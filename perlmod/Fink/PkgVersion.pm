@@ -469,6 +469,15 @@ sub get_source {
 	return "-";
 }
 
+sub get_source_list {
+	my $self = shift;
+	my @list = {};
+	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
+	        push(@list, get_source($self, $index));
+	}
+	return @list;
+}
+
 sub get_tarball {
 	my $self = shift;
 	my $index = shift || 1;
@@ -484,6 +493,15 @@ sub get_tarball {
 		return &filename($self->param("Source".$index));
 	}
 	return "-";
+}
+
+sub get_tarball_list {
+	my $self = shift;
+	my @list = {};
+	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
+	        push(@list, get_tarball($self, $index));
+	}
+	return @list;
 }
 
 sub get_checksum {
