@@ -1,3 +1,7 @@
+2004-03-16  Ben Hines <benh57@users.sourceforge.net>
+
+	* PkgVersion.pm: Add get_filename to get the info file name (used by FinkCommander)
+
 2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Change from pathsetup.command to pathsetup.sh

@@ -500,6 +500,11 @@ sub get_fullname {
 	return $self->{_fullname};
 }
 
+sub get_filename {
+	my $self = shift;
+	return $self->{_filename};
+}
+
 sub get_debname {
 	my $self = shift;
 	return $self->{_debname};
