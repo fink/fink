@@ -1,3 +1,9 @@
+2001-03-28  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_install): Removes build dir after
+	successful build unless KeepBuildDir is set in the configuration.
+	* FinkVersion.pm: Set version number to "post-0.1.6".
+
 2001-03-21  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (real_install): Added check to catch unknown packages

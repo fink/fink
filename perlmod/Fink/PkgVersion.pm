@@ -552,7 +552,7 @@ sub phase_compile {
 
 sub phase_install {
   my $self = shift;
-  my ($dir, $install_script, $cmd);
+  my ($dir, $install_script, $cmd, $bdir);
 
   if ($self->{_type} ne "bundle") {
     $dir = $self->get_build_directory();
@@ -583,6 +583,16 @@ sub phase_install {
 
     if (&execute($cmd)) {
       die "installing failed\n";
+    }
+  }
+
+  ### remove build dir
+
+  $bdir = $self->get_fullname();
+  chdir "$basepath/src";
+  if (not $config->param_boolean("KeepBuildDir") and -e $bdir) {
+    if (&execute("rm -rf $bdir")) {
+      die "can't remove build directory $bdir\n";
     }
   }
 }
