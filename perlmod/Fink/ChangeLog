@@ -1,5 +1,8 @@
 2001-06-22  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Bootstrap.pm: Use the new dpkg-bootstrap package during
+	bootstrap phase two.
+
 	* Engine.pm (cmd_fetch_missing): Fix handling of partially fetched
 	packages.
 

@@ -49,7 +49,7 @@ END { }       # module clean-up code here (global destructor)
 sub bootstrap {
   my ($bsbase, $save_path);
   my ($pkgname, $package, @elist);
-  my @plist = ("gettext", "tar", "dpkg");
+  my @plist = ("gettext", "tar", "dpkg-bootstrap");
 
   $bsbase = "$basepath/bootstrap";
   &print_breaking("Bootstrapping a base system via $bsbase.");
@@ -78,7 +78,7 @@ sub bootstrap {
   print "\n";
 
   # use normal install routines
-  Fink::Engine::cmd_fetch_missing(@elist);
+  Fink::Engine::cmd_fetch_missing(@plist, @elist);
 
 
   print "\n";
