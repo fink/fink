@@ -185,11 +185,22 @@ sub get_matching_versions {
 
 sub get_all_providers {
 	my $self = shift;
-	my (@versions);
+	my @versions;
 
 	@versions = values %{$self->{_versions}};
 	push @versions, @{$self->{_providers}};
 	return @versions;
+}
+
+# Are any of the package's providers installed?
+sub is_provided {
+	my $self = shift;
+	my $pvo;
+
+	foreach $pvo (@{$self->{_providers}}) {
+		return 1 if $pvo->is_installed();
+	}
+	return 0;
 }
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
