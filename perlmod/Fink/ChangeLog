@@ -1,4 +1,7 @@
 2003-01-24  Max Horn  <max@quendi.de>
+
+	* Package.pm: Carsten Klapp's patch to speed up search_comparedb and
+	  update_db, which speeds up many fink commands a bit (Patch #674313).
 	
 	* Services.pm: Tiny optimization in expand_percent.
 	

@@ -394,25 +394,24 @@ sub scan_all {
 
 sub search_comparedb {
   my $path = shift;
-  my (@files, $file, $newpath, @stats);
+  my (@files, $file, $fullpath, @stats);
 
+  # FIXME: should probably just check dirs of $config->get_treelist()
   opendir(DIR, $path) || die "can't opendir $path: $!";
-  @files = readdir(DIR);
+  @files = grep { !/^[\.#]/ } readdir(DIR);
   closedir DIR;
-  
+
   foreach $file (@files) {
-    next if substr($file, 0, 1) eq ".";
-    next if $file eq "CVS";
-    
-    $newpath = "$path/$file"; 
+    $fullpath = "$path/$file"; 
 
-    @stats = stat($newpath);
-
-    if (S_ISDIR($stats[2])) {
-      return 1 if (&search_comparedb($newpath));
+    if (-d $fullpath) {
+      next if $file eq "binary-darwin-powerpc";
+      next if $file eq "CVS";
+      return 1 if (&search_comparedb($fullpath));
     }
-    
-    if (substr($file, length($file)-5) eq ".info") {
+    else {
+      next if !(substr($file, length($file)-5) eq ".info");
+      @stats = stat($fullpath);
       return 1 if ($stats[9] > $db_mtime);
     }
   }
@@ -425,18 +424,16 @@ sub search_comparedb {
 sub update_db {
   shift;  # class method - ignore first parameter
   my ($tree, $dir);
-  
-  print "Reading package info...\n";
-  
-  # read data from descriptions
-  foreach $tree ($config->get_treelist()) {
-    $dir = "$basepath/fink/dists/$tree/finkinfo";
-    Fink::Package->scan($dir);
-  }
-  
+
   eval {
     require Storable; 
     if ($> == 0) {
+      # read data from descriptions
+      print "Reading package info...\n";
+      foreach $tree ($config->get_treelist()) {
+        $dir = "$basepath/fink/dists/$tree/finkinfo";
+        Fink::Package->scan($dir);
+      }
       print "Updating package index... ";
       unless (-d "$basepath/var/db") {
         mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
