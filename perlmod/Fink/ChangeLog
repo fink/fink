@@ -1,5 +1,7 @@
 2001-07-13  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Package.pm: Make sure the PkgVersion.pm module is loaded.
+
 	* PkgVersion.pm (phase_build): Added support to automatically
 	install / remove Info documents.
 
