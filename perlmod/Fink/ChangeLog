@@ -1,3 +1,11 @@
+2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* Persist.pm, Persist/Base.pm, Persist/TableHash.pm: New files,
+	enabling persistence of Fink objects to SQLite databases.
+	* Base.pm: New method new_no_init to allow interception of object
+	blessing in Fink::Persist::Base.
+	* Tie/Watch.pm: Import from CPAN's Tie::Watch version 1.1.
+
 2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* all: updated Copyright notice

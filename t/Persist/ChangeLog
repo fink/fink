@@ -1,0 +1,8 @@
+2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* persist.t: New file, test routines for Fink::Persist,
+	Fink::Persist::TableHash and Fink::Persist::Base.
+	
+2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* DIRECTORY CREATED

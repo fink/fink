@@ -52,6 +52,25 @@ Basic parameter handling for fink objects.
 
 =over 4
 
+=item new_no_init
+
+  my $obj = Fink::Base->new_no_init;
+
+I<Protected method, do not call directly>.
+
+Create a new fink object but don't initialize it. All other constructors should
+use this method.
+
+=cut
+
+sub new_no_init {
+	my $proto = shift;
+	my $class = ref($proto) || $proto;
+
+	my $self = {};
+	return bless($self, $class);
+}
+
 =item new
 
   my $obj = Fink::Base->new;
@@ -62,11 +81,7 @@ Create a new, empty fink object.
 
 sub new {
 	my $proto = shift;
-	my $class = ref($proto) || $proto;
-
-	my $self = {};
-	bless($self, $class);
-
+	my $self = $proto->new_no_init;
 	$self->initialize();
 
 	return $self;
@@ -84,11 +99,10 @@ Any key with a leading _ is ignored.
 =cut
 
 sub new_from_properties {
-	my($proto, $props) = @_;
-	my $class = ref($proto) || $proto;
-
-	my $self = bless({}, $class);
-
+	my $proto = shift;
+	my $self = $proto->new_no_init;
+	
+	my $props = shift;
 	while (my($key, $value) = each %$props) {
 		$self->{$key} = $value unless $key =~ /^_/;
 	}
@@ -104,7 +118,7 @@ sub new_from_properties {
 
 I<Protected method, do not call directly>.
 
-All Fink::Base constructors will call initialize() just before returning
+All public Fink::Base constructors will call initialize() just before returning
 the object.
 
 The default initialize() is empty.  You may override.

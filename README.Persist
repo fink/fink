@@ -1,0 +1,47 @@
+
+The Fink::Persist* packages enable Fink objects to be backed by a database.
+
+To test the Persist packages, you must first install the package dbd-sqlite-pmXXX, where XXX is your installed version of Perl (eg: 581).
+
+Look at t/Persist/persist.t for examples of how to use Persist.
+
+
+TODO (no particular order):
+
+	- Make Package and PkgVersion inherit from Fink::Persist::Base
+	
+	- Abstract out the $Package::packages hash. Two options:
+		* Use TableHash to make it table-backed
+		* Turn references to $packages into calls to get/set methods, then have
+			them do the appropriate things with select_by_params and new.
+			
+	- Profile things for speed (Devel::SmallProf should work)
+	
+	- Normalize the DB
+		* Required fields
+		* Foreign keys: one-to-many, many-to-many
+		* Complex values => fkeys and new tables
+	
+	- Collating method to work with versions?
+	
+	- Turn various searches in dep-engine into SELECTs, conditional on DB
+		existence
+	
+	- Error test for difficult conditions:
+		- DBI / SQLite not available
+	
+	- Add read-only ability
+	
+	- Use table_info rather than SQLite specific code for exists_table
+	
+	- Add ability to disconnect / reconnect
+	
+	- Add caching if possible
+		* How to deal with aliasing?
+	
+	- Add indices to DB
+	
+	- Add ref-counting GC
+	
+	- Check locking
+	

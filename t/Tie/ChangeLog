@@ -1,0 +1,8 @@
+2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* Watch.t: New file, test routines for Fink::Tie::Watch copied
+	from Tie::Watch version 1.1 on CPAN.
+
+2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* DIRECTORY CREATED
