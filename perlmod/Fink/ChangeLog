@@ -1,5 +1,10 @@
 2005-01-09  Daniel Macks  <dmacks@netspace.org>
 
+	* Package.pm: Put off variable assignments in loop until after
+	checking abort conditions.
+
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
 	* Services.pm: rewrite execute() build_as_nobody to use recursive
 	wrapper (cuts down on system.log polution and fixes pipelines).
 	
