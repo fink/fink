@@ -539,23 +539,25 @@ sub validate_info_file {
 		}
 
 		# Check for hardcoded /sw.
-		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
+		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
 			print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
 			$looks_good = 0;
 			next;
 		}
-
-=pod
-
-			This line is a dumb hack to keep emacs paren balancing happy );
-
-=cut
 
 		# Check for %p/src
 		if ($value =~ /\%p\\?\/src\\?\//) {
 			print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
 			$looks_good = 0;
 			next;
+		}
+
+		# A #! line is worthless in dpkg install-time scripts
+		if ($field =~ /^{pre,post}{inst,rm}script$/) {
+			if ($value =~ /^\s*\#!/) {   # emacs misparses # in a pattern:(
+				print "Warning: Field \"$field\" explicitly calls for an interpretter. ($filename)\nFink always prefixes this field with an explicit \"#!/bin/sh\".\n";
+				$looks_good = 0;
+			}
 		}
 
 		# Validate splitoffs
@@ -629,16 +631,10 @@ sub validate_info_file {
 				}
 
 				# Check for hardcoded /sw.
-				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
+				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
 					print "Warning: Field \"$field\" of \"$splitoff_field\" appears to contain a hardcoded /sw. ($filename)\n";
 					$looks_good = 0;
 				}
-
-=pod
-
-			This line is a dumb hack to keep emacs paren balancing happy );
-
-=cut
 
 				# Check for %p/src
 				if ($value =~ /\%p\\?\/src\\?\//) {
