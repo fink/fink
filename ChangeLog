@@ -7,6 +7,16 @@
 	* fink.conf.5.in: Document Verbose=4.
 	* fink.in: -v sets verbose=4.
 
+2004-12-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.in: Add new option '--compile-from-source', '-c' that causes 
+	fink to compile package from source, overriding the UseBinaryDist
+	configuration option on a per-package basis.
+	* fink.8.in: Document '--compile-from-source', '-c' options
+	* fink.conf.5.in: Modify documentation of 'UseBinaryDist'
+	* fink.info.in: Use "fink -c" in postinstall to avoid invoking
+	UseBinaryDist when installing fink itself
+
 2004-11-28  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: Add global flag --build-as-nobody
