@@ -1,0 +1,87 @@
+Package: apt
+Version: 0.5.3
+Revision: 3
+Source: http://http.us.debian.org/debian/pool/main/a/apt/%n_%v.tar.gz
+SourceDirectory: apt
+Depends: dpkg
+PatchScript: sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1
+SetCXXFLAGS: -O2
+CompileScript: <<
+./configure %c
+make -f makefile.wrap
+<<
+InstallScript: <<
+mkdir -p %i/bin
+install -m 755 bin/apt-cache %i/bin/
+install -m 755 bin/apt-cdrom %i/bin/
+install -m 755 bin/apt-config %i/bin/
+install -m 755 bin/apt-extracttemplates %i/bin/
+install -m 755 bin/apt-get %i/bin/
+install -m 755 bin/apt-sortpkgs %i/bin/
+mkdir -p %i/lib
+install -m 644 bin/libapt-pkg.3.1.3.dylib %i/lib/
+cd %i/lib/ && ln -s libapt-pkg.3.1.3.dylib libapt-pkg.3.1.dylib && ln -s libapt-pkg.3.1.3.dylib libapt-pkg.dylib
+install -m 644 bin/libapt-inst.1.0.0.dylib %i/lib/
+cd %i/lib/ && ln -s libapt-inst.1.0.0.dylib libapt-inst.1.0.dylib && ln -s libapt-inst.1.0.0.dylib libapt-inst.dylib
+mkdir -p %i/lib/apt/methods
+install -m 755 bin/methods/cdrom %i/lib/apt/methods/
+install -m 755 bin/methods/copy %i/lib/apt/methods/
+install -m 755 bin/methods/file %i/lib/apt/methods/
+install -m 755 bin/methods/ftp %i/lib/apt/methods/
+install -m 755 bin/methods/gzip %i/lib/apt/methods/
+install -m 755 bin/methods/http %i/lib/apt/methods/
+install -m 755 bin/methods/rsh %i/lib/apt/methods/
+cd %i/lib/apt/methods && ln -s rsh ssh
+mkdir -p %i/lib/dpkg/methods/apt
+install -m 644 scripts/dselect/desc.apt %i/lib/dpkg/methods/apt/
+install -m 755 scripts/dselect/install %i/lib/dpkg/methods/apt/
+install -m 644 scripts/dselect/names %i/lib/dpkg/methods/apt/
+install -m 755 scripts/dselect/setup %i/lib/dpkg/methods/apt/
+install -m 755 scripts/dselect/update %i/lib/dpkg/methods/apt/
+mkdir -p %i/include/apt-pkg
+cp include/apt-pkg/*.h %i/include/apt-pkg/
+mkdir -p %i/share/man
+mkdir -p %i/share/man/man1
+mkdir -p %i/share/man/man5
+mkdir -p %i/share/man/man8
+install -m 644 doc/apt.8 %i/share/man/man8/
+install -m 644 docs/apt-cache.8 %i/share/man/man8/
+install -m 644 docs/apt-cdrom.8 %i/share/man/man8/
+install -m 644 docs/apt-config.8 %i/share/man/man8/
+install -m 644 docs/apt-extracttemplates.1 %i/share/man/man1/
+install -m 644 docs/apt-get.8 %i/share/man/man8/
+install -m 644 docs/apt-sortpkgs.1 %i/share/man/man1/
+install -m 644 docs/apt.conf.5 %i/share/man/man5/
+install -m 644 docs/apt_preferences.5 %i/share/man/man5/
+install -m 644 docs/sources.list.5 %i/share/man/man5/
+mkdir -p %i/etc/apt/apt.conf.d
+echo 'deb file:%p/fink local main' >%i/etc/apt/sources.list
+echo 'deb file:%p/fink stable main crypto bootstrap' >>%i/etc/apt/sources.list
+echo '#deb file:%p/fink unstable main crypto' >>%i/etc/apt/sources.list
+mkdir -p %i/var/cache/apt/archives/partial
+mkdir -p %i/var/lib/apt/lists/partial
+mkdir -p %i/share/doc/%n
+cp COPYING* AUTHORS %i/share/doc/%n/
+<<
+ConfFiles: %p/etc/apt/sources.list
+PostInstScript: <<
+if [ ! -f %p/var/lib/dpkg/cmethopt ]; then
+  echo "apt apt" >%p/var/lib/dpkg/cmethopt
+  chmod 644 %p/var/lib/dpkg/cmethopt
+fi
+<<
+#
+Description: Advanced front-end for dpkg
+DescPort: <<
+There are three troublemakers when porting apt:
+- It was written for Linux/ELF/glibc.
+- It was written to maintain a distribution that is in charge of the
+  system and hardcodes paths like /usr/bin, /usr/lib and /var/lib.
+- There is no install target in the Makefiles because the Debian
+  packaging files take care of what goes where.
+There's also the usual trouble like not recognizing Darwin and
+depending on a case-sensitive file system. All of this amounts to a
+big, bad patch.
+<<
+License: GPL
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

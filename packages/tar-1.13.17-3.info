@@ -1,0 +1,31 @@
+Package: tar
+Version: 1.13.17
+Revision: 3
+Source: ftp://alpha.gnu.org/gnu/%n/%n-%v.tar.gz
+Depends: gettext, gzip, bzip2, base-files
+Essential: yes
+UpdateConfigGuess: true
+ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib
+InstallScript: <<
+make install DESTDIR=%d
+cd %i/bin ; ln -s gtar tar ; ln -s gtar gnutar
+mv %i/lib/rmt %i/lib/rmt-tar
+mkdir -p %i/share/doc/%n
+cp README* COPYING AUTHORS NEWS THANKS %i/share/doc/%n/
+<<
+Description: GNU tar - tape archiver
+DescPort: <<
+Uses autoconf. Checks the hosttype - the usual fix.
+<<
+License: GPL
+InfoDocs: tar.info
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+#
+PostInstScript: <<
+update-alternatives --install %p/lib/rmt rmt %p/lib/rmt-tar 60
+<<
+PreRmScript: <<
+if [ $1 != "upgrade" ]; then
+  update-alternatives --remove rmt %p/lib/rmt-tar
+fi
+<<

@@ -1,0 +1,26 @@
+Package: ncurses
+Version: 5.2
+Revision: 5
+Source: gnu
+Essential: yes
+Depends: base-files
+Patch: %f.patch
+ConfigureParams: --without-cxx-binding --without-ada --with-shared --without-debug --disable-termcap --mandir=%p/share/man
+SetCFLAGS: -no-cpp-precomp
+InstallScript: <<
+make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib
+mkdir -p %i/share/doc/%n
+cp README ANNOUNCE NEWS %i/share/doc/%n/
+cp tack/README %i/share/doc/%n/README.tack
+cp tack/COPYING %i/share/doc/%n/COPYING.tack
+<<
+Description: Full-screen ascii drawing library
+DescPort: <<
+Needs heavy hacking to build shared libraries. The -no-cpp-precomp is
+not strictly needed, but gets rid of the myriad of bogus error
+messages. Also needs a small patch for case-insensitive file systems.
+
+First revision by David Ross.
+<<
+License: OSI-Approved
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

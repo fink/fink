@@ -1,0 +1,5 @@
+--- gettext/config.cache.orig	Fri Jul 20 13:15:55 2001
++++ gettext/config.cache	Fri Jul 20 13:14:22 2001
+@@ -0,0 +1,2 @@
++am_cv_func_iconv=no
++am_cv_lib_iconv=no
