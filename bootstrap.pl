@@ -33,10 +33,25 @@ my ($script, $cmd);
 
 ### check the perl version
 
-if ("$]" == "5.006" or "$]" == "5.006001" or "$]" == "5.008" or "$]" == "5.008001") {
+# acceptible perl versions: "$] value" => "human-readible version string"
+my %ok_perl_versions = (
+    "5.006"    => "5.6.0",
+    "5.006001" => "5.6.1",
+    "5.008"    => "5.8.0",
+    "5.008001" => "5.8.1",
+    "5.008002" => "5.8.2",
+    "5.008004" => "5.8.4"
+);
+
+if (exists $ok_perl_versions{"$]"}) {
     print "Found perl version $].\n";
 } else {
-die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.6.1 (5.006001), 5.8.0 (5.008), or 5.8.1 (5.008001).\n\n";
+    die "\nSorry, your /usr/bin/perl is version $], but Fink can only use" . (
+	join "", map {
+	    ( $ok_perl_versions{$_} =~ /0$/ ? "\n  " : ", " ) .
+	    "$ok_perl_versions{$_} ($_)"
+	} sort keys %ok_perl_versions
+    )."\n\n";
 }
 
 if ("$]" == "5.006001") {

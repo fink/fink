@@ -2460,7 +2460,6 @@ END
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
 		chomp @vars;
 		%ENV = map { split /=/,$_,2 } @vars;
-		$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	}
 
 	# set variables according to the info file
