@@ -580,6 +580,7 @@ sub prepare_script {
     my $string = expand_percent $template;
     my $string = expand_percent $template, \%map;
     my $string = expand_percent $template, \%map, $err_info;
+    my $string = expand_percent $template, \%map, $err_info, $err_action;
 
 Performs percent-expansion on the given multiline $template according
 to %map (if one is defined). If a line in $template begins with #
@@ -593,9 +594,16 @@ passes are made to deal with this situation. Recursing is currently
 limitted to a single additional level (only (up to) two passes are
 made). If there are still % chars left after the recursion, that means
 $template needs more passes (beyond the recursion limit) or there are
-% patterns in $template that are not in %map. If either of these two
-cases occurs, the program will die with an error message. If given,
-$err_info will be appended to this error message.
+% patterns in $template that are not in %map. The value of $err_action
+determins what happens if either of these two cases occurs:
+
+  0 (or undef or not specified)
+         die with error message
+  1      print error message but ignore
+  2      silently ignore
+
+If given, $err_info will be appended to the error message. "Ignore" in
+this context means the unknown % is left intact in the string.
 
 To get an actual percent char in the string, protect it as %% in
 $template (similar to printf()). This occurs whether or not there is a
@@ -617,6 +625,7 @@ sub expand_percent {
 	my $s = shift;
 	my $map = shift || {};
 	my $err_info = shift;
+	my $err_action = shift || 0;
 	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
 	return $s if (not defined $s);
@@ -662,11 +671,13 @@ sub expand_percent {
 			# The presence of a sequence of an odd number
 			# of percent chars means we have unexpanded
 			# percents besides (%% => %) left. Error out.
-			if ($s =~ /(?<!\%)(\%\%)*\%(?!\%)/) {
+			if ($s =~ /(?<!\%)(\%\%)*\%(?!\%)/ and $err_action != 2) {
 				my $errmsg = "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"";
 				$errmsg .= " ($err_info)" if defined $err_info;
 				$errmsg .= "\n";
-				die $errmsg;
+				$err_action
+					? print $errmsg
+					: die $errmsg;
 			}
 			# Now handle %% => %
 			$s =~ s/\%\%/\%/g;

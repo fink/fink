@@ -2098,7 +2098,7 @@ EOF
 			} elsif ($_ =~ /^desc(detail|usage)$/) {
 				# multiline field, so indent 1 space always
 				# format_description does that for us
-				print "$_:\n", Fink::PkgVersion::format_description($pkg->param_expanded($_)) if $pkg->has_param($_);
+				print "$_:\n", Fink::PkgVersion::format_description($pkg->param_expanded($_, 2)) if $pkg->has_param($_);
 			} elsif ($_ eq 'type'       or $_ eq 'license' or
 					 $_ eq 'maintainer' or $_ eq 'homepage'
 					) {

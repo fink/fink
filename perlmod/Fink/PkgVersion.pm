@@ -303,8 +303,10 @@ sub expand_percent_if_available {
 
 sub param_expanded {
 	my $self = shift;
-	return &expand_percent($self->param(@_), $self->{_expand},
-		$self->get_info_filename." \"$_[0]\"");
+	my $field = shift;
+	my $err_action = shift;
+	return &expand_percent($self->param($field), $self->{_expand},
+		$self->get_info_filename." \"$field\"", $err_action);
 }
 
 # param_default_expanded FIELD, DEFAULT
@@ -1033,13 +1035,13 @@ sub get_description {
 	$desc .= "\n";
 
 	if ($self->has_param("DescDetail")) {
-		$desc .= &format_description($self->param_expanded("DescDetail"));
+		$desc .= &format_description($self->param_expanded("DescDetail", 2));
 	}
 
 	if ($style != 1) {
 		if ($self->has_param("DescUsage")) {
 			$desc .= " .\n Usage Notes:\n";
-			$desc .= &format_description($self->param_expanded("DescUsage"));
+			$desc .= &format_description($self->param_expanded("DescUsage", 2));
 		}
 
 		if ($self->has_param("Homepage")) {
