@@ -3047,7 +3047,14 @@ sub run_script {
 	%env_bak = %ENV;        # backup existing environment
 	%ENV = %$script_env;    # run under modified environment
 	if (&execute_script($script)) {
-		die $phase." ".$self->get_fullname()." failed\n";
+		my $error = $phase." ".$self->get_fullname()." failed\n";
+		if ($self->has_param('maintainer')) {
+			$error .= "\nBefore reporting any errors, please run \"fink selfupdate\" and\n" .
+				"try again.  If you continue to have issues, you can try e-mailing\n".
+				"the maintainer:\n\n".
+				"\t" . $self->param('maintainer') . "\n\n";
+		}
+		die $error;
 	}
 	%ENV = %env_bak;        # restore previous environment
 }
