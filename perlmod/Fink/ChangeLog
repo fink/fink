@@ -6,7 +6,7 @@
 
 2005-02-28  Justin F. Hallett  <thesin@users.sourceforge.net>
 
-	* VirtPackage.pm: Added 0.6 detection
+	* VirtPackage.pm: Added Growl 0.6 detection
 
 2005-02-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

@@ -1000,11 +1000,12 @@ For more info on this package see http://growl.info/.
 				close(FILEIN);
 			}
                 } else {
-			print STDERR "/Library/Receipts/Growl.pkg/Contents/Info.plist not found... " if ($options{debug});
+			print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
 			$growl_version = "0";
                 }
 
 		### This check is for growl's less then 0.6
+		### Growl team told me 1.0 would be versioned 1.00
 		if ($growl_version eq "1.0") {
 			if (-f "/Library/Receipts/Growl.pkg/Contents/Info.plist") {
 				if (open(FILEIN, '/Library/Receipts/Growl.pkg/Contents/Info.plist')) {
@@ -1015,7 +1016,7 @@ For more info on this package see http://growl.info/.
 					close(FILEIN);
 				} 
 			} else {
-				print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
+				print STDERR "/Library/Receipts/Growl.pkg/Contents/Info.plist not found... " if ($options{debug});
 				$growl_version = "0";
 			}
 		}
