@@ -686,7 +686,7 @@ sub resolve_depends {
       }
 
       if ($include_build and @{$self->{_splitoffs}} > 0 and
-	 ($idx >= $split_idx or $include_build > 1)) {
+	 ($idx >= $split_idx or $include_build == 2)) {
 	# To prevent circular refs in the build dependency graph, we have to
 	# remove all our splitoffs from the graph. Exception: any splitoffs
 	# this master depends on directly are not filtered. Exception from the

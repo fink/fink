@@ -76,6 +76,9 @@
 	
 2002-07-24  Max Horn  <max@quendi.de>
 
+	* Incorporated patch #504498 by Justin F. Hallett which adds the
+	  TarFilesRename and TarNFilesRename field.
+
 	* Incorporated patch #577882 by Sylvain Cuaz which cleans the environment 
 	before building packages.
 
