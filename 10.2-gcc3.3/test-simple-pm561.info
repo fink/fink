@@ -1,13 +1,16 @@
-Package: test-simple-pm
+Package: test-simple-pm561
 Version: 0.47
-Revision: 1
+Revision: 14
 ###
-Depends: test-harness-pm
+Depends: perl561-core, file-spec-pm561
+BuildDepends: fink (>= 0.20.2.1-1), test-harness-pm561, file-spec-pm561, perl561-core
+Replaces: test-simple-pm (<= 0.47-14), perl560, perl580, perl584, perl585, test-simple-pm560, test-simple-pm561, test-simple-pm580, test-simple-pm581, test-simple-pm584, test-simple-pm585
+Provides: test-simple-pm
 ###
 Source: mirror:cpan:authors/id/M/MS/MSCHWERN/Test-Simple-%v.tar.gz
 Source-MD5: 4a6c12685bfeadfe8ff6fca70825f90c
 ###
-Type: perl
+Type: perl 5.6.0
 UpdatePOD: true
 ###
 DocFiles: Changes MANIFEST* README* TODO
@@ -20,7 +23,10 @@ DescDetail: <<
   for this one).
 <<
 DescPackaging: <<
- Needed in 10.2-gcc3.3 and earlier so that the fink test suite can be run.
+ test-simple-pm560 and test-simple-pm561 are needed in 10.2-gcc3.3 and 
+earlier so that the fink test suite can be run as fink is being compiled.
+To avoid problems with updating, Info2 is not used for those two packages
+(in any tree).
 <<
 ###
 License: Artistic
