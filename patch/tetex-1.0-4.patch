@@ -1,0 +1,85 @@
+--- teTeX-1.0/Makefile.in	Fri Apr  6 19:53:37 2001
++++ teTeX-1.0/Makefile.in	Fri Apr  6 19:55:16 2001
+@@ -84,9 +84,9 @@
+ 	test -f $(scriptdir)/mktexlsr && \
+ 	  TEXMFMAIN=$(texmf) PATH=$(scriptdir):$(bindir):$(PATH) \
+ 	    $(scriptdir)/mktexlsr
+-	test -f $(scriptdir)/texconfig && \
+-	  TEXMFMAIN=$(texmf) PATH=$(scriptdir):$(bindir):$(PATH) \
+-	    $(scriptdir)/texconfig init
++#test -f $(scriptdir)/texconfig && \
++#  TEXMFMAIN=$(texmf) PATH=$(scriptdir):$(bindir):$(PATH) \
++#    $(scriptdir)/texconfig init
+ 
+ install-exec:
+ 	for dir in $(ESUBDIRS); do \
+--- teTeX-1.0/texk/make/programs.mk	Wed Feb  7 15:19:38 2001
++++ teTeX-1.0/texk/make/programs.mk	Wed Feb  7 15:19:51 2001
+@@ -7,7 +7,7 @@
+ # proglib is for web2c; 
+ # XLOADLIBES is for the installer.
+ LIBS = @LIBS@
+-LOADLIBES = $(proglib) $(kpathsea) $(LIBS) -lm $(XLOADLIBES)
++LOADLIBES = $(proglib) $(kpathsea) $(LIBS) $(XLOADLIBES)
+ 
+ # May as well separate linking from compiling, just in case.
+ CCLD = $(CC)
+--- teTeX-1.0/libs/libwww/configure	Wed Feb  7 17:17:09 2001
++++ teTeX-1.0/libs/libwww/configure	Wed Feb  7 17:18:16 2001
+@@ -4422,16 +4422,16 @@
+ fi
+ rm -f conftest*
+ fi
+-if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
+-  echo "$ac_t""yes" 1>&6
+-    ac_tr_hdr=HAVE_`echo $ac_hdr | sed 'y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%'`
+-  cat >> confdefs.h <<EOF
+-#define $ac_tr_hdr 1
+-EOF
+- 
+-else
++#if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
++#  echo "$ac_t""yes" 1>&6
++#    ac_tr_hdr=HAVE_`echo $ac_hdr | sed 'y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%'`
++#  cat >> confdefs.h <<EOF
++##define $ac_tr_hdr 1
++#EOF
++# 
++#else
+   echo "$ac_t""no" 1>&6
+-fi
++#fi
+ done
+ 
+ for ac_hdr in arpa/inet.h inet.h
+--- teTeX-1.0/texk/xdvik/configure.in	Thu Feb  8 10:33:48 2001
++++ teTeX-1.0/texk/xdvik/configure.in	Thu Feb  8 10:34:02 2001
+@@ -64,7 +64,7 @@
+ else
+   # Effectively promote --with-x-toolkit=xt to athena since the code
+   # does not distinguish.
+-  x_tool_libs="-lXaw -lXmu -lXt"
++  x_tool_libs="-lXaw -lXmu -lXt -lXpm"
+ fi
+ AC_SUBST(x_tool_libs)
+ 
+--- teTeX-1.0/texk/oxdvik/configure	Fri Feb  9 05:44:27 2001
++++ teTeX-1.0/texk/oxdvik/configure	Fri Feb  9 05:44:46 2001
+@@ -3553,7 +3553,7 @@
+ else
+   # Effectively promote --with-x-toolkit=xt to athena since the code
+   # does not distinguish.
+-  x_tool_libs="-lXaw -lXmu -lXt"
++  x_tool_libs="-lXaw -lXmu -lXt -lXpm"
+ fi
+ 
+ 
+--- teTeX-1.0/texk/xdvik/configure	Fri Feb  9 08:51:08 2001
++++ teTeX-1.0/texk/xdvik/configure	Fri Feb  9 08:51:26 2001
+@@ -3553,7 +3553,7 @@
+ else
+   # Effectively promote --with-x-toolkit=xt to athena since the code
+   # does not distinguish.
+-  x_tool_libs="-lXaw -lXmu -lXt"
++  x_tool_libs="-lXaw -lXmu -lXt -lXpm"
+ fi
