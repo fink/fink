@@ -1,3 +1,9 @@
+2003-11-19  Michael G Schwern <schwern@pobox.com>
+	
+	* Makefile: re-enabling Command.pm test.  Disabling was premature.  
+	No failure report was given, no analysis done.  Please post a
+	report to fink-devel.
+
 2003-11-19  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Makefile: disable Command.pm test since it's not in use yet
