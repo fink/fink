@@ -739,12 +739,7 @@ sub type_hash_from_string {
 			$hash{$1} = $1;
 		} elsif (/^(\S+)\s+(\S+)$/) {
 			# have subtype
-			if ($2 eq '""') {
-				# handle special meaning of "" as null string
-				$hash{$1} = '';
-			} else {
-				$hash{$1} = $2;
-			}
+			$hash{$1} = $2;
 		} else {
 			warn "Bad Type specifier '$_' in $filename\n";
 		}

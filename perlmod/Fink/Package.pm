@@ -513,7 +513,7 @@ sub setup_package_object {
 			my @subtypes = split ' ', $2;
 			if ($subtypes[0] =~ /^boolean$/i) {
 				# a list of (boolean) has special meaning
-				@subtypes = ('','""');
+				@subtypes = ('','.');
 			}
 			my @pkgversions;
 			foreach (@subtypes) {
