@@ -7,6 +7,7 @@
 Order: gnu gnome gimp ctan cpan sourceforge
 
 gnu: GNU software
+debian: Debian
 gnome: GNOME
 gimp: The GIMP
 kde: KDE
