@@ -1768,7 +1768,7 @@ EOF
 			} elsif ($_ eq 'configureparams') {
 				my $cparams = &expand_percent(
 					$pkg->parse_configureparams,
-					$pkg->{_expand}, "fink dumpinfo " . $pkg->get_fullversion
+					$pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion
 				);
 				printf "%s: %s\n", $_, $cparams if length $cparams;
 			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
@@ -1789,7 +1789,7 @@ EOF
 		$pkg->parse_configureparams;
 		foreach (@percents) {
 			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
-			printf "%%%s: %s\n", $_, &expand_percent("\%$_", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_fullversion);
+			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);
 		}
 	}
 }

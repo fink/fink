@@ -1,8 +1,9 @@
 2004-04-26  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: dumpinfo: corrected printing of Desc* fields and
-	of splitoffs for SplitOff packages.
-
+	of splitoffs for SplitOff packages, improved handling of -p keys,
+	better error message for %-expansion.
+	
 2004-04-26  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Grr...committed wrong file. Fixing...
