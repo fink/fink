@@ -28,49 +28,49 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-basepath=$1
+basepath="$1"
 
 
 echo "Creating directories..."
 
-mkdir -p $basepath
-chmod 755 $basepath
+mkdir -p "$basepath"
+chmod 755 "$basepath"
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   lib/fink/mirror lib/fink/update \
 	   share share/doc share/doc/fink share/man share/man/man8 ; do
-  mkdir $basepath/$dir
-  chmod 755 $basepath/$dir
+  mkdir "$basepath/$dir"
+  chmod 755 "$basepath/$dir"
 done
 
 
 echo "Copying files..."
 
-install -c -p -m 755 fink $basepath/bin/
-install -c -p -m 644 fink.8 $basepath/share/man/man8/
+install -c -p -m 755 fink "$basepath/bin/"
+install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 
 for file in perlmod/Fink/*.pm ; do
   if [ -f $file ]; then
-    install -c -p -m 644 $file $basepath/lib/perl5/Fink/
+    install -c -p -m 644 $file "$basepath/lib/perl5/Fink/"
   fi
 done
 
 for file in mirror/* ; do
   if [ -f $file ]; then
-    install -c -p -m 644 $file $basepath/lib/fink/mirror/
+    install -c -p -m 644 $file "$basepath/lib/fink/mirror/"
   fi
 done
 
 for file in update/config.guess update/config.sub update/ltconfig ; do
-  install -c -p -m 755 $file $basepath/lib/fink/update/
+  install -c -p -m 755 $file "$basepath/lib/fink/update/"
 done
 for file in update/ltmain.sh update/Makefile.in.in ; do
-  install -c -p -m 644 $file $basepath/lib/fink/update/
+  install -c -p -m 644 $file "$basepath/lib/fink/update/"
 done
 
 for file in COPYING README README.html INSTALL INSTALL.html \
             USAGE USAGE.html ; do
-  install -c -p -m 644  $file $basepath/share/doc/fink/
+  install -c -p -m 644  $file "$basepath/share/doc/fink/"
 done
 
 

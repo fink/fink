@@ -1,3 +1,7 @@
+2002-04-25  Max Horn  <max@quendi.de>
+
+	* install.sh: Changed to hopefully support paths with white spaces in them.
+
 2002-04-21  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: Report Darwin 5.4 (OS X 10.1.4) as supported
