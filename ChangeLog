@@ -1,3 +1,8 @@
+2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	Create a CVS branch "isystem" to isolate the proposed changes in 
+	default values for environment variables from the main CVS branch.
+
 2002-12-22  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* fink.info.in, inject.pl: The postinstall script should not be
