@@ -1,3 +1,13 @@
+2004-05-04  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fixed bug in Depends processing where packages
+	with version requirements could get dropped if field had conditionals.
+
+2004-05-03  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: status: add "have-deb", allversions: add
+	"b" if .deb file is present.
+
 2004-05-03  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: dumpinfo: fixed display of SourceN in all-fields

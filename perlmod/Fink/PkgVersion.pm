@@ -317,7 +317,7 @@ sub conditional_pkg_list {
 #	print "\toriginal: $value\n";
 	my @atoms = split /([,|])/, $value; # break apart the field
 	map {
-		if (s/\s*\((.*?)\)(\s*.*)/$2/) {
+		if (s/^\s*\((.*?)\)(\s*.*)/$2/) {
 			# we have a conditional; remove the cond expression
 			my $cond = $1;
 #			print "\tfound conditional '$cond'\n";
