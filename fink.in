@@ -40,19 +40,37 @@ my %options =
 my $optionsString = '';
 
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
-GetOptions('yes|y' => sub { $options{dontask} = 1 ;  $optionsString .= '--yes ' },
-	   'quiet|q' => sub { $options{verbosity} = -1 ;  $optionsString .= '--quiet ' },
-	   'verbose|v' => sub { $options{verbosity} = 3 ;  $optionsString .= '--verbose ' },
-	   'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  $optionsString .= '--keep-build-dir ' },
-	   'keep-root-dir|K' => sub { $options{keep_root} = 1 ;  $optionsString .= '--keep-root-dir ' },
-#	   'interactive|i' => sub { $options{interactive} = 1 ;  $optionsString .= '--interactive ' },
-	   'version|V' => \&show_version,
-	   'help|h' => \&show_help)
- or die "fink: unknown option\nType 'fink --help' for more information.\n";
+GetOptions(
+     'yes|y'            => sub { $options{dontask} = 1 ;  
+                                 $optionsString .= '--yes ' 
+                               },
+	 'quiet|q'          => sub { $options{verbosity} = -1 ;  
+                                 $optionsString .= '--quiet ' 
+                               },
+     'verbose|v'        => sub { $options{verbosity} = 3 ;  
+                                 $optionsString .= '--verbose ' 
+                               },
+     'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  
+                                 $optionsString .= '--keep-build-dir ' 
+                               },
+     'keep-root-dir|K'  => sub { $options{keep_root} = 1 ;  
+                                 $optionsString .= '--keep-root-dir ' 
+                               },
+#	 'interactive|i'    => sub { $options{interactive} = 1 ;  
+#                                $optionsString .= '--interactive ' 
+#                              },
+	 'version|V'        => \&show_version,
+	 'help|h'           => \&show_help
+)
+  or die <<UNKNOWN;
+fink: unknown option
+Type 'fink --help' for more information.
+UNKNOWN
 
 ### display version numbers if requested
 
 sub show_version {
+  load_config();
   require Fink::FinkVersion;
   print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
   print "Distribution version: ".Fink::FinkVersion::distribution_version()."\n";
@@ -109,6 +127,27 @@ EOF
 
 ### setup environment
 
+my $Config;
+my $Config_Loaded = 0;
+sub load_config {
+    return 1 if $Config_Loaded++;
+
+    require Fink::Config;
+
+    # read the configuration file
+    my $configpath;
+    $configpath = "@BASEPATH@/etc/fink.conf";
+    if (-f $configpath) {
+        $Config = &Fink::Services::read_config($configpath, 
+                                               { Basepath => '@BASEPATH@' }
+                                              );
+    } else {
+        print "ERROR: Configuration file \"$configpath\" not found.\n";
+        exit 1;
+    }
+}
+
+
 # set useful umask
 umask oct("022");
 
@@ -122,24 +161,13 @@ delete $ENV{CDPATH};
 
 # load the modules
 require Fink::Services;
-require Fink::Config;
 require Fink::Engine;
-
-# read the configuration file
-my ($config, $configpath);
-$configpath = "@BASEPATH@/etc/fink.conf";
-if (-f $configpath) {
-  $config = &Fink::Services::read_config($configpath);
-} else {
-  print "ERROR: Configuration file \"$configpath\" not found.\n";
-  exit 1;
-}
 
 # propagate command-line options
 Fink::Config::set_options(\%options);
 
 # create the command-processing engine
-my $engine = Fink::Engine->new_with_config($config);
+my $engine = Fink::Engine->new_with_config($Config);
 
 ### process the command line (or enter interactive mode)
 

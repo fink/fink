@@ -133,8 +133,11 @@ sub UseFinkModules {
 	if ($standalone != 1)
 	{
 		my $configpath = '@BASEPATH@/etc/fink.conf';
+                my $config;
 		if (-f $configpath) {
-			read_config($configpath);
+			$config = read_config($configpath,
+                                              { Basepath => '@BASEPATH@' }
+                                             );
 		} else {
 			$standalone=1;
 		}

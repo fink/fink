@@ -33,23 +33,25 @@ use Fink::Bootstrap qw(&check_host);
 use Fink::Services qw(&print_breaking &prompt &prompt_boolean
                          &prompt_selection &read_config &execute);
 
-use Fink::Config qw($config $basepath $libpath);
+use Fink::Config qw($config);
 
 use File::Find;
 use File::Basename;
 
+my ($basepath);
+$basepath = "@PREFIX@";
+
 # read the configuration file
-my ($config, $configpath);
-$configpath = "@PREFIX@/etc/fink.conf";
+my $config;
+my $configpath = "@PREFIX@/etc/fink.conf";
 if (-f $configpath) {
-  $config = &Fink::Services::read_config($configpath);
+  $config = &Fink::Services::read_config($configpath, 
+                                         { Basepath => '@PREFIX@' }
+                                        );
 } else {
   print "ERROR: Configuration file \"$configpath\" not found.\n";
   exit 1;
 }
-
-my ($basepath);
-$basepath = "@PREFIX@";
 
 ### check if we like this system
 

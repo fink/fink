@@ -1,3 +1,11 @@
+2003-11-25  Michael G Schwern <schwern@pobox.com>
+
+	* fink-virtual-pkgs.in, fink.in, inject.pl, postinstall.pl.in:
+	Ensuring Basepath is set in Fink::Config.
+	* fink.in: Making option handling bits readable.
+	* fink.in: Ensuring Fink::Config is loaded before Fink::FinkVersion
+	used
+
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 
 	* Makefile: run setup.sh before the tests so we have all the files

@@ -96,7 +96,8 @@ if ($packageversion =~ /cvs/) {
 
 ### load configuration
 
-my $config = &read_config("$basepath/etc/fink.conf");
+my $config = &read_config("$basepath/etc/fink.conf", 
+                          { Basepath => $basepath });
 
 ### parse config file for root method
 
