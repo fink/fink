@@ -1,3 +1,8 @@
+2003-04-26  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Fix multi line Depends/BuildDepends fields, and slightly
+	  improve detection of malformed dependencies. 
+
 2003-04-15	Ben Hines <benh57@users.sourceforge.net>
 
     * SelfUpdate.pm: Allow distribution upgrades to work (append fake revision)

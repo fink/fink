@@ -698,9 +698,11 @@ sub resolve_depends {
 			if ($depspec =~ /^([0-9a-zA-Z.\+-]+)\s*\((.+)\)$/) {
 				$depname = $1;
 				$versionspec = $2;
-			} else {
-				$depname = $depspec;
+			} elsif ($depspec =~ /^([0-9a-zA-Z.\+-]+)$/) {
+				$depname = $1;
 				$versionspec = "";
+			} else {
+				die "Illegal spec format: $depspec\n";
 			}
 
 			if ($include_build and @{$self->{_splitoffs}} > 0 and
