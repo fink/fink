@@ -2629,6 +2629,9 @@ sub phase_deactivate {
 	my @packages = @_;
 
 	if (&execute("dpkg --remove @packages")) {
+		&print_breaking("ERROR: Can't remove package(s). Try 'fink remove --recursive " .
+		                "@packages', which will also remove packages that depend " .
+		                "on the package(s) to be removed.");
 		if (@packages == 1) {
 			growl('finkPackageRemovalFailed', 'Fink removal failed.', "can't remove package ".$packages[0]);
 			die "can't remove package ".$packages[0]."\n";
@@ -2649,12 +2652,45 @@ sub phase_deactivate {
 	Fink::Status->invalidate();
 }
 
+### deactivate recursive
+
+sub phase_deactivate_recursive {
+	my @packages = @_;
+
+	if (&execute("apt-get remove @packages")) {
+		if (@packages == 1) {
+			die "can't remove package ".$packages[0]."\n";
+		} else {
+			die "can't batch-remove packages: @packages\n";
+		}
+	}
+	Fink::Status->invalidate();
+}
+
 ### purge
 
 sub phase_purge {
 	my @packages = @_;
 
 	if (&execute("dpkg --purge @packages")) {
+		&print_breaking("ERROR: Can't purge package(s). Try 'fink purge --recursive " .
+		                "@packages', which will also purge packages that depend " .
+		                "on the package to be purged.");
+		if (@packages == 1) {
+			die "can't purge package ".$packages[0]."\n";
+		} else {
+			die "can't batch-purge packages: @packages\n";
+		}
+	}
+	Fink::Status->invalidate();
+}
+
+### purge recursive
+
+sub phase_purge_recursive {
+	my @packages = @_;
+
+	if (&execute("apt-get remove --purge @packages")) {
 		if (@packages == 1) {
 			die "can't purge package ".$packages[0]."\n";
 		} else {

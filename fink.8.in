@@ -79,12 +79,11 @@ does so.
 Aliases:
 .Cm update, enable, activate, use
 .It Cm remove Ar package...
-The remove command removes packages from the system by calling
-.Ql "dpkg --remove".
+The remove command removes packages from the system.
 The current implementation has some flaws: It only works on
 packages Fink knows about (i.e. where an .info file is present); and it
 doesn't check dependencies itself but rather completly leaves that to the
-dpkg tool (usually this poses no problem, though).
+dpkg or apt-get tool (usually this poses no problem, though).
 .Pp
 The remove command removes the actual package files (excluding configuration
 files), but leaves the .deb compressed package file intact. This means that you 
@@ -93,14 +92,35 @@ If you need the disk space, you can remove the .deb from the
 .Pa @PREFIX@/fink/dists
 tree.
 .Pp
+These flags can be used with the 
+.Cm fink remove
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -r,--recursive
+Also remove packages that depend on the package(s) to be removed.
+.El
+.Pp
 Aliases:
 .Cm disable, deactivate, unuse, delete
+.Pp
 .It Cm purge Ar package...
-The purge command purges packages from the system by calling
-.Ql "dpkg --purge".
+The purge command purges packages from the system.
 This is the same as
 .Cm fink remove
 except that it removes configuration files as well.
+.Pp
+These flags can be used with the 
+.Cm fink purge
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -r,--recursive
+Also purge packages that depend on the package(s) to be purged.
+.El
+.Pp
 .It Cm update-all
 This command updates all installed packages to the latest version. It does
 not need a package list, so you just type:

@@ -719,9 +719,50 @@ sub cmd_fetch_all_missing {
 }
 
 sub cmd_remove {
-	my @packages = get_pkglist("remove", @_);
+	my ($recursive, $wanthelp);
 
-	Fink::PkgVersion::phase_deactivate(@packages);
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'recursive|r'	=> \$recursive,
+		'help|h'	=> \$wanthelp
+	) or die "fink remove: unknown option\nType 'fink remove --help' for more information.\n";
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $version
+
+Usage: fink remove [options] [package(s)]
+
+Options:
+  -r, --recursive      - Also remove packages that depend on the package(s) 
+                         to be removed.
+  -h, --help           - This help text.
+
+EOF
+		exit 0;
+	}
+
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
+	if ($recursive) {
+		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", 1)) {
+			&print_breaking("ERROR: Couldn't call apt-get, which is needed for ".
+			    "the recursive option. Try to install the 'apt' Fink package ".
+			    "(with e.g. 'fink install apt').");
+			die "Purge not performed!\n";
+		}
+		my @packages = get_pkglist("remove --recursive", @_);
+		Fink::PkgVersion::phase_deactivate_recursive(@packages);
+	}
+	else {
+		my @packages = get_pkglist("remove", @_);
+		Fink::PkgVersion::phase_deactivate(@packages);
+	}
 	Fink::Status->invalidate();
 }
 
@@ -829,7 +870,31 @@ EOF
 }
 
 sub cmd_purge {
-	my @packages = get_pkglist("purge", @_);
+	my ($recursive, $wanthelp);
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'recursive|r'	=> \$recursive,
+		'help|h'	=> \$wanthelp
+	) or die "fink purge: unknown option\nType 'fink purge --help' for more information.\n";
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $version
+
+Usage: fink purge [options] [package(s)]
+
+Options:
+  -r, --recursive      - Also purge packages that depend on the package 
+                         to be purged.
+  -h, --help           - This help text.
+
+EOF
+		exit 0;
+	}
 
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
@@ -837,10 +902,26 @@ sub cmd_purge {
 	my $answer = &prompt_boolean("Do you want to continue?", 1);			
 	if (! $answer) {
 		die "Purge not performed!\n";
-	} else {
-		Fink::PkgVersion::phase_purge(@packages);
-		Fink::Status->invalidate();
 	}
+	
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
+	if ($recursive) {
+		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", 1)) {
+			&print_breaking("ERROR: Couldn't call apt-get, which is needed for ".
+			    "the recursive option. Try to install the 'apt' Fink package ".
+			    "(with e.g. 'fink install apt').");
+			die "Purge not performed!\n";
+		}
+		my @packages = get_pkglist("purge --recursive", @_);
+		Fink::PkgVersion::phase_purge_recursive(@packages);
+	}
+	else {
+		my @packages = get_pkglist("purge", @_);
+		Fink::PkgVersion::phase_purge(@packages);
+	}
+	Fink::Status->invalidate();
 }
 
 sub cmd_validate {
