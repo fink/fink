@@ -250,7 +250,7 @@ sub read_properties_lines {
 			} elsif (/^\s+(\S.*?)\s*$/) {
 				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
-				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
+				print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
 			} else {

@@ -1,3 +1,7 @@
+2004-02-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Enable warning for RFC-822 multiline format.
+
 2004-02-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Stop supporting bootstrap/upgrade on 10.2 when
