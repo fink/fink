@@ -1,3 +1,7 @@
+2004-12-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Do not show developers' note during 'make test'
+
 2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.23.5, a bugfix
