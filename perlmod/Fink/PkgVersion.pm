@@ -36,7 +36,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
-use Fink::User qw(&get_perms &add_user_script);
+use Fink::User qw(&get_perms &add_user_script &remove_user_script);
 
 use File::Basename qw(&dirname);
 
@@ -1636,6 +1636,8 @@ EOF
 	### create scripts as neccessary
 
 	foreach $scriptname (qw(preinst postinst prerm postrm)) {
+        $scriptbody = "";
+        
         ### Check for Group/User, if exists then process
         if ($self->has_param("Group") || $self->has_param("User")) {
         	my ($name, $type) = (0, 0);
@@ -1661,8 +1663,9 @@ EOF
                                 $desc, $pass, $shell, $home, $group);
 
                 if ($script) {
+                    ### Add $script to top of preinstscript
                     $script .= "\n";
-                 $scriptbody = $script;
+                    $scriptbody = $script;
                 }
             }
         
@@ -1677,13 +1680,22 @@ EOF
                     $scriptbody = $script;
                 }
             }
+            
+            ### Add remove user/group check/script if needed
+            if ($scriptname eq "postrm") {
+                ### FIXME need to figure out a script for this.
+                my script = Fink::User->remove_user_script($name, $type);
+                
+                if ($script) {
+                    ### Add check to remove user/group to top of postrm
+                    $script .= "\n";
+                    $scriptbody = $script;
+            }
         }
 
 		# get script piece from package description
 		if ($self->has_param($scriptname."Script")) {
 			$scriptbody = $self->param($scriptname."Script");
-		} else {
-			$scriptbody = "";
 		}
 
 		# add UpdatePOD Code

@@ -38,7 +38,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&get_perms &add_user_script);
+	@EXPORT_OK	 = qw(&get_perms &add_user_script &remove_user_script);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -306,6 +306,18 @@ sub add_user_script {
     ### FIXME
     
     return $script;
+}
+
+### Check remove user/group
+sub remove_user_script {
+    my $self = shift;
+    my $name = shift;
+    my $type = shift;
+    my $script = "";
+    
+    ### FIXME
+    
+    return $script
 }
 
 ### Return a passwd
