@@ -109,8 +109,23 @@ sub initialize {
 		$self->{$hash->{package}} = $hash;
 	}
 
-	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+	# create dummy object for system perl
+	if (defined Fink::Services::get_system_perl_version()) {
+		$hash = {};
+		$hash->{package} = "system-perl";
+		$hash->{status} = "install ok installed";
+		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
+		$hash->{description} = "[virtual package representing perl]";
+
+		$hash->{provides} = Fink::Services::get_system_perl_version();
+		$hash->{provides} =~ s/\.//g;
+		$hash->{provides} = 'perl' . $hash->{provides} . '-core';
+
+		$self->{$hash->{package}} = $hash;
+	}
+
 	# create dummy object for java
+	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
 	if (opendir(DIR, $javadir)) {
 		for my $dir ( sort readdir(DIR)) {
 			chomp($dir);

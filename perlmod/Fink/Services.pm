@@ -43,13 +43,15 @@ BEGIN {
 					  &prompt &prompt_boolean &prompt_selection
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
-					  &file_MD5_checksum &get_arch &get_sw_vers);
+					  &file_MD5_checksum &get_arch &get_sw_vers
+					  &get_system_perl_version);
 }
 our @EXPORT_OK;
 
 # non-exported package globals go here
 our $linelength = 77;
 our $arch;
+our $system_perl_version;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -637,6 +639,19 @@ sub get_sw_vers {
 	}
 	return Fink::Config::get_option('sw_vers');
 }
+
+# get_system_perl_version
+# Returns the version of perl in /usr/bin/perl
+sub get_system_perl_version {
+	if (not defined $system_perl_version) {
+		if (open(PERL, "/usr/bin/perl -e 'printf \"\%vd\", \$^V' 2>/dev/null |")) {
+			chomp($system_perl_version = <PERL>);
+			close(PERL);
+		}
+	}
+	return $system_perl_version;
+}
+
 
 ### EOF
 1;

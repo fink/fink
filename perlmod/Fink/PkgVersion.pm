@@ -28,7 +28,7 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &prompt_boolean &prompt_selection
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
-					  &get_arch);
+					  &get_arch &get_system_perl_version);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -38,8 +38,6 @@ use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 
 use File::Basename qw(&dirname);
-
-use vars qw( $system_perl_version );
 
 use strict;
 use warnings;
@@ -2045,16 +2043,6 @@ sub run_script {
 	
 	# Restore the environment
 	%ENV = %env_bak;
-}
-
-sub get_system_perl_version {
-	if (not defined $system_perl_version) {
-		if (open(PERL, "/usr/bin/perl -e 'printf \"\%vd\", \$^V' 2>/dev/null |")) {
-			chomp($system_perl_version = <PERL>);
-			close(PERL);
-		}
-	}
-	return $system_perl_version;
 }
 
 ### EOF

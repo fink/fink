@@ -1,5 +1,12 @@
 2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* Services.pm, PkgVersion.pm, VirtPackage.pm: move the system
+	  perl stuff from PkgVersion.pm to Services.pm so it can be used
+	  by other things (and then use it in VirtPackage.pm to make a
+	  system-perl virtual)
+
+2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* Services.pm: make sure get_sw_vers() is EXPORT_OK.
 	* PkgVersion.pm: make sure we know what the system perl
 	  version is on unversioned Type: perl info files.
