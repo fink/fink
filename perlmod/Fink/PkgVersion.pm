@@ -255,7 +255,40 @@ sub initialize {
 			$self->expand_percent_if_available('Source'.$i.'Rename');
 			$self->{_sourcecount} = $i;
 		}
-	
+
+		# Build a hash with uniformly-named keys:
+		#   source, md5, rename, tarfilesrename, extractdir
+		# for all .info fields pertaining to a particular source.
+		# Store a ref to a list of refs to the hashes for all sources
+		# for the package, ordered (but not indexed) by source number.
+		$self->{_source_items} = [];
+		if ($self->{_type} ne "bundle" and $self->{_type} ne "nosource") {
+			# Schwartzian Transform to sort source\d* in "numerical" order
+			# easier to code and more efficient to run if 'source' is ignored
+			my @source_n_fields = map { $_->[0] } sort { $a->[1] <=> $b->[1] }
+				map { [$_, /source(\d*)/] } $self->params_matching('source\d+');;
+			# always have 'source', so now just insert it manually for correct order
+			foreach my $source_field ("source", @source_n_fields) {
+			    if ($self->{package} eq "docbook-dtd") {
+				print "doing $source_field\n";
+			    }
+				next if $self->{$source_field} eq "none";
+				$source_field =~ /source(\d*)/;
+				my $number = $1;
+				my %source_item;
+				$source_item{"source"} = $self->{$source_field};
+				$source_item{"md5"} = $self->{$source_field."-md5"}
+					if exists $self->{$source_field."-md5"};
+				$source_item{"rename"} = $self->{$source_field."rename"}
+					if exists $self->{$source_field."rename"};
+				$source_item{"tarfilesrename"} = $self->{$source_field."tar".$number."filesrename"}
+					if exists $self->{"tar".$number."filesrename"};
+				$source_item{"extractdir"} = $self->{$source_field."extractdir"}
+					if exists $self->{$source_field."rename"} and $number ne "";
+				push @{$self->{_source_items}}, \%source_item;
+			}
+		}
+
 		# handle splitoff(s)
 		if ($self->has_param('splitoff')) {
 			$self->add_splitoff($self->{'splitoff'});
@@ -520,6 +553,20 @@ sub get_checksum {
 	return "-";
 }
 
+sub get_source_items_list {
+	my $self = shift;
+
+	# need to do deep copy because _source_items is a ref to a
+	# list of hashes and we don't want the caller to accidentally
+	# modify the package data
+
+	my (@source_items, $source_item);
+	foreach $source_item (@{$self->{_source_items}}) {
+		my %source_item = %$source_item;
+		push @source_items, \%source_item;
+	}
+	return @source_items;
+}
 
 sub get_custom_mirror {
 	my $self = shift;

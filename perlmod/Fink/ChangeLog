@@ -2,6 +2,10 @@
 
 	* Base.pm: Added params_matching, a method to return the names of
 	all parameters that match a passed regex.
+	* PkgVersion.pm: Added _source_items, a ref to a list of refs to
+	uniformly-keyed hashes of all info pertaining to each source for a
+	package. Added accessor method get_source_items_list() to return a
+	(deep) copy of this list.
 
 2004-01-09  Remi Mommsen  <remigius.mommsen@cern.ch>
 
