@@ -2291,18 +2291,10 @@ sub cmd_show_deps {
 		print "To install the compiled package...\n";
 
 		print "  The following other packages (and their dependencies) must be installed:\n";
-		&show_deps_display_list(
-			[qw/ Depends Pre-Depends /],
-			[ $pkg ],
-			0
-		);
+		&show_deps_display_list($pkg, 0, 0);
 		
 		print "  The following other packages must not be installed:\n";
-		&show_deps_display_list(
-			[qw/ Conflicts /],
-			[ $pkg ],
-			0
-		);
+		&show_deps_display_list($pkg, 0, 1);
 
 		print "To compile this package from source...\n";
 
@@ -2316,18 +2308,10 @@ sub cmd_show_deps {
 		}
 
 		print "  The following other packages (and their dependencies) must be installed:\n";
-		&show_deps_display_list(
-			[qw/ Depends Pre-Depends BuildDepends /],
-			[ $pkg, @relatives ],
-			1
-		);
+		&show_deps_display_list($pkg, 1, 0);
 
 		print "  The following other packages must not be installed:\n";
-		&show_deps_display_list(
-			[qw/ BuildConflicts /],
-			[ $pkg, @relatives ],
-			1
-		);
+		&show_deps_display_list($pkg, 1, 1);
 
 		print "\n";
 	}
@@ -2402,32 +2386,19 @@ EOF
 
 # pretty-print a set of PkgVersion::pkglist (each "or" group on its own line)
 # pass:
-#   ref to list of field names
-#   ref to list of PkgVersion objects
-#   boolean whether to exclude packages themselves when printing
+#   PkgVersion object
+#   $run_or_build (see PkgVersion::get_depends)
+#   $dep_of_confl (see PkgVersion::get_depends)
 sub show_deps_display_list {
-	my $fields = shift;
-	my $pkgs = shift;
-	my $exclude_selves = shift;
+	my $pkg = shift;
+	my $run_or_build = shift;
+	my $dep_or_confl = shift;
 
-	my @lol;    # combination of all requested fields of all PkgVersion objs
-	foreach my $field (@$fields) {
-		foreach (@$pkgs) {
-			push @lol, @{ &pkglist2lol( $_->pkglist_default($field, "") ) };
-		}
-	}
-	&cleanup_lol(\@lol);  # remove duplicates
+	# get the data
+	my $lol = $pkg->get_depends($run_or_build, $dep_or_confl);
 
-	if ($exclude_selves) {
-		foreach (@$pkgs) {
-			$_->lol_remove_self(\@lol);
-		}
-	}
-
-	# stringify each still-existing OR cluster
-	# (cleanup_lol is overkill for simple undef removal, especially
-	# since we want stringified values anyway)
-	my @results = map { join ' | ', @$_ } grep defined $_, @lol;
+	# stringify each OR cluster
+	my @results = map { join ' | ', @$_ } grep defined $_, @$lol;
 
 	# organize and display the list of packages
 	if (@results) {

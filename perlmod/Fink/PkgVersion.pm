@@ -26,7 +26,7 @@ use Fink::Base;
 use Fink::Services qw(&filename &execute
 					  &expand_percent &latest_version
 					  &collapse_space &read_properties_var
-					  &pkglist2lol &lol2pkglist
+					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc);
@@ -1428,6 +1428,56 @@ sub get_binary_depends {
 	return &collapse_space($depspec);
 }
 
+# usage: $lol_struct = $self->get_depends($run_or_build, $dep_or_confl)
+# where:
+#   $self is a PkgVersion object
+#   $run_or_build - 0=runtime pkgs, 1=buildtime pkgs
+#   $dep_or_confl - 0=dependencies, 1=antidependencies (conflicts)
+#
+# A package's buildtime includes buildtime of its whole family.
+# NB: In no other sense is this method recursive!
+#
+# This gives pkgnames and other Depends-style string data, unlike
+# resolve_depends and resolve_conflicts, which give PkgVersion
+# objects.
+#
+
+sub get_depends {
+	my $self = shift;
+	my $run_or_build = shift;   # boolean for want_build
+	my $dep_or_confl = shift;   # boolean for want_conflicts
+
+	# antidependencies require no special processing
+	if ($dep_or_confl) {
+		if ($run_or_build) {
+			# BuildConflicts is attribute of parent pkg only
+			return &pkglist2lol($self->get_family_parent->pkglist_default("BuildConflicts",""));
+		} else {
+			# Conflicts is attribute of our own pkg only
+			return &pkglist2lol($self->pkglist_default("Conflicts",""));
+		}
+	}
+
+	if ($run_or_build) {
+		# build-time dependencies need to include whole family and
+		# to remove whole family from also-runtime deplist
+
+		my @family_pkgs = $self->get_splitoffs(1,1);
+
+		my @lol = map @{ &pkglist2lol($_->pkglist_default("Depends","")) }, @family_pkgs;
+		&cleanup_lol(\@lol);  # remove duplicates (for efficiency)
+		map $_->lol_remove_self(\@lol), @family_pkgs;
+
+		# (not a runtime dependency so it gets added after remove-self games)
+		push @lol, @{ &pkglist2lol($self->get_family_parent->pkglist_default("BuildDepends","")) };
+
+		&cleanup_lol(\@lol);  # remove duplicates
+		return \@lol;
+	}
+
+	# run-time dependencies
+	return &pkglist2lol($self->pkglist_default("Depends",""));
+}
 
 ### find package and version by matching a specification
 
@@ -2933,13 +2983,15 @@ Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
 Provides: fink-buildlock
 EOF
 
-	# build (anti)dependencies of pkg family are "real" (anti)dependencies of lockpkg
-	my $parent_pkg = $self->get_family_parent;
-	foreach my $field (qw(Conflicts Depends)) {
-		my $build_field = "Build$field";
-		if ($parent_pkg->has_pkglist($build_field)) {
-			$control .= "$field: ".&collapse_space($parent_pkg->pkglist($build_field))."\n";
-		}
+	# buildtime (anti)dependencies of pkg are runtime (anti)dependencies of lockpkg
+	my $depfield;
+	$depfield = &lol2pkglist($self->get_depends(1, 1));
+	if (length $depfield) {
+		$control .= "Conflicts: $depfield\n";
+	}
+	$depfield = &lol2pkglist($self->get_depends(1, 0));
+	if (length $depfield) {
+		$control .= "Depends: $depfield\n";
 	}
 
 	### write "control" file

@@ -1,3 +1,10 @@
+2005-02-15  Daniel Macks  <dmacks@netspace.org>
+
+
+	* PkgVersion.pm: add new general-purpose get_depends method,
+	rewrite set_buildlock to use it
+	* Engine.pm: rewrite show-deps functions to use get_depends
+
 2005-02-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* NetAccess.pm: Remove code whose only obvious purpose is to cause
