@@ -1,3 +1,8 @@
+2003-06-11  Justin F. Hallett <thesin@users.sourceforge.net>
+
+	* Selfupdate.pm: added -q to cvs commands based on verbosity level
+	from the config file and/or command line.
+
 2003-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net
 
 	* Bootstrap.pm: allow bootstrapping with either perl 5.6.0 or 

@@ -226,6 +226,12 @@ sub setup_direct_cvs {
 
 	# start the CVS fun
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
+
+	# add cvs quiet flag if verbosity level permits
+	my $verbosity = "-q";
+	if (Fink::Config::verbosity_level() > 1) {
+		$verbosity = "";
+	}
 	if ($cvsuser eq "anonymous") {
 		&print_breaking("Now logging into the CVS server. When CVS asks you ".
 						"for a password, just press return (i.e. the password ".
@@ -238,9 +244,9 @@ sub setup_direct_cvs {
 			die "Logging into the CVS server for anonymous read-only access failed.\n";
 		}
 
-		$cmd = "cvs -z3 -d:pserver:anonymous\@cvs.sourceforge.net:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@cvs.sourceforge.net:/cvsroot/fink";
 	} else {
-		$cmd = "cvs -z3 -d:ext:$cvsuser\@cvs.sourceforge.net:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@cvs.sourceforge.net:/cvsroot/fink";
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -d fink dists";
@@ -328,11 +334,17 @@ sub setup_direct_cvs {
 sub do_direct_cvs {
 	my ($descdir, @sb, $cmd, $username, $msg);
 
+	# add cvs quiet flag if verbosity level permits
+	my $verbosity = "-q";
+	if (Fink::Config::verbosity_level() > 1) {
+		$verbosity = "";
+	}
+
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
 	@sb = stat("$descdir/CVS");
-	$cmd = "cvs -z3 update -d -P";
+	$cmd = "cvs ${verbosity} -z3 update -d -P";
 	$msg = "I will now run the cvs command to retrieve the latest package ".
 			"descriptions. ";
 
