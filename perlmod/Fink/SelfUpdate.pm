@@ -465,11 +465,6 @@ sub do_finish {
 	if (not $package->is_installed()) {
 		Fink::Engine::cmd_install("fink");
 	
-		# delete the old package DB, so that the new package manager rebuilds it
-		if (-e "$basepath/var/db/fink.db") {
-			unlink "$basepath/var/db/fink.db";
-		}
-
 		# re-execute ourselves before we update the rest
 		print "Re-executing fink to use the new version...\n";
 		exec "$basepath/bin/fink selfupdate-finish";
@@ -489,6 +484,13 @@ sub finish {
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
+
+	# delete the old package DB
+	if (-e "$basepath/var/db/fink.db") {
+		unlink "$basepath/var/db/fink.db";
+	}
+	# ...and regenerate it
+	Fink::Package->scan_all();
 
 	# add some non-essential but important ones
 	push @elist, qw(apt apt-shlibs storable-pm bzip2-dev gettext-dev gettext-bin libiconv-dev ncurses-dev);

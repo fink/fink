@@ -1,3 +1,8 @@
+2003-11-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* SelfUpdate.pm: Always regenerate the index on a
+	"fink selfupdate".
+
 2003-11-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Bootstrap.pm, Engine.pm, FinkVersion.pm.in, NetAccess.pm,
