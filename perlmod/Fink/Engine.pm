@@ -670,7 +670,7 @@ sub cmd_remove {
 sub get_pkglist {
 	my $cmd = shift;
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
-	my ($vo, $lversion);
+	my ($vo, @versions);
 	my ($buildonly, $wanthelp);
 
 	use Getopt::Long;
@@ -727,8 +727,8 @@ EOF
 		# Can't purge or remove virtuals
 		next if $package->is_virtual();
 
-		$lversion = &latest_version($package->list_versions());
-		$vo = $package->get_version($lversion);
+		@versions = $package->list_installed_versions();
+		$vo = $package->get_version($versions[0]);
 
 		# Can only remove/purge installed pkgs
 		next unless $vo->is_installed();
