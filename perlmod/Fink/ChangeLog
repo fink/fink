@@ -1,5 +1,11 @@
 2005-01-24  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: Extract core of gcc* pkg data into new
+	gen_gcc_hash(). All expected gcc* pkgs now always exist in
+	pdb (marked "uninstalled" if not present).
+
+2005-01-24  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Extract core of cmd_fetch_all() and
 	cmd_fetch_all_missing() into a new do_fetch_all(), which uses
 	call_queue_*(). Fix spacing on parse_fetch_options() help. Reorder
