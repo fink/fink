@@ -729,6 +729,8 @@ EOF
 		# Can't purge or remove virtuals
 		next if $package->is_virtual();
 
+		### FIXME, this needs a better way, plus it makes my
+		###        is_installed block useless.
 		@versions = $package->list_installed_versions();
 		next unless ($versions[0]);
 		$vo = $package->get_version($versions[0]);
