@@ -1,5 +1,8 @@
 2001-07-21  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Bootstrap.pm (bootstrap): Create empty 'diversions' file for
+	dpkg-divert during bootstrap.
+
 	* Engine.pm: Added 'desc' and 'info' as aliases for the
 	'description' command. Suggested by Max Horn.
 

@@ -105,6 +105,7 @@ sub bootstrap {
   &execute("mkdir -p $basepath/var/lib/dpkg");
   &execute("touch $basepath/var/lib/dpkg/status");
   &execute("touch $basepath/var/lib/dpkg/available");
+  &execute("touch $basepath/var/lib/dpkg/diversions");
 
 
   print "\n";
