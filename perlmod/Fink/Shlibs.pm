@@ -540,7 +540,6 @@ sub inject_shlib {
     @packages = split(/\|/, $package);
     $counter = 0;
     foreach $pkg (@packages) {
-      print "DEBUG: $pkg\n";
       $counter++;
       if ($pkg =~ /(.+) \((.+)\)/) {
         $pkgnum = "package".$counter;
