@@ -109,7 +109,7 @@ sub check {
 
   # inject it
   chdir $dir;
-  if (&execute("./inject.pl $basepath")) {
+  if (&execute("./inject.pl $basepath -quiet")) {
     die "injecting the new package definitions from $pkgtarball failed\n";
   }
   chdir $destdir;

@@ -1,3 +1,7 @@
+2001-10-09  Christoph Pfisterer  <cp@chrisp.de>
+
+	* SelfUpdate.pm (check): Suppress inject.pl's user info message.
+
 2001-10-07  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (get_tarball): Handle the new SourceRename and
