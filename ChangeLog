@@ -1,3 +1,9 @@
+2004-08-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.21.2, a release
+	on branch_0_21 recognizing OS X 10.3.5, and with minor boostrapping
+	updates
+
 2004-08-13  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: Undocument 'fink checksums'
