@@ -1,6 +1,6 @@
 PREFIX=/sw
 VERSION=`cat VERSION`
-TEST_BASEPATH=$$PWD/t/basepath
+TEST_BASEPATH=$(PWD)/t/basepath
 
 all:
 	@echo "usage: $(MAKE) <target>" && \
