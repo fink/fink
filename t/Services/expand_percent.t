@@ -84,3 +84,9 @@ is( Fink::Services::expand_percent( 'M%iss%iss%ippi', {qw/iss ith ipp iss/} ),
     'Mithithissi',
     'Long keys'
     );
+
+# braces
+is( Fink::Services::expand_percent( 'po%{ta}%{t}o', {qw/ta n t ch/} ),
+    'poncho',
+    'Braces'
+  );
