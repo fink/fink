@@ -455,8 +455,15 @@ sub do_tarball {
 sub do_finish {
 	my $package;
 
-	# re-read package info
+	# forget the package info
 	Fink::Package->forget_packages();
+
+	# delete the old package DB
+	if (-e "$basepath/var/db/fink.db") {
+		unlink "$basepath/var/db/fink.db";
+	}
+
+	# ...and then read it back in
 	Fink::Package->require_packages();
 
 	# update the package manager itself first if necessary (that is, if a
@@ -484,13 +491,6 @@ sub finish {
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
-
-	# delete the old package DB
-	if (-e "$basepath/var/db/fink.db") {
-		unlink "$basepath/var/db/fink.db";
-	}
-	# ...and regenerate it
-	Fink::Package->scan_all();
 
 	# add some non-essential but important ones
 	push @elist, qw(apt apt-shlibs storable-pm bzip2-dev gettext-dev gettext-bin libiconv-dev ncurses-dev);
