@@ -129,12 +129,19 @@ sub check {
   $config->save();
 
   # get the file with the current release number
-  if (&fetch_url("http://fink.sourceforge.net/LATEST-FINK", $srcdir)) {
+  my $currentfink;
+  $currentfink = "CURRENT-FINK";
+  ### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
+  if ($Fink::Config::distribution =~ /10.1/) {
+      $currentfink = "LATEST-FINK";
+  }
+
+  if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
     die "Can't get latest version info\n";
   }
 
   # check if we need to upgrade
-  $latest_fink = `cat $srcdir/LATEST-FINK`;
+  $latest_fink = `cat $srcdir/$currentfink`;
   chomp($latest_fink);
   if (&version_cmp($latest_fink, $installed_version) <= 0) {
     print "\n";
@@ -371,7 +378,13 @@ sub do_tarball {
 
   # go ahead and upgrade
   # first, download the packages tarball
-  $dir = "packages-$newversion";
+  $dir = "dists-$newversion";
+
+  ### if we are in 10.1, need to use "packages" not "dists"
+  if ($Fink::Config::distribution =~ /10.1/) {
+      $dir = "packages-$newversion";
+  }
+  
   $pkgtarball = "$dir.tar.gz";
   $url = "mirror:sourceforge:fink/$pkgtarball";
 

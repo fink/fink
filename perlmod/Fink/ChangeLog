@@ -1,71 +1,10 @@
-2002-11-18  Max Horn  <max@quendi.de>
+2002-12-04  Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* PkgVersion.pm: Patch #608920: Add --keep-root-dir and --keep-build-dir.
+	* SelfUpdate.pm: Modify the test used during the non-CVS version of 
+	fink selfupdate to check CURRENT_VERSION and download the file named 
+	dists-###.tar.gz (rather than LATEST_VERSION and 
+	packages-###.tar.gz)
 
-2002-11-14  Justin Hallett <thesin@users.sourceforge.net>
-
-	* Engine.pm: fixed scanpackage default section to use proper value.
-
-2002-11-13  Max Horn  <max@quendi.de>
-
-	* Engine.pm: Install build dependencies when doing a rebuild (bug #637689).
-
-2002-11-13  Chris Zubrzycki <beren12@users.sf.net>
-
-	* PkgVersion.pm: Fix the path of install-info. It is in %p/sbin, not %p/bin
-
-2002-11-12  Max Horn  <max@quendi.de>
-
-	* PkgVersion.pm: Apparently the install-info of texinfo is incompatible with
-	 the dpkg one. Hence we reverse the previous change and instead harcode the
-	 location of our install-info.
-
-2002-11-11  Max Horn  <max@quendi.de>
-
-	* PkgVersion.pm: Use "--info-dir" instead of "--infodir" as argument to 
-	  the install-info command (this should prevent problems with texinfo
-	  version of install-info).
-
-2002-10-31  Max Horn  <max@quendi.de>
-
-	* Engine.pm: When we we build a package which we are not going to install
-	  (e.g. as consequence of a 'fink build foo'), only resolve the build time
-	  dependencies, not install-time deps (currently this only affects splitoffs
-	  which depends on a sibling).
-
-	* PkgVersion.pm: Build deps of a splitoff are equivalent to the parent's.
-	
-	* PkgVersion.pm: Fixed typos, clarified/extended some comments.
-
-	* PkgVersion.pm: Set DYLD_LIBRARY_PATH, too. This  allows libtool to find
-	  its *.la files in /sw/lib again.
-
-2002-10-27  Max Horn  <max@quendi.de>
-
-	* Mirror.pm: Never use "retry same mirror" as initial default choice if 
-	  there are other mirrors.
-	
-	* PkgVersion.pm: CPPFLAGS=-no-cpp-precomp + CPATH doesn't work correctly
-	  with tar and probably many other packages. With -isystem, everything seems
-	  fine now.
-
-2002-10-25  Max Horn  <max@quendi.de>
-
-	* PkgVersion.pm: Fixed bootstrap (my last change broke it).
-
-	* PkgVersion.pm: Instead of the old default values for CPPFLAGS and LDFLAGS,
-	  we now set CPATH and LIBRARY_PATH to point to the Fink include/lib dirs.
-	  This should avoid many problem encountered in the past. However, it may
-	  also break a few existing packages.
-	  Since the Apple C preprocessor seems to ignore CPATH, we also set 
-	  by default -no-cpp-precomp (many packages need this anyway).
-
-	* Validation.pm: recognize (No)SetCPATH and (No)SetLIBRARY_PATH fields.
-
-2002-10-21  Ben Hines <bhines@alumni.ucsd.edu>
-
-	* Services.pm: Fix typo in nesting too deep error.
-	
 2002-10-15  Max Horn  <max@quendi.de>
 
 	* Engine.pm: Fixed a wrong 'circular dependencies' error caused by my 
