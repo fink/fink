@@ -72,7 +72,6 @@ sub configure {
                        1 => "Low (don't show tarballs being expanded)",
                        0 => "Quiet (don't show download stats)" },
                      0, 1, 2, 3);
-  print "You chose $verbose\n";
   $config->set_param("Verbose", $verbose);
 
   # proxy settings
