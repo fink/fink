@@ -1,5 +1,10 @@
 2003-11-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* VirtPackage: fall back to XFree86 -version if we can't figure
+	  it out from man pages.
+
+2003-11-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* Services.pm: No point in continuing to search through the path if
 	  we have a match.
 	* Package.pm: Fix version spec checking to allow epochs.

@@ -332,21 +332,42 @@ sub has_lib {
 ### Check the installed x11 version
 sub check_x11_version {
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
-	if (-f "/usr/X11R6/man/man1/xterm.1" and open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
-		while (<XTERM>) {
-			if (/^.*Version\S* ([^\s]+) .*$/) {
-				$XF_VERSION = $1;
-				@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+	if (-f "/usr/X11R6/man/man1/xterm.1") {
+		if (open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
+			while (<XTERM>) {
+				if (/^.*Version\S* ([^\s]+) .*$/) {
+					$XF_VERSION = $1;
+					@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+					last;
+				}
+			}
+			close(XTERM);
+		} else {
+			warn "could not read xterm.1: $!\n";
+			return;
+		}
+	}
+	if (not defined $XF_VERSION) {
+		for my $binary ('X', 'XDarwin', 'Xquartz') {
+			if (-x '/usr/X11R6/bin/' . $binary) {
+				if (open (XBIN, "/usr/X11R6/bin/$binary -version 2>\&1 |")) {
+					while (my $line = <XBIN>) {
+						if ($line =~ /XFree86 Version ([\d\.]+)/) {
+							$XF_VERSION = $1;
+							@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+							last;
+						}
+					}
+					close(XBIN);
+				} else {
+					print STDERR "couldn't run $binary: $!\n";
+				}
 				last;
 			}
 		}
-		close(XTERM);
-		if (not defined $XF_VERSION) {
-			warn "could not determine XFree86 version number\n";
-			return;
-		}
-	} else {
-		warn "could not read xterm.1: $!\n";
+	}
+	if (not defined $XF_VERSION) {
+		print STDERR "could not determine XFree86 version number\n";
 		return;
 	}
 	return ($XF_VERSION, @XF_VERSION_COMPONENTS);
