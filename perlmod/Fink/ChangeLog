@@ -1,3 +1,8 @@
+2003-11-10  Rob Braun <bbraun@users.sourceforge.net>
+	* SelfUpdate.pm: Add a TIMESTAMP check when using rsync.
+	* SelfUpdate.pm: Remove support for a Distribution in Trees.
+	* SelfUpdate.pm: Do rsync updates with a single rsync command.
+
 2003-11-10  Michael G Schwern <schwern@pobox.com>
 
 	* PkgVersion.pm: Change below broke get_perl_dir_arch(), didn't

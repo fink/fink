@@ -513,6 +513,7 @@ sub rsync_check {
 
 sub do_direct_rsync {
 	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
+	my ($timecmd, $oldts, $newts);
 	my $dist = $Fink::Config::distribution;
 	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://master.us.finkmirrors.net/finkinfo/");
 	my $touchcmd = "/usr/bin/touch stamp-rsync-live && /bin/rm -f stamp-cvs-live";
@@ -528,6 +529,47 @@ sub do_direct_rsync {
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
+	# Fetch the timestamp for comparison
+	$timecmd = "rsync -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp";
+	if (&execute($timecmd)) {
+		die "Failed to fetch the timestamp file from the rsync server: $rsynchost.  Check the error messages above.\n";
+	}
+	# If there's no TIMESTAMP file, then we haven't synced from rsync
+	# before, so there's no checking we can do.  Blaze on past.
+	if ( -f "$descdir/TIMESTAMP" ) {
+		open TS, "$descdir/TIMESTAMP";
+		$oldts = <TS>;
+		close TS;
+		chomp $oldts;
+		# Make sure the timestamp only contains digits
+		if ($oldts =~ /\D/) {
+			unlink("$descdir/TIMESTAMP.tmp");
+			die "The timestamp file $descdir/TIMESTAMP contains non-numeric characters.  This is illegal.  Refusing to continue.\n";
+		}
+
+		open TS, "$descdir/TIMESTAMP.tmp";
+		$newts = <TS>;
+		close TS;
+		chomp $newts;
+		# Make sure the timestamp only contains digits
+		if ($oldts =~ /\D/) {
+			unlink("$descdir/TIMESTAMP.tmp");
+			die "The timestamp file fetched from $rsynchost contains non-numeric characters.  This is illegal.  Refusing to continue.\n";
+		}
+		
+		if ( $oldts > $newts ) {
+			# error out complaining that we're trying to update
+			# from something older than what we already have.
+			unlink("$descdir/TIMESTAMP.tmp");
+			print "The timestamp of the server is older than what you already have.\n";
+			exit 1;
+		}
+
+	} 
+	# cleanup after ourselves and continue with the update.
+	unlink("$descdir/TIMESTAMP");
+	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
+
 	# If the Distributions line has been updated...
 	if (! -d "$descdir/$dist") {
 		&execute("/bin/mkdir -p '$descdir/$dist'")
@@ -539,9 +581,10 @@ sub do_direct_rsync {
 	# there will thoroughly confuse things if someone later does 
 	# selfupdate-cvs.  However, don't actually do the removal until
 	# we've tried to put something there.
-	$vercmd = "rsync -az $verbosity $nohfs $rsynchost/VERSION $basepath/fink/VERSION";
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
 	&print_breaking($msg);
+	
+	my $rinclist = "";
 	foreach $tree ($config->get_treelist()) {
 		next unless ($tree =~ /stable/);
 
@@ -549,40 +592,45 @@ sub do_direct_rsync {
 		$dist      =~ s/\/*$//;
 		$tree      =~ s/\/*$//;
 
-		my $rsyncpath;
+		my $oldpart = "";
+		my @line = split /\//,$tree;
 
-		if ($tree =~ m#/[^/]*/#) {
-			# the user specificed a dist as well as a tree in their Trees: line
-			$rsyncpath = "$rsynchost/$tree/finkinfo";
-		} else {
-			# a standard Trees: entry
-			$rsyncpath = "$rsynchost/$dist/$tree/finkinfo";
+		$rinclist .= " --include='$dist/'";
+		$oldpart = "$dist";
+		for(my $i = 0; defined $line[$i]; $i++) {
+			$oldpart = "$oldpart/$line[$i]";
+			$rinclist .= " --include='$oldpart/'";
 		}
+		$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/*/*'";
 
-		$cmd = "rsync -az --delete-after $verbosity $nohfs '$rsyncpath' '$basepath/fink/$dist/$tree/'";
 		if (! -d "$basepath/fink/$dist/$tree" ) {
 			&execute("/bin/mkdir -p '$basepath/fink/$dist/$tree'")
 		}
-		if (system("rsync $nohfs '$rsyncpath' >/dev/null 2>&1") == 0) {
-			$msg = "Updating $tree \n";
-			if ($sb[4] != 0 and $> != $sb[4]) {
-				($username) = getpwuid($sb[4]);
-				$cmd = "/usr/bin/su $username -c \"$cmd\"";
-				system("/usr/sbin/chown -R $username '$basepath/fink/$dist'");
-			}
-			&print_breaking($msg);
-			if (&execute($cmd)) {
-				die "Updating $tree using rsync failed. Check the error messages above.\n";
-			} else {
-				&execute("/usr/bin/find '$basepath/fink/$dist/$tree' -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
-			}
-		} else {
-			print "Warning: $tree exists in fink.conf, but is not on rsync server.  Skipping.\n";
-		}
-		&execute("/bin/rm -rf '$basepath/fink/$dist/CVS'");
 	}
+	if ($sb[4] != 0 and $> != $sb[4]) {
+		($username) = getpwuid($sb[4]);
+		$cmd = "/usr/bin/su $username -c \"$cmd\"";
+		system("/usr/sbin/chown -R $username '$basepath/fink/$dist'");
+	}
+	&print_breaking($msg);
+
+	$cmd = "rsync -az --delete-after $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
+	print "$rinclist\n";
+	if (&execute($cmd)) {
+		die "Updating $tree using rsync failed. Check the error messages above.\n";
+	} else {
+		foreach $tree ($config->get_treelist()) {
+			next unless ($tree =~ /stable/);
+
+			$rsynchost =~ s/\/*$//;
+			$dist      =~ s/\/*$//;
+			$tree      =~ s/\/*$//;
+			&execute("/usr/bin/find '$basepath/fink/$dist/$tree' -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
+		}
+	}
+
+	&execute("/bin/rm -rf '$basepath/fink/$dist/CVS'");
 	&execute("/bin/rm -rf '$basepath/fink/CVS'");
-	&execute($vercmd);
 	&execute($touchcmd);
 }
 
