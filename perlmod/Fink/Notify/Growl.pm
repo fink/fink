@@ -58,7 +58,7 @@ sub do_notify {
 	my $sticky = 0;
 
 	$image = undef unless (-r $basepath . '/share/fink/images/' . $args{'event'} . '.png');
-	$sticky = 1 if ($args{'event'} =~ /(Failed|Failure)/);
+	$sticky = 1 if ($args{'event'} =~ /Failed$/);
 
 	eval {
 		if (defined $image) {

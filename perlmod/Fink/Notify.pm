@@ -134,8 +134,8 @@ The default events are:
 	finkPackageInstallationFailed
 	finkPackageRemovalPassed
 	finkPackageRemovalFailed
-	finkDoneSuccess
-	finkDoneFailure
+	finkDonePassed
+	finkDoneFailed
 	
 Notifier modules may supply an alternate list of supported events by
 providing their own events() method.
@@ -149,8 +149,8 @@ our @events = qw(
 	finkPackageInstallationFailed
 	finkPackageRemovalPassed
 	finkPackageRemovalFailed
-	finkDoneSuccess
-	finkDoneFailure
+	finkDonePassed
+	finkDoneFailed
 );
 
 sub events {
@@ -200,8 +200,8 @@ sub notify {
 		finkPackageInstallationFailed => 'Fink Installation Failed!',
 		finkPackageRemovalPassed      => 'Fink Removal Passed.',
 		finkPackageRemovalFailed      => 'Fink Removal Failed!',
-		finkDoneSuccess               => 'Fink Finished Successfully.',
-		finkDoneFailure               => 'Fink Finished With Failure!',
+		finkDonePassed                => 'Fink Finished Successfully.',
+		finkDoneFailed                => 'Fink Finished With Failure!',
 	);
 
 	# sanity check for required params

@@ -1,5 +1,10 @@
 2005-02-23  Daniel Macks  <dmacks@netspace.org>
 
+	* Notify.pm, Notify/Growl.pm, Engine.pm: Canonicalize notification
+	event names to /(Passed|Failed)$/
+
+2005-02-23  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Test length instead of logical value of strings.
 	Overhaul DocFiles handler.
 

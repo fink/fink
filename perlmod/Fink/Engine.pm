@@ -233,7 +233,7 @@ sub process {
 	if ($proc_rc->{'$@'}) {                    # now deal with eval results
 		print "Failed: " . $proc_rc->{'$@'};
 		$notifier->notify(
-			event => 'finkDoneFailure',
+			event => 'finkDoneFailed',
 			description => "$commandline\n$proc_rc->{'$@'}"
 		);
 		return $proc_rc->{'$?'} || 1;
@@ -242,7 +242,7 @@ sub process {
 	# FIXME: min_notify_secs should be less arbitrary! Option?
 	my $min_notify_secs = 60;
 	$notifier->notify(
-		event => 'finkDoneSuccess',
+		event => 'finkDonePassed',
 		description => $commandline
 	) if time() - $start > $min_notify_secs;
 	return 0;
