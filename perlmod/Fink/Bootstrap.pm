@@ -55,11 +55,9 @@ sub bootstrap {
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560";
 	} elsif ("$]" == "5.006001") {
-		push @addlist, "system-perl561", "storable-pm561";
+		push @addlist, "storable-pm561";
 	} elsif ("$]" == "5.008") {
-		push @addlist, "system-perl580";
 	} elsif ("$]" == "5.008001") {
-		push @addlist, "system-perl581";
 	} else {
 		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
 	}

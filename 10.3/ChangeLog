@@ -1,3 +1,8 @@
+2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* system-perl*: removed these, which are no longer needed with
+	VirtPackage.pm
+
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* apt.patch: modify sources.list for this distribution

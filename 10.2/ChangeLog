@@ -1,3 +1,8 @@
+2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* system-perl*: removed these, which are no longer needed with
+	VirtPackage.pm
+
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* gettext-0.10.40-7, latest version from stable

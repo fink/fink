@@ -1,3 +1,8 @@
+2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  No longer load the system-perl* package, since
+	it is not needed anymore (thanks to VirtPackage.pm)
+
 2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Add --delete, since it is not implied by 
