@@ -1,3 +1,7 @@
+2002-04-13  Max Horn  <max@quendi.de>
+
+	* fink.in: added 'require 5.006' to enforce Perl 5.6.0 or newer
+
 2002-04-03  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.9.10
