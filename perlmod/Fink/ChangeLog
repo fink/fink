@@ -1,5 +1,12 @@
 2004-03-18  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Hacks to keep emacs paren balancing from getting
+	confused. Changed regex match m#pattern# to /pattern/ so it
+	doesn't look like a comment, and added POD line containing a dummy
+	closing ")" where a pattern had $) which looks like a variable.
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: improve regex to find SplitOffN fields
 	* Validation.pm: For *N* fields, improve checking of N to allow
 	any number of digits but no N=1 or leading zeros. Consolidate

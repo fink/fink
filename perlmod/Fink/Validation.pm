@@ -475,7 +475,7 @@ sub validate_info_file {
 			}
 		}
 
-		if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {
+		if ($field eq "files" and ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/)) {
 			print "Warning: Field \"$field\" contains entries that end in \"/\" ($filename)\n";
 			$looks_good = 0;
 		}
@@ -486,6 +486,12 @@ sub validate_info_file {
 			$looks_good = 0;
 			next;
 		}
+
+=pod
+
+			This line is a dumb hack to keep emacs paren balancing happy );
+
+=cut
 
 		# Validate splitoffs
 		if ($field =~ m/^splitoff([2-9]|[1-9]\d+)?$/) {
@@ -505,7 +511,7 @@ sub validate_info_file {
 			foreach $field (keys %$splitoff_properties) {
 				$value = $splitoff_properties->{$field};
 
-				if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {
+				if ($field eq "files" and ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/)) {
 					print "Warning: Field \"$field\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
 					$looks_good = 0;
 				}
@@ -516,6 +522,12 @@ sub validate_info_file {
 					$looks_good = 0;
 					next;
 				}
+
+=pod
+
+			This line is a dumb hack to keep emacs paren balancing happy );
+
+=cut
 
 				# Warn if field is unknown or invalid within a splitoff
 				unless ($splitoff_valid_fields{$field}) {
