@@ -482,8 +482,8 @@ sub scan {
 		}
 
 		Fink::Package->setup_package_object($properties, $filename);
-	    }
-    }
+	}
+}
 
 # Given $properties as a ref to a hash of .info lines in $filename,
 # instantiate the package(s) and return an array of Fink::PkgVersion
@@ -515,11 +515,10 @@ sub setup_package_object {
 		}
 	}
 	if (exists $properties->{parent}) {
-#	    warn $properties->{package}," has parent\n";
 		# get parent's Package and Type info for percent expansion
 		$pkg_expand{'N'}  = $properties->{parent}->{package};
-#	    warn "\t%N expands to ",$pkg_expand{'N'}, "\n";
 		$pkg_expand{'Lv'} = $properties->{parent}->{_typeversion_pkg};
+		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
 	}
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand);
 

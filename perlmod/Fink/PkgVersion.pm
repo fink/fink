@@ -244,45 +244,6 @@ sub initialize {
 			$self->{_sourcecount} = $i;
 		}
 
-		if (0) {
-#####
-		# Build a hash with uniformly-named keys:
-		#   source, md5, rename, tarfilesrename, extractdir
-		# for all .info fields pertaining to a particular source.
-		# Store a ref to a list of refs to the hashes for all sources
-		# for the package, ordered (but not indexed) by source number.
-		$self->{_source_items} = [];
-		if ($self->{_type} ne "bundle" and $self->{_type} ne "nosource") {
-			# Schwartzian Transform to sort source\d* in "numerical" order
-			# easier to code and more efficient to run if 'source' is ignored
-			my @source_n_fields = map { $_->[0] } sort { $a->[1] <=> $b->[1] }
-				map { [$_, /source(\d*)/] } $self->params_matching('source\d+');;
-			# always have 'source', so now just insert it manually for correct order
-			foreach my $source_field ("source", @source_n_fields) {
-				next if $self->{$source_field} eq "none";
-				$source_field =~ /source(\d*)/;
-				my $number = $1;
-				my %source_item;
-#				# sometimes ya feel like a percent-expansion nut
-#				foreach my $templ (qw/ Source%s Source%s-MD5 Source%sRename tar%sFilesRename Source%sExtractDir / ) {
-#					my $info_field = sprintf $templ, $number;
-#					my $key = sprintf $templ, "";
-#					$source_item{$key} = &expand_percent($self->param($info_field), $expand)
-#						if $self->has_param($info_field);
-#				}
-				# sometimes ya don't
-				foreach my $templ (qw/ Source%s Source%s-MD5 Source%sRename tar%sFilesRename Source%sExtractDir / ) {
-					my $info_field = sprintf $templ, $number;
-					my $key = sprintf $templ, "";
-					$source_item{$key} = $self->param($info_field)
-						if $self->has_param($info_field);
-				}
-				push @{$self->{_source_items}}, \%source_item;
-			}
-		}
-#####
-		}
-
 		# handle splitoff(s)
 		if ($self->has_param('splitoff')) {
 			$self->add_splitoff($self->{'splitoff'});
@@ -340,9 +301,9 @@ sub add_splitoff {
 
 	# need to inherit (maybe) Type before package gets created
 	if (not exists $properties->{'type'}) {
-	    if (exists $self->{'type'}) {
-		$properties->{'type'} = $self->{'type'};
-	    }
+		if (exists $self->{'type'}) {
+			$properties->{'type'} = $self->{'type'};
+		}
 	} elsif ($properties->{'type'} eq "none") {
 		delete $properties->{'type'};
 	}
@@ -636,7 +597,7 @@ sub get_splitoffs {
 	if (exists $self->{parent}) {
 		$parent = $self->{parent};
 	} else {
-	        $parent = $self;
+		$parent = $self;
 	}
 
 	if ($include_parent) {

@@ -1,3 +1,9 @@
+2004-01-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Treat typo of %n in SplitOff:Package: as %N. Remove
+	debugging.
+	* PkgVersion.pm: Remove remnants of my _source_item stuff.
+
 2004-01-16  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm, PkgVersion.pm: Consolidated common code for
