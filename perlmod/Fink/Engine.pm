@@ -794,7 +794,11 @@ sub real_install {
 
 	my $labels = {};
 	foreach $dname (@candidates) {
-	  $labels->{$dname} = $dname;
+          my $package = Fink::Package->package_by_name($dname);
+          my $lversion = &latest_version($package->list_versions());
+          my $vo = $package->get_version($lversion);
+          my $description = $vo->get_shortdescription(60);
+	  $labels->{$dname} = "$dname: $description";
 	}
 
 	print "\n";

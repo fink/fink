@@ -1,3 +1,12 @@
+2002-03-16 Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Added "SplitOff" to the list of known fields, and 
+	parsing for SplitOff2-SplitOff9
+
+	* Engine.pm: When fink prompts users for a decision about a
+	dependency, it now displays the Descriptions of the packages involved
+	in the decision.
+
 2002-03-16  Max Horn  <max@quendi.de>
 	
 	* Validation.pm: Added "BuildDependsOnly" to the list of known fields

@@ -114,6 +114,7 @@ our %known_fields = map {$_, 1}
      configureparams
      compilescript
      installscript
+     splitoff
     ),
     (map {"set".$_} @set_vars),
     (map {"noset".$_} @set_vars),
@@ -267,6 +268,7 @@ sub validate_info_file {
 
     # Warn if field is unknown
     unless (%known_fields->{$field}
+         or $field =~ m/^splitoff([2-9]|\d\d)$/
          or $field =~ m/^nosource([2-9]|\d\d)directory$/
          or $field =~ m/^source([2-9]|\d\d)$/
          or $field =~ m/^source([2-9]|\d\d)extractdir$/
