@@ -326,7 +326,7 @@ sub du_sk {
 		sub {
 			# Use lstat first, so the -f refers to the link and not the target.
 			my $file_blocks = (lstat $_)[12];
-			$total_size += ($blocksize * $file_blocks) if -f _;
+			$total_size += ($blocksize * $file_blocks) if -f _ or -d _;
 		},
 		@dirs) if @dirs;
 	
