@@ -134,6 +134,11 @@
 	* Validation.pm: Add polite feedback if a .deb is okay in analogy
 	to behavior for .info (cf. exiting silently). (Patch #822456)
 
+2003-10-31  Michael G Schwern <schwern@pobox.com>
+
+	* Mirror.pm: Mirror doesn't have fetch_url or fetch_url_to_file
+	functions, yet was exporting them.
+
 2003-10-29  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: check for threaded X, and check for the file
