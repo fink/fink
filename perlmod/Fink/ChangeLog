@@ -1,3 +1,8 @@
+2001-03-21  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (real_install): Added check to catch unknown packages
+	that are mentioned in a dependency list.
+
 2001-03-08  Christoph Pfisterer  <cp@chrisp.de>
 
 	* FinkVersion.pm: Bumped version number to 0.1.6.

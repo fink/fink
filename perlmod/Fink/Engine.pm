@@ -271,6 +271,9 @@ sub real_install {
     # if no Package object was assigned, find it
     if (not defined $item->[1]) {
       $item->[1] = Fink::Package->package_by_name($pkgname);
+      if (not defined $item->[1]) {
+	die "unknown package '$pkgname' in dependency list\n";
+      }
     }
 
     # if no PkgVersion object was assigned, find one
