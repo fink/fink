@@ -1,3 +1,8 @@
+2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.5, a bugfix
+	release on branch_0_23
+
 2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.23.4, a release
