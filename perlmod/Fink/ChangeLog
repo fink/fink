@@ -1,5 +1,9 @@
 2004-11-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* PkgVersion.pm: run SplitForks on AppBundles
+
+2004-11-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* Bootstrap.pm, PkgVersion.pm: make gcc 4.0 count as gcc 3.3
 
 2004-11-01  Benjamin Reed  <rangerrick@users.sourceforge.net>

@@ -2092,9 +2092,12 @@ sub phase_install {
 		$install_script .= "\n/usr/bin/install -d -m 755 %i/Applications";
 		for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
 			$bundle =~ s/\'/\\\'/gsi;
-			$install_script .= "\ncp -pR '$bundle' '%i/Applications/'" .
-				"\nchmod -R o-w '%i/Applications/'";
+			$install_script .= "\ncp -pR '$bundle' '%i/Applications/'";
 		}
+		$install_script .= "\nchmod -R o-w '%i/Applications/'" .
+			"\nif test -x /Developer/Tools/SplitForks; then" .
+			"\n     /Developer/Tools/SplitForks '%i/Applications/'" .
+			"\nfi";
 	}
 
 	# generate commands to install jar files
