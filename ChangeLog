@@ -1,5 +1,10 @@
 2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.16.1, a bugfix
+	release on the branch_0_16 branch
+
+2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* INSTALL*, README*, USAGE*: backport recent changes from HEAD
 
 2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
