@@ -1,3 +1,10 @@
+2002-12-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* modify the apt sources.list configuration file, to use 10.2/release
+	and 10.2/current rather that release and current; also add a line to
+	the postinstall script to make this change for users with custom
+	configurations (modifications from Ben Hines)
+	
 2002-10-11  Max Horn  <max@quendi.de>
 
 	* fixed an issue with apt (preventing it from using its own timegm function)
