@@ -825,7 +825,14 @@ sub validate_dpkg_file {
 						next if (($filename eq "/Applications/") || ($filename eq "/private/") || ($filename eq "/private/etc/") || ($filename eq "/usr/"));
 						print "Warning: File \"$filename\" installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, and /usr/X11R6\n";
 						$looks_good = 0;
-					}}
+					}
+				}
+			} elsif ($filename ne "$basepath/src/" and $bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
+				# Directory from this list are not allowed to exist in the .deb.
+				# The only exception is $basepath/src which may exist but must be empty
+				print "Warning: File installed into deprecated directory $bad_dir\n";
+				print "					Offender is $filename\n";
+				$looks_good = 0;
 			} elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
 				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
 				$looks_good = 0;
@@ -886,17 +893,6 @@ sub validate_dpkg_file {
 					}
 				}
 				close(DAEMONIC_FILE) or die "Error on close: $!\n";
-			} else {
-				foreach $bad_dir (@bad_dirs) {
-					# Directory from this list are not allowed to exist in the .deb.
-					# The only exception is $basepath/src which may exist but must be empty
-					if ($filename =~ /^$bad_dir/ and not $filename eq "$basepath/src/") {
-						print "Warning: File installed into deprecated directory $bad_dir\n";
-						print "					Offender is $filename\n";
-						$looks_good = 0;
-						last;
-					}
-				}
 			}
 		}
 	}
