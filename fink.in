@@ -62,8 +62,8 @@ GetOptions(
      'use-binary-dist|b'  => sub { $options{use_binary} = 1 ;  
                                  $optionsString .= '--use-binary-dist ' 
                                },
-     'compile-from-source|c'  => sub { $options{use_binary} = -1 ;  
-                                 $optionsString .= '--compile-from-source ' 
+     'no-use-binary-dist|c'  => sub { $options{use_binary} = -1 ;  
+                                 $optionsString .= '--no-use-binary-dist ' 
                                },
      'build-as-nobody'    => sub { $options{build_as_nobody} = 1 ;  
                                  $optionsString .= '--build-as-nobody ' 
