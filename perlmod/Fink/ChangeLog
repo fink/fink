@@ -1,3 +1,7 @@
+2002-07-06  Max Horn  <max@quendi.de>
+
+	* Package.pm (scan_all, update_db): Fixed index'ing bug.
+
 2002-06-09  Max Horn  <max@quendi.de>
 
 	* Engine.pm (cmd_cleanup): Added a "fink cleanup" command, still unfinished,

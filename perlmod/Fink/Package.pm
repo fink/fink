@@ -49,7 +49,6 @@ $have_packages = 0;
 %package_hash = ();
 @essential_packages = ();
 $essential_valid = 0;
-$use_cache = 0;
 $db_outdated = 0;
 $db_mtime = 0;
 
@@ -313,15 +312,10 @@ sub scan_all {
 
   Fink::Package->forget_packages();
   
-  $use_cache = 0;
-  
   # If we have the Storable perl module, try to use the package index
   if (-e "$basepath/var/db/fink.db") {
     eval {
       require Storable; 
-      
-      # Flag that want to use the cache
-      $use_cache = 1;
 
       # We assume the DB is up-to-date unless proven otherwise
       $db_outdated = 0;
@@ -419,7 +413,7 @@ sub update_db {
         " an update, but does not have privileges to modify it. Please re-run fink as root," .
         " for example with a \"fink index\" command.\n" );
     }
-  } if ($use_cache);
+  };
   $db_outdated = 0;
 }
 
