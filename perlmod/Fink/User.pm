@@ -58,12 +58,17 @@ sub get_perms {
 	my $self = shift;
 	my $rootdir = shift;
 
-	my $script = "";
+	my $script = ""
 
 	my (@filelist, @files, @users, @groups);
 	my ($wanted, $file, $usr, $grp);
 	my ($dev, $ino, $mode, $nlink, $uid, $gid);
-    
+
+	### Weird why isn't $rootdir the full path...odd
+	unless ($rootdir =~ /^$basepath\/src/) {
+		$rootdir = "$basepath/src/$rootdir";
+	}
+
 	$wanted =
 		sub {
 			if (-x) {
@@ -73,10 +78,10 @@ sub get_perms {
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $rootdir);
     
 	foreach $file (@filelist) {
-		### Remove $basepath/src/root-...
-		$file =~ s/^$rootdir/$basepath/g;
 		### Don't add DEBIAN dir
 		next if ($file =~ /DEBIAN/);
+		### Skip the rootdir
+		next if ($file == $rootdir);
 	  
 		($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
 
@@ -85,6 +90,12 @@ sub get_perms {
 	  
 		$usr = User::pwent::getpwuid($uid);
 		$grp = User::grent::getgrgid($gid);
+
+		### Remove $basepath/src/root-...
+		$file =~ s/^$rootdir//g;
+
+		### DEBUG
+		print "Processing $file...UID: $uid, GID: $gid\n";
 	  
 		push(@files, $file);
 		push(@users, $usr);
@@ -301,7 +312,7 @@ sub set_perms {
 	my @files = split(/:/, $files);
 	
 	foreach $file (@files) {
-		if (&execute("/usr/sbin/chown 0:0 \"$rootdir$file\"")) {
+		if (&execute("/usr/sbin/chown root:wheel \"$rootdir$file\"")) {
 			die "Couldn't change ownership of $file!\n";
 		}
 	}
