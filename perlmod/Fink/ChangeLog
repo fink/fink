@@ -1,3 +1,7 @@
+2004-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Base.pm: params_matching() now defaults to case-insensitive.
+
 2004-01-11  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgConfig.pm: Improved get_source_items_count(). Improved
