@@ -39,6 +39,8 @@ use Fink::Bootstrap qw(&get_bsbase);
 
 use File::Basename qw(&dirname);
 
+use POSIX qw(uname);
+
 use strict;
 use warnings;
 
@@ -1648,6 +1650,30 @@ EOF
 		} else {
 			$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
 		}
+	}
+
+# Add a dependency on the darwin version (if not already present).
+#   We depend on the major version only, in order to prevent users from
+#   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
+#   value.
+# FIXME: Actually, if the package states a darwin version we should combine
+#   the version given by the package with the one we want to impose.
+#   Instead, right now, we just use the package's version but this means
+#   that a package will need to be revised if the darwin major version changes.
+
+	my ($dummy, $darwin_version, $darwin_major_version);
+	($dummy,$dummy,$darwin_version) = uname();
+	if ($darwin_version =~ /(\d+)/) {
+	    $darwin_major_version = $1;
+	} else {
+	    die "No major version number for darwin!";
+	}
+
+	if (not $depline =~ /\bdarwin\b/) {
+	    if (not $depline eq '') {
+		$depline = $depline . ", ";
+	    }
+	    $depline = $depline . "darwin (>= $darwin_major_version-1)";
 	}
 
 	# FIXME: make sure there are no linebreaks in the following fields

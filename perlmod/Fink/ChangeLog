@@ -1,8 +1,15 @@
+2003-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: Add an automatic dependency on the current version 
+	of darwin, whenever building a package.  (This is so that packages
+	which have MACSOX_DEPLOYMENT_TARGET set by default in 10.3, don't
+	get built in 10.3 but then installed in 10.2 by accident.)
+
 2003-10-18  Peter O'Gorman <ogorman@users.sourceforge.net>
 	
-	 * VirtPackage.pm: New virtual package for gcc2 (needed for 10.3)
+	* VirtPackage.pm: New virtual package for gcc2 (needed for 10.3)
 
-2003-10-17  <schwern@users.sourceforge.net>
+2003-10-17  Michael G Schwern <schwern@users.sourceforge.net>
 
 	* Package.pm, Services.pm: Optimizations to speed up
 	some common operations.
