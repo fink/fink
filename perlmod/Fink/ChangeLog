@@ -60,7 +60,7 @@
 	with regexps instead of the @PERCENT@ sentinel
 
 2003-12-11  Justin F. Hallett  <thesin@users.sourceforge.net>
-v
+
 	* Engine.pm: Made BuildConflicts effective, it doesn't just tell you
 	 now, it's acctually remove and reinstall after the build.
 
