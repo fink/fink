@@ -58,29 +58,36 @@ sub check {
 	$srcdir = "$basepath/src";
 	$finkdir = "$basepath/fink";
 	if ($useopt != 0) {
-		&print_breaking("Please use fink-selfupdate, using selfupdate-cvs ".
-			"is deprecated. \n");
+		&print_breaking("\n Please note: the command 'fink selfupdate' "
+				. "should be used for routine updating; you only need to use " 
+				. "'fink selfupdate-cvs' or 'fink selfupdate-rsync' if you are "
+				. "changing your update method. \n\n");
 	}
-	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
-	# The user has not chosen a selfupdatemethod yet, always ask
-	# if the fink.conf setting is not there.
-		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
-		$answer = &prompt_selection("Choose an update method", 1, {"rsync" => "rsync",
-			"cvs" => "cvs", "point" => "Stick to point releases"}, "rsync","cvs","point");
-		$config->set_param("SelfUpdateMethod", $answer);
-		$config->save();	
-	}
-	elsif (! defined($config->param("SelfUpdateMethod") )) {
+	if ((! defined($config->param("SelfUpdateMethod") )) and ! $useopt == 0){
 		if ($useopt == 1) {
 			$answer = "cvs";	
 		}
-		else {
+		elsif ($useopt == 2) {
 			$answer = "rsync";
+		}
+		else {
+		    $answer = "point";
 		}
 		&print_breaking("fink is setting your default update method to $answer \n");
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();
 	}
+
+	# The user has not chosen a selfupdatemethod yet, always ask
+	# if the fink.conf setting is not there.
+	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
+		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
+		$answer = &prompt_selection("Choose an update method", 1, {"rsync" => "rsync",
+			"cvs" => "cvs", "point" => "Stick to point releases"}, "rsync","cvs","point");
+		$config->set_param("SelfUpdateMethod", $answer);
+		$config->save();	
+	    }
+
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
 		if (-f "$finkdir/stamp-rsync-live") {
@@ -103,23 +110,26 @@ sub check {
 	}
 	# Hm, we were called with a different option than the default :(
 	$installed_version = &pkginfo_version();
-	if (($config->param("SelfUpdateMethod") ne "rsync") and $useopt == 2) {
+	my $selfupdatemethod = $config->param("SelfUpdateMethod");
+	if (($selfupdatemethod ne "rsync") and $useopt == 2) {
 		$answer =
-			&prompt_boolean("Do you wish to change the default selfupdate method ".
-				"to rsync",1);
+			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
+					. "Do you wish to change the default selfupdate method ".
+				"to rsync?",1);
 		if (! $answer) {
 			return;
-		}
+		    }
 		$config->set_param("SelfUpdateMethod", "rsync");
 		$config->save();	
 		&do_direct_rsync();
 		&do_finish();
 		return;		
-	}
-	if (($config->param("SelfUpdateMethod") ne "cvs") and $useopt == 1) {
+	    }
+	if (($selfupdatemethod ne "cvs") and $useopt == 1) {
 		$answer =
-			&prompt_boolean("Do you wish to change the default selfupdate method ".
-				"to cvs",1);
+			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
+					. "Do you wish to change the default selfupdate method ".
+				"to cvs?",1);
 		if (! $answer) {
 			return;
 		}

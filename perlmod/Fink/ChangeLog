@@ -1,3 +1,9 @@
+2003-10-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm, SelfUpdate.pm: Further tweaks to the user interface 
+	for selfupdate commands.  Also, ensure that the SelfUpdateMethod 
+	conf option is properly reset when selfupdate-rsync is invoked.
+
 2003-10-04  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* FinkVersion.pm.in, Selfupdate.pm: Give the user some choice of 

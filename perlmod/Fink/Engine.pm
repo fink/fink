@@ -238,7 +238,7 @@ sub cmd_selfupdate_cvs {
 
 sub cmd_selfupdate_rsync {
 	require Fink::SelfUpdate;
-	Fink::SelfUpdate::rsync_check();
+	Fink::SelfUpdate::check(2);
 }
 
 sub cmd_selfupdate_finish {
