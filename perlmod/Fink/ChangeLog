@@ -1,3 +1,9 @@
+2003-11-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm: reverted the "Simplified code" changes from 11-12,
+	since they were apparently causing extra carriage returns in
+	prompts to the user.
+
 2003-11-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: More checks for X version for system-xfree86.
