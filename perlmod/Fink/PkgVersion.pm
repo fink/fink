@@ -132,18 +132,9 @@ sub initialize {
 	# percent-expansions
 	if ($self->param("_type") eq "perl") {
 		# grab perl version, if present
-		my $perlversion = get_system_perl_version();
-		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+		my ($perldirectory, $perlarchdir,$perlcmd) = $self->get_perl_dir_arch();
 
-		### PERL= needs a full path or you end up with
-		### perlmods trying to run ../perl$perlversion
-		my $pathnperlver = get_path('perl'.$perlversion);
-		### if perl$perlversion doesn't exist set it to old method
-		### this happens on 10.3 since there is nolonger a perl5.6.0
-		unless ($pathnperlver) {
-			$pathnperlver = "perl".$perlversion;
-		}
-		$configure_params = "PERL=$pathnperlver PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
+		$configure_params = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
 			$self->param_default("ConfigureParams", "");
 	} else {
 		$configure_params = "--prefix=\%p ".
@@ -1309,10 +1300,7 @@ sub phase_compile {
 		$compile_script = $self->param("CompileScript");
 	} else {
 		if ($self->param("_type") eq "perl") {
-			my $perlcmd = "/usr/bin/perl";
-			if ($self->has_param("_perlversion")) {
-				$perlcmd = 'perl' . $self->param("_perlversion");
-			}
+		    my ($perldirectory, $perlarchdir,$perlcmd) = $self->get_perl_dir_arch();
 			$compile_script =
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
@@ -2096,34 +2084,25 @@ sub get_perl_dir_arch {
 	my $self = shift;
 
 	# grab perl version, if present
-	my $perlversion   = get_system_perl_version();
+	my $perlversion   = "";
+#get_system_perl_version();
 	my $perldirectory = "";
 	my $perlarchdir;
 	if ($self->has_param("_perlversion")) {
 		$perlversion = $self->param("_perlversion");
-	}
-	$perldirectory = "/" . $perlversion;
+		$perldirectory = "/" . $perlversion;
+	    }
+	### PERL= needs a full path or you end up with
+	### perlmods trying to run ../perl$perlversion
 	my $perlcmd = get_path('perl'.$perlversion);
 
-	if (defined $perlcmd and $perlcmd ne "" and -x $perlcmd and 
-            open(ARCHNAME, 
-             qq{$perlcmd -MConfig -e 'print \$Config{archname}' 2>/dev/null |}) ) 
-        {
-		$perlarchdir = <ARCHNAME>;
-		close(ARCHNAME);
-	}
-
-	# if we can't get it from perl (perhaps because it's not installed yet)
-	# then we guess, based on the version (this is the old behavior)
-	if (not defined $perlarchdir or $perlarchdir eq "") {
 		if ($perlversion ge "5.8.1") {
 			$perlarchdir = 'darwin-thread-multi-2level';
 		} else {
 			$perlarchdir = 'darwin';
 		}
-	}
 
-	return ($perldirectory, $perlarchdir);
+	return ($perldirectory, $perlarchdir,$perlcmd);
 }
 
 ### EOF

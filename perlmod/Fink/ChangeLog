@@ -2,6 +2,9 @@
 
 	* PkgVersion.pm: Small tweak to UpdatePOD in case two files are
 	being catted together
+	* PkgVersion.pm: Revise get_perl_dir_arch() and the places where it
+	is used, correcting some errors in UpdatePOD in case of Type: perl,
+	and guaranteeing that the correct perl command is used when needed.
 
 2003-11-13  Max Horn  <max@quendi.de>
 
