@@ -440,7 +440,7 @@ sub resolve_depends {
   foreach $depname (@{$self->{_depends}}) {
     $package = Fink::Package->package_by_name($depname);
     if (not defined $package) {
-      die "Can't resolve dependency \"$depname\" for package \"".$self->get_name()."\"\n";
+      die "Can't resolve dependency \"$depname\" for package \"".$self->get_fullname()."\"\n";
     }
     push @deplist, [ $package->get_all_providers() ];
   }
@@ -461,7 +461,7 @@ sub resolve_conflicts {
 			   $self->param_default("Conflicts", ""))) {
     $package = Fink::Package->package_by_name($confname);
     if (not defined $package) {
-      die "Can't resolve anti-dependency \"$confname\" for package \"".$self->get_name()."\"\n";
+      die "Can't resolve anti-dependency \"$confname\" for package \"".$self->get_fullname()."\"\n";
     }
     push @conflist, [ $package->get_all_providers() ];
   }
@@ -612,7 +612,7 @@ sub fetch_source {
 		    "the same command.");
     print "\n";
 
-    die "file download failed for $file\n";
+    die "file download failed for $file of package ".$self->get_fullname()."\n";
   }
 }
 
@@ -652,7 +652,7 @@ sub phase_unpack {
       $found_archive = $self->find_tarball($i);
     }
     if (not defined $found_archive) {
-      die "can't find source tarball $archive!\n";
+      die "can't find source tarball $archive for package ".$self->get_fullname()."\n";
     }
 
     # determine unpacking command
@@ -683,7 +683,7 @@ sub phase_unpack {
     # unpack it
     chdir $destdir;
     if (&execute($unpack_cmd)) {
-      die "unpacking failed\n";
+      die "unpacking ".$self->get_fullname()." failed\n";
     }
   }
 }
@@ -745,7 +745,7 @@ sub phase_patch {
     next unless $cmd;   # skip empty lines
 
     if (&execute($cmd)) {
-      die "patching failed\n";
+      die "patching ".$self->get_fullname()." failed\n";
     }
   }
 }
@@ -783,7 +783,7 @@ sub phase_compile {
     next unless $cmd;   # skip empty lines
 
     if (&execute($cmd)) {
-      die "compiling failed\n";
+      die "compiling ".$self->get_fullname()." failed\n";
     }
   }
 }
@@ -832,7 +832,7 @@ sub phase_install {
     next unless $cmd;   # skip empty lines
 
     if (&execute($cmd)) {
-      die "installing failed\n";
+      die "installing ".$self->get_fullname()." failed\n";
     }
   }
 
@@ -865,7 +865,7 @@ sub phase_build {
 
   if (not -d "$destdir/DEBIAN") {
     if (&execute("mkdir -p $destdir/DEBIAN")) {
-      die "can't create directory for control files\n";
+      die "can't create directory for control files for package ".$self->get_fullname()."\n";
     }
   }
 
@@ -895,9 +895,9 @@ EOF
 
   print "Writing control file...\n";
 
-  open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file: $!\n";
+  open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file for ".$self->get_fullname().": $!\n";
   print CONTROL $control;
-  close(CONTROL) or die "can't write control file: $!\n";
+  close(CONTROL) or die "can't write control file for ".$self->get_fullname().": $!\n";
 
   ### create scripts as neccessary
 
@@ -910,7 +910,7 @@ EOF
 
     print "Writing package script $scriptname...\n";
 
-    open(SCRIPT,">$scriptfile") or die "can't write $scriptname script: $!\n";
+    open(SCRIPT,">$scriptfile") or die "can't write $scriptname script for ".$self->get_fullname().": $!\n";
     print SCRIPT <<EOF;
 #!/bin/sh
 # $scriptname script for package $pkgname, auto-created by fink
@@ -921,7 +921,7 @@ $scriptbody
 
 exit 0
 EOF
-    close(SCRIPT) or die "can't write $scriptname script: $!\n";
+    close(SCRIPT) or die "can't write $scriptname script for ".$self->get_fullname().": $!\n";
     chmod 0755, $scriptfile;
   }
 
@@ -934,9 +934,9 @@ EOF
 
     print "Writing conffiles list...\n";
 
-    open(SCRIPT,">$listfile") or die "can't write conffiles: $!\n";
+    open(SCRIPT,">$listfile") or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
     print SCRIPT $conffiles;
-    close(SCRIPT) or die "can't write conffiles: $!\n";
+    close(SCRIPT) or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
     chmod 0644, $listfile;
   }
 
@@ -949,12 +949,12 @@ EOF
   }
   $cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
   if (&execute($cmd)) {
-    die "can't create package\n";
+    die "can't create package ".$self->get_debname()."\n";
   }
 
   if (&execute("ln -sf ".$self->get_debpath()."/".$self->get_debname()." ".
 	       "$basepath/fink/debs/")) {
-    die "can't symlink package into pool directory\n";
+    die "can't symlink package ".$self->get_debname()." into pool directory\n";
   }
 
   ### remove root dir
@@ -985,7 +985,7 @@ sub phase_activate {
   while(1) {
     delete $self->{_installed};
     if (&execute("dpkg -i $deb")) {
-      die "can't install package\n";
+      die "can't install package ".$self->get_fullname()."\n";
     }
     last if $self->is_installed();
 
@@ -1004,7 +1004,7 @@ sub phase_deactivate {
   delete $self->{_installed};
 
   if (&execute("dpkg --remove ".$self->get_name())) {
-    die "can't remove package\n";
+    die "can't remove package ".$self->get_fullname()."\n";
   }
 }
 

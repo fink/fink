@@ -1,3 +1,7 @@
+2001-06-22  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Provide full package name in all error messages.
+
 2001-06-17  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: Automatically create section name from
