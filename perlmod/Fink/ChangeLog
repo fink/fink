@@ -1,3 +1,12 @@
+2003-11-21  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm, PkgVersion.pm: expand_percent handles %% using a
+	temporary sentinel value, but that was defined in two different
+	places (in expand_percent itself and in the caller of
+	it). Consolidated into expand_percent.
+	* Services.pm: Factored definition of a constant string out of a
+	tight loop.
+
 2003-11-25  Michael G Schwern <schwern@pobox.com
 
 	* Config.pm: new_with_path() now takes default parameters.

@@ -264,9 +264,12 @@ sub execute_script {
 sub expand_percent {
 	my $s = shift;
 	my $map = shift;
-	my ($key, $value, $i, @lines, @newlines);
+	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
 	return $s if (not defined $s);
+
+	%map = ( %$map, '%' => '@PERCENT@' );  # Don't touch the caller's copy
+	$percent_keys = join('|', keys %map);
 
 	# split multi lines to process each line incase of comments
 	@lines = split(/\r?\n/, $s);
@@ -281,9 +284,8 @@ sub expand_percent {
 			# %N = %n-shlibs). Hence we repeate the expansion if
 			# necessary.
 			# Abort as soon as no substitution performed.
-			my $percent_keys = join('|', keys %$map);
 			for ($i = 0; $i < 2 ; $i++) {
-				$s =~ s/\%($percent_keys)/$map->{$1}/eg || last;
+				$s =~ s/\%($percent_keys)/$map{$1}/eg || last;
 				# Abort early if no percent symbols are left
 				last if not $s =~ /\%/;
 			}

@@ -167,8 +167,7 @@ sub initialize {
 
 				'a' => $self->{_patchpath},
 				'c' => $configure_params,
-				'b' => '.',
-				'%' => '@PERCENT@'
+				'b' => '.'
 			};
 
 	$self->{_expand} = $expand;
