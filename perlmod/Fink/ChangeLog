@@ -1,3 +1,8 @@
+2003-12-22  Daniel Macks <dmacks@netspace.org>
+
+        * Validation.pm: Added support for Type python, guile, ruby
+        (version optional, except mandatory for python).
+
 2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: move inject.pl code into Bootstrap.pm, and
