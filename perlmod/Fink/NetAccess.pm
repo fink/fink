@@ -247,10 +247,10 @@ sub fetch_url_to_file {
 		if ($dryrun) {
 			print " $url";
 		} elsif ($cont) {
-			$result = &execute("$cont_cmd $url");
+			$result = &execute("$cont_cmd \Q$url\E");
 			$cont = 0;
 		} else {
-			$result = &execute("$cmd $url");
+			$result = &execute("$cmd \Q$url\E");
 		}
 		
 		if ($dryrun or ($result or not -f $file)) {
@@ -321,7 +321,7 @@ sub download_cmd {
 			$cmd .= " -P -";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -o $file";
+			$cmd .= " -o \Q$file\E";
 		} else {
 			$cmd .= " -O"
 		}
@@ -343,7 +343,7 @@ sub download_cmd {
 			$cmd .= " --passive-ftp";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -O $file";
+			$cmd .= " -O \Q$file\E";
 		}
 		if ($cont) {
 			$cmd .= " -c"
@@ -362,7 +362,7 @@ sub download_cmd {
 			$cmd .= " --verbose";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -o $file";
+			$cmd .= " -o \Q$file\E";
 		}
 		# Axel always continues downloads, by default
 	}
