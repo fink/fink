@@ -1,4 +1,4 @@
-Generated from $Fink: usage.xml,v 1.11 2002/04/13 21:14:22 fingolfin Exp $
+Generated from $Fink: usage.xml,v 1.13 2002/10/07 13:33:22 fingolfin Exp $
 
  Fink Usage
 ============
@@ -17,8 +17,9 @@ windows), so you should also run this command in all Terminal windows that
 you opened before you edited the file. You'll also need to run "rehash"
 because tcsh caches the list of available commands internally.
 
-If you use a Bourne type shell (e.g. sh, bash, zsh), use /sw/bin/init.sh
-instead.
+If you use a Bourne type shell (e.g. sh, bash, zsh), use instead:
+
+   source /sw/bin/init.sh
 
 Note that the scripts also add /usr/X11R6/bin and /usr/X11R6/man to your
 path so you can use X11 when it is installed. Packages have the ability to
