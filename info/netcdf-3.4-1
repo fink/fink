@@ -1,0 +1,11 @@
+Package: netcdf
+Version: 3.4
+Revision: 1
+Source: ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-%v.tar.Z
+UpdateConfigGuess: true
+SetCXX: c++
+Patch: %f.patch
+SourceDirectory: netcdf-3.4/src
+CommentPort: no fortran interface yet (should be able to do it with f2c).
+Homepage: http://www.unidata.ucar.edu/packages/netcdf/
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>

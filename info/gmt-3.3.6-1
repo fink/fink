@@ -1,0 +1,21 @@
+Package: gmt
+Version: 3.3.6
+Revision: 1
+Source: ftp://falcon.grdl.noaa.gov/pub/gmt/GMT%v_progs.tar.gz
+Source2: ftp://falcon.grdl.noaa.gov/pub/gmt/GMT%v_doc.tar.gz
+Source3: ftp://falcon.grdl.noaa.gov/pub/gmt/GMT_share.tar.gz
+Source3ExtractDir: GMT3.3.6
+Depends: netcdf
+SourceDirectory: GMT3.3.6
+SetCFLAGS: -O -traditional-cpp
+UpdateConfigGuess: true
+CompileScript: ./configure %c
+ make NETCDF=%p LDFLAGS=
+ echo "%i/share" >! share/coastline.conf
+InstallScript: make install prefix=%i
+ make install-data prefix=%i
+ make install-man prefix=%i
+CommentPort: 
+CommentStow: No issues.
+Homepage: http://www.soest.hawaii.edu/gmt/ 
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
