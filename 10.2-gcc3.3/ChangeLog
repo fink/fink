@@ -1,3 +1,8 @@
+2005-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* apt.info, apt.patch: sync with stable (0.5.4-41)
+	* cctools-extra.info: sync with stable (1:525-1) (same .patch)
+
 2004-11-17  Daniel Macks  <dmacks@netspace.org>
 
 	* tar.info: sync with version in stable tree (1.14-1)
