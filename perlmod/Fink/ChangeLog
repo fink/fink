@@ -1,4 +1,10 @@
-2003-11-21  Michael G Schwern <schwern@pobox.com
+2003-11-25  Michael G Schwern <schwern@pobox.com
+
+	* Config.pm: new_with_path() now takes default parameters.
+	* Services.pm: read_config() now takes default parameters to pass
+	through to Config->new_with_path().
+
+2003-11-25  Michael G Schwern <schwern@pobox.com
 
 	* Config.pm: Error message wrong when Basepath not in config file
 	or config file missing entirely.  Tested.

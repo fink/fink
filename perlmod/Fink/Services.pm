@@ -58,12 +58,11 @@ END { }				# module clean-up code here (global destructor)
 ### create configuration
 
 sub read_config {
-	my $filename = shift;
-	my ($config_object);
+	my($filename, $defaults) = @_;
 
 	require Fink::Config;
 
-	$config_object = Fink::Config->new_with_path($filename);
+	my $config_object = Fink::Config->new_with_path($filename, $defaults);
 
 	return $config_object;
 }

@@ -83,24 +83,33 @@ Inherited from Fink::Base.
 =item new_with_path
 
   my $config = Fink::Config->new_with_path($config_file);
+  my $config = Fink::Config->new_with_path($config_file, \%defaults);
 
 Reads a fink.conf file into a new Fink::Config object and initializes
-Fink::Config globals from it.
+Fink::Config globals from it.  
+
+If %defaults is given they will be used as defaults for any keys not in the
+config file.  For example...
+
+    my $config = Fink::Config->new_with_path($file, { Basepath => "/sw" });
 
 =cut
 
 sub new_with_path {
-	my($proto, $path) = @_;
+	my($proto, $path, $defaults) = @_;
+        $defaults = {} unless ref $defaults eq 'HASH';
 	my $class = ref($proto) || $proto;
 
 	my $props = Fink::Services::read_properties($path);
 
-	my $self = bless({ _path => $path }, $class);
+        my $self = { _path => $path };
+        @{$self}{map lc, keys %$defaults} = values %$defaults;
 
 	while (my($key, $value) = each %$props) {
 		$self->{$key} = $value unless $key =~ /^_/;
 	}
 
+	$self = bless $self, $class;
 	$self->initialize();
 
 	return $self;
@@ -204,9 +213,8 @@ Inherited from Fink::Base.
 =cut
 
 sub set_param {
-	my $self = shift;
-	my $key  = shift;
-	$self->SUPER::set_param($key, @_);
+	my($self, $key, $value) = @_;
+	$self->SUPER::set_param($key, $value);
 	push @{$self->{_queue}}, $key;
 }
 

@@ -12,8 +12,15 @@ END { unlink $Config_File }
 
 use Fink::Config;
 
-my $config = Fink::Config->new_with_path($Config_File);
+my $config = Fink::Config->new_with_path($Config_File, 
+                                         { Basepath => "TheDefault",
+                                           Something => "A Default",
+                                         });
 isa_ok( $config, 'Fink::Config' );
+
+is( $config->{Basepath}, undef, 'defaults lowercased' );
+isnt( $config->param('Basepath'), 'TheDefault' );
+is( $config->param('Something'), 'A Default' );
 
 
 sub ck_config {
