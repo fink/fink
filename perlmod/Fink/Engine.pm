@@ -2079,12 +2079,13 @@ EOF
 				print "\n";
 			} elsif ($_ eq 'allversions') {
 				# multiline field, so indent 1 space always
-				my $package = Fink::Package->package_by_name($pkg->get_name());
+				my $pkgname = $pkg->get_name();
+				my $package = Fink::Package->package_by_name($pkgname);
 				my $lversion = &latest_version($package->list_versions());
 				print "$_:\n";
 				foreach (&sort_versions($package->list_versions())) {
 					printf " %1s%1s\t%s\n",
-						$package->get_version($_)->is_present() ? "b" : "",
+						( $package->get_version($_)->is_present() or $config->binary_requested() && $package->is_in_apt($pkgname,$_) ) ? "b" : "",
 						$package->get_version($_)->is_installed() ? "i" : "",
 						$_;
 				}
