@@ -1,3 +1,7 @@
+2003-07-07  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* updated libiconv to fix certain issues (temp fix)
+
 2003-06-27  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Adding 10.3 dir for bootstraping

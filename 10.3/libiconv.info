@@ -1,12 +1,14 @@
 Package: libiconv
-Version: 1.7
-Revision: 5
-Source: mirror:sourceforge:fink/%n-%v.tar.gz
-Source-MD5: bc7029c0bc913dc297cf49afa4c0e133
+Version: 1.8
+Revision: 1
+Source: gnu
+Source-MD5: fd2a95a4b79fbdc8ea55ad093a8bb6cf
 Essential: yes
 Depends: base-files
 BuildDepends: fink-prebinding
 Patch: %n.patch
+NoSetLDFLAGS: true
+SetLIBS: -L%p/lib
 ConfigureParams: --mandir=%p/share/man
 InstallScript: <<
 mkdir -p %i/share/man %i/share/doc/%n
