@@ -1,5 +1,10 @@
 2003-09-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* VirtPackage.pm: Implement system-xfree86 as a list of provides,
+	instead of the system-xfree86-foo packages.
+
+2003-09-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* VirtPackage.pm: Some cleanup/performance updates to the X11 detect.
 
 2003-09-08  Peter O'Gorman  <ogorman@users.sourceforge.net>

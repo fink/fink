@@ -169,22 +169,26 @@ sub initialize {
 				$hash->{status} = "install ok installed";
 				$hash->{version} = "2:${xvermaj}.${xvermin}-1";
 				$hash->{description} = "[placeholder for user installed x11]";
+
+				my @provides;
+				push(@provides, 'x11')                if (has_lib('/usr/X11R6/lib/libX11.dylib') and
+									-f '/usr/X11R6/include/X11/Xlib.h');
+				push(@provides, 'x11-shlibs')         if has_lib('/usr/X11R6/lib/libX11.6.dylib');
+				push(@provides, 'libgl')              if (has_lib('/usr/X11R6/lib/libGL.dylib') and
+									-f '/usr/X11R6/include/GL/gl.h');
+				push(@provides, 'libgl-shlibs')       if has_lib('/usr/X11R6/lib/libGL.1.dylib');
+				push(@provides, 'xft1')               if (readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
+									-f '/usr/X11R6/include/X11/Xft/Xft.h');
+				push(@provides, 'xft2')               if (readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
+									-f '/usr/X11R6/include/X11/Xft/XftCompat.h');
+				push(@provides, 'xft1-shlibs')        if has_lib('/usr/X11R6/lib/libXft.1.dylib');
+				push(@provides, 'xft2-shlibs')        if has_lib('/usr/X11R6/lib/libXft.2.dylib');
+				push(@provides, 'rman')               if (-x '/usr/X11R6/bin/rman');
+				push(@provides, 'fontconfig1')        if (readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
+									-f '/usr/X11R6/include/fontconfig/fontconfig.h');
+				push(@provides, 'fontconfig1-shlibs') if has_lib('/usr/X11R6/lib/libfontconfig.1.dylib');
+				$hash->{provides} = join(', ', @provides);
 				$self->{$hash->{package}} = $hash;
-				$hash = {};	
-				if ($xvermin eq "2")
-				{
-					$hash->{package} = "system-xfree86-42";
-		       		$hash->{status} = "install ok installed";
-					$hash->{version} = "4.2-3";
-					$hash->{provides} = "x11, rman, libgl, libgl-shlibs, xft1";
-				} else {
-					$hash->{package} = "system-xfree86-43";
-		       		$hash->{status} = "install ok installed";
-					$hash->{version} = "4.3-3";
-					$hash->{provides} = "x11, rman, libgl, libgl-shlibs, xft2, fontconfig1";
-				}
-				$hash->{description} = "[placeholder for user installed xfree86]";
-				$self->{$hash->{package}} = $hash;				
 			}
 		}    
 	}
@@ -253,16 +257,22 @@ sub list {
 	return $list;
 }
 
+sub has_lib {
+	my $libname = shift;
+	my $dir;
+
+	if ($libname =~ /^\//) {
+		return (-f $libname);
+	} else {
+		for $dir ('/usr/X11R6/lib', $basepath . '/lib', '/usr/lib') {
+			return 1 if (-f $dir . '/' . $libname);
+		}
+	}
+	return;
+}
+
 ### Check the installed x11 version
 sub check_x11_version {
-	if (
-	    (! -f '/usr/X11R6/lib/libX11.dylib') or
-	    (! -f '/usr/X11R6/include/X11/Xlib.h') or
-	    ((! -x '/usr/X11R6/bin/XDarwin') and
-	    (! -x '/usr/X11R6/bin/Xquartz')))
-	{
-		return;
-	}
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
 	if (open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
 		while (<XTERM>) {
