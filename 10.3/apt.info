@@ -12,14 +12,12 @@ PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' <%a/%n.patch | patch -p1
  sh patch_flush
  for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
- for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i ; done
-#perl -pi.bak -e 's/socklen_t/int/' methods/ftp.h methods/ftp.cc
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
-SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC -fconstant-cfstrings
+SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC -fconstant-cfstrings -DHAVE_SOCKLEN_T=1
 CompileScript: <<
- export CC=gcc-3.3; export CXX=g++-3.3; ./configure %c
+ ./configure %c
  make -f makefile.wrap NOISY=1
 <<
 InstallScript: <<
