@@ -284,6 +284,7 @@ sub validate_info_file {
 	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
 	my ($basepath, $expand, $buildpath);
+	my ($type, $type_hash);
 	my $looks_good = 1;
 	my $error_found = 0;
 	my $arch = get_arch();
@@ -319,6 +320,15 @@ sub validate_info_file {
 	$buildpath = $config->param_default("buildpath", "$basepath/src");
 
 	$pkgname = $properties->{package};
+
+	# right now we don't know how to deal with variants too well
+	$type = $properties->{type};
+	$type =~ s/(\S+?)\s*\(:?.*?\)/$1 ./g;  # use . for all subtype lists
+	$type_hash = Fink::PkgVersion->type_hash_from_string($type,$filename);
+	foreach (keys %$type_hash) {
+		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+	}
+	$pkgname = &expand_percent($pkgname, $expand, $filename.' Package');
 
 	$pkgversion = $properties->{version};
 	$pkgrevision = $properties->{revision};
@@ -618,7 +628,8 @@ sub validate_info_file {
 				'i' => $pkgdestdir.$basepath,
 				'a' => $pkgpatchpath,
 				'b' => '.',
-				'm' => $arch
+				'm' => $arch,
+				%{$expand}
 	};
 
 	# Verify the patch file(s) exist and check some things
