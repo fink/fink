@@ -130,7 +130,7 @@ sub validate_info_file {
   $pkgdestdir = "$basepath/src/root-".$pkgfullname;
   
   @parts = split(/\//, $filename);
-  pop @parts;   # remove filename
+  $filename = pop @parts;   # remove filename
   $pkgpatchpath = join("/", @parts);
   
   unless ($pkgname) {
@@ -224,7 +224,7 @@ sub validate_info_file {
   # Verify the patch file exists, if specified
   $value = $properties->{patch};
   if ($value) {
-    $value = &expand_percent($value, $expand);
+    $value = $pkgpatchpath . "/" . &expand_percent($value, $expand);
     unless (-f $value) {
       print "Error: can't find patchfile \"$value\"\n";
       $looks_good = 0;

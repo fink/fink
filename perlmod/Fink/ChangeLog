@@ -1,3 +1,9 @@
+2001-08-28  Max Horn  <max@quendi.de>
+
+	* Validation.pm: made sure that validate also works when the
+	specified filename contains a path.
+
+	
 2001-08-26  Max Horn  <max@quendi.de>
 
 	* Validation.pm: New Module. Contains the code for validation of
