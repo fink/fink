@@ -4,6 +4,20 @@
 	  (using MasterFirst as long as the master mirror has not all files is
 	  causing more pain than it helps).
 
+2003-05-10  Rob Braun <bbraun@users.sourceforge.net>
+
+	* PkgVersion.pm: When doing a fetch-* --dry-run, and the source
+	  doesn't have a URL, ignore the entry.
+
+2003-05-07  Rob Braun <bbraun@users.sourceforge.net>
+
+	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm,
+	  Services.pm, Validation.pm: Remove hard coded references
+	  to 'powerpc'.  (Patch #732058)
+
+	* PkgVersion.pm, Validation.pm: Add %m for machine architecture
+	  string expansion.
+
 2003-05-04  Max Horn  <max@quendi.de>
 
 	* Bootstrap.pm: Added check_host and check_files, used by bootstrap.pl and
