@@ -1,5 +1,4 @@
-Generated from $Fink: readme.en.xml,v 1.1 2004/02/29 22:31:41 fingolfin Exp
-$
+Generated from $Fink: readme.en.xml,v 1.3 2004/03/12 09:25:16 michga Exp $
 
  Fink ReadMe
 =============
@@ -8,7 +7,7 @@ This is Fink, a package management system that aims to bring the full world
 of Open Source software to Darwin and Mac OS X.
 
 With the help of dpkg, it maintains a separate directory hierarchy. It
-downloads original source releases, patches them if neccessary, configures
+downloads original source releases, patches them if necessary, configures
 them for Darwin and compiles and installs them. The information about
 available packages and the necessary patches (the "package descriptions")
 are maintained separately, but are usually included with this distribution.
