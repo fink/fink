@@ -50,7 +50,7 @@ END { }       # module clean-up code here (global destructor)
 sub fetch_url {
   my $url = shift;
   my $destdir = shift || "$basepath/src";
-  my ($file, $params);
+  my ($file, $cmd);
   my ($http_proxy, $ftp_proxy);
 
   if (not -d $destdir) {
@@ -66,25 +66,51 @@ sub fetch_url {
     &execute("rm -f $file");
   }
 
-  $params = "";
-  if ($config->param_boolean("Verbose")) {
-    $params .= " --verbose";
-  } else {
-    $params .= " --non-verbose";
-  }
-  if ($config->param_boolean("ProxyPassiveFTP")) {
-    $params .= " --passive-ftp";
-  }
+  # set proxy env vars
   $http_proxy = $config->param_default("ProxyHTTP", "");
   if ($http_proxy) {
     $ENV{http_proxy} = $http_proxy;
+    $ENV{HTTP_PROXY} = $http_proxy;
   }
   $ftp_proxy = $config->param_default("ProxyFTP", "");
   if ($ftp_proxy) {
     $ENV{ftp_proxy} = $ftp_proxy;
+    $ENV{FTP_PROXY} = $ftp_proxy;
   }
 
-  if (&execute("wget $params $url") or not -f $file) {
+
+  $cmd = "";
+
+  # check if we have curl
+  if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
+    $cmd = "curl";
+    if (!$config->param_boolean("Verbose")) {
+      $cmd .= " -s -S";
+    }
+    if (!$config->param_boolean("ProxyPassiveFTP")) {
+      $cmd .= " -P -";
+    }
+    $cmd .= " -o $file"
+  }
+
+  # check if we have wget
+  if (!$cmd and (-x "$basepath/bin/wget" or -x "/usr/bin/wget")) {
+    $cmd = "wget";
+    if ($config->param_boolean("Verbose")) {
+      $cmd .= " --verbose";
+    } else {
+      $cmd .= " --non-verbose";
+    }
+    if ($config->param_boolean("ProxyPassiveFTP")) {
+      $cmd .= " --passive-ftp";
+    }
+  }
+
+  if (!$cmd) {
+    die "Can't locate a download program. Install either curl or wget.\n";
+  }
+
+  if (&execute("$cmd $url") or not -f $file) {
     return 1;
   }
   return 0;
