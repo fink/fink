@@ -269,9 +269,6 @@ sub initialize {
 				map { [$_, /source(\d*)/] } $self->params_matching('source\d+');;
 			# always have 'source', so now just insert it manually for correct order
 			foreach my $source_field ("source", @source_n_fields) {
-			    if ($self->{package} eq "docbook-dtd") {
-				print "doing $source_field\n";
-			    }
 				next if $self->{$source_field} eq "none";
 				$source_field =~ /source(\d*)/;
 				my $number = $1;
