@@ -1,0 +1,9 @@
+Package: libsigc++
+Version: 1.0.3
+Revision: 1
+Source: http://prdownloads.sourceforge.net/libsigc/libsigc++-1.0.3.tar.gz
+UpdateLibtool: true
+PatchScript: mv -f ltconfig ltmain.sh scripts
+ConfigureParams: --disable-shared
+SetCPPFLAGS: -traditional-cpp
+Maintainer: Jeremy Higgs <jhiggs@iprsystems.com>
