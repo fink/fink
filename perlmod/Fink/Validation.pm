@@ -583,7 +583,7 @@ sub validate_info_file {
 					}
 					my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
 					foreach (@shlib_deps) {
-						if (not /^\S+\s+\(>=\s*(\S+-\S+)\)$/) {
+						if (not /^[a-z%]\S*\s+\(>=\s*(\S+-\S+)\)$/) {
 							print "Warning: Malformed dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
 							$looks_good = 0;
 							next;

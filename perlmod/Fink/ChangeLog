@@ -1,5 +1,10 @@
 2004-12-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Warn is pkgname field of shlibs looks like a
+	version-number.
+
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Services.pm: Add import for POSIX functions. Move parsing of
 	scripts from execute_script() into new prepare_script() function.
 
