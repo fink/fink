@@ -312,7 +312,7 @@ sub bootstrap {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
 	my @plist = ("gettext", "tar", "dpkg-bootstrap");
-	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "ncurses-dev");
+	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
 	} elsif ("$]" == "5.006001") {
@@ -354,7 +354,6 @@ sub bootstrap {
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
-
 
 	print "\n";
 	&print_breaking("BOOTSTRAP PHASE ONE: download tarballs.");

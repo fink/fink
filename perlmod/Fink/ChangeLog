@@ -17,6 +17,10 @@
 	parameters.
 	* *.pm: Adjust prompt*() calls for new API.
 
+2005-02-06  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Bootstrap.pm: Replacing ncurses with libncurses5 for bootstraping
+
 2005-02-06  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Fix .deb-creation error checking.
