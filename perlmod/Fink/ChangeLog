@@ -1,8 +1,17 @@
+2005-01-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm, Services.pm: Changed "growl" to notify.  This
+	  will be replaced with something more configurable post-0.24.
+
+2005-01-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* *.pm: Updated POD validation errors.
+
 2005-01-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Slightly rearrange order of functions, for clarity;
 	expand documentation of inject_package.
-	
+
 2005-01-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Add documentation

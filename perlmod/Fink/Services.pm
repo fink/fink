@@ -50,7 +50,7 @@ BEGIN {
 					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &growl &call_queue_clear &call_queue_add);
+					  &notify &call_queue_clear &call_queue_add);
 }
 our @EXPORT_OK;
 
@@ -1294,12 +1294,12 @@ sub eval_conditional {
 }
 
 
-=item growl
+=item notify
 
-    growl($notificationName, $notificationTitle, $notificationDescription);
+    notify($notificationName, $notificationTitle, $notificationDescription);
 
 Notifies the system that $notificationName event occurred, if Growl is
-installed.
+installed.  Future versions will support other notification engines as well.
 
 Currently available notifications used by fink are:
 
@@ -1325,7 +1325,7 @@ One or more packages failed to be removed.
 
 =cut
 
-sub growl {
+sub notify {
 	eval {
 		require Mac::Growl;
 	};
@@ -1346,7 +1346,8 @@ sub growl {
 
 	eval {
 		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
-		#Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription, 0, -2, '/Users/ranger/Pictures/ranger_rick_fink.png');
+		# eventually, when we have a good picture  ;)
+		# Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription, 0, -2, '/Users/ranger/Pictures/ranger_rick_fink.png');
 		Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription);
 	};
 

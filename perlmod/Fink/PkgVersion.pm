@@ -29,7 +29,7 @@ use Fink::Services qw(&filename &execute
 					  &pkglist2lol &lol2pkglist
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
-					  &get_path &eval_conditional &growl &enforce_gcc);
+					  &get_path &eval_conditional &notify &enforce_gcc);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors binary_requested);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -2651,18 +2651,18 @@ sub phase_activate {
 	my @deb_installable = map { $_->find_debfile() } @installable;
 	if (&execute("dpkg -i @deb_installable")) {
 		if (@installable == 1) {
-			growl('finkPackageInstallationFailed', 'Fink installation failed.', "can't install package ".$installable[0]->get_fullname());
+			notify('finkPackageInstallationFailed', 'Fink installation failed.', "can't install package ".$installable[0]->get_fullname());
 			die "can't install package ".$installable[0]->get_fullname()."\n";
 		} else {
-			growl('finkPackageInstallationFailed', 'Fink installation of ' . int(@installable) . ' packages failed.',
+			notify('finkPackageInstallationFailed', 'Fink installation of ' . int(@installable) . ' packages failed.',
 				"can't batch-install packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
 			die "can't batch-install packages: @deb_installable\n";
 		}
 	} else {
 		if (@installable == 1) {
-			growl('finkPackageInstallationPassed', 'Fink installation passed.', "installed " . $installable[0]->get_fullname());
+			notify('finkPackageInstallationPassed', 'Fink installation passed.', "installed " . $installable[0]->get_fullname());
 		} else {
-			growl('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
+			notify('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
 		}
 	}
 
@@ -2681,18 +2681,18 @@ sub phase_deactivate {
 		                "This will attempt to remove the package(s) specified as " .
 		                "well as ALL packages that depend on it.");
 		if (@packages == 1) {
-			growl('finkPackageRemovalFailed', 'Fink removal failed.', "can't remove package ".$packages[0]);
+			notifyl('finkPackageRemovalFailed', 'Fink removal failed.', "can't remove package ".$packages[0]);
 			die "can't remove package ".$packages[0]."\n";
 		} else {
-			growl('finkPackageRemovalFailed', 'Fink removal of ' . int(@packages) . ' packages failed.',
+			notifyl('finkPackageRemovalFailed', 'Fink removal of ' . int(@packages) . ' packages failed.',
 				"can't batch-remove packages:\n  " . join("\n  ", @packages));
 			die "can't batch-remove packages: @packages\n";
 		}
 	} else {
 		if (@packages == 1) {
-			growl('finkPackageRemovalPassed', 'Fink removal passed.', "removed " . $packages[0]);
+			notify('finkPackageRemovalPassed', 'Fink removal passed.', "removed " . $packages[0]);
 		} else {
-			growl('finkPackageRemovalPassed', 'Fink removal of ' . int(@packages) . ' packages passed.',
+			notify('finkPackageRemovalPassed', 'Fink removal of ' . int(@packages) . ' packages passed.',
 				"batch-removed packages:\n  " . join("\n  ", @packages));
 		}
 	}
@@ -3014,7 +3014,7 @@ END
 
 	# start with a clean the environment
 	# uncomment this to be able to use distcc -- not officially supported!
-	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	%script_env = ("HOME" => $ENV{"HOME"});
 
 	# add system path
