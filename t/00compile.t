@@ -32,7 +32,7 @@ foreach my $file (sort { $a cmp $b } @modules) {
     (my $module = $file) =~ s{.*perlmod/}{};
     $module =~ s{/}{::}g;
     $module =~ s/\.pm//;
-    eval qq{ package Foo; require $module };
+    eval qq{ package Foo; require '$module' };
     is( $@, '', "require $module" );
     is_deeply( [sort @original_symbols], [sort keys %Foo::], 
                '  namespace not polluted' );
