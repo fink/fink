@@ -149,8 +149,8 @@ sub initialize {
 		$parentdestdir = $destdir;
 		$self->{_splitoffs} = [];
 	}
-	$self->{package_invariant} = $pkgname unless exists $self->{package_invariant};  # virtual packages don't know to set this field
-	$expand = { 'n' => $self->{package_invariant},
+
+	$expand = { 'n' => $self->param_default("package_invariant", $pkgname),
 				'Vn'=> $pkgname,
 				'e' => $epoch,
 				'v' => $version,

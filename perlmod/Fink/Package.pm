@@ -524,13 +524,12 @@ sub setup_package_object {
 				push @pkgversions, Fink::Package->setup_package_object($this_properties, $filename);
 			};
 			return @pkgversions;
-		} else {
-			# we have only single-value subtypes
-#			print "Type: ",$properties->{type},"\n";
-			my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
-			foreach (keys %$type_hash) {
-				( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-			}
+		}
+		# we have only single-value subtypes
+#		print "Type: ",$properties->{type},"\n";
+		my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
+		foreach (keys %$type_hash) {
+			( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 		}
 	}
 #	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
@@ -546,6 +545,8 @@ sub setup_package_object {
 		$properties->{package_invariant} = &expand_percent($properties->{package_invariant},\%pkg_expand, "$filename \"package\"");
 	}
 
+	# must always call expand_percent even if no Type in order to make
+	# sure Maintainer doesn't have %type_*[] or other bad % constructs
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
 	# get/create package object
