@@ -1,5 +1,9 @@
 2001-11-01  Christoph Pfisterer  <cp@chrisp.de>
 
+	* ctan: New mirror list for the Comprehensive TeX Archive
+	Network.
+	* _list: Added ctan entries.
+
 	* _keys: Added entries for Costa Rica and Russia. The "sam" entry
 	was changed from "South America" to "South America, Middle America
 	and Caribbean".
