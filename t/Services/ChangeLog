@@ -1,3 +1,9 @@
+2005-1-11  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: execute() may fork a process that needs
+	to find Services.pm, so make a copy of that file that is
+	guaranteed to be readable by "nobody".
+
 2005-1-5  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: delete expected tempfile.

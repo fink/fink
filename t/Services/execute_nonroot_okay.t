@@ -33,6 +33,20 @@ if (!defined $tmpdir or !length $tmpdir or !-d $tmpdir) {
     die "\n";
 }
 chmod 0755, $tmpdir;  # must have only root be able to write to dir but all read
+
+# Need a world-readable Fink/Services.pm but don't want to go changing
+# perms on the whole hierarchy leading to whereever user is running test,
+# so make a copy in a known place with known perms.
+if (system qq{ mkdir "$tmpdir/Fink" && cp ../perlmod/Fink/Services.pm "$tmpdir/Fink" }) {
+    diag "Could not create temp Services.pm; using local copy instead.\nDepending on permissions and the presence of an existing Fink, this\nsituation may result in an apparently-missing Services.pm.\n";
+} else {
+    chmod 0755, "$tmpdir/Fink";
+    chmod 0644, "$tmpdir/Fink/Services.pm";
+    $ENV{'PERL5LIB'} = defined $ENV{'PERL5LIB'}  # so subprocesses see it
+	? "$tmpdir:$ENV{'PERL5LIB'}"
+	: $tmpdir;
+}
+
 chdir "/tmp";         # set local dir to where user="nobody" can start shells
 
 # 6
