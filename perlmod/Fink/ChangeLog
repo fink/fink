@@ -5,7 +5,7 @@
 	* Bootstrap.pm, SelfUpdate.pm: Add gettext-bin to the bootstrap and
 	update lists (in preparation for making it non-essential)
 	* Bootstrap.pm: Move the code which enables the 10.3 distribution to
-	a new branch, "test_10.3"
+	a new branch, "test_10_3"
 	
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
