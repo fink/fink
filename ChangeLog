@@ -1,5 +1,7 @@
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
+	* fink.in: Use methods of FinkVersion if possible.
+
 	* bootstrap.pl: Removed special treatment of base-files. Use
 	fink.info.in instead of packages/fink.in to generate the fink
 	package description. Don't create FinkVersion.pm.

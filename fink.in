@@ -28,8 +28,8 @@ use lib "@BASEPATH@/lib/perl5";
 
 if ($#ARGV >= 0 and $ARGV[0] =~ /^-?-v(ersion)?$/i) {
   # version of the package manager
-  use Fink::FinkVersion;
-  print "Package manager version: $fink_version\n";
+  require Fink::FinkVersion;
+  print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
 
   # distribution version
   my $dv;
