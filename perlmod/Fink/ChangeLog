@@ -1,3 +1,18 @@
+2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: More changes, split up system-xfree86 into
+	  system-xfree86, system-xfree86-shlibs, and system-xfree86-dev.
+
+2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Totally reworked the provides of the system-xfree86
+	  virtual packages, so that "x11" is provided when the shared libraries
+	  and an X server are present, and "x11-dev" is provided when headers
+	  and development libraries are present.  This will require changes to
+	  the BuildDepends: of all x11-using packages.  This is a major change
+	  (considering how many files it will end up touching) so this change
+	  is going into HEAD.
+
 2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Add --delete since it is not implied by 

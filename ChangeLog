@@ -1,3 +1,9 @@
+2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: Make fink-virtual-pkgs print builddependsonly
+	  packages on the command-line when not being called in "dpkg" or
+	  "apt" mode (for debugging).
+
 2003-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.17.0
