@@ -582,8 +582,8 @@ diff -ruN apt-0.5.4/cmdline/apt-cache.cc apt-0.5.4-patched/cmdline/apt-cache.cc
     // Iterate over all the package files and write them out.
     char *Buffer = new char[Cache.HeaderP->MaxVerFileSize+10];
 diff -ruN apt-0.5.4/cmdline/apt-get.cc apt-0.5.4-patched/cmdline/apt-get.cc
---- apt-0.5.4/cmdline/apt-get.cc	Sun Jul  1 18:59:04 2001
-+++ apt-0.5.4-patched/cmdline/apt-get.cc	Sun Nov  9 14:02:47 2003
+--- apt-0.5.4/cmdline/apt-get.cc	2001-07-01 18:59:04.000000000 -0400
++++ apt-0.5.4-patched/cmdline/apt-get.cc	2004-10-12 13:48:09.000000000 -0400
 @@ -113,6 +113,8 @@
        return true;
     }
@@ -609,6 +609,107 @@ diff -ruN apt-0.5.4/cmdline/apt-get.cc apt-0.5.4-patched/cmdline/apt-get.cc
  		     else
  			out << _("but it is a virtual package");
  		  }		  
+@@ -569,7 +578,9 @@
+       return false;
+    
+    // Nothing is broken
+-   if (DCache->BrokenCount() == 0 || AllowBroken == true)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (DCache->BrokenCount() == 0 || AllowBroken == true
++       || _config->FindB("APT::Get::Ignore-Breakage") == true)
+       return true;
+ 
+    // Attempt to fix broken things
+@@ -634,7 +645,9 @@
+    Stats(c1out,Cache);
+    
+    // Sanity check
+-   if (Cache->BrokenCount() != 0)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (Cache->BrokenCount() != 0
++       && _config->FindB("APT::Get::Ignore-Breakage",false) == false)
+    {
+       ShowBroken(c1out,Cache,false);
+       return _error->Error("Internal Error, InstallPackages was called with broken packages!");
+@@ -1019,7 +1032,9 @@
+       ExpectedInst++;
+    
+    // Install it with autoinstalling enabled.
+-   if (State.InstBroken() == true && BrokenFix == false)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (State.InstBroken() == true && BrokenFix == false
++      && _config->FindB("APT::Get::Ignore-Breakage") == false)
+       Cache.MarkInstall(Pkg,true);
+    return true;
+ }
+@@ -1366,7 +1381,9 @@
+    /* If we are in the Broken fixing mode we do not attempt to fix the
+       problems. This is if the user invoked install without -f and gave
+       packages */
+-   if (BrokenFix == true && Cache->BrokenCount() != 0)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (BrokenFix == true && Cache->BrokenCount() != 0
++       && _config->FindB("APT::Get::Ignore-Breakage") == false)
+    {
+       c1out << _("You might want to run `apt-get -f install' to correct these:") << endl;
+       ShowBroken(c1out,Cache,false);
+@@ -1376,11 +1393,13 @@
+    
+    // Call the scored problem resolver
+    Fix.InstallProtect();
+-   if (Fix.Resolve(true) == false)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (_config->FindB("APT::Get::Ignore-Breakage") == false && Fix.Resolve(true) == false)
+       _error->Discard();
+ 
+    // Now we check the state of the packages,
+-   if (Cache->BrokenCount() != 0)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (Cache->BrokenCount() != 0 && _config->FindB("APT::Get::Ignore-Breakage") == false)
+    {
+       c1out << 
+        _("Some packages could not be installed. This may mean that you have\n" 
+@@ -2057,6 +2076,8 @@
+    _config->Set("APT::Get::Simulate",false);
+    _config->Set("APT::Get::Assume-Yes",false);
+    _config->Set("APT::Get::Fix-Broken",false);
++   // FINK LOCAL added APT::Get::Ignore-Breakage
++   _config->Set("APT::Get::Ignore-Breakage",false);
+    _config->Set("APT::Get::Force-Yes",false);
+    _config->Set("APT::Get::APT::Get::No-List-Cleanup",true);
+ }
+@@ -2094,6 +2115,8 @@
+       {'y',"yes","APT::Get::Assume-Yes",0},
+       {'y',"assume-yes","APT::Get::Assume-Yes",0},      
+       {'f',"fix-broken","APT::Get::Fix-Broken",0},
++      // FINK LOCAL added APT::Get::Ignore-Breakage
++      {0,"ignore-breakage","APT::Get::Ignore-Breakage",0},
+       {'u',"show-upgraded","APT::Get::Show-Upgraded",0},
+       {'m',"ignore-missing","APT::Get::Fix-Missing",0},
+       {'t',"target-release","APT::Default-Release",CommandLine::HasArg},
+@@ -2151,6 +2174,22 @@
+       ShowHelp(CmdL);
+       return 0;
+    }
++
++   /* FINK LOCAL begin */
++   if (_config->FindB("APT::Get::Ignore-Breakage",false) == true) {
++     if (_config->FindB("APT::Get::Print-URIs",false) == false &&
++	 _config->FindB("APT::Get::Download-Only",false) == false) {
++       _error->Error("--ignore-breakage can only be used with --print-uris or --download-only");
++       _error->DumpErrors();
++       return 100;
++     }
++     if (strcmp(CmdL.FileList[0],"install") != 0) {
++       _error->Error("--ignore-breakage can only be used with apt-get install");
++       _error->DumpErrors();
++       return 100;
++     }
++   }
++   /* FINK LOCAL end */
+    
+    // Deal with stdout not being a tty
+    if (ttyname(STDOUT_FILENO) == 0 && _config->FindI("quiet",0) < 1)
 diff -ruN apt-0.5.4/configure apt-0.5.4-patched/configure
 --- apt-0.5.4/configure	Sat Aug 18 20:46:43 2001
 +++ apt-0.5.4-patched/configure	Sun Nov  9 14:02:48 2003
@@ -648,6 +749,220 @@ diff -ruN apt-0.5.4/configure.in apt-0.5.4-patched/configure.in
  
 -AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile:buildlib/makefile.in,make -s dirs)
 +AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile.wrap:buildlib/makefile.in,make -f makefile.wrap -s dirs)
+diff -ruN apt-0.5.4/doc/apt-cache.8 apt-0.5.4-patched/doc/apt-cache.8
+--- apt-0.5.4/doc/apt-cache.8	2001-08-18 20:48:24.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-cache.8	2004-10-07 01:08:45.000000000 -0400
+@@ -277,16 +277,16 @@
+ option. The syntax is \fB-o Foo::Bar=bar\fR.
+ .SH "FILES"
+ .TP
+-\fB\fI/etc/apt/sources.list\fB\fR
++\fB\fI@PREFIX@/etc/apt/sources.list\fB\fR
+ locations to fetch packages from.
+ Configuration Item: Dir::Etc::SourceList.
+ .TP
+-\fB\fI/var/lib/apt/lists/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/\fB\fR
+ storage area for state information for each package resource specified in
+ \fB\fIsources.list\fB\fR(5)
+ Configuration Item: Dir::State::Lists.
+ .TP
+-\fB\fI/var/lib/apt/lists/partial/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/partial/\fB\fR
+ storage area for state information in transit.
+ Configuration Item: Dir::State::Lists (implicit partial).
+ .SH "SEE ALSO"
+diff -ruN apt-0.5.4/doc/apt-cdrom.8 apt-0.5.4-patched/doc/apt-cdrom.8
+--- apt-0.5.4/doc/apt-cdrom.8	2001-08-18 20:48:25.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-cdrom.8	2004-10-07 01:10:19.000000000 -0400
+@@ -32,7 +32,7 @@
+ 
+ APT uses a CDROM ID to track which disc is currently in the drive and
+ maintains a database of these IDs in 
+-\fI/var/lib/apt/cdroms.list\fR
++\fI@PREFIX@/var/lib/apt/cdroms.list\fR
+ .TP
+ \fBident\fR
+ A debugging tool to report the identity of the current disc as well
+diff -ruN apt-0.5.4/doc/apt-config.8 apt-0.5.4-patched/doc/apt-config.8
+--- apt-0.5.4/doc/apt-config.8	2001-08-18 20:48:27.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-config.8	2004-10-07 01:09:29.000000000 -0400
+@@ -13,7 +13,7 @@
+ .PP
+ \fBapt-config\fR is an internal program used by various portions of
+ the APT suite to provide consistent configurability. It accesses the main 
+-configuarion file \fI/etc/apt/apt.conf\fR in a manner that is 
++configuarion file \fI@PREFIX@/etc/apt/apt.conf\fR in a manner that is 
+ easy to use by scripted applications.
+ .PP
+ Unless the \fB-h\fR, or \fB--help\fR option is given one of the
+diff -ruN apt-0.5.4/doc/apt-get.8 apt-0.5.4-patched/doc/apt-get.8
+--- apt-0.5.4/doc/apt-get.8	2001-08-18 20:48:25.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-get.8	2004-10-07 01:16:25.000000000 -0400
+@@ -20,7 +20,7 @@
+ \fBupdate\fR
+ update is used to resynchronize the package index files from
+ their sources. The indexes of available packages are fetched from the
+-location(s) specified in \fI/etc/apt/sources.list\fR.
++location(s) specified in \fI@PREFIX@/etc/apt/sources.list\fR.
+ For example, when using a Debian archive, this command retrieves and
+ scans the \fIPackages.gz\fR files, so that information about new 
+ and updated packages is available. An update should always be 
+@@ -31,7 +31,7 @@
+ \fBupgrade\fR
+ upgrade is used to install the newest versions of all packages 
+ currently installed on the system from the sources enumerated in
+-\fI/etc/apt/sources.list\fR. Packages currently installed with 
++\fI@PREFIX@/etc/apt/sources.list\fR. Packages currently installed with 
+ new versions available are retrieved and upgraded; under no circumstances 
+ are currently installed packages removed, or packages not already installed 
+ retrieved and installed. New versions of currently installed packages that 
+@@ -54,7 +54,7 @@
+ with new versions of packages; \fBapt-get\fR has a "smart" conflict 
+ resolution system, and it will attempt to upgrade the most important 
+ packages at the expense of less important ones if necessary. 
+-The \fI/etc/apt/sources.list\fR file contains a list of locations 
++The \fI@PREFIX@/etc/apt/sources.list\fR file contains a list of locations 
+ from which to retrieve desired package files.
+ .TP
+ \fBinstall\fR
+@@ -63,7 +63,7 @@
+ filename (for instance, in a Debian GNU/Linux system, libc6 would be the 
+ argument provided, not em(libc6_1.9.6-2.deb)). All packages required 
+ by the package(s) specified for installation will also be retrieved and 
+-installed. The \fI/etc/apt/sources.list\fR file is used to locate 
++installed. The \fI@PREFIX@/etc/apt/sources.list\fR file is used to locate 
+ the desired packages. If a hyphen is appended to the package name (with 
+ no intervening space), the identified package will be removed if it is 
+ installed. Similarly a plus sign can be used to designate a package to 
+@@ -75,7 +75,7 @@
+ to select. This will cause that version to be located and selected for
+ install. Alternatively a specific distribution can be selected by 
+ following the package name with a slash and the version of the 
+-distribution or the Archive name (stable, frozen, unstable).
++distribution or the Archive name (@DIST@/release or @DIST@/current).
+ 
+ Both of the version selection mechanisms can downgrade packages and must
+ be used with care.
+@@ -126,8 +126,8 @@
+ \fBclean\fR
+ clean clears out the local repository of retrieved package 
+ files. It removes everything but the lock file from 
+-\fI/var/cache/apt/archives/\fR and 
+-\fI/var/cache/apt/archive/partial/\fR. When APT is used as a 
++\fI@PREFIX@/var/cache/apt/archives/\fR and 
++\fI@PREFIX@/var/cache/apt/archive/partial/\fR. When APT is used as a 
+ \fBdselect\fR(8) method, clean is run automatically.
+ Those who do not use dselect will likely want to run apt-get clean
+ from time to time to free up disk space.
+@@ -169,6 +169,17 @@
+ error in some situations. 
+ Configuration Item: APT::Get::Fix-Broken.
+ .TP
++\fB--ignore-breakage\fR
++For mode \fBinstall\fR, ignore dependency problems. This option is
++useful if you want to perform actions on just a particular package,
++not its whole dependency tree. It must be used in conjunction with
++\fB--download-only\fR or \fB--print-uris\fR.  Configuration Item:
++APT::Get::Ignore-Breakage.
++
++Note: The \fB--ignore-breakage\fR option was added by The Fink Project
++and hence is only available in the \fBapt-get\fR provided by Fink's
++\fBapt\fR package.
++.TP
+ \fB-m\fR
+ .TP
+ \fB--ignore-missing\fR
+@@ -284,7 +295,7 @@
+ \fB--list-cleanup\fR
+ This option defaults to on, use --no-list-cleanup to turn it 
+ off. When on \fBapt-get\fR will automatically manage the contents of 
+-\fI/var/lib/apt/lists\fR to ensure that obsolete files are erased. 
++\fI@PREFIX@/var/lib/apt/lists\fR to ensure that obsolete files are erased. 
+ The only reason to turn it off is if you frequently change your source 
+ list. 
+ Configuration Item: APT::Get::List-Cleanup.
+@@ -349,36 +360,36 @@
+ option. The syntax is \fB-o Foo::Bar=bar\fR.
+ .SH "FILES"
+ .TP
+-\fB\fI/etc/apt/sources.list\fB\fR
++\fB\fI@PREFIX@/etc/apt/sources.list\fB\fR
+ locations to fetch packages from.
+ Configuration Item: Dir::Etc::SourceList.
+ .TP
+-\fB\fI/etc/apt/apt.conf\fB\fR
++\fB\fI@PREFIX@/etc/apt/apt.conf\fB\fR
+ APT configuration file.
+ Configuration Item: Dir::Etc::Main.
+ .TP
+-\fB\fI/etc/apt/apt.conf.d/\fB\fR
++\fB\fI@PREFIX@/etc/apt/apt.conf.d/\fB\fR
+ APT configuration file fragments
+ Configuration Item: Dir::Etc::Parts.
+ .TP
+-\fB\fI/etc/apt/preferences\fB\fR
++\fB\fI@PREFIX@/etc/apt/preferences\fB\fR
+ version preferences file
+ Configuration Item: Dir::Etc::Preferences.
+ .TP
+-\fB\fI/var/cache/apt/archives/\fB\fR
++\fB\fI@PREFIX@/var/cache/apt/archives/\fB\fR
+ storage area for retrieved package files.
+ Configuration Item: Dir::Cache::Archives.
+ .TP
+-\fB\fI/var/cache/apt/archives/partial/\fB\fR
++\fB\fI@PREFIX@/var/cache/apt/archives/partial/\fB\fR
+ storage area for package files in transit.
+ Configuration Item: Dir::Cache::Archives (implicit partial). 
+ .TP
+-\fB\fI/var/lib/apt/lists/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/\fB\fR
+ storage area for state information for each package resource specified in
+ \fB\fIsources.list\fB\fR(5)
+ Configuration Item: Dir::State::Lists.
+ .TP
+-\fB\fI/var/lib/apt/lists/partial/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/partial/\fB\fR
+ storage area for state information in transit.
+ Configuration Item: Dir::State::Lists (implicit partial).
+ .SH "SEE ALSO"
+diff -ruN apt-0.5.4/doc/apt_preferences.5 apt-0.5.4-patched/doc/apt_preferences.5
+--- apt-0.5.4/doc/apt_preferences.5	2001-08-18 20:48:28.000000000 -0400
++++ apt-0.5.4-patched/doc/apt_preferences.5	2004-10-07 01:12:21.000000000 -0400
+@@ -12,7 +12,7 @@
+ It is meant to be user editable and manipulatable from software. The file
+ consists of a number of records formed like the dpkg status file, space
+ seperated sections of text with at the start of each line tags seperated 
+-by a colon. It is stored in \fI/etc/apt/preferences\fR.
++by a colon. It is stored in \fI@PREFIX@/etc/apt/preferences\fR.
+ .SH "VERSIONING"
+ .PP
+ One purpose of the preferences file is to let the user select which version
+diff -ruN apt-0.5.4/doc/sources.list.5 apt-0.5.4-patched/doc/sources.list.5
+--- apt-0.5.4/doc/sources.list.5	2001-08-18 20:48:26.000000000 -0400
++++ apt-0.5.4-patched/doc/sources.list.5	2004-10-07 01:06:21.000000000 -0400
+@@ -11,7 +11,7 @@
+ The package resource list is used to locate archives of the package
+ distribution system in use on the system. At this time, this manual page
+ documents only the packaging system used by the Debian GNU/Linux system.
+-This control file is located in \fI/etc/apt/sources.list\fR
++This control file is located in \fI@PREFIX@/etc/apt/sources.list\fR
+ .PP
+ The source list is designed to support any number of active sources and a
+ variety of source media. The file lists one source per line, with the
+@@ -25,9 +25,8 @@
+ .PP
+ The deb type describes a typical two-level Debian archive,
+ \fIdistribution/component\fR. Typically, distribution is 
+-generally one of stable, unstable, or 
+-frozen, while component is one of main, 
+-contrib, non-free, or non-us. The 
++generally one of @DIST@/release or @DIST@/current,
++while component is one of main or crypto. The
+ deb-src type describes a debian distribution's source code in 
+ the same form as the deb type. A deb-src line is 
+ required to fetch source indexes.
 diff -ruN apt-0.5.4/dselect/install apt-0.5.4-patched/dselect/install
 --- apt-0.5.4/dselect/install	Tue Feb 20 02:03:17 2001
 +++ apt-0.5.4-patched/dselect/install	Sun Nov  9 14:02:48 2003
@@ -683,7 +998,7 @@ diff -ruN apt-0.5.4/dselect/setup apt-0.5.4-patched/dselect/setup
  my @known_access         = ('http', 'ftp', 'file');
 -my @typical_distributions = ('stable', 'unstable', 'frozen', 'non-US');
 -my @typical_components    = ('main', 'contrib', 'non-free');
-+my @typical_distributions = ('10.3/release', '10.3/current');
++my @typical_distributions = ('@DIST@/release', '@DIST@/current');
 +my @typical_components    = ('main', 'crypto');
  
  my %known_access           = map {($_,$_)} @known_access;
@@ -696,7 +1011,7 @@ diff -ruN apt-0.5.4/dselect/setup apt-0.5.4-patched/dselect/setup
 -  $distribution = "stable" unless $distribution;
 -  $components   = "main contrib non-free" unless $components;
 +  $urn          = "http://us.dl.sourceforge.net/fink/direct_download" unless $urn;
-+  $distribution = "10.3/release" unless $distribution;
++  $distribution = "@DIST@/release" unless $distribution;
 +  $components   = "main" unless $components;
  
      
@@ -781,41 +1096,6 @@ diff -ruN apt-0.5.4/methods/ftp.cc apt-0.5.4-patched/methods/ftp.cc
        if (getsockopt(DataFd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
  	 return _error->Errno("getsockopt","Failed");
        if (Err != 0)
-@@ -739,7 +739,7 @@
-    
-    // Determine the name to send to the remote
-    struct sockaddr_storage Addr;
--   socklen_t AddrLen = sizeof(Addr);
-+   int AddrLen = sizeof(Addr);
-    if (getsockname(DataListenFd,(sockaddr *)&Addr,&AddrLen) < 0)
-       return _error->Errno("getsockname","Could not determine the socket's name");
- 
-@@ -815,7 +815,7 @@
-       
-    // Accept the connection
-    struct sockaddr_in Addr;
--   socklen_t Len = sizeof(Addr);
-+   int Len = sizeof(Addr);
-    DataFd = accept(DataListenFd,(struct sockaddr *)&Addr,&Len);
-    if (DataFd < 0)
-       return _error->Errno("accept","Unable to accept connection");
-diff -ruN apt-0.5.4/methods/ftp.h apt-0.5.4-patched/methods/ftp.h
---- apt-0.5.4/methods/ftp.h	Tue Mar  6 02:15:29 2001
-+++ apt-0.5.4-patched/methods/ftp.h	Sun Nov  9 14:02:48 2003
-@@ -26,11 +26,11 @@
-    
-    // Generic Peer Address
-    struct sockaddr_storage PeerAddr;
--   socklen_t PeerAddrLen;
-+   int PeerAddrLen;
-    
-    // Generic Server Address (us)
-    struct sockaddr_storage ServerAddr;
--   socklen_t ServerAddrLen;
-+   int ServerAddrLen;
-    
-    // Private helper functions
-    bool ReadLine(string &Text);      
 diff -ruN apt-0.5.4/methods/rfc2553emu.h apt-0.5.4-patched/methods/rfc2553emu.h
 --- apt-0.5.4/methods/rfc2553emu.h	Sun Jun 18 02:04:45 2000
 +++ apt-0.5.4-patched/methods/rfc2553emu.h	Sun Nov  9 14:02:48 2003
