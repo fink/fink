@@ -1043,7 +1043,6 @@ sub real_install {
   PACKAGELOOP: foreach $pkgname (sort keys %deps) {
       $item = $deps{$pkgname};
       next if (($item->[4] & 2) == 2);   # already installed
-      next if $already_activated{$pkgname};
       $all_installed = 0;
 
       # check dependencies
@@ -1057,6 +1056,11 @@ sub real_install {
 
       $any_installed = 1;
       $package = $item->[2];
+
+      # Mark item as done (FIXME - why can't we just delete it from %deps?)
+      $item->[4] |= 2;
+
+      next if $already_activated{$pkgname};
 
       # Determine the splitoff parent of this package, if any (used later on)
       if (exists $package->{_splitoffs} and @{$package->{_splitoffs}} > 0) {
@@ -1100,9 +1104,6 @@ sub real_install {
 	$already_activated{$pkgname} = 1;
       }
       
-      # Mark item as done (FIXME - why can't we just delete it from %deps?)
-      $item->[4] |= 2;
-
       # Mark the package and all its "relatives" as being rebuilt if we just
       # did perform a build - this way we won't rebuild packages twice when
       # we process another splitoff of the same master.

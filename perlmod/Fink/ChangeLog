@@ -1,3 +1,8 @@
+2002-10-15  Max Horn  <max@quendi.de>
+
+	* Engine.pm: Fixed a wrong 'circular dependencies' error caused by my 
+	  recent changes.
+
 2002-10-14  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Recognize Tar??FilesRename field
