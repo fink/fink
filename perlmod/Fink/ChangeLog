@@ -1,3 +1,11 @@
+2004-01-02  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* PkgVersion.pm: Modified method get_splitoffs to return list of
+	splitoff packages, not just names. No need for passing package
+	name to method belonging to a package. Moved method to other
+	accessor methods.
+	* Engine.pm: Modification to use changed get_splitoffs method.
+
 2004-01-01  Remi Mommsen  <remigius.mommsen@cern.ch>
 
 	* PkgVersion.pm: Added two methods to access lists of sources and 

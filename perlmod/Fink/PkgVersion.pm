@@ -471,7 +471,7 @@ sub get_source {
 
 sub get_source_list {
 	my $self = shift;
-	my @list = {};
+	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
 	        push(@list, get_source($self, $index));
 	}
@@ -497,7 +497,7 @@ sub get_tarball {
 
 sub get_tarball_list {
 	my $self = shift;
-	my @list = {};
+	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
 	        push(@list, get_tarball($self, $index));
 	}
@@ -567,6 +567,34 @@ sub get_build_directory {
 
 	$self->{_expand}->{b} = "$buildpath/".$self->{_builddir};
 	return $self->{_builddir};
+}
+
+sub get_splitoffs {
+	my $self = shift;
+	my $include_parent = shift || 0;
+	my $include_self = shift || 0;
+	my @list = ();
+	my ($splitoff, $parent);
+
+	if (exists $self->{parent}) {
+		$parent = $self->{parent};
+	} else {
+	        $parent = $self;
+	}
+
+	if ($include_parent) {
+		unless ($self eq $parent && not $include_self) {
+			push(@list, $parent);
+		}
+	}
+
+	foreach $splitoff (@{$parent->{_splitoffs}}) {
+		unless ($self eq $splitoff && not $include_self) {
+			push(@list, $splitoff);
+		}
+	}
+
+	return @list;
 }
 
 ### generate description
@@ -2250,43 +2278,6 @@ sub get_perl_dir_arch {
 	}
 
 	return ($perldirectory, $perlarchdir,$perlcmd);
-}
-
-### Return all pkg names in a single info file
-
-sub get_splitoffs {
-	my $self = shift;
-	my $name = shift;
-	my $include_parent = shift || 0;
-	my $include_self = shift || 0;
-	my (@splits) = ();
-	my ($pkg, $parent, $i, $package, $split);
-
-	unless ($name) {
-		die("Must specify at least one package name.\n");
-	}
-
-	$package = Fink::PkgVersion->match_package($name);
-
-	if (exists $package->{parent}) {
-		$package = $package->{parent};
-	}
-
-	if ($include_parent) {
-		$pkg = $package->param('package');
-		unless ($name eq $pkg && not $include_self) {
-			push(@splits, $pkg);
-		}
-	}
-
-	foreach $split (@{$package->{_splitoffs}}) {
-		$pkg = $split->param("package");
-		unless ($name eq $pkg && not $include_self) {
-			push(@splits, $pkg);
-		}
-	}
-
-	return @splits;
 }
 
 ### EOF

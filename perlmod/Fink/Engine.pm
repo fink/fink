@@ -1566,11 +1566,11 @@ sub cmd_splitoffs {
 			next;
 		}
 
-		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
-		if ($arg ne $pkgs[0]) {
+		@pkgs = $package->get_splitoffs(1, 1);
+		if ($arg ne $pkgs[0]->get_name()) {
 			print "$arg is a child, it's parent ";
 		}
-		printf("%s has ", $pkgs[0]);
+		printf("%s has ", $pkgs[0]->get_name());
 		unless ($pkgs[1]) {
 			printf("no children.\n");
 		} else {
@@ -1581,7 +1581,7 @@ sub cmd_splitoffs {
 			print ":\n";
 			foreach $pkg (@pkgs) {
 				unless ($pkg eq $pkgs[0]) {
-					print "\t-> $pkg\n";
+					printf("\t-> %s\n", $pkg->get_name());
 				}
 			}
 		}
@@ -1602,9 +1602,9 @@ sub cmd_showparent {
 			next;
 		}
 
-		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
-		unless ($pkgs[0] eq $arg) {
-			printf("%s's parent is $pkgs[0].\n", $arg, $pkgs[0]);
+		@pkgs = $package->get_splitoffs(1, 1);
+		unless ($arg eq $pkgs[0]->get_name()) {
+			printf("%s's parent is %s.\n", $arg, $pkgs[0]->get_name());
 		} else {
 			printf("%s is the parent.\n", $arg);
 		}
