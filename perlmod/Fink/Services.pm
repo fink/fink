@@ -319,8 +319,10 @@ sub print_breaking {
 	my $s = shift;
 	my $linebreak = shift;
 	$linebreak = 1 unless defined $linebreak;
-	my $prefix1 = shift || "";
-	my $prefix2 = shift || $prefix1;
+	my $prefix1 = shift;
+	$prefix1 = "" unless defined $prefix1;
+	my $prefix2 = shift;
+	$prefix2 = $prefix1 unless defined $prefix2;
 	my ($pos, $t, $reallength, $prefix, $first);
 
 	chomp($s);

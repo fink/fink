@@ -1,3 +1,10 @@
+2003-11-21  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Conversion to using only print_breaking
+	(removal of print_breaking_prefix/print_breaking_twoprefix)
+	changed the meaning of $prefix1 and $prefix2 (defined
+	vs. logically true). Changed it back.
+
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 		
 	* FinkVersion.pm.in: Removing hard coded @BASEPATH@.  Using Fink::Config
