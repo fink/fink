@@ -1,3 +1,8 @@
+2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Added condition to display Information line on reading
+	shlibs.  I will no longer appear between builds.
+
 2003-12-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* PkgVersion.pm: Added force switch to resolve_depends so duplicate

@@ -1517,7 +1517,7 @@ sub real_install {
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 			# Rebuild Shlibs db before next build
 			Fink::Shlibs->forget_shlibs();
-			Fink::Shlibs->require_shlibs();
+			Fink::Shlibs->require_shlibs(1);
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {
