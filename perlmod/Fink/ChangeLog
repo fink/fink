@@ -1,3 +1,7 @@
+2004-03-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Be careful about permissions when creating directories
+
 2004-03-28  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: When extracting tarballs, do not preserve
