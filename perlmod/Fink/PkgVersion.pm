@@ -998,6 +998,7 @@ sub phase_unpack {
     $renamelist = "";
 
     # Determine the rename list (if any)
+    $tar = "/usr/bin/gnutar"; # Default to Apple's GNU Tar
     if ($self->has_param($renamefield)) {
       @renamefiles = split(/\s+/, $self->param($renamefield));
       foreach $renamefile (@renamefiles) {
@@ -1009,8 +1010,8 @@ sub phase_unpack {
         }
       }
       $tar = "/usr/bin/tar"; # Use BSD Tar not GNU Tar (only BSD Tar has the rename feature)
-    } else {
-      $tar = "$basepath/bin/tar"; # Default is GNU Tar
+    } elsif ( -e "$basepath/bin/tar" ) {
+      $tar = "$basepath/bin/tar"; # Use Fink's GNU Tar if available
     }
     $bzip2 = "bzip2";
     $unzip = "unzip";

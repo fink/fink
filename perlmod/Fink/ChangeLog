@@ -1,3 +1,9 @@
+2002-07-25  Max Horn  <max@quendi.de>
+	
+	* PkgVersion.pm: Fixed Bootstrap (use /usr/bin/gnutar if %p/bin/tar is missing)
+
+	* Engine.pm: Little fix that ensures Fink runs even if not on a terminal.
+	
 2002-07-24  Max Horn  <max@quendi.de>
 
 	* Incorporated patch #577882 by Sylvain Cuaz which cleans the environment 
