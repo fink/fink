@@ -1,7 +1,7 @@
 2005-02-23  Dave Mmorrison  <dmrrsn@users.sourceforge.net>
 
-        * ncurses, ncurses-shlibs: updated to current stable versions of (old) 
-        ncurses and (new) libncurses5 packages
+	* ncurses, ncurses-shlibs: updated to current stable versions of (old) 
+	ncurses and (new) libncurses5 packages
 
 2005-01-12  Daniel Macks  <dmacks@netspace.org>
 
