@@ -1,4 +1,6 @@
-2002-05-05  Max Horn  <max@quendi.de>
+2002-05-11  Max Horn  <max@quendi.de>
+
+	* Engine.pm (cmd_scanpackages): Fixed very stupid bug.
 
 	* Validation.pm (validate_info_file): missing description field now is an
 	error instead of a warning.
