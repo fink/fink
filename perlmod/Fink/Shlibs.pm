@@ -61,10 +61,11 @@ END { }				# module clean-up code here (global destructor)
 ### get shlibs depends line
 sub get_shlibs {
 	my $self = shift;
+	my $pkgname = shift;
 	my @filelist = @_;
 	my ($depend, @depends, @deps, %SHLIBS);
 
-	@depends = $self->check_files(@filelist);
+	@depends = $self->check_files($pkgname, @filelist);
 
 	foreach $depend (@depends) {
 		if (length($depend) > 1) {
@@ -84,16 +85,19 @@ sub check_files {
 	my $self = shift;
 	my $package = shift;
 	my @files = @_;
-	my ($file, @depends, $deb, $currentlib, $lib, $compat, $packageinfo);
+	my ($file, @depends, $deb, $currentlib, $lib, $compat);
 	my (@splits, $split, $tmpdep, $dep, $vers, @dsplits, $dsplit);
 	my (@deplines, @builddeps, $depline, $builddep, $pkg);
 
 	# Get package object
 	$pkg = Fink::PkgVersion->match_package($package);
+	unless (defined $pkg) {
+		print "no package found for specification '$package'!\n";
+		return;
+	}
 
 	# get parent and split names to envoke a = %v-%r override
-	$packageinfo = Fink::PkgVersion->match_package($package);
-	@splits = $packageinfo->get_splitoffs(1, 1);
+	@splits = $pkg->get_splitoffs(1, 1);
 
 	# Get depends line and builddepends lines for compares
 	@deplines = split(/\s*\,\s*/, $pkg->param_default("Depends", ""));
@@ -185,8 +189,13 @@ sub check_files {
 					print "DEBUG: bdep: $dep vers: $vers\n";
 					# check all splits of the deps to find
 					# this shlibs version of the -dev
-					$packageinfo = Fink::PkgVersion->match_package($dep);
-					@dsplits = $packageinfo->get_splitoffs(1, 1);
+					$pkg = Fink::PkgVersion->match_package($dep);
+					unless (defined $pkg) {
+						print "no package found for specification '$dep'!\n";
+						next;
+					}
+
+					@dsplits = $pkg->get_splitoffs(1, 1);
 					foreach $dsplit (@dsplits) {
 						print "DEBUG: compare -$dsplit- to -$tmpdep-\n";
 						if ($dsplit eq $tmpdep) {

@@ -2363,16 +2363,17 @@ EOF
 
 				### FIXME shlibs, should change this to a hash like
 				### get_binary_depends above.
-				my @shlib_deps = Fink::Shlibs->get_shlibs(@filelist);
+				my @shlib_deps = Fink::Shlibs->get_shlibs($pkgname, @filelist);
 
 				### FIXME shlibs, this will likely break, once hash above
 				### foreach loop and push into @$struct
 				### 3) replace it in the debian control file
 				foreach my $shlib_dep (@shlib_deps) {
 					push @$struct, ["$shlib_dep"];
-					print "DEBUG: $shlib_dep\n";
+					if (Fink::Config::verbosity_level() > 2) {
+						print "- Adding $shlib_dep to 'Depends' line\n";
+					}
 				}
-				die();
 			}
 		}
 	}
