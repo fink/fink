@@ -276,17 +276,14 @@ END { }				# module clean-up code here (global destructor)
 #	  (easier to try it than to check for some broken-ness here)
 #	- run a mock build phase (catch typos in dependencies,
 #	  BuildDependsOnly violations, etc.)
-#	- make sure for each %type_*[foo] there is a Type: foo
 #	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
 	my $filename = shift;
 	my ($properties, @parts);
-	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
+	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
-	my ($basepath, $buildpath);
-	my ($type, $type_hash);
-	my $expand = {};
+	my ($basepath, $expand, $buildpath);
 	my $looks_good = 1;
 	my $error_found = 0;
 	my $arch = get_arch();
@@ -321,21 +318,10 @@ sub validate_info_file {
 	$basepath = $config->param_default("basepath", "/sw");
 	$buildpath = $config->param_default("buildpath", "$basepath/src");
 
-	( $pkginvarname = $pkgname = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
-	# right now we don't know how to deal with variants too well
-	if (defined ($type = $properties->{type}) ) {
-		$type =~ s/(\S+?)\s*\(:?.*?\)/$1 ./g;  # use . for all subtype lists
-		$type_hash = Fink::PkgVersion->type_hash_from_string($type,$filename);
-		foreach (keys %$type_hash) {
-			( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-		}
-		$pkgname = &expand_percent($pkgname, $expand, $filename.' Package');
-	}
+	$pkgname = $properties->{package};
 
 	$pkgversion = $properties->{version};
-	$pkgversion = '' unless defined $pkgversion;
 	$pkgrevision = $properties->{revision};
-	$pkgrevision = '' unless defined $pkgrevision;
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
 	$pkgdestdir = "$buildpath/root-".$pkgfullname;
 	
@@ -379,16 +365,9 @@ sub validate_info_file {
 	#
 	# Now check for other mistakes
 	#
-
-	# variants with Package: foo-%type[bar] leave escess hyphens
-	my @ok_filenames = $pkgname;
-	$ok_filenames[0] =~ s/-+/-/g;
-	$ok_filenames[0] =~ s/-*$//g;
-	$ok_filenames[1] = "$ok_filenames[0]-$pkgversion-$pkgrevision";
-	map $_ .= ".info", @ok_filenames;
-
-	unless (1 == grep $filename eq $_, @ok_filenames) {
-		print "Warning: File name should be ", join( " or ", @ok_filenames ),"\n";
+	
+	unless (("$pkgfullname.info" eq $filename) || ("$pkgname.info" eq $filename)) {
+		print "Warning: File name should be $pkgfullname.info or $pkgname.info ($filename)\n";
 		$looks_good = 0;
 	}
 	
@@ -639,10 +618,7 @@ sub validate_info_file {
 				'i' => $pkgdestdir.$basepath,
 				'a' => $pkgpatchpath,
 				'b' => '.',
-				'm' => $arch,
-				%{$expand},
-				'ni' => $pkginvarname,
-				'Ni' => $pkginvarname
+				'm' => $arch
 	};
 
 	# Verify the patch file(s) exist and check some things
@@ -666,7 +642,7 @@ sub validate_info_file {
 
 	# now check each one in turn
 	foreach $value (@patchfiles) {
-		$value = &expand_percent($value, $expand, $filename.' Patch');
+		$value = &expand_percent($value, $expand);
 		unless (-f $value) {
 			print "Error: can't find patchfile \"$value\"\n";
 			$looks_good = 0;
@@ -720,6 +696,8 @@ sub validate_info_file {
 #     - installation of .elc files
 #     - (it's now OK to install files directly into
 #        /sw/share/emacs/site-lisp, so we no longer check for this)
+# - BuildDependsOnly: if package stores files in /sw/include, it should
+#     declare BuildDependsOnly true
 # - ideas?
 #
 sub validate_dpkg_file {
@@ -732,6 +710,7 @@ sub validate_dpkg_file {
 	my ($pid, $bad_dir);
 	my $filename;
 	my $looks_good = 1;
+	my $installed_headers = 0;
 
 	print "Validating .deb file $dpkg_filename...\n";
 	
@@ -758,6 +737,8 @@ sub validate_dpkg_file {
 					($dpkg_filename =~ /xemacs/)))) {
 				$looks_good = 0;
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
+			} elsif ( $filename =~/^$basepath\/include/ ) {
+				$installed_headers = 1;
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.
@@ -774,6 +755,17 @@ sub validate_dpkg_file {
 	}
 	close(DPKG_CONTENTS) or die "Error on close: $!\n";
 	
+# Note that if the .deb was compiled with an old version of fink which
+# does not record the BuildDependsOnly field, the warning is not issued
+
+	if ($installed_headers) {
+		my $BDO = `dpkg --field $dpkg_filename BuildDependsOnly`;
+		if ($BDO =~ /False/) {
+			print "Warning: Headers installed in $basepath/include but package does not declare BuildDependsOnly to be true\n";
+			$looks_good = 0;
+		}
+	}
+
 	if ($looks_good and Fink::Config::verbosity_level() == 3) {
 		print "Package looks good!\n";
 	}

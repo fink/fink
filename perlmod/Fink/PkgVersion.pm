@@ -1918,6 +1918,11 @@ Section: $section
 Installed-Size: $instsize
 Architecture: $debarch
 EOF
+if ($self->param_boolean("BuildDependsOnly")) {
+	$control .= "BuildDependsOnly: True\n";
+} else {
+	$control .= "BuildDependsOnly: False\n";
+}
 	if ($self->param_boolean("Essential")) {
 		$control .= "Essential: yes\n";
 	}
