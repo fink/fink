@@ -1,5 +1,10 @@
 2005-01-24  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm: Remove ncurses-dev from "important" (implied
+	dependency) list.
+
+2005-01-24  Daniel Macks  <dmacks@netspace.org>
+
 	* VirtPackage.pm: Extract core of gcc* pkg data into new
 	gen_gcc_hash(). All expected gcc* pkgs now always exist in
 	pdb (marked "uninstalled" if not present).
