@@ -73,13 +73,13 @@ our %commands =
 	  'remove'            => [\&cmd_remove,            1, 1],
 	  'delete'            => [\&cmd_remove,            1, 1],
 	  'purge'             => [\&cmd_purge,             1, 1],
-	  'apropos'           => [\&cmd_apropos,           0, 0],
+	  'apropos'           => [\&cmd_list_apropos,      0, 0],
 	  'describe'          => [\&cmd_description,       1, 0],
 	  'description'       => [\&cmd_description,       1, 0],
 	  'desc'              => [\&cmd_description,       1, 0],
 	  'info'              => [\&cmd_description,       1, 0],
 	  'scanpackages'      => [\&cmd_scanpackages,      1, 1],
-	  'list'              => [\&cmd_list,              0, 0],
+	  'list'              => [\&cmd_list_apropos,      0, 0],
 	  'listpackages'      => [\&cmd_listpackages,      1, 0],
 	  'selfupdate'        => [\&cmd_selfupdate,        0, 1],
 	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1],
@@ -130,7 +130,7 @@ sub initialize {
 
 sub process {
 	my $self = shift;
-	my $options = shift;
+	my $options_string = shift;
 	my $cmd = shift;
 	my ($proc, $pkgflag, $rootflag);
 
@@ -143,18 +143,19 @@ sub process {
 		die "fink: unknown command \"$cmd\".\nType 'fink --help' for more information.\n";
 	}
 
+	$self->{cmd} = $cmd;
 	($proc, $pkgflag, $rootflag) = @{$commands{$cmd}};
 
 	# check if we need to be root
 	if ($rootflag and $> != 0) {
-		&restart_as_root($options, $cmd, @_);
+		&restart_as_root($options_string, $cmd, @_);
 	}
 
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
 	}
-	eval { &$proc(@_); };
+	eval { $self->$proc(@_); };
 	if ($@) {
 		print "Failed: $@";
 		return $? || 1;
@@ -199,49 +200,54 @@ sub restart_as_root {
 ### simple commands
 
 sub cmd_index {
+	shift;
 	Fink::Package->update_db();
 }
 
 sub cmd_rescan {
+	shift;
 	Fink::Package->forget_packages();
 	Fink::Package->require_packages();
 }
 
 sub cmd_configure {
+	shift;
 	require Fink::Configure;
 	Fink::Configure::configure();
 }
 
 sub cmd_bootstrap {
+	shift;
 	require Fink::Bootstrap;
 	Fink::Bootstrap::bootstrap();
 }
 
 sub cmd_selfupdate {
+	shift;
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check();
 }
 
 sub cmd_selfupdate_cvs {
+	shift;
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check(1);
 }
 
 sub cmd_selfupdate_rsync {
+	shift;
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check(2);
 }
 
 sub cmd_selfupdate_finish {
+	shift;
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::finish();
 }
 
-sub cmd_list {
-	do_real_list("list",@_);
-}
-
-sub do_real_list {
+sub cmd_list_apropos {
+	my $self = shift;
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag, $description);
 	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer);
@@ -251,7 +257,7 @@ sub do_real_list {
 	 "installedstate" => 0
 	);
 	my ($width, $namelen, $verlen, $dotab);
-	my $cmd = shift;
+	my $cmd = $self->{cmd};
 	use Getopt::Long;
 	$formatstr = "%s	%-15.15s	%-11.11s	%s\n";
 	$desclen = 43;
@@ -270,13 +276,13 @@ sub do_real_list {
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
 				   'tree|r=s'		=> \$pkgtree,
-				   'help|h'			=> sub {&help_list_apropos($cmd)}
+				   'help|h'			=> sub { $self->help_list_apropos }
 		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}	 else { # apropos
 		GetOptions(
 				   'width|w=s'		=> \$width,
 				   'tab|t'			=> \$dotab,
-				   'help|h'			=> sub {&help_list_apropos($cmd)}
+				   'help|h'			=> sub { $self->help_list_apropos }
 		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}
 	if ($options{installedstate} == 0) {$options{installedstate} = 7;}
@@ -388,7 +394,8 @@ sub do_real_list {
 }
 
 sub help_list_apropos {
-	my $cmd = shift;
+	my $self = shift;
+	my $cmd = $self->{cmd};
 	require Fink::FinkVersion;
 	my $version = Fink::FinkVersion::fink_version();
 
@@ -437,6 +444,7 @@ EOF
 }
 
 sub cmd_listpackages {
+	shift;
 	my ($pname, $package);
 
 	foreach $pname (Fink::Package->list_packages()) {
@@ -451,6 +459,7 @@ sub cmd_listpackages {
 }
 
 sub cmd_scanpackages {
+	shift;
 	my @treelist = @_;
 	my ($tree, $treedir, $cmd, $archive, $component);
 
@@ -524,6 +533,7 @@ EOF
 ### package-related commands
 
 sub cmd_fetch {
+	shift;
 	my ($package, @plist);
 
 	@plist = &expand_packages(@_);
@@ -537,6 +547,7 @@ sub cmd_fetch {
 }
 
 sub cmd_description {
+	shift;
 	my ($package, @plist);
 
 	@plist = &expand_packages(@_);
@@ -552,12 +563,9 @@ sub cmd_description {
 	}
 }
 
-sub cmd_apropos {
-	do_real_list("apropos", @_);	
-}
-
 sub parse_fetch_options {
-	my $cmd = shift;
+	my $self = shift;
+	my $cmd = $self->{cmd};
 	my %options =
 	  (
 	   "norestrictive" => 0,
@@ -597,6 +605,7 @@ EOF
 
 #This sub is currently only used for bootstrap. No command line parsing needed
 sub cmd_fetch_missing {
+	shift;
 	my ($package, $options, @plist);
 
 	@plist = &expand_packages(@_);
@@ -609,10 +618,11 @@ sub cmd_fetch_missing {
 }
 
 sub cmd_fetch_all {
+	my $self = shift;
 	my ($pname, $package, $version, $vo);
 	
 	my (%options, $norestrictive, $dryrun);
-	%options = &parse_fetch_options("fetch-all", @_);
+	%options = $self->parse_fetch_options(@_);
 	$norestrictive = $options{"norestrictive"} || 0;
 	$dryrun = $options{"dryrun"} || 0;
 	
@@ -636,10 +646,11 @@ sub cmd_fetch_all {
 }
 
 sub cmd_fetch_all_missing {
+	my $self = shift;
 	my ($pname, $package, $version, $vo);
 	my (%options, $norestrictive, $dryrun);
 
-	%options = &parse_fetch_options("fetch-missing", @_);
+	%options = $self->parse_fetch_options(@_);
 	$norestrictive = $options{"norestrictive"} || 0;
 	$dryrun = $options{"dryrun"} || 0;
 
@@ -665,14 +676,16 @@ sub cmd_fetch_all_missing {
 }
 
 sub cmd_remove {
-	my @packages = get_pkglist("remove", @_);
+	my $self = shift;
+	my @packages = $self->get_pkglist(@_);
 
 	Fink::PkgVersion::phase_deactivate(@packages);
 	Fink::Status->invalidate();
 }
 
 sub get_pkglist {
-	my $cmd = shift;
+	my $self = shift;
+	my $cmd = $self->{cmd};
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
 	my ($buildonly, $wanthelp, $po);
 
@@ -775,7 +788,8 @@ EOF
 }
 
 sub cmd_purge {
-	my @packages = get_pkglist("purge", @_);
+	my $self = shift;
+	my @packages = $self->get_pkglist(@_);
 
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
@@ -790,6 +804,7 @@ sub cmd_purge {
 }
 
 sub cmd_validate {
+	shift;
 	my ($filename, @flist);
 
 	my ($wanthelp, $val_prefix);
@@ -840,6 +855,7 @@ EOF
 }
 
 sub cmd_cleanup {
+	shift;
 	my ($pname, $package, $vo, $file, $suffix);
 	my (@to_be_deleted);
 
@@ -940,22 +956,27 @@ my ($OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
 	(0, 1, 2, 3);
 
 sub cmd_build {
+	shift;
 	&real_install($OP_BUILD, 0, 0, @_);
 }
 
 sub cmd_rebuild {
+	shift;
 	&real_install($OP_REBUILD, 0, 0, @_);
 }
 
 sub cmd_install {
+	shift;
 	&real_install($OP_INSTALL, 0, 0, @_);
 }
 
 sub cmd_reinstall {
+	shift;
 	&real_install($OP_REINSTALL, 0, 0, @_);
 }
 
 sub cmd_update_all {
+	shift;
 	my (@plist, $pname, $package);
 
 	foreach $pname (Fink::Package->list_packages()) {
@@ -1571,6 +1592,7 @@ sub expand_packages {
 ### Display pkgs in an info file based on and pkg name
 
 sub cmd_splitoffs {
+	shift;
 	my ($pkg, $package, @pkgs, $arg);
 
 	print "\n";
@@ -1607,6 +1629,7 @@ sub cmd_splitoffs {
 ### Display a pkg's parent
 
 sub cmd_showparent {
+	shift;
 	my ($pkg, $package, @pkgs, $arg);
 
 	print "\n";
@@ -1629,6 +1652,7 @@ sub cmd_showparent {
 
 ### display a pkg's package description (parsed .info file)
 sub cmd_dumpinfo {
+	shift;
 
 	my (@fields, @percents, $wantall, $wanthelp);
 

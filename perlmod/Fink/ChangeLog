@@ -1,5 +1,12 @@
 2004-08-31  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Convert all cmd_* to being methods of Engine object.
+	Store 'fink <cmd>' in Engine object, and use that value instead of
+	passing around $cmd. Scrap cmd_list and cmd_apropos, rename
+	do_real_list to cmd_list_apropos.
+
+2004-08-31  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Do not save raw SplitOffN in parent pkg.
 
 2004-08-22  Daniel Macks  <dmacks@netspace.org>
