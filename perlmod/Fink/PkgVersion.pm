@@ -1624,28 +1624,45 @@ EOF
 ### activate
 
 sub phase_activate {
-  my $self = shift;
-  my ($deb, $answer);
+  my @packages = @_;
+  my (@installable);
 
-  $deb = $self->find_debfile();
+  for my $package (@packages) {
+    my $deb = $package->find_debfile();
 
-  unless (defined $deb and -f $deb) {
-    die "can't find package ".$self->get_debname()."\n";
+	unless (defined $deb and -f $deb) {
+	  die "can't find package ".$package->get_debname()."\n";
+	}
+
+    push(@installable, $deb);
   }
 
-  if (&execute("dpkg -i $deb")) {
-    die "can't install package ".$self->get_fullname()."\n";
+  if (@installable == 0) {
+    die "no installable .deb files found!\n";
   }
+
+  if (&execute("dpkg -i @installable")) {
+    if (@installable == 1) {
+      die "can't install package ".$installable[0]->get_fullname()."\n";
+    } else {
+      die "can't batch-install packages: @installable\n";
+    }
+  }
+
   Fink::Status->invalidate();
 }
 
 ### deactivate
 
 sub phase_deactivate {
-  my $self = shift;
+  my @packages = @_;
 
-  if (&execute("dpkg --remove ".$self->get_name())) {
-    die "can't remove package ".$self->get_fullname()."\n";
+  if (&execute("dpkg --remove @packages")) {
+    if (@packages == 1) {
+      die "can't remove package ".$packages[0]->get_fullname()."\n";
+    } else {
+      die "can't batch-remove packages: @packages\n";
+    }
   }
   Fink::Status->invalidate();
 }

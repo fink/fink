@@ -567,20 +567,14 @@ sub cmd_fetch_all_missing {
 }
 
 sub cmd_remove {
-  my ($package, @plist, $pnames);
+  my (@packages);
 
-  @plist = &expand_packages(@_);
-  if ($#plist < 0) {
+  @packages = &expand_packages(@_);
+  if ($#packages < 0) {
     die "no package specified for command 'remove'!\n";
   }
 
-  $pnames = "";
-  foreach $package (@plist) {
-    $pnames = $pnames." ".$package->get_name();
-  }
-  if (&execute("dpkg --remove ".$pnames)) {
-    die "can't remove package(s)\n";
-  }
+  Fink::PkgVersion::phase_deactivate(@packages);
   Fink::Status->invalidate();
 }
 
@@ -1024,6 +1018,7 @@ sub real_install {
       $any_installed = 1;
       $package = $item->[2];
 
+      my @batch_install;
 
       if (($item->[3] == $OP_REBUILD and not $already_rebuilt{$pkgname})
 	  or not $package->is_present()) {
@@ -1034,34 +1029,37 @@ sub real_install {
 	$package->phase_build();
 
 	$already_rebuilt{$pkgname} = 1;
+      }
 
-	my $parent;
-	if (@{$package->{_splitoffs}} > 0) {
-	  $parent = $package;
-	} elsif (exists $package->{parent}) {
-	  $parent = $package->{parent};
-	}
-	if (defined $parent) {
-	  my $splitoff;
-	  $already_rebuilt{$parent->get_name()} = 1;
-	  foreach $splitoff (@{$package->{_splitoffs}}) {
-	    $already_rebuilt{$splitoff->get_name()} = 1;
-	    if ($splitoff->is_installed()) {
-	      $already_activated{$splitoff->get_name()} = 1;
-	      $splitoff->phase_activate();
-	    }
+      my $parent;
+      if (exists $package->{_splitoffs} and @{$package->{_splitoffs}} > 0) {
+	$parent = $package;
+      } elsif (exists $package->{parent}) {
+	$parent = $package->{parent};
+      }
+
+      if (defined $parent) {
+	$already_rebuilt{$parent->get_name()} = 1;
+	foreach my $splitoff (@{$parent->{_splitoffs}}) {
+	  $already_rebuilt{$splitoff->get_name()} = 1;
+	  if ($splitoff->is_installed() or exists $deps{$splitoff->get_name()}) {
+	    push(@batch_install, $splitoff) unless ($already_activated{$splitoff->get_name()});
+	    $already_activated{$splitoff->get_name()} = 1;
 	  }
 	}
       }
+
       # Install the package if necessary and if it wasn't already installed 
       # previously. "Necessary" means that the command issued by the user
       # was an "install", a "reinstall" or a "rebuild" of an installed pkg.
       if (not $already_activated{$pkgname} and
 	  ($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL
 	   or ($item->[3] == $OP_REBUILD and $package->is_installed()))) {
+        push(@batch_install, $package) unless ($already_activated{$pkgname});
 	$already_activated{$pkgname} = 1;
-	$package->phase_activate();
       }
+
+      Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 
       # mark it as installed
       $item->[4] |= 2;
