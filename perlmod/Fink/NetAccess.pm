@@ -52,11 +52,11 @@ END { }       # module clean-up code here (global destructor)
 
 sub fetch_url {
   my $url = shift;
-  my $destdir = shift || "$basepath/src";
+  my $downloaddir = shift || "$basepath/src";
   my ($file, $cmd);
 
   $file = &filename($url);
-  return &fetch_url_to_file($url, $file, 0, 0, 0, $destdir);
+  return &fetch_url_to_file($url, $file, 0, 0, 0, $downloaddir);
 }
 
 ### download a file to the designated directory and save it under the
@@ -69,18 +69,18 @@ sub fetch_url_to_file {
   my $custom_mirror = shift || 0;
   my $tries = shift || 0;
   my $cont = shift || 0;  
-  my $destdir = shift || "$basepath/src";
+  my $downloaddir = shift || "$basepath/src";
   my ($http_proxy, $ftp_proxy);
   my ($url, $cmd, $cont_cmd, $result);
 
   # create destination directory if necessary
-  if (not -d $destdir) {
-    &execute("mkdir -p $destdir");
-    if (not -d $destdir) {
-      die "Download directory \"$destdir\" can not be created!\n";
+  if (not -d $downloaddir) {
+    &execute("mkdir -p $downloaddir");
+    if (not -d $downloaddir) {
+      die "Download directory \"$downloaddir\" can not be created!\n";
     }
   }
-  chdir $destdir;
+  chdir $downloaddir;
 
   # determine download command
   $cmd = &download_cmd($origurl, $file);

@@ -23,7 +23,7 @@
 package Fink::Validation;
 
 use Fink::Services qw(&read_properties &expand_percent);
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $buildpath);
 
 use strict;
 use warnings;
@@ -172,7 +172,7 @@ sub validate_info_file {
   my ($properties, @parts);
   my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
   my ($field, $value);
-  my ($basepath, $expand);
+  my ($basepath, $expand, $buildpath);
   my $looks_good = 1;
   my $error_found = 0;
 
@@ -185,12 +185,13 @@ sub validate_info_file {
   
   # determine the base path
   $basepath = $config->param("basepath");
+  $buildpath = $config->param("buildpath");
 
   $pkgname = $properties->{package};
   $pkgversion = $properties->{version};
   $pkgrevision = $properties->{revision};
   $pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
-  $pkgdestdir = "$basepath/src/root-".$pkgfullname;
+  $pkgdestdir = "$buildpath/root-".$pkgfullname;
   
   @parts = split(/\//, $filename);
   $filename = pop @parts;	# remove filename

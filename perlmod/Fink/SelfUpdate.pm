@@ -363,7 +363,7 @@ sub do_direct_cvs {
 
 sub do_tarball {
   my $newversion = shift;
-  my ($destdir, $dir);
+  my ($downloaddir, $dir);
   my ($pkgtarball, $url, $verbosity, $unpack_cmd);
 
   print "\n";
@@ -373,8 +373,8 @@ sub do_tarball {
 		  "using commands like 'fink update-all'.");
   print "\n";
 
-  $destdir = "$basepath/src";
-  chdir $destdir or die "Can't cd to $destdir: $!\n";
+  $downloaddir = "$basepath/src";
+  chdir $downloaddir or die "Can't cd to $downloaddir: $!\n";
 
   # go ahead and upgrade
   # first, download the packages tarball
@@ -389,7 +389,7 @@ sub do_tarball {
   $url = "mirror:sourceforge:fink/$pkgtarball";
 
   if (not -f $pkgtarball) {
-    if (&fetch_url($url, $destdir)) {
+    if (&fetch_url($url, $downloaddir)) {
       die "Downloading the update tarball '$pkgtarball' from the URL '$url' failed.\n";
     }
   }
@@ -415,7 +415,7 @@ sub do_tarball {
   if (&execute("./inject.pl $basepath -quiet")) {
     die "injecting the new package definitions from $pkgtarball failed\n";
   }
-  chdir $destdir or die "Can't cd to $destdir: $!\n";
+  chdir $downloaddir or die "Can't cd to $downloaddir: $!\n";
   if (-e $dir) {
     &execute("rm -rf $dir");
   }

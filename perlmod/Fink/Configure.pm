@@ -64,6 +64,14 @@ sub configure {
     $config->set_param("FetchAltDir", $otherdir);
   }
 
+  $builddir =
+    &prompt("Which directory should Fink use to build packages? \(If you don't ".
+	    "know what this means, it is safe to leave it at its default.\)",
+	    $config->param_default("Buildpath", ""));
+  if ($builddir) {
+    $config->set_param("Buildpath", $builddir);
+  }
+
   $verbose = $config->param_default("Verbose", 3);
   $verbose =
     &prompt_selection("How verbose should Fink be?", $verbose + 1, 

@@ -28,7 +28,7 @@ use Fink::Services qw(&filename &execute &execute_script
 		      &prompt_boolean &prompt_selection
 		      &collapse_space &read_properties_var
 		      &file_MD5_checksum);
-use Fink::Config qw($config $basepath $libpath $debarch);
+use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
@@ -55,7 +55,6 @@ END { }	      # module clean-up code here (global destructor)
 
 
 ### self-initialization
-
 sub initialize {
   my $self = shift;
   my ($pkgname, $version, $revision, $filename, $source);
@@ -71,6 +70,7 @@ sub initialize {
   $self->{_type} = lc $self->param_default("Type", "");
   # the following is set by Fink::Package::scan
   $self->{_filename} = $filename = $self->{thefilename};
+
 
   # path handling
   if ($filename) {
@@ -122,11 +122,11 @@ sub initialize {
   # percent-expansions
   $configure_params = "--prefix=\%p ".
     $self->param_default("ConfigureParams", "");
-  $destdir = "$basepath/src/root-".$self->{_fullname};
+  $destdir = "$buildpath/root-".$self->{_fullname};
   if ($self->{_type} eq "splitoff") {
     my $parent = $self->{parent};
     $parentpkgname = $parent->{_name};
-    $parentdestdir = "$basepath/src/root-".$parent->{_fullname};
+    $parentdestdir = "$buildpath/root-".$parent->{_fullname};
   } else {
     $parentpkgname = $pkgname;
     $parentdestdir = $destdir;
@@ -149,6 +149,7 @@ sub initialize {
 	      'c' => $configure_params,
 	      'b' => '.'
 	    };
+
   $self->{_expand} = $expand;
 
   $self->{_bootstrap} = 0;
@@ -315,13 +316,13 @@ sub disable_bootstrap {
   my ($destdir);
   my $splitoff;
 
-  $destdir = "$basepath/src/root-".$self->{_fullname};
+  $destdir = "$buildpath/root-".$self->{_fullname};
   $self->{_expand}->{p} = $basepath;
   $self->{_expand}->{d} = $destdir;
   $self->{_expand}->{i} = $destdir.$basepath;
   if ($self->{_type} eq "splitoff") {
     my $parent = $self->{parent};
-    my $parentdestdir = "$basepath/src/root-".$parent->{_fullname};
+    my $parentdestdir = "$buildpath/root-".$parent->{_fullname};
     $self->{_expand}->{D} = $parentdestdir;
     $self->{_expand}->{I} = $parentdestdir.$basepath;
   } else {
@@ -483,7 +484,7 @@ sub get_build_directory {
     $self->{_builddir} = $self->get_fullname()."/".$dir;
   }
 
-  $self->{_expand}->{b} = "$basepath/src/".$self->{_builddir};
+  $self->{_expand}->{b} = "$buildpath/".$self->{_builddir};
   return $self->{_builddir};
 }
 
@@ -940,7 +941,7 @@ sub phase_unpack {
   }
 
   # remove dir if it exists
-  chdir "$basepath/src";
+  chdir "$buildpath";
   if (-e $bdir) {
     if (&execute("rm -rf $bdir")) {
       die "can't remove existing directory $bdir\n";
@@ -948,7 +949,7 @@ sub phase_unpack {
   }
 
   if ($self->{_type} eq "nosource") {
-    $destdir = "$basepath/src/$bdir";
+    $destdir = "$buildpath/$bdir";
     if (&execute("mkdir -p $destdir")) {
       die "can't create directory $destdir\n";
     }
@@ -1051,7 +1052,7 @@ sub phase_unpack {
     }
 
     # calculate destination directory
-    $destdir = "$basepath/src/$bdir";
+    $destdir = "$buildpath/$bdir";
     if ($i > 1) {
       if ($self->has_param("Source".$i."ExtractDir")) {
 	$destdir .= "/".&expand_percent($self->param("Source".$i."ExtractDir"), $self->{_expand});
@@ -1109,10 +1110,10 @@ sub phase_patch {
   }
 
   $dir = $self->get_build_directory();
-  if (not -d "$basepath/src/$dir") {
-    die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+  if (not -d "$buildpath/$dir") {
+    die "directory $buildpath/$dir doesn't exist, check the package description\n";
   }
-  chdir "$basepath/src/$dir";
+  chdir "$buildpath/$dir";
 
   $patch_script = "";
 
@@ -1195,10 +1196,10 @@ sub phase_compile {
   }
 
   $dir = $self->get_build_directory();
-  if (not -d "$basepath/src/$dir") {
-    die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+  if (not -d "$buildpath/$dir") {
+    die "directory $buildpath/$dir doesn't exist, check the package description\n";
   }
-  chdir "$basepath/src/$dir";
+  chdir "$buildpath/$dir";
 
   # generate compilation script
   if ($self->has_param("CompileScript")) {
@@ -1240,10 +1241,10 @@ sub phase_install {
     } else {
       $dir = $self->get_build_directory();
     }
-    if (not -d "$basepath/src/$dir") {
-      die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+    if (not -d "$buildpath/$dir") {
+      die "directory $buildpath/$dir doesn't exist, check the package description\n";
     }
-    chdir "$basepath/src/$dir";
+    chdir "$buildpath/$dir";
   }
 
   # generate installation script
@@ -1400,7 +1401,7 @@ sub phase_install {
 
   if (not $do_splitoff) {
     $bdir = $self->get_fullname();
-    chdir "$basepath/src";
+    chdir "$buildpath";
     if (not $config->param_boolean("KeepBuildDir") and not Fink::Config::get_option("keep_build") and -e $bdir) {
       if (&execute("rm -rf $bdir")) {
 	&print_breaking("WARNING: Can't remove build directory $bdir. ".
@@ -1433,9 +1434,9 @@ sub phase_build {
     return;
   }
 
-  chdir "$basepath/src";
+  chdir "$buildpath";
   $ddir = "root-".$self->get_fullname();
-  $destdir = "$basepath/src/$ddir";
+  $destdir = "$buildpath/$ddir";
 
   if (not -d "$destdir/DEBIAN") {
     if (&execute("mkdir -p $destdir/DEBIAN")) {

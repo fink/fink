@@ -1,8 +1,13 @@
+2003-01-22  Max Horn  <max@quendi.de>
+
+	* Various files: Applied Chris Zubrzycki's build directory patch which allows
+	  the use of an alternate build dir (Patch #658682).
+
 2003-01-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm:  Allow a new license "Restrictive/Distributable"
-	to indicate that distribution of binaries is allowed even though
-	the license is restrictive.
+	  to indicate that distribution of binaries is allowed even though
+	  the license is restrictive.
 	
 2003-01-15  Max Horn  <max@quendi.de>
 
