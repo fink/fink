@@ -1,3 +1,9 @@
+2004-11-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Simplify %type test for main, correct it for
+	SplitOffs; implement dpkg install-time script interpretter check
+	for SplitOffs.
+
 2004-11-14  Daniel Macks  <dmacks@netspace.org>
 
 	* NetAccess.pm: Fix my fix to regex.

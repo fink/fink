@@ -333,14 +333,9 @@ sub validate_info_file {
 
 	# make sure have InfoN (N>=2) if use Info2 features
 	if (($properties->{infon} || 1) < 2) {
-		# %type_*[*] in Package
-		if ($properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/) {
-			print "Error: Use of percent expansion in \"package\" field requires InfoN level 2 or higher. ($filename)\n";
-			$looks_good = 0;
-			return;
-		}
 		# fink-0.16.1 can't even index if unknown %-exp in *any* field!
 		foreach (sort keys %$properties) {
+			next if /^splitoff\d*$/;  # SplitOffs checked later
 			if ($properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
 				print "Error: Use of %type_ expansions (field \"$_\") requires InfoN level 2 or higher. ($filename)\n";
 				$looks_good = 0;
@@ -565,7 +560,7 @@ sub validate_info_file {
 
 		# A #! line is worthless in dpkg install-time scripts
 		if ($field =~ /^(pre|post)(inst|rm)script$/) {
-			if ($value =~ /^\s*\#!/) {   # emacs misparses # in a pattern:(
+			if ($value =~ /^\s*\#!/) {
 				print "Warning: Useless use of explicit interpretter in \"$field\". ($filename)\n";
 				$looks_good = 0;
 			}
@@ -586,26 +581,12 @@ sub validate_info_file {
 				}
 			}
 
-
-			# make sure have InfoN (N>=2) if use Info2 features (%type_*[*] in Package)
-			if ($splitoff_properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/ and $properties->{infon} < 2) {
-				$looks_good = 0;
-				return;
-			}
-
-
 			# make sure have InfoN (N>=2) if use Info2 features
 			if (($properties->{infon} || 1) < 2) {
-				# %type_*[*] in Package
-				if ($properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/) {
-					print "Error: Use of percent expansion in \"package\" field of \"$field\" requires InfoN level 2 or higher. ($filename)\n";
-					$looks_good = 0;
-					return;
-				}
 				# fink-0.16.1 can't even index if unknown %-exp in *any* field!
-				foreach (sort keys %$properties) {
-					if ($properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
-						print "Error: Use of %type_ expansions in \"$field\" (field \"$_\") requires InfoN level 2 or higher. ($filename)\n";
+				foreach (sort keys %$splitoff_properties) {
+					if ($splitoff_properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
+						print "Error: Use of %type_ expansions (field \"$_\" of \"$field\") requires InfoN level 2 or higher. ($filename)\n";
 						$looks_good = 0;
 						return;
 					}
@@ -670,6 +651,14 @@ sub validate_info_file {
 				if ($value =~ /\%p\\?\/src\\?\//) {
 					print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
 					$looks_good = 0;
+				}
+
+				# A #! line is worthless in dpkg install-time scripts
+				if ($field =~ /^(pre|post)(inst|rm)script$/) {
+					if ($value =~ /^\s*\#!/) {
+						print "Warning: Useless use of explicit interpretter in field \"$field\" of \"$splitoff_field\". ($filename)\n";
+						$looks_good = 0;
+					}
 				}
 
 				# Warn if field is unknown or invalid within a splitoff
