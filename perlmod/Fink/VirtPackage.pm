@@ -150,7 +150,7 @@ sub initialize {
 		$shortver =~ s/\.//g;
 		my $perlprovides = 'perl' . $shortver . '-core, system-perl' . $shortver;
 		if ($perlver ge '5.8.0') {
-			$perlprovides .= ', attribute-handlers-pm, cgi-pm, digest-md5-pm' . $shortver . ', file-spec-pm, file-temp-pm, filter-simple-pm' . $shortver . ', filter-util-pm' . $shortver . ', getopt-long-pm, i18n-langtags-pm, libnet-pm, locale-maketext-pm, memoize-pm, mime-base64-pm' . $shortver . ', scalar-list-utils-pm' . $shortver .', test-harness-pm, test-simple-pm, time-hires-pm' . $shortver;
+			$perlprovides .= ', attribute-handlers-pm' . $shortver . ', cgi-pm' . $shortver . ', digest-md5-pm' . $shortver . ', file-spec-pm' . $shortver . ', file-temp-pm' . $shortver . ', filter-simple-pm' . $shortver . ', filter-util-pm' . $shortver . ', getopt-long-pm' . $shortver . ', i18n-langtags-pm' . $shortver . ', libnet-pm' . $shortver . ', locale-maketext-pm' . $shortver . ', memoize-pm' . $shortver . ', mime-base64-pm' . $shortver . ', scalar-list-utils-pm' . $shortver .', test-harness-pm' . $shortver . ', test-simple-pm' . $shortver . ', time-hires-pm' . $shortver;
 		}
 		$hash->{provides} = $perlprovides;
 
