@@ -458,8 +458,9 @@ as part of the XCode tools.
 		MacOSX10.4.0.sdk
 	);
 
-	if (open(DIR, '/Developer/SDKs')) {
+	if (opendir(DIR, '/Developer/SDKs')) {
 		push(@SDKDIRS, grep(/MacOSX.*.sdk/, readdir(DIR)));
+		closedir DIR;
 	}
 	for my $dir (sort @SDKDIRS) {
 		if ($dir =~ /MacOSX([\d\.]+)\.sdk/) {

@@ -1,3 +1,7 @@
+2005-03-10  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Use opendir() for reading a dir.
+
 2005-03-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: add a check for /Developer/SDK
