@@ -5,6 +5,11 @@
 	* Shlibs.pm: change the DEBUG output from the Shlibs package, to 
 	output which is only shown at verbosity level 3
 
+2003-10-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Config.pm: make sure Trees line doesn't have absolute paths
+	or ../'s in it.
+
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* ChangeLog, Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm, 

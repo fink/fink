@@ -110,7 +110,7 @@ sub get_path {
 sub get_treelist {
 	my $self = shift;
 
-	return split(/\s+/, $self->param_default("Trees", "local/main stable/main stable/bootstrap"));
+	return grep(!/^(\/|.*\.\.\/)/, split(/\s+/, $self->param_default("Trees", "local/main stable/main stable/bootstrap")));
 }
 
 ### set parameter
