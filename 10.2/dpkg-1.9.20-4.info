@@ -44,3 +44,4 @@ if [ ! -f %p/var/lib/dpkg/diversions ]; then
   chmod 644 %p/var/lib/dpkg/diversions
 fi
 <<
+Homepage: http://packages.qa.debian.org/d/dpkg.html

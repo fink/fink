@@ -31,5 +31,5 @@ causes unnecessary conflicts between packages.
 <<
 DescPackaging: Previous versions by Christoph Pfisterer.
 License: LGPL
-Homepage: http://clisp.cons.org/~haible/packages-libiconv.html
 Maintainer: Max Horn <max@quendi.de>
+Homepage: http://www.gnu.org/software/libiconv/
