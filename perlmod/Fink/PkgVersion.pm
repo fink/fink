@@ -689,6 +689,7 @@ sub resolve_depends {
 		}
 	}
 	
+        ### Add rebuild check here.
 	if ($self->find_debfile()) {
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
