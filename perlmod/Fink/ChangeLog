@@ -1,3 +1,8 @@
+2002-05-23  Max Horn  <max@quendi.de>
+
+	* Engine.pm (real_install): Under certain condition, splitoffs could have 
+	been activated more than once. This problem fixes this.
+
 2002-05-16  Max Horn  <max@quendi.de>
 
 	* Engine.pm (real_install): Fixed 'fink rebuild' to honor BuildDepends.

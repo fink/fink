@@ -658,7 +658,7 @@ sub real_install {
   my (%candidates, @candidates, $pnode);
   my ($oversion, $opackage, $v, $ep, $dp, $dname);
   my ($answer, $s);
-  my (%already_rebuilt);
+  my (%already_rebuilt, %already_activated);
 
   if (Fink::Config::is_verbose()) {
     $showlist = 1;
@@ -667,6 +667,7 @@ sub real_install {
   %deps = ();   # hash by package name
 
   %already_rebuilt = ();
+  %already_activated = ();
 
   # add requested packages
   foreach $pkgspec (@_) {
@@ -922,14 +923,14 @@ sub real_install {
 
 
       if (($item->[3] == $OP_REBUILD and not $already_rebuilt{$pkgname})
-          or not $package->is_present()) {
+	  or not $package->is_present()) {
 	$package->phase_unpack();
 	$package->phase_patch();
 	$package->phase_compile();
 	$package->phase_install();
 	$package->phase_build();
 
-        $already_rebuilt{$pkgname} = 1;
+	$already_rebuilt{$pkgname} = 1;
 
 	my $parent;
 	if (@{$package->{_splitoffs}} > 0) {
@@ -938,18 +939,24 @@ sub real_install {
 	  $parent = $package->{parent};
 	}
 	if (defined $parent) {
-          my $splitoff;
-          $already_rebuilt{$parent->get_name()} = 1;
-          foreach $splitoff (@{$package->{_splitoffs}}) {
-            $already_rebuilt{$splitoff->get_name()} = 1;
-            if ($splitoff->is_installed()) {
-              $splitoff->phase_activate();
-            }
-          }
-        }
+	  my $splitoff;
+	  $already_rebuilt{$parent->get_name()} = 1;
+	  foreach $splitoff (@{$package->{_splitoffs}}) {
+	    $already_rebuilt{$splitoff->get_name()} = 1;
+	    if ($splitoff->is_installed()) {
+	      $already_activated{$splitoff->get_name()} = 1;
+	      $splitoff->phase_activate();
+	    }
+	  }
+	}
       }
-      if ($item->[3] != $OP_BUILD
-	  and ($item->[3] != $OP_REBUILD or $package->is_installed())) {
+      # Install the package if necessary and if it wasn't already installed 
+      # previously. "Necessary" means that the command issued by the user
+      # was an "install", a "reinstall" or a "rebuild" of an installed pkg.
+      if (not $already_activated{$pkgname} and
+	  ($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL
+	   or ($item->[3] == $OP_REBUILD and $package->is_installed()))) {
+	$already_activated{$pkgname} = 1;
 	$package->phase_activate();
       }
 
