@@ -325,14 +325,26 @@ sub param_default_expanded {
 ### to be conditional-free (remove conditional expressions, remove
 ### packages for which expression was false). No percent expansion is
 ### performed (i.e., do it yourself before calling this method).
+### As a side effect, leading and trailing whitespace is also removed.
 
 sub conditional_pkg_list {
 	my $self = shift;
 	my $field = lc shift;
 
 	my $value = $self->param($field);
-	return unless defined $value and length $value;
-	return unless $value =~ /(?-:\A|,|\|)\s*\(/;  # short-cut if no conditionals
+	return unless defined $value;
+
+	# short-cut if no conditionals...
+	if (not $value =~ /(?-:\A|,|\|)\s*\(/) {
+		# just remove leading and trailing whitespace (slinging $value
+		# through pkglist2lol + lol2pkglist has same effect so only
+		# need to do it manually if short-cut inhibits those calls)
+		$value =~ s/^\s*//;
+		$value =~ s/\s*$//;
+		$self->set_param($field, $value);
+		return;
+	}
+
 #	print "conditional_pkg_list for ",$self->get_name,": $field\n";
 #	print "\toriginal: '$value'\n";
 	my $struct = &pkglist2lol($value);
