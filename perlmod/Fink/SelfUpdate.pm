@@ -535,7 +535,6 @@ sub do_direct_rsync {
 	# there will thoroughly confuse things if someone later does 
 	# selfupdate-cvs.  However, don't actually do the removal until
 	# we've tried to put something there.
-	$rmcmd = "find . -name CVS | xargs rm -rf ";
 	$vercmd = "rsync -az $verbosity $rsynchost/VERSION $basepath/fink/VERSION";
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
 	&print_breaking($msg);
@@ -570,12 +569,15 @@ sub do_direct_rsync {
 			&print_breaking($msg);
 			if (&execute($cmd)) {
 				die "Updating $tree using rsync failed. Check the error messages above.\n";
+			} else {
+				&execute("find '$basepath/fink/$dist/$tree' -type d -name CVS | xargs rm -rf");
 			}
 		} else {
 			print "Warning: $tree exists in fink.conf, but is not on rsync server.  Skipping.\n";
 		}
+		&execute("rm -rf '$basepath/fink/$dist/CVS'");
 	}
-	&execute($rmcmd);
+	&execute("rm -rf '$basepath/fink/CVS'");
 	&execute($vercmd);
 	&execute($touchcmd);
 }

@@ -1,6 +1,11 @@
+2003-10-24  Benjamin Reed  <rangerrick@users.sourceforge.net
+
+	* SelfUpdate.pm: Modify the rsync command to only remove
+	CVS directories in trees that are updated through rsync.
+
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	*SelfUpdate.pm: Modify the "point" selfupdate method so that the
+	* SelfUpdate.pm: Modify the "point" selfupdate method so that the
 	version number information which it retrieves from the Fink
 	website is specific to which distribution is the current one
 	(e.g., whether we are running 10.2 or 10.2-gcc3.3).
