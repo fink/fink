@@ -1,3 +1,7 @@
+2002-03-21  Max Horn  <max@quendi.de>
+
+	* VERSION: Bumped package manager version to 0.9.9
+
 2002-03-13  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* fink.in: Made option position strict for command
