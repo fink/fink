@@ -1,3 +1,8 @@
+2001-07-21  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm: Added 'desc' and 'info' as aliases for the
+	'description' command. Suggested by Max Horn.
+
 2001-07-13  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (get_description): Added optional style
