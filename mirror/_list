@@ -6,7 +6,7 @@
 
 Order: master gnu gnome gimp ctan cpan debian kde sourceforge
 
-master: Master fink mirrors
+master: Master Fink mirrors
 cpan: Comprehensive Perl Archive Network
 ctan: Comprehensive TeX Archive Network
 debian: Debian
