@@ -1,3 +1,8 @@
+2005-02-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: check RuntimeVars for DYLD_LIBRARY_PATH: %p/lib
+	and error if it exists.
+
 2005-02-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: add DescDetail to the install script failure for

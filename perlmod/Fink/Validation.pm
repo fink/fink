@@ -608,6 +608,14 @@ sub validate_info_file {
 		} # end of SplitOff field validation
 	}
 
+	# error for having %p/lib in RuntimeVars
+	for my $line (split(/\n/, $properties->{runtimevars})) {
+		if ($line =~ m,^\s*(DYLD_LIBRARY_PATH:\s+($basepath|\%p)/lib/?)\s*$,) {
+			print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
 	# Warn for missing / overlong package descriptions
 	$value = $properties->{description};
 	if (not (defined $value and length $value)) {
