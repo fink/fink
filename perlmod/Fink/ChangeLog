@@ -1,5 +1,10 @@
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* Bootstrap.pm, PkgVersion.pm: reverting changes from 2003-07-02
+	and 2003-06-27 for the 0.13.4 release
+
+2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* Bootstrap.pm, SelfUpdate.pm: Add bzip2-dev, gettext-dev, 
 	libiconv-dev, ncurses-dev to the bootstrap and update lists
 
