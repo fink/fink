@@ -2671,6 +2671,12 @@ EOF
 				}
 
 				$scriptbody .= "\nfi";
+			} elsif ($scriptname eq "postrm") {
+				for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
+					$bundle =~ s/\'/\\\'/gsi;
+					my $shortname = basename($bundle);
+					$scriptbody .= "\nrm -f '/Applications/Fink/${shortname}'";
+				}
 			}
 		}
 
