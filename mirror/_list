@@ -6,11 +6,11 @@
 
 Order: gnu gnome gimp ctan cpan debian kde sourceforge
 
-gnu: GNU software
-debian: Debian
-gnome: GNOME
-gimp: The GIMP
-kde: KDE
-ctan: Comprehensive TeX Archive Network
 cpan: Comprehensive Perl Archive Network
+ctan: Comprehensive TeX Archive Network
+debian: Debian
+gimp: The GIMP
+gnome: GNOME
+gnu: GNU software
+kde: KDE
 sourceforge: SourceForge
