@@ -348,7 +348,7 @@ sub check_x11_version {
 	if (not defined $XF_VERSION) {
 		for my $binary ('X', 'XDarwin', 'Xquartz') {
 			if (-x '/usr/X11R6/bin/' . $binary) {
-				if (open (XBIN, "/usr/X11R6/bin/$binary -version 2>\&1 |")) {
+				if (open (XBIN, "/usr/X11R6/bin/$binary -version -iokit 2>\&1 |")) {
 					while (my $line = <XBIN>) {
 						if ($line =~ /XFree86 Version ([\d\.]+)/) {
 							$XF_VERSION = $1;
