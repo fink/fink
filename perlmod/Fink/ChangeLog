@@ -1,3 +1,9 @@
+2005-02-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: no longer read depends from deb files when rebuilding
+	or building and a deb is present, that made no sense what was I
+	thinking?
+
 2005-02-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Removed ref to {SHLIB_DEPS} and added RunTimeDepends to

@@ -1261,19 +1261,9 @@ sub resolve_depends {
 		# when switching between 'wget' and 'wget-ssl')
 		### FIXME shlibs, might need to revisit this later
 		if (Fink::Config::verbosity_level() > 2) {
-			print "Reading $oper from ".$self->get_fullname()." ";
+			print "Reading $oper for ".$self->get_fullname()."...\n";
 		}
-		if ($self->find_debfile() && $include_build != 2 && lc($field) eq "depends") {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "deb file...\n";
-			}
-			@speclist = split(/\s*\,\s*/, $self->get_debdeps());
-		} else {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "info file...\n";
-			}
-			@speclist = split(/\s*\,\s*/, $self->pkglist_default($field, ""));
-		}
+		@speclist = split(/\s*\,\s*/, $self->pkglist_default($field, ""));
 	}
 
 	if (lc($field) ne "conflicts") {
@@ -1334,19 +1324,9 @@ sub resolve_depends {
 		# Add build time dependencies to the spec list
 		### FIXME shlibs, might need to revisit this later
 		if (Fink::Config::verbosity_level() > 2) {
-			print "Reading $oper from ".$self->get_fullname()." ";
+			print "Reading build $oper for ".$self->get_fullname()."...\n";
 		}
-		if ($self->find_debfile() && $include_build != 2) {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "deb file...\n";
-			}
-			push @speclist, split(/\s*\,\s*/, $self->get_debdeps("Build".$field));
-		} else {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "info file...\n";
-			}
-			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
-		}
+		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our splitoffs.
@@ -1357,19 +1337,9 @@ sub resolve_depends {
 			foreach	 $splitoff (@{$self->{_splitoffs}}) {
 				### FIXME shlibs, might need to revisit this later
 				if (Fink::Config::verbosity_level() > 2) {
-					print "Reading $oper from ".$splitoff->get_fullname()." ";
+					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
-				if ($splitoff->find_debfile() && $include_build != 2) {
-					if (Fink::Config::verbosity_level() > 2) {
-						print "deb file...\n";
-					}
-					push @speclist, split(/\s*\,\s*/, $splitoff->get_debdeps($field));
-				} else {
-					if (Fink::Config::verbosity_level() > 2) {
-						print "info file...\n";
-					}
-					push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
-				}
+				push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
 			}
 		}
 	}
