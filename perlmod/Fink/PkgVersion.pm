@@ -1649,7 +1649,7 @@ sub phase_unpack {
 	}
 
 	my ($gcc);
-	my %gcchash = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3');
+	my %gcchash = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3', '4.0.0' => '3.3');
 
 	if ($self->has_param("GCC")) {
 		$gcc = $self->param("GCC");
@@ -1657,10 +1657,10 @@ sub phase_unpack {
 		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
 			$gcc_select = 'an unknown version';
 		}
-		if (not exists $gcchash{$gcc}) {
-			$gcchash{$gcc} = $gcc;
+		if (not exists $gcchash{$gcc_select}) {
+			$gcchash{$gcc_select} = $gcc_select;
 		}
-		if ($gcc_select !~ /^$gcc/) {
+		if ($gcchash{$gcc_select} ne $gcc) {
 			die <<END;
 
 This package must be compiled with GCC $gcc, but you currently have $gcc_select selected.
