@@ -37,7 +37,7 @@ BEGIN {
         # your exported package globals go here,
         # as well as any optionally exported functions
         @EXPORT_OK       = qw();
-
+}
 
 END { }                         # module clean-up code here (global destructor)
 
