@@ -47,7 +47,7 @@ END { }       # module clean-up code here (global destructor)
 ### create/change configuration interactively
 
 sub configure {
-  my ($otherdir, $verbose);
+  my ($otherdir, $builddir, $verbose);
   my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $default);
 
   print "\n";
