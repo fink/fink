@@ -1,12 +1,12 @@
 Package: tar
-Version: 1.13.25
-Revision: 12
+Version: 1.14
+Revision: 1
 Essential: yes
 GCC: 3.3
 Depends: gettext, gzip, bzip2, base-files
 BuildDepends: gettext-dev
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
-Source-MD5: 6ef8c906e81eee441f8335652670ac4a
+Source-MD5: 3094544702b1affa32d969f0b6459663 
 UpdateConfigGuess: true
 ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib
 InstallScript: <<
