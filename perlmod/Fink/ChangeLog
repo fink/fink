@@ -1,4 +1,8 @@
-2004-04-07  Daniel Macks  <dmacks@netspace.org>
+2004-04-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fixed parsing of .info that do not have a Type field.
+
+2004-04-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Correctly expand %type_ for single-subtype
 	types. For all multi-subtype types, use the single subtype ".".

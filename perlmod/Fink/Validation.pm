@@ -276,6 +276,7 @@ END { }				# module clean-up code here (global destructor)
 #	  (easier to try it than to check for some broken-ness here)
 #	- run a mock build phase (catch typos in dependencies,
 #	  BuildDependsOnly violations, etc.)
+#	- make sure for each %type_*[foo] there is a Type: foo
 #	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
@@ -283,8 +284,9 @@ sub validate_info_file {
 	my ($properties, @parts);
 	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
-	my ($basepath, $expand, $buildpath);
+	my ($basepath, $buildpath);
 	my ($type, $type_hash);
+	my $expand = {};
 	my $looks_good = 1;
 	my $error_found = 0;
 	my $arch = get_arch();
@@ -322,13 +324,14 @@ sub validate_info_file {
 	$pkgname = $properties->{package};
 
 	# right now we don't know how to deal with variants too well
-	$type = $properties->{type};
-	$type =~ s/(\S+?)\s*\(:?.*?\)/$1 ./g;  # use . for all subtype lists
-	$type_hash = Fink::PkgVersion->type_hash_from_string($type,$filename);
-	foreach (keys %$type_hash) {
-		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+	if (defined ($type = $properties->{type}) ) {
+		$type =~ s/(\S+?)\s*\(:?.*?\)/$1 ./g;  # use . for all subtype lists
+		$type_hash = Fink::PkgVersion->type_hash_from_string($type,$filename);
+		foreach (keys %$type_hash) {
+			( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+		}
+		$pkgname = &expand_percent($pkgname, $expand, $filename.' Package');
 	}
-	$pkgname = &expand_percent($pkgname, $expand, $filename.' Package');
 
 	$pkgversion = $properties->{version};
 	$pkgrevision = $properties->{revision};
