@@ -2049,7 +2049,10 @@ sub run_script {
 
 sub get_system_perl_version {
 	if (not defined $system_perl_version) {
-		chomp($system_perl_version = `/usr/bin/perl -e 'printf "%vd", $^V' 2>/dev/null`);
+		if (open(PERL, "/usr/bin/perl -e 'printf \"\%vd\", \$^V' 2>/dev/null |")) {
+			chomp($system_perl_version = <PERL>);
+			close(PERL);
+		}
 	}
 	return $system_perl_version;
 }
