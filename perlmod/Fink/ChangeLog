@@ -1,4 +1,4 @@
-2004-01-07  Daniel Macks  <dmacks@netpace.org>
+2004-01-08  Daniel Macks  <dmacks@netpace.org>
 
 	* Validation.pm: Warning for DescDetail and DescUsage that will
 	look bad in Terminal window (long lines and non-ASCII chars).
