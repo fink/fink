@@ -479,7 +479,7 @@ diff -ruN apt-0.5.4/dselect/setup apt-0.5.4-patched/dselect/setup
 -  $urn          = "http://http.us.debian.org/debian" unless $urn;
 -  $distribution = "stable" unless $distribution;
 -  $components   = "main contrib non-free" unless $components;
-+  $urn          = "http://fink.sourceforge.net/bindist" unless $urn;
++  $urn          = "http://us.dl.sourceforge.net/fink/direct_download" unless $urn;
 +  $distribution = "release" unless $distribution;
 +  $components   = "main" unless $components;
  
@@ -504,7 +504,7 @@ diff -ruN apt-0.5.4/dselect/setup apt-0.5.4-patched/dselect/setup
 -#  print " and the special mirror scheme,\n";
 -#  print "              mirror:http://www.debian.org/archivemirrors \n";
 +  print "              file:/sw/fink,\n";
-+  print "              http://fink.sourceforge.net/bindist\n";
++  print "              http://us.dl.sourceforge.net/fink/direct_download\n";
    print "\n";
  
    my $index = 0;
@@ -656,8 +656,8 @@ diff -ruN apt-0.5.4/sources.list.fink-bindist apt-0.5.4-patched/sources.list.fin
 +
 +# Official binary distribution: download location for packages
 +# from the latest release
-+deb http://fink.sourceforge.net/bindist release main crypto
++deb http://us.dl.sourceforge.net/fink/direct_download release main crypto
 +
 +# Official binary distribution: download location for updated
 +# packages built between releases
-+deb http://fink.sourceforge.net/bindist current main crypto
++deb http://us.dl.sourceforge.net/fink/direct_download current main crypto
