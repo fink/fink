@@ -50,6 +50,7 @@ sub bootstrap {
   my ($bsbase, $save_path);
   my ($pkgname, $package, @elist);
   my @plist = ("gettext", "tar", "dpkg-bootstrap");
+  my @addlist = ("apt");
 
   $bsbase = "$basepath/bootstrap";
   &print_breaking("Bootstrapping a base system via $bsbase.");
@@ -78,7 +79,7 @@ sub bootstrap {
   print "\n";
 
   # use normal install routines
-  Fink::Engine::cmd_fetch_missing(@plist, @elist);
+  Fink::Engine::cmd_fetch_missing(@plist, @elist, @addlist);
 
 
   print "\n";
@@ -114,7 +115,7 @@ sub bootstrap {
   print "\n";
 
   # use normal install routines
-  Fink::Engine::cmd_install(@elist);
+  Fink::Engine::cmd_install(@elist, @addlist);
 
 
   print "\n";

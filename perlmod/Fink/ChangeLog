@@ -1,3 +1,9 @@
+2001-08-24  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Bootstrap.pm (bootstrap): Added code to install some
+	non-essential, but important packages at bootstrap time. Currently
+	installs apt.
+
 2001-08-22  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (phase_patch): Added support for
