@@ -1261,22 +1261,34 @@ sub phase_install {
 
   # splitoff 'Files' field
   if ($do_splitoff and $self->has_param("Files")) {
-    my (@files, $file, $target);
+    my (@files, $file, $source, $target, $target_dir);
 
     @files = split(/\s+/, $self->param("Files"));
     foreach $file (@files) {
       if ($file =~ /^(.+)\:(.+)$/) {
-	$install_script .= "\nmv %I/$1 %i/$2";
+        $source = $1;
+        $target = $2;
       } else {
-	$target = dirname($file);
-	if ($target ne ".") {
-	  $target = "%i/$target";
-	  $install_script .= "\ninstall -d -m 755 $target";
-	} else {
-	  $target = "%i";
-	}
-	$install_script .= "\nmv %I/$file $target";
+        $source = $file;
+        $target = $file;
       }
+      # If the path starts with a slash, assume it is meant to be global
+      # and base it upon %D, otherwise treat it as relative to %I
+      if ($source =~ /^\//) {
+	$source = "%D$source";
+      } else {
+	$source = "%I/$source";
+      }
+      # Now the same for the target (but use %d and %i).
+      if ($target =~ /^\//) {
+	$target = "%d$target";
+      } else {
+	$target = "%i/$target";
+      }
+
+      $target_dir = dirname($target);
+      $install_script .= "\ninstall -d -m 755 $target_dir";
+      $install_script .= "\nmv $source $target_dir/";
     }
   }
 

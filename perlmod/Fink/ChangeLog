@@ -1,5 +1,9 @@
 2002-08-11  Max Horn  <max@quendi.de>
 
+	* PkgVersion.pm: Enhanced how the Files field (in splitoffs) is handled:
+	  if the given path starts with a slash, we treat it as relative to %d/%D
+	  otherwise as relative to %i/%I (as we do currently anyway).
+	
 	* Services.pm: Fix for bug #545155 (it was possible to cause infinite
 	  recursion during percent expansion).
 
