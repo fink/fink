@@ -1,7 +1,6 @@
 2003-01-13  Finlay Dobbie <finlayd@users.sourceforge.net>
 
-	* postinstall.pl.in: Fixed formatting, cleaned up, make sure package
-	index is rebuilt.
+	* postinstall.pl.in: Fixed formatting, cleaned up.
 	
 2003-01-12  Dave Morrison <dmrrsn@users.sourceforge.net>
 

@@ -1,7 +1,5 @@
 2003-01-13  Finlay Dobbie <finlay@users.sourceforge.net>
 
-	* Package.pm: Added support for partial db updates.
-	
 	* PkgVersion.pm (merge): Added warning to if we try to merge a 
 	non-dummy package.
 	

@@ -253,11 +253,6 @@ if ($distribution =~ /10.2/) {
   }
 }
 
-if (&execute("fink reindex")) {
-  print "ERROR: Can't re-index fink db.";
-  exit 1;
-}
-
 exit 0;
 
 
