@@ -331,11 +331,22 @@ sub validate_info_file {
 		$buildpath = $config->param_default("buildpath", "$basepath/src");
 	}
 
-	# make sure have InfoN (N>=2) if use Info2 features (%type_*[*] in Package)
-	if ($properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/ and ($properties->{infon} || 1) < 2) {
-		print "Error: Use of percent expansion in \"package\" field requires InfoN level 2 or higher. ($filename)\n";
-		$looks_good = 0;
-		return;
+	# make sure have InfoN (N>=2) if use Info2 features
+	if (($properties->{infon} || 1) < 2) {
+		# %type_*[*] in Package
+		if ($properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/) {
+			print "Error: Use of percent expansion in \"package\" field requires InfoN level 2 or higher. ($filename)\n";
+			$looks_good = 0;
+			return;
+		}
+		# fink-0.16.1 can't even index if unknown %-exp in *any* field!
+		foreach (sort keys %$properties) {
+			if ($properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
+				print "Error: Use of %type_ expansions (field \"$_\") requires InfoN level 2 or higher. ($filename)\n";
+				$looks_good = 0;
+				return;
+			}
+		}
 	}
 
 	( $pkginvarname = $pkgname = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
@@ -575,11 +586,30 @@ sub validate_info_file {
 				}
 			}
 
+
 			# make sure have InfoN (N>=2) if use Info2 features (%type_*[*] in Package)
 			if ($splitoff_properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/ and $properties->{infon} < 2) {
-				print "Error: Use of percent expansion in \"package\" field of \"$field\" requires InfoN level 2 or higher. ($filename)\n";
 				$looks_good = 0;
 				return;
+			}
+
+
+			# make sure have InfoN (N>=2) if use Info2 features
+			if (($properties->{infon} || 1) < 2) {
+				# %type_*[*] in Package
+				if ($properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/) {
+					print "Error: Use of percent expansion in \"package\" field of \"$field\" requires InfoN level 2 or higher. ($filename)\n";
+					$looks_good = 0;
+					return;
+				}
+				# fink-0.16.1 can't even index if unknown %-exp in *any* field!
+				foreach (sort keys %$properties) {
+					if ($properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
+						print "Error: Use of %type_ expansions in \"$field\" (field \"$_\") requires InfoN level 2 or higher. ($filename)\n";
+						$looks_good = 0;
+						return;
+					}
+				}
 			}
 		
 			if (exists $splitoff_properties->{shlibs}) {
