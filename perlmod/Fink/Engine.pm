@@ -1728,7 +1728,7 @@ EOF
 						   jarfiles docfiles shlibs runtimevars splitoffs files
 						   preinstscript postinstscript
 						   prermscript postrmscript
-						   conffiles infodocs daemonicfile daemonicname
+						   conffiles infodocs daemonicname daemonicfile
 						   homepage descdetail descusage
 						   descpackaging descport
 						   /);
@@ -1823,7 +1823,7 @@ EOF
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
 					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf|)files$/ or
 					 $_ eq 'patch' or $_ eq 'infodocs' or
-					 $_ =~ /^daemonic(file|name)$/
+					 $_ =~ /^daemonicname$/
 					) {
 				# singleline fields start on the same line, have
 				# embedded newlines removes, and are not wrapped
@@ -1833,7 +1833,7 @@ EOF
 					$value =~ s/\n/ /g; # merge into single line
 					printf "%s: %s\n", $_, $value;
 				}
-			} elsif ($_ =~ /^((patch|compile|install|(pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)$/) {
+			} elsif ($_ =~ /^((patch|compile|install|(pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
 				# multiline fields start on a new line and are
 				# indented one extra space
 				$pkg->parse_configureparams;
