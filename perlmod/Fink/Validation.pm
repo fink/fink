@@ -67,8 +67,16 @@ our %name_version_fields = map {$_, 1}
     );
 
 # Allowed values for the type field
-our %type_field_values = map {$_, 1}
+our %allowed_type_values = map {$_, 1}
   qw(nosource bundle perl);
+
+# Allowed values for the license field
+our %allowed_license_values = map {$_, 1}
+  (
+   "GPL", "LGPL", "GFDL", "LDP", "BSD",
+   "Artistic", "OSI-Approved", "Restrictive",
+   "Commercial", "Public Domain"
+  );
 
 # List of all known fields.
 our %known_fields = map {$_, 1}
@@ -207,17 +215,23 @@ sub validate_info_file {
     $looks_good = 0;
   }
   
-  # License should always be specified!
-  unless ($properties->{license}
-       or (defined($properties->{type}) and $properties->{type} eq "bundle")) {
+  # License should always be specified, and must be one of the allowed set
+  if ($properties->{license}) {
+  	foreach $value (split /\//, $properties->{license}) {
+      if (not %allowed_license_values->{$value}) {
+        print "Warning: Unknown license \"$value\". ($filename)\n";
+        $looks_good = 0;
+      }
+    }
+  } elsif (not (defined($properties->{type}) and $properties->{type} eq "bundle")) {
     print "Warning: No license specified. ($filename)\n";
     $looks_good = 0;
   }
-  
+
   # Check value of type field
   $value = lc $properties->{type};
-  if ($value and not %type_field_values->{$value}) {
-    print "Warning: Unknown value \"$value\"in field \"Type\". ($filename)\n";
+  if ($value and not %allowed_type_values->{$value}) {
+    print "Error: Unknown value \"$value\"in field \"Type\". ($filename)\n";
     $looks_good = 0;
   }
   
