@@ -519,7 +519,7 @@ END
 			'xfree86-base-threaded', 'system-xfree86-43', 'system-xfree86-42',
 			'xfree86-base-shlibs', 'xfree86', 'system-xtools',
 			'xfree86-base-threaded-shlibs', 'xfree86-rootless-shlibs',
-			'xfree86-rootless-threaded-shlibs')
+			'xfree86-rootless-threaded-shlibs', 'xorg', 'xorg-shlibs')
 		{
 			
 			if (Fink::Status->query_package($packagename)) {
