@@ -82,6 +82,7 @@ sub initialize {
 	$self->{_type_hash} = $type_hash = Fink::PkgVersion->type_hash_from_string($self->param_default("Type", ""));
 
 	# the following is set by Fink::Package::scan
+	### Do not change meaning of _filename! This is used by FinkCommander (fpkg_list.pl)
 	$self->{_filename} = $filename = $self->{thefilename};
 
 	# path handling
@@ -699,6 +700,8 @@ sub get_fullname {
 	return $self->{_fullname};
 }
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub get_filename {
 	my $self = shift;
 	return $self->{_filename};
@@ -719,6 +722,8 @@ sub get_debfile {
 	return $self->{_debpath}."/".$self->{_debname};
 }
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub get_section {
 	my $self = shift;
 	return $self->{_section};
@@ -737,6 +742,8 @@ sub get_instsize {
 	}
 	return $size;
 }
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub get_tree {
 	my $self = shift;
@@ -1001,6 +1008,8 @@ sub format_oneline {
 	return $s;
 }
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub get_shortdescription {
 	my $self = shift;
 	my $limit = shift || 75;
@@ -1013,6 +1022,8 @@ sub get_shortdescription {
 	}
 	return $desc;
 }
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub get_description {
 	my $self = shift;
@@ -1076,6 +1087,8 @@ sub is_aptgetable {
 	return 0;
 }
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub is_present {
 	my $self = shift;
 
@@ -1084,6 +1097,8 @@ sub is_present {
 	}
 	return 0;
 }
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub is_installed {
 	my $self = shift;

@@ -92,6 +92,8 @@ file. The new object is returned.
 
 =cut
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub read_config {
 	my($filename, $defaults) = @_;
 
@@ -802,6 +804,8 @@ that is the highest. See the Debian Policy Manual, section 5.6.11
 "Version" for more information.
 
 =cut
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub latest_version {
 	my ($latest, $v);

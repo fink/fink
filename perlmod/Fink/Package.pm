@@ -91,6 +91,8 @@ sub get_name {
 
 ### get pure virtual package flag
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub is_virtual {
 	use Fink::VirtPackage;
 	my $self = shift;
@@ -129,6 +131,8 @@ sub add_provider {
 }
 
 ### list available versions
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub list_versions {
 	my $self = shift;
@@ -188,6 +192,8 @@ sub get_all_providers {
 	return @versions;
 }
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub list_installed_versions {
 	my $self = shift;
 	my (@versions, $version);
@@ -199,6 +205,8 @@ sub list_installed_versions {
 	}
 	return @versions;
 }
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub is_any_installed {
 	my $self = shift;
@@ -237,6 +245,8 @@ sub is_in_apt {
 
 ### get version object by exact name
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub get_version {
 	my $self = shift;
 	my $version = shift;
@@ -252,6 +262,8 @@ sub get_version {
 
 
 ### get package by exact name, fail when not found
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub package_by_name {
 	shift;	# class method - ignore first parameter
@@ -272,6 +284,8 @@ sub package_by_name_create {
 }
 
 ### list all packages
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub list_packages {
 	shift;	# class method - ignore first parameter
@@ -300,6 +314,8 @@ sub list_essential_packages {
 }
 
 ### make sure package descriptions are available
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub require_packages {
 	shift;	# class method - ignore first parameter
