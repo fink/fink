@@ -366,7 +366,7 @@ sub get_shlib {
 ### make sure shlibs are available
 sub require_shlibs {
 	my $self = shift;
-	my $forceoff = shift | 0;
+	my $forceoff = shift || 0;
 
 	if (!$have_shlibs) {
 		$self->get_all_shlibs($forceoff);
@@ -385,7 +385,7 @@ sub forget_shlibs {
 ### read list of shlibs, either from cache or files
 sub get_all_shlibs {
 	my $self= shift;
-	my $forceoff = shift | 0;
+	my $forceoff = shift || 0;
 	my ($time) = time;
 	my ($shlibname);
 	my ($db) = "shlibs.db";
