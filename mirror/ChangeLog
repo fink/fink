@@ -1,5 +1,13 @@
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Releasing version 0.0.3 of fink-mirrors
+
+2003-12-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: Explicitly include the perl library path
+
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* VERSION: Releasing version 0.0.2 of fink-mirrors
 
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>

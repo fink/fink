@@ -26,6 +26,8 @@ $| = 1;
 use 5.006;  # perl 5.6.0 or newer required
 use strict;
 
+use lib "@PREFIX@/lib/perl5";
+
 use Fink::Services qw(&read_config);
 use Fink::Configure qw(&choose_mirrors);
 
