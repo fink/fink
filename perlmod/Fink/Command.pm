@@ -211,6 +211,7 @@ sub rm_f {
 	
 	my $nok = 0;
 	foreach my $file (@files) {
+		next unless lstat $file;
 		next if unlink($file);
 		chmod(0777,$file);
 		next if unlink($file);
@@ -345,7 +346,7 @@ Expands a list of filepaths like the shell would.
 =cut
 
 sub _expand {
-	return map { /[{*?]/ ? glob($_) : $_ } @_;
+	return grep { defined and length } map { ( defined && /[{*?]/ ) ? glob($_) : $_ } @_;
 }
 
 

@@ -1,3 +1,8 @@
+2004-05-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: Fixed rm_f to not return failure for non-existent	files.
+	Made _expand omit globs that match nothing, undefs, and blanks.
+
 2004-05-13  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* Command.pm: Fix Failed: can't symlink package due to perl's -e
