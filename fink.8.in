@@ -75,15 +75,21 @@ packages Fink knows about (i.e. where an .info file is present); and it
 doesn't check dependencies itself but rather completly leaves that to the
 dpkg tool (usually this poses no problem, though).
 .Pp
-The remove command only removes the actual package files, but leaves the .deb
-compressed package file intact. This means that you can re-install the
-package later without going through the compile process again. If you need
-the disk space, you can remove the .deb from the 
+The remove command removes the actual package files (excluding configuration
+files), but leaves the .deb compressed package file intact. This means that you 
+can re-install the package later without going through the compile process again. 
+If you need the disk space, you can remove the .deb from the 
 .Pa @PREFIX@/fink/dists
 tree.
 .Pp
 Aliases:
-.Cm disable, deactivate, unuse, delete, purge
+.Cm disable, deactivate, unuse, delete
+.It Cm purge Ar package...
+The purge command purges packages from the system by calling
+.Ql "dpkg --purge".
+This is the same as
+.Cm fink remove
+except that it removes configuration files as well.
 .It Cm update-all
 This command updates all installed packages to the latest version. It does
 not need a package list, so you just type:
@@ -117,6 +123,13 @@ list all packages that start with 'gnome'.
 .Pp
 The quotes in the last example are necessary to stop the shell from
 interpreting the pattern itself.
+.It Cm fink apropos Ar package...
+This command behaves similarly to
+.Cm fink list
+except that
+.Ar package...
+must be supplied and it searches package descriptions as well as package
+names.
 .It Cm describe Ar package...
 This command displays a description of the package you name on the command
 line. Note that only a small part of the packages currently have a
@@ -180,6 +193,22 @@ revisions of all packages.
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm
 should auto-detect when it needs to be updated.
+.It Cm validate Ar file...
+This command performs various checks on .info and .deb files. Package maintainers 
+should run this on their package descriptions and corresponding built
+packages before submitting them.
+.Pp
+Aliases:
+.Cm check
+.It Cm scanpackages Op Ar tree...
+Calls
+.Xr dpkg-scanpackages 8
+with the specified trees.
+.It Cm checksums
+Validates the MD5 digest of all packages' tarballs, where possible.
+.It Cm cleanup
+Removes obsolete package files (.info, .patch, .deb) if newer versions
+are available. This can reclaim large amounts of disk space.
 .El
 .\"
 .\"
