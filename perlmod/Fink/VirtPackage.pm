@@ -147,9 +147,13 @@ sub initialize {
 		$hash->{description} = "[virtual package representing perl]";
 		$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 
-		my $shortver = Fink::Services::get_system_perl_version();
+		my $perlver = my $shortver = Fink::Services::get_system_perl_version();
 		$shortver =~ s/\.//g;
-		$hash->{provides} = 'perl' . $shortver . '-core, system-perl' . $shortver;
+		my $perlprovides = 'perl' . $shortver . '-core, system-perl' . $shortver;
+		if ($perlver ge '5.8.0') {
+			$perlprovides .= ', attribute-handlers-pm, cgi-pm, digest-md5-pm' . $shortver . ', file-spec-pm, file-temp-pm, filter-simple-pm' . $shortver . ', filter-util-pm' . $shortver . ', getopt-long-pm, i18n-langtags-pm, libnet-pm, locale-maketext-pm, memoize-pm, mime-base64-pm' . $shortver . ', scalar-list-utils-pm' . $shortver .', test-harness-pm, test-simple-pm, time-hires-pm' . $shortver;
+		}
+		$hash->{provides} = $perlprovides;
 
 		$self->{$hash->{package}} = $hash;
 	} else {
