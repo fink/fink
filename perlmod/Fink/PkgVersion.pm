@@ -695,10 +695,10 @@ sub resolve_depends {
 	SPECLOOP: foreach $altspec (@speclist) {
 		$altlist = [];
 		foreach $depspec (split(/\s*\|\s*/, $altspec)) {
-			if ($depspec =~ /^([0-9a-zA-Z.\+-]+)\s*\((.+)\)$/) {
+			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
 				$depname = $1;
 				$versionspec = $2;
-			} elsif ($depspec =~ /^([0-9a-zA-Z.\+-]+)$/) {
+			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
 				$depname = $1;
 				$versionspec = "";
 			} else {
