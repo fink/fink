@@ -773,7 +773,7 @@ sub phase_install {
   }
   $install_script .= "\nmkdir -p \%i/var/fink-stamp".
     "\ntouch \%i/var/fink-stamp/\%f".
-    "\nrm -f %i/info/dir %i/share/info/dir";
+    "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
   $install_script = &expand_percent($install_script, $self->{_expand});
 
@@ -794,7 +794,10 @@ sub phase_install {
   chdir "$basepath/src";
   if (not $config->param_boolean("KeepBuildDir") and -e $bdir) {
     if (&execute("rm -rf $bdir")) {
-      die "can't remove build directory $bdir\n";
+      &print_breaking("WARNING: Can't remove build directory $dbir. ".
+		      "This is not fatal, but you may want to remove ".
+		      "the directory manually to save disk space. ".
+		      "Continuing with normal procedure.");
     }
   }
 }
@@ -910,7 +913,11 @@ EOF
 
   if (not $config->param_boolean("KeepRootDir") and -e $destdir) {
     if (&execute("rm -rf $destdir")) {
-      die "can't remove build directory $destdir\n";
+      &print_breaking("WARNING: Can't remove package build directory ".
+		      "$destdir. ".
+		      "This is not fatal, but you may want to remove ".
+		      "the directory manually to save disk space. ".
+		      "Continuing with normal procedure.");
     }
   }
 }

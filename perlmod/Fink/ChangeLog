@@ -1,3 +1,7 @@
+2001-06-12  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Make some 'rm -rf' failures non-fatal.
+
 2001-06-06  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Package.pm: Virtual packages, step 1 - keeping track of the
