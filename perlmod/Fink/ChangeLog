@@ -1,5 +1,8 @@
 2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
 
+	* PkgVersion.pm (phase_activate): Removed sudo from dpkg
+	invocation command line.
+
 	* Bootstrap.pm: Refined bootstrap.
 	* Package.pm: New function list_essential_packages.
 	* Services.pm (execute): Added quiet flag.

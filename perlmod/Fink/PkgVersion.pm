@@ -700,7 +700,7 @@ sub phase_activate {
     die "can't find package $deb\n";
   }
 
-  if (&execute("sudo dpkg -i $debpath")) {
+  if (&execute("dpkg -i $debpath")) {
     die "can't install package/n";
   }
 }
