@@ -1,3 +1,8 @@
+2002-05-26  Max Horn  <max@quendi.de>
+
+	* Engine.pm (do_real_list): Fixed bug that occured when output of 'fink list'
+	was not going to a terminal and --width=auto was specified.
+
 2002-05-25  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm: Added Source-MD5/SourceN-MD5 fields.

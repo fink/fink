@@ -317,34 +317,29 @@ EOF
   }
   if ($options{installedstate} == 0) {$options{installedstate} = 7;}
 
+  # By default or if --width=auto, compute the output width to fit exactly into the terminal
+  if ((not defined $width and not $dotab) or (defined $width and
+  	(($width eq "") or ($width eq "auto") or ($width eq "=auto") or ($width eq "=")))) {
+    $width = &get_term_width();
+    if ($width == 0) {
+      $dotab = 1;	# not a terminal, fallback to tabbed mode
+      undef $width;
+    }
+  }
+  
   if (defined $width) {
-    if (($width eq "") || ($width eq "auto") || ($width eq "=auto") || ($width eq "=")) {
-      $width = &get_term_width;
-      if ($width == 0) {
-        $desclen=0;
-        $formatstr = "%s\t%s\t%s\t%s\n";
-        undef $width;
-      }
-      else {
-        if ($width < 40) { $width = 40; }
-      }
-    }  
     $width =~ s/[\=]?([0-9]+)/$1/;
-    if ($width < 40) { $width = 40; }
-    if (defined $width) {  
-      $width = $width -5;
-      $namelen = int($width * 0.2);
-      $verlen = int($width * 0.15);
-      if ($desclen != 0) {
-        $desclen = $width - $namelen -$verlen -2;
-      }
-      $formatstr = "%s %-" . $namelen . "." . $namelen . "s %-" . $verlen . "." . $verlen . "s %s\n";
+    $width = 40 if ($width < 40);  # enforce minimum display width of 40 characters
+    $width = $width - 5;           # 5 chars for the first field
+    $namelen = int($width * 0.2);  # 20% for the name
+    $verlen = int($width * 0.15);  # 15% for the version
+    if ($desclen != 0) {
+      $desclen = $width - $namelen - $verlen - 2;
     }
-  } else {
-    if ($dotab) {
-      $formatstr = "%s\t%s\t%s\t%s\n";
-      $desclen = 0;
-    }
+    $formatstr = "%s %-" . $namelen . "." . $namelen . "s %-" . $verlen . "." . $verlen . "s %s\n";
+  } elsif ($dotab) {
+    $formatstr = "%s\t%s\t%s\t%s\n";
+    $desclen = 0;
   }
   Fink::Package->require_packages();
   @_=@ARGV;
