@@ -1,11 +1,18 @@
+2003-02-16  Max Horn  <max@quendi.de>
+
+	* Package.pm, PkgVersion.pm, SelfUpdate.pm, Services.pm: Added Ben Hines
+	  patch for epoch support (Patch #607742).
+	  
+	* Validation.pm: Make package validator recognize the new Epoch field.
+
 2003-01-29 Ben Hines <benh57@users.sourceforge.net>
 
-	* Package.pm: Do not require storable to create index (Bug# 676512).
+	* Package.pm: Do not require storable to create index (Bug #676512).
 	  
 2003-01-28  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm: Adjust dependencies when working with multiple
-	splitoffs at the same time (fixes Bug #641462)
+	splitoffs at the same time (Bug #641462).
 
 2003-01-24  Max Horn  <max@quendi.de>
 
@@ -24,7 +31,7 @@
 2003-01-22  Ben Hines <benh57@users.sourceforge.net>
 
 	* Engine.pm, Package.pm: Match "fink list" & "install/remove/etc"
-	  items case-insensitively (Patch #622663)
+	  items case-insensitively (Patch #622663).
 	  
 2003-01-22  Max Horn  <max@quendi.de>
 

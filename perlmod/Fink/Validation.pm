@@ -83,6 +83,7 @@ our %known_fields = map {$_, 1}
   (
 	qw(
 	 package
+	 epoch
 	 version
 	 revision
 	 type

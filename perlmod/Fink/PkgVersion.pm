@@ -27,7 +27,7 @@ use Fink::Services qw(&filename &execute &execute_script
 		      &print_breaking &print_breaking_twoprefix
 		      &prompt_boolean &prompt_selection
 		      &collapse_space &read_properties_var
-		      &file_MD5_checksum);
+		      &file_MD5_checksum &version_cmp);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -57,7 +57,7 @@ END { }	      # module clean-up code here (global destructor)
 ### self-initialization
 sub initialize {
   my $self = shift;
-  my ($pkgname, $version, $revision, $filename, $source);
+  my ($pkgname, $epoch, $version, $revision, $filename, $source);
   my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
   my ($parentpkgname, $parentdestdir);
   my ($i, $path, @parts, $finkinfo_index, $section);
@@ -67,6 +67,7 @@ sub initialize {
   $self->{_name} = $pkgname = $self->param_default("Package", "");
   $self->{_version} = $version = $self->param_default("Version", "0");
   $self->{_revision} = $revision = $self->param_default("Revision", "0");
+  $self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
   $self->{_type} = lc $self->param_default("Type", "");
   # the following is set by Fink::Package::scan
   $self->{_filename} = $filename = $self->{thefilename};
@@ -115,10 +116,9 @@ sub initialize {
   }
 
   # some commonly used stuff
-  $self->{_fullversion} = $version."-".$revision;
+  $self->{_fullversion} = (($epoch ne "0") ? "$epoch:" : "").$version."-".$revision;
   $self->{_fullname} = $pkgname."-".$version."-".$revision;
   $self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
-
   # percent-expansions
   $configure_params = "--prefix=\%p ".
     $self->param_default("ConfigureParams", "");
@@ -133,6 +133,7 @@ sub initialize {
     $self->{_splitoffs} = [];
   }
   $expand = { 'n' => $pkgname,
+	      'e' => $epoch,
 	      'v' => $version,
 	      'r' => $revision,
 	      'f' => $self->{_fullname},
@@ -597,7 +598,7 @@ sub is_present {
 sub is_installed {
   my $self = shift;
 
-  if (Fink::Status->query_package($self->{_name}) eq $self->{_fullversion}) {
+  if (&version_cmp(Fink::Status->query_package($self->{_name}), '=', $self->get_fullversion())) {
     return 1;
   }
   return 0;

@@ -22,7 +22,7 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(&read_properties &latest_version &version_cmp
+use Fink::Services qw(&read_properties &latest_version &version_cmp &parse_fullversion
                       &print_breaking &execute);
 use Fink::Config qw($config $basepath);
 use Fink::PkgVersion;
@@ -161,27 +161,9 @@ sub get_matching_versions {
   }
 
   @list = ();
-
-  if ($relation eq "<<") {
-    while (($version, $vo) = each %{$self->{_versions}}) {
-      push @list, $vo if &version_cmp($version, $reqversion) < 0;
-    }
-  } elsif ($relation eq "<=") {
-    while (($version, $vo) = each %{$self->{_versions}}) {
-      push @list, $vo if &version_cmp($version, $reqversion) <= 0;
-    }
-  } elsif ($relation eq "=") {
-    while (($version, $vo) = each %{$self->{_versions}}) {
-      push @list, $vo if &version_cmp($version, $reqversion) == 0;
-    }
-  } elsif ($relation eq ">=") {
-    while (($version, $vo) = each %{$self->{_versions}}) {
-      push @list, $vo if &version_cmp($version, $reqversion) >= 0;
-    }
-  } elsif ($relation eq ">>") {
-    while (($version, $vo) = each %{$self->{_versions}}) {
-      push @list, $vo if &version_cmp($version, $reqversion) > 0;
-    }
+  
+  while (($version, $vo) = each %{$self->{_versions}}) {
+    push @list, $vo if &version_cmp($version, $relation, $reqversion);
   }
 
   if (@include_list > 0) {
@@ -324,7 +306,7 @@ sub forget_packages {
 sub scan_all {
   shift;  # class method - ignore first parameter
   my ($time) = time;
-  my ($dlist, $pkgname, $po, $hash, $fullversion);
+  my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
 
   Fink::Package->forget_packages();
   
@@ -373,10 +355,10 @@ sub scan_all {
     $hash = $dlist->{$pkgname};
 
     # create dummy object
-    $fullversion = $hash->{version};
-    if ($fullversion =~ /^(.+)-([^-]+)$/) {
-      $hash->{version} = $1;
-      $hash->{revision} = $2;
+    if (@versions = parse_fullversion($hash->{version})) {
+      $hash->{epoch} = $versions[0];
+      $hash->{version} = $versions[1];
+      $hash->{revision} = $versions[2];
       $hash->{type} = "dummy";
       $hash->{filename} = "";
 

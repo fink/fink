@@ -41,7 +41,7 @@ BEGIN {
                     &print_breaking &print_breaking_prefix
                     &print_breaking_twoprefix
                     &prompt &prompt_boolean &prompt_selection
-                    &version_cmp &latest_version
+                    &version_cmp &latest_version &parse_fullversion
                     &collapse_space &get_term_width
                     &file_MD5_checksum);
 }
@@ -454,29 +454,40 @@ sub prompt_selection {
 ### comparing versions
 
 sub version_cmp {
-  my ($a, $b, $aver, $arev, $bver, $brev, $res);
+  my ($a, $b, $op, $i, $res, @avers, @bvers);
   $a = shift;
+  $op = shift;
   $b = shift;
-
-  if ($a =~ /^(.+)\-([^-]+)$/) {
-    $aver = $1;
-    $arev = $2;
-  } else {
-    $aver = $a;
-    $arev = "";
+  
+  @avers = parse_fullversion($a);
+  @bvers = parse_fullversion($b);
+  #compare them in version array order: Epoch, Version, Revision
+  for ($i = 0; $i<=$#avers; $i++ )
+  {
+    if(! defined $avers[$i])
+    {
+      $avers[$i] = "";
+    }
+    if(! defined $bvers[$i])
+    {
+      $bvers[$i] = "";
+    }
+	$res = raw_version_cmp($avers[$i], $bvers[$i]);
+	last if $res;
+  }	  
+	  
+  if ($op eq "<<") {
+	 	$res = $res < 0 ? 1 : 0;  
+  } elsif ($op eq "<=") {
+	 	$res = $res <= 0 ? 1 : 0;
+  } elsif ($op eq "=") {
+		$res = $res == 0 ? 1 : 0;
+  } elsif ($op eq ">=") {
+		$res = $res >= 0 ? 1 : 0;
+  } elsif ($op eq ">>") {
+		$res = $res > 0 ? 1 : 0;
   }
-
-  if ($b =~ /^(.+)\-([^-]+)$/) {
-    $bver = $1;
-    $brev = $2;
-  } else {
-    $bver = $b;
-    $brev = "";
-  }
-
-  $res = &raw_version_cmp($aver, $bver);
-  return $res if $res;
-  return &raw_version_cmp($arev, $brev);
+  return $res;
 }
 
 sub raw_version_cmp {
@@ -528,12 +539,27 @@ sub latest_version {
 
   $latest = shift;
   while (defined($v = shift)) {
-    if (version_cmp($v,$latest) > 0) {
+    if (version_cmp($v, '>>', $latest)) {
       $latest = $v;
     }
   }
   return $latest;
 }
+
+### parsing full versions
+
+# return an array with this pattern : ($epoch, $version, $revision)
+# return undef if a parse error occur
+sub parse_fullversion {
+    my $fv = shift;
+    if ($fv =~ /^((\d+):)?(.+)-([^-]+)$/) {
+        # not all package have an epoch
+        return ($2 ? $2 : '0', $3, $4);
+    } else {
+        return undef;
+    }
+}
+
 
 ### collapse white space inside a string (removes newlines)
 
