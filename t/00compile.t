@@ -27,7 +27,7 @@ find(sub { push @modules, $File::Find::name if /\.pm$/ }, '../perlmod');
 my @original_symbols = keys %Foo::;
 foreach my $file (sort { $a cmp $b } @modules) {
     my $warnings = '';
-    local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
+    local $SIG{__WARN__} = sub { $warnings .= join('', grep(!/redefined at/, @_)) };
 
     (my $module = $file) =~ s{.*perlmod/}{};
     $module =~ s{/}{::}g;

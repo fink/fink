@@ -22,8 +22,8 @@
 
 package Fink::SelfUpdate;
 
-use Fink::Services qw(&execute &version_cmp &print_breaking
-					  &prompt &prompt_boolean &prompt_selection_new);
+use Fink::Services qw(&execute &version_cmp);
+use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
@@ -157,7 +157,7 @@ sub check {
 		if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
 			die "Can't get latest version info\n";
 		}
-		$latest_fink = `/bin/cat $srcdir/$currentfink`;
+		$latest_fink = cat "$srcdir/$currentfink";
 		chomp($latest_fink);
 		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" )
 		{

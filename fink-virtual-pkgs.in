@@ -117,10 +117,10 @@ if ($options{apt}) {
 sub UseFinkModules {
 	# Be careful about using fink modules
 	eval { 
-        die unless -d '@BASEPATH@/lib/perl5';
+        die unless -d '$basepath/lib/perl5';
 
         require lib;
-        import lib '@BASEPATH@/lib/perl5';
+        import lib '$basepath/lib/perl5';
 
 		require Fink::VirtPackage;
 		require Fink::Services;
@@ -132,11 +132,11 @@ sub UseFinkModules {
 	# read the configuration file
 	if ($standalone != 1)
 	{
-		my $configpath = '@BASEPATH@/etc/fink.conf';
+		my $configpath = '$basepath/etc/fink.conf';
                 my $config;
 		if (-f $configpath) {
 			$config = read_config($configpath,
-                                              { Basepath => '@BASEPATH@' }
+                                              { Basepath => '$basepath' }
                                              );
 		} else {
 			$standalone=1;

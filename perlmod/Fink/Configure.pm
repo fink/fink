@@ -23,9 +23,8 @@
 package Fink::Configure;
 
 use Fink::Config qw($config $basepath $libpath);
-use Fink::Services qw(&prompt &prompt_boolean &prompt_selection_new
-					  &print_breaking &read_properties
-					  &read_properties_multival &filename);
+use Fink::Services qw(&read_properties &read_properties_multival &filename);
+use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection_new &print_breaking);
 
 use strict;
 use warnings;

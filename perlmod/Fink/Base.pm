@@ -224,6 +224,42 @@ sub has_param {
 	return 0;
 }
 
+=item params_matching
+
+  my @params = $obj->params_matching($regex);
+  my @params = $obj->params_matching($regex, $ignore_case);
+
+Returns a list of the parameters that exist for $obj that match the
+given pattern $regex. Each returned value is suitable for passing to
+the other param* methods. The string $regex is a treated as a perl
+regular expression (which will not be further interpolated), with the
+exception that it will not return parameters of which only a substring
+matches. In perl terms, a leading ^ and trailing $ are applied. In
+human terms, passing 'a.'  will not return parameters such as 'apple'
+or 'cat'. If the optional $ignore_case is given and is true, matching
+will be done without regard to case (i.e., a /i modifier is applied).
+If $ignore_case is false or not given, the matching will be
+case-sensitive. The values are not returned in any particular order.
+
+=cut
+
+sub params_matching {
+	my $self = shift;
+	my $regex = shift;
+	$regex = '' unless defined $regex;
+	my $ignore_case = shift;
+	$ignore_case = '' unless defined $ignore_case;
+
+	$regex = "^$regex\$";
+	if ($ignore_case) {
+		$regex = qr/$regex/;
+	} else {
+		$regex = qr/$regex/i;
+	}
+
+	return grep { $_ =~ $regex } keys %$self;
+}
+
 =back
 
 =cut

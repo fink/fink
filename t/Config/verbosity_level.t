@@ -11,7 +11,7 @@ is( verbosity_level(), 0 );
 
 # XXX Who wins, verbosity or verbose?  Should it pick the highest?
 my @Verbosity_Levels = (
-                        ['true',   0,     3],
+                        ['true',   0,     4],
                         ['high',   0,     3],
                         ['medium', 0,     2],
                         ['low',    0,     1],

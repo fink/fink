@@ -1,3 +1,63 @@
+2004-01-10  Daniel Macks  <dmacks@netpace.org>
+
+	* Base.pm: Added params_matching, a method to return the names of
+	all parameters that match a passed regex.
+	* PkgVersion.pm: Added _source_items, a ref to a list of refs to
+	uniformly-keyed hashes of all info pertaining to each source for a
+	package. Added accessor method get_source_items_list() to return a
+	(deep) copy of this list.
+
+2004-01-09  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* PkgVersion.pm: get_source: Do not return the default source name
+	if there exists no source. Instead return 'none' as expected
+	elsewhere. get_source_list and get_tarball_list return an empty
+	list if there are no sources.
+
+2004-01-09  Daniel Macks  <dmacks@netpace.org>
+
+	* CLI.pm: Fixed a bug in print_breaking: was treating an embedded
+	newline as an ordinary entity (printable character), not adjusting
+	the wrapping for starting a new line.
+
+2004-01-09  Daniel Macks  <dmacks@netpace.org>
+
+	* Bootstrap.pm, SelfUpdate.pm: Swiched `cat` to Fink::Command::cat.
+	* PkgVersion.pm: Improved check for failure when creating
+	seg_addr_table file. Switched one system("mkdir") to &execute.
+
+2004-01-08  Daniel Macks  <dmacks@netpace.org>
+
+	* Validation.pm: Warning for DescDetail and DescUsage that will
+	look bad in Terminal window (long lines and non-ASCII chars).
+	Warning for oddly formatted Maintainer.
+
+2004-01-06  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Fixed resolve_depends code.
+	* Engine.pm: Do not use BuildConflicts for packages which are not going to
+	  be built!
+
+2004-01-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Left this file out of the giant CLI commit.
+
+2004-01-06  Max Horn  <max@quendi.de>
+
+	* Engine.pm: Partially undid Justin's change from Dec 23 (revision 1.144).
+	  Relatives of a package can't (and mustn't) be build dependencies of the
+	  package, since they are built at *exactly the same time*.
+
+	* Engine.pm: Fixed a case where fink would rebuild a package twice. Also
+	  clarified some comments.
+
+	* Validation.pm: BuildDepends and BuildConflicts are actually not valid in
+	  splitoffs.
+
+2004-01-05  Daniel Macks  <dmacks@netspace.org>
+
+	* all: Moved CLI functions from Services.pm into a new CLI.pm package.
+
 2004-01-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm:  Use eval{} instead of a subroutine to implement the 

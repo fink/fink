@@ -1,0 +1,31 @@
+2004-12-22  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: Explicitly use correct perl interp
+
+2004-12-22  Daniel Macks  <dmacks@netspace.org>
+
+	* prepare_script.t: Improved test for blank line removal.
+
+2004-12-21  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: Lots of cleanups. Add TODO test for not
+	script not running in setuid mode.
+
+2004-12-21  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: execute_nonroot_okay() wrapper merged
+	into underlying execute(). Extract common parts of some tests. Add
+	tests to make sure root not dropped when it's not supposed to be.
+
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_script_nonroot_okay.t: function removed so scrap the test.
+
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* prepare_script.t: Wrote a test suite.
+
+2004-11-23  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t,execute_script_nonroot_okay.t: Wrote some
+	basic tests.

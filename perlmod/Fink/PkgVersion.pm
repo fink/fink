@@ -24,12 +24,11 @@ package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
-					  &print_breaking
-					  &prompt_boolean &prompt_selection_new
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -256,7 +255,37 @@ sub initialize {
 			$self->expand_percent_if_available('Source'.$i.'Rename');
 			$self->{_sourcecount} = $i;
 		}
-	
+
+		# Build a hash with uniformly-named keys:
+		#   source, md5, rename, tarfilesrename, extractdir
+		# for all .info fields pertaining to a particular source.
+		# Store a ref to a list of refs to the hashes for all sources
+		# for the package, ordered (but not indexed) by source number.
+		$self->{_source_items} = [];
+		if ($self->{_type} ne "bundle" and $self->{_type} ne "nosource") {
+			# Schwartzian Transform to sort source\d* in "numerical" order
+			# easier to code and more efficient to run if 'source' is ignored
+			my @source_n_fields = map { $_->[0] } sort { $a->[1] <=> $b->[1] }
+				map { [$_, /source(\d*)/] } $self->params_matching('source\d+');;
+			# always have 'source', so now just insert it manually for correct order
+			foreach my $source_field ("source", @source_n_fields) {
+				next if $self->{$source_field} eq "none";
+				$source_field =~ /source(\d*)/;
+				my $number = $1;
+				my %source_item;
+				$source_item{"source"} = $self->{$source_field};
+				$source_item{"md5"} = $self->{$source_field."-md5"}
+					if exists $self->{$source_field."-md5"};
+				$source_item{"rename"} = $self->{$source_field."rename"}
+					if exists $self->{$source_field."rename"};
+				$source_item{"tarfilesrename"} = $self->{$source_field."tar".$number."filesrename"}
+					if exists $self->{"tar".$number."filesrename"};
+				$source_item{"extractdir"} = $self->{$source_field."extractdir"}
+					if exists $self->{$source_field."rename"} and $number ne "";
+				push @{$self->{_source_items}}, \%source_item;
+			}
+		}
+
 		# handle splitoff(s)
 		if ($self->has_param('splitoff')) {
 			$self->add_splitoff($self->{'splitoff'});
@@ -462,18 +491,19 @@ sub get_source {
 	my $self = shift;
 	my $index = shift || 1;
 	if ($index < 2) {
-		return $self->param("Source");
+		return $self->param("Source") unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
 	} elsif ($index <= $self->{_sourcecount}) {
 		return $self->param("Source".$index);
 	}
-	return "-";
+	return "none";
 }
 
 sub get_source_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
-	        push(@list, get_source($self, $index));
+	        my $source = get_source($self, $index);
+	        push(@list, $source) unless $source eq "none";
 	}
 	return @list;
 }
@@ -485,21 +515,22 @@ sub get_tarball {
 		if ($self->has_param("SourceRename")) {
 			return $self->param("SourceRename");
 		}
-		return &filename($self->param("Source"));
+		return &filename($self->param("Source")) unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
 	} elsif ($index <= $self->{_sourcecount}) {
 		if ($self->has_param("Source".$index."Rename")) {
 			return $self->param("Source".$index."Rename");
 		}
 		return &filename($self->param("Source".$index));
 	}
-	return "-";
+	return "none";
 }
 
 sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
-	        push(@list, get_tarball($self, $index));
+	        my $tarball = get_tarball($self, $index);
+	        push(@list, $tarball) unless $tarball eq "none";
 	}
 	return @list;
 }
@@ -519,6 +550,20 @@ sub get_checksum {
 	return "-";
 }
 
+sub get_source_items_list {
+	my $self = shift;
+
+	# need to do deep copy because _source_items is a ref to a
+	# list of hashes and we don't want the caller to accidentally
+	# modify the package data
+
+	my (@source_items, $source_item);
+	foreach $source_item (@{$self->{_source_items}}) {
+		my %source_item = %$source_item;
+		push @source_items, \%source_item;
+	}
+	return @source_items;
+}
 
 sub get_custom_mirror {
 	my $self = shift;
@@ -795,7 +840,14 @@ sub resolve_depends {
 		}
 	}
 	
-	unless (lc($field) eq "conflicts" || $include_build == 2) {
+	# First, add all regular dependencies to the list.
+	if (lc($field) ne "conflicts") {
+		# FIXME: Right now we completely ignore 'Conflicts' in the dep engine.
+		# We leave handling them to dpkg. That is somewhat ugly, though, because it
+		# means that 'Conflicts' are not automatically 'BuildConflicts' (i.e. the
+		# behavior differs from 'Depends'). 
+		# But right now, enabling conflicts would cause update problems (e.g.
+		# when switching between 'wget' and 'wget-ssl')
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading $oper from ".$self->get_fullname()." ";
 		}
@@ -810,8 +862,12 @@ sub resolve_depends {
 			}
 			@speclist = split(/\s*\,\s*/, $self->param_default("$field", ""));
 		}
-# with this primitive form of @speclist, we verify that the "BuildDependsOnly"
-# declarations have not been violated
+	}
+
+	if (lc($field) ne "conflicts") {
+		# With this primitive form of @speclist, we verify that the "BuildDependsOnly"
+		# declarations have not been violated (of course we only do that when generating
+		# a 'depends' list, not for 'conflicts').
 		foreach $altspecs (@speclist){
 			next if ($altspecs eq '{SHLIB_DEPS}');
 			## Determine if it has a multi type depends line thus
@@ -855,8 +911,10 @@ sub resolve_depends {
 			}
 		}
 	}
-# now we continue to assemble the larger @speclist
+
+	# now we continue to assemble the larger @speclist
 	if ($include_build) {
+		# Add build time dependencies to the spec list
 		push @speclist,
 			split(/\s*\,\s*/, $self->param_default("Build".$field, ""));
 
@@ -1805,7 +1863,6 @@ EOF
 		$depline = $depline . "darwin (>= $darwin_major_version-1)";
 	}
 
-	# FIXME: make sure there are no linebreaks in the following fields
 	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
 										 Recommends Suggests Enhances
@@ -2206,7 +2263,10 @@ sub set_env {
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
-		system("mkdir -p '$basepath/var/lib/fink/prebound'");
+
+		if (&execute("/bin/mkdir -p $basepath/var/lib/fink/prebound")) {
+			warn "couldn't create seg_addr_table directory, this may cause compilation to fail!\n";
+		}
 		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
 			print FILEOUT <<END;
 0x90000000  0xa0000000  <<< Next split address to assign >>>

@@ -22,8 +22,8 @@
 
 package Fink::NetAccess;
 
-use Fink::Services qw(&prompt_selection_new &print_breaking
-					  &execute &filename);
+use Fink::Services qw(&execute &filename);
+use Fink::CLI qw(&prompt_selection_new &print_breaking);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
 

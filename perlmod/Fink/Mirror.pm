@@ -22,8 +22,8 @@
 
 package Fink::Mirror;
 
-use Fink::Services qw(&prompt_selection_new
-					  &read_properties &read_properties_multival_var &read_properties_multival);
+use Fink::Services qw(&read_properties &read_properties_multival_var &read_properties_multival);
+use Fink::CLI qw(&prompt_selection_new);
 use Fink::Config qw($config $libpath);
 
 use strict;

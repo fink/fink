@@ -1,3 +1,13 @@
+2004-01-08  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in, fink.in: Consolidated all @BASEPATH@
+	substitutions into a single lexical variable to reduce risk of
+	typos and make easier to compare various resulting executables.
+
+2004-01-05  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl,postinstall.pl.in: Services.pm spawned CLI.pm
+
 2004-01-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.18.0

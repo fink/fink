@@ -1,0 +1,8 @@
+Package: non-consecutive-test2
+Version: 1.0
+Revision: 1
+Maintainer: Dave Vasilevsky <vasi@users.sourceforge.net>
+License: GPL
+Description: Test whether non-consecutive sources work 2
+Source: gnu
+Source-MD5: 42
