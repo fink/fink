@@ -144,7 +144,7 @@ Returns undef on error, even in list context.
 sub cat {
 	my $file = shift;
 	my $fh;
-	unless( open $fh, $file ) {
+	unless( open $fh, "<$file" ) {
 		return undef;
 	}
 	

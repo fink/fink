@@ -1,4 +1,8 @@
-2004-02-24  David Höhn <dmalloc@users.sourceforge.net>
+2004-02-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: finish gaborit's patch from 841381 to cat().
+
+2004-02-24  David Höhn  <dmalloc@users.sourceforge.net>
 
 	* SelfUpdate.pm: changed the rsync command to
 	explicitly preserve the timestamps using -t
