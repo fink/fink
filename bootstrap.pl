@@ -315,7 +315,7 @@ $script =
 	"tar -cf $installto/src/fink-$packageversion.tar ".
 	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
 	"ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-	"postinstall.pl.in perlmod update mirror shlibs.default.in\n";
+	"pathsetup.command.in postinstall.pl.in perlmod update mirror shlibs.default.in\n";
 
 foreach $cmd (split(/\n/,$script)) {
 	next unless $cmd;		# skip empty lines
