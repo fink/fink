@@ -1,3 +1,11 @@
+2004-06-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: When writing the contents of the BuildDependsOnly
+	field into the .deb file, only write the contents if the field
+	exists.
+	* Validation.pm: Warn if headers are present (as well as a dylib) 
+	but BuildDependsOnly is not set to any value.
+
 2004-06-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Modify regex so that xemacs-base, xemacs-efs

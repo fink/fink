@@ -1927,7 +1927,7 @@ Architecture: $debarch
 EOF
 if ($self->param_boolean("BuildDependsOnly")) {
 	$control .= "BuildDependsOnly: True\n";
-} else {
+} elsif ($self->has_param("BuildDependsOnly")) {
 	$control .= "BuildDependsOnly: False\n";
 }
 	if ($self->param_boolean("Essential")) {
