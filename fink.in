@@ -69,9 +69,9 @@ GetOptions(
 	'build-as-nobody'    => sub { $options{build_as_nobody} = 1 ;  
 								  $optionsString .= '--build-as-nobody ' 
 								},
-	'interactive|i'    => sub { $options{interactive} = 1 ;  
-                                $optionsString .= '--interactive ' 
-                              },
+#	'interactive|i'    => sub { $options{interactive} = 1 ;  
+#                                $optionsString .= '--interactive ' 
+#                              },
 	'version|V'        => \&show_version,
 	'help|h'           => \&show_help
 )
