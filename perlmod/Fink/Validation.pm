@@ -116,6 +116,7 @@ our %known_fields = map {$_, 1}
      gcc
      compilescript
      installscript
+     runtimevars
      splitoff
      jarfiles
      tarfilesrename
@@ -315,6 +316,10 @@ sub validate_info_file {
       print "Warning: Description contains package name. ($filename)\n";
       $looks_good = 0;
     }
+  	if ($value =~ m/\.$/) {
+      print "Warning: Description ends with \".\". ($filename)\n";
+      $looks_good = 0;
+  	}
   }
   
   $expand = { 'n' => $pkgname,

@@ -1,3 +1,7 @@
+2002-10-10  Max Horn  <max@quendi.de>
+
+	* Validation.pm: Added RunTimeVars field; warn if description ends with "."
+
 2002-10-04  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* Engine.pm: another small patch to the splitoff code.  This patch
@@ -13,7 +17,7 @@
 
 	* PkgVersion.pm: Fix Axel problem with partial downloads
 
-	* PkgVersion.pm: Change some tarballs to "file"s.
+	* PkgVersion.pm: Change some tarballs to "file"s
 
 2002-09-28  Benjamin Reed <rangerrick@users.sourceforge.net>
 
