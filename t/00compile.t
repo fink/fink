@@ -1,6 +1,12 @@
 #!/usr/bin/perl -w
 
 use strict;
+
+BEGIN {
+    eval qq{ require Test::More };
+    $@ && print STDERR "\n\n$@\nDo you need to install the test-simple-pm package or perl >= v5.8.0?\n\n";
+}
+
 use Test::More 'no_plan';
 
 use File::Find;
