@@ -1,3 +1,8 @@
+2001-12-23  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm (phase_install): Fixed bug occuring when removing the
+	last 'perl' type package using UpdatePOD.
+
 2001-12-21  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm, Package.pm: Allow '+' in package names.

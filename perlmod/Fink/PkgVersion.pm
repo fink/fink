@@ -1115,11 +1115,22 @@ EOF
       if ($scriptname eq "postinst") {
         $scriptbody .=
           "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n".
+          "mkdir -p \%p/lib/perl5/darwin\n".
           "cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\n";
       } elsif ($scriptname eq "postrm") {
         $scriptbody .=
-          "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n".
-          "cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\n";
+          "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n\n".
+          "###\n".
+          "### check to see if any .pod files exist in \%p/share/podfiles.\n".
+          "###\n\n".
+          "perl <<'END_PERL'\n\n".
+          "if (-e \"\%p/share/podfiles\") {\n".
+          "  \@files = <\%p/share/podfiles/*.pod>;\n".
+          "  if (\$#files >= 0) {\n".
+          "    exec \"cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\";\n".
+          "  }\n".
+          "}\n\n".
+          "END_PERL\n";
       } 
     }
 
