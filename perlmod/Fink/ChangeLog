@@ -1,9 +1,15 @@
 2004-01-09  Daniel Macks  <dmacks@netpace.org>
 
+	* CLI.pm: Fixed a bug in print_breaking: was treating an embedded
+	newline as an ordinary entity (printable character), not adjusting
+	the wrapping for starting a new line.
+
+2004-01-09  Daniel Macks  <dmacks@netpace.org>
+
 	* Bootstrap.pm, SelfUpdate.pm: Swiched `cat` to Fink::Command::cat.
 	* PkgVersion.pm: Improved check for failure when creating
 	seg_addr_table file. Switched one system("mkdir") to &execute.
-	
+
 2004-01-08  Daniel Macks  <dmacks@netpace.org>
 
 	* Validation.pm: Warning for DescDetail and DescUsage that will

@@ -83,13 +83,11 @@ printed: $prefix1 is prepended to the first line, $prefix2 is
 prepended to all other lines. If only $prefix1 is defined, that will
 be prepended to all lines.
 
-FIXME: if $string has an embedded newline, this is treated as a forced
-break (good) but the counter used to track how much has been printed
-to a line is not reset (bad). Consider:
-
-    $a="A"x10;
-    &print_breaking("$a "x8);
-    &print_breaking("$a\n"."$a "x8)'
+If $string is a multiline string (i.e., it contains embedded newlines
+other than an optional one at the end of the whole string), the prefix
+rules are applied to each contained line separately. That means
+$prefix1 affects the first line printed for each line in $string and
+$prefix2 affects all other lines printed for each line in $string.
 
 =cut
 
@@ -104,6 +102,19 @@ sub print_breaking {
 	my ($pos, $t, $reallength, $prefix, $first);
 
 	chomp($s);
+
+	# if string has embedded newlines, handle each line separately
+	while ($s =~ s/^(.*?)\n//) {
+	    # Feed each line except for last back to ourselves (always
+	    # want linebreak since $linebreak only controls last line)
+	    # prefix behavior: prefix1 for first line of each line of
+	    # multiline (cf. first line of the whole multiline only)
+	    my $s_line = $1;
+	    &print_breaking($s_line, 1, $prefix1, $prefix2);
+	}
+
+	# at this point we have either a single line or only the last
+	# line of a multiline, so wrap and print
 
 	$first = 1;
 	$prefix = $prefix1;
