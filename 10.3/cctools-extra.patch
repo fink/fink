@@ -1,0 +1,23 @@
+diff -uNbr cctools/misc/seg_addr_table.c cctools-new/misc/seg_addr_table.c
+--- cctools/misc/seg_addr_table.c	Fri Sep  6 21:28:06 2002
++++ cctools-new/misc/seg_addr_table.c	Fri May 16 10:46:48 2003
+@@ -20,13 +20,13 @@
+  * These are the default addresses use when re-laying out the images.  These
+  * changed in Mac OS X in the 10.2 release.
+  */
+-#define DEFAULT_SEG1ADDR_X10_1		0x41300000 /* low to high allocation */
+-#define DEFAULT_READ_ONLY_ADDR_X10_1	0x70000000
+-#define DEFAULT_READ_WRITE_ADDR_X10_1	0x80000000
++#define DEFAULT_SEG1ADDR_X10_1		0x00000000 /* low to high allocation */
++#define DEFAULT_READ_ONLY_ADDR_X10_1	0x50000000
++#define DEFAULT_READ_WRITE_ADDR_X10_1	0x60000000
+ 
+-#define DEFAULT_SEG1ADDR_X10_2		0x8fe00000 /* high to low allocation */
+-#define DEFAULT_READ_ONLY_ADDR_X10_2	0x90000000
+-#define DEFAULT_READ_WRITE_ADDR_X10_2	0xa0000000
++#define DEFAULT_SEG1ADDR_X10_2		0x3fe00000 /* high to low allocation */
++#define DEFAULT_READ_ONLY_ADDR_X10_2	0x50000000
++#define DEFAULT_READ_WRITE_ADDR_X10_2	0x60000000
+ 
+ /*
+  * The 256meg regions can only have at most 128meg allocated from them leaving

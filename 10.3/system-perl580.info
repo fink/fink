@@ -1,0 +1,14 @@
+Package: system-perl580
+Version: 5.8.0
+Revision: 1
+Provides: perl580-core
+Type: bundle
+Description: Placeholder package for manually installed perl 5.8.0
+DescDetail: <<
+Install this package if you have perl 5.8.0 installed manually.
+<<
+#
+PreInstScript: <<
+perl -e 'if ("$]" == "5.008") {print "\n\nLooks like perl 5.8.0\n\n\n"} else {die "\n\nSorry, your perl is not version 5.8.0.  DO NOT INSTALL THIS PACKAGE.\n\n\n"}'
+<<
+Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>

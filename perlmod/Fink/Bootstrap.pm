@@ -165,10 +165,14 @@ sub check_host {
 	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-6]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.2";
-	} elsif ($host =~ /^powerpc-apple-darwin(6\.[7-9]|[7-9]\.)/) {
+	} elsif ($host =~ /^powerpc-apple-darwin(6\.[7-9]\.)/) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.2";
+	} elsif ($host =~ /^powerpc-apple-darwin(7\.[0-9]\.)/) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made, but should work.");
+		$distribution = "10.3";
 	} elsif ($host =~ /^i386-apple-darwin(6\.[0-6]|[7-9]\.)/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".

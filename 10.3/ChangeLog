@@ -1,0 +1,5 @@
+2003-06-27  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Adding 10.3 dir for bootstraping
+	* Using new file names
+	* Added prebinding thanks to RangerRick

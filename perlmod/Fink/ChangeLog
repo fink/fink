@@ -1,3 +1,8 @@
+2003-06-27  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Bootstrap.pm: Added checks for 10.3 tree
+	* PkgVersion.pm: Adding RangerRick's patch for prebinding for 10.3 only
+
 2003-06-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Bootstrapping with perl 5.6.1 also requires 

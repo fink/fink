@@ -1546,6 +1546,92 @@ EOF
 	print CONTROL $control;
 	close(CONTROL) or die "can't write control file for ".$self->get_fullname().": $!\n";
 
+	### update Mach-O Object List
+
+	our %prebound_files = ();
+	my $prebind_debug = 1;
+
+	eval {
+		require File::Find;
+		import File::Find;
+	};
+	print "Finding prebound objects...\n";
+	my ($is_prebound, $is_exe, $name);
+	find({ wanted => sub {
+		return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
+		#print "\$_ = $_\n";
+		$is_prebound = 0;
+		$is_exe      = 0;
+		$name        = undef;
+		my @dep_list;
+		if (open(OTOOL, "otool -hLv '$_' |")) {
+			while (<OTOOL>) {
+				if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
+					# executable has no install_name, add to the list
+					$name = $File::Find::name;
+					$name =~ s/^$destdir//;
+					warn "exe, prebound: adding $name ($File::Find::name)\n" if ($prebind_debug);
+					$is_exe = 1;
+					$is_prebound = 1;
+				} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
+					# if the last didn't match, but this did, it's a
+					# non-prebound executable, so skip it
+					warn "exe, not prebound: $File::Find::name\n" if ($prebind_debug);
+					last;
+				} elsif (/^\s*MH_MAGIC.*PREBOUND.*$/) {
+					# otherwise it's a dylib of some form, mark it
+					# so we can pull the install_name in a few lines
+					warn "lib, prebound: adding $File::Find::name\n" if ($prebind_debug);
+					$is_prebound = 1;
+				} elsif (/^\s*MH_MAGIC.*$/) {
+					# if it wasn't an executable, and the last didn't
+					# match, then it's not a prebound lib
+					warn "lib, not prebound: $File::Find::name\n" if ($prebind_debug);
+					last;
+				} elsif (my ($lib) = $_ =~ /^\s*(.+?) \(compatibility.*$/ and $is_prebound) {
+					# we hit the install_name, add it to the list
+					unless ($lib =~ /\/libSystem/ or $lib =~ /^\/+[Ss]ystem/ or $lib =~ /^\/usr\/lib/) {
+						push(@dep_list, $lib);
+						warn "lib, prebound: found dep $lib ($File::Find::name)\n" if ($prebind_debug);
+					}
+				}
+			}
+			close(OTOOL);
+			if ($is_exe) {
+				$prebound_files{$name} = \@dep_list;
+			} else {
+				$name = shift(@dep_list);
+				return if (not defined $name);
+				$prebound_files{$name} = \@dep_list;
+			}
+		} else {
+			warn "couldn't check prebinding on $_\n" if ($prebind_debug);
+		}
+	} }, $destdir);
+
+	if (keys %prebound_files) {
+		system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/files') == 0 or
+			die "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!\n";
+		open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') or
+			die "can't write " . $self->get_name() . '.pblist';
+		print PREBOUND join("\n", sort keys %prebound_files), "\n";
+		close(PREBOUND);
+	}
+
+	print "Writing dependencies...\n";
+	for my $key (sort keys %prebound_files) {
+		for my $file (@{$prebound_files{$key}}) {
+			$file =~ s/\//-/g;
+			$file =~ s/^-+//;
+			system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/deps/'. $file) == 0 or
+				die "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!\n";
+			open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') or
+				die "can't write " . $self->get_name() . '.deplist';
+			print DEPS $key, "\n";
+			close(DEPS);
+		}
+	}
+
 	### create scripts as neccessary
 
 	foreach $scriptname (qw(preinst postinst prerm postrm)) {
@@ -1625,6 +1711,18 @@ EOF
 				}
 				$scriptbody .= "fi\n";
 			}
+		}
+
+		# add the call to redo prebinding on any packages with prebound files
+		if (keys %prebound_files > 0 and $scriptname eq "postinst") {
+			my $name = $self->get_name();
+			$scriptbody .= <<EOF;
+
+if test -x "$basepath/var/lib/fink/prebound/queue-prebinding.pl"; then
+	$basepath/var/lib/fink/prebound/queue-prebinding.pl $name
+fi
+
+EOF
 		}
 
 		# do we have a non-empty script?
