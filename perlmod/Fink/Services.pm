@@ -42,7 +42,8 @@ BEGIN {
                     &print_breaking_twoprefix
                     &prompt &prompt_boolean &prompt_selection
                     &version_cmp &latest_version
-                    &collapse_space &get_term_width);
+                    &collapse_space &get_term_width
+                    &file_MD5_checksum);
 }
 our @EXPORT_OK;
 
@@ -561,5 +562,26 @@ sub get_term_width {
   }
   return $width;
 }
+
+### compute the MD5 checksum for a given file
+
+sub file_MD5_checksum {
+  my $filename = shift;
+  my ($pid, $checksum, $name);
+
+  $checksum = "-";
+
+  $pid = open(MD5SUM, "md5sum $filename |") or die "Couldn't run md5sum: $!\n";
+  while (<MD5SUM>) {
+    if (/([^\s]*)\s*$filename/) {
+      $checksum = $1;
+      last;
+    }
+  }
+  close(MD5SUM) or die "Error on closing pipe to md5sum: $!\n";
+
+  return $checksum;
+}
+
 ### EOF
 1;

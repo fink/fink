@@ -1,9 +1,13 @@
 2002-05-25  Max Horn  <max@quendi.de>
 
-	* Services.pm: Added execute_script function (based on patch #534121 by
-	Benjamin Reed).
+	* PkgVersion.pm: Added Source-MD5/SourceN-MD5 fields.
+
+	* Services.pm: Added file_MD5_checksum function.
 
 	* PkgVersion.pm: Make use of the new execute_script function.
+
+	* Services.pm: Added execute_script function (based on patch #534121 by
+	Benjamin Reed).
 
 2002-05-25  Alexander Strange <MrVacBob@mac.com>
 

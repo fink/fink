@@ -22,10 +22,12 @@
 
 package Fink::PkgVersion;
 use Fink::Base;
-use Fink::Services qw(&filename &execute &execute_script &expand_percent
-                      &latest_version &print_breaking
-                      &print_breaking_twoprefix &prompt_boolean
-                      &collapse_space &read_properties_var);
+use Fink::Services qw(&filename &execute &execute_script
+                      &expand_percent &latest_version
+                      &print_breaking &print_breaking_twoprefix
+                      &prompt_boolean &prompt_selection
+                      &collapse_space &read_properties_var
+                      &file_MD5_checksum);
 use Fink::Config qw($config $basepath $libpath $debarch);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -409,6 +411,22 @@ sub get_tarball {
   }
   return "-";
 }
+
+sub get_checksum {
+  my $self = shift;
+  my $index = shift || 1;
+  if ($index == 1) {
+    if ($self->has_param("Source-MD5")) {
+      return $self->param("Source-MD5");
+    }
+  } elsif ($index >= 2 and $index <= $self->{_sourcecount}) {
+    if ($self->has_param("Source".$index."-MD5")) {
+      return $self->param("Source".$index."-MD5");
+    }
+  }
+  return "-";
+}
+
 
 sub get_custom_mirror {
   my $self = shift;
@@ -886,7 +904,7 @@ sub fetch_source {
 sub phase_unpack {
   my $self = shift;
   my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-  my ($i, $verbosity, $answer, $tries);
+  my ($i, $verbosity, $answer, $tries, $checksum);
 
   if ($self->{_type} eq "bundle") {
     return;
@@ -936,6 +954,36 @@ sub phase_unpack {
     if (not defined $found_archive) {
       die "can't find source tarball $archive for package ".$self->get_fullname()."\n";
     }
+    
+    # verify the MD5 checksum, if specified
+    $checksum = $self->get_checksum($i);
+    if ($checksum ne "-") {  # Checksum was specified
+      # compare to the MD5 checksum of the tarball
+      if ($checksum ne &file_MD5_checksum($found_archive)) {
+        # mismatch, ask user what to do
+	$tries++;
+  	
+  	&print_breaking("The checksum of the tarball $archive of package ".
+			$self->get_fullname()." is incorrect. The most likely ".
+			"cause for this is a corrupted or incomplete ".
+			"download. It is recommended that you download it ".
+			"again. How do you want to proceed?");
+	$answer =
+	  &prompt_selection("Make your choice: ",
+			    ($tries >= 3) ? 1 : 2,
+			    { "error" => "Give up",
+			      "redownload" => "Download again",
+			      "continue" => "Use tarball anyway" },
+			    ( "error", "redownload", "continue" ));
+	if ($answer eq "redownload") {
+	  &execute("rm -f $found_archive");
+	  $i--;
+	  next;   # restart loop with same tarball
+	} elsif($answer eq "error") {
+	  die "checksum of tarball $archive of package ".$self->get_fullname()." incorrect\n";
+	}
+      }
+    }
 
     # determine unpacking command
     $unpack_cmd = "cp $found_archive .";
@@ -978,7 +1026,6 @@ sub phase_unpack {
 			($tries >= 3) ? 0 : 1);
       if ($answer) {
 	&execute("rm -f $found_archive");
-
 	$i--;
 	next;   # restart loop with same tarball
       } else {
