@@ -32,8 +32,8 @@ if (!defined $tmpdir or !length $tmpdir or !-d $tmpdir) {
     print "Bail out! Cannot create scratchdir\n";
     die "\n";
 }
-chmod 0755, $tmpdir;  # must have only root be able to write to dir
-chdir "/tmp";         # user="nobody" must start shells in the local dir
+chmod 0755, $tmpdir;  # must have only root be able to write to dir but all read
+chdir "/tmp";         # set local dir to where user="nobody" can start shells
 
 # 6
 Fink::Config::set_options( {'build_as_nobody' => 0} );
