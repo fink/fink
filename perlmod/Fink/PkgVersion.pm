@@ -141,11 +141,15 @@ sub initialize {
   $self->{_bootstrap} = 0;
 
   # expand percents in various fields
-  $self->expand_percent_if_available('depends');
-  $self->expand_percent_if_available('builddepends');
-  $self->expand_percent_if_available('conflicts');
-  $self->expand_percent_if_available('provides');
-  $self->expand_percent_if_available('replaces');
+  $self->expand_percent_if_available('BuildDepends');
+  $self->expand_percent_if_available('Conflicts');
+  $self->expand_percent_if_available('Depends');
+  $self->expand_percent_if_available('Enhances');
+  $self->expand_percent_if_available('Pre-Depends');
+  $self->expand_percent_if_available('Provides');
+  $self->expand_percent_if_available('Recommends');
+  $self->expand_percent_if_available('Replaces');
+  $self->expand_percent_if_available('Suggests');
 
   # from here on we have to distinguish between "real" packages and splitoffs
   if ($self->{_type} eq "splitoff") {
@@ -185,11 +189,11 @@ sub initialize {
     $self->{source} = $source;
     $self->{_sourcecount} = 1;
   
-    $self->expand_percent_if_available('sourcerename');
+    $self->expand_percent_if_available('SourceRename');
   
     for ($i = 2; $self->has_param('source'.$i); $i++) {
       $self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
-      $self->expand_percent_if_available('source'.$i.'rename');
+      $self->expand_percent_if_available('Source'.$i.'Rename');
       $self->{_sourcecount} = $i;
     }
   
@@ -207,7 +211,7 @@ sub initialize {
 
 sub expand_percent_if_available {
   my $self = shift;
-  my $field = shift;
+  my $field = lc shift;
 
   if ($self->has_param($field)) {
     $self->{$field} = &expand_percent($self->{$field}, $self->{_expand});

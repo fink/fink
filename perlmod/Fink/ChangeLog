@@ -1,3 +1,9 @@
+2002-03-07  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm (initialize): Expand percents in even more fields now:
+	Suggests, Enhances, Recommends and Pre-Depends.
+	(expand_percent_if_available): First converts field parameter to lower case.
+
 2002-03-06  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm: Multitude of changes, implementing initial splitoff 
