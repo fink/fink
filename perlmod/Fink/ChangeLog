@@ -1,3 +1,7 @@
+2003-06-13  Ben Hines <benh57@users.sourceforge.net>
+
+	* NetAccess.pm: Clarify nesting too deep error.
+	
 2003-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: allow bootstrapping with perl 5.8.1 too
