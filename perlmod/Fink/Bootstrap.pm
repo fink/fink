@@ -51,7 +51,7 @@ sub bootstrap {
   my ($bsbase, $save_path);
   my ($pkgname, $package, @elist);
   my @plist = ("gettext", "tar", "dpkg-bootstrap");
-  my @addlist = ("apt storable-pm");
+  my @addlist = ("apt", "storable-pm");
 
   $bsbase = "$basepath/bootstrap";
   &print_breaking("Bootstrapping a base system via $bsbase.");

@@ -325,7 +325,12 @@ sub scan_all {
       # the index based on its modification date and that of the package descs.
       if (not $config->param_boolean("NoAutoIndex")) {
 	$db_mtime = (stat("$basepath/var/db/fink.db"))[9];       
-	find (\&process_find, "$basepath/fink/dists");
+	if (((lstat("$basepath/etc/fink.conf"))[9] > $db_mtime)
+	  or ((stat("$basepath/etc/fink.conf"))[9] > $db_mtime)) {
+	  $db_outdated = 1;
+	} else {
+	  find (\&process_find, "$basepath/fink/dists");
+	}
       }
       
       # If the index is not outdated, we can use it, and thus safe a lot of time
@@ -374,7 +379,7 @@ sub scan_all {
 
 sub process_find {
   if (/^.*\.info\z/s ) {
-    if ( ( (lstat($_))[9] > $db_mtime ) || ( (stat($_))[9] > $db_mtime ) ) {
+    if ( ( (lstat($_))[9] > $db_mtime ) or ( (stat($_))[9] > $db_mtime ) ) {
       $db_outdated = 1;
       $File::Find::prune = 1;
     }

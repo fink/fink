@@ -1,3 +1,7 @@
+2002-05-16  Max Horn  <max@quendi.de>
+
+	* Bootstrap.pm (bootstrap): Fixed bootstraping (YASB).
+
 2002-05-11  Max Horn  <max@quendi.de>
 
 	* Engine.pm (cmd_scanpackages): Fixed very stupid bug.
