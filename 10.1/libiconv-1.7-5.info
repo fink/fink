@@ -1,0 +1,35 @@
+Package: libiconv
+Version: 1.7
+Revision: 5
+Source: gnu
+Essential: yes
+Depends: base-files
+Patch: %f.patch
+ConfigureParams: --mandir=%p/share/man
+InstallScript: <<
+mkdir -p %i/share/man %i/share/doc/%n
+make install prefix=%i mandir=%i/share/man docdir=%i/share/doc/%n
+install -m 644 README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS %i/share/doc/%n/
+rm -rf %i/doc
+rm -f %i/lib/charset.alias
+<<
+#
+PostInstScript: <<
+if [ -L %p/etc/alternatives/charset.alias ]; then
+  update-alternatives --remove charset.alias %p/lib/charset.alias.libiconv
+fi
+<<
+#
+Description: Character set conversion library
+DescDetail: <<
+GNU libiconv provides an iconv() implemententation for systems that lack
+it, or whose implementation cannot convert from/to Unicode.
+<<
+DescPort: <<
+charset.alias is deleted because it is empty on Darwin anyway and
+causes unnecessary conflicts between packages.
+<<
+DescPackaging: Previous versions by Christoph Pfisterer.
+License: LGPL
+Homepage: http://clisp.cons.org/~haible/packages-libiconv.html
+Maintainer: Max Horn <max@quendi.de>

@@ -1,0 +1,264 @@
+diff -ruN dpkg-1.9.17/archtable dpkg-1.9.17-patched/archtable
+--- dpkg-1.9.17/archtable	Sun May 13 23:50:59 2001
++++ dpkg-1.9.17-patched/archtable	Fri Oct 19 11:33:44 2001
+@@ -51,3 +51,5 @@
+ s390-ibm-linux-gnu	s390		s390
+ s390-unknown-linux-gnu	s390		s390
+ i386-openbsd2.8		openbsd-i386	i386
++powerpc-darwin		darwin-powerpc	darwin-powerpc
++i386-darwin		darwin-i386	darwin-i386
+diff -ruN dpkg-1.9.17/dpkg-deb/extract.c dpkg-1.9.17-patched/dpkg-deb/extract.c
+--- dpkg-1.9.17/dpkg-deb/extract.c	Mon Apr 23 22:42:17 2001
++++ dpkg-1.9.17-patched/dpkg-deb/extract.c	Fri Oct 19 11:33:44 2001
+@@ -122,7 +122,7 @@
+       memberlen= parseheaderlength(arh.ar_size,sizeof(arh.ar_size),
+                                    debar,"member length");
+       if (memberlen<0)
+-        ohshit(_("file `%.250s' is corrupt - negative member length %zi"),debar,memberlen);
++        ohshit(FIX_PERCENT_ZI(_("file `%.250s' is corrupt - negative member length %zi")),debar,memberlen);
+       if (!header_done) {
+         if (memcmp(arh.ar_name,"debian-binary   ",sizeof(arh.ar_name)) &&
+ 	    memcmp(arh.ar_name,"debian-binary/   ",sizeof(arh.ar_name)))
+@@ -173,8 +173,8 @@
+     }
+ 
+     if (admininfo >= 2)
+-      if (printf(_(" new debian package, version %s.\n"
+-                 " size %ld bytes: control archive= %zi bytes.\n"),
++      if (printf(FIX_PERCENT_ZI(_(" new debian package, version %s.\n"
++                 " size %ld bytes: control archive= %zi bytes.\n")),
+                  versionbuf, (long)stab.st_size, ctrllennum) == EOF ||
+           fflush(stdout)) werr("stdout");
+     
+@@ -186,12 +186,12 @@
+     l= strlen(versionbuf); if (l && versionbuf[l-1]=='\n') versionbuf[l-1]=0;
+     if (!fgets(ctrllenbuf,sizeof(ctrllenbuf),ar))
+       readfail(ar,debar,_("ctrl information length"));
+-    if (sscanf(ctrllenbuf,"%zi%c%d",&ctrllennum,&nlc,&dummy) !=2 || nlc != '\n')
++    if (sscanf(ctrllenbuf,"%ld%c%d",&ctrllennum,&nlc,&dummy) !=2 || nlc != '\n')
+       ohshit(_("archive has malformatted ctrl len `%s'"),ctrllenbuf);
+ 
+     if (admininfo >= 2)
+-      if (printf(_(" old debian package, version %s.\n"
+-                 " size %ld bytes: control archive= %ld, main archive= %zi.\n"),
++      if (printf(FIX_PERCENT_ZI(_(" old debian package, version %s.\n"
++                 " size %ld bytes: control archive= %ld, main archive= %zi.\n")),
+                  versionbuf, (long)stab.st_size, ctrllennum,
+                  (long) (stab.st_size - ctrllennum - strlen(ctrllenbuf) - l)) == EOF ||
+           fflush(stdout)) werr("stdout");
+diff -ruN dpkg-1.9.17/include/dpkg.h.in dpkg-1.9.17-patched/include/dpkg.h.in
+--- dpkg-1.9.17/include/dpkg.h.in	Tue May  8 00:27:09 2001
++++ dpkg-1.9.17-patched/include/dpkg.h.in	Fri Oct 19 11:33:44 2001
+@@ -161,6 +161,15 @@
+ extern const char thisname[]; /* defined separately in each program */
+ extern const char printforhelp[];
+ 
++/*** work around prehistoric Darwin libc ***/
++
++#ifdef __APPLE__
++#define FIX_PERCENT_ZI(s) fix_percent_zi(s)
++const char *fix_percent_zi(const char *s);
++#else
++#define FIX_PERCENT_ZI(s) (s)
++#endif
++
+ /*** from ehandle.c ***/
+ 
+ void push_error_handler(jmp_buf *jbufp,
+diff -ruN dpkg-1.9.17/lib/Makefile.in dpkg-1.9.17-patched/lib/Makefile.in
+--- dpkg-1.9.17/lib/Makefile.in	Sun Mar  4 15:39:06 2001
++++ dpkg-1.9.17-patched/lib/Makefile.in	Fri Oct 19 11:33:44 2001
+@@ -21,7 +21,9 @@
+ 	set -e ; cd ../optlib ; $(MAKE) libopt.a
+ 
+ libdpkg.a: $(OBJECTS) ../optlib/libopt.a
+-	$(AR) r $@ $^
++	mkdir -p optlib
++	(cd optlib && ar x ../../optlib/libopt.a)
++	$(AR) r $@ $^ optlib/*.o
+ 	$(RANLIB) $@
+ 
+ .PHONY: install
+diff -ruN dpkg-1.9.17/lib/compat.c dpkg-1.9.17-patched/lib/compat.c
+--- dpkg-1.9.17/lib/compat.c	Mon Apr 23 13:29:30 2001
++++ dpkg-1.9.17-patched/lib/compat.c	Fri Oct 19 11:33:44 2001
+@@ -189,3 +189,25 @@
+   strcpy(q,p); strcat(q,"="); putenv(q);
+ }
+ #endif
++
++#ifdef __APPLE__
++const char *fix_percent_zi(const char *s) {
++  static char *buf = NULL;
++  char *p;
++  if (s == NULL)
++    return NULL;
++  if (buf)
++    free(buf);
++  buf = strdup(s);
++  if (buf == NULL)
++    return s;
++  for (p = buf; *p; p++) {
++    if (p[0] == '%' && p[1] == 'z' && p[2] == 'i') {
++      p[1] = 'l';
++      p[2] = 'd';
++      p += 2;
++    }
++  }
++  return buf;
++}
++#endif
+diff -ruN dpkg-1.9.17/lib/mlib.c dpkg-1.9.17-patched/lib/mlib.c
+--- dpkg-1.9.17/lib/mlib.c	Tue May  8 00:27:09 2001
++++ dpkg-1.9.17-patched/lib/mlib.c	Fri Oct 19 11:33:44 2001
+@@ -196,7 +196,7 @@
+       break;
+     case BUFFER_WRITE_FD:
+       if((ret= write(data->data.i, buf, length)) < 0 && errno != EINTR)
+-	ohshite(_("failed in buffer_write(fd) (%i, ret=%zi %s)"), data->data.i, ret, desc);
++	ohshite(FIX_PERCENT_ZI(_("failed in buffer_write(fd) (%i, ret=%zi %s)")), data->data.i, ret, desc);
+       break;
+     case BUFFER_WRITE_NULL:
+       break;
+diff -ruN dpkg-1.9.17/main/archives.c dpkg-1.9.17-patched/main/archives.c
+--- dpkg-1.9.17/main/archives.c	Mon May 28 23:32:23 2001
++++ dpkg-1.9.17-patched/main/archives.c	Fri Oct 19 11:33:44 2001
+@@ -547,12 +547,10 @@
+     debug(dbg_eachfiledetail,"tarobject SymbolicLink creating");
+ #ifdef HAVE_LCHOWN
+     if (lchown(fnamenewvb.buf,
+-#else
+-    if (chown(fnamenewvb.buf,
+-#endif
+ 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->uid : ti->UserID,
+ 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->gid : ti->GroupID))
+       ohshite(_("error setting ownership of symlink `%.255s'"),ti->Name);
++#endif
+     break;
+   case Directory:
+     /* We've already checked for an existing directory. */
+@@ -608,10 +606,8 @@
+         ohshite(_("unable to make backup symlink for `%.255s'"),ti->Name);
+ #ifdef HAVE_LCHOWN
+       if (lchown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
+-#else
+-      if (chown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
+-#endif
+         ohshite(_("unable to chown backup symlink for `%.255s'"),ti->Name);
++#endif
+     } else {
+       debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
+       if (link(fnamevb.buf,fnametmpvb.buf))
+diff -ruN dpkg-1.9.17/main/configure.c dpkg-1.9.17-patched/main/configure.c
+--- dpkg-1.9.17/main/configure.c	Thu Apr 26 20:48:49 2001
++++ dpkg-1.9.17-patched/main/configure.c	Fri Oct 19 11:33:45 2001
+@@ -340,8 +340,10 @@
+           " I do not mess up your careful work.\n"),
+                     cdr.buf, cdr2.buf);
+ 
++#ifndef __APPLE__
+             s= getenv(NOJOBCTRLSTOPENV);
+             if (s && *s) {
++#endif
+               fputs(_("Type `exit' when you're done.\n"),stderr);
+               if (!(c1= m_fork())) {
+                 s= getenv(SHELLENV);
+@@ -351,11 +353,13 @@
+               }
+               while ((r= waitpid(c1,&status,0)) == -1 && errno == EINTR);
+               if (r != c1) { onerr_abort++; ohshite(_("wait for shell failed")); }
++#ifndef __APPLE__
+             } else {
+               fputs(_("Don't forget to foreground (`fg') this "
+                     "process when you're done !\n"),stderr);
+               kill(-getpgid(0),SIGTSTP);
+             }
++#endif
+           }
+ 
+         } while (!strchr("yino",cc));
+diff -ruN dpkg-1.9.17/main/help.c dpkg-1.9.17-patched/main/help.c
+--- dpkg-1.9.17/main/help.c	Sat Jun 30 16:36:32 2001
++++ dpkg-1.9.17-patched/main/help.c	Fri Oct 19 11:33:45 2001
+@@ -69,7 +69,10 @@
+ 
+ void checkpath(void) {
+ /* Verify that some programs can be found in the PATH. */
+-  static const char *const checklist[]= { "ldconfig", 
++  static const char *const checklist[]= {
++#ifndef __APPLE__
++    "ldconfig",
++#endif
+ #ifdef USE_START_STOP_DAEMON
+     "start-stop-daemon",
+ #endif    
+diff -ruN dpkg-1.9.17/optlib/Makefile.in dpkg-1.9.17-patched/optlib/Makefile.in
+--- dpkg-1.9.17/optlib/Makefile.in	Sun Mar  4 15:39:06 2001
++++ dpkg-1.9.17-patched/optlib/Makefile.in	Fri Oct 19 11:33:45 2001
+@@ -11,9 +11,10 @@
+ 
+ .PHONY: all
+ all:: libopt.a
+-	
++
+ libopt.a: $(OBJECTS)
+ 	$(AR) r $@ $^
++	$(RANLIB) $@
+ 
+ .PHONY: install
+ install:: all
+diff -ruN dpkg-1.9.17/origin.fink dpkg-1.9.17-patched/origin.fink
+--- dpkg-1.9.17/origin.fink	Thu Jan  1 01:00:00 1970
++++ dpkg-1.9.17-patched/origin.fink	Fri Oct 19 12:07:59 2001
+@@ -0,0 +1,4 @@
++Vendor: Fink
++Vendor-URL: http://fink.sourceforge.net/
++Bugs: http://fink.sourceforge.net/
++
+diff -ruN dpkg-1.9.17/scripts/dpkg-architecture.pl dpkg-1.9.17-patched/scripts/dpkg-architecture.pl
+--- dpkg-1.9.17/scripts/dpkg-architecture.pl	Wed Jun 20 02:39:27 2001
++++ dpkg-1.9.17-patched/scripts/dpkg-architecture.pl	Fri Oct 19 11:33:45 2001
+@@ -63,7 +63,9 @@
+ 	    's390',	 's390-linux',
+ 	    'ia64',	 'ia64-linux',
+ 	    'openbsd-i386', 'i386-openbsd',
+-	    'freebsd-i386', 'i386-freebsd');
++	    'freebsd-i386', 'i386-freebsd',
++	    'darwin-powerpc', 'powerpc-darwin',
++	    'darwin-i386', 'i386-darwin');
+ 
+ sub usageversion {
+     print STDERR
+diff -ruN dpkg-1.9.17/scripts/update-alternatives.pl dpkg-1.9.17-patched/scripts/update-alternatives.pl
+--- dpkg-1.9.17/scripts/update-alternatives.pl	Sat Jun 16 21:53:59 2001
++++ dpkg-1.9.17-patched/scripts/update-alternatives.pl	Fri Oct 19 11:33:45 2001
+@@ -56,7 +56,7 @@
+ sub quit { print STDERR "update-alternatives: @_\n"; exit(2); }
+ sub badusage { print STDERR "update-alternatives: @_\n\n"; &usageversion; exit(2); }
+ 
+-$altdir= '/etc/alternatives';
++$altdir= '@ADMINPREFIX@/etc/alternatives';
+ $admindir= $admindir . '/alternatives';
+ $testmode= 0;
+ $verbosemode= 0;
+diff -ruN dpkg-1.9.17/split/info.c dpkg-1.9.17-patched/split/info.c
+--- dpkg-1.9.17/split/info.c	Thu Apr 26 20:48:49 2001
++++ dpkg-1.9.17-patched/split/info.c	Fri Oct 19 11:33:45 2001
+@@ -185,7 +185,7 @@
+ }
+ 
+ void print_info(const struct partinfo *pi) {
+-  printf(_("%s:\n"
++  printf(FIX_PERCENT_ZI(_("%s:\n"
+          "    Part format version:            %s\n"
+          "    Part of package:                %s\n"
+          "        ... version:                %s\n"
+@@ -195,7 +195,7 @@
+          "    Part number:                    %d/%d\n"
+          "    Part length:                    %lu bytes\n"
+          "    Part offset:                    %lu bytes\n"
+-         "    Part file size (used portion):  %zi bytes\n\n"),
++         "    Part file size (used portion):  %zi bytes\n\n")),
+          pi->filename,
+          pi->fmtversion,
+          pi->package,
