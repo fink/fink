@@ -66,9 +66,9 @@ $script = "\nhi\n  \n\nwocka\nwocka2\n\n  wiff\n\n\n    \n\n\n";
 $result = &Fink::Services::prepare_script($scriptref);
 is($script, "hi\nwocka\nwocka2\nwiff", 'blanks are removed');
 
-$script = "Hello\nI am # Sam\n#Sam I am\n  # leave now\n";
+$script = "Hello\nI am # Sam\n#Sam I am\n  # leave now\nwoof";
 $result = &Fink::Services::prepare_script($scriptref);
-is($script, "Hello\nI am # Sam", 'comments are removed');
+is($script, "Hello\nI am # Sam\nwoof", 'comments are removed');
 
 $script = "I hate\\\nwriting tests";
 $result = &Fink::Services::prepare_script($scriptref);

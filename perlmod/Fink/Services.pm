@@ -447,7 +447,6 @@ sub execute {
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
-		next if ($cmd =~ /(^\s*\Z)|(^\s*\#)/);  # not sure why we need this
 		if (not $options{'quiet'}) {
 			print "$cmd\n";
 		}
@@ -521,11 +520,11 @@ sub prepare_script {
 	}
 
 	### No interpretter is specified so process for line-by-line system()
-	$$script =~ s/^\s*//mg;        # Strip leading white space on each line
-	$$script =~ s/\s*\\\s*\n/ /g;  # Rejoin continuation/multiline commands
-	$$script =~ s/^\#.*?$//mg;     # remove comments
-	$$script =~ s/^\s*$//mg;       # remove blanks
-	chomp $$script;                # always remove trailing newline 
+	$$script =~ s/^\s*//mg;          # Strip leading white space on each line
+	$$script =~ s/\s*\\\s*\n/ /g;    # Rejoin continuation/multiline commands
+	$$script =~ s/^\#.*?($)\n?//mg;  # remove comment lines
+	$$script =~ s/^\s*($)\n?//mg;    # remove blank lines
+	chomp $$script;                  # always remove trailing newline 
 
 	# sanity check
 	if ($$script =~ /\\$/s) {
