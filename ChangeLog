@@ -1,3 +1,10 @@
+2003-01-15  Finlay Dobbie <finlayd@users.sourceforge.net>
+
+	* fink.conf.5.in: fink.conf manual page.
+	
+	* bootstrap.pl, inject.pl, install.sh, setup.sh: Install fink.conf
+	manual page.
+	
 2003-01-14  Max Horn  <max@quendi.de>
 
 	* fink.in: Fixing problems with exit codes (Patch #662894).
