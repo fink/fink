@@ -888,7 +888,7 @@ sub cmd_cleanup {
 		$package = Fink::Package->package_by_name($pname);
 		foreach $vo ($package->get_all_versions()) {
 			# Skip dummy packages
-			next if $vo->{_type} eq "dummy";
+			next if $vo->is_type('dummy');
 
 			# deb file 
 			$file = $vo->get_debfile();

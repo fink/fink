@@ -1,5 +1,11 @@
 2004-02-27  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm,Package.pm,PkgVersion.pm: convert all checking of
+	package type from directly comparing {_type} to using a new
+	PkgVersion::is_type() accessor.
+
+2004-02-27  Daniel Macks  <dmacks@netspace.org>
+
 	* Command.pm: rm_f now succeeds if try to remove non-existent
 	file. symlink_f now uses native rm_f to remove a pre-existing
 	target (so doesn't fail if it doesn't exist). Fixed doc about

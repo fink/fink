@@ -133,7 +133,7 @@ sub initialize {
 	$self->{_fullname} = $pkgname."-".$version."-".$revision;
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 	# percent-expansions
-	if ($self->param("_type") eq "perl") {
+	if ($self->is_type('perl')) {
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 
@@ -433,7 +433,7 @@ sub merge {
 	my $self = shift;
 	my $dup = shift;
 	
-	print "Warning! Not a dummy package\n" if $self->{_type} ne 'dummy';
+	print "Warning! Not a dummy package\n" if $self->is_type('dummy');
 	push @{$self->{_debpaths}}, @{$dup->{_debpaths}};
 }
 
@@ -570,7 +570,7 @@ sub get_source {
 	my $self = shift;
 	my $index = shift || 1;
 	if ($index < 2) {
-		return $self->param("Source") unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
+		return $self->param("Source") unless ($self->is_type('bundle') || $self->is_type('nosource'));
 	} elsif ($index <= $self->{_sourcecount}) {
 		return $self->param("Source".$index);
 	}
@@ -594,7 +594,7 @@ sub get_tarball {
 		if ($self->has_param("SourceRename")) {
 			return $self->param("SourceRename");
 		}
-		return &filename($self->param("Source")) unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
+		return &filename($self->param("Source")) unless ($self->is_type('bundle') || $self->is_type('nosource'));
 	} elsif ($index <= $self->{_sourcecount}) {
 		if ($self->has_param("Source".$index."Rename")) {
 			return $self->param("Source".$index."Rename");
@@ -653,7 +653,7 @@ sub get_build_directory {
 		return $self->{_builddir};
 	}
 
-	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource"
+	if ($self->is_type('bundle') || $self->is_type('nosource')
 			|| lc $self->get_source(1) eq "none"
 			|| $self->param_boolean("NoSourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname();
@@ -704,6 +704,17 @@ sub get_splitoffs {
 	}
 
 	return @list;
+}
+
+# returns whether this fink package is of a given Type:
+# presumes the field is already been parsed into $self->{_type}
+
+sub is_type {
+	my $self = shift;
+	my $type = shift;
+
+	return 0 unless $self->has_param("_type");
+	$self->param("_type") eq $type;
 }
 
 ### generate description
@@ -790,9 +801,9 @@ sub is_fetched {
 	my $self = shift;
 	my ($i);
 
-	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+	if ($self->is__type('bundle') || $self->is_type('nosource') ||
 			lc $self->get_source(1) eq "none" ||
-			$self->{_type} eq "dummy") {
+			$self->is_type('dummy')) {
 		return 1;
 	}
 
@@ -1156,9 +1167,9 @@ sub phase_fetch {
 	my $dryrun = shift || 0;
 	my ($i);
 
-	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+	if ($self->is_type('bundle') || $self->is_type('nosource') ||
 			lc $self->get_source(1) eq "none" ||
-			$self->{_type} eq "dummy") {
+			$self->is_type('dummy')) {
 		return;
 	}
 	if (exists $self->{parent}) {
@@ -1252,10 +1263,10 @@ sub phase_unpack {
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		return;
 	}
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 			" because no package description is available\n";
 	}
@@ -1305,7 +1316,7 @@ END
 			die "can't remove existing directory $bdir\n";
 	}
 
-	if ($self->{_type} eq "nosource" || lc $self->get_source(1) eq "none") {
+	if ($self->is_type('nosource') || lc $self->get_source(1) eq "none") {
 		$destdir = "$buildpath/$bdir";
 		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
@@ -1457,10 +1468,10 @@ sub phase_patch {
 	my $self = shift;
 	my ($dir, $patch_script, $cmd, $patch, $subdir);
 
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		return;
 	}
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
@@ -1543,10 +1554,10 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		return;
 	}
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
@@ -1565,7 +1576,7 @@ sub phase_compile {
 	if ($self->has_param("CompileScript")) {
 		$compile_script = $self->param("CompileScript");
 	} else {
-		if ($self->param("_type") eq "perl") {
+		if ($self->is_type('perl')) {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$compile_script =
 				"$perlcmd Makefile.PL \%c\n".
@@ -1573,7 +1584,7 @@ sub phase_compile {
 			unless ($self->param_boolean("NoPerlTests")) {
 				$compile_script .= "make test\n";
 			}
-		} elsif ($self->param("_type") eq "ruby") {
+		} elsif ($self->is_type('ruby')) {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$compile_script =
 				"$rubycmd extconf.rb\n".
@@ -1597,7 +1608,7 @@ sub phase_install {
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
 
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
@@ -1605,7 +1616,7 @@ sub phase_install {
 		($self->{parent})->phase_install();
 		return;
 	}
-	if ($self->{_type} ne "bundle") {
+	if (not $self->is_type('bundle')) {
 		if ($do_splitoff) {
 			$dir = ($self->{parent})->get_build_directory();
 		} else {
@@ -1627,7 +1638,7 @@ sub phase_install {
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 	}
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		$install_script .= "/bin/mkdir -p \%i/share/doc/\%n\n";
 		$install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 	} else {
@@ -1637,7 +1648,7 @@ sub phase_install {
 			$install_script = "";
 			# Now run the custom install script
 			$self->run_script($self->param("InstallScript"), "installing");
-		} elsif (!exists $self->{parent} and $self->param("_type") eq "perl") {
+		} elsif (!exists $self->{parent} and $self->is_type('perl')) {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
@@ -1798,7 +1809,7 @@ sub phase_build {
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
 
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}

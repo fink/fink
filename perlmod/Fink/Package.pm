@@ -108,8 +108,8 @@ sub add_version {
 	my $version_object = shift;
 
 	my $version = $version_object->get_fullversion();
-	if (exists $self->{_versions}->{ $version} 
-		&& $self->{_versions}->{ $version}->{_type} eq 'dummy' ) {
+	if (exists $self->{_versions}->{$version} 
+		&& $self->{_versions}->{$version}->is_type('dummy') ) {
 		$self->{_versions}->{$version}->merge($version_object);
 	} else {
 		$self->{_versions}->{$version} = $version_object;
