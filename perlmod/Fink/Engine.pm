@@ -231,8 +231,8 @@ sub cmd_description {
 
   print "\n";
   foreach $package (@plist) {
-    print $package->get_fullname().":\n";
-    print " ".$package->get_description();
+    print $package->get_fullname().": ";
+    print $package->get_description();
     print "\n";
   }
 }
