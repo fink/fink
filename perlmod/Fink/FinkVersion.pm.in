@@ -84,7 +84,9 @@ Returns the fink distribution version you're currently using.
 
 sub distribution_version {
 	my $dv;
-	if (-f "$basepath/fink/VERSION") {
+	if (-f "$basepath/fink/dists/VERSION") {
+		chomp($dv = cat "$basepath/fink/dists/VERSION");
+	} elsif (-f "$basepath/fink/VERSION") {
 		chomp($dv = cat "$basepath/fink/VERSION");
 	} elsif (-f "$basepath/etc/fink-release") {
 		chomp($dv = cat "$basepath/etc/fink-release");
