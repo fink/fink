@@ -1,3 +1,7 @@
+2002-04-21  Max Horn  <max@quendi.de>
+
+	* bootstrap.pl: Report Darwin 5.4 (OS X 10.1.4) as supported
+
 2002-04-15  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.9.11
