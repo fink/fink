@@ -98,7 +98,8 @@ our %allowed_type_values =
 	 "python"   => [ "2.1", "2.2", "2.3" ],
 	 "guile"    => [ "", "1.4", "1.6" ],
 	 "ruby"     => [ "", "1.6", "1.8" ],
-	 "java"     => [ "1.3", "1.4" ]
+	 "java"     => [ "1.3", "1.4" ],
+	 "none"     => [ "" ]
 	 );
 
 
@@ -206,7 +207,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		(
 #  initial data:
 		 'package',
-            #documentation is ambiguous about type and license
+            #documentation is ambiguous about license
 		 'type',
 		 'license',
 #  dependencies:
@@ -224,7 +225,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'essential',
 		 'builddependsonly',
 #  install phase:
-               # what about updatepod? manual says it should be here
+                 'updatepod',
 		 'installscript',
 		 'jarfiles',
 		 'docfiles',
