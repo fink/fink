@@ -58,6 +58,7 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+
 END { }				# module clean-up code here (global destructor)
 
 
@@ -1087,13 +1088,22 @@ sub is_fetched {
 	return 1;
 }
 
+
+### Is this package available via apt?
+
 sub is_aptgetable {
 	my $self = shift;
-	if (Fink::Package->is_in_apt($self->get_name(), $self->get_fullversion())) {
-		return 1;
-	}
-	return 0;
+	return defined $self->{_aptgetable};
 }
+
+
+### Note that this package *is* available via apt
+
+sub set_aptgetable {
+	my $self = shift;
+	$self->{_aptgetable} = 1;
+}
+
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 

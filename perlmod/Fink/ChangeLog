@@ -1,3 +1,15 @@
+2005-01-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm, Package.pm, Engine.pm: Clean up aptdb (UseBinaryDist)
+	stuff:
+		- Normal usage of regexes, safe use of 'open', OO usage in
+		apt-cache parsing.
+		- Moved aptgetable status into regular fink DB.
+		- Fixed bug where fink would try to use apt-get to fetch a .deb when
+		the apt-cache info comes from dpkg status (not a real repo).
+		- Removed Package::is_in_apt and fixed all uses thereof.
+		- Make fink complain if two packages have the same fullname.
+
 2005-01-27  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Fix conditional_pkg_list whitespace removal again.

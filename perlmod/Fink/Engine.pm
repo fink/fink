@@ -2079,7 +2079,7 @@ EOF
 				print "$_:\n";
 				foreach (&sort_versions($package->list_versions())) {
 					printf " %1s%1s\t%s\n",
-						( $package->get_version($_)->is_present() or $config->binary_requested() && $package->is_in_apt($pkgname,$_) ) ? "b" : "",
+						( $package->get_version($_)->is_present() or $config->binary_requested() && $package->get_version($_)->is_aptgetable() ) ? "b" : "",
 						$package->get_version($_)->is_installed() ? "i" : "",
 						$_;
 				}

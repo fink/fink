@@ -44,7 +44,6 @@ our @essential_packages = ();
 our $essential_valid = 0;
 our $db_outdated = 1;
 our $db_mtime = 0;
-our $aptdb = {};
 
 END { }				# module clean-up code here (global destructor)
 
@@ -109,12 +108,21 @@ sub is_virtual {
 sub add_version {
 	my $self = shift;
 	my $version_object = shift;
-
+	
 	my $version = $version_object->get_fullversion();
 	if (exists $self->{_versions}->{$version} 
 		&& $self->{_versions}->{$version}->is_type('dummy') ) {
 		$self->{_versions}->{$version}->merge($version_object);
 	} else {
+		# $pv->fullname is currently treated as unique, even though it won't be
+		# if the version is the same but epoch isn't. So let's make sure.
+		delete $self->{_versions}->{$version};
+		my $fullname = $version_object->get_fullname();
+		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions()) {
+			die "The package full name '$fullname' is not allowed to be used"
+			 ." more than once.";
+		}
+		
 		$self->{_versions}->{$version} = $version_object;
 	}
 
@@ -241,19 +249,6 @@ sub is_any_present{
 	return 0;
 }
 
-### Find a specific package name/version in aptdb
-
-sub is_in_apt {
-	my $self = shift;
-	my $name = shift;
-	my $version = shift;
-
-	if (defined $aptdb->{$name}{$version}) {
-		return 1;
-	}
-	return 0;
-}
-
 ### get version object by exact name
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
@@ -336,6 +331,34 @@ sub require_packages {
 	}
 }
 
+# set the aptgetable status of packages
+
+sub update_aptgetable {
+	my $class = shift; # class method
+	my $statusfile = "$basepath/var/lib/dpkg/status";
+	
+	open APTDUMP, '-|', "$basepath/bin/apt-cache", "dump"
+		or die "Can't run apt-cache dump: $!";
+		
+	# Note: We assume here that the package DB exists already
+	my ($po, $pv);
+	while(<APTDUMP>) {
+		if (/^\s*Package:\s*(\S+)/) {
+			($po, $pv) = (Fink::Package->package_by_name($1), undef);
+		} elsif (/^\s*Version:\s*(\S+)/) {
+			$pv = $po->get_version($1) if defined $po;
+		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
+										# of apt-cache dump
+			# Avoid using debs that aren't really apt-getable
+			next if $1 eq $statusfile;
+			
+			$pv->set_aptgetable() if defined $pv;
+		}
+	}
+	close APTDUMP;
+}
+
+
 ### forget about all packages
 
 sub forget_packages {
@@ -378,10 +401,9 @@ sub scan_all {
 			}
 			
 			# If the index is not outdated, we can use it, and thus save a lot of time
-			 if (not $db_outdated) {
+			if (not $db_outdated) {
 				$packages = Storable::lock_retrieve("$basepath/var/db/fink.db");
-			 }
-			$aptdb = Storable::lock_retrieve("$basepath/var/db/finkapt.db");
+			}
 		}
 	}
 	
@@ -449,33 +471,6 @@ sub search_comparedb {
 		 ? 1 : 0;
 }
 
-### update the apt-get db file
-
-sub update_aptdb {
-	shift;
-
-	my ($pkg, $ver);
-	open(APTDUMP, "$basepath/bin/apt-cache dump |") || die "Can't run apt-cache dump: $!\n";
-	$aptdb = {};
-	while(<APTDUMP>) {
-		if (grep(/Package:/,$_)) {
-			chomp;
-			$pkg = $_;
-			$pkg =~ s/.*Package:[\ ]*//; 
-		}
-		if (grep(/Version:/,$_)) {
-			my $count;
-			chomp;
-			$ver = $_;
-			$ver =~ s/.*Version:[\ ]*//;
-			$aptdb->{$pkg}{$ver}++;
-		}
-	}
-	close APTDUMP;
-
-	Storable::lock_store($aptdb, "$basepath/var/db/finkapt.db");
-}
-
 ### read the packages and update the database, if needed and we are root
 
 sub update_db {
@@ -490,6 +485,10 @@ sub update_db {
 		$dir = "$basepath/fink/dists/$tree/finkinfo";
 		Fink::Package->scan($dir);
 	}
+	if (Fink::Config::binary_requested()) {
+		Fink::Package->update_aptgetable();
+	}
+	
 	eval {
 		require Storable; 
 		if ($> == 0) {
@@ -501,9 +500,6 @@ sub update_db {
 			}
 			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
-			if (Fink::Config::binary_requested()) {
-				Fink::Package->update_aptdb();
-			}
 			print "done.\n";
 		} else {
 			&print_breaking_stderr( "\nFink has detected that your package cache is out of date and needs" .
