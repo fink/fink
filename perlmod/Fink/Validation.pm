@@ -68,7 +68,11 @@ our %name_version_fields = map {$_, 1}
 
 # Allowed values for the type field
 our %allowed_type_values = map {$_, 1}
-	qw(nosource bundle perl);
+	(
+	 "nosource", "bundle", "perl", 
+	 "perl 5.6.0", "perl 5.6.1", "perl 5.8.0"
+	 );
+
 
 # Allowed values for the license field
 our %allowed_license_values = map {$_, 1}
