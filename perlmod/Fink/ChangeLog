@@ -1,3 +1,8 @@
+2002-01-05  Max Horn  <max@quendi.de>
+
+	* Validation.pm: Added /sw/lib/locale to list of depracted directories;
+	added some new fields to list of allowed fields (not yet used)
+
 2001-12-28  Matthias Neeracher <neeracher@mac.com>
 
 	* Package.pm: Added %package_hash which speeds up some operations

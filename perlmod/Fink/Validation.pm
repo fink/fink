@@ -42,6 +42,7 @@ our @EXPORT_OK;
 our @boolean_fields = qw(Essential NoSourceDirectory UpdateConfigGuess UpdateLibtool); # add NoSet* !
 our @obsolete_fields = qw(Comment CommentPort CommenStow UseGettext);
 our @name_version_fields = qw(Source SourceDirectory SourceN SourceNExtractDir Patch);
+out @type_field_values = qw(nosource bundle perl)
 our @recommended_field_order =
   qw(
     Package
@@ -50,17 +51,25 @@ our @recommended_field_order =
     Type
     Maintainer
     Depends
+    BuildDepends
     Provides
     Conflicts
     Replaces
+    Recommends
+    Suggests
+    Enhances
+    Pre-Depends
     Essential
     Source
     SourceDirectory
     NoSourceDirectory
-    SourceN
-    SourceNExtractDir
+    Source*
+    Source*ExtractDir
     UpdateConfigGuess
+    UpdateConfigGuessInDirs
     UpdateLibtool
+    UpdateLibtoolInDirs
+    UpdatePoMakefile
     Patch
     PatchScript
     ConfigureParams
@@ -83,7 +92,7 @@ our @recommended_field_order =
     DescPort
     Homepage
     License
-  );	# The order for "License" is not yet officiall specified
+  );
 
 END { }       # module clean-up code here (global destructor)
 
@@ -242,13 +251,13 @@ sub validate_info_file {
 #
 # Check a given .deb file for standard compliance
 #
-# - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec)
+# - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
 # - usage of other non-standard subdirs 
 # - ideas?
 #
 sub validate_dpkg_file {
   my $filename = shift;
-  my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/");
+  my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/");
   my ($pid, $bad_dir);
   
   print "Validating .deb file $filename...\n";
@@ -263,7 +272,7 @@ sub validate_dpkg_file {
       #print "$6\n";
       foreach $bad_dir (@bad_dirs) {
         if ($6 =~ /^$bad_dir/) {
-          print "Warning: File installed into depracted directory $bad_dir\n";
+          print "WARNING: File installed into depracted directory $bad_dir\n";
           print "         Offender is $filename\n";
           last;
         }
