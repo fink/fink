@@ -286,34 +286,34 @@ sub do_real_list {
 Fink $version
 
 Usage: fink list [options] [string]
-			 
+
 Options:
-	-w=xyz, --width=xyz	 - Sets the width of the display you would like the output
-												 formatted for. xyz is either a numeric value or auto.
-												 auto will set the width based on the terminal width.
-	-t, --tab						 - Outputs the list with tabs as field delimiter.
-	-i, --installed			 - Only list packages which are currently installed.
-	-u, --uptodate			 - Only list packages which are up to date.
-	-o, --outdated			 - Only list packages for which a newer version is
-												 available.
-	-n, --notinstalled	 - Only list packages which are not installed.
-	-s=expr,						 - Only list packages in the section(s) matching expr
-		--section=expr			 (example: fink list --section=x11).
-	-h, --help					 - This help text.
+  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -i, --installed      - Only list packages which are currently installed.
+  -u, --uptodate       - Only list packages which are up to date.
+  -o, --outdated       - Only list packages for which a newer version is
+                         available.
+  -n, --notinstalled   - Only list packages which are not installed.
+  -s=expr,             - Only list packages in the section(s) matching expr
+    --section=expr       (example: fink list --section=x11).
+  -h, --help           - This help text.
 
 EOF
-		}	 else { # apropos
+		} else { # apropos
 			print <<"EOF";
 Fink $version
 
 Usage: fink apropos [options] [string]
-			 
+       
 Options:
-	-w=xyz, --width=xyz	 - Sets the width of the display you would like the output
-												 formatted for. xyz is either a numeric value or auto.
-												 auto will set the width based on the terminal width.
-	-t, --tab						 - Outputs the list with tabs as field delimiter.
-	-h, --help					 - This help text.
+  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -h, --help           - This help text.
 
 EOF
 		}
@@ -346,8 +346,8 @@ EOF
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
-	@_=@ARGV;
-	@ARGV=@temp_ARGV;
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
 	if ($cmd eq "list") {
 		if ($#_ < 0) {
@@ -604,7 +604,7 @@ sub cmd_purge {
 		push @packages, $package->get_name();
 	}
 	print "WARNING: this command will remove the package(s) and remove any\n";
-	print "					global configure files, even if you modified them!\n\n";
+	print "         global configure files, even if you modified them!\n\n";
  
 	$answer = &prompt_boolean("Do you want to continue?", 1);			
 	if (! $answer) {
@@ -983,7 +983,7 @@ sub real_install {
 
 				print "\n";
 				&print_breaking("fink needs help picking an alternative to satisfy ".
-												"a virtual dependency. The candidates:");
+								"a virtual dependency. The candidates:");
 				$dname =
 					&prompt_selection("Pick one:", 1, $labels, @candidates);
 			}
@@ -1081,10 +1081,10 @@ sub real_install {
 	if ($#additionals >= 0) {
 		if ($#additionals > 0) {
 			&print_breaking("The following ".scalar(@additionals).
-											" additional packages will be installed:");
+							" additional packages will be installed:");
 		} else {
 			&print_breaking("The following additional package ".
-											"will be installed:");
+							"will be installed:");
 		}
 		&print_breaking_prefix(join(" ",@additionals), 1, " ");
 		$answer = &prompt_boolean("Do you want to continue?", 1);
