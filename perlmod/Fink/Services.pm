@@ -521,7 +521,7 @@ sub expand_percent {
 	return $s unless ($s =~ /\%/);
 
 	%map = %$map;  # avoid lots of dereferencing later
-	$percent_keys = join('|', keys %map);
+	$percent_keys = join('|', map "\Q$_\E", keys %map);
 
 	# split multi lines to process each line incase of comments
 	@lines = split(/\r?\n/, $s);

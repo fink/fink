@@ -1,3 +1,7 @@
+2004-02-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: expand_percent: protect regex metachars in % keys.
+
 2004-02-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm,Package.pm,PkgVersion.pm: convert all checking of
