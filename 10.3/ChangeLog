@@ -1,3 +1,8 @@
+2003-07-11  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Changed all shlibs and dev pkg to actual pkgs, and split the
+	  pkgs that needed it.
+
 2003-07-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* updated libiconv to fix certain issues (temp fix)
