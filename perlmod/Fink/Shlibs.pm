@@ -108,6 +108,15 @@ sub check_files {
     close (OTOOL);
   }
 
+  ### FIXME
+  ## we need to check the build deps against a dep like this
+  ## 1) get the parent of the shlib and then check the splitoffs
+  ##    for -dev pkgs (this includes -dev and main pkgs)
+  ## 2) then check the builddep line, if they match copy to
+  ##    versioned dep part to the shlib dep.
+  ## 3) if the shlibs if for it's self, ie it's it's parent
+  ##    then it should auto add (= %v-%r) but expanded of course
+
   print "DEBUG: before deduplication: ", join(', ', @depends), "\n";
 
   # this next bit does some really strange voodoo, I will try to
