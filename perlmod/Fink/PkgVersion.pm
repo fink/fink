@@ -2870,8 +2870,8 @@ EOMSG
 
 		# Failure due to depenendecy problems leaves lockpkg in an
 		# "unpacked" state, so try to remove it entirely.
-		&execute("dpkg -r $lockpkg") or
-			&print_breaking('You can probably ignore the above errors from "dpkg -r"');
+		&execute("dpkg -r $lockpkg") and
+			&print_breaking('You can probably ignore that last message from "dpkg -r"');
 	}
 
 	# Even if installation fails, no reason to keep this around

@@ -1,5 +1,9 @@
 2005-1-05  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Fixed processing of execute() return-code.
+
+2005-1-05  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Try not to leave partially-installed buildlock pkg.
 
 2005-1-05  Daniel Macks  <dmacks@netspace.org>
