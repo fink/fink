@@ -1,3 +1,10 @@
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* COPYING, README, README.buildsystem, VERSION, fink-mirrors.info.in, 
+	inject.pl, install.sh, postinstall.pl.in: files to create a separate 
+	fink-mirrors package which can be updated independently of fink 
+	releases.
+
 2003-11-28 David H. <dmalloc@users.sourceforge.net>
 	* Adding full mirror in Perth, Austrial
 		Maintainer:
