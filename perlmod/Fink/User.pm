@@ -52,6 +52,9 @@ $highGID = $config->param("highGID") || 299;
 
 END { }				# module clean-up code here (global destructor)
 
+### Using shell scripts for now, will just add the commands
+### direct before finished, just faster for now
+
 ### Create User
 sub add_user {
 	my $self = shift;
@@ -167,6 +170,11 @@ sub check_for_name {
 	my $self = shift;
 	my $type = shift;
 	my $name = shift;
+	my $desc = shift;
+	my $pass = shift || "";
+	my $shell = shift || "/usr/bin/false";
+	my $home = shift || "/tmp";
+	my $group = shift || $name;
 	my $id = 0;
 
 	### find if a user exists
@@ -175,11 +183,15 @@ sub check_for_name {
 		if ($type eq "group") {
 			$currentname = User::grent::getgrgid($id);
 			if ($name eq $currentname) {
+                ### FIXME
+                ### Compare info make it's hte same, or setup process rules
 				return 1;
 			}
 		} else {
 			$currentname = User::pwent::getpwuid($id);
 			if ($name eq $currentname) {
+                ### FIXME
+                ### Compare info make it's hte same, or setup process rules
 				return 1;
 			}
 		}
@@ -234,7 +246,8 @@ sub get_perms {
         $pass = $self->mkpasswd();
     }    
 
-	unless ($self->check_for_name($type, $name)) {
+	unless ($self->check_for_name($type, $name, $desc, $pass, $shell,
+	           $home, $group)) {
 		### add user/group
 		if ($type eq "user") {
             $self->add_user($name, $desc, $pass, $shell, $home, $group);
