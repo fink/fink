@@ -724,8 +724,15 @@ sub validate_dpkg_file {
 			#print "$filename\n";
 			next if $filename eq "/";
 			if (not $filename =~ /^$basepath/) {
-				print "Warning: File \"$filename\" installed outside of $basepath\n";
-				$looks_good = 0;
+				if (not (($dpkg_filename =~ /xfree86[_\-]/) || ($dpkg_filename =~ /xorg[_\-]/))) {
+					print "Warning: File \"$filename\" installed outside of $basepath\n";
+					$looks_good = 0;
+				} else {
+					if (not (($filename =~ /^\/Applications\/XDarwin.app/) || ($filename =~ /^\/usr\/X11R6/) || ($filename =~ /^\/private\/etc\/fonts/) )) {
+						next if (($filename eq "/Applications/") || ($filename eq "/private/") || ($filename eq "/private/etc/") || ($filename eq "/usr/"));
+						print "Warning: File \"$filename\" installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, and /usr/X11R6\n";
+						$looks_good = 0;
+					}}
 			} elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
 				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
 				$looks_good = 0;
@@ -733,8 +740,8 @@ sub validate_dpkg_file {
 				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
 				$looks_good = 0;
 			} elsif ( ($filename =~/^($basepath\/.*\.elc)$/) &&
-				  (not (($dpkg_filename =~ /^emacs[0-9][0-9]/) ||
-					($dpkg_filename =~ /xemacs/)))) {
+				  (not (($dpkg_filename =~ /emacs[0-9][0-9][_\-]/) ||
+					($dpkg_filename =~ /xemacs_/)))) {
 				$looks_good = 0;
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
 			} elsif ( $filename =~/^$basepath\/include/ ) {

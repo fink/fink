@@ -1,3 +1,10 @@
+2004-06-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Don't warn when the xfree86 package installs files
+	outside /sw, as long as it installs them in the right place.
+	Also, fixed the regex which lets (x)emacs install .elc files without
+	the warning.
+
 2004-06-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Recognize darwin 7.4.0.
