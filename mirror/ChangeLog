@@ -1,3 +1,8 @@
+2004-02-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.19.0.1 of fink-mirrors
+	* README.versioning: explanation of the versioning of this package
+
 2004-02-23 David H. <dmalloc@users.sourceforge.net>
 	* added new full mirror in Tromsoe, Norway
 		tos.no.eu.finkmirrors.net
