@@ -4,9 +4,10 @@
 # during mirror selection. The individual keys list titles
 # displayed in mirror selection.
 
-Order: gnu gnome gimp ctan
+Order: gnu gnome gimp ctan cpan
 
 gnu: GNU software
 gnome: GNOME
 gimp: The GIMP
 ctan: Comprehensive TeX Archive Network
+cpan: Comprehensive Perl Archive Network

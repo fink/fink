@@ -1,11 +1,19 @@
+2002-01-18  Max Horn  <max@quendi.de>
+
+	* cpan: New mirror list for the Comprehensive Perl Archive Network.
+
+	* _list: Added cpan entries
+
+	* _keys: Added entries for several missing countries
+
 2001-11-07  Max Horn  <max@quendi.de>
 
 	* gnome: Fixed SourceForge mirror (ftp -> ftp2)
 
 2001-11-01  Christoph Pfisterer  <cp@chrisp.de>
 
-	* ctan: New mirror list for the Comprehensive TeX Archive
-	Network.
+	* ctan: New mirror list for the Comprehensive TeX Archive Network.
+
 	* _list: Added ctan entries.
 
 	* _keys: Added entries for Costa Rica and Russia. The "sam" entry
