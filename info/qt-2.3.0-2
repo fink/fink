@@ -1,0 +1,41 @@
+Package: qt
+Version: 2.3.0
+Revision: 2
+Source: ftp://ftp.trolltech.com/qt/source/%n-x11-%v.tar.gz
+SourceDirectory: qt-2.3.0
+Depends: x11, zlib, libpng, libjpeg
+Patch: %f.patch
+CompileScript: ./configure -platform darwin-c++ -shared -system-zlib -system-libpng -system-jpeg -gif -xft -sm -I/sw/include -L/sw/lib
+ mkdir -p lib
+ make FINAL_LIB_DIR=%p/lib/qt2/lib/ DYLD_LIBRARY_PATH=`pwd`/lib
+InstallScript: mkdir -p %i/lib/qt2
+ cp -R bin %i/lib/qt2
+ mkdir -p %i/bin
+ cd %i/bin; ln -s ../lib/qt2/bin/* .
+ cp -R include %i/lib/qt2
+ mkdir -p %i/include
+ cd %i/include; ln -s ../lib/qt2/include/* .
+ cp -Rd lib %i/lib/qt2
+ mkdir -p %i/lib
+ cd %i/lib; ln -s qt2/lib/* .
+ cp -R doc %i/lib/qt2
+ mkdir -p %i/man/man3
+ cd %i/man/man3; ln -s ../../lib/qt2/doc/man/man3/* .
+ cp -R examples tutorial extensions tools %i/lib/qt2
+ cp FAQ LICENSE* MANIFEST README* changes* %i/lib/qt2
+CommentPort: Uses custom configure script. Added config files to build
+ static or shared libraries on Darwin. This package builds and uses
+ shared libraries.
+ .
+ No thread and OpenGL support yet.
+ .
+ Installs the files in <prefix>/lib/qt2, which you can set as your
+ $QTDIR. Binaries, headers, libraries and manpages are also linked
+ from the standard directories, so they are found without additional
+ measures.
+ .
+ The man pages are not usable when the package is built on a HFS+
+ filesystem (or any other not case-sensitive filesystem).
+CommentStow: No issues known.
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
+Homepage: http://www.trolltech.com/
