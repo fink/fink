@@ -545,12 +545,6 @@ the successful execution of "gcc --version".
 						$hash = &gen_gcc_hash('gcc2', $version, 0, STATUS_PRESENT);
 						$self->{$hash->{package}} = $hash;
 					}
-					if ($version =~ s/^(.*)-64$/$1/) {
-						$hash = &gen_gcc_hash("gcc$shortversion-64", $version, 1, STATUS_PRESENT);
-						$self->{$hash->{package}} = $hash;
-						print STDERR "  - found 64-bit $version\n" if ($options{debug});
-						next;
-					}
 					$hash = &gen_gcc_hash("gcc$shortversion", $version, 0, STATUS_PRESENT);
 					$self->{$hash->{package}} = $hash;
 					print STDERR "  - found $version\n" if ($options{debug});

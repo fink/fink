@@ -1,5 +1,9 @@
 2005-01-31  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: No 64-bit-specific gcc* pkgs exist at this time.
+
+2005-01-31  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Warn for "Provides: foo (versiondata)"
 
 2005-01-31  Daniel Macks  <dmacks@netspace.org>
