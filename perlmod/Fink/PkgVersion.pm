@@ -1532,8 +1532,37 @@ EOF
 	if ($self->param_boolean("Essential")) {
 		$control .= "Essential: yes\n";
 	}
+
+	### FIXME
+	### Add ${SHLIB_DEPS} replace code here
+	### 1) check for ${SHLIB_DEPS} else continue
+	my $depline = $self->get_binary_depends();
+
+	if ($depline =~ /\$\{SHLIB_DEPS\}/) {
+		print "Writting Depends...\n";
+
+		### 2) get a list to replace it with
+		my $shlibstr = "";
+		my @filelist = ();
+		my $wanted = sub {
+			if (-f) {
+				push @filelist, $File::Find::fullname;
+			}
+		};
+		find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $destdir);
+
+		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
+
+		### FIXME
+		### Debug for testing
+		print "- Depends: $shlibstr\n";
+
+		### 3) replace it in the debian control file
+		$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
+	}
+
 	# FIXME: make sure there are no linebreaks in the following fields
-	$control .= "Depends: ".$self->get_binary_depends()."\n";
+	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
 										 Recommends Suggests Enhances
 										 Maintainer)) {
@@ -1795,39 +1824,6 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		print SCRIPT &expand_percent($self->param("DaemonicFile"), $self->{_expand});
 		close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
 		chmod 0644, $daemonicfile;
-	}
-
-	### FIXME
-	### Add ${SHLIB_DEPS} replace code here
-	### 1) open control file and check for ${SHLIB_DEPS} else continue
-	my $depline = "";
-	my $controlfile = "$ddir/DEBIAN/control";
-	open (CONTROL, $controlfile) or die "Couldn't open control file: $!\n";
-	while (<CONTROL>) {
-		if ($_ =~ /Depends: (.*)$/) {
-			$depline = $1;
-		}
-	}
-	close (CONTROL);
-	if ($depline =~ /\$\{SHLIB_DEPS\}/) {
-		print "Writting depends...\n";
-		### 2) get a list to replace it with
-		my $shlibstr = "";
-		my @filelist = ();
-		my $wanted =
-		sub {
-			if (-f) {
-				push @filelist, $File::Find::fullname;
-			}
-		};
-		find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $ddir);
-
-		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
-
-		### FIXME
-		### Debug for testing
-		print "- Depends: $shlibstr\n";
-		### 3) replace it in the debian control file
 	}
 
 	### create .deb using dpkg-deb
