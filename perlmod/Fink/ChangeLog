@@ -1,3 +1,9 @@
+2002-05-01  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm (get_description): Don't display DescPort and DescPackaging,
+	they are unimportant for the avarage user and developers must look at the
+	.info file anyway.
+
 2002-04-25  Max Horn  <max@quendi.de>
 
 	* Engine.pm (real_install): Fixed bug #546315

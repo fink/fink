@@ -504,16 +504,6 @@ sub get_description {
       $desc .= " .\n Web site: ".&format_oneline($self->param("Homepage"))."\n";
     }
 
-    if ($self->has_param("DescPackaging")) {
-      $desc .= " .\n Packaging Notes:\n";
-      $desc .= &format_description($self->param("DescPackaging"));
-    }
-
-    if ($self->has_param("DescPort")) {
-      $desc .= " .\n Porting Notes:\n";
-      $desc .= &format_description($self->param("DescPort"));
-    }
-
     if ($self->has_param("Maintainer")) {
       $desc .= " .\n Maintainer: ".&format_oneline($self->param("Maintainer"))."\n";
     }
