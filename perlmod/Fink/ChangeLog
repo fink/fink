@@ -1,3 +1,8 @@
+2001-07-13  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_build): Added support to automatically
+	install / remove Info documents.
+
 2001-07-07  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Services.pm (read_properties): Ignore trailing white space.

@@ -884,7 +884,7 @@ sub phase_build {
   my $self = shift;
   my ($ddir, $destdir, $control);
   my ($scriptname, $scriptfile, $scriptbody);
-  my ($conffiles, $listfile);
+  my ($conffiles, $listfile, $infodoc);
   my ($daemonicname, $daemonicfile);
   my ($cmd);
 
@@ -931,9 +931,37 @@ EOF
   ### create scripts as neccessary
 
   foreach $scriptname (qw(preinst postinst prerm postrm)) {
-    next unless $self->has_param($scriptname."Script");
+    # get script piece from package description
+    if ($self->has_param($scriptname."Script")) {
+      $scriptbody = $self->param($scriptname."Script");
+    } else {
+      $scriptbody = "";
+    }
 
-    $scriptbody = $self->param($scriptname."Script");
+    # add auto-generated parts
+    if ($self->has_param("InfoDocs")) {
+      if ($scriptname eq "postinst") {
+	$scriptbody .= "\n\n# generated from InfoDocs directive\n";
+	$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
+	foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
+	  $infodoc = "\%p/share/info/$infodoc" unless $infodoc =~ /\//;
+	  $scriptbody .= "  install-info --infodir=\%p/share/info $infodoc\n";
+	}
+	$scriptbody .= "fi\n";
+      } elsif ($scriptname eq "prerm") {
+	$scriptbody .= "\n\n# generated from InfoDocs directive\n";
+	$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
+	foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
+	  $scriptbody .= "  install-info --infodir=\%p/share/info --remove $infodoc\n";
+	}
+	$scriptbody .= "fi\n";
+      }
+    }
+
+    # do we have a non-empty script?
+    next if $scriptbody eq "";
+
+    # no, so write it out
     $scriptbody = &expand_percent($scriptbody, $self->{_expand});
     $scriptfile = "$destdir/DEBIAN/$scriptname";
 
