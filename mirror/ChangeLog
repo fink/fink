@@ -1,3 +1,7 @@
+2005-03-03  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Prepare for enhanced choose_mirrors functionality
+
 2005-03-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* README.buildsystem, fink-mirrors.info.in: minor revision to buildsystem

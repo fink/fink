@@ -34,10 +34,18 @@ use Fink::Configure qw(&choose_mirrors);
 
 read_config("@PREFIX@/etc/fink.conf");
 
+if(1) {
+
 choose_mirrors(1);
 
 #write new configuration file
 $config->save();
 
+} else {
 
+# TODO: this syntax requires Configure.pm >= 1.40, which is not yet released
 
+#get mirror selections, write write new configuration file if changed
+choose_mirrors(1) && $config->save();
+
+}
