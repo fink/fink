@@ -38,16 +38,10 @@ else
   setenv INFOPATH BASEPATH/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:/usr/info
 endif
 
-if ( $?LD_LIBRARY_PATH ) then
-  setenv LD_LIBRARY_PATH BASEPATH/lib:$LD_LIBRARY_PATH
-else
-  setenv LD_LIBRARY_PATH BASEPATH/lib
-endif
-
-if ( $?DYLD_LIBRARY_PATH ) then
-  setenv DYLD_LIBRARY_PATH BASEPATH/lib:$DYLD_LIBRARY_PATH
-else
-  setenv DYLD_LIBRARY_PATH BASEPATH/lib
-endif
+#if ( $?DYLD_LIBRARY_PATH ) then
+#  setenv DYLD_LIBRARY_PATH BASEPATH/lib:$DYLD_LIBRARY_PATH
+#else
+#  setenv DYLD_LIBRARY_PATH BASEPATH/lib
+#endif
 
 # eof
