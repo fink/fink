@@ -1,5 +1,7 @@
 2001-05-08  Christoph Pfisterer  <cp@chrisp.de>
 
+	* bootstrap.pl, inject.pl: Include USAGE in created tarball.
+
 	* inject.pl, bootstrap.pl: Create directory <prefix>/fink/debs.
 
 	* README, INSTALL, USAGE: Updated documentation.
