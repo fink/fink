@@ -455,42 +455,19 @@ sub scan {
 	shift;	# class method - ignore first parameter
 	my $directory = shift;
 	my (@filelist, $wanted);
-	my ($filename, $properties, $pkgname, $package, $starttime, $lasttime);
+	my ($filename, $properties, $pkgname, $package);
 
 	return if not -d $directory;
-	$starttime = int(time);
-
-	my $tsname = $directory;
-	$tsname =~ s/\/+/-/g;
-	$tsname = "index-timestamp-$tsname";
-
-	if (-f "$basepath/var/db/$tsname") {
-		open(TOUCHFILE, "$basepath/var/db/$tsname") or die "Error: Could not read from $basepath/var/db/$tsname";
-		chomp($lasttime = <TOUCHFILE>);
-		close(TOUCHFILE);
-	} else {
-		$lasttime = 0;
-	}
-
-	unless (-d "$basepath/var/db") {
-		mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
-	}
 
 	# search for .info files
 	@filelist = ();
 	$wanted =
 		sub {
-			if (-f and not /^[\.#]/ and /\.info$/ and (stat($_))[10] >= $lasttime) {
+			if (-f and not /^[\.#]/ and /\.info$/) {
 				push @filelist, $File::Find::fullname;
 			}
 		};
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
-
-	print "Found ", int(@filelist), " new packages to index in $directory\n" if (Fink::Config::verbosity_level() >= 3);
-
-	open(TOUCHFILE, ">$basepath/var/db/$tsname") or die "Error: Could not write to $basepath/var/db/$tsname";
-	print TOUCHFILE $starttime, "\n";
-	close(TOUCHFILE);
 
 	foreach $filename (@filelist) {
 		# read the file and get the package name
