@@ -1,3 +1,7 @@
+2004-12-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in: Modify "Suggests" for running under perl 5.8.4
+	
 2004-12-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.in: Add new option '--compile-from-source', '-c' that causes 

@@ -2,7 +2,7 @@ Package: fink
 Version: @VERSION@
 Revision: @REVISION@
 Depends: base-files
-Suggests: term-readkey-pm560 | term-readkey-pm581
+Suggests: term-readkey-pm560 | term-readkey-pm581 | term-readkey-pm584
 Recommends: storable-pm, apt (>= 0.5.4-41)
 Essential: yes
 Source: %n-%v.tar
