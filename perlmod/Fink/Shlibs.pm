@@ -116,7 +116,7 @@ sub check_files {
   # first, there is a hash that contains a list of <package>,<operator>
   # tuples -- we use this for determining if a package is mentioned
   # multiple times.  We need to consider <package>,<operator> as a
-  # unique key because of cases like:
+  # unique key rather than just the package name because of cases like:
   #
   #   Depends: macosx (>= 10.1), macosx (<< 10.4)
 
@@ -141,8 +141,9 @@ sub check_files {
     # get_depobj() returns multiple entries when the source depend
     # is a foo|bar|baz style dependency (ie alternates)
     # for each one of these we want to strip it down to a
-    # @newdeps-style array, and pump each of the individual deps
-    # into the $depvers hash.
+    # @newdeps-style value, and pump each of the individual deps
+    # into the $depvers hash, then recreating the |'s with the
+    # @newdeps values instead of the original package spec.
 
     if (@depobj > 1) {
       my @depnames;
@@ -158,10 +159,12 @@ sub check_files {
       $name = $depobj[0]->{tuplename};
       $depvers = update_version_hash($depvers, $depobj[0]);
     }
+
     # this will skip putting something into @newdeps if it's
     # already there (it has to match the <package>,<operator>
     # tuple exactly, not just the package name, to be
     # considered a duplicate)
+
     if (not grep($_ eq $name, @newdeps)) {
       push(@newdeps, $name);
     }
@@ -186,7 +189,7 @@ sub check_files {
       for my $index (0..$#splitdeps) {
 
         if (defined $depvers->{$splitdeps[$index]}->{operator}) {
-          # operator is undefined if there was no version comparison
+          # operator is defined if there was a version comparison
           $splitdeps[$index] = $depvers->{$splitdeps[$index]}->{name} . ' (' . $depvers->{$splitdeps[$index]}->{operator} . ' ' . $depvers->{$splitdeps[$index]}->{version} . ')';
         } else {
           $splitdeps[$index] = $depvers->{$splitdeps[$index]}->{name};
@@ -199,7 +202,7 @@ sub check_files {
       # it on the depends array
 
       if (defined $depvers->{$depspec}->{operator}) {
-        # operator is undefined if there was no version comparison
+        # operator is defined if there was a version comparison
         push(@depends, $depvers->{$depspec}->{name} . ' (' . $depvers->{$depspec}->{operator} . ' ' . $depvers->{$depspec}->{version} . ')');
       } else {
         push(@depends, $depvers->{$depspec}->{name});
@@ -211,48 +214,73 @@ sub check_files {
   return @depends;
 }
 
-# this is a scary subroutine to update the name,operator cache
-# for handling duplicates -- it's just plain evil.  EVIL. EEEEVIIIILLLL.
+### this is a scary subroutine to update the name,operator cache
+### for handling duplicates -- it's just plain evil.  EVIL.  EEEEVIIIILLLL.
 sub update_version_hash {
   my $hash   = shift;
   my $depobj = shift;
 
   if (exists $hash->{$depobj->{tuplename}}) {
+
     # if the name,operator pair exists in the dep cache hash
     if ($depobj->{operator} =~ /^==?$/ and
         $depobj->{version} ne $hash->{$depobj->{tuplename}}->{version}) {
+
       # can't have 2 different versions in an == comparison for the
       # same dependency (ie, Depends: macosx = 10.2-1, macosx = 10.3-1)
+
       warn "this package depends on ", $depobj->{name}, " = ", $depobj->{version}, " *and* ",
         $depobj->{name}, " = ", $hash->{$depobj->{tuplename}}->{version}, "!!!\n";
+
     } elsif (version_cmp($depobj->{version}, $depobj->{operator}, $hash->{$depobj->{tuplename}}->{version})) {
+
       # according to the operator, this new dependency is more "specific"
       $hash->{$depobj->{tuplename}} = $depobj;
+
     }
-  } elsif ($depobj->{tuplename} eq $depobj->{name}) {
+
+  } elsif (not defined $depobj->{operator}) {
+
+    # $depobj contains an unversioned dependency, we have to
+    # check if there's a more specific comparison already in
+    # the dep cache
+
     my @matches = grep(/^$depobj->{name}\,/, keys %{$hash});
+
     if (@matches > 0) {
+
       # $depobj has no version dep, but a versioned dependency
       # already exists in the object cache -- take the first match
+      # and use it instead of $depobj
       $hash->{$depobj->{tuplename}} = $hash->{$matches[0]};
 
       if (@matches > 1) {
         warn "more than one version comparison exists for ", $depobj->{name}, "!!!\n",
           "taking ", $hash->{$matches[0]}->{tuplename}, "\n";
       }
+
     } else {
-      # $depobj isn't in the cache (versioned or not)
+
+      # $depobj isn't in the cache (versioned or not), just
+      # put what we have in
       $hash->{$depobj->{tuplename}} = $depobj;
+
     }
+
   } elsif (grep(/^$depobj->{name}$/, keys %{$hash})) {
+
     # $depobj has a versioned dep, but an unversioned dependency
     # already exists in the object cache -- we need to update the
     # previous one
+
     $hash->{$depobj->{tuplename}} = $depobj;
     $hash->{$depobj->{name}}      = $depobj;
+
   } else {
+
     # if the tuple doesn't exist, we add it
     $hash->{$depobj->{tuplename}} = $depobj;
+
   }
 
   return $hash;
@@ -277,7 +305,6 @@ sub get_depobj {
       $depobj->{operator}  = $operator;
       $depobj->{version}   = $version;
       $depobj->{tuplename} = $name . ',' . $operator;
-      #$depobj->{tuplename} = $name;
     } else {
       $depobj->{name}      = $dep;
       $depobj->{operator}  = undef;
