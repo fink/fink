@@ -325,7 +325,7 @@ sub param_default_expanded {
 ### to be conditional-free (remove conditional expressions, remove
 ### packages for which expression was false). No percent expansion is
 ### performed (i.e., do it yourself before calling this method).
-### As a side effect, leading and trailing whitespace is also removed.
+### Whitespace cleanup is performed.
 
 sub conditional_pkg_list {
 	my $self = shift;
@@ -339,8 +339,7 @@ sub conditional_pkg_list {
 		# just remove leading and trailing whitespace (slinging $value
 		# through pkglist2lol + lol2pkglist has same effect so only
 		# need to do it manually if short-cut inhibits those calls)
-		$value =~ s/^\s*//;
-		$value =~ s/\s*$//;
+		$value = &collapse_space($value);
 		$self->set_param($field, $value);
 		return;
 	}

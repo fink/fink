@@ -1,3 +1,9 @@
+2005-01-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fix conditional_pkg_list whitespace removal again.
+	* Services.pm: collapse_whitespace and pkglist2lol now remove
+	leading/trailing whitespace.
+
 2005-01-26  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Make sure conditional_pkg_list always removes

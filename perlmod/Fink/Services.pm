@@ -902,13 +902,16 @@ sub parse_fullversion {
     my $pretty_text = collapse_space $original_text;
 
 Collapses whitespace inside a string. All whitespace sequences are
-converted to a single space char. Newlines are removed.
+converted to a single space char. Newlines are removed. Leading and
+trailing whitespace is removed.
 
 =cut
 
 sub collapse_space {
 	my $s = shift;
 	$s =~ s/\s+/ /gs;
+	$s =~ s/^\s*//;
+	$s =~ s/\s*$//;
 	return $s;
 }
 
@@ -935,7 +938,11 @@ sub pkglist2lol {
 	my $pkglist = shift;
 	my @lol = ();
 
-	return [] unless defined $pkglist && length $pkglist;
+	return [] unless defined $pkglist;
+	$pkglist =~ s/^\s*//;
+	$pkglist =~ s/\s*$//;
+	return [] unless length $pkglist;
+
 	foreach (split /\s*,\s*/, $pkglist) {  # take each OR cluster
 		# store ref to list of non-null pkgs
 		my @or_cluster = grep {length} split /\s*\|\s*/, $_;
