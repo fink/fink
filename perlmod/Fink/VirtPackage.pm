@@ -312,60 +312,78 @@ sub initialize {
 						last;
 					}
 				}
-				print "missing\n" if ($options{debug} and $found_xserver == 0);
+				print STDERR "missing\n" if ($options{debug} and $found_xserver == 0);
 
 				# this is always there if we got this far
+				print STDERR "  - system-xfree86-shlibs provides x11-shlibs\n" if ($options{debug});
 				push(@{$provides->{'system-xfree86-shlibs'}}, 'x11-shlibs');
 
 				if ( $found_xserver ) {
+					print STDERR "  - found an X server, system-xfree86 provides xserver and x11\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'xserver', 'x11');
 				}
 
 				# "x11-dev" is for BuildDepends: on x11 packages
 				if ( has_header('X11/Xlib.h') ) {
+					print STDERR "  - system-xfree86-dev provides x11-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'x11-dev');
 				}
 				# now we do the same for libgl
 				if ( has_lib('libGL.1.dylib') ) {
+					print STDERR "  - system-xfree86-shlibs provides libgl-shlibs\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-shlibs'}}, 'libgl-shlibs');
+					print STDERR "  - system-xfree86 provides libgl\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'libgl');
 				}
 				if ( has_header('GL/gl.h') and has_lib('libGL.dylib') ) {
+					print STDERR "  - system-xfree86-dev provides libgl-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'libgl-dev');
 				}
 				if ( has_lib('libXft.dylib') and
 						defined readlink('/usr/X11R6/lib/libXft.dylib') and
 						readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
 						has_header('X11/Xft/Xft.h') ) {
+					print STDERR "  - libXft points to Xft1\n" if ($options{debug});
+					print STDERR "    - system-xfree86-dev provides xft1-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'xft1-dev');
+					print STDERR "    - system-xfree86 provides xft1\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'xft1');
 				}
 				if ( has_lib('libXft.1.dylib') ) {
+					print STDERR "  - system-xfree86-shlibs provides xft1-shlibs\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-shlibs'}}, 'xft1-shlibs');
 				}
 				if ( has_lib('libXft.dylib') and
 						defined readlink('/usr/X11R6/lib/libXft.dylib') and
 						readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
 						has_header('X11/Xft/Xft.h') ) {
+					print STDERR "  - libXft points to Xft2\n" if ($options{debug});
+					print STDERR "    - system-xfree86-dev provides xft2-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'xft2-dev');
+					print STDERR "    - system-xfree86 provides xft2\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'xft2');
 				}
 				if ( has_lib('libXft.2.dylib') ) {
+					print STDERR "  - system-xfree86-shlibs provides xft2-shlibs\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-shlibs'}}, 'xft2-shlibs');
 				}
 				if ( has_lib('libfontconfig.dylib') and
 						defined readlink('/usr/X11R6/lib/libfontconfig.dylib') and
 						readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
 						has_header('fontconfig/fontconfig.h') ) {
+					print STDERR "  - libfontconfig points to fontconfig1\n" if ($options{debug});
+					print STDERR "    - system-xfree86-dev provides fontconfig1-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'fontconfig1-dev');
+					print STDERR "    - system-xfree86 provides fontconfig1\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'fontconfig1');
 				}
 				if ( has_lib('libfontconfig.1.dylib') ) {
+					print STDERR "  - system-xfree86-shlibs provides fontconfig1-shlibs\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-shlibs'}}, 'fontconfig1-shlibs');
 				}
 				print STDERR "- checking for rman... " if ($options{debug});
 				if (-x '/usr/X11R6/bin/rman') {
-					print STDERR "found\n" if ($options{debug});
+					print STDERR "found, system-xfree86 provides rman\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'rman');
 				} else {
 					print STDERR "missing\n" if ($options{debug});
@@ -374,8 +392,12 @@ sub initialize {
 				if (-f '/usr/X11R6/lib/libXt.6.dylib' and -x '/usr/bin/grep') {
 					if (system('/usr/bin/grep', '-q', '-a', 'pthread_mutex_lock', '/usr/X11R6/lib/libXt.6.dylib') == 0) {
 						print STDERR "threaded\n" if ($options{debug});
+						print STDERR "  - system-xfree86-shlibs provides xfree86-base-threaded-shlibs\n" if ($options{debug});
 						push(@{$provides->{'system-xfree86-shlibs'}}, 'xfree86-base-threaded-shlibs');
-						push(@{$provides->{'system-xfree86'}}, 'xfree86-base-threaded') if (grep(/^x11$/, @{$provides->{'system-xfree86'}}));
+						if (grep(/^x11$/, @{$provides->{'system-xfree86'}})) {
+							print STDERR "  - system-xfree86 provides xfree86-base-threaded\n" if ($options{debug});
+							push(@{$provides->{'system-xfree86'}}, 'xfree86-base-threaded');
+						}
 					} else {
 						print STDERR "not threaded\n" if ($options{debug});
 					}
