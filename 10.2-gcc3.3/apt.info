@@ -8,7 +8,7 @@ Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1
+ sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
  if [ "%p" = "/sw" ]; then cat sources.list.fink-bindist >>sources.list.fink ; fi
  sh patch_flush
  for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done

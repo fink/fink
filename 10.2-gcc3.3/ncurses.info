@@ -5,7 +5,7 @@ GCC: 3.3
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
 PatchScript: perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
-Patch: %f.patch
+Patch: %n.patch
 Essential: yes
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink (>= 0.13.0), fink-prebinding
