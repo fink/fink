@@ -1,6 +1,7 @@
 2003-01-12  Finlay Dobbie <finlayd@users.sourceforge.net>
 
-	* PkgVersion.pm: Fix splitoff dependency problem (Bug #641466). 
+	* PkgVersion.pm: Fix splitoff dependency problem (Bug #641466).
+	Also removed the really old "pkg <blah> version ###" text, finally.
 	
 2003-01-07  Max Horn  <max@quendi.de>
 

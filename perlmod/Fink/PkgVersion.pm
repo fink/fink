@@ -813,9 +813,6 @@ sub match_package {
     return undef;
   }
 
-  print "pkg $pkgname  version $version\n"
-    unless $quiet;
-
   # we now have the package name in $pkgname, the package
   # object in $package, and the
   # still to be matched version (or "###") in $version.
