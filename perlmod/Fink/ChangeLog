@@ -1,6 +1,14 @@
+2005-02-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm (check_host): We work on 10.3.8.
+
 2005-01-31  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* VirtPackage.pm: Added Growl virtual pkg
+
+2005-01-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* *.pm: Updated POD validation errors.
 
 2005-01-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
