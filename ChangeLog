@@ -1,3 +1,7 @@
+2003-07-17  Justin F. Hallett <thesin@users.sourceforge.net>
+
+	* VERSION: upped version to match head
+
 2003-07-10  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* created new CVS branch "shlibs", for final development of fink
