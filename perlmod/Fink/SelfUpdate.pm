@@ -615,7 +615,6 @@ sub do_direct_rsync {
 	&print_breaking($msg);
 
 	$cmd = "rsync -az --delete-after $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
-	print "$rinclist\n";
 	if (&execute($cmd)) {
 		die "Updating $tree using rsync failed. Check the error messages above.\n";
 	} else {
