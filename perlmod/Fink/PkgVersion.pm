@@ -958,7 +958,7 @@ sub is_installed {
 	my $self = shift;
 
 	if ((&version_cmp(Fink::Status->query_package($self->{_name}), '=', $self->get_fullversion())) or
-	   (&version_cmp(Fink::VirtPackage->query_package($self->{_name}), '=', $self->get_fullversion()))) {
+	   ((defined Fink::VirtPackage->query_package($self->{_name}) and &version_cmp(Fink::VirtPackage->query_package($self->{_name}), '=', $self->get_fullversion())))) {
 		return 1;
 	}
 	return 0;
@@ -2460,6 +2460,7 @@ END
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
 		chomp @vars;
 		%ENV = map { split /=/,$_,2 } @vars;
+		$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	}
 
 	# set variables according to the info file

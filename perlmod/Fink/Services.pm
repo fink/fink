@@ -633,7 +633,9 @@ sub version_cmp {
 	$a = shift;
 	$op = shift;
 	$b = shift;
-	
+
+	return if (not defined $a or not defined $op or not defined $b);
+
 	if (exists($Version_Cmp_Cache{$a}{$b})) {
 		$res = $Version_Cmp_Cache{$a}{$b};
 	} else {

@@ -150,17 +150,10 @@ sub query_package {
 
 	$self->validate();
 
-	if (not exists $self->{$pkgname}) {
-		return 0;
+	if (exists $self->{$pkgname} and $self->{$pkgname}->{status} =~ /\s+installed$/i) {
+		return $self->{$pkgname}->{version};
 	}
-	$hash = $self->{$pkgname};
-	if (not exists $hash->{status} or not exists $hash->{version}) {
-		return 0;
-	}
-	if ($hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
-		return $hash->{version};
-	}
-	return 0;
+	return;
 }
 
 ### retrieve whole list with versions
