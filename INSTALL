@@ -141,6 +141,19 @@ upon. Fink currently has no way to enforce this, so you may run into
 problems.
 
 
+ Other Notes
+-------------
+IMPORTANT! When you update from Fink 0.2.0 or a CVS version, the first
+thing you should do after running the inject.pl scripts is this:
+
+  fink update dpkg
+
+There was a bug in dpkg that could lead to partially extracted
+packages. If you had unusual trouble with installed packages,
+especially missing symlinks, use 'fink reinstall' on them to
+re-install the .deb package files.
+
+
  Upgrading From Fink 0.1.x
 ===========================
 
