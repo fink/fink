@@ -17,7 +17,7 @@ commit: test
 bootstrap: test
 	@sh bootstrap.sh $(PREFIX)
 
-install: test
+install:
 	./inject.pl
 
 test:
