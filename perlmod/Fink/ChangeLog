@@ -1,3 +1,9 @@
+2003-10-17  <dmalloc@users.sourceforge.net>
+
+	* SelfUpdate.pm: Change default rsync host from 
+	rsync://fink.opendarwin.org/finkinfo/ to
+	rsync://master.us.finkmirrors.net/finkinfo/
+
 2003-10-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Config.pm, Configure.pm: Change the default verbosity level from
