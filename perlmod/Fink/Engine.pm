@@ -952,8 +952,8 @@ sub real_install {
 			# -> only include life-time dependencies
 			@deplist = $item->[2]->resolve_depends(0);
 		}
-		# add essential packages
-		if (not $item->[2]->param_boolean("Essential")) {
+		# add essential packages (being careful about packages whose parent is essential)
+		if (not $item->[2]->param_boolean("Essential") and not $item->[2]->param_boolean("_ParentEssential")) {
 			push @deplist, @elist;
 		}
 	DEPLOOP: foreach $dep (@deplist) {

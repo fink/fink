@@ -187,7 +187,10 @@ sub initialize {
 		if ($parent->has_param('homepage')) {
 			$self->{'homepage'} = $parent->{'homepage'};
 		}
-		
+		if ($parent->has_param('essential')) {
+		    $self->{'_parentessential'} = $parent->{'essential'};
+		}
+
 		# handle inherited fields
 		our @inherited_fields =
 		 qw(Description DescDetail License);

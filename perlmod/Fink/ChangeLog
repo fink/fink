@@ -1,3 +1,10 @@
+2003-06-07  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm, PkgVersion.pm:  Allow an essential package to have a 
+	splitoff which is not essential.  (However, the parent of an 
+	essential package must be essential.)  Uses a new virtual field 
+	_ParentEssential.
+
 2003-06-04  Chris Zubrzycki <beren12@users.sourceforge.net>
 
 	* Engine.pm: Add fink list limit by maintainer or tree.
