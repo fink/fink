@@ -282,9 +282,9 @@ sub initialize {
 					$hash->{description} = "[virtual package representing the gcc $version compiler]";
 					$hash->{builddependsonly} = "true";
 					$self->{$hash->{package}} = $hash;
-					print STDERR "  - found $version\n";
+					print STDERR "  - found $version\n" if ($options{debug});
 				} else {
-					print STDERR "  - warning, couldn't match '$version'\n";
+					print STDERR "  - warning, couldn't match '$version'\n" if ($options{debug});
 				}
 			}
 		}
