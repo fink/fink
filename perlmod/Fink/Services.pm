@@ -817,7 +817,9 @@ delimited cluster). Leading and trailing whitespace are removed from
 each pkg, and null pkgs are removed. A ref to an array is always
 returned, though it may contain no elements. Each element of @$struct
 is always an array ref, even if that list only has one element; none
-of these will have no elements.
+of these will have no elements. A new $struct is returned on each
+call, so changing one returned value does not afect the data returned
+by another call or the underlying data.
 
 =cut
 
