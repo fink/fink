@@ -1,3 +1,7 @@
+2004-07-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add some jdbc stuff to the provides
+
 2004-07-14  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: get_source_suffices now omits suffices for which

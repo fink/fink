@@ -182,6 +182,9 @@ sub initialize {
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 				$hash->{provides}    = 'system-java';
+				if ($ver >= 14) {
+					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
+				}
 				$self->{$hash->{package}} = $hash;
 				$latest_java = $dir;
 
