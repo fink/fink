@@ -1,3 +1,8 @@
+2005-02-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.1, a bugfix
+	release on branch_0_24
+
 2005-02-25  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* fink.in: Adding maintainer mode, -m|--maintainer
