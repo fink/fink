@@ -195,7 +195,7 @@ END
 		$hash->{status} = STATUS_PRESENT;
 		print STDERR $hash->{version}, "\n" if ($options{debug});
 	} else {
-		print STDERR "no\n";
+		print STDERR "no\n" if ($options{debug});
 	}
 	$self->{$hash->{package}} = $hash;
 
