@@ -1525,7 +1525,14 @@ END
 		$renamelist = "";
 
 		# Determine the rename list (if any)
-		$tarflags = "-x${verbosity}f - --no-same-owner --no-same-permissions";
+		$tarflags = "-x${verbosity}f -";
+
+		# Note: the Apple-supplied /usr/bin/gnutar in versions 10.2 and
+		# earlier does not know about the flags --no-same-owner and
+		# --no-same-permissions.  Therefore, we do not use these in
+		# the "default" situation (which should only occur during bootstrap).
+
+		my $permissionflags = " --no-same-owner --no-same-permissions";
 		$tarcommand = "/usr/bin/gnutar $tarflags"; # Default to Apple's GNU Tar
 		if ($self->has_param($renamefield)) {
 			@renamefiles = split(/\s+/, $self->param($renamefield));
@@ -1539,7 +1546,7 @@ END
 			}
 			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
 		} elsif ( -e "$basepath/bin/tar" ) {
-			$tarcommand = "$basepath/bin/tar $tarflags"; # Use Fink's GNU Tar if available
+			$tarcommand = "$basepath/bin/tar $tarflags $permissionflags"; # Use Fink's GNU Tar if available
 		}
 		$bzip2 = "bzip2";
 		$unzip = "unzip";
