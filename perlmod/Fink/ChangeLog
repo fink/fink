@@ -1,3 +1,10 @@
+2004-07-12  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: convert set_env (which alters ENV) to
+	get_env (which just returns what env should be); fix run_script
+	accordingly.
+	* Engine.pm: dumpinfo: add 'env' pseudo-field.
+
 2004-07-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: set_env: simplify handling of NoSetENVVAR and

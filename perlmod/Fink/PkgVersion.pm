@@ -2496,17 +2496,18 @@ sub phase_purge {
 	Fink::Status->invalidate();
 }
 
-### set environment variables according to spec
-# changes %ENV, so caller should backup/restore as necessary
+# returns hashref for the ENV to be used while running package scripts
+# does not alter global ENV
 
-sub set_env {
+sub get_env {
 	my $self = shift;
 	my ($varname, $expand, $ccache_dir);
+	my %script_env;
 
 	# just return cached copy if there is one
 	if (exists $self->{_script_env}) {
-		%ENV = %{$self->{_script_env}};
-		return;
+		# return ref to a copy, so caller changes do not modify cached value
+		return \%{$self->{_script_env}};
 	}
 
 	# bits of ENV that can be altered by SetENVVAR and NoSetENVVAR in a .info
@@ -2552,15 +2553,15 @@ END
 	}
 
 	# start with a clean the environment
-	%ENV = ("HOME" => $ENV{"HOME"});
+	%script_env = ("HOME" => $ENV{"HOME"});
 
 	# add system path
-	$ENV{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";
+	$script_env{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";
 	
 	# add bootstrap path if necessary
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 	if (-d $bsbase) {
-		$ENV{"PATH"} = "$bsbase/bin:$bsbase/sbin:" . $ENV{"PATH"};
+		$script_env{"PATH"} = "$bsbase/bin:$bsbase/sbin:" . $script_env{"PATH"};
 	}
 	
 	# Stop ccache stompage: allow user to specify directory via fink.conf
@@ -2572,16 +2573,20 @@ END
 				"\"$ccache_dir\" for CCacheDir, so CCACHE_DIR will not ".
 				"be set.\n";
 		} else {
-			$ENV{CCACHE_DIR} = $ccache_dir;
+			$script_env{CCACHE_DIR} = $ccache_dir;
 		}
 	}
 
 	# get full environment: parse what a shell has after sourcing init.sh
 	# script when starting with the (purified) ENV we have so far
 	if (-r "$basepath/bin/init.sh") {
+		my %temp_ENV = %ENV;  # need to activatescript_env, so save ENV for later
+		%ENV = %script_env;
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
+		%ENV = %temp_ENV;     # restore previous ENV
 		chomp @vars;
-		%ENV = map { split /=/,$_,2 } @vars;
+		%script_env = map { split /=/,$_,2 } @vars;
+		delete $script_env{_};  # artifact of how we fetch init.sh results
 	}
 
 	# set variables according to the info file
@@ -2600,10 +2605,10 @@ END
 		}
 		if (defined $s) {
 			# %-expand and store if we have anything at all
-			$ENV{$varname} = &expand_percent($s, $expand, $self->get_info_filename." \"set$varname\" or \%Fink::PkgVersion::set_env::defaults");
+			$script_env{$varname} = &expand_percent($s, $expand, $self->get_info_filename." \"set$varname\" or \%Fink::PkgVersion::get_env::defaults");
 		} else {
 			# otherwise do not set
-			delete $ENV{$varname};
+			delete $script_env{$varname};
 		}
 	}
 
@@ -2612,9 +2617,9 @@ END
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined $sw_vers and $sw_vers ne "0") {
 		$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 		if ($sw_vers eq "10.2") {
-			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
+			$script_env{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
 		} else {
-			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
+			$script_env{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
 
@@ -2627,8 +2632,8 @@ END
 				if (opendir(DIR, $versions_dir)) {
 					for $dir (sort(readdir(DIR))) {
 						if ($dir =~ /^${subtype}/ and -f "$versions_dir/$dir/Headers/jni.h") {
-							$ENV{'JAVA_HOME'} = "$versions_dir/$dir/Home" unless $self->has_param('SetJAVA_HOME');
-							$ENV{'PATH'} = "$versions_dir/$dir/Home/bin:" . $ENV{'PATH'} unless $self->has_param('SetPATH');
+							$script_env{'JAVA_HOME'} = "$versions_dir/$dir/Home" unless $self->has_param('SetJAVA_HOME');
+							$script_env{'PATH'} = "$versions_dir/$dir/Home/bin:" . $script_env{'PATH'} unless $self->has_param('SetPATH');
 							$found++;
 						}
 					}
@@ -2639,7 +2644,8 @@ END
 	}
 
 	# cache a copy for next time
-	$self->{_script_env} = { %ENV };
+	$self->{_script_env} = { %script_env };
+	return \%script_env;
 }
 
 ### run script
@@ -2649,24 +2655,20 @@ sub run_script {
 	my $script = shift;
 	my $phase = shift;
 	my $no_expand = shift || 0;
-	my %env_bak;
-	
-	# Backup the environment variables
-	%env_bak = %ENV;
-	
+	my ($script_env, %env_bak);
+
+
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
-	
-	# Switch to our own environment
-	$self->set_env();
-	
+
 	# Run the script
+	$script_env = $self->get_env();# fetch script environment
+	%env_bak = %ENV;        # backup existing environment
+	%ENV = %$script_env;    # run under modified environment
 	if (&execute_script($script)) {
 		die $phase." ".$self->get_fullname()." failed\n";
 	}
-	
-	# Restore the environment
-	%ENV = %env_bak;
+	%ENV = %env_bak;        # restore previous environment
 }
 
 

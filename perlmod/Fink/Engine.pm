@@ -1668,6 +1668,7 @@ described in the Fink Packaging Manual:
                    "installed" if this version is currently installed.
   allversions  - List of all known versions of the package name in order.
                  Currently-installed version (if any) is prefixed with "i".
+  env          - Shell environment in effect during pkg construction.
 
 EOF
 		exit 0;
@@ -1723,6 +1724,7 @@ EOF
 						   $pkg->params_matching(/^set/),
 						   $pkg->params_matching(/^noset/),
 						   qw/
+						   env
 						   configureparams gcc compilescript noperltests
 						   updatepod installscript
 						   jarfiles docfiles shlibs runtimevars splitoffs files
@@ -1879,6 +1881,11 @@ EOF
 					$value =~ s/^/ /gm;
 					printf "%s:\n%s\n", $_, $value;
 				}
+			} elsif ($_ eq 'env') {
+				# multiline field, but has special format and own accessor
+				my $value = $pkg->get_env;
+				printf "%s:\n", $_;
+				print map { " $_=".$value->{$_}."\n" } sort keys %$value;
 			} else {
 				die "Unknown field $_\n";
 			}
