@@ -1,0 +1,47 @@
+# init.csh
+#
+# to use the Fink hierarchy, put the following in your .cshrc:
+#
+#  source BASEPATH/bin/init.csh
+#
+
+#
+# Fink - a package manager that downloads source and installs it
+# Copyright (c) 2001 Christoph Pfisterer
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+set path = ( BASEPATH/bin BASEPATH/sbin $path )
+
+if ( $?MANPATH) then
+  setenv MANPATH BASEPATH/man:$MANPATH
+else
+  setenv MANPATH BASEPATH/man:/usr/local/share/man:/usr/local/man:/usr/share/man:/usr/man
+endif
+
+if ( $?INFOPATH ) then
+  setenv INFOPATH BASEPATH/info:$INFOPATH
+else
+  setenv INFOPATH BASEPATH/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:/usr/info
+endif
+
+#if ( $?DYLD_LIBRARY_PATH ) then
+#  setenv DYLD_LIBRARY_PATH BASEPATH/lib:$DYLD_LIBRARY_PATH
+#else
+#  setenv DYLD_LIBRARY_PATH BASEPATH/lib
+#endif
+
+# eof
