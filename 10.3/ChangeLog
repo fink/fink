@@ -1,3 +1,7 @@
+2005-03-21  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg-bootstrap.info: fix sed in PatchScript to actually work
+
 2005-03-18  Daniel Macks  <dmacks@netspace.org>
 
 	* base-files.info: sync with stable (1.9.5-1) (+AddShlibDeps)
