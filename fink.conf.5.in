@@ -218,7 +218,8 @@ choose a version based on its binary availability.
 .\"
 .\"
 .Sh MIRROR SETTINGS
-Getting software from the Internet can be tedious thing and often downloads are 
+Getting software from the Internet can be a tedious thing and often 
+downloads are 
 not as fast as we would like them to be. Mirror servers host copies of files 
 available on other servers, but may have a faster connection to the Internet or 
 be geographically closer to you, thus enabling you to download files faster. 
