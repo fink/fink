@@ -1,21 +1,44 @@
+2005-02-23  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* shlibs.pm: Adding changes to Storable calls from Benjamin Reed on
+	2005-02-22.
+
+2005-02-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: protect pkgnames when used as regex patterns.
+
+2005-02-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Configure.pm: Removed Verbosity:4 (pedantic) level.
+	* Engine.pm: Added --(no-)pedantic flag to 'fink validate'.
+	* Validation.pm: Use --pedantic flag instead of verbosity level to
+	control display of pendantic warnings
+
+2005-02-22  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Package.pm: Lock indexing so multiple indexes don't step on
+	each other and/or fail.  If one is indexing, other fink processes
+	will wait for it to finish and then just re-load the package
+	hash from storable.
+
 2005-02-21  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Added last two updates to shlibs.db calls
 
 2005-02-21  Daniel Macks  <dmacks@netspace.org>
 
-        * Package.pm: overhaul search_comparedb: stop as soon as find one
+	* Package.pm: overhaul search_comparedb: stop as soon as find one
 	newer file, use piped open() so don't have to wait for `` to
 	finish before beginning to process outout.
 
 2005-02-21  Daniel Macks  <dmacks@netspace.org>
 
-        * Package.pm: overhaul update_db, including warning immediately if
+	* Package.pm: overhaul update_db, including warning immediately if
 	cannot update cache
 
 2005-02-20  Daniel Macks  <dmacks@netspace.org>
 
-        * Engine.pm: backing out 'snapshot' until after 0.24
+	* Engine.pm: backing out 'snapshot' until after 0.24
 
 2005-02-18  Daniel Macks  <dmacks@netspace.org>
 

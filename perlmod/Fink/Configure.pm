@@ -160,8 +160,7 @@ sub configure {
 							   "Quiet (do not show download statistics)"   => 0,
 							   "Low (do not show tarballs being expanded)" => 1,
 							   "Medium (will show almost everything)"      => 2,
-							   "High (will show everything)"               => 3,
-							   "Pedantic (even show nitpicky details)"     => 4
+							   "High (will show everything)"               => 3
 							  ]
 							);
 	$config->set_param("Verbose", $verbose);

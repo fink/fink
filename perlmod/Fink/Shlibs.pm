@@ -551,6 +551,13 @@ sub update_shlib_db {
 	my $self = shift;
 	my ($dir);
 
+	my $dbdir = "$basepath/var/db";
+	my $dbfile = "$dbdir/shlibs.db";
+	my $lockfile = "$dbdir/shlibs.db.lock";
+
+	my $oldsig = $SIG{'INT'};
+	$SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
+
 	# check if we should update index cache
 	my $writable_cache = 0;
 	eval "require Storable";
@@ -564,6 +571,29 @@ sub update_shlib_db {
 		$writable_cache = 1;
 	}
 
+	# minutes to wait
+	my $wait = 5;
+	if (-f $lockfile) {
+		# Check if we're already indexing.  If the index is less than 5 minutes old,
+		# assume that there's another fink running and try to wait for it to finish indexing
+		my $db_mtime = (stat($lockfile))[9];
+		if ($db_mtime > (time - 60 * $wait)) {
+			print STDERR "\nWaiting for another reindex to finish...";
+			for (0 .. 60) {
+				sleep $wait;
+				if (! -f $lockfile) {
+					print STDERR " done.\n";
+					$shlibs = Storable::lock_retrieve($dbfile);
+					$shlib_db_outdated = 0;
+					return;
+				}
+			}
+		}
+	} else {
+		open (FILEOUT, '>' . $lockfile);
+		close (FILEOUT);
+	}
+
 	# read data from descriptions
 	if (&get_term_width) {
 		print STDERR "Reading shared library info...\n";
@@ -575,15 +605,18 @@ sub update_shlib_db {
 		if (&get_term_width) {
 			print STDERR "Updating shared library index... ";
 		}
-		my $dbdir = "$basepath/var/db";
-		my $dbfile = "$dbdir/shlibs.db";
 		unless (-d $dbdir) {
 			mkdir($dbdir, 0755) || die "Error: Could not create directory $dbdir: $!\n";
 		}
+
 		Storable::lock_store($shlibs, "$dbfile.tmp");
 		rename "$dbfile.tmp", $dbfile or die "Error: could not activate temporary file $dbfile.tmp: $!\n";
-		print "done.\n";
+		print STDERR "done.\n";
 	};
+
+	$SIG{'INT'} = $oldsig if (defined $oldsig);
+	unlink($lockfile);
+
 	$shlib_db_outdated = 0;
 }
 

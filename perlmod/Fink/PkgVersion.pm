@@ -1590,7 +1590,7 @@ sub lol_remove_self {
 #		print "cluster: ", join(' | ', @$cluster), "\n";
 		foreach $atom (@$cluster) {
 #			print "\tatom: '$atom'\n";
-			if ($atom =~ /^$self_pkg\s*\(\s*([<>=]+)\s*(\S*)\s*\)$/) {
+			if ($atom =~ /^\Q$self_pkg\E\s*\(\s*([<>=]+)\s*(\S*)\s*\)$/) {
 				# pkg matches, has version dependency (op=$1, ver=$2)
 #				print "\t\tmatched pkg, need ver $1$2\n";
 				# check versioning
@@ -2458,7 +2458,7 @@ EOF
 	}
 	foreach (@$struct) {
 		foreach (@$_) {
-			$has_kernel_dep = 1 if /^$kernel(\Z|\s|\()/;
+			$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
 		}
 	}
 	push @$struct, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;

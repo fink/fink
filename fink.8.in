@@ -54,6 +54,10 @@ directory after building a package.
 .It Cm -b, --use-binary-dist
 Download pre-compiled binary packages from the binary distribution 
 if available and if deb is not already on the system
+.Pp
+Note that this mode instructs Fink to download the version it wants if
+that version is available for download; it does not cause Fink to
+choose a version based on its binary availability.
 .It Cm --no-use-binary-dist
 Don't use pre-compiled binary packages from the binary distribution
 (opposite of --use-binary-dist)
@@ -342,6 +346,10 @@ may be used:
 Show the options which are available.
 .It Cm -p,--prefix
 Simulate an alternate Fink basepath prefix (%p) within the files being validated.
+.It Cm --pedantic, --no-pedantic
+Control the display of nitpicky formatting warnings.
+.Cm --pedantic
+is the default.
 .El
 .It Cm scanpackages Op Ar tree...
 Calls

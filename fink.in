@@ -47,7 +47,7 @@ Getopt::Long::Configure(qw(bundling ignore_case require_order));
 GetOptions(
 	'yes|y'              => sub { $options{dontask} = 1         },
 	'quiet|q'            => sub { $options{verbosity} = -1      },
-	'verbose|v'          => sub { $options{verbosity} = 4       },
+	'verbose|v'          => sub { $options{verbosity} = 3       },
 	'keep-build-dir|k'   => sub { $options{keep_build} = 1      },
 	'keep-root-dir|K'    => sub { $options{keep_root} = 1       },
 	'use-binary-dist|b'  => sub { $options{use_binary} = 1      },

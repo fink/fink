@@ -1,3 +1,13 @@
+2005-02-23  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in, fink.conf.5.in: Note that -b effect is *after*
+	resolver chooses the version.
+
+2005-02-22  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in, fink.conf.5.in: Removed Verbosity:4 (pendantic) level
+	* fink.8.in: Documented new --(no-)pendantic flag for 'fink validate'
+
 2005-02-20  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in, fink.8.in: backing out 'snapshot' until after 0.24
