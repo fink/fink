@@ -1709,7 +1709,8 @@ sub set_env {
   my $self = shift;
   my ($varname, $s, $expand);
   my %defaults = ( "CPPFLAGS" => "-isystem \%p/include",
-		   "LIBRARY_PATH" => "\%p/lib" );
+		   "LIBRARY_PATH" => "\%p/lib",
+		   "DYLD_LIBRARY_PATH" => "\%p/lib" );
   my $bsbase = get_bsbase();
 
   # clean the environment
@@ -1737,7 +1738,8 @@ sub set_env {
 		    "CXX", "CXXFLAGS",
 		    "LD", "LDFLAGS", "LIBS",
 		    "MAKE", "MFLAGS",
-		    "LIBRARY_PATH", "CPATH") {
+		    "LIBRARY_PATH",
+		    "DYLD_LIBRARY_PATH") {
     if ($self->has_param("Set$varname")) {
       $s = $self->param("Set$varname");
       if (exists $defaults{$varname} and

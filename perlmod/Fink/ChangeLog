@@ -1,3 +1,8 @@
+2002-10-31  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Set DYLD_LIBRARY_PATH, too. This  allows libtool to find
+	  its *.la files in /sw/lib again.
+
 2002-10-27  Max Horn  <max@quendi.de>
 
 	* Mirror.pm: Never use "retry same mirror" as initial default choice if 

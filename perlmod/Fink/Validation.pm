@@ -41,7 +41,7 @@ our @EXPORT_OK;
 
 # Currently, the Set* and NoSet* fields only support a limited list of variables.
 our @set_vars =
-  qw(cc cflags cpp cppflags cxx cxxflags ld ldflags libs make mflags library_path cpath);
+  qw(cc cflags cpp cppflags cxx cxxflags ld ldflags libs make mflags library_path dyld_library_path);
 
 # Required fields.
 our @required_fields =
