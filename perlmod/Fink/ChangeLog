@@ -1,3 +1,10 @@
+2003-12-16  Daniel Macks <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change to a more generic way of parsing perl
+	version info from Type
+	* Validation.pm: Change to a more structured definition of allowed
+	Type values
+
 2003-12-15  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* PkgVersion.pm: Changed the warning about missing packages in multi

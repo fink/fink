@@ -89,10 +89,12 @@ our %name_version_fields = map {$_, 1}
 		);
 
 # Allowed values for the type field
-our %allowed_type_values = map {$_, 1}
+# keys are major types, values are refs to lists of minor types
+our %allowed_type_values = 
 	(
-	 "nosource", "bundle", "perl", 
-	 "perl 5.6.0", "perl 5.6.1", "perl 5.8.0", "perl 5.8.1"
+	 "nosource" => [ "" ],
+	 "bundle"   => [ "" ],
+	 "perl"     => [ "", "5.6.0", "5.6.1", "5.8.0", "5.8.1" ]
 	 );
 
 
@@ -360,8 +362,21 @@ sub validate_info_file {
 
 	# Check value of type field
 	$value = lc $properties->{type};
-	if ($value and not $allowed_type_values{$value}) {
-		print "Error: Unknown value \"$value\"in field \"Type\". ($filename)\n";
+	my ($type_major, $type_minor, $junk) = split ' ', $value;
+	if (!defined $junk) {
+		$type_major = "" unless defined $type_major;
+		$type_minor = "" unless defined $type_minor;
+		if (exists $allowed_type_values{$type_major}) {
+			if (!grep {$type_minor eq $_} @{$allowed_type_values{$type_major}}) {
+				print "Error: Unknown minor value \"$type_minor\" for major value \"$type_major\" in field \"Type\". ($filename)\n";
+				$looks_good = 0;
+			}
+		} else {
+			print "Error: Unknown major value \"$type_major\" in field \"Type\". ($filename)\n";
+			$looks_good = 0;
+		}
+	} else {
+		print "Error: Malformed value \"$value\"in field \"Type\". ($filename)\n";
 		$looks_good = 0;
 	}
 	

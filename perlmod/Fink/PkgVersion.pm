@@ -74,12 +74,16 @@ sub initialize {
 	$self->{_version} = $version = $self->param_default("Version", "0");
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
+
 	$self->{_type} = $type = lc $self->param_default("Type", "");
 	# split off perl version number, when given with the type
-	if ($type =~ s/^perl\s+([0-9]+\.[0-9]+\.[0-9]+)/perl/) {
-		$self->{_perlversion} = $1;
+	# Presume we have passed validation which is quite explicit
+	# about allowed major and minor (language version) values
+	if ($type =~ s/^(\S+)\s+(\S+)/$1/) {
+		$self->{_perlversion} = $2;
 		$self->{_type} = $type;
 	}
+
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
 
