@@ -1,3 +1,9 @@
+2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm: export "read_properties_lines"
+	* Mirror.pm: set a default value for Master mirror, if config file 
+	not present
+
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Configure.pm: export "choose_mirrors", and enlarge the dialogue
@@ -6,7 +12,6 @@
 	Also check for the existence of mirror/_keys and mirror/_list,
 	and bail with a warning to install fink-mirrors if these are not
 	found.
-
 	* Bootstrap.pm: don't install the mirror directory (or its files)
 	in the fink package (this is being moved to the fink-mirrors
 	package)
