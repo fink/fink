@@ -53,8 +53,8 @@ sub fink_version {
 
 sub distribution_version {
   my $dv;
-  if (-f "@BASEPATH@/fink/fink-release") {
-    chomp($dv = `cat @BASEPATH@/fink/fink-release`);
+  if (-f "@BASEPATH@/fink/VERSION") {
+    chomp($dv = `cat @BASEPATH@/fink/VERSION`);
   } else {
     $dv = "unknown";
   }
