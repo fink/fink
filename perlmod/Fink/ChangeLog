@@ -1,3 +1,7 @@
+2005-02-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Improved wording for scorllkeeper misuse warnings.
+
 2005-02-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm: Repair dumpinfo under perl 5.6 (thanks to Martin 
