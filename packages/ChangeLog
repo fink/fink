@@ -1,0 +1,424 @@
+2002-04-24 15:28  fingolfin
+
+	* bzip2-1.0.2-1.info, debianutils-1.15-4.info,
+	gettext-0.10.40-2.info, gzip-1.2.4a-6.info,
+	storable-pm-1.0.14-1.info: changed source URLs to our own copies of
+	the files 
+
+2002-04-19 17:42  fingolfin
+
+	* storable-pm-1.0.14-1.info: made storable-pm an 'important'
+	package like apt is 
+
+2002-04-15 21:32  fingolfin
+
+	* dpkg-1.9.20-1.info, dpkg-1.9.20-1.patch, dpkg-1.9.20-3.info,
+	dpkg-1.9.20-3.patch: downgraded dpkg again, since it's really rev 1
+	which is in stable CVS, not rev 3 
+
+2002-04-14 04:04  fingolfin
+
+	* dpkg-1.9.17-2.info, dpkg-1.9.17-2.patch, dpkg-1.9.20-3.info,
+	dpkg-1.9.20-3.patch, dpkg-bootstrap-1.9.17-2.info,
+	dpkg-bootstrap-1.9.20-1.info: sync with package tree 
+
+2002-04-03 14:36  fingolfin
+
+	* gzip-1.2.4a-5.info, gzip-1.2.4a-6.info, gzip-1.2.4a-6.patch: 
+	applied security fix 
+
+2002-04-02 19:20  fingolfin
+
+	* bzip2-1.0.1-4.info, bzip2-1.0.1-4.patch, bzip2-1.0.2-1.info,
+	bzip2-1.0.2-1.patch: synced bzip2 package with package tree 
+
+2002-03-28 00:40  finlayd
+
+	* apt-0.5.4-1.info, base-files-1.2-1.info, base-files-1.5-1.info,
+	bzip2-1.0.1-4.info, dpkg-1.9.17-2.info,
+	dpkg-bootstrap-1.9.17-2.info, gettext-0.10.40-1.info,
+	gettext-0.10.40-1.patch, gettext-0.10.40-2.info,
+	gettext-0.10.40-2.patch, gzip-1.2.4a-5.info, libiconv-1.7-3.info,
+	ncurses-5.2-5.info, ncurses-5.2-5.patch, ncurses-5.2-6.info,
+	ncurses-5.2-6.patch, tar-1.13.19-1.info: Syncing with HEAD.  
+
+2002-01-11 14:20  fingolfin
+
+	* base-files-1.4-1.info, base-files-1.5-1.info: updated base-files
+	.info file 
+
+2002-01-09 22:25  fingolfin
+
+	* gettext-0.10.40-1.info, gettext-0.10.40-1.patch,
+	gettext-0.10.40-2.info, gettext-0.10.40-2.patch: ouch, gettext was
+	outdated, now in sync with stable 
+
+2002-01-07 12:27  fingolfin
+
+	* ncurses-5.2-5.info, ncurses-5.2-5.patch, ncurses-5.2-6.info,
+	ncurses-5.2-6.patch: updated ncurses 
+
+2002-01-07 12:18  fingolfin
+
+	* base-files-1.4-1.info: was missing base-files 
+
+2001-12-28 01:39  fingolfin
+
+	* apt-0.5.4-1.info, bzip2-1.0.1-4.info, dpkg-1.9.17-2.info,
+	dpkg-bootstrap-1.9.17-2.info, gettext-0.10.40-1.info,
+	gzip-1.2.4a-5.info, libiconv-1.7-3.info, ncurses-5.2-5.info,
+	tar-1.13.19-1.info: moved tarballs to SourceForge's file release
+	system 
+
+2001-12-28 01:25  fingolfin
+
+	* base-files-1.2-1.info: remvoed obsolete 
+
+2001-11-02 13:00  chrisp
+
+	* apt-0.5.4-1.patch: Removed accidentally included backup files
+	from the patch.  
+
+2001-11-02 08:41  chrisp
+
+	* apt-0.5.3-7.info, apt-0.5.3-7.patch, base-files-1.1-1.info,
+	dpkg-1.9.17-1.info, dpkg-1.9.17-1.patch,
+	dpkg-bootstrap-1.9.17-1.info: Removed old packages.  
+
+2001-11-02 08:40  chrisp
+
+	* apt-0.5.4-1.info, apt-0.5.4-1.patch, base-files-1.2-1.info,
+	dpkg-1.9.17-2.info, dpkg-1.9.17-2.patch,
+	dpkg-bootstrap-1.9.17-2.info: Synchronized with stable, fixing the
+	download URLs on the way.  
+
+2001-11-02 08:39  chrisp
+
+	* .cvsignore: We no longer auto-generate files in this directory,
+	no need to ignore anything...  
+
+2001-11-02 08:36  chrisp
+
+	* tar-1.13.19-1.info: Fixed download URL for long-term stability.  
+
+2001-09-29 15:47  chrisp
+
+	* base-files-1.0-1.info, base-files-1.1-1.info,
+	debianutils-1.15-4.info, debianutils-1.15-4.patch,
+	tar-1.13.17-4.info, tar-1.13.19-1.info: Synchronized with stable.  
+
+2001-09-28 20:05  chrisp
+
+	* apt-0.5.3-5.info, apt-0.5.3-5.patch, apt-0.5.3-7.info,
+	apt-0.5.3-7.patch, gettext-0.10.39-2.info, gettext-0.10.39-2.patch,
+	gettext-0.10.40-1.info, gettext-0.10.40-1.patch: Sync'd with
+	stable.  
+
+2001-09-11 17:12  chrisp
+
+	* base-files-1.0-1.info, base-files.in, fink.in: Moved base-files
+	to a separate CVS module and removed special treatment for it from
+	the scripts. Other infrastructure changes to decouple fink (package
+	manager) releases from distribution releases.  
+
+2001-09-04 14:11  chrisp
+
+	* gettext-0.10.39-1.info, gettext-0.10.39-1.patch,
+	gettext-0.10.39-2.info, gettext-0.10.39-2.patch: Sync'd with
+	stable.  
+
+2001-09-03 02:56  fingolfin
+
+	* apt-0.5.3-5.info: fixed apt package download path 
+
+2001-09-02 11:32  chrisp
+
+	* apt-0.5.3-5.info, bzip2-1.0.1-4.info, dpkg-1.9.16-3.info,
+	dpkg-1.9.16-3.patch, dpkg-1.9.17-1.info, dpkg-1.9.17-1.patch,
+	dpkg-bootstrap-1.9.16-3.info, dpkg-bootstrap-1.9.17-1.info,
+	gettext-0.10.39-1.info, gzip-1.2.4a-5.info, libiconv-1.7-3.info,
+	ncurses-5.2-5.info, tar-1.13.17-4.info: Updated dpkg from stable.
+	Changed all URLs to point to the Fink source mirror.  
+
+2001-08-25 11:34  chrisp
+
+	* tar-1.13.17-3.info, tar-1.13.17-4.info: Last-minute update to
+	allow a smooth upgrade from really old Fink versions.  
+
+2001-08-25 07:23  chrisp
+
+	* gettext-0.10.39-1.patch: 10.1 linker fix.  
+
+2001-08-24 19:17  chrisp
+
+	* apt-0.5.3-3.info, apt-0.5.3-3.patch, apt-0.5.3-5.info,
+	apt-0.5.3-5.patch, bzip2-1.0.1-4.info, bzip2-1.0.1-4.patch,
+	gettext-0.10.38-6.info, gettext-0.10.38-6.patch,
+	gettext-0.10.39-1.info, gettext-0.10.39-1.patch,
+	libiconv-1.7-2.info, libiconv-1.7-3.info, ncurses-5.2-5.patch: 
+	Synchronized with stable.  
+
+2001-07-31 11:54  chrisp
+
+	* bzip2-1.0.1-3.info, bzip2-1.0.1-3.patch, dpkg-1.8.3.1-5.info,
+	dpkg-1.8.3.1-5.patch, dpkg-bootstrap-1.8.3.1-5.info,
+	gettext-0.10.38-1.info, gzip-1.2.4a-4.info, ncurses-5.2-3.info,
+	ncurses-5.2-3.patch, tar-1.13.17-2.info: Obsolete.  
+
+2001-07-31 11:52  chrisp
+
+	* apt-0.5.3-3.info, apt-0.5.3-3.patch, base-files.in,
+	bzip2-1.0.1-4.info, bzip2-1.0.1-4.patch, dpkg-1.9.16-3.info,
+	dpkg-1.9.16-3.patch, dpkg-bootstrap-1.9.16-3.info, fink.in,
+	gettext-0.10.38-6.info, gettext-0.10.38-6.patch,
+	gzip-1.2.4a-5.info, libiconv-1.7-2.info, ncurses-5.2-5.info,
+	ncurses-5.2-5.patch, tar-1.13.17-3.info: Updated from the packages
+	module.  
+
+2001-07-16 14:21  chrisp
+
+	* dpkg-1.8.3.1-5.info, dpkg-bootstrap-1.8.3.1-5.info,
+	gettext-0.10.38-1.info, ncurses-5.2-3.info: Mass move from
+	-traditional-cpp to -no-cpp-precomp.  
+
+2001-07-12 14:37  chrisp
+
+	* base-files.in: Install skeleton Info dir file in the postinst
+	script.  
+
+2001-07-09 20:35  chrisp
+
+	* gettext-0.10.35-4.info, gettext-0.10.35-4.patch: Obsolete.  
+
+2001-07-09 20:32  chrisp
+
+	* dpkg-1.8.3.1-5.info, dpkg-bootstrap-1.8.3.1-5.info,
+	gettext-0.10.38-1.info: Synchronized with packages module.  
+
+2001-07-09 20:31  chrisp
+
+	* ncurses-5.2-3.info: Description updated.  
+
+2001-07-07 12:23  finlayd
+
+	* dpkg-1.8.3.1-5.info, dpkg-bootstrap-1.8.3.1-5.info: Updated
+	download URLs so fink can now install 
+
+2001-06-22 19:09  chrisp
+
+	* dpkg-1.8.3.1-2.info, dpkg-1.8.3.1-2.patch: Obsolete.  
+
+2001-06-22 19:09  chrisp
+
+	* dpkg-bootstrap-1.8.3.1-5.info: New special package with dselect
+	disabled to reduce dependencies.  
+
+2001-06-22 19:08  chrisp
+
+	* dpkg-1.8.3.1-5.info, dpkg-1.8.3.1-5.patch: New revision with
+	dselect enabled and some path problems fixed.  
+
+2001-06-22 19:07  chrisp
+
+	* ncurses-5.2-3.info, ncurses-5.2-3.patch: New package, needed for
+	dselect (in the dpkg package).  
+
+2001-06-22 19:06  chrisp
+
+	* tar-1.13.17-2.info: Updated descriptions and fixed gettext
+	dependency.  
+
+2001-06-22 19:06  chrisp
+
+	* base-files.in, bzip2-1.0.1-3.info, fink.in,
+	gettext-0.10.35-4.info, gzip-1.2.4a-4.info: Updated descriptions.  
+
+2001-05-11 19:33  chrisp
+
+	* .cvsignore, base-files.in, bzip2-1.0.1-3.info,
+	bzip2-1.0.1-3.patch, dpkg-1.8.3.1-2.info, dpkg-1.8.3.1-2.patch,
+	fink.in, gettext-0.10.35-4.info, gettext-0.10.35-4.patch,
+	gzip-1.2.4a-4.info, tar-1.13.17-2.info: Merged dpkg-branch into
+	HEAD.  
+
+2001-05-08 19:04  chrisp
+
+	* dpkg-1.8.3.1-1.info, dpkg-1.8.3.1-1.patch: Obsolete.  
+
+2001-05-04 17:51  chrisp
+
+	* dpkg-1.8.3.1-2.patch: file dpkg-1.8.3.1-2.patch was initially
+	added on branch dpkg-branch.  
+
+2001-05-04 17:51  chrisp
+
+	* dpkg-1.8.3.1-2.info: file dpkg-1.8.3.1-2.info was initially added
+	on branch dpkg-branch.  
+
+2001-05-04 17:51  chrisp
+
+	* dpkg-1.8.3.1-2.info, dpkg-1.8.3.1-2.patch: Fixed incomplete
+	unpacking bug.  
+
+2001-04-29 21:30  chrisp
+
+	* tar-1.13.17-1.info: New revision available.  
+
+2001-04-29 21:30  chrisp
+
+	* tar-1.13.17-2.info: file tar-1.13.17-2.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-29 21:30  chrisp
+
+	* tar-1.13.17-2.info: New revision fixing documentation install
+	location.  
+
+2001-04-29 15:22  chrisp
+
+	* gettext-0.10.35-2.info, gettext-0.10.35-2.patch: New revision
+	available.  
+
+2001-04-29 14:56  chrisp
+
+	* gettext-0.10.35-4.info, gettext-0.10.35-4.patch: Important
+	installation fixes.  
+
+2001-04-29 14:56  chrisp
+
+	* gettext-0.10.35-4.patch: file gettext-0.10.35-4.patch was
+	initially added on branch dpkg-branch.  
+
+2001-04-29 14:56  chrisp
+
+	* gettext-0.10.35-4.info: file gettext-0.10.35-4.info was initially
+	added on branch dpkg-branch.  
+
+2001-04-28 10:12  chrisp
+
+	* gzip-1.2.4a-4.info: New revision working around configure
+	intelligence while updating.  
+
+2001-04-28 10:12  chrisp
+
+	* gzip-1.2.4a-4.info: file gzip-1.2.4a-4.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-28 10:12  chrisp
+
+	* gzip-1.2.4a-3.info: New revision available.  
+
+2001-04-27 22:58  chrisp
+
+	* gzip-1.2.4a-2.info: New revision available.  
+
+2001-04-27 22:57  chrisp
+
+	* gzip-1.2.4a-3.info: New revision fixing install problems
+	triggered by . in PATH.  
+
+2001-04-27 22:57  chrisp
+
+	* gzip-1.2.4a-3.info: file gzip-1.2.4a-3.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-23 21:47  chrisp
+
+	* bzip2-1.0.1-3.info: Changed download location to a less crowded
+	server.  
+
+2001-04-20 10:03  chrisp
+
+	* .cvsignore: file .cvsignore was initially added on branch
+	dpkg-branch.  
+
+2001-04-20 10:02  chrisp
+
+	* base-files.in: file base-files.in was initially added on branch
+	dpkg-branch.  
+
+2001-04-20 10:02  chrisp
+
+	* base-files-0.2.0-1.info, base-files.in, fink-0.2.0-1.info,
+	fink.in, .cvsignore: Renamed and changed to support
+	auto-versioning.  
+
+2001-04-20 10:02  chrisp
+
+	* fink.in: file fink.in was initially added on branch dpkg-branch.  
+
+2001-04-12 10:35  chrisp
+
+	* gzip-1.2.4a-2.info: file gzip-1.2.4a-2.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-12 10:34  chrisp
+
+	* bzip2-1.0.1-3.info, dpkg-1.8.3.1-1.info, gettext-0.10.35-2.info,
+	gzip-1.2.4a-1.info, tar-1.13.17-1.info, gzip-1.2.4a-2.info: Fixed
+	manpage and info document locations, removed stow comments.  
+	Improved gzip package.  
+
+2001-04-05 15:49  chrisp
+
+	* base-files-0.2.0-1.info, fink-0.2.0-1.info: Added
+	NoSourceDirectory line.  
+
+2001-04-05 15:32  chrisp
+
+	* tar-1.13.17-1.info: file tar-1.13.17-1.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* gettext-0.10.35-2.info: file gettext-0.10.35-2.info was initially
+	added on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* gzip-1.2.4a-1.info: file gzip-1.2.4a-1.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* fink-0.2.0-1.info: file fink-0.2.0-1.info was initially added on
+	branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* gettext-0.10.35-2.patch: file gettext-0.10.35-2.patch was
+	initially added on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* base-files-0.2.0-1.info: file base-files-0.2.0-1.info was
+	initially added on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* dpkg-1.8.3.1-1.info: file dpkg-1.8.3.1-1.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* base-files-0.2.0-1.info, bzip2-1.0.1-3.info, bzip2-1.0.1-3.patch,
+	dpkg-1.8.3.1-1.info, dpkg-1.8.3.1-1.patch, fink-0.2.0-1.info,
+	gettext-0.10.35-2.info, gettext-0.10.35-2.patch,
+	gzip-1.2.4a-1.info, tar-1.13.17-1.info: New directory with package
+	info needed during bootstrap.  
+
+2001-04-05 15:32  chrisp
+
+	* bzip2-1.0.1-3.info: file bzip2-1.0.1-3.info was initially added
+	on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* bzip2-1.0.1-3.patch: file bzip2-1.0.1-3.patch was initially added
+	on branch dpkg-branch.  
+
+2001-04-05 15:32  chrisp
+
+	* dpkg-1.8.3.1-1.patch: file dpkg-1.8.3.1-1.patch was initially
+	added on branch dpkg-branch.  
+
