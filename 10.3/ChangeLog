@@ -1,3 +1,8 @@
+2003-08-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* added userutils to essential pkgs for the fink user/group
+	control.
+
 2003-07-29  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* downgraded ncurses to current 10.2

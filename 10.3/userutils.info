@@ -1,0 +1,21 @@
+Package: userutils
+Version: 1.3
+Revision: 1
+Source: http://homepage.mac.com/beren/%n-%v.tar.bz2
+SourceDirectory: %n-%v
+Source-MD5: 7b9e2e70771e20e1cf1ab99a62c8c39a
+Essential: yes
+DocFiles: License README
+CompileScript: echo "Nothing to compile"
+InstallScript: <<
+ cp -r sbin %i
+ cp -r share %i
+<<
+Description: Add/Remove users and groups via the command line
+DescDetail: <<
+These programs use nis to emulate the same commands on other UNIX like
+operating systems.
+<<
+License: OSI-Approved
+Maintainer: Chris Zubrzycki <beren12@users.sourceforge.net>
+Homepage: http://www.osxgnu.org/
