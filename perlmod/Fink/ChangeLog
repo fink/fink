@@ -1,3 +1,7 @@
+20004-03-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: Recognize darwin 7.3.0.
+
 2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Change from pathsetup.command to pathsetup.sh
