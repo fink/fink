@@ -18,8 +18,4 @@ kde: KDE
 rsync: RSync SelfUpdate
 sourceforge: SourceForge
 
-# Note: we are now storing several other values here, for which there is
-# a unique choice.  There is no need to list them during mirror selection.
 
-cvs-repository: CVS Repository
-website: Fink Website
