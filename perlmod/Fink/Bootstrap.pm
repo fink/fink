@@ -40,7 +40,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &get_packageversion &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &get_packageversion &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -58,6 +58,7 @@ Fink::Bootstrap - Bootstrap a fink installation
 
 	my $distribution = check_host($host);
 	my $result = inject_package($package, $packagefiles, $info_script, $param);
+    my ($package_list, $perl_is_supported) = additional_packages();
 	bootstrap();
 	my $bsbase = get_bsbase();
 	my $result = check_files();
@@ -311,6 +312,43 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	return 0;
 }
 
+=item additional_packages
+
+	my ($package_list, $perl_is_supported) = additional_packages();
+
+Returns (1) a reference to the list of non-essential packages which must be 
+installed during bootstrap or selfupdate (this answer is affected by the
+currently-running version of perl), and (2) a boolean value which is
+"True" if the currently-running version of perl is on the list of those
+versions supported during bootstrapping, and "False" otherwise.
+
+
+Called by bootstrap() and by Fink::SelfUpdate::finish().
+
+=cut
+
+sub additional_packages {
+
+	my $perl_is_supported = 1;
+
+	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
+	if ("$]" == "5.006") {
+		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
+	} elsif ("$]" == "5.006001") {
+		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
+	} elsif ("$]" == "5.008") {
+	} elsif ("$]" == "5.008001") {
+	} elsif ("$]" == "5.008002") {
+	} elsif ("$]" == "5.008006") {
+	} else {
+# unsupported version of perl
+		$perl_is_supported = 0;
+	}
+
+	return (\@addlist, $perl_is_supported);
+
+}
+
 =item bootstrap 
 
 	bootstrap();
@@ -323,18 +361,9 @@ sub bootstrap {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
 	my @plist = ("gettext", "tar", "dpkg-bootstrap");
-	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
-	if ("$]" == "5.006") {
-		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
-	} elsif ("$]" == "5.006001") {
-		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
-	} elsif ("$]" == "5.008") {
-	} elsif ("$]" == "5.008001") {
-	} elsif ("$]" == "5.008002") {
-	} elsif ("$]" == "5.008006") {
-	} else {
-		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
-	}
+	my ($package_list, $perl_is_supported) = additional_packages();
+	my @addlist = @{$package_list};
+	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless $perl_is_supported;
 
 	$bsbase = &get_bsbase();
 	&print_breaking("Bootstrapping a base system via $bsbase.");
