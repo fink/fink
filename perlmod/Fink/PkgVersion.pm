@@ -2350,38 +2350,38 @@ EOF
 
 	my $has_kernel_dep;
 	my $struct = &pkglist2lol($self->get_binary_depends()); 
+
+	### FIXME shlibs, Add shlib depends code here
+	### 1) check for 'AddShlibDeps: true' else continue
+	if ($self->param_boolean("AddShlibDeps")) {
+		print "Writing shared library dependencies...\n";
+
+		### 2) get a list to replace it with
+		my @filelist = ();
+		my $wanted = sub {
+			if (-f) {
+				# print "DEBUG: file: $File::Find::fullname\n";
+				push @filelist, $File::Find::fullname;
+			}
+		};
+		## Might need follow_skip but then need to change fullname
+		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
+
+		### get_binary_depends above.
+		my @shlib_deps = Fink::Shlibs->get_shlibs($pkgname, @filelist);
+
+		### foreach loop and push into @$struct
+		### 3) replace it in the debian control file
+		foreach my $shlib_dep (@shlib_deps) {
+			push @$struct, ["$shlib_dep"];
+			if (Fink::Config::verbosity_level() > 2) {
+				print "- Adding $shlib_dep to 'Depends' line\n";
+			}
+		}
+	}
 	foreach (@$struct) {
 		foreach (@$_) {
 			$has_kernel_dep = 1 if /^$kernel(\Z|\s|\()/;
-
-			### Add shlib depends code here
-			### 1) check for 'AddShlibDeps: true' else continue
-			if ($self->param_boolean("AddShlibDeps")) {
-				print "Writing shared library dependencies...\n";
-        
-				### 2) get a list to replace it with
-				my @filelist = ();
-				my $wanted = sub {
-					if (-f) {
-						# print "DEBUG: file: $File::Find::fullname\n";
-						push @filelist, $File::Find::fullname;
-					}
-				};
-				## Might need follow_skip but then need to change fullname
-				find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
-
-				### get_binary_depends above.
-				my @shlib_deps = Fink::Shlibs->get_shlibs($pkgname, @filelist);
-
-				### foreach loop and push into @$struct
-				### 3) replace it in the debian control file
-				foreach my $shlib_dep (@shlib_deps) {
-					push @$struct, ["$shlib_dep"];
-					if (Fink::Config::verbosity_level() > 2) {
-						print "- Adding $shlib_dep to 'Depends' line\n";
-					}
-				}
-			}
 		}
 	}
 	push @$struct, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;

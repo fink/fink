@@ -543,7 +543,7 @@ sub update_shlib_db {
 				mkdir_p "$basepath/var/db" or
 					die "Error: Could not create directory $basepath/var/db";
 			}
-			Storable::store($shlibs, "$basepath/var/db/$db.tmp");
+			Storable::lock_store($shlibs, "$basepath/var/db/$db.tmp");
 			rename "$basepath/var/db/$db.tmp", "$basepath/var/db/$db";
 			print "done.\n";
 		} else {
