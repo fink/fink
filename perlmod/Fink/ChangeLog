@@ -1,5 +1,12 @@
 2001-07-05  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Configure.pm (configure): Added proxy and firewall
+	settings. Cosmetic output formatting changes.
+	(choose_mirrors): Remember continent and country in the config
+	file. Offer the current settings as default values.
+	* PkgVersion.pm (fetch_source): Support new proxy and firewall
+	settings.
+
 	* Config.pm (set_param): Handle empty values.
 	(save): Remove keys that are set to empty values from the file.
 

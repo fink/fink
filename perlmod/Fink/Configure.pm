@@ -47,10 +47,12 @@ END { }       # module clean-up code here (global destructor)
 
 sub configure {
   my ($otherdir, $verbose);
+  my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $default);
 
   print "\n";
   &print_breaking("OK, I'll ask you some questions and update the ".
 		  "configuration file in '".$config->get_path()."'.");
+  print "\n";
 
   # normal configuration
   $otherdir =
@@ -60,10 +62,58 @@ sub configure {
   if ($otherdir) {
     $config->set_param("FetchAltDir", $otherdir);
   }
+
   $verbose =
     &prompt_boolean("Always print verbose messages?",
 		    $config->param_boolean("Verbose"));
   $config->set_param("Verbose", $verbose ? "true" : "false");
+
+
+  # proxy settings
+  print "\n";
+  &print_breaking("Proxy/Firewall settings");
+
+  $default = $config->param_default("ProxyHTTP", "");
+  $default = "none" unless $default;
+  $http_proxy =
+    &prompt("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
+	    "The URL should start with http:// and may contain username, ".
+	    "password or port specifications.",
+	    $default);
+  if ($http_proxy =~ /^none$/i) {
+    $http_proxy = "";
+  }
+  $config->set_param("ProxyHTTP", $http_proxy);
+
+  if ($http_proxy) {
+    $same_for_ftp =
+      &prompt_boolean("Use the same proxy for FTP?", 0);
+  } else {
+    $same_for_ftp = 0;
+  }
+
+  if ($same_for_ftp) {
+    $ftp_proxy = $http_proxy;
+  } else {
+    $default = $config->param_default("ProxyFTP", "");
+    $default = "none" unless $default;
+    $ftp_proxy =
+      &prompt("Enter the URL of the proxy to use for FTP, ".
+	      "or 'none' for no proxy. ".
+	      "The URL should start with http:// and may contain username, ".
+	      "password or port specifications.",
+	      $default);
+    if ($ftp_proxy =~ /^none$/i) {
+      $ftp_proxy = "";
+    }
+  }
+  $config->set_param("ProxyFTP", $ftp_proxy);
+
+  $passive_ftp =
+    &prompt_boolean("Use passive mode FTP transfers (to get through a ".
+		    "firewall)?",
+		    $config->param_boolean("ProxyPassiveFTP"));
+  $config->set_param("ProxyPassiveFTP", $passive_ftp ? "true" : "false");
 
 
   # mirror selection
@@ -80,48 +130,79 @@ sub configure {
 ### mirror selection
 
 sub choose_mirrors {
-  my ($continent, $country, $answer);
+  my ($answer, $missing, $default, $def_value);
+  my ($continent, $country);
   my ($keyinfo, @continents, @countries, $key, $listinfo);
   my ($mirrorfile, $mirrorname, $mirrortitle);
   my ($all_mirrors, @mirrors, $mirror_labels, $site);
 
+  print "\n";
   &print_breaking("Mirror selection");
   $keyinfo = &read_properties("$libpath/mirror/_keys");
+  $listinfo = &read_properties("$libpath/mirror/_list");
+
+  ### step 0: determine and ask if we need to change anything
+
+  $missing = 0;
+  foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
+    next if $mirrorname =~ /^\s*$/;
+
+    if (!$config->has_param("Mirror-$mirrorname")) {
+      $missing = 1;
+    }
+  }
+  if (!$missing) {
+    $answer =
+      &prompt_boolean("All mirrors are set. Do you want to change them?", 0);
+    if (!$answer) {
+      return;
+    }
+  }
 
   ### step 1: choose a continent
 
+  $def_value = $config->param_default("MirrorContinent", "-");
+  $default = 1;
   @continents = ();
   foreach $key (sort keys %$keyinfo) {
     if (length($key) == 3) {
       push @continents, $key;
+      if ($key eq $def_value) {
+	$default = scalar(@continents);
+      }
     }
   }
 
   &print_breaking("Choose a continent:");
-  $continent = &prompt_selection("Your continent?", 1, $keyinfo,
+  $continent = &prompt_selection("Your continent?", $default, $keyinfo,
 				 @continents);
+  $config->set_param("MirrorContinent", $continent);
 
   ### step 2: choose a country
 
+  $def_value = $config->param_default("MirrorCountry", "-");
+  $default = 1;
   @countries = ( "-" );
   $keyinfo->{"-"} = "No selection - display all mirrors on the continent";
   foreach $key (sort keys %$keyinfo) {
     if ($key =~ /^$continent-/) {
       push @countries, $key;
+      if ($key eq $def_value) {
+	$default = scalar(@countries);
+      }
     }
   }
 
   print "\n";
   &print_breaking("Choose a country:");
-  $country = &prompt_selection("Your country?", 1, $keyinfo,
+  $country = &prompt_selection("Your country?", $default, $keyinfo,
 			       @countries);
   if ($country eq "-") {
     $country = $continent;
   }
+  $config->set_param("MirrorCountry", $country);
 
   ### step 3: mirrors
-
-  $listinfo = &read_properties("$libpath/mirror/_list");
 
   foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
     next if $mirrorname =~ /^\s*$/;
@@ -136,6 +217,13 @@ sub choose_mirrors {
 
     @mirrors = ();
     $mirror_labels = {};
+
+    $def_value = $config->param_default("Mirror-$mirrorname", "");
+    if ($def_value) {
+      push @mirrors, "current";
+      $mirror_labels->{current} = "Current setting: $def_value";
+    }
+    $default = 1;
 
     if (exists $all_mirrors->{primary}) {
       foreach $site (@{$all_mirrors->{primary}}) {
@@ -158,8 +246,11 @@ sub choose_mirrors {
 
     print "\n";
     &print_breaking("Choose a mirror for '$mirrortitle':");
-    $answer = &prompt_selection("Mirror for $mirrortitle?", 1,
+    $answer = &prompt_selection("Mirror for $mirrortitle?", $default,
 				$mirror_labels, @mirrors);
+    if ($answer eq "current") {
+      $answer = $def_value;
+    }
     $config->set_param("Mirror-$mirrorname", $answer);
   }
 }

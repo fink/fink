@@ -576,7 +576,8 @@ sub phase_fetch {
 sub fetch_source {
   my $self = shift;
   my $index = shift;
-  my ($url, $file, $verbosity);
+  my ($url, $file, $params);
+  my ($http_proxy, $ftp_proxy);
 
   chdir "$basepath/src";
 
@@ -587,11 +588,25 @@ sub fetch_source {
     &execute("rm -f $file");
   }
 
-  $verbosity = "--non-verbose";
+  $params = "";
   if ($config->param_boolean("Verbose")) {
-    $verbosity = "--verbose";
+    $params .= " --verbose";
+  } else {
+    $params .= " --non-verbose";
   }
-  if (&execute("wget $verbosity $url") or not -f $file) {
+  if ($config->param_boolean("ProxyPassiveFTP")) {
+    $params .= " --passive-ftp";
+  }
+  $http_proxy = $config->param_default("ProxyHTTP", "");
+  if ($http_proxy) {
+    $ENV{http_proxy} = $http_proxy;
+  }
+  $ftp_proxy = $config->param_default("ProxyFTP", "");
+  if ($ftp_proxy) {
+    $ENV{ftp_proxy} = $ftp_proxy;
+  }
+
+  if (&execute("wget $params $url") or not -f $file) {
     print "\n";
     &print_breaking("Downloading '$file' from the URL '$url' failed. ".
 		    "There can be several reasons for this:");
@@ -600,8 +615,8 @@ sub fetch_source {
 			      1, "- ", "  ");
     &print_breaking_twoprefix("There is a network problem. If you are ".
 			      "behind a firewall you may want to check ".
-			      "the wget documentation for proxy and ".
-			      "passive mode settings. Then try again.",
+			      "the proxy and passive mode FTP ".
+			      "settings. Then try again.",
 			      1, "- ", "  ");
     &print_breaking_twoprefix("The file was removed from the server or ".
 			      "moved to another directory. The package ".
