@@ -810,7 +810,7 @@
 
 	* Services.pm: Fixed ignoring of null OR clusters in lol2pkglist.
 
-2004-10-19  David HÃ¶hn <dmalloc@users.sourceforge.net>
+2004-10-19  David Höhn <dmalloc@users.sourceforge.net>
 
 	* Configure.pm: Use print_breaking for the extremely long
 	prompt that used to be the proxy configure prompt. This is more
@@ -860,7 +860,7 @@
 	* PkgVersion.pm, SelfUpdate.pm: Remove obsolete tests for apt-get. 
 	  Use the full path to apt-get.
 
-2004-10-12  David HÃ¶hn <dmalloc@users.sourceforge.net>
+2004-10-12  David Höhn <dmalloc@users.sourceforge.net>
 
 	* Configure.pm: Chnage the prompt for proxy selection slightly.
 			Some clean up of phrases. I thinkt his prompt is
@@ -1768,7 +1768,7 @@
 	use Fink::Command calls instead of system() or &execute whenever
 	possible (based on 841381).
 
-2004-02-24  David HÃ¶hn  <dmalloc@users.sourceforge.net>
+2004-02-24  David Höhn  <dmalloc@users.sourceforge.net>
 
 	* SelfUpdate.pm: changed the rsync command to
 	explicitly preserve the timestamps using -t
@@ -2038,7 +2038,7 @@
 	* Services.pm:  Use eval{} instead of a subroutine to implement the 
 	timeout  (and remove superfluous function stdin_timeout.)
 
-2004-01-04  David HÃ¶hn <dmalloc@users.sourceforge.net>
+2004-01-04  David Höhn <dmalloc@users.sourceforge.net>
 
 	* Package.pm: Changed Storable method from store() to lock_store()
 	This should help use phase out problems when a fink index tries to write
