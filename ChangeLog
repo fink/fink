@@ -1,5 +1,7 @@
 2002-04-03  Max Horn  <max@quendi.de>
 
+	* VERSION: Bumped package manager version to 0.9.10
+
 	* fink.info.in: Added Suggests field with storable-pm and term-readkey-pm 
 
 2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
