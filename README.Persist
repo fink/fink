@@ -8,6 +8,9 @@ Look at t/Persist/persist.t for examples of how to use Persist.
 
 TODO (no particular order):
 	
+	- Relinquish all locks (even read locks) once done writing. To do this, make
+		the main DB ":memory:" and close the file DB once a copy is done.
+	
 	- Get selfupdate working
 	
 	- Normalize the DB
