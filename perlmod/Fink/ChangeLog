@@ -5,6 +5,8 @@
 	* Selfupdate.pm Added call to forget_shlibs and require_shlibs (in case
 	  we use selfupdate to populate override.shlibs)
 	* Engine.pm: added forget, and require for shlibs to enable auto index
+	* Package.pm: removed a \n to clean up the output since the shlibs
+	  index code is always called after the pkg index code
 
 2003-07-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
