@@ -1,3 +1,10 @@
+2002-05-25  Max Horn  <max@quendi.de>
+
+	* Services.pm: Added execute_script function (based on patch #534121 by
+	Benjamin Reed).
+
+	* PkgVersion.pm: Make use of the new execute_script function.
+
 2002-05-25  Alexander Strange <MrVacBob@mac.com>
 
 	* SelfUpdate.pm (setup_direct_cvs): The hardlink-support test works now.

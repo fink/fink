@@ -22,7 +22,7 @@
 
 package Fink::PkgVersion;
 use Fink::Base;
-use Fink::Services qw(&filename &expand_percent &execute
+use Fink::Services qw(&filename &execute &execute_script &expand_percent
                       &latest_version &print_breaking
                       &print_breaking_twoprefix &prompt_boolean
                       &collapse_space &read_properties_var);
@@ -1074,12 +1074,8 @@ sub phase_patch {
   ### patch
 
   $self->set_env();
-  foreach $cmd (split(/\n/,$patch_script)) {
-    next unless $cmd;   # skip empty lines
-
-    if (&execute($cmd)) {
-      die "patching ".$self->get_fullname()." failed\n";
-    }
+  if (&execute_script($patch_script)) {
+    die "patching ".$self->get_fullname()." failed\n";
   }
 }
 
@@ -1126,12 +1122,8 @@ sub phase_compile {
   ### compile
 
   $self->set_env();
-  foreach $cmd (split(/\n/,$compile_script)) {
-    next unless $cmd;   # skip empty lines
-
-    if (&execute($cmd)) {
-      die "compiling ".$self->get_fullname()." failed\n";
-    }
+  if (&execute_script($compile_script)) {
+    die "compiling ".$self->get_fullname()." failed\n";
   }
 }
 
@@ -1240,12 +1232,8 @@ sub phase_install {
   ### install
 
   $self->set_env();
-  foreach $cmd (split(/\n/,$install_script)) {
-    next unless $cmd;   # skip empty lines
-
-    if (&execute($cmd)) {
-      die "installing ".$self->get_fullname()." failed\n";
-    }
+  if (&execute_script($install_script)) {
+    die "installing ".$self->get_fullname()." failed\n";
   }
 
   ### splitoffs

@@ -37,7 +37,7 @@ BEGIN {
   # as well as any optionally exported functions
   @EXPORT_OK   = qw(&read_config &read_properties &read_properties_var
                     &read_properties_multival
-                    &filename &execute &expand_percent
+                    &filename &execute &execute_script &expand_percent
                     &print_breaking &print_breaking_prefix
                     &print_breaking_twoprefix
                     &prompt &prompt_boolean &prompt_selection
@@ -196,21 +196,63 @@ sub read_properties_multival {
   return $hash;
 }
 
-### execute command
+### execute a single command
 
 sub execute {
   my $cmd = shift;
   my $quiet = shift || 0;
-  my ($retval, $prog);
+  my ($retval, $commandname);
 
+  return if ($cmd =~ /^\s*$/); # Ignore empty commands
   print "$cmd\n";
   $retval = system($cmd);
   $retval >>= 8 if defined $retval and $retval >= 256;
   if ($retval and not $quiet) {
-    ($prog) = split(/\s+/, $cmd);
-    print "### $prog failed, exit code $retval\n";
+    ($commandname) = split(/\s+/, $cmd);
+    print "### execution of $commandname failed, exit code $retval\n";
   }
   return $retval;
+}
+
+### execute a full script
+
+sub execute_script {
+  my $script = shift;
+  my $quiet = shift || 0;
+  my ($retval, $cmd, $tempfile);
+
+  $script =~ s/[\r\n]+$//s;	# Remove empty lines
+  $script =~ s/^\s*//;		# Remove white spaces from the start of each line
+
+  # If the script starts with a shell specified (e.g. #!/bin/sh), run it 
+  # as a script. Otherwise fall back to the old behaviour for compatibility.
+  if ($script =~ /^#!/) {
+    # Put the script into a temporary file and run it.
+    $tempfile = POSIX::tmpnam() or die "unable to get temporary file: $!";
+    open (OUT, ">$tempfile") or die "unable to write to $tempfile: $!";
+    print OUT "$script\n";
+    close (OUT) or die "an unexpected error occurred closing $tempfile: $!";
+    chmod(0755, $tempfile);
+    $retval = execute($tempfile, $quiet);
+    if ($retval == 0) {
+      # Delete the temporary file, but only if it run successfully. Simplifies
+      # debugging since it allows us to look at failed scripts. 
+      unlink($tempfile);
+    }
+    return $retval;
+  } elsif (defined $script and $script ne "") {
+    # Execute each line as a seperate command.
+    foreach $cmd (split(/\n/,$script)) {
+      $retval = execute($cmd, $quiet);
+      if ($retval) {
+        return $retval;
+      }
+    }
+    return 0;
+  } else {
+    # Script is empty. We pretend successful execution.
+    return 0;
+  }
 }
 
 ### do % substitutions on a string
