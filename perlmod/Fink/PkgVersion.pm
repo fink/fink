@@ -1729,8 +1729,6 @@ sub set_env {
     my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
     chomp @vars;
     %ENV = map { split /=/ } @vars;
-  } else {
-    die "Can't execute '$basepath/bin/init.sh'. Apparently your Fink installation is damaged\n";
   }
 
   # set variables according to the info file

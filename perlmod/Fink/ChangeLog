@@ -1,5 +1,7 @@
 2002-10-25  Max Horn  <max@quendi.de>
 
+	* PkgVersion.pm: Fixed bootstrap (my last change broke it).
+
 	* PkgVersion.pm: Instead of the old default values for CPPFLAGS and LDFLAGS,
 	  we now set CPATH and LIBRARY_PATH to point to the Fink include/lib dirs.
 	  This should avoid many problem encountered in the past. However, it may
