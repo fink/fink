@@ -1,5 +1,9 @@
 2003-11-04  Max Horn <max@quendi.de>
-	
+
+	* Makefile: Dummy Makefile so we can do "make test" to run the unit tests.
+
+2003-11-04  Max Horn <max@quendi.de>
+
 	* INSTALL*, README*, USAGE*: Updated to latest generated versions.
 	* INSTALL, INSTALL.html: Updated distribution version (was 0.5.2, is 0.6.1)
 
@@ -184,13 +188,13 @@
 2003-04-15  Ben Hines <bhines@alumni.ucsd.edu>
 
 	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.5.
-	
+
 2003-04-05  Ben Hines <benh57@users.sourceforge.net>
 
 	* fink.conf.5.in: Document new mirroring options
-	
+
 	* inject.pl: Add MD5 to temp info file.
-	
+
 2003-03-11  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.12.1
@@ -198,9 +202,9 @@
 2003-03-07  Ben Hines <benh57@users.sourceforge.net>
 
 	* AUTHORS: Add some more contributors.
-	
+
 	* fink.8.in: Document --ignore-restrictive.
-	
+
 2003-03-06  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: Print more appropriate message when run on x86 Darwin; fix
@@ -210,7 +214,7 @@
 
 	* fink.in: Fixed typo in help string (it's -h not -H as alias for --help);
 	  removed the -? alias for --help.
-	
+
 	* fink.in: Removed the copyright notice and the description of what fink
 	  is from "fink --help" and added the (updated) copyright notice to
 	  "fink --version" where most GNU tools have it.
@@ -238,10 +242,10 @@
 2003-01-15  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* fink.conf.5.in: fink.conf manual page.
-	
+
 	* bootstrap.pl, inject.pl, install.sh, setup.sh: Install fink.conf
 	manual page.
-	
+
 2003-01-14  Max Horn  <max@quendi.de>
 
 	* fink.in: Fixing problems with exit codes (Patch #662894).
@@ -249,7 +253,7 @@
 2003-01-13  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* postinstall.pl.in: Fixed formatting, cleaned up.
-	
+
 2003-01-12  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* many files: updated copyright notices to include 2003
@@ -264,7 +268,7 @@
 	from %p/fink/dists to 10.1 or 10.2 (suggested by Ben Hines)
 
 	* shlibs.default.in: Update to latest format for Shlibs field
-	
+
 
 2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
 
@@ -360,7 +364,7 @@
 
 	* update-fink.sh: script to update a user's installation from 10.1 
 	  to 10.2
-	
+
 2002-08-11  Max Horn  <max@quendi.de>
 
 	* fink.8.in, USAGE, USAGE.html: Updated description of the remove command.
@@ -419,8 +423,8 @@
 2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* fink.in: Added brief note about index to command listing.
-	
-	* fink.8.in: Added index and information about fink.db.	
+
+	* fink.8.in: Added index and information about fink.db.
 
 2002-03-26  Max Horn  <max@quendi.de>
 
@@ -433,7 +437,7 @@
 2002-03-13  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* fink.in: Made option position strict for command
-	options. eg 'fink install package --yes' no longer works	
+	options. eg 'fink install package --yes' no longer works
 
 2002-03-02  Peter O'Gorman <ogorman@users.sourceforge.net>
 
@@ -589,7 +593,7 @@
 
 	* bootstrap.pl: fixed creation of FinkVersion.pm (has to be
 	done before any "use Fink:XYZ;" statment)
-	
+
 2001-09-02  Christoph Pfisterer  <cp@chrisp.de>
 
 	* mkrelease.sh: Moved to separate CVS module 'scripts'.
