@@ -179,7 +179,7 @@ sub execute {
 	my $quiet = shift || 0;
 	my ($commandname);
 
-	return if ($cmd =~ /^\s*$/); # Ignore empty commands
+	return if ($cmd =~ /(^\s*$)|(^\s*#)/); # Ignore empty commands and comments
 	print "$cmd\n";
 	system($cmd);
 	$? >>= 8 if defined $? and $? >= 256;

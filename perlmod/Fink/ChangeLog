@@ -1,3 +1,7 @@
+2003-04-08	Ben Hines <benh57@users.sourceforge.net>
+
+    * Services.pm: Allow comments (#) in fink Script fields
+    
 2003-04-05	Ben Hines <benh57@users.sourceforge.net>
 
 	* Many Files: Implement fink master mirroring  (Patch # 700260)
