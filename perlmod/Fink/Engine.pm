@@ -373,7 +373,9 @@ sub real_install {
     $item = $deps{$pkgname};
     next if (($item->[4] & 2) == 2);   # already installed
     next if $item->[2]->is_fetched();
-    $item->[2]->phase_fetch();
+    if ($item->[3] == $OP_REBUILD or not $package->is_present()) {
+      $item->[2]->phase_fetch();
+    }
   }
 
   # install in correct order...
