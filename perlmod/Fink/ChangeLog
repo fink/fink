@@ -1,3 +1,16 @@
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Configure.pm: export "choose_mirrors", and enlarge the dialogue
+	with users at the beginning of choosing the mirrors.  (This will 
+	be used in the 	postinstall script of the fink-mirrors package.)
+	Also check for the existence of mirror/_keys and mirror/_list,
+	and bail with a warning to install fink-mirrors if these are not
+	found.
+
+	* Bootstrap.pm: don't install the mirror directory (or its files)
+	in the fink package (this is being moved to the fink-mirrors
+	package)
+
 2003-12-23  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Fixed fink list --help output since some of it was wrong.
