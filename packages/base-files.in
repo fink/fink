@@ -13,3 +13,11 @@ a Fink installation. It makes sure the usual directories are present
 and have the right permissions.
 <<
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+#
+PostInstScript: <<
+# install info dir file
+if [ ! -f %p/share/info/dir ]; then
+  cp %p/share/base-files/dir-base %p/share/info/dir
+  chmod 644 %p/share/info/dir
+fi
+<<
