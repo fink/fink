@@ -158,7 +158,7 @@ sub check {
 				$currentfink = "LATEST-FINK";
 		}
 		my $website = "http://fink.sourceforge.net";
-		if (-f "$basepath/lib/fink/mirror/website") {
+		if (-f "$basepath/lib/fink/URL/website") {
 			$website = cat "$basepath/lib/fink/URL/website";
 			chomp($website);
 		}
@@ -262,7 +262,7 @@ sub setup_direct_cvs {
 	}
 	my $cvsrepository = "cvs.sourceforge.net";
 	if (-f "$basepath/lib/fink/URL/cvs-repository") {
-		$cvsrepository = cat "$basepath/lib/fink/mirror/cvs-repository";
+		$cvsrepository = cat "$basepath/lib/fink/URL/cvs-repository";
 		chomp($cvsrepository);
 	}
 	if ($cvsuser eq "anonymous") {
