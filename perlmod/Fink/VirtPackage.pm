@@ -402,14 +402,16 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-	print STDERR "- checking for various GCC versions:" if ($options{debug});
+	print STDERR "- checking for various GCC versions:\n" if ($options{debug});
 	if (opendir(DIR, "/usr/bin")) {
 		for my $gcc (grep(/^gcc/, readdir(DIR))) {
 			if (open(GCC, $gcc . ' --version |')) {
 				chomp(my $version = <GCC>);
 				close(GCC);
-				if ($version =~ /^([\d\.]+)$/ or $version =~ /^gcc.*? \(GCC\) ([\d\.]+) /) {
+				if ($version =~ /^([\d\.]+)$/ or $version =~ /^.*? \(GCC\) ([\d\.\-]+)/) {
 					$version = $1;
+					$version =~ s/[\.\-]*$//;
+					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
 					if ($version eq "2.95.2") {
 						$hash = {};
 						$hash->{package} = "gcc2";
@@ -432,7 +434,30 @@ END
 
 						$self->{$hash->{package}} = $hash;
 					}
-					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
+					if ($version =~ s/^(.*)-64$/$1/) {
+						$hash = {};
+						$hash->{package} = "gcc$shortversion-64";
+						$hash->{status} = STATUS_PRESENT;
+						$hash->{version} = "$version-1";
+						$hash->{description} = "[virtual package representing the 64-bit gcc $version compiler]";
+						$hash->{homepage} = "http://fink.sourceforge.net/faq/comp-general.php#virtpackage";
+						$hash->{compilescript} = $compile_script;
+						$hash->{builddependsonly} = "true";
+						$hash->{descdetail} = <<END;
+This package represents the 64-bit gcc $version compiler,
+which is part of the Apple developer tools (also known as
+XCode on Mac OS X 10.3 and above).  The latest versions of
+the Apple developer tools are always available from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+
+						$self->{$hash->{package}} = $hash;
+						print STDERR "  - found 64-bit $version\n" if ($options{debug});
+						next;
+					}
 					$hash = {};
 					$hash->{package} = "gcc$shortversion";
 					$hash->{status} = STATUS_PRESENT;
