@@ -1534,6 +1534,11 @@ EOF
 		$control .= "Essential: yes\n";
 	}
 
+	eval {
+		require File::Find;
+		import File::Find;
+	};
+
 	### FIXME
 	### Add ${SHLIB_DEPS} replace code here
 	### 1) check for ${SHLIB_DEPS} else continue
@@ -1585,10 +1590,6 @@ EOF
 
 	our %prebound_files = ();
 
-	eval {
-		require File::Find;
-		import File::Find;
-	};
 	print "Finding prebound objects...\n";
 	my ($is_prebound, $is_exe, $name);
 	find({ wanted => sub {
