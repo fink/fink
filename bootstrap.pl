@@ -112,6 +112,13 @@ if ($distribution eq "unknown") {
 
 print "Distribution $distribution\n";
 
+### check for a perl compatible with the Distribution:
+
+if (("$]" lt "5.008") and ($distribution gt "10.2-gcc3.3")) {
+    &print_breaking("\nSorry, you are using the 10.3 distribution or later along with perl 5.6.x.  Fink no longer supports bootstrapping with this combination; please upgrade your /usr/bin/perl.\n\n");
+    exit 1;
+}
+
 ### choose root method
 
 my ($rootmethod);
@@ -341,8 +348,10 @@ if ($result == 1 ) {
 
 ### copy package info needed for bootstrap
 
-$script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n ";
+$script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
 $script .= "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
+$script .= "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/libs/perlmods\n";
+$script .= "/bin/mv $installto/fink/dists/stable/main/finkinfo/base/*-pm*.* $installto/fink/dists/stable/main/finkinfo/libs/perlmods/\n";
 
 $result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base");
 if ($result == 1 ) {
