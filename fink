@@ -23,9 +23,19 @@ use v5.6.0;  # perl 5.6.0 or newer required
 use strict;
 
 use FindBin;
-#use Getopt::Long;
 
 use lib "$FindBin::RealBin/perlmod";
+
+### quick check so see if all the user wants is the version number
+
+if ($ARGV[0] =~ /^-?-v(ersion)?$/i) {
+  use Fink::FinkVersion;
+  print "$fink_version\n";
+  exit 0;
+}
+
+### now load the useful modules
+
 use Fink::Services qw(prompt_boolean read_config);
 use Fink::Config;
 use Fink::Engine;
