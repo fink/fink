@@ -1,12 +1,7 @@
 2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Bootstrap.pm:  No longer load the system-perl* package, since
-	it is not needed anymore (thanks to VirtPackage.pm)
-
-2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
-
-	* SelfUpdate.pm: Add --delete, since it is not implied by 
-	  --delete-after with older rsyncs (10.2).
+	* Bootstrap.pm: When installing into a pre-release darwin 7.x, say
+	that it "should work".
 
 2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
@@ -23,12 +18,10 @@
 	  (considering how many files it will end up touching) so this change
 	  is going into HEAD.
 
-2003-11-14  Max Horn  <max@quendi.de>
+2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
 
-	* Engine.pm, PkgVersion.pm, Services.pm: Removed old print_breaking and
-	  print_breaking_prefix code and renamed print_breaking_twoprefix to
-	  print_breaking, as it already contained the functionality of the other
-	  two. 
+	* SelfUpdate.pm: Add --delete since it is not implied by 
+	  --delete-after on older versions of rsync (10.2).
 
 2003-11-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
@@ -242,11 +235,11 @@
 
 	* VirtPackage.pm: make system-xfree86 virtual complain if you're
 	missing important SDK bits.  =)
-
+    
 2003-10-25  Mohammad A. Haque  <batmanppc@users.sourceforge.net>
 
 	* Engine.pm: Patch 828653 fix fink cleanup and improve user feedback
-
+    
 2003-10-25  Justin F. Hallett  <thesin@users.sourceforge.net
 
 	* Service.pm: Added an get_path function that is a perl version
@@ -721,12 +714,12 @@
 
 2003-04-15	Ben Hines <benh57@users.sourceforge.net>
 
-	* SelfUpdate.pm: Allow distribution upgrades to work (append fake revision)
-
+    * SelfUpdate.pm: Allow distribution upgrades to work (append fake revision)
+    
 2003-04-08	Ben Hines <benh57@users.sourceforge.net>
 
-	* Services.pm: Allow comments (#) in fink Script fields
-
+    * Services.pm: Allow comments (#) in fink Script fields
+    
 2003-04-05	Ben Hines <benh57@users.sourceforge.net>
 
 	* Many Files: Implement fink master mirroring (Patch #700260).
