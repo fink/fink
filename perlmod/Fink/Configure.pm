@@ -98,11 +98,12 @@ sub configure {
 
 	$default = $config->param_default("ProxyHTTP", "");
 	$default = "none" unless $default;
+	&print_breaking("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
+        "The URL should start with http:// and may contain username, ".
+	"password or port specifications ".
+	" E.g: http://username:password\@hostname:port ");
 	$http_proxy =
-		&prompt("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
-				"The URL should start with http:// and may contain username, ".
-				"password or port specifications.".
-				" E.g: http://username:password\@hostname:port ",
+		&prompt("Your proxy: ".
 				$default);
 	if ($http_proxy =~ /^none$/i) {
 		$http_proxy = "";
@@ -121,13 +122,13 @@ sub configure {
 	} else {
 		$default = $config->param_default("ProxyFTP", "");
 		$default = "none" unless $default;
-		$ftp_proxy =
-			&prompt("Enter the URL of the proxy to use for FTP, ".
-					"or 'none' for no proxy. ".
-					"The URL should start with http:// and may contain username, ".
-					"password or port specifications.".
-					" E.g: ftp://username:password\@hostname:port ",
-					$default);
+                &print_breaking("Enter the URL of the proxy to use for FTP, ".
+		                "or 'none' for no proxy. ".
+				"The URL should start with http:// and may contain username," .
+				"password or port specifications.".
+				" E.g: ftp://username:password\@hostname:port ");	
+                $ftp_proxy = &prompt("Your proxy:" , $default);
+		
 		if ($ftp_proxy =~ /^none$/i) {
 			$ftp_proxy = "";
 		}

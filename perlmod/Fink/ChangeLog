@@ -1,3 +1,10 @@
+2004-10-19  David Höhn <dmalloc@users.sourceforge.net>
+
+	* Configure.pm: Use print_breaking for the extremely long
+	prompt that used to be the proxy configure prompt. This is more
+	readable and looks better.
+
+
 2004-10-17  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: lol2pkglist code cleanup.
