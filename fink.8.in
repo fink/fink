@@ -235,9 +235,15 @@ website to see if a new version is available. It then downloads the package
 descriptions and updates the core packages, including
 .Nm
 itself. This command can upgrade to regular releases, but it can also
-setup your @PREFIX@/fink/dists directory tree for direct CVS updates.
+setup your @PREFIX@/fink/dists directory tree for
+.Xr cvs 1
+or
+.Xr rsync 1
+updates.
 This means that you then will be able to access the very latest
-revisions of all packages.
+revisions of all packages. See
+.Xr fink.conf 5
+for more details.
 .It Cm index
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm

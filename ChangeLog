@@ -1,3 +1,7 @@
+2003-10-06  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* fink.8.in, fink.conf.in: Update manpages for selfupdate with rsync.
+
 2003-10-01  Rob Braun <bbraun@users.sourceforge.net>
 
 	* fink.conf.5.in: Add selfupdate-rsync option for updating 
