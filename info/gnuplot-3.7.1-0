@@ -1,0 +1,11 @@
+Package: gnuplot
+Version: 3.7.1
+Revision: 0
+Source: ftp://ftp.gnuplot.vt.edu/pub/gnuplot/%n-%v.tar.gz
+Depends: zlib,libpng
+Patch: %f.patch
+UpdateConfigGuess: true
+SetCFLAGS -traditional-cpp
+CommentPort: 
+CommentStow: No issues.
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>

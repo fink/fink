@@ -1,0 +1,11 @@
+--- gnuplot-3.7.1/term.h	Sat Mar 10 08:07:06 2001
++++ gnuplot-3.7.1/term.h	Sat Mar 10 08:04:30 2001
+@@ -139,7 +139,7 @@
+ 
+ /* Apple MacOs X Server (Openstep Unix) */
+ #if defined(__APPLE__) && defined(__MACH__)
+-# include "openstep.trm"
++/*# include "openstep.trm"*/
+ #endif 
+ 
+ /* OS/2 */
