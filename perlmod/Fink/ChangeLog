@@ -1,3 +1,8 @@
+2003-12-15  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: Stop warning about missing packages in depends line
+	if an other pkg in the expression is found to statisfy it.
+
 2003-12-15  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Changed expand_percent to do the automatic %% => %
