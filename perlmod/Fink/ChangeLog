@@ -1,10 +1,10 @@
 2003-05-23  Ben Hines <benh57@users.sourceforge.net>
 
-	* Engine.pm: Use full path to uname to prevent build problems.
+	* Services.pm: Use full path to uname to prevent build problems.
 	
 2003-05-23  Benjamin Reed <rangerrick@users.sourceforge.net>
 
-	* Bootstrap.pm: Handle (Open)Darwin 6.6
+	* Bootstrap.pm: Handle (Open)Darwin 6.6.
 
 2003-05-23  Peter O'Gorman <ogorman@users.sourceforge.net>
 
@@ -12,7 +12,7 @@
 
 2003-05-16  Ben Hines <benh57@users.sourceforge.net>
 
-	* Engine.pm: Cache arch to minimize uname calls
+	* Engine.pm: Cache arch to minimize uname calls.
 	
 2003-05-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
