@@ -509,7 +509,7 @@ sub has_header {
 			}
 		}
 	}
-	print "missing" if ($options{debug});
+	print "missing\n" if ($options{debug});
 	return;
 }
 
@@ -529,7 +529,7 @@ sub has_lib {
 			}
 		}
 	}
-	print "missing" if ($options{debug});
+	print "missing\n" if ($options{debug});
 	return;
 }
 
