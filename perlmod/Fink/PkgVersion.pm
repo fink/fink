@@ -971,7 +971,7 @@ sub phase_unpack {
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
 	my ($i, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
-	my ($tar, $bzip2, $unzip);
+	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip);
 
 	if ($self->{_type} eq "bundle") {
 		return;
@@ -1073,7 +1073,8 @@ sub phase_unpack {
 		$renamelist = "";
 
 		# Determine the rename list (if any)
-		$tar = "/usr/bin/gnutar"; # Default to Apple's GNU Tar
+		$tarflags = "-x${verbosity}f -";
+		$tarcommand = "/usr/bin/gnutar $tarflags"; # Default to Apple's GNU Tar
 		if ($self->has_param($renamefield)) {
 			@renamefiles = split(/\s+/, $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
@@ -1084,21 +1085,23 @@ sub phase_unpack {
 					$renamelist .= " -s ,${renamefile},${renamefile}_tmp,";
 				}
 			}
-			$tar = "/usr/bin/tar"; # Use BSD Tar not GNU Tar (only BSD Tar has the rename feature)
+			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
 		} elsif ( -e "$basepath/bin/tar" ) {
-			$tar = "$basepath/bin/tar"; # Use Fink's GNU Tar if available
+			$tarcommand = "$basepath/bin/tar $tarflags"; # Use Fink's GNU Tar if available
 		}
 		$bzip2 = "bzip2";
 		$unzip = "unzip";
+		$gzip = "gzip";
+		$cat = "cat";
 
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive .";
 		if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-			$unpack_cmd = "$tar -x${verbosity}zf $found_archive $renamelist";
+		    $unpack_cmd = "$gzip -dc $found_archive | $tarcommand $renamelist";
 		} elsif ($archive =~ /[\.\-]tar\.bz2$/) {
-			$unpack_cmd = "$bzip2 -dc $found_archive | $tar -x${verbosity}f $renamelist -";
+			$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand $renamelist";
 		} elsif ($archive =~ /[\.\-]tar$/) {
-			$unpack_cmd = "$tar -x${verbosity}f $found_archive $renamelist";
+			$unpack_cmd = "$cat $found_archive | $tarcommand $renamelist";
 		} elsif ($archive =~ /\.zip$/) {
 			$unpack_cmd = "$unzip -o $found_archive";
 		}

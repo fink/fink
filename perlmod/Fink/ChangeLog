@@ -1,3 +1,8 @@
+2003-07-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: switch from BSD tar to /bin/pax for the
+	implementation of TarFilesRename.
+
 2003-07-06  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* VirtPackage.pm, Config.pm, Engine.pm, Package.pm, PkgVersion.pm, 
