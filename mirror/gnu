@@ -26,7 +26,7 @@ sam-BR: ftp://master.softaplic.com.br/pub/gnu/
 sam-BR: ftp://ftp.matrix.com.br/pub/gnu/
 nam-CA: ftp://ftp.cs.ubc.ca/mirror2/gnu/
 sam-CL: ftp://ftp.inf.utfsm.cl/pub/gnu/
-nam: ftp://sunsite.ulatina.ac.cr/Mirrors/GNU/
+sam-CR: ftp://sunsite.ulatina.ac.cr/Mirrors/GNU/
 nam-MX: ftp://ftp.uaem.mx/pub/gnu/
 nam-MX: ftp://www.gnu.unam.mx/pub/gnu/software/
 nam-MX: ftp://gnu.cem.itesm.mx/pub/mirrors/gnu.org/

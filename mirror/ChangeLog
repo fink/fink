@@ -1,38 +1,42 @@
+2002-08-10  Max Horn  <max@quendi.de>
+
+	* gnu: Fixed sunsite.ulatina.ac.cr, not in the US but rather in Costa Rica.
+
 2002-08-03  Max Horn  <max@quendi.de>
 
-	* sourceforge: Added new US mirror, added global eu mirror
+	* sourceforge: Added new US mirror, added global eu mirror.
 
 2002-05-04  Max Horn  <max@quendi.de>
 
-	* sourceforge: mirrors for SourceForge's prdownloads server
+	* sourceforge: Mirrors for SourceForge's prdownloads server.
 
 2002-03-29  Max Horn  <max@quendi.de>
 
 	* cpan, gimp, gnome, gnu: removed all SourceForge mirrors again,
-	  they just don't work properly
+	  they just don't work properly.
 
 2002-03-29  Max Horn  <max@quendi.de>
 
-	* gimp: Added SourceForge mirror
+	* gimp: Added SourceForge mirror.
 
-	* gnu: Added SourceForge mirror
+	* gnu: Added SourceForge mirror.
 
 2002-03-07  Max Horn  <max@quendi.de>
 
 	* gnome: Fixed SourceForge mirror once more - they now only allow
-	http access (as was announced some time ago)
+	http access (as was announced some time ago).
 
 2002-01-18  Max Horn  <max@quendi.de>
 
 	* cpan: New mirror list for the Comprehensive Perl Archive Network.
 
-	* _list: Added cpan entries
+	* _list: Added cpan entries.
 
-	* _keys: Added entries for several missing countries
+	* _keys: Added entries for several missing countries.
 
 2001-11-07  Max Horn  <max@quendi.de>
 
-	* gnome: Fixed SourceForge mirror (ftp -> ftp2)
+	* gnome: Fixed SourceForge mirror (ftp -> ftp2).
 
 2001-11-01  Christoph Pfisterer  <cp@chrisp.de>
 
