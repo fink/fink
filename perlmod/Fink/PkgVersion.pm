@@ -194,7 +194,8 @@ sub initialize {
     if ($source eq "gnu") {
       $source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
     } elsif ($source eq "gnome") {
-      $source = "mirror:gnome:stable/sources/\%n/\%n-\%v.tar.gz";
+      $version =~ /(^[0-9]+\.[0-9]+)\.*/;
+      $source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
     }
     
     $source = &expand_percent($source, $expand);

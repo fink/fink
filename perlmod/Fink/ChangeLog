@@ -1,3 +1,7 @@
+2002-09-25  Ben Hines <bhines@alumni.ucsd.edu>
+
+	* PkgVersion.pm: Patch #614133: fix gnome mirror
+
 2002-09-19  Max Horn  <max@quendi.de>
 
 	* Engine.pm, Package.pm, PkgVersion.pm: Patch #610249: fix for the 'node 
