@@ -1,5 +1,10 @@
 2004-06-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Disable Shlibs format check, and all Shlibs
+	checks if not in single-pkg format).
+
+2004-06-20  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm Make "NoSetLD_PREBIND:false" not disable prebinding.
 	* Validation.pm: Warn if have pkg-config files but not depend on
 	pkgconfig package. In .info SplitOff sections, note all problems,

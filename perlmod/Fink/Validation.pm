@@ -558,8 +558,8 @@ sub validate_info_file {
 				my %shlibs;
 				foreach (@shlibs) {
 					if (not /^\s*(\S+)\s+(\S+)\s+(\S+)\s*\(\s*>=\s*(\S+)\s*\)\s*$/) {
-						print "Warning: Malformed line in field \"shlibs\" of \"$field\". ($filename)\n  $_\n";
-						$looks_good = 0;
+#						print "Warning: Malformed line in field \"shlibs\" of \"$field\". ($filename)\n  $_\n";
+#						$looks_good = 0;
 					} else {
 						my @shlibs_parts = ($1, $2, $3, $4);
 						if (not /^(\%p)?\//) {
