@@ -327,20 +327,23 @@ sub has_lib {
 ### Check the installed x11 version
 sub check_x11_version {
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
-	if (-f "/usr/X11R6/man/man1/xterm.1") {
-		if (open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
-			while (<XTERM>) {
-				if (/^.*Version\S* ([^\s]+) .*$/) {
-					$XF_VERSION = $1;
-					@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
-					last;
+	for my $checkfile ('xterm.1', 'bdftruncate.1', 'gccmakedep.1') {
+		if (-f "/usr/X11R6/man/man1/$checkfile") {
+			if (open(CHECKFILE, "/usr/X11R6/man/man1/$checkfile")) {
+				while (<CHECKFILE>) {
+					if (/^.*Version\S* ([^\s]+) .*$/) {
+						$XF_VERSION = $1;
+						@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+						last;
+					}
 				}
+				close(CHECKFILE);
+			} else {
+				warn "could not read $checkfile: $!\n";
+				return;
 			}
-			close(XTERM);
-		} else {
-			warn "could not read xterm.1: $!\n";
-			return;
 		}
+		last if (defined $XF_VERSION);
 	}
 	if (not defined $XF_VERSION) {
 		for my $binary ('X', 'XDarwin', 'Xquartz') {

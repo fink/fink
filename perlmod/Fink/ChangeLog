@@ -1,5 +1,10 @@
 2003-11-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* VirtPackage.pm: More checks for X version for system-xfree86.
+	  this will find 4.3.99 cvs without having to run -version.
+
+2003-11-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* VirtPackage.pm: Change the thread test to use grep -a, so as not to
 	  depend on nm from the dev tools.
 
