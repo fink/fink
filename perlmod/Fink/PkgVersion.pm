@@ -70,6 +70,7 @@ sub initialize {
   $self->{_patchpath} = $path;
   $path =~ s|/finkinfo|/binary-$debarch|;
   $self->{_debpath} = $path;
+  $self->{_debpaths} = [ $path ];
 
   # some commonly used stuff
   $self->{_fullversion} = $version."-".$revision;
@@ -121,6 +122,15 @@ sub initialize {
   }
 
   $self->{_bootstrap} = 0;
+}
+
+### merge duplicate package description
+
+sub merge {
+  my $self = shift;
+  my $dup = shift;
+
+  push @{$self->{_debpaths}}, $dup->{_debpath};
 }
 
 ### bootstrap helpers
@@ -275,7 +285,7 @@ sub is_fetched {
 sub is_present {
   my $self = shift;
 
-  if (-f $self->get_debfile()) {
+  if (defined $self->find_debfile()) {
     return 1;
   }
   return 0;
@@ -314,6 +324,21 @@ sub find_tarball {
     $found_archive = "$search_dir/$archive";
     if (-f $found_archive) {
       return $found_archive;
+    }
+  }
+  return undef;
+}
+
+### binary package finding
+
+sub find_debfile {
+  my $self = shift;
+  my ($path, $fn);
+
+  foreach $path (@{$self->{_debpaths}}) {
+    $fn = $path."/".$self->{_debname};
+    if (-f $fn) {
+      return $fn;
     }
   }
   return undef;
@@ -703,7 +728,7 @@ EOF
 
   ### remove root dir
 
-  if (-e $destdir) {
+  if (not $config->param_boolean("KeepRootDir") and -e $destdir) {
     if (&execute("rm -rf $destdir")) {
       die "can't remove build directory $destdir\n";
     }
@@ -716,10 +741,10 @@ sub phase_activate {
   my $self = shift;
   my ($deb);
 
-  $deb = $self->get_debfile();
+  $deb = $self->find_debfile();
 
-  if (not -f $deb) {
-    die "can't find package $deb\n";
+  unless (defined $deb and -f $deb) {
+    die "can't find package ".$self->get_debname()."\n";
   }
 
   if (&execute("dpkg -i $deb")) {

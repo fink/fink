@@ -1,3 +1,10 @@
+2001-04-11  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Handle duplicate package descriptions in
+	different directories.
+	* Package.pm (add_version): Merge info if version is already
+	present.
+
 2001-04-10  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm: Use the new scan_all method.

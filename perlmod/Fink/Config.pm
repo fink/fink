@@ -98,7 +98,7 @@ sub get_path {
 sub get_treelist {
   my $self = shift;
 
-  return split(/\s+/, $self->param_default("Trees", "stable/bootstrap stable/main local/main"));
+  return split(/\s+/, $self->param_default("Trees", "local/main stable/main stable/bootstrap"));
 }
 
 ### set parameter

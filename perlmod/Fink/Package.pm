@@ -92,7 +92,11 @@ sub add_version {
   my $version_object = shift;
 
   my $version = $version_object->get_fullversion();
-  $self->{_versions}->{$version} = $version_object;
+  if (exists $self->{_versions}->{$version}) {
+    $self->{_versions}->{$version}->merge($version_object);
+  } else {
+    $self->{_versions}->{$version} = $version_object;
+  }
 }
 
 ### list available versions
