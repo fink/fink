@@ -27,7 +27,6 @@ use Fink::Services qw(&print_breaking &print_breaking_prefix
 					  &latest_version &execute &get_term_width
 					  &file_MD5_checksum &get_arch);
 use Fink::Package;
-use Fink::Shlibs;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
 use File::Find;
@@ -90,7 +89,6 @@ our %commands =
 	  'check' => [\&cmd_validate, 0, 0],
 	  'checksums' => [\&cmd_checksums, 1, 0],
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
-	  'depends' => [\&cmd_depends, 1, 0],
 	);
 
 our (%deb_list, %src_list);
@@ -164,7 +162,6 @@ sub process {
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
-		Fink::Shlibs->require_shlibs();
 	}
 	eval { &$proc(@_); };
 	if ($@) {
@@ -212,14 +209,11 @@ sub restart_as_root {
 
 sub cmd_index {
 	Fink::Package->update_db();
-	Fink::Shlibs->update_shlib_db();
 }
 
 sub cmd_rescan {
 	Fink::Package->forget_packages();
 	Fink::Package->require_packages();
-	Fink::Shlibs->forget_shlibs();
-	Fink::Shlibs->require_shlibs();
 }
 
 sub cmd_configure {
@@ -365,7 +359,6 @@ EOF
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
-	Fink::Shlibs->require_shlibs();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
@@ -832,36 +825,6 @@ sub kill_obsolete_debs {
 	}
 }
 
-### Display the depends for a package
-
-sub cmd_depends {
-	my ($pkg, $package, @deplist, $fullname);
-
-	foreach $pkg (@_) {
-		$package = Fink::PkgVersion->match_package($pkg);
-                unless (defined $package) {
-			print "no package found for specification '$pkg'!\n";
-			next;
-		}
-
-		$fullname = $package->get_fullname();
-		if ($package->find_debfile()) {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "Reading dependencies from ".$fullname." deb file...\n";
-			}
-			@deplist = split(/\s*\,\s*/, $package->get_debdeps());
-		} else {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "Reading dependencies from ".$fullname." info file...\n";
-			}
-			@deplist = split(/\s*\,\s*/, $package->param_default("Depends", ""));
-		}
-
-		print "Depends for $fullname are...\n";
-		print join(', ', @deplist)."\n\n";
-	}
-}
-
 sub kill_broken_links {
 	if(-l && !-e) {
 		# Broken link
@@ -986,15 +949,15 @@ sub real_install {
 				($item->[3] == $OP_REBUILD and not $item->[2]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[2]->resolve_depends(2, $op);
+			@deplist = $item->[2]->resolve_depends(2);
 		} elsif (not $item->[2]->is_present() or $item->[3] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
-			@deplist = $item->[2]->resolve_depends(1, $op);
+			@deplist = $item->[2]->resolve_depends(1);
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			@deplist = $item->[2]->resolve_depends(0, $op);
+			@deplist = $item->[2]->resolve_depends(0);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
 		if (not $item->[2]->param_boolean("Essential") and not $item->[2]->param_boolean("_ParentEssential")) {

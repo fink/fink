@@ -25,7 +25,6 @@ package Fink::Bootstrap;
 use Fink::Config qw($config $basepath);
 use Fink::Services qw(&print_breaking &execute);
 use Fink::Package;
-use Fink::Shlibs;
 use Fink::PkgVersion;
 use Fink::Engine;
 
@@ -91,7 +90,6 @@ sub bootstrap {
 
 	# make sure we have the package descriptions
 	Fink::Package->require_packages();
-	Fink::Shlibs->require_shlibs();
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();

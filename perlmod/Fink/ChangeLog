@@ -1,5 +1,11 @@
 2003-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* Bootstrap.pm, Engine.pm, PkgVersion.pm, SelfUpdate.pm, Shlibs.pm:
+	The shlibs code is giving trouble, so we move it to its own branch 
+	again.  New branch is called "shlibs-20031018".
+
+2003-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* PkgVersion.pm: Add an automatic dependency on the current version 
 	of darwin, whenever building a package.  (This is so that packages
 	which have MACSOX_DEPLOYMENT_TARGET set by default in 10.3, don't
