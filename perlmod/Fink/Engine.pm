@@ -875,6 +875,12 @@ sub cmd_update_all {
 	&real_install($OP_INSTALL, 1, @plist);
 }
 
+use constant PKGNAME => 0;
+use constant PKGOBJ  => 1;  # $item->[1] unused?
+use constant PKGVER  => 2;
+use constant OP      => 3;
+use constant FLAG    => 4;
+
 sub real_install {
 	my $op = shift;
 	my $showlist = shift;
@@ -945,31 +951,31 @@ sub real_install {
 		$item = $deps{$pkgname};
 
 		# check installation state
-		if ($item->[2]->is_installed() and $item->[3] != $OP_REBUILD) {
-			if ($item->[4] == 0) {
-				$item->[4] = 2;
+		if ($item->[PKGVER]->is_installed() and $item->[OP] != $OP_REBUILD) {
+			if ($item->[FLAG] == 0) {
+				$item->[FLAG] = 2;
 			}
 			# already installed, don't think about it any more
 			next;
 		}
 
 		# get list of dependencies
-		if ($item->[3] == $OP_BUILD or
-				($item->[3] == $OP_REBUILD and not $item->[2]->is_installed())) {
+		if ($item->[OP] == $OP_BUILD or
+				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[2]->resolve_depends(2);
-		} elsif (not $item->[2]->is_present() or $item->[3] == $OP_REBUILD) {
+			@deplist = $item->[PKGVER]->resolve_depends(2);
+		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
-			@deplist = $item->[2]->resolve_depends(1);
+			@deplist = $item->[PKGVER]->resolve_depends(1);
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			@deplist = $item->[2]->resolve_depends(0);
+			@deplist = $item->[PKGVER]->resolve_depends(0);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
-		if (not $item->[2]->param_boolean("Essential") and not $item->[2]->param_boolean("_ParentEssential")) {
+		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {
 			push @deplist, @elist;
 		}
 	DEPLOOP: foreach $dep (@deplist) {
@@ -979,8 +985,8 @@ sub real_install {
 			foreach $dp (@$dep) {
 				$dname = $dp->get_name();
 				if (exists $deps{$dname} and $deps{$dname}->[2] == $dp) {
-					if ($deps{$dname}->[3] < $OP_INSTALL) {
-						$deps{$dname}->[3] = $OP_INSTALL;
+					if ($deps{$dname}->[OP] < $OP_INSTALL) {
+						$deps{$dname}->[OP] = $OP_INSTALL;
 					}
 					# add a link
 					push @$item, $deps{$dname};
@@ -1140,9 +1146,9 @@ sub real_install {
 	@additionals = ();
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
-		if ($item->[4] == 0) {
+		if ($item->[FLAG] == 0) {
 			push @additionals, $pkgname;
-		} elsif ($item->[4] == 1) {
+		} elsif ($item->[FLAG] == 1) {
 			push @requested, $pkgname;
 		}
 	}
@@ -1188,9 +1194,9 @@ sub real_install {
 	# fetch all packages that need fetching
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
-		next if $item->[3] == $OP_INSTALL and $item->[2]->is_installed();
-		if ($item->[3] == $OP_REBUILD or not $item->[2]->is_present()) {
-			$item->[2]->phase_fetch(1, 0);
+		next if $item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed();
+		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
+			$item->[PKGVER]->phase_fetch(1, 0);
 		}
 	}
 
@@ -1200,10 +1206,10 @@ sub real_install {
 		$any_installed = 0;
 	PACKAGELOOP: foreach $pkgname (sort keys %deps) {
 			$item = $deps{$pkgname};
-			next if (($item->[4] & 2) == 2);	 # already installed
+			next if (($item->[FLAG] & 2) == 2);	 # already installed
 			$all_installed = 0;
 
-			$package = $item->[2];
+			$package = $item->[PKGVER];
 			my $pkg;
 
 			# concatinate dependencies of package and its relatives
@@ -1212,7 +1218,7 @@ sub real_install {
 			my @extendeddeps = ();
 			foreach $dpp (@{$item}[5..$#{$item}]) {
 				$isgood = 1;
-				$dppname = $dpp->[0];
+				$dppname = $dpp->[PKGNAME];
 				if (exists $package->{_relatives}) {
 					foreach $pkgg (@{$package->{_relatives}}){
 						$pkggname = $pkgg->get_name();
@@ -1230,7 +1236,7 @@ sub real_install {
 					if (exists $deps{$name}) {
 						foreach $dpp (@{$deps{$name}}[5..$#{$deps{$name}}]) {
 							$isgood = 1;
-							$dppname = $dpp->[0];
+							$dppname = $dpp->[PKGNAME];
 							foreach $pkgg (@{$package->{_relatives}}){
 								$pkggname = $pkgg->get_name();
 								if ($pkggname eq $dppname) {
@@ -1245,7 +1251,7 @@ sub real_install {
 
 			# check dependencies
 			foreach $dep (@extendeddeps) {
-				next PACKAGELOOP if (($dep->[4] & 2) == 0);
+				next PACKAGELOOP if (($dep->[FLAG] & 2) == 0);
 			}
 
 			my @batch_install;
@@ -1253,7 +1259,7 @@ sub real_install {
 			$any_installed = 1;
 
 			# Mark item as done (FIXME - why can't we just delete it from %deps?)
-			$item->[4] |= 2;
+			$item->[FLAG] |= 2;
 
 			next if $already_activated{$pkgname};
 
@@ -1286,7 +1292,7 @@ sub real_install {
 			# Install the package unless we already did that in a previous
 			# iteration, and if the command issued by the user was an "install"
 			# or a "reinstall" or a "rebuild" of an currently installed pkg.
-			if (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
+			if (($item->[OP] == $OP_INSTALL or $item->[OP] == $OP_REINSTALL)
 					 or ($is_build and $package->is_installed())) {
 				push(@batch_install, $package);
 				$already_activated{$pkgname} = 1;
@@ -1311,8 +1317,8 @@ sub real_install {
 					# Also (re)install if that was requested by the user
 					next unless exists $deps{$name};
 					$item = $deps{$name};
-					if ((($item->[4] & 2) != 2) and
-							($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)) {
+					if ((($item->[FLAG] & 2) != 2) and
+							($item->[OP] == $OP_INSTALL or $item->[OP] == $OP_REINSTALL)) {
 						push(@batch_install, $pkg);
 						$already_activated{$name} = 1;
 					}
@@ -1326,7 +1332,7 @@ sub real_install {
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {
-					$deps{$pkg->get_name()}->[4] |= 2;
+					$deps{$pkg->get_name()}->[FLAG] |= 2;
 			}
 
 		}
