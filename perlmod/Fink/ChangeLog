@@ -2,6 +2,8 @@
 
 	* PkgVersion.pm: Disable the prebinding code unless the distribution
 	is > 10.2.
+	* Bootstrap.pm, SelfUpdate.pm: Add gettext-bin to the bootstrap and
+	update lists (in preparation for making it non-essential)
 
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
