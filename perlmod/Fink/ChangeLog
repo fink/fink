@@ -1,3 +1,22 @@
+2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: more modularization, to allow inject.pl in 10.3 
+	directory to call some modules; eliminate local/bootstrap; injected 
+	packages now go into local/injected
+	* Config.pm: new function write_sources_list which writes an 
+	appropriate file $basepath/etc/apt/sources.list .  (Called 
+	automatically by $config->save().); move the hook to old pre-10.2 
+	debs from postinstall script to Config.pm; allow local modifications 
+	at both the top and bottom of the sources.list file, and preserve 
+	them when the file is re-generated
+	* FinkVersion.pm.in: the VERSION file and the stamp-* files will 
+	now live in /sw/fink/dists, not /sw/fink
+	* SelfUpdate.pm: manipulate stamp-* files in new location; rsync must 
+	include DISTRIBUTION and README files; change the VERSION when
+	rsyncing to reflect rsync; store the website and cvs-repository 
+	addresses in /sw/lib/fink/URL via the fink-mirrors package, and use
+	the addresses stored there rather than hard-wired ones
+	
 2004-07-07  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Backported get_configureparams() accessor (needed

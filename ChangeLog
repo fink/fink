@@ -1,3 +1,13 @@
+2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: avoid unneeded symlink when bootstrapping; improved
+	ability to re-run bootstrap when it didn't get very far the first 
+	time; no longer use the local/bootstrap tree; put perl modules in 
+	the correct place, and don't allow perl 5.6.x with 10.3; install 
+	$basepath/etc/apt/ during bootstrap
+	* postinstall.pl.in: manipulation of sources.list file is now done 
+	in Config.pm, not here
+
 2004-07-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.20.6, a release
