@@ -74,6 +74,13 @@ sub read {
   $file = $basepath."/var/lib/dpkg/status";
   $hash = {};
 
+  if (! -f $file) {
+    print "WARNING: can't read dpkg status file \"$file\".\n";
+
+    $self->{_invalid} = 0;
+    return;
+  }
+
   open(IN,$file) or die "can't open $file: $!";
   while (<IN>) {
     chomp;

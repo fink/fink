@@ -1,5 +1,8 @@
 2001-09-09  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Status.pm (read): Make non-existence of the dpkg status file
+	non-fatal.
+
 	* Package.pm (get_matching_versions): Implemented the version
 	comparisons supported by dpkg.
 	* PkgVersion.pm (initialize): Removed special handling for the
