@@ -122,5 +122,6 @@ Oh, one more thing: mmap() is broken for non-trivial uses in OS X
 10.1. Luckily apt uses a wrapper class that can be equipped with a
 workaround (malloc() + read() + write()...).
 <<
+DescPackaging: Previous versions by Christoph Pfisterer.
 License: GPL
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Maintainer: Max Horn <max@quendi.de>

@@ -28,6 +28,7 @@ DescPort: <<
 charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
 <<
+DescPackaging: Previous versions by Christoph Pfisterer.
 License: LGPL
 Homepage: http://clisp.cons.org/~haible/packages-libiconv.html
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Maintainer: Max Horn <max@quendi.de>

@@ -22,5 +22,6 @@ messages. Also needs a small patch for case-insensitive file systems.
 
 First revision by David Ross.
 <<
+DescPackaging: Previous versions by Christoph Pfisterer.
 License: OSI-Approved
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Maintainer: Max Horn <max@quendi.de>

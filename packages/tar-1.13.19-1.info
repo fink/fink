@@ -24,5 +24,6 @@ Description: GNU tar - tape archiver
 DescPort: <<
 Uses autoconf. Checks the hosttype - the usual fix.
 <<
+DescPackaging: Previous versions by Christoph Pfisterer.
 License: GPL
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Maintainer: Max Horn <max@quendi.de>
