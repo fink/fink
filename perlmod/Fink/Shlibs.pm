@@ -114,12 +114,12 @@ sub check_files {
 				chomp();
 				#drop first lines and errors
 				if ($_ =~ /:/) {
-					print "DEBUG: not a lib, droping: $_\n";
+					# print "DEBUG: not a lib, droping: $_\n";
 					next OTOOLLOOP;
 				}
 				# Get lib
 				unless ($_ =~ /^\s*(\S+)\s+\(\S+\s\S+\s(\d+\.\d+.\d+),.*$/) {
-					print "DEBUG: not matching REGEX: $_\n";
+					# print "DEBUG: not matching REGEX: $_\n";
 					next OTOOLLOOP;
 				} else {
 					$lib = $1;
@@ -129,17 +129,17 @@ sub check_files {
 				#next unless (-x $lib);
 				### This should drop any depends on it's self
 				### Strictly on it's self not a child
-				print "DEBUG: Checking lib: $lib, compat: $compat\n";
+				# print "DEBUG: Checking lib: $lib, compat: $compat\n";
 				$deb = $self->get_shlib($lib, $compat);
 				unless ($deb) {
-					print "DEBUG: Needs shlib file: $lib\n";
+					# print "DEBUG: Needs shlib file: $lib\n";
 					next OTOOLLOOP;
 				}
 				
 				# get just the unversioned dep for compares
 				$tmpdep = $deb;
 				$tmpdep =~ s/^(\S*)\s*\(.*\)$/$1/g;
-				print "DEBUG: tmpdep: $tmpdep, dep: $deb\n";
+				# print "DEBUG: tmpdep: $tmpdep, dep: $deb\n";
 
 				if ($tmpdep eq $package) {
 					next OTOOLLOOP;
@@ -155,7 +155,7 @@ sub check_files {
 					# in the root and splitoff roots at this
 					# point
 					if ($split eq $tmpdep) {
-						print "DEBUG: forcing =%v-%r\n";
+						# print "DEBUG: forcing =%v-%r\n";
 					}
 				}
 
@@ -186,7 +186,7 @@ sub check_files {
 						# no version
 						next;
 					}
-					print "DEBUG: bdep: $dep vers: $vers\n";
+					# print "DEBUG: bdep: $dep vers: $vers\n";
 					# check all splits of the deps to find
 					# this shlibs version of the -dev
 					$pkg = Fink::PkgVersion->match_package($dep);
@@ -197,9 +197,9 @@ sub check_files {
 
 					@dsplits = $pkg->get_splitoffs(1, 1);
 					foreach $dsplit (@dsplits) {
-						print "DEBUG: compare -$dsplit- to -$tmpdep-\n";
+						# print "DEBUG: compare -$dsplit- to -$tmpdep-\n";
 						if ($dsplit eq $tmpdep) {
-							print "DEBUG: override version\n";
+							# print "DEBUG: override version\n";
 							$deb = $dsplit." (".$vers.")";
 							push(@depends, $deb)
 						}
@@ -211,7 +211,7 @@ sub check_files {
 		close (OTOOL);
 	}
 
-	print "DEBUG: before deduplication: ", join(', ', @depends), "\n";
+	# print "DEBUG: before deduplication: ", join(', ', @depends), "\n";
 
 	# this next bit does some really strange voodoo, I will try to
 	# explain how it works.
@@ -319,7 +319,7 @@ sub check_files {
 		}
 	}
 
-	print "DEBUG: after deduplication: ", join(', ', @depends), "\n";
+	# print "DEBUG: after deduplication: ", join(', ', @depends), "\n";
 	return @depends;
 }
 

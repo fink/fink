@@ -2363,7 +2363,7 @@ EOF
 				my @filelist = ();
 				my $wanted = sub {
 					if (-f) {
-						print "DEBUG: file: $File::Find::fullname\n";
+						# print "DEBUG: file: $File::Find::fullname\n";
 						push @filelist, $File::Find::fullname;
 					}
 				};
