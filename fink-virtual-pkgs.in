@@ -70,7 +70,7 @@ if ($standalone == 0)
 			printf "Package: %s\nStatus: %s\nVersion: %s\n", $hash->{package},$hash->{status},$hash->{version};
 			foreach $field (keys %$hash)
 			{
-				next if (($field eq "package") or ($field eq "status") or ($field eq "version"));
+				next if ($field =~ /^(package|status|version|descdetail|compilescript)$/);
 				printf "%s: %s\n",$field,$hash->{$field};
 			}
 			print "\n";
