@@ -1,3 +1,14 @@
+2004-01-26  Rob Braun  <bbraun@users.sourceforge.net>
+
+	* Selfupdate.pm: rsync with the -r flag instead of the -a flag.
+	the difference is that -r will not preserve ownership/groups,
+	permissions, links, times, and device files.  None of this 
+	matters for .info and .patch files, since there are no links
+	or device files, and the ownership, permissions, and times
+	on the server don't matter to the client.  However, we will
+	continue using -a on the TIMESTAMP file to preserve the time
+	on that.
+
 2004-01-21  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: If a package lists itself in its own Conflicts or
