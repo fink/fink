@@ -1,5 +1,9 @@
 2004-11-14  Daniel Macks  <dmacks@netspace.org>
 
+	* NetAccess.pm: Fix my fix to regex.
+
+2004-11-14  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Error if %type_ *anywhere* but not InfoN>=2.
 
 2004-11-14  Daniel Macks  <dmacks@netspace.org>

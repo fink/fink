@@ -109,7 +109,7 @@ sub fetch_url_to_file {
 	my ($path, $basename, $masterpath);
 
 	$mirrorindex = 0;
-	if ($origurl =~ m/^mirror\:(\w+)\:(.*?)([^/]+\Z)/g) {
+	if ($origurl =~ m/^mirror\:(\w+)\:(.*?)([^\/]+\Z)/g) {
 		$mirrorname = $1;
 		$path = $2;
 		$basename = $3;
