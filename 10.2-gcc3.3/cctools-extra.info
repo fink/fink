@@ -1,11 +1,12 @@
 Package: cctools-extra
-Version: 20030516
-Revision: 2
+Epoch: 1
+Version: 495
+Revision: 1
 
 Source: mirror:sourceforge:fink/cctools-%v.tar.bz2
-Source-MD5: a78b299dea5a9cf0fb051a7805c040e6
+Source-MD5: 4fc18896b958d17864cc2d001e595ff0
+SourceDirectory: cctools-%v
 Patch: %n.patch
-SourceDirectory: cctools
 Essential: yes
 Depends: base-files
 CompileScript: <<

@@ -1,7 +1,8 @@
 Package: tar
 Version: 1.13.25
-Revision: 1
+Revision: 11
 Essential: yes
+GCC: 3.3
 Depends: gettext, gzip, bzip2, base-files
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 6ef8c906e81eee441f8335652670ac4a
@@ -24,5 +25,5 @@ InfoDocs: tar.info
 Description: GNU tar - tape archiver
 DescPackaging: Previous versions by Christoph Pfisterer.
 License: GPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://www.gnu.org/software/tar/
