@@ -1,6 +1,11 @@
+2002-01-11  Max Horn  <max@quendi.de>
+
+	* FinkVersion.pm.in: If /sw/fink/VERSION is missing, now tries to look
+	at the old /sw/etc/fink-release file instead.
+
 2002-01-10  Max Horn  <max@quendi.de>
 
-	* FinkVersion.pm: moved fink-release from /sw/etc to /sw/fink and
+	* FinkVersion.pm.in: moved fink-release from /sw/etc to /sw/fink and
 	renamed it to VERSION to match with other modules
 
 	* SelfUpdate.pm: fixed selfupdate, it would hang when trying to
