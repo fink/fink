@@ -1,3 +1,7 @@
+2004-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: Majorly reworked for new execute().
+
 2004-12-22  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: Explicitly use correct perl interp

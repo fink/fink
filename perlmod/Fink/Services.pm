@@ -434,23 +434,24 @@ sub execute {
 	my $is_tempfile = &prepare_script(\$script);
 	return 0 if not defined $script;
 
-  MAYBE_NOBODY: {
-	local $>;  # don't want to leak loss of root powers!
-
 	# drop root if requested
-	if ($options{'nonroot_okay'} && Fink::Config::get_option("build_as_nobody") == 1) {
-		use integer;    # getpw* returns unsigned int but "nobody" is uid -2
-		my $uid = getpwnam('nobody');
-		$> = $uid;
-		die "Couldn't set EUID=nobody\n" if $> != $uid;
+	my $drop_root = $options{'nonroot_okay'} && Fink::Config::get_option("build_as_nobody") == 1;
+	if ($drop_root && $< != 0) {
+		print "Fink cannot switch users when not running as root.\n";
+		return 1;
 	}
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
 		if (not $options{'quiet'}) {
-			print "$cmd\n";
+#			print "$cmd\n";
+			$drop_root
+				? print "sudo -u nobody sh -c $cmd\n"
+				: print "$cmd\n";
 		}
-		system($cmd);
+		$drop_root
+			? system(qw/ sudo -u nobody sh -c /, $cmd)
+			: system($cmd);
 		$? >>= 8 if defined $? and $? >= 256;
 		if ($?) {
 			if (not $options{'quiet'}) {
@@ -460,8 +461,6 @@ sub execute {
 			return $?;  # something went boom; give up now
 		}
 	}
-
-  } # end of MAYBE_NOBODY block
 
 	# everything was successful so delete tempfile
 	# (otherwise keep it around to aide debugging)
