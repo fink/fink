@@ -178,6 +178,7 @@ sub initialize {
 				$hash->{status}      = "install ok installed";
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
+				$hash->{provides}    = 'system-java';
 				$self->{$hash->{package}} = $hash;
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
