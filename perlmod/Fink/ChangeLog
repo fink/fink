@@ -1,3 +1,9 @@
+2003-01-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm:  Allow a new license "Restrictive/Distributable"
+	to indicate that distribution of binaries is allowed even though
+	the license is restrictive.
+	
 2003-01-15  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Putting stuff inside /sw/src is illegal for a .deb,

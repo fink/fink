@@ -75,7 +75,7 @@ our %allowed_license_values = map {$_, 1}
   (
    "GPL", "LGPL", "GFDL", "LDP", "BSD",
    "Artistic", "OSI-Approved", "Restrictive",
-   "Commercial", "Public Domain"
+   "Distributable", "Commercial", "Public Domain"
   );
 
 # List of all known fields.
