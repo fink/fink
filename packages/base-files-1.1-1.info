@@ -1,5 +1,5 @@
 Package: base-files
-Version: 1.0
+Version: 1.1
 Revision: 1
 Source: http://prdownloads.sourceforge.net/fink/%n-%v.tar.gz
 Essential: yes
