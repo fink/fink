@@ -1574,10 +1574,10 @@ EOF
 
 	### update Mach-O Object List
 	###
-	### (but not for distributions prior to 10.3)
+	### (but not for distributions prior to 10.2-gcc3.3)
 
 	our %prebound_files = ();
-	if ($config->param("Distribution") > 10.2) {
+	if ($config->param("Distribution") ge "10.2-gcc3.3") {
 
 	eval {
 		require File::Find;
