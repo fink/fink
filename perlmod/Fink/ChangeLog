@@ -1,3 +1,8 @@
+2003-10-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Temporary change for the 0.14.1 beta release:
+	enables the 10.2-gcc3.3 and 10.3 trees
+
 2003-10-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm, SelfUpdate.pm: Further tweaks to the user interface 
