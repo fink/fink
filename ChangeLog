@@ -1,3 +1,8 @@
+2005-02-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl, fink.info.in: allow the creation of several .info
+	files from a single .info.in, depending on %{Distribution}
+
 2005-01-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: allow bootstrapping with perl 5.8.6, not perl 5.8.4

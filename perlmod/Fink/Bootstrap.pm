@@ -24,7 +24,7 @@
 package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
-use Fink::Services qw(&execute &file_MD5_checksum &enforce_gcc);
+use Fink::Services qw(&execute &file_MD5_checksum &enforce_gcc &eval_conditional);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -40,7 +40,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &get_packageversion &find_rootmethod &create_tarball &copy_description &inject_package);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &get_packageversion &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -69,14 +69,18 @@ Fink::Bootstrap - Bootstrap a fink installation
 	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination);
+	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda);
+	my ($version, $revisions) = read_version_revision($package_source);
+	my ($version, $revision) = get_version_revision($package_source,$distribution);
+
 
 =head1 DESCRIPTION
 
 This module defines functions that are used to bootstrap a fink installation 
 or update to a new version.  The functions are intended to be called from
 scripts that are not part of fink itself.  In particular, the scripts 
-bootstrap.pl, inject.pl, and fink's postinstall.pl all depend on functions
-from this module.
+bootstrap.pl, inject.pl, scripts/srcdist/dist-module.pl, and fink's 
+postinstall.pl all depend on functions from this module.
 
 =head2 Functions
 
@@ -237,9 +241,16 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 		return 1;
 	}
 	
+    ### determine $distribution
+	my $distribution = `ls -ld $bpath/fink/dists`;
+	chomp($distribution);
+	$distribution =~ s/^.*->\s+//;
+#	print "DISTRIBUTION $distribution\n";
+
 	### get version
 	
-	my ($packageversion, $packagerevision) = &get_packageversion();
+#	my ($packageversion, $packagerevision) = &get_packageversion();
+	my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
 	
 	### load configuration
 	
@@ -452,7 +463,7 @@ Called by bootstrap.pl and fink's inject.pl.
 sub fink_packagefiles {
 
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
-  "ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
+  "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
   "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
   "fink-virtual-pkgs.in";
 
@@ -526,7 +537,7 @@ Finds the current version (by examining the VERSION file) and the current
 revision (which defaults to 1 or a cvs timestamp) of the package being 
 compiled.
 
-Called by bootstrap.pl and inject_package().
+Formerly called by bootstrap.pl and inject_package(); now obsolete.
 
 =cut
 
@@ -664,12 +675,9 @@ sub copy_description {
 #		&print_breaking("\nNOTICE: the previously existing file $bpath/fink/dists/$destination/$package.info has been moved to $bpath/fink/dists/$destination/$package.info.bak .\n\n");
 		&execute("/bin/mv $bpath/fink/dists/$destination/$package.info $bpath/fink/dists/$destination/$package.info.bak");
 		}
-	my $md5 = &file_MD5_checksum("$bpath/src/$package-$packageversion.tar");
-	$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <$package.info.in >$bpath/fink/dists/$destination/$package.info\n";
-	$script .= "/bin/chmod 644 $bpath/fink/dists/$destination/*.*\n";
 	
 	my $result = 0;
-	
+
 	foreach $cmd (split(/\n/,$script)) {
 		next unless $cmd;   # skip empty lines
 		
@@ -678,7 +686,164 @@ sub copy_description {
 			$result = 1;
 		}
 	}
+
+# determine $distribution
+	my $distribution = `ls -ld $bpath/fink/dists`;
+	chomp($distribution);
+	$distribution =~ s/^.*->\s+//;
+#	print "DISTRIBUTION $distribution\n";
+
+	my $coda = "NoSourceDirectory: true\n";
+
+	if (modify_description("$package.info.in","$bpath/fink/dists/$destination/$package.info","$bpath/src/$package-$packageversion.tar",".","%n-%v.tar",$distribution,$coda)) {
+			print "ERROR: Can't copy package description(s).\n";
+			$result = 1;
+		} elsif (&execute("/bin/chmod 644 $bpath/fink/dists/$destination/*.*")) {
+			print "ERROR: Can't copy package description(s).\n";
+			$result = 1;
+		}
+	
 	return $result;
+}			 
+
+=item modify_description
+
+	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda);
+
+Copy the file $original to $target, supplying the correct version and
+revision (from get_version_revision($package_source,$distribution)) and 
+$source_location as well as an MD5 sum calculated from 
+$tarball.  Evaluate any conditionals using $distribution as the value 
+of %{Distribution}.  Append $coda to the end of the file.
+
+Returns 0 on success, 1 on failure.
+
+Called by copy_description() and scripts/srcdist/dist-module.pl .
+
+=cut
+
+sub modify_description {
+
+	my $original = shift;
+	my $target = shift;
+	my $tarball = shift;
+	my $package_source = shift;
+	my $source_location = shift;
+	my $distribution = shift;
+	my $coda = shift;
+
+	my ($version, $revision) = get_version_revision($package_source,$distribution);
+	print "Modifying package description...\n";
+	my $md5 = &file_MD5_checksum($tarball);
+
+	my $result = 0;
+
+	open(IN,$original) or die "can't open $original: $!";
+	open(OUT,">$target") or die "can't write $target: $!";
+	while (<IN>) {
+		chomp;
+		$_ =~ s/\@VERSION\@/$version/;
+		$_ =~ s/\@REVISION\@/$revision/;
+		$_ =~ s/\@SOURCE\@/$source_location/;
+		$_ =~ s/\@MD5\@/$md5/;
+		if (s/^(\s*)\((.*?)\)\s*(.*)/$1$3/) {
+            # we have a conditional; remove the cond expression
+			my $cond = $2;
+#            print "\tfound conditional '$cond'\n";
+			$cond =~ s/%\{Distribution\}/$distribution/;
+#            print "\tfound conditional '$cond'\n";
+            # if cond is false, clear entire line
+			undef $_ unless &eval_conditional($cond, "modify_description");
+		}
+			print OUT "$_\n" if defined($_);
+	}
+	close(IN);
+	print OUT "$coda\n";
+	close(OUT);
+
+	return $result;
+}
+
+=item read_version_revision
+
+	my ($version, $revisions) = read_version_revision($package_source);
+
+Finds the current version and possible revisions by examining the files 
+$package_source/VERSION and $package_source/REVISION.  $revisions is
+a reference to a hash which either specifies a revision for each 
+distribution, or else specifies a single revision with the key "all".
+
+Called by get_version_revision() and scripts/srcdist/dist-module.pl.
+
+=cut
+
+sub read_version_revision {
+
+	my $package_source = shift;
+
+	my %revision_data;
+
+	if (-f "$package_source/REVISION") {
+		open(IN,"$package_source/REVISION") or die "Can't open $package_source/REVISION: $!";
+		while(<IN>) {
+			chomp;
+			/(.*):\s*(.*)/;
+			$revision_data{$1} = $2;
+		}
+		close(IN);
+	}
+
+	my ($packageversion,$packagerevision,$revisions);
+	
+	chomp($packageversion = cat "$package_source/VERSION");
+	if ($packageversion =~ /cvs/) {
+		my @now = gmtime(time);
+		$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
+		                           $now[5]+1900, $now[4]+1, $now[3],
+		                           $now[2], $now[1]);
+		$revisions = {"all" => $packagerevision};
+	} elsif (-f "$package_source/REVISION") {
+		open(IN,"$package_source/REVISION") or die "Can't open $package_source/REVISION: $!";
+		while(<IN>) {
+			chomp;
+			/(.*):\s*(.*)/;
+			$revision_data{$1} = $2;
+		}
+		close(IN);
+		$revisions = \%revision_data;
+	} else {
+		$packagerevision = "1";
+        $revisions = {"all" => $packagerevision};
+	}
+	return ($packageversion, $revisions);
+}
+
+=item get_version_revision
+
+	my ($version, $revision) = get_version_revision($package_source,$distribution);
+
+Calculate the version and revision numbers for the .info file, based on the 
+current $distribution, and the data given in $package_source/VERSION and
+$package_source/REVISION.
+
+Called by bootstrap.pl, inject_package(), and modify_description().
+
+=cut
+
+sub get_version_revision {
+
+	my $package_source = shift;
+	my $distribution = shift;
+
+	my ($version, $revisions) = read_version_revision($package_source);
+
+	if (defined(${$revisions}{$distribution})) {
+#	print "CALCULATED from $distribution:" .  ${$revisions}{$distribution} . "\n";
+	return ($version, ${$revisions}{$distribution});
+} elsif (defined(${$revisions}{'all'})) {
+#	print "CALCULATED from ALL:" .  ${$revisions}{'all'} . "\n";
+	return ($version, ${$revisions}{'all'});
+}
 }
 
 =back
