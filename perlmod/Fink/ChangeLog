@@ -1,3 +1,8 @@
+2004-06-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Modify regex so that xemacs-base, xemacs-efs
+	and xemacs-sumo are allowed to install .elc files.
+
 2004-06-17  Dainel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Add final newline to generated daemonic .xml file.
