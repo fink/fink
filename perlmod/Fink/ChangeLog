@@ -1,3 +1,6 @@
+2003-11-11  Rob Braun <bbraun@users.sourceforge.net>
+	* SelfUpdate.pm: Recurse down multiple directories, to get libs/perlmods
+
 2003-11-11  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm, Validation.pm: Allow 'Homepage' field in splitoffs. This
