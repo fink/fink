@@ -520,7 +520,7 @@ sub setup_package_object {
 		$pkg_expand{'Lv'} = $properties->{parent}->{_typeversion_pkg};
 		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
 	}
-	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand);
+	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
 	# get/create package object
 	my $package = Fink::Package->package_by_name_create($properties->{package});

@@ -471,7 +471,7 @@ sub execute_script {
 
     my $string = expand_percent $template;
     my $string = expand_percent $template, \%map;
-
+    my $string = expand_percent $template, \%map, $err_info;
 
 Performs percent-expansion on the given multiline $template according
 to %map (if one is defined). If a line in $template begins with #
@@ -486,26 +486,26 @@ limitted to a single additional level (only (up to) two passes are
 made). If there are still % chars left after the recursion, that means
 $template needs more passes (beyond the recursion limit) or there are
 % patterns in $template that are not in %map. If either of these two
-cases occurs, the program will die with an error message.
+cases occurs, the program will die with an error message. If given,
+$err_info will be appended to this error message.
 
 To get an actual percent char in the string, protect it as %% in
 $template (similar to printf()). This occurs whether or not there is a
 %map.  This behavior is implemented internally in the function, so you
 should not have ('%'=>'%') in %map. Pecent-delimited percent chars are
-left-associative (again as in printf()). Currently, this %% treatment
-is implemented using a temporary sentinel string of "@PERCENT@", so if
-$template contains @PERCENT@ that will also be replaced with %.
+left-associative (again as in printf()).
 
 Expansion keys are not limitted to single letters, however, having one
 expansion key that is the beginning of a longer one (d and dir) will
 cause unpredictable results (i.e., "a" and "arch" is bad but "c" and
-"arch" is okay). Note that no such keys are in use at this point.
+"arch" is okay).
 
 =cut
 
 sub expand_percent {
 	my $s = shift;
 	my $map = shift || {};
+	my $err_info = shift;
 	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
 	return $s if (not defined $s);
@@ -546,8 +546,12 @@ sub expand_percent {
 			# The presence of a sequence of an odd number
 			# of percent chars means we have unexpanded
 			# percents besides (%% => %) left. Error out.
-			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /(?<!\%)(\%\%)*\%(?!\%)/;
-
+			if ($s =~ /(?<!\%)(\%\%)*\%(?!\%)/) {
+				my $errmsg = "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"";
+				$errmsg .= " ($err_info)" if defined $err_info;
+				$errmsg .= "\n";
+				die $errmsg;
+			}
 			# Now handle %% => %
 			$s =~ s/\%\%/\%/g;
 		}

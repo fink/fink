@@ -196,7 +196,7 @@ sub initialize {
 	$self->expand_percent_if_available('Recommends');
 	$self->expand_percent_if_available('Replaces');
 	$self->expand_percent_if_available('Suggests');
-	$self->expand_percent_if_available('Package');
+#	$self->expand_percent_if_available('Package');
 
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if (exists $self->{parent}) {
@@ -239,7 +239,7 @@ sub initialize {
 		$self->expand_percent_if_available('SourceRename');
 	
 		for ($i = 2; $self->has_param('source'.$i); $i++) {
-			$self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
+			$self->expand_percent_if_available('Source'.$i);
 			$self->expand_percent_if_available('Source'.$i.'Rename');
 			$self->{_sourcecount} = $i;
 		}
@@ -263,13 +263,26 @@ sub initialize {
 }
 
 ### expand percent chars in the given field, if that field exists
+### return the expanded form and store it back into the field data
 
 sub expand_percent_if_available {
 	my $self = shift;
 	my $field = lc shift;
 
 	if ($self->has_param($field)) {
-		$self->{$field} = &expand_percent($self->{$field}, $self->{_expand});
+		$self->{$field} = &expand_percent($self->{$field}, $self->{_expand}, $self->get_info_filename." \"$field\"");
+	}
+}
+
+### expand percent chars in the given field, if that field exists
+### return the expanded form but do not store it back into the field data
+
+sub get_param_with_expansion {
+	my $self = shift;
+	my $field = lc shift;
+
+	if ($self->has_param($field)) {
+		&expand_percent($self->{$field}, $self->{_expand}, $self->get_info_filename." \"$field\"");
 	}
 }
 
@@ -440,6 +453,13 @@ sub get_tree {
 	return $self->{_tree};
 }
 
+sub get_info_filename {
+	my $self = shift;
+	return "" unless exists  $self->{thefilename};
+	return "" unless defined $self->{thefilename};
+	return $self->{thefilename};
+}
+
 ### other accessors
 
 sub is_multisource {
@@ -547,7 +567,7 @@ sub get_custom_mirror {
 
 	if ($self->has_param("CustomMirror")) {
 		$self->{_custom_mirror} =
-			Fink::Mirror->new_from_field(&expand_percent($self->param("CustomMirror"), $self->{_expand}));
+			Fink::Mirror->new_from_field($self->get_param_with_expansion("CustomMirror"));
 	} else {
 		$self->{_custom_mirror} = 0;
 	}
@@ -569,7 +589,7 @@ sub get_build_directory {
 	}
 	elsif ($self->has_param("SourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname()."/".
-			&expand_percent($self->param("SourceDirectory"), $self->{_expand});
+			$self->get_param_with_expansion("SourceDirectory");
 	}
 	else {
 		$dir = $self->get_tarball();
@@ -1295,7 +1315,7 @@ END
 		if ($self->has_param($renamefield)) {
 			@renamefiles = split(/\s+/, $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
-				$renamefile = &expand_percent($renamefile, $expand);
+				$renamefile = &expand_percent($renamefile, $expand, $self->get_info_filename." \"$renamefield\"");
 				if ($renamefile =~ /^(.+)\:(.+)$/) {
 					$renamelist .= " -s ,$1,$2,";
 				} else {
@@ -1327,7 +1347,7 @@ END
 		$destdir = "$buildpath/$bdir";
 		if ($i > 1) {
 			if ($self->has_param("Source".$i."ExtractDir")) {
-				$destdir .= "/".&expand_percent($self->param("Source".$i."ExtractDir"), $self->{_expand});
+				$destdir .= "/".$self->get_param_with_expansion("Source".$i."ExtractDir");
 			}
 		}
 
@@ -1999,7 +2019,7 @@ EOF
 		next if $scriptbody eq "";
 
 		# no, so write it out
-		$scriptbody = &expand_percent($scriptbody, $self->{_expand});
+		$scriptbody = &expand_percent($scriptbody, $self->{_expand}, $self->get_info_filename." \"$scriptname\"");
 		$scriptfile = "$destdir/DEBIAN/$scriptname";
 
 		print "Writing package script $scriptname...\n";
@@ -2022,9 +2042,8 @@ EOF
 	### shlibs file
 
 	if ($self->has_param("Shlibs")) {
-			$shlibsbody = $self->param("Shlibs");
+			$shlibsbody = $self->get_param_with_expansion("Shlibs");
 			chomp $shlibsbody;
-			$shlibsbody = &expand_percent($shlibsbody, $self->{_expand});
 			$shlibsfile = "$destdir/DEBIAN/shlibs";
 
 			print "Writing shlibs file...\n";
@@ -2042,7 +2061,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	if ($self->has_param("conffiles")) {
 		$listfile = "$destdir/DEBIAN/conffiles";
 		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")));
-		$conffiles = &expand_percent($conffiles, $self->{_expand})."\n";
+		$conffiles = &expand_percent($conffiles, $self->{_expand}, $self->get_info_filename." \"conffiles\"")."\n";
 
 		print "Writing conffiles list...\n";
 
@@ -2065,7 +2084,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 			die "can't write daemonic info file for ".$self->get_fullname()."\n";
 		}
 		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
-		print SCRIPT &expand_percent($self->param("DaemonicFile"), $self->{_expand});
+		print SCRIPT $self->get_param_with_expansion("DaemonicFile");
 		close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
 		chmod 0644, $daemonicfile;
 	}
@@ -2239,13 +2258,13 @@ END
 					not $self->param_boolean("NoSet$varname")) {
 				$s .= " ".$defaults{$varname};
 			}
-			$ENV{$varname} = &expand_percent($s, $expand);
+			$ENV{$varname} = &expand_percent($s, $expand, $self->get_info_filename." \"set$varname\" or \%Fink::PkgVersion::defaults");
 		} else {
 			if (exists $defaults{$varname} and
 					defined $defaults{$varname} and 
 					not $self->param_boolean("NoSet$varname")) {
 				$s = $defaults{$varname};
-				$ENV{$varname} = &expand_percent($s, $expand);
+				$ENV{$varname} = &expand_percent($s, $expand, "\%Fink::PkgVersion::defaults");
 			} else {
 				delete $ENV{$varname};
 			}
@@ -2274,7 +2293,7 @@ sub run_script {
 	%env_bak = %ENV;
 	
 	# Expand percent shortcuts
-	$script = &expand_percent($script, $self->{_expand});
+	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script");
 	
 	# Clean the environment
 	$self->set_env();

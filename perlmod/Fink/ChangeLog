@@ -1,3 +1,12 @@
+2004-01-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Added new $err_info parameter to expand_percent that
+	will be printed if there's an expansion error. Remembered \n in
+	that die to prevent stack backtrace. Doc-cleanup expand_percent.
+	* PkgVersion.pm: Implemented new get_param_with_expansion and
+	get_info_filename methods.
+	* Package.pm, PkgVersion.pm: added $err_info to expand_percent calls.
+	
 2004-01-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: Treat typo of %n in SplitOff:Package: as %N. Remove
