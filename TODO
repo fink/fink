@@ -17,8 +17,6 @@ Medium
 * add a mirror check utillity that given some testcases will verify that all mirrors
   do still work
 
-* add epoch support
-
 * possibly get rid of the ncurses package on 10.2, by providing a system-ncurses
   package that just symlinks the ncurses dylibs in /usr/lib to /sw/lib
   (this is necessary at least for now to ensure backwards compatibility)
