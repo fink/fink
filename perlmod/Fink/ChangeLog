@@ -1,3 +1,7 @@
+2004-07-04  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Sync with r1.42.
+
 2004-05-21  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: Replaced dpkg "status" strings with constants.
