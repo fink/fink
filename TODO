@@ -1,0 +1,11 @@
+* seperate the "mirror" list into its own package (either by putting it into 
+  "base-files" or by creating a "mirror" CVS module & package)
+  -> this allows us to quickly update the mirror list, should it be necessary
+
+* possibly get rid of the ncurses package on 10.2, by providing a system-ncurses
+  package that just symlinks the ncurses dylibs in /usr/lib to /sw/lib
+  (this is necessary at least for now to ensure backwards compatibility)
+
+* add epoch support
+* rewrite the dependency code
+  -> added Conflicts / BuildConflicts support
