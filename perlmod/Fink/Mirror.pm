@@ -39,7 +39,7 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK	 = qw(&fetch_url &fetch_url_to_file);
+	@EXPORT_OK	 = qw();
 }
 our @EXPORT_OK;
 
