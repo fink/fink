@@ -128,6 +128,7 @@ Common commands:
   cleanup      - removes obsolete package files if newer versions are available
   dumpinfo     - show how fink parses parts of a package's .info file
   show-deps    - list run-time and compile-time package dependencies
+  snapshot     - create a file detailing all of your installed packages
 
 Options:
   -h, --help            - display this help text

@@ -97,6 +97,7 @@ our %commands =
 	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
 	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0, 0],
 	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
+	  'snapshot'          => [\&cmd_snapshot,          1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -2330,6 +2331,51 @@ sub cmd_show_deps {
 
 		print "\n";
 	}
+}
+
+sub cmd_snapshot {
+	my ($pname, $package, @installed, $snapdir, $outfile, @time,
+		$snappkg, $snapver, $snaprev, $snapdep);
+
+	eval "use POSIX qw(strftime);";
+	$snappkg = "fink-snapshot";
+	$snapver = strftime("%Y.%m.%d.%H", localtime);
+	$snaprev = "1";
+	$snapdir = "/tmp";
+	foreach $pname (Fink::Package->list_packages()) {
+		next if ($pname eq $snappkg);
+		$package = Fink::Package->package_by_name($pname);
+		if ($package->is_any_installed() &&
+			!$package->is_virtual()) {
+			push @installed, $pname;
+		}
+	}
+	$snapdep = join(",\n ", sort(@installed));
+	$outfile = sprintf("$snapdir/snap-%s-%s.info",
+					   $snapver, $snaprev);
+	my @user = getpwnam($ENV{SUDO_USER} || $ENV{USER});
+	local *SNAP;
+	open(SNAP, "> $outfile") or die "can't create file $outfile\n";
+	print SNAP <<"EOF";
+Package: $snappkg
+Version: $snapver
+Revision: $snaprev
+Type: bundle
+License: Restrictive
+Description: Snapshot of Fink packages for $user[6]
+Maintainer: $user[6] <$user[0]\@localhost>
+Homepage: http://fink.sourceforge.net/
+Depends: <<
+ $snapdep
+<<
+EOF
+	close(SNAP) or die "can't create file $outfile\n";
+    print <<"EOF";
+Wrote $outfile
+To use this file:
+   copy to /sw/fink/dists/local/main/finkinfo
+   run "fink build fink-snapshot"
+EOF
 }
 
 # pretty-print a set of PkgVersion::pkglist (each "or" group on its own line)
