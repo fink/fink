@@ -1,3 +1,8 @@
+2001-09-03  Max Horn  <max@quendi.de>
+
+	* bootstrap.pl: fixed creation of FinkVersion.pm (has to be
+	done before any "use Fink:XYZ;" statment)
+	
 2001-09-02  Christoph Pfisterer  <cp@chrisp.de>
 
 	* mkrelease.sh: Moved to separate CVS module 'scripts'.

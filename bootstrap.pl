@@ -27,12 +27,6 @@ use strict;
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
-use Fink::Services qw(&print_breaking &prompt &prompt_boolean &prompt_selection
-                      &read_config &execute);
-use Fink::Config qw($basepath $libpath);
-use Fink::Engine;
-use Fink::Configure;
-use Fink::Bootstrap;
 
 my ($answer, $packageversion, $packagerevision);
 my ($script, $cmd);
@@ -67,6 +61,13 @@ if ($packageversion =~ /cvs/) {
 } else {
   $packagerevision = "1";
 }
+
+use Fink::Services qw(&print_breaking &prompt &prompt_boolean &prompt_selection
+                      &read_config &execute);
+use Fink::Config qw($basepath $libpath);
+use Fink::Engine;
+use Fink::Configure;
+use Fink::Bootstrap;
 
 ### check if we like this system
 
