@@ -63,7 +63,7 @@ sub get_shlibs {
   my ($depend, @depends, %SHLIBS);
   my $depline = "";
 
-//  $self->require_shlibs();
+#  $self->require_shlibs();
 
   @depends = $self->check_files(@filelist);
 
@@ -79,8 +79,8 @@ sub get_shlibs {
 ### check the files for depends
 sub check_files {
   my $self = shift;
-  my $files = @_;
-  my ($file, $deb, $vers);
+  my @files = @_;
+  my ($file, @depends, $deb, $vers);
 
   # get a list of linked files to the pkg files
   foreach $file (@files) {

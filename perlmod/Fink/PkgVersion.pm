@@ -1808,7 +1808,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 			$depline = $1;
 		}
 	}
-	close (<CONTROL>);
+	close (CONTROL);
 	if ($depline =~ /\$\{SHLIB_DEPS\}/) {
 		print "Writting depends...\n";
 		### 2) get a list to replace it with
@@ -1822,7 +1822,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		};
 		find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $ddir);
 
-		$shlibstr = get_shlib(@filelist);
+		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
 
 		### FIXME
 		### Debug for testing
