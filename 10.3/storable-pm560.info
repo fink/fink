@@ -13,7 +13,7 @@ make test
 InstallScript: <<
 make install INSTALLPRIVLIB=\%i/lib/perl5/5.6.0  INSTALLARCHLIB=\%i/lib/perl5/5.6.0/darwin  INSTALLSITELIB=\%i/lib/perl5/5.6.0  INSTALLSITEARCH=\%i/lib/perl5/5.6.0/darwin  INSTALLMAN1DIR=\%i/share/man/man1  INSTALLMAN3DIR=\%i/share/man/man3
 mkdir -p %i/share/podfiles/5.6.0
-cat %i/lib/perl5/5.6.0/darwin/perllocal.pod | sed -e s,%i/lib/perl5,/sw/lib/perl5, > %i/share/podfiles/5.6.0/perllocal.%n.pod
+cat %i/lib/perl5/5.6.0/darwin/perllocal.pod | sed -e s,%i/lib/perl5,%p/lib/perl5, > %i/share/podfiles/5.6.0/perllocal.%n.pod
 rm -rf %i/lib/perl5/5.6.0/darwin/perllocal.pod
 <<
 #UpdatePOD: True
