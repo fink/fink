@@ -190,6 +190,8 @@ our %valid_fields = map {$_, 1}
 		 'infodocs',
 		 'daemonicfile',
 		 'daemonicname',
+		 'user',
+		 'group',
 #  additional data:
 		 'homepage',
 		 'descdetail',
