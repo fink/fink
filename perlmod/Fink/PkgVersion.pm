@@ -244,8 +244,8 @@ sub initialize {
 			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
 		}
 		
-		$source = &expand_percent($source, $expand);
 		$self->{source} = $source;
+		$self->expand_percent_if_available("Source");
 		$self->{_sourcecount} = 1;
 	
 		$self->expand_percent_if_available('SourceRename');
@@ -256,6 +256,8 @@ sub initialize {
 			$self->{_sourcecount} = $i;
 		}
 
+		if (0) {
+#####
 		# Build a hash with uniformly-named keys:
 		#   source, md5, rename, tarfilesrename, extractdir
 		# for all .info fields pertaining to a particular source.
@@ -273,17 +275,24 @@ sub initialize {
 				$source_field =~ /source(\d*)/;
 				my $number = $1;
 				my %source_item;
-				$source_item{"source"} = $self->{$source_field};
-				$source_item{"md5"} = $self->{$source_field."-md5"}
-					if exists $self->{$source_field."-md5"};
-				$source_item{"rename"} = $self->{$source_field."rename"}
-					if exists $self->{$source_field."rename"};
-				$source_item{"tarfilesrename"} = $self->{$source_field."tar".$number."filesrename"}
-					if exists $self->{"tar".$number."filesrename"};
-				$source_item{"extractdir"} = $self->{$source_field."extractdir"}
-					if exists $self->{$source_field."rename"} and $number ne "";
+#				# sometimes ya feel like a percent-expansion nut
+#				foreach my $templ (qw/ Source%s Source%s-MD5 Source%sRename tar%sFilesRename Source%sExtractDir / ) {
+#					my $info_field = sprintf $templ, $number;
+#					my $key = sprintf $templ, "";
+#					$source_item{$key} = &expand_percent($self->param($info_field), $expand)
+#						if $self->has_param($info_field);
+#				}
+				# sometimes ya don't
+				foreach my $templ (qw/ Source%s Source%s-MD5 Source%sRename tar%sFilesRename Source%sExtractDir / ) {
+					my $info_field = sprintf $templ, $number;
+					my $key = sprintf $templ, "";
+					$source_item{$key} = $self->param($info_field)
+						if $self->has_param($info_field);
+				}
 				push @{$self->{_source_items}}, \%source_item;
 			}
+		}
+#####
 		}
 
 		# handle splitoff(s)
@@ -553,7 +562,9 @@ sub get_checksum {
 # return the number of source items stored in an object
 sub get_source_items_count {
 	my $self = shift;
-	return scalar $self->get_source_items_list;
+	return 0 unless exists  $self->{_source_items};
+	return 0 unless defined $self->{_source_items};
+	return scalar @{$self->{_source_items}};
 }
 
 # return a (possibly null but always defined) list of the source items
@@ -561,7 +572,7 @@ sub get_source_items_count {
 sub get_source_items_list {
 	my $self = shift;
 
-	return () unless exists  $self->{_source_items};
+ 	return () unless exists  $self->{_source_items};
 	return () unless defined $self->{_source_items};
 
 	# need to do deep copy because _source_items is a ref to a

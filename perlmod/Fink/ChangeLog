@@ -1,6 +1,12 @@
 2004-01-11  Daniel Macks  <dmacks@netspace.org>
 
-	* CLI,pm: Removed antiquated prompt_selection(). Improved
+	* PkgConfig.pm: Improved get_source_items_count(). Improved
+	construction of _source_items. Disabled construction of
+	_source_items for now.
+
+2004-01-11  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Removed antiquated prompt_selection(). Improved
 	fink-code error checking by use of Carp::confess.
 
 2004-01-10  Daniel Macks  <dmacks@netspace.org>
