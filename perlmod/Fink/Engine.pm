@@ -63,6 +63,7 @@ our %commands =
     'remove' => [\&cmd_remove, 1],
     'delete' => [\&cmd_remove, 1],
     'purge' => [\&cmd_remove, 1],
+    'apropos' => [\&cmd_apropos, 1],
     'describe' => [\&cmd_description, 1],
     'description' => [\&cmd_description, 1],
     'desc' => [\&cmd_description, 1],
@@ -192,11 +193,11 @@ sub cmd_list {
       $lversion = &latest_version($package->list_versions());
       $vo = $package->get_version($lversion);
       if ($vo->is_installed()) {
-	$iflag = " i ";
+        $iflag = " i ";
       } elsif ($package->is_any_installed()) {
-	$iflag = "(i)";
+        $iflag = "(i)";
       } else {
-	$iflag = "   ";
+        $iflag = "   ";
       }
       $description = $vo->get_shortdescription(46);
     }
@@ -314,6 +315,41 @@ sub cmd_description {
     print $package->get_fullname().": ";
     print $package->get_description();
     print "\n";
+  }
+}
+
+sub cmd_apropos {
+  my ($pattern, @allnames);
+  my ($pname, $package, $lversion, $vo, $iflag, $description);
+
+  $pattern = shift;
+  unless ($pattern) {
+    die "no keyword specified for command 'apropos'!\n";
+  }
+
+  @allnames = Fink::Package->list_packages();
+  
+  print "\n";
+  foreach $pname (sort @allnames) {
+    $package = Fink::Package->package_by_name($pname);
+    next unless defined $package;
+    next if $package->is_virtual();
+
+    $lversion = &latest_version($package->list_versions());
+    $vo = $package->get_version($lversion);
+	if ($vo->is_installed()) {
+	  $iflag = " i ";
+	} elsif ($package->is_any_installed()) {
+	  $iflag = "(i)";
+	} else {
+	  $iflag = "   ";
+	}
+	$description = $vo->get_shortdescription(46);
+
+	next unless $vo->get_shortdescription(150) =~ /$pattern/i;
+
+    printf "%s %-15.15s %-11.11s %s\n",
+      $iflag, $pname, $lversion, $description;
   }
 }
 

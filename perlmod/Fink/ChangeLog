@@ -1,3 +1,7 @@
+2001-09-12  Max Horn  <max@quendi.de>
+
+	* Engine.pm: Added 'apropos' command analog to the Unix 'apropos'
+	
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
 	* SelfUpdate.pm (check): Adapted to the new structure, check
