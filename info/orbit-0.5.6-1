@@ -12,6 +12,6 @@ PatchScript: cp ltconfig ltmain.sh libIDL
 CommentPort: Uses autoconf and libtool. The usual fix for
  libtool. Could use tcp_wrappers. Needs a patch to orbit-config to
  remove a -lm. (Comments about indent, bison, flex here.)
-CommentStow: No issues known.
+CommentStow: Encodes the stow path into the libraries.
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
 Homepage: http://www.gnome.org/

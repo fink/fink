@@ -15,6 +15,6 @@ InstallScript: make install INSTALLTOP=%i OPENSSLDIR=%i/etc/ssl
 CommentPort: Uses a custom configure script, which is patched to
  recognize Darwin. The patches are derived from Apple's Darwin
  source repository. No thread support yet.
-CommentStow: No issues.
+CommentStow: Encodes the stow path into the libraries.
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
 Homepage: http://www.openssl.org/
