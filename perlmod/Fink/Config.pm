@@ -353,6 +353,22 @@ EOF
 
 	print OUT "\n";
 
+# For transition from 10.1 installations, we include pointers to "old"
+# deb files.
+
+	if (-e "$basepath/fink/old/dists") {
+		print OUT <<"EOF";
+# Allow APT to find pre-10.2 deb files
+deb file:$basepath/fink/old local main
+deb file:$basepath/fink/old stable main crypto
+EOF
+
+if (-e "$basepath/fink/old/dists/unstable") {
+	print OUT "deb file:$basepath/fink/old unstable main crypto\n";
+}
+		print OUT "\n";
+	}
+
 # We only include the remote debs if the $basepath is set to /sw.
 
 	if ("$basepath" eq "/sw") {
