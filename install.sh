@@ -47,7 +47,7 @@ echo "Copying files..."
 cp fink $basepath/bin/
 chmod 755 $basepath/bin/fink
 
-for file in perlmod/Fink/* ; do
+for file in perlmod/Fink/*.pm ; do
   if [ -f $file ]; then
     cp $file $basepath/lib/fink/perlmod/Fink/
     chmod 644 $basepath/lib/fink/$file
