@@ -208,7 +208,9 @@ sub validate_info_file {
   }
   
   # License should always be specified!
-  unless ($properties->{license}) {
+  unless ($properties->{license}
+       or $properties->{type} eq "nosource"
+       or $properties->{type} eq "bundle") {
     print "Warning: No license specified. ($filename)\n";
     $looks_good = 0;
   }
@@ -251,10 +253,10 @@ sub validate_info_file {
 
     # Warn if field is unknown
     unless (%known_fields->{$field}
-      || $field =~ m/^nosource([2-9]|\d\d)directory$/
-      || $field =~ m/^source([2-9]|\d\d)$/
-      || $field =~ m/^source([2-9]|\d\d)extractdir$/
-      || $field =~ m/^source([2-9]|\d\d)rename$/) {
+         or $field =~ m/^nosource([2-9]|\d\d)directory$/
+         or $field =~ m/^source([2-9]|\d\d)$/
+         or $field =~ m/^source([2-9]|\d\d)extractdir$/
+         or $field =~ m/^source([2-9]|\d\d)rename$/) {
       print "Warning: Field \"$field\" is unknown. ($filename)\n";
       $looks_good = 0;
       next;
