@@ -464,8 +464,8 @@ sub version_cmp {
 	$op = shift;
 	$b = shift;
 	
-        return $Version_Cmp_Cache{$a}{$op}{$b} if 
-          defined $Version_Cmp_Cache{$a}{$op}{$b};
+	return $Version_Cmp_Cache{$a}{$op}{$b} if 
+	  defined $Version_Cmp_Cache{$a}{$op}{$b};
 
 	@avers = parse_fullversion($a);
 	@bvers = parse_fullversion($b);

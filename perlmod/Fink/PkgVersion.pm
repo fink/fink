@@ -144,9 +144,9 @@ sub initialize {
 			$perlarchdir = "darwin-thread-multi-2level";
 		}
 
-                ### PERL= needs a full path or you end up with
-                ### perlmods trying to run ../perl$perlversion
-               	my $pathnperlver = get_path('perl'.$perlversion);
+		### PERL= needs a full path or you end up with
+		### perlmods trying to run ../perl$perlversion
+		my $pathnperlver = get_path('perl'.$perlversion);
 		### if perl$perlversion doesn't exist set it to old method
 		### this happens on 10.3 since there is nolonger a perl5.6.0
 		unless ($pathnperlver) {
@@ -1081,7 +1081,7 @@ END
 		
 		# verify the MD5 checksum, if specified
 		$checksum = $self->get_checksum($i);
-                $found_archive_sum = &file_MD5_checksum($found_archive);
+		$found_archive_sum = &file_MD5_checksum($found_archive);
 		if ($checksum ne "-" ) { # Checksum was specified
 		# compare to the MD5 checksum of the tarball
 			if ($checksum ne $found_archive_sum) {
@@ -1119,9 +1119,9 @@ END
 				}
 			}
 		} else {
-                # No checksum was specifed in the .info file, die die die
-                    die "No checksum specifed for ".$self->get_fullname()." I got a sum of $found_archive_sum \n";
-                }
+		# No checksum was specifed in the .info file, die die die
+			die "No checksum specifed for ".$self->get_fullname()." I got a sum of $found_archive_sum \n";
+		}
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
 		if ($i < 2) {

@@ -376,13 +376,13 @@ sub scan_all {
 
 sub search_comparedb {
 	my $path = shift;
-        $path .= "/";  # forces find to follow the symlink
+	$path .= "/";  # forces find to follow the symlink
 
-        # Using find is much faster than doing it in Perl
-        return
-          (grep !m{/(CVS|binary-$debarch)/},
-           `find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db`)
-             ? 1 : 0;
+	# Using find is much faster than doing it in Perl
+	return
+	  (grep !m{/(CVS|binary-$debarch)/},
+	   `find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db`)
+		 ? 1 : 0;
 }
 
 ### read the packages and update the database, if needed and we are root

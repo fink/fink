@@ -141,7 +141,7 @@ sub check {
 	}
 	if (($config->param("SelfUpdateMethod") eq "point")) {
 		# get the file with the current release number
-	        my $distro = $Fink::Config::distribution;
+		my $distro = $Fink::Config::distribution;
 		my $currentfink;
 		$currentfink = "CURRENT-FINK-$distro";
 		### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
