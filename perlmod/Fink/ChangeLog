@@ -1,3 +1,7 @@
+2002-11-13  Chris Zubrzycki <beren12@users.sf.net>
+
+	* PkgVersion.pm: Fix the path of install-info. It is in %p/sbin, not %p/bin
+
 2002-11-12  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm: Apparently the install-info of texinfo is incompatible with
