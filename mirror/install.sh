@@ -37,7 +37,7 @@ echo "Creating directories..."
 mkdir -p "$basepath"
 chmod 755 "$basepath"
 
-for dir in lib lib/fink lib/fink/mirror share share/doc share/doc/fink-mirrors  share/doc/fink ; do
+for dir in lib lib/fink lib/fink/mirror lib/fink/URL share share/doc share/doc/fink-mirrors  share/doc/fink ; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -45,9 +45,15 @@ done
 
 echo "Copying files..."
 
-for file in ChangeLog _keys _list apt cpan ctan cvs-repository debian gimp gnome gnu kde master rsync sourceforge website; do
+for file in ChangeLog _keys _list apt cpan ctan debian gimp gnome gnu kde master rsync sourceforge; do
   if [ -f $file ]; then
     install -c -p -m 644 $file "$basepath/lib/fink/mirror/"
+  fi
+done
+
+for file in _urls cvs-repository website; do
+  if [ -f $file ]; then
+    install -c -p -m 644 $file "$basepath/lib/fink/URL/"
   fi
 done
 
