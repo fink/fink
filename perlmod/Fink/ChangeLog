@@ -1,5 +1,9 @@
 2005-03-20  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm: backport of SF-cvs-username prompt.
+
+2005-03-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: backport of multiple-%e/same-%f msg fix
 
 2005-03-07  Daniel Macks  <dmacks@netspace.org>
