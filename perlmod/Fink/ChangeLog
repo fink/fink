@@ -1,3 +1,7 @@
+2005-03-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add a check for /Developer/SDK
+
 2005-03-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: add a check for cups

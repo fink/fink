@@ -443,6 +443,56 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
+=item system-sdk-*
+
+These packages represent the SDKs available in /Developer/SDKs, available
+as part of the XCode tools.
+
+=cut
+
+	my @SDKDIRS = qw(
+		MacOSX10.1.5.sdk
+		MacOSX10.2.8.sdk
+		MacOSX10.3.0.sdk
+		MacOSX10.3.9.sdk
+		MacOSX10.4.0.sdk
+	);
+
+	if (open(DIR, '/Developer/SDKs')) {
+		push(@SDKDIRS, grep(/MacOSX.*.sdk/, readdir(DIR)));
+	}
+	for my $dir (sort @SDKDIRS) {
+		if ($dir =~ /MacOSX([\d\.]+)\.sdk/) {
+			my $version = $1;
+			my ($shortversion) = $version =~ /^(\d+\.\d+)/;
+
+			$hash = {};
+			$hash->{version} = $version . '-1';
+			$hash->{package} = "system-sdk-$shortversion";
+			$hash->{status} = STATUS_ABSENT;
+			$hash->{description} = "[virtual package representing the Mac OS X SDKs]";
+			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{builddependsonly} = "true";
+			$hash->{descdetail} = <<END;
+This package represents the Mac OS X $shortversion SDK provided
+by Apple, as part of XCode.  If it does not show as
+installed, you can download XCode from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+			$hash->{compilescript} = &gen_compile_script($hash);
+			if (-d '/Developer/SDKs/' . $dir) {
+				$hash->{status} = STATUS_PRESENT;
+				$self->{$hash->{package}} = $hash;
+			} else {
+				$self->{$hash->{package}} = $hash
+					unless (exists $self->{$hash->{package}}->{status} and $self->{$hash->{package}}->{status} eq STATUS_PRESENT);
+			}
+		}
+	}
+
 =item cctools-I<XXX>
 
 This package represents the compiler tools provided by Apple.  It is
