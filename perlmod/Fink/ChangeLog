@@ -1,3 +1,8 @@
+2003-12-10  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Fixed a problem in the dep engine where if a dep was 
+	installed but it's deb file was missing, fink would fail.
+
 2003-12-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* Engine.pm: If the package name is being truncated in list/apropos
