@@ -1950,14 +1950,15 @@ sub phase_build {
 
 	# generate dpkg "control" file
 
-	my ($pkgname, $version, $field, $section, $instsize);
-	$pkgname = $self->get_name();
+	my ($pkgname, $parentpkgname, $version, $field, $section, $instsize);
+	$parentpkgname = $pkgname = $self->get_name();
+	$parentpkgname = $self->{parent}->get_name() if exists $self->{parent};
 	$version = $self->get_fullversion();
 	$section = $self->get_section();
 	$instsize = $self->get_instsize("$destdir$basepath");	# kilobytes!
 	$control = <<EOF;
 Package: $pkgname
-Source: $pkgname
+Source: $parentpkgname
 Version: $version
 Section: $section
 Installed-Size: $instsize

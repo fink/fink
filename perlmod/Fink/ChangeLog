@@ -1,5 +1,11 @@
 2004-04-22  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: .deb/control Source field corrected to contain
+	parent pkg (if there is one) instead of always same as pkg itself.
+	See fink-devel "Source field in var/lib/dpkg/available" April 2004
+
+2004-04-22  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm, Services.pm: Move eval_conditional() from an
 	instance method in PkgVersion to a package function in Services.
 
