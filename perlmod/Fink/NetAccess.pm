@@ -24,7 +24,7 @@
 package Fink::NetAccess;
 
 use Fink::Services qw(&execute &filename &file_MD5_checksum);
-use Fink::CLI qw(&prompt_selection_new &print_breaking);
+use Fink::CLI qw(&prompt_selection &print_breaking);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
 use Fink::Command qw(mkdir_p rm_f);
