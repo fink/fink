@@ -175,7 +175,7 @@ sub read_properties_lines {
 ### read properties file with multiple values per key
 
 sub read_properties_multival {
-  my ($file) = @_;
+  my ($file) = shift;
   my ($notLC) = shift || 0;
   my ($hash, $lastkey, $lastindex);
 

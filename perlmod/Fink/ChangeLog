@@ -1,5 +1,8 @@
 2002-08-03  Max Horn  <max@quendi.de>
 
+	* Services.pm: Fixed read_properties_multival, it was broken by the
+	  RuntimeVars patch.
+
 	* PkgVersion.pm, Services.pm: Patch #579210: RuntimeVars field added
 	  (thanks to Sylvain Cuaz for this)
 
