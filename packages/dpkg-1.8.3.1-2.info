@@ -1,0 +1,22 @@
+Package: dpkg
+Version: 1.8.3.1
+Revision: 2
+Source: http://ftp.us.debian.org/debian/project/dpkg/%n-%v.tar.gz
+Depends: gettext, gzip, tar
+Essential: yes
+Patch: %f.patch
+SetCFLAGS: -traditional-cpp -I%p/include
+SetCC: cc
+ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info
+CompileScript: ./configure powerpc-apple-darwin %c
+ make NLS_LIBS=-lintl
+InstallScript: mkdir -p %i/share/doc/dpkg
+ make install DESTDIR=%d
+CommentPort: Uses autoconf. Needs some fixes and workarounds. dselect
+ is disabled because it doesn't compile with the system's curses
+ library. ncurses should help.
+ .
+ Revision 2 fixes a bug which could lead to incompletely extracted
+ packages. Some debug messages are still there; don't let them scare
+ you.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
