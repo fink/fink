@@ -1,10 +1,8 @@
 Timestamp: 2001-11-01
 
 Primary: ftp://tug.ctan.org/tex-archive/
-
-eur-DE: ftp://ftp.dante.de/tex-archive/
-eur-UK: ftp://ftp.tex.ac.uk/tex-archive/
-
+Primary: ftp://ftp.dante.de/tex-archive/
+Primary: ftp://ftp.tex.ac.uk/tex-archive/
 aus-AU: ftp://ctan.unsw.edu.au/tex-archive/
 eur-BE: ftp://ftp.belnet.be/packages/TeX/
 nam-CA: ftp://ctan.cms.math.ca/tex-archive/
