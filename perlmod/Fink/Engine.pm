@@ -999,7 +999,7 @@ sub real_install {
 					$pnode = Fink::Package->package_by_name($cand);
 					if ($pnode->is_any_installed()) {
 						$dname = $cand;
-						$found = 1;
+						$found++;
 						last;
 					}
 				}
@@ -1015,24 +1015,24 @@ sub real_install {
 					my $package = Fink::Package->package_by_name($cand);
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
-
+					
 					if (exists $vo->{_relatives}) {
 						foreach $splitoff (@{$vo->{_relatives}}) {
 							# if the package is being installed, or is already installed,
 							# auto-choose it
 							if ( exists $deps{$splitoff->get_name()} ) {
 								$dname = $cand;
-								$found = 1;
+								$found++;
 							} elsif ( $splitoff->is_installed() ) {
 								$dname = $cand;
-								$found = 1;
+								$found++;
 							}
 						}
 					}
 				}
 			}
 
-			if (not $found) {
+			if ($found != 1) {
 				# let the user pick one
 
 				my $labels = {};
