@@ -57,7 +57,7 @@ sub get_perms {
 	my $self = shift;
 	my $rootdir = shift;
 
-	my $script = ""
+	my $script = "";
 
 	my (@filelist, @files, @users, @groups);
 	my ($wanted, $file, $usr, $grp);
