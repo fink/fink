@@ -1,5 +1,9 @@
 2004-03-18  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Prohibit SourceN:none (Source:none still okay).
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Hacks to keep emacs paren balancing from getting
 	confused. Changed regex match m#pattern# to /pattern/ so it
 	doesn't look like a comment, and added POD line containing a dummy

@@ -450,7 +450,10 @@ sub validate_info_file {
 		# Error if there is a source for Type:nosource or Type:bundle
 		# Error if there is a source without an associated MD5
  		if ($field =~ /^source\d*$/) {
-			if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
+			if ($field =~ /\d/ and $value =~ /^none$/i) {
+				print "Error: \"$field: none\" is a no-op. ($filename)\n";
+				$looks_good = 0;
+			} elsif (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
 				print "Error: \"$field\" specified for \"type: $1\". ($filename)\n";
 				$looks_good = 0;
 			} elsif ($value !~ /^none$/i and not $properties->{$field."-md5"}) {
