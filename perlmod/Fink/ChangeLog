@@ -1,6 +1,10 @@
+2004-01-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Services.pm: Give the line number on a badly-formed line.
+
 2004-01-28  Daniel Macks  <dmacks@netspace.org>
 
-	*Validation.pm: Error if Version or Revision contain forbidden
+	* Validation.pm: Error if Version or Revision contain forbidden
 	characters (according to Debian docs).
 
 2004-01-26  Rob Braun  <bbraun@users.sourceforge.net>
