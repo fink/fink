@@ -692,7 +692,7 @@ Fink $version
 Usage: fink $cmd [options] [string]
 
 Options:
-  -b, --buildonly      - Only list packages which are Build Only Depends
+  -b, --buildonly      - Only packages which are Build Depends Only
   -h, --help           - This help text.
 
 EOF
