@@ -38,8 +38,8 @@ my ($homebase, $file);
 $homebase = $FindBin::RealBin;
 chdir $homebase;
 
-foreach $file (qw(fink install.sh COPYING VERSION
-		  perlmod/Fink mirror update base-files packages
+foreach $file (qw(fink.in install.sh COPYING VERSION
+		  perlmod/Fink mirror update packages fink.info.in
 		  update/config.guess perlmod/Fink/Config.pm mirror/_keys
 		 )) {
   if (not -e $file) {
@@ -300,14 +300,7 @@ print "Copying package descriptions...\n";
 
 $script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
 
-if (-f "packages/base-files.in") {
-  $script .= "rm -f $installto/fink/dists/local/bootstrap/finkinfo/base-files*\n";
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/base-files.in >$installto/fink/dists/local/bootstrap/finkinfo/base-files-$packageversion.info\n";
-}
-if (-f "packages/fink.in") {
-  $script .= "rm -f $installto/fink/dists/local/bootstrap/finkinfo/fink*\n";
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/fink.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-}
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
@@ -318,32 +311,21 @@ foreach $cmd (split(/\n/,$script)) {
   }
 }
 
-### create tarballs for bootstrap
+### create fink tarball for bootstrap
 
-print "Creating tarballs...\n";
+print "Creating fink tarball...\n";
 
-$script = "";
-if (-f "perlmod/Fink/FinkVersion.pm.in") {
-  $script .=
-    "sed -e 's/\@VERSION\@/$packageversion/' ".
-    "<perlmod/Fink/FinkVersion.pm.in ".
-    ">perlmod/Fink/FinkVersion.pm\n";
-}
-$script .=
+$script =
   "tar -cf $installto/src/fink-$packageversion.tar ".
   "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
-  "ChangeLog VERSION fink fink.8.in install.sh setup.sh ".
+  "ChangeLog VERSION fink.in fink.8.in install.sh setup.sh ".
   "perlmod update mirror\n";
-$script .=
-  "cd base-files && ".
-  "tar -cf $installto/src/base-files-$packageversion.tar ".
-  "fink-release init.csh.in init.sh.in dir-base install.sh setup.sh\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
 
   if (&execute($cmd)) {
-    print "ERROR: Can't create tarballs.\n";
+    print "ERROR: Can't create tarball.\n";
     exit 1;
   }
 }

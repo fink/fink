@@ -1,5 +1,16 @@
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
+	* bootstrap.pl: Removed special treatment of base-files. Use
+	fink.info.in instead of packages/fink.in to generate the fink
+	package description. Don't create FinkVersion.pm.
+	* inject.pl: Removed special treatment of base-files. Use
+	fink.info.in instead of packages/fink.in to generate the fink
+	package description. Don't create FinkVersion.pm.
+	* fink.info.in: Replaces packages/fink.in, no content changes.
+	* packages/fink.in: Removed.
+	* packages/base-files.in: Removed.
+	* base-files: Whole directory moved to a separate CVS module.
+
 	* fink.in: fink is now generated from fink.in to hardcode paths
 	(instead of using FindBin).
 	* fink: Removed.

@@ -33,8 +33,8 @@ my ($script, $cmd);
 ### check if we're unharmed
 
 my ($file);
-foreach $file (qw(fink install.sh COPYING VERSION
-                  perlmod/Fink mirror update base-files packages
+foreach $file (qw(fink.in install.sh COPYING VERSION
+                  perlmod/Fink mirror update fink.info.in
                   update/config.guess perlmod/Fink/Config.pm mirror/_keys
                  )) {
   if (not -e $file) {
@@ -129,9 +129,9 @@ if ($trees =~ /^\s*$/) {
   }
 }
 
-### create and copy description files
+### create and copy description file
 
-print "Copying package descriptions...\n";
+print "Copying package description...\n";
 
 $script = "";
 if (not -d "$basepath/fink/debs") {
@@ -141,74 +141,56 @@ if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
   $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
 }
 
-if (-f "packages/base-files.in") {
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/base-files.in >$basepath/fink/dists/local/bootstrap/finkinfo/base-files-$packageversion.info\n";
-} else {
-  $script .= "cp packages/base-files*.info $basepath/fink/dists/local/bootstrap/finkinfo/\n";
-}
-if (-f "packages/fink.in") {
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/fink.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-} else {
-  $script .= "cp packages/fink*.info $basepath/fink/dists/local/bootstrap/finkinfo/\n";
-}
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
 
   if (&execute($cmd)) {
-    print "ERROR: Can't copy package descriptions.\n";
+    print "ERROR: Can't copy package description.\n";
     exit 1;
   }
 }
 
-### create tarballs for the packages
+### create tarball for the package
 
-print "Creating tarballs...\n";
+print "Creating tarball...\n";
 
 $script = "";
 if (not -d "$basepath/src") {
   $script .= "mkdir -p $basepath/src\n";
 }
 
-if (-f "perlmod/Fink/FinkVersion.pm.in") {
-  $script .=
-    "sed -e 's/\@VERSION\@/$packageversion/' ".
-    "<perlmod/Fink/FinkVersion.pm.in ".
-    ">perlmod/Fink/FinkVersion.pm\n";
-}
 $script .=
   "tar -cf $basepath/src/fink-$packageversion.tar ".
   "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
-  "ChangeLog VERSION fink fink.8.in install.sh setup.sh ".
+  "ChangeLog VERSION fink.in fink.8.in install.sh setup.sh ".
   "perlmod update mirror\n";
-$script .=
-  "cd base-files && ".
-  "tar -cf $basepath/src/base-files-$packageversion.tar ".
-  "fink-release init.csh.in init.sh.in dir-base install.sh setup.sh\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
 
   if (&execute($cmd)) {
-    print "ERROR: Can't create tarballs.\n";
+    print "ERROR: Can't create tarball.\n";
     exit 1;
   }
 }
 
-### install the packages
+### install the package
 
-print "Installing packages...\n";
+print "Installing package...\n";
 print "\n";
 
-if (&execute("$basepath/bin/fink install fink base-files")) {
+if (&execute("$basepath/bin/fink install fink")) {
   print "\n";
-  &print_breaking("Installing the new packages failed. The descriptions and ".
-		  "tarballs were installed, though. You can retry at a ".
-		  "later time by issuing the appropriate fink commands.");
+  &print_breaking("Installing the new fink package failed. ".
+		  "The description and the tarball were installed, though. ".
+		  "You can retry at a later time by issuing the ".
+		  "appropriate fink commands.");
 } else {
   print "\n";
   &print_breaking("Your Fink installation in '$basepath' was updated with ".
-		  "new fink packages.");
+		  "a new fink package.");
 }
 print "\n";
 

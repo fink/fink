@@ -1,8 +1,7 @@
 Package: base-files
-Version: @VERSION@
-Revision: @REVISION@
-Source: %n-%v.tar
-NoSourceDirectory: true
+Version: 1.0
+Revision: 1
+Source: http://prdownloads.sourceforge.net/fink/%n-%v.tar.gz
 Essential: yes
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
