@@ -1,6 +1,7 @@
 2005-02-03  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* shilbs branch is now fully working and merged to head.
+	* shlibs.pm: added better regex for multi whitespace delim
 
 2005-02-03  Daniel Macks  <dmacks@netspace.org>
 

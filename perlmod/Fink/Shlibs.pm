@@ -584,7 +584,7 @@ sub scan {
 					chomp($line);
 					$line =~ s/^\s*//;
 					$line =~ s/\s*$//;
-					if ($line =~ /^(.+) ([.0-9]+) (.*)$/) {
+					if ($line =~ /^(.+)\s+([.0-9]+)\s+(.*)$/) {
 						$shlibname = $1;
 						$compat = $2;
 						$package = $3;
