@@ -1,3 +1,18 @@
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.19.2, a release
+	on branch_0_19 which incorporates the pathsetup change
+
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.18.3, a release
+	on branch_0_18 which incorporates the pathsetup change
+
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* INDEX, INDEX.html, install.sh, setup.sh: change from 
+	pathsetup.command to pathsetup.sh
+
 2004-03-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.in: Updated copyright notice displayed by fink
