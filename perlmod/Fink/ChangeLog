@@ -1,3 +1,8 @@
+2004-02-17  Daniel Macks  <dmacks@netspace.org>
+
+	* all: add emacs tags to get perl-mode (even for .pm.in) and set
+	tab-width to 4 chars (in accord with fink coding style).
+
 2004-02-16  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: *Script parsing improvements for non-#!-specified
