@@ -1,3 +1,7 @@
+2004-08-12  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Undocument 'fink checksums'
+
 2004-08-07  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.21.1, a release
