@@ -398,7 +398,7 @@ sub search_comparedb {
         # Using find is much faster than doing it in Perl
         return
           (grep !m{/(CVS|binary-$debarch)/},
-           `find $path -type f -name '*.info' -newer $basepath/var/db/fink.db`)
+           `find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db`)
              ? 1 : 0;
 }
 
