@@ -132,7 +132,7 @@ sub validate_info_file {
   @parts = split(/\//, $filename);
   $filename = pop @parts;   # remove filename
   $pkgpatchpath = join("/", @parts);
-  
+
   unless ($pkgname) {
     print "Error: No package name in $filename\n";
     return;
@@ -224,7 +224,10 @@ sub validate_info_file {
   # Verify the patch file exists, if specified
   $value = $properties->{patch};
   if ($value) {
-    $value = $pkgpatchpath . "/" . &expand_percent($value, $expand);
+    $value = &expand_percent($value, $expand);
+    if ($pkgpatchpath) {
+      $value = $pkgpatchpath . "/" .$value;
+    }
     unless (-f $value) {
       print "Error: can't find patchfile \"$value\"\n";
       $looks_good = 0;
