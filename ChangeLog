@@ -1,3 +1,7 @@
+2004-01-10  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Removed duplicate ADVANCED SETTINGS section.
+
 2004-01-08  Daniel Macks  <dmacks@netspace.org>
 
 	* fink-virtual-pkgs.in, fink.in: Consolidated all @BASEPATH@
