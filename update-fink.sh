@@ -23,7 +23,9 @@
 
 # Remove two packages which will interfere with the update if they aren't
 # at the latest versions
-fink remove openldap-ssl cyrus-sasl
+echo "Removing incompatible packages pine-ssl, openldap-ssl, cyrus-sasl and manconf..."
+echo "(pine-ssl and cyrus-sasl may be reinstalled after the upgrade)"
+fink remove pine-ssl openldap-ssl cyrus-sasl
 
 # Force-remove a disfunctional package which won't be used in 10.2
 sudo dpkg -r --force-depends manconf
