@@ -1,3 +1,7 @@
+2003-01-28  Max Horn  <max@quendi.de>
+
+	* synced packages with the stable tree
+
 2002-12-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* modify the apt sources.list configuration file, to use 10.2/release

@@ -1,0 +1,43 @@
+Package: ncurses
+Version: 5.2
+Revision: 9
+GCC: 3.1
+Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Essential: yes
+Depends: base-files
+Patch: %f.patch
+PatchScript: perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
+ConfigureParams: --with-libtool --without-ada --with-shared --without-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo"
+SetCFLAGS: -no-cpp-precomp -Wno-deprecated
+CompileScript: <<
+LIBTOOL=/usr/bin/glibtool ./configure %c
+make
+<<
+InstallScript: <<
+make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib
+mkdir -p %i/share/doc/%n
+cp README ANNOUNCE NEWS %i/share/doc/%n/
+cp tack/README %i/share/doc/%n/README.tack
+cp tack/COPYING %i/share/doc/%n/COPYING.tack
+
+ln -s %p/lib/libform.5.0.2.dylib %i/lib/libform.dylib.5
+ln -s %p/lib/libmenu.5.0.2.dylib %i/lib/libmenu.dylib.5
+ln -s %p/lib/libncurses.5.0.2.dylib %i/lib/libncurses.dylib.5
+ln -s %p/lib/libpanel.5.0.2.dylib %i/lib/libpanel.dylib.5
+
+<<
+Description: Binaries for the full-screen ascii drawing library
+
+DescPort: <<
+Needs some hacking to build shared libraries. The -no-cpp-precomp is
+not strictly needed, but gets rid of the myriad of bogus error
+messages. Also needs a small patch for case-insensitive file systems.
+More changes by Chris Zubrzycki to be more compatable with apple's lib, splitoffs, etc.
+<<
+DescPackaging: <<
+First revision by David Ross.
+Previous versions by Christoph Pfisterer.
+<<
+License: OSI-Approved
+Maintainer: Max Horn <max@quendi.de>
+Homepage: http://www.gnu.org/software/ncurses/ncurses.html

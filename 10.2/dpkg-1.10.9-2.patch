@@ -1,0 +1,1866 @@
+diff -ru2N dpkg-1.10.9/Makefile.conf.in dpkg-1.10.9-patched/Makefile.conf.in
+--- dpkg-1.10.9/Makefile.conf.in	Sun Jul 14 16:15:06 2002
++++ dpkg-1.10.9-patched/Makefile.conf.in	Sat Dec  7 22:19:02 2002
+@@ -61,5 +61,5 @@
+ CPPFLAGS		= @CPPFLAGS@
+ LD			= @LD@
+-LDFLAGS			= @LDFLAGS@ -L../lib -L../optlib
++LDFLAGS			= @LDFLAGS@ -L../lib -L../optlib -framework CoreFoundation
+ LIBS			= @LIBS@ -ldpkg -lopt $(ZLIB_LIBS)
+ 
+@@ -67,5 +67,5 @@
+ 
+ DEFS			= @DEFS@ -D_GNU_SOURCE
+-INCLUDE_CFLAGS		= -I$(top_srcdir)/include -I$(top_srcdir) -I$(srcdir) -I../include -I.. -I. -I$(top_srcdir)/optlib
++INCLUDE_CFLAGS		= -I$(top_srcdir)/include -I$(top_srcdir) -I$(srcdir) -I../include -I.. -I. -I$(top_srcdir)/optlib -F/System/Library/Frameworks/CoreFoundation.framework
+ 
+ NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir)/intl -I../intl
+diff -ru2N dpkg-1.10.9/dpkg-deb/dpkg-deb.1 dpkg-1.10.9-patched/dpkg-deb/dpkg-deb.1
+--- dpkg-1.10.9/dpkg-deb/dpkg-deb.1	Wed Aug  1 20:59:31 2001
++++ dpkg-1.10.9-patched/dpkg-deb/dpkg-deb.1	Sat Dec  7 22:19:02 2002
+@@ -245,6 +245,7 @@
+ by him and released under the GNU General Public Licence; there is NO
+ WARRANTY.  See
+-.B /usr/share/doc/dpkg/copyright
++.B @PREFIX@/share/doc/dpkg/copyright
+ and
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ for details.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/dselect/dselect.8 dpkg-1.10.9-patched/dselect/dselect.8
+--- dpkg-1.10.9/dselect/dselect.8	Mon Jul 16 18:39:24 2001
++++ dpkg-1.10.9-patched/dselect/dselect.8	Sat Dec  7 22:19:02 2002
+@@ -35,5 +35,5 @@
+ .SH OPTIONS 
+ All options can be specified both on the commandline and in the \fBdselect\fP 
+-configuration file \fI/etc/dpkg/dselect.cfg\fP. Each line in the 
++configuration file \fI@PREFIX@/etc/dpkg/dselect.cfg\fP. Each line in the 
+ configuration file is either an option (exactly the same as the
+ commandline option but without leading dashes) or a comment (if it starts
+@@ -43,5 +43,5 @@
+ .B --admindir <directory>
+ Changes the directory where the dpkg `status', `available' and similar
+-files are located. This defaults to \fI/var/lib/dpkg\fP
++files are located. This defaults to \fI@PREFIX@/var/lib/dpkg\fP
+ and normally there shouldn't be any need to change it.
+ .TP
+@@ -441,3 +441,4 @@
+ This manual page was written by Juho Vuori <javuori@cc.helsinki.fi>,
+ Josip Rodin and Joost kooij.
+-
++.br
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/include/dpkg.h.in dpkg-1.10.9-patched/include/dpkg.h.in
+--- dpkg-1.10.9/include/dpkg.h.in	Sun Sep  1 00:47:05 2002
++++ dpkg-1.10.9-patched/include/dpkg.h.in	Sat Dec  7 22:19:02 2002
+@@ -97,5 +97,5 @@
+ #define DEFAULTSHELL        "sh"
+ #define PAGERENV            "PAGER"
+-#define DEFAULTPAGER        "pager"
++#define DEFAULTPAGER        "less"
+ 
+ #define IMETHODMAXLEN        50
+diff -ru2N dpkg-1.10.9/lib/nfmalloc.c dpkg-1.10.9-patched/lib/nfmalloc.c
+--- dpkg-1.10.9/lib/nfmalloc.c	Tue Sep  3 19:34:50 2002
++++ dpkg-1.10.9-patched/lib/nfmalloc.c	Sat Dec  7 22:19:02 2002
+@@ -27,5 +27,5 @@
+ #include <dpkg-db.h>
+ 
+-#include <obstack.h>
++#include "obstack.h"
+ 
+ #define obstack_chunk_alloc m_malloc
+diff -ru2N dpkg-1.10.9/main/archives.c dpkg-1.10.9-patched/main/archives.c
+--- dpkg-1.10.9/main/archives.c	Sat Aug 24 15:22:33 2002
++++ dpkg-1.10.9-patched/main/archives.c	Sat Dec  7 22:19:02 2002
+@@ -548,10 +548,8 @@
+ #ifdef HAVE_LCHOWN
+     if (lchown(fnamenewvb.buf,
+-#else
+-    if (chown(fnamenewvb.buf,
+-#endif
+ 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->uid : ti->UserID,
+ 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->gid : ti->GroupID))
+       ohshite(_("error setting ownership of symlink `%.255s'"),ti->Name);
++#endif
+     break;
+   case Directory:
+@@ -609,8 +607,6 @@
+ #ifdef HAVE_LCHOWN
+       if (lchown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
+-#else
+-      if (chown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
+-#endif
+         ohshite(_("unable to chown backup symlink for `%.255s'"),ti->Name);
++#endif
+     } else {
+       debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
+diff -ru2N dpkg-1.10.9/main/configure.c dpkg-1.10.9-patched/main/configure.c
+--- dpkg-1.10.9/main/configure.c	Thu Aug 29 15:58:11 2002
++++ dpkg-1.10.9-patched/main/configure.c	Sat Dec  7 22:19:02 2002
+@@ -477,7 +477,8 @@
+ 	const char*	s;
+ 	int		pid;
+-
++#ifndef __APPLE__
+ 	s= getenv(NOJOBCTRLSTOPENV);
+ 	if (s && *s) {
++#endif
+ 		/* Do not job control to suspend but fork and start a new shell
+ 		 * instead.
+@@ -507,4 +508,5 @@
+ 			ohshite(_("wait for shell failed"));
+ 		}
++#ifndef __APPLE__
+ 	} else {
+ 		fputs(_("Don't forget to foreground (`fg') this "
+@@ -512,4 +514,5 @@
+ 		kill(-getpgid(0),SIGTSTP);
+ 	}
++#endif
+ }
+ 
+diff -ru2N dpkg-1.10.9/main/dpkg-query.8 dpkg-1.10.9-patched/main/dpkg-query.8
+--- dpkg-1.10.9/main/dpkg-query.8	Sat Nov 17 09:26:43 2001
++++ dpkg-1.10.9-patched/main/dpkg-query.8	Sat Dec  7 22:19:02 2002
+@@ -15,5 +15,5 @@
+ \fB-l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
+ List packages matching given pattern. If no \fIpackage-name-pattern\fP
+-is given, list all packages in \fI/var/lib/dpkg/available\fP.  Normal
++is given, list all packages in \fI@PREFIX@/var/lib/dpkg/available\fP.  Normal
+ shell wildchars are allowed in \fIpackage-name-pattern\fP. Please note
+ you will probably have to quote \fIpackage-name-pattern\fP to prevent
+@@ -46,5 +46,5 @@
+ \fB-p\fP |\fB--print-avail\fP package
+ Display details about \fIpackage\fP, as found in
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fB--licence\fP | \fB--license\fP
+@@ -58,5 +58,5 @@
+ \fB--admindir=\fIdir\fP
+ Change the location of the \fBdpkg\fR database. The default location is
+-\fI/var/lib/dpkg\fP.
++\fI@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB--showformat=\fP\fIformat\fR
+@@ -80,4 +80,5 @@
+ <wakkerma@debian.org>
+ .UE
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence version 2 or
+diff -ru2N dpkg-1.10.9/main/dpkg.8 dpkg-1.10.9-patched/main/dpkg.8
+--- dpkg-1.10.9/main/dpkg.8	Sat May 25 23:53:43 2002
++++ dpkg-1.10.9-patched/main/dpkg.8	Sat Dec  7 22:19:02 2002
+@@ -155,5 +155,5 @@
+ files.  If \fB-a\fP or \fB--pending\fP is given instead of a package
+ name, then all packages unpacked, but marked to be removed or purged
+-in file \fI/var/lib/dpkg/status\fP, are removed or purged,
++in file \fI@PREFIX@/var/lib/dpkg/status\fP, are removed or purged,
+ respectively.
+ 
+@@ -172,5 +172,5 @@
+ .BI "dpkg  -p|--print-avail " package
+ Display details about \fIpackage\fP, as found in
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg --update-avail\fP | \fB--merge-avail\fP \fIPackages-file\fP
+@@ -181,5 +181,5 @@
+ in the \fIPackages-file\fP.  The \fIPackages-file\fP distributed with
+ Debian is simply named \fIPackages\fP.  \fBdpkg\fP keeps its
+-record of available packages in \fI/var/lib/dpkg/available\fP.
++record of available packages in \fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg -A\fP | \fB--record-avail\fP \fIpackage_file\fP ...
+@@ -197,5 +197,5 @@
+ \fBdpkg -l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
+ List packages matching given pattern. If no \fIpackage-name-pattern\fP
+-is given, list all packages in \fI/var/lib/dpkg/available\fP.  Normal
++is given, list all packages in \fI@PREFIX@/var/lib/dpkg/available\fP.  Normal
+ shell wildchars are allowed in \fIpackage-name-pattern\fP.  (You will
+ probably have to quote \fIpackage-name-pattern\fP to prevent the shell
+@@ -297,5 +297,5 @@
+ .SH OPTIONS
+ All options can be specified both on the commandline and in the \fBdpkg\fP
+-configuration file \fI/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
++configuration file \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
+ file is either an option (exactly the same as the commandline option but
+ without leading dashes) or a comment (if it starts with a \fB#\fR).
+@@ -450,5 +450,5 @@
+ \fB--root=\fP\fIdir\fP | \fB--admindir=\fP\fIdir\fP | \fB--instdir=\fP\fIdir\fP
+ Change default directories.  \fBadmindir\fP defaults to
+-\fI/var/lib/dpkg\fP and contains many files that give information
++\fI@PREFIX@/var/lib/dpkg\fP and contains many files that give information
+ about status of installed or uninstalled packages, etc.  \fBinstdir\fP
+ defaults to \fI/\fP and refers to the directory where packages are to
+@@ -457,5 +457,5 @@
+ means that the scripts see \fBinstdir\fP as a root directory.
+ Changing \fBroot\fP changes \fBinstdir\fP to \fIdir\fP and
+-\fBadmindir\fP to \fIdir\fP\fB/var/lib/dpkg\fP.
++\fBadmindir\fP to \fIdir\fP\fB@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB-O\fP | \fB--selected-only\fP
+@@ -474,5 +474,5 @@
+ .SH FILES
+ .TP
+-.I /etc/dpkg/dpkg.cfg
++.I @PREFIX@/etc/dpkg/dpkg.cfg
+ Configuration file with default options.
+ .P
+@@ -480,8 +480,8 @@
+ \fB--admindir\fP to see how to change locations of these files.
+ .TP
+-.I /var/lib/dpkg/available
++.I @PREFIX@/var/lib/dpkg/available
+ List of available packages.
+ .TP
+-.I /var/lib/dpkg/status
++.I @PREFIX@/var/lib/dpkg/status
+ Statuses of available packages. This file contains information about
+ whether a package is marked for removing or not, whether it is
+@@ -533,5 +533,5 @@
+ .br
+ 
+-To see the entries in \fI/var/lib/dpkg/available\fP on two packages:
++To see the entries in \fI@PREFIX@/var/lib/dpkg/available\fP on two packages:
+ .br
+ \fB     dpkg --print-avail elvis vim | less\fP
+@@ -540,5 +540,5 @@
+ To search the listing of packages yourself:
+ .br
+-\fB     less /var/lib/dpkg/available\fP
++\fB     less @PREFIX@/var/lib/dpkg/available\fP
+ .br
+ 
+@@ -587,5 +587,6 @@
+ .SH AUTHORS
+ .nf
+-See \fB/usr/share/doc/dpkg/THANKS\fP for the list of people who have
+-contributed to \fBdpkg\fP .
++See \fB@PREFIX@/share/doc/dpkg/THANKS\fP for the list of people who have
++contributed to \fBdpkg\fP . Paths modified by Carsten Klapp to reflect fink
++distribution, December 2002.
+ .fi
+diff -ru2N dpkg-1.10.9/main/help.c dpkg-1.10.9-patched/main/help.c
+--- dpkg-1.10.9/main/help.c	Sun Sep 15 13:55:51 2002
++++ dpkg-1.10.9-patched/main/help.c	Sat Dec  7 22:19:02 2002
+@@ -70,9 +70,16 @@
+ void checkpath(void) {
+ /* Verify that some programs can be found in the PATH. */
+-  static const char *const checklist[]= { "ldconfig", 
++  static const char *const checklist[]= { 
++#ifndef __APPLE__
++    "ldconfig", 
++#endif
+ #ifdef USE_START_STOP_DAEMON
+     "start-stop-daemon",
+ #endif    
+-    "install-info", "update-rc.d", 0
++    "install-info",
++#ifndef __APPLE__
++   "update-rc.d",
++#endif
++    0
+   };
+ 
+diff -ru2N dpkg-1.10.9/main/main.c dpkg-1.10.9-patched/main/main.c
+--- dpkg-1.10.9/main/main.c	Sun Sep  1 00:47:05 2002
++++ dpkg-1.10.9-patched/main/main.c	Sat Dec  7 22:19:02 2002
+@@ -39,4 +39,9 @@
+ #include <myopt.h>
+ 
++/* FINK LOCAL begin */
++#include <sys/utsname.h>
++#include <CoreFoundation/CoreFoundation.h>
++/* FINK LOCAL end */
++
+ #include "main.h"
+ 
+@@ -544,4 +549,82 @@
+ }
+ 
++/* FINK LOCAL begin */
++struct versionrevision darwin_version = {0,NULL,NULL};
++struct versionrevision macosx_version = {0,NULL,NULL};
++
++static void finkinit()
++{
++  Boolean status;
++  SInt32 errorCode;
++  CFURLRef fileURL = NULL;
++  CFDataRef resourceData = NULL;
++  CFPropertyListRef propertyList = NULL;
++  CFStringRef string;
++  static char buffer[256];	// This is static, to ensure the buffer stays around
++
++  static struct utsname ver;	// This is static, to ensure the buffer stays around
++  
++  /* Determine system version */
++  /* TODO - should maybe check if this is really Darwin? */
++  if (!uname(&ver)) {
++    darwin_version.version = ver.release;
++  }
++
++  /* Check whether this is Mac OS X, and which version of it */
++
++  fileURL = CFURLCreateWithFileSystemPath( NULL, 	
++		CFSTR("/System/Library/CoreServices/SystemVersion.plist"),
++		kCFURLPOSIXPathStyle,				
++		false );
++  if (!fileURL)
++    goto BAIL;
++  
++  /* Read the XML */
++  status = CFURLCreateDataAndPropertiesFromResource(
++		NULL,
++		fileURL,
++		&resourceData,
++		NULL,		
++		NULL,
++		&errorCode);
++  if (!status || errorCode != 0)
++    goto BAIL;
++  
++  /* Reconstitute the dictionary using the XML data. */
++  propertyList = CFPropertyListCreateFromXMLData( NULL,
++		resourceData,
++		kCFPropertyListImmutable,
++		&string);
++  if (!propertyList)
++    goto BAIL;
++  
++  /* Try to read the system version from it. */
++  status = CFDictionaryGetValueIfPresent( propertyList,
++		CFSTR("ProductVersion"),
++		(void*)&string);
++  if (!status)
++    goto BAIL;
++  
++  /* Convert into a C string */
++  status = CFStringGetCString( string,
++		buffer,
++		sizeof(buffer),
++		kCFStringEncodingISOLatin1);
++  if (!status)
++    goto BAIL;
++  
++  /* Finally link the buffer into the macosx_version struct. */
++  macosx_version.version = buffer;
++  
++BAIL:
++  // Release all of the CF objects we're responsible for.
++  if (fileURL)
++    CFRelease(fileURL);
++  if (resourceData)
++    CFRelease(resourceData);
++  if (propertyList)
++    CFRelease(propertyList);
++}
++/* FINK LOCAL end */
+ 
+ int main(int argc, const char *const *argv) {
+@@ -554,5 +637,7 @@
+   setvbuf(stdout,0,_IONBF,0);
+   filesdbinit();
+-
++  /* FINK LOCAL begin */
++  finkinit();
++  /* FINK LOCAL end */
+   actionfunction= (void (*)(const char* const*))cipaction->farg;
+ 
+diff -ru2N dpkg-1.10.9/main/main.h dpkg-1.10.9-patched/main/main.h
+--- dpkg-1.10.9/main/main.h	Mon May 20 01:56:01 2002
++++ dpkg-1.10.9-patched/main/main.h	Sat Dec  7 22:19:02 2002
+@@ -94,4 +94,9 @@
+ extern struct packageinlist *ignoredependss;
+ extern const char architecture[];
++ 
++/* FINK LOCAL begin */
++extern struct versionrevision darwin_version;
++extern struct versionrevision macosx_version;
++/* FINK LOCAL end */
+ 
+ /* from filesdb.c */
+diff -ru2N dpkg-1.10.9/main/packages.c dpkg-1.10.9-patched/main/packages.c
+--- dpkg-1.10.9/main/packages.c	Mon May  6 12:18:15 2002
++++ dpkg-1.10.9-patched/main/packages.c	Sat Dec  7 22:19:02 2002
+@@ -332,4 +332,22 @@
+   }
+ }
++ 
++/* FINK LOCAL begin */
++static int check_pseudo_package(const struct versionrevision *versrev, const struct deppossi *possi,
++                                int *interestingwarnings, struct varbuf *oemsgs) {
++
++  if (versionsatisfied3(versrev,&possi->version,possi->verrel)) {
++    return 3;
++  } else {
++    varbufaddstr(oemsgs, _("  Version of "));
++    varbufaddstr(oemsgs, possi->ed->name);
++    varbufaddstr(oemsgs, _(" on system is "));
++    varbufaddstr(oemsgs, versiondescribe(versrev, vdew_nonambig));
++    varbufaddstr(oemsgs, ".\n");
++    (*interestingwarnings)++;
++    return 0;
++  }
++}
++/* FINK LOCAL end */
+ 
+ int dependencies_ok(struct pkginfo *pkg, struct pkginfo *removing,
+@@ -353,4 +371,16 @@
+     for (possi= dep->list; found != 3 && possi; possi= possi->next) {
+       debug(dbg_depcondetail,"    checking possibility  -> %s",possi->ed->name);
++      /* FINK LOCAL begin */
++      if (0==strcmp(possi->ed->name,"darwin") && darwin_version.version) {
++        debug(dbg_depcondetail,"        pseudo package darwin");
++        found= check_pseudo_package(&darwin_version,possi,&interestingwarnings,&oemsgs);
++        break;
++      }
++      else if (0==strcmp(possi->ed->name,"macosx") && macosx_version.version) {
++        debug(dbg_depcondetail,"        pseudo package macosx");
++        found= check_pseudo_package(&macosx_version,possi,&interestingwarnings,&oemsgs);
++        break;
++      }
++      /* FINK LOCAL end */
+       if (possi->cyclebreak) {
+         debug(dbg_depcondetail,"      break cycle so ok and found");
+diff -ru2N dpkg-1.10.9/man/en/dpkg.cfg.5 dpkg-1.10.9-patched/man/en/dpkg.cfg.5
+--- dpkg-1.10.9/man/en/dpkg.cfg.5	Sat Feb  9 19:37:01 2002
++++ dpkg-1.10.9-patched/man/en/dpkg.cfg.5	Sat Dec  7 22:19:02 2002
+@@ -9,9 +9,10 @@
+ ("\fB#\fR").
+ .SH FILES
+-.I /etc/dpkg/dpkg.cfg
++.I @PREFIX@/etc/dpkg/dpkg.cfg
+ ~/.dpkg.cfg
+ .SH AUTHOR
+-See \fB/usr/share/doc/dpkg/THANKS\fP for the list of people who have
++See \fB@PREFIX@/share/doc/dpkg/THANKS\fP for the list of people who have
+ contributed to \fBdpkg\fP .
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH SEE ALSO
+ .BR dpkg (8)
+diff -ru2N dpkg-1.10.9/man/en/dselect.cfg.5 dpkg-1.10.9-patched/man/en/dselect.cfg.5
+--- dpkg-1.10.9/man/en/dselect.cfg.5	Sat Feb 16 09:10:50 2002
++++ dpkg-1.10.9-patched/man/en/dselect.cfg.5	Sat Dec  7 22:19:02 2002
+@@ -9,9 +9,10 @@
+ ("\fB#\fR").
+ .SH FILES
+-.I /etc/dpkg/dselect.cfg
++.I @PREFIX@/etc/dpkg/dselect.cfg
+ ~/.dselect.cfg
+ .SH AUTHOR
+-See \fB/usr/share/doc/dpkg/THANKS\fP for the list of people who have
++See \fB@PREFIX@/share/doc/dpkg/THANKS\fP for the list of people who have
+ contributed to \fBdselect\fP .
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH SEE ALSO
+ .BR dselect (8)
+diff -ru2N dpkg-1.10.9/man/fr/cleanup-info.8 dpkg-1.10.9-patched/man/fr/cleanup-info.8
+--- dpkg-1.10.9/man/fr/cleanup-info.8	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/cleanup-info.8	Sat Dec  7 22:19:02 2002
+@@ -39,5 +39,5 @@
+ .SH FICHIERS
+ .TP
+-.I "/usr/info/dir ou <nom-de-rep>/dir"
++.I "@PREFIX@/share/info/dir ou <nom-de-rep>/dir"
+ Le fichier « dir » du répertoire « info ». Le fichier verrouillé porte le même
+ nom suivi de « .lock ».
+@@ -55,3 +55,5 @@
+ de garantie.
+ .SH TRADUCTION
+-Philippe Batailler, Janvier 2001.
+\ No newline at end of file
++Philippe Batailler, Janvier 2001.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg-deb.1 dpkg-1.10.9-patched/man/fr/dpkg-deb.1
+--- dpkg-1.10.9/man/fr/dpkg-deb.1	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg-deb.1	Sat Dec  7 22:19:02 2002
+@@ -246,8 +246,10 @@
+ « GNU General Public Licence » ; il n'y a PAS de garantie.
+ Voyez
+-.B /usr/share/doc/dpkg/copyright
++.B @PREFIX@/share/doc/dpkg/copyright
+ et
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ pour des précisions.
+ .SH "TRADUCTION"
+-Philippe Batailler, Dec 2000.
+\ No newline at end of file
++Philippe Batailler, Dec 2000.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg-divert.8 dpkg-1.10.9-patched/man/fr/dpkg-divert.8
+--- dpkg-1.10.9/man/fr/dpkg-divert.8	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg-divert.8	Sat Dec  7 22:19:02 2002
+@@ -42,5 +42,5 @@
+ .I --admindir <répertoire>
+ Définit le répertoire de données de Dpkg comme <répertoire> (par défaut c'est 
+-/var/lib/dpkg).
++@PREFIX@/var/lib/dpkg).
+ .TP
+ .I --divert <dévier-dans>
+@@ -77,5 +77,5 @@
+ .SH FICHIERS
+ .TP
+-.I /var/lib/dpkg/diversions
++.I @PREFIX@/var/lib/dpkg/diversions
+ Ce fichier contient la liste actuelle des diversions en oeuvre sur le
+ système. Il se trouve dans le répertoire d'administration de Dpkg, avec
+@@ -95,3 +95,5 @@
+ version 2 ou supérieure pour le copyright. Il n'y a PAS de garantie.
+ .SH TRADUCTION
+-Philippe Batailler, Jan 2001.
+\ No newline at end of file
++Philippe Batailler, Jan 2001.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg-query.8 dpkg-1.10.9-patched/man/fr/dpkg-query.8
+--- dpkg-1.10.9/man/fr/dpkg-query.8	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg-query.8	Sat Dec  7 22:19:02 2002
+@@ -16,5 +16,5 @@
+ Liste les paquets correspondant au motif donné. Quand on ne donne aucun
+ \fIpaquet-nom-motif\fP, tous les paquets listés dans 
+-\fI/var/lib/dpkg/available\fP sont affichés. Les métacaractères ordinaires du
++\fI@PREFIX@/var/lib/dpkg/available\fP sont affichés. Les métacaractères ordinaires du
+ shell sont autorisés dans \fIpaquet-nom-motif\fP. Il faudra sans doute mettre
+ \fIpaquet-nom-motif\fP entre apostrophes pour éviter l'expansion des noms de
+@@ -47,5 +47,5 @@
+ \fB-p\fP |\fB--print-avail\fP paquet
+ Affiche des renseignements détaillés sur \fIpaquet\fP, tels qu'ils sont
+-trouvés dans le fichier \fI/var/lib/dpkg/available\fP.
++trouvés dans le fichier \fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fB--licence\fP | \fB--license\fP
+@@ -59,5 +59,5 @@
+ \fB--admindir=\fIdir\fP
+ Changer l'endroit où se trouve la base de données de \fBdpkg\fR database. Par
+-défaut, c'est \fI/var/lib/dpkg\fP.
++défaut, c'est \fI@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB--showformat=\fP\fIformat\fR
+@@ -88,3 +88,5 @@
+ version 2 ou supérieure pour les droits de copie. Il n'y a PAS de garantie.
+ .SH TRADUCTEUR
+-Philippe Batailler, Août 2001.
+\ No newline at end of file
++Philippe Batailler, Août 2001.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg-scanpackages.8 dpkg-1.10.9-patched/man/fr/dpkg-scanpackages.8
+--- dpkg-1.10.9/man/fr/dpkg-scanpackages.8	Fri May 31 15:49:12 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg-scanpackages.8	Sat Dec  7 22:19:02 2002
+@@ -41,5 +41,5 @@
+ .I rep-de-binaires
+ est le nom de l'arborescence binaire (par exemple
+-.BR contrib/binary-i386)
++.BR main/binary-darwin-powerpc)
+ que l'on veut traiter.
+ Il vaut mieux qu'elle soit relative à la racine de l'archive Debian ;
+@@ -116,6 +116,4 @@
+ .SH TRADUCTION
+ Philippe Batailler <pbatailler@teaser.fr>, Mai 2002.
+-
+-
+-
+-
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg-source.1 dpkg-1.10.9-patched/man/fr/dpkg-source.1
+--- dpkg-1.10.9/man/fr/dpkg-source.1	Fri May 31 15:49:12 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg-source.1	Sat Dec  7 22:19:02 2002
+@@ -59,5 +59,5 @@
+ partagées dans les fichiers suivants :
+ .BR debian/shlibs.local,
+-.BR /etc/dpkg/shlibs.override,
++.BR @PREFIX@/etc/dpkg/shlibs.override,
+ le fichier
+ .B shlibs,
+@@ -65,5 +65,5 @@
+ .B objdump,
+ satisfait au système de dépendance envers les bibliothèques) ou bien
+-.BR /etc/dpkg/shlibs.default.
++.BR @PREFIX@/etc/dpkg/shlibs.default.
+ Le premier trouvé est utilisé. Voyez le
+ .I Debian packaging manual
+@@ -844,8 +844,10 @@
+ .B pas
+ de garantie. Voyez
+-.B /usr/share/doc/dpkg/copyright
++.B @PREFIX@/share/doc/dpkg/copyright
+ et
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ pour des précisions.
+ .SH TRADUCTION
+-Philippe Batailler, Février 2001.
+\ No newline at end of file
++Philippe Batailler, Février 2001.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg-split.8 dpkg-1.10.9-patched/man/fr/dpkg-split.8
+--- dpkg-1.10.9/man/fr/dpkg-split.8	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg-split.8	Sat Dec  7 22:19:02 2002
+@@ -163,5 +163,5 @@
+ Indique un répertoire différent pour la file comprenant les parties en attente
+ d'une recomposition automatique. Par défaut, c'est le répertoire
+-.BR /var/lib/dpkg .
++.BR @PREFIX@/var/lib/dpkg .
+ .TP
+ .BI --partsize\fR|\fB-S " kbytes"
+@@ -234,5 +234,5 @@
+ .SH FICHIERS
+ .TP
+-.B /var/lib/dpkg/parts
++.B @PREFIX@/var/lib/dpkg/parts
+ Le répertoire par défaut de la file contenant les fichiers qui attendent une
+ recomposition automatique.
+@@ -255,6 +255,8 @@
+ PAS de GARANTIE.
+ Voyez
+-.B /usr/share/dpkg/copyright
++.B @PREFIX@/share/dpkg/copyright
+ et
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ pour des précisions.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg-statoverride.8 dpkg-1.10.9-patched/man/fr/dpkg-statoverride.8
+--- dpkg-1.10.9/man/fr/dpkg-statoverride.8	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg-statoverride.8	Sat Dec  7 22:19:02 2002
+@@ -56,8 +56,8 @@
+ .I --admindir
+ Changer le répertoire de la base de données de dpkg, où se trouve aussi le
+-fichier statoverride. par défaut, c'est /var/lib/dpkg.
++fichier statoverride. par défaut, c'est @PREFIX@/var/lib/dpkg.
+ .SH FICHIERS
+ .TP
+-.I /var/lib/dpkg/statoverride
++.I @PREFIX@/var/lib/dpkg/statoverride
+ Ce fichier contient la liste actuelle des annulations concernant le système.
+ Il se trouve dans le répertoire d'administration de Dpkg, avec les autres 
+@@ -77,3 +77,5 @@
+ version 2 ou supérieure pour les droits de copie. Il n'y a PAS de garantie.
+ .SH TRADUCTEUR
+-Philippe Batailler, Août 2001.
+\ No newline at end of file
++Philippe Batailler, Août 2001.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/dpkg.8 dpkg-1.10.9-patched/man/fr/dpkg.8
+--- dpkg-1.10.9/man/fr/dpkg.8	Fri May 31 15:49:12 2002
++++ dpkg-1.10.9-patched/man/fr/dpkg.8	Sat Dec  7 22:19:02 2002
+@@ -163,5 +163,5 @@
+ place d'un nom de paquet, tous les paquets non dépaquetés, mais qui sont
+ marqués comme devant être supprimés ou purgés
+-dans le file \fI/var/lib/dpkg/status\fP, sont respectivement
++dans le file \fI@PREFIX@/var/lib/dpkg/status\fP, sont respectivement
+ supprimés et purgés.
+ 
+@@ -180,5 +180,5 @@
+ .BI "dpkg  -p|--print-avail " paquet
+ Affiche des renseignements détaillés sur \fIpaquet\fP, tels qu'ils sont
+-trouvés dans le fichier \fI/var/lib/dpkg/available\fP.
++trouvés dans le fichier \fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg --update-avail\fP | \fB--merge-avail\fP \fIfichier-paquet\fP
+@@ -190,5 +190,5 @@
+ distribué avec Debian est appelé simplement \fIpaquet\fP.
+ \fBdpkg\fP garde son propre enregistrement des paquets disponibles dans
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg -A\fP | \fB--record-avail\fP \fIfichier-paquet\fP ...
+@@ -207,5 +207,5 @@
+ Affiche la liste des paquets qui correspondent au motif donné. Quand on
+ ne fournit pas de \fIpaquet-nom-motif\fP, la liste comporte tous les 
+-paquets cités dans \fI/var/lib/dpkg/available\fP.  Les métacaractères
++paquets cités dans \fI@PREFIX@/var/lib/dpkg/available\fP.  Les métacaractères
+ ordinaires du shell sont autorisés dans \fIpaquet-nom-motif\fP. (Il faudra
+ sans doute mettre \fIpaquet-nom-motif\fP entre apostrophes pour éviter 
+@@ -310,5 +310,5 @@
+ .SH OPTIONS
+ On peut spécifier une option à la fois sur la ligne de commande et dans le
+-fichier de configuration de dpkg, \fI/etc/dpkg/dpkg.cfg\fP. Chaque ligne de
++fichier de configuration de dpkg, \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP. Chaque ligne de
+ ce fichier est soit une option (identique à une option en ligne de commande
+ mais sans tiret), soit un commentaire, commençant par \fB#\fR.
+@@ -471,5 +471,5 @@
+ \fB--root=\fP\fIrep\fP | \fB--admindir=\fP\fIrep\fP | \fB--instdir=\fP\fIrep\fP
+ Changer les répertoires par défaut. \fBadmindir\fP est par défaut 
+-\fI/var/lib/dpkg\fP et contient beaucoup de fichiers qui donnent des
++\fI@PREFIX@/var/lib/dpkg\fP et contient beaucoup de fichiers qui donnent des
+ informations sur l'état des paquets installés ou non installés, etc. 
+ \fBinstdir\fP est par défaut \fI/\fP et se réfère au répertoire où les 
+@@ -478,5 +478,5 @@
+ du \fIpaquet\fP, ce qui signifie que ces scripts voient \fBinstdir\fP 
+ comme le répertoire de root. Changer \fBroot\fP change \fBinstdir\fP en
+-\fIrep\fP et \fBadmindir\fP en \fIrep\fP\fB/var/lib/dpkg\fP.
++\fIrep\fP et \fBadmindir\fP en \fIrep\fP\fB@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB-O\fP | \fB--selected-only\fP
+@@ -497,5 +497,5 @@
+ .SH FICHIERS
+ .TP
+-.I /etc/dpkg/dpkg.cfg
++.I @PREFIX@/etc/dpkg/dpkg.cfg
+ Fichier de configuration contenant les options par défaut.
+ .P
+@@ -503,8 +503,8 @@
+ l'option \fB--admindir\fP pour savoir changer l'emplacement de ces fichiers.
+ .TP
+-.I /var/lib/dpkg/available
++.I @PREFIX@/var/lib/dpkg/available
+ Liste des paquets disponibles.
+ .TP
+-.I /var/lib/dpkg/status
++.I @PREFIX@/var/lib/dpkg/status
+ États des paquets disponibles. Ce fichier contient des informations qui
+ permettent de savoir si un paquet est marqué comme devant être supprimé
+@@ -556,5 +556,5 @@
+ .br
+ 
+-Pour voir les entrées de \fI/var/lib/dpkg/available\fP concernant deux
++Pour voir les entrées de \fI@PREFIX@/var/lib/dpkg/available\fP concernant deux
+ paquets :
+ .br
+@@ -564,5 +564,5 @@
+ Pour rechercher vous-même dans la liste des paquets :
+ .br
+-\fB     less /var/lib/dpkg/available\fP
++\fB     less @PREFIX@/var/lib/dpkg/available\fP
+ .br
+ 
+@@ -612,7 +612,9 @@
+ .SH AUTEURS
+ .nf
+-Voyez le fichier \fB/usr/share/doc/dpkg/THANKS\fP pour la liste des
++Voyez le fichier \fB@PREFIX@/share/doc/dpkg/THANKS\fP pour la liste des
+ personnes qui ont contribué à \fBdpkg\fP.
+ .fi
+ .SH "TRADUCTION"
+ Philippe Batailler <pbatailler@teaser.fr> 2002.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/fr/install-info.8 dpkg-1.10.9-patched/man/fr/install-info.8
+--- dpkg-1.10.9/man/fr/install-info.8	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/install-info.8	Sat Dec  7 22:19:02 2002
+@@ -158,5 +158,5 @@
+ .IR rep-info . 
+ Par défaut, c'est
+-.BR /usr/info .
++.BR @PREFIX@/share/info .
+ .TP
+ .BI \-\-align= nnn " [déconseillé]"
+@@ -273,4 +273,6 @@
+ .SH "TRADUCTION"
+ Philippe Batailler. Dec 2000
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH COPYRIGHT
+ Copyright 1994, Ian Jackson.
+diff -ru2N dpkg-1.10.9/man/fr/update-alternatives.8 dpkg-1.10.9-patched/man/fr/update-alternatives.8
+--- dpkg-1.10.9/man/fr/update-alternatives.8	Sat Feb  2 10:56:06 2002
++++ dpkg-1.10.9-patched/man/fr/update-alternatives.8	Sat Dec  7 22:19:02 2002
+@@ -5,5 +5,5 @@
+ .\" by the Free Software Foundation; either version 2 of the License, or
+ .\" (at your option) any later version.  There is NO WARRANTY.  You can
+-.\" find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
++.\" find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
+ .\" traduction de la révision CVS 1.8
+ .TH UPDATE-ALTERNATIVES 8 "19 January 1998" "Debian Project" "dpkg utilities"
+@@ -68,9 +68,9 @@
+ sont tous les deux installés, le système des « alternatives » fait que le nom 
+ générique 
+-.I /usr/bin/editor
++.I @PREFIX@/bin/editor
+ renvoie par défaut à
+-.I /usr/bin/nvi.
++.I @PREFIX@/bin/nvi.
+ L'administrateur système peut remplacer cette assignation par
+-.I /usr/bin/ed
++.I @PREFIX@/bin/ed
+ et le système des « alternatives » ne la changera pas tant qu'on ne lui
+ aura pas demandé explicitement de le faire.
+@@ -83,5 +83,5 @@
+ visé. Les modifications faites par l'administrateur système sont ainsi
+ confinées dans le répertoire 
+-.I /etc :
++.I @PREFIX@/etc :
+ le FHS (lisez-le) donne de Bonnes Raisons de faire ainsi.
+ .PP
+@@ -104,7 +104,7 @@
+ .BR vi (1) 
+ sont installées, la page de manuel qui est visée par
+-.I /usr/share/man/man1/vi.1
++.I @PREFIX@/share/man/man1/vi.1
+ devrait correspondre à 
+-.IR /usr/bin/vi.
++.IR @PREFIX@/bin/vi.
+ .B update-alternatives
+ gère ce problème avec les liens
+@@ -157,5 +157,5 @@
+ nom générique
+ C'est un nom, par exemple
+-.IR /usr/bin/editor,
++.IR @PREFIX@/bin/editor,
+ qui renvoie, à travers le système des « alternatives », à l'un des fichiers qui
+ remplissent des fonctions similaires.
+@@ -172,5 +172,5 @@
+ C'est le répertoire qui contient les liens symboliques ; il s'agit 
+ par défaut de
+-.IR /etc/alternatives.
++.IR @PREFIX@/etc/alternatives.
+ .TP
+ répertoire administratif
+@@ -178,5 +178,5 @@
+ .BR update-alternatives. 
+ Il s'agit par défaut de
+-.IR /var/lib/dpkg/alternatives.
++.IR @PREFIX@/var/lib/dpkg/alternatives.
+ .TP
+ groupe de liens
+@@ -311,10 +311,10 @@
+ .SH FICHIERS
+ .TP
+-.I /etc/alternatives/
++.I @PREFIX@/etc/alternatives/
+ Le répertoire des « alternatives » par défaut.
+ Peut être remplacé avec l'option
+ .B --altdir.
+ .TP
+-.I /var/lib/dpkg/alternatives/
++.I @PREFIX@/var/lib/dpkg/alternatives/
+ Le répertoire administratif par défaut.
+ Peut être remplacé avec l'option
+@@ -356,5 +356,5 @@
+ AUCUNE garantie.
+ .PP
+-On peut trouver la licence GNU GPL dans /usr/share/common-licenses/GPL 
++On peut trouver la licence GNU GPL dans @PREFIX@/share/common-licenses/GPL 
+ sur tous les systèmes Debian.
+ .\" .SH REMERCIEMENTS
+@@ -363,3 +363,5 @@
+ FHS, le standard pour les systèmes de fichiers Linux.
+ .SH "TRADUCTION"
+-Philippe Batailler. Nov 200O
+\ No newline at end of file
++Philippe Batailler. Nov 200O
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/man/ja/cleanup-info.8 dpkg-1.10.9-patched/man/ja/cleanup-info.8
+--- dpkg-1.10.9/man/ja/cleanup-info.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/cleanup-info.8	Sat Dec  7 22:19:02 2002
+@@ -38,5 +38,5 @@
+ .SH ¥Õ¥¡¥¤¥ë
+ .TP
+-.I "/usr/info/dir ¤Þ¤¿¤Ï <¥Ç¥£¥ì¥¯¥È¥êÌ¾>/dir"
++.I "@PREFIX@/share/info/dir ¤Þ¤¿¤Ï <¥Ç¥£¥ì¥¯¥È¥êÌ¾>/dir"
+ info ¥Ç¥£¥ì¥¯¥È¥ê¥Õ¥¡¥¤¥ë¡£¥í¥Ã¥¯¥Õ¥¡¥¤¥ë¤ÏÆ±¤¸Ì¾Á°¤Ç ".lock" ³ÈÄ¥»Ò¤¬
+ ¤Ä¤¤¤¿¤â¤Î¤Ë¤Ê¤ë¡£
+@@ -48,4 +48,6 @@
+ .SH Ãø¼Ô
+ Copyright (C) 1996 Kim-Minh Kaplan.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence
+diff -ru2N dpkg-1.10.9/man/ja/dpkg-deb.1 dpkg-1.10.9-patched/man/ja/dpkg-deb.1
+--- dpkg-1.10.9/man/ja/dpkg-deb.1	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/dpkg-deb.1	Sat Dec  7 22:19:02 2002
+@@ -263,7 +263,7 @@
+ ¤¢¤ê(Copyright (C)1995-1996)¡¢GNU °ìÈÌ¸øÍ­»ÈÍÑµöÂú¤Ë¤è¤êÈÒÉÛ¤µ¤ì¤ë¡£
+ ¤³¤ì¤é¤ÏÌµÊÝ¾Ú¤Ç¤¢¤ë¡£¾ÜºÙ¤Ï
+-.B /usr/share/doc/dpkg/copyright
++.B @PREFIX@/share/doc/dpkg/copyright
+ ¤È
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ ¤ò»²¾È¤¹¤ë¤³¤È¡£
+ 
+@@ -274,8 +274,11 @@
+ by him and released under the GNU General Public Licence; there is NO
+ WARRANTY.  See
+-.B /usr/share/doc/dpkg/copyright
++.B @PREFIX@/share/doc/dpkg/copyright
+ and
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ for details.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
++.PP
+ )
+ .SH ÆüËÜ¸ìÈÇËÝÌõ
+diff -ru2N dpkg-1.10.9/man/ja/dpkg-divert.8 dpkg-1.10.9-patched/man/ja/dpkg-divert.8
+--- dpkg-1.10.9/man/ja/dpkg-divert.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/dpkg-divert.8	Sat Dec  7 22:19:02 2002
+@@ -40,5 +40,5 @@
+ .TP
+ .I --admindir <¥Ç¥£¥ì¥¯¥È¥ê>
+-dpkg¥Ç¡¼¥¿¥Ç¥£¥ì¥¯¥È¥ê¤ò<¥Ç¥£¥ì¥¯¥È¥ê>¤ËÀßÄê¤¹¤ë¡£(¥Ç¥Õ¥©¥ë¥È: /var/lib/dpkg)
++dpkg¥Ç¡¼¥¿¥Ç¥£¥ì¥¯¥È¥ê¤ò<¥Ç¥£¥ì¥¯¥È¥ê>¤ËÀßÄê¤¹¤ë¡£(¥Ç¥Õ¥©¥ë¥È: @PREFIX@/var/lib/dpkg)
+ .TP
+ .I --divert <ÂàÈòÀè>
+@@ -74,5 +74,5 @@
+ .SH ¥Õ¥¡¥¤¥ë
+ .TP
+-.I /var/lib/dpkg/diversions
++.I @PREFIX@/var/lib/dpkg/diversions
+ ¥·¥¹¥Æ¥à¤Î¸½ºß¤ÎÂàÈò¥ê¥¹¥È¤ò´Þ¤à¥Õ¥¡¥¤¥ë¡£¤³¤ì¤Ïdpkg¤Ç»È¤ï¤ì¤ë½ÅÍ×¤Ê¥Õ¥¡¥¤¥ë
+ `status'¤ä`available'¤¬¤¢¤ëdpkg¤Î´ÉÍý¥Ç¥£¥ì¥¯¥È¥ê¤Ë¤¢¤ë¡£
+@@ -87,4 +87,5 @@
+ .SH Ãø¼Ô
+ Copyright (C) 1995 Ian Jackson.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence
+diff -ru2N dpkg-1.10.9/man/ja/dpkg-scanpackages.8 dpkg-1.10.9-patched/man/ja/dpkg-scanpackages.8
+--- dpkg-1.10.9/man/ja/dpkg-scanpackages.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/dpkg-scanpackages.8	Sat Dec  7 22:19:02 2002
+@@ -42,5 +42,5 @@
+ .I binarydir
+ ¤Ï½èÍý¤¹¤ë¥Ð¥¤¥Ê¥ê¥Ä¥ê¡¼¤ÎÌ¾Á°¤Ç¤¢¤ë¡£(Îã¤¨¤Ð
+-.BR contrib/binary-i386 
++.BR main/binary-darwin-powerpc 
+ ¤Ê¤É)
+ Debian¥¢¡¼¥«¥¤¥Ö¤Î¥ë¡¼¥È¤«¤é¤ÎÁêÂÐ¤Ë¤·¤Æ¤ª¤¯¤Î¤¬ºÇ¤â¤¤¤¤ÊýË¡¤Ç¤¢¤ë¡£
+@@ -95,4 +95,6 @@
+ .I newmaintainer
+ ¤Î¾ì¹ç¤ÏÃÖ´¹¤µ¤ì¤ë¡£
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .PP
+ ¸ø¼°¤ÎPackages¥ê¥¹¥È¤òºîÀ®¤¹¤ë¤¿¤á¤Ë»È¤ï¤ì¤Æ¤¤¤ëoverride¥Õ¥¡¥¤¥ë¤Ï¡¢
+diff -ru2N dpkg-1.10.9/man/ja/dpkg-statoverride.8 dpkg-1.10.9-patched/man/ja/dpkg-statoverride.8
+--- dpkg-1.10.9/man/ja/dpkg-statoverride.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/dpkg-statoverride.8	Sat Dec  7 22:19:02 2002
+@@ -100,12 +100,12 @@
+ .I --admindir
+ .\"O Change the directory of the dpkg database where the statoverride file is
+-.\"O also stored. Defaults to /var/lib/dpkg.
++.\"O also stored. Defaults to @PREFIX@/var/lib/dpkg.
+ dpkg ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Î¥Ç¥£¥ì¥¯¥È¥ê¤òÊÑ¹¹¤¹¤ë¡£
+ statoverride ¤Î¥Õ¥¡¥¤¥ë¤â¤³¤³¤ËÊÝÂ¸¤µ¤ì¤ë¡£
+-¥Ç¥Õ¥©¥ë¥È¤Ï /var/lib/dpkg¡£
++¥Ç¥Õ¥©¥ë¥È¤Ï @PREFIX@/var/lib/dpkg¡£
+ .\"O .SH FILES
+ .SH ¥Õ¥¡¥¤¥ë
+ .TP
+-.I /var/lib/dpkg/statoverride
++.I @PREFIX@/var/lib/dpkg/statoverride
+ .\"O File which contains the current list of stat overrides of the system. It
+ .\"O is located in the dpkg administration directory, along with other files
+@@ -128,4 +128,6 @@
+ <wakkerma@debian.org>
+ .UE
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence version 2 or
+diff -ru2N dpkg-1.10.9/man/ja/dpkg.8 dpkg-1.10.9-patched/man/ja/dpkg.8
+--- dpkg-1.10.9/man/ja/dpkg.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/dpkg.8	Sat Dec  7 22:19:03 2002
+@@ -50,5 +50,5 @@
+ (ÌõÃí: Gnu Info ·Á¼°¤Î \fIdebian-faq\fP ¤ÏÂ¸ºß¤·¤Ê¤¤¤è¤¦¤Ç¤¢¤ë¡£
+ ¤½¤ÎÂå¤ï¤ê¡¢doc-debian ¥Ñ¥Ã¥±¡¼¥¸¤ò¥¤¥ó¥¹¥È¡¼¥ë¤·¤¿¾õÂÖ¤Î
+-/usr/share/doc/debian/FAQ ¥Ç¥£¥ì¥¯¥È¥ê¤Ë HTML ·Á¼°¤ÇÃÖ¤«¤ì¤Æ¤¤¤ë)¡£
++@PREFIX@/share/doc/debian/FAQ ¥Ç¥£¥ì¥¯¥È¥ê¤Ë HTML ·Á¼°¤ÇÃÖ¤«¤ì¤Æ¤¤¤ë)¡£
+ 
+ .SH ÀâÌÀ
+@@ -189,5 +189,5 @@
+ \fIconffiles\fP ¥³¥ó¥È¥í¡¼¥ë¥Õ¥¡¥¤¥ë¤Ë¤¢¤ë)¡£
+ °ú¤­¿ô¤È¤·¤Æ¡¢¥Ñ¥Ã¥±¡¼¥¸Ì¾¤ÎÂå¤ï¤ê¤Ë \fB-a\fP ¤Þ¤¿¤Ï \fB--pending\fP ¤¬
+-»ØÄê¤µ¤ì¤¿¾ì¹ç¤Ë¤Ï¡¢\fI/var/lib/dpkg/status\fP ¥Õ¥¡¥¤¥ë¤Ë remove ¤Þ¤¿¤Ï
++»ØÄê¤µ¤ì¤¿¾ì¹ç¤Ë¤Ï¡¢\fI@PREFIX@/var/lib/dpkg/status\fP ¥Õ¥¡¥¤¥ë¤Ë remove ¤Þ¤¿¤Ï
+ purge ¤Î°õ¤ò»ý¤Ä¤¹¤Ù¤Æ¤ÎÅ¸³«ºÑ¤ß¥Ñ¥Ã¥±¡¼¥¸¤ò¡¢¤½¤ì¤¾¤ì remove ¤Þ¤¿¤Ï
+ purge ¤¹¤ë¡£
+@@ -205,5 +205,5 @@
+ .TP
+ .BI "dpkg -p|--print-avail " package
+-\fI/var/lib/dpkg/available\fP ¤Ë¤¢¤ë \fIpackage\fP ¤Ë´Ø¤¹¤ë¾ðÊó¤ò
++\fI@PREFIX@/var/lib/dpkg/available\fP ¤Ë¤¢¤ë \fIpackage\fP ¤Ë´Ø¤¹¤ë¾ðÊó¤ò
+ É½¼¨¤¹¤ë¡£
+ .TP
+@@ -216,5 +216,5 @@
+ \fIPackages-file\fP ¤Ï Debian GNU/Linux ¤È°ì½ï¤ËÇÛÉÛ¤µ¤ì¤Æ¤¤¤ë¡£Ì¾Á°¤ÏÃ±½ã¤Ë
+ \fIPackages\fP ¤Ç¤¢¤ë¡£\fBdpkg\fP ¤Ï¡¢ÍøÍÑ²ÄÇ½¤Ê¥Ñ¥Ã¥±¡¼¥¸¤Î¾ðÊó¤ò
+-\fI/var/lib/dpkg/available\fP ¤Ëµ­Ï¿¤¹¤ë¡£
++\fI@PREFIX@/var/lib/dpkg/available\fP ¤Ëµ­Ï¿¤¹¤ë¡£
+ .TP
+ \fBdpkg -A\fP | \fB--record-avail\fP \fIpackage_file\fP ...
+@@ -233,5 +233,5 @@
+ Í¿¤¨¤é¤ì¤¿¥Ñ¥¿¡¼¥ó¤Ë¥Þ¥Ã¥Á¤¹¤ëÌ¾Á°¤Î¥Ñ¥Ã¥±¡¼¥¸¤òÉ½¼¨¤¹¤ë¡£
+ ¤â¤· \fIpackage-name-pattern\fP ¤¬Í¿¤¨¤é¤ì¤Ê¤¤¾ì¹ç¤Ï¡¢
+-\fI/var/lib/dpkg/status\fP ¤Ë¤¢¤ë¥¤¥ó¥¹¥È¡¼¥ëºÑ¤ß¤Î¤¹¤Ù¤Æ¤Î¥Ñ¥Ã¥±¡¼¥¸¤ò
++\fI@PREFIX@/var/lib/dpkg/status\fP ¤Ë¤¢¤ë¥¤¥ó¥¹¥È¡¼¥ëºÑ¤ß¤Î¤¹¤Ù¤Æ¤Î¥Ñ¥Ã¥±¡¼¥¸¤ò
+ É½¼¨¤¹¤ë¡£\fIpackage-name-pattern\fP ¤Ë¤Ï¡¢É¸½àÅª¤Ê¥·¥§¥ë¤Î¥ï¥¤¥ë¥ÉÊ¸»ú¤ò
+ »ÈÍÑ¤¹¤ë¤³¤È¤¬¤Ç¤­¤ë¡£
+@@ -334,5 +334,5 @@
+ .SS ¥ª¥×¥·¥ç¥ó
+ ¤¹¤Ù¤Æ¤Î¥ª¥×¥·¥ç¥ó¤Ï¡¢¥³¥Þ¥ó¥É¥é¥¤¥ó¤ä \fBdpkg\fP ¤ÎÀßÄê¥Õ¥¡¥¤¥ë¤Ç
+-¤¢¤ë \fI/etc/dpkg/dpkg.cfg\fP ¤ÎÃæ¤Ç»ØÄê¤Ç¤­¤ë¡£ÀßÄê¥Õ¥¡¥¤¥ë¤Ï¡¢
++¤¢¤ë \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP ¤ÎÃæ¤Ç»ØÄê¤Ç¤­¤ë¡£ÀßÄê¥Õ¥¡¥¤¥ë¤Ï¡¢
+ 1 ¹Ô¤Ë 1 ¤Ä¤Î¥ª¥×¥·¥ç¥ó(¥³¥Þ¥ó¥É¥é¥¤¥ó¥ª¥×¥·¥ç¥ó¤È¤Þ¤Ã¤¿¤¯Æ±¤¸¡¢
+ ¤¿¤À¤·Æ¬¤Î¥À¥Ã¥·¥å¤ò¼è¤ë)¤«¡¢¥³¥á¥ó¥È(ºÇ½é¤Ë \fB#\fR ¤Ç»Ï¤Þ¤ë)
+@@ -488,5 +488,5 @@
+ ¥Ñ¥Ã¥±¡¼¥¸¤ä¥¤¥ó¥¹¥È¡¼¥ë¤µ¤ì¤Æ¤¤¤Ê¤¤¥Ñ¥Ã¥±¡¼¥¸¤Î¾õÂÖ¤Ë´Ø¤¹¤ë¾ðÊó¤Ê¤É¤ò
+ Äó¶¡¤¹¤ë¡¢Â¿¿ô¤Î¥Õ¥¡¥¤¥ë¤¬³ÊÇ¼¤µ¤ì¤Æ¤¤¤ë¥Ç¥£¥ì¥¯¥È¥ê¤Ç¡¢¥Ç¥Õ¥©¥ë¥È¤Ï
+-\fI/var/lib/dpkg\fP ¤Ç¤¢¤ë¡£\fBinstdir\fP ¤Ï¥Ñ¥Ã¥±¡¼¥¸¤¬¥¤¥ó¥¹¥È¡¼¥ë
++\fI@PREFIX@/var/lib/dpkg\fP ¤Ç¤¢¤ë¡£\fBinstdir\fP ¤Ï¥Ñ¥Ã¥±¡¼¥¸¤¬¥¤¥ó¥¹¥È¡¼¥ë
+ ¤¹¤ë¤È¤­¤Ë»²¾È¤µ¤ì¤ë¥Ç¥£¥ì¥¯¥È¥ê¤Ç¡¢¥Ç¥Õ¥©¥ë¥È¤Ï \fI/\fP ¤Ç¤¢¤ë¡£
+ ¤Þ¤¿¡¢\fBinstdir\fP ¤Ï¡¢¥Ñ¥Ã¥±¡¼¥¸¤Î¥¤¥ó¥¹¥È¡¼¥ë¥¹¥¯¥ê¥×¥È¤¬¼Â¹Ô
+@@ -494,5 +494,5 @@
+ ¥¹¥¯¥ê¥×¥È¤Ï \fBinstdir\fP ¤ò¥ë¡¼¥È¥Ç¥£¥ì¥¯¥È¥ê¤È¤ß¤Ê¤¹¡£
+ \fBroot\fP ¤òÊÑ¹¹¤¹¤ë¤È¡¢\fBinstdir\fP ¤ò \fIdir\fP ¤Ë¡¢\fBadmindir\fP
+-¤ò \fIdir\fP\fB/var/lib/dpkg\fP ¤ËÊÑ¹¹¤¹¤ë¡£
++¤ò \fIdir\fP\fB@PREFIX@/var/lib/dpkg\fP ¤ËÊÑ¹¹¤¹¤ë¡£
+ .TP
+ \fB-O\fP | \fB--selected-only\fP
+@@ -516,5 +516,5 @@
+ .SH ¥Õ¥¡¥¤¥ë
+ .TP
+-.I /etc/dpkg.cfg
++.I @PREFIX@/etc/dpkg.cfg
+ ¥ª¥×¥·¥ç¥ó¤Î¥Ç¥Õ¥©¥ë¥ÈÃÍ¤òµ­½Ò¤¹¤ëÀßÄê¥Õ¥¡¥¤¥ë¡£
+ .P
+@@ -523,8 +523,8 @@
+ »²¾È¤¹¤ë¤³¤È¡£
+ .TP
+-.I /var/lib/dpkg/available
++.I @PREFIX@/var/lib/dpkg/available
+ »ÈÍÑ¤Ç¤­¤ë¥Ñ¥Ã¥±¡¼¥¸¤Î°ìÍ÷¡£
+ .TP
+-.I /var/lib/dpkg/status
++.I @PREFIX@/var/lib/dpkg/status
+ »ÈÍÑ¤Ç¤­¤ë¥Ñ¥Ã¥±¡¼¥¸¤Î¾õÂÖ¡£¤³¤Î¥Õ¥¡¥¤¥ë¤Ï¡¢¥Ñ¥Ã¥±¡¼¥¸¤Ëºï½ü¤Î°õ¤¬¤¢¤ë¤«
+ ¤É¤¦¤«¡¢¥¤¥ó¥¹¥È¡¼¥ëºÑ¤ß¤«¤É¤¦¤«¡¢¤Ê¤É¤Î¾ðÊó¤¬´Þ¤Þ¤ì¤Æ¤¤¤ë¡£¤¯¤ï¤·¤¯¤Ï¡¢
+@@ -565,5 +565,5 @@
+ .br
+ 
+-2¤Ä¤Î¥Ñ¥Ã¥±¡¼¥¸¤Î \fI/var/lib/dpkg/available\fP ¤Ë¤¢¤ë¹àÌÜ¤òÉ½¼¨¤¹¤ë¡£
++2¤Ä¤Î¥Ñ¥Ã¥±¡¼¥¸¤Î \fI@PREFIX@/var/lib/dpkg/available\fP ¤Ë¤¢¤ë¹àÌÜ¤òÉ½¼¨¤¹¤ë¡£
+ .br
+ \fB     dpkg --print-avail elvis vim | less\fP
+@@ -572,5 +572,5 @@
+ ¼«Ê¬¤Ç¥Ñ¥Ã¥±¡¼¥¸¤Î¥ê¥¹¥È¤«¤é¸¡º÷¤¹¤ë¡£
+ .br
+-\fB     less /var/lib/dpkg/available\fP
++\fB     less @PREFIX@/var/lib/dpkg/available\fP
+ .br
+ 
+@@ -616,7 +616,8 @@
+ .SH Ãø¼Ô
+ .nf
+-\fBdpkg\fP¤Ë¹×¸¥¤·¤¿¿Í¤Î¥ê¥¹¥È¤Ï \fB/usr/share/doc/dpkg/THANKS\fP¤Ë
++\fBdpkg\fP¤Ë¹×¸¥¤·¤¿¿Í¤Î¥ê¥¹¥È¤Ï \fB@PREFIX@/share/doc/dpkg/THANKS\fP¤Ë
+ µó¤²¤Æ¤¢¤ë¡£
+ .fi
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH ÆüËÜ¸ìÈÇËÝÌõ
+ ´îÀ¥¹À <fuyuneko@ryukyu.ne.jp>
+diff -ru2N dpkg-1.10.9/man/ja/dselect.8 dpkg-1.10.9-patched/man/ja/dselect.8
+--- dpkg-1.10.9/man/ja/dselect.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/dselect.8	Sat Dec  7 22:19:03 2002
+@@ -92,9 +92,9 @@
+ .\" Changes the directory where the dpkg `status', `available' and similar
+ .\" files are located. This defaults to
+-.\" .I /var/lib/dpkg
++.\" .I @PREFIX@/var/lib/dpkg
+ .\" and normally there shouldn't be any need to change it.
+ dpkg ¤¬»ÈÍÑ¤¹¤ë `status' ¥Õ¥¡¥¤¥ë¤ä `available' ¥Õ¥¡¥¤¥ëÅù¤òÃÖ¤¯
+ ¥Ç¥£¥ì¥¯¥È¥ê¤òÊÑ¹¹¤¹¤ë¡£¥Ç¥Õ¥©¥ë¥È¤Ç¤Ï
+-.I /var/lib/dpkg
++.I @PREFIX@/var/lib/dpkg
+ ¤Ç¤¢¤ê¡¢ÄÌ¾ï¤Ç¤Ï¤³¤ì¤òÊÑ¹¹¤¹¤ëÉ¬Í×¤Ï¤Ê¤¤¡£
+ .TP
+@@ -157,4 +157,7 @@
+ .\" This manual page was written by Juho Vuori <javuori@cc.helsinki.fi>
+ .\" and updated by Josip Rodin.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
++.PP
+ ¤³¤Î¥Þ¥Ë¥å¥¢¥ë¤Ï Juho Vuori <javuori@cc.helsinki.fi> ¤Ë¤è¤Ã¤Æ½ñ¤«¤ì¡¢
+ Josip Rodin ¤Ë¤è¤Ã¤Æ¹¹¿·¤µ¤ì¤¿¡£
+diff -ru2N dpkg-1.10.9/man/ja/install-info.8 dpkg-1.10.9-patched/man/ja/install-info.8
+--- dpkg-1.10.9/man/ja/install-info.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/install-info.8	Sat Dec  7 22:19:03 2002
+@@ -293,10 +293,10 @@
+ .\"O .IR infodir .
+ .\"O The default is
+-.\"O .BR /usr/info .
++.\"O .BR @PREFIX@/share/info .
+ .B dir
+ ¥Õ¥¡¥¤¥ë¤È¡¢¥¤¥ó¥¹¥È¡¼¥ë¤µ¤ì¤ë¿·¤¿¤Ê Info ¥Õ¥¡¥¤¥ë¤Î¥³¥Ô¡¼¤È¤¬
+ .I infodir
+ ¤Ë¤¢¤ë¤³¤È¤ò»ØÄê¤¹¤ë¡£¥Ç¥Õ¥©¥ë¥È¤Ï
+-.B /usr/info
++.B @PREFIX@/share/info
+ ¤Ç¤¢¤ë¡£
+ .TP
+@@ -483,4 +483,6 @@
+ .I no
+ warranty.
++.PP
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH ËÝÌõ¼Ô
+ ´Ø¸Í ¹¬°ì <sekido@mbox.kyoto-inet.or.jp>
+diff -ru2N dpkg-1.10.9/man/ja/update-alternatives.8 dpkg-1.10.9-patched/man/ja/update-alternatives.8
+--- dpkg-1.10.9/man/ja/update-alternatives.8	Sat Feb  2 10:56:45 2002
++++ dpkg-1.10.9-patched/man/ja/update-alternatives.8	Sat Dec  7 22:19:03 2002
+@@ -5,5 +5,5 @@
+ .\" by the Free Software Foundation; either version 2 of the License, or
+ .\" (at your option) any later version.  There is NO WARRANTY.  You can
+-.\" find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
++.\" find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
+ .\"
+ .\"WORD:	action		¥¢¥¯¥·¥ç¥ó
+@@ -68,9 +68,9 @@
+ ¤ÎÎ¾Êý¤¬¥·¥¹¥Æ¥à¤Ë¥¤¥ó¥¹¥È¡¼¥ë¤µ¤ì¤Æ¤¤¤¿¤È¤¹¤ë¤È¡¢
+ °ìÈÌÌ¾¤Ç¤¢¤ë
+-.I /usr/bin/editor
++.I @PREFIX@/bin/editor
+ ¤Ï¡¢¥Ç¥Õ¥©¥ë¥È¤Ç¤Ï
+-.I /usr/bin/nvi
++.I @PREFIX@/bin/nvi
+ ¤ò»²¾È¤¹¤ë¡£¥·¥¹¥Æ¥à´ÉÍý¼Ô¤Ï¤³¤ì¤ò¾å½ñ¤­¤·¡¢
+-.I /usr/bin/ed
++.I @PREFIX@/bin/ed
+ ¤ò»²¾È¤µ¤»¤ë¤è¤¦¤Ë¤¹¤ë¤³¤È¤â¤Ç¤­¤ë¡£¤³¤¦¤¹¤ë¤È¡¢
+ ¤½¤Î¸åÌÀ¼¨Åª¤Ê¥ê¥¯¥¨¥¹¥È¤¬¤Ê¤±¤ì¤Ð¡¢
+@@ -82,5 +82,5 @@
+ ¤½¤·¤Æ¤½¤ÎÌ¾Á°¤¬¼ÂºÝ¤Ë»²¾È¤µ¤ì¤ë¥Õ¥¡¥¤¥ë¤Ø¤Î¥·¥ó¥Ü¥ê¥Ã¥¯¥ê¥ó¥¯¤Ë¤Ê¤Ã¤Æ¤¤¤ë¡£
+ ¤³¤¦¤Ê¤Ã¤Æ¤¤¤ëÍýÍ³¤Ï¡¢¥·¥¹¥Æ¥à´ÉÍý¼Ô¤ÎÊÑ¹¹¤¬
+-.I /etc
++.I @PREFIX@/etc
+ ¥Ç¥£¥ì¥¯¥È¥ê°Ê²¼¤Ç¹Ô¤ï¤ì¤ë¤è¤¦¤Ë¤¹¤ë¤¿¤á¤Ç¤¢¤ë¡£
+ ¤Ê¤¼¤³¤¦¤¹¤ë¤Î¤¬ÎÉ¤¤¤«¤Ë¤Ä¤¤¤Æ¤Ï FHS ¤ËÀâÌÀ¤¬¤¢¤ë¡£
+@@ -101,7 +101,7 @@
+ .BR vi (1)
+ ¥¨¥Ç¥£¥¿¤Î¤¤¤í¤¤¤í¤ÊÇÉÀ¸¥·¥¹¥Æ¥à¤¬Æ±»þ¤Ë¥¤¥ó¥¹¥È¡¼¥ë¤µ¤ì¤Æ¤¤¤¿¤È¤¹¤ë¤È¡¢
+-.I /usr/share/man/man1/vi.1
++.I @PREFIX@/share/man/man1/vi.1
+ ¤¬»²¾È¤¹¤ë man ¥Ú¡¼¥¸¤Ï¡¢
+-.I /usr/bin/vi
++.I @PREFIX@/bin/vi
+ ¤¬»²¾È¤¹¤ë¼Â¹Ô¥Õ¥¡¥¤¥ë¤ËÂÐ±þ¤·¤Æ¤¤¤ë¤Ù¤­¤Ç¤¢¤í¤¦¡£
+ .B update-alternatives
+@@ -156,5 +156,5 @@
+ .TP
+ °ìÈÌÌ¾ (generic name)
+-.I /usr/bin/editor
++.I @PREFIX@/bin/editor
+ ¤Î¤è¤¦¤ÊÌ¾Á°¡£ alternatives ¥·¥¹¥Æ¥à¤Ë¤è¤Ã¤Æ
+ Æ±ÍÍ¤Îµ¡Ç½¤ò»ý¤ÄÊ£¿ô¤Î¥Õ¥¡¥¤¥ë¤Î¤É¤ì¤«¤Ò¤È¤Ä¤ò»²¾È¤¹¤ë¡£
+@@ -171,10 +171,10 @@
+ alternatives ¥Ç¥£¥ì¥¯¥È¥ê
+ symlink ¤òÊÝ»ý¤¹¤ë¥Ç¥£¥ì¥¯¥È¥ê¡£¥Ç¥Õ¥©¥ë¥È¤Ï
+-.IR /etc/alternatives ¡£
++.IR @PREFIX@/etc/alternatives ¡£
+ .TP
+ administrative ¥Ç¥£¥ì¥¯¥È¥ê
+ .B update-alternatives
+ ¤Î¾õÂÖ¾ðÊó¤òÊÝ»ý¤¹¤ë¥Ç¥£¥ì¥¯¥È¥ê¡£¥Ç¥Õ¥©¥ë¥È¤Ï
+-.IR /var/lib/dpkg/alternatives ¡£
++.IR @PREFIX@/var/lib/dpkg/alternatives ¡£
+ .TP
+ ¥ê¥ó¥¯¥°¥ë¡¼¥×
+@@ -298,10 +298,10 @@
+ .SH ¥Õ¥¡¥¤¥ë
+ .TP
+-.I /etc/alternatives/
++.I @PREFIX@/etc/alternatives/
+ ¥Ç¥Õ¥©¥ë¥È¤Î alternatives ¥Ç¥£¥ì¥¯¥È¥ê¡£
+ .B --altdir
+ ¥ª¥×¥·¥ç¥ó¤Ë¤è¤Ã¤ÆÊÑ¹¹¤Ç¤­¤ë¡£
+ .TP
+-.I /var/lib/dpkg/alternatives/
++.I @PREFIX@/var/lib/dpkg/alternatives/
+ ¥Ç¥Õ¥©¥ë¥È¤Î administration ¥Ç¥£¥ì¥¯¥È¥ê¡£
+ .B --admindir
+@@ -339,5 +339,7 @@
+ version 2 or later for copying conditions.  There is NO WARRANTY.
+ .PP
+-You can find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
++.PP
++You can find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
+ .SH ´ØÏ¢¹àÌÜ
+ .BR ln (1),
+diff -ru2N dpkg-1.10.9/man/pt_BR/Makefile.in dpkg-1.10.9-patched/man/pt_BR/Makefile.in
+--- dpkg-1.10.9/man/pt_BR/Makefile.in	Mon May 20 00:40:28 2002
++++ dpkg-1.10.9-patched/man/pt_BR/Makefile.in	Sat Dec  7 22:19:02 2002
+@@ -20,8 +20,8 @@
+ 
+ install-doc:
+-	$(mkinstalldirs) $(DESTDIR)$(svman8dir) 
++	$(mkinstalldirs) $(DESTDIR)$(ptman8dir) 
+ 	set -e ; for i in $(MAN8PAGES) ; do \
+ 	    if test -f $$i ; then d= ; else d="$(srcdir)/" ; fi ; \
+-	    $(INSTALL_DATA) $$d$$i $(DESTDIR)$(svman8dir) ; \
++	    $(INSTALL_DATA) $$d$$i $(DESTDIR)$(ptman8dir) ; \
+ 	done
+ 
+diff -ru2N dpkg-1.10.9/man/pt_BR/update-alternatives.8 dpkg-1.10.9-patched/man/pt_BR/update-alternatives.8
+--- dpkg-1.10.9/man/pt_BR/update-alternatives.8	Sat Feb  2 12:58:58 2002
++++ dpkg-1.10.9-patched/man/pt_BR/update-alternatives.8	Sat Dec  7 22:19:03 2002
+@@ -5,5 +5,5 @@
+ .\" Free Software Foundation; versão 2 da Licença ou (a sua escolha)
+ .\" qualquer versão posterior. NÂO existe garantia. Você pode encontrar a
+-.\" GNU GPL em /usr/share/common-licenses/GPL em qualquer sistema Debian.
++.\" GNU GPL em @PREFIX@/share/common-licenses/GPL em qualquer sistema Debian.
+ .TH UPDATE-ALTERNATIVES 8 "19 de Janeiro de 1998" "Projeto Debian" "utilitários dpkg"
+ .SH NOME
+@@ -67,10 +67,10 @@
+ estejam ambos instalados no sistema, o sistema de alternativas fará com
+ que o nome genérico
+-.I /usr/bin/editor
++.I @PREFIX@/bin/editor
+ refira-se a
+-.I /usr/bin/nvi
++.I @PREFIX@/bin/nvi
+ por padrão. O administrador do sistema pode sobreescrever isto e fazer com
+ que refira-se a
+-.I /usr/bin/ed
++.I @PREFIX@/bin/ed
+ e o sistema de alternativas não irá alterar esta configuração até que
+ explicitamente requisitado a fazê-lo.
+@@ -83,5 +83,5 @@
+ referenciado. Isto é feito para que as mudanças do administrador do
+ sistema possam ser confinadas dentro do diretório
+-.I /etc
++.I @PREFIX@/etc
+ : a FHS (q.v.) dá razões de porquê isto é um Boa Coisa.
+ .PP
+@@ -103,7 +103,7 @@
+ .BR vi (1)
+ estão instaladas, a página de manual referenciada por
+-.I /usr/share/man/man1/vi.1
++.I @PREFIX@/share/man/man1/vi.1
+ deverá corresponder ao executável referenciado por
+-.IR /usr/bin/vi .
++.IR @PREFIX@/bin/vi .
+ .B update-alternatives
+ gerencia isso por meio de ligações
+@@ -165,5 +165,5 @@
+ Um nome,  como
+ A name, like
+-.IR /usr/bin/editor ,
++.IR @PREFIX@/bin/editor ,
+ o qual refere-se, através do sistema de alternativas, a um ou a diversos
+ arquivos de função similar.
+@@ -180,10 +180,10 @@
+ diretório de alternativas
+ Um diretório, por padrão
+-.IR /etc/alternatives ,
++.IR @PREFIX@/etc/alternatives ,
+ contendo as ligações simbólicas.
+ .TP
+ diretório administrativo
+ Um diretório, por padrão
+-.IR /var/lib/dpkg/alternatives ,
++.IR @PREFIX@/var/lib/dpkg/alternatives ,
+ contendo informação de estado de
+ .BR update-alternatives .
+@@ -319,9 +319,9 @@
+ .SH ARQUIVOS
+ .TP
+-.I /etc/alternatives/
++.I @PREFIX@/etc/alternatives/
+ O diretório de alternativas padrão. Pode ser sobreescrito pela opção
+ .B --altdir
+ .TP
+-.I /var/lib/dpkg/alternatives/
++.I @PREFIX@/var/lib/dpkg/alternatives/
+ O diretório de administração padrão. Pode ser sobreescrito pela opção
+ .B --admindir
+@@ -359,5 +359,7 @@
+ posterior para condições de cópia. NÂO existe garantia.
+ .PP
+-Você pode encontrar a GNU GPL em /usr/share/common-licenses/GPL em
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
++.PP
++Você pode encontrar a GNU GPL em @PREFIX@/share/common-licenses/GPL em
+ qualquer sistema Debian.
+ .SH "VEJA TAMBÉM"
+diff -ru2N dpkg-1.10.9/man/ru/dpkg.8 dpkg-1.10.9-patched/man/ru/dpkg.8
+--- dpkg-1.10.9/man/ru/dpkg.8	Sat Feb  2 10:57:02 2002
++++ dpkg-1.10.9-patched/man/ru/dpkg.8	Sat Dec  7 22:19:03 2002
+@@ -233,5 +233,5 @@
+ .B --pending,
+ ÔÏ ×ÓÅ ÐÁËÅÔÙ, ÒÁÓÐÁËÏ×ÁÎÎÙÅ, ÎÏ ÏÔÍÅÞÅÎÎÙÅ × ÆÁÊÌÅ
+-.I /var/lib/dpkg/status
++.I @PREFIX@/var/lib/dpkg/status
+ ÄÌÑ ÕÄÁÌÅÎÉÑ ÉÌÉ ÐÏÌÎÏÊ ÏÞÉÓÔËÉ, ÓÏÏÔ×ÅÔÓÔ×ÅÎÎÏ, ÕÄÁÌÑÀÔÓÑ ÉÌÉ
+ ÐÏÌÎÏÓÔØÀ ÏÞÉÝÁÀÔÓÑ.
+@@ -259,5 +259,5 @@
+ .IR ÐÁËÅÔÅ ,
+ ËÏÔÏÒÕÀ ÉÚ×ÌÅËÁÅÔ ÉÚ ÆÁÊÌÁ
+-.IR /var/lib/dpkg/available .
++.IR @PREFIX@/var/lib/dpkg/available .
+ 
+ .TP
+@@ -280,5 +280,5 @@
+ .B dpkg
+ ÈÒÁÎÉÔ ÉÎÆÏÒÍÁÃÉÀ Ï ÄÏÓÔÕÐÎÙÈ ÐÁËÅÔÁÈ ×
+-.IR /var/lib/dpkg/available .
++.IR @PREFIX@/var/lib/dpkg/available .
+ 
+ .TP
+@@ -310,5 +310,5 @@
+ .I ÏÂÒÁÚÅÃ ÉÍÅÎÉ ÐÁËÅÔÁ 
+ ÎÅ ÚÁÄÁÎ, ÐÏËÁÚÙ×ÁÅÔ ×ÓÅ ÐÁËÅÔÙ × 
+-.BR /var/lib/dpkg/available . 
++.BR @PREFIX@/var/lib/dpkg/available . 
+ ÷ 
+ .I ÏÂÒÁÚÃÅ ÉÍÅÎÉ ÐÁËÅÔÁ 
+@@ -455,5 +455,5 @@
+ ËÏÎÆÉÇÕÒÁÃÉÏÎÎÏÍ ÆÁÊÌÅ
+ .BR dpkg \~--
+-.IR /etc/dpkg/dpkg.cfg .
++.IR @PREFIX@/etc/dpkg/dpkg.cfg .
+ ëÁÖÄÁÑ ÓÔÒÏËÁ × ËÏÎÆÉÇÕÒÁÃÉÏÎÎÏÍ ÆÁÊÌÅ ÄÏÌÖÎÁ ÂÙÔØ ÌÉÂÏ ËÌÀÞÏÍ (×
+ ÔÏÞÎÏÓÔÉ ËÁË ËÌÀÞ ËÏÍÁÎÄÎÏÊ ÓÔÒÏËÉ, ÎÏ ÂÅÚ ÎÁÞÁÌØÎÙÈ ÄÅÆÉÓÏ×), ÉÌÉ ÖÅ
+@@ -640,5 +640,5 @@
+ õÓÔÁÎÁ×ÌÉ×ÁÅÔ ËÁÔÁÌÏÇÉ ÐÏ ÕÍÏÌÞÁÎÉÀ.  ëÁÔÁÌÏÇ admindir ÐÏ ÕÍÏÌÞÁÎÉÀ
+ ÒÁ×ÅÎ
+-.B /var/lib/dpkg 
++.B @PREFIX@/var/lib/dpkg 
+ É ÓÏÄÅÒÖÉÔ ÍÎÏÇÏ ÆÁÊÌÏ×, × ËÏÔÏÒÙÈ ÄÁÅÔÓÑ ÉÎÆÏÒÍÁÃÉÑ Ï ÓÏÓÔÏÑÎÉÑÈ 
+ ÕÓÔÁÎÏ×ÌÅÎÎÙÈ ÉÌÉ ÕÄÁÌÅÎÎÙÈ ÐÁËÅÔÏ× É Ô.\~Ä. 
+@@ -661,5 +661,5 @@
+ .BR admindir \~--
+ × ÚÎÁÞÅÎÉÅ
+-.IB dir /var/lib/dpkg \P.
++.IB dir @PREFIX@/var/lib/dpkg \P.
+ 
+ .TP
+@@ -689,5 +689,5 @@
+ 
+ .TP
+-.I /etc/dpkg/dpkg.cfg
++.I @PREFIX@/etc/dpkg/dpkg.cfg
+ æÁÊÌ ËÏÎÆÉÇÕÒÁÃÉÉ Ó ËÌÀÞÁÍÉ ÐÏ ÕÍÏÌÞÁÎÉÀ.
+ .P
+@@ -698,9 +698,9 @@
+ 
+ .TP
+-.I /var/lib/dpkg/available
++.I @PREFIX@/var/lib/dpkg/available
+ óÐÉÓÏË ÄÏÓÔÕÐÎÙÈ ÐÁËÅÔÏ×.
+ 
+ .TP
+-.I /var/lib/dpkg/status
++.I @PREFIX@/var/lib/dpkg/status
+ óÏÓÔÏÑÎÉÑ ÄÏÓÔÕÐÎÙÈ ÐÁËÅÔÏ×. üÔÏÔ ÆÁÊÌ ÓÏÄÅÒÖÉÔ ÉÎÆÏÒÍÁÃÉÀ Ï ÔÏÍ,
+ ÐÏÍÅÞÅÎ ÌÉ ÐÁËÅÔ ÄÌÑ ÕÄÁÌÅÎÉÑ ÉÌÉ ÎÅÔ, ÕÓÔÁÎÏ×ÌÅÎ ÏÎ ÉÌÉ ÎÅÔ, É
+@@ -757,5 +757,5 @@
+ 
+ þÔÏÂÙ ÐÏÓÍÏÔÒÅÔØ ÎÁ ÚÁÐÉÓÉ Ï Ä×ÕÈ ÐÁËÅÔÁÈ × ÆÁÊÌÅ
+-.BR /var/lib/dpkg/available :
++.BR @PREFIX@/var/lib/dpkg/available :
+ .br
+ \fB     dpkg --print-avail elvis vim | less\fP
+@@ -764,5 +764,5 @@
+ ÷ÒÕÞÎÕÀ ÐÒÏÓÍÏÔÒÅÔØ ÓÐÉÓÏË ÐÁËÅÔÏ×:
+ .br
+-\fB     less /var/lib/dpkg/available\fP
++\fB     less @PREFIX@/var/lib/dpkg/available\fP
+ .br
+ 
+@@ -815,6 +815,7 @@
+ .SH á÷ôïòù
+ óÍ.
+-.BR /usr/share/doc/dpkg/THANKS ,
++.BR @PREFIX@/share/doc/dpkg/THANKS ,
+ ÇÄÅ ÐÒÉ×ÅÄÅÎ ÓÐÉÓÏË ÔÅÈ, ËÔÏ ÕÞÁÓÔ×Ï×ÁÌ × ÒÁÚÒÁÂÏÔËÅ
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .BR dpkg .
+ 
+diff -ru2N dpkg-1.10.9/man/sv/dpkg-deb.1 dpkg-1.10.9-patched/man/sv/dpkg-deb.1
+--- dpkg-1.10.9/man/sv/dpkg-deb.1	Sat Feb  2 12:46:49 2002
++++ dpkg-1.10.9-patched/man/sv/dpkg-deb.1	Sat Dec  7 22:19:03 2002
+@@ -249,7 +249,8 @@
+ De är upphovsrättsskyddade 1995-1996 av honom och släppta under
+ GNU General Public Licence; det finns INGEN garanti.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ Se
+-.B /usr/share/doc/dpkg/copyright
++.B @PREFIX@/share/doc/dpkg/copyright
+ och
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ för detaljer.
+diff -ru2N dpkg-1.10.9/man/sv/dpkg-query.8 dpkg-1.10.9-patched/man/sv/dpkg-query.8
+--- dpkg-1.10.9/man/sv/dpkg-query.8	Sat Feb  2 12:56:49 2002
++++ dpkg-1.10.9-patched/man/sv/dpkg-query.8	Sat Dec  7 22:19:03 2002
+@@ -17,5 +17,5 @@
+ Lista paket som matchar det givna mönstret.
+ Om inget \fIpaketnamnsmönster\fP anges listas alla paket i
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ Skalets normala jokertecken tillåts i \fIpaketnamnsmönster\fP.
+ Observera att du sannolikt måste skriva \fIpaketnamnsmönster\fP inom
+@@ -50,5 +50,5 @@
+ \fB-p\fP |\fB--print-avail\fP paket
+ Visar detaljer om \fIpaket\fP från
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fB--licence\fP | \fB--license\fP
+@@ -62,5 +62,5 @@
+ \fB--admindir=\fIkat\fP
+ Ändra platsen för \fBdpkg\fR-databasen.
+-Förval är \fI/var/lib/dpkg\fP.
++Förval är \fI@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB--showformat=\fP\fIformat\fR
+@@ -86,4 +86,5 @@
+ <wakkerma@debian.org>
+ .UE
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ Detta är fri programvara; se GNU General Public License version 2 eller
+diff -ru2N dpkg-1.10.9/man/sv/dpkg-split.8 dpkg-1.10.9-patched/man/sv/dpkg-split.8
+--- dpkg-1.10.9/man/sv/dpkg-split.8	Sat Feb 16 09:04:24 2002
++++ dpkg-1.10.9-patched/man/sv/dpkg-split.8	Sat Dec  7 22:19:03 2002
+@@ -170,5 +170,5 @@
+ sammanslagning.
+ Förvalet är
+-.BR /var/lib/dpkg .
++.BR @PREFIX@/var/lib/dpkg .
+ .TP
+ .BI --partsize\fR|\fB-S " kbyte"
+@@ -240,5 +240,5 @@
+ .SH FILER
+ .TP
+-.B /var/lib/dpkg/parts
++.B @PREFIX@/var/lib/dpkg/parts
+ Förvald kö-katalog för delfiler som väntar på automatisk sammanslagning.
+ 
+@@ -257,8 +257,9 @@
+ Upphovsrätten © 1995-1996 ligger hos honom och de är släppta under GNU
+ General Public Licence; det finns INGEN GARANTI.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ Se
+-.B /usr/share/dpkg/copyright
++.B @PREFIX@/share/dpkg/copyright
+ och
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ för ytterligare detaljer.
+ 
+diff -ru2N dpkg-1.10.9/man/sv/dpkg.8 dpkg-1.10.9-patched/man/sv/dpkg.8
+--- dpkg-1.10.9/man/sv/dpkg.8	Sun May 26 13:54:33 2002
++++ dpkg-1.10.9-patched/man/sv/dpkg.8	Sat Dec  7 22:19:03 2002
+@@ -158,5 +158,5 @@
+ konfigurationsfiler.
+ Om \fB-a\fP eller \fB--pending\fP anges istället för ett paketnamn kommer
+-alla uppackade paket som i filen \fI/var/lib/dpkg/status\fP markerats för
++alla uppackade paket som i filen \fI@PREFIX@/var/lib/dpkg/status\fP markerats för
+ att tas bort eller rensas att tas bort eller rensas, respektive.
+ 
+@@ -175,5 +175,5 @@
+ .BI "dpkg  -p|--print-avail " paket
+ Visar detaljer om \fIpaket\fP från
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg --update-avail\fP | \fB--merge-avail\fP \fIPackages-fil\fP
+@@ -187,5 +187,5 @@
+ \fIPackages\fP.
+ \fBdpkg\fP behåller sin lista över tillgängliga paket i
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg -A\fP | \fB--record-avail\fP \fIpaketfil\fP ...
+@@ -206,5 +206,5 @@
+ Lista paket som matchar det givna mönstret.
+ Om inget \fIpaketnamnsmönster\fP anges listas alla paket i
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ Skalets normala jokertecken tillåts i \fIpaketnamnsmönster\fP.
+ (Du måste sannolikt skriva \fIpaketnamnsmönster\fP inom citationstecken
+@@ -311,5 +311,5 @@
+ .SH FLAGGOR
+ Alla flaggorna kan ges både på kommandoraden och i \fBdpkg\fPs
+-konfigurationsfil \fI/etc/dpkg/dpkg.cfg\fP.
++konfigurationsfil \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP.
+ En rad i konfigurationsfilen är antingen en flagga (precis samma som på
+ kommandoraden, men utan inledande bindestreck) eller en kommentar (om den
+@@ -473,5 +473,5 @@
+ \fB--root=\fP\fIkat\fP | \fB--admindir=\fP\fIkat\fP | \fB--instdir=\fP\fIkat\fP
+ Ändra standardkataloger.
+-Förval för \fBadmindir\fP är \fI/var/lib/dpkg\fP, och innehåller filer som
++Förval för \fBadmindir\fP är \fI@PREFIX@/var/lib/dpkg\fP, och innehåller filer som
+ ger information om status för installerade och ej installerade paket, osv.
+ Förval för \fBinstdir\fP är \fI/\fP och är den katalog som skickas som
+@@ -479,5 +479,5 @@
+ vilket betyder att skripten ser \fBinstdir\fP som rotkatalog.
+ Om du ändrar \fBroot\fP ändrar du \fBinstdir\fP till \fIkat\fP och
+-\fBadmindir\fP till \fIkat\fP\fB/var/lib/dpkg\fP.
++\fBadmindir\fP till \fIkat\fP\fB@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB-O\fP | \fB--selected-only\fP
+@@ -497,5 +497,5 @@
+ .SH FILER
+ .TP
+-.I /etc/dpkg/dpkg.cfg
++.I @PREFIX@/etc/dpkg/dpkg.cfg
+ Konfigurationsfil med förvalda inställningar.
+ .P
+@@ -504,8 +504,8 @@
+ filer.
+ .TP
+-.I /var/lib/dpkg/available
++.I @PREFIX@/var/lib/dpkg/available
+ Lista över tillgängliga paket.
+ .TP
+-.I /var/lib/dpkg/status
++.I @PREFIX@/var/lib/dpkg/status
+ Status för tillgängliga paket.
+ Denna fil innehåller information om huruvida ett paket är markerat för
+@@ -556,5 +556,5 @@
+ .br
+ 
+-För att se posterna i \fI/var/lib/dpkg/available\fP för två paket:
++För att se posterna i \fI@PREFIX@/var/lib/dpkg/available\fP för två paket:
+ .br
+ \fB     dpkg --print-avail elvis vim | less\fP
+@@ -563,5 +563,5 @@
+ För att själv söka i paketlistan:
+ .br
+-\fB     less /var/lib/dpkg/available\fP
++\fB     less @PREFIX@/var/lib/dpkg/available\fP
+ .br
+ 
+@@ -610,5 +610,6 @@
+ .SH FÖRFATTARE
+ .nf
+-Se filen \fB/usr/share/doc/dpkg/THANKS\fP för en lista över personer som
++Se filen \fB@PREFIX@/share/doc/dpkg/THANKS\fP för en lista över personer som
+ bidragit till \fBdpkg\fP .
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .fi
+diff -ru2N dpkg-1.10.9/man/sv/dpkg.cfg.5 dpkg-1.10.9-patched/man/sv/dpkg.cfg.5
+--- dpkg-1.10.9/man/sv/dpkg.cfg.5	Sat Feb 16 09:14:15 2002
++++ dpkg-1.10.9-patched/man/sv/dpkg.cfg.5	Sat Dec  7 22:19:03 2002
+@@ -11,9 +11,10 @@
+ ("\fB#\fR").
+ .SH FILER
+-.I /etc/dpkg/dpkg.cfg
++.I @PREFIX@/etc/dpkg/dpkg.cfg
+ ~/.dpkg.cfg
+ .SH FÖRFATTARE
+-Se \fB/usr/share/doc/dpkg/THANKS\fP för listan över personer som har
++Se \fB@PREFIX@/share/doc/dpkg/THANKS\fP för listan över personer som har
+ bidragit till \fBdpkg\fP .
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH SE ÄVEN
+ .BR dpkg (8)
+diff -ru2N dpkg-1.10.9/man/sv/dselect.8 dpkg-1.10.9-patched/man/sv/dselect.8
+--- dpkg-1.10.9/man/sv/dselect.8	Sat Feb  2 12:46:49 2002
++++ dpkg-1.10.9-patched/man/sv/dselect.8	Sat Dec  7 22:19:03 2002
+@@ -40,5 +40,5 @@
+ .SH FLAGGOR
+ Alla flaggorna kan ges både på kommandoraden och i \fBdselect\fPs
+-konfigurationsfil \fI/etc/dpkg/dselect.cfg\fP.
++konfigurationsfil \fI@PREFIX@/etc/dpkg/dselect.cfg\fP.
+ En rad i konfigurationsfilen är antingen en flagga (precis samma som på
+ kommandoraden, men utan inledande bindestreck) eller en kommentar (om den
+@@ -49,5 +49,5 @@
+ Ändrar namnet på katalogen där dpkg letar efter filerna "status", "available"
+ m.fl.
+-Förval är \fI/var/lib/dpkg\fP
++Förval är \fI@PREFIX@/var/lib/dpkg\fP
+ och du bör normalt sett inte behöva ändra det.
+ .TP
+@@ -466,2 +466,5 @@
+ .br
+ Dselect, och denna manualsida, är översatt av Peter Karlsson.
++.br
++Paths modified by Carsten Klapp to reflect fink distribution,
++December 2002.
+diff -ru2N dpkg-1.10.9/man/sv/dselect.cfg.5 dpkg-1.10.9-patched/man/sv/dselect.cfg.5
+--- dpkg-1.10.9/man/sv/dselect.cfg.5	Sat Feb 16 09:14:15 2002
++++ dpkg-1.10.9-patched/man/sv/dselect.cfg.5	Sat Dec  7 22:19:03 2002
+@@ -11,9 +11,10 @@
+ ("\fB#\fR").
+ .SH FILER
+-.I /etc/dpkg/dselect.cfg
++.I @PREFIX@/etc/dpkg/dselect.cfg
+ ~/.dselect.cfg
+ .SH FÖRFATTARE
+-Se \fB/usr/share/doc/dpkg/THANKS\fP för listan över personer som har
++Se \fB@PREFIX@/share/doc/dpkg/THANKS\fP för listan över personer som har
+ bidragit till \fBdselect\fP .
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH SE ÄVEN
+ .BR dselect (8)
+diff -ru2N dpkg-1.10.9/origin.fink dpkg-1.10.9-patched/origin.fink
+--- dpkg-1.10.9/origin.fink	Wed Dec 31 19:00:00 1969
++++ dpkg-1.10.9-patched/origin.fink	Sat Dec  7 22:32:52 2002
+@@ -0,0 +1,3 @@
++Vendor: Fink
++Vendor-URL: http://fink.sourceforge.net/
++Bugs: http://fink.sourceforge.net/
+diff -ru2N dpkg-1.10.9/scripts/cleanup-info.8 dpkg-1.10.9-patched/scripts/cleanup-info.8
+--- dpkg-1.10.9/scripts/cleanup-info.8	Sun Dec  5 12:49:04 1999
++++ dpkg-1.10.9-patched/scripts/cleanup-info.8	Sat Dec  7 22:19:03 2002
+@@ -35,5 +35,5 @@
+ .SH FILES
+ .TP
+-.I "/usr/info/dir or <dirname>/dir"
++.I "@PREFIX@/share/info/dir or <dirname>/dir"
+ The info directory file. The lock file is named the same, with ".lock" suffix.
+ .SH BUGS
+@@ -44,4 +44,5 @@
+ .SH AUTHOR
+ Copyright (C) 1996 Kim-Minh Kaplan.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence
+diff -ru2N dpkg-1.10.9/scripts/dpkg-divert.8 dpkg-1.10.9-patched/scripts/dpkg-divert.8
+--- dpkg-1.10.9/scripts/dpkg-divert.8	Thu Jul  5 19:19:56 2001
++++ dpkg-1.10.9-patched/scripts/dpkg-divert.8	Sat Dec  7 22:19:03 2002
+@@ -38,5 +38,5 @@
+ .TP
+ .I --admindir <directory>
+-Set the dpkg data directory to <directory> (default: /var/lib/dpkg).
++Set the dpkg data directory to <directory> (default: @PREFIX@/var/lib/dpkg).
+ .TP
+ .I --divert <divert-to>
+@@ -71,5 +71,5 @@
+ .SH FILES
+ .TP
+-.I /var/lib/dpkg/diversions
++.I @PREFIX@/var/lib/dpkg/diversions
+ File which contains the current list of diversions of the system. It is
+ located in the dpkg administration directory, along with other files
+@@ -85,4 +85,5 @@
+ .SH AUTHOR
+ Copyright (C) 1995 Ian Jackson.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence
+diff -ru2N dpkg-1.10.9/scripts/dpkg-name.sh dpkg-1.10.9-patched/scripts/dpkg-name.sh
+--- dpkg-1.10.9/scripts/dpkg-name.sh	Sun Dec 24 07:34:20 2000
++++ dpkg-1.10.9-patched/scripts/dpkg-name.sh	Sat Dec  7 22:20:46 2002
+@@ -11,4 +11,5 @@
+ echo "# ${prog} ${version} -- ${purpose}
+ # Copyright (C) 1995,1996 Erick Branderhorst <branderh@debian.org>.
++# Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ 
+ # This is free software; you can redistribute it and/or modify it
+@@ -20,5 +21,5 @@
+ # WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
+-# /usr/share/common-licenses/GPL for more details."
++# @PREFIX@/share/common-licenses/GPL for more details."
+ }
+ 
+diff -ru2N dpkg-1.10.9/scripts/dpkg-scanpackages.8 dpkg-1.10.9-patched/scripts/dpkg-scanpackages.8
+--- dpkg-1.10.9/scripts/dpkg-scanpackages.8	Fri May 24 23:35:00 2002
++++ dpkg-1.10.9-patched/scripts/dpkg-scanpackages.8	Sat Dec  7 22:19:03 2002
+@@ -40,5 +40,5 @@
+ .I binarydir
+ is the name of the binary tree to process (for example,
+-.BR contrib/binary-i386 ).
++.BR main/binary-darwin-powerpc ).
+ It is best to make this relative to the root of the Debian archive,
+ because every Filename field in the new Packages file will start with
+@@ -106,3 +106,5 @@
+ .BR dpkg (8),
+ .BR dselect (8),
+-.BR dpkg-scansources (8).
+\ No newline at end of file
++.BR dpkg-scansources (8).
++.SH AUTHOR
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -ru2N dpkg-1.10.9/scripts/dpkg-source.1 dpkg-1.10.9-patched/scripts/dpkg-source.1
+--- dpkg-1.10.9/scripts/dpkg-source.1	Fri May 24 23:11:02 2002
++++ dpkg-1.10.9-patched/scripts/dpkg-source.1	Sat Dec  7 22:19:03 2002
+@@ -806,4 +806,5 @@
+ .SH AUTHOR
+ The utilities and this manpage were written by Ian Jackson.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH COPYRIGHT
+ Copyright (C) 1995-1996 Ian Jackson
+@@ -813,6 +814,6 @@
+ This is free software; see the GNU General Public Licence version 2 or later
+ for copying conditions. There is NO WARRANTY.  See
+-.B /usr/share/doc/dpkg/copyright
++.B @PREFIX@/share/doc/dpkg/copyright
+ and
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ for details.
+diff -ru2N dpkg-1.10.9/scripts/dpkg-statoverride.8 dpkg-1.10.9-patched/scripts/dpkg-statoverride.8
+--- dpkg-1.10.9/scripts/dpkg-statoverride.8	Sun Mar  4 09:39:06 2001
++++ dpkg-1.10.9-patched/scripts/dpkg-statoverride.8	Sat Dec  7 22:19:03 2002
+@@ -52,8 +52,8 @@
+ .I --admindir
+ Change the directory of the dpkg database where the statoverride file is
+-also stored. Defaults to /var/lib/dpkg.
++also stored. Defaults to @PREFIX@/var/lib/dpkg.
+ .SH FILES
+ .TP
+-.I /var/lib/dpkg/statoverride
++.I @PREFIX@/var/lib/dpkg/statoverride
+ File which contains the current list of stat overrides of the system. It
+ is located in the dpkg administration directory, along with other files
+@@ -69,4 +69,5 @@
+ <wakkerma@debian.org>
+ .UE
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence version 2 or
+diff -ru2N dpkg-1.10.9/scripts/install-info.8 dpkg-1.10.9-patched/scripts/install-info.8
+--- dpkg-1.10.9/scripts/install-info.8	Thu Jan 31 09:00:59 2002
++++ dpkg-1.10.9-patched/scripts/install-info.8	Sat Dec  7 22:19:03 2002
+@@ -157,5 +157,5 @@
+ .IR infodir .
+ The default is
+-.BR /usr/info .
++.BR @PREFIX@/share/info .
+ .TP
+ .BI \-\-align= nnn " [deprecated]"
+@@ -267,4 +267,6 @@
+ .SH "SEE ALSO"
+ emacs(1), info(1), gzip(1)
++.SH AUTHOR
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .SH COPYRIGHT
+ Copyright 1994, Ian Jackson.
+diff -ru2N dpkg-1.10.9/scripts/update-alternatives.8 dpkg-1.10.9-patched/scripts/update-alternatives.8
+--- dpkg-1.10.9/scripts/update-alternatives.8	Wed Nov 28 18:41:10 2001
++++ dpkg-1.10.9-patched/scripts/update-alternatives.8	Sat Dec  7 22:19:03 2002
+@@ -5,5 +5,5 @@
+ .\" by the Free Software Foundation; either version 2 of the License, or
+ .\" (at your option) any later version.  There is NO WARRANTY.  You can
+-.\" find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
++.\" find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
+ .TH UPDATE-ALTERNATIVES 8 "19 January 1998" "Debian Project" "dpkg utilities"
+ .SH NAME
+@@ -66,11 +66,11 @@
+ are both installed on the system, the alternatives system will cause
+ the generic name
+-.I /usr/bin/editor
++.I @PREFIX@/bin/editor
+ to refer to
+-.I /usr/bin/nvi
++.I @PREFIX@/bin/nvi
+ by default.  The system administrator can override this and cause
+ it
+ to refer to
+-.I /usr/bin/ed
++.I @PREFIX@/bin/ed
+ instead,
+ and the alternatives system will not alter this setting until explicitly
+@@ -84,5 +84,5 @@
+ This is done so that the system administrator's changes can be confined
+ within the
+-.I /etc
++.I @PREFIX@/etc
+ directory: the FHS (q.v.) gives reasons why this is a Good Thing.
+ .PP
+@@ -104,7 +104,7 @@
+ .BR vi (1)
+ editor are installed, the man page referenced by
+-.I /usr/share/man/man1/vi.1
++.I @PREFIX@/share/man/man1/vi.1
+ should correspond to the executable referenced by
+-.IR /usr/bin/vi .
++.IR @PREFIX@/bin/vi .
+ .B update-alternatives
+ handles this by means of
+@@ -165,5 +165,5 @@
+ generic name
+ A name, like
+-.IR /usr/bin/editor ,
++.IR @PREFIX@/bin/editor ,
+ which refers, via the alternatives system, to one of a number of
+ files of similar function.
+@@ -180,10 +180,10 @@
+ alternatives directory
+ A directory, by default
+-.IR /etc/alternatives ,
++.IR @PREFIX@/etc/alternatives ,
+ containing the symlinks.
+ .TP
+ administrative directory
+ A directory, by default
+-.IR /var/lib/dpkg/alternatives ,
++.IR @PREFIX@/var/lib/dpkg/alternatives ,
+ containing
+ .BR update-alternatives '
+@@ -324,5 +324,5 @@
+ .SH FILES
+ .TP
+-.I /etc/alternatives/
++.I @PREFIX@/etc/alternatives/
+ The default alternatives directory.
+ Can be overridden by the
+@@ -330,5 +330,5 @@
+ option.
+ .TP
+-.I /var/lib/dpkg/alternatives/
++.I @PREFIX@/var/lib/dpkg/alternatives/
+ The default administration directory.
+ Can be overridden by the
+@@ -362,4 +362,5 @@
+ Ian Jackson.  It is free software; see the GNU General Public Licence
+ version 2 or later for copying conditions.  There is NO warranty.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .PP
+ This manual page is copyright 1997/98 Charles Briscoe-Smith.
+@@ -367,5 +368,5 @@
+ version 2 or later for copying conditions.  There is NO WARRANTY.
+ .PP
+-You can find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
++You can find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
+ .SH "SEE ALSO"
+ .BR ln (1),
+diff -ru2N dpkg-1.10.9/scripts/update-alternatives.pl dpkg-1.10.9-patched/scripts/update-alternatives.pl
+--- dpkg-1.10.9/scripts/update-alternatives.pl	Sun Apr 28 15:34:07 2002
++++ dpkg-1.10.9-patched/scripts/update-alternatives.pl	Sat Dec  7 22:19:02 2002
+@@ -57,5 +57,5 @@
+ sub badusage { print STDERR "update-alternatives: @_\n\n"; &usageversion; exit(2); }
+ 
+-$altdir= '/etc/alternatives';
++$altdir= '@PREFIX@/etc/alternatives';
+ $admindir= $admindir . '/alternatives';
+ $testmode= 0;
+diff -ru2N dpkg-1.10.9/split/dpkg-split.8 dpkg-1.10.9-patched/split/dpkg-split.8
+--- dpkg-1.10.9/split/dpkg-split.8	Thu Jan 31 09:00:59 2002
++++ dpkg-1.10.9-patched/split/dpkg-split.8	Sat Dec  7 22:19:03 2002
+@@ -163,5 +163,5 @@
+ Specifies an alternative directory for the queue of parts awaiting
+ automatic reassembly.  The default is
+-.BR /var/lib/dpkg .
++.BR @PREFIX@/var/lib/dpkg .
+ .TP
+ .BI --partsize\fR|\fB-S " kbytes"
+@@ -235,5 +235,5 @@
+ .SH FILES
+ .TP
+-.B /var/lib/dpkg/parts
++.B @PREFIX@/var/lib/dpkg/parts
+ The default queue directory for part files awaiting automatic
+ reassembly.
+@@ -254,6 +254,7 @@
+ by him and released under the GNU General Public Licence; there is NO
+ WARRANTY.  See
+-.B /usr/share/dpkg/copyright
++.B @PREFIX@/share/dpkg/copyright
+ and
+-.B /usr/share/common-licenses/GPL
++.B @PREFIX@/share/common-licenses/GPL
+ for details.
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
