@@ -1,7 +1,10 @@
 2005-01-09  Daniel Macks  <dmacks@netspace.org>
 
-	* Package.pm: Put off variable assignments in loop until after
+	* Engine.pm: Put off variable assignments in loop until after
 	checking abort conditions.
+	* Package.pm: Add is_provided() method (Patches #1053414).
+	* Engine.pm: 'fink list' shows "p" for virtual that is installed;
+	'fink listpackages' says YES for provided pkgs (Patches #1053414).
 
 2005-01-09  Daniel Macks  <dmacks@netspace.org>
 

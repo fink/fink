@@ -401,44 +401,54 @@ sub do_real_list {
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
 		if ($package->is_virtual() == 1) {
+			next if $cmd eq "apropos";
+			next unless $options{installedstate} & $ISTATE_ABSENT;
+			next if defined $buildonly;
+			next if defined $section;
+			next if defined $maintainer;
+			next if defined $pkgtree;
 			$lversion = "";
-			$iflag = "   ";
+			$iflag = $package->is_provided()
+				? " p "
+				: "   ";
 			$description = "[virtual package]";
-			next if ($cmd eq "apropos"); 
-			next unless ($options{installedstate} & $ISTATE_ABSENT);
-			next if (defined $buildonly);
-			next if (defined $section);
-			next if (defined $maintainer);
-			next if (defined $pkgtree);
 		} else {
 			$lversion = &latest_version($package->list_versions());
 			$vo = $package->get_version($lversion);
+			# $iflag installed pkg precedence: real-latest > real-old > provided
 			if ($vo->is_installed()) {
-				next unless ($options{installedstate} & $ISTATE_CURRENT);
+				next unless $options{installedstate} & $ISTATE_CURRENT;
 				$iflag = " i ";
 			} elsif ($package->is_any_installed()) {
+				next unless $options{installedstate} & $ISTATE_OUTDATED;
 				$iflag = "(i)";
-				next unless ($options{installedstate} & $ISTATE_OUTDATED);
+			} elsif ($package->is_provided()) {
+				next if $cmd eq "apropos";
+				next unless $options{installedstate} & $ISTATE_CURRENT;
+				next if defined $buildonly;
+				next if defined $section;
+				next if defined $maintainer;
+				next if defined $pkgtree;
+				$iflag = " p ";
 			} else {
+				next unless $options{installedstate} & $ISTATE_ABSENT;
 				$iflag = "   ";
-				next unless ($options{installedstate} & $ISTATE_ABSENT);
 			}
-
 			$description = $vo->get_shortdescription($desclen);
 		}
 		if (defined $buildonly) {
 			next unless $vo->param_boolean("builddependsonly");
 		}
 		if (defined $section) {
-			$section =~ s/[\=]?(.*)/$1/;
 			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
+			$section =~ s/[\=]?(.*)/$1/;
 		}
 		if (defined $maintainer) {
 			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
 		}
 		if (defined $pkgtree) {
-#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
 			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
+#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
 		}
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
@@ -507,7 +517,7 @@ sub cmd_listpackages {
 	foreach $pname (Fink::Package->list_packages()) {
 		print "$pname\n";
 		$package = Fink::Package->package_by_name($pname);
-		if ($package->is_any_installed()) {
+		if ($package->is_any_installed() or $package->is_provided()) {
 			print "YES\n";
 		} else {
 			print "NO\n";
