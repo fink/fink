@@ -1,6 +1,10 @@
+2003-01-07  Max Horn  <max@quendi.de>
+
+	* Validation.pm: Warn if MD5 field(s) is/are missing.
+
 2003-01-05  Justin F. Hallett <thesin@users.sourceforge.net>
 
-        * Engine.pm:  Added sub phase_purge
+	* Engine.pm:  Added sub phase_purge
 
 	* PkgVersion.pm:  Added sub cmd_purge and change fink purge to
 	acctually do a dpkg purge

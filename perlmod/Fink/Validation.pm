@@ -225,10 +225,10 @@ sub validate_info_file {
   
   # License should always be specified, and must be one of the allowed set
   if ($properties->{license}) {
-  	foreach $value (split /\//, $properties->{license}) {
+    foreach $value (split /\//, $properties->{license}) {
       if (not $allowed_license_values{$value}) {
-        print "Warning: Unknown license \"$value\". ($filename)\n";
-        $looks_good = 0;
+	print "Warning: Unknown license \"$value\". ($filename)\n";
+	$looks_good = 0;
       }
     }
   } elsif (not (defined($properties->{type}) and $properties->{type} eq "bundle")) {
@@ -272,6 +272,13 @@ sub validate_info_file {
        }
     }
 
+    # Warn if there is a source without a MD5
+    if (($field eq "source" or $field =~ m/^source([2-9]|\d\d)$/)
+	and not $properties->{$field."-md5"}) {
+      print "Warning: No MD5 checksum specified for \"$field\". ($filename)\n";
+      $looks_good = 0;
+    }
+    
     # Warn if field is unknown
     unless ($known_fields{$field}
          or $field =~ m/^splitoff([2-9]|\d\d)$/
