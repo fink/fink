@@ -1,3 +1,10 @@
+2004-03-01  David H. <dmalloc@users.sourceforge.net>
+	* added new rsync mirror in Hartford, CT, USA
+		bdl.ct.us.finkmirrors.net
+		Maintainer:
+		Christopher Molnar
+		molnar@kde.org
+
 2004-02-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Releasing version 0.19.0.1 of fink-mirrors
