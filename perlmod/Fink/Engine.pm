@@ -24,10 +24,11 @@
 package Fink::Engine;
 
 use Fink::Services qw(&latest_version &sort_versions
+					  &pkglist2lol &cleanup_lol
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
 					  &call_queue_clear &call_queue_add);
-+use Fink::CLI qw(&print_breaking
+use Fink::CLI qw(&print_breaking
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
 use Fink::Package;
