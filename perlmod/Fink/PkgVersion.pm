@@ -208,8 +208,9 @@ sub initialize {
 					 sort { $a->[1] <=> $b->[1] }
 					 map  { [ $_, ( (/(\d+)/)[0] || 0 ) ] } @splitofffields
 					 ) {
+				# form splitoff pkg as its own PkgVersion object
 				push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
-				delete $self->{$_};
+				delete $self->{$_};  # no need to keep the raw fields in the parent
 			}
 		}
 	}
