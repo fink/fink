@@ -1,18 +1,17 @@
 Package: dpkg
 Version: 1.10.9
-Revision: 14
+Revision: 27
 GCC: 3.3
 Depends: gettext, libiconv, gzip, tar, ncurses (>= 5.3-12)
-#BuildDepends: gettext-dev, libiconv-dev, ncurses-dev (>= 5.3-20031018-1)
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-#Source: mirror:debian:pool/main/d/%n/%n_%v.tar.gz
 Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
 SourceDirectory: %n-%v
 Source-MD5: ecd7d51416837f8910314ccb62e39dc2
 PatchScript: sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 CompileScript: <<
+ %p/bin/fink -y install gettext-dev libiconv-dev ncurses-dev
  ./configure %m-apple-darwin %c
  make
 <<

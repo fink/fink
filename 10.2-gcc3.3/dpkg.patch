@@ -1,6 +1,6 @@
 diff -urN dpkg-1.10.9.orig/Makefile.conf.in dpkg-1.10.9/Makefile.conf.in
 --- dpkg-1.10.9.orig/Makefile.conf.in	Mon Jul 15 05:15:06 2002
-+++ dpkg-1.10.9/Makefile.conf.in	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/Makefile.conf.in	Sat Nov  8 22:01:19 2003
 @@ -60,13 +60,13 @@
  
  CPPFLAGS		= @CPPFLAGS@
@@ -19,7 +19,7 @@ diff -urN dpkg-1.10.9.orig/Makefile.conf.in dpkg-1.10.9/Makefile.conf.in
  NLS_LIBS		= @INTLLIBS@ 
 diff -urN dpkg-1.10.9.orig/dpkg-deb/dpkg-deb.1 dpkg-1.10.9/dpkg-deb/dpkg-deb.1
 --- dpkg-1.10.9.orig/dpkg-deb/dpkg-deb.1	Thu Aug  2 09:59:31 2001
-+++ dpkg-1.10.9/dpkg-deb/dpkg-deb.1	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/dpkg-deb/dpkg-deb.1	Sat Nov  8 22:01:19 2003
 @@ -244,7 +244,8 @@
  Copyright (C)1995-1996
  by him and released under the GNU General Public Licence; there is NO
@@ -33,7 +33,7 @@ diff -urN dpkg-1.10.9.orig/dpkg-deb/dpkg-deb.1 dpkg-1.10.9/dpkg-deb/dpkg-deb.1
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/dselect/dselect.8 dpkg-1.10.9/dselect/dselect.8
 --- dpkg-1.10.9.orig/dselect/dselect.8	Tue Jul 17 07:39:24 2001
-+++ dpkg-1.10.9/dselect/dselect.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/dselect/dselect.8	Sat Nov  8 22:01:19 2003
 @@ -34,7 +34,7 @@
  of \fBdselect\fP or show additional information about the program.
  .SH OPTIONS 
@@ -59,283 +59,27 @@ diff -urN dpkg-1.10.9.orig/dselect/dselect.8 dpkg-1.10.9/dselect/dselect.8
 -
 +.br
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -urN dpkg-1.10.9.orig/include/dpkg.h.in dpkg-1.10.9/include/dpkg.h.in
---- dpkg-1.10.9.orig/include/dpkg.h.in	Sun Sep  1 13:47:05 2002
-+++ dpkg-1.10.9/include/dpkg.h.in	Thu Jun 12 23:11:13 2003
-@@ -96,7 +96,7 @@
- #define SHELLENV            "SHELL"
- #define DEFAULTSHELL        "sh"
- #define PAGERENV            "PAGER"
--#define DEFAULTPAGER        "pager"
-+#define DEFAULTPAGER        "less"
- 
- #define IMETHODMAXLEN        50
- #define IOPTIONMAXLEN        IMETHODMAXLEN
-diff -urN dpkg-1.10.9.orig/lib/nfmalloc.c dpkg-1.10.9/lib/nfmalloc.c
---- dpkg-1.10.9.orig/lib/nfmalloc.c	Wed Sep  4 08:34:50 2002
-+++ dpkg-1.10.9/lib/nfmalloc.c	Thu Jun 12 23:11:13 2003
-@@ -26,7 +26,7 @@
- #include <dpkg.h>
+diff -urN dpkg-1.10.9.orig/dselect/main.cc dpkg-1.10.9/dselect/main.cc
+--- dpkg-1.10.9.orig/dselect/main.cc	Sun Sep  1 13:47:05 2002
++++ dpkg-1.10.9/dselect/main.cc	Sat Nov  8 23:09:43 2003
+@@ -41,6 +41,11 @@
  #include <dpkg-db.h>
- 
--#include <obstack.h>
-+#include "obstack.h"
- 
- #define obstack_chunk_alloc m_malloc
- #define obstack_chunk_free free
-diff -urN dpkg-1.10.9.orig/main/archives.c dpkg-1.10.9/main/archives.c
---- dpkg-1.10.9.orig/main/archives.c	Sun Aug 25 04:22:33 2002
-+++ dpkg-1.10.9/main/archives.c	Thu Jun 12 23:11:13 2003
-@@ -547,12 +547,10 @@
-     debug(dbg_eachfiledetail,"tarobject SymbolicLink creating");
- #ifdef HAVE_LCHOWN
-     if (lchown(fnamenewvb.buf,
--#else
--    if (chown(fnamenewvb.buf,
--#endif
- 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->uid : ti->UserID,
- 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->gid : ti->GroupID))
-       ohshite(_("error setting ownership of symlink `%.255s'"),ti->Name);
-+#endif
-     break;
-   case Directory:
-     /* We've already checked for an existing directory. */
-@@ -608,10 +606,8 @@
-         ohshite(_("unable to make backup symlink for `%.255s'"),ti->Name);
- #ifdef HAVE_LCHOWN
-       if (lchown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
--#else
--      if (chown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
--#endif
-         ohshite(_("unable to chown backup symlink for `%.255s'"),ti->Name);
-+#endif
-     } else {
-       debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
-       if (link(fnamevb.buf,fnametmpvb.buf))
-diff -urN dpkg-1.10.9.orig/main/configure.c dpkg-1.10.9/main/configure.c
---- dpkg-1.10.9.orig/main/configure.c	Fri Aug 30 04:58:11 2002
-+++ dpkg-1.10.9/main/configure.c	Thu Jun 12 23:11:13 2003
-@@ -476,9 +476,10 @@
- static void suspend(void) {
- 	const char*	s;
- 	int		pid;
--
-+#ifndef __APPLE__
- 	s= getenv(NOJOBCTRLSTOPENV);
- 	if (s && *s) {
-+#endif
- 		/* Do not job control to suspend but fork and start a new shell
- 		 * instead.
- 		 */
-@@ -506,11 +507,13 @@
- 			onerr_abort++;
- 			ohshite(_("wait for shell failed"));
- 		}
-+#ifndef __APPLE__
- 	} else {
- 		fputs(_("Don't forget to foreground (`fg') this "
- 					"process when you're done !\n"), stderr);
- 		kill(-getpgid(0),SIGTSTP);
- 	}
-+#endif
- }
- 
- 
-diff -urN dpkg-1.10.9.orig/main/dpkg-query.8 dpkg-1.10.9/main/dpkg-query.8
---- dpkg-1.10.9.orig/main/dpkg-query.8	Sat Nov 17 23:26:43 2001
-+++ dpkg-1.10.9/main/dpkg-query.8	Thu Jun 12 23:11:13 2003
-@@ -14,7 +14,7 @@
- .TP
- \fB-l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
- List packages matching given pattern. If no \fIpackage-name-pattern\fP
--is given, list all packages in \fI/var/lib/dpkg/available\fP.  Normal
-+is given, list all packages in \fI@PREFIX@/var/lib/dpkg/available\fP.  Normal
- shell wildchars are allowed in \fIpackage-name-pattern\fP. Please note
- you will probably have to quote \fIpackage-name-pattern\fP to prevent
- the shell from performing filename expansion. For example this will
-@@ -45,7 +45,7 @@
- .TP
- \fB-p\fP |\fB--print-avail\fP package
- Display details about \fIpackage\fP, as found in
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fB--licence\fP | \fB--license\fP
- Display licence and copyright information.
-@@ -57,7 +57,7 @@
- .TP
- \fB--admindir=\fIdir\fP
- Change the location of the \fBdpkg\fR database. The default location is
--\fI/var/lib/dpkg\fP.
-+\fI@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB--showformat=\fP\fIformat\fR
- This option is used to specify the format of the output \fB--show\fP
-@@ -79,6 +79,7 @@
- .UR mailto:wakkerma@debian.org
- <wakkerma@debian.org>
- .UE
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence version 2 or
- later for copying conditions.  There is NO warranty.
-diff -urN dpkg-1.10.9.orig/main/dpkg.8 dpkg-1.10.9/main/dpkg.8
---- dpkg-1.10.9.orig/main/dpkg.8	Sun May 26 12:53:43 2002
-+++ dpkg-1.10.9/main/dpkg.8	Thu Jun 12 23:11:13 2003
-@@ -154,7 +154,7 @@
- file).  \fB-P\fP or \fB--purge\fP removes everything, including configuration
- files.  If \fB-a\fP or \fB--pending\fP is given instead of a package
- name, then all packages unpacked, but marked to be removed or purged
--in file \fI/var/lib/dpkg/status\fP, are removed or purged,
-+in file \fI@PREFIX@/var/lib/dpkg/status\fP, are removed or purged,
- respectively.
- 
- Removing of a package consists of the following steps:
-@@ -171,7 +171,7 @@
- .TP
- .BI "dpkg  -p|--print-avail " package
- Display details about \fIpackage\fP, as found in
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fBdpkg --update-avail\fP | \fB--merge-avail\fP \fIPackages-file\fP
- Update \fBdpkg\fP's and \fBdselect\fP's idea of which packages are
-@@ -180,7 +180,7 @@
- \fB--update-avail\fP, old information is replaced with the information
- in the \fIPackages-file\fP.  The \fIPackages-file\fP distributed with
- Debian is simply named \fIPackages\fP.  \fBdpkg\fP keeps its
--record of available packages in \fI/var/lib/dpkg/available\fP.
-+record of available packages in \fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fBdpkg -A\fP | \fB--record-avail\fP \fIpackage_file\fP ...
- Update \fBdpkg\fP and \fBdselect\fP's idea of which packages are
-@@ -196,7 +196,7 @@
- .TP
- \fBdpkg -l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
- List packages matching given pattern. If no \fIpackage-name-pattern\fP
--is given, list all packages in \fI/var/lib/dpkg/available\fP.  Normal
-+is given, list all packages in \fI@PREFIX@/var/lib/dpkg/available\fP.  Normal
- shell wildchars are allowed in \fIpackage-name-pattern\fP.  (You will
- probably have to quote \fIpackage-name-pattern\fP to prevent the shell
- from performing filename expansion.  For example, \fBdpkg -l 'libc5*'\fP will list all the package names starting with "libc5".)
-@@ -296,7 +296,7 @@
- 
- .SH OPTIONS
- All options can be specified both on the commandline and in the \fBdpkg\fP
--configuration file \fI/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
-+configuration file \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
- file is either an option (exactly the same as the commandline option but
- without leading dashes) or a comment (if it starts with a \fB#\fR).
- .br
-@@ -449,14 +449,14 @@
- .TP
- \fB--root=\fP\fIdir\fP | \fB--admindir=\fP\fIdir\fP | \fB--instdir=\fP\fIdir\fP
- Change default directories.  \fBadmindir\fP defaults to
--\fI/var/lib/dpkg\fP and contains many files that give information
-+\fI@PREFIX@/var/lib/dpkg\fP and contains many files that give information
- about status of installed or uninstalled packages, etc.  \fBinstdir\fP
- defaults to \fI/\fP and refers to the directory where packages are to
- be installed.  \fBinstdir\fP is also the directory passed to
- \fBchroot\fP(2) before running \fIpackage\fP's installation scripts, which
- means that the scripts see \fBinstdir\fP as a root directory.
- Changing \fBroot\fP changes \fBinstdir\fP to \fIdir\fP and
--\fBadmindir\fP to \fIdir\fP\fB/var/lib/dpkg\fP.
-+\fBadmindir\fP to \fIdir\fP\fB@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB-O\fP | \fB--selected-only\fP
- Only process the packages that are selected for installation. The
-@@ -473,16 +473,16 @@
- multiple times.  Status updates are of the form `status: <pkg>: <pkg qstate>'.
- .SH FILES
- .TP
--.I /etc/dpkg/dpkg.cfg
-+.I @PREFIX@/etc/dpkg/dpkg.cfg
- Configuration file with default options.
- .P
- The other files listed below are in their default directories, see option
- \fB--admindir\fP to see how to change locations of these files.
- .TP
--.I /var/lib/dpkg/available
-+.I @PREFIX@/var/lib/dpkg/available
- List of available packages.
- .TP
--.I /var/lib/dpkg/status
-+.I @PREFIX@/var/lib/dpkg/status
- Statuses of available packages. This file contains information about
- whether a package is marked for removing or not, whether it is
- installed or not, etc. See section \fBINFORMATION ABOUT PACKAGES\fP
-@@ -532,14 +532,14 @@
- \fB     dpkg -l '*vi*'\fP
- .br
- 
--To see the entries in \fI/var/lib/dpkg/available\fP on two packages:
-+To see the entries in \fI@PREFIX@/var/lib/dpkg/available\fP on two packages:
- .br
- \fB     dpkg --print-avail elvis vim | less\fP
- .br
- 
- To search the listing of packages yourself:
- .br
--\fB     less /var/lib/dpkg/available\fP
-+\fB     less @PREFIX@/var/lib/dpkg/available\fP
- .br
- 
- To remove an installed elvis package:
-@@ -586,6 +586,7 @@
- 
- .SH AUTHORS
- .nf
--See \fB/usr/share/doc/dpkg/THANKS\fP for the list of people who have
--contributed to \fBdpkg\fP .
-+See \fB@PREFIX@/share/doc/dpkg/THANKS\fP for the list of people who have
-+contributed to \fBdpkg\fP . Paths modified by Carsten Klapp to reflect fink
-+distribution, December 2002.
- .fi
-diff -urN dpkg-1.10.9.orig/main/help.c dpkg-1.10.9/main/help.c
---- dpkg-1.10.9.orig/main/help.c	Mon Sep 16 02:55:51 2002
-+++ dpkg-1.10.9/main/help.c	Thu Jun 12 23:11:13 2003
-@@ -69,11 +69,18 @@
- 
- void checkpath(void) {
- /* Verify that some programs can be found in the PATH. */
--  static const char *const checklist[]= { "ldconfig", 
-+  static const char *const checklist[]= { 
-+#ifndef __APPLE__
-+    "ldconfig", 
-+#endif
- #ifdef USE_START_STOP_DAEMON
-     "start-stop-daemon",
- #endif    
--    "install-info", "update-rc.d", 0
-+    "install-info",
-+#ifndef __APPLE__
-+   "update-rc.d",
-+#endif
-+    0
-   };
- 
-   struct stat stab;
-diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
---- dpkg-1.10.9.orig/main/main.c	Sun Sep  1 13:47:05 2002
-+++ dpkg-1.10.9/main/main.c	Mon Jul  7 21:29:58 2003
-@@ -38,6 +38,12 @@
  #include <version.h>
  #include <myopt.h>
- 
 +/* FINK LOCAL begin */
 +#include <sys/utsname.h>
 +#include <CoreFoundation/CoreFoundation.h>
 +static void finkinit();
 +/* FINK LOCAL end */
-+
- #include "main.h"
- 
- static void printversion(void) {
-@@ -543,6 +549,152 @@
-   }
  }
- 
+ #include "dselect.h"
+ #include "bindings.h"
+@@ -464,6 +469,154 @@
+   return urqr_quitmenu;
+   /* fixme: check packages OK */
+ }
 +/* FINK LOCAL begin */
++extern "C" {
 +struct FinkVirtualPkgs {
 +  struct FinkVirtualPkgs *next;
 +  char *pkgname;
@@ -343,6 +87,7 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
 +};
 +
 +struct FinkVirtualPkgs *fink_virt_pkg = NULL;
++}
 +static void finkinit()
 +{
 +	FILE *virt_pkg_stream = NULL;
@@ -361,9 +106,9 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
 +    static char buffer[256];	// This is static, to ensure the buffer stays around
 +
 +    static struct utsname ver;	// This is static, to ensure the buffer stays around
-+	if (0 == stat("@PREFIX@/bin/fink-virtual-pkgs", &sb))
++	if (0 == stat("/sw/bin/fink-virtual-pkgs", &sb))
 +	{
-+	  virt_pkg_stream =popen("@PREFIX@/bin/fink-virtual-pkgs --dpkg","r");
++	  virt_pkg_stream =popen("/sw/bin/fink-virtual-pkgs --dpkg","r");
 +  	  if (virt_pkg_stream)
 +	  {
 +	    while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version, revision) == 4)
@@ -482,9 +227,518 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
 +}
 +/* FINK LOCAL end */
  
+ int main(int, const char *const *argv) {
+   jmp_buf ejbuf;
+@@ -471,7 +624,9 @@
+   setlocale(LC_ALL, "");
+   bindtextdomain(PACKAGE, LOCALEDIR);
+   textdomain(PACKAGE);
+-
++  /* FINK LOCAL begin */
++  finkinit();
++  /* FINK LOCAL end */
+   if (setjmp(ejbuf)) { /* expect warning about possible clobbering of argv */
+     cursesoff();
+     error_unwind(ehflag_bombout); exit(2);
+diff -urN dpkg-1.10.9.orig/dselect/pkgdepcon.cc dpkg-1.10.9/dselect/pkgdepcon.cc
+--- dpkg-1.10.9.orig/dselect/pkgdepcon.cc	Tue May  7 01:18:15 2002
++++ dpkg-1.10.9/dselect/pkgdepcon.cc	Sun Nov  9 00:56:32 2003
+@@ -196,12 +196,20 @@
+ 
+   return 2;
+ }
+-
++/* FINK LOCAL begin */
++extern "C" {
++struct FinkVirtualPkgs {
++  struct FinkVirtualPkgs *next;
++  char *pkgname;
++  struct versionrevision version;
++};
++extern struct FinkVirtualPkgs *fink_virt_pkg;
++}
++/* FINK LOCAL end */
+ int packagelist::resolvedepcon(dependency *depends) {
+   perpackagestate *best, *fixbyupgrade;
+   deppossi *possi, *provider;
+   int r, foundany;
+-
+   if (depdebug && debug) {
+     fprintf(debug,"packagelist[%p]::resolvedepcon([%p] %s --%s-->",
+           this,depends,depends->up->name,gettext(relatestrings[depends->type]));
+@@ -212,7 +220,7 @@
+             ? gettext(wantstrings[depends->up->clientdata->suggested])
+             : _("(no clientdata)"));
+   }
+-  
++
+   if (!depends->up->clientdata) return 0;
+ 
+   switch (depends->type) {
+@@ -352,7 +360,28 @@
+ int packagelist::deppossatisfied(deppossi *possi, perpackagestate **fixbyupgrade) {
+   int would;
+   pkginfo::pkgwant want= pkginfo::want_purge;
+-  
++/* FINK LOCAL begin */
++  {
++      int interestingwarnings;
++      struct varbuf oemsgs;
++      struct FinkVirtualPkgs *virt_pkg = NULL; 
++      varbufinit(&oemsgs);
++      interestingwarnings= 0;
++      virt_pkg = fink_virt_pkg;
++      while (virt_pkg)
++      {
++            if (0==strcmp(possi->ed->name,virt_pkg->pkgname)) {
++            if (depdebug && debug)
++                fprintf(debug,"Found package : %s from VirtPackages.pm, depended by %s\n",virt_pkg->pkgname, possi->up->up->name);
++            if (versionsatisfied3(&virt_pkg->version,&possi->version,possi->verrel))
++            {
++                return 1;
++            }
++            }
++        virt_pkg = virt_pkg->next;
++      }
++  }    
++// FINK_LOCAL_END      
+   if (possi->ed->clientdata) {
+     want= possi->ed->clientdata->selected;
+     would= would_like_to_install(want,possi->ed);
+@@ -411,5 +440,6 @@
+         *fixbyupgrade= provider->up->up->clientdata;
+     }
+   }
++
+   return 0;
+ }
+diff -urN dpkg-1.10.9.orig/include/dpkg.h.in dpkg-1.10.9/include/dpkg.h.in
+--- dpkg-1.10.9.orig/include/dpkg.h.in	Sun Sep  1 13:47:05 2002
++++ dpkg-1.10.9/include/dpkg.h.in	Sat Nov  8 22:01:19 2003
+@@ -96,7 +96,7 @@
+ #define SHELLENV            "SHELL"
+ #define DEFAULTSHELL        "sh"
+ #define PAGERENV            "PAGER"
+-#define DEFAULTPAGER        "pager"
++#define DEFAULTPAGER        "less"
+ 
+ #define IMETHODMAXLEN        50
+ #define IOPTIONMAXLEN        IMETHODMAXLEN
+diff -urN dpkg-1.10.9.orig/lib/nfmalloc.c dpkg-1.10.9/lib/nfmalloc.c
+--- dpkg-1.10.9.orig/lib/nfmalloc.c	Wed Sep  4 08:34:50 2002
++++ dpkg-1.10.9/lib/nfmalloc.c	Sat Nov  8 22:01:19 2003
+@@ -26,7 +26,7 @@
+ #include <dpkg.h>
+ #include <dpkg-db.h>
+ 
+-#include <obstack.h>
++#include "obstack.h"
+ 
+ #define obstack_chunk_alloc m_malloc
+ #define obstack_chunk_free free
+diff -urN dpkg-1.10.9.orig/main/archives.c dpkg-1.10.9/main/archives.c
+--- dpkg-1.10.9.orig/main/archives.c	Sun Aug 25 04:22:33 2002
++++ dpkg-1.10.9/main/archives.c	Sat Nov  8 22:01:19 2003
+@@ -547,12 +547,10 @@
+     debug(dbg_eachfiledetail,"tarobject SymbolicLink creating");
+ #ifdef HAVE_LCHOWN
+     if (lchown(fnamenewvb.buf,
+-#else
+-    if (chown(fnamenewvb.buf,
+-#endif
+ 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->uid : ti->UserID,
+ 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->gid : ti->GroupID))
+       ohshite(_("error setting ownership of symlink `%.255s'"),ti->Name);
++#endif
+     break;
+   case Directory:
+     /* We've already checked for an existing directory. */
+@@ -608,10 +606,8 @@
+         ohshite(_("unable to make backup symlink for `%.255s'"),ti->Name);
+ #ifdef HAVE_LCHOWN
+       if (lchown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
+-#else
+-      if (chown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
+-#endif
+         ohshite(_("unable to chown backup symlink for `%.255s'"),ti->Name);
++#endif
+     } else {
+       debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
+       if (link(fnamevb.buf,fnametmpvb.buf))
+diff -urN dpkg-1.10.9.orig/main/configure.c dpkg-1.10.9/main/configure.c
+--- dpkg-1.10.9.orig/main/configure.c	Fri Aug 30 04:58:11 2002
++++ dpkg-1.10.9/main/configure.c	Sat Nov  8 22:01:19 2003
+@@ -476,9 +476,10 @@
+ static void suspend(void) {
+ 	const char*	s;
+ 	int		pid;
+-
++#ifndef __APPLE__
+ 	s= getenv(NOJOBCTRLSTOPENV);
+ 	if (s && *s) {
++#endif
+ 		/* Do not job control to suspend but fork and start a new shell
+ 		 * instead.
+ 		 */
+@@ -506,11 +507,13 @@
+ 			onerr_abort++;
+ 			ohshite(_("wait for shell failed"));
+ 		}
++#ifndef __APPLE__
+ 	} else {
+ 		fputs(_("Don't forget to foreground (`fg') this "
+ 					"process when you're done !\n"), stderr);
+ 		kill(-getpgid(0),SIGTSTP);
+ 	}
++#endif
+ }
+ 
+ 
+diff -urN dpkg-1.10.9.orig/main/dpkg-query.8 dpkg-1.10.9/main/dpkg-query.8
+--- dpkg-1.10.9.orig/main/dpkg-query.8	Sat Nov 17 23:26:43 2001
++++ dpkg-1.10.9/main/dpkg-query.8	Sat Nov  8 22:01:19 2003
+@@ -14,7 +14,7 @@
+ .TP
+ \fB-l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
+ List packages matching given pattern. If no \fIpackage-name-pattern\fP
+-is given, list all packages in \fI/var/lib/dpkg/available\fP.  Normal
++is given, list all packages in \fI@PREFIX@/var/lib/dpkg/available\fP.  Normal
+ shell wildchars are allowed in \fIpackage-name-pattern\fP. Please note
+ you will probably have to quote \fIpackage-name-pattern\fP to prevent
+ the shell from performing filename expansion. For example this will
+@@ -45,7 +45,7 @@
+ .TP
+ \fB-p\fP |\fB--print-avail\fP package
+ Display details about \fIpackage\fP, as found in
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fB--licence\fP | \fB--license\fP
+ Display licence and copyright information.
+@@ -57,7 +57,7 @@
+ .TP
+ \fB--admindir=\fIdir\fP
+ Change the location of the \fBdpkg\fR database. The default location is
+-\fI/var/lib/dpkg\fP.
++\fI@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB--showformat=\fP\fIformat\fR
+ This option is used to specify the format of the output \fB--show\fP
+@@ -79,6 +79,7 @@
+ .UR mailto:wakkerma@debian.org
+ <wakkerma@debian.org>
+ .UE
++Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+ .sp
+ This is free software; see the GNU General Public Licence version 2 or
+ later for copying conditions.  There is NO warranty.
+diff -urN dpkg-1.10.9.orig/main/dpkg.8 dpkg-1.10.9/main/dpkg.8
+--- dpkg-1.10.9.orig/main/dpkg.8	Sun May 26 12:53:43 2002
++++ dpkg-1.10.9/main/dpkg.8	Sat Nov  8 22:01:19 2003
+@@ -154,7 +154,7 @@
+ file).  \fB-P\fP or \fB--purge\fP removes everything, including configuration
+ files.  If \fB-a\fP or \fB--pending\fP is given instead of a package
+ name, then all packages unpacked, but marked to be removed or purged
+-in file \fI/var/lib/dpkg/status\fP, are removed or purged,
++in file \fI@PREFIX@/var/lib/dpkg/status\fP, are removed or purged,
+ respectively.
+ 
+ Removing of a package consists of the following steps:
+@@ -171,7 +171,7 @@
+ .TP
+ .BI "dpkg  -p|--print-avail " package
+ Display details about \fIpackage\fP, as found in
+-\fI/var/lib/dpkg/available\fP.
++\fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg --update-avail\fP | \fB--merge-avail\fP \fIPackages-file\fP
+ Update \fBdpkg\fP's and \fBdselect\fP's idea of which packages are
+@@ -180,7 +180,7 @@
+ \fB--update-avail\fP, old information is replaced with the information
+ in the \fIPackages-file\fP.  The \fIPackages-file\fP distributed with
+ Debian is simply named \fIPackages\fP.  \fBdpkg\fP keeps its
+-record of available packages in \fI/var/lib/dpkg/available\fP.
++record of available packages in \fI@PREFIX@/var/lib/dpkg/available\fP.
+ .TP
+ \fBdpkg -A\fP | \fB--record-avail\fP \fIpackage_file\fP ...
+ Update \fBdpkg\fP and \fBdselect\fP's idea of which packages are
+@@ -196,7 +196,7 @@
+ .TP
+ \fBdpkg -l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
+ List packages matching given pattern. If no \fIpackage-name-pattern\fP
+-is given, list all packages in \fI/var/lib/dpkg/available\fP.  Normal
++is given, list all packages in \fI@PREFIX@/var/lib/dpkg/available\fP.  Normal
+ shell wildchars are allowed in \fIpackage-name-pattern\fP.  (You will
+ probably have to quote \fIpackage-name-pattern\fP to prevent the shell
+ from performing filename expansion.  For example, \fBdpkg -l 'libc5*'\fP will list all the package names starting with "libc5".)
+@@ -296,7 +296,7 @@
+ 
+ .SH OPTIONS
+ All options can be specified both on the commandline and in the \fBdpkg\fP
+-configuration file \fI/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
++configuration file \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
+ file is either an option (exactly the same as the commandline option but
+ without leading dashes) or a comment (if it starts with a \fB#\fR).
+ .br
+@@ -449,14 +449,14 @@
+ .TP
+ \fB--root=\fP\fIdir\fP | \fB--admindir=\fP\fIdir\fP | \fB--instdir=\fP\fIdir\fP
+ Change default directories.  \fBadmindir\fP defaults to
+-\fI/var/lib/dpkg\fP and contains many files that give information
++\fI@PREFIX@/var/lib/dpkg\fP and contains many files that give information
+ about status of installed or uninstalled packages, etc.  \fBinstdir\fP
+ defaults to \fI/\fP and refers to the directory where packages are to
+ be installed.  \fBinstdir\fP is also the directory passed to
+ \fBchroot\fP(2) before running \fIpackage\fP's installation scripts, which
+ means that the scripts see \fBinstdir\fP as a root directory.
+ Changing \fBroot\fP changes \fBinstdir\fP to \fIdir\fP and
+-\fBadmindir\fP to \fIdir\fP\fB/var/lib/dpkg\fP.
++\fBadmindir\fP to \fIdir\fP\fB@PREFIX@/var/lib/dpkg\fP.
+ .TP
+ \fB-O\fP | \fB--selected-only\fP
+ Only process the packages that are selected for installation. The
+@@ -473,16 +473,16 @@
+ multiple times.  Status updates are of the form `status: <pkg>: <pkg qstate>'.
+ .SH FILES
+ .TP
+-.I /etc/dpkg/dpkg.cfg
++.I @PREFIX@/etc/dpkg/dpkg.cfg
+ Configuration file with default options.
+ .P
+ The other files listed below are in their default directories, see option
+ \fB--admindir\fP to see how to change locations of these files.
+ .TP
+-.I /var/lib/dpkg/available
++.I @PREFIX@/var/lib/dpkg/available
+ List of available packages.
+ .TP
+-.I /var/lib/dpkg/status
++.I @PREFIX@/var/lib/dpkg/status
+ Statuses of available packages. This file contains information about
+ whether a package is marked for removing or not, whether it is
+ installed or not, etc. See section \fBINFORMATION ABOUT PACKAGES\fP
+@@ -532,14 +532,14 @@
+ \fB     dpkg -l '*vi*'\fP
+ .br
+ 
+-To see the entries in \fI/var/lib/dpkg/available\fP on two packages:
++To see the entries in \fI@PREFIX@/var/lib/dpkg/available\fP on two packages:
+ .br
+ \fB     dpkg --print-avail elvis vim | less\fP
+ .br
+ 
+ To search the listing of packages yourself:
+ .br
+-\fB     less /var/lib/dpkg/available\fP
++\fB     less @PREFIX@/var/lib/dpkg/available\fP
+ .br
+ 
+ To remove an installed elvis package:
+@@ -586,6 +586,7 @@
+ 
+ .SH AUTHORS
+ .nf
+-See \fB/usr/share/doc/dpkg/THANKS\fP for the list of people who have
+-contributed to \fBdpkg\fP .
++See \fB@PREFIX@/share/doc/dpkg/THANKS\fP for the list of people who have
++contributed to \fBdpkg\fP . Paths modified by Carsten Klapp to reflect fink
++distribution, December 2002.
+ .fi
+diff -urN dpkg-1.10.9.orig/main/help.c dpkg-1.10.9/main/help.c
+--- dpkg-1.10.9.orig/main/help.c	Mon Sep 16 02:55:51 2002
++++ dpkg-1.10.9/main/help.c	Sat Nov  8 22:01:19 2003
+@@ -69,11 +69,18 @@
+ 
+ void checkpath(void) {
+ /* Verify that some programs can be found in the PATH. */
+-  static const char *const checklist[]= { "ldconfig", 
++  static const char *const checklist[]= { 
++#ifndef __APPLE__
++    "ldconfig", 
++#endif
+ #ifdef USE_START_STOP_DAEMON
+     "start-stop-daemon",
+ #endif    
+-    "install-info", "update-rc.d", 0
++    "install-info",
++#ifndef __APPLE__
++   "update-rc.d",
++#endif
++    0
+   };
+ 
+   struct stat stab;
+diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
+--- dpkg-1.10.9.orig/main/main.c	Sun Sep  1 13:47:05 2002
++++ dpkg-1.10.9/main/main.c	Sat Nov  8 22:15:32 2003
+@@ -38,6 +38,12 @@
+ #include <version.h>
+ #include <myopt.h>
+ 
++/* FINK LOCAL begin */
++#include <sys/utsname.h>
++#include <CoreFoundation/CoreFoundation.h>
++static void finkinit();
++/* FINK LOCAL end */
++
+ #include "main.h"
+ 
+ static void printversion(void) {
+@@ -543,6 +549,153 @@
+   }
+ }
+ 
++/* FINK LOCAL begin */
++struct FinkVirtualPkgs {
++  struct FinkVirtualPkgs *next;
++  char *pkgname;
++  struct versionrevision version;
++};
++
++struct FinkVirtualPkgs *fink_virt_pkg = NULL;
++static void finkinit()
++{
++	FILE *virt_pkg_stream = NULL;
++	struct stat sb;
++	struct FinkVirtualPkgs *pkg;
++	char name[256];
++	char version[256];
++	char revision[256];
++	unsigned long  epoch;
++    Boolean status;
++    SInt32 errorCode;
++    CFURLRef fileURL = NULL;
++    CFDataRef resourceData = NULL;
++    CFPropertyListRef propertyList = NULL;
++    CFStringRef string;
++    static char buffer[256];	// This is static, to ensure the buffer stays around
++
++    static struct utsname ver;	// This is static, to ensure the buffer stays around
++	if (0 == stat("@PREFIX@/bin/fink-virtual-pkgs", &sb))
++	{
++	  virt_pkg_stream =popen("@PREFIX@/bin/fink-virtual-pkgs --dpkg","r");
++  	  if (virt_pkg_stream)
++	  {
++	    while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version, revision) == 4)
++	    {
++	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
++	      if (pkg)
++	      {
++			  pkg->next = fink_virt_pkg;
++			  pkg->pkgname = strdup(name);
++			  pkg->version.epoch = epoch;
++			  pkg->version.version = strdup(version);
++			  pkg->version.revision = strdup(revision);
++			  /* Quick and simple sanity check */
++			  if ((NULL != pkg->pkgname) && (0 != strlen(pkg->pkgname)) &&
++			      (NULL != pkg->version.version) && (0 != strlen(pkg->version.version)) &&
++			      (NULL != pkg->version.revision) && (0 != strlen(pkg->version.revision)))
++			  {
++			  	/* We are leaking here if something fails the sanity check above */
++			  	fink_virt_pkg = pkg;
++			  }
++	      }
++	    }
++	    if (pclose(virt_pkg_stream))
++	    {
++	    	/* The fink-virtual-pkgs script returned a non zero exit status *
++	    	 * clean up and try the old way.                                */
++	    	while(NULL != fink_virt_pkg)
++	    	{
++	    		pkg = fink_virt_pkg;
++	    		if (NULL != pkg->pkgname) free(pkg->pkgname);
++	    		if (NULL != pkg->version.version) free(pkg->version.version);
++	    		if (NULL != pkg->version.revision) free(pkg->version.revision);
++	    		fink_virt_pkg = pkg->next;
++	    		free(pkg);
++	    	}
++                fink_virt_pkg = NULL;
++	    }
++	  }
++	} 
++	if (NULL == fink_virt_pkg)
++	{
++	  /* Determine system version */
++	  /* TODO - should maybe check if this is really Darwin? */
++	  if (!uname(&ver)) {
++	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
++	      if (pkg) {
++			  pkg->next = fink_virt_pkg;
++			  pkg->pkgname = strdup("darwin");
++			  pkg->version.epoch = 0;
++			  pkg->version.version = ver.release;
++			  pkg->version.revision = NULL;
++			  fink_virt_pkg = pkg;
++	      }  
++	  }
++	
++	  /* Check whether this is Mac OS X, and which version of it */
++
++	  fileURL = CFURLCreateWithFileSystemPath( NULL, 	
++			CFSTR("/System/Library/CoreServices/SystemVersion.plist"),
++			kCFURLPOSIXPathStyle,				
++			false );
++	  if (!fileURL)
++		goto BAIL;
++	  
++	  /* Read the XML */
++	  status = CFURLCreateDataAndPropertiesFromResource(
++			NULL,
++			fileURL,
++			&resourceData,
++			NULL,		
++			NULL,
++			&errorCode);
++	  if (!status || errorCode != 0)
++		goto BAIL;
++	  
++	  /* Reconstitute the dictionary using the XML data. */
++	  propertyList = CFPropertyListCreateFromXMLData( NULL,
++			resourceData,
++			kCFPropertyListImmutable,
++			&string);
++	  if (!propertyList)
++		goto BAIL;
++	  
++	  /* Try to read the system version from it. */
++	  status = CFDictionaryGetValueIfPresent( propertyList,
++			CFSTR("ProductVersion"),
++			(void*)&string);
++	  if (!status)
++		goto BAIL;
++	  
++	  /* Convert into a C string */
++	  status = CFStringGetCString( string,
++			buffer,
++			sizeof(buffer),
++			kCFStringEncodingISOLatin1);
++	  if (!status)
++		goto BAIL;
++	  pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
++	  if (pkg)
++	  {
++		  pkg->next = fink_virt_pkg;
++		  pkg->pkgname = strdup("macosx");
++		  pkg->version.epoch = 0;
++		  pkg->version.version = buffer;
++		  pkg->version.revision = NULL;
++		  fink_virt_pkg = pkg;
++	  }
++	BAIL:
++	  // Release all of the CF objects we're responsible for.
++	  if (fileURL)
++		CFRelease(fileURL);
++	  if (resourceData)
++		CFRelease(resourceData);
++	  if (propertyList)
++		CFRelease(propertyList);
++	}
++}
++/* FINK LOCAL end */
+ 
  int main(int argc, const char *const *argv) {
    jmp_buf ejbuf;
-@@ -553,7 +705,9 @@
+@@ -553,7 +706,9 @@
  
    setvbuf(stdout,0,_IONBF,0);
    filesdbinit();
@@ -497,7 +751,7 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
    actionfunction(argv);
 diff -urN dpkg-1.10.9.orig/main/main.h dpkg-1.10.9/main/main.h
 --- dpkg-1.10.9.orig/main/main.h	Mon May 20 14:56:01 2002
-+++ dpkg-1.10.9/main/main.h	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/main/main.h	Sat Nov  8 22:01:19 2003
 @@ -93,6 +93,11 @@
  extern const char *instdir;
  extern struct packageinlist *ignoredependss;
@@ -512,7 +766,7 @@ diff -urN dpkg-1.10.9.orig/main/main.h dpkg-1.10.9/main/main.h
  
 diff -urN dpkg-1.10.9.orig/main/packages.c dpkg-1.10.9/main/packages.c
 --- dpkg-1.10.9.orig/main/packages.c	Tue May  7 01:18:15 2002
-+++ dpkg-1.10.9/main/packages.c	Thu Jul  3 23:38:32 2003
++++ dpkg-1.10.9/main/packages.c	Sat Nov  8 22:01:19 2003
 @@ -331,6 +331,30 @@
      return thisf;
    }
@@ -585,7 +839,7 @@ diff -urN dpkg-1.10.9.orig/main/packages.c dpkg-1.10.9/main/packages.c
          found= 3; break;
 diff -urN dpkg-1.10.9.orig/man/en/dpkg.cfg.5 dpkg-1.10.9/man/en/dpkg.cfg.5
 --- dpkg-1.10.9.orig/man/en/dpkg.cfg.5	Sun Feb 10 09:37:01 2002
-+++ dpkg-1.10.9/man/en/dpkg.cfg.5	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/en/dpkg.cfg.5	Sat Nov  8 22:01:19 2003
 @@ -8,10 +8,11 @@
  here. Comments are allowed by starting a line with a hash sign
  ("\fB#\fR").
@@ -602,7 +856,7 @@ diff -urN dpkg-1.10.9.orig/man/en/dpkg.cfg.5 dpkg-1.10.9/man/en/dpkg.cfg.5
  .BR dpkg (8)
 diff -urN dpkg-1.10.9.orig/man/en/dselect.cfg.5 dpkg-1.10.9/man/en/dselect.cfg.5
 --- dpkg-1.10.9.orig/man/en/dselect.cfg.5	Sat Feb 16 23:10:50 2002
-+++ dpkg-1.10.9/man/en/dselect.cfg.5	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/en/dselect.cfg.5	Sat Nov  8 22:01:19 2003
 @@ -8,10 +8,11 @@
  here. Comments are allowed by starting a line with a hash sign
  ("\fB#\fR").
@@ -619,7 +873,7 @@ diff -urN dpkg-1.10.9.orig/man/en/dselect.cfg.5 dpkg-1.10.9/man/en/dselect.cfg.5
  .BR dselect (8)
 diff -urN dpkg-1.10.9.orig/man/fr/cleanup-info.8 dpkg-1.10.9/man/fr/cleanup-info.8
 --- dpkg-1.10.9.orig/man/fr/cleanup-info.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/cleanup-info.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/cleanup-info.8	Sat Nov  8 22:01:19 2003
 @@ -38,7 +38,7 @@
  Affiche la version et se termine normalement.
  .SH FICHIERS
@@ -640,7 +894,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/cleanup-info.8 dpkg-1.10.9/man/fr/cleanup-info
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-deb.1 dpkg-1.10.9/man/fr/dpkg-deb.1
 --- dpkg-1.10.9.orig/man/fr/dpkg-deb.1	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-deb.1	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg-deb.1	Sat Nov  8 22:01:19 2003
 @@ -245,9 +245,11 @@
  Le copyright (C) date de 1995-1996 et ils ont paru sous la licence
  « GNU General Public Licence » ; il n'y a PAS de garantie.
@@ -659,7 +913,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-deb.1 dpkg-1.10.9/man/fr/dpkg-deb.1
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-divert.8 dpkg-1.10.9/man/fr/dpkg-divert.8
 --- dpkg-1.10.9.orig/man/fr/dpkg-divert.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-divert.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg-divert.8	Sat Nov  8 22:01:19 2003
 @@ -41,7 +41,7 @@
  .TP
  .I --admindir <répertoire>
@@ -689,7 +943,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-divert.8 dpkg-1.10.9/man/fr/dpkg-divert.8
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-query.8 dpkg-1.10.9/man/fr/dpkg-query.8
 --- dpkg-1.10.9.orig/man/fr/dpkg-query.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-query.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg-query.8	Sat Nov  8 22:01:19 2003
 @@ -15,7 +15,7 @@
  \fB-l\fP | \fB--list\fP \fIpaquet-nom-motif\fP ...
  Liste les paquets correspondant au motif donné. Quand on ne donne aucun
@@ -728,7 +982,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-query.8 dpkg-1.10.9/man/fr/dpkg-query.8
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-scanpackages.8 dpkg-1.10.9/man/fr/dpkg-scanpackages.8
 --- dpkg-1.10.9.orig/man/fr/dpkg-scanpackages.8	Sat Jun  1 04:49:12 2002
-+++ dpkg-1.10.9/man/fr/dpkg-scanpackages.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg-scanpackages.8	Sat Nov  8 22:01:19 2003
 @@ -40,7 +40,7 @@
  .PP
  .I rep-de-binaires
@@ -750,7 +1004,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-scanpackages.8 dpkg-1.10.9/man/fr/dpkg-sc
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-source.1 dpkg-1.10.9/man/fr/dpkg-source.1
 --- dpkg-1.10.9.orig/man/fr/dpkg-source.1	Sat Jun  1 04:49:12 2002
-+++ dpkg-1.10.9/man/fr/dpkg-source.1	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg-source.1	Sat Nov  8 22:01:19 2003
 @@ -58,13 +58,13 @@
  lit les informations concernant les dépendances envers les bibliothèques 
  partagées dans les fichiers suivants :
@@ -785,7 +1039,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-source.1 dpkg-1.10.9/man/fr/dpkg-source.1
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-split.8 dpkg-1.10.9/man/fr/dpkg-split.8
 --- dpkg-1.10.9.orig/man/fr/dpkg-split.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-split.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg-split.8	Sat Nov  8 22:01:19 2003
 @@ -162,7 +162,7 @@
  .BI --depotdir " répertoire"
  Indique un répertoire différent pour la file comprenant les parties en attente
@@ -818,7 +1072,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-split.8 dpkg-1.10.9/man/fr/dpkg-split.8
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-statoverride.8 dpkg-1.10.9/man/fr/dpkg-statoverride.8
 --- dpkg-1.10.9.orig/man/fr/dpkg-statoverride.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-statoverride.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg-statoverride.8	Sat Nov  8 22:01:19 2003
 @@ -55,10 +55,10 @@
  .TP
  .I --admindir
@@ -843,7 +1097,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-statoverride.8 dpkg-1.10.9/man/fr/dpkg-st
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg.8 dpkg-1.10.9/man/fr/dpkg.8
 --- dpkg-1.10.9.orig/man/fr/dpkg.8	Sat Jun  1 04:49:12 2002
-+++ dpkg-1.10.9/man/fr/dpkg.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/dpkg.8	Sat Nov  8 22:01:19 2003
 @@ -162,7 +162,7 @@
  configuration. Si l'on donne l'option \fB-a\fP ou \fB--pending\fP à la 
  place d'un nom de paquet, tous les paquets non dépaquetés, mais qui sont
@@ -958,7 +1212,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg.8 dpkg-1.10.9/man/fr/dpkg.8
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/install-info.8 dpkg-1.10.9/man/fr/install-info.8
 --- dpkg-1.10.9.orig/man/fr/install-info.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/install-info.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/install-info.8	Sat Nov  8 22:01:19 2003
 @@ -157,7 +157,7 @@
  dans
  .IR rep-info . 
@@ -979,7 +1233,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/install-info.8 dpkg-1.10.9/man/fr/install-info
  .B install\-info
 diff -urN dpkg-1.10.9.orig/man/fr/update-alternatives.8 dpkg-1.10.9/man/fr/update-alternatives.8
 --- dpkg-1.10.9.orig/man/fr/update-alternatives.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/update-alternatives.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/fr/update-alternatives.8	Sat Nov  8 22:01:19 2003
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -1084,7 +1338,7 @@ diff -urN dpkg-1.10.9.orig/man/fr/update-alternatives.8 dpkg-1.10.9/man/fr/updat
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/ja/cleanup-info.8 dpkg-1.10.9/man/ja/cleanup-info.8
 --- dpkg-1.10.9.orig/man/ja/cleanup-info.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/cleanup-info.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/cleanup-info.8	Sat Nov  8 22:01:19 2003
 @@ -37,7 +37,7 @@
  ¥Ð¡¼¥¸¥ç¥ó¤òÉ½¼¨¤·¡¢Àµ¾ï½ªÎ»¤¹¤ë¡£
  .SH ¥Õ¥¡¥¤¥ë
@@ -1105,7 +1359,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/cleanup-info.8 dpkg-1.10.9/man/ja/cleanup-info
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-deb.1 dpkg-1.10.9/man/ja/dpkg-deb.1
 --- dpkg-1.10.9.orig/man/ja/dpkg-deb.1	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-deb.1	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/dpkg-deb.1	Sat Nov  8 22:01:19 2003
 @@ -262,9 +262,9 @@
  ¤È¤³¤Î¥Þ¥Ë¥å¥¢¥ë¥Ú¡¼¥¸¤Ï Ian Jackson ¤¬ºîÀ®¤·¤¿¡£¤³¤ì¤é¤ÎÃøºî¸¢¤ÏÈà¤Ë
  ¤¢¤ê(Copyright (C)1995-1996)¡¢GNU °ìÈÌ¸øÍ­»ÈÍÑµöÂú¤Ë¤è¤êÈÒÉÛ¤µ¤ì¤ë¡£
@@ -1136,7 +1390,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-deb.1 dpkg-1.10.9/man/ja/dpkg-deb.1
  ´îÀ¥¹À <fuyuneko@ryukyu.ne.jp>
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-divert.8 dpkg-1.10.9/man/ja/dpkg-divert.8
 --- dpkg-1.10.9.orig/man/ja/dpkg-divert.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-divert.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/dpkg-divert.8	Sat Nov  8 22:01:19 2003
 @@ -39,7 +39,7 @@
  .SH ¥ª¥×¥·¥ç¥ó
  .TP
@@ -1165,7 +1419,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-divert.8 dpkg-1.10.9/man/ja/dpkg-divert.8
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-scanpackages.8 dpkg-1.10.9/man/ja/dpkg-scanpackages.8
 --- dpkg-1.10.9.orig/man/ja/dpkg-scanpackages.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-scanpackages.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/dpkg-scanpackages.8	Sat Nov  8 22:01:19 2003
 @@ -41,7 +41,7 @@
  .PP
  .I binarydir
@@ -1186,7 +1440,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-scanpackages.8 dpkg-1.10.9/man/ja/dpkg-sc
  Debian¥ß¥é¡¼¤Î
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-statoverride.8 dpkg-1.10.9/man/ja/dpkg-statoverride.8
 --- dpkg-1.10.9.orig/man/ja/dpkg-statoverride.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-statoverride.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/dpkg-statoverride.8	Sat Nov  8 22:01:19 2003
 @@ -99,14 +99,14 @@
  .TP
  .I --admindir
@@ -1216,7 +1470,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-statoverride.8 dpkg-1.10.9/man/ja/dpkg-st
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg.8 dpkg-1.10.9/man/ja/dpkg.8
 --- dpkg-1.10.9.orig/man/ja/dpkg.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/dpkg.8	Sat Nov  8 22:01:19 2003
 @@ -49,7 +49,7 @@
  \fIDebian Package Management Tools\fP ¤ò»²¾È¤¹¤ë¤³¤È¡£
  (ÌõÃí: Gnu Info ·Á¼°¤Î \fIdebian-faq\fP ¤ÏÂ¸ºß¤·¤Ê¤¤¤è¤¦¤Ç¤¢¤ë¡£
@@ -1339,7 +1593,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg.8 dpkg-1.10.9/man/ja/dpkg.8
  .SH ÆüËÜ¸ìÈÇ¹»Àµ
 diff -urN dpkg-1.10.9.orig/man/ja/dselect.8 dpkg-1.10.9/man/ja/dselect.8
 --- dpkg-1.10.9.orig/man/ja/dselect.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dselect.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/dselect.8	Sat Nov  8 22:01:19 2003
 @@ -91,11 +91,11 @@
  .B --admindir <¥Ç¥£¥ì¥¯¥È¥ê>
  .\" Changes the directory where the dpkg `status', `available' and similar
@@ -1366,7 +1620,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/dselect.8 dpkg-1.10.9/man/ja/dselect.8
  .B dselect
 diff -urN dpkg-1.10.9.orig/man/ja/install-info.8 dpkg-1.10.9/man/ja/install-info.8
 --- dpkg-1.10.9.orig/man/ja/install-info.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/install-info.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/install-info.8	Sat Nov  8 22:01:19 2003
 @@ -292,12 +292,12 @@
  .\"O be located in
  .\"O .IR infodir .
@@ -1393,7 +1647,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/install-info.8 dpkg-1.10.9/man/ja/install-info
  .SH ËÝÌõ¼ÔÃí
 diff -urN dpkg-1.10.9.orig/man/ja/update-alternatives.8 dpkg-1.10.9/man/ja/update-alternatives.8
 --- dpkg-1.10.9.orig/man/ja/update-alternatives.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/update-alternatives.8	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/ja/update-alternatives.8	Sat Nov  8 22:01:19 2003
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -1491,7 +1745,7 @@ diff -urN dpkg-1.10.9.orig/man/ja/update-alternatives.8 dpkg-1.10.9/man/ja/updat
  FHS, the Filesystem Hierarchy Standard.
 diff -urN dpkg-1.10.9.orig/man/pt_BR/Makefile.in dpkg-1.10.9/man/pt_BR/Makefile.in
 --- dpkg-1.10.9.orig/man/pt_BR/Makefile.in	Mon May 20 13:40:28 2002
-+++ dpkg-1.10.9/man/pt_BR/Makefile.in	Thu Jun 12 23:11:13 2003
++++ dpkg-1.10.9/man/pt_BR/Makefile.in	Sat Nov  8 22:01:19 2003
 @@ -19,10 +19,10 @@
  install: install-doc
  
@@ -1507,7 +1761,7 @@ diff -urN dpkg-1.10.9.orig/man/pt_BR/Makefile.in dpkg-1.10.9/man/pt_BR/Makefile.
  .PHONY: all clean distclean install install-doc
 diff -urN dpkg-1.10.9.orig/man/pt_BR/update-alternatives.8 dpkg-1.10.9/man/pt_BR/update-alternatives.8
 --- dpkg-1.10.9.orig/man/pt_BR/update-alternatives.8	Sun Feb  3 02:58:58 2002
-+++ dpkg-1.10.9/man/pt_BR/update-alternatives.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/pt_BR/update-alternatives.8	Sat Nov  8 22:01:19 2003
 @@ -4,7 +4,7 @@
  .\" sob os termos da Lincença Pública Geral GNU como publicado pela
  .\" Free Software Foundation; versão 2 da Licença ou (a sua escolha)
@@ -1605,7 +1859,7 @@ diff -urN dpkg-1.10.9.orig/man/pt_BR/update-alternatives.8 dpkg-1.10.9/man/pt_BR
  .BR ln (1),
 diff -urN dpkg-1.10.9.orig/man/ru/dpkg.8 dpkg-1.10.9/man/ru/dpkg.8
 --- dpkg-1.10.9.orig/man/ru/dpkg.8	Sun Feb  3 00:57:02 2002
-+++ dpkg-1.10.9/man/ru/dpkg.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/ru/dpkg.8	Sat Nov  8 22:01:19 2003
 @@ -232,7 +232,7 @@
  ÉÌÉ 
  .B --pending,
@@ -1722,7 +1976,7 @@ diff -urN dpkg-1.10.9.orig/man/ru/dpkg.8 dpkg-1.10.9/man/ru/dpkg.8
  .SH ðåòå÷ïä
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg-deb.1 dpkg-1.10.9/man/sv/dpkg-deb.1
 --- dpkg-1.10.9.orig/man/sv/dpkg-deb.1	Sun Feb  3 02:46:49 2002
-+++ dpkg-1.10.9/man/sv/dpkg-deb.1	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/sv/dpkg-deb.1	Sat Nov  8 22:01:19 2003
 @@ -248,8 +248,9 @@
  och denna manualsida skrevs av Ian Jackson.
  De är upphovsrättsskyddade 1995-1996 av honom och släppta under
@@ -1737,7 +1991,7 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg-deb.1 dpkg-1.10.9/man/sv/dpkg-deb.1
  för detaljer.
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg-query.8 dpkg-1.10.9/man/sv/dpkg-query.8
 --- dpkg-1.10.9.orig/man/sv/dpkg-query.8	Sun Feb  3 02:56:49 2002
-+++ dpkg-1.10.9/man/sv/dpkg-query.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/sv/dpkg-query.8	Sat Nov  8 22:01:19 2003
 @@ -16,7 +16,7 @@
  \fB-l\fP | \fB--list\fP \fIpaketnamnsmönster\fP ...
  Lista paket som matchar det givna mönstret.
@@ -1775,7 +2029,7 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg-query.8 dpkg-1.10.9/man/sv/dpkg-query.8
  senare för kopieringsvillkor. Det finns INGEN garanti.
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg-split.8 dpkg-1.10.9/man/sv/dpkg-split.8
 --- dpkg-1.10.9.orig/man/sv/dpkg-split.8	Sat Feb 16 23:04:24 2002
-+++ dpkg-1.10.9/man/sv/dpkg-split.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/sv/dpkg-split.8	Sat Nov  8 22:01:19 2003
 @@ -169,7 +169,7 @@
  Anger en alternativ katalog för kön av delar som väntar på automatisk
  sammanslagning.
@@ -1810,7 +2064,7 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg-split.8 dpkg-1.10.9/man/sv/dpkg-split.8
  Denna manualsida översattes av Peter Karlsson.
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg.8 dpkg-1.10.9/man/sv/dpkg.8
 --- dpkg-1.10.9.orig/man/sv/dpkg.8	Mon May 27 02:54:33 2002
-+++ dpkg-1.10.9/man/sv/dpkg.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/sv/dpkg.8	Sat Nov  8 22:01:19 2003
 @@ -157,7 +157,7 @@
  \fB-P\fP eller \fB--purge\fP tar bort allting, inklusive
  konfigurationsfiler.
@@ -1921,7 +2175,7 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg.8 dpkg-1.10.9/man/sv/dpkg.8
  .fi
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg.cfg.5 dpkg-1.10.9/man/sv/dpkg.cfg.5
 --- dpkg-1.10.9.orig/man/sv/dpkg.cfg.5	Sat Feb 16 23:14:15 2002
-+++ dpkg-1.10.9/man/sv/dpkg.cfg.5	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/sv/dpkg.cfg.5	Sat Nov  8 22:01:19 2003
 @@ -10,10 +10,11 @@
  Kommentarer är tillåtna genom att inleda en rad med nummertecken
  ("\fB#\fR").
@@ -1938,7 +2192,7 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg.cfg.5 dpkg-1.10.9/man/sv/dpkg.cfg.5
  .BR dpkg (8)
 diff -urN dpkg-1.10.9.orig/man/sv/dselect.8 dpkg-1.10.9/man/sv/dselect.8
 --- dpkg-1.10.9.orig/man/sv/dselect.8	Sun Feb  3 02:46:49 2002
-+++ dpkg-1.10.9/man/sv/dselect.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/sv/dselect.8	Sat Nov  8 22:01:19 2003
 @@ -39,7 +39,7 @@
  programmet.
  .SH FLAGGOR
@@ -1966,7 +2220,7 @@ diff -urN dpkg-1.10.9.orig/man/sv/dselect.8 dpkg-1.10.9/man/sv/dselect.8
 +December 2002.
 diff -urN dpkg-1.10.9.orig/man/sv/dselect.cfg.5 dpkg-1.10.9/man/sv/dselect.cfg.5
 --- dpkg-1.10.9.orig/man/sv/dselect.cfg.5	Sat Feb 16 23:14:15 2002
-+++ dpkg-1.10.9/man/sv/dselect.cfg.5	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/man/sv/dselect.cfg.5	Sat Nov  8 22:01:19 2003
 @@ -10,10 +10,11 @@
  Kommentarer är tillåtna genom att inleda en rad med nummertecken
  ("\fB#\fR").
@@ -1983,14 +2237,14 @@ diff -urN dpkg-1.10.9.orig/man/sv/dselect.cfg.5 dpkg-1.10.9/man/sv/dselect.cfg.5
  .BR dselect (8)
 diff -urN dpkg-1.10.9.orig/origin.fink dpkg-1.10.9/origin.fink
 --- dpkg-1.10.9.orig/origin.fink	Thu Jan  1 09:00:00 1970
-+++ dpkg-1.10.9/origin.fink	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/origin.fink	Sat Nov  8 22:01:19 2003
 @@ -0,0 +1,3 @@
 +Vendor: Fink
 +Vendor-URL: http://fink.sourceforge.net/
 +Bugs: http://fink.sourceforge.net/
 diff -urN dpkg-1.10.9.orig/scripts/cleanup-info.8 dpkg-1.10.9/scripts/cleanup-info.8
 --- dpkg-1.10.9.orig/scripts/cleanup-info.8	Mon Dec  6 02:49:04 1999
-+++ dpkg-1.10.9/scripts/cleanup-info.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/cleanup-info.8	Sat Nov  8 22:01:19 2003
 @@ -34,7 +34,7 @@
  Output version and exit successfully.
  .SH FILES
@@ -2010,7 +2264,7 @@ diff -urN dpkg-1.10.9.orig/scripts/cleanup-info.8 dpkg-1.10.9/scripts/cleanup-in
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-divert.8 dpkg-1.10.9/scripts/dpkg-divert.8
 --- dpkg-1.10.9.orig/scripts/dpkg-divert.8	Fri Jul  6 08:19:56 2001
-+++ dpkg-1.10.9/scripts/dpkg-divert.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/dpkg-divert.8	Sat Nov  8 22:01:19 2003
 @@ -37,7 +37,7 @@
  .SH OPTIONS
  .TP
@@ -2039,7 +2293,7 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-divert.8 dpkg-1.10.9/scripts/dpkg-divert
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-name.sh dpkg-1.10.9/scripts/dpkg-name.sh
 --- dpkg-1.10.9.orig/scripts/dpkg-name.sh	Sun Dec 24 21:34:20 2000
-+++ dpkg-1.10.9/scripts/dpkg-name.sh	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/dpkg-name.sh	Sat Nov  8 22:01:19 2003
 @@ -10,6 +10,7 @@
  license () {
  echo "# ${prog} ${version} -- ${purpose}
@@ -2059,7 +2313,7 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-name.sh dpkg-1.10.9/scripts/dpkg-name.sh
  stderr () {
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-scanpackages.8 dpkg-1.10.9/scripts/dpkg-scanpackages.8
 --- dpkg-1.10.9.orig/scripts/dpkg-scanpackages.8	Sat May 25 12:35:00 2002
-+++ dpkg-1.10.9/scripts/dpkg-scanpackages.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/dpkg-scanpackages.8	Sat Nov  8 22:01:19 2003
 @@ -39,7 +39,7 @@
  .PP
  .I binarydir
@@ -2080,7 +2334,7 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-scanpackages.8 dpkg-1.10.9/scripts/dpkg-
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-source.1 dpkg-1.10.9/scripts/dpkg-source.1
 --- dpkg-1.10.9.orig/scripts/dpkg-source.1	Sat May 25 12:11:02 2002
-+++ dpkg-1.10.9/scripts/dpkg-source.1	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/dpkg-source.1	Sat Nov  8 22:01:19 2003
 @@ -805,6 +805,7 @@
  .BR pgp (1).
  .SH AUTHOR
@@ -2101,7 +2355,7 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-source.1 dpkg-1.10.9/scripts/dpkg-source
  for details.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-statoverride.8 dpkg-1.10.9/scripts/dpkg-statoverride.8
 --- dpkg-1.10.9.orig/scripts/dpkg-statoverride.8	Sun Mar  4 23:39:06 2001
-+++ dpkg-1.10.9/scripts/dpkg-statoverride.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/dpkg-statoverride.8	Sat Nov  8 22:01:19 2003
 @@ -51,10 +51,10 @@
  .TP
  .I --admindir
@@ -2125,7 +2379,7 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-statoverride.8 dpkg-1.10.9/scripts/dpkg-
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/scripts/install-info.8 dpkg-1.10.9/scripts/install-info.8
 --- dpkg-1.10.9.orig/scripts/install-info.8	Thu Jan 31 23:00:59 2002
-+++ dpkg-1.10.9/scripts/install-info.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/install-info.8	Sat Nov  8 22:01:19 2003
 @@ -156,7 +156,7 @@
  be located in
  .IR infodir .
@@ -2146,7 +2400,7 @@ diff -urN dpkg-1.10.9.orig/scripts/install-info.8 dpkg-1.10.9/scripts/install-in
  .B install\-info
 diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.8 dpkg-1.10.9/scripts/update-alternatives.8
 --- dpkg-1.10.9.orig/scripts/update-alternatives.8	Thu Nov 29 08:41:10 2001
-+++ dpkg-1.10.9/scripts/update-alternatives.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/update-alternatives.8	Sat Nov  8 22:01:19 2003
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -2251,7 +2505,7 @@ diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.8 dpkg-1.10.9/scripts/upd
  FHS, the Filesystem Hierarchy Standard.
 diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.pl dpkg-1.10.9/scripts/update-alternatives.pl
 --- dpkg-1.10.9.orig/scripts/update-alternatives.pl	Mon Apr 29 04:34:07 2002
-+++ dpkg-1.10.9/scripts/update-alternatives.pl	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/scripts/update-alternatives.pl	Sat Nov  8 22:01:19 2003
 @@ -56,7 +56,7 @@
  sub quit { print STDERR "update-alternatives: @_\n"; exit(2); }
  sub badusage { print STDERR "update-alternatives: @_\n\n"; &usageversion; exit(2); }
@@ -2263,7 +2517,7 @@ diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.pl dpkg-1.10.9/scripts/up
  $verbosemode= 0;
 diff -urN dpkg-1.10.9.orig/split/dpkg-split.8 dpkg-1.10.9/split/dpkg-split.8
 --- dpkg-1.10.9.orig/split/dpkg-split.8	Thu Jan 31 23:00:59 2002
-+++ dpkg-1.10.9/split/dpkg-split.8	Thu Jun 12 23:11:14 2003
++++ dpkg-1.10.9/split/dpkg-split.8	Sat Nov  8 22:01:19 2003
 @@ -162,7 +162,7 @@
  .BI --depotdir " directory"
  Specifies an alternative directory for the queue of parts awaiting
