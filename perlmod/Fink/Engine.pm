@@ -1111,11 +1111,19 @@ sub real_install {
       if (defined $parent) {
 	foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
 	  my $name = $pkg->get_name();
-	  $to_be_rebuilt{$name} = 0; # not necessary to rebuild this, we already did it
+	  $to_be_rebuilt{$name} = 0;
 	  next if $already_activated{$name};
-	  $item = $deps{$name} || [0, 0, 0, -1, 0];
-	  if (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
-	       or ($is_build and $package->is_installed())) {
+	  # Reinstall any installed splitoff if we just rebuilt
+	  if ($is_build and $package->is_installed()) {
+	    push(@batch_install, $pkg);
+	    $already_activated{$name} = 1;
+	    next;
+	  }
+	  # Also (re)install if that was requested by the user
+	  next unless exists $deps{$name};
+	  $item = $deps{$name};
+	  if ((($item->[4] & 2) != 2) and
+	      ($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)) {
 	    push(@batch_install, $pkg);
 	    $already_activated{$name} = 1;
 	  }
