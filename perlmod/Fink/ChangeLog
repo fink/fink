@@ -1,5 +1,10 @@
 2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* SelfUpdate.pm: Enable the Trees: hack for rsync'ing multiple
+	dists inside a fink dists tree.
+
+2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* SelfUpdate.pm: Check that a directory exists on the server
 	before trying to rsync it.  Also some more quoting to make
 	things a bit more sane.

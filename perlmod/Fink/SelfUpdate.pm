@@ -539,17 +539,27 @@ sub do_direct_rsync {
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
 	&print_breaking($msg);
 	foreach $tree ($config->get_treelist()) {
-		if( !grep(/stable/,$tree) ) {
-			next;
-		}
+		next unless ($tree =~ /stable/);
+
 		$rsynchost =~ s/\/*$//;
 		$dist      =~ s/\/*$//;
 		$tree      =~ s/\/*$//;
-		$cmd = "rsync -az --delete-after $verbosity '$rsynchost/$dist/$tree/finkinfo' '$basepath/fink/$dist/$tree/'";
-		if (! -d "$basepath/fink/$dist/$tree/" ) {
+
+		my $rsyncpath;
+
+		if ($tree =~ m#/[^/]*/#) {
+			# the user specificed a dist as well as a tree in their Trees: line
+			$rsyncpath = "$rsynchost/$tree/finkinfo";
+		} else {
+			# a standard Trees: entry
+			$rsyncpath = "$rsynchost/$dist/$tree/finkinfo";
+		}
+
+		$cmd = "rsync -az --delete-after $verbosity '$rsyncpath' '$basepath/fink/$dist/$tree/'";
+		if (! -d "$basepath/fink/$dist/$tree" ) {
 			&execute("mkdir -p '$basepath/fink/$dist/$tree'")
 		}
-		if (system("rsync '$rsynchost/$dist/$tree/finkinfo' >/dev/null 2>&1") == 0) {
+		if (system("rsync '$rsyncpath' >/dev/null 2>&1") == 0) {
 			$msg = "Updating $tree \n";
 			if ($sb[4] != 0 and $> != $sb[4]) {
 				($username) = getpwuid($sb[4]);
