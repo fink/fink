@@ -2,7 +2,15 @@
 
 	* PkgVersion.pm: Changed conditional depends syntax for "equals"
 	to "=" (like Debian version dependency syntax).
-
+	* PkgVersion.pm: Activated conditional depends parsing (during
+	indexing). Fixed to use accessor methods.
+	* PkgVersion.pm: Moved removal-of-self-from-Conflicts/Replaces
+	code into a new clear_self_from_list method. Fixed to use accessor
+	methods. Switch to calling it during indexing instead of .deb
+	construction (dependency engine may need Conflicts info).
+	* PkgVersion.pm: Remove more remnants of my _source_item stuff.
+	* Services.pm: Revert accidental commit of debugging code.
+	
 2004-02-18  Rob Braun  <bbraun@opendarwin.org>
 
 	* Bootstrap.pm: Update the i386 distribution detection code to
