@@ -29,7 +29,7 @@ use UNIVERSAL qw(isa);
 BEGIN {
         use Exporter ();
         our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-        $VERSION         = (qw$Revision$)[-1];
+        $VERSION         = ( qw$Revision$ )[-1];
         @ISA             = qw(Exporter);
         @EXPORT          = qw();
         %EXPORT_TAGS = ( );                     # eg: TAG => [ qw!name1 name2! ],

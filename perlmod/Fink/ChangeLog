@@ -1,6 +1,6 @@
 2005-03-02  Daniel Macks  <dmacks@netspace.org>
 
-	* VirtPackage.pm: Fix $VERSION for emacs paren balancer.
+	* VirtPackage.pm, Notify.pm: Fix $VERSION for emacs paren balancer.
 
 2005-03-01  Daniel Macks  <dmacks@netspace.org>
 
