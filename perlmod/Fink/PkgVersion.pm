@@ -391,7 +391,7 @@ sub add_splitoff {
 	$properties = &read_properties_var("splitoff$splitoff_num of \"$filename\"", $splitoff_data);
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
-		print "No package name for SplitOff in $filename\n";
+		print "No package name for SplitOff$splitoff_num in $filename\n";
 	}
 	
 	# copy version information
@@ -554,33 +554,28 @@ sub get_info_filename {
 
 # Returns the number of source tarballs for the package. Actually it
 # gives the highest *consecutive* N of SourceN, or 1 if no SourceN
-# (even if no Source either). FIXME: that's pretty weird.
-#
-# Results are cached in a package global (class variable) hash using
-# the object ref as the key. NB: perl hash keys get stringified so
-# cannot use the key as a ref.
+# (even if no Source b/c it's a nosource or bundle).
+# FIXME: that's pretty weird.
 
 sub get_source_count {
 	my $self = shift;
-
-	our %source_count_cache;
 
 	if (exists $self->{_parent}) {
 		# SplitOff packages have no sources of their own
 		return 0;
 	}
 
-	if (!exists $source_count_cache{$self}) {
-		# not found is cache, so calculate it
+	if (!exists $self->{_sourcecount}) {
+		# have not calculated it before
 		my $count = 1;
 		while ($self->has_param('source'.($count+1))) {
 			$count++;
 		}
-		# cache the result
-		$source_count_cache{$self} = $count;
+		# save the result for next time
+		$self->{_sourcecount} = $count;
 	}
 
-	return $source_count_cache{$self};
+	return $self->{_sourcecount};
 }
 
 sub get_source {

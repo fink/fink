@@ -1,5 +1,12 @@
 2004-03-02  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: fix error message for missing Package: in
+	SplitOffN:. Caching by object ref is not safe so revert to
+	_sourcecount internally in get_source_count() (but must not be
+	used in other places b/c may not be saved to package db).
+	
+2004-03-02  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Implement get_source_count() accessor. Remove
 	is_multisource() accessor (leftover from long-gone SourceItems).
 	* Engine.pm, PkgVersion.pm: abolish _sourcecount instance
