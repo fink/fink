@@ -2073,11 +2073,9 @@ if ($self->param_boolean("BuildDependsOnly")) {
 
 	while (exists $pkgref->{_parent}) {
 		$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
-		$skip_prebinding++ if ($pkgref->has_param("NoSetLD_PREBIND"));
 		$pkgref = $pkgref->{_parent};
 	}
 	$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
-	$skip_prebinding++ if ($pkgref->has_param("NoSetLD_PREBIND"));
 
 	# "our" instead of "my", so that it can be referenced later in the post-install script
 	our %prebound_files = ();
