@@ -1,3 +1,9 @@
+2003-03-07  Ben Hines <benh57@users.sourceforge.net>
+
+	* AUTHORS: Add some more contributors.
+	
+	* fink.8.in: Document --ignore-restrictive.
+	
 2003-03-06  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: Print more appropriate message when run on x86 Darwin; fix
@@ -74,7 +80,7 @@
 	explicitly executed as sudo (it is already executed sudo) 
 	Bug # 652349.
 
-2002-12-19  Ben Hines <bhines@alumni.ucsd.edu>
+2002-12-19  Ben Hines <benh57@users.sourceforge.net>
 
 	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.3.
 
