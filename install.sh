@@ -36,7 +36,7 @@ chmod 755 $basepath
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   lib/fink/mirror lib/fink/update \
-	   share share/doc share/doc/fink ; do
+	   share share/doc share/doc/fink share/man share/man/man8 ; do
   mkdir $basepath/$dir
   chmod 755 $basepath/$dir
 done
@@ -46,6 +46,9 @@ echo "Copying files..."
 
 cp fink $basepath/bin/
 chmod 755 $basepath/bin/fink
+
+cp fink.8 $basepath/share/man/man8/
+chmod 644 $basepath/share/man/man8/fink.8
 
 for file in perlmod/Fink/*.pm ; do
   if [ -f $file ]; then

@@ -1,3 +1,12 @@
+2001-08-13  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink.8.in: Man page contributed by Max Horn.
+	* bootstrap.pl, inject.pl: Include fink.8.in and VERSION in the
+	generated tarballs.
+	* install.sh: Install fink.8.
+	* setup.sh: No longer a NOP script. Generates fink.8 from
+	fink.8.in.
+
 2001-08-01  Christoph Pfisterer  <cp@chrisp.de>
 
 	* bootstrap.pl: Quick fix for bootstrapping problems - create

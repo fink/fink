@@ -1,0 +1,229 @@
+.\" -*- nroff -*-
+.TH fink 8 "November 19, 2000" "Version @VERSION@"
+.SH NAME
+fink \- a package management system
+.SH SYNOPSIS
+.B fink
+.I command
+.B [
+.I package
+.B ]
+.\"
+.\"
+.\" DESCRIPTION
+.\"
+.\"
+.SH DESCRIPTION
+.B fink
+is a package management system that aims to bring the full world
+of GNU and other common Open Source software to Darwin and Mac OS X.
+
+With the help of
+.BR dpkg (8),
+it maintains a separate directory hierarchy. It
+downloads original source releases, patches them if neccessary, configures
+them for Darwin and compiles and installs them. The information about
+available packages and the neccessary patches are included with this
+distribution, everything else is downloaded off the Internet.
+.\"
+.\"
+.\" COMMANDS
+.\"
+.\"
+.SH COMMANDS
+.B fink
+has several commands that work on packages. All of them need at least
+one package name, and all can handle several package names at once. You can
+specify just the package name (e.g. gimp), or a fully qualified name with a
+version number (e.g. gimp-1.2.1 or gimp-1.2.1-3). Fink will automatically
+choose the latest available version and revision when they are not
+specified.
+.\"
+.\"
+.TP
+\fBfink install\fP \fIpackage\fP\|.\|.\|.
+The install command is used to install packages. It downloads, configure,
+builds and installs the packages you name. It will also install required
+dependencies automatically, but will ask you for confirmation before it does
+so.
+
+Aliases:
+.BR update ", " enable ", " activate ", "
+.BR use "."
+.\"
+.\"
+.TP
+\fBfink remove\fP \fIpackage\fP\|.\|.\|.
+The remove command removes packages from the system by calling 'dpkg
+--remove'. The current implementation has several fundamental flaws. It only
+works on packages Fink knows about (i.e. .info file is present). It doesn't
+check dependencies. It makes one dpkg invocation per packages, thus not
+allowing dpkg to reorder according to dependencies.
+
+The remove command only removes the actual package files, but leaves the .deb
+compressed package file intact. This means that you can re-install the
+package later without going through the compile process again. If you need
+the disk space, you can remove the .deb from the @PREFIX@/fink/dists tree.
+
+Aliases:
+.BR disable ", " deactivate ", " unuse ", "
+.BR delete ", " purge "."
+.\"
+.\"
+.TP
+.B update-all
+This command updates all installed packages to the latest version. It does
+not need a package list, so you just type:
+.in +1i
+.B fink update-all
+.in -1i
+.\"
+.\"
+.TP
+\fBfink list\fP [\fIpackage\fP\|.\|.\|.]
+This command produces a list of available packages, listing installation
+status, the latest version and a short description. If you call it without
+parameters, it will list all available packages. You can also pass a name or
+a shell pattern, and fink will list all packages that match.
+
+The first column displays the installation state with the following
+meanings:
+
+        not installed
+    i   latest version is installed
+   (i)  installed, but a newer version is available
+
+Some usage examples:
+
+\fBfink list\fP
+.in +5
+- list all packages
+.in -5
+
+\fBfink list bash\fP
+.in +5
+- check if bash is available and what version
+.in -5
+
+\fBfink list "gnome*"\fP
+.in +5
+- list all packages that start with 'gnome'
+.in -5
+
+The quotes in the last example are necessary to stop the shell from
+interpreting the pattern itself.
+.\"
+.\"
+.TP
+\fBfink describe\fP \fIpackage\fP\|.\|.\|.
+This command displays a description of the package you name on the command
+line. Note that only a small part of the packages currently have a
+description.
+
+Aliases:
+.BR desc ", " description ", " info "."
+.\"
+.\"
+.TP
+\fBfink fetch\fP \fIpackage\fP\|.\|.\|.
+Downloads the named packages, but does not install it. This command will
+download the tarballs even if they were downloaded before.
+.\"
+.\"
+.TP
+.B fink fetch-all
+Downloads
+.I all
+package source files. Like fetch, this downloads the
+tarballs even when they were downloaded before.
+.\"
+.\"
+.TP
+.B fink fetch-missing
+Downloads
+.I all
+package source files. This command will only download files
+that are not present on the system.
+.\"
+.\"
+.TP
+\fBfink build\fP \fIpackage\fP\|.\|.\|.
+Builds a package, but does not install it. As usual, the source tarballs are
+downloaded if they can not be found. The result of this command is an
+installable .deb package file, which you can quickly install later with the
+install command. This command will do nothing if the .deb already exists.
+Note that dependencies are still 
+.I installed,
+not just built.
+.\"
+.\"
+.TP
+\fBfink rebuild\fP \fIpackage\fP\|.\|.\|.
+Builds a package (like the
+.B build
+command), but ignores and overwrites the existing .deb file. If the
+package is installed, the newly created .deb file will also be installed
+in the system via
+.BR dpkg "."
+Very useful during package development.
+.\"
+.\"
+.TP
+\fBfink reinstall\fP \fIpackage\fP\|.\|.\|.
+Same as install, but will install the package via
+.B dpkg
+even when it is already installed. You can use this when you accidentally
+deleted package files or changed configuration files and want to get the
+default settings back.
+.\"
+.\"
+.TP
+.B fink configure
+Reruns the
+.B fink
+configuration process. This will let you change your mirror
+sites and proxy settings, among others.
+.\"
+.\"
+.\" FILES
+.\"
+.\"
+.SH FILES
+.I @PREFIX@/etc/fink.conf
+.RS
+The system wide configuration file. You should not edit this file manually,
+but rather use
+.B fink configure
+to change fink's settings.
+.\"
+.\"
+.\" HOMEPAGE
+.\"
+.\"
+.SH HOMEPAGE
+http://fink.sourceforge.net/
+.\"
+.\"
+.\" BUGS
+.\"
+.\"
+.SH BUGS
+Check out fink's bug tracker at
+http://sourceforge.net/tracker/?group_id=17203&atid=117203
+for a current list of known bugs.
+.\"
+.\"
+.\" AUTHOR
+.\"
+.\"
+.SH AUTHOR
+Christoph Pfisterer <cp@chrisp.de>
+.br
+This manpage written by Max Horn <max@quendi.de>.
+.\"
+.\"
+.\" SEE ALSO
+.\"
+.\"
+.SH "SEE ALSO"
+.BR dpkg (8)

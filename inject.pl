@@ -150,7 +150,7 @@ if (-f "perlmod/Fink/FinkVersion.pm.in") {
 $script .=
   "tar -cf $basepath/src/fink-$packageversion.tar ".
   "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
-  "ChangeLog fink install.sh setup.sh ".
+  "ChangeLog VERSION fink fink.8.in install.sh setup.sh ".
   "perlmod update mirror\n";
 $script .=
   "cd base-files && ".
