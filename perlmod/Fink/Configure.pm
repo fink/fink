@@ -23,6 +23,12 @@
 
 package Fink::Configure;
 
+
+###
+# Remember to up the $conf_file_compat_version constant below if you add
+# a field to the $basepath/etc/fink.conf file.
+###
+
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Services qw(&read_properties &read_properties_multival &filename);
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection_new &print_breaking);
@@ -36,12 +42,25 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&configure &choose_mirrors);
+	@EXPORT_OK	 = qw(&configure &choose_mirrors $conf_file_compat_version);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
 END { }				# module clean-up code here (global destructor)
+
+
+# Compatibility version of the $basepath/etc/fink.conf file.
+# Needs to be updated whenever a new field is added to the
+# configuration file by code here. This will tell users to 
+# rerun fink configure after installing the new fink version.
+# (during postinstall.pl)
+#
+# History:
+#  0: Default value, fink < 0.24.0
+#  1: Added ConfFileCompatVersion, UseBinaryDist, fink 0.24.0
+#
+our $conf_file_compat_version  = 1;
 
 
 ### create/change configuration interactively
@@ -165,6 +184,8 @@ sub configure {
 	# mirror selection
 	&choose_mirrors();
 
+	# set the conf file compatibility version to the current value 
+	$config->set_param("ConfFileCompatVersion", $conf_file_compat_version);
 
 	# write configuration
 	print "\n";
@@ -283,6 +304,32 @@ sub choose_mirrors {
 	}
 }
 
+=head2 Exported Variables
+
+These variables are exported on request.  They are initialized by creating
+a Fink::Configure object.
+
+=over 4
+
+=item $conf_file_compat_version
+
+Compatibility version of the F<$basepath/etc/fink.conf> file.
+Needs to be updated whenever a new field is added to the
+configuration file by code here. This will tell users to 
+rerun fink configure after installing the new fink version.
+
+For example, C<1>.
+
+
+
+=back
+
+
+=head1 SEE ALSO
+
+L<Fink::Base>
+
+=cut
 
 ### EOF
 1;

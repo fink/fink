@@ -34,6 +34,7 @@ use Fink::Services qw(&read_config &execute);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 
 use Fink::Config qw($config);
+use Fink::Configure qw($conf_file_compat_version);
 
 use File::Find;
 use File::Basename;
@@ -44,6 +45,7 @@ $basepath = "@PREFIX@";
 # read the configuration file
 my $config;
 my $configpath = "@PREFIX@/etc/fink.conf";
+my $configNeedsUpdate = 0;
 if (-f $configpath) {
   $config = &Fink::Services::read_config($configpath, 
                                          { Basepath => '@PREFIX@' }
@@ -52,6 +54,21 @@ if (-f $configpath) {
   print "ERROR: Configuration file \"$configpath\" not found.\n";
   exit 1;
 }
+
+
+### check if we need to rerun configure since the fink.conf file
+### compatibility version has changed.
+my $expectedConfFileCompatVersion = $Fink::Configure::conf_file_compat_version;
+my $actualConfFileCompatVersion = $config->param_default("ConfFileCompatVersion", "0");
+if ($expectedConfFileCompatVersion > $actualConfFileCompatVersion) {
+  $configNeedsUpdate = 1;
+}
+elsif ($expectedConfFileCompatVersion < $actualConfFileCompatVersion) {
+  &print_breaking("\nWARNING: Your fink configuration file \"$configpath\" " . 
+        "was created from a fink version newer than this one! Try to run " .
+        "'fink configure' or reinstall the latest fink to correct this.\n\n");
+}
+
 
 ### check if we like this system
 
@@ -210,6 +227,20 @@ if (not $distribution =~ /10.1/) {
  
 }
 
+
+if ($configNeedsUpdate) {
+  &print_breaking("\nThis fink version introduces new settings stored in the " .
+        "fink configuration file \"$configpath\". You should rerun the " .
+        "configuration process.\n");
+  my $answer = &prompt_boolean("Do you want to configure now?", 0, 60);
+  if ($answer) {
+    require Fink::Configure;
+    Fink::Configure::configure();
+  }
+  else {
+    print "Please remember to call 'fink configure' later!\n\n";
+  }
+}
 
 
 exit 0;
