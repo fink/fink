@@ -1,5 +1,10 @@
 2001-10-17  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Engine.pm (process): Added a "this command needs root
+	privileges" flag. Minor restructuring.
+	(restart_as_root): New function which re-executes fink as root,
+	passing the current command. Now knows about su if configured.
+
 	* FinkVersion.pm.in: Made independent of Fink::Config. The
 	installation path is now hardcoded during installation, like with
 	fink.in.

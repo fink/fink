@@ -42,39 +42,39 @@ BEGIN {
 our @EXPORT_OK;
 
 our %commands =
-  ( 'rescan' => [\&cmd_rescan, 0],
-    'configure' => [\&cmd_configure, 0],
-    'bootstrap' => [\&cmd_bootstrap, 0],
-    'fetch' => [\&cmd_fetch, 1],
-    'fetch-all' => [\&cmd_fetch_all, 1],
-    'fetch-missing' => [\&cmd_fetch_all_missing, 1],
-    'build' => [\&cmd_build, 1],
-    'rebuild' => [\&cmd_rebuild, 1],
-    'install' => [\&cmd_install, 1],
-    'reinstall' => [\&cmd_reinstall, 1],
-    'update' => [\&cmd_install, 1],
-    'update-all' => [\&cmd_update_all, 1],
-    'enable' => [\&cmd_install, 1],
-    'activate' => [\&cmd_install, 1],
-    'use' => [\&cmd_install, 1],
-    'disable' => [\&cmd_remove, 1],
-    'deactivate' => [\&cmd_remove, 1],
-    'unuse' => [\&cmd_remove, 1],
-    'remove' => [\&cmd_remove, 1],
-    'delete' => [\&cmd_remove, 1],
-    'purge' => [\&cmd_remove, 1],
-    'apropos' => [\&cmd_apropos, 1],
-    'describe' => [\&cmd_description, 1],
-    'description' => [\&cmd_description, 1],
-    'desc' => [\&cmd_description, 1],
-    'info' => [\&cmd_description, 1],
-    'scanpackages' => [\&cmd_scanpackages, 1],
-    'list' => [\&cmd_list, 1],
-    'listpackages' => [\&cmd_listpackages, 1],
-    'selfupdate' => [\&cmd_selfupdate, 0],
-    'selfupdate-finish' => [\&cmd_selfupdate_finish, 1],
-    'validate' => [\&cmd_validate, 0],
-    'check' => [\&cmd_validate, 0],
+  ( 'rescan' => [\&cmd_rescan, 0, 0],
+    'configure' => [\&cmd_configure, 0, 1],
+    'bootstrap' => [\&cmd_bootstrap, 0, 1],
+    'fetch' => [\&cmd_fetch, 1, 1],
+    'fetch-all' => [\&cmd_fetch_all, 1, 1],
+    'fetch-missing' => [\&cmd_fetch_all_missing, 1, 1],
+    'build' => [\&cmd_build, 1, 1],
+    'rebuild' => [\&cmd_rebuild, 1, 1],
+    'install' => [\&cmd_install, 1, 1],
+    'reinstall' => [\&cmd_reinstall, 1, 1],
+    'update' => [\&cmd_install, 1, 1],
+    'update-all' => [\&cmd_update_all, 1, 1],
+    'enable' => [\&cmd_install, 1, 1],
+    'activate' => [\&cmd_install, 1, 1],
+    'use' => [\&cmd_install, 1, 1],
+    'disable' => [\&cmd_remove, 1, 1],
+    'deactivate' => [\&cmd_remove, 1, 1],
+    'unuse' => [\&cmd_remove, 1, 1],
+    'remove' => [\&cmd_remove, 1, 1],
+    'delete' => [\&cmd_remove, 1, 1],
+    'purge' => [\&cmd_remove, 1, 1],
+    'apropos' => [\&cmd_apropos, 1, 0],
+    'describe' => [\&cmd_description, 1, 0],
+    'description' => [\&cmd_description, 1, 0],
+    'desc' => [\&cmd_description, 1, 0],
+    'info' => [\&cmd_description, 1, 0],
+    'scanpackages' => [\&cmd_scanpackages, 1, 1],
+    'list' => [\&cmd_list, 1, 0],
+    'listpackages' => [\&cmd_listpackages, 1, 0],
+    'selfupdate' => [\&cmd_selfupdate, 0, 1],
+    'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
+    'validate' => [\&cmd_validate, 0, 0],
+    'check' => [\&cmd_validate, 0, 0],
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -114,30 +114,71 @@ sub initialize {
 sub process {
   my $self = shift;
   my $cmd = shift;
-  my ($cmdname, $flag, $proc, $arr);
+  my ($cmdname, $cmdinfo, $info);
+  my ($proc, $pkgflag, $rootflag);
 
   unless (defined $cmd) {
     print "NOP\n";
     return;
   }
 
-  while (($cmdname, $arr) = each %commands) {
+  $cmdinfo = undef;
+  while (($cmdname, $info) = each %commands) {
     if ($cmd eq $cmdname) {
-      ($proc, $flag) = @$arr;
-      if ($flag) {
-	Fink::Package->require_packages();
-      }
-      eval { &$proc(@_); };
-      if ($@) {
-	print "Failed: $@";
-      } else {
-	print "Done.\n";
-      }
-      return;
+      $cmdinfo = $info;
+      last;
+    }
+  }
+  if (not defined $cmdinfo) {
+    die "unknown command: $cmd\n";
+  }
+
+  ($proc, $pkgflag, $rootflag) = @$cmdinfo;
+
+  # check if we need to be root
+  if ($rootflag and $> != 0) {
+    &restart_as_root($cmd, @_);
+  }
+
+  # read package descriptions if needed
+  if ($pkgflag) {
+    Fink::Package->require_packages();
+  }
+  eval { &$proc(@_); };
+  if ($@) {
+    print "Failed: $@";
+  } else {
+    print "Done.\n";
+  }
+}
+
+### restart as root with command
+
+sub restart_as_root {
+  my ($method, $cmd, $arg);
+
+  $method = $config->param_default("RootMethod", "sudo");
+
+  $cmd = "$basepath/bin/fink";
+  foreach $arg (@_) {
+    if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
+      $cmd .= " $arg";
+    } else {
+      # safety first
+      $arg =~ s/[\$\`\'\"|;]/_/g;
+      $cmd .= " \"$arg\"";
     }
   }
 
-  die "unknown command: $cmd\n";
+  if ($method eq "sudo") {
+    $cmd = "sudo $cmd";
+  } elsif ($method eq "su") {
+    $cmd = "su root -c '$cmd'";
+  } else {
+    die "Fink is not configured to become root automatically.\n";
+  }
+
+  exit &execute($cmd, 1);
 }
 
 ### simple commands
