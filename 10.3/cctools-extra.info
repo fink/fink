@@ -7,7 +7,7 @@ Source-MD5: a78b299dea5a9cf0fb051a7805c040e6
 Patch: %n.patch
 SourceDirectory: cctools
 Essential: yes
-Depends: ${SHLIB_DEPS}, base-files
+Depends: {SHLIB_DEPS}, base-files
 CompileScript: <<
 #!/bin/sh
 

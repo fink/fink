@@ -1,7 +1,7 @@
 Package: dpkg-bootstrap
 Version: 1.10.9
 Revision: 15
-Depends: ${SHLIB_DEPS}, gzip, tar
+Depends: {SHLIB_DEPS}, gzip, tar
 BuildDepends: gettext-dev
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg-%v.tar.gz

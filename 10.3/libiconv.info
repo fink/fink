@@ -4,7 +4,7 @@ Revision: 12
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 0c99a05e0c3c153bac1c960f78711155
 Essential: yes
-Depends: ${SHLIB_DEPS}, base-files
+Depends: {SHLIB_DEPS}, base-files
 BuildDepends: fink (>= 0.13.0), fink-prebinding
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)

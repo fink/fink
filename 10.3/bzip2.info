@@ -2,7 +2,7 @@ Package: bzip2
 Version: 1.0.2
 Revision: 13
 Essential: yes
-Depends: ${SHLIB_DEPS}
+Depends: {SHLIB_DEPS}
 BuildDepends: fink (>= 0.13.0), fink-prebinding
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/%n-%v.tar.gz

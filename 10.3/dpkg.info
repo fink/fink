@@ -2,7 +2,7 @@ Package: dpkg
 Version: 1.10.9
 Revision: 28
 GCC: 3.3
-Depends: ${SHLIB_DEPS}, gzip, tar
+Depends: {SHLIB_DEPS}, gzip, tar
 BuildDepends: libiconv-dev, gettext-dev, ncurses-dev (>= 5.3-13)
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
