@@ -1,5 +1,9 @@
 2005-01-14  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Re-add missing \n in get_description.
+
+2005-01-14  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm, PkgVersion.pm: Do percent-expansion in DescDetail and DescUsage.
 
 2005-01-13  Daniel Macks  <dmacks@netspace.org>

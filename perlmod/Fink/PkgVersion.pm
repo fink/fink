@@ -1030,6 +1030,7 @@ sub get_description {
 	my $style = shift || 0;
 
 	my $desc = $self->get_shortdescription(75);  # "Description" (already %-exp)
+	$desc .= "\n";
 
 	if ($self->has_param("DescDetail")) {
 		$desc .= &format_description($self->param_expanded("DescDetail"));
