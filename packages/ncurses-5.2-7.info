@@ -1,12 +1,12 @@
 Package: ncurses
 Version: 5.2
-Revision: 6
+Revision: 7
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 Patch: %f.patch
 ConfigureParams: --without-ada --with-shared --without-debug --disable-termcap --mandir=%p/share/man
-SetCFLAGS: -no-cpp-precomp
+SetCFLAGS: -no-cpp-precomp -Wno-deprecated
 InstallScript: <<
 make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib
 mkdir -p %i/share/doc/%n
