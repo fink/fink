@@ -1659,7 +1659,7 @@ sub phase_deactivate {
 
   if (&execute("dpkg --remove @packages")) {
     if (@packages == 1) {
-      die "can't remove package ".$packages[0]->get_fullname()."\n";
+      die "can't remove package ".$packages[0]."\n";
     } else {
       die "can't batch-remove packages: @packages\n";
     }
