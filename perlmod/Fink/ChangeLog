@@ -1,6 +1,6 @@
 2002-08-19  Max Horn  <max@quendi.de>
 
-	* Validation.pm: Added JarFiles field.
+	* Validation.pm: Added JarFiles and TarFilesRename fields.
 
 2002-08-11  Max Horn  <max@quendi.de>
 
