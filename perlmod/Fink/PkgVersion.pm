@@ -2618,14 +2618,14 @@ sub phase_activate {
 			die "can't install package ".$installable[0]->get_fullname()."\n";
 		} else {
 			growl('finkPackageInstallationFailed', 'Fink installation of ' . int(@installable) . ' packages failed.',
-				"can't batch-install packages: " . join(', ', map { $_->get_fullname() } @installable));
+				"can't batch-install packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
 			die "can't batch-install packages: @deb_installable\n";
 		}
 	} else {
 		if (@installable == 1) {
 			growl('finkPackageInstallationPassed', 'Fink installation passed.', "installed " . $installable[0]->get_fullname());
 		} else {
-			growl('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages: " . join(', ', map { $_->get_fullname() } @installable));
+			growl('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
 		}
 	}
 
@@ -2646,7 +2646,7 @@ sub phase_deactivate {
 			die "can't remove package ".$packages[0]."\n";
 		} else {
 			growl('finkPackageRemovalFailed', 'Fink removal of ' . int(@packages) . ' packages failed.',
-				"can't batch-remove packages: @packages");
+				"can't batch-remove packages:\n  " . join("\n  ", @packages));
 			die "can't batch-remove packages: @packages\n";
 		}
 	} else {
@@ -2654,7 +2654,7 @@ sub phase_deactivate {
 			growl('finkPackageRemovalPassed', 'Fink removal passed.', "removed " . $packages[0]);
 		} else {
 			growl('finkPackageRemovalPassed', 'Fink removal of ' . int(@packages) . ' packages passed.',
-				"batch-removed packages: @packages");
+				"batch-removed packages:\n  " . join("\n  ", @packages));
 		}
 	}
 
