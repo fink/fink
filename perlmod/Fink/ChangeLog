@@ -1,3 +1,10 @@
+2005-01-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Extract core of cmd_fetch_all() and
+	cmd_fetch_all_missing() into a new do_fetch_all(), which uses
+	call_queue_*(). Fix spacing on parse_fetch_options() help. Reorder
+	some subs. Move BuildConflicts removal to after src/deb download.
+
 2005-01-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* VirtPackage.pm: Don't print messages when not in debug mode (they

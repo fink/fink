@@ -300,6 +300,10 @@ sub cmd_list {
 	do_real_list("list",@_);
 }
 
+sub cmd_apropos {
+	do_real_list("apropos", @_);	
+}
+
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag, $description);
@@ -632,26 +636,6 @@ sub cmd_fetch {
 	&call_queue_clear;
 }
 
-sub cmd_description {
-	my ($package, @plist);
-
-	@plist = &expand_packages(@_);
-	if ($#plist < 0) {
-		die "no package specified for command 'description'!\n";
-	}
-
-	print "\n";
-	foreach $package (@plist) {
-		print $package->get_fullname().": ";
-		print $package->get_description();
-		print "\n";
-	}
-}
-
-sub cmd_apropos {
-	do_real_list("apropos", @_);	
-}
-
 sub parse_fetch_options {
 	my $cmd = shift;
 	my %options =
@@ -678,8 +662,9 @@ Usage: fink $cmd [options]
 
 Options:
   -i, --ignore-restrictive  - Do not fetch sources for packages with 
-                            a "Restrictive" license. Useful for mirroring.
-  -d, --dry-run             - Prints filename, MD5, list of source URLs, Maintainer for each package
+                              a "Restrictive" license. Useful for mirroring.
+  -d, --dry-run             - Prints filename, MD5, list of source URLs,
+                              Maintainer for each package
   -h, --help                - This help text.
 
 EOF
@@ -697,7 +682,7 @@ sub cmd_fetch_missing {
 
 	@plist = &expand_packages(@_);
 	if ($#plist < 0) {
-		die "no package specified for command 'fetch'!\n";
+		die "no package specified for command 'cmd_fetch_missing'!\n";
 	}
 	&call_queue_clear;
 	map { &call_queue_add([ $_, 'phase_fetch', 1, 0 ]) } @plist;
@@ -705,59 +690,61 @@ sub cmd_fetch_missing {
 }
 
 sub cmd_fetch_all {
-	my ($pname, $package, $version, $vo);
-	
-	my (%options, $norestrictive, $dryrun);
-	%options = &parse_fetch_options("fetch-all", @_);
-	$norestrictive = $options{"norestrictive"} || 0;
-	$dryrun = $options{"dryrun"} || 0;
-	
-	foreach $pname (Fink::Package->list_packages()) {
-		$package = Fink::Package->package_by_name($pname);
-		$version = &latest_version($package->list_versions());
-		$vo = $package->get_version($version);
-		if (defined $vo) {
-			if ($norestrictive && $vo->has_param("license")) {
-					if($vo->param("license") =~ m/Restrictive\s*$/i) {
-						print "Ignoring $pname due to License: Restrictive\n";
-						next;
-				}
-			}
-			eval {
-				$vo->phase_fetch(0, $dryrun);
-			};
-			warn "$@" if $@;				 # turn fatal exceptions into warnings
-		}
-	}
+	&do_fetch_all("fetch-all", @_);
 }
 
 sub cmd_fetch_all_missing {
-	my ($pname, $package, $version, $vo);
-	my (%options, $norestrictive, $dryrun);
+	&do_fetch_all("fetch-missing", @_);
+}
 
-	%options = &parse_fetch_options("fetch-missing", @_);
+sub do_fetch_all {
+	my $cmd = shift;
+	my ($pname, $package, $version, $vo);
+	
+	my (%options, $norestrictive, $missing_only, $dryrun);
+	%options = &parse_fetch_options($cmd, @_);
 	$norestrictive = $options{"norestrictive"} || 0;
+	$missing_only = $cmd eq "fetch-missing";
 	$dryrun = $options{"dryrun"} || 0;
 
+	&call_queue_clear;
 	foreach $pname (Fink::Package->list_packages()) {
 		$package = Fink::Package->package_by_name($pname);
 		$version = &latest_version($package->list_versions());
 		$vo = $package->get_version($version);
 		if (defined $vo) {
-			if ($norestrictive) {
-				if ($vo->has_param("license")) {
-						if($vo->param("license") =~ m/Restrictive\s*$/i) {
-							print "Ignoring $pname due to License: Restrictive\n";
-							next;
-					}
-				}
+			if ($norestrictive && $vo->has_param("license") && $vo->param("license") =~ m/Restrictive\s*$/i) {
+				print "Ignoring $pname due to License: Restrictive\n";
+				next;
 			}
-			eval {
-				$vo->phase_fetch(1, $dryrun);
-			};
-			warn "$@" if $@;				 # turn fatal exceptions into warnings
+			&call_queue_add([
+				sub {
+					eval {
+#						$vo->phase_fetch(($missing_only, $dryrun);
+						$_[0]->phase_fetch($_[1], $_[2]);
+					};
+					warn "$@" if $@;				 # turn fatal exceptions into warnings
+				},
+				$vo, $missing_only, $dryrun ]);
 		}
-	}	
+	}
+	&call_queue_clear;
+}
+
+sub cmd_description {
+	my ($package, @plist);
+
+	@plist = &expand_packages(@_);
+	if ($#plist < 0) {
+		die "no package specified for command 'description'!\n";
+	}
+
+	print "\n";
+	foreach $package (@plist) {
+		print $package->get_fullname().": ";
+		print $package->get_description();
+		print "\n";
+	}
 }
 
 sub cmd_remove {
@@ -1652,6 +1639,8 @@ sub real_install {
 	}
 	unless ($forceoff) {
 		# ask user when additional packages are to be installed
+		# TODO: implement --dry-run flag, which *always* does the
+		#       following output block then exits (not dies).
 		if ($#additionals >= 0 || $#removals >= 0) {
 			if ($#additionals >= 0) {
 				if ($#additionals > 0) {
@@ -1680,9 +1669,7 @@ sub real_install {
 		}
 	}
 
-	# remove buildconfilcts before new builds reinstall after build
-	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
-
+	# TODO: pass --dry-run of fetch through to phase_fetch*()
 	&call_queue_clear;
 	# fetch all packages that need fetching
 	foreach $pkgname (sort keys %deps) {
@@ -1698,6 +1685,10 @@ sub real_install {
 		}
 	}
 	&call_queue_clear;
+	# TODO: implement fetch --recursive, which exits here.
+
+	# remove buildconfilcts before new builds reinstall after build
+	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
 
 	# install in correct order...
 	while (1) {
