@@ -1,5 +1,7 @@
 2001-08-29  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Configure.pm (configure): Passive FTP is now the default.
+
 	* PkgVersion.pm (phase_install): Added DocFiles field to ease
 	installation of README files.
 

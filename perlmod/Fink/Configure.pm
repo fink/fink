@@ -109,10 +109,14 @@ sub configure {
   }
   $config->set_param("ProxyFTP", $ftp_proxy);
 
+  $passive_ftp = $config->param_boolean("ProxyPassiveFTP");
+  # passive FTP is the safe default
+  if (!$config->has_param("ProxyPassiveFTP")) {
+    $passive_ftp = 1;
+  }
   $passive_ftp =
     &prompt_boolean("Use passive mode FTP transfers (to get through a ".
-		    "firewall)?",
-		    $config->param_boolean("ProxyPassiveFTP"));
+		    "firewall)?", $passive_ftp);
   $config->set_param("ProxyPassiveFTP", $passive_ftp ? "true" : "false");
 
 
