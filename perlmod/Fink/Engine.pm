@@ -49,7 +49,7 @@ our %commands =
     'bootstrap' => \&cmd_bootstrap,
     'fetch' => \&cmd_fetch,
     'fetch-all' => \&cmd_fetch_all,
-    'fetch-missing' => \&cmd_fetch_missing,
+    'fetch-missing' => \&cmd_fetch_all_missing,
     'build' => \&cmd_build,
     'rebuild' => \&cmd_rebuild,
     'install' => \&cmd_install,
@@ -158,6 +158,21 @@ sub cmd_fetch {
   }
 }
 
+sub cmd_fetch_missing {
+  my ($package, @plist);
+
+  @plist = &expand_packages(@_);
+  if ($#plist < 0) {
+    die "no package specified for command 'fetch'!\n";
+  }
+
+  foreach $package (@plist) {
+    if (not $package->is_fetched()) {
+      $package->phase_fetch();
+    }
+  }
+}
+
 sub cmd_fetch_all {
   my ($pname, $package, $version);
 
@@ -168,7 +183,7 @@ sub cmd_fetch_all {
   }
 }
 
-sub cmd_fetch_missing {
+sub cmd_fetch_all_missing {
   my ($pname, $package, $version, $vo);
 
   foreach $pname (Fink::Package->list_packages()) {

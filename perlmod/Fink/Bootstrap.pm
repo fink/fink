@@ -69,9 +69,20 @@ sub bootstrap {
                "$bsbase/sbin:$bsbase/bin:".
                $save_path;
 
+  # determine essential packages
+  @elist = Fink::Package->list_essential_packages();
+
 
   print "\n";
-  &print_breaking("BOOTSTRAP PHASE ONE: installing neccessary packages to ".
+  &print_breaking("BOOTSTRAP PHASE ONE: download tarballs.");
+  print "\n";
+
+  # use normal install routines
+  Fink::Engine::cmd_fetch_missing(@elist);
+
+
+  print "\n";
+  &print_breaking("BOOTSTRAP PHASE TWO: installing neccessary packages to ".
 		  "$bsbase without package management.");
   print "\n";
 
@@ -97,12 +108,11 @@ sub bootstrap {
 
 
   print "\n";
-  &print_breaking("BOOTSTRAP PHASE TWO: installing essential packages to ".
+  &print_breaking("BOOTSTRAP PHASE THREE: installing essential packages to ".
 		  "$basepath with package management.");
   print "\n";
 
   # use normal install routines
-  @elist = Fink::Package->list_essential_packages();
   Fink::Engine::cmd_install(@elist);
 
 
