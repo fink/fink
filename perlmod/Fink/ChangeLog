@@ -1,3 +1,11 @@
+2001-06-06  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Package.pm: Virtual packages, step 1 - keeping track of the
+	Provides in the data structures. Also, ignore files that start
+	with a dot (.) or a hash (#).
+	* PkgVersion.pm: Pass Provides, Replaces and Conflicts on to
+	dpkg.
+
 2001-06-05  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm: Make sure only missing tarballs are fetched, not

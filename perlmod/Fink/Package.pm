@@ -73,6 +73,8 @@ sub initialize {
 
   $self->{_name} = $self->param_default("Package", "");
   $self->{_versions} = {};
+  $self->{_virtual} = 1;
+  $self->{_providers} = [];
 
   push @package_list, $self;
 }
@@ -83,6 +85,14 @@ sub get_name {
   my $self = shift;
 
   return $self->{_name};
+}
+
+### get pure virtual package flag
+
+sub is_virtual {
+  my $self = shift;
+
+  return $self->{_virtual};
 }
 
 ### add a version object
@@ -97,6 +107,17 @@ sub add_version {
   } else {
     $self->{_versions}->{$version} = $version_object;
   }
+
+  $self->{_virtual} = 0;
+}
+
+### add a providing version object of another package
+
+sub add_provider {
+  my $self = shift;
+  my $provider = shift;
+
+  push @{$self->{_providers}}, $provider;
 }
 
 ### list available versions
@@ -108,6 +129,27 @@ sub list_versions {
 }
 
 ### other listings
+
+sub get_all_versions {
+  my $self = shift;
+
+  return values %{$self->{_versions}};
+}
+
+sub get_matching_versions {
+  my $self = shift;
+
+  return values %{$self->{_versions}};
+}
+
+sub get_all_providers {
+  my $self = shift;
+  my (@versions);
+
+  @versions = values %{$self->{_versions}};
+  push @versions, @{$self->{_providers}};
+  return @versions;
+}
 
 sub list_installed_versions {
   my $self = shift;
@@ -138,6 +180,9 @@ sub get_version {
   my $self = shift;
   my $version = shift;
 
+  unless (defined($version) && $version) {
+    return undef;
+  }
   if (exists $self->{_versions}->{$version}) {
     return $self->{_versions}->{$version};
   }
@@ -192,13 +237,14 @@ sub list_packages {
 
 sub list_essential_packages {
   shift;  # class method - ignore first parameter
-  my ($package, $version, $node);
+  my ($package, $version, $vnode);
 
   if (not $essential_valid) {
     @essential_packages = ();
     foreach $package (@package_list) {
       $version = &latest_version($package->list_versions());
-      if ($package->get_version($version)->param_boolean("Essential")) {
+      $vnode = $package->get_version($version);
+      if (defined($vnode) && $vnode->param_boolean("Essential")) {
 	push @essential_packages, $package->get_name();
       }
     }
@@ -238,13 +284,13 @@ sub scan {
   my $directory = shift;
   my (@filelist, $wanted);
   my ($filename, $properties);
-  my ($pkgname, $package, $version);
+  my ($pkgname, $package, $version, $vp, $vpo);
 
   # search for .info files
   @filelist = ();
   $wanted =
     sub {
-      if (-f and /\.info$/) {
+      if (-f and not /^[\.#]/ and /\.info$/) {
 	push @filelist, $File::Find::fullname;
       }
     };
@@ -272,6 +318,14 @@ sub scan {
 
     # link them together
     $package->add_version($version);
+
+    # track provided packages
+    if ($version->has_param("Provides")) {
+      foreach $vp (split(/\s*\,\s*/, $version->param("Provides"))) {
+        $vpo = Fink::Package->package_by_name_create($vp);
+        $vpo->add_provider($package);
+      }
+    }
   }
 }
 

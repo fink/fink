@@ -820,7 +820,7 @@ sub phase_build {
 
   # generate dpkg "control" file
 
-  my ($pkgname, $version);
+  my ($pkgname, $version, $field);
   $pkgname = $self->get_name();
   $version = $self->get_fullversion();
   $control = <<EOF;
@@ -830,13 +830,15 @@ Version: $version
 Architecture: $debarch
 EOF
   $control .= "Depends: ".join(", ", @{$self->{_depends}})."\n";
-  $control .= "Description: ".$self->get_description();
-  if ($self->has_param("Maintainer")) {
-    $control .= "Maintainer: ".$self->param("Maintainer")."\n";
-  }
   if ($self->param_boolean("Essential")) {
     $control .= "Essential: yes\n";
   }
+  foreach $field (qw(Maintainer Provides Replaces Conflicts)) {
+    if ($self->has_param($field)) {
+      $control .= "$field: ".$self->param($field)."\n";
+    }
+   }
+  $control .= "Description: ".$self->get_description();
 
   ### write "control" file
 
