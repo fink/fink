@@ -1,3 +1,9 @@
+2003-07-20  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Package.pm: Use simple time stamps for determining which info
+	files should be scanned for updates.  Why in the heck didn't we
+	do this earlier?  It speeds up 'fink index' by massive amounts.
+
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Don't print the output of linking the
