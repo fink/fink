@@ -1,0 +1,11 @@
+Package: fnlib
+Version: 0.5
+Revision: 1
+Source: ftp://ftp.enlightenment.org/enlightenment/fnlib/fnlib-%v.tar.gz
+Depends: imlib
+UpdateConfigGuess: true
+UpdateLibtool: true
+CommentPort: Uses autoconf and libtool - the usual fixes.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.enlightenment.org/
