@@ -1,3 +1,7 @@
+2004-08-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.21.1.1 of fink-mirrors
+
 2004-08-17 David H. <dmalloc@users.sourceforge.net>
 	* master, rsync: Added new mirror for Europe
 	Maintainer: bernard.grymonpon@belnet.be
