@@ -1411,12 +1411,8 @@ sub phase_unpack {
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
-	if ($self->is_type('bundle')) {
+	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
-	}
-	if ($self->is_type('dummy')) {
-		die "can't build ".$self->get_fullname().
-			" because no package description is available\n";
 	}
 	if (exists $self->{parent}) {
 		($self->{parent})->phase_unpack();
@@ -1619,12 +1615,8 @@ sub phase_patch {
 
 	$self->parse_configureparams;
 
-	if ($self->is_type('bundle')) {
+	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
-	}
-	if ($self->is_type('dummy')) {
-		die "can't build ".$self->get_fullname().
-				" because no package description is available\n";
 	}
 	if (exists $self->{parent}) {
 		($self->{parent})->phase_patch();
@@ -1735,8 +1727,8 @@ sub phase_compile {
 	if ($self->is_type('bundle')) {
 		return;
 	}
-	if ($self->is_type('dummy')) {
-		die "can't build ".$self->get_fullname().
+	if ($self->is_type('dummy') and not $self->has_param('CompileScript')) {
+		die "compile phase: can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
 	if (exists $self->{parent}) {
@@ -1744,11 +1736,15 @@ sub phase_compile {
 		return;
 	}
 
-	$dir = $self->get_build_directory();
-	if (not -d "$buildpath/$dir") {
-		die "directory $buildpath/$dir doesn't exist, check the package description\n";
+	if (!$self->is_type('dummy')) {
+		# dummy packages do not actually compile (so no build dir),
+		# but they can have a CompileScript to run
+		$dir = $self->get_build_directory();
+		if (not -d "$buildpath/$dir") {
+			die "directory $buildpath/$dir doesn't exist, check the package description\n";
+		}
+		chdir "$buildpath/$dir";
 	}
-	chdir "$buildpath/$dir";
 
 	### construct CompileScript and execute it
 	$compile_script = $self->get_compilescript;
@@ -1809,7 +1805,7 @@ sub phase_install {
 	$self->parse_configureparams;
 
 	if ($self->is_type('dummy')) {
-		die "can't build ".$self->get_fullname().
+		die "install phase: can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
 	if (exists $self->{parent} and not $do_splitoff) {
@@ -2039,7 +2035,8 @@ sub phase_build {
 	my ($cmd);
 
 	if ($self->is_type('dummy')) {
-		die "can't build ".$self->get_fullname().
+		die "build phase: can't build ".$self->get_fullname().
+			" build".
 				" because no package description is available\n";
 	}
 	if (exists $self->{parent} and not $do_splitoff) {

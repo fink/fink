@@ -1,3 +1,10 @@
+2004-07-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Run CompileScript (if one is explicitly defined)
+	for dummy packages instead of just crashing.
+	* VirtPackage.pm: Add CompileScript field: crash with with error
+	message explaining to RTFDescDetail.
+
 2004-07-18  Max Horn <max@quendi.de>
 
 	* Configure.pm: Fix default value for the master mirror configure option.
