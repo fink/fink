@@ -30,7 +30,7 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &pkglist2lol &lol2pkglist
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
-					  &get_path &eval_conditional &growl);
+					  &get_path &eval_conditional &growl &enforce_gcc);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors binary_requested);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -1673,31 +1673,13 @@ sub phase_unpack {
 		return;
 	}
 
-	my ($gcc);
-	my %gcchash = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3', '4.0.0' => '4.0');
-
 	if ($self->has_param("GCC")) {
-		$gcc = $self->param("GCC");
-		chomp(my $gcc_select = `gcc_select`);
-		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
-			$gcc_select = 'an unknown version';
-		}
-		if (not exists $gcchash{$gcc_select}) {
-			$gcchash{$gcc_select} = $gcc_select;
-		}
-		if ($gcchash{$gcc_select} ne $gcc) {
-			die <<END;
-
-This package must be compiled with GCC $gcc, but you currently have $gcc_select selected.
-To correct this problem, run the command:
-
-	sudo gcc_select $gcchash{$gcc}
-
-You may need to install a more recent version of the Developer Tools to be able
-to do so.
-
-END
-		}
+		my $gcc_abi = $self->param("GCC");
+Fink::Services::enforce_gcc("This package must be compiled with GCC EXPECTED_GCC, but you currently have\n" .
+"GCC INSTALLED_GCC selected.  To correct this problem, run the command:\n\n" .
+"    sudo gcc_select GCC_SELECT_COMMAND\n\n" .
+"(You may need to install a more recent version of the Developer Tools to be\n" .
+							"able to do so.)\n", $gcc_abi);
 	}
 
 	$bdir = $self->get_fullname();

@@ -24,7 +24,7 @@
 package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
-use Fink::Services qw(&execute &file_MD5_checksum);
+use Fink::Services qw(&execute &file_MD5_checksum &enforce_gcc);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -160,13 +160,12 @@ sub check_host {
 	my $host = shift @_;
 	my ($distribution, $gcc, $build);
 
-	# We check to see if gcc 3.3 is installed, and if it is the correct version.
-	# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
-	#
+	# We test for an obsolete version of gcc3.3, and refuse to proceed if
+    # it is present.
+    #
 	# (Note: the June 2003 Developer Tools had build 1435, the August 2003 ones
 	#  had build 1493.)
 
-	$gcc = "";
 	if (-x '/usr/bin/gcc-3.3') {
 		foreach(`/usr/bin/gcc-3.3 --version`) {
 			if (/build (\d+)\)/) {
@@ -180,30 +179,22 @@ Your version of the gcc 3.3 compiler is out of date.  Please update to the
 August 2003 Developer Tools update, or to Xcode, and try again.
 
 END
-		chomp(my $gcc_select = `gcc_select`);
-		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
-			$gcc_select = 'an unknown version';
-		}
-		if ($gcc_select !~ /^(3\.3|4\.0)/) {
-			die <<END;
+}
 
-Since you have gcc 3.3 installed, fink must be bootstrapped or updated using 
-that compiler.  However, you currently have gcc $gcc_select selected.  To correct 
-this problem, run the command: 
+	# We check to see if gcc is installed, and if it is the correct version.
+	# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
 
-  sudo gcc_select 3.3 
-
-END
-		}
-		$gcc = "-gcc3.3";
-	}
-
-# 10.2 users who do not have gcc at all are installing binary only, so they get
-# to move to 10.2-gcc3.3 also
-
-	if (not -x '/usr/bin/gcc') {
-		$gcc = "-gcc3.3";
-	}
+	if (-x '/usr/bin/gcc') {
+$gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrapped or updated using\n" .
+"gcc EXPECTED_GCC.  However, you currently have gcc INSTALLED_GCC selected.\n" .
+"To correct this problem, run the command:\n\n" .
+								   "    sudo gcc_select GCC_SELECT_COMMAND\n\n");
+		$gcc = "-" . $gcc;
+} else {
+## 10.2 users who do not have gcc at all are installing binary only, so they get
+## to move to 10.2-gcc3.3 also
+	$gcc = "-gcc3.3";
+}
 
 	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 		&print_breaking("\nThis system is no longer supported " .

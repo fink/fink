@@ -46,7 +46,7 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist
-					  &file_MD5_checksum &get_arch &get_sw_vers
+					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
 					  &growl);
@@ -999,6 +999,86 @@ sub get_arch {
 		}
 	}
 	return $arch;
+}
+
+=item enforce_gcc
+
+	my $gcc = enforce_gcc($message);
+	my $gcc = enforce_gcc($message, $gcc_abi);
+
+Check to see if the gcc version optionally supplied in $gcc_abi is the
+same as the default GCC ABI for the installed version of Mac OS X or Darwin.
+If it is not, we return the value for the deafult GCC ABI.
+
+If it is, or if $gcc_abi is not supplied, then we check to see if the
+gcc version obtained from /usr/sbin/gcc_select agrees with the expected 
+(default) gcc version corresponding to the installed version of
+Mac OS X or Darwin.  If the versions agree, the common value is returned.
+If they do not agree, we print $message and exit fink.
+
+The strings CURRENT_SYSTEM, INSTALLED_GCC, EXPECTED_GCC, and 
+GCC_SELECT_COMMAND within $message are converted to appropriate values.
+
+Sample message:
+
+This package must be compiled with GCC EXPECTED_GCC, but you currently have
+GCC INSTALLED_GCC selected.  To correct this problem, run the command:
+
+    sudo gcc_select GCC_SELECT_COMMAND
+
+(You may need to install a more recent version of the Developer Tools to be 
+able to do so.)
+
+=cut
+
+sub enforce_gcc {
+	my $message = shift;
+	my $gcc_abi = shift;
+	my ($gcc, $gcc_select, $gcc_command, $current_system);
+	my ($dummy, $darwin_version);
+
+# Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
+# specify default values for these.
+
+	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0.0');
+	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0.0');
+	my %gcc_name = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3', '4.0.0' => '4.0');
+	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0.0' => '3.3');
+
+	my $sw_vers = get_sw_vers();
+	if ($sw_vers ne 0) {
+		$current_system = "Mac OS X $sw_vers";
+		$sw_vers =~ s/^(\d*\.\d*).*/${1}/;
+		$gcc = $osx_default{$sw_vers};
+	} else {
+        ($dummy,$dummy,$darwin_version) = POSIX::uname();
+		$current_system = "Darwin $darwin_version";
+		$darwin_version =~ s/^(\d*).*/${1}/;
+		$gcc = $darwin_default{$darwin_version};
+	}
+
+	if (defined $gcc_abi) {
+		if ($gcc_abi_default{$gcc} !~ /^$gcc_abi/) {
+			return $gcc_abi_default{$gcc};;
+		}
+	}
+
+	chomp($gcc_select = `gcc_select`);
+	if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
+		$gcc_select = 'an unknown version';
+	}
+
+	$gcc_command = $gcc_name{$gcc};
+
+    $message =~ s/CURRENT_SYSTEM/$current_system/g;
+	$message =~ s/INSTALLED_GCC/$gcc_select/g;
+	$message =~ s/EXPECTED_GCC/$gcc/g;
+	$message =~ s/GCC_SELECT_COMMAND/$gcc_command/g;
+
+    ($gcc_select =~ /^$gcc/) or die($message);
+
+	return $gcc;
+
 }
 
 =item get_sw_vers
