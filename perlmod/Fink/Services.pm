@@ -669,17 +669,6 @@ returns a null string or Fink is configured to automatically accept
 defaults (i.e., bin/fink was invoked with the -y or --yes option), the
 answer-number $default is used.
 
-The use of %names seems backwards: one can have the same user text
-choice for multiple multiple return values but not vice versa. Also,
-cannot return anything except simple scalars. Should probably swap the
-key/value relationship. Also, seems like there is needless redundancy.
-
-This seems ripe for replacement by an ordered hash or an array of
-array-refs ([key1,val1],[key2,val2],...) or a simple pairwise list
-(key1,val1,key2,val2,...) and the actual default value instead of
-default value-number (abstracting for an interface other than
-numbered-choices).
-
 =cut
 
 sub prompt_selection {
@@ -699,36 +688,67 @@ sub prompt_selection {
 		}
 	}
 
-	prompt_selection_new( $prompt, $default_value, @choices_new );
+	prompt_selection_new( $prompt, ["number",$default_value], @choices_new );
 }
 
 =item prompt_selection_new
-    my $answer = prompt_selection_new $prompt, $default, @choices;
+    my $answer = prompt_selection_new $prompt, \@default, @choices;
 
-Same as prompt_selection, except instead of %names (valueN=>labelN)
-ordered by the list @choices of values, there is just @choices
-that is an ordered pairwise list (label1,value1,label2,value2,...).
+Ask the user a multiple-choice question and return the answer. The
+user is prompted via STDOUT/STDIN using $prompt (which is
+word-wrapped) and a list of choices. The choices are numbered
+(beginning with 1) and the user selects by number. The list @choices
+is an ordered pairwise list (label1,value1,label2,value2,...). If the
+user returns a null string or Fink is configured to automatically
+accept defaults (i.e., bin/fink was invoked with the -y or --yes
+option), the default answer is used according to the following:
+
+  @default = undef;                # choice 1
+  @default = [];                   # choice 1
+  @default = ["number", $number];  # choice $number
+  @default = ["label", $label];    # first choice with label $label
+  @default = ["value", $label];    # first choice with value $value
 
 =cut
 
 sub prompt_selection_new {
 	my $prompt = shift;
-	my $default_value = shift;
-	$default_value = 1 unless defined $default_value;
+	my $default = shift;
 	my @choices = @_;
-	my ($count, $index, $answer);
+	my ($count, $index, $answer, $default_value);
 
 	if (@choices/2 != int(@choices/2)) {
 		die "Odd number of elements in \@choices (called by ",(caller)[1]," line ",(caller)[2],")";
 	}
 
+	if (!defined $default->[0]) {
+		$default_value = 1;
+	} elsif ($default->[0] eq "number") {
+		$default_value = $default->[1];
+	} elsif ($default->[0] =~ /^(label|value)$/) {
+		# will be handled later
+	} else {
+		die "Unknown default type ",$default->[0]," (called by ",(caller)[1]," line ",(caller)[2],")";
+	}
+
+
 	require Fink::Config;
 	my $dontask = Fink::Config::get_option("dontask");
 
 	$count = 0;
-	for ($index = 0; $index < @choices; $index+=2) {
+	for ($index = 0; $index <= $#choices; $index+=2) {
 		$count++;
 		print "\n($count)	 $choices[$index]";
+		if (!defined $default_value && (
+						(
+						 ($default->[0] eq "label" && $choices[$index]   eq $default->[1])
+						 ||
+						 ($default->[0] eq "value" && $choices[$index+1] eq $default->[1])
+						 )
+						)) {
+			$default_value = $count;
+		}
+
 	}
 	print "\n\n";
 

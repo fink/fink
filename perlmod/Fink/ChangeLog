@@ -1,3 +1,8 @@
+2003-12-21  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Gave prompt_selection_new more flexible default-
+	choice behavior. Not gonna change API any more so okay to use.
+
 2003-12-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Detect Java3D and Java Advanced Imaging
