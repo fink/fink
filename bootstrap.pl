@@ -33,7 +33,7 @@ my ($script, $cmd);
 
 ### check the perl version
 
-# acceptible perl versions: "$] value" => "human-readible version string"
+# acceptable perl versions: "$] value" => "human-readable version string"
 my %ok_perl_versions = (
     "5.006"    => "5.6.0",
     "5.006001" => "5.6.1",
@@ -61,7 +61,7 @@ die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.
 	die "\nYour /usr/bin/perl5.6.1 is not functional; you must repair this problem\nbefore installing Fink.\n\n"}
 }
 
-### check if we're unharmed
+### check if we are unharmed
 
 print "Checking package...";
 my ($homebase, $file);
