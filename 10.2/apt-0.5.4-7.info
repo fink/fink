@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 6
+Revision: 7
 GCC: 3.1
 Depends: %N-shlibs (= %v-%r)
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
@@ -106,6 +106,7 @@ else
 fi
 
 rm -f %p/var/cache/apt/pkgcache.bin %p/var/cache/apt/srcpkgcache.bin
+perl -pi -e 's#direct_download (release|current)#direct_download 10.2/$1#g' %p/etc/apt/sources.list
 <<
 #
 Description: Advanced front-end for dpkg
