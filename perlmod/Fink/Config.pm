@@ -62,9 +62,12 @@ Fink::Config - Read/write the fink configuration
 =head1 DESCRIPTION
 
 A class representing the fink configuration file as well as any command
-line options.
+line options.  Fink::Config inherits from Fink::Base.
 
-Fink::Config inherits from Fink::Base.
+Fink::Config will not work without a Fink::Config object having been made
+that contains a basepath.  The fink program typically does this for you.
+Since the variables Fink::Config exports use data from the last initialized
+Fink::Config object, creating a second object is not recommended.
 
 
 =head2 Constructors
@@ -339,6 +342,49 @@ sub verbosity_level {
 }
 
 =back
+
+=head2 Exported Variables
+
+These variables are exported on request.  They are initialized by creating
+a Fink::Config object.
+
+=over 4
+
+=item $basepath
+
+Path to the base of the Fink installation directory.
+
+Typically F</src>.
+
+=item $buildpath
+
+Directory where fink packages will be built.  
+
+Typically F<$basepath/src>
+
+=item $config
+
+The last Fink::Config object created.
+
+=item $debarch
+
+Debian-style name of the current architecture.  
+
+Typically C<darwin-powerpc>.
+
+=item $distribution
+
+Fink package distribution being used.
+
+For example, C<10.2>.
+
+=item $libpath
+
+XXX Don't understand this one.
+
+
+=back
+
 
 =head1 SEE ALSO
 

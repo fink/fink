@@ -1,3 +1,9 @@
+2003-11-20  Michael G Schwern <schwern@pobox.com>
+
+	* Config.pm: Document exported variables.  Document that you need
+	a Fink::Config object for them to work and that its a Bad Idea
+	to have two Fink::Config objects.
+
 2003-11-20  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Service.pm: Make is so expand_percent ignores commented line so
