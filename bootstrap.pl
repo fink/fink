@@ -33,10 +33,17 @@ my ($script, $cmd);
 
 ### check the perl version
 
-if ("$]" == "5.006" or "$]" == "5.008" or "$]" == "5.008001") {
+if ("$]" == "5.006" or "$]" == "5.006001" or "$]" == "5.008" or "$]" == "5.008001") {
     print "Found perl version $].\n";
 } else {
-die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.8.0 (5.008), or 5.8.1 (5.008001).\n\n";
+die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.6.1 (5.006001), 5.8.0 (5.008), or 5.8.1 (5.008001).\n\n";
+}
+
+if ("$]" == "5.006001") {
+    if (not -x "/usr/bin/perl5.6.1") {
+die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
+    elsif (system "/usr/bin/perl5.6.1 -V") {
+	die "\nYour /usr/bin/perl5.6.1 is not functional; you must repair this problem\nbefore installing Fink.\n\n"}
 }
 
 ### check if we're unharmed

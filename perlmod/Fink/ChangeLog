@@ -1,3 +1,8 @@
+2003-06-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Bootstrapping with perl 5.6.1 also requires 
+	storable-pm561.
+
 2003-06-14  Max Horn  <max@quendi.de>
 
 	* Bootstrap.pm: Allow bootstrapping with perl 5.6.1; cleaned up code; show
