@@ -958,7 +958,7 @@ sub is_installed {
 	my $self = shift;
 
 	if ((&version_cmp(Fink::Status->query_package($self->{_name}), '=', $self->get_fullversion())) or
-	   ((defined Fink::VirtPackage->query_package($self->{_name}) and &version_cmp(Fink::VirtPackage->query_package($self->{_name}), '=', $self->get_fullversion())))) {
+	   (version_cmp(Fink::VirtPackage->query_package($self->{_name}), '=', $self->get_fullversion()))) {
 		return 1;
 	}
 	return 0;
