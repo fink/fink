@@ -1,3 +1,8 @@
+2004-05-03  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document the -K and -k flags.
+	* fink.conf.5.in: Mention -K and -k in the Keep*Dir sections.
+
 2004-04-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: Use /usr/bin/perl for tests since that's how fink runs.

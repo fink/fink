@@ -272,26 +272,6 @@ Validates the MD5 digest of all packages' tarballs, where possible.
 .It Cm cleanup
 Removes obsolete package files (.info, .patch, .deb) if newer versions
 are available. This can reclaim large amounts of disk space.
-.It Cm dumpinfo Ar [options] package...
-Shows how Fink parses parts of a package's .info file. Various fields and
-percent expansions will be displayed according to
-.Ar options
-as follows:
-.Bl -tag -width flag -offset indent -compact
-.It Cm -h,--help
-Show the options which are available.
-.It Cm -a,--all
-Display all fields from the package description.
-This is the default mode when no
-.Ar --field
-or
-.Ar --percent
-flags are given.
-.It Cm -f fieldname, --field=fieldname
-Display the given fieldname(s), in the order listed.
-.It Cm -p key, --percent=key
-Display the given percent expansion key(s), in the order listed.
-.El
 .El
 .\"
 .\"
