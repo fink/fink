@@ -31,6 +31,7 @@ use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
 use File::Find;
+use Fink::Package::Mini;
 
 use strict;
 use warnings;
@@ -415,11 +416,14 @@ sub update_db {
 
 	# read data from descriptions
 	if (&get_term_width) {
-		print STDERR "Reading package info...\n";
+		print STDERR "Reading package info... ";
 	}
 	foreach $tree ($config->get_treelist()) {
 		$dir = "$basepath/fink/dists/$tree/finkinfo";
 		Fink::Package->scan($dir);
+	}
+	if (&get_term_width) {
+		print STDERR "done.\n";
 	}
 	eval {
 		require Storable; 
@@ -432,7 +436,9 @@ sub update_db {
 			}
 			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
-			print "done.\n";
+			if (&get_term_width) {
+				print STDERR "done.\n";
+			}
 		} else {
 			&print_breaking_stderr( "\nFink has detected that your package cache is out of date and needs" .
 				" an update, but does not have privileges to modify it. Please re-run fink as root," .
@@ -440,6 +446,10 @@ sub update_db {
 		}
 	};
 	$db_outdated = 0;
+
+	# update the mini-index for 'fink list' when we update
+	# the full index
+	Fink::Package::Mini->scan_all();
 }
 
 ### scan one tree for package desccriptions

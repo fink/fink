@@ -38,7 +38,7 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
-	   lib/fink/update etc etc/dpkg \
+	   lib/perl5/Fink/Package lib/fink/update etc etc/dpkg \
 	   share share/doc share/doc/fink share/man \
 	   share/man/man8 share/man/man5 ; do
   mkdir "$basepath/$dir"
@@ -59,6 +59,12 @@ install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 for file in perlmod/Fink/*.pm ; do
   if [ -f $file ]; then
     install -c -p -m 644 $file "$basepath/lib/perl5/Fink/"
+  fi
+done
+
+for file in perlmod/Fink/Package/*.pm ; do
+  if [ -f $file ]; then
+    install -c -p -m 644 $file "$basepath/lib/perl5/Fink/Package/"
   fi
 done
 
