@@ -480,7 +480,7 @@ sub do_finish {
 		}
 		$aptcmd .= "update";
 		if (&execute($aptcmd)) {
-			&print_breaking("WARNING: Failure while downloading indexes.".
+			&print_breaking("WARNING: Failure while downloading indexes. ".
 			                "Running 'fink scanpackages' may fix this.");
 		}
 	}
