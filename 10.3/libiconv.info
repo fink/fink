@@ -1,10 +1,10 @@
 Package: libiconv
 Version: 1.8
-Revision: 1
+Revision: 2
 Source: gnu
 Source-MD5: fd2a95a4b79fbdc8ea55ad093a8bb6cf
 Essential: yes
-Depends: base-files
+Depends: base-files, %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
 Patch: %n.patch
 NoSetLDFLAGS: true
@@ -16,6 +16,31 @@ make install prefix=%i mandir=%i/share/man docdir=%i/share/doc/%n
 install -m 644 README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS %i/share/doc/%n/
 rm -rf %i/doc
 rm -f %i/lib/charset.alias
+<<
+SplitOff: <<
+  Package: %N-shlibs
+  Replaces: %N (<= 1.8-1)
+  Files: <<
+    lib/libcharset.*.dylib
+    lib/libiconv.*.dylib
+  <<
+  Shlibs: <<
+    %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.8-2)
+    %p/lib/libiconv.2.dylib 4.0.0 %n (>= 1.8-2)
+  <<
+  DocFiles: COPYING* AUTHORS
+<<
+SplitOff2: <<
+  Package: %N-dev
+  Depends: %N-shlibs (= %v-%r)
+  Replaces: %N (<= 1.8-1)
+  BuildDependsOnly: true
+  Files: <<
+    lib/libcharset.dylib
+    lib/libiconv.dylib
+    include
+  <<
+  DocFiles: COPYING* AUTHORS
 <<
 #
 PostInstScript: <<

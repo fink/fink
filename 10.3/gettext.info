@@ -1,12 +1,11 @@
 Package: gettext
 Version: 0.10.40
-Revision: 4
+Revision: 5
 Source: gnu
 Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: yes
-BuildDepends: fink-prebinding
-#BuildDepends: libiconv-dev
-Depends: base-files, libiconv
+BuildDepends: fink-prebinding, libiconv-dev
+Depends: base-files, libiconv-shlibs, %N-shlibs (= %v-%r)
 Patch: %n.patch
 SetCPPFLAGS: -no-cpp-precomp
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
@@ -19,6 +18,32 @@ InstallScript: <<
 <<
 DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
 #
+SplitOff: <<
+  Package: %N-shlibs
+  Depends: libiconv-shlibs
+  Replaces: %N (<= 0.10.40-4)
+  Files: <<
+    lib/libintl.*.dylib
+  <<
+  Shlibs: <<
+    %p/lib/libintl.1.dylib 2.0.0 %n (>= 0.10.40-5)
+  <<
+  DocFiles: COPYING* AUTHORS
+<<
+SplitOff2: <<
+  Package: %N-dev
+  Depends: %N-shlibs (= %v-%r)
+  Replaces: %N (<= 0.10.40-4)
+  BuildDependsOnly: true
+  Files: <<
+    lib/libintl.a
+    lib/libintl.la
+    lib/libintl.dylib
+    include
+    share/aclocal
+  <<
+  DocFiles: COPYING* AUTHORS
+<<
 PostInstScript: <<
 if [ -L %p/etc/alternatives/charset.alias ]; then
   update-alternatives --remove charset.alias %p/lib/charset.alias.gettext

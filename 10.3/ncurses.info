@@ -1,6 +1,6 @@
 Package: ncurses
 Version: 5.3-20030308
-Revision: 1
+Revision: 2
 GCC: 3.1
 Source: mirror:sourceforge:fink/%n-5.3.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
@@ -15,7 +15,7 @@ chmod +x %n-%v-patch.sh
 patch -p1 < %a/%n.patch
 <<
 Essential: yes
-Depends: base-files
+Depends: base-files, %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
 ConfigureParams: --with-libtool=/usr/bin/glibtool --without-ada --with-shared --without-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo"
 NoSetCFLAGS: true
@@ -35,6 +35,43 @@ ln -s %p/lib/libmenu.5.dylib %i/lib/libmenu.dylib.5
 ln -s %p/lib/libncurses.5.dylib %i/lib/libncurses.dylib.5
 ln -s %p/lib/libpanel.5.dylib %i/lib/libpanel.dylib.5
 
+<<
+SplitOff: <<
+  Package: %N-shlibs
+  Replaces: %N (<= 5.3-20030308-1)
+  Files: <<
+    lib/libform.*.dylib
+    lib/libmenu.*.dylib
+    lib/libncurses.*.dylib
+    lib/libpanel.*.dylib
+    lib/libform.dylib.5
+    lib/libmenu.dylib.5
+    lib/libncurses.dylib.5
+    lib/libpanel.dylib.5
+  <<
+  Shlibs: <<
+    %p/lib/libform.5.dylib 2.0.0 %n (>= 5.3-20030308-2)
+    %p/lib/libmenu.5.dylib 4.0.0 %n (>= 5.3-20030308-2)
+    %p/lib/libncurses.5.dylib 2.0.0 %n (>= 5.3-20030308-2)
+    %p/lib/libpanel.5.dylib 4.0.0 %n (>= 5.3-20030308-2)
+  <<
+<<
+SplitOff2: <<
+  Package: %N-dev
+  Depends: %N-shlibs (= %v-%r)
+  Replaces: %N (<= 5.3-20030308-1)
+  BuildDependsOnly: true
+  Files: <<
+    lib/libform.a
+    lib/libmenu.a
+    lib/libncurses.a
+    lib/libpanel.a
+    lib/libform.dylib
+    lib/libmenu.dylib
+    lib/libncurses.dylib
+    lib/libpanel.dylib
+    include
+  <<
 <<
 DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
 Description: Full-screen ascii drawing library

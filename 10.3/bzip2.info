@@ -1,8 +1,8 @@
 Package: bzip2
 Version: 1.0.2
-Revision: 1
+Revision: 2
 Essential: yes
-Depends: base-files
+Depends: base-files, %N-shlibs (%v-%r)
 BuildDepends: fink-prebinding
 Maintainer: Max Horn <max@quendi.de>
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
@@ -10,6 +10,28 @@ Source-MD5: ee76864958d568677f03db8afad92beb
 Patch: %n.patch
 CompileScript: make PREFIX=%p
 InstallScript: make install PREFIX=%i
+SplitOff: <<
+  Package: %N-shlibs
+  Replaces: %N (<= 1.0.2-1)
+  Files: <<
+    lib/libbz2.*.dylib
+  <<
+  Shlibs: <<
+    %p/lib/libbz2.1.dylib 1.0.1 %n (>= 1.0.2-2)
+  <<
+  DocFiles: LICENSE
+<<
+SplitOff2: <<
+  Package: %N-dev
+  Depends: %N-shlibs (= %v-%r)
+  Replaces: %N (<= 1.0.2-1)
+  BuildDependsOnly: true
+  Files: <<
+    lib/libbz2.dylib
+    include
+  <<
+  DocFiles: LICENSE
+<<
 DocFiles: LICENSE README CHANGES manual*.html
 Description: Block-sorting file compressor
 DescDetail: <<
