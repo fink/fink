@@ -1,3 +1,7 @@
+2003-04-15  Ben Hines <bhines@alumni.ucsd.edu>
+
+	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.5.
+	
 2003-04-05  Ben Hines <benh57@users.sourceforge.net>
 
 	* fink.conf.5.in: Document new mirroring options
