@@ -24,8 +24,6 @@ package Fink::User;
 
 use Fink::Config qw($config $basepath $debarch);
 use Fink::Services qw(&execute &print_breaking &prompt &prompt_boolean);
-use User::grent;
-use User::pwent;
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
 
@@ -78,6 +76,8 @@ sub get_perms {
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $rootdir);
     
 	foreach $file (@filelist) {
+		### reset uid and gid
+		($gid, $uid) = ("None", "None");
 		### Don't add DEBIAN dir
 		next if ($file =~ /DEBIAN/);
 		### Skip the rootdir
@@ -86,16 +86,19 @@ sub get_perms {
 		($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
 
 		### Skip anything that doesn't have a user or group;
-		# next if (not $uid or not $gid);
+		next if ($uid eq "None" or $gid eq "None");
 	  
-		$usr = User::pwent::getpwuid($uid);
-		$grp = User::grent::getgrgid($gid);
+		$usr = `/usr/bin/nidump passwd . | /usr/bin/grep \"*:$uid:\" | /usr/bin/cut -d\":\" -f1`;
+		$grp = `/usr/bin/nidump group . | /usr/bin/grep \"*:$gid:\" | /usr/bin/cut -d\":\" -f1`;
+
+		chomp($usr);
+		chomp($grp);
 
 		### Remove $basepath/src/root-...
 		$file =~ s/^$rootdir//g;
 
 		### DEBUG
-		print "Processing $file...UID: $uid, GID: $gid\n";
+		print "Processing \%i$file...UID: $uid ($usr), GID: $gid ($grp)\n";
 	  
 		push(@files, $file);
 		push(@users, $usr);
