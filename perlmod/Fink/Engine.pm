@@ -999,7 +999,7 @@ EOF
 		} elsif ($filename =~/\.deb$/) {
 			Fink::Validation::validate_dpkg_file($filename, $val_prefix);
 		} else {
-			die "Don't know how to validate $filename!\n";
+			print "Error: don't know how to validate $filename!\n";
 		}
 	}
 }
