@@ -1,3 +1,7 @@
+2004-11-07  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm: We work with 10.3.6.
+
 2004-11-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Corrected regex in dpkg install-time script
