@@ -1309,7 +1309,7 @@ sub real_install {
 					$to_be_rebuilt{$name} = 0;
 					next if $already_activated{$name};
 					# Reinstall any installed splitoff if we just rebuilt
-					if ($is_build and $package->is_installed()) {
+					if ($is_build and $pkg->is_installed()) {
 						push(@batch_install, $pkg);
 						$already_activated{$name} = 1;
 						next;

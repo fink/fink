@@ -1,3 +1,8 @@
+2003-11-07  Max Horn  <max@quendi.de>
+
+	* Engine.pm: Fix bug causing incorrect installation of 'relatives' when
+	  rebuilding splitoff packages (Bug #645841).
+
 2003-11-05  Ben Hines <benh57@users.sourceforge.net>
 
 	* Bootstrap.pm: Support Mac OS X 10.3 / Darwin 7.0.0
