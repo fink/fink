@@ -1,0 +1,8 @@
+Package: rxvt
+Version: 2.6.3
+Revision: 1
+Source: ftp://ftp.rxvt.org/pub/rxvt/rxvt-%v.tar.gz
+CommentPort: Builds 'out of the box'.
+CommentStow: No issues.
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
+Homepage: http://www.rxvt.org/
