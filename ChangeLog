@@ -1,5 +1,9 @@
 2001-10-18  Christoph Pfisterer  <cp@chrisp.de>
 
+	* fink.in: Recognize some more options; most are disabled until
+	they are actually implemented. Added code to pass the options on
+	to the other modules.
+
 	* fink.in: Added a --help option and some hints towards it
 	(contributed by Justin Hallett).
 

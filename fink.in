@@ -28,10 +28,18 @@ use lib "@BASEPATH@/lib/perl5";
 
 use Getopt::Long;
 
-my $dontask = 0;
+my %options =
+  (
+   "dontask" => 0,
+   "interactive" => 0,
+   "verbosity" => 0,
+  );
 
 Getopt::Long::Configure(qw(bundling ignore_case_always));
-GetOptions('yes' => \$dontask,
+GetOptions('yes|y' => \$options{dontask},
+#	   'quiet|q' => sub { $options{verbosity}-- },
+#	   'verbose' => sub { $options{verbosity}++ },
+#	   'interactive|i' => \$options{interactive},
 	   'version|v' => \&show_version,
 	   'help|h|?' => \&show_help)
  or die "fink: unknown option\nType 'fink --help' for more information.\n";
@@ -98,6 +106,7 @@ delete $ENV{CDPATH};
 
 # load the modules
 require Fink::Services;
+require Fink::Config;
 require Fink::Engine;
 
 # read the configuration file
@@ -109,6 +118,9 @@ if (-f $configpath) {
   print "ERROR: Configuration file \"$configpath\" not found.\n";
   exit 1;
 }
+
+# propagate command-line options
+Fink::Config::set_options(\%options);
 
 # create the command-processing engine
 my $engine = Fink::Engine->new_with_config($config);
