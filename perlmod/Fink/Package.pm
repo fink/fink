@@ -87,8 +87,13 @@ sub get_name {
 ### get pure virtual package flag
 
 sub is_virtual {
+	use Fink::VirtPackage;
 	my $self = shift;
 
+	if (Fink::VirtPackage->query_package($self->{_name})) {
+		# Fix to set VirtPackage.pm pkgs as virtuals level 2
+		$self->{_virtual} = 2;
+	}
 	return $self->{_virtual};
 }
 

@@ -1,7 +1,12 @@
 2003-12-02  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Added --buildonly to fink list command, to list all
-	packages that have a BuildDependsOnly tag.
+	packages that have a BuildDependsOnly tag. Added --buildonly to
+	remove and purge as well. And Fixed fink list with virtuals, so
+	if is_virtual returns 2 treat like normal pkg in listing.
+	* Package.pm: Fixed is_virtual so new virtuals (as of
+	VirtPackage.pm) now work again, but since they have descriptions
+	and version, they return 2.
 
 2003-12-01  Daniel Macks <dmacks@netspace.org>
 

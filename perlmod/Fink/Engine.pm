@@ -387,7 +387,7 @@ EOF
 
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
-		if ($package->is_virtual()) {
+		if ($package->is_virtual() == 1) {
 			$lversion = "";
 			$iflag = "   ";
 			$description = "[virtual package]";
@@ -661,39 +661,112 @@ sub cmd_fetch_all_missing {
 }
 
 sub cmd_remove {
-	my ($package, @plist);
-	my (@packages);
+	my @packages = get_pkglist("remove", @_);
 
-	@plist = &expand_packages(@_);
-	if ($#plist < 0) {
-		die "no package specified for command 'remove'!\n";
-	}
-	
-	foreach $package (@plist) {
-		push @packages, $package->get_name();
-	}
-
-	Fink::PkgVersion::phase_deactivate(@packages);
+        Fink::PkgVersion::phase_deactivate(@packages);
 	Fink::Status->invalidate();
 }
 
-sub cmd_purge {
-	my ($package, @plist, @packages, $answer);
+sub get_pkglist {
+	my $cmd = shift;
+	my ($package, @plist, $pname, @selected, $pattern, @packages);
+	my ($vo, $lversion);
+	my ($buildonly, $wanthelp);
 
-	@plist = &expand_packages(@_);		 
-	if ($#plist < 0) {
-		die "no package specified for command 'purge'!\n";
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'buildonly|b'	=> \$buildonly,
+		'help|h'	=> \$wanthelp
+	) or die "fink $cmd: unknown option\nType 'fink $cmd --help' for more information.\n";
+
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+
+		print <<"EOF";
+Fink $version
+
+Usage: fink $cmd [options] [string]
+
+Options:
+  -b, --buildonly      - Only list packages which are Build Only Depends
+  -h, --help           - This help text.
+
+EOF
+		exit 0;
 	}
 
-	foreach $package (@plist) {
+	Fink::Package->require_packages();
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+	@plist = Fink::Package->list_packages();
+	if ($#_ < 0) {
+		if (defined $buildonly) {
+			@selected = @plist;
+		} else {
+			die "no package specified for command '$cmd'!\n";
+		}
+	} else {
+		@selected = ();
+		while (defined($pattern = shift)) {
+			$pattern = lc quotemeta $pattern; # fixes bug about ++ etc in search string.
+			push @selected, grep(/^$pattern$/, @plist);
+                }
+	}
+
+	if ($#selected < 0 ) {
+		die "no package specified for command '$cmd'!\n";
+	}
+
+	foreach $pname (sort @selected) {
+		$package = Fink::Package->package_by_name($pname);
+
+		# Can't purge or remove virtuals
+		next if $package->is_virtual();
+
+		$lversion = &latest_version($package->list_versions());
+		$vo = $package->get_version($lversion);
+
+		# Can only remove/purge installed pkgs
+		next unless $vo->is_installed();
+
+                if (defined $buildonly) {
+                        next unless ( $vo->has_param("builddependsonly") );
+                }
+
 		push @packages, $package->get_name();
 	}
+
+	# Incase no packages meet the requirements above.
+	if ($#packages < 0) {
+		die "no package specified for command '$cmd'!\n";
+	}
+
+	my $pkglist = join(", ", @packages);
+	my $rmcount = $#packages + 1;
+	print "Fink will attempt to $cmd $rmcount package(s).\n";
+	print "$pkglist\n\n";
+
+	my $answer = &prompt_boolean("Do you want to continue?", 1);
+	if (! $answer) {
+		die "$cmd not performed!\n";
+	}
+
+	return @packages;
+}
+
+sub cmd_purge {
+	my @packages = get_pkglist("purge", @_);
+
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
  
-	$answer = &prompt_boolean("Do you want to continue?", 1);			
+	my $answer = &prompt_boolean("Do you want to continue?", 1);			
 	if (! $answer) {
-		die "Purge not performed\n";
+		die "Purge not performed!\n";
 	} else {
 		Fink::PkgVersion::phase_purge(@packages);
 		Fink::Status->invalidate();
