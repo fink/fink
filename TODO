@@ -1,11 +1,33 @@
+Minor
+=====
+
+* mirror choice with three options present should not initially default to
+  option 2 (retry same mirror)
+
+Medium
+======
+
+* checksums should always be checked whenever we know we are going to use a given
+  source file later. E.g. if you run "fink rebuild foo", then Fink does check 
+  if the source files for package foo are present, and if not, downloads them.
+  If present, fink should verify the checksum *immediatly, not when the build
+  is actually starting
+
 * seperate the "mirror" list into its own package (either by putting it into 
   "base-files" or by creating a "mirror" CVS module & package)
   -> this allows us to quickly update the mirror list, should it be necessary
+
+* add a mirror check utillity that given some testcases will verify that all mirrors
+  do still work
+
+* add epoch support
 
 * possibly get rid of the ncurses package on 10.2, by providing a system-ncurses
   package that just symlinks the ncurses dylibs in /usr/lib to /sw/lib
   (this is necessary at least for now to ensure backwards compatibility)
 
-* add epoch support
+Major
+=====
 * rewrite the dependency code
   -> added Conflicts / BuildConflicts support
+
