@@ -37,7 +37,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -132,6 +132,69 @@ sub bootstrap {
 
 sub get_bsbase {
 	return "$basepath/bootstrap";
+}
+
+# check_host
+# This checks the current host OS version and returns which 
+# distribution to use.  It will also warn the user if there
+# are any known issues with the system they are using.
+# Takes the host as returned by config.guess
+# Returns the distribution to use, "unknown" if it cannot
+# determine the distribution.
+sub check_host {
+	my $host = shift @_;
+	my $distribution;
+
+	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "10.1";
+	} elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "10.1";
+	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-5]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "10.2";
+	} elsif ($host =~ /^powerpc-apple-darwin(6\.[6-9]|[7-9]\.)/) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made, but should work.");
+		$distribution = "10.2";
+	} elsif ($host =~ /^i386-apple-darwin(6\.[0-5]|[7-9]\.)/) {
+		&print_breaking("Fink is currently not supported on x86 ".
+			"Darwin. Various parts of Fink hardcode 'powerpc' ".
+			"and assume to run on a PowerPC based operating ".
+			"system. Use Fink on this system at your own risk!");
+		$distribution = "10.2";
+	} elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
+		&print_breaking("This system is outdated and not supported ".
+			"by this Fink release. Please update to Mac OS X ".
+			"10.0 or Darwin 1.3.");
+		$distribution = "unknown";
+	} else {
+		&print_breaking("This system is unrecognized and not ".
+			"supported by Fink.");
+		$distribution = "unknown";
+	}
+
+	return $distribution;
+}
+
+# check_self
+# Description: this will iterate over the list of files we're supposed
+# to have, and checks if they are present.
+# Takes no arguments
+# Returns 0 on success, 1 if anything is missing.
+sub check_files {
+	my ($file);
+	foreach $file (qw(fink.in install.sh COPYING VERSION
+  		perlmod/Fink mirror update fink.info.in postinstall.pl.in
+  		update/config.guess perlmod/Fink/Config.pm mirror/_keys
+ 	)) {
+		if (not -e $file) {
+			print "ERROR: Package incomplete, '$file' is missing.\n";
+			return 1;
+		}
+	}
+	return 0;
 }
 
 ### EOF
