@@ -1,5 +1,9 @@
 2002-05-16  Max Horn  <max@quendi.de>
 
+	* Engine.pm (real_install): Fixed 'fink rebuild' to honor BuildDepends.
+
+2002-05-16  Max Horn  <max@quendi.de>
+
 	* Bootstrap.pm (bootstrap): Fixed bootstraping (YASB).
 
 2002-05-11  Max Horn  <max@quendi.de>

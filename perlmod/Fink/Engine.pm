@@ -718,7 +718,7 @@ sub real_install {
     $item = $deps{$pkgname};
 
     # check installation state
-    if ($item->[2]->is_installed()) {
+    if ($item->[2]->is_installed() and $item->[3] != $OP_REBUILD) {
       if ($item->[4] == 0) {
 	$item->[4] = 2;
       }
