@@ -1791,6 +1791,7 @@ sub real_install {
 	PACKAGELOOP: foreach $pkgname (sort keys %deps) {
 			$item = $deps{$pkgname};
 			next if (($item->[FLAG] & 2) == 2);	 # already installed
+
 			$all_installed = 0;
 
 			$package = $item->[PKGVER];
@@ -1836,6 +1837,17 @@ sub real_install {
 			# check dependencies
 			foreach $dep (@extendeddeps) {
 				next PACKAGELOOP if (($dep->[FLAG] & 2) == 0);
+				### FIXME switch debs during long builds
+				if (!$dep->[PKGVER]->is_installed()) {
+					### Guess we should build/install it then
+					my $prompt = "To continue ".$dep->[PKGNAME]." is required, do you want to install it now?";
+					my $continue = prompt_boolean($prompt, default => 1, timeout => 60);
+					if ($continue) {
+						&real_install($OP_INSTALL, 0, 1, $dryrun, $dep->[PKGVER]->get_name());
+					} else {
+						die "Failed to switch in ".$dep->[PKGNAME]."!\n";
+					}
+				}
 			}
 
 			my @batch_install;

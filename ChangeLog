@@ -1,4 +1,4 @@
-2005-03-07  Justin F. Hallett  <thesin@users.sourceforge.net>
+2005-04-04  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* bootstrap.pl: added var/lib/fink to mkdir to fix bootstraping
 

@@ -1,3 +1,7 @@
+2005-04-05  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Started work for auto-switching depends inbetween builds
+
 2005-04-04  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm, Shlibs.pm: Check defined($FH) not defined(fileno($FH))
