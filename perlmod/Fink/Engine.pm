@@ -636,7 +636,8 @@ sub cmd_checksums {
 
 sub cmd_cleanup {
   my ($pname, $package, $vo, $i, $file);
-  
+  my (@to_be_deleted);
+
   # TODO - add option that specify whether to clean up source, .debs, or both
   # TODO - add --dry-run option that prints out what actions would be performed
   # TODO - option that steers which file to keep/delete: keep all files that
@@ -674,21 +675,38 @@ sub cmd_cleanup {
   # Now search through all .deb files in /sw/fink/dists/
   find (\&kill_obsolete_debs, "$basepath/fink/dists");
   
-  # Finally remove broken symlinks in /sw/fink/debs
+  # Remove broken symlinks in /sw/fink/debs (i.e. those that pointed to 
+  # the .deb files we deleted above).
   find (\&kill_broken_links, "$basepath/fink/debs");
   
-  # Remove obsolete source files
-  # TODO - for this better not to use Find::File, we just want a flat
-  # listing of files in /sw/src (i.e. no recursion); and we probably
-  # also want to delete subdirectories, however it must be possible to
-  # turn that off with a switch...
+
+  # Remove obsolete source files. We do not delete immediatly because that
+  # will confuse readdir().
+  @to_be_deleted = ();
+  opendir(DIR, "$basepath/src") or die "Can't access $basepath/src: $!";
+  while (defined($file = readdir(DIR))) {
+    $file = "$basepath/src/$file";
+    # Skip all source files that are still used by some package
+    next if $src_list{$file};
+    push @to_be_deleted, $file;
+  }
+  closedir(DIR);
+
+  foreach $file (@to_be_deleted) {
+    # For now, do *not* remove directories - this could easily kill
+    # a build running in another process. In the future, we might want
+    # to add a --dirs switch that will also delete directories.
+    if (-f $file) {
+      unlink $file;
+    }
+  }
 }
 
 sub kill_obsolete_debs {
   if (/^.*\.deb\z/s ) {
     if (not $deb_list{$File::Find::name}) {
       # Obsolete deb
-      unlink($File::Find::name)
+      unlink $File::Find::name;
     }
   }
 }
@@ -696,7 +714,7 @@ sub kill_obsolete_debs {
 sub kill_broken_links {
   if(-l && !-e) {
     # Broken link
-    unlink($File::Find::name)
+    unlink $File::Find::name;
   }
 }
 

@@ -1,5 +1,9 @@
 2002-08-05  Max Horn  <max@quendi.de>
 
+	* Engine.pm (cmd_cleanup): Improved the "fink cleanup" command to also clean
+	  files in /sw/src (only files not directories - removing directories in 
+	  /sw/src is dangerous as it can interupt running builds etc.)
+
 	* Mirror.pm: Don't use mirror timestamp as a mirror (Bug #563182).
 
 2002-08-04  Max Horn  <max@quendi.de>
