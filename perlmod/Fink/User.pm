@@ -38,8 +38,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&get_perms &add_user_script &remove_user_script
-				&add_user &del_user &add_group &del_group);
+	@EXPORT_OK	 = qw(&get_perms &add_user_script &remove_user_script);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -52,259 +51,6 @@ $lowGID = $config->param("lowGID") || 250;
 $highGID = $config->param("highGID") || 299;
 
 END { }				# module clean-up code here (global destructor)
-
-### Using shell scripts for now, will just add the commands
-### direct before finished, just faster for now
-
-### Create User
-sub add_user {
-	my $self = shift;
-	my $user = shift;
-	my $desc = shift;
-	my $pass = shift || "*";
-	my $shell = shift || "/usr/bin/false";
-	my $home = shift;
-	my $group = shift || "staff";
-
-	my ($cmd, $uid, $gid);
-	my $goterr = 0;
-
-	my $old = $self->check_for_name("user", $user);
-
-	unless ($old) {
-		$uid = $self->get_id("user", $user);
-
-		$cmd = "/usr/bin/niutil -create . /users/$user";
-
-		if (&execute($cmd)) {
-			die "Can't create user '$user'\nERROR: $!\n";
-		}
-	}
-
-	$gid = User::grent::getgrnam($group);
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user realname \"$desc\"";
-	$goterr = &execute($cmd);
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user gid $gid";
-	$goterr = &execute($cmd);
-
-	unless ($old) {
-		$cmd = "/usr/bin/niutil -createprop . /users/$user uid $uid";
-		$goterr = &execute($cmd);
-	}
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user home \"$home\"";
-	$goterr = &execute($cmd);
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user name \"$user\"";
-	$goterr = &execute($cmd);
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user passwd \"$pass\"";
-	$goterr = &execute($cmd);
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user shell \"$shell\"";
-	$goterr = &execute($cmd);
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user change 0";
-	$goterr = &execute($cmd);
-
-	$cmd = "/usr/bin/niutil -createprop . /users/$user expire 0";
-	$goterr = &execute($cmd);
-
-	if ($goterr) {
-		die "Can't set user info for '$user'\nERROR: $!\n";
-	}
-
-	unless (-d $home) {
-		$cmd = "/bin/mkdir -p \"$home\"";
-		$goterr = &execute($cmd);
-
-		$cmd = "/usr/sbin/chown \"$uid.$gid\" \"$home\"";
-		$goterr = &execute($cmd);
-
-		if ($goterr) {
-			die "Can't creat or set perms on '$home'!\nERROR: $!\n";
-		}
-	}
-
-	return 0;
-}
-
-### Remove User
-sub del_user {
-	my $self = shift
-	my $user = shift;
-
-	my ($cmd, $homedir);
-
-	$homedir = `/usr/bin/nidump passwd . | /usr/bin/grep '$user:' | /usr/bin/cut -d":" -f9 `
-	$cmd = "/bin/rm -rf $homedir";
-
-	if (&execute($cmd)) {
-		die "Can't remove user '$user' home directory!\nERROR: $!\n";
-	}
-
-	$cmd = "/usr/bin/niutil -destroy . /users/$user";
-
-	if (&execute($cmd)) {
-		die "Can't remove user '$user'!ERROR: $!\n\n";
-	}
-
-	return 0;
-}
-
-### Create Group
-sub add_group {
-	my $self = shift;
-	my $group = shift;
-	my $pass = shift || "*";
-
-	my ($cmd, $gid);
-	my $goterr = 0;
-
-	my $old = $self->check_for_name("group", $group);
-
-	unless ($old) {
-		$gid = $self->get_id("group", $group);
-		$cmd = "/usr/bin/niutil -create . /groups/$group";
-
-		if (&execute($cmd)) {
-			die "Can't create group '$group'\nERROR: $!\n";
-		}
-	}
-
-	$cmd = "/usr/bin/niutil -createprop . /groups/$group name \"$group\"";
-	$goterr = &execute($cmd);
-
-	unless ($old) {
-		$cmd = "/usr/bin/niutil -createprop . /groups/$group gid $gid";
-		$goterr = &execute($cmd);
-	}
-
-	$cmd = "/usr/bin/niutil -createprop . /groups/$group passwd \"$pass\"";
-	$goterr = &execute($cmd);
-
-	if ($goterr) {
-		die "Can't set group info for "$group'\nERROR: $!\n";
-	}
-
-	return 0;
-}
-
-### Remove Group
-sub del_group {
-	my $self = shift;
-	my $group = shift;
-
-	my ($cmd);
-
-	$cmd = "/usr/bin/niutil -destroy . /groups/$group";
-
-	if (&execute($cmd)) {
-		die "Can't remove group '$group'\nERROR: $!\n";
-	}
-
-	return 0;
-}
-
-### Get uid or gid
-sub get_id {
-	my $self = shift;
-	my $type = shift;
-	my $name = shift;
-
-	my $id = 0;		### set to 0 so first value is false
-
-	### ask for uid or gid via type
-	while (not $self->is_id_free($type, $id) {
-		$id = $self->get_next_avail($type);
-		if ($config->param_boolean("AskForID")) {
-			if ($type eq "group") {
-				$id = &prompt("Please enter a GID for $name ".
-			              "[$lowGID...$highGID] ", $id);
-			} else {
-				$id = &prompt("Please enter a UID for $name ".
-			              "[$lowUID...$highUID] ", $id);
-			}
-		}
-	}
-
-	return $id;
-}
-
-### Check if id is available (return 1 id available)
-sub is_id_free {
-	my $self = shift;
-	my $type = shift;
-	my $id = shift;
-
-	my ($name);
-
-	if ($type eq "user") {
-		while ($name = User::pwent::getpwuid($id)) {
-			return 1 if not $name;
-		}
-	} else {
-		while ($name = User::grent::getgrgid($id)) {
-			return 1 if not $name;
-		}
-	}
-
-	return 0;
-}
-
-### check is a user or group exists before adding a user or group
-sub check_for_name {
-	my $self = shift;
-	my $type = shift;
-	my $name = shift;
-
-	my $id = 0;
-
-	### find if a user exists
-	while ($name not $currentname) {
-		$id++;
-		if ($type eq "group") {
-			$currentname = User::grent::getgrgid($id);
-			if ($name eq $currentname) {
-				return 1;
-			}
-		} else {
-			$currentname = User::pwent::getpwuid($id);
-			if ($name eq $currentname) {
-				return 1;
-			}
-		}
-	}
-
-	return 0;
-}
-
-### Get next available id
-sub get_next_avail {
-	my $self = shift;
-	my $type = shift;
-
-	my ($id, $user, $uid, $group, $gid, $pass);
-
-	if ($type eq "user") {
-		while (($user,$pass,$uid) = User::pwent::getpwent) {
-			next if ($uid < $lowUID) || ($uid > $highUID);
-			$id++;
-
-			break if not $user;
-		}
-	} else {
-		while (($group,$pass,$gid) = User::grent::getgrent) {
-			next if ($gid < $lowGID) || ($gid > $highGID);
-			$id++;
-
-			break if not $group;
-	}
-
-	return $id;
-}
 
 ### Get a list of uid:gid for all files in a pkg, this is per pkg not just
 ### parent pkgs, return a postinstscript to set them, include it in the deb
@@ -363,10 +109,51 @@ sub add_user_script {
 	my $shell = shift || "/usr/bin/false";
 	my $home = shift;
 	my $group = shift || $name;
-    
+ 
+	my $nidump = "/usr/bin/nidump";
+	my $grep = "/usr/bin/grep";
+	my $cut = "/usr/bin/cut";
+	my $chown = "/usr/sbin/chown";
+	my $mkdir = "/bin/mkdir -p";
+
 	my $script = "";
 
-	### FIXME
+	### FIXME need to figure a way ehre to get and set uids and gids, and
+	### ask if the fink.conf specifies this.  maybe use a grep on fink.conf
+
+	if ($type eq "user") {
+		$script =
+			"getuid() {\n".
+			"}\n".
+			"getgid() {\n".
+			"}\n".
+			"uid=getuid()\n".
+			"gid=getgid()\n".
+			"$niutil -create . /users/$name\n".
+			"$niutil -createprop . /users/$name realname \"$desc\"\n".
+			"$niutil -createprop . /users/$name gid \$gid\n".
+			"$niutil -createprop . /users/$name uid \$uid\n".
+			"$niutil -createprop . /users/$name home \"$home\"\n".
+			"$niutil -createprop . /users/$name name \"$user\"\n".
+			"$niutil -createprop . /users/$name passwd \"$pass\"\n".
+			"$niutil -createprop . /users/$name shell \"$shell\"\n".
+			"$niutil -createprop . /users/$name change 0\n".
+			"$niutil -createprop . /users/$name expire 0\n".
+			"$mkdir \"$home\"\n".
+			"$chown \"$name.$group\" \"$home\"\n".
+			"\n";
+	} else {
+		$script =
+			"getgid() {\n".
+			"}\n";
+			"\n";
+			"gid=getgid()\n".
+                	"$niutil -create . /groups/$user\n".
+        		"$niutil -createprop . /groups/$name name \"$name\"\n".
+                	"$niutil -createprop . /groups/$user gid \$gid\n".
+			"$niutil -createprop . /groups/$user passwd \"$pass\"\n".
+			"\n";
+	}
     
 	return $script;
 }
@@ -377,9 +164,25 @@ sub remove_user_script {
 	my $name = shift;
 	my $type = shift;
 
+	my $nidump = "/usr/bin/nidump";
+	my $grep = "/usr/bin/grep";
+	my $cut = "/usr/bin/cut";
+	my $rm = "/bin/rm -rf";
+
 	my $script = "";
     
-	### FIXME
+	if ($type eq "user") {
+		$script =
+			"HomeDir=`$nidump passwd . | $grep '$name:' ".
+				"| $cut -d\":\" -f9`\n".
+			"$rm \$HomeDir\n".
+			"$niutil -destroy . /users/$name\n".
+			"\n";
+	} else {
+		$script =
+			"$niutil -destroy . /groups/$name\n".
+			"\n";
+	}
     
 	return $script
 }
