@@ -22,7 +22,7 @@
 package Fink::PkgVersion;
 use Fink::Base;
 
-use Fink::Services qw(&filename &expand_percent &expand_url &execute
+use Fink::Services qw(&filename &expand_percent &execute
                       &latest_version &print_breaking
                       &print_breaking_twoprefix &collapse_space);
 use Fink::Config qw($config $basepath $libpath $debarch);
@@ -640,7 +640,7 @@ sub fetch_source {
 
   chdir "$basepath/src";
 
-  $url = &expand_url($self->get_source($index));
+  $url = $self->get_source($index);
   $file = &filename($url);
 
   if (&fetch_url($url)) {

@@ -1,3 +1,14 @@
+2001-10-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* NetAccess.pm: Major overhaul. New function fetch_url_to_file
+	allows a target file name to be specified. fetch_url calls through
+	to the new function. mirror: URL's are handled
+	transparently. After obvious failures fetch_url_to_file offers the
+	user to retry the same server or a randomly chosen mirror.
+	* Services.pm (expand_url): Removed mirror expansion code.
+	* PkgVersion.pm (fetch_source): Don't use expand_url, this is now
+	handled transparently by fetch_url.
+
 2001-10-04  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (cmd_scanpackages): Make sure the directory we're

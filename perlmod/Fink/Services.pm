@@ -39,7 +39,7 @@ BEGIN {
                     &print_breaking &print_breaking_prefix
                     &print_breaking_twoprefix
                     &prompt &prompt_boolean &prompt_selection
-                    &expand_url &version_cmp &latest_version
+                    &version_cmp &latest_version
                     &collapse_space);
 }
 our @EXPORT_OK;
@@ -201,30 +201,6 @@ sub expand_percent {
       }
     }
   } while ($iterate);
-
-  return $s;
-}
-
-### expand mirror urls
-
-sub expand_url {
-  my $s = shift;
-  my ($mirror, $path);
-
-  require Fink::Config;
-
-  if ($s =~ /^mirror\:(\w+)\:(.*)$/) {
-    $mirror = $1;
-    $path = $2;
-
-    if ($Fink::Config::config->has_param("mirror-$mirror")) {
-      $s = $Fink::Config::config->param("mirror-$mirror");
-      $s .= "/" unless $s =~ /\/$/;
-      $s .= $path;
-    } else {
-      die "can't find url for mirror $mirror in configuration";
-    }
-  }
 
   return $s;
 }
