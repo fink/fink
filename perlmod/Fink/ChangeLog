@@ -1,5 +1,8 @@
-2003-12-23  Daniel Macks <dmacks@netspace.org>
+2003-12-23  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* Engine.pm: Fixed fink list --help output since some of it was wrong.
+
+2003-12-23  Daniel Macks <dmacks@netspace.org>
 
         * PkgVersion.pm: Support %lV and %lv as raw and punctionation-free
 	values of Type version string (if provided).

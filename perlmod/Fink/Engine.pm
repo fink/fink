@@ -308,11 +308,11 @@ Options:
                          available.
   -n, --notinstalled   - Only list packages which are not installed.
   -b, --buildonly      - Only list packages which are Build Only Depends
-  -s=expr,             - Only list packages in the section(s) matching expr
+  -s expr,             - Only list packages in the section(s) matching expr
     --section=expr       (example: fink list --section=x11).
-  -m=expr,             - Only list packages with the maintainer(s) matching expr
+  -m expr,             - Only list packages with the maintainer(s) matching expr
     --maintainer=expr    (example: fink list --maintainer=beren12).
-  -t=expr,             - Only list packages with the tree matching expr
+  -t expr,             - Only list packages with the tree matching expr
     --tree=expr          (example: fink list --tree=stable).
   -h, --help           - This help text.
 
@@ -324,7 +324,7 @@ Fink $version
 Usage: fink apropos [options] [string]
        
 Options:
-  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
                          formatted for. xyz is either a numeric value or auto.
                          auto will set the width based on the terminal width.
   -t, --tab            - Outputs the list with tabs as field delimiter.
