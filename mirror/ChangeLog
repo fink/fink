@@ -1,3 +1,8 @@
+2004-08-01 David H. <dmalloc@users.sourceforge.net>
+	* master, rsync: Suspended trd and per mirrors.
+	Continued failures, maintainers not really responsive
+	pending removal in 30 days.
+
 2004-07-19  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* gimp: .nl is correct, not .ml. thanks to Martijn Dekker.
