@@ -1,4 +1,4 @@
-2003-05-03  Peter O'Gorman <ogorman@users.sourceforge.net>
+2003-05-03  Max Horn <max@quendi.de>
 
 	* bootstrap.pl, postinstall.pl.in: Updated x86 case (thanks to bbraun2), and
 	  syncing the OS detection code.
