@@ -1,8 +1,8 @@
-2005-02-08  Daniel Macks  <dmacks@netspace.org>
+2005-02-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: lol_remove_self(): skip clusters after removing them
 
-2005-02-08  Daniel Macks  <dmacks@netspace.org>
+2005-02-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Rewrite show_deps_display_list using lol_remove_self().
 	* PkgVersion.pm: Implement lol_remove_self() (also handles Provides).
