@@ -1,3 +1,8 @@
+ 2004-02-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm, Packages.pm, Validation.pm: Changed handle_infon_block
+	from being a function in Services to being a class method in Packages.
+
 2004-02-10  Daniel Macks  <dmacks@netspace.org>
 
 	* FinkVersion.pm.in: Implemented max_info_level(): returns largest

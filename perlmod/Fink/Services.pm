@@ -21,7 +21,6 @@
 #
 
 package Fink::Services;
-require Fink::FinkVersion;
 
 use strict;
 use warnings;
@@ -37,7 +36,6 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
-					  &handle_infon_block
 					  &read_properties_multival &read_properties_multival_var
 					  &execute &execute_script &expand_percent
 					  &filename
@@ -265,59 +263,6 @@ sub read_properties_lines {
 	}
 
 	return $hash;
-}
-
-=item handle_infon_block
-
-    my $properties = &read_properties($filename);
-    $properties = &handle_infon_block($properties, $filename);
-
-For the .info file lines processed into the hash ref $properties from
-file $filename, deal with the possibility that the whole thing is in a
-InfoN: block.
-
-If so, make sure this fink is new enough to understand this .info
-format (i.e., N<=max_info_level). If so, promote the fields of the
-block up to the top level of %$properties and return a ref to this new
-hash. Also set a _info_level key to N.
-
-If an error with InfoN occurs (N>max_info_level, more than one InfoN
-block, or part of $properties existing outside the InfoN block) print
-a warning message and return a ref to an empty hash (i.e., ignore the
-.info file).
-
-=cut
-
-sub handle_infon_block {
-	my $properties = shift;
-	my $filename = shift;
-
-	my($infon,@junk) = grep {/^info\d+$/i} keys %$properties;
-	if (not defined $infon) {
-		return $properties;
-	}
-	# file contains an InfoN block
-	if (@junk) {
-		print "Multiple InfoN blocks in $filename; skipping\n";
-		return {};
-	}
-	unless (keys %$properties == 1) {
-		# if InfoN, entire file must be within block (avoids
-		# having to merge InfoN block with top-level fields)
-		print "Field(s) outside $infon block! Skipping $filename\n";
-		return {};
-	}
-	my ($info_level) = ($infon =~ /(\d+)/);
-	my $max_info_level = &Fink::FinkVersion::max_info_level;
-	if ($info_level > $max_info_level) {
-		# make sure we can handle this InfoN
-		print "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename\n";
-		return {};
-	}
-	# okay, parse InfoN and promote it to the top level
-	my $new_properties = &read_properties_var("$infon of \"$filename\"", $properties->{$infon});
-	$new_properties->{_info_level} = $info_level;
-	return $new_properties;
 }
 
 =item read_properties_multival

@@ -22,7 +22,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &handle_infon_block &expand_percent &get_arch);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch);
 use Fink::Config qw($config $basepath $buildpath);
 
 use strict;
@@ -325,7 +325,7 @@ sub validate_info_file {
 
 	# read the file properties
 	$properties = &read_properties($filename);
-	$properties = &handle_infon_block($properties, $filename);
+	$properties = Fink::Package->handle_infon_block($properties, $filename);
 	return unless keys %$properties;
 	
 	# determine the base path
