@@ -272,7 +272,7 @@ sub validate_dpkg_file {
       #print "$6\n";
       foreach $bad_dir (@bad_dirs) {
         if ($6 =~ /^$bad_dir/) {
-          print "WARNING: File installed into depracted directory $bad_dir\n";
+          print "WARNING: File installed into deprecated directory $bad_dir\n";
           print "         Offender is $filename\n";
           last;
         }
