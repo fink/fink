@@ -263,7 +263,7 @@ sub execute_script {
 
 sub expand_percent {
 	my $s = shift;
-	my $map = shift;
+	my $map = shift || {};
 	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
 	return $s if (not defined $s);

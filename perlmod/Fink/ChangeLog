@@ -1,6 +1,13 @@
+2003-12-01  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Actually, my entry would fail (fink crash) if there
+	were no map, not if no expanding was needed. Fixed. thesin's
+	modification is a nice optimization, but seems orthogonal to the
+	actual problem.
+
 2003-11-29  Justin F. Hallett  <thesin@users.sourceforge.net>
 
-	* Service.pm: With Daniel Macks entry on 11-26 expand_percent would
+	* Services.pm: With Daniel Macks entry on 11-26 expand_percent would
 	fail if no expanding was needed.  Added a check to identify
 	if it was needed to continue and if not just return the original
 	string.

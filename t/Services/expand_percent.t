@@ -14,9 +14,25 @@ my $map = { 'f' => 'm',
 
 # basic stuff
 
+is( Fink::Services::expand_percent( 'Fink for life', undef ),
+    'Fink for life',
+    'undef map'
+    );
+
+eval { Fink::Services::expand_percent( 'Fink for li%r', undef ) };
+like( $@,
+      qr/unknown.*expansion/i,
+      'undef map but try to use expansion'
+      );
+
+is( Fink::Services::expand_percent( 'Give 110%%, son', undef ),
+    'Give 110%, son',
+    'undef map but need percent expansion'
+    );
+
 is( Fink::Services::expand_percent( 'Fink for life', $map ),
     'Fink for life',
-    'No expansions'
+    'No expansions needed'
     );
 
 is( Fink::Services::expand_percent( 'Fink %fo%r li%fe', $map ),
