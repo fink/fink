@@ -653,7 +653,7 @@ sub query_package {
 		my ($purge, $ok, $installstat) = split(/\s+/, $self->{$pkgname}->{status});
 		return $self->{$pkgname}->{version} if ($installstat eq "installed" and exists $self->{$pkgname}->{version});
 	}
-	return;
+	return undef;
 }
 
 
@@ -693,17 +693,6 @@ sub list {
 	return $list;
 }
 
-### query whether a package is installed
-# returns true/false
-sub is_installed {
-	my $self = shift;
-	my $pkgname = shift;
-
-	if (exists $self->{$pkgname} and exists $self->{$pkgname}->{status} and $self->{$pkgname}->{status} =~ / installed$/) {
-		return 1;
-	}
-	return;
-}
 
 sub has_header {
 	my $headername = shift;

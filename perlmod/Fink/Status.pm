@@ -153,7 +153,7 @@ sub query_package {
 	if (exists $self->{$pkgname} and $self->{$pkgname}->{status} =~ /\s+installed$/i) {
 		return $self->{$pkgname}->{version};
 	}
-	return;
+	return undef;
 }
 
 ### retrieve whole list with versions
