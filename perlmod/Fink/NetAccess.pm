@@ -249,8 +249,27 @@ sub download_cmd {
     }
   }
 
+  # if we would prefer axel (or didn't have curl or wget available), check for axel
+  if ((!$cmd or $config->param_default("DownloadMethod") eq "axel"
+  	     or $config->param_default("DownloadMethod") eq "axelautomirror") and
+      (-x "$basepath/bin/axel" or -x "/usr/bin/axel")) {
+    $cmd = "axel";
+    if ($config->param_default("DownloadMethod") eq "axelautomirror") {
+      $cmd = "axel -S 1";
+    }
+    if (Fink::Config::is_verbose()) {
+      $cmd .= " --verbose";
+    }
+    if ($file ne &filename($url)) {
+      $cmd .= " -o $file";
+    }
+    if ($cont) {
+      print "WARNING: not possible to continue a previously started download with axel\n";
+    }
+  }
+  
   if (!$cmd) {
-    die "Can't locate a download program. Install either curl or wget.\n";
+    die "Can't locate a download program. Install either curl, wget, or axel.\n";
   }
 
   return $cmd;

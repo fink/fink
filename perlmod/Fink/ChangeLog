@@ -1,3 +1,8 @@
+2002-03-21  Max Horn  <max@quendi.de>
+
+	* NetAccess.pm (download_cmd): Added another download method, "axel"
+	(thanks to Alexander Strange)
+
 2002-03-19  Max Horn  <max@quendi.de>
 
 	* Config.pm (initialize): No macosx pseudo package if we are not on
