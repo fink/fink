@@ -1,5 +1,5 @@
 Package: base-files
-Version: 1.5
+Version: 1.6
 Revision: 1
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Essential: yes
