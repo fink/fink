@@ -24,6 +24,8 @@ package Fink::User;
 
 use Fink::Config qw($config $basepath $debarch);
 use Fink::Services qw(&execute &print_breaking &prompt &prompt_boolean);
+use User::grent;
+use User::pwent;
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
 
