@@ -1,6 +1,6 @@
 Package: debianutils
 Version: 1.23
-Revision: 1
+Revision: 11
 Essential: true
 Maintainer: Christian Swinehart <cswinehart@users.sourceforge.net>
 Depends: base-files
@@ -11,7 +11,7 @@ Provides: mktemp
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 232b5bc916a1e2af43fde890f840a304
 SourceDirectory: %n-%v
-Patch: %f.patch
+Patch: %n.patch
 InstallScript: <<
   #!/bin/sh
   INSTALL=install

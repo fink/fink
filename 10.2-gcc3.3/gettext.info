@@ -1,6 +1,6 @@
 Package: gettext
 Version: 0.10.40
-Revision: 7
+Revision: 17
 Source: mirror:gnu:gettext/gettext-%v.tar.gz
 Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: yes
@@ -13,7 +13,7 @@ DescPackaging: <<
 
  Previous versions by Christoph Pfisterer.
 <<
-Patch: %f.patch
+Patch: %n.patch
 SetCPPFLAGS: -no-cpp-precomp
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
 SetLDFLAGS: -L%b/intl/.libs

@@ -1,6 +1,6 @@
 Package: libiconv
 Version: 1.7
-Revision: 7
+Revision: 17
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: bc7029c0bc913dc297cf49afa4c0e133
 Essential: yes
