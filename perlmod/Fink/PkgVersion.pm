@@ -26,6 +26,7 @@ use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
 					  &collapse_space &read_properties_var
+					  &pkglist2lol &lol2pkglist
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional);
@@ -322,28 +323,19 @@ sub conditional_pkg_list {
 	return unless $value =~ /(?-:\A|,|\|)\s*\(/;  # short-cut if no conditionals
 #	print "conditional_pkg_list for ",$self->get_name,": $field\n";
 #	print "\toriginal: '$value'\n";
-	my @atoms = split /([,|])/, $value; # break apart the field
-	map {
-		if (s/^\s*\((.*?)\)\s*(.*)/$2/) {
-			# we have a conditional; remove the cond expression
-			my $cond = $1;
-#			print "\tfound conditional '$cond'\n";
-			# if cond is false, clear entire atom
-			$_ = "" if not &eval_conditional($cond, "$field of ".$self->get_info_filename);
+	my $struct = &pkglist2lol($value);
+	foreach (@$struct) {
+		foreach (@$_) {
+			if (s/^\s*\((.*?)\)\s*(.*)/$2/) {
+				# we have a conditional; remove the cond expression
+				my $cond = $1;
+#				print "\tfound conditional '$cond'\n";
+				# if cond is false, clear entire atom
+				undef $_ unless &eval_conditional($cond, "$field of ".$self->get_info_filename);
+			}
 		}
-	} @atoms;
-	$value = join "", @atoms; # reconstruct field
-	# if atoms were removed, we have consecutive [,|] chars; merge them
-#	print "\tnow have: '$value'\n";
-	while ($value =~ s/,\s*,/,/g   or
-	       $value =~ s/,\s*\|/,/g  or
-	       $value =~ s/\|\s*,/,/g  or
-	       $value =~ s/\|\s*\|/|/g
-	      ) {};
-#	print "\tnow have: '$value'\n";
-	# also any leading or trailing separator chars
-	$value =~ s/^\s*[,|]\s*//;
-	$value =~ s/\s*[,|]\s*$//;
+	}
+	$value = &lol2pkglist($struct);
 #	print "\tnow have: '$value'\n";
 	$self->set_param($field, $value);
 	return;
@@ -1355,8 +1347,7 @@ sub resolve_conflicts {
 	# by other routines
 	@conflist = Fink::Package->package_by_name($self->get_name())->get_all_versions();
 
-	foreach $confname (split(/\s*\,\s*/,
-													 $self->pkglist_default("Conflicts", ""))) {
+	foreach $confname (split(/\s*\,\s*/,$self->pkglist_default("Conflicts", ""))) {
 		$package = Fink::Package->package_by_name($confname);
 		if (not defined $package) {
 			die "Can't resolve anti-dependency \"$confname\" for package \"".$self->get_fullname()."\"\n";
@@ -2222,12 +2213,15 @@ EOF
 		die "No major version number for darwin!";
 	}
 
-	if (not $depline =~ /\bdarwin\b/) {
-		if (not $depline eq '') {
-			$depline = $depline . ", ";
+	my $has_darwin_dep;
+	my $struct &pkglist2lol($self->get_binary_depends()); 
+	foreach (@$struct) {
+		foreach (@$_) {
+			$has_darwin_dep = 1 if /^darwin(\Z|\s|\()/;
 		}
-		$depline = $depline . "darwin (>= $darwin_major_version-1)";
 	}
+	push @$struct, ["darwin (>= $darwin_major_version-1)"] if not $has_darwin_dep;
+	$depline = &lol2pkglist($struct);
 
 	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends

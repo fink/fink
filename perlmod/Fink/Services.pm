@@ -43,6 +43,7 @@ BEGIN {
 					  &version_cmp &latest_version &sort_versions
 					  &parse_fullversion
 					  &collapse_space
+					  &pkglist2lol &lol2pkglist
 					  &file_MD5_checksum &get_arch &get_sw_vers
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files);
@@ -801,6 +802,68 @@ sub collapse_space {
 	my $s = shift;
 	$s =~ s/\s+/ /gs;
 	return $s;
+}
+
+=item pkglist2lol
+
+	my $struct = pkglist2lol $pkglist;
+
+Takes a string representing a pkglist field and returns a ref to a
+list of lists of strings representing each pkg. The elements of the
+list referenced by $struct are joined by logical AND (commas in
+$pkglist). The pkgs in each list referenced by an element of @$srtuct
+are joined by logical OR (delimited by vertical-bar within a comma-
+delimited cluster). Leading and trailing whitespace are removed from
+each pkg, and null pkgs are removed. A ref to an array is always
+returned, though it may contain no elements. None of the internal
+lists will have no elements.
+
+=cut
+
+sub pkglist2lol {
+	my $pkglist = shift;
+	my @lol = ();
+
+	return [] unless defined $pkglist && length $pkglist;
+#	print "pkglist2lol: '$pkglist'\n";
+	foreach (split /\s*,\s*/, $pkglist) {  # take each OR cluster
+#		print "\t'$_'\n";
+		# store ref to list of non-null pkgs
+		my @or_cluster = grep {length} split /\s*\|\s*/, $_;
+		push @lol, \@or_cluster if @or_cluster;
+	}
+
+	return \@lol;
+}
+
+=item lol2pkglist
+
+	my $pkglist = lol2pkglist $struct;
+
+Given a ref to a list of lists of pkgs, reconstitute the Debian
+pkglist string. Blank/whitespace-only/undef elements are removed. The
+return is always defined (though it may be null).
+
+=cut
+
+sub lol2pkglist {
+	my $struct = shift;
+	my $pkglist = "";
+
+	return "" unless defined $struct && @$struct;
+	foreach (@$struct) {                          # take each OR cluster
+		next unless defined $_ && @$_;            # skip empty clusters
+		my $or_cluster;
+		foreach (@$_) {                           # take each pkg in the cluster
+			next unless defined $_ && length $_;  # skip null pkgs
+			$or_cluster .= " | " if defined $or_cluster;
+			$or_cluster .= $_;                    # join pkgs in cluster by OR
+		}
+		$pkglist .= ", " if length $pkglist;
+		$pkglist .= $or_cluster if defined $or_cluster;  # join clusters by AND
+	}
+
+	return $pkglist;
 }
 
 =item file_MD5_checksum
