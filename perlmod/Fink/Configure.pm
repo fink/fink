@@ -77,9 +77,17 @@ sub configure {
 	if (not $basepath eq '/sw') {
 		$binary_dist = 0;
 	} else {
-		# new users should use the binary dist
+		# New users should use the binary dist, but an existing user who
+		# is running "fink configure" should see a default answer of "no"
+		# for this question... To tell these two classes of users apart,
+		# we check to see if the "Verbose" parameter has been set yet.
+
 		if (!$config->has_param("UseBinaryDist")) {
-			$binary_dist = 1;
+			if ($config->has_param("Verbose")) {
+				$binary_dist = 0;
+			} else {
+				$binary_dist = 1;
+			}
 		}
 		$binary_dist =
 			&prompt_boolean("Should Fink try to download pre-compiled packages from ".
