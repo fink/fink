@@ -1,6 +1,7 @@
 2004-12-03  Daniel Macks  <dmacks@netspace.org>
 
-	* Validation.pm: Fix 'entries that end in "/"' msg
+	* Validation.pm: Fix 'entries that end in "/"' msg.
+	Fix regex in libtool %b test.
 
 2004-12-03  Daniel Macks  <dmacks@netspace.org>
 

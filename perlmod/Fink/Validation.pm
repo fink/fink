@@ -991,7 +991,7 @@ sub validate_dpkg_file {
 			if ( $filename =~/\.la$/ ) {
 				open(LA_FILE, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O .$filename |") or die "Couldn't run dpkg: $!\n";
 				while (<LA_FILE>) {
-					if (/$pkgbuilddir\//) {
+					if (/\Q$pkgbuilddir\/\E/) {
 						print "Warning: libtool file $filename points to fink build dir. ($dpkg_filename)\n";
 						$looks_good = 0;
 					}
