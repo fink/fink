@@ -4,6 +4,9 @@ Minor
 * make sure the man pages are complete and up-to-date
 
 * validator should error if a field is there more than once
+  (done in parent, not yet in splitoffs).
+
+* long validator wishlist in Validation.pm
 
 Medium
 ======
@@ -15,11 +18,7 @@ Medium
   source file later. E.g. if you run "fink rebuild foo", then Fink does check 
   if the source files for package foo are present, and if not, downloads them.
   If present, fink should verify the checksum *immediatly*, in addition to the
-  current check (just priort to decompressing the archive).
-
-* seperate the "mirror" list into its own package (either by putting it into 
-  "base-files" or by creating a "mirror" CVS module & package)
-  -> this allows us to quickly update the mirror list, should it be necessary
+  current check (just prior to decompressing the archive).
 
 * add a mirror check utillity that given some testcases will verify that all mirrors
   do still work
