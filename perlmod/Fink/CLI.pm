@@ -81,12 +81,13 @@ need with things like:
 Wraps $string, breaking at word-breaks, and prints it on STDOUT. The
 screen width is determined by get_term_width, or if that fails, the
 package global variable $linelength. Breaking is performed only at
-space chars. If $linebreak is true, a linefeed will be appended to the
-last line printed, otherwise one will not be appended. Optionally,
-prefixes can be defined to prepend to each line printed: $prefix1 is
-prepended to the first line, $prefix2 is prepended to all other
-lines. If only $prefix1 is defined, that will be prepended to all
-lines.
+space chars. A linefeed will be appended to the last line printed
+unless $linebreak is defined and false.
+
+Optionally, prefixes can be defined to prepend to each line printed:
+$prefix1 is prepended to the first line, $prefix2 is prepended to all
+other lines. If only $prefix1 is defined, that will be prepended to
+all lines.
 
 If $string is a multiline string (i.e., it contains embedded newlines
 other than an optional one at the end of the whole string), the prefix
