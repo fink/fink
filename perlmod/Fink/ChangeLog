@@ -1,3 +1,7 @@
+2002-03-31  Max Horn  <max@quendi.de>
+
+	* Package.pm: Now works again if the Storable perl module is not installed.
+
 2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* Package.pm: Added support for caching of info files.

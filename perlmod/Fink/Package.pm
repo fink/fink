@@ -21,7 +21,8 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(&read_properties &latest_version &version_cmp &print_breaking);
+use Fink::Services qw(&read_properties &latest_version &version_cmp
+                      &print_breaking &execute);
 use Fink::Config qw($config $basepath);
 use Fink::PkgVersion;
 use File::Find;
@@ -41,7 +42,7 @@ BEGIN {
 our @EXPORT_OK;
 
 our ($have_packages, @package_list, @essential_packages, $essential_valid, %package_hash, 
-        $use_cache, $have_storable, $db_outdated, $db_mtime);
+        $use_cache, $db_outdated, $db_mtime);
 $have_packages = 0;
 @package_list = ();
 %package_hash = ();
@@ -50,7 +51,6 @@ $essential_valid = 0;
 $use_cache = 0;
 $db_outdated = 0;
 $db_mtime = 0;
-$have_storable = defined @Storable::EXPORT;
 
 END { }       # module clean-up code here (global destructor)
 
@@ -313,28 +313,28 @@ sub scan_all {
   Fink::Package->forget_packages();
   
   # If we have the Storable perl module, try to use the package index
-  if ($have_storable) {
-    if (-e "$basepath/var/db/fink.db") {
+  if (-e "$basepath/var/db/fink.db") {
+    eval {
+      require Storable; 
        
-       # We assume the DB is up-to-date unless proven otherwise
-       $db_outdated = 0;
+	  # We assume the DB is up-to-date unless proven otherwise
+	  $db_outdated = 0;
 
-       # Unless the NoAutoIndex option is set, check whether we should regenerate
-       # the index based on its modification date and that of the package descs.
-       if (not $config->param_boolean("NoAutoIndex")) {
-         $db_mtime = (stat("$basepath/var/db/fink.db"))[9];       
-         find (\&process_find, "$basepath/fink/dists");
-       }
-       
-       # If the index is not outdated, we can use it, and thus safe a lot of time
-       if (not $db_outdated) {
-         use Storable qw(retrieve);
-         %package_hash = %{retrieve("$basepath/var/db/fink.db")};
-         my ($pkgtmp);
-         foreach $pkgtmp (keys %package_hash) {
-           push @package_list, $package_hash{$pkgtmp};
-         }
-       }
+	  # Unless the NoAutoIndex option is set, check whether we should regenerate
+	  # the index based on its modification date and that of the package descs.
+	  if (not $config->param_boolean("NoAutoIndex")) {
+		$db_mtime = (stat("$basepath/var/db/fink.db"))[9];       
+		find (\&process_find, "$basepath/fink/dists");
+	  }
+	  
+	  # If the index is not outdated, we can use it, and thus safe a lot of time
+	  if (not $db_outdated) {
+		%package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
+		my ($pkgtmp);
+		foreach $pkgtmp (keys %package_hash) {
+		  push @package_list, $package_hash{$pkgtmp};
+		}
+	  }
     }
   }
   
@@ -394,21 +394,21 @@ sub update_db {
     Fink::Package->scan($dir);
   }
   
-  if ($have_storable) {
+  eval {
+    require Storable; 
     if ($> == 0) {
-      use Storable qw(store);
       print "Updating package index... ";
 	  unless (-d "$basepath/var/db") {
         mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 	  }
-      store (\%package_hash, "$basepath/var/db/fink.db");
+      Storable::store (\%package_hash, "$basepath/var/db/fink.db");
       print "done.\n";
     } else {
       &print_breaking( "\nFink has detected that your package cache is out of date and needs" .
         " an update, but does not have privileges to modify it. Please re-run fink as root," .
         " for example with a \"fink index\" command.\n" );
-    }
-  }
+	}
+  };
   $db_outdated = 0;
 }
 
