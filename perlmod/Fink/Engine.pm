@@ -840,10 +840,14 @@ sub cmd_depends {
 
 		$fullname = $package->get_fullname();
 		if ($package->find_debfile()) {
-			print "Reading dependencies from ".$fullname." deb file...\n";
+			if (Fink::Config::verbosity_level() > 2) {
+				print "Reading dependencies from ".$fullname." deb file...\n";
+			}
 			@deplist = split(/\s*\,\s*/, $package->get_debdeps());
 		} else {
-			print "Reading dependencies from ".$fullname." info file...\n";
+			if (Fink::Config::verbosity_level() > 2) {
+				print "Reading dependencies from ".$fullname." info file...\n";
+			}
 			@deplist = split(/\s*\,\s*/, $package->param_default("Depends", ""));
 		}
 
