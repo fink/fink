@@ -1,5 +1,8 @@
 2001-10-18  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Config.pm: Added infrastructure to propagate command line
+	options: set_options() and get_option().
+
 	* Engine.pm (process): Be more helpful when the user entered an
 	unknown command (contributed by Justin Hallett).
 

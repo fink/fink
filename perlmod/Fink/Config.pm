@@ -33,13 +33,16 @@ BEGIN {
   $VERSION = 1.00;
   @ISA         = qw(Exporter Fink::Base);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw($config $basepath $libpath $debarch);
+  @EXPORT_OK   = qw($config $basepath $libpath $debarch
+                    &get_option &set_options);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
 our ($config, $basepath, $libpath, $debarch);
 $debarch = "darwin-powerpc";
+
+my %globals = ();
 
 END { }       # module clean-up code here (global destructor)
 
@@ -183,6 +186,30 @@ sub save {
 
   $self->{_queue} = [];
 }
+
+### inject run-time options
+
+sub set_options {
+  my $hashref = shift;
+
+  my ($key, $value);
+  while (($key, $value) = each %$hashref) {
+    $globals{lc $key} = $value;
+  }
+}
+
+### retreive a run-time option
+
+sub get_option {
+  my $option = shift;
+  my $default = shift || 0;
+
+  if (exists $globals{lc $option}) {
+    return $globals{lc $option};
+  }
+  return $default;
+}
+
 
 ### EOF
 1;
