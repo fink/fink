@@ -8,10 +8,7 @@ Look at t/Persist/persist.t for examples of how to use Persist.
 
 TODO (no particular order):
 	
-	- Use CONFLICT to optimize SQL
-		
-	- Profile things for speed (Devel::SmallProf should work,
-		so should DBI_PROFILE)
+	- Get selfupdate working
 	
 	- Normalize the DB
 		* Required fields
@@ -33,13 +30,58 @@ TODO (no particular order):
 	- Use table_info rather than SQLite specific code for exists_table
 	
 	- Add ability to disconnect / reconnect
-	
-	- Add caching if possible
-		* How to deal with aliasing?
-		
+			
 	- Add ref-counting GC
 	
 	- Check locking
 	
 	- Vacuum the DB when size is too big, rescan when vacuuming doesn't help much
 		
+
+Optimization for performance:
+	
+	- Read-only TEMP tables. Need to set temp_store = MEMORY!
+	
+	- When the database is loaded read-only, use 'INSERT ... SELECT * ..." to
+		copy quickly.
+	
+	- Use CONFLICT to optimize SQL (done, not yet committed)
+		
+	- Profile things for speed (Devel::SmallProf should work,
+		so should DBI_PROFILE and DBI_TRACE)
+	
+	- Batch inserts: Better to do one SQL command with thousands of join()ed
+		INSERTs than thousands of inserts. Drop index while inserting?
+	
+	- Use three modes: WRITE, MEMORY, SELECT. In WRITE and MEMORY mode,
+		no inserts are performed, just a list of needed inserts is kept.
+		Access to Fink::Persist::Base objects *must* use standard object
+		methods. Arbitrary SELECTs (including the all_with_props method) are
+		not allowed.
+		
+		On leaving WRITE or MEMORY mode, inserts are performed. WRITE mode
+		additionally will commit to file when it is left. In SELECT mode,
+		changes are temporarily cached but can never be inserted. And
+		of course selects are possible in SELECT mode.
+
+	- Add caching of stores, SELECT results:
+		* To deal with aliasing, make sure all of the "same" TableHash
+			are actually the same object.
+		* On firstkey, read all of hash, but don't thaw yet.
+		* Group fields? So if we know that usually foo and bar are read
+			nearby, just read those instead of all.
+		* Try to get rid of param_matching since it must go through all keys.
+	
+	- Add required fields, so they can be added all at once instead of in
+		many selects.
+	
+	- Investigate not storing some fields, rather reading them from files when
+		needed. Eg: InstallScript rarely needed.
+	
+	- Investigate putting some large fields (eg: Desc*) in their own table, to
+		reduce memory usage.
+		
+	- Cache table existence, make some assumptions.
+	
+	- Change size of memory cache?
+	
