@@ -84,6 +84,8 @@ print " $host\n";
 
 if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
   &print_breaking("This system is supported and tested.");
+} elsif ($host =~ /^powerpc-apple-darwin5\.[012]/) {
+  &print_breaking("This system is supported and tested.");
 } elsif ($host =~ /^powerpc-apple-darwin(1\.[3-9]|[2-9]\.)/) {
   &print_breaking("This system was not released at the time this Fink ".
 		  "release was made, but should work.");
