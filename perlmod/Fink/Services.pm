@@ -455,26 +455,23 @@ sub version_cmp {
 	$op = shift;
 	$b = shift;
 	
-	return $Version_Cmp_Cache{$a}{$op}{$b} if 
-	  defined $Version_Cmp_Cache{$a}{$op}{$b};
+	if (exists($Version_Cmp_Cache{$a}{$b})) {
+		$res = $Version_Cmp_Cache{$a}{$b};
+	} else {
+		@avers = parse_fullversion($a);
+		@bvers = parse_fullversion($b);
+		# compare them in version array order: Epoch, Version, Revision
+		for ($i = 0; $i <= $#avers; $i++) {
+			$avers[$i] = "" if (not defined $avers[$i]);
+			$bvers[$i] = "" if (not defined $bvers[$i]);
+			$res = raw_version_cmp($avers[$i], $bvers[$i]);
+			last if $res;
+		}
 
-	@avers = parse_fullversion($a);
-	@bvers = parse_fullversion($b);
-	#compare them in version array order: Epoch, Version, Revision
-	for ($i = 0; $i<=$#avers; $i++ )
-	{
-		if(! defined $avers[$i])
-		{
-			$avers[$i] = "";
-		}
-		if(! defined $bvers[$i])
-		{
-			$bvers[$i] = "";
-		}
-		$res = raw_version_cmp($avers[$i], $bvers[$i]);
-		last if $res;
-	}				
-					
+		$Version_Cmp_Cache{$a}{$b} = $res;
+		$Version_Cmp_Cache{$b}{$a} = - $res;
+	}
+	
 	if ($op eq "<<") {
 		$res = $res < 0 ? 1 : 0;	
 	} elsif ($op eq "<=") {
@@ -486,7 +483,8 @@ sub version_cmp {
 	} elsif ($op eq ">>") {
 		$res = $res > 0 ? 1 : 0;
 	}
-	return $Version_Cmp_Cache{$a}{$op}{$b} = $res;
+
+	return $res;
 }
 
 sub raw_version_cmp {
