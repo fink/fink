@@ -398,10 +398,13 @@ sub scan_all {
 	my ($time) = time;
 	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
 
+	my $dbfile = "$basepath/var/db/fink.db";
+	my $conffile = "$basepath/etc/fink.conf";
+
 	Fink::Package->forget_packages();
 	
 	# If we have the Storable perl module, try to use the package index
-	if (-e "$basepath/var/db/fink.db") {
+	if (-e $dbfile) {
 		eval {
 			require Storable; 
 
@@ -411,9 +414,9 @@ sub scan_all {
 			# Unless the NoAutoIndex option is set, check whether we should regenerate
 			# the index based on its modification date and that of the package descs.
 			if (not $config->param_boolean("NoAutoIndex")) {
-				$db_mtime = (stat("$basepath/var/db/fink.db"))[9];			 
-				if (((lstat("$basepath/etc/fink.conf"))[9] > $db_mtime)
-					or ((stat("$basepath/etc/fink.conf"))[9] > $db_mtime)) {
+				$db_mtime = (stat($dbfile))[9];			 
+				if (((lstat($conffile))[9] > $db_mtime)
+					or ((stat($conffile))[9] > $db_mtime)) {
 					$db_outdated = 1;
 				} else {
 					$db_outdated = &search_comparedb( "$basepath/fink/dists" );
@@ -422,7 +425,7 @@ sub scan_all {
 			
 			# If the index is not outdated, we can use it, and thus save a lot of time
 			if (not $db_outdated) {
-				$packages = Storable::lock_retrieve("$basepath/var/db/fink.db");
+				$packages = Storable::lock_retrieve($dbfile);
 			}
 		}
 	}
@@ -480,15 +483,22 @@ sub scan_all {
 
 ### scan for info files and compare to $db_mtime
 
+# returns true if any are newer than $db_mtime, false if not
 sub search_comparedb {
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
 
 	# Using find is much faster than doing it in Perl
-	return
-	  (grep !m{/(CVS|binary-$debarch)/},
-	   `/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db`)
-		 ? 1 : 0;
+	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db |"
+		or die "/usr/bin/find failed: $!\n";
+
+	# If there is anything on find's STDOUT, we know at least one
+	# .info is out-of-date. No reason to check them all.
+	my $file_found = defined <NEWER_FILES>;
+
+	close NEWER_FILES;
+
+	return $file_found;
 }
 
 ### read the packages and update the database, if needed and we are root

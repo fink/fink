@@ -1,5 +1,11 @@
 2005-02-21  Daniel Macks  <dmacks@netspace.org>
 
+        * Package.pm: overhaul search_comparedb: stop as soon as find one
+	newer file, use piped open() so don't have to wait for `` to
+	finish before beginning to process outout.
+
+2005-02-21  Daniel Macks  <dmacks@netspace.org>
+
         * Package.pm: overhaul update_db, including warning immediately if
 	cannot update cache
 
