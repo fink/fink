@@ -414,6 +414,43 @@ sub get_depends {
   return @{$self->{_depends}};
 }
 
+sub resolve_depends {
+  my $self = shift;
+  my ($depname, $package, @deplist);
+
+  @deplist = ();
+  foreach $depname (@{$self->{_depends}}) {
+    $package = Fink::Package->package_by_name($depname);
+    if (not defined $package) {
+      die "Can't resolve dependency \"$depname\" for package \"".$self->get_name()."\"\n";
+    }
+    push @deplist, [ $package->get_all_providers() ];
+  }
+
+  return @deplist;
+}
+
+sub resolve_conflicts {
+  my $self = shift;
+  my ($confname, $package, @conflist);
+
+  # conflict with other versions of the same package
+  # this here includes ourselves, it is treated The Right Way
+  # by other routines
+  @conflist = Fink::Package->package_by_name($self->get_name())->get_all_versions();
+
+  foreach $confname (split(/\s*\,\s*/,
+			   $self->param_default("Conflicts", ""))) {
+    $package = Fink::Package->package_by_name($confname);
+    if (not defined $package) {
+      die "Can't resolve anti-dependency \"$confname\" for package \"".$self->get_name()."\"\n";
+    }
+    push @conflist, [ $package->get_all_providers() ];
+  }
+
+  return @conflist;
+}
+
 
 ### find package and version by matching a specification
 
