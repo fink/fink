@@ -1,5 +1,10 @@
 2005-02-23  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* Shlibs.pm: removed old comments and fixed all print commands to use
+	STDERR
+
+2005-02-23  Justin F. Hallett  <thesin@users.sourceforge.net>
+
 	* shlibs.pm: Adding changes to Storable calls from Benjamin Reed on
 	2005-02-22.
 

@@ -92,7 +92,7 @@ sub check_files {
 	# Get package object
 	$pkg = Fink::PkgVersion->match_package($package);
 	unless (defined $pkg) {
-		print "no package found for specification '$package'!\n";
+		print STDERR "no package found for specification '$package'!\n";
 		return;
 	}
 
@@ -117,12 +117,12 @@ sub check_files {
 				chomp();
 				#drop first lines and errors
 				if ($_ =~ /:/) {
-					# print "DEBUG: not a lib, droping: $_\n";
+					# not a lib, droping
 					next OTOOLLOOP;
 				}
 				# Get lib
 				unless ($_ =~ /^\s*(\S+)\s+\(\S+\s\S+\s(\d+\.\d+.\d+),.*$/) {
-					# print "DEBUG: not matching REGEX: $_\n";
+					# not matching REGEX
 					next OTOOLLOOP;
 				} else {
 					$lib = $1;
@@ -130,10 +130,10 @@ sub check_files {
 				}
 
 				# Make sure it's a lib and is installed.
-				#next unless (-x $lib);
+				# next unless (-x $lib);
+
 				### This should drop any depends on it's self
 				### Strictly on it's self not a child
-				# print "DEBUG: Checking lib: $lib, compat: $compat\n";
 				$deb = $self->get_shlib($lib, $compat);
 				unless ($deb) {
 					# Add a big warning about /usr/local/lib being
@@ -143,14 +143,13 @@ sub check_files {
 							die "There are files in /usr/local that will break fink, please move them out of the way and rebuild this package.\n";
 					}
 
-					# print "DEBUG: Needs shlib file: $lib\n";
+					# no package found for shlib file
 					next OTOOLLOOP;
 				}
 				
 				# get just the unversioned dep for compares
 				$tmpdep = $deb;
 				$tmpdep =~ s/^(\S*)\s*\(.*\)$/$1/g;
-				# print "DEBUG: tmpdep: $tmpdep, dep: $deb\n";
 
 				if ($tmpdep eq $package) {
 					next OTOOLLOOP;
@@ -166,7 +165,7 @@ sub check_files {
 					# in the root and splitoff roots at this
 					# point
 					if ($split eq $tmpdep) {
-						# print "DEBUG: forcing =%v-%r\n";
+						# should force =%v-%r once working
 					}
 				}
 
@@ -196,20 +195,18 @@ sub check_files {
 						# no version
 						next;
 					}
-					# print "DEBUG: bdep: $dep vers: $vers\n";
 					# check all splits of the deps to find
 					# this shlibs version of the -dev
 					$pkg = Fink::PkgVersion->match_package($dep);
 					unless (defined $pkg) {
-						print "no package found for specification '$dep'!\n";
+						print STDERR "no package found for specification '$dep'!\n";
 						next;
 					}
 
 					@dsplits = $pkg->get_splitoffs(1, 1);
 					foreach $dsplit (@dsplits) {
-						# print "DEBUG: compare -$dsplit- to -$tmpdep-\n";
 						if ($dsplit eq $tmpdep) {
-							# print "DEBUG: override version\n";
+							# override version based on specified Depends
 							$deb = $dsplit." (".$vers.")";
 							push(@depends, $deb)
 						}
@@ -653,15 +650,15 @@ sub scan {
 						$package = $3;
 
 						unless ($shlibname) {
-							print "No lib name in $filename\n";
+							print STDERR "No lib name in $filename\n";
 							next;
 						}
 						unless ($compat) {
-							print "No lib compatability version for $shlibname\n";
+							print STDERR "No lib compatability version for $shlibname\n";
 							next;
 						}
 						unless ($package) {
-							print "No owner package(s) for $shlibname\n";
+							print STDERR "No owner package(s) for $shlibname\n";
 							next;
 						}
 
