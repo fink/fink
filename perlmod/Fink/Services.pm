@@ -1385,6 +1385,10 @@ runtime data structures.
 
 =cut
 
+# should rewrite this as a queue where the API is an add_call function
+# that blocks until an agent is available to run it (to save memory in
+# the parent).
+
 sub do_calls {
 	my $call_list = shift;
 	my( $object, $method, $function );
