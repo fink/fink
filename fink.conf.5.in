@@ -203,7 +203,7 @@ For example, if you live in europe:
 .Bl -tag -width flag -offset indent -compact
 .It MirrorContinent: eur
 .El
-.It Cm MirrorCountry: Tt six letter code 
+.It Cm MirrorCountry: six letter code 
 You should change this value using the
 .Nm fink configure
 command. The three letter code is one found in 
@@ -211,6 +211,7 @@ command. The three letter code is one found in
 For example, if you live in Austria: 
 .Bl -tag -width flag -offset indent -compact
 .It MirrorCountry: eur-AT 
+.El
 .El
 .\"
 .\"
