@@ -1,0 +1,11 @@
+Package: pwm
+Version: 20010309
+Revision: 1
+Source: http://www.students.tut.fi/~tuomov/dl/pwm-%v.tar.gz
+Patch: %f.patch
+CompileScript: make PREFIX=%p
+InstallScript: make install PREFIX=%i
+CommentPort: Comes with a Makefile. Only minor changes to the Makefile
+ were needed.
+CommentStow: No issues.
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
