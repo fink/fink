@@ -71,7 +71,7 @@ for file in update/ltmain.sh ; do
   chmod 644 $basepath/lib/fink/$file
 done
 
-for file in COPYING README ; do
+for file in COPYING README INSTALL USAGE ; do
   cp $file $basepath/share/doc/fink/
   chmod 644 $basepath/share/doc/fink/$file
 done

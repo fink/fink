@@ -1,12 +1,13 @@
 $Id$   -*- text -*-
 
- Fink 0.2.0 Installation
+ Fink 0.2.1 Installation
 =========================
 
-These are the installation instructions for Fink version 0.2.0. This
-document covers two procedures:
+These are the installation instructions for Fink version 0.2.1. This
+document covers three procedures:
 
  * First time installation
+ * Upgrading from Fink 0.2.x
  * Upgrading from Fink 0.1.x
 
 
@@ -16,14 +17,17 @@ document covers two procedures:
  Requirements
 --------------
 You need:
- * An installed Mac OS X, version 10.0 system. Darwin 1.3 should also
-   work, but this has not been tested.
+ * An installed Mac OS X system, version 10.0 or later. Darwin 1.3.1
+   should also work, but this has not been tested. Earlier versions of
+   both will _not_ work.
  * Development tools. On Mac OS X, install the Developer.pkg package
    from the Developer Tools CD. On Darwin, the tools should be present
    in the default install.
  * Many other things that come with Mac OS X. This includes perl 5.6,
    wget and autoconf.
  * Internet access. All source code is downloaded from mirror sites.
+ * Patience. Compiling several big packages takes time. I'm talking
+   hours here.
 
 
  Choosing A Directory
@@ -38,7 +42,7 @@ A special note about /usr/local: While it is possible to install Fink
 in /usr/local (and the bootstrap script will let you do that after a
 confirmation), it is a bad idea. Many third party software packages
 install into /usr/local. This can cause severe problems for Fink,
-ranging from dpkg getting confused and refusing to install packages to
+including overwriting files, dpkg refusing to install packages and
 strange build errors. Also, the /usr/local hierarchy is in the default
 search path for the shell and the compiler. That means that it is much
 more difficult to get back to a working system when things break. You
@@ -74,6 +78,67 @@ process. That means it will now download, build and install some
 essential packages. Don't worry if you see some packages being
 compiled twice. This is required because to build a binary package of
 the package manager, you must have the package manager available.
+
+
+ Upgrading From Fink 0.2.x
+===========================
+
+If you already have Fink 0.2.x installed, you can update your
+installation to 0.2.1 with this package.
+
+Actually, there are two pieces that are updated independently: the
+package manager and the package descriptions. It is recommended to
+update the package manager first.
+
+
+ Updating The Package Manager
+------------------------------
+To update the package manager, run the inject.pl script in this
+directory, like this:
+
+  ./inject.pl
+
+It will try to locate your Fink installation automatically. If it
+can't find it, you can pass the path as a parameter, like this:
+
+  ./inject.pl /sw
+
+The script copies the package descriptions into the appropriate
+directory, creates tarballs in /sw/src and then runs fink to install
+the new versions of the fink and base-files packages.
+
+
+ Updating The Package Descriptions
+-----------------------------------
+If you downloaded the fink-0.2.1-full tarball, the package
+descriptions are in the subdirectory pkginfo. To install them, run the
+inject.pl script in that directory:
+
+  cd pkginfo
+  ./inject.pl
+
+This inject.pl script works just like the one for the package
+manager.
+
+You can also grab the package descriptions as a separate tarball,
+packages-0.2.1. If you did that, just unpack it and run the inject.pl
+script inside.
+
+
+ Updating Packages
+-------------------
+The above two steps will not update the actual packages, they only
+provide you with the means to do so. The easiest way to get the new
+packages is to use the 'update-all' command:
+
+  fink update-all
+
+This will bring all installed packages to the latest version. If you
+don't want to do this (it may take some time), you can update
+individual packages with the 'update' command. But note that some
+package require specific versions of the packages they depend
+upon. Fink currently has no way to enforce this, so you may run into
+problems.
 
 
  Upgrading From Fink 0.1.x

@@ -1,3 +1,9 @@
+2001-05-08  Christoph Pfisterer  <cp@chrisp.de>
+
+	* README, INSTALL, USAGE: Updated documentation.
+	* install.sh: Added INSTALL and USAGE to the list of files to
+	install.
+
 2001-04-24  Christoph Pfisterer  <cp@chrisp.de>
 
 	* bootstrap.pl: Call inject.pl with -quiet to suppress some
