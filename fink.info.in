@@ -6,8 +6,8 @@ Suggests: storable-pm, term-readkey-pm
 Essential: yes
 Source: %n-%v.tar
 Source-MD5: @MD5@
-NoSourceDirectory: true
 CompileScript: <<
+ #!/bin/sh -e
  ./setup.sh %p
 <<
 InstallScript: ./install.sh %i
@@ -22,6 +22,11 @@ fink is the Fink project's package manager. It is responsible for
 downloading and compiling source and building binary packages from
 it. Binary package handling is then delegated to dpkg.
 <<
+DescPackaging: <<
+Don't use mirror:sourceforge so that older package manager versions
+which do not know that mirror can still selfupdate.
+<<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://fink.sourceforge.net/
+NoSourceDirectory: true
