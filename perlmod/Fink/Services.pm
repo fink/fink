@@ -158,7 +158,7 @@ sub read_properties_lines {
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
 			} else {
-				print "WARNING: Unable to parse \"".$_."\" in \"$file\".\n";
+				print "WARNING: Unable to parse the line \"".$_."\" in \"$file\".\n";
 			}
 		}
 	}

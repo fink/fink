@@ -1,3 +1,7 @@
+2003-11-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Clarified "unable to parse..." warning message.
+
 2003-11-12  Michael G Schwern <schwern@pobox.com>
 
 	* Package.pm: Does not use execute() so don't import it from
@@ -134,7 +138,7 @@
 
 	* Config.pm: Bomb if Distribution isn't set.
 
-2003-11-02  Daniel Macks  <dmacks@users.sourceforge.net>
+2003-11-02  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Add polite feedback if a .deb is okay in analogy
 	to behavior for .info (cf. exiting silently). (Patch #822456)
