@@ -22,6 +22,8 @@
 
 package Fink::CLI;
 
+use Carp;
+
 use strict;
 use warnings;
 
@@ -239,45 +241,6 @@ sub prompt_boolean {
 	return $meaning;
 }
 
-=item prompt_selection
-
-    my $answer = prompt_selection $prompt, $default, \%names, @choices;
-
-This function is deprecated. Use prompt_selection_new instead.
-
-Ask the user a multiple-choice question and return the answer. The
-user is prompted via STDOUT/STDIN using $prompt (which is
-word-wrapped) and a list of choices (the values of %names). The
-choices are numbered (beginning with 1) and the user selects by
-number. The list @choices is the keys of %names listed in the order
-they are to be presented to the user, and the value returned is the
-item in @choices corresponding to the choice number. If the user
-returns a null string or Fink is configured to automatically accept
-defaults (i.e., bin/fink was invoked with the -y or --yes option), the
-answer-number $default is used.
-
-=cut
-
-sub prompt_selection {
-	my $prompt = shift;
-	my $default_value = shift;
-	$default_value = 1 unless defined $default_value;
-	my $names = shift;
-	my @choices = @_;
-
-	my ($key, @choices_new);
-
-	foreach $key (@choices) {
-		if (exists $names->{$key}) {
-			push @choices_new, ($names->{$key}, $key);
-		} else {
-			push @choices_new, ($key, $key);
-		}
-	}
-
-	prompt_selection_new( $prompt, ["number",$default_value], @choices_new );
-}
-
 =item prompt_selection_new
 
     my $answer = prompt_selection_new $prompt, \@default, @choices;
@@ -306,7 +269,7 @@ sub prompt_selection_new {
 	my ($count, $index, $answer, $default_value);
 
 	if (@choices/2 != int(@choices/2)) {
-		die "Odd number of elements in \@choices (called by ",(caller)[1]," line ",(caller)[2],")";
+		confess "Odd number of elements in \@choices";
 	}
 
 	if (!defined $default->[0]) {
@@ -317,9 +280,8 @@ sub prompt_selection_new {
 	} elsif ($default->[0] =~ /^(label|value)$/) {
 		# will be handled later
 	} else {
-		die "Unknown default type ",$default->[0]," (called by ",(caller)[1]," line ",(caller)[2],")";
+		confess "Unknown default type ",$default->[0];
 	}
-
 
 	require Fink::Config;
 	my $dontask = Fink::Config::get_option("dontask");
