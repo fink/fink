@@ -820,10 +820,7 @@ sub match_package {
     # find the newest version
 
     $version = &latest_version($package->list_versions());
-    if (defined $version) {
-      print "pkg $pkgname  version $version\n"
-	unless $quiet;
-    } else {
+    if (not defined $version) {
       # there's nothing we can do here...
       die "no version info available for $pkgname\n";
     }
@@ -838,10 +835,7 @@ sub match_package {
       }
     }
     $version = &latest_version(@rlist);
-    if (defined $version) {
-      print "pkg $pkgname  version $version\n"
-	unless $quiet;
-    } else {
+    if (not defined $version) {
       # there's nothing we can do here...
       die "no matching version found for $pkgname\n";
     }
