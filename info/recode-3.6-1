@@ -1,0 +1,12 @@
+Package: recode
+Version: 3.6
+Revision: 1
+Source: gnu
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp -Dgetopt=rc_getopt -Dopterr=rc_opterr -Doptind=rc_optind -Doptopt=rc_optopt
+UsesGettext: true
+CommentPort: Uses autoconf and checks the host type. It doesn't seem
+ to use it for anything useful, though. The usual fix.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
