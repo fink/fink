@@ -15,19 +15,19 @@
 	which will enable extra output for maintainers and will self validate
 	the info and deb files.
 
-2004-02-25  Daniel Macks  <dmacks@netspace.org>
+2005-02-25  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: add return values for validate_*_file
 
-2004-02-25  Daniel Macks  <dmacks@netspace.org>
+2005-02-25  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: Make InstallScript output stand out better
 
-2004-02-25  Daniel Macks  <dmacks@netspace.org>
+2005-02-25  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: More-compatible syntax for open().
 
-2004-02-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2005-02-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: When a compile fails, point the user at the FAQ
 	and mailing lists *before* having them e-mail the maintainer
