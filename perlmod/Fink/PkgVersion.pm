@@ -690,9 +690,15 @@ sub resolve_depends {
 	}
 	
 	if ($self->find_debfile()) {
-		print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+		if (Fink::Config::verbosity_level() > 2) {
+			print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+		}
 		@speclist = split(/\s*\,\s*/, $self->get_debdeps());
 	} else {
+                if (Fink::Config::verbosity_level() > 2) {
+			print "Reading dependencies from ".$self->get_fullname()." info file...\n";
+		}
+
 		@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
 	}
 	if ($include_build) {

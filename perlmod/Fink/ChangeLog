@@ -2,6 +2,7 @@
 
 	* shlibs.pm: removed my debug line, left RangerRick's for now
 	* shlibs.pm: added more space filtering in the inject_shlibs sub
+	* PkgVersion.pm: added verbosity level for output in 'resolve_depends'
 
 2003-07-16  Justin F. Hallett  <thesin@users.sourceforge.net>
 
