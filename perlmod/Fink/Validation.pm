@@ -73,10 +73,10 @@ our %allowed_type_values = map {$_, 1}
 # Allowed values for the license field
 our %allowed_license_values = map {$_, 1}
 	(
-	 "GPL", "LGPL", "GFDL", "LDP", "BSD",
-	 "Artistic", "OSI-Approved", "Public Domain",
-	 "Restrictive", "Restrictive/Distributable", "Commercial",
-	 "Artistic/GPL", "GPL/GFDL", "GPL/LGPL", "LGPL/GFDL"
+	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL", 
+	 "GPL/GFDL", "LGPL/GFDL", "GPL/LGPL/GFDL", "LDP", "GPL/LGPL/LDP", 
+	 "OSI-Approved", "Public Domain", "Restrictive/Distributable", 
+	 "Restrictive", "Commercial"
 	);
 
 # List of all known fields.
