@@ -142,7 +142,7 @@ sub new_from_url {
 
   $self->{name} = "Original URL";
   $self->{package} = $package;
-    
+
   $self->{data}->{"primary"} = [ $url ];
 
   $self->initialize();
@@ -192,7 +192,7 @@ sub get_site {
 
 	if ($self->{lastused}) {
 		$url = $self->{lastused};
-  	    $url .= "/" unless $url =~ /\/$/;
+		$url .= "/" unless $url =~ /\/$/;
 		return $url;
 	}
 
@@ -281,10 +281,10 @@ sub get_site_retry {
 	}
 	# ask the user
 	if($printmode) {
-		#just printing URLs, never ask, never retry same mirror
-	    if($default == 2) {
-	    	$default = 1;
-	    }
+		# just printing URLs, never ask, never retry same mirror
+		if($default == 2) {
+			$default = 1;
+		}
 		$result = $choice_list[$default - 1];
 	} else {
 		my $nexttext;

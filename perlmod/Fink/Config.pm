@@ -185,10 +185,10 @@ Inherited from Fink::Base.
 =cut
 
 sub set_param {
-    my $self = shift;
-    my $key  = shift;
-    $self->SUPER::set_param($key, @_);
-    push @{$self->{_queue}}, $key;
+	my $self = shift;
+	my $key  = shift;
+	$self->SUPER::set_param($key, @_);
+	push @{$self->{_queue}}, $key;
 }
 
 =item save

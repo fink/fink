@@ -85,19 +85,19 @@ Like C<mv>.
 =cut
 
 sub mv {
-    my @src = _expand(@_);
-    my $dst = pop @src;
-
-    require File::Copy;
-
-    croak("Too many arguments") if @src > 1 && ! -d $dst;
-    croak("Insufficient arguments") unless @src;
-
-    my $nok = 0;
-    foreach my $src (@src) {
-        $nok ||= !File::Copy::move($src,$dst);
-    }
-    return !$nok;
+	my @src = _expand(@_);
+	my $dst = pop @src;
+	
+	require File::Copy;
+	
+	croak("Too many arguments") if @src > 1 && ! -d $dst;
+	croak("Insufficient arguments") unless @src;
+	
+	my $nok = 0;
+	foreach my $src (@src) {
+		$nok ||= !File::Copy::move($src,$dst);
+	}
+	return !$nok;
 }
 
 =item cp
@@ -110,19 +110,19 @@ Like C<cp>.
 =cut
 
 sub cp {
-    my @src = _expand(@_);
-    my $dst = pop @src;
-
-    require File::Copy;
-
-    croak("Too many arguments") if (@src > 1 && ! -d $dst);
-    croak("Insufficient arguments") unless @src;
-
-    my $nok = 0;
-    foreach my $src (@src) {
-        $nok ||= !File::Copy::copy($src,$dst);
-    }
-    return !$nok;
+	my @src = _expand(@_);
+	my $dst = pop @src;
+	
+	require File::Copy;
+	
+	croak("Too many arguments") if (@src > 1 && ! -d $dst);
+	croak("Insufficient arguments") unless @src;
+	
+	my $nok = 0;
+	foreach my $src (@src) {
+		$nok ||= !File::Copy::copy($src,$dst);
+	}
+	return !$nok;
 }
 
 =item cat
@@ -138,15 +138,15 @@ Returns undef on error, even in list context.
 =cut
 
 sub cat {
-    my $file = shift;
-    my $fh;
-    unless( open $fh, $file ) {
-        return undef;
-    }
-
-    local $/ = $/;
-    $/ = undef unless wantarray;
-    return <$fh>;
+	my $file = shift;
+	my $fh;
+	unless( open $fh, $file ) {
+		return undef;
+	}
+	
+	local $/ = $/;
+	$/ = undef unless wantarray;
+	return <$fh>;
 }
 
 =item mkdir_p
@@ -163,17 +163,17 @@ If this becomes a problem, reimplement without File::Path
 =cut
 
 sub mkdir_p {
-    my @dirs = _expand(@_);
-    require File::Path;
-
-    # mkpath() has one condition where it will die. :(  The eval
-    # loses the value of $!.
-    my $nok = 0;
-    foreach my $dir (@dirs) {
-        eval { File::Path::mkpath([$dir]) };
-        $nok = 1 if $@;
-    }
-    return !$nok;
+	my @dirs = _expand(@_);
+	require File::Path;
+	
+	# mkpath() has one condition where it will die. :(  The eval
+	# loses the value of $!.
+	my $nok = 0;
+	foreach my $dir (@dirs) {
+		eval { File::Path::mkpath([$dir]) };
+		$nok = 1 if $@;
+	}
+	return !$nok;
 }
 
 =item rm_rf
@@ -185,10 +185,10 @@ Like C<rm -rf>
 =cut
 
 sub rm_rf {
-    my @dirs = _expand(@_);
-    require File::Path;
-    local $SIG{__WARN__} = sub {};  # rmtree is noisy on failure.  Shut up.
-    return File::Path::rmtree([grep -e $_, @dirs]);
+	my @dirs = _expand(@_);
+	require File::Path;
+	local $SIG{__WARN__} = sub {};  # rmtree is noisy on failure.  Shut up.
+	return File::Path::rmtree([grep -e $_, @dirs]);
 }
 
 =item rm_f
@@ -200,18 +200,18 @@ Like C<rm -f>
 =cut
 
 sub rm_f {
-    my @files = _expand(@_);
-
-    my $nok = 0;
-    foreach my $file (@files) {
-        next if unlink($file);
-        chmod(0777,$file);
-        next if unlink($file);
-
-        $nok = 1;
-    }
-
-    return !$nok;
+	my @files = _expand(@_);
+	
+	my $nok = 0;
+	foreach my $file (@files) {
+		next if unlink($file);
+		chmod(0777,$file);
+		next if unlink($file);
+	
+		$nok = 1;
+	}
+	
+	return !$nok;
 }
     
 
@@ -224,17 +224,17 @@ Like C<touch>.
 =cut
 
 sub touch {
-    my $t = time;
-    my @files = _expand(@_);
-
-    my $nok = 0;
-    foreach my $file (@files) {
-        open(FILE,">>$file") or $nok = 1;
-        close(FILE)          or $nok = 1;
-        utime($t,$t,$file)   or $nok = 1;
-    }
-
-    return !$nok;
+	my $t = time;
+	my @files = _expand(@_);
+	
+	my $nok = 0;
+	foreach my $file (@files) {
+		open(FILE,">>$file") or $nok = 1;
+		close(FILE)          or $nok = 1;
+		utime($t,$t,$file)   or $nok = 1;
+	}
+	
+	return !$nok;
 }
 
 
@@ -250,22 +250,22 @@ supported as a seperator.
 =cut
 
 sub chowname {
-    my($owner, @files) = @_;
-    my($user, $group) = split /:/, $owner, 2;
-
-    my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
-    my $gid = defined $group && length $group ? getgrnam($group) : -1;
-
-    return if !defined $uid or !defined $gid;
-
-    # chown() won't return false as long as one operation succeeds, so we
-    # have to call it one at a time.
-    my $nok = 0;
-    foreach my $file (@files) {
-        $nok ||= !CORE::chown $uid, $gid, $file;
-    }
-
-    return !$nok;
+	my($owner, @files) = @_;
+	my($user, $group) = split /:/, $owner, 2;
+	
+	my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
+	my $gid = defined $group && length $group ? getgrnam($group) : -1;
+	
+	return if !defined $uid or !defined $gid;
+	
+	# chown() won't return false as long as one operation succeeds, so we
+	# have to call it one at a time.
+	my $nok = 0;
+	foreach my $file (@files) {
+		$nok ||= !CORE::chown $uid, $gid, $file;
+	}
+	
+	return !$nok;
 }
 
 =item symlink_f
@@ -277,10 +277,10 @@ Like C<ln -sf>.  Currently requires the $dest.
 =cut
 
 sub symlink_f {
-    my($src, $dest) = @_;
-
-    unlink $dest or return;
-    return symlink($src, $dest);
+	my($src, $dest) = @_;
+	
+	unlink $dest or return;
+	return symlink($src, $dest);
 }
 
 =begin private
@@ -296,7 +296,7 @@ Expands a list of filepaths like the shell would.
 =cut
 
 sub _expand {
-    return map { /[{*?]/ ? glob($_) : $_ } @_;
+	return map { /[{*?]/ ? glob($_) : $_ } @_;
 }
 
 
