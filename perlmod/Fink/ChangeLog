@@ -1,3 +1,7 @@
+2005-01-22  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm:  Allow bootstrapping with perl 5.8.6 (maybe).
+
 2005-01-20  Daniel Macks  <dmacks@netspace.org>
 
 	* NetAccess.pm: Un-quotemeta std URL chars that aren't shell metas.

@@ -63,6 +63,7 @@ sub bootstrap {
 	} elsif ("$]" == "5.008001") {
 	} elsif ("$]" == "5.008002") {
 	} elsif ("$]" == "5.008004") {
+	} elsif ("$]" == "5.008006") {
 	} else {
 		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
 	}
