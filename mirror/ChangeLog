@@ -1,3 +1,13 @@
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Added mirror in Norway
+		trd.no.eu.finkmirrors.net
+		Maintainer:
+		Harvar Valeur
+		havarv@idi.ntnu.no
+		
+2003-11-19 David H. <dmalloc@users.sourceforge.net>
+	* Corrected the distfiles entry for San Fran
+		from .sf. to .sfo. to follow policy
 2003-11-05 David H. <dmalloc@users.sourceforge.net>
 	* Changed eu-hr to eur-hr to follow the
 		common scheme we use.
