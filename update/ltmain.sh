@@ -1079,8 +1079,8 @@ compiler."
 	    # These systems don't actually have c library (as such)
 	    continue
 	    ;;
-	  *-*-rhapsody* | *-*-darwin*)
-	    # Darwin C library is in the System framework
+	  *-*-rhapsody* | *-*-darwin1.[012])
+	    # Rhapsody C library is in the System framework
 	    deplibs="$deplibs -framework System"
 	    continue
 	    ;;
@@ -1091,8 +1091,8 @@ compiler."
 	    # These systems don't actually have math library (as such)
 	    continue
 	    ;;
-	  *-*-rhapsody* | *-*-darwin*)
-	    # Darwin math library is in the System framework
+	  *-*-rhapsody* | *-*-darwin1.[012])
+	    # Rhapsody math library is in the System framework
 	    deplibs="$deplibs -framework System"
 	    continue
 	    ;;
@@ -1815,8 +1815,8 @@ compiler."
 	*-*-cygwin* | *-*-mingw* | *-*-os2* | *-*-beos*)
 	  # these systems don't actually have a c library (as such)!
 	  ;;
-        *-*-rhapsody* | *-*-darwin*)
-	  # Darwin C library is in the System framework
+        *-*-rhapsody* | *-*-darwin1.[012])
+	  # Rhapsody C library is in the System framework
 	  deplibs="$deplibs -framework System"
 	  ;;
 	*)
