@@ -147,7 +147,7 @@ if ($> != 0) {
 		exit 1;
 	}
 	print "\n";
-	exit &execute($cmd, 1);
+	exit &execute($cmd, quiet=>1);
 } else {
 	if (defined $ARGV[0] and substr($ARGV[0],0,1) eq ".") {
 		$rootmethod = shift;

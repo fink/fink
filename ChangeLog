@@ -1,3 +1,7 @@
+2005-01-06  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: update to new Services::execute() API
+
 2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* all: updated Copyright notice
