@@ -1637,83 +1637,102 @@ EOF
 	###
 	### (but not for distributions prior to 10.2-gcc3.3)
 
-	our %prebound_files = ();
-	if ($config->param("Distribution") ge "10.2-gcc3.3") {
+	my $skip_prebinding = 0;
+	my $pkgref = ($self);
+	$skip_prebinding++ unless ($config->param("Distribution") ge "10.2-gcc3.3");
 
-	print "Finding prebound objects...\n";
-	my ($is_prebound, $is_exe, $name);
-	find({ wanted => sub {
-		# common things that shouldn't be objects
-		return if (/\.(bz2|c|cfg|conf|class|cpp|csh|db|dll|gif|gz|h|html|info|ini|jpg|m4|mng|pdf|pl|png|po|py|sh|tar|tcl|txt|wav|xml)$/i);
-		return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
-		return if (readlink $_ =~ /\/usr\/lib/); # don't re-prebind stuff in /usr/lib
-		#print "\$_ = $_\n";
-		$is_prebound = 0;
-		$is_exe      = 0;
-		$name        = undef;
-		my @dep_list;
-		if (open(OTOOL, "otool -hLv '$_' |")) {
-			while (<OTOOL>) {
-				if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
-					# executable has no install_name, add to the list
-					$name = $File::Find::name;
-					my $destmeta = quotemeta($destdir);
-					$name =~ s/^$destmeta//;
-					$is_exe = 1;
-					$is_prebound = 1;
-				} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
-					# if the last didn't match, but this did, it's a
-					# non-prebound executable, so skip it
-					last;
-				} elsif (/^\s*MH_MAGIC.*PREBOUND.*$/) {
-					# otherwise it's a dylib of some form, mark it
-					# so we can pull the install_name in a few lines
-					$is_prebound = 1;
-				} elsif (/^\s*MH_MAGIC.*$/) {
-					# if it wasn't an executable, and the last didn't
-					# match, then it's not a prebound lib
-					last;
-				} elsif (my ($lib) = $_ =~ /^\s*(.+?) \(compatibility.*$/ and $is_prebound) {
-					# we hit the install_name, add it to the list
-					unless ($lib =~ /\/libSystem/ or $lib =~ /^\/+[Ss]ystem/ or $lib =~ /^\/usr\/lib/) {
-						push(@dep_list, $lib);
+	# Why do this?  On the off-chance the parent relationship is recursive (ie, a splitoff
+	# depends on a splitoff, instead of the top-level package in the splitoff)
+	# we work our way back to the top level, and skip prebinding if things are set
+	# anywhere along the way (since the LD_* variables are normally set in the top-level
+	# but need to take effect in, say, -shlibs)
+
+	while (exists $pkgref->{_parent})) {
+		$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
+		$skip_prebinding++ if ($pkgref->has_param("NoSetLD_PREBIND"));
+		$pkgref = $pkgref->{_parent};
+	}
+	$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
+	$skip_prebinding++ if ($pkgref->has_param("NoSetLD_PREBIND"));
+
+	# "our" instead of "my", so that it can be referenced later in the post-install script
+	our %prebound_files = ();
+	unless ($skip_prebinding) {
+
+		print "Finding prebound objects...\n";
+		my ($is_prebound, $is_exe, $name);
+		find({ wanted => sub {
+			# common things that shouldn't be objects
+			return if (/\.(bz2|c|cfg|conf|class|cpp|csh|db|dll|gif|gz|h|html|info|ini|jpg|m4|mng|pdf|pl|png|po|py|sh|tar|tcl|txt|wav|xml)$/i);
+			return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
+			return if (readlink $_ =~ /\/usr\/lib/); # don't re-prebind stuff in /usr/lib
+			#print "\$_ = $_\n";
+			$is_prebound = 0;
+			$is_exe      = 0;
+			$name        = undef;
+			my @dep_list;
+			if (open(OTOOL, "otool -hLv '$_' |")) {
+				while (<OTOOL>) {
+					if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
+						# executable has no install_name, add to the list
+						$name = $File::Find::name;
+						my $destmeta = quotemeta($destdir);
+						$name =~ s/^$destmeta//;
+						$is_exe = 1;
+						$is_prebound = 1;
+					} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
+						# if the last didn't match, but this did, it's a
+						# non-prebound executable, so skip it
+						last;
+					} elsif (/^\s*MH_MAGIC.*PREBOUND.*$/) {
+						# otherwise it's a dylib of some form, mark it
+						# so we can pull the install_name in a few lines
+						$is_prebound = 1;
+					} elsif (/^\s*MH_MAGIC.*$/) {
+						# if it wasn't an executable, and the last didn't
+						# match, then it's not a prebound lib
+						last;
+					} elsif (my ($lib) = $_ =~ /^\s*(.+?) \(compatibility.*$/ and $is_prebound) {
+						# we hit the install_name, add it to the list
+						unless ($lib =~ /\/libSystem/ or $lib =~ /^\/+[Ss]ystem/ or $lib =~ /^\/usr\/lib/) {
+							push(@dep_list, $lib);
+						}
 					}
 				}
+				close(OTOOL);
+				if ($is_exe) {
+					$prebound_files{$name} = \@dep_list;
+				} else {
+					$name = shift(@dep_list);
+					return if (not defined $name);
+					$prebound_files{$name} = \@dep_list;
+				}
 			}
-			close(OTOOL);
-			if ($is_exe) {
-				$prebound_files{$name} = \@dep_list;
-			} else {
-				$name = shift(@dep_list);
-				return if (not defined $name);
-				$prebound_files{$name} = \@dep_list;
+		} }, $destdir);
+
+		if (keys %prebound_files) {
+			system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/files') == 0 or
+				die "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!\n";
+			open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') or
+				die "can't write " . $self->get_name() . '.pblist';
+			print PREBOUND join("\n", sort keys %prebound_files), "\n";
+			close(PREBOUND);
+		}
+
+		print "Writing dependencies...\n";
+		for my $key (sort keys %prebound_files) {
+			for my $file (@{$prebound_files{$key}}) {
+				$file =~ s/\//-/g;
+				$file =~ s/^-+//;
+				system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/deps/'. $file) == 0 or
+					die "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!\n";
+				open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') or
+					die "can't write " . $self->get_name() . '.deplist';
+				print DEPS $key, "\n";
+				close(DEPS);
 			}
 		}
-	} }, $destdir);
-
-	if (keys %prebound_files) {
-		system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/files') == 0 or
-			die "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!\n";
-		open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') or
-			die "can't write " . $self->get_name() . '.pblist';
-		print PREBOUND join("\n", sort keys %prebound_files), "\n";
-		close(PREBOUND);
-	}
-
-	print "Writing dependencies...\n";
-	for my $key (sort keys %prebound_files) {
-		for my $file (@{$prebound_files{$key}}) {
-			$file =~ s/\//-/g;
-			$file =~ s/^-+//;
-			system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/deps/'. $file) == 0 or
-				die "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!\n";
-			open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') or
-				die "can't write " . $self->get_name() . '.deplist';
-			print DEPS $key, "\n";
-			close(DEPS);
-		}
-	}
-    } # conditional on distribution > 10.2
+	} # unless ($skip_prebinding)
 
 	### create scripts as neccessary
 
@@ -2035,6 +2054,7 @@ END
 			"DYLD_LIBRARY_PATH",
 			"LD_PREBIND",
 			"LD_PREBIND_ALLOW_OVERLAP",
+			"LD_FORCE_NO_PREBIND",
 			"LD_SEG_ADDR_TABLE",
 			"LD", "LDFLAGS", 
 			"LIBRARY_PATH", "LIBS",

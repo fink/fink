@@ -41,7 +41,12 @@ our @EXPORT_OK;
 
 # Currently, the Set* and NoSet* fields only support a limited list of variables.
 our @set_vars =
-	qw(cc cflags cpp cppflags cxx cxxflags dyld_library_path ld ldflags library_path libs macosx_deployment_target make mflags makeflags);
+	qw(
+		cc cflags cpp cppflags cxx cxxflags dyld_library_path
+		ld_prebind ld_prebind_allow_overlap ld_force_no_prebind
+		ld_seg_addr_table ld ldflags library_path libs
+		macosx_deployment_target make mflags makeflags
+	);
 
 # Required fields.
 our @required_fields =
