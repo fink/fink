@@ -231,7 +231,7 @@ sub cmd_scanpackages {
 
   # create a global override file
 
-  my ($pkgname, $package, $pkgversion, $prio);
+  my ($pkgname, $package, $pkgversion, $prio, $section);
   open(OVERRIDE,">$basepath/fink/override") or die "can't write override file: $!\n";
   foreach $pkgname (Fink::Package->list_packages()) {
     $package = Fink::Package->package_by_name($pkgname);
@@ -239,7 +239,15 @@ sub cmd_scanpackages {
     $pkgversion = $package->get_version(&latest_version($package->list_versions()));
     next unless defined $pkgversion;
 
+    $section = $pkgversion->get_section();
+    if ($section eq "bootstrap") {
+      $section = "base";
+    }
+
     $prio = "optional";
+    if ($pkgname eq "apt") {
+      $prio = "important";
+    }
     if ($pkgversion->param_boolean("Essential")) {
       $prio = "required";
     }

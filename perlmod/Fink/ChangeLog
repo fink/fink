@@ -1,5 +1,8 @@
 2001-09-04  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Engine.pm (cmd_scanpackages): Fixes to section and priority
+	determination.
+
 	* Config.pm (initialize): Bail out if Basepath is not set in the
 	config file.
 
