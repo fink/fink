@@ -1,5 +1,10 @@
 2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* PkgVersion.pm: make the gcc_select error a bit more user
+	friendly.
+
+2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* SelfUpdate.pm: Enable the Trees: hack for rsync'ing multiple
 	dists inside a fink dists tree.
 

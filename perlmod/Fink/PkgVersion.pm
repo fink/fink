@@ -1006,8 +1006,27 @@ sub phase_unpack {
 	my %gcchash = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3');
 
 	if ($self->has_param("GCC")) {
-	    $gcc = $self->param("GCC");
-	    die "\n\nYou have the wrong version of gcc selected; run the command\n\n     sudo gcc_select " . $gcchash{$gcc} . "\n\n(and/or install a more recent version of the Developer Tools)\nto correct this problem.\n" unless (`gcc_select` =~ /version\ $gcc/s);
+		$gcc = $self->param("GCC");
+		chomp(my $gcc_select = `gcc_select`);
+		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
+			$gcc_select = 'an unknown version';
+		}
+		if (not exists $gcchash{$gcc}) {
+			$gcchash{$gcc} = $gcc;
+		}
+		if ($gcc_select !~ /^$gcc/) {
+			die <<END;
+
+This package must be compiled with GCC $gcc, but you currently have $gcc_select selected.
+To correct this problem, run the command:
+
+	sudo gcc_select $gcchash{$gcc}
+
+You may need to install a more recent version of the Developer Tools to be able
+to do so.
+
+END
+		}
 	}
 
 	$bdir = $self->get_fullname();
