@@ -25,6 +25,6 @@ test_setup:
 	@./setup.sh $(TEST_BASEPATH)
 
 test: test_setup
-	@cd t && ./testmore.pl || find . -name '*.t' | xargs /usr/bin/perl -I../perlmod -MTest::Harness -e 'runtests(@ARGV)'
+	@cd t && ./testmore.pl || find . -name '*.t' | sort | xargs /usr/bin/perl -I../perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
 .PHONY: all test install

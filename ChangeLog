@@ -1,3 +1,7 @@
+2004-05-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: 'test': run tests in sorted order.
+
 2004-05-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.info.in: Now suggests term-readkey-pm560 | term-readkey-pm581
