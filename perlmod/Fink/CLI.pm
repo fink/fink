@@ -54,8 +54,6 @@ END { }				# module clean-up code here (global destructor)
 
 Fink::CLI - functions for user interaction
 
-=head1 SYNOPSIS
-
 =head1 DESCRIPTION
 
 These functions handle a variety of output formatting and user
@@ -238,7 +236,7 @@ sub prompt_boolean {
 =item prompt_selection_new
 
     my $answer = prompt_selection_new $prompt, \@default, @choices;
-	
+
 Compatibility during API migration. Use prompt_selection() instead.
 
 =cut

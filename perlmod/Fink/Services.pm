@@ -64,8 +64,6 @@ END { }				# module clean-up code here (global destructor)
 
 Fink::Services - functions for text processing and system interaction
 
-=head1 SYNOPSIS
-
 =head1 DESCRIPTION
 
 These functions handle a variety of text (file and string) parsing and
@@ -1245,24 +1243,16 @@ supported:
 
 =over 4
 
-string1 op string2
-
-=over 4
+=item string1 op string2
 
 The two strings are compared using one of the operators defined as a
 key in the %compare_subs package-global. The three components may be
 separated from each other by "some whitespace" for legibility.
 
-=back
-
-string
-
-=over 4
+=item string
 
 "False" indicates the string is null (has no non-whitespace
 characters). "True" indicates the string is non-null.
-
-=back
 
 =back
 
@@ -1356,6 +1346,7 @@ sub growl {
 
 	eval {
 		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
+		#Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription, 0, -2, '/Users/ranger/Pictures/ranger_rick_fink.png');
 		Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription);
 	};
 

@@ -44,7 +44,7 @@ Fink::Command - emulate common shell commands in Perl
 
   mv @src, $dest;
   cp @src, $dest;
-  
+
   my $text = cat $file;
   my @text = cat $file;
 

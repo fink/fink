@@ -847,7 +847,7 @@ $post.
   $mc->delim("\\(", "\\)");
   $mc->('pre (match) post')   == ('pre ', '(match)', ' post');
   $mc->('pre (ma(t)ch) post') == ('pre ', '(ma(t)ch)', ' post');
- 
+
   $mc->quote('"');
   $mc->escape("\\");
   $mc->('pre (ma")"tch) post') == ('pre ', '(ma")"tch)', ' post');

@@ -47,6 +47,26 @@ our $db_mtime = 0;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
+
+Fink::Package - manipulate Fink package objects
+
+=head1 DESCRIPTION
+
+Fink::Package contains a variety of tools for querying, manipulating, and
+navigating the Fink package database.
+
+=head2 Functions
+
+No functions are exported by default.  You should generally be getting
+a package object by interacting with this module in an object-oriented
+fashion:
+
+  my $package = Fink::Package->package_by_name('PackageName');
+
+=over 4
+
+=cut
 
 ### constructor taking a name
 
@@ -658,7 +678,7 @@ file $filename, deal with the possibility that the whole thing is in a
 InfoN: block.
 
 If so, make sure this fink is new enough to understand this .info
-format (i.e., N<=max_info_level). If so, promote the fields of the
+format (i.e., NE<lt>=max_info_level). If so, promote the fields of the
 block up to the top level of %$properties and return a ref to this new
 hash. Also set a _info_level key to N.
 
@@ -701,5 +721,10 @@ sub handle_infon_block {
 	$new_properties->{infon} = $info_level;
 	return $new_properties;
 }
+
+
+=back
+
+=cut
 
 1;

@@ -49,6 +49,15 @@ our @EXPORT_OK;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
+
+Fink::Configure - handle versioned Fink configuration files
+
+=head1 DESCRIPTION
+
+These functions handle managing changes in the fink.conf file.
+
+=cut
 
 # Compatibility version of the $basepath/etc/fink.conf file.
 # Needs to be updated whenever a new field is added to the
@@ -62,8 +71,33 @@ END { }				# module clean-up code here (global destructor)
 #
 our $conf_file_compat_version  = 1;
 
+=head2 Exported Variables
 
-### create/change configuration interactively
+These variables are exported on request.  They are initialized by creating
+a Fink::Configure object.
+
+=over 4
+
+=item $conf_file_compat_version
+
+Compatibility version of the F<$basepath/etc/fink.conf> file.
+Needs to be updated whenever a new field is added to the
+configuration file by code here. This will tell users to 
+rerun fink configure after installing the new fink version.
+
+For example, C<1>.
+
+=back
+
+=head2 Functions
+
+=over 4
+
+=item configure
+
+create/change configuration interactively
+
+=cut
 
 sub configure {
 	my ($otherdir, $builddir, $verbose);
@@ -194,7 +228,12 @@ sub configure {
 	$config->save();
 }
 
-### mirror selection
+
+=item choose_mirrors
+
+mirror selection
+
+=cut
 
 sub choose_mirrors {
 	my $mirrors_postinstall = shift; # boolean value, =1 if we've been
@@ -304,26 +343,8 @@ sub choose_mirrors {
 	}
 }
 
-=head2 Exported Variables
-
-These variables are exported on request.  They are initialized by creating
-a Fink::Configure object.
-
-=over 4
-
-=item $conf_file_compat_version
-
-Compatibility version of the F<$basepath/etc/fink.conf> file.
-Needs to be updated whenever a new field is added to the
-configuration file by code here. This will tell users to 
-rerun fink configure after installing the new fink version.
-
-For example, C<1>.
-
-
 
 =back
-
 
 =head1 SEE ALSO
 

@@ -682,6 +682,9 @@ sub copy_description {
 }
 
 
+=back
+
+=cut
 
 ### EOF
 1;

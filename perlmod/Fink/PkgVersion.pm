@@ -3014,7 +3014,7 @@ END
 
 	# start with a clean the environment
 	# uncomment this to be able to use distcc -- not officially supported!
-#	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	%script_env = ("HOME" => $ENV{"HOME"});
 
 	# add system path
