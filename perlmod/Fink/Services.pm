@@ -50,7 +50,7 @@ BEGIN {
 					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &growl);
+					  &growl &do_calls);
 }
 our @EXPORT_OK;
 
@@ -1353,6 +1353,57 @@ sub growl {
 	};
 
 	return 1;
+}
+
+=item do_calls
+
+	&do_calls(\@call_list);
+
+Loop through the method and function calls specified in @call_list,
+running each one in turn. Each element of @call_list is a ref to a
+list having one of two forms:
+
+  $call_list[n] = [ $object, $method, @params ]
+
+    In this form, a call will be made to the specified $method name
+    (given as a string, i.e., a symbolic ref) of (blessed) object
+    $obj, that is, $object->$method(@params).
+
+  $call_list[n] = [ \&function, @params ]
+
+    In this form, a call will be made to function &function (unblessed
+    CODE ref), that is, &$function(@params).
+
+In both cases, the thing is called with parameter list @params (if
+given, otherwise an empty list). Return values are discarded.
+
+The anonymous list referenced from $call_list[n] will be clobbered. At
+some point, this function may be rewritten using fork(), so you should
+not expect sane results if your functions and methods change
+parameters passed by reference, (object) instance variables, or other
+runtime data structures.
+
+=cut
+
+sub do_calls {
+	my $call_list = shift;
+	my( $object, $method, $function );
+
+	foreach my $call (@$call_list) {
+		$function = shift @$call;
+		if (ref($function) ne 'CODE') {
+			# not an unblessed CODE ref so assume it is an object
+			$object = $function;
+			$method = shift @$call;
+			$function = $object->can($method);  # CODE ref for pkg function
+			unshift @$call, $object;  # handle $obj->$method as &function($obj)
+			if (not defined $function) {
+				warn "$object does not appear to have a \"$method\" method...will skip\n";
+				next;
+			}
+		}
+		&$function(@$call);
+	}
 }
 
 =back

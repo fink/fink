@@ -1,3 +1,10 @@
+2005-01-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: New do_calls() function processes a list of method
+	and function calls.
+	* Engine.pm: cmd_fetch, cmd_fetch_missing, and real_install now
+	use do_calls() to handle phase_fetch*() calls.
+
 2005-01-18  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: add new param to expand_percent() to reduce

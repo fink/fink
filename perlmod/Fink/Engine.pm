@@ -23,7 +23,7 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent &count_files);
+use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent &count_files &do_calls);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -599,7 +599,7 @@ EOF
 ### package-related commands
 
 sub cmd_fetch {
-	my ($package, @plist);
+	my ($package, @plist, @fetch_calls);
 
 	my (%options, $norestrictive, $dryrun);
 	my @sav = @_;
@@ -620,14 +620,16 @@ sub cmd_fetch {
 		die "no package specified for command 'fetch'!\n";
 	}
 
+	@fetch_calls = ();
 	foreach $package (@plist) {
 		my $pname = $package->get_name();
 		if ($norestrictive && $package->has_param("license") && $package->param("license") =~ m/Restrictive\s*$/i) {
 				print "Ignoring $pname due to License: Restrictive\n";
 				next;
 		}
-		$package->phase_fetch(0, $dryrun);
+		push @fetch_calls, [ $package, 'phase_fetch', 0, $dryrun ];
 	}
+	&do_calls(\@fetch_calls);
 }
 
 sub cmd_description {
@@ -691,15 +693,14 @@ EOF
 
 #This sub is currently only used for bootstrap. No command line parsing needed
 sub cmd_fetch_missing {
-	my ($package, $options, @plist);
+	my (@plist, @fetch_calls);
 
 	@plist = &expand_packages(@_);
 	if ($#plist < 0) {
 		die "no package specified for command 'fetch'!\n";
 	}
-	foreach $package (@plist) {
-		$package->phase_fetch(1, 0);
-	}
+	@fetch_calls = map { [ $_, 'phase_fetch', 1, 0 ] } @plist;
+	&do_calls(\@fetch_calls);
 }
 
 sub cmd_fetch_all {
@@ -1242,6 +1243,7 @@ sub real_install {
 	my ($oversion, $opackage, $v, $ep, $dp, $dname);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
+	my @fetch_calls;
 
 	if (Fink::Config::verbosity_level() > -1) {
 		$showlist = 1;
@@ -1681,20 +1683,21 @@ sub real_install {
 	# remove buildconfilcts before new builds reinstall after build
 	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
 
+	@fetch_calls = ();
 	# fetch all packages that need fetching
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
 		next if $item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed();
-		if (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD 
-		    and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
-			# download the deb
-			$item->[PKGVER]->phase_fetch_deb(1, 0);
-		}
-
-		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
-			$item->[PKGVER]->phase_fetch(1, 0);
+		if (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD) {
+			push @fetch_calls, [
+				$item->[PKGVER],
+				$deb_from_binary_dist && $item->[PKGVER]->is_aptgetable()
+					? 'phase_fetch_deb'
+					: 'phase_fetch',
+				1, 0 ];
 		}
 	}
+	&do_calls(\@fetch_calls);
 
 	# install in correct order...
 	while (1) {
