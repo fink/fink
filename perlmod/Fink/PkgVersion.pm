@@ -2849,14 +2849,8 @@ EOSCRIPT
 	print "Setting build lock...\n";
 	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
 	my $lock_failed = &execute("dpkg -i $debfile");
-	rm_f $debfile or
-		&print_breaking("WARNING: Can't remove binary package file ".
-						"$debfile. ".
-						"This is not fatal, but you may want to remove ".
-						"the file manually to save disk space. ".
-						"Continuing with normal procedure.");
 	if ($lock_failed) {
-		die <<EOMSG
+		&print_breaking(<<EOMSG);
 Can't set build lock for $pkgname ($pkgvers)
 
 If any of the above dpkg error messages mention problems with
@@ -2869,7 +2863,22 @@ Regardless of the cause of the lock failure, don't worry: you have not
 wasted compiling time! Packages that had been completely built before
 this error occurred will not have to be recompiled.
 EOMSG
+
+		# Failure due to depenendecy problems leaves lockpkg in an
+		# "unpacked" state, so try to remove it entirely.
+		&execute("dpkg -r $lockpkg") or
+			&print_breaking('You can probably ignore the above errors from "dpkg -r"');
 	}
+
+	# Even if installation fails, no reason to keep this around
+	rm_f $debfile or
+		&print_breaking("WARNING: Can't remove binary package file ".
+						"$debfile. ".
+						"This is not fatal, but you may want to remove ".
+						"the file manually to save disk space. ".
+						"Continuing with normal procedure.");
+
+	die("buildlock failure") if $lock_failed;
 
 	# successfully get lock, so record ourselves
 	$self->{_lockpkg} = $lockpkg;
