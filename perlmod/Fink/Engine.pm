@@ -410,7 +410,7 @@ EOF
 			$description = $vo->get_shortdescription($desclen);
 		}
 		if (defined $buildonly) {
-			next unless ( $vo->has_param("buildonlydepends") );
+			next unless ( $vo->has_param("builddependsonly") );
 		}
 		if (defined $section) {
 			$section =~ s/[\=]?(.*)/$1/;
