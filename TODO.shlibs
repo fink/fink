@@ -13,6 +13,7 @@ Missing:
 * Common code for build, updating and reading the shlibs.db should get merged
 * Should move the fink.shlibs files to system.shlibs ie 10.2.shlibs and
   darwin7.shlibs enventually maybe VirtPackages could do this?
+* build tests for Shlibs.pm
 * Better checking/enforcing of the Shlibs field
 * Warning about Depends being removed in the future.
 * Check for depends on children packages
