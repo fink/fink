@@ -51,6 +51,9 @@ cp init.sh $basepath/bin/
 chmod 644 $basepath/bin/init.sh
 cp init.csh $basepath/bin/
 chmod 644 $basepath/bin/init.csh
+# generate a dummy file to avoid problems with zsh
+touch $basepath/etc/profile.d/dummy.sh
+chmod 644 $basepath/etc/profile.d/dummy.sh
 
 cp fink-release $basepath/etc/
 chmod 644 $basepath/etc/fink-release
