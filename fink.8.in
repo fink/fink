@@ -43,6 +43,14 @@ Display fink version information.
 Causes fink to be more verbose, opposite of --quiet
 .It Cm -y, --yes
 Assume default answer for all interactive questions
+.It Cm -K, --keep-root-dir
+Causes Fink not to delete the
+.Pa @PREFIX@/src/root-[name]-[version]-[revision]
+directory after building a package.
+.It Cm -k, --keep-build-dir
+Causes Fink not to delete the
+.Pa @PREFIX@/src/[name]-[version]-[revision]
+directory after building a package.
 .El
 .\"
 .\"
@@ -264,6 +272,8 @@ Validates the MD5 digest of all packages' tarballs, where possible.
 .It Cm cleanup
 Removes obsolete package files (.info, .patch, .deb) if newer versions
 are available. This can reclaim large amounts of disk space.
+.It Cm dumpinfo
+Shows how Fink parses parts of a package's .info file.
 .El
 .\"
 .\"

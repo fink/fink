@@ -263,14 +263,28 @@ fall into this category.
 .Bl -tag -width flag
 .It Cm KeepRootDir: Ar boolean
 Causes Fink not to delete the
-.Pa @PREFIX@/src/root-name-version
+.Pa @PREFIX@/src/root-[name]-[version]-[revision]
 directory after building a package. Defaults to false. 
 Be careful, this option can fill your hard-disk quickly! 
+Passing
+.Cm fink
+the
+.Cm -K
+flag has the same effect, but only operates on that single
+.Cm fink
+invocation.
 .It Cm KeepBuildDir: Ar boolean 
 Causes Fink not to delete the
-.Pa @PREFIX@/src/name-version
+.Pa @PREFIX@/src/[name]-[version]-[revision]
 directory after building a package. Defaults to false. 
 Be careful, this option can fill your hard-disk quickly! 
+Passing
+.Cm fink
+the
+.Cm -k
+flag has the same effect, but only operates on that single
+.Cm fink
+invocation.
 .El
 .\"
 .\"

@@ -1,3 +1,8 @@
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document 'dumpinfo' mode, and the -K and -k flags.
+	* fink.conf.5.in: Mention -K and -k in the Keep*Dir sections.
+
 2004-04-07  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: Documented 'fink dumpinfo'
