@@ -71,13 +71,15 @@ sub initialize {
   $hash->{description} = "[virtual package representing the kernel]";
   $self->{$hash->{package}} = $hash;
   
-  # create dummy object for system version
-  $hash = {};
-  $hash->{package} = "macosx";
-  $hash->{status} = "install ok installed";
-  $hash->{version} = $macosx_version."-1";
-  $hash->{description} = "[virtual package representing the system]";
-  $self->{$hash->{package}} = $hash;
+  # create dummy object for system version, if this is OS X at all
+  if ($macosx_version > 0) {
+	$hash = {};
+	$hash->{package} = "macosx";
+	$hash->{status} = "install ok installed";
+	$hash->{version} = $macosx_version."-1";
+	$hash->{description} = "[virtual package representing the system]";
+	$self->{$hash->{package}} = $hash;
+  }
 
   $self->read();
 }

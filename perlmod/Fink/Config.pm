@@ -94,13 +94,16 @@ sub initialize {
   ($dummy,$dummy,$darwin_version) = uname();
 
   # Now the Mac OS X version
-  $dummy = open(SW_VERS, "sw_vers |") or die "Couldn't determine system version: $!\n";
-  while (<SW_VERS>) {
-    chomp;
-    if (/(ProductVersion\:)\s*([^\s]*)/) {
-      $macosx_version = $2;
-      last;
-    }
+  $macosx_version = -1;
+  if (-x "/usr/bin/sw_vers") {
+	$dummy = open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
+	while (<SW_VERS>) {
+	  chomp;
+	  if (/(ProductVersion\:)\s*([^\s]*)/) {
+		$macosx_version = $2;
+		last;
+	  }
+	}
   }
 }
 

@@ -1,7 +1,15 @@
+2002-03-19  Max Horn  <max@quendi.de>
+
+	* Config.pm (initialize): No macosx pseudo package if we are not on
+	Mac OS X!
+
+	* Status.pm (initialize): Fixed macosx version detection on Darwin
+	(obviously there is no Mac OS X version on a pure Darwin system)
+
 2002-03-16  Max Horn  <max@quendi.de>
 	
-	* PkgVersion.pm (resolve_depends): Yet another attempt to fix splitoff build
-	dependencies, hopefully more succesful this time.
+	* PkgVersion.pm (resolve_depends): Yet another attempt to fix splitoff
+	build dependencies, hopefully more succesful this time.
 
 2002-03-16 Dave Morrison <dmrrsn@users.sourceforge.net>
 
@@ -16,13 +24,15 @@
 	
 	* Validation.pm: Added "BuildDependsOnly" to the list of known fields
 	
-	* PkgVersion.pm (resolve_depends): Fixed this so that splitoffs and splitoff
-	masters always return the same (correct) build dependencies.
+	* PkgVersion.pm (resolve_depends): Fixed this so that splitoffs and
+	splitoff masters always return the same (correct) build dependencies.
 	
-	* PkgVersion.pm (add_splitoff): Removed debug output ("Found a splitoff")
+	* PkgVersion.pm (add_splitoff): Removed annoying debug output ("Found a
+	splitoff")
 		
-	* Services.pm (read_properties_lines): Handle nested heredocs correctly,
-	and if errors are encountered, once more output the affected filename.
+	* Services.pm (read_properties_lines): Handle nested heredocs
+	correctly, and if errors are encountered, once more output the
+	affected filename.
 
 2002-02-13  Peter O'Gorman <ogorman@users.sourceforge.net>
 
