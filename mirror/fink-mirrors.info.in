@@ -2,7 +2,7 @@ Package: fink-mirrors
 Version: @VERSION@
 Revision: @REVISION@
 Essential: yes
-Source: %n-%v.tar
+Source: @SOURCE@
 Source-MD5: @MD5@
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
@@ -18,4 +18,4 @@ by fink to download sourcefiles.
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://fink.sourceforge.net/
-NoSourceDirectory: true
+

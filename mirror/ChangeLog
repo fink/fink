@@ -1,3 +1,7 @@
+2005-03-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* README.buildsystem, fink-mirrors.info.in: minor revision to buildsystem
+
 2005-02-25 David H <dmalloc@users.sourceforge.net>
 	* master, rsync: New mirror in Mississippi
 	rsync as well as distfiles, thanks to mdjoy@phy.olemiss.edu
