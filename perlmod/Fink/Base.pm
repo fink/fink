@@ -94,7 +94,10 @@ sub param {
 sub param_default {
   my $self = shift;
   my $param_name = lc shift || "";
-  my $default_value = shift || "";
+  my $default_value = shift;
+  if (not defined $default_value) {
+    $default_value = "";
+  }
 
   if (exists $self->{$param_name}) {
     return $self->{$param_name};
@@ -118,7 +121,7 @@ sub param_boolean {
   return 0;
 }
 
-### retreive boolean parameter, false if not found
+### check if parameter exists
 
 sub has_param {
   my $self = shift;

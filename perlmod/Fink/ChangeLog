@@ -1,3 +1,7 @@
+2001-05-02  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Base.pm (param_default): Fixed default handling.
+
 2001-04-28  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: Honor verbosity setting during fetch and
