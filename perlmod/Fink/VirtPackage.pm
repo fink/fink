@@ -1275,11 +1275,7 @@ sub gen_gcc_hash {
                                 : '-0'
 							  ),
 		description      => "[virtual package representing the$is_64bit gcc $version compiler]",
-		homepage         => 'http://fink.sourceforge.net/faq/'
-		                    . ($package eq 'gcc2'
-		                        ? 'comp-general.php#gcc2'
-		                        : 'usage-general.php#virtpackage'
-							  ),
+		homepage         => 'http://fink.sourceforge.net/faq/comp-general.php#gcc2',
 		builddependsonly => 'true',
 		descdetail       => <<END,
 This package represents the$is_64bit gcc $version compiler,

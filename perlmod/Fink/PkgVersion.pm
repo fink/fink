@@ -2616,15 +2616,14 @@ EOF
 			if ($scriptname eq "postinst") {
 				$scriptbody .=
 					"\nif \! test -e /Applications/Fink; then".
-					"\n  /usr/bin/install -d -m 755 /Applications/Fink";
+					"\n  /usr/bin/install -d -m 755 /Applications/Fink".
+					"\nfi;
 
 				for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
 					$bundle =~ s/\'/\\\'/gsi;
 					my $shortname = basename($bundle);
 					$scriptbody .= "\nln -s '%p/Applications/${shortname}' /Applications/Fink/";
 				}
-
-				$scriptbody .= "\nfi";
 			} elsif ($scriptname eq "postrm") {
 				for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
 					$bundle =~ s/\'/\\\'/gsi;
