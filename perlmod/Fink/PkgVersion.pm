@@ -1401,7 +1401,7 @@ sub phase_install {
   if (not $do_splitoff) {
     $bdir = $self->get_fullname();
     chdir "$basepath/src";
-    if (not $config->param_boolean("KeepBuildDir") and -e $bdir) {
+    if (not $config->param_boolean("KeepBuildDir") and not Fink::Config::get_option("keep_build") and -e $bdir) {
       if (&execute("rm -rf $bdir")) {
 	&print_breaking("WARNING: Can't remove build directory $bdir. ".
 			"This is not fatal, but you may want to remove ".
@@ -1650,8 +1650,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
   ### remove root dir
 
-  if (not $config->param_boolean("KeepRootDir") 
-      and -e $destdir) {
+  if (not $config->param_boolean("KeepRootDir") and not Fink::Config::get_option("keep_root") and -e $destdir) {
     if (&execute("rm -rf $destdir")) {
       &print_breaking("WARNING: Can't remove package build directory ".
 		      "$destdir. ".

@@ -34,6 +34,8 @@ my %options =
    "dontask" => 0,
    "interactive" => 0,
    "verbosity" => 0,
+   "keep_build" => 0,
+   "keep_root" => 0,
   );
 my $optionsString = '';
 
@@ -41,6 +43,8 @@ Getopt::Long::Configure(qw(bundling ignore_case require_order));
 GetOptions('yes|y' => sub { $options{dontask} = 1 ;  $optionsString .= '--yes ' },
 	   'quiet|q' => sub { $options{verbosity} = -1 ;  $optionsString .= '--quiet ' },
 	   'verbose|v' => sub { $options{verbosity} = 3 ;  $optionsString .= '--verbose ' },
+	   'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  $optionsString .= '--keep-build-dir ' },
+	   'keep-root-dir|K' => sub { $options{keep_root} = 1 ;  $optionsString .= '--keep-root-dir ' },
 #	   'interactive|i' => sub { $options{interactive} = 1 ;  $optionsString .= '--interactive ' },
 	   'version|V' => \&show_version,
 	   'help|h|?' => \&show_help)
