@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2002 The Fink Package Manager Team
+# Copyright (c) 2001-2003 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -279,7 +279,7 @@ sub do_real_list {
     my $version = Fink::FinkVersion::fink_version();
 
     print <<"EOF";
-Fink $version, Copyright (c) 2001,2002 Christoph Pfisterer and others.
+Fink $version, Copyright (c) 2001-2003 Christoph Pfisterer and others.
 This is free software, distributed under the GNU General Public License.
 
 Usage: fink [options] list [listoptions] [string]
