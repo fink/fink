@@ -256,13 +256,23 @@ for more details.
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm
 should auto-detect when it needs to be updated.
-.It Cm validate Ar file...
+.It Cm validate Ar [options] file...
 This command performs various checks on .info and .deb files. Package maintainers 
 should run this on their package descriptions and corresponding built
 packages before submitting them.
 .Pp
 Aliases:
 .Cm check
+.Pp
+The following optional
+.Ar options
+may be used:
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -p,--prefix
+Simulate an alternate Fink basepath prefix (%p) within the files being validated.
+.El
 .It Cm scanpackages Op Ar tree...
 Calls
 .Xr dpkg-scanpackages 8

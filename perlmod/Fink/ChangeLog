@@ -1,5 +1,12 @@
 2004-07-27  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Add --prefix to 'fink validate'.
+	* Validation.pm: Allow user-speficied alternate prefix (%p other
+	than $config->basepath). Added error checking when reading .info
+	and .patch.
+
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Check that files are in allowed dirs of .deb,
 	not just not-in disallowed dirs.
 

@@ -787,19 +787,47 @@ sub cmd_purge {
 sub cmd_validate {
 	my ($filename, @flist);
 
+	my ($wanthelp, $val_prefix);
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'prefix|p=s' => \$val_prefix,
+		'help|h'     => \$wanthelp
+	) or die "fink validate: unknown option\nType 'fink validate --help' for more information.\n";
+
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+
+		print <<"EOF";
+Fink $version
+
+Usage: fink validate [options] [package(s)]
+
+Options:
+  -p, --prefix    - Simulate an alternate Fink prefix (\%p) in files.
+  -h, --help      - This help text.
+
+EOF
+		exit 0;
+	}
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
 	require Fink::Validation;
 
 	@flist = @_;
 	if ($#flist < 0) {
-		die "no input file specified for command 'validate'!\n";
+		die "fink validate: no input file specified\nType 'fink validate --help' for more information.\n";
 	}
 	
 	foreach $filename (@flist) {
-		die "File \"$filename\" does not exist!\n" unless (-f $filename);
 		if ($filename =~/\.info$/) {
-			Fink::Validation::validate_info_file($filename);
+			Fink::Validation::validate_info_file($filename, $val_prefix);
 		} elsif ($filename =~/\.deb$/) {
-			Fink::Validation::validate_dpkg_file($filename);
+			Fink::Validation::validate_dpkg_file($filename, $val_prefix);
 		} else {
 			die "Don't know how to validate $filename!\n";
 		}

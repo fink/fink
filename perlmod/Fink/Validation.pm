@@ -24,7 +24,7 @@
 package Fink::Validation;
 
 use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch);
-use Fink::Config qw($config $basepath $buildpath);
+use Fink::Config qw($config);
 
 use strict;
 use warnings;
@@ -283,6 +283,7 @@ END { }				# module clean-up code here (global destructor)
 #
 sub validate_info_file {
 	my $filename = shift;
+	my $val_prefix = shift;
 	my ($properties, @parts);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
@@ -300,9 +301,9 @@ sub validate_info_file {
 	#
 	# Check for line endings before reading properties
 	#
-	open(INPUT, "<$filename"); 
-	my $info_file_content = <INPUT>; 
-	close INPUT;
+	open(INPUT, "<$filename") or die "Couldn't read $filename: $!\n";
+	my $info_file_content = <INPUT>;
+	close INPUT or die "Couldn't read $filename: $!\n";
 	if ($info_file_content =~ m/\r\n/s) {
 		print "Error: Info file has DOS line endings. ($filename)\n";
 		$looks_good = 0;
@@ -320,8 +321,13 @@ sub validate_info_file {
 	return unless keys %$properties;
 	
 	# determine the base path
-	$basepath = $config->param_default("basepath", "/sw");
-	$buildpath = $config->param_default("buildpath", "$basepath/src");
+	if (defined $val_prefix) {
+		$basepath = $val_prefix;
+		$buildpath = "$basepath/src";
+	} else {
+		$basepath = $config->param_default("basepath", "/sw");
+		$buildpath = $config->param_default("buildpath", "$basepath/src");
+	}
 
 	# make sure have InfoN (N>=2) if use Info2 features (%type_*[*] in Package)
 	if ($properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/ and ($properties->{infon} || 1) < 2) {
@@ -735,9 +741,9 @@ sub validate_info_file {
 		}
 		else {
 			# Check patch file
-			open(INPUT, "<$value"); 
-			my $patch_file_content = <INPUT>; 
-			close INPUT;
+			open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+			my $patch_file_content = <INPUT>;
+			close INPUT or die "Couldn't read $value: $!\n";
 			# Check for empty patch file
 			if (!$patch_file_content) {
 				print "Warning: Patch file is empty. ($value)\n";
@@ -753,7 +759,7 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 			# Check for hardcoded /sw.
-			open(INPUT, "<$value"); 
+			open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
 			while (defined($patch_file_content=<INPUT>)) {
 				# only check lines being added (and skip diff header line)
 				next unless $patch_file_content =~ /^\+(?!\+\+ )/;
@@ -763,7 +769,7 @@ sub validate_info_file {
 					last;
 				}
 			}
-			close INPUT;
+			close INPUT or die "Couldn't read $value: $!\n";
 		}
 	}
 	
@@ -791,6 +797,14 @@ sub validate_info_file {
 #
 sub validate_dpkg_file {
 	my $dpkg_filename = shift;
+	my $val_prefix = shift;
+
+	my $basepath;
+	if (defined $val_prefix) {
+		$basepath = $val_prefix;
+	} else {
+		$basepath = $config->param_default("basepath", "/sw");
+	}
 
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
@@ -809,7 +823,7 @@ sub validate_dpkg_file {
 	# This is a potential security risk, we should maybe filter $dpkg_filename...
 	$pid = open(DPKG_CONTENTS, "dpkg --contents $dpkg_filename |") or die "Couldn't run dpkg: $!\n";
 	my @dpkg_contents = <DPKG_CONTENTS>;
-	close(DPKG_CONTENTS) or die "Error on close: $!\n";
+	close(DPKG_CONTENTS) or die "Error on close: ", $?>>8, " $!\n";
 
 	foreach (@dpkg_contents) {
 		# process
@@ -897,7 +911,7 @@ sub validate_dpkg_file {
 						}
 					}
 				}
-				close(DAEMONIC_FILE) or die "Error on close: $!\n";
+				close(DAEMONIC_FILE) or die "Error on close: ", $?>>8, " $!\n";
 			}
 		}
 	}

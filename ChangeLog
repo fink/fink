@@ -1,3 +1,7 @@
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document new --prefix flag to "fink validate".
+
 2004-07-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: Changed to not honor/print descdetail
