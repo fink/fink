@@ -515,7 +515,7 @@ sub rsync_check {
 sub do_direct_rsync {
 	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
 	my $dist = $Fink::Config::distribution;
-	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://fink.opendarwin.org/finkinfo/");
+	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://master.us.finkmirrors.net/finkinfo/");
 	my $touchcmd = "touch stamp-rsync-live && rm -f stamp-cvs-live";
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
