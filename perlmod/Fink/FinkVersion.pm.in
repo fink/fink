@@ -12,12 +12,12 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA	 02111-1307, USA.
 #
 
 package Fink::FinkVersion;
@@ -26,13 +26,13 @@ use strict;
 use warnings;
 
 BEGIN {
-  use Exporter ();
-  our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-  $VERSION = 1.00;
-  @ISA         = qw(Exporter);
-  @EXPORT      = qw();
-  @EXPORT_OK   = qw(&fink_version &distribution_version &pkginfo_version);
-  %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
+	use Exporter ();
+	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
+	$VERSION	 = 1.00;
+	@ISA		 = qw(Exporter);
+	@EXPORT		 = qw();
+	@EXPORT_OK	 = qw(&fink_version &distribution_version &pkginfo_version);
+	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
@@ -41,44 +41,44 @@ our @EXPORT_OK;
 our $fink_version = "@VERSION@";
 
 
-END { }       # module clean-up code here (global destructor)
+END { }				# module clean-up code here (global destructor)
 
 
 ### return package manager version
 
 sub fink_version {
-  return $fink_version;
+	return $fink_version;
 }
 
 ### retreive distribution version
 
 sub distribution_version {
-  my $dv;
-  if (-f "@BASEPATH@/fink/VERSION") {
-    chomp($dv = `cat @BASEPATH@/fink/VERSION`);
-  } elsif (-f "@BASEPATH@/etc/fink-release") {
-    chomp($dv = `cat @BASEPATH@/etc/fink-release`);
-  } else {
-    $dv = "unknown";
-  }
-  return $dv;
+	my $dv;
+	if (-f "@BASEPATH@/fink/VERSION") {
+		chomp($dv = `cat @BASEPATH@/fink/VERSION`);
+	} elsif (-f "@BASEPATH@/etc/fink-release") {
+		chomp($dv = `cat @BASEPATH@/etc/fink-release`);
+	} else {
+		$dv = "unknown";
+	}
+	return $dv;
 }
 
 ### retreive version stamp of package info
 
 sub pkginfo_version {
-  my $pv = "0";
-  my ($fn, $v);
-  foreach $fn (glob("@BASEPATH@/fink/stamp-*")) {
-    if ($fn =~ /\/stamp-cvs/) {
-      return "cvs";
-    } elsif ($fn =~ /\/stamp-rel-(.+)$/) {
-      $v = $1;
-      $pv = $v if ($v gt $pv);
-    }
-  }
-  $pv = &distribution_version() if $pv eq "0";
-  return $pv;
+	my $pv = "0";
+	my ($fn, $v);
+	foreach $fn (glob("@BASEPATH@/fink/stamp-*")) {
+		if ($fn =~ /\/stamp-cvs/) {
+			return "cvs";
+		} elsif ($fn =~ /\/stamp-rel-(.+)$/) {
+			$v = $1;
+			$pv = $v if ($v gt $pv);
+		}
+	}
+	$pv = &distribution_version() if $pv eq "0";
+	return $pv;
 }
 
 

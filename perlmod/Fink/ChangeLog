@@ -1,5 +1,8 @@
 2003-02-27  Max Horn  <max@quendi.de>
 
+	* All files: Changed from indent/tab style 2/8 (strange emacs style) to
+	  the more common 4/4 style.
+
 	* Engine.pm: Seperated the help texts for "fink list" and "fink apropos".
 	  Also clarified and unified their wording.
 
