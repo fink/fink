@@ -600,7 +600,7 @@ sub validate_info_file {
 
 			if (defined ($value = $splitoff_properties->{files})) {
 				if ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/) {
-					print "Warning: Field \"$field\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
+					print "Warning: Field \"files\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
 					$looks_good = 0;
 				}
 			}
