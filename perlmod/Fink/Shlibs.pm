@@ -544,6 +544,7 @@ sub update_shlib_db {
 	my $dbfile = "$dbpath/shlibs.db";
 	my $lockfile = "$dbfile.lock";
 	my $lockfile_FH;
+	my $dbtemp = "$dbfile.tmp";
 
 	# check if we should update index cache
 	my $writable_cache = 0;
@@ -559,20 +560,28 @@ sub update_shlib_db {
 	}
 
 	if ($writable_cache) {
-	$lockfile_FH = Symbol::gensym();
-	open $lockfile_FH, "+>> $lockfile" or die "Can't access indexer lock $lockfile: $!\n";
-	unless (flock $lockfile_FH, LOCK_EX | LOCK_NB) {
-		# couldn't get exclusive lock, meaning another fink process has it
-		print STDERR "\nWaiting for another reindex to finish...";
-		flock $lockfile_FH, LOCK_EX or die "can't lock $lockfile: $!\n";
-		print STDERR " done.\n";
-			# nearly-concurrent indexing run finished so just grab its results
-			$shlibs = Storable::lock_retrieve($dbfile);
-			close $lockfile_FH;
-			$shlib_db_outdated = 0;
-			return;
+		$lockfile_FH = Symbol::gensym();
+		unless (open $lockfile_FH, "+>> $lockfile") {
+			&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lock $lockfile: $!");
+			$writable_cache = 0;
+		}
 	}
-	# getting here means we got the lock on the first try
+
+	if ($writable_cache) {
+		unless (flock $lockfile_FH, LOCK_EX | LOCK_NB) {
+			# couldn't get exclusive lock, meaning another fink process has it
+			print STDERR "\nWaiting for another reindex to finish...";
+			if (flock $lockfile_FH, LOCK_EX) {
+				print STDERR " done.\n";
+				# nearly-concurrent indexing run finished so just grab its results
+				$shlibs = Storable::lock_retrieve($dbfile);
+				close $lockfile_FH;
+				$shlib_db_outdated = 0;
+				return;
+			}
+			print STDERR "error: could not lock $lockfile: $!\n";
+		}
+		# getting here means we got the lock on the first try
 	}
 
 	# read data from descriptions
@@ -586,16 +595,18 @@ sub update_shlib_db {
 		if (&get_term_width) {
 			print STDERR "Updating shared library index... ";
 		}
-		unless (-d $dbpath) {
-			mkdir($dbpath, 0755) || die "Error: Could not create directory $dbpath: $!\n";
+
+		if (Storable::lock_store($shlibs, $dbtemp)) {
+			if (rename $dbtemp, $dbfile) {
+				print STDERR "done.\n";
+			} else {
+				print STDERR "error: could not activate temporary file $dbtemp: $!\n";
+			}
+		} else {
+			print STDERR "error: could not write temporary file $dbtemp: $!\n";
 		}
-
-		Storable::lock_store($shlibs, "$dbfile.tmp");
-		rename "$dbfile.tmp", $dbfile or die "Error: could not activate temporary file $dbfile.tmp: $!\n";
-		print STDERR "done.\n";
+		close $lockfile_FH;
 	};
-
-	close $lockfile_FH if defined $lockfile_FH;
 
 	$shlib_db_outdated = 0;
 }
