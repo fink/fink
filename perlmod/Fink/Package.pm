@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -420,7 +420,7 @@ sub update_db {
 			unless (-d "$basepath/var/db") {
 				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 			}
-			Storable::store ($packages, "$basepath/var/db/fink.db.tmp");
+			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
 			print "done.\n";
 		} else {

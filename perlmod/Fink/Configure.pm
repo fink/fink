@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 package Fink::Configure;
 
 use Fink::Config qw($config $basepath $libpath);
-use Fink::Services qw(&prompt &prompt_boolean &prompt_selection
+use Fink::Services qw(&prompt &prompt_boolean &prompt_selection_new
 					  &print_breaking &read_properties
 					  &read_properties_multival &filename);
 
@@ -74,12 +74,12 @@ sub configure {
 
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
-		&prompt_selection("How verbose should Fink be?", $verbose + 1, 
-						  { 3 => "High (shows everything)",
-							2 => "Medium (shows almost everything)",
-							1 => "Low (don't show tarballs being expanded)",
-							0 => "Quiet (don't show download stats)" },
-						  0, 1, 2, 3);
+		&prompt_selection_new("How verbose should Fink be?",
+				      [value=>$verbose], 
+				      ( "Quiet (don't show download stats)" => 0,
+					"Low (don't show tarballs being expanded)" => 1,
+					"Medium (shows almost everything)" => 2,
+					"High (shows everything)" => 3 ) );
 	$config->set_param("Verbose", $verbose);
 
 	# proxy settings
@@ -152,9 +152,9 @@ sub choose_mirrors {
 					# of the fink-mirrors package
 	my ($answer, $missing, $default, $def_value);
 	my ($continent, $country);
-	my ($keyinfo, @continents, @countries, $key, $listinfo);
+	my ($keyinfo, $listinfo);
 	my ($mirrorfile, $mirrorname, $mirrortitle);
-	my ($all_mirrors, @mirrors, $mirror_labels, $site, $mirror_order);
+	my ($all_mirrors, @mirrors, $site, $mirror_order);
 
 	print "\n";
 	&print_breaking("Mirror selection");
@@ -177,7 +177,7 @@ sub choose_mirrors {
 		if ($mirrors_postinstall) {
 			print "\n";
 			$answer = &prompt_boolean("The list of possible mirrors in fink has" .
-				" been updated.  Do you want to review and change your choices?", 0);
+				" been updated.  Do you want to review and change your choices?", 0, 60);
 	} else {
 		$answer =
 			&prompt_boolean("All mirrors are set. Do you want to change them?", 0);
@@ -191,56 +191,28 @@ sub choose_mirrors {
     				  "the sources for all fink packages. You can choose to use these mirrors first, ".
 					  "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
 	
-	$mirror_order =
-    &prompt_selection("What mirror order should fink use when downloading sources?", 1, 
-                     { "MasterFirst" => "Search \"Master\" source mirrors first.",
-                       "MasterLast" => "Search \"Master\" source mirrors last.",
-                       "MasterNever" => "Never use \"Master\" source mirrors.",
-                       "ClosestFirst" => "Search closest source mirrors first. (combine all mirrors into one set)" },
-                      ("MasterFirst", "MasterLast",  "MasterNever", "ClosestFirst") );
+	$mirror_order = &prompt_selection_new("What mirror order should fink use when downloading sources?",
+					      [number=>1], 
+					      ( "Search \"Master\" source mirrors first." => "MasterFirst",
+						"Search \"Master\" source mirrors last." => "MasterLast",
+						"Never use \"Master\" source mirrors." => "MasterNever",
+						"Search closest source mirrors first. (combine all mirrors into one set)" => "ClosestFirst" ) );
 	$config->set_param("MirrorOrder", $mirror_order);
 	
 	### step 1: choose a continent
-
-	$def_value = $config->param_default("MirrorContinent", "-");
-	$default = 1;
-	@continents = ();
-	foreach $key (sort keys %$keyinfo) {
-		if (length($key) == 3) {
-			push @continents, $key;
-			if ($key eq $def_value) {
-				$default = scalar(@continents);
-			}
-		}
-	}
-
 	&print_breaking("Choose a continent:");
-	$continent = &prompt_selection("Your continent?", $default, $keyinfo,
-																 @continents);
+	$continent = &prompt_selection_new("Your continent?",
+					   [ value => $config->param_default("MirrorContinent", "-") ],
+					   map { length($_)==3 ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo);
 	$config->set_param("MirrorContinent", $continent);
 
 	### step 2: choose a country
-
-	$def_value = $config->param_default("MirrorCountry", "-");
-	$default = 1;
-	@countries = ( "-" );
-	$keyinfo->{"-"} = "No selection - display all mirrors on the continent";
-	foreach $key (sort keys %$keyinfo) {
-		if ($key =~ /^$continent-/) {
-			push @countries, $key;
-			if ($key eq $def_value) {
-				$default = scalar(@countries);
-			}
-		}
-	}
-
 	print "\n";
 	&print_breaking("Choose a country:");
-	$country = &prompt_selection("Your country?", $default, $keyinfo,
-															 @countries);
-	if ($country eq "-") {
-		$country = $continent;
-	}
+	$country = &prompt_selection_new("Your country?",
+					 [ value => $config->param_default("MirrorCountry", $continent) ],
+					 ( "No selection - display all mirrors on the continent" => $continent,
+					   map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo ) );
 	$config->set_param("MirrorCountry", $country);
 
 	### step 3: mirrors
@@ -257,41 +229,27 @@ sub choose_mirrors {
 		$all_mirrors = &read_properties_multival($mirrorfile);
 
 		@mirrors = ();
-		$mirror_labels = {};
 
 		$def_value = $config->param_default("Mirror-$mirrorname", "");
 		if ($def_value) {
-			push @mirrors, "current";
-			$mirror_labels->{current} = "Current setting: $def_value";
+			push @mirrors, ( "Current setting: $def_value" => $def_value );
 		}
-		$default = 1;
 
 		if (exists $all_mirrors->{primary}) {
-			foreach $site (@{$all_mirrors->{primary}}) {
-				push @mirrors, $site;
-				$mirror_labels->{$site} = "Primary: $site";
-			}
+			push @mirrors, map { ( "Primary: $_" => $_ ) } @{$all_mirrors->{primary}};
 		}
 		if ($country ne $continent and exists $all_mirrors->{$country}) {
-			foreach $site (@{$all_mirrors->{$country}}) {
-				push @mirrors, $site;
-				$mirror_labels->{$site} = $keyinfo->{$country}.": $site";
-			}
+			push @mirrors, map { ( $keyinfo->{$country}.": $_" => $_ ) } @{$all_mirrors->{$country}};
 		}
 		if (exists $all_mirrors->{$continent}) {
-			foreach $site (@{$all_mirrors->{$continent}}) {
-				push @mirrors, $site;
-				$mirror_labels->{$site} = $keyinfo->{$continent}.": $site";
-			}
+			push @mirrors, map { ( $keyinfo->{$continent}.": $_" => $_ ) } @{$all_mirrors->{$continent}};
 		}
 
 		print "\n";
 		&print_breaking("Choose a mirror for '$mirrortitle':");
-		$answer = &prompt_selection("Mirror for $mirrortitle?", $default,
-																$mirror_labels, @mirrors);
-		if ($answer eq "current") {
-			$answer = $def_value;
-		}
+		$answer = &prompt_selection_new("Mirror for $mirrortitle?",
+						[ number => 1 ],
+						@mirrors );
 		$config->set_param("Mirror-$mirrorname", $answer);
 	}
 }

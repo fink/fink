@@ -1,3 +1,55 @@
+2004-01-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm:  Use eval{} instead of a subroutine to implement the 
+	timeout  (and remove superfluous function stdin_timeout.)
+
+2004-01-04  David Höhn <dmalloc@users.sourceforge.net>
+
+	* Package.pm: Changed Storable method from store() to lock_store()
+	This should help use phase out problems when a fink index tries to write
+	almost at the same time
+
+2004-01-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm: Add a (non-exported) function stdin_timeout to
+	prompt for input but timeout if no answer.  Use this to construct
+	a (new) optional third argument to prompt_boolean which specifies
+	a timeout interval.
+
+	* Configure.pm: Use a 60 sec. timeout in the question being asked in
+	choose_mirrors, when called from the fink-mirrors postinstall script.
+
+2004-01-02  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* PkgVersion.pm: Modified method get_splitoffs to return list of
+	splitoff packages, not just names. No need for passing package
+	name to method belonging to a package. Moved method to other
+	accessor methods.
+	* Engine.pm: Modification to use changed get_splitoffs method.
+
+2004-01-01  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* PkgVersion.pm: Added two methods to access lists of sources and
+	tarballs used by given package
+
+2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2003-12-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Configure.pm,Engine.pm,Mirror.pm,NetAccess.pm,PkgVersion.pm,SelfUpdate.pm:
+	Completed prompt_selection -> prompt_selection_new migration.
+	* Services.pm: prompt_selection deprecated in favor of ..._new so
+	don't export.
+	
+2003-12-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: prompt_selection_new(): forgot to deal with
+	unspecified or invalid default choice.
+	* Configure.pm: Switch from using prompt_selection to
+	prompt_selection_new.
+	
 2003-12-28  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Type:splitoff is redundant: switch to checkiing
@@ -8,7 +60,7 @@
 
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Service.pm: *don't* export "read_properties_lines".
+	* Services.pm: *don't* export "read_properties_lines".
 	Instead, introduce new subroutines "read_properties_multival_var"
 	and "read_properties_multival_lines", the first of which is exported.
 	* Mirror.pm: use "read_properties_multival_var" when setting 
@@ -86,6 +138,12 @@
 
 	* Services.pm: Gave prompt_selection_new more flexible default-
 	choice behavior. Not gonna change API any more so okay to use.
+
+2003-12-20  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* Engine.pm: Extended MatchPackageRegEx which resorts the
+	candidate list so that packages matching the regex are at the top
+	in case that multiple packages match the regex. 
 
 2003-12-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
@@ -341,7 +399,7 @@
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 		
 	* FinkVersion.pm.in: Removing hard coded @BASEPATH@.  Using Fink::Config
-		instead.
+	instead.
 
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 
@@ -1737,7 +1795,7 @@
 	
 	* PkgVersion.pm (add_splitoff): Removed annoying debug output ("Found a
 	splitoff")
-		
+
 	* Services.pm (read_properties_lines): Handle nested heredocs
 	correctly, and if errors are encountered, once more output the
 	affected filename.

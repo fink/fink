@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp &print_breaking
-					  &prompt &prompt_boolean &prompt_selection);
+					  &prompt &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
@@ -73,7 +73,7 @@ sub check {
 			$answer = "rsync";
 		}
 		else {
-		    $answer = "point";
+			$answer = "point";
 		}
 		&print_breaking("fink is setting your default update method to $answer \n");
 		$config->set_param("SelfUpdateMethod", $answer);
@@ -84,11 +84,14 @@ sub check {
 	# if the fink.conf setting is not there.
 	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
 		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
-		$answer = &prompt_selection("Choose an update method", 1, {"rsync" => "rsync",
-			"cvs" => "cvs", "point" => "Stick to point releases"}, "rsync","cvs","point");
+		$answer = &prompt_selection_new("Choose an update method",
+						[ value => "rsync" ],
+						( "rsync" => "rsync",
+						  "cvs" => "cvs",
+						  "Stick to point releases" => "point" ) );
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();	
-	    }
+	}
 
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
@@ -120,13 +123,13 @@ sub check {
 				"to rsync?",1);
 		if (! $answer) {
 			return;
-		    }
+		}
 		$config->set_param("SelfUpdateMethod", "rsync");
 		$config->save();	
 		&do_direct_rsync();
 		&do_finish();
 		return;		
-	    }
+	}
 	if (($selfupdatemethod ne "cvs") and $useopt == 1) {
 		$answer =
 			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 

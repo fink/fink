@@ -16,7 +16,7 @@ PatchScript: <<
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
-SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC
+SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC -fconstant-cfstrings
 CompileScript: <<
  ./configure %c
  make -f makefile.wrap NOISY=1

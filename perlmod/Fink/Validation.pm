@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -132,7 +132,7 @@ our %valid_fields = map {$_, 1}
 #  dependencies:
 		 'depends',
 		 'builddepends',
-          #  need documentation for buildconflicts
+		  #  need documentation for buildconflicts
 		 'buildconflicts',
 		 'provides',
 		 'conflicts',
@@ -146,16 +146,16 @@ our %valid_fields = map {$_, 1}
 #  unpack phase:
 		 'custommirror',
 		 'source',
-                 #sourceN
+		 #sourceN
 		 'sourcedirectory',
 		 'nosourcedirectory',
-                 #sourceNextractdir
+		 #sourceNextractdir
 		 'sourcerename',
-                 #sourceNRename
+		 #sourceNRename
 		 'source-md5',
-                 #sourceN-md5
+		 #sourceN-md5
 		 'tarfilesrename',
-                 #tarNfilesrename
+		 #tarNfilesrename
 #  patch phase:
 		 'updateconfigguess',
 		 'updateconfigguessindirs',
@@ -181,8 +181,8 @@ our %valid_fields = map {$_, 1}
 		 'shlibs',
 		 'runtimevars',
 		 'splitoff',
-                 #splitoffN
-                 #files
+		 #splitoffN
+		 #files
 #  build phase:
 		 'preinstscript',
 		 'postinstscript',
@@ -207,7 +207,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		(
 #  initial data:
 		 'package',
-            #documentation is ambiguous about license
+		 #documentation is ambiguous about license
 		 'type',
 		 'license',
 #  dependencies:
@@ -221,7 +221,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'suggests',
 		 'enhances',
 		 'pre-depends',
-               #documentation seems incorrect about essential
+		 #documentation seems incorrect about essential
 		 'essential',
 		 'builddependsonly',
 #  install phase:
@@ -396,7 +396,7 @@ sub validate_info_file {
 	}
 	
 	# error if have a source or MD5 for type nosource
-	if ($properties->{type} =~ /^(nosource|bundle)$/i) {
+	if (exists $properties->{type} and $properties->{type} =~ /^(nosource|bundle)$/i) {
 		if ($properties->{source}) {
 			print "Error: Not using a source (type \"".$properties->{type}."\") but \"source\" specified. ($filename)\n";
 			$looks_good = 0;
@@ -407,9 +407,15 @@ sub validate_info_file {
 		}
 	}
 
+	# error if have an MD5 for implicit type nosource (i.e., source=none)
+	if (lc $properties->{source} eq "none" and $properties->{"source-md5"}) {
+		print "Error: Not using a source (implicit nosource) but \"source-md5\" specified. ($filename)\n";
+		$looks_good = 0;
+	}
+
 	# error if using the default source but there is no MD5
 	# (not caught later b/c there is no "source")
-	if ($properties->{type} =~ /^(nosource|bundle)$/i) {
+	if (exists $properties->{type} and $properties->{type} =~ /^(nosource|bundle)$/i) {
 	# nosource and bundle are supposed to not have source
 	} elsif (not $properties->{source} and not $properties->{"source-md5"}) {
 		print "Error: No MD5 checksum specified for implicitly defined \"source\". ($filename)\n";
@@ -446,14 +452,15 @@ sub validate_info_file {
 		}
 
 		# Error if there is a source without an MD5
-		if (($field eq "source" or $field =~ m/^source([2-9]|\d\d)$/)
+		if ((($field eq "source" and lc $properties->{source} ne "none")
+				or $field =~ m/^source([2-9]|\d\d)$/)
 				and not $properties->{$field."-md5"}) {
 			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
 			$looks_good = 0;
 		}
 
 		# Error if there is an MD5 without a source
-		if ($field =~ /^(source\d+)-md5$/) {
+ 		if ($field =~ /^(source\d+)-md5$/) {
 			my $sourcefield = $1;
 			if (not $properties->{$sourcefield}) {
 				print "Error: \"$field\" specified but no \"$sourcefield\" specified. ($filename)\n";

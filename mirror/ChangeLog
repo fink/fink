@@ -1,3 +1,27 @@
+2004-01-02  David H. <dmalloc@users.sourceforge.net>
+	* added new rsync mirror in Los Angeles.
+		lax.finkmirrors.net
+		Maintainer:
+		Srikanth Sariapalli
+		srik@sagan.usc.edu
+		
+2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink-mirrors.info.in: adjust dependency
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.0.4 of fink-mirrors
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in:  Write the new mirror choices to the config file
+	at the end of the process! (oops)
+
 2003-12-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Releasing version 0.0.3 of fink-mirrors

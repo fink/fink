@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@ use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
 					  &print_breaking
-					  &prompt_boolean &prompt_selection
+					  &prompt_boolean &prompt_selection_new
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
@@ -222,7 +222,7 @@ sub initialize {
 			$self->{'maintainer'} = $parent->{'maintainer'};
 		}
 		if ($parent->has_param('essential')) {
-		    $self->{'_parentessential'} = $parent->{'essential'};
+			$self->{'_parentessential'} = $parent->{'essential'};
 		}
 
 		# handle inherited fields
@@ -469,6 +469,15 @@ sub get_source {
 	return "-";
 }
 
+sub get_source_list {
+	my $self = shift;
+	my @list = ();
+	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
+	        push(@list, get_source($self, $index));
+	}
+	return @list;
+}
+
 sub get_tarball {
 	my $self = shift;
 	my $index = shift || 1;
@@ -484,6 +493,15 @@ sub get_tarball {
 		return &filename($self->param("Source".$index));
 	}
 	return "-";
+}
+
+sub get_tarball_list {
+	my $self = shift;
+	my @list = ();
+	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
+	        push(@list, get_tarball($self, $index));
+	}
+	return @list;
 }
 
 sub get_checksum {
@@ -549,6 +567,34 @@ sub get_build_directory {
 
 	$self->{_expand}->{b} = "$buildpath/".$self->{_builddir};
 	return $self->{_builddir};
+}
+
+sub get_splitoffs {
+	my $self = shift;
+	my $include_parent = shift || 0;
+	my $include_self = shift || 0;
+	my @list = ();
+	my ($splitoff, $parent);
+
+	if (exists $self->{parent}) {
+		$parent = $self->{parent};
+	} else {
+	        $parent = $self;
+	}
+
+	if ($include_parent) {
+		unless ($self eq $parent && not $include_self) {
+			push(@list, $parent);
+		}
+	}
+
+	foreach $splitoff (@{$parent->{_splitoffs}}) {
+		unless ($self eq $splitoff && not $include_self) {
+			push(@list, $splitoff);
+		}
+	}
+
+	return @list;
 }
 
 ### generate description
@@ -774,21 +820,21 @@ sub resolve_depends {
 			@altspec = split(/\s*\|\s*/, $altspecs);
 			$loopcount = 0;
 			$found = 0;
-		    BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
+			BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
 			$loopcount++;
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-			    $depname = $1;
-			    $versionspec = $2;
+				$depname = $1;
+				$versionspec = $2;
 			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-			    $depname = $1;
-			    $versionspec = "";
+				$depname = $1;
+				$versionspec = "";
 			} else {
-			    die "Illegal spec format: $depspec\n";
+				die "Illegal spec format: $depspec\n";
 			}
 			$package = Fink::Package->package_by_name($depname);
 			$found = 1 if defined $package;
 			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-			    print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 			}
 			if (not defined $package) {
 				next BUILDDEPENDSLOOP;
@@ -797,16 +843,15 @@ sub resolve_depends {
 			$currentpackage = $self->get_name();
 			@dependslist = $package->get_all_providers();
 			foreach $dependent (@dependslist) {
-			    $dependentname = $dependent->get_name();
-			    if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
-				if ($dependentname eq $depname) {
-				    print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
-				} else {
-				    print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+				$dependentname = $dependent->get_name();
+				if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
+					if ($dependentname eq $depname) {
+						print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
+					} else {
+						print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+					}
 				}
-			    }
 			}
-		    }
 		}
 	}
 # now we continue to assemble the larger @speclist
@@ -1207,14 +1252,12 @@ END
 								"Expected: $checksum \nActual: $found_archive_sum \n".
 								"It is recommended that you download it ".
 								"again. How do you want to proceed?");
-				$answer =
-					&prompt_selection("Make your choice: ",
-								($tries >= 3) ? 1 : 2,
-								{ "error" => "Give up",
-									"redownload" => "Delete it and download again",													
-									"continuedownload" => "Assume it is a partial download and try to continue",
-									"continue" => "Don't download, use existing file" },
-								( "error", "redownload", "continuedownload", "continue" ));
+				$answer = &prompt_selection_new("Make your choice: ",
+								[ value => ($tries >= 3) ? "error" : "redownload" ],
+								( "Give up" => "error",
+								  "Delete it and download again" => "redownload",
+								  "Assume it is a partial download and try to continue" => "continuedownload",
+								  "Don't download, use existing file" => "continue" ) );
 				if ($answer eq "redownload") {
 					&execute("/bin/rm -f $found_archive");
 					$i--;
@@ -1271,7 +1314,7 @@ END
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive .";
 		if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-		    $unpack_cmd = "$gzip -dc $found_archive | $tarcommand $renamelist";
+			$unpack_cmd = "$gzip -dc $found_archive | $tarcommand $renamelist";
 		} elsif ($archive =~ /[\.\-]tar\.bz2$/) {
 			$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand $renamelist";
 		} elsif ($archive =~ /[\.\-]tar$/) {
@@ -1435,7 +1478,7 @@ sub phase_compile {
 		$compile_script = $self->param("CompileScript");
 	} else {
 		if ($self->param("_type") eq "perl") {
-		    my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$compile_script =
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
@@ -1749,16 +1792,16 @@ EOF
 	my ($dummy, $darwin_version, $darwin_major_version);
 	($dummy,$dummy,$darwin_version) = uname();
 	if ($darwin_version =~ /(\d+)/) {
-	    $darwin_major_version = $1;
+		$darwin_major_version = $1;
 	} else {
-	    die "No major version number for darwin!";
+		die "No major version number for darwin!";
 	}
 
 	if (not $depline =~ /\bdarwin\b/) {
-	    if (not $depline eq '') {
-		$depline = $depline . ", ";
-	    }
-	    $depline = $depline . "darwin (>= $darwin_major_version-1)";
+		if (not $depline eq '') {
+			$depline = $depline . ", ";
+		}
+		$depline = $depline . "darwin (>= $darwin_major_version-1)";
 	}
 
 	# FIXME: make sure there are no linebreaks in the following fields
@@ -2277,7 +2320,7 @@ sub get_perl_dir_arch {
 	if ($self->has_param("_typeversion_raw")) {
 		$perlversion = $self->param("_typeversion_raw");
 		$perldirectory = "/" . $perlversion;
-	    }
+	}
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
 	my $perlcmd = get_path('perl'.$perlversion);
@@ -2309,47 +2352,6 @@ sub get_debdeps {
 	close (DPKGINFO);
 
 	return $deps;
-}
-
-### Return all pkg names in a single info file
-
-sub get_splitoffs {
-	my $self = shift;
-	my $name = shift;
-	my $include_parent = shift || 0;
-	my $include_self = shift || 0;
-	my (@splits) = ();
-	my ($pkg, $parent, $i, $package, $split);
-
-	unless ($name) {
-		die("Must specify at least one package name.\n");
-	}
-
-	$package = Fink::PkgVersion->match_package($name);
-
-	unless (defined $package) {
-		die("no package found for specification '$name'!\n");
-	}
-
-	if (exists $package->{parent}) {
-		$package = $package->{parent};
-	}
-
-        if ($include_parent) {
-		$pkg = $package->param('package');
-		unless ($name eq $pkg && not $include_self) {
-			push(@splits, $pkg);
-		}
-	}
-
-	foreach $split (@{$package->{_splitoffs}}) {
-		$pkg = $split->param("package");
-		unless ($name eq $pkg && not $include_self) {
-			push(@splits, $pkg);
-		}
-        }
-
-        return @splits;
 }
 
 ### EOF

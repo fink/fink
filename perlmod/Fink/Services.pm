@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -39,7 +39,7 @@ BEGIN {
 					  &read_properties_multival &read_properties_multival_var
 					  &execute &execute_script &expand_percent
 					  &filename &print_breaking
-					  &prompt &prompt_boolean &prompt_selection &prompt_selection_new
+					  &prompt &prompt_boolean &prompt_selection_new
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
 					  &file_MD5_checksum &get_arch &get_sw_vers
@@ -353,7 +353,7 @@ sub read_properties_multival_lines {
 	$lastindex = 0;
 
 	foreach (@lines) {
-	    chomp;
+		chomp;
 		next if /^\s*\#/;		# skip comments
 		if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 			$lastkey = $notLC ? $1 : lc $1;
@@ -370,7 +370,7 @@ sub read_properties_multival_lines {
 	}
 
 	return $hash;
-    }
+}
 
 =item execute
 
@@ -669,6 +669,7 @@ sub prompt {
 =item prompt_boolean
     my $answer = prompt_boolean $prompt;
     my $answer = prompt_boolean $prompt, $default_true;
+    my $answer = prompt_boolean $prompt, $default_true, $timeout;
 
 Ask the user a yes/no question and return the logical value of the
 answer. The user is prompted via STDOUT/STDIN using $prompt (which is
@@ -676,7 +677,9 @@ word-wrapped). If $default_true is true or undef, the default answer
 is true, otherwise it is false. If the user returns a null string or
 Fink is configured to automatically accept defaults (i.e., bin/fink
 was invoked with the -y or --yes option), the default answer is
-returned.
+returned.  The optional $timeout argument establishes a wait period
+(in seconds) for the prompt, after which the default answer will be
+used.
 
 =cut
 
@@ -684,6 +687,7 @@ sub prompt_boolean {
 	my $prompt = shift;
 	my $default_value = shift;
 	$default_value = 1 unless defined $default_value;
+	my $timeout = shift;
 	my ($answer, $meaning);
 
 	require Fink::Config;
@@ -696,7 +700,20 @@ sub prompt_boolean {
 			$meaning = $default_value;
 			last;
 		}
-		$answer = <STDIN> || "";
+		if (defined $timeout) {
+			$answer = eval {
+				local $SIG{ALRM} = sub {
+					print "\n\nTIMEOUT: using default answer.\n";
+					die;
+				};
+				alarm $timeout;
+				my $answer = <STDIN>;
+				alarm(0);
+				return $answer;
+			} || "";
+		} else {
+		    $answer = <STDIN> || "";
+		}
 		chomp($answer);
 		if ($answer eq "") {
 			$meaning = $default_value;
@@ -715,6 +732,8 @@ sub prompt_boolean {
 
 =item prompt_selection
     my $answer = prompt_selection $prompt, $default, \%names, @choices;
+
+This function is deprecated. Use prompt_selection_new instead.
 
 Ask the user a multiple-choice question and return the answer. The
 user is prompted via STDOUT/STDIN using $prompt (which is
@@ -783,6 +802,7 @@ sub prompt_selection_new {
 		$default_value = 1;
 	} elsif ($default->[0] eq "number") {
 		$default_value = $default->[1];
+		$default_value = 1 if $default_value < 1 || $default_value > @choices/2;
 	} elsif ($default->[0] =~ /^(label|value)$/) {
 		# will be handled later
 	} else {
@@ -808,6 +828,7 @@ sub prompt_selection_new {
 		}
 
 	}
+	$default_value = 1 if !defined $default_value;
 	print "\n\n";
 
 	&print_breaking("$prompt [$default_value] ", 0);

@@ -3,7 +3,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 package Fink::Engine;
 
 use Fink::Services qw(&print_breaking
-					  &prompt_boolean &prompt_selection
+					  &prompt_boolean &prompt_selection_new
 					  &latest_version &execute &get_term_width
 					  &file_MD5_checksum &get_arch);
 use Fink::Package;
@@ -1187,25 +1187,25 @@ sub real_install {
 					foreach $dname (@candidates) {
 						if ( $dname =~ $matchstr ) {
 							push(@matched, $dname);
- 					        } else {
-						        push(@notmatched, $dname);
+ 						} else {
+							push(@notmatched, $dname);
 						}
 					}
 					if (1 == @matched ) {
-					        # we have exactly one match, use it
+						# we have exactly one match, use it
 						$dname = pop(@matched);
 						$found = 1;
 					} elsif (@matched > 1) {
-					        # we have multiple matches
-					        # reorder list so that matched ones are at the top
-					        @candidates = (@matched, @notmatched);
+						# we have multiple matches
+						# reorder list so that matched ones are at the top
+						@candidates = (@matched, @notmatched);
 					}
 				}
 			}
 			if (not $found) {
 				# let the user pick one
 
-				my $labels = {};
+				my @choices = ();
 				my $pkgindex = 1;
 				my $choice = 1;
 				my $founddebcnt = 0;
@@ -1214,7 +1214,7 @@ sub real_install {
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
 					my $description = $vo->get_shortdescription(60);
-					$labels->{$dname} = "$dname: $description";
+					push @choices, ( "$dname: $description" => $dname );
 					if ($package->is_any_present()) {
 						$choice = $pkgindex;
 						$founddebcnt++;
@@ -1227,9 +1227,8 @@ sub real_install {
 				print "\n";
 				&print_breaking("fink needs help picking an alternative to satisfy ".
 								"a virtual dependency. The candidates:");
-				$dname =
-					&prompt_selection("Pick one:", $choice, $labels, @candidates);
-			}
+				$dname = &prompt_selection_new("Pick one:", [number=>$choice], @choices);
+ 			}
 
 			# the dice are rolled...
 
@@ -1578,12 +1577,11 @@ sub cmd_splitoffs {
 			next;
 		}
 
-		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
-		if ($arg ne $pkgs[0]) {
+		@pkgs = $package->get_splitoffs(1, 1);
+		if ($arg ne $pkgs[0]->get_name()) {
 			print "$arg is a child, it's parent ";
 		}
-
-		printf("%s has ", $pkgs[0]);
+		printf("%s has ", $pkgs[0]->get_name());
 		unless ($pkgs[1]) {
 			printf("no children.\n");
 		} else {
@@ -1594,7 +1592,7 @@ sub cmd_splitoffs {
 			print ":\n";
 			foreach $pkg (@pkgs) {
 				unless ($pkg eq $pkgs[0]) {
-					print "\t-> $pkg\n";
+					printf("\t-> %s\n", $pkg->get_name());
 				}
 			}
 		}
@@ -1615,9 +1613,9 @@ sub cmd_showparent {
 			next;
 		}
 
-		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
-		unless ($pkgs[0] eq $arg) {
-			printf("%s's parent is $pkgs[0].\n", $arg, $pkgs[0]);
+		@pkgs = $package->get_splitoffs(1, 1);
+		unless ($arg eq $pkgs[0]->get_name()) {
+			printf("%s's parent is %s.\n", $arg, $pkgs[0]->get_name());
 		} else {
 			printf("%s is the parent.\n", $arg);
 		}

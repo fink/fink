@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -68,7 +68,7 @@ print " looks good.\n";
 
 require Fink::Services;
 import Fink::Services qw(&print_breaking &prompt &prompt_boolean
-						 &prompt_selection &read_config &execute
+						 &prompt_selection_new &read_config &execute
 						 &get_arch);
 import Fink::Bootstrap qw(&get_packageversion &create_tarball &fink_packagefiles &copy_description);
 
@@ -98,8 +98,6 @@ print "Distribution $distribution\n";
 
 ### choose root method
 
-my $rootmethods = { "sudo" => "Use sudo", "su" => "Use su",
-					"none" => "None, fink must be run as root" };
 my ($rootmethod);
 if ($> != 0) {
 	print "\n";
@@ -109,8 +107,11 @@ if ($> != 0) {
 					"currently running this script as a normal user, the ".
 					"method you choose will also be used immediately for ".
 					"this script. Avaliable methods:");
-	$answer = &prompt_selection("Choose a method:",
-								1, $rootmethods, "sudo", "su", "none");
+	$answer = &prompt_selection_new("Choose a method:",
+					[ value => "sudo" ],
+					( "Use sudo" => "sudo",
+					  "Use su" => "su",
+					  "None, fink must be run as root" => "none" ) );
 	$cmd = "'$homebase/bootstrap.pl' .$answer";
 	if ($#ARGV >= 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
@@ -135,8 +136,11 @@ if ($> != 0) {
 						"privileges. Fink can automatically try to become ".
 						"root when it's run from a user account. ".
 						"Avaliable methods:");
-		$answer = &prompt_selection("Choose a method:",
-									3, $rootmethods, "sudo", "su", "none");
+		$answer = &prompt_selection_new("Choose a method:",
+						[ value => "sudo" ],
+						( "Use sudo" => "sudo",
+						  "Use su" => "su",
+						  "None, fink must be run as root" => "none" ) );
 		$rootmethod = $answer;
 	}
 }
