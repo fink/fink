@@ -1674,14 +1674,14 @@ EOF
 		my @filelist = ();
 		my $wanted = sub {
 			if (-f) {
-				print "DEBUG: $File::Find::fullname\n";
+				print "DEBUG: file: $File::Find::fullname\n";
 				push @filelist, $File::Find::fullname;
 			}
 		};
 		## Might need follow_skip but then need to change fullname
 		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
 
-		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
+		$shlibstr = Fink::Shlibs->get_shlibs($pkgname, @filelist);
 
 		### 3) replace it in the debian control file
 		if ($depline =~ /\{SHLIB_DEPS\}, / &&
@@ -2281,6 +2281,10 @@ sub get_splitoffs {
 	}
 
 	$package = Fink::PkgVersion->match_package($name);
+
+	unless (defined $package) {
+		die("no package found for specification '$name'!\n");
+	}
 
 	if ($package->{_type} eq "splitoff") {
 		$package = $package->{parent};

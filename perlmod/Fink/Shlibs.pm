@@ -23,9 +23,12 @@
 $|++;
 
 package Fink::Shlibs;
+
 use Fink::Base;
 use Fink::Services qw(&print_breaking &version_cmp);
 use Fink::Config qw($config $basepath);
+use Fink::PkgVersion;
+
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
 
@@ -75,8 +78,21 @@ sub get_shlibs {
 ### check the files for depends
 sub check_files {
 	my $self = shift;
+	my $package = shift;
 	my @files = @_;
-	my ($file, @depends, $deb, $currentlib);
+	my ($file, @depends, $deb, $currentlib, $lib, $compat);
+	my (@splits, $split, $tmpdep, $dep, $vers, @dsplits, $dsplit);
+	my (@deplines, @builddeps, $depline, $builddep, $pkg);
+
+	# Get package object
+	$pkg = Fink::PkgVersion->match_package($package);
+
+	# get parent and split names to envoke a = %v-%r override
+	@splits = Fink::PkgVersion->get_splitoffs($package, 1, 1);
+
+	# Get depends line and builddepends lines for compares
+	@deplines = split(/\s*\,\s*/, $pkg->param_default("Depends", ""));
+	@builddeps = split(/\s*\,\s*/, $pkg->param_default("BuildDepends", ""));
 
 	# get a list of linked files to the pkg files
 	FILELOOP: foreach $file (@files) {
@@ -85,36 +101,96 @@ sub check_files {
 				die "can't run otool: $!\n";
 			# need to drop all links to system libs and the
 			# first two lines
-			while (<OTOOL>) {
+			OTOOLLOOP: while (<OTOOL>) {
 				chomp();
+				#drop first lines and errors
+				if ($_ =~ /:/) {
+					print "DEBUG: not a lib, droping: $_\n";
+					next OTOOLLOOP;
+				}
 				# Get lib
-				$_ =~ s/^\s*(\S+)\s+.*$/$1/;
+				unless ($_ =~ /^\s*(\S+)\s+\(\S+\s\S+\s(\d+\.\d+.\d+),.*$/) {
+					print "DEBUG: not matching REGEX: $_\n";
+					next OTOOLLOOP;
+				} else {
+					$lib = $1;
+					$compat = $2;
+				}
 				# Make sure it's a lib and is installed.
-				next unless (-f $_);
+				#next unless (-x $lib);
 				### This should drop any depends on it's self
 				### Strictly on it's self not a child
-				foreach $currentlib (@files) {
-					if ($currentlib eq $_) {
-						next FILELOOP;
+				print "DEBUG: Checking lib: $lib, compat: $compat\n";
+				$deb = $self->get_shlib($lib, $compat);
+				unless ($deb) {
+					print "DEBUG: Needs shlib file: $lib\n";
+					next OTOOLLOOP;
+				}
+				
+				# get just the unversioned dep for compares
+				$tmpdep = $deb;
+				$tmpdep =~ s/^(\S*)\s*\(.*\)$/$1/g;
+				print "DEBUG: tmpdep: $tmpdep, dep: $deb\n";
+
+				if ($tmpdep eq $package) {
+					next OTOOLLOOP;
+				}
+
+				### Checking for dep on own shlibs
+				### force to =%v-%r
+				foreach $split (@splits) {
+					# get just the unversioned dep
+					if ($split eq $tmpdep) {
+						print "DEBUG: forcing =%v-%r\n";
 					}
 				}
-				$deb = $self->get_shlib($_);
+
+				### Check that a dep isn't already explicitly
+				### set
+				foreach $depline (@deplines) {
+					next if ($depline eq "{SHLIB_DEPS}");
+					if ($depline =~ /^(\S*)\s*\((.*)\)$/) {
+						$vers = $2;
+						$dep = $1;
+					} else {
+						$vers = "";
+						$dep = $depline;
+					}
+					if ($dep eq $tmpdep) {
+						next OTOOLLOOP;
+					}
+				}
+
+				### Build dep versions override shlibs files
+				foreach $builddep (@builddeps) {
+					### Need to check splits here.
+					if ($builddep =~ /^(\S*)\s*\((.*)\)$/) {
+						$vers = $2;
+						$dep = $1;
+					} else {
+						# no need to continue if	
+						# no version
+						next;
+					}
+					print "DEBUG: bdep: $dep vers: $vers\n";
+					# check all splits of the deps to find
+					# this shlibs version of the -dev
+					@dsplits = Fink::PkgVersion->get_splitoffs($dep, 1, 1);
+					foreach $dsplit (@dsplits) {
+						print "DEBUG: compare -$dsplit- to -$tmpdep-\n";
+						if ($dsplit eq $tmpdep) {
+							print "DEBUG: override version\n";
+							$deb = $dsplit." (".$vers.")";
+							push(@depends, $deb)
+						}
+					}
+				}
+
 				push(@depends, $deb) if (defined $deb and $deb !~ /^\s*$/);
 			}
 		close (OTOOL);
 	}
 
-	### Add versions to deps that need it
-	### FIXME
-	## we need to check the build deps against a dep like this
-	## 1) get the parent of the shlib and then check the splitoffs
-	##    for -dev pkgs (this includes -dev and main pkgs)
-	## 2) then check the builddep line, if they match copy to
-	##    versioned dep part to the shlib dep.
-	## 3) if the shlibs if for it's self, ie it's it's parent
-	##    then it should auto add (= %v-%r) but expanded of course
-
-	### May not be needed once the above is added
 	print "DEBUG: before deduplication: ", join(', ', @depends), "\n";
 
 	# this next bit does some really strange voodoo, I will try to

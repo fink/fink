@@ -2,7 +2,14 @@
 
 	* Shlibs.pm: Added condition to display Information line on reading
 	shlibs.  I will no longer appear between builds. Changed ${SHLIB_DEPS}
-	to {SHLIB_DEPS} so perl doesn't think it' s a variable.
+	to {SHLIB_DEPS} so perl doesn't think it' s a variable. Lots of changes
+	to the core of shlibs.pm, it now won't add to explicits deps on
+	the dep line, and will override a shlibs version via the matching dev
+	packge on the builddepends line.
+	ie: builddepends: readline (>= 4.3-25) would make the depends line
+	readline-shlibs (>= 4.3-25) if readline-shlibs is a true depends.
+	Also it won't depend on it's self, and various other checks and tweaks.
+	
 
 2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
