@@ -205,6 +205,7 @@ sub initialize {
 		}
 	} else {
 		# handle splitoff(s)
+		# FIXME-dmacks: should not require consecutive N
 		if ($self->has_param('splitoff')) {
 			$self->add_splitoff($self->{'splitoff'},"");
 		}
@@ -224,6 +225,7 @@ sub initialize {
 
 ### fields that are package lists need special treatment
 ### use these accessors instead of param(), has_param(), param_default()
+# FIXME-dmacks: need a syntax like foo(-ssl?) that expands to foo|foo-ssl
 
 # fields from which one's own package should be removed
 our %pkglist_no_self = ( 'conflicts' => 1,
@@ -555,7 +557,7 @@ sub get_info_filename {
 # Returns the number of source tarballs for the package. Actually it
 # gives the highest *consecutive* N of SourceN, or 1 if no SourceN
 # (even if no Source b/c it's a nosource or bundle).
-# FIXME: that's pretty weird.
+# FIXME-dmacks: that's pretty weird.
 
 sub get_source_count {
 	my $self = shift;
@@ -1731,6 +1733,10 @@ sub phase_install {
 
 		@files = split(/\s+/, $self->param("Files"));
 		foreach $file (@files) {
+
+# FIXME:
+#   * prefix conditional syntax
+
 			if ($file =~ /^(.+)\:(.+)$/) {
 				$source = $1;
 				$target = $2;
@@ -2181,6 +2187,14 @@ EOF
 			$shlibsfile = "$destdir/DEBIAN/shlibs";
 
 			print "Writing shlibs file...\n";
+
+# FIXME-dmacks:
+#    * Make sure each file is actually present in $destdir
+#    * Remove file if package isn't listed as a provider
+#      (needed since only some variants may provide but we don't
+#      have any condiitonal syntax in Shlibs)
+#    * Rejoin wrap continuation lines
+#      (use \ not heredoc multiline-field)
 
 			open(SHLIBS,">$shlibsfile") or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
 			print SHLIBS <<EOF;
