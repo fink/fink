@@ -90,7 +90,8 @@ sub mv {
 
     require File::Copy;
 
-    croak("Too many arguments") if (@src > 1 && ! -d $dst);
+    croak("Too many arguments") if @src > 1 && ! -d $dst;
+    croak("Insufficient arguments") unless @src;
 
     my $nok = 0;
     foreach my $src (@src) {
@@ -115,6 +116,7 @@ sub cp {
     require File::Copy;
 
     croak("Too many arguments") if (@src > 1 && ! -d $dst);
+    croak("Insufficient arguments") unless @src;
 
     my $nok = 0;
     foreach my $src (@src) {

@@ -1,3 +1,8 @@
+2003-11-14  Michael G Schwern <schwern@pobox.com>
+
+	* Command.pm: Adding insufficient argument checks to cp and mv
+	(from Paul Gaborit, see 841381).  Tested.
+
 2003-11-14  Daniel Macks <dmacks@netspace.org>
 
 	* Validation.pm: Fixed typo in my previous change.
@@ -12,8 +17,8 @@
 
 2003-11-13  Max Horn  <max@quendi.de>
 
-	* Services.pm: Improve the caching of version_cmp in Fink::Services; some
-	  cleanup (Patch #841031).
+	* Services.pm: Improve the caching of version_cmp in Fink::Services; 
+	some cleanup (Patch #841031).
 
 2003-11-13  Justin F. Hallett  <thesin@users.sourceforge.net
 

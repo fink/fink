@@ -7,6 +7,16 @@ use Test::More 'no_plan';
 use Fink::Command qw(:ALL);
 
 {
+    eval { mv() };
+    like( $@, qr/^Insufficient arguments / );
+    eval { mv 'foo' };
+    like( $@, qr/^Insufficient arguments / );
+
+    touch 'foo', 'bar', 'baz';
+    eval { mv 'foo', 'bar', 'baz' };
+    like( $@, qr/^Too many arguments / );
+    unlink 'foo', 'bar', 'baz';
+
     $! = 0;
     ok( !mv('dont_exist', 'bar'),  'mv, no source, no dest' );
     ok( !-e 'bar' );
@@ -28,6 +38,17 @@ use Fink::Command qw(:ALL);
 }
 
 {
+    eval { cp() };
+    like( $@, qr/^Insufficient arguments / );
+    eval { cp 'foo' };
+    like( $@, qr/^Insufficient arguments / );
+
+    touch 'foo', 'bar', 'baz';
+    eval { cp 'foo', 'bar', 'baz' };
+    like( $@, qr/^Too many arguments / );
+    unlink 'foo', 'bar', 'baz';
+
+
     $! = 0;
     ok( !cp('dont_exist', 'bar'),  'cp, no source, no dest' );
     ok( !-e 'bar' );
