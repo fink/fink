@@ -1,3 +1,10 @@
+2001-03-08  Christoph Pfisterer  <cp@chrisp.de>
+
+	* FinkVersion.pm: Bumped version number to 0.1.6.
+
+	* Bootstrap.pm (choose_mirrors): Read mirror list from a file
+	instead of just using all files in the directory.
+
 2001-03-05  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: added support for bundle packages (no source,

@@ -90,8 +90,9 @@ sub bootstrap {
 
 sub choose_mirrors {
   my ($continent, $country, $answer);
-  my ($keyinfo, @continents, @countries, $key);
-  my ($mirrorfile, $mirrorname, $all_mirrors, @mirrors, $mirror_labels, $site);
+  my ($keyinfo, @continents, @countries, $key, $listinfo);
+  my ($mirrorfile, $mirrorname, $mirrortitle);
+  my ($all_mirrors, @mirrors, $mirror_labels, $site);
 
   &print_breaking("Mirror selection");
   $keyinfo = &read_properties("$basepath/fink/mirror/_keys");
@@ -129,9 +130,16 @@ sub choose_mirrors {
 
   ### step 3: mirrors
 
-  foreach $mirrorfile (glob("$basepath/fink/mirror/*")) {
-    $mirrorname = &filename($mirrorfile);
-    next if $mirrorname =~ /^[._]/;
+  $listinfo = &read_properties("$basepath/fink/mirror/_list");
+
+  foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
+    next if $mirrorname =~ /^\s*$/;
+
+    $mirrorfile = "$basepath/fink/mirror/$mirrorname";
+    $mirrortitle = $mirrorname;
+    if (exists $listinfo->{lc $mirrorname}) {
+      $mirrortitle = $listinfo->{lc $mirrorname};
+    }
 
     $all_mirrors = &read_properties_multival($mirrorfile);
 
@@ -158,8 +166,8 @@ sub choose_mirrors {
     }
 
     print "\n";
-    &print_breaking("Choose a mirror for '$mirrorname':");
-    $answer = &prompt_selection("Mirror for $mirrorname?", 1,
+    &print_breaking("Choose a mirror for '$mirrortitle':");
+    $answer = &prompt_selection("Mirror for $mirrortitle?", 1,
 				$mirror_labels, @mirrors);
     $config->set_param("Mirror-$mirrorname", $answer);
   }
