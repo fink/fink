@@ -633,6 +633,7 @@ sub print_breaking {
 }
 
 =item prompt
+
     my $answer = prompt $prompt;
     my $answer = prompt $prompt, $default;
 
@@ -667,6 +668,7 @@ sub prompt {
 }
 
 =item prompt_boolean
+
     my $answer = prompt_boolean $prompt;
     my $answer = prompt_boolean $prompt, $default_true;
     my $answer = prompt_boolean $prompt, $default_true, $timeout;
@@ -731,6 +733,7 @@ sub prompt_boolean {
 }
 
 =item prompt_selection
+
     my $answer = prompt_selection $prompt, $default, \%names, @choices;
 
 This function is deprecated. Use prompt_selection_new instead.
@@ -769,6 +772,7 @@ sub prompt_selection {
 }
 
 =item prompt_selection_new
+
     my $answer = prompt_selection_new $prompt, \@default, @choices;
 
 Ask the user a multiple-choice question and return the answer. The
@@ -913,6 +917,7 @@ sub version_cmp {
 }
 
 =item raw_version_cmp
+
     my $cmp = raw_version_cmp $item1, $item2;
 
 This is function is not exported. You should use version_cmp instead.
