@@ -289,7 +289,7 @@ sub expand_percent {
 sub filename {
   my ($s) = @_;
 
-  if ($s =~ /[\/:]([^\/:]+)$/) {
+  if (defined $s and $s =~ /[\/:]([^\/:]+)$/) {
     $s = $1;
   }
   return $s;

@@ -1,3 +1,7 @@
+2003-01-02 Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* Services.pm: One-liner fix to get rid of an undefined warning
+
 2002-12-24  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm:  Perl syntax fixes (thanks to Randal Schwartz)
