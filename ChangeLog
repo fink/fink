@@ -1,3 +1,10 @@
+2001-04-21  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Fixed package revision for CVS snapshots to use
+	'.' as a delimiter, not '-'.
+	* inject.pl: New script to install fink (the package manager) from
+	a CVS snapshot into an existing Fink tree.
+
 2001-04-20  Christoph Pfisterer  <cp@chrisp.de>
 
 	* README, INSTALL: Documentation updated.

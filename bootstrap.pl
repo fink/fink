@@ -61,7 +61,7 @@ print " looks good.\n";
 chomp($packageversion = `cat VERSION`);
 if ($packageversion =~ /cvs/) {
   my @now = gmtime(time);
-  $packagerevision = sprintf("%04d%02d%02d-%02d%02d",
+  $packagerevision = sprintf("%04d%02d%02d.%02d%02d",
 			     $now[5]+1900, $now[4]+1, $now[3],
 			     $now[2], $now[1]);
 } else {
