@@ -1,5 +1,9 @@
 2003-06-19  Dave Morrison <dmrrsn@users.sourceforge.net>
 
+	* postinstall.pl.in: remove a warning under 5.8.x
+
+2003-06-19  Dave Morrison <dmrrsn@users.sourceforge.net>
+
 	* VERSION: Bumped package manager version to 0.13.3
 
 2003-06-19  Dave Morrison <dmrrsn@users.sourceforge.net>
