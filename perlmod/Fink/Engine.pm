@@ -255,6 +255,10 @@ sub restart_as_root {
 	exit &execute($cmd, quiet=>1);
 }
 
+# these must be numerical and in the correct order (and should really be constants)
+my ($OP_FETCH, $OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
+	(-1, 0, 1, 2, 3);
+
 ### simple commands
 
 sub cmd_index {
@@ -619,6 +623,13 @@ sub cmd_fetch {
 		shift;
 	}
 
+	if( $options{"recursive"} ) {
+		shift;
+		# if we need the dep engine, may as well let it do *everything* for us
+		&real_install($OP_FETCH, 0, 0, $dryrun, @_);
+		return;
+	}
+
 	@plist = &expand_packages(@_);
 	if ($#plist < 0) {
 		die "no package specified for command 'fetch'!\n";
@@ -638,19 +649,21 @@ sub cmd_fetch {
 
 sub parse_fetch_options {
 	my $cmd = shift;
-	my %options =
-	  (
-	   "norestrictive" => 0,
-	   "dryrun" => 0,
-	   "wanthelp" => 0,
-	   );
+	my %options = (
+		"norestrictive" => 0,
+		"dryrun"        => 0,
+		"recursive"     => 0,
+		"wanthelp"      => 0,
+	);
 
 	my @temp_ARGV = @ARGV;
 	@ARGV=@_;
 	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions('ignore-restrictive|i'	=> sub {$options{norestrictive} = 1 } , 
-			   'dry-run|d'				=> sub {$options{dryrun} = 1 } , 
-			   'help|h'					=> sub {$options{wanthelp} = 1 })
+	GetOptions('ignore-restrictive|i'	=> sub { $options{norestrictive} = 1 },
+			   'dry-run|d'				=> sub { $options{dryrun}        = 1 },
+			   'recursive|r'            => sub { $options{recursive}     = 1 },
+			   'help|h'					=> sub { $options{wanthelp}      = 1 }
+			  )
 		or die "fink fetch: unknown option\nType 'fink $cmd --help' for more information.\n";
 	if ($options{wanthelp} == 1) {
 		require Fink::FinkVersion;
@@ -665,6 +678,7 @@ Options:
                               a "Restrictive" license. Useful for mirroring.
   -d, --dry-run             - Prints filename, MD5, list of source URLs,
                               Maintainer for each package
+  -r, --recursive           - Fetch dependent packages also
   -h, --help                - This help text.
 
 EOF
@@ -707,6 +721,10 @@ sub do_fetch_all {
 	$missing_only = $cmd eq "fetch-missing";
 	$dryrun = $options{"dryrun"} || 0;
 
+	if ($options{"recursive"}) {
+		print "fetch_all already fetches everything; --recursive is meaningless\n";
+	}
+
 	&call_queue_clear;
 	foreach $pname (Fink::Package->list_packages()) {
 		$package = Fink::Package->package_by_name($pname);
@@ -720,7 +738,6 @@ sub do_fetch_all {
 			&call_queue_add([
 				sub {
 					eval {
-#						$vo->phase_fetch(($missing_only, $dryrun);
 						$_[0]->phase_fetch($_[1], $_[2]);
 					};
 					warn "$@" if $@;				 # turn fatal exceptions into warnings
@@ -1182,23 +1199,20 @@ if (Fink::Config::binary_requested()) {
 
 ### building and installing
 
-my ($OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
-	(0, 1, 2, 3);
-
 sub cmd_build {
-	&real_install($OP_BUILD, 0, 0, @_);
+	&real_install($OP_BUILD, 0, 0, 0, @_);
 }
 
 sub cmd_rebuild {
-	&real_install($OP_REBUILD, 0, 0, @_);
+	&real_install($OP_REBUILD, 0, 0, 0, @_);
 }
 
 sub cmd_install {
-	&real_install($OP_INSTALL, 0, 0, @_);
+	&real_install($OP_INSTALL, 0, 0, 0, @_);
 }
 
 sub cmd_reinstall {
-	&real_install($OP_REINSTALL, 0, 0, @_);
+	&real_install($OP_REINSTALL, 0, 0, 0, @_);
 }
 
 sub cmd_update_all {
@@ -1211,7 +1225,7 @@ sub cmd_update_all {
 		}
 	}
 
-	&real_install($OP_INSTALL, 1, 0, @plist);
+	&real_install($OP_INSTALL, 1, 0, 0, @plist);
 }
 
 use constant PKGNAME => 0;
@@ -1224,13 +1238,29 @@ sub real_install {
 	my $op = shift;
 	my $showlist = shift;
 	my $forceoff = shift; # check if this is a secondary loop
-	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $con, $cn);
+	my $dryrun = shift;
+
+	my ($pkgspec, $package, $pkgname, $item, $dep, $con, $cn);
 	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
 	my (%candidates, @candidates, $pnode, $found);
 	my ($oversion, $opackage, $v, $ep, $dp, $dname);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
+
+	# if we only want to fetch, run the engine in mode=build, but
+	# abort before doing any actual building
+	my $fetch_only = 0;
+	if ($op == $OP_FETCH) {
+		$fetch_only = 1;
+		$op = $OP_BUILD;
+	}
+
+	# correct verb tense for actions
+	my $to_be = ( $fetch_only || $dryrun
+				  ? 'would be'
+				  : 'will be'
+				  );
 
 	if (Fink::Config::verbosity_level() > -1) {
 		$showlist = 1;
@@ -1271,7 +1301,6 @@ sub real_install {
 			print "Duplicate request for package '$pkgname' ignored.\n";
 			next;
 		}
-		$pkgobj = Fink::Package->package_by_name($pkgname);
 		# skip if this version/revision is installed
 		#	 (also applies to update)
 		if ($op != $OP_REBUILD and $op != $OP_REINSTALL
@@ -1283,7 +1312,10 @@ sub real_install {
 			next;
 		}
 		# add to table
-		$deps{$pkgname} = [ $pkgname, $pkgobj, $package, $op, 1 ];
+		@{$deps{$pkgname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+			$pkgname, Fink::Package->package_by_name($pkgname),
+			$package, $op, 1
+		);
 		$to_be_rebuilt{$pkgname} = ($op == $OP_REBUILD);
 	}
 
@@ -1322,7 +1354,7 @@ sub real_install {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
 			if (Fink::Config::verbosity_level() > 2) {
-				print "The package '" . $item->[PKGVER]->get_name() . "' will be built without being installed.\n";
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built without being installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
 			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
@@ -1332,7 +1364,7 @@ sub real_install {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
 			if (Fink::Config::verbosity_level() > 2) {
-				print "The package '" . $item->[PKGVER]->get_name() . "' will be built and installed.\n";
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
 		} elsif (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD 
@@ -1340,7 +1372,7 @@ sub real_install {
 			# We want to install this package and will download the .deb for it
 			# -> only include life-time dependencies
 			if (Fink::Config::verbosity_level() > 2) {
-				print "The package '" . $item->[PKGVER]->get_name() . "' will be downloaded as a binary package and installed.\n";
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be downloaded as a binary package and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			
@@ -1350,7 +1382,7 @@ sub real_install {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
 			if (Fink::Config::verbosity_level() > 2) {
-				print "The package '" . $item->[PKGVER]->get_name() . "' will be installed.\n";
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			
@@ -1385,8 +1417,10 @@ sub real_install {
 						die "Internal error: node for $dname already exists\n";
 					}
 					# add node to graph
-					$deps{$dname} = [ $dname, Fink::Package->package_by_name($dname),
-					                  $dp, $OP_INSTALL, 2 ];
+					@{$deps{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+						$dname, Fink::Package->package_by_name($dname),
+						$dp, $OP_INSTALL, 2
+					);
 					# add a link
 					push @$item, $deps{$dname};
 					# add to investigation queue
@@ -1557,9 +1591,10 @@ sub real_install {
 			}
 
 			# add node to graph
-			$deps{$dname} = [ $dname, $pnode,
-			                  $pnode->get_version(&latest_version(@vlist)),
-			                  $OP_INSTALL, 0 ];
+               @{$deps{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+				   $dname, $pnode,
+				   $pnode->get_version(&latest_version(@vlist)), $OP_INSTALL, 0
+			   );
 			# add a link
 			push @$item, $deps{$dname};
 			# add to investigation queue
@@ -1578,8 +1613,10 @@ sub real_install {
 					die "Internal error: node for $cname already exists\n";
 				}
 				# add node to graph
-				$cons{$cname} = [ $cname, Fink::Package->package_by_name($cname),
-				                  $cn, $OP_INSTALL, 2 ];
+				@{$cons{$cname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+					$cname, Fink::Package->package_by_name($cname),
+					$cn, $OP_INSTALL, 2
+				);
 				next CONLOOP;
 			}
 		}
@@ -1623,7 +1660,7 @@ sub real_install {
 		} else {
 			$s .= "package";
 		}
-		$s .= " will be ";
+		$s .= " $to_be ";
 		if ($op == $OP_INSTALL) {
 			$s .= "installed or updated";
 		} elsif ($op == $OP_BUILD) {
@@ -1639,37 +1676,36 @@ sub real_install {
 	}
 	unless ($forceoff) {
 		# ask user when additional packages are to be installed
-		# TODO: implement --dry-run flag, which *always* does the
-		#       following output block then exits (not dies).
 		if ($#additionals >= 0 || $#removals >= 0) {
-			if ($#additionals >= 0) {
+			if ($#additionals >= 0 and not $fetch_only) {
 				if ($#additionals > 0) {
 					&print_breaking("The following ".scalar(@additionals).
-							" additional packages will be installed:");
+							" additional packages $to_be installed:");
 				} else {
 					&print_breaking("The following additional package ".
-							"will be installed:");
+							"$to_be installed:");
 				}
 				&print_breaking(join(" ",@additionals), 1, " ");
 			}
-			if ($#removals >= 0) {
+			if ($#removals >= 0 and not $fetch_only) {
 				if ($#removals > 0) {
 					&print_breaking("The following ".scalar(@removals).
-							" packages will be removed:");
+							" packages $to_be removed:");
 				} else {
 					&print_breaking("The following package ".
-							"will be removed:");
+							"$to_be removed:");
 				}
 				&print_breaking(join(" ",@removals), 1, " ");
 			}
-			$answer = &prompt_boolean("Do you want to continue?", 1);
-			if (! $answer) {
-				die "Package requirements not satisfied\n";
+			if (not $dryrun) {
+				$answer = &prompt_boolean("Do you want to continue?", 1);
+				if (! $answer) {
+					die "Package requirements not satisfied\n";
+				}
 			}
 		}
 	}
 
-	# TODO: pass --dry-run of fetch through to phase_fetch*()
 	&call_queue_clear;
 	# fetch all packages that need fetching
 	foreach $pkgname (sort keys %deps) {
@@ -1681,11 +1717,13 @@ sub real_install {
 				$deb_from_binary_dist && $item->[PKGVER]->is_aptgetable()
 					? 'phase_fetch_deb'
 					: 'phase_fetch',
-				1, 0 ]);
+				 1, $dryrun ]);
 		}
 	}
 	&call_queue_clear;
-	# TODO: implement fetch --recursive, which exits here.
+
+	# if we were really in fetch or dry-run modes, stop here
+	return if $fetch_only || $dryrun;
 
 	# remove buildconfilcts before new builds reinstall after build
 	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
@@ -1796,7 +1834,7 @@ sub real_install {
 						$package->phase_build();
 						$package->clear_buildlock();
 					} else {
-						&real_install($OP_BUILD, 0, 1, $package->get_name());
+						&real_install($OP_BUILD, 0, 1, $dryrun, $package->get_name());
 					}
 				}
 			}
@@ -1841,7 +1879,7 @@ sub real_install {
 			# Finally perform the actually installation
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 			# Reinstall buildconficts after the build
-			&real_install($OP_INSTALL, 1, 1, @removals) if (scalar(@removals) > 0);
+			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {
