@@ -71,7 +71,7 @@ our %commands =
     'unuse' => [\&cmd_remove, 1, 1],
     'remove' => [\&cmd_remove, 1, 1],
     'delete' => [\&cmd_remove, 1, 1],
-    'purge' => [\&cmd_remove, 1, 1],
+    'purge' => [\&cmd_purge, 1, 1],
     'apropos' => [\&cmd_apropos, 0, 0],
     'describe' => [\&cmd_description, 1, 0],
     'description' => [\&cmd_description, 1, 0],
@@ -581,6 +581,29 @@ sub cmd_remove {
 
   Fink::PkgVersion::phase_deactivate(@packages);
   Fink::Status->invalidate();
+}
+
+sub cmd_purge {
+  my ($package, @plist, @packages, $answer);
+
+  @plist = &expand_packages(@_);     
+  if ($#plist < 0) {
+    die "no package specified for command 'purge'!\n";
+  }
+
+  foreach $package (@plist) {
+    push @packages, $package->get_name();
+  }
+  print "WARNING: this command will remove the package(s) and remove any\n";
+  print "         global configure files, even if you modified them!\n\n";
+ 
+  $answer = &prompt_boolean("Do you want to continue?", 1);     
+  if (! $answer) {
+    die "Purge not performed\n";
+  } else {
+    Fink::PkgVersion::phase_purge(@packages);
+    Fink::Status->invalidate();
+  }
 }
 
 sub cmd_validate {

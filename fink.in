@@ -80,6 +80,7 @@ Usage: fink [options] command [package...]
 Common commmands:
   install    - install/update the named packages
   remove     - remove the named packages
+  purge      - same as remove but also removes all configuration files
   update     - update the named packages
   selfupdate - upgrade fink to the lastest release
   update-all - update all installed packages

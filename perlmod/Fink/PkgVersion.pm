@@ -1721,6 +1721,21 @@ sub phase_deactivate {
   Fink::Status->invalidate();
 }
 
+### purge
+
+sub phase_purge {
+  my @packages = @_;
+
+  if (&execute("dpkg --purge @packages")) {
+    if (@packages == 1) {
+      die "can't purge package ".$packages[0]."\n";
+    } else {
+      die "can't batch-purge packages: @packages\n";
+    }
+  }
+  Fink::Status->invalidate();
+}
+
 ### set environment variables according to spec
 
 sub set_env {

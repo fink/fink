@@ -1,3 +1,7 @@
+2003-01-05  Justin F. Hallett <thesin@users.sourceforge.net>
+
+        * fink.in:  Added description for purge option in show_help
+
 2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl, postinstall.pl.in: Simplify the symlink to point

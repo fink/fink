@@ -1,6 +1,13 @@
-2003-01-02 Benjamin Reed <rangerrick@users.sourceforge.net>
+2003-01-05  Justin F. Hallett <thesin@users.sourceforge.net>
 
-	* Services.pm: One-liner fix to get rid of an undefined warning
+        * Engine.pm:  Added sub phase_purge
+
+	* PkgVersion.pm:  Added sub cmd_purge and change fink purge to
+	acctually do a dpkg purge
+
+2003-01-02  Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* Services.pm:  One-liner fix to get rid of an undefined warning
 
 2002-12-24  Dave Morrison <dmrrsn@users.sourceforge.net>
 
