@@ -1,5 +1,10 @@
 2003-11-21  Daniel Macks <dmacks@netspace.org>
 
+	* Services.pm: Improved early-escape from recursive percent
+	expansion.
+
+2003-11-21  Daniel Macks <dmacks@netspace.org>
+
 	* Services.pm: Conversion to using only print_breaking
 	(removal of print_breaking_prefix/print_breaking_twoprefix)
 	changed the meaning of $prefix1 and $prefix2 (defined
