@@ -1,3 +1,8 @@
+2005-03-25  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fix PostInst creation of /Applications/Fink
+	symlinks (patch by AIDA Shinra)
+
 2005-03-23  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: Use the gcc* FAQ for all gcc* Homepages.
