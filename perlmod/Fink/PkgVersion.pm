@@ -239,17 +239,14 @@ sub initialize {
 			$version =~ /(^[0-9]+\.[0-9]+)\.*/;
 			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
 		}
-		
 		$self->{source} = $source;
+
 		$self->expand_percent_if_available("Source");
-		$self->{_sourcecount} = 1;
-	
 		$self->expand_percent_if_available('SourceRename');
 	
-		for ($i = 2; $self->has_param('source'.$i); $i++) {
+		for ($i = 2; $i<=$self->get_source_count; $i++) {
 			$self->expand_percent_if_available('Source'.$i);
 			$self->expand_percent_if_available('Source'.$i.'Rename');
-			$self->{_sourcecount} = $i;
 		}
 
 		# handle splitoff(s)
@@ -555,9 +552,35 @@ sub get_info_filename {
 
 ### other accessors
 
-sub is_multisource {
+# Returns the number of source tarballs for the package. Actually it
+# gives the highest *consecutive* N of SourceN, or 1 if no SourceN
+# (even if no Source either). FIXME: that's pretty weird.
+#
+# Results are cached in a package global (class variable) hash using
+# the object ref as the key. NB: perl hash keys get stringified so
+# cannot use the key as a ref.
+
+sub get_source_count {
 	my $self = shift;
-	return $self->{_sourcecount} > 1;
+
+	our %source_count_cache;
+
+	if (exists $self->{_parent}) {
+		# SplitOff packages have no sources of their own
+		return 0;
+	}
+
+	if (!exists $source_count_cache{$self}) {
+		# not found is cache, so calculate it
+		my $count = 1;
+		while ($self->has_param('source'.($count+1))) {
+			$count++;
+		}
+		# cache the result
+		$source_count_cache{$self} = $count;
+	}
+
+	return $source_count_cache{$self};
 }
 
 sub get_source {
@@ -565,7 +588,7 @@ sub get_source {
 	my $index = shift || 1;
 	if ($index < 2) {
 		return $self->param("Source") unless ($self->is_type('bundle') || $self->is_type('nosource'));
-	} elsif ($index <= $self->{_sourcecount}) {
+	} elsif ($index <= $self->get_source_count) {
 		return $self->param("Source".$index);
 	}
 	return "none";
@@ -574,7 +597,7 @@ sub get_source {
 sub get_source_list {
 	my $self = shift;
 	my @list = ();
-	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
+	for (my $index = 1; $index<=$self->get_source_count; $index++) {
  	        my $source = get_source($self, $index);
 	        push(@list, $source) unless $source eq "none";
 	}
@@ -589,7 +612,7 @@ sub get_tarball {
 			return $self->param("SourceRename");
 		}
 		return &filename($self->param("Source")) unless ($self->is_type('bundle') || $self->is_type('nosource'));
-	} elsif ($index <= $self->{_sourcecount}) {
+	} elsif ($index <= $self->get_source_count) {
 		if ($self->has_param("Source".$index."Rename")) {
 			return $self->param("Source".$index."Rename");
 		}
@@ -601,7 +624,7 @@ sub get_tarball {
 sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
-	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
+	for (my $index = 1; $index<=$self->get_source_count; $index++) {
  	        my $tarball = get_tarball($self, $index);
 	        push(@list, $tarball) unless $tarball eq "none";
 	}
@@ -615,7 +638,7 @@ sub get_checksum {
 		if ($self->has_param("Source-MD5")) {
 			return $self->param("Source-MD5");
 		}
-	} elsif ($index >= 2 and $index <= $self->{_sourcecount}) {
+	} elsif ($index >= 2 and $index <= $self->get_source_count) {
 		if ($self->has_param("Source".$index."-MD5")) {
 			return $self->param("Source".$index."-MD5");
 		}
@@ -837,7 +860,7 @@ sub is_fetched {
 		return 1;
 	}
 
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+	for ($i = 1; $i <= $self->get_source_count; $i++) {
 		if (not defined $self->find_tarball($i)) {
 			return 0;
 		}
@@ -1207,7 +1230,7 @@ sub phase_fetch {
 		return;
 	}
 
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+	for ($i = 1; $i <= $self->get_source_count; $i++) {
 		if (not $conditional or not defined $self->find_tarball($i)) {
 			$self->fetch_source($i,0,0,0,$dryrun);
 		}
@@ -1354,7 +1377,7 @@ END
 	}
 
 	$tries = 0;
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+	for ($i = 1; $i <= $self->get_source_count; $i++) {
 		$archive = $self->get_tarball($i);
 
 		# search for archive, try fetching if not found

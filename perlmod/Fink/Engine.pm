@@ -824,11 +824,11 @@ sub cmd_checksums {
 		$package = Fink::Package->package_by_name($pname);
 		foreach $vo ($package->get_all_versions()) {
 			# Skip packages that do not have source files
-			next if not defined $vo->{_sourcecount};
+			next unless $vo->get_source_count;
 		
 			# For each tar ball, if a checksum was specified, locate it and
 			# verify the checksum.
-			for ($i = 1; $i <= $vo->{_sourcecount}; $i++) {
+			for ($i = 1; $i <= $vo->get_source_count; $i++) {
 				$chk = $vo->get_checksum($i);
 				if ($chk ne "-") {
 					$file = $vo->find_tarball($i);
@@ -895,8 +895,8 @@ sub cmd_cleanup {
 			$deb_list{$file} = 1;
 
 			# all source files
-			if (defined $vo->{_sourcecount}) {
-				for ($i = 1; $i <= $vo->{_sourcecount}; $i++) {
+			if ($vo->get_source_count}) {
+				for ($i = 1; $i <= $vo->get_source_count; $i++) {
 					$file = $vo->find_tarball($i);
 					$src_list{$file} = 1 if defined($file);
 				}
