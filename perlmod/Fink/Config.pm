@@ -311,13 +311,24 @@ sub write_sources_list {
 
 # We copy any existing sources.list file to sources.list.finkbak, unless
 # a fink backup already exists.  (So effectively, this is done only once.)
+
 	if ((not -f "$path.finkbak") and (-f "$path")) {
 		cp "$path", "$path.finkbak";
 	}
 
 	open(OUT,">$path.tmp") or die "can't open $path.tmp: $!";
 
-	print OUT <<EOF;
+# We separate out the top and bottom lines of the body of sources.list, to
+# allow for local modifications above and below them, respectively.
+
+	my $topline = "# Local modifications should either go above this line, or at the end.";
+	my $bottomline = "# Put local modifications to this file below this line, or at the top.";
+
+# Next, we prepare the body for writing.
+
+	my $body = "$topline\n";
+	$body .= <<EOF;
+#
 # Default APT sources configuration for Fink, written by the fink program
 
 # Local package trees - packages built from source locally
@@ -341,32 +352,32 @@ EOF
 			push @prevcomp, $2;
 		} else {
 			if ($prevdist) {
-				print OUT "deb file:$basepath/fink $prevdist @prevcomp\n";
+				$body .= "deb file:$basepath/fink $prevdist @prevcomp\n";
 			}
 			$prevdist = $1;
 			@prevcomp = ($2);
 		}
 	}
 	if ($prevdist) {
-		print OUT "deb file:$basepath/fink $prevdist @prevcomp\n";
+		$body .= "deb file:$basepath/fink $prevdist @prevcomp\n";
 	}
 
-	print OUT "\n";
+	$body .= "\n";
 
 # For transition from 10.1 installations, we include pointers to "old"
 # deb files.
 
 	if (-e "$basepath/fink/old/dists") {
-		print OUT <<"EOF";
+		$body .= <<"EOF";
 # Allow APT to find pre-10.2 deb files
 deb file:$basepath/fink/old local main
 deb file:$basepath/fink/old stable main crypto
 EOF
 
 if (-e "$basepath/fink/old/dists/unstable") {
-	print OUT "deb file:$basepath/fink/old unstable main crypto\n";
+	$body .= "deb file:$basepath/fink/old unstable main crypto\n";
 }
-		print OUT "\n";
+		$body .= "\n";
 	}
 
 # We only include the remote debs if the $basepath is set to /sw.
@@ -381,41 +392,88 @@ if (-e "$basepath/fink/old/dists/unstable") {
 
 		my $distribution = $self->param("Distribution");
 
-		print OUT <<EOF;
+		$body .= <<EOF;
 # Official binary distribution: download location for packages
 # from the latest release
 EOF
 
-	print OUT "deb $apt_mirror $distribution/release main crypto\n\n";
-		print OUT <<EOF;
+	$body .= "deb $apt_mirror $distribution/release main crypto\n\n";
+		$body .= <<EOF;
 # Official binary distribution: download location for updated
 # packages built between releases
 EOF
 
-	print OUT "deb $apt_mirror $distribution/current main crypto\n\n";
+	$body .= "deb $apt_mirror $distribution/current main crypto\n\n";
 
 	}
 
-	my $localmods = 0;
-if (-f "$path") {
-	open(IN,"$path") or die "can't open sources.list: $!";
-	while (<IN>) {
-		chomp;
-		if (not $localmods) {
-			if (/^\# Put all local modifications to this file below this line\./) {
-				$localmods = 1;
-				print OUT "$_\n";
+	$body .= "$bottomline\n";
+
+# Now we analyze the existing file, to see which parts we will need to copy.
+
+	my $bodywritten = 0;
+
+# If there is an existing source.list file, we copy the top lines to the
+# new file, until we hit the expected demarcation line. 
+
+	my $topmodification = 1;
+	my $bottommodification = 0;
+
+
+	if (-f "$path") {
+		open(IN,"$path") or die "can't open sources.list: $!";
+		while (<IN>) {
+			chomp;
+			if ($topmodification) {
+				if ($_ eq $topline) {
+					$topmodification = 0;
+
+# We need to watch for the closing demarcation line: if we hit that before the
+# opening demarcation line, then we shouldn't have copied the lines to the
+# output file.  To fix this, we close the output file, discard it, and reopen 
+# the file.
+
+				} elsif ($_ eq $bottomline) {
+					$topmodification = 0;
+					$bottommodification = 1;
+					close(OUT);
+					unlink "path.tmp";
+					open(OUT,">$path.tmp") or die "can't write temporary file: $!";
+				} else {
+					print OUT "$_\n";
+				}
+			} else {
+				if (not $bodywritten) {
+					print OUT $body;
+					$bodywritten = 1;
+				}
+				if ($bottommodification) {
+					print OUT "$_\n";
+				} elsif ($_ eq $bottomline) {
+					$bottommodification =1;
+				}
 			}
-		} else {
-			print OUT "$_\n";
 		}
+	
+		close(IN);
 	}
-	close(IN);
-}
 
-    if (not $localmods) {
-		print OUT "# Put all local modifications to this file below this line.\n\n";
+# If we never saw $topline, we should discard the output file and reopen it.
+
+	if ($topmodification) {
+		close(OUT);
+		unlink "path.tmp";
+		open(OUT,">$path.tmp") or die "can't write temporary file: $!";
 	}
+
+
+# If we have failed to write the body (because sources.list didn't exist, or
+# didn't contain the expected lines), write it now.
+
+	if (not $bodywritten) {
+		print OUT $body;
+	}
+
 	close(OUT);
 
 
