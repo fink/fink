@@ -1,3 +1,8 @@
+2003-11-02  Daniel Macks  <dmacks@users.sourceforge.net>
+
+	* Validation.pm: Add polite feedback if a .deb is okay in analogy
+	to behavior for .info (cf. exiting silently). (Patch #822456)
+
 2003-10-29  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: check for threaded X, and check for the file
