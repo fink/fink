@@ -184,7 +184,7 @@ sub fetch_url_to_file {
 	if(defined $mirror_list[0]) {
 	  $url = $mirror_list[0]->get_site();
 	}
-    	
+
 	### if the file already exists, ask user what to do
 	if (-f $file && !$cont && !$dryrun) {
 		$result = &prompt_selection_new("The file \"$file\" already exists, how do you want to proceed?",
@@ -216,8 +216,8 @@ sub fetch_url_to_file {
 			$url .= $masterpath . $file;    # SourceRenamed tarball name
 		} else {
 			$url .= $path . $basename;
-    }
-    	
+		}
+
 		### fetch $url to $file
 
 		if (!$dryrun && -f $file) {

@@ -14,7 +14,7 @@
 	
 2003-12-28  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVersion.pm: Type:splitoff is redundant: switch to checkiing
+	* PkgVersion.pm: Type:splitoff is redundant: switch to checking
 	for presence of parent link. Now okay to use Type in splitoffs
 	(else inherits from parent). Added Type:none to clear.
 	* Validation.pm: Allow Type:none. Allow Type and UpdatePOD in
@@ -36,9 +36,9 @@
 
 2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-        * Services.pm: export "read_properties_lines"
-        * Mirror.pm: set a default value for Master mirror, if config file 
-        not present
+	* Services.pm: export "read_properties_lines"
+	* Mirror.pm: set a default value for Master mirror, if config file 
+	not present
 
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
@@ -61,19 +61,19 @@
 
 2003-12-23  Daniel Macks <dmacks@netspace.org>
 
-        * PkgVersion.pm: Support %lV and %lv as raw and punctionation-free
+	* PkgVersion.pm: Support %lV and %lv as raw and punctionation-free
 	values of Type version string (if provided).
 	* Package.pm: Support %lv in Package.
 	* Validation.pm: Allow %lv in Package (for info filename check).
 	
 2003-12-23  Daniel Macks <dmacks@netspace.org>
 
-        * Validation.pm: Added support for Type java (version mandatory).
+	* Validation.pm: Added support for Type java (version mandatory).
 
 2003-12-22  Daniel Macks <dmacks@netspace.org>
 
-        * Validation.pm: Added support for Type python, guile, ruby
-        (version optional, except mandatory for python).
+	* Validation.pm: Added support for Type python, guile, ruby
+	(version optional, except mandatory for python).
 
 2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
@@ -335,9 +335,9 @@
 	vs. logically true). Changed it back.
 
 2003-11-20  Michael G Schwern <schwern@pobox.com>
-		
+
 	* FinkVersion.pm.in: Removing hard coded @BASEPATH@.  Using Fink::Config
-		instead.
+	instead.
 
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 
@@ -1733,7 +1733,7 @@
 	
 	* PkgVersion.pm (add_splitoff): Removed annoying debug output ("Found a
 	splitoff")
-		
+
 	* Services.pm (read_properties_lines): Handle nested heredocs
 	correctly, and if errors are encountered, once more output the
 	affected filename.

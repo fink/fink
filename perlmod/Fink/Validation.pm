@@ -132,7 +132,7 @@ our %valid_fields = map {$_, 1}
 #  dependencies:
 		 'depends',
 		 'builddepends',
-          #  need documentation for buildconflicts
+		  #  need documentation for buildconflicts
 		 'buildconflicts',
 		 'provides',
 		 'conflicts',
@@ -146,16 +146,16 @@ our %valid_fields = map {$_, 1}
 #  unpack phase:
 		 'custommirror',
 		 'source',
-                 #sourceN
+		 #sourceN
 		 'sourcedirectory',
 		 'nosourcedirectory',
-                 #sourceNextractdir
+		 #sourceNextractdir
 		 'sourcerename',
-                 #sourceNRename
+		 #sourceNRename
 		 'source-md5',
-                 #sourceN-md5
+		 #sourceN-md5
 		 'tarfilesrename',
-                 #tarNfilesrename
+		 #tarNfilesrename
 #  patch phase:
 		 'updateconfigguess',
 		 'updateconfigguessindirs',
@@ -181,8 +181,8 @@ our %valid_fields = map {$_, 1}
 		 'shlibs',
 		 'runtimevars',
 		 'splitoff',
-                 #splitoffN
-                 #files
+		 #splitoffN
+		 #files
 #  build phase:
 		 'preinstscript',
 		 'postinstscript',
@@ -207,7 +207,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		(
 #  initial data:
 		 'package',
-            #documentation is ambiguous about license
+		 #documentation is ambiguous about license
 		 'type',
 		 'license',
 #  dependencies:
@@ -221,11 +221,11 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'suggests',
 		 'enhances',
 		 'pre-depends',
-               #documentation seems incorrect about essential
+		 #documentation seems incorrect about essential
 		 'essential',
 		 'builddependsonly',
 #  install phase:
-                 'updatepod',
+		 'updatepod',
 		 'installscript',
 		 'jarfiles',
 		 'docfiles',

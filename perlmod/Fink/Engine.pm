@@ -1179,18 +1179,18 @@ sub real_install {
 					foreach $dname (@candidates) {
 						if ( $dname =~ $matchstr ) {
 							push(@matched, $dname);
-  					        } else {
-						        push(@notmatched, $dname);
+						} else {
+							push(@notmatched, $dname);
 						}
 					}
 					if (1 == @matched ) {
-					        # we have exactly one match, use it
+						# we have exactly one match, use it
 						$dname = pop(@matched);
 						$found = 1;
 					} elsif (@matched > 1) {
-					        # we have multiple matches
-					        # reorder list so that matched ones are at the top
-					        @candidates = (@matched, @notmatched);
+						# we have multiple matches
+						# reorder list so that matched ones are at the top
+						@candidates = (@matched, @notmatched);
 					}
 				}
 			}

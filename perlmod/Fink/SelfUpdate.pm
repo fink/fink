@@ -72,7 +72,7 @@ sub check {
 			$answer = "rsync";
 		}
 		else {
-		    $answer = "point";
+			$answer = "point";
 		}
 		&print_breaking("fink is setting your default update method to $answer \n");
 		$config->set_param("SelfUpdateMethod", $answer);
@@ -90,7 +90,7 @@ sub check {
 						  "Stick to point releases" => "point" ) );
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();	
-	    }
+	}
 
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
@@ -122,13 +122,13 @@ sub check {
 				"to rsync?",1);
 		if (! $answer) {
 			return;
-		    }
+		}
 		$config->set_param("SelfUpdateMethod", "rsync");
 		$config->save();	
 		&do_direct_rsync();
 		&do_finish();
 		return;		
-	    }
+	}
 	if (($selfupdatemethod ne "cvs") and $useopt == 1) {
 		$answer =
 			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 

@@ -222,7 +222,7 @@ sub initialize {
 			$self->{'maintainer'} = $parent->{'maintainer'};
 		}
 		if ($parent->has_param('essential')) {
-		    $self->{'_parentessential'} = $parent->{'essential'};
+			$self->{'_parentessential'} = $parent->{'essential'};
 		}
 
 		# handle inherited fields
@@ -759,21 +759,21 @@ sub resolve_depends {
 			@altspec = split(/\s*\|\s*/, $altspecs);
 			$loopcount = 0;
 			$found = 0;
-		    BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
+			BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
 			$loopcount++;
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-			    $depname = $1;
-			    $versionspec = $2;
+				$depname = $1;
+				$versionspec = $2;
 			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-			    $depname = $1;
-			    $versionspec = "";
+				$depname = $1;
+				$versionspec = "";
 			} else {
-			    die "Illegal spec format: $depspec\n";
+				die "Illegal spec format: $depspec\n";
 			}
 			$package = Fink::Package->package_by_name($depname);
 			$found = 1 if defined $package;
 			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-			    print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 			}
 			if (not defined $package) {
 				next BUILDDEPENDSLOOP;
@@ -782,16 +782,16 @@ sub resolve_depends {
 			$currentpackage = $self->get_name();
 			@dependslist = $package->get_all_providers();
 			foreach $dependent (@dependslist) {
-			    $dependentname = $dependent->get_name();
-			    if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
-				if ($dependentname eq $depname) {
-				    print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
-				} else {
-				    print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+				$dependentname = $dependent->get_name();
+				if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
+					if ($dependentname eq $depname) {
+						print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
+					} else {
+						print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+					}
 				}
-			    }
 			}
-		    }
+			}
 		}
 	}
 # now we continue to assemble the larger @speclist
@@ -806,8 +806,8 @@ sub resolve_depends {
 		$split_idx = @speclist;
 		unless (lc($field) eq "conflicts") {
 			foreach	 $splitoff (@{$self->{_splitoffs}}) {
-			    push @speclist,
-			    split(/\s*\,\s*/, $splitoff->param_default($field, ""));
+				push @speclist,
+				split(/\s*\,\s*/, $splitoff->param_default($field, ""));
 			}
 		}
 	}
@@ -1241,7 +1241,7 @@ END
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive .";
 		if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-		    $unpack_cmd = "$gzip -dc $found_archive | $tarcommand $renamelist";
+			$unpack_cmd = "$gzip -dc $found_archive | $tarcommand $renamelist";
 		} elsif ($archive =~ /[\.\-]tar\.bz2$/) {
 			$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand $renamelist";
 		} elsif ($archive =~ /[\.\-]tar$/) {
@@ -1249,7 +1249,7 @@ END
 		} elsif ($archive =~ /\.zip$/) {
 			$unpack_cmd = "$unzip -o $found_archive";
 		}
-
+	
 		# calculate destination directory
 		$destdir = "$buildpath/$bdir";
 		if ($i > 1) {
@@ -1405,7 +1405,7 @@ sub phase_compile {
 		$compile_script = $self->param("CompileScript");
 	} else {
 		if ($self->param("_type") eq "perl") {
-		    my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$compile_script =
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
@@ -1692,16 +1692,16 @@ EOF
 	my ($dummy, $darwin_version, $darwin_major_version);
 	($dummy,$dummy,$darwin_version) = uname();
 	if ($darwin_version =~ /(\d+)/) {
-	    $darwin_major_version = $1;
+		$darwin_major_version = $1;
 	} else {
-	    die "No major version number for darwin!";
+		die "No major version number for darwin!";
 	}
 
 	if (not $depline =~ /\bdarwin\b/) {
-	    if (not $depline eq '') {
-		$depline = $depline . ", ";
-	    }
-	    $depline = $depline . "darwin (>= $darwin_major_version-1)";
+		if (not $depline eq '') {
+			$depline = $depline . ", ";
+		}
+		$depline = $depline . "darwin (>= $darwin_major_version-1)";
 	}
 
 	# FIXME: make sure there are no linebreaks in the following fields
@@ -2220,7 +2220,7 @@ sub get_perl_dir_arch {
 	if ($self->has_param("_typeversion_raw")) {
 		$perlversion = $self->param("_typeversion_raw");
 		$perldirectory = "/" . $perlversion;
-	    }
+	}
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
 	my $perlcmd = get_path('perl'.$perlversion);
@@ -2254,7 +2254,7 @@ sub get_splitoffs {
 		$package = $package->{parent};
 	}
 
-        if ($include_parent) {
+	if ($include_parent) {
 		$pkg = $package->param('package');
 		unless ($name eq $pkg && not $include_self) {
 			push(@splits, $pkg);
@@ -2266,9 +2266,9 @@ sub get_splitoffs {
 		unless ($name eq $pkg && not $include_self) {
 			push(@splits, $pkg);
 		}
-        }
+	}
 
-        return @splits;
+	return @splits;
 }
 
 ### EOF

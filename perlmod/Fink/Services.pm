@@ -353,7 +353,7 @@ sub read_properties_multival_lines {
 	$lastindex = 0;
 
 	foreach (@lines) {
-	    chomp;
+		chomp;
 		next if /^\s*\#/;		# skip comments
 		if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 			$lastkey = $notLC ? $1 : lc $1;
@@ -370,7 +370,7 @@ sub read_properties_multival_lines {
 	}
 
 	return $hash;
-    }
+}
 
 =item execute
 

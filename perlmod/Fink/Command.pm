@@ -216,7 +216,7 @@ sub rm_f {
 	
 	return !$nok;
 }
-    
+
 
 =item touch
 
