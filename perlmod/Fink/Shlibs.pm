@@ -410,7 +410,7 @@ sub get_shlib {
 				$pkgnum = "package".$count;
 				$vernum = "version".$count;
 				$dep .= $shlibs->{$shlib}->{$compat}->{$pkgnum}." (".$shlibs->{$shlib}->{$compat}->{$vernum}.")";
-				if ($count >= $total) {
+				if ($count < $total) {
 					$dep .= " | ";
  				}
 			}
