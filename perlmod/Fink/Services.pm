@@ -560,6 +560,9 @@ sub get_term_width {
   else {
     $width = 0;
   }
+  if ($width !~ /^[0-9]+$/) {
+    $width = 80;
+  }
   return $width;
 }
 
