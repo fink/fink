@@ -1,3 +1,8 @@
+2004-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: make sure a minimum of java versions are filled
+	in so we don't get warnings.
+
 2004-07-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm, Services.pm, Status.pm, VirtPackage.pm: import

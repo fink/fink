@@ -154,35 +154,36 @@ END
 	$self->{$hash->{package}} = $hash;
 
 	# create dummy object for java
-	print STDERR "- checking Java directories:\n" if ($options{debug});
+	print STDERR "- checking Java versions:\n" if ($options{debug});
 	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
 	my $latest_java;
 	if (opendir(DIR, $javadir)) {
-		for my $dir ( sort readdir(DIR)) {
-			chomp($dir);
-			next if ($dir =~ /^\.\.?$/);
+		chomp(my @dirs = readdir(DIR));
+		for my $dir (@dirs, '1.3', '1.4', '1.5') {
+			my $ver = $dir;
+			$ver =~ s/[^\d]+//g;
+			$ver =~ s/^(..).*$/$1/;
+			next if ($dir =~ /^\.\.?$/ or $ver eq "");
 			print STDERR "  - $dir... " if ($options{debug});
-			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
-				print STDERR "$dir/Commands " if ($options{debug});
-				# chop the version down to major/minor without dots
-				my $ver = $dir;
-				$ver =~ s/[^\d]+//g;
-				$ver =~ s/^(..).*$/$1/;
-				$hash = {};
-				$hash->{package}     = "system-java${ver}";
-				$hash->{status}      = STATUS_PRESENT;
-				$hash->{version}     = $dir . "-1";
-				$hash->{description} = "[virtual package representing Java $dir]";
-				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
-				$hash->{provides}    = 'system-java';
-				if ($ver >= 14) {
-					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
-				}
-				$hash->{descdetail}  = <<END;
+
+			$hash = {};
+			$hash->{package}     = "system-java${ver}";
+			$hash->{version}     = $dir . "-1";
+			$hash->{description} = "[virtual package representing Java $dir]";
+			$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java';
+			if ($ver >= 14) {
+				$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
+			}
+			$hash->{descdetail}  = <<END;
 This package represents the currently installed version
 of Java $dir.
 END
-				$self->{$hash->{package}} = $hash;
+
+			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
+				print STDERR "$dir/Commands " if ($options{debug});
+				# chop the version down to major/minor without dots
+				$hash->{status}      = STATUS_PRESENT;
 				$latest_java = $dir;
 
 				$hash = {};
@@ -211,6 +212,7 @@ END
 			} else {
 				print STDERR "nothing\n" if ($options{debug});
 			}
+			$self->{$hash->{package}} = $hash;
 		}
 		closedir(DIR);
 	}
