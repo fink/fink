@@ -517,11 +517,12 @@ sub validate_info_file {
 					next;
 				}
 			}
-			# warn for non-plain-text chars
-			if ($value =~ /[^[:ascii:]]/) {
-				print "Warning: \"$field\" contains non-standard characters. ($filename)\n";
-				$looks_good = 0;
-			}
+		}
+
+		# warn for non-plain-text chars
+		if ($value =~ /[^[:ascii:]]/) {
+			print "Warning: \"$field\" contains non-standard characters. ($filename)\n";
+			$looks_good = 0;
 		}
 
 		# Check for any source-related field without associated Source(N) field
