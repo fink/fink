@@ -692,7 +692,7 @@ sub resolve_depends {
 	### FIXME
 	### Underconstruction
 	if ($self->find_debfile()) {
-		print "Reading dependencies from deb file...\n";
+		print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
 		@speclist = split(/\s*\,\s*/, $self->get_debdeps());
 	} else {
 		@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
@@ -708,7 +708,7 @@ sub resolve_depends {
 		$split_idx = @speclist;
 		foreach	 $splitoff (@{$self->{_splitoffs}}) {
 			if ($splitoff->find_debfile()) {
-				print "Reading dependencies from deb file...\n";
+				print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
 				push @speclist,
 					split(/\s*\,\s*/, $splitoff->get_debdeps());
 			} else {
