@@ -61,6 +61,7 @@ sub bootstrap {
 		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
 	} elsif ("$]" == "5.008") {
 	} elsif ("$]" == "5.008001") {
+	} elsif ("$]" == "5.008002") {
 	} elsif ("$]" == "5.008004") {
 	} else {
 		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
