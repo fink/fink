@@ -1,3 +1,15 @@
+2005-02-08  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: don't export obsoleted prompt_selection_new
+	* PkgVersion.pm: fixed a prompt*() API-change straggler.
+
+2005-02-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Rename prompt_selction_new prompt_selection. Switch
+	prompt, prompt_boolean, and prompt_selection to use named
+	parameters.
+	* *.pm: Adjust prompt*() calls for new API.
+
 2005-02-06  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Fix .deb-creation error checking.

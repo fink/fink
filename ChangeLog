@@ -1,3 +1,8 @@
+2005-02-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* bootstrap.pl, postinstall.pl.in: Adjust prompt*() calls for new
+	named-parameters API.
+
 2005-02-05  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: ...which it now does, so reviving it

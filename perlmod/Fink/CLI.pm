@@ -39,7 +39,7 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
-					  &prompt &prompt_boolean &prompt_selection_new &prompt_selection
+					  &prompt &prompt_boolean &prompt_selection &prompt_selection
 					  &print_optionlist
 			      &get_term_width);
 }

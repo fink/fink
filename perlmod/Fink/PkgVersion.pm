@@ -30,7 +30,7 @@ use Fink::Services qw(&filename &execute
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors binary_requested);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -1765,12 +1765,14 @@ Fink::Services::enforce_gcc("This package must be compiled with GCC EXPECTED_GCC
 								"Expected: $checksum \nActual: $found_archive_sum \n".
 								"It is recommended that you download it ".
 								"again. How do you want to proceed?");
-				$answer = &prompt_selection_new("Make your choice: ",
-								[ value => ($tries >= 3) ? "error" : "redownload" ],
-								( "Give up" => "error",
+				$answer = &prompt_selection("Make your choice: ",
+								default => [ value => ($tries >= 3) ? "error" : "redownload" ],
+								choices => [
+								  "Give up" => "error",
 								  "Delete it and download again" => "redownload",
 								  "Assume it is a partial download and try to continue" => "continuedownload",
-								  "Don't download, use existing file" => "continue" ) );
+								  "Don't download, use existing file" => "continue"
+								] );
 				if ($answer eq "redownload") {
 					rm_f $found_archive;
 					# Axel leaves .st files around for partial files, need to remove
