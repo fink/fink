@@ -1,3 +1,7 @@
+2005-03-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add a check for cups
+
 2005-03-08  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Build all dpkg scripts concurrently in memeory
