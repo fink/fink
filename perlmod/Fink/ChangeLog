@@ -1,3 +1,8 @@
+2003-11-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: Warn when Files: entries have / at the end (messes
+	  up panther mv sometimes)
+
 2003-11-09  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Minimal validation of splitoffs. This definitely should be

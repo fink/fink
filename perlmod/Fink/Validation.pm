@@ -363,6 +363,11 @@ sub validate_info_file {
 			$looks_good = 0;
 		}
 
+		if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {
+			print "Warning: Field \"$field\" contains entries that end in \"/\" ($filename)\n";
+			$looks_good = 0;
+		}
+
 		# Check for hardcoded /sw.
 		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
 			print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
@@ -387,6 +392,11 @@ sub validate_info_file {
 		
 			foreach $field (keys %$splitoff_properties) {
 				$value = $splitoff_properties->{$field};
+
+				if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {
+					print "Warning: Field \"$field\" contains entries that end in \"/\" ($filename)\n";
+					$looks_good = 0;
+				}
 
 				# Check for hardcoded /sw.
 				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
