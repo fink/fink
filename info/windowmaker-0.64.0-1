@@ -2,7 +2,7 @@ Package: windowmaker
 Version: 0.64.0
 Revision: 1
 Source: http://www.windowmaker.org/pub/beta/srcs/WindowMaker-%v.tar.gz
-Depends: dlcompat, libproplist, giflib, libpng, libjpeg, libtiff, gettext
+Depends: dlcompat, libproplist, giflib, libpng, libjpeg, libtiff, gettext, autoconf, automake, libtool
 UpdateLibtool: true
 Patch: %f.patch
 PatchScript: autoconf
