@@ -316,25 +316,25 @@ sub scan_all {
   if (-e "$basepath/var/db/fink.db") {
     eval {
       require Storable; 
-       
-	  # We assume the DB is up-to-date unless proven otherwise
-	  $db_outdated = 0;
-
-	  # Unless the NoAutoIndex option is set, check whether we should regenerate
-	  # the index based on its modification date and that of the package descs.
-	  if (not $config->param_boolean("NoAutoIndex")) {
-		$db_mtime = (stat("$basepath/var/db/fink.db"))[9];       
-		find (\&process_find, "$basepath/fink/dists");
-	  }
-	  
-	  # If the index is not outdated, we can use it, and thus safe a lot of time
-	  if (not $db_outdated) {
-		%package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
-		my ($pkgtmp);
-		foreach $pkgtmp (keys %package_hash) {
-		  push @package_list, $package_hash{$pkgtmp};
-		}
-	  }
+      
+      # We assume the DB is up-to-date unless proven otherwise
+      $db_outdated = 0;
+    
+      # Unless the NoAutoIndex option is set, check whether we should regenerate
+      # the index based on its modification date and that of the package descs.
+      if (not $config->param_boolean("NoAutoIndex")) {
+	$db_mtime = (stat("$basepath/var/db/fink.db"))[9];       
+	find (\&process_find, "$basepath/fink/dists");
+      }
+      
+      # If the index is not outdated, we can use it, and thus safe a lot of time
+      if (not $db_outdated) {
+	%package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
+	my ($pkgtmp);
+	foreach $pkgtmp (keys %package_hash) {
+	  push @package_list, $package_hash{$pkgtmp};
+	}
+      }
     }
   }
   
@@ -398,16 +398,16 @@ sub update_db {
     require Storable; 
     if ($> == 0) {
       print "Updating package index... ";
-	  unless (-d "$basepath/var/db") {
+      unless (-d "$basepath/var/db") {
         mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
-	  }
+      }
       Storable::store (\%package_hash, "$basepath/var/db/fink.db");
       print "done.\n";
     } else {
       &print_breaking( "\nFink has detected that your package cache is out of date and needs" .
         " an update, but does not have privileges to modify it. Please re-run fink as root," .
         " for example with a \"fink index\" command.\n" );
-	}
+    }
   };
   $db_outdated = 0;
 }
@@ -415,10 +415,10 @@ sub update_db {
 ### force the database to be rebuilt, if possible
 
 sub force_update_db {
-	shift;  # class method - ignore first parameter
-	
-	$db_outdated = 1;
-	Fink::Package->update_db();
+  shift;  # class method - ignore first parameter
+  
+  $db_outdated = 1;
+  Fink::Package->update_db();
 }
 
 ### scan one tree for package desccriptions
