@@ -426,7 +426,7 @@ sub get_all_shlibs {
 
 	$have_shlibs = 1;
 
-	printf "Information about %d shlibs read in %d seconds.\n",
+	printf "Information about %d shared libraries read in %d seconds.\n",
 		scalar(values %$shlibs), (time - $time);
 }
 

@@ -696,6 +696,7 @@ sub resolve_depends {
 	my $include_build = shift || 0;
 	my $op = shift;
 	my $field = shift;
+	my $forceoff = shift;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
@@ -751,7 +752,7 @@ sub resolve_depends {
 			    die "Illegal spec format: $depspec\n";
 			}
 			$package = Fink::Package->package_by_name($depname);
-			if (not defined $package) {
+			if (not defined $package || $forceoff) {
 			    print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 			    next; # BUILDDEPENDSLOOP
 			}
@@ -831,7 +832,7 @@ sub resolve_depends {
 
 			$package = Fink::Package->package_by_name($depname);
 
-			if (not defined $package) {
+			if (not defined $package || $forceoff) {
 				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 				next;
 			}
