@@ -632,6 +632,24 @@ sub print_breaking {
 	print "\n" if $linebreak;
 }
 
+=item stdin_timeout
+    my $answer = stdin_timeout $timeout;
+
+This function is not exported.
+
+Prompt the user for input, but timeout after $timeout seconds.
+
+=cut
+
+sub stdin_timeout {
+    local $SIG{ALRM} = sub {print "\n\nTIMEOUT: using default answer.\n"; return };
+    my $timeout = shift;
+    alarm $timeout;
+    my $answer = <STDIN>;
+    alarm(0);
+    return $answer;
+}
+
 =item prompt
     my $answer = prompt $prompt;
     my $answer = prompt $prompt, $default;
@@ -669,6 +687,7 @@ sub prompt {
 =item prompt_boolean
     my $answer = prompt_boolean $prompt;
     my $answer = prompt_boolean $prompt, $default_true;
+    my $answer = prompt_boolean $prompt, $default_true, $timeout;
 
 Ask the user a yes/no question and return the logical value of the
 answer. The user is prompted via STDOUT/STDIN using $prompt (which is
@@ -676,7 +695,9 @@ word-wrapped). If $default_true is true or undef, the default answer
 is true, otherwise it is false. If the user returns a null string or
 Fink is configured to automatically accept defaults (i.e., bin/fink
 was invoked with the -y or --yes option), the default answer is
-returned.
+returned.  The optional $timeout argument establishes a wait period
+(in seconds) for the prompt, after which the default answer will be
+used.
 
 =cut
 
@@ -684,6 +705,7 @@ sub prompt_boolean {
 	my $prompt = shift;
 	my $default_value = shift;
 	$default_value = 1 unless defined $default_value;
+	my $timeout = shift;
 	my ($answer, $meaning);
 
 	require Fink::Config;
@@ -696,7 +718,11 @@ sub prompt_boolean {
 			$meaning = $default_value;
 			last;
 		}
-		$answer = <STDIN> || "";
+		if (defined $timeout) {
+		    $answer = &stdin_timeout($timeout) || "";
+		} else {
+		    $answer = <STDIN> || "";
+		}
 		chomp($answer);
 		if ($answer eq "") {
 			$meaning = $default_value;

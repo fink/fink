@@ -177,7 +177,7 @@ sub choose_mirrors {
 		if ($mirrors_postinstall) {
 			print "\n";
 			$answer = &prompt_boolean("The list of possible mirrors in fink has" .
-				" been updated.  Do you want to review and change your choices?", 0);
+				" been updated.  Do you want to review and change your choices?", 0, 60);
 	} else {
 		$answer =
 			&prompt_boolean("All mirrors are set. Do you want to change them?", 0);

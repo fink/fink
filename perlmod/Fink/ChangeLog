@@ -1,3 +1,13 @@
+2004-01-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm: Add a (non-exported) function stdin_timeout to
+	prompt for input but timeout if no answer.  Use this to construct
+	a (new) optional third argument to prompt_boolean which specifies
+	a timeout interval.
+
+	* Configure.pm: Use a 60 sec. timeout in the question being asked in
+	choose_mirrors, when called from the fink-mirrors postinstall script.
+
 2004-01-02  Remi Mommsen  <remigius.mommsen@cern.ch>
 
 	* PkgVersion.pm: Modified method get_splitoffs to return list of
