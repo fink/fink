@@ -125,7 +125,7 @@ This package represents the kernel (XNU (Darwin) on Mac OS X),
 which is a core part of the operating system.
 END
 	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 	$self->{$hash->{package}} = $hash;
 	
 =item macosx
@@ -156,7 +156,7 @@ installations (but not pure Darwin systems).
 This package represents the Mac OS X software release.
 It will not show as installed on pure Darwin systems.
 END
-	$hash->{compilescript} = gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 	$self->{$hash->{package}} = $hash;
 
 =item system-perl
@@ -179,7 +179,7 @@ version.
 This package represents the version of perl installed on the
 system in /usr/bin/perl.
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 
 	if (defined Fink::Services::get_system_perl_version()) {
 		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
@@ -236,7 +236,7 @@ directory exists.
 This package represents the currently installed version
 of Java $dir.
 END
-			$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+			$hash->{compilescript} = &gen_compile_script($hash);
 
 			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
 				print STDERR "$dir/Commands " if ($options{debug});
@@ -268,7 +268,7 @@ you must download the Java SDK from Apple at:
 
 (free registration required)
 END
-				$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+				$hash->{compilescript} = &gen_compile_script($hash);
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
 					print STDERR "$dir/Headers " if ($options{debug});
@@ -342,7 +342,7 @@ as installed, you can download it from Apple at:
 
 (free registration required)
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 
 	print STDERR "- searching for java3d... " if ($options{debug});
 	if (-f '/System/Library/Java/Extensions/j3dcore.jar') {
@@ -384,7 +384,7 @@ does not show as installed, you can download it from Apple at:
 
 (free registration required)
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 
 	print STDERR "- searching for javaai... " if ($options{debug});
 	if (-f '/System/Library/Java/Extensions/jai_core.jar') {
@@ -443,7 +443,7 @@ you can download it from Apple at:
 
 (free registration required)
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 
 	if (defined ($cctools_version)) {
 		$hash->{version} = $cctools_version."-1";
@@ -498,7 +498,7 @@ above) from Apple at:
 
 (free registration required)
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 
 	if ($cctools_single_module) {
 		$hash->{status} = STATUS_PRESENT;
@@ -592,7 +592,7 @@ tools at:
 
 (free registration required)
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 	
 	{
 		my $cc1plus = '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus';
@@ -641,7 +641,7 @@ comes with Mac OS X 10.3 and above.  If it shows as not
 installed, you must install the GimpPrintPrinterDrivers
 package that came with your Mac OS X CDs.
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 
 	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
 		print STDERR "- found gimp-print-shlibs 4.2.5-1\n" if ($options{debug});
@@ -685,7 +685,6 @@ installation at:
   http://fink.sourceforge.net/faq/usage-packages.php#apple-x11-wants-xfree86
 
 END
-			my $compile_script = &gen_compile_script($descdetail);
 
 			$hash = {};
 			$hash->{package} = "system-xfree86-shlibs";
@@ -693,8 +692,8 @@ END
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "[virtual package representing Apple's install of X11]";
 			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
-			$hash->{compilescript} = $compile_script;
 			$hash->{descdetail} = $descdetail;
+			$hash->{compilescript} =  &gen_compile_script($hash);
 			$hash->{provides} = 'x11-shlibs, libgl-shlibs, xft1-shlibs, xft2-shlibs, fontconfig1-shlibs, xfree86-base-threaded-shlibs';
 			$self->{$hash->{package}} = $hash;
 
@@ -704,8 +703,8 @@ END
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "[virtual package representing Apple's install of X11]";
 			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
-			$hash->{compilescript} = $compile_script;
 			$hash->{descdetail} = $descdetail;
+			$hash->{compilescript} =  &gen_compile_script($hash);
 			$hash->{provides} = 'x11, xserver, libgl, xft1, xft2, fontconfig1, xfree86-base-threaded';
 			$self->{$hash->{package}} = $hash;
 
@@ -715,8 +714,8 @@ END
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "[virtual package representing Apple's install of X11]";
 			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
-			$hash->{compilescript} = $compile_script;
 			$hash->{descdetail} = $descdetail;
+			$hash->{compilescript} =  &gen_compile_script($hash);
 			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, xft2-dev, fontconfig1-dev, xfree86-base-threaded-dev';
 			$self->{$hash->{package}} = $hash;
 
@@ -744,7 +743,7 @@ installation at:
   http://fink.sourceforge.net/faq/usage-packages.php#apple-x11-wants-xfree86
 
 END
-			$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+			$hash->{compilescript} = &gen_compile_script($hash);
 
 			$hash->{provides} = join ',', map $self->{$_}->{provides}, qw/ system-xfree86 system-xfree86-shlibs system-xfree86-dev /;
 			$self->{$hash->{package}} = $hash;
@@ -966,7 +965,7 @@ in the library.
 							'homepage'    => "http://fink.sourceforge.net/faq/usage-general.php#virtpackage",
 							'provides'    => join(', ', @{$provides->{$pkg}}),
 						};
-						$self->{$pkg}->{compilescript} = &gen_compile_script($self->{$pkg}->{descdetail});
+						$self->{$pkg}->{compilescript} = &gen_compile_script($self->{$pkg});
 						if ($pkg eq "system-xfree86-shlibs") {
 							$self->{$pkg}->{'description'} = "[placeholder for user installed x11 shared libraries]";
 						} elsif ($pkg eq "system-xfree86-dev") {
@@ -1021,7 +1020,7 @@ currently works with a growing number of applications.
 
   http://growl.info/
 END
-	$hash->{compilescript} = &gen_compile_script($hash->{descdetail});
+	$hash->{compilescript} = &gen_compile_script($hash);
 
 	if (defined ($growl_version)) {
 		$hash->{version} = $growl_version."-1";
@@ -1283,20 +1282,24 @@ END
 		status           => $status
 	};
 
-	$return->{compilescript} = &gen_compile_script($return->{descdetail});
+	$return->{compilescript} = &gen_compile_script($return);
 	return $return;
 }
 
 
-=item &gen_compile_script(I<$descdetail>)
+=item &gen_compile_script(I<\%pkg_hash>)
 
-Return the text to put in compilescript for a package, given the
-descdetail of the package.
+Return the text to put in compilescript for a package, given a ref to
+a hash containing other parts (descdetail and homepage) and of the
+package description.
 
 =cut
 
 sub gen_compile_script {
-	my $descdetail = shift;
+	my $pkg_hash = shift;
+
+	my $descdetail = $pkg_hash->{descdetail};
+	my $homepage = $pkg_hash->{homepage};
 
 	my $return = <<END;
 #!/bin/sh -e
@@ -1309,12 +1312,16 @@ cat <<EOMSG
 | Package %n is an autogenerated virtual package.
 | 
 | You cannot manipulate this type of package using the usual Fink tools.
-| A detailed description of this package follows:
+| A detailed description of this package follows...
 | 
 END
 
 	for my $line (split(/\n/, $descdetail)) {
 		$return .= "| " . $line . "\n";
+	}
+
+	if (defined $homepage and length $homepage) {
+		$return .= "| \n| Web site: $homepage\n";
 	}
 
 	$return .= <<END;

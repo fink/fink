@@ -1,3 +1,8 @@
+2005-02-27  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: add Homepage to the install script failure for
+	virtual packages.
+
 2005-02-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Validation.pm: check RuntimeVars for DYLD_LIBRARY_PATH: %p/lib
