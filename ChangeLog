@@ -1,3 +1,8 @@
+2001-07-08  Christoph Pfisterer  <cp@chrisp.de>
+
+	* USAGE: Updated from the XML document system. A description for
+	the new 'list' command was addded.
+
 2001-07-06  Christoph Pfisterer  <cp@chrisp.de>
 
 	* README: Updated for the upcoming 0.2.3 release.
