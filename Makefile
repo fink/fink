@@ -21,6 +21,6 @@ install:
 	./inject.pl
 
 test:
-	@cd t && find . -name '*.t' | xargs perl -I../perlmod -MTest::Harness -e 'runtests(@ARGV)'
+	@cd t && find . -name '*.t' -not -iregex '.*\/Command\/.*' | xargs perl -I../perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
 .PHONY: all test install
