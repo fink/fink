@@ -115,49 +115,35 @@ if ($options{apt}) {
 
 
 sub UseFinkModules {
-	my ($config, $configpath);
 	# Be careful about using fink modules
-	if (-d '@BASEPATH@/lib/perl5') {
-		use lib '@BASEPATH@/lib/perl5';
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::Status; 1; }) {
-		import Fink::Status;
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::VirtPackage; 1; }) {
-		import Fink::VirtPackage;
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::Services; 1; }) {
-		import Fink::Services qw(&parse_fullversion)
-	}
-	else
-	{
-		$standalone=1;
-	}
+	eval { 
+        die unless -d '@BASEPATH@/lib/perl5';
+
+        require lib;
+        import lib '@BASEPATH@/lib/perl5';
+
+		require Fink::VirtPackage;
+		require Fink::Services;
+		import Fink::Services qw(parse_fullversion read_config)
+	};
+
+	$standalone = 1 if $@;
+
 	# read the configuration file
 	if ($standalone != 1)
 	{
-		$configpath = '@BASEPATH@/etc/fink.conf';
+		my $configpath = '@BASEPATH@/etc/fink.conf';
 		if (-f $configpath) {
-		  $config = &Fink::Services::read_config($configpath);
+			read_config($configpath);
 		} else {
 			$standalone=1;
 		}
 	}
+
 	if ($standalone == 1)
 	{
-		use POSIX qw(uname);
+		require POSIX;
+		import POSIX qw(uname);
 	}
 
 }
