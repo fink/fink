@@ -130,6 +130,10 @@ Show only packages which are up to date.
 Show packages which are not currently installed.
 .It Cm -s=expr,--section=expr
 Show only packages in the sections matching the regular expression expr.
+.It Cm -m=expr,--maintainer=expr
+Show only packages with the maintainer  matching the regular expression expr.
+.It Cm -t=expr,--tree=expr
+Show only packages in the trees matching the regular expression expr.
 .It Cm -w=xyz,--width=xyz
 Sets the width of the display you would like the output
 formatted for. xyz is either a numeric value or auto.
@@ -147,6 +151,10 @@ check if bash is available and what version.
 just list the names of the out of date packages.
 .It Cm fink list --section=kde
 list the packages in the kde section.
+.It Cm fink list --maintainer=fink-devel
+list the packages with no maintainer.
+.It Cm fink list --tree=unstable --maintainer=fink-devel
+list the packages with no maintainer, but only in the unstable tree.
 .It Cm fink list Qq "gnome*"
 list all packages that start with 'gnome'.
 .El

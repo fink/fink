@@ -1,3 +1,8 @@
+2003-06-04  Chris Zubrzycki <beren12@users.sourceforge.net>
+
+	* Engine.pm: add maintainer and tree searches to fink list
+	* fink.8.in: add usage docs for maintainer and tree searches
+
 2003-05-25  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.13.1

@@ -246,7 +246,7 @@ sub cmd_list {
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag, $description);
-	my ($formatstr, $desclen, $name, @temp_ARGV, $section);
+	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer, $pkgtree);
 	my %options =
 	(
 	 "installedstate" => 0
@@ -262,20 +262,22 @@ sub do_real_list {
 	if ($cmd eq "list") {
 		GetOptions(
 				   'width|w=s'		=> \$width,
-				   'tab|t'			=> \$dotab,
+				   'tab|t'		=> \$dotab,
 				   'installed|i'	=> sub {$options{installedstate} |=3;},
 				   'uptodate|u'		=> sub {$options{installedstate} |=2;},
 				   'outdated|o'		=> sub {$options{installedstate} |=1;},
 				   'notinstalled|n'	=> sub {$options{installedstate} |=4;},
 				   'section|s=s'	=> \$section,
-				   'help|h'			=> \$wanthelp
+				   'maintainer|m=s'	=> \$maintainer,
+				   'tree|r=s'		=> \$pkgtree,
+				   'help|h'		=> \$wanthelp
 		) or die "fink list: unknown option\nType 'fink list --help' for more information.\n";
 	}	 else { # apropos
 		GetOptions(
 				   'width|w=s'		=> \$width,
 				   'tab|t'			=> \$dotab,
 				   'help|h'			=> \$wanthelp
-		) or die "fink list: unknown option\nType 'fink apropos --help' for more information.\n";	 
+		) or die "fink list: unknown option\nType 'fink apropos --help' for more information.\n";
 	}
 	if ($wanthelp) {
 		require Fink::FinkVersion;
@@ -299,6 +301,10 @@ Options:
   -n, --notinstalled   - Only list packages which are not installed.
   -s=expr,             - Only list packages in the section(s) matching expr
     --section=expr       (example: fink list --section=x11).
+  -m=expr,             - Only list packages with the maintainer(s) matching expr
+    --maintainer=expr       (example: fink list --maintainer=beren12).
+  -t=expr,             - Only list packages with the tree matching expr
+    --tree=expr       (example: fink list --tree=stable).
   -h, --help           - This help text.
 
 EOF
@@ -400,9 +406,16 @@ EOF
 		if (defined $section) {
 			$section =~ s/[\=]?(.*)/$1/;
 			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
-		}	 
+		}
+		if (defined $maintainer) {
+			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
+		}
+		if (defined $pkgtree) {
+#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
+			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
+		}
 		if ($cmd eq "apropos") {
-			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;
+			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
 		}
 		printf $formatstr,
 				$iflag, $pname, $lversion, $description;
@@ -565,7 +578,7 @@ EOF
 	}
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
-	
+
 	return %options;
 }
 
@@ -612,11 +625,11 @@ sub cmd_fetch_all {
 sub cmd_fetch_all_missing {
 	my ($pname, $package, $version, $vo);
 	my (%options, $norestrictive, $dryrun);
-		
+
 	%options = &parse_fetch_options(@_);
 	$norestrictive = $options{"norestrictive"} || 0;
 	$dryrun = $options{"dryrun"} || 0;
-	
+
 	foreach $pname (Fink::Package->list_packages()) {
 		$package = Fink::Package->package_by_name($pname);
 		$version = &latest_version($package->list_versions());
