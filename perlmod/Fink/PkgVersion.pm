@@ -1138,7 +1138,7 @@ sub fetch_source {
 	my $continue = shift || 0;
 	my $nomirror = shift || 0;
 	my $dryrun = shift || 0;
-	my ($url, $file, $checksum, $urlnofile);
+	my ($url, $file, $checksum);
 
 	chdir "$basepath/src";
 
@@ -1153,11 +1153,7 @@ sub fetch_source {
 	$checksum = $self->get_checksum($index);
 	
 	if($dryrun) {
-		$urlnofile = $url;
-		$urlnofile =~ s/$file//;
-		if($urlnofile eq "") {
-			return;
-		}
+		return if $url eq $file; # just a simple filename
 		print "$file $checksum";
 	} else {
 		if($checksum eq '-') {	

@@ -1,3 +1,9 @@
+2004-01-13  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fix for regex /$file/ not do what we want if
+	$file is the literal filename when it contains regex
+	metacharacters. (bugs #875876).
+
 2004-01-12  Daniel Macks  <dmacks@netspace.org>
 
 	* Base.pm: params_matching() now defaults to case-insensitive.
