@@ -2,6 +2,8 @@
 
 	* Validation.pm: Empirically determined that 79 chars is the
 	maximum safe line length for DescDetail.
+	* Package.pm: Dumb hack to keep emacs paren balancing happy (was
+	interpretting # in a few lines before as comment symbol).
 
 2004-01-13  Daniel Macks  <dmacks@netspace.org>
 
