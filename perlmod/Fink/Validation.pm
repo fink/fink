@@ -266,10 +266,9 @@ END { }				# module clean-up code here (global destructor)
 #	+ warn if unknown fields are encountered
 #	+ warn if /sw is hardcoded in the script or set fields
 #	+ correspondence between source* and source*-md5 fields
-#	+ if type is nosource - warn about usage of "Source" etc.
+#	+ if type is bindle/nosource - warn about usage of "Source" etc.
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#	- if type is bundle - warn about usage of "Source" etc.
 #	- better validation of splitoffs
 #	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
 #	  it uses ">" instead of ">>".
@@ -382,24 +381,24 @@ sub validate_info_file {
 	}
 	
 	# error if have a source or MD5 for type nosource
-	if (lc $properties->{type} eq "nosource") {
+	if ($properties->{type} =~ /^(nosource|bundle)$/i) {
 		if ($properties->{source}) {
-			print "Error: Not using a source but \"source\" specified. ($filename)\n";
+			print "Error: Not using a source (type \"".$properties->{type}."\") but \"source\" specified. ($filename)\n";
 			$looks_good = 0;
 		}
 		if ($properties->{"source-md5"}) {
-			print "Error: Not using a source but \"source-md5\" specified. ($filename)\n";
+			print "Error: Not using a source (type \"".$properties->{type}."\") but \"source-md5\" specified. ($filename)\n";
 			$looks_good = 0;
 		}
 	}
 
 	# error if using the default source but there is no MD5
 	# (not caught later b/c there is no "source")
-	if (lc $properties->{type} ne "nosource" and not $properties->{source}) {
-		if (not $properties->{"source-md5"}) {
-			print "Error: No MD5 checksum specified for implicitly defined \"source\". ($filename)\n";
-			$looks_good = 0;
-		}
+	if ($properties->{type} =~ /^(nosource|bundle)$/i) {
+	# nosource and bundle are supposed to not have source
+	} elsif (not $properties->{source} and not $properties->{"source-md5"}) {
+		print "Error: No MD5 checksum specified for implicitly defined \"source\". ($filename)\n";
+		$looks_good = 0;
 	}
 
 	# Loop over all fields and verify them
