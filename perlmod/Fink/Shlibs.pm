@@ -547,8 +547,7 @@ sub update_shlib_db {
 	my $dbfile = "$dbpath/shlibs.db";
 	my $lockfile = "$dbpath/shlibs.db.lock";
 
-	my $oldsig = $SIG{'INT'};
-	$SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
+	local $SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
 
 	# check if we should update index cache
 	my $writable_cache = 0;
@@ -606,7 +605,6 @@ sub update_shlib_db {
 		print STDERR "done.\n";
 	};
 
-	$SIG{'INT'} = $oldsig if (defined $oldsig);
 	unlink($lockfile);
 
 	$shlib_db_outdated = 0;

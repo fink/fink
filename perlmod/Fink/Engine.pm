@@ -231,9 +231,10 @@ sub process {
 		}
 	}
 
-	$::SIG{INT} = sub { die "User interrupt.\n" };
-	eval { &$proc(@args); };
-	$::SIG{INT} = 'DEFAULT';
+	{
+		local $SIG{'INT'} = sub { die "User interrupt.\n" };
+		eval { &$proc(@args); };
+	}
 
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
 	Fink::PkgVersion->clear_buildlock();       # always clean up

@@ -542,8 +542,7 @@ sub update_db {
 	my $dbfile = "$dbpath/fink.db";
 	my $lockfile = "$dbpath/fink.db.lock";
 
-	my $oldsig = $SIG{'INT'};
-	$SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
+	local $SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
 
 	# check if we should update index cache
 	my $writable_cache = 0;
@@ -606,7 +605,6 @@ sub update_db {
 		print STDERR "done.\n";
 	};
 
-	$SIG{'INT'} = $oldsig if (defined $oldsig);
 	unlink($lockfile);
 
 	$db_outdated = 0;

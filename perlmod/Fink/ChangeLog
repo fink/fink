@@ -1,3 +1,7 @@
+2005-03-22  Daniel Macks <dmacks@netspace.org>
+
+	* Engine.pm, Package.pm, Shlibs.pm: Fixed scoping of $SIG{INT}
+
 2005-03-21  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Implemented 'ignore_INT' option for execute().
