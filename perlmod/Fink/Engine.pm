@@ -246,9 +246,7 @@ sub cmd_fetch_missing {
   }
 
   foreach $package (@plist) {
-    if (not $package->is_fetched()) {
-      $package->phase_fetch();
-    }
+    $package->phase_fetch(1);
   }
 }
 
