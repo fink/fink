@@ -281,22 +281,46 @@ sub merge {
 sub enable_bootstrap {
   my $self = shift;
   my $bsbase = shift;
+  my $splitoff;
 
   $self->{_expand}->{p} = $bsbase;
   $self->{_expand}->{d} = "";
   $self->{_expand}->{i} = $bsbase;
+  $self->{_expand}->{D} = "";
+  $self->{_expand}->{I} = $bsbase;
+
   $self->{_bootstrap} = 1;
+  
+  foreach  $splitoff (@{$self->{_splitoffs}}) {
+    $splitoff->enable_bootstrap($bsbase);
+  }
+
 }
 
 sub disable_bootstrap {
   my $self = shift;
   my ($destdir);
+  my $splitoff;
 
   $destdir = "$basepath/src/root-".$self->{_fullname};
   $self->{_expand}->{p} = $basepath;
   $self->{_expand}->{d} = $destdir;
   $self->{_expand}->{i} = $destdir.$basepath;
+  if ($self->{_type} eq "splitoff") {
+    my $parent = $self->{parent};
+    my $parentdestdir = "$basepath/src/root-".$parent->{_fullname};
+    $self->{_expand}->{D} = $parentdestdir;
+    $self->{_expand}->{I} = $parentdestdir.$basepath;
+  } else {
+    $self->{_expand}->{D} = $self->{_expand}->{d};
+    $self->{_expand}->{I} = $self->{_expand}->{i};
+  };
+  
   $self->{_bootstrap} = 0;
+  
+  foreach  $splitoff (@{$self->{_splitoffs}}) {
+    $splitoff->disable_bootstrap();
+  }
 }
 
 ### get package name, version etc.
