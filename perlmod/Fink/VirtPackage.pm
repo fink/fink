@@ -114,7 +114,7 @@ sub initialize {
 	my $self    = shift;
 
 	my ($hash);
-	my ($cctools_version, $cctools_single_module);
+	my ($cctools_version, $cctools_single_module, $growl_version);
 
 =item kernel
 
@@ -983,6 +983,58 @@ in the library.
 			print STDERR "- skipping X11 virtuals, existing X11 packages installed\n" if ($options{debug});
 		}
 	}
+
+=item Growl
+
+This package represents the Growl notification system.
+For more info on this package see http://growl.info/.
+
+=cut
+
+	print STDERR "- checking for Growl... " if ($options{debug});
+	if (-x '/Library/PreferencePanes/Growl.prefPane/Contents/Resources/GrowlHelperApp.app/Contents/MacOS/GrowlHelperApp') {
+		print STDERR "found, Growl\n" if ($options{debug});
+		print STDERR "- checking for Growl version... " if ($options{debug});
+		if (-f "/Library/Receipts/Growl.pkg/Contents/Info.plist") {
+			if (open(FILEIN, '/Library/Receipts/Growl.pkg/Contents/Info.plist')) {
+				local $/ = undef;
+				if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
+					$growl_version = $1;
+				}
+				close(FILEIN);
+			} 
+		} else {
+			print STDERR "/Library/Receipts/Growl.pkg/Contents/Info.plist not found... " if ($options{debug});
+			$growl_version = "0";
+		}
+	} else {
+		print STDERR "missing\n" if ($options{debug});
+	}
+
+	$hash = {};
+	$hash->{package} = "growl";
+	$hash->{status} = STATUS_PRESENT;
+	$hash->{description} = "[virtual package representing Growl]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{compilescript} = $compile_script;
+	$hash->{descdetail} = <<END;
+Growl is a global notification system for Mac OS X. Any
+application can send a notification to Growl, which will
+display an attractive message on your screen. Growl
+currently works with a growing number of applications.
+
+  http://growl.info/
+END
+
+	if (defined ($growl_version)) {
+		$hash->{version} = $growl_version."-1";
+		print STDERR $hash->{version}, "\n" if ($options{debug});
+	} else {
+		print STDERR "unknown\n" if ($options{debug});
+		$hash->{version} = '0-0';
+		$hash->{status} = STATUS_ABSENT;
+	}
+	$self->{$hash->{package}} = $hash;
 }
 
 =back
