@@ -336,10 +336,10 @@ sub copy_description {
 	print "Copying package description(s)...\n";
 	
 	if (not -d "$bpath/fink/debs") {
-		$script .= "mkdir -p $bpath/fink/debs\n";
+		$script .= "/bin/mkdir -p -m755 $bpath/fink/debs\n";
 	}
 	if (not -d "$bpath/fink/dists/local/bootstrap/finkinfo") {
-		$script .= "mkdir -p $bpath/fink/dists/local/bootstrap/finkinfo\n";
+		$script .= "/bin/mkdir -p -m755 $bpath/fink/dists/local/bootstrap/finkinfo\n";
 	}
 	my $md5 = &file_MD5_checksum("$bpath/src/$package-$packageversion.tar");
 	$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <$package.info.in >$bpath/fink/dists/local/bootstrap/finkinfo/$package-$packageversion.info\n";

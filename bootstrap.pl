@@ -67,9 +67,9 @@ print " looks good.\n";
 ### load some modules
 
 require Fink::Services;
-import Fink::Services qw(&read_config &execute &get_arch);
-require Fink::CLI;
-import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection_new);
+import Fink::Services qw(&print_breaking &prompt &prompt_boolean
+						 &prompt_selection_new &read_config &execute
+						 &get_arch);
 import Fink::Bootstrap qw(&get_packageversion &create_tarball &fink_packagefiles &copy_description);
 
 ### get version
@@ -286,7 +286,7 @@ print "Creating directories...\n";
 my ($dir, @dirlist);
 
 if (not -d $installto) {
-	if (&execute("mkdir -p $installto")) {
+	if (&execute("/bin/mkdir -p -m755 $installto")) {
 		print "ERROR: Can't create directory '$installto'.\n";
 		exit 1;
 	}
@@ -302,7 +302,7 @@ foreach $dir (qw(local/bootstrap stable/main stable/crypto local/main)) {
 }
 foreach $dir (@dirlist) {
 	if (not -d "$installto/$dir") {
-		if (&execute("mkdir $installto/$dir")) {
+		if (&execute("/bin/mkdir -m755 $installto/$dir")) {
 			print "ERROR: Can't create directory '$installto/$dir'.\n";
 			exit 1;
 		}
