@@ -1456,7 +1456,8 @@ sub real_install {
 					&real_install($OP_BUILD, 0, 1, $package->get_name());
 					### Double check it didn't already get
 					### installed in an other loop
-					unless ($package->is_installed()) {
+					unless ($package->is_installed() &&
+						$op != $OP_REBUILD) {
 						$package->phase_unpack();
 						$package->phase_patch();
 						$package->phase_compile();
