@@ -1,5 +1,9 @@
 2004-08-16  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm, PkgVersion.pm: Fixed %-expansion on Files.
+
+2004-08-16  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Unify get_*script() into new get_script().
 	* Engine.pm: update dumpinfo for new get_script().
 

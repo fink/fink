@@ -1862,7 +1862,7 @@ sub phase_install {
 	# splitoff 'Files' field
 	if ($do_splitoff and $self->has_param("Files")) {
 		my $files = $self->conditional_space_list(
-			$self->param("Files"),
+			$self->param_expanded("Files"),
 			"Files of ".$self->get_fullname()." in ".$self->get_info_filename
 		);
 

@@ -1859,7 +1859,7 @@ EOF
 				# need conditionals processing
 				if ($pkg->has_param($_)) {
 					my $value = $pkg->conditional_space_list(
-						$pkg->param("Files"),
+						$pkg->param_expanded("Files"),
 						"Files of ".$pkg->get_fullname()." in ".$pkg->get_info_filename
 					);
 					printf "%s: %s\n", $_, $value if length $value;
