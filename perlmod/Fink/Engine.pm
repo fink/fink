@@ -760,7 +760,7 @@ sub real_install {
   my (%candidates, @candidates, $pnode);
   my ($oversion, $opackage, $v, $ep, $dp, $dname);
   my ($answer, $s);
-  my (%already_rebuilt, %already_activated);
+  my (%to_be_rebuilt, %already_activated);
 
   if (Fink::Config::verbosity_level() > -1) {
     $showlist = 1;
@@ -768,7 +768,7 @@ sub real_install {
 
   %deps = ();   # hash by package name
 
-  %already_rebuilt = ();
+  %to_be_rebuilt = ();
   %already_activated = ();
 
   # add requested packages
@@ -800,6 +800,7 @@ sub real_install {
     }
     # add to table
     $deps{$pkgname} = [ $pkgname, $pkgobj, $package, $op, 1 ];
+    $to_be_rebuilt{$pkgname} = ($op == $OP_REBUILD);
   }
 
   @queue = keys %deps;
@@ -1049,72 +1050,78 @@ sub real_install {
 	next PACKAGELOOP if (($dep->[4] & 2) == 0);
       }
 
-      # build it
+      my $parent;
+      my @batch_install;
+      my $pkg;
+
       $any_installed = 1;
       $package = $item->[2];
 
-      my @batch_install;
+      # Determine the splitoff parent of this package, if any (used later on)
+      if (exists $package->{_splitoffs} and @{$package->{_splitoffs}} > 0) {
+	$parent = $package;  # package is itself splitoff parent
+      } elsif (exists $package->{parent}) {
+	$parent = $package->{parent};  # package is a splitoff
+      }
 
-      if (($item->[3] == $OP_REBUILD and not $already_rebuilt{$pkgname})
-	  or not $package->is_present()) {
+      # Check whether package has to be (re)built. For normal packages that
+      # means the user explicitly requested the rebuild; but for splitoffs
+      # and masters, we also have to check if any of their "relatives" is
+      # scheduled for rebuilding.
+      # But first, check if there is no .deb present - in that case we have
+      # to build in any case.
+      $to_be_rebuilt{$pkgname} = 0 unless exists $to_be_rebuilt{$pkgname};
+      $to_be_rebuilt{$pkgname} |= not $package->is_present();
+      if (not $to_be_rebuilt{$pkgname} and defined $parent) {
+	foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
+	  $to_be_rebuilt{$pkgname} |= $to_be_rebuilt{$pkg->get_name()};
+	  last if $to_be_rebuilt{$pkgname}; # short circuit
+	}
+      }
+
+      # Now (re)build the package if we determined above that it is necessary.
+      if ($to_be_rebuilt{$pkgname}) {
 	$package->phase_unpack();
 	$package->phase_patch();
 	$package->phase_compile();
 	$package->phase_install();
 	$package->phase_build();
-
-	$already_rebuilt{$pkgname} = 1;
       }
 
-      my $parent;
-      if (exists $package->{_splitoffs} and @{$package->{_splitoffs}} > 0) {
-	$parent = $package;
-      } elsif (exists $package->{parent}) {
-	$parent = $package->{parent};
-      }
-
-      # If this is a splitoff, we mark the parent and all the children as having
-      # been built now.  We then go through each sub-package and check if they're
-      # in the list of things to check to be installed.  If so, we add them to
-      # the batch queue so that all of the splitoffs that are due for installation
-      # get installed at the same time.  This fixes a number of chicken-and-egg
-      # problems with dependencies.  The parent package is then added down below.
-
-      # FIXME: This really should be turned into it's own subroutine (something
-      # like "check for parent dependency in splitoff") that can be called in a
-      # proper loop, but this should at least fix the ordering in the meantime.
-      # Grr, stupid dpkg needs the parent dep last on the command-line.  WHY?!
-
-      if (defined $parent) {
-	$already_rebuilt{$parent->get_name()} = 1;
-	foreach my $splitoff (@{$parent->{_splitoffs}}) {
-	  $already_rebuilt{$splitoff->get_name()} = 1;
-	  # skip it if it's the parent, he gets added down below
-	  next if ($parent->get_name() eq $splitoff->get_name());
-	  if ($splitoff->is_installed() or exists $deps{$splitoff->get_name()}) {
-            if (not $already_activated{$splitoff->get_name()} and
-	        ($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL
-	         or ($item->[3] == $OP_REBUILD and $splitoff->is_installed()))) {
-	      push(@batch_install, $splitoff);
-	    $already_activated{$splitoff->get_name()} = 1;
-	    }
-	  }
-	}
-      }
-
-      # Install the package if necessary and if it wasn't already installed 
-      # previously. "Necessary" means that the command issued by the user
-      # was an "install", a "reinstall" or a "rebuild" of an installed pkg.
+      # Install the package unless we already did that in a previous
+      # iteration, and if the command issued by the user was an "install"
+      # or a "reinstall" or a "rebuild" of an currently installed pkg.
       if (not $already_activated{$pkgname} and
-	  ($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL
-	   or ($item->[3] == $OP_REBUILD and $package->is_installed()))) {
-        push(@batch_install, $package) unless ($already_activated{$pkgname});
+	  (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
+	   or ($to_be_rebuilt{$pkgname} and $package->is_installed()))) {
+        push(@batch_install, $package);
 	$already_activated{$pkgname} = 1;
       }
 
+      # Mark the package and all its "relatives" as being rebuilt if we just
+      # did perform a build - this way we won't rebuild packages twice when
+      # we process another splitoff of the same master.
+      # In addition, we check for the splitoffs whether they have to be reinstalled.
+      # That is the case if they are currently installed and where rebuild just now.
+      if ($to_be_rebuilt{$pkgname}) {
+        if (defined $parent) {
+	  foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
+	    my $name = $pkg->get_name();
+	    $to_be_rebuilt{$name} = 0; # not necessary to rebuild this, we already did it
+	    if (not $already_activated{$name} and $pkg->is_installed()) {
+	      push(@batch_install, $pkg);
+	      $already_activated{$name} = 1;
+	    }
+	  }
+	} else {
+	  $to_be_rebuilt{$pkgname} = 0;
+	}
+      }
+
+      # Finally perform the actually installation
       Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 
-      # mark it as installed
+      # Mark item as installed
       $item->[4] |= 2;
     }
     last if $all_installed;

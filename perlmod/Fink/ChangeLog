@@ -1,9 +1,14 @@
+2002-10-14  Max Horn  <max@quendi.de>
+
+	* Engine.pm: Rewrote parts of real_install to hopefully make it cleaner,
+	  easier to understand, and less buggy when it comes to splitoffs.
+
 2002-10-12 Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* PkgVersion.pm: when a Shlibs field is present, write its contents 
+	* PkgVersion.pm: When a Shlibs field is present, write its contents 
 	into DEBIAN/shlibs when building the deb
 
-	* Validation.pm: added Shlibs field
+	* Validation.pm: Added Shlibs field
 	
 2002-10-10  Max Horn  <max@quendi.de>
 
@@ -11,7 +16,7 @@
 
 2002-10-04  Benjamin Reed <rangerrick@users.sourceforge.net>
 
-	* Engine.pm: another small patch to the splitoff code.  This patch
+	* Engine.pm: Another small patch to the splitoff code.  This patch
 	  changes the checking for flags (reinstall, rebuild, etc.) to match
 	  the code used for installing the primary package, and it makes
 	  sure that the parent splitoff is the last one installed on the
