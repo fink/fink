@@ -21,7 +21,7 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(&read_properties &latest_version);
+use Fink::Services qw(&read_properties &latest_version &version_cmp);
 use Fink::Config qw($config $basepath);
 use Fink::PkgVersion;
 use File::Find;
@@ -140,8 +140,41 @@ sub get_all_versions {
 
 sub get_matching_versions {
   my $self = shift;
+  my $spec = shift;
+  my (@list, $version, $vo, $relation, $reqversion);
 
-  return values %{$self->{_versions}};
+  if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\-]+)\s*$/) {
+    $relation = $1;
+    $reqversion = $2;
+  } else {
+    die "Illegal version specification '".$spec."' for package ".$self->get_name()."\n";
+  }
+
+  @list = ();
+
+  if ($relation eq "<<") {
+    while (($version, $vo) = each %{$self->{_versions}}) {
+      push @list, $vo if &version_cmp($version, $reqversion) < 0;
+    }
+  } elsif ($relation eq "<=") {
+    while (($version, $vo) = each %{$self->{_versions}}) {
+      push @list, $vo if &version_cmp($version, $reqversion) <= 0;
+    }
+  } elsif ($relation eq "=") {
+    while (($version, $vo) = each %{$self->{_versions}}) {
+      push @list, $vo if &version_cmp($version, $reqversion) == 0;
+    }
+  } elsif ($relation eq ">=") {
+    while (($version, $vo) = each %{$self->{_versions}}) {
+      push @list, $vo if &version_cmp($version, $reqversion) >= 0;
+    }
+  } elsif ($relation eq ">>") {
+    while (($version, $vo) = each %{$self->{_versions}}) {
+      push @list, $vo if &version_cmp($version, $reqversion) > 0;
+    }
+  }
+
+  return @list;
 }
 
 sub get_all_providers {

@@ -119,11 +119,6 @@ sub initialize {
 	    };
   $self->{_expand} = $expand;
 
-  # parse dependencies
-  $depspec = $self->param_default("Depends", "");
-  $deplist = [ split(/\s*\,\s*/, $depspec) ];
-  $self->{_depends} = $deplist;
-
   # expand source
   $source = $self->param_default("Source", "\%n-\%v.tar.gz");
   if ($source eq "gnu") {
@@ -455,23 +450,41 @@ sub find_debfile {
 
 ### get dependencies
 
-sub get_depends {
-  my $self = shift;
-
-  return @{$self->{_depends}};
-}
-
 sub resolve_depends {
   my $self = shift;
-  my ($depname, $package, @deplist);
+  my $include_build = shift || 0;
+  my (@deplist, $altlist);
+  my ($altspec, $depspec, $depname, $versionspec, $package);
 
   @deplist = ();
-  foreach $depname (@{$self->{_depends}}) {
-    $package = Fink::Package->package_by_name($depname);
-    if (not defined $package) {
-      die "Can't resolve dependency \"$depname\" for package \"".$self->get_fullname()."\"\n";
+
+  foreach $altspec (split(/\s*\,\s*/,
+			  $self->param_default("Depends", ""))) {
+    $altlist = [];
+    foreach $depspec (split(/\s*\|\s*/, $altspec)) {
+      if ($depspec =~ /^([0-9a-zA-Z.\-]+)\s*\((.+)\)$/) {
+	$depname = $1;
+	$versionspec = $2;
+      } else {
+	$depname = $depspec;
+	$versionspec = "";
+      }
+
+      $package = Fink::Package->package_by_name($depname);
+      if (not defined $package) {
+	die "Can't resolve dependency \"$depspec\" for package \"".$self->get_fullname()."\" (package \"$depname\" not found)\n";
+      }
+
+      if ($versionspec) {
+	push @$altlist, $package->get_matching_versions($versionspec);
+      } else {
+	push @$altlist, $package->get_all_providers();
+      }
     }
-    push @deplist, [ $package->get_all_providers() ];
+    if (scalar(@$altlist) <= 0) {
+      die "Can't resolve dependency \"$altspec\" for package \"".$self->get_fullname()."\" (no matching versions found)\n";
+    }
+    push @deplist, $altlist;
   }
 
   return @deplist;
@@ -496,6 +509,15 @@ sub resolve_conflicts {
   }
 
   return @conflist;
+}
+
+sub get_binary_depends {
+  my $self = shift;
+
+  # TODO: modify dependency list on the fly to account for minor
+  #  library versions
+
+  return $self->param_default("Depends", "");
 }
 
 
@@ -957,15 +979,18 @@ Source: $pkgname
 Version: $version
 Architecture: $debarch
 EOF
-  $control .= "Depends: ".join(", ", @{$self->{_depends}})."\n";
   if ($self->param_boolean("Essential")) {
     $control .= "Essential: yes\n";
   }
-  foreach $field (qw(Maintainer Provides Replaces Conflicts)) {
+  # FIXME: make sure there are no linebreaks in the following fields
+  $control .= "Depends: ".$self->get_binary_depends()."\n";
+  foreach $field (qw(Provides Replaces Conflicts Pre-Depends
+                     Recommends Suggests Enhances
+                     Maintainer)) {
     if ($self->has_param($field)) {
       $control .= "$field: ".$self->param($field)."\n";
     }
-   }
+  }
   $control .= "Description: ".$self->get_description();
 
   ### write "control" file

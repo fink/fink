@@ -1,3 +1,17 @@
+2001-09-09  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Package.pm (get_matching_versions): Implemented the version
+	comparisons supported by dpkg.
+	* PkgVersion.pm (initialize): Removed special handling for the
+	Depends field.
+	(get_depends): Removed, not needed any more.
+	(resolve_depends): Rewritten to allow versioned dependencies and
+	alternatives.
+	(get_binary_depends): New function to generate dependencies for
+	the .deb.
+	(phase_build): Use get_binary_depends for the Depends field. Added
+	Recommends, Suggests, Enhances and Pre-Depends.
+
 2001-09-07  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Bootstrap.pm: Create dpkg status area earlier.
