@@ -16,7 +16,13 @@ my $pv = Fink::PkgVersion->new_from_properties(
 isa_ok( $pv, 'Fink::PkgVersion' );
 
 my($perldir, $perlarch) = $pv->get_perl_dir_arch;
-#like( $perldir,  qr{^/ 5 \. \d{1,2} \. \d{1,2} $}x );
+
+# The following test is somewhat questionable, since it imposes a rather
+# strict limitation on a directory name which potentially can be of
+# arbitrary form. As such it may have to be adapted when/if get_perl_dir_arch()
+# is changed in the future.
+like( $perldir,  qr{^(/ 5 \. \d{1,2} \. \d{1,2} )?$}x );
+
 like( $perlarch,   qr{^darwin} );
 unlike( $perlarch, qr{[='"]}, 'not picking up extra cruft from -V' );
 unlike( $perlarch, qr/\n/,    'no stray newlines in perlarch' );
