@@ -36,7 +36,7 @@ my ($script, $cmd);
 if ("$]" == "5.006" or "$]" == "5.006001" or "$]" == "5.008" or "$]" == "5.008001" or "$]" == "5.008004") {
     print "Found perl version $].\n";
 } else {
-die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.6.1 (5.006001), 5.8.0 (5.008), or 5.8.1 (5.008001).\n\n";
+die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.6.1 (5.006001), 5.8.0 (5.008), 5.8.1 (5.008001), or 5.8.4 (5.008004).\n\n";
 }
 
 if ("$]" == "5.006001") {
