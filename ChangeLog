@@ -1,3 +1,14 @@
+2001-09-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Delay loading of modules until the package has
+	been checked for completeness. Changed stable/bootstrap to
+	local/bootstrap. Runs the scanpackages command at the end of
+	bootstrap. Final message reworded after a suggestion from Tom
+	Sobczynski.
+	* inject.pl: Use the modules from the perlmod directory. Changed
+	stable/bootstrap to local/bootstrap. Adds local/bootstrap to
+	fink.conf if required.
+
 2001-09-03  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: fixed creation of FinkVersion.pm (has to be

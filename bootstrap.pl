@@ -26,10 +26,6 @@ use v5.6.0;  # perl 5.6.0 or newer required
 use strict;
 
 use FindBin;
-use lib "$FindBin::RealBin/perlmod";
-use Fink::Services qw(&print_breaking &prompt &prompt_boolean &prompt_selection
-                      &read_config &execute);
-use Fink::Config qw($basepath $libpath);
 
 my ($answer, $packageversion, $packagerevision);
 my ($script, $cmd);
@@ -52,6 +48,14 @@ foreach $file (qw(fink install.sh COPYING VERSION
   }
 }
 print " looks good.\n";
+
+### load some modules
+
+unshift @INC, "$FindBin::RealBin/perlmod";
+
+require Fink::Services;
+import Fink::Services qw(&print_breaking &prompt &prompt_boolean
+                         &prompt_selection &read_config &execute);
 
 ### get version
 
@@ -277,7 +281,7 @@ if (not -d $installto) {
 }
 
 @dirlist = qw(etc etc/alternatives src fink fink/debs fink/dists fink/dists/stable fink/dists/local);
-foreach $dir (qw(stable/bootstrap stable/main stable/crypto local/main)) {
+foreach $dir (qw(local/bootstrap stable/main stable/crypto local/main)) {
   push @dirlist, "fink/dists/$dir", "fink/dists/$dir/finkinfo",
     "fink/dists/$dir/binary-darwin-powerpc";
 }
@@ -294,15 +298,15 @@ foreach $dir (@dirlist) {
 
 print "Copying package descriptions...\n";
 
-$script = "cp packages/*.info packages/*.patch $installto/fink/dists/stable/bootstrap/finkinfo/\n";
+$script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
 
 if (-f "packages/base-files.in") {
-  $script .= "rm -f $installto/fink/dists/stable/bootstrap/finkinfo/base-files*\n";
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/base-files.in >$installto/fink/dists/stable/bootstrap/finkinfo/base-files-$packageversion.info\n";
+  $script .= "rm -f $installto/fink/dists/local/bootstrap/finkinfo/base-files*\n";
+  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/base-files.in >$installto/fink/dists/local/bootstrap/finkinfo/base-files-$packageversion.info\n";
 }
 if (-f "packages/fink.in") {
-  $script .= "rm -f $installto/fink/dists/stable/bootstrap/finkinfo/fink*\n";
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/fink.in >$installto/fink/dists/stable/bootstrap/finkinfo/fink-$packageversion.info\n";
+  $script .= "rm -f $installto/fink/dists/local/bootstrap/finkinfo/fink*\n";
+  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/fink.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
 }
 
 foreach $cmd (split(/\n/,$script)) {
@@ -346,6 +350,7 @@ foreach $cmd (split(/\n/,$script)) {
 
 ### load the Fink modules
 
+require Fink::Config;
 require Fink::Engine;
 require Fink::Configure;
 require Fink::Bootstrap;
@@ -361,12 +366,15 @@ print CONFIG <<"EOF";
 # Fink configuration, initially created by bootstrap.pl
 Basepath: $installto
 RootMethod: $rootmethod
-Trees: local/main stable/main stable/crypto stable/bootstrap
+Trees: local/main stable/main stable/crypto local/bootstrap
 EOF
 close(CONFIG) or die "can't write configuration: $!";
 
 $config = &read_config($configpath);
-$libpath = $homebase;   # fink is not yet installed...
+# override path to data files (update, mirror)
+no warnings 'once';
+$Fink::Config::libpath = $homebase;
+use warnings 'once';
 $engine = Fink::Engine->new_with_config($config);
 
 ### interactive configuration
@@ -384,36 +392,56 @@ if ($packageversion !~ /cvs/) {
   $showversion = "-$packageversion";
 }
 
+my $endmsg = "Internal error.";
+
 chdir $homebase;
 if (-d "pkginfo") {
   if (&execute("cd pkginfo && ./inject.pl $installto -quiet")) {
     # inject failed
-    print "\n";
-    &print_breaking("Copying the package description tree failed. This ".
-		    "is no big harm; your Fink installation should work ".
-		    "nonetheless. Use '$installto/bin/init.csh' to set up ".
-                    "your environment to use it. You still need package ".
-                    "descriptions if you want to compile packages yourself. ".
-                    "You can get them from CVS or by installing the ".
-                    "packages$showversion.tar.gz tarball. Enjoy.");
+    $endmsg = <<"EOF";
+Copying the package description tree failed. This is no big harm;
+your Fink installation should work nonetheless.
+You can add the package descriptions at a later time if you want to
+compile packages yourself.
+You can get them from CVS or by installing the packages$showversion.tar.gz
+tarball.
+EOF
   } else {
     # inject worked
-    print "\n";
-    &print_breaking("You should now have a working Fink installation in ".
-		    "'$installto'. Use '$installto/bin/init.csh' to set up ".
-		    "your environment to use it. Enjoy.");
+    $endmsg = <<"EOF";
+You should now have a working Fink installation in '$installto'.
+EOF
   }
 } else {
   # this was not the 'full' tarball
-  print "\n";
-  &print_breaking("You should now have a working Fink installation in ".
-		  "'$installto'. Use '$installto/bin/init.csh' to set up ".
-		  "your environment to use it. You still need package ".
-		  "descriptions if you want to compile packages yourself. ".
-		  "You can get them from CVS or by installing the ".
-		  "packages$showversion.tar.gz tarball. Enjoy.");
+  $endmsg = <<"EOF";
+You should now have a working Fink installation in '$installto'.
+You still need package descriptions if you want to compile packages yourself.
+You can get them from CVS or by installing the packages$showversion.tar.gz
+tarball.
+EOF
 }
 
+### create Packages.gz files for apt
+
+# set PATH so we find dpkg-scanpackages
+$ENV{PATH} = "$installto/sbin:$installto/bin:".$ENV{PATH};
+
+Fink::Engine::cmd_scanpackages();
+
+### the final words...
+
+$endmsg =~ s/\s+/ /gs;
+$endmsg =~ s/ $//;
+
+print "\n";
+&print_breaking($endmsg);
+print "\n";
+&print_breaking("Run 'source $installto/bin/init.csh ; rehash' to set ".
+		"up this Terminal's environment to use Fink. To make the ".
+		"software installed by Fink available in all of your ".
+		"shells, add 'source $installto/bin/init.csh' to the ".
+		"init script '.cshrc' in your home directory. Enjoy.");
 print "\n";
 
 ### eof

@@ -25,6 +25,8 @@ $| = 1;
 use v5.6.0;  # perl 5.6.0 or newer required
 use strict;
 
+use FindBin;
+
 my ($basepath, $packageversion, $packagerevision);
 my ($script, $cmd);
 
@@ -40,6 +42,14 @@ foreach $file (qw(fink install.sh COPYING VERSION
     exit 1;
   }
 }
+
+### load some modules
+
+unshift @INC, "$FindBin::RealBin/perlmod";
+
+require Fink::Services;
+import Fink::Services qw(&print_breaking &read_config &execute);
+require Fink::Config;
 
 ### locate Fink installation
 
@@ -90,15 +100,34 @@ if ($packageversion =~ /cvs/) {
   $packagerevision = "1";
 }
 
+### load configuration
+
+my $config = &read_config("$basepath/etc/fink.conf");
+
 ### parse config file for root method
 
-# TODO: really parse the file, support both su and sudo
+# TODO: use setting from config
 # for now, we just use sudo...
 
 if ($> != 0) {
   exit &execute("sudo ./inject.pl $basepath");
 }
 umask oct("022");
+
+### check that local/bootstrap is in the Trees list
+
+my $trees = $config->param("Trees");
+if ($trees =~ /^\s*$/) {
+  print "Adding a Trees line to fink.conf...\n";
+  $config->set_param("Trees", "local/main stable/main stable/crypto local/bootstrap");
+  $config->save();
+} else {
+  if (grep({$_ eq "local/bootstrap"} split(/\s+/, $trees)) < 1) {
+    print "Adding local/bootstrap to the Trees line in fink.conf...\n";
+    $config->set_param("Trees", "$trees local/bootstrap");
+    $config->save();
+  }
+}
 
 ### create and copy description files
 
@@ -108,19 +137,19 @@ $script = "";
 if (not -d "$basepath/fink/debs") {
   $script .= "mkdir -p $basepath/fink/debs\n";
 }
-if (not -d "$basepath/fink/dists/stable/bootstrap/finkinfo") {
-  $script .= "mkdir -p $basepath/fink/dists/stable/bootstrap/finkinfo\n";
+if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
+  $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
 }
 
 if (-f "packages/base-files.in") {
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/base-files.in >$basepath/fink/dists/stable/bootstrap/finkinfo/base-files-$packageversion.info\n";
+  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/base-files.in >$basepath/fink/dists/local/bootstrap/finkinfo/base-files-$packageversion.info\n";
 } else {
-  $script .= "cp packages/base-files*.info $basepath/fink/dists/stable/bootstrap/finkinfo/\n";
+  $script .= "cp packages/base-files*.info $basepath/fink/dists/local/bootstrap/finkinfo/\n";
 }
 if (-f "packages/fink.in") {
-  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/fink.in >$basepath/fink/dists/stable/bootstrap/finkinfo/fink-$packageversion.info\n";
+  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/fink.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
 } else {
-  $script .= "cp packages/fink*.info $basepath/fink/dists/stable/bootstrap/finkinfo/\n";
+  $script .= "cp packages/fink*.info $basepath/fink/dists/local/bootstrap/finkinfo/\n";
 }
 
 foreach $cmd (split(/\n/,$script)) {
@@ -182,43 +211,6 @@ if (&execute("$basepath/bin/fink install fink base-files")) {
 		  "new fink packages.");
 }
 print "\n";
-
-### helper functions
-
-sub execute {
-  my $cmd = shift;
-  my $quiet = shift || 0;
-  my ($retval, $prog);
-
-  print "$cmd\n";
-  $retval = system($cmd);
-  $retval >>= 8 if defined $retval and $retval >= 256;
-  if ($retval and not $quiet) {
-    ($prog) = split(/\s+/, $cmd);
-    print "### $prog failed, exit code $retval\n";
-  }
-  return $retval;
-}
-
-sub print_breaking {
-  my $s = shift;
-  my ($pos, $t);
-  my $linelength = 77;
-
-  chomp($s);
-  while (length($s) > $linelength) {
-    $pos = rindex($s," ",$linelength);
-    if ($pos < 0) {
-      $t = substr($s,0,$linelength);
-      $s = substr($s,$linelength);
-    } else {
-      $t = substr($s,0,$pos);
-      $s = substr($s,$pos+1);
-    }
-    print "$t\n";
-  }
-  print "$s\n";
-}
 
 ### eof
 exit 0;
