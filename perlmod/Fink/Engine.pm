@@ -1307,6 +1307,7 @@ sub real_install {
 	@requested = ();
 	@additionals = ();
 	@removals = ();
+	my $willbuild = 0;
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
 		if ($item->[FLAG] == 0) {
@@ -1314,12 +1315,19 @@ sub real_install {
 		} elsif ($item->[FLAG] == 1) {
 			push @requested, $pkgname;
 		}
+		if ($item->[OP] == $OP_BUILD or $item->[OP] == $OP_REBUILD) {
+			$willbuild = 1;
+		}
 	}
 
 	foreach $pkgname (sort keys %cons) {
 		push @removals, $pkgname;
 	}
 			
+	if ($willbuild) {
+		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) { print "\nWARNING: You are using a version of gcc which is known to produce incorrect\noutput from c++ code under certain circumstances.\n\nFor information about upgrading, see the Fink web site.\n\n" ;
+																		 }
+	}
 
 	# display list of requested packages
 	if ($showlist && not $forceoff) {
