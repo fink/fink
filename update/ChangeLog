@@ -1,3 +1,9 @@
+2001-08-30  Christoph Pfisterer  <cp@chrisp.de>
+
+	* ltconfig, ltmain.sh: Updated from the libtool-1.3.5-8
+	package. Fixes problems when -release is used without
+	-version-info. Also some more cleanup.
+
 2001-08-22  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Makefile.in.in: Added. Used for packages with outdated gettext

@@ -1783,7 +1783,16 @@ compiler."
 	# Clear the version info if we defaulted, and they specified a release.
 	if test -z "$vinfo" && test -n "$release"; then
 	  major=
-	  verstring="0.0"
+	  case "$version_type" in
+	  darwin)
+	    # we can't check for "0.0" in archive_cmds due to quoting
+	    # problems, so we reset it completely
+	    verstring=""
+	    ;;
+	  *)
+	    verstring="0.0"
+	    ;;
+	  esac
 	  if test "$need_version" = no; then
 	    versuffix=
 	  else
