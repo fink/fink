@@ -1,5 +1,10 @@
 2002-08-10  Max Horn  <max@quendi.de>
 
+	* sourceforge: added twtelecom; corrected primary (it is west; us is just a
+	  round robin virtual server).
+
+2002-08-10  Max Horn  <max@quendi.de>
+
 	* gnu: Fixed sunsite.ulatina.ac.cr, not in the US but rather in Costa Rica.
 
 2002-08-03  Max Horn  <max@quendi.de>
