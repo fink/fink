@@ -24,7 +24,7 @@ package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp &print_breaking
                       &prompt &prompt_boolean);
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
@@ -154,6 +154,9 @@ sub setup_direct_cvs {
   my ($finkdir, $tempdir, $tempfinkdir);
   my ($username, $cvsuser, @testlist);
   my ($use_hardlinks, $cutoff, $cmd);
+  my ($cmdd);
+
+  
 
   $username = "root";
   if (exists $ENV{SUDO_USER}) {
@@ -234,13 +237,25 @@ sub setup_direct_cvs {
     $cmd = "cvs -z3 -d:ext:$cvsuser\@cvs.sourceforge.net:/cvsroot/fink";
     $ENV{CVS_RSH} = "ssh";
   }
-  $cmd = "$cmd checkout -d fink packages";
+  $cmdd = "$cmd checkout -d fink dists";
   if ($username ne "root") {
-    $cmd = "su $username -c '$cmd'";
+    $cmdd = "su $username -c '$cmdd'";
   }
   &print_breaking("Now downloading package descriptions...");
-  if (&execute($cmd)) {
+  if (&execute($cmdd)) {
     die "Downloading package descriptions from CVS failed.\n";
+  }
+  if ($Fink::Config::distribution =~ /10.1/) { #must do a second checkout in this case
+      chdir "fink" or die "Can't cd to fink\n";
+      $cmdd = "$cmd checkout -d 10.1 packages/dists";
+      if ($username ne "root") {
+	  $cmdd = "su $username -c '$cmdd'";
+      }
+      &print_breaking("Now downloading more package descriptions...");
+      if (&execute($cmdd)) {
+	  die "Downloading package descriptions from CVS failed.\n";
+      }
+      chdir $tempdir or die "Can't cd to $tempdir: $!\n";
   }
   if (not -d $tempfinkdir) {
     die "The CVS didn't report an error, but the directory '$tempfinkdir' ".

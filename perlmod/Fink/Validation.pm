@@ -113,6 +113,7 @@ our %known_fields = map {$_, 1}
      patch
      patchscript
      configureparams
+     gcc
      compilescript
      installscript
      splitoff

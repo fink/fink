@@ -8,6 +8,7 @@ Essential: yes
 Suggests: storable-pm, term-readkey-pm
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
+PostInstScript: sudo @PREFIX@/lib/fink/postinstall.pl
 #
 Description: The Fink package manager
 DescDetail: <<

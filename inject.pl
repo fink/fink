@@ -34,7 +34,7 @@ my ($script, $cmd);
 
 my ($file);
 foreach $file (qw(fink.in install.sh COPYING VERSION
-                  perlmod/Fink mirror update fink.info.in
+                  perlmod/Fink mirror update fink.info.in postinstall.pl.in
                   update/config.guess perlmod/Fink/Config.pm mirror/_keys
                  )) {
   if (not -e $file) {
@@ -141,7 +141,7 @@ if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
   $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
 }
 
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's|\@PREFIX\@|$basepath|' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
@@ -165,7 +165,7 @@ $script .=
   "tar -cf $basepath/src/fink-$packageversion.tar ".
   "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
   "ChangeLog VERSION fink.in fink.8.in install.sh setup.sh ".
-  "perlmod update mirror\n";
+  "postinstall.pl.in perlmod update mirror\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines

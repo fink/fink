@@ -40,7 +40,7 @@ $homebase = $FindBin::RealBin;
 chdir $homebase;
 
 foreach $file (qw(fink.in install.sh COPYING VERSION
-		  perlmod/Fink mirror update packages fink.info.in
+		  perlmod/Fink mirror update 10.1 10.2 fink.info.in
 		  update/config.guess perlmod/Fink/Config.pm mirror/_keys
 		 )) {
   if (not -e $file) {
@@ -73,7 +73,7 @@ if ($packageversion =~ /cvs/) {
 ### check if we like this system
 
 print "Checking system...";
-my ($host);
+my ($host, $distribution);
 
 $host = `update/config.guess`;
 chomp($host);
@@ -85,11 +85,17 @@ print " $host\n";
 
 if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
   &print_breaking("This system is supported and tested.");
+  $distribution = "10.1";
 } elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
   &print_breaking("This system is supported and tested.");
+  $distribution = "10.1";
+} elsif ($host =~ /^powerpc-apple-darwin6\.0/) {
+  &print_breaking("This system is supported and tested.");
+  $distribution = "10.2";
 } elsif ($host =~ /^powerpc-apple-darwin(1\.[3-9]|[2-9]\.)/) {
   &print_breaking("This system was not released at the time this Fink ".
 		  "release was made, but should work.");
+  $distribution = "10.2";
 } elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
   &print_breaking("This system is outdated and not supported by this Fink ".
 		  "release. Please update to Mac OS X 10.0 or Darwin 1.3.");
@@ -98,6 +104,8 @@ if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
   &print_breaking("This system is unrecognized and not supported by Fink.");
   exit 1;
 }
+
+print "Distribution $distribution\n";
 
 ### choose root method
 
@@ -199,6 +207,16 @@ if (-x "/usr/bin/head") {
   exit 1;
 }
 
+### setup the correct packages directory
+
+if (-d "packages") {
+    rename "packages", "packages-old" or die "Can't rename 'packages'";
+}
+if (-e "packages") {
+    unlink "packages" or die "Cannot unlink 'packages'";
+}
+symlink "$distribution", "packages" or die "Cannot create symlink";
+
 ### choose installation path
 
 my ($installto, $forbidden);
@@ -283,10 +301,11 @@ if (not -d $installto) {
   }
 }
 
-@dirlist = qw(etc etc/alternatives src fink fink/debs fink/dists fink/dists/stable fink/dists/local);
+@dirlist = qw(etc etc/alternatives src fink fink/debs);
+push @dirlist, "fink/$distribution", "fink/$distribution/stable", "fink/$distribution/local";
 foreach $dir (qw(local/bootstrap stable/main stable/crypto local/main)) {
-  push @dirlist, "fink/dists/$dir", "fink/dists/$dir/finkinfo",
-    "fink/dists/$dir/binary-darwin-powerpc";
+  push @dirlist, "fink/$distribution/$dir", "fink/$distribution/$dir/finkinfo",
+    "fink/$distribution/$dir/binary-darwin-powerpc";
 }
 foreach $dir (@dirlist) {
   if (not -d "$installto/$dir") {
@@ -297,13 +316,17 @@ foreach $dir (@dirlist) {
   }
 }
 
+symlink "$installto/fink/$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
+
 ### copy package info needed for bootstrap
 
 print "Copying package descriptions...\n";
 
 $script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
 
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's|\@PREFIX\@|$installto|' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+
+$script .= "chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
@@ -322,7 +345,7 @@ $script =
   "tar -cf $installto/src/fink-$packageversion.tar ".
   "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
   "ChangeLog VERSION fink.in fink.8.in install.sh setup.sh ".
-  "perlmod update mirror\n";
+  "postinstall.pl.in perlmod update mirror\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
@@ -352,6 +375,7 @@ print CONFIG <<"EOF";
 Basepath: $installto
 RootMethod: $rootmethod
 Trees: local/main stable/main stable/crypto local/bootstrap
+Distribution: $distribution
 EOF
 close(CONFIG) or die "can't write configuration: $!";
 

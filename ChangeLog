@@ -1,3 +1,38 @@
+2002-09-08 Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* packages: directory renamed to 10.1
+
+	* 10.2: new directory, containing essential packages for 10.2
+
+	* bootstrap.pl: now defines $distribution to be 10.1 or 10.2 based on 
+	  config.guess output and records value in fink.conf, sets up 
+	  "packages" as a symlink to the $distribution directory during 
+	  bootstrapping, and sets up "dists" as a symlink to the $distribution
+	  directory upon installation
+
+	* postinstall.pl.in: new postinstall script for Fink which modifies
+	  an old-style Fink installation (with the "dists" directory) to
+	  a new-style Fink installation (in which "dists" is a symlink to
+	  the $distribution directory).  Works in 10.1 or 10.2.  Does the 
+	  Right Thing if CVS is already being used (compatible with the new 
+	  SelfUpdate.pm)
+
+	* fink.info.in: adds PostInstScript
+
+	* inject.pl: adds an sed command for fink.info.in to handle the
+	  PostInstScript, includes postinstall.pl.in in the Fink tarball
+
+	* install.sh: installs postinstall.pl in $basepath/lib/fink/
+
+	* setup.sh: processes postinstall.pl.in to postinstall.pl
+
+	* dpkg-checkall.sh: new script from Alexander Strange which tests 
+	  to see if all files in the dpkg logs are actually present on the 
+	  system
+
+	* update-fink.sh: script to update a user's installation from 10.1 
+	  to 10.2
+	
 2002-08-11  Max Horn  <max@quendi.de>
 
 	* fink.8.in, USAGE, USAGE.html: Updated description of the remove command.

@@ -1,6 +1,6 @@
-#!/bin/sh -e
+#!/bin/sh
 #
-# setup.sh - configure fink package
+# update-fink.sh -- A script to update Fink for Mac OS X, 10.2
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -21,25 +21,29 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-if [ $# -ne 1 ]; then
-  echo "Usage: ./setup.sh <prefix>"
-  echo "  Example: ./setup.sh /sw"
-  exit 1
-fi
+# Remove two packages which will interfere with the update if they aren't
+# at the latest versions
+fink remove openldap-ssl cyrus-sasl
 
-basepath=$1
-version=`cat VERSION`
+# Force-remove a disfunctional package which won't be used in 10.2
+sudo dpkg -r --force-depends manconf
 
-echo "Creating fink..."
-sed "s|@BASEPATH@|$basepath|g" <fink.in >fink
+# Create Packages.gz and Release files for the last time in 10.1 directories
+# before they are moved to another location (so that apt-get can find them
+# even after the upgrade)
+fink scanpackages
 
-echo "Creating FinkVersion.pm..."
-sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
+# Install the new version of fink, whose post-install script modifies the
+# directory structure for 10.2
+./inject.pl
 
-echo "Creating man page..."
-sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8
+# Finish the setup with fink selfupdate-cvs, fink scanpackages, and apt-get
+# update
 
-echo "Creating postinstall script..."
-sed "s|@PREFIX@|$basepath|g" <postinstall.pl.in >postinstall.pl
+fink selfupdate-cvs
+fink scanpackages
+sudo apt-get update
 
 exit 0
+
+

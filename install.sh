@@ -46,6 +46,7 @@ done
 
 echo "Copying files..."
 
+install -c -p -m 755 postinstall.pl "$basepath/lib/fink/"
 install -c -p -m 755 fink "$basepath/bin/"
 install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 

@@ -35,13 +35,13 @@ BEGIN {
   $VERSION = 1.00;
   @ISA         = qw(Exporter Fink::Base);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw($config $basepath $libpath $debarch $darwin_version $macosx_version
+  @EXPORT_OK   = qw($config $basepath $libpath $debarch $darwin_version $macosx_version $distribution
                     &get_option &set_options &verbosity_level);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
-our ($config, $basepath, $libpath, $debarch, $darwin_version, $macosx_version);
+our ($config, $basepath, $libpath, $debarch, $darwin_version, $macosx_version, $distribution);
 $debarch = "darwin-powerpc";
 
 my %globals = ();
@@ -88,6 +88,7 @@ sub initialize {
   die "Basepath not set in config file \"".$self->{_path}."\"!\n"
     unless (defined $basepath and $basepath);
   $libpath = "$basepath/lib/fink";
+  $distribution = $self->param("Distribution");
 
   $self->{_queue} = [];
 

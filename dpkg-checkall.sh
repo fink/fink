@@ -1,6 +1,10 @@
-#!/bin/sh -e
+#!/bin/sh
 #
-# setup.sh - configure fink package
+# dpkg-checkall.sh -- A script to check if everything which dpkg thinks
+#                     is installed, is actually installed.  Outputs a
+#                     list of packages with problems.
+#
+#                     Script written by Alexander Strange.
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -21,25 +25,15 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-if [ $# -ne 1 ]; then
-  echo "Usage: ./setup.sh <prefix>"
-  echo "  Example: ./setup.sh /sw"
-  exit 1
+fink_path=`which dpkg | sed -e 's:/bin/dpkg::'`
+for foo in `cat $fink_path/var/lib/dpkg/info/*.list`
+do
+if (! test -e "$foo")
+then
+if (! test -L "$foo")
+then
+echo $foo not found
+echo $foo is part of `dpkg -S $foo | awk '{print $1}' | sed -e 's;:;;g' | sort | uniq`
 fi
-
-basepath=$1
-version=`cat VERSION`
-
-echo "Creating fink..."
-sed "s|@BASEPATH@|$basepath|g" <fink.in >fink
-
-echo "Creating FinkVersion.pm..."
-sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
-
-echo "Creating man page..."
-sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8
-
-echo "Creating postinstall script..."
-sed "s|@PREFIX@|$basepath|g" <postinstall.pl.in >postinstall.pl
-
-exit 0
+fi
+done
