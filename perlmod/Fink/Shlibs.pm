@@ -63,8 +63,6 @@ sub get_shlibs {
   my ($depend, @depends, %SHLIBS);
   my $depline = "";
 
-#  $self->require_shlibs();
-
   @depends = $self->check_files(@filelist);
 
   foreach $depend (@depends) {
@@ -117,13 +115,24 @@ sub check_files {
 sub get_shlib {
   my $self = shift;
   my $lib = shift;
-  my ($dep, $shlib);
+  my ($dep, $shlib, $count, $pkgnum, $vernum);
 
   $dep = "";
 
   foreach $shlib (keys %shlib_hash) {
     if ("$shlib" eq "$lib") {
-      $dep = $shlib_hash{$shlib}->{packages};
+      if ($shlib_hash{$shlib}->{total} > 1) {
+        for ($count = 1; $count <= $shlib_hash{$shlib}->{total}; $count++) {
+          $pkgnum = "package".$count;
+          $vernum = "version".$count;
+          $dep .= $shlib_hash{$shlib}->{$pkgnum}." (".$shlib_hash{$shlib}->{$vernum}.")";
+          if ($count != $shlib_hash{$shlib}->{total}) {
+            $dep .= " |";
+          }
+        }
+      } else {
+        $dep = $shlib_hash{$shlib}->{package1}." (".$shlib_hash{$shlib}->{version1}.")";
+      }
     }
   }
 
@@ -318,9 +327,30 @@ sub inject_shlib {
   my $shlibname = shift;
   my $compat = shift;
   my $package = shift;
+  my (@packages, $pkg, $counter, $pkgnum, $vernum);
 
   $shlib_hash{$shlibname}->{compat} = $compat;
-  $shlib_hash{$shlibname}->{packages} = $package;
+  if ($package =~ /\|/) {
+    @packages = split(/\|/, $package);
+    $counter = 0;
+    foreach $pkg (@packages) {
+      print "DEBUG: $pkg\n";
+      $counter++;
+      if ($pkg =~ /(.+) \((.+)\)/) {
+        $pkgnum = "package".$counter;
+        $vernum = "version".$counter;;
+        $shlib_hash{$shlibname}->{$pkgnum} = $1;
+        $shlib_hash{$shlibname}->{$vernum} = $2;
+      }
+      $shlib_hash{$shlibname}->{total} = $counter;
+    }
+  } else {
+    if ($package =~ /(.+) \((.+)\)/) {
+      $shlib_hash{$shlibname}->{package1} = $1;
+      $shlib_hash{$shlibname}->{version1} = $2;
+      $shlib_hash{$shlibname}->{total} = 1;
+    }
+  }
 }
 
 ### EOF
