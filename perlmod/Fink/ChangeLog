@@ -1,3 +1,7 @@
+2001-06-30  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Package.pm (scan): Don't try to scan non-existing directories.
+
 2001-06-28  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (phase_build): Added support for inline daemonic

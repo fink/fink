@@ -286,6 +286,8 @@ sub scan {
   my ($filename, $properties);
   my ($pkgname, $package, $version, $vp, $vpo);
 
+  return if not -d $directory;
+
   # search for .info files
   @filelist = ();
   $wanted =
