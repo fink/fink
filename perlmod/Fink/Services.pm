@@ -443,16 +443,39 @@ sub execute {
 	my %options = ( defined $_[0] ? @_ : () );
 	my ($retval, $cmd);
 
-	# preprocess the script, making executable tempfile if necessary
-	my $is_tempfile = &prepare_script(\$script);
-	return 0 if not defined $script;
-
 	# drop root if requested
 	my $drop_root = $options{'nonroot_okay'} && Fink::Config::get_option("build_as_nobody") == 1;
 	if ($drop_root && $< != 0) {
 		print "Fink cannot switch users when not running as root.\n";
 		return 1;
 	}
+
+	# to drop root, we wrap the given $script in a formal (with #!
+	# line) perl script that passes the original back to ourselves
+	# but omitting the nonroot_okay flag
+	if ($drop_root) {
+		my $wrap = <<EOSCRIPT;
+#!/usr/bin/perl
+		use Fink::Services qw(execute);
+		{
+			local \$/;
+			\$script = <DATA>;
+		}
+EOSCRIPT
+		$script = $wrap .
+			'exit &execute(' .
+			join ( ', ',
+				   '$script',
+				   map { "$_ => $options{$_}" } grep { !/nonroot_okay/ } keys %options
+				 ) .
+			 ");\n" .
+			 "__DATA__\n" .
+			 $script;
+	}
+
+	# preprocess the script, making executable tempfile if necessary
+	my $is_tempfile = &prepare_script(\$script);
+	return 0 if not defined $script;
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
