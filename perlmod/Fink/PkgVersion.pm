@@ -2351,7 +2351,6 @@ EOF
 				print "Writing shared library dependencies...\n";
         
 				### 2) get a list to replace it with
-				my $shlibstr = "";
 				my @filelist = ();
 				my $wanted = sub {
 					if (-f) {
@@ -2364,12 +2363,16 @@ EOF
 
 				### FIXME shlibs, should change this to a hash like
 				### get_binary_depends above.
-				$shlibstr = Fink::Shlibs->get_shlibs($pkgname, @filelist);
+				my @shlib_deps = Fink::Shlibs->get_shlibs(@filelist);
 
 				### FIXME shlibs, this will likely break, once hash above
 				### foreach loop and push into @$struct
 				### 3) replace it in the debian control file
-				$_ = $shlibstr;
+				foreach my $shlib_dep (@shlib_deps) {
+					push @$struct, ["$shlib_dep"];
+					print "DEBUG: $shlib_dep\n";
+				}
+				die();
 			}
 		}
 	}
@@ -3352,8 +3355,8 @@ sub get_ruby_dir_arch {
 	return ($rubydirectory, $rubyarchdir, $rubycmd);
 }
 
-### FIXME shlibs, this is a duplicate function now, I Think
-### fix shlibs code to use the current function instead
+### FIXME shlibs, this should get renamed to get_depcontrolparam
+### and moved to shlibs or services I think
 sub get_debdeps {
 	my $wantedpkg = shift;
 	my $field = "Depends";
