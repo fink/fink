@@ -1,3 +1,7 @@
+2003-10-18  Peter O'Gorman <ogorman@users.sourceforge.net>
+	
+	 * VirtPackage.pm: New virtual package for gcc2 (needed for 10.3)
+
 2003-10-17  <schwern@users.sourceforge.net>
 
 	* Package.pm, Services.pm: Optimizations to speed up

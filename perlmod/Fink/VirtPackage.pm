@@ -176,6 +176,16 @@ sub initialize {
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
 	}
+        if ( -x '/usr/bin/gcc2' )
+        {
+                $hash = {};
+                $hash->{package} = "gcc2";
+                $hash->{status} = "install ok installed";
+                $hash->{version} = "2.9.5-1";
+                $hash->{description} = "[virtual package representing the gcc2 compiler]";
+                $hash->{builddependsonly} = "true";
+                $self->{$hash->{package}} = $hash;
+        }
 	if ( -f '/usr/X11R6/lib/libX11.6.dylib' )
 	{
 		# check the status of xfree86 packages
