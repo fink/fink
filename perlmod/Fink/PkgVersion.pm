@@ -190,6 +190,7 @@ sub initialize {
 	$self->expand_percent_if_available('BuildDepends');
 	$self->expand_percent_if_available('Conflicts');
 	$self->expand_percent_if_available('Depends');
+#	$self->conditional_pkg_list('Depends');
 	$self->expand_percent_if_available('Enhances');
 	$self->expand_percent_if_available('Pre-Depends');
 	$self->expand_percent_if_available('Provides');
@@ -284,6 +285,58 @@ sub get_param_with_expansion {
 	if ($self->has_param($field)) {
 		&expand_percent($self->{$field}, $self->{_expand}, $self->get_info_filename." \"$field\"");
 	}
+}
+
+### Process a Depends (or other field that is a list of packages,
+### indicated by $field) to handle conditionals. The field is re-set
+### to be conditional-free (remove conditional expressions, remove
+### packages for which expression was false). No percent expansion is
+### performed (i.e., do it yourself before calling this method).
+{
+# need some private variables, may as well define 'em here once
+	my %sep_fix_map = ( ',\s*,' =>   ',',
+			    ',\s*\|' =>  ',',
+			    '\|\s*\|' => '|',
+			    '\|\s*,' =>  ','
+			  );
+	my $sep_fix_match = join "|", keys %sep_fix_map;
+
+sub conditional_pkg_list {
+	my $self = shift;
+	my $field = shift;
+
+	my $value = $self->param($field);
+	return unless defined $value and length $value;
+	return unless $value =~ /(?-:\A|,|\|)\s*\(/;  # short-cut if no conditionals
+#	print "conditional_pkg_list for ",$self->{package},"\n";
+#	print "\toriginal: $value\n";
+	my @atoms = split /([,|])/, $value; # break apart the field
+	map {
+		if (s/(\s*)\((.*?)\)\s*(.*)/$1$3/) {
+		    # we have a conditional; remove the cond expression
+		    my $cond = $2;
+#		    print "\tfound conditional '$cond'\n";
+		    if ($cond =~ /^(\S+)\s+(\S+)$/) {
+#			print "\t\ttesting '$1'$2'\n";
+			# if cond is false, clear entire atom
+			$_ = "" if $1 ne $2;
+		    } else {
+			print "Error: Invalid conditional expression \"$cond\" in $field of ".$self->get_info_filename.". Treating as true.\n";
+		    }
+		}
+	    } @atoms;
+	$value = join "", @atoms; # reconstruct field
+	# if atoms were removed, we have consecutive [,|] chars; merge them
+#	print "\tnow have: $value\n";
+	while ($value =~ s/($sep_fix_match)/$sep_fix_map{$1}/) {};
+	# also any leading or trailing separator chars
+	$value =~ s/^\s*[,|]\s*//;
+	$value =~ s/\s*[,|]\s*$//;
+#	print "\tnow have: $value\n";
+	return;
+}
+
+# remember we were in a block for this method
 }
 
 ### add a splitoff package

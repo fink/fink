@@ -1,4 +1,13 @@
- 2004-02-11  Daniel Macks  <dmacks@netspace.org>
+2004-02-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Wrote conditional_pkg_list which processes
+	conditionals in Depends (and similarly formatted fields) according
+	to 'Depends: (a b) foo', where foo is only a dependency if a and b
+	are stringwise equal. Will probably need to bump max_info_level.
+	Tested and seems to work, but not actually calling it from main
+	code yet.
+
+2004-02-11  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm, Packages.pm, Validation.pm: Changed handle_infon_block
 	from being a function in Services to being a class method in Packages.
