@@ -714,10 +714,12 @@ sub prompt_selection {
 Compares the two debian version strings $fullversion1 and
 $fullversion2 according to the binary operator $op. Each version
 string is of the form epoch:version-revision (though one or more of
-these components may be omitted as usual). The operators are those
-used in the debian-package world: << and >> for strictly-less-than and
-strictly-greater-than, <= and >= for less-than-or-equal-to and
-greater-than-or-equal-to, and = for equal-to.
+these components may be omitted as usual--see the Debian Policy
+Manual, section 5.6.11 "Version" for more information). The operators
+are those used in the debian-package world: << and >> for
+strictly-less-than and strictly-greater-than, <= and >= for
+less-than-or-equal-to and greater-than-or-equal-to, and = for
+equal-to.
 
 The results of the basic comparison (similar to the perl <=> and cmp
 operators) are cached in a package variable so repeated queries about
@@ -828,8 +830,9 @@ sub raw_version_cmp {
 
     my $latest = latest_version @versionstrings;
 
-Given a list of one or more debian-esque version strings, return the
-one that is the highest.
+Given a list of one or more debian version strings, return the one
+that is the highest. See the Debian Policy Manual, section 5.6.11
+"Version" for more information.
 
 =cut
 
