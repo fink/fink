@@ -1,3 +1,8 @@
+2001-10-27  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (resolve_depends): Make "package not found"
+	non-fatal if there are alternatives.
+
 2001-10-20  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (real_install): Let the user pick one alternative when

@@ -501,7 +501,8 @@ sub resolve_depends {
 
       $package = Fink::Package->package_by_name($depname);
       if (not defined $package) {
-	die "Can't resolve dependency \"$depspec\" for package \"".$self->get_fullname()."\" (package \"$depname\" not found)\n";
+	print "WARNING: While resolving dependency \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+	next;
       }
 
       if ($versionspec) {
@@ -511,7 +512,7 @@ sub resolve_depends {
       }
     }
     if (scalar(@$altlist) <= 0) {
-      die "Can't resolve dependency \"$altspec\" for package \"".$self->get_fullname()."\" (no matching versions found)\n";
+      die "Can't resolve dependency \"$altspec\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
     }
     push @deplist, $altlist;
   }
