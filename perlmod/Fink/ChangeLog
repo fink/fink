@@ -1,3 +1,8 @@
+2001-07-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Config.pm (set_param): Handle empty values.
+	(save): Remove keys that are set to empty values from the file.
+
 2001-06-30  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Package.pm (scan): Don't try to scan non-existing directories.

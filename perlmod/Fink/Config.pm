@@ -108,7 +108,11 @@ sub set_param {
   my $key = shift;
   my $value = shift;
 
-  $self->{lc $key} = $value;
+  if (not defined($value) or $value eq "") {
+    delete $self->{lc $key};
+  } else {
+    $self->{lc $key} = $value;
+  }
   push @{$self->{_queue}}, $key;
 }
 
@@ -123,7 +127,11 @@ sub save {
   %values = ();
   foreach $key (@{$self->{_queue}}) {
     $queue{lc $key} = $key;
-    $values{lc $key} = $self->{lc $key};
+    if (exists $self->{lc $key} and defined($self->{lc $key})) {
+      $values{lc $key} = $self->{lc $key};
+    } else {
+      $values{lc $key} = "";
+    }
     $values{lc $key} =~ s/\n/\n /gs;
   }
 
@@ -132,17 +140,25 @@ sub save {
   open(OUT,">$path.tmp") or die "can't write temporary file: $!";
   while (<IN>) {
     chomp;
-    unless (/^\s*\#/) {
-      if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*)$/) {
+    unless (/^\s*\#/) {   # leave comments alone
+      if (/^([0-9A-Za-z_.\-]+)\:.*$/) {
 	if (exists $queue{lc $1}) {
-	  next unless defined $queue{lc $1};
-	  $_ = $queue{lc $1}.": ".$values{lc $1};
-	  $queue{lc $1} = undef;
+	  # skip continuation lines
 	  $skip_cont = 1;
+	  # make sure we only write it once
+	  next unless defined($queue{lc $1});
+	  $key = $queue{lc $1};
+	  $queue{lc $1} = undef;
+	  # write nothing for empty values
+	  next if $values{lc $1} eq "";
+	  # else write the new setting
+	  $_ = $key.": ".$values{lc $1};
 	} else {
+	  # keep this setting and its continuation lines
 	  $skip_cont = 0;
 	}
       } elsif (/^\s+(\S.*)$/) {
+	# it's a continuation line
 	next if $skip_cont;
       }
     }
@@ -150,11 +166,16 @@ sub save {
   }
   close(IN);
   foreach $key (sort keys %queue) {
+    # get the keys we have not seen yet
     next unless defined $queue{$key};
+    # write nothing for empty values
+    next if $values{$key} eq "";
+    # add the setting at the end of the file
     print OUT $queue{$key}.": ".$values{$key}."\n";
   }
   close(OUT);
 
+  # put the temporary file in place
   unlink $path;
   rename "$path.tmp", $path;
 
