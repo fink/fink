@@ -38,7 +38,8 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&get_perms &add_user_script &remove_user_script);
+	@EXPORT_OK	 = qw(&get_perms &add_user_script &remove_user_script
+				&add_user &del_user &add_group &del_group);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -60,18 +61,71 @@ sub add_user {
 	my $self = shift;
 	my $user = shift;
 	my $desc = shift;
-	my $pass = shift;
-	my $shell = shift;
+	my $pass = shift || "*";
+	my $shell = shift || "/usr/bin/false";
 	my $home = shift;
-	my $group = shift;
+	my $group = shift || "staff";
 
-	my $uid = $self->get_id("user", $user);
+	my ($cmd, $uid, $gid);
+	my $goterr = 0;
 
-	my $cmd  = "$basepath/sbin/useradd -c $desc -d $home -e 0";
-	   $cmd .= "-f 0 -g $group -s $shell -u $uid $user";
+	my $old = $self->check_for_name("user", $user);
 
-	if (&execute($cmd)) {
-		die "Can't create user '$user'\n";
+	unless ($old) {
+		$uid = $self->get_id("user", $user);
+
+		$cmd = "/usr/bin/niutil -create . /users/$user";
+
+		if (&execute($cmd)) {
+			die "Can't create user '$user'\nERROR: $!\n";
+		}
+	}
+
+	$gid = User::grent::getgrnam($group);
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user realname \"$desc\"";
+	$goterr = &execute($cmd);
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user gid $gid";
+	$goterr = &execute($cmd);
+
+	unless ($old) {
+		$cmd = "/usr/bin/niutil -createprop . /users/$user uid $uid";
+		$goterr = &execute($cmd);
+	}
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user home \"$home\"";
+	$goterr = &execute($cmd);
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user name \"$user\"";
+	$goterr = &execute($cmd);
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user passwd \"$pass\"";
+	$goterr = &execute($cmd);
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user shell \"$shell\"";
+	$goterr = &execute($cmd);
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user change 0";
+	$goterr = &execute($cmd);
+
+	$cmd = "/usr/bin/niutil -createprop . /users/$user expire 0";
+	$goterr = &execute($cmd);
+
+	if ($goterr) {
+		die "Can't set user info for '$user'\nERROR: $!\n";
+	}
+
+	unless (-d $home) {
+		$cmd = "/bin/mkdir -p \"$home\"";
+		$goterr = &execute($cmd);
+
+		$cmd = "/usr/sbin/chown \"$uid.$gid\" \"$home\"";
+		$goterr = &execute($cmd);
+
+		if ($goterr) {
+			die "Can't creat or set perms on '$home'!\nERROR: $!\n";
+		}
 	}
 
 	return 0;
@@ -82,10 +136,19 @@ sub del_user {
 	my $self = shift
 	my $user = shift;
 
-	my $cmd = "$basepath/sbin/userdel -r $user";
+	my ($cmd, $homedir);
+
+	$homedir = `/usr/bin/nidump passwd . | /usr/bin/grep '$user:' | /usr/bin/cut -d":" -f9 `
+	$cmd = "/bin/rm -rf $homedir";
 
 	if (&execute($cmd)) {
-		die "Can't remove user '$user'\n";
+		die "Can't remove user '$user' home directory!\nERROR: $!\n";
+	}
+
+	$cmd = "/usr/bin/niutil -destroy . /users/$user";
+
+	if (&execute($cmd)) {
+		die "Can't remove user '$user'!ERROR: $!\n\n";
 	}
 
 	return 0;
@@ -95,15 +158,35 @@ sub del_user {
 sub add_group {
 	my $self = shift;
 	my $group = shift;
-	my $desc = shift;
-	my $pass = shift;
+	my $pass = shift || "*";
 
-	my $gid = $self->get_id("group", $group);
+	my ($cmd, $gid);
+	my $goterr = 0;
 
-	my $cmd = "$basepath/sbin/groupadd -g $gid $group";
+	my $old = $self->check_for_name("group", $group);
 
-	if (&execute($cmd)) {
-		die "Can't create group '$group'\n";
+	unless ($old) {
+		$gid = $self->get_id("group", $group);
+		$cmd = "/usr/bin/niutil -create . /groups/$group";
+
+		if (&execute($cmd)) {
+			die "Can't create group '$group'\nERROR: $!\n";
+		}
+	}
+
+	$cmd = "/usr/bin/niutil -createprop . /groups/$group name \"$group\"";
+	$goterr = &execute($cmd);
+
+	unless ($old) {
+		$cmd = "/usr/bin/niutil -createprop . /groups/$group gid $gid";
+		$goterr = &execute($cmd);
+	}
+
+	$cmd = "/usr/bin/niutil -createprop . /groups/$group passwd \"$pass\"";
+	$goterr = &execute($cmd);
+
+	if ($goterr) {
+		die "Can't set group info for "$group'\nERROR: $!\n";
 	}
 
 	return 0;
@@ -114,10 +197,12 @@ sub del_group {
 	my $self = shift;
 	my $group = shift;
 
-	my $cmd = "$basepath/sbin/groupdel $group";
+	my ($cmd);
+
+	$cmd = "/usr/bin/niutil -destroy . /groups/$group";
 
 	if (&execute($cmd)) {
-		die "Can't remove group '$group'\n";
+		die "Can't remove group '$group'\nERROR: $!\n";
 	}
 
 	return 0;
@@ -128,6 +213,7 @@ sub get_id {
 	my $self = shift;
 	my $type = shift;
 	my $name = shift;
+
 	my $id = 0;		### set to 0 so first value is false
 
 	### ask for uid or gid via type
@@ -152,6 +238,7 @@ sub is_id_free {
 	my $self = shift;
 	my $type = shift;
 	my $id = shift;
+
 	my ($name);
 
 	if ($type eq "user") {
@@ -172,11 +259,7 @@ sub check_for_name {
 	my $self = shift;
 	my $type = shift;
 	my $name = shift;
-	my $desc = shift;
-	my $pass = shift || "";
-	my $shell = shift || "/usr/bin/false";
-	my $home = shift || "/tmp";
-	my $group = shift || $name;
+
 	my $id = 0;
 
 	### find if a user exists
@@ -185,15 +268,11 @@ sub check_for_name {
 		if ($type eq "group") {
 			$currentname = User::grent::getgrgid($id);
 			if ($name eq $currentname) {
-                ### FIXME
-                ### Compare info make it's hte same, or setup process rules
 				return 1;
 			}
 		} else {
 			$currentname = User::pwent::getpwuid($id);
 			if ($name eq $currentname) {
-                ### FIXME
-                ### Compare info make it's hte same, or setup process rules
 				return 1;
 			}
 		}
@@ -206,6 +285,7 @@ sub check_for_name {
 sub get_next_avail {
 	my $self = shift;
 	my $type = shift;
+
 	my ($id, $user, $uid, $group, $gid, $pass);
 
 	if ($type eq "user") {
@@ -231,6 +311,7 @@ sub get_next_avail {
 sub get_perms {
 	my $self = shift;
 	my $rootdir = shift;
+
 	my $script = "";
 
 	my (@filelist, @files, @users, @groups);
@@ -278,9 +359,9 @@ sub add_user_script {
 	my $name = shift;
 	my $type = shift;
 	my $desc = shift;
-	my $pass = shift || "";
+	my $pass = shift || "*";
 	my $shell = shift || "/usr/bin/false";
-	my $home = shift || "/tmp";
+	my $home = shift;
 	my $group = shift || $name;
     
 	my $script = "";
@@ -295,6 +376,7 @@ sub remove_user_script {
 	my $self = shift;
 	my $name = shift;
 	my $type = shift;
+
 	my $script = "";
     
 	### FIXME
@@ -308,6 +390,7 @@ sub build_chown_script {
 	my $files = shift;
 	my $users = shift;
 	my $groups = shift;
+
 	my $script = "";
 	my $i = 0;
 	
@@ -317,7 +400,7 @@ sub build_chown_script {
 	my @groups = split(/:/, $groups);
 
 	foreach $file (@files) {
-		$script .= "chown @users[$i]:@groups[$i] $file\n";
+		$script .= "/usr/sbin/chown \"@users[$i].@groups[$i]\" \"$file\"\n";
 		$i++;
 	}
     
@@ -333,7 +416,7 @@ sub set_perms {
 	my @files = split(/:/, $files);
 	
 	foreach $file (@files);
-		if (&execute("chown root:wheel $file")) {
+		if (&execute("/usr/sbin/chown \"0.0\" \"$file"\")) {
 			die "Couldn't change ownershil of $file!\n";
 		}
 	}
