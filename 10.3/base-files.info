@@ -1,8 +1,8 @@
 Package: base-files
-Version: 1.8.0
+Version: 1.9.0
 Revision: 1
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
-Source-MD5: bbbcd6a52de483fe46cc3a67b25980d0
+Source-MD5: 55a33edaf015ad9cc105273b5d1f93f8
 Essential: yes
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
