@@ -58,10 +58,12 @@ sub do_notify {
 	my $errors = 0;
 
 	for my $line (split(/\s*\n+/, $args{'description'})) {
-		system('/usr/bin/logger', '-t', 'Fink', $args{'description'}) == 1 or ($errors++);
+		my $return = system('/usr/bin/logger', '-t', 'Fink', $args{'description'});
+		if ($return >> 8) {
+			$errors++;
+		}
 	}
 
-	print "$errors errors\n";
 	if ($errors) {
 		return undef;
 	} else {
