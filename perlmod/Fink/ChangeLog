@@ -1,3 +1,9 @@
+2003-12-17  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm Added prompt_selection_new (like prompt_selection
+	except parameters are less redundant and more logical). Rewrote
+	prompt_selection to be just a wrapper around prompt_selection_new.
+	
 2003-12-16  Daniel Macks <dmacks@netspace.org>
 
 	* Validation.pm: Remembered that Type doesn't always exist

@@ -39,7 +39,7 @@ BEGIN {
 					  &read_properties_multival
 					  &execute &execute_script &expand_percent
 					  &filename &print_breaking
-					  &prompt &prompt_boolean &prompt_selection
+					  &prompt &prompt_boolean &prompt_selection &prompt_selection_new
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
 					  &file_MD5_checksum &get_arch &get_sw_vers
@@ -688,26 +688,54 @@ sub prompt_selection {
 	$default_value = 1 unless defined $default_value;
 	my $names = shift;
 	my @choices = @_;
-	my ($key, $count, $answer);
+
+	my ($key, @choices_new);
+
+	foreach $key (@choices) {
+		if (exists $names->{$key}) {
+			push @choices_new, ($names->{$key}, $key);
+		} else {
+			push @choices_new, ($key, $key);
+		}
+	}
+
+	prompt_selection_new( $prompt, $default_value, @choices_new );
+}
+
+=item prompt_selection_new
+    my $answer = prompt_selection_new $prompt, $default, @choices;
+
+Same as prompt_selection, except instead of %names (valueN=>labelN)
+ordered by the list @choices of values, there is just @choices
+that is an ordered pairwise list (label1,value1,label2,value2,...).
+
+=cut
+
+sub prompt_selection_new {
+	my $prompt = shift;
+	my $default_value = shift;
+	$default_value = 1 unless defined $default_value;
+	my @choices = @_;
+	my ($count, $index, $answer);
+
+	if (@choices/2 != int(@choices/2)) {
+		die "Odd number of elements in \@choices (called by ",(caller)[1]," line ",(caller)[2],")";
+	}
 
 	require Fink::Config;
 	my $dontask = Fink::Config::get_option("dontask");
 
-	$count = 1;
-	foreach $key (@choices) {
-		print "\n($count)	 ";
-		if (exists $names->{$key}) {
-			print $names->{$key};
-		} else {
-			print $key;
-		}
+	$count = 0;
+	for ($index = 0; $index < @choices; $index+=2) {
 		$count++;
+		print "\n($count)	 $choices[$index]";
 	}
 	print "\n\n";
 
 	&print_breaking("$prompt [$default_value] ", 0);
 	if ($dontask) {
 		print "(assuming default)\n";
+		$answer = $default_value;
 	} else {
 		$answer = <STDIN> || "";
 		chomp($answer);
@@ -715,11 +743,11 @@ sub prompt_selection {
 			$answer = 0;
 		}
 		$answer = int($answer);
-		if ($answer > 0 && $answer <= $#choices + 1) {
-			return $choices[$answer-1];
+		if ($answer < 1 || $answer > $count) {
+			$answer = $default_value;
 		}
 	}
-	return $choices[$default_value-1];
+	return $choices[2*$answer-1];
 }
 
 =item version_cmp
