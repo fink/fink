@@ -1,0 +1,12 @@
+diff -ru blackbox-0.61.1/src/BaseDisplay.cc blackbox-0.61.1-patched/src/BaseDisplay.cc
+--- blackbox-0.61.1/src/BaseDisplay.cc	Thu Oct  5 23:05:40 2000
++++ blackbox-0.61.1-patched/src/BaseDisplay.cc	Wed Mar 21 13:20:04 2001
+@@ -232,7 +232,7 @@
+ #ifdef    HAVE_SIGACTION
+   struct sigaction action;
+ 
+-  action.sa_handler = signalhandler;
++  action.sa_handler = (RETSIGTYPE (*)())signalhandler;
+   action.sa_mask = sigset_t();
+   action.sa_flags = SA_NOCLDSTOP | SA_NODEFER;
+ 

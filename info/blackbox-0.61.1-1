@@ -1,0 +1,12 @@
+Package: blackbox
+Version: 0.61.1
+Revision: 1
+Source: ftp://portal.alug.org/pub/blackbox/0.6x.x/%n-%v.tar.gz
+ConfigureParams: --disable-nls
+Patch: %f.patch
+# The following is only needed on Darwin 1.2 / Mac OS X Public Beta.
+# Remove it for Darwin 1.3 / Mac OS X Final or if you use recent CVS
+# versions.
+PatchScript: patch -p1 <%a/%f-darwin12.patch
+Maintainer: Finlay Dobbie <finlay.dobbie@btinternet.com>
+Homepage: http://blackbox.alug.org/
