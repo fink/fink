@@ -1756,9 +1756,8 @@ EOF
 				$pkg->get_fullversion eq $lversion
 					? print " latest"
 					: print " old";
-				if ($pkg->is_installed()) {
-					print " installed";
-				};
+				print " have-deb" if $pkg->is_present();
+				print " installed" if $pkg->is_installed();
 				print "\n";
 			} elsif ($_ eq 'allversions') {
 				# multiline field, so indent 1 space always
@@ -1766,8 +1765,9 @@ EOF
 				my $lversion = &latest_version($package->list_versions());
 				print "$_:\n";
 				foreach (&sort_versions($package->list_versions())) {
-					printf " %s %s\n",
-						$package->get_version($_)->is_installed() ? "i" : " ",
+					printf " %1s%1s\t%s\n",
+						$package->get_version($_)->is_present() ? "b" : "",
+						$package->get_version($_)->is_installed() ? "i" : "",
 						$_;
 				}
 			} elsif ($_ eq 'description') {
