@@ -1,3 +1,16 @@
+2001-03-31  Christoph Pfisterer  <cp@chrisp.de>
+
+	* FinkVersion.pm: Set version number to "pre-0.2.0".
+
+	* PkgVersion.pm: Major changes to support dpkg and
+	bootstrapping. Added qualifiers to import list.
+	* Bootstrap.pm: Separated bootstrap from interactive
+	configuration. Massive changes to bootstrap with dpkg.
+	* Configure.pm: New module for interactive configuration. Only
+	minor changes from the old Bootstrap.pm.
+	* Engine.pm: Separated bootstrap from interactive
+	configuration. Added call to phase_build().
+
 2001-03-30  Christoph Pfisterer  <cp@chrisp.de>
 
 	* FinkVersion.pm: Bumped version number to 0.1.7.

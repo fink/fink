@@ -22,8 +22,9 @@
 package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
+use Fink::Services qw(&print_breaking &execute);
+use Fink::PkgVersion;
 use Fink::Engine;
-use Fink::Services qw(prompt prompt_boolean prompt_selection print_breaking read_properties read_properties_multival filename);
 
 use strict;
 use warnings;
@@ -42,135 +43,63 @@ our @EXPORT_OK;
 END { }       # module clean-up code here (global destructor)
 
 
-### create configuration interactively
+### bootstrap a base system
 
 sub bootstrap {
-  my ($umask, $otherdir);
+  my ($bsbase, $save_path);
+  my ($pkgname, $package);
+  my @plist = ("gettext", "tar", "dpkg");
+
+  $bsbase = "$basepath/bootstrap";
+  &print_breaking("Bootstrapping a base system via $bsbase.");
+
+  # create directories
+  if (-d $bsbase) {
+    &execute("rm -rf $bsbase");
+  }
+  &execute("mkdir -p $bsbase");
+  &execute("mkdir -p $bsbase/bin");
+  &execute("mkdir -p $bsbase/sbin");
+  &execute("mkdir -p $bsbase/lib");
+  &execute("mkdir -p $bsbase/var/lib/dpkg");
+
+  # set paths so that everything is found
+  $save_path = $ENV{PATH};
+  $ENV{PATH} = "$basepath/sbin:$basepath/bin:".
+               "$bsbase/sbin:$bsbase/bin:".
+               $save_path;
+
 
   print "\n";
-  &print_breaking("OK, I'll ask you some questions and update the ".
-		  "configuration file in '".$config->get_path()."'.");
-
-  # normal configuration
-  $umask =
-    &prompt("What umask should be used by Fink? If you don't want ".
-	    "Fink to set a umask, type 'none'.", "022");
-  if ($umask !~ /none/i) {
-    $config->set_param("UMask", $umask);
-    umask oct($umask);
-  }
-  $otherdir =
-    &prompt("In what additional directory should Fink look for downloaded ".
-	    "tarballs?", "");
-  if ($otherdir) {
-    $config->set_param("FetchAltDir", $otherdir);
-  }
-
-
-  # mirror selection
-  &choose_mirrors();
-
-
-  # write configuration
+  &print_breaking("BOOTSTRAP PHASE ONE: installing neccessary packages to ".
+		  "$bsbase without package management.");
   print "\n";
-  &print_breaking("Writing updated configuration to '".$config->get_path().
-		  "'...");
-  $config->save();
 
-
-  # install essential packages
-  # TODO: use Essential parameter of packages
-  # TODO: better interface to Engine
-  &print_breaking("I'll now install stow, which is required for Fink ".
-		  "operation.");
-  Fink::Engine::cmd_install("stow");
-}
-
-### mirror selection
-
-sub choose_mirrors {
-  my ($continent, $country, $answer);
-  my ($keyinfo, @continents, @countries, $key, $listinfo);
-  my ($mirrorfile, $mirrorname, $mirrortitle);
-  my ($all_mirrors, @mirrors, $mirror_labels, $site);
-
-  &print_breaking("Mirror selection");
-  $keyinfo = &read_properties("$basepath/fink/mirror/_keys");
-
-  ### step 1: choose a continent
-
-  @continents = ();
-  foreach $key (sort keys %$keyinfo) {
-    if (length($key) == 3) {
-      push @continents, $key;
+  foreach $pkgname (@plist) {
+    $package = Fink::PkgVersion->match_package($pkgname);
+    unless (defined $package) {
+      die "no package found for specification '$pkgname'!\n";
     }
+
+    $package->enable_bootstrap($bsbase);
+    $package->phase_unpack();
+    $package->phase_patch();
+    $package->phase_compile();
+    $package->phase_install();
+    $package->disable_bootstrap();
   }
 
-  &print_breaking("Choose a continent:");
-  $continent = &prompt_selection("Your continent?", 1, $keyinfo,
-				 @continents);
-
-  ### step 2: choose a country
-
-  @countries = ( "-" );
-  $keyinfo->{"-"} = "No selection - display all mirrors on the continent";
-  foreach $key (sort keys %$keyinfo) {
-    if ($key =~ /^$continent-/) {
-      push @countries, $key;
-    }
-  }
 
   print "\n";
-  &print_breaking("Choose a country:");
-  $country = &prompt_selection("Your country?", 1, $keyinfo,
-			       @countries);
-  if ($country eq "-") {
-    $country = $continent;
-  }
+  &print_breaking("BOOTSTRAP PHASE TWO: installing essential packages to ".
+		  "$basepath with package management.");
+  print "\n";
 
-  ### step 3: mirrors
+  Fink::Engine::cmd_install(@plist);
 
-  $listinfo = &read_properties("$basepath/fink/mirror/_list");
 
-  foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
-    next if $mirrorname =~ /^\s*$/;
-
-    $mirrorfile = "$basepath/fink/mirror/$mirrorname";
-    $mirrortitle = $mirrorname;
-    if (exists $listinfo->{lc $mirrorname}) {
-      $mirrortitle = $listinfo->{lc $mirrorname};
-    }
-
-    $all_mirrors = &read_properties_multival($mirrorfile);
-
-    @mirrors = ();
-    $mirror_labels = {};
-
-    if (exists $all_mirrors->{primary}) {
-      foreach $site (@{$all_mirrors->{primary}}) {
-	push @mirrors, $site;
-	$mirror_labels->{$site} = "Primary: $site";
-      }
-    }
-    if ($country ne $continent and exists $all_mirrors->{$country}) {
-      foreach $site (@{$all_mirrors->{$country}}) {
-	push @mirrors, $site;
-	$mirror_labels->{$site} = $keyinfo->{$country}.": $site";
-      }
-    }
-    if (exists $all_mirrors->{$continent}) {
-      foreach $site (@{$all_mirrors->{$continent}}) {
-	push @mirrors, $site;
-	$mirror_labels->{$site} = $keyinfo->{$continent}.": $site";
-      }
-    }
-
-    print "\n";
-    &print_breaking("Choose a mirror for '$mirrortitle':");
-    $answer = &prompt_selection("Mirror for $mirrortitle?", 1,
-				$mirror_labels, @mirrors);
-    $config->set_param("Mirror-$mirrorname", $answer);
-  }
+  #&execute("rm -rf $bsbase");
+  $ENV{PATH} = $save_path;
 }
 
 

@@ -22,7 +22,7 @@
 package Fink::PkgVersion;
 use Fink::Base;
 
-use Fink::Services qw(filename expand_percent expand_url execute find_stow latest_version);
+use Fink::Services qw(&filename &expand_percent &expand_url &execute &find_stow &latest_version);
 use Fink::Package;
 use Fink::Config qw($config $basepath);
 
@@ -48,7 +48,7 @@ END { }       # module clean-up code here (global destructor)
 sub initialize {
   my $self = shift;
   my ($pkgname, $version, $revision, $source);
-  my ($depspec, $deplist, $dep, $expand, $configure_params);
+  my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
   my ($i);
 
   $self->SUPER::initialize();
@@ -65,12 +65,14 @@ sub initialize {
   # percent-expansions
   $configure_params = "--prefix=\%p ".
     $self->param_default("ConfigureParams", "");
+  $destdir = "$basepath/src/root-".$self->{_fullname};
   $expand = { 'n' => $pkgname,
 	      'v' => $version,
 	      'r' => $revision,
 	      'f' => $self->{_fullname},
-	      'p' => $basepath,
-	      'i' => "$basepath/stow/".$self->{_fullname},
+	      'p' => $basepath, 'P' => $basepath,
+	      'd' => $destdir,
+	      'i' => $destdir.$basepath,
 	      'a' => "$basepath/fink/patch",
 	      'c' => $configure_params};
   $self->{_expand} = $expand;
@@ -103,6 +105,31 @@ sub initialize {
     $self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
     $self->{_sourcecount} = $i;
   }
+
+  $self->{_bootstrap} = 0;
+}
+
+### bootstrap helpers
+
+sub enable_bootstrap {
+  my $self = shift;
+  my $bsbase = shift;
+
+  $self->{_expand}->{p} = $bsbase;
+  $self->{_expand}->{d} = "";
+  $self->{_expand}->{i} = $bsbase;
+  $self->{_bootstrap} = 1;
+}
+
+sub disable_bootstrap {
+  my $self = shift;
+  my ($destdir);
+
+  $destdir = "$basepath/src/root-".$self->{_fullname};
+  $self->{_expand}->{p} = $basepath;
+  $self->{_expand}->{d} = $destdir;
+  $self->{_expand}->{i} = $destdir.$basepath;
+  $self->{_bootstrap} = 0;
 }
 
 ### get package name, version etc.
@@ -561,8 +588,11 @@ sub phase_install {
 
   # generate installation script
 
-  $install_script = "rm -rf \%i\n".
-    "mkdir -p \%i\n";
+  $install_script = "";
+  unless ($self->{_bootstrap}) {
+    $install_script .= "rm -rf \%d\n";
+  }
+  $install_script .= "mkdir -p \%i\n";
   if ($self->{_type} ne "bundle") {
     if ($self->has_param("InstallScript")) {
       $install_script .= $self->param("InstallScript");
@@ -597,28 +627,78 @@ sub phase_install {
   }
 }
 
+### build .deb
+
+sub phase_build {
+  my $self = shift;
+  my ($ddir, $destdir, $control);
+  my ($cmd);
+
+  chdir "$basepath/src";
+  $ddir = "root-".$self->{_fullname};
+  $destdir = "$basepath/src/$ddir";
+
+  # generate dpkg "control" file
+
+  my ($pkgname, $version, $revision, $depends);
+  $pkgname = $self->{_name};
+  $version = $self->{_version};
+  $revision = $self->{_revision};
+  $depends = join(", ", @{$self->{_depends}});
+  $control = <<EOF;
+Package: $pkgname
+Source: $pkgname
+Version: $version-$revision
+Depends: $depends
+Architecture: darwin-powerpc
+EOF
+  if ($self->has_param("Maintainer")) {
+    $control .= "Maintainer: ".$self->param("Maintainer")."\n";
+  }
+
+  if (&execute("mkdir -p $destdir/DEBIAN")) {
+    die "can't create directory for control files\n";
+  }
+  open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file: $!\n";
+  print CONTROL $control;
+  close(CONTROL) or die "can't write control file: $!\n";
+
+  ### create .deb using dpkg-deb
+
+  if (not -d "$basepath/debs") {
+    if (&execute("mkdir -p $basepath/debs")) {
+      die "can't create directory for packages\n";
+    }
+  }
+  $cmd = "dpkg-deb -b $ddir $basepath/debs";
+  if (&execute($cmd)) {
+    die "can't create package\n";
+  }
+
+  ### remove root dir
+
+  if (-e $destdir) {
+    if (&execute("rm -rf $destdir")) {
+      die "can't remove build directory $destdir\n";
+    }
+  }
+}
+
 ### activate
 
 sub phase_activate {
   my $self = shift;
-  my ($dir, $stow);
+  my ($deb, $debpath);
 
-  $dir = $self->get_fullname();
+  $deb = $self->get_name()."_".$self->get_fullversion()."_darwin-powerpc.deb";
+  $debpath = "$basepath/debs/$deb";
 
-  chdir "$basepath/stow";
-  if (-d $dir) {
-    # avoid conflicts for info documentation
-    if (-f "$dir/info/dir") {
-      &execute("rm -f $dir/info/dir");
-    }
+  if (not -f $debpath) {
+    die "can't find package $deb\n";
+  }
 
-    $stow = &find_stow;
-
-    if (&execute("$stow $dir")) {
-      die "stow failed\n";
-    }
-  } else {
-    die "Package directory $dir not found unter $basepath/stow!\n";
+  if (&execute("sudo dpkg -i $debpath")) {
+    die "can't install package/n";
   }
 }
 
@@ -626,19 +706,9 @@ sub phase_activate {
 
 sub phase_deactivate {
   my $self = shift;
-  my ($dir, $stow);
 
-  $dir = $self->get_fullname();
-
-  chdir "$basepath/stow";
-  if (-d $dir) {
-    $stow = &find_stow;
-
-    if (&execute("$stow -D $dir")) {
-      die "stow failed\n";
-    }
-  } else {
-    die "Package directory $dir not found unter $basepath/stow!\n";
+  if (&execute("dpkg --remove ".$self->get_name())) {
+    die "can't remove package/n";
   }
 }
 

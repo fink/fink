@@ -25,6 +25,7 @@ use Fink::Services qw(&prompt_boolean &print_breaking &print_breaking_prefix &la
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($basepath);
+use Fink::Configure;
 use Fink::Bootstrap;
 
 use strict;
@@ -43,6 +44,7 @@ our @EXPORT_OK;
 
 our %commands =
   ( 'rescan' => \&cmd_rescan,
+    'configure' => \&cmd_configure,
     'bootstrap' => \&cmd_bootstrap,
     'fetch' => \&cmd_fetch,
     'build' => \&cmd_build,
@@ -131,6 +133,10 @@ sub cmd_rescan {
   print "Re-reading package info...\n";
   Fink::Package->forget_packages();
   Fink::Package->scan($basepath."/fink/info");
+}
+
+sub cmd_configure {
+  Fink::Configure::configure();
 }
 
 sub cmd_bootstrap {
@@ -369,6 +375,7 @@ sub real_install {
       $package->phase_patch();
       $package->phase_compile();
       $package->phase_install();
+      $package->phase_build();
 
       if (($item->[3] & 4) == 0) {
 	# check for installed version
