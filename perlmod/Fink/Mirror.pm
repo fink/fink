@@ -81,6 +81,10 @@ sub new_from_name {
   }
   $self->{data} = &read_properties_multival($mirrorfile);
 
+  # Extract the timestamp, and delete it from the hash.
+  $self->{timestamp} = $self->{data}->{timestamp};
+  delete $self->{data}->{timestamp};
+
   $self->initialize();
 
   return $self;
