@@ -268,6 +268,9 @@ END { }				# module clean-up code here (global destructor)
 #	+ if 'fink describe' output will display poorly on vt100
 #	+ Check Package/Version/Revision for disallowed characters
 #	+ Check if have sufficient InfoN if using their features
+#   + Warn if shbang in dpkg install-time scripts
+#   + Error if %i used in dpkg install-time scripts
+#   + Warn if non-ASCII chars in any field
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -559,10 +562,16 @@ sub validate_info_file {
 			next;
 		}
 
-		# A #! line is worthless in dpkg install-time scripts
+		# dpkg install-time script stuff
 		if ($field =~ /^(pre|post)(inst|rm)script$/) {
+			# A #! line is worthless
 			if ($value =~ /^\s*\#!/) {
 				print "Warning: Useless use of explicit interpretter in \"$field\". ($filename)\n";
+				$looks_good = 0;
+			}
+			# must operate on %p not %i
+			if ($value =~ /\%i\//) {
+				print "Error: Use of \%i in field \"$field\". ($filename)\n";
 				$looks_good = 0;
 			}
 		}
@@ -654,10 +663,16 @@ sub validate_info_file {
 					$looks_good = 0;
 				}
 
-				# A #! line is worthless in dpkg install-time scripts
+				# dpkg install-time script stuff
 				if ($field =~ /^(pre|post)(inst|rm)script$/) {
+					# A #! line is worthless
 					if ($value =~ /^\s*\#!/) {
 						print "Warning: Useless use of explicit interpretter in field \"$field\" of \"$splitoff_field\". ($filename)\n";
+						$looks_good = 0;
+					}
+					# must operate on %p not %i
+					if ($value =~ /\%i\//) {
+						print "Error: Use of \%i in field \"$field\" of \"$splitoff_field\". ($filename)\n";
 						$looks_good = 0;
 					}
 				}
