@@ -1254,7 +1254,7 @@ sub resolve_depends {
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading $oper from ".$self->get_fullname()." ";
 		}
-		if ($self->find_debfile() && $op != 2 && lc($field) eq "depends") {
+		if ($self->find_debfile() && $include_build != 2 && lc($field) eq "depends") {
 			if (Fink::Config::verbosity_level() > 2) {
 				print "deb file...\n";
 			}
@@ -1328,7 +1328,7 @@ sub resolve_depends {
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading $oper from ".$self->get_fullname()." ";
 		}
-		if ($splitoff->find_debfile() && $op != 2 && lc($field) eq "depends") {
+		if ($splitoff->find_debfile() && $include_build != 2 && lc($field) eq "depends") {
 			if (Fink::Config::verbosity_level() > 2) {
 				print "deb file...\n";
 			}
