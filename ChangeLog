@@ -1,5 +1,11 @@
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 
+	* Makefile: run setup.sh before the tests so we have all the files
+		generated with a basepath pointing to a test base.  This should
+		allow the tests to run even if fink isn't installed.
+
+2003-11-20  Michael G Schwern <schwern@pobox.com>
+
 	* fink-virtual-pkgs.in: Cleaning up logic to check for standalone
 	and load modules.  Also, POSIX was always loaded and the fink
 	Perl library path added to lib, standalone or not.

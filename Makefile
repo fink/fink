@@ -1,4 +1,6 @@
 PREFIX=/sw
+VERSION=`cat VERSION`
+TEST_BASEPATH=$$PWD/t/basepath
 
 all:
 	@echo "usage: $(MAKE) <target>" && \
@@ -21,6 +23,7 @@ install:
 	./inject.pl
 
 test:
+	@./setup.sh $(TEST_BASEPATH)
 	@cd t && find . -name '*.t' | xargs perl -I../perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
 .PHONY: all test install
