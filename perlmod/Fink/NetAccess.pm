@@ -106,7 +106,7 @@ sub fetch_url_to_file {
 	
 	my ($mirrorname, $origmirror, $nextmirror);
 	my ($mirrorindex, $mirrororder, @mirror_list);
-	my ($path, $basename, $masterpath);
+	my ($path, $basename);
 
 	$mirrorindex = 0;
 	if ($origurl =~ m/^mirror\:(\w+)\:(.*?)([^\/]+\Z)/g) {
@@ -170,7 +170,6 @@ sub fetch_url_to_file {
 	}
 	if($nomirror == 0) {
 		push(@mirror_list, Fink::Mirror->get_by_name("master"));
-		$masterpath = ""; # Add package sections, etc here perhaps?
 		if($mirrororder eq "MasterFirst") {
 			push(@mirror_list, $origmirror);
 		} elsif($mirrororder eq "MasterLast") {
@@ -233,7 +232,7 @@ sub fetch_url_to_file {
 		if(defined $url && 
 		   (($url =~ /^master:/) || ($mirror_list[$mirrorindex]->{name} eq "master"))) {
 			$url =~ s/^master://;
-			$url .= $masterpath . $file;    # SourceRenamed tarball name
+			$url .= $file;    # SourceRenamed tarball name
 		} else {
 			$url .= $path . $basename;
 		}
