@@ -7,10 +7,11 @@ nam-CA: Canada
 nam-MX: Mexico
 nam-US: United States
 
-sam: South America
+sam: South America, Middle America and Caribbean
 sam-AR: Argentinia
 sam-BR: Brazil
 sam-CL: Chile
+sam-CR: Costa Rica
 
 eur: Europe
 eur-AT: Austria
@@ -33,6 +34,7 @@ eur-NL: Netherlands
 eur-NO: Norway
 eur-PL: Poland
 eur-PT: Portugal
+eur-RU: Russia
 eur-SE: Sweden
 eur-SI: Slovenia
 eur-SK: Slovak Republic
