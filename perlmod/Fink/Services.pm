@@ -479,7 +479,11 @@ EOSCRIPT
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
-		print "sudo -u nobody sh -c $cmd\n" unless $options{'quiet'};
+		if (not $options{'quiet'}) {
+			$drop_root
+				? print "sudo -u nobody sh -c $cmd\n"
+				: print "$cmd\n";
+		}
 		$drop_root
 			? system(qw/ sudo -u nobody sh -c /, $cmd)
 			: system($cmd);
