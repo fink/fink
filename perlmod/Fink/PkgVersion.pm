@@ -355,6 +355,10 @@ sub get_description {
       $desc .= " .\n Porting Notes:\n";
       $desc .= &format_description($self->param("DescPort"));
     }
+
+    if ($self->has_param("Maintainer")) {
+      $desc .= " .\n Maintainer: ".&format_oneline($self->param("Maintainer"))."\n";
+    }
   }
 
   return $desc;

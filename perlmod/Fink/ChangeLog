@@ -1,5 +1,8 @@
 2001-08-24  Christoph Pfisterer  <cp@chrisp.de>
 
+	* PkgVersion.pm (get_description): Added the Maintainer field to
+	'fink describe' output.
+
 	* Bootstrap.pm (bootstrap): Added code to install some
 	non-essential, but important packages at bootstrap time. Currently
 	installs apt.
