@@ -754,8 +754,6 @@ EOF
 	}
 
 	# In case no packages meet the requirements above.
-	# FIXME: This will print "Nothing remove" and "Nothing purge"
-	# the way it is currently used. Which isn't proper english...
 	if ($#packages < 0) {
 		print "Nothing ".$cmd."d\n";
 		exit(0);
