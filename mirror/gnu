@@ -1,4 +1,4 @@
-Primary: ftg://ftp.gnu.org/gnu
+Primary: ftp://ftp.gnu.org/gnu
 Timestamp: 2001-01-30
 nam-US: ftp://labrea.stanford.edu/pub/gnu
 nam-US: ftp://gatekeeper.dec.com/pub/GNU
