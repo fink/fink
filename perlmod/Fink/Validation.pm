@@ -379,6 +379,27 @@ sub validate_info_file {
 		}
 	}
 	
+	# error if have a source or MD5 for type nosource
+	if (lc $properties->{type} eq "nosource") {
+		if ($properties->{source}) {
+			print "Error: Not using a source but \"source\" specified. ($filename)\n";
+			$looks_good = 0;
+		}
+		if ($properties->{"source-md5"}) {
+			print "Error: Not using a source but \"source-md5\" specified. ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
+	# error if using the default source but there is no MD5
+	# (not caught later b/c there is no "source")
+	if (lc $properties->{type} ne "nosource" and not $properties->{source}) {
+		if (not $properties->{"source-md5"}) {
+			print "Error: No MD5 checksum specified for implicitly defined \"source\". ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
 	# Loop over all fields and verify them
 	foreach $field (keys %$properties) {
 		$value = $properties->{$field};
@@ -408,11 +429,20 @@ sub validate_info_file {
 			 }
 		}
 
-		# Error if there is a source without a MD5
+		# Error if there is a source without an MD5
 		if (($field eq "source" or $field =~ m/^source([2-9]|\d\d)$/)
 				and not $properties->{$field."-md5"}) {
 			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
 			$looks_good = 0;
+		}
+
+		# Error if there is an MD5 without a source
+ 		if ($field =~ /^(source\d+)-md5$/) {
+			my $sourcefield = $1;
+			if (not $properties->{$sourcefield}) {
+				print "Error: \"$field\" specified but no \"$sourcefield\" specified. ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 
 		if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {

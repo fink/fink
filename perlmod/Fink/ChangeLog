@@ -1,3 +1,9 @@
+2003-12-19  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Added errors if there is an MD5 without a
+	corresponding source, if no MD5 and using the implicit/default
+	source, or if there is a source or MD5 for type NoSource.
+	
 2003-12-17  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm Added prompt_selection_new (like prompt_selection
