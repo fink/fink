@@ -1447,13 +1447,15 @@ sub phase_build {
 
 	# generate dpkg "control" file
 
-	my ($pkgname, $version, $field);
+	my ($pkgname, $version, $field, $section);
 	$pkgname = $self->get_name();
 	$version = $self->get_fullversion();
+	$section = $self->get_section();
 	$control = <<EOF;
 Package: $pkgname
 Source: $pkgname
 Version: $version
+Section: $section
 Architecture: $debarch
 EOF
 	if ($self->param_boolean("Essential")) {
@@ -1658,7 +1660,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 	if (not $config->param_boolean("KeepRootDir") and not Fink::Config::get_option("keep_root") and -e $destdir) {
 		if (&execute("rm -rf $destdir")) {
-			&print_breaking("WARNING: Can't remove package build directory ".
+			&print_breaking("WARNING: Can't remove package root directory ".
 											"$destdir. ".
 											"This is not fatal, but you may want to remove ".
 											"the directory manually to save disk space. ".
