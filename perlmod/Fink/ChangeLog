@@ -1,3 +1,8 @@
+2001-10-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (cmd_scanpackages): Make sure the directory we're
+	scanning does exist.
+
 2001-09-27  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (phase_patch): New fields UpdateConfigGuessInDirs

@@ -269,10 +269,16 @@ sub cmd_scanpackages {
       $component = "main";
     }
 
+    if (! -d $treedir) {
+      if (&execute("mkdir -p $treedir")) {
+	die "can't create directory $treedir\n";
+      }
+    }
+
     $cmd = "dpkg-scanpackages $treedir override | gzip >$treedir/Packages.gz";
     if (&execute($cmd)) {
       unlink("$treedir/Packages.gz");
-      die "package scan failed\n";
+      die "package scan failed in $treedir\n";
     }
 
     open(RELEASE,">$treedir/Release") or die "can't write Release file: $!\n";
