@@ -460,7 +460,7 @@ sub validate_info_file {
 			# no intelligent word-wrap so warn for long lines
 			foreach my $line (split /\n/, $value) {
 				if (length $line > 77) {
-					print "Warning: \"$field\" contains line(s) exceeding 78 characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
+					print "Warning: \"$field\" contains line(s) exceeding 77 characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
 					$looks_good = 0;
 					last;
 				}
