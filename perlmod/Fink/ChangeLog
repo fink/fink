@@ -1,3 +1,7 @@
+2003-01-29 Ben Hines <benh57@users.sourceforge.net>
+
+	* Package.pm: Do not require storable to create index (Bug# 676512).
+	  
 2003-01-28  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm: Adjust dependencies when working with multiple
