@@ -827,8 +827,17 @@ example, "powerpc" for ppc.
 
 sub get_arch {
 	if(not defined $arch) {
-	  $arch = `/usr/bin/uname -p`;
-	  chomp $arch;
+		foreach ('/usr/bin/uname', '/bin/uname') {
+			# check some common places (why aren't we using $ENV{PATH}?)
+			if (-x $_) {
+				$arch = `$_ -p`;
+				last;
+			}
+		}
+		if (not defined $arch) {
+			die "Could not find an 'arch' executable\n";
+		}
+		chomp $arch;
 	}
 	return $arch;
 }

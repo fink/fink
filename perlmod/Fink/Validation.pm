@@ -390,26 +390,6 @@ sub validate_info_file {
 		$looks_good = 0;
 	}
 
-	# error if have a source or MD5 for type nosource
-	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
-		if ($properties->{source}) {
-			print "Error: Not using a source (type \"$1\") but \"source\" specified. ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($properties->{"source-md5"}) {
-			print "Error: Not using a source (type \"$1\") but \"source-md5\" specified. ($filename)\n";
-			$looks_good = 0;
-		}
-	}
-
-	# error if have an MD5 for implicit type nosource (i.e., source=none)
-	if ($properties->{"source-md5"}) {
-		if (not exists $properties->{source} or lc $properties->{source} =~ /^none$/i) {
-			print "Error: Not using a source (implicit nosource) but \"source-md5\" specified. ($filename)\n";
-			$looks_good = 0;
-		}
-	}
-
 	# error if using the default source but there is no MD5
 	# (not caught later b/c there is no "source")
 	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
@@ -467,19 +447,30 @@ sub validate_info_file {
 			}
 		}
 
-		# Error if there is a source without an MD5
-		if ((($field eq "source" and lc $properties->{source} ne "none")
-				or $field =~ m/^source([2-9]|\d\d)$/)
-				and not $properties->{$field."-md5"}) {
-			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
-			$looks_good = 0;
+		# Error if there is a source for Type:nosource or Type:bundle
+		# Error if there is a source without an associated MD5
+ 		if ($field =~ /^source\d*$/) {
+			if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
+				print "Error: \"$field\" specified for \"type: $1\". ($filename)\n";
+				$looks_good = 0;
+			} elsif ($value !~ /^none$/i and not $properties->{$field."-md5"}) {
+				print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 
 		# Error if there is an MD5 without a source
- 		if ($field =~ /^(source\d+)-md5$/) {
+		# Error if there is an MD5 for a source "none"
+ 		if ($field =~ /^(source\d*)-md5$/) {
 			my $sourcefield = $1;
 			if (not $properties->{$sourcefield}) {
-				print "Error: \"$field\" specified but no \"$sourcefield\" specified. ($filename)\n";
+				if ($sourcefield =~ /\d/) {
+					# Source (but not SourceN) can be implicit
+					print "Error: MD5 checksum specified non-existent \"$sourcefield\". ($filename)\n";
+					$looks_good = 0;
+				}
+			} elsif ($properties->{$sourcefield} =~ /^none$/i) {
+				print "Error: MD5 checksum specified for \"$sourcefield: none\". ($filename)\n";
 				$looks_good = 0;
 			}
 		}
@@ -497,7 +488,7 @@ sub validate_info_file {
 		}
 
 		# Validate splitoffs
-		if ($field =~ m/^splitoff([2-9]|\d\d)?$/) {
+		if ($field =~ m/^splitoff([2-9]|[1-9]\d+)?$/) {
 			# Parse the splitoff properties
 			my $splitoff_properties = $properties->{$field};
 			my $splitoff_field = $field;
@@ -541,12 +532,12 @@ sub validate_info_file {
 
 		# Warn if field is unknown
 		unless ($valid_fields{$field}
-				 or $field =~ m/^splitoff([2-9]|\d\d)$/
-				 or $field =~ m/^source([2-9]|\d\d)$/
-				 or $field =~ m/^source([2-9]|\d\d)-md5$/
-				 or $field =~ m/^source([2-9]|\d\d)extractdir$/
-				 or $field =~ m/^source([2-9]|\d\d)rename$/
-				 or $field =~ m/^tar([2-9]|\d\d)filesrename$/) {
+				 or $field =~ m/^splitoff([2-9]|[1-9]\d+)$/
+				 or $field =~ m/^source([2-9]|[1-9]\d+)$/
+				 or $field =~ m/^source([2-9]|[1-9]\d+)-md5$/
+				 or $field =~ m/^source([2-9]|[1-9]\d+)extractdir$/
+				 or $field =~ m/^source([2-9]|[1-9]\d+)rename$/
+				 or $field =~ m/^tar([2-9]|[1-9]\d+)filesrename$/) {
 			print "Warning: Field \"$field\" is unknown. ($filename)\n";
 			$looks_good = 0;
 			next;
