@@ -1,3 +1,7 @@
+2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
 2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: fix error which prevented &enforce_gcc from working
