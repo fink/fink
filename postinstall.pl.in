@@ -31,7 +31,7 @@ use lib "@PREFIX@/lib/perl5";
 
 use Fink::Bootstrap qw(&check_host);
 use Fink::Services qw(&print_breaking &prompt_boolean
-                         &read_config &execute);
+			&read_config &execute);
 
 use Fink::Config qw($config);
 
