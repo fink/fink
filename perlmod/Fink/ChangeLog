@@ -1,3 +1,8 @@
+2004-10-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: Warn users with the broken gcc, whenever they compile
+	something.
+	
 2004-10-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Add the broken-gcc package, currently detects
