@@ -1,3 +1,51 @@
+2004-07-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.6.1 of fink-mirrors
+
+2004-07-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _list, apt: add mirror list for apt-get repository
+	* website, cvs-repository, _urls, inject.pl, install.sh: store the 
+	URL's for fink-related sites in /sw/lib/fink/URL
+
+2004-05-31  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.2.1 of fink-mirrors
+
+2004-05-31  David H. <dmalloc@users.sourceforge.net>
+
+	* master, rsync: Added new Master mirror for 
+	Oceania in Australia,
+		*bne.qld.au.finkmirrors.net
+		Maintainer:
+		Dan Goodes
+		support@planetmirror.com
+	Changed the master rsync servers DNS for the
+	Master record of each continent
+
+2004-05-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* gnu: Only use mirrors which my tests showed have libtool-1.5.6.
+	It looks like a whole bunch of gnu mirrors have not been updated
+	since June 2003, when gnu stopped rsync updating.
+
+2004-05-08  David H. <dmalloc@users.sourceforge.net>
+	* added new Master mirror for Asia
+		University of Tokyo
+		distfiles.master.asi.finkmirrors.net
+		Maintainer:
+		Sodans
+		sodans@users.finkmirrors.net
+
+2004-04-29  David H. <dmalloc@users.sourceforge.net>
+
+	* added new full mirror in Indiana, USA
+		University of Notre Dame
+		distfiles.sbn.in.us.finkmirrors.net
+		Maintainer:
+		Brandon and the OSM Team
+		osm@cse.nd.edu
+
 2004-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Releasing version 0.20.0.1 of fink-mirrors
