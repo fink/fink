@@ -528,7 +528,7 @@ sub setup_package_object {
 #			print "Type: ",$properties->{type},"\n";
 			my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
 			foreach (keys %$type_hash) {
-				( $pkg_expand{"type_pkg[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+				( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 			}
 		}
 	}

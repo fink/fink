@@ -1,3 +1,26 @@
+2004-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Added missing support for %type_raw[] in Package
+	field.
+
+2004-02-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, PkgVersion.pm: Full multivariant support. 'Type:
+	foo, bar' allowed (means package is of both types). 'Type: foo
+	thing' allowed for arbitrary type and subtype (no longer limited
+	to languages and lang-versions; any strings of \S+ will do (but no parens or commas).
+	Subtype "" means null string. If no subtype is given, the type is
+	used ('Type: foo' means 'Type: foo foo'). 'Type: foo (thing1
+	thing2)' allowed (autogenerates two packages, one with 'Type: foo
+	thing1' one with 'Type: foo thing2'). 'Type foo (boolean)' is a
+	synonym for 'Type: foo (foo "")'. Subtype list expansion is
+	recursive ('Type: foo (a b), bar (c d)' gives all 4 combinations).
+	All subtypes (as entered and with periods removed) are available
+	for percent expansion: 'Type: perl 5.8.1' gives
+	%type_raw[perl]=5.8.1 and %type_pkg[perl]=581 using %type[foo].
+	* FinkVersion.pm: Bumped InfoN -> N=2 so can handle %-expansion in
+	Package and multiple Type values.
+
 2004-02-29  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: stash InfoN value as 'infon' not '_info_level' since
