@@ -962,7 +962,7 @@ EOF
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
  
-	my $answer = &prompt_boolean("Do you want to continue?", default => 1);			
+	my $answer = &prompt_boolean("Do you want to continue?", default => 1);
 	if (! $answer) {
 		die "Purge not performed!\n";
 	}
