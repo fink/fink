@@ -23,7 +23,7 @@
 package Fink::Mirror;
 
 use Fink::Services qw(&prompt_selection
-					  &read_properties &read_properties_lines &read_properties_multival);
+					  &read_properties &read_properties_multival_var &read_properties_multival);
 use Fink::Config qw($config $libpath);
 
 use strict;
@@ -88,7 +88,7 @@ sub new_from_name {
 	    foreach $key ( keys %mirrordefaults ) {
 		if ($name eq $key) {
 		    $mirrordefault = $mirrordefaults{$key}."\n";
-		    $self->{data} = &read_properties_lines($mirrordefault);
+		    $self->{data} = &read_properties_multival_var("",$mirrordefault);
 		    $self->initialize();
 		    return $self;
 		}

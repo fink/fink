@@ -1,5 +1,13 @@
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* Service.pm: *don't* export "read_properties_lines".
+	Instead, introduce new subroutines "read_properties_multival_var"
+	and "read_properties_multival_lines", the first of which is exported.
+	* Mirror.pm: use "read_properties_multival_var" when setting 
+	default values for mirrors.
+
+2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
         * Mirror.pm: setting default values for rsync and sourceforge 
         mirror sets, as well as master mirror set, in case the mirror
         directory is absent or damaged.
