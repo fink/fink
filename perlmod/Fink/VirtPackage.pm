@@ -173,6 +173,7 @@ END
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+				$hash->{provides}    = 'system-java';
 				$hash->{descdetail}  = <<END;
 This package represents the currently installed version
 of Java $dir.
