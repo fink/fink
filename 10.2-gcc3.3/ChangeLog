@@ -1,8 +1,8 @@
 2003-09-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* updated apt, dpkg, ncurses to GCC 3.3 revisions; also added
-	BuildDepends: fink-prebinding to apt, bzip2, debianutils, gettext,
-	libiconv, ncurses.
+	* updated apt, dpkg, dpkg-bootstrap, ncurses to GCC 3.3 revisions; 
+	also added 	BuildDepends: fink-prebinding to apt, bzip2,
+	debianutils, gettext, libiconv, ncurses.
 
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

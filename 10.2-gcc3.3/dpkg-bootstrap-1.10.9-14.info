@@ -1,6 +1,6 @@
 Package: dpkg-bootstrap
 Version: 1.10.9
-Revision: 4
+Revision: 14
 Depends: gettext, gzip, tar
 Maintainer: Max Horn <max@quendi.de>
 Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
