@@ -1,3 +1,7 @@
+2004-10-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Fixed ignoring of null OR clusters in lol2pkglist.
+
 2004-10-19  David Höhn <dmalloc@users.sourceforge.net>
 
 	* Configure.pm: Use print_breaking for the extremely long
