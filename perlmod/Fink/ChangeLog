@@ -1,3 +1,13 @@
+2003-08-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: added use User.pm and added call to get_perms which	
+	  returns a postinstscript to set perms at install.  And to make sure
+	  user exists.
+	* PkgVersion.pm: check if need to add user and/or group during build
+	* User.pm: added a few new subs and completing others.  No longer
+	  need a db for this will just use User.pm to check the current
+	  stuff and can form a list from that if need be.
+
 2003-08-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* User.pm: adding User.pm for all user/group functions, started

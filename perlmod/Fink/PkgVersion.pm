@@ -36,6 +36,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
+use Fink::User qw(&get_perms);
 
 use File::Basename qw(&dirname);
 
@@ -1063,6 +1064,9 @@ sub phase_unpack {
 			}
 		}
 
+		### Add check for User/Group
+		### FIXME
+
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
 		if ($i < 2) {
 			$renamefield = "TarFilesRename";
@@ -1803,6 +1807,23 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		if (&execute("mkdir -p ".$self->get_debpath())) {
 			die "can't create directory for packages\n";
 		}
+	}
+
+	my $name = 0;
+	my $type = 0;
+
+	if ($self->has_param("User")) {
+		$name = $self->param("User");
+		$type = "user";
+	} elsif ($self->has_param("Group");
+		$name = $self->param("Group");
+		$type = "group";
+	}
+
+	if (my $script = Fink::User->get_perms($ddir, $name, $type)) {
+		if ($script) {
+			### Add $script to top of postinstscript
+		} 
 	}
 	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {

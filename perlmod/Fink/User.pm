@@ -38,12 +38,11 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw();	# eg: qw($Var1 %Hashit &func3);
+	@EXPORT_OK	 = qw(&get_perms);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
-our ($usrgrps, @users, @groups, $db_outdated);
 our ($lowUID, $highUID, $lowGID, $highGID);
 
 $lowUID = $config->param("lowUID") || 250;
@@ -51,24 +50,7 @@ $highUID = $config->param("highUID") || 299;
 $lowGID = $config->param("lowGID") || 250;
 $highGID = $config->param("highGID") || 299;
 
-@users = ();
-@groups = ();
-%usrgrps = ();
-$db_outdated = 1;
-
 END { }				# module clean-up code here (global destructor)
-
-### %usrgrps hash/info layout
-### {user} ->
-###   {$usrname}{$uid}      "user id range 250...299 (next avail or ask)"
-###             {$gid}      "group id (primary group, group must be made first)"
-###             {$homedir}  "user home directory (mkdir if need or /dev/null)"
-###             {$shell}    "user shell (default: /usr/bin/false or /dev/null)"
-###             {$desc}     "user description"
-###             {@packages} "array of pkgs that need this user, if 0 remove"
-### {group} ->
-###   {$grpname}{$gid}      "group id range 250...299 (next avail or ask)"
-###             {@packages} "array of pkgs that need this group, if 0 remove"
 
 ### Create User
 sub add_user {
@@ -145,7 +127,7 @@ sub get_id {
 	### ask for uid or gid via type
 	while (not $self->is_id_free($type, $id) {
 		$id = $self->get_next_avail($type);
-		if ($type == "group") {
+		if ($type eq "group") {
 			$id = &prompt("Please enter a GID for $name ".
 			              "[$lowGID...$highGID] ", $id);
 		} else {
@@ -164,7 +146,7 @@ sub is_id_free {
 	my $id = shift;
 	my ($name);
 
-	if ($type == "user") {
+	if ($type eq "user") {
 		while ($name = User::pwent::getpwuid($id)) {
 			return 1 if not $name;
 		}
@@ -177,13 +159,39 @@ sub is_id_free {
 	return 0;
 }
 
+### check is a user or group exists before adding a user or group
+sub check_for_name {
+	my $self = shift;
+	my $type = shift;
+	my $name = shift;
+	my $id = 0;
+
+	### find if a user exists
+	while ($name not $currentname) {
+		$id++;
+		if ($type eq "group") {
+			$currentname = User::grent::getgrgid($id);
+			if ($name eq $currentname) {
+				return 1;
+			}
+		} else {
+			$currentname = User::pwent::getpwuid($id);
+			if ($name eq $currentname) {
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 ### Get next available id
 sub get_next_avail {
 	my $self = shift;
 	my $type = shift;
 	my ($id, $user, $uid, $group, $gid, $pass);
 
-	if ($type == "user") {
+	if ($type eq "user") {
 		while (($user,$pass,$uid) = User::pwent::getpwent) {
 			next if ($uid < $lowUID) || ($uid > $highUID);
 			$id++;
@@ -201,53 +209,45 @@ sub get_next_avail {
 	return $id;
 }
 
-### Forget users and groups and reload via debs or info of installed pkgs
-sub forget_ids {
-	$self = shift;
-
-	@users = ();
-	@groups = ();
-	%usrgrps = ();
-	db_outdated = 1;
-}
-
-### get list of users and groups, either from cache or files
-sub get_all_ids {
+### Get a list of uid:gid for all files in a pkg, this is per pkg not just
+### parent pkgs, return a postinstscript to set them, include it in the deb
+sub get_perms {
 	my $self = shift;
-	my $db = "$basepath/var/db/ids.db";
-	my ($group, $user);
+	my $rootdir = shift;
+	my $name = shift;
+	my $type = shift;
+	my $script = "";
 
-	$self->forget_ids();
-
-	# If we have the Storable perl module, try to use the ids index
-	if (-e $db) {
-		eval {
-			require Storable; 
-
-			# We assume the DB is up-to-date unless told otherwise
-			$db_outdated = 0;
-		
-			%usrgrps = %{Storable::retrieve($db)};
-			foreach $group (keys %$usrgrps{group}) {
-				push($group, @groups);
-			}
-			foreach $user (keys %$usrgrps{user}) {
-				push($user, @users);
-			}
-		}
-	}
-	
-	# Regenerate the DB if it is outdated
-	if ($db_outdated) {
-		$self->update_id_db();
+	if ($name == 0) {
+		return $script;
 	}
 
+	unless ($self->check_for_name($type, $name)) {
+		### add user
+	}
+
+	if ($self->set_perms($rootdir)) {
+	}
+
+	$script = $self->build_user_script();
+
+	return $script;
 }
 
-### read the infofiles and update the database, if needed and we are root
-### need list of installed pkgs, only scan installed pkgs
-sub update_id_db {
+### add check/add user script and then set perms
+sub build_user_script {
 	my $self = shift;
+	my $script = "";
+
+	return $script;
+}
+
+### Set everything to root:wheel before packaging to keep all debs the same
+sub set_perms {
+	my $self = shift;
+	my $rootdir = shift;
+
+	return 0;
 }
 
 ### EOF
