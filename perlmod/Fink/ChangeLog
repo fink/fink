@@ -1,5 +1,10 @@
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 
+	* FinkVersion.pm.in: Documenting Fink::FinkVersion.  Removing module
+	template cruft.
+
+2003-11-20  Michael G Schwern <schwern@pobox.com>
+
 	* Config.pm: Document exported variables.  Document that you need
 	a Fink::Config object for them to work and that its a Bad Idea
 	to have two Fink::Config objects.

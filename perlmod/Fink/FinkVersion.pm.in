@@ -25,56 +25,95 @@ package Fink::FinkVersion;
 use strict;
 use warnings;
 
-BEGIN {
-	use Exporter ();
-	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION	 = 1.00;
-	@ISA		 = qw(Exporter);
-	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&fink_version &distribution_version &pkginfo_version);
-	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
-}
-our @EXPORT_OK;
+require Exporter;
+our @ISA	 = qw(Exporter);
+our @EXPORT_OK	 = qw(&fink_version &distribution_version &pkginfo_version);
+our %EXPORT_TAGS = (':ALL' => \@EXPORT_OK);
+
+use Fink::Config qw($basepath);
 
 
-# this is the one and only version number
-our $fink_version = "@VERSION@";
+=head1 NAME
 
+Fink::FinkVersion - Fink version numbers
 
-END { }				# module clean-up code here (global destructor)
+=head1 SYNOPSIS
 
+  use Fink::FinkVersion qw(:ALL);
 
-### return package manager version
+  my $fink_version    = fink_version;
+  my $dist_version    = distribution_version;
+  my $pkginfo_version = pkginfo_version;
+
+=head1 DESCRIPTION
+
+This module retrieves the version numbers of various parts of the fink
+installation.
+
+=head2 Functions
+
+These functions are exported on request.  You can export them all with
+
+  use Fink::FinkVersion qw(:ALL);
+
+=over 4
+
+=item fink_version
+
+  my $fink_version = fink_version;
+
+Returns the version of the fink source code.
+
+=cut
 
 sub fink_version {
-	return $fink_version;
+	return "@VERSION";
 }
 
-### retrieve distribution version
+
+=item distribution_version
+
+  my $dist_version = distribution_version
+
+Returns the fink distribution version you're currently using.
+
+=cut
 
 sub distribution_version {
 	my $dv;
-	if (-f "@BASEPATH@/fink/VERSION") {
-		chomp($dv = `/bin/cat @BASEPATH@/fink/VERSION`);
-	} elsif (-f "@BASEPATH@/etc/fink-release") {
-		chomp($dv = `/bin/cat @BASEPATH@/etc/fink-release`);
+	if (-f "$basepath/fink/VERSION") {
+		chomp($dv = `/bin/cat $basepath/fink/VERSION`);
+	} elsif (-f "$basepath/etc/fink-release") {
+		chomp($dv = `/bin/cat $basepath/etc/fink-release`);
 	} else {
 		$dv = "unknown";
 	}
 	return $dv;
 }
 
-### retrieve version stamp of package info
+
+=item pkginfo_version
+
+  my $pkginfo_version = pkginfo_version;
+
+Returns from whence you updated your packages.  If you're using a point
+release it will return that.  Otherwise if you're using one of the dynamic
+methods...
+
+    rsync       packages updated via rsync
+    cvs         packages updated via cvs
+
+=cut
 
 sub pkginfo_version {
 	my $pv = "0";
 	my ($fn, $v);
 	foreach $fn (glob("@BASEPATH@/fink/stamp-*")) {
-		if ($fn =~ /\/stamp-rsync/) {
+		if ($fn =~ m{/stamp-rsync}) {
 			return "rsync";
-		} elsif ($fn =~ /\/stamp-cvs/) {
+		} elsif ($fn =~ m{/stamp-cvs}) {
 			return "cvs";
-		} elsif ($fn =~ /\/stamp-rel-(.+)$/) {
+		} elsif ($fn =~ m{/stamp-rel-(.+)$}) {
 			$v = $1;
 			$pv = $v if ($v gt $pv);
 		}
@@ -83,6 +122,8 @@ sub pkginfo_version {
 	return $pv;
 }
 
+=back
 
-### EOF
+=cut
+
 1;
