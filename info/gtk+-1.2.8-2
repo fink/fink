@@ -1,0 +1,12 @@
+Package: gtk+
+Version: 1.2.8
+Revision: 2
+Source: gnome
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+Depends: x11, glib, gettext
+CommentPort: Uses autoconf and libtool. The usual fix.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gtk.org/
