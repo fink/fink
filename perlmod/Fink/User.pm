@@ -65,7 +65,7 @@ sub add_user {
 	my $home = shift;
 	my $group = shift;
 
-    my $uid = $self->get_id("user", $user);
+	my $uid = $self->get_id("user", $user);
 
 	my $cmd  = "$basepath/sbin/useradd -c $desc -d $home -e 0";
 	   $cmd .= "-f 0 -g $group -s $shell -u $uid $user";
@@ -229,64 +229,39 @@ sub get_next_avail {
 sub get_perms {
 	my $self = shift;
 	my $rootdir = shift;
-	my $name = shift;
-	my $type = shift;
-	my $desc = shift;
-	my $pass = shift || "";
-	my $shell = shift || "/usr/bin/false";
-	my $home = shift || "/tmp";
-	my $group = shift || $name;
 	my $script = "";
 
-	unless ($name) {
-		return $script;
-	}
-
-    unless ($pass) {
-        $pass = $self->mkpasswd();
-    }    
-
-	unless ($self->check_for_name($type, $name, $desc, $pass, $shell,
-	           $home, $group)) {
-		### add user/group
-		if ($type eq "user") {
-            $self->add_user($name, $desc, $pass, $shell, $home, $group);
-        } else {
-            $self->add_group($name, $desc, $pass);
-        }
-	}
-	
 	my (@filelist, @files, @users, @groups);
 	my ($wanted, $file, $usr, $grp);
-    my ($dev, $ino, $mode, $nlink, $uid, $gid);
+	my ($dev, $ino, $mode, $nlink, $uid, $gid);
     
-    $wanted =
-        sub {
-            if (-x) {
-                push @filelist, $File::Find::fullname;
-            }
-        };
-    find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $rootdir);
+	$wanted =
+		sub {
+			if (-x) {
+				push @filelist, $File::Find::fullname;
+			}
+		};
+	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $rootdir);
     
 	foreach $file (@filelist) {
-	  ### Remove $basepath/src/root-...
-	  $file =~ s/^$basepath\/src\/root-.+$basepath/$basepath/g;
-	  ### Don't add DEBIAN dir
-	  next if ($file =~ /DEBIAN/);
+		### Remove $basepath/src/root-...
+		$file =~ s/^$basepath\/src\/root-.+$basepath/$basepath/g;
+		### Don't add DEBIAN dir
+		next if ($file =~ /DEBIAN/);
 	  
-	  ($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
+		($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
 	  
-	  $usr = User::pwent::getpwuid($uid);
-	  $grp = User::grent::getgrgid($gid);
+		$usr = User::pwent::getpwuid($uid);
+		$grp = User::grent::getgrgid($gid);
 	  
-	  push(@files, $file);
-	  push(@users, $usr);
-	  push(@groups, $grp);
-    }
+		push(@files, $file);
+		push(@users, $usr);
+		push(@groups, $grp);
+	}
 
-    $file = join(":", @files);
-    $usr = join (":", @users);
-    $grp = join (":", @groups);
+	$file = join(":", @files);
+	$usr = join (":", @users);
+	$grp = join (":", @groups);
 
 	$self->set_perms($rootdir, $file);
 
@@ -297,50 +272,32 @@ sub get_perms {
 
 ### add check/add user script and then set perms
 sub add_user_script {
-    my $self = shift;
-    my $name = shift;
-    my $type = shift;
-    my $desc = shift;
+	my $self = shift;
+	my $name = shift;
+	my $type = shift;
+	my $desc = shift;
 	my $pass = shift || "";
 	my $shell = shift || "/usr/bin/false";
 	my $home = shift || "/tmp";
 	my $group = shift || $name;
     
-    my $script = "";
+	my $script = "";
 
-    unless ($name) {
-        return $script;
-    }
+	### FIXME
     
-    unless ($pass) {
-        $pass = $self->mkpasswd();
-    }    
-
-    ### FIXME
-    
-    return $script;
+	return $script;
 }
 
 ### Check remove user/group
 sub remove_user_script {
-    my $self = shift;
-    my $name = shift;
-    my $type = shift;
-    my $script = "";
+	my $self = shift;
+	my $name = shift;
+	my $type = shift;
+	my $script = "";
     
-    ### FIXME
+	### FIXME
     
-    return $script
-}
-
-### Return a passwd
-sub mkpasswd {
-    $self = shift;
-    $pass = "";
-    
-    ### FIXME
-    
-    return $pass;
+	return $script
 }
 
 ### build script to set user/groups
@@ -357,10 +314,10 @@ sub build_chown_script {
 	my @users = split(/:/, $users);
 	my @groups = split(/:/, $groups);
 
-    foreach $file (@files) {
-        $script .= "chown @users[$i]:@groups[$i] $file\n";
-        $i++;
-    }
+	foreach $file (@files) {
+		$script .= "chown @users[$i]:@groups[$i] $file\n";
+		$i++;
+	}
     
 	return $script;
 }
@@ -374,10 +331,10 @@ sub set_perms {
 	my @files = split(/:/, $files);
 	
 	foreach $file (@files);
-        if (&execute("chown root:wheel $file")) {
-            die "Couldn't change ownershil of $file!\n";
-        }
-    }
+		if (&execute("chown root:wheel $file")) {
+			die "Couldn't change ownershil of $file!\n";
+		}
+	}
 
 	return 0;
 }

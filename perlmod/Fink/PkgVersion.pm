@@ -78,6 +78,12 @@ sub initialize {
 		$self->{_perlversion} = $1;
 		$self->{_type} = $type;
 	}
+	### make type "user" and/or "group" equal to bundle
+	if ($self->{_type} eq "user") {
+		$self->{_type} = $type = "bundle";
+	} elsif ($self->{_type} eq "group") {
+		$self->{_type} = $type = "bundle";
+	}
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
 
@@ -1064,9 +1070,6 @@ sub phase_unpack {
 			}
 		}
 
-		### Add check for User/Group
-		### FIXME
-
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
 		if ($i < 2) {
 			$renamefield = "TarFilesRename";
@@ -1639,59 +1642,45 @@ EOF
         $scriptbody = "";
         
         ### Check for Group/User, if exists then process
-        if ($self->has_param("Group") || $self->has_param("User")) {
-        	my ($name, $type) = (0, 0);
-        	my ($desc, $pass, $shell, $home, $group, $tmp);
+	if ($self->has_param("Group") || $self->has_param("User")) {
+		### Add user/group check to preinst if needed
+		if ($scriptname eq "preinst" && $self->{_type} = "bundle") {
+			my ($name, $type) = (0, 0);
+			my ($desc, $pass, $shell, $home, $group, $tmp);
     
-            ### Need to process group first since user might depend on it
-            if ($self->has_param("Group")) {
-                $tmp = $self->param("Group");
-                $tmp = &expand_percent($tmp, $self->{_expand});
-                ($name, $desc, $pass) = split(/:/, $tmp);
-                $type = "group";
-            } elsif ($self->has_param("User")) {
-                $tmp = $self->param("User");
-                $tmp = &expand_percent($tmp, $self->{_expand});
-                ($name, $group, $desc, $pass, $shell, $home) =
-                        split(/:/, $tmp);
-                $type = "user";
-            }
-            ### Add user/group check to preinst if needed
-            if ($scriptname eq "preinst") {
+			if ($self->has_param("Group")) {
+				$tmp = $self->param("Group");
+				$tmp = &expand_percent($tmp, $self->{_expand});
+				($name, $desc, $pass) = split(/:/, $tmp);
+				$type = "group";
+			} elsif ($self->has_param("User")) {
+				$tmp = $self->param("User");
+				$tmp = &expand_percent($tmp, $self->{_expand});
+				($name, $group, $desc, $pass, $shell, $home) =
+							split(/:/, $tmp);
+				$type = "user";
+			}
             
-                my $script =  Fink::User->add_user_script($name, $type,
-                                $desc, $pass, $shell, $home, $group);
+			my $script =  Fink::User->add_user_script($name, $type,
+					$desc, $pass, $shell, $home, $group);
 
-                if ($script) {
-                    ### Add $script to top of preinstscript
-                    $script .= "\n";
-                    $scriptbody = $script;
-                }
-            }
+			if ($script) {
+				### Add $script to top of preinstscript
+				$script .= "\n";
+				$scriptbody = $script;
+			}
+		}
         
-            ### Add chown script to postinst script if needed
-            if ($scriptname eq "postinst") {
-                my $script = Fink::User->get_perms($ddir, $name, $type,
-                                $desc, $pass, $shell, $home, $group);
+		### Add chown script to postinst script if needed
+		if ($scriptname eq "postinst") {
+			my $script = Fink::User->get_perms($ddir);
 
-                if ($script) {
-                    ### Add $script to top of postinstscript
-                    $script .= "\n";
-                    $scriptbody = $script;
-                }
-            }
-            
-            ### Add remove user/group check/script if needed
-            if ($scriptname eq "postrm") {
-                ### FIXME need to figure out a script for this.
-                my script = Fink::User->remove_user_script($name, $type);
-                
-                if ($script) {
-                    ### Add check to remove user/group to top of postrm
-                    $script .= "\n";
-                    $scriptbody = $script;
-            }
-        }
+			if ($script) {
+				### Add $script to top of postinstscript
+				$script .= "\n";
+				$scriptbody = $script;
+			}
+		}
 
 		# get script piece from package description
 		if ($self->has_param($scriptname."Script")) {

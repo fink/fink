@@ -1,3 +1,8 @@
+2003-08-11  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* removing userutils, since they are just a set of shell scripts
+	  I'll add the code directly into fink
+
 2003-08-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* added userutils to essential pkgs for the fink user/group
