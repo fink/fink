@@ -78,7 +78,7 @@ sub configure {
 		$binary_dist = 1;
 	}
 	$binary_dist =
-		&prompt_boolean("Download pre-compiled binary packages from ".
+		&prompt_boolean("Should Fink try to download pre-compiled packages from ".
 		                "the binary distribution if available?", $binary_dist);
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
@@ -86,10 +86,10 @@ sub configure {
 	$verbose =
 		&prompt_selection_new("How verbose should Fink be?",
 				      [value=>$verbose], 
-				      ( "Quiet (don't show download stats)" => 0,
-					"Low (don't show tarballs being expanded)" => 1,
-					"Medium (shows almost everything)" => 2,
-					"High (shows everything)" => 3 ) );
+				      ( "Quiet (do not show download statistics)" => 0,
+					"Low (do not show tarballs being expanded)" => 1,
+					"Medium (will show almost everything)" => 2,
+					"High (will show everything)" => 3 ) );
 	$config->set_param("Verbose", $verbose);
 
 	# proxy settings
@@ -101,7 +101,8 @@ sub configure {
 	$http_proxy =
 		&prompt("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
 				"The URL should start with http:// and may contain username, ".
-				"password or port specifications.",
+				"password or port specifications.".
+				" E.g: http://username:password\@hostname:port ",
 				$default);
 	if ($http_proxy =~ /^none$/i) {
 		$http_proxy = "";
@@ -110,7 +111,7 @@ sub configure {
 
 	if ($http_proxy) {
 		$same_for_ftp =
-			&prompt_boolean("Use the same proxy for FTP?", 0);
+			&prompt_boolean("Use the same proxy server for FTP connections?", 0);
 	} else {
 		$same_for_ftp = 0;
 	}
@@ -124,7 +125,8 @@ sub configure {
 			&prompt("Enter the URL of the proxy to use for FTP, ".
 					"or 'none' for no proxy. ".
 					"The URL should start with http:// and may contain username, ".
-					"password or port specifications.",
+					"password or port specifications.".
+					" E.g: ftp://username:password\@hostname:port ",
 					$default);
 		if ($ftp_proxy =~ /^none$/i) {
 			$ftp_proxy = "";

@@ -1,3 +1,10 @@
+2004-10-12  David Höhn <dmalloc@users.sourceforge.net>
+
+	* Configure.pm: Chnage the prompt for proxy selection slightly.
+			Some clean up of phrases. I thinkt his prompt is
+			too long, we can easily revert if, should people
+			dislike it.
+
 2004-10-12  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: Obey flock when reading db files via Storable
