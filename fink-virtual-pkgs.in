@@ -43,10 +43,10 @@ GetOptions(
 	'dpkg|d' => sub { $options{dpkg} = 1},
 	'help|h' => \&usage,
 	'version|v' => \&version,
-	) or die "Unknown option";
-if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt" }
+	) or die "Unknown option\n";
+if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt\n" }
 if ($options{apt}) {
-	open(FH,">/tmp/finkaptstatus") || die "Can not open file /tmp/finkaptstatus for writing";
+	open(FH,">/tmp/finkaptstatus") || die "Can not open file /tmp/finkaptstatus for writing\n";
 	select FH;
     }
 if ($standalone == 0)
