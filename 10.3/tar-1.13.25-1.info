@@ -24,5 +24,5 @@ InfoDocs: tar.info
 Description: GNU tar - tape archiver
 DescPackaging: Previous versions by Christoph Pfisterer.
 License: GPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://www.gnu.org/software/tar/

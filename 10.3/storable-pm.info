@@ -8,5 +8,5 @@ DescPackaging: <<
   This version of storable-pm can be installed when /usr/bin/perl is either 
   5.6.0, 5.6.1, 5.8.0, or 5.8.1.
 <<
-Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://search.cpan.org/author/RAM/

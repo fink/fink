@@ -47,5 +47,5 @@ containing SCALAR, ARRAY, HASH or REF objects, i.e. anything that can be
 convenientely stored to disk and retrieved at a later time.
 <<
 License: Artistic/GPL
-Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://search.cpan.org/author/RAM/

@@ -2,7 +2,7 @@ Package: debianutils
 Version: 1.23
 Revision: 11
 Essential: true
-Maintainer: Christian Swinehart <cswinehart@users.sourceforge.net>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
 BuildDepends: fink-prebinding
 Conflicts: mktemp
