@@ -211,7 +211,6 @@ sub rm_f {
 	
 	my $nok = 0;
 	foreach my $file (@files) {
-		next unless -e $file;
 		next if unlink($file);
 		chmod(0777,$file);
 		next if unlink($file);
