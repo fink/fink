@@ -71,6 +71,10 @@ SplitOff: <<
   Depends: dpkg
   Replaces: %N (<= 0.5.4-1)
   Files: lib/libapt-inst.1.0.0.dylib lib/libapt-pkg.3.2.0.dylib lib/libapt-inst.1.0.dylib lib/libapt-pkg.3.2.dylib
+  Shlibs: <<
+    %p/lib/libapt-inst.1.0.dylib %n (>= %v-%r)
+    %p/lib/libapt-pkg.3.2 %n (>= %v-%r)
+  <<
   DocFiles: COPYING* AUTHORS
 <<
 SplitOff2: <<
