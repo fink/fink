@@ -1,3 +1,7 @@
+2002-11-14  Justin Hallett <thesin@users.sourceforge.net>
+
+	* Engine.pm: fixed scanpackage default section to use proper value.
+
 2002-11-13  Max Horn  <max@quendi.de>
 
 	* Engine.pm: Install build dependencies when doing a rebuild (bug #637689).
