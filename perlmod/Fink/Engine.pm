@@ -249,7 +249,8 @@ sub cmd_list {
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag, $description);
-	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer, $pkgtree);
+	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer);
+	my ($buildonly, $pkgtree);
 	my %options =
 	(
 	 "installedstate" => 0
@@ -270,6 +271,7 @@ sub do_real_list {
 				   'uptodate|u'		=> sub {$options{installedstate} |=2;},
 				   'outdated|o'		=> sub {$options{installedstate} |=1;},
 				   'notinstalled|n'	=> sub {$options{installedstate} |=4;},
+				   'buildonly|b'	=> \$buildonly,
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
 				   'tree|r=s'		=> \$pkgtree,
@@ -302,6 +304,7 @@ Options:
   -o, --outdated       - Only list packages for which a newer version is
                          available.
   -n, --notinstalled   - Only list packages which are not installed.
+  -b, --buildonly      - Only list packages which are Build Only Depends
   -s=expr,             - Only list packages in the section(s) matching expr
     --section=expr       (example: fink list --section=x11).
   -m=expr,             - Only list packages with the maintainer(s) matching expr
@@ -405,6 +408,9 @@ EOF
 			}
 
 			$description = $vo->get_shortdescription($desclen);
+		}
+		if (defined $buildonly) {
+			next unless ( $vo->has_param("buildonlydepends") );
 		}
 		if (defined $section) {
 			$section =~ s/[\=]?(.*)/$1/;

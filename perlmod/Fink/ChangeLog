@@ -1,3 +1,8 @@
+2003-12-02  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Added --buildonly to fink list command, to list all
+	packages that have a BuildDependsOnly tag.
+
 2003-12-01  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Actually, my entry would fail (fink crash) if there
