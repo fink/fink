@@ -16,8 +16,8 @@ CommentPort: I have had some problems with dialog boxes disappearing.
  see http://www.stanford.edu/~parker42/xemacs.html
  .
  Needs a dirty trick to link against the static X11 libraries;
- it doesn't work when linked against the shared libraries. Note that
- this will only work with XFree86, because Xtools is shipped with
- shared libraries only.
+ it doesn't work when linked against the shared libraries. If you use
+ Xtools, get the latest beta. Earlier betas shipped with shared
+ libraries only.
 CommentStow:
 Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
