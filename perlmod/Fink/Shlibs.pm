@@ -39,7 +39,7 @@ BEGIN {
   $VERSION	= 1.00;
   @ISA		= qw(Exporter Fink::Base);
   @EXPORT	= qw();
-  @EXPORT_OK	= qw(&get_shlib);
+  @EXPORT_OK	= qw(&get_shlibs);
   %EXPORT_TAGS	= ( );
 }
 our @EXPORT_OK;
@@ -56,6 +56,62 @@ $shlib_db_mtime = 0;
 END { }				# module clean-up code here (global destructor)
 
 
+### get shlibs depends line
+sub get_shlibs {
+  my $self = shift;
+  my @filelist = @_;
+  my ($depend, @depends, %SHLIBS);
+  my $depline = "";
+
+//  $self->require_shlibs();
+
+  @depends = $self->check_files(@filelist);
+
+  foreach $depend (@depends) {
+    $SHLIBS{$depend} = 1;
+  }
+
+  $depline = join(', ', sort keys %SHLIBS);
+
+  return $depline;
+}
+
+### check the files for depends
+sub check_files {
+  my $self = shift;
+  my $files = @_;
+  my ($file, $deb, $vers);
+
+  # get a list of linked files to the pkg files
+  foreach $file (@files) {
+    chomp($file);
+    open(OTOOL, "otool -L $file 2>/dev/null |") or die "can't run otool: $!\n";
+      # need to drop all links to system libs and the first two lines
+      while (<OTOOL>) {
+        chomp();
+        next if ("$_" =~ /\:/);                 # Nuke first line and errors
+        if ($_ =~ /compatibility version ([.0-9]+)/) {
+          $vers = $1;
+        }
+        $_ =~ s/\ \(.*$//;                      # Nuke the end
+        $_ =~ s/^[\s|\t]+//;
+        $_ =~ s/[\s|\t]+$//;
+        $deb = "";
+        if (length($_) > 1) {
+          $deb = $self->get_shlib($_);
+          if (length($deb) > 1) {
+            push(@depends, $deb);
+          } else {
+            push(@depends, "$_ (>= $vers)");
+          }
+        }
+      }
+    close (OTOOL);
+  }
+
+  return @depends;
+}
+
 ### get package name
 sub get_shlib {
   my $self = shift;
@@ -63,8 +119,6 @@ sub get_shlib {
   my ($dep, $shlib);
 
   $dep = "";
-
-  $self->require_shlibs();
 
   foreach $shlib (keys %shlib_hash) {
     if ("$shlib" eq "$lib") {

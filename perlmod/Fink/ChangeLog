@@ -7,6 +7,7 @@
 	* Engine.pm: added forget, and require for shlibs to enable auto index
 	* Package.pm: removed a \n to clean up the output since the shlibs
 	  index code is always called after the pkg index code
+	* PkgVersion.pm: adding ${SHLIB_DEPS} replace code
 
 2003-07-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

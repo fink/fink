@@ -1797,6 +1797,39 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		chmod 0644, $daemonicfile;
 	}
 
+	### FIXME
+	### Add ${SHLIB_DEPS} replace code here
+	### 1) open control file and check for ${SHLIB_DEPS} else continue
+	my $depline = "";
+	my $controlfile = "$ddir/DEBIAN/control";
+	open (CONTROL, $controlfile) or die "Couldn't open control file: $!\n";
+	while (<CONTROL>) {
+		if ($_ =~ /Depends: (.*)$/) {
+			$depline = $1;
+		}
+	}
+	close (<CONTROL>);
+	if ($depline =~ /\$\{SHLIB_DEPS\}/) {
+		print "Writting depends...\n";
+		### 2) get a list to replace it with
+		my $shlibstr = "";
+		my @filelist = ();
+		my $wanted =
+		sub {
+			if (-f) {
+				push @filelist, $File::Find::fullname;
+			}
+		};
+		find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $ddir);
+
+		$shlibstr = get_shlib(@filelist);
+
+		### FIXME
+		### Debug for testing
+		print "- Depends: $shlibstr\n";
+		### 3) replace it in the debian control file
+	}
+
 	### create .deb using dpkg-deb
 
 	if (not -d $self->get_debpath()) {
