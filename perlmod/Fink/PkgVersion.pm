@@ -2679,7 +2679,7 @@ EOF
 		}
 	}
 	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
-	if (&execute($cmd) == 1) {
+	if (&execute($cmd)) {
 		my $error = "can't create package ".$self->get_debname();
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die $error . "\n";
