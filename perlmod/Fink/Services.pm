@@ -40,8 +40,7 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
 					  &read_properties_multival &read_properties_multival_var
-					  &execute &execute_script
-					  &execute_nonroot_okay &execute_script_nonroot_okay
+					  &execute &execute_nonroot_okay
 					  &expand_percent
 					  &filename
 					  &version_cmp &latest_version &sort_versions
@@ -78,7 +77,7 @@ No functions are exported by default. You can get whichever ones you
 need with things like:
 
     use Fink::Services '&read_config';
-    use Fink::Services qw(&execute_script &expand_percent);
+    use Fink::Services qw(&execute &expand_percent);
 
 =over 4
 
@@ -389,49 +388,10 @@ sub read_properties_multival_lines {
 
 =item execute
 
-    my $retval = execute $cmd;
-    my $retval = execute $cmd, %options;
+     my $retval = execute $script;
+     my $retval = execute $script, %options;
 
-Executes $cmd as a single string via a perl system() call and returns
-the exit code from it. The command is printed on STDOUT before being
-executed. If $cmd begins with a # (preceeded optionally by whitespace)
-it is treated as a comment and is not executed. The optional %options
-are given as option=>value pairs. The following options are known:
-
-    quiet
-
-        If the option 'quiet' is not given or its value is false and
-        the command failed, a message including the return code is
-        sent to STDOUT.
-
-=cut
-
-### execute a single command
-
-sub execute {
-	my $cmd = shift;
-	my %options = ( defined $_[0] ? @_ : () );
-	my ($commandname);
-
-	return if ($cmd =~ /(^\s*\Z)|(^\s*\#)/); # Ignore empty commands & comments
-	if (not $options{'quiet'}) {
-		print "$cmd\n";
-	}
-	system($cmd);
-	$? >>= 8 if defined $? and $? >= 256;
-	if ($? and not $options{'quiet'}) {
-		($commandname) = split(/\s+/, $cmd);
-		print "### execution of $commandname failed, exit code $?\n";
-	}
-	return $?;
-}
-
-=item execute_script
-
-     my $retval = execute_script $script;
-     my $retval = execute_script $script, %options;
-
-Executes the multiline script $script.
+Executes the (possibly multiline) script $script.
 
 If $script appears to specify an interpretter (i.e., the first line
 begins with #!) the whole thing is stored in a temp file which is made
@@ -442,10 +402,15 @@ tempfile is not deleted and the failure code is returned.
 If $script does not specify an interpretter, each line is executed
 individually. In this latter case, the first line that fails causes
 further lines to not be executed and the failure code is returned.
+Blank lines and lines beginning with # are ignored, and any line
+ending with \ is joined to the following line.
 
-In either case, execution is performed by Fink::Services::execute
-(which see for more information). The optional %options are given as
-option=>value pairs. The following options are known:
+In either case, each command to be executed (either the shell script
+tempfile or individual lines of the simple script) is printed on
+STDOUT before being executed by a system() call.
+
+The optional %options are given as option=>value pairs. The following
+options are known:
 
     quiet
 
@@ -455,7 +420,7 @@ option=>value pairs. The following options are known:
 
 =cut
 
-sub execute_script {
+sub execute {
 	my $script = shift;
 	my %options = ( defined $_[0] ? @_ : () );
 	my ($retval, $cmd);
@@ -466,10 +431,17 @@ sub execute_script {
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
-		$retval = execute($cmd, $options{'quiet'});
-		if ($retval) {
-			# something went boom; give up now
-			return $retval;
+		if (not $options{'quiet'}) {
+			print "$cmd\n";
+		}
+		system($cmd);
+		$? >>= 8 if defined $? and $? >= 256;
+		if ($?) {
+			if (not $options{'quiet'}) {
+				my ($commandname) = split(/\s+/, $cmd);
+				print "### execution of $commandname failed, exit code $?\n";
+			}
+			return $?;  # something went boom; give up now
 		}
 	}
 
@@ -566,29 +538,6 @@ sub execute_nonroot_okay {
 	}
 
 	&execute(@_);
-}
-
-=item execute_script_nonroot_okay {
-
-	my $retval = execute_script_nonroot_okay $script;
-    my $retval = execute_script_nonroot_okay $script, %options;
-
-Wrapper for execute_script() to run $script as user "nobody" if fink
-was run with the --build-as-nobody flag.
-
-=cut
-
-sub execute_script_nonroot_okay {
-	use integer;    # getpw* returns unsigned int but "nobody" is uid -2
-
-	local $>;
-	if (Fink::Config::get_option("build_as_nobody") == 1) {
-		my $uid = getpwnam('nobody');
-		$> = $uid;
-		die "Couldn't set EUID=nobody\n" if $> != $uid;
-	}
-
-	&execute_script(@_);
 }
 
 =item expand_percent

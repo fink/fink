@@ -23,8 +23,7 @@
 
 package Fink::PkgVersion;
 use Fink::Base;
-use Fink::Services qw(&filename &execute &execute_script
-					  &execute_nonroot_okay &execute_script_nonroot_okay
+use Fink::Services qw(&filename &execute &execute_nonroot_okay
 					  &expand_percent &latest_version
 					  &collapse_space &read_properties_var
 					  &pkglist2lol &lol2pkglist
@@ -3091,8 +3090,8 @@ sub run_script {
 	%ENV = %$script_env;    # run under modified environment
 
 	my $result = $nonroot_okay
-		? &execute_script_nonroot_okay($script)
-		: &execute_script($script);
+		? &execute_nonroot_okay($script)
+		: &execute($script);
 	if ($result) {
 		my $error = $phase." ".$self->get_fullname()." failed\n";
 		if ($self->has_param('maintainer')) {

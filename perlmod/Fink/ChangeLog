@@ -1,5 +1,11 @@
 2004-12-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Services.pm: unify execute() and execute_script() into execute().
+	Scrap execute_script_nonroot_okay().
+	* PkgVersion.pm: Adjust run_script() for new execute().
+
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Warn is pkgname field of shlibs looks like a
 	version-number.
 
