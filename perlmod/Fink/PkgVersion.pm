@@ -1583,7 +1583,7 @@ sub set_env {
   my $bsbase = get_bsbase();
 
   # clean the environment
-  %ENV = ();
+  %ENV = ("HOME" => $ENV{"HOME"});
 
   # add system path
   $ENV{"PATH"} = "/bin:/usr/bin";
