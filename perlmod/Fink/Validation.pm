@@ -741,7 +741,7 @@ sub validate_dpkg_file {
 				$looks_good = 0;
 			} elsif ( ($filename =~/^($basepath\/.*\.elc)$/) &&
 				  (not (($dpkg_filename =~ /emacs[0-9][0-9][_\-]/) ||
-					($dpkg_filename =~ /xemacs_/)))) {
+					($dpkg_filename =~ /xemacs[_\-]/)))) {
 				$looks_good = 0;
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
 			} elsif ( $filename =~/^$basepath\/include\S*[^\/]$/ ) {
