@@ -11,11 +11,6 @@
 
 	* Validation.pm: Warn if used debconf but no Depends:debconf.
 
-2005-02-02  Daniel Macks  <dmacks@netspace.org>
-
-	* Notify.pm: Make notify() only respond to a notifier's declared
-	events() list of events.
-
 2005-02-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Notify.pm: Fixed dmacks' breakage, plus better test for new() failure.
