@@ -1,5 +1,9 @@
 2005-01-20  Daniel Macks  <dmacks@netspace.org>
 
+	* NetAccess.pm: Un-quotemeta std URL chars that aren't shell metas.
+
+2005-01-20  Daniel Macks  <dmacks@netspace.org>
+
 	* NetAccess.pm: quotemeta() Source values when used in shell cmd.
 
 2005-01-19  Daniel Macks  <dmacks@netspace.org>

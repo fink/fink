@@ -78,7 +78,7 @@ sub fetch_url_to_file {
 	my $downloaddir = shift || "$basepath/src";
 	my $checksum = shift;
 	my ($http_proxy, $ftp_proxy);
-	my ($url, $cmd, $cont_cmd, $result);
+	my ($url, $cmd, $cont_cmd, $result, $cmd_url);
 	my $found_archive_sum;
 
 	# create destination directory if necessary
@@ -234,6 +234,10 @@ sub fetch_url_to_file {
 			$url .= $path . $basename;
 		}
 
+		# protect against shell metachars
+		# deprotect common URI chars that are metachars for regex not shell
+		( $cmd_url = "\Q$url\E" ) =~ s{\\([/.:\-=])}{$1}g;
+
 		### fetch $url to $file
 
 		if (!$dryrun && -f $file) {
@@ -247,10 +251,10 @@ sub fetch_url_to_file {
 		if ($dryrun) {
 			print " $url";
 		} elsif ($cont) {
-			$result = &execute("$cont_cmd \Q$url\E");
+			$result = &execute("$cont_cmd $cmd_url");
 			$cont = 0;
 		} else {
-			$result = &execute("$cmd \Q$url\E");
+			$result = &execute("$cmd $cmd_url");
 		}
 		
 		if ($dryrun or ($result or not -f $file)) {
@@ -306,7 +310,14 @@ sub download_cmd {
 	# $file is the post-SourceRename tarball name
 	my $file = shift || &filename($url);
 	my $cont = shift || 0;	# Continue a previously started download?
-	my $cmd;
+	my($cmd, $cmd_file);
+
+	# protect against shell metachars
+	# deprotect common URI chars that are metachars for regex not shell
+	if ($file =~ /\//) {
+		die "security error: Cannot use path sep in target filename (\"$file\")\n";
+	}
+	( $cmd_file = "\Q$file\E" ) =~ s{\\([/.:\-=])}{$1}g;
 
 	# determine the download command
 	$cmd = "";
@@ -321,7 +332,7 @@ sub download_cmd {
 			$cmd .= " -P -";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -o \Q$file\E";
+			$cmd .= " -o $cmd_file";
 		} else {
 			$cmd .= " -O"
 		}
@@ -343,7 +354,7 @@ sub download_cmd {
 			$cmd .= " --passive-ftp";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -O \Q$file\E";
+			$cmd .= " -O $cmd_file";
 		}
 		if ($cont) {
 			$cmd .= " -c"
@@ -362,7 +373,7 @@ sub download_cmd {
 			$cmd .= " --verbose";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -o \Q$file\E";
+			$cmd .= " -o $cmd_file";
 		}
 		# Axel always continues downloads, by default
 	}
