@@ -721,7 +721,7 @@ sub resolve_depends {
 		}
 	}
 	
-	unless (lc($field) eq "conflicts" && $include_build == 2) {
+	unless (lc($field) eq "conflicts" || $include_build == 2) {
 		@speclist = split(/\s*\,\s*/, $self->param_default($field, ""));
 # with this primitive form of @speclist, we verify that the "BuildDependsOnly"
 # declarations have not been violated
