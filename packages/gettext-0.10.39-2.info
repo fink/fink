@@ -1,6 +1,6 @@
 Package: gettext
 Version: 0.10.39
-Revision: 1
+Revision: 2
 Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
@@ -10,10 +10,11 @@ ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-g
 SetLDFLAGS: -L%b/intl/.libs
 InstallScript: <<
  make install DESTDIR=%d docdir=%p/share/doc/%n
- mkdir -p %i/share/doc/%n
- install -m 644 README* AUTHORS BUGS COPYING NEWS THANKS TODO %i/share/doc/%n/
+ sed 's;-L%b/intl/.libs;;' <%i/lib/libintl.la >%i/lib/libintl.la.tmp
+ mv -f %i/lib/libintl.la.tmp %i/lib/libintl.la
  rm -f %i/lib/charset.alias
 <<
+DocFiles: README* AUTHORS BUGS COPYING NEWS THANKS TODO
 #
 PostInstScript: <<
 if [ -L %p/etc/alternatives/charset.alias ]; then
@@ -28,12 +29,14 @@ The gettext package provides some of the i18n and l10n support used by
 many GNU programs but missing from the Darwin C library.
 <<
 DescPort: <<
-Uses libtool 1.4; may need a patch for Mac OS X 10.1.
+Uses libtool 1.4; needs a minimal patch for Mac OS X 10.1.
 
 Now again deliberately avoids using iconv() because libiconv causes
 build problems with various packages.
 
-Also needs help to link against the right copy of the library.
+Also needs help to link against the right copy of the
+library. Afterwards, we remove the used flag from the .la file as it
+refers to the temporary build directory.
 
 charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
