@@ -333,9 +333,9 @@ sub additional_packages {
 
 	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
 	if ("$]" == "5.006") {
-		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
+		push @addlist, "storable-pm560", "file-spec-pm560", "test-harness-pm560", "test-simple-pm560";
 	} elsif ("$]" == "5.006001") {
-		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
+		push @addlist, "storable-pm561", "file-spec-pm561", "test-harness-pm561", "test-simple-pm561";
 	} elsif ("$]" == "5.008") {
 	} elsif ("$]" == "5.008001") {
 	} elsif ("$]" == "5.008002") {

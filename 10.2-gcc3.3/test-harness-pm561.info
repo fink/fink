@@ -1,11 +1,13 @@
-Package: test-harness-pm
+Package: test-harness-pm561
 Version: 2.26
-Revision: 2
-Depends: file-spec-pm
+Revision: 3
+Depends: file-spec-pm561
+BuildDepends: fink (>= 0.20.1-1), darwin (<< 7.0.0-1) | perl561-core
 Recommends: devel-corestack-pm
+Replaces: perl560-core, perl561-core, perl580, perl584, test-harness-pm (<= 2.26-3)
 Source: mirror:sourceforge:fink/Test-Harness-%v.tar.gz
 #Source: mirror:cpan:authors/id/M/MS/MSCHWERN/Test-Harness-%v.tar.gz
-Type: perl
+Type: perl 5.6.1
 UpdatePOD: True
 Source-MD5: ec1b1ebc715614a5b06fe7ff5d355f25
 DocFiles: MANIFEST NOTES TODO Changes
