@@ -1,3 +1,8 @@
+2005-03-08  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Build all dpkg scripts concurrently in memeory
+	instead of looking over them one at a time.
+
 2005-03-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Package.pm: refactoring require_packages

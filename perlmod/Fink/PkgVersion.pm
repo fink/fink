@@ -44,6 +44,7 @@ use Fink::Notify;
 use Fink::Validation;
 
 use POSIX qw(uname strftime);
+use Hash::Util;
 
 use strict;
 use warnings;
@@ -2330,8 +2331,7 @@ sub phase_build {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($ddir, $destdir, $control);
-	my ($scriptname, $scriptfile, $scriptbody);
-	my ($shlibsfile, $shlibsbody);
+	my %scriptbody;
 	my ($conffiles, $listfile);
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
@@ -2606,144 +2606,140 @@ EOF
 
 	### create scripts as neccessary
 
-	foreach $scriptname (qw(preinst postinst prerm postrm)) {
+	foreach (qw(postinst postrm preinst prerm)) {
 		# get script piece from package description
-		if ($self->has_param($scriptname."Script")) {
-			$scriptbody = $self->param($scriptname."Script");
-		} else {
-			$scriptbody = "";
+		$scriptbody{$_} = $self->param_default($_.'Script','');
+	}
+	Hash::Util::lock_keys %scriptbody;  # safety: key typos become runtime errors
+
+	# add UpdatePOD Code
+	if ($self->param_boolean("UpdatePOD")) {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+
+		$scriptbody{postinst} .=
+			"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
+			"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
+			"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
+		$scriptbody{postrm} .=
+			"\n\n# Updating \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n\n".
+			"###\n".
+			"### check to see if any .pod files exist in \%p/share/podfiles.\n".
+			"###\n\n".
+			"perl <<'END_PERL'\n\n".
+			"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
+			"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
+			"	 if (\$#files >= 0) {\n".
+			"		 exec \"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
+			"	 }\n".
+			"}\n\n".
+			"END_PERL\n";
+	}
+
+	# add JarFiles Code
+	if ($self->has_param("JarFiles")) {
+		my $scriptbody =
+			"\n\n".
+			"/bin/mkdir -p %p/share/java\n".
+			"jars=`/usr/bin/find %p/share/java -name '*.jar'`\n".
+			'if (test -n "$jars")'."\n".
+			"then\n".
+			'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'."\n".
+			"else\n".
+			"/bin/rm -f %p/share/java/classpath\n".
+			"fi\n".
+			"unset jars\n";
+		$scriptbody{postinst} .= $scriptbody;
+		$scriptbody{postrm}   .= $scriptbody;
+	}
+
+	# add Fink symlink Code for .app OS X applications
+	if ($self->has_param("AppBundles")) {
+		# shell-escape app names and parse down to just the .app dirname
+		my @apps = map { s/\'/\\\'/gsi; basename{$_} } split(/\s+/, $self->param("AppBundles"));
+
+		$scriptbody{postinst} .=
+			"\n".
+			"if \! test -e /Applications/Fink; then\n".
+			"  /usr/bin/install -d -m 755 /Applications/Fink\n";
+		foreach (@apps) {
+			$scriptbody{postinst} .= "ln -s '%p/Applications/$_' /Applications/Fink/\n";
 		}
+		$scriptbody{postinst} .= "fi\n";
 
-		# add UpdatePOD Code
-		if ($self->param_boolean("UpdatePOD")) {
-			# grab perl version, if present
-			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
-
-			if ($scriptname eq "postinst") {
-				$scriptbody .=
-					"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
-					"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
-					"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
-			} elsif ($scriptname eq "postrm") {
-				$scriptbody .=
-					"\n\n# Updating \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n\n".
-					"###\n".
-					"### check to see if any .pod files exist in \%p/share/podfiles.\n".
-					"###\n\n".
-					"perl <<'END_PERL'\n\n".
-					"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
-					"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
-					"	 if (\$#files >= 0) {\n".
-					"		 exec \"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
-					"	 }\n".
-					"}\n\n".
-					"END_PERL\n";
-			} 
+		$scriptbody{postrm} .= "\n";
+		foreach (@apps) {
+			$scriptbody{postrm} .= "rm -f '/Applications/Fink/$_'\n";
 		}
+	}
 
-		# add JarFiles Code
-		if ($self->has_param("JarFiles")) {
-			if (($scriptname eq "postinst") || ($scriptname eq "postrm")) {
-				$scriptbody.=
-						"\n/bin/mkdir -p %p/share/java".
-						"\njars=`/usr/bin/find %p/share/java -name '*.jar'`".
-						"\n".'if (test -n "$jars")'.
-						"\nthen".
-						"\n".'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'.
-						"\nelse".
-						"\n/bin/rm -f %p/share/java/classpath".
-						"\nfi".
-						"\nunset jars";
-			}
+	# add emacs texinfo files
+	if ($self->has_param("InfoDocs")) {
+		my $infodir = '%p/share/info';
+		my @infodocs;
+
+		# postinst needs to tweak @infodocs
+		@infodocs = split(/\s+/, $self->param("InfoDocs"));
+		@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
+
+		# FIXME: This seems brokenly implemented for @infodocs that are already absolute path
+		map { $_ = "$infodir/$_" unless $_ =~ /\// } @infodocs;
+
+		# FIXME: debian install-info seems to always omit all path components when adding
+
+		$scriptbody{postinst} .= "\n";
+		$scriptbody{postinst} .= "# generated from InfoDocs directive\n";
+		$scriptbody{postinst} .= "if [ -f $infodir/dir ]; then\n";
+		$scriptbody{postinst} .= "\tif [ -f %p/sbin/install-info ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{postinst} .= "\t\t%p/sbin/install-info --infodir=$infodir $_\n";
 		}
-
-		# add Fink symlink Code
-		if ($self->has_param("AppBundles")) {
-			if ($scriptname eq "postinst") {
-				$scriptbody .=
-					"\nif \! test -e /Applications/Fink; then".
-					"\n  /usr/bin/install -d -m 755 /Applications/Fink";
-
-				for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
-					$bundle =~ s/\'/\\\'/gsi;
-					my $shortname = basename($bundle);
-					$scriptbody .= "\nln -s '%p/Applications/${shortname}' /Applications/Fink/";
-				}
-
-				$scriptbody .= "\nfi";
-			} elsif ($scriptname eq "postrm") {
-				for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
-					$bundle =~ s/\'/\\\'/gsi;
-					my $shortname = basename($bundle);
-					$scriptbody .= "\nrm -f '/Applications/Fink/${shortname}'";
-				}
-			}
+		$scriptbody{postinst} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{postinst} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir $_\n";
 		}
+		$scriptbody{postinst} .= "\tfi\n";
+		$scriptbody{postinst} .= "fi\n";
 
-		# add auto-generated parts
-		if ($self->has_param("InfoDocs") and $scriptname eq "postinst" || $scriptname eq "prerm") {
-			my @infodocs = split(/\s+/, $self->param("InfoDocs"));
-			@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
-			my $infodir = '%p/share/info';
+		# postinst tweaked @infodocs so reload the original form
+		@infodocs = split(/\s+/, $self->param("InfoDocs"));
+		@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
 
-			if ($scriptname eq "postinst") {
+		# FIXME: this seems wrong for non-simple-filename $_ (since the dir only lists
+		# the filename component and could have same value in different dirs)
 
-				# FIXME: This seems brokenly implemented for @infodocs that are already absolute path
-				map { $_ = "$infodir/$_" unless $_ =~ /\//} @infodocs;
-
-				# FIXME: debian install-info seems to always omit all path components when adding
-
-				$scriptbody .= "\n\n# generated from InfoDocs directive\n";
-				$scriptbody .= "if [ -f $infodir/dir ]; then\n";
-				$scriptbody .= "\tif [ -f %p/sbin/install-info ]; then\n";
-				foreach (@infodocs) {
-					$scriptbody .= "\t\t%p/sbin/install-info --infodir=$infodir $_\n";
-				}
-				$scriptbody .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
-				foreach (@infodocs) {
-					$scriptbody .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir $_\n";
-				}
-				$scriptbody .= "\tfi\n";
-				$scriptbody .= "fi\n";
-
-			} elsif ($scriptname eq "prerm") {
-
-				# FIXME: this seems wrong for non-simple-filename $_ (since the dir only lists
-				# the filename component and could have same value in different dirs)
-
-				$scriptbody .= "\n\n# generated from InfoDocs directive\n";
-				$scriptbody .= "if [ -f $infodir/dir ]; then\n";
-				foreach (@infodocs) {
-					$scriptbody .= "\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
-				}
-				$scriptbody .= "fi\n";
-
-			}
+		$scriptbody{prerm} .= "\n";
+		$scriptbody{prerm} .= "# generated from InfoDocs directive\n";
+		$scriptbody{prerm} .= "if [ -f $infodir/dir ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{prerm} .= "\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
 		}
+		$scriptbody{prerm} .= "fi\n";
+	}
 
-		# add the call to redo prebinding on any packages with prebound files
-		if (keys %prebound_files > 0 and $scriptname eq "postinst") {
-			my $name = $self->get_name();
-			$scriptbody .= <<EOF;
+	# add the call to redo prebinding on any packages with prebound files
+	if (keys %prebound_files) {
+		my $name = $self->get_name();
+		$scriptbody{postinst} .= <<EOF;
 
 if test -x "$basepath/var/lib/fink/prebound/queue-prebinding.pl"; then
 	$basepath/var/lib/fink/prebound/queue-prebinding.pl $name
 fi
 
 EOF
-		}
-
-		# do we have a non-empty script?
-		next if $scriptbody eq "";
-
-		# no, so write it out
-		$scriptbody = &expand_percent($scriptbody, $self->{_expand}, $self->get_info_filename." \"$scriptname\"");
-		$scriptfile = "$destdir/DEBIAN/$scriptname";
+	}
+	
+	# write out each non-empty script
+	foreach my $scriptname (sort keys %scriptbody) {
+		next unless length $scriptbody{$scriptname};
+		my $scriptbody = &expand_percent($scriptbody{$scriptname}, $self->{_expand}, $self->get_info_filename." \"$scriptname\"");
+		my $scriptfile = "$destdir/DEBIAN/$scriptname";
 
 		print "Writing package script $scriptname...\n";
 
+		my $write_okay;
 		# NB: if change the automatic #! line here, must adjust validator
-		if ( open(SCRIPT,">$scriptfile") ) {
+		if ( $write_okay = open(SCRIPT,">$scriptfile") ) {
 			print SCRIPT <<EOF;
 #!/bin/sh
 # $scriptname script for package $pkgname, auto-created by fink
@@ -2754,9 +2750,10 @@ $scriptbody
 
 exit 0
 EOF
-			close(SCRIPT) or die "can't write $scriptname script for ".$self->get_fullname().": $!\n";
+			close(SCRIPT) or $write_okay = 0;
 			chmod 0755, $scriptfile;
-		} else {
+		}
+		if (not $write_okay) {
 			my $error = "can't write $scriptname script for ".$self->get_fullname().": $!";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
@@ -2766,11 +2763,11 @@ EOF
 	### shlibs file
 
 	if ($self->has_param("Shlibs")) {
-			$shlibsbody = $self->param_expanded("Shlibs");
-			chomp $shlibsbody;
-			$shlibsfile = "$destdir/DEBIAN/shlibs";
+		my $shlibsbody = $self->param_expanded("Shlibs");
+		chomp $shlibsbody;
+		my $shlibsfile = "$destdir/DEBIAN/shlibs";
 
-			print "Writing shlibs file...\n";
+		print "Writing shlibs file...\n";
 
 # FIXME-dmacks:
 #    * Make sure each file is actually present in $destdir
@@ -2780,17 +2777,17 @@ EOF
 #    * Rejoin wrap continuation lines
 #      (use \ not heredoc multiline-field)
 
-			if ( open(SHLIBS,">$shlibsfile") ) {
-				print SHLIBS <<EOF;
-$shlibsbody
-EOF
-				close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
-				chmod 0644, $shlibsfile;
-			} else {
-				my $error = "can't write shlibs file for ".$self->get_fullname().": $!";
-				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-				die $error . "\n";
-			}
+		my $write_okay;
+		if ( $write_okay = open(SHLIBS,">$shlibsfile") ) {
+			print SHLIBS $shlibsbody;
+			close(SHLIBS) or $write_okay = 0;
+			chmod 0644, $shlibsfile;
+		}
+		if (not $write_okay) {
+			my $error = "can't write shlibs file for ".$self->get_fullname().": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
 	}
 
 	### config file list
