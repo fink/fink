@@ -996,13 +996,15 @@ sub cmd_validate {
 	my ($filename, @flist);
 
 	my ($wanthelp, $val_prefix);
+	my $pedantic = 1;
 	use Getopt::Long;
 	my @temp_ARGV = @ARGV;
 	@ARGV=@_;
 	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
 	GetOptions(
-		'prefix|p=s' => \$val_prefix,
-		'help|h'     => \$wanthelp
+		'prefix|p=s'  => \$val_prefix,
+		'pedantic!'   => \$pedantic,
+		'help|h'      => \$wanthelp
 	) or die "fink validate: unknown option\nType 'fink validate --help' for more information.\n";
 
 	if ($wanthelp) {
@@ -1016,6 +1018,8 @@ Usage: fink validate [options] [package(s)]
 
 Options:
   -p, --prefix    - Simulate an alternate Fink prefix (\%p) in files.
+  --pedantic      - Display even the most nitpicky warnings (default).
+  --no-pedantic   - Do not display the pedantic warnings.
   -h, --help      - This help text.
 
 EOF
@@ -1023,6 +1027,8 @@ EOF
 	}
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
+
+	Fink::Config::set_options( { "Pedantic" => $pedantic } );
 
 	require Fink::Validation;
 

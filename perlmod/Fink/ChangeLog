@@ -1,3 +1,10 @@
+2005-02-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Configure.pm: Removed Verbosity:4 (pedantic) level.
+	* Engine.pm: Added --(no-)pedantic flag to 'fink validate'.
+	* Validation.pm: Use --pedantic flag instead of verbosity level to
+	control display of pendantic warnings
+
 2005-02-22  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Package.pm: Lock indexing so multiple indexes don't step on

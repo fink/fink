@@ -507,7 +507,7 @@ sub validate_info_file {
 
 		# these fields are printed verbatim, so check to make sure
 		# they won't look weird on an 80-column plain-text terminal
-		if (Fink::Config::verbosity_level() > 3 and $text_describe_fields{$field} and $value) {
+		if (Fink::Config::get_option("Pedantic") and $text_describe_fields{$field} and $value) {
 			# no intelligent word-wrap so warn for long lines
 			my $maxlinelen = 79;
 			foreach my $line (split /\n/, $value) {
@@ -615,7 +615,7 @@ sub validate_info_file {
 	} elsif (length($value) > 60) {
 		print "Error: Length of package description exceeds 60 characters. ($filename)\n";
 		$looks_good = 0;
-	} elsif (Fink::Config::verbosity_level() > 3) {
+	} elsif (Fink::Config::get_option("Pedantic")) {
 		# Some pedantic checks
 		if (length($value) > 45) {
 			print "Warning: Length of package description exceeds 45 characters. ($filename)\n";

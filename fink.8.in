@@ -342,6 +342,10 @@ may be used:
 Show the options which are available.
 .It Cm -p,--prefix
 Simulate an alternate Fink basepath prefix (%p) within the files being validated.
+.It Cm --pedantic, --no-pedantic
+Control the display of nitpicky formatting warnings.
+.Cm --pedantic
+is the default.
 .El
 .It Cm scanpackages Op Ar tree...
 Calls
