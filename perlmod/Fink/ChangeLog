@@ -1,3 +1,9 @@
+2005-02-23  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm, Package.pm, SelfUpdate.pm, Shlibs.pm: refactored some
+	of the code so that there's less duplication.  Shlibs.pm now
+	ISA Package.pm.
+
 2005-02-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Notify.pm, Notify/Growl.pm, Engine.pm: Canonicalize notification

@@ -219,7 +219,7 @@ sub process {
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
-		Fink::Shlibs->require_shlibs();
+		Fink::Shlibs->require_packages();
 	}
 	$::SIG{INT} = sub { die "User interrupt.\n" };
 	eval { &$proc(@args); };
@@ -292,8 +292,8 @@ sub cmd_index {
 sub cmd_rescan {
 	Fink::Package->forget_packages();
 	Fink::Package->require_packages();
-	Fink::Shlibs->forget_shlibs();
-	Fink::Shlibs->require_shlibs();
+	Fink::Shlibs->forget_packages();
+	Fink::Shlibs->require_packages();
 }
 
 sub cmd_configure {
@@ -405,7 +405,7 @@ sub do_real_list {
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
-	Fink::Shlibs->require_shlibs();
+	Fink::Shlibs->require_packages();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
@@ -871,7 +871,7 @@ EOF
 	}
 
 	Fink::Package->require_packages();
-	Fink::Shlibs->require_shlibs();
+	Fink::Shlibs->require_packages();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
@@ -1917,8 +1917,8 @@ sub real_install {
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 			# Reinstall buildconficts after the build
 			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
-			Fink::Shlibs->forget_shlibs();
-			Fink::Shlibs->require_shlibs(1);
+			Fink::Shlibs->forget_packages();
+			Fink::Shlibs->require_packages(quiet => 1);
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {

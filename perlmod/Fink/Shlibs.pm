@@ -31,6 +31,7 @@ use Fink::CLI qw(&get_term_width &print_breaking);
 use Fink::Config qw($config $basepath);
 use Fink::PkgVersion;
 use Fink::Command qw(mkdir_p);
+use Fink::Package;
 
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
@@ -43,7 +44,7 @@ BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 	$VERSION	= 1.00;
-	@ISA		= qw(Exporter Fink::Base);
+	@ISA		= qw(Fink::Package Exporter Fink::Base);
 	@EXPORT		= qw();
 	@EXPORT_OK	= qw(&get_shlibs);
 	%EXPORT_TAGS	= ( );
@@ -447,18 +448,9 @@ sub get_shlib {
 	return $dep;
 }
 
-### make sure shlibs are available
-sub require_shlibs {
-	my $self = shift;
-	my $forceoff = shift || 0;
-
-	if (!$have_shlibs) {
-		$self->get_all_shlibs($forceoff);
-	}
-}
 
 ### forget about all shlibs
-sub forget_shlibs {
+sub forget_packages {
 	my $self = shift;
 
 	$have_shlibs = 0;
@@ -467,16 +459,16 @@ sub forget_shlibs {
 }
 
 ### read list of shlibs, either from cache or files
-sub get_all_shlibs {
+sub scan_all {
 	my $self= shift;
-	my $forceoff = shift || 0;
+	my %args = @_;
 	my ($time) = time;
 	my ($shlibname);
 
 	my $dbfile = "$basepath/var/db/shlibs.db";
 	my $conffile = "$basepath/etc/fink.conf";
 
-	$self->forget_shlibs();
+	$self->forget_packages();
 	
 	# If we have the Storable perl module, try to use the package index
 	if (-e $dbfile) {
@@ -514,7 +506,7 @@ sub get_all_shlibs {
 
 	$have_shlibs = 1;
 
-	unless ($forceoff) {
+	unless ($args{'quiet'}) {
 		if (&get_term_width) {
 			printf STDERR "Information about %d shared libraries read in %d seconds.\n",
 				scalar(values %$shlibs), (time - $time);

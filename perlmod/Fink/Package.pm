@@ -347,7 +347,7 @@ sub require_packages {
 	shift;	# class method - ignore first parameter
 
 	if (!$have_packages) {
-		Fink::Package->scan_all();
+		Fink::Package->scan_all(@_);
 	}
 }
 
