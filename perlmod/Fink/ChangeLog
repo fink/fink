@@ -1,3 +1,10 @@
+2005-03-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm: Adding missing calls to rebuilt the
+	shlibs.db
+	* Package.pm: Fixed require_packages from 2005-02-23 commit to
+	combine duplicate code
+
 2005-03-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Config.pm: Added new $dbpath var

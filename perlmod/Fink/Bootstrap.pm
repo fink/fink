@@ -27,6 +27,7 @@ use Fink::Config qw($config $basepath);
 use Fink::Services qw(&execute &file_MD5_checksum &enforce_gcc &eval_conditional);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
+use Fink::Shlibs;
 use Fink::PkgVersion;
 use Fink::Engine;
 use Fink::Command qw(cat mkdir_p rm_rf touch);
@@ -389,8 +390,9 @@ sub bootstrap {
 	# disable UseBinaryDist during bootstrap
 	Fink::Config::set_options( { 'use_binary' => -1 });
 
-	# make sure we have the package descriptions
+	# make sure we have the package descriptions and shlibs
 	Fink::Package->require_packages();
+	Fink::Shlibs->require_packages();
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();

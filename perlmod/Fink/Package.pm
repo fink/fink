@@ -344,11 +344,12 @@ sub list_essential_packages {
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub require_packages {
-	shift;	# class method - ignore first parameter
+	my $self = shift;	# class method - ignore first parameter
 
-	if (!$have_packages) {
-		Fink::Package->scan_all(@_);
-	}
+	### Removed if, since if it runs once for packages, shilbs won't run
+	#if (!$have_packages) {
+		$self->scan_all(@_);
+	#}
 }
 
 # set the aptgetable status of packages

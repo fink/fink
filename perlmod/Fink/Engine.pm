@@ -2085,6 +2085,7 @@ EOF
 	}
 
 	Fink::Package->require_packages();
+	Fink::Shlibs->require_packages();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 
