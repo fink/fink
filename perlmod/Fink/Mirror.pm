@@ -160,13 +160,14 @@ sub merge_master_mirror {
 	$DB::single = 1;	
 
 	foreach $key (keys %{$mirror->{data}}){	
-		s/^/master:/ for @{ $mirror->{data}->{$key} };
 		if (exists $self->{data}->{$key}) {
 			for $url (@{ $mirror->{data}->{$key} }) {
-				push @{$self->{data}->{$key}}, $url;
+				(my $masterurl = $url) =~ s/^/master:/;
+				push @{$self->{data}->{$key}}, $masterurl;
 			}
 		} else {
-			$self->{data}->{$key} = $mirror->{data}->{$key};
+			@{ $self->{data}->{$key} } = @{ $mirror->{data}->{$key} };
+			s/^/master:/ for (@{ $self->{data}->{$key} });
 		}
 	}
  	
