@@ -30,7 +30,7 @@ basepath=$1
 version=`cat VERSION`
 
 echo "Creating fink..."
-sed "s|@PREFIX@|$basepath|g" <fink.in >fink
+sed "s|@BASEPATH@|$basepath|g" <fink.in >fink
 
 echo "Creating man page..."
 sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8
