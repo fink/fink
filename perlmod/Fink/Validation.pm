@@ -900,7 +900,13 @@ sub validate_dpkg_file {
 			#print "$filename\n";
 			next if "$basepath/" =~ /^\Q$filename\E/;  # skip parent components of basepath hierarchy
 			if (not $filename =~ /^$basepath/) {
-				if (not (($dpkg_filename =~ /xfree86[_\-]/) || ($dpkg_filename =~ /xorg[_\-]/))) {
+				if (($filename =~ /^\/etc/) || ($filename =~ /^\/tmp/) || ($filename =~ /^\/var/)) {
+					print "Error: File \"$filename\" is overwriting essential system symlink pointing to /private/...\n";
+					$looks_good = 0;
+				} elsif ($filename =~ /^\/mach/) {
+					print "Error: File \"$filename\" is overwriting essential system symlink pointing to /mach.sym\n";
+					$looks_good = 0;
+				} elsif (not (($dpkg_filename =~ /xfree86[_\-]/) || ($dpkg_filename =~ /xorg[_\-]/))) {
 					print "Warning: File \"$filename\" installed outside of $basepath\n";
 					$looks_good = 0;
 				} else {
