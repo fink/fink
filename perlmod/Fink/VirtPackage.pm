@@ -21,6 +21,23 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA	 02111-1307, USA.
 #
 
+=head1 NAME
+
+Fink::VirtPackage - Provide "virtual" packages for Fink and related tools
+
+=head1 SYNOPSIS
+
+Fink::VirtPackage is generally not used directly, but is instead used by
+the fink-virtual-pkgs tool.
+
+=head1 DESCRIPTION
+
+Fink::VirtPackage is used to inject "fake" package data into the fink
+database, as well as to generate a list of dpkg- and apt-get-compatible
+packages to satisfy dependencies outside of Fink.
+
+=cut
+
 package Fink::VirtPackage;
 
 # Programmers' note: Please be *very* careful if you alter this file.
@@ -83,6 +100,12 @@ sub new {
 	return $self;
 }
 
+=head1 TESTS
+
+=over
+
+=cut
+
 ### self-initialization
 
 sub initialize {
@@ -93,6 +116,13 @@ sub initialize {
 	my ($darwin_version, $cctools_version, $cctools_single_module);
 	# determine the kernel version
 	($dummy,$dummy,$darwin_version) = uname();
+
+=item darwin
+
+This test checks for the darwin version by running the system uname(1)
+call.  This should *always* exist.
+
+=cut
 
 	# create dummy object for kernel version
 	$hash = {};
@@ -109,6 +139,14 @@ END
 	$hash->{compilescript} = $compile_script;
 	$self->{$hash->{package}} = $hash;
 	
+=item macosx
+
+This test checks for the Mac OS X version by running the sw_vers(1)
+command and parsing the output.  It should exist on all Mac OS X
+installations (but not pure Darwin systems).
+
+=cut
+
 	# create dummy object for system version, if this is OS X at all
 	print STDERR "- checking OSX version... " if ($options{debug});
 
@@ -131,6 +169,15 @@ This package represents the Mac OS X software release.
 It will not show as installed on pure Darwin systems.
 END
 	$self->{$hash->{package}} = $hash;
+
+=item system-perl
+
+This package represents the version of the perl in /usr/bin.  It
+is determined by parsing the $^V variable in a perl script.  It
+also provides the perlI<XXX>-core package that corresponds with it's
+version.
+
+=cut
 
 	# create dummy object for system perl
 	print STDERR "- checking system perl version... " if ($options{debug});
@@ -164,10 +211,19 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
+=item system-javaI<XX>
+
+This package represents an installed version of Apple's Java.
+It is considered present if the
+/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Commands
+directory exists.
+
+=cut
+
 	# create dummy object for java
 	print STDERR "- checking Java versions:\n" if ($options{debug});
 	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
-	my $latest_java;
+	my ($latest_java, $latest_javadev);
 	if (opendir(DIR, $javadir)) {
 		chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 		for my $dir (reverse(sort(@dirs, '1.3', '1.4', '1.5'))) {
@@ -199,6 +255,15 @@ END
 				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 				$latest_java = $dir unless (defined $latest_java);
 
+=item system-javaI<XX>-dev
+
+This package represents an installed version of Apple's Java SDK.
+It is considered present if the
+/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Headers
+directory exists.
+
+=cut
+
 				$hash = {};
 				$hash->{package}     = "system-java${ver}-dev";
 				$hash->{status}      = STATUS_PRESENT;
@@ -218,6 +283,7 @@ END
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
 					print STDERR "$dir/Headers " if ($options{debug});
+					$latest_javadev = $dir unless (defined $latest_javadev);
 				} else {
 					$hash->{status} = STATUS_ABSENT;
 				}
@@ -232,6 +298,13 @@ END
 		closedir(DIR);
 	}
 
+=item system-java
+
+This is a convenience package that represents the latest Java version
+that is considered installed, based on the previous tests.
+
+=cut
+
 	if (defined $latest_java) {
 		$hash = {};
 		$hash->{package}     = "system-java";
@@ -240,6 +313,30 @@ END
 		$hash->{description} = "[virtual package representing Java $latest_java]";
 		$self->{$hash->{package}} = $hash;
 	}
+
+=item system-java-dev
+
+This is a convenience package that represents the latest Java SDK
+version that is considered installed, based on the previous tests.
+
+=cut
+
+	if (defined $latest_javadev) {
+		$hash = {};
+		$hash->{package}     = "system-java-dev";
+		$hash->{status}      = "install ok installed";
+		$hash->{version}     = $latest_javadev . "-1";
+		$hash->{description} = "[virtual package representing Java SDK $latest_java]";
+		$self->{$hash->{package}} = $hash;
+	}
+
+=item system-java3d
+
+This package represents the Java3D APIs available as a separate download
+from Apple.  It is considered present if the j3dcore.jar file exists in
+the system Java extensions directory.
+
+=cut
 
 	# create dummy object for Java3D
 	$hash = {};
@@ -275,6 +372,14 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
+=item system-javaai
+
+This package represents the JavaAdvancedImaging APIs available as a
+separate download from Apple.  It is considered present if the jai_core.jar
+file exists in the system Java extensions directory.
+
+=cut
+
 	# create dummy object for JavaAdvancedImaging
 	$hash = {};
 	$hash->{package}     = "system-javaai";
@@ -308,6 +413,14 @@ END
 		print STDERR "missing /System/Library/Java/Extensions/jai_core.jar\n" if ($options{debug});
 	}
 	$self->{$hash->{package}} = $hash;
+
+=item cctools-I<XXX>
+
+This package represents the compiler tools provided by Apple.  It is
+considered present if either I</usr/bin/what /usr/bin/ld> or
+I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
+
+=cut
 
 	# create dummy object for cctools version, if version was found in Config.pm
 	print STDERR "- checking for cctools version... " if ($options{debug});
@@ -352,6 +465,14 @@ END
 		$hash->{status} = STATUS_ABSENT;
 	}
 	$self->{$hash->{package}} = $hash;
+
+=item cctools-single-module
+
+This package represents whether the cctools linker is capable
+of using the -single_module flag.  It is considered present
+if a dummy file can be linked using the -single_module flag.
+
+=cut
 
 	# create dummy object for cctools-single-module, if supported
 	print STDERR "- checking for cctools -single_module support:\n" if ($options{debug});
@@ -402,6 +523,14 @@ END
 		}
 	}
 	$self->{$hash->{package}} = $hash;
+
+=item gcc-*
+
+The GCC virtual packages exist based on gcc* commands
+in /usr/bin.  They are considered present based on
+the successful execution of "gcc --version".
+
+=cut
 
 	print STDERR "- checking for various GCC versions:\n" if ($options{debug});
 	if (opendir(DIR, "/usr/bin")) {
@@ -488,6 +617,15 @@ END
 	} else {
 		print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
 	}
+
+=item gimp-print-shlibs
+
+This package represents the GIMP printing libraries
+provided by Apple on Mac OS X 10.3 and higher.  They
+are considered present if libgimpprint.*.dylib exists
+in /usr/lib.
+
+=cut
 
 	print STDERR "- checking for gimp-print... " if ($options{debug});
 	$hash = {};
@@ -595,20 +733,62 @@ END
 				}
 				print STDERR "missing\n" if ($options{debug} and $found_xserver == 0);
 
+=item system-xfree86-shlibs
+
+This package represents the shared libraries from an
+X11 installation (be it XFree86, X.org, Apple's X11,
+or something else).  It is considered present if
+libX11.*.dylib exists.
+
+=cut
+
 				# this is always there if we got this far
 				print STDERR "  - system-xfree86-shlibs provides x11-shlibs\n" if ($options{debug});
 				push(@{$provides->{'system-xfree86-shlibs'}}, 'x11-shlibs');
+
+=item system-xfree86
+
+This package represents an X11 implementation up to
+and including the X server.  It is considered present
+if an X server is found.
+
+=cut
 
 				if ( $found_xserver ) {
 					print STDERR "  - found an X server, system-xfree86 provides xserver and x11\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'xserver', 'x11');
 				}
 
+=item system-xfree86-dev
+
+This package represents the development headers and
+libraries for X11.  It is considered present if the
+X11/Xlib.h header is found.
+
+=cut
+
 				# "x11-dev" is for BuildDepends: on x11 packages
 				if ( has_header('X11/Xlib.h') ) {
 					print STDERR "  - system-xfree86-dev provides x11-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'x11-dev');
 				}
+
+=item extra X11 provides
+
+Depending on the existence of certain files,
+the system-xfree86* packages can B<Provide> a number
+of extra virtual packages.
+
+=over
+
+=item libgl and libgl-shlibs
+
+These packages represent the existence of the OpenGL
+libraries.  They are considered present if libGL.1.dylib
+is found.
+
+=cut
+
 				# now we do the same for libgl
 				if ( has_lib('libGL.1.dylib') ) {
 					print STDERR "  - system-xfree86-shlibs provides libgl-shlibs\n" if ($options{debug});
@@ -616,10 +796,45 @@ END
 					print STDERR "  - system-xfree86 provides libgl\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'libgl');
 				}
+
+=item libgl-dev
+
+This package represents the existence of the OpenGL
+development headers and libraries.  It is considered
+present if GL/gl.h and libGL.dylib are found.
+
+=cut
+
 				if ( has_header('GL/gl.h') and has_lib('libGL.dylib') ) {
 					print STDERR "  - system-xfree86-dev provides libgl-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'libgl-dev');
 				}
+
+=item xftI<X>-shlibs
+
+This package represents the shared libraries for
+the modern font API for X.  It currently creates
+a B<Provide> for major versions 1 and 2 of the
+libXft.[version].dylib library if it is found.
+
+=cut
+
+				for my $ver (1, 2) {
+					if ( has_lib("libXft.${ver}.dylib") ) {
+						print STDERR "  - system-xfree86-shlibs provides xft${ver}-shlibs\n" if ($options{debug});
+						push(@{$provides->{'system-xfree86-shlibs'}}, "xft${ver}-shlibs");
+					}
+				}
+
+=item xftI<X> and xftI<X>-dev
+
+These packages represent the development headers and
+library for the Xft font API.  It is considered present
+if libXft.dylib exists and the version number I<X> is based
+on the version the symlink points to.
+
+=cut
+
 				if ( has_lib('libXft.dylib') ) {
 					if ( defined readlink('/usr/X11R6/lib/libXft.dylib') ) {
 						my $link = readlink('/usr/X11R6/lib/libXft.dylib');
@@ -633,12 +848,28 @@ END
 						}
 					}
 				}
-				for my $ver (1, 2) {
-					if ( has_lib("libXft.${ver}.dylib") ) {
-						print STDERR "  - system-xfree86-shlibs provides xft${ver}-shlibs\n" if ($options{debug});
-						push(@{$provides->{'system-xfree86-shlibs'}}, "xft${ver}-shlibs");
-					}
+
+=item fontconfigI<X>-shlibs
+
+This package reprents the font configuration API for
+X11.  It is considered present if libfontconfig.*.dylib
+is found.
+
+=cut
+
+				if ( has_lib('libfontconfig.1.dylib') ) {
+					print STDERR "  - system-xfree86-shlibs provides fontconfig1-shlibs\n" if ($options{debug});
+					push(@{$provides->{'system-xfree86-shlibs'}}, 'fontconfig1-shlibs');
 				}
+
+=item fontconfigI<X> and fontconfigI<X>-dev
+
+These packages represent the development headers and
+library for the X11 font configuration API.  It is
+considered present if libXft.dylib exists.
+
+=cut
+
 				if ( has_lib('libfontconfig.dylib') and
 						defined readlink('/usr/X11R6/lib/libfontconfig.dylib') and
 						readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
@@ -649,10 +880,14 @@ END
 					print STDERR "    - system-xfree86 provides fontconfig1\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'fontconfig1');
 				}
-				if ( has_lib('libfontconfig.1.dylib') ) {
-					print STDERR "  - system-xfree86-shlibs provides fontconfig1-shlibs\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86-shlibs'}}, 'fontconfig1-shlibs');
-				}
+
+=item rman
+
+This package represents the X11-based man-page reader.
+It is considered present if /usr/X11R6/bin/rman exists.
+
+=cut
+
 				print STDERR "- checking for rman... " if ($options{debug});
 				if (-x '/usr/X11R6/bin/rman') {
 					print STDERR "found, system-xfree86 provides rman\n" if ($options{debug});
@@ -660,6 +895,17 @@ END
 				} else {
 					print STDERR "missing\n" if ($options{debug});
 				}
+
+=item xfree86-base-threaded and xfree86-base-threaded-shlibs
+
+These packages represent whether libXt has support for threading.
+It is considered present if the pthread_mutex_lock symbol exists
+in the library.
+
+=back
+
+=cut
+
 				print STDERR "- checking for threaded libXt... " if ($options{debug});
 				if (-f '/usr/X11R6/lib/libXt.6.dylib' and -x '/usr/bin/grep') {
 					if (system('/usr/bin/grep', '-q', '-a', 'pthread_mutex_lock', '/usr/X11R6/lib/libXt.6.dylib') == 0) {
@@ -704,9 +950,21 @@ END
 	}
 }
 
-### query by package name
-# returns false when not installed
-# returns full version when installed and configured
+=back
+
+=head1 INTERNAL APIs
+
+=over
+
+=item $self->query_package(I<package_name>)
+
+Query a package by name.
+
+Returns false when not installed, returns the
+full version when installed and configured.
+
+=cut
+
 sub query_package {
 	my $self = shift;
 	my $pkgname = shift;
@@ -727,11 +985,21 @@ sub query_package {
 	return undef;
 }
 
+=item $self->list(I<%options>)
 
-### retrieve whole list with versions
-# doesn't care about installed status
-# returns a hash ref, key: package name, value: hash with core fields
-# in the hash, 'package' and 'version' are guaranteed to exist
+Retrieves a complete hash of all virtual packages,
+with versions, regardless of installed status.
+
+The list is a hash reference, with the package name
+as key and the value a reference to a hash containing
+the package attributes.  The I<package> and I<version>
+attributes are guaranteed to exist.
+
+%options is provided for future implementation, but
+currently does nothing.
+
+=cut
+
 sub list {
 	my $self = shift;
 	%options = (@_);
@@ -764,6 +1032,13 @@ sub list {
 	return $list;
 }
 
+=item &has_header(I<$headername>)
+
+Searches for a header file in a list of common places.
+
+Returns true if found, false if not.
+
+=cut
 
 sub has_header {
 	my $headername = shift;
@@ -785,6 +1060,14 @@ sub has_header {
 	return;
 }
 
+=item &has_lib(I<$libname>)
+
+Searches for a library in a list of common places.
+
+Returns true if found, false if not.
+
+=cut
+
 sub has_lib {
 	my $libname = shift;
 	my $dir;
@@ -804,6 +1087,16 @@ sub has_lib {
 	print "missing\n" if ($options{debug});
 	return;
 }
+
+=item &check_x11_version()
+
+Attempts to determine the version of X11 based on a number of
+heuristics, including parsing the versions in man pages (less expensive)
+and running B<Xserver -version> (more expensive).
+
+Returns the X11 version if found.
+
+=cut
 
 
 ### Check the installed x11 version
@@ -828,7 +1121,7 @@ sub check_x11_version {
 		last if (defined $XF_VERSION);
 	}
 	if (not defined $XF_VERSION) {
-		for my $binary ('X', 'XDarwin', 'Xquartz') {
+		for my $binary (@xservers, 'X') {
 			if (-x '/usr/X11R6/bin/' . $binary) {
 				if (open (XBIN, "/usr/X11R6/bin/$binary -version -iokit 2>\&1 |")) {
 					while (my $line = <XBIN>) {
@@ -859,5 +1152,10 @@ sub check_x11_version {
 		return (join('.', @XF_VERSION_COMPONENTS[0..1]));
 	}
 }
+
+=back
+
+=cut
+
 ### EOF
 1;

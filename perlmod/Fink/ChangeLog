@@ -1,3 +1,9 @@
+2004-09-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Documented all of the tests, did a little
+	rearranging to facilitate a sensible order in the docs, and
+	added system-java-dev.
+
 2004-09-21  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: fix regex for Package and Version to prohibit commas
@@ -5,8 +11,8 @@
 
 2004-09-19  Daniel Macks  <dmacks@netspace.org>
 
-        * PkgVersion,pm, Validation.pm: Add deprecated-feature warning for
-        implicit Source to indexing loop and validator.
+	* PkgVersion,pm, Validation.pm: Add deprecated-feature warning for
+	implicit Source to indexing loop and validator.
 
 2004-09-19  Daniel Macks  <dmacks@netspace.org>
 
