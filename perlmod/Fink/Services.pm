@@ -922,14 +922,14 @@ sub get_arch {
 		foreach ('/usr/bin/uname', '/bin/uname') {
 			# check some common places (why aren't we using $ENV{PATH}?)
 			if (-x $_) {
-				$arch = `$_ -p`;
+				chomp($arch = `$_ -p 2>/dev/null`);
+				chomp($arch = `$_ -m 2>/dev/null`) if ($arch eq "");
 				last;
 			}
 		}
 		if (not defined $arch) {
 			die "Could not find an 'arch' executable\n";
 		}
-		chomp $arch;
 	}
 	return $arch;
 }

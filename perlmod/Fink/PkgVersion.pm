@@ -31,7 +31,7 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &growl);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
-use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
+use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
@@ -94,26 +94,35 @@ sub initialize {
 			# this loop intentionally left blank
 		}
 		if ($finkinfo_index <= 0) {
-			die "Path \"$filename\" contains no finkinfo directory!\n";
+			if ($ignore_errors) {
+				# put some dummy info in for scripts that want
+				# to parse info files outside of Fink
+				$self->{_section}  = 'unknown';
+				$self->{_debpath}  = '/tmp';
+				$self->{_debpaths} = ['/tmp'];
+				$self->{_tree}     = 'unknown';
+			} else {
+				die "Path \"$filename\" contains no finkinfo directory!\n";
+			}
+		} else {
+			# compute the "section" of this package, e.g. "net", "devel", "crypto"...
+			$section = $parts[$finkinfo_index-1]."/";
+			if ($finkinfo_index < $#parts) {
+				$section = "" if $section eq "main/";
+				$section .= join("/", @parts[$finkinfo_index+1..$#parts])."/";
+			}
+			$self->{_section} = substr($section,0,-1);	 # cut last /
+			$parts[$finkinfo_index] = "binary-$debarch";
+			$self->{_debpath} = join("/", @parts);
+			$self->{_debpaths} = [];
+			for ($i = $#parts; $i >= $finkinfo_index; $i--) {
+				push @{$self->{_debpaths}}, join("/", @parts[0..$i]);
+			}
+			
+			# determine the package tree ("stable", "unstable", etc.)
+					@parts = split(/\//, substr($filename,length("$basepath/fink/dists/")));
+			$self->{_tree}	= $parts[0];
 		}
-		
-		# compute the "section" of this package, e.g. "net", "devel", "crypto"...
-		$section = $parts[$finkinfo_index-1]."/";
-		if ($finkinfo_index < $#parts) {
-			$section = "" if $section eq "main/";
-			$section .= join("/", @parts[$finkinfo_index+1..$#parts])."/";
-		}
-		$self->{_section} = substr($section,0,-1);	 # cut last /
-		$parts[$finkinfo_index] = "binary-$debarch";
-		$self->{_debpath} = join("/", @parts);
-		$self->{_debpaths} = [];
-		for ($i = $#parts; $i >= $finkinfo_index; $i--) {
-			push @{$self->{_debpaths}}, join("/", @parts[0..$i]);
-		}
-		
-		# determine the package tree ("stable", "unstable", etc.)
-				@parts = split(/\//, substr($filename,length("$basepath/fink/dists/")));
-		$self->{_tree}	= $parts[0];
 	} else {
 		# for dummy descriptions generated from dpkg status data alone
 		$self->{_patchpath} = "";

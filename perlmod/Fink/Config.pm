@@ -34,14 +34,14 @@ require Exporter;
 
 our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath
-                      $distribution
+                      $distribution $ignore_errors
                       get_option set_options verbosity_level
 
                      );
 our $VERSION	 = 1.00;
 
 
-our ($config, $basepath, $libpath, $distribution, $buildpath);
+our ($config, $basepath, $libpath, $distribution, $buildpath, $ignore_errors);
 my $_arch = Fink::Services::get_arch();
 our $debarch = "darwin-$_arch";
 
