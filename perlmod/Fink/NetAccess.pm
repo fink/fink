@@ -177,7 +177,7 @@ sub download_cmd {
 
   # check if we have curl
   if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
-    $cmd = "curl -L";
+    $cmd = "curl -f -L";
     if (not Fink::Config::is_verbose()) {
       $cmd .= " -s -S";
     }

@@ -42,6 +42,10 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+# The list of commands. Maps command names to a list containing
+# a function reference, and two flags. The first flag indicates
+# whether this command requires the package descriptions to be
+# read, the second flag whether root permissions are needed.
 our %commands =
   ( 'rescan' => [\&cmd_rescan, 0, 0],
     'configure' => [\&cmd_configure, 0, 1],
@@ -442,7 +446,10 @@ sub cmd_fetch_all {
     $version = &latest_version($package->list_versions());
     $vo = $package->get_version($version);
     if (defined $vo) {
-      $vo->phase_fetch();
+      eval {
+        $vo->phase_fetch();
+      };
+      warn "$@" if $@;         # turn fatal exceptions into warnings
     }
   }
 }
@@ -455,7 +462,10 @@ sub cmd_fetch_all_missing {
     $version = &latest_version($package->list_versions());
     $vo = $package->get_version($version);
     if (defined $vo) {
-      $vo->phase_fetch(1);
+      eval {
+        $vo->phase_fetch(1);
+      };
+      warn "$@" if $@;         # turn fatal exceptions into warnings
     }
   }
 }
