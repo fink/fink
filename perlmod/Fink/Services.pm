@@ -121,6 +121,9 @@ sub read_properties_lines {
 			next if /^\s*\#/;		# skip comments
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
+				if (exists $hash->{$lastkey}) {
+					print "WARNING: Field \"$lastkey\" occurs more than once in \"$file\".\n";
+				}
 				if ($2 eq "<<") {
 					$hash->{$lastkey} = "";
 					$heredoc = 1;

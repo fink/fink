@@ -1,3 +1,8 @@
+2003-05-02  Max Horn  <max@quendi.de>
+
+	* Services.pm: Warn if an .info file uses a field more than once (will soon
+	  be turned into an error).
+
 2003-04-26  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm: Fix multi line Depends/BuildDepends fields, and slightly
