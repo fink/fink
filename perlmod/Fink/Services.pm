@@ -39,7 +39,7 @@ BEGIN {
 					  &read_properties_multival &read_properties_multival_var
 					  &execute &execute_script &expand_percent
 					  &filename &print_breaking
-					  &prompt &prompt_boolean &prompt_selection &prompt_selection_new
+					  &prompt &prompt_boolean &prompt_selection_new
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
 					  &file_MD5_checksum &get_arch &get_sw_vers
@@ -715,6 +715,8 @@ sub prompt_boolean {
 
 =item prompt_selection
     my $answer = prompt_selection $prompt, $default, \%names, @choices;
+
+This function is deprecated. Use prompt_selection_new instead.
 
 Ask the user a multiple-choice question and return the answer. The
 user is prompted via STDOUT/STDIN using $prompt (which is

@@ -22,7 +22,7 @@
 
 package Fink::Mirror;
 
-use Fink::Services qw(&prompt_selection
+use Fink::Services qw(&prompt_selection_new
 					  &read_properties &read_properties_multival_var &read_properties_multival);
 use Fink::Config qw($config $libpath);
 
@@ -309,15 +309,17 @@ sub get_site_retry {
 		} else {
 			$nexttext = "Retry using next mirror set \"$next_set\"";
 		}
+		my %choices = ( "error" => "Give up",
+				"retry" => "Retry the same mirror",
+				"retry-country" => "Retry another mirror from your country",
+				"retry-continent" => "Retry another mirror from your continent",
+				"retry-world" => "Retry another mirror",
+				"retry-next" => $nexttext );
+		my @choices = map { ( $choices{$_} => $_ ) } @choice_list;
 		$result =
-		&prompt_selection("How do you want to proceed?", $default,
-						  { "error" => "Give up",
-							"retry" => "Retry the same mirror",
-							"retry-country" => "Retry another mirror from your country",
-							"retry-continent" => "Retry another mirror from your continent",
-							"retry-world" => "Retry another mirror",
-							"retry-next" => $nexttext  },
-						  @choice_list);
+		&prompt_selection_new("How do you want to proceed?",
+				      [ number => $default ],
+				      @choices );
 	}
 	$url = $self->{lastused};
 	if ($result eq "error") {

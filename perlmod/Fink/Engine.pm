@@ -23,7 +23,7 @@
 package Fink::Engine;
 
 use Fink::Services qw(&print_breaking
-					  &prompt_boolean &prompt_selection
+					  &prompt_boolean &prompt_selection_new
 					  &latest_version &execute &get_term_width
 					  &file_MD5_checksum &get_arch);
 use Fink::Package;
@@ -1197,7 +1197,7 @@ sub real_install {
 			if (not $found) {
 				# let the user pick one
 
-				my $labels = {};
+				my @choices = ();
 				my $pkgindex = 1;
 				my $choice = 1;
 				my $founddebcnt = 0;
@@ -1206,7 +1206,7 @@ sub real_install {
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
 					my $description = $vo->get_shortdescription(60);
-					$labels->{$dname} = "$dname: $description";
+					push @choices, ( "$dname: $description" => $dname );
 					if ($package->is_any_present()) {
 						$choice = $pkgindex;
 						$founddebcnt++;
@@ -1219,8 +1219,7 @@ sub real_install {
 				print "\n";
 				&print_breaking("fink needs help picking an alternative to satisfy ".
 								"a virtual dependency. The candidates:");
-				$dname =
-					&prompt_selection("Pick one:", $choice, $labels, @candidates);
+				$dname = &prompt_selection_new("Pick one:", [number=>$choice], @choices);
 			}
 
 			# the dice are rolled...

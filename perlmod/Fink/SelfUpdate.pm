@@ -23,7 +23,7 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp &print_breaking
-					  &prompt &prompt_boolean &prompt_selection);
+					  &prompt &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
@@ -83,8 +83,11 @@ sub check {
 	# if the fink.conf setting is not there.
 	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
 		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
-		$answer = &prompt_selection("Choose an update method", 1, {"rsync" => "rsync",
-			"cvs" => "cvs", "point" => "Stick to point releases"}, "rsync","cvs","point");
+		$answer = &prompt_selection_new("Choose an update method",
+						[ value => "rsync" ],
+						( "rsync" => "rsync",
+						  "cvs" => "cvs",
+						  "Stick to point releases" => "point" ) );
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();	
 	    }

@@ -25,7 +25,7 @@ use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
 					  &print_breaking
-					  &prompt_boolean &prompt_selection
+					  &prompt_boolean &prompt_selection_new
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
@@ -1179,14 +1179,12 @@ END
 								"Expected: $checksum \nActual: $found_archive_sum \n".
 								"It is recommended that you download it ".
 								"again. How do you want to proceed?");
-				$answer =
-					&prompt_selection("Make your choice: ",
-								($tries >= 3) ? 1 : 2,
-								{ "error" => "Give up",
-									"redownload" => "Delete it and download again",													
-									"continuedownload" => "Assume it is a partial download and try to continue",
-									"continue" => "Don't download, use existing file" },
-								( "error", "redownload", "continuedownload", "continue" ));
+				$answer = &prompt_selection_new("Make your choice: ",
+								[ value => ($tries >= 3) ? "error" : "redownload" ],
+								( "Give up" => "error",
+								  "Delete it and download again" => "redownload",
+								  "Assume it is a partial download and try to continue" => "continuedownload",
+								  "Don't download, use existing file" => "continue" ) );
 				if ($answer eq "redownload") {
 					&execute("/bin/rm -f $found_archive");
 					$i--;

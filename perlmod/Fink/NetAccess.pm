@@ -22,7 +22,7 @@
 
 package Fink::NetAccess;
 
-use Fink::Services qw(&prompt_selection &print_breaking
+use Fink::Services qw(&prompt_selection_new &print_breaking
 					  &execute &filename);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
@@ -183,17 +183,15 @@ sub fetch_url_to_file {
 	}
 	if(defined $mirror_list[0]) {
 	  $url = $mirror_list[0]->get_site();
-    }
+	}
     	
 	### if the file already exists, ask user what to do
 	if (-f $file && !$cont && !$dryrun) {
-		$result =
-			&prompt_selection("The file \"$file\" already exists, how do you want to proceed?",
-							1, # Play it save, assume redownload as default
-							{ "retry" => "Delete it and download again",
-								"continue" => "Assume it is a partial download and try to continue",
-								"use_it" => "Don't download, use existing file" },
-							"retry", "continue", "use_it");
+		$result = &prompt_selection_new("The file \"$file\" already exists, how do you want to proceed?",
+						[ value => "retry" ], # Play it save, assume redownload as default
+						( "Delete it and download again" => "retry",
+						  "Assume it is a partial download and try to continue" => "continue",
+						  "Don't download, use existing file" => "use_it" ) );
 		if ($result eq "retry") {
 			&execute("/bin/rm -f $file");
 		} elsif ($result eq "continue") {

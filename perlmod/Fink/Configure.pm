@@ -74,11 +74,12 @@ sub configure {
 
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
-		&prompt_selection_new("How verbose should Fink be?", [value=>$verbose], 
-						  ( "High (shows everything)" => 3,
-							"Medium (shows almost everything)" => 2,
-							"Low (don't show tarballs being expanded)" => 1,
-							"Quiet (don't show download stats)" => 0 ) );
+		&prompt_selection_new("How verbose should Fink be?",
+				      [value=>$verbose], 
+				      ( "Quiet (don't show download stats)" => 0,
+					"Low (don't show tarballs being expanded)" => 1,
+					"Medium (shows almost everything)" => 2,
+					"High (shows everything)" => 3 ) );
 	$config->set_param("Verbose", $verbose);
 
 	# proxy settings
