@@ -64,7 +64,7 @@ sub get_shlibs {
 	my $self = shift;
 	my $pkgname = shift;
 	my @filelist = @_;
-	my ($depend, @depends, @deps, %SHLIBS);
+	my ($depend, @depends, %SHLIBS);
 
 	@depends = $self->check_files($pkgname, @filelist);
 
@@ -74,11 +74,7 @@ sub get_shlibs {
 		}
 	}
 
-	foreach (sort keys %SHLIBS) {
-		push @deps, $_;
-	}
-
-	return @deps;
+	return sort keys %SHLIBS;
 }
 
 ### check the files for depends
@@ -102,9 +98,7 @@ sub check_files {
 
 	# Get runtimedepends and depends line and builddepends line for compares
 	@deplines = split(/\s*\,\s*/, $pkg->pkglist_default("Depends", ""));
-	foreach my $tmp (split(/\s*\,\s*/, $pkg->pkglist_default("RunTimeDepends", ""))) {
-		push @deplines, $tmp;
-	}
+	push @deplines, split(/\s*\,\s*/, $pkg->pkglist_default("RunTimeDepends", ""));
 	@builddeps = split(/\s*\,\s*/, $pkg->pkglist_default("BuildDepends", ""));
 
 	# get a list of linked files to the pkg files
@@ -198,13 +192,13 @@ sub check_files {
 					}
 					# check all splits of the deps to find
 					# this shlibs version of the -dev
-					$pkg = Fink::PkgVersion->match_package($dep);
-					unless (defined $pkg) {
+					my $deppkg = Fink::PkgVersion->match_package($dep);
+					unless (defined $deppkg) {
 						print STDERR "no package found for specification '$dep'!\n";
 						next;
 					}
 
-					@dsplits = $pkg->get_splitoffs(1, 1);
+					@dsplits = $deppkg->get_splitoffs(1, 1);
 					foreach $dsplit (@dsplits) {
 						if ($dsplit eq $tmpdep) {
 							# override version based on specified Depends
@@ -488,7 +482,7 @@ sub scan_all {
 			if (not $config->param_boolean("NoAutoIndex")) {
 				$shlib_db_mtime = (stat($dbfile))[9];
 				if (((lstat($conffile))[9] > $shlib_db_mtime)
-					or ((stat($conffile))[9] > $shlib_db_mtime)) {
+ 					or ((stat($conffile))[9] > $shlib_db_mtime)) {
 					$shlib_db_outdated = 1;
 				} else {
 					$shlib_db_outdated = &search_comparedb( "$basepath/var/lib/dpkg/info" );
@@ -540,12 +534,13 @@ sub search_comparedb {
 }
 
 ### read shlibs and update the database, if needed and we are root
+
 sub update_shlib_db {
 	my $self = shift;
 	my ($dir);
 
 	my $dbfile = "$dbpath/shlibs.db";
-	my $lockfile = "$dbpath/shlibs.db.lock";
+	my $lockfile = "$dbfile.lock";
 
 	local $SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
 
@@ -554,9 +549,9 @@ sub update_shlib_db {
 	eval "require Storable";
 	if ($@) {
 		my $perlver = sprintf '%*vd', '', $^V;
-		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the shlib cache. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
+		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the shlibs list. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
 	} elsif ($> != 0) {
-		&print_breaking_stderr( "Fink has detected that your shlib cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+		&print_breaking_stderr( "Fink has detected that your shlibs list cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
 	} else {
 		# we have Storable.pm and are root
 		$writable_cache = 1;

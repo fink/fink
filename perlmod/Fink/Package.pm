@@ -449,7 +449,7 @@ sub scan_all {
 			# Unless the NoAutoIndex option is set, check whether we should regenerate
 			# the index based on its modification date and that of the package descs.
 			if (not $config->param_boolean("NoAutoIndex")) {
-				$db_mtime = (stat($dbfile))[9];			 
+				$db_mtime = (stat($dbfile))[9];
 				if (((lstat($conffile))[9] > $db_mtime)
 					or ((stat($conffile))[9] > $db_mtime)) {
 					$db_outdated = 1;
@@ -522,9 +522,10 @@ sub scan_all {
 sub search_comparedb {
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
+	my $dbfile = "$dbpath/fink.db";
 
 	# Using find is much faster than doing it in Perl
-	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $dbpath/fink.db |"
+	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $dbfile |"
 		or die "/usr/bin/find failed: $!\n";
 
 	# If there is anything on find's STDOUT, we know at least one
@@ -543,7 +544,7 @@ sub update_db {
 	my ($tree, $dir);
 
 	my $dbfile = "$dbpath/fink.db";
-	my $lockfile = "$dbpath/fink.db.lock";
+	my $lockfile = "$dbfile.lock";
 
 	local $SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
 

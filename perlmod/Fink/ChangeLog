@@ -1,3 +1,8 @@
+2005-03-23  Daniel Macks <dmacks@netspace.org>
+
+	* Shibs.pm: Scattered code cleanups.
+	* Package.pm, Shlibs.pm: reduce Package/Shlibs differences.
+
 2005-03-22  Daniel Macks <dmacks@netspace.org>
 
 	* Engine.pm, Package.pm, Shlibs.pm: Fixed scoping of $SIG{INT}
