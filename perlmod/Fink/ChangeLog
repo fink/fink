@@ -3,6 +3,8 @@
 	* Services.pm: No point in continuing to search through the path if
 	  we have a match.
 	* Package.pm: Fix version spec checking to allow epochs.
+	* PkgVersion.pm: Ask perl what it's arch directory is, rather than
+	  assuming based on version.
 
 2003-11-10  Daniel Macks  <dmacks@netspace.org>
 
