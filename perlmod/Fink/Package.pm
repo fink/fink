@@ -40,9 +40,10 @@ BEGIN {
 }
 our @EXPORT_OK;
 
-our ($have_packages, @package_list, @essential_packages, $essential_valid);
+our ($have_packages, @package_list, @essential_packages, $essential_valid, %package_hash);
 $have_packages = 0;
 @package_list = ();
+%package_hash = ();
 @essential_packages = ();
 $essential_valid = 0;
 
@@ -79,6 +80,7 @@ sub initialize {
   $self->{_providers} = [];
 
   push @package_list, $self;
+  $package_hash{$self->{package}} = $self;
 }
 
 ### get package name
@@ -232,12 +234,7 @@ sub package_by_name {
   my $pkgname = shift;
   my $package;
 
-  foreach $package (@package_list) {
-    if ($package->get_name() eq $pkgname) {
-      return $package;
-    }
-  }
-  return undef;
+  return $package_hash{$pkgname};
 }
 
 ### get package by exact name, create when not found
@@ -247,25 +244,15 @@ sub package_by_name_create {
   my $pkgname = shift;
   my $package;
 
-  foreach $package (@package_list) {
-    if ($package->get_name() eq $pkgname) {
-      return $package;
-    }
-  }
-  return Fink::Package->new_with_name($pkgname);
+  return $package_hash{$pkgname} || Fink::Package->new_with_name($pkgname);
 }
 
 ### list all packages
 
 sub list_packages {
   shift;  # class method - ignore first parameter
-  my ($package, @list);
 
-  @list = ();
-  foreach $package (@package_list) {
-    push @list, $package->get_name();
-  }
-  return @list;
+  return keys %package_hash;
 }
 
 ### list essential packages
@@ -306,6 +293,7 @@ sub forget_packages {
 
   $have_packages = 0;
   @package_list = ();
+  %package_hash = ();
   @essential_packages = ();
   $essential_valid = 0;
 }
@@ -316,6 +304,7 @@ sub scan_all {
   shift;  # class method - ignore first parameter
   my ($tree, $dir);
   my ($dlist, $pkgname, $po, $hash, $fullversion);
+  my ($time) = time;
 
   $have_packages = 0;
   @package_list = ();
@@ -349,7 +338,8 @@ sub scan_all {
 
   $have_packages = 1;
 
-  print "Information about ".($#package_list+1)." packages read.\n";
+  print "Information about ".($#package_list+1)." packages read in ",
+    (time - $time), " seconds.\n";
 }
 
 ### scan one tree for package desccriptions
