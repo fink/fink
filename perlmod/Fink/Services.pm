@@ -272,9 +272,8 @@ sub expand_percent {
   # which do stuff like %N = %n-shlibs). Hence we repeate the expansion
   # if necessary.
   for ($i = 0; $i < 2 ; $i++) {
-    while (($key, $value) = each %$map) {
-      $s =~ s/\%$key/$value/g;
-    }
+    my $percent_keys = join('|', keys %$map);
+    $s =~ s/\%($percent_keys)/$map->{$1}/eg;
     last if not $s =~ /\%/; # Abort early if no percent symbols are left
   }
   

@@ -1,3 +1,8 @@
+2003-01-23  Max Horn  <max@quendi.de>
+
+	* Services.pm: Added Paul Gaborit's patch to speed up expand_percent and 
+	  hence index building.
+
 2003-01-22  Ben Hines <benh57@users.sourceforge.net>
 
 	* Engine.pm, Package.pm: Match "fink list" & "install/remove/etc"
