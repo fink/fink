@@ -473,6 +473,10 @@ sub scan {
 			}
 		}
 
+		# If we want to allow the main package to see lang
+		# vers, we need to replicate the parsing for
+		# _langversion_pkg from PkgVersion::initialize here.
+
 		# get/create package object
 		$package = Fink::Package->package_by_name_create($pkgname);
 
