@@ -137,7 +137,7 @@ sub initialize {
 				$ver =~ s/[^\d]+//g;
 				$ver =~ s/^(..).*$/$1/;
 				$hash = {};
-				$hash->{package}     = "java${ver}";
+				$hash->{package}     = "system-java${ver}";
 				$hash->{status}      = "install ok installed";
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
@@ -145,7 +145,7 @@ sub initialize {
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
 					$hash = {};
-					$hash->{package}     = "java${ver}-dev";
+					$hash->{package}     = "system-java${ver}-dev";
 					$hash->{status}      = "install ok installed";
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
