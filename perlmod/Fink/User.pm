@@ -83,6 +83,8 @@ sub del_user {
 	my $self = shift
 	my $user = shift;
 
+	my $cmd = "$basepath/sbin/userdel -r $user";
+
 	return 1;
 }
 
@@ -91,6 +93,10 @@ sub add_group {
 	my $self = shift;
 	my $group = shift;
 
+	my $gid = $usrgrps{'group'}->{$group}->{$gid};
+
+	my $cmd = "$basepath/sbin/groupadd -g $gid $group";
+
 	return 1;
 }
 
@@ -98,6 +104,8 @@ sub add_group {
 sub del_group {
 	my $self = shift;
 	my $group = shift;
+
+	my $cmd = "$basepath/sbin/groupdel $group";
 
 	return 1;
 }
@@ -170,7 +178,7 @@ sub get_next_avail {
 
 ### Forget users and groups and reload via debs or info of installed pkgs
 sub forget_ids {
-	shift;			# drop proto
+	$self = shift;
 
 	@users = ();
 	@groups = ();
