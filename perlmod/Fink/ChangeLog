@@ -1,3 +1,8 @@
+2001-10-13  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Services.pm (filename): More general solution to handle mirror:
+	URLs that don't contain a slash.
+
 2001-10-10  Max Horn  <max@quendi.de>
 
 	* Service.pm (filename): Handle fileanames with the mirror: syntax
