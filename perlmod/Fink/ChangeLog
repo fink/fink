@@ -1,3 +1,8 @@
+2001-09-03  Max Horn  <max@quendi.de>
+
+	* Bootstrap.pm: fixed bootstrap by forcing the package descriptions
+	tp be read in.
+
 2001-08-31  Christoph Pfisterer  <cp@chrisp.de>
 
 	* NetAccess.pm (fetch_url): Let curl follow redirects.
