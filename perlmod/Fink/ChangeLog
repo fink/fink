@@ -5,8 +5,8 @@
 2004-03-16  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Command.pm, PkgVersion.pm: New &du_sk replacement for 'du -sk'.
-	This changes the meaning of Installed-Size in .deb's from KB to
-	bytes, in accordance with Debian policy. Apt and dpkg should now
+	This changes the meaning of Installed-Size in .deb's from bytes to
+	KB, in accordance with Debian policy. Apt and dpkg should now
 	understand it correctly.
 
 2004-03-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
