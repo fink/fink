@@ -701,16 +701,16 @@ sub prompt_boolean {
 			last;
 		}
 		if (defined $timeout) {
-		    $answer = eval {
-			local $SIG{ALRM} = sub {
-			    print "\n\nTIMEOUT: using default answer.\n";
-			    die;
-			};
-			alarm $timeout;
-			my $answer = <STDIN>;
-			alarm(0);
-			return $answer;
-		    } || "";
+			$answer = eval {
+				local $SIG{ALRM} = sub {
+					print "\n\nTIMEOUT: using default answer.\n";
+					die;
+				};
+				alarm $timeout;
+				my $answer = <STDIN>;
+				alarm(0);
+				return $answer;
+			} || "";
 		} else {
 		    $answer = <STDIN> || "";
 		}
