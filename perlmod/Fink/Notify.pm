@@ -128,14 +128,25 @@ sub new {
 
 The default events are:
 
-	finkPackageBuildPassed
-	finkPackageBuildFailed
-	finkPackageInstallationPassed
-	finkPackageInstallationFailed
-	finkPackageRemovalPassed
-	finkPackageRemovalFailed
-	finkDonePassed
-	finkDoneFailed
+=over 4
+
+=item * finkPackageBuildPassed - build phase has completed
+
+=item * finkPackageBuildFailed - build phase has failed
+
+=item * finkPackageInstallationPassed - install phase has completed
+
+=item * finkPackageInstallationFailed - install phase has failed
+
+=item * finkPackageRemovalPassed - deactivation phase has completed
+
+=item * finkPackageRemovalFailed - deactivation phase has failed
+
+=item * finkDonePassed - fink is done running and exiting
+
+=item * finkDoneFailed - fink is done running and exiting non-zero
+
+=back
 	
 Notifier modules may supply an alternate list of supported events by
 providing their own events() method.
