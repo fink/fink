@@ -45,10 +45,10 @@ our @EXPORT_OK;
 
 our ($lowUID, $highUID, $lowGID, $highGID);
 
-$lowUID = $config->param("lowUID") || 250;
-$highUID = $config->param("highUID") || 299;
-$lowGID = $config->param("lowGID") || 250;
-$highGID = $config->param("highGID") || 299;
+$lowUID = 250;
+$highUID = 299;
+$lowGID = 250;
+$highGID = 299;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -115,6 +115,7 @@ sub add_user {
 	my $cut = "/usr/bin/cut";
 	my $chown = "/usr/sbin/chown";
 	my $mkdir = "/bin/mkdir -p";
+	my $expr = "/bin/expr";
 
 	my pass = "*";
 	my $script = "";
@@ -123,49 +124,136 @@ sub add_user {
 	### ask if the fink.conf specifies this.  maybe use a grep on fink.conf
 
 	if ($type eq "user") {
-		$script =
-			"getgid() {\n".
-			"gid=`$nidump group . | $grep -e \"^$name:\" | $cut -d\":\" -f3`\n".
-			"if [ ! \$gid ]; then\n".
-			"\n".
-			"fi\n".
-			"}\n".
-			"getuid() {\n".
-			"uid=`$nidump passwd . | $grep -e \"^$name:\" | $cut -d\":\" -f3`\n".
-			"if [ ! \$uid ]; then\n".
-			"\n".
-			"fi\n".
-			"}\n".
-			"uid=getuid()\n".
-			"gid=getgid()\n".
-			"$niutil -create . /users/$name\n".
-			"$niutil -createprop . /users/$name realname \"$desc\"\n".
-			"$niutil -createprop . /users/$name gid \$gid\n".
-			"$niutil -createprop . /users/$name uid \$uid\n".
-			"$niutil -createprop . /users/$name home \"$home\"\n".
-			"$niutil -createprop . /users/$name name \"$user\"\n".
-			"$niutil -createprop . /users/$name passwd \"$pass\"\n".
-			"$niutil -createprop . /users/$name shell \"$shell\"\n".
-			"$niutil -createprop . /users/$name change 0\n".
-			"$niutil -createprop . /users/$name expire 0\n".
-			"$mkdir \"$home\"\n".
-			"$chown \"$name.$group\" \"$home\"\n".
-			"\n";
+		$script = <<"EOF";
+getgid() {
+  gid=`$nidump group . | $grep -e \"^$name:\" | $cut -d\":\" -f3`
+  if [ ! \$gid ]; then
+    continue="no"
+    number_used="dontknow"
+    fnumber=$lowGID
+    until [ $continue = "yes" ]; do
+      if [ `$nidump group . | $cut -d":" -f3 | $grep -c "^$fnumber$"` -gt 0 ]; then
+        number_used=true
+      else
+        if [ $fnumber -gt $highGID ]; then
+          break
+        fi
+        number_used=false
+      fi
+
+      if [ $number_used = "true" ]; then
+        fnumber=`$expr $fnumber + 1`
+      else
+        gid="$fnumber"
+        continue="yes"
+      fi
+    done;
+  fi
+}
+
+getuid() {
+  uid=`$nidump passwd . | $grep -e \"^$name:\" | $cut -d\":\" -f3`
+  if [ ! \$uid ]; then
+    continue="no"
+    number_used="dontknow"
+    fnumber=$lowUID
+    until [ $continue = "yes" ]; do
+      if [ `$nidump passwd . | $cut -d":" -f3 | $grep -c "^$fnumber$"` -gt 0 ]; then
+        number_used=true
+      else
+        if [ $fnumber -gt $highUID ]; then
+          break
+        fi
+        number_used=false
+      fi
+
+      if [ $number_used = "true" ]; then
+        fnumber=`$expr $fnumber + 1`
+      else
+        uid="$fnumber"
+        continue="yes"
+      fi
+    done;
+  fi
+}
+
+uid=getuid()
+gid=getgid()
+
+if [ $uid -gt $highUID ]; then
+  exit 1
+fi
+
+if [ $gid -gt $highGID ]; then
+  exit 1
+fi
+
+if [ $uid -lt $lowUID ]; then
+  exit 1
+fi
+
+if [ $gid -lt $lowGID ]; then
+  exit 1
+fi
+
+$niutil -create . /users/$name
+$niutil -createprop . /users/$name realname "$desc"
+$niutil -createprop . /users/$name gid \$gid
+$niutil -createprop . /users/$name uid \$uid
+$niutil -createprop . /users/$name home "$home"
+$niutil -createprop . /users/$name name "$name"
+$niutil -createprop . /users/$name passwd "$pass"
+$niutil -createprop . /users/$name shell "$shell"
+$niutil -createprop . /users/$name change 0
+$niutil -createprop . /users/$name expire 0
+$mkdir "$home"
+$chown "$name.$group" "$home"
+
+EOF
 	} else {
-		$script =
-			"getgid() {\n".
-			"gid=`$nidump group . | $grep -e \"^$name:\" | $cut -d\":\" -f3`\n".
-			"if [ ! \$gid ]; then\n".
-			"\n".
-			"fi\n".
-			"}\n".
-			"\n";
-			"gid=getgid()\n".
-                	"$niutil -create . /groups/$user\n".
-        		"$niutil -createprop . /groups/$name name \"$name\"\n".
-                	"$niutil -createprop . /groups/$user gid \$gid\n".
-			"$niutil -createprop . /groups/$user passwd \"$pass\"\n".
-			"\n";
+		$script = <<"EOF";
+getgid() {
+  gid=`$nidump group . | $grep -e \"^$name:\" | $cut -d\":\" -f3`
+  if [ ! \$gid ]; then
+    continue="no"
+    number_used="dontknow"
+    fnumber=$lowGID
+    until [ $continue = "yes" ]; do
+      if [ `$nidump group . |$cut -d":" -f3 |$grep -c "^$fnumber$"` -gt 0 ]; then
+        number_used=true
+      else
+        if [ $fnumber -gt $highGID ]; then
+          break
+        fi
+        number_used=false
+      fi
+
+      if [ $number_used = "true" ]; then
+        fnumber=`$expr $fnumber + 1`
+      else
+        gid="$fnumber"
+        continue="yes"
+      fi
+    done;
+  fi
+}
+
+gid=getgid()
+
+if [ $gid -gt $highGID ]; then
+  exit 1
+fi
+
+if [ $gid -lt $lowGID ]; then
+  exit 1
+fi
+
+$niutil -create . /groups/$user
+$niutil -createprop . /groups/$name name "$name"
+$niutil -createprop . /groups/$user gid \$gid
+$niutil -createprop . /groups/$user passwd "$pass"
+
+EOF
 	}
     
 	return $script;
@@ -185,16 +273,17 @@ sub remove_user {
 	my $script = "";
     
 	if ($type eq "user") {
-		$script =
-			"HomeDir=`$nidump passwd . | $grep '$name:' ".
-				"| $cut -d\":\" -f9`\n".
-			"$rm \$HomeDir\n".
-			"$niutil -destroy . /users/$name\n".
-			"\n";
+		$script = <<"EOF";
+HomeDir=`$nidump passwd . | $grep '$name:' | $cut -d\":\" -f9`
+$rm \$HomeDir
+$niutil -destroy . /users/$name
+
+EOF
 	} else {
-		$script =
-			"$niutil -destroy . /groups/$name\n".
-			"\n";
+		$script = <<"EOF";
+$niutil -destroy . /groups/$name
+
+EOF
 	}
     
 	return $script
