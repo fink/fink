@@ -825,7 +825,6 @@ sub validate_info_component {
 #        /sw/share/emacs/site-lisp, so we no longer check for this)
 # - BuildDependsOnly: if package stores files in /sw/include, it should
 #     declare BuildDependsOnly true
-# - If a package contains pkg-config .pc files, it should Depends:pkgconfig
 # - Check presence and execute-flag on executable specified in daemonicfile
 # - If a package contains a daemonicfile, it should Depends:daemonic
 # - Check for symptoms of running update-scrollkeeper during package building
@@ -948,11 +947,6 @@ sub validate_dpkg_file {
 						print "Warning: scrollkeeper source file found, but scrollkeeper-update not called\nin $_. See scrollkeeper package docs for information. Offending file:\n  $filename\n";
 						$looks_good = 0;
 					}
-				}
-			} elsif ( $filename =~/^$basepath\/lib\/pkgconfig\/\S+$/ ) {
-				if (not exists $deb_control->{depends_pkgs}->{pkgconfig}) {
-					print "Warning: Package appears to contain pkg-config file but does not depend on the package \"pkgconfig\"\n  Offending file: $filename\n";
-					$looks_good = 0;
 				}
 			} elsif ( $filename =~ /^$basepath\/etc\/daemons\/\S+$/ ) {
 				if (not exists $deb_control->{depends_pkgs}->{daemonic}) {
