@@ -22,8 +22,10 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&latest_version &execute &file_MD5_checksum &get_arch);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
+use Fink::Services qw(&print_breaking
+					  &prompt_boolean &prompt_selection_new
+					  &latest_version &execute &get_term_width
+					  &file_MD5_checksum &get_arch);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
@@ -1064,7 +1066,7 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
+			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
 			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
 		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
@@ -1075,9 +1077,7 @@ sub real_install {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
-			
-			# Do not use BuildConflicts for packages which are not going to be built!
-#			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
 		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {
@@ -1089,7 +1089,7 @@ sub real_install {
 			# check the graph
 			foreach $dp (@$dep) {
 				$dname = $dp->get_name();
-				if (exists $deps{$dname} and $deps{$dname}->[PKGVER] == $dp) {
+				if (exists $deps{$dname} and $deps{$dname}->[2] == $dp) {
 					if ($deps{$dname}->[OP] < $OP_INSTALL) {
 						$deps{$dname}->[OP] = $OP_INSTALL;
 					}
@@ -1108,7 +1108,7 @@ sub real_install {
 					}
 					# add node to graph
 					$deps{$dname} = [ $dname, Fink::Package->package_by_name($dname),
-					                  $dp, $OP_INSTALL, 2 ];
+														$dp, $OP_INSTALL, 2 ];
 					# add a link
 					push @$item, $deps{$dname};
 					# add to investigation queue
@@ -1125,46 +1125,38 @@ sub real_install {
 				$candidates{$dp->get_name()} = 1;
 				push @candidates, $dp->get_name();
 			}
+			$found = 0;
 
-			# At this point, we are trying to fulfill a dependency. In the loop
-			# above, we determined all potential candidates, i.e. packages which
-			# would fulfill the dep. Now we have to decide which to use.
-
-			$found = 0;		# Set to true once we decided which candidate to support.
-
-
-			# Trivial case: only one candidate, nothing to be done, just use it.
-			if ($#candidates == 0) {
+			if ($#candidates == 0) {	# only one candidate
 				$dname = $candidates[0];
 				$found = 1;
 			}
 
-			# Next, we check if by chance one of the candidates is already
-			# installed. If so, that is the natural choice to fulfill the dep.
 			if (not $found) {
+				# check for installed pkgs (by name)
 				my $cand;
 				foreach $cand (@candidates) {
 					$pnode = Fink::Package->package_by_name($cand);
 					if ($pnode->is_any_installed()) {
 						$dname = $cand;
-						$found = 1;
+						$found++;
 						last;
 					}
 				}
 			}
 
-			# Next, check if a relative of a candidate has already been marked
-			# for installation (or is itself a dependency). If so, we use that
-			# candidate to fulfill the dep.
-			# This is a heuristic, but usually does exactly "the right thing".
 			if (not $found) {
+
+				# check if a sibling package has been marked for install
+				# if so, choose it instead of asking
+
 				my ($cand, $splitoff);
-				my $candcount=0;
+				my $candcount = 0;
+
 				SIBCHECK: foreach $cand (@candidates) {
 					my $package = Fink::Package->package_by_name($cand);
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
-					
 					if (exists $vo->{_relatives}) {
 						foreach $splitoff (@{$vo->{_relatives}}) {
 							# if the package is being installed, or is already installed,
@@ -1178,12 +1170,10 @@ sub real_install {
 				}
 				if ($candcount == 1) {
 				    $found=1;
-				}
+			    }				
 			}
-
-			# No decision has been made so far. Now see if the user has set a
-			# regexp to match in fink.conf.
 			if (not $found) {
+				# See if the user has a regexp to match in fink.conf
 				my $matchstr = $config->param("MatchPackageRegEx");
 				my (@matched, @notmatched);
 				if (defined $matchstr) {
@@ -1194,7 +1184,7 @@ sub real_install {
 							push(@notmatched, $dname);
 						}
 					}
-					if (1 == @matched) {
+					if (1 == @matched ) {
 						# we have exactly one match, use it
 						$dname = pop(@matched);
 						$found = 1;
@@ -1205,10 +1195,9 @@ sub real_install {
 					}
 				}
 			}
-
-			# None of our heuristics managed to narrow down the list to a
-			# single choice. So as a last resort, ask the use!
 			if (not $found) {
+				# let the user pick one
+
 				my @choices = ();
 				my $pkgindex = 1;
 				my $choice = 1;
@@ -1280,8 +1269,8 @@ sub real_install {
 
 			# add node to graph
 			$deps{$dname} = [ $dname, $pnode,
-			                  $pnode->get_version(&latest_version(@vlist)),
-			                  $OP_INSTALL, 0 ];
+												$pnode->get_version(&latest_version(@vlist)),
+												$OP_INSTALL, 0 ];
 			# add a link
 			push @$item, $deps{$dname};
 			# add to investigation queue
@@ -1301,7 +1290,7 @@ sub real_install {
 				}
 				# add node to graph
 				$cons{$cname} = [ $cname, Fink::Package->package_by_name($cname),
-				                  $cn, $OP_INSTALL, 2 ];
+						$cn, $OP_INSTALL, 2 ];
 				next CONLOOP;
 			}
 		}
@@ -1402,7 +1391,7 @@ sub real_install {
 			$package = $item->[PKGVER];
 			my $pkg;
 
-			# concatenate dependencies of package and its relatives
+			# concatinate dependencies of package and its relatives
 			my ($dpp, $pkgg, $isgood);
 			my ($dppname,$pkggname,$tmpname);
 			my @extendeddeps = ();
@@ -1453,23 +1442,15 @@ sub real_install {
 
 			next if $already_activated{$pkgname};
 
-			# Check whether package has to be (re)built. Defaults to false.
+			# Check whether package has to be (re)built. For normal packages that
+			# means the user explicitly requested the rebuild; but for splitoffs
+			# and their parents, we also have to check if any of their "relatives"
+			# is scheduled for rebuilding.
+			# But first, check if there is no .deb present - in that case we have
+			# to build in any case.
 			$to_be_rebuilt{$pkgname} = 0 unless exists $to_be_rebuilt{$pkgname};
-
-			# If there is no .deb present, we definitely have to (re)built.
 			$to_be_rebuilt{$pkgname} |= not $package->is_present();
-
 			if (not $to_be_rebuilt{$pkgname} and exists $package->{_relatives}) {
-				# So far, it seems the package doesn't have to be rebuilt. However,
-				# it has splitoff relatives. If any of those is going to be rebuilt,
-				# then rebuild the package, too!
-				# Reasoning: If any splitoff is rebuilt, then fink automatically 
-				# will rebuild all others splitoffs (including master), too. This
-				# check here essential is there to make the dependency engine
-				# properly aware of that fact. Without it, odd things can happen
-				# (like for example an old version of a splitoff being installed,
-				# then its package being rebuilt, then a new version of one of its
-				# relatives being installed).
 				foreach $pkg (@{$package->{_relatives}}) {
 					next unless exists $to_be_rebuilt{$pkg->get_name()};
 					$to_be_rebuilt{$pkgname} |= $to_be_rebuilt{$pkg->get_name()};
@@ -1487,7 +1468,8 @@ sub real_install {
 				unless ($forceoff) {
 					### Double check it didn't already get
 					### installed in an other loop
-					if (!$package->is_installed() || $op == $OP_REBUILD) {
+					unless ($package->is_installed() &&
+						$op != $OP_REBUILD) {
 						$package->phase_unpack();
 						$package->phase_patch();
 						$package->phase_compile();
@@ -1511,9 +1493,8 @@ sub real_install {
 			# Mark the package and all its "relatives" as being rebuilt if we just
 			# did perform a build - this way we won't rebuild packages twice when
 			# we process another splitoff of the same parent.
-			# In addition, we check for all splitoffs whether they have to be reinstalled.
-			# That is the case if they are currently installed and were just rebuilt.
-			$to_be_rebuilt{$pkgname} = 0;
+			# In addition, we check for the splitoffs whether they have to be reinstalled.
+			# That is the case if they are currently installed and where rebuild just now.
 			if (exists $package->{_relatives}) {
 				foreach $pkg (@{$package->{_relatives}}) {
 					my $name = $pkg->get_name();
@@ -1534,6 +1515,8 @@ sub real_install {
 						$already_activated{$name} = 1;
 					}
 				}
+			} else {
+				$to_be_rebuilt{$pkgname} = 0;
 			}
 
 			# Finally perform the actually installation
