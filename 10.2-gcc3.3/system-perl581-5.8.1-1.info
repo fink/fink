@@ -1,0 +1,14 @@
+Package: system-perl581
+Version: 5.8.1
+Revision: 1
+Provides: perl581-core
+Type: bundle
+Description: Placeholder package for manually installed perl 5.8.1
+DescDetail: <<
+Install this package if you have perl 5.8.1 installed manually.
+<<
+#
+PreInstScript: <<
+perl -e 'if ("$]" == "5.008001") {print "\n\nLooks like perl 5.8.1\n\n\n"} else {die "\n\nSorry, your perl is not version 5.8.1.  DO NOT INSTALL THIS PACKAGE.\n\n\n"}'
+<<
+Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>
