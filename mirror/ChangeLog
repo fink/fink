@@ -1,3 +1,7 @@
+2005-01-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.23.5.2 of fink-mirrors
+
 2005-01-12	David H <dmalloc@users.sourceforge.net>
 	* master, rsync: Ne HE-Net mirror.
 	rsync as well as distfiles, thanks to colm.maccarthaigh@heanet.ie
