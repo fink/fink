@@ -279,7 +279,7 @@ if (not -d $installto) {
   }
 }
 
-@dirlist = qw(etc src fink fink/debs fink/dists fink/dists/stable fink/dists/local);
+@dirlist = qw(etc etc/alternatives src fink fink/debs fink/dists fink/dists/stable fink/dists/local);
 foreach $dir (qw(stable/bootstrap stable/main stable/crypto local/main)) {
   push @dirlist, "fink/dists/$dir", "fink/dists/$dir/finkinfo",
     "fink/dists/$dir/binary-darwin-powerpc";

@@ -1,5 +1,8 @@
 2001-08-01  Christoph Pfisterer  <cp@chrisp.de>
 
+	* bootstrap.pl: Quick fix for bootstrapping problems - create
+	.../etc/alternatives manually.
+
 	* VERSION: Bumped fink version to 0.2.4.
 
 	* INSTALL, INSTALL.html: Added update fast track
