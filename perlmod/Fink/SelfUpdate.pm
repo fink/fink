@@ -582,7 +582,6 @@ sub do_direct_rsync {
 	# selfupdate-cvs.  However, don't actually do the removal until
 	# we've tried to put something there.
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
-	&print_breaking($msg);
 	
 	my $rinclist = "";
 	foreach $tree ($config->get_treelist()) {
@@ -614,7 +613,6 @@ sub do_direct_rsync {
 		system("/usr/sbin/chown -R $username '$basepath/fink/$dist'");
 	}
 	&print_breaking($msg);
-
 
 	if (&execute($cmd)) {
 		die "Updating $tree using rsync failed. Check the error messages above.\n";
