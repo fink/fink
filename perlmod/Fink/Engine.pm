@@ -737,12 +737,21 @@ EOF
 		$parent = $vo->{parent};
 
 		# Can only remove/purge installed pkgs
-		next unless $vo->is_installed();
+		unless ( $vo->is_installed() ) {
+			print "WARNING: $pname is not installed, skipping.\n";
+			next;
+		}
 
 		# shouldn't be able to remove or purge esstential pkgs
-		next if ( $vo->has_param("essential") );
+		if ( $vo->has_param("essential") ) {
+			print "WARNING: $pname is essential, skipping.\n";
+			next;
+		}
 		if (defined $parent) {
-			next if ( $parent->has_param("essential") );
+			if ( $parent->has_param("essential") ) {
+				print "WARNING: $pname is essential, skipping.\n";
+				next;
+			}
 		}
 
                 if (defined $buildonly) {
