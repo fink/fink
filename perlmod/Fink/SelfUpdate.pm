@@ -502,7 +502,7 @@ sub finish {
 	@elist = Fink::Package->list_essential_packages();
 
 	# add some non-essential but important ones
-	push @elist, qw(apt apt-shlibs storable-pm bzip2-dev gettext-dev gettext-bin libiconv-dev ncurses-dev);
+	push @elist, qw(apt apt-shlibs storable-pm bzip2-dev gettext-dev libiconv-dev ncurses-dev);
 
 	# update them
 	Fink::Engine::cmd_install(@elist);	

@@ -1,3 +1,7 @@
+2004-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* SelfUpdate.pm: Don't automatically update gettext-bin
+	
 2004-11-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Mirror.pm: Re-reworded menu b/c must match /^Custom/
