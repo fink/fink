@@ -640,28 +640,31 @@ cc1plus.
 This package represents broken versions of the GCC compiler
 as shipped by Apple.
 END
-
-	if (-x '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus') {
-		if (open(GCC, '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus --version 2>&1 |')) {
-			while (my $line = <GCC>) {
-				if ($line =~ /build (\d+)/gsi) {
-					my $build = $1;
-					print STDERR "  - found build $build" if ($options{debug});
-					if (grep(/^${build}$/, @badbuilds)) {
-						print STDERR " (bad)" if ($options{debug});
-						$hash->{status}      = STATUS_PRESENT;
-						$hash->{version}     = '3.3-' . $build;
+	
+	{
+		my $cc1plus = '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus';
+		if (-x $cc1plus) {
+			if (open(GCC, "$cc1plus --version 2>&1 |")) {
+				while (my $line = <GCC>) {
+					if ($line =~ /build (\d+)/gsi) {
+						my $build = $1;
+						print STDERR "  - found build $build" if ($options{debug});
+						if (grep(/^${build}$/, @badbuilds)) {
+							print STDERR " (bad)" if ($options{debug});
+							$hash->{status}      = STATUS_PRESENT;
+							$hash->{version}     = '3.3-' . $build;
+						}
+						print STDERR "\n" if ($options{debug});
+						last;
 					}
-					print STDERR "\n" if ($options{debug});
-					last;
 				}
+				close(GCC);
+			} else {
+				print STDERR "WARNING: couldn't run cc1plus: $!\n" if ($options{debug});
 			}
-			close(GCC);
 		} else {
-			warn "couldn't run cc1plus: $!\n";
+			print STDERR "WARNING: $cc1plus is not executable!\n" if ($options{debug});
 		}
-	} else {
-		warn "/usr/libexec/gcc/darwin/ppc/3.3/cc1plus is not executable!\n";
 	}
 	$self->{$hash->{package}} = $hash;
 
@@ -1188,7 +1191,8 @@ sub check_x11_version {
 				}
 				close(CHECKFILE);
 			} else {
-				warn "could not read $checkfile: $!\n";
+				print STDERR "WARNING: could not read $checkfile: $!\n"
+					if ($options{debug});
 				return;
 			}
 		}

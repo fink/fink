@@ -1,3 +1,9 @@
+2005-01-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* VirtPackage.pm: Don't print messages when not in debug mode (they
+	will be seen every time apt/dpkg is run!). Eliminate repetition of
+	path to cc1plus.
+
 2005-01-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm, Services.pm: Replace do_calls() with
