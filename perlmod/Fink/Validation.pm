@@ -572,7 +572,7 @@ sub validate_info_file {
 				'm' => $arch
 	};
 
-	# Verify the patch file exists, if specified
+	# Verify the patch file exists, if specified in Patch
 	$value = $properties->{patch};
 	if ($value) {
 		$value = &expand_percent($value, $expand);
@@ -603,10 +603,16 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 			# Check for hardcoded /sw.
-			if ($patch_file_content =~ /\/sw([\s\/]|$)/) {
-				print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
-				$looks_good = 0;
+			open(INPUT, "<$value"); 
+			while (defined($patch_file_content=<INPUT>)) {
+				next if $patch_file_content =~ /^(diff|---|\+\+\+) /;  # skip diff headers
+				if ($patch_file_content =~ /\/sw([\s\/]|$)/) {
+					print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
+					$looks_good = 0;
+					last;
+				}
 			}
+			close INPUT;
 		}
 	}
 	
