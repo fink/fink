@@ -1,3 +1,7 @@
+2005-01-16  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Add $timeout param to prompt() and prompt_selection_new().
+
 2005-01-14  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Re-add missing \n in get_description.
