@@ -1,3 +1,9 @@
+2003-04-05	Ben Hines <benh57@users.sourceforge.net>
+
+	* master: New file containing fink master mirrors
+	
+	* _list: Add master mirror, first one
+
 2003-03-19 Max Horn  <max@quendi.de>
 
 	* sourceforge: Added two new mirrors, flow (Australia) and aleron (USA)

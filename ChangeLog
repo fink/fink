@@ -1,3 +1,9 @@
+2003-04-05  Ben Hines <benh57@users.sourceforge.net>
+
+	* fink.conf.5.in: Document new mirroring options
+	
+	* inject.pl: Add MD5 to temp info file.
+	
 2003-03-11  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.12.1
