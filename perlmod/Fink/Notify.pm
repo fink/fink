@@ -204,9 +204,13 @@ sub notify {
 		finkDoneFailure               => 'Fink Finished With Failure!',
 	);
 
+	# sanity check for required params
 	return undef if (not defined $args{'event'} or not defined $args{'description'});
+
+	# try to provide default $arg{title} if none was passed
 	$args{'title'} = $default_titles{$args{'event'}} unless defined $args{'title'};
 
+	# call the notifier-specific implementation to actually notify
 	$self->do_notify(%args);
 }
 
