@@ -1,3 +1,12 @@
+2003-02-27  Max Horn  <max@quendi.de>
+
+	* fink.in: Fixed typo in help string (it's -h not -H as alias for --help);
+	  removed the -? alias for --help.
+	
+	* fink.in: Removed the copyright notice and the description of what fink
+	  is from "fink --help" and added the (updated) copyright notice to
+	  "fink --version" where most GNU tools have it.
+
 2003-02-25  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* fink.8.in: Some doc for fink list options.

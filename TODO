@@ -1,8 +1,13 @@
 Minor
 =====
 
+* make sure the man pages are complete and up-to-date
+
 Medium
 ======
+
+* replace "fink list --help" by a general "fink --help [command]" similiar to 
+  how CVS does it (e.g. try "cvs -H update")
 
 * checksums should always be checked whenever we know we are going to use a given
   source file later. E.g. if you run "fink rebuild foo", then Fink does check 
@@ -16,10 +21,6 @@ Medium
 
 * add a mirror check utillity that given some testcases will verify that all mirrors
   do still work
-
-* possibly get rid of the ncurses package on 10.2, by providing a system-ncurses
-  package that just symlinks the ncurses dylibs in /usr/lib to /sw/lib
-  (this is necessary at least for now to ensure backwards compatibility)
 
 Major
 =====

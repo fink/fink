@@ -281,36 +281,42 @@ sub do_real_list {
     require Fink::FinkVersion;
     my $version = Fink::FinkVersion::fink_version();
 
-    print <<"EOF";
-Fink $version, Copyright (c) 2001-2003 Christoph Pfisterer and others.
-This is free software, distributed under the GNU General Public License.
+    if ($cmd eq "list") {
+      print <<"EOF";
+Fink $version
 
-Usage: fink [options] list [listoptions] [string]
-       fink [options] apropos [listoptions] [string]
+Usage: fink list [options] [string]
        
-Where listoptions are:
-  -w=xyz, --width=xyz	Sets the width of the display you would like the output
-			formatted for. xyz is either a numeric value or auto.
-			auto will set the width based on the terminal width.
-                      
-  -t, --tab		Outputs the list with the tab char as a delimiter 
-			between fields. Useful for GUI implementations.
-
-  -i, --installed	list only, lists only installed packages.
-  
-  -u, --uptodate	list only, lists only packages which are up to date.
-  
-  -o, --outdated	list only, lists packages for which a newer version 
-			is available.
-  
-  -n, --notinstalled	list only, lists packages which are not installed.
-  
-  -s=expr, 		list only, lists packages in the sections matching
-    --section=expr 	the expr. eg fink list --section=x11
- 
-  -h, --help		This text.
+Options:
+  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -i, --installed      - Only list packages which are currently installed.
+  -u, --uptodate       - Only list packages which are up to date.
+  -o, --outdated       - Only list packages for which a newer version is
+                         available.
+  -n, --notinstalled   - Only list packages which are not installed.
+  -s=expr,             - Only list packages in the section(s) matching expr
+    --section=expr       (example: fink list --section=x11).
+  -h, --help           - This help text.
 
 EOF
+    }  else { # apropos
+      print <<"EOF";
+Fink $version
+
+Usage: fink apropos [options] [string]
+       
+Options:
+  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -h, --help           - This help text.
+
+EOF
+    }
   exit 0;
   }
   if ($options{installedstate} == 0) {$options{installedstate} = 7;}

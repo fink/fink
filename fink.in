@@ -47,7 +47,7 @@ GetOptions('yes|y' => sub { $options{dontask} = 1 ;  $optionsString .= '--yes ' 
 	   'keep-root-dir|K' => sub { $options{keep_root} = 1 ;  $optionsString .= '--keep-root-dir ' },
 #	   'interactive|i' => sub { $options{interactive} = 1 ;  $optionsString .= '--interactive ' },
 	   'version|V' => \&show_version,
-	   'help|h|?' => \&show_help)
+	   'help|h' => \&show_help)
  or die "fink: unknown option\nType 'fink --help' for more information.\n";
 
 ### display version numbers if requested
@@ -56,6 +56,15 @@ sub show_version {
   require Fink::FinkVersion;
   print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
   print "Distribution version: ".Fink::FinkVersion::distribution_version()."\n";
+  print <<"EOF";
+
+Copyright (c) 2001 Christoph Pfisterer
+Copyright (c) 2001-2003 The Fink Package Manager Team
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+EOF
   exit 0;
 }
 
@@ -66,13 +75,7 @@ sub show_help {
   my $version = Fink::FinkVersion::fink_version();
 
   print <<"EOF";
-Fink $version, Copyright (c) 2001-2003 Christoph Pfisterer and others.
-This is free software, distributed under the GNU General Public License.
-Read @BASEPATH@/share/doc/fink/COPYING for details.
-
-Fink is a package manager that automatically downloads, configures, compiles
-and installs packages using the original source code. If you want to install
-precompiled binary packages, check out dselect or apt-get instead.
+Fink $version
 
 Usage: fink [options] command [package...]
        fink install pkg1 [pkg2 ...]
@@ -92,7 +95,7 @@ Common commmands:
   index      - force rebuild of package cache
 
 Options:
-  -H, -?, --help - display this help text
+  -h, --help     - display this help text
   -q, --quiet    - causes fink to be less verbose, opposite of --verbose
   -V, --version  - display version information
   -v, --verbose  - causes fink to be more verbose, opposite of --quiet
