@@ -851,6 +851,7 @@ modified.
 sub lol2pkglist {
 	my $struct = shift;
 	my $pkglist = "";
+
 	return "" unless defined $struct && @$struct;
 
 	my $or_cluster;
@@ -858,8 +859,10 @@ sub lol2pkglist {
 	foreach (@$struct) {                          # take each OR cluster
 		next unless defined $_ && @$_;            # skip empty clusters
 		$or_cluster = join " | ", grep {defined and length} @$_;
-		$pkglist .= ", " if defined $or_cluster && length $or_cluster && length $pkglist;
-		$pkglist .= $or_cluster if defined $or_cluster;  # join clusters by AND
+		if (defined $or_cluster && length $or_cluster) {
+			$pkglist .= ", " if length $pkglist;
+			$pkglist .= $or_cluster;              # join clusters by AND
+		}
 	}
 
 	return $pkglist;
