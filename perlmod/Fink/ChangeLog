@@ -1,6 +1,11 @@
 2004-03-01  Daniel Macks  <dmacks@netspace.org>
 
-	* Package.pm, PkgVersion.pm: Remove special meaning of "".  'Type:
+	* Validation.pm: Rip out old Type: validation code. Fix other
+	checks to use new multivariant Type. This is slightly fragile.
+
+2004-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, PkgVersion.pm: Remove special meaning of "". 'Type:
 	foo (boolean)' now gives 'Type: foo (foo .)'. The %type_pkg has
 	periods removed so still can get null for Package: substitution.
 

@@ -95,21 +95,6 @@ our %text_describe_fields = map {$_, 1}
 		 descdetail descusage
 		);
 
-# Allowed values for the type field
-# keys are major types, values are refs to lists of minor types
-our %allowed_type_values = 
-	(
-	 "nosource" => [ "" ],
-	 "bundle"   => [ "" ],
-	 "perl"     => [ "", "5.6.0", "5.6.1", "5.8.0", "5.8.1" ],
-	 "python"   => [ "2.1", "2.2", "2.3" ],
-	 "guile"    => [ "", "1.4", "1.6" ],
-	 "ruby"     => [ "", "1.6", "1.8" ],
-	 "java"     => [ "1.3", "1.4" ],
-	 "none"     => [ "" ]
-	 );
-
-
 # Allowed values for the license field
 our %allowed_license_values = map {$_, 1}
 	(
@@ -136,7 +121,7 @@ our %valid_fields = map {$_, 1}
 		 'type',
 		 'license',
 		 'maintainer',
-		 '_info_level',  # set by handle_infon_block if InfoN: used
+		 'infon',  # set by handle_infon_block if InfoN: used
 #  dependencies:
 		 'depends',
 		 'builddepends',
@@ -299,6 +284,7 @@ sub validate_info_file {
 	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
 	my ($basepath, $expand, $buildpath);
+	my ($type_hash);
 	my $looks_good = 1;
 	my $error_found = 0;
 	my $arch = get_arch();
@@ -334,14 +320,6 @@ sub validate_info_file {
 	$buildpath = $config->param_default("buildpath", "$basepath/src");
 
 	$pkgname = $properties->{package};
-	# allow %lv (typeversion_pkg) in Package
-	if ($properties->{type}) {
-		my $type = $properties->{type};
-		if ($type =~ s/^(\S+)\s+(\S+)/$2/) {
-			$type =~ s/\.//g;
-			$properties->{package} = $pkgname = &expand_percent($pkgname,{'lv',$type});
-		}
-	}
 
 	$pkgversion = $properties->{version};
 	$pkgrevision = $properties->{revision};
@@ -378,8 +356,11 @@ sub validate_info_file {
 		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
 	}
-	return unless ($looks_good);
 	
+	# TODO: figure out how to validate multivariant Type:
+	
+	return unless ($looks_good);
+
 	#
 	# Now check for other mistakes
 	#
@@ -403,51 +384,32 @@ sub validate_info_file {
 			print "Warning: Unknown license \"$value\". ($filename)\n";
 			$looks_good = 0;
 		}
-	} elsif (not (defined($properties->{type}) and $properties->{type} eq "bundle")) {
+	} elsif (not (defined($properties->{type}) and $properties->{type} =~ /\bbundle\b/i)) {
 		print "Warning: No license specified. ($filename)\n";
 		$looks_good = 0;
 	}
 
-	# Check value of type field
-	$value = lc $properties->{type};
-	my ($type_major, $type_minor, $junk) = split ' ', $value;
-	if (defined $junk) {
-		print "Error: Malformed value \"$value\"in field \"Type\". ($filename)\n";
-		$looks_good = 0;
-	} elsif (defined $type_major) {
-		if (exists $allowed_type_values{$type_major}) {
-			$type_minor = "" unless defined $type_minor;
-			if (!grep {$type_minor eq $_} @{$allowed_type_values{$type_major}}) {
-				print "Error: Unknown minor value \"$type_minor\" for major value \"$type_major\" in field \"Type\". ($filename)\n";
-				$looks_good = 0;
-			}
-		} else {
-			print "Error: Unknown major value \"$type_major\" in field \"Type\". ($filename)\n";
-			$looks_good = 0;
-		}
-	}
-	
 	# error if have a source or MD5 for type nosource
-	if (exists $properties->{type} and $properties->{type} =~ /^(nosource|bundle)$/i) {
+	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
 		if ($properties->{source}) {
-			print "Error: Not using a source (type \"".$properties->{type}."\") but \"source\" specified. ($filename)\n";
+			print "Error: Not using a source (type \"$1\") but \"source\" specified. ($filename)\n";
 			$looks_good = 0;
 		}
 		if ($properties->{"source-md5"}) {
-			print "Error: Not using a source (type \"".$properties->{type}."\") but \"source-md5\" specified. ($filename)\n";
+			print "Error: Not using a source (type \"$1\") but \"source-md5\" specified. ($filename)\n";
 			$looks_good = 0;
 		}
 	}
 
 	# error if have an MD5 for implicit type nosource (i.e., source=none)
-	if (lc $properties->{source} eq "none" and $properties->{"source-md5"}) {
+	if (lc $properties->{source} =~ /^none$/i and $properties->{"source-md5"}) {
 		print "Error: Not using a source (implicit nosource) but \"source-md5\" specified. ($filename)\n";
 		$looks_good = 0;
 	}
 
 	# error if using the default source but there is no MD5
 	# (not caught later b/c there is no "source")
-	if (exists $properties->{type} and $properties->{type} =~ /^(nosource|bundle)$/i) {
+	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
 	# nosource and bundle are supposed to not have source
 	} elsif (not $properties->{source} and not $properties->{"source-md5"}) {
 		print "Error: No MD5 checksum specified for implicitly defined \"source\". ($filename)\n";
@@ -635,6 +597,15 @@ sub validate_info_file {
 				'b' => '.',
 				'm' => $arch
 	};
+
+	if (defined $properties->{type}) {
+		$type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
+		foreach (keys %$type_hash) {
+			( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+		}
+	} else {
+		$type_hash = {};
+	}
 
 	# Verify the patch file(s) exist and check some things
 	@patchfiles = ();
