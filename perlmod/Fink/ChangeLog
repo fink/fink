@@ -1,3 +1,8 @@
+2003-06-14  Max Horn  <max@quendi.de>
+
+	* Bootstrap.pm: Allow bootstrapping with perl 5.6.1; cleaned up code; show
+	  more user friendly error message in case of an unknown perl version.
+
 2003-06-13  Ben Hines <benh57@users.sourceforge.net>
 
 	* NetAccess.pm: Support file:// and bare tarball names without choking

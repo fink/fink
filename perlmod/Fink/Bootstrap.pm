@@ -49,15 +49,20 @@ END { }				# module clean-up code here (global destructor)
 
 sub bootstrap {
 	my ($bsbase, $save_path);
-	my ($pkgname, $package, @elist, @addlist);
+	my ($pkgname, $package, @elist);
 	my @plist = ("gettext", "tar", "dpkg-bootstrap");
+	my @addlist = ("apt", "apt-shlibs", "storable-pm");
 	if ("$]" == "5.006") {
-	    @addlist = ("apt", "apt-shlibs", "storable-pm", "storable-pm560");
+		push @addlist, "storable-pm560";
+	} elsif ("$]" == "5.006001") {
+		push @addlist, "system-perl561";
 	} elsif ("$]" == "5.008") {
-	    @addlist = ("apt", "apt-shlibs", "storable-pm", "system-perl580");
+		push @addlist, "system-perl580";
 	} elsif ("$]" == "5.008001") {
-	    @addlist = ("apt", "apt-shlibs", "storable-pm", "system-perl581");
-	} else {die "Sorry, wrong version of perl! (This can't happen...)\n"}
+		push @addlist, "system-perl581";
+	} else {
+		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
+	}
 
 	$bsbase = &get_bsbase();
 	&print_breaking("Bootstrapping a base system via $bsbase.");
