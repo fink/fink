@@ -1,3 +1,8 @@
+2004-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.1, a release
+	on branch_0_20 which adds Provides to system-perl packages >= 5.8.0
+
 2004-04-25  Dainel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Added flags for 'dumpinfo'.
