@@ -22,7 +22,7 @@
 package Fink::Engine;
 
 use Fink::Services qw(&prompt_boolean &print_breaking &print_breaking_prefix
-                      &latest_version &execute);
+                      &latest_version &execute &read_properties &expand_percent);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath);
@@ -45,37 +45,86 @@ BEGIN {
 our @EXPORT_OK;
 
 our %commands =
-  ( 'rescan' => \&cmd_rescan,
-    'configure' => \&cmd_configure,
-    'bootstrap' => \&cmd_bootstrap,
-    'fetch' => \&cmd_fetch,
-    'fetch-all' => \&cmd_fetch_all,
-    'fetch-missing' => \&cmd_fetch_all_missing,
-    'build' => \&cmd_build,
-    'rebuild' => \&cmd_rebuild,
-    'install' => \&cmd_install,
-    'reinstall' => \&cmd_reinstall,
-    'update' => \&cmd_install,
-    'update-all' => \&cmd_update_all,
-    'enable' => \&cmd_install,
-    'activate' => \&cmd_install,
-    'use' => \&cmd_install,
-    'disable' => \&cmd_remove,
-    'deactivate' => \&cmd_remove,
-    'unuse' => \&cmd_remove,
-    'remove' => \&cmd_remove,
-    'delete' => \&cmd_remove,
-    'purge' => \&cmd_remove,
-    'describe' => \&cmd_description,
-    'description' => \&cmd_description,
-    'desc' => \&cmd_description,
-    'info' => \&cmd_description,
-    'scanpackages' => \&cmd_scanpackages,
-    'list' => \&cmd_list,
-    'listpackages' => \&cmd_listpackages,
-    'selfupdate' => \&cmd_selfupdate,
-    'selfupdate-finish' => \&cmd_selfupdate_finish,
+  ( 'rescan' => [\&cmd_rescan, 1],
+    'configure' => [\&cmd_configure, 1],
+    'bootstrap' => [\&cmd_bootstrap, 1],
+    'fetch' => [\&cmd_fetch, 1],
+    'fetch-all' => [\&cmd_fetch_all, 1],
+    'fetch-missing' => [\&cmd_fetch_all_missing, 1],
+    'build' => [\&cmd_build, 1],
+    'rebuild' => [\&cmd_rebuild, 1],
+    'install' => [\&cmd_install, 1],
+    'reinstall' => [\&cmd_reinstall, 1],
+    'update' => [\&cmd_install, 1],
+    'update-all' => [\&cmd_update_all, 1],
+    'enable' => [\&cmd_install, 1],
+    'activate' => [\&cmd_install, 1],
+    'use' => [\&cmd_install, 1],
+    'disable' => [\&cmd_remove, 1],
+    'deactivate' => [\&cmd_remove, 1],
+    'unuse' => [\&cmd_remove, 1],
+    'remove' => [\&cmd_remove, 1],
+    'delete' => [\&cmd_remove, 1],
+    'purge' => [\&cmd_remove, 1],
+    'describe' => [\&cmd_description, 1],
+    'description' => [\&cmd_description, 1],
+    'desc' => [\&cmd_description, 1],
+    'info' => [\&cmd_description, 1],
+    'scanpackages' => [\&cmd_scanpackages, 1],
+    'list' => [\&cmd_list, 1],
+    'listpackages' => [\&cmd_listpackages, 1],
+    'selfupdate' => [\&cmd_selfupdate, 1],
+    'selfupdate-finish' => [\&cmd_selfupdate_finish, 1],
+    'validate' => [\&cmd_validate, 0],
+    'check' => [\&cmd_validate, 0],
   );
+
+our @boolean_fields = qw(Essential NoSourceDirectory UpdateConfigGuess UpdateLibtool); # add NoSet* !
+our @obsolete_fields = qw(Comment CommentPort CommenStow UseGettext);
+our @name_version_fields = qw(Source SourceDirectory SourceN SourceNExtractDir Patch);
+our @recommended_field_order =
+  qw(
+    Package
+    Version
+    Revision
+    Type
+    Maintainer
+    Depends
+    Provides
+    Conflicts
+    Replaces
+    Essential
+    Source
+    SourceDirectory
+    NoSourceDirectory
+    SourceN
+    SourceNExtractDir
+    UpdateConfigGuess
+    UpdateLibtool
+    Patch
+    PatchScript
+    ConfigureParams
+    CompileScript
+    InstallScript
+    Set*
+    NoSet*
+    PreInstScript
+    PostInstScript
+    PreRmScript
+    PostRmScript
+    ConfFiles
+    InfoDocs
+    DaemonicFile
+    DaemonicName
+    Description
+    DescDetail
+    DescUsage
+    DescPackaging
+    DescPort
+    Homepage
+    License
+  );	# The order for "License" is not yet officiall specified
+
 
 END { }       # module clean-up code here (global destructor)
 
@@ -108,8 +157,8 @@ sub initialize {
     die "Basepath not set in config file!\n";
   }
 
-  print "Reading package info...\n";
-  Fink::Package->scan_all();
+#  print "Reading package info...\n";
+#  Fink::Package->scan_all();
 }
 
 ### process command
@@ -117,15 +166,20 @@ sub initialize {
 sub process {
   my $self = shift;
   my $cmd = shift;
-  my ($cmdname, $proc);
+  my ($cmdname, $flag, $proc, $arr);
 
   unless (defined $cmd) {
     print "NOP\n";
     return;
   }
 
-  while (($cmdname, $proc) = each %commands) {
+  while (($cmdname, $arr) = each %commands) {
     if ($cmd eq $cmdname) {
+      ($proc, $flag) = @$arr;
+      if ($flag) {
+        print "Reading package info...\n";
+        Fink::Package->scan_all();
+      }
       eval { &$proc(@_); };
       if ($@) {
 	print "Failed: $@";
@@ -356,6 +410,208 @@ sub cmd_remove {
   foreach $package (@plist) {
     $package->phase_deactivate();
   }
+}
+
+### .info/.deb file validation
+
+# Should check/verifies the following in .info files:
+#   + the filename matches %f.info
+#   + patch file is present
+#   + all required fields are present
+#   + warn if obsolete fields are encountered
+#   + warn about missing Description/Maintainer fields
+#   + warn about overlong Description fields
+#   + warn if boolean fields contain bogus values
+#   + warn if fields seem to contain the package name/version, and suggest %n/%v should be used
+#     (excluded from this are fields like Description, Homepage etc.)
+#
+# TODO: Optionally, should sort the fields to the recommended field order
+#   - warn if unknown fields are encountered
+#   - error if format is violated (e.g. bad here-doc)
+#   - warn if /sw is hardcoded somewhere
+#   - if type is bundle/nosource - warn about usage of "Source" etc.
+# ... other things, make suggestions ;)
+#
+sub cmd_validate {
+	my ($filename, @flist);
+	
+	@flist = @_;
+	if ($#flist < 0) {
+		die "no input file specified for command 'validate'!\n";
+	}
+	
+	print "\n";
+	foreach $filename (@flist) {
+		die "File \"$filename\" does not exist!\n" unless (-f $filename);
+		if ($filename =~/\.info$/) {
+			&validate_info_file($filename);
+			print "\n";
+		} elsif ($filename =~/\.deb$/) {
+			&validate_dpkg_file($filename);
+			print "\n";
+		} else {
+			print "Don't know how to handle $filename, skipping\n";
+		}
+	}
+}
+
+sub validate_info_file {
+	my $filename = shift;
+	my ($properties, @parts);
+	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
+	my ($field, $value);
+	my ($expand);
+	my $looks_good = 1;
+
+	print "Validating package file $filename...\n";
+	
+	# read the file properties
+	$properties = &read_properties($filename);
+	
+	$pkgname = $properties->{package};
+	$pkgversion = $properties->{version};
+	$pkgrevision = $properties->{revision};
+	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
+	$pkgdestdir = "$basepath/src/root-".$pkgfullname;
+	
+	@parts = split(/\//, $filename);
+	pop @parts;   # remove filename
+	$pkgpatchpath = join("/", @parts);
+	
+	unless ($pkgname) {
+		print "Error: No package name in $filename\n";
+		return;
+	}
+	unless ($pkgversion) {
+		print "Error: No version number in $filename\n";
+		return;
+	}
+	unless ($pkgrevision) {
+		print "Error: No revision number or revision number is 0 in $filename\n";
+		return;
+	}
+	if ($pkgname =~ /[^-.a-z0-9]/) {
+		print "Error: Package name may only contain lowercase letters, numbers, '.' and '-'\n";
+		return;
+	}
+	unless ($properties->{maintainer}) {
+		print "Error: No maintainer specified in $filename\n";
+		$looks_good = 0;
+	}
+
+	unless ("$pkgfullname.info" eq $filename) {
+		print "Warning: File name should be $pkgfullname.info but is $filename\n";
+		$looks_good = 0;
+	}
+	
+	# Check whether any of the following fields contains the package name or version,
+	# and suggest that %f/%n/%v be used instead
+	foreach $field (@name_version_fields) {
+		$value = $properties->{lc $field};
+		if ($value) {
+			if ($value =~ /$pkgfullname/) {
+				print "Warning: Field \"$field\" contains full package name. Use %f instead.\n";
+				$looks_good = 0;
+			} else {
+#				if ($value =~ /$pkgname/) {
+#					print "Warning: Field \"$field\" contains package name. Use %n instead.\n";
+#					$looks_good = 0;
+#				}
+				if ($value =~ /$pkgversion/) {
+					print "Warning: Field \"$field\" contains package version. Use %v instead.\n";
+					$looks_good = 0;
+				}
+			}
+		}
+	}
+	
+	# Check if any obsolete fields are used
+	foreach $field (@obsolete_fields) {
+		if ($properties->{lc $field}) {
+			print "Warning: Field \"$field\" is obsolete.\n";
+			$looks_good = 0;
+		}
+	}
+
+	# Boolean fields
+	foreach $field (@boolean_fields) {
+		$value = $properties->{lc $field};
+		if ($value) {
+			unless ($value =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
+				print "Warning: Boolean field \"$field\" contains suspicious value \"$value\".\n";
+				$looks_good = 0;
+			}
+		}
+	}
+	
+	# Warn for missing / overlong package descriptions
+	$value = $properties->{description};
+	unless ($value) {
+		print "Warning: No package description supplied.\n";
+		$looks_good = 0;
+	}
+	elsif (length($value) > 40) {
+		print "Warning: Length of package description exceeds 40 characters.\n";
+		$looks_good = 0;
+	}
+			
+	$expand = { 'n' => $pkgname,
+				'v' => $pkgversion,
+				'r' => $pkgrevision,
+				'f' => $pkgfullname,
+				'p' => $basepath, 'P' => $basepath,
+				'd' => $pkgdestdir,
+				'i' => $pkgdestdir.$basepath,
+				'a' => $pkgpatchpath,
+				'b' => '.'
+	};
+	
+	# Verify the patch file exists, if specified
+	$value = $properties->{patchfile};
+	if ($value) {
+		$value = &expand_percent($value, $expand);
+		unless (-f $value) {
+			print "Error: can't find patchfile \"$value\"\n";
+			$looks_good = 0;
+		}
+	}
+	
+	if ($looks_good) {
+		print "Package looks good!\n";
+	}
+}
+
+#
+# Check a given .deb file for standard compliance
+#
+#	- usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec)
+#	- usage of other non-standard subdirs 
+#	- ideas?
+#
+sub validate_dpkg_file {
+	my $filename = shift;
+	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/");
+	my ($pid, $bad_dir);
+	
+	print "Validating .deb file $filename...\n";
+	
+	# Quick & Dirty solution!!!
+	$pid = open(README, "dpkg --contents $filename |") or die "Couldn't run dpkg: $!\n";
+	while (<README>) {
+		# process
+		if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
+			$filename = $6;
+			#print "$6\n";
+			foreach $bad_dir (@bad_dirs) {
+				if ($6 =~ /^$bad_dir/) {
+					print "Warning: File installed into depracted directory $bad_dir\n";
+					print "         Offender is $filename\n";
+					last;
+				}
+			}
+		}
+	}
+	close(README) or die "Error on close: $!\n";
 }
 
 ### building and installing
