@@ -1,3 +1,8 @@
+2003-11-18  Michael G Schwern  <schwern@pobox.com>
+
+	* Package.pm: Write the new index atomicly to avoid a corrupted
+	index should fink be killed in the middle of reindexing.
+
 2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Fix a problem with syncing the crypto/ directory,
