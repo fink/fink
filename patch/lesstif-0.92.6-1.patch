@@ -1,0 +1,192 @@
+diff -ru lesstif-0.92.6/lib/Xm/BaseClass.c lesstif-0.92.6-patched/lib/Xm/BaseClass.c
+--- lesstif-0.92.6/lib/Xm/BaseClass.c	Fri Sep 22 22:35:11 2000
++++ lesstif-0.92.6-patched/lib/Xm/BaseClass.c	Sun Mar  4 19:31:55 2001
+@@ -650,7 +650,7 @@
+ 
+     while ((wc != NULL) && (wc != (WidgetClass)vendorShellWidgetClass))
+     {
+-	Depth++;
++	;Depth++;
+ 	wc = wc->core_class.superclass;
+     }
+ 
+@@ -688,7 +688,7 @@
+ 
+     while ((wc != NULL) && (wc != (WidgetClass)rectObjClass))
+     {
+-	Depth++;
++	;Depth++;
+ 	wc = wc->core_class.superclass;
+     }
+ 
+@@ -728,7 +728,7 @@
+ 
+     while ((wc != NULL) && (wc != (WidgetClass)rectObjClass))
+     {
+-	Depth++;
++	;Depth++;
+ 	wc = wc->core_class.superclass;
+     }
+ 
+diff -ru lesstif-0.92.6/lib/Mrm/Makefile.in lesstif-0.92.6-patched/lib/Mrm/Makefile.in
+--- lesstif-0.92.6/lib/Mrm/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Mrm/Makefile.in	Sun Mar  4 19:38:16 2001
+@@ -365,12 +365,10 @@
+ 
+ 
+ install-data-hook:
+-@Version_1_2_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.so.1*
+-@Version_1_2_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libMrm.so.1* .)
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.la
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libMrm.la .)
+-@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.so
+-@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libMrm.so .)
++@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.dylib
++@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libMrm.dylib .)
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.a
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libMrm.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Mrm-2.0/Makefile.in lesstif-0.92.6-patched/lib/Mrm-2.0/Makefile.in
+--- lesstif-0.92.6/lib/Mrm-2.0/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Mrm-2.0/Makefile.in	Sun Mar  4 19:39:35 2001
+@@ -401,12 +401,10 @@
+ @Version_2_0_TRUE@	  done
+ 
+ install-data-hook:
+-@Version_2_0_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.so.2*
+-@Version_2_0_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libMrm.so.2* .)
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.la
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libMrm.la .)
+-@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.so
+-@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libMrm.so .)
++@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.dylib
++@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libMrm.dylib .)
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.a
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libMrm.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Mrm-2.1/Makefile.in lesstif-0.92.6-patched/lib/Mrm-2.1/Makefile.in
+--- lesstif-0.92.6/lib/Mrm-2.1/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Mrm-2.1/Makefile.in	Sun Mar  4 19:40:11 2001
+@@ -410,12 +410,10 @@
+ @Version_2_1_TRUE@	  done
+ 
+ install-data-hook:
+-@Version_2_1_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.so.2*
+-@Version_2_1_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libMrm.so.2* .)
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.la
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libMrm.la .)
+-@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.so
+-@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libMrm.so .)
++@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.dylib
++@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libMrm.dylib .)
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libMrm.a
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libMrm.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Uil/Makefile.in lesstif-0.92.6-patched/lib/Uil/Makefile.in
+--- lesstif-0.92.6/lib/Uil/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Uil/Makefile.in	Sun Mar  4 20:48:56 2001
+@@ -365,12 +365,10 @@
+ 
+ 
+ install-data-hook:
+-@Version_1_2_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.so.1*
+-@Version_1_2_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libUil.so.1* .)
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.la
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libUil.la .)
+-@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.so
+-@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libUil.so .)
++@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.dylib
++@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libUil.dylib .)
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.a
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libUil.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Uil-2.0/Makefile.in lesstif-0.92.6-patched/lib/Uil-2.0/Makefile.in
+--- lesstif-0.92.6/lib/Uil-2.0/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Uil-2.0/Makefile.in	Sun Mar  4 20:49:23 2001
+@@ -395,12 +395,10 @@
+ @Version_2_0_TRUE@	  done
+ 
+ install-data-hook:
+-@Version_2_0_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.so.2*
+-@Version_2_0_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libUil.so.2* .)
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.la
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libUil.la .)
+-@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.so
+-@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libUil.so .)
++@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.dylib
++@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libUil.dylib .)
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.a
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libUil.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Uil-2.1/Makefile.in lesstif-0.92.6-patched/lib/Uil-2.1/Makefile.in
+--- lesstif-0.92.6/lib/Uil-2.1/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Uil-2.1/Makefile.in	Sun Mar  4 20:49:45 2001
+@@ -402,12 +402,10 @@
+ @Version_2_1_TRUE@	  done
+ 
+ install-data-hook:
+-@Version_2_1_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.so.2*
+-@Version_2_1_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libUil.so.2* .)
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.la
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libUil.la .)
+-@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.so
+-@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libUil.so .)
++@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.dylib
++@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libUil.dylib .)
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libUil.a
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libUil.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Xm/Makefile.in lesstif-0.92.6-patched/lib/Xm/Makefile.in
+--- lesstif-0.92.6/lib/Xm/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Xm/Makefile.in	Sun Mar  4 19:40:48 2001
+@@ -403,12 +403,10 @@
+ 
+ 
+ install-data-hook:
+-@Version_1_2_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.so.1*
+-@Version_1_2_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libXm.so.1* .)
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.la
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libXm.la .)
+-@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.so
+-@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libXm.so .)
++@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.dylib
++@Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libXm.dylib .)
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.a
+ @Version_1_2_TRUE@@DefaultVersion12_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif1.2/lib/libXm.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Xm-2.0/Makefile.in lesstif-0.92.6-patched/lib/Xm-2.0/Makefile.in
+--- lesstif-0.92.6/lib/Xm-2.0/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Xm-2.0/Makefile.in	Sun Mar  4 19:41:14 2001
+@@ -428,12 +428,10 @@
+ @Version_2_0_TRUE@	  done
+ 
+ install-data-hook:
+-@Version_2_0_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.so.2*
+-@Version_2_0_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libXm.so.2* .)
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.la
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libXm.la .)
+-@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.so
+-@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libXm.so .)
++@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.dylib
++@Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libXm.dylib .)
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.a
+ @Version_2_0_TRUE@@DefaultVersion20_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.0/lib/libXm.a .)
+ 
+diff -ru lesstif-0.92.6/lib/Xm-2.1/Makefile.in lesstif-0.92.6-patched/lib/Xm-2.1/Makefile.in
+--- lesstif-0.92.6/lib/Xm-2.1/Makefile.in	Thu Dec 21 13:42:39 2000
++++ lesstif-0.92.6-patched/lib/Xm-2.1/Makefile.in	Sun Mar  4 19:41:35 2001
+@@ -438,12 +438,10 @@
+ @Version_2_1_TRUE@	  done
+ 
+ install-data-hook:
+-@Version_2_1_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.so.2*
+-@Version_2_1_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libXm.so.2* .)
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.la
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libXm.la .)
+-@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.so
+-@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libXm.so .)
++@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.dylib
++@Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolShared_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libXm.dylib .)
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolStatic_TRUE@	-rm -f $(DESTDIR)$(prefix)/lib/libXm.a
+ @Version_2_1_TRUE@@DefaultVersion21_TRUE@@LibtoolStatic_TRUE@	(cd $(DESTDIR)$(prefix)/lib && $(LN_S) ../LessTif/Motif2.1/lib/libXm.a .)
+ 
