@@ -266,10 +266,13 @@ foreach $cmd (split(/\n/,$script)) {
 
 print "Creating tarballs...\n";
 
-$script =
-  "sed -e 's/@VERSION@/$packageversion/' ".
-  "<perlmod/Fink/FinkVersion.pm.in ".
-  ">perlmod/Fink/FinkVersion.pm\n";
+$script = "";
+if (-f "perlmod/Fink/FinkVersion.pm.in") {
+  $script .=
+    "sed -e 's/@VERSION@/$packageversion/' ".
+    "<perlmod/Fink/FinkVersion.pm.in ".
+    ">perlmod/Fink/FinkVersion.pm\n";
+}
 $script .=
   "tar -cf $installto/src/fink-$packageversion.tar ".
   "COPYING INSTALL README ChangeLog fink install.sh setup.sh ".
