@@ -2,6 +2,7 @@
 
 	* Services.pm: Repair dumpinfo under perl 5.6 (thanks to Martin 
 	Costabel for the fix)
+	* PkgVersion.pm: Improved error message for buildlock failure.
 
 2005-02-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
