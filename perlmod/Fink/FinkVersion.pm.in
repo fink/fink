@@ -21,8 +21,6 @@
 
 package Fink::FinkVersion;
 
-use Fink::Config qw($basepath);
-
 use strict;
 use warnings;
 
@@ -55,8 +53,8 @@ sub fink_version {
 
 sub distribution_version {
   my $dv;
-  if (-f "$basepath/etc/fink-release") {
-    chomp($dv = `cat $basepath/etc/fink-release`);
+  if (-f "@BASEPATH@/etc/fink-release") {
+    chomp($dv = `cat @BASEPATH@/etc/fink-release`);
   } else {
     $dv = "unknown";
   }
@@ -68,7 +66,7 @@ sub distribution_version {
 sub pkginfo_version {
   my $pv = "0";
   my ($fn, $v);
-  foreach $fn (glob("$basepath/fink/stamp-*")) {
+  foreach $fn (glob("@BASEPATH@/fink/stamp-*")) {
     if ($fn =~ /\/stamp-cvs/) {
       return "cvs";
     } elsif ($fn =~ /\/stamp-rel-(.+)$/) {

@@ -1,3 +1,9 @@
+2001-10-17  Christoph Pfisterer  <cp@chrisp.de>
+
+	* FinkVersion.pm.in: Made independent of Fink::Config. The
+	installation path is now hardcoded during installation, like with
+	fink.in.
+
 2001-10-14  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Services.pm (version_cmp): Hopefully get it right this
