@@ -1,8 +1,8 @@
-2004-01-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
+2004-03-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* dpkg.info, dpkg.patch, dpkg-bootstrap.info: fix hardcoded /sw
-	in patch, make flat namespace.
-	
+	* unzip.info: change download location to fink, for reliable
+	bootstrapping
+
 2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* system-perl*: removed these, which are no longer needed with
