@@ -2269,12 +2269,12 @@ sub get_debdeps {
 ### Return all pkg names in a single info file
 
 sub get_splitoffs {
-        my $self = shift;
+	my $self = shift;
 	my $name = shift;
-        my $include_parent = shift || 0;
+	my $include_parent = shift || 0;
 	my $include_self = shift || 0;
-        my (@splits) = ();
-        my ($pkg, $parent, $i, $package, $split);
+	my (@splits) = ();
+	my ($pkg, $parent, $i, $package, $split);
 
 	unless ($name) {
 		die("Must specify at least one package name.\n");

@@ -92,6 +92,7 @@ our %commands =
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
 	  'depends' => [\&cmd_depends, 1, 0],
 	  'splits' => [\&cmd_splits, 1, 0],
+	  'find' => [\&cmd_findpkg, 1, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -1578,6 +1579,28 @@ sub cmd_splits {
 			}
 		}
 		print "\n";
+	}
+}
+
+### Display a pkg's parent
+
+sub cmd_findpkg {
+	my ($pkg, $package, @pkgs, $arg);
+
+	print "\n";
+	foreach $arg (@_) {
+		$package = Fink::PkgVersion->match_package($arg);
+		unless (defined $package) {
+			print "no package found for specification '$arg'!\n";
+			next;
+		}
+
+		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
+		unless ($pkgs[0] eq $arg) {
+			printf("%s's parent is $pkgs[0].\n", $arg, $pkgs[0]);
+		} else {
+			printf("%s is the parent.\n", $arg);
+		}
 	}
 }
 
