@@ -1,3 +1,8 @@
+2002-08-10  Max Horn  <max@quendi.de>
+
+	* SelfUpdate.pm: Only force a second rebuild of the package database, and 
+	  also only restart Fink if the package manager is being updated.
+
 2002-08-05  Max Horn  <max@quendi.de>
 
 	* Engine.pm (cmd_cleanup): Improved the "fink cleanup" command to also clean

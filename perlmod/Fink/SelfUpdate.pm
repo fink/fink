@@ -396,24 +396,34 @@ sub do_tarball {
 ### last steps: reread descriptions, update fink, re-exec
 
 sub do_finish {
+  my $package;
+
   # re-read package info
   Fink::Package->forget_packages();
   Fink::Package->require_packages();
 
-  # update the package manager itself first
-  Fink::Engine::cmd_install("fink");
 
-  # delete the old package DB, so that the new package manager rebuilds it
-  if (-e "$basepath/var/db/fink.db") {
-    unlink "$basepath/var/db/fink.db";
-  }
+  # update the package manager itself first if necessary (that is, if a
+  # newer version is available).
+  $package = Fink::PkgVersion->match_package("fink");
+  if (not $package->is_installed()) {
+    Fink::Engine::cmd_install("fink");
   
-  # re-execute ourselves before we update the rest
-  print "Re-executing fink to use the new version...\n";
-  exec "$basepath/bin/fink selfupdate-finish";
-
-  # the exec doesn't return, but just in case...
-  die "re-executing fink failed, run 'fink selfupdate-finish' manually\n";
+    # delete the old package DB, so that the new package manager rebuilds it
+    if (-e "$basepath/var/db/fink.db") {
+      unlink "$basepath/var/db/fink.db";
+    }
+    
+    # re-execute ourselves before we update the rest
+    print "Re-executing fink to use the new version...\n";
+    exec "$basepath/bin/fink selfupdate-finish";
+  
+    # the exec doesn't return, but just in case...
+    die "re-executing fink failed, run 'fink selfupdate-finish' manually\n";
+  } else {
+    # package manager was not updated, just finish selfupdate directly
+    &finish();
+  }
 }
 
 ### finish self-update (after upgrading fink itself and re-exec)
@@ -423,8 +433,9 @@ sub finish {
 
   # determine essential packages
   @elist = Fink::Package->list_essential_packages();
+
   # add some non-essential but important ones
-  push @elist, qw(apt apt-shlibs storable-pm);  # maybe add libxpg4 in the future, too
+  push @elist, qw(apt apt-shlibs storable-pm);
 
   # update them
   Fink::Engine::cmd_install(@elist);  
