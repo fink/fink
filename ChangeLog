@@ -1,3 +1,7 @@
+2001-11-23  Max Horn  <max@quendi.de>
+
+	* fink.8.in: added reference to apt-get
+
 2001-11-16  Max Horn  <max@quendi.de>
 
 	* fink.8.in: fixed small mistake

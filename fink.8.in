@@ -204,4 +204,5 @@ This manpage was written by Max Horn <max@quendi.de>.
 .\"
 .\"
 .Sh "SEE ALSO"
+.Xr apt-get 8
 .Xr dpkg 8
