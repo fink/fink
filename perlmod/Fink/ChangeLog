@@ -1,5 +1,8 @@
 2001-05-18  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Services.pm (read_config): Removed dead code.
+	(read_properties): Added here-document support.
+
 	* Engine.pm (real_install): Fixed the don't-fetch-unless-needed
 	check.
 

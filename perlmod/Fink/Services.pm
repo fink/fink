@@ -86,11 +86,8 @@ END { }       # module clean-up code here (global destructor)
 sub read_config {
   my $filename = shift;
   my ($config_object);
-#  my ($config_properties, $config_object);
 
   $config_object = Fink::Config->new_with_path($filename);
-#  $config_properties = read_properties($filename);
-#  $config_object = Fink::Config->new_from_properties($config_properties);
 
   return $config_object;
 }
@@ -99,22 +96,44 @@ sub read_config {
 
 sub read_properties {
   my ($file) = @_;
-  my ($hash, $lastkey);
+  my ($hash, $lastkey, $heredoc);
 
   $hash = {};
   $lastkey = "";
+  $heredoc = 0;
 
   open(IN,$file) or die "can't open $file: $!";
   while (<IN>) {
-    next if /^\s*\#/;   # skip comments
-    if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*)$/) {
-      $lastkey = lc $1;
-      $hash->{$lastkey} = $2;
-    } elsif (/^\s+(\S.*)$/) {
-      $hash->{$lastkey} .= "\n".$1;
+    chomp;
+    if ($heredoc) {
+      if ($_ eq "<<") {
+	$heredoc = 0;
+      } else {
+	$hash->{$lastkey} .= $_."\n";
+	if (/<<$/) {
+	  print "WARNING: Possible unterminated here-document in \"$file\".\n";
+	}
+      }
+    } else {
+      next if /^\s*\#/;   # skip comments
+      if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*)$/) {
+	$lastkey = lc $1;
+	if ($2 eq "<<") {
+	  $hash->{$lastkey} = "";
+	  $heredoc = 1;
+	} else {
+	  $hash->{$lastkey} = $2;
+	}
+      } elsif (/^\s+(\S.*)$/) {
+	$hash->{$lastkey} .= "\n".$1;
+      }
     }
   }
   close(IN);
+
+  if ($heredoc) {
+    print "WARNING: End of file reached during here-document in \"$file\".\n";
+  }
 
   return $hash;
 }
