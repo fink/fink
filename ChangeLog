@@ -1,3 +1,7 @@
+2001-07-12  Christoph Pfisterer  <cp@chrisp.de>
+
+	* inject.pl: Add dir-base to the base-files tarball.
+
 2001-07-09  Christoph Pfisterer  <cp@chrisp.de>
 
 	* VERSION: Bumped fink version to 0.2.3.
