@@ -1,0 +1,31 @@
+Package: base-files
+Version: 1.9.4
+Revision: 1
+Source: mirror:custom:fink/%n-%v.tar.gz
+
+Essential: yes
+Source-MD5: 59b02defa72ea5c3c1fcabaf945b2990
+CompileScript: ./setup.sh %p
+InstallScript: ./install.sh %i
+#
+PostInstScript: <<
+# install info dir file
+if [ ! -f %p/share/info/dir ]; then
+  cp %p/share/base-files/dir-base %p/share/info/dir
+  chmod 644 %p/share/info/dir
+fi
+<<
+#
+Description: Directory infrastructure
+DescDetail: <<
+The base-files package contains the basic directory infrastructure for
+a Fink installation. It makes sure the usual directories are present
+and have the right permissions.
+<<
+License: GPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+CustomMirror: <<
+ Primary: http://west.dl.sourceforge.net/sourceforge/
+ nam-US: http://us.dl.sourceforge.net/sourceforge/
+ eur: http://eu.dl.sourceforge.net/sourceforge/
+<<

@@ -1,0 +1,9 @@
+Package: duplicate-fullname
+Version: 1.0
+Revision: 1
+Maintainer: Dave Vasilevsky <vasi@users.sourceforge.net>
+License: GPL
+Description: Test whether duplicate fullnames fail
+Source: http://www.example.com/this-doesnt-exist.tgz
+Source-MD5: 00000000000000000000000000000000
+Epoch: 1

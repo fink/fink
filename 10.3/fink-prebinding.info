@@ -1,34 +1,20 @@
 Package: fink-prebinding
-Version: 0.1
-Revision: 1
+Version: 0.7.1
+Revision: 2
 
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
-Source-MD5: 397617226935cb0df1b5802dfa267cd5
-SourceDirectory: %n
+Source-MD5: 6ab0e97ca25dbe9359eb1e0e5b44e851
 Essential: yes
-Depends: base-files, cctools-extra (>= 20030516-2)
+BuildDepends: fink (>= 0.17.0-1)
+Depends: base-files, fink (>= 0.17.0-1), cctools-extra (>= 1:495-1)
+AddShlibDeps: true
 CompileScript: make PREFIX='%p' MANDIR='%p/share/man'
 InstallScript: make PREFIX='%p' MANDIR='%p/share/man' DESTDIR='%d' install
-PostInstScript: <<
-  # this file must exist or ld fails when LD_SEG_ADDR_TABLE is set
-  if test ! -e %p/var/lib/fink/prebound/seg_addr_table || test ! -s %p/var/lib/fink/prebound/seg_addr_table; then
-    mkdir -p %p/var/lib/fink/prebound
-    cat <<END >%p/var/lib/fink/prebound/seg_addr_table
-0x90000000	0xa0000000	<<< Next split address to assign >>>
-0x20000000	<<< Next flat address to assign >>>
-END
-  fi
-<<
-RuntimeVars: <<
-  LD_SEG_ADDR_TABLE: %p/var/lib/fink/prebound/seg_addr_table
-  LD_PREBIND: 1
-  LD_PREBIND_ALLOW_OVERLAP: 1
-<<
 Description: Tools for enabling prebinding in Fink
 DescDetail: <<
 This package contains the files needed to enable
 prebinding libraries and exectuables in Fink.
 <<
 License: OSI-Approved
-Maintainer: Benjamin Reed <ranger@befunk.com>
-Homepage: http://fink.sf.net/
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://fink.sourceforge.net/

@@ -1,0 +1,39 @@
+Breaks:
+* show-deps
+* buildlock
+
+  Both are based on the same function, and since Depends aren't fully known for
+  packages using AddShlibDeps till deb building phase.
+
+  The solution for buildlock is to enforce the policy that all -dev packages
+  must have a Depends (RunTimeDepends) on it's -shlibs.
+
+Missing:
+* Common code for build, updating and reading the shlibs.db should get merged
+* Should move the fink.shlibs files to system.shlibs ie 10.2.shlibs and
+  darwin7.shlibs enventually maybe VirtPackages could do this?
+* build tests for Shlibs.pm
+* Better checking/enforcing of the Shlibs field
+* Warning about the Depends field being removed from info files in the future.
+* Check for depends on children packages
+  This should be easy enough by:
+  1) installing all the files and adding a check for the files minus %i + %p
+     (installed name) and adding the contents to a hash with the package name in
+     it and adding it to the loop.  This should be versioned to = for the most
+     part and not read from shlibs.
+  2) just read the shlibs fields in the currently build pkgs (current info file)
+     and temporarily to the shlibs hash and looped.  (won't be able to use = for
+     this version, but much easier to implement)
+
+Documentation:
+* AddShlibDeps:
+* RunTimeDepends:
+* new use of Depends and BuildDepends, where BuildDepends and Depends are
+  combined during build phase, and Depends and RunTimeDepends are combined for
+  the Dep.  Depends should eventually be discontinued and unsupported and
+  should be added as a warning to the validator.  This is to avoid breakage
+  while we get everything into BuildDepends for fink build, a pkg should build
+  without Depends at all.  AssShlibDeps will auto add all Shared Library
+  depends to RunTimeDepends line and will be versioned via Shlibs fields from
+  all installed packages.
+* Maintainer Mode

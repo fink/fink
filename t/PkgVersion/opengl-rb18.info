@@ -1,0 +1,15 @@
+Package: opengl-rb18
+Version: 0.32c
+Revision: 1
+Depends: ruby18-shlibs
+BuildDepends: ruby18-dev
+Source: http://www2.giganet.net/~yoshi/rbogl-%v.tar.gz
+Source-MD5: 37e8a112dcc1b2e8446abfdab3b6ac07
+SourceDirectory: opengl-%v
+Patch: %n.patch
+Type: ruby 1.8
+DocFiles: MANIFEST ChangeLog README.EUC
+Description: Ruby module providing OpenGL, GLU, and GLUT access
+Maintainer: Matthias Neeracher <neeracher@mac.com>
+Homepage: http://www2.giganet.net/~yoshi
+

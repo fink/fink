@@ -1,24 +1,25 @@
 Package: apt
 Version: 0.5.4
-Revision: 14
-GCC: 3.1
+Revision: 51
+GCC: 3.3
 Depends: %N-shlibs (= %v-%r)
-BuildDepends: fink-prebinding
+BuildDepends: fink-prebinding, gcc3.3
+AddShlibDeps: true
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
- if [ "%p" = "/sw" ]; then cat sources.list.fink-bindist >>sources.list.fink ; fi
+ sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' <%a/%n.patch | patch -p1
  sh patch_flush
- for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
- for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i ; done
+ for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
+ for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i ; done
+#perl -pi.bak -e 's/socklen_t/int/' methods/ftp.h methods/ftp.cc
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
-SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC
+SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC -fconstant-cfstrings
 CompileScript: <<
- ./configure %c
+ export CC=gcc-3.3; export CXX=g++-3.3; ./configure %c
  make -f makefile.wrap NOISY=1
 <<
 InstallScript: <<
@@ -66,30 +67,30 @@ InstallScript: <<
  install -m 644 docs/apt_preferences.5 %i/share/man/man5/
  install -m 644 docs/sources.list.5 %i/share/man/man5/
  mkdir -p %i/etc/apt/apt.conf.d
- install -m 644 sources.list.fink %i/etc/apt/sources.list
  mkdir -p %i/var/cache/apt/archives/partial
  mkdir -p %i/var/lib/apt/lists/partial
 <<
 SplitOff: <<
   Package: %N-shlibs
-  Depends: dpkg
+  Depends: dpkg, fink (>> 0.20.6-1)
+  AddShlibDeps: true
   Replaces: %N (<= 0.5.4-1)
   Files: lib/libapt-inst.1.0.0.dylib lib/libapt-pkg.3.2.0.dylib lib/libapt-inst.1.0.dylib lib/libapt-pkg.3.2.dylib
   Shlibs: <<
-    %p/lib/libapt-inst.1.0.dylib 1.0.0 %n (>= 0.5.4-5)
-    %p/lib/libapt-pkg.3.2.dylib 3.2.0 %n (>= 0.5.4-5)
+    %p/lib/libapt-inst.1.0.dylib 1.0.0 %n (>= 0.5.4-24)
+    %p/lib/libapt-pkg.3.2.dylib 3.2.0 %n (>= 0.5.4-24)
   <<
   DocFiles: COPYING* AUTHORS
 <<
 SplitOff2: <<
   Package: %N-dev
   Depends: %N-shlibs (= %v-%r)
+  AddShlibDeps: true
   BuildDependsOnly: true
   Files: lib/libapt-inst.dylib lib/libapt-pkg.dylib include
   DocFiles: COPYING* AUTHORS
 <<
 DocFiles: COPYING* AUTHORS
-ConfFiles: %p/etc/apt/sources.list
 PostInstScript: <<
 if [ ! -f %p/var/lib/dpkg/cmethopt ]; then
   echo "apt apt" >%p/var/lib/dpkg/cmethopt
@@ -110,7 +111,6 @@ else
 fi
 
 rm -f %p/var/cache/apt/pkgcache.bin %p/var/cache/apt/srcpkgcache.bin
-perl -pi -e 's#direct_download (release|current)#direct_download 10.2/$1#g' %p/etc/apt/sources.list
 <<
 #
 Description: Advanced front-end for dpkg
@@ -134,8 +134,18 @@ workaround (malloc() + read() + write()...).
 The -fno-rtti works around a bug in GCC 3.1 on Jaguar.
 
 Ben Hines - added patch to make apt recognize macosx and darwin pkgs
+
+The sources.list file is now supplied by the fink program rather than
+by apt-get.
+
+socklen_t exists starting in OS X 10.3
+
+dmacks - Implemented "--ignore-breakage" cmdline flag to 'apt-get install'
+(first appears in: 10.2-gcc3.3/0.5.4-41, 10.3/0.5.4-51)
 <<
-DescPackaging: Previous versions by Christoph Pfisterer.
+DescPackaging: <<
+Previous versions by Christoph Pfisterer.
+<<
 License: GPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://packages.qa.debian.org/a/apt.html

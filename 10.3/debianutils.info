@@ -1,10 +1,11 @@
 Package: debianutils
 Version: 1.23
-Revision: 1
+Revision: 11
 Essential: true
-Maintainer: Christian Swinehart <cswinehart@users.sourceforge.net>
-BuildDepends: fink-prebinding
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
+BuildDepends: fink-prebinding
+AddShlibDeps: true
 Conflicts: mktemp
 Replaces: mktemp, tetex
 Provides: mktemp

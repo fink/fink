@@ -1,6 +1,0 @@
-Package: ncurses-dev
-Version: 5.3
-Revision: 1
-Type: bundle
-Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>
-Description: Placeholder for transition to splitoffs for essential pkgs

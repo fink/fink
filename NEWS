@@ -1,0 +1,19 @@
+Changes since Fink 0.16.2
+----------------------------------------------------------------------
+
+* mirror updates
+* lots of test suite work and cleanup
+* many info file validation updates
+* make error messages more understandable
+* ability to fallback on rsync mirrors (also, better detection of
+  out-of-date rsync mirrors)
+* fixed a number of version corner cases (perl version handling,
+  package epochs, etc.)
+* fink-prebinding no longer sets the LD_* prebinding variables in the
+  user's environment
+* selfupdate-rsync should now work with (well, in spite of) rsync-hfs
+* system-xfree86 virtual now complains if you're missing the SDK
+  (since most fink usage of external X11 will require it)
+* On Mac OS X 10.3 packages using an old (1.3.5-based) libtool can
+  now be compiled twolevel
+

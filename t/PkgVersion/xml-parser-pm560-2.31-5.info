@@ -1,0 +1,36 @@
+Package: xml-parser-pm560
+Version: 2.31
+Revision: 5
+###
+Depends: expat-shlibs (>= 1.95.5-1)
+BuildDepends: expat (>= 1.95.5-1), fink (>= 0.13.0-1), darwin (<< 7.0.0-1) | perl560-core
+Replaces: xml-parser-pm (<= 2.31-4)
+PostInstScript: <<
+ rm -rf %p/lib/perl5/darwin/auto/XML/Parser/
+ rm -rf %p/lib/perl5/darwin/XML/Parser/
+ rm -f %p/lib/perl5/darwin/XML/Parser.pm
+<<
+###
+Source: mirror:cpan:authors/id/C/CO/COOPERCL/XML-Parser-%v.tar.gz
+SourceDirectory: XML-Parser-%v
+Source-MD5: 01f136a5f71631845979fd2b797b3ce3
+###
+Type: perl 5.6.0
+UpdatePOD: true
+###
+CompileScript: <<
+  perl5.6.0 Makefile.PL EXPATLIBPATH=%p/lib EXPATINCPATH=%p/include PREFIX=%p INSTALLPRIVLIB=%p/lib/perl5/5.6.0 INSTALLARCHLIB=%p/lib/perl5/5.6.0/darwin INSTALLSITELIB=%p/lib/perl5/5.6.0 INSTALLSITEARCH=%p/lib/perl5/5.6.0/darwin INSTALLMAN1DIR=%i/share/man/man1 INSTALLMAN3DIR=%i/share/man/man3
+  make
+  make test
+<<
+###
+DocFiles: Changes MANIFEST README samples/*
+###
+Description: Perl ext interface to XML parser/expat
+DescDetail: <<
+  This is a Perl extension interface to James Clark's XML parser, expat.
+<<
+###
+License: Artistic
+Maintainer: Justin F. Hallett <thesin@users.sourceforge.net>
+Homepage: http://search.cpan.org/dist/XML-Parser

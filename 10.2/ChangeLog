@@ -1,3 +1,31 @@
+2004-02-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* remove the contents of this directory, since we no longer
+	support bootstrapping on 10.2 with the old Developer Tools
+
+2004-01-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* dpkg.info, dpkg.patch, dpkg-bootstrap.info: fix hardcoded /sw
+	in patch, make flat namespace.
+
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+        * file-spec-pm, test-harness-pm, test-simple-pm: new essential
+        packages, needed so that the test suite can be run during bootstrap
+
+2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* system-perl*: removed these, which are no longer needed with
+	VirtPackage.pm
+
+2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* gettext-0.10.40-7, latest version from stable
+	* convert to new file format: base-files, storable-pm*, unzip
+	* Big revision, making sure that all files are properly coordinated
+	among the 4 bootstrap trees, with the file having the same name
+	in different trees whenever it is the same file
+	
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* updated to splitoff version: bzip2-1.0.2-2, gettext-0.10.40-5,

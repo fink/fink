@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -28,25 +28,40 @@ use strict;
 
 use FindBin;
 
-my ($answer, $packageversion, $packagerevision);
+my ($answer);
 my ($script, $cmd);
 
 ### check the perl version
 
-if ("$]" == "5.006" or "$]" == "5.006001" or "$]" == "5.008" or "$]" == "5.008001") {
+# acceptable perl versions: "$] value" => "human-readable version string"
+my %ok_perl_versions = (
+    "5.006"    => "5.6.0",
+    "5.006001" => "5.6.1",
+    "5.008"    => "5.8.0",
+    "5.008001" => "5.8.1",
+    "5.008002" => "5.8.2",
+    "5.008006" => "5.8.6"
+);
+
+if (exists $ok_perl_versions{"$]"}) {
     print "Found perl version $].\n";
 } else {
-die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.6.1 (5.006001), 5.8.0 (5.008), or 5.8.1 (5.008001).\n\n";
+    die "\nSorry, your /usr/bin/perl is version $], but Fink can only use" . (
+	join "", map {
+	    ( $ok_perl_versions{$_} =~ /0$/ ? "\n  " : ", " ) .
+	    "$ok_perl_versions{$_} ($_)"
+	} sort keys %ok_perl_versions
+    )."\n\n";
 }
 
 if ("$]" == "5.006001") {
     if (not -x "/usr/bin/perl5.6.1") {
-die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
+	die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
     elsif (system "/usr/bin/perl5.6.1 -V") {
 	die "\nYour /usr/bin/perl5.6.1 is not functional; you must repair this problem\nbefore installing Fink.\n\n"}
 }
 
-### check if we're unharmed
+### check if we are unharmed
 
 print "Checking package...";
 my ($homebase, $file);
@@ -67,21 +82,10 @@ print " looks good.\n";
 ### load some modules
 
 require Fink::Services;
-import Fink::Services qw(&print_breaking &prompt &prompt_boolean
-						 &prompt_selection &read_config &execute
-						 &file_MD5_checksum &get_arch);
-
-### get version
-
-chomp($packageversion = `cat VERSION`);
-if ($packageversion =~ /cvs/) {
-	my @now = gmtime(time);
-	$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
-								 $now[5]+1900, $now[4]+1, $now[3],
-								 $now[2], $now[1]);
-} else {
-	$packagerevision = "1";
-}
+import Fink::Services qw(&read_config &execute &get_arch);
+require Fink::CLI;
+import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
+import Fink::Bootstrap qw(&create_tarball &fink_packagefiles &copy_description &get_version_revision);
 
 ### check if we like this system
 
@@ -103,35 +107,48 @@ if ($distribution eq "unknown") {
 
 print "Distribution $distribution\n";
 
+### get version
+
+my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
+
+### check for a perl compatible with the Distribution:
+
+if (("$]" lt "5.008") and ($distribution gt "10.2-gcc3.3")) {
+    &print_breaking("\nSorry, you are using the 10.3 distribution or later along with perl 5.6.x.  Fink no longer supports bootstrapping with this combination; please upgrade your /usr/bin/perl.\n\n");
+    exit 1;
+}
+
 ### choose root method
 
-my $rootmethods = { "sudo" => "Use sudo", "su" => "Use su",
-					"none" => "None, fink must be run as root" };
 my ($rootmethod);
 if ($> != 0) {
-	print "\n";
-	&print_breaking("Fink must be installed and run with superuser (root) ".
-					"privileges. Fink can automatically try to become ".
-					"root when it's run from a user account. Since you're ".
-					"currently running this script as a normal user, the ".
-					"method you choose will also be used immediately for ".
-					"this script. Avaliable methods:");
+	my $sel_intro = "Fink must be installed and run with superuser (root) ".
+	    "privileges. Fink can automatically try to become ".
+	    "root when it's run from a user account. Since you're ".
+	    "currently running this script as a normal user, the ".
+	    "method you choose will also be used immediately for ".
+	    "this script. Avaliable methods:";
 	$answer = &prompt_selection("Choose a method:",
-								1, $rootmethods, "sudo", "su", "none");
+					intro   => $sel_intro,
+					default => [ value => "sudo" ],
+					choices => [
+					  "Use sudo" => "sudo",
+					  "Use su" => "su",
+					  "None, fink must be run as root" => "none" ] );
 	$cmd = "'$homebase/bootstrap.pl' .$answer";
 	if ($#ARGV >= 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
 	}
 	if ($answer eq "sudo") {
-		$cmd = "sudo $cmd";
+		$cmd = "/usr/bin/sudo $cmd";
 	} elsif ($answer eq "su") {
-		$cmd = "$cmd | su";
+		$cmd = "$cmd | /usr/bin/su";
 	} else {
 		print "ERROR: Can't continue as non-root.\n";
 		exit 1;
 	}
 	print "\n";
-	exit &execute($cmd, 1);
+	exit &execute($cmd, quiet=>1);
 } else {
 	if (defined $ARGV[0] and substr($ARGV[0],0,1) eq ".") {
 		$rootmethod = shift;
@@ -143,7 +160,11 @@ if ($> != 0) {
 						"root when it's run from a user account. ".
 						"Avaliable methods:");
 		$answer = &prompt_selection("Choose a method:",
-									3, $rootmethods, "sudo", "su", "none");
+						default => [ value => "sudo" ],
+						choices => [
+						  "Use sudo" => "sudo",
+						  "Use su" => "su",
+						  "None, fink must be run as root" => "none" ] );
 		$rootmethod = $answer;
 	}
 }
@@ -204,12 +225,13 @@ if (-x "/usr/bin/head") {
 }
 
 ### setup the correct packages directory
-
-if (-e "packages") {
-		rename "packages", "packages-old";
-		unlink "packages";
-}
-symlink "$distribution", "packages" or die "Cannot create symlink";
+# (no longer needed: we just use $distribution directly...)
+#
+#if (-e "packages") {
+#		rename "packages", "packages-old";
+#		unlink "packages";
+#}
+#symlink "$distribution", "packages" or die "Cannot create symlink";
 
 ### choose installation path
 
@@ -222,7 +244,7 @@ if (not $installto) {
 	print "\n";
 	$installto =
 		&prompt("Please choose the path where Fink should be installed.",
-				"/sw");
+				default => "/sw");
 }
 print "\n";
 
@@ -260,7 +282,7 @@ if ($installto eq "/usr/local") {
 						"It may conflict with third party software also ".
 						"installed there. It will be more difficult to get ".
 						"rid of Fink when something breaks. Are you sure ".
-						"you want to install to /usr/local?", 0);
+						"you want to install to /usr/local?", default => 0);
 	if ($answer) {
 		&print_breaking("You have been warned. Think twice before reporting ".
 						"problems as a bug.");
@@ -289,7 +311,7 @@ print "Creating directories...\n";
 my ($dir, @dirlist);
 
 if (not -d $installto) {
-	if (&execute("mkdir -p $installto")) {
+	if (&execute("/bin/mkdir -p -m755 $installto")) {
 		print "ERROR: Can't create directory '$installto'.\n";
 		exit 1;
 	}
@@ -297,59 +319,44 @@ if (not -d $installto) {
 
 my $arch = get_arch();
 
-@dirlist = qw(etc etc/alternatives src fink fink/debs);
+@dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs);
 push @dirlist, "fink/$distribution", "fink/$distribution/stable", "fink/$distribution/local";
-foreach $dir (qw(local/bootstrap stable/main stable/crypto local/main)) {
+foreach $dir (qw(stable/main stable/crypto local/main)) {
 	push @dirlist, "fink/$distribution/$dir", "fink/$distribution/$dir/finkinfo",
 		"fink/$distribution/$dir/binary-darwin-$arch";
 }
 foreach $dir (@dirlist) {
 	if (not -d "$installto/$dir") {
-		if (&execute("mkdir $installto/$dir")) {
+		if (&execute("/bin/mkdir -m755 $installto/$dir")) {
 			print "ERROR: Can't create directory '$installto/$dir'.\n";
 			exit 1;
 		}
 	}
 }
 
+unlink "$installto/fink/dists";
+
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
 
 ### create fink tarball for bootstrap
 
-print "Creating fink tarball...\n";
+my $packagefiles = &fink_packagefiles();
 
-$script =
-	"tar -cf $installto/src/fink-$packageversion.tar ".
-	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
-	"ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-	"pathsetup.command.in postinstall.pl.in perlmod update mirror ".
-	"fink-virtual-pkgs.in shlibs.default.in\n";
-
-foreach $cmd (split(/\n/,$script)) {
-	next unless $cmd;		# skip empty lines
-
-	if (&execute($cmd)) {
-		print "ERROR: Can't create tarball.\n";
-		exit 1;
-	}
+my $result = &create_tarball($installto, "fink", $packageversion, $packagefiles);
+if ($result == 1 ) {
+	exit 1;
 }
 
 ### copy package info needed for bootstrap
 
-print "Copying package descriptions...\n";
+$script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
+$script .= "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
+$script .= "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/libs/perlmods\n";
+$script .= "/bin/mv $installto/fink/dists/stable/main/finkinfo/base/*-pm*.* $installto/fink/dists/stable/main/finkinfo/libs/perlmods/\n";
 
-$script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
-my $md5 = &file_MD5_checksum("$installto/src/fink-$packageversion.tar");
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-$script .= "chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
-
-foreach $cmd (split(/\n/,$script)) {
-	next unless $cmd;		# skip empty lines
-
-	if (&execute($cmd)) {
-		print "ERROR: Can't copy package descriptions.\n";
-		exit 1;
-	}
+$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base");
+if ($result == 1 ) {
+	exit 1;
 }
 
 ### load the Fink modules
@@ -370,7 +377,7 @@ print CONFIG <<"EOF";
 # Fink configuration, initially created by bootstrap.pl
 Basepath: $installto
 RootMethod: $rootmethod
-Trees: local/main stable/main stable/crypto local/bootstrap
+Trees: local/main stable/main stable/crypto
 Distribution: $distribution
 EOF
 close(CONFIG) or die "can't write configuration: $!";
@@ -389,6 +396,10 @@ Fink::Configure::configure();
 ### bootstrap
 
 Fink::Bootstrap::bootstrap();
+
+### remove dpkg-bootstrap.info, to avoid later confusion
+
+&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info");
 
 ### copy included package info tree if present
 
@@ -451,3 +462,5 @@ print "\n";
 
 ### eof
 exit 0;
+
+

@@ -1,0 +1,11 @@
+Package: non-consecutive-test
+Version: 1.0
+Revision: 1
+Maintainer: Dave Vasilevsky <vasi@users.sourceforge.net>
+License: GPL
+Description: Test whether non-consecutive sources work
+Source-MD5: 42
+Source13: http://www.example.com/%n-addons.tgz
+Source13-MD5: 43
+Tar13FilesRename: renamer
+Source014: foobar

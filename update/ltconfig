@@ -1378,7 +1378,18 @@ else
       allow_undefined_flag='-undefined suppress'
       ;;
     *) # Darwin 1.3 on
+    if test -z ${MACOSX_DEPLOYMENT_TARGET} ; then
       allow_undefined_flag='-flat_namespace -undefined suppress'
+    else
+      case ${MACOSX_DEPLOYMENT_TARGET} in
+        10.[012])
+          allow_undefined_flag='-flat_namespace -undefined suppress'
+          ;;
+        10.*)
+          allow_undefined_flag='-undefined dynamic_lookup'
+          ;;
+       esac
+    fi
       ;;
     esac
     archive_cmds='$nonopt $(test .$module = .yes && echo -bundle || echo -dynamiclib) $allow_undefined_flag -o $lib $libobjs $deplibs $linkopts $(test .$module != .yes && echo -install_name $rpath/$soname $verstring)'

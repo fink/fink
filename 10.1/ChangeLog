@@ -1,3 +1,19 @@
+2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* remove the contents of this directory, since we no longer
+	support bootstrapping on 10.1
+
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+        * file-spec-pm, test-harness-pm, test-simple-pm: new essential
+        packages, needed so that the test suite can be run during bootstrap
+
+2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Big revision, making sure that all files are properly coordinated
+	among the 4 bootstrap trees, with the file having the same name
+	in different trees whenever it is the same file
+
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* add -dev counterparts to four packages, needed by fink-0.13.4

@@ -4,6 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -37,9 +38,12 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
-	   lib/fink/mirror lib/fink/update etc etc/dpkg \
+	   lib/perl5/Fink/Text \
+		lib/perl5/Fink/Notify \
+	   lib/fink/update etc etc/dpkg \
 	   share share/doc share/doc/fink share/man \
-	   share/man/man8 share/man/man5 ; do
+	   share/man/man8 share/man/man5 \
+		share/fink share/fink/images; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -51,20 +55,19 @@ install -c -p -m 755 postinstall.pl "$basepath/lib/fink/"
 install -c -p -m 644 shlibs.default "$basepath/etc/dpkg/"
 install -c -p -m 755 fink "$basepath/bin/"
 install -c -p -m 755 fink-virtual-pkgs "$basepath/bin/"
-install -c -p -m 755 pathsetup.command "$basepath/bin/"
+install -c -p -m 755 pathsetup.sh "$basepath/bin/"
 install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
+install -c -p -m 644 fink.shlibs "$basepath/../DEBIAN/shlibs"
+install -c -p -m 644 images/*.png "$basepath/share/fink/images/"
 
-for file in perlmod/Fink/*.pm ; do
-  if [ -f $file ]; then
-    install -c -p -m 644 $file "$basepath/lib/perl5/Fink/"
-  fi
-done
-
-for file in mirror/* ; do
-  if [ -f $file ]; then
-    install -c -p -m 644 $file "$basepath/lib/fink/mirror/"
-  fi
+# copy all perl modules
+for subdir in . Text Notify ; do
+  for file in perlmod/Fink/${subdir}/*.pm ; do
+    if [ -f $file ]; then
+      install -c -p -m 644 $file "$basepath/lib/perl5/Fink/$subdir"
+    fi
+  done
 done
 
 for file in update/config.guess update/config.sub update/ltconfig ; do
@@ -80,7 +83,6 @@ for file in COPYING README README.html INSTALL INSTALL.html \
 done
 
 install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog"
-install -c -p -m 644  mirror/ChangeLog "$basepath/share/doc/fink/ChangeLog.mirror"
 install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
 install -c -p -m 644  update/ChangeLog "$basepath/share/doc/fink/ChangeLog.update"
 
