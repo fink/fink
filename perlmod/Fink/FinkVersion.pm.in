@@ -28,9 +28,10 @@ use warnings;
 require Exporter;
 our @ISA	 = qw(Exporter);
 our @EXPORT_OK	 = qw(&fink_version &distribution_version &pkginfo_version);
-our %EXPORT_TAGS = (':ALL' => \@EXPORT_OK);
+our %EXPORT_TAGS = ('ALL' => \@EXPORT_OK);
 
 use Fink::Config qw($basepath);
+use Fink::Command qw(cat);
 
 
 =head1 NAME
@@ -82,9 +83,9 @@ Returns the fink distribution version you're currently using.
 sub distribution_version {
 	my $dv;
 	if (-f "$basepath/fink/VERSION") {
-		chomp($dv = `/bin/cat $basepath/fink/VERSION`);
+		chomp($dv = cat "$basepath/fink/VERSION");
 	} elsif (-f "$basepath/etc/fink-release") {
-		chomp($dv = `/bin/cat $basepath/etc/fink-release`);
+		chomp($dv = cat "$basepath/etc/fink-release");
 	} else {
 		$dv = "unknown";
 	}
