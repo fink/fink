@@ -2,7 +2,8 @@
 
 	* PkgVersion.pm: no longer read depends from deb files when rebuilding
 	or building and a deb is present, that made no sense what was I
-	thinking?
+	thinking? Changed get_debdeps to use dpkg-deb -f <deb> <field>
+	thanks to dmacks, one less loop!
 
 2005-02-09  Daniel Macks  <dmacks@netspace.org>
 

@@ -3378,14 +3378,12 @@ sub get_debdeps {
 	### get deb file
 	my $deb = $wantedpkg->find_debfile();
 
-	open (DPKGINFO, "dpkg -I $deb |") or die "Can't get deb info: $!\n";
-		while (<DPKGINFO>) {
-			chomp($_);
-			if ($_ =~ /^ +$field: +(.*)$/) {
-				$deps = $1;
-			}
-		}
-	close (DPKGINFO);
+	if (-f $deb) {
+		$deps = `dpkg-deb -f $deb $field 2> /dev/null`;
+		chomp($deps);
+	} else {
+		die "Can't find deb file: $deb\n";
+	}
 
 	return $deps;
 }
