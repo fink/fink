@@ -50,7 +50,7 @@ sub fink_version {
 	return $fink_version;
 }
 
-### retreive distribution version
+### retrieve distribution version
 
 sub distribution_version {
 	my $dv;
@@ -64,7 +64,7 @@ sub distribution_version {
 	return $dv;
 }
 
-### retreive version stamp of package info
+### retrieve version stamp of package info
 
 sub pkginfo_version {
 	my $pv = "0";

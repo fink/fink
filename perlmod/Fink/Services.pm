@@ -223,7 +223,7 @@ sub execute_script {
 		}
 		return $retval;
 	} elsif (defined $script and $script ne "") {
-		# Execute each line as a seperate command.
+		# Execute each line as a separate command.
 		foreach $cmd (split(/\n/,$script)) {
 			$retval = execute($cmd, $quiet);
 			if ($retval) {

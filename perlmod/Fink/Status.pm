@@ -162,7 +162,7 @@ sub query_package {
 	return 0;
 }
 
-### retreive whole list with versions
+### retrieve whole list with versions
 # doesn't care about installed status
 # returns a hash ref, key: package name, value: hash with core fields
 # in the hash, 'package' and 'version' are guaranteed to exist
