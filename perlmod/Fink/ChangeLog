@@ -1,3 +1,8 @@
+2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Services.pm: Resolved circular dependency between Services and
+	Config.
+
 2001-09-09  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Status.pm (read): Make non-existence of the dpkg status file

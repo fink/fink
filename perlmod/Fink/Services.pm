@@ -21,8 +21,6 @@
 
 package Fink::Services;
 
-use Fink::Config qw($config $basepath);
-
 use strict;
 use warnings;
 
@@ -85,6 +83,8 @@ END { }       # module clean-up code here (global destructor)
 sub read_config {
   my $filename = shift;
   my ($config_object);
+
+  require Fink::Config;
 
   $config_object = Fink::Config->new_with_path($filename);
 
@@ -209,6 +209,9 @@ sub expand_percent {
 sub expand_url {
   my $s = shift;
   my ($mirror, $path);
+
+  require Fink::Config;
+  import Fink::Config qw($config);
 
   if ($s =~ /^mirror\:(\w+)\:(.*)$/) {
     $mirror = $1;
