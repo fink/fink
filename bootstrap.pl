@@ -85,11 +85,7 @@ require Fink::Services;
 import Fink::Services qw(&read_config &execute &get_arch);
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
-import Fink::Bootstrap qw(&get_packageversion &create_tarball &fink_packagefiles &copy_description);
-
-### get version
-
-my ($packageversion, $packagerevision) = &get_packageversion();
+import Fink::Bootstrap qw(&create_tarball &fink_packagefiles &copy_description &get_version_revision);
 
 ### check if we like this system
 
@@ -110,6 +106,10 @@ if ($distribution eq "unknown") {
 }
 
 print "Distribution $distribution\n";
+
+### get version
+
+my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
 
 ### check for a perl compatible with the Distribution:
 

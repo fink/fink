@@ -1,3 +1,18 @@
+2005-02-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* NetAccess.pm: Remove code whose only obvious purpose is to cause
+	breakage.
+
+2005-02-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: allow the creation of several .info
+	files from a single .info.in, depending on %{Distribution};
+	reorganize some functions to accomodate dist-module.pl
+
+2005-02-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm (check_host): We work on 10.3.8.
+
 2005-02-11  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: moved /usr/local/lib check to the no match from shlib file
