@@ -1,5 +1,8 @@
 2002-03-07  Max Horn  <max@quendi.de>
 
+	* Engine.pm (real_install): Fix to make rebuilding splitoffs and splitoff
+	master packages work correctly.
+
 	* PkgVersion.pm (initialize): Expand percents in even more fields now:
 	Suggests, Enhances, Recommends and Pre-Depends.
 	(expand_percent_if_available): First converts field parameter to lower case.

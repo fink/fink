@@ -569,6 +569,11 @@ sub real_install {
     unless (defined $package) {
       die "no package found for specification '$pkgspec'!\n";
     }
+    # if we rebuild a splitoff, rebuild the parent instead
+    if ($op == $OP_REBUILD
+        and $package->{_type} eq "splitoff") {
+      $package = $package->{parent};
+    }
     # no duplicates here
     #  (dependencies is different, but those are checked later)
     $pkgname = $package->get_name();
@@ -811,6 +816,17 @@ sub real_install {
 	$package->phase_compile();
 	$package->phase_install();
 	$package->phase_build();
+
+        # if we just rebuilt a splitoff master package, then reinstall  
+        # all its splitoff if necessary.
+        if ($item->[3] == $OP_REBUILD and @{$package->{_splitoffs}} > 0) {
+          my $splitoff;
+          foreach $splitoff (@{$package->{_splitoffs}}) {
+            if ($splitoff->is_installed()) {
+              $splitoff->phase_activate();
+            }
+          }
+        }
       }
       if ($item->[3] != $OP_BUILD
 	  and ($item->[3] != $OP_REBUILD or $package->is_installed())) {
