@@ -51,6 +51,9 @@ directory after building a package.
 Causes Fink not to delete the
 .Pa @PREFIX@/src/[name]-[version]-[revision]
 directory after building a package.
+.It Cm -b, --use-binary-dist
+Download pre-compiled binary packages from the binary distribution 
+if available and if deb is not already on the system.
 .El
 .\"
 .\"

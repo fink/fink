@@ -37,6 +37,7 @@ my %options =
    "verbosity" => 0,
    "keep_build" => 0,
    "keep_root" => 0,
+   "use_binary" => 0,
   );
 my $optionsString = '';
 
@@ -56,6 +57,9 @@ GetOptions(
                                },
      'keep-root-dir|K'  => sub { $options{keep_root} = 1 ;  
                                  $optionsString .= '--keep-root-dir ' 
+                               },
+     'use-binary-dist|b'  => sub { $options{use_binary} = 1 ;  
+                                 $optionsString .= '--use-binary-dist ' 
                                },
 #	 'interactive|i'    => sub { $options{interactive} = 1 ;  
 #                                $optionsString .= '--interactive ' 

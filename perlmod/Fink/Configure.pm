@@ -48,7 +48,7 @@ END { }				# module clean-up code here (global destructor)
 
 sub configure {
 	my ($otherdir, $builddir, $verbose);
-	my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $default);
+	my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $binary_dist, $default);
 
 	print "\n";
 	&print_breaking("OK, I'll ask you some questions and update the ".
@@ -71,6 +71,16 @@ sub configure {
 	if ($builddir) {
 		$config->set_param("Buildpath", $builddir);
 	}
+
+	$binary_dist = $config->param_boolean("UseBinaryDist");
+	# new users should use the binary dist
+	if (!$config->has_param("UseBinaryDist")) {
+		$binary_dist = 1;
+	}
+	$binary_dist =
+		&prompt_boolean("Download pre-compiled binary packages from ".
+		                "the binary distribution if available?", $binary_dist);
+	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =

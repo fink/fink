@@ -45,7 +45,7 @@ BEGIN {
 					  &collapse_space
 					  &file_MD5_checksum &get_arch &get_sw_vers
 					  &get_system_perl_version &get_path
-					  &eval_conditional);
+					  &eval_conditional &count_files);
 }
 our @EXPORT_OK;
 
@@ -401,7 +401,9 @@ sub execute {
 	my ($commandname);
 
 	return if ($cmd =~ /(^\s*$)|(^\s*#)/); # Ignore empty commands and comments
-	print "$cmd\n";
+	if (not $quiet) {
+		print "$cmd\n";
+	}
 	system($cmd);
 	$? >>= 8 if defined $? and $? >= 256;
 	if ($? and not $quiet) {
@@ -944,6 +946,32 @@ sub get_path {
 	}
 
 	return $path;
+}
+
+=item count_files
+
+    my $number_of_files = &count_files($path, $regexp);
+
+Returns the number of files in $path. If $regexp is set only 
+files matching the regexp are returned.
+
+=cut
+
+sub count_files {
+	my $path = shift;
+	my $regexp = shift || undef;
+	my $numoffiles;
+	
+	opendir(DH, $path) or die "Couldn't open directory '$path'";
+	if ($regexp) {
+		$numoffiles = grep(/$regexp/, readdir(DH));
+	}
+	else {
+		# only count real files
+		$numoffiles = grep(!/^\.{1,2}$/, readdir(DH));
+	}
+	closedir DH;
+	return $numoffiles;
 }
 
 =item eval_conditional

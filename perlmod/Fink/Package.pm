@@ -44,6 +44,7 @@ our @essential_packages = ();
 our $essential_valid = 0;
 our $db_outdated = 1;
 our $db_mtime = 0;
+our $aptdb = {};
 
 END { }				# module clean-up code here (global destructor)
 
@@ -221,6 +222,19 @@ sub is_any_present{
 	return 0;
 }
 
+### Find a specific package name/version in aptdb
+
+sub is_in_apt {
+	my $self = shift;
+	my $name = shift;
+	my $version = shift;
+
+	if (defined $aptdb->{$name}{$version}) {
+		return 1;
+	}
+	return 0;
+}
+
 ### get version object by exact name
 
 sub get_version {
@@ -340,6 +354,7 @@ sub scan_all {
 			 if (not $db_outdated) {
 				$packages = Storable::retrieve("$basepath/var/db/fink.db");
 			 }
+			$aptdb = Storable::retrieve("$basepath/var/db/finkapt.db");
 		}
 	}
 	
@@ -407,6 +422,33 @@ sub search_comparedb {
 		 ? 1 : 0;
 }
 
+### update the apt-get db file
+
+sub update_aptdb {
+	shift;
+
+	my ($pkg, $ver);
+	open(APTDUMP, "apt-cache dump |") || die "Can't run apt-cache dump: $!\n";
+	$aptdb = {};
+	while(<APTDUMP>) {
+		if (grep(/Package:/,$_)) {
+			chomp;
+			$pkg = $_;
+			$pkg =~ s/.*Package:[\ ]*//; 
+		}
+		if (grep(/Version:/,$_)) {
+			my $count;
+			chomp;
+			$ver = $_;
+			$ver =~ s/.*Version:[\ ]*//;
+			$aptdb->{$pkg}{$ver}++;
+		}
+	}
+	close APTDUMP;
+
+	Storable::lock_store($aptdb, "$basepath/var/db/finkapt.db");
+}
+
 ### read the packages and update the database, if needed and we are root
 
 sub update_db {
@@ -432,6 +474,9 @@ sub update_db {
 			}
 			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
+			if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+				Fink::Package->update_aptdb();
+			}
 			print "done.\n";
 		} else {
 			&print_breaking_stderr( "\nFink has detected that your package cache is out of date and needs" .

@@ -1064,6 +1064,14 @@ sub is_fetched {
 	return 1;
 }
 
+sub is_aptgetable {
+	my $self = shift;
+	if (Fink::Package->is_in_apt($self->get_name(), $self->get_fullversion())) {
+		return 1;
+	}
+	return 0;
+}
+
 sub is_present {
 	my $self = shift;
 
@@ -1125,6 +1133,18 @@ sub find_debfile {
 			return $fn;
 		}
 	}
+	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+		# the colon (':') for the epoch needs to be url encoded to '%3a' since apt-get
+		# likes to store the debs in its cache like this.
+		# FIXME: add a _encfulldebname variable or similar, to make the next 
+		# line look nicer.
+		my $debfile = $self->{_name}."_".(($self->{_epoch} ne "0") ? $self->{_epoch}."%3a" : "").$self->{_version}."-".$self->{_revision}."_".$debarch.".deb";
+		$fn = "$basepath/var/cache/apt/archives/$debfile";
+		if (-f $fn) {
+			return $fn;
+		}
+	}
+
 	return undef;
 }
 
@@ -1434,6 +1454,94 @@ sub match_package {
 ###
 ### PHASES
 ###
+
+### fetch_deb
+
+sub phase_fetch_deb {
+	my $self = shift;
+	my $conditional = shift || 0;
+	my $dryrun = shift || 0;
+
+	# check if $basepath is really '/sw' since the debs are built with 
+	# '/sw' hardcoded
+	if (not $basepath eq '/sw') {
+		print "\n";
+		&print_breaking("ERROR: Downloading packages from the binary distribution ".
+		                "is currently only possible if Fink is installed at '/sw'!.");
+		die "Downloading the binary package '" . $self->get_debname() . "' failed.\n";
+	}
+
+	if (not $conditional) {
+		# delete already downloaded deb
+		my $found_deb = $self->find_debfile();
+		if ($found_deb) {
+			rm_f $found_deb;
+		}
+	}
+	$self->fetch_deb(0, 0, $dryrun);
+}
+
+# fetch_deb [ TRIES ], [ CONTINUE ], [ DRYRUN ]
+#
+# Unconditionally download the deb, dying on failure.
+sub fetch_deb {
+	my $self = shift;
+	my $tries = shift || 0;
+	my $continue = shift || 0;
+	my $dryrun = shift || 0;
+
+	# Test if we are using a version of apt-get that allows the
+	# '--ignore-breakage' option
+	my $aptcmd = "apt-get --ignore-breakage 2>&1 1>/dev/null";
+	if (&execute($aptcmd, 1)) {
+		&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but the ".
+		    "'apt-get' tool installed on this system doesn't support it, or the ".
+		    "apt package is not installed at all. Please update your Fink ".
+		    "installation (with e.g. 'fink selfupdate').");
+		die "Downloading the binary package '" . $self->get_debname() . "' failed.\n";
+	}
+
+	if (Fink::Config::verbosity_level() > 2) {
+		print "Downloading " . $self->get_debname() . " from binary dist.\n";
+	}
+	$aptcmd = "apt-get ";
+	if (Fink::Config::verbosity_level() == 0) {
+		$aptcmd .= "-qq ";
+	}
+	elsif (Fink::Config::verbosity_level() < 2) {
+		$aptcmd .= "-q ";
+	}
+	if($dryrun) {
+		$aptcmd .= "--dry-run ";
+	}
+	$aptcmd .= "--ignore-breakage --download-only install " . $self->get_name() . "=" .$self->get_fullversion();
+	if (&execute($aptcmd)) {
+		if (0) {
+		print "\n";
+		&print_breaking("Downloading '".$self->get_debname()."' failed. ".
+		                "There can be several reasons for this:");
+		&print_breaking("The server is too busy to let you in or ".
+		                "is temporarily down. Try again later.",
+		                1, "- ", "	");
+		&print_breaking("There is a network problem. If you are ".
+		                "behind a firewall you may want to check ".
+		                "the proxy and passive mode FTP ".
+		                "settings. Then try again.",
+		                1, "- ", "	");
+		&print_breaking("The file was removed from the server or ".
+		                "moved to another directory. The package ".
+		                "description must be updated.");
+		print "\n";
+		}
+		if($dryrun) {
+			if ($self->has_param("Maintainer")) {
+				print ' "'.$self->param("Maintainer") . "\"\n";
+			}
+		} else {
+			die "Downloading the binary package '" . $self->get_debname() . "' failed.\n";
+		}
+	}
+}
 
 ### fetch
 

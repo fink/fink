@@ -1,3 +1,12 @@
+2004-10-12  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* fink.in: Add new option '--use-binary-dist', '-b' that causes fink 
+	to try to download pre-compiled binary packages from the binary 
+	distribution if available and if deb is not already on the system
+	* fink.8.in: Document '--use-binary-dist', '-b' options
+	* fink.conf.5.in: Document 'UseBinaryDist'
+	(Original idea and started by bbraun, Patches: #1037296)
+
 2004-09-28  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: Implemented 'fink show-deps'.

@@ -507,6 +507,29 @@ sub finish {
 	# update them
 	Fink::Engine::cmd_install(@elist);	
 
+	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+		if ($basepath eq '/sw') {
+			print "Downloading the indexes of available packages in the binary distribution.\n";
+			my $aptcmd = "apt-get ";
+			if (Fink::Config::verbosity_level() == 0) {
+				$aptcmd .= "-qq ";
+			}
+			elsif (Fink::Config::verbosity_level() < 2) {
+				$aptcmd .= "-q ";
+			}
+			$aptcmd .= "update";
+			if (&execute($aptcmd)) {
+				&print_breaking("WARNING: Failure while downloading indexes.".
+				                "Running 'fink scanpackages' may fix this.");
+			}
+		}
+		else {
+			&print_breaking("WARNING: Downloading packages from the binary distribution ".
+			                "is currently only possible if Fink is installed at ".
+			                "'/sw'! Therefore the apt-get index is not updated.");
+		}
+	}
+
 	# tell the user what has happened
 	print "\n";
 	&print_breaking("The core packages have been updated. ".

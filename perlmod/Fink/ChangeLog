@@ -1,3 +1,26 @@
+2004-10-12  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Engine.pm: Implement 'UseBinaryDist' option that causes fink 
+	to download pre-compiled binary packages from the binary distro if
+	available and the deb is not yet on the system. The cleanup cmd will
+	also call 'apt-get autoclean' if the 'UseBinaryDist' option is enabled.
+	* Package.pm: add is_in_apt sub to find a specific package in aptdb.
+	Add update_aptdb sub to update the apt-get db file which is called 
+	from	update_db
+	* PkgVersion.pm: Add is_aptgetable sub that checks if a package is
+	available via apt-get. find_debfile now also finds debs in 
+	'$basepath/var/cache/apt/archives/' if the 'UseBinaryDist' option
+	is enabled. Add subs 'phase_fetch_deb' and 'fetch_deb' to fetch the 
+	debs from the binary distro. This uses the '--ignore-breakage' option
+	of apt-get added in apt >= 0.5.4-51 (or >= 0.5.4-41 for 10.2-gcc3.3)
+	* SelfUpdate.pm: Call 'apt-get update' during finish if the 
+	'UseBinaryDist' option is enabled. 
+	* Configure.pm: Add configuration for 'UseBinaryDist'.
+	* Services.pm: Add new sub 'count_files' to count files in a directory.
+	Used in Engine.pm to count how many files were deleted during cleanup.
+	Don't output the cmd in execute if quite is set to 1.
+	(Patches: #1037296)
+
 2004-10-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Check ConfigureParams for hardcoded /sw.

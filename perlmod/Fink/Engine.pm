@@ -23,7 +23,7 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent);
+use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent &count_files);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -854,6 +854,9 @@ sub cmd_cleanup {
 	# TODO - document --keep-src in the man page, and add a fink.conf entry for defaults
 
 	my ($wanthelp, $keep_old);
+	# dryrun is not yet used. Provided here as a starter for the --dry-run option.
+	my $dryrun = 0;
+	
 	use Getopt::Long;
 	my @temp_ARGV = @ARGV;
 	@ARGV=@_;
@@ -971,7 +974,40 @@ EOF
 		}
 	}
 
-	print 'Obsolete deb packages deleted: ' . $file_count{'deb'} . "\n";
+	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
+		# 'apt-get autoclean'
+		my $aptcmd = "apt-get ";
+		if (Fink::Config::verbosity_level() == 0) {
+			$aptcmd .= "-qq ";
+		}
+		elsif (Fink::Config::verbosity_level() < 2) {
+			$aptcmd .= "-q ";
+		}
+		if($dryrun) {
+			$aptcmd .= "--dry-run ";
+		}
+		my $apt_cache_path = "$basepath/var/cache/apt/archives";
+		my $deb_regexp = "\\.deb\$";
+		my $files_before_clean = &count_files($apt_cache_path, $deb_regexp);
+
+		if (&execute($aptcmd . "--option APT::Clean-Installed=false autoclean")) {
+			print("WARNING: Cleaning deb packages in '$apt_cache_path' failed.\n");
+		}
+		my $files_deleted = $files_before_clean - &count_files($apt_cache_path, $deb_regexp);
+
+		# Running scanpackages and updating apt-get db
+		print "Updating the list of locally available binary packages.\n";
+		&cmd_scanpackages;
+		print "Updating the indexes of available binary packages.\n";
+		if (&execute($aptcmd . "update")) {
+			print("WARNING: Failure while updating indexes.\n");
+		}
+
+		print 'Obsolete deb packages deleted from apt cache: ' . $files_deleted . "\n";
+	}
+
+	print 'Obsolete deb packages deleted from fink trees: ' . $file_count{'deb'} . "\n";
 	print 'Obsolete symlinks deleted: ' . $file_count{'symlink'} . "\n";
 	if ($keep_old) {
 		print 'Obsolete sources moved: ' . $file_count{'src'} . "\n\n";
@@ -1043,6 +1079,20 @@ sub real_install {
 	%to_be_rebuilt = ();
 	%already_activated = ();
 
+	# should we try to download the deb from the binary distro?
+	# warn if UseBinaryDist is enabled and not installed in '/sw'
+	my $deb_from_binary_dist = 0;
+	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+		if ($basepath eq '/sw') {
+			$deb_from_binary_dist = 1;
+		}
+		else {
+				print "\n";
+				&print_breaking("WARNING: Downloading packages from the binary distribution ".
+				                "is currently only possible if Fink is installed at '/sw'!.");
+		}
+	}
+		
 	# add requested packages
 	foreach $pkgspec (@_) {
 		# resolve package name
@@ -1108,16 +1158,37 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' will be built without being installed.\n";
+			}
 			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
 			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
-		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
+		} elsif ((not $item->[PKGVER]->is_present() 
+		  and not ($deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()))
+		  or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' will be built and installed.\n";
+			}
 			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
-			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
+		} elsif (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD 
+		         and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
+			# We want to install this package and will download the .deb for it
+			# -> only include life-time dependencies
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' will be downloaded as a binary package and installed.\n";
+			}
+			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
+			
+			# Do not use BuildConflicts for packages which are not going to be built!
+#			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' will be installed.\n";
+			}
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			
 			# Do not use BuildConflicts for packages which are not going to be built!
@@ -1429,6 +1500,12 @@ sub real_install {
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
 		next if $item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed();
+		if (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD 
+		    and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
+			# download the deb
+			$item->[PKGVER]->phase_fetch_deb(1, 0);
+		}
+
 		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
 			$item->[PKGVER]->phase_fetch(1, 0);
 		}
