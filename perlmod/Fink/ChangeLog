@@ -1,5 +1,9 @@
 2004-02-24  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: Make InstallScript output stand out better
+
+2004-02-24  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: More-compatible syntax for open().
 
 2004-02-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
