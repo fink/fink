@@ -46,7 +46,7 @@ END { }       # module clean-up code here (global destructor)
 ### create/change configuration interactively
 
 sub configure {
-  my ($umask, $otherdir);
+  my ($otherdir, $verbose);
 
   print "\n";
   &print_breaking("OK, I'll ask you some questions and update the ".
@@ -60,6 +60,10 @@ sub configure {
   if ($otherdir) {
     $config->set_param("FetchAltDir", $otherdir);
   }
+  $verbose =
+    &prompt_boolean("Always print verbose messages?",
+		    $config->param_boolean("Verbose"));
+  $config->set_param("Verbose", $verbose ? "true" : "false");
 
 
   # mirror selection

@@ -23,7 +23,8 @@ package Fink::PkgVersion;
 use Fink::Base;
 
 use Fink::Services qw(&filename &expand_percent &expand_url &execute
-                      &latest_version);
+                      &latest_version &print_breaking
+                      &print_breaking_twoprefix);
 use Fink::Package;
 use Fink::Config qw($config $basepath $libpath $debarch);
 
@@ -453,7 +454,7 @@ sub phase_fetch {
 sub fetch_source {
   my $self = shift;
   my $index = shift;
-  my ($url, $file);
+  my ($url, $file, $verbosity);
 
   chdir "$basepath/src";
 
@@ -463,8 +464,32 @@ sub fetch_source {
   if (-f $file) {
     &execute("rm -f $file");
   }
-  &execute("wget $url");
-  if (not -f $file) {
+
+  $verbosity = "--non-verbose";
+  if ($config->param_boolean("Verbose")) {
+    $verbosity = "--verbose";
+  }
+  if (&execute("wget $verbosity $url") or not -f $file) {
+    print "\n";
+    &print_breaking("Downloading '$file' from the URL '$url' failed. ".
+		    "There can be several reasons for this:");
+    &print_breaking_twoprefix("The server is too busy to let you in or ".
+			      "is temporarily down. Try again later.",
+			      1, "- ", "  ");
+    &print_breaking_twoprefix("There is a network problem. If you are ".
+			      "behind a firewall you may want to check ".
+			      "the wget documentation for proxy and ".
+			      "passive mode settings. Then try again.",
+			      1, "- ", "  ");
+    &print_breaking_twoprefix("The file was removed from the server or ".
+			      "moved to another directory. The package ".
+			      "description must be updated.",
+			      1, "- ", "  ");
+    &print_breaking("In any case, you can download '$file' manually and ".
+		    "put it in '$basepath/src', then run fink again with ".
+		    "the same command.");
+    print "\n";
+
     die "file download failed for $file\n";
   }
 }
@@ -474,13 +499,18 @@ sub fetch_source {
 sub phase_unpack {
   my $self = shift;
   my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-  my ($i);
+  my ($i, $verbosity);
 
   if ($self->{_type} eq "bundle") {
     return;
   }
 
   $bdir = $self->get_fullname();
+
+  $verbosity = "";
+  if ($config->param_boolean("Verbose")) {
+    $verbosity = "v";
+  }
 
   # remove dir if it exists
   chdir "$basepath/src";
@@ -506,11 +536,11 @@ sub phase_unpack {
     # determine unpacking command
     $unpack_cmd = "cp $found_archive .";
     if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-      $unpack_cmd = "gzip -dc $found_archive | tar -xvf -";
+      $unpack_cmd = "gzip -dc $found_archive | tar -x${verbosity}f -";
     } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
-      $unpack_cmd = "bzip2 -dc $found_archive | tar -xvf -";
+      $unpack_cmd = "bzip2 -dc $found_archive | tar -x${verbosity}f -";
     } elsif ($archive =~ /[\.\-]tar$/) {
-      $unpack_cmd = "tar -xvf $found_archive";
+      $unpack_cmd = "tar -x${verbosity}f $found_archive";
     } elsif ($archive =~ /\.zip$/) {
       $unpack_cmd = "unzip -o $found_archive";
     }
