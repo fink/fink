@@ -1,3 +1,9 @@
+2004-02-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: When a compile fails, point the user at the FAQ
+	and mailing lists *before* having them e-mail the maintainer
+	directly.
+
 2005-02-23  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Added new "intro" param to prompt_selection

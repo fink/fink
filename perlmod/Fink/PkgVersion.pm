@@ -3392,8 +3392,10 @@ sub run_script {
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		if ($self->has_param('maintainer')) {
 			$error .= "\n\nBefore reporting any errors, please run \"fink selfupdate\" and\n" .
-				"try again.  If you continue to have issues, you can try e-mailing\n".
-				"the maintainer:\n\n".
+				"try again.  If you continue to have issues, please check to see if the\n" .
+				"FAQ on fink's website solves the problem.  If not, ask on the fink-users\n" .
+				"or fink-beginners mailing lists.  As a last resort, you can try e-mailing\n".
+				"the maintainer directly:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
 		}
 		die $error . "\n";
