@@ -1,3 +1,8 @@
+2003-10-17  <schwern@users.sourceforge.net>
+
+	* Package.pm, Services.pm: Optimizations to speed up
+	some common operations.
+
 2003-10-17  <dmalloc@users.sourceforge.net>
 
 	* SelfUpdate.pm: Change default rsync host from 

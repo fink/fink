@@ -27,7 +27,6 @@ use Fink::Services qw(&read_properties &latest_version &version_cmp &parse_fullv
 use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
 use File::Find;
-use Fcntl ':mode'; # for search_comparedb
 
 use strict;
 use warnings;
@@ -394,29 +393,13 @@ sub scan_all {
 
 sub search_comparedb {
 	my $path = shift;
-	my (@files, $file, $fullpath, @stats);
+        $path .= "/";  # forces find to follow the symlink
 
-	# FIXME: should probably just check dirs of $config->get_treelist()
-	opendir(DIR, $path) || die "can't opendir $path: $!";
-	@files = grep { !/^[\.#]/ } readdir(DIR);
-	closedir DIR;
-
-	foreach $file (@files) {
-		$fullpath = "$path/$file"; 
-
-		if (-d $fullpath) {
-			next if $file eq "binary-$debarch";
-			next if $file eq "CVS";
-			return 1 if (&search_comparedb($fullpath));
-		}
-		else {
-			next if !(substr($file, length($file)-5) eq ".info");
-			@stats = stat($fullpath);
-			return 1 if ($stats[9] > $db_mtime);
-		}
-	}
-	
-	return 0;
+        # Using find is much faster than doing it in Perl
+        return
+          (grep !m{/(CVS|binary-$debarch)/},
+           `find $path -type f -name '*.info' -newer $basepath/var/db/fink.db`)
+             ? 1 : 0;
 }
 
 ### read the packages and update the database, if needed and we are root

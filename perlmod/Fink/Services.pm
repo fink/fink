@@ -432,12 +432,17 @@ sub prompt_selection {
 
 ### comparing versions
 
+# Caching the results makes fink much faster.
+my %Version_Cmp_Cache = ();
 sub version_cmp {
 	my ($a, $b, $op, $i, $res, @avers, @bvers);
 	$a = shift;
 	$op = shift;
 	$b = shift;
 	
+        return $Version_Cmp_Cache{$a}{$op}{$b} if 
+          defined $Version_Cmp_Cache{$a}{$op}{$b};
+
 	@avers = parse_fullversion($a);
 	@bvers = parse_fullversion($b);
 	#compare them in version array order: Epoch, Version, Revision
@@ -466,7 +471,7 @@ sub version_cmp {
 	} elsif ($op eq ">>") {
 		$res = $res > 0 ? 1 : 0;
 	}
-	return $res;
+	return $Version_Cmp_Cache{$a}{$op}{$b} = $res;
 }
 
 sub raw_version_cmp {
