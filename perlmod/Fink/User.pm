@@ -38,7 +38,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&get_perms);
+	@EXPORT_OK	 = qw(&get_perms &add_user_script);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -56,14 +56,15 @@ END { }				# module clean-up code here (global destructor)
 sub add_user {
 	my $self = shift;
 	my $user = shift;
+	my $desc = shift;
+	my $pass = shift;
+	my $shell = shift;
+	my $home = shift;
+	my $group = shift;
 
-	my $comment = $usrgrps{usrname}->{$user}->{desc};
-	my $homedir = $usrgrps{usrname}->{$user}->{homedir};
-	my $group = $usrgrps{usrname}->{$user}->{group};
-	my $shell = $usrgrps{usrname}->{$user}->{shell};
-	my $uid = $usrgrps{usrname}->{$user}->{uid};
+    my $uid = $self->get_id("user", $user);
 
-	my $cmd  = "$basepath/sbin/useradd -c $comment -d $homedir -e 0";
+	my $cmd  = "$basepath/sbin/useradd -c $desc -d $home -e 0";
 	   $cmd .= "-f 0 -g $group -s $shell -u $uid $user";
 
 	if (&execute($cmd)) {
@@ -91,8 +92,10 @@ sub del_user {
 sub add_group {
 	my $self = shift;
 	my $group = shift;
+	my $desc = shift;
+	my $pass = shift;
 
-	my $gid = $usrgrps{grpname}->{$group}->{gid};
+	my $gid = $self->get_id("group", $group);
 
 	my $cmd = "$basepath/sbin/groupadd -g $gid $group";
 
@@ -216,29 +219,124 @@ sub get_perms {
 	my $rootdir = shift;
 	my $name = shift;
 	my $type = shift;
+	my $desc = shift;
+	my $pass = shift || "";
+	my $shell = shift || "/usr/bin/false";
+	my $home = shift || "/tmp";
+	my $group = shift || $name;
 	my $script = "";
 
-	if ($name == 0) {
-		return 0;
+	unless ($name) {
+		return $script;
 	}
+
+    unless ($pass) {
+        $pass = $self->mkpasswd();
+    }    
 
 	unless ($self->check_for_name($type, $name)) {
-		### add user
+		### add user/group
+		if ($type eq "user") {
+            $self->add_user($name, $desc, $pass, $shell, $home, $group);
+        } else {
+            $self->add_group($name, $desc, $pass);
+        }
 	}
+	
+	my (@filelist, @files, @users, @groups);
+	my ($wanted, $file, $usr, $grp);
+    my ($dev, $ino, $mode, $nlink, $uid, $gid);
+    
+    $wanted =
+        sub {
+            if (-x) {
+                push @filelist, $File::Find::fullname;
+            }
+        };
+    find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $rootdir);
+    
+	foreach $file (@filelist) {
+	  ### Remove $basepath/src/root-...
+	  $file =~ s/^$basepath\/src\/root-.+$basepath/$basepath/g;
+	  ### Don't add DEBIAN dir
+	  next if ($file =~ /DEBIAN/);
+	  
+	  ($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
+	  
+	  $usr = User::pwent::getpwuid($uid);
+	  $grp = User::grent::getgrgid($gid);
+	  
+	  push(@files, $file);
+	  push(@users, $usr);
+	  push(@groups, $grp);
+    }
 
-	if ($self->set_perms($rootdir)) {
-	}
+    $file = join(":", @files);
+    $usr = join (":", @users);
+    $grp = join (":", @groups);
 
-	$script = $self->build_user_script();
+	$self->set_perms($rootdir, $file);
+
+	$script = $self->build_chown_script($file, $usr, $grp);
 
 	return $script;
 }
 
 ### add check/add user script and then set perms
-sub build_user_script {
-	my $self = shift;
-	my $script = "";
+sub add_user_script {
+    my $self = shift;
+    my $name = shift;
+    my $type = shift;
+    my $desc = shift;
+	my $pass = shift || "";
+	my $shell = shift || "/usr/bin/false";
+	my $home = shift || "/tmp";
+	my $group = shift || $name;
+    
+    my $script = "";
 
+    unless ($name) {
+        return $script;
+    }
+    
+    unless ($pass) {
+        $pass = $self->mkpasswd();
+    }    
+
+    ### FIXME
+    
+    return $script;
+}
+
+### Return a passwd
+sub mkpasswd {
+    $self = shift;
+    $pass = "";
+    
+    ### FIXME
+    
+    return $pass;
+}
+
+### build script to set user/groups
+sub build_chown_script {
+	my $self = shift;
+	my $files = shift;
+	my $users = shift;
+	my $groups = shift;
+	my $script = "";
+	my $i = 0;
+	
+	### Build perms script
+	my @files = split(/:/, $files);
+	my @users = split(/:/, $users);
+	my @groups = split(/:/, $groups);
+
+    foreach $file (@files) {
+        $script .= "chown @users[$i]:@groups[$i] $file\n";
+        $i++;
+    }
+    
 	return $script;
 }
 
@@ -246,6 +344,15 @@ sub build_user_script {
 sub set_perms {
 	my $self = shift;
 	my $rootdir = shift;
+	my $files = shift;
+	
+	my @files = split(/:/, $files);
+	
+	foreach $file (@files);
+        if (&execute("chown root:wheel $file")) {
+            die "Couldn't change ownershil of $file!\n";
+        }
+    }
 
 	return 0;
 }
