@@ -506,6 +506,7 @@ sub get_build_directory {
 	}
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource"
+			|| lc $self->get_source(1) eq "none"
 			|| $self->param_boolean("NoSourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname();
 	}
@@ -614,6 +615,7 @@ sub is_fetched {
 	my ($i);
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+			lc $self->get_source(1) eq "none" ||
 			$self->{_type} eq "dummy") {
 		return 1;
 	}
@@ -966,6 +968,7 @@ sub phase_fetch {
 	my ($i);
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+			lc $self->get_source(1) eq "none" ||
 			$self->{_type} eq "dummy") {
 		return;
 	}
@@ -1118,7 +1121,7 @@ END
 		}
 	}
 
-	if ($self->{_type} eq "nosource") {
+	if ($self->{_type} eq "nosource" || lc $self->get_source(1) eq "none") {
 		$destdir = "$buildpath/$bdir";
 		if (&execute("/bin/mkdir -p $destdir")) {
 			die "can't create directory $destdir\n";

@@ -1,5 +1,10 @@
 2003-12-19  Daniel Macks <dmacks@netspace.org>
 
+	* PkgVersion,Validation.pm: Support for "Source: none" as synonym
+	for "Type: NoSource".
+
+2003-12-19  Daniel Macks <dmacks@netspace.org>
+
 	* Validation.pm: Added error if there is a source or MD5 for type
 	Bundle.
 
@@ -11,7 +16,7 @@
 	
 2003-12-17  Daniel Macks <dmacks@netspace.org>
 
-	* Services.pm Added prompt_selection_new (like prompt_selection
+	* Services.pm: Added prompt_selection_new (like prompt_selection
 	except parameters are less redundant and more logical). Rewrote
 	prompt_selection to be just a wrapper around prompt_selection_new.
 	
