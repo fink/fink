@@ -481,22 +481,55 @@ sub scan {
 			}
 		}
 
-		# allow %lv (typeversion_pkg) in Package
-		if ($properties->{type}) {
-			my $type = $properties->{type};
-			if ($type =~ s/^(\S+)\s+(\S+)/$2/) {
-				$type =~ s/\.//g;
-				$properties->{package} = $pkgname = &expand_percent($pkgname,{'lv',$type});
+		Fink::Package->setup_package_object($properties, $filename);
+	    }
+    }
+
+# Given $properties as a ref to a hash of .info lines in $filename,
+# instantiate the package(s) and return an array of Fink::PkgVersion
+# object(s) (i.e., the results of Fink::Package::inject_description().
+sub setup_package_object {
+	shift;	# class method - ignore first parameter
+	my $properties = shift;
+	my $filename = shift;
+
+	my %pkg_expand;
+	if (exists $properties->{type}) {
+		if ($properties->{type} =~ s/\((.*)\)//) {
+			# if we were fed multiple language versions in Type,
+			# remove and refeed ourselves with each one in turn
+			my $types = $1;
+			my @pkgversions;
+			foreach my $this_type (split ' ', $types) {
+				# need new copy, not copy of ref to original
+				my $this_properties = {%{$properties}};
+				$this_properties->{type} .= " ".$this_type;
+				push @pkgversions, Fink::Package->setup_package_object($this_properties, $filename);
+			};
+			return @pkgversions;
+		} else {
+			if ($properties->{type} =~ /^\s*\S+\s+(\S+)\s*$/) {
+				# a single language version in Type
+				( $pkg_expand{'lv'} = $1 ) =~ s/\.//g; # prepare for %lv
 			}
 		}
-
-		# get/create package object
-		$package = Fink::Package->package_by_name_create($pkgname);
-
-		# create object for this particular version
-		$properties->{thefilename} = $filename;
-		Fink::Package->inject_description($package, $properties);
 	}
+	if (exists $properties->{parent}) {
+#	    warn $properties->{package}," has parent\n";
+		# get parent's Package and Type info for percent expansion
+		$pkg_expand{'N'}  = $properties->{parent}->{package};
+#	    warn "\t%N expands to ",$pkg_expand{'N'}, "\n";
+		$pkg_expand{'Lv'} = $properties->{parent}->{_typeversion_pkg};
+	}
+	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand);
+
+	# get/create package object
+	my $package = Fink::Package->package_by_name_create($properties->{package});
+
+	# create object for this particular version
+	$properties->{thefilename} = $filename;
+	my $pkgversion = Fink::Package->inject_description($package, $properties);
+	return ($pkgversion);
 }
 
 ### create a version object from a properties hash and link it

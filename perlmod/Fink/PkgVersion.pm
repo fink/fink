@@ -74,27 +74,11 @@ sub initialize {
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
 
-	# inherit type
-	if (exists $self->{parent}) {
-		$type = lc $self->{parent}->param_default("Type", "");
-	} else {
-		$type = "";
-	}
-	$self->{_type} = $type = lc $self->param_default("Type", $type);
-	if ($type eq "none") {
-		$self->{_type} = $type = "";
-	}
-	# split off language version number, when given with the type
-	# Presume we have passed validation which is quite explicit
-	# about allowed major and minor (language version) values
-	if ($type =~ s/^(\S+)\s+(\S+)/$1/) {
+	$self->{_type} = $type = lc $self->param_default("Type", "");
+	if ($type =~ s/^\s*(\S+)\s+(\S+)\s*/$1/) {
 		$self->{_typeversion_raw} = $self->{_typeversion_pkg} = $2;
 		$self->{_typeversion_pkg} =~ s/\.//g;
 		$self->{_type} = $type;
-		# to allow %lv (typeversion_pkg) in Package have to do
-		# this early since _name and $pkgname used before
-		# percent expansion is ordinarily done
-		$self->{_name} = $pkgname = &expand_percent($pkgname,{'lv',$self->{_typeversion_pkg}});
 	}
 
 	# the following is set by Fink::Package::scan
@@ -192,6 +176,10 @@ sub initialize {
 	if ($self->{_typeversion_raw}) {
 		$expand->{'lV'} = $self->{_typeversion_raw};
 		$expand->{'lv'} = $self->{_typeversion_pkg};
+	}
+	if (exists $self->{'parent'}) {
+		$expand->{'LV'} = $self->{'parent'}->{_typeversion_raw};
+		$expand->{'Lv'} = $self->{'parent'}->{_typeversion_pkg};
 	}
 
 	$self->{_expand} = $expand;
@@ -330,7 +318,7 @@ sub add_splitoff {
 	my $self = shift;
 	my $splitoff_data = shift;
 	my $filename = $self->{_filename};
-	my ($properties, $package, $pkgname, $splitoff);
+	my ($properties, $package, $pkgname, @splitoffs);
 	
 	# get rid of any indention first
 	$splitoff_data =~ s/^\s+//gm;
@@ -342,9 +330,6 @@ sub add_splitoff {
 		print "No package name for SplitOff in $filename\n";
 	}
 	
-	# expand percents in it, to allow e.g. "%n-shlibs"
-	$properties->{'package'} = $pkgname = &expand_percent($pkgname, $self->{_expand});
-	
 	# copy version information
 	$properties->{'version'} = $self->{_version};
 	$properties->{'revision'} = $self->{_revision};
@@ -352,16 +337,21 @@ sub add_splitoff {
 	
 	# link the splitoff to its "parent" (=us)
 	$properties->{parent} = $self;
+
+	# need to inherit (maybe) Type before package gets created
+	if (not exists $properties->{'type'}) {
+	    if (exists $self->{'type'}) {
+		$properties->{'type'} = $self->{'type'};
+	    }
+	} elsif ($properties->{'type'} eq "none") {
+		delete $properties->{'type'};
+	}
 	
-	# get/create package object for the splitoff
-	$package = Fink::Package->package_by_name_create($pkgname);
-	
-	# create object for this particular version
-	$properties->{thefilename} = $filename;
-	$splitoff = Fink::Package->inject_description($package, $properties);
+	# instantiate the splitoff
+	@splitoffs = Fink::Package->setup_package_object($properties, $filename);
 	
 	# add it to the list of splitoffs
-	push @{$self->{_splitoffs}}, $splitoff;
+	push @{$self->{_splitoffs}}, @splitoffs;
 }
 
 ### merge duplicate package description
@@ -511,8 +501,8 @@ sub get_source_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 		my $source = get_source($self, $index);
-		push(@list, $source) unless $source eq "none";
+ 	        my $source = get_source($self, $index);
+	        push(@list, $source) unless $source eq "none";
 	}
 	return @list;
 }
@@ -538,8 +528,8 @@ sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 		my $tarball = get_tarball($self, $index);
-		push(@list, $tarball) unless $tarball eq "none";
+ 	        my $tarball = get_tarball($self, $index);
+	        push(@list, $tarball) unless $tarball eq "none";
 	}
 	return @list;
 }
@@ -646,7 +636,7 @@ sub get_splitoffs {
 	if (exists $self->{parent}) {
 		$parent = $self->{parent};
 	} else {
-		$parent = $self;
+	        $parent = $self;
 	}
 
 	if ($include_parent) {
@@ -1612,8 +1602,6 @@ sub phase_install {
 		} elsif (not $do_splitoff) {
 			$install_script .= "make install prefix=\%i\n";
 		} 
-
-		
 		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();

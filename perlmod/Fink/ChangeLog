@@ -1,3 +1,13 @@
+2004-01-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, PkgVersion.pm: Consolidated common code for
+	instantiating a package into a new Package->setup_package_object
+	function. Moved Type inheiritance and %-expansion in Package there
+	also. Evaluate SplitOff Package in SplitOff scope instead of
+	parent scope. Added support for multiple language versions: 'Type:
+	perl (5.6.1 5.8.1)' gives a clone of the .info that has
+	each (single) Type.
+
 2004-01-14  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Empirically determined that 79 chars is the
