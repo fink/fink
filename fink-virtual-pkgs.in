@@ -54,7 +54,7 @@ if ($standalone == 0)
 		}
 		$epoch=0;
 		if ($options{dpkg}) {
-			if (@versions = parse_fullversion($hash->{version})) {
+			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
 				printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];
 				# for provides we tell dpkg about them with the version as zero
 				if (exists $hash->{provides})
@@ -67,7 +67,7 @@ if ($standalone == 0)
 				}
 			}
 		} else {
-			printf "Package: %s\nStatus: install ok installed\nVersion: %s\n", $hash->{package},$hash->{version};
+			printf "Package: %s\nStatus: %s\nVersion: %s\n", $hash->{package},$hash->{status},$hash->{version};
 			foreach $field (keys %$hash)
 			{
 				next if (($field eq "package") or ($field eq "status") or ($field eq "version"));

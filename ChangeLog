@@ -1,7 +1,8 @@
-2004-05-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2005-23-04  Daniel Macks  <dmacks@netspace.org>
 
-	* VERSION: Bumped package manager version to 0.20.2, a release
-	on branch_0_20 which modifies the Provides of system-perl packages
+	* fink-virtual-pkgs.in: Changed apt mode to respect "status"
+	(parallel to that method in Status.pm) instead of assuming
+	presence of package entry is equivalent to it being installed.
 
 2004-05-17  Daniel Macks  <dmacks@netspace.org>
 
