@@ -1,3 +1,7 @@
+2004-06-23 Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: If have %type_*[*] in Package, error if not InfoN>=2.
+
 2004-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm, Validation.pm: One more tweak to BuildDependsOnly:

@@ -321,6 +321,14 @@ sub validate_info_file {
 	$basepath = $config->param_default("basepath", "/sw");
 	$buildpath = $config->param_default("buildpath", "$basepath/src");
 
+	# make sure have InfoN (N>=2) if use Info2 features (%type_*[*] in Package)
+	if ($properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/ and ($properties->{infon} || 1) < 2) {
+		print "Error: Use of percent expansion in \"package\" field requires InfoN level 2 or higher. ($filename)\n";
+		$looks_good = 0;
+		return;
+	}
+#	print map "$_\t".$package->{$_}."\n", sort keys %$properties;
+
 	( $pkginvarname = $pkgname = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
 	# right now we don't know how to deal with variants too well
 	if (defined ($type = $properties->{type}) ) {
@@ -550,6 +558,13 @@ sub validate_info_file {
 					print "Error: Required field \"$field\" missing for \"$splitoff_field\". ($filename)\n";
 					$looks_good = 0;
 				}
+			}
+
+			# make sure have InfoN (N>=2) if use Info2 features (%type_*[*] in Package)
+			if ($splitoff_properties->{package} =~ /\%type_(raw|pkg)\[.*?\]/ and $properties->{infon} < 2) {
+				print "Error: Use of percent expansion in \"package\" field of \"$field\" requires InfoN level 2 or higher. ($filename)\n";
+				$looks_good = 0;
+				return;
 			}
 		
 			if (exists $splitoff_properties->{shlibs}) {
