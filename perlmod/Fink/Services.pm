@@ -39,7 +39,7 @@ BEGIN {
 					  &read_properties_multival
 					  &execute &execute_script &expand_percent
 					  &filename &print_breaking
-					  &prompt &prompt_boolean &prompt_selection
+					  &prompt &prompt_boolean &prompt_selection &prompt_selection_new
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
 					  &file_MD5_checksum &get_arch &get_sw_vers
@@ -452,7 +452,7 @@ sub expand_percent {
 	# Bail if there is nothing to expand
 	return $s unless ($s =~ /\%/);
 
-	%map = ( %$map, '%' => '@PERCENT@' );  # Don't touch the caller's copy
+	%map = %$map;  # avoid lots of dereferencing later
 	$percent_keys = join('|', keys %map);
 
 	# split multi lines to process each line incase of comments
@@ -462,23 +462,34 @@ sub expand_percent {
 		# if line is a comment don't expand
 		unless ($s =~ /^\s*#/) {
 
-			# Values for percent signs expansion may be nested
-			# once, to allow e.g. the definition of %N in terms of
-			# %n (used a lot for splitoffs which do stuff like
-			# %N = %n-shlibs). Hence we repeate the expansion if
-			# necessary.
-			# Abort as soon as no substitution performed.
-			for ($i = 0; $i < 2 ; $i++) {
-				$s =~ s/\%($percent_keys)/$map{$1}/eg || last;
-				# Abort early if no percent symbols are left
-				last if not $s =~ /\%/;
+			if (keys %map) {
+				# only expand using $map if one was passed
+
+				# Values for percent signs expansion
+				# may be nested once, to allow e.g.
+				# the definition of %N in terms of %n
+				# (used a lot for splitoffs which do
+				# stuff like %N = %n-shlibs). Hence we
+				# repeat the expansion if necessary.
+				# Do not handle %% => % at this point.
+				# The regex for this hairy; to explain
+				# REGEX look at thereturn value of
+				# YAPE::Regex::Explain->new(REGEX)->explain
+				# Abort as soon as no subst performed.
+				for ($i = 0; $i < 2 ; $i++) {
+					$s =~ s/(?<!\%)\%((?:\%\%)*)($percent_keys)/$1$map{$2}/g || last;
+					# Abort early if no percent symbols are left
+					last if not $s =~ /\%/;
+				}
 			}
 	
-			# If ther are still unexpanded percents left, error out
-			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /\%/;
+			# The presence of a sequence of an odd number
+			# of percent chars means we have unexpanded
+			# percents besides (%% => %) left. Error out.
+			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /(?<!\%)(\%\%)*\%(?!\%)/;
 
-			# Change @PERCENT@ back to % as it should be
-			$s =~ s/\@PERCENT\@/\%/g;
+			# Now handle %% => %
+			$s =~ s/\%\%/\%/g;
 		}
 		push(@newlines, $s);
 	}
@@ -658,17 +669,6 @@ returns a null string or Fink is configured to automatically accept
 defaults (i.e., bin/fink was invoked with the -y or --yes option), the
 answer-number $default is used.
 
-The use of %names seems backwards: one can have the same user text
-choice for multiple multiple return values but not vice versa. Also,
-cannot return anything except simple scalars. Should probably swap the
-key/value relationship. Also, seems like there is needless redundancy.
-
-This seems ripe for replacement by an ordered hash or an array of
-array-refs ([key1,val1],[key2,val2],...) or a simple pairwise list
-(key1,val1,key2,val2,...) and the actual default value instead of
-default value-number (abstracting for an interface other than
-numbered-choices).
-
 =cut
 
 sub prompt_selection {
@@ -677,26 +677,85 @@ sub prompt_selection {
 	$default_value = 1 unless defined $default_value;
 	my $names = shift;
 	my @choices = @_;
-	my ($key, $count, $answer);
+
+	my ($key, @choices_new);
+
+	foreach $key (@choices) {
+		if (exists $names->{$key}) {
+			push @choices_new, ($names->{$key}, $key);
+		} else {
+			push @choices_new, ($key, $key);
+		}
+	}
+
+	prompt_selection_new( $prompt, ["number",$default_value], @choices_new );
+}
+
+=item prompt_selection_new
+    my $answer = prompt_selection_new $prompt, \@default, @choices;
+
+Ask the user a multiple-choice question and return the answer. The
+user is prompted via STDOUT/STDIN using $prompt (which is
+word-wrapped) and a list of choices. The choices are numbered
+(beginning with 1) and the user selects by number. The list @choices
+is an ordered pairwise list (label1,value1,label2,value2,...). If the
+user returns a null string or Fink is configured to automatically
+accept defaults (i.e., bin/fink was invoked with the -y or --yes
+option), the default answer is used according to the following:
+
+  @default = undef;                # choice 1
+  @default = [];                   # choice 1
+  @default = ["number", $number];  # choice $number
+  @default = ["label", $label];    # first choice with label $label
+  @default = ["value", $label];    # first choice with value $value
+
+=cut
+
+sub prompt_selection_new {
+	my $prompt = shift;
+	my $default = shift;
+	my @choices = @_;
+	my ($count, $index, $answer, $default_value);
+
+	if (@choices/2 != int(@choices/2)) {
+		die "Odd number of elements in \@choices (called by ",(caller)[1]," line ",(caller)[2],")";
+	}
+
+	if (!defined $default->[0]) {
+		$default_value = 1;
+	} elsif ($default->[0] eq "number") {
+		$default_value = $default->[1];
+	} elsif ($default->[0] =~ /^(label|value)$/) {
+		# will be handled later
+	} else {
+		die "Unknown default type ",$default->[0]," (called by ",(caller)[1]," line ",(caller)[2],")";
+	}
+
 
 	require Fink::Config;
 	my $dontask = Fink::Config::get_option("dontask");
 
-	$count = 1;
-	foreach $key (@choices) {
-		print "\n($count)	 ";
-		if (exists $names->{$key}) {
-			print $names->{$key};
-		} else {
-			print $key;
-		}
+	$count = 0;
+	for ($index = 0; $index <= $#choices; $index+=2) {
 		$count++;
+		print "\n($count)	 $choices[$index]";
+		if (!defined $default_value && (
+						(
+						 ($default->[0] eq "label" && $choices[$index]   eq $default->[1])
+						 ||
+						 ($default->[0] eq "value" && $choices[$index+1] eq $default->[1])
+						 )
+						)) {
+			$default_value = $count;
+		}
+
 	}
 	print "\n\n";
 
 	&print_breaking("$prompt [$default_value] ", 0);
 	if ($dontask) {
 		print "(assuming default)\n";
+		$answer = $default_value;
 	} else {
 		$answer = <STDIN> || "";
 		chomp($answer);
@@ -704,11 +763,11 @@ sub prompt_selection {
 			$answer = 0;
 		}
 		$answer = int($answer);
-		if ($answer > 0 && $answer <= $#choices + 1) {
-			return $choices[$answer-1];
+		if ($answer < 1 || $answer > $count) {
+			$answer = $default_value;
 		}
 	}
-	return $choices[$default_value-1];
+	return $choices[2*$answer-1];
 }
 
 =item version_cmp

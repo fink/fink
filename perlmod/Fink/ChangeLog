@@ -1,3 +1,59 @@
+2003-12-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Detect Java3D and Java Advanced Imaging
+
+2003-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Recognize darwin 7.2.0.
+
+2003-12-19  Daniel Macks <dmacks@netspace.org>
+
+	* PkgVersion,Validation.pm: Support for "Source: none" as synonym
+	for "Type: NoSource".
+
+2003-12-19  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Added error if there is a source or MD5 for type
+	Bundle.
+
+2003-12-19  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Added errors if there is an MD5 without a
+	corresponding source, if no MD5 and using the implicit/default
+	source, or if there is a source or MD5 for type NoSource.
+	
+2003-12-17  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Added prompt_selection_new (like prompt_selection
+	except parameters are less redundant and more logical). Rewrote
+	prompt_selection to be just a wrapper around prompt_selection_new.
+	
+2003-12-16  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Remembered that Type doesn't always exist
+
+2003-12-16  Daniel Macks <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change to a more generic way of parsing perl
+	version info from Type
+	* Validation.pm: Change to a more structured definition of allowed
+	Type values
+
+2003-12-15  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: Changed the warning about missing packages in multi
+	depends line to still display but only at verbose 4
+
+2003-12-15  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: Stop warning about missing packages in depends line
+	if an other pkg in the expression is found to statisfy it.
+
+2003-12-15  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Changed expand_percent to do the automatic %% => %
+	with regexps instead of the @PERCENT@ sentinel
+
 2003-12-11  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Made BuildConflicts effective, it doesn't just tell you

@@ -74,12 +74,16 @@ sub initialize {
 	$self->{_version} = $version = $self->param_default("Version", "0");
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
+
 	$self->{_type} = $type = lc $self->param_default("Type", "");
 	# split off perl version number, when given with the type
-	if ($type =~ s/^perl\s+([0-9]+\.[0-9]+\.[0-9]+)/perl/) {
-		$self->{_perlversion} = $1;
+	# Presume we have passed validation which is quite explicit
+	# about allowed major and minor (language version) values
+	if ($type =~ s/^(\S+)\s+(\S+)/$1/) {
+		$self->{_perlversion} = $2;
 		$self->{_type} = $type;
 	}
+
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
 
@@ -502,6 +506,7 @@ sub get_build_directory {
 	}
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource"
+			|| lc $self->get_source(1) eq "none"
 			|| $self->param_boolean("NoSourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname();
 	}
@@ -610,6 +615,7 @@ sub is_fetched {
 	my ($i);
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+			lc $self->get_source(1) eq "none" ||
 			$self->{_type} eq "dummy") {
 		return 1;
 	}
@@ -698,9 +704,9 @@ sub resolve_depends {
 	my $field = shift;
 	my $forceoff = shift || 0;
 	my (@speclist, @deplist, $altlist);
-	my ($altspec, $depspec, $depname, $versionspec, $package);
+	my ($altspecs, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
-	my ($oper);
+	my ($oper, $found, @altspec, $loopcount);
 	if (lc($field) eq "conflicts") {
 		$oper = "conflict";
 	} elsif (lc($field) eq "depends") {
@@ -739,9 +745,16 @@ sub resolve_depends {
 		}
 # with this primitive form of @speclist, we verify that the "BuildDependsOnly"
 # declarations have not been violated
-		foreach $altspec (@speclist){
-		    BUILDDEPENDSLOOP: foreach $depspec (split(/\s*\|\s*/, $altspec)) {
-			next if ($altspec eq '{SHLIB_DEPS}');
+		foreach $altspecs (@speclist){
+			next if ($altspecs eq '{SHLIB_DEPS}');
+			## Determine if it has a multi type depends line thus
+			## multi pkgs can satisfy the depend and it shouldn't
+			## warn if one isn't found, as long as one is.
+			@altspec = split(/\s*\|\s*/, $altspecs);
+			$loopcount = 0;
+			$found = 0;
+		    BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
+			$loopcount++;
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
 			    $depname = $1;
 			    $versionspec = $2;
@@ -752,9 +765,12 @@ sub resolve_depends {
 			    die "Illegal spec format: $depspec\n";
 			}
 			$package = Fink::Package->package_by_name($depname);
-			if (not defined $package || $forceoff) {
+			$found = 1 if defined $package;
+			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
 			    print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-			    next; # BUILDDEPENDSLOOP
+			}
+			if (not defined $package) {
+				next BUILDDEPENDSLOOP;
 			}
 			my ($currentpackage, @dependslist, $dependent, $dependentname);
 			$currentpackage = $self->get_name();
@@ -802,10 +818,14 @@ sub resolve_depends {
 		}
 	}
 
-	SPECLOOP: foreach $altspec (@speclist) {
-		next if ($altspec eq '{SHLIB_DEPS}');
+	SPECLOOP: foreach $altspecs (@speclist) {
+		next if ($altspecs eq '{SHLIB_DEPS}');
 		$altlist = [];
-		foreach $depspec (split(/\s*\|\s*/, $altspec)) {
+		@altspec = split(/\s*\|\s*/, $altspecs);
+		$found = 0;
+		$loopcount = 0;
+		foreach $depspec (@altspec) {
+			$loopcount++;
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
 				$depname = $1;
 				$versionspec = $2;
@@ -832,8 +852,11 @@ sub resolve_depends {
 
 			$package = Fink::Package->package_by_name($depname);
 
-			if (not defined $package || $forceoff) {
+			$found = 1 if defined $package;
+			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
 				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+			}
+			if (not defined $package) {
 				next;
 			}
 
@@ -846,7 +869,7 @@ sub resolve_depends {
 			}
 		}
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
-			die "Can't resolve $oper \"$altspec\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
+			die "Can't resolve $oper \"$altspecs\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
 		}
 		push @deplist, $altlist;
 		$idx++;
@@ -973,6 +996,7 @@ sub phase_fetch {
 	my ($i);
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+			lc $self->get_source(1) eq "none" ||
 			$self->{_type} eq "dummy") {
 		return;
 	}
@@ -1125,7 +1149,7 @@ END
 		}
 	}
 
-	if ($self->{_type} eq "nosource") {
+	if ($self->{_type} eq "nosource" || lc $self->get_source(1) eq "none") {
 		$destdir = "$buildpath/$bdir";
 		if (&execute("/bin/mkdir -p $destdir")) {
 			die "can't create directory $destdir\n";

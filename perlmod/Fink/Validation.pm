@@ -89,10 +89,12 @@ our %name_version_fields = map {$_, 1}
 		);
 
 # Allowed values for the type field
-our %allowed_type_values = map {$_, 1}
+# keys are major types, values are refs to lists of minor types
+our %allowed_type_values = 
 	(
-	 "nosource", "bundle", "perl", 
-	 "perl 5.6.0", "perl 5.6.1", "perl 5.8.0", "perl 5.8.1"
+	 "nosource" => [ "" ],
+	 "bundle"   => [ "" ],
+	 "perl"     => [ "", "5.6.0", "5.6.1", "5.8.0", "5.8.1" ]
 	 );
 
 
@@ -263,9 +265,10 @@ END { }				# module clean-up code here (global destructor)
 #		(excluded from this are fields like Description, Homepage etc.)
 #	+ warn if unknown fields are encountered
 #	+ warn if /sw is hardcoded in the script or set fields
+#	+ correspondence between source* and source*-md5 fields
+#	+ if type is bundle/nosource - warn about usage of "Source" etc.
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#	- if type is bundle/nosource - warn about usage of "Source" etc.
 #	- better validation of splitoffs
 #	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
 #	  it uses ">" instead of ">>".
@@ -360,11 +363,44 @@ sub validate_info_file {
 
 	# Check value of type field
 	$value = lc $properties->{type};
-	if ($value and not $allowed_type_values{$value}) {
-		print "Error: Unknown value \"$value\"in field \"Type\". ($filename)\n";
+	my ($type_major, $type_minor, $junk) = split ' ', $value;
+	if (defined $junk) {
+		print "Error: Malformed value \"$value\"in field \"Type\". ($filename)\n";
 		$looks_good = 0;
+	} elsif (defined $type_major) {
+		if (exists $allowed_type_values{$type_major}) {
+			$type_minor = "" unless defined $type_minor;
+			if (!grep {$type_minor eq $_} @{$allowed_type_values{$type_major}}) {
+				print "Error: Unknown minor value \"$type_minor\" for major value \"$type_major\" in field \"Type\". ($filename)\n";
+				$looks_good = 0;
+			}
+		} else {
+			print "Error: Unknown major value \"$type_major\" in field \"Type\". ($filename)\n";
+			$looks_good = 0;
+		}
 	}
 	
+	# error if have a source or MD5 for type nosource
+	if ($properties->{type} =~ /^(nosource|bundle)$/i) {
+		if ($properties->{source}) {
+			print "Error: Not using a source (type \"".$properties->{type}."\") but \"source\" specified. ($filename)\n";
+			$looks_good = 0;
+		}
+		if ($properties->{"source-md5"}) {
+			print "Error: Not using a source (type \"".$properties->{type}."\") but \"source-md5\" specified. ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
+	# error if using the default source but there is no MD5
+	# (not caught later b/c there is no "source")
+	if ($properties->{type} =~ /^(nosource|bundle)$/i) {
+	# nosource and bundle are supposed to not have source
+	} elsif (not $properties->{source} and not $properties->{"source-md5"}) {
+		print "Error: No MD5 checksum specified for implicitly defined \"source\". ($filename)\n";
+		$looks_good = 0;
+	}
+
 	# Loop over all fields and verify them
 	foreach $field (keys %$properties) {
 		$value = $properties->{$field};
@@ -394,11 +430,20 @@ sub validate_info_file {
 			 }
 		}
 
-		# Error if there is a source without a MD5
+		# Error if there is a source without an MD5
 		if (($field eq "source" or $field =~ m/^source([2-9]|\d\d)$/)
 				and not $properties->{$field."-md5"}) {
 			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
 			$looks_good = 0;
+		}
+
+		# Error if there is an MD5 without a source
+		if ($field =~ /^(source\d+)-md5$/) {
+			my $sourcefield = $1;
+			if (not $properties->{$sourcefield}) {
+				print "Error: \"$field\" specified but no \"$sourcefield\" specified. ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 
 		if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {

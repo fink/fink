@@ -156,6 +156,40 @@ sub initialize {
 		closedir(DIR);
 	}
 
+	# create dummy object for Java3D
+	if (-f '/System/Library/Java/Extensions/j3dcore.jar') {
+		$hash = {};
+		$hash->{package}     = "system-java3d";
+		$hash->{status}      = "install ok installed";
+		$hash->{version}     = "0-1";
+		$hash->{description} = "[virtual package representing Java3D]";
+		$self->{$hash->{package}} = $hash;
+		if (open(FILEIN, '/Library/Receipts/Java3D.pkg/Contents/Info.plist')) {
+			local $/ = undef;
+			if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
+				$hash->{version} = $1 . '-1';
+			}
+			close(FILEIN);
+		}
+	}
+
+	# create dummy object for JavaAdvancedImaging
+	if (-f '/System/Library/Java/Extensions/jai_core.jar') {
+		$hash = {};
+		$hash->{package}     = "system-javaai";
+		$hash->{status}      = "install ok installed";
+		$hash->{version}     = "0-1";
+		$hash->{description} = "[virtual package representing Java Advanced Imaging]";
+		$self->{$hash->{package}} = $hash;
+		if (open(FILEIN, '/Library/Receipts/JavaAdvancedImaging.pkg/Contents/Info.plist')) {
+			local $/ = undef;
+			if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
+				$hash->{version} = $1 . '-1';
+			}
+			close(FILEIN);
+		}
+	}
+
 	# create dummy object for cctools version, if version was found in Config.pm
 	if (defined ($cctools_version)) {
 		$hash = {};
