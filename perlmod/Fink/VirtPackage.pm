@@ -177,14 +177,17 @@ sub initialize {
 				push(@provides, 'libgl')              if (has_lib('/usr/X11R6/lib/libGL.dylib') and
 									-f '/usr/X11R6/include/GL/gl.h');
 				push(@provides, 'libgl-shlibs')       if has_lib('/usr/X11R6/lib/libGL.1.dylib');
-				push(@provides, 'xft1')               if (readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
+				push(@provides, 'xft1')               if (has_lib('/usr/X11R6/lib/libXft.dylib') and
+									readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
 									-f '/usr/X11R6/include/X11/Xft/Xft.h');
-				push(@provides, 'xft2')               if (readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
+				push(@provides, 'xft2')               if (has_lib('/usr/X11R6/lib/libXft.dylib') and
+									readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
 									-f '/usr/X11R6/include/X11/Xft/XftCompat.h');
 				push(@provides, 'xft1-shlibs')        if has_lib('/usr/X11R6/lib/libXft.1.dylib');
 				push(@provides, 'xft2-shlibs')        if has_lib('/usr/X11R6/lib/libXft.2.dylib');
 				push(@provides, 'rman')               if (-x '/usr/X11R6/bin/rman');
-				push(@provides, 'fontconfig1')        if (readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
+				push(@provides, 'fontconfig1')        if (has_lib('/usr/X11R6/lib/libfontconfig.dylib') and
+									readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
 									-f '/usr/X11R6/include/fontconfig/fontconfig.h');
 				push(@provides, 'fontconfig1-shlibs') if has_lib('/usr/X11R6/lib/libfontconfig.1.dylib');
 				$hash->{provides} = join(', ', @provides);
