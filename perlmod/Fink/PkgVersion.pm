@@ -1647,7 +1647,7 @@ EOF
 	# anywhere along the way (since the LD_* variables are normally set in the top-level
 	# but need to take effect in, say, -shlibs)
 
-	while (exists $pkgref->{_parent})) {
+	while (exists $pkgref->{_parent}) {
 		$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
 		$skip_prebinding++ if ($pkgref->has_param("NoSetLD_PREBIND"));
 		$pkgref = $pkgref->{_parent};
