@@ -146,11 +146,12 @@ sub read_properties_var {
 	 return read_properties_lines($file, $notLC, @lines);
 }
 
-=begin private
-
 =item read_properties_lines
 
     my $property_hash = read_properties_lines $filename, $notLC, @lines;
+
+This is function is not exported. You should use read_properties_var,
+read_properties, or read_properties_multival instead.
 
 Parses the list of text strings @lines and returns a ref to a hash of
 its fields. The string $filename is used in parsing-error messages but
@@ -186,8 +187,6 @@ Note that no check is made for the validity of the fields being in the
 file in which they were encountered. The filetype (fink.conf, *.info,
 etc.) is not necessarily known and this routine is used for many
 different filetypes.
-
-=end private
 
 =cut
 
@@ -659,6 +658,11 @@ returns a null string or Fink is configured to automatically accept
 defaults (i.e., bin/fink was invoked with the -y or --yes option), the
 answer-number $default is used.
 
+The use of %names seems backwards: one can have the same user text
+choice for multiple multiple return values but not vice versa. Also,
+cannot return anything except simple scalars. Should probably swap the
+key/value relationship. Also, seems like there is needless redundancy.
+
 This seems ripe for replacement by an ordered hash or an array of
 array-refs ([key1,val1],[key2,val2],...) or a simple pairwise list
 (key1,val1,key2,val2,...) and the actual default value instead of
@@ -770,15 +774,13 @@ sub version_cmp {
 	return $res;
 }
 
-=begin private
-
 =item raw_version_cmp
     my $cmp = raw_version_cmp $item1, $item2;
 
+This is function is not exported. You should use version_cmp instead.
+
 Compare $item1 and $item2 as debian epoch or version or revision
 strings and return -1, 0, 1 as for the perl <=> or cmp operators.
-
-=end private
 
 =cut
 
