@@ -16,6 +16,10 @@
 	thinking? Changed get_debdeps to use dpkg-deb -f <deb> <field>
 	thanks to dmacks, one less loop!
 
+2005-02-09  Chris Dolan <chrisdolan@users.sourceforge.net>
+
+	* Engine.pm: improvements for snapshot command
+
 2005-02-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: lol_remove_self(): skip clusters after removing them
@@ -79,6 +83,10 @@
 2005-02-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Alphabetize and remove duplicates in output of show-deps.
+
+2005-02-04  Chris Dolan <chrisdolan@users.sourceforge.net>
+
+	* Engine.pm: Add snapshot command
 
 2005-02-03  Justin F. Hallett  <thesin@users.sourceforge.net>
 

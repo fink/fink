@@ -2346,9 +2346,9 @@ sub cmd_snapshot {
 	my ($pname, $package, @installed, $snapdir, $outfile, @time,
 		$snappkg, $snapver, $snaprev, $snapdep);
 
-	eval "use POSIX qw(strftime);";
+	require POSIX;
 	$snappkg = "fink-snapshot";
-	$snapver = strftime("%Y.%m.%d.%H", localtime);
+	$snapver = POSIX::strftime("%Y.%m.%d.%H", localtime);
 	$snaprev = "1";
 	$snapdir = "/tmp";
 	foreach $pname (Fink::Package->list_packages()) {
@@ -2373,17 +2373,39 @@ Type: bundle
 License: Restrictive
 Description: Snapshot of Fink packages for $user[6]
 Maintainer: $user[6] <$user[0]\@localhost>
+DescUsage: <<
+ Instructions for how to use this snapshot to replicate your fink
+ environment on another computer:
+
+   * Install Fink on the target computer
+   * Chdir to the Fink install directory (e.g. %p)
+   * Copy this file to fink/dists/local/main/finkinfo
+   * Make sure local/main is in yor etc/fink.conf file
+   * You might need to run "fink index"
+   * Run "fink build fink-snapshot"
+   * Do NOT try to "fink install" this package
+
+ Note: This process may not be 100% repeatable.  If the destination
+   machine has a different version of Fink or a different set of
+   user-installed "virtual" packages (e.g. an X11 server from Apple or
+   from X.org), some packages might not build exactly the same.  But
+   in general, the results should be good.
+<<
 Homepage: http://fink.sourceforge.net/
-Depends: <<
+BuildDepends: <<
  $snapdep
+<<
+PreInstScript: <<
+ echo "This package is not intended to be installed!"
+ echo "Please read the DescUsage for this package"
+ echo "Aborting install now..."
+ exit 1
 <<
 EOF
 	close(SNAP) or die "can't create file $outfile\n";
     print <<"EOF";
 Wrote $outfile
-To use this file:
-   copy to /sw/fink/dists/local/main/finkinfo
-   run "fink build fink-snapshot"
+See the DescUsage for how to use this file
 EOF
 }
 
