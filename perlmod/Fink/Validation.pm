@@ -243,8 +243,8 @@ sub validate_info_file {
 	# Now check for other mistakes
 	#
 	
-	unless ("$pkgfullname.info" eq $filename) {
-		print "Warning: File name should be $pkgfullname.info ($filename)\n";
+	unless (("$pkgfullname.info" eq $filename) || ("$pkgname.info" eq $filename)) {
+		print "Warning: File name should be $pkgfullname.info or $pkgname.info ($filename)\n";
 		$looks_good = 0;
 	}
 	
