@@ -40,7 +40,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &get_packageversion &create_tarball &copy_description &inject_package);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &get_packageversion &find_rootmethod &create_tarball &copy_description &inject_package);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -291,6 +291,47 @@ return $packagefiles;
 
 }
 
+sub locate_Fink {
+
+	my $param = shift;
+
+	my ($guessed, $path, $bpath);
+	
+	$guessed = "";
+	
+	if (defined $param) {
+		$bpath = $param;
+	} else {
+		$bpath = undef;
+		if (exists $ENV{PATH}) {
+			foreach $path (split(/:/, $ENV{PATH})) {
+				if (substr($path,-1) eq "/") {
+					$path = substr($path,0,-1);
+				}
+				if (-f "$path/init.sh" and -f "$path/fink") {
+					$path =~ /^(.+)\/[^\/]+$/;
+					$bpath = $1;
+					last;
+				}
+			}
+		}
+		if (not defined $bpath or $bpath eq "") {
+			$bpath = "/sw";
+		}
+		$guessed = " (guessed)";
+	}
+	unless (-f "$bpath/bin/fink" and
+	        -f "$bpath/bin/init.sh" and
+	        -f "$bpath/etc/fink.conf" and
+	        -d "$bpath/fink/dists") {
+		&print_breaking("The directory '$bpath'$guessed does not contain a ".
+						"Fink installation. Please provide the correct path ".
+						"as a parameter to this script.");
+		return (1,"");
+	}
+	return (0,$bpath);
+}
+
 sub get_packageversion {
 
 	my ($packageversion, $packagerevision);
@@ -305,6 +346,18 @@ sub get_packageversion {
 		$packagerevision = "1";
 	}
 	return ($packageversion, $packagerevision);
+}
+
+sub find_rootmethod {
+	# TODO: use setting from config
+	# for now, we just use sudo...
+
+my $bpath = shift;
+	
+	if ($> != 0) {
+		exit &execute("sudo ./inject.pl $bpath");
+	}
+	umask oct("022");
 }
 
 sub create_tarball {
@@ -387,39 +440,10 @@ sub inject_package {
 	### locate Fink installation
 	
 	my $param = shift;
-	
-	my ($guessed, $path, $bpath);
-	
-	$guessed = "";
-	
-	if (defined $param) {
-		$bpath = $param;
-	} else {
-		$bpath = undef;
-		if (exists $ENV{PATH}) {
-			foreach $path (split(/:/, $ENV{PATH})) {
-				if (substr($path,-1) eq "/") {
-					$path = substr($path,0,-1);
-				}
-				if (-f "$path/init.sh" and -f "$path/fink") {
-					$path =~ /^(.+)\/[^\/]+$/;
-					$bpath = $1;
-					last;
-				}
-			}
-		}
-		if (not defined $bpath or $bpath eq "") {
-			$bpath = "/sw";
-		}
-		$guessed = " (guessed)";
-	}
-	unless (-f "$bpath/bin/fink" and
-	        -f "$bpath/bin/init.sh" and
-	        -f "$bpath/etc/fink.conf" and
-	        -d "$bpath/fink/dists") {
-		&print_breaking("The directory '$bpath'$guessed does not contain a ".
-						"Fink installation. Please provide the correct path ".
-						"as a parameter to this script.");
+
+my ($notlocated, $bpath) = &locate_Fink($param); 	
+
+	if ($notlocated) {
 		return 1;
 	}
 	
@@ -433,14 +457,8 @@ sub inject_package {
 							  { Basepath => $bpath });
 	
 	### parse config file for root method
-	
-	# TODO: use setting from config
-	# for now, we just use sudo...
-	
-	if ($> != 0) {
-		exit &execute("sudo ./inject.pl $bpath");
-	}
-	umask oct("022");
+
+	&find_rootmethod($bpath);
 	
 	### check that local/bootstrap is in the Trees list
 	
@@ -491,6 +509,7 @@ sub inject_package {
 	
 	return 0;
 }
+
 
 ### EOF
 1;
