@@ -8,6 +8,14 @@
 	* VirtPackage.pm: add DescDetail to the install script failure for
 	virtual packages.
 
+2005-02-25  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Make InstallScript output stand out better
+
+2005-02-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: More-compatible syntax for open().
+
 2005-02-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: When a compile fails, point the user at the FAQ
