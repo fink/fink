@@ -1,5 +1,13 @@
 2003-12-23  Daniel Macks <dmacks@netspace.org>
 
+
+        * PkgVersion.pm: Support %lV and %lv as raw and punctionation-free
+	values of Type version string (if provided).
+	* Package.pm: Support %lv in Package.
+	* Validation.pm: Allow %lv in Package (for info filename check).
+	
+2003-12-23  Daniel Macks <dmacks@netspace.org>
+
         * Validation.pm: Added support for Type java (version mandatory).
 
 2003-12-22  Daniel Macks <dmacks@netspace.org>

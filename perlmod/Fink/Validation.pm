@@ -318,6 +318,15 @@ sub validate_info_file {
 	$buildpath = $config->param_default("buildpath", "$basepath/src");
 
 	$pkgname = $properties->{package};
+	# allow %lv (typeversion_pkg) in Package
+	if ($properties->{type}) {
+		my $type = $properties->{type};
+		if ($type =~ s/^(\S+)\s+(\S+)/$2/) {
+			$type =~ s/\.//g;
+			$properties->{package} = $pkgname = &expand_percent($pkgname,{'lv',$type});
+		}
+	}
+
 	$pkgversion = $properties->{version};
 	$pkgrevision = $properties->{revision};
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
