@@ -161,7 +161,7 @@ sub check_files {
     # this will skip putting something into @newdeps if it's
     # already there (it has to match the <package>,<operator>
     # tuple exactly, not just the package name, to be
-    # considered a duplicate
+    # considered a duplicate)
     if (not grep($_ eq $name, @newdeps)) {
       push(@newdeps, $name);
     }
