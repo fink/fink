@@ -66,25 +66,9 @@ sub initialize {
 	my $self = shift;
 	my ($hash);
 	my ($dummy);
-	my ($darwin_version, $macosx_version, $cctools_version, $cctools_single_module);
+	my ($darwin_version, $cctools_version, $cctools_single_module);
 	# determine the kernel version
 	($dummy,$dummy,$darwin_version) = uname();
-
-	# Now the Mac OS X version
-	$macosx_version = 0;
-	if (-x "/usr/bin/sw_vers") {
-		if (open(SW_VERS, "/usr/bin/sw_vers |")) {
-			while (<SW_VERS>) {
-				if (/(ProductVersion\:)\s*([^\s]*)/) {
-					$macosx_version = $2;
-					last;
-				}
-			}
-			close(SW_VERS);
-		} else {
-			die "Couldn't determine system version: $!\n";
-		}
-	}
 
 	# now find the cctools version
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
@@ -116,11 +100,11 @@ sub initialize {
 	$self->{$hash->{package}} = $hash;
 	
 	# create dummy object for system version, if this is OS X at all
-	if ($macosx_version ne 0) {
+	if (Fink::Services::get_sw_vers() ne 0) {
 		$hash = {};
 		$hash->{package} = "macosx";
 		$hash->{status} = "install ok installed";
-		$hash->{version} = $macosx_version."-1";
+		$hash->{version} = Fink::Services::get_sw_vers()."-1";
 		$hash->{description} = "[virtual package representing the system]";
 		$self->{$hash->{package}} = $hash;
 	}

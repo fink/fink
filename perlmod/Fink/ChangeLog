@@ -1,3 +1,18 @@
+2003-09-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: don't do update-prebinding on files that are
+	actually linking to things in /usr/lib!
+
+2003-09-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm, Services.pm, VirtPackage.pm: Refactored the
+	sw_vers code so it can be used for setting
+	MACOSX_DEPLOYMENT_TARGET as well as making the virtual macosx
+	package.  Also, set MACOSX_DEPLOYMENT_TARGET in packages that
+	don't specify SetMACOSX_DEPLOYMENT_TARGET to the target arch
+	unless it's 10.2 (special-cased to set to 10.1 for compatibility
+	purposes).
+
 2003-09-23  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* PkgVersion.pm: die if no md5 specified. You were warned!
@@ -5,6 +20,11 @@
 2003-09-22  Ben Hines <benh57@users.sourceforge.net>
 
 	* Bootstrap.pm: Support 10.2.8.
+
+2003-09-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Fix regex parsing when unusual characters are
+	in the filename.
 
 2003-09-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
 

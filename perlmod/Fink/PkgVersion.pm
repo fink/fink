@@ -1591,6 +1591,7 @@ EOF
 	find({ wanted => sub {
 		return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
 		return if (/\.class$/); # java looks like mach-o!
+		return if (readlink $_ =~ /\/usr\/lib/); # don't re-prebind stuff in /usr/lib
 		#print "\$_ = $_\n";
 		$is_prebound = 0;
 		$is_exe      = 0;
@@ -1601,7 +1602,8 @@ EOF
 				if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
 					# executable has no install_name, add to the list
 					$name = $File::Find::name;
-					$name =~ s/^$destdir//;
+					my $destmeta = quotemeta($destdir);
+					$name =~ s/^$destmeta//;
 					$is_exe = 1;
 					$is_prebound = 1;
 				} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
@@ -1932,7 +1934,8 @@ sub set_env {
 	my $self = shift;
 	my ($varname, $s, $expand);
 	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
-					 "LDFLAGS" => "-L\%p/lib" );
+			 "LDFLAGS" => "-L\%p/lib",
+	);
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	# clean the environment
@@ -1978,6 +1981,15 @@ sub set_env {
 			} else {
 				delete $ENV{$varname};
 			}
+		}
+	}
+	my $sw_vers = Fink::Services::get_sw_vers();
+	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined $sw_vers and $sw_vers ne "0") {
+		$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
+		if ($sw_vers eq "10.2") {
+			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
+		} else {
+			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
 }
