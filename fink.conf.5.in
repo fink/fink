@@ -225,7 +225,7 @@ to the Master (or non Master) set if a download fails. The options are:
 .It MasterFirst - Search "Master" source mirrors first.
 .It MasterLast - Search "Master" source mirrors last.
 .It MasterNever - Never use "Master" source mirrors.
-.It ClosestFirst - Search closest source mirrors first. (combine all mirrors into one set)
+.It ClosestFirst - Search closest source mirrors first (combine all mirrors into one set).
 .El	
 .El
 .\"
