@@ -314,22 +314,22 @@ sub validate_info_file {
 	# Check if description starts with "A" or "An", or with lowercase
 	# or if it contains the package name
 	if ($value) {
-				if ($value =~ m/^[Aa]n? /) {
+		if ($value =~ m/^[Aa]n? /) {
 			print "Warning: Description starts with \"A\" or \"An\". ($filename)\n";
 			$looks_good = 0;
-				}
-				elsif ($value =~ m/^[a-z]/) {
+		}
+		elsif ($value =~ m/^[a-z]/) {
 			print "Warning: Description starts with lower case. ($filename)\n";
 			$looks_good = 0;
-				}
+		}
 		if ($value =~ /\b\Q$pkgname\E\b/) {
 			print "Warning: Description contains package name. ($filename)\n";
 			$looks_good = 0;
 		}
-				if ($value =~ m/\.$/) {
+		if ($value =~ m/\.$/) {
 			print "Warning: Description ends with \".\". ($filename)\n";
 			$looks_good = 0;
-				}
+		}
 	}
 	
 	$expand = { 'n' => $pkgname,
