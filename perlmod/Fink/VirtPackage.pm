@@ -339,6 +339,23 @@ sub check_x11_version {
 		}
 		close(XTERM);
 		if (not defined $XF_VERSION) {
+			for ('X', 'XDarwin', 'Xquartz') {
+				if (-x '/usr/X11R6/bin/' . $_) {
+					if (open (X, "/usr/X11R6/bin/$_ -version 2>/dev/null |")) {
+						while (<X>) {
+							if (/XFree86 Version ([\d\.]+)/) {
+								$XF_VERSION = $1;
+								@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+								last;
+							}
+						}
+						close(X);
+					}
+					last;
+				}
+			}
+		}
+		if (not defined $XF_VERSION) {
 			warn "could not determine XFree86 version number\n";
 			return;
 		}

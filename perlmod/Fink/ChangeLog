@@ -1,3 +1,8 @@
+2003-11-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage: fall back to XFree86 -version if we can't figure
+	  it out from man pages.
+
 2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: finish reverting the "perl 5.8.1" changes from 
