@@ -1,6 +1,0 @@
-Package: gettext-dev
-Version: 0.10.40
-Revision: 4
-Type: bundle
-Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>
-Description: Placeholder for transition to splitoffs for essential pkgs
