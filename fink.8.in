@@ -216,27 +216,65 @@ description.
 .Pp
 Aliases:
 .Cm desc, description, info
+.Pp
 .It Cm fetch Ar package...
 Downloads the named packages, but does not install it. This command will
 download the tarballs even if they were downloaded before.
+.Pp
+These flags can be used with the 
+.Cm fink fetch
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -i,--ignore-restrictive
+Do not fetch packages that are "License: Restrictive". Useful for mirrors, because
+some restrictive packages do not allow source mirroring.
+.It Cm -d,--dry-run
+Just display information about the file(s) that would be downloaded
+for the package(s) to be fetched; do not actually download anything.
+.It Cm -r,--recursive
+Also fetch packages that are dependencies of the package(s) to be fetched.
+.El
+.Pp
 .It Cm fetch-all
 Downloads
 .Em all
 package source files. Like fetch, this downloads the
 tarballs even when they were downloaded before.
+.Pp
+These flags can be used with the 
+.Cm fink fetch-all
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -i,--ignore-restrictive
+Do not fetch packages that are "License: Restrictive". Useful for mirrors, because
+some restrictive packages do not allow source mirroring.
+.It Cm -d,--dry-run
+Just display information about the file(s) that would be downloaded
+for the package(s) to be fetched; do not actually download anything.
+.El
+.Pp
 .It Cm fetch-missing
 Downloads
 .Em all
 package source files. This command will only download files
 that are not present on the system.
 .Pp
-fink
-.Cm fetch-missing
-has one flag:
+These flags can be used with the 
+.Cm fink fetch-missing
+command
 .Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
 .It Cm -i,--ignore-restrictive
 Do not fetch packages that are "License: Restrictive". Useful for mirrors, because
 some restrictive packages do not allow source mirroring.
+.It Cm -d,--dry-run
+Just display information about the file(s) that would be downloaded
+for the package(s) to be fetched; do not actually download anything.
 .El
 .Pp
 .It Cm build Ar package...
