@@ -113,15 +113,33 @@ sub read_properties_lines {
 	foreach (@lines) {
 		chomp;
 		if ($heredoc > 0) {
+			# We are inside a HereDoc
 			if (/^\s*<<\s*$/) {
+				# The heredoc ends here; decrese the nesting level
 				$heredoc--;
-				$hash->{$lastkey} .= $_."\n" if ($heredoc > 0);
+				if ($heredoc > 0) {
+					# This was the end of an inner/nested heredoc. Just append
+					# it to the data of its parent heredoc.
+					$hash->{$lastkey} .= $_."\n";
+				} else {
+					# The heredoc really ended; remove trailing empty lines.
+					$hash->{$lastkey} =~ s/\s+$//;
+					$hash->{$lastkey} .= "\n";
+				}
 			} else {
+				# Append line to the heredoc.
 				$hash->{$lastkey} .= $_."\n";
+
+				# Did a nested heredoc start here? This commonly occurs when
+				# using splitoffs in a package. We need to detect it, else the
+				# parser would have no way to distinguish the end of the inner
+				# heredoc(s) and the end of the top heredoc, since both are
+				# marked by '<<'.
 				$heredoc++ if (/<<\s*$/);
 			}
 		} else {
 			next if /^\s*\#/;		# skip comments
+			next if /^\s*$/;		# skip empty lines
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
 				if (exists $hash->{$lastkey}) {
@@ -134,13 +152,17 @@ sub read_properties_lines {
 					$hash->{$lastkey} = $2;
 				}
 			} elsif (/^\s+(\S.*?)\s*$/) {
+				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
+				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in \"$file\".\n";
+			} else {
+				print "WARNING: Unknown sequence \"".$_."\" in \"$file\".\n";
 			}
 		}
 	}
 
 	if ($heredoc > 0) {
-			print "WARNING: End of file reached during here-document in \"$file\".\n";
+		print "WARNING: End of file reached during here-document in \"$file\".\n";
 	}
 
 	return $hash;

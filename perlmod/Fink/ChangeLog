@@ -1,8 +1,7 @@
 2003-11-08  Max Horn  <max@quendi.de>
 
 	* Services.pm: Remove trailing empty lines in heredocs (Bug #670712). Also
-	  implemented stricter .info parsing which discovers more illegally 
-	  formatted .info files.
+	  made .info parsing stricter, which discovers more illegal .info files.
 
 2003-11-07  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
