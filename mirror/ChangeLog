@@ -1,3 +1,7 @@
+2003-11-05 David H. <dmalloc@users.sourceforge.net>
+	* Changed eu-hr to eur-hr to follow the
+		common scheme we use.
+
 2003-10-31 David H. <dmalloc@users.sourceforge.net>
 
 	* This is a cumulative update
