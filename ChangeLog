@@ -2,6 +2,7 @@
 
 	* bootstrap.pl, fink.info.in: allow the creation of several .info
 	files from a single .info.in, depending on %{Distribution}
+	* REVISION: new file to specify revision numbers for variant info files
 
 2005-02-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
