@@ -1,11 +1,14 @@
 2002-02-23  Max Horn  <max@quendi.de>
 
+	* NetAccess.pm (download_cmd): Added 'DownloadMethod' field to fink.conf
+	(thanks to Christian Swinehart).
+
 	* NetAccess.pm (download_cmd): If we use curl, make sure it treats 
 	error 404 properly, i.e. fail instead of downloading the error page
-	(thanks to Joseph).
+	(thanks to Joseph Bauer).
 
 	* Engine.pm (, cmd_fetch_allcmd_fetch_all_missing): keep going even if a
-	single file could not be downloaded. (thanks to Randal).
+	single file could not be downloaded. (thanks to Randal L. Schwartz). 
 
 2002-02-01  Max Horn  <max@quendi.de>
 
