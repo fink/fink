@@ -857,6 +857,7 @@ sub phase_build {
   my ($ddir, $destdir, $control);
   my ($scriptname, $scriptfile, $scriptbody);
   my ($conffiles, $listfile);
+  my ($daemonicname, $daemonicfile);
   my ($cmd);
 
   chdir "$basepath/src";
@@ -938,6 +939,24 @@ EOF
     print SCRIPT $conffiles;
     close(SCRIPT) or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
     chmod 0644, $listfile;
+  }
+
+  ### daemonic service file
+
+  if ($self->has_param("DaemonicFile")) {
+    $daemonicname = $self->param_default("DaemonicName", $self->get_name());
+    $daemonicname .= ".xml";
+    $daemonicfile = "$destdir$basepath/etc/daemons/".$daemonicname;
+
+    print "Writing daemonic info file $daemonicname...\n";
+
+    if (&execute("mkdir -p $destdir$basepath/etc/daemons")) {
+      die "can't write daemonic info file for ".$self->get_fullname()."\n";
+    }
+    open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
+    print SCRIPT &expand_percent($self->param("DaemonicFile"), $self->{_expand});
+    close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
+    chmod 0644, $daemonicfile;
   }
 
   ### create .deb using dpkg-deb

@@ -1,3 +1,8 @@
+2001-06-28  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_build): Added support for inline daemonic
+	service description file.
+
 2001-06-22  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Bootstrap.pm: Use the new dpkg-bootstrap package during
