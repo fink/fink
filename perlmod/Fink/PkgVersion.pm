@@ -1021,7 +1021,7 @@ sub is_fetched {
 	my $self = shift;
 	my ($suffix);
 
-	if ($self->is__type('bundle') || $self->is_type('nosource') ||
+	if ($self->is_type('bundle') || $self->is_type('nosource') ||
 			lc $self->get_source() eq "none" ||
 			$self->is_type('dummy')) {
 		return 1;
