@@ -1,3 +1,16 @@
+2002-09-25 Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* Engine.pm: fixed so that the rest of a splitoff doesn't get
+	  reinstalled if just one package from the splitoff is being installed
+
+	* PkgVersion.pm: fixes the get_fullname bug when a dependency
+	  doesn't exist
+
+	* PkgVersion.pm: moved the code that checks for existing versions
+	  in the package tree when resolving dependencies -- in some cases
+	  it could die because a package that wasn't supposed to exist was
+	  getting marked as being there
+
 2002-09-25  Ben Hines <bhines@alumni.ucsd.edu>
 
 	* PkgVersion.pm: Patch #614133: fix gnome mirror
@@ -241,15 +254,15 @@
 2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* Package.pm: Added support for caching of info files.
-        
+	
 	* Engine.pm: Added an index command to update the cache.
-        
+	
 	* SelfUpdate.pm (do_finish): added hook to update package cache.
-        
+	
 2002-03-26  Justin F. Hallett <thesin@southofheaven.net>
 
-        * PkgVersion.pm: Fixed Type: perl to install the execs into
-        the proper dir and not directly into BASEPATH.
+	* PkgVersion.pm: Fixed Type: perl to install the execs into
+	the proper dir and not directly into BASEPATH.
 
 2002-03-21  Max Horn  <max@quendi.de>
 
