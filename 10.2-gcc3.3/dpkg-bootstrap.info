@@ -2,7 +2,7 @@ Package: dpkg-bootstrap
 Version: 1.10.9
 Revision: 14
 Depends: gettext, gzip, tar
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
 Source-MD5: ecd7d51416837f8910314ccb62e39dc2
 PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/dpkg.patch | patch -p1
