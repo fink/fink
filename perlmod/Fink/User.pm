@@ -120,35 +120,13 @@ sub add_user {
 	my pass = "*";
 	my $script = "";
 
-	### FIXME need to figure a way ehre to get and set uids and gids, and
+	### FIXME need to figure a way here to get and set uids and gids, and
 	### ask if the fink.conf specifies this.  maybe use a grep on fink.conf
 
 	if ($type eq "user") {
 		$script = <<"EOF";
 getgid() {
   gid=`$nidump group . | $grep -e \"^$name:\" | $cut -d\":\" -f3`
-  if [ ! \$gid ]; then
-    continue="no"
-    number_used="dontknow"
-    fnumber=$lowGID
-    until [ $continue = "yes" ]; do
-      if [ `$nidump group . | $cut -d":" -f3 | $grep -c "^$fnumber$"` -gt 0 ]; then
-        number_used=true
-      else
-        if [ $fnumber -gt $highGID ]; then
-          break
-        fi
-        number_used=false
-      fi
-
-      if [ $number_used = "true" ]; then
-        fnumber=`$expr $fnumber + 1`
-      else
-        gid="$fnumber"
-        continue="yes"
-      fi
-    done;
-  fi
 }
 
 getuid() {
@@ -184,15 +162,11 @@ if [ $uid -gt $highUID ]; then
   exit 1
 fi
 
-if [ $gid -gt $highGID ]; then
+if [ ! $gid ]; then
   exit 1
 fi
 
 if [ $uid -lt $lowUID ]; then
-  exit 1
-fi
-
-if [ $gid -lt $lowGID ]; then
   exit 1
 fi
 
