@@ -1,5 +1,9 @@
 2005-01-09  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in: Document 'fink list' "p" status flag.
+
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
 	* Makefile: use absolute path to local perlmod (in case a test
 	changes current dir)
 

@@ -142,6 +142,8 @@ not installed
 latest version is installed
 .It (i)
 installed, but a newer version is available
+.It \ p
+a virtual package provided by a package that is installed
 .El
 .Pp
 There are also some flags for the 
