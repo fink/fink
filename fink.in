@@ -123,11 +123,13 @@ Common commands:
   show-deps    - list run-time and compile-time package dependencies
 
 Options:
-  -h, --help     - display this help text
-  -q, --quiet    - causes fink to be less verbose, opposite of --verbose
-  -V, --version  - display version information
-  -v, --verbose  - causes fink to be more verbose, opposite of --quiet
-  -y, --yes      - assume default answer for all interactive questions
+  -h, --help            - display this help text
+  -q, --quiet           - causes fink to be less verbose, opposite of --verbose
+  -V, --version         - display version information
+  -v, --verbose         - causes fink to be more verbose, opposite of --quiet
+  -y, --yes             - assume default answer for all interactive questions
+  -b, --use-binary-dist - download pre-compiled packages from the binary 
+                          distribution if available
 
 See the fink(8) manual page for more commands and options.
 Visit http://fink.sourceforge.net/ for further information.
