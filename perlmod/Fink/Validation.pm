@@ -283,7 +283,8 @@ END { }				# module clean-up code here (global destructor)
 #	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
 #	  it uses ">" instead of ">>".
 #	- correct format of Shlibs: (including misuse of %v-%r)
-#	- use of %n in SplitOff:Package: (should be %N) (this is in Bugs tracker)
+#	- use of %n in SplitOff:Package: (should be %N)
+#	- use of SplitOff:Depends: %n (should be %N (tracker Bugs #622810)
 #	- actually instantiate the Package or PkgVersion object
 #	  (easier to try it than to check for some broken-ness here)
 #	- run a mock build phase (catch typos in dependencies,
