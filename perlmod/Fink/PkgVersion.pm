@@ -1500,6 +1500,56 @@ sub match_package {
 	return $package->get_version($version);
 }
 
+# Given a ref to a lol struct representing a depends line, remove all
+# OR clusters satisfied by this PkgVersion (Package and Provides fields)
+
+sub lol_remove_self {
+	my $self = shift;
+	my $lol = shift;
+
+	my $self_pkg = $self->get_name();
+	my $self_ver = $self->get_fullversion();
+
+	# keys are all packages we supply (Package + Provides)
+	my %provides = ($self_pkg => 1);   # pkg supplies itself
+	map { $provides{$_}++ } split /\s*,\S*/, $self->pkglist_default("Provides", "");
+
+#	print "lol_remove_self was (", &lol2pkglist($lol), ") for $self_pkg-$self_ver\n";
+
+	my ($cluster, $atom);
+	foreach $cluster (@$lol) {
+		next unless defined $cluster;  # skip deleted clusters
+#		print "cluster: ", join(' | ', @$cluster), "\n";
+		foreach $atom (@$cluster) {
+#			print "\tatom: '$atom'\n";
+			if ($atom =~ /^$self_pkg\s*\(\s*([<>=]+)\s*(\S*)\s*\)$/) {
+				# pkg matches, has version dependency (op=$1, ver=$2)
+#				print "\t\tmatched pkg, need ver $1$2\n";
+				# check versioning
+				if (&version_cmp($self_ver, $1, $2)) {
+#					print "\t\tmatch\n";
+					undef $cluster;  # atom matches so clear cluster
+					next;
+				}
+#				print "\t\tno match\n";
+			} else {
+#				print "\t\tnot self-with-version\n";
+				next if $atom =~ /\(/;  # versioned-dep cannot match a Provides
+#				print "\t\tno version at all\n";
+#				print "\t\tchecking against providers: ", join(",", keys %provides), "\n";
+				if (exists $provides{$atom}) {
+#					print "\t\t\tmatch\n";
+					undef $cluster;  # atom matches so clear cluster
+					next;
+				}
+#				print "\t\t\tno match\n";
+			}
+		}
+	}
+
+#	print "lol_remove_self now (", &lol2pkglist($lol), ")\n";
+}
+
 ###
 ### PHASES
 ###
