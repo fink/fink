@@ -1529,7 +1529,7 @@ sub lol_remove_self {
 				if (&version_cmp($self_ver, $1, $2)) {
 #					print "\t\tmatch\n";
 					undef $cluster;  # atom matches so clear cluster
-					next;
+					last;            # cluster gone, skip to next one
 				}
 #				print "\t\tno match\n";
 			} else {
@@ -1540,7 +1540,7 @@ sub lol_remove_self {
 				if (exists $provides{$atom}) {
 #					print "\t\t\tmatch\n";
 					undef $cluster;  # atom matches so clear cluster
-					next;
+					last;            # cluster gone, skip to next one
 				}
 #				print "\t\t\tno match\n";
 			}
