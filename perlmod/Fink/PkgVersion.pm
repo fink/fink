@@ -518,11 +518,15 @@ sub resolve_conflicts {
 
 sub get_binary_depends {
   my $self = shift;
+  my ($depspec);
 
   # TODO: modify dependency list on the fly to account for minor
   #  library versions
 
-  return $self->param_default("Depends", "");
+  $depspec = $self->param_default("Depends", "");
+  $depspec =~ s/\s+/ /gs;
+
+  return $depspec;
 }
 
 
