@@ -1641,57 +1641,62 @@ EOF
 	foreach $scriptname (qw(preinst postinst prerm postrm)) {
         $scriptbody = "";
         
-        ### Check for Group/User, if exists then process
-	if ($self->has_param("Group") || $self->has_param("User")) {
-		### Add user/group check to preinst if needed
-		if ($self->{_type} = "bundle") {
-			my ($name, $type) = (0, 0);
-			my ($desc, $shell, $home, $group, $tmp, $script);
+        	### Check for Group/User, if exists then process
+		if ($self->has_param("Group") || $self->has_param("User")) {
+			### Add user/group check to preinst if needed
+			if ($self->{_type} eq "bundle") {
+				my ($name, $type) = (0, 0);
+				my ($desc, $shell, $home, $group);
+				my ($tmp, $script);
     
-			if ($self->has_param("Group")) {
-				$tmp = $self->param("Group");
-				$tmp = &expand_percent($tmp, $self->{_expand});
-				($name, $desc) = split(/:/, $tmp);
-				$type = "group";
-			} elsif ($self->has_param("User")) {
-				$tmp = $self->param("User");
-				$tmp = &expand_percent($tmp, $self->{_expand});
-				($name, $group, $desc, $shell, $home) =
+				if ($self->has_param("Group")) {
+					$tmp = $self->param("Group");
+					$tmp = &expand_percent($tmp,
+						$self->{_expand});
+					($name, $desc) = split(/:/, $tmp);
+					$type = "group";
+				} elsif ($self->has_param("User")) {
+					$tmp = $self->param("User");
+					$tmp = &expand_percent($tmp,
+						$self->{_expand});
+					($name, $group, $desc, $shell, $home) =
 							split(/:/, $tmp);
-				$type = "user";
-			}
+					$type = "user";
+				}
             
-			if ($scriptname eq "preinst") {
-				$script = "";
-				$script = Fink::User->add_user($name, $type,
-						$desc, $shell, $home, $group);
+				if ($scriptname eq "preinst") {
+					$script = "";
+					$script = Fink::User->add_user($name
+					$type, $desc, $shell, $home, $group);
 
-				if ($script) {
-					### Add $script to top of preinstscript
-					$script .= "\n";
-					$scriptbody = $script;
+					if ($script) {
+						### Add to top of preinstscript
+						$script .= "\n";
+						$scriptbody = $script;
+					}
+				}
+				if($scriptname eq "postrm") {
+					$script = "";
+					$script =
+					Fink::User->remove_user($name, $type);
+
+					if ($script) {
+						### Add to top of postrmscript
+						$script .= "\n";
+						$scriptbody = $script;
+					}
 				}
 			}
-			if($scriptname eq "postrm") {
-				$script = "";
-				$script = Fink::User->remove_user($name, $type);
-
-				if ($script) {
-					### Add $script to top of postrmscript
-					$script .= "\n";
-					$scriptbody = $script;
-				}
-			}
-		}
         
-		### Add chown script to postinst script if needed
-		if ($scriptname eq "postinst") {
-			my $script = Fink::User->get_perms($ddir);
+			### Add chown script to postinst script if needed
+			if ($scriptname eq "postinst") {
+				my $script = Fink::User->get_perms($ddir);
 
-			if ($script) {
-				### Add $script to top of postinstscript
-				$script .= "\n";
-				$scriptbody = $script;
+				if ($script) {
+					### Add to top of postinstscript
+					$script .= "\n";
+					$scriptbody = $script;
+				}
 			}
 		}
 

@@ -117,7 +117,7 @@ sub add_user {
 	my $mkdir = "/bin/mkdir -p";
 	my $expr = "/bin/expr";
 
-	my pass = "*";
+	my $pass = "*";
 	my $script = "";
 
 	### FIXME need to figure a way here to get and set uids and gids, and
@@ -135,20 +135,20 @@ getuid() {
     continue="no"
     number_used="dontknow"
     fnumber=$lowUID
-    until [ $continue = "yes" ]; do
-      if [ `$nidump passwd . | $cut -d":" -f3 | $grep -c "^$fnumber$"` -gt 0 ]; then
+    until [ \$continue = "yes" ]; do
+      if [ `$nidump passwd . | $cut -d":" -f3 | $grep -c "^\$fnumber$"` -gt 0 ]; then
         number_used=true
       else
-        if [ $fnumber -gt $highUID ]; then
+        if [ \$fnumber -gt $highUID ]; then
           break
         fi
         number_used=false
       fi
 
-      if [ $number_used = "true" ]; then
-        fnumber=`$expr $fnumber + 1`
+      if [ \$number_used = "true" ]; then
+        fnumber=`$expr \$fnumber + 1`
       else
-        uid="$fnumber"
+        uid="\$fnumber"
         continue="yes"
       fi
     done;
@@ -158,15 +158,15 @@ getuid() {
 uid=getuid()
 gid=getgid()
 
-if [ $uid -gt $highUID ]; then
+if [ \$uid -gt $highUID ]; then
   exit 1
 fi
 
-if [ ! $gid ]; then
+if [ ! \$gid ]; then
   exit 1
 fi
 
-if [ $uid -lt $lowUID ]; then
+if [ \$uid -lt $lowUID ]; then
   exit 1
 fi
 
@@ -192,20 +192,20 @@ getgid() {
     continue="no"
     number_used="dontknow"
     fnumber=$lowGID
-    until [ $continue = "yes" ]; do
-      if [ `$nidump group . |$cut -d":" -f3 |$grep -c "^$fnumber$"` -gt 0 ]; then
+    until [ \$continue = "yes" ]; do
+      if [ `$nidump group . | $cut -d":" -f3 | $grep -c "^\$fnumber$"` -gt 0 ]; then
         number_used=true
       else
-        if [ $fnumber -gt $highGID ]; then
+        if [ \$fnumber -gt $highGID ]; then
           break
         fi
         number_used=false
       fi
 
-      if [ $number_used = "true" ]; then
-        fnumber=`$expr $fnumber + 1`
+      if [ \$number_used = "true" ]; then
+        fnumber=`$expr \$fnumber + 1`
       else
-        gid="$fnumber"
+        gid="\$fnumber"
         continue="yes"
       fi
     done;
@@ -214,18 +214,18 @@ getgid() {
 
 gid=getgid()
 
-if [ $gid -gt $highGID ]; then
+if [ \$gid -gt $highGID ]; then
   exit 1
 fi
 
-if [ $gid -lt $lowGID ]; then
+if [ \$gid -lt $lowGID ]; then
   exit 1
 fi
 
-$niutil -create . /groups/$user
+$niutil -create . /groups/$name
 $niutil -createprop . /groups/$name name "$name"
-$niutil -createprop . /groups/$user gid \$gid
-$niutil -createprop . /groups/$user passwd "$pass"
+$niutil -createprop . /groups/$name gid \$gid
+$niutil -createprop . /groups/$name passwd "$pass"
 
 EOF
 	}
@@ -240,6 +240,7 @@ sub remove_user {
 	my $type = shift;
 
 	my $nidump = "/usr/bin/nidump";
+	my $niutil = "/usr/bin/niutil";
 	my $grep = "/usr/bin/grep";
 	my $cut = "/usr/bin/cut";
 	my $rm = "/bin/rm -rf";
@@ -270,6 +271,7 @@ sub get_chown {
 	my $users = shift;
 	my $groups = shift;
 
+	my ($file);
 	my $script = "";
 	my $i = 0;
 	
@@ -279,7 +281,7 @@ sub get_chown {
 	my @groups = split(/:/, $groups);
 
 	foreach $file (@files) {
-		$script .= "/usr/sbin/chown \"@users[$i].@groups[$i]\" \"$file\"\n";
+		$script .= "/usr/sbin/chown \"$users[$i].$groups[$i]\" \"$file\"\n";
 		$i++;
 	}
     
@@ -292,11 +294,12 @@ sub set_perms {
 	my $rootdir = shift;
 	my $files = shift;
 	
+	my ($file);
 	my @files = split(/:/, $files);
 	
-	foreach $file (@files);
-		if (&execute("/usr/sbin/chown \"0.0\" \"$file"\")) {
-			die "Couldn't change ownershil of $file!\n";
+	foreach $file (@files) {
+		if (&execute("/usr/sbin/chown \"0.0\" \"$file\"")) {
+			die "Couldn't change ownership of $file!\n";
 		}
 	}
 
