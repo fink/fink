@@ -1,3 +1,8 @@
+2004-02-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.18.2, a bugfix release 
+	on branch_0_18
+
 2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.18.1, a bugfix release 
@@ -43,8 +48,8 @@
 
 2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
  
-        * VERSION: Bumped package manager version to 0.17.3, a bugfix
-        release on branch_0_17
+	* VERSION: Bumped package manager version to 0.17.3, a bugfix
+	release on branch_0_17
  
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
@@ -76,6 +81,15 @@
 
 	* pathsetup.command.in: echo a newline to an existing . file before
 	anything else, in case the file does not end in one.
+
+2003-12-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* inject.pl: including fink.shlibs in tar ball
+	* install.sh: Adding install bts for fink.shlibs
+	* fink.shlibs: Adding new file, installing to
+	$basepath/var/lib/dpkg/info. Should contain a full list of shlibs for
+	macosx version and darwin versions, and perhaps apple's x11 and other
+	virtuals.
 
 2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
