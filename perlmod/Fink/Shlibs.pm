@@ -99,9 +99,11 @@ sub check_files {
 	# get parent and split names to envoke a = %v-%r override
 	@splits = $pkg->get_splitoffs(1, 1);
 
-	# Get depends line and builddepends lines for compares
-	# FIXME add RunTimeDepends to this array
+	# Get runtimedepends and depends line and builddepends line for compares
 	@deplines = split(/\s*\,\s*/, $pkg->param_default("Depends", ""));
+	foreach my $tmp (split(/\s*\,\s*/, $pkg->param_default("RunTimeDepends", ""))) {
+		push @deplines, $tmp;
+	}
 	@builddeps = split(/\s*\,\s*/, $pkg->param_default("BuildDepends", ""));
 
 	# get a list of linked files to the pkg files
