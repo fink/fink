@@ -141,8 +141,20 @@ sub add_version {
 		delete $self->{_versions}->{$version};
 		my $fullname = $version_object->get_fullname();
 		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions()) {
-			die "The package full name '$fullname' is not allowed to be used"
-			 ." more than once.";
+			# avoid overhead of allocating for and storing the grep
+			# results in if() since it's rare we'll need it
+			my $msg = "A package name is not allowed to have the same ".
+				"version-revision but different epochs: $fullname\n";
+			foreach (
+				grep { $_->get_fullname() eq $fullname } $self->get_all_versions(),
+				$version_object
+			) {
+				my $infofile = $_->get_info_filename();
+				$msg .= sprintf "  epoch %d\t%s\n", 
+					$_->param_default('epoch',0),
+					length $infofile ? "fink virtual or dpkg status" : $infofile;
+			};
+			die $msg;
 		}
 		
 		$self->{_versions}->{$version} = $version_object;

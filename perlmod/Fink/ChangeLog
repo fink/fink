@@ -1,3 +1,9 @@
+2005-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Better sanity-check of user input to prompt_selection
+	and prompt_boolean
+	* Package.pm: Improved diagnostics when dup %f with different %e.
+	
 2005-03-14  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Fix prompt for CVS username.

@@ -166,7 +166,8 @@ sub print_breaking_stderr {
     my $answer = prompt $prompt, %options;
 
 Ask the user a question and return the answer. The user is prompted
-via STDOUT/STDIN using $prompt (which is word-wrapped).
+via STDOUT/STDIN using $prompt (which is word-wrapped). The trailing
+newline from the user's entry is removed.
 
 The %options are given as option => value pairs. The following
 options are known:
@@ -247,23 +248,29 @@ sub prompt_boolean {
 	my $prompt = shift;
 	my %opts = (default => 1, timeout => 0, @_);
 
+	my $choice_prompt = $opts{default} ? "Y/n" : "y/N";
+
 	my $meaning;
+	my $answer = &get_input(
+		"$prompt [$choice_prompt]",
+		$opts{timeout}
+	);
 	while (1) {
-		my $answer = &get_input(
-			"$prompt [".($opts{default} ? "Y/n" : "y/N")."]",
-			$opts{timeout}
-		);
 		chomp $answer;
 		if ($answer eq "") {
 			$meaning = $opts{default};
 			last;
-		} elsif ($answer =~ /^y(es?)?/i) {
+		} elsif ($answer =~ /^y(es?)?$/i) {
 			$meaning = 1;
 			last;
-		} elsif ($answer =~ /^no?/i) {
+		} elsif ($answer =~ /^no?$/i) {
 			$meaning = 0;
 			last;
 		}
+		$answer = &get_input(
+			"Invalid choice. Please try again [$choice_prompt]",
+			$opts{timeout}
+		);
 	}
 
 	return $meaning;
@@ -273,8 +280,8 @@ sub prompt_boolean {
 
     my $answer = prompt_selection $prompt, %options;
 
-Ask the user a multiple-choice question and return the answer. The
-user is prompted via STDOUT/STDIN using $prompt (which is
+Ask the user a multiple-choice question and return the value for the
+choice. The user is prompted via STDOUT/STDIN using $prompt (which is
 word-wrapped) and a list of choices. The choices are numbered
 (beginning with 1) and the user selects by number.
 
@@ -331,7 +338,7 @@ sub prompt_selection {
 	my @choices = @{$opts{choices}};
 	my $default = $opts{default};
 
-	my ($count, $answer, $default_value);
+	my ($count, $default_value);
 
 	if (@choices/2 != int(@choices/2)) {
 		confess 'Odd number of elements in @choices';
@@ -358,7 +365,7 @@ sub prompt_selection {
 	$count = 0;
 	for (my $index = 0; $index <= $#choices; $index+=2) {
 		$count++;
-		print "($count)	 $choices[$index]\n";
+		print "($count)\t$choices[$index]\n";
 		if (!defined $default_value && (
 						(
 						 ($default->[0] eq "label" && $choices[$index]   eq $default->[1])
@@ -373,15 +380,24 @@ sub prompt_selection {
 	$default_value = 1 if !defined $default_value;
 	print "\n";
 
-	$answer = &get_input("$prompt [$default_value]", $opts{timeout});
-	chomp($answer);
-	if (!$answer) {
-		$answer = 0;
+	my $answer = &get_input(
+		"$prompt [$default_value]",
+		$opts{timeout}
+	);
+	while (1) {
+		chomp $answer;
+		if ($answer eq "") {
+			$answer = $default_value;
+			last;
+		} elsif ($answer =~ /^[1-9]\d*$/ and $answer >= 1 && $answer <= $count) {
+			last;
+		}
+		$answer = &get_input(
+			"Invalid choice. Please try again [$default_value]",
+			$opts{timeout}
+		);
 	}
-	$answer = int($answer);
-	if ($answer < 1 || $answer > $count) {
-		$answer = $default_value;
-	}
+
 	return $choices[2*$answer-1];
 }
 
