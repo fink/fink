@@ -30,6 +30,10 @@ use Fink::Config qw($config $basepath);
 use POSIX qw(uname);
 use Fink::Status;
 
+use vars qw(
+	%options
+);
+
 use strict;
 use warnings;
 
@@ -53,8 +57,8 @@ END { }				# module clean-up code here (global destructor)
 ### constructor
 
 sub new {
-	my $proto = shift;
-	my $class = ref($proto) || $proto;
+	my $proto   = shift;
+	my $class   = ref($proto) || $proto;
 
 	my $self = {};
 	bless($self, $class);
@@ -68,7 +72,8 @@ sub new {
 ### self-initialization
 
 sub initialize {
-	my $self = shift;
+	my $self    = shift;
+
 	my ($hash);
 	my ($dummy);
 	my ($darwin_version, $cctools_version, $cctools_single_module);
@@ -76,6 +81,7 @@ sub initialize {
 	($dummy,$dummy,$darwin_version) = uname();
 
 	# now find the cctools version
+	print STDERR "- checking for cctools version... " if ($options{debug});
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
 		foreach(`/usr/bin/what /usr/bin/ld`) {
 			if (/cctools-(\d+)/) {
@@ -83,13 +89,24 @@ sub initialize {
 				last;
 			}
 		}
+		if (defined $cctools_version) {
+			print STDERR $cctools_version, "\n" if ($options{debug});
+		} else {
+			print STDERR "unknown\n" if ($options{debug});
+		}
+	} else {
+		print STDERR "/usr/bin/ld or /usr/bin/what not executable\n" if ($options{debug});
 	}
 
 	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam() and -x "/usr/bin/touch") {
 		system("/usr/bin/touch ${cctestfile}.c");
-		if (system("/usr/bin/cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1") == 0) {
+		my $command = "/usr/bin/cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1";
+		print STDERR "- running $command... " if ($options{debug});
+		if (system($command) == 0) {
+			print STDERR "-single_module passed\n" if ($options{debug});
 			$cctools_single_module = '1.0';
 		} else {
+			print STDERR "failed\n" if ($options{debug});
 			$cctools_single_module = undef;
 		}
 		unlink($cctestfile);
@@ -105,17 +122,23 @@ sub initialize {
 	$self->{$hash->{package}} = $hash;
 	
 	# create dummy object for system version, if this is OS X at all
+	print STDERR "- checking OSX version... " if ($options{debug});
 	if (Fink::Services::get_sw_vers() ne 0) {
+		print STDERR Fink::Services::get_sw_vers(), "\n" if ($options{debug});
 		$hash = {};
 		$hash->{package} = "macosx";
 		$hash->{status} = "install ok installed";
 		$hash->{version} = Fink::Services::get_sw_vers()."-1";
 		$hash->{description} = "[virtual package representing the system]";
 		$self->{$hash->{package}} = $hash;
+	} else {
+		print STDERR "unknown\n" if ($options{debug});
 	}
 
 	# create dummy object for system perl
+	print STDERR "- checking system perl version... " if ($options{debug});
 	if (defined Fink::Services::get_system_perl_version()) {
+		print STDERR Fink::Services::get_system_perl_version(), "\n" if ($options{debug});
 		$hash = {};
 		$hash->{package} = "system-perl";
 		$hash->{status} = "install ok installed";
@@ -127,15 +150,20 @@ sub initialize {
 		$hash->{provides} = 'perl' . $hash->{provides} . '-core';
 
 		$self->{$hash->{package}} = $hash;
+	} else {
+		print STDERR "unknown\n" if ($options{debug});
 	}
 
 	# create dummy object for java
+	print STDERR "- checking Java directories:\n" if ($options{debug});
 	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
 	if (opendir(DIR, $javadir)) {
 		for my $dir ( sort readdir(DIR)) {
 			chomp($dir);
 			next if ($dir =~ /^\.\.?$/);
+			print STDERR "  - $dir... " if ($options{debug});
 			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
+				print STDERR "$dir/Commands " if ($options{debug});
 				# chop the version down to major/minor without dots
 				my $ver = $dir;
 				$ver =~ s/[^\d]+//g;
@@ -148,6 +176,7 @@ sub initialize {
 				$self->{$hash->{package}} = $hash;
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
+					print STDERR "$dir/Headers " if ($options{debug});
 					$hash = {};
 					$hash->{package}     = "system-java${ver}-dev";
 					$hash->{status}      = "install ok installed";
@@ -155,13 +184,18 @@ sub initialize {
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$self->{$hash->{package}} = $hash;
 				}
+				print STDERR "\n" if ($options{debug});
+			} else {
+				print STDERR "nothing\n" if ($options{debug});
 			}
 		}
 		closedir(DIR);
 	}
 
 	# create dummy object for Java3D
+	print STDERR "- searching for java3d... " if ($options{debug});
 	if (-f '/System/Library/Java/Extensions/j3dcore.jar') {
+		print STDERR "found /System/Library/Java/Extensions/j3dcore.jar\n" if ($options{debug});
 		$hash = {};
 		$hash->{package}     = "system-java3d";
 		$hash->{status}      = "install ok installed";
@@ -175,10 +209,14 @@ sub initialize {
 			}
 			close(FILEIN);
 		}
+	} else {
+		print STDERR "missing /System/Library/Java/Extensions/j3dcore.jar\n" if ($options{debug});
 	}
 
 	# create dummy object for JavaAdvancedImaging
+	print STDERR "- searching for javaai... " if ($options{debug});
 	if (-f '/System/Library/Java/Extensions/jai_core.jar') {
+		print STDERR "found /System/Library/Java/Extensions/jai_core.jar\n" if ($options{debug});
 		$hash = {};
 		$hash->{package}     = "system-javaai";
 		$hash->{status}      = "install ok installed";
@@ -192,6 +230,8 @@ sub initialize {
 			}
 			close(FILEIN);
 		}
+	} else {
+		print STDERR "missing /System/Library/Java/Extensions/jai_core.jar\n" if ($options{debug});
 	}
 
 	# create dummy object for cctools version, if version was found in Config.pm
@@ -215,7 +255,10 @@ sub initialize {
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
 	}
+
+	print STDERR "- checking for /usr/bin/gcc2... " if ($options{debug});
 	if ( -x '/usr/bin/gcc2' ) {
+		print STDERR "found\n" if ($options{debug});
 		$hash = {};
 		$hash->{package} = "gcc2";
 		$hash->{status} = "install ok installed";
@@ -223,6 +266,8 @@ sub initialize {
 		$hash->{description} = "[virtual package representing the gcc2 compiler]";
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
+	} else {
+		print STDERR "missing\n" if ($options{debug});
 	}
 	
 	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
@@ -244,7 +289,11 @@ sub initialize {
 			'xfree86-base-threaded-shlibs', 'xfree86-rootless-shlibs',
 			'xfree86-rootless-threaded-shlibs')
 		{
-			$packagecount++ if (Fink::Status->query_package($packagename));
+			
+			if (Fink::Status->query_package($packagename)) {
+				print STDERR "- $packagename is installed\n" if ($options{debug});
+				$packagecount++;
+			}
 		}
 
 		# if no xfree86 packages are installed, put in our own placeholder
@@ -255,12 +304,15 @@ sub initialize {
 				my $provides;
 
 				my $found_xserver = 0;
+				print STDERR "- checking for X servers... " if ($options{debug});
 				for my $xserver (@xservers) {
 					if (-x '/usr/X11R6/bin/' . $xserver) {
+						print STDERR "$xserver\n" if ($options{debug});
 						$found_xserver++;
 						last;
 					}
 				}
+				print "missing\n" if ($options{debug} and $found_xserver == 0);
 
 				# this is always there if we got this far
 				push(@{$provides->{'system-xfree86-shlibs'}}, 'x11-shlibs');
@@ -311,14 +363,24 @@ sub initialize {
 				if ( has_lib('libfontconfig.1.dylib') ) {
 					push(@{$provides->{'system-xfree86-shlibs'}}, 'fontconfig1-shlibs');
 				}
+				print STDERR "- checking for rman... " if ($options{debug});
 				if (-x '/usr/X11R6/bin/rman') {
+					print STDERR "found\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86'}}, 'rman');
+				} else {
+					print STDERR "missing\n" if ($options{debug});
 				}
+				print STDERR "- checking for threaded libXt... " if ($options{debug});
 				if (-f '/usr/X11R6/lib/libXt.6.dylib' and -x '/usr/bin/grep') {
 					if (system('/usr/bin/grep', '-q', '-a', 'pthread_mutex_lock', '/usr/X11R6/lib/libXt.6.dylib') == 0) {
+						print STDERR "threaded\n" if ($options{debug});
 						push(@{$provides->{'system-xfree86-shlibs'}}, 'xfree86-base-threaded-shlibs');
 						push(@{$provides->{'system-xfree86'}}, 'xfree86-base-threaded') if (grep(/^x11$/, @{$provides->{'system-xfree86'}}));
+					} else {
+						print STDERR "not threaded\n" if ($options{debug});
 					}
+				} else {
+					print STDERR "missing libXt or grep\n" if ($options{debug});
 				}
 
 				for my $pkg ('system-xfree86', 'system-xfree86-shlibs', 'system-xfree86-dev') {
@@ -339,7 +401,9 @@ sub initialize {
 					}
 				}
 			}
-		}    
+		} else {
+			print STDERR "- skipping X11 virtuals, existing X11 packages installed\n" if ($options{debug});
+		}
 	}
 }
 
@@ -377,6 +441,8 @@ sub query_package {
 
 sub list {
 	my $self = shift;
+	%options = (@_);
+
 	my ($list, $pkgname, $hash, $newhash, $field);
 
 	if (not ref($self)) {
@@ -409,13 +475,19 @@ sub has_header {
 	my $headername = shift;
 	my $dir;
 
-	if ($headername =~ /^\//) {
-		return (-f $headername);
+	print STDERR "- checking for header $headername... " if ($options{debug});
+	if ($headername =~ /^\// and -f $headername) {
+		print STDERR "found\n" if ($options{debug});
+		return 1;
 	} else {
 		for $dir ('/usr/X11R6/include', $basepath . '/include', '/usr/include') {
-			return 1 if (-f $dir . '/' . $headername);
+			if (-f $dir . '/' . $headername) {
+				print STDERR "found in $dir\n" if ($options{debug});
+				return 1;
+			}
 		}
 	}
+	print "missing" if ($options{debug});
 	return;
 }
 
@@ -423,13 +495,19 @@ sub has_lib {
 	my $libname = shift;
 	my $dir;
 
-	if ($libname =~ /^\//) {
-		return (-f $libname);
+	print STDERR "- checking for library $libname... " if ($options{debug});
+	if ($libname =~ /^\// and -f $libname) {
+		print STDERR "found\n" if ($options{debug});
+		return 1;
 	} else {
 		for $dir ('/usr/X11R6/lib', $basepath . '/lib', '/usr/lib') {
-			return 1 if (-f $dir . '/' . $libname);
+			if (-f $dir . '/' . $libname) {
+				print STDERR "found in $dir\n" if ($options{debug});
+				return 1;
+			}
 		}
 	}
+	print "missing" if ($options{debug});
 	return;
 }
 

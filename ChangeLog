@@ -1,3 +1,8 @@
+2004-02-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: Added "debug" mode to show what's going
+	on while searching for various virtual bits.  (Good idea, Martin!)
+
 2004-02-12  Rob Braun  <bbraun@users.sourceforge.net>
 
 	* fink.in: Fixed a spelling error in the usage statement, and

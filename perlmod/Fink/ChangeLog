@@ -1,3 +1,8 @@
+2004-02-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Added "debug" mode to show what's going on while
+	searching for various virtual bits.  (Good idea, Martin!)
+
 2004-02-12  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: conditional_pkg_list: optimized initial field
