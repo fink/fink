@@ -1,13 +1,19 @@
-Generated from $Fink: install.xml,v 1.19 2004/03/17 00:34:29 dmrrsn Exp $
+Generated from $Fink: install.xml,v 1.20 2004/07/30 15:53:31 dmrrsn Exp $
 
  Fink 0.7.0 Installation
 =========================
 
 These are the installation instructions for the "source" distribution of
-Fink 0.7.0. This document does not apply to the "binary
-[http://fink.sourceforge.net/download/index.php]" distribution. There are
-instructions for both first time installation and upgrading from a previous
-version. Fast track instructions for the impatient are at the top.
+Fink 0.7.0, intended for use with OS X v.10.3 and later. The instructions
+can also be used for installation on OS X v.10.2 (replacing 0.7.0 by 0.6.3
+throughout the document) and for installation on OS X v.10.1 (replacing
+0.7.0 by 0.4.1a).
+
+This document does not apply to the "binary
+[http://fink.sourceforge.net/download/index.php]" distribution.
+
+There are instructions for both first time installation and upgrading from a
+previous version. Fast track instructions for the impatient are at the top.
 
 
  The Fast Track
