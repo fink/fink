@@ -336,7 +336,7 @@ sub find_debfile {
   my $self = shift;
   my ($path, $fn);
 
-  foreach $path (@{$self->{_debpaths}}) {
+  foreach $path (@{$self->{_debpaths}}, "$basepath/fink/debs") {
     $fn = $path."/".$self->{_debname};
     if (-f $fn) {
       return $fn;

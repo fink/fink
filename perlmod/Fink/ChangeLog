@@ -1,5 +1,8 @@
 2001-05-08  Christoph Pfisterer  <cp@chrisp.de>
 
+	* PkgVersion.pm (find_debfile): Also search <prefix>/fink/debs for
+	.deb files.
+
 	* Engine.pm (real_install): Only fetch when we need the tarballs
 	later.
 
