@@ -66,7 +66,7 @@ sub initialize {
 	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type_hash);
 	my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
 	my ($parentpkgname, $parentdestdir, $parentinvname);
-	my ($i, $path, @parts, $finkinfo_index, $section);
+	my ($i, $path, @parts, $finkinfo_index, $section, @splitofffields);
 	my $arch = get_arch();
 
 	$self->SUPER::initialize();
@@ -208,8 +208,15 @@ sub initialize {
 		}
 	} else {
 		# handle splitoff(s)
-		foreach ($self->params_matching('SplitOff(?:[2-9]|[1-9]\d+)?')) {
-			push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
+		@splitofffields = $self->params_matching('SplitOff(?:[2-9]|[1-9]\d+)?');
+		if (@splitofffields) {
+			# need to keep SplitOff(N) in order
+			foreach (map  { $_->[0] }
+					 sort { $a->[1] <=> $b->[1] }
+					 map  { [ $_, ( (/(\d+)/)[0] || 0 ) ] } @splitofffields
+					 ) {
+				push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
+			}
 		}
 	}
 
