@@ -820,6 +820,7 @@ sub phase_compile {
 sub phase_install {
   my $self = shift;
   my ($dir, $install_script, $cmd, $bdir);
+  my (@docfiles, $docfile, $docfilelist);
 
   if ($self->{_type} ne "bundle") {
     $dir = $self->get_build_directory();
@@ -846,6 +847,25 @@ sub phase_install {
       $install_script .= "make install prefix=\%i";
     }
   }
+
+  # generate commands to install documentation files
+  if ($self->has_param("DocFiles")) {
+    $install_script .= "\ninstall -d -m 755 %i/share/doc/%n";
+
+    @docfiles = split(/\s+/, $self->param("DocFiles"));
+    $docfilelist = "";
+    foreach $docfile (@docfiles) {
+      if ($docfile =~ /^(.+)\:(.+)$/) {
+	$install_script .= "\ninstall -c -p -m 644 $1 %i/share/doc/%n/$2";
+      } else {
+	$docfilelist .= " $docfile";
+      }
+    }
+    if ($docfilelist ne "") {
+      $install_script .= "\ninstall -c -p -m 644$docfilelist %i/share/doc/%n/";
+    }
+  }
+
   $install_script .= "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
   $install_script = &expand_percent($install_script, $self->{_expand});
