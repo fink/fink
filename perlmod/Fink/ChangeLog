@@ -1,3 +1,8 @@
+2003-01-15  Max Horn  <max@quendi.de>
+
+	* Validation.pm: Putting stuff inside /sw/src is illegal for a .deb,
+	  but just containing /sw/src is fine (as long as it is empty).
+
 2003-01-14  Max Horn  <max@quendi.de>
 
 	* Engine.pm, Services.pm: Fixing problems with exit codes (Patch #662894).

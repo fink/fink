@@ -387,7 +387,7 @@ sub validate_dpkg_file {
             print "Warning: File \"$filename\" installed outside of $basepath\n";
       } else {
         foreach $bad_dir (@bad_dirs) {
-          if ($filename =~ /^$bad_dir/) {
+          if ($filename =~ /^$bad_dir/ and not $filename eq $bad_dir) {
             print "Warning: File installed into deprecated directory $bad_dir\n";
             print "         Offender is $filename\n";
             last;
