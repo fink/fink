@@ -116,6 +116,7 @@ our %known_fields = map {$_, 1}
      compilescript
      installscript
      splitoff
+     jarfiles
     ),
     (map {"set".$_} @set_vars),
     (map {"noset".$_} @set_vars),
