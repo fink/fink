@@ -340,7 +340,7 @@ EOF
 		if ($desclen != 0) {
 			$desclen = $width - $namelen - $verlen - 5;
 		}
-		$formatstr = "%s	%-" . $namelen . "." . $namelen . "s	%-" . $verlen . "." . $verlen . "s	%s\n";
+		$formatstr = "%s  %-" . $namelen . "." . $namelen . "s  %-" . $verlen . "." . $verlen . "s  %s\n";
 	} elsif ($dotab) {
 		$formatstr = "%s\t%s\t%s\t%s\n";
 		$desclen = 0;
@@ -377,7 +377,7 @@ EOF
 		$package = Fink::Package->package_by_name($pname);
 		if ($package->is_virtual()) {
 			$lversion = "";
-			$iflag = "	 ";
+			$iflag = "   ";
 			$description = "[virtual package]";
 			next if ($cmd eq "apropos"); 
 			if (not ($options{installedstate} & 4)) {next; };
