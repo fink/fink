@@ -2106,9 +2106,11 @@ sub get_perl_dir_arch {
 	$perldirectory = "/" . $perlversion;
 	my $perlcmd = get_path('perl'.$perlversion);
 
-	if (defined $perlcmd and $perlcmd ne "" and -x $perlcmd and open(ARCHNAME, "$perlcmd -MConfig -e '\$Config{archname}' 2>/dev/null |")) {
+	if (defined $perlcmd and $perlcmd ne "" and -x $perlcmd and 
+            open(ARCHNAME, 
+             qq{$perlcmd -MConfig -e 'print \$Config{archname}' 2>/dev/null |}) ) 
+        {
 		$perlarchdir = <ARCHNAME>;
-		chomp($perlarchdir) if ($perlarchdir);
 		close(ARCHNAME);
 	}
 

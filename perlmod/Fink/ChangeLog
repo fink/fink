@@ -1,10 +1,18 @@
+2003-11-11  Michael G Schwern <schwern@pobox.com>
+
+	* PkgVersion.pm: "uninitialized value in chomp" warning below
+	  because get_perl_dir_arch()'s attempt at reading the system perl's
+	  Config.pm wasn't working.  Forgot a print.  chomp() now unnecessary.
+
 2003-11-11  Rob Braun <bbraun@users.sourceforge.net>
-	* SelfUpdate.pm: Recurse down multiple directories, to get libs/perlmods
+
+	* SelfUpdate.pm: Recurse down multiple directories, to get 
+	  libs/perlmods
 
 2003-11-11  Max Horn  <max@quendi.de>
 
-	* PkgVersion.pm, Validation.pm: Allow 'Homepage' field in splitoffs. This
-	  actually matches what our packaging docs say.
+	* PkgVersion.pm, Validation.pm: Allow 'Homepage' field in splitoffs. 
+	  This actually matches what our packaging docs say.
 
 2003-11-11  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
