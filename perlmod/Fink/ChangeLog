@@ -7,6 +7,9 @@
 	* PkgVersion.pm: Fix splitoff dependency problem (Bug #641466).
 	Also removed the really old "pkg <blah> version ###" text, finally.
 	
+	* Package.pm: Moved to custom find code for scan_packages. Hopefully
+	safer, possibly slightly faster, but I doubt it.
+	
 2003-01-07  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Warn if MD5 field(s) is/are missing.

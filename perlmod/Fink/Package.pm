@@ -27,6 +27,7 @@ use Fink::Services qw(&read_properties &latest_version &version_cmp
 use Fink::Config qw($config $basepath);
 use Fink::PkgVersion;
 use File::Find;
+use Fcntl ':mode'; # for search_comparedb
 
 use strict;
 use warnings;
@@ -342,7 +343,7 @@ sub scan_all {
 	  or ((stat("$basepath/etc/fink.conf"))[9] > $db_mtime)) {
 	  $db_outdated = 1;
 	} else {
-	  find (\&process_find, "$basepath/fink/dists");
+	  $db_outdated = &search_comparedb( "$basepath/fink/dists" );
 	}
       }
       
@@ -388,15 +389,34 @@ sub scan_all {
     (time - $time), " seconds.\n\n";
 }
 
-###Êfind callback from scan_all
+### scan for info files and compare to $db_mtime
 
-sub process_find {
-  if (/^.*\.info\z/s ) {
-    if ( ( (lstat($_))[9] > $db_mtime ) or ( (stat($_))[9] > $db_mtime ) ) {
-      $db_outdated = 1;
-      $File::Find::prune = 1;
+sub search_comparedb {
+  my $path = shift;
+  my (@files, $file, $newpath, @stats);
+
+  opendir(DIR, $path) || die "can't opendir $path: $!";
+  @files = readdir(DIR);
+  closedir DIR;
+  
+  foreach $file (@files) {
+    next if substr($file, 0, 1) eq ".";
+    next if $file eq "CVS";
+    
+    $newpath = "$path/$file"; 
+
+    @stats = stat($newpath);
+
+    if (S_ISDIR($stats[2])) {
+      return 1 if (&search_comparedb($newpath));
+    }
+    
+    if (substr($file, length($file)-5) eq ".info") {
+      return 1 if ($stats[9] > $db_mtime);
     }
   }
+  
+  return 0;
 }
 
 ### read the packages and update the database, if needed and we are root

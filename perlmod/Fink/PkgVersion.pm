@@ -220,7 +220,7 @@ sub initialize {
   }
 
   if (exists $self->{_splitoffs} and @{$self->{_splitoffs}} > 0) {
-    my ($splitoff, @sibling_list);
+    my $splitoff;
     for $splitoff (@{$self->{_splitoffs}}) {
       @{$splitoff->{_relatives}} = ($self, grep {$_->get_name() ne $splitoff->get_name()} @{$self->{_splitoffs}});
     }
