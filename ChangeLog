@@ -1,5 +1,7 @@
 2001-09-29  Christoph Pfisterer  <cp@chrisp.de>
 
+	* VERSION: Bumped package manager version to 0.9.1.
+
 	* fink.in: Also add /usr/X11R6/bin and the */sbin dirs to the PATH
 	while building.
 
