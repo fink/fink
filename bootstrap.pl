@@ -56,7 +56,7 @@ if (exists $ok_perl_versions{"$]"}) {
 
 if ("$]" == "5.006001") {
     if (not -x "/usr/bin/perl5.6.1") {
-die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
+	die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
     elsif (system "/usr/bin/perl5.6.1 -V") {
 	die "\nYour /usr/bin/perl5.6.1 is not functional; you must repair this problem\nbefore installing Fink.\n\n"}
 }
@@ -122,14 +122,14 @@ if (("$]" lt "5.008") and ($distribution gt "10.2-gcc3.3")) {
 
 my ($rootmethod);
 if ($> != 0) {
-	print "\n";
-	&print_breaking("Fink must be installed and run with superuser (root) ".
-					"privileges. Fink can automatically try to become ".
-					"root when it's run from a user account. Since you're ".
-					"currently running this script as a normal user, the ".
-					"method you choose will also be used immediately for ".
-					"this script. Avaliable methods:");
+	my $sel_intro = "Fink must be installed and run with superuser (root) ".
+	    "privileges. Fink can automatically try to become ".
+	    "root when it's run from a user account. Since you're ".
+	    "currently running this script as a normal user, the ".
+	    "method you choose will also be used immediately for ".
+	    "this script. Avaliable methods:";
 	$answer = &prompt_selection("Choose a method:",
+					intro   => $sel_intro,
 					default => [ value => "sudo" ],
 					choices => [
 					  "Use sudo" => "sudo",

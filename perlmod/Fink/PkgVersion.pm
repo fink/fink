@@ -1873,13 +1873,14 @@ Fink::Services::enforce_gcc("This package must be compiled with GCC EXPECTED_GCC
 			if ($checksum ne $found_archive_sum) {
 				# mismatch, ask user what to do
 				$tries++;
-				&print_breaking("The checksum of the file $archive of package ".
-								$self->get_fullname()." is incorrect. The most likely ".
-								"cause for this is a corrupted or incomplete download\n".
-								"Expected: $checksum \nActual: $found_archive_sum \n".
-								"It is recommended that you download it ".
-								"again. How do you want to proceed?");
+				my $sel_intro = "The checksum of the file $archive of package ".
+					$self->get_fullname()." is incorrect. The most likely ".
+					"cause for this is a corrupted or incomplete download\n".
+					"Expected: $checksum\nActual: $found_archive_sum\n".
+					"It is recommended that you download it ".
+					"again. How do you want to proceed?";
 				$answer = &prompt_selection("Make your choice: ",
+								intro   => $sel_intro,
 								default => [ value => ($tries >= 3) ? "error" : "redownload" ],
 								choices => [
 								  "Give up" => "error",

@@ -86,8 +86,8 @@ sub check {
 	# The user has not chosen a selfupdatemethod yet, always ask
 	# if the fink.conf setting is not there.
 	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
-		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
 		$answer = &prompt_selection("Choose an update method",
+						intro   => "fink needs you to choose a SelfUpdateMethod.",
 						default => [ value => "rsync" ],
 						choices => [
 						  "rsync" => "rsync",

@@ -277,12 +277,11 @@ sub choose_mirrors {
 		}
 	}
 	
-	&print_breaking("\nThe Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
-    				  "the sources for all fink packages. You can choose to use these mirrors first, ".
-					  "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
-	
 	$mirror_order = &prompt_selection(
 		"What mirror order should fink use when downloading sources?",
+		intro   => "The Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
+		           "the sources for all fink packages. You can choose to use these mirrors first, ".
+		           "last, never, or mixed in with regular mirrors. If you don't care, just select the default.",
 		default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
 		choices => [
 			"Search \"Master\" source mirrors first." => "MasterFirst",
@@ -294,8 +293,8 @@ sub choose_mirrors {
 	$config->set_param("MirrorOrder", $mirror_order);
 	
 	### step 1: choose a continent
-	&print_breaking("Choose a continent:");
 	$continent = &prompt_selection("Your continent?",
+		intro   => "Choose a continent:",
 		default => [ value => $config->param_default("MirrorContinent", "-") ],
 		choices => [
 			map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
@@ -305,9 +304,8 @@ sub choose_mirrors {
 	$config->set_param("MirrorContinent", $continent);
 
 	### step 2: choose a country
-	print "\n";
-	&print_breaking("Choose a country:");
 	$country = &prompt_selection("Your country?",
+		intro   => "Choose a country:",
 		default => [ value => $config->param_default("MirrorCountry", $continent) ],
 		choices => [
 			"No selection - display all mirrors on the continent" => $continent,
@@ -346,9 +344,8 @@ sub choose_mirrors {
 			push @mirrors, map { ( $keyinfo->{$continent}.": $_" => $_ ) } @{$all_mirrors->{$continent}};
 		}
 
-		print "\n";
-		&print_breaking("Choose a mirror for '$mirrortitle':");
 		$answer = &prompt_selection("Mirror for $mirrortitle?",
+						intro   => "Choose a mirror for '$mirrortitle':",
 						default => [ number => 1 ],
 						choices => \@mirrors );
 		$config->set_param("Mirror-$mirrorname", $answer);

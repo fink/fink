@@ -1,3 +1,7 @@
+2005-02-24  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: Use new "intro" param to prompt_selection
+
 2005-02-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.0, a new release

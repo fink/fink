@@ -316,6 +316,11 @@ If a timeout is given, any existing alarm() is destroyed.
 
 Default value: no timeout
 
+=item intro (optional)
+
+A text block that will be displayed before the list of options. This
+contrasts with the $prompt, which is goes afterwards.
+
 =back
 
 =cut
@@ -343,10 +348,17 @@ sub prompt_selection {
 		confess "Unknown default type ",$default->[0];
 	}
 
+	print "\n";
+
+	if (defined $opts{intro}) {
+		&print_breaking($opts{intro});
+		print "\n";
+	}
+
 	$count = 0;
 	for (my $index = 0; $index <= $#choices; $index+=2) {
 		$count++;
-		print "\n($count)	 $choices[$index]";
+		print "($count)	 $choices[$index]\n";
 		if (!defined $default_value && (
 						(
 						 ($default->[0] eq "label" && $choices[$index]   eq $default->[1])
@@ -359,7 +371,7 @@ sub prompt_selection {
 
 	}
 	$default_value = 1 if !defined $default_value;
-	print "\n\n";
+	print "\n";
 
 	$answer = &get_input("$prompt [$default_value]", $opts{timeout});
 	chomp($answer);

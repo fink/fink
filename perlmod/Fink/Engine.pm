@@ -1575,10 +1575,8 @@ sub real_install {
 				if ($founddebcnt > 1) {
 				   $choice = 1; # Do not select anything if more than one choice is available
 				}
-				print "\n";
-				&print_breaking("fink needs help picking an alternative to satisfy ".
-								"a virtual dependency. The candidates:");
 				$dname = &prompt_selection("Pick one:",
+					intro   => "fink needs help picking an alternative to satisfy a virtual dependency. The candidates:",
 					default => [number=>$choice], choices => \@choices);
 			}
 
