@@ -265,6 +265,15 @@ sub get_build_directory {
   return $self->{_builddir};
 }
 
+sub get_description {
+  my $self = shift;
+  if ($self->has_param("Description")) {
+    return $self->param_default("Description","") . "\n";
+  } else {
+    return "no description for package '" . $self->get_name() . "'\n";
+  }
+}
+
 ### get installation state
 
 sub is_fetched {

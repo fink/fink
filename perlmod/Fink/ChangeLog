@@ -1,3 +1,9 @@
+2001-05-11  Finlay Dobbie  <finlay.dobbie@btinternet.com>
+
+	* PkgVersion.pm: get_description() implemented, for use in fink
+	description <package>
+	* Engine.pm: fink description implemented
+
 2001-05-11  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (initialize): Dependencies must be separated by a

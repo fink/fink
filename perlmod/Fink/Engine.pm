@@ -65,6 +65,8 @@ our %commands =
     'remove' => \&cmd_remove,
     'delete' => \&cmd_remove,
     'purge' => \&cmd_remove,
+    'describe' => \&cmd_description,
+    'description' => \&cmd_description,
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -155,6 +157,19 @@ sub cmd_fetch {
 
   foreach $package (@plist) {
     $package->phase_fetch();
+  }
+}
+
+sub cmd_description {
+  my ($package, @plist);
+
+  @plist = &expand_packages(@_);
+  if ($#plist < 0) {
+    die "no package specified for command 'description'!\n";
+  }
+
+  foreach $package (@plist) {
+    print "\n" . $package->get_description() . "\n";
   }
 }
 
