@@ -615,7 +615,7 @@ RSYNCAGAIN:
 			mkdir_p "$basepath/fink/$dist/$tree";
 		}
 	}
-	$cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
+	$cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
 		if ($username) {
@@ -643,6 +643,20 @@ RSYNCAGAIN:
 	rm_rf "$basepath/fink/CVS";
 	touch "$dist/stamp-rsync-live";
 	rm_f "stamp-cvs-live", "$dist/stamp-cvs-live";
+# change the VERSION to reflect rsync
+if (-f "$basepath/fink/$dist/VERSION") {
+	open(IN,"$basepath/fink/$dist/VERSION") or die "can't open VERSION: $!";
+	open(OUT,">$basepath/fink/$dist/VERSION.tmp") or die "can't write VERSION.tmp: $!";
+	while (<IN>) {
+		chomp;
+		$_ =~ s/cvs/rsync/;
+		print OUT "$_\n";
+	}
+	close(IN);
+	unlink "$basepath/fink/$dist/VERSION";
+	rename "$basepath/fink/$dist/VERSION.tmp", "$basepath/fink/$dist/VERSION";
+}
+
 	# cleanup after ourselves and continue with the update.
 	unlink("$descdir/TIMESTAMP");
 	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
