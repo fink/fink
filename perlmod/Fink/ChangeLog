@@ -1,9 +1,8 @@
 2003-09-04  Justin F. Hallett  <thesin@users.sourceforge.net>
 
-	* PkgVersion.pm: Added the ability to add to the perl Makefile.PL
-	line in type: perl packages, to keep more control on perlmodules again.
-	I just reused "ConfigureParams:" so if present and so is Type: perl
-	it'll just append to the end of the line, like normal modules do.
+	* PkgVersion.pm: Changed the way Type: perl works, it now can use
+	ConfigureParams and makes ue of %c like normal builds, this will
+	standarize how perlmodules and normal packages are packaged.
 
 2003-08-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

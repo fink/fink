@@ -128,8 +128,19 @@ sub initialize {
 	$self->{_fullname} = $pkgname."-".$version."-".$revision;
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 	# percent-expansions
-	$configure_params = "--prefix=\%p ".
-		$self->param_default("ConfigureParams", "");
+	if ($self->param("_type") eq "perl") {
+		my $perlversion = "";
+		my $perldirectory = "";
+		if ($self->has_param("_perlversion")) {
+			$perlversion = $self->param("_perlversion");
+			$perldirectory = "/" . $perlversion;
+		}
+		$configure_params = "PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
+			$self->param_default("ConfigureParams", "");
+	} else {
+		$configure_params = "--prefix=\%p ".
+			$self->param_default("ConfigureParams", "");
+	}
 	$destdir = "$buildpath/root-".$self->{_fullname};
 	if ($self->{_type} eq "splitoff") {
 		my $parent = $self->{parent};
@@ -1268,29 +1279,23 @@ sub phase_compile {
 	# generate compilation script
 	if ($self->has_param("CompileScript")) {
 		$compile_script = $self->param("CompileScript");
-	} elsif ($self->param("_type") eq "perl") {
-		# grab perl version, if present
-		my $perlversion = "";
-		my $perldirectory = "";
-		if ($self->has_param("_perlversion")) {
-			$perlversion = $self->param("_perlversion");
-			$perldirectory = "/" . $perlversion;
-		}
-		$compile_script =
-			"perl$perlversion Makefile.PL PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
-		if ($self->has_param("ConfigureParams")) {
-			$compile_script .= $self->param("ConfigureParams");
-		} 
-
-		$compile_script .= "\nmake\n";
-
-		unless ($self->param_boolean("NoPerlTests")) {
-			$compile_script .= "make test";
-		}
 	} else {
-		$compile_script = 
-			"./configure \%c\n".
-			"make";
+		if ($self->param("_type") eq "perl") {
+			my $perlversion = "";
+			if ($self->has_param("_perlversion")) {
+				$perlversion = $self->param("_perlversion");
+			}
+			$compile_script =
+				"perl$perlversion Makefile.PL \%c\n".
+				"make";
+			unless ($self->param_boolean("NoPerlTests")) {
+				$compile_script .= "make test";
+			}
+		} else {
+			$compile_script = 
+				"./configure \%c\n".
+				"make";
+		}
 	}	 
 
 	### compile
