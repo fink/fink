@@ -823,7 +823,7 @@ sub cmd_checksums {
 			# verify the checksum.
 			foreach $suffix ( $vo->get_source_suffices() ) {
 				$chk = $vo->get_checksum($suffix);
-				if ($chk ne "-") {
+				if (defined $chk) {
 					$file = $vo->find_tarball($suffix);
 					if (defined($file) and $chk ne &file_MD5_checksum($file)) {
 						print "Checksum of tarball $file of package ".$vo->get_fullname()." is incorrect.\n";

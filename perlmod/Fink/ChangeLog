@@ -1,8 +1,17 @@
+2004-07-14  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change get_checksum to return undef (instead of
+	"-") if MD5 for requested suffix is not defined.
+	* Services.pm: Make file_MD5_checksum die if checksum pipe
+	output could not be parsed.
+	* NetAccess.pm: fetch_url_to_file now takes undef instead of "-"
+	as $checksum arg meaning "do not check".
+	* Engine.pm, PkgVersion.pm: Changes for new get_checksum behavior.
+
 2004-07-12  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVersion.pm: convert set_env (which alters ENV) to
-	get_env (which just returns what env should be); fix run_script
-	accordingly.
+	* PkgVersion.pm: convert set_env (which alters ENV) to get_env
+	(which just returns what env should be); fix run_script	accordingly.
 	* Engine.pm: dumpinfo: add 'env' pseudo-field.
 
 2004-07-09  Daniel Macks  <dmacks@netspace.org>

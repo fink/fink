@@ -703,11 +703,11 @@ sub get_tarball {
 #
 # Returns the checksum of the source tarball for a given SourceN suffix.
 # If no suffix is given, returns the primary source tarball's checksum.
-# On error (eg: nonexistent suffix) returns "-".
+# On error (eg: checksum for the requested suffix) returns undef.
 sub get_checksum {
 	my $self = shift;
 	my $suffix = shift || "";
-	return $self->param_default("Source".$suffix."-MD5", "-");
+	return $self->param_default("Source".$suffix."-MD5", undef);
 }
 
 sub get_custom_mirror {
@@ -1348,9 +1348,9 @@ sub fetch_source {
 	
 	if($dryrun) {
 		return if $url eq $file; # just a simple filename
-		print "$file $checksum";
+		print "$file ", (defined $checksum ? $checksum : "-");
 	} else {
-		if($checksum eq '-') {	
+		if(not defined $checksum) {	
 			print "WARNING: No MD5 specified for Source".$suffix.
 							" of package ".$self->get_fullname();
 			if ($self->has_param("Maintainer")) {
@@ -1487,7 +1487,7 @@ END
 		# verify the MD5 checksum, if specified
 		$checksum = $self->get_checksum($suffix);
 		$found_archive_sum = &file_MD5_checksum($found_archive);
-		if ($checksum ne "-" ) { # Checksum was specified
+		if (defined $checksum) { # Checksum was specified
 		# compare to the MD5 checksum of the tarball
 			if ($checksum ne $found_archive_sum) {
 				# mismatch, ask user what to do

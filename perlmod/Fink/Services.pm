@@ -806,16 +806,15 @@ sub collapse_space {
 Returns the MD5 checksum of the given $filename. Uses /sbin/md5 if it
 is available, otherwise uses the first md5sum in PATH. The output of
 the chosen command is read via an open() pipe and matched against the
-appropriate regexp. If the match fails, a '-' char is returned. If the
-command fails, the program dies with an error message.
+appropriate regexp. If the command returns failure or its output was
+not in the expected format, the program dies with an error message.
 
 =cut
 
 sub file_MD5_checksum {
 	my $filename = shift;
-	my ($pid, $checksum, $name, $md5cmd, $match);
+	my ($pid, $checksum, $md5cmd, $match);
 
-	$checksum = "-";
 	if(-e "/sbin/md5") {
 		$md5cmd = "/sbin/md5";
 		$match = '= ([^\s]+)$';
@@ -830,7 +829,11 @@ sub file_MD5_checksum {
 			$checksum = $1;
 		}
 	}
-	close(MD5SUM) or die "Error on closing pipe to $md5cmd: $!\n";
+	close(MD5SUM) or die "Error on closing pipe  $md5cmd: $!\n";
+
+	if (not defined $checksum) {
+		die "Could not parse results of '$md5cmd $filename'\n";
+	}
 
 	return $checksum;
 }

@@ -59,7 +59,7 @@ sub fetch_url {
 	my ($file, $cmd);
 
 	$file = &filename($url);
-	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, '-');
+	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, undef);
 }
 
 ### download a file to the designated directory and save it under the
@@ -193,7 +193,7 @@ sub fetch_url_to_file {
 		my $checksum_msg = ". ";
 		my $default_value = "retry"; # Play it save, assume redownload as default
 		$found_archive_sum = &file_MD5_checksum($file);
-		if ($checksum ne "-") {
+		if (defined $checksum) {
 			if ($checksum eq $found_archive_sum) {
 				$checksum_msg = " and its checksum matches. ";
 				$default_value = "use_it"; # MD5 matches: assume okay to use it
@@ -257,7 +257,7 @@ sub fetch_url_to_file {
 			# failure, continue loop
 		} else {
 			$found_archive_sum = &file_MD5_checksum($file);
-			if ($checksum ne "-" and $checksum ne $found_archive_sum) {
+			if (defined $checksum and $checksum ne $found_archive_sum) {
 
 				&print_breaking("The checksum of the file is incorrect. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
