@@ -1,7 +1,7 @@
 Package: cctools-extra
 Epoch: 1
 Version: 495
-Revision: 1
+Revision: 3
 
 Source: mirror:sourceforge:fink/cctools-%v.tar.bz2
 Source-MD5: 4fc18896b958d17864cc2d001e595ff0
