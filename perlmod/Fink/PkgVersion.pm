@@ -405,6 +405,22 @@ sub get_section {
 	return $self->{_section};
 }
 
+sub get_instsize {
+	my $self = shift;
+	my $path = shift;
+
+	### FIXME ### This should be done in perl
+	### Need to get the full size in bytes of %i
+	my ($size) = split(/\s+/, `/usr/bin/du -sk "$path" 2>/dev/null`);
+	if ($size =~ /^(\d+)$/) {
+		$size = ($1 * 1024);
+	} else {
+		$size = 0;
+	}
+
+	return $size;
+}
+
 sub get_tree {
 	my $self = shift;
 	return $self->{_tree};
@@ -1550,15 +1566,17 @@ sub phase_build {
 
 	# generate dpkg "control" file
 
-	my ($pkgname, $version, $field, $section);
+	my ($pkgname, $version, $field, $section, $instsize);
 	$pkgname = $self->get_name();
 	$version = $self->get_fullversion();
 	$section = $self->get_section();
+	$instsize = $self->get_instsize("$destdir$basepath");
 	$control = <<EOF;
 Package: $pkgname
 Source: $pkgname
 Version: $version
 Section: $section
+Installed-Size: $instsize
 Architecture: $debarch
 EOF
 	if ($self->param_boolean("Essential")) {

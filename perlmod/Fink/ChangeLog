@@ -1,3 +1,8 @@
+2003-11-19  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: Adding initial code to add 'Installed-Size' to
+	CONTROL, should be converted to a perl code instead of using du.
+
 2003-11-19  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* Package.pm (is_any_present): Add new subroutine, returns 1 if a deb
