@@ -1,0 +1,18 @@
+diff -ruN gettext-0.10.40/config.cache gettext-0.10.40-patched/config.cache
+--- gettext-0.10.40/config.cache	Thu Jan  1 01:00:00 1970
++++ gettext-0.10.40-patched/config.cache	Sat Sep 22 20:50:48 2001
+@@ -0,0 +1,2 @@
++am_cv_func_iconv=no
++am_cv_lib_iconv=no
+diff -ruN gettext-0.10.40/configure gettext-0.10.40-patched/configure
+--- gettext-0.10.40/configure	Sat Sep 15 02:47:29 2001
++++ gettext-0.10.40-patched/configure	Sat Sep 22 20:50:49 2001
+@@ -3782,7 +3782,7 @@
+     ;;
+ 
+   darwin* | rhapsody*)
+-    allow_undefined_flag='-undefined suppress'
++    allow_undefined_flag='-flat_namespace -undefined suppress'
+     # FIXME: Relying on posixy $() will cause problems for
+     #        cross-compilation, but unfortunately the echo tests do not
+     #        yet detect zsh echo's removal of \ escapes.

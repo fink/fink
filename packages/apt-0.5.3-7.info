@@ -1,14 +1,17 @@
 Package: apt
 Version: 0.5.3
-Revision: 5
+Revision: 7
 Depends: dpkg
 Source: http://fink.sourceforge.net/bindist/source/%n_%v.tar.gz
 SourceDirectory: apt
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1
+ if [ "%p" = "/sw" ]; then cat sources.list.fink-bindist >>sources.list.fink ; fi
  sh patch_flush
 <<
-SetCXXFLAGS: -O2
+NoSetCPPFLAGS: true
+NoSetLDFLAGS: true
+SetCXXFLAGS: -O2 -DEMULATE_MMAP
 CompileScript: <<
  ./configure %c
  make -f makefile.wrap
@@ -61,15 +64,16 @@ InstallScript: <<
  install -m 644 sources.list.fink %i/etc/apt/sources.list
  mkdir -p %i/var/cache/apt/archives/partial
  mkdir -p %i/var/lib/apt/lists/partial
- mkdir -p %i/share/doc/%n
- cp COPYING* AUTHORS %i/share/doc/%n/
 <<
+DocFiles: COPYING* AUTHORS
 ConfFiles: %p/etc/apt/sources.list
 PostInstScript: <<
 if [ ! -f %p/var/lib/dpkg/cmethopt ]; then
   echo "apt apt" >%p/var/lib/dpkg/cmethopt
   chmod 644 %p/var/lib/dpkg/cmethopt
 fi
+
+rm -f %p/var/cache/apt/pkgcache.bin %p/var/cache/apt/srcpkgcache.bin
 <<
 #
 Description: Advanced front-end for dpkg
@@ -83,6 +87,12 @@ There are three troublemakers when porting apt:
 There's also the usual trouble like not recognizing Darwin and
 depending on a case-sensitive file system. All of this amounts to a
 big, bad patch.
+
+The patch also fixes some potential and some real crashing bugs.
+
+Oh, one more thing: mmap() is broken for non-trivial uses in OS X
+10.1. Luckily apt uses a wrapper class that can be equipped with a
+workaround (malloc() + read() + write()...).
 <<
 License: GPL
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
