@@ -2,6 +2,7 @@
 
 	* Engine.pm: Fix bug causing incorrect installation of 'relatives' when
 	  rebuilding splitoff packages (Bug #645841).
+	* Package.pm: Fink::Package %package_hash -> $packages (Patch #831573).
 
 2003-11-05  Ben Hines <benh57@users.sourceforge.net>
 
