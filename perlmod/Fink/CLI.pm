@@ -83,6 +83,14 @@ printed: $prefix1 is prepended to the first line, $prefix2 is
 prepended to all other lines. If only $prefix1 is defined, that will
 be prepended to all lines.
 
+FIXME: if $string has an embedded newline, this is treated as a forced
+break (good) but the counter used to track how much has been printed
+to a line is not reset (bad). Consider:
+
+    $a="A"x10;
+    &print_breaking("$a "x8);
+    &print_breaking("$a\n"."$a "x8)'
+
 =cut
 
 sub print_breaking {
