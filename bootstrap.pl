@@ -35,6 +35,7 @@ use Fink::Configure;
 use Fink::Bootstrap;
 
 my ($answer, $packageversion, $packagerevision);
+my ($script, $cmd);
 
 ### check if we're unharmed
 
@@ -44,7 +45,7 @@ my ($homebase, $file);
 $homebase = $FindBin::RealBin;
 
 foreach $file (qw(fink install.sh COPYING VERSION
-		  perlmod/Fink mirror update info patch base-files
+		  perlmod/Fink mirror update base-files packages
 		  update/config.guess perlmod/Fink/Config.pm mirror/_keys
 		 )) {
   if (not -e "$homebase/$file") {
@@ -56,7 +57,7 @@ print " looks good.\n";
 
 ### get version
 
-chomp($packageversion = `VERSION`);
+chomp($packageversion = `cat VERSION`);
 if ($packageversion =~ /cvs/) {
   my @now = gmtime(time);
   $packagerevision = sprintf("%04d%02d%02d-%02d%02d",
@@ -97,7 +98,7 @@ if ($host =~ /^powerpc-apple-darwin1\.3/) {
 
 my $rootmethods = { "sudo" => "Use sudo", "su" => "Use su",
 		    "none" => "None, fink must be run as root" };
-my ($rootmethod, $cmd);
+my ($rootmethod);
 if ($> != 0) {
   print "\n";
   &print_breaking("Fink must be installed and run with superuser (root) ".
@@ -240,17 +241,16 @@ foreach $dir (@dirlist) {
 ### copy package info needed for bootstrap
 
 print "Copying package descriptions...\n";
-my ($script, $cmd);
 
 $script = "cp packages/*.info packages/*.patch $installto/fink/dists/stable/bootstrap/finkinfo/\n";
 
 if (-f "packages/base-files.in") {
   $script .= "rm -f $installto/fink/dists/stable/bootstrap/finkinfo/base-files*\n";
-  $script .= "sed -e 's/@VERSION@/$packageversion/' -e 's/@REVISION@/$packagerevision/' <packages/base-files.in >$installto/fink/dists/stable/bootstrap/finkinfo/base-files-$packageversion.info\n";
+  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/base-files.in >$installto/fink/dists/stable/bootstrap/finkinfo/base-files-$packageversion.info\n";
 }
 if (-f "packages/fink.in") {
   $script .= "rm -f $installto/fink/dists/stable/bootstrap/finkinfo/fink*\n";
-  $script .= "sed -e 's/@VERSION@/$packageversion/' -e 's/@REVISION@/$packagerevision/' <packages/fink.in >$installto/fink/dists/stable/bootstrap/finkinfo/fink-$packageversion.info\n";
+  $script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <packages/fink.in >$installto/fink/dists/stable/bootstrap/finkinfo/fink-$packageversion.info\n";
 }
 
 foreach $cmd (split(/\n/,$script)) {
@@ -269,7 +269,7 @@ print "Creating tarballs...\n";
 $script = "";
 if (-f "perlmod/Fink/FinkVersion.pm.in") {
   $script .=
-    "sed -e 's/@VERSION@/$packageversion/' ".
+    "sed -e 's/\@VERSION\@/$packageversion/' ".
     "<perlmod/Fink/FinkVersion.pm.in ".
     ">perlmod/Fink/FinkVersion.pm\n";
 }
@@ -320,7 +320,7 @@ Fink::Bootstrap::bootstrap();
 
 ### copy included package info tree if present
 
-$my $showversion = "";
+my $showversion = "";
 if ($packageversion !~ /cvs/) {
   $showversion = "-$packageversion";
 }
