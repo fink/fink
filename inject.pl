@@ -76,72 +76,10 @@ my $info_script = shift;
 
 my $param = shift;
 
-my ($result, $basepath) = &locate_fink($param);
-if ($result == 1) {
-    return $result;
-}
-
-### get version
-
-my ($packageversion, $packagerevision) = &get_packageversion();
-
-### load configuration
-
-my $config = &read_config("$basepath/etc/fink.conf",
-                          { Basepath => $basepath });
-
-### parse config file for root method
-
-# TODO: use setting from config
-# for now, we just use sudo...
-
-if ($> != 0) {
-  exit &execute("sudo ./inject.pl $basepath");
-}
-umask oct("022");
-
-### check that local/bootstrap is in the Trees list
-
-my $trees = $config->param("Trees");
-if ($trees =~ /^\s*$/) {
-  print "Adding a Trees line to fink.conf...\n";
-  $config->set_param("Trees", "local/main stable/main stable/crypto local/bootstrap");
-  $config->save();
-} else {
-  if (grep({$_ eq "local/bootstrap"} split(/\s+/, $trees)) < 1) {
-    print "Adding local/bootstrap to the Trees line in fink.conf...\n";
-    $config->set_param("Trees", "$trees local/bootstrap");
-    $config->save();
-  }
-}
-
-### create tarball for the package
-
-$result = &create_tarball($basepath, $package, $packageversion, $packagefiles);
-if ($result == 1 ) {
-    return $result;
-}
-
-### create and copy description file
-
-$result = &copy_description($info_script, $basepath, $package, $packageversion, $packagerevision);
-if ($result == 1 ) {
-    return $result;
-}
-
-### install the package
-
-&install_package($basepath, $package);
-
-return 0;
-}
-
-sub locate_fink {
-
-my ($guessed, $param, $path, $bpath);
+my ($guessed, $path, $bpath);
 
 $guessed = "";
-$param = shift;
+
 if (defined $param) {
   $bpath = $param;
 } else {
@@ -163,7 +101,6 @@ if (defined $param) {
   }
   $guessed = " (guessed)";
 }
-my $result = 0;
 unless (-f "$bpath/bin/fink" and
 	-f "$bpath/bin/init.sh" and
 	-f "$bpath/etc/fink.conf" and
@@ -172,8 +109,76 @@ unless (-f "$bpath/bin/fink" and
 		  "Fink installation. Please provide the correct path ".
 		  "as a parameter to this script.");
   $result = 1;
+  return $result;
 }
-return ($result, $bpath);
+
+### get version
+
+my ($packageversion, $packagerevision) = &get_packageversion();
+
+### load configuration
+
+my $config = &read_config("$bpath/etc/fink.conf",
+                          { Basepath => $bpath });
+
+### parse config file for root method
+
+# TODO: use setting from config
+# for now, we just use sudo...
+
+if ($> != 0) {
+  exit &execute("sudo ./inject.pl $bpath");
+}
+umask oct("022");
+
+### check that local/bootstrap is in the Trees list
+
+my $trees = $config->param("Trees");
+if ($trees =~ /^\s*$/) {
+  print "Adding a Trees line to fink.conf...\n";
+  $config->set_param("Trees", "local/main stable/main stable/crypto local/bootstrap");
+  $config->save();
+} else {
+  if (grep({$_ eq "local/bootstrap"} split(/\s+/, $trees)) < 1) {
+    print "Adding local/bootstrap to the Trees line in fink.conf...\n";
+    $config->set_param("Trees", "$trees local/bootstrap");
+    $config->save();
+  }
+}
+
+### create tarball for the package
+
+$result = &create_tarball($bpath, $package, $packageversion, $packagefiles);
+if ($result == 1 ) {
+    return $result;
+}
+
+### create and copy description file
+
+$result = &copy_description($info_script, $bpath, $package, $packageversion, $packagerevision);
+if ($result == 1 ) {
+    return $result;
+}
+
+### install the package
+
+print "Installing package...\n";
+print "\n";
+
+if (&execute("$bpath/bin/fink install $package")) {
+  print "\n";
+  &print_breaking("Installing the new $package package failed. ".
+		  "The description and the tarball were installed, though. ".
+		  "You can retry at a later time by issuing the ".
+		  "appropriate fink commands.");
+} else {
+  print "\n";
+  &print_breaking("Your Fink installation in '$bpath' was updated with ".
+		  "a new $package package.");
+}
+print "\n";
+
+return 0;
 }
 
 sub get_packageversion {
