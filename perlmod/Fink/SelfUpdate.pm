@@ -208,7 +208,7 @@ sub setup_direct_cvs {
   &print_breaking("Checking to see if we can use hard links to merge ".
 		  "the existing tree. Please ignore errors on the next ".
 		  "few lines.");
-  if (&execute("ln $finkdir/README $tempdir/README")) {
+  if (&execute("touch $finkdir/README; ln $finkdir/README $tempdir/README")) {
     $use_hardlinks = 0;
   } else {
     $use_hardlinks = 1;

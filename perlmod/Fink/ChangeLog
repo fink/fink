@@ -1,3 +1,7 @@
+2002-05-25  Alexander Strange <MrVacBob@mac.com>
+
+	* SelfUpdate.pm (setup_direct_cvs): The hardlink-support test works now.
+
 2002-05-23  Max Horn  <max@quendi.de>
 
 	* Engine.pm (real_install): Under certain condition, splitoffs could have 
