@@ -385,25 +385,28 @@ sub parse_configureparams {
 	} else {
 		$self->{_expand}->{'c'} = "--prefix=\%p ";
 	}
-	$self->{_expand}->{'c'} .= $self->param_default("ConfigureParams", "");
-#	$self->{_expand}->{'c'} .= $self->get_configureparams("");
+#	$self->{_expand}->{'c'} .= $self->param_default("ConfigureParams", "");
+	$self->{_expand}->{'c'} .= $self->conditional_space_list(
+		$self->param_default_expanded("ConfigureParams", ""),
+		"ConfigureParams of ".$self->get_info_filename
+	);
 }
 
-# actually handle the conditional processing of ConfigureParams
+# handle conditionals processing in a list of space-separated atoms
 
 our $warned_delimmatch;  # defined if user has been warned
 
-sub get_configureparams {
-	my $self = shift;
-	my $default = shift;
+sub conditional_space_list {
+	my $self = shift;    # unused
+	my $string = shift;  # the string to parse
+	my $where = shift;   # used in warning messages
 
-	my $string = $self->param_default_expanded('ConfigureParams', $default);
 	return $string unless defined $string and $string =~ /\(/; # short-circuit
 
 	if (not eval { require Text::DelimMatch }) {
 		# this is not an Essential package
 		if (not $warned_delimmatch) {
-			print "Could not load Text::DelimMatch so cannot handle ConfigureParam conditionals.\n";
+			print "Could not load Text::DelimMatch so cannot handle conditionals in $where.\n";
 			print "(note: this feature is not needed for any packages in the official Fink trees)\n";
 			$warned_delimmatch = 1;  # only warn once per indexing run
 		}
@@ -420,11 +423,8 @@ sub get_configureparams {
 	$mc->returndelim(0);
 	$mc->keep(0);
 
-	my($stash, $prefix, $cond, @words);  # scratches used in loop
+	my($stash, $prefix, $cond, $chunk, @save_delim);  # scratches used in loop
 	my $result;
-
-	# this is a constant within loop; no reason to keep redefining it
-	my $where = "ConfigureParams of ".$self->get_info_filename;
 
 	while (defined $string) {
 		$stash = $string;  # save in case no parens (parsing clobbers string)
@@ -434,12 +434,20 @@ sub get_configureparams {
 		if (defined $cond) {
 			# found a conditional (string in balanced parens)
 			if (defined $string) {
-				# grab first word after it
-				@words = &parse_line('\s+', 1, $string);
-				if (defined $words[0]) {
+				if ($string =~ /^\s*\{/) {
+					# grab whole braces-delimited chunk
+					@save_delim = $mc->delim( '\s*\{\s*', '\s*\}\s*' );
+					($prefix, $chunk, $string) = $mc->match($string);
+					$mc->delim(@save_delim);
+				} else {
+					# grab first word
+					# should canibalize parse_line, optimize this specific use
+					$chunk = (&parse_line('\s+', 1, $string))[0];
+					$string =~ s/^\Q$chunk//;  # already dealt with this now
+				}
+				if (defined $chunk and $chunk =~ /\S/) {
 					# only keep it if conditional is true
-					$result .= " $words[0]" if &eval_conditional($cond, $where);
-					$string =~ s/^\Q$words[0]//;  # already dealt with this now
+					$result .= " $chunk" if &eval_conditional($cond, $where);
 				} else {
 					print "Conditional \"$cond\" controls nothing in $where!\n";
 				}
