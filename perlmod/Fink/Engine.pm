@@ -391,7 +391,7 @@ EOF
 				$iflag = "(i)";
 				if (not ($options{installedstate} &1)) {next;};
 			} else {
-				$iflag = "	 ";
+				$iflag = "   ";
 				if (not ($options{installedstate} & 4)) {next; };
 			}
 
