@@ -40,7 +40,8 @@ BEGIN {
 					  &read_properties_multival &read_properties_multival_var
 					  &execute &execute_script &expand_percent
 					  &filename
-					  &version_cmp &latest_version &parse_fullversion
+					  &version_cmp &latest_version &sort_versions
+					  &parse_fullversion
 					  &collapse_space
 					  &file_MD5_checksum &get_arch &get_sw_vers
 					  &get_system_perl_version &get_path
@@ -660,6 +661,9 @@ sub version_cmp {
 		$res = $res >= 0 ? 1 : 0;
 	} elsif ($op eq ">>") {
 		$res = $res > 0 ? 1 : 0;
+	} elsif ($op eq "<=>") {
+	} else {
+		warn "Unknown version comparison operator \"$op\"\n";
 	}
 
 	return $res;
@@ -742,6 +746,20 @@ sub latest_version {
 	}
 	return $latest;
 }
+
+=item sort_versions {
+
+	my @sorted = sort_versions @versionstrings;
+
+Given a list of one or more debian version strings, return the list
+sorted lowest-to-highest. See the Debian Policy Manual, section 5.6.11
+"Version" for more information.
+
+=cut
+
+sub sort_versions {
+	sort { version_cmp($a,"<=>",$b) } @_;
+}	
 
 =item parse_fullversion
 

@@ -23,7 +23,7 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&latest_version &execute &file_MD5_checksum &get_arch &expand_percent);
+use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width &parse_cmd_options);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -1646,10 +1646,28 @@ Fink $version
 Usage: fink dumpinfo [options] [package(s)]
 
 Options:
-  -a, --all            - All package info fields (default behavior)
-  -f s, --field=s      - Just the specific field(s) specified
-  -p s, --percent=key  - Just the percent expansion for specific key(s)
+  -a, --all            - All package info fields (default behavior).
+  -f s, --field=s      - Just the specific field(s) specified.
+  -p s, --percent=key  - Just the percent expansion for specific key(s).
   -h, --help           - This help text.
+
+The following pseudo-fields are available in addition to all fields
+described in the Fink Packaging Manual:
+  infofile     - Full path to package description file.
+  sources      - Source and all SourceN values in numerical order.
+  splitoffs    - Package name for SplitOff and all SplitOffN in numerical
+                 order. You cannot ask for splitoff packages by SplitOffN
+                 field name of the parentfields by field name--they are
+                 handled as full and independent packages.
+  parent       - Package name of main package (if a splitoff package).
+  family       - "splitoffs", "parent", and "splitoffs" of "parent".
+  status       - For this version of the package:
+                   "latest" if the most recent known version, or
+                   "old" if a more recent version is known;
+                 followed by:
+                   "installed" if this version is currently installed.
+  allversions  - List of all known versions of the package name in order.
+                 Currently-installed version (if any) is prefixed with "i".
 
 EOF
 		exit 0;
@@ -1673,7 +1691,8 @@ EOF
 		# default to all fields if no fields or %expands specified
 		if ($wantall or not (@fields or @percents)) {
 			@fields = (qw/
-					   info package epoch version revision parent family
+					   infofile package epoch version revision parent family
+					   status allversions
 					   description type license maintainer
 					   pre-depends depends builddepends
 					   provides replaces conflicts buildconflicts
@@ -1689,11 +1708,11 @@ EOF
 								   tarfilesrename
 								   /);
 				} else {
-					push @fields, (qw/
-								   source$_ source$_rename source$_-md5
-								   source$_extractdir
-								   tar$_filesrename
-								   /);
+					push @fields, ("source${_}", "source${_}rename",
+								   "source${_}-md5",
+								   "source${_}extractdir",
+								   "tar${_}filesrename"
+								  );
 				}
 			}
 			push @fields, (qw/
@@ -1716,8 +1735,8 @@ EOF
 		};
 
 		foreach (@fields) {
-			if ($_ eq 'info') {
-				printf "file: %s\n", $pkg->get_info_filename();
+			if ($_ eq 'infofile') {
+				printf "infofile: %s\n", $pkg->get_info_filename();
 			} elsif ($_ eq 'package') {
 				printf "%s: %s\n", $_, $pkg->get_name();
 			} elsif ($_ eq 'version') {
@@ -1730,9 +1749,32 @@ EOF
 				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->{_splitoffs}} if defined $pkg->{_splitoffs} and @{$pkg->{_splitoffs}};
 			} elsif ($_ eq 'family') {
 				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(1, 1);
+			} elsif ($_ eq 'status') {
+				my $package = Fink::Package->package_by_name($pkg->get_name());
+				my $lversion = &latest_version($package->list_versions());
+				print "$_:";
+				$pkg->get_fullversion eq $lversion
+					? print " latest"
+					: print " old";
+				if ($pkg->is_installed()) {
+					print " installed";
+				};
+				print "\n";
+			} elsif ($_ eq 'allversions') {
+				# multiline field, so indent 1 space always
+				my $package = Fink::Package->package_by_name($pkg->get_name());
+				my $lversion = &latest_version($package->list_versions());
+				print "$_:\n";
+				foreach (&sort_versions($package->list_versions())) {
+					printf " %s %s\n",
+						$package->get_version($_)->is_installed() ? "i" : " ",
+						$_;
+				}
 			} elsif ($_ eq 'description') {
 				printf "%s: %s\n", $_, $pkg->get_shortdescription;
 			} elsif ($_ =~ /^desc(detail|usage|packaging|port)$/) {
+				# multiline field, so indent 1 space always
+				# format_description does that for us
 				print "$_:\n", Fink::PkgVersion::format_description($pkg->param($_)) if $pkg->has_param($_);
 			} elsif ($_ eq 'type'       or $_ eq 'license' or
 					 $_ eq 'maintainer' or $_ eq 'homepage'
@@ -1754,11 +1796,12 @@ EOF
 					) {
 				printf "%s: %s\n", $_, $pkg->param_boolean($_) ? "true" : "false";
 			} elsif ($_ eq 'sources') {
+				# multiline field, so indent 1 space always
 				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;
 				@suffixes = grep { $_ ne "none" } @suffixes;
 				if (@suffixes) {
 					print "$_:\n";
-					print map { "\t" .$pkg->get_source($_) . "\n" } @suffixes;
+					print map { " $_\n" } @suffixes;
 				}
 			} elsif ($_ =~ /^source(\d*)$/) {
 				my $src = $pkg->get_source($1);
@@ -1770,6 +1813,7 @@ EOF
 					$pkg->parse_configureparams,
 					$pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion
 				);
+				$cparams =~ s/\n//g;
 				printf "%s: %s\n", $_, $cparams if length $cparams;
 			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
 					 $_ =~ /^tar\d*filesrename$/ or
@@ -1778,10 +1822,23 @@ EOF
 					 $_ eq 'patch' or $_ eq 'infodocs' or
 					 $_ =~ /^daemonic(file|name)$/
 					) {
-				printf "%s: %s\n", $_, $pkg->param_expanded($_) if $pkg->has_param($_);
+				# singleline fields start on the same line, have
+				# embedded newlines removes, and are not wrapped
+				if ($pkg->has_param($_)) {
+					my $value = $pkg->param_expanded($_);
+					$value =~ s/^\s+//m;
+					$value =~ s/\n/ /g; # merge into single line
+					printf "%s: %s\n", $_, $value;
+				}
 			} elsif ($_ =~ /^((patch|compile|install|(pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)$/) {
+				# multiline fields start on a new line and are
+				# indented one extra space
 				$pkg->parse_configureparams;
-				printf "$_:\n%s\n", $pkg->param_expanded($_) if $pkg->has_param($_);
+				if ($pkg->has_param($_)) {
+					my $value = $pkg->param_expanded($_);
+					$value =~ s/^/ /gm;
+					printf "%s:\n%s\n", $_, $value;
+				}
 			} else {
 				die "Unknown field $_\n";
 			}
