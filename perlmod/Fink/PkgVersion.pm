@@ -128,8 +128,19 @@ sub initialize {
 	$self->{_fullname} = $pkgname."-".$version."-".$revision;
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 	# percent-expansions
-	$configure_params = "--prefix=\%p ".
-		$self->param_default("ConfigureParams", "");
+	if ($self->param("_type") eq "perl") {
+		my $perlversion = "";
+		my $perldirectory = "";
+		if ($self->has_param("_perlversion")) {
+			$perlversion = $self->param("_perlversion");
+			$perldirectory = "/" . $perlversion;
+		}
+		$configure_params = "PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
+			$self->param_default("ConfigureParams", "");
+	} else {
+		$configure_params = "--prefix=\%p ".
+			$self->param_default("ConfigureParams", "");
+	}
 	$destdir = "$buildpath/root-".$self->{_fullname};
 	if ($self->{_type} eq "splitoff") {
 		my $parent = $self->{parent};
@@ -985,6 +996,14 @@ sub phase_unpack {
 		return;
 	}
 
+	my ($gcc);
+	my %gcchash = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3');
+
+	if ($self->has_param("GCC")) {
+	    $gcc = $self->param("GCC");
+	    die "\n\nYou have the wrong version of gcc selected; run the command\n\n     sudo gcc_select " . $gcchash{$gcc} . "\n\n(and/or install a more recent version of the Developer Tools)\nto correct this problem.\n" unless (`gcc_select` =~ /version\ $gcc/s);
+	}
+
 	$bdir = $self->get_fullname();
 
 	$verbosity = "";
@@ -1027,14 +1046,15 @@ sub phase_unpack {
 		$checksum = $self->get_checksum($i);
 		if ($checksum ne "-" ) { # Checksum was specified 
 		# compare to the MD5 checksum of the tarball
-			if ($checksum ne &file_MD5_checksum($found_archive)) {
+			my  $found_archive_sum = &file_MD5_checksum($found_archive);
+			if ($checksum ne $found_archive_sum) {
 				# mismatch, ask user what to do
 				$tries++;
-				
 				&print_breaking("The checksum of the file $archive of package ".
 								$self->get_fullname()." is incorrect. The most likely ".
-								"cause for this is a corrupted or incomplete ".
-								"download. It is recommended that you download it ".
+								"cause for this is a corrupted or incomplete download\n".
+								"Expected: $checksum \nActual: $found_archive_sum \n".
+								"It is recommended that you download it ".
 								"again. How do you want to proceed?");
 				$answer =
 					&prompt_selection("Make your choice: ",
@@ -1259,22 +1279,23 @@ sub phase_compile {
 	# generate compilation script
 	if ($self->has_param("CompileScript")) {
 		$compile_script = $self->param("CompileScript");
-	} elsif ($self->param("_type") eq "perl") {
-		# grab perl version, if present
-		my $perlversion = "";
-		my $perldirectory = "";
-		if ($self->has_param("_perlversion")) {
-			$perlversion = $self->param("_perlversion");
-			$perldirectory = "/" . $perlversion;
-		}
-		$compile_script =
-			"perl$perlversion Makefile.PL PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin\n".
-			"make\n".
-			"make test";
 	} else {
-		$compile_script = 
-			"./configure \%c\n".
-			"make";
+		if ($self->param("_type") eq "perl") {
+			my $perlversion = "";
+			if ($self->has_param("_perlversion")) {
+				$perlversion = $self->param("_perlversion");
+			}
+			$compile_script =
+				"perl$perlversion Makefile.PL \%c\n".
+				"make";
+			unless ($self->param_boolean("NoPerlTests")) {
+				$compile_script .= "make test";
+			}
+		} else {
+			$compile_script = 
+				"./configure \%c\n".
+				"make";
+		}
 	}	 
 
 	### compile
@@ -1908,10 +1929,6 @@ sub set_env {
 	my ($varname, $s, $expand);
 	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
 					 "LDFLAGS" => "-L\%p/lib" );
-	my %stickydefaults;
-	if ($config->param("Distribution") > 10.2) {
-	    %stickydefaults  = ( "MACOSX_DEPLOYMENT_TARGET" => "10.3" );
-	}
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	# clean the environment
@@ -1947,19 +1964,14 @@ sub set_env {
 			if (exists $defaults{$varname} and
 					not $self->param_boolean("NoSet$varname")) {
 				$s .= " ".$defaults{$varname};
-			    } 
+			}
 			$ENV{$varname} = &expand_percent($s, $expand);
 		} else {
 			if (exists $defaults{$varname} and
-					not $self->param_boolean("NoSet$varname
-")) {
+					not $self->param_boolean("NoSet$varname")) {
 				$s = $defaults{$varname};
 				$ENV{$varname} = &expand_percent($s, $expand);
-			} elsif (exists $stickydefaults{$varname} and 
-					not $self->param_boolean("NoSet$varname")) {
-				$s = $stickydefaults{$varname};
-				$ENV{$varname} = &expand_percent($s, $expand);
-			    } else {
+			} else {
 				delete $ENV{$varname};
 			}
 		}

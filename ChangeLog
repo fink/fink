@@ -1,3 +1,12 @@
+2003-08-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.7; this release
+	only contains the fix for Boostrap.pm and is otherwise unchanged
+
+2003-08-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.6
+
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.13.5; this release

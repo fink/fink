@@ -50,7 +50,7 @@ our @required_fields =
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
 	(
-		qw(essential nosourcedirectory updateconfigguess updatelibtool updatepod),
+		qw(essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests),
 		map {"noset".$_} @set_vars
 	);
 
@@ -123,6 +123,7 @@ our %known_fields = map {$_, 1}
 		 updatelibtoolindirs
 		 updatepomakefile
 		 updatepod
+		 noperltests
 		 patch
 		 patchscript
 		 configureparams
