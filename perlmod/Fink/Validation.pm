@@ -254,7 +254,7 @@ END { }				# module clean-up code here (global destructor)
 
 # Should check/verifies the following in .info files:
 #	+ the filename matches %f.info
-#	+ patch file is present
+#	+ patch file (from Patch, not PatchScript) is present
 #	+ all required fields are present
 #	+ warn if obsolete fields are encountered
 #	+ warn about missing Description/Maintainer/License fields
@@ -264,7 +264,8 @@ END { }				# module clean-up code here (global destructor)
 #	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
 #		(excluded from this are fields like Description, Homepage etc.)
 #	+ warn if unknown fields are encountered
-#	+ warn if /sw is hardcoded in the script or set fields
+#	+ warn if /sw is hardcoded in the script or set fields or patch file
+#		(from Patch, not PatchScript)
 #	+ correspondence between source* and source*-md5 fields
 #	+ if type is bundle/nosource - warn about usage of "Source" etc.
 #
@@ -272,6 +273,7 @@ END { }				# module clean-up code here (global destructor)
 #	- better validation of splitoffs
 #	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
 #	  it uses ">" instead of ">>".
+#	- checks against patch files used in PatchScript (not just Patch)
 #	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
@@ -598,6 +600,11 @@ sub validate_info_file {
 			}
 			elsif ($patch_file_content =~ m/\r/s) {
 				print "Error: Patch file has Mac line endings. ($value)\n";
+				$looks_good = 0;
+			}
+			# Check for hardcoded /sw.
+			if ($patch_file_content =~ /\/sw([\s\/]|$)/) {
+				print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
 				$looks_good = 0;
 			}
 		}

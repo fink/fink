@@ -1,3 +1,8 @@
+2003-12-22  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Check for hardcoded /sw in patch file (as loaded
+	by Patch, not as by PatchScript).
+
 2003-12-21  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Gave prompt_selection_new more flexible default-
