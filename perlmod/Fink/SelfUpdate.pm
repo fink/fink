@@ -225,7 +225,7 @@ sub setup_direct_cvs {
 				"Enter your SourceForge login name to set up full CVS access. ".
 				"Other users, just press return to set up anonymous ".
 				"read-only access.",
-				"anonymous");
+				default => "anonymous");
 	print "\n";
 
 	# start by creating a temporary directory with the right permissions

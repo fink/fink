@@ -1,3 +1,7 @@
+2005-03-14  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Fix prompt for CVS username.
+
 2005-03-11  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: fix double display of shlibs library reading
