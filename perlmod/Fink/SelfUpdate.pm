@@ -96,6 +96,9 @@ sub check {
 
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
+		if (-f "$finkdir/dists/stamp-rsync-live") {
+			unlink "$finkdir/dists/stamp-rsync-live";
+		}
 		if (-f "$finkdir/stamp-rsync-live") {
 			unlink "$finkdir/stamp-rsync-live";
 		}
@@ -160,7 +163,7 @@ sub check {
 		}
 		$latest_fink = cat "$srcdir/$currentfink";
 		chomp($latest_fink);
-		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" )
+		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" and ! "$finkdir/dists/stamp-cvs-live" and ! -f "$finkdir/dists/stamp-rsync-live")
 		{
 			# check if we need to upgrade
 			if (&version_cmp($latest_fink . '-1', '<=', $installed_version . '-1')) {
@@ -171,7 +174,7 @@ sub check {
 				return;
 			}
 		} else {
-			rm_f "$finkdir/stamp-rsync-live", "$finkdir/stamp-cvs-live";
+			rm_f "$finkdir/stamp-rsync-live", "$finkdir/stamp-cvs-live", "$finkdir/dists/stamp-rsync-live", "$finkdir/dists/stamp-cvs-live";
 			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 		&do_tarball($latest_fink);
@@ -638,8 +641,8 @@ RSYNCAGAIN:
 
 	rm_rf "$basepath/fink/$dist/CVS";
 	rm_rf "$basepath/fink/CVS";
-	touch "stamp-rsync-live";
-	rm_f "stamp-cvs-live";
+	touch "$dist/stamp-rsync-live";
+	rm_f "stamp-cvs-live", "$dist/stamp-cvs-live";
 	# cleanup after ourselves and continue with the update.
 	unlink("$descdir/TIMESTAMP");
 	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
