@@ -45,7 +45,6 @@ use Fink::Engine;
 my ($config, $configpath);
 $configpath = "$FindBin::RealBin/../etc/fink.conf";
 if (-f $configpath) {
-  print "Reading configuration...\n";
   $config = &read_config($configpath);
 } else {
   print "ERROR: No configuration file found.\n";
