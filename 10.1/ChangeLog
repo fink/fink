@@ -1,3 +1,8 @@
+2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* add -dev counterparts to four packages, needed by fink-0.13.4
+	(unknown whether fink-0.13.4 still works on 10.1 or not)
+
 2002-10-03  Max Horn  <max@quendi.de>
 	
 	* fixed various packages to really use the Fink copies of source files
