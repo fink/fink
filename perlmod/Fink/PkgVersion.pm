@@ -256,7 +256,7 @@ sub get_build_directory {
   if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
     $dir = $1;
   }
-  if ($dir =~ /^(.*)\.tgz$/) {
+  if ($dir =~ /^(.*)\.(tgz|zip)$/) {
     $dir = $1;
   }
 
@@ -473,7 +473,7 @@ sub fetch_source {
 
 sub phase_unpack {
   my $self = shift;
-  my ($archive, $found_archive, $bdir, $destdir, $tar_cmd);
+  my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
   my ($i);
 
   if ($self->{_type} eq "bundle") {
@@ -504,11 +504,15 @@ sub phase_unpack {
     }
 
     # determine unpacking command
-    $tar_cmd = "tar -xvf $found_archive";
+    $unpack_cmd = "cp $found_archive .";
     if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-      $tar_cmd = "gzip -dc $found_archive | tar -xvf -";
+      $unpack_cmd = "gzip -dc $found_archive | tar -xvf -";
     } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
-      $tar_cmd = "bzip2 -dc $found_archive | tar -xvf -";
+      $unpack_cmd = "bzip2 -dc $found_archive | tar -xvf -";
+    } elsif ($archive =~ /[\.\-]tar$/) {
+      $unpack_cmd = "tar -xvf $found_archive";
+    } elsif ($archive =~ /\.zip$/) {
+      $unpack_cmd = "unzip -o $found_archive";
     }
 
     # calculate destination directory
@@ -526,7 +530,7 @@ sub phase_unpack {
 
     # unpack it
     chdir $destdir;
-    if (&execute($tar_cmd)) {
+    if (&execute($unpack_cmd)) {
       die "unpacking failed\n";
     }
   }
@@ -543,6 +547,9 @@ sub phase_patch {
   }
 
   $dir = $self->get_build_directory();
+  if (not -d "$basepath/src/$dir") {
+    die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+  }
   chdir "$basepath/src/$dir";
 
   $patch_script = "";
@@ -602,6 +609,9 @@ sub phase_compile {
   }
 
   $dir = $self->get_build_directory();
+  if (not -d "$basepath/src/$dir") {
+    die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+  }
   chdir "$basepath/src/$dir";
 
   # generate compilation script
@@ -634,6 +644,9 @@ sub phase_install {
 
   if ($self->{_type} ne "bundle") {
     $dir = $self->get_build_directory();
+    if (not -d "$basepath/src/$dir") {
+      die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+    }
     chdir "$basepath/src/$dir";
   }
 
