@@ -144,7 +144,7 @@ Returns undef on error, even in list context.
 sub cat {
 	my $file = shift;
 	my $fh;
-	unless( open $fh, $file ) {
+	unless( open $fh, "<$file" ) {
 		return undef;
 	}
 	
@@ -211,6 +211,7 @@ sub rm_f {
 	
 	my $nok = 0;
 	foreach my $file (@files) {
+		next unless -e $file;
 		next if unlink($file);
 		chmod(0777,$file);
 		next if unlink($file);
@@ -279,14 +280,15 @@ sub chowname {
 
   symlink_f $src, $dest;
 
-Like C<ln -sf>.  Currently requires the $dest.
+Like C<ln -sf>.  Currently requires the full filename for $dest (not
+just target directory.
 
 =cut
 
 sub symlink_f {
 	my($src, $dest) = @_;
 	
-	unlink $dest or return;
+	rm_f $dest or return;
 	return symlink($src, $dest);
 }
 

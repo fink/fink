@@ -37,6 +37,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
+use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f);
 
 use File::Basename qw(&dirname);
 
@@ -62,7 +63,7 @@ END { }				# module clean-up code here (global destructor)
 ### self-initialization
 sub initialize {
 	my $self = shift;
-	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type);
+	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type_hash);
 	my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
 	my ($parentpkgname, $parentdestdir);
 	my ($i, $path, @parts, $finkinfo_index, $section);
@@ -75,12 +76,8 @@ sub initialize {
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
 
-	$self->{_type} = $type = lc $self->param_default("Type", "");
-	if ($type =~ s/^\s*(\S+)\s+(\S+)\s*/$1/) {
-		$self->{_typeversion_raw} = $self->{_typeversion_pkg} = $2;
-		$self->{_typeversion_pkg} =~ s/\.//g;
-		$self->{_type} = $type;
-	}
+	# multivalue lists were already cleared
+	$self->{_type_hash} = $type_hash = Fink::PkgVersion->type_hash_from_string($self->param_default("Type", ""));
 
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
@@ -132,7 +129,7 @@ sub initialize {
 	$self->{_fullname} = $pkgname."-".$version."-".$revision;
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 	# percent-expansions
-	if ($self->param("_type") eq "perl") {
+	if ($self->is_type('perl')) {
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 
@@ -172,20 +169,18 @@ sub initialize {
 				'b' => '.'
 			};
 
-	# only add percent keys for language version if one was given
-	# (so fatal error if attempt to use when not set)
-	if ($self->{_typeversion_raw}) {
-		$expand->{'lV'} = $self->{_typeversion_raw};
-		$expand->{'lv'} = $self->{_typeversion_pkg};
-	}
-	if (exists $self->{'parent'}) {
-		$expand->{'LV'} = $self->{'parent'}->{_typeversion_raw};
-		$expand->{'Lv'} = $self->{'parent'}->{_typeversion_pkg};
+	foreach (keys %$type_hash) {
+		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 	}
 
 	$self->{_expand} = $expand;
 
 	$self->{_bootstrap} = 0;
+
+	# FIXME: Could most of this expand and conditional parsing be put
+	# off until later, perhaps as part of the param() accessor method?
+	# Provides must be done here, however, since we are possibly being
+	# called by Package::inject_description() which uses that field
 
 	# expand percents in various fields
 	$self->expand_percent_if_available('BuildDepends');
@@ -432,7 +427,7 @@ sub merge {
 	my $self = shift;
 	my $dup = shift;
 	
-	print "Warning! Not a dummy package\n" if $self->{_type} ne 'dummy';
+	print "Warning! Not a dummy package\n" if $self->is_type('dummy');
 	push @{$self->{_debpaths}}, @{$dup->{_debpaths}};
 }
 
@@ -569,8 +564,8 @@ sub get_source {
 	my $self = shift;
 	my $index = shift || 1;
 	if ($index < 2) {
-		return $self->param("Source") unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
-	} elsif ($index <= $self->{_sourcecount}) {
+		return $self->param("Source") unless ($self->is_type('bundle') || $self->is_type('nosource'));
+ 	} elsif ($index <= $self->{_sourcecount}) {
 		return $self->param("Source".$index);
 	}
 	return "none";
@@ -593,7 +588,7 @@ sub get_tarball {
 		if ($self->has_param("SourceRename")) {
 			return $self->param("SourceRename");
 		}
-		return &filename($self->param("Source")) unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
+		return &filename($self->param("Source")) unless ($self->is_type('bundle') || $self->is_type('nosource'));
 	} elsif ($index <= $self->{_sourcecount}) {
 		if ($self->has_param("Source".$index."Rename")) {
 			return $self->param("Source".$index."Rename");
@@ -652,7 +647,7 @@ sub get_build_directory {
 		return $self->{_builddir};
 	}
 
-	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource"
+	if ($self->is_type('bundle') || $self->is_type('nosource')
 			|| lc $self->get_source(1) eq "none"
 			|| $self->param_boolean("NoSourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname();
@@ -703,6 +698,53 @@ sub get_splitoffs {
 	}
 
 	return @list;
+}
+
+# returns whether this fink package is of a given Type:
+# presumes the field is already been parsed into $self->{_type_hash}
+
+sub is_type {
+	my $self = shift;
+	my $type = shift;
+
+	if (defined $self->{_type_hash}->{$type} and length $self->{_type_hash}->{$type}) {
+		return 1;
+	}
+	return 0;
+}
+
+# returns the subtype for a given type, or undef if the type is not
+# known for the package
+
+sub get_subtype {
+	my $self = shift;
+	my $type = shift;
+
+	return $self->{_type_hash}->{$type};
+}
+
+# given a string representing the Type: field (with no multivalue
+# subtype lists), return a ref to a hash of type=>subtype
+
+sub type_hash_from_string {
+	shift;	# class method - ignore first parameter
+	my $string = shift;
+	my $filename = shift;
+
+	my %hash;
+	$string =~ s/\s*$//g;  # detritus from multitype parsing
+	foreach (split /\s*,\s*/, $string) {
+		if (/^(\S+)$/) {
+			# no subtype so use type as subtype
+			$hash{$1} = $1;
+		} elsif (/^(\S+)\s+(\S+)$/) {
+			# have subtype
+			$hash{$1} = $2;
+		} else {
+			warn "Bad Type specifier '$_' in $filename\n";
+		}
+	}
+	return \%hash;
 }
 
 ### generate description
@@ -789,9 +831,9 @@ sub is_fetched {
 	my $self = shift;
 	my ($i);
 
-	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+	if ($self->is__type('bundle') || $self->is_type('nosource') ||
 			lc $self->get_source(1) eq "none" ||
-			$self->{_type} eq "dummy") {
+			$self->is_type('dummy')) {
 		return 1;
 	}
 
@@ -1183,9 +1225,9 @@ sub phase_fetch {
 	my $dryrun = shift || 0;
 	my ($i);
 
-	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+	if ($self->is_type('bundle') || $self->is_type('nosource') ||
 			lc $self->get_source(1) eq "none" ||
-			$self->{_type} eq "dummy") {
+			$self->is_type('dummy')) {
 		return;
 	}
 	if (exists $self->{parent}) {
@@ -1279,10 +1321,10 @@ sub phase_unpack {
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		return;
 	}
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 			" because no package description is available\n";
 	}
@@ -1328,16 +1370,14 @@ END
 	# remove dir if it exists
 	chdir "$buildpath";
 	if (-e $bdir) {
-		if (&execute("/bin/rm -rf $bdir")) {
+		rm_rf $bdir or
 			die "can't remove existing directory $bdir\n";
-		}
 	}
 
-	if ($self->{_type} eq "nosource" || lc $self->get_source(1) eq "none") {
+	if ($self->is_type('nosource') || lc $self->get_source(1) eq "none") {
 		$destdir = "$buildpath/$bdir";
-		if (&execute("/bin/mkdir -p $destdir")) {
+		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
-		}
 		return;
 	}
 
@@ -1377,12 +1417,12 @@ END
 								  "Assume it is a partial download and try to continue" => "continuedownload",
 								  "Don't download, use existing file" => "continue" ) );
 				if ($answer eq "redownload") {
-					&execute("/bin/rm -f $found_archive");
+					rm_f $found_archive;
 					$i--;
 					# Axel leaves .st files around for partial files, need to remove
 					if($config->param_default("DownloadMethod") =~ /^axel/)
 					{
-									&execute("/bin/rm -f $found_archive.st");
+									rm_f "$found_archive.st";
 					}
 					next;		# restart loop with same tarball
 				} elsif($answer eq "error") {
@@ -1451,9 +1491,8 @@ END
 
 		# create directory
 		if (! -d $destdir) {
-			if (&execute("/bin/mkdir -p $destdir")) {
+			mkdir_p $destdir or
 				die "can't create directory $destdir\n";
-			}
 		}
 
 		# unpack it
@@ -1469,7 +1508,7 @@ END
 								"and download it again?",
 								($tries >= 3) ? 0 : 1);
 			if ($answer) {
-				&execute("/bin/rm -f $found_archive");
+				rm_f $found_archive;
 				$i--;
 				next;		# restart loop with same tarball
 			} else {
@@ -1487,10 +1526,10 @@ sub phase_patch {
 	my $self = shift;
 	my ($dir, $patch_script, $cmd, $patch, $subdir);
 
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		return;
 	}
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
@@ -1573,10 +1612,10 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		return;
 	}
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
@@ -1595,7 +1634,7 @@ sub phase_compile {
 	if ($self->has_param("CompileScript")) {
 		$compile_script = $self->param("CompileScript");
 	} else {
-		if ($self->param("_type") eq "perl") {
+		if ($self->is_type('perl')) {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$compile_script =
 				"$perlcmd Makefile.PL \%c\n".
@@ -1603,7 +1642,7 @@ sub phase_compile {
 			unless ($self->param_boolean("NoPerlTests")) {
 				$compile_script .= "make test\n";
 			}
-		} elsif ($self->param("_type") eq "ruby") {
+		} elsif ($self->is_type('ruby')) {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$compile_script =
 				"$rubycmd extconf.rb\n".
@@ -1627,7 +1666,7 @@ sub phase_install {
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
 
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
@@ -1635,7 +1674,7 @@ sub phase_install {
 		($self->{parent})->phase_install();
 		return;
 	}
-	if ($self->{_type} ne "bundle") {
+	if (not $self->is_type('bundle')) {
 		if ($do_splitoff) {
 			$dir = ($self->{parent})->get_build_directory();
 		} else {
@@ -1657,7 +1696,7 @@ sub phase_install {
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 	}
-	if ($self->{_type} eq "bundle") {
+	if ($self->is_type('bundle')) {
 		$install_script .= "/bin/mkdir -p \%i/share/doc/\%n\n";
 		$install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 	} else {
@@ -1667,13 +1706,13 @@ sub phase_install {
 			$install_script = "";
 			# Now run the custom install script
 			$self->run_script($self->param("InstallScript"), "installing");
-		} elsif (!exists $self->{parent} and $self->param("_type") eq "perl") {
+		} elsif (!exists $self->{parent} and $self->is_type('perl')) {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
 			$install_script .= 
 				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
-		} elsif ($self->param("_type") eq "ruby") {
+		} elsif ($self->is_type('ruby')) {
 			# grab ruby version, if present
 			my ($rubydirectory, $rubyarchdir) = $self->get_ruby_dir_arch();
 
@@ -1812,12 +1851,11 @@ sub phase_install {
 		$bdir = $self->get_fullname();
 		chdir "$buildpath";
 		if (not $config->param_boolean("KeepBuildDir") and not Fink::Config::get_option("keep_build") and -e $bdir) {
-			if (&execute("/bin/rm -rf $bdir")) {
+			rm_rf $bdir or
 				&print_breaking("WARNING: Can't remove build directory $bdir. ".
 								"This is not fatal, but you may want to remove ".
 								"the directory manually to save disk space. ".
 								"Continuing with normal procedure.");
-			}
 		}
 	}
 }
@@ -1834,7 +1872,7 @@ sub phase_build {
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
 
-	if ($self->{_type} eq "dummy") {
+	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
@@ -1848,9 +1886,8 @@ sub phase_build {
 	$destdir = "$buildpath/$ddir";
 
 	if (not -d "$destdir/DEBIAN") {
-		if (&execute("/bin/mkdir -p $destdir/DEBIAN")) {
+		mkdir_p "$destdir/DEBIAN" or
 			die "can't create directory for control files for package ".$self->get_fullname()."\n";
-		}
 	}
 
 	# generate dpkg "control" file
@@ -2027,7 +2064,7 @@ EOF
 		} }, $destdir);
 
 		if (keys %prebound_files) {
-			system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/files') == 0 or
+			mkdir_p "$destdir$basepath/var/lib/fink/prebound/files" or
 				die "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!\n";
 			open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') or
 				die "can't write " . $self->get_name() . '.pblist';
@@ -2040,7 +2077,7 @@ EOF
 			for my $file (@{$prebound_files{$key}}) {
 				$file =~ s/\//-/g;
 				$file =~ s/^-+//;
-				system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/deps/'. $file) == 0 or
+				mkdir_p "$destdir$basepath/var/lib/fink/prebound/deps/$file" or
 					die "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!\n";
 				open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') or
 					die "can't write " . $self->get_name() . '.deplist';
@@ -2206,9 +2243,8 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 		print "Writing daemonic info file $daemonicname...\n";
 
-		if (&execute("/bin/mkdir -p $destdir$basepath/etc/daemons")) {
+		mkdir_p "$destdir$basepath/etc/daemons" or
 			die "can't write daemonic info file for ".$self->get_fullname()."\n";
-		}
 		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
 		print SCRIPT $self->get_param_with_expansion("DaemonicFile");
 		close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
@@ -2218,19 +2254,16 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	### create .deb using dpkg-deb
 
 	if (not -d $self->get_debpath()) {
-		if (&execute("/bin/mkdir -p ".$self->get_debpath())) {
+		mkdir_p $self->get_debpath() or
 			die "can't create directory for packages\n";
-		}
 	}
 	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
 		die "can't create package ".$self->get_debname()."\n";
 	}
 
-	if (&execute("/bin/ln -sf ".$self->get_debpath()."/".$self->get_debname()." ".
-							 "$basepath/fink/debs/")) {
+	symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname() or
 		die "can't symlink package ".$self->get_debname()." into pool directory\n";
-	}
 
 	### splitoffs
 	
@@ -2243,13 +2276,12 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	### remove root dir
 
 	if (not $config->param_boolean("KeepRootDir") and not Fink::Config::get_option("keep_root") and -e $destdir) {
-		if (&execute("/bin/rm -rf $destdir")) {
+		rm_rf $destdir or
 			&print_breaking("WARNING: Can't remove package root directory ".
 							"$destdir. ".
 							"This is not fatal, but you may want to remove ".
 							"the directory manually to save disk space. ".
 							"Continuing with normal procedure.");
-		}
 	}
 }
 
@@ -2331,9 +2363,8 @@ sub set_env {
 
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
 
-		if (&execute("/bin/mkdir -p $basepath/var/lib/fink/prebound")) {
+		mkdir_p "$basepath/var/lib/fink/prebound" or
 			warn "couldn't create seg_addr_table directory, this may cause compilation to fail!\n";
-		}
 		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
 			print FILEOUT <<END;
 0x90000000  0xa0000000  <<< Next split address to assign >>>
@@ -2445,8 +2476,8 @@ sub get_perl_dir_arch {
 #get_system_perl_version();
 	my $perldirectory = "";
 	my $perlarchdir;
-	if ($self->has_param("_typeversion_raw")) {
-		$perlversion = $self->param("_typeversion_raw");
+	if ($self->is_type('perl') and $self->get_subtype('perl') ne 'perl') {
+		$perlversion = $self->get_subtype('perl');
 		$perldirectory = "/" . $perlversion;
 	}
 	### PERL= needs a full path or you end up with
@@ -2471,8 +2502,8 @@ sub get_ruby_dir_arch {
 	my $rubyversion   = "";
 	my $rubydirectory = "";
 	my $rubyarchdir   = "powerpc-darwin";
-	if ($self->has_param("_typeversion_raw")) {
-		$rubyversion = $self->param("_typeversion_raw");
+	if ($self->is_type('ruby') and $self->get_subtype('ruby') ne 'ruby') {
+		$rubyversion = $self->get_subtype('ruby');
 		$rubydirectory = "/" . $rubyversion;
 	}
 	### ruby= needs a full path or you end up with

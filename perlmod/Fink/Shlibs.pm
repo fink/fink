@@ -26,9 +26,11 @@ $|++;
 package Fink::Shlibs;
 
 use Fink::Base;
-use Fink::Services qw(&print_breaking &version_cmp);
+use Fink::Services qw(&version_cmp);
+use Fink::CLI qw(&print_breaking);
 use Fink::Config qw($config $basepath);
 use Fink::PkgVersion;
+use Fink::Command qw(mkdir_p);
 
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
@@ -526,7 +528,7 @@ sub update_shlib_db {
 		if ($> == 0) {
 			print "Updating shared library index... ";
 			unless (-d "$basepath/var/db") {
-				mkdir("$basepath/var/db", 0755) ||
+				mkdir_p "$basepath/var/db" or
 					die "Error: Could not create directory $basepath/var/db";
 			}
 			Storable::store($shlibs, "$basepath/var/db/$db.tmp");

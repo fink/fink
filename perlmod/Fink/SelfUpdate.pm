@@ -32,6 +32,7 @@ use Fink::Package;
 use Fink::Shlibs;
 use Fink::FinkVersion qw(&pkginfo_version);
 use Fink::Mirror;
+use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
 
 use File::Find;
 
@@ -171,7 +172,7 @@ sub check {
 				return;
 			}
 		} else {
-			&execute("/bin/rm -f $finkdir/stamp-rsync-live $finkdir/stamp-cvs-live");
+			rm_f "$finkdir/stamp-rsync-live", "$finkdir/stamp-cvs-live";
 			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 		&do_tarball($latest_fink);
@@ -224,24 +225,21 @@ sub setup_direct_cvs {
 	$tempfinkdir = "$tempdir/fink";
 
 	if (-d $tempdir) {
-		if (&execute("/bin/rm -rf $tempdir")) {
+		rm_rf $tempdir or
 			die "Can't remove left-over temporary directory '$tempdir'\n";
-		}
 	}
-	if (&execute("/bin/mkdir -p $tempdir")) {
+	mkdir_p $tempdir or
 		die "Can't create temporary directory '$tempdir'\n";
-	}
 	if ($username ne "root") {
-		if (&execute("/usr/sbin/chown $username $tempdir")) {
+		chowname $username, $tempdir or
 			die "Can't set ownership of temporary directory '$tempdir'\n";
-		}
 	}
 
 	# check if hardlinks from the old directory work
 	&print_breaking("Checking to see if we can use hard links to merge ".
 					"the existing tree. Please ignore errors on the next ".
 					"few lines.");
-	if (&execute("/usr/bin/touch $finkdir/README; /bin/ln $finkdir/README $tempdir/README")) {
+	unless (touch "$finkdir/README" and link "$finkdir/README", "$tempdir/README") {
 		$use_hardlinks = 0;
 	} else {
 		$use_hardlinks = 1;
@@ -311,13 +309,11 @@ sub setup_direct_cvs {
 					 my $linkto;
 					 $linkto = readlink($_)
 						 or die "Can't read target of symlink $File::Find::name: $!\n";
-					 if (&execute("/bin/ln -s '$linkto' '$tempfinkdir/$rel'")) {
+					 symlink $linkto, "$tempfinkdir/$rel" or
 						 die "Can't create symlink \"$tempfinkdir/$rel\"\n";
-					 }
 				 } elsif (-d and not -d "$tempfinkdir/$rel") {
-					 if (&execute("/bin/mkdir -p '$tempfinkdir/$rel'")) {
+					 mkdir_p "$tempfinkdir/$rel" or
 						 die "Can't create directory \"$tempfinkdir/$rel\"\n";
-					 }
 				 } elsif (-f and not -f "$tempfinkdir/$rel") {
 					 my $cmd;
 					 if ($use_hardlinks) {
@@ -334,14 +330,12 @@ sub setup_direct_cvs {
 
 	# switch $tempfinkdir to $finkdir
 	chdir $basepath or die "Can't cd to $basepath: $!\n";
-	if (&execute("/bin/mv $finkdir $finkdir.old")) {
+	mv $finkdir, "$finkdir.old" or
 		die "Can't move \"$finkdir\" out of the way\n";
-	}
-	if (&execute("/bin/mv $tempfinkdir $finkdir")) {
+	mv $tempfinkdir, $finkdir or
 		die "Can't move new tree \"$tempfinkdir\" into place at \"$finkdir\". ".
 			"Warning: Your Fink installation is in an inconsistent state now.\n";
-	}
-	&execute("/bin/rm -rf $tempdir");
+	rm_rf $tempdir;
 
 	print "\n";
 	&print_breaking("Your Fink installation was successfully set up for ".
@@ -431,9 +425,8 @@ sub do_tarball {
 
 	# unpack it
 	if (-e $dir) {
-		if (&execute("/bin/rm -rf $dir")) {
+		rm_rf $dir or
 			die "can't remove existing directory $dir\n";
-		}
 	}
 
 	$verbosity = "";
@@ -452,7 +445,7 @@ sub do_tarball {
 	}
 	chdir $downloaddir or die "Can't cd to $downloaddir: $!\n";
 	if (-e $dir) {
-		&execute("/bin/rm -rf $dir");
+		rm_rf $dir;
 	}
 }
 
@@ -530,7 +523,6 @@ sub do_direct_rsync {
 	my $origmirror;
 	my $dist = $Fink::Config::distribution;
 	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://master.us.finkmirrors.net/finkinfo/");
-	my $touchcmd = "/usr/bin/touch stamp-rsync-live && /bin/rm -f stamp-cvs-live";
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
 	my $nohfs ="";
@@ -594,7 +586,7 @@ RSYNCAGAIN:
 
 	# If the Distributions line has been updated...
 	if (! -d "$descdir/$dist") {
-		&execute("/bin/mkdir -p '$descdir/$dist'")
+		mkdir_p "$descdir/$dist";
 	}
 	@sb = stat("$descdir/$dist");
 
@@ -625,15 +617,15 @@ RSYNCAGAIN:
 		$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/*' --include='$oldpart/finkinfo/**/*'";
 
 		if (! -d "$basepath/fink/$dist/$tree" ) {
-			&execute("/bin/mkdir -p '$basepath/fink/$dist/$tree'")
+			mkdir_p "$basepath/fink/$dist/$tree";
 		}
 	}
-	$cmd = "rsync -az --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
+	$cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
 		if ($username) {
 			$cmd = "/usr/bin/su $username -c \"$cmd\"";
-			system("/usr/sbin/chown -R $username '$basepath/fink/$dist'");
+			chowname $username, "$basepath/fink/$dist";
 		}
 	}
 	&print_breaking($msg);
@@ -652,9 +644,10 @@ RSYNCAGAIN:
 		}
 	}
 
-	&execute("/bin/rm -rf '$basepath/fink/$dist/CVS'");
-	&execute("/bin/rm -rf '$basepath/fink/CVS'");
-	&execute($touchcmd);
+	rm_rf "$basepath/fink/$dist/CVS";
+	rm_rf "$basepath/fink/CVS";
+	touch "stamp-rsync-live";
+	rm_f "stamp-cvs-live";
 	# cleanup after ourselves and continue with the update.
 	unlink("$descdir/TIMESTAMP");
 	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");

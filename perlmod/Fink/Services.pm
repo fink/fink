@@ -250,7 +250,7 @@ sub read_properties_lines {
 			} elsif (/^\s+(\S.*?)\s*$/) {
 				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
-				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
+				print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
 			} else {
@@ -271,10 +271,10 @@ sub read_properties_lines {
     my $property_hash = read_properties_multival $filename;
     my $property_hash = read_properties_multival $filename, $notLC;
 
-Reads a text file $filename and returns a ref to a hash of its
-fields, with multiple values for each key being handled by letting
-the key refer to another hash. See the description of 
-read_properties_multival_lines for more information.
+Reads a text file $filename and returns a ref to a hash of its fields,
+with each value being a ref to a list of values for that field. See
+the description of read_properties_multival_lines for more
+information.
 
 If $filename cannot be read, program will die with an error message.
 
@@ -298,10 +298,9 @@ sub read_properties_multival {
     my $property_hash = read_properties_multival_var $filename, $string, $notLC;
 
 Parses the multiline text $string and returns a ref to a hash of its
-fields, with multiple values for each key being handled by letting
-the key refer to another hash. See the description of 
-read_properties_multival_lines for more information.
-The string $filename is used in parsing-error messages
+fields, with each value being a ref to a list of values for that
+field. See the description of read_properties_multival_lines for more
+information. The string $filename is used in parsing-error messages
 but the file is not accessed.
 
 =cut
@@ -327,10 +326,10 @@ This is function is not exported. You should use read_properties_var,
 read_properties, read_properties_multival, or read_properties_multival_var 
 instead.
 
-Parses the list of text strings @lines and returns a ref to a hash of its
-fields, with multiple values for each key being handled by letting
-the key refer to another hash.  The string $filename is used in 
-parsing-error messages but the file is not accessed.
+Parses the list of text strings @lines and returns a ref to a hash of
+its fields, with each value being a ref to a list of values for that
+field. The string $filename is used in parsing-error messages but the
+file is not accessed.
 
 The function is similar to read_properties_lines, with the following 
 differences:
@@ -341,9 +340,10 @@ differences:
   No sanity-checking is performed. Lines that could not be parsed are
   silently ignored.
 
-  Multiple occurances of a field are allowed. In this case, the value
-  returned in the hash is a ref to an array of the values (in the
-  order as they were encountered in $filename).
+  Multiple occurances of a field are allowed.
+
+  Each hash value is a ref to a list of key values instead of a simple
+  value string. The list is in the order the values appear in @lines.
 
 =cut
 
@@ -521,7 +521,7 @@ sub expand_percent {
 	return $s unless ($s =~ /\%/);
 
 	%map = %$map;  # avoid lots of dereferencing later
-	$percent_keys = join('|', keys %map);
+	$percent_keys = join('|', map "\Q$_\E", keys %map);
 
 	# split multi lines to process each line incase of comments
 	@lines = split(/\r?\n/, $s);

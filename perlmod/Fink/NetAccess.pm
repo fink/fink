@@ -80,10 +80,8 @@ sub fetch_url_to_file {
 
 	# create destination directory if necessary
 	if (not -d $downloaddir) {
-		&execute("/bin/mkdir -p $downloaddir");
-		if (not -d $downloaddir) {
+		mkdir_p $downloaddir or
 			die "Download directory \"$downloaddir\" can not be created!\n";
-		}
 	}
 	chdir $downloaddir;
 
@@ -194,7 +192,7 @@ sub fetch_url_to_file {
 						  "Assume it is a partial download and try to continue" => "continue",
 						  "Don't download, use existing file" => "use_it" ) );
 		if ($result eq "retry") {
-			&execute("/bin/rm -f $file");
+			rm_f $file;
 		} elsif ($result eq "continue") {
 			$cont = 1;
 		} elsif ($result eq "use_it") {
@@ -223,7 +221,7 @@ sub fetch_url_to_file {
 
 		if (!$dryrun && -f $file) {
 			if (not $cont) {
-				&execute("/bin/rm -f $file");
+				rm_f $file;
 			}
 		} else {
 			$cont = 0;

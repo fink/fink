@@ -1,3 +1,91 @@
+2004-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Took out parsing of Type into %type_*[] b/c don't
+	have a way to get a single subtype from the subtype list. This
+	means %type_*[] will cause an error if used in Patch: value.
+
+2004-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Rip out old Type: validation code. Fix other
+	checks to use new multivariant Type. This is slightly fragile.
+	Remembered to switch _info_level property to infon
+
+2004-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, PkgVersion.pm: Remove special meaning of "". 'Type:
+	foo (boolean)' now gives 'Type: foo (foo .)'. The %type_pkg has
+	periods removed so still can get null for Package: substitution.
+
+2004-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Added missing support for %type_raw[] in Package
+	field.
+
+2004-02-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, PkgVersion.pm: Full multivariant support. 'Type:
+	foo, bar' allowed (means package is of both types). 'Type: foo
+	thing' allowed for arbitrary type and subtype (no longer limited
+	to languages and lang-versions; any strings of \S+ will do (but no parens or commas).
+	Subtype "" means null string. If no subtype is given, the type is
+	used ('Type: foo' means 'Type: foo foo'). 'Type: foo (thing1
+	thing2)' allowed (autogenerates two packages, one with 'Type: foo
+	thing1' one with 'Type: foo thing2'). 'Type foo (boolean)' is a
+	synonym for 'Type: foo (foo "")'. Subtype list expansion is
+	recursive ('Type: foo (a b), bar (c d)' gives all 4 combinations).
+	All subtypes (as entered and with periods removed) are available
+	for percent expansion: 'Type: perl 5.8.1' gives
+	%type_raw[perl]=5.8.1 and %type_pkg[perl]=581 using %type[foo].
+	* FinkVersion.pm: Bumped InfoN -> N=2 so can handle %-expansion in
+	Package and multiple Type values.
+
+2004-02-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: stash InfoN value as 'infon' not '_info_level' since
+	elements with leading _ are lost during new_from_properties().
+
+2004-02-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: expand_percent: protect regex metachars in % keys.
+
+2004-02-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm,Package.pm,PkgVersion.pm: convert all checking of
+	package type from directly comparing {_type} to using a new
+	PkgVersion::is_type() accessor.
+
+2004-02-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: rm_f now succeeds if try to remove non-existent
+	file. symlink_f now uses native rm_f to remove a pre-existing
+	target (so doesn't fail if it doesn't exist). Fixed doc about
+	$dest being a full filename.
+	* PkgVersion.pm: fixed usage of symlink_f to include filename in
+	$dest.
+	* SelfUpdate.pm: fixed accidental hardlink/softlink swap from last
+	commit.
+
+2004-02-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: finish gaborit's patch from 841381 to cat().
+	* Bootstrap.pm,Engine.pm,NetAccess.pm,PkgVersion.pm,SelfUpdate.pm:
+	use Fink::Command calls instead of system() or &execute whenever
+	possible (based on 841381).
+
+2004-02-24  David HÃ¶hn  <dmalloc@users.sourceforge.net>
+
+	* SelfUpdate.pm: changed the rsync command to
+	explicitly preserve the timestamps using -t
+	For more information see:
+		1.) http://article.gmane.org/gmane.os.apple.fink.devel/7592
+		2.) http://article.gmane.org/gmane.os.apple.fink.devel/7597
+		3.) http://article.gmane.org/gmane.os.apple.fink.devel/7598
+	All credit goes to Rob Braun.
+
+2004-02-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Enable warning for RFC-822 multiline format.
+
 2004-02-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Stop supporting bootstrap/upgrade on 10.2 when
