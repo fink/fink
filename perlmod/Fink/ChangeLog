@@ -1,3 +1,7 @@
+2005-02-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	*VirtPackage.pm: perl packages now Provide digest-pm (when >= 5.8.0)
+	
 2005-02-23  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Engine.pm, Package.pm, SelfUpdate.pm, Shlibs.pm: refactored some
