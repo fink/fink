@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.9
-Revision: 16
+Revision: 17
 GCC: 3.3
 Depends: gettext, libiconv, gzip, tar, ncurses (>= 5.3-12)
 Essential: yes
