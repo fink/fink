@@ -823,14 +823,13 @@ sub cmd_checksums {
 		$package = Fink::Package->package_by_name($pname);
 		foreach $vo ($package->get_all_versions()) {
 			# Skip packages that do not have source files
-			next if not defined $vo->{_sourcecount};
 		
 			# For each tar ball, if a checksum was specified, locate it and
 			# verify the checksum.
-			for ($i = 1; $i <= $vo->{_sourcecount}; $i++) {
-				$chk = $vo->get_checksum($i);
+			foreach my $source_item (@{$vo->{_source_items}}) {
+				$chk = $source_item->get_checksum;
 				if ($chk ne "-") {
-					$file = $vo->find_tarball($i);
+					$file = $vo->find_tarball($source_item->get_tarball);
 					if (defined($file) and $chk ne &file_MD5_checksum($file)) {
 						print "Checksum of tarball $file of package ".$vo->get_fullname()." is incorrect.\n";
 					}
@@ -894,11 +893,9 @@ sub cmd_cleanup {
 			$deb_list{$file} = 1;
 
 			# all source files
-			if (defined $vo->{_sourcecount}) {
-				for ($i = 1; $i <= $vo->{_sourcecount}; $i++) {
-					$file = $vo->find_tarball($i);
-					$src_list{$file} = 1 if defined($file);
-				}
+			foreach my $source_item (@{$vo->{_source_items}}) {
+				$file = $vo->find_tarball($source_item->get_tarball);
+				$src_list{$file} = 1 if defined($file);
 			}
 		}
 	}

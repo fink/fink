@@ -1,3 +1,10 @@
+2004-01-11  Daniel Macks  <dmacks@netpsace.org>
+
+	* SourceItems.pm: new object-oriented way of handling Source items
+	(tarballs plus associated .info fields and functionality related
+	to them.
+	* Engine.pm, PkgVersion.pm: start using SourceItems objects.
+
 2004-01-11  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI,pm: Removed antiquated prompt_selection(). Improved

@@ -21,6 +21,7 @@
 #
 
 package Fink::PkgVersion;
+use Fink::SourceItem;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
@@ -30,7 +31,6 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &get_path);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
-use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
 use Fink::Status;
@@ -235,56 +235,10 @@ sub initialize {
 			}
 		}
 	} else {
-		# expand source / sourcerename fields
-		$source = $self->param_default("Source", "\%n-\%v.tar.gz");
-		if ($source eq "gnu") {
-			$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
-		} elsif ($source eq "gnome") {
-			$version =~ /(^[0-9]+\.[0-9]+)\.*/;
-			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
-		}
-		
-		$source = &expand_percent($source, $expand);
-		$self->{source} = $source;
-		$self->{_sourcecount} = 1;
-	
-		$self->expand_percent_if_available('SourceRename');
-	
-		for ($i = 2; $self->has_param('source'.$i); $i++) {
-			$self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
-			$self->expand_percent_if_available('Source'.$i.'Rename');
-			$self->{_sourcecount} = $i;
-		}
-
-		# Build a hash with uniformly-named keys:
-		#   source, md5, rename, tarfilesrename, extractdir
-		# for all .info fields pertaining to a particular source.
-		# Store a ref to a list of refs to the hashes for all sources
-		# for the package, ordered (but not indexed) by source number.
-		$self->{_source_items} = [];
-		if ($self->{_type} ne "bundle" and $self->{_type} ne "nosource") {
-			# Schwartzian Transform to sort source\d* in "numerical" order
-			# easier to code and more efficient to run if 'source' is ignored
-			my @source_n_fields = map { $_->[0] } sort { $a->[1] <=> $b->[1] }
-				map { [$_, /source(\d*)/] } $self->params_matching('source\d+');;
-			# always have 'source', so now just insert it manually for correct order
-			foreach my $source_field ("source", @source_n_fields) {
-				next if $self->{$source_field} eq "none";
-				$source_field =~ /source(\d*)/;
-				my $number = $1;
-				my %source_item;
-				$source_item{"source"} = $self->{$source_field};
-				$source_item{"md5"} = $self->{$source_field."-md5"}
-					if exists $self->{$source_field."-md5"};
-				$source_item{"rename"} = $self->{$source_field."rename"}
-					if exists $self->{$source_field."rename"};
-				$source_item{"tarfilesrename"} = $self->{$source_field."tar".$number."filesrename"}
-					if exists $self->{"tar".$number."filesrename"};
-				$source_item{"extractdir"} = $self->{$source_field."extractdir"}
-					if exists $self->{$source_field."rename"} and $number ne "";
-				push @{$self->{_source_items}}, \%source_item;
-			}
-		}
+	    if (lc $self->{_type} ne "nosource" and lc $self->{_type} ne "bundle") {
+		$self->{_source_items} = [ Fink::SourceItem->items_from_pkg($self) ];
+	    };
+		&Fink::SourceItem::delete_fields_from_hash($self);
 
 		# handle splitoff(s)
 		if ($self->has_param('splitoff')) {
@@ -480,116 +434,35 @@ sub get_tree {
 	return $self->{_tree};
 }
 
+sub get_expand_map {
+	my $self = shift;
+	return $self->{_expand};
+}
+
 ### other accessors
 
 sub is_multisource {
 	my $self = shift;
-	return $self->{_sourcecount} > 1;
-}
-
-sub get_source {
-	my $self = shift;
-	my $index = shift || 1;
-	if ($index < 2) {
-		return $self->param("Source") unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
-	} elsif ($index <= $self->{_sourcecount}) {
-		return $self->param("Source".$index);
-	}
-	return "none";
+	return scalar @{$self->{_source_items}} > 1;
 }
 
 sub get_source_list {
 	my $self = shift;
-	my @list = ();
-	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 	        my $source = get_source($self, $index);
-	        push(@list, $source) unless $source eq "none";
-	}
-	return @list;
-}
-
-sub get_tarball {
-	my $self = shift;
-	my $index = shift || 1;
-	if ($index < 2) {
-		if ($self->has_param("SourceRename")) {
-			return $self->param("SourceRename");
-		}
-		return &filename($self->param("Source")) unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
-	} elsif ($index <= $self->{_sourcecount}) {
-		if ($self->has_param("Source".$index."Rename")) {
-			return $self->param("Source".$index."Rename");
-		}
-		return &filename($self->param("Source".$index));
-	}
-	return "none";
+	return map { $_->get_source } @{$self->{_source_items}};
 }
 
 sub get_tarball_list {
 	my $self = shift;
-	my @list = ();
-	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 	        my $tarball = get_tarball($self, $index);
-	        push(@list, $tarball) unless $tarball eq "none";
-	}
-	return @list;
-}
-
-sub get_checksum {
-	my $self = shift;
-	my $index = shift || 1;
-	if ($index == 1) {
-		if ($self->has_param("Source-MD5")) {
-			return $self->param("Source-MD5");
-		}
-	} elsif ($index >= 2 and $index <= $self->{_sourcecount}) {
-		if ($self->has_param("Source".$index."-MD5")) {
-			return $self->param("Source".$index."-MD5");
-		}
-	}		
-	return "-";
+	return map { $_->get_tarball } @{$self->{_source_items}};
 }
 
 # return the number of source items stored in an object
 sub get_source_items_count {
 	my $self = shift;
-	return scalar $self->get_source_items_list;
-}
 
-# return a (possibly null but always defined) list of the source items
-# stored in in an object
-sub get_source_items_list {
-	my $self = shift;
-
-	return () unless exists  $self->{_source_items};
-	return () unless defined $self->{_source_items};
-
-	# need to do deep copy because _source_items is a ref to a
-	# list of hashes and we don't want the caller to accidentally
-	# modify the package data
-
-	my (@source_items, $source_item);
-	foreach $source_item (@{$self->{_source_items}}) {
-		my %source_item = %$source_item;
-		push @source_items, \%source_item;
-	}
-	return @source_items;
-}
-
-sub get_custom_mirror {
-	my $self = shift;
-
-	if (exists $self->{_custom_mirror}) {
-		return $self->{_custom_mirror};
-	}
-
-	if ($self->has_param("CustomMirror")) {
-		$self->{_custom_mirror} =
-			Fink::Mirror->new_from_field(&expand_percent($self->param("CustomMirror"), $self->{_expand}));
-	} else {
-		$self->{_custom_mirror} = 0;
-	}
-	return $self->{_custom_mirror};
+	return 0 unless exists  $self->{_source_items};
+	return 0 unless defined $self->{_source_items};
+	return scalar @{$self->{_source_items}};
 }
 
 sub get_build_directory {
@@ -601,7 +474,7 @@ sub get_build_directory {
 	}
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource"
-			|| lc $self->get_source(1) eq "none"
+			|| $self->get_source_items_count == 0
 			|| $self->param_boolean("NoSourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname();
 	}
@@ -610,7 +483,7 @@ sub get_build_directory {
 			&expand_percent($self->param("SourceDirectory"), $self->{_expand});
 	}
 	else {
-		$dir = $self->get_tarball();
+		$dir = $self->{_source_items}->[0]->get_tarball;
 		if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
 			$dir = $1;
 		}
@@ -735,16 +608,14 @@ sub get_description {
 
 sub is_fetched {
 	my $self = shift;
-	my ($i);
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
-			lc $self->get_source(1) eq "none" ||
 			$self->{_type} eq "dummy") {
 		return 1;
 	}
 
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
-		if (not defined $self->find_tarball($i)) {
+	foreach my $source_item (@{$self->{_source_items}}) {
+		if (not defined $self->find_tarball($source_item->get_tarball)) {
 			return 0;
 		}
 	}
@@ -774,14 +645,9 @@ sub is_installed {
 
 sub find_tarball {
 	my $self = shift;
-	my $index = shift || 1;
-	my ($archive, $found_archive);
+	my $archive = shift;
+	my $found_archive;
 	my (@search_dirs, $search_dir);
-
-	$archive = $self->get_tarball($index);
-	if ($archive eq "-") {	# bad index
-		return undef;
-	}
 
 	# compile list of dirs to search
 	@search_dirs = ( "$basepath/src" );
@@ -1101,10 +967,9 @@ sub phase_fetch {
 	my $self = shift;
 	my $conditional = shift || 0;
 	my $dryrun = shift || 0;
-	my ($i);
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
-			lc $self->get_source(1) eq "none" ||
+			$self->get_source_items_count == 0 ||
 			$self->{_type} eq "dummy") {
 		return;
 	}
@@ -1113,83 +978,9 @@ sub phase_fetch {
 		return;
 	}
 
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
-		if (not $conditional or not defined $self->find_tarball($i)) {
-			$self->fetch_source($i,0,0,0,$dryrun);
-		}
-	}
-}
-
-sub fetch_source {
-	my $self = shift;
-	my $index = shift;
-	my $tries = shift || 0;
-	my $continue = shift || 0;
-	my $nomirror = shift || 0;
-	my $dryrun = shift || 0;
-	my ($url, $file, $checksum, $urlnofile);
-
-	chdir "$basepath/src";
-
-	$url = $self->get_source($index);
-	$file = $self->get_tarball($index);
-	if($self->has_param("license")) {
-		if($self->param("license") =~ /Restrictive\s*$/) {
-			$nomirror = 1;
-		} 
-	}
-	
-	$checksum = $self->get_checksum($index);
-	
-	if($dryrun) {
-		$urlnofile = $url;
-		$urlnofile =~ s/$file//;
-		if($urlnofile eq "") {
-			return;
-		}
-		print "$file $checksum";
-	} else {
-		if($checksum eq '-') {	
-			print "WARNING: No MD5 specified for Source #".$index.
-							" of package ".$self->get_fullname();
-			if ($self->has_param("Maintainer")) {
-				print ' Maintainer: '.$self->param("Maintainer") . "\n";
-			} else {
-				print "\n";
-			}		
-		}
-	}
-	
-	if (&fetch_url_to_file($url, $file, $self->get_custom_mirror(), 
-						   $tries, $continue, $nomirror, $dryrun)) {
-
-		if (0) {
-		print "\n";
-		&print_breaking("Downloading '$file' from the URL '$url' failed. ".
-						"There can be several reasons for this:");
-		&print_breaking("The server is too busy to let you in or ".
-						"is temporarily down. Try again later.",
-						1, "- ", "	");
-		&print_breaking("There is a network problem. If you are ".
-						"behind a firewall you may want to check ".
-						"the proxy and passive mode FTP ".
-						"settings. Then try again.",
-						1, "- ", "	");
-		&print_breaking("The file was removed from the server or ".
-						"moved to another directory. The package ".
-						"description must be updated.",
-						1, "- ", "	");
-		&print_breaking("In any case, you can download '$file' manually and ".
-						"put it in '$basepath/src', then run fink again with ".
-						"the same command.");
-		print "\n";
-		}
-		if($dryrun) {
-			if ($self->has_param("Maintainer")) {
-				print ' "'.$self->param("Maintainer") . "\"\n";
-			}
-		} else {
-			die "file download failed for $file of package ".$self->get_fullname()."\n";
+	foreach my $source_item (@{$self->{_source_items}}) {
+		if (not $conditional or not defined $self->find_tarball($source_item->get_tarball)) {
+			$source_item->fetch_source($self, 0, 0, 0, $dryrun);
 		}
 	}
 }
@@ -1257,7 +1048,7 @@ END
 		}
 	}
 
-	if ($self->{_type} eq "nosource" || lc $self->get_source(1) eq "none") {
+	if ($self->{_type} eq "nosource" || lc $self->get_source_items_count == 0) {
 		$destdir = "$buildpath/$bdir";
 		if (&execute("/bin/mkdir -p $destdir")) {
 			die "can't create directory $destdir\n";
@@ -1266,22 +1057,22 @@ END
 	}
 
 	$tries = 0;
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
-		$archive = $self->get_tarball($i);
+	foreach my $source_item (@{$self->{_source_items}}) {
+		$archive = $source_item->get_tarball;
 
 		# search for archive, try fetching if not found
-		$found_archive = $self->find_tarball($i);
+		$found_archive = $self->find_tarball($archive);
 		if (not defined $found_archive or $tries > 0) {
-			$self->fetch_source($i, $tries, $continue);
+			$source_item->fetch_source($self, $tries, $continue);
 			$continue = 0;
-			$found_archive = $self->find_tarball($i);
+			$found_archive = $self->find_tarball($archive);
 		}
 		if (not defined $found_archive) {
 			die "can't find source file $archive for package ".$self->get_fullname()."\n";
 		}
 		
 		# verify the MD5 checksum, if specified
-		$checksum = $self->get_checksum($i);
+		$checksum = $source_item->get_checksum;
 		$found_archive_sum = &file_MD5_checksum($found_archive);
 		if ($checksum ne "-" ) { # Checksum was specified
 		# compare to the MD5 checksum of the tarball
@@ -1322,27 +1113,16 @@ END
 			die "No checksum specifed for ".$self->get_fullname()." I got a sum of $found_archive_sum \n";
 		}
 
-		# Determine the name of the TarFilesRename in the case of multi tarball packages
-		if ($i < 2) {
-			$renamefield = "TarFilesRename";
-		} else {
-			$renamefield = "Tar".$i."FilesRename";
-		}
+		# Determine the name of the TarFilesRename
 
 		$renamelist = "";
 
 		# Determine the rename list (if any)
 		$tarflags = "-x${verbosity}f -";
 		$tarcommand = "/usr/bin/gnutar $tarflags"; # Default to Apple's GNU Tar
-		if ($self->has_param($renamefield)) {
-			@renamefiles = split(/\s+/, $self->param($renamefield));
-			foreach $renamefile (@renamefiles) {
-				$renamefile = &expand_percent($renamefile, $expand);
-				if ($renamefile =~ /^(.+)\:(.+)$/) {
-					$renamelist .= " -s ,$1,$2,";
-				} else {
-					$renamelist .= " -s ,${renamefile},${renamefile}_tmp,";
-				}
+		if (defined $source_item->have_tarfilesrename) {
+			while ( my($old,$new) = each %{$source_item->get_tarfilesrename_map} ) {
+				$renamelist .= " -s,$old,$new,";
 			}
 			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
 		} elsif ( -e "$basepath/bin/tar" ) {
@@ -1367,10 +1147,8 @@ END
 	
 		# calculate destination directory
 		$destdir = "$buildpath/$bdir";
-		if ($i > 1) {
-			if ($self->has_param("Source".$i."ExtractDir")) {
-				$destdir .= "/".&expand_percent($self->param("Source".$i."ExtractDir"), $self->{_expand});
-			}
+		if ($source_item->get_extractdir) {
+			$destdir .= "/".$source_item->get_extractdir;
 		}
 
 		# create directory
