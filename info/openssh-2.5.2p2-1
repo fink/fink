@@ -1,0 +1,28 @@
+Package: openssh
+Version: 2.5.2p2
+Revision: 1
+Source: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-%v.tar.gz
+Depends: zlib, openssl
+ConfigureParams: --with-pid-dir=%p/var/run
+PatchScript: mkdir -p %p/var/run
+ touch %p/var/run/.placeholder
+InstallScript: mkdir -p %i/etc
+ touch %i/etc/ssh_host_key
+ touch %i/etc/ssh_host_dsa_key
+ touch %i/etc/ssh_host_rsa_key
+ make install prefix=%i
+ rm -f %i/etc/ssh_host_key
+ rm -f %i/etc/ssh_host_dsa_key
+ rm -f %i/etc/ssh_host_rsa_key
+CommentPort: Uses autoconf.
+ .
+ To run sshd, you must edit /System/Library/StartupItems/SSH/SSH and
+ set the paths to point at the Fink version. Also set the SSHSERVER
+ flag to YES in /etc/hostconfig if you haven't done so already. In the
+ future, this will be replaced by a init-script system for Fink...
+ .
+ If you have host keys in /etc and want to continue to use them, copy
+ them to /sw/etc (or wherever you installed Fink).
+CommentStow: The manpages contain the stow paths.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.openssh.com/
