@@ -115,87 +115,87 @@ sub fetch_url_to_file {
       ### resolve mirror url
   
       if ($mirror_level <= 0 && $mirror ne "custom") {
-        # use last / preconfigured mirror
-        if (!$url) {
-          if ($Fink::Config::config->has_param("mirror-$mirror")) {
-            $url = $Fink::Config::config->param("mirror-$mirror");
-            $url .= "/" unless $url =~ /\/$/;
-            $url .= $path;
-          } else {
-            # FIXME: pick a mirror at random
-            die "can't find url for mirror $mirror in configuration";
-          }
-        }
+	# use last / preconfigured mirror
+	if (!$url) {
+	  if ($Fink::Config::config->has_param("mirror-$mirror")) {
+	    $url = $Fink::Config::config->param("mirror-$mirror");
+	    $url .= "/" unless $url =~ /\/$/;
+	    $url .= $path;
+	  } else {
+	    # FIXME: pick a mirror at random
+	    die "can't find url for mirror $mirror in configuration";
+	  }
+	}
       } else {
-        # pick a mirror at random, $mirror_level controls the scope
-        my ($key, $site, $match, @list);
-        
-        if ($mirror_level == 1) {
-          $match = lc $config->param_default("MirrorCountry", "nam-us");
-        } elsif ($mirror_level == 2) {
-          $match = lc $config->param_default("MirrorContinent", "nam");
-        } else {
-          $match = "";
-        }
+	# pick a mirror at random, $mirror_level controls the scope
+	my ($key, $site, $match, @list);
+	
+	if ($mirror_level == 1) {
+	  $match = lc $config->param_default("MirrorCountry", "nam-us");
+	} elsif ($mirror_level == 2) {
+	  $match = lc $config->param_default("MirrorContinent", "nam");
+	} else {
+	  $match = "";
+	}
 
-        @list = ();
-        foreach $key (keys %$all_mirrors) {
-          if ($key =~ /^$match/) {
-            foreach $site (@{$all_mirrors->{$key}}) {
-              push @list, $site;
-            }
-          }
-        }
-        if ($#list < 0 && exists $all_mirrors->{primary}) {
-          foreach $site (@{$all_mirrors->{primary}}) {
-            push @list, $site;
-          }
-        }
-        if ($#list < 0) {
-          die "No mirrors found for mirror list \"$mirror\", not even a primary site. Check the mirror lists.";
-        }
+	@list = ();
+	foreach $key (keys %$all_mirrors) {
+	  if ($key =~ /^$match/) {
+	    foreach $site (@{$all_mirrors->{$key}}) {
+	      push @list, $site;
+	    }
+	  }
+	}
+	if ($#list < 0 && exists $all_mirrors->{primary}) {
+	  foreach $site (@{$all_mirrors->{primary}}) {
+	    push @list, $site;
+	  }
+	}
+	if ($#list < 0) {
+	  die "No mirrors found for mirror list \"$mirror\", not even a primary site. Check the mirror lists.";
+	}
 
-        $url = $list[int(rand(scalar(@list)))];
-        $url .= "/" unless $url =~ /\/$/;
-        $url .= $path;
+	$url = $list[int(rand(scalar(@list)))];
+	$url .= "/" unless $url =~ /\/$/;
+	$url .= $path;
       }
   
       ### fetch $url to $file
   
       if (-f $file) {
-        &execute("rm -f $file");
+	&execute("rm -f $file");
       }
       if (&execute("$cmd $url") or not -f $file) {
-        $failed = 1;
+	$failed = 1;
       } else {
-        $failed = 0;
+	$failed = 0;
       }
   
       ### failure handling
   
       if ($failed) {
-        $result =
-          &prompt_selection("Downloading the file \"$file\" failed. ".
-                            "How do you want to proceed?",
-                            ($tries > 5) ? 1 : (($tries > 3) ? 5 : 4),
-                            { "error" => "Give up",
-                              "retry" => "Retry the same mirror",
-                              "retry-country" => "Retry a random mirror from your country",
-                              "retry-continent" => "Retry a random mirror from your continent",
-                              "retry-world" => "Retry a random mirror" },
-                            "error", "retry", "retry-country", "retry-continent", "retry-world");
-        if ($result eq "error") {
-          return 1;
-        } elsif ($result eq "retry") {
-          $mirror_level = 0;
-        } elsif ($result eq "retry-country") {
-          $mirror_level = 1;
-        } elsif ($result eq "retry-continent") {
-          $mirror_level = 2;
-        } elsif ($result eq "retry-world") {
-          $mirror_level = 3;
-        }
-        $tries++;
+	$result =
+	  &prompt_selection("Downloading the file \"$file\" failed. ".
+			    "How do you want to proceed?",
+			    ($tries > 5) ? 1 : (($tries > 3) ? 5 : 4),
+			    { "error" => "Give up",
+			      "retry" => "Retry the same mirror",
+			      "retry-country" => "Retry a random mirror from your country",
+			      "retry-continent" => "Retry a random mirror from your continent",
+			      "retry-world" => "Retry a random mirror" },
+			    "error", "retry", "retry-country", "retry-continent", "retry-world");
+	if ($result eq "error") {
+	  return 1;
+	} elsif ($result eq "retry") {
+	  $mirror_level = 0;
+	} elsif ($result eq "retry-country") {
+	  $mirror_level = 1;
+	} elsif ($result eq "retry-continent") {
+	  $mirror_level = 2;
+	} elsif ($result eq "retry-world") {
+	  $mirror_level = 3;
+	}
+	$tries++;
       }
   
     } while ($failed);
@@ -208,28 +208,28 @@ sub fetch_url_to_file {
       ### fetch $url to $file
   
       if (-f $file) {
-        &execute("rm -f $file");
+	&execute("rm -f $file");
       }
       if (&execute("$cmd $url") or not -f $file) {
-        $failed = 1;
+	$failed = 1;
       } else {
-        $failed = 0;
+	$failed = 0;
       }
   
       ### failure handling
   
       if ($failed) {
-        $result =
-          &prompt_selection("Downloading the file \"$file\" failed. ".
-                            "How do you want to proceed?",
-                            ($tries > 5) ? 1 : 2,
-                            { "error" => "Give up",
-                              "retry" => "Retry" },
-                            "error", "retry");
-        if ($result eq "error") {
-          return 1;
-        }
-        $tries++;
+	$result =
+	  &prompt_selection("Downloading the file \"$file\" failed. ".
+			    "How do you want to proceed?",
+			    ($tries > 5) ? 1 : 2,
+			    { "error" => "Give up",
+			      "retry" => "Retry" },
+			    "error", "retry");
+	if ($result eq "error") {
+	  return 1;
+	}
+	$tries++;
       }
   
     } while ($failed);
