@@ -1,5 +1,10 @@
 2005-03-03  Daniel Macks  <dmacks@netspace.org>
 
+	* Configure.pm: Invert meaning of choose_mirrors return (true
+	means unchanged)
+
+2005-03-03  Daniel Macks  <dmacks@netspace.org>
+
 	* Configure.pm: Add boolean return value to choose_mirrors, indicating if mirror selections are changed
 
 2005-03-02  Daniel Macks  <dmacks@netspace.org>

@@ -229,7 +229,8 @@ sub configure {
 
 =item choose_mirrors
 
-mirror selection (returns boolean about whether any changes were made)
+mirror selection (returns boolean indicating if mirror selections are
+unchanged: true means no changes, false means changed)
 
 =cut
 
@@ -273,7 +274,7 @@ sub choose_mirrors {
 								default => 0);
 		}
 		if (!$answer) {
-			return 0;
+			return 1;
 		}
 	}
 	
@@ -351,7 +352,7 @@ sub choose_mirrors {
 		$config->set_param("Mirror-$mirrorname", $answer);
 	}
 
-	return 1;
+	return 0;
 }
 
 
