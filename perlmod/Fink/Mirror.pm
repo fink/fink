@@ -79,21 +79,21 @@ sub new_from_name {
         # set default values for critical mirrors, in case mirror directory
         # is not present
 	my %mirrordefaults = (
-	    "master" => "Primary: http://distfiles.master.finkmirrors.net/",
-            "rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
-            "sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
+		"master" => "Primary: http://distfiles.master.finkmirrors.net/",
+		"rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
+		"sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
 			      );
 	my ($key, $mirrordefault);
 	if (not -f $mirrorfile) {
-	    foreach $key ( keys %mirrordefaults ) {
-		if ($name eq $key) {
-		    $mirrordefault = $mirrordefaults{$key}."\n";
-		    $self->{data} = &read_properties_multival_var("",$mirrordefault);
-		    $self->initialize();
-		    return $self;
+		foreach $key ( keys %mirrordefaults ) {
+			if ($name eq $key) {
+				$mirrordefault = $mirrordefaults{$key}."\n";
+				$self->{data} = &read_properties_multival_var("",$mirrordefault);
+				$self->initialize();
+				return $self;
+			}
 		}
-	    }
-	    die "No mirror site list file found for mirror '$name'.\n";
+		die "No mirror site list file found for mirror '$name'.\n";
 	}
 	$self->{data} = &read_properties_multival($mirrorfile);
 
