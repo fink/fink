@@ -1,4 +1,4 @@
-2002-12-22  Dave Morrison
+2002-12-22  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Fix bootstrapping problem caused by giving full
 	path-name to install-info.
