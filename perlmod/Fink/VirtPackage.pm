@@ -278,7 +278,7 @@ sub initialize {
 						$self->{$pkg} = {
 							'package'     => $pkg,
 							'status'      => "install ok installed",
-							'version'     => "2:${xver}-1",
+							'version'     => "2:${xver}-2",
 							'description' => "[placeholder for user installed x11]",
 							'provides'    => join(', ', @{$provides->{$pkg}}),
 						};
