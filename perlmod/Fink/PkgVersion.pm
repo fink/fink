@@ -595,16 +595,21 @@ sub resolve_depends {
   my $include_build = shift || 0;
   my (@speclist, @deplist, $altlist);
   my ($altspec, $depspec, $depname, $versionspec, $package);
-  my $splitoff;
+  my ($splitoff, $idx, $split_idx);
 
-  # If this is a splitoff, and we are asked for build depends, return
-  # the build depend list of the master packager
-  if ($include_build and $self->{_type} eq "splitoff") {
-    return ($self->{parent})->resolve_depends(1);
-  }
-  
   @deplist = ();
 
+  $idx = 0;
+  $split_idx = 0;
+
+  # If this is a splitoff, and we are asked for build depends, add in
+  # the build depend list of the master packager. We use a special
+  # mode of resolve_depends for this, which tells our master to
+  # strip all plitoff deps from its build deps list... nasty, but works.
+  if ($include_build and $self->{_type} eq "splitoff") {
+    push @deplist, ($self->{parent})->resolve_depends(2);
+  }
+  
   @speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
   if ($include_build) {
     push @speclist,
@@ -612,6 +617,9 @@ sub resolve_depends {
 
     # If this is a master package with splitoffs, and build deps are requested,
     # then add to the list the runtime deps of all our aplitoffs.
+    # We remember the offset at which we added these in $split_idx, so that we
+    # can add any inter-splitoff deps that would otherwise be introduced by this.
+    $split_idx = @speclist;
     foreach  $splitoff (@{$self->{_splitoffs}}) {
       push @speclist,
         split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
@@ -629,9 +637,14 @@ sub resolve_depends {
 	$versionspec = "";
       }
 
-      if ($include_build and @{$self->{_splitoffs}} > 0) {
-	# To prevent loops in the build dependency graph, we have to remove all
-	# our splitoffs from the graph.
+      if ($include_build and @{$self->{_splitoffs}} > 0 and
+	 ($idx >= $split_idx or $include_build > 1)) {
+	# To prevent circular refs in the build dependency graph, we have to
+	# remove all our splitoffs from the graph. Exception: any splitoffs
+	# this master depends on directly are not filtered. Exception from the
+	# exception: if we were called by a splitoff to determine the "meta
+	# dependencies" of it, then we again filter out all splitoffs.
+	# If you've read till here without mental injuries, congrats :-)
 	foreach  $splitoff (@{$self->{_splitoffs}}) {
 	   next SPECLOOP if ($depname eq $splitoff->get_name());
 	}
@@ -653,6 +666,7 @@ sub resolve_depends {
       die "Can't resolve dependency \"$altspec\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
     }
     push @deplist, $altlist;
+    $idx++;
   }
 
   return @deplist;
