@@ -1,3 +1,9 @@
+2003-11-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Changed the X11 tracking to return major.minor.mini
+	if using an XFree86 snapshot (ie, if the version has more than 3
+	components)
+
 2003-11-21  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Improved early-escape from recursive percent

@@ -201,9 +201,8 @@ sub initialize {
 
 		# if no xfree86 packages are installed, put in our own placeholder
 		if ($packagecount == 0) {
-			my ($xver, $xvermaj, $xvermin, $xverrev) = check_x11_version();
-			if (defined $xver and $xvermaj == 4)
-			{
+			my ($xver) = check_x11_version();
+			if (defined $xver) {
 				$hash = {};
 				my $provides;
 
@@ -279,7 +278,7 @@ sub initialize {
 						$self->{$pkg} = {
 							'package'     => $pkg,
 							'status'      => "install ok installed",
-							'version'     => "2:${xvermaj}.${xvermin}-1",
+							'version'     => "2:${xver}-1",
 							'description' => "[placeholder for user installed x11]",
 							'provides'    => join(', ', @{$provides->{$pkg}}),
 						};
@@ -386,6 +385,7 @@ sub has_lib {
 	return;
 }
 
+
 ### Check the installed x11 version
 sub check_x11_version {
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
@@ -395,7 +395,7 @@ sub check_x11_version {
 				while (<CHECKFILE>) {
 					if (/^.*Version\S* ([^\s]+) .*$/) {
 						$XF_VERSION = $1;
-						@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+						@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
 						last;
 					}
 				}
@@ -414,7 +414,7 @@ sub check_x11_version {
 					while (my $line = <XBIN>) {
 						if ($line =~ /XFree86 Version ([\d\.]+)/) {
 							$XF_VERSION = $1;
-							@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+							@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
 							last;
 						}
 					}
@@ -430,7 +430,14 @@ sub check_x11_version {
 		print STDERR "could not determine XFree86 version number\n";
 		return;
 	}
-	return ($XF_VERSION, @XF_VERSION_COMPONENTS);
+
+	if (@XF_VERSION_COMPONENTS >= 4) {
+		# it's a snapshot (ie, 4.3.99.15)
+		# give back 3 parts of the component
+		return (join('.', @XF_VERSION_COMPONENTS[0..2]));
+	} else {
+		return (join('.', @XF_VERSION_COMPONENTS[0..1]));
+	}
 }
 ### EOF
 1;
