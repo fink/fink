@@ -536,7 +536,7 @@ sub inject_shlib {
   my (@packages, $pkg, $counter, $pkgnum, $vernum);
 
   $shlib_hash{$shlibname}->{compat} = $compat;
-  if ($package =~ /\|/) {
+  if ($package =~ /\\s*|\s*/) {
     @packages = split(/\|/, $package);
     $counter = 0;
     foreach $pkg (@packages) {
