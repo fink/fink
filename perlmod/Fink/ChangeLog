@@ -1,3 +1,8 @@
+2003-12-03  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Shuffled @EXPORT_OK to be in same order as the subs
+	appear in the file.
+
 2003-12-02  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Added --buildonly to fink list command, to list all

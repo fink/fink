@@ -37,8 +37,8 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
 					  &read_properties_multival
-					  &filename &execute &execute_script &expand_percent
-					  &print_breaking
+					  &execute &execute_script &expand_percent
+					  &filename &print_breaking
 					  &prompt &prompt_boolean &prompt_selection
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
