@@ -438,6 +438,7 @@ sub execute_script {
 
 	# If the script starts with a shell specified (e.g. #!/bin/sh), run it 
 	# as a script. Otherwise fall back to the old behaviour for compatibility.
+	print "Fink::Services::execute_script:\n--\n",$script,"--\n";
 	if ($script =~ /^\s*#!/) {
 		# An interpretter is specified.
 		# Strip any leading whitespace before "#!" magic
