@@ -783,6 +783,7 @@ sub prompt_selection_new {
 		$default_value = 1;
 	} elsif ($default->[0] eq "number") {
 		$default_value = $default->[1];
+		$default_value = 1 if $default_value < 1 || $default_value > @choices/2;
 	} elsif ($default->[0] =~ /^(label|value)$/) {
 		# will be handled later
 	} else {
@@ -808,6 +809,7 @@ sub prompt_selection_new {
 		}
 
 	}
+	$default_value = 1 if !defined $default_value;
 	print "\n\n";
 
 	&print_breaking("$prompt [$default_value] ", 0);

@@ -1,3 +1,10 @@
+2003-12-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: prompt_selection_new(): forgot to deal with
+	unspecified or invalid default choice.
+	* Configure.pm: Switch from using prompt_selection to
+	prompt_selection_new.
+	
 2003-12-28  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Type:splitoff is redundant: switch to checkiing
@@ -8,7 +15,7 @@
 	
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Service.pm: *don't* export "read_properties_lines".
+	* Services.pm: *don't* export "read_properties_lines".
 	Instead, introduce new subroutines "read_properties_multival_var"
 	and "read_properties_multival_lines", the first of which is exported.
 	* Mirror.pm: use "read_properties_multival_var" when setting 
