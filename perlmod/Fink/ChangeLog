@@ -1,3 +1,7 @@
+2001-09-07  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Bootstrap.pm: Create dpkg status area earlier.
+
 2001-09-06  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Status.pm (list): Added list() method to retreive the whole

@@ -64,6 +64,12 @@ sub bootstrap {
   &execute("mkdir -p $bsbase/sbin");
   &execute("mkdir -p $bsbase/lib");
 
+  # create empty dpkg database
+  &execute("mkdir -p $basepath/var/lib/dpkg");
+  &execute("touch $basepath/var/lib/dpkg/status");
+  &execute("touch $basepath/var/lib/dpkg/available");
+  &execute("touch $basepath/var/lib/dpkg/diversions");
+
   # set paths so that everything is found
   $save_path = $ENV{PATH};
   $ENV{PATH} = "$basepath/sbin:$basepath/bin:".
@@ -104,12 +110,6 @@ sub bootstrap {
     $package->phase_install();
     $package->disable_bootstrap();
   }
-
-  # create empty dpkg database
-  &execute("mkdir -p $basepath/var/lib/dpkg");
-  &execute("touch $basepath/var/lib/dpkg/status");
-  &execute("touch $basepath/var/lib/dpkg/available");
-  &execute("touch $basepath/var/lib/dpkg/diversions");
 
 
   print "\n";
