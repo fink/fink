@@ -32,7 +32,7 @@ BEGIN {
   $VERSION = 1.00;
   @ISA         = qw(Exporter);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw(&fink_version &distribution_version);
+  @EXPORT_OK   = qw(&fink_version &distribution_version &pkginfo_version);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -61,6 +61,23 @@ sub distribution_version {
     $dv = "unknown";
   }
   return $dv;
+}
+
+### retreive version stamp of package info
+
+sub pkginfo_version {
+  my $pv = "0";
+  my ($fn, $v);
+  foreach $fn (glob("$basepath/fink/stamp-*")) {
+    if ($fn =~ /\/stamp-cvs/) {
+      return "cvs";
+    } elsif ($fn =~ /\/stamp-rel-(.+)$/) {
+      $v = $1;
+      $pv = $v if ($v gt $pv);
+    }
+  }
+  $pv = &distribution_version() if $pv eq "0";
+  return $pv;
 }
 
 

@@ -1,5 +1,11 @@
 2001-10-09  Christoph Pfisterer  <cp@chrisp.de>
 
+	* FinkVersion.pm.in (pkginfo_version): New function to evaluate
+	the stamp files for package descriptions.
+	* SelfUpdate.pm (check): Use the new pkginfo_version() instead of
+	distribution_version(). Stop dead when CVS updating is
+	detected. Minor text and code fixes.
+
 	* Services.pm (version_cmp): Changed the version comparison to
 	match that of dpkg exactly.
 

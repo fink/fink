@@ -26,7 +26,7 @@ use Fink::Config qw($config $basepath);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
-use Fink::FinkVersion qw(&distribution_version);
+use Fink::FinkVersion qw(&pkginfo_version);
 
 use strict;
 use warnings;
@@ -63,10 +63,19 @@ sub check {
   # check if we need to upgrade
   $latest_fink = `cat LATEST-FINK`;
   chomp($latest_fink);
-  $installed_version = &distribution_version();
+  $installed_version = &pkginfo_version();
+  if ($installed_version eq "cvs") {
+    print "\n";
+    &print_breaking("You have used CVS to update your package descriptions. ".
+		    "The selfupdate command can not determine if the ".
+		    "descriptions need updating. Use CVS to update them ".
+		    "if required.");
+    return;
+  }
   if (&version_cmp($latest_fink, $installed_version) <= 0) {
     print "\n";
-    &print_breaking("You already have the latest Fink release. ".
+    &print_breaking("You already have the package descriptions from ".
+		    "the latest Fink source release. ".
 		    "(installed:$installed_version available:$latest_fink)");
     return;
   }
@@ -102,7 +111,7 @@ sub check {
   if ($config->param_boolean("Verbose")) {
     $verbosity = "v";
   }
-  $unpack_cmd = "gzip -dc $pkgtarball | tar -x${verbosity}f -";
+  $unpack_cmd = "tar -xz${verbosity}f -";
   if (&execute($unpack_cmd)) {
     die "unpacking $pkgtarball failed\n";
   }
