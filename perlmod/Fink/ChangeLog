@@ -1,3 +1,7 @@
+2005-02-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm (check_host): We work on 10.3.8.
+
 2005-02-09  Chris Dolan <chrisdolan@users.sourceforge.net>
 
 	* Engine.pm: improvements for snapshot command
