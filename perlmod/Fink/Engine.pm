@@ -22,7 +22,7 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&print_breaking &print_breaking_prefix
+use Fink::Services qw(&print_breaking
 					  &prompt_boolean &prompt_selection
 					  &latest_version &execute &get_term_width
 					  &file_MD5_checksum &get_arch);
@@ -1173,7 +1173,7 @@ sub real_install {
 		}
 		$s .= ":";
 		&print_breaking($s);
-		&print_breaking_prefix(join(" ",@requested), 1, " ");
+		&print_breaking(join(" ",@requested), 1, " ");
 	}
 	# ask user when additional packages are to be installed
 	if ($#additionals >= 0) {
@@ -1184,7 +1184,7 @@ sub real_install {
 			&print_breaking("The following additional package ".
 							"will be installed:");
 		}
-		&print_breaking_prefix(join(" ",@additionals), 1, " ");
+		&print_breaking(join(" ",@additionals), 1, " ");
 		$answer = &prompt_boolean("Do you want to continue?", 1);
 		if (! $answer) {
 			die "Dependencies not satisfied\n";

@@ -38,8 +38,7 @@ BEGIN {
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
 					  &read_properties_multival
 					  &filename &execute &execute_script &expand_percent
-					  &print_breaking &print_breaking_prefix
-					  &print_breaking_twoprefix
+					  &print_breaking
 					  &prompt &prompt_boolean &prompt_selection
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
@@ -303,28 +302,8 @@ sub print_breaking {
 	my $s = shift;
 	my $linebreak = shift;
 	$linebreak = 1 unless defined $linebreak;
-
-	print_breaking_twoprefix($s, $linebreak, "", "");
-}
-
-sub print_breaking_prefix {
-	my $s = shift;
-	my $linebreak = shift;
-	$linebreak = 1 unless defined $linebreak;
-	my $prefix = shift;
-	$prefix = "" unless defined $prefix;
-
-	print_breaking_twoprefix($s, $linebreak, $prefix, $prefix);
-}
-
-sub print_breaking_twoprefix {
-	my $s = shift;
-	my $linebreak = shift;
-	$linebreak = 1 unless defined $linebreak;
-	my $prefix1 = shift;
-	$prefix1 = "" unless defined $prefix1;
-	my $prefix2 = shift;
-	$prefix2 = "" unless defined $prefix2;
+	my $prefix1 = shift || "";
+	my $prefix2 = shift || $prefix1;
 	my ($pos, $t, $reallength, $prefix, $first);
 
 	chomp($s);
@@ -408,11 +387,11 @@ sub prompt_boolean {
 
 # select from a list of choices
 # parameters:
-#	 prompt					- a string
+#	 prompt			- a string
 #	 default_value	- a number between 1 and the number of choices
-#	 names					- a hashref containing display names for the choices,
-#										indexed by the choices themselves (not their index)
-#	 the choices		- a list of choices; one of these will be returned
+#	 names			- a hashref containing display names for the choices,
+#					  indexed by the choices themselves (not their index)
+#	 the choices	- a list of choices; one of these will be returned
 
 sub prompt_selection {
 	my $prompt = shift;

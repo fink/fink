@@ -24,7 +24,7 @@ package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
-					  &print_breaking &print_breaking_twoprefix
+					  &print_breaking
 					  &prompt_boolean &prompt_selection
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
@@ -132,7 +132,7 @@ sub initialize {
 	# percent-expansions
 	if ($self->param("_type") eq "perl") {
 		# grab perl version, if present
-		my ($perldirectory, $perlarchdir,$perlcmd) = $self->get_perl_dir_arch();
+		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 
 		$configure_params = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
 			$self->param_default("ConfigureParams", "");
@@ -945,15 +945,15 @@ sub fetch_source {
 		print "\n";
 		&print_breaking("Downloading '$file' from the URL '$url' failed. ".
 						"There can be several reasons for this:");
-		&print_breaking_twoprefix("The server is too busy to let you in or ".
+		&print_breaking("The server is too busy to let you in or ".
 						"is temporarily down. Try again later.",
 						1, "- ", "	");
-		&print_breaking_twoprefix("There is a network problem. If you are ".
+		&print_breaking("There is a network problem. If you are ".
 						"behind a firewall you may want to check ".
 						"the proxy and passive mode FTP ".
 						"settings. Then try again.",
 						1, "- ", "	");
-		&print_breaking_twoprefix("The file was removed from the server or ".
+		&print_breaking("The file was removed from the server or ".
 						"moved to another directory. The package ".
 						"description must be updated.",
 						1, "- ", "	");
@@ -1300,7 +1300,7 @@ sub phase_compile {
 		$compile_script = $self->param("CompileScript");
 	} else {
 		if ($self->param("_type") eq "perl") {
-		    my ($perldirectory, $perlarchdir,$perlcmd) = $self->get_perl_dir_arch();
+		    my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$compile_script =
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
@@ -2096,11 +2096,11 @@ sub get_perl_dir_arch {
 	### perlmods trying to run ../perl$perlversion
 	my $perlcmd = get_path('perl'.$perlversion);
 
-		if ($perlversion ge "5.8.1") {
-			$perlarchdir = 'darwin-thread-multi-2level';
-		} else {
-			$perlarchdir = 'darwin';
-		}
+	if ($perlversion ge "5.8.1") {
+		$perlarchdir = 'darwin-thread-multi-2level';
+	} else {
+		$perlarchdir = 'darwin';
+	}
 
 	return ($perldirectory, $perlarchdir,$perlcmd);
 }
