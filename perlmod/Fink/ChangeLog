@@ -1,5 +1,11 @@
 2004-04-09  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Fix dumpinfo so when run on a SplitOff package it
+	gives the parent's fields for fields that don't make sense to have
+	in a SplitOff.
+
+2004-04-09  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Remembered to handle %ni and %Ni in $expand map.
 
 2004-04-08  Daniel Macks  <dmacks@netspace.org>

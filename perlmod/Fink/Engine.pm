@@ -1634,7 +1634,7 @@ sub cmd_showparent {
 sub cmd_dumpinfo {
 	my @packagelist = @_;
 
-	my $field;
+	my $field;					# scratch variable
 
 	foreach my $package (@packagelist) {
 		print "\n";
@@ -1652,21 +1652,39 @@ sub cmd_dumpinfo {
 		printf "%s: %s\n", 'Revision', $pkg->get_revision();
 		print "\n";
 		print "Sources:\n";
-		foreach $field ( $pkg->get_source_suffices() ) {
-			printf "\tSource%s: %s\n", $field, $pkg->get_source($field);
+		
+		# this is the parent if there is one, else the package at hand
+		my $parent = $pkg->param_default("Parent", $pkg);
+
+		foreach $field ( $parent->get_source_suffices() ) {
+			printf "\tSource%s: %s\n", $field, $parent->get_source($field);
 		}
 		print "\n";
 		foreach my $field (qw/ Depends BuildDepends Provides Conflicts Replaces BuildConflicts /) {
-			printf "%s: %s\n", $field, $pkg->pkglist_default($field);
+			if ($field =~ /^Build/) {
+				# these cannot be in a splitoff so assume parent
+				printf "%s: %s\n", $field, $parent->pkglist_default($field);
+			} else {
+				# these could be in a splitoff
+				printf "%s: %s\n", $field, $pkg->pkglist_default($field);
+			}
 		}
 		print "\n";
 		printf "Patch files:\n";
-		if ($pkg->has_param("Patch")) {
-			foreach my $patchfile (split(/\s+/,$pkg->param("Patch"))) {
+		if ($parent->has_param("Patch")) {
+			foreach my $patchfile (split(/\s+/,$parent->param("Patch"))) {
 				printf "\t%s\n", &expand_percent("\%a/$patchfile", $pkg->{_expand}, $pkg->get_info_filename." Patch");
 			}
 		}
-		foreach $field (qw/ Patch Compile Install PreInst PostInst PreRm PostRm /) {
+		foreach $field (qw/ Patch Compile /) {
+			# these cannot be in a splitoff so assume parent
+			printf "\n%sScript:\n", $field;
+			if ($parent->has_param($field.'Script')) {
+				print $parent->param_expanded($field.'Script'),"\n";
+			}
+		}
+		foreach $field (qw/ Install PreInst PostInst PreRm PostRm /) {
+			# these could be in a splitoff
 			printf "\n%sScript:\n", $field;
 			if ($pkg->has_param($field.'Script')) {
 				print $pkg->param_expanded($field.'Script'),"\n";
