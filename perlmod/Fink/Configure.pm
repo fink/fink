@@ -73,13 +73,18 @@ sub configure {
 	}
 
 	$binary_dist = $config->param_boolean("UseBinaryDist");
-	# new users should use the binary dist
-	if (!$config->has_param("UseBinaryDist")) {
-		$binary_dist = 1;
+	# if we are not installed in /sw, $binary_dist must be 0:
+	if (not $basepath eq '/sw') {
+		$binary_dist = 0;
+	} else {
+		# new users should use the binary dist
+		if (!$config->has_param("UseBinaryDist")) {
+			$binary_dist = 1;
+		}
+		$binary_dist =
+			&prompt_boolean("Should Fink try to download pre-compiled packages from ".
+							"the binary distribution if available?", $binary_dist);
 	}
-	$binary_dist =
-		&prompt_boolean("Should Fink try to download pre-compiled packages from ".
-		                "the binary distribution if available?", $binary_dist);
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
 	$verbose = $config->param_default("Verbose", 1);
@@ -98,12 +103,11 @@ sub configure {
 
 	$default = $config->param_default("ProxyHTTP", "");
 	$default = "none" unless $default;
-	&print_breaking("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
-        "The URL should start with http:// and may contain username, ".
-	"password or port specifications ".
-	" E.g: http://username:password\@hostname:port ");
 	$http_proxy =
-		&prompt("Your proxy: ".
+		&prompt("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
+				"The URL should start with http:// and may contain username, ".
+				"password or port specifications.".
+				" E.g: http://username:password\@hostname:port ",
 				$default);
 	if ($http_proxy =~ /^none$/i) {
 		$http_proxy = "";
@@ -122,13 +126,13 @@ sub configure {
 	} else {
 		$default = $config->param_default("ProxyFTP", "");
 		$default = "none" unless $default;
-                &print_breaking("Enter the URL of the proxy to use for FTP, ".
-		                "or 'none' for no proxy. ".
-				"The URL should start with http:// and may contain username," .
-				"password or port specifications.".
-				" E.g: ftp://username:password\@hostname:port ");	
-                $ftp_proxy = &prompt("Your proxy:" , $default);
-		
+		$ftp_proxy =
+			&prompt("Enter the URL of the proxy to use for FTP, ".
+					"or 'none' for no proxy. ".
+					"The URL should start with http:// and may contain username, ".
+					"password or port specifications.".
+					" E.g: ftp://username:password\@hostname:port ",
+					$default);
 		if ($ftp_proxy =~ /^none$/i) {
 			$ftp_proxy = "";
 		}

@@ -27,7 +27,7 @@ use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
-use Fink::Config qw($config $basepath $debarch);
+use Fink::Config qw($config $basepath $debarch binary_requested);
 use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p);
@@ -155,8 +155,7 @@ sub process {
 	}
 
 	# check if we need apt-get
-	if ($aptgetflag > 0 and 
-	   ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary"))) {
+	if ($aptgetflag > 0 and (Fink::Config::binary_requested())) {
 		my $apt_problem = 0;
 		# check if we are installed at '/sw'
 		if (not $basepath eq '/sw') {
@@ -185,7 +184,7 @@ sub process {
 			}
 		}
 		if($apt_problem) {
-			my $prompt = "Continue with the 'UseBinaryDist' option temporarely disabled?";
+			my $prompt = "Continue with the 'UseBinaryDist' option temporarily disabled?";
 			my $continue = prompt_boolean($prompt, 1, 60);
 			if ($continue) {
 				# temporarely disable UseBinaryDist
@@ -1021,7 +1020,7 @@ EOF
 		}
 	}
 
-	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+if (Fink::Config::binary_requested()) {
 		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
 		# 'apt-get autoclean'
 		my $aptcmd = "$basepath/bin/apt-get ";
@@ -1129,7 +1128,7 @@ sub real_install {
 	# should we try to download the deb from the binary distro?
 	# warn if UseBinaryDist is enabled and not installed in '/sw'
 	my $deb_from_binary_dist = 0;
-	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+	if (Fink::Config::binary_requested()) {
 		if ($basepath eq '/sw') {
 			$deb_from_binary_dist = 1;
 		}

@@ -1,3 +1,13 @@
+2004-12-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm, Engine.pm, Package.pm PkgVersion.pm, SelfUpdate.pm: 
+	Refactor 'UseBinaryDist' to use a new binary_requested function
+	which takes into account the per-package -b and -c flags as well
+	as the global UseBinaryDist option.
+	* Bootstrap.pm: Disable 'UseBinaryDist' during bootstrap
+	* Configure.pm: Set 'UseBinaryDist' to be false if we are not 
+	installed in /sw
+
 2004-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* SelfUpdate.pm: Don't automatically update gettext-bin
