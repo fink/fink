@@ -1,3 +1,8 @@
+2003-03-06  Max Horn  <max@quendi.de>
+
+	* bootstrap.pl: Print more appropriate message when run on x86 Darwin; fix
+	  indention.
+
 2003-02-27  Max Horn  <max@quendi.de>
 
 	* fink.in: Fixed typo in help string (it's -h not -H as alias for --help);
