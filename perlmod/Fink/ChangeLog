@@ -1,3 +1,8 @@
+2004-11-24  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Remove timestamp from buildlock pkgname; use
+	lockpkg's dpkg preinst scripts to prevent concurrent builds.
+
 2004-11-22  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: fixed .la check to look for %b/%N not %b/%n

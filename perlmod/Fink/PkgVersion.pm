@@ -2719,9 +2719,10 @@ sub set_buildlock {
 	# allow over-ride
 	return if Fink::Config::get_option("no_buildlock");
 
-	my $lockpkg_minor = 'fink-buildlock-' . $self->get_fullname();
-	my $lockpkg = $lockpkg_minor . '-' .  strftime "%Y.%m.%d-%H.%M.%S", localtime;
-	$self->{_lockpkg} = $lockpkg;
+	my $pkgname = $self->get_name();
+	my $pkgvers = $self->get_fullversion();
+	my $lockpkg = "fink-buildlock-$pkgname-$pkgvers";
+	my $timestamp = strftime "%Y.%m.%d-%H.%M.%S", localtime;
 
 	my $destdir = "$buildpath/root-$lockpkg";
 
@@ -2735,16 +2736,16 @@ sub set_buildlock {
 	my $control = <<EOF;
 Package: $lockpkg
 Source: fink
-Version: 0-0
+Version: $timestamp
 Section: unknown
 Installed-Size: 0
 Architecture: $debarch
 Description: Package compile-time lockfile
 Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
-Provides: fink-buildlock, $lockpkg_minor
+Provides: fink-buildlock
 EOF
 
-	my @pkglist;
+	my( @pkglist, $deplist );
 
 	# BuildConflicts of parent pkg are Conflicts of lockpkg
 	if (exists $self->{parent}) {
@@ -2752,8 +2753,8 @@ EOF
 	} else {
 		@pkglist = @{pkglist2lol($self->pkglist('BuildConflicts'))};
 	}
-	push @pkglist, [$lockpkg_minor];  # prevent concurrent builds of the family
-	$control .= 'Conflicts: ' . &lol2pkglist(\@pkglist) . "\n";
+	$deplist = &lol2pkglist(\@pkglist);
+	$control .= "Conflicts: $deplist\n" if length $deplist;
 
 	# All *Depends of whole family of pkgs are Depends of lockpkg...
 	@pkglist = ();
@@ -2772,13 +2773,50 @@ EOF
 		$deplist = [] if grep { /$pkgregex/ } @$deplist;
 	}
 
-	my $deplist = &lol2pkglist(\@pkglist);
+	$deplist = &lol2pkglist(\@pkglist);
 	$control .= "Depends: $deplist\n" if length $deplist;
 
 	### write "control" file
 	open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file for $lockpkg: $!\n";
 	print CONTROL $control;
 	close(CONTROL) or die "can't write control file for $lockpkg: $!\n";
+
+	# avoid concurrent builds of a given %f by having any existing
+	# buildlock pkgs refuse to allow themselves to be upgraded
+	my $script = <<EOSCRIPT;
+#!/bin/sh
+
+case "\$1" in
+  "upgrade")
+    cat <<EOMSG
+
+Error: fink thinks that the package it is about to build:
+  $pkgname ($pkgvers)
+is currently being built by another fink process. That build
+process has a timestamp of:
+  $timestamp
+If this is not true (perhaps the previous build process crashed?),
+just remove the fink package:
+  $lockpkg
+Then retry whatever you did that led to the present error.
+
+EOMSG
+    exit 1
+	;;
+  "failed-upgrade")
+	exit 1
+	;;
+  *)
+	exit 0
+	;;
+esac
+EOSCRIPT
+
+	### write "prerm" file
+	open(PREINST,">$destdir/DEBIAN/prerm") or die "can't write prerm script file for $lockpkg: $!\n";
+	print PREINST $script;
+	close(PREINST) or die "can't write prerm script file for $lockpkg: $!\n";
+	chmod 0755, "$destdir/DEBIAN/prerm";
 
 	### create .deb using dpkg-deb (in buildpath so apt doesn't see it)
 	if (&execute("dpkg-deb -b $destdir $buildpath")) {
@@ -2793,7 +2831,7 @@ EOF
 
 	# install lockpkg (== set lockfile for building ourself)
 	print "Setting build lock...\n";
-	my $debfile = $buildpath.'/'.$lockpkg.'_0-0_'.$debarch.'.deb';
+	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
 	my $lock_failed = &execute("dpkg -i $debfile");
 	rm_f $debfile or
 		&print_breaking("WARNING: Can't remove binary package file ".
@@ -2802,34 +2840,25 @@ EOF
 						"the file manually to save disk space. ".
 						"Continuing with normal procedure.");
 	if ($lock_failed) {
-		print "Trying to clean up...\n";
-		&execute("dpkg -r $lockpkg");
-		my $fullname = $self->get_fullname();
 		die <<EOMSG
-Can't set build lock for $fullname.
+Can't set build lock for $pkgname ($pkgvers)
 
-There are two common causes for this, depending on the error message
-following "Setting build lock..." above:
+If any of the above dpkg error messages mention problems with
+dependencies, fink has probably gotten confused by trying to build
+many packages at once. Try building just this current package. When
+that has completed successfully, you could retry whatever you did that
+led to the present error.
 
-1. Problems with dependencies: fink has probably gotten confused by
-   trying to build many packages at once. Try building just this
-   current package. When that has completed successfully, retry
-   whatever you did that led to the present error.
-
-2. Conflicts among several fink-buildlock packages: fink thinks that
-   the package it is about to build is currently being built by
-   another fink process. If that is not true (perhaps a previous build
-   attempt crashed?), just use fink to remove the currently-installed
-   $lockpkg_minor- package(s).
-   Then retry whatever you did that led to the present error.
-
-In either case, don't worry, you have not wasted compiling time:
-Packages that had been completely built before this error occurred
-will not have to be recompiled.
+Regardless of the cause of the lock failure, don't worry: you have not
+wasted compiling time! Packages that had been completely built before
+this error occurred will not have to be recompiled.
 EOMSG
 	}
 
-	# save ref to ourself in global config so can remove lock if build dies
+	# successfully get lock, so record ourselves
+	$self->{_lockpkg} = $lockpkg;
+
+	# keep global record so can remove lock if build dies
 	Fink::Config::set_options( { "Buildlock_PkgVersion" => $self } );
 }
 
@@ -3036,7 +3065,6 @@ sub run_script {
 	my $phase = shift;
 	my $no_expand = shift || 0;
 	my ($script_env, %env_bak);
-
 
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
