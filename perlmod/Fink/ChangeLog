@@ -1,5 +1,9 @@
 2004-03-23  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: %ni and %Ni instead of %in and %IN.
+
+2004-03-23  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: always expand_percent invariant portion of Package.
 	* PkgVersion.pm: %in is invariant portion of Package, %IN is
 	invariant portion of parent Package; %n reverted to whole Package.

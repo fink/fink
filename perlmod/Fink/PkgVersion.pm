@@ -153,7 +153,7 @@ sub initialize {
 	}
 
 	$expand = { 'n' => $pkgname,
-				'in'=> $self->param_default("package_invariant", $pkgname),
+				'ni'=> $self->param_default("package_invariant", $pkgname),
 				'e' => $epoch,
 				'v' => $version,
 				'r' => $revision,
@@ -164,7 +164,7 @@ sub initialize {
 				'm' => $arch,
 
 				'N' => $parentpkgname,
-				'IN'=> $parentinvname,
+				'Ni'=> $parentinvname,
 				'P' => $basepath,
 				'D' => $parentdestdir,
 				'I' => $parentdestdir.$basepath,
