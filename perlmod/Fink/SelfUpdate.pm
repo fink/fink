@@ -607,6 +607,7 @@ sub do_direct_rsync {
 			&execute("/bin/mkdir -p '$basepath/fink/$dist/$tree'")
 		}
 	}
+	$cmd = "rsync -az --delete-after $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
 		$cmd = "/usr/bin/su $username -c \"$cmd\"";
@@ -614,7 +615,7 @@ sub do_direct_rsync {
 	}
 	&print_breaking($msg);
 
-	$cmd = "rsync -az --delete-after $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
+
 	if (&execute($cmd)) {
 		die "Updating $tree using rsync failed. Check the error messages above.\n";
 	} else {
