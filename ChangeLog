@@ -1,3 +1,7 @@
+2001-10-17  Christoph Pfisterer  <cp@chrisp.de>
+
+	* setup.sh: Hardcode base path into FinkVersion.pm.
+
 2001-10-13  Christoph Pfisterer  <cp@chrisp.de>
 
 	* README, README.html: Major overhaul. Brought up to date to

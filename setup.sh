@@ -32,10 +32,10 @@ version=`cat VERSION`
 echo "Creating fink..."
 sed "s|@BASEPATH@|$basepath|g" <fink.in >fink
 
+echo "Creating FinkVersion.pm..."
+sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
+
 echo "Creating man page..."
 sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8
-
-echo "Creating FinkVersion.pm..."
-sed "s|@VERSION@|$version|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
 
 exit 0
