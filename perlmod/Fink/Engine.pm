@@ -103,7 +103,6 @@ our %commands =
 	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
 	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0, 0],
 	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
-	  'snapshot'          => [\&cmd_snapshot,          1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -2315,73 +2314,6 @@ sub cmd_show_deps {
 
 		print "\n";
 	}
-}
-
-sub cmd_snapshot {
-	my ($pname, $package, @installed, $snapdir, $outfile, @time,
-		$snappkg, $snapver, $snaprev, $snapdep);
-
-	require POSIX;
-	$snappkg = "fink-snapshot";
-	$snapver = POSIX::strftime("%Y.%m.%d.%H", localtime);
-	$snaprev = "1";
-	$snapdir = "/tmp";
-	foreach $pname (Fink::Package->list_packages()) {
-		next if ($pname eq $snappkg);
-		$package = Fink::Package->package_by_name($pname);
-		if ($package->is_any_installed() &&
-			!$package->is_virtual()) {
-			push @installed, $pname;
-		}
-	}
-	$snapdep = join(",\n ", sort(@installed));
-	$outfile = sprintf("$snapdir/snap-%s-%s.info",
-					   $snapver, $snaprev);
-	my @user = getpwnam($ENV{SUDO_USER} || $ENV{USER});
-	local *SNAP;
-	open(SNAP, "> $outfile") or die "can't create file $outfile\n";
-	print SNAP <<"EOF";
-Package: $snappkg
-Version: $snapver
-Revision: $snaprev
-Type: bundle
-License: Restrictive
-Description: Snapshot of Fink packages for $user[6]
-Maintainer: $user[6] <$user[0]\@localhost>
-DescUsage: <<
- Instructions for how to use this snapshot to replicate your fink
- environment on another computer:
-
-   * Install Fink on the target computer
-   * Chdir to the Fink install directory (e.g. %p)
-   * Copy this file to fink/dists/local/main/finkinfo
-   * Make sure local/main is in yor etc/fink.conf file
-   * You might need to run "fink index"
-   * Run "fink build fink-snapshot"
-   * Do NOT try to "fink install" this package
-
- Note: This process may not be 100% repeatable.  If the destination
-   machine has a different version of Fink or a different set of
-   user-installed "virtual" packages (e.g. an X11 server from Apple or
-   from X.org), some packages might not build exactly the same.  But
-   in general, the results should be good.
-<<
-Homepage: http://fink.sourceforge.net/
-BuildDepends: <<
- $snapdep
-<<
-PreInstScript: <<
- echo "This package is not intended to be installed!"
- echo "Please read the DescUsage for this package"
- echo "Aborting install now..."
- exit 1
-<<
-EOF
-	close(SNAP) or die "can't create file $outfile\n";
-    print <<"EOF";
-Wrote $outfile
-See the DescUsage for how to use this file
-EOF
 }
 
 # pretty-print a set of PkgVersion::pkglist (each "or" group on its own line)
