@@ -1,3 +1,8 @@
+2005-02-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add DescDetail to the install script failure for
+	virtual packages.
+
 2005-02-25  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm, PkgVersion.pm: Adding maintainer mode, -m|--maintainer,
