@@ -1,3 +1,8 @@
+2003-11-13  Michael G Schwern <schwern@pobox.com>
+
+	* Command.pm: Created to replace execute() of common shell commands
+	like rm -rf and mkdir -p.  Tested.
+
 2003-11-12  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Clarified "unable to parse..." warning message.
