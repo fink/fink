@@ -1,6 +1,6 @@
 $Id$   -*- text -*-
 
- Fink 0.2.1
+ Fink 0.2.2
 ============
 
 This is Fink, a package management system that aims to bring the full
@@ -14,7 +14,7 @@ information about available packages and the neccessary patches are
 included with this distribution, everything else is downloaded off the
 Internet.
 
-This is version 0.2.1, a development release. It has rough edges
+This is version 0.2.2, a development release. It has rough edges
 everywhere, and lacks lots of useful features. The package list is
 also quite short. You're walking on thin ground. It could easily break
 your system (although it hasn't broken mine to date). You have been
@@ -37,7 +37,7 @@ You need:
    wget and autoconf.
  * Internet access. All source code is downloaded from mirror sites.
  * Patience. Compiling several big packages takes time. I'm talking
-   hours here.
+   hours or even days here.
 
 
  Installation
@@ -50,6 +50,16 @@ INSTALL. Please read it first, the process is non-trivial.
 ------------
 The file USAGE describes how to set your paths and how to install and
 remove packages. It also has a complete list of available commands.
+
+
+ Further Questions?
+--------------------
+If the documentation included here doesn't answer your question,
+stroll over to the Fink website at <http://fink.sourceforge.net> and
+read the FAQ there: <http://fink.sourceforge.net/faq/>.
+
+If that still doesn't answer your questions, ask for help on the
+fink-users mailing list (see below).
 
 
  Staying Informed

@@ -1,9 +1,9 @@
 $Id$   -*- text -*-
 
- Fink 0.2.1 Installation
+ Fink 0.2.2 Installation
 =========================
 
-These are the installation instructions for Fink version 0.2.1. This
+These are the installation instructions for Fink version 0.2.2. This
 document covers three procedures:
 
  * First time installation
@@ -27,7 +27,7 @@ You need:
    wget and autoconf.
  * Internet access. All source code is downloaded from mirror sites.
  * Patience. Compiling several big packages takes time. I'm talking
-   hours here.
+   hours or even days here.
 
 
  Choosing A Directory
@@ -80,11 +80,43 @@ compiled twice. This is required because to build a binary package of
 the package manager, you must have the package manager available.
 
 
+ Getting X11 Sorted Out
+------------------------
+Fink 0.2.2 uses a virtual package to declare dependencies on X11. As
+there are several X11 packages available for Mac OS X (Xfree86, Tenon
+Xtools) and several ways to install them (manually or via Fink), there
+are several actual packages - one for each setup. Fink is quite bad at
+guessing what you have, so it's best to get this sorted out right at
+the beginning. Here is a list of the available packages and
+installation methods:
+
+ * xfree86-base: This package is the real thing. It will fetch the
+   XFree86 source, compile it and install it into /usr/X11R6. For
+   maximum flexibility, this package does not contain the actual
+   XDarwin server. To get it, you can install the xfree86-server
+   package. Or you can install it manually, for example using an
+   "XAqua" release from the XonX project (not useful right now as
+   those are older than XFree86 4.1.0) or one of the "rootless"
+   servers circulating the net.
+
+ * system-xfree86: This package expects that you installed XFree86
+   manually, either from source or from the official binary
+   distribution. It will just check that the installation is useful
+   and then act as a dependency placeholder. Note that XFree86 4.0.2
+   or 4.0.3 will not pass the test. You need a version that builds
+   shared libraries. Usually that will be 4.1.0, but CVS versions not
+   older than a few months will also work.
+
+ * system-xtools: Install this if you have Tenon's Xtools product
+   installed. Like system-xfree86, this will just do a sanity check
+   and leave the actual files alone.
+
+
  Upgrading From Fink 0.2.x
 ===========================
 
 If you already have Fink 0.2.x installed, you can update your
-installation to 0.2.1 with this package.
+installation to 0.2.2 with this package.
 
 Actually, there are two pieces that are updated independently: the
 package manager and the package descriptions. It is recommended to
@@ -110,7 +142,7 @@ the new versions of the fink and base-files packages.
 
  Updating The Package Descriptions
 -----------------------------------
-If you downloaded the fink-0.2.1-full tarball, the package
+If you downloaded the fink-0.2.2-full tarball, the package
 descriptions are in the subdirectory pkginfo. To install them, run the
 inject.pl script in that directory:
 
@@ -121,15 +153,33 @@ This inject.pl script works just like the one for the package
 manager.
 
 You can also grab the package descriptions as a separate tarball,
-packages-0.2.1. If you did that, just unpack it and run the inject.pl
+packages-0.2.2. If you did that, just unpack it and run the inject.pl
 script inside.
+
+
+ Getting X11 Sorted Out
+------------------------
+The first thing you should do after updating the package descriptions
+is getting the X11 dependencies settled. Refer to the "Getting X11
+Sorted Out" section under "First Time Installation" above.
+
+Note that if you used the xfree86-base package before, you may have to
+rebuild it to get correct dependency information. If you have
+xfree86-base-4.1.0-1 (and exactly that version) installed, run:
+
+  fink rebuild xfree86-base
+
+If you have an older version of the xfree86-base package, simply
+update it to 4.1.0-1:
+
+  fink update xfree86-base
 
 
  Updating Packages
 -------------------
-The above two steps will not update the actual packages, they only
-provide you with the means to do so. The easiest way to get the new
-packages is to use the 'update-all' command:
+The above updating steps will not update the actual packages, they
+only provide you with the means to do so. The easiest way to get the
+new packages is to use the 'update-all' command:
 
   fink update-all
 
@@ -143,8 +193,9 @@ problems.
 
  Other Notes
 -------------
-IMPORTANT! When you update from Fink 0.2.0 or a CVS version, the first
-thing you should do after running the inject.pl scripts is this:
+IMPORTANT! When you update from Fink 0.2.0 or a CVS version before
+0.2.1, the first thing you should do after running the inject.pl
+scripts is this:
 
   fink update dpkg
 

@@ -1,6 +1,6 @@
 $Id$   -*- text -*-
 
- Fink 0.2.1 Usage
+ Fink 0.2.2 Usage
 ==================
 
  Setting The Paths
@@ -77,6 +77,12 @@ does not need a package list, so you just type:
 
   fink update-all
 
+ describe
+----------
+This command displays a description of the package you name on the
+command line. Note that only a small part of the packages currently
+have a description.
+
  fetch
 -------
 Downloads the named packages, but does not install it. This command
@@ -117,8 +123,8 @@ default settings back.
 
  configure
 -----------
-Reruns the configuration process. This will let you change your mirror
-sites settings, among others.
+Reruns the Fink configuration process. This will let you change your
+mirror sites settings, among others.
 
 
  Further Questions
