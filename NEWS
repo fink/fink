@@ -14,6 +14,6 @@ Changes since Fink 0.16.2
 * selfupdate-rsync should now work with (well, in spite of) rsync-hfs
 * system-xfree86 virtual now complains if you're missing the SDK
   (since most fink usage of external X11 will require it)
-* On Mac OS X 10.3 packages using an old old (1.3.5-based) can now be
-  compiled twolevel
+* On Mac OS X 10.3 packages using an old (1.3.5-based) libtool can
+  now be compiled twolevel
 
