@@ -1241,20 +1241,22 @@ sub resolve_depends {
 				if (not defined $package) {
 					next BUILDDEPENDSLOOP;
 				}
-				my ($currentpackage, @dependslist, $dependent, $dependentname);
-				$currentpackage = $self->get_name();
-				@dependslist = $package->get_all_providers();
-				foreach $dependent (@dependslist) {
-					$dependentname = $dependent->get_name();
 
-# only issue the warning about BuildDependsOnly if we are more
-# verbose than the default
+				if (lc($field) eq "depends" && Fink::Config::verbosity_level() > 1) {
+					# only bother to check for BuildDependsOnly
+					# violations if we are more verbose than default
 
-					if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends" &&  Fink::Config::verbosity_level() > 1 ) {
-						if ($dependentname eq $depname) {
-							print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
-						} else {
-							print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+					foreach my $dependent ($package->get_all_providers()) {
+						# loop through all PkgVersion that supply $pkg
+
+						if ($dependent->param_boolean("BuildDependsOnly")) {
+							# whine if BDO violation
+							my $dep_providername = $dependent->get_name();
+							print "\nWARNING: The package " . $self->get_name() . " Depends on $depname";
+							if ($dep_providername ne $depname) {  # virtual pkg
+								print "\n\t (which is provided by $dep_providername)";
+							}
+							print ",\n\t but $depname only allows things to BuildDepend on it.\n\n";
 						}
 					}
 				}

@@ -5,7 +5,7 @@
 	pkgname atoms.
 	* PkgVersion.pm: Convert conditional_pkg_list to use the new
 	Services functions. Fix check for Depends:darwin to allow pkgnames
-	to contain "darwin".
+	to contain "darwin". Optimize BDO violation check.
 
 2004-10-15  Daniel Macks  <dmacks@netspace.org>
 
