@@ -1,5 +1,7 @@
 2002-10-31  Max Horn  <max@quendi.de>
 
+	* PkgVersion.pm: Fixed typos, clarified/extended some comments.
+
 	* PkgVersion.pm: Set DYLD_LIBRARY_PATH, too. This  allows libtool to find
 	  its *.la files in /sw/lib again.
 

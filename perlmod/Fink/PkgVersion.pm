@@ -639,6 +639,10 @@ sub find_debfile {
 
 ### get dependencies
 
+# Possible parameters:
+# 0 - return runtime dependencies only
+# 1 - return runtime & build dependencies
+# 2 - return build dependencies only
 sub resolve_depends {
   my $self = shift;
   my $include_build = shift || 0;
@@ -651,10 +655,8 @@ sub resolve_depends {
   $idx = 0;
   $split_idx = 0;
 
-  # If this is a splitoff, and we are asked for build depends, add in
-  # the build depend list of the master packager. We use a special
-  # mode of resolve_depends for this, which tells our master to
-  # strip all plitoff deps from its build deps list... nasty, but works.
+  # If this is a splitoff, and we are asked for build depends, add the build deps
+  # of the master package to the list.
   if ($include_build and $self->{_type} eq "splitoff") {
     push @deplist, ($self->{parent})->resolve_depends(2);
   }
@@ -667,7 +669,7 @@ sub resolve_depends {
     # If this is a master package with splitoffs, and build deps are requested,
     # then add to the list the runtime deps of all our aplitoffs.
     # We remember the offset at which we added these in $split_idx, so that we
-    # can add any inter-splitoff deps that would otherwise be introduced by this.
+    # can remove any inter-splitoff deps that would otherwise be introduced by this.
     $split_idx = @speclist;
     foreach  $splitoff (@{$self->{_splitoffs}}) {
       push @speclist,
