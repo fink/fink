@@ -326,6 +326,8 @@ foreach $dir (@dirlist) {
 	}
 }
 
+unlink "$installto/fink/dists";
+
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
 
 ### create fink tarball for bootstrap
