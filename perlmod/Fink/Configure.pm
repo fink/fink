@@ -209,12 +209,9 @@ sub choose_mirrors {
 	print "\n";
 	&print_breaking("Choose a country:");
 	$country = &prompt_selection_new("Your country?",
-					   [ value => $config->param_default("MirrorCountry", "-") ],
-					   ( "No selection - display all mirrors on the continent" => "-",
-					     map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo ) );
-	if ($country eq "-") {
-		$country = $continent;
-	}
+					 [ value => $config->param_default("MirrorCountry", $continent) ],
+					 ( "No selection - display all mirrors on the continent" => $continent,
+					   map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo ) );
 	$config->set_param("MirrorCountry", $country);
 
 	### step 3: mirrors
