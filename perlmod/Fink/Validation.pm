@@ -835,6 +835,8 @@ sub validate_info_component {
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
 # - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:scrollkeeper
 # - only gettext should should have charset.alias
+# - If a package *Script uses debconf, it should Depends:debconf
+#   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
 # - any other ideas?
 #
 sub validate_dpkg_file {
@@ -1015,9 +1017,6 @@ sub validate_dpkg_file {
 				print "Warning: The file $filename seems misplaced.\n";
 				$looks_good = 0;
 			}
-
-
-
 		}
 	}
 
@@ -1047,6 +1046,16 @@ sub validate_dpkg_file {
 		if (grep { /^\s*scrollkeeper-update/ } @{$deb_control->{$_}}) {
 			print "Warning: scrollkeeper-update in $_ is a no-op\nSee scrollkeeper package docs for information.\n";
 			$looks_good = 0;
+		}
+	}
+
+	# check debconf usage
+	if ($deb_control->{package} ne "debconf" and !exists $deb_control->{depends_pkgs}->{debconf}) {
+		foreach (qw/ preinst postinst prerm postrm /) {
+			if (grep { /debconf/i } @{$deb_control->{$_}}) {
+				print "Warning: Package appears to use debconf in $_ but does not depend on the package \"debconf\"\n";
+				$looks_good = 0;
+			}
 		}
 	}
 
