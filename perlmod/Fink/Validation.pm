@@ -826,8 +826,8 @@ sub validate_info_component {
 # - Check for symptoms of running update-scrollkeeper during package building
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
 # - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:scrollkeeper
-
-# - ideas?
+# - only gettext should should have charset.alias
+# - any other ideas?
 #
 sub validate_dpkg_file {
 	my $dpkg_filename = shift;
@@ -998,6 +998,18 @@ sub validate_dpkg_file {
 				}
 				close(LA_FILE) or die "Error on close: ", $?>>8, " $!\n";
 			}
+			if ( $filename eq "$basepath/lib/charset.alias" and $deb_control->{package} !~ /^libgettext\d*/ ) {
+				print "Warning: The file $filename should only exist in the \"libgettextN\" packages.\n";
+				$looks_good = 0;
+			}
+			if ( $filename eq "$basepath/share/locale/charset.alias" ) {
+				# this seems to be a common bug in pkgs using gettext
+				print "Warning: The file $filename seems misplaced.\n";
+				$looks_good = 0;
+			}
+
+
+
 		}
 	}
 
