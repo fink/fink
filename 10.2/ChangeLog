@@ -2,7 +2,10 @@
 
 	* gettext-0.10.40-7, latest version from stable
 	* convert to new file format: base-files, storable-pm*, unzip
-
+	* Big revision, making sure that all files are properly coordinated
+	among the 4 bootstrap trees, with the file having the same name
+	in different trees whenever it is the same file
+	
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* updated to splitoff version: bzip2-1.0.2-2, gettext-0.10.40-5,

@@ -1,3 +1,9 @@
+2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Big revision, making sure that all files are properly coordinated
+	among the 4 bootstrap trees, with the file having the same name
+	in different trees whenever it is the same file
+
 2003-09-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* updated apt, dpkg, dpkg-bootstrap, ncurses to GCC 3.3 revisions; 
