@@ -200,6 +200,11 @@ sub initialize {
 			}
 		}
 	} else {
+		# implicit "Source" must die
+		if (!$self->has_param('Source') and !$self->is_type('dummy') and !$self->is_type('nosource') and !$self->is_type('bundle')) {
+			print "\nWarning: file ", $self->get_info_filename, "\nThe implicit \"Source\" feature is deprecated and will be removed soon.\nAdd \"Source: %n-%v.tar.gz\" to assure future compatibility.\n\n";
+		}
+
 		# handle splitoff(s)
 		@splitofffields = $self->params_matching('SplitOff(?:[2-9]|[1-9]\d+)?');
 		if (@splitofffields) {

@@ -1,5 +1,10 @@
 2004-09-19  Daniel Macks  <dmacks@netspace.org>
 
+        * PkgVersion,pm, Validation.pm: Add deprecated-feature warning for
+        implicit Source to indexing loop and validator.
+
+2004-09-19  Daniel Macks  <dmacks@netspace.org>
+
 	* Services.pm: remove extraneous quotes in read_properties_lines err msg.
 
 2004-09-10  Benjamin Reed  <rangerrick@users.sourceforge.net>

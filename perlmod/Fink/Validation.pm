@@ -434,10 +434,14 @@ sub validate_info_file {
 	# have Source or SourceN when we shouldn't
 	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
 		if (keys %source_fields) {
-			print "Warning: Source and/or SourceN field(s) found for \"Type: nosource\" or \"Type: bundle\". ($filename)\n";
+			print "Warning: Source and/or SourceN field(s) found for \"Type: $1\". ($filename)\n";
 			$looks_good = 0;
 		}
 	} else {
+		if (!exists $source_fields{source}) {
+			print "Warning: the implicit \"Source\" feature is deprecated and will be removed soon.\nAdd \"Source: %n-%v.tar.gz\" to assure future compatibility. ($filename)\n";
+			$looks_good = 0;
+		}
 		$source_fields{source} = 1;  # always have Source (could be implicit)
 	}
 	if (exists $properties->{source} and $properties->{source} =~ /^none$/i and keys %source_fields > 1) {
