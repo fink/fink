@@ -1113,7 +1113,7 @@ sub real_install {
 	  my $name = $pkg->get_name();
 	  $to_be_rebuilt{$name} = 0; # not necessary to rebuild this, we already did it
 	  next if $already_activated{$name};
-	  $item = $deps{$name} || [0, 0, 0, 0, 0];
+	  $item = $deps{$name} || [0, 0, 0, -1, 0];
 	  if (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
 	       or ($is_build and $package->is_installed())) {
 	    push(@batch_install, $pkg);
