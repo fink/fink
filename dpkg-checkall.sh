@@ -4,7 +4,7 @@
 #                     is installed, is actually installed.  Outputs a
 #                     list of packages with problems.
 #
-#                     Script written by Alexander Strange.
+#                     Script written by Alexander Strange, enhanced by Martin Costabel.
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -24,16 +24,24 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
-
 fink_path=`which dpkg | sed -e 's:/bin/dpkg::'`
-for foo in `cat $fink_path/var/lib/dpkg/info/*.list`
+NONE=1
+echo "Checking for missing files (Package - Missing files):"
+echo " "
+for FILELIST in $fink_path/var/lib/dpkg/info/*.list
 do
-if (! test -e "$foo")
-then
-if (! test -L "$foo")
-then
-echo $foo not found
-echo $foo is part of `dpkg -S $foo | awk '{print $1}' | sed -e 's;:;;g' | sort | uniq`
-fi
-fi
+  PACKAGE=`basename $FILELIST .list`
+# trick to allow for spaces in file names: remove them from IFS 
+IFS="
+"
+for FILE in `cat $FILELIST`
+  do
+    if ! test -e "$FILE" 
+    then
+        NONE=0
+        echo $PACKAGE "-" $FILE
+    fi
+  done
 done
+[ $NONE -gt 0 ] &&  echo "No files missing. Congratulations!"
+
