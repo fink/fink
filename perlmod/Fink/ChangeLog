@@ -1,5 +1,9 @@
 2005-03-30  Daniel Macks  <dmacks@netspace.org>
 
+	* Package.pm, Shlibs.pm: Switch to flock()-based concurrent-index lock
+
+2005-03-30  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm, Shlibs.pm: only use concurrent-index-run results if
 	we have Storable
 

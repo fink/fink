@@ -35,6 +35,8 @@ use Fink::Package;
 
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
+use Symbol qw();
+use Fcntl qw(:flock);
 
 use strict;
 use warnings;
@@ -542,8 +544,6 @@ sub update_shlib_db {
 	my $dbfile = "$dbpath/shlibs.db";
 	my $lockfile = "$dbfile.lock";
 
-	local $SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
-
 	# check if we should update index cache
 	my $writable_cache = 0;
 	eval "require Storable";
@@ -557,32 +557,22 @@ sub update_shlib_db {
 		$writable_cache = 1;
 	}
 
-	# minutes to wait
-	my $wait = 5;
-	if (-f $lockfile) {
-		# Check if we're already indexing.  If the index is less than 5 minutes old,
-		# assume that there's another fink running and try to wait for it to finish indexing
-		my $db_mtime = (stat($lockfile))[9];
-		if ($db_mtime > (time - 60 * $wait)) {
-			print STDERR "\nWaiting for another reindex to finish...";
-			for (0 .. 60) {
-				sleep $wait;
-				if (! -f $lockfile) {
-					print STDERR " done.\n";
-					if ($writable_cache) {
-						# nearly-concurrent indexing run finished so
-						# just grab its results
-						$shlibs = Storable::lock_retrieve($dbfile);
-						$shlib_db_outdated = 0;
-						return;
-					}
-				}
-			}
+	my $index_lock_FH = Symbol::gensym();
+	open $index_lock_FH, "+>> $lockfile" or die "Can't access indexer lock $lockfile: $!\n";
+	unless (flock $index_lock_FH, LOCK_EX | LOCK_NB) {
+		# couldn't get exclusive lock, meaning another fink process has it
+		print STDERR "\nWaiting for another reindex to finish...";
+		flock $index_lock_FH, LOCK_EX or die "can't lock $lockfile: $!\n";
+		print STDERR " done.\n";
+		if ($writable_cache) {
+			# nearly-concurrent indexing run finished so just grab its results
+			$shlibs = Storable::lock_retrieve($dbfile);
+			close $index_lock_FH;
+			$shlib_db_outdated = 0;
+			return;
 		}
-	} else {
-		open (FILEOUT, '>' . $lockfile);
-		close (FILEOUT);
 	}
+	# getting here means we got the lock on the first try
 
 	# read data from descriptions
 	if (&get_term_width) {
@@ -604,7 +594,7 @@ sub update_shlib_db {
 		print STDERR "done.\n";
 	};
 
-	unlink($lockfile);
+	close $index_lock_FH;
 
 	$shlib_db_outdated = 0;
 }
