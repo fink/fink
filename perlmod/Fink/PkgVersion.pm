@@ -104,7 +104,9 @@ sub initialize {
 	      'd' => $destdir,
 	      'i' => $destdir.$basepath,
 	      'a' => $self->{_patchpath},
-	      'c' => $configure_params};
+	      'c' => $configure_params,
+	      'b' => '.'
+	    };
   $self->{_expand} = $expand;
 
   # parse dependencies
@@ -251,23 +253,24 @@ sub get_build_directory {
   if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource"
       || $self->param_boolean("NoSourceDirectory")) {
     $self->{_builddir} = $self->get_fullname();
-    return $self->{_builddir};
   }
-  if ($self->has_param("SourceDirectory")) {
+  elsif ($self->has_param("SourceDirectory")) {
     $self->{_builddir} = $self->get_fullname()."/".
       &expand_percent($self->param("SourceDirectory"), $self->{_expand});
-    return $self->{_builddir};
+  }
+  else {
+    $dir = $self->get_tarball();
+    if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
+      $dir = $1;
+    }
+    if ($dir =~ /^(.*)\.(tgz|zip)$/) {
+      $dir = $1;
+    }
+
+    $self->{_builddir} = $self->get_fullname()."/".$dir;
   }
 
-  $dir = $self->get_tarball();
-  if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
-    $dir = $1;
-  }
-  if ($dir =~ /^(.*)\.(tgz|zip)$/) {
-    $dir = $1;
-  }
-
-  $self->{_builddir} = $self->get_fullname()."/".$dir;
+  $self->{_expand}->{b} = "$basepath/src/".$self->{_builddir};
   return $self->{_builddir};
 }
 
