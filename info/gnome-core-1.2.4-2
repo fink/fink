@@ -1,7 +1,7 @@
 Package: gnome-core
 Version: 1.2.4
 Revision: 2
-Source: gnome
+Source: mirror:gnome:stable/sources/%n/1.2/%n-%v.tar.gz
 Depends: gnome-libs, gdk-pixbuf, libxml, control-center, orbit, bzip2
 UpdateLibtool: true
 SetCPPFLAGS: -traditional-cpp
