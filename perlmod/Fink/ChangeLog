@@ -1,3 +1,10 @@
+2004-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm, Validation.pm: One more tweak to BuildDependsOnly:
+	we now write out the value "Undefined" to the .deb if it wasn't
+	defined in the .info, and test for that value when deciding whether
+	or not to warn.
+
 2004-06-22  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Use new accessors for CompileScript and InstallScript.

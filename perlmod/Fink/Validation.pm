@@ -834,11 +834,13 @@ sub validate_dpkg_file {
 	close(DPKG_CONTENTS) or die "Error on close: $!\n";
 	
 # Note that if the .deb was compiled with an old version of fink which
-# does not record the BuildDependsOnly field, the warning is not issued
+# does not record the BuildDependsOnly field, or with an old version
+# which did not use the "Undefined" value for the BuildDependsOnly field,
+# the warning is not issued
 
 	if ($installed_headers and $installed_dylibs) {
 		my $BDO = `dpkg --field $dpkg_filename BuildDependsOnly`;
-		if (not $BDO =~ /True/ and not $BDO =~ /False/) {
+		if ($BDO =~ /Undefined/) {
 			print "Warning: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
 		}
