@@ -1,3 +1,9 @@
+2004-08-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.21.1, a release
+	on branch_0_21 updating VirtPackage.pm for system-java and the
+	new cctools from XCode 1.5
+
 2004-07-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* INSTALL, INSTALL.html: use 0.7.1 since this release will be 
