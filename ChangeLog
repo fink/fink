@@ -1,3 +1,9 @@
+2004-07-16  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Changed apt mode to respect "status"
+	(parallel to that method in Status.pm) instead of assuming
+	presence of package entry is equivalent to it being installed.
+
 2004-07-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.20.6, a release

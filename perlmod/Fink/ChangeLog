@@ -35,6 +35,20 @@
 	* VirtPackage.pm: system-java
 	* PkgVersion.pm: support for Type: java
 
+2004-07-07  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Check whether VirtPackage's return value is
+	undefined, since "0" is a true version, undefined is a non-
+	existent one.
+
+	* Services.pm: Treat undefined values passed to a version compare
+	as a false value.
+
+	* Status.pm: Simplify status checking.
+
+	* VirtPackage.pm: Change all virtuals to exist even if they're
+	not installed, with status "purge ok not-installed".
+
 2004-07-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Allow bootstrapping with perl 5.8.2 and perl 5.8.4.
@@ -192,6 +206,13 @@
 2004-05-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VirtPackage.pm:  adjust the Provides in the system-perl packages
+
+2004-05-21  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Replaced dpkg "status" strings with constants.
+	Changed query_package to respect "status" (parallel to that method
+	in Status.pm) instead of assuming presence of package entry is
+	equivalent to it being installed.
 
 2004-05-13  Daniel Macks  <dmacks@netspace.org>
 

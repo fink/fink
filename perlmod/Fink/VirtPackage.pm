@@ -31,6 +31,11 @@ use Fink::Config qw($config $basepath);
 use POSIX qw(uname);
 use Fink::Status;
 
+use constant {
+	STATUS_PRESENT => "install ok installed",
+	STATUS_ABSENT  => "purge ok not-installed",
+};
+
 use vars qw(
 	%options
 );
@@ -81,72 +86,58 @@ sub initialize {
 	# determine the kernel version
 	($dummy,$dummy,$darwin_version) = uname();
 
-	# now find the cctools version
-	print STDERR "- checking for cctools version... " if ($options{debug});
-	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		foreach(`/usr/bin/what /usr/bin/ld`) {
-			if (/cctools-(\d+)/) {
-				$cctools_version = $1;
-				last;
-			}
-		}
-		if (defined $cctools_version) {
-			print STDERR $cctools_version, "\n" if ($options{debug});
-		} else {
-			print STDERR "unknown\n" if ($options{debug});
-		}
-	} else {
-		print STDERR "/usr/bin/ld or /usr/bin/what not executable\n" if ($options{debug});
-	}
-
-	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam() and -x "/usr/bin/touch") {
-		system("/usr/bin/touch ${cctestfile}.c");
-		my $command = "/usr/bin/cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1";
-		print STDERR "- running $command... " if ($options{debug});
-		if (system($command) == 0) {
-			print STDERR "-single_module passed\n" if ($options{debug});
-			$cctools_single_module = '1.0';
-		} else {
-			print STDERR "failed\n" if ($options{debug});
-			$cctools_single_module = undef;
-		}
-		unlink($cctestfile);
-		unlink("${cctestfile}.c");
-		unlink("${cctestfile}.dylib");
-	}
 	# create dummy object for kernel version
 	$hash = {};
 	$hash->{package} = "darwin";
-	$hash->{status} = "install ok installed";
+	$hash->{status} = STATUS_PRESENT;
 	$hash->{version} = $darwin_version."-1";
 	$hash->{description} = "[virtual package representing the kernel]";
+	$hash->{descdetail} = <<END;
+This package represents the XNU (Darwin) kernel, which is
+a core part of the system for Mac OS X and all other Darwin
+variants.
+END
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 	$self->{$hash->{package}} = $hash;
 	
 	# create dummy object for system version, if this is OS X at all
 	print STDERR "- checking OSX version... " if ($options{debug});
+
+	$hash = {};
+	$hash->{package} = "macosx";
+	$hash->{description} = "[virtual package representing the system]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 	if (Fink::Services::get_sw_vers() ne 0) {
-		print STDERR Fink::Services::get_sw_vers(), "\n" if ($options{debug});
-		$hash = {};
-		$hash->{package} = "macosx";
-		$hash->{status} = "install ok installed";
+		$hash->{status} = STATUS_PRESENT;
 		$hash->{version} = Fink::Services::get_sw_vers()."-1";
-		$hash->{description} = "[virtual package representing the system]";
-		$self->{$hash->{package}} = $hash;
+		print STDERR $hash->{version}, "\n" if ($options{debug});
 	} else {
+		$hash->{status} = STATUS_ABSENT;
+		$hash->{version} = '0-0';
 		print STDERR "unknown\n" if ($options{debug});
 	}
+	$hash->{descdetail} = <<END;
+This package represents the Mac OS X software release.
+It will not show as installed on pure Darwin systems.
+END
+	$self->{$hash->{package}} = $hash;
 
 	# create dummy object for system perl
 	print STDERR "- checking system perl version... " if ($options{debug});
-	if (defined Fink::Services::get_system_perl_version()) {
-		print STDERR Fink::Services::get_system_perl_version(), "\n" if ($options{debug});
-		$hash = {};
-		$hash->{package} = "system-perl";
-		$hash->{status} = "install ok installed";
-		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
-		$hash->{description} = "[virtual package representing perl]";
-		$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 
+	$hash = {};
+	$hash->{package} = "system-perl";
+	$hash->{description} = "[virtual package representing perl]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{descdetail} = <<END;
+This package represents the version of perl installed on the
+system in /usr/bin/perl.
+END
+
+	if (defined Fink::Services::get_system_perl_version()) {
+		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
+		$hash->{status} = STATUS_PRESENT;
+		print STDERR Fink::Services::get_system_perl_version(), "\n" if ($options{debug});
 		my $perlver = my $shortver = Fink::Services::get_system_perl_version();
 		$shortver =~ s/\.//g;
 		my $perlprovides = 'perl' . $shortver . '-core, system-perl' . $shortver;
@@ -155,10 +146,12 @@ sub initialize {
 		}
 		$hash->{provides} = $perlprovides;
 
-		$self->{$hash->{package}} = $hash;
 	} else {
+		$hash->{version} = '0-0';
+		$hash->{status} = STATUS_ABSENT;
 		print STDERR "unknown\n" if ($options{debug});
 	}
+	$self->{$hash->{package}} = $hash;
 
 	# create dummy object for java
 	print STDERR "- checking Java directories:\n" if ($options{debug});
@@ -177,27 +170,43 @@ sub initialize {
 				$ver =~ s/^(..).*$/$1/;
 				$hash = {};
 				$hash->{package}     = "system-java${ver}";
-				$hash->{status}      = "install ok installed";
+				$hash->{status}      = STATUS_PRESENT;
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
-				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
+				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 				$hash->{provides}    = 'system-java';
 				if ($ver >= 14) {
 					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
 				}
+				$hash->{descdetail}  = <<END;
+This package represents the currently installed version
+of Java $dir.
+END
 				$self->{$hash->{package}} = $hash;
 				$latest_java = $dir;
 
+				$hash = {};
+				$hash->{package}     = "system-java${ver}-dev";
+				$hash->{status}      = STATUS_PRESENT;
+				$hash->{version}     = $dir . "-1";
+				$hash->{description} = "[virtual package representing Java $dir development headers]";
+				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+				$hash->{descdetail}  = <<END;
+This package represents the development headers for
+Java $dir.  If this package shows as not being installed,
+you must download the Java SDK from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+
 				if (-d $javadir . '/' . $dir . '/Headers') {
 					print STDERR "$dir/Headers " if ($options{debug});
-					$hash = {};
-					$hash->{package}     = "system-java${ver}-dev";
-					$hash->{status}      = "install ok installed";
-					$hash->{version}     = $dir . "-1";
-					$hash->{description} = "[virtual package representing Java $dir development headers]";
-					$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
-					$self->{$hash->{package}} = $hash;
+				} else {
+					$hash->{status} = STATUS_ABSENT;
 				}
+				$self->{$hash->{package}} = $hash;
 				print STDERR "\n" if ($options{debug});
 			} else {
 				print STDERR "nothing\n" if ($options{debug});
@@ -216,16 +225,24 @@ sub initialize {
 	}
 
 	# create dummy object for Java3D
+	$hash = {};
+	$hash->{package}     = "system-java3d";
+	$hash->{status}      = STATUS_PRESENT;
+	$hash->{version}     = "0-1";
+	$hash->{description} = "[virtual package representing Java3D]";
+	$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{descdetail}  = <<END;
+This package represents the Java3D API.  If it does not show
+as installed, you can download it from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+
 	print STDERR "- searching for java3d... " if ($options{debug});
 	if (-f '/System/Library/Java/Extensions/j3dcore.jar') {
 		print STDERR "found /System/Library/Java/Extensions/j3dcore.jar\n" if ($options{debug});
-		$hash = {};
-		$hash->{package}     = "system-java3d";
-		$hash->{status}      = "install ok installed";
-		$hash->{version}     = "0-1";
-		$hash->{description} = "[virtual package representing Java3D]";
-		$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
-		$self->{$hash->{package}} = $hash;
 		if (open(FILEIN, '/Library/Receipts/Java3D.pkg/Contents/Info.plist')) {
 			local $/ = undef;
 			if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
@@ -234,20 +251,31 @@ sub initialize {
 			close(FILEIN);
 		}
 	} else {
+		$hash->{status} = STATUS_ABSENT;
+		$hash->{version} = '0-0';
 		print STDERR "missing /System/Library/Java/Extensions/j3dcore.jar\n" if ($options{debug});
 	}
+	$self->{$hash->{package}} = $hash;
 
 	# create dummy object for JavaAdvancedImaging
+	$hash = {};
+	$hash->{package}     = "system-javaai";
+	$hash->{status}      = STATUS_PRESENT;
+	$hash->{version}     = "0-1";
+	$hash->{description} = "[virtual package representing Java Advanced Imaging]";
+	$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{descdetail}  = <<END;
+This package represents the Java Advanced Imaging API.  If it
+does not show as installed, you can download it from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+
 	print STDERR "- searching for javaai... " if ($options{debug});
 	if (-f '/System/Library/Java/Extensions/jai_core.jar') {
 		print STDERR "found /System/Library/Java/Extensions/jai_core.jar\n" if ($options{debug});
-		$hash = {};
-		$hash->{package}     = "system-javaai";
-		$hash->{status}      = "install ok installed";
-		$hash->{version}     = "0-1";
-		$hash->{description} = "[virtual package representing Java Advanced Imaging]";
-		$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
-		$self->{$hash->{package}} = $hash;
 		if (open(FILEIN, '/Library/Receipts/JavaAdvancedImaging.pkg/Contents/Info.plist')) {
 			local $/ = undef;
 			if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
@@ -256,30 +284,99 @@ sub initialize {
 			close(FILEIN);
 		}
 	} else {
+		$hash->{status} = STATUS_ABSENT;
+		$hash->{version} = '0-0';
 		print STDERR "missing /System/Library/Java/Extensions/jai_core.jar\n" if ($options{debug});
 	}
+	$self->{$hash->{package}} = $hash;
 
 	# create dummy object for cctools version, if version was found in Config.pm
-	if (defined ($cctools_version)) {
-		$hash = {};
-		$hash->{package} = "cctools";
-		$hash->{status} = "install ok installed";
-		$hash->{version} = $cctools_version."-1";
-		$hash->{description} = "[virtual package representing the developer tools]";
-		$hash->{builddependsonly} = "true";
-		$self->{$hash->{package}} = $hash;
+	print STDERR "- checking for cctools version... " if ($options{debug});
+
+	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
+		foreach(`/usr/bin/what /usr/bin/ld`) {
+			if (/cctools-(\d+)/) {
+				$cctools_version = $1;
+				last;
+			}
+		}
+	} else {
+		print STDERR "/usr/bin/ld or /usr/bin/what not executable... " if ($options{debug});
 	}
 
-	# create dummy object for cctools-single-module, if supported
-	if ($cctools_single_module) {
-		$hash = {};
-		$hash->{package} = "cctools-single-module";
-		$hash->{status} = "install ok installed";
-		$hash->{version} = $cctools_single_module."-1";
-		$hash->{description} = "[virtual package, your dev tools support -single_module]";
-		$hash->{builddependsonly} = "true";
-		$self->{$hash->{package}} = $hash;
+	$hash = {};
+	$hash->{package} = "cctools";
+	$hash->{status} = STATUS_PRESENT;
+	$hash->{description} = "[virtual package representing the developer tools]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{builddependsonly} = "true";
+	$hash->{descdetail} = <<END;
+This package represents the C/C++/ObjC developer tools
+provided by Apple.  If it does not show as installed,
+you can download it from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+
+	if (defined ($cctools_version)) {
+		$hash->{version} = $cctools_version."-1";
+		print STDERR $hash->{version}, "\n" if ($options{debug});
+	} else {
+		print STDERR "unknown\n" if ($options{debug});
+		$hash->{version} = '0-0';
+		$hash->{status} = STATUS_ABSENT;
 	}
+	$self->{$hash->{package}} = $hash;
+
+	# create dummy object for cctools-single-module, if supported
+	print STDERR "- checking for cctools -single_module support:\n" if ($options{debug});
+
+	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam() and -x "/usr/bin/touch") {
+		system("/usr/bin/touch ${cctestfile}.c");
+		my $command = "/usr/bin/cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1";
+		print STDERR "- running $command... " if ($options{debug});
+		if (system($command) == 0) {
+			print STDERR "-single_module passed\n" if ($options{debug});
+			$cctools_single_module = '1.0';
+		} else {
+			print STDERR "failed\n" if ($options{debug});
+			$cctools_single_module = undef;
+		}
+		unlink($cctestfile);
+		unlink("${cctestfile}.c");
+		unlink("${cctestfile}.dylib");
+	}
+
+	$hash = {};
+	$hash->{package} = "cctools-single-module";
+	$hash->{status} = STATUS_PRESENT;
+	$hash->{version} = $cctools_single_module."-1";
+	$hash->{description} = "[virtual package, your dev tools support -single_module]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{builddependsonly} = "true";
+	$hash->{descdetail} = <<END;
+This package represents support for the -single_module
+flag in the development tools provided by Apple.  If it
+does not show as installed, you can download the latest
+developer tools (called XCode for Mac OS X 10.3 and
+above) from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+
+	if (not $cctools_single_module) {
+		$hash->{status} = STATUS_ABSENT;
+		if ($cctools_version) {
+			$hash->{version} = $cctools_version;
+		} else {
+			$hash->{version} = '0-0';
+		}
+	}
+	$self->{$hash->{package}} = $hash;
 
 	print STDERR "- checking for various GCC versions:" if ($options{debug});
 	if (opendir(DIR, "/usr/bin")) {
@@ -292,20 +389,42 @@ sub initialize {
 					if ($version eq "2.95.2") {
 						$hash = {};
 						$hash->{package} = "gcc2";
-						$hash->{status} = "install ok installed";
+						$hash->{status} = STATUS_PRESENT;
 						$hash->{version} = "$version-1";
 						$hash->{description} = "[virtual package representing the gcc $version compiler]";
-						$hash->{homepage} = "http://fink.sourceforge.net/faq/comp-general.php?phpLang=en#gcc2";
+						$hash->{homepage} = "http://fink.sourceforge.net/faq/comp-general.php#gcc2";
 						$hash->{builddependsonly} = "true";
+						$hash->{descdetail} = <<END;
+This package represents the gcc $version compiler, which
+is part of the Apple developer tools (also known as XCode
+on Mac OS X 10.3 and above).  The latest versions of the
+Apple developer tools are always available from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+
 						$self->{$hash->{package}} = $hash;
 					}
 					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
 					$hash = {};
 					$hash->{package} = "gcc$shortversion";
-					$hash->{status} = "install ok installed";
+					$hash->{status} = STATUS_PRESENT;
 					$hash->{version} = "$version-1";
 					$hash->{description} = "[virtual package representing the gcc $version compiler]";
+					$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 					$hash->{builddependsonly} = "true";
+					$hash->{descdetail} = <<END;
+This package represents the gcc $version compiler, which
+is part of the Apple developer tools (also known as XCode
+on Mac OS X 10.3 and above).  The latest versions of the
+Apple developer tools are always available from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
 					$self->{$hash->{package}} = $hash;
 					print STDERR "  - found $version\n" if ($options{debug});
 				} else {
@@ -318,14 +437,26 @@ sub initialize {
 		print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
 	}
 
+	print STDERR "- checking for gimp-print... " if ($options{debug});
+	$hash = {};
+	$hash->{package} = "gimp-print-shlibs";
+	$hash->{version} = "4.2.5-1";
+	$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{descdetail} = <<END;
+This package represents the version of Gimp-Print that
+comes with Mac OS X 10.3 and above.  If it shows as not
+installed, you must install the GimpPrintPrinterDrivers
+package that came with your Mac OS X CDs.
+END
+
 	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
-		$hash = {};
-		$hash->{package} = "gimp-print-shlibs";
-		$hash->{status} = "install ok installed";
-		$hash->{version} = "4.2.5-1";
-		$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
-		$self->{$hash->{package}} = $hash;
+		print STDERR "4.2.5-1\n" if ($options{debug});
+		$hash->{status} = STATUS_PRESENT;
+	} else {
+		$hash->{status} = STATUS_ABSENT;
 	}
+	$self->{$hash->{package}} = $hash;
 	
 	if ( has_lib('libX11.6.dylib') )
 	{
@@ -346,6 +477,52 @@ sub initialize {
 
 		# if no xfree86 packages are installed, put in our own placeholder
 		if ($packagecount == 0) {
+
+			my $descdetail = <<END;
+This package represents a pre-existing installation
+of X11 on your system that is not installed through
+Fink.
+
+If it shows as not installed, you likely need to
+install the X11User and/or X11SDK packages from
+Apple, or a similarly-compatible version.  For more
+information, please see the FAQ entry on X11
+installation at:
+
+  http://fink.sourceforge.net/faq/usage-packages.php#apple-x11-wants-xfree86
+
+END
+
+			$hash = {};
+			$hash->{package} = "system-xfree86-shlibs";
+			$hash->{version} = "0-0";
+			$hash->{status} = STATUS_ABSENT;
+			$hash->{description} = "[virtual package representing Apple's install of X11]";
+			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{descdetail} = $descdetail;
+			$hash->{provides} = 'x11-shlibs, libgl-shlibs, xft1-shlibs, xft2-shlibs, fontconfig1-shlibs, xfree86-base-threaded-shlibs';
+			$self->{$hash->{package}} = $hash;
+
+			$hash = {};
+			$hash->{package} = "system-xfree86";
+			$hash->{version} = "0-0";
+			$hash->{status} = STATUS_ABSENT;
+			$hash->{description} = "[virtual package representing Apple's install of X11]";
+			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{descdetail} = $descdetail;
+			$hash->{provides} = 'x11, xserver, libgl, xft1, xft2, fontconfig1, xfree86-base-threaded';
+			$self->{$hash->{package}} = $hash;
+
+			$hash = {};
+			$hash->{package} = "system-xfree86-dev";
+			$hash->{version} = "0-0";
+			$hash->{status} = STATUS_ABSENT;
+			$hash->{description} = "[virtual package representing Apple's install of X11]";
+			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{descdetail} = $descdetail;
+			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, xft2-dev, fontconfig1-dev, xfree86-base-threaded-dev';
+			$self->{$hash->{package}} = $hash;
+
 			my ($xver) = check_x11_version();
 			if (defined $xver) {
 				$hash = {};
@@ -448,10 +625,11 @@ sub initialize {
 					if (exists $provides->{$pkg}) {
 						$self->{$pkg} = {
 							'package'     => $pkg,
-							'status'      => "install ok installed",
+							'status'      => STATUS_PRESENT,
 							'version'     => "2:${xver}-2",
 							'description' => "[placeholder for user installed x11]",
-							'homepage'    => "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage",
+							'descdetail'  => $descdetail,
+							'homepage'    => "http://fink.sourceforge.net/faq/usage-general.php#virtpackage",
 							'provides'    => join(', ', @{$provides->{$pkg}}),
 						};
 						if ($pkg eq "system-xfree86-shlibs") {
@@ -472,7 +650,6 @@ sub initialize {
 ### query by package name
 # returns false when not installed
 # returns full version when installed and configured
-
 sub query_package {
 	my $self = shift;
 	my $pkgname = shift;
@@ -486,21 +663,18 @@ sub query_package {
 		}
 	}
 
-	if (not exists $self->{$pkgname}) {
-		return 0;
+	if (exists $self->{$pkgname} and exists $self->{$pkgname}->{status}) {
+		my ($purge, $ok, $installstat) = split(/\s+/, $self->{$pkgname}->{status});
+		return $self->{$pkgname}->{version} if ($installstat eq "installed" and exists $self->{$pkgname}->{version});
 	}
-	$hash = $self->{$pkgname};
-	if (not exists $hash->{version}) {
-		return 0;
-	}
-	return $hash->{version};
+	return undef;
 }
+
 
 ### retrieve whole list with versions
 # doesn't care about installed status
 # returns a hash ref, key: package name, value: hash with core fields
 # in the hash, 'package' and 'version' are guaranteed to exist
-
 sub list {
 	my $self = shift;
 	%options = (@_);
@@ -522,7 +696,7 @@ sub list {
 		next unless exists $hash->{version};
 
 		$newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
-		foreach $field (qw(depends provides conflicts maintainer description homepage status builddependsonly)) {
+		foreach $field (qw(depends provides conflicts maintainer description descdetail homepage status builddependsonly)) {
 			if (exists $hash->{$field}) {
 				$newhash->{$field} = $hash->{$field};
 			}
@@ -532,6 +706,7 @@ sub list {
 
 	return $list;
 }
+
 
 sub has_header {
 	my $headername = shift;
