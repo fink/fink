@@ -1,5 +1,9 @@
 2003-06-16  Dave Morrison <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.13.2
+
+2003-06-16  Dave Morrison <dmrrsn@users.sourceforge.net>
+
 	* bootstrap.pl, inject.pl, install.sh, pathsetup.command.in, setup.sh:
 	add the "pathsetup.command" shell script, to be installed along with
 	fink, which helps users set their paths
