@@ -323,7 +323,7 @@ sub scan {
     if ($version->has_param("Provides")) {
       foreach $vp (split(/\s*\,\s*/, $version->param("Provides"))) {
         $vpo = Fink::Package->package_by_name_create($vp);
-        $vpo->add_provider($package);
+        $vpo->add_provider($version);
       }
     }
   }

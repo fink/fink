@@ -1,3 +1,11 @@
+2001-06-17  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (real_install): Added preliminary virtual package
+	support.
+	* Package.pm (scan): Add the right object to the provider list.
+	* PkgVersion.pm (initialize): Removed special treatment for x11 in
+	dependency list.
+
 2001-06-16  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: New methods to retreive dependency and conflict

@@ -327,12 +327,12 @@ sub cmd_update_all {
 
 sub real_install {
   my $op = shift;
-  my ($pkgspec, $package, $pkgname, $item, $dep, $all_installed);
+  my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $all_installed);
   my (%deps, @queue, @deplist, @vlist, @additionals, @elist);
-  my ($oversion, $opackage, $v);
+  my ($oversion, $opackage, $v, $ep, $dp, $dname);
   my ($answer);
 
-  %deps = ();
+  %deps = ();   # hash by package name
 
   # add requested packages
   foreach $pkgspec (@_) {
@@ -349,6 +349,7 @@ sub real_install {
       print "Duplicate request for package '$pkgname' ignored.\n";
       next;
     }
+    $pkgobj = Fink::Package->package_by_name($pkgname);
     # skip if this version/revision is installed
     #  (also applies to update)
     if ($op != $OP_REBUILD and $op != $OP_REINSTALL
@@ -361,7 +362,7 @@ sub real_install {
       next;
     }
     # add to table
-    $deps{$pkgname} = [ $pkgname, undef, $package, $op, 1 ];
+    $deps{$pkgname} = [ $pkgname, $pkgobj, $package, $op, 1 ];
   }
 
   @queue = keys %deps;
@@ -370,35 +371,17 @@ sub real_install {
     return;
   }
 
-  # recursively expand dependencies
+  # resolve dependencies for essential packages
   @elist = Fink::Package->list_essential_packages();
+  foreach $ep (@elist) {
+    # no virtual packages here
+    $ep = [ Fink::Package->package_by_name($ep)->get_all_versions() ];
+  }
+
+  # recursively expand dependencies
   while ($#queue >= 0) {
     $pkgname = shift @queue;
     $item = $deps{$pkgname};
-
-    # if no Package object was assigned, find it
-    if (not defined $item->[1]) {
-      $item->[1] = Fink::Package->package_by_name($pkgname);
-      if (not defined $item->[1]) {
-	die "unknown package '$pkgname' in dependency list\n";
-      }
-    }
-
-    # if no PkgVersion object was assigned, find one
-    #  (either the installed version or the newest available)
-    if (not defined $item->[2]) {
-      $v = &latest_version($item->[1]->list_installed_versions());
-      if (defined $v) {
-	$item->[2] = $item->[1]->get_version($v);
-      } else {
-	$v = &latest_version($item->[1]->list_versions());
-	if (defined $v) {
-	  $item->[2] = $item->[1]->get_version($v);
-	} else {
-	  die "no version info available for '$pkgname'\n";
-	}
-      }
-    }
 
     # check installation state
     if ($item->[2]->is_installed()) {
@@ -410,22 +393,63 @@ sub real_install {
     }
 
     # get list of dependencies
-    @deplist = $item->[2]->get_depends();
+    @deplist = $item->[2]->resolve_depends();
     if (not $item->[2]->param_boolean("Essential")) {
       push @deplist, @elist;
     }
-    foreach $dep (@deplist) {
-      if (exists $deps{$dep}) {
-	# already in graph, just add link
-	push @$item, $deps{$dep};
-      } else {
-	# create a node
-	$deps{$dep} = [ $dep, undef, undef, $OP_INSTALL, 0 ];
-	# add a link
-	push @$item, $deps{$dep};
-	# add to investigation queue
-	push @queue, $dep;
+  DEPLOOP: foreach $dep (@deplist) {
+      next if $#$dep < 0;   # skip empty lists
+
+      # check the graph
+      foreach $dp (@$dep) {
+	$dname = $dp->get_name();
+	if (exists $deps{$dname} and $deps{$dname}->[2] == $dp) {
+	  push @$item, $deps{$dname};
+	  next DEPLOOP;
+	}
       }
+
+      # check for installed pkgs
+      foreach $dp (@$dep) {
+	if ($dp->is_installed()) {
+	  $dname = $dp->get_name();
+	  if (exists $deps{$dname}) {
+	    die "Internal error: node for $dname already exists\n";
+	  }
+	  # add node to graph
+	  $deps{$dname} = [ $dname, Fink::Package->package_by_name($dname),
+			    $dp, $OP_INSTALL, 2 ];
+	  # add a link
+	  push @$item, $deps{$dname};
+	  # add to investigation queue
+	  push @queue, $dname;
+	  next DEPLOOP;
+	}
+      }
+
+      # else choose one arbitrarily
+      $dname = $dep->[0]->get_name();
+      if (exists $deps{$dname}) {
+	die "Internal error: node for $dname already exists\n";
+      }
+
+      my (@vlist, $pnode);
+      $pnode = Fink::Package->package_by_name($dname);
+      @vlist = ();
+      foreach $dp (@$dep) {
+	if ($dp->get_name() eq $dname) {
+            push @vlist, $dp->get_fullversion();
+          }
+      }
+      
+      # add node to graph
+      $deps{$dname} = [ $dname, $pnode,
+			$pnode->get_version(&latest_version(@vlist)),
+			$OP_INSTALL, 0 ];
+      # add a link
+      push @$item, $deps{$dname};
+      # add to investigation queue
+      push @queue, $dname;
     }
   }
 
@@ -457,7 +481,7 @@ sub real_install {
   # fetch all packages that need fetching
   foreach $pkgname (sort keys %deps) {
     $item = $deps{$pkgname};
-    next if (($item->[4] & 2) == 2);   # already installed
+    next if $item->[3] == $OP_INSTALL and $item->[2]->is_installed();
     if ($item->[3] == $OP_REBUILD or not $item->[2]->is_present()) {
       $item->[2]->phase_fetch(1);
     }

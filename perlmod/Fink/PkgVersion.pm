@@ -95,14 +95,7 @@ sub initialize {
 
   # parse dependencies
   $depspec = $self->param_default("Depends", "");
-  $deplist = [];
-  foreach $dep (split(/\s*\,\s*/, $depspec)) {
-    next if $dep eq "x11";
-    push @$deplist, $dep;
-  }
-  if ($self->param_boolean("UsesGettext")) {
-    push @$deplist, "gettext";
-  }
+  $deplist = [ split(/\s*\,\s*/, $depspec) ];
   $self->{_depends} = $deplist;
 
   # expand source
