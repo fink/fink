@@ -1,3 +1,8 @@
+2004-02-03  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Engine.pm: Only choose a splitoff if the candidates contain
+	only one splitoff. Fixes bug reported by chris01 on irc.
+
 2004-02-01  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Implemented print_breaking_stderr, a wrapper around
