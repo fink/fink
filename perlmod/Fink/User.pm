@@ -110,6 +110,7 @@ sub add_user {
 	my $group = shift || $name;
  
 	my $nidump = "/usr/bin/nidump";
+	my $niutil = "/usr/bin/niutil";
 	my $grep = "/usr/bin/grep";
 	my $cut = "/usr/bin/cut";
 	my $chown = "/usr/sbin/chown";
@@ -123,9 +124,17 @@ sub add_user {
 
 	if ($type eq "user") {
 		$script =
-			"getuid() {\n".
-			"}\n".
 			"getgid() {\n".
+			"gid=`$nidump group . | $grep -e \"^$name:\" | $cut -d\":\" -f3`\n".
+			"if [ ! \$gid ]; then\n".
+			"\n".
+			"fi\n".
+			"}\n".
+			"getuid() {\n".
+			"uid=`$nidump passwd . | $grep -e \"^$name:\" | $cut -d\":\" -f3`\n".
+			"if [ ! \$uid ]; then\n".
+			"\n".
+			"fi\n".
 			"}\n".
 			"uid=getuid()\n".
 			"gid=getgid()\n".
@@ -145,7 +154,11 @@ sub add_user {
 	} else {
 		$script =
 			"getgid() {\n".
-			"}\n";
+			"gid=`$nidump group . | $grep -e \"^$name:\" | $cut -d\":\" -f3`\n".
+			"if [ ! \$gid ]; then\n".
+			"\n".
+			"fi\n".
+			"}\n".
 			"\n";
 			"gid=getgid()\n".
                 	"$niutil -create . /groups/$user\n".
