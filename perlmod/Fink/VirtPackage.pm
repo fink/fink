@@ -257,20 +257,42 @@ sub initialize {
 		$self->{$hash->{package}} = $hash;
 	}
 
-	print STDERR "- checking for /usr/bin/gcc2... " if ($options{debug});
-	if ( -x '/usr/bin/gcc2' ) {
-		print STDERR "found\n" if ($options{debug});
-		$hash = {};
-		$hash->{package} = "gcc2";
-		$hash->{status} = "install ok installed";
-		$hash->{version} = "2.9.5-1";
-		$hash->{description} = "[virtual package representing the gcc2 compiler]";
-		$hash->{builddependsonly} = "true";
-		$self->{$hash->{package}} = $hash;
+	print STDERR "- checking for various GCC versions:" if ($options{debug});
+	if (opendir(DIR, "/usr/bin")) {
+		for my $gcc (grep(/^gcc/, readdir(DIR))) {
+			if (open(GCC, $gcc . ' --version |')) {
+				chomp(my $version = <GCC>);
+				close(GCC);
+				if ($version =~ /^([\d\.]+)$/ or $version =~ /^gcc.*? \(GCC\) ([\d\.]+) /) {
+					$version = $1;
+					if ($version eq "2.95.2") {
+						$hash = {};
+						$hash->{package} = "gcc2";
+						$hash->{status} = "install ok installed";
+						$hash->{version} = "$version-1";
+						$hash->{description} = "[virtual package representing the gcc $version compiler]";
+						$hash->{builddependsonly} = "true";
+						$self->{$hash->{package}} = $hash;
+					}
+					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
+					$hash = {};
+					$hash->{package} = "gcc$shortversion";
+					$hash->{status} = "install ok installed";
+					$hash->{version} = "$version-1";
+					$hash->{description} = "[virtual package representing the gcc $version compiler]";
+					$hash->{builddependsonly} = "true";
+					$self->{$hash->{package}} = $hash;
+					print STDERR "  - found $version\n";
+				} else {
+					print STDERR "  - warning, couldn't match '$version'\n";
+				}
+			}
+		}
+		closedir(DIR);
 	} else {
-		print STDERR "missing\n" if ($options{debug});
+		print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
 	}
-	
+
 	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
 	   $hash = {};
 	   $hash->{package} = "gimp-print-shlibs";
