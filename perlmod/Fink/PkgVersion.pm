@@ -1539,7 +1539,6 @@ EOF
 		import File::Find;
 	};
 
-	### FIXME
 	### Add ${SHLIB_DEPS} replace code here
 	### 1) check for ${SHLIB_DEPS} else continue
 	my $depline = $self->get_binary_depends();
@@ -1561,10 +1560,19 @@ EOF
 
 		### FIXME
 		### Debug for testing
-		print "- Depends: $shlibstr\n";
+		print "DEBUG: Shlibs: $shlibstr\n";
 
 		### 3) replace it in the debian control file
-		$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
+		if ($depline =~ /\$\{SHLIB_DEPS\}, / &&
+		    length($shlibstr) <= 0) {
+			$depline =~ s/\$\{SHLIB_DEPS\}, //;
+		} else {
+			$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
+		}
+
+                ### FIXME
+                ### Debug for testing
+                print "DEBUG: Depends: $depline\n";
 	}
 
 	# FIXME: make sure there are no linebreaks in the following fields

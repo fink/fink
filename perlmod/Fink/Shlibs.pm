@@ -68,7 +68,9 @@ sub get_shlibs {
   @depends = $self->check_files(@filelist);
 
   foreach $depend (@depends) {
-    $SHLIBS{$depend} = 1;
+    if (length($depend) > 1) {
+      $SHLIBS{$depend} = 1;
+    }
   }
 
   $depline = join(', ', sort keys %SHLIBS);
@@ -80,7 +82,7 @@ sub get_shlibs {
 sub check_files {
   my $self = shift;
   my @files = @_;
-  my ($file, @depends, $deb, $vers);
+  my ($file, @depends, $deb, $currentlib);
 
   # get a list of linked files to the pkg files
   foreach $file (@files) {
@@ -90,20 +92,19 @@ sub check_files {
       while (<OTOOL>) {
         chomp();
         next if ("$_" =~ /\:/);                 # Nuke first line and errors
-        if ($_ =~ /compatibility version ([.0-9]+)/) {
-          $vers = $1;
-        }
         $_ =~ s/\ \(.*$//;                      # Nuke the end
         $_ =~ s/^[\s|\t]+//;
         $_ =~ s/[\s|\t]+$//;
+        ### This should drop any depends on it's self
+        foreach $currentlib (@files) {
+          if ($currentlib eq $_) {
+            $_ = "";
+          }
+        }
         $deb = "";
         if (length($_) > 1) {
           $deb = $self->get_shlib($_);
-          if (length($deb) > 1) {
-            push(@depends, $deb);
-          } else {
-            push(@depends, "$_ (>= $vers)");
-          }
+          push(@depends, $deb);
         }
       }
     close (OTOOL);
