@@ -1,3 +1,9 @@
+2004-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.info.in: Add Recommends:apt (needed by --use-binary-dist)
+	(>=0.5.4-41 to get "apt-get --ignore-breakage" support). Moved
+	storable-pm from Suggests to Recommends.
+
 2004-10-12  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* fink.in: Add new option '--use-binary-dist', '-b' that causes fink 
