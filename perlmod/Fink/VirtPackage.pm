@@ -159,21 +159,24 @@ END
 	$hash->{compilescript} = &gen_compile_script($hash);
 	$self->{$hash->{package}} = $hash;
 
-=item system-cups-dev
+=item cups-dev
 
 This package represents and existing installation of the CUPS
 headers in /usr/include/cups.
+
+It is called "cups-dev" instead of "system-cups-dev" for the
+purposes of versioned cups-dev dependencies.
 
 =cut
 
 	print STDERR "- checking for cups headers... " if ($options{debug});
 
 	$hash = {};
-	$hash->{package} = "system-cups-dev";
+	$hash->{package} = "cups-dev";
 	$hash->{version} = '0-0';
 	$hash->{status} = STATUS_ABSENT;
 	$hash->{description} = "[virtual package representing CUPS headers]";
-	$hash->{provides} = "cups-dev";
+	$hash->{provides} = "system-cups-dev";
 	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 This package represents the version of CUPS headers installed
@@ -190,10 +193,11 @@ END
 		}
 		close(FILEIN);
 		$hash->{status} = STATUS_PRESENT;
-		print STDERR $hash->{version} if ($options{debug});
+		print STDERR $hash->{version}, "\n" if ($options{debug});
 	} else {
 		print STDERR "no\n";
 	}
+	$self->{$hash->{package}} = $hash;
 
 =item system-perl
 
