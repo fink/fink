@@ -1,3 +1,9 @@
+2003-10-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Test for the presence of gcc 3.3, and the correct
+	version of gcc 3.3, in order to decide between the 10.2 and
+	10.2-gcc3.3 distributions.
+
 2003-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm, Engine.pm, PkgVersion.pm, SelfUpdate.pm, Shlibs.pm:
