@@ -24,9 +24,10 @@ use Fink::Base;
 
 use Fink::Services qw(&filename &expand_percent &execute
                       &latest_version &print_breaking
-                      &print_breaking_twoprefix &collapse_space);
+                      &print_breaking_twoprefix &prompt_boolean
+                      &collapse_space);
 use Fink::Config qw($config $basepath $libpath $debarch);
-use Fink::NetAccess qw(&fetch_url);
+use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Package;
 use Fink::Status;
 
@@ -240,8 +241,14 @@ sub get_tarball {
   my $self = shift;
   my $index = shift || 1;
   if ($index < 2) {
+    if ($self->has_param("SourceRename")) {
+      return $self->param("SourceRename");
+    }
     return &filename($self->param("Source"));
   } elsif ($index <= $self->{_sourcecount}) {
+    if ($self->has_param("Source".$index."Rename")) {
+      return $self->param("Source".$index."Rename");
+    }
     return &filename($self->param("Source".$index));
   }
   return "-";
@@ -636,14 +643,16 @@ sub phase_fetch {
 sub fetch_source {
   my $self = shift;
   my $index = shift;
+  my $tries = shift || 0;
   my ($url, $file);
 
   chdir "$basepath/src";
 
   $url = $self->get_source($index);
-  $file = &filename($url);
+  $file = $self->get_tarball($index);
 
-  if (&fetch_url($url)) {
+  if (&fetch_url_to_file($url, $file, $tries)) {
+    if (0) {
     print "\n";
     &print_breaking("Downloading '$file' from the URL '$url' failed. ".
 		    "There can be several reasons for this:");
@@ -663,6 +672,7 @@ sub fetch_source {
 		    "put it in '$basepath/src', then run fink again with ".
 		    "the same command.");
     print "\n";
+    }
 
     die "file download failed for $file of package ".$self->get_fullname()."\n";
   }
@@ -673,7 +683,7 @@ sub fetch_source {
 sub phase_unpack {
   my $self = shift;
   my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-  my ($i, $verbosity);
+  my ($i, $verbosity, $answer, $tries);
 
   if ($self->{_type} eq "bundle") {
     return;
@@ -706,13 +716,14 @@ sub phase_unpack {
     return;
   }
 
+  $tries = 0;
   for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
     $archive = $self->get_tarball($i);
 
     # search for archive, try fetching if not found
     $found_archive = $self->find_tarball($i);
-    if (not defined $found_archive) {
-      $self->fetch_source($i);
+    if (not defined $found_archive or $tries > 0) {
+      $self->fetch_source($i, $tries);
       $found_archive = $self->find_tarball($i);
     }
     if (not defined $found_archive) {
@@ -722,7 +733,7 @@ sub phase_unpack {
     # determine unpacking command
     $unpack_cmd = "cp $found_archive .";
     if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-      $unpack_cmd = "gzip -dc $found_archive | tar -x${verbosity}f -";
+      $unpack_cmd = "tar -x${verbosity}zf $found_archive";
     } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
       $unpack_cmd = "bzip2 -dc $found_archive | tar -x${verbosity}f -";
     } elsif ($archive =~ /[\.\-]tar$/) {
@@ -740,15 +751,35 @@ sub phase_unpack {
     }
 
     # create directory
-    if (&execute("mkdir -p $destdir")) {
-      die "can't create directory $destdir\n";
+    if (! -d $destdir) {
+      if (&execute("mkdir -p $destdir")) {
+	die "can't create directory $destdir\n";
+      }
     }
 
     # unpack it
     chdir $destdir;
     if (&execute($unpack_cmd)) {
-      die "unpacking ".$self->get_fullname()." failed\n";
+      $tries++;
+
+      $answer =
+	&prompt_boolean("Unpacking the tarball $archive of package ".
+			$self->get_fullname()." failed. The most likely ".
+			"cause for this is a corrupted or incomplete ".
+			"download. Do you want to delete the tarball ".
+			"and download it again?",
+			($tries >= 3) ? 0 : 1);
+      if ($answer) {
+	&execute("rm -f $found_archive");
+
+	$i--;
+	next;   # restart loop with same tarball
+      } else {
+	die "unpacking tarball $archive of package ".$self->get_fullname()." failed\n";
+      }
     }
+
+    $tries = 0;
   }
 }
 

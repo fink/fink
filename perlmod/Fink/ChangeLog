@@ -1,3 +1,15 @@
+2001-10-07  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (get_tarball): Handle the new SourceRename and
+	Source#Rename fields.
+	(fetch_source): Use get_tarball and fetch_url_to_file to handle
+	on-the-fly renaming. Disabled verbose error messages, failures are
+	handled by fetch_url_to_file. Added tries parameter (passed on to
+	fetch_url_to_file).
+	(phase_unpack): Offer re-downloading when unpacking fails. Let tar
+	handle gzip-compressed files to catch more errors (the shell pipe
+	apparently only returns the last command's error code).
+
 2001-10-05  Christoph Pfisterer  <cp@chrisp.de>
 
 	* NetAccess.pm: Major overhaul. New function fetch_url_to_file
