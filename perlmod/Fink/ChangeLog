@@ -1,3 +1,7 @@
+2004-10-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: Fix bug in code for broken gcc warning.
+	
 2004-10-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm: Warn users with the broken gcc, whenever they compile

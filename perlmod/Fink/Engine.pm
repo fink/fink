@@ -1315,8 +1315,8 @@ sub real_install {
 		} elsif ($item->[FLAG] == 1) {
 			push @requested, $pkgname;
 		}
-		if ($item->[OP] == $OP_BUILD or $item->[OP] == $OP_REBUILD) {
-			$willbuild = 1;
+		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
+			$willbuild = 1 unless ($item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed());
 		}
 	}
 
