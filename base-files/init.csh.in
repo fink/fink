@@ -24,18 +24,18 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-set path = ( BASEPATH/bin BASEPATH/sbin $path )
+set path = ( BASEPATH/bin BASEPATH/sbin $path /usr/X11R6/bin )
 
 if ( $?MANPATH) then
-  setenv MANPATH BASEPATH/share/man:BASEPATH/man:$MANPATH
+  setenv MANPATH BASEPATH/share/man:BASEPATH/man:$MANPATH:/usr/X11R6/man
 else
-  setenv MANPATH BASEPATH/share/man:BASEPATH/man:/usr/local/share/man:/usr/local/man:/usr/share/man:/usr/man
+  setenv MANPATH BASEPATH/share/man:BASEPATH/man:/usr/local/share/man:/usr/local/man:/usr/share/man:/usr/X11R6/man
 endif
 
 if ( $?INFOPATH ) then
   setenv INFOPATH BASEPATH/share/info:BASEPATH/info:$INFOPATH
 else
-  setenv INFOPATH BASEPATH/share/info:BASEPATH/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:/usr/info
+  setenv INFOPATH BASEPATH/share/info:BASEPATH/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info
 endif
 
 #if ( $?DYLD_LIBRARY_PATH ) then
