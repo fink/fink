@@ -188,6 +188,11 @@ sub initialize {
 
 	$self->{_bootstrap} = 0;
 
+	# FIXME: Could most of this expand and conditional parsing be put
+	# off until later, perhaps as part of the param() accessor method?
+	# Provides must be done here, however, since we are possibly being
+	# called by Package::inject_description() which uses that field
+
 	# expand percents in various fields
 	$self->expand_percent_if_available('BuildDepends');
 	$self->expand_percent_if_available('Conflicts');
