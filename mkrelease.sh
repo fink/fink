@@ -84,9 +84,9 @@ sed -e "s/@VERSION@/$version/" -e "s/@REVISION@/1/" \
 rm -f fink/packages/fink.in
 
 sed -e "s/@VERSION@/$version/" \
-  <perlmod/Fink/FinkVersion.pm.in \
-  >perlmod/Fink/FinkVersion.pm
-rm -f perlmod/Fink/FinkVersion.pm.in
+  <fink/perlmod/Fink/FinkVersion.pm.in \
+  >fink/perlmod/Fink/FinkVersion.pm
+rm -f fink/perlmod/Fink/FinkVersion.pm.in
 
 ### create package directories
 
