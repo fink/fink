@@ -27,7 +27,7 @@ use warnings;
 
 require Exporter;
 our @ISA	 = qw(Exporter);
-our @EXPORT_OK	 = qw(&fink_version &distribution_version &pkginfo_version);
+our @EXPORT_OK	 = qw(&fink_version &distribution_version &pkginfo_version &max_info_level);
 our %EXPORT_TAGS = ('ALL' => \@EXPORT_OK);
 
 use Fink::Config qw($basepath);
@@ -45,6 +45,7 @@ Fink::FinkVersion - Fink version numbers
   my $fink_version    = fink_version;
   my $dist_version    = distribution_version;
   my $pkginfo_version = pkginfo_version;
+  my $max_info_level  = max_info_level;
 
 =head1 DESCRIPTION
 
@@ -121,6 +122,23 @@ sub pkginfo_version {
 	}
 	$pv = &distribution_version() if $pv eq "0";
 	return $pv;
+}
+
+
+=item max_info_level
+
+  my $max_info_level = max_info_level;
+
+Returns the highest level of package description file that this fink
+can parse. If a .info is componsed of a 'InfoN: <<' ... '<<' block
+where N is a larger integer than that returned by this function, the
+entire .info file should be ignored.
+
+=cut
+
+sub max_info_level {
+	# 1 is the original level (same as none specified)
+	return 1;
 }
 
 =back

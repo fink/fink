@@ -1,3 +1,14 @@
+2004-02-10  Daniel Macks  <dmacks@netspace.org>
+
+	* FinkVersion.pm.in: Implemented max_info_level(): returns largest
+	.info version this fink can handle. Initial value is 1 (same
+	format as non-InfoN file).
+	* Services.pm: Implemented handle_infon_block: Reprocess .info to
+	account for it consisting entirely of a InfoN: multiline field. If
+	N larger than max_info_level, warn and scrap the file.
+	* Package.pm, Validation.pm: Call handle_infon_block after reading
+	.info.
+	
 2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Stop supporting bootstrap/upgrade on 10.1, and

@@ -22,7 +22,7 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(&read_properties &latest_version &version_cmp 
+use Fink::Services qw(&read_properties &handle_infon_block &latest_version &version_cmp 
                       &parse_fullversion &expand_percent);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $debarch);
@@ -469,6 +469,8 @@ sub scan {
 	foreach $filename (@filelist) {
 		# read the file and get the package name
 		$properties = &read_properties($filename);
+		$properties = &handle_infon_block($properties, $filename);
+		next unless keys %$properties;
 		$pkgname = $properties->{package};
 		unless ($pkgname) {
 			print "No package name in $filename\n";
