@@ -739,11 +739,18 @@ sub phase_install {
 sub phase_build {
   my $self = shift;
   my ($ddir, $destdir, $control);
+  my ($scriptname, $scriptfile, $scriptbody);
   my ($cmd);
 
   chdir "$basepath/src";
   $ddir = "root-".$self->get_fullname();
   $destdir = "$basepath/src/$ddir";
+
+  if (not -d "$destdir/DEBIAN") {
+    if (&execute("mkdir -p $destdir/DEBIAN")) {
+      die "can't create directory for control files\n";
+    }
+  }
 
   # generate dpkg "control" file
 
@@ -766,14 +773,38 @@ EOF
     $control .= "Essential: yes\n";
   }
 
-  if (not -d "$destdir/DEBIAN") {
-    if (&execute("mkdir -p $destdir/DEBIAN")) {
-      die "can't create directory for control files\n";
-    }
-  }
+  ### write "control" file
+
+  print "Writing control file...\n";
+
   open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file: $!\n";
   print CONTROL $control;
   close(CONTROL) or die "can't write control file: $!\n";
+
+  ### create scripts as neccessary
+
+  foreach $scriptname (qw(preinst postinst prerm postrm)) {
+    next unless $self->has_param($scriptname."Script");
+
+    $scriptbody = $self->param($scriptname."Script");
+    $scriptfile = "$destdir/DEBIAN/$scriptname";
+
+    print "Writing package script $scriptname...\n";
+
+    open(SCRIPT,">$scriptfile") or die "can't write $scriptname script: $!\n";
+    print SCRIPT <<EOF;
+#!/bin/sh
+# $scriptname script for package $pkgname, auto-created by fink
+
+set -e
+
+$scriptbody
+
+exit 0
+EOF
+    close(SCRIPT) or die "can't write $scriptname script: $!\n";
+    chmod 0755, $scriptfile;
+  }
 
   ### create .deb using dpkg-deb
 
