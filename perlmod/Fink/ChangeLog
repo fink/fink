@@ -1,3 +1,8 @@
+2001-08-06  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (real_install): Added check to catch endless loops
+	caused by circular dependencies.
+
 2001-07-30  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: Provide the full path to the build directory in

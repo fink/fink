@@ -384,7 +384,8 @@ sub cmd_update_all {
 sub real_install {
   my $op = shift;
   my $showlist = shift;
-  my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $all_installed);
+  my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep);
+  my ($all_installed, $any_installed);
   my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
   my ($oversion, $opackage, $v, $ep, $dp, $dname);
   my ($answer, $s);
@@ -576,6 +577,7 @@ sub real_install {
   # install in correct order...
   while (1) {
     $all_installed = 1;
+    $any_installed = 0;
   PACKAGELOOP: foreach $pkgname (sort keys %deps) {
       $item = $deps{$pkgname};
       next if (($item->[4] & 2) == 2);   # already installed
@@ -587,6 +589,7 @@ sub real_install {
       }
 
       # build it
+      $any_installed = 1;
       $package = $item->[2];
 
       if ($item->[3] == $OP_REBUILD or not $package->is_present()) {
@@ -605,6 +608,10 @@ sub real_install {
       $item->[4] |= 2;
     }
     last if $all_installed;
+
+    if (!$any_installed) {
+      die "Problem resolving dependencies. Check for circular dependencies.\n";
+    }
   }
 }
 
