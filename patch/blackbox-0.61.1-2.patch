@@ -1,0 +1,11 @@
+diff -ru blackbox-0.61.1/src/i18n.hh blackbox-0.61.1-patched/src/i18n.hh
+--- blackbox-0.61.1/src/i18n.hh	Wed May 31 15:42:49 2000
++++ blackbox-0.61.1-patched/src/i18n.hh	Sun Mar 18 01:58:05 2001
+@@ -37,6 +37,7 @@
+ }
+ #endif // HAVE_NL_TYPES_H
+ 
++typedef void *nl_catd;
+ 
+ class I18n {
+ private:
