@@ -182,6 +182,23 @@ sub validate_info_file {
 		print "Validating package file $filename...\n";
 	}
 	
+	#
+	# Check for line endings before reading properties
+	#
+	open(INPUT, "<$filename"); 
+	my $info_file_content = <INPUT>; 
+	close INPUT;
+	if ($info_file_content =~ m/\r\n/s) {
+		print "Error: Info file has DOS line endings. ($filename)\n";
+		$looks_good = 0;
+	}
+	return unless ($looks_good);
+	if ($info_file_content =~ m/\r/s) {
+		print "Error: Info file has Mac line endings. ($filename)\n";
+		$looks_good = 0;
+	}
+	return unless ($looks_good);
+
 	# read the file properties
 	$properties = &read_properties($filename);
 	
@@ -353,6 +370,26 @@ sub validate_info_file {
 		unless (-f $value) {
 			print "Error: can't find patchfile \"$value\"\n";
 			$looks_good = 0;
+		}
+		else {
+			# Check patch file
+			open(INPUT, "<$value"); 
+			my $patch_file_content = <INPUT>; 
+			close INPUT;
+			# Check for empty patch file
+			if (!$patch_file_content) {
+				print "Warning: Patch file is empty. ($value)\n";
+				$looks_good = 0;
+			}
+			# Check for line endings of patch file
+			elsif ($patch_file_content =~ m/\r\n/s) {
+				print "Error: Patch file has DOS line endings. ($value)\n";
+				$looks_good = 0;
+			}
+			elsif ($patch_file_content =~ m/\r/s) {
+				print "Error: Patch file has Mac line endings. ($value)\n";
+				$looks_good = 0;
+			}
 		}
 	}
 	

@@ -1,3 +1,8 @@
+2003-05-03  Max Horn  <max@quendi.de>
+
+	* Validation.pm: Check for bad (DOS or Mac) line endings in .info / .patch
+	  files, and also check for empty .patch files (Patch #731791).
+
 2003-05-02  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Do not allow arbitrary license combinations, rather only a
@@ -20,7 +25,7 @@
     
 2003-04-05	Ben Hines <benh57@users.sourceforge.net>
 
-	* Many Files: Implement fink master mirroring  (Patch # 700260)
+	* Many Files: Implement fink master mirroring (Patch #700260).
 	  
 2003-04-04  Max Horn  <max@quendi.de>
 
@@ -68,7 +73,7 @@
 
 2003-02-17  Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* Config.pm, Status.pm: provide virtual package for cctools (Patch #687178)
+	* Config.pm, Status.pm: provide virtual package for cctools (Patch #687178).
 
 2003-02-16  Ben Hines <benh57@users.sourceforge.net>
 
