@@ -70,8 +70,8 @@ sub bootstrap {
                "$bsbase/sbin:$bsbase/bin:".
                $save_path;
 
-  # read in the package descriptions
-  Fink::Engine::cmd_rescan();
+  # make sure we have the package descriptions
+  Fink::Package->require_packages();
 
   # determine essential packages
   @elist = Fink::Package->list_essential_packages();

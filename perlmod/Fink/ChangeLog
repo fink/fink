@@ -1,5 +1,14 @@
 2001-09-03  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Package.pm: Enable on-demand loading of package descriptions
+	through require_packages().
+	* Engine.pm: Use require_packages() for on-demand loading of
+	package descriptions. Fixed the flag for some commands. Adapted
+	the rescan command.
+	* Bootstrap.pm: Use require_packages() instead of cmd_rescan().
+	* SelfUpdate.pm: Use require_packages() to reload package info
+	after update.
+
 	* Engine.pm: Load specialized modules on demand only.
 
 2001-09-03  Max Horn  <max@quendi.de>

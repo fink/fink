@@ -117,9 +117,8 @@ sub check {
   }
 
   # re-read package info
-  print "Re-reading package info...\n";
   Fink::Package->forget_packages();
-  Fink::Package->scan_all();
+  Fink::Package->require_packages();
 
   # update fink and base-files first
   Fink::Engine::cmd_install("base-files", "fink");

@@ -40,7 +40,8 @@ BEGIN {
 }
 our @EXPORT_OK;
 
-our (@package_list, @essential_packages, $essential_valid);
+our ($have_packages, @package_list, @essential_packages, $essential_valid);
+$have_packages = 0;
 @package_list = ();
 @essential_packages = ();
 $essential_valid = 0;
@@ -254,11 +255,23 @@ sub list_essential_packages {
   return @essential_packages;
 }
 
+### make sure package descriptions are available
+
+sub require_packages {
+  shift;  # class method - ignore first parameter
+
+  if (!$have_packages) {
+    print "Reading package info...\n";
+    Fink::Package->scan_all();
+  }
+}
+
 ### forget about all packages
 
 sub forget_packages {
   shift;  # class method - ignore first parameter
 
+  $have_packages = 0;
   @package_list = ();
   @essential_packages = ();
   $essential_valid = 0;
@@ -270,10 +283,17 @@ sub scan_all {
   shift;  # class method - ignore first parameter
   my ($tree, $dir);
 
+  $have_packages = 0;
+  @package_list = ();
+  @essential_packages = ();
+  $essential_valid = 0;
+
   foreach $tree ($config->get_treelist()) {
     $dir = "$basepath/fink/dists/$tree/finkinfo";
     Fink::Package->scan($dir);
   }
+
+  $have_packages = 1;
 
   print "Information about ".($#package_list+1)." packages read.\n";
 }

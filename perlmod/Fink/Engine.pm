@@ -42,9 +42,9 @@ BEGIN {
 our @EXPORT_OK;
 
 our %commands =
-  ( 'rescan' => [\&cmd_rescan, 1],
-    'configure' => [\&cmd_configure, 1],
-    'bootstrap' => [\&cmd_bootstrap, 1],
+  ( 'rescan' => [\&cmd_rescan, 0],
+    'configure' => [\&cmd_configure, 0],
+    'bootstrap' => [\&cmd_bootstrap, 0],
     'fetch' => [\&cmd_fetch, 1],
     'fetch-all' => [\&cmd_fetch_all, 1],
     'fetch-missing' => [\&cmd_fetch_all_missing, 1],
@@ -70,7 +70,7 @@ our %commands =
     'scanpackages' => [\&cmd_scanpackages, 1],
     'list' => [\&cmd_list, 1],
     'listpackages' => [\&cmd_listpackages, 1],
-    'selfupdate' => [\&cmd_selfupdate, 1],
+    'selfupdate' => [\&cmd_selfupdate, 0],
     'selfupdate-finish' => [\&cmd_selfupdate_finish, 1],
     'validate' => [\&cmd_validate, 0],
     'check' => [\&cmd_validate, 0],
@@ -106,9 +106,6 @@ sub initialize {
   if (!$basepath) {
     die "Basepath not set in config file!\n";
   }
-
-#  print "Reading package info...\n";
-#  Fink::Package->scan_all();
 }
 
 ### process command
@@ -127,8 +124,7 @@ sub process {
     if ($cmd eq $cmdname) {
       ($proc, $flag) = @$arr;
       if ($flag) {
-        print "Reading package info...\n";
-        Fink::Package->scan_all();
+	Fink::Package->require_packages();
       }
       eval { &$proc(@_); };
       if ($@) {
@@ -146,9 +142,8 @@ sub process {
 ### simple commands
 
 sub cmd_rescan {
-  print "Re-reading package info...\n";
   Fink::Package->forget_packages();
-  Fink::Package->scan_all();
+  Fink::Package->require_packages();
 }
 
 sub cmd_configure {
