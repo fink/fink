@@ -1,0 +1,18 @@
+Package: dlcompat
+Version: 20010123
+Revision: 2
+Source: http://download.sourceforge.net/fink/%n-%v.tar.gz
+CompileScript: make prefix=%p
+InstallScript: make install prefix=%i
+ if [ x`whoami` = xroot -a -f /usr/local/lib/libdl.dylib ]; then rm -f /usr/local/include/dlfcn.h /usr/local/lib/libdl.a /usr/local/lib/libdl.dylib ; ln -s %p/lib/libdl.dylib /usr/local/lib ; fi
+ if [ x`whoami` != xroot -a -f /usr/local/lib/libdl.dylib ]; then sudo sh -c 'rm -f /usr/local/include/dlfcn.h /usr/local/lib/libdl.a /usr/local/lib/libdl.dylib ; ln -s %p/lib/libdl.dylib /usr/local/lib' ; fi
+CommentPort: Doesn't use autoconf, just a Darwin-specific
+ Makefile. Will try to use sudo to install a compatibility symlink in
+ /usr/local/lib if neccessary.
+CommentStow: Previous revisions installed the package in
+ /usr/local. This is no longer the case. When upgrading, this package
+ will remove the include file and library in /usr/local and put a
+ compatibility symlink there (for binaries linked against the older
+ package). It doesn't do this on first installs, so new users no
+ longer need to setup sudo.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
