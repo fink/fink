@@ -1,3 +1,12 @@
+2003-05-07  Rob Braun <bbraun@users.sourceforge.net>
+
+	* bootstrap.pl, Config.pm, Engine.pm, Package.pm, PkgVersion.pm,
+	  Services.pm, Validation.pm: Remove hard coded references
+	  to 'powerpc'.  (Patch #732058)
+
+	* PkgVersion.pm, Validation.pm: Add %m for machine architecture
+	  string expansion.
+
 2003-05-04  Max Horn <max@quendi.de>
 
 	* bootstrap.pl, inject.pl: Fixed inject.pl.
