@@ -1980,11 +1980,13 @@ sub set_env {
 			}
 		}
 	}
-	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined Fink::Services::get_sw_vers() and Fink::Services::get_sw_vers() ne "0") {
-		if (Fink::Services::get_sw_vers() eq "10.2") {
+	my $sw_vers = Fink::Services::get_sw_vers();
+	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined $sw_vers and $sw_vers ne "0") {
+		$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
+		if ($sw_vers eq "10.2") {
 			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
 		} else {
-			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = Fink::Services::get_sw_vers();
+			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
 }
