@@ -409,7 +409,7 @@ sub validate_info_file {
 				# Warn if field is unknown or invalid within a splitoff
 				unless ($splitoff_valid_fields{$field}) {
 					if ($valid_fields{$field}) {
-						print "Warning: Field \"$field\" of \$splitoff_field\" is not valid in splitoff. ($filename)\n";
+						print "Warning: Field \"$field\" of \"$splitoff_field\" is not valid in splitoff. ($filename)\n";
 					} else {
 						print "Warning: Field \"$field\" of \"$splitoff_field\" is unknown. ($filename)\n";
 					}

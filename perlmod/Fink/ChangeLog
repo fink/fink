@@ -1,3 +1,7 @@
+2003-11-14  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Fixed typo in my previous change.
+
 2003-11-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Small tweak to UpdatePOD in case two files are
