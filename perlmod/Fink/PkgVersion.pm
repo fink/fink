@@ -1259,7 +1259,7 @@ sub resolve_depends {
 		# behavior differs from 'Depends'). 
 		# But right now, enabling conflicts would cause update problems (e.g.
 		# when switching between 'wget' and 'wget-ssl')
-		### FIXME shlibs, migh tneed to revisit this
+		### FIXME shlibs, might need to revisit this later
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading $oper from ".$self->get_fullname()." ";
 		}
@@ -2370,11 +2370,9 @@ EOF
 				## Might need follow_skip but then need to change fullname
 				find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
 
-				### FIXME shlibs, should change this to a hash like
 				### get_binary_depends above.
 				my @shlib_deps = Fink::Shlibs->get_shlibs($pkgname, @filelist);
 
-				### FIXME shlibs, this will likely break, once hash above
 				### foreach loop and push into @$struct
 				### 3) replace it in the debian control file
 				foreach my $shlib_dep (@shlib_deps) {
@@ -3343,8 +3341,8 @@ sub get_ruby_dir_arch {
 	return ($rubydirectory, $rubyarchdir, $rubycmd);
 }
 
-### FIXME shlibs, this should get renamed to get_depcontrolparam
-### and moved to shlibs or services I think
+### FIXME shlibs, this should get renamed to get_debdeps
+### and moved to shlibs.pm or snd other pm
 sub get_debdeps {
 	my $wantedpkg = shift;
 	my $field = "Depends";
