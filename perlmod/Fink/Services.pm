@@ -43,7 +43,7 @@ BEGIN {
 					  &prompt &prompt_boolean &prompt_selection
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
-					  &file_MD5_checksum &get_arch);
+					  &file_MD5_checksum &get_arch &get_sw_vers);
 }
 our @EXPORT_OK;
 

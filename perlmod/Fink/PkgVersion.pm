@@ -39,6 +39,8 @@ use Fink::Bootstrap qw(&get_bsbase);
 
 use File::Basename qw(&dirname);
 
+use vars qw( $system_perl_version );
+
 use strict;
 use warnings;
 
@@ -129,16 +131,16 @@ sub initialize {
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 	# percent-expansions
 	if ($self->param("_type") eq "perl") {
-		my $perlversion   = "";
+		my $perlversion   = get_system_perl_version();
 		my $perldirectory = "";
 		my $perlarchdir   = "darwin";
 
 		if ($self->has_param("_perlversion")) {
 			$perlversion = $self->param("_perlversion");
 			$perldirectory = "/" . $perlversion;
-			if ($perlversion ge "5.8.1") {
-				$perlarchdir = "darwin-thread-multi-2level";
-			}
+		}
+		if ($perlversion ge "5.8.1") {
+			$perlarchdir = "darwin-thread-multi-2level";
 		}
 
 		$configure_params = "PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
@@ -1290,12 +1292,12 @@ sub phase_compile {
 		$compile_script = $self->param("CompileScript");
 	} else {
 		if ($self->param("_type") eq "perl") {
-			my $perlversion = "";
+			my $perlcmd = "/usr/bin/perl";
 			if ($self->has_param("_perlversion")) {
-				$perlversion = $self->param("_perlversion");
+				$perlcmd = 'perl' . $self->param("_perlversion");
 			}
 			$compile_script =
-				"perl$perlversion Makefile.PL \%c\n".
+				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
 			unless ($self->param_boolean("NoPerlTests")) {
 				$compile_script .= "make test\n";
@@ -1361,16 +1363,16 @@ sub phase_install {
 			$self->run_script($self->param("InstallScript"), "installing");
 		} elsif ($self->param("_type") eq "perl") {
 			# grab perl version, if present
-			my $perlversion   = "";
+			my $perlversion   = get_system_perl_version();
 			my $perldirectory = "";
 			my $perlarchdir   = "darwin";
 
 			if ($self->has_param("_perlversion")) {
 				$perlversion = $self->param("_perlversion");
 				$perldirectory = "/" . $perlversion;
-				if ($perlversion ge "5.8.1") {
-					$perlarchdir = "darwin-thread-multi-2level";
-				}
+			}
+			if ($perlversion ge "5.8.1") {
+				$perlarchdir = "darwin-thread-multi-2level";
 			}
 			$install_script .= 
 				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
@@ -1380,15 +1382,15 @@ sub phase_install {
 
 		if ($self->param_boolean("UpdatePOD")) { 
 			# grab perl version, if present
-			my $perlversion   = "";
+			my $perlversion   = get_system_perl_version();
 			my $perldirectory = "";
 			my $perlarchdir   = "darwin";
 			if ($self->has_param("_perlversion")) {
 				$perlversion = $self->param("_perlversion");
 				$perldirectory = "/" . $perlversion;
-				if ($perlversion ge "5.8.1") {
-					$perlarchdir = "darwin-thread-multi-2level";
-				}
+			}
+			if ($perlversion ge "5.8.1") {
+				$perlarchdir = "darwin-thread-multi-2level";
 			}
 			$install_script .= 
 				"mkdir -p \%i/share/podfiles$perldirectory\n".
@@ -1692,15 +1694,15 @@ EOF
 		# add UpdatePOD Code
 		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present
-			my $perlversion   = "";
+			my $perlversion   = get_system_perl_version();
 			my $perldirectory = "";
 			my $perlarchdir   = "darwin";
 			if ($self->has_param("_perlversion")) {
 				$perlversion = $self->param("_perlversion");
 				$perldirectory = "/" . $perlversion;
-				if ($perlversion ge "5.8.1") {
-					$perlarchdir = "darwin-thread-multi-2level";
-				}
+			}
+			if ($perlversion ge "5.8.1") {
+				$perlarchdir = "darwin-thread-multi-2level";
 			}
 			if ($scriptname eq "postinst") {
 				$scriptbody .=
@@ -2043,6 +2045,13 @@ sub run_script {
 	
 	# Restore the environment
 	%ENV = %env_bak;
+}
+
+sub get_system_perl_version {
+	if (not defined $system_perl_version) {
+		chomp($system_perl_version = `/usr/bin/perl -e 'printf "%vd", $^V' 2>/dev/null`);
+	}
+	return $system_perl_version;
 }
 
 ### EOF

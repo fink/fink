@@ -1,5 +1,11 @@
 2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* Services.pm: make sure get_sw_vers() is EXPORT_OK.
+	* PkgVersion.pm: make sure we know what the system perl
+	  version is on unversioned Type: perl info files.
+
+2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* PkgVersion.pm: handle panther 5.8.1 perl modules properly.
 
 2003-10-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
