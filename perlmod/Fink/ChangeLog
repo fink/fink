@@ -1,5 +1,11 @@
 2003-08-20  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* PkgVersion.pm: fix my mistake of using has_param instead of
+	param_boolean like I should have the first time
+	* Validate.pm: Added NoPerlType to valid field list and boolean list
+
+2003-08-20  Justin F. Hallett  <thesin@users.sourceforge.net>
+
 	* PkgVersion.pm: Added NoPerlTests field to info file for Type: perl
 	this will make it easier fo rthe maintainers to keep the pkgs compat
 	since you will nolonger need to manually type the configure params to
