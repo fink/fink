@@ -2,6 +2,7 @@
 
 	* Validation.pm: Warning for DescDetail and DescUsage that will
 	look bad in Terminal window (long lines and non-ASCII chars).
+	Warning for oddly formatted Maintainer.
 
 2004-01-06  Max Horn  <max@quendi.de>
 

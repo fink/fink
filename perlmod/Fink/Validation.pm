@@ -367,6 +367,13 @@ sub validate_info_file {
 		$looks_good = 0;
 	}
 	
+	# Make sure Maintainer is in the correct format: Joe Bob <jbob@foo.com>
+	$value = $properties->{maintainer};
+	if ($value !~ /^[^<>@]+\s+<\S+\@\S+>$/) {
+		print "Warning: Malformed value for \"maintainer\". ($filename)\n";
+		$looks_good = 0;
+	}
+
 	# License should always be specified, and must be one of the allowed set
 	$value = $properties->{license};
 	if ($value) {
