@@ -209,6 +209,11 @@ $gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrap
 	my $result = inject_package($package, $packagefiles, $info_script, $param);
 
 The primary routine to update a fink installation, called by inject.pl.
+Installs a new version of $package (passing $param to the locate_Fink function
+to find out where to install it), whose source files are those listed in
+$packagefiles, and executing the script $info_script prior to making the new
+package desription.
+
 Returns 0 on success, 1 on failure.
 
 =cut
@@ -567,7 +572,7 @@ my $bpath = shift;
 	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
 
 Create the directory $bpath/src if necessary, then create the tarball 
-$bpath/src/$package-$packageversion.tar out of the directory $packagefiles.
+$bpath/src/$package-$packageversion.tar containing the files $packagefiles.
 Returns 0 on success, 1 on failure.
 
 Called by bootstrap.pl and inject_package().

@@ -1,6 +1,7 @@
 2005-01-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Bootstrap.pm:  Slightly rearrange order of functions, for clarity
+	* Bootstrap.pm:  Slightly rearrange order of functions, for clarity;
+	expand documentation of inject_package.
 	
 2005-01-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
