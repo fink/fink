@@ -2733,6 +2733,11 @@ sub phase_purge_recursive {
 sub set_buildlock {
 	my $self = shift;
 
+	# lock on parent pkg
+	if (exists $self->{parent}) {
+		return $self->{parent}->set_buildlock();
+	}
+
 	# bootstrapping occurs before we have package-management tools needed for buildlock
 	return if $self->{_bootstrap};
 
@@ -2897,8 +2902,14 @@ EOMSG
 sub clear_buildlock {
 	my $self = shift;
 
-	if (!ref $self) {
+	if (ref $self) {
+		# pkg object knows to lock on parent pkg
+		if (exists $self->{parent}) {
+			return $self->{parent}->clear_buildlock();
+		}
+	} else {
 		# called as package method...look up PkgVersion object that locked
+		# and assume it knows what it's doing
 		$self = Fink::Config::get_option("Buildlock_PkgVersion");
 		return if !ref $self;   # get out if there's no lock recorded
 	}
