@@ -1,4 +1,9 @@
-package Text::DelimMatch;
+# This file is based on Text::DelimMatch v1.06 from CPAN.
+# It was converted to Fink::Text::DelimMatch and further modified 
+# for use by Fink. You can read about these changes in the accompanying
+# ChangeLog files and by browsing the CVS repository.
+
+package Fink::Text::DelimMatch;
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT $case_sensitive);
@@ -249,7 +254,7 @@ sub dump {
     my $self	 = shift;
     my ($key, $val);
 
-    print "Dump of Text::DelimMatch:\n";
+    print "Dump of ", ref $self, ":\n";
 
     print "\n\tERROR : ", $self->{'ERROR'}, "\n"
 	if $self->{'ERROR'};
@@ -601,7 +606,7 @@ sub _match {
 
 sub nested_match {
     my ($search, $start, $end, $three) = @_;
-    my $mc = new Text::DelimMatch $start, $end;
+    my $mc = new Fink::Text::DelimMatch $start, $end;
     my ($p, $m, $s) = $mc->match($search);
 
     if (defined($three)) {
@@ -613,7 +618,7 @@ sub nested_match {
 
 sub skip_nested_match {
     my ($search, $start, $end, $three) = @_;
-    my $mc = new Text::DelimMatch $start, $end;
+    my $mc = new Fink::Text::DelimMatch $start, $end;
     my ($p, $m, $s) = $mc->match($search);
 
     if (defined($three)) {
@@ -628,13 +633,13 @@ __END__
 
 =head1 NAME
 
-Text::DelimMatch - Perl extension to find regexp delimited strings with proper nesting
+Fink::Text::DelimMatch - Perl extension to find regexp delimited strings with proper nesting
 
 =head1 SYNOPSIS
 
-  use Text::DelimMatch;
+  use Fink::Text::DelimMatch;
 
-  $mc = new Text::DelimMatch, $startdelim, $enddelim;
+  $mc = new Fink::Text::DelimMatch, $startdelim, $enddelim;
 
   $mc->quote('"');
   $mc->escape("\\");
@@ -665,7 +670,7 @@ in this buffer is "(ma(t)c\)h)":
   'prefix text "(quoted text)" \(escaped \" text) (ma(t)c\)h) postfix text'
 
 In order to support this rather complex interface, the matching context
-is encapsulated in an object.  The object, Text::DelimMatch,
+is encapsulated in an object.  The object, Fink::Text::DelimMatch,
 has the following public methods:
 
 =over 4
@@ -836,7 +841,7 @@ $post.
 
 =head1 EXAMPLES
 
-  $mc = new Text::DelimMatch '"';
+  $mc = new Fink::Text::DelimMatch '"';
   $mc->('pre "match" post') == '"match"';
 
   $mc->delim("\\(", "\\)");
@@ -856,9 +861,17 @@ Norman Walsh, ndw@nwalsh.com
 
 =head1 COPYRIGHT
 
+From the original file:
 Copyright (C) 1997-2002 Norman Walsh.
 All rights reserved.  This program is free software; you can 
 redistribute it and/or modify it under the same terms as Perl itself.
+
+For the changes by Fink:
+Copyright (C) 2004 The Fink Package Manager Team.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
 =head1 WARRANTY
 

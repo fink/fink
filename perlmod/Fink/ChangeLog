@@ -1,4 +1,9 @@
-2004-06-26  Daniel Macks  <dmacks@netspace.org>
+2004-07-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Text/DelimMatch.pm: import from CPAN, convert to Fink:: namespace.
+	* PkgVersion.pm: use our own Text::DelimMatch.
+
+2004-07-26  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Activate conditionals in ConfigureParams.
 

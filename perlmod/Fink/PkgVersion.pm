@@ -394,8 +394,6 @@ sub parse_configureparams {
 
 # handle conditionals processing in a list of space-separated atoms
 
-our $warned_delimmatch;  # defined if user has been warned
-
 sub conditional_space_list {
 	my $self = shift;    # unused
 	my $string = shift;  # the string to parse
@@ -403,21 +401,12 @@ sub conditional_space_list {
 
 	return $string unless defined $string and $string =~ /\(/; # short-circuit
 
-	if (not eval { require Text::DelimMatch }) {
-		# this is not an Essential package
-		if (not $warned_delimmatch) {
-			print "Could not load Text::DelimMatch so cannot handle conditionals in $where.\n";
-			print "(note: this feature is not needed for any packages in the official Fink trees)\n";
-			$warned_delimmatch = 1;  # only warn once per indexing run
-		}
-		return $string;
-	}
-	import Text::DelimMatch;
+	use Fink::Text::DelimMatch;
 
 	use Text::ParseWords;    # part of perl5 itself
 
 	# prepare the paren-balancing parser
-	my $mc = Text::DelimMatch->new( '\s*\(\s*', '\s*\)\s*' );
+	my $mc = Fink::Text::DelimMatch->new( '\s*\(\s*', '\s*\)\s*' );
 	$mc->quote("'");
 	$mc->escape("\\");
 	$mc->returndelim(0);
