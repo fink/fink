@@ -2721,7 +2721,7 @@ sub set_buildlock {
 
 	my $pkgname = $self->get_name();
 	my $pkgvers = $self->get_fullversion();
-	my $lockpkg = "fink-buildlock-$pkgname-$pkgvers";
+	my $lockpkg = "fink-buildlock-$pkgname-" . $self->get_version() . '-' . $self->get_revision();
 	my $timestamp = strftime "%Y.%m.%d-%H.%M.%S", localtime;
 
 	my $destdir = "$buildpath/root-$lockpkg";

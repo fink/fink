@@ -1,5 +1,9 @@
 2004-11-24  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Do not include "$epoch:" in buildlock pkgname.
+
+2004-11-24  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Remove timestamp from buildlock pkgname; use
 	lockpkg's dpkg preinst scripts to prevent concurrent builds.
 
