@@ -189,7 +189,13 @@ sub prompt {
 		print "(assuming default)\n";
 		$answer = $default_value;
 	} else {
-		$answer = <STDIN> || "";
+		{
+			local $SIG{INT} = sub {
+				print "\n";
+				die "User interrupt\n";
+			};
+			$answer = <STDIN> || "";
+		}
 		chomp($answer);
 		$answer = $default_value if $answer eq "";
 	}
@@ -243,6 +249,10 @@ sub prompt_boolean {
 				return $answer;
 			} || "";
 		} else {
+			local $SIG{INT} = sub {
+				print "\n";
+				die "User interrupt\n";
+			};
 		    $answer = <STDIN> || "";
 		}
 		chomp($answer);
@@ -329,7 +339,13 @@ sub prompt_selection_new {
 		print "(assuming default)\n";
 		$answer = $default_value;
 	} else {
-		$answer = <STDIN> || "";
+		{
+			local $SIG{INT} = sub {
+				print "\n";
+				die "\nUser interrupt\n";
+			};
+			$answer = <STDIN> || "";
+		}
 		chomp($answer);
 		if (!$answer) {
 			$answer = 0;
