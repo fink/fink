@@ -1,0 +1,178 @@
+diff -ru libtool-1.3.5/ChangeLog libtool-1.3.5-patched/ChangeLog
+--- libtool-1.3.5/ChangeLog	Sat May 27 13:12:27 2000
++++ libtool-1.3.5-patched/ChangeLog	Wed Mar 28 17:01:15 2001
+@@ -1,3 +1,20 @@
++2001-03-12  Christoph Pfisterer  <cp@chrisp.de>
++
++	* ltconfig.in: Added proper library versioning on Darwin.
++	* ltmain.in: Added proper library versioning on Darwin.
++
++2001-02-03  Christoph Pfisterer  <cp@chrisp.de>
++
++	* ltconfig.in: Fixes to the dyld port for Darwin.
++	* ltmain.in: Fixes to the dyld port for Darwin.
++
++2000-08-23  Wilfredo Sanchez  <wsanchez@apple.com>
++
++	* ltconfig.in: (darwin*) New port for dyld platforms.
++	               (rhapsody*) Use dyld port.
++	* ltmain.in: (darwin*) New port for dyld platforms.
++	             (rhapsody*) Use dyld port.
++
+ 2000-05-27  Gary V. Vaughan  <gvv@techie.com>
+ 
+ 	GNU libtool 1.3.5 was released.
+diff -ru libtool-1.3.5/README libtool-1.3.5-patched/README
+--- libtool-1.3.5/README	Wed Jun 23 17:13:15 1999
++++ libtool-1.3.5-patched/README	Wed Mar 28 17:24:38 2001
+@@ -12,6 +12,7 @@
+   AIX 3.x, 4.x (*-*-aix3*, *-*-aix4*)
+   BeOS (*-*-beos*)
+   BSD/OS 2.1, 3.x, 4.x (*-*-bsdi2.1, *-*-bsdi3*, *-*-bsdi4*)
++  Darwin / Mac OS (*-*-darwin*)
+   Digital/UNIX 3.x, 4.x, a.k.a. OSF/1 (*-*-osf3*, *-*-osf4*)
+   DG/UX R4.11, R4.12, R4.20 (*-*-dguxR411*, *-*-dguxR412*, *-*-dguxR420*)
+   FreeBSD 2.x, 3.x, 4.x (*-*-freebsd2*, *-*-freebsd3*, *-*-freebsd4*)
+diff -ru libtool-1.3.5/ltconfig.in libtool-1.3.5-patched/ltconfig.in
+--- libtool-1.3.5/ltconfig.in	Sat May 27 03:58:57 2000
++++ libtool-1.3.5-patched/ltconfig.in	Wed Mar 28 17:27:38 2001
+@@ -678,6 +678,11 @@
+   cygwin* | mingw* | os2*)
+     # We can build DLLs from non-PIC.
+     ;;
++  darwin* | rhapsody*)
++    # PIC is the default on this platform
++    # Common symbols not allowed in MH_DYLIB files
++    pic_flag='-fno-common'
++    ;;
+   amigaos*)
+     # FIXME: we need at least 68020 code to build shared libraries, but
+     # adding the `-m68020' flag to GCC prevents building anything better,
+@@ -1367,6 +1372,16 @@
+     hardcode_shlibpath_var=no
+     ;;
+ 
++  darwin* | rhapsody*)
++    allow_undefined_flag='-undefined suppress'
++    archive_cmds='$CC $(test x$module = xyes && echo -bundle || echo -dynamiclib) $allow_undefined_flag -o $lib $libobjs $deplibs $linkopts -install_name $rpath/$soname $(test -n "$verstring" -a x$verstring != x0.0 && echo $verstring)'
++    # We need to add '_' to the symbols in $export_symbols first
++    #archive_expsym_cmds="$archive_cmds"' && strip -s $export_symbols $lib'
++    hardcode_direct=yes
++    hardcode_shlibpath_var=no
++    whole_archive_flag_spec='-all_load $convenience'
++    ;;
++
+   hpux9* | hpux10* | hpux11*)
+     case "$host_os" in
+     hpux9*) archive_cmds='$rm $objdir/$soname~$LD -b +b $install_libdir -o $objdir/$soname $libobjs $deplibs $linkopts~test $objdir/$soname = $lib || mv $objdir/$soname $lib' ;;
+@@ -1439,12 +1454,6 @@
+     hardcode_libdir_flag_spec='${wl}-rpath ${wl}$libdir'
+     hardcode_libdir_separator=:
+     ;;
+-  rhapsody*)
+-    archive_cmds='$CC -bundle -undefined suppress -o $lib $libobjs $deplibs $linkopts'
+-    hardcode_libdir_flags_spec='-L$libdir'
+-    hardcode_direct=yes
+-    hardcode_shlibpath_var=no
+-    ;;
+                                        
+   sco3.2v5*)
+     archive_cmds='$LD -G -h $soname -o $lib $libobjs $deplibs $linkopts'
+@@ -1915,6 +1924,27 @@
+   esac
+   ;;
+ 
++darwin* | rhapsody*)
++  dynamic_linker="$host_os dyld"
++  version_type=darwin
++  need_lib_prefix=no
++  need_version=no
++  deplibs_check_method='file_magic Mach-O dynamically linked shared library'
++  file_magic_cmd='/usr/bin/file -L'
++  case "$host_os" in
++  rhapsody* | darwin1.[012])
++    file_magic_test_file='/System/Library/Frameworks/System.framework/System'
++    ;;
++  *) # Darwin 1.3 on
++    file_magic_test_file='/usr/lib/libSystem.dylib'
++    ;;
++  esac
++  library_names_spec='${libname}${release}${versuffix}.$(test x$module = xyes && echo so || echo dylib) ${libname}${release}${major}.$(test x$module = xyes && echo so || echo dylib) ${libname}.$(test x$module = xyes && echo so || echo dylib)'
++  soname_spec='${libname}${release}${major}.$(test x$module = xyes && echo so || echo dylib)'
++  shlibpath_overrides_runpath=yes
++  shlibpath_var=DYLD_LIBRARY_PATH
++  ;;
++
+ gnu*)
+   version_type=linux
+   need_lib_prefix=no
+@@ -2051,14 +2081,6 @@
+   deplibs_check_method='pass_all'
+   sys_lib_search_path_spec="/usr/shlib /usr/ccs/lib /usr/lib/cmplrs/cc /usr/lib /usr/local/lib /var/shlib"
+   sys_lib_dlsearch_path_spec="$sys_lib_search_path_spec"
+-  ;;
+-
+-rhapsody*)
+-  version_type=sunos
+-  library_names_spec='${libname}.so'
+-  soname_spec='${libname}.so'
+-  shlibpath_var=DYLD_LIBRARY_PATH
+-  deplibs_check_method=pass_all
+   ;;
+ 
+ sco3.2v5*)
+diff -ru libtool-1.3.5/ltmain.in libtool-1.3.5-patched/ltmain.in
+--- libtool-1.3.5/ltmain.in	Sat May 27 03:53:15 2000
++++ libtool-1.3.5-patched/ltmain.in	Wed Mar 28 17:28:51 2001
+@@ -1079,6 +1079,11 @@
+ 	    # These systems don't actually have c library (as such)
+ 	    continue
+ 	    ;;
++	  *-*-rhapsody* | *-*-darwin1.[012])
++	    # Rhapsody C library is in the System framework
++	    deplibs="$deplibs -framework System"
++	    continue
++	    ;;
+ 	  esac
+ 	elif test "$arg" = "-lm"; then
+ 	  case "$host" in
+@@ -1086,6 +1091,11 @@
+ 	    # These systems don't actually have math library (as such)
+ 	    continue
+ 	    ;;
++	  *-*-rhapsody* | *-*-darwin1.[012])
++	    # Rhapsody math library is in the System framework
++	    deplibs="$deplibs -framework System"
++	    continue
++	    ;;
+ 	  esac
+ 	fi
+ 	deplibs="$deplibs $arg"
+@@ -1753,6 +1763,16 @@
+ 	  versuffix="-$major-$age-$revision"
+ 	  ;;
+ 
++	darwin)
++	  # Like Linux, but with the current version available in
++	  # verstring for coding it into the library header
++	  major=.`expr $current - $age`
++	  versuffix="$major.$age.$revision"
++	  # Darwin ld doesn't like 0 for these options...
++	  minor_current=`expr $current + 1`
++	  verstring="-compatibility_version $minor_current -current_version $minor_current.$revision"
++	  ;;
++
+ 	*)
+ 	  $echo "$modename: unknown library version type \`$version_type'" 1>&2
+ 	  echo "Fatal configuration error.  See the $PACKAGE docs for more information." 1>&2
+@@ -1795,8 +1815,8 @@
+ 	*-*-cygwin* | *-*-mingw* | *-*-os2* | *-*-beos*)
+ 	  # these systems don't actually have a c library (as such)!
+ 	  ;;
+-        *-*-rhapsody*)
+-	  # rhapsody is a little odd...
++        *-*-rhapsody* | *-*-darwin1.[012])
++	  # Rhapsody C library is in the System framework
+ 	  deplibs="$deplibs -framework System"
+ 	  ;;
+ 	*)
