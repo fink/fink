@@ -1,9 +1,9 @@
 Package: fink-prebinding
-Version: 0.3
+Version: 0.4
 Revision: 1
 
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
-Source-MD5: 8eef8d0c66f47dec3169397ed3b858c8
+Source-MD5: 01c0185db677b2209212e5d39acef97e
 Essential: yes
 Depends: base-files, cctools-extra (>= 20030516-2)
 CompileScript: make PREFIX='%p' MANDIR='%p/share/man'
@@ -29,5 +29,5 @@ This package contains the files needed to enable
 prebinding libraries and exectuables in Fink.
 <<
 License: OSI-Approved
-Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Maintainer: Benjamin Reed <ranger@befunk.com>
 Homepage: http://fink.sf.net/
