@@ -1174,18 +1174,23 @@ sub real_install {
 			if (not $found) {
 				# See if the user has a regexp to match in fink.conf
 				my $matchstr = $config->param("MatchPackageRegEx");
-				my $matchcount =0;
-				my $usename;
+				my (@matched, @notmatched);
 				if (defined $matchstr) {
 					foreach $dname (@candidates) {
 						if ( $dname =~ $matchstr ) {
-							$matchcount++;
-							$usename = $dname;
+							push(@matched, $dname);
+  					        } else {
+						        push(@notmatched, $dname);
 						}
 					}
-					if (1 == $matchcount ) {
-						$dname = $usename;
+					if (1 == @matched ) {
+					        # we have exactly one match, use it
+						$dname = pop(@matched);
 						$found = 1;
+					} elsif (@matched > 1) {
+					        # we have multiple matches
+					        # reorder list so that matched ones are at the top
+					        @candidates = (@matched, @notmatched);
 					}
 				}
 			}
