@@ -3,7 +3,7 @@ Version: 0.5.4
 Revision: 5
 GCC: 3.1
 Depends: %N-shlibs (= %v-%r)
-Source: http://http.us.debian.org/debian/pool/main/a/apt/%n_%v.tar.gz
+Source: mirror:sourceforge:fink/%n_%v.tar.gz
 SourceDirectory: %n-%v
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1

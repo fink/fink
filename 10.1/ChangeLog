@@ -1,3 +1,8 @@
+2002-10-03  Max Horn  <max@quendi.de>
+	
+	* fixed various packages to really use the Fink copies of source files
+	  (during bootstrap, *never* relay on 3rd party servers!)
+
 2002-08-05  Max Horn  <max@quendi.de>
 	
 	* new base-files version 1.6

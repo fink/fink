@@ -1,7 +1,7 @@
 Package: libiconv
 Version: 1.7
 Revision: 5
-Source: gnu
+Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 Patch: %f.patch

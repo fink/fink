@@ -1,7 +1,6 @@
 Package: gettext
 Version: 0.10.40
 Revision: 3
-#Source: gnu
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Essential: yes
 Depends: base-files, libiconv

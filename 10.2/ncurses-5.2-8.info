@@ -2,7 +2,7 @@ Package: ncurses
 Version: 5.2
 Revision: 8
 GCC: 3.1
-Source: gnu
+Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 Patch: %f.patch
