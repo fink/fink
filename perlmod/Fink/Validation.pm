@@ -41,7 +41,12 @@ our @EXPORT_OK;
 
 # Currently, the Set* and NoSet* fields only support a limited list of variables.
 our @set_vars =
-	qw(cc cflags cpp cppflags cxx cxxflags dyld_library_path ld ldflags library_path libs macosx_deployment_target make mflags makeflags);
+	qw(
+		cc cflags cpp cppflags cxx cxxflags dyld_library_path
+		ld_prebind ld_prebind_allow_overlap ld_force_no_prebind
+		ld_seg_addr_table ld ldflags library_path libs
+		macosx_deployment_target make mflags makeflags
+	);
 
 # Required fields.
 our @required_fields =
@@ -120,6 +125,8 @@ our %valid_fields = map {$_, 1}
 #  dependencies:
 		 'depends',
 		 'builddepends',
+          #  need documentation for buildconflicts
+		 'buildconflicts',
 		 'provides',
 		 'conflicts',
 		 'replaces',
@@ -132,16 +139,16 @@ our %valid_fields = map {$_, 1}
 #  unpack phase:
 		 'custommirror',
 		 'source',
-#                #sourceN
+                 #sourceN
 		 'sourcedirectory',
 		 'nosourcedirectory',
-#                #sourceNextractdir
+                 #sourceNextractdir
 		 'sourcerename',
-#                #sourceNRename
+                 #sourceNRename
 		 'source-md5',
-#                #sourceN-md5
+                 #sourceN-md5
 		 'tarfilesrename',
-#                #tarNfilesrename
+                 #tarNfilesrename
 #  patch phase:
 		 'updateconfigguess',
 		 'updateconfigguessindirs',
@@ -199,6 +206,7 @@ our %splitoff_valid_fields = map {$_, 1}
 #  dependencies:
 		 'depends',
 		 'builddepends',
+		 'buildconflicts',
 		 'provides',
 		 'conflicts',
 		 'replaces',
@@ -243,23 +251,25 @@ END { }				# module clean-up code here (global destructor)
 
 
 # Should check/verifies the following in .info files:
-#		+ the filename matches %f.info
-#		+ patch file is present
-#		+ all required fields are present
-#		+ warn if obsolete fields are encountered
-#		+ warn about missing Description/Maintainer/License fields
-#		+ warn about overlong Description fields
-#		+ warn about Description starting with "A" or "An" or containing the package name
-#		+ warn if boolean fields contain bogus values
-#		+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
-#			(excluded from this are fields like Description, Homepage etc.)
-#		+ warn if unknown fields are encountered
-#		+ warn if /sw is hardcoded in the script or set fields
+#	+ the filename matches %f.info
+#	+ patch file is present
+#	+ all required fields are present
+#	+ warn if obsolete fields are encountered
+#	+ warn about missing Description/Maintainer/License fields
+#	+ warn about overlong Description fields
+#	+ warn about Description starting with "A" or "An" or containing the package name
+#	+ warn if boolean fields contain bogus values
+#	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
+#		(excluded from this are fields like Description, Homepage etc.)
+#	+ warn if unknown fields are encountered
+#	+ warn if /sw is hardcoded in the script or set fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#		- if type is bundle/nosource - warn about usage of "Source" etc.
-#       - validate splitoffs!!! Very important
-# ... other things, make suggestions ;)
+#	- if type is bundle/nosource - warn about usage of "Source" etc.
+#	- better validation of splitoffs
+#	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
+#	  it uses ">" instead of ">>".
+#	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
 	my $filename = shift;
