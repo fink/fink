@@ -358,7 +358,9 @@ sub validate_info_file {
 	}
 	
 	# TODO: figure out how to validate multivariant Type:
-	
+	#  - make sure syntax is okay
+	#  - make sure each type appears as a type_*[] in Package
+
 	return unless ($looks_good);
 
 	#
