@@ -1,3 +1,9 @@
+2001-11-01  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Mirror.pm (new_from_field): Disabled the case for leaving out
+	the key in custom mirror lists; it doesn't work anyway because the
+	URLs themselves also contain colons. We'll need another separator.
+
 2001-10-27  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (resolve_depends): Make "package not found"

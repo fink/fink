@@ -106,9 +106,9 @@ sub new_from_field {
     if (/^\s*([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
       $key = lc $1;
       $url = $2;
-    } elsif (/^\s+(\S.*?)\s*$/) {
-      $key = "primary";
-      $url = $1;
+#    } elsif (/^\s+(\S.*?)\s*$/) {
+#      $key = "primary";
+#      $url = $1;
     } else {
       next;
     }
