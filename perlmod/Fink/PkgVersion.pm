@@ -1726,9 +1726,8 @@ sub phase_deactivate {
 sub set_env {
   my $self = shift;
   my ($varname, $s, $expand);
-  my %defaults = ( "CPPFLAGS" => "-isystem \%p/include",
-		   "LIBRARY_PATH" => "\%p/lib",
-		   "DYLD_LIBRARY_PATH" => "\%p/lib" );
+  my %defaults = ( "CPPFLAGS" => "-I\%p/include",
+                   "LDFLAGS" => "-L\%p/lib" );
   my $bsbase = get_bsbase();
 
   # clean the environment
