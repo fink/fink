@@ -1,3 +1,7 @@
+2003-09-22  Ben Hines <benh57@users.sourceforge.net>
+
+	* Bootstrap.pm: Support 10.2.8.
+
 2003-09-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Implement java virtuals.
