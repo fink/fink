@@ -163,6 +163,8 @@ delete $ENV{CDPATH};
 require Fink::Services;
 require Fink::Engine;
 
+load_config();
+
 # propagate command-line options
 Fink::Config::set_options(\%options);
 

@@ -1,3 +1,7 @@
+2003-11-26  Michael G Schwern <schwern@pobox.com>
+
+	* fink.in: Last change forgot to read_config() so fink wouldn't work.
+
 2003-11-25  Michael G Schwern <schwern@pobox.com>
 
 	* fink-virtual-pkgs.in, fink.in, inject.pl, postinstall.pl.in:
