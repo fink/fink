@@ -24,6 +24,7 @@ require 5.006;  # perl 5.6.0 or newer required
 use strict;
 
 use lib "@BASEPATH@/lib/perl5";
+my $basepath = '@BASEPATH@';
 
 ### parse options passed on the command line
 
@@ -136,10 +137,10 @@ sub load_config {
 
     # read the configuration file
     my $configpath;
-    $configpath = "@BASEPATH@/etc/fink.conf";
+    $configpath = "$basepath/etc/fink.conf";
     if (-f $configpath) {
         $Config = &Fink::Services::read_config($configpath, 
-                                               { Basepath => '@BASEPATH@' }
+                                               { Basepath => "$basepath" }
                                               );
     } else {
         print "ERROR: Configuration file \"$configpath\" not found.\n";
@@ -152,7 +153,7 @@ sub load_config {
 umask oct("022");
 
 # set PATH so we find dpkg and *-config scripts
-$ENV{PATH} = "@BASEPATH@/sbin:@BASEPATH@/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
+$ENV{PATH} = "$basepath/sbin:$basepath/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
 
 # get rid of CDPATH
 delete $ENV{CDPATH};
