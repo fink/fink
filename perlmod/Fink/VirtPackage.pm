@@ -1027,7 +1027,7 @@ For more info on this package see http://growl.info/.
 	$hash->{package} = "growl";
 	$hash->{status} = STATUS_PRESENT;
 	$hash->{description} = "[virtual package representing Growl]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://growl.info/";
 	$hash->{compilescript} = $compile_script;
 	$hash->{descdetail} = <<END;
 Growl is a global notification system for Mac OS X. Any
