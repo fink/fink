@@ -327,7 +327,7 @@ EOF
   if ((not defined $width and not $dotab) or (defined $width and
   	(($width eq "") or ($width eq "auto") or ($width eq "=auto") or ($width eq "=")))) {
     $width = &get_term_width();
-    if ($width == 0) {
+    if (not defined $width or $width == 0) {
       $dotab = 1;	# not a terminal, fallback to tabbed mode
       undef $width;
     }
