@@ -1737,7 +1737,7 @@ sub set_env {
 	my $self = shift;
 	my ($varname, $s, $expand);
 	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
-									 "LDFLAGS" => "-L\%p/lib" );
+					 "LDFLAGS" => "-L\%p/lib" );
 	my $bsbase = get_bsbase();
 
 	# clean the environment
@@ -1755,7 +1755,7 @@ sub set_env {
 	if (-r "$basepath/bin/init.sh") {
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
 		chomp @vars;
-		%ENV = map { split /=/ } @vars;
+		%ENV = map { split /=/,$_,2 } @vars;
 	}
 
 	# set variables according to the info file
