@@ -1679,8 +1679,9 @@ EOF
 	print "Finding prebound objects...\n";
 	my ($is_prebound, $is_exe, $name);
 	find({ wanted => sub {
+		# common things that shouldn't be objects
+		return if (/\.(bz2|c|cfg|conf|class|cpp|csh|db|dll|gif|gz|h|html|info|ini|jpg|m4|mng|pdf|png|po|sh|tar|txt|wav|xml)$/i);
 		return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
-		return if (/\.class$/); # java looks like mach-o!
 		return if (readlink $_ =~ /\/usr\/lib/); # don't re-prebind stuff in /usr/lib
 		#print "\$_ = $_\n";
 		$is_prebound = 0;
