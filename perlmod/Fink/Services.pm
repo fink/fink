@@ -420,8 +420,21 @@ options are known:
 
     nonroot_okay
 
-        If fink was run with the --build-as-nobody flag, drop to
-        user=nobody when running the actual commands.
+        If the value of the option 'nonroot_okay' is true, fink was
+        run with the --build-as-nobody flag, drop to user=nobody when
+        running the actual commands.
+
+    delete_tempfile
+
+        Whether to delete temp-files that are created. The following
+        values are known:
+
+            -1         Always delete
+
+            undef, 0   Delete if script was successful, do not delete
+                       if it failed
+
+            1          Never delete
 
 =cut
 
@@ -444,7 +457,6 @@ sub execute {
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
 		if (not $options{'quiet'}) {
-#			print "$cmd\n";
 			$drop_root
 				? print "sudo -u nobody sh -c $cmd\n"
 				: print "$cmd\n";
@@ -454,17 +466,23 @@ sub execute {
 			: system($cmd);
 		$? >>= 8 if defined $? and $? >= 256;
 		if ($?) {
+			my $rc = $?;
 			if (not $options{'quiet'}) {
 				my ($commandname) = split(/\s+/, $cmd);
-				print "### execution of $commandname failed, exit code $?\n";
+				print "### execution of $commandname failed, exit code $rc\n";
+			}	
+			if (defined $options{'delete_script'} and $options{'delete_script'} == 1) {
+				# probably keep tempfile around (to aide debugging)
+				unlink($script) if $is_tempfile;
 			}
-			return $?;  # something went boom; give up now
+			return $rc;  # something went boom; give up now
 		}
 	}
 
-	# everything was successful so delete tempfile
-	# (otherwise keep it around to aide debugging)
-	unlink($script) if $is_tempfile;  # 
+	# everything was successful so probably delete tempfile
+	if (!defined $options{'delete_script'} or $options{'delete_script'} != -1) {
+		unlink($script) if $is_tempfile;
+	}
 	return 0;
 }
 
