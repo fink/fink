@@ -1,0 +1,9 @@
+Package: fink
+Version: 0.2.0
+Revision: 1
+Source: %n-%v.tar
+Depends: base-files
+Essential: yes
+CompileScript: ./setup.sh %p
+InstallScript: ./install.sh %i
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
