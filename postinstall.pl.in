@@ -238,7 +238,7 @@ if (not $distribution =~ /10.1/) {
     exit 1;
   }
  
-  ### Now we modify the apt-get config file if needed...
+  ### Now we modify the apt-get config file "sources.list" if needed...
   ###
 
   if (-f $aptfile) {
@@ -246,16 +246,32 @@ if (not $distribution =~ /10.1/) {
       open (OUTPUT, ">$aptfile.new") or die "couldn't write $aptfile.new: $!\n";
 
       my $changed = 0;
+      my $unexpected_change = 0;
       while (<INPUT>) {
 	  if (s,(deb http://us.dl.sourceforge.net/fink/direct_download )(1.*)/,$1$distribution/,) {
 	      $changed++ if ($2 ne $distribution);
+	  } elsif (s,(deb http://us.dl.sourceforge.net/fink/direct_download)(.*)/,$1 $distribution/,){
+	      $unexpected_change++ if ($2 ne " ".$distribution);
 	  }
 	  print OUTPUT;
       }
 	  close(OUTPUT);
 	  close(INPUT);
 
-	  if ($changed) {
+      if ($unexpected_change) {
+	  my $unexpectedquestion = &prompt_boolean("\nYour apt/sources.list file has been modified in an unexpected way.  I can perform a partial repair, but I strongly advise you to replace @PREFIX@/etc/apt/sources.list by @PREFIX@/lib/fink/sources.list.fink and then reinstall fink.  Would you like me to perform the partial repair now?",1);
+	      if ($unexpectedquestion) {
+		  if (&execute("mv $aptfile.new $aptfile")){
+		      print "ERROR: Can't move $aptfile.new to $aptfile\n";
+		      exit 1;
+		  }
+	      } else {
+		  if (&execute("rm $aptfile.new")){
+		      print "ERROR: Can't remove $aptfile.new\n";
+		      exit 1;
+		  }
+	      }
+      } elsif ($changed) {
 	      my $updatequestion= &prompt_boolean("\nYour apt/sources.list file needs to be updated".
 " to match your current Fink distribution $distribution.  Would you like".
 						  " to update this file now?",1);

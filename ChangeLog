@@ -1,3 +1,9 @@
+2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in:  Further sanity checking on sources.list file:
+	try to correct errors which might have been introduced when using
+	dselect to modify sources.list in the recent past.
+
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.16.0, which does
