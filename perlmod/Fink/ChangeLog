@@ -1,5 +1,10 @@
 2004-02-01  Daniel Macks  <dmacks@netspace.org>
 
+	* Services.pm: Resuscitated RangerRick's idea from CVS r1.95 of
+	adding line numbers to parser error messages.
+
+2004-02-01  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm, Services.pm, Validation.pm: finished implementing
 	splittoffN (etc.) passing to read_properties_var() and fixed
 	quotation mark placement in its messages.

@@ -197,13 +197,15 @@ sub read_properties_lines {
 	# do we make the keys all lowercase
 	my ($notLC) = shift || 0;
 	my (@lines) = @_;
-	my ($hash, $lastkey, $heredoc);
+	my ($hash, $lastkey, $heredoc, $linenum);
 
 	$hash = {};
 	$lastkey = "";
 	$heredoc = 0;
+	$linenum = 0;
 
 	foreach (@lines) {
+		$linenum++;
 		chomp;
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
@@ -236,7 +238,7 @@ sub read_properties_lines {
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
 				if (exists $hash->{$lastkey}) {
-					print "WARNING: Field \"$lastkey\" occurs more than once in $file.\n";
+					print "WARNING: Repeated occurrence of field \"$lastkey\" at line $linenum of $file.\n";
 				}
 				if ($2 eq "<<") {
 					$hash->{$lastkey} = "";
@@ -247,11 +249,11 @@ sub read_properties_lines {
 			} elsif (/^\s+(\S.*?)\s*$/) {
 				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
-				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in $file.\n";
+				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
 			} else {
-				print "WARNING: Unable to parse the line \"".$_."\" in $file.\n";
+				print "WARNING: Unable to parse the line \"".$_."\" at line $linenum of $file.\n";
 			}
 		}
 	}
