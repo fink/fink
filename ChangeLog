@@ -1,3 +1,8 @@
+2003-12-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* pathsetup.command.in: echo a newline to an existing . file before
+	anything else, in case the file does not end in one.
+
 2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Makefile, fink.info.in: Modification of strategy for running the
@@ -27,8 +32,8 @@
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 
 	* Makefile: run setup.sh before the tests so we have all the files
-		generated with a basepath pointing to a test base.  This should
-		allow the tests to run even if fink isn't installed.
+	generated with a basepath pointing to a test base.  This should
+	allow the tests to run even if fink isn't installed.
 
 2003-11-20  Michael G Schwern <schwern@pobox.com>
 
