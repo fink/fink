@@ -963,10 +963,10 @@ use constant FLAG    => 4;
 sub real_install {
 	my $op = shift;
 	my $showlist = shift;
-	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep);
-	my ($all_installed, $any_installed);
+	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $con, $cn);
+	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
-	my (%candidates, @candidates, $pnode);
+	my (%candidates, @candidates, $pnode, $found);
 	my ($oversion, $opackage, $v, $ep, $dp, $dname);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
@@ -976,6 +976,7 @@ sub real_install {
 	}
 
 	%deps = ();		# hash by package name
+	%cons = ();		# hash by package name
 
 	%to_be_rebuilt = ();
 	%already_activated = ();
@@ -1043,15 +1044,18 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(2);
+			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends");
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts");
 		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(1);
+			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends");
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts");
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(0);
+			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends");
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts");
 		}
 		# add essential packages (being careful about packages whose parent is essential)
 		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {
@@ -1099,7 +1103,7 @@ sub real_install {
 				$candidates{$dp->get_name()} = 1;
 				push @candidates, $dp->get_name();
 			}
-			my $found = 0;
+			$found = 0;
 
 			if ($#candidates == 0) {	# only one candidate
 				$dname = $candidates[0];
@@ -1247,9 +1251,29 @@ sub real_install {
 		}
 	}
 
+	CONLOOP: foreach $con (@conlist) {
+		next if $#$con < 0;			# skip empty lists
+
+		# check for installed pkgs (exact revision)
+		foreach $cn (@$con) {
+			if ($cn->is_installed()) {
+				$cname = $cn->get_name();
+				if (exists $cons{$cname}) {
+					die "Internal error: node for $cname already exists\n";
+				}
+				# add node to graph
+				$cons{$cname} = [ $cname, Fink::Package->package_by_name($cname),
+						$cn, $OP_INSTALL, 2 ];
+				next CONLOOP;
+			}
+		}
+	}
+
+
 	# generate summary
 	@requested = ();
 	@additionals = ();
+	@removals = ();
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
 		if ($item->[FLAG] == 0) {
@@ -1258,6 +1282,11 @@ sub real_install {
 			push @requested, $pkgname;
 		}
 	}
+
+	foreach $pkgname (sort keys %cons) {
+		push @removals, $pkgname;
+	}
+			
 
 	# display list of requested packages
 	if ($showlist) {
@@ -1282,18 +1311,30 @@ sub real_install {
 		&print_breaking(join(" ",@requested), 1, " ");
 	}
 	# ask user when additional packages are to be installed
-	if ($#additionals >= 0) {
-		if ($#additionals > 0) {
-			&print_breaking("The following ".scalar(@additionals).
-							" additional packages will be installed:");
-		} else {
-			&print_breaking("The following additional package ".
-							"will be installed:");
+	if ($#additionals >= 0 || $#removals >= 0) {
+		if ($#additionals >= 0) {
+			if ($#additionals > 0) {
+				&print_breaking("The following ".scalar(@additionals).
+						" additional packages will be installed:");
+			} else {
+				&print_breaking("The following additional package ".
+						"will be installed:");
+			}
+			&print_breaking(join(" ",@additionals), 1, " ");
 		}
-		&print_breaking(join(" ",@additionals), 1, " ");
+		if ($#removals >= 0) {
+			if ($#removals > 0) {
+				&print_breaking("The following ".scalar(@removals).
+						" packages will be removed:");
+			} else {
+				&print_breaking("The following package ".
+						"will be removed:");
+			}
+			&print_breaking(join(" ",@removals), 1, " ");
+		}
 		$answer = &prompt_boolean("Do you want to continue?", 1);
 		if (! $answer) {
-			die "Dependencies not satisfied\n";
+			die "Package requirements not satisfied\n";
 		}
 	}
 

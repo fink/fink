@@ -694,9 +694,16 @@ sub find_debfile {
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
+	my $field = shift;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
+	my ($oper);
+	if (lc($field) eq "conflicts") {
+		$oper = "conflict";
+	} elsif (lc($field) eq "depends") {
+		$oper = "dependency";
+	}
 
 	@deplist = ();
 
@@ -706,14 +713,14 @@ sub resolve_depends {
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list. In 
 	if ($include_build and $self->{_type} eq "splitoff") {
-		push @deplist, ($self->{parent})->resolve_depends(2);
+		push @deplist, ($self->{parent})->resolve_depends(2, $field);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
 		}
 	}
 	
-	@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+	@speclist = split(/\s*\,\s*/, $self->param_default($field, ""));
 # with this primitive form of @speclist, we verify that the "BuildDependsOnly"
 # declarations have not been violated
 	foreach $altspec (@speclist){
@@ -729,7 +736,7 @@ sub resolve_depends {
 		}
 		$package = Fink::Package->package_by_name($depname);
 		if (not defined $package) {
-		    print "WARNING: While resolving dependency \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+		    print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 		    next; # BUILDDEPENDSLOOP
 		}
 		my ($currentpackage, @dependslist, $dependent, $dependentname);
@@ -737,7 +744,7 @@ sub resolve_depends {
 		@dependslist = $package->get_all_providers();
 		foreach $dependent (@dependslist) {
 		    $dependentname = $dependent->get_name();
-		    if ($dependent->param_boolean("BuildDependsOnly")) {
+		    if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
 			if ($dependentname eq $depname) {
 			    print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
 			} else {
@@ -750,7 +757,7 @@ sub resolve_depends {
 # now we continue to assemble the larger @speclist
 	if ($include_build) {
 		push @speclist,
-			split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
+			split(/\s*\,\s*/, $self->param_default("Build".$field, ""));
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our aplitoffs.
@@ -759,7 +766,7 @@ sub resolve_depends {
 		$split_idx = @speclist;
 		foreach	 $splitoff (@{$self->{_splitoffs}}) {
 		    push @speclist,
-		    split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+		    split(/\s*\,\s*/, $splitoff->param_default($field, ""));
 		}
 	}
 
@@ -793,7 +800,7 @@ sub resolve_depends {
 			$package = Fink::Package->package_by_name($depname);
 
 			if (not defined $package) {
-				print "WARNING: While resolving dependency \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 				next;
 			}
 
@@ -805,8 +812,8 @@ sub resolve_depends {
 				push @$altlist, $package->get_all_providers();
 			}
 		}
-		if (scalar(@$altlist) <= 0) {
-			die "Can't resolve dependency \"$altspec\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
+		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
+			die "Can't resolve $oper \"$altspec\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
 		}
 		push @deplist, $altlist;
 		$idx++;

@@ -117,6 +117,7 @@ our %valid_fields = map {$_, 1}
 		 maintainer
 		 depends
 		 builddepends
+		 buildconflicts
 		 provides
 		 conflicts
 		 replaces
@@ -182,6 +183,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 type
 		 depends
 		 builddepends
+		 buildconflicts
 		 provides
 		 conflicts
 		 replaces
