@@ -999,10 +999,10 @@ For more info on this package see http://growl.info/.
 				}
 				close(FILEIN);
 			}
-                } else {
+		} else {
 			print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
-			$growl_version = "0";
-                }
+ 			$growl_version = "0";
+		}
 
 		### This check is for growl's less then 0.6
 		### Growl team told me 1.0 would be versioned 1.00
