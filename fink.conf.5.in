@@ -227,6 +227,9 @@ to the Master (or non Master) set if a download fails. The options are:
 .It MasterNever - Never use "Master" source mirrors.
 .It ClosestFirst - Search closest source mirrors first (combine all mirrors into one set).
 .El	
+.It Cm Mirror-rsync:
+When doing 'selfupdate-rsync', this is the rsync url to sync from.  This should be an anonymous rsync url, pointing to a directory which contains all the fink Distrubutions and Trees.  
+.El
 .El
 .\"
 .\"

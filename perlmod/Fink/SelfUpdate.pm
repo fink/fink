@@ -487,6 +487,66 @@ sub finish {
 	print "\n";
 }
 
+sub rsync_check {
+	&do_direct_rsync();
+	&do_finish();
+}
+
+sub do_direct_rsync {
+	my ($descdir, @sb, $cmd, $tree, $rmcmd, $username, $msg);
+	my $dist = $Fink::Config::distribution;
+	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://fink.opendarwin.org/finkinfo/");
+
+	# add rsync quiet flag if verbosity level permits
+	my $verbosity = "-q";
+	if (Fink::Config::verbosity_level() > 1) {
+		$verbosity = "-v";
+	}
+
+	$descdir = "$basepath/fink";
+	chdir $descdir or die "Can't cd to $descdir: $!\n";
+
+	# If the Distributions line has been updated...
+	if (! -d "$descdir/$dist") {
+		mkdir "$descdir/$dist";
+	}
+	@sb = stat("$descdir/$dist");
+
+	# We need to remove the CVS directories, since what we're
+	# going to put there isn't from cvs.  Leaving those directories
+	# there will thoroughly confuse things if someone later does 
+	# selfupdate-cvs.  However, don't actually do the removal until
+	# we've tried to put something there.
+	$rmcmd = "find . -name CVS | xargs rm -rf ";
+	foreach $tree ($config->get_treelist()) {
+		if( !grep(/stable/,$tree) ) {
+			next;
+		}
+		$cmd = "rsync -az --delete-after $verbosity $rsynchost/$dist/$tree/finkinfo $dist/$tree/";
+		$msg = "I will now run the rsync command to retrieve the latest package descriptions for $tree. ";
+
+		if (! -d "$dist/$tree/" ) {
+			mkdir "$dist/$tree/";
+		}
+
+		$rmcmd = "find . -name CVS | xargs rm -rf ";
+		if ($sb[4] != 0 and $> != $sb[4]) {
+			($username) = getpwuid($sb[4]);
+			$cmd = "su $username -c '$cmd'";
+			$rmcmd = "su $username -c '$rmcmd'";
+			$msg .= "The 'su' command will be used to run the rsync command as the user '$username'. ";
+		}
+
+		print "\n";
+		&print_breaking($msg);
+		print "\n";
+
+		if (&execute($cmd)) {
+			die "Updating $tree using rsync failed. Check the error messages above.\n";
+		}
+	}
+	&execute($rmcmd);
+}
 
 ### EOF
 1;

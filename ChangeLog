@@ -1,3 +1,7 @@
+2003-10-01  Rob Braun <bbraun@users.sourceforge.net>
+	* SelfUpdate.pm, Engine.pm, fink.conf.5.in: Add selfupdate-rsync 
+	option for updating via rsync instead of cvs.
+
 2003-09-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.13.9, a beta release on 

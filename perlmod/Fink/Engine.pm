@@ -83,6 +83,7 @@ our %commands =
 	  'listpackages' => [\&cmd_listpackages, 1, 0],
 	  'selfupdate' => [\&cmd_selfupdate, 0, 1],
 	  'selfupdate-cvs' => [\&cmd_selfupdate_cvs, 0, 1],
+	  'selfupdate-rsync' => [\&cmd_selfupdate_rsync, 0, 1],
 	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
 	  'validate' => [\&cmd_validate, 0, 0],
 	  'check' => [\&cmd_validate, 0, 0],
@@ -233,6 +234,11 @@ sub cmd_selfupdate {
 sub cmd_selfupdate_cvs {
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check(1);
+}
+
+sub cmd_selfupdate_rsync {
+	require Fink::SelfUpdate;
+	Fink::SelfUpdate::rsync_check();
 }
 
 sub cmd_selfupdate_finish {
