@@ -98,30 +98,36 @@ sub read_config {
 ### read properties file
 
 sub read_properties {
-   my ($file) = @_;
+   my ($file) = shift;
+   # do we make the keys all lowercase
+   my ($notLC) = shift || 0;
    my (@lines);
    
    open(IN,$file) or die "can't open $file: $!";
    @lines = <IN>;
    close(IN);
-   return read_properties_lines($file, @lines);
+   return read_properties_lines($file, $notLC, @lines);
 }
 
 ### read properties from a variable with text
 
 sub read_properties_var {
-   my ($var) = @_;
+   my ($var) = shift;
+   # do we make the keys all lowercase
+   my ($notLC) = shift || 0;
    my (@lines);
    my ($line);
 
    @lines = split /^/m,$var;
-   return read_properties_lines("", @lines);
+   return read_properties_lines("", $notLC, @lines);
 }
 
 ### read properties from a list of lines.
 
 sub read_properties_lines {
   my ($file) = shift;
+  # do we make the keys all lowercase
+  my ($notLC) = shift || 0;
   my (@lines) = @_;
   my ($hash, $lastkey, $heredoc);
 
@@ -142,7 +148,7 @@ sub read_properties_lines {
     } else {
       next if /^\s*\#/;   # skip comments
       if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
-	$lastkey = lc $1;
+        $lastkey = $notLC ? $1 : lc $1;
 	if ($2 eq "<<") {
 	  $hash->{$lastkey} = "";
 	  $heredoc = 1;
@@ -170,6 +176,7 @@ sub read_properties_lines {
 
 sub read_properties_multival {
   my ($file) = @_;
+  my ($notLC) = shift || 0;
   my ($hash, $lastkey, $lastindex);
 
   $hash = {};
@@ -180,7 +187,7 @@ sub read_properties_multival {
   while (<IN>) {
     next if /^\s*\#/;   # skip comments
     if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
-      $lastkey = lc $1;
+      $lastkey = $notLC ? $1 : lc $1;
       if (exists $hash->{$lastkey}) {
 	$lastindex = @{$hash->{$lastkey}};
 	$hash->{$lastkey}->[$lastindex] = $2;

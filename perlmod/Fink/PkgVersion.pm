@@ -1299,6 +1299,36 @@ sub phase_install {
     }
   }
 
+  # generate commands to install profile.d scripts
+  if ($self->has_param("RuntimeVars")) {
+  
+    my ($var, $value, $vars, $properties);
+
+    $vars = $self->param("RuntimeVars");
+    # get rid of any indention first
+    $vars =~ s/^\s+//gm;
+    # Read the set if variavkes (but don't change the keys to lowercase)
+    $properties = &read_properties_var($vars, 1);
+
+    if(scalar keys %$properties > 0){
+      $install_script .= "\ninstall -d -m 755 %i/etc/profile.d";
+      while (($var, $value) = each %$properties) {
+        $install_script .= "\necho \"setenv $var '$value'\" >> %i/etc/profile.d/%n.csh.env";
+        $install_script .= "\necho \"export $var='$value'\" >> %i/etc/profile.d/%n.sh.env";
+      }
+      # make sure the scripts exist
+      $install_script .= "\ntouch %i/etc/profile.d/%n.csh";
+      $install_script .= "\ntouch %i/etc/profile.d/%n.sh";
+      # prepend *.env to *.[c]sh
+      $install_script .= "\ncat %i/etc/profile.d/%n.csh >> %i/etc/profile.d/%n.csh.env";
+      $install_script .= "\ncat %i/etc/profile.d/%n.sh >> %i/etc/profile.d/%n.sh.env";
+      $install_script .= "\nmv -f %i/etc/profile.d/%n.csh.env %i/etc/profile.d/%n.csh";
+      $install_script .= "\nmv -f %i/etc/profile.d/%n.sh.env %i/etc/profile.d/%n.sh";
+      # make them executable (to allow them to be sourced by /sw/bin.init.[c]sh)
+      $install_script .= "\nchmod 755 %i/etc/profile.d/%n.*";
+    }
+  }
+
   $install_script .= "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
   ### install
