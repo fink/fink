@@ -532,7 +532,7 @@ sub do_direct_rsync {
 RSYNCAGAIN:
 	$rsynchost = $origmirror->get_site_retry("", 0);
 	if( !grep(/^rsync:/,$rsynchost) ) {
-		print "No mirrors worked!  Bailing.\n";
+		print "No mirror worked. This seems unusual, please submit a short summary of this event to mirrors\@finkmirrors.net\n Thank you\n";
 		exit 1;
 	}
 
