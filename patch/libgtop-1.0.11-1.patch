@@ -1,0 +1,12 @@
+diff -ru libgtop-1.0.11/src/daemon/Makefile.in libgtop-1.0.11-patched/src/daemon/Makefile.in
+--- libgtop-1.0.11/src/daemon/Makefile.in	Thu Feb 15 02:30:16 2001
++++ libgtop-1.0.11-patched/src/daemon/Makefile.in	Mon Mar  5 11:54:36 2001
+@@ -177,7 +177,7 @@
+ 
+ LINK = $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+ 
+-INCLUDES = @INCLUDES@ -D_BSD 				  -DLIBGTOP_COMPILE_SYSTEM=\"`uname -s`\" 				  -DLIBGTOP_COMPILE_RELEASE=\"`uname -r`\" 				  -DLIBGTOP_COMPILE_MACHINE=\"`uname -m`\"
++INCLUDES = @INCLUDES@ -D_BSD 				  -DLIBGTOP_COMPILE_SYSTEM=\"`uname -s`\" 				  -DLIBGTOP_COMPILE_RELEASE=\"`uname -r`\" 				  -DLIBGTOP_COMPILE_MACHINE=\"`uname -m | sed 's, ,_,g'`\"
+ 
+ @NEED_LIBGTOP_TRUE@suid_sysdeps = $(top_builddir)/sysdeps/@sysdeps_dir@/libgtop_sysdeps_suid.la
+ @NEED_LIBGTOP_FALSE@suid_sysdeps = 

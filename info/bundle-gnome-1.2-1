@@ -1,0 +1,8 @@
+Package: bundle-gnome
+Version: 1.2
+Revision: 1
+Type: bundle
+Depends: gnome-libs, gnome-core, control-center, gnome-applets, gnome-users-guide, libgtop, enlightenment
+# gtk-engines
+Comment: A bundle that installs all available packages from GNOME 1.2.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
