@@ -1,7 +1,6 @@
 Package: dpkg
 Version: 1.8.3.1
 Revision: 5
-#Source: http://http.us.debian.org/debian/project/dpkg/%n-%v.tar.gz
 Source: http://fink.sourceforge.net/files/%n-%v.tar.gz
 Depends: gettext, gzip, tar, ncurses
 Essential: yes
