@@ -33,6 +33,7 @@ use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
 use Fink::Status;
+use Fink::Bootstrap qw(&get_bsbase);
 
 use File::Basename qw(&dirname);
 
@@ -905,6 +906,8 @@ sub phase_unpack {
   my $self = shift;
   my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
   my ($i, $verbosity, $answer, $tries, $checksum);
+  my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
+  my ($tar, $bzip2, $unzip);
 
   if ($self->{_type} eq "bundle") {
     return;
@@ -985,16 +988,43 @@ sub phase_unpack {
       }
     }
 
-    # determine unpacking command
+    # Determine the name of the TarFilesRename in the case of multi tarball packages
+    if ($i < 2) {
+      $renamefield = "TarFilesRename";
+    } else {
+      $renamefield = "Tar".$i."FilesRename";
+    }
+
+    $renamelist = "";
+
+    # Determine the rename list (if any)
+    if ($self->has_param($renamefield)) {
+      @renamefiles = split(/\s+/, $self->param($renamefield));
+      foreach $renamefile (@renamefiles) {
+        $renamefile = &expand_percent($renamefile, $expand);
+        if ($renamefile =~ /^(.+)\:(.+)$/) {
+          $renamelist .= " -s ,$1,$2,";
+        } else {
+          $renamelist .= " -s ,${renamefile},${renamefile}_tmp,";
+        }
+      }
+      $tar = "/usr/bin/tar"; # Use BSD Tar not GNU Tar (only BSD Tar has the rename feature)
+    } else {
+      $tar = "$basepath/bin/tar"; # Default is GNU Tar
+    }
+    $bzip2 = "bzip2";
+    $unzip = "unzip";
+
+    # Determine unpack command
     $unpack_cmd = "cp $found_archive .";
     if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-      $unpack_cmd = "tar -x${verbosity}zf $found_archive";
+      $unpack_cmd = "$tar -x${verbosity}zf $found_archive $renamelist";
     } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
-      $unpack_cmd = "bzip2 -dc $found_archive | tar -x${verbosity}f -";
+      $unpack_cmd = "$bzip2 -dc $found_archive | $tar -x${verbosity}f $renamelist -";
     } elsif ($archive =~ /[\.\-]tar$/) {
-      $unpack_cmd = "tar -x${verbosity}f $found_archive";
+      $unpack_cmd = "$tar -x${verbosity}f $found_archive $renamelist";
     } elsif ($archive =~ /\.zip$/) {
-      $unpack_cmd = "unzip -o $found_archive";
+      $unpack_cmd = "$unzip -o $found_archive";
     }
 
     # calculate destination directory
@@ -1549,7 +1579,27 @@ sub set_env {
   my ($varname, $s, $expand);
   my %defaults = ( "CPPFLAGS" => "-I\%p/include",
 		   "LDFLAGS" => "-L\%p/lib" );
+  my $bsbase = get_bsbase();
 
+  # clean the environment
+  %ENV = ();
+
+  # add system path
+  $ENV{"PATH"} = "/bin:/usr/bin";
+  
+  # add bootstrap path if necessary
+  if (-d $bsbase) {
+    $ENV{"PATH"} = "$bsbase/bin:$bsbase/sbin:" . $ENV{"PATH"};
+  }
+
+  # set additional variables if possible
+  if (-r $basepath . '/bin/init.sh') {
+    my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
+    chomp @vars;
+    %ENV = map { split /=/ } @vars;
+  }
+
+  # set variables according to the info file
   $expand = $self->{_expand};
   foreach $varname ("CC", "CFLAGS",
 		    "CPP", "CPPFLAGS",

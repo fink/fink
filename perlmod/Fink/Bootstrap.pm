@@ -37,7 +37,7 @@ BEGIN {
   $VERSION = 1.00;
   @ISA         = qw(Exporter);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw(&bootstrap);
+  @EXPORT_OK   = qw(&bootstrap &get_bsbase);
   %EXPORT_TAGS = ( );     # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -53,7 +53,7 @@ sub bootstrap {
   my @plist = ("gettext", "tar", "dpkg-bootstrap");
   my @addlist = ("apt", "apt-shlibs", "storable-pm");
 
-  $bsbase = "$basepath/bootstrap";
+  $bsbase = &get_bsbase();
   &print_breaking("Bootstrapping a base system via $bsbase.");
 
   # create directories
@@ -130,6 +130,9 @@ sub bootstrap {
   $ENV{PATH} = $save_path;
 }
 
+sub get_bsbase {
+  return "$basepath/bootstrap";
+}
 
 ### EOF
 1;
