@@ -7,11 +7,18 @@
 	* VERSION: Bumped package manager version to 0.17.1, a bugfix
 	release on branch_0_17
 
+2003-11-16  Max Horn <max@quendi.de>
+
+	* fink.info.in, inject.pl: Automatically run the tests are part of
+	  the CompileScript in fink.info.
+
 2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: Make fink-virtual-pkgs print builddependsonly
 	  packages on the command-line when not being called in "dpkg" or
 	  "apt" mode (for debugging).
+	* Makefile: added "commit" target, as well as adding the "test" target
+	  as a dep for a few other targets.
 
 2003-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

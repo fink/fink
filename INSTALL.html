@@ -1,8 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><title>Fink Documentation - Fink 0.6.1 Installation</title></head><body><h1 style="text-align: center;">Fink 0.6.1 Installation</h1>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><title>Fink Documentation - Fink 0.6.2 Installation</title></head><body><h1 style="text-align: center;">Fink 0.6.2 Installation</h1>
 <p>
 These are the installation instructions for the "source" distribution
-of Fink 0.6.1.
+of Fink 0.6.2.
 This document does not apply to the "<a href="http://fink.sourceforge.net/download/index.php">binary</a>" distribution.
 There are instructions for both first time installation and upgrading
 from a previous version.
@@ -29,7 +29,7 @@ If you're looking for the real instructions, skip to the <a href="#install-first
 <h3><a name="install-fast.install">1.1 First Time Installation Fast
 Track</a></h3>
 <p>
-Start out by copying the <tt style="white-space: nowrap;">fink-0.6.1-full.tar.gz</tt>
+Start out by copying the <tt style="white-space: nowrap;">fink-0.6.2-full.tar.gz</tt>
 file to your home folder.
 Then, open Terminal.app and follow the session below.
 Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your input is in
@@ -37,16 +37,16 @@ Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your in
 The actual input prompts from the shell may vary, and some chunks of
 the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
-<pre>[frodo:~] testuser% <b>tar xzf fink-0.6.1-full.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.6.1-full</b>
-[frodo:~/fink-0.6.1-full] testuser% <b>./bootstrap.sh /sw</b>
+<pre>[frodo:~] testuser% <b>tar xzf fink-0.6.2-full.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.6.2-full</b>
+[frodo:~/fink-0.6.2-full] testuser% <b>./bootstrap.sh /sw</b>
 
 Welcome to Fink.
 
 ...
 Choose a method: [1] <b>1</b>
 
-sudo /Users/testuser/fink-0.6.1-full/bootstrap.pl .sudo '/sw'
+sudo /Users/testuser/fink-0.6.2-full/bootstrap.pl .sudo '/sw'
 Password:<b>(your normal password here)</b>
 ...
 OK, I'll ask you some questions and update the configuration file in
@@ -82,8 +82,8 @@ to use Fink. To make the software installed by Fink available in all of your
 shells, add 'source /sw/bin/init.csh' to the init script '.cshrc' in your
 home directory. Enjoy.
 
-[frodo:~/fink-0.6.1-full] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.6.1-full</b>
+[frodo:~/fink-0.6.2-full] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.6.2-full</b>
 [frodo:~] testuser% <b>open /sw/bin/pathsetup.command</b></pre>
 <p>
 The last command runs a little script to help set up your Unix paths
@@ -130,7 +130,7 @@ documentation when your problem actually is well-documented.
 
 <h3><a name="install-fast.update">1.2 Update Fast Track</a></h3>
 <p>
-Start out by copying the <tt style="white-space: nowrap;">fink-0.6.1-full.tar.gz</tt>
+Start out by copying the <tt style="white-space: nowrap;">fink-0.6.2-full.tar.gz</tt>
 file to your home folder.
 Then, open Terminal.app and follow the session below.
 Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your input is in
@@ -138,9 +138,9 @@ Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your in
 The actual input prompts from the shell may vary, and some chunks of
 the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
-<pre>[frodo:~] testuser% <b>tar xzf fink-0.6.1-full.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.6.1-full</b>
-[frodo:~/fink-0.6.1-full] testuser% <b>./inject.pl /sw</b>
+<pre>[frodo:~] testuser% <b>tar xzf fink-0.6.2-full.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.6.2-full</b>
+[frodo:~/fink-0.6.2-full] testuser% <b>./inject.pl /sw</b>
 sudo ./inject.pl /sw
 Password:<b>(your normal password here)</b>
 Copying package descriptions
@@ -149,8 +149,8 @@ Done.
 
 Your Fink installation in '/sw' was updated with new fink packages.
 
-[frodo:~/fink-0.6.1-full] testuser% <b>cd pkginfo</b>
-[frodo:~/fink-0.6.1-full/pkginfo] testuser% <b>./inject.pl /sw</b>
+[frodo:~/fink-0.6.2-full] testuser% <b>cd pkginfo</b>
+[frodo:~/fink-0.6.2-full/pkginfo] testuser% <b>./inject.pl /sw</b>
 sudo ./inject.pl /sw
 Copying...
 ...
@@ -159,8 +159,8 @@ Your Fink installation in '/sw' was updated with new package description
 files. Use appropriate fink commands to update the packages, e.g. 'fink
 update-all'.
 
-[frodo:~/fink-0.6.1-full/pkginfo] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.6.1-full</b>
+[frodo:~/fink-0.6.2-full/pkginfo] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.6.2-full</b>
 [frodo:~] testuser% <b>fink update-all</b>
 ...</pre>
 
@@ -237,16 +237,16 @@ have been warned.
 
 <h3><a name="install-first.install">2.3 Installation</a></h3>
 <p>
-First, you need to unpack the fink-0.6.1-full.tar.gz tarball.
+First, you need to unpack the fink-0.6.2-full.tar.gz tarball.
 It is recommended that you do this from the command line -
 StuffIt Expander has a tendency to screw up text files.
 So, go to the directory where you put the tarball, and run this
 command:
 </p>
-<pre>tar xzf fink-0.6.1-full.tar.gz</pre>
+<pre>tar xzf fink-0.6.2-full.tar.gz</pre>
 <p>
-You now have a directory named fink-0.6.1-full.
-Change to it with <tt style="white-space: nowrap;">cd fink-0.6.1-full</tt>.
+You now have a directory named fink-0.6.2-full.
+Change to it with <tt style="white-space: nowrap;">cd fink-0.6.2-full</tt>.
 </p>
 <p>
 The actual installation is performed by the perl script
@@ -254,7 +254,7 @@ bootstrap.pl.
 It is accompanied by a small shell script, bootstrap.sh, which checks
 some basic requirements and then hands over control to the perl
 script.
-So, to start installation, go to the fink-0.6.1-full directory and run
+So, to start installation, go to the fink-0.6.2-full directory and run
 this command:
 </p>
 <pre>./bootstrap.sh</pre>
@@ -348,7 +348,7 @@ and Mac OS X document</a>.
 
 <p>
 If you already have Fink 0.3.x installed, you can update your
-installation to 0.6.1 with the built-in 'selfupdate' command.
+installation to 0.6.2 with the built-in 'selfupdate' command.
 </p>
 
 
@@ -395,7 +395,7 @@ individual packages with the 'update' command.
 
 <p>
 If you already have Fink 0.2.x installed, you can update your
-installation to 0.6.1 with this package.
+installation to 0.6.2 with this package.
 </p>
 <p>
 Actually, there are two pieces that are updated independently: the
@@ -407,7 +407,7 @@ update the package manager first.
 <h3><a name="install-up02.packman">4.1 Updating The Package Manager</a></h3>
 <p>
 To update the package manager, run the inject.pl script in the
-fink-0.6.1-full directory, like this:
+fink-0.6.2-full directory, like this:
 </p>
 <pre>./inject.pl</pre>
 <p>
@@ -425,7 +425,7 @@ the new versions of the fink and base-files packages.
 
 <h3><a name="install-up02.descriptions">4.2 Updating The Package Descriptions</a></h3>
 <p>
-If you downloaded the fink-0.6.1-full tarball, the package
+If you downloaded the fink-0.6.2-full tarball, the package
 descriptions are in the subdirectory pkginfo. To install them, run the
 inject.pl script in that directory:
 </p>
@@ -437,7 +437,7 @@ manager.
 </p>
 <p>
 You can also grab the package descriptions as a separate tarball,
-packages-0.6.1. If you did that, just unpack it and run the inject.pl
+packages-0.6.2. If you did that, just unpack it and run the inject.pl
 script inside.
 </p>
 <p>
