@@ -409,6 +409,7 @@ sub validate_info_file {
 #
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
 # - usage of other non-standard subdirs 
+# - storage of a .bundle inside /sw/lib/perl5/darwin or /sw/lib/perl5/auto
 # - ideas?
 #
 sub validate_dpkg_file {
@@ -429,7 +430,11 @@ sub validate_dpkg_file {
 			next if $filename eq "/";
 			if (not $filename =~ /^$basepath/) {
 						print "Warning: File \"$filename\" installed outside of $basepath\n";
-			} else {
+					    } 
+			elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
+			    print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n" }
+			elsif ( $filename =~/^($basepath\/lib\/perl5\/darwin\/.*\.bundle)/ ) {
+			    print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n" } else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.
 					# The only exception is $basepath/src which may exist but must be empty
@@ -438,8 +443,8 @@ sub validate_dpkg_file {
 						print "					Offender is $filename\n";
 						last;
 					}
-				}
-			}
+				    }
+			    }
 		}
 	}
 	close(DPKG_CONTENTS) or die "Error on close: $!\n";

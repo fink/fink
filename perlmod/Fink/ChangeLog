@@ -1,3 +1,9 @@
+2003-05-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Check the .deb file for the presence of a .bundle
+	in a non-versioned subdirectory of /sw/lib/perl5; if present, warn
+	about a possible perl XS module installed incorrectly.
+
 2003-05-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm, Validation.pm: Introduce new versioned variants
