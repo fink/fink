@@ -1,3 +1,7 @@
+2003-02-28  Max Horn  <max@quendi.de>
+
+	* updated ncurses package to 5.3, matching (un)stable CVS
+
 2003-02-27  Max Horn  <max@quendi.de>
 
 	* Added MD5 values back (now that we use /sbin/md5 to calculate the MD5
