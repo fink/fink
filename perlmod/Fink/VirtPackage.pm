@@ -347,7 +347,7 @@ sub has_header {
 		return (-f $headername);
 	} else {
 		for $dir ('/usr/X11R6/include', $basepath . '/include', '/usr/include') {
-			return 1 if (-f $dir . '/' . $includename);
+			return 1 if (-f $dir . '/' . $headername);
 		}
 	}
 	return;
