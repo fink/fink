@@ -1,8 +1,3 @@
-2002-03-26  Justin F. Hallett <thesin@southofheaven.net>
-
-	* PkgVersion.pm: Fixed Type: perl to install the execs into
-	the proper dir and not directly into BASEPATH.
-
 2002-03-21  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.9.9
