@@ -1,7 +1,7 @@
 Package: gettext
 Version: 0.10.40
 Revision: 1
-Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
+Source: http://prdownloads.sourceforge.net/fink/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 Patch: %f.patch

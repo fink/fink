@@ -2,7 +2,7 @@ Package: apt
 Version: 0.5.4
 Revision: 1
 Depends: dpkg
-Source: http://fink.sourceforge.net/bindist/source/%n_%v.tar.gz
+Source: http://prdownloads.sourceforge.net/fink/%n_%v.tar.gz
 SourceDirectory: %n-%v
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1

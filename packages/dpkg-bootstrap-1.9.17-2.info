@@ -2,7 +2,7 @@ Package: dpkg-bootstrap
 Version: 1.9.17
 Revision: 2
 Depends: gettext, gzip, tar
-Source: http://fink.sourceforge.net/bindist/source/dpkg-%v.tar.gz
+Source: http://prdownloads.sourceforge.net/fink/dpkg-%v.tar.gz
 PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/dpkg-%v-%r.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 SetCC: cc

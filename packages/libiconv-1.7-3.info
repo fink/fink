@@ -1,7 +1,7 @@
 Package: libiconv
 Version: 1.7
 Revision: 3
-Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
+Source: http://prdownloads.sourceforge.net/fink/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 ConfigureParams: --mandir=%p/share/man
