@@ -48,7 +48,52 @@ our @EXPORT_OK;
 END { }				# module clean-up code here (global destructor)
 
 
-### bootstrap a base system
+=head1 NAME
+
+Fink::Bootstrap - Bootstrap a fink installation
+
+=head1 SYNOPSIS
+
+  use Fink::Bootstrap qw(:ALL);
+
+	bootstrap();
+	my $bsbase = get_bsbase();
+	my $distribution = check_host($host);
+	my $result = check_files();
+	my $packagefiles = fink_packagefiles();
+	my ($notlocated, $basepath) = locate_Fink();
+	my ($notlocated, $basepath) = locate_Fink($param);
+	my ($version, $revision) = get_packageversion();
+	find_rootmethod($bpath);
+	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
+	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision);
+	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination);
+	my $result = inject_package($package, $packagefiles, $info_script, $param);
+
+=head1 DESCRIPTION
+
+This module defines functions that are used to bootstrap a fink installation 
+or update to a new version.  The functions are intended to be called from
+scripts that are not part of fink itself.  In particular, the scripts 
+bootstrap.pl, inject.pl, and fink's postinstall.pl all depend on functions
+from this module.
+
+=head2 Functions
+
+These functions are exported on request.  You can export them all with
+
+  use Fink::Bootstrap qw(:ALL);
+
+
+=over 4
+
+=item bootstrap 
+
+	bootstrap();
+
+The primary bootstrap routine, called by bootstrap.pl.
+
+=cut
 
 sub bootstrap {
 	my ($bsbase, $save_path);
@@ -132,9 +177,10 @@ sub bootstrap {
 					"$basepath with package management.");
 	print "\n";
 
-	# use normal install routines
+#	# use normal install routines, but do not use buildlocks
+#	Fink::Config::set_options( { 'no_buildlock' => 1 } );
 	Fink::Engine::cmd_install(@elist, @addlist);
-
+#	Fink::Config::set_options( { 'no_buildlock' => 0 } );
 
 	print "\n";
 	&print_breaking("BOOTSTRAP DONE. Cleaning up.");
@@ -144,17 +190,35 @@ sub bootstrap {
 	$ENV{PATH} = $save_path;
 }
 
+=item get_bsbase
+
+	my $bsbase = get_bsbase();
+
+Returns the base path for bootstrapping.  Called by bootstrap().
+
+=cut
+
 sub get_bsbase {
 	return "$basepath/bootstrap";
 }
 
-# check_host
-# This checks the current host OS version and returns which 
-# distribution to use.  It will also warn the user if there
-# are any known issues with the system they are using.
-# Takes the host as returned by config.guess
-# Returns the distribution to use, "unknown" if it cannot
-# determine the distribution.
+=item check_host
+
+	my $distribution = check_host($host);
+
+Checks the current host OS version and returns which distribution to use,
+or "unknown."  $host should be as determined by config.guess.
+
+This function also warns the user about certain bad configurations, or 
+incorrect versions of gcc.
+
+After every release of Mac OS X, fink should be tested against the new
+release and then this function should be updated.
+
+Called by bootstrap.pl and fink's postinstall.pl.
+
+=cut
+
 sub check_host {
 	my $host = shift @_;
 	my ($distribution, $gcc, $build);
@@ -255,11 +319,17 @@ $gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrap
 	return $distribution;
 }
 
-# check_self
-# Description: this will iterate over the list of files we're supposed
-# to have, and checks if they are present.
-# Takes no arguments
-# Returns 0 on success, 1 if anything is missing.
+=item check_files
+
+	my $result = check_files();
+
+Tests whether the current directory contains all of the files needed to 
+compile fink.  Returns 0 on success, 1 on failure.
+
+Called by bootstrap.pl and fink's inject.pl.
+
+=cut
+
 sub check_files {
 	my ($file);
 	foreach $file (qw(fink.in install.sh COPYING VERSION
@@ -274,6 +344,15 @@ sub check_files {
 	return 0;
 }
 
+=item fink_packagefiles
+
+	my $packagefiles = fink_packagefiles();
+
+Returns a list of all files which should be contained in the fink tarball.  
+Called by bootstrap.pl and fink's inject.pl.
+
+=cut
+
 sub fink_packagefiles {
 
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
@@ -284,6 +363,23 @@ my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.
 return $packagefiles;
 
 }
+
+=item locate_Fink
+
+	my ($notlocated, $basepath) = locate_Fink();
+	my ($notlocated, $basepath) = locate_Fink($param);
+
+If called without a parameter, attempts to guess the base path of the fink
+installation.  If the guess is successful, returns (0, base path).  If
+the guess is unsuccessful, returns (1, guessed value) and suggests to the
+user to call the script with a parameter.
+
+When a parameter is passed, it is returned as the base path value via
+(0, base path).
+
+This function is called by inject_package().
+
+=cut
 
 sub locate_Fink {
 
@@ -326,6 +422,18 @@ sub locate_Fink {
 	return (0,$bpath);
 }
 
+=item get_packageversion
+
+	my ($version, $revision) = get_packageversion();
+
+Finds the current version (by examining the VERSION file) and the current
+revision (which defaults to 1 or a cvs timestamp) of the package being 
+compiled.
+
+Called by bootstrap.pl and inject_package().
+
+=cut
+
 sub get_packageversion {
 
 	my ($packageversion, $packagerevision);
@@ -342,6 +450,15 @@ sub get_packageversion {
 	return ($packageversion, $packagerevision);
 }
 
+=item find_rootmethod
+
+	find_rootmethod($bpath);
+
+Reexecute "./inject.pl $bpath" as sudo, if appropriate.  Called by 
+inject_package().
+
+=cut
+
 sub find_rootmethod {
 	# TODO: use setting from config
 	# for now, we just use sudo...
@@ -353,6 +470,18 @@ my $bpath = shift;
 	}
 	umask oct("022");
 }
+
+=item create_tarball
+
+	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
+
+Create the directory $bpath/src if necessary, then create the tarball 
+$bpath/src/$package-$packageversion.tar out of the directory $packagefiles.
+Returns 0 on success, 1 on failure.
+
+Called by bootstrap.pl and inject_package().
+
+=cut 
 
 sub create_tarball {
 	
@@ -385,6 +514,28 @@ sub create_tarball {
 	}
 	return $result;
 }
+
+=item copy_description
+
+	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision);
+	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination);
+
+Execute the given $script, create the directories $bpath/fink/debs and
+$bpath/fink/dists/$destination if necessary, and backup the file
+$bpath/fink/dists/$destination/$package.info if it already exists.  
+
+Next, copy $package.info.in (from the current directory) to 
+$bpath/fink/dists/$destination/$package.info, supplying the correct
+$packageversion and $packagerevision as well as an MD5 sum calculated from
+$bpath/src/$package-$packageversion.tar.  Ensure that the created file
+has mode 644.
+
+Returns 0 on success, 1 on failure.  The default $destination, if not 
+supplied, is "local/injected/finkinfo".
+
+Called by bootstrap.pl and inject_package().
+
+=cut
 
 sub copy_description {
 	
@@ -434,6 +585,15 @@ sub copy_description {
 	return $result;
 }
 
+
+=item inject_package
+
+	my $result = inject_package($package, $packagefiles, $info_script, $param);
+
+The primary routine to update a fink installation, called by inject.pl.
+Returns 0 on success, 1 on failure.
+
+=cut
 
 sub inject_package {
 	
