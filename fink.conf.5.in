@@ -280,12 +280,16 @@ Be careful, this option can fill your hard-disk quickly!
 .Sh ADVANCED SETTINGS
 There are some other options which may be useful, but require some knowledge to get right.
 .Bl -tag -width flag
-.It Cm MatchPackageRegEx
-Causes fink not to ask which package to install if one (and only one) of the choices matches
+.It Cm MatchPackageRegEx: Ar regex
+Causes
+.Nm fink
+not to ask which package to install if one (and only one) of the choices matches
 the perl Regular Expression given here.
 Example:
-MatchPackageRegEx: (.*-ssl$|^xfree86$|^xfree86-shlibs$)
-Will match packages ending in -ssl and match xfree86 and xfree86-shlibs exactly.
+.Bl -tag -width flag -offset indent -compact
+.It MatchPackageRegEx: (.*-ssl$|^xfree86$|^xfree86-shlibs$)
+.El
+will match packages ending in '-ssl', and will match 'xfree86' and 'xfree86-shlibs' exactly.
 .El
 .\"
 .\"
