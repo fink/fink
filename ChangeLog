@@ -1,5 +1,9 @@
 2002-04-15  Max Horn  <max@quendi.de>
 
+	* VERSION: Bumped package manager version to 0.9.11
+
+	* INSTALL, INSTALL.html: updated for 0.4.0
+
 	* AUTHORS: added
 
 	* all: updated copyright notice.
