@@ -24,7 +24,7 @@
 package Fink::Engine;
 
 use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width &parse_cmd_options);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
@@ -270,14 +270,14 @@ sub do_real_list {
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
 				   'tree|r=s'		=> \$pkgtree,
-				   'help|h'			=> \&help_list_apropos($cmd)
-		) or die "fink list: unknown option\nType 'fink list --help' for more information.\n";
+				   'help|h'			=> sub {&help_list_apropos($cmd)}
+		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}	 else { # apropos
 		GetOptions(
 				   'width|w=s'		=> \$width,
 				   'tab|t'			=> \$dotab,
-				   'help|h'			=> \&help_list_apropos($cmd)
-		) or die "fink list: unknown option\nType 'fink apropos --help' for more information.\n";
+				   'help|h'			=> sub {&help_list_apropos($cmd)}
+		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}
 	if ($options{installedstate} == 0) {$options{installedstate} = 7;}
 

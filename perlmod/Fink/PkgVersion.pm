@@ -1392,13 +1392,13 @@ sub phase_fetch {
 	my $dryrun = shift || 0;
 	my ($suffix);
 
+	if (exists $self->{parent}) {
+		($self->{parent})->phase_fetch($conditional, $dryrun);
+		return;
+	}
 	if ($self->is_type('bundle') || $self->is_type('nosource') ||
 			lc $self->get_source() eq "none" ||
 			$self->is_type('dummy')) {
-		return;
-	}
-	if (exists $self->{parent}) {
-		($self->{parent})->phase_fetch($conditional, $dryrun);
 		return;
 	}
 

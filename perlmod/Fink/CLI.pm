@@ -40,7 +40,7 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
 					  &prompt &prompt_boolean &prompt_selection_new
-					  &parse_cmd_options &print_optionlist
+					  &print_optionlist
 			      &get_term_width);
 }
 our @EXPORT_OK;

@@ -1,3 +1,9 @@
+2004-08-22  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm, Engine.pm: remove refs to non-existent function.
+	* Engine.pm: fix passing of help_list_apropos callback.
+	* PkgVersion.pm: fix phase_fetch on splitoff to download parent.
+
 2004-08-21  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Extract list/apropos help into separate function.
