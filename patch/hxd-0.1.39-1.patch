@@ -1,0 +1,26 @@
+diff -ru hxd-0.1.39/hxd.conf hxd-0.1.39-patched/hxd.conf
+--- hxd-0.1.39/hxd.conf Sat Mar 10 01:50:36 2001
++++ hxd-0.1.39-patched/hxd.conf Tue Apr  3 20:44:31 2001
+@@ -56,14 +56,14 @@
+ };
+
+ paths {
+-	files "./files";
+-	accounts "./accounts";
+-	exec "./exec";
+-	news "./news";
+-	agreement "./agreement";
+-	log "./log";
+-	banlist "./banlist";
+-	tracker_banlist "./tracker_banlist";
++	files "<STOWDIR>/share/hxd/files";
++	accounts "<STOWDIR>/share/hxd/accounts";
++	exec "<STOWDIR>/share/hxd/exec";
++	news "<STOWDIR>/share/hxd/news";
++	agreement "<STOWDIR>/share/hxd/agreement";
++	log "<STOWDIR>/share/hxd/log";
++	banlist "<STOWDIR>/share/hxd/banlist";
++	tracker_banlist "<STOWDIR>/share/hxd/tracker_banlist";
+ };
+
+ # default permissions of created files
