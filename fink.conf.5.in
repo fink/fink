@@ -113,6 +113,7 @@ values are:
 .It 1 - Low (don't show tarballs being expanded) 
 .It 2 - Medium (shows almost everything)
 .It 3 - High (shows everything) 
+.It 4 - Pedantic (even shows nitpicky details)
 .El
 The default value is 3. 
 .It Cm NoAutoIndex: Ar boolean 

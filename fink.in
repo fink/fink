@@ -50,7 +50,7 @@ GetOptions(
 	 'quiet|q'          => sub { $options{verbosity} = -1 ;  
                                  $optionsString .= '--quiet ' 
                                },
-     'verbose|v'        => sub { $options{verbosity} = 3 ;  
+     'verbose|v'        => sub { $options{verbosity} = 4 ;  
                                  $optionsString .= '--verbose ' 
                                },
      'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  

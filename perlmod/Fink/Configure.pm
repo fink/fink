@@ -82,14 +82,17 @@ sub configure {
 		                "the binary distribution if available?", $binary_dist);
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
-	$verbose = $config->param_default("Verbose", 1);
+	$verbose = $config->param_default("Verbose", 3);
 	$verbose =
 		&prompt_selection_new("How verbose should Fink be?",
-				      [value=>$verbose], 
-				      ( "Quiet (do not show download statistics)" => 0,
-					"Low (do not show tarballs being expanded)" => 1,
-					"Medium (will show almost everything)" => 2,
-					"High (will show everything)" => 3 ) );
+							  [value=>$verbose],
+							  (
+							   "Quiet (do not show download statistics)"   => 0,
+							   "Low (do not show tarballs being expanded)" => 1,
+							   "Medium (will show almost everything)"      => 2,
+							   "High (will show everything)"               => 3,
+							   "Pedantic (even show nitpicky details)"     => 4
+							  ) );
 	$config->set_param("Verbose", $verbose);
 
 	# proxy settings

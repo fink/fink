@@ -1,3 +1,9 @@
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Configure.pm: New Verbose=4 setting.
+	* Configure.pm: Default to Verbose=3 (sync with fink.conf manpage).
+	* Validation.pm: Require Verbose>3 to do pedantic Description checks.
+	
 2004-12-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Also catch libtool files pointing to %i and %I

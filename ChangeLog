@@ -1,3 +1,8 @@
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Document Verbose=4.
+	* fink.in: -v sets verbose=4.
+
 2004-11-28  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: Add global flag --build-as-nobody

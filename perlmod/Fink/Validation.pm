@@ -299,7 +299,7 @@ sub validate_info_file {
 	my $error_found = 0;
 	my $arch = get_arch();
 
-	if (Fink::Config::verbosity_level() == 3) {
+	if (Fink::Config::verbosity_level() >= 3) {
 		print "Validating package file $filename...\n";
 	}
 	
@@ -507,7 +507,7 @@ sub validate_info_file {
 
 		# these fields are printed verbatim, so check to make sure
 		# they won't look weird on an 80-column plain-text terminal
-		if ($text_describe_fields{$field} and $value) {
+		if (Fink::Config::verbosity_level() > 3 and $text_describe_fields{$field} and $value) {
 			# no intelligent word-wrap so warn for long lines
 			my $maxlinelen = 79;
 			foreach my $line (split /\n/, $value) {
@@ -609,27 +609,23 @@ sub validate_info_file {
 
 	# Warn for missing / overlong package descriptions
 	$value = $properties->{description};
-	unless ($value) {
+	if (not (defined $value and length $value)) {
 		print "Error: No package description supplied. ($filename)\n";
 		$looks_good = 0;
-	}
-	elsif (length($value) > 60) {
+	} elsif (length($value) > 60) {
 		print "Error: Length of package description exceeds 60 characters. ($filename)\n";
 		$looks_good = 0;
-	}
-	elsif (length($value) > 45 and Fink::Config::verbosity_level() == 3) {
-		print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
-		$looks_good = 0;
-	}
-	
-	# Check if description starts with "A" or "An", or with lowercase
-	# or if it contains the package name
-	if ($value) {
+	} elsif (Fink::Config::verbosity_level() > 3) {
+		# Some pedantic checks
+		if (length($value) > 45) {
+			print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
+			$looks_good = 0;
+		}
 		if ($value =~ m/^[Aa]n? /) {
 			print "Warning: Description starts with \"A\" or \"An\". ($filename)\n";
 			$looks_good = 0;
 		}
-		elsif ($value =~ m/^[a-z]/) {
+		if ($value =~ m/^[a-z]/) {
 			print "Warning: Description starts with lower case. ($filename)\n";
 			$looks_good = 0;
 		}
@@ -718,7 +714,7 @@ sub validate_info_file {
 		}
 	}
 	
-	if ($looks_good and Fink::Config::verbosity_level() == 3) {
+	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
 }
@@ -1034,7 +1030,7 @@ sub validate_dpkg_file {
 		}
 	}
 
-	if ($looks_good and Fink::Config::verbosity_level() == 3) {
+	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
 }
