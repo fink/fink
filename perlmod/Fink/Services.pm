@@ -611,20 +611,25 @@ sub get_term_width {
 
 sub file_MD5_checksum {
   my $filename = shift;
-  my ($pid, $checksum, $name);
+  my ($pid, $checksum, $name, $md5cmd, $match);
 
   $checksum = "-";
-
-  $pid = open(MD5SUM, "md5sum $filename |") or die "Couldn't run md5sum: $!\n";
+  if(-e "/sbin/md5") {
+    $md5cmd = "/sbin/md5";
+    $match = '= ([^\s]+)$';
+  } else
+  {
+    $md5cmd = "md5sum";
+    $match = '([^\s]*)\s*(:?[^\s]*)';
+  }
+  
+  $pid = open(MD5SUM, "$md5cmd $filename |") or die "Couldn't run $md5cmd: $!\n";
   while (<MD5SUM>) {
-    if (/([^\s]*)\s*([^\s]*)/) {
-      if ($filename eq $2) {
-	$checksum = $1;
-	last;
-      }
+    if (/$match/) {
+      $checksum = $1;
     }
   }
-  close(MD5SUM) or die "Error on closing pipe to md5sum: $!\n";
+  close(MD5SUM) or die "Error on closing pipe to $md5cmd: $!\n";
 
   return $checksum;
 }
