@@ -1,3 +1,8 @@
+2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink: Added code to become root automatically and to setup a
+	suitable environment (PATH, umask).
+
 2001-03-31  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink: Removed dead code, added qualifiers to import list.

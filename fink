@@ -36,11 +36,11 @@ if ($#ARGV >= 0 and $ARGV[0] =~ /^-?-v(ersion)?$/i) {
 
 ### now load the useful modules
 
-use Fink::Services qw(&prompt_boolean &read_config);
-use Fink::Config;
+use Fink::Services qw(&read_config &execute);
+use Fink::Config qw($basepath);
 use Fink::Engine;
 
-### read config (create on the fly if not found)
+### read config
 
 my ($config, $configpath);
 $configpath = "$FindBin::RealBin/config";
@@ -51,6 +51,26 @@ if (-f $configpath) {
   print "ERROR: No configuration file found.\n";
   exit 1;
 }
+
+### setup environment
+
+# are we root?
+if ($> != 0) {
+  # TODO: add a config value to control what method is used
+
+  my $cmd = "$FindBin::RealBin/fink";
+  if ($#ARGV >= 0) {
+    $cmd .= " '".join("' '", @ARGV)."'";
+  }
+  $cmd = "sudo $cmd";
+  exit &execute($cmd, 1);
+}
+
+# set useful umask
+umask oct("022");
+
+# set PATH so we find dpkg and *-config scripts
+$ENV{PATH} = "$basepath/sbin:$basepath/bin:".$ENV{PATH};
 
 ### create engine
 
