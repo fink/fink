@@ -2500,7 +2500,32 @@ sub phase_purge {
 
 sub set_env {
 	my $self = shift;
-	my ($varname, $s, $expand, $ccache_dir);
+	my ($varname, $expand, $ccache_dir);
+
+	# just return cached copy if there is one
+	if (exists $self->{_script_env}) {
+		%ENV = %{$self->{_script_env}};
+		return;
+	}
+
+	# bits of ENV that can be altered by SetENVVAR and NoSetENVVAR in a .info
+	# Remember to update Packaging Manual if you change this var list!
+	our @setable_env_vars = (
+		"CC", "CFLAGS",
+		"CPP", "CPPFLAGS",
+		"CXX", "CXXFLAGS",
+		"DYLD_LIBRARY_PATH",
+		"LD_PREBIND",
+		"LD_PREBIND_ALLOW_OVERLAP",
+		"LD_FORCE_NO_PREBIND",
+		"LD_SEG_ADDR_TABLE",
+		"LD", "LDFLAGS", 
+		"LIBRARY_PATH", "LIBS",
+		"MACOSX_DEPLOYMENT_TARGET",
+		"MAKE", "MFLAGS", "MAKEFLAGS",
+	);
+
+	# default environment variable values
 	# Remember to update FAQ 8.3 if you change this var list!
 	my %defaults = (
 		"CPPFLAGS"                 => "-I\%p/include",
@@ -2509,10 +2534,9 @@ sub set_env {
 		"LD_PREBIND_ALLOW_OVERLAP" => 1,
 		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
-	my $bsbase = Fink::Bootstrap::get_bsbase();
 
+	# lay the groundwork for prebinding
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
-
 		mkdir_p "$basepath/var/lib/fink/prebound" or
 			warn "couldn't create seg_addr_table directory, this may cause compilation to fail!\n";
 		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
@@ -2526,20 +2550,22 @@ END
 		}
 	}
 
-	# clean the environment
+	# start with a clean the environment
 	%ENV = ("HOME" => $ENV{"HOME"});
 
 	# add system path
 	$ENV{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";
 	
 	# add bootstrap path if necessary
+	my $bsbase = Fink::Bootstrap::get_bsbase();
 	if (-d $bsbase) {
 		$ENV{"PATH"} = "$bsbase/bin:$bsbase/sbin:" . $ENV{"PATH"};
 	}
 	
-	# Stop ccache stompage
+	# Stop ccache stompage: allow user to specify directory via fink.conf
 	$ccache_dir = $config->param_default("CCacheDir", "$basepath/var/ccache");
 	unless ( lc $ccache_dir eq "none" ) {
+		# make sure directory exists
 		if ( not -d $ccache_dir and not mkdir_p($ccache_dir) ) {
 			die "WARNING: Something is preventing the creation of " .
 				"\"$ccache_dir\" for CCacheDir, so CCACHE_DIR will not ".
@@ -2549,7 +2575,8 @@ END
 		}
 	}
 
-	# run init.sh script which will set the path and other additional variables
+	# get full environment: parse what a shell has after sourcing init.sh
+	# script when starting with the (purified) ENV we have so far
 	if (-r "$basepath/bin/init.sh") {
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
 		chomp @vars;
@@ -2557,40 +2584,29 @@ END
 	}
 
 	# set variables according to the info file
-	# Remember to update "SetENVVAR" in the Packaging Manual if you
-	# change the var list!
 	$expand = $self->{_expand};
-	foreach $varname (
-			"CC", "CFLAGS",
-			"CPP", "CPPFLAGS",
-			"CXX", "CXXFLAGS",
-			"DYLD_LIBRARY_PATH",
-			"LD_PREBIND",
-			"LD_PREBIND_ALLOW_OVERLAP",
-			"LD_FORCE_NO_PREBIND",
-			"LD_SEG_ADDR_TABLE",
-			"LD", "LDFLAGS", 
-			"LIBRARY_PATH", "LIBS",
-			"MACOSX_DEPLOYMENT_TARGET",
-			"MAKE", "MFLAGS", "MAKEFLAGS") {
+	foreach $varname (@setable_env_vars) {
+		my $s;
+		# start with fink's default unless .info says not to
+		$s = $defaults{$varname} unless $self->param_boolean("NoSet$varname");
 		if ($self->has_param("Set$varname")) {
-			$s = $self->param("Set$varname");
-			if (exists $defaults{$varname} and
-					not $self->param_boolean("NoSet$varname")) {
-				$s .= " ".$defaults{$varname};
-			}
-			$ENV{$varname} = &expand_percent($s, $expand, $self->get_info_filename." \"set$varname\" or \%Fink::PkgVersion::defaults");
-		} else {
-			if (exists $defaults{$varname} and
-					defined $defaults{$varname} and 
-					not $self->param_boolean("NoSet$varname")) {
-				$s = $defaults{$varname};
-				$ENV{$varname} = &expand_percent($s, $expand, "\%Fink::PkgVersion::defaults");
+			# set package-defined value (prepend if still have a default)
+			if (defined $s) {
+				$s = $self->param("Set$varname") . " $s";
 			} else {
-				delete $ENV{$varname};
+				$s = $self->param("Set$varname");
 			}
 		}
+		if (defined $s) {
+			# %-expand and store if we have anything at all
+			$ENV{$varname} = &expand_percent($s, $expand, $self->get_info_filename." \"set$varname\" or \%Fink::PkgVersion::set_env::defaults");
+		} else {
+			# otherwise do not set
+			delete $ENV{$varname};
+		}
 	}
+
+	# handle MACOSX_DEPLOYMENT_TARGET
 	my $sw_vers = Fink::Services::get_sw_vers();
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined $sw_vers and $sw_vers ne "0") {
 		$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
@@ -2601,15 +2617,17 @@ END
 		}
 	}
 
+	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
 		if ($self->is_type('java')) {
 			my ($subtype, $dir, $found);
 			if ($subtype = $self->get_subtype('java')) {
-				if (opendir(DIR, '/System/Library/Frameworks/JavaVM.framework/Versions')) {
+				my $versions_dir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+				if (opendir(DIR, $versions_dir)) {
 					for $dir (sort(readdir(DIR))) {
-						if ($dir =~ /^${subtype}/ and -f '/System/Library/Frameworks/JavaVM.framework/Versions/' . $dir . '/Headers/jni.h') {
-							$ENV{'JAVA_HOME'} = '/System/Library/Frameworks/JavaVM.framework/Versions/' . $dir . '/Home' unless $self->has_param('SetJAVA_HOME');
-							$ENV{'PATH'} = '/System/Library/Frameworks/JavaVM.framework/Versions/' . $dir . '/Home/bin:' . $ENV{'PATH'} unless $self->has_param('SetPATH');
+						if ($dir =~ /^${subtype}/ and -f "$versions_dir/$dir/Headers/jni.h") {
+							$ENV{'JAVA_HOME'} = "$versions_dir/$dir/Home" unless $self->has_param('SetJAVA_HOME');
+							$ENV{'PATH'} = "$versions_dir/$dir/Home/bin:" . $ENV{'PATH'} unless $self->has_param('SetPATH');
 							$found++;
 						}
 					}
@@ -2618,6 +2636,9 @@ END
 			}
 		}
 	}
+
+	# cache a copy for next time
+	$self->{_script_env} = { %ENV };
 }
 
 ### run script
@@ -2635,7 +2656,7 @@ sub run_script {
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
 	
-	# Clean the environment
+	# Switch to our own environment
 	$self->set_env();
 	
 	# Run the script

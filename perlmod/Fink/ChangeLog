@@ -1,3 +1,9 @@
+2004-07-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: set_env: simplify handling of NoSetENVVAR and
+	SetENVVAR; implement caching of results; factor out path (string
+	constant) for Type:java.
+
 2004-07-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: system-java
