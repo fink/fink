@@ -532,7 +532,7 @@ sub validate_info_file {
 			my $splitoff_properties = $properties->{$field};
 			my $splitoff_field = $field;
 			$splitoff_properties =~ s/^\s+//gm;
-			$splitoff_properties = &read_properties_var($filename, $splitoff_properties);
+			$splitoff_properties = &read_properties_var("$field of \"$filename\"", $splitoff_properties);
 			# Right now, only 'Package' is a required field for a splitoff.
 			foreach $field (qw(package)) {
 				unless ($splitoff_properties->{lc $field}) {

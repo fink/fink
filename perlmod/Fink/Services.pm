@@ -117,7 +117,7 @@ sub read_properties {
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
-	 return read_properties_lines($file, $notLC, @lines);
+	 return read_properties_lines("\"$file\"", $notLC, @lines);
 }
 
 =item read_properties_var
@@ -236,7 +236,7 @@ sub read_properties_lines {
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
 				if (exists $hash->{$lastkey}) {
-					print "WARNING: Field \"$lastkey\" occurs more than once in \"$file\".\n";
+					print "WARNING: Field \"$lastkey\" occurs more than once in $file.\n";
 				}
 				if ($2 eq "<<") {
 					$hash->{$lastkey} = "";
@@ -247,11 +247,11 @@ sub read_properties_lines {
 			} elsif (/^\s+(\S.*?)\s*$/) {
 				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
-				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in \"$file\".\n";
+				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in $file.\n";
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
 			} else {
-				print "WARNING: Unable to parse the line \"".$_."\" in \"$file\".\n";
+				print "WARNING: Unable to parse the line \"".$_."\" in $file.\n";
 			}
 		}
 	}

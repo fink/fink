@@ -1,3 +1,9 @@
+2004-02-01  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Services.pm, Validation.pm: finished implementing
+	splittoffN (etc.) passing to read_properties_var() and fixed
+	quotation mark placement in its messages.
+
 2004-01-30  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Added second parameter to add_splitoff() for
