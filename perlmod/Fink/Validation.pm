@@ -207,7 +207,6 @@ our %splitoff_valid_fields = map {$_, 1}
 		(
 #  initial data:
 		 'package',
-		 #documentation is ambiguous about license
 		 'type',
 		 'license',
 #  dependencies:
@@ -221,7 +220,6 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'suggests',
 		 'enhances',
 		 'pre-depends',
-		 #documentation seems incorrect about essential
 		 'essential',
 		 'builddependsonly',
 #  install phase:
