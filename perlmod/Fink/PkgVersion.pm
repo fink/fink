@@ -23,7 +23,7 @@
 
 package Fink::PkgVersion;
 use Fink::Base;
-use Fink::Services qw(&filename &execute &execute_nonroot_okay
+use Fink::Services qw(&filename &execute
 					  &expand_percent &latest_version
 					  &collapse_space &read_properties_var
 					  &pkglist2lol &lol2pkglist
@@ -1828,7 +1828,7 @@ Fink::Services::enforce_gcc("This package must be compiled with GCC EXPECTED_GCC
 
 		# unpack it
 		chdir $destdir;
-		if (&execute_nonroot_okay($unpack_cmd)) {
+		if (&execute($unpack_cmd, nonroot_okay=>1)) {
 			$tries++;
 
 			# FIXME: this is not the likely problem now since we already checked MD5
@@ -3089,9 +3089,7 @@ sub run_script {
 	%env_bak = %ENV;        # backup existing environment
 	%ENV = %$script_env;    # run under modified environment
 
-	my $result = $nonroot_okay
-		? &execute_nonroot_okay($script)
-		: &execute($script);
+	my $result = &execute($script, nonroot_okay=>$nonroot_okay);
 	if ($result) {
 		my $error = $phase." ".$self->get_fullname()." failed\n";
 		if ($self->has_param('maintainer')) {

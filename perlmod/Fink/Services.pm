@@ -40,7 +40,7 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
 					  &read_properties_multival &read_properties_multival_var
-					  &execute &execute_nonroot_okay
+					  &execute
 					  &expand_percent
 					  &filename
 					  &version_cmp &latest_version &sort_versions
@@ -418,6 +418,11 @@ options are known:
         the command failed, a message including the return code is
         sent to STDOUT.
 
+    nonroot_okay
+
+        If fink was run with the --build-as-nobody flag, drop to
+        user=nobody when running the actual commands.
+
 =cut
 
 sub execute {
@@ -428,6 +433,17 @@ sub execute {
 	# preprocess the script, making executable tempfile if necessary
 	my $is_tempfile = &prepare_script(\$script);
 	return 0 if not defined $script;
+
+  MAYBE_NOBODY: {
+	local $>;  # don't want to leak loss of root powers!
+
+	# drop root if requested
+	if ($options{'nonroot_okay'} && Fink::Config::get_option("build_as_nobody") == 1) {
+		use integer;    # getpw* returns unsigned int but "nobody" is uid -2
+		my $uid = getpwnam('nobody');
+		$> = $uid;
+		die "Couldn't set EUID=nobody\n" if $> != $uid;
+	}
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
@@ -444,6 +460,8 @@ sub execute {
 			return $?;  # something went boom; give up now
 		}
 	}
+
+  } # end of MAYBE_NOBODY block
 
 	# everything was successful so delete tempfile
 	# (otherwise keep it around to aide debugging)
@@ -515,29 +533,6 @@ sub prepare_script {
 
 	$$script = undef if !length $$script;
 	return 0;  # $$script is still the real thing, not a tempfile handle
-}
-
-=item execute_nonroot_okay
-
-    my $retval = execute_nonroot_okay $cmd;
-    my $retval = execute_nonroot_okay $cmd, %options;
-
-Wrapper for execute() to run $cmd as user "nobody" if fink was run
-with the --build-as-nobody flag.
-
-=cut
-
-sub execute_nonroot_okay {
-	use integer;    # getpw* returns unsigned int but "nobody" is uid -2
-
-	local $>;
-	if (Fink::Config::get_option("build_as_nobody") == 1) {
-		my $uid = getpwnam('nobody');
-		$> = $uid;
-		die "Couldn't set EUID=nobody\n" if $> != $uid;
-	}
-
-	&execute(@_);
 }
 
 =item expand_percent

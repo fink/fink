@@ -1,3 +1,9 @@
+2004-12-21  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: execute_nonroot_okay() wrapper merged
+	into underlying execute(). Extract common parts of some tests. Add
+	tests to make sure root not dropped when it's not supposed to be.
+
 2004-12-20  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_script_nonroot_okay.t: function removed so scrap the test.

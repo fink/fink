@@ -1,3 +1,8 @@
+2004-12-21  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Services.pm: Replace execute_nonroot_okay()
+	wrapper around execute() with an %options flag to execute().
+
 2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: fix error which prevented &enforce_gcc from working
