@@ -376,7 +376,7 @@ if (-e "$basepath/fink/old/dists/unstable") {
 		my $apt_mirror = "http://us.dl.sourceforge.net/fink/direct_download";
 
 		if ($self->has_param("Mirror-apt")) {
-			$apt_mirror = $self->get_param("Mirror-apt");
+			$apt_mirror = $self->param("Mirror-apt");
 		}
 
 		my $distribution = $self->param("Distribution");
