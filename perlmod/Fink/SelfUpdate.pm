@@ -157,12 +157,16 @@ sub check {
 		if ($distro =~ /10.1/) {
 				$currentfink = "LATEST-FINK";
 		}
-	
-		if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
+		my $website = "http://fink.sourceforge.net";
+		if (-f "$basepath/lib/fink/mirror/website") {
+			$website = cat "$basepath/lib/fink/mirror/website";
+			chomp($website);
+		}
+		if (&fetch_url("$website/$currentfink", $srcdir)) {
 			die "Can't get latest version info\n";
 		}
 		$latest_fink = cat "$srcdir/$currentfink";
-		chomp($latest_fink);
+		Chomp($latest_fink);
 		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" and ! "$finkdir/dists/stamp-cvs-live" and ! -f "$finkdir/dists/stamp-rsync-live")
 		{
 			# check if we need to upgrade
@@ -256,11 +260,16 @@ sub setup_direct_cvs {
 	if (Fink::Config::verbosity_level() > 1) {
 		$verbosity = "";
 	}
+	my $cvsrepository = "cvs.sourceforge.net";
+	if (-f "$basepath/lib/fink/mirror/cvs-repository") {
+		$cvsrepository = cat "$basepath/lib/fink/mirror/cvs-repository";
+		chomp($cvsrepository);
+	}
 	if ($cvsuser eq "anonymous") {
 		&print_breaking("Now logging into the CVS server. When CVS asks you ".
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
-		$cmd = "cvs -d:pserver:anonymous\@cvs.sourceforge.net:/cvsroot/fink login";
+		$cmd = "cvs -d:pserver:anonymous\@$cvsrepository:/cvsroot/fink login";
 		if ($username ne "root") {
 			$cmd = "/usr/bin/su $username -c '$cmd'";
 		}
@@ -268,9 +277,9 @@ sub setup_direct_cvs {
 			die "Logging into the CVS server for anonymous read-only access failed.\n";
 		}
 
-		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@cvs.sourceforge.net:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository:/cvsroot/fink";
 	} else {
-		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@cvs.sourceforge.net:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository:/cvsroot/fink";
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -d fink dists";
