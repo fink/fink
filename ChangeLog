@@ -1,5 +1,9 @@
 2001-10-17  Christoph Pfisterer  <cp@chrisp.de>
 
+	* fink.in: Eliminated the remaining Fink::Config dependencies. The
+	big modules are loaded only when needed. Now uses Getopt::Long to
+	parse command line options (more to come in that department).
+
 	* setup.sh: Hardcode base path into FinkVersion.pm.
 
 2001-10-13  Christoph Pfisterer  <cp@chrisp.de>

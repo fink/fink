@@ -24,30 +24,31 @@ use strict;
 
 use lib "@BASEPATH@/lib/perl5";
 
-### quick check so see if all the user wants is the version number
+### parse options passed on the command line
 
-if ($#ARGV >= 0 and $ARGV[0] =~ /^-?-v(ersion)?$/i) {
-  # version of the package manager
+use Getopt::Long;
+
+my $dontask = 0;
+
+Getopt::Long::Configure(qw(bundling ignore_case_always));
+GetOptions('yes' => \$dontask,
+	   'version|v' => \&show_version)
+ or die "Can't parse command line\n";
+
+### display the version numbers
+
+sub show_version {
   require Fink::FinkVersion;
   print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
-
-  # distribution version
-  my $dv;
-  if (-f "@BASEPATH@/etc/fink-release") {
-    chomp($dv = `cat @BASEPATH@/etc/fink-release`);
-  } else {
-    $dv = "unknown";
-  }
-  print "Distribution version: $dv\n";
-
+  print "Distribution version: ".Fink::FinkVersion::distribution_version()."\n";
   exit 0;
 }
 
 ### now load the useful modules
 
-use Fink::Services qw(&read_config &execute);
-use Fink::Config qw($basepath);
-use Fink::Engine;
+require Fink::Services;
+ import Fink::Services qw(&read_config &execute);
+require Fink::Engine;
 
 ### read config
 
@@ -78,7 +79,7 @@ if ($> != 0) {
 umask oct("022");
 
 # set PATH so we find dpkg and *-config scripts
-$ENV{PATH} = "$basepath/sbin:$basepath/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
+$ENV{PATH} = "@BASEPATH@/sbin:@BASEPATH@/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
 
 ### create engine
 
