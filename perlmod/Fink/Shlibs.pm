@@ -148,7 +148,7 @@ sub check_files {
     if (@depobj == 0) {
       # empty, we skip it
       next;
-    if (@depobj > 1) {
+    } elsif (@depobj > 1) {
       my @depnames;
       for my $obj (@depobj) {
         push(@depnames, $obj->{tuplename});
