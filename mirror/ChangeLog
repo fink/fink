@@ -1,3 +1,10 @@
+2001-05-09  Christoph Pfisterer  <cp@chrisp.de>
+
+	* gnome: Updated from GNOME web site. There are now a lot less
+	mirrors than before.
+	* gnu: Updated from the GNU web site.
+	* gimp: Updated from the GIMP web site.
+
 2001-03-08  Christoph Pfisterer  <cp@chrisp.de>
 
 	* _list: Added this file, listing available mirror lists.
