@@ -1,3 +1,12 @@
+2004-06-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Use new accessors for CompileScript and InstallScript.
+	* PkgVersion.pm: Added parameter to run_script to control whether
+	%-expansion should be performed. Moved parsing of CompileScript
+	and InstallScript (including defaults) into new get_compilescript
+	and get_installscript accessors. Added support for %default_script
+	in these fields.
+
 2004-06-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Check that BuildDependsOnly is a boolean field.
@@ -66,6 +75,15 @@
 	BuildDependsOnly field into the .deb file, and when validating a 
 	.deb, verify that BuildDependsOnly is true whenever things are
 	installed into /sw/include.
+
+2004-05-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Use new accessors for CompileScript and InstallScript.
+	* PkgVersion.pm: Added parameter to run_script to control whether
+	%-expansion should be performed. Moved parsing of CompileScript
+	and InstallScript (including defaults) into new get_compilescript
+	and get_installscript accessors. Added support for %default_script
+	in these fields.
 
 2004-05-26  Daniel Macks  <dmacks@netspace.org>
 

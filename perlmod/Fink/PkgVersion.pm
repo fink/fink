@@ -1682,13 +1682,13 @@ sub phase_patch {
 	### patch
 
 	if ($patch_script ne "") {
-		$self->run_script($patch_script, "patching");
+		$self->run_script($patch_script, "patching", 0);
 	}
 
 	### run custom patch script (if any)
 
 	if ($self->has_param("PatchScript")) {
-		$self->run_script($self->param("PatchScript"), "patching");
+		$self->run_script($self->param("PatchScript"), "patching", 0);
 	}
 }
 
@@ -1718,33 +1718,53 @@ sub phase_compile {
 	}
 	chdir "$buildpath/$dir";
 
-	# generate compilation script
-	if ($self->has_param("CompileScript")) {
-		$compile_script = $self->param("CompileScript");
-	} else {
-		if ($self->is_type('perl')) {
-			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			$compile_script =
-				"$perlcmd Makefile.PL \%c\n".
-				"make\n";
-			unless ($self->param_boolean("NoPerlTests")) {
-				$compile_script .= "make test\n";
-			}
-		} elsif ($self->is_type('ruby')) {
-			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
-			$compile_script =
-				"$rubycmd extconf.rb\n".
-				"make\n";
-		} else {
-			$compile_script = 
-				"./configure \%c\n".
-				"make\n";
+	### construct CompileScript and execute it
+	$compile_script = $self->get_compilescript;
+	$self->run_script($compile_script, "compiling", 1);
+}
+
+# return the CompileScript (or implicit default) after percent-expansion
+sub get_compilescript {
+	my $self = shift;
+
+	return "" if exists $self->{parent};
+
+	my $default_script;
+	if ($self->is_type('perl')) {
+		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+		$default_script =
+			"$perlcmd Makefile.PL \%c\n".
+			"make\n";
+		unless ($self->param_boolean("NoPerlTests")) {
+			$default_script .= "make test\n";
 		}
-	}	 
+	} elsif ($self->is_type('ruby')) {
+		my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
+		$default_script =
+			"$rubycmd extconf.rb\n".
+			"make\n";
+	} else {
+		$default_script =
+			"./configure \%c\n".
+			"make\n";
+	}
 
-	### compile
+	# need to pre-expand default_script so not have to change
+	# expand_percent() to go a third level deep
+	$self->parse_configureparams;
+	$self->{_expand}->{default_script} = &expand_percent(
+		$default_script,
+		$self->{_expand},
+		$self->get_info_filename." CompileScript"
+	);
 
-	$self->run_script($compile_script, "compiling");
+	my $script = $self->param_default_expanded(
+		"CompileScript",
+		'%{default_script}'
+	);
+	delete $self->{_expand}->{default_script};  # this key must stay local
+
+	return $script;
 }
 
 ### install
@@ -1790,21 +1810,15 @@ sub phase_install {
 		$install_script .= "/bin/mkdir -p \%i/share/doc/\%n\n";
 		$install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 	} else {
-		if ($self->has_param("InstallScript")) {
-			# Run the script part we have so far, then reset it.
-			$self->run_script($install_script, "installing");
-			$install_script = "";
-			# Now run the custom install script
-			$self->run_script($self->param("InstallScript"), "installing");
-		} elsif (!exists $self->{parent} and $self->is_type('perl')) {
-			# grab perl version, if present
-			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
-
-			$install_script .= 
-				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
-		} elsif (not $do_splitoff) {
-			$install_script .= "make install prefix=\%i\n";
-		} 
+		# Run the script part we have so far
+		$self->run_script($install_script, "installing", 0);
+		# Now run the actual InstallScript
+		$install_script = $self->get_installscript;
+		if (length $install_script) {
+			$self->run_script($install_script, "installing", 1);
+		}
+		$install_script = ""; # reset it
+		# Handle remaining fields that affect installation
 		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
@@ -1924,7 +1938,7 @@ sub phase_install {
 
 	### install
 
-	$self->run_script($install_script, "installing");
+	$self->run_script($install_script, "installing", 0);
 
 	### splitoffs
 	
@@ -1947,6 +1961,40 @@ sub phase_install {
 								"Continuing with normal procedure.");
 		}
 	}
+}
+
+# return the InstallScript (or implicit default) after percent-expansion
+sub get_installscript {
+	my $self = shift;
+
+	my $default_script;
+	if ($self->is_type('perl')) {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+		$default_script = 
+			"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
+	} else {
+		$default_script = "make install prefix=\%i\n";
+	} 
+
+	# need to pre-expand default_script so not have to change
+	# expand_percent() to go a third level deep
+	$self->parse_configureparams;
+	$self->{_expand}->{default_script} = &expand_percent(
+		$default_script,
+		$self->{_expand},
+		$self->get_info_filename." InstallScript"
+	);
+
+	my $script = $self->param_default_expanded(
+		"InstallScript",
+		exists $self->{parent}
+			? ''                  # SplitOffs default to no script
+			: '%{default_script}'
+	);
+	delete $self->{_expand}->{default_script};  # this key must stay local
+
+	return $script;
 }
 
 ### build .deb
@@ -2524,13 +2572,14 @@ sub run_script {
 	my $self = shift;
 	my $script = shift;
 	my $phase = shift;
+	my $no_expand = shift || 0;
 	my %env_bak;
 	
 	# Backup the environment variables
 	%env_bak = %ENV;
 	
 	# Expand percent shortcuts
-	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script");
+	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
 	
 	# Clean the environment
 	$self->set_env();
