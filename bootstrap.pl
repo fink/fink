@@ -28,7 +28,7 @@ use strict;
 
 use FindBin;
 
-my ($answer, $packageversion, $packagerevision);
+my ($answer);
 my ($script, $cmd);
 
 ### check the perl version
@@ -70,18 +70,11 @@ require Fink::Services;
 import Fink::Services qw(&print_breaking &prompt &prompt_boolean
 						 &prompt_selection &read_config &execute
 						 &file_MD5_checksum &get_arch);
+#						 &get_arch);
 
 ### get version
 
-chomp($packageversion = `cat VERSION`);
-if ($packageversion =~ /cvs/) {
-	my @now = gmtime(time);
-	$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
-								 $now[5]+1900, $now[4]+1, $now[3],
-								 $now[2], $now[1]);
-} else {
-	$packagerevision = "1";
-}
+my ($packageversion, $packagerevision) = &get_packageversion();
 
 ### check if we like this system
 
@@ -314,42 +307,22 @@ foreach $dir (@dirlist) {
 
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
 
+my $packagefiles = &fink_packagefiles();
+
 ### create fink tarball for bootstrap
 
-print "Creating fink tarball...\n";
-
-$script =
-	"tar -cf $installto/src/fink-$packageversion.tar ".
-	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
-	"ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-	"shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
-	"fink-virtual-pkgs.in mirror\n";
-
-foreach $cmd (split(/\n/,$script)) {
-	next unless $cmd;		# skip empty lines
-
-	if (&execute($cmd)) {
-		print "ERROR: Can't create tarball.\n";
-		exit 1;
-	}
+my $result = &create_tarball($installto, "fink", $packageversion, $packagefiles);
+if ($result == 1 ) {
+	exit 1;
 }
 
 ### copy package info needed for bootstrap
 
-print "Copying package descriptions...\n";
-
 $script = "/bin/cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
-my $md5 = &file_MD5_checksum("$installto/src/fink-$packageversion.tar");
-$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-$script .= "/bin/chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
 
-foreach $cmd (split(/\n/,$script)) {
-	next unless $cmd;		# skip empty lines
-
-	if (&execute($cmd)) {
-		print "ERROR: Can't copy package descriptions.\n";
-		exit 1;
-	}
+$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision);
+if ($result == 1 ) {
+	exit 1;
 }
 
 ### load the Fink modules
@@ -451,3 +424,102 @@ print "\n";
 
 ### eof
 exit 0;
+
+
+sub get_packageversion {
+
+    my ($packageversion, $packagerevision);
+
+    chomp($packageversion = `cat VERSION`);
+    if ($packageversion =~ /cvs/) {
+	my @now = gmtime(time);
+  $packagerevision = sprintf("%04d%02d%02d.%02d%02d",
+                             $now[5]+1900, $now[4]+1, $now[3],
+                             $now[2], $now[1]);
+    } else {
+	$packagerevision = "1";
+    }
+    return ($packageversion, $packagerevision);
+}
+
+sub create_tarball {
+
+my $basepath = shift;
+my $package = shift;
+my $packageversion = shift;
+my $packagefiles = shift;
+
+my ($cmd, $script);
+
+print "Creating $package tarball...\n";
+
+$script = "";
+if (not -d "$basepath/src") {
+  $script .= "mkdir -p $basepath/src\n";
+}
+
+$script .=
+  "tar -cf $basepath/src/$package-$packageversion.tar ".
+    "$packagefiles\n";
+
+my $res = 0;
+
+foreach $cmd (split(/\n/,$script)) {
+  next unless $cmd;   # skip empty lines
+
+  if (&execute($cmd)) {
+    print "ERROR: Can't create tarball.\n";
+    $res = 1;
+  }
+}
+return $res;
+}
+
+sub fink_packagefiles {
+
+my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
+  "ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
+  "shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
+  "fink-virtual-pkgs.in mirror";
+
+return $packagefiles;
+
+}
+
+sub copy_description {
+
+my $script = shift;
+my $basepath = shift;
+my $package = shift;
+my $packageversion = shift;
+my $packagerevision = shift;
+
+my ($cmd);
+
+print "Copying package description(s)...\n";
+
+if (not -d "$basepath/fink/debs") {
+  $script .= "mkdir -p $basepath/fink/debs\n";
+}
+if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
+  $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
+}
+my $md5 = &file_MD5_checksum("$basepath/src/$package-$packageversion.tar");
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <$package.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/$package-$packageversion.info\n";
+
+my $res = 0;
+
+foreach $cmd (split(/\n/,$script)) {
+  next unless $cmd;   # skip empty lines
+
+  if (&execute($cmd)) {
+    print "ERROR: Can't copy package description(s).\n";
+    $res = 1;
+  }
+}
+return $res;
+}
+
+
+
+

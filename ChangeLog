@@ -1,3 +1,7 @@
+2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl, inject.pl: Make the code modular, update copyright
+
 2003-12-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.info.in: Remove "make test" from branch_0_17
