@@ -171,6 +171,19 @@ application which tries to determine the closest server that has a certain file.
 The use of axelautomirror is not recommended at this time. The default value is
 .Nm curl.
 The application you chose as DownloadMethod MUST be installed!
+.It Cm SelfUpdateMethod: Ar point, rsync or cvs
+.Xr fink 8
+can use some different methods to update the package info files.
+.Nm rsync
+is the recommended setting, it uses
+.Xr rsync 1
+to download only modified files in the trees that you have enabled. Note that if you have changed or added to files in the stable or unstable trees, using rsync will delete them. Make a backup first.
+.Nm cvs
+will download using anonymous or :ext:
+.Xr cvs 1
+access from the fink repository. This has the disadvantage that cvs can not switch mirrors, if the server is unavailable you will not be able to update.
+.Nm point
+will download only the latest released version of the packages. It is not recommended as your packages may be quite out of date.
 .El
 .\"
 .\"
@@ -227,6 +240,8 @@ to the Master (or non Master) set if a download fails. The options are:
 .It MasterNever - Never use "Master" source mirrors.
 .It ClosestFirst - Search closest source mirrors first (combine all mirrors into one set).
 .El	
+.It Cm Mirror-rsync:
+When doing 'selfupdate' with the SelfupdateMethod set to rsync, this is the rsync url to sync from.  This should be an anonymous rsync url, pointing to a directory which contains all the fink Distrubutions and Trees.  
 .El
 .\"
 .\"
@@ -249,6 +264,36 @@ Causes Fink not to delete the
 .Pa @PREFIX@/src/name-version
 directory after building a package. Defaults to false. 
 Be careful, this option can fill your hard-disk quickly! 
+.El
+.\"
+.\"
+.\" ADVANCED SETTINGS
+.\"
+.\"
+.Sh ADVANCED SETTINGS
+There are some other options which may be useful, but require some knowledge to get right.
+.Bl -tag -width flag
+.It Cm MatchPackageRegEx
+Causes fink not to ask which package to install if one (and only one) of the choices matches
+the perl Regular Expression given here.
+Example:
+MatchPackageRegEx: (.*-ssl$|^xfree86$|^xfree86-shlibs$)
+Will match packages ending in -ssl and match xfree86 and xfree86-shlibs exactly.
+.El
+.\"
+.\"
+.\" ADVANCED SETTINGS
+.\"
+.\"
+.Sh ADVANCED SETTINGS
+There are some other options which may be useful, but require some knowledge to get right.
+.Bl -tag -width flag
+.It Cm MatchPackageRegEx
+Causes fink not to ask which package to install if one (and only one) of the choices matches
+the perl Regular Expression given here.
+Example:
+MatchPackageRegEx: (.*-ssl$|^xfree86$|^xfree86-shlibs$)
+Will match packages ending in -ssl and match xfree86 and xfree86-shlibs exactly.
 .El
 .\"
 .\"

@@ -1,0 +1,40 @@
+Package: sed
+Version: 4.0.5
+Revision: 1
+Maintainer: Sylvain Cuaz <zauc@users.sourceforge.net>
+#
+Source: gnu
+Source-MD5: ede56d576aa7be4ed44e2d868616d00d
+BuildDepends: gettext-dev, gettext-bin, libiconv-dev
+ConfigureParams: --mandir=%p/share/man --infodir=%p/share/info --program-prefix=g
+InstallScript: <<
+ make install DESTDIR=%d
+ mv %i/share/info/sed.info %i/share/info/gsed.info
+ mv %i/share/info/sed.info-1 %i/share/info/gsed.info-1
+ mv %i/share/info/sed.info-2 %i/share/info/gsed.info-2
+<<
+DocFiles: README COPYING AUTHORS BUGS NEWS THANKS
+InfoDocs: gsed.info
+#
+PostInstScript: <<
+  update-alternatives --install %p/bin/sed sed %p/bin/gsed 40 --slave %p/share/man/man1/sed.1 sed.1 %p/share/man/man1/gsed.1 --slave %p/share/info/sed.info sed.info %p/share/info/gsed.info --slave %p/share/info/sed.info-1 sed.info-1 %p/share/info/gsed.info-1 --slave %p/share/info/sed.info-2 sed.info-2 %p/share/info/gsed.info-2
+<<
+PreRmScript: <<
+  if [ $1 != "upgrade" ]; then
+    update-alternatives --remove sed %p/bin/gsed
+  fi
+<<
+#
+Description: The stream editor, GNU version
+DescDetail: <<
+ Sed is a text stream editor that is commonly used 
+ to process text from shell scripts and makefiles.
+<<
+DescPackaging: <<
+ Previous revisions by Christoph Pfisterer.
+<<
+DescUsage: <<
+ this program intalls as gsed, to use it as sed run 'sudo update-alternatives --config sed'
+<<
+License: GPL
+Homepage: http://www.gnu.org/software/sed/sed.html

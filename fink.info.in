@@ -1,13 +1,16 @@
 Package: fink
 Version: @VERSION@
 Revision: @REVISION@
+Depends: base-files
+Suggests: storable-pm, term-readkey-pm
+Essential: yes
 Source: %n-%v.tar
 Source-MD5: @MD5@
 NoSourceDirectory: true
-Depends: base-files
-Essential: yes
-Suggests: storable-pm, term-readkey-pm
-CompileScript: ./setup.sh %p
+CompileScript: <<
+ make test
+ ./setup.sh %p
+<<
 InstallScript: ./install.sh %i
 PostInstScript: <<
  %p/lib/fink/postinstall.pl
@@ -15,10 +18,17 @@ PostInstScript: <<
 <<
 #
 Description: The Fink package manager
+DescPackaging: <<
+ Must put "make test" before "./setup.sh %p", because make test runs
+ the setup script itself, but pointed at the testing directory.
+ The second run of setup.sh properly points fink at the installed
+ configuration file.
+<<
 DescDetail: <<
 fink is the Fink project's package manager. It is responsible for
 downloading and compiling source and building binary packages from
 it. Binary package handling is then delegated to dpkg.
 <<
 License: GPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://fink.sourceforge.net/

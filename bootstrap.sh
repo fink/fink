@@ -50,7 +50,7 @@ fi
 ### start bootstrap.pl
 
 if [ ! -x bootstrap.pl ]; then
-  chmod a+x bootstrap.pl
+  /bin/chmod a+x bootstrap.pl
 fi
 
 exec ./bootstrap.pl "$@"

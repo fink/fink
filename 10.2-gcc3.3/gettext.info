@@ -1,0 +1,69 @@
+Package: gettext
+Version: 0.10.40
+Revision: 17
+Source: mirror:gnu:gettext/gettext-%v.tar.gz
+Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
+Essential: yes
+Depends: libiconv, libiconv-bin, base-files
+BuildDepends: libiconv-dev, fink (>= 0.13.6), fink-prebinding
+Shlibs: %p/lib/libintl.1.dylib 2.0.0 %n (>= 0.10.40-5)
+DescPackaging: <<
+ Shared libraries are in gettext for backward compatibility, to avoid
+ breaking dpkg during an update.
+
+ Previous versions by Christoph Pfisterer.
+<<
+Patch: %n.patch
+SetCPPFLAGS: -no-cpp-precomp
+ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
+SetLDFLAGS: -L%b/intl/.libs
+InstallScript: <<
+ make install DESTDIR=%d docdir=%p/share/doc/%n
+ sed 's;-L%b/intl/.libs;;' <%i/lib/libintl.la >%i/lib/libintl.la.tmp
+ mv -f %i/lib/libintl.la.tmp %i/lib/libintl.la
+ rm -f %i/lib/charset.alias
+<<
+DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
+SplitOff: <<
+ Package: gettext-bin
+ Depends: %N (= %v-%r)
+ Replaces: %N (<= 0.10.40-4)
+ Files: bin share/aclocal share/doc/gettext/*.html share/emacs share/gettext share/info share/locale share/man
+ Description: Executables for gettext package
+ InfoDocs: gettext.info
+ DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
+<<
+SplitOff2: <<
+ Package: gettext-dev
+ Depends: gettext (= %v-%r)
+ Replaces: gettext (<= 0.10.40-4)
+ BuildDependsOnly: true
+ Files: include lib/libintl.dylib lib/*.a lib/*.la
+ Description: Developer files for gettext package
+ DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
+<<
+#
+PostInstScript: <<
+if [ -L %p/etc/alternatives/charset.alias ]; then
+  update-alternatives --remove charset.alias %p/lib/charset.alias.gettext
+fi
+<<
+#
+Description: Message localization support
+DescDetail: <<
+The gettext package provides some of the i18n and l10n support used by
+many GNU programs but missing from the Darwin C library.
+<<
+DescPort: <<
+Uses libtool 1.4; needs a minimal patch for Mac OS X 10.1.
+
+Needs help to link against the right copy of the library. Afterwards,
+we remove the used flag from the .la file as it refers to the
+temporary build directory.
+
+charset.alias is deleted because it is empty on Darwin anyway and
+causes unnecessary conflicts between packages.
+<<
+License: GPL/LGPL
+Maintainer: Max Horn <max@quendi.de>
+Homepage: http://www.gnu.org/software/gettext/

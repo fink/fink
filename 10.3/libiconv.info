@@ -1,47 +1,31 @@
 Package: libiconv
-Version: 1.8
-Revision: 2
-Source: gnu
-Source-MD5: fd2a95a4b79fbdc8ea55ad093a8bb6cf
+Version: 1.9.1
+Revision: 11
+Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source-MD5: 0c99a05e0c3c153bac1c960f78711155
 Essential: yes
-Depends: base-files, %N-shlibs (= %v-%r)
-BuildDepends: fink-prebinding
-Patch: %n.patch
+Depends: base-files
+BuildDepends: fink (>= 0.13.0), fink-prebinding
+Shlibs: <<
+ %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
+ %p/lib/libiconv.2.dylib 5.0.0 %n (>= 1.9.1-1)
+<<
+DescPackaging: <<
+ Shared libraries are in libiconv for backward compatibility, to avoid
+ breaking dpkg during an update.
+
+ Previous versions by Christoph Pfisterer.
+<<
 NoSetLDFLAGS: true
 SetLIBS: -L%p/lib
 ConfigureParams: --mandir=%p/share/man
 InstallScript: <<
 mkdir -p %i/share/man %i/share/doc/%n
 make install prefix=%i mandir=%i/share/man docdir=%i/share/doc/%n
-install -m 644 README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS %i/share/doc/%n/
 rm -rf %i/doc
 rm -f %i/lib/charset.alias
 <<
-SplitOff: <<
-  Package: %N-shlibs
-  Replaces: %N (<= 1.8-1)
-  Files: <<
-    lib/libcharset.*.dylib
-    lib/libiconv.*.dylib
-  <<
-  Shlibs: <<
-    %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.8-2)
-    %p/lib/libiconv.2.dylib 4.0.0 %n (>= 1.8-2)
-  <<
-  DocFiles: COPYING* AUTHORS
-<<
-SplitOff2: <<
-  Package: %N-dev
-  Depends: %N-shlibs (= %v-%r)
-  Replaces: %N (<= 1.8-1)
-  BuildDependsOnly: true
-  Files: <<
-    lib/libcharset.dylib
-    lib/libiconv.dylib
-    include
-  <<
-  DocFiles: COPYING* AUTHORS
-<<
+DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
 #
 PostInstScript: <<
 if [ -L %p/etc/alternatives/charset.alias ]; then
@@ -49,6 +33,24 @@ if [ -L %p/etc/alternatives/charset.alias ]; then
 fi
 <<
 #
+SplitOff: <<
+ Package: libiconv-bin
+ Essential: true
+ Depends: libiconv (= %v-%r)
+ Replaces: libiconv (<= 1.7-6)
+ Files: bin share/doc/libiconv/*.html share/man
+ Description: Executables for libiconv package
+ DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
+<<
+SplitOff2: <<
+ Package: libiconv-dev
+ Depends: libiconv (= %v-%r)
+ Replaces: libiconv (<= 1.7-6)
+ BuildDependsOnly: true
+ Files: include lib/libcharset.dylib lib/libiconv.dylib lib/*.a lib/*.la
+ Description: Developer files for libiconv package
+ DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
+<<
 Description: Character set conversion library
 DescDetail: <<
 GNU libiconv provides an iconv() implemententation for systems that lack
@@ -58,7 +60,6 @@ DescPort: <<
 charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
 <<
-DescPackaging: Previous versions by Christoph Pfisterer.
 License: LGPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://www.gnu.org/software/libiconv/

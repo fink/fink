@@ -1,0 +1,105 @@
+diff -ruN ncurses-5.3/configure ncurses-5.3.new/configure
+--- ncurses-5.3/configure	2002-09-21 20:49:14.000000000 -0400
++++ ncurses-5.3.new/configure	2003-01-28 20:26:45.000000000 -0500
+@@ -7531,101 +7531,6 @@
+ 
+ fi
+ 
+-echo "$as_me:7534: checking if data-only library module links" >&5
+-echo $ECHO_N "checking if data-only library module links... $ECHO_C" >&6
+-if test "${cf_cv_link_dataonly+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-
+-	rm -f conftest.a
+-	cat >conftest.$ac_ext <<EOF
+-#line 7542 "configure"
+-int	testdata[3] = { 123, 456, 789 };
+-EOF
+-	if { (eval echo "$as_me:7545: \"$ac_compile\"") >&5
+-  (eval $ac_compile) 2>&5
+-  ac_status=$?
+-  echo "$as_me:7548: \$? = $ac_status" >&5
+-  (exit $ac_status); } ; then
+-		mv conftest.o data.o && \
+-		( $AR $AR_OPTS conftest.a data.o ) 2>&5 1>/dev/null
+-	fi
+-	rm -f conftest.$ac_ext data.o
+-	cat >conftest.$ac_ext <<EOF
+-#line 7555 "configure"
+-int	testfunc()
+-{
+-#if defined(NeXT)
+-	exit(1);	/* I'm told this linker is broken */
+-#else
+-	extern int testdata[3];
+-	return testdata[0] == 123
+-	   &&  testdata[1] == 456
+-	   &&  testdata[2] == 789;
+-#endif
+-}
+-EOF
+-	if { (eval echo "$as_me:7568: \"$ac_compile\"") >&5
+-  (eval $ac_compile) 2>&5
+-  ac_status=$?
+-  echo "$as_me:7571: \$? = $ac_status" >&5
+-  (exit $ac_status); }; then
+-		mv conftest.o func.o && \
+-		( $AR $AR_OPTS conftest.a func.o ) 2>&5 1>/dev/null
+-	fi
+-	rm -f conftest.$ac_ext func.o
+-	( eval $ac_cv_prog_RANLIB conftest.a ) 2>&5 >/dev/null
+-	cf_saveLIBS="$LIBS"
+-	LIBS="conftest.a $LIBS"
+-	if test "$cross_compiling" = yes; then
+-  cf_cv_link_dataonly=unknown
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-#line 7584 "configure"
+-#include "confdefs.h"
+-
+-	int main()
+-	{
+-		extern int testfunc();
+-		exit (!testfunc());
+-	}
+-
+-_ACEOF
+-rm -f conftest$ac_exeext
+-if { (eval echo "$as_me:7595: \"$ac_link\"") >&5
+-  (eval $ac_link) 2>&5
+-  ac_status=$?
+-  echo "$as_me:7598: \$? = $ac_status" >&5
+-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+-  { (eval echo "$as_me:7600: \"$ac_try\"") >&5
+-  (eval $ac_try) 2>&5
+-  ac_status=$?
+-  echo "$as_me:7603: \$? = $ac_status" >&5
+-  (exit $ac_status); }; }; then
+-  cf_cv_link_dataonly=yes
+-else
+-  echo "$as_me: program exited with status $ac_status" >&5
+-echo "$as_me: failed program was:" >&5
+-cat conftest.$ac_ext >&5
+-cf_cv_link_dataonly=no
+-fi
+-rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+-fi
+-	LIBS="$cf_saveLIBS"
+-
+-fi
+-
+-echo "$as_me:7618: result: $cf_cv_link_dataonly" >&5
+-echo "${ECHO_T}$cf_cv_link_dataonly" >&6
+-
+-if test "$cf_cv_link_dataonly" = no ; then
+-	cat >>confdefs.h <<\EOF
+-#define BROKEN_LINKER 1
+-EOF
+-
+-	BROKEN_LINKER=1
+-fi
+-
+ ###	Checks for library functions.
+ 
+ for ac_func in \

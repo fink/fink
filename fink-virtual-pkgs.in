@@ -25,7 +25,7 @@ use Getopt::Long;
 my $standalone = 0;
 UseFinkModules();
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
-my ($dlist, $hash, $pkgname, $epoch, @versions);
+my ($dlist, $hash, $pkgname, $epoch, @versions, $field, $provides);
 my %options = 
    (
      "dpkg" => 0,
@@ -41,25 +41,43 @@ if ($options{apt}) {
 	select FH;
 	}
 if ($standalone == 0)
-{	
+{
 	$dlist = Fink::VirtPackage->list();
-	foreach $pkgname (keys %$dlist) {
+	foreach $pkgname (sort keys %$dlist) {
 		$hash = $dlist->{$pkgname};
+		if ($options{'dpkg'} or $options{'apt'}) {
+			next if exists $hash->{builddependsonly}; # Do no pass builddependsonly packages to apt/dpkg
+		}
 		$epoch=0;
 		if ($options{dpkg}) {
 			if (@versions = parse_fullversion($hash->{version})) {
 				printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];
-			}	
+				# for provides we tell dpkg about them with the version as zero
+				if (exists $hash->{provides})
+				{
+					foreach $provides (split /,/,$hash->{provides})
+					{
+						$provides =~ s/\s+//gs;
+						print "$provides\t0\t0\t0\n";
+					}
+				}
+			}
 		} else {
-			printf "Package: %s\nStatus: install ok installed\nVersion: %s\n\n", $hash->{package},$hash->{version};
-		}	
+			printf "Package: %s\nStatus: install ok installed\nVersion: %s\n", $hash->{package},$hash->{version};
+			foreach $field (keys %$hash)
+			{
+				next if (($field eq "package") or ($field eq "status") or ($field eq "version"));
+				printf "%s: %s\n",$field,$hash->{$field};
+			}
+			print "\n";
+		}
 	}
 }
 else
 {
 # We are running without fink modules
 	my ($dummy);
-	my ($darwin_version, $macosx_version, $cctools_version, $cctools_single_module);
+	my ($darwin_version, $macosx_version);
 	# determine the kernel version
 	($dummy,$dummy,$darwin_version) = uname();
 
@@ -75,39 +93,11 @@ else
 			}
 		}
 	}
-
-	# now find the cctools version
-	if (-x "/usr/bin/ld") {
-		foreach(`what /usr/bin/ld`) {
-			if (/cctools-(\d+)/) {
-				$cctools_version = $1;
-				last;
-			}
-		}
-	}
-
-	if (my $cctestfile = POSIX::tmpnam()) {
-		system("touch ${cctestfile}.c");
-		if (system("cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module") == 0) {
-			$cctools_single_module = '1.0';
-		} else {
-			$cctools_single_module = undef;
-		}
-		unlink($cctestfile);
-		unlink("${cctestfile}.c");
-		unlink("${cctestfile}.dylib");
-	}
 	if ($options{dpkg})
 	{
 		printf "darwin\t0\t%s\t1\n",$darwin_version;
 		if ($macosx_version ne 0) {
 			printf "macosx\t0\t%s\t1\n",$macosx_version;
-		}
-		if (defined ($cctools_version)) {
-			printf "cctools\t0\t%s\t1\n",$cctools_version;
-		}
-		if ($cctools_single_module) {
-			printf "cctools-single-module\t0\t%s\t1\n",$cctools_single_module;
 		}
 	}
 	else
@@ -116,12 +106,6 @@ else
 		if ($macosx_version ne 0) {
 			printf "Package: macosx\nStatus: install ok installed\nVersion: %s-1\n\n",$macosx_version;
 		}
-		if (defined ($cctools_version)) {
-			printf "Package: cctools\nStatus: install ok installed\nVersion: %s-1\n\n",$cctools_version;
-		}
-		if ($cctools_single_module) {
-			printf "Package: cctools-single-module\nStatus: install ok installed\nVersion: %s-1\n\n",$cctools_single_module;
-		}	
 	}
 }
 if ($options{apt}) {
@@ -132,37 +116,37 @@ if ($options{apt}) {
 
 sub UseFinkModules {
 	# Be careful about using fink modules
-	if (-d '@BASEPATH@/lib/perl5') {
-		use lib '@BASEPATH@/lib/perl5';
-	}
-	else
+	eval { 
+        die unless -d '@BASEPATH@/lib/perl5';
+
+        require lib;
+        import lib '@BASEPATH@/lib/perl5';
+
+		require Fink::VirtPackage;
+		require Fink::Services;
+		import Fink::Services qw(parse_fullversion read_config)
+	};
+
+	$standalone = 1 if $@;
+
+	# read the configuration file
+	if ($standalone != 1)
 	{
-		$standalone=1;
+		my $configpath = '@BASEPATH@/etc/fink.conf';
+                my $config;
+		if (-f $configpath) {
+			$config = read_config($configpath,
+                                              { Basepath => '@BASEPATH@' }
+                                             );
+		} else {
+			$standalone=1;
+		}
 	}
-	if (eval { require Fink::Status; 1; }) {
-		import Fink::Status;
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::VirtPackage; 1; }) {
-		import Fink::VirtPackage;
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::Services; 1; }) {
-		import Fink::Services qw(&parse_fullversion)
-	}
-	else
-	{
-		$standalone=1;
-	}
+
 	if ($standalone == 1)
 	{
-		use POSIX qw(uname);
+		require POSIX;
+		import POSIX qw(uname);
 	}
 
 }

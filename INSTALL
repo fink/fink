@@ -1,11 +1,10 @@
-Generated from $Fink: install.xml,v 1.16 2003/02/26 14:51:52 alexkhansen Exp
-$
+Generated from $Fink: install.xml,v 1.17 2003/06/22 15:35:13 dmrrsn Exp $
 
- Fink 0.5.2 Installation
+ Fink 0.6.2 Installation
 =========================
 
 These are the installation instructions for the "source" distribution of
-Fink 0.5.2. This document does not apply to the "binary
+Fink 0.6.2. This document does not apply to the "binary
 [http://fink.sourceforge.net/download/index.php]" distribution. There are
 instructions for both first time installation and upgrading from a previous
 version. Fast track instructions for the impatient are at the top.
@@ -24,22 +23,22 @@ can still use this section as an example.)
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.5.2-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.6.2-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
 "normal face" , your input is in "_bold_face_" (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of the
 output have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.5.2-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.5.2-full_
-   [frodo:~/fink-0.5.2-full] testuser% _./bootstrap.sh_/sw_
+   [frodo:~] testuser% _tar_xzf_fink-0.6.2-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.6.2-full_
+   [frodo:~/fink-0.6.2-full] testuser% _./bootstrap.sh_/sw_
    
    Welcome to Fink.
    
    ...
    Choose a method: [1] _1_
    
-   sudo /Users/testuser/fink-0.5.2-full/bootstrap.pl .sudo '/sw'
+   sudo /Users/testuser/fink-0.6.2-full/bootstrap.pl .sudo '/sw'
    Password:_(your_normal_password_here)_
    ...
    OK, I'll ask you some questions and update the configuration file in
@@ -75,20 +74,24 @@ output have been omitted ( "..." ).
    shells, add 'source /sw/bin/init.csh' to the init script '.cshrc' in your
    home directory. Enjoy.
    
-   [frodo:~/fink-0.5.2-full] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.5.2-full_
-   [frodo:~] testuser% _pico_.cshrc_
+   [frodo:~/fink-0.6.2-full] testuser% _cd_
+   [frodo:~] testuser% _rm_-r_fink-0.6.2-full_
+   [frodo:~] testuser% _open_/sw/bin/pathsetup.command_
 
-The last command launches you into a text file editor. Type "source
-/sw/bin/init.csh" , press return, press control-O, press return, press
-control-X. You're now back at the prompt:
+The last command runs a little script to help set up your Unix paths (and
+other things) for use with Fink. In most cases, it will run automatically,
+and prompt you for permission to make changes. If the script fails, you'll
+have to do things by hand.
 
-   [frodo:~] testuser% _source_.cshrc_
-   [frodo:~] testuser% _rehash_
-   [frodo:~] testuser% 
+(If you need to do things by hand, and you are using csh or tcsh, you need
+to make sure that the command "source /sw/bin/init.csh" is executed during
+startup of your shell, either by .login, .cshrc, .tcshrc, or something else
+appropriate. If you are using bash or similar shells, the command you need
+is ". /sw/bin/init.sh" , and places where it might get executed include
+.bashrc and .profile.)
 
-If you have several Terminal.app windows open, close the other ones. That's
-it, you now have a base system installed.
+Once you have set up the paths, open a new Terminal.app window, and close
+all other ones. That's it, you now have a base system installed.
 
 You can now install additional packages with the "fink" command, like this:
 
@@ -113,15 +116,15 @@ well-documented.
 
  Update Fast Track
 -------------------
-Start out by copying the "fink-0.5.2-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.6.2-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
 "normal face" , your input is in "_bold_face_" (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of the
 output have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.5.2-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.5.2-full_
-   [frodo:~/fink-0.5.2-full] testuser% _./inject.pl_/sw_
+   [frodo:~] testuser% _tar_xzf_fink-0.6.2-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.6.2-full_
+   [frodo:~/fink-0.6.2-full] testuser% _./inject.pl_/sw_
    sudo ./inject.pl /sw
    Password:_(your_normal_password_here)_
    Copying package descriptions
@@ -130,8 +133,8 @@ output have been omitted ( "..." ).
    
    Your Fink installation in '/sw' was updated with new fink packages.
    
-   [frodo:~/fink-0.5.2-full] testuser% _cd_pkginfo_
-   [frodo:~/fink-0.5.2-full/pkginfo] testuser% _./inject.pl_/sw_
+   [frodo:~/fink-0.6.2-full] testuser% _cd_pkginfo_
+   [frodo:~/fink-0.6.2-full/pkginfo] testuser% _./inject.pl_/sw_
    sudo ./inject.pl /sw
    Copying...
    ...
@@ -140,8 +143,8 @@ output have been omitted ( "..." ).
    files. Use appropriate fink commands to update the packages, e.g. 'fink
    update-all'.
    
-   [frodo:~/fink-0.5.2-full/pkginfo] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.5.2-full_
+   [frodo:~/fink-0.6.2-full/pkginfo] testuser% _cd_
+   [frodo:~] testuser% _rm_-r_fink-0.6.2-full_
    [frodo:~] testuser% _fink_update-all_
    ...
 
@@ -197,20 +200,20 @@ back to a working system when things break. You have been warned.
 
  Installation
 --------------
-First, you need to unpack the fink-0.5.2-full.tar.gz tarball. It is
+First, you need to unpack the fink-0.6.2-full.tar.gz tarball. It is
 recommended that you do this from the command line - StuffIt Expander has a
 tendency to screw up text files. So, go to the directory where you put the
 tarball, and run this command:
 
-   tar xzf fink-0.5.2-full.tar.gz
+   tar xzf fink-0.6.2-full.tar.gz
 
-You now have a directory named fink-0.5.2-full. Change to it with "cd
-fink-0.5.2-full" .
+You now have a directory named fink-0.6.2-full. Change to it with "cd
+fink-0.6.2-full" .
 
 The actual installation is performed by the perl script bootstrap.pl. It is
 accompanied by a small shell script, bootstrap.sh, which checks some basic
 requirements and then hands over control to the perl script. So, to start
-installation, go to the fink-0.5.2-full directory and run this command:
+installation, go to the fink-0.6.2-full directory and run this command:
 
    ./bootstrap.sh
 
@@ -271,7 +274,7 @@ on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/].
 ===========================
 
 If you already have Fink 0.3.x installed, you can update your installation
-to 0.5.2 with the built-in 'selfupdate' command.
+to 0.6.2 with the built-in 'selfupdate' command.
 
 
  Updating The Package Manager
@@ -311,7 +314,7 @@ with the 'update' command.
 ===========================
 
 If you already have Fink 0.2.x installed, you can update your installation
-to 0.5.2 with this package.
+to 0.6.2 with this package.
 
 Actually, there are two pieces that are updated independently: the package
 manager and the package descriptions. It is recommended to update the
@@ -321,7 +324,7 @@ package manager first.
  Updating The Package Manager
 ------------------------------
 To update the package manager, run the inject.pl script in the
-fink-0.5.2-full directory, like this:
+fink-0.6.2-full directory, like this:
 
    ./inject.pl
 
@@ -338,7 +341,7 @@ itself. ":-)" )
 
  Updating The Package Descriptions
 -----------------------------------
-If you downloaded the fink-0.5.2-full tarball, the package descriptions are
+If you downloaded the fink-0.6.2-full tarball, the package descriptions are
 in the subdirectory pkginfo. To install them, run the inject.pl script in
 that directory:
 
@@ -348,7 +351,7 @@ that directory:
 This inject.pl script works just like the one for the package manager.
 
 You can also grab the package descriptions as a separate tarball,
-packages-0.5.2. If you did that, just unpack it and run the inject.pl script
+packages-0.6.2. If you did that, just unpack it and run the inject.pl script
 inside.
 
 As a third alternative, you can have Fink automatically update itself to the

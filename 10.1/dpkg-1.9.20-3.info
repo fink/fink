@@ -7,7 +7,10 @@ Maintainer: Max Horn <max@quendi.de>
 Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
 PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/%f.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
+NoSetCC: true
 SetCC: cc
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
 ConfigureParams: --without-zlib --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info
 CompileScript: <<
  ./configure powerpc-apple-darwin %c

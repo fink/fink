@@ -1,7 +1,22 @@
-2003-07-11  Justin F. Hallett  <thesin@users.sourceforge.net>
+2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Changed all shlibs and dev pkg to actual pkgs, and split the
-	  pkgs that needed it.
+	* system-perl*: removed these, which are no longer needed with
+	VirtPackage.pm
+
+2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* apt.patch: modify sources.list for this distribution
+	* all packages: change of Maintainer to fink-core@
+
+2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Big revision, making sure that all files are properly coordinated
+	among the 4 bootstrap trees, with the file having the same name
+	in different trees whenever it is the same file
+
+2003-07-29  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* downgraded ncurses to current 10.2
 
 2003-07-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 

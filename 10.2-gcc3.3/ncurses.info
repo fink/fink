@@ -1,0 +1,87 @@
+Package: ncurses
+Version: 5.3
+Revision: 12
+GCC: 3.3
+Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source-MD5: 5dcc9faa93157eafa572494bffed131a
+PatchScript: perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
+Patch: %n.patch
+Essential: yes
+Depends: %N-shlibs (= %v-%r)
+BuildDepends: fink (>= 0.13.0), fink-prebinding
+ConfigureParams: --with-libtool --without-ada --with-shared --without-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo"
+NoSetCFLAGS: true
+NoSetLDFLAGS: true
+SetCFLAGS: -Wno-deprecated -isystem %p/include/ncurses
+NoSetCPPFLAGS: true
+SetCPPFLAGS: -no-cpp-precomp
+CompileScript: <<
+  LIBTOOL=/usr/bin/glibtool ./configure %c
+  make
+<<
+
+InstallScript: <<
+  make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib
+  mkdir -p %i/share/doc/%n
+  cp tack/README %i/share/doc/%n/README.tack
+  cp tack/COPYING %i/share/doc/%n/COPYING.tack
+
+ln -s %p/lib/libform.5.dylib %i/lib/libform.dylib.5
+ln -s %p/lib/libmenu.5.dylib %i/lib/libmenu.dylib.5
+ln -s %p/lib/libncurses.5.dylib %i/lib/libncurses.dylib.5
+ln -s %p/lib/libpanel.5.dylib %i/lib/libpanel.dylib.5
+
+<<
+DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+SplitOff: <<
+ Package: %N-shlibs
+ Replaces: %N (<= 5.3-1)
+ Depends: base-files
+ Essential: true
+ Files: <<
+  lib/libform.*.dylib
+  lib/libmenu.*.dylib
+  lib/libncurses++.*.dylib
+  lib/libncurses.*.dylib
+  lib/libpanel.*.dylib
+  lib/libform.dylib.5
+  lib/libmenu.dylib.5
+  lib/libncurses.dylib.5
+  lib/libpanel.dylib.5
+ <<
+ Shlibs: <<
+  %p/lib/libform.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libmenu.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libncurses++.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libncurses.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libpanel.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libform.dylib.5 6.0.0 %n (>= 5.3-12)
+  %p/lib/libmenu.dylib.5 6.0.0 %n (>= 5.3-12)
+  %p/lib/libncurses.dylib.5 6.0.0 %n (>= 5.3-12)
+  %p/lib/libpanel.dylib.5 6.0.0 %n (>= 5.3-12)
+ <<
+ DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+ Description: Shared libraries for ncurses package
+<<
+SplitOff2: <<
+ Package: %N-dev
+ Depends: %N-shlibs (= %v-%r)
+ Replaces: %N (<= 5.3-1)
+ BuildDependsOnly: True
+ Files: include lib/libform.dylib lib/libmenu.dylib lib/libncurses++.dylib lib/libncurses.dylib lib/libpanel.dylib lib/*.a lib/*.la
+ DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+ Description: Shared libraries for ncurses package
+<<
+Description: Full-screen ascii drawing library
+DescPort: <<
+The -no-cpp-precomp is strictly needed.
+More changes by Chris Zubrzycki to be more compatable with apple's lib
+Stupid bug in configure enables broken support, which breaks ncurses. I removed it.
+<<
+DescPackaging: <<
+First revision by David Ross.
+Previous versions by Christoph Pfisterer.
+<<
+License: OSI-Approved
+Maintainer: Chris Zubrzycki <beren12@users.sourceforge.net>
+Homepage: http://www.gnu.org/software/ncurses/ncurses.html

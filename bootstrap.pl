@@ -123,9 +123,9 @@ if ($> != 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
 	}
 	if ($answer eq "sudo") {
-		$cmd = "sudo $cmd";
+		$cmd = "/usr/bin/sudo $cmd";
 	} elsif ($answer eq "su") {
-		$cmd = "$cmd | su";
+		$cmd = "$cmd | /usr/bin/su";
 	} else {
 		print "ERROR: Can't continue as non-root.\n";
 		exit 1;
@@ -320,10 +320,10 @@ print "Creating fink tarball...\n";
 
 $script =
 	"tar -cf $installto/src/fink-$packageversion.tar ".
-	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
+	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
 	"ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-	"pathsetup.command.in postinstall.pl.in perlmod update mirror ".
-	"fink-virtual-pkgs.in shlibs.default.in\n";
+	"shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
+	"fink-virtual-pkgs.in mirror\n";
 
 foreach $cmd (split(/\n/,$script)) {
 	next unless $cmd;		# skip empty lines
@@ -338,10 +338,10 @@ foreach $cmd (split(/\n/,$script)) {
 
 print "Copying package descriptions...\n";
 
-$script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
+$script = "/bin/cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
 my $md5 = &file_MD5_checksum("$installto/src/fink-$packageversion.tar");
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-$script .= "chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
+$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+$script .= "/bin/chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
 
 foreach $cmd (split(/\n/,$script)) {
 	next unless $cmd;		# skip empty lines

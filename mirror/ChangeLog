@@ -1,3 +1,61 @@
+2003-11-28 David H. <dmalloc@users.sourceforge.net>
+	* Adding full mirror in Perth, Austrial
+		Maintainer:
+		Matthew Healey
+		matt_h@mac.com
+	* Addding distfiles mirror in Lancester, UK
+		Maintainer:
+		Yang He
+		 tech-staff@mirror.ac.uk
+	This is part of mirrors.ac.uk.
+
+2003-11-24 David H. <dmalloc@users.sourceforge.net>
+	* rjk admin reported that the server is now fixed.
+
+2003-11-21 David H. <dmalloc@users.sourceforge.net>
+	* New rsync policy is in effect. The flags
+		--delete --delete-after -az
+		are now mandatory.
+		Mailed all mirrors so they can heed this.
+		
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Corrected all entries to have upper case ISO
+		country codes, because the _keys file
+		says so.
+
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Added full mirror in Norway (rsync/distfiles)
+		trd.no.eu.finkmirrors.net
+		Maintainer:
+		Harvar Valeur
+		havarv@idi.ntnu.no
+		
+2003-11-19 David H. <dmalloc@users.sourceforge.net>
+	* Corrected the distfiles entry for San Fran
+		from .sf. to .sfo. to follow policy
+2003-11-05 David H. <dmalloc@users.sourceforge.net>
+	* Changed eu-hr to eur-hr to follow the
+		common scheme we use.
+
+2003-10-31 David H. <dmalloc@users.sourceforge.net>
+
+	* This is a cumulative update
+	* rsync Update Added:
+		Hrvoje Dogan, Rijeka Croatia
+		hdogan@dir.hr
+		Dave Schroeder, Madison WI
+		This is a dedicated 100Mbit
+		secondary Master
+		Dave Schroeder
+		das@doit.wisc.edu
+		A. J. Wright, Knoxville TN
+		SunSITE@UTK mirror
+		ajw@utk.edu
+		Rus Foster, Atlanta GA
+		jvsd.com
+	* distfile Update Added:
+		All of the above except for Atlanta
+
 2003-04-14 Max Horn  <max@quendi.de>
 
 	* sourceforge: Added new mirror heanet (Ireland)

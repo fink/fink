@@ -1,15 +1,211 @@
-2003-08-15  Justin F. Hallett <thesin@users.sourceforge.net>
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* VERSION: upped version to match head
+	* Makefile, fink.info.in: Modification of strategy for running the
+	test suite.  We now check for the presence of Test::More before
+	invoking the tests.  This will fail during bootstrap under 10.2
+	but will work at other times.  (Avoids the problems of introducing
+	new packages as essential.)
 
-2003-07-17  Justin F. Hallett <thesin@users.sourceforge.net>
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* VERSION: upped version to match head
+	* fink.info.in, bootstrap.pl: Run the test suite while building
+	fink.  (Requires new bootstrap packages file-spec-pm, test-simple-pm, 
+	and test-harness-pm when running under perl 5.6.x.)
 
-2003-07-10  Dave Morrison <dmrrsn@users.sourceforge.net>
+2003-11-26  Michael G Schwern <schwern@pobox.com>
 
-	* created new CVS branch "shlibs", for final development of fink
-	code to implement the shlibs project
+	* fink.in: Last change forgot to read_config() so fink wouldn't work.
+
+2003-11-25  Michael G Schwern <schwern@pobox.com>
+
+	* fink-virtual-pkgs.in, fink.in, inject.pl, postinstall.pl.in:
+	Ensuring Basepath is set in Fink::Config.
+	* fink.in: Making option handling bits readable.
+	* fink.in: Ensuring Fink::Config is loaded before Fink::FinkVersion
+	used
+
+2003-11-20  Michael G Schwern <schwern@pobox.com>
+
+	* Makefile: run setup.sh before the tests so we have all the files
+		generated with a basepath pointing to a test base.  This should
+		allow the tests to run even if fink isn't installed.
+
+2003-11-20  Michael G Schwern <schwern@pobox.com>
+
+	* fink-virtual-pkgs.in: Cleaning up logic to check for standalone
+	and load modules.  Also, POSIX was always loaded and the fink
+	Perl library path added to lib, standalone or not.
+
+2003-11-20  Michael G Schwern <schwern@pobox.com>
+
+	* fink.info.in: Disable running tests as part of the install process
+	until the dependency on Test::More and an updated Test::Harness is
+	resolved.
+
+2003-11-19  Michael G Schwern <schwern@pobox.com>
+	
+	* Makefile: re-enabling Command.pm test.  Disabling was premature.  
+	No failure report was given, no analysis done.  Please post a
+	report to fink-devel.
+
+2003-11-19  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Makefile: disable Command.pm test since it's not in use yet
+	and fails on some systems.
+
+2003-11-19  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* fink.conf.5.in: Document the new MatchPackageRegEx.
+	
+2003-11-19  Max Horn <max@quendi.de>
+
+	* fink.info.in: Synced with regular fink.info file.
+
+2003-11-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.17.1, a bugfix
+	release on branch_0_17
+
+2003-11-16  Max Horn <max@quendi.de>
+
+	* fink.info.in, inject.pl: Automatically run the tests are part of
+	  the CompileScript in fink.info.
+
+2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: Make fink-virtual-pkgs print builddependsonly
+	  packages on the command-line when not being called in "dpkg" or
+	  "apt" mode (for debugging).
+	* Makefile: added "commit" target, as well as adding the "test" target
+	  as a dep for a few other targets.
+
+2003-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.17.0
+
+2003-11-11  Michael G Schwern <schwern@pobox.com
+
+	* Makefile: tests were running against the installed version instead
+	of the new version in the perlmod directory
+
+2003-11-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.16.2, a bugfix
+	release on the branch_0_16 branch
+
+2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.16.1, a bugfix
+	release on the branch_0_16 branch
+
+2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in:  Further sanity checking on sources.list file:
+	try to correct errors which might have been introduced when using
+	dselect to modify sources.list in the recent past.
+
+2003-11-04  Max Horn <max@quendi.de>
+
+	* Makefile: Dummy Makefile so we can do "make test" to run the unit tests.
+
+2003-11-04  Max Horn <max@quendi.de>
+
+	* INSTALL*, README*, USAGE*: Updated to latest generated versions.
+	* INSTALL, INSTALL.html: Updated distribution version (was 0.5.2, is 0.6.1)
+
+2003-11-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* bootstrap.pl bootstrap.sh postinstall.pl.in: just being pedantic,
+	updating our external calls to system versions, for safety.
+
+2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.16.0, which does
+	not include the perl module changes from 2003-10-21
+
+2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: Compare the distribution written in sources.list
+	file with the Distribution in fink.conf, and offer to modify
+	sources.list when needed
+
+2003-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.15.0
+
+2003-10-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.14.3, a beta release
+	for folks testing 10.2-gcc3.3 (and 10.3)
+
+2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.14.2, a bugfix
+	release on the 0.14.0 branch
+
+2003-10-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.14.1, a beta release
+	for folks testing 10.2-gcc3.3 (and 10.3)
+
+2003-10-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.14.0
+
+2003-10-06  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* fink.8.in, fink.conf.in: Update manpages for selfupdate with rsync.
+
+2003-10-01  Rob Braun <bbraun@users.sourceforge.net>
+
+	* fink.conf.5.in: Add selfupdate-rsync option for updating 
+	via rsync instead of cvs.
+
+2003-09-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.9, a beta release on 
+	the test-10.3 branch 
+
+2003-09-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.8
+
+2003-09-17  Dave Vasilevsky <vasi@users.sourceforge.net>
+
+	* Mirror.pm: Fix master:master:master: bug
+	* Package.pm, Services.pm: Stop Fink from choking on .debs
+	without revisions (which do not come from Fink), as per dpkg
+	spec.
+
+2003-09-08  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: Allow Provides, and don't propogate
+	builddependsonly virtual packages to apt/dpkg.
+
+2003-09-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: set up the dists symlink correctly for any
+	post-10.1 distribution
+
+2003-08-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.7; this release
+	only contains the fix for Boostrap.pm and is otherwise unchanged
+
+2003-08-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.6
+
+2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.5; this release
+	contains a fix for spurious output from the cctools -single_module
+	check
+
+2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.4; this release
+	does not contain the 10.3-ready code or the fink-prebinding
 
 2003-07-07  Peter O'Gorman <ogorman@users.sourceforge.net>
 
@@ -98,13 +294,13 @@
 2003-04-15  Ben Hines <bhines@alumni.ucsd.edu>
 
 	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.5.
-	
+
 2003-04-05  Ben Hines <benh57@users.sourceforge.net>
 
 	* fink.conf.5.in: Document new mirroring options
-	
+
 	* inject.pl: Add MD5 to temp info file.
-	
+
 2003-03-11  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.12.1
@@ -112,9 +308,9 @@
 2003-03-07  Ben Hines <benh57@users.sourceforge.net>
 
 	* AUTHORS: Add some more contributors.
-	
+
 	* fink.8.in: Document --ignore-restrictive.
-	
+
 2003-03-06  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: Print more appropriate message when run on x86 Darwin; fix
@@ -124,7 +320,7 @@
 
 	* fink.in: Fixed typo in help string (it's -h not -H as alias for --help);
 	  removed the -? alias for --help.
-	
+
 	* fink.in: Removed the copyright notice and the description of what fink
 	  is from "fink --help" and added the (updated) copyright notice to
 	  "fink --version" where most GNU tools have it.
@@ -152,10 +348,10 @@
 2003-01-15  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* fink.conf.5.in: fink.conf manual page.
-	
+
 	* bootstrap.pl, inject.pl, install.sh, setup.sh: Install fink.conf
 	manual page.
-	
+
 2003-01-14  Max Horn  <max@quendi.de>
 
 	* fink.in: Fixing problems with exit codes (Patch #662894).
@@ -163,14 +359,14 @@
 2003-01-13  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* postinstall.pl.in: Fixed formatting, cleaned up.
-	
+
 2003-01-12  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* many files: updated copyright notices to include 2003
 
 2003-01-05  Justin F. Hallett <thesin@users.sourceforge.net>
 
-        * fink.in:  Added description for purge option in show_help
+	* fink.in: Added description for purge option in show_help
 
 2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
 
@@ -178,7 +374,7 @@
 	from %p/fink/dists to 10.1 or 10.2 (suggested by Ben Hines)
 
 	* shlibs.default.in: Update to latest format for Shlibs field
-	
+
 
 2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
 
@@ -274,7 +470,7 @@
 
 	* update-fink.sh: script to update a user's installation from 10.1 
 	  to 10.2
-	
+
 2002-08-11  Max Horn  <max@quendi.de>
 
 	* fink.8.in, USAGE, USAGE.html: Updated description of the remove command.
@@ -333,8 +529,8 @@
 2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* fink.in: Added brief note about index to command listing.
-	
-	* fink.8.in: Added index and information about fink.db.	
+
+	* fink.8.in: Added index and information about fink.db.
 
 2002-03-26  Max Horn  <max@quendi.de>
 
@@ -347,7 +543,7 @@
 2002-03-13  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* fink.in: Made option position strict for command
-	options. eg 'fink install package --yes' no longer works	
+	options. eg 'fink install package --yes' no longer works
 
 2002-03-02  Peter O'Gorman <ogorman@users.sourceforge.net>
 
@@ -503,7 +699,7 @@
 
 	* bootstrap.pl: fixed creation of FinkVersion.pm (has to be
 	done before any "use Fink:XYZ;" statment)
-	
+
 2001-09-02  Christoph Pfisterer  <cp@chrisp.de>
 
 	* mkrelease.sh: Moved to separate CVS module 'scripts'.
