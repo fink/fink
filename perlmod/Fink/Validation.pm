@@ -61,7 +61,17 @@ our %obsolete_fields = map {$_, 1}
 # Fields to check for hardcoded /sw
 our %check_hardcode_fields = map {$_, 1}
 	( 
-		qw(patchscript compilescript installscript),
+		qw(
+		 patchscript
+		 compilescript
+		 installscript
+		 shlibs
+		 preinstscript
+		 postinstscript
+		 prermscript
+		 postrmscript
+		 conffiles
+		),
 		(map {"set".$_} @set_vars)
 	);
 
@@ -90,8 +100,8 @@ our %allowed_license_values = map {$_, 1}
 	 "Restrictive", "Commercial"
 	);
 
-# List of all known fields.
-our %known_fields = map {$_, 1}
+# List of all valid fields.
+our %valid_fields = map {$_, 1}
 	(
 		qw(
 		 package
@@ -157,6 +167,47 @@ our %known_fields = map {$_, 1}
 		 license
 		)
 	);
+
+# List of all fields which are legal in a splitoff
+our %splitoff_valid_fields = map {$_, 1}
+	(
+		qw(
+		 package
+		 files
+		 type
+		 depends
+		 builddepends
+		 provides
+		 conflicts
+		 replaces
+		 recommends
+		 suggests
+		 enhances
+		 pre-depends
+		 essential
+		 builddependsonly
+		 installscript
+		 shlibs
+		 runtimevars
+		 jarfiles
+		 preinstscript
+		 postinstscript
+		 prermscript
+		 postrmscript
+		 conffiles
+		 infodocs
+		 docfiles
+		 daemonicfile
+		 daemonicname
+		 description
+		 descdetail
+		 descusage
+		 descpackaging
+		 descport
+		)
+	);
+
+
 
 END { }				# module clean-up code here (global destructor)
 
@@ -310,14 +361,54 @@ sub validate_info_file {
 			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
 			$looks_good = 0;
 		}
+
 		# Check for hardcoded /sw.
 		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
 			print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
 			$looks_good = 0;
 			next;
 		}
+
+		# Validate splitoffs
+		if ($field =~ m/^splitoff([2-9]|\d\d)?$/) {
+			# Parse the splitoff properties
+			my $splitoff_properties = $properties->{$field};
+			my $splitoff_field = $field;
+			$splitoff_properties =~ s/^\s+//gm;
+			$splitoff_properties = &read_properties_var($filename, $splitoff_properties);
+			# Right now, only 'Package' is a required field for a splitoff.
+			foreach $field (qw(package)) {
+				unless ($splitoff_properties->{lc $field}) {
+					print "Error: Required field \"$field\" missing. ($filename)\n";
+					$looks_good = 0;
+				}
+			}
+		
+			foreach $field (keys %$splitoff_properties) {
+				$value = $splitoff_properties->{$field};
+
+				# Check for hardcoded /sw.
+				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
+					print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
+					$looks_good = 0;
+					next;
+				}
+
+				# Warn if field is unknown or invalid within a splitoff
+				unless ($splitoff_valid_fields{$field}) {
+					if ($valid_fields{$field}) {
+						print "Warning: Field \"$field\" is not valid in splitoff. ($filename)\n";
+					} else {
+						print "Warning: Field \"$field\" is unknown. ($filename)\n";
+					}
+					$looks_good = 0;
+					next;
+				}
+			}
+		}
+
 		# Warn if field is unknown
-		unless ($known_fields{$field}
+		unless ($valid_fields{$field}
 				 or $field =~ m/^splitoff([2-9]|\d\d)$/
 				 or $field =~ m/^source([2-9]|\d\d)$/
 				 or $field =~ m/^source([2-9]|\d\d)-md5$/
@@ -328,27 +419,6 @@ sub validate_info_file {
 			$looks_good = 0;
 			next;
 		}
-		
-		# Extremly simply splitoff validation: We simply parse the Splitoff fields.
-		# TODO: This is not enough by far. We should validate all fields contained
-		# in the splitoff. Some fields are not allowed inside splitoffs, some are
-		# *only* valid in splitoffs, etc. We should factor out some of the code
-		# in this procedure so it can be used both on the main package, and on
-		# its splitoffs.
-		if ($field =~ m/^splitoff([2-9]|\d\d)?$/) {
-			my $splitoff_properties = $properties->{$field};
-			my $splitoff_field = $field;
-			$splitoff_properties =~ s/^\s+//gm;
-			$splitoff_properties = &read_properties_var($filename, $splitoff_properties);
-			# Required fields for splitoffs: Package, Files
-			foreach $field (qw(package files)) {
-				unless ($splitoff_properties->{lc $field}) {
-					print "Error: Required field \"$field\" missing. ($filename)\n";
-					$looks_good = 0;
-				}
-			}
-		}
-
 	}
 
 	# Warn for missing / overlong package descriptions

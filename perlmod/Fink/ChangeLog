@@ -3,6 +3,8 @@
 	* Validation.pm: Minimal validation of splitoffs. This definitely should be
 	  improved ASAP, though.
 	* PkgVersion.pm: Propagate epoch to splitoffs.
+	* Validation.pm: Improved validation of splitoffs. Check more fields for
+	  hardcoded /sw.
 
 2003-11-08  Max Horn  <max@quendi.de>
 
