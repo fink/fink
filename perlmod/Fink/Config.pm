@@ -93,9 +93,15 @@ sub new_with_path {
 	my($proto, $path) = @_;
 	my $class = ref($proto) || $proto;
 
-	my $properties = Fink::Services::read_properties($path);
-	my $self = $class->new_from_properties($properties);
-	$self->{_path} = $path;
+	my $props = Fink::Services::read_properties($path);
+
+	my $self = bless({ _path => $path }, $class);
+
+	while (my($key, $value) = each %$props) {
+		$self->{$key} = $value unless $key =~ /^_/;
+	}
+
+	$self->initialize();
 
 	return $self;
 }
@@ -119,9 +125,19 @@ sub initialize {
 	$self->SUPER::initialize();
 
 	$config = $self;
+
 	$basepath = $self->param("Basepath");
-	die "Basepath not set in config file \"".$self->{_path}."\"!\n"
-		unless (defined $basepath and $basepath);
+        unless (defined $basepath and $basepath) {
+            my $error = 'Basepath not set';
+            if( $self->{_path} ) {
+                $error .= qq{ in config file "$self->{_path}"};
+            }
+            else {
+                $error .= qq{, no config file};
+            }
+            $error .= "!\n";
+            die $error;
+        }
 
 	$buildpath = $self->param_default("Buildpath", "$basepath/src");
 

@@ -1,3 +1,8 @@
+2003-11-21  Michael G Schwern <schwern@pobox.com
+
+	* Config.pm: Error message wrong when Basepath not in config file
+	or config file missing entirely.  Tested.
+	
 2003-11-21  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Re-improved early-escape from recursive percent
