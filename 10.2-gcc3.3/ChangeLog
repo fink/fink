@@ -1,3 +1,7 @@
+2004-11-17  Daniel Macks  <dmacks@netspace.org>
+
+	* tar.info: sync with version in stable tree (1.14-1)
+
 2004-03-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* unzip.info: change download location to fink, for reliable

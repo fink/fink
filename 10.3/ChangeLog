@@ -1,3 +1,7 @@
+2004-11-17  Daniel Macks  <dmacks@netspace.org>
+
+	* tar.info: sync with version in stable tree (1.14-1)
+
 2004-10-25  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* storable-pm.info: Allow opendarwin's perl582.
