@@ -1,6 +1,6 @@
 2003-06-13  Ben Hines <benh57@users.sourceforge.net>
 
-	* NetAccess.pm: Clarify nesting too deep error.
+	* NetAccess.pm: Support file:// and bare tarball names without choking
 	
 2003-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
