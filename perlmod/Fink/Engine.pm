@@ -73,6 +73,7 @@ our %commands =
     'list' => [\&cmd_list, 1, 0],
     'listpackages' => [\&cmd_listpackages, 1, 0],
     'selfupdate' => [\&cmd_selfupdate, 0, 1],
+    'selfupdate-cvs' => [\&cmd_selfupdate_cvs, 0, 1],
     'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
     'validate' => [\&cmd_validate, 0, 0],
     'check' => [\&cmd_validate, 0, 0],
@@ -208,6 +209,11 @@ sub cmd_bootstrap {
 sub cmd_selfupdate {
   require Fink::SelfUpdate;
   Fink::SelfUpdate::check();
+}
+
+sub cmd_selfupdate_cvs {
+  require Fink::SelfUpdate;
+  Fink::SelfUpdate::check(1);
 }
 
 sub cmd_selfupdate_finish {

@@ -1,3 +1,10 @@
+2001-11-02  Christoph Pfisterer  <cp@chrisp.de>
+
+	* SelfUpdate.pm: Major rewrite. Now gives the user the choice
+	between tracking point releases (the usual packages-#.#.#.tar.gz
+	procedure) and setting up direct CVS updating.
+	* Engine.pm: Added a selfupdate-cvs command.
+
 2001-11-01  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Mirror.pm (new_from_field): Disabled the case for leaving out
