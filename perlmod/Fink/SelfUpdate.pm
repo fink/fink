@@ -23,7 +23,7 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp &print_breaking
-					  &prompt &prompt_boolean);
+					  &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
@@ -52,107 +52,114 @@ END { }				# module clean-up code here (global destructor)
 ### check for new Fink release
 
 sub check {
-	my $usecvs = shift || 0;
+	my $useopt = shift || 0;
 	my ($srcdir, $finkdir, $latest_fink, $installed_version, $answer);
 
 	$srcdir = "$basepath/src";
 	$finkdir = "$basepath/fink";
-
-	if (-d "$finkdir/CVS") {
-		if ($usecvs) {
-			$answer = 1;
+	if ($useopt != 0) {
+		&print_breaking("Please use fink-selfupdate, using selfupdate-cvs ".
+			"is deprecated. \n");
+	}
+	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
+	# The user has not chosen a selfupdatemethod yet, always ask
+	# if the fink.conf setting is not there.
+		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
+		$answer = &prompt_selection("Choose an update method", 1, {"rsync" => "rsync",
+			"cvs" => "cvs", "point" => "Stick to point releases"}, "rsync","cvs","point");
+		$config->set_param("SelfUpdateMethod", $answer);
+		$config->save();	
+	}
+	elsif (! defined($config->param("SelfUpdateMethod") )) {
+		if ($useopt == 1) {
+			$answer = "cvs";	
+		}
+		else {
+			$answer = "rsync";
+		}
+		&print_breaking("fink is setting your default update method to $answer \n");
+		$config->set_param("SelfUpdateMethod", $answer);
+		$config->save();
+	}
+	# By now the config param SelfUpdateMethod should be set.
+	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
+		if (-f "$finkdir/stamp-rsync-live") {
+			unlink "$finkdir/stamp-rsync-live";
+		}
+		if (-d "$finkdir/dists/CVS") {
+			&do_direct_cvs();
+			&do_finish();
+			return;
 		} else {
-			print "\n";
-			$answer =
-				&prompt_boolean("Your Fink installation is set up to update package ".
-								"descriptions directly from CVS. Do you want to ".
-								"use this setup and update now?", 1);
-		}
-		if (not $answer) {
+			&setup_direct_cvs();
+			&do_finish();
 			return;
 		}
-
-		&do_direct_cvs();
+	}
+	elsif (($config->param("SelfUpdateMethod") eq "rsync") and $useopt != 1){
+		&do_direct_rsync();
 		&do_finish();
 		return;
 	}
-
+	# Hm, we were called with a different option than the default :(
 	$installed_version = &pkginfo_version();
-	if ($installed_version eq "cvs" or -d "$finkdir/dists/CVS") {
-		print "\n";
+	if (($config->param("SelfUpdateMethod") ne "rsync") and $useopt == 2) {
 		$answer =
-			&prompt_boolean("You have previously used CVS to update package ".
-							"descriptions, but your Fink installation is not ".
-							"set up for direct CVS updating (without inject.pl). ".
-							"Do you want to set up direct CVS updating now?", 1);
-		if (not $answer) {
+			&prompt_boolean("Do you wish to change the default selfupdate method ".
+				"to rsync",1);
+		if (! $answer) {
 			return;
 		}
-
-		&setup_direct_cvs();
+		$config->set_param("SelfUpdateMethod", "rsync");
+		$config->save();	
+		&do_direct_rsync();
 		&do_finish();
-		return;
+		return;		
 	}
-
-
-	if ($usecvs or not $config->param_boolean("SelfUpdateNoCVS")) {
-		print "\n";
+	if (($config->param("SelfUpdateMethod") ne "cvs") and $useopt == 1) {
 		$answer =
-			&prompt_boolean("The selfupdate function can track point releases ".
-							"or it can set up your Fink installation to update ".
-							"package descriptions from CVS. Updating from CVS ".
-							"has the advantage that it is more up to date than ".
-							"the last point release. On the other hand, ".
-							"the point release may be more mature or have ".
-							"less bugs. Nevertheless, CVS is recommended. ".
-							"Do you want to set up direct CVS updating?",
-							$usecvs);
-		if (not $answer) {
-			print "\n";
-			&print_breaking("Okay, the selfupdate command will stick to point ".
-							"releases from now on. If you ever rethink your ".
-							"decision, run 'fink selfupdate-cvs' to be asked ".
-							"again.");
-			print "\n";
+			&prompt_boolean("Do you wish to change the default selfupdate method ".
+				"to cvs",1);
+		if (! $answer) {
+			return;
 		}
-	} else {
-		$answer = 0;
-	}
-	if ($answer) {
+		$config->set_param("SelfUpdateMethod", "cvs");
+		$config->save();	
 		&setup_direct_cvs();
 		&do_finish();
 		return;
 	}
-
-	# remember the choice
-	$config->set_param("SelfUpdateNoCVS", "true");
-	$config->save();
-
-	# get the file with the current release number
-	my $currentfink;
-	$currentfink = "CURRENT-FINK";
-	### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
-	if ($Fink::Config::distribution =~ /10.1/) {
-			$currentfink = "LATEST-FINK";
+	if (($config->param("SelfUpdateMethod") eq "point")) {
+		# get the file with the current release number
+		my $currentfink;
+		$currentfink = "CURRENT-FINK";
+		### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
+		if ($Fink::Config::distribution =~ /10.1/) {
+				$currentfink = "LATEST-FINK";
+		}
+	
+		if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
+			die "Can't get latest version info\n";
+		}
+		$latest_fink = `cat $srcdir/$currentfink`;
+		chomp($latest_fink);
+		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" )
+		{
+			# check if we need to upgrade
+			if (&version_cmp($latest_fink . '-1', '<=', $installed_version . '-1')) {
+				print "\n";
+				&print_breaking("You already have the package descriptions from ".
+								"the latest Fink point release. ".
+								"(installed:$installed_version available:$latest_fink)");
+				return;
+			}
+		} else {
+			&execute("rm -f $finkdir/stamp-rsync-live $finkdir/stamp-cvs-live");
+			&execute("find $finkdir -name \"CVS\" -type d | xargs rm -rf");
+		}
+		&do_tarball($latest_fink);
+		&do_finish();
 	}
-
-	if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
-		die "Can't get latest version info\n";
-	}
-
-	# check if we need to upgrade
-	$latest_fink = `cat $srcdir/$currentfink`;
-	chomp($latest_fink);
-	if (&version_cmp($latest_fink . '-1', '<=', $installed_version . '-1')) {
-		print "\n";
-		&print_breaking("You already have the package descriptions from ".
-						"the latest Fink point release. ".
-						"(installed:$installed_version available:$latest_fink)");
-		return;
-	}
-
-	&do_tarball($latest_fink);
-	&do_finish();
 }
 
 ### set up direct cvs
@@ -496,7 +503,7 @@ sub do_direct_rsync {
 	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
 	my $dist = $Fink::Config::distribution;
 	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://fink.opendarwin.org/finkinfo/");
-
+	my $touchcmd = "touch stamp-rsync-live && rm -f stamp-cvs-live";
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
 	if (Fink::Config::verbosity_level() > 1) {
@@ -518,39 +525,32 @@ sub do_direct_rsync {
 	# selfupdate-cvs.  However, don't actually do the removal until
 	# we've tried to put something there.
 	$rmcmd = "find . -name CVS | xargs rm -rf ";
-	$vercmd = "rsync -az $verbosity $rsynchost/VERSION $dist/VERSION";
+	$vercmd = "rsync -az $verbosity $rsynchost/VERSION VERSION";
+	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
+	&print_breaking($msg);
 	foreach $tree ($config->get_treelist()) {
 		if( !grep(/stable/,$tree) ) {
 			next;
 		}
 		$cmd = "rsync -az --delete-after $verbosity $rsynchost/$dist/$tree/finkinfo $dist/$tree/";
-		$msg = "I will now run the rsync command to retrieve the latest package descriptions for $tree. ";
-
 		if (! -d "$dist/$tree/" ) {
 			mkdir "$dist/$tree/";
 		}
-
-		$rmcmd = "find . -name CVS | xargs rm -rf ";
-		$vercmd = "rsync -az $verbosity $rsynchost/VERSION $dist/VERSION";
+		$msg = "Updating $tree \n";
 		if ($sb[4] != 0 and $> != $sb[4]) {
 			($username) = getpwuid($sb[4]);
 			$cmd = "su $username -c '$cmd'";
-			$rmcmd = "su $username -c '$rmcmd'";
-			$vercmd = "rsync -az $verbosity $rsynchost/VERSION $dist/VERSION";
-			$msg .= "The 'su' command will be used to run the rsync command as the user '$username'. ";
 		}
-
-		print "\n";
 		&print_breaking($msg);
-		print "\n";
-
 		if (&execute($cmd)) {
 			die "Updating $tree using rsync failed. Check the error messages above.\n";
 		}
 	}
 	&execute($rmcmd);
 	&execute($vercmd);
+	&execute($touchcmd);
 }
+
 
 ### EOF
 1;

@@ -70,7 +70,9 @@ sub pkginfo_version {
 	my $pv = "0";
 	my ($fn, $v);
 	foreach $fn (glob("@BASEPATH@/fink/stamp-*")) {
-		if ($fn =~ /\/stamp-cvs/) {
+		if ($fn =~ /\/stamp-rsync/) {
+			return "rsync";
+		} elsif ($fn =~ /\/stamp-cvs/) {
 			return "cvs";
 		} elsif ($fn =~ /\/stamp-rel-(.+)$/) {
 			$v = $1;

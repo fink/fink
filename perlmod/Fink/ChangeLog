@@ -1,3 +1,8 @@
+2003-10-04  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Selfupdate.pm: Give the user some choice of update method; use a 
+	stamp-rsync-live file when using the rsync method.
+	
 2003-10-02  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Add updating of the VERSION file when using
