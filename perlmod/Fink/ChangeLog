@@ -3,6 +3,8 @@
 	* Engine.pm: If the package name is being truncated in list/apropos
 	print an ellipses ("...") so that the user knows about it.
 
+	* Selfupdate.pm: Don't try to su or chown to an undefined $username.
+	
 2003-12-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Rearranged the list of allowed fields and added

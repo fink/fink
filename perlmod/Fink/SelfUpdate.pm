@@ -619,8 +619,10 @@ RSYNCAGAIN:
 	$cmd = "rsync -az --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
-		$cmd = "/usr/bin/su $username -c \"$cmd\"";
-		system("/usr/sbin/chown -R $username '$basepath/fink/$dist'");
+		if ($username) {
+			$cmd = "/usr/bin/su $username -c \"$cmd\"";
+			system("/usr/sbin/chown -R $username '$basepath/fink/$dist'");
+		}
 	}
 	&print_breaking($msg);
 
