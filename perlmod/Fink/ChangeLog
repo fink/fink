@@ -1,5 +1,11 @@
 2001-08-26  Max Horn  <max@quendi.de>
 
+	* Validation.pm: New Module. Contains the code for validation of
+	both .info and .deb files.
+	* Engine.pm: moved validation code to new module.
+
+2001-08-26  Max Horn  <max@quendi.de>
+
 	* Engine.pm: added new command "validate" (alias "check") which
 	validates a given package .info file or .deb file. Not finished.
 
