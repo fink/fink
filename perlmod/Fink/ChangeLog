@@ -1,3 +1,7 @@
+2004-12-02  Rob Braun <bbraun@opendarwin.org>
+
+	* Engine.pm: Make 'fetch' support the same arguments as 'fetch-all'.
+
 2004-11-30  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Fixed &execute() result-code handling when

@@ -592,13 +592,32 @@ EOF
 sub cmd_fetch {
 	my ($package, @plist);
 
+	my (%options, $norestrictive, $dryrun);
+	my @sav = @_;
+	%options = &parse_fetch_options("fetch", @_);
+	$norestrictive = $options{"norestrictive"} || 0;
+	$dryrun = $options{"dryrun"} || 0;
+
+	@_ = @sav;
+	if( $dryrun ) {
+		shift;
+	}
+	if( $norestrictive ) {
+		shift;
+	}
+
 	@plist = &expand_packages(@_);
 	if ($#plist < 0) {
 		die "no package specified for command 'fetch'!\n";
 	}
 
 	foreach $package (@plist) {
-		$package->phase_fetch(0, 0);
+		my $pname = $package->get_name();
+		if ($norestrictive && $package->has_param("license") && $package->param("license") =~ m/Restrictive\s*$/i) {
+				print "Ignoring $pname due to License: Restrictive\n";
+				next;
+		}
+		$package->phase_fetch(0, $dryrun);
 	}
 }
 
