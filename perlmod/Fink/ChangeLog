@@ -1,3 +1,9 @@
+2004-07-02  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Only cvs-update the distro actually in use.
+	Remove redundant variable usage. Replace regex-match with
+	string-equality to prevent accidental substring matches.
+
 2004-06-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Just a little rearranging to make things easier.

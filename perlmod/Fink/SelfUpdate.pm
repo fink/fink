@@ -147,11 +147,10 @@ sub check {
 	}
 	if (($config->param("SelfUpdateMethod") eq "point")) {
 		# get the file with the current release number
-		my $distro = $Fink::Config::distribution;
 		my $currentfink;
-		$currentfink = "CURRENT-FINK-$distro";
+		$currentfink = "CURRENT-FINK-$distribution";
 		### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
-		if ($distro =~ /10.1/) {
+		if ($distribution eq "10.1") {
 				$currentfink = "LATEST-FINK";
 		}
 	
@@ -271,6 +270,11 @@ sub setup_direct_cvs {
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -d fink dists";
+	if ($distribution ne "10.1") {
+		# Only fetch the dist we're using. Not sure how to short-circuit
+		# 10.1 tree--good thing we can't bootstrap there any more...
+		$cmdd .= "/" . $distribution;
+	}
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -278,7 +282,7 @@ sub setup_direct_cvs {
 	if (&execute($cmdd)) {
 		die "Downloading package descriptions from CVS failed.\n";
 	}
-	if ($Fink::Config::distribution =~ /10.1/) { #must do a second checkout in this case
+	if ($distribution eq "10.1") { #must do a second checkout in this case
 			chdir "fink" or die "Can't cd to fink\n";
 			$cmdd = "$cmd checkout -d 10.1 packages/dists";
 			if ($username ne "root") {
@@ -362,6 +366,11 @@ sub do_direct_cvs {
 
 	@sb = stat("$descdir/CVS");
 	$cmd = "cvs ${verbosity} -z3 update -d -P";
+	if ($distribution ne "10.1") {
+		# Only update the dist we're using. Not sure how to short-circuit
+		# 10.1 tree--good thing we can't bootstrap there any more...
+		$cmd .= " " . $distribution;
+	}
 	$msg = "I will now run the cvs command to retrieve the latest package ".
 			"descriptions. ";
 
@@ -409,7 +418,7 @@ sub do_tarball {
 	$dir = "dists-$newversion";
 
 	### if we are in 10.1, need to use "packages" not "dists"
-	if ($Fink::Config::distribution =~ /10.1/) {
+	if ($distribution eq "10.1") {
 			$dir = "packages-$newversion";
 	}
 	
@@ -513,7 +522,7 @@ sub do_direct_rsync {
 	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
 	my ($timecmd, $oldts, $newts);
 	my $origmirror;
-	my $dist = $Fink::Config::distribution;
+	my $dist = $distribution;
 	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://master.us.finkmirrors.net/finkinfo/");
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
@@ -591,7 +600,7 @@ RSYNCAGAIN:
 	
 	my $rinclist = "";
 	foreach $tree ($config->get_treelist()) {
-		next unless ($tree =~ /stable/);
+		next unless ($tree eq "stable" or $tree eq "unstable");
 
 		$rsynchost =~ s/\/*$//;
 		$dist      =~ s/\/*$//;
@@ -627,7 +636,7 @@ RSYNCAGAIN:
 		goto RSYNCAGAIN;
 	} else {
 		foreach $tree ($config->get_treelist()) {
-			next unless ($tree =~ /stable/);
+			next unless ($tree eq "stable" or $tree eq "unstable");
 
 			$rsynchost =~ s/\/*$//;
 			$dist      =~ s/\/*$//;
