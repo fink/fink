@@ -2,8 +2,8 @@ Package: dpkg
 Version: 1.10.21
 Revision: 202
 GCC: 3.3
-Depends: {SHLIB_DEPS}, gettext, libiconv, gzip, tar, ncurses (>= 5.3-12)
-BuildDepends: gcc3.3, fink (>= 0.23.4-1)
+Depends: {SHLIB_DEPS}, gzip, tar
+BuildDepends: gcc3.3, fink (>= 0.23.4-1), gettext-dev, libiconv-dev, ncurses-dev (>= 5.3-12)
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz

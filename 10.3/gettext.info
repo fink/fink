@@ -4,7 +4,7 @@ Revision: 18
 Source: mirror:gnu:gettext/gettext-%v.tar.gz
 Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: yes
-Depends: {SHLIB_DEPS}, libiconv, libiconv-bin, base-files
+Depends: {SHLIB_DEPS}, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.13.6), fink-prebinding
 Shlibs: %p/lib/libintl.1.dylib 2.0.0 %n (>= 0.10.40-5)
 DescPackaging: <<
