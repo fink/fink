@@ -1,7 +1,7 @@
 #! /bin/sh 
 #
 # Shell script for preparing the user's shell startup scripts for Fink.
-# Copyright (c) 2003 Martin Costabel
+# Copyright (c) 2003-2004 Martin Costabel
 # Copyright (c) 2003-2004 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
@@ -27,14 +27,16 @@
 
 do_login_test () {
 # Start a login session to see whether the PATH is already set up for Fink. 
-# PATH and SHELL are written into TMPFILE
-#
+# PATH and SHELL are written into TMPFILE.
+# We have to use basic shell speak here, because we don't know
+# which shell will come up.
     /usr/bin/login -f $USER >$TMPFILE <<EOF
     /bin/echo -n LOGINSHELL= 
     /usr/bin/printenv SHELL
     /usr/bin/printenv PATH
     /bin/bash --norc --noprofile <<EOF2
-#   for bash, we need a second opinion 
+#   For bash, we need a second opinion. 
+#   We do the test for bash inside bash.
     if test $(/bin/echo $SHELL | /usr/bin/grep bash); then
 	bash --login <<EOF3
         /usr/bin/printenv PATH
@@ -47,59 +49,100 @@ EOF2
 EOF
 }
 
+msg_title () {
+    echo --------------------------------
+    echo Setting up your Fink environment
+    echo --------------------------------
+}
+
 msg_create () {
-    echo
     echo I will create a file named $RC in your
     echo home directory, containing one line
-    echo \"$SOURCECMD\"
+    echo
+    echo \\\"$SOURCECMD\\\"
 }
 
 msg_append () {
-    echo
     echo I will append a line
-    echo \"$SOURCECMD\"
+    echo
+    echo \\\"$SOURCECMD\\\"
+    echo
     echo to the file $RC in your home directory.
 }		       
 
-msg_choose_do () {
+msg_choose (){
+    echo If you do not want me to do this, 
+    echo you can answer \\\"No\\\" here  
+    echo and do it later manually.
+    echo
+    echo Continue\?
+    echo
+}
+
+display_choose () {
+# display choice popup
+   osascript <<-EOF
+   tell application "Finder"
+      activate
+      set dd to display dialog "`msg_title`\nYour login shell: $LOGINSHELL\n\n`$MSG` \n\n`msg_choose`\n" buttons {"No, thanks", "YES"} default button 2 with icon caution giving up after 30
+      set UserResponse to button returned of dd
+   end tell
+EOF
+}
+
+display_result (){
+# display final result
+   osascript <<-EOF
+   tell application "Finder"
+      activate
+      set dd to display dialog "`msg_title`\n$Result\n" buttons {"OK"} default button 1 with icon caution giving up after 20
+      set UserResponse to button returned of dd
+   end tell
+EOF
+}
+
+display_choose_do (){
 # propose choice, append line to startup script, and verify if it worked
-    echo
-    echo If you don\'t want me to do this, you can answer
-    echo \"no\" here and do it later manually.
-    echo Otherwise answer \"yes\".
-    echo
-    echo -n "Do you want to continue? [Y/n] "
-    read answer
-    answer=`echo $answer | sed 's/^[yY].*$/y/'`
-    if [ -z "$answer" -o "x$answer" = "xy" ]; then
-	test -f $HOME/$RC && echo >> $HOME/$RC # Users . file may not end in \n
+    answer=`display_choose`
+    if [ "$answer" != "No, thanks" ]; then
+	echo "" >> $HOME/$RC
 	echo "$SOURCECMD" >> $HOME/$RC
-	echo
-	echo Done. Verifying...
 	do_login_test
 	if grep @PREFIX@/sbin $TMPFILE >/dev/null 2>&1 ; then
-	    echo ... OK. You should be fine now.
+	    Result="\n Your Fink environment\n   should be fine now.\n"
 	else
-	    echo Hmm. I tried my best, but it still doesn\'t work.
-	    echo The code I put into $RC has no effect.
-	    echo Please check your $LOGINSHELL startup scripts.
-	    echo Perhaps there is some other file like ~/.login
-	    echo that resets the PATH after $RC is executed. Bye.
+	    Result="\n
+Hmm. I tried my best, but it still does not work.
+The code I put into $RC has no effect.\n
+Please check your $LOGINSHELL startup scripts.
+Perhaps  some other file like\n
+	    ~/.login\n
+is resetting the PATH after $RC is executed.
+		   \n"
 	fi		    
-	echo
     else
-	echo
-	echo OK, as you wish. You are on your own. Bye.
-	echo
-    fi		
-    echo Have a nice day.
-    echo
+	Result="OK, as you wish.\nYou are on your own. Good luck\n" 
+    fi
+    display_result
+}
+
+msg_already_setup (){
+    echo Your environment seems to be correctly
+    echo set up for Fink already.
+}
+
+display_already_setup (){
+    osascript <<-EOF
+    tell application "Finder"
+	activate
+	set dd to display dialog "`msg_title`\n\n`msg_already_setup`" buttons {"OK"} default button 1 giving up after 20 
+    set UserResponse to button returned of dd
+    end tell
+EOF
 }
 # End of function declarations
 
 ### Main program:
-
-/usr/bin/clear
 
 # A temporary file for communicating with a login shell 
 TMPFILE=`/usr/bin/mktemp /tmp/resu.XXXXXX`
@@ -111,21 +154,15 @@ do_login_test
 # TODO: Test for other sensible things, too. 
 if grep @PREFIX@/sbin $TMPFILE >/dev/null 2>&1 ; then
     # Yes: already set up
-    echo 
-    echo Your environment seems to be correctly
-    echo set up for Fink already.
-    echo
+    display_already_setup
 else
     # No: we need to do something
     eval `grep LOGINSHELL $TMPFILE`
-    echo
     if [ -z $LOGINSHELL ]; then
-        echo Your startup scripts contain an error. I am giving up. Bye.
-	echo 
+	Result="\nYour startup scripts contain an error.\nI am giving up. Bye.\n"
+	display_result
 	exit
     fi
-    echo Setting up your fink environment
-    echo --------------------------------
     LOGINSHELL=`basename $LOGINSHELL`
     case $LOGINSHELL in
     *csh)
@@ -141,13 +178,13 @@ else
  	case $RC in
 	new)
 	    RC=.cshrc
-	    msg_create
+	    MSG=msg_create
 	    ;;
 	*)
-	    msg_append
+	    MSG=msg_append
 	    ;;
 	esac
-	    msg_choose_do
+	display_choose_do
     ;;
     bash)
     # Only bash here; other sh type shells are not supported
@@ -164,38 +201,33 @@ else
 	case $RC in
 	  new)
 	    RC=.profile
-	    msg_create
+	    MSG=msg_create
 	  ;;
 	  *)
-	    msg_append
+	    MSG=msg_append
 	  ;;
 	esac
-     msg_choose_do
+	display_choose_do
     ;;
     *)
     # Any shell except *csh and bash
-	echo 
-    	echo Since you have changed your login shell to $LOGINSHELL,
-	echo I am confident that you know what you are doing.
-	echo So now add a line equivalent to
-	echo 
-	echo "    source @PREFIX@/bin/init.sh"
-	echo
-	echo to one of your $LOGINSHELL startup scripts
-	echo and you will be set up for using Fink.
-	echo
-	echo Have a nice day.
+	Result="\n
+Since you have changed your login shell to $LOGINSHELL,
+I am confident that you know what you are doing.\n
+So now add a line equivalent to
+		
+	source @PREFIX@/bin/init.sh
+
+to one of your $LOGINSHELL startup scripts
+and you will be set up for using Fink.
+	    
+    Have a nice day.
+	    \n"
+	display_result
     ;;
     esac	    
 fi
 
 rm -f $TMPFILE
-
-echo ""
-echo ""
-echo "     (You can close this window now)"
-echo ""
-echo ""
-echo ""
 
 # End of program.
