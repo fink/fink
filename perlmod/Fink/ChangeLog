@@ -1,3 +1,7 @@
+2001-11-06  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (process): Get rid of the funky "Done." message.
+
 2001-11-04  Christoph Pfisterer  <cp@chrisp.de>
 
 	* SelfUpdate.pm (setup_direct_cvs): Made the File::Find routine

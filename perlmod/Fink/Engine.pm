@@ -149,8 +149,6 @@ sub process {
   eval { &$proc(@_); };
   if ($@) {
     print "Failed: $@";
-  } else {
-    print "Done.\n";
   }
 }
 
