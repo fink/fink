@@ -1,8 +1,9 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
 Revision: 200
-Depends: gettext, gzip, tar
-BuildDepends: gcc3.3
+Depends: gzip, tar
+BuildDepends: gcc3.3, gettext-dev
+AddShlibDeps: true
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v

@@ -1259,6 +1259,10 @@ sub resolve_depends {
 		# behavior differs from 'Depends'). 
 		# But right now, enabling conflicts would cause update problems (e.g.
 		# when switching between 'wget' and 'wget-ssl')
+		### FIXME shlibs, might need to revisit this later
+		if (Fink::Config::verbosity_level() > 2) {
+			print "Reading $oper for ".$self->get_fullname()."...\n";
+		}
 		@speclist = split(/\s*\,\s*/, $self->pkglist_default($field, ""));
 	}
 
@@ -1318,8 +1322,11 @@ sub resolve_depends {
 	# now we continue to assemble the larger @speclist
 	if ($include_build) {
 		# Add build time dependencies to the spec list
-		push @speclist,
-			split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
+		### FIXME shlibs, might need to revisit this later
+		if (Fink::Config::verbosity_level() > 2) {
+			print "Reading build $oper for ".$self->get_fullname()."...\n";
+		}
+		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our splitoffs.
@@ -1328,8 +1335,11 @@ sub resolve_depends {
 		$split_idx = @speclist;
 		unless (lc($field) eq "conflicts") {
 			foreach	 $splitoff (@{$self->{_splitoffs}}) {
-				push @speclist,
-				split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
+				### FIXME shlibs, might need to revisit this later
+				if (Fink::Config::verbosity_level() > 2) {
+					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
+				}
+				push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
 			}
 		}
 	}
@@ -1418,12 +1428,20 @@ sub resolve_conflicts {
 # in pkglist()
 sub get_binary_depends {
 	my $self = shift;
-	my ($depspec);
+	my ($depspec1, $depspec2, $depspec);
 
 	# TODO: modify dependency list on the fly to account for minor
 	#	 library versions
 
-	$depspec = $self->pkglist_default("Depends", "");
+	### FIXME shlibs, added for RunTimeDepends
+	$depspec1 = $self->pkglist_default("RunTimeDepends", "");
+	$depspec2 = $self->pkglist_default("Depends", "");
+
+	if ($depspec1 && $depspec2) {
+		$depspec = $depspec1.", ".$depspec2;
+	} else {
+		$depspec = $depspec1.$depspec2
+	}
 
 	return &collapse_space($depspec);
 }
@@ -2410,6 +2428,34 @@ EOF
 
 	my $has_kernel_dep;
 	my $struct = &pkglist2lol($self->get_binary_depends()); 
+
+	### FIXME shlibs, Add shlib depends code here
+	### 1) check for 'AddShlibDeps: true' else continue
+	if ($self->param_boolean("AddShlibDeps")) {
+		print "Writing shared library dependencies...\n";
+
+		### 2) get a list to replace it with
+		my @filelist = ();
+		my $wanted = sub {
+			if (-f) {
+				# print "DEBUG: file: $File::Find::fullname\n";
+				push @filelist, $File::Find::fullname;
+			}
+		};
+		## Might need follow_skip but then need to change fullname
+		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
+
+		my @shlib_deps = Fink::Shlibs->get_shlibs($pkgname, @filelist);
+
+		### foreach loop and push into @$struct
+		### 3) replace it in the debian control file
+		foreach my $shlib_dep (@shlib_deps) {
+			push @$struct, ["$shlib_dep"];
+			if (Fink::Config::verbosity_level() > 2) {
+				print "- Adding $shlib_dep to 'Depends' line\n";
+			}
+		}
+	}
 	foreach (@$struct) {
 		foreach (@$_) {
 			$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
@@ -3391,6 +3437,25 @@ sub get_ruby_dir_arch {
 	my $rubycmd = get_path('ruby'.$rubyversion);
 
 	return ($rubydirectory, $rubyarchdir, $rubycmd);
+}
+
+### FIXME shlibs, crap no longer needed keeping for now incase the pdb needs it
+sub get_debdeps {
+	my $wantedpkg = shift;
+	my $field = "Depends";
+	my $deps = "";
+
+	### get deb file
+	my $deb = $wantedpkg->find_debfile();
+
+	if (-f $deb) {
+		$deps = `dpkg-deb -f $deb $field 2> /dev/null`;
+		chomp($deps);
+	} else {
+		die "Can't find deb file: $deb\n";
+	}
+
+	return $deps;
 }
 
 ### EOF

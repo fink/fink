@@ -32,6 +32,7 @@ use Fink::CLI qw(&print_breaking
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
 use Fink::Package;
+use Fink::Shlibs;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch binary_requested);
 use File::Find;
@@ -218,6 +219,7 @@ sub process {
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
+		Fink::Shlibs->require_shlibs();
 	}
 	$::SIG{INT} = sub { die "User interrupt.\n" };
 	eval { &$proc(@args); };
@@ -284,11 +286,14 @@ my ($OP_FETCH, $OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
 
 sub cmd_index {
 	Fink::Package->update_db();
+	Fink::Shlibs->update_shlib_db();
 }
 
 sub cmd_rescan {
 	Fink::Package->forget_packages();
 	Fink::Package->require_packages();
+	Fink::Shlibs->forget_shlibs();
+	Fink::Shlibs->require_shlibs();
 }
 
 sub cmd_configure {
@@ -400,6 +405,7 @@ sub do_real_list {
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
+	Fink::Shlibs->require_shlibs();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
@@ -865,6 +871,7 @@ EOF
 	}
 
 	Fink::Package->require_packages();
+	Fink::Shlibs->require_shlibs();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
@@ -1910,6 +1917,8 @@ sub real_install {
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 			# Reinstall buildconficts after the build
 			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
+			Fink::Shlibs->forget_shlibs();
+			Fink::Shlibs->require_shlibs(1);
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {

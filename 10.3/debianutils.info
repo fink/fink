@@ -5,6 +5,7 @@ Essential: true
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
 BuildDepends: fink-prebinding
+AddShlibDeps: true
 Conflicts: mktemp
 Replaces: mktemp, tetex
 Provides: mktemp

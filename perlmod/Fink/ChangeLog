@@ -1,3 +1,8 @@
+2005-02-23  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* shlibs.pm: Adding changes to Storable calls from Benjamin Reed on
+	2005-02-22.
+
 2005-02-22  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: protect pkgnames when used as regex patterns.
@@ -15,6 +20,10 @@
 	each other and/or fail.  If one is indexing, other fink processes
 	will wait for it to finish and then just re-load the package
 	hash from storable.
+
+2005-02-21  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Added last two updates to shlibs.db calls
 
 2005-02-21  Daniel Macks  <dmacks@netspace.org>
 
@@ -83,6 +92,24 @@
 
 	* Bootstrap.pm (check_host): We work on 10.3.8.
 
+2005-02-11  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: moved /usr/local/lib check to the no match from shlib file
+	loop.  So that system-package with proper Shlibs fields will still
+	work.
+
+2005-02-10  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Add a check and die if something links to something
+	in /usr/local/lib and /usr/local isn't the basepath.
+
+2005-02-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: no longer read depends from deb files when rebuilding
+	or building and a deb is present, that made no sense what was I
+	thinking? Changed get_debdeps to use dpkg-deb -f <deb> <field>
+	thanks to dmacks, one less loop!
+
 2005-02-09  Chris Dolan <chrisdolan@users.sourceforge.net>
 
 	* Engine.pm: improvements for snapshot command
@@ -96,6 +123,15 @@
 	* Engine.pm: Rewrite show_deps_display_list using lol_remove_self().
 	* PkgVersion.pm: Implement lol_remove_self() (also handles Provides).
 	* Services.pm: Implement cleanup_lol().
+
+2005-02-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Removed ref to {SHLIB_DEPS} and added RunTimeDepends to
+	depends duplication checks (Allows for a maintainer to force a certain
+	version of a dep).  Also updated to use new API pkglist_default.
+	* PkgVersion.pm: Removed refs to {SHLIB_DEPS}, added check for
+	AddShlibDeps to run auto adding of depends for deb file creation. Added
+	RunTimeDepends to PkgVersion.pm.
 
 2005-02-08  Daniel Macks  <dmacks@netspace.org>
 
@@ -145,6 +181,11 @@
 2005-02-04  Chris Dolan <chrisdolan@users.sourceforge.net>
 
 	* Engine.pm: Add snapshot command
+
+2005-02-03  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* shilbs branch is now fully working and merged to head.
+	* shlibs.pm: added better regex for multi whitespace delim
 
 2005-02-03  Daniel Macks  <dmacks@netspace.org>
 
@@ -2141,6 +2182,11 @@
 
 	* Selfupdate.pm: Don't try to su or chown to an undefined $username.
 	
+2003-12-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Changed shlibs hash structure a little to deal with
+	 multi compat versions of a shlib.  A few various tweaks.
+
 2003-12-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Rearranged the list of allowed fields and added
@@ -2149,9 +2195,22 @@
 
 2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* Shlibs.pm: Added condition to display Information line on reading
+	shlibs.  I will no longer appear between builds. Changed ${SHLIB_DEPS}
+	to {SHLIB_DEPS} so perl doesn't think it' s a variable. Lots of changes
+	to the core of shlibs.pm, it now won't add to explicits deps on
+	the dep line, and will override a shlibs version via the matching dev
+	packge on the builddepends line.
+	ie: builddepends: readline (>= 4.3-25) would make the depends line
+	readline-shlibs (>= 4.3-25) if readline-shlibs is a true depends.
+	Also it won't depend on it's self, and various other checks and tweaks.
+	
+
+2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
 	* Engine.pm: Adding "fink splitoffs", shows parent and splitoffs in a
 	package. Adding "fink showparent" which will return the parent package
-	 of a package.
+	of a package.
 	* PkgVersion.pm: Adding sub get_splitoffs() has two switches, to
 	include self in list and include parent.
 

@@ -21,6 +21,7 @@ Replaces: ncurses (<= 5.3-1)
 Depends: base-files
 Essential: yes
 BuildDepends: fink (>= 0.13.0)
+AddShlibDeps: true
 ConfigureParams: --without-ada --without-debug --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs
 NoSetCFLAGS: true
 NoSetLDFLAGS: true
@@ -57,6 +58,7 @@ SplitOff: <<
  Depends: ncurses-shlibs (= %v-%r)
  Replaces: ncurses (<= 5.3-1), libncurses5
  Conflicts: libncurses5
+ AddShlibDeps: true
  BuildDependsOnly: True
  Files: include lib/libform.dylib lib/libmenu.dylib lib/libncurses.dylib lib/libpanel.dylib lib/*.a
  Description: Development files for ncurses package

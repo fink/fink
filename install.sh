@@ -58,6 +58,7 @@ install -c -p -m 755 fink-virtual-pkgs "$basepath/bin/"
 install -c -p -m 755 pathsetup.sh "$basepath/bin/"
 install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
+install -c -p -m 644 fink.shlibs "$basepath/../DEBIAN/shlibs"
 install -c -p -m 644 images/*.png "$basepath/share/fink/images/"
 
 # copy all perl modules

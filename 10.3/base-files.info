@@ -1,6 +1,7 @@
 Package: base-files
 Version: 1.9.4
 Revision: 1
+AddShlibDeps: true
 Source: mirror:custom:fink/%n-%v.tar.gz
 
 Essential: yes
