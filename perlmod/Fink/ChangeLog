@@ -2,6 +2,10 @@
 
 	* Bootstrap.pm: be sure that the pre-expansion of conditionals
 	is only applied to ones containing "%{Distribution}"
+	* Bootstrap.pm, SelfUpdate.pm: move the list of additional packages 
+	to be installed to a new function in Bootstrap.pm, which can be
+	shared by both modules.  Add a warning when "fink selfupdate" is
+	run with an unsupported version of perl.
 
 2005-02-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
