@@ -1,3 +1,11 @@
+2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
+
+	* Package.pm: Added support for caching of info files.
+        
+	* Engine.pm: Added an index command to update the cache.
+        
+	* SelfUpdate.pm (do_finish): added hook to update package cache.
+        
 2002-03-26  Justin F. Hallett <thesin@southofheaven.net>
 
         * PkgVersion.pm: Fixed Type: perl to install the execs into

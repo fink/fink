@@ -397,6 +397,7 @@ sub do_tarball {
 sub do_finish {
   # re-read package info
   Fink::Package->forget_packages();
+  Fink::Package->force_update_db();
   Fink::Package->require_packages();
 
   # update the package manager itself first

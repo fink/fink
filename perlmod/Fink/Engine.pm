@@ -47,7 +47,8 @@ our @EXPORT_OK;
 # whether this command requires the package descriptions to be
 # read, the second flag whether root permissions are needed.
 our %commands =
-  ( 'rescan' => [\&cmd_rescan, 0, 0],
+  ( 'index' => [\&cmd_index, 0, 1],
+    'rescan' => [\&cmd_rescan, 0, 0],
     'configure' => [\&cmd_configure, 0, 1],
     'bootstrap' => [\&cmd_bootstrap, 0, 1],
     'fetch' => [\&cmd_fetch, 1, 1],
@@ -202,6 +203,10 @@ sub restart_as_root {
 }
 
 ### simple commands
+
+sub cmd_index {
+  Fink::Package->force_update_db();
+}
 
 sub cmd_rescan {
   Fink::Package->forget_packages();

@@ -81,6 +81,7 @@ Common commmands:
   list       - list available packages, optionally filtering by name
   apropos    - list packages matching a search keyword
   describe   - display a detailed description of the named packages
+  index      - force rebuild of package cache
 
 Options:
   -H, -?, --help - display this help text

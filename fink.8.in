@@ -176,6 +176,10 @@ itself. This command can upgrade to regular releases, but it can also
 setup your @PREFIX@/fink/dists directory tree for direct CVS updates.
 This means that you then will be able to access the very latest
 revisions of all packages.
+.It Cm index
+Rebuilds the package cache. You should not normally need to execute this manually,
+.Nm
+should auto-detect when it needs to be updated.
 .El
 .\"
 .\"
@@ -183,6 +187,12 @@ revisions of all packages.
 .\"
 .\"
 .Sh FILES
+.Pa @PREFIX@/var/db/fink.db
+.Bd -filled -offset indent -compact
+Package cache database. Don't try to edit this manually, instead update it using
+.Cm fink index.
+.Ed
+.Pp
 .Pa @PREFIX@/etc/fink.conf
 .Bd -filled -offset indent -compact
 The system wide configuration file. You should not need to edit this file 

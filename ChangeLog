@@ -1,3 +1,9 @@
+2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
+
+	* fink.in: Added brief note about index to command listing.
+	
+	* fink.8.in: Added index and information about fink.db.	
+
 2002-03-26  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.9.9a
