@@ -1,7 +1,7 @@
-$Id$   -*- text -*-
+Generated from $Fink: readme.xml,v 1.1 2001/07/25 18:55:23 chrisp Exp $
 
- Fink 0.2.3
-============
+ Fink 0.2.3 ReadMe
+===================
 
 This is Fink, a package management system that aims to bring the full
 world of GNU and other common Open Source software to Darwin and
@@ -20,8 +20,8 @@ also quite short. You're walking on thin ground. It could easily break
 your system (although it hasn't broken mine to date). You have been
 warned.
 
-Fink is released under the terms of the GNU General Public
-License. See the file COPYING for details.
+Fink is released under the terms of the GNU General Public License.
+See the file COPYING for details.
 
 
  Requirements
@@ -47,9 +47,9 @@ You need:
 
  Installation
 --------------
-The installation process is described in detail in the file
-INSTALL. Please read it first, the process is non-trivial. It also
-describes the upgrade procedure.
+The installation process is described in detail in the file INSTALL.
+Please read it first, the process is non-trivial. It also describes
+the upgrade procedure.
 
 
  Using Fink
@@ -61,7 +61,7 @@ remove packages. It also has a complete list of available commands.
  Further Questions?
 --------------------
 If the documentation included here doesn't answer your question,
-stroll over to the Fink website at <http://fink.sourceforge.net> and
+stroll over to the Fink website at <http://fink.sourceforge.net/> and
 read the FAQ there: <http://fink.sourceforge.net/faq/>.
 
 If that still doesn't answer your questions, ask for help on the
@@ -79,7 +79,7 @@ To get help or just chat with other Fink users, subscribe to the
 fink-users mailing list at
 <http://lists.sourceforge.net/lists/listinfo/fink-users>.
 
-The project's website is at <http://fink.sourceforge.net>.
+The project's website is at <http://fink.sourceforge.net/>.
 
 
  Contributing

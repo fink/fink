@@ -1,3 +1,7 @@
+2001-07-25  Christoph Pfisterer  <cp@chrisp.de>
+
+	* README: Moved to the XML document system.
+
 2001-07-15  Christoph Pfisterer  <cp@chrisp.de>
 
 	* bootstrap.pl: Add dir-base to the base-files tarball.
