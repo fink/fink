@@ -100,11 +100,11 @@ sub check_files {
 	@splits = $pkg->get_splitoffs(1, 1);
 
 	# Get runtimedepends and depends line and builddepends line for compares
-	@deplines = split(/\s*\,\s*/, $pkg->param_default("Depends", ""));
-	foreach my $tmp (split(/\s*\,\s*/, $pkg->param_default("RunTimeDepends", ""))) {
+	@deplines = split(/\s*\,\s*/, $pkg->pkglist_default("Depends", ""));
+	foreach my $tmp (split(/\s*\,\s*/, $pkg->pkglist_default("RunTimeDepends", ""))) {
 		push @deplines, $tmp;
 	}
-	@builddeps = split(/\s*\,\s*/, $pkg->param_default("BuildDepends", ""));
+	@builddeps = split(/\s*\,\s*/, $pkg->pkglist_default("BuildDepends", ""));
 
 	# get a list of linked files to the pkg files
 	FILELOOP: foreach $file (@files) {

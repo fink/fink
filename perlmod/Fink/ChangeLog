@@ -2,7 +2,7 @@
 
 	* Shlibs.pm: Removed ref to {SHLIB_DEPS} and added RunTimeDepends to
 	depends duplication checks (Allows for a maintainer to force a certain
-	version of a dep)
+	version of a dep).  Also updated to use new API pkglist_default.
 	* PkgVersion.pm: Removed refs to {SHLIB_DEPS}, added check for
 	AddShlibDeps to run auto adding of depends for deb file creation. Added
 	RunTimeDepends to PkgVersion.pm.
