@@ -2105,9 +2105,7 @@ sub phase_install {
 			$install_script .= "\ncp -pR '$bundle' '%i/Applications/'";
 		}
 		$install_script .= "\nchmod -R o-w '%i/Applications/'" .
-			"\nif test -x /Developer/Tools/SplitForks; then" .
-			"\n     /Developer/Tools/SplitForks '%i/Applications/'" .
-			"\nfi";
+			"\nif test -x /Developer/Tools/SplitForks; then /Developer/Tools/SplitForks '%i/Applications/'; fi";
 	}
 
 	# generate commands to install jar files
@@ -2619,14 +2617,14 @@ sub phase_activate {
 			die "can't install package ".$installable[0]->get_fullname()."\n";
 		} else {
 			growl('finkPackageInstallationFailed', 'Fink installation of ' . int(@installable) . ' packages failed.',
-				"can't batch-install packages: @deb_installable");
+				"can't batch-install packages: " . join(', ', map { $_->get_fullname() } @installable));
 			die "can't batch-install packages: @deb_installable\n";
 		}
 	} else {
 		if (@installable == 1) {
 			growl('finkPackageInstallationPassed', 'Fink installation passed.', "installed " . $installable[0]->get_fullname());
 		} else {
-			growl('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages: @deb_installable");
+			growl('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages: " . join(', ', map { $_->get_fullname() } @installable));
 		}
 	}
 
