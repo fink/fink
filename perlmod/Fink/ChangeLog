@@ -1,5 +1,8 @@
 2002-10-14  Max Horn  <max@quendi.de>
 
+	* PkgVersion.pm: Allow percent expansion in CustomMirror field
+	 (patch #621175, thanks to Ben Hines)
+
 	* Engine.pm: Rewrote parts of real_install to hopefully make it cleaner,
 	  easier to understand, and less buggy when it comes to splitoffs.
 

@@ -439,7 +439,7 @@ sub get_custom_mirror {
 
   if ($self->has_param("CustomMirror")) {
     $self->{_custom_mirror} =
-      Fink::Mirror->new_from_field($self->param("CustomMirror"));
+      Fink::Mirror->new_from_field(&expand_percent($self->param("CustomMirror"), $self->{_expand}));
   } else {
     $self->{_custom_mirror} = 0;
   }
