@@ -1,3 +1,8 @@
+2002-02-13  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* Engine.pm (do_real_list): Don't read package info first, wait and
+	see if it is needed. Fixed a mistake in the help text.
+
 2002-03-13  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm (phase_build): Fix so that root-dirs of splitoffs are

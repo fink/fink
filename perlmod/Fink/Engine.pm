@@ -68,13 +68,13 @@ our %commands =
     'remove' => [\&cmd_remove, 1, 1],
     'delete' => [\&cmd_remove, 1, 1],
     'purge' => [\&cmd_remove, 1, 1],
-    'apropos' => [\&cmd_apropos, 1, 0],
+    'apropos' => [\&cmd_apropos, 0, 0],
     'describe' => [\&cmd_description, 1, 0],
     'description' => [\&cmd_description, 1, 0],
     'desc' => [\&cmd_description, 1, 0],
     'info' => [\&cmd_description, 1, 0],
     'scanpackages' => [\&cmd_scanpackages, 1, 1],
-    'list' => [\&cmd_list, 1, 0],
+    'list' => [\&cmd_list, 0, 0],
     'listpackages' => [\&cmd_listpackages, 1, 0],
     'selfupdate' => [\&cmd_selfupdate, 0, 1],
     'selfupdate-cvs' => [\&cmd_selfupdate_cvs, 0, 1],
@@ -294,7 +294,7 @@ Where listoptions are:
   
   -u, --uptodate	list only, lists only packages which are up to date.
   
-  -o, --outofdate	list only, lists packages for which a newer version 
+  -o, --outdated	list only, lists packages for which a newer version 
 			is available.
   
   -n, --notinstalled	list only, lists packages which are not installed.
@@ -338,7 +338,7 @@ EOF
       $desclen = 0;
     }
   }
-
+  Fink::Package->require_packages();
   @_=@ARGV;
   @ARGV=@temp_ARGV;
   @allnames = Fink::Package->list_packages();
