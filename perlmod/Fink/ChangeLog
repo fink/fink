@@ -1,12 +1,14 @@
 2003-12-03  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: made it so fink can't remove or purge essential pkgs
-	like bzip2-dev and added warnings for it and not installed packages.
+	and added warnings for it and not installed packages.
 	Also made it so if the pkgs to be removed are the same as the ones
 	in ARGV then don't ask first.  And added a print_breaking for long
 	package listings. Disabled parent essential params on splitoffs.
 	Changed BuildDependsOnly and Essential checks from has_param to
-	param_boolean, in case it's there and set to false.
+	param_boolean, in case it's there and set to false. Fixed the not
+	installed warning, and prints and exits if nothing to do instead of
+	dieing.
 
 2003-12-03  Daniel Macks <dmacks@netspace.org>
 

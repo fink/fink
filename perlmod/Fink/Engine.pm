@@ -727,19 +727,15 @@ EOF
 		# Can't purge or remove virtuals
 		next if $package->is_virtual();
 
-		### FIXME, this needs a better way, plus it makes my
-		###        is_installed block useless.
-		@versions = $package->list_installed_versions();
-		next unless ($versions[0]);
-		$vo = $package->get_version($versions[0]);
-
 		# Can only remove/purge installed pkgs
-		unless ( $vo->is_installed() ) {
+		unless ( $package->is_any_installed($package->list_installed_versions()) ) {
 			print "WARNING: $pname is not installed, skipping.\n";
 			next;
 		}
 
 		# shouldn't be able to remove or purge esstential pkgs
+		@versions = $package->list_installed_versions();
+		$vo = $package->get_version($versions[0]);
 		if ( $vo->param_boolean("essential") ) {
 			print "WARNING: $pname is essential, skipping.\n";
 			next;
@@ -754,7 +750,8 @@ EOF
 
 	# Incase no packages meet the requirements above.
 	if ($#packages < 0) {
-		die "no package specified for command '$cmd'!\n";
+		print "Nothing ".$cmd."d\n";
+		exit(0);
 	}
 
 	my $cmp1 = join(" ", $cmd, @packages);
