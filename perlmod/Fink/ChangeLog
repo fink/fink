@@ -1,3 +1,8 @@
+2002-01-10  Max Horn  <max@quendi.de>
+
+	* SelfUpdate.pm: fixed selfupdate, it would hang when trying to
+	uncompress the package tar ball.
+
 2002-01-05  Max Horn  <max@quendi.de>
 
 	* Validation.pm: fixed stupid mistake

@@ -376,7 +376,7 @@ sub do_tarball {
   if ($config->param_boolean("Verbose")) {
     $verbosity = "v";
   }
-  $unpack_cmd = "tar -xz${verbosity}f -";
+  $unpack_cmd = "tar -xz${verbosity}f $pkgtarball";
   if (&execute($unpack_cmd)) {
     die "unpacking $pkgtarball failed\n";
   }
