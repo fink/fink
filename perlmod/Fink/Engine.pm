@@ -1426,6 +1426,7 @@ sub real_install {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
+			@conlist = $item->[PKGVER]->resolve_depends(1, "Conflicts", $forceoff);
 		} elsif (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD 
 		         and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
 			# We want to install this package and will download the .deb for it

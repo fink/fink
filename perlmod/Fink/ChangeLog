@@ -1,3 +1,8 @@
+2005-02-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: Enable BuildConflicts when running "fink install" (not
+	just when running "fink build")
+	
 2005-02-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm, PkgVersion.pm: Better scoping and more flexible
