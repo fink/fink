@@ -1,3 +1,8 @@
+2004-11-19  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Use uname(0) instead of hardcoding
+	kernel=darwin for kernel pkg, and have this pkg Provides:kernel
+
 2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: add --version

@@ -114,28 +114,25 @@ sub initialize {
 	my $self    = shift;
 
 	my ($hash);
-	my ($dummy);
-	my ($darwin_version, $cctools_version, $cctools_single_module);
-	# determine the kernel version
-	($dummy,$dummy,$darwin_version) = uname();
+	my ($cctools_version, $cctools_single_module);
 
-=item darwin
+=item kernel
 
-This test checks for the darwin version by running the system uname(1)
-call.  This should *always* exist.
+This test checks for the kernel name and version by running the system
+uname(1) call.  This should *always* exist.
 
 =cut
 
 	# create dummy object for kernel version
 	$hash = {};
-	$hash->{package} = "darwin";
+	$hash->{package} = lc((uname())[0]);
+	$hash->{provides} = "kernel";
 	$hash->{status} = STATUS_PRESENT;
-	$hash->{version} = $darwin_version."-1";
+	$hash->{version} = lc((uname())[2]) . "-1";
 	$hash->{description} = "[virtual package representing the kernel]";
 	$hash->{descdetail} = <<END;
-This package represents the XNU (Darwin) kernel, which is
-a core part of the system for Mac OS X and all other Darwin
-variants.
+This package represents the kernel (XNU (Darwin) on Mac OS X),
+which is a core part of the operating system.
 END
 	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 	$hash->{compilescript} = $compile_script;

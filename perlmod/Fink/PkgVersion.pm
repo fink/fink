@@ -2219,31 +2219,32 @@ EOF
 		import File::Find;
 	};
 
-# Add a dependency on the darwin version (if not already present).
+# Add a dependency on the kernel version (if not already present).
 #   We depend on the major version only, in order to prevent users from
 #   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
 #   value.
-# FIXME: Actually, if the package states a darwin version we should combine
+# FIXME: Actually, if the package states a kernel version we should combine
 #   the version given by the package with the one we want to impose.
 #   Instead, right now, we just use the package's version but this means
-#   that a package will need to be revised if the darwin major version changes.
+#   that a package will need to be revised if the kernel major version changes.
 
-	my ($dummy, $darwin_version, $darwin_major_version);
-	($dummy,$dummy,$darwin_version) = uname();
-	if ($darwin_version =~ /(\d+)/) {
-		$darwin_major_version = $1;
+	my $kernel = lc((uname())[0]);
+	my $kernel_version = lc((uname())[2]);
+	my $kernel_major_version;
+	if ($kernel_version =~ /(\d+)/) {
+		$kernel_major_version = $1;
 	} else {
-		die "No major version number for darwin!";
+		die "Couldn't determin major version number for $kernel kernel!";
 	}
 
-	my $has_darwin_dep;
+	my $has_kernel_dep;
 	my $struct = &pkglist2lol($self->get_binary_depends()); 
 	foreach (@$struct) {
 		foreach (@$_) {
-			$has_darwin_dep = 1 if /^darwin(\Z|\s|\()/;
+			$has_kernel_dep = 1 if /^$kernel(\Z|\s|\()/;
 		}
 	}
-	push @$struct, ["darwin (>= $darwin_major_version-1)"] if not $has_darwin_dep;
+	push @$struct, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
 	$control .= "Depends: " . &lol2pkglist($struct) . "\n";
 
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends

@@ -1,3 +1,10 @@
+2004-11-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use uname(0) instead of hardcoding kernel=darwin
+	when setting Depends for the kernel pkg.
+	* VirtPackage.pm: Use uname(0) instead of hardcoding kernel=darwin
+	for kernel pkg, and have this pkg Provides:kernel
+
 2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: add support for --version in fink-virtual-pkgs
