@@ -1,0 +1,27 @@
+Package: mp3-info-pm
+Version: 1.01
+Revision: 1
+###
+Source: mirror:cpan:authors/id/C/CN/CNANDOR/MP3-Info-%v.tar.gz
+Source-MD5: 168abf312bc9fe52b6d9bd5af510fe7b
+###
+Type: perl
+UpdatePOD: true
+###
+DocFiles: MANIFEST README*
+###
+Description: MP3::Info, for getting info out of and into MP3 files
+DescDetail: <<
+  This is MP3::Info, for getting info out of and into MP3 files.
+
+  This release has some more bugfixes for extracting ID3v2 tags,
+  including fixes for ID3v2.2.0, basic support for ID3v2.4.0, and
+  support for Unicode tags.  See the documentation for more information.
+
+  A wrapper module is included so scripts calling MPEG::MP3Info (the
+  old name) will still work.
+<<
+###
+License: Artistic
+Maintainer: Justin F. Hallett <thesin@users.sourceforge.net>
+Homepage: http://search.cpan.org/dist/MP3-Info
