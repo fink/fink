@@ -429,6 +429,7 @@ sub validate_dpkg_file {
 	my $filename = shift;
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/");
 	my ($pid, $bad_dir);
+	my $looks_good = 1;
 	
 	print "Validating .deb file $filename...\n";
 	
@@ -443,10 +444,13 @@ sub validate_dpkg_file {
 			next if $filename eq "/";
 			if (not $filename =~ /^$basepath/) {
 				print "Warning: File \"$filename\" installed outside of $basepath\n";
+				$looks_good = 0;
 			} elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
-				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n"
+				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
+				$looks_good = 0;
 			} elsif ( $filename =~/^($basepath\/lib\/perl5\/darwin\/.*\.bundle)/ ) {
-				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n"
+				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
+				$looks_good = 0;
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.
@@ -454,6 +458,7 @@ sub validate_dpkg_file {
 					if ($filename =~ /^$bad_dir/ and not $filename eq "$basepath/src/") {
 						print "Warning: File installed into deprecated directory $bad_dir\n";
 						print "					Offender is $filename\n";
+						$looks_good = 0;
 						last;
 					}
 				}
@@ -461,6 +466,10 @@ sub validate_dpkg_file {
 		}
 	}
 	close(DPKG_CONTENTS) or die "Error on close: $!\n";
+	
+	if ($looks_good and Fink::Config::verbosity_level() == 3) {
+		print "Package looks good!\n";
+	}
 }
 
 
