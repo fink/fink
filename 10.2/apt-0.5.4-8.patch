@@ -427,7 +427,7 @@ diff -ruN apt-0.5.4/dselect/setup apt-0.5.4-patched/dselect/setup
 -  print "              http://ftp.de.debian.org/debian,\n";
 -#  print " and the special mirror scheme,\n";
 -#  print "              mirror:http://www.debian.org/archivemirrors \n";
-+  print "              file:/sw/fink,\n";
++  print "              file:@PREFIX@/fink,\n";
 +  print "              http://us.dl.sourceforge.net/fink/direct_download\n";
    print "\n";
  
@@ -814,6 +814,6 @@ diff -ruN apt-0.5.4/sources.list.fink-bindist apt-0.5.4-patched/sources.list.fin
 +#   # Do not know how to create shared libraries here.
 +#   ONLYSTATICLIBS = yes
 +#endif
-+SONAME_MAGIC=-install_name /sw/lib/
++SONAME_MAGIC=-install_name @PREFIX@/lib/
 +LFLAGS_SO=-dynamiclib -flat_namespace -undefined suppress
  	
