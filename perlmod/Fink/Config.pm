@@ -23,6 +23,7 @@
 
 package Fink::Config;
 use Fink::Base;
+use Fink::Command qw(cp);
 use Fink::Services;
 
 
@@ -35,6 +36,7 @@ our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath
                       $distribution
                       get_option set_options verbosity_level
+
                      );
 our $VERSION	 = 1.00;
 
@@ -289,6 +291,121 @@ sub save {
 	rename "$path.tmp", $path;
 
 	$self->{_queue} = [];
+
+	$self->write_sources_list;
+}
+
+=item write_sources_list
+
+  $config->write_sources_list;
+
+Writes an appropriate $basepath/etc/apt/sources.list file, based on
+configuration information.  Called automatically by $config->save.
+
+=cut
+
+sub write_sources_list {
+	my $self = shift;
+	my $basepath = $self->param("Basepath");
+	my $path = "$basepath/etc/apt/sources.list";
+
+# We copy any existing sources.list file to sources.list.finkbak, unless
+# a fink backup already exists.  (So effectively, this is done only once.)
+	if ((not -f "$path.finkbak") and (-f "$path")) {
+		cp "$path", "$path.finkbak";
+	}
+
+	open(OUT,">$path.tmp") or die "can't open $path.tmp: $!";
+
+	print OUT <<EOF;
+# Default APT sources configuration for Fink, written by the fink program
+
+# Local package trees - packages built from source locally
+# NOTE: this is automatically kept in sync with the Trees: line in 
+# $basepath/etc/fink.conf
+# NOTE: run 'fink scanpackages' to update the corresponding Packages.gz files
+EOF
+
+# We write a separate line for each entry in Trees, in order, so that
+# apt-get searches for packages in the same order as fink does.  However,
+# we do combine lines if the distribution is the same in two consecutive
+# ones.
+
+	my $trees = $self->param("Trees");
+	my $prevdist = "";
+	my ($tree, @prevcomp);
+
+	foreach $tree (split(/\s+/, $trees)) {
+		$tree =~ /(\w+)\/(\w+)/;
+		if ($prevdist eq $1) {
+			push @prevcomp, $2;
+		} else {
+			if ($prevdist) {
+				print OUT "deb file:$basepath/fink $prevdist @prevcomp\n";
+			}
+			$prevdist = $1;
+			@prevcomp = ($2);
+		}
+	}
+	if ($prevdist) {
+		print OUT "deb file:$basepath/fink $prevdist @prevcomp\n";
+	}
+
+	print OUT "\n";
+
+# We only include the remote debs if the $basepath is set to /sw.
+
+	if ("$basepath" eq "/sw") {
+
+		my $apt_mirror = "http://us.dl.sourceforge.net/fink/direct_download";
+
+		if ($self->has_param("Mirror-apt")) {
+			$apt_mirror = $self->get_param("Mirror-apt");
+		}
+
+		my $distribution = $self->param("Distribution");
+
+		print OUT <<EOF;
+# Official binary distribution: download location for packages
+# from the latest release
+EOF
+
+	print OUT "deb $apt_mirror $distribution/release main crypto\n\n";
+		print OUT <<EOF;
+# Official binary distribution: download location for updated
+# packages built between releases
+EOF
+
+	print OUT "deb $apt_mirror $distribution/current main crypto\n\n";
+
+	}
+
+	my $localmods = 0;
+if (-f "$path") {
+	open(IN,"$path") or die "can't open sources.list: $!";
+	while (<IN>) {
+		chomp;
+		if (not $localmods) {
+			if (/^\# Put all local modifications to this file below this line\./) {
+				$localmods = 1;
+				print OUT "$_\n";
+			}
+		} else {
+			print OUT "$_\n";
+		}
+	}
+	close(IN);
+}
+
+    if (not $localmods) {
+		print OUT "# Put all local modifications to this file below this line.\n\n";
+	}
+	close(OUT);
+
+
+	# put the temporary file in place
+	unlink $path;
+	rename "$path.tmp", $path;
 }
 
 =back
