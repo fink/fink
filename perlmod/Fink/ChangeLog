@@ -1,3 +1,7 @@
+2005-02-28  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* VirtPackage.pm: Added Growl 0.6 detection
+
 2005-02-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm: Repair dumpinfo under perl 5.6 (thanks to Martin 

@@ -992,17 +992,34 @@ For more info on this package see http://growl.info/.
 	if (-x '/Library/PreferencePanes/Growl.prefPane/Contents/Resources/GrowlHelperApp.app/Contents/MacOS/GrowlHelperApp') {
 		print STDERR "found, Growl\n" if ($options{debug});
 		print STDERR "- checking for Growl version... " if ($options{debug});
-		if (-f "/Library/Receipts/Growl.pkg/Contents/Info.plist") {
-			if (open(FILEIN, '/Library/Receipts/Growl.pkg/Contents/Info.plist')) {
+		if (-f "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist") {
+			if (open(FILEIN, '/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist')) {
 				local $/ = undef;
-				if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
+				if (<FILEIN> =~ /<key>CFBundleVersion<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
 					$growl_version = $1;
 				}
 				close(FILEIN);
-			} 
+			}
 		} else {
-			print STDERR "/Library/Receipts/Growl.pkg/Contents/Info.plist not found... " if ($options{debug});
-			$growl_version = "0";
+				print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
+ 			$growl_version = "0";
+                }
+
+		### This check is for growl's less then 0.6
+		### Growl team told me 1.0 would be versioned 1.00
+		if ($growl_version eq "1.0") {
+			if (-f "/Library/Receipts/Growl.pkg/Contents/Info.plist") {
+				if (open(FILEIN, '/Library/Receipts/Growl.pkg/Contents/Info.plist')) {
+					local $/ = undef;
+					if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
+						$growl_version = $1;
+					}
+					close(FILEIN);
+				} 
+			} else {
+				print STDERR "/Library/Receipts/Growl.pkg/Contents/Info.plist not found... " if ($options{debug});
+				$growl_version = "0";
+			}
 		}
 	} else {
 		print STDERR "missing\n" if ($options{debug});
