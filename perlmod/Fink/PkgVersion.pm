@@ -1602,7 +1602,7 @@ sub phase_patch {
 	my $self = shift;
 	my ($dir, $patch_script, $cmd, $patch, $subdir);
 
-	$self->parse_configure_params;
+	$self->parse_configureparams;
 
 	if ($self->is_type('bundle')) {
 		return;
@@ -1690,7 +1690,7 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 
-	$self->parse_configure_params;
+	$self->parse_configureparams;
 
 	if ($self->is_type('bundle')) {
 		return;
@@ -1746,7 +1746,7 @@ sub phase_install {
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
 
-	$self->parse_configure_params;
+	$self->parse_configureparams;
 
 	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().

@@ -1,5 +1,9 @@
 2004-04-26  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Grr...committed wrong file. Fixing...
+
+2004-04-26  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Pushed processing of ConfigureParams (including
 	Type-specific default and setting %c expansion) into a new
 	parse_configureparams() method. Disabled ConfigureParams
