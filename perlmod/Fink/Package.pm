@@ -24,7 +24,7 @@ package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &latest_version &version_cmp 
                       &parse_fullversion &expand_percent);
-use Fink::CLI qw(&print_breaking);
+use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
 use File::Find;
@@ -385,8 +385,10 @@ sub scan_all {
 	}
 	$have_packages = 1;
 
-	printf "Information about %d packages read in %d seconds.\n", 
-               scalar(values %$packages), (time - $time);
+	if (&get_term_width) {
+		printf STDERR "Information about %d packages read in %d seconds.\n", 
+			scalar(values %$packages), (time - $time);
+	}
 }
 
 ### scan for info files and compare to $db_mtime
@@ -409,7 +411,9 @@ sub update_db {
 	my ($tree, $dir);
 
 	# read data from descriptions
-	print "Reading package info...\n";
+	if (&get_term_width) {
+		print STDERR "Reading package info...\n";
+	}
 	foreach $tree ($config->get_treelist()) {
 		$dir = "$basepath/fink/dists/$tree/finkinfo";
 		Fink::Package->scan($dir);
@@ -417,7 +421,9 @@ sub update_db {
 	eval {
 		require Storable; 
 		if ($> == 0) {
-			print "Updating package index... ";
+			if (&get_term_width) {
+				print STDERR "Updating package index... ";
+			}
 			unless (-d "$basepath/var/db") {
 				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 			}
@@ -425,7 +431,7 @@ sub update_db {
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
 			print "done.\n";
 		} else {
-			&print_breaking( "\nFink has detected that your package cache is out of date and needs" .
+			&print_breaking_stderr( "\nFink has detected that your package cache is out of date and needs" .
 				" an update, but does not have privileges to modify it. Please re-run fink as root," .
 				" for example with a \"fink index\" command.\n" );
 		}

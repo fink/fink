@@ -37,7 +37,7 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK	 = qw(&print_breaking
+	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
 					  &prompt &prompt_boolean &prompt_selection_new
 			      &get_term_width);
 }
@@ -139,6 +139,20 @@ sub print_breaking {
 	}
 	print "$prefix$s";
 	print "\n" if $linebreak;
+}
+
+=item print_breaking_stderr
+
+This is a wrapper around print_breaking that causes output to go to
+STDERR. See print_breaking for a complete description of parameters
+and usage.
+
+=cut
+
+sub print_breaking_stderr {
+	my $old_fh = select STDERR;
+	&print_breaking(@_);
+	select $old_fh;
 }
 
 =item prompt

@@ -1,5 +1,13 @@
 2004-02-01  Daniel Macks  <dmacks@netspace.org>
 
+	* CLI.pm: Implemented print_breaking_stderr, a wrapper around
+	print_breaking that causes output to go to STDERR.
+	* Package.pm: For all diagnostic/status messages from 'fink list',
+	send to STDERR. For all that are not critical, don't output unless
+	output is a  terminal (i.e., hide if a Unix pipeline).
+	
+2004-02-01  Daniel Macks  <dmacks@netspace.org>
+
 	* Services.pm: Resuscitated RangerRick's idea from CVS r1.95 of
 	adding line numbers to parser error messages.
 
