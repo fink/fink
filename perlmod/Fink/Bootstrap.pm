@@ -189,7 +189,7 @@ $gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrap
 "gcc EXPECTED_GCC.  However, you currently have gcc INSTALLED_GCC selected.\n" .
 "To correct this problem, run the command:\n\n" .
 								   "    sudo gcc_select GCC_SELECT_COMMAND\n\n");
-		$gcc = "-" . $gcc;
+		$gcc = "-gcc" . $gcc;
 } else {
 ## 10.2 users who do not have gcc at all are installing binary only, so they get
 ## to move to 10.2-gcc3.3 also

@@ -1,3 +1,8 @@
+2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: fix error which prevented &enforce_gcc from working
+	properly on 10.2.
+
 2004-12-20  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: unify execute() and execute_script() into execute().
