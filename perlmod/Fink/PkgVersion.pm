@@ -1386,6 +1386,9 @@ sub resolve_conflicts {
 	return @conflist;
 }
 
+# TODO: this method is superfluous and incomplete. Should inline it
+# into callers, and (eventually) implement minor-libversion handling
+# in pkglist()
 sub get_binary_depends {
 	my $self = shift;
 	my ($depspec);
@@ -2237,6 +2240,7 @@ EOF
 #   We depend on the major version only, in order to prevent users from
 #   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
 #   value.
+# TODO: move all this kernel-dependency stuff into pkglist()
 # FIXME: Actually, if the package states a kernel version we should combine
 #   the version given by the package with the one we want to impose.
 #   Instead, right now, we just use the package's version but this means
@@ -2248,7 +2252,7 @@ EOF
 	if ($kernel_version =~ /(\d+)/) {
 		$kernel_major_version = $1;
 	} else {
-		die "Couldn't determin major version number for $kernel kernel!";
+		die "Couldn't determine major version number for $kernel kernel!";
 	}
 
 	my $has_kernel_dep;
