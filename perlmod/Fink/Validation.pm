@@ -829,9 +829,10 @@ sub validate_dpkg_file {
 	# This is a potential security risk, we should maybe filter $dpkg_filename...
 
 	# read some fields from the control file
-	foreach (qw/ builddependsonly package depends /) {
-		$deb_control->{$_} = `dpkg --field $dpkg_filename $_`;
-		chomp $deb_control->{$_};
+	$deb_control = map {$_, 1} (qw/ builddependsonly package depends /);
+	foreach (`dpkg --field $dpkg_filename builddependsonly package depends`) {
+		/^([^:]*): (.*)/;
+		$deb_control->{lc $1} = $2;
 	}
 
 	# read some control script files

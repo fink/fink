@@ -1,3 +1,8 @@
+2004-07-29  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: switch to perl5.6.x-safe use of constants.
+	* Validation.pm: consolidate system calls for reading .deb fields.
+
 2004-07-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Parse .deb control early; make data available in

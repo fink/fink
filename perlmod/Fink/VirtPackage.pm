@@ -31,10 +31,8 @@ use Fink::Config qw($config $basepath);
 use POSIX qw(uname);
 use Fink::Status;
 
-use constant {
-	STATUS_PRESENT => "install ok installed",
-	STATUS_ABSENT  => "purge ok not-installed",
-};
+use constant STATUS_PRESENT => "install ok installed";
+use constant STATUS_ABSENT  => "purge ok not-installed";
 
 use vars qw(
 	%options
