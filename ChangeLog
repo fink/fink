@@ -1,3 +1,7 @@
+2004-02-16  Daniel Macks  <dmacks@netspace.org>
+
+	* STYLE: a style guide for the fink core code.
+
 2004-02-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.sh, setup.sh: Create FinkVersion.pm from FinkVersion.pm.in
