@@ -2,9 +2,12 @@
 
 # Test the return values of Fink::Command functions when they fail.
 
+use strict;
 use Test::More 'no_plan';
 
 use Fink::Command qw(:ALL);
+
+my $Unprivledged_UID = getpwnam('nobody') || getpwnam('unknown');
 
 {
     eval { mv() };
@@ -83,6 +86,7 @@ use Fink::Command qw(:ALL);
 
 SKIP: {
     skip "You must be root", 5 unless $> == 0;
+    skip "Can't find an unprivledged user", 5 unless $Unprivledged_UID;
 
     mkdir 'foo';
     mkdir 'bar';
@@ -95,8 +99,8 @@ SKIP: {
     chmod 0666, 'bar/baz';
 
     # drop privledges
-    local $> = -2;
-    local $< = -2;  
+    local $> = $Unprivledged_UID;
+    local $< = $Unprivledged_UID;  
 
     $! = 0;
     ok( !rm_rf('foo') );
@@ -142,14 +146,15 @@ rm_rf 'bar';
 
 SKIP: {
     skip "You must be root", 2 unless $> == 0;
+    skip "Can't find an unprivledged user", 2 unless $Unprivledged_UID;
 
     touch 'foo';
     chmod 0400, 'foo';
     my $mtime = (stat 'foo')[9];
 
     # drop privs
-    local $> = -2;
-    local $< = -2;
+    local $> = $Unprivledged_UID;
+    local $< = $Unprivledged_UID;
 
     sleep 1;
     ok( !touch 'foo' );
@@ -176,15 +181,15 @@ unlink 'foo';
 
 
 SKIP: {
-    skip "You must be root", 2
-      unless $> == 0;
+    skip "You must be root", 2 unless $> == 0;
+    skip "Can't find an unprivledged user", 2 unless $Unprivledged_UID;
 
     touch 'foo';
     chmod 0400, 'foo';
 
     # drop privs
-    local $> = -2;
-    local $< = -2;
+    local $> = $Unprivledged_UID;
+    local $< = $Unprivledged_UID;
 
     touch 'bar';
 
