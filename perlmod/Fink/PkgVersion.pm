@@ -650,6 +650,7 @@ sub resolve_depends {
 	# exception: if we were called by a splitoff to determine the "meta
 	# dependencies" of it, then we again filter out all splitoffs.
 	# If you've read till here without mental injuries, congrats :-)
+	next SPECLOOP if ($depname eq $self->{_name});
 	foreach  $splitoff (@{$self->{_splitoffs}}) {
 	   next SPECLOOP if ($depname eq $splitoff->get_name());
 	}

@@ -1,3 +1,8 @@
+2002-05-02  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm (resolve_depends): Fixed bug that made building splitoffs that 
+	depend on their master impossible (affects kdebase package).
+
 2002-05-01  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm (get_description): Don't display DescPort and DescPackaging,
