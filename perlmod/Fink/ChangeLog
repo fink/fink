@@ -1,3 +1,13 @@
+2003-11-21  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Re-improved early-escape from recursive percent
+	expansion. The main regex isn't much heavier than this check, so
+	we lose in the case where multiple passes are needed but avoid
+	loop overhead in the more common one-pass-needed case. May as well
+	leave my "|| last" (helps sometimes, doesn't hurt, will avoid
+	wheel spinning if we go to higher pass-count limit and have
+	unknown %vars).
+
 2003-11-21  Michael G Schwern <schwern@pobox.com>
 
 	* Command.pm: rm_rf() not returning false when it deletes some 

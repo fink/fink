@@ -280,10 +280,13 @@ sub expand_percent {
 			# once, to allow e.g. the definition of %N in terms of
 			# %n (used a lot for splitoffs which do stuff like
 			# %N = %n-shlibs). Hence we repeate the expansion if
-			# necessary. Abort early if no substitution performed.
+			# necessary.
+			# Abort as soon as no substitution performed.
 			my $percent_keys = join('|', keys %$map);
 			for ($i = 0; $i < 2 ; $i++) {
 				$s =~ s/\%($percent_keys)/$map->{$1}/eg || last;
+				# Abort early if no percent symbols are left
+				last if not $s =~ /\%/;
 			}
 	
 			# If ther are still unexpanded percents left, error out
