@@ -1,5 +1,9 @@
 2004-12-07  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.conf.5.in: Document Verbose=1 is default.
+
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.conf.5.in: Document Verbose=4.
 	* fink.in: -v sets verbose=4.
 

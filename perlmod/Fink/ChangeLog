@@ -1,3 +1,7 @@
+2004-12-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Configure.pm: Verbose=1 *is* desired default.
+
 2004-12-07  Daniel Macks  <dmacks@netspace.org>
 
 	* Config.pm: Default to Verbose=3.

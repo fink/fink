@@ -82,7 +82,7 @@ sub configure {
 		                "the binary distribution if available?", $binary_dist);
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
-	$verbose = $config->param_default("Verbose", 3);
+	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
 		&prompt_selection_new("How verbose should Fink be?",
 							  [value=>$verbose],

@@ -538,7 +538,7 @@ setting in fink.conf.
 =cut
 
 sub verbosity_level {
-	my $verblevel = $config->param_default("Verbose", 3);
+	my $verblevel = $config->param_default("Verbose", 1);
 	my $verbosity = get_option("verbosity");
 
 	if ($verbosity != -1 && ($verbosity == 4 || $verblevel eq "4" || $verblevel eq "true" || $verblevel eq "pedantic")) {
