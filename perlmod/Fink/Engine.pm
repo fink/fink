@@ -1849,12 +1849,19 @@ EOF
 					$value =~ s/\n/ /g; # merge into single line
 					printf "%s: %s\n", $_, $value;
 				}
-			} elsif ($_ =~ /^((patch|(pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
+			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
 				# multiline fields start on a new line and are
 				# indented one extra space
 				$pkg->parse_configureparams;
 				if ($pkg->has_param($_)) {
 					my $value = $pkg->param_expanded($_);
+					$value =~ s/^/ /gm;
+					printf "%s:\n%s\n", $_, $value;
+				}
+			} elsif ($_ eq 'patchscript') {
+				# multiline field, but has own accessor
+				my $value = $pkg->get_patchscript;
+				if (length $value) {
 					$value =~ s/^/ /gm;
 					printf "%s:\n%s\n", $_, $value;
 				}

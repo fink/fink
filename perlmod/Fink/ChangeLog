@@ -1,3 +1,9 @@
+2004-06-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Move PatchScript processing into new get_patchscript
+	method and enable %default_script (which is blank) in that field.
+	* Engine.pm: Use new get_patchscript accessor for dumpinfo.
+	
 2004-06-26  Daniel Macks  <dmacks@netspace.org>
 
 	* Base.pm: param_boolean now returns undef if field is not present.

@@ -1671,25 +1671,45 @@ sub phase_patch {
 			"cp -f $libpath/update/Makefile.in.in po/\n";
 	}
 
-	### patches specifies by filename
+	### run what we have so far
+	$self->run_script($patch_script, "patching (Update* flags)", 0);
+	$patch_script = "";
 
+	### patches specified by filename
 	if ($self->has_param("Patch")) {
 		foreach $patch (split(/\s+/,$self->param("Patch"))) {
 			$patch_script .= "patch -p1 <\%a/$patch\n";
 		}
 	}
+	$self->run_script($patch_script, "patching (patchfiles)", 0);
 
-	### patch
+	### Deal with PatchScript field
+	$self->run_script($self->get_patchscript, "patching", 1);
+}
 
-	if ($patch_script ne "") {
-		$self->run_script($patch_script, "patching", 0);
-	}
+sub get_patchscript {
+	my $self = shift;
 
-	### run custom patch script (if any)
+	return "" if exists $self->{parent};
 
-	if ($self->has_param("PatchScript")) {
-		$self->run_script($self->param("PatchScript"), "patching", 0);
-	}
+	my $default_script = "";
+
+	# need to pre-expand default_script so not have to change
+	# expand_percent() to go a third level deep
+	$self->parse_configureparams;
+	$self->{_expand}->{default_script} = &expand_percent(
+		$default_script,
+		$self->{_expand},
+		$self->get_info_filename." PatchScript"
+	);
+
+	my $script = $self->param_default_expanded(
+		"PatchScript",
+		'%{default_script}'
+	);
+	delete $self->{_expand}->{default_script};  # this key must stay local
+
+	return $script;
 }
 
 ### compile
@@ -1813,10 +1833,7 @@ sub phase_install {
 		# Run the script part we have so far
 		$self->run_script($install_script, "installing", 0);
 		# Now run the actual InstallScript
-		$install_script = $self->get_installscript;
-		if (length $install_script) {
-			$self->run_script($install_script, "installing", 1);
-		}
+		$self->run_script($self->get_installscript, "installing", 1);
 		$install_script = ""; # reset it
 		# Handle remaining fields that affect installation
 		if ($self->param_boolean("UpdatePOD")) {
