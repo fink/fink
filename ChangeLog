@@ -1,5 +1,9 @@
 2001-07-31  Christoph Pfisterer  <cp@chrisp.de>
 
+	* inject.pl, bootstrap.pl: Include HTML documentation in
+	tarballs.
+	* install.sh: Install HTML documentation in .../share/doc/fink.
+
 	* README, INSTALL, USAGE: Updated for the 0.2.4 release via the
 	XML document system. Some layout changes.
 	* README.html, INSTALL.html, USAGE.html: HTML versions of the
