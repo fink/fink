@@ -115,9 +115,14 @@ sub check_files {
 sub get_shlib {
   my $self = shift;
   my $lib = shift;
-  my ($dep, $shlib, $count, $pkgnum, $vernum);
+  my ($dep, $shlib, $count, $pkgnum, $vernum, %pkgs);
 
   $dep = "";
+
+  ###FIXME
+  ### add a hash here, to gather the pkgs, then re run a loop to get
+  ### versions, this will solve the same pkg with multi versions, make
+  ### sure to take the highest version
 
   foreach $shlib (keys %shlib_hash) {
     if ("$shlib" eq "$lib") {
