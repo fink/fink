@@ -262,7 +262,7 @@ sub read_properties_lines {
 	}
 
 	if ($heredoc > 0) {
-		print "WARNING: End of file reached during here-document in \"$file\".\n";
+		print "WARNING: End of file reached during here-document in $file.\n";
 	}
 
 	return $hash;
