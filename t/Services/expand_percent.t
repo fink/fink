@@ -79,3 +79,8 @@ is( Fink::Services::expand_percent( 'hash %%%rreets', $map ),
     'Actual expansion following %%'
     );
 
+# long keys
+is( Fink::Services::expand_percent( 'M%iss%iss%ippi', {qw/iss ith ipp iss/} ),
+    'Mithithissi',
+    'Long keys'
+    );

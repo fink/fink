@@ -354,11 +354,11 @@ sub execute {
 
 Executes the multiline script $script.
 
-If $script appears to specify an interpretter (i.e., it begins with
-#!) the whole thing is stored in a temp file which is made chmod +x
-and executed. If the tempfile could not be created, the program dies
-with an error message. If executing the script fails, the tempfile is
-not deleted and the failure code is returned.
+If $script appears to specify an interpretter (i.e., the first line
+begins with #!) the whole thing is stored in a temp file which is made
+chmod +x and executed. If the tempfile could not be created, the
+program dies with an error message. If executing the script fails, the
+tempfile is not deleted and the failure code is returned.
 
 If $script does not specify an interpretter, each line is executed
 individually. In this latter case, the first line that fails causes
@@ -415,19 +415,19 @@ sub execute_script {
 
 
 Performs percent-expansion on the given multiline $template according
-to %map (if one is passed). If a line in $template begins with #
+to %map (if one is defined). If a line in $template begins with #
 (possibly preceeded with whitespace) it is treated as a comment and no
 expansion is performed on that line.
 
 The %map is a hash where the keys are the strings to be replaced (not
-including the percent char). The map can be recursive (i.e., a value
-that itself has a percent char), and multiple substitution passes are
-made to deal with this situation. Recursing is currently limitted to a
-single additional level (only (up to) two passes are made). If there
-are still % chars left after the recursion, that means $template needs
-more passes (beyond the recursion limit) or there are % patterns in
-$template that are not in %map. If either of these two cases occurs,
-the program will die with an error message.
+including the percent char). The mapping can be recursive (i.e., a
+value that itself has a percent char), and multiple substitution
+passes are made to deal with this situation. Recursing is currently
+limitted to a single additional level (only (up to) two passes are
+made). If there are still % chars left after the recursion, that means
+$template needs more passes (beyond the recursion limit) or there are
+% patterns in $template that are not in %map. If either of these two
+cases occurs, the program will die with an error message.
 
 To get an actual percent char in the string, protect it as %% in
 $template (similar to printf()). This occurs whether or not there is a
@@ -436,6 +436,11 @@ should not have ('%'=>'%') in %map. Pecent-delimited percent chars are
 left-associative (again as in printf()). Currently, this %% treatment
 is implemented using a temporary sentinel string of "@PERCENT@", so if
 $template contains @PERCENT@ that will also be replaced with %.
+
+Expansion keys are not limitted to single letters, however, having one
+expansion key that is the beginning of a longer one (d and dir) will
+cause unpredictable results (i.e., "a" and "arch" is bad but "c" and
+"arch" is okay). Note that no such keys are in use at this point.
 
 =cut
 
@@ -508,11 +513,21 @@ sub filename {
 
 =item print_breaking
 
-TODO
+    print_breaking $string;
+    print_breaking $string, $linebreak;
+    print_breaking $string, $linebreak, $prefix1;
+    print_breaking $string, $linebreak, $prefix1, $prefix2;
+
+Wraps $string, breaking at word-breaks, and prints it on STDOUT. The
+screen width used is the package global variable $linelength. Breaking
+is performed only at space chars. If $linebreak is true, a linefeed
+will be appended to the last line printed, otherwise one will not be
+appended. Optionally, prefixes can be defined to prepend to each line
+printed: $prefix1 is prepended to the first line, $prefix2 is
+prepended to all other lines. If only $prefix1 is defined, that will
+be prepended to all lines.
 
 =cut
-
-### user interaction
 
 sub print_breaking {
 	my $s = shift;
@@ -550,8 +565,15 @@ sub print_breaking {
 }
 
 =item prompt
+    my $answer = prompt $prompt;
+    my $answer = prompt $prompt, $default;
 
-TODO
+Ask the user a question and return the answer. The user is prompted
+via STDOUT/STDIN using $prompt (which is word-wrapped). If the user
+returns a null string or Fink is configured to automatically accept
+defaults (i.e., bin/fink was invoked with the -y or --yes option), the
+default answer $default is returned (or a null string if no $default
+is not defined).
 
 =cut
 
@@ -577,8 +599,16 @@ sub prompt {
 }
 
 =item prompt_boolean
+    my $answer = prompt_boolean $prompt;
+    my $answer = prompt_boolean $prompt, $default_true;
 
-TODO
+Ask the user a yes/no question and return the logical value of the
+answer. The user is prompted via STDOUT/STDIN using $prompt (which is
+word-wrapped). If $default_true is true or undef, the default answer
+is true, otherwise it is false. If the user returns a null string or
+Fink is configured to automatically accept defaults (i.e., bin/fink
+was invoked with the -y or --yes option), the default answer is
+returned.
 
 =cut
 
@@ -616,18 +646,26 @@ sub prompt_boolean {
 }
 
 =item prompt_selection
+    my $answer = prompt_selection $prompt, $default, \%names, @choices;
 
-TODO
+Ask the user a multiple-choice question and return the answer. The
+user is prompted via STDOUT/STDIN using $prompt (which is
+word-wrapped) and a list of choices (the values of %names). The
+choices are numbered (beginning with 1) and the user selects by
+number. The list @choices is the keys of %names listed in the order
+they are to be presented to the user, and the value returned is the
+item in @choices corresponding to the choice number. If the user
+returns a null string or Fink is configured to automatically accept
+defaults (i.e., bin/fink was invoked with the -y or --yes option), the
+answer-number $default is used.
+
+This seems ripe for replacement by an ordered hash or an array of
+array-refs ([key1,val1],[key2,val2],...) or a simple pairwise list
+(key1,val1,key2,val2,...) and the actual default value instead of
+default value-number (abstracting for an interface other than
+numbered-choices).
 
 =cut
-
-# select from a list of choices
-# parameters:
-#	 prompt			- a string
-#	 default_value	- a number between 1 and the number of choices
-#	 names			- a hashref containing display names for the choices,
-#					  indexed by the choices themselves (not their index)
-#	 the choices	- a list of choices; one of these will be returned
 
 sub prompt_selection {
 	my $prompt = shift;
@@ -733,8 +771,10 @@ sub version_cmp {
 =begin private
 
 =item raw_version_cmp
+    my $cmp = raw_version_cmp $item1, $item2;
 
-TODO
+Compare $item1 and $item2 as debian epoch or version or revision
+strings and return -1, 0, 1 as for the perl <=> or cmp operators.
 
 =end private
 
@@ -786,7 +826,10 @@ sub raw_version_cmp {
 
 =item latest_version
 
-TODO
+    my $latest = latest_version @versionstrings;
+
+Given a list of one or more debian-esque version strings, return the
+one that is the highest.
 
 =cut
 
@@ -794,14 +837,14 @@ sub latest_version {
 	my ($latest, $v);
 
 	$latest = shift;
-	while (defined($v = shift)) {
+	foreach $v (@_) {
+		next unless defined $v;
 		if (version_cmp($v, '>>', $latest)) {
 			$latest = $v;
 		}
 	}
 	return $latest;
 }
-
 
 =item parse_fullversion
 

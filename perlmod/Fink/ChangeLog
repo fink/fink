@@ -1,3 +1,9 @@
+2003-12-04  Daniel Macks <dmacks@netspace.org>
+
+	* Services.pm: Fixed latest_version to continue past (and ignore)
+	undef values rather than ignoring the rest of the passed list.
+	* Services.pm: Finished PODifying the docs.
+
 2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Add file-spec-pm, test-harness-pm, and test-simple-pm
