@@ -15,6 +15,9 @@ require_ok('Fink::Config');            # 3
 can_ok('Fink::Config','get_option');   # 4
 can_ok('Fink::Config','set_options');  # 5
 
+### FIXME: File::Temp is not present until perl-5.6.1, so need to
+### rewrite this for use on OS X 10.2 (perl-5.6.0). Maybe use
+### /usr/bin/mktemp (which has no -p flag on OS X 10.2).
 # need a a safe place to create files
 use_ok('File::Temp', 'tempdir');       # 6
 my $tmpdir = tempdir( 'execute_nonroot_okay.t_XXXXX',
