@@ -2,7 +2,7 @@ Package: tar
 Version: 1.13.17
 Revision: 1
 Source: ftp://alpha.gnu.org/gnu/%n/%n-%v.tar.gz
-Depends: gzip, bzip2
+Depends: stow, gzip, bzip2
 Essential: yes
 UsesGettext: true
 UpdateConfigGuess: true

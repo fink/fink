@@ -3,6 +3,7 @@ Version: 1.2.4a
 Revision: 1
 Source: gnu
 Essential: yes
+Depends: stow
 CommentPort: Uses autoconf. Works fine. TODO: add links from gzcat to
  gzip, from zless to zmore. Dito for manpages.
 CommentStow: The shellscripts hardcode the stow path. However, this is
