@@ -1906,10 +1906,10 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	if (not $config->param_boolean("KeepRootDir") and not Fink::Config::get_option("keep_root") and -e $destdir) {
 		if (&execute("/bin/rm -rf $destdir")) {
 			&print_breaking("WARNING: Can't remove package root directory ".
-											"$destdir. ".
-											"This is not fatal, but you may want to remove ".
-											"the directory manually to save disk space. ".
-											"Continuing with normal procedure.");
+							"$destdir. ".
+							"This is not fatal, but you may want to remove ".
+							"the directory manually to save disk space. ".
+							"Continuing with normal procedure.");
 		}
 	}
 }
