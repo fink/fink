@@ -1,5 +1,7 @@
 2001-04-20  Christoph Pfisterer  <cp@chrisp.de>
 
+	* README, INSTALL: Documentation updated.
+
 	* bootstrap.pl: Added auto-versioning. Added support for
 	all-in-one distribution tarball.
 	* mkrelease.sh: New script to create the release tarballs.

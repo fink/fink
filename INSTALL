@@ -16,8 +16,8 @@ document covers two procedures:
  Requirements
 --------------
 You need:
- * An installed Mac OS X, version 10.0 system. Darwin 1.3 may also
-   work once it's released.
+ * An installed Mac OS X, version 10.0 system. Darwin 1.3 should also
+   work, but this has not been tested.
  * Development tools. On Mac OS X, install the Developer.pkg package
    from the Developer Tools CD. On Darwin, the tools should be present
    in the default install.

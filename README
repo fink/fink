@@ -27,8 +27,8 @@ License. See the file COPYING for details.
  Requirements
 --------------
 You need:
- * An installed Mac OS X, version 10.0 system. Darwin 1.3 may also
-   work once it's released.
+ * An installed Mac OS X, version 10.0 system. Darwin 1.3.1 should
+   also work, but this has not been tested.
  * Development tools. On Mac OS X, install the Developer.pkg package
    from the Developer Tools CD. On Darwin, the tools should be present
    in the default install.
@@ -39,7 +39,8 @@ You need:
 
  Installation
 --------------
-The installation process is described in detail in the file INSTALL.
+The installation process is described in detail in the file
+INSTALL. Please read it first, the process is non-trivial.
 
 
  Using Fink
@@ -60,30 +61,24 @@ executed separately:
   fink fetch <package-name>...
     - download the source tarball
   fink build <package-name>...
-    - configure and compile the package, install it in it's stow
-      directory
+    - configure and compile the package, create a binary package
+      file (.deb)
   fink activate <package-name>...
-    - link the package into the main tree
+    - install the binary package file
 
 If you no longer want to use a package, you can remove it from the
 main tree with:
 
-  fink deactivate <package-name>...
+  fink remove <package-name>...
 
-Note that this just removes the symlinks that point into the
-package's stow directory. It will still use disk space.
+This will remove the package's files, but leave the .deb, so you can
+easily re-install it at a later time. If you need the disk space, you
+can remove the .deb from the /sw/fink/dists tree.
 
-To update a package, type:
-
-  fink update <package-name>...
-
-This was introduced in version 0.1.4 and is almost identical to the
-install command. Note that only the packages you specify in the
-command will be updated, not the dependencies. If the newest version
-of the package is already installed, nothing will be done. To
-re-install a package, you must 'deactivate' it first.
-
-To update all installed packages, type:
+To update a package, simply ask fink to install it - it will always
+pick the latest version. You can also use the 'update' command, but
+that is just an alias for the 'install' command. To update all
+installed packages, type:
 
   fink update-all
 
@@ -106,9 +101,13 @@ the appropriate shell startup file.
 
  Staying Informed
 ------------------
-If you use Fink, please subscribe to the fink-users mailing list. New
-releases are announced there and you can use it to get help. To
-subscribe, visit
+To be informed of new releases, go to
+<http://lists.sourceforge.net/lists/listinfo/fink-announce> and
+subscribe yourself to the fink-announce mailing list. The list is
+moderated and low-traffic.
+
+To get help or just chat with other Fink users, subscribe to the
+fink-users mailing list at
 <http://lists.sourceforge.net/lists/listinfo/fink-users>.
 
 The project's website is at <http://fink.sourceforge.net>.
