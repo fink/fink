@@ -493,7 +493,7 @@ sub rsync_check {
 }
 
 sub do_direct_rsync {
-	my ($descdir, @sb, $cmd, $tree, $rmcmd, $username, $msg);
+	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
 	my $dist = $Fink::Config::distribution;
 	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://fink.opendarwin.org/finkinfo/");
 
@@ -518,6 +518,7 @@ sub do_direct_rsync {
 	# selfupdate-cvs.  However, don't actually do the removal until
 	# we've tried to put something there.
 	$rmcmd = "find . -name CVS | xargs rm -rf ";
+	$vercmd = "rsync -az $verbosity $rsynchost/VERSION $dist/VERSION";
 	foreach $tree ($config->get_treelist()) {
 		if( !grep(/stable/,$tree) ) {
 			next;
@@ -530,10 +531,12 @@ sub do_direct_rsync {
 		}
 
 		$rmcmd = "find . -name CVS | xargs rm -rf ";
+		$vercmd = "rsync -az $verbosity $rsynchost/VERSION $dist/VERSION";
 		if ($sb[4] != 0 and $> != $sb[4]) {
 			($username) = getpwuid($sb[4]);
 			$cmd = "su $username -c '$cmd'";
 			$rmcmd = "su $username -c '$rmcmd'";
+			$vercmd = "rsync -az $verbosity $rsynchost/VERSION $dist/VERSION";
 			$msg .= "The 'su' command will be used to run the rsync command as the user '$username'. ";
 		}
 
@@ -546,6 +549,7 @@ sub do_direct_rsync {
 		}
 	}
 	&execute($rmcmd);
+	&execute($vercmd);
 }
 
 ### EOF
