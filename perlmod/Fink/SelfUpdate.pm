@@ -24,7 +24,7 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp);
-use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection_new);
+use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $distribution binary_requested);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
@@ -86,11 +86,13 @@ sub check {
 	# if the fink.conf setting is not there.
 	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
 		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
-		$answer = &prompt_selection_new("Choose an update method",
-						[ value => "rsync" ],
-						( "rsync" => "rsync",
+		$answer = &prompt_selection("Choose an update method",
+						default => [ value => "rsync" ],
+						choices => [
+						  "rsync" => "rsync",
 						  "cvs" => "cvs",
-						  "Stick to point releases" => "point" ) );
+						  "Stick to point releases" => "point"
+						] );
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();	
 	}
@@ -125,7 +127,7 @@ sub check {
 		$answer =
 			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
 					. "Do you wish to change the default selfupdate method ".
-				"to rsync?",1);
+				"to rsync?", default => 1);
 		if (! $answer) {
 			return;
 		}
@@ -139,7 +141,7 @@ sub check {
 		$answer =
 			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
 					. "Do you wish to change the default selfupdate method ".
-				"to cvs?",1);
+				"to cvs?", default => 1);
 		if (! $answer) {
 			return;
 		}
@@ -208,7 +210,7 @@ sub setup_direct_cvs {
 				"descriptions to be edited and updated without becoming ".
 				"root. Please specify the user login name that should be ".
 				"used:",
-				$username);
+				default => $username);
 
 	# sanity check
 	@testlist = getpwnam($username);

@@ -203,11 +203,15 @@ sub fetch_url_to_file {
 								"Expected: $checksum \nActual: $found_archive_sum \n";
 			}
 		}
-		$result = &prompt_selection_new("The file \"$file\" already exists".$checksum_msg."How do you want to proceed?",
-						[ value => $default_value ],
-						( "Delete it and download again" => "retry",
-						  "Assume it is a partial download and try to continue" => "continue",
-						  "Don't download, use existing file" => "use_it" ) );
+		$result = &prompt_selection(
+			"The file \"$file\" already exists".$checksum_msg."How do you want to proceed?",
+			default => [ value => $default_value ],
+			choices => [
+				"Delete it and download again" => "retry",
+				"Assume it is a partial download and try to continue" => "continue",
+				"Don't download, use existing file" => "use_it"
+			]
+		);
 		if ($result eq "retry") {
 			rm_f $file;
 		} elsif ($result eq "continue") {

@@ -24,7 +24,7 @@
 package Fink::Engine;
 
 use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent &count_files &call_queue_clear &call_queue_add);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection &get_term_width);
 use Fink::Package;
 use Fink::Shlibs;
 use Fink::PkgVersion;
@@ -98,6 +98,7 @@ our %commands =
 	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
 	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0, 0],
 	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
+	  'snapshot'          => [\&cmd_snapshot,          1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -136,7 +137,7 @@ sub initialize {
 
 sub process {
 	my $self = shift;
-	my $options = shift;
+	my $orig_ARGV = shift;
 	my $cmd = shift;
 	my @args = @_;
 
@@ -156,7 +157,7 @@ sub process {
 
 	# check if we need to be root
 	if ($rootflag and $> != 0) {
-		&restart_as_root($options, $cmd, @args);
+		&restart_as_root(@$orig_ARGV);
 	}
 
 	# check if we need apt-get
@@ -190,7 +191,7 @@ sub process {
 		}
 		if($apt_problem) {
 			my $prompt = "Continue with the 'UseBinaryDist' option temporarily disabled?";
-			my $continue = prompt_boolean($prompt, 1, 60);
+			my $continue = prompt_boolean($prompt, default => 1, timeout => 60);
 			if ($continue) {
 				# temporarily disable UseBinaryDist
 				$config->set_param("UseBinaryDist", "false");
@@ -222,11 +223,7 @@ sub process {
 	Fink::PkgVersion->clear_buildlock();       # always clean up
 
 	# Rebuild the command line, for user viewing
-	my $commandline = 'fink';
-	$commandline .= " $options" if $options;
-	$commandline .= " $cmd" if $cmd;
-	$commandline .= join('', map { " $_" } @args) if @args;
-
+	my $commandline = join ' ', 'fink', @$orig_ARGV;
 	my $notifier = Fink::Notify->new();
 	if ($proc_rc->{'$@'}) {                    # now deal with eval results
 		print "Failed: " . $proc_rc->{'$@'};
@@ -255,14 +252,11 @@ sub restart_as_root {
 
 	$cmd = "$basepath/bin/fink";
 
-	# Pass on options
-	$cmd .= ' ' . shift;
-
 	foreach $arg (@_) {
 		if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
 			$cmd .= " $arg";
 		} else {
-			# safety first
+			# safety first (protect shell metachars, quote whole string)
 			$arg =~ s/[\$\`\'\"|;]/_/g;
 			$cmd .= " \"$arg\"";
 		}
@@ -931,11 +925,12 @@ EOF
 
 	if ($cmp1 ne $cmp2) {
 		my $pkglist = join(", ", @packages);
-		my $rmcount = $#packages + 1;
-		print "Fink will attempt to $cmd $rmcount package(s).\n";
-		&print_breaking("$pkglist\n\n");
-
-		my $answer = &prompt_boolean("Do you want to continue?", 1);
+		my $pkgcount = $#packages + 1;
+		my $prompt = "Fink will attempt to $cmd $pkgcount package" .
+			( $pkgcount > 1 ? "s" : "" ) .
+			"\n\n" .
+			"Do you want to continue?";
+		my $answer = &prompt_boolean($prompt, default => 1);
 		if (! $answer) {
 			die "$cmd not performed!\n";
 		}
@@ -974,7 +969,7 @@ EOF
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
  
-	my $answer = &prompt_boolean("Do you want to continue?", 1);			
+	my $answer = &prompt_boolean("Do you want to continue?", default => 1);
 	if (! $answer) {
 		die "Purge not performed!\n";
 	}
@@ -1572,7 +1567,8 @@ sub real_install {
 				print "\n";
 				&print_breaking("fink needs help picking an alternative to satisfy ".
 								"a virtual dependency. The candidates:");
-				$dname = &prompt_selection_new("Pick one:", [number=>$choice], @choices);
+				$dname = &prompt_selection("Pick one:",
+					default => [number=>$choice], choices => \@choices);
 			}
 
 			# the dice are rolled...
@@ -1727,7 +1723,8 @@ sub real_install {
 				&print_breaking(join(" ",@removals), 1, " ");
 			}
 			if (not $dryrun) {
-				$answer = &prompt_boolean("Do you want to continue?", 1);
+				$answer = &prompt_boolean("Do you want to continue?",
+						  				  default => 1);
 				if (! $answer) {
 					die "Package requirements not satisfied\n";
 				}
@@ -2341,6 +2338,51 @@ sub cmd_show_deps {
 	}
 }
 
+sub cmd_snapshot {
+	my ($pname, $package, @installed, $snapdir, $outfile, @time,
+		$snappkg, $snapver, $snaprev, $snapdep);
+
+	eval "use POSIX qw(strftime);";
+	$snappkg = "fink-snapshot";
+	$snapver = strftime("%Y.%m.%d.%H", localtime);
+	$snaprev = "1";
+	$snapdir = "/tmp";
+	foreach $pname (Fink::Package->list_packages()) {
+		next if ($pname eq $snappkg);
+		$package = Fink::Package->package_by_name($pname);
+		if ($package->is_any_installed() &&
+			!$package->is_virtual()) {
+			push @installed, $pname;
+		}
+	}
+	$snapdep = join(",\n ", sort(@installed));
+	$outfile = sprintf("$snapdir/snap-%s-%s.info",
+					   $snapver, $snaprev);
+	my @user = getpwnam($ENV{SUDO_USER} || $ENV{USER});
+	local *SNAP;
+	open(SNAP, "> $outfile") or die "can't create file $outfile\n";
+	print SNAP <<"EOF";
+Package: $snappkg
+Version: $snapver
+Revision: $snaprev
+Type: bundle
+License: Restrictive
+Description: Snapshot of Fink packages for $user[6]
+Maintainer: $user[6] <$user[0]\@localhost>
+Homepage: http://fink.sourceforge.net/
+Depends: <<
+ $snapdep
+<<
+EOF
+	close(SNAP) or die "can't create file $outfile\n";
+    print <<"EOF";
+Wrote $outfile
+To use this file:
+   copy to /sw/fink/dists/local/main/finkinfo
+   run "fink build fink-snapshot"
+EOF
+}
+
 # pretty-print a set of PkgVersion::pkglist (each "or" group on its own line)
 # pass:
 #   ref to list of field names
@@ -2358,8 +2400,8 @@ sub show_deps_display_list {
 	}
 
 	my $field_value;    # used in dep processing loop (string from pkglist())
+	my %results;        # hash so duplicates are removed automatically
 
-	my $did_print = 0;  # did we print anything at all?
 	foreach my $field (@$fields) {
 		foreach (@$pkgs) {
 			next unless defined( $field_value = $_->pkglist($field) );
@@ -2373,16 +2415,17 @@ sub show_deps_display_list {
 					s/^\s*\|\s*//;
 					s/\s*\|\s*$//;
 				}
-
-				if (length $_) {
-					printf "    %s\n", $_;
-					$did_print++;
-				}
+				$results{$_} = 1 if length $_;  # save what we found
 			}
 		}
 	}
-	print "    [none]\n" unless $did_print;
 
+	# organize and display the list of packages
+	if (%results) {
+		print map "    $_\n", sort keys %results;
+	} else {
+		print "    [none]\n";
+	}
 }
 
 ### EOF

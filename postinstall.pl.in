@@ -232,7 +232,8 @@ if ($configNeedsUpdate) {
   &print_breaking("\nThis fink version introduces new settings stored in the " .
         "fink configuration file \"$configpath\". You should rerun the " .
         "configuration process.\n");
-  my $answer = &prompt_boolean("Do you want to configure now?", 0, 60);
+  my $answer = &prompt_boolean("Do you want to configure now?", default => 0,
+  	timeout => 60);
   if ($answer) {
     require Fink::Configure;
     Fink::Configure::configure();

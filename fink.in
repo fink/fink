@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -40,41 +41,23 @@ my %options =
    "use_binary"      => 0,
    "build_as_nobody" => 0,
   );
-my $optionsString = '';
+my @orig_ARGV = @ARGV;
 
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
 GetOptions(
-     'yes|y'            => sub { $options{dontask} = 1 ;  
-                                 $optionsString .= '--yes ' 
-                               },
-	 'quiet|q'          => sub { $options{verbosity} = -1 ;  
-                                 $optionsString .= '--quiet ' 
-                               },
-     'verbose|v'        => sub { $options{verbosity} = 4 ;  
-                                 $optionsString .= '--verbose ' 
-                               },
-     'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  
-                                 $optionsString .= '--keep-build-dir ' 
-                               },
-     'keep-root-dir|K'  => sub { $options{keep_root} = 1 ;  
-                                 $optionsString .= '--keep-root-dir ' 
-                               },
-     'use-binary-dist|b'  => sub { $options{use_binary} = 1 ;  
-                                 $optionsString .= '--use-binary-dist ' 
-                               },
-     'no-use-binary-dist'  => sub { $options{use_binary} = -1 ;  
-                                 $optionsString .= '--no-use-binary-dist ' 
-                               },
-     'build-as-nobody'    => sub { $options{build_as_nobody} = 1 ;  
-                                 $optionsString .= '--build-as-nobody ' 
-                               },
-#	 'interactive|i'    => sub { $options{interactive} = 1 ;  
-#                                $optionsString .= '--interactive ' 
-#                              },
-	 'version|V'        => \&show_version,
-	 'help|h'           => \&show_help
+	'yes|y'              => sub { $options{dontask} = 1         },
+	'quiet|q'            => sub { $options{verbosity} = -1      },
+	'verbose|v'          => sub { $options{verbosity} = 4       },
+	'keep-build-dir|k'   => sub { $options{keep_build} = 1      },
+	'keep-root-dir|K'    => sub { $options{keep_root} = 1       },
+	'use-binary-dist|b'  => sub { $options{use_binary} = 1      },
+	'no-use-binary-dist' => sub { $options{use_binary} = -1     },
+	'build-as-nobody'    => sub { $options{build_as_nobody} = 1 },
+#	'interactive|i'      => sub { $options{interactive} = 1     },
+	'version|V'          => \&show_version,
+	'help|h'             => \&show_help
 )
-  or die <<UNKNOWN;
+	or die <<UNKNOWN;
 fink: unknown option
 Type 'fink --help' for more information.
 UNKNOWN
@@ -128,6 +111,7 @@ Common commands:
   cleanup      - removes obsolete package files if newer versions are available
   dumpinfo     - show how fink parses parts of a package's .info file
   show-deps    - list run-time and compile-time package dependencies
+  snapshot     - create a file detailing all of your installed packages
 
 Options:
   -h, --help            - display this help text
@@ -197,7 +181,7 @@ my $engine = Fink::Engine->new_with_config($Config);
 ### process the command line (or enter interactive mode)
 
 if ($#ARGV >= 0) {
-  exit $engine->process($optionsString,@ARGV);
+  exit $engine->process(\@orig_ARGV,@ARGV);
 } else {
   # TODO: enter interactive mode
 #  die "fink: no command given.\nType 'fink --help' for usage information.\n";

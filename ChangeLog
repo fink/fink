@@ -1,3 +1,25 @@
+2005-02-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* bootstrap.pl, postinstall.pl.in: Adjust prompt*() calls for new
+	named-parameters API.
+
+2005-02-06  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* shlibs.default.in: Changed to use new libncurses5-shlibs shlibs
+
+2005-02-05  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: ...which it now does, so reviving it
+
+2005-02-05  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* fink.in: backing out last change till it's complete and works
+
+2005-02-05  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Instead of decomposing and rebuilding cmdline, just
+	save original @ARGV
+
 2005-01-31  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* install.sh, fink.conf.5.in: add Fink::Notify modules to install

@@ -31,7 +31,7 @@ package Fink::Configure;
 
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Services qw(&read_properties &read_properties_multival &filename);
-use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection_new &print_breaking);
+use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
 use strict;
 use warnings;
@@ -101,7 +101,7 @@ create/change configuration interactively
 
 sub configure {
 	my ($otherdir, $builddir, $verbose);
-	my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $binary_dist, $default);
+	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
 
 	print "\n";
 	&print_breaking("OK, I'll ask you some questions and update the ".
@@ -112,23 +112,26 @@ sub configure {
 	$otherdir =
 		&prompt("In what additional directory should Fink look for downloaded ".
 				"tarballs?",
-				$config->param_default("FetchAltDir", ""));
-	if ($otherdir) {
+				default => $config->param_default("FetchAltDir", ""));
+	if ($otherdir =~ /\S/) {
 		$config->set_param("FetchAltDir", $otherdir);
 	}
 
+	print "\n";
 	$builddir =
 		&prompt("Which directory should Fink use to build packages? \(If you don't ".
 				"know what this means, it is safe to leave it at its default.\)",
-				$config->param_default("Buildpath", ""));
-	if ($builddir) {
+				default => $config->param_default("Buildpath", ""));
+	if ($builddir =~ /\S/) {
 		$config->set_param("Buildpath", $builddir);
 	}
 
+	print "\n";
 	$binary_dist = $config->param_boolean("UseBinaryDist");
 	# if we are not installed in /sw, $binary_dist must be 0:
 	if (not $basepath eq '/sw') {
 		$binary_dist = 0;
+		&print_breaking('Setting UseBinaryDist to "false". This option can be used only when fink is installed in /sw.');
 	} else {
 		# New users should use the binary dist, but an existing user who
 		# is running "fink configure" should see a default answer of "no"
@@ -144,74 +147,70 @@ sub configure {
 		}
 		$binary_dist =
 			&prompt_boolean("Should Fink try to download pre-compiled packages from ".
-							"the binary distribution if available?", $binary_dist);
+							"the binary distribution if available?",
+							default => $binary_dist);
 	}
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
-		&prompt_selection_new("How verbose should Fink be?",
-							  [value=>$verbose],
-							  (
+		&prompt_selection("How verbose should Fink be?",
+							  default => [value=>$verbose],
+							  choices => [
 							   "Quiet (do not show download statistics)"   => 0,
 							   "Low (do not show tarballs being expanded)" => 1,
 							   "Medium (will show almost everything)"      => 2,
 							   "High (will show everything)"               => 3,
 							   "Pedantic (even show nitpicky details)"     => 4
-							  ) );
+							  ]
+							);
 	$config->set_param("Verbose", $verbose);
 
 	# proxy settings
 	print "\n";
 	&print_breaking("Proxy/Firewall settings");
 
-	$default = $config->param_default("ProxyHTTP", "");
-	$default = "none" unless $default;
-	&print_breaking("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
-        "The URL should start with http:// and may contain username, ".
-	"password or port specifications ".
-	" E.g: http://username:password\@hostname:port ");
-	$http_proxy =
-		&prompt("Your proxy: ".
-				$default);
-	if ($http_proxy =~ /^none$/i) {
-		$http_proxy = "";
-	}
-	$config->set_param("ProxyHTTP", $http_proxy);
+	$proxy_prompt =
+		"Enter the URL of the %s proxy to use, or 'none' for no proxy. " .
+		"The URL should start with http:// and may contain username, " .
+		"password, and/or port specifications. " .
+		"Note that this value will be visible to all users on your computer.\n".
+		"Example, http://username:password\@hostname:port\n" .
+		"Your proxy: ";
 
-	if ($http_proxy) {
+	$proxy = $config->param_default("ProxyHTTP", "none");
+	$proxy = &prompt(sprintf($proxy_prompt, "HTTP"), default => $proxy);
+	if ($proxy =~ /^\s*none\s*$/i) {
+		$proxy = "";
+	}
+	$config->set_param("ProxyHTTP", $proxy);
+
+	if (length $proxy) {
 		$same_for_ftp =
-			&prompt_boolean("Use the same proxy server for FTP connections?", 0);
+			&prompt_boolean("Use the same proxy server for FTP connections?",
+							default => 0);
 	} else {
 		$same_for_ftp = 0;
 	}
 
-	if ($same_for_ftp) {
-		$ftp_proxy = $http_proxy;
-	} else {
-		$default = $config->param_default("ProxyFTP", "");
-		$default = "none" unless $default;
-                &print_breaking("Enter the URL of the proxy to use for FTP, ".
-		                "or 'none' for no proxy. ".
-				"The URL should start with http:// and may contain username," .
-				"password or port specifications.".
-				" E.g: ftp://username:password\@hostname:port ");	
-                $ftp_proxy = &prompt("Your proxy:" , $default);
-		
-		if ($ftp_proxy =~ /^none$/i) {
-			$ftp_proxy = "";
+	if (not $same_for_ftp) {
+		$proxy = $config->param_default("ProxyFTP", "none");
+		$proxy = &prompt(sprintf($proxy_prompt, "FTP"), default => $proxy);
+		if ($proxy =~ /^\s*none\s*$/i) {
+			$proxy = "";
 		}
 	}
-	$config->set_param("ProxyFTP", $ftp_proxy);
+	$config->set_param("ProxyFTP", $proxy);
 
-	$passive_ftp = $config->param_boolean("ProxyPassiveFTP");
-	# passive FTP is the safe default
-	if (!$config->has_param("ProxyPassiveFTP")) {
+	if ($config->has_param("ProxyPassiveFTP")) {
+		$passive_ftp = $config->param_boolean("ProxyPassiveFTP");
+	} else {
+		# passive FTP is the safe default
 		$passive_ftp = 1;
 	}
 	$passive_ftp =
 		&prompt_boolean("Use passive mode FTP transfers (to get through a ".
-						"firewall)?", $passive_ftp);
+						"firewall)?", default => $passive_ftp);
 	$config->set_param("ProxyPassiveFTP", $passive_ftp ? "true" : "false");
 
 
@@ -264,13 +263,16 @@ sub choose_mirrors {
 	}
 	if (!$missing) {
 		if ($mirrors_postinstall) {
+			# called from dpkg postinst script of fink-mirrors pkg
 			print "\n";
 			$answer = &prompt_boolean("The list of possible mirrors in fink has" .
-				" been updated.  Do you want to review and change your choices?", 0, 60);
-	} else {
-		$answer =
-			&prompt_boolean("All mirrors are set. Do you want to change them?", 0);
-	}
+				" been updated.  Do you want to review and change your choices?",
+				default => 0, timeout => 60);
+		} else {
+			$answer =
+				&prompt_boolean("All mirrors are set. Do you want to change them?",
+								default => 0);
+		}
 		if (!$answer) {
 			return;
 		}
@@ -280,28 +282,39 @@ sub choose_mirrors {
     				  "the sources for all fink packages. You can choose to use these mirrors first, ".
 					  "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
 	
-	$mirror_order = &prompt_selection_new("What mirror order should fink use when downloading sources?",
-					      [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
-					      ( "Search \"Master\" source mirrors first." => "MasterFirst",
-						"Search \"Master\" source mirrors last." => "MasterLast",
-						"Never use \"Master\" source mirrors." => "MasterNever",
-						"Search closest source mirrors first. (combine all mirrors into one set)" => "ClosestFirst" ) );
+	$mirror_order = &prompt_selection(
+		"What mirror order should fink use when downloading sources?",
+		default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
+		choices => [
+			"Search \"Master\" source mirrors first." => "MasterFirst",
+			"Search \"Master\" source mirrors last." => "MasterLast",
+			"Never use \"Master\" source mirrors." => "MasterNever",
+			"Search closest source mirrors first. (combine all mirrors into one set)"
+				=> "ClosestFirst"
+		]);
 	$config->set_param("MirrorOrder", $mirror_order);
 	
 	### step 1: choose a continent
 	&print_breaking("Choose a continent:");
-	$continent = &prompt_selection_new("Your continent?",
-					   [ value => $config->param_default("MirrorContinent", "-") ],
-					   map { length($_)==3 ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo);
+	$continent = &prompt_selection("Your continent?",
+		default => [ value => $config->param_default("MirrorContinent", "-") ],
+		choices => [
+			map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
+				sort keys %$keyinfo
+		]
+	);
 	$config->set_param("MirrorContinent", $continent);
 
 	### step 2: choose a country
 	print "\n";
 	&print_breaking("Choose a country:");
-	$country = &prompt_selection_new("Your country?",
-					 [ value => $config->param_default("MirrorCountry", $continent) ],
-					 ( "No selection - display all mirrors on the continent" => $continent,
-					   map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo ) );
+	$country = &prompt_selection("Your country?",
+		default => [ value => $config->param_default("MirrorCountry", $continent) ],
+		choices => [
+			"No selection - display all mirrors on the continent" => $continent,
+			map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo
+		]
+	);
 	$config->set_param("MirrorCountry", $country);
 
 	### step 3: mirrors
@@ -336,9 +349,9 @@ sub choose_mirrors {
 
 		print "\n";
 		&print_breaking("Choose a mirror for '$mirrortitle':");
-		$answer = &prompt_selection_new("Mirror for $mirrortitle?",
-						[ number => 1 ],
-						@mirrors );
+		$answer = &prompt_selection("Mirror for $mirrortitle?",
+						default => [ number => 1 ],
+						choices => \@mirrors );
 		$config->set_param("Mirror-$mirrorname", $answer);
 	}
 }

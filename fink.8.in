@@ -373,6 +373,10 @@ Display the given percent expansion key(s), in the order listed.
 .It Cm show-deps Ar package...
 Displays a human-readable list of the compile-time (build) and
 run-time (installation) dependencies of the listed package(s).
+.It Cm snapshot
+Creates a file detailing all of your installed packages. You can move
+this file to a new computer, install it with Fink there, and your
+whole Fink environment will be replicated.
 .El
 .\"
 .\"

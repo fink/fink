@@ -84,7 +84,7 @@ print " looks good.\n";
 require Fink::Services;
 import Fink::Services qw(&read_config &execute &get_arch);
 require Fink::CLI;
-import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection_new);
+import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 import Fink::Bootstrap qw(&get_packageversion &create_tarball &fink_packagefiles &copy_description);
 
 ### get version
@@ -129,11 +129,12 @@ if ($> != 0) {
 					"currently running this script as a normal user, the ".
 					"method you choose will also be used immediately for ".
 					"this script. Avaliable methods:");
-	$answer = &prompt_selection_new("Choose a method:",
-					[ value => "sudo" ],
-					( "Use sudo" => "sudo",
+	$answer = &prompt_selection("Choose a method:",
+					default => [ value => "sudo" ],
+					choices => [
+					  "Use sudo" => "sudo",
 					  "Use su" => "su",
-					  "None, fink must be run as root" => "none" ) );
+					  "None, fink must be run as root" => "none" ] );
 	$cmd = "'$homebase/bootstrap.pl' .$answer";
 	if ($#ARGV >= 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
@@ -158,11 +159,12 @@ if ($> != 0) {
 						"privileges. Fink can automatically try to become ".
 						"root when it's run from a user account. ".
 						"Avaliable methods:");
-		$answer = &prompt_selection_new("Choose a method:",
-						[ value => "sudo" ],
-						( "Use sudo" => "sudo",
+		$answer = &prompt_selection("Choose a method:",
+						default => [ value => "sudo" ],
+						choices => [
+						  "Use sudo" => "sudo",
 						  "Use su" => "su",
-						  "None, fink must be run as root" => "none" ) );
+						  "None, fink must be run as root" => "none" ] );
 		$rootmethod = $answer;
 	}
 }
@@ -242,7 +244,7 @@ if (not $installto) {
 	print "\n";
 	$installto =
 		&prompt("Please choose the path where Fink should be installed.",
-				"/sw");
+				default => "/sw");
 }
 print "\n";
 
@@ -280,7 +282,7 @@ if ($installto eq "/usr/local") {
 						"It may conflict with third party software also ".
 						"installed there. It will be more difficult to get ".
 						"rid of Fink when something breaks. Are you sure ".
-						"you want to install to /usr/local?", 0);
+						"you want to install to /usr/local?", default => 0);
 	if ($answer) {
 		&print_breaking("You have been warned. Think twice before reporting ".
 						"problems as a bug.");
