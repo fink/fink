@@ -102,7 +102,7 @@ sub check_files {
         $deb = "";
         if (length($_) > 1) {
           $deb = $self->get_shlib($_);
-          push(@depends, $deb);
+          push(@depends, $deb) if (defined $deb and $deb !~ /^\s*$/);
         }
       }
     close (OTOOL);
@@ -145,6 +145,9 @@ sub check_files {
     # into the $depvers hash, then recreating the |'s with the
     # @newdeps values instead of the original package spec.
 
+    if (@depobj == 0) {
+      # empty, we skip it
+      next;
     if (@depobj > 1) {
       my @depnames;
       for my $obj (@depobj) {
@@ -159,6 +162,8 @@ sub check_files {
       $name = $depobj[0]->{tuplename};
       $depvers = update_version_hash($depvers, $depobj[0]);
     }
+
+    next if (not defined $name);
 
     # this will skip putting something into @newdeps if it's
     # already there (it has to match the <package>,<operator>
