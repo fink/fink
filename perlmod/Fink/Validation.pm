@@ -283,7 +283,7 @@ sub validate_info_file {
   # Warn for missing / overlong package descriptions
   $value = $properties->{description};
   unless ($value) {
-    print "Warning: No package description supplied. ($filename)\n";
+    print "Error: No package description supplied. ($filename)\n";
     $looks_good = 0;
   }
   elsif (length($value) > 60) {

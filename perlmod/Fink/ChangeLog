@@ -1,7 +1,12 @@
 2002-05-05  Max Horn  <max@quendi.de>
 
+	* Validation.pm (validate_info_file): missing description field now is an
+	error instead of a warning.
+
+2002-05-05  Max Horn  <max@quendi.de>
+
 	* PkgVersion.pm (enable_bootstrap, disable_bootstrap): fixed for splitoffs
-	(thanks to Sylvain Cuaz for this patch)
+	(thanks to Sylvain Cuaz for this patch).
 
 2002-05-04  Max Horn  <max@quendi.de>
 
