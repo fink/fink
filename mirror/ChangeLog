@@ -1,3 +1,9 @@
+2002-03-29  Max Horn  <max@quendi.de>
+
+	* gimp: Added SourceForge mirror
+
+	* gnu: Added SourceForge mirror
+
 2002-03-07  Max Horn  <max@quendi.de>
 
 	* gnome: Fixed SourceForge mirror once more - they now only allow

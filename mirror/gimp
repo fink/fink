@@ -1,5 +1,5 @@
 Primary: ftp://ftp.gimp.org/pub
-Timestamp: 2001-05-09
+Timestamp: 2002-03-29
 afr: ftp://ftp.is.co.za/applications/gimp/
 aus-AU: ftp://ftp.au.gimp.org/pub/gimp/
 aus-AU: ftp://gimp.zeta.org.au/
@@ -48,3 +48,4 @@ nam-US: ftp://ftp.cs.umn.edu/pub/gimp/
 nam-US: ftp://froody.res.cmu.edu/pub/gimp/
 nam-US: ftp://gimp.cs.stevens-tech.edu/mirrors/gimp/
 nam-US: ftp://ftp.ameth.org/pub/mirrors/ftp.gimp.org/
+nam-US: http://download.sourceforge.net/mirrors/gimp/
