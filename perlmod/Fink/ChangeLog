@@ -1,3 +1,8 @@
+2002-12-11  Ben Hines <benh57@users.sourceforge.net>
+
+	* Services.pm, PkgVersion.pm: Pass filename to read_properties_var to 
+	  clarify here-document error.
+	
 2002-12-11  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: Added a key to the package object to track the
@@ -81,7 +86,7 @@
 
 	* Validation.pm: recognize (No)SetCPATH and (No)SetLIBRARY_PATH fields.
 
-2002-10-21  Ben Hines <bhines@alumni.ucsd.edu>
+2002-10-21  Ben Hines <benh57@users.sourceforge.net>
 
 	* Services.pm: Fix typo in nesting too deep error.
 	
@@ -122,7 +127,7 @@
 	  sure that the parent splitoff is the last one installed on the
 	  dpkg command-line to fix goofy dpkg ordering issues.
 
-2002-09-28  Ben Hines <bhines@alumni.ucsd.edu>
+2002-09-28  Ben Hines <benh57@users.sourceforge.net>
 
 	* PkgVersion.pm, NetAccess.pm: Patch 612681: Allow "continue" 
 	  for bad MD5 during "fink install... "
@@ -151,7 +156,7 @@
 	  it could die because a package that wasn't supposed to exist was
 	  getting marked as being there
 
-2002-09-25  Ben Hines <bhines@alumni.ucsd.edu>
+2002-09-25  Ben Hines <benh57@users.sourceforge.net>
 
 	* PkgVersion.pm: Patch #614133: fix gnome mirror
 

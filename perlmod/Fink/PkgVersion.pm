@@ -252,7 +252,7 @@ sub add_splitoff {
   $splitoff_data =~ s/^\s+//gm;
   
   # get the splitoff package name
-  $properties = &read_properties_var($splitoff_data);
+  $properties = &read_properties_var($filename, $splitoff_data);
   $pkgname = $properties->{'package'};
   unless ($pkgname) {
     print "No package name for SplitOff in $filename\n";
@@ -1351,7 +1351,7 @@ sub phase_install {
     # get rid of any indention first
     $vars =~ s/^\s+//gm;
     # Read the set if variavkes (but don't change the keys to lowercase)
-    $properties = &read_properties_var($vars, 1);
+    $properties = &read_properties_var($self->{_filename}, $vars, 1);
 
     if(scalar keys %$properties > 0){
       $install_script .= "\ninstall -d -m 755 %i/etc/profile.d";

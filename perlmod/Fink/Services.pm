@@ -112,6 +112,7 @@ sub read_properties {
 ### read properties from a variable with text
 
 sub read_properties_var {
+   my ($file) = shift;
    my ($var) = shift;
    # do we make the keys all lowercase
    my ($notLC) = shift || 0;
@@ -119,7 +120,7 @@ sub read_properties_var {
    my ($line);
 
    @lines = split /^/m,$var;
-   return read_properties_lines("", $notLC, @lines);
+   return read_properties_lines($file, $notLC, @lines);
 }
 
 ### read properties from a list of lines.
@@ -162,11 +163,7 @@ sub read_properties_lines {
   }
 
   if ($heredoc > 0) {
-    if ($file) {
       print "WARNING: End of file reached during here-document in \"$file\".\n";
-    } else {
-      print "WARNING: End of file reached during here-document.\n";
-    }
   }
 
   return $hash;
