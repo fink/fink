@@ -65,28 +65,36 @@ sub initialize {
   $self->{_filename} = $filename = $self->{thefilename};
 
   # path handling
-  @parts = split(/\//, $filename);
-  pop @parts;   # remove filename
-  $self->{_patchpath} = join("/", @parts);
-  for ($finkinfo_index = $#parts;
-       $finkinfo_index > 0 and $parts[$finkinfo_index] ne "finkinfo";
-       $finkinfo_index--) {
-    # this loop intentionally left blank
-  }
-  if ($finkinfo_index <= 0) {
-    die "Path \"$filename\" contains no finkinfo directory!\n";
-  }
-  $section = $parts[$finkinfo_index-1]."/";
-  if ($finkinfo_index < $#parts) {
-    $section = "" if $section eq "main/";
-    $section .= join("/", @parts[$finkinfo_index+1..$#parts])."/";
-  }
-  $self->{_section} = substr($section,0,-1);   # cut last /
-  $parts[$finkinfo_index] = "binary-$debarch";
-  $self->{_debpath} = join("/", @parts);
-  $self->{_debpaths} = [];
-  for ($i = $#parts; $i >= $finkinfo_index; $i--) {
-    push @{$self->{_debpaths}}, join("/", @parts[0..$i]);
+  if ($filename) {
+    @parts = split(/\//, $filename);
+    pop @parts;   # remove filename
+    $self->{_patchpath} = join("/", @parts);
+    for ($finkinfo_index = $#parts;
+	 $finkinfo_index > 0 and $parts[$finkinfo_index] ne "finkinfo";
+	 $finkinfo_index--) {
+      # this loop intentionally left blank
+    }
+    if ($finkinfo_index <= 0) {
+      die "Path \"$filename\" contains no finkinfo directory!\n";
+    }
+    $section = $parts[$finkinfo_index-1]."/";
+    if ($finkinfo_index < $#parts) {
+      $section = "" if $section eq "main/";
+      $section .= join("/", @parts[$finkinfo_index+1..$#parts])."/";
+    }
+    $self->{_section} = substr($section,0,-1);   # cut last /
+    $parts[$finkinfo_index] = "binary-$debarch";
+    $self->{_debpath} = join("/", @parts);
+    $self->{_debpaths} = [];
+    for ($i = $#parts; $i >= $finkinfo_index; $i--) {
+      push @{$self->{_debpaths}}, join("/", @parts[0..$i]);
+    }
+  } else {
+    # for dummy descriptions generated from dpkg status data alone
+    $self->{_patchpath} = "";
+    $self->{_section} = "unknown";
+    $self->{_debpath} = "";
+    $self->{_debpaths} = [];
   }
 
   # some commonly used stuff
@@ -370,7 +378,8 @@ sub is_fetched {
   my $self = shift;
   my ($i);
 
-  if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource") {
+  if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+      $self->{_type} eq "dummy") {
     return 1;
   }
 
@@ -582,7 +591,8 @@ sub phase_fetch {
   my $conditional = shift || 0;
   my ($i);
 
-  if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource") {
+  if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
+      $self->{_type} eq "dummy") {
     return;
   }
 
@@ -637,6 +647,10 @@ sub phase_unpack {
 
   if ($self->{_type} eq "bundle") {
     return;
+  }
+  if ($self->{_type} eq "dummy") {
+    die "can't build ".$self->get_fullname().
+        " because no package description is available\n";
   }
 
   $bdir = $self->get_fullname();
@@ -717,6 +731,10 @@ sub phase_patch {
   if ($self->{_type} eq "bundle") {
     return;
   }
+  if ($self->{_type} eq "dummy") {
+    die "can't build ".$self->get_fullname().
+        " because no package description is available\n";
+  }
 
   $dir = $self->get_build_directory();
   if (not -d "$basepath/src/$dir") {
@@ -786,6 +804,10 @@ sub phase_compile {
   if ($self->{_type} eq "bundle") {
     return;
   }
+  if ($self->{_type} eq "dummy") {
+    die "can't build ".$self->get_fullname().
+        " because no package description is available\n";
+  }
 
   $dir = $self->get_build_directory();
   if (not -d "$basepath/src/$dir") {
@@ -822,6 +844,10 @@ sub phase_install {
   my ($dir, $install_script, $cmd, $bdir);
   my (@docfiles, $docfile, $docfilelist);
 
+  if ($self->{_type} eq "dummy") {
+    die "can't build ".$self->get_fullname().
+        " because no package description is available\n";
+  }
   if ($self->{_type} ne "bundle") {
     $dir = $self->get_build_directory();
     if (not -d "$basepath/src/$dir") {
@@ -904,6 +930,11 @@ sub phase_build {
   my ($conffiles, $listfile, $infodoc);
   my ($daemonicname, $daemonicfile);
   my ($cmd);
+
+  if ($self->{_type} eq "dummy") {
+    die "can't build ".$self->get_fullname().
+        " because no package description is available\n";
+  }
 
   chdir "$basepath/src";
   $ddir = "root-".$self->get_fullname();

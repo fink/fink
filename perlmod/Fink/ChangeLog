@@ -1,3 +1,14 @@
+2001-09-06  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Status.pm (list): Added list() method to retreive the whole
+	list, independent of installation status.
+	* Package.pm (scan_all): Get list of known packages from dpkg and
+	merge it into the info read from files.
+	(inject_description): New function to centralize creation of
+	version objects.
+	* PkgVersion.pm: Added checks for dummy packages created from the
+	dpkg status file.
+
 2001-09-04  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (cmd_scanpackages): Fixes to section and priority

@@ -21,10 +21,6 @@
 
 package Fink::Status;
 
-#use Fink::Services qw(&filename &expand_percent &expand_url &execute
-#                      &latest_version &print_breaking
-#                      &print_breaking_twoprefix &prompt_boolean);
-#use Fink::Package;
 use Fink::Config qw($config $basepath);
 
 use strict;
@@ -156,6 +152,44 @@ sub query_package {
     return $hash->{version};
   }
   return 0;
+}
+
+### retreive whole list with versions
+# doesn't care about installed status
+# returns a hash ref, key: package name, value: hash with core fields
+# in the hash, 'package' and 'version' are guaranteed to exist
+
+sub list {
+  my $self = shift;
+  my ($list, $pkgname, $hash, $newhash, $field);
+
+  if (not ref($self)) {
+    if (defined($the_instance)) {
+      $self = $the_instance;
+    } else {
+      $self = Fink::Status->new();
+    }
+  }
+
+  $self->validate();
+
+  $list = {};
+  foreach $pkgname (keys %$self) {
+    next if $pkgname =~ /^_/;
+    $hash = $self->{$pkgname};
+    next unless exists $hash->{version};
+
+    $newhash = { 'package' => $pkgname,
+		 'version' => $hash->{version} };
+    foreach $field (qw(depends provides conflicts maintainer description)) {
+      if (exists $hash->{$field}) {
+	$newhash->{$field} = $hash->{$field};
+      }
+    }
+    $list->{$pkgname} = $newhash;
+  }
+
+  return $list;
 }
 
 

@@ -282,15 +282,36 @@ sub forget_packages {
 sub scan_all {
   shift;  # class method - ignore first parameter
   my ($tree, $dir);
+  my ($dlist, $pkgname, $po, $hash, $fullversion);
 
   $have_packages = 0;
   @package_list = ();
   @essential_packages = ();
   $essential_valid = 0;
 
+  # read data from descriptions
   foreach $tree ($config->get_treelist()) {
     $dir = "$basepath/fink/dists/$tree/finkinfo";
     Fink::Package->scan($dir);
+  }
+
+  # get data from dpkg's status file
+  $dlist = Fink::Status->list();
+  foreach $pkgname (keys %$dlist) {
+    $po = Fink::Package->package_by_name_create($pkgname);
+    next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
+    $hash = $dlist->{$pkgname};
+
+    # create dummy object
+    $fullversion = $hash->{version};
+    if ($fullversion =~ /^(.+)-([^-]+)$/) {
+      $hash->{version} = $1;
+      $hash->{revision} = $2;
+      $hash->{type} = "dummy";
+      $hash->{filename} = "";
+
+      Fink::Package->inject_description($po, $hash);
+    }
   }
 
   $have_packages = 1;
@@ -304,8 +325,7 @@ sub scan {
   shift;  # class method - ignore first parameter
   my $directory = shift;
   my (@filelist, $wanted);
-  my ($filename, $properties);
-  my ($pkgname, $package, $version, $vp, $vpo);
+  my ($filename, $properties, $pkgname, $package);
 
   return if not -d $directory;
 
@@ -337,17 +357,31 @@ sub scan {
 
     # create object for this particular version
     $properties->{thefilename} = $filename;
-    $version = Fink::PkgVersion->new_from_properties($properties);
+    Fink::Package->inject_description($package, $properties);
+  }
+}
 
-    # link them together
-    $package->add_version($version);
+### create a version object from a properties hash and link it
+# first parameter: existing Package object
+# second parameter: ref to hash with fields
 
-    # track provided packages
-    if ($version->has_param("Provides")) {
-      foreach $vp (split(/\s*\,\s*/, $version->param("Provides"))) {
-        $vpo = Fink::Package->package_by_name_create($vp);
-        $vpo->add_provider($version);
-      }
+sub inject_description {
+  shift;  # class method - ignore first parameter
+  my $po = shift;
+  my $properties = shift;
+  my ($version, $vp, $vpo);
+
+  # create version object
+  $version = Fink::PkgVersion->new_from_properties($properties);
+
+  # link them together
+  $po->add_version($version);
+
+  # track provided packages
+  if ($version->has_param("Provides")) {
+    foreach $vp (split(/\s*\,\s*/, $version->param("Provides"))) {
+      $vpo = Fink::Package->package_by_name_create($vp);
+      $vpo->add_provider($version);
     }
   }
 }
