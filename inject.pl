@@ -141,7 +141,7 @@ if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
   $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
 }
 
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's|\@PREFIX\@|$basepath|' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
