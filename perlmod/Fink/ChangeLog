@@ -1,3 +1,7 @@
+2004-08-19  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Fix Tree matching (revert r1.67->1.68 in part).
+
 2004-08-18  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Typo in is_fetched() for Type:bundle.

@@ -602,7 +602,7 @@ RSYNCAGAIN:
 	
 	my $rinclist = "";
 	foreach $tree ($config->get_treelist()) {
-		next unless ($tree eq "stable" or $tree eq "unstable");
+		next unless ($tree =~ /stable/);
 
 		$rsynchost =~ s/\/*$//;
 		$dist      =~ s/\/*$//;
@@ -638,7 +638,7 @@ RSYNCAGAIN:
 		goto RSYNCAGAIN;
 	} else {
 		foreach $tree ($config->get_treelist()) {
-			next unless ($tree eq "stable" or $tree eq "unstable");
+			next unless ($tree =~ /stable/);
 
 			$rsynchost =~ s/\/*$//;
 			$dist      =~ s/\/*$//;
