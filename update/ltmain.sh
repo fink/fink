@@ -1763,6 +1763,16 @@ compiler."
 	  versuffix="-$major-$age-$revision"
 	  ;;
 
+	darwin)
+	  # Like Linux, but with the current version available in
+	  # verstring for coding it into the library header
+	  major=.`expr $current - $age`
+	  versuffix="$major.$age.$revision"
+	  # Darwin ld doesn't like 0 for these options...
+	  minor_current=`expr $current + 1`
+	  verstring="-compatibility_version $minor_current -current_version $minor_current.$revision"
+	  ;;
+
 	*)
 	  $echo "$modename: unknown library version type \`$version_type'" 1>&2
 	  echo "Fatal configuration error.  See the $PACKAGE docs for more information." 1>&2

@@ -1,3 +1,9 @@
+2001-03-12  Christoph Pfisterer  <cp@chrisp.de>
+
+	* ltconfig, ltmain.sh: Updated from the libtool-1.3.5-5
+	package. Now does proper versioning using both filenames /
+	symlinks and the Mach-O versioning mechanisms.
+
 2001-02-18  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Released version 0.1.5. Started using CVS and ChangeLogs.
