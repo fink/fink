@@ -1,6 +1,8 @@
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Adjust the dists symlink for the 0.14.2 release
+	* Bootstrap.pm: Adjust the dists symlink back again for the 
+	0.14.3-beta release 
 
 2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
