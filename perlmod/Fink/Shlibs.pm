@@ -28,7 +28,7 @@ package Fink::Shlibs;
 use Fink::Base;
 use Fink::Services qw(&version_cmp);
 use Fink::CLI qw(&get_term_width &print_breaking);
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $dbpath);
 use Fink::PkgVersion;
 use Fink::Command qw(mkdir_p);
 use Fink::Package;
@@ -469,7 +469,7 @@ sub scan_all {
 	my ($time) = time;
 	my ($shlibname);
 
-	my $dbfile = "$basepath/var/lib/fink/shlibs.db";
+	my $dbfile = "$dbpath/shlibs.db";
 	my $conffile = "$basepath/etc/fink.conf";
 
 	$self->forget_packages();
@@ -524,7 +524,7 @@ sub scan_all {
 sub search_comparedb {
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
-	my $dbfile = "$basepath/var/lib/fink/shlibs.db";
+	my $dbfile = "$dbpath/shlibs.db";
 
 	# Using find is much faster than doing it in Perl
 	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.shlibs' -newer $dbfile |"
@@ -544,9 +544,8 @@ sub update_shlib_db {
 	my $self = shift;
 	my ($dir);
 
-	my $dbdir = "$basepath/var/lib/fink";
-	my $dbfile = "$dbdir/shlibs.db";
-	my $lockfile = "$dbdir/shlibs.db.lock";
+	my $dbfile = "$dbpath/shlibs.db";
+	my $lockfile = "$dbpath/shlibs.db.lock";
 
 	my $oldsig = $SIG{'INT'};
 	$SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
@@ -598,8 +597,8 @@ sub update_shlib_db {
 		if (&get_term_width) {
 			print STDERR "Updating shared library index... ";
 		}
-		unless (-d $dbdir) {
-			mkdir($dbdir, 0755) || die "Error: Could not create directory $dbdir: $!\n";
+		unless (-d $dbpath) {
+			mkdir($dbpath, 0755) || die "Error: Could not create directory $dbpath: $!\n";
 		}
 
 		Storable::lock_store($shlibs, "$dbfile.tmp");

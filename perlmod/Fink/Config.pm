@@ -33,14 +33,14 @@ use warnings;
 require Exporter;
 
 our @ISA	 = qw(Exporter Fink::Base);
-our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath
+our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath $dbpath
                       $distribution $ignore_errors
                       get_option set_options verbosity_level binary_requested
                      );
 our $VERSION	 = 1.00;
 
 
-our ($config, $basepath, $libpath, $distribution, $buildpath, $ignore_errors);
+our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors);
 my $_arch = Fink::Services::get_arch();
 our $debarch = "darwin-$_arch";
 
@@ -153,6 +153,7 @@ sub initialize {
 	$buildpath = $self->param_default("Buildpath", "$basepath/src");
 
 	$libpath = "$basepath/lib/fink";
+	$dbpath = "$basepath/var/lib/fink";
 	$distribution = $self->param("Distribution");
 	if (not defined $distribution or ($distribution =~ /^\s*$/)) {
 		die "Distribution not set in config file \"".$self->{_path}."\"!\n";
@@ -619,6 +620,10 @@ Typically C<darwin-powerpc>.
 Fink package distribution being used.
 
 For example, C<10.2>.
+
+=item $dbpath
+
+Where fink stores it's database files.
 
 =item $libpath
 

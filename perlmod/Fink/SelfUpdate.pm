@@ -26,7 +26,7 @@ package Fink::SelfUpdate;
 use Fink::Services qw(&execute &version_cmp);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
-use Fink::Config qw($config $basepath $distribution binary_requested);
+use Fink::Config qw($config $basepath $dbpath $distribution binary_requested);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
@@ -490,13 +490,13 @@ sub do_finish {
 	Fink::Shlibs->forget_packages();
 
 	# delete the old package DB
-	if (-e "$basepath/var/lib/fink/fink.db") {
-		unlink "$basepath/var/lib/fink/fink.db";
+	if (-e "$dbpath/fink.db") {
+		unlink "$dbpath/fink.db";
 	}
 
 	# delete the old shlibs DB
-	if (-e "$basepath/var/lib/fink/shlibs.db") {
-		unlink "$basepath/var/lib/fink/shlibs.db";
+	if (-e "$dbpath/shlibs.db") {
+		unlink "$dbpath/shlibs.db";
 	}
 
 	# ...and then read it back in

@@ -27,7 +27,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
-use Fink::Config qw($config $basepath $debarch binary_requested);
+use Fink::Config qw($config $basepath $dbpath $debarch binary_requested);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
 use File::Find;
@@ -398,7 +398,7 @@ sub scan_all {
 	my ($time) = time;
 	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
 
-	my $dbfile = "$basepath/var/lib/fink/fink.db";
+	my $dbfile = "$dbpath/fink.db";
 	my $conffile = "$basepath/etc/fink.conf";
 
 	Fink::Package->forget_packages();
@@ -489,7 +489,7 @@ sub search_comparedb {
 	$path .= "/";  # forces find to follow the symlink
 
 	# Using find is much faster than doing it in Perl
-	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/lib/fink/fink.db |"
+	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $dbpath/fink.db |"
 		or die "/usr/bin/find failed: $!\n";
 
 	# If there is anything on find's STDOUT, we know at least one
@@ -507,9 +507,8 @@ sub update_db {
 	shift;	# class method - ignore first parameter
 	my ($tree, $dir);
 
-	my $dbdir = "$basepath/var/lib/fink";
-	my $dbfile = "$dbdir/fink.db";
-	my $lockfile = "$dbdir/fink.db.lock";
+	my $dbfile = "$dbpath/fink.db";
+	my $lockfile = "$dbpath/fink.db.lock";
 
 	my $oldsig = $SIG{'INT'};
 	$SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
@@ -566,8 +565,8 @@ sub update_db {
 		if (&get_term_width) {
 			print STDERR "Updating package index... ";
 		}
-		unless (-d $dbdir) {
-			mkdir($dbdir, 0755) || die "Error: Could not create directory $dbdir: $!\n";
+		unless (-d $dbpath) {
+			mkdir($dbpath, 0755) || die "Error: Could not create directory $dbpath: $!\n";
 		}
 
 		Storable::lock_store ($packages, "$dbfile.tmp");

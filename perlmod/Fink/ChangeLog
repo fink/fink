@@ -1,7 +1,8 @@
 2005-03-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* Config.pm: Added new $dbpath var
 	* Shlibs.pm, Package.pm, Selfupdate.pm: Moved db files to
-	%p/var/lib/fink
+	%p/var/lib/fink and changed to use new $dbpath var
 
 2005-03-07  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
