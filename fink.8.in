@@ -111,18 +111,49 @@ latest version is installed
 installed, but a newer version is available
 .El
 .Pp
+There are also some flags for the 
+.Cm fink list
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -t,--tab
+Output the list in a tab delimited format, useful for running the output
+through a script.
+.It Cm -i,--installed
+Show only those packages which are currently installed.
+.It Cm -o,--outdated
+Show only those packages which are out of date.
+.It Cm -u,--uptodate
+Show only packages which are up to date.
+.It Cm -n,--notinstalled
+Show packages which are not currently installed.
+.It Cm -s=expr,--section=expr
+Show only packages in the sections matching the regular expression expr.
+.It Cm -w=xyz,--width=xyz
+Sets the width of the display you would like the output
+formatted for. xyz is either a numeric value or auto.
+auto will set the width based on the terminal width.
+The default is auto.
+.El
+.Pp
 Some usage examples:
 .Bl -tag -width flag -offset indent
 .It Cm fink list
-list all packages
+list all packages.
 .It Cm fink list bash
-check if bash is available and what version
+check if bash is available and what version.
+.It Cm fink list --tab --outdated | cut -f2
+just list the names of the out of date packages.
+.It Cm fink list --section=kde
+list the packages in the kde section.
 .It Cm fink list Qq "gnome*"
 list all packages that start with 'gnome'.
 .El
 .Pp
 The quotes in the last example are necessary to stop the shell from
 interpreting the pattern itself.
+.Pp
 .It Cm fink apropos Ar package...
 This command behaves similarly to
 .Cm fink list
