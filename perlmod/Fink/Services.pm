@@ -206,17 +206,17 @@ sub read_properties_multival {
 sub execute {
   my $cmd = shift;
   my $quiet = shift || 0;
-  my ($retval, $commandname);
+  my ($commandname);
 
   return if ($cmd =~ /^\s*$/); # Ignore empty commands
   print "$cmd\n";
-  $retval = system($cmd);
-  $retval >>= 8 if defined $retval and $retval >= 256;
-  if ($retval and not $quiet) {
+  system($cmd);
+  $? >>= 8 if defined $? and $? >= 256;
+  if ($? and not $quiet) {
     ($commandname) = split(/\s+/, $cmd);
-    print "### execution of $commandname failed, exit code $retval\n";
+    print "### execution of $commandname failed, exit code $?\n";
   }
-  return $retval;
+  return $?;
 }
 
 ### execute a full script

@@ -140,12 +140,12 @@ my $engine = Fink::Engine->new_with_config($config);
 ### process the command line (or enter interactive mode)
 
 if ($#ARGV >= 0) {
-  $engine->process($optionsString,@ARGV);
+  exit $engine->process($optionsString,@ARGV);
 } else {
   # TODO: enter interactive mode
 #  die "fink: no command given.\nType 'fink --help' for usage information.\n";
     show_help
 }
 
-### eof
+### eof -- shouldn't get here.
 exit 0;

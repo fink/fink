@@ -164,7 +164,10 @@ sub process {
   eval { &$proc(@_); };
   if ($@) {
     print "Failed: $@";
+    return $? || 1;
   }
+
+  return 0;
 }
 
 ### restart as root with command

@@ -1,3 +1,7 @@
+2003-01-14  Max Horn  <max@quendi.de>
+
+	* fink.in: Fixing problems with exit codes (Patch #662894).
+
 2003-01-13  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* postinstall.pl.in: Fixed formatting, cleaned up.
