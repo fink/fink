@@ -26,7 +26,7 @@ my $standalone = 0;
 my $basepath = '@BASEPATH@';
 UseFinkModules();
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
-my ($dlist, $hash, $pkgname, $epoch, @versions, $field, $provides);
+my ($dlist, $hash, $pkgname, @versions, $field, $provides);
 my %options = 
    (
 		"apt" => 0,
@@ -52,7 +52,6 @@ if ($standalone == 0)
 		if ($options{'dpkg'} or $options{'apt'}) {
 			next if exists $hash->{builddependsonly}; # Do no pass builddependsonly packages to apt/dpkg
 		}
-		$epoch=0;
 		if ($options{dpkg}) {
 			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
 				printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];
