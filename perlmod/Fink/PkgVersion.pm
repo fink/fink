@@ -3128,11 +3128,12 @@ EOSCRIPT
 		&print_breaking(<<EOMSG);
 Can't set build lock for $pkgname ($pkgvers)
 
-If any of the above dpkg error messages mention problems with
-dependencies, fink has probably gotten confused by trying to build
-many packages at once. Try building just this current package. When
-that has completed successfully, you could retry whatever you did that
-led to the present error.
+If any of the above dpkg error messages mention conflicting packages --
+for example, telling you that fink-buildlock-$pkgname-$pkgvers
+conflicts with something else -- fink has probably gotten confused by trying 
+to build many packages at once. Try building just this current package
+$pkgname (i.e, "fink build $pkgname"). When that has completed successfully, 
+you could retry whatever you did that led to the present error.
 
 Regardless of the cause of the lock failure, don't worry: you have not
 wasted compiling time! Packages that had been completely built before
