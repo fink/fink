@@ -1,3 +1,7 @@
+2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.23.5.1 of fink-mirrors
+
 2004-12-03  Peter O'Gorman  <peter@pogma.com>
 
 	* gnu: update to latest from http://www.gnu.org_order/ftp.html having
