@@ -287,6 +287,7 @@ END { }				# module clean-up code here (global destructor)
 #	  (easier to try it than to check for some broken-ness here)
 #	- run a mock build phase (catch typos in dependencies,
 #	  BuildDependsOnly violations, etc.)
+#	- Check Package/Version/Revision/Epoch for disallowed characters
 #	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
