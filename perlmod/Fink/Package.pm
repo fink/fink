@@ -22,6 +22,7 @@
 package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &latest_version);
+use Fink::Config qw($config $basepath);
 use File::Find;
 
 use strict;
@@ -214,6 +215,20 @@ sub forget_packages {
 
 ### read list of packages from files
 
+sub scan_all {
+  shift;  # class method - ignore first parameter
+  my ($tree, $dir);
+
+  foreach $tree ($config->get_treelist()) {
+    $dir = "$basepath/fink/dists/$tree/finkinfo";
+    Fink::Package->scan($dir);
+  }
+
+  print "Information about ".($#package_list+1)." packages read.\n";
+}
+
+### scan one tree for package desccriptions
+
 sub scan {
   shift;  # class method - ignore first parameter
   my $directory = shift;
@@ -254,8 +269,6 @@ sub scan {
     # link them together
     $package->add_version($version);
   }
-
-  print "Information about ".($#package_list+1)." packages read.\n";
 }
 
 

@@ -1,3 +1,10 @@
+2001-04-10  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm: Use the new scan_all method.
+	* Package.pm: Added method scan_all to scan all trees listed in
+	the config file.
+	* Config.pm: Added method get_treelist.
+
 2001-04-05  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Config.pm: New variable $libpath, pointing at the directory for

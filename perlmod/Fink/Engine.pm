@@ -93,7 +93,7 @@ sub initialize {
   }
 
   print "Reading package info...\n";
-  Fink::Package->scan($basepath."/fink/dists/stable/bootstrap/finkinfo");
+  Fink::Package->scan_all();
 }
 
 ### process command
@@ -128,7 +128,7 @@ sub process {
 sub cmd_rescan {
   print "Re-reading package info...\n";
   Fink::Package->forget_packages();
-  Fink::Package->scan($basepath."/fink/info");
+  Fink::Package->scan_all();
 }
 
 sub cmd_configure {
