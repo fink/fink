@@ -1,0 +1,13 @@
+Package: mysql
+Version: 3.23.36
+Revision: 2
+Source: http://www.mysql.com/Downloads/MySQL-3.23/mysql-3.23.36.tar.gz
+ConfigureParams: --mandir=%p/share/man
+Patch: %f.patch
+InstallScript: make install prefix=%i mandir=%i/share/man
+ mkdir -p %i/doc/mysql
+ cd Docs/; cp -R *.html Flags *.ps *.txt INSTALL-BINARY %i/doc/mysql/
+Maintainer: Ashley Yakeley <ashley@semantic.org>
+CommentPort: This doesn't install the database or create the mysql user/group. See INSTALL-BINARY (copied) for that.
+ The need for a patch suggests that release 36 was tested under Darwin 1.2 (i.e. the Public Beta) rather than 1.3 (the GM). 
+Homepage: http://www.mysql.com/

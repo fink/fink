@@ -1,0 +1,12 @@
+diff -ru hugs98-Feb2001/src/unix/configure hugs98-Feb2001-patched/src/unix/configure
+--- hugs98-Feb2001/src/unix/configure	Thu Feb 15 04:18:14 2001
++++ hugs98-Feb2001-patched/src/unix/configure	Sun Apr  1 09:42:43 2001
+@@ -3426,7 +3426,7 @@
+ 
+ if test "$with_readline" = yes; then
+     use_readline=no
+-    TERMCAP=no
++    TERMCAP=""
+     echo $ac_n "checking for main in -lncurses""... $ac_c" 1>&6
+ echo "configure:3432: checking for main in -lncurses" >&5
+ ac_lib_var=`echo ncurses'_'main | sed 'y%./+-%__p_%'`

@@ -1,0 +1,16 @@
+Package: hugs
+Version: 1998.200102
+Revision: 2
+Source: http://www.cse.ogi.edu/PacSoft/projects/Hugs/downloads/hugs98-Feb2001.tar.gz
+Depends: dlcompat, readline
+Patch: %f.patch
+ConfigureParams: --mandir=%p/share/man --with-readline
+CompileScript:  cd src/unix/; ./configure %c
+ cd src/; make CFLAGS=-I%p/include
+InstallScript: cd src/; make install prefix=%i mandir=%i/share/man
+CommentPort: The configure script is badly written and doesn't pass
+ CPPFLAGS or CFLAGS to the Makefile, so we set it again on the make
+ command line. The configure script needed a small patch to find
+ readline without ncurses installed.
+Maintainer: Ashley Yakeley <ashley@semantic.org>
+Homepage: http://haskell.org/hugs/
