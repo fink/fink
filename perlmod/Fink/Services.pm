@@ -186,8 +186,8 @@ The following situations are checked:
 
   Any unknown/invalid syntax.
 
-  Reaching the end of @lines while a heredoc multiline value is still
-  open.
+  Reaching the end of @lines while a heredoc multiline value is
+  still open.
 
 Note that no check is made for the validity of the fields being in the
 file in which they were encountered. The filetype (fink.conf, *.info,
@@ -344,13 +344,14 @@ differences:
   Multiline values are can only be given in RFC-822 style notation,
   not with heredoc.
 
-  No sanity-checking is performed. Lines that could not be parsed are
-  silently ignored.
+  No sanity-checking is performed. Lines that could not be parsed
+  are silently ignored.
 
   Multiple occurances of a field are allowed.
 
-  Each hash value is a ref to a list of key values instead of a simple
-  value string. The list is in the order the values appear in @lines.
+  Each hash value is a ref to a list of key values instead of a
+  simple value string. The list is in the order the values appear in
+  @lines.
 
 =cut
 
@@ -419,8 +420,8 @@ options are known:
     nonroot_okay
 
         If the value of the option 'nonroot_okay' is true, fink was
-        run with the --build-as-nobody flag, drop to user=nobody when
-        running the actual commands.
+        run with the --build-as-nobody flag, drop to user=nobody
+        when running the actual commands.
 
     delete_tempfile
 
@@ -430,7 +431,8 @@ options are known:
             -1    Always delete
 
             0 (or not passed)
-                  Delete if script was successful, do not delete if it failed
+                  Delete if script was successful, do not delete if
+                  it failed
 
             1     Never delete
 
@@ -858,7 +860,7 @@ sub latest_version {
 	return $latest;
 }
 
-=item sort_versions {
+=item sort_versions
 
 	my @sorted = sort_versions @versionstrings;
 
@@ -1324,8 +1326,8 @@ to a list having one of two forms:
 
   [ \&function, @params ]
 
-    In this form, a call will be made to function &function (unblessed
-    CODE ref), that is, &$function(@params).
+    In this form, a call will be made to function &function
+    (unblessed CODE ref), that is, &$function(@params).
 
 In both cases, the thing is called with parameter list @params (if
 given, otherwise an empty list). Return values are discarded. The lis
