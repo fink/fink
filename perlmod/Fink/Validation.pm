@@ -403,9 +403,11 @@ sub validate_info_file {
 	}
 
 	# error if have an MD5 for implicit type nosource (i.e., source=none)
-	if (lc $properties->{source} =~ /^none$/i and $properties->{"source-md5"}) {
-		print "Error: Not using a source (implicit nosource) but \"source-md5\" specified. ($filename)\n";
-		$looks_good = 0;
+	if ($properties->{"source-md5"}) {
+		if (not exists $properties->{source} or lc $properties->{source} =~ /^none$/i) {
+			print "Error: Not using a source (implicit nosource) but \"source-md5\" specified. ($filename)\n";
+			$looks_good = 0;
+		}
 	}
 
 	# error if using the default source but there is no MD5
