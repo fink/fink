@@ -92,6 +92,9 @@ sub initialize {
 
 	$libpath = "$basepath/lib/fink";
 	$distribution = $self->param("Distribution");
+	if (not defined $distribution or ($distribution =~ /^\s*$/)) {
+		die "Distribution not set in config file \"".$self->{_path}."\"!\n";
+	}
 
 	$self->{_queue} = [];
 }

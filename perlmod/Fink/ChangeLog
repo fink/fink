@@ -1,3 +1,7 @@
+2003-11-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Config.pm: Bomb if Distribution isn't set.
+
 2003-11-02  Daniel Macks  <dmacks@users.sourceforge.net>
 
 	* Validation.pm: Add polite feedback if a .deb is okay in analogy
