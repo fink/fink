@@ -1,3 +1,14 @@
+2004-07-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.6, a release
+	on branch_0_20 implementing %default_script, better handling of
+	checksum failures when downloading, and allowing bootstrap with
+	perl 5.8.2 and 5.8.4.
+
+2004-07-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: Allow bootstrapping with perl 5.8.2 and perl 5.8.4.
+	
 2004-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.20.5, a release
