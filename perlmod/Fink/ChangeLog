@@ -1,3 +1,7 @@
+2004-12-27  Chris Zubrzycki <beren12@users.sf.net>
+
+	* PkgVersion.pm: Better description for removing stuck build locks
+
 2004-12-22  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Fixed prepare_script() removal of blank lines from

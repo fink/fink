@@ -2811,7 +2811,7 @@ process has a timestamp of:
   $timestamp
 If this is not true (perhaps the previous build process crashed?),
 just remove the fink package:
-  $lockpkg
+  fink remove $lockpkg
 Then retry whatever you did that led to the present error.
 
 EOMSG
@@ -2969,7 +2969,7 @@ END
 
 	# start with a clean the environment
 	# uncomment this to be able to use distcc -- not officially supported!
-	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+#	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	%script_env = ("HOME" => $ENV{"HOME"});
 
 	# add system path
