@@ -28,6 +28,7 @@ use Fink::Config qw($config $basepath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
+use Fink::Shlibs;
 use Fink::FinkVersion qw(&pkginfo_version);
 
 use File::Find;
@@ -440,6 +441,8 @@ sub do_finish {
 	# re-read package info
 	Fink::Package->forget_packages();
 	Fink::Package->require_packages();
+	Fink::Shlibs->forget_shlibs();
+	Fink::Shlibs->require_shlibs();
 
 
 	# update the package manager itself first if necessary (that is, if a

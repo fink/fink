@@ -27,6 +27,7 @@ use Fink::Services qw(&print_breaking &print_breaking_prefix
 					  &latest_version &execute &get_term_width
 					  &file_MD5_checksum &get_arch);
 use Fink::Package;
+use Fink::Shlibs;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
 use File::Find;
@@ -161,6 +162,7 @@ sub process {
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
+		Fink::Shlibs->require_shlibs();
 	}
 	eval { &$proc(@_); };
 	if ($@) {
@@ -208,11 +210,14 @@ sub restart_as_root {
 
 sub cmd_index {
 	Fink::Package->update_db();
+	Fink::Shlibs->update_shlib_db();
 }
 
 sub cmd_rescan {
 	Fink::Package->forget_packages();
 	Fink::Package->require_packages();
+	Fink::Shlibs->forget_shlibs();
+	Fink::Shlibs->require_shlibs();
 }
 
 sub cmd_configure {
@@ -353,6 +358,7 @@ EOF
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
+	Fink::Shlibs->require_shlibs();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();

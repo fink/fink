@@ -1,6 +1,10 @@
 2003-07-11  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Added new file to deal with all the shlibs functions
+	* Bootstrap.pm: Added call to require_shlibs
+	* Selfupdate.pm Added call to forget_shlibs and require_shlibs (in case
+	  we use selfupdate to populate override.shlibs)
+	* Engine.pm: added forget, and require for shlibs to enable auto index
 
 2003-07-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
