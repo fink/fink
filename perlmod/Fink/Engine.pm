@@ -185,10 +185,10 @@ sub process {
 			}
 		}
 		if($apt_problem) {
-			my $prompt = "Continue with the 'UseBinaryDist' option temporarely disabled?";
+			my $prompt = "Continue with the 'UseBinaryDist' option temporarily disabled?";
 			my $continue = prompt_boolean($prompt, 1, 60);
 			if ($continue) {
-				# temporarely disable UseBinaryDist
+				# temporarily disable UseBinaryDist
 				$config->set_param("UseBinaryDist", "false");
 				Fink::Config::set_options( { 'use_binary' => 0 } );
 			}
