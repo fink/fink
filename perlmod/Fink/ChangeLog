@@ -1,3 +1,7 @@
+2002-04-25  Max Horn  <max@quendi.de>
+
+	* Engine.pm (real_install): Fixed bug #546315
+
 2002-04-19  Max Horn  <max@quendi.de>
 
 	* Bootstrap.pm, Engine.pm, SelfUpdate.pm: Made storable-pm an "important"

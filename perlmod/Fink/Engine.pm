@@ -744,6 +744,10 @@ sub real_install {
       foreach $dp (@$dep) {
 	$dname = $dp->get_name();
 	if (exists $deps{$dname} and $deps{$dname}->[2] == $dp) {
+	  if ($deps{$dname}->[3] < $OP_INSTALL) {
+	    $deps{$dname}->[3] = $OP_INSTALL;
+	  }
+	  # add a link
 	  push @$item, $deps{$dname};
 	  next DEPLOOP;
 	}
