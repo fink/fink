@@ -267,6 +267,8 @@ sub expand_percent {
 	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
 	return $s if (not defined $s);
+	# Bail if there is nothing to expand
+	return $s unless ($s =~ /\%/);
 
 	%map = ( %$map, '%' => '@PERCENT@' );  # Don't touch the caller's copy
 	$percent_keys = join('|', keys %map);
