@@ -1,5 +1,9 @@
 2002-08-04  Max Horn  <max@quendi.de>
 
+	* Fixed bug #548373 (package DB read thrice). It is not only read twice
+	  (the new package manager may support new features, and thus must rebuild
+	  the database once more)
+
 	* Engine.pm: Patch #588705: Automates passing on the options
 	  (by Sylvain Cuaz)
 

@@ -49,7 +49,7 @@ $have_packages = 0;
 %package_hash = ();
 @essential_packages = ();
 $essential_valid = 0;
-$db_outdated = 0;
+$db_outdated = 1;
 $db_mtime = 0;
 
 END { }       # module clean-up code here (global destructor)
@@ -415,14 +415,6 @@ sub update_db {
     }
   };
   $db_outdated = 0;
-}
-
-### force the database to be rebuilt, if possible
-
-sub force_update_db {
-  shift;  # class method - ignore first parameter
-
-  Fink::Package->update_db();
 }
 
 ### scan one tree for package desccriptions

@@ -203,7 +203,7 @@ sub restart_as_root {
 ### simple commands
 
 sub cmd_index {
-  Fink::Package->force_update_db();
+  Fink::Package->update_db();
 }
 
 sub cmd_rescan {

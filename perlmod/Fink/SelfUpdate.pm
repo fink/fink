@@ -398,12 +398,16 @@ sub do_tarball {
 sub do_finish {
   # re-read package info
   Fink::Package->forget_packages();
-  Fink::Package->force_update_db();
   Fink::Package->require_packages();
 
   # update the package manager itself first
   Fink::Engine::cmd_install("fink");
 
+  # delete the old package DB, so that the new package manager rebuilds it
+  if (-e "$basepath/var/db/fink.db") {
+    unlink "$basepath/var/db/fink.db";
+  }
+  
   # re-execute ourselves before we update the rest
   print "Re-executing fink to use the new version...\n";
   exec "$basepath/bin/fink selfupdate-finish";
