@@ -1,3 +1,9 @@
+2001-07-06  Christoph Pfisterer  <cp@chrisp.de>
+
+	* README: Updated for the upcoming 0.2.3 release.
+	* INSTALL, USAGE: Moved to the XML document system. Updated for
+	the upcoming 0.2.3 release.
+
 2001-06-23  Christoph Pfisterer  <cp@chrisp.de>
 
 	* VERSION: Bumped fink version to 0.2.2.
