@@ -674,7 +674,8 @@ sub validate_info_file {
 # - storage of a .bundle inside /sw/lib/perl5/darwin or /sw/lib/perl5/auto
 # - Emacs packages
 #     - installation of .elc files
-#     - installing files directly in /sw/share/emacs/site-lisp
+#     - (it's now OK to install files directly into
+#        /sw/share/emacs/site-lisp, so we no longer check for this)
 # - ideas?
 #
 sub validate_dpkg_file {
@@ -713,10 +714,6 @@ sub validate_dpkg_file {
 					($dpkg_filename =~ /xemacs/)))) {
 				$looks_good = 0;
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
-			} elsif ( ($filename =~/^($basepath\/share\/emacs\/site-lisp\/[^\/]+)$/) &&
-				  (not $dpkg_filename =~ /^emacsen-common_/)) {
-				$looks_good = 0;
-				print "Warning: File installed directly in $basepath/share/emacs/site-lisp. Files should be installed in a package subdirectory.\n  Offending file: $1\n";
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.

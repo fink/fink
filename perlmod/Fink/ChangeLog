@@ -1,3 +1,8 @@
+2004-03-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm:  it's now OK to install files directly into
+	/sw/share/emacs/site-lisp, so we no longer check for this
+
 2004-03-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Only display the warnings about BuildDependsOnly
