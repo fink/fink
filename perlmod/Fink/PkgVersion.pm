@@ -693,7 +693,7 @@ sub resolve_depends {
 	### Underconstruction
 	if ($self->find_debfile()) {
 		print "Reading dependencies from deb file...\n";
-		@speclist = split(/\s*\,\s*/, &get_debdeps());
+		@speclist = split(/\s*\,\s*/, $self->get_debdeps());
 	} else {
 		@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
 	}
@@ -710,7 +710,7 @@ sub resolve_depends {
 			if ($splitoff->find_debfile()) {
 				print "Reading dependencies from deb file...\n";
 				push @speclist,
-					split(/\s*\,\s*/, &get_debdeps());
+					split(/\s*\,\s*/, $splitoff->get_debdeps());
 			} else {
 				push @speclist,
 					split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
@@ -1571,10 +1571,6 @@ EOF
 
 		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
 
-		### FIXME
-		### Debug for testing
-		print "DEBUG: Shlibs: $shlibstr\n";
-
 		### 3) replace it in the debian control file
 		if ($depline =~ /\$\{SHLIB_DEPS\}, / &&
 		    length($shlibstr) <= 0) {
@@ -1582,10 +1578,6 @@ EOF
 		} else {
 			$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
 		}
-
-                ### FIXME
-                ### Debug for testing
-                print "DEBUG: Depends: $depline\n";
 	}
 
 	# FIXME: make sure there are no linebreaks in the following fields
@@ -2032,7 +2024,22 @@ sub run_script {
 }
 
 sub get_debdeps {
-	return "";
+	my $wantedpkg = shift;
+	my $deps = "";
+
+	### get deb file
+	my $deb = $wantedpkg->find_debfile();
+
+	open (DPKGINFO, "dpkg -I $deb |") or die "Can't get deb info: $!\n";
+		while (<DPKGINFO>) {
+			chomp($_);
+			if ($_ =~ /^ +Depends: +(.*)$/) {
+				$deps = $1;
+			}
+		}
+	close (DPKGINFO);
+	
+	return $deps;
 }
 
 ### EOF
