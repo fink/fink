@@ -1708,8 +1708,9 @@ sub phase_deactivate {
 sub set_env {
   my $self = shift;
   my ($varname, $s, $expand);
-  my %defaults = ( "CPPFLAGS" => "-I\%p/include",
-		   "LDFLAGS" => "-L\%p/lib" );
+  my %defaults = ( "CPPFLAGS" => "-no-cpp-precomp",
+		   "LIBRARY_PATH" => "\%p/lib",
+		   "CPATH" => "\%p/include" );
   my $bsbase = get_bsbase();
 
   # clean the environment
@@ -1723,11 +1724,13 @@ sub set_env {
     $ENV{"PATH"} = "$bsbase/bin:$bsbase/sbin:" . $ENV{"PATH"};
   }
 
-  # set additional variables if possible
-  if (-r $basepath . '/bin/init.sh') {
+  # run init.sh script which will set the path and other additional variables
+  if (-r "$basepath/bin/init.sh") {
     my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
     chomp @vars;
     %ENV = map { split /=/ } @vars;
+  } else {
+    die "Can't execute '$basepath/bin/init.sh'. Apparently your Fink installation is damaged\n";
   }
 
   # set variables according to the info file
@@ -1736,7 +1739,8 @@ sub set_env {
 		    "CPP", "CPPFLAGS",
 		    "CXX", "CXXFLAGS",
 		    "LD", "LDFLAGS", "LIBS",
-		    "MAKE", "MFLAGS") {
+		    "MAKE", "MFLAGS",
+		    "LIBRARY_PATH", "CPATH") {
     if ($self->has_param("Set$varname")) {
       $s = $self->param("Set$varname");
       if (exists $defaults{$varname} and

@@ -1,3 +1,14 @@
+2002-10-25  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Instead of the old default values for CPPFLAGS and LDFLAGS,
+	  we now set CPATH and LIBRARY_PATH to point to the Fink include/lib dirs.
+	  This should avoid many problem encountered in the past. However, it may
+	  also break a few existing packages.
+	  Since the Apple C preprocessor seems to ignore CPATH, we also set 
+	  by default -no-cpp-precomp (many packages need this anyway).
+
+	* Validation.pm: recognize (No)SetCPATH and (No)SetLIBRARY_PATH fields.
+
 2002-10-21  Ben Hines <bhines@alumni.ucsd.edu>
 
 	* Services.pm, Fix typo in nesting too deep error.
