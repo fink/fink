@@ -78,6 +78,11 @@
 	* PkgVersion.pm: Allow prebinding whenever the distribution is
 	greater than or equal to 10.2-gcc3.3 .
 
+2003-09-06  Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Temporary change on the "test_10_3" branch: if
+	this is run on 10.2, it will set up the 10.2-gcc3.3 distribution.
+
 2003-09-04  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* PkgVersion.pm: Changed the way Type: perl works, it now can use
