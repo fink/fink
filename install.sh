@@ -39,9 +39,11 @@ chmod 755 "$basepath"
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   lib/perl5/Fink/Text \
+		lib/perl5/Fink/Notify \
 	   lib/fink/update etc etc/dpkg \
 	   share share/doc share/doc/fink share/man \
-	   share/man/man8 share/man/man5 ; do
+	   share/man/man8 share/man/man5 \
+		share/fink share/fink/images; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -56,9 +58,10 @@ install -c -p -m 755 fink-virtual-pkgs "$basepath/bin/"
 install -c -p -m 755 pathsetup.sh "$basepath/bin/"
 install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
+install -c -p -m 644 images/*.png "$basepath/share/fink/images/"
 
 # copy all perl modules
-for subdir in . Text ; do
+for subdir in . Text Notify ; do
   for file in perlmod/Fink/${subdir}/*.pm ; do
     if [ -f $file ]; then
       install -c -p -m 644 $file "$basepath/lib/perl5/Fink/$subdir"
