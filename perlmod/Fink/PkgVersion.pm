@@ -315,22 +315,23 @@ sub conditional_pkg_list {
 	my @atoms = split /([,|])/, $value; # break apart the field
 	map {
 		if (s/\s*\((.*?)\)(\s*.*)/$2/) {
-		    # we have a conditional; remove the cond expression
-		    my $cond = $1;
-#		    print "\tfound conditional '$cond'\n";
-		    if ($cond =~ /^(\S+)\s*($compare_ops)\s*(\S+)$/) {
-			# syntax 1: (string1 op string2)
-#			print "\t\ttesting '$1'$2'\n";
+			# we have a conditional; remove the cond expression
+			my $cond = $1;
+#			print "\tfound conditional '$cond'\n";
 			# if cond is false, clear entire atom
-			$_ = "" unless $compare_subs{$2}->($1,$3);
-		    } elsif ($cond !~ /\s/) {
-			#syntax 2: (string): string must be non-null
-			$_ = "" unless length $cond;
-		    } else {
-			print "Error: Invalid conditional expression \"$cond\" in $field of ".$self->get_info_filename.". Treating as true.\n";
-		    }
+			if ($cond =~ /^(\S+)\s*($compare_ops)\s*(\S+)$/) {
+				# syntax 1: (string1 op string2)
+#				print "\t\ttesting '$1' '$2' '$3'\n";
+				$_ = "" unless $compare_subs{$2}->($1,$3);
+			} elsif ($cond !~ /\s/) {
+				#syntax 2: (string): string must be non-null
+#				print "\t\ttesting '$cond'\n";
+				$_ = "" unless length $cond;
+			} else {
+				print "Error: Invalid conditional expression \"$cond\" in $field of ".$self->get_info_filename.". Treating as true.\n";
+			}
 		}
-	    } @atoms;
+	} @atoms;
 	$value = join "", @atoms; # reconstruct field
 	# if atoms were removed, we have consecutive [,|] chars; merge them
 #	print "\tnow have: $value\n";
