@@ -7,22 +7,18 @@ Look at t/Persist/persist.t for examples of how to use Persist.
 
 
 TODO (no particular order):
-
-	- Make Package and PkgVersion inherit from Fink::Persist::Base
 	
-	- Abstract out the $Package::packages hash. Two options:
-		* Use TableHash to make it table-backed
-		* Turn references to $packages into calls to get/set methods, then have
-			them do the appropriate things with select_by_params and new.
-			
-	- Profile things for speed (Devel::SmallProf should work)
+	- Use CONFLICT to optimize SQL
+		
+	- Profile things for speed (Devel::SmallProf should work,
+		so should DBI_PROFILE)
 	
 	- Normalize the DB
 		* Required fields
 		* Foreign keys: one-to-many, many-to-many
 		* Complex values => fkeys and new tables
 	
-	- Collating method to work with versions?
+	- Collation method to work with versions?
 	
 	- Test database versioning
 	
@@ -40,14 +36,10 @@ TODO (no particular order):
 	
 	- Add caching if possible
 		* How to deal with aliasing?
-	
-	- Add indices to DB
-	
+		
 	- Add ref-counting GC
 	
 	- Check locking
 	
 	- Vacuum the DB when size is too big, rescan when vacuuming doesn't help much
-	
-	- Use prepare() on SQL statements, cache 'em. (Invalidated by commit?)
-	
+		

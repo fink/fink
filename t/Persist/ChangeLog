@@ -1,5 +1,9 @@
 2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
 
+	* persist.t: Use Fink::Config, update tests for new all_with_props API.
+		
+2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
 	* persist.t: Fix overriding fink_db, make sure test files created
 	in correct directory.
 	

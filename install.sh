@@ -38,7 +38,7 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
-	   lib/perl5/Fink/Text \
+	   lib/perl5/Fink/Persist lib/perl5/Fink/Text lib/perl5/Fink/Tie \
 	   lib/fink/update etc etc/dpkg \
 	   share share/doc share/doc/fink share/man \
 	   share/man/man8 share/man/man5 ; do
@@ -58,7 +58,7 @@ install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 
 # copy all perl modules
-for subdir in . Text ; do
+for subdir in . Persist Text Tie; do
   for file in perlmod/Fink/${subdir}/*.pm ; do
     if [ -f $file ]; then
       install -c -p -m 644 $file "$basepath/lib/perl5/Fink/$subdir"

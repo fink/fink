@@ -51,7 +51,7 @@ BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 	$VERSION	 = 1.00;
-	@ISA		 = qw(Exporter Fink::Base);
+	@ISA		 = qw(Exporter Fink::Persist::Base);
 	@EXPORT		 = qw();
 	@EXPORT_OK	 = qw();	# eg: qw($Var1 %Hashit &func3);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],

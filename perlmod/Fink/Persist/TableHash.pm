@@ -22,13 +22,14 @@
 
 package Fink::Persist::TableHash;
 
-use Fink::Persist qw(&getdbh &exists_table &thaw $thaw_dbh);
+use Fink::Persist qw(&getdbh &exists_object &thaw $thaw_dbh
+	&writeable);
 use Fink::Tie::Watch;
 
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(&check_version &ensure_version);
-our @EXPORT_OK = qw(&all_with_prop &all &exists_id &freeze &table_name);
+our @EXPORT_OK = qw(&all_with_props &all &exists_id &freeze &table_name);
 our %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
@@ -60,8 +61,8 @@ Fink::Persist::TableHash - a hash backed by a database table
     
   use Fink::Persist::TableHash qw(:ALL);
   
-  my @ids = all_with_prop($dbh, $base, $key, $val);
-  my @ids = all($dbh, $base);
+  my @hashes = all_with_props($dbh, $base, { key1 => val1, key2 => val2, ... });
+  my @hashes = all($dbh, $base);
   
   
   if (Fink::Persist::TableHash::exists_id($dbh, $base, $id)) { ... }  
@@ -133,7 +134,7 @@ sub exists_id {
 	
 	my $recs = table_name($base, "recs");
 	
-	return 0 unless exists_table $dbh, $recs;
+	return 0 unless exists_object $dbh, $recs, 'table';
 	
 	my $slct = qq{SELECT id FROM $recs WHERE id = ?};
 	return scalar($dbh->selectrow_array($slct, {}, $id));
@@ -149,6 +150,8 @@ Ensure a database is using the current format for TableHash. If so, returns true
 =cut
 
 sub ensure_version {
+	return 1; # Disable version checking
+	
 	my $dbh = shift;
 	
 	return 1 if check_version($dbh);
@@ -156,7 +159,7 @@ sub ensure_version {
 	# Bad version, try to get rid of everything
 	
 	my $tablelist = table_name("tablelist");
-	if (exists_table $dbh, $tablelist) {
+	if (exists_object $dbh, $tablelist, 'table') {
 		my $tbls = $dbh->selectcol_arrayref(qq{SELECT name FROM $tablelist});
 		if (defined $tbls) {
 			foreach my $table (@$tbls) {
@@ -188,6 +191,8 @@ Check if a database is using the current format for TableHash.
 	my %vers_ok;
 	
 	sub check_version {
+		return 1; # Disable version checking
+	
 		my $dbh = shift;
 		
 		# Check again if it was false before
@@ -200,7 +205,7 @@ Check if a database is using the current format for TableHash.
 		
 		my $verstbl = table_name("version");
 		
-		if (not exists_table $dbh, $verstbl) {
+		if (not exists_object $dbh, $verstbl, 'table') {
 			$dbh->do(qq{CREATE TABLE $verstbl (vers INTEGER PRIMARY KEY)});
 			add_table($dbh, $verstbl);
 			
@@ -224,11 +229,13 @@ Ensure that the database knows that a new TableHash data table has been added.
 =cut
 
 sub add_table {
+	return 1; # Disable version checking
+	
 	my ($dbh, $tblname) = @_;
 	
 	my $tablelist = table_name("tablelist");
 	
-	if (not exists_table $dbh, $tablelist) {
+	if (not exists_object $dbh, $tablelist, 'table') {
 		$dbh->do(qq{CREATE TABLE $tablelist (name PRIMARY KEY)});
 		add_table($dbh, $tablelist);
 	}
@@ -468,16 +475,20 @@ sub TIEHASH {
 	
 	my $recs = table_name $base, "recs";
 	my $props = table_name $base, "props";
+	my $pidx = table_name $base, "props_idx";
 	
-	if (not exists_table $dbh, $recs) {		
+	if (not exists_object $dbh, $recs, 'table') {		
 		# Make the basic table
 		$dbh->do(qq{CREATE TABLE $recs (id INTEGER PRIMARY KEY)});
 		add_table($dbh, $recs);
 	}
-	if (not exists_table $dbh, $props) {
+	if (not exists_object $dbh, $props, 'table') {		
 		# Make the property table
 		$dbh->do(qq{CREATE TABLE $props (id, key, value)});
 		add_table($dbh, $props);
+	}
+	if (not exists_object $dbh, $pidx, 'index') {
+		$dbh->do(qq{CREATE UNIQUE INDEX $pidx ON $props (id, key)});
 	}
 	
 	# Make sure a record exists for this hash
@@ -486,7 +497,7 @@ sub TIEHASH {
 		my $insert = qq{INSERT INTO $recs VALUES(?)};
 		$insert =~ s/\?/NULL/ unless defined $id;
 		$dbh->do($insert, {}, defined $id ? $id : () );
-		
+	
 		if (!defined $id) {
 			$id = $dbh->last_insert_id((undef) x 4);
 		}
@@ -540,7 +551,7 @@ sub STORE {
 		
 	$self->DELETE($key);
 	
-	my $sql = qq{INSERT INTO $props VALUES(?, ?, ?)};
+		my $sql = qq{INSERT INTO $props VALUES(?, ?, ?)};
 	$dbh->do($sql, {}, $id, $key, freeze($value));
 	$self->watch($key, $value)
 }
@@ -617,33 +628,55 @@ To allow storing these objects as references in the database, we need custom hoo
 
 =over 4
 
-=item all_with_prop
+=item all_with_props
 
-  @ids = all_with_prop($dbh, $base, $key, $val);
+  @hashes = all_with_props($dbh, $base, { key1 => val1, key2 => val2, ... });
   
-Gets all ids whose hashes have a given key set to a given value. Returns undef if the database is not the proper version.
+Gets all hashes with the given keys set to the given values. Returns undef if the database is not the proper version.
 
 =cut
 
-sub all_with_prop {
-	my ($dbh, $base, $key, $val) = @_;
+sub all_with_props {
+	my ($dbh, $base, $params) = @_;
 	return undef unless check_version($dbh);
 
+	my $recs = table_name $base, "recs";
 	my $props = table_name $base, "props";
 	
-	return () unless (exists_table $dbh, $props);
+	my %params2 = %$params;
+	my @ks = keys %params2;
+	my ($sql, @binds);
 	
-	my $sql = qq{SELECT DISTINCT id FROM $props WHERE key = ? AND value = ?};
-	my $results = $dbh->selectcol_arrayref($sql, {}, $key, freeze($val));
-	return @$results;
+	unless (scalar(@ks)) {
+		return () unless exists_object($dbh, $recs, 'table');
+		
+		$sql = qq{SELECT id FROM $recs};
+	} else {
+		return () unless exists_object($dbh, $props, 'table');
+
+		$sql = qq{SELECT t1.id FROM $props AS t1};
+		my @where = q{t1.key = ? AND t1.value = ?};
+		
+		for (my $i = 2; $i <= scalar(@ks); ++$i) {
+			$sql .= qq{ JOIN $props AS t$i ON t1.id = t$i.id};
+			push @where, qq{t$i.key = ? AND t$i.value = ?};
+		}
+		
+		$sql .= q{ WHERE } . join(q{ AND }, @where);
+		
+		map { $_ = freeze $_ } values %params2;
+	}
+	
+	return map { Fink::Persist::TableHash->new($dbh, $base, $_) }
+		@{ $dbh->selectcol_arrayref($sql, {}, %params2) };
 }
 
 
 =item all
 
-  @ids = all($dbh, $base);
+  @hashes = all($dbh, $base);
   
-Gets all ids in a table. Returns undef if the database is not the proper version.
+Gets all hashes in a table. Returns undef if the database is not the proper version.
 
 =back
 
@@ -655,11 +688,11 @@ sub all {
 
 	my $recs = table_name $base, "recs";
 	
-	return () unless (exists_table $dbh, $recs);
+	return () unless (exists_object $dbh, $recs, 'table');
 	
 	my $sql = qq{SELECT DISTINCT id FROM $recs};
-	my $results = $dbh->selectcol_arrayref($sql, {});
-	return @$results;
+	return map { Fink::Persist::TableHash->new($dbh, $base, $_) }
+		@{ $dbh->selectcol_arrayref($sql) };
 }
 
 

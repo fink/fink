@@ -1,8 +1,10 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Data::Dumper; # for debugging
 use Test::More 'no_plan';
+
+use Fink::Config;
+use Data::Dumper;
 
 =begin private
 
@@ -15,12 +17,11 @@ Hard to test explicitly:
 
 =cut
 
-use lib '.';
 use Fink::Persist;
 use Fink::Persist::TableHash qw(:ALL);
 use Fink::Persist::Base;
-use Fink::Services qw(&read_config);
 
+my $config = Fink::Config->new_with_path('basepath/etc/fink.conf');
 
 ### Test loading ###
 
@@ -78,14 +79,15 @@ ok(eq_array($h->{arrayref}, [ 1, 2, 3 ]), "Values should still be in DB");
 
 ### Test getting all ###
 
-my @res = all_with_prop($dbh2, "iggy", "foo", "bar");
+my @res = all_with_props($dbh2, "iggy", { foo => "bar" });
 is(scalar(@res), 0, "Should be no results with invalid table");
 
-@res = all_with_prop($dbh2, "test", "str", "bar");
+@res = all_with_props($dbh2, "test", { str => "bar" });
 is(scalar(@res), 0, "Should be no results");
 
-@res = all_with_prop($dbh2, "test", "str", "foo");
-ok(eq_array(\@res, [ 2 ]), "One result should be present, correct");
+@res = all_with_props($dbh2, "test", { str => "foo" });
+is(scalar(@res), 1, "One result should be present");
+is((tied %{$res[0]})->id, 2, "Result should be correct");
 
 @res = Fink::Persist::TableHash::all($dbh2, "test");
 is(scalar(@res), 2, "All items should be present");
@@ -119,21 +121,6 @@ is($h4->{thref}{str}, "foo", "TableHashes can be stored inside each other");
 
 
 ### Test objects ###
-
-(my $basepath = `which fink`) =~ s/bin.*//s;
-read_config("$basepath/etc/fink.conf");
-
-{	
-	package Fink::Persist::Base;
-	no warnings 'redefine';
-	
-	my $finkdb = "Persist/fink.sqlite";
-	unlink $finkdb;
-
-	# Override so we can use something local
-	sub fink_db {	return $finkdb;		}
-}
-
 
 my $obj1 = Fink::Persist::Base->new();
 ok($obj1, "Object creation works");
@@ -173,4 +160,9 @@ ok(scalar(@sel) == 2, "Selection by one param works");
 ok(scalar(@sel) == 1, "Selection by multi params gets right count of results");
 is($sel[0]->param("name"), "good", "Selected objects work");
 
+
+$obj1->set_param(foo => "Chris");
+$obj2->set_param(compobj => [ $obj1, $obj3 ]);
+ok(eq_array([ map { $_->param("foo") } @{$obj2->param("compobj")} ],
+	[ "Chris", "Dave" ]), "Objects within complex works");
 

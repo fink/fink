@@ -22,7 +22,8 @@
 #
 
 package Fink::Package;
-use Fink::Persist::Base qw(&fink_dbh);
+use Fink::Persist qw(&clear);
+use Fink::Persist::Base qw(&fink_dbh &fink_db);
 use Fink::Persist::TableHash;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
@@ -54,13 +55,9 @@ END { }				# module clean-up code here (global destructor)
 ### constructor taking a name
 
 sub new_with_name {
-	my $proto = shift;
-	my $class = ref($proto) || $proto;
-	my $pkgname = shift;
-
-	my $self = {};
-	bless($self, $class);
-
+	my ($proto, $pkgname) = @_;
+	
+	my $self = $proto->new_no_init;
 	$self->{package} = lc $pkgname;
 
 	$self->initialize();
@@ -384,13 +381,22 @@ sub scan_all {
 				}
 			}
 			
-			if (fink_dbh) {
-				$db_outdated = $db_outdated || !ensure_version fink_dbh;
-				$packages = Fink::Persist::TableHash->new(fink_dbh, "packages");
-			} elsif (not $db_outdated) {
-				# If the index is not outdated, we can use it, and thus save a
-				# lot of time
-				$packages = Storable::lock_retrieve(fink_store);
+			$db_outdated = 1 if fink_dbh && !check_version fink_dbh;
+			
+			if (not $db_outdated) {
+				if (fink_dbh) {
+					print "DEBUG: Loading SQLite DB\n";
+					$packages = Fink::Persist::TableHash->
+						new(fink_dbh, "packages", 1);
+					my @pkgnames = sort keys %$packages;
+					my $max = (10 > $#pkgnames ? $#pkgnames : 10);
+					print("DEBUG: First packages loaded: ",
+						join(', ', @pkgnames[0..$max]), "\n");
+				} else {
+					# If the index is not outdated, we can use it, and thus save a
+					# lot of time
+					$packages = Storable::lock_retrieve(fink_store);
+				}
 			}
 			$aptdb = Storable::lock_retrieve("$basepath/var/db/finkapt.db");
 		}
@@ -400,11 +406,12 @@ sub scan_all {
 	if ($db_outdated) {
 		Fink::Package->update_db();
 	}
-
+	
 	# Get data from dpkg's status file. Note that we do *not* store this 
 	# information into the package database.
 	$dlist = Fink::Status->list();
-	foreach $pkgname (keys %$dlist) {
+	foreach $pkgname (sort keys %$dlist) {
+		print "DEBUG: Status $pkgname\n";
 		$po = Fink::Package->package_by_name_create($pkgname);
 		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
 		$hash = $dlist->{$pkgname};
@@ -423,7 +430,8 @@ sub scan_all {
 	# Get data from VirtPackage.pm. Note that we do *not* store this 
 	# information into the package database.
 	$dlist = Fink::VirtPackage->list();
-	foreach $pkgname (keys %$dlist) {
+	foreach $pkgname (sort keys %$dlist) {
+		print "DEBUG: Virtual $pkgname\n";
 		$po = Fink::Package->package_by_name_create($pkgname);
 		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
 		$hash = $dlist->{$pkgname};
@@ -493,6 +501,12 @@ sub update_db {
 	shift;	# class method - ignore first parameter
 	my ($tree, $dir);
 
+	if (fink_dbh && $> == 0) {
+		print "DEBUG: Initializing SQLite DB\n";
+		clear fink_dbh;
+		$packages = Fink::Persist::TableHash->new(fink_dbh, "packages", 1);
+	}
+
 	# read data from descriptions
 	if (&get_term_width) {
 		print STDERR "Reading package info...\n";
@@ -513,6 +527,7 @@ sub update_db {
 			
 			if (fink_dbh) {
 				eval { fink_dbh->commit };
+				print "DEBUG: Saving SQLite DB\n";
 				if (@$) {
 					warn "Couldn't save database: $@";
 					eval { fink_dbh->rollback };
@@ -579,6 +594,7 @@ sub scan {
 		}
 
 		Fink::Package->setup_package_object($properties, $filename);
+		print "DEBUG: Added package $filename\n";
 	}
 }
 

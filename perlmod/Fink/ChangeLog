@@ -1,5 +1,17 @@
 2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
 
+	* Package.pm: Complete basic DB interaction.
+	* PkgVersion.pm: Inherit from Persist::Base.
+	* Persist.pm: Add &clear, basic read-only functionality, allow TEMP tables
+	to show up, move from &exists_table to &exists_object and from &tables to
+	&all_objects.
+	* Persist/Base.pm: Remove &table_name, make &select_by_params use TableHash::
+	all_with_props.
+	* Persist/TableHash.pm: Update &all and &all_with_props, steal logic from
+	&select_by_params. Add indexing, disable versioning.
+	
+2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
 	* Package.pm: Begin integration of Persist::Base
 	* Persist.pm: Add tables() method, document $thaw_dbh
 	* Persist/Base.pm: Better DB finding, integrate versioning, new table

@@ -22,12 +22,15 @@
 
 package Fink::Persist;
 
+use Fink::Command qw(&mkdir_p);
 use Storable;
+use File::Basename;
 
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(&getdbh);
-our @EXPORT_OK = qw(&exists_table &tables &freeze &thaw $thaw_dbh);
+our @EXPORT_OK = qw(&exists_object &all_objects &freeze &thaw $thaw_dbh
+	&writeable &clear &set_read_only);
 our %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
@@ -37,6 +40,7 @@ our $VERSION = 1.00;
 
 our $thaw_dbh;
 our %dbhs;
+our %writeable_dbh;
 
 END {				# module clean-up code here (global destructor)
 	for my $dbh (values %dbhs) {
@@ -54,17 +58,20 @@ Fink::Persist - utilities for persistence of objects
   use Fink::Persist;
   
   my $dbh = getdbh $filename;
+  my $bool = writeable $dbh;
+  clear $dbh;
   
+  use Fink::Persist qw(:ALL);
   
-  use Fink::Persist qw(&exists_table &freeze &thaw);
-  
-  my @tbls = tables;
-  if (exists_table $dbh, $tablename) { ... }
+  my @tbls = all_objects $dbh, 'table';
+  if (exists_object $dbh, $tablename) { ... }
   
   my $val;
   $dbh->do(q{INSERT INTO table VALUES(?)}, {}, freeze($val));
   my @res = $dbh->selectrow_array(q{SELECT col FROM table});
   my $valcopy = thaw($res[0]);
+  
+  set_read_only $dbh;
 
 =head1 FUNCTIONS
 
@@ -96,56 +103,131 @@ sub getdbh_real {
 		return 0;
 	}
 			
+	# Try to make any necessary directories
+	my $dir = dirname($filename);
+	mkdir_p($dir) unless -d $dir;
+	
 	my $dbh;
-	unless ($dbh = DBI->connect("dbi:SQLite:dbname=$filename")) {
+	# AutoCommit = 0 -> enable transactions
+	unless ( $dbh = DBI->connect("dbi:SQLite:dbname=$filename", "", "",
+			{ AutoCommit => 0, RaiseError =>1 }) ) {
 		warn "Couldn't load database: $@";
 		return 0;
 	}
-	$dbh->{AutoCommit} = 0;  # enable transactions
-	$dbh->{RaiseError} = 1;
+	$writeable_dbh{$dbh} = -w $filename;
 	
 	return $dbh;
 }
 
-=item exists_table
 
-  $bool = exists_table $dbh, $tablename;
+=begin private
 
-Uses database-specific commands to determine whether a table exists.
+  $sql = perm_and_temp;
+  
+Get the SQL representing a table of both the permanent and temporary table lists.
+
+=end private
 
 =cut
 
-sub exists_table {
-	my ($dbh, $tablename) = @_;
+sub perm_and_temp {
+	return "(SELECT * FROM sqlite_master UNION ALL SELECT * FROM " .
+		"sqlite_temp_master)";
+}
+
+
+=item exists_object
+
+  $bool = exists_object $dbh, $tablename, $type;
+
+Uses database-specific commands to determine whether a DB object exists. Type can be "table", "view" or "index".
+
+=cut
+
+sub exists_object {
+	my ($dbh, $tablename, $type) = @_;
 	
 	eval {
 		# FIXME: get table_info working
 		
 		# Assume it's SQLite
-		my $sql = q{SELECT name FROM sqlite_master WHERE type='table' and name=?};
-		return defined $dbh->selectrow_arrayref($sql, {}, $tablename);
+		my $sql = sprintf(q{SELECT name FROM %s WHERE type = ? and name = ?},
+			perm_and_temp);
+		return defined $dbh->selectrow_arrayref($sql, {}, $type, $tablename);
 	} or return 0;
 }
 
 
-=item tables
+=item clear
 
-  @tbls = tables $dbh;
+  clear $dbh;
 
-Get a list of all tables.
+Get rid of everything in the database.
 
 =cut
 
-sub tables {
+sub clear {
 	my ($dbh) = @_;
 	
-	eval {
+	$dbh->do(qq{DROP VIEW $_}) foreach (all_objects($dbh, 'view'));
+	$dbh->do(qq{DROP TABLE $_}) foreach (all_objects($dbh, 'table'));
+}
+
+
+=item writeable
+
+  $bool = writeable $dbh;
+
+Check if a database is writeable.
+
+=cut
+
+sub writeable {
+	my ($dbh) = @_;
+	
+	return $writeable_dbh{$dbh};
+}
+
+
+=item set_read_only
+
+  set_read_only $dbh;
+
+Set a database to be read-only.
+
+=cut
+
+sub set_read_only {
+	my ($dbh) = @_;
+	
+	$writeable_dbh{$dbh} = 0;
+}
+
+
+=item all_objects
+
+  @tbls = all_objects $dbh, $type;
+  @tbls = all_objects $dbh;
+
+Get a list of all database objects of the given type (all types if no type given).
+
+=cut
+
+sub all_objects {
+	my ($dbh, $type) = @_;
+	
+	my @objs = eval {
 		# FIXME: get table_info working
 		
 		# Assume it's SQLite
-		my $sql = q{SELECT name FROM sqlite_master WHERE type='table'};
-		return @{$dbh->selectcol_arrayref($sql)};
-	} or return ();
+		my $sql = q{SELECT name FROM } . perm_and_temp;
+		$sql = $sql . q{ WHERE type = ?} if defined $type;
+		
+		my $objs = $dbh->selectcol_arrayref($sql, {},
+			( defined $type ? ($type) : () ));
+		return @$objs;
+	};
+	return ($@ ? () : @objs);
 }
 
 

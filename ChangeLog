@@ -1,5 +1,10 @@
 2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
 
+	* README.Persist: Optimizing, remove old TODOs.
+	* install.sh: Add new dirs.
+	
+2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
 	* README.Persist: Versioning, vacuum, prepare()
 	
 2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
