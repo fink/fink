@@ -738,6 +738,13 @@ sub phase_patch {
       "cp -f $libpath/update/ltmain.sh .\n";
   }
 
+  ### copy po/Makefile.in.in if required
+
+  if ($self->param_boolean("UpdatePoMakefile")) {
+    $patch_script .=
+      "cp -f $libpath/update/Makefile.in.in po/\n";
+  }
+
   ### patches specifies by filename
 
   if ($self->has_param("Patch")) {

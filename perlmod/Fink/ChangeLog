@@ -1,3 +1,9 @@
+2001-08-22  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_patch): Added support for
+	UpdatePoMakefile. When set, copy the updated Makefile.in.in to the
+	po subdirectory of the source tree.
+
 2001-08-14  Christoph Pfisterer  <cp@chrisp.de>
 
 	* SelfUpdate.pm: New module. Contains code to let Fink update

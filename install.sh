@@ -69,7 +69,7 @@ for file in update/config.guess update/config.sub update/ltconfig ; do
   chmod 755 $basepath/lib/fink/$file
 done
 
-for file in update/ltmain.sh ; do
+for file in update/ltmain.sh update/Makefile.in.in ; do
   cp $file $basepath/lib/fink/update/
   chmod 644 $basepath/lib/fink/$file
 done
