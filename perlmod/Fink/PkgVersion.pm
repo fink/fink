@@ -1810,7 +1810,16 @@ EOF
 										 Recommends Suggests Enhances
 										 Maintainer)) {
 		if ($self->has_param($field)) {
-			$control .= "$field: ".&collapse_space($self->param($field))."\n";
+			my $pkgs = &collapse_space($self->param($field));
+			if ($field eq "Replaces" or $field eq "Conflicts") {
+				# Remove self from own Conflicts and Replaces.
+				# Approach: break apart comma-delimited list,
+				# reassemble only those atoms that don't match.
+				$pkgs = join ", ", ( grep { /([a-z0-9.+\-]+)/ ; $1 ne $self->get_name } split /,\s*/, $pkgs)
+			}
+			if (length $pkgs) {
+				$control .= "$field: $pkgs\n";
+			}
 		}
 	}
 	$control .= "Description: ".$self->get_description();
