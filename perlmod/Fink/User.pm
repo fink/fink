@@ -153,7 +153,7 @@ getuid() {
     number_used="dontknow"
     fnumber=$lowUID
     until [ \$continue = "yes" ]; do
-      if [ `$nidump passwd . | $cut -d":" -f3 | $grep -c "^\$fnumber$"` -gt 0 ]; then
+      if [ `$nidump passwd . | $cut -d":" -f3 | $grep -c "^\$fnumber\$"` -gt 0 ]; then
         number_used=true
       else
         if [ \$fnumber -gt $highUID ]; then
@@ -172,8 +172,8 @@ getuid() {
   fi
 }
 
-uid=getuid()
-gid=getgid()
+getuid
+getgid
 
 if [ \$uid -gt $highUID ]; then
   exit 1
@@ -210,7 +210,7 @@ getgid() {
     number_used="dontknow"
     fnumber=$lowGID
     until [ \$continue = "yes" ]; do
-      if [ `$nidump group . | $cut -d":" -f3 | $grep -c "^\$fnumber$"` -gt 0 ]; then
+      if [ `$nidump group . | $cut -d":" -f3 | $grep -c "^\$fnumber\$"` -gt 0 ]; then
         number_used=true
       else
         if [ \$fnumber -gt $highGID ]; then
@@ -229,7 +229,7 @@ getgid() {
   fi
 }
 
-gid=getgid()
+getgid
 
 if [ \$gid -gt $highGID ]; then
   exit 1
@@ -266,14 +266,18 @@ sub remove_user {
     
 	if ($type eq "user") {
 		$script = <<"EOF";
-HomeDir=`$nidump passwd . | $grep '$name:' | $cut -d\":\" -f9`
-$rm \$HomeDir
-$niutil -destroy . /users/$name
+if [ \$1 != "upgrade" ]; then
+  HomeDir=`$nidump passwd . | $grep '$name:' | $cut -d\":\" -f9`
+  $rm \$HomeDir
+  $niutil -destroy . /users/$name
+fi
 
 EOF
 	} else {
 		$script = <<"EOF";
-$niutil -destroy . /groups/$name
+if [ \$1 != "upgrade" ]; then
+  $niutil -destroy . /groups/$name
+fi
 
 EOF
 	}
