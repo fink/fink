@@ -1,3 +1,7 @@
+2001-07-22  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Added new package type 'nosource'.
+
 2001-07-21  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Bootstrap.pm (bootstrap): Create empty 'diversions' file for

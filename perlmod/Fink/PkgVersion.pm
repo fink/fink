@@ -248,7 +248,8 @@ sub get_build_directory {
     return $self->{_builddir};
   }
 
-  if ($self->param_boolean("NoSourceDirectory")) {
+  if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource"
+      || $self->param_boolean("NoSourceDirectory")) {
     $self->{_builddir} = $self->get_fullname();
     return $self->{_builddir};
   }
@@ -360,7 +361,7 @@ sub is_fetched {
   my $self = shift;
   my ($i);
 
-  if ($self->{_type} eq "bundle") {
+  if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource") {
     return 1;
   }
 
@@ -578,7 +579,7 @@ sub phase_fetch {
   my $conditional = shift || 0;
   my ($i);
 
-  if ($self->{_type} eq "bundle") {
+  if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource") {
     return;
   }
 
@@ -671,6 +672,14 @@ sub phase_unpack {
     if (&execute("rm -rf $bdir")) {
       die "can't remove existing directory $bdir\n";
     }
+  }
+
+  if ($self->{_type} eq "nosource") {
+    $destdir = "$basepath/src/$bdir";
+    if (&execute("mkdir -p $destdir")) {
+      die "can't create directory $destdir\n";
+    }
+    return;
   }
 
   for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
