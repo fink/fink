@@ -1,26 +1,39 @@
 Package: ncurses
-Version: 5.3
-Revision: 12
+Version: 5.3-20031018
+Revision: 1
 GCC: 3.3
-Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source: mirror:gnu:%n/%n-5.3.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
-PatchScript: perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
-Patch: %n.patch
+#Source2: mirror:sourceforge:fink/%n-20031004-patch.sh.bz2
+Source2: ftp://dickey.his.com/ncurses/5.3/%n-5.3-20031004-patch.sh.bz2
+Source2-MD5: 3c1d1c4c78a4e2b9d99924ba8aa2a608
+Source2ExtractDir: %n-5.3
+PatchScript: <<
+  #!/bin/sh -e
+  bunzip2 %n-5.3-20031004-patch.sh.bz2
+  chmod +x %n-5.3-20031004-patch.sh
+  ./%n-5.3-20031004-patch.sh
+  echo "***********************************************************************"
+  patch -p1 < %a/%n.patch
+  perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
+  echo "***********************************************************************"
+<<
 Essential: yes
 Depends: %N-shlibs (= %v-%r)
-BuildDepends: fink (>= 0.13.0), fink-prebinding
-ConfigureParams: --with-libtool --without-ada --with-shared --without-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo"
+BuildDepends: fink (>= 0.13.0)
+ConfigureParams: --without-ada --without-debug --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs
 NoSetCFLAGS: true
 NoSetLDFLAGS: true
-SetCFLAGS: -Wno-deprecated -isystem %p/include/ncurses
-NoSetCPPFLAGS: true
-SetCPPFLAGS: -no-cpp-precomp
+SetLDFLAGS: -Wl,-search_paths_first
+#NoSetCPPFLAGS: true
+#SetCPPFLAGS: -no-cpp-precomp
 CompileScript: <<
-  LIBTOOL=/usr/bin/glibtool ./configure %c
+  #!/bin/sh -e
+  ./configure %c
   make
 <<
-
 InstallScript: <<
+#!/bin/sh -e
   make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib
   mkdir -p %i/share/doc/%n
   cp tack/README %i/share/doc/%n/README.tack
@@ -32,7 +45,6 @@ ln -s %p/lib/libncurses.5.dylib %i/lib/libncurses.dylib.5
 ln -s %p/lib/libpanel.5.dylib %i/lib/libpanel.dylib.5
 
 <<
-DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
 SplitOff: <<
  Package: %N-shlibs
  Replaces: %N (<= 5.3-1)
@@ -41,7 +53,6 @@ SplitOff: <<
  Files: <<
   lib/libform.*.dylib
   lib/libmenu.*.dylib
-  lib/libncurses++.*.dylib
   lib/libncurses.*.dylib
   lib/libpanel.*.dylib
   lib/libform.dylib.5
@@ -50,17 +61,15 @@ SplitOff: <<
   lib/libpanel.dylib.5
  <<
  Shlibs: <<
-  %p/lib/libform.5.dylib 6.0.0 %n (>= 5.3-12)
-  %p/lib/libmenu.5.dylib 6.0.0 %n (>= 5.3-12)
-  %p/lib/libncurses++.5.dylib 6.0.0 %n (>= 5.3-12)
-  %p/lib/libncurses.5.dylib 6.0.0 %n (>= 5.3-12)
-  %p/lib/libpanel.5.dylib 6.0.0 %n (>= 5.3-12)
-  %p/lib/libform.dylib.5 6.0.0 %n (>= 5.3-12)
-  %p/lib/libmenu.dylib.5 6.0.0 %n (>= 5.3-12)
-  %p/lib/libncurses.dylib.5 6.0.0 %n (>= 5.3-12)
-  %p/lib/libpanel.dylib.5 6.0.0 %n (>= 5.3-12)
+  %p/lib/libform.5.dylib 5.0.0 %n (>= 5.3-20030308-1)
+  %p/lib/libmenu.5.dylib 5.0.0 %n (>= 5.3-20030308-1)
+  %p/lib/libncurses.5.dylib 5.0.0 %n (>= 5.3-20030308-1)
+  %p/lib/libpanel.5.dylib 5.0.0 %n (>= 5.3-20030308-1)
+  %p/lib/libform.dylib.5 5.0.0 %n (>= 5.3-20030308-1)
+  %p/lib/libmenu.dylib.5 5.0.0 %n (>= 5.3-20030308-1)
+  %p/lib/libncurses.dylib.5 5.0.0 %n (>= 5.3-20030308-1)
+  %p/lib/libpanel.dylib.5 5.0.0 %n (>= 5.3-20030308-1)
  <<
- DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
  Description: Shared libraries for ncurses package
 <<
 SplitOff2: <<
@@ -68,15 +77,16 @@ SplitOff2: <<
  Depends: %N-shlibs (= %v-%r)
  Replaces: %N (<= 5.3-1)
  BuildDependsOnly: True
- Files: include lib/libform.dylib lib/libmenu.dylib lib/libncurses++.dylib lib/libncurses.dylib lib/libpanel.dylib lib/*.a lib/*.la
- DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
- Description: Shared libraries for ncurses package
+ Files: include lib/libform.dylib lib/libmenu.dylib lib/libncurses.dylib lib/libpanel.dylib lib/*.a
+ Description: Development files for ncurses package
 <<
+
+DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
 Description: Full-screen ascii drawing library
 DescPort: <<
 The -no-cpp-precomp is strictly needed.
 More changes by Chris Zubrzycki to be more compatable with apple's lib
-Stupid bug in configure enables broken support, which breaks ncurses. I removed it.
+-udates to the (sometimes) monthly releases of ncurses (in patch form)
 <<
 DescPackaging: <<
 First revision by David Ross.
