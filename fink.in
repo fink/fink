@@ -136,15 +136,11 @@ Options:
   -v, --verbose         - causes fink to be more verbose, opposite of --quiet
   -y, --yes             - assume default answer for all interactive questions
   -b, --use-binary-dist - download pre-compiled packages from the binary 
-<<<<<<< fink.in
                           distribution if available
+  --no-use-binary-dist  - don't use pre-compiled packages from the binary 
+                          distribution (opposite of -b)
   --build-as-nobody     - do unpack/patch/compile/install phases as non-root
                           (*only* use for package development/deugging!)
-=======
-                          distribution if available (opposite of -c)
-  -c, --compile-from-source - don't use pre-compiled packages from the binary 
-                          distribution (opposite of -b)
->>>>>>> 1.34.2.1
 
 See the fink(8) manual page for more commands and options.
 Visit http://fink.sourceforge.net/ for further information.

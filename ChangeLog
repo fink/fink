@@ -1,3 +1,8 @@
+2004-12-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.8.in, fink.conf.5.in, fink.in, fink.info.in:  Rename 
+	'--compile-from-source' to '--no-use-binary-dist'
+
 2004-12-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.info.in: Modify "Suggests" for running under perl 5.8.4

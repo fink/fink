@@ -204,7 +204,7 @@ flag has the same effect, but only operates on that single
 invocation.  Passing
 .Cm fink
 the
-.Cm -c
+.Cm --no-use-binary-dist
 flag overrides this, and compiles from source for that single
 .Cm fink
 invocation.
