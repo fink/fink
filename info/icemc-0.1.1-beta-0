@@ -1,0 +1,13 @@
+Package: icemc
+Version: 0.1.1-beta
+Revision: 0
+Source: http://www.mittendorfer.com/gm/information/icemc/iceMC-%v.tar.gz
+Depends: qt
+SourceDirectory: iceMC-%v-%r
+Patch: %f.patch
+CompileScript:  (cd iceMC-%v; make QTDIR=%p/lib/qt2)
+InstallScript: (cd iceMC-%v; mkdir -p %i/bin; cp iceMC %i/bin/icemc)
+CommentPort:
+CommentStow: No issues known.
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
+Homepage: http://www.mittendorfer.com/gm/information/icemc/icemc.html
