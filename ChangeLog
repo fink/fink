@@ -1,3 +1,8 @@
+2002-11-05  Max Horn  <max@quendi.de>
+
+	* bootstrap.pl: Fix a bootstrapping problem that occured if the path leading
+	  to bootstrap.pl contained spaces.
+
 2002-10-20  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.11.0

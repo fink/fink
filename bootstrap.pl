@@ -122,7 +122,7 @@ if ($> != 0) {
 		  "this script. Avaliable methods:");
   $answer = &prompt_selection("Choose a method:",
 			      1, $rootmethods, "sudo", "su", "none");
-  $cmd = "$homebase/bootstrap.pl .$answer";
+  $cmd = "'$homebase/bootstrap.pl' .$answer";
   if ($#ARGV >= 0) {
     $cmd .= " '".join("' '", @ARGV)."'";
   }
