@@ -301,6 +301,19 @@ sub format_oneline {
   return $s;
 }
 
+sub get_shortdescription {
+  my $self = shift;
+  my $limit = shift || 75;
+  my ($desc);
+
+  if ($self->has_param("Description")) {
+    $desc = &format_oneline($self->param("Description"), $limit);
+  } else {
+    $desc = "[Package ".$self->get_name()." version ".$self->get_fullversion()."]";
+  }
+  return $desc;
+}
+
 sub get_description {
   my $self = shift;
   my ($desc, $s);

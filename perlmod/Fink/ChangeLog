@@ -1,3 +1,8 @@
+2001-07-07  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Added method get_shortdescription to get just the
+	one line description.
+
 2001-07-05  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (real_install): Optionally print list of requested
