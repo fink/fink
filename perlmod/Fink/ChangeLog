@@ -1,3 +1,8 @@
+2003-11-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Make the check for package-name in Description:
+	case-insensitive.
+
 2003-11-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Validation.pm: Warn when Files: entries have / at the end (messes
