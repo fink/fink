@@ -1,7 +1,7 @@
 Package: lesstif
 Version: 0.92.6
 Revision: 1
-Source: ftp://ftp.hungry.com/pub/hungry/lesstif/srcdist/lesstif-%v.tar.gz
+Source: ftp://ftp.hungry.com/pub/hungry/lesstif/srcdist/obsolete/lesstif-%v.tar.gz
 SetCFLAGS: -traditional-cpp 
 UpdateConfigGuess: true
 UpdateLibtool: true
