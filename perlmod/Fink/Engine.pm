@@ -23,8 +23,13 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent &count_files &call_queue_clear &call_queue_add);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection &get_term_width);
+use Fink::Services qw(&latest_version &sort_versions
+					  &execute &expand_percent
+					  &file_MD5_checksum &count_files &get_arch
+					  &call_queue_clear &call_queue_add);
+use Fink::CLI qw(&print_breaking
+				 &prompt_boolean &prompt_selection
+				 &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch binary_requested);
@@ -2267,8 +2272,6 @@ EOF
 
 # display the dependencies "from a user's perspective" of a given package
 sub cmd_show_deps {
-	my( $field, $pkglist, $did_print );  # temps used in dep-listing loops
-
 	my @plist = &expand_packages(@_);
 	if ($#plist < 0) {
 		die "no package specified for command 'show-deps'!\n";
