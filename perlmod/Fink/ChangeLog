@@ -1,3 +1,8 @@
+2003-11-09  Max Horn  <max@quendi.de>
+
+	* Validation.pm: Minimal validation of splitoffs. This definitely should be
+	  improved ASAP, though.
+
 2003-11-08  Max Horn  <max@quendi.de>
 
 	* Services.pm: Remove trailing empty lines in heredocs (Bug #670712). Also

@@ -22,7 +22,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &expand_percent &get_arch);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch);
 use Fink::Config qw($config $basepath $buildpath);
 
 use strict;
@@ -177,8 +177,8 @@ END { }				# module clean-up code here (global destructor)
 #		+ warn if /sw is hardcoded in the script or set fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#		- error if format is violated (e.g. bad here-doc)
 #		- if type is bundle/nosource - warn about usage of "Source" etc.
+#       - validate splitoffs!!! Very important
 # ... other things, make suggestions ;)
 #
 sub validate_info_file {
@@ -327,6 +327,26 @@ sub validate_info_file {
 			print "Warning: Field \"$field\" is unknown. ($filename)\n";
 			$looks_good = 0;
 			next;
+		}
+		
+		# Extremly simply splitoff validation: We simply parse the Splitoff fields.
+		# TODO: This is not enough by far. We should validate all fields contained
+		# in the splitoff. Some fields are not allowed inside splitoffs, some are
+		# *only* valid in splitoffs, etc. We should factor out some of the code
+		# in this procedure so it can be used both on the main package, and on
+		# its splitoffs.
+		if ($field =~ m/^splitoff([2-9]|\d\d)?$/) {
+			my $splitoff_properties = $properties->{$field};
+			my $splitoff_field = $field;
+			$splitoff_properties =~ s/^\s+//gm;
+			$splitoff_properties = &read_properties_var($filename, $splitoff_properties);
+			# Required fields for splitoffs: Package, Files
+			foreach $field (qw(package files)) {
+				unless ($splitoff_properties->{lc $field}) {
+					print "Error: Required field \"$field\" missing. ($filename)\n";
+					$looks_good = 0;
+				}
+			}
 		}
 
 	}
