@@ -425,15 +425,15 @@ sub update_db {
   shift;  # class method - ignore first parameter
   my ($tree, $dir);
 
-  eval {
-    require Storable; 
-    if ($> == 0) {
       # read data from descriptions
       print "Reading package info...\n";
       foreach $tree ($config->get_treelist()) {
         $dir = "$basepath/fink/dists/$tree/finkinfo";
         Fink::Package->scan($dir);
       }
+  eval {
+    require Storable; 
+    if ($> == 0) {
       print "Updating package index... ";
       unless (-d "$basepath/var/db") {
         mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
