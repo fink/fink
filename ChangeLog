@@ -1,3 +1,7 @@
+2001-04-14  Christoph Pfisterer  <cp@chrisp.de>
+
+	* README: Updated for release 0.1.8.
+
 2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink: Removed dead code. Automatically add <prefix>/bin and
