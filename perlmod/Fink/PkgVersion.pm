@@ -722,7 +722,7 @@ sub resolve_depends {
 		}
 	}
 	
-	unless (lc($field) eq "conflicts" && $include_build == 2) {
+	unless (lc($field) eq "conflicts" || $include_build == 2) {
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading $oper from ".$self->get_fullname()." ";
 		}
