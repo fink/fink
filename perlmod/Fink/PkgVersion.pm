@@ -511,8 +511,8 @@ sub get_source_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 	        my $source = get_source($self, $index);
-	        push(@list, $source) unless $source eq "none";
+ 		my $source = get_source($self, $index);
+		push(@list, $source) unless $source eq "none";
 	}
 	return @list;
 }
@@ -538,8 +538,8 @@ sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 	        my $tarball = get_tarball($self, $index);
-	        push(@list, $tarball) unless $tarball eq "none";
+ 		my $tarball = get_tarball($self, $index);
+		push(@list, $tarball) unless $tarball eq "none";
 	}
 	return @list;
 }
@@ -646,7 +646,7 @@ sub get_splitoffs {
 	if (exists $self->{parent}) {
 		$parent = $self->{parent};
 	} else {
-	        $parent = $self;
+		$parent = $self;
 	}
 
 	if ($include_parent) {
@@ -1535,7 +1535,7 @@ sub phase_compile {
 				$compile_script .= "make test\n";
 			}
 		} elsif ($self->param("_type") eq "ruby") {
-		    my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
+			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$compile_script =
 				"$rubycmd extconf.rb\n".
 				"make\n";
@@ -2380,7 +2380,7 @@ sub get_ruby_dir_arch {
 	if ($self->has_param("_typeversion_raw")) {
 		$rubyversion = $self->param("_typeversion_raw");
 		$rubydirectory = "/" . $rubyversion;
-	    }
+	}
 	### ruby= needs a full path or you end up with
 	### rubymods trying to run ../ruby$rubyversion
 	my $rubycmd = get_path('ruby'.$rubyversion);
