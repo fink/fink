@@ -1,3 +1,8 @@
+2002-08-11  Max Horn  <max@quendi.de>
+
+	* Services.pm: Fix for bug #545155 (it was possible to cause infinite
+	  recursion during percent expansion).
+
 2002-08-10  Max Horn  <max@quendi.de>
 
 	* SelfUpdate.pm: Only force a second rebuild of the package database, and 

@@ -268,16 +268,21 @@ sub execute_script {
 sub expand_percent {
   my $s = shift;
   my $map = shift;
-  my ($key, $value, $iterate);
+  my ($key, $value, $i);
 
-  do {
-    $iterate = 0;
+  # Values for percent signs expansion may be nested once, to allow
+  # e.g. the definition of %N in terms of %n (used a lot for splitoffs
+  # which do stuff like %N = %n-shlibs). Hence we repeate the expansion
+  # if necessary.
+  for ($i = 0; $i < 2 ; $i++) {
     while (($key, $value) = each %$map) {
-      if ($s =~ s/\%$key/$value/g) {
-	$iterate = 1 if $value =~ /\%/;
-      }
+      $s =~ s/\%$key/$value/g;
     }
-  } while ($iterate);
+    last if not $s =~ /\%/; # Abort early if no percent symbols are left
+  }
+  
+  # If ther are still unexpanded percents left, error out
+  die "Error performing percent expansion: nesting to deep!" if $s =~ /\%/;
 
   return $s;
 }
