@@ -80,8 +80,7 @@ Aliases:
 .Cm update, enable, activate, use
 .It Cm remove Ar package...
 The remove command removes packages from the system.
-The current implementation has some flaws: It only works on
-packages Fink knows about (i.e. where an .info file is present); and it
+The current implementation has a flaw: it
 doesn't check dependencies itself but rather completly leaves that to the
 dpkg or apt-get tool (usually this poses no problem, though).
 .Pp
