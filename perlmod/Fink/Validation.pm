@@ -809,9 +809,9 @@ sub validate_dpkg_file {
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/");
-	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc / );
+	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src / );
 
-	my ($pid, $bad_dir);
+	my ($pid, @found_bad_dir);
 	my $filename;
 	my $looks_good = 1;
 	my $installed_headers = 0;
@@ -842,10 +842,10 @@ sub validate_dpkg_file {
 						$looks_good = 0;
 					}
 				}
-			} elsif ($filename ne "$basepath/src/" and $bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
+			} elsif ($filename ne "$basepath/src/" and @found_bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
 				# Directory from this list are not allowed to exist in the .deb.
 				# The only exception is $basepath/src which may exist but must be empty
-				print "Warning: File installed into deprecated directory $bad_dir\n";
+				print "Warning: File installed into deprecated directory $found_bad_dir[0]\n";
 				print "					Offender is $filename\n";
 				$looks_good = 0;
 			} elsif (not grep { $filename =~ /^$_/ } @good_dirs) {
