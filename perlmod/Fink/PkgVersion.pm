@@ -2282,6 +2282,10 @@ sub get_splitoffs {
 
 	$package = Fink::PkgVersion->match_package($name);
 
+	if ($package->{_type} eq "splitoff") {
+		$package = $package->{parent};
+	}
+
         if ($include_parent) {
 		$pkg = $package->param('package');
 		unless ($name eq $pkg && not $include_self) {

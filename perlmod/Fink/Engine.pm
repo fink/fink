@@ -1553,6 +1553,7 @@ sub expand_packages {
 sub cmd_splits {
 	my ($pkg, $package, @pkgs, $arg);
 
+	print "\n";
 	foreach $arg (@_) {
 		$package = Fink::PkgVersion->match_package($arg);
 		unless (defined $package) {
@@ -1561,15 +1562,20 @@ sub cmd_splits {
 		}
 
 		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
-		print "splitoffs for $pkgs[0] are:\n";
-		if ($pkgs[1]) {
+		printf("%s has ", $pkgs[0]);
+		unless ($pkgs[1]) {
+			printf("no children.\n");
+		} else {
+			printf("%d child", $#pkgs);
+			if ($#pkgs > 1) {
+				print "ren";
+			}
+			print ":\n";
 			foreach $pkg (@pkgs) {
 				unless ($pkg eq $pkgs[0]) {
 					print "\t-> $pkg\n";
 				}
 			}
-		} else {
-			print "\t-> none\n";
 		}
 		print "\n";
 	}
