@@ -1,3 +1,10 @@
+2002-03-16  Max Horn  <max@quendi.de>
+	
+	* PkgVersion.pm (add_splitoff): Removed debug output ("Found a splitoff")
+		
+	* Services.pm (read_properties_lines): Handle nested heredocs correctly,
+	and if errors are encountered, once more output the affected filename.
+
 2002-02-13  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* Engine.pm (do_real_list): Don't read package info first, wait and

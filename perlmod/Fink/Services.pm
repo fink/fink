@@ -102,7 +102,7 @@ sub read_properties {
    open(IN,$file) or die "can't open $file: $!";
    @lines = <IN>;
    close(IN);
-   return read_properties_lines(@lines);
+   return read_properties_lines($file, @lines);
 }
 
 ### read properties from a variable with text
@@ -113,12 +113,13 @@ sub read_properties_var {
    my ($line);
 
    @lines = split /^/m,$var;
-   return read_properties_lines(@lines);
+   return read_properties_lines("", @lines);
 }
 
 ### read properties from a list of lines.
 
 sub read_properties_lines {
+  my ($file) = shift;
   my (@lines) = @_;
   my ($hash, $lastkey, $heredoc);
 
@@ -128,15 +129,13 @@ sub read_properties_lines {
 
   foreach (@lines) {
     chomp;
-    if ($heredoc) {
-      if ($_ eq "<<") {
-	$heredoc = 0;
+    if ($heredoc > 0) {
+      if (/^\s*<<$/) {
+	$heredoc--;
+	$hash->{$lastkey} .= $_."\n" if ($heredoc > 0);
       } else {
 	$hash->{$lastkey} .= $_."\n";
-	if (/<<$/) {
-	  print "WARNING: Possible unterminated here-document.\n";
-#	  print "WARNING: Possible unterminated here-document in \"$file\".\n";
-	}
+	$heredoc++ if (/<<$/);
       }
     } else {
       next if /^\s*\#/;   # skip comments
@@ -154,9 +153,12 @@ sub read_properties_lines {
     }
   }
 
-  if ($heredoc) {
-    print "WARNING: End of file reached during here-document.\n";
-#    print "WARNING: End of file reached during here-document in \"$file\".\n";
+  if ($heredoc > 0) {
+    if ($file) {
+      print "WARNING: End of file reached during here-document in \"$file\".\n";
+    } else {
+      print "WARNING: End of file reached during here-document.\n";
+    }
   }
 
   return $hash;

@@ -238,9 +238,6 @@ sub add_splitoff {
   # expand percents in it, to allow e.g. "%n-shlibs"
   $properties->{'package'} = $pkgname = &expand_percent($pkgname, $self->{_expand});
   
-  # DEBUG remove me!
-  print "Found a splitoff: $pkgname\n"; 
-  
   # copy version information
   $properties->{'version'} = $self->{_version};
   $properties->{'revision'} = $self->{_revision};
