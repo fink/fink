@@ -63,7 +63,7 @@ END { }				# module clean-up code here (global destructor)
 ### self-initialization
 sub initialize {
 	my $self = shift;
-	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type);
+	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type_hash);
 	my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
 	my ($parentpkgname, $parentdestdir);
 	my ($i, $path, @parts, $finkinfo_index, $section);
@@ -76,12 +76,8 @@ sub initialize {
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
 
-	$self->{_type} = $type = lc $self->param_default("Type", "");
-	if ($type =~ s/^\s*(\S+)\s+(\S+)\s*/$1/) {
-		$self->{_typeversion_raw} = $self->{_typeversion_pkg} = $2;
-		$self->{_typeversion_pkg} =~ s/\.//g;
-		$self->{_type} = $type;
-	}
+	# multivalue lists were already cleared
+	$self->{_type_hash} = $type_hash = Fink::PkgVersion->type_hash_from_string($self->param_default("Type", ""));
 
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
@@ -173,15 +169,8 @@ sub initialize {
 				'b' => '.'
 			};
 
-	# only add percent keys for language version if one was given
-	# (so fatal error if attempt to use when not set)
-	if ($self->{_typeversion_raw}) {
-		$expand->{'lV'} = $self->{_typeversion_raw};
-		$expand->{'lv'} = $self->{_typeversion_pkg};
-	}
-	if (exists $self->{'parent'}) {
-		$expand->{'LV'} = $self->{'parent'}->{_typeversion_raw};
-		$expand->{'Lv'} = $self->{'parent'}->{_typeversion_pkg};
+	foreach (keys %$type_hash) {
+		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 	}
 
 	$self->{_expand} = $expand;
@@ -712,14 +701,55 @@ sub get_splitoffs {
 }
 
 # returns whether this fink package is of a given Type:
-# presumes the field is already been parsed into $self->{_type}
+# presumes the field is already been parsed into $self->{_type_hash}
 
 sub is_type {
 	my $self = shift;
 	my $type = shift;
 
-	return 0 unless $self->has_param("_type");
-	$self->param("_type") eq $type;
+	if (defined $self->{_type_hash}->{$type} and length $self->{_type_hash}->{$type}) {
+		return 1;
+	}
+	return 0;
+}
+
+# returns the subtype for a given type, or undef if the type is not
+# known for the package
+
+sub get_subtype {
+	my $self = shift;
+	my $type = shift;
+
+	return $self->{_type_hash}->{$type};
+}
+
+# given a string representing the Type: field (with no multivalue
+# subtype lists), return a ref to a hash of type=>subtype
+
+sub type_hash_from_string {
+	shift;	# class method - ignore first parameter
+	my $string = shift;
+	my $filename = shift;
+
+	my %hash;
+	$string =~ s/\s*$//g;  # detritus from multitype parsing
+	foreach (split /\s*,\s*/, $string) {
+		if (/^(\S+)$/) {
+			# no subtype so use type as subtype
+			$hash{$1} = $1;
+		} elsif (/^(\S+)\s+(\S+)$/) {
+			# have subtype
+			if ($2 eq '""') {
+				# handle special meaning of "" as null string
+				$hash{$1} = '';
+			} else {
+				$hash{$1} = $2;
+			}
+		} else {
+			warn "Bad Type specifier '$_' in $filename\n";
+		}
+	}
+	return \%hash;
 }
 
 ### generate description
@@ -2390,8 +2420,8 @@ sub get_perl_dir_arch {
 #get_system_perl_version();
 	my $perldirectory = "";
 	my $perlarchdir;
-	if ($self->has_param("_typeversion_raw")) {
-		$perlversion = $self->param("_typeversion_raw");
+	if ($self->is_type('perl') and $self->get_subtype('perl') ne 'perl') {
+		$perlversion = $self->get_subtype('perl');
 		$perldirectory = "/" . $perlversion;
 	}
 	### PERL= needs a full path or you end up with
@@ -2416,8 +2446,8 @@ sub get_ruby_dir_arch {
 	my $rubyversion   = "";
 	my $rubydirectory = "";
 	my $rubyarchdir   = "powerpc-darwin";
-	if ($self->has_param("_typeversion_raw")) {
-		$rubyversion = $self->param("_typeversion_raw");
+	if ($self->is_type('ruby') and $self->get_subtype('ruby') ne 'ruby') {
+		$rubyversion = $self->get_subtype('ruby');
 		$rubydirectory = "/" . $rubyversion;
 	}
 	### ruby= needs a full path or you end up with

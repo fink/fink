@@ -139,7 +139,8 @@ entire .info file should be ignored.
 
 sub max_info_level {
 	# 1 is the original level (same as none specified)
-	return 1;
+	# 2 gives percent-expansion in Package: and multiple Type: syntax.
+	return 2;
 }
 
 =back

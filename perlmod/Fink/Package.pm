@@ -506,31 +506,39 @@ sub setup_package_object {
 
 	my %pkg_expand;
 	if (exists $properties->{type}) {
-		if ($properties->{type} =~ s/\((.*)\)//) {
-			# if we were fed multiple language versions in Type,
-			# remove and refeed ourselves with each one in turn
-			my $types = $1;
+		if ($properties->{type} =~ /([a-z0-9+.\-]*)\s*\((.*?)\)/) {
+			# if we were fed a list of subtypes, remove the list and
+			# refeed ourselves with each one in turn
+			my $type = $1;
+			my @subtypes = split ' ', $2;
+			if ($subtypes[0] =~ /^boolean$/i) {
+				# a list of (boolean) has special meaning
+				@subtypes = ('','""');
+			}
 			my @pkgversions;
-			foreach my $this_type (split ' ', $types) {
+			foreach (@subtypes) {
 				# need new copy, not copy of ref to original
 				my $this_properties = {%{$properties}};
-				$this_properties->{type} .= " ".$this_type;
+				$this_properties->{type} =~ s/($type\s*)\(.*?\)/$type $_/;
 				push @pkgversions, Fink::Package->setup_package_object($this_properties, $filename);
 			};
 			return @pkgversions;
 		} else {
-			if ($properties->{type} =~ /^\s*\S+\s+(\S+)\s*$/) {
-				# a single language version in Type
-				( $pkg_expand{'lv'} = $1 ) =~ s/\.//g; # prepare for %lv
+			# we have only single-value subtypes
+#			print "Type: ",$properties->{type},"\n";
+			my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
+			foreach (keys %$type_hash) {
+				( $pkg_expand{"type_pkg[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 			}
 		}
 	}
+#	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
 	if (exists $properties->{parent}) {
-		# get parent's Package and Type info for percent expansion
+		# get parent's Package for percent expansion
 		$pkg_expand{'N'}  = $properties->{parent}->{package};
-		$pkg_expand{'Lv'} = $properties->{parent}->{_typeversion_pkg};
 		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
 	}
+
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
 	# get/create package object
