@@ -547,7 +547,8 @@ sub collapse_space {
 sub get_term_width {
 # This function returns the width of the terminal window, or zero if STDOUT 
 # is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
-# env var if ReadKey is not installed returns 80 if neither are available.
+# env var if ReadKey is not installed, tries tput if neither are available,
+# and if nothing works just returns 80.
   my ($width, $dummy);
   use POSIX qw(isatty);
   if (isatty(fileno STDOUT))
@@ -557,22 +558,25 @@ sub get_term_width {
       ($width, $dummy, $dummy, $dummy) = &GetTerminalSize();             
     }
     else {
-      $width = $ENV{TERMCAP};
-      if ((defined $width and $width !~ /^[0-9]+$/) or (not defined $width)) {
-        $width = $ENV{COLUMNS};
-      }
-      if (defined $width) {
-        $width =~ s/.*co#([0-9]+).*/$1/;
-      }
-      else {
-        $width = 80;
+      $width =~ s/.*co#([0-9]+).*/$1/ if defined ($width = $ENV{TERMCAP});
+      unless (defined $width and $width =~ /^\d+$/) {
+        chomp($width = `tput cols`)    # Only use tput if it won't spout an error.
+        	if -t 1 and defined ($width = $ENV{TERM}) and $width ne "unknown";
+        unless ($? == 0 and defined $width and $width =~ /^\d+$/) {
+          $width = $ENV{COLUMNS};
+          unless (defined $width and $width =~ /^\d+$/) {
+            $width = 80;
+          }
+        }
       }
     }
   }
   else {
+    # Not a TTY
     $width = 0;
   }
   if ($width !~ /^[0-9]+$/) {
+    # Shouldn't get here, but just in case...
     $width = 80;
   }
   return $width;

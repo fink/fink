@@ -1,3 +1,7 @@
+2003-01-14  Max Horn  <max@quendi.de>
+
+	* Services.pm: Added terminal width fix from patch #598402.
+
 2003-01-13  Finlay Dobbie <finlay@users.sourceforge.net>
 
 	* PkgVersion.pm (merge): Added warning to if we try to merge a 
