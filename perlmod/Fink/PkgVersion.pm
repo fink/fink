@@ -794,7 +794,7 @@ sub phase_install {
   chdir "$basepath/src";
   if (not $config->param_boolean("KeepBuildDir") and -e $bdir) {
     if (&execute("rm -rf $bdir")) {
-      &print_breaking("WARNING: Can't remove build directory $dbir. ".
+      &print_breaking("WARNING: Can't remove build directory $bdir. ".
 		      "This is not fatal, but you may want to remove ".
 		      "the directory manually to save disk space. ".
 		      "Continuing with normal procedure.");
