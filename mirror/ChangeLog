@@ -1,4 +1,9 @@
 2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Corrected all entries to have upper case ISO
+		country codes, because the _keys file
+		says so
+
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
 	* Added full mirror in Norway (rsync/distfiles)
 		trd.no.eu.finkmirrors.net
 		Maintainer:
