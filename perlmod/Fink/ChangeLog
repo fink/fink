@@ -239,7 +239,6 @@
 	* PkgVersion.pm: added get_debdeps function to read the deps from a
 	  deb file and return the comma delimited string
 
->>>>>>> 1.305.2.13
 2003-07-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: switch from BSD tar to /bin/pax for the
