@@ -1,3 +1,8 @@
+2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
+
+	* SelfUpdate.pm: Fix a problem with syncing the crypto/ directory,
+	  since it doesn't have subdirectories like main/ does.
+
 2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: When installing into a pre-release darwin 7.x, say

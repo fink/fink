@@ -610,7 +610,7 @@ RSYNCAGAIN:
 			$oldpart = "$oldpart/$line[$i]";
 			$rinclist .= " --include='$oldpart/'";
 		}
-		$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/**/*'";
+		$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/*' --include='$oldpart/finkinfo/**/*'";
 
 		if (! -d "$basepath/fink/$dist/$tree" ) {
 			&execute("/bin/mkdir -p '$basepath/fink/$dist/$tree'")
