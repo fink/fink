@@ -851,7 +851,7 @@ sub validate_dpkg_file {
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/");
-	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src / );
+	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications / );
 
 	my ($pid, @found_bad_dir);
 	my $filename;
