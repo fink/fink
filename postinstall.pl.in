@@ -94,14 +94,11 @@ if (-d "$distdir/CVS") {
 
 ### If the old dists directory has not yet been moved to $basepath/fink/10.1:
 ###  1) move it there, add appropriate symlinks to dists
-###  2) add a line to $basepath/etc/apt/sources.list so that apt finds old
-###     debs
-###  3) re-do the symlinks in /sw/fink/debs to point to the new locations
+###  2) re-do the symlinks in /sw/fink/debs to point to the new locations
+###  3) to enable apt to find these old debs, we need some additions to
+###     $basepath/etc/apt/sources.list which are made in Config.pm
 
-
-my ($aptfile, $basenm) ;
-
-$aptfile = "$basepath/etc/apt/sources.list" ;
+my $basenm;
 
 if (not -l $distdir) {
   print "Needs an update...\n";
@@ -113,35 +110,6 @@ if (not -l $distdir) {
   mkdir "$basepath/fink/old";
   unlink "$basepath/fink/old/dists";
   symlink "$basepath/fink/10.1", "$basepath/fink/old/dists" or die "ERROR: Can't create link from $basepath/fink/10.1 to $basepath/fink/old/dists\n";
-
-
-  ### Now we work on apt ...
-  ###
-  ### First step is to change the URL for the bindist if necessary...
-
-  if (-f $aptfile) {
-    if (&execute("sed 's|fink.sourceforge.net/bindist|us.dl.sourceforge.net/fink/direct_download|g' < $aptfile > $aptfile.old")) {
-      print "ERROR: Can't make substitutions on $aptfile, writing them to $aptfile.old\n";
-      exit 1;
-    }
-    open(SOURCES, ">$aptfile") or die "can't create $aptfile";
-    print SOURCES <<"EOF";
-# Allow APT to find pre-10.2 deb files
-deb file:$basepath/fink/old local main
-deb file:$basepath/fink/old stable main crypto
-#deb file:$basepath/fink/old unstable main crypto
-
-EOF
-    close(SOURCES) or die "can't write $aptfile";
-    if (&execute("/bin/cat $aptfile.old >> $aptfile")) {
-      print "ERROR: Can't concatentate $aptfile and $aptfile.old\n";
-      exit 1;
-    }
-    if (&execute("/bin/rm $aptfile.old")) {
-      print "ERROR: Can't remove $aptfile.old\n";
-      exit 1;
-    }
-  }
 
 
   ### Now see if CVS is present...
@@ -204,7 +172,7 @@ EOF
       print "ERROR: Can't change ownership of $basepath/fink/10.2/CVS to $username\n";
       exit 1;
     }
-  }
+}
 
   ### We create new symlinks in $basepath/fink/debs to point to the existing
   ### debs in the 10.1 tree
@@ -240,56 +208,6 @@ if (not $distribution =~ /10.1/) {
     exit 1;
   }
  
-  ### Now we modify the apt-get config file "sources.list" if needed...
-  ###
-
-  if (-f $aptfile) {
-      open (INPUT, $aptfile) or die "couldn't read $aptfile: $!\n";
-      open (OUTPUT, ">$aptfile.new") or die "couldn't write $aptfile.new: $!\n";
-
-      my $changed = 0;
-      my $unexpected_change = 0;
-      while (<INPUT>) {
-	  if (s,(deb http://us.dl.sourceforge.net/fink/direct_download )(1.*)/,$1$distribution/,) {
-	      $changed++ if ($2 ne $distribution);
-	  } elsif (s,(deb http://us.dl.sourceforge.net/fink/direct_download)(.*)/,$1 $distribution/,){
-	      $unexpected_change++ if ($2 ne " ".$distribution);
-	  }
-	  print OUTPUT;
-      }
-	  close(OUTPUT);
-	  close(INPUT);
-
-      if ($unexpected_change) {
-	  my $unexpectedquestion = &prompt_boolean("\nYour apt/sources.list file has been modified in an unexpected way.  I can perform a partial repair, but I strongly advise you to replace @PREFIX@/etc/apt/sources.list by @PREFIX@/lib/fink/sources.list.fink and then reinstall fink.  Would you like me to perform the partial repair now?",1);
-	      if ($unexpectedquestion) {
-		  if (&execute("mv $aptfile.new $aptfile")){
-		      print "ERROR: Can't move $aptfile.new to $aptfile\n";
-		      exit 1;
-		  }
-	      } else {
-		  if (&execute("rm $aptfile.new")){
-		      print "ERROR: Can't remove $aptfile.new\n";
-		      exit 1;
-		  }
-	      }
-      } elsif ($changed) {
-	      my $updatequestion= &prompt_boolean("\nYour apt/sources.list file needs to be updated".
-" to match your current Fink distribution $distribution.  Would you like".
-						  " to update this file now?",1);
-	      if ($updatequestion) {
-		  if (&execute("/bin/mv $aptfile.new $aptfile")){
-		      print "ERROR: Can't move $aptfile.new to $aptfile\n";
-		      exit 1;
-		  }
-	      } else {
-		  if (&execute("/bin/rm $aptfile.new")){
-		      print "ERROR: Can't remove $aptfile.new\n";
-		      exit 1;
-		  }
-	      }
-	  }
-  }
 }
 
 

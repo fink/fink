@@ -23,6 +23,7 @@
 
 package Fink::Config;
 use Fink::Base;
+use Fink::Command qw(cp);
 use Fink::Services;
 
 
@@ -35,6 +36,7 @@ our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath
                       $distribution
                       get_option set_options verbosity_level
+
                      );
 our $VERSION	 = 1.00;
 
@@ -289,6 +291,195 @@ sub save {
 	rename "$path.tmp", $path;
 
 	$self->{_queue} = [];
+
+	$self->write_sources_list;
+}
+
+=item write_sources_list
+
+  $config->write_sources_list;
+
+Writes an appropriate $basepath/etc/apt/sources.list file, based on
+configuration information.  Called automatically by $config->save.
+
+=cut
+
+sub write_sources_list {
+	my $self = shift;
+	my $basepath = $self->param("Basepath");
+	my $path = "$basepath/etc/apt/sources.list";
+
+# We copy any existing sources.list file to sources.list.finkbak, unless
+# a fink backup already exists.  (So effectively, this is done only once.)
+
+	if ((not -f "$path.finkbak") and (-f "$path")) {
+		cp "$path", "$path.finkbak";
+	}
+
+	open(OUT,">$path.tmp") or die "can't open $path.tmp: $!";
+
+# We separate out the top and bottom lines of the body of sources.list, to
+# allow for local modifications above and below them, respectively.
+
+	my $topline = "# Local modifications should either go above this line, or at the end.";
+	my $bottomline = "# Put local modifications to this file below this line, or at the top.";
+
+# Next, we prepare the body for writing.
+
+	my $body = "$topline\n";
+	$body .= <<EOF;
+#
+# Default APT sources configuration for Fink, written by the fink program
+
+# Local package trees - packages built from source locally
+# NOTE: this is automatically kept in sync with the Trees: line in 
+# $basepath/etc/fink.conf
+# NOTE: run 'fink scanpackages' to update the corresponding Packages.gz files
+EOF
+
+# We write a separate line for each entry in Trees, in order, so that
+# apt-get searches for packages in the same order as fink does.  However,
+# we do combine lines if the distribution is the same in two consecutive
+# ones.
+
+	my $trees = $self->param("Trees");
+	my $prevdist = "";
+	my ($tree, @prevcomp);
+
+	foreach $tree (split(/\s+/, $trees)) {
+		$tree =~ /(\w+)\/(\w+)/;
+		if ($prevdist eq $1) {
+			push @prevcomp, $2;
+		} else {
+			if ($prevdist) {
+				$body .= "deb file:$basepath/fink $prevdist @prevcomp\n";
+			}
+			$prevdist = $1;
+			@prevcomp = ($2);
+		}
+	}
+	if ($prevdist) {
+		$body .= "deb file:$basepath/fink $prevdist @prevcomp\n";
+	}
+
+	$body .= "\n";
+
+# For transition from 10.1 installations, we include pointers to "old"
+# deb files.
+
+	if (-e "$basepath/fink/old/dists") {
+		$body .= <<"EOF";
+# Allow APT to find pre-10.2 deb files
+deb file:$basepath/fink/old local main
+deb file:$basepath/fink/old stable main crypto
+EOF
+
+if (-e "$basepath/fink/old/dists/unstable") {
+	$body .= "deb file:$basepath/fink/old unstable main crypto\n";
+}
+		$body .= "\n";
+	}
+
+# We only include the remote debs if the $basepath is set to /sw.
+
+	if ("$basepath" eq "/sw") {
+
+		my $apt_mirror = "http://us.dl.sourceforge.net/fink/direct_download";
+
+		if ($self->has_param("Mirror-apt")) {
+			$apt_mirror = $self->param("Mirror-apt");
+		}
+
+		my $distribution = $self->param("Distribution");
+
+		$body .= <<EOF;
+# Official binary distribution: download location for packages
+# from the latest release
+EOF
+
+	$body .= "deb $apt_mirror $distribution/release main crypto\n\n";
+		$body .= <<EOF;
+# Official binary distribution: download location for updated
+# packages built between releases
+EOF
+
+	$body .= "deb $apt_mirror $distribution/current main crypto\n\n";
+
+	}
+
+	$body .= "$bottomline\n";
+
+# Now we analyze the existing file, to see which parts we will need to copy.
+
+	my $bodywritten = 0;
+
+# If there is an existing source.list file, we copy the top lines to the
+# new file, until we hit the expected demarcation line. 
+
+	my $topmodification = 1;
+	my $bottommodification = 0;
+
+
+	if (-f "$path") {
+		open(IN,"$path") or die "can't open sources.list: $!";
+		while (<IN>) {
+			chomp;
+			if ($topmodification) {
+				if ($_ eq $topline) {
+					$topmodification = 0;
+
+# We need to watch for the closing demarcation line: if we hit that before the
+# opening demarcation line, then we shouldn't have copied the lines to the
+# output file.  To fix this, we close the output file, discard it, and reopen 
+# the file.
+
+				} elsif ($_ eq $bottomline) {
+					$topmodification = 0;
+					$bottommodification = 1;
+					close(OUT);
+					unlink "path.tmp";
+					open(OUT,">$path.tmp") or die "can't write temporary file: $!";
+				} else {
+					print OUT "$_\n";
+				}
+			} else {
+				if (not $bodywritten) {
+					print OUT $body;
+					$bodywritten = 1;
+				}
+				if ($bottommodification) {
+					print OUT "$_\n";
+				} elsif ($_ eq $bottomline) {
+					$bottommodification =1;
+				}
+			}
+		}
+	
+		close(IN);
+	}
+
+# If we never saw $topline, we should discard the output file and reopen it.
+
+	if ($topmodification) {
+		close(OUT);
+		unlink "path.tmp";
+		open(OUT,">$path.tmp") or die "can't write temporary file: $!";
+	}
+
+
+# If we have failed to write the body (because sources.list didn't exist, or
+# didn't contain the expected lines), write it now.
+
+	if (not $bodywritten) {
+		print OUT $body;
+	}
+
+	close(OUT);
+
+
+	# put the temporary file in place
+	unlink $path;
+	rename "$path.tmp", $path;
 }
 
 =back

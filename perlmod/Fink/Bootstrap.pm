@@ -25,7 +25,7 @@ package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
 use Fink::Services qw(&execute &file_MD5_checksum);
-use Fink::CLI qw(&print_breaking);
+use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Engine;
@@ -40,7 +40,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &get_packageversion &create_tarball &copy_description &inject_package);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &get_packageversion &find_rootmethod &create_tarball &copy_description &inject_package);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -291,6 +291,47 @@ return $packagefiles;
 
 }
 
+sub locate_Fink {
+
+	my $param = shift;
+
+	my ($guessed, $path, $bpath);
+	
+	$guessed = "";
+	
+	if (defined $param) {
+		$bpath = $param;
+	} else {
+		$bpath = undef;
+		if (exists $ENV{PATH}) {
+			foreach $path (split(/:/, $ENV{PATH})) {
+				if (substr($path,-1) eq "/") {
+					$path = substr($path,0,-1);
+				}
+				if (-f "$path/init.sh" and -f "$path/fink") {
+					$path =~ /^(.+)\/[^\/]+$/;
+					$bpath = $1;
+					last;
+				}
+			}
+		}
+		if (not defined $bpath or $bpath eq "") {
+			$bpath = "/sw";
+		}
+		$guessed = " (guessed)";
+	}
+	unless (-f "$bpath/bin/fink" and
+	        -f "$bpath/bin/init.sh" and
+	        -f "$bpath/etc/fink.conf" and
+	        -d "$bpath/fink/dists") {
+		&print_breaking("The directory '$bpath'$guessed does not contain a ".
+						"Fink installation. Please provide the correct path ".
+						"as a parameter to this script.");
+		return (1,"");
+	}
+	return (0,$bpath);
+}
+
 sub get_packageversion {
 
 	my ($packageversion, $packagerevision);
@@ -305,6 +346,18 @@ sub get_packageversion {
 		$packagerevision = "1";
 	}
 	return ($packageversion, $packagerevision);
+}
+
+sub find_rootmethod {
+	# TODO: use setting from config
+	# for now, we just use sudo...
+
+my $bpath = shift;
+	
+	if ($> != 0) {
+		exit &execute("sudo ./inject.pl $bpath");
+	}
+	umask oct("022");
 }
 
 sub create_tarball {
@@ -346,6 +399,8 @@ sub copy_description {
 	my $package = shift;
 	my $packageversion = shift;
 	my $packagerevision = shift;
+
+	my $destination = shift || "local/injected/finkinfo";
 	
 	my ($cmd);
 	
@@ -354,12 +409,23 @@ sub copy_description {
 	if (not -d "$bpath/fink/debs") {
 		$script .= "/bin/mkdir -p -m755 $bpath/fink/debs\n";
 	}
-	if (not -d "$bpath/fink/dists/local/bootstrap/finkinfo") {
-		$script .= "/bin/mkdir -p -m755 $bpath/fink/dists/local/bootstrap/finkinfo\n";
+	if (not -d "$bpath/fink/dists/$destination") {
+		$script .= "/bin/mkdir -p -m755 $bpath/fink/dists/$destination\n";
 	}
+	if (-e "$bpath/fink/dists/$destination/$package.info") {
+#		if (-e "$bpath/fink/dists/$destination/$package.info.bak") {
+#			my $answer = &prompt_boolean("\nWARNING: The file $bpath/fink/dists/$destination/$package.info.bak exists and will be overwritten.  Do you wish to continue?", 1);
+#			if (not $answer) {
+#				die "\nOK, you can re-run ./inject.pl after moving the file.\n\n";
+#			}
+			unlink "$bpath/fink/dists/$destination/$package.info.bak";
+#		}
+#		&print_breaking("\nNOTICE: the previously existing file $bpath/fink/dists/$destination/$package.info has been moved to $bpath/fink/dists/$destination/$package.info.bak .\n\n");
+		&execute("/bin/mv $bpath/fink/dists/$destination/$package.info $bpath/fink/dists/$destination/$package.info.bak");
+		}
 	my $md5 = &file_MD5_checksum("$bpath/src/$package-$packageversion.tar");
-	$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <$package.info.in >$bpath/fink/dists/local/bootstrap/finkinfo/$package-$packageversion.info\n";
-	$script .= "/bin/chmod 644 $bpath/fink/dists/local/bootstrap/finkinfo/*.*\n";
+	$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <$package.info.in >$bpath/fink/dists/$destination/$package.info\n";
+	$script .= "/bin/chmod 644 $bpath/fink/dists/$destination/*.*\n";
 	
 	my $result = 0;
 	
@@ -387,39 +453,10 @@ sub inject_package {
 	### locate Fink installation
 	
 	my $param = shift;
-	
-	my ($guessed, $path, $bpath);
-	
-	$guessed = "";
-	
-	if (defined $param) {
-		$bpath = $param;
-	} else {
-		$bpath = undef;
-		if (exists $ENV{PATH}) {
-			foreach $path (split(/:/, $ENV{PATH})) {
-				if (substr($path,-1) eq "/") {
-					$path = substr($path,0,-1);
-				}
-				if (-f "$path/init.sh" and -f "$path/fink") {
-					$path =~ /^(.+)\/[^\/]+$/;
-					$bpath = $1;
-					last;
-				}
-			}
-		}
-		if (not defined $bpath or $bpath eq "") {
-			$bpath = "/sw";
-		}
-		$guessed = " (guessed)";
-	}
-	unless (-f "$bpath/bin/fink" and
-	        -f "$bpath/bin/init.sh" and
-	        -f "$bpath/etc/fink.conf" and
-	        -d "$bpath/fink/dists") {
-		&print_breaking("The directory '$bpath'$guessed does not contain a ".
-						"Fink installation. Please provide the correct path ".
-						"as a parameter to this script.");
+
+my ($notlocated, $bpath) = &locate_Fink($param); 	
+
+	if ($notlocated) {
 		return 1;
 	}
 	
@@ -433,26 +470,20 @@ sub inject_package {
 							  { Basepath => $bpath });
 	
 	### parse config file for root method
+
+	&find_rootmethod($bpath);
 	
-	# TODO: use setting from config
-	# for now, we just use sudo...
-	
-	if ($> != 0) {
-		exit &execute("sudo ./inject.pl $bpath");
-	}
-	umask oct("022");
-	
-	### check that local/bootstrap is in the Trees list
+	### check that local/injected is in the Trees list
 	
 	my $trees = $config->param("Trees");
 	if ($trees =~ /^\s*$/) {
 		print "Adding a Trees line to fink.conf...\n";
-		$config->set_param("Trees", "local/main stable/main stable/crypto local/bootstrap");
+		$config->set_param("Trees", "local/main stable/main stable/crypto local/injected");
 		$config->save();
 	} else {
-		if (grep({$_ eq "local/bootstrap"} split(/\s+/, $trees)) < 1) {
-			print "Adding local/bootstrap to the Trees line in fink.conf...\n";
-			$config->set_param("Trees", "$trees local/bootstrap");
+		if (grep({$_ eq "local/injected"} split(/\s+/, $trees)) < 1) {
+			print "Adding local/injected to the Trees line in fink.conf...\n";
+			$config->set_param("Trees", "$trees local/injected");
 			$config->save();
 		}
 	}
@@ -491,6 +522,7 @@ sub inject_package {
 	
 	return 0;
 }
+
 
 ### EOF
 1;

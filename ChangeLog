@@ -1,3 +1,18 @@
+2004-07-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* pathsetup.sh.in: Martin Costabel's new version of pathsetup.sh
+	* VERSION: Bumped package manager version to 0.21.0, a new release
+
+2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: avoid unneeded symlink when bootstrapping; improved
+	ability to re-run bootstrap when it didn't get very far the first 
+	time; no longer use the local/bootstrap tree; put perl modules in 
+	the correct place, and don't allow perl 5.6.x with 10.3; install 
+	$basepath/etc/apt/ during bootstrap
+	* postinstall.pl.in: manipulation of sources.list file is now done 
+	in Config.pm, not here
+
 2004-07-27  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Document new --prefix flag to "fink validate".

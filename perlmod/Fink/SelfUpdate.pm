@@ -96,6 +96,9 @@ sub check {
 
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
+		if (-f "$finkdir/dists/stamp-rsync-live") {
+			unlink "$finkdir/dists/stamp-rsync-live";
+		}
 		if (-f "$finkdir/stamp-rsync-live") {
 			unlink "$finkdir/stamp-rsync-live";
 		}
@@ -153,13 +156,17 @@ sub check {
 		if ($distribution eq "10.1") {
 				$currentfink = "LATEST-FINK";
 		}
-	
-		if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
+		my $website = "http://fink.sourceforge.net";
+		if (-f "$basepath/lib/fink/URL/website") {
+			$website = cat "$basepath/lib/fink/URL/website";
+			chomp($website);
+		}
+		if (&fetch_url("$website/$currentfink", $srcdir)) {
 			die "Can't get latest version info\n";
 		}
 		$latest_fink = cat "$srcdir/$currentfink";
 		chomp($latest_fink);
-		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" )
+		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" and ! -f "$finkdir/dists/stamp-cvs-live" and ! -f "$finkdir/dists/stamp-rsync-live")
 		{
 			# check if we need to upgrade
 			if (&version_cmp($latest_fink . '-1', '<=', $installed_version . '-1')) {
@@ -170,7 +177,7 @@ sub check {
 				return;
 			}
 		} else {
-			rm_f "$finkdir/stamp-rsync-live", "$finkdir/stamp-cvs-live";
+			rm_f "$finkdir/stamp-rsync-live", "$finkdir/stamp-cvs-live", "$finkdir/dists/stamp-rsync-live", "$finkdir/dists/stamp-cvs-live";
 			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 		&do_tarball($latest_fink);
@@ -252,11 +259,16 @@ sub setup_direct_cvs {
 	if (Fink::Config::verbosity_level() > 1) {
 		$verbosity = "";
 	}
+	my $cvsrepository = "cvs.sourceforge.net";
+	if (-f "$basepath/lib/fink/URL/cvs-repository") {
+		$cvsrepository = cat "$basepath/lib/fink/URL/cvs-repository";
+		chomp($cvsrepository);
+	}
 	if ($cvsuser eq "anonymous") {
 		&print_breaking("Now logging into the CVS server. When CVS asks you ".
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
-		$cmd = "cvs -d:pserver:anonymous\@cvs.sourceforge.net:/cvsroot/fink login";
+		$cmd = "cvs -d:pserver:anonymous\@$cvsrepository:/cvsroot/fink login";
 		if ($username ne "root") {
 			$cmd = "/usr/bin/su $username -c '$cmd'";
 		}
@@ -264,9 +276,9 @@ sub setup_direct_cvs {
 			die "Logging into the CVS server for anonymous read-only access failed.\n";
 		}
 
-		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@cvs.sourceforge.net:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository:/cvsroot/fink";
 	} else {
-		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@cvs.sourceforge.net:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository:/cvsroot/fink";
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -d fink dists";
@@ -611,7 +623,7 @@ RSYNCAGAIN:
 			mkdir_p "$basepath/fink/$dist/$tree";
 		}
 	}
-	$cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
+	$cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
 		if ($username) {
@@ -637,8 +649,22 @@ RSYNCAGAIN:
 
 	rm_rf "$basepath/fink/$dist/CVS";
 	rm_rf "$basepath/fink/CVS";
-	touch "stamp-rsync-live";
-	rm_f "stamp-cvs-live";
+	touch "$dist/stamp-rsync-live";
+	rm_f "stamp-cvs-live", "$dist/stamp-cvs-live";
+# change the VERSION to reflect rsync
+if (-f "$basepath/fink/$dist/VERSION") {
+	open(IN,"$basepath/fink/$dist/VERSION") or die "can't open VERSION: $!";
+	open(OUT,">$basepath/fink/$dist/VERSION.tmp") or die "can't write VERSION.tmp: $!";
+	while (<IN>) {
+		chomp;
+		$_ =~ s/cvs/rsync/;
+		print OUT "$_\n";
+	}
+	close(IN);
+	unlink "$basepath/fink/$dist/VERSION";
+	rename "$basepath/fink/$dist/VERSION.tmp", "$basepath/fink/$dist/VERSION";
+}
+
 	# cleanup after ourselves and continue with the update.
 	unlink("$descdir/TIMESTAMP");
 	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
