@@ -38,7 +38,9 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
 					  &read_properties_multival &read_properties_multival_var
-					  &execute &execute_script &expand_percent
+					  &execute &execute_script
+					  &execute_nonroot_okay &execute_script_nonroot_okay
+					  &expand_percent
 					  &filename
 					  &version_cmp &latest_version &sort_versions
 					  &parse_fullversion
@@ -479,6 +481,52 @@ sub execute_script {
 		# Script is empty. We pretend successful execution.
 		return 0;
 	}
+}
+
+=item execute_nonroot_okay
+
+    my $retval = execute_nonroot_okay $cmd;
+    my $retval = execute_nonroot_okay $cmd, $quiet;
+
+Wrapper for execute() to run $cmd as user "nobody" if fink was run
+with the --build-as-nobody flag.
+
+=cut
+
+sub execute_nonroot_okay {
+	use integer;    # getpw* returns unsigned int but "nobody" is uid -2
+
+	local $>;
+	if (Fink::Config::get_option("build_as_nobody") == 1) {
+		my $uid = getpwnam('nobody');
+		$> = $uid;
+		die "Couldn't set EUID=nobody\n" if $> != $uid;
+	}
+
+	&execute(@_);
+}
+
+=item execute_script_nonroot_okay {
+
+	my $retval = execute_script_nonroot_okay $script;
+    my $retval = execute_script_nonroot_okay $script, $quiet;
+
+Wrapper for execute_script() to run $script as user "nobody" if fink
+was run with the --build-as-nobody flag.
+
+=cut
+
+sub execute_script_nonroot_okay {
+	use integer;    # getpw* returns unsigned int but "nobody" is uid -2
+
+	local $>;
+	if (Fink::Config::get_option("build_as_nobody") == 1) {
+		my $uid = getpwnam('nobody');
+		$> = $uid;
+		die "Couldn't set EUID=nobody\n" if $> != $uid;
+	}
+
+	&execute_script(@_);
 }
 
 =item expand_percent

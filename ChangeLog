@@ -1,3 +1,7 @@
+2004-11-28  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Add global flag --build-as-nobody
+
 2004-11-21  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.info.in: Make sure *this* fink reindexes after install.

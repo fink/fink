@@ -24,6 +24,7 @@
 package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
+					  &execute_nonroot_okay &execute_script_nonroot_okay
 					  &expand_percent &latest_version
 					  &collapse_space &read_properties_var
 					  &pkglist2lol &lol2pkglist
@@ -38,7 +39,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
-use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk);
+use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname);
 
 use File::Basename qw(&dirname &basename);
 
@@ -1702,6 +1703,10 @@ END
 		$destdir = "$buildpath/$bdir";
 		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
+		if (Fink::Config::get_option("build_as_nobody")) {
+			chowname 'nobody', $destdir or
+				die "can't chown 'nobody' $destdir\n";
+		}
 		return;
 	}
 
@@ -1819,11 +1824,15 @@ END
 		if (! -d $destdir) {
 			mkdir_p $destdir or
 				die "can't create directory $destdir\n";
+			if (Fink::Config::get_option("build_as_nobody")) {
+				chowname 'nobody', $destdir or
+					die "can't chown 'nobody' $destdir\n";
+			}
 		}
 
 		# unpack it
 		chdir $destdir;
-		if (&execute($unpack_cmd)) {
+		if (&execute_nonroot_okay($unpack_cmd)) {
 			$tries++;
 
 			# FIXME: this is not the likely problem now since we already checked MD5
@@ -1908,7 +1917,7 @@ sub phase_patch {
 	}
 
 	### run what we have so far
-	$self->run_script($patch_script, "patching (Update* flags)", 0);
+	$self->run_script($patch_script, "patching (Update* flags)", 0, 1);
 	$patch_script = "";
 
 	### patches specified by filename
@@ -1917,10 +1926,10 @@ sub phase_patch {
 			$patch_script .= "patch -p1 <\%a/$patch\n";
 		}
 	}
-	$self->run_script($patch_script, "patching (patchfiles)", 0);
+	$self->run_script($patch_script, "patching (patchfiles)", 0, 1);
 
 	### Deal with PatchScript field
-	$self->run_script($self->get_script("PatchScript"), "patching", 1);
+	$self->run_script($self->get_script("PatchScript"), "patching", 1, 1);
 }
 
 ### compile
@@ -1952,7 +1961,7 @@ sub phase_compile {
 	}
 
 	### construct CompileScript and execute it
-	$self->run_script($self->get_script("CompileScript"), "compiling", 1);
+	$self->run_script($self->get_script("CompileScript"), "compiling", 1, 1);
 }
 
 ### install
@@ -1992,11 +2001,14 @@ sub phase_install {
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 	}
+	if (Fink::Config::get_option("build_as_nobody")) {
+		$install_script .= "/usr/sbin/chown -R nobody \%d\n";
+	}
 	# Run the script part we have so far
-	$self->run_script($install_script, "installing", 0);
+	$self->run_script($install_script, "installing", 0, 0);
 	$install_script = ""; # reset it
 	# Now run the actual InstallScript
-	$self->run_script($self->get_script("InstallScript"), "installing", 1);
+	$self->run_script($self->get_script("InstallScript"), "installing", 1, 1);
 	if (!$self->is_type('bundle')) {
 		# Handle remaining fields that affect installation
 		if ($self->param_boolean("UpdatePOD")) {
@@ -2131,7 +2143,7 @@ sub phase_install {
 
 	### install
 
-	$self->run_script($install_script, "installing", 0);
+	$self->run_script($install_script, "installing", 0, 1);
 
 	### splitoffs
 	
@@ -2185,6 +2197,12 @@ sub phase_build {
 	if (not -d "$destdir/DEBIAN") {
 		mkdir_p "$destdir/DEBIAN" or
 			die "can't create directory for control files for package ".$self->get_fullname()."\n";
+	}
+
+	# switch everything back to root ownership if we were --build-as-nobody
+	if (Fink::Config::get_option("build_as_nobody")) {
+		print "Reverting ownership of install dir to root\n";
+		&execute("chown -R root '$destdir'") or die "\n";
 	}
 
 	# generate dpkg "control" file
@@ -3064,6 +3082,7 @@ sub run_script {
 	my $script = shift;
 	my $phase = shift;
 	my $no_expand = shift || 0;
+	my $nonroot_okay = shift || 0;
 	my ($script_env, %env_bak);
 
 	# Expand percent shortcuts
@@ -3073,7 +3092,11 @@ sub run_script {
 	$script_env = $self->get_env();# fetch script environment
 	%env_bak = %ENV;        # backup existing environment
 	%ENV = %$script_env;    # run under modified environment
-	if (&execute_script($script)) {
+
+	my $result = $nonroot_okay
+		? &execute_script_nonroot_okay($script)
+		: &execute_script($script);
+	if ($result) {
 		my $error = $phase." ".$self->get_fullname()." failed\n";
 		if ($self->has_param('maintainer')) {
 			$error .= "\nBefore reporting any errors, please run \"fink selfupdate\" and\n" .
