@@ -1,3 +1,7 @@
+2004-04-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Implemented 'fink dumpinfo'
+
 2004-03-30  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: Recognize darwin 7.3.0.

@@ -23,7 +23,7 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&latest_version &execute &file_MD5_checksum &get_arch);
+use Fink::Services qw(&latest_version &execute &file_MD5_checksum &get_arch &expand_percent);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -92,6 +92,7 @@ our %commands =
 	  'splitoffs' => [\&cmd_splitoffs, 1, 0],
 	  'splits' => [\&cmd_splitoffs, 1, 0],
 	  'showparent' => [\&cmd_showparent, 1, 0],
+	  'dumpinfo' => [\&cmd_dumpinfo, 1, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -1624,6 +1625,52 @@ sub cmd_showparent {
 			printf("%s's parent is %s.\n", $arg, $pkgs[0]->get_name());
 		} else {
 			printf("%s is the parent.\n", $arg);
+		}
+	}
+}
+
+
+### display a pkg's package description (parsed .info file)
+sub cmd_dumpinfo {
+	my @packagelist = @_;
+
+	my $field;
+
+	foreach my $package (@packagelist) {
+		print "\n";
+
+		my $pkg = Fink::PkgVersion->match_package($package);
+		unless (defined $pkg) {
+			print "no package found for specification '$package'!\n";
+			next;
+		}
+
+		printf "%s: %s\n", 'file', $pkg->get_info_filename();
+		print "\n";
+		printf "%s: %s\n", 'Package', $pkg->get_name();
+		printf "%s: %s\n", 'Version', $pkg->get_version();
+		printf "%s: %s\n", 'Revision', $pkg->get_revision();
+		print "\n";
+		print "Sources (SourceRename applied):\n";
+		foreach $field ( $pkg->get_source_suffices() ) {
+			printf "\tSource%s: %s\n", $field, $pkg->get_tarball($field);
+		}
+		print "\n";
+		foreach my $field (qw/ Depends BuildDepends Provides Conflicts Replaces BuildConflicts /) {
+			printf "%s: %s\n", $field, $pkg->pkglist_default($field);
+		}
+		print "\n";
+		printf "Patch files:\n";
+		if ($pkg->has_param("Patch")) {
+			foreach my $patchfile (split(/\s+/,$pkg->param("Patch"))) {
+				printf "\t%s\n", &expand_percent("\%a/$patchfile", $pkg->{_expand}, $pkg->get_info_filename." Patch");
+			}
+		}
+		foreach $field (qw/ Patch Compile Install PreInst PostInst PreRm PostRm /) {
+			printf "\n%sScript:\n", $field;
+			if ($pkg->has_param($field.'Script')) {
+				print $pkg->param_expanded($field.'Script'),"\n";
+			}
 		}
 	}
 }
