@@ -73,8 +73,8 @@ sub initialize {
 	$self->{_type} = $type = lc $self->param_default("Type", "");
 	# split off perl version number, when given with the type
 	if ($type =~ s/^perl\s+([0-9]+\.[0-9]+\.[0-9]+)/perl/) {
-	    $self->{_perlversion} = $1;
-	    $self->{_type} = $type;
+		$self->{_perlversion} = $1;
+		$self->{_type} = $type;
 	}
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
@@ -1252,13 +1252,13 @@ sub phase_compile {
 	if ($self->has_param("CompileScript")) {
 		$compile_script = $self->param("CompileScript");
 	} elsif ($self->param("_type") eq "perl") {
-        # grab perl version, if present
-	    my $perlversion = "";
-	    my $perldirectory = "";
-	    if ($self->has_param("_perlversion")) {
-		$perlversion = $self->param("_perlversion");
-		$perldirectory = "/" . $perlversion;
-	    }
+		# grab perl version, if present
+		my $perlversion = "";
+		my $perldirectory = "";
+		if ($self->has_param("_perlversion")) {
+			$perlversion = $self->param("_perlversion");
+			$perldirectory = "/" . $perlversion;
+		}
 		$compile_script =
 			"perl$perlversion Makefile.PL PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3\n".
 			"make\n".
@@ -1322,11 +1322,11 @@ sub phase_install {
 			# Now run the custom install script
 			$self->run_script($self->param("InstallScript"), "installing");
 		} elsif ($self->param("_type") eq "perl") {
-        # grab perl version, if present
-	    my $perldirectory = "";
-	    if ($self->has_param("_perlversion")) {
-		$perldirectory = "/" . $self->param("_perlversion");
-	    }
+			# grab perl version, if present
+			my $perldirectory = "";
+			if ($self->has_param("_perlversion")) {
+				$perldirectory = "/" . $self->param("_perlversion");
+			}
 			$install_script .= 
 				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
 		} elsif (not $do_splitoff) {
@@ -1334,11 +1334,11 @@ sub phase_install {
 		} 
 
 		if ($self->param_boolean("UpdatePOD")) { 
-        # grab perl version, if present
-	    my $perldirectory = "";
-	    if ($self->has_param("_perlversion")) {
-		$perldirectory = "/" . $self->param("_perlversion");
-	    }
+			# grab perl version, if present
+			my $perldirectory = "";
+			if ($self->has_param("_perlversion")) {
+				$perldirectory = "/" . $self->param("_perlversion");
+			}
 			$install_script .= 
 				"mkdir -p \%i/share/podfiles$perldirectory\n".
 				"cat \%i/lib/perl5$perldirectory/darwin/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod\n".
@@ -1555,11 +1555,11 @@ EOF
 
 		# add UpdatePOD Code
 		if ($self->param_boolean("UpdatePOD")) {
-        # grab perl version, if present
-	    my $perldirectory ="";
-	    if ($self->has_param("_perlversion")) {
-		$perldirectory = "/" . $self->param("_perlversion");
-	    }
+			# grab perl version, if present
+			my $perldirectory ="";
+			if ($self->has_param("_perlversion")) {
+				$perldirectory = "/" . $self->param("_perlversion");
+			}
 			if ($scriptname eq "postinst") {
 				$scriptbody .=
 					"\n\n# Updating \%p/lib/perl5/darwin$perldirectory/perllocal.pod\n".
