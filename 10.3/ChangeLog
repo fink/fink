@@ -1,3 +1,7 @@
+2003-07-29  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* downgraded ncurses to current 10.2
+
 2003-07-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* updated libiconv to fix certain issues (temp fix)
