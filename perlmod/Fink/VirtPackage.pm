@@ -224,6 +224,16 @@ sub initialize {
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
 	}
+	
+	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
+	   $hash = {};
+	   $hash->{package} = "gimp-print-shlibs";
+	   $hash->{status} = "install ok installed";
+	   $hash->{version} = "4.2.5-1";
+	   $hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
+       $self->{$hash->{package}} = $hash;
+	}
+	
 	if ( has_lib('libX11.6.dylib') )
 	{
 		# check the status of xfree86 packages
