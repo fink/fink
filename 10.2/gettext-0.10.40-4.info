@@ -1,10 +1,11 @@
 Package: gettext
 Version: 0.10.40
-Revision: 3
+Revision: 4
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: yes
 Depends: base-files, libiconv
+#BuildDepends: libiconv-dev
 Patch: %f.patch
 SetCPPFLAGS: -no-cpp-precomp
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
