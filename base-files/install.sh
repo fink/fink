@@ -37,6 +37,7 @@ chmod 755 $basepath
 for dir in etc etc/profile.d bin sbin lib libexec include \
 	   share share/info share/man share/doc \
 	   info man \
+	   lib/perl5 lib/perl5/darwin lib/perl5/auto lib/perl5/darwin/auto \
 	   var var/run var/spool src ; do
   mkdir $basepath/$dir
   chmod 755 $basepath/$dir

@@ -39,6 +39,13 @@ fi
 INFOPATH=BASEPATH/share/info:BASEPATH/info:$INFOPATH
 export INFOPATH
 
+if [ -z "$PERL5LIB" ]; then
+  PERL5LIB=BASEPATH/lib/perl5
+else
+  PERL5LIB=BASEPATH/lib/perl5:$PERL5LIB
+fi
+export PERL5LIB
+
 # setting this is not neccessary and results in performance degradation
 #if [ -z "$DYLD_LIBRARY_PATH" ]; then
 #  DYLD_LIBRARY_PATH=BASEPATH/lib
