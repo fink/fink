@@ -1,3 +1,8 @@
+2004-10-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Add the broken-gcc package, currently detects
+	XCode 1.5 build 1666.
+
 2004-10-14  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* Engine.pm: Introduce new column in the commands matrix indicating if
