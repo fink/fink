@@ -43,7 +43,8 @@ for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   lib/fink/update etc etc/dpkg \
 	   share share/doc share/doc/fink share/man \
 	   share/man/man8 share/man/man5 \
-		share/fink share/fink/images; do
+		share/fink share/fink/images \
+		var var/lib var/run var/lib/fink var/run/fink; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done

@@ -1,3 +1,8 @@
+2005-03-07  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm, Package.pm, Selfupdate.pm: Moved db files to
+	%p/var/lib/fink
+
 2005-03-07  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: remove app link in /Applications/Fink if it

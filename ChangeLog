@@ -1,3 +1,10 @@
+2005-03-07  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* install.sh, fink.info.in: removing old dbs for new location, adding
+	%p/var/lib/fink and %p/var/run/fink, for new db location and
+	new buildlock pid files.
+	* fink.8.in, fink.conf.5.in: update new location
+
 2005-03-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* README.buildsystem: minor revision to buildsystem

@@ -117,7 +117,7 @@ values are:
 The default value is 1. 
 .It Cm NoAutoIndex: Ar boolean 
 Fink caches its package descripition files in 
-.Pa @PREFIX@/var/db/fink.db
+.Pa @PREFIX@/var/lib/fink/fink.db
 to save it having to read 
 and parse them all every time it runs. Fink checks whether or not the package 
 index needs to be updated unless this option is set to "True". It defaults to 

@@ -490,13 +490,13 @@ sub do_finish {
 	Fink::Shlibs->forget_packages();
 
 	# delete the old package DB
-	if (-e "$basepath/var/db/fink.db") {
-		unlink "$basepath/var/db/fink.db";
+	if (-e "$basepath/var/lib/fink/fink.db") {
+		unlink "$basepath/var/lib/fink/fink.db";
 	}
 
 	# delete the old shlibs DB
-	if (-e "$basepath/var/db/shlibs.db") {
-		unlink "$basepath/var/db/shlibs.db";
+	if (-e "$basepath/var/lib/fink/shlibs.db") {
+		unlink "$basepath/var/lib/fink/shlibs.db";
 	}
 
 	# ...and then read it back in

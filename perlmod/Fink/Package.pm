@@ -398,7 +398,7 @@ sub scan_all {
 	my ($time) = time;
 	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
 
-	my $dbfile = "$basepath/var/db/fink.db";
+	my $dbfile = "$basepath/var/lib/fink/fink.db";
 	my $conffile = "$basepath/etc/fink.conf";
 
 	Fink::Package->forget_packages();
@@ -489,7 +489,7 @@ sub search_comparedb {
 	$path .= "/";  # forces find to follow the symlink
 
 	# Using find is much faster than doing it in Perl
-	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db |"
+	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/lib/fink/fink.db |"
 		or die "/usr/bin/find failed: $!\n";
 
 	# If there is anything on find's STDOUT, we know at least one
@@ -507,7 +507,7 @@ sub update_db {
 	shift;	# class method - ignore first parameter
 	my ($tree, $dir);
 
-	my $dbdir = "$basepath/var/db";
+	my $dbdir = "$basepath/var/lib/fink";
 	my $dbfile = "$dbdir/fink.db";
 	my $lockfile = "$dbdir/fink.db.lock";
 

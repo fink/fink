@@ -469,7 +469,7 @@ sub scan_all {
 	my ($time) = time;
 	my ($shlibname);
 
-	my $dbfile = "$basepath/var/db/shlibs.db";
+	my $dbfile = "$basepath/var/lib/fink/shlibs.db";
 	my $conffile = "$basepath/etc/fink.conf";
 
 	$self->forget_packages();
@@ -524,7 +524,7 @@ sub scan_all {
 sub search_comparedb {
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
-	my $dbfile = "$basepath/var/db/shlibs.db";
+	my $dbfile = "$basepath/var/lib/fink/shlibs.db";
 
 	# Using find is much faster than doing it in Perl
 	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.shlibs' -newer $dbfile |"
@@ -544,7 +544,7 @@ sub update_shlib_db {
 	my $self = shift;
 	my ($dir);
 
-	my $dbdir = "$basepath/var/db";
+	my $dbdir = "$basepath/var/lib/fink";
 	my $dbfile = "$dbdir/shlibs.db";
 	my $lockfile = "$dbdir/shlibs.db.lock";
 
