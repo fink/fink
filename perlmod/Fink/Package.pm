@@ -387,7 +387,7 @@ sub scan_all {
 	$have_packages = 1;
 
 	print "Information about ".($#package_list+1)." packages read in ",
-		(time - $time), " seconds.\n\n";
+		(time - $time), " seconds.\n";
 }
 
 ### scan for info files and compare to $db_mtime

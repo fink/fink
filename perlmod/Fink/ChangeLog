@@ -1,3 +1,8 @@
+2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* ChangeLog, Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm, 
+	SelfUpdate.pm, Shlibs.pm: merge in the "shlibs" branch from July
+	
 2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: make the gcc_select error a bit more user
@@ -173,15 +178,44 @@
 	* Bootstrap.pm: Move the code which enables the 10.3 distribution to
 	a new branch, "test_10_3"
 	
+2003-07-29  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: added second option to resolve_depends call to specify
+	  the operation
+	* PkgVersion.pm: enabled the second option checking in resolve_depends
+	  to force dep reading from the info if rebuild is the operation
+
+2003-07-17  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* shlibs.pm: removed my debug line, left RangerRick's for now
+	* shlibs.pm: added more space filtering in the inject_shlibs sub
+	* PkgVersion.pm: added verbosity level for output in 'resolve_depends'
+
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Don't print the output of linking the
 	-single_module test we only care about pass/fail.
 
+2003-07-16  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: added verbosity level for output for 'fink depends'
+
+2003-07-15  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Adding 'fink depends' to give a list of expanded depends
+	  good for maintainers since it'sll expand ${SHLIB_DEPS} if the pkg
+	  is built.
+
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm, SelfUpdate.pm: Add bzip2-dev, gettext-dev, 
 	libiconv-dev, ncurses-dev to the bootstrap and update lists
+
+2003-07-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Shlibs.pm: Evil, scary voodoo to remove duplicates in dependency
+	  specifications.  I tried to document the heck out of it, but it's
+	  still pretty freakish.  Handle with care.  :)
 
 2003-07-14  Max Horn  <max@quendi.de>
 
@@ -189,6 +223,23 @@
 	before invoking them. This is necessary for the PDB, which runs on a
 	non-darwin system currently, but also for any system which has no compiler.
 
+2003-07-11  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Added new file to deal with all the shlibs functions
+	* Bootstrap.pm: Added call to require_shlibs
+	* Selfupdate.pm Added call to forget_shlibs and require_shlibs (in case
+	  we use selfupdate to populate override.shlibs)
+	* Engine.pm: added forget, and require for shlibs to enable auto index
+	* Package.pm: removed a \n to clean up the output since the shlibs
+	  index code is always called after the pkg index code
+	* PkgVersion.pm: adding ${SHLIB_DEPS} replace code, had to ignore
+	  ${SHLIB_DEPS} in resolve_depends
+	* PkgVersion.pm: added check in resolve_depends for deb file, if deb
+	  file call get_debdeps
+	* PkgVersion.pm: added get_debdeps function to read the deps from a
+	  deb file and return the comma delimited string
+
+>>>>>>> 1.305.2.13
 2003-07-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: switch from BSD tar to /bin/pax for the

@@ -687,6 +687,7 @@ sub find_debfile {
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
+        my $op = shift || 0;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
@@ -699,14 +700,26 @@ sub resolve_depends {
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list. In 
 	if ($include_build and $self->{_type} eq "splitoff") {
-		push @deplist, ($self->{parent})->resolve_depends(2);
+		push @deplist, ($self->{parent})->resolve_depends(2, $op);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
 		}
 	}
 	
-	@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+        ### Add rebuild check here.
+	if ($self->find_debfile() && $op != 2) {
+		if (Fink::Config::verbosity_level() > 2) {
+			print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+		}
+		@speclist = split(/\s*\,\s*/, $self->get_debdeps());
+	} else {
+                if (Fink::Config::verbosity_level() > 2) {
+			print "Reading dependencies from ".$self->get_fullname()." info file...\n";
+		}
+
+		@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+	}
 	if ($include_build) {
 		push @speclist,
 			split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
@@ -717,12 +730,21 @@ sub resolve_depends {
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
 		foreach	 $splitoff (@{$self->{_splitoffs}}) {
-			push @speclist,
-				split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+			if ($splitoff->find_debfile() && $op != 2) {
+				if (Fink::Config::verbosity_level() > 2) {
+					print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+				}
+				push @speclist,
+					split(/\s*\,\s*/, $splitoff->get_debdeps());
+			} else {
+				push @speclist,
+					split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+			}
 		}
 	}
 
 	SPECLOOP: foreach $altspec (@speclist) {
+		next if ($altspec eq '${SHLIB_DEPS}');
 		$altlist = [];
 		foreach $depspec (split(/\s*\|\s*/, $altspec)) {
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
@@ -1594,8 +1616,42 @@ EOF
 	if ($self->param_boolean("Essential")) {
 		$control .= "Essential: yes\n";
 	}
+
+	eval {
+		require File::Find;
+		import File::Find;
+	};
+
+	### Add ${SHLIB_DEPS} replace code here
+	### 1) check for ${SHLIB_DEPS} else continue
+	my $depline = $self->get_binary_depends();
+
+	if ($depline =~ /\$\{SHLIB_DEPS\}/) {
+		print "Writing shared library dependencies...\n";
+
+		### 2) get a list to replace it with
+		my $shlibstr = "";
+		my @filelist = ();
+		my $wanted = sub {
+			if (-f) {
+				push @filelist, $File::Find::fullname;
+			}
+		};
+		find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $destdir);
+
+		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
+
+		### 3) replace it in the debian control file
+		if ($depline =~ /\$\{SHLIB_DEPS\}, / &&
+		    length($shlibstr) <= 0) {
+			$depline =~ s/\$\{SHLIB_DEPS\}, //;
+		} else {
+			$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
+		}
+	}
+
 	# FIXME: make sure there are no linebreaks in the following fields
-	$control .= "Depends: ".$self->get_binary_depends()."\n";
+	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
 										 Recommends Suggests Enhances
 										 Maintainer)) {
@@ -1620,10 +1676,6 @@ EOF
 	our %prebound_files = ();
 	if ($config->param("Distribution") ge "10.2-gcc3.3") {
 
-	eval {
-		require File::Find;
-		import File::Find;
-	};
 	print "Finding prebound objects...\n";
 	my ($is_prebound, $is_exe, $name);
 	find({ wanted => sub {
@@ -2062,6 +2114,25 @@ sub run_script {
 	
 	# Restore the environment
 	%ENV = %env_bak;
+}
+
+sub get_debdeps {
+	my $wantedpkg = shift;
+	my $deps = "";
+
+	### get deb file
+	my $deb = $wantedpkg->find_debfile();
+
+	open (DPKGINFO, "dpkg -I $deb |") or die "Can't get deb info: $!\n";
+		while (<DPKGINFO>) {
+			chomp($_);
+			if ($_ =~ /^ +Depends: +(.*)$/) {
+				$deps = $1;
+			}
+		}
+	close (DPKGINFO);
+	
+	return $deps;
 }
 
 ### EOF
