@@ -1,11 +1,10 @@
 Package: base-files
-Version: 1.9.4
+Version: 1.9.5
 Revision: 1
 AddShlibDeps: true
 Source: mirror:custom:fink/%n-%v.tar.gz
-
 Essential: yes
-Source-MD5: 59b02defa72ea5c3c1fcabaf945b2990
+Source-MD5: cda64cdfdcb78af875e9ad48cc14fd73
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 #
