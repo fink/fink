@@ -3,8 +3,18 @@
 use strict;
 
 BEGIN {
-    eval qq{ require Test::More };
-    $@ && print STDERR "\n\n$@\nDo you need to install the test-simple-pm package or perl >= v5.8.0?\n\n";
+    unless( eval { require Test::More } ) {
+        print "Bail out!  Can't find Test::More\n";
+        print STDERR <<ERROR;
+
+$@
+
+Do you need to install the test-simple-pm package or perl >= v5.8.0?
+
+ERROR
+
+        exit;
+    }
 }
 
 use Test::More 'no_plan';
