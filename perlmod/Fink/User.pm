@@ -23,10 +23,10 @@
 
 package Fink::User;
 
-use Fink::Config qw($config $basepath $debarch);
-use Fink::Services qw(&execute &print_breaking &prompt &prompt_boolean);
+use Fink::Config qw($basepath);
+use Fink::Command qw(&chowname);
+
 use File::Find;
-use Fcntl ':mode'; # for search_comparedb
 
 use strict;
 use warnings;
@@ -98,8 +98,9 @@ sub get_perms {
 		### Remove $basepath/src/root-...
 		$file =~ s/^$rootdir//g;
 
-		### DEBUG
-		print "Processing \%i$file...UID: $uid ($usr), GID: $gid ($grp)\n";
+		if (Fink::Config::get_option("maintainermode")) {
+			print "Processing \%i$file...UID: $uid ($usr), GID: $gid ($grp)\n";
+		}
 	  
 		push(@files, $file);
 		push(@users, $usr);
@@ -310,7 +311,7 @@ sub get_chown {
 	return $script;
 }
 
-### Set everything to root:wheel before packaging to keep all debs the same
+### Set everything to root:admin before packaging to keep all debs the same
 sub set_perms {
 	my $self = shift;
 	my $rootdir = shift;
@@ -318,11 +319,9 @@ sub set_perms {
 	
 	my ($file);
 	my @files = split(/:/, $files);
-	
+
 	foreach $file (@files) {
-		if (&execute("/usr/sbin/chown root:wheel \"$rootdir$file\"")) {
-			die "Couldn't change ownership of $file!\n";
-		}
+		chowname "root:admin", $rootdir.$file or die "Couldn't change ownership of $rootdir"."$file!\n";
 	}
 
 	return 0;

@@ -1,6 +1,8 @@
 2005-02-25  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Validation.pm: added user and group to valid fields
+	* User.pm: fixed command references and changed to use new functions
+	from Fink::Command
 
 2005-02-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
