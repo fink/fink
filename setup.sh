@@ -29,7 +29,13 @@ fi
 basepath=$1
 version=`cat VERSION`
 
+echo "Creating fink..."
+sed "s|@PREFIX@|$basepath|g" <fink.in >fink
+
 echo "Creating man page..."
 sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8
+
+echo "Creating FinkVersion.pm..."
+sed "s|@VERSION@|$version|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
 
 exit 0

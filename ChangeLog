@@ -1,5 +1,12 @@
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
+	* fink.in: fink is now generated from fink.in to hardcode paths
+	(instead of using FindBin).
+	* fink: Removed.
+	* setup.sh: Generate fink from fink.in. Generate FinkVersion.pm
+	(previously done independently in inject.pl, bootstrap.pl and
+	mkrelease.sh).
+
 	* install.sh: Updated usage message. Switched from cp/chmod to
 	install.
 
