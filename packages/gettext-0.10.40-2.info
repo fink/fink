@@ -1,9 +1,9 @@
 Package: gettext
 Version: 0.10.40
-Revision: 1
-Source: http://prdownloads.sourceforge.net/fink/%n-%v.tar.gz
+Revision: 2
+Source: gnu
 Essential: yes
-Depends: base-files
+Depends: base-files, libiconv
 Patch: %f.patch
 SetCPPFLAGS: -no-cpp-precomp
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
@@ -31,12 +31,9 @@ many GNU programs but missing from the Darwin C library.
 DescPort: <<
 Uses libtool 1.4; needs a minimal patch for Mac OS X 10.1.
 
-Now again deliberately avoids using iconv() because libiconv causes
-build problems with various packages.
-
-Also needs help to link against the right copy of the
-library. Afterwards, we remove the used flag from the .la file as it
-refers to the temporary build directory.
+Needs help to link against the right copy of the library. Afterwards,
+we remove the used flag from the .la file as it refers to the
+temporary build directory.
 
 charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
