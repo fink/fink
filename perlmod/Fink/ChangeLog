@@ -1,3 +1,8 @@
+2003-11-12  Rob Braun <bbraun@users.sourceforge.net>
+
+	* SelfUpdate.pm: Add rsync mirroring fallback with prompting, similar
+	  to distfiles mirroring/fetching.
+
 2003-11-12  Daniel Macks <dmacks@netspace.org>
 
 	* Validation.pm: Changed warnings about fields in splitoffs to say

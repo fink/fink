@@ -29,6 +29,7 @@ use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
 use Fink::FinkVersion qw(&pkginfo_version);
+use Fink::Mirror;
 
 use File::Find;
 
@@ -514,6 +515,7 @@ sub rsync_check {
 sub do_direct_rsync {
 	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
 	my ($timecmd, $oldts, $newts);
+	my $origmirror;
 	my $dist = $Fink::Config::distribution;
 	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://master.us.finkmirrors.net/finkinfo/");
 	my $touchcmd = "/usr/bin/touch stamp-rsync-live && /bin/rm -f stamp-cvs-live";
@@ -529,10 +531,21 @@ sub do_direct_rsync {
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
+
+	$origmirror = Fink::Mirror->get_by_name("rsync");
+
+RSYNCAGAIN:
+	$rsynchost = $origmirror->get_site_retry("", 0);
+	if( !grep(/^rsync:/,$rsynchost) ) {
+		print "No mirrors worked!  Bailing.\n";
+		exit 1;
+	}
+
 	# Fetch the timestamp for comparison
 	$timecmd = "rsync -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp";
 	if (&execute($timecmd)) {
-		die "Failed to fetch the timestamp file from the rsync server: $rsynchost.  Check the error messages above.\n";
+		print "Failed to fetch the timestamp file from the rsync server: $rsynchost.  Check the error messages above.\n";
+		goto RSYNCAGAIN;
 	}
 	# If there's no TIMESTAMP file, then we haven't synced from rsync
 	# before, so there's no checking we can do.  Blaze on past.
@@ -566,9 +579,6 @@ sub do_direct_rsync {
 		}
 
 	} 
-	# cleanup after ourselves and continue with the update.
-	unlink("$descdir/TIMESTAMP");
-	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
 
 	# If the Distributions line has been updated...
 	if (! -d "$descdir/$dist") {
@@ -615,7 +625,8 @@ sub do_direct_rsync {
 	&print_breaking($msg);
 
 	if (&execute($cmd)) {
-		die "Updating $tree using rsync failed. Check the error messages above.\n";
+		print "Updating $tree using rsync failed. Check the error messages above.\n";
+		goto RSYNCAGAIN;
 	} else {
 		foreach $tree ($config->get_treelist()) {
 			next unless ($tree =~ /stable/);
@@ -630,6 +641,9 @@ sub do_direct_rsync {
 	&execute("/bin/rm -rf '$basepath/fink/$dist/CVS'");
 	&execute("/bin/rm -rf '$basepath/fink/CVS'");
 	&execute($touchcmd);
+	# cleanup after ourselves and continue with the update.
+	unlink("$descdir/TIMESTAMP");
+	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
 }
 
 
