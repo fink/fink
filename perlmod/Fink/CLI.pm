@@ -171,24 +171,28 @@ via STDOUT/STDIN using $prompt (which is word-wrapped).
 The %options are given as option => value pairs. The following
 options are known:
 
-	default (optional)
-	
-		If the option 'default' is given, then its value will be
-		returned if no input is detected.
-		
-		This can occur if the user enters a null string, or if Fink
-		is configured to automatically accept defaults (i.e., bin/fink
-		was invoked with the -y or --yes option).
-		
-		Default value: null string
-		
-	timeout (optional)
-	
-		The 'timeout' option establishes a wait period (in seconds) for
-		the prompt, after which the default answer will be used.
-		If a timeout is given, any existing alarm() is destroyed.
-		
-		Default value: no timeout
+=over 4
+
+=item default (optional)
+
+If the option 'default' is given, then its value will be
+returned if no input is detected.
+
+This can occur if the user enters a null string, or if Fink
+is configured to automatically accept defaults (i.e., bin/fink
+was invoked with the -y or --yes option).
+
+Default value: null string
+
+=item timeout (optional)
+
+The 'timeout' option establishes a wait period (in seconds) for
+the prompt, after which the default answer will be used.
+If a timeout is given, any existing alarm() is destroyed.
+
+Default value: no timeout
+
+=back
 
 =cut
 
@@ -214,24 +218,28 @@ word-wrapped).
 The %options are given as option => value pairs. The following
 options are known:
 
-	default (optional)
-	
-		If the option 'default' is given, then its B<truth>-value will be
-		returned if no input is detected.
-		
-		This can occur if the user enters a null string, or if Fink
-		is configured to automatically accept defaults (i.e., bin/fink
-		was invoked with the -y or --yes option).
-		
-		Default value: true
-		
-	timeout (optional)
-	
-		The 'timeout' option establishes a wait period (in seconds) for
-		the prompt, after which the default answer will be used.
-		If a timeout is given, any existing alarm() is destroyed.
-		
-		Default value: no timeout
+=over 4
+
+=item default (optional)
+
+If the option 'default' is given, then its B<truth>-value will be
+returned if no input is detected.
+
+This can occur if the user enters a null string, or if Fink
+is configured to automatically accept defaults (i.e., bin/fink
+was invoked with the -y or --yes option).
+
+Default value: true
+
+=item timeout (optional)
+
+The 'timeout' option establishes a wait period (in seconds) for
+the prompt, after which the default answer will be used.
+If a timeout is given, any existing alarm() is destroyed.
+
+Default value: no timeout
+
+=back
 
 =cut
 
@@ -272,39 +280,43 @@ word-wrapped) and a list of choices. The choices are numbered
 
 The %options are given as option => value pairs. The following
 options are known:
-	
-	choices (required)
-		
-		The option 'choices' must be a reference to an ordered pairwise
-		array [ label1 => value1, label2 => value2, ... ]. The labels will
-		be displayed to the user; the values are the return values if that
-		option is chosen.
-	
-	default (optional)
-	
-		If the option 'default' is given, then it determines which choice
-		will be returned if no input is detected.
-		
-		This can occur if the user enters a null string, or if Fink
-		is configured to automatically accept defaults (i.e., bin/fink
-		was invoked with the -y or --yes option).
-		
-		The following formats are recognized for the 'default' option:
-		
-		  @default = [];                   # choice 1
-		  @default = ["number", $number];  # choice $number
-		  @default = ["label", $label];    # first choice with label $label
-		  @default = ["value", $label];    # first choice with value $value
-		
-		Default value: choice 1
-		
-	timeout (optional)
-	
-		The 'timeout' option establishes a wait period (in seconds) for
-		the prompt, after which the default answer will be used.
-		If a timeout is given, any existing alarm() is destroyed.
-		
-		Default value: no timeout
+
+=over 4
+
+=item choices (required)
+
+The option 'choices' must be a reference to an ordered pairwise
+array [ label1 => value1, label2 => value2, ... ]. The labels will
+be displayed to the user; the values are the return values if that
+option is chosen.
+
+=item default (optional)
+
+If the option 'default' is given, then it determines which choice
+will be returned if no input is detected.
+
+This can occur if the user enters a null string, or if Fink
+is configured to automatically accept defaults (i.e., bin/fink
+was invoked with the -y or --yes option).
+
+The following formats are recognized for the 'default' option:
+
+  @default = [];                   # choice 1
+  @default = ["number", $number];  # choice $number
+  @default = ["label", $label];    # first choice with label $label
+  @default = ["value", $label];    # first choice with value $value
+
+Default value: choice 1
+
+=item timeout (optional)
+
+The 'timeout' option establishes a wait period (in seconds) for
+the prompt, after which the default answer will be used.
+If a timeout is given, any existing alarm() is destroyed.
+
+Default value: no timeout
+
+=back
 
 =cut
 
