@@ -567,11 +567,16 @@ sub cmd_fetch_all_missing {
 }
 
 sub cmd_remove {
+  my ($package, @plist);
   my (@packages);
 
-  @packages = &expand_packages(@_);
-  if ($#packages < 0) {
+  @plist = &expand_packages(@_);
+  if ($#plist < 0) {
     die "no package specified for command 'remove'!\n";
+  }
+  
+  foreach $package (@plist) {
+    push @packages, $package->get_name();
   }
 
   Fink::PkgVersion::phase_deactivate(@packages);
