@@ -12,6 +12,6 @@ is_deeply( [cat 'foo'], ["Some stuff\n", "And things\n"] );
 
 $! = 0;  # just in case something else set it.
 is( cat('i_do_not_exist'), undef, "cat can't find the file" );
-isnt( $!, 0,                      '  $! set' );
+cmp_ok( $!, '!=', 0,                      '  $! set' );
 
 unlink 'foo';

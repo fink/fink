@@ -71,6 +71,8 @@ all of them with
 
   use Fink::Command ':ALL';
 
+Unless noted otherwise, functions set $! and return false on failure.
+
 =over 4
 
 =item mv
@@ -129,7 +131,7 @@ sub cp {
 Reads a file returning all the text in one lump or as a list of lines
 depending on context.
 
-Returns undef on error and sets $!.
+Returns undef on error, even in list context.
 
 =cut
 
@@ -149,14 +151,27 @@ sub cat {
 
   mkdir_p @dirs;
 
-Like C<mkdir -p>
+Like C<mkdir -p>.
+
+Due to an implementation quirk, $! is not set on failure.
+
+=for private
+If this becomes a problem, reimplement without File::Path
 
 =cut
 
 sub mkdir_p {
     my @dirs = _expand(@_);
     require File::Path;
-    return File::Path::mkpath(\@dirs);
+
+    # mkpath() has one condition where it will die. :(  The eval
+    # loses the value of $!.
+    my $nok = 0;
+    foreach my $dir (@dirs) {
+        eval { File::Path::mkpath([$dir]) };
+        $nok = 1 if $@;
+    }
+    return !$nok;
 }
 
 =item rm_rf
@@ -170,6 +185,7 @@ Like C<rm -rf>
 sub rm_rf {
     my @dirs = _expand(@_);
     require File::Path;
+    local $SIG{__WARN__} = sub {};  # rmtree is noisy on failure.  Shut up.
     return File::Path::rmtree([grep -e $_, @dirs]);
 }
 
@@ -186,12 +202,11 @@ sub rm_f {
 
     my $nok = 0;
     foreach my $file (@files) {
-        next unless -f $file;
         next if unlink($file);
         chmod(0777,$file);
         next if unlink($file);
 
-        $nok ||= 1;
+        $nok = 1;
     }
 
     return !$nok;
@@ -236,10 +251,19 @@ sub chowname {
     my($owner, @files) = @_;
     my($user, $group) = split /:/, $owner, 2;
 
-    my $uid = defined $user && length $user  ? getpwnam($user)  : -1;
-    my $gid = defined $user && length $group ? getgrnam($group) : -1;
+    my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
+    my $gid = defined $group && length $group ? getgrnam($group) : -1;
 
-    return CORE::chown $uid, $gid, @files;
+    return if !defined $uid or !defined $gid;
+
+    # chown() won't return false as long as one operation succeeds, so we
+    # have to call it one at a time.
+    my $nok = 0;
+    foreach my $file (@files) {
+        $nok ||= !CORE::chown $uid, $gid, $file;
+    }
+
+    return !$nok;
 }
 
 =item symlink_f

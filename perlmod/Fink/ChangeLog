@@ -1,5 +1,10 @@
 2003-11-13  Michael G Schwern <schwern@pobox.com>
 
+	* Command.pm: Make sure functions fail quietly and with the
+	proper return value and errno setting.  Tested.
+
+2003-11-13  Michael G Schwern <schwern@pobox.com>
+
 	* Command.pm: Created to replace execute() of common shell commands
 	like rm -rf and mkdir -p.  Tested.
 
