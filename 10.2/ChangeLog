@@ -1,3 +1,8 @@
+2004-01-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* dpkg.info, dpkg.patch, dpkg-bootstrap.info: fix hardcoded /sw
+	in patch, make flat namespace.
+
 2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
         * file-spec-pm, test-harness-pm, test-simple-pm: new essential

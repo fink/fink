@@ -1,6 +1,6 @@
 diff -urN dpkg-1.10.9.orig/Makefile.conf.in dpkg-1.10.9/Makefile.conf.in
---- dpkg-1.10.9.orig/Makefile.conf.in	Mon Jul 15 05:15:06 2002
-+++ dpkg-1.10.9/Makefile.conf.in	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/Makefile.conf.in	Sun Jul 14 21:15:06 2002
++++ dpkg-1.10.9/Makefile.conf.in	Mon Dec  8 14:09:25 2003
 @@ -60,13 +60,13 @@
  
  CPPFLAGS		= @CPPFLAGS@
@@ -17,9 +17,19 @@ diff -urN dpkg-1.10.9.orig/Makefile.conf.in dpkg-1.10.9/Makefile.conf.in
  
  NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir)/intl -I../intl
  NLS_LIBS		= @INTLLIBS@ 
+diff -urN dpkg-1.10.9.orig/dpkg-deb/Makefile.in dpkg-1.10.9/dpkg-deb/Makefile.in
+--- dpkg-1.10.9.orig/dpkg-deb/Makefile.in	Mon May 20 05:40:26 2002
++++ dpkg-1.10.9/dpkg-deb/Makefile.in	Mon Dec  8 14:12:13 2003
+@@ -51,5 +51,5 @@
+ dpkg-deb-static: LDFLAGS += -static
+ dpkg-deb-static: ZLIB_LIBS = $(ZLIB_LIBS_ALSO_STATIC)
+ dpkg-deb dpkg-deb-static: $(OBJECTS) ../lib/libdpkg.a
+-	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
++	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
+ 
 diff -urN dpkg-1.10.9.orig/dpkg-deb/dpkg-deb.1 dpkg-1.10.9/dpkg-deb/dpkg-deb.1
---- dpkg-1.10.9.orig/dpkg-deb/dpkg-deb.1	Thu Aug  2 09:59:31 2001
-+++ dpkg-1.10.9/dpkg-deb/dpkg-deb.1	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/dpkg-deb/dpkg-deb.1	Thu Aug  2 01:59:31 2001
++++ dpkg-1.10.9/dpkg-deb/dpkg-deb.1	Mon Dec  8 14:09:25 2003
 @@ -244,7 +244,8 @@
  Copyright (C)1995-1996
  by him and released under the GNU General Public Licence; there is NO
@@ -31,9 +41,21 @@ diff -urN dpkg-1.10.9.orig/dpkg-deb/dpkg-deb.1 dpkg-1.10.9/dpkg-deb/dpkg-deb.1
 +.B @PREFIX@/share/common-licenses/GPL
  for details.
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -urN dpkg-1.10.9.orig/dselect/Makefile.in dpkg-1.10.9/dselect/Makefile.in
+--- dpkg-1.10.9.orig/dselect/Makefile.in	Mon May 20 05:40:26 2002
++++ dpkg-1.10.9/dselect/Makefile.in	Mon Dec  8 14:27:02 2003
+@@ -48,7 +48,7 @@
+ 	done
+ 
+ dselect: $(OBJECTS) ../lib/libdpkg.a
+-	$(CXX) $(LDFLAGS) -o $@ $(OBJECTS) -lncurses $(LIBS) $(NLS_LIBS)
++	$(CXX) $(LDFLAGS) $(EXEFLAGS) -o $@ $(OBJECTS) -lncurses $(LIBS) $(NLS_LIBS)
+ 
+ basecmds.o: helpmsgs.h
+ curkeys.o: curkeys.h
 diff -urN dpkg-1.10.9.orig/dselect/dselect.8 dpkg-1.10.9/dselect/dselect.8
---- dpkg-1.10.9.orig/dselect/dselect.8	Tue Jul 17 07:39:24 2001
-+++ dpkg-1.10.9/dselect/dselect.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/dselect/dselect.8	Mon Jul 16 23:39:24 2001
++++ dpkg-1.10.9/dselect/dselect.8	Mon Dec  8 14:09:25 2003
 @@ -34,7 +34,7 @@
  of \fBdselect\fP or show additional information about the program.
  .SH OPTIONS 
@@ -60,8 +82,8 @@ diff -urN dpkg-1.10.9.orig/dselect/dselect.8 dpkg-1.10.9/dselect/dselect.8
 +.br
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/dselect/main.cc dpkg-1.10.9/dselect/main.cc
---- dpkg-1.10.9.orig/dselect/main.cc	Sun Sep  1 13:47:05 2002
-+++ dpkg-1.10.9/dselect/main.cc	Sat Nov  8 23:09:43 2003
+--- dpkg-1.10.9.orig/dselect/main.cc	Sun Sep  1 05:47:05 2002
++++ dpkg-1.10.9/dselect/main.cc	Tue Dec 23 19:46:57 2003
 @@ -41,6 +41,11 @@
  #include <dpkg-db.h>
  #include <version.h>
@@ -106,9 +128,9 @@ diff -urN dpkg-1.10.9.orig/dselect/main.cc dpkg-1.10.9/dselect/main.cc
 +    static char buffer[256];	// This is static, to ensure the buffer stays around
 +
 +    static struct utsname ver;	// This is static, to ensure the buffer stays around
-+	if (0 == stat("/sw/bin/fink-virtual-pkgs", &sb))
++	if (0 == stat("@PREFIX@/bin/fink-virtual-pkgs", &sb))
 +	{
-+	  virt_pkg_stream =popen("/sw/bin/fink-virtual-pkgs --dpkg","r");
++	  virt_pkg_stream =popen("@PREFIX@/bin/fink-virtual-pkgs --dpkg","r");
 +  	  if (virt_pkg_stream)
 +	  {
 +	    while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version, revision) == 4)
@@ -241,8 +263,8 @@ diff -urN dpkg-1.10.9.orig/dselect/main.cc dpkg-1.10.9/dselect/main.cc
      cursesoff();
      error_unwind(ehflag_bombout); exit(2);
 diff -urN dpkg-1.10.9.orig/dselect/pkgdepcon.cc dpkg-1.10.9/dselect/pkgdepcon.cc
---- dpkg-1.10.9.orig/dselect/pkgdepcon.cc	Tue May  7 01:18:15 2002
-+++ dpkg-1.10.9/dselect/pkgdepcon.cc	Sun Nov  9 00:56:32 2003
+--- dpkg-1.10.9.orig/dselect/pkgdepcon.cc	Mon May  6 17:18:15 2002
++++ dpkg-1.10.9/dselect/pkgdepcon.cc	Mon Dec  8 14:09:25 2003
 @@ -196,12 +196,20 @@
  
    return 2;
@@ -313,8 +335,8 @@ diff -urN dpkg-1.10.9.orig/dselect/pkgdepcon.cc dpkg-1.10.9/dselect/pkgdepcon.cc
    return 0;
  }
 diff -urN dpkg-1.10.9.orig/include/dpkg.h.in dpkg-1.10.9/include/dpkg.h.in
---- dpkg-1.10.9.orig/include/dpkg.h.in	Sun Sep  1 13:47:05 2002
-+++ dpkg-1.10.9/include/dpkg.h.in	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/include/dpkg.h.in	Sun Sep  1 05:47:05 2002
++++ dpkg-1.10.9/include/dpkg.h.in	Mon Dec  8 14:09:25 2003
 @@ -96,7 +96,7 @@
  #define SHELLENV            "SHELL"
  #define DEFAULTSHELL        "sh"
@@ -325,8 +347,8 @@ diff -urN dpkg-1.10.9.orig/include/dpkg.h.in dpkg-1.10.9/include/dpkg.h.in
  #define IMETHODMAXLEN        50
  #define IOPTIONMAXLEN        IMETHODMAXLEN
 diff -urN dpkg-1.10.9.orig/lib/nfmalloc.c dpkg-1.10.9/lib/nfmalloc.c
---- dpkg-1.10.9.orig/lib/nfmalloc.c	Wed Sep  4 08:34:50 2002
-+++ dpkg-1.10.9/lib/nfmalloc.c	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/lib/nfmalloc.c	Wed Sep  4 00:34:50 2002
++++ dpkg-1.10.9/lib/nfmalloc.c	Mon Dec  8 14:09:25 2003
 @@ -26,7 +26,7 @@
  #include <dpkg.h>
  #include <dpkg-db.h>
@@ -336,9 +358,25 @@ diff -urN dpkg-1.10.9.orig/lib/nfmalloc.c dpkg-1.10.9/lib/nfmalloc.c
  
  #define obstack_chunk_alloc m_malloc
  #define obstack_chunk_free free
+diff -urN dpkg-1.10.9.orig/main/Makefile.in dpkg-1.10.9/main/Makefile.in
+--- dpkg-1.10.9.orig/main/Makefile.in	Sat Aug 24 20:54:18 2002
++++ dpkg-1.10.9/main/Makefile.in	Mon Dec  8 14:11:28 2003
+@@ -63,10 +63,10 @@
+ dpkg-static: LDFLAGS += -static
+ dpkg-static: ZLIB_LIBS = $(ZLIBS_LIBS_ALSO_STATIC)
+ dpkg dpkg-static: $(OBJECTS) ../lib/libdpkg.a
+-	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
++	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
+ 
+ dpkg-query: $(QUERY_OBJECTS) ../lib/libdpkg.a
+-	$(CC) $(LDFLAGS) -o $@ $(QUERY_OBJECTS) $(LIBS) $(NLS_LIBS)
++	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(QUERY_OBJECTS) $(LIBS) $(NLS_LIBS)
+ 
+ enquiry.o: archtable.h
+ 
 diff -urN dpkg-1.10.9.orig/main/archives.c dpkg-1.10.9/main/archives.c
---- dpkg-1.10.9.orig/main/archives.c	Sun Aug 25 04:22:33 2002
-+++ dpkg-1.10.9/main/archives.c	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/main/archives.c	Sat Aug 24 20:22:33 2002
++++ dpkg-1.10.9/main/archives.c	Mon Dec  8 14:09:25 2003
 @@ -547,12 +547,10 @@
      debug(dbg_eachfiledetail,"tarobject SymbolicLink creating");
  #ifdef HAVE_LCHOWN
@@ -366,8 +404,8 @@ diff -urN dpkg-1.10.9.orig/main/archives.c dpkg-1.10.9/main/archives.c
        debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
        if (link(fnamevb.buf,fnametmpvb.buf))
 diff -urN dpkg-1.10.9.orig/main/configure.c dpkg-1.10.9/main/configure.c
---- dpkg-1.10.9.orig/main/configure.c	Fri Aug 30 04:58:11 2002
-+++ dpkg-1.10.9/main/configure.c	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/main/configure.c	Thu Aug 29 20:58:11 2002
++++ dpkg-1.10.9/main/configure.c	Mon Dec  8 14:09:25 2003
 @@ -476,9 +476,10 @@
  static void suspend(void) {
  	const char*	s;
@@ -395,8 +433,8 @@ diff -urN dpkg-1.10.9.orig/main/configure.c dpkg-1.10.9/main/configure.c
  
  
 diff -urN dpkg-1.10.9.orig/main/dpkg-query.8 dpkg-1.10.9/main/dpkg-query.8
---- dpkg-1.10.9.orig/main/dpkg-query.8	Sat Nov 17 23:26:43 2001
-+++ dpkg-1.10.9/main/dpkg-query.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/main/dpkg-query.8	Sat Nov 17 14:26:43 2001
++++ dpkg-1.10.9/main/dpkg-query.8	Mon Dec  8 14:09:25 2003
 @@ -14,7 +14,7 @@
  .TP
  \fB-l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
@@ -433,8 +471,8 @@ diff -urN dpkg-1.10.9.orig/main/dpkg-query.8 dpkg-1.10.9/main/dpkg-query.8
  This is free software; see the GNU General Public Licence version 2 or
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/main/dpkg.8 dpkg-1.10.9/main/dpkg.8
---- dpkg-1.10.9.orig/main/dpkg.8	Sun May 26 12:53:43 2002
-+++ dpkg-1.10.9/main/dpkg.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/main/dpkg.8	Sun May 26 04:53:43 2002
++++ dpkg-1.10.9/main/dpkg.8	Mon Dec  8 14:09:25 2003
 @@ -154,7 +154,7 @@
  file).  \fB-P\fP or \fB--purge\fP removes everything, including configuration
  files.  If \fB-a\fP or \fB--pending\fP is given instead of a package
@@ -545,8 +583,8 @@ diff -urN dpkg-1.10.9.orig/main/dpkg.8 dpkg-1.10.9/main/dpkg.8
 +distribution, December 2002.
  .fi
 diff -urN dpkg-1.10.9.orig/main/help.c dpkg-1.10.9/main/help.c
---- dpkg-1.10.9.orig/main/help.c	Mon Sep 16 02:55:51 2002
-+++ dpkg-1.10.9/main/help.c	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/main/help.c	Sun Sep 15 18:55:51 2002
++++ dpkg-1.10.9/main/help.c	Mon Dec  8 14:09:25 2003
 @@ -69,11 +69,18 @@
  
  void checkpath(void) {
@@ -569,8 +607,8 @@ diff -urN dpkg-1.10.9.orig/main/help.c dpkg-1.10.9/main/help.c
  
    struct stat stab;
 diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
---- dpkg-1.10.9.orig/main/main.c	Sun Sep  1 13:47:05 2002
-+++ dpkg-1.10.9/main/main.c	Sat Nov  8 22:15:32 2003
+--- dpkg-1.10.9.orig/main/main.c	Sun Sep  1 05:47:05 2002
++++ dpkg-1.10.9/main/main.c	Mon Dec  8 14:09:26 2003
 @@ -38,6 +38,12 @@
  #include <version.h>
  #include <myopt.h>
@@ -750,8 +788,8 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
  
    actionfunction(argv);
 diff -urN dpkg-1.10.9.orig/main/main.h dpkg-1.10.9/main/main.h
---- dpkg-1.10.9.orig/main/main.h	Mon May 20 14:56:01 2002
-+++ dpkg-1.10.9/main/main.h	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/main/main.h	Mon May 20 06:56:01 2002
++++ dpkg-1.10.9/main/main.h	Mon Dec  8 14:09:26 2003
 @@ -93,6 +93,11 @@
  extern const char *instdir;
  extern struct packageinlist *ignoredependss;
@@ -765,8 +803,8 @@ diff -urN dpkg-1.10.9.orig/main/main.h dpkg-1.10.9/main/main.h
  /* from filesdb.c */
  
 diff -urN dpkg-1.10.9.orig/main/packages.c dpkg-1.10.9/main/packages.c
---- dpkg-1.10.9.orig/main/packages.c	Tue May  7 01:18:15 2002
-+++ dpkg-1.10.9/main/packages.c	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/main/packages.c	Mon May  6 17:18:15 2002
++++ dpkg-1.10.9/main/packages.c	Mon Dec  8 14:09:26 2003
 @@ -331,6 +331,30 @@
      return thisf;
    }
@@ -838,8 +876,8 @@ diff -urN dpkg-1.10.9.orig/main/packages.c dpkg-1.10.9/main/packages.c
          debug(dbg_depcondetail,"      break cycle so ok and found");
          found= 3; break;
 diff -urN dpkg-1.10.9.orig/man/en/dpkg.cfg.5 dpkg-1.10.9/man/en/dpkg.cfg.5
---- dpkg-1.10.9.orig/man/en/dpkg.cfg.5	Sun Feb 10 09:37:01 2002
-+++ dpkg-1.10.9/man/en/dpkg.cfg.5	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/en/dpkg.cfg.5	Sun Feb 10 00:37:01 2002
++++ dpkg-1.10.9/man/en/dpkg.cfg.5	Mon Dec  8 14:09:26 2003
 @@ -8,10 +8,11 @@
  here. Comments are allowed by starting a line with a hash sign
  ("\fB#\fR").
@@ -855,8 +893,8 @@ diff -urN dpkg-1.10.9.orig/man/en/dpkg.cfg.5 dpkg-1.10.9/man/en/dpkg.cfg.5
  .SH SEE ALSO
  .BR dpkg (8)
 diff -urN dpkg-1.10.9.orig/man/en/dselect.cfg.5 dpkg-1.10.9/man/en/dselect.cfg.5
---- dpkg-1.10.9.orig/man/en/dselect.cfg.5	Sat Feb 16 23:10:50 2002
-+++ dpkg-1.10.9/man/en/dselect.cfg.5	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/en/dselect.cfg.5	Sat Feb 16 14:10:50 2002
++++ dpkg-1.10.9/man/en/dselect.cfg.5	Mon Dec  8 14:09:26 2003
 @@ -8,10 +8,11 @@
  here. Comments are allowed by starting a line with a hash sign
  ("\fB#\fR").
@@ -872,8 +910,8 @@ diff -urN dpkg-1.10.9.orig/man/en/dselect.cfg.5 dpkg-1.10.9/man/en/dselect.cfg.5
  .SH SEE ALSO
  .BR dselect (8)
 diff -urN dpkg-1.10.9.orig/man/fr/cleanup-info.8 dpkg-1.10.9/man/fr/cleanup-info.8
---- dpkg-1.10.9.orig/man/fr/cleanup-info.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/cleanup-info.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/cleanup-info.8	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/cleanup-info.8	Mon Dec  8 14:09:26 2003
 @@ -38,7 +38,7 @@
  Affiche la version et se termine normalement.
  .SH FICHIERS
@@ -893,8 +931,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/cleanup-info.8 dpkg-1.10.9/man/fr/cleanup-info
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-deb.1 dpkg-1.10.9/man/fr/dpkg-deb.1
---- dpkg-1.10.9.orig/man/fr/dpkg-deb.1	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-deb.1	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg-deb.1	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/dpkg-deb.1	Mon Dec  8 14:09:26 2003
 @@ -245,9 +245,11 @@
  Le copyright (C) date de 1995-1996 et ils ont paru sous la licence
  « GNU General Public Licence » ; il n'y a PAS de garantie.
@@ -912,8 +950,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-deb.1 dpkg-1.10.9/man/fr/dpkg-deb.1
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-divert.8 dpkg-1.10.9/man/fr/dpkg-divert.8
---- dpkg-1.10.9.orig/man/fr/dpkg-divert.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-divert.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg-divert.8	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/dpkg-divert.8	Mon Dec  8 14:09:26 2003
 @@ -41,7 +41,7 @@
  .TP
  .I --admindir <répertoire>
@@ -942,8 +980,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-divert.8 dpkg-1.10.9/man/fr/dpkg-divert.8
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-query.8 dpkg-1.10.9/man/fr/dpkg-query.8
---- dpkg-1.10.9.orig/man/fr/dpkg-query.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-query.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg-query.8	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/dpkg-query.8	Mon Dec  8 14:09:26 2003
 @@ -15,7 +15,7 @@
  \fB-l\fP | \fB--list\fP \fIpaquet-nom-motif\fP ...
  Liste les paquets correspondant au motif donné. Quand on ne donne aucun
@@ -981,8 +1019,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-query.8 dpkg-1.10.9/man/fr/dpkg-query.8
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-scanpackages.8 dpkg-1.10.9/man/fr/dpkg-scanpackages.8
---- dpkg-1.10.9.orig/man/fr/dpkg-scanpackages.8	Sat Jun  1 04:49:12 2002
-+++ dpkg-1.10.9/man/fr/dpkg-scanpackages.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg-scanpackages.8	Fri May 31 20:49:12 2002
++++ dpkg-1.10.9/man/fr/dpkg-scanpackages.8	Mon Dec  8 14:09:26 2003
 @@ -40,7 +40,7 @@
  .PP
  .I rep-de-binaires
@@ -1003,8 +1041,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-scanpackages.8 dpkg-1.10.9/man/fr/dpkg-sc
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-source.1 dpkg-1.10.9/man/fr/dpkg-source.1
---- dpkg-1.10.9.orig/man/fr/dpkg-source.1	Sat Jun  1 04:49:12 2002
-+++ dpkg-1.10.9/man/fr/dpkg-source.1	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg-source.1	Fri May 31 20:49:12 2002
++++ dpkg-1.10.9/man/fr/dpkg-source.1	Mon Dec  8 14:09:26 2003
 @@ -58,13 +58,13 @@
  lit les informations concernant les dépendances envers les bibliothèques 
  partagées dans les fichiers suivants :
@@ -1038,8 +1076,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-source.1 dpkg-1.10.9/man/fr/dpkg-source.1
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-split.8 dpkg-1.10.9/man/fr/dpkg-split.8
---- dpkg-1.10.9.orig/man/fr/dpkg-split.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-split.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg-split.8	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/dpkg-split.8	Mon Dec  8 14:09:26 2003
 @@ -162,7 +162,7 @@
  .BI --depotdir " répertoire"
  Indique un répertoire différent pour la file comprenant les parties en attente
@@ -1071,8 +1109,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-split.8 dpkg-1.10.9/man/fr/dpkg-split.8
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg-statoverride.8 dpkg-1.10.9/man/fr/dpkg-statoverride.8
---- dpkg-1.10.9.orig/man/fr/dpkg-statoverride.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/dpkg-statoverride.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg-statoverride.8	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/dpkg-statoverride.8	Mon Dec  8 14:09:26 2003
 @@ -55,10 +55,10 @@
  .TP
  .I --admindir
@@ -1096,8 +1134,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg-statoverride.8 dpkg-1.10.9/man/fr/dpkg-st
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/dpkg.8 dpkg-1.10.9/man/fr/dpkg.8
---- dpkg-1.10.9.orig/man/fr/dpkg.8	Sat Jun  1 04:49:12 2002
-+++ dpkg-1.10.9/man/fr/dpkg.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/dpkg.8	Fri May 31 20:49:12 2002
++++ dpkg-1.10.9/man/fr/dpkg.8	Mon Dec  8 14:09:26 2003
 @@ -162,7 +162,7 @@
  configuration. Si l'on donne l'option \fB-a\fP ou \fB--pending\fP à la 
  place d'un nom de paquet, tous les paquets non dépaquetés, mais qui sont
@@ -1211,8 +1249,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/dpkg.8 dpkg-1.10.9/man/fr/dpkg.8
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/fr/install-info.8 dpkg-1.10.9/man/fr/install-info.8
---- dpkg-1.10.9.orig/man/fr/install-info.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/install-info.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/install-info.8	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/install-info.8	Mon Dec  8 14:09:26 2003
 @@ -157,7 +157,7 @@
  dans
  .IR rep-info . 
@@ -1232,8 +1270,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/install-info.8 dpkg-1.10.9/man/fr/install-info
  Copyright 1994, Ian Jackson.
  .B install\-info
 diff -urN dpkg-1.10.9.orig/man/fr/update-alternatives.8 dpkg-1.10.9/man/fr/update-alternatives.8
---- dpkg-1.10.9.orig/man/fr/update-alternatives.8	Sun Feb  3 00:56:06 2002
-+++ dpkg-1.10.9/man/fr/update-alternatives.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/fr/update-alternatives.8	Sat Feb  2 15:56:06 2002
++++ dpkg-1.10.9/man/fr/update-alternatives.8	Mon Dec  8 14:09:26 2003
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -1337,8 +1375,8 @@ diff -urN dpkg-1.10.9.orig/man/fr/update-alternatives.8 dpkg-1.10.9/man/fr/updat
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/man/ja/cleanup-info.8 dpkg-1.10.9/man/ja/cleanup-info.8
---- dpkg-1.10.9.orig/man/ja/cleanup-info.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/cleanup-info.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/cleanup-info.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/cleanup-info.8	Mon Dec  8 14:09:26 2003
 @@ -37,7 +37,7 @@
  ¥Ð¡¼¥¸¥ç¥ó¤òÉ½¼¨¤·¡¢Àµ¾ï½ªÎ»¤¹¤ë¡£
  .SH ¥Õ¥¡¥¤¥ë
@@ -1358,8 +1396,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/cleanup-info.8 dpkg-1.10.9/man/ja/cleanup-info
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-deb.1 dpkg-1.10.9/man/ja/dpkg-deb.1
---- dpkg-1.10.9.orig/man/ja/dpkg-deb.1	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-deb.1	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/dpkg-deb.1	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/dpkg-deb.1	Mon Dec  8 14:09:26 2003
 @@ -262,9 +262,9 @@
  ¤È¤³¤Î¥Þ¥Ë¥å¥¢¥ë¥Ú¡¼¥¸¤Ï Ian Jackson ¤¬ºîÀ®¤·¤¿¡£¤³¤ì¤é¤ÎÃøºî¸¢¤ÏÈà¤Ë
  ¤¢¤ê(Copyright (C)1995-1996)¡¢GNU °ìÈÌ¸øÍ­»ÈÍÑµöÂú¤Ë¤è¤êÈÒÉÛ¤µ¤ì¤ë¡£
@@ -1389,8 +1427,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-deb.1 dpkg-1.10.9/man/ja/dpkg-deb.1
  .SH ÆüËÜ¸ìÈÇËÝÌõ
  ´îÀ¥¹À <fuyuneko@ryukyu.ne.jp>
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-divert.8 dpkg-1.10.9/man/ja/dpkg-divert.8
---- dpkg-1.10.9.orig/man/ja/dpkg-divert.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-divert.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/dpkg-divert.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/dpkg-divert.8	Mon Dec  8 14:09:26 2003
 @@ -39,7 +39,7 @@
  .SH ¥ª¥×¥·¥ç¥ó
  .TP
@@ -1418,8 +1456,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-divert.8 dpkg-1.10.9/man/ja/dpkg-divert.8
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-scanpackages.8 dpkg-1.10.9/man/ja/dpkg-scanpackages.8
---- dpkg-1.10.9.orig/man/ja/dpkg-scanpackages.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-scanpackages.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/dpkg-scanpackages.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/dpkg-scanpackages.8	Mon Dec  8 14:09:26 2003
 @@ -41,7 +41,7 @@
  .PP
  .I binarydir
@@ -1439,8 +1477,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-scanpackages.8 dpkg-1.10.9/man/ja/dpkg-sc
  ¸ø¼°¤ÎPackages¥ê¥¹¥È¤òºîÀ®¤¹¤ë¤¿¤á¤Ë»È¤ï¤ì¤Æ¤¤¤ëoverride¥Õ¥¡¥¤¥ë¤Ï¡¢
  Debian¥ß¥é¡¼¤Î
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg-statoverride.8 dpkg-1.10.9/man/ja/dpkg-statoverride.8
---- dpkg-1.10.9.orig/man/ja/dpkg-statoverride.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg-statoverride.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/dpkg-statoverride.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/dpkg-statoverride.8	Mon Dec  8 14:09:26 2003
 @@ -99,14 +99,14 @@
  .TP
  .I --admindir
@@ -1469,8 +1507,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg-statoverride.8 dpkg-1.10.9/man/ja/dpkg-st
  This is free software; see the GNU General Public Licence version 2 or
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/man/ja/dpkg.8 dpkg-1.10.9/man/ja/dpkg.8
---- dpkg-1.10.9.orig/man/ja/dpkg.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dpkg.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/dpkg.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/dpkg.8	Mon Dec  8 14:09:26 2003
 @@ -49,7 +49,7 @@
  \fIDebian Package Management Tools\fP ¤ò»²¾È¤¹¤ë¤³¤È¡£
  (ÌõÃí: Gnu Info ·Á¼°¤Î \fIdebian-faq\fP ¤ÏÂ¸ºß¤·¤Ê¤¤¤è¤¦¤Ç¤¢¤ë¡£
@@ -1592,8 +1630,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/dpkg.8 dpkg-1.10.9/man/ja/dpkg.8
  ´îÀ¥¹À <fuyuneko@ryukyu.ne.jp>
  .SH ÆüËÜ¸ìÈÇ¹»Àµ
 diff -urN dpkg-1.10.9.orig/man/ja/dselect.8 dpkg-1.10.9/man/ja/dselect.8
---- dpkg-1.10.9.orig/man/ja/dselect.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/dselect.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/dselect.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/dselect.8	Mon Dec  8 14:09:26 2003
 @@ -91,11 +91,11 @@
  .B --admindir <¥Ç¥£¥ì¥¯¥È¥ê>
  .\" Changes the directory where the dpkg `status', `available' and similar
@@ -1619,8 +1657,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/dselect.8 dpkg-1.10.9/man/ja/dselect.8
  Josip Rodin ¤Ë¤è¤Ã¤Æ¹¹¿·¤µ¤ì¤¿¡£
  .B dselect
 diff -urN dpkg-1.10.9.orig/man/ja/install-info.8 dpkg-1.10.9/man/ja/install-info.8
---- dpkg-1.10.9.orig/man/ja/install-info.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/install-info.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/install-info.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/install-info.8	Mon Dec  8 14:09:26 2003
 @@ -292,12 +292,12 @@
  .\"O be located in
  .\"O .IR infodir .
@@ -1646,8 +1684,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/install-info.8 dpkg-1.10.9/man/ja/install-info
  ´Ø¸Í ¹¬°ì <sekido@mbox.kyoto-inet.or.jp>
  .SH ËÝÌõ¼ÔÃí
 diff -urN dpkg-1.10.9.orig/man/ja/update-alternatives.8 dpkg-1.10.9/man/ja/update-alternatives.8
---- dpkg-1.10.9.orig/man/ja/update-alternatives.8	Sun Feb  3 00:56:45 2002
-+++ dpkg-1.10.9/man/ja/update-alternatives.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ja/update-alternatives.8	Sat Feb  2 15:56:45 2002
++++ dpkg-1.10.9/man/ja/update-alternatives.8	Mon Dec  8 14:09:26 2003
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -1744,8 +1782,8 @@ diff -urN dpkg-1.10.9.orig/man/ja/update-alternatives.8 dpkg-1.10.9/man/ja/updat
  .BR ln (1),
  FHS, the Filesystem Hierarchy Standard.
 diff -urN dpkg-1.10.9.orig/man/pt_BR/Makefile.in dpkg-1.10.9/man/pt_BR/Makefile.in
---- dpkg-1.10.9.orig/man/pt_BR/Makefile.in	Mon May 20 13:40:28 2002
-+++ dpkg-1.10.9/man/pt_BR/Makefile.in	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/pt_BR/Makefile.in	Mon May 20 05:40:28 2002
++++ dpkg-1.10.9/man/pt_BR/Makefile.in	Mon Dec  8 14:09:26 2003
 @@ -19,10 +19,10 @@
  install: install-doc
  
@@ -1760,8 +1798,8 @@ diff -urN dpkg-1.10.9.orig/man/pt_BR/Makefile.in dpkg-1.10.9/man/pt_BR/Makefile.
  
  .PHONY: all clean distclean install install-doc
 diff -urN dpkg-1.10.9.orig/man/pt_BR/update-alternatives.8 dpkg-1.10.9/man/pt_BR/update-alternatives.8
---- dpkg-1.10.9.orig/man/pt_BR/update-alternatives.8	Sun Feb  3 02:58:58 2002
-+++ dpkg-1.10.9/man/pt_BR/update-alternatives.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/pt_BR/update-alternatives.8	Sat Feb  2 17:58:58 2002
++++ dpkg-1.10.9/man/pt_BR/update-alternatives.8	Mon Dec  8 14:09:26 2003
 @@ -4,7 +4,7 @@
  .\" sob os termos da Lincença Pública Geral GNU como publicado pela
  .\" Free Software Foundation; versão 2 da Licença ou (a sua escolha)
@@ -1858,8 +1896,8 @@ diff -urN dpkg-1.10.9.orig/man/pt_BR/update-alternatives.8 dpkg-1.10.9/man/pt_BR
  .SH "VEJA TAMBÉM"
  .BR ln (1),
 diff -urN dpkg-1.10.9.orig/man/ru/dpkg.8 dpkg-1.10.9/man/ru/dpkg.8
---- dpkg-1.10.9.orig/man/ru/dpkg.8	Sun Feb  3 00:57:02 2002
-+++ dpkg-1.10.9/man/ru/dpkg.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/ru/dpkg.8	Sat Feb  2 15:57:02 2002
++++ dpkg-1.10.9/man/ru/dpkg.8	Mon Dec  8 14:09:26 2003
 @@ -232,7 +232,7 @@
  ÉÌÉ 
  .B --pending,
@@ -1975,8 +2013,8 @@ diff -urN dpkg-1.10.9.orig/man/ru/dpkg.8 dpkg-1.10.9/man/ru/dpkg.8
  
  .SH ðåòå÷ïä
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg-deb.1 dpkg-1.10.9/man/sv/dpkg-deb.1
---- dpkg-1.10.9.orig/man/sv/dpkg-deb.1	Sun Feb  3 02:46:49 2002
-+++ dpkg-1.10.9/man/sv/dpkg-deb.1	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/sv/dpkg-deb.1	Sat Feb  2 17:46:49 2002
++++ dpkg-1.10.9/man/sv/dpkg-deb.1	Mon Dec  8 14:09:26 2003
 @@ -248,8 +248,9 @@
  och denna manualsida skrevs av Ian Jackson.
  De är upphovsrättsskyddade 1995-1996 av honom och släppta under
@@ -1990,8 +2028,8 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg-deb.1 dpkg-1.10.9/man/sv/dpkg-deb.1
 +.B @PREFIX@/share/common-licenses/GPL
  för detaljer.
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg-query.8 dpkg-1.10.9/man/sv/dpkg-query.8
---- dpkg-1.10.9.orig/man/sv/dpkg-query.8	Sun Feb  3 02:56:49 2002
-+++ dpkg-1.10.9/man/sv/dpkg-query.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/sv/dpkg-query.8	Sat Feb  2 17:56:49 2002
++++ dpkg-1.10.9/man/sv/dpkg-query.8	Mon Dec  8 14:09:26 2003
 @@ -16,7 +16,7 @@
  \fB-l\fP | \fB--list\fP \fIpaketnamnsmönster\fP ...
  Lista paket som matchar det givna mönstret.
@@ -2028,8 +2066,8 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg-query.8 dpkg-1.10.9/man/sv/dpkg-query.8
  Detta är fri programvara; se GNU General Public License version 2 eller
  senare för kopieringsvillkor. Det finns INGEN garanti.
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg-split.8 dpkg-1.10.9/man/sv/dpkg-split.8
---- dpkg-1.10.9.orig/man/sv/dpkg-split.8	Sat Feb 16 23:04:24 2002
-+++ dpkg-1.10.9/man/sv/dpkg-split.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/sv/dpkg-split.8	Sat Feb 16 14:04:24 2002
++++ dpkg-1.10.9/man/sv/dpkg-split.8	Mon Dec  8 14:09:26 2003
 @@ -169,7 +169,7 @@
  Anger en alternativ katalog för kön av delar som väntar på automatisk
  sammanslagning.
@@ -2063,8 +2101,8 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg-split.8 dpkg-1.10.9/man/sv/dpkg-split.8
  
  Denna manualsida översattes av Peter Karlsson.
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg.8 dpkg-1.10.9/man/sv/dpkg.8
---- dpkg-1.10.9.orig/man/sv/dpkg.8	Mon May 27 02:54:33 2002
-+++ dpkg-1.10.9/man/sv/dpkg.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/sv/dpkg.8	Sun May 26 18:54:33 2002
++++ dpkg-1.10.9/man/sv/dpkg.8	Mon Dec  8 14:09:26 2003
 @@ -157,7 +157,7 @@
  \fB-P\fP eller \fB--purge\fP tar bort allting, inklusive
  konfigurationsfiler.
@@ -2174,8 +2212,8 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg.8 dpkg-1.10.9/man/sv/dpkg.8
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
  .fi
 diff -urN dpkg-1.10.9.orig/man/sv/dpkg.cfg.5 dpkg-1.10.9/man/sv/dpkg.cfg.5
---- dpkg-1.10.9.orig/man/sv/dpkg.cfg.5	Sat Feb 16 23:14:15 2002
-+++ dpkg-1.10.9/man/sv/dpkg.cfg.5	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/sv/dpkg.cfg.5	Sat Feb 16 14:14:15 2002
++++ dpkg-1.10.9/man/sv/dpkg.cfg.5	Mon Dec  8 14:09:26 2003
 @@ -10,10 +10,11 @@
  Kommentarer är tillåtna genom att inleda en rad med nummertecken
  ("\fB#\fR").
@@ -2191,8 +2229,8 @@ diff -urN dpkg-1.10.9.orig/man/sv/dpkg.cfg.5 dpkg-1.10.9/man/sv/dpkg.cfg.5
  .SH SE ÄVEN
  .BR dpkg (8)
 diff -urN dpkg-1.10.9.orig/man/sv/dselect.8 dpkg-1.10.9/man/sv/dselect.8
---- dpkg-1.10.9.orig/man/sv/dselect.8	Sun Feb  3 02:46:49 2002
-+++ dpkg-1.10.9/man/sv/dselect.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/sv/dselect.8	Sat Feb  2 17:46:49 2002
++++ dpkg-1.10.9/man/sv/dselect.8	Mon Dec  8 14:09:26 2003
 @@ -39,7 +39,7 @@
  programmet.
  .SH FLAGGOR
@@ -2219,8 +2257,8 @@ diff -urN dpkg-1.10.9.orig/man/sv/dselect.8 dpkg-1.10.9/man/sv/dselect.8
 +Paths modified by Carsten Klapp to reflect fink distribution,
 +December 2002.
 diff -urN dpkg-1.10.9.orig/man/sv/dselect.cfg.5 dpkg-1.10.9/man/sv/dselect.cfg.5
---- dpkg-1.10.9.orig/man/sv/dselect.cfg.5	Sat Feb 16 23:14:15 2002
-+++ dpkg-1.10.9/man/sv/dselect.cfg.5	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/man/sv/dselect.cfg.5	Sat Feb 16 14:14:15 2002
++++ dpkg-1.10.9/man/sv/dselect.cfg.5	Mon Dec  8 14:09:26 2003
 @@ -10,10 +10,11 @@
  Kommentarer är tillåtna genom att inleda en rad med nummertecken
  ("\fB#\fR").
@@ -2236,15 +2274,15 @@ diff -urN dpkg-1.10.9.orig/man/sv/dselect.cfg.5 dpkg-1.10.9/man/sv/dselect.cfg.5
  .SH SE ÄVEN
  .BR dselect (8)
 diff -urN dpkg-1.10.9.orig/origin.fink dpkg-1.10.9/origin.fink
---- dpkg-1.10.9.orig/origin.fink	Thu Jan  1 09:00:00 1970
-+++ dpkg-1.10.9/origin.fink	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/origin.fink	Thu Jan  1 01:00:00 1970
++++ dpkg-1.10.9/origin.fink	Mon Dec  8 14:09:26 2003
 @@ -0,0 +1,3 @@
 +Vendor: Fink
 +Vendor-URL: http://fink.sourceforge.net/
 +Bugs: http://fink.sourceforge.net/
 diff -urN dpkg-1.10.9.orig/scripts/cleanup-info.8 dpkg-1.10.9/scripts/cleanup-info.8
---- dpkg-1.10.9.orig/scripts/cleanup-info.8	Mon Dec  6 02:49:04 1999
-+++ dpkg-1.10.9/scripts/cleanup-info.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/cleanup-info.8	Sun Dec  5 17:49:04 1999
++++ dpkg-1.10.9/scripts/cleanup-info.8	Mon Dec  8 14:09:26 2003
 @@ -34,7 +34,7 @@
  Output version and exit successfully.
  .SH FILES
@@ -2263,8 +2301,8 @@ diff -urN dpkg-1.10.9.orig/scripts/cleanup-info.8 dpkg-1.10.9/scripts/cleanup-in
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-divert.8 dpkg-1.10.9/scripts/dpkg-divert.8
---- dpkg-1.10.9.orig/scripts/dpkg-divert.8	Fri Jul  6 08:19:56 2001
-+++ dpkg-1.10.9/scripts/dpkg-divert.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/dpkg-divert.8	Fri Jul  6 00:19:56 2001
++++ dpkg-1.10.9/scripts/dpkg-divert.8	Mon Dec  8 14:09:26 2003
 @@ -37,7 +37,7 @@
  .SH OPTIONS
  .TP
@@ -2292,8 +2330,8 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-divert.8 dpkg-1.10.9/scripts/dpkg-divert
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-name.sh dpkg-1.10.9/scripts/dpkg-name.sh
---- dpkg-1.10.9.orig/scripts/dpkg-name.sh	Sun Dec 24 21:34:20 2000
-+++ dpkg-1.10.9/scripts/dpkg-name.sh	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/dpkg-name.sh	Sun Dec 24 12:34:20 2000
++++ dpkg-1.10.9/scripts/dpkg-name.sh	Mon Dec  8 14:09:26 2003
 @@ -10,6 +10,7 @@
  license () {
  echo "# ${prog} ${version} -- ${purpose}
@@ -2312,8 +2350,8 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-name.sh dpkg-1.10.9/scripts/dpkg-name.sh
  
  stderr () {
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-scanpackages.8 dpkg-1.10.9/scripts/dpkg-scanpackages.8
---- dpkg-1.10.9.orig/scripts/dpkg-scanpackages.8	Sat May 25 12:35:00 2002
-+++ dpkg-1.10.9/scripts/dpkg-scanpackages.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/dpkg-scanpackages.8	Sat May 25 04:35:00 2002
++++ dpkg-1.10.9/scripts/dpkg-scanpackages.8	Mon Dec  8 14:09:26 2003
 @@ -39,7 +39,7 @@
  .PP
  .I binarydir
@@ -2333,8 +2371,8 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-scanpackages.8 dpkg-1.10.9/scripts/dpkg-
 +.SH AUTHOR
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-source.1 dpkg-1.10.9/scripts/dpkg-source.1
---- dpkg-1.10.9.orig/scripts/dpkg-source.1	Sat May 25 12:11:02 2002
-+++ dpkg-1.10.9/scripts/dpkg-source.1	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/dpkg-source.1	Sat May 25 04:11:02 2002
++++ dpkg-1.10.9/scripts/dpkg-source.1	Mon Dec  8 14:09:26 2003
 @@ -805,6 +805,7 @@
  .BR pgp (1).
  .SH AUTHOR
@@ -2354,8 +2392,8 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-source.1 dpkg-1.10.9/scripts/dpkg-source
 +.B @PREFIX@/share/common-licenses/GPL
  for details.
 diff -urN dpkg-1.10.9.orig/scripts/dpkg-statoverride.8 dpkg-1.10.9/scripts/dpkg-statoverride.8
---- dpkg-1.10.9.orig/scripts/dpkg-statoverride.8	Sun Mar  4 23:39:06 2001
-+++ dpkg-1.10.9/scripts/dpkg-statoverride.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/dpkg-statoverride.8	Sun Mar  4 14:39:06 2001
++++ dpkg-1.10.9/scripts/dpkg-statoverride.8	Mon Dec  8 14:09:26 2003
 @@ -51,10 +51,10 @@
  .TP
  .I --admindir
@@ -2378,8 +2416,8 @@ diff -urN dpkg-1.10.9.orig/scripts/dpkg-statoverride.8 dpkg-1.10.9/scripts/dpkg-
  This is free software; see the GNU General Public Licence version 2 or
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.9.orig/scripts/install-info.8 dpkg-1.10.9/scripts/install-info.8
---- dpkg-1.10.9.orig/scripts/install-info.8	Thu Jan 31 23:00:59 2002
-+++ dpkg-1.10.9/scripts/install-info.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/install-info.8	Thu Jan 31 14:00:59 2002
++++ dpkg-1.10.9/scripts/install-info.8	Mon Dec  8 14:09:26 2003
 @@ -156,7 +156,7 @@
  be located in
  .IR infodir .
@@ -2399,8 +2437,8 @@ diff -urN dpkg-1.10.9.orig/scripts/install-info.8 dpkg-1.10.9/scripts/install-in
  Copyright 1994, Ian Jackson.
  .B install\-info
 diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.8 dpkg-1.10.9/scripts/update-alternatives.8
---- dpkg-1.10.9.orig/scripts/update-alternatives.8	Thu Nov 29 08:41:10 2001
-+++ dpkg-1.10.9/scripts/update-alternatives.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/update-alternatives.8	Wed Nov 28 23:41:10 2001
++++ dpkg-1.10.9/scripts/update-alternatives.8	Mon Dec  8 14:09:26 2003
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -2504,8 +2542,8 @@ diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.8 dpkg-1.10.9/scripts/upd
  .BR ln (1),
  FHS, the Filesystem Hierarchy Standard.
 diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.pl dpkg-1.10.9/scripts/update-alternatives.pl
---- dpkg-1.10.9.orig/scripts/update-alternatives.pl	Mon Apr 29 04:34:07 2002
-+++ dpkg-1.10.9/scripts/update-alternatives.pl	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/scripts/update-alternatives.pl	Sun Apr 28 20:34:07 2002
++++ dpkg-1.10.9/scripts/update-alternatives.pl	Mon Dec  8 14:09:26 2003
 @@ -56,7 +56,7 @@
  sub quit { print STDERR "update-alternatives: @_\n"; exit(2); }
  sub badusage { print STDERR "update-alternatives: @_\n\n"; &usageversion; exit(2); }
@@ -2515,9 +2553,21 @@ diff -urN dpkg-1.10.9.orig/scripts/update-alternatives.pl dpkg-1.10.9/scripts/up
  $admindir= $admindir . '/alternatives';
  $testmode= 0;
  $verbosemode= 0;
+diff -urN dpkg-1.10.9.orig/split/Makefile.in dpkg-1.10.9/split/Makefile.in
+--- dpkg-1.10.9.orig/split/Makefile.in	Mon May 20 05:40:27 2002
++++ dpkg-1.10.9/split/Makefile.in	Mon Dec  8 14:19:20 2003
+@@ -42,7 +42,7 @@
+ 	$(INSTALL_DATA) $(srcdir)/dpkg-split.8 $(DESTDIR)/$(man8dir)
+ 
+ dpkg-split: $(SPLIT_OBJECTS) 
+-	$(CC) $(LDFLAGS) -o $@ $(SPLIT_OBJECTS) $(LIBS) $(NLS_LIBS)
++	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(SPLIT_OBJECTS) $(LIBS) $(NLS_LIBS)
+ 
+ split.o: split.c
+ 	$(CC) $(ALL_CFLAGS) -DMKSPLITSCRIPT=\"$(dpkglibdir)/mksplit\" -c $<
 diff -urN dpkg-1.10.9.orig/split/dpkg-split.8 dpkg-1.10.9/split/dpkg-split.8
---- dpkg-1.10.9.orig/split/dpkg-split.8	Thu Jan 31 23:00:59 2002
-+++ dpkg-1.10.9/split/dpkg-split.8	Sat Nov  8 22:01:19 2003
+--- dpkg-1.10.9.orig/split/dpkg-split.8	Thu Jan 31 14:00:59 2002
++++ dpkg-1.10.9/split/dpkg-split.8	Mon Dec  8 14:09:26 2003
 @@ -162,7 +162,7 @@
  .BI --depotdir " directory"
  Specifies an alternative directory for the queue of parts awaiting
@@ -2547,3 +2597,18 @@ diff -urN dpkg-1.10.9.orig/split/dpkg-split.8 dpkg-1.10.9/split/dpkg-split.8
 +.B @PREFIX@/share/common-licenses/GPL
  for details.
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
+diff -urN dpkg-1.10.9.orig/utils/Makefile.in dpkg-1.10.9/utils/Makefile.in
+--- dpkg-1.10.9.orig/utils/Makefile.in	Sat Aug 24 20:54:19 2002
++++ dpkg-1.10.9/utils/Makefile.in	Mon Dec  8 14:15:41 2003
+@@ -72,9 +72,9 @@
+ 	$(INSTALL_DATA) $(srcdir)/$(MD5_MANPAGES) $(DESTDIR)/$(man1dir)
+ 
+ start-stop-daemon: $(SSD_OBJECTS) ../lib/libdpkg.a
+-	$(CC) $(LDFLAGS) -o $@ $(SSD_OBJECTS) $(LIBS) $(SSD_LIBS)
++	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(SSD_OBJECTS) $(LIBS) $(SSD_LIBS)
+ 
+ md5sum-static: LDFLAGS += -static
+ md5sum-static: ZLIB_LIBS = $(ZLIBS_LIBS_ALSO_STATIC)
+ md5sum md5sum-static: $(MD5_OBJECTS) ../lib/libdpkg.a
+-	$(CC) $(LDFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
++	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)

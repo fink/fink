@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.9
-Revision: 27
+Revision: 200
 GCC: 3.3
 Depends: gettext, libiconv, gzip, tar, ncurses (>= 5.3-12)
 Essential: yes
@@ -15,7 +15,7 @@ SetMAKEFLAGS: -j1
 CompileScript: <<
  %p/bin/fink -y install gettext-dev libiconv-dev ncurses-dev
  ./configure %m-apple-darwin %c
- make
+ make EXEFLAGS=-force_flat_namespace
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<

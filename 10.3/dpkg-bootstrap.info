@@ -1,6 +1,6 @@
 Package: dpkg-bootstrap
 Version: 1.10.9
-Revision: 14
+Revision: 200
 Depends: gettext, gzip, tar
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
@@ -12,7 +12,7 @@ SetMAKEFLAGS: -j1
 ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 CompileScript: <<
  ./configure %m-apple-darwin %c
- make
+ make EXEFLAGS=-force_flat_namespace
 <<
 InstallScript: <<
  mkdir -p %i/share/doc/dpkg
