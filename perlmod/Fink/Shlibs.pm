@@ -24,7 +24,7 @@ $|++;
 
 package Fink::Shlibs;
 use Fink::Base;
-use Fink::Services qw(&print_breaking);
+use Fink::Services qw(&print_breaking &version_cmp);
 use Fink::Config qw($config $basepath);
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
@@ -108,13 +108,186 @@ sub check_files {
     close (OTOOL);
   }
 
-  ### FIXME
-  ### add code to go through the array and split by , then by |
-  ### then seperate by pkg name and versions and then reassemble
-  ### and each pkg may only be listed once, with the highest reported
-  ### version
+  print "DEBUG: before deduplication: ", join(', ', @depends), "\n";
 
+  # this next bit does some really strange voodoo, I will try to
+  # explain how it works.
+
+  # first, there is a hash that contains a list of <package>,<operator>
+  # tuples -- we use this for determining if a package is mentioned
+  # multiple times.  We need to consider <package>,<operator> as a
+  # unique key because of cases like:
+  #
+  #   Depends: macosx (>= 10.1), macosx (<< 10.4)
+
+  my $depvers = {};
+
+  # next, there is an array that keeps a cooked version of the input
+  # dependency list, with "<package> (<operator> <version>)" transformed
+  # into "<package>,<operator>" -- this retains the order, as well as
+  # any combinations of foo|bar|baz and so on, for the purposes of
+  # recreating it later.
+
+  my @newdeps;
+
+  # so, first we go through each depend, turn it into an object that
+  # contains versioning information and such, and then fills in the
+  # $depvers hash and @newdeps array.
+
+  for my $dep (@depends) {
+    my @depobj = get_depobj($dep);
+    my $name;
+
+    # get_depobj() returns multiple entries when the source depend
+    # is a foo|bar|baz style dependency (ie alternates)
+    # for each one of these we want to strip it down to a
+    # @newdeps-style array, and pump each of the individual deps
+    # into the $depvers hash.
+
+    if (@depobj > 1) {
+      my @depnames;
+      for my $obj (@depobj) {
+        push(@depnames, $obj->{tuplename});
+      }
+      $name = join('|', @depnames);
+      undef @depnames;
+      for my $obj (@depobj) {
+        $depvers = update_version_hash($depvers, $obj);
+      }
+    } else {
+      $name = $depobj[0]->{tuplename};
+      $depvers = update_version_hash($depvers, $depobj[0]);
+    }
+    # this will skip putting something into @newdeps if it's
+    # already there (it has to match the <package>,<operator>
+    # tuple exactly, not just the package name, to be
+    # considered a duplicate
+    if (not grep($_ eq $name, @newdeps)) {
+      push(@newdeps, $name);
+    }
+  }
+
+  @depends = ();
+
+  # now, we parse through the cooked data, and generate a new
+  # dependency list, with duplicates removed because of the
+  # skip above, and any matching version comparisons for a given
+  # package should all be in parity
+
+  for my $depspec (@newdeps) {
+    if ($depspec =~ /\|/) {
+
+      # if it's a multiple, we chop it up and transform each
+      # part into it's "real" comparison, and then put it back
+      # together and stick it on the new @depends
+
+      my @splitdeps = split(/\|/, $depspec);
+
+      for my $index (0..$#splitdeps) {
+
+        if (defined $depvers->{$splitdeps[$index]}->{operator}) {
+          # operator is undefined if there was no version comparison
+          $splitdeps[$index] = $depvers->{$splitdeps[$index]}->{name} . ' (' . $depvers->{$splitdeps[$index]}->{operator} . ' ' . $depvers->{$splitdeps[$index]}->{version} . ')';
+        } else {
+          $splitdeps[$index] = $depvers->{$splitdeps[$index]}->{name};
+        }
+      }
+      push(@depends, join(' | ', @splitdeps));
+    } else {
+
+      # otherwise we just transform the single entry and push
+      # it on the depends array
+
+      if (defined $depvers->{$depspec}->{operator}) {
+        # operator is undefined if there was no version comparison
+        push(@depends, $depvers->{$depspec}->{name} . ' (' . $depvers->{$depspec}->{operator} . ' ' . $depvers->{$depspec}->{version} . ')');
+      } else {
+        push(@depends, $depvers->{$depspec}->{name});
+      }
+    }
+  }
+
+  print "DEBUG: after deduplication: ", join(', ', @depends), "\n";
   return @depends;
+}
+
+# this is a scary subroutine to update the name,operator cache
+# for handling duplicates -- it's just plain evil.  EVIL. EEEEVIIIILLLL.
+sub update_version_hash {
+  my $hash   = shift;
+  my $depobj = shift;
+
+  if (exists $hash->{$depobj->{tuplename}}) {
+    # if the name,operator pair exists in the dep cache hash
+    if ($depobj->{operator} =~ /^==?$/ and
+        $depobj->{version} ne $hash->{$depobj->{tuplename}}->{version}) {
+      # can't have 2 different versions in an == comparison for the
+      # same dependency (ie, Depends: macosx = 10.2-1, macosx = 10.3-1)
+      warn "this package depends on ", $depobj->{name}, " = ", $depobj->{version}, " *and* ",
+        $depobj->{name}, " = ", $hash->{$depobj->{tuplename}}->{version}, "!!!\n";
+    } elsif (version_cmp($depobj->{version}, $depobj->{operator}, $hash->{$depobj->{tuplename}}->{version})) {
+      # according to the operator, this new dependency is more "specific"
+      $hash->{$depobj->{tuplename}} = $depobj;
+    }
+  } elsif ($depobj->{tuplename} eq $depobj->{name}) {
+    my @matches = grep(/^$depobj->{name}\,/, keys %{$hash});
+    if (@matches > 0) {
+      # $depobj has no version dep, but a versioned dependency
+      # already exists in the object cache -- take the first match
+      $hash->{$depobj->{tuplename}} = $hash->{$matches[0]};
+
+      if (@matches > 1) {
+        warn "more than one version comparison exists for ", $depobj->{name}, "!!!\n",
+          "taking ", $hash->{$matches[0]}->{tuplename}, "\n";
+      }
+    } else {
+      # $depobj isn't in the cache (versioned or not)
+      $hash->{$depobj->{tuplename}} = $depobj;
+    }
+  } elsif (grep(/^$depobj->{name}$/, keys %{$hash})) {
+    # $depobj has a versioned dep, but an unversioned dependency
+    # already exists in the object cache -- we need to update the
+    # previous one
+    $hash->{$depobj->{tuplename}} = $depobj;
+    $hash->{$depobj->{name}}      = $depobj;
+  } else {
+    # if the tuple doesn't exist, we add it
+    $hash->{$depobj->{tuplename}} = $depobj;
+  }
+
+  return $hash;
+}
+
+# get a dependency "object" (just a data structure with dep info)
+sub get_depobj {
+  my $depdef = shift;
+  my @return;
+
+  # this seems weird, but splitting when there isn't a "|" will
+  # just give a 1-entry array, so it works even in the case there's
+  # no multiple comparison (ie, "foo|bar")
+
+  for my $dep (split(/\s*\|\s*/, $depdef)) {
+    $dep =~ s/[\r\n\s]+/ /;
+    $dep =~ s/^\s+//;
+    $dep =~ s/\s+$//;
+    my $depobj;
+    if (my ($name, $operator, $version) = $dep =~ /^\s*(.+?)\s+\(([\<\>\=]+)\s+(\S+)\)\s*$/) {
+      $depobj->{name}      = $name;
+      $depobj->{operator}  = $operator;
+      $depobj->{version}   = $version;
+      $depobj->{tuplename} = $name . ',' . $operator;
+      #$depobj->{tuplename} = $name;
+    } else {
+      $depobj->{name}      = $dep;
+      $depobj->{operator}  = undef;
+      $depobj->{version}   = '0-0';
+      $depobj->{tuplename} = $dep;
+    }
+    push(@return, $depobj);
+  }
+
+  return @return;
 }
 
 ### get package name

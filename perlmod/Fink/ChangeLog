@@ -1,3 +1,9 @@
+2003-07-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Shlibs.pm: Evil, scary voodoo to remove duplicates in dependency
+	  specifications.  I tried to document the heck out of it, but it's
+	  still pretty freakish.  Handle with care.  :)
+
 2003-07-11  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Added new file to deal with all the shlibs functions
