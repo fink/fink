@@ -1,0 +1,23 @@
+Package: pine-ssl
+Version: 4.33
+Revision: 1
+Source: ftp://ftp.cac.washington.edu/pine/pine%v.tar.gz
+Depends: openssl
+Patch: %f.patch
+CompileScript: ./build SSLDIR=%p osx
+InstallScript: mkdir -p %i/bin
+ cp bin/pine %i/bin
+ cp bin/pico %i/bin
+ cp bin/pilot %i/bin
+ cp bin/mtest %i/bin
+ mkdir -p %i/sbin
+ cp bin/imapd %i/sbin
+ cp imap/ipopd/ipop2d %i/sbin
+ cp imap/ipopd/ipop3d %i/sbin
+ mkdir -p %i/man/man1
+ cp doc/pine.1 %i/man/man1
+ cp doc/pico.1 %i/man/man1
+ cp doc/pilot.1 %i/man/man1
+CommentPort: 
+CommentStow: 
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
