@@ -1,5 +1,9 @@
 2004-11-21  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.info.in: Make sure *this* fink reindexes after install.
+
+2004-11-21  Daniel Macks  <dmacks@netspace.org>
+
 	* fink-virtual-pkgs.in: Clean up error messages.
 
 2004-11-19  Daniel Macks  <dmacks@netspace.org>
