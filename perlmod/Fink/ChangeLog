@@ -1,5 +1,8 @@
 2001-10-18  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Engine.pm (restart_as_root): Propagate the "--yes" option when
+	restarting as root.
+
 	* Services.pm (prompt, prompt_boolean, prompt_selection): Check
 	the "dontask" a.k.a. "--yes" option and use the default value
 	instead of prompting the user when set.

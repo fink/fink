@@ -160,6 +160,12 @@ sub restart_as_root {
   $method = $config->param_default("RootMethod", "sudo");
 
   $cmd = "$basepath/bin/fink";
+
+  if (Fink::Config::get_option("dontask")) {
+    $cmd .= " --yes";
+  }
+  # TODO: add code for other options here
+
   foreach $arg (@_) {
     if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
       $cmd .= " $arg";
