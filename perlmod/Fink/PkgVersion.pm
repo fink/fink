@@ -696,7 +696,7 @@ sub resolve_depends {
 	my $include_build = shift || 0;
 	my $op = shift;
 	my $field = shift;
-	my $forceoff = shift;
+	my $forceoff = shift || 0;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
@@ -715,7 +715,7 @@ sub resolve_depends {
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list. In 
 	if ($include_build and $self->{_type} eq "splitoff") {
-		push @deplist, ($self->{parent})->resolve_depends(2, $field);
+		push @deplist, ($self->{parent})->resolve_depends(2, $op, $field, $forceoff);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
@@ -741,7 +741,7 @@ sub resolve_depends {
 # declarations have not been violated
 		foreach $altspec (@speclist){
 		    BUILDDEPENDSLOOP: foreach $depspec (split(/\s*\|\s*/, $altspec)) {
-			next if ($altspec eq '${SHLIB_DEPS}');
+			next if ($altspec eq '{SHLIB_DEPS}');
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
 			    $depname = $1;
 			    $versionspec = $2;
@@ -803,7 +803,7 @@ sub resolve_depends {
 	}
 
 	SPECLOOP: foreach $altspec (@speclist) {
-		next if ($altspec eq '${SHLIB_DEPS}');
+		next if ($altspec eq '{SHLIB_DEPS}');
 		$altlist = [];
 		foreach $depspec (split(/\s*\|\s*/, $altspec)) {
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
@@ -1662,11 +1662,11 @@ EOF
 		import File::Find;
 	};
 
-	### Add ${SHLIB_DEPS} replace code here
-	### 1) check for ${SHLIB_DEPS} else continue
+	### Add {SHLIB_DEPS} replace code here
+	### 1) check for {SHLIB_DEPS} else continue
 	my $depline = $self->get_binary_depends();
 
-	if ($depline =~ /\$\{SHLIB_DEPS\}/) {
+	if ($depline =~ /\{SHLIB_DEPS\}/) {
 		print "Writing shared library dependencies...\n";
 
 		### 2) get a list to replace it with
@@ -1684,11 +1684,11 @@ EOF
 		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
 
 		### 3) replace it in the debian control file
-		if ($depline =~ /\$\{SHLIB_DEPS\}, / &&
+		if ($depline =~ /\{SHLIB_DEPS\}, / &&
 			length($shlibstr) <= 0) {
-			$depline =~ s/\$\{SHLIB_DEPS\}, //;
+			$depline =~ s/\{SHLIB_DEPS\}, //;
 		} else {
-			$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
+			$depline =~ s/\{SHLIB_DEPS\}/$shlibstr/;
 		}
 	}
 

@@ -81,20 +81,6 @@ sub check_files {
 	# get a list of linked files to the pkg files
 	FILELOOP: foreach $file (@files) {
 		chomp($file);
-		### Add extra deps here 
-#                        if (-f $_) {
-#                                $filelist{$_}++;
-#                        }
-#                        if (/\.omf$/) {
-#                                # scrollkeeper .omf files
-#                                $deppackages{'scrollkeeper'}++;
-#                        } elsif (/lib\/perl5\/([\d\.]+)\//) {
-#                                # /sw/lib/perl5/X.X.X/*
-#                                my $perlver = $1;
-#                                $perlver =~ s/\.//g;
-#                                $deppackages{'perl'.$perlver.'-core'}++;
-#                        }
-
 		open(OTOOL, "otool -L $file 2>/dev/null |") or
 				die "can't run otool: $!\n";
 			# need to drop all links to system libs and the
@@ -102,12 +88,16 @@ sub check_files {
 			while (<OTOOL>) {
 				chomp();
 				# Nuke first line and errors
-				next if ("$_" =~ /\:/);
+				#next if ("$_" =~ /\:/);
 				# Nuke the end
-				$_ =~ s/\ \(.*$//;
+				#$_ =~ s/\ \(.*$//;
 				# Remove space at the beginning and end
-				$_ =~ s/^\s*//;
-				$_ =~ s/\s*$//;
+				#$_ =~ s/^\s*//;
+				#$_ =~ s/\s*$//;
+				# Get lib
+				$_ =~ s/^\s*(\S+)\s+.*$/$1/;
+				# Make sure it's a lib and is installed.
+				next unless (-f $_);
 				### This should drop any depends on it's self
 				### Strictly on it's self not a child
 				foreach $currentlib (@files) {
@@ -454,7 +444,7 @@ sub update_shlib_db {
 	my $db = "shlibs.db";
 
 	# read data from descriptions
-	print "Reading shared library  info...\n";
+	print "Reading shared library info...\n";
 	$dir = "$basepath/var/lib/dpkg/info";
 	$self->scan($dir);
 

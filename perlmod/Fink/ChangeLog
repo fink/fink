@@ -1,7 +1,8 @@
 2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Added condition to display Information line on reading
-	shlibs.  I will no longer appear between builds.
+	shlibs.  I will no longer appear between builds. Changed ${SHLIB_DEPS}
+	to {SHLIB_DEPS} so perl doesn't think it' s a variable.
 
 2003-12-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
