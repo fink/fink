@@ -36,7 +36,7 @@ if ($#ARGV >= 0 and $ARGV[0] =~ /^-?-v(ersion)?$/i) {
 
 ### now load the useful modules
 
-use Fink::Services qw(prompt_boolean read_config);
+use Fink::Services qw(&prompt_boolean &read_config);
 use Fink::Config;
 use Fink::Engine;
 
@@ -44,16 +44,6 @@ use Fink::Engine;
 
 my ($config, $configpath);
 $configpath = "$FindBin::RealBin/config";
-#if (! -f $configpath) {
-#  if (&prompt_boolean("Configuration file '$configpath' not found. ".
-#		      "Do you want to interactively create ".
-#		      "a configuration?", 1)) {
-#    use Fink::Bootstrap qw(bootstrap);
-#    &bootstrap($configpath);
-#  } else {
-#    exit 0;
-#  }
-#}
 if (-f $configpath) {
   print "Reading configuration...\n";
   $config = &read_config($configpath);
