@@ -133,9 +133,10 @@ sub bootstrap {
 					"$basepath with package management.");
 	print "\n";
 
-	# use normal install routines
+	# use normal install routines, but do not use buildlocks
+	Fink::Config::set_options( { 'no_buildlock' => 1 } );
 	Fink::Engine::cmd_install(@elist, @addlist);
-
+	Fink::Config::set_options( { 'no_buildlock' => 0 } );
 
 	print "\n";
 	&print_breaking("BOOTSTRAP DONE. Cleaning up.");

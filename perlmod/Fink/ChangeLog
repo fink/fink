@@ -1,3 +1,8 @@
+2004-11-16  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use Config option no_buildlock to skip build-locking
+	* Bootstrap.pm: no_buildlock during phase 3
+
 2004-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: disable UseBinaryDist during bootstrap

@@ -2717,6 +2717,9 @@ sub set_buildlock {
 	# bootstrapping occurs before we have package-management tools needed for buildlock
 	return if $self->{_bootstrap};
 
+	# allow over-ride
+	return if Fink::Config::get_option("no_buildlock");
+
 	my $lockpkg_minor = 'fink-buildlock-' . $self->get_fullname();
 	my $lockpkg = $lockpkg_minor . '-' .  strftime "%Y.%m.%d-%H.%M.%S", localtime;
 	$self->{_lockpkg} = $lockpkg;
@@ -2847,6 +2850,7 @@ sub clear_buildlock {
 	return if $self->{_bootstrap};
 
 	my $lockpkg = $self->{_lockpkg};
+	return if !defined $lockpkg;
 
 	# remove $lockpkg (== clear lock for building $self)
 	print "Removing build lock...\n";
@@ -2861,6 +2865,7 @@ sub clear_buildlock {
 
 	# we're gone
 	Fink::Config::set_options( { "Buildlock_PkgVersion" => undef } );
+	delete $self->{_lockpkg};
 }
 
 # returns hashref for the ENV to be used while running package scripts
