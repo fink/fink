@@ -1,3 +1,8 @@
+2003-03-30  Max Horn  <max@quendi.de>
+
+	* Validation.pm: There are no NoSourceNDirectory fields (i.e. with a
+	  number).
+
 2003-03-20  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm (run_script): Backup the environment before clearing it
@@ -10,15 +15,16 @@
 	
 2003-03-05	Ben Hines <benh57@users.sourceforge.net>
 
-	* PkgVersion.pm: Add section to dpkg control file (should prevent "unknown section" for 
-	  unstable locally built binaries in dselect) and correct root dir error typo.
+	* PkgVersion.pm: Add section to dpkg control file (should prevent "unknown
+	  section" for unstable locally built binaries in dselect) and correct root
+	  dir error typo.
 	
 2003-02-28  Max Horn  <max@quendi.de>
 
-	* Package.pm: Reverting a "fix" from 2003-01-27 (no ChangeLog entry was made)
-	  which causes the package DB file to grow ad infinitum (unless a manual
-	  "fink index" is performed). A proper fix for the issue this was meant
-	  to fix has yet to be added.
+	* Package.pm: Reverting a "fix" from 2003-01-27 (no ChangeLog entry was
+	  made) which causes the package DB file to grow ad infinitum (unless a
+	  manual "fink index" is performed). A proper fix for the issue this was
+	  meant to fix has yet to be added.
 
 2003-02-27  Max Horn  <max@quendi.de>
 
@@ -76,8 +82,8 @@
 	  
 2003-01-22  Max Horn  <max@quendi.de>
 
-	* Various files: Applied Chris Zubrzycki's build directory patch which allows
-	  the use of an alternate build dir (Patch #658682).
+	* Various files: Applied Chris Zubrzycki's build directory patch which
+	  allows the use of an alternate build dir (Patch #658682).
 
 2003-01-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

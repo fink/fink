@@ -284,7 +284,6 @@ sub validate_info_file {
 		# Warn if field is unknown
 		unless ($known_fields{$field}
 				 or $field =~ m/^splitoff([2-9]|\d\d)$/
-				 or $field =~ m/^nosource([2-9]|\d\d)directory$/
 				 or $field =~ m/^source([2-9]|\d\d)$/
 				 or $field =~ m/^source([2-9]|\d\d)-md5$/
 				 or $field =~ m/^source([2-9]|\d\d)extractdir$/
