@@ -124,8 +124,8 @@ sub add_user {
 	my $name = shift;
 	my $type = shift;
 	my $desc = shift;
-	my $shell = shift || "/usr/bin/false";
 	my $home = shift;
+	my $shell = shift || "/usr/bin/false";
 	my $group = shift || $name;
  
 	my $nidump = "/usr/bin/nidump";

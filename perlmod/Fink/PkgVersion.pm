@@ -2636,7 +2636,7 @@ EOF
 				if ($scriptname eq "preinst") {
 					$script = "";
 					$script = Fink::User->add_user($name,
-					$type, $desc, $shell, $home, $group);
+					$type, $desc, $home, $shell, $group);
 
 					if ($script) {
 						### Add to top of preinstscript
