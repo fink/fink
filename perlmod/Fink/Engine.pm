@@ -24,7 +24,7 @@
 package Fink::Engine;
 
 use Fink::Services qw(&latest_version &execute &file_MD5_checksum &get_arch &expand_percent);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width &parse_cmd_options);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
@@ -1708,6 +1708,44 @@ sub cmd_dumpinfo {
 			}
 		}
 	}
+}
+
+sub _cmd_dumpinfo {
+	use constant {
+		OP_DESC    => 1,
+		OP_DEPENDS => 2,
+		OP_FETCH   => 4,
+		OP_BUILD   => 8,
+		OP_INSTALL => 16,
+	};
+
+	my $phases = 0;
+	my @pkglist = &parse_cmd_options(
+		'dumpinfo',
+		[
+		 [ 'describe|text|t',   sub {$phases |= OP_DESC;   },
+		   'All of the Desc* fields.' ],
+		 [ 'depends|d',         sub {$phases |= OP_DEPENDS;},
+		   'Fields relating to source downloading.' ],
+		 [ 'fetch|sources|f',   sub {$phases |= OP_FETCH;  },
+		   'All of the dependency fields.' ],
+		 [ 'build|compile|b|c', sub {$phases |= OP_BUILD;  },
+		   'Unpacking, patching, compiling, and installing into the .deb.' ],
+		 [ 'install|i',         sub {$phases |= OP_INSTALL;},
+		   '{Pre,Post}{Inst,Rm}Script, Daemonic*, and other fields that influence them.' ],
+		 [ 'all|a',             sub {$phases |= (
+										  OP_DESC    |
+										  OP_DEPENDS |
+										  OP_FETCH   |
+										  OP_BUILD   |
+										  OP_INSTALL
+									  )
+									 },
+		   'All of the above.' ]
+		], @_);
+
+	print "using old behavior untile dan implements new...\n\n";
+	&_cmd_dumpinfo(@_);
 }
 
 ### EOF

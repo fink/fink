@@ -1,3 +1,9 @@
+2004-04-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: New flags for 'fink dumpinfo' (not live yet),
+	implemented using parse_cmd_options instead of Getopt (and simple
+	print for help).
+
 2004-04-22  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: .deb/control Source field corrected to contain
