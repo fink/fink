@@ -28,7 +28,7 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
-					  &get_path);
+					  &get_path &eval_conditional);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -128,7 +128,7 @@ sub initialize {
 	$self->{_fullversion} = (($epoch ne "0") ? "$epoch:" : "").$version."-".$revision;
 	$self->{_fullname} = $pkgname."-".$version."-".$revision;
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
-	# percent-expansions
+	# prepare percent-expansion map
 	$destdir = "$buildpath/root-".$self->{_fullname};
 	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
@@ -334,7 +334,7 @@ sub conditional_pkg_list {
 			my $cond = $1;
 #			print "\tfound conditional '$cond'\n";
 			# if cond is false, clear entire atom
-			$_ = "" if not $self->eval_conditional($cond, "$field of ".$self->get_info_filename);
+			$_ = "" if not &eval_conditional($cond, "$field of ".$self->get_info_filename);
 		}
 	} @atoms;
 	$value = join "", @atoms; # reconstruct field
@@ -352,40 +352,6 @@ sub conditional_pkg_list {
 #	print "\tnow have: $value\n";
 	$self->set_param($field, $value);
 	return;
-}
-
-# need some variables, may as well define 'em here once
-our %compare_subs = ( '>>' => sub { $_[0] gt $_[1] },
-					  '<<' => sub { $_[0] lt $_[1] },
-					  '>=' => sub { $_[0] ge $_[1] },
-					  '<=' => sub { $_[0] le $_[1] },
-					  '='  => sub { $_[0] eq $_[1] },
-					  '!=' => sub { $_[0] ne $_[1] }
-					);
-our $compare_ops = join "|", keys %compare_subs;
-
-# evaluate a conditional expression and return its logical result
-
-sub eval_conditional {
-	my $self = shift;
-	my $expr = shift;    # the expression (as a string)
-	my $where = shift;   # used in error messages
-
-	$expr =~ s/^\s*//;  # remove leading and trailing whitespace
-	$expr =~ s/\s*$//;
-
-	if ($expr =~ /^(\S+)\s*($compare_ops)\s*(\S+)$/) {
-		# syntax 1: (string1 op string2)
-#		print "\t\ttesting '$1' '$2' '$3'\n";
-		return $compare_subs{$2}->($1,$3);
-	} elsif ($expr !~ /\s/) {
-		# syntax 2: (string): string must be non-null
-#		print "\t\ttesting '$expt'\n";
-		return length $expr > 0;
-	} else {
-		print "Error: Invalid conditional expression \"$expr\"\nin $where. Treating as true.\n";
-		return 1;
-	}
 }
 
 ### Remove our own package name from a given package-list field
@@ -455,7 +421,7 @@ sub get_configureparams {
 				@words = &parse_line('\s+', 1, $string);
 				if (defined $words[0]) {
 					# only keep it if conditional is true
-					$result .= " $words[0]" if $self->eval_conditional($cond, $where);
+					$result .= " $words[0]" if &eval_conditional($cond, $where);
 					$string =~ s/^\Q$words[0]//;  # already dealt with this now
 				} else {
 					print "Conditional \"$cond\" controls nothing in $where!\n";

@@ -1,5 +1,10 @@
 2004-04-22  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm, Services.pm: Move eval_conditional() from an
+	instance method in PkgVersion to a package function in Services.
+
+2004-04-22  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Move actual logical evaluation of conditional
 	expression (Depends, etc.) into its own eval_conditional() method.
 	Implemented get_configureparams() accessor, and enabled

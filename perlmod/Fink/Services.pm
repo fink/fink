@@ -43,7 +43,8 @@ BEGIN {
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space
 					  &file_MD5_checksum &get_arch &get_sw_vers
-					  &get_system_perl_version &get_path);
+					  &get_system_perl_version &get_path
+					  &eval_conditional);
 }
 our @EXPORT_OK;
 
@@ -920,6 +921,72 @@ sub get_path {
 	}
 
 	return $path;
+}
+
+=item eval_conditional
+
+    my $bool = &eval_conditional($expr, $where);
+
+Evaluates the logical expression passed as a string in $expr and
+returns its logical value. If there is a parsing error, "true" is
+returned and a message (including $where) is printed. Two syntaxes are
+supported:
+
+=over 4
+
+string1 op string2
+
+=over 4
+
+The two strings are compared using one of the operators defined as a
+key in the %compare_subs package-global. The three components may be
+separated from each other by "some whitespace" for legibility.
+
+=back
+
+string
+
+=over 4
+
+"False" indicates the string is null (has no non-whitespace
+characters). "True" indicates the string is non-null.
+
+=back
+
+=back
+
+Leading and trailing whitespace is ignored. The strings must not
+contain whitespace or any of the op operators (no quoting, delimiting,
+or protection syntax is implemented).
+
+=cut
+
+# need some variables, may as well define 'em here once
+our %compare_subs = ( '>>' => sub { $_[0] gt $_[1] },
+					  '<<' => sub { $_[0] lt $_[1] },
+					  '>=' => sub { $_[0] ge $_[1] },
+					  '<=' => sub { $_[0] le $_[1] },
+					  '='  => sub { $_[0] eq $_[1] },
+					  '!=' => sub { $_[0] ne $_[1] }
+					);
+our $compare_ops = join "|", keys %compare_subs;
+
+sub eval_conditional {
+	my $expr = shift;
+	my $where = shift;
+
+	if ($expr =~ /^\s*(\S+)\s*($compare_ops)\s*(\S+)\s*$/) {
+		# syntax 1: (string1 op string2)
+#		print "\t\ttesting '$1' '$2' '$3'\n";
+		return $compare_subs{$2}->($1,$3);
+	} elsif ($expr !~ /\s/) {
+		# syntax 2: (string): string must be non-null
+#		print "\t\ttesting '$expt'\n";
+		return length $expr > 0;
+	} else {
+		print "Error: Invalid conditional expression \"$expr\"\nin $where. Treating as true.\n";
+		return 1;
+	}
 }
 
 =back
