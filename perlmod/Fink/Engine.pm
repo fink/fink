@@ -1563,6 +1563,10 @@ sub cmd_splits {
 		}
 
 		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
+		if ($arg ne $pkgs[0]) {
+			print "$arg is a child, it's parent ";
+		}
+
 		printf("%s has ", $pkgs[0]);
 		unless ($pkgs[1]) {
 			printf("no children.\n");
