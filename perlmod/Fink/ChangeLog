@@ -1,3 +1,8 @@
+2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
+
+	* SelfUpdate.pm: Add --delete since it is not implied by 
+	  --delete-after on older versions of rsync (10.2).
+
 2003-11-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm: reverted the "Simplified code" changes from 11-12,
