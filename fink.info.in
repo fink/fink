@@ -1,12 +1,12 @@
 Package: fink
 Version: @VERSION@
 Revision: @REVISION@
+Depends: base-files
+Suggests: storable-pm, term-readkey-pm
+Essential: yes
 Source: %n-%v.tar
 Source-MD5: @MD5@
 NoSourceDirectory: true
-Depends: base-files
-Essential: yes
-Suggests: storable-pm, term-readkey-pm
 CompileScript: <<
  ./setup.sh %p
  make test
@@ -24,4 +24,5 @@ downloading and compiling source and building binary packages from
 it. Binary package handling is then delegated to dpkg.
 <<
 License: GPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://fink.sourceforge.net/
