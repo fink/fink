@@ -1,5 +1,9 @@
 2001-08-06  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Services.pm (read_properties): Fixed regular expressions to
+	really remove trailing whitespace.
+	(read_properties_multival): Likewise.
+
 	* Engine.pm (real_install): Added check to catch endless loops
 	caused by circular dependencies.
 
