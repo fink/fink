@@ -1,3 +1,11 @@
+2003-10-25  Justin F. Hallett  <thesin@users.sourceforge.net
+
+	* Service.pm: Added an get_path function that is a perl version
+	of the command util which, you give it a file name and it returns
+	the first match in the path of that file with it's full path.
+	* PkgVersion.pm: Changed which call in for perl$version to use
+	new get_path function.
+
 2003-10-24  Benjamin Reed  <rangerrick@users.sourceforge.net
 
 	* SelfUpdate.pm: Modify the rsync command to only remove

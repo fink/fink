@@ -28,7 +28,8 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &prompt_boolean &prompt_selection
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
-					  &get_arch &get_system_perl_version);
+					  &get_arch &get_system_perl_version
+					  &get_path);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -145,11 +146,12 @@ sub initialize {
 
                 ### PERL= needs a full path or you end up with
                 ### perlmods trying to run ../perl$perlversion
-                my $pathnperlver;
-                if (open(PERLPATH, "/usr/bin/which perl$perlversion |")) {
-                        chomp($pathnperlver = <PERLPATH>);
-                        close(PERLPATH);
-                }
+               	my $pathnperlver = get_path('perl'.$perlversion);
+		### if perl$perlversion doesn't exist set it to old method
+		### this happens on 10.3 since there is nolonger a perl5.6.0
+		unless ($pathnperlver) {
+			$pathnperlver = "perl".$perlversion;
+		}
 		$configure_params = "PERL=$pathnperlver PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
 			$self->param_default("ConfigureParams", "");
 	} else {

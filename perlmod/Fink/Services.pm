@@ -44,7 +44,7 @@ BEGIN {
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
 					  &file_MD5_checksum &get_arch &get_sw_vers
-					  &get_system_perl_version);
+					  &get_system_perl_version &get_path);
 }
 our @EXPORT_OK;
 
@@ -657,6 +657,26 @@ sub get_system_perl_version {
 	return $system_perl_version;
 }
 
+# get_path
+# an perl version of which to get the full path to a binary in your path
+sub get_path {
+	use File::Spec;
 
+	my $file = shift;
+	my $path = undef;
+	my (@path, $base);
+
+	### Get current user path env
+	@path = File::Spec->path();
+
+	### Get matches and return first match in order of path
+	for $base (map { File::Spec->catfile($_, $file) } @path) {
+		if (-x $base and !-d $base and !$path) {
+			$path = $base;
+		}
+	}
+
+	return $path;
+}
 ### EOF
 1;
