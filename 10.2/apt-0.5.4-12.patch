@@ -845,3 +845,23 @@ diff -uNbr apt-0.5.4/sources.list.fink-bindist apt-0.5.4-new/sources.list.fink-b
 +# Official binary distribution: download location for updated
 +# packages built between releases
 +deb http://us.dl.sourceforge.net/fink/direct_download 10.2/current main crypto
+--- apt-0.5.4/apt-pkg/policy.cc.orig	2003-06-23 23:35:02.000000000 -0700
++++ apt-0.5.4/apt-pkg/policy.cc	2003-06-23 23:35:56.000000000 -0700
+@@ -183,7 +183,7 @@
+    Pin *P = 0;
+    
+    if (Name.empty() == true)
+-      P = &*Defaults.insert(Defaults.end());
++      P = &*Defaults.insert(Defaults.end(),PkgPin());
+    else
+    {
+       // Get a spot to put the pin
+@@ -197,7 +197,7 @@
+ 	       P = &*I;
+ 	 
+ 	 if (P == 0)
+-	    P = &*Unmatched.insert(Unmatched.end());      
++	    P = &*Unmatched.insert(Unmatched.end(), PkgPin());      
+       }
+       else
+       {

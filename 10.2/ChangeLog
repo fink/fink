@@ -1,3 +1,7 @@
+2003-06-27  Max Horn  <max@quendi.de>
+
+	* updated apt package to 0.5.4-12, matching (un)stable CVS
+
 2003-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* updated storable-pm to 1.0.14-5, and added the system-perl581 package
