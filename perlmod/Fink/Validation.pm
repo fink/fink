@@ -567,15 +567,15 @@ sub validate_info_file {
 							$looks_good = 0;
 						}
 						if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
-							print "Warning: Malformed compatibility_version \"$shlibs_parts[1]\" for $shlibs_parts[0] in field \"shlibs\" of \"$field\". ($filename)\n";
+							print "Warning: Malformed compatibility_version for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
 							$looks_good = 0;
 						}
 						if ($shlibs_parts[3] =~ /%/) {
-							print "Warning: Package version for \"$shlibs_parts[0]\n must be hard-coded in field \"shlibs\" of \"$field\". ($filename)\n";
+							print "Warning: Package version for \"$shlibs_parts[0]\" must be hard-coded in field \"shlibs\" of \"$field\". ($filename)\n";
 							$looks_good = 0;
 						}
 						if ($shlibs{$shlibs_parts[0]}++) {
-							print "Warning: File \"$shlibs_parts[0]\" listed more than once in field \"shlibs\" of \"$field\". ($filename)\n";
+							print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\" of \"$field\". ($filename)\n";
 							$looks_good = 0;
 						}
 					}
