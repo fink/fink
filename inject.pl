@@ -134,9 +134,9 @@ if (not -d "$basepath/src") {
 
 $script .=
   "tar -cf $basepath/src/fink-$packageversion.tar ".
-  "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
+  "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-  "shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update ".
+  "shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
   "fink-virtual-pkgs.in mirror\n";
 
 foreach $cmd (split(/\n/,$script)) {

@@ -7,7 +7,10 @@ NoSourceDirectory: true
 Depends: base-files
 Essential: yes
 Suggests: storable-pm, term-readkey-pm
-CompileScript: ./setup.sh %p
+CompileScript: <<
+ ./setup.sh %p
+ make test
+<<
 InstallScript: ./install.sh %i
 PostInstScript: <<
  %p/lib/fink/postinstall.pl

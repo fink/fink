@@ -1,3 +1,8 @@
+2003-11-16  Max Horn <max@quendi.de>
+
+	* fink.info.in, inject.pl: Automatically run the tests are part of
+	  the CompileScript in fink.info.
+
 2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: Make fink-virtual-pkgs print builddependsonly
