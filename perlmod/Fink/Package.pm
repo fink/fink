@@ -357,7 +357,7 @@ sub update_aptgetable {
 	my $class = shift; # class method
 	my $statusfile = "$basepath/var/lib/dpkg/status";
 	
-	open APTDUMP, '-|', "$basepath/bin/apt-cache", "dump"
+	open APTDUMP, "$basepath/bin/apt-cache dump |"
 		or die "Can't run apt-cache dump: $!";
 		
 	# Note: We assume here that the package DB exists already
