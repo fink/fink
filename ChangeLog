@@ -1,5 +1,11 @@
 2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.23.4, a release
+	on branch_0_23 which modifies UseBinaryDist functionality and
+	recognizes Mac OS X 10.3.7.
+
+2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* fink.in, fink.info.in: Missed one spot while changing names
 
 2004-12-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
