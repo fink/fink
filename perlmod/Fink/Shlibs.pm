@@ -45,7 +45,7 @@ BEGIN {
 our @EXPORT_OK;
 
 our $have_shlibs = 0;
-our %shlibs = ();
+our $shlibs = {};
 our $shlib_db_outdated = 1;
 our $shlib_db_mtime = 0;
 
@@ -81,6 +81,20 @@ sub check_files {
 	# get a list of linked files to the pkg files
 	FILELOOP: foreach $file (@files) {
 		chomp($file);
+		### Add extra deps here 
+#                        if (-f $_) {
+#                                $filelist{$_}++;
+#                        }
+#                        if (/\.omf$/) {
+#                                # scrollkeeper .omf files
+#                                $deppackages{'scrollkeeper'}++;
+#                        } elsif (/lib\/perl5\/([\d\.]+)\//) {
+#                                # /sw/lib/perl5/X.X.X/*
+#                                my $perlver = $1;
+#                                $perlver =~ s/\.//g;
+#                                $deppackages{'perl'.$perlver.'-core'}++;
+#                        }
+
 		open(OTOOL, "otool -L $file 2>/dev/null |") or
 				die "can't run otool: $!\n";
 			# need to drop all links to system libs and the
@@ -329,19 +343,19 @@ sub get_shlib {
 
 	$dep = "";
 
-	foreach $shlib (keys %shlibs) {
+	foreach $shlib (keys %$shlibs) {
 		if ("$shlib" eq "$lib") {
-			if ($shlibs{$shlib}->{total} > 1) {
-				for ($count = 1; $count <= $shlibs{$shlib}->{total}; $count++) {
+			if ($shlibs->{$shlib}->{total} > 1) {
+				for ($count = 1; $count <= $shlibs->{$shlib}->{total}; $count++) {
 					$pkgnum = "package".$count;
 					$vernum = "version".$count;
-					$dep .= $shlibs{$shlib}->{$pkgnum}." (".$shlibs{$shlib}->{$vernum}.")";
-					if ($count != $shlibs{$shlib}->{total}) {
+					$dep .= $shlibs->{$shlib}->{$pkgnum}." (".$shlibs->{$shlib}->{$vernum}.")";
+					if ($count != $shlibs->{$shlib}->{total}) {
 						$dep .= " |";
  					}
 				}
 			} else {
-				$dep = $shlibs{$shlib}->{package1}." (".$shlibs{$shlib}->{version1}.")";
+				$dep = $shlibs->{$shlib}->{package1}." (".$shlibs->{$shlib}->{version1}.")";
 			}
 		}
 	}
@@ -363,7 +377,7 @@ sub forget_shlibs {
 	my $self = shift;
 
 	$have_shlibs = 0;
-	%shlibs = ();
+	$shlibs = {};
 	$shlib_db_outdated = 1;
 }
 
@@ -400,7 +414,7 @@ sub get_all_shlibs {
 			# If the index is not outdated, we can use it,
 			# and thus safe a lot of time
 			if (not $shlib_db_outdated) {
-				%shlibs = Storable::retrieve("$basepath/var/db/$db");
+				$shlibs = Storable::retrieve("$basepath/var/db/$db");
 			}
 		}
 	}
@@ -413,18 +427,19 @@ sub get_all_shlibs {
 	$have_shlibs = 1;
 
 	printf "Information about %d shlibs read in %d seconds.\n",
-		scalar(values %shlibs), (time - $time);
+		scalar(values %$shlibs), (time - $time);
 }
 
 ### scan for info files and compare to $db_mtime
 sub search_comparedb {
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
+	my $db = "shlibs.db";
 
 	# Using find is much faster than doing it in Perl
 	return
 		(grep !m{/CVS/},
-		`/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.shlibs' -newer $basepath/var/db/shlibs.db`)
+		`/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.shlibs' -newer $basepath/var/db/$db`)
 		? 1 : 0;
 }
 
@@ -435,19 +450,19 @@ sub update_shlib_db {
 	my $db = "shlibs.db";
 
 	# read data from descriptions
-	print "Reading shlib info...\n";
+	print "Reading shared library  info...\n";
 	$dir = "$basepath/var/lib/dpkg/info";
 	$self->scan($dir);
 
 	eval {
 		require Storable; 
 		if ($> == 0) {
-			print "Updating shlib index... ";
+			print "Updating shared library index... ";
 			unless (-d "$basepath/var/db") {
 				mkdir("$basepath/var/db", 0755) ||
 					die "Error: Could not create directory $basepath/var/db";
 			}
-			Storable::store (%shlibs, "$basepath/var/db/$db.tmp");
+			Storable::store($shlibs, "$basepath/var/db/$db.tmp");
 			rename "$basepath/var/db/$db.tmp", "$basepath/var/db/$db";
 			print "done.\n";
 		} else {
@@ -522,7 +537,7 @@ sub inject_shlib {
 	my $package = shift;
 	my (@packages, $pkg, $counter, $pkgnum, $vernum);
 
-	$shlibs{$shlibname}->{compat} = $compat;
+	$shlibs->{$shlibname}->{compat} = $compat;
 	if ($package =~ /\|/) {
 		@packages = split(/\s*\|\s*/, $package);
 		$counter = 0;
@@ -531,16 +546,16 @@ sub inject_shlib {
 			if ($pkg =~ /(.+) \((.+)\)/) {
 				$pkgnum = "package".$counter;
 				$vernum = "version".$counter;;
-				$shlibs{$shlibname}->{$pkgnum} = $1;
-				$shlibs{$shlibname}->{$vernum} = $2;
+				$shlibs->{$shlibname}->{$pkgnum} = $1;
+				$shlibs->{$shlibname}->{$vernum} = $2;
 			}
-			$shlibs{$shlibname}->{total} = $counter;
+			$shlibs->{$shlibname}->{total} = $counter;
 		}
 	} else {
 		if ($package =~ /(.+) \((.+)\)/) {
-			$shlibs{$shlibname}->{package1} = $1;
-			$shlibs{$shlibname}->{version1} = $2;
-			$shlibs{$shlibname}->{total} = 1;
+			$shlibs->{$shlibname}->{package1} = $1;
+			$shlibs->{$shlibname}->{version1} = $2;
+			$shlibs->{$shlibname}->{total} = 1;
 		}
 	}
 }

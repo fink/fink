@@ -1673,10 +1673,12 @@ EOF
 		my @filelist = ();
 		my $wanted = sub {
 			if (-f) {
+				print "DEBUG: $File::Find::fullname\n";
 				push @filelist, $File::Find::fullname;
 			}
 		};
-		find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $destdir);
+		## Might need follow_skip but then need to change fullname
+		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
 
 		$shlibstr = Fink::Shlibs->get_shlibs(@filelist);
 
