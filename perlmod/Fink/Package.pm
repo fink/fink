@@ -1,9 +1,10 @@
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::Package class
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,39 +23,50 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(&read_properties &latest_version &version_cmp &parse_fullversion
-					  &print_breaking &execute);
-use Fink::Config qw($config $basepath $debarch);
+use Fink::Services qw(&read_properties &read_properties_var
+		      &latest_version &version_cmp &parse_fullversion
+		      &expand_percent);
+use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
+use Fink::Config qw($config $basepath $debarch binary_requested);
 use Fink::PkgVersion;
+use Fink::FinkVersion;
 use File::Find;
-use Fcntl ':mode'; # for search_comparedb
 
 use strict;
 use warnings;
 
-BEGIN {
-	use Exporter ();
-	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION	 = 1.00;
-	@ISA		 = qw(Exporter Fink::Base);
-	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw();	# eg: qw($Var1 %Hashit &func3);
-	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
-}
-our @EXPORT_OK;
+our $VERSION = 1.00;
+our @ISA = qw(Fink::Base);
 
-our ($have_packages, @package_list, @essential_packages, $essential_valid, %package_hash, 
-				$use_cache, $db_outdated, $db_mtime);
-$have_packages = 0;
-@package_list = ();
-%package_hash = ();
-@essential_packages = ();
-$essential_valid = 0;
-$db_outdated = 1;
-$db_mtime = 0;
+our $have_packages = 0;
+our $packages = {};
+our @essential_packages = ();
+our $essential_valid = 0;
+our $db_outdated = 1;
+our $db_mtime = 0;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
+
+Fink::Package - manipulate Fink package objects
+
+=head1 DESCRIPTION
+
+Fink::Package contains a variety of tools for querying, manipulating, and
+navigating the Fink package database.
+
+=head2 Functions
+
+No functions are exported by default.  You should generally be getting
+a package object by interacting with this module in an object-oriented
+fashion:
+
+  my $package = Fink::Package->package_by_name('PackageName');
+
+=over 4
+
+=cut
 
 ### constructor taking a name
 
@@ -85,8 +97,7 @@ sub initialize {
 	$self->{_virtual} = 1;
 	$self->{_providers} = [];
 
-	push @package_list, $self;
-	$package_hash{$self->{package}} = $self;
+	$packages->{$self->{package}} = $self;
 }
 
 ### get package name
@@ -99,9 +110,16 @@ sub get_name {
 
 ### get pure virtual package flag
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub is_virtual {
+	use Fink::VirtPackage;
 	my $self = shift;
 
+	if (Fink::VirtPackage->query_package($self->{_name})) {
+		# Fix to set VirtPackage.pm pkgs as virtuals level 2
+		$self->{_virtual} = 2;
+	}
 	return $self->{_virtual};
 }
 
@@ -110,12 +128,21 @@ sub is_virtual {
 sub add_version {
 	my $self = shift;
 	my $version_object = shift;
-
+	
 	my $version = $version_object->get_fullversion();
-	if (exists $self->{_versions}->{ $version} 
-		&& $self->{_versions}->{ $version}->{_type} eq 'dummy' ) {
+	if (exists $self->{_versions}->{$version} 
+		&& $self->{_versions}->{$version}->is_type('dummy') ) {
 		$self->{_versions}->{$version}->merge($version_object);
 	} else {
+		# $pv->fullname is currently treated as unique, even though it won't be
+		# if the version is the same but epoch isn't. So let's make sure.
+		delete $self->{_versions}->{$version};
+		my $fullname = $version_object->get_fullname();
+		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions()) {
+			die "The package full name '$fullname' is not allowed to be used"
+			 ." more than once.";
+		}
+		
 		$self->{_versions}->{$version} = $version_object;
 	}
 
@@ -132,6 +159,8 @@ sub add_provider {
 }
 
 ### list available versions
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub list_versions {
 	my $self = shift;
@@ -153,7 +182,7 @@ sub get_matching_versions {
 	my @include_list = @_;
 	my (@list, $version, $vo, $relation, $reqversion);
 
-	if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+	if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
 		$relation = $1;
 		$reqversion = $2;
 	} else {
@@ -184,12 +213,25 @@ sub get_matching_versions {
 
 sub get_all_providers {
 	my $self = shift;
-	my (@versions);
+	my @versions;
 
 	@versions = values %{$self->{_versions}};
 	push @versions, @{$self->{_providers}};
 	return @versions;
 }
+
+# Are any of the package's providers installed?
+sub is_provided {
+	my $self = shift;
+	my $pvo;
+
+	foreach $pvo (@{$self->{_providers}}) {
+		return 1 if $pvo->is_installed();
+	}
+	return 0;
+}
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub list_installed_versions {
 	my $self = shift;
@@ -203,6 +245,8 @@ sub list_installed_versions {
 	return @versions;
 }
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub is_any_installed {
 	my $self = shift;
 	my ($version);
@@ -214,7 +258,20 @@ sub is_any_installed {
 	return 0;
 }
 
+sub is_any_present{
+	my $self = shift;
+	my ($version);
+
+	foreach $version (keys %{$self->{_versions}}) {
+		return 1
+			if $self->{_versions}->{$version}->is_present();
+	}
+	return 0;
+}
+
 ### get version object by exact name
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub get_version {
 	my $self = shift;
@@ -232,12 +289,14 @@ sub get_version {
 
 ### get package by exact name, fail when not found
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub package_by_name {
 	shift;	# class method - ignore first parameter
 	my $pkgname = shift;
 	my $package;
 
-	return $package_hash{lc $pkgname};
+	return $packages->{lc $pkgname};
 }
 
 ### get package by exact name, create when not found
@@ -247,15 +306,17 @@ sub package_by_name_create {
 	my $pkgname = shift;
 	my $package;
 
-	return $package_hash{lc $pkgname} || Fink::Package->new_with_name($pkgname);
+	return $packages->{lc $pkgname} || Fink::Package->new_with_name($pkgname);
 }
 
 ### list all packages
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub list_packages {
 	shift;	# class method - ignore first parameter
 
-	return keys %package_hash;
+	return keys %$packages;
 }
 
 ### list essential packages
@@ -266,7 +327,7 @@ sub list_essential_packages {
 
 	if (not $essential_valid) {
 		@essential_packages = ();
-		foreach $package (@package_list) {
+		foreach $package (values %$packages) {
 			$version = &latest_version($package->list_versions());
 			$vnode = $package->get_version($version);
 			if (defined($vnode) && $vnode->param_boolean("Essential")) {
@@ -280,13 +341,43 @@ sub list_essential_packages {
 
 ### make sure package descriptions are available
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub require_packages {
 	shift;	# class method - ignore first parameter
 
 	if (!$have_packages) {
-		Fink::Package->scan_all();
+		Fink::Package->scan_all(@_);
 	}
 }
+
+# set the aptgetable status of packages
+
+sub update_aptgetable {
+	my $class = shift; # class method
+	my $statusfile = "$basepath/var/lib/dpkg/status";
+	
+	open APTDUMP, "$basepath/bin/apt-cache dump |"
+		or die "Can't run apt-cache dump: $!";
+		
+	# Note: We assume here that the package DB exists already
+	my ($po, $pv);
+	while(<APTDUMP>) {
+		if (/^\s*Package:\s*(\S+)/) {
+			($po, $pv) = (Fink::Package->package_by_name($1), undef);
+		} elsif (/^\s*Version:\s*(\S+)/) {
+			$pv = $po->get_version($1) if defined $po;
+		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
+										# of apt-cache dump
+			# Avoid using debs that aren't really apt-getable
+			next if $1 eq $statusfile;
+			
+			$pv->set_aptgetable() if defined $pv;
+		}
+	}
+	close APTDUMP;
+}
+
 
 ### forget about all packages
 
@@ -294,8 +385,7 @@ sub forget_packages {
 	shift;	# class method - ignore first parameter
 
 	$have_packages = 0;
-	@package_list = ();
-	%package_hash = ();
+	%$packages = ();
 	@essential_packages = ();
 	$essential_valid = 0;
 	$db_outdated = 1;
@@ -308,10 +398,13 @@ sub scan_all {
 	my ($time) = time;
 	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
 
+	my $dbfile = "$basepath/var/db/fink.db";
+	my $conffile = "$basepath/etc/fink.conf";
+
 	Fink::Package->forget_packages();
 	
 	# If we have the Storable perl module, try to use the package index
-	if (-e "$basepath/var/db/fink.db") {
+	if (-e $dbfile) {
 		eval {
 			require Storable; 
 
@@ -321,23 +414,19 @@ sub scan_all {
 			# Unless the NoAutoIndex option is set, check whether we should regenerate
 			# the index based on its modification date and that of the package descs.
 			if (not $config->param_boolean("NoAutoIndex")) {
-				$db_mtime = (stat("$basepath/var/db/fink.db"))[9];			 
-				if (((lstat("$basepath/etc/fink.conf"))[9] > $db_mtime)
-					or ((stat("$basepath/etc/fink.conf"))[9] > $db_mtime)) {
+				$db_mtime = (stat($dbfile))[9];			 
+				if (((lstat($conffile))[9] > $db_mtime)
+					or ((stat($conffile))[9] > $db_mtime)) {
 					$db_outdated = 1;
 				} else {
 					$db_outdated = &search_comparedb( "$basepath/fink/dists" );
 				}
 			}
 			
-			# If the index is not outdated, we can use it, and thus safe a lot of time
-			 if (not $db_outdated) {
-				%package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
-				my ($pkgtmp);
-				foreach $pkgtmp (keys %package_hash) {
-					push @package_list, $package_hash{$pkgtmp};
-				}
-			 }
+			# If the index is not outdated, we can use it, and thus save a lot of time
+			if (not $db_outdated) {
+				$packages = Storable::lock_retrieve($dbfile);
+			}
 		}
 	}
 	
@@ -356,9 +445,9 @@ sub scan_all {
 
 		# create dummy object
 		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0];
-			$hash->{version} = $versions[1];
-			$hash->{revision} = $versions[2];
+			$hash->{epoch} = $versions[0] if defined($versions[0]);
+			$hash->{version} = $versions[1] if defined($versions[1]);
+			$hash->{revision} = $versions[2] if defined($versions[2]);
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
@@ -375,9 +464,9 @@ sub scan_all {
 
 		# create dummy object
 		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0];
-			$hash->{version} = $versions[1];
-			$hash->{revision} = $versions[2];
+			$hash->{epoch} = $versions[0] if defined($versions[0]);
+			$hash->{version} = $versions[1] if defined($versions[1]);
+			$hash->{revision} = $versions[2] if defined($versions[2]);
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
@@ -386,37 +475,30 @@ sub scan_all {
 	}
 	$have_packages = 1;
 
-	print "Information about ".($#package_list+1)." packages read in ",
-		(time - $time), " seconds.\n\n";
+	if (&get_term_width) {
+		printf STDERR "Information about %d packages read in %d seconds.\n", 
+			scalar(values %$packages), (time - $time);
+	}
 }
 
 ### scan for info files and compare to $db_mtime
 
+# returns true if any are newer than $db_mtime, false if not
 sub search_comparedb {
 	my $path = shift;
-	my (@files, $file, $fullpath, @stats);
+	$path .= "/";  # forces find to follow the symlink
 
-	# FIXME: should probably just check dirs of $config->get_treelist()
-	opendir(DIR, $path) || die "can't opendir $path: $!";
-	@files = grep { !/^[\.#]/ } readdir(DIR);
-	closedir DIR;
+	# Using find is much faster than doing it in Perl
+	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db |"
+		or die "/usr/bin/find failed: $!\n";
 
-	foreach $file (@files) {
-		$fullpath = "$path/$file"; 
+	# If there is anything on find's STDOUT, we know at least one
+	# .info is out-of-date. No reason to check them all.
+	my $file_found = defined <NEWER_FILES>;
 
-		if (-d $fullpath) {
-			next if $file eq "binary-$debarch";
-			next if $file eq "CVS";
-			return 1 if (&search_comparedb($fullpath));
-		}
-		else {
-			next if !(substr($file, length($file)-5) eq ".info");
-			@stats = stat($fullpath);
-			return 1 if ($stats[9] > $db_mtime);
-		}
-	}
-	
-	return 0;
+	close NEWER_FILES;
+
+	return $file_found;
 }
 
 ### read the packages and update the database, if needed and we are root
@@ -425,27 +507,77 @@ sub update_db {
 	shift;	# class method - ignore first parameter
 	my ($tree, $dir);
 
+	my $dbdir = "$basepath/var/db";
+	my $dbfile = "$dbdir/fink.db";
+	my $lockfile = "$dbdir/fink.db.lock";
+
+	my $oldsig = $SIG{'INT'};
+	$SIG{'INT'} = sub { unlink($lockfile); die "User interrupt.\n"  };
+
+	# check if we should update index cache
+	my $writable_cache = 0;
+	eval "require Storable";
+	if ($@) {
+		my $perlver = sprintf '%*vd', '', $^V;
+		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the package index. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
+	} elsif ($> != 0) {
+		&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+	} else {
+		# we have Storable.pm and are root
+		$writable_cache = 1;
+	}
+
+	# minutes to wait
+	my $wait = 5;
+	if (-f $lockfile) {
+		# Check if we're already indexing.  If the index is less than 5 minutes old,
+		# assume that there's another fink running and try to wait for it to finish indexing
+		my $db_mtime = (stat($lockfile))[9];
+		if ($db_mtime > (time - 60 * $wait)) {
+			print STDERR "\nWaiting for another reindex to finish...";
+			for (0 .. 60) {
+				sleep $wait;
+				if (! -f $lockfile) {
+					print STDERR " done.\n";
+					$packages = Storable::lock_retrieve($dbfile);
+					$db_outdated = 0;
+					return;
+				}
+			}
+		}
+	} else {
+		open (FILEOUT, '>' . $lockfile);
+		close (FILEOUT);
+	}
+
 	# read data from descriptions
-	print "Reading package info...\n";
+	if (&get_term_width) {
+		print STDERR "Reading package info...\n";
+	}
 	foreach $tree ($config->get_treelist()) {
 		$dir = "$basepath/fink/dists/$tree/finkinfo";
 		Fink::Package->scan($dir);
 	}
-	eval {
-		require Storable; 
-		if ($> == 0) {
-			print "Updating package index... ";
-			unless (-d "$basepath/var/db") {
-				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
-			}
-			Storable::store (\%package_hash, "$basepath/var/db/fink.db");
-			print "done.\n";
-		} else {
-			&print_breaking( "\nFink has detected that your package cache is out of date and needs" .
-				" an update, but does not have privileges to modify it. Please re-run fink as root," .
-				" for example with a \"fink index\" command.\n" );
+	if (Fink::Config::binary_requested()) {
+		Fink::Package->update_aptgetable();
+	}
+	
+	if ($writable_cache) {
+		if (&get_term_width) {
+			print STDERR "Updating package index... ";
 		}
+		unless (-d $dbdir) {
+			mkdir($dbdir, 0755) || die "Error: Could not create directory $dbdir: $!\n";
+		}
+
+		Storable::lock_store ($packages, "$dbfile.tmp");
+		rename "$dbfile.tmp", $dbfile or die "Error: could not activate temporary file $dbfile.tmp: $!\n";
+		print STDERR "done.\n";
 	};
+
+	$SIG{'INT'} = $oldsig if (defined $oldsig);
+	unlink($lockfile);
+
 	$db_outdated = 0;
 }
 
@@ -463,7 +595,7 @@ sub scan {
 	@filelist = ();
 	$wanted =
 		sub {
-			if (-f and not /^[\.#]/ and /\.info$/) {
+			if (-f and not /^[\.\#]/ and /\.info$/) {
 				push @filelist, $File::Find::fullname;
 			}
 		};
@@ -472,6 +604,8 @@ sub scan {
 	foreach $filename (@filelist) {
 		# read the file and get the package name
 		$properties = &read_properties($filename);
+		$properties = Fink::Package->handle_infon_block($properties, $filename);
+		next unless keys %$properties;
 		$pkgname = $properties->{package};
 		unless ($pkgname) {
 			print "No package name in $filename\n";
@@ -481,14 +615,81 @@ sub scan {
 			print "No version number for package $pkgname in $filename\n";
 			next;
 		}
+		# fields that should be converted from multiline to
+		# single-line
+		for my $field ('builddepends', 'depends', 'files') {
+			if (exists $properties->{$field}) {
+				$properties->{$field} =~ s/[\r\n]+/ /gs;
+				$properties->{$field} =~ s/\s+/ /gs;
+			}
+		}
 
-		# get/create package object
-		$package = Fink::Package->package_by_name_create($pkgname);
-
-		# create object for this particular version
-		$properties->{thefilename} = $filename;
-		Fink::Package->inject_description($package, $properties);
+		Fink::Package->setup_package_object($properties, $filename);
 	}
+}
+
+# Given $properties as a ref to a hash of .info lines in $filename,
+# instantiate the package(s) and return an array of Fink::PkgVersion
+# object(s) (i.e., the results of Fink::Package::inject_description().
+sub setup_package_object {
+	shift;	# class method - ignore first parameter
+	my $properties = shift;
+	my $filename = shift;
+
+	my %pkg_expand;
+
+	if (exists $properties->{type}) {
+		if ($properties->{type} =~ /([a-z0-9+.\-]*)\s*\((.*?)\)/) {
+			# if we were fed a list of subtypes, remove the list and
+			# refeed ourselves with each one in turn
+			my $type = $1;
+			my @subtypes = split ' ', $2;
+			if ($subtypes[0] =~ /^boolean$/i) {
+				# a list of (boolean) has special meaning
+				@subtypes = ('','.');
+			}
+			my @pkgversions;
+			foreach (@subtypes) {
+				# need new copy, not copy of ref to original
+				my $this_properties = {%{$properties}};
+				$this_properties->{type} =~ s/($type\s*)\(.*?\)/$type $_/;
+				push @pkgversions, Fink::Package->setup_package_object($this_properties, $filename);
+			};
+			return @pkgversions;
+		}
+		# we have only single-value subtypes
+#		print "Type: ",$properties->{type},"\n";
+		my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
+		foreach (keys %$type_hash) {
+			( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+		}
+	}
+#	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
+
+
+	# store invariant portion of Package
+	( $properties->{package_invariant} = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
+	if (exists $properties->{parent}) {
+		# get parent's Package for percent expansion
+		# (only splitoffs can use %N in Package)
+		$pkg_expand{'N'}  = $properties->{parent}->{package};
+		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
+	}
+	# must always call expand_percent even if no Type or parent in
+	# order to make sure Maintainer doesn't have bad % constructs
+	$properties->{package_invariant} = &expand_percent($properties->{package_invariant},\%pkg_expand, "$filename \"package\"");
+
+	# must always call expand_percent even if no Type in order to make
+	# sure Maintainer doesn't have %type_*[] or other bad % constructs
+	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
+
+	# get/create package object
+	my $package = Fink::Package->package_by_name_create($properties->{package});
+
+	# create object for this particular version
+	$properties->{thefilename} = $filename;
+	my $pkgversion = Fink::Package->inject_description($package, $properties);
+	return ($pkgversion);
 }
 
 ### create a version object from a properties hash and link it
@@ -508,8 +709,8 @@ sub inject_description {
 	$po->add_version($version);
 
 	# track provided packages
-	if ($version->has_param("Provides")) {
-		foreach $vp (split(/\s*\,\s*/, $version->param("Provides"))) {
+	if ($version->has_pkglist("Provides")) {
+		foreach $vp (split(/\s*\,\s*/, $version->pkglist("Provides"))) {
 			$vpo = Fink::Package->package_by_name_create($vp);
 			$vpo->add_provider($version);
 		}
@@ -518,6 +719,63 @@ sub inject_description {
 	return $version;
 }
 
+=item handle_infon_block
 
-### EOF
+    my $properties = &read_properties($filename);
+    $properties = &handle_infon_block($properties, $filename);
+
+For the .info file lines processed into the hash ref $properties from
+file $filename, deal with the possibility that the whole thing is in a
+InfoN: block.
+
+If so, make sure this fink is new enough to understand this .info
+format (i.e., NE<lt>=max_info_level). If so, promote the fields of the
+block up to the top level of %$properties and return a ref to this new
+hash. Also set a _info_level key to N.
+
+If an error with InfoN occurs (N>max_info_level, more than one InfoN
+block, or part of $properties existing outside the InfoN block) print
+a warning message and return a ref to an empty hash (i.e., ignore the
+.info file).
+
+=cut
+
+sub handle_infon_block {
+	shift;	# class method - ignore first parameter
+	my $properties = shift;
+	my $filename = shift;
+
+	my($infon,@junk) = grep {/^info\d+$/i} keys %$properties;
+	if (not defined $infon) {
+		return $properties;
+	}
+	# file contains an InfoN block
+	if (@junk) {
+		print "Multiple InfoN blocks in $filename; skipping\n";
+		return {};
+	}
+	unless (keys %$properties == 1) {
+		# if InfoN, entire file must be within block (avoids
+		# having to merge InfoN block with top-level fields)
+		print "Field(s) outside $infon block! Skipping $filename\n";
+		return {};
+	}
+	my ($info_level) = ($infon =~ /(\d+)/);
+	my $max_info_level = &Fink::FinkVersion::max_info_level;
+	if ($info_level > $max_info_level) {
+		# make sure we can handle this InfoN
+		print "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename\n";
+		return {};
+	}
+	# okay, parse InfoN and promote it to the top level
+	my $new_properties = &read_properties_var("$infon of \"$filename\"", $properties->{$infon});
+	$new_properties->{infon} = $info_level;
+	return $new_properties;
+}
+
+
+=back
+
+=cut
+
 1;
