@@ -1,3 +1,12 @@
+2003-12-03  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: made it so fink can't remove or purge essential pkgs
+	like bzip2-dev which can be removed in current fink, even though
+	fink will just reinstall them, why not just not allow it to be removed?
+	Also made it so if the pkgs to be removed are the same as the ones
+	in ARGV then don't ask first.  And added a print_breaking for long
+	package listings.
+
 2003-12-03  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Initial go at PODifying the docs.

@@ -670,7 +670,7 @@ sub cmd_remove {
 sub get_pkglist {
 	my $cmd = shift;
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
-	my ($vo, @versions);
+	my ($vo, @versions, $parent);
 	my ($buildonly, $wanthelp);
 
 	use Getopt::Long;
@@ -723,15 +723,27 @@ EOF
 
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
+		# Make sure it's empty before every check
+		undef $parent;
 
 		# Can't purge or remove virtuals
 		next if $package->is_virtual();
 
 		@versions = $package->list_installed_versions();
+		next unless ($versions[0]);
 		$vo = $package->get_version($versions[0]);
+
+		# get parent if exists
+		$parent = $vo->{parent};
 
 		# Can only remove/purge installed pkgs
 		next unless $vo->is_installed();
+
+		# shouldn't be able to remove or purge esstential pkgs
+		next if ( $vo->has_param("essential") );
+		if (defined $parent) {
+			next if ( $parent->has_param("essential") );
+		}
 
                 if (defined $buildonly) {
                         next unless ( $vo->has_param("builddependsonly") );
@@ -745,14 +757,19 @@ EOF
 		die "no package specified for command '$cmd'!\n";
 	}
 
-	my $pkglist = join(", ", @packages);
-	my $rmcount = $#packages + 1;
-	print "Fink will attempt to $cmd $rmcount package(s).\n";
-	print "$pkglist\n\n";
+	my $cmp1 = join(" ", $cmd, @packages);
+	my $cmp2 = join(" ", @ARGV);
 
-	my $answer = &prompt_boolean("Do you want to continue?", 1);
-	if (! $answer) {
-		die "$cmd not performed!\n";
+	if ($cmp1 ne $cmp2) {
+		my $pkglist = join(", ", @packages);
+		my $rmcount = $#packages + 1;
+		print "Fink will attempt to $cmd $rmcount package(s).\n";
+		&print_breaking("$pkglist\n\n");
+
+		my $answer = &prompt_boolean("Do you want to continue?", 1);
+		if (! $answer) {
+			die "$cmd not performed!\n";
+		}
 	}
 
 	return @packages;
