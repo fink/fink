@@ -246,10 +246,10 @@ sub initialize {
 
 		# handle splitoff(s)
 		if ($self->has_param('splitoff')) {
-			$self->add_splitoff($self->{'splitoff'});
+			$self->add_splitoff($self->{'splitoff'},"");
 		}
 		for ($i = 2; $self->has_param('splitoff'.$i); $i++) {
-			$self->add_splitoff($self->{'splitoff'.$i});
+			$self->add_splitoff($self->{'splitoff'.$i},$i);
 		}
 	}
 
@@ -291,6 +291,7 @@ sub get_param_with_expansion {
 sub add_splitoff {
 	my $self = shift;
 	my $splitoff_data = shift;
+	my $splitoff_num = shift;
 	my $filename = $self->{_filename};
 	my ($properties, $package, $pkgname, @splitoffs);
 	
@@ -298,7 +299,7 @@ sub add_splitoff {
 	$splitoff_data =~ s/^\s+//gm;
 	
 	# get the splitoff package name
-	$properties = &read_properties_var($filename, $splitoff_data);
+	$properties = &read_properties_var("splitoff$splitoff_num of $filename", $splitoff_data);
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
 		print "No package name for SplitOff in $filename\n";

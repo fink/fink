@@ -1,6 +1,12 @@
+2004-01-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Added second parameter to add_splitoff() for
+	splitoff #, and pass it as part of $file to read_properties_var()
+	so parsing-error error messages note which splitoff is broken.
+
 2004-01-28  Daniel Macks  <dmacks@netspace.org>
 
-	*Validation.pm: Error if Version or Revision contain forbidden
+	* Validation.pm: Error if Version or Revision contain forbidden
 	characters (according to Debian docs).
 
 2004-01-26  Rob Braun  <bbraun@users.sourceforge.net>
