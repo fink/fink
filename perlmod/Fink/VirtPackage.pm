@@ -197,7 +197,7 @@ END
 				print STDERR "$dir/Commands " if ($options{debug});
 				$hash->{status}      = STATUS_PRESENT;
 				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
-				$latest_java = $dir;
+				$latest_java = $dir unless (defined $latest_java);
 
 				$hash = {};
 				$hash->{package}     = "system-java${ver}-dev";
@@ -356,6 +356,7 @@ END
 	# create dummy object for cctools-single-module, if supported
 	print STDERR "- checking for cctools -single_module support:\n" if ($options{debug});
 
+	undef $cctools_single_module;
 	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam() and -x "/usr/bin/touch") {
 		system("/usr/bin/touch ${cctestfile}.c");
 		my $command = "/usr/bin/cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1";
@@ -365,7 +366,6 @@ END
 			$cctools_single_module = '1.0';
 		} else {
 			print STDERR "failed\n" if ($options{debug});
-			$cctools_single_module = undef;
 		}
 		unlink($cctestfile);
 		unlink("${cctestfile}.c");
@@ -374,8 +374,6 @@ END
 
 	$hash = {};
 	$hash->{package} = "cctools-single-module";
-	$hash->{status} = STATUS_PRESENT;
-	$hash->{version} = $cctools_single_module."-1";
 	$hash->{description} = "[virtual package, your dev tools support -single_module]";
 	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 	$hash->{compilescript} = $compile_script;
@@ -392,7 +390,10 @@ above) from Apple at:
 (free registration required)
 END
 
-	if (not $cctools_single_module) {
+	if ($cctools_single_module) {
+		$hash->{status} = STATUS_PRESENT;
+		$hash->{version} = $cctools_single_module."-1";
+	} else {
 		$hash->{status} = STATUS_ABSENT;
 		if ($cctools_version) {
 			$hash->{version} = $cctools_version;

@@ -2494,6 +2494,7 @@ sub get_env {
 		"CPP", "CPPFLAGS",
 		"CXX", "CXXFLAGS",
 		"DYLD_LIBRARY_PATH",
+		"JAVA_HOME",
 		"LD_PREBIND",
 		"LD_PREBIND_ALLOW_OVERLAP",
 		"LD_FORCE_NO_PREBIND",
@@ -2514,6 +2515,9 @@ sub get_env {
 		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
 
+	# uncomment this to be able to use distcc -- not officially supported!
+	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+ 
 	# lay the groundwork for prebinding
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
 		mkdir_p "$basepath/var/lib/fink/prebound" or
@@ -2603,23 +2607,25 @@ END
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
 		if ($self->is_type('java')) {
-			my ($subtype, $dir, $found);
+			my ($JAVA_HOME, $subtype, $dir, $versions_dir, @dirs);
 			if ($subtype = $self->get_subtype('java')) {
-				my $versions_dir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+				$subtype = '' if ($subtype eq 'java');
+				$versions_dir = '/System/Library/Frameworks/JavaVM.framework/Versions';
 				if (opendir(DIR, $versions_dir)) {
-					for $dir (sort(readdir(DIR))) {
+					@dirs = sort(grep(/^${subtype}/, readdir(DIR)));
+					@dirs = reverse(@dirs) if ($subtype eq "");
+					for $dir (@dirs) {
 						if ($dir =~ /^${subtype}/ and -f "$versions_dir/$dir/Headers/jni.h") {
-							$script_env{'JAVA_HOME'} = "$versions_dir/$dir/Home" unless $self->has_param('SetJAVA_HOME');
-							$script_env{'PATH'} = "$versions_dir/$dir/Home/bin:" . $script_env{'PATH'} unless $self->has_param('SetPATH');
-							$found++;
+							$JAVA_HOME = "$versions_dir/$dir/Home";
 						}
 					}
 					closedir(DIR);
 				}
 			}
+			$script_env{'JAVA_HOME'} = $JAVA_HOME unless $self->has_param('SetJAVA_HOME');
+			$script_env{'PATH'}      = $JAVA_HOME . '/bin:' . $script_env{'PATH'} unless $self->has_param('SetPATH');
 		}
 	}
-
 	# cache a copy so caller's changes to returned val don't touch cached val
 	if (not $self->{_bootstrap}) {
 		$self->{_script_env} = { %script_env };
