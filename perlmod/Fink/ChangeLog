@@ -1,3 +1,7 @@
+2005-03-11  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: fix double display of shlibs library reading
+
 2005-03-11  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Fix warning when another process has removed buildlock

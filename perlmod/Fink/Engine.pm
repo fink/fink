@@ -878,7 +878,7 @@ EOF
 		exit 0;
 	}
 
-	Fink::Package->require_packages();
+	Fink::Package->require_packages(0, quiet => 1));
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
