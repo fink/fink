@@ -2,6 +2,7 @@ Package: dpkg-bootstrap
 Version: 1.10.21
 Revision: 200
 Depends: gettext, gzip, tar
+BuildDepends: gcc3.3
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
@@ -12,8 +13,8 @@ NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 CompileScript: <<
- ./configure --build=%m-apple-darwin %c
- make EXEFLAGS=-force_flat_namespace
+ export CC=gcc-3.3; export CXX=g++-3.3; ./configure --build=%m-apple-darwin %c
+ make EXEFLAGS=-force_flat_namespace CC=gcc-3.3 CXX=g++-3.3
 <<
 InstallScript: <<
  mkdir -p %i/share/doc/dpkg
