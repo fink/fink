@@ -233,7 +233,7 @@ sub read_properties_lines {
 				# parser would have no way to distinguish the end of the inner
 				# heredoc(s) and the end of the top heredoc, since both are
 				# marked by '<<'.
-				$heredoc++ if (/<<\s*$/);
+				$heredoc++ if (/<<\s*$/ and not /^\s*#/);
 			}
 		} else {
 			next if /^\s*\#/;		# skip comments
