@@ -276,6 +276,7 @@ END { }				# module clean-up code here (global destructor)
 #	+ correspondence between source* and source*-md5 fields
 #	+ if type is bundle/nosource - warn about usage of "Source" etc.
 #	+ if 'fink describe' output will display poorly on vt100
+#	+ Check Package/Version/Revision for disallowed characters
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -287,7 +288,6 @@ END { }				# module clean-up code here (global destructor)
 #	  (easier to try it than to check for some broken-ness here)
 #	- run a mock build phase (catch typos in dependencies,
 #	  BuildDependsOnly violations, etc.)
-#	- Check Package/Version/Revision/Epoch for disallowed characters
 #	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
@@ -361,6 +361,16 @@ sub validate_info_file {
 	if ($pkgname =~ /[^+-.a-z0-9]/) {
 		print "Error: Package name may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
+		$looks_good = 0;
+	}
+	if ($pkgversion =~ /[^+-.a-z0-9]/) {
+		print "Error: Package version may only contain lowercase letters, numbers,";
+		print "'.', '+' and '-' ($filename)\n";
+		$looks_good = 0;
+	}
+	if ($pkgrevision =~ /[^+.a-z0-9]/) {
+		print "Error: Package revision may only contain lowercase letters, numbers,";
+		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
 	}
 	return unless ($looks_good);
