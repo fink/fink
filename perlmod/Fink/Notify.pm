@@ -140,6 +140,25 @@ The default events are:
 Notifier modules may supply an alternate list of supported events by
 providing their own events() method.
 
+Event names should follow the form [origin][EventType][Status], where:
+
+=over 4
+
+=item * origin
+
+The program that generated the notification.
+
+=item * EventType
+
+The program's event, action, or mode leading to the notification.
+
+=item * Status
+
+Either "Passed" or "Failed", indicating the result of the
+event, action, or mode.
+
+=back
+
 =cut
 
 our @events = qw(
