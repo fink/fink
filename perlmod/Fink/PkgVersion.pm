@@ -1164,7 +1164,7 @@ sub phase_install {
       $install_script .= $self->param("InstallScript");
     } elsif ($self->param("_type") eq "perl") {
       $install_script .= 
-        "make install INSTALLPRIVLIB=\%i/lib/perl5 INSTALLARCHLIB=\%i/lib/perl5/darwin INSTALLSITELIB=\%i/lib/perl5 INSTALLSITEARCH=\%i/lib/perl5/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
+        "make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5 INSTALLARCHLIB=\%i/lib/perl5/darwin INSTALLSITELIB=\%i/lib/perl5 INSTALLSITEARCH=\%i/lib/perl5/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
     } elsif (not $do_splitoff) {
       $install_script .= "make install prefix=\%i\n";
     } 
