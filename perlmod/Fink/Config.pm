@@ -79,6 +79,8 @@ sub initialize {
 
   $config = $self;
   $basepath = $self->param("Basepath");
+  die "Basepath not set in config file \"".$self->{_path}."\"!\n"
+    unless (defined $basepath and $basepath);
   $libpath = "$basepath/lib/fink";
 
   $self->{_queue} = [];
