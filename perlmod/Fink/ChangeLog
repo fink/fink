@@ -3,6 +3,12 @@
 	* PkgVersion.pm (phase_build): Fix so that root-dirs of splitoffs are
 	properly removed again.
 
+2002-03-13  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* Engine.pm: Support for options in apropos and list commands.
+
+	* Services.pm: Added a get_term_width function.
+
 2002-03-09  Max Horn  <max@quendi.de>
 
 	* Engine.pm (cmd_apropos): Fixed apropos commands for strings like "gtk+"
