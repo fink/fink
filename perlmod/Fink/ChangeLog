@@ -1,3 +1,8 @@
+2003-07-05  Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: Revision of "Type: perl" to handle changes in 5.8.0
+	(thanks to JF Mertens)
+
 2003-07-04  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* Validation.pm: Check for hardcoded /sw in the scripts and set fields.
