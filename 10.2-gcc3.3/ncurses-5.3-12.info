@@ -1,7 +1,7 @@
 Package: ncurses
 Version: 5.3
-Revision: 2
-GCC: 3.1
+Revision: 12
+GCC: 3.3
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
 PatchScript: perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
