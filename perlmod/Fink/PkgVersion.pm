@@ -911,12 +911,18 @@ sub phase_compile {
   chdir "$basepath/src/$dir";
 
   # generate compilation script
-  $compile_script =
-    "./configure \%c\n".
-    "make";
   if ($self->has_param("CompileScript")) {
     $compile_script = $self->param("CompileScript");
-  }
+  } elsif ($self->param("_type") eq "perl") {
+    $compile_script =
+      "perl Makefile.PL PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5 INSTALLARCHLIB=\%p/lib/perl5/darwin INSTALLSITELIB=\%p/lib/perl5 INSTALLSITEARCH=\%p/lib/perl5/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3\n".
+      "make\n".
+      "make test";
+  } else {
+    $compile_script = 
+      "./configure \%c\n".
+      "make";
+  }  
 
   $compile_script = &expand_percent($compile_script, $self->{_expand});
 
@@ -967,8 +973,18 @@ sub phase_install {
   } else {
     if ($self->has_param("InstallScript")) {
       $install_script .= $self->param("InstallScript");
+    } elsif ($self->param("_type") eq "perl") {
+      $install_script .= 
+        "make install INSTALLPRIVLIB=\%i/lib/perl5 INSTALLARCHLIB=\%i/lib/perl5/darwin INSTALLSITELIB=\%i/lib/perl5 INSTALLSITEARCH=\%i/lib/perl5/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
     } else {
-      $install_script .= "make install prefix=\%i";
+      $install_script .= "make install prefix=\%i\n";
+    } 
+
+    if ($self->param_boolean("UpdatePOD")) { 
+      $install_script .= 
+        "mkdir -p \%i/share/podfiles/\n".
+        "cat \%i/lib/perl5/darwin/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles/perllocal.\%n.pod\n".
+        "rm -rf \%i/lib/perl5/darwin/perllocal.pod\n";
     }
   }
 
@@ -1085,6 +1101,19 @@ EOF
       $scriptbody = $self->param($scriptname."Script");
     } else {
       $scriptbody = "";
+    }
+
+    # add UpdatePOD Code
+    if ($self->param_boolean("UpdatePOD")) {
+      if ($scriptname eq "postinst") {
+        $scriptbody .=
+          "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n".
+          "cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\n";
+      } elsif ($scriptname eq "postrm") {
+        $scriptbody .=
+          "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n".
+          "cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\n";
+      } 
     }
 
     # add auto-generated parts

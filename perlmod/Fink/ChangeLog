@@ -1,3 +1,8 @@
+2001-12-12  Justin F. Hallett  <thesin@southofheaven.net>
+
+	* PkgVersion.pm: Added UpdatePOD field, and added value "Perl" for
+	the "type" field to better support perl packages
+
 2001-12-11  Max Horn  <max@quendi.de>
 
 	* Engine.pm (cmd_remove): All packages to be removed are now passed
