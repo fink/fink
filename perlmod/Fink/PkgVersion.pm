@@ -1598,7 +1598,8 @@ EOF
 				if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
 					# executable has no install_name, add to the list
 					$name = $File::Find::name;
-					$name =~ s/^$destdir//;
+					my $destmeta = quotemeta($destdir);
+					$name =~ s/^$destmeta//;
 					$is_exe = 1;
 					$is_prebound = 1;
 				} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
