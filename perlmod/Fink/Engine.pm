@@ -1841,17 +1841,28 @@ EOF
 			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
-					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf|)files$/ or
+					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf)files$/ or
 					 $_ eq 'patch' or $_ eq 'infodocs' or
 					 $_ =~ /^daemonicname$/
 					) {
 				# singleline fields start on the same line, have
-				# embedded newlines removes, and are not wrapped
+				# embedded newlines removed, and are not wrapped
 				if ($pkg->has_param($_)) {
 					my $value = $pkg->param_expanded($_);
 					$value =~ s/^\s+//m;
 					$value =~ s/\n/ /g; # merge into single line
 					printf "%s: %s\n", $_, $value;
+				}
+			} elsif ($_ eq 'files') {
+				# singleline fields start on the same line, have
+				# embedded newlines removed, and are not wrapped
+				# need conditionals processing
+				if ($pkg->has_param($_)) {
+					my $value = $pkg->conditional_space_list(
+						$pkg->param("Files"),
+						"Files of ".$pkg->get_fullname()." in ".$pkg->get_info_filename
+					);
+					printf "%s: %s\n", $_, $value if length $value;
 				}
 			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
 				# multiline fields start on a new line and are

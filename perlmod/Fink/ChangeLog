@@ -1,3 +1,9 @@
+2004-08-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm,PkgVersion.pm: Implement conditionals for Files field.
+	* PkgVersion.pm: conditional_space_list: trim leading/trailing
+	whitespace in return value.
+
 2004-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: support for newer (and 64-bit)  versions of gcc

@@ -461,6 +461,8 @@ sub conditional_space_list {
 		}
 	}
 
+	$result =~ s/^\s*//;
+	$result =~ s/\s*$//;
 	$result;
 }
 
@@ -1856,14 +1858,16 @@ sub phase_install {
 
 	# splitoff 'Files' field
 	if ($do_splitoff and $self->has_param("Files")) {
+		my $files = $self->conditional_space_list(
+			$self->param("Files"),
+			"Files of ".$self->get_fullname()." in ".$self->get_info_filename
+		);
+
 		my (@files, $file, $source, $target, $target_dir);
 
-		@files = split(/\s+/, $self->param("Files"));
+		@files = split(/\s+/, $files);
 		foreach $file (@files) {
-
-# FIXME:
-#   * prefix conditional syntax
-
+			$file =~ s/\%/\%\%/g;   # reprotect for later %-expansion
 			if ($file =~ /^(.+)\:(.+)$/) {
 				$source = $1;
 				$target = $2;
