@@ -402,25 +402,25 @@ EOF
 			$iflag = "   ";
 			$description = "[virtual package]";
 			next if ($cmd eq "apropos"); 
-			if (not ($options{installedstate} & 4)) {next; };
+			next unless ($options{installedstate} & 4);
 		} else {
 			$lversion = &latest_version($package->list_versions());
 			$vo = $package->get_version($lversion);
 			if ($vo->is_installed()) {
-				if (not ($options{installedstate} &2)) {next;};
+				next unless ($options{installedstate} & 2);
 				$iflag = " i ";
 			} elsif ($package->is_any_installed()) {
 				$iflag = "(i)";
-				if (not ($options{installedstate} &1)) {next;};
+				next unless ($options{installedstate} & 1);
 			} else {
 				$iflag = "   ";
-				if (not ($options{installedstate} & 4)) {next; };
+				next unless ($options{installedstate} & 4);
 			}
 
 			$description = $vo->get_shortdescription($desclen);
 		}
 		if (defined $buildonly) {
-			next unless ( $vo->param_boolean("builddependsonly") );
+			next unless $vo->param_boolean("builddependsonly");
 		}
 		if (defined $section) {
 			$section =~ s/[\=]?(.*)/$1/;
@@ -747,7 +747,7 @@ EOF
 			next;
 		}
 
-		# shouldn't be able to remove or purge esstential pkgs
+		# shouldn't be able to remove or purge essential pkgs
 		$po = Fink::PkgVersion->match_package($pname);
 		if ( $po->param_boolean("essential") ) {
 			print "WARNING: $pname is essential, skipping.\n";
@@ -761,7 +761,7 @@ EOF
 		push @packages, $package->get_name();
 	}
 
-	# Incase no packages meet the requirements above.
+	# In case no packages meet the requirements above.
 	if ($#packages < 0) {
 		print "Nothing ".$cmd."d\n";
 		exit(0);
