@@ -1,5 +1,9 @@
 2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* inject.pl: Rearranged subroutines
+
+2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* bootstrap.pl, inject.pl: Make the code modular, update copyright
 
 2003-12-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
