@@ -310,7 +310,7 @@ sub validate_info_file {
 			$looks_good = 0;
 		}
 		# Check for hardcoded /sw.
-		if ($check_hardcode_fields{$field} and $value =~ /\/sw/) {
+		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
 		    print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
 		    $looks_good = 0;
 		    next;
