@@ -1,3 +1,8 @@
+2003-12-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in: Remove "make test" from branch_0_17
+	* bootstrap.pl, inject.pl: backport changes from HEAD to branch_0_17
+
 2003-11-19  Max Horn <max@quendi.de>
 
 	* fink.info.in: Synced with regular fink.info file.

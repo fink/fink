@@ -320,10 +320,10 @@ print "Creating fink tarball...\n";
 
 $script =
 	"tar -cf $installto/src/fink-$packageversion.tar ".
-	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
+	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
 	"ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-	"pathsetup.command.in postinstall.pl.in perlmod update mirror ".
-	"fink-virtual-pkgs.in shlibs.default.in\n";
+	"shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
+	"fink-virtual-pkgs.in mirror\n";
 
 foreach $cmd (split(/\n/,$script)) {
 	next unless $cmd;		# skip empty lines
