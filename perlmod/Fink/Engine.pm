@@ -250,7 +250,7 @@ sub do_real_list {
 	(
 	 "installedstate" => 0
 	);
-	my ($width, $namelen, $verlen, $dotab, $wanthelp);
+	my ($width, $namelen, $verlen, $dotab);
 	my $cmd = shift;
 	use Getopt::Long;
 	$formatstr = "%s	%-15.15s	%-11.11s	%s\n";
@@ -261,7 +261,7 @@ sub do_real_list {
 	if ($cmd eq "list") {
 		GetOptions(
 				   'width|w=s'		=> \$width,
-				   'tab|t'		=> \$dotab,
+				   'tab|t'			=> \$dotab,
 				   'installed|i'	=> sub {$options{installedstate} |=3;},
 				   'uptodate|u'		=> sub {$options{installedstate} |=2;},
 				   'outdated|o'		=> sub {$options{installedstate} |=1;},
@@ -270,61 +270,14 @@ sub do_real_list {
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
 				   'tree|r=s'		=> \$pkgtree,
-				   'help|h'		=> \$wanthelp
+				   'help|h'			=> \&help_list_apropos($cmd)
 		) or die "fink list: unknown option\nType 'fink list --help' for more information.\n";
 	}	 else { # apropos
 		GetOptions(
 				   'width|w=s'		=> \$width,
 				   'tab|t'			=> \$dotab,
-				   'help|h'			=> \$wanthelp
+				   'help|h'			=> \&help_list_apropos($cmd)
 		) or die "fink list: unknown option\nType 'fink apropos --help' for more information.\n";
-	}
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-
-		if ($cmd eq "list") {
-			print <<"EOF";
-Fink $version
-
-Usage: fink list [options] [string]
-
-Options:
-  -w xyz, --width=xyz  - Sets the width of the display you would like the output
-                         formatted for. xyz is either a numeric value or auto.
-                         auto will set the width based on the terminal width.
-  -t, --tab            - Outputs the list with tabs as field delimiter.
-  -i, --installed      - Only list packages which are currently installed.
-  -u, --uptodate       - Only list packages which are up to date.
-  -o, --outdated       - Only list packages for which a newer version is
-                         available.
-  -n, --notinstalled   - Only list packages which are not installed.
-  -b, --buildonly      - Only list packages which are Build Only Depends
-  -s expr,             - Only list packages in the section(s) matching expr
-    --section=expr       (example: fink list --section=x11).
-  -m expr,             - Only list packages with the maintainer(s) matching expr
-    --maintainer=expr    (example: fink list --maintainer=beren12).
-  -r expr,             - Only list packages with the tree matching expr
-    --tree=expr          (example: fink list --tree=stable).
-  -h, --help           - This help text.
-
-EOF
-		} else { # apropos
-			print <<"EOF";
-Fink $version
-
-Usage: fink apropos [options] [string]
-       
-Options:
-  -w xyz, --width=xyz  - Sets the width of the display you would like the output
-                         formatted for. xyz is either a numeric value or auto.
-                         auto will set the width based on the terminal width.
-  -t, --tab            - Outputs the list with tabs as field delimiter.
-  -h, --help           - This help text.
-
-EOF
-		}
-	exit 0;
 	}
 	if ($options{installedstate} == 0) {$options{installedstate} = 7;}
 
@@ -432,6 +385,55 @@ EOF
 		printf $formatstr,
 				$iflag, $pname, $lversion, $description;
 	}
+}
+
+sub help_list_apropos {
+	my $cmd = shift;
+	require Fink::FinkVersion;
+	my $version = Fink::FinkVersion::fink_version();
+
+	if ($cmd eq "list") {
+		print <<"EOF";
+Fink $version
+
+Usage: fink list [options] [string]
+
+Options:
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -i, --installed      - Only list packages which are currently installed.
+  -u, --uptodate       - Only list packages which are up to date.
+  -o, --outdated       - Only list packages for which a newer version is
+                         available.
+  -n, --notinstalled   - Only list packages which are not installed.
+  -b, --buildonly      - Only list packages which are Build Only Depends
+  -s expr,             - Only list packages in the section(s) matching expr
+    --section=expr       (example: fink list --section=x11).
+  -m expr,             - Only list packages with the maintainer(s) matching expr
+    --maintainer=expr    (example: fink list --maintainer=beren12).
+  -r expr,             - Only list packages with the tree matching expr
+    --tree=expr          (example: fink list --tree=stable).
+  -h, --help           - This help text.
+
+EOF
+	} else { # apropos
+		print <<"EOF";
+Fink $version
+
+Usage: fink apropos [options] [string]
+       
+Options:
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -h, --help           - This help text.
+
+EOF
+	}
+	exit 0;
 }
 
 sub cmd_listpackages {
@@ -555,29 +557,29 @@ sub cmd_apropos {
 }
 
 sub parse_fetch_options {
+	my $cmd = shift;
 	my %options =
 	  (
 	   "norestrictive" => 0,
 	   "dryrun" => 0,
 	   "wanthelp" => 0,
 	   );
-   
+
 	my @temp_ARGV = @ARGV;
 	@ARGV=@_;
 	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
 	GetOptions('ignore-restrictive|i'	=> sub {$options{norestrictive} = 1 } , 
 			   'dry-run|d'				=> sub {$options{dryrun} = 1 } , 
 			   'help|h'					=> sub {$options{wanthelp} = 1 })
-		 or die "fink fetch: unknown option\nType 'fink fetch-missing --help' or 'fetch-all --help' for more information.\n";
-		 
+		or die "fink fetch: unknown option\nType 'fink $cmd --help' for more information.\n";
 	if ($options{wanthelp} == 1) {
 		require Fink::FinkVersion;
 		my $finkversion = Fink::FinkVersion::fink_version();
 		print <<"EOF";
 Fink $finkversion
 
-Usage: fink fetch-{missing,all} [options]
-       
+Usage: fink $cmd [options]
+
 Options:
   -i, --ignore-restrictive  - Do not fetch sources for packages with 
                             a "Restrictive" license. Useful for mirroring.
@@ -585,7 +587,7 @@ Options:
   -h, --help                - This help text.
 
 EOF
-		die " ";
+		exit 0;
 	}
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
@@ -610,7 +612,7 @@ sub cmd_fetch_all {
 	my ($pname, $package, $version, $vo);
 	
 	my (%options, $norestrictive, $dryrun);
-	%options = &parse_fetch_options(@_);
+	%options = &parse_fetch_options("fetch-all", @_);
 	$norestrictive = $options{"norestrictive"} || 0;
 	$dryrun = $options{"dryrun"} || 0;
 	
@@ -637,7 +639,7 @@ sub cmd_fetch_all_missing {
 	my ($pname, $package, $version, $vo);
 	my (%options, $norestrictive, $dryrun);
 
-	%options = &parse_fetch_options(@_);
+	%options = &parse_fetch_options("fetch-missing", @_);
 	$norestrictive = $options{"norestrictive"} || 0;
 	$dryrun = $options{"dryrun"} || 0;
 
