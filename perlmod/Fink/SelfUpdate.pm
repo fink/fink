@@ -253,16 +253,17 @@ sub setup_direct_cvs {
 	   $File::Find::prune = 1;
 	   return;
 	 }
+	 return if (length($File::Find::name) <= $cutoff);
 	 my $rel = substr($File::Find::name, $cutoff);
 	 if (-l and not -e "$tempfinkdir/$rel") {
 	   my $linkto;
 	   $linkto = readlink($_)
 	     or die "Can't read target of symlink $File::Find::name: $!\n";
-           if (&execute("ln -s '$linkto' $tempfinkdir/$rel")) {
+           if (&execute("ln -s '$linkto' '$tempfinkdir/$rel'")) {
              die "Can't create symlink \"$tempfinkdir/$rel\"\n";
            }
 	 } elsif (-d and not -d "$tempfinkdir/$rel") {
-	   if (&execute("mkdir $tempfinkdir/$rel")) {
+	   if (&execute("mkdir '$tempfinkdir/$rel'")) {
 	     die "Can't create directory \"$tempfinkdir/$rel\"\n";
 	   }
 	 } elsif (-f and not -f "$tempfinkdir/$rel") {
@@ -272,7 +273,7 @@ sub setup_direct_cvs {
 	   } else {
 	     $cmd = "cp -p"
 	   }
-	   $cmd .= " $_ $tempfinkdir/$rel";
+	   $cmd .= " '$_' '$tempfinkdir/$rel'";
            if (&execute($cmd)) {
              die "Can't copy file \"$tempfinkdir/$rel\"\n";
            }
