@@ -55,14 +55,13 @@ sub bootstrap {
   &print_breaking("Bootstrapping a base system via $bsbase.");
 
   # create directories
-  if (-d $bsbase) {
+  if (-e $bsbase) {
     &execute("rm -rf $bsbase");
   }
   &execute("mkdir -p $bsbase");
   &execute("mkdir -p $bsbase/bin");
   &execute("mkdir -p $bsbase/sbin");
   &execute("mkdir -p $bsbase/lib");
-  &execute("mkdir -p $bsbase/var/lib/dpkg");
 
   # set paths so that everything is found
   $save_path = $ENV{PATH};
@@ -76,6 +75,7 @@ sub bootstrap {
 		  "$bsbase without package management.");
   print "\n";
 
+  # install the packages needed to build packages into the bootstrap tree
   foreach $pkgname (@plist) {
     $package = Fink::PkgVersion->match_package($pkgname);
     unless (defined $package) {
@@ -90,8 +90,10 @@ sub bootstrap {
     $package->disable_bootstrap();
   }
 
-  &execute("touch $bsbase/var/lib/dpkg/status");
-  &execute("touch $bsbase/var/lib/dpkg/available");
+  # create empty dpkg database
+  &execute("mkdir -p $basepath/var/lib/dpkg");
+  &execute("touch $basepath/var/lib/dpkg/status");
+  &execute("touch $basepath/var/lib/dpkg/available");
 
 
   print "\n";
@@ -99,7 +101,8 @@ sub bootstrap {
 		  "$basepath with package management.");
   print "\n";
 
-  @elist = Fink::Package->get_essential_packages();
+  # use normal install routines
+  @elist = Fink::Package->list_essential_packages();
   Fink::Engine::cmd_install(@elist);
 
 
