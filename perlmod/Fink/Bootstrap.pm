@@ -23,12 +23,10 @@
 package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
-use Fink::Services qw(&execute &file_MD5_checksum);
-use Fink::CLI qw(&print_breaking);
+use Fink::Services qw(&print_breaking &execute &file_MD5_checksum);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Engine;
-use Fink::Command qw(cat);
 
 use strict;
 use warnings;
@@ -270,7 +268,7 @@ sub fink_packagefiles {
 
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-  "shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
+  "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
   "fink-virtual-pkgs.in";
 
 return $packagefiles;
@@ -281,7 +279,7 @@ sub get_packageversion {
 
 	my ($packageversion, $packagerevision);
 	
-	chomp($packageversion = cat "VERSION");
+	chomp($packageversion = `cat VERSION`);
 	if ($packageversion =~ /cvs/) {
 	my @now = gmtime(time);
 		$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
