@@ -210,6 +210,10 @@ sub expand_percent {
 sub filename {
   my ($s) = @_;
 
+  if ($s =~ /^mirror\:(\w+)\:(.*)$/) {
+    $s = $2;
+  }
+
   if ($s =~ /\/([^\/]+)$/) {
     $s = $1;
   }

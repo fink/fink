@@ -55,7 +55,7 @@ sub fetch_url {
   my ($file, $cmd);
 
   $file = &filename($url);
-  return &fetch_url_to_file($url, $file, 0, $destdir);
+  return &fetch_url_to_file($url, $file, {}, 0, $destdir);
 }
 
 ### download a file to the designated directory and save it under the
@@ -65,11 +65,11 @@ sub fetch_url {
 sub fetch_url_to_file {
   my $origurl = shift;
   my $file = shift;
+  my $custom_mirrors = shift || {};
   my $tries = shift || 0;
   my $destdir = shift || "$basepath/src";
-  my ($url, $mirror_level, $mirror, $path);
   my ($http_proxy, $ftp_proxy);
-  my ($cmd, $failed, $result);
+  my ($url, $cmd, $failed, $result);
 
   # create destination directory if necessary
   if (not -d $destdir) {
@@ -79,6 +79,9 @@ sub fetch_url_to_file {
     }
   }
   chdir $destdir;
+  
+  # determine download command
+  $cmd = &download_cmd($origurl, $file);
 
   # set proxy env vars
   $http_proxy = $config->param_default("ProxyHTTP", "");
@@ -92,18 +95,26 @@ sub fetch_url_to_file {
     $ENV{FTP_PROXY} = $ftp_proxy;
   }
 
-  $mirror_level = 0;
-  $url = "";
+  if ($origurl =~ /^mirror\:(\w+)\:(.*)$/) {
+    my $mirror = $1;
+    my $path = $2;
+    my $mirror_level = 0;
+    my ($all_mirrors);
+    
+    # read the mirror list
+    if ($mirror eq "custom") {
+      $all_mirrors = $custom_mirrors;
+    } else {
+      $all_mirrors = &read_properties_multival("$libpath/mirror/$mirror");
+    }
 
-  do {
+    $url = "";
 
-    ### resolve mirror url
-
-    if ($origurl =~ /^mirror\:(\w+)\:(.*)$/) {
-      $mirror = $1;
-      $path = $2;
-
-      if ($mirror_level <= 0) {
+    do {
+  
+      ### resolve mirror url
+  
+      if ($mirror_level <= 0 && $mirror ne "custom") {
 	# use last / preconfigured mirror
 	if (!$url) {
 	  if ($Fink::Config::config->has_param("mirror-$mirror")) {
@@ -117,9 +128,8 @@ sub fetch_url_to_file {
 	}
       } else {
 	# pick a mirror at random, $mirror_level controls the scope
-	my ($all_mirrors, $key, $site, $match, @list);
-
-	$all_mirrors = &read_properties_multival("$libpath/mirror/$mirror");
+	my ($key, $site, $match, @list);
+	
 	if ($mirror_level == 1) {
 	  $match = lc $config->param_default("MirrorCountry", "nam-us");
 	} elsif ($mirror_level == 2) {
@@ -149,60 +159,21 @@ sub fetch_url_to_file {
 	$url .= "/" unless $url =~ /\/$/;
 	$url .= $path;
       }
-    } else {
-      $url = $origurl;
-    }
-
-
-    ### fetch $url to $file
-
-    $cmd = "";
-
-    # check if we have curl
-    if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
-      $cmd = "curl -L";
-      if (!$config->param_boolean("Verbose")) {
-	$cmd .= " -s -S";
+  
+      ### fetch $url to $file
+  
+      if (-f $file) {
+	&execute("rm -f $file");
       }
-      if (!$config->param_boolean("ProxyPassiveFTP")) {
-	$cmd .= " -P -";
-      }
-      $cmd .= " -o $file"
-    }
-
-    # check if we have wget
-    if (!$cmd and (-x "$basepath/bin/wget" or -x "/usr/bin/wget")) {
-      $cmd = "wget";
-      if ($config->param_boolean("Verbose")) {
-	$cmd .= " --verbose";
+      if (&execute("$cmd $url") or not -f $file) {
+	$failed = 1;
       } else {
-	$cmd .= " --non-verbose";
+	$failed = 0;
       }
-      if ($config->param_boolean("ProxyPassiveFTP")) {
-	$cmd .= " --passive-ftp";
-      }
-      if ($file ne &filename($url)) {
-	$cmd .= " -O $file";
-      }
-    }
-
-    if (!$cmd) {
-      die "Can't locate a download program. Install either curl or wget.\n";
-    }
-
-    if (-f $file) {
-      &execute("rm -f $file");
-    }
-    if (&execute("$cmd $url") or not -f $file) {
-      $failed = 1;
-    } else {
-      $failed = 0;
-    }
-
-    ### failure handling
-
-    if ($failed) {
-      if (substr($origurl,0,7) eq "mirror:") {
+  
+      ### failure handling
+  
+      if ($failed) {
 	$result =
 	  &prompt_selection("Downloading the file \"$file\" failed. ".
 			    "How do you want to proceed?",
@@ -224,7 +195,30 @@ sub fetch_url_to_file {
 	} elsif ($result eq "retry-world") {
 	  $mirror_level = 3;
 	}
+	$tries++;
+      }
+  
+    } while ($failed);
+
+  } else {
+    $url = $origurl;
+
+    do {
+
+      ### fetch $url to $file
+  
+      if (-f $file) {
+	&execute("rm -f $file");
+      }
+      if (&execute("$cmd $url") or not -f $file) {
+	$failed = 1;
       } else {
+	$failed = 0;
+      }
+  
+      ### failure handling
+  
+      if ($failed) {
 	$result =
 	  &prompt_selection("Downloading the file \"$file\" failed. ".
 			    "How do you want to proceed?",
@@ -235,13 +229,60 @@ sub fetch_url_to_file {
 	if ($result eq "error") {
 	  return 1;
 	}
+	$tries++;
       }
-      $tries++;
-    }
-
-  } while ($failed);
+  
+    } while ($failed);
+  }
 
   return 0;
+}
+
+sub download_cmd {
+  my $url = shift;
+  my $file = shift || &filename($url);
+  my $cmd;
+
+  # determine the download command
+  $cmd = "";
+
+  # check if we have curl
+  if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
+    $cmd = "curl -L";
+    if (!$config->param_boolean("Verbose")) {
+      $cmd .= " -s -S";
+    }
+    if (!$config->param_boolean("ProxyPassiveFTP")) {
+      $cmd .= " -P -";
+    }
+    if ($file ne &filename($url)) {
+      $cmd .= " -o $file";
+    } else {
+      $cmd .= " -O"
+    }
+  }
+
+  # check if we have wget
+  if (!$cmd and (-x "$basepath/bin/wget" or -x "/usr/bin/wget")) {
+    $cmd = "wget";
+    if ($config->param_boolean("Verbose")) {
+      $cmd .= " --verbose";
+    } else {
+      $cmd .= " --non-verbose";
+    }
+    if ($config->param_boolean("ProxyPassiveFTP")) {
+      $cmd .= " --passive-ftp";
+    }
+    if ($file ne &filename($url)) {
+      $cmd .= " -O $file";
+    }
+  }
+
+  if (!$cmd) {
+    die "Can't locate a download program. Install either curl or wget.\n";
+  }
+
+  return $cmd;
 }
 
 

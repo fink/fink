@@ -1,3 +1,16 @@
+2001-10-10  Max Horn  <max@quendi.de>
+
+	* Service.pm (filename): Handle fileanames with the mirror: syntax
+	correctly (was broken).
+
+	* PkgVersion.pm (initialize): Parse the new CustomMirror field
+	(fetch_source): pass the custom mirror list to fetch_url_to_file
+
+	* NetAccess.pm: converted tabs to spaces
+	(fetch_url_to_file): some  clean up, now handles "custom" mirrors,
+	code that determines the download cmd moved to a seperate function
+	so that it will be easier to enhance this.
+
 2001-10-09  Christoph Pfisterer  <cp@chrisp.de>
 
 	* FinkVersion.pm.in (pkginfo_version): New function to evaluate
