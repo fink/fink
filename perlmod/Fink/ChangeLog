@@ -1,3 +1,8 @@
+2001-05-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_activate): Detect dpkg malfunction
+	(incomplete extraction) and offer to retry.
+
 2001-05-02  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Base.pm (param_default): Fixed default handling.

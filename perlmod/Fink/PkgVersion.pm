@@ -24,7 +24,7 @@ use Fink::Base;
 
 use Fink::Services qw(&filename &expand_percent &expand_url &execute
                       &latest_version &print_breaking
-                      &print_breaking_twoprefix);
+                      &print_breaking_twoprefix &prompt_boolean);
 use Fink::Package;
 use Fink::Config qw($config $basepath $libpath $debarch);
 
@@ -791,7 +791,7 @@ EOF
 
 sub phase_activate {
   my $self = shift;
-  my ($deb);
+  my ($deb, $answer);
 
   $deb = $self->find_debfile();
 
@@ -799,8 +799,16 @@ sub phase_activate {
     die "can't find package ".$self->get_debname()."\n";
   }
 
-  if (&execute("dpkg -i $deb")) {
-    die "can't install package\n";
+  while(1) {
+    if (&execute("dpkg -i $deb")) {
+      die "can't install package\n";
+    }
+    last if $self->is_installed();
+
+    $answer =
+      &prompt_boolean("WARNING: dpkg malfunction detected. Not all files ".
+		      "were extracted. Retry installing?");
+    last if not $answer;
   }
 }
 
