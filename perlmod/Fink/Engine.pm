@@ -269,9 +269,7 @@ sub cmd_fetch_all_missing {
     $package = Fink::Package->package_by_name($pname);
     $version = &latest_version($package->list_versions());
     $vo = $package->get_version($version);
-    if (not $vo->is_fetched()) {
-      $vo->phase_fetch();
-    }
+    $vo->phase_fetch(1);
   }
 }
 
@@ -455,9 +453,8 @@ sub real_install {
   foreach $pkgname (sort keys %deps) {
     $item = $deps{$pkgname};
     next if (($item->[4] & 2) == 2);   # already installed
-    next if $item->[2]->is_fetched();
     if ($item->[3] == $OP_REBUILD or not $item->[2]->is_present()) {
-      $item->[2]->phase_fetch();
+      $item->[2]->phase_fetch(1);
     }
   }
 

@@ -511,6 +511,7 @@ sub match_package {
 
 sub phase_fetch {
   my $self = shift;
+  my $conditional = shift || 0;
   my ($i);
 
   if ($self->{_type} eq "bundle") {
@@ -518,7 +519,9 @@ sub phase_fetch {
   }
 
   for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
-    $self->fetch_source($i);
+    if (not $conditional or not defined $self->find_tarball($i)) {
+      $self->fetch_source($i);
+    }
   }
 }
 
@@ -894,6 +897,11 @@ EOF
   $cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
   if (&execute($cmd)) {
     die "can't create package\n";
+  }
+
+  if (&execute("ln -sf ".$self->get_debpath()."/".$self->get_debname()." ".
+	       "$basepath/fink/debs/")) {
+    die "can't symlink package into pool directory\n";
   }
 
   ### remove root dir

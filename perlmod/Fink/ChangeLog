@@ -1,4 +1,15 @@
+2001-06-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm: Make sure only missing tarballs are fetched, not
+	whole packages at a time.
+	* PkgVersion.pm (phase_fetch): Optionally fetch only missing
+	individual tarballs, instead of whole-package or none.
+
 2001-06-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_build): Add symlink to built packages in
+	<prefix>/fink/debs to make sure they can be found even after
+	moving the descriptions around.
 
 	* Engine.pm (cmd_description): Small formatting change.
 
