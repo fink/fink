@@ -66,7 +66,6 @@ Fink::Bootstrap - Bootstrap a fink installation
 	my ($notlocated, $basepath) = locate_Fink();
 	my ($notlocated, $basepath) = locate_Fink($param);
 	my ($version, $revision) = get_packageversion();
-	my ($version, $revision) = get_packageversion($dir);
 	find_rootmethod($bpath);
 	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision);
@@ -562,11 +561,10 @@ sub locate_Fink {
 =item get_packageversion
 
 	my ($version, $revision) = get_packageversion();
-	my ($version, $revision) = get_packageversion($dir);
 
-Finds the current version (by examining the $dir/VERSION file) and the current
+Finds the current version (by examining the VERSION file) and the current
 revision (which defaults to 1 or a cvs timestamp) of the package being 
-compiled.  The optional argument $dir defaults to ".".
+compiled.
 
 Formerly called by bootstrap.pl and inject_package(); now obsolete.
 
@@ -574,10 +572,9 @@ Formerly called by bootstrap.pl and inject_package(); now obsolete.
 
 sub get_packageversion {
 
-	my $dir = shift || ".";
 	my ($packageversion, $packagerevision);
 	
-	chomp($packageversion = cat "$dir/VERSION");
+	chomp($packageversion = cat "VERSION");
 	if ($packageversion =~ /cvs/) {
 	my @now = gmtime(time);
 		$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
