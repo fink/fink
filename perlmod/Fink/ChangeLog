@@ -1,3 +1,8 @@
+2001-05-23  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_build): Apply percent expansions to package
+	scripts.
+
 2001-05-18  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (phase_build): Added support for package scripts.

@@ -787,6 +787,7 @@ EOF
     next unless $self->has_param($scriptname."Script");
 
     $scriptbody = $self->param($scriptname."Script");
+    $scriptbody = &expand_percent($scriptbody, $self->{_expand});
     $scriptfile = "$destdir/DEBIAN/$scriptname";
 
     print "Writing package script $scriptname...\n";
