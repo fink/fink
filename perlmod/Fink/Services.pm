@@ -197,24 +197,23 @@ sub read_properties_lines {
 	# do we make the keys all lowercase
 	my ($notLC) = shift || 0;
 	my (@lines) = @_;
-	my ($hash, $lastkey, $heredoc, $linenum, $line);
+	my ($hash, $lastkey, $heredoc);
 
 	$hash = {};
 	$lastkey = "";
 	$heredoc = 0;
 
-	foreach $linenum (0..$#lines) {
-		$line = $lines[$linenum];
-		chomp ($line);
+	foreach (@lines) {
+		chomp;
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
-			if ($line =~ /^\s*<<\s*$/) {
+			if (/^\s*<<\s*$/) {
 				# The heredoc ends here; decrese the nesting level
 				$heredoc--;
 				if ($heredoc > 0) {
 					# This was the end of an inner/nested heredoc. Just append
 					# it to the data of its parent heredoc.
-					$hash->{$lastkey} .= $line."\n";
+					$hash->{$lastkey} .= $_."\n";
 				} else {
 					# The heredoc really ended; remove trailing empty lines.
 					$hash->{$lastkey} =~ s/\s+$//;
@@ -222,19 +221,19 @@ sub read_properties_lines {
 				}
 			} else {
 				# Append line to the heredoc.
-				$hash->{$lastkey} .= $line."\n";
+				$hash->{$lastkey} .= $_."\n";
 
 				# Did a nested heredoc start here? This commonly occurs when
 				# using splitoffs in a package. We need to detect it, else the
 				# parser would have no way to distinguish the end of the inner
 				# heredoc(s) and the end of the top heredoc, since both are
 				# marked by '<<'.
-				$heredoc++ if ($line =~ /<<\s*$/);
+				$heredoc++ if (/<<\s*$/);
 			}
 		} else {
-			next if ($line =~ /^\s*\#/);		# skip comments
-			next if ($line =~ /^\s*$/);		# skip empty lines
-			if ($line =~ /^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
+			next if /^\s*\#/;		# skip comments
+			next if /^\s*$/;		# skip empty lines
+			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
 				if (exists $hash->{$lastkey}) {
 					print "WARNING: Field \"$lastkey\" occurs more than once in \"$file\".\n";
@@ -245,14 +244,14 @@ sub read_properties_lines {
 				} else {
 					$hash->{$lastkey} = $2;
 				}
-			} elsif ($line =~ /^\s+(\S.*?)\s*$/) {
+			} elsif (/^\s+(\S.*?)\s*$/) {
 				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
 				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in \"$file\".\n";
-			} elsif ($line =~ /^([0-9A-Za-z_.\-]+)\:\s*$/) {
+			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
 			} else {
-				print "WARNING: Unable to parse the line \"".$line."\" in \"$file\" at line ", ($linenum + 1), ".\n";
+				print "WARNING: Unable to parse the line \"".$_."\" in \"$file\".\n";
 			}
 		}
 	}
