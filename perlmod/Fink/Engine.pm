@@ -29,6 +29,7 @@ use Fink::Services qw(&print_breaking &print_breaking_prefix
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath);
+use File::Find;
 
 use strict;
 use warnings;
@@ -85,7 +86,12 @@ our %commands =
     'validate' => [\&cmd_validate, 0, 0],
     'check' => [\&cmd_validate, 0, 0],
     'checksums' => [\&cmd_checksums, 1, 0],
+    'cleanup' => [\&cmd_cleanup, 1, 1],
   );
+
+our (%deb_list, %src_list);
+%deb_list = ();
+%src_list = ();
 
 END { }       # module clean-up code here (global destructor)
 
@@ -636,6 +642,72 @@ sub cmd_checksums {
 	}
       }
     }
+  }
+}
+
+sub cmd_cleanup {
+  my ($pname, $package, $vo, $i, $file);
+  
+  # TODO - add option that specify whether to clean up source, .debs, or both
+  # TODO - add --dry-run option that prints out what actions would be performed
+  # TODO - option that steers which file to keep/delete: keep all files that
+  #        are refered by any .info file; keep only those refered to by the
+  #        current version of any package; etc.
+  #        Delete all .deb and delete all src? Not really needed, this can be
+  #        achieved each with single line CLI commands.
+  
+  # Reset list of non-obsolete debs/source files
+  %deb_list = ();
+  %src_list = ();
+
+  # Iterate over all packages and collect the deb files, as well
+  # as all their source files.
+  foreach $pname (Fink::Package->list_packages()) {
+    $package = Fink::Package->package_by_name($pname);
+    foreach $vo ($package->get_all_versions()) {
+      # Skip dummy packages
+      next if $vo->{_type} eq "dummy";
+
+      # deb file 
+      $file = $vo->get_debfile();
+      $deb_list{$file} = 1;
+
+      # all source files
+      if (defined $vo->{_sourcecount}) {
+	for ($i = 1; $i <= $vo->{_sourcecount}; $i++) {
+	  $file = $vo->find_tarball($i);
+	  $src_list{$file} = 1 if defined($file);
+	}
+      }
+    }
+  }
+  
+  # Now search through all .deb files in /sw/fink/dists/
+  find (\&kill_obsolete_debs, "$basepath/fink/dists");
+  
+  # Finally remove broken symlinks in /sw/fink/debs
+  find (\&kill_broken_links, "$basepath/fink/debs");
+  
+  # Remove obsolete source files
+  # TODO - for this better not to use Find::File, we just want a flat
+  # listing of files in /sw/src (i.e. no recursion); and we probably
+  # also want to delete subdirectories, however it must be possible to
+  # turn that off with a switch...
+}
+
+sub kill_obsolete_debs {
+  if (/^.*\.deb\z/s ) {
+    if (not $deb_list{$File::Find::name}) {
+      # Obsolete deb
+      unlink($File::Find::name)
+    }
+  }
+}
+
+sub kill_broken_links {
+  if(-l && !-e) {
+    # Broken link
+    unlink($File::Find::name)
   }
 }
 

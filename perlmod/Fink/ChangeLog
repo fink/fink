@@ -1,3 +1,8 @@
+2002-06-09  Max Horn  <max@quendi.de>
+
+	* Engine.pm (cmd_cleanup): Added a "fink cleanup" command, still unfinished,
+	but already usable to clean up .deb files.
+
 2002-06-08  Max Horn  <max@quendi.de>
 
 	* Bootstrap.pm (bootstrap): Added apt-shlibs to the list of packages that are
