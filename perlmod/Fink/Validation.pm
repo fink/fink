@@ -39,59 +39,93 @@ BEGIN {
 }
 our @EXPORT_OK;
 
-our @boolean_fields = qw(Essential NoSourceDirectory UpdateConfigGuess UpdateLibtool); # add NoSet* !
-our @obsolete_fields = qw(Comment CommentPort CommenStow UseGettext);
-our @name_version_fields = qw(Source SourceDirectory SourceN SourceNExtractDir Patch);
-our @type_field_values = qw(nosource bundle perl);
-our @recommended_field_order =
+# Currently, the Set* and NoSet* fields only support a limited list of variables.
+our @set_vars =
+  qw(cc cflags cpp cppflags cxx cxxflags ld ldflags libs make mflags);
+
+# Required fields.
+our @required_fields =
+  qw(Package Version Revision Maintainer);
+
+# All fields that expect a boolean value
+our %boolean_fields = map {$_, 1}
+  (
+    qw(essential nosourcedirectory updateconfigguess updatelibtool updatepod),
+    map {"noset".$_} @set_vars
+  );
+
+# Obsolete fields, generate a warning
+our %obsolete_fields = map {$_, 1}
+  qw(comment commentport commenstow usegettext);
+
+# Fields in which %n/%v can and should be used
+our %name_version_fields = map {$_, 1}
   qw(
-    Package
-    Version
-    Revision
-    Type
-    Maintainer
-    Depends
-    BuildDepends
-    Provides
-    Conflicts
-    Replaces
-    Recommends
-    Suggests
-    Enhances
-    Pre-Depends
-    Essential
-    Source
-    SourceDirectory
-    NoSourceDirectory
-    Source*
-    Source*ExtractDir
-    UpdateConfigGuess
-    UpdateConfigGuessInDirs
-    UpdateLibtool
-    UpdateLibtoolInDirs
-    UpdatePoMakefile
-    Patch
-    PatchScript
-    ConfigureParams
-    CompileScript
-    InstallScript
-    Set*
-    NoSet*
-    PreInstScript
-    PostInstScript
-    PreRmScript
-    PostRmScript
-    ConfFiles
-    InfoDocs
-    DaemonicFile
-    DaemonicName
-    Description
-    DescDetail
-    DescUsage
-    DescPackaging
-    DescPort
-    Homepage
-    License
+     source sourcedirectory sourcerename
+     source0 source0extractdir source0rename
+     patch
+    );
+
+# Allowed values for the type field
+our %type_field_values = map {$_, 1}
+  qw(nosource bundle perl);
+
+# List of all known fields.
+our %known_fields = map {$_, 1}
+  (
+    qw(
+     package
+     version
+     revision
+     type
+     maintainer
+     depends
+     builddepends
+     provides
+     conflicts
+     replaces
+     recommends
+     suggests
+     enhances
+     pre-depends
+     essential
+     source
+     custommirror
+     sourcedirectory
+     nosourcedirectory
+     sourcerename
+     updateconfigguess
+     updateconfigguessindirs
+     updatelibtool
+     updatelibtoolindirs
+     updatepomakefile
+     updatepod
+     patch
+     patchscript
+     configureparams
+     compilescript
+     installscript
+    ),
+    (map {"set".$_} @set_vars),
+    (map {"noset".$_} @set_vars),
+    qw(
+     preinstscript
+     postinstscript
+     prermscript
+     postrmscript
+     conffiles
+     infodocs
+     docfiles
+     daemonicfile
+     daemonicname
+     description
+     descdetail
+     descusage
+     descpackaging
+     descport
+     homepage
+     license
+    )
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -103,14 +137,15 @@ END { }       # module clean-up code here (global destructor)
 #   + patch file is present
 #   + all required fields are present
 #   + warn if obsolete fields are encountered
-#   + warn about missing Description/Maintainer fields
+#   + warn about missing Description/Maintainer/License fields
 #   + warn about overlong Description fields
+#   + warn about Description starting with "A" or "An" or containing the package name
 #   + warn if boolean fields contain bogus values
 #   + warn if fields seem to contain the package name/version, and suggest %n/%v should be used
 #     (excluded from this are fields like Description, Homepage etc.)
+#   + warn if unknown fields are encountered
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#   - warn if unknown fields are encountered
 #   - error if format is violated (e.g. bad here-doc)
 #   - warn if /sw is hardcoded somewhere
 #   - if type is bundle/nosource - warn about usage of "Source" etc.
@@ -123,6 +158,7 @@ sub validate_info_file {
   my ($field, $value);
   my ($basepath, $expand);
   my $looks_good = 1;
+  my $error_found = 0;
 
   if (Fink::Config::is_verbose()) {
     print "Validating package file $filename...\n";
@@ -144,80 +180,118 @@ sub validate_info_file {
   $filename = pop @parts;   # remove filename
   $pkgpatchpath = join("/", @parts);
 
-  unless ($pkgname) {
-    print "Error: No package name in $filename\n";
-    return;
-  }
-  unless ($pkgversion) {
-    print "Error: No version number in $filename\n";
-    return;
-  }
-  unless ($pkgrevision) {
-    print "Error: No revision number or revision number is 0 in $filename\n";
-    return;
-  }
-  if ($pkgname =~ /[^+-.a-z0-9]/) {
-    print "Error: Package name may only contain lowercase letters, numbers, '.', '+' and '-'\n";
-    return;
-  }
-  unless ($properties->{maintainer}) {
-    print "Error: No maintainer specified in $filename\n";
-    $looks_good = 0;
-  }
+  #
+  # First check for critical errors
+  #
 
-  unless ("$pkgfullname.info" eq $filename) {
-    print "Warning: File name should be $pkgfullname.info but is $filename\n";
-    $looks_good = 0;
-  }
-  
-  unless ($properties->{license}) {
-    print "Warning: No license specified in $filename\n";
-    $looks_good = 0;
-  }
-
-  # Check whether any of the following fields contains the package name or version,
-  # and suggest that %f/%n/%v be used instead
-  foreach $field (@name_version_fields) {
-    $value = $properties->{lc $field};
-    if ($value) {
-      if ($value =~ /$pkgfullname/) {
-        print "Warning: Field \"$field\" contains full package name. Use %f instead.\n";
-        $looks_good = 0;
-      } elsif ($value =~ /$pkgversion/) {
-        print "Warning: Field \"$field\" contains package version. Use %v instead.\n";
-        $looks_good = 0;
-      }
-    }
-  }
-  
-  # Check if any obsolete fields are used
-  foreach $field (@obsolete_fields) {
-    if ($properties->{lc $field}) {
-      print "Warning: Field \"$field\" is obsolete.\n";
+  # Verify that all required fields are present
+  foreach $field (@required_fields) {
+    unless ($properties->{lc $field}) {
+      print "Error: Required field \"$field\" missing. ($filename)\n";
       $looks_good = 0;
     }
   }
-
-  # Boolean fields
-  foreach $field (@boolean_fields) {
-    $value = $properties->{lc $field};
-    if ($value) {
-      unless ($value =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
-        print "Warning: Boolean field \"$field\" contains suspicious value \"$value\".\n";
-        $looks_good = 0;
-      }
-    }
+  if ($pkgname =~ /[^+-.a-z0-9]/) {
+    print "Error: Package name may only contain lowercase letters, numbers,";
+    print "'.', '+' and '-' ($filename)\n";
+    $looks_good = 0;
+  }
+  return unless ($looks_good);
+  
+  #
+  # Now check for other mistakes
+  #
+  
+  unless ("$pkgfullname.info" eq $filename) {
+    print "Warning: File name should be $pkgfullname.info ($filename)\n";
+    $looks_good = 0;
   }
   
+  # License should always be specified!
+  unless ($properties->{license}) {
+    print "Warning: No license specified. ($filename)\n";
+    $looks_good = 0;
+  }
+  
+  # Check value of type field
+  $value = lc $properties->{type};
+  if ($value and not %type_field_values->{$value}) {
+    print "Warning: Unknown value \"$value\"in field \"Type\". ($filename)\n";
+    $looks_good = 0;
+  }
+  
+  # Loop over all fields and verify them
+  foreach $field (keys %$properties) {
+    $value = $properties->{$field};
+
+    # Warn if field is obsolete
+    if (%obsolete_fields->{$field}) {
+      print "Warning: Field \"$field\" is obsolete. ($filename)\n";
+      $looks_good = 0;
+      next;
+    }
+
+    # Boolean field?
+    if (%boolean_fields->{$field} and not (lc $value) =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
+      print "Warning: Boolean field \"$field\" contains suspicious value \"$value\". ($filename)\n";
+      $looks_good = 0;
+      next;
+    }
+
+    # If this field permits percent expansion, check if %f/%n/%v should be used
+    if (%name_version_fields->{$field} and $value) {
+       if ($value =~ /\Q$pkgfullname\E/) {
+         print "Warning: Field \"$field\" contains full package name. Use %f instead. ($filename)\n";
+         $looks_good = 0;
+       } elsif ($value =~ /\Q$pkgversion\E/) {
+         print "Warning: Field \"$field\" contains package version. Use %v instead. ($filename)\n";
+         $looks_good = 0;
+       }
+    }
+
+    # Warn if field is unknown
+    unless (%known_fields->{$field}
+      || $field =~ m/^nosource([2-9]|\d\d)directory$/
+      || $field =~ m/^source([2-9]|\d\d)$/
+      || $field =~ m/^source([2-9]|\d\d)extractdir$/
+      || $field =~ m/^source([2-9]|\d\d)rename$/) {
+      print "Warning: Field \"$field\" is unknown. ($filename)\n";
+      $looks_good = 0;
+      next;
+    }
+
+  }
+
   # Warn for missing / overlong package descriptions
   $value = $properties->{description};
   unless ($value) {
-    print "Warning: No package description supplied.\n";
+    print "Warning: No package description supplied. ($filename)\n";
     $looks_good = 0;
   }
-  elsif (length($value) > 45) {
-    print "Warning: Length of package description exceeds 45 characters.\n";
+  elsif (length($value) > 60) {
+    print "Error: Length of package description exceeds 60 characters. ($filename)\n";
     $looks_good = 0;
+  }
+  elsif (length($value) > 45 and Fink::Config::is_verbose()) {
+    print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
+    $looks_good = 0;
+  }
+  
+  # Check if description starts with "A" or "An", or with lowercase
+  # or if it contains the package name
+  if ($value) {
+  	if ($value =~ m/^[Aa]n? /) {
+      print "Warning: Description starts with \"A\" or \"An\". ($filename)\n";
+      $looks_good = 0;
+  	}
+  	elsif ($value =~ m/^[a-z]/) {
+      print "Warning: Description starts with lower case. ($filename)\n";
+      $looks_good = 0;
+  	}
+    if ($value =~ /\Q$pkgname\E/) {
+      print "Warning: Description contains package name. ($filename)\n";
+      $looks_good = 0;
+    }
   }
   
   $expand = { 'n' => $pkgname,

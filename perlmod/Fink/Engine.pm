@@ -488,7 +488,6 @@ sub cmd_validate {
     die "no input file specified for command 'validate'!\n";
   }
   
-  print "\n";
   foreach $filename (@flist) {
     die "File \"$filename\" does not exist!\n" unless (-f $filename);
     if ($filename =~/\.info$/) {
