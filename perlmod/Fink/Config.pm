@@ -33,12 +33,13 @@ BEGIN {
   $VERSION = 1.00;
   @ISA         = qw(Exporter Fink::Base);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw($config $basepath);
+  @EXPORT_OK   = qw($config $basepath $libpath $debarch);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
-our ($config, $basepath);
+our ($config, $basepath, $libpath, $debarch);
+$debarch = "darwin-powerpc";
 
 END { }       # module clean-up code here (global destructor)
 
@@ -78,6 +79,7 @@ sub initialize {
 
   $config = $self;
   $basepath = $self->param("Basepath");
+  $libpath = "$basepath/lib/fink";
 
   $self->{_queue} = [];
 }
@@ -89,6 +91,14 @@ sub get_path {
   my $self = shift;
 
   return $self->{_path};
+}
+
+### get list of trees
+
+sub get_treelist {
+  my $self = shift;
+
+  return split(/\s+/, $self->param_default("Trees", "local/main stable/main stable/bootstrap"));
 }
 
 ### set parameter

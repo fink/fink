@@ -1,8 +1,0 @@
-Package: patch
-Version: 2.5
-Revision: 1
-Source: gnu
-CommentPort: Uses autoconf. Works fine.
-CommentStow: No issues.
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
-Homepage: http://www.fsf.org/software/patch/patch.html

@@ -1,0 +1,9 @@
+Package: base-files
+Version: @VERSION@
+Revision: @REVISION@
+Source: %n-%v.tar
+NoSourceDirectory: true
+Essential: yes
+CompileScript: ./setup.sh %p
+InstallScript: ./install.sh %i
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

@@ -1,7 +1,0 @@
-Package: libungif
-Version: 4.1.0b1
-Revision: 1
-Source: ftp://prtr-13.ucsc.edu/pub/libungif/libungif-4.1.0b1.tar.gz
-UpdateConfigGuess: true
-UpdateLibtool: true
-Maintainer: Jeremy Higgs <jhiggs@iprsystems.com>

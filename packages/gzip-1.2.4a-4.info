@@ -1,0 +1,23 @@
+Package: gzip
+Version: 1.2.4a
+Revision: 4
+Source: gnu
+Essential: yes
+Depends: base-files
+PatchScript: mv -f INSTALL INSTALL.txt
+CompileScript: ./configure %c
+ make all G= ZCAT=zcat
+InstallScript: make install G= ZCAT=zcat prefix=%i
+ mkdir -p %i/share
+ mv %i/man %i/share/
+ mv %i/info %i/share/
+ ln -s zcat %i/bin/gzcat
+ ln -s zcat.1 %i/share/man/man1/gzcat.1
+ ln -s zmore %i/bin/zless
+ ln -s zmore.1 %i/share/man/man1/zless.1
+CommentPort: Uses autoconf. Works fine, but needs some tweaking to put
+ documentation in <prefix>/share.
+ The configure script tries to be adaptive with gzcat and the like, we
+ force the Makefile to do the right thing regardless.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gzip.org/

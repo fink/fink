@@ -1,22 +1,24 @@
- Fink 0.1.8
+$Id$   -*- text -*-
+
+ Fink 0.2.1
 ============
 
 This is Fink, a package management system that aims to bring the full
 world of GNU and other common Open Source software to Darwin and
 Mac OS X.
 
-With the help of GNU stow, it maintains a separate directory
-hierarchy. It downloads original source releases, patches them if
-neccessary, configures them for Darwin and compiles and installs
-them. The information about available packages and the neccessary
-patches are included with this distribution, everything else is
-downloaded off the 'net.
+With the help of dpkg, it maintains a separate directory hierarchy. It
+downloads original source releases, patches them if neccessary,
+configures them for Darwin and compiles and installs them. The
+information about available packages and the neccessary patches are
+included with this distribution, everything else is downloaded off the
+Internet.
 
-This is version 0.1.8, an early development release. It has rough
-edges everywhere, and some things don't work yet. Also, the list of
-packages is quite short. You're walking on thin ground. It could easily
-break your system (although it hasn't broken mine to date). You have
-been warned.
+This is version 0.2.1, a development release. It has rough edges
+everywhere, and lacks lots of useful features. The package list is
+also quite short. You're walking on thin ground. It could easily break
+your system (although it hasn't broken mine to date). You have been
+warned.
 
 Fink is released under the terms of the GNU General Public
 License. See the file COPYING for details.
@@ -25,128 +27,40 @@ License. See the file COPYING for details.
  Requirements
 --------------
 You need:
- * An installed Mac OS X, version 10.0 system. Darwin 1.3.1 should
-   also work, but this has not been tested.
+ * An installed Mac OS X system, version 10.0 or later. Darwin 1.3.1
+   should also work, but this has not been tested. Earlier versions of
+   both will _not_ work.
  * Development tools. On Mac OS X, install the Developer.pkg package
    from the Developer Tools CD. On Darwin, the tools should be present
    in the default install.
  * Many other things that come with Mac OS X. This includes perl 5.6,
    wget and autoconf.
  * Internet access. All source code is downloaded from mirror sites.
+ * Patience. Compiling several big packages takes time. I'm talking
+   hours here.
 
 
  Installation
 --------------
-First, you must decide where Fink's directory hierarchy will live. I
-recommend /sw, because that's what I'm using. Theoretically, anything
-should be fine, but don't use common, existing directories like
-/usr/local or even /usr - that _will_ break your system.
-
-This version of Fink comes with a small installation script,
-install.sh. It takes the installation base path as the first
-argument. To install Fink in the recommended location, type:
-
-   ./install.sh /sw
-
-The script will create the neccessary directories and copy the files
-there. Then, it will run Fink and let it bootstrap itself. This
-includes an interactive configuration, mirror selection and the
-installation of essential packages (currently the stow package).
-
-
- Upgrading from previous releases
-----------------------------------
-You can upgrade from release 0.1.2 and later by using the upgrade.sh
-script. It is called like the install.sh script, with the installation
-path as the first (and only) parameter, e.g.:
-
-   ./upgrade.sh /sw
-
-Upgrading from releases prior to 0.1.2 is not possible. Sorry, too
-much has changed.
-
-To update all packages to the latest version use the 'update-all'
-command (see below).
-
-Special package update notes:
-
-- When updating the libtiff package from version 3.4, either keep the
-  file /sw/stow/libtiff-3.4-1/lib/libtiff.dylib, or rebuild all
-  packages that depend on libtiff.
-- The new revision of the dlcompat package will remove the header and
-  library from /usr/local and install a symlink for compatibility with
-  binaries and libraries linked against the old package. It will try
-  to use sudo for this (as it did when the old package was
-  installed). On new installations, sudo is not needed.
+The installation process is described in detail in the file
+INSTALL. Please read it first, the process is non-trivial.
 
 
  Using Fink
 ------------
-Fink has several commands that work on packages. All of them need at
-least one package name, and all can handle several package names at
-once. You can specify just the package name, or a fully qualified name
-with a version number (e.g. stow-1.3.2 or stow-1.3.2-1).
-
-To download, configure, build and install a package, type:
-
-  fink install <package-name>...
-
-This will also download and install any dependencies that are not yet
-installed. The three major phases of the installation process can be
-executed separately:
-
-  fink fetch <package-name>...
-    - download the source tarball
-  fink build <package-name>...
-    - configure and compile the package, install it in it's stow
-      directory
-  fink activate <package-name>...
-    - link the package into the main tree
-
-If you no longer want to use a package, you can remove it from the
-main tree with:
-
-  fink deactivate <package-name>...
-
-Note that this just removes the symlinks that point into the
-package's stow directory. It will still use disk space.
-
-To update a package, type:
-
-  fink update <package-name>...
-
-This was introduced in version 0.1.4 and is almost identical to the
-install command. Note that only the packages you specify in the
-command will be updated, not the dependencies. If the newest version
-of the package is already installed, nothing will be done. To
-re-install a package, you must 'deactivate' it first.
-
-To update all installed packages, type:
-
-  fink update-all
-
-This is identical to an 'update' command with all installed packages
-as parameters.
-
-
- Using the Hierarchy
----------------------
-To use the software installed in Fink's directory hierarchy, you must
-set your PATH environment variable (and some others)
-accordingly. Shell scripts are provided to do this for you. If you use
-tcsh or csh, add the following to your .cshrc:
-
-  source /sw/bin/init.csh
-
-If you use sh or bash, you can call init.sh in the same location from
-the appropriate shell startup file.
+The file USAGE describes how to set your paths and how to install and
+remove packages. It also has a complete list of available commands.
 
 
  Staying Informed
 ------------------
-If you use Fink, please subscribe to the fink-users mailing list. New
-releases are announced there and you can use it to get help. To
-subscribe, visit
+To be informed of new releases, go to
+<http://lists.sourceforge.net/lists/listinfo/fink-announce> and
+subscribe yourself to the fink-announce mailing list. The list is
+moderated and low-traffic.
+
+To get help or just chat with other Fink users, subscribe to the
+fink-users mailing list at
 <http://lists.sourceforge.net/lists/listinfo/fink-users>.
 
 The project's website is at <http://fink.sourceforge.net>.

@@ -1,20 +1,134 @@
-2001-04-14  Christoph Pfisterer  <cp@chrisp.de>
-
-	* FinkVersion.pm: Bumped version number to 0.1.8.
-
-2001-04-04  Christoph Pfisterer  <cp@chrisp.de>
+2001-05-11  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (initialize): Dependencies must be separated by a
-	comma now; a space is no longer sufficient.
+	comma now; a space is no longer sufficient. (Result of merging
+	dpkg-branch and HEAD.)
+	* Engine.pm (real_install): Added code to add all essential
+	packages to the dependency list of non-essential packages. (Result
+	of merging dpkg-branch and HEAD.)
+
+2001-05-08  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (find_debfile): Also search <prefix>/fink/debs for
+	.deb files.
+
+	* Engine.pm (real_install): Only fetch when we need the tarballs
+	later.
+
+2001-05-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_activate): Detect dpkg malfunction
+	(incomplete extraction) and offer to retry.
+
+2001-05-02  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Base.pm (param_default): Fixed default handling.
+
+2001-04-28  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Honor verbosity setting during fetch and
+	unpack. Provide tips after download failures.
+	* Configure.pm: Add interactive configuration for the verboseness
+	setting.
+	* Services.pm: New function print_breaking_twoprefix. Removed
+	obsolete find_stow.
+
+2001-04-24  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Bootstrap.pm: Fetch all packages at the beginning of the
+	bootstrap.
+	* Engine.pm: Renamed cmd_fetch_missing to
+	cmd_fetch_all_missing. New routine cmd_fetch_missing that takes a
+	package list.
+
+2001-04-22  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Handle .zip files. Source files with an unknown
+	extension are copied to the unpacking directory. Check build
+	directory for existence.
+
+2001-04-20  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_install): Remove dir files in the info
+	directories (was removed during the dpkg move).
+
+2001-04-14  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm: Changed internals of real_install. The first
+	parameter to real_install is now one of the defined constants
+	designating an operation. New commands: rebuild, reinstall.
+
+	* PkgVersion.pm: Create DEBIAN directory during install
+	phase. Mark essential packages as essential in dpkg control file.
+
+2001-04-12  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (real_install): Don't deactivate older revisions of a
+	package before installing the new revision. dpkg takes care of
+	upgrading itself, and refuses to violate dependencies.
+
+2001-04-11  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Handle duplicate package descriptions in
+	different directories.
+	* Package.pm (add_version): Merge info if version is already
+	present.
+
+2001-04-10  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm: Use the new scan_all method.
+	* Package.pm: Added method scan_all to scan all trees listed in
+	the config file.
+	* Config.pm: Added method get_treelist.
+
+2001-04-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Config.pm: New variable $libpath, pointing at the directory for
+	support files.
+	* Configure.pm: Removed umask code. Use $libpath. Fixed wrong
+	method call.
+	* Engine.pm: Removed umask code. Call Fink::Package->scan on the
+	correct directory in the new layout (temporary, hardcoded
+	solution).
+	* Package.pm (scan): Use File::Find to recursively search
+	directories. Read all files with the extension '.info'. Pass the
+	filename to the PkgVersion object for processing.
+	* PkgVersion.pm: Use $libpath. Use the description file path
+	passed by Fink::Package::scan to generate paths to the patch and
+	to the binary .deb. New accessors for the .deb path. Other small
+	fixes.
+
+	* Services.pm (prompt_boolean): Fixed regular expression
+	recognizing 'yes' answers.
 
 2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
 
-	* Bootstrap.pm (bootstrap): Added code to install all essential
-	packages, not just stow.
-	* Engine.pm (real_install): Added code to add all essential
-	packages to the dependency list of non-essential packages.
+	* PkgVersion.pm (phase_activate): Removed sudo from dpkg
+	invocation command line.
 
+	* Bootstrap.pm: Refined bootstrap.
 	* Package.pm: New function list_essential_packages.
+	* Services.pm (execute): Added quiet flag.
+
+2001-04-01  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Added accessor for .deb name. Use accessors
+	wherever possible instead of direct access. Use $debarch
+	variable. Add a dummy Description to the control file.
+	* Config.pm: Added $debarch variable.
+
+2001-03-31  Christoph Pfisterer  <cp@chrisp.de>
+
+	* FinkVersion.pm: Set version number to "pre-0.2.0".
+
+	* PkgVersion.pm: Major changes to support dpkg and
+	bootstrapping. Added qualifiers to import list.
+	* Bootstrap.pm: Separated bootstrap from interactive
+	configuration. Massive changes to bootstrap with dpkg.
+	* Configure.pm: New module for interactive configuration. Only
+	minor changes from the old Bootstrap.pm.
+	* Engine.pm: Separated bootstrap from interactive
+	configuration. Added call to phase_build().
 
 2001-03-30  Christoph Pfisterer  <cp@chrisp.de>
 

@@ -37,7 +37,12 @@ BEGIN {
 
   # your exported package globals go here,
   # as well as any optionally exported functions
-  @EXPORT_OK   = qw(&read_config &read_properties &read_properties_multival &filename &execute &expand_percent &print_breaking &print_breaking_prefix &prompt &prompt_boolean &prompt_selection &find_stow &expand_url &version_cmp &latest_version);
+  @EXPORT_OK   = qw(&read_config &read_properties &read_properties_multival
+                    &filename &execute &expand_percent
+                    &print_breaking &print_breaking_prefix
+                    &print_breaking_twoprefix
+                    &prompt &prompt_boolean &prompt_selection
+                    &expand_url &version_cmp &latest_version);
 }
 our @EXPORT_OK;
 
@@ -149,12 +154,13 @@ sub read_properties_multival {
 
 sub execute {
   my $cmd = shift;
+  my $quiet = shift || 0;
   my ($retval, $prog);
 
   print "$cmd\n";
   $retval = system($cmd);
   $retval >>= 8 if defined $retval and $retval >= 256;
-  if ($retval) {
+  if ($retval and not $quiet) {
     ($prog) = split(/\s+/, $cmd);
     print "### $prog failed, exit code $retval\n";
   }
@@ -220,7 +226,7 @@ sub print_breaking {
   my $linebreak = shift;
   $linebreak = 1 unless defined $linebreak;
 
-  print_breaking_prefix($s, $linebreak, "");
+  print_breaking_twoprefix($s, $linebreak, "", "");
 }
 
 sub print_breaking_prefix {
@@ -229,9 +235,24 @@ sub print_breaking_prefix {
   $linebreak = 1 unless defined $linebreak;
   my $prefix = shift;
   $prefix = "" unless defined $prefix;
-  my ($pos, $t, $reallength);
+
+  print_breaking_twoprefix($s, $linebreak, $prefix, $prefix);
+}
+
+sub print_breaking_twoprefix {
+  my $s = shift;
+  my $linebreak = shift;
+  $linebreak = 1 unless defined $linebreak;
+  my $prefix1 = shift;
+  $prefix1 = "" unless defined $prefix1;
+  my $prefix2 = shift;
+  $prefix2 = "" unless defined $prefix2;
+  my ($pos, $t, $reallength, $prefix, $first);
 
   chomp($s);
+
+  $first = 1;
+  $prefix = $prefix1;
   $reallength = $linelength - length($prefix);
   while (length($s) > $reallength) {
     $pos = rindex($s," ",$reallength);
@@ -243,6 +264,11 @@ sub print_breaking_prefix {
       $s = substr($s,$pos+1);
     }
     print "$prefix$t\n";
+    if ($first) {
+      $first = 0;
+      $prefix = $prefix2;
+      $reallength = $linelength - length($prefix);
+    }
   }
   print "$prefix$s";
   print "\n" if $linebreak;
@@ -274,7 +300,7 @@ sub prompt_boolean {
     if ($answer eq "") {
       $meaning = $default_value;
       last;
-    } elsif ($answer =~ /^y(e?s)?/i) {
+    } elsif ($answer =~ /^y(es?)?/i) {
       $meaning = 1;
       last;
     } elsif ($answer =~ /^no?/i) {
@@ -325,21 +351,6 @@ sub prompt_selection {
     return $choices[$answer-1];
   }
   return $choices[$default_value-1];
-}
-
-### find stow binary
-
-sub find_stow {
-  my $fn;
-
-  foreach $fn ("$basepath/bin/stow", "$FindBin::Bin/stow",
-               glob("$basepath/stow/stow*/bin/stow")) {
-    if (-x $fn) {
-      return $fn;
-    }
-  }
-  print "Warning: stow not found, I hope it's in the PATH somewhere...\n";
-  return "stow";
 }
 
 ### comparing versions

@@ -22,9 +22,11 @@
 package Fink::PkgVersion;
 use Fink::Base;
 
-use Fink::Services qw(filename expand_percent expand_url execute find_stow latest_version);
+use Fink::Services qw(&filename &expand_percent &expand_url &execute
+                      &latest_version &print_breaking
+                      &print_breaking_twoprefix &prompt_boolean);
 use Fink::Package;
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $libpath $debarch);
 
 use strict;
 use warnings;
@@ -47,9 +49,9 @@ END { }       # module clean-up code here (global destructor)
 
 sub initialize {
   my $self = shift;
-  my ($pkgname, $version, $revision, $source);
-  my ($depspec, $deplist, $dep, $expand, $configure_params);
-  my ($i);
+  my ($pkgname, $version, $revision, $filename, $source);
+  my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
+  my ($i, $path);
 
   $self->SUPER::initialize();
 
@@ -57,21 +59,37 @@ sub initialize {
   $self->{_version} = $version = $self->param_default("Version", "0");
   $self->{_revision} = $revision = $self->param_default("Revision", "0");
   $self->{_type} = lc $self->param_default("Type", "");
+  # the following is set by Fink::Package::scan
+  $self->{_filename} = $filename = $self->{thefilename};
+
+  # path handling
+  $filename =~ /^(.*\/)[^\/]*$/;
+  $path = $1;
+  if (substr($path,-1) eq "/") {
+    $path = substr($path,0,-1);
+  }
+  $self->{_patchpath} = $path;
+  $path =~ s|/finkinfo|/binary-$debarch|;
+  $self->{_debpath} = $path;
+  $self->{_debpaths} = [ $path ];
 
   # some commonly used stuff
   $self->{_fullversion} = $version."-".$revision;
   $self->{_fullname} = $pkgname."-".$version."-".$revision;
+  $self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 
   # percent-expansions
   $configure_params = "--prefix=\%p ".
     $self->param_default("ConfigureParams", "");
+  $destdir = "$basepath/src/root-".$self->{_fullname};
   $expand = { 'n' => $pkgname,
 	      'v' => $version,
 	      'r' => $revision,
 	      'f' => $self->{_fullname},
-	      'p' => $basepath,
-	      'i' => "$basepath/stow/".$self->{_fullname},
-	      'a' => "$basepath/fink/patch",
+	      'p' => $basepath, 'P' => $basepath,
+	      'd' => $destdir,
+	      'i' => $destdir.$basepath,
+	      'a' => $self->{_patchpath},
 	      'c' => $configure_params};
   $self->{_expand} = $expand;
 
@@ -103,6 +121,40 @@ sub initialize {
     $self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
     $self->{_sourcecount} = $i;
   }
+
+  $self->{_bootstrap} = 0;
+}
+
+### merge duplicate package description
+
+sub merge {
+  my $self = shift;
+  my $dup = shift;
+
+  push @{$self->{_debpaths}}, $dup->{_debpath};
+}
+
+### bootstrap helpers
+
+sub enable_bootstrap {
+  my $self = shift;
+  my $bsbase = shift;
+
+  $self->{_expand}->{p} = $bsbase;
+  $self->{_expand}->{d} = "";
+  $self->{_expand}->{i} = $bsbase;
+  $self->{_bootstrap} = 1;
+}
+
+sub disable_bootstrap {
+  my $self = shift;
+  my ($destdir);
+
+  $destdir = "$basepath/src/root-".$self->{_fullname};
+  $self->{_expand}->{p} = $basepath;
+  $self->{_expand}->{d} = $destdir;
+  $self->{_expand}->{i} = $destdir.$basepath;
+  $self->{_bootstrap} = 0;
 }
 
 ### get package name, version etc.
@@ -137,6 +189,21 @@ sub get_fullversion {
 sub get_fullname {
   my $self = shift;
   return $self->{_fullname};
+}
+
+sub get_debname {
+  my $self = shift;
+  return $self->{_debname};
+}
+
+sub get_debpath {
+  my $self = shift;
+  return $self->{_debpath};
+}
+
+sub get_debfile {
+  my $self = shift;
+  return $self->{_debpath}."/".$self->{_debname};
 }
 
 ### other accessors
@@ -187,10 +254,10 @@ sub get_build_directory {
   }
 
   $dir = $self->get_tarball();
-  if ($dir =~ /^(.*)\.tar\.(gz|Z|bz2)$/) {
+  if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
     $dir = $1;
   }
-  if ($dir =~ /^(.*)\.tgz$/) {
+  if ($dir =~ /^(.*)\.(tgz|zip)$/) {
     $dir = $1;
   }
 
@@ -218,11 +285,8 @@ sub is_fetched {
 
 sub is_present {
   my $self = shift;
-  my ($idir);
 
-  $idir = "$basepath/stow/".$self->get_fullname();
-
-  if (-e "$idir/var/fink-stamp/".$self->get_fullname()) {
+  if (defined $self->find_debfile()) {
     return 1;
   }
   return 0;
@@ -261,6 +325,21 @@ sub find_tarball {
     $found_archive = "$search_dir/$archive";
     if (-f $found_archive) {
       return $found_archive;
+    }
+  }
+  return undef;
+}
+
+### binary package finding
+
+sub find_debfile {
+  my $self = shift;
+  my ($path, $fn);
+
+  foreach $path (@{$self->{_debpaths}}, "$basepath/fink/debs") {
+    $fn = $path."/".$self->{_debname};
+    if (-f $fn) {
+      return $fn;
     }
   }
   return undef;
@@ -375,7 +454,7 @@ sub phase_fetch {
 sub fetch_source {
   my $self = shift;
   my $index = shift;
-  my ($url, $file);
+  my ($url, $file, $verbosity);
 
   chdir "$basepath/src";
 
@@ -385,8 +464,32 @@ sub fetch_source {
   if (-f $file) {
     &execute("rm -f $file");
   }
-  &execute("wget $url");
-  if (not -f $file) {
+
+  $verbosity = "--non-verbose";
+  if ($config->param_boolean("Verbose")) {
+    $verbosity = "--verbose";
+  }
+  if (&execute("wget $verbosity $url") or not -f $file) {
+    print "\n";
+    &print_breaking("Downloading '$file' from the URL '$url' failed. ".
+		    "There can be several reasons for this:");
+    &print_breaking_twoprefix("The server is too busy to let you in or ".
+			      "is temporarily down. Try again later.",
+			      1, "- ", "  ");
+    &print_breaking_twoprefix("There is a network problem. If you are ".
+			      "behind a firewall you may want to check ".
+			      "the wget documentation for proxy and ".
+			      "passive mode settings. Then try again.",
+			      1, "- ", "  ");
+    &print_breaking_twoprefix("The file was removed from the server or ".
+			      "moved to another directory. The package ".
+			      "description must be updated.",
+			      1, "- ", "  ");
+    &print_breaking("In any case, you can download '$file' manually and ".
+		    "put it in '$basepath/src', then run fink again with ".
+		    "the same command.");
+    print "\n";
+
     die "file download failed for $file\n";
   }
 }
@@ -395,14 +498,19 @@ sub fetch_source {
 
 sub phase_unpack {
   my $self = shift;
-  my ($archive, $found_archive, $bdir, $destdir, $tar_cmd);
-  my ($i);
+  my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
+  my ($i, $verbosity);
 
   if ($self->{_type} eq "bundle") {
     return;
   }
 
   $bdir = $self->get_fullname();
+
+  $verbosity = "";
+  if ($config->param_boolean("Verbose")) {
+    $verbosity = "v";
+  }
 
   # remove dir if it exists
   chdir "$basepath/src";
@@ -426,11 +534,15 @@ sub phase_unpack {
     }
 
     # determine unpacking command
-    $tar_cmd = "tar -xvf $found_archive";
-    if ($archive =~ /[\.\-]tar\.(gz|Z)$/ or $archive =~ /\.tgz$/) {
-      $tar_cmd = "gzip -dc $found_archive | tar -xvf -";
+    $unpack_cmd = "cp $found_archive .";
+    if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
+      $unpack_cmd = "gzip -dc $found_archive | tar -x${verbosity}f -";
     } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
-      $tar_cmd = "bzip2 -dc $found_archive | tar -xvf -";
+      $unpack_cmd = "bzip2 -dc $found_archive | tar -x${verbosity}f -";
+    } elsif ($archive =~ /[\.\-]tar$/) {
+      $unpack_cmd = "tar -x${verbosity}f $found_archive";
+    } elsif ($archive =~ /\.zip$/) {
+      $unpack_cmd = "unzip -o $found_archive";
     }
 
     # calculate destination directory
@@ -448,7 +560,7 @@ sub phase_unpack {
 
     # unpack it
     chdir $destdir;
-    if (&execute($tar_cmd)) {
+    if (&execute($unpack_cmd)) {
       die "unpacking failed\n";
     }
   }
@@ -465,6 +577,9 @@ sub phase_patch {
   }
 
   $dir = $self->get_build_directory();
+  if (not -d "$basepath/src/$dir") {
+    die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+  }
   chdir "$basepath/src/$dir";
 
   $patch_script = "";
@@ -473,16 +588,16 @@ sub phase_patch {
 
   if ($self->param_boolean("UpdateConfigGuess")) {
     $patch_script .=
-      "cp -f $basepath/fink/update/config.guess .\n".
-      "cp -f $basepath/fink/update/config.sub .\n";
+      "cp -f $libpath/update/config.guess .\n".
+      "cp -f $libpath/update/config.sub .\n";
   }
 
   ### copy libtool scripts (ltconfig and ltmain.sh) if required
 
   if ($self->param_boolean("UpdateLibtool")) {
     $patch_script .=
-      "cp -f $basepath/fink/update/ltconfig .\n".
-      "cp -f $basepath/fink/update/ltmain.sh .\n";
+      "cp -f $libpath/update/ltconfig .\n".
+      "cp -f $libpath/update/ltmain.sh .\n";
   }
 
   ### patches specifies by filename
@@ -524,6 +639,9 @@ sub phase_compile {
   }
 
   $dir = $self->get_build_directory();
+  if (not -d "$basepath/src/$dir") {
+    die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+  }
   chdir "$basepath/src/$dir";
 
   # generate compilation script
@@ -556,13 +674,22 @@ sub phase_install {
 
   if ($self->{_type} ne "bundle") {
     $dir = $self->get_build_directory();
+    if (not -d "$basepath/src/$dir") {
+      die "directory $basepath/src/$dir doesn't exist, check the package description\n";
+    }
     chdir "$basepath/src/$dir";
   }
 
   # generate installation script
 
-  $install_script = "rm -rf \%i\n".
-    "mkdir -p \%i\n";
+  $install_script = "";
+  unless ($self->{_bootstrap}) {
+    $install_script .= "rm -rf \%d\n";
+  }
+  $install_script .= "mkdir -p \%i\n";
+  unless ($self->{_bootstrap}) {
+    $install_script .= "mkdir -p \%d/DEBIAN\n";
+  }
   if ($self->{_type} ne "bundle") {
     if ($self->has_param("InstallScript")) {
       $install_script .= $self->param("InstallScript");
@@ -571,7 +698,8 @@ sub phase_install {
     }
   }
   $install_script .= "\nmkdir -p \%i/var/fink-stamp".
-    "\ntouch \%i/var/fink-stamp/\%f";
+    "\ntouch \%i/var/fink-stamp/\%f".
+    "\nrm -f %i/info/dir %i/share/info/dir";
 
   $install_script = &expand_percent($install_script, $self->{_expand});
 
@@ -597,28 +725,90 @@ sub phase_install {
   }
 }
 
+### build .deb
+
+sub phase_build {
+  my $self = shift;
+  my ($ddir, $destdir, $control);
+  my ($cmd);
+
+  chdir "$basepath/src";
+  $ddir = "root-".$self->get_fullname();
+  $destdir = "$basepath/src/$ddir";
+
+  # generate dpkg "control" file
+
+  my ($pkgname, $version, $depends);
+  $pkgname = $self->get_name();
+  $version = $self->get_fullversion();
+  $depends = join(", ", @{$self->{_depends}});
+  $control = <<EOF;
+Package: $pkgname
+Source: $pkgname
+Version: $version
+Depends: $depends
+Architecture: $debarch
+Description: Package $pkgname version $version
+EOF
+  if ($self->has_param("Maintainer")) {
+    $control .= "Maintainer: ".$self->param("Maintainer")."\n";
+  }
+  if ($self->param_boolean("Essential")) {
+    $control .= "Essential: yes\n";
+  }
+
+  if (not -d "$destdir/DEBIAN") {
+    if (&execute("mkdir -p $destdir/DEBIAN")) {
+      die "can't create directory for control files\n";
+    }
+  }
+  open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file: $!\n";
+  print CONTROL $control;
+  close(CONTROL) or die "can't write control file: $!\n";
+
+  ### create .deb using dpkg-deb
+
+  if (not -d $self->get_debpath()) {
+    if (&execute("mkdir -p ".$self->get_debpath())) {
+      die "can't create directory for packages\n";
+    }
+  }
+  $cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
+  if (&execute($cmd)) {
+    die "can't create package\n";
+  }
+
+  ### remove root dir
+
+  if (not $config->param_boolean("KeepRootDir") and -e $destdir) {
+    if (&execute("rm -rf $destdir")) {
+      die "can't remove build directory $destdir\n";
+    }
+  }
+}
+
 ### activate
 
 sub phase_activate {
   my $self = shift;
-  my ($dir, $stow);
+  my ($deb, $answer);
 
-  $dir = $self->get_fullname();
+  $deb = $self->find_debfile();
 
-  chdir "$basepath/stow";
-  if (-d $dir) {
-    # avoid conflicts for info documentation
-    if (-f "$dir/info/dir") {
-      &execute("rm -f $dir/info/dir");
+  unless (defined $deb and -f $deb) {
+    die "can't find package ".$self->get_debname()."\n";
+  }
+
+  while(1) {
+    if (&execute("dpkg -i $deb")) {
+      die "can't install package\n";
     }
+    last if $self->is_installed();
 
-    $stow = &find_stow;
-
-    if (&execute("$stow $dir")) {
-      die "stow failed\n";
-    }
-  } else {
-    die "Package directory $dir not found unter $basepath/stow!\n";
+    $answer =
+      &prompt_boolean("WARNING: dpkg malfunction detected. Not all files ".
+		      "were extracted. Retry installing?");
+    last if not $answer;
   }
 }
 
@@ -626,19 +816,9 @@ sub phase_activate {
 
 sub phase_deactivate {
   my $self = shift;
-  my ($dir, $stow);
 
-  $dir = $self->get_fullname();
-
-  chdir "$basepath/stow";
-  if (-d $dir) {
-    $stow = &find_stow;
-
-    if (&execute("$stow -D $dir")) {
-      die "stow failed\n";
-    }
-  } else {
-    die "Package directory $dir not found unter $basepath/stow!\n";
+  if (&execute("dpkg --remove ".$self->get_name())) {
+    die "can't remove package\n";
   }
 }
 

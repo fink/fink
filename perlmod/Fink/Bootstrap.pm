@@ -22,9 +22,10 @@
 package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
-use Fink::Engine;
-use Fink::Services qw(prompt prompt_boolean prompt_selection print_breaking read_properties read_properties_multival filename);
+use Fink::Services qw(&print_breaking &execute);
 use Fink::Package;
+use Fink::PkgVersion;
+use Fink::Engine;
 
 use strict;
 use warnings;
@@ -43,135 +44,84 @@ our @EXPORT_OK;
 END { }       # module clean-up code here (global destructor)
 
 
-### create configuration interactively
+### bootstrap a base system
 
 sub bootstrap {
-  my ($umask, $otherdir, @elist);
+  my ($bsbase, $save_path);
+  my ($pkgname, $package, @elist);
+  my @plist = ("gettext", "tar", "dpkg");
 
-  print "\n";
-  &print_breaking("OK, I'll ask you some questions and update the ".
-		  "configuration file in '".$config->get_path()."'.");
+  $bsbase = "$basepath/bootstrap";
+  &print_breaking("Bootstrapping a base system via $bsbase.");
 
-  # normal configuration
-  $umask =
-    &prompt("What umask should be used by Fink? If you don't want ".
-	    "Fink to set a umask, type 'none'.", "022");
-  if ($umask !~ /none/i) {
-    $config->set_param("UMask", $umask);
-    umask oct($umask);
+  # create directories
+  if (-e $bsbase) {
+    &execute("rm -rf $bsbase");
   }
-  $otherdir =
-    &prompt("In what additional directory should Fink look for downloaded ".
-	    "tarballs?", "");
-  if ($otherdir) {
-    $config->set_param("FetchAltDir", $otherdir);
-  }
+  &execute("mkdir -p $bsbase");
+  &execute("mkdir -p $bsbase/bin");
+  &execute("mkdir -p $bsbase/sbin");
+  &execute("mkdir -p $bsbase/lib");
 
+  # set paths so that everything is found
+  $save_path = $ENV{PATH};
+  $ENV{PATH} = "$basepath/sbin:$basepath/bin:".
+               "$bsbase/sbin:$bsbase/bin:".
+               $save_path;
 
-  # mirror selection
-  &choose_mirrors();
-
-
-  # write configuration
-  print "\n";
-  &print_breaking("Writing updated configuration to '".$config->get_path().
-		  "'...");
-  $config->save();
-
-
-  # install essential packages
-  # TODO: better interface to Engine
-  &print_breaking("I'll now install some essential packages, ".
-		  "which are required for Fink operation.");
+  # determine essential packages
   @elist = Fink::Package->list_essential_packages();
-  Fink::Engine::cmd_install(@elist);
-}
 
-### mirror selection
-
-sub choose_mirrors {
-  my ($continent, $country, $answer);
-  my ($keyinfo, @continents, @countries, $key, $listinfo);
-  my ($mirrorfile, $mirrorname, $mirrortitle);
-  my ($all_mirrors, @mirrors, $mirror_labels, $site);
-
-  &print_breaking("Mirror selection");
-  $keyinfo = &read_properties("$basepath/fink/mirror/_keys");
-
-  ### step 1: choose a continent
-
-  @continents = ();
-  foreach $key (sort keys %$keyinfo) {
-    if (length($key) == 3) {
-      push @continents, $key;
-    }
-  }
-
-  &print_breaking("Choose a continent:");
-  $continent = &prompt_selection("Your continent?", 1, $keyinfo,
-				 @continents);
-
-  ### step 2: choose a country
-
-  @countries = ( "-" );
-  $keyinfo->{"-"} = "No selection - display all mirrors on the continent";
-  foreach $key (sort keys %$keyinfo) {
-    if ($key =~ /^$continent-/) {
-      push @countries, $key;
-    }
-  }
 
   print "\n";
-  &print_breaking("Choose a country:");
-  $country = &prompt_selection("Your country?", 1, $keyinfo,
-			       @countries);
-  if ($country eq "-") {
-    $country = $continent;
+  &print_breaking("BOOTSTRAP PHASE ONE: download tarballs.");
+  print "\n";
+
+  # use normal install routines
+  Fink::Engine::cmd_fetch_missing(@elist);
+
+
+  print "\n";
+  &print_breaking("BOOTSTRAP PHASE TWO: installing neccessary packages to ".
+		  "$bsbase without package management.");
+  print "\n";
+
+  # install the packages needed to build packages into the bootstrap tree
+  foreach $pkgname (@plist) {
+    $package = Fink::PkgVersion->match_package($pkgname);
+    unless (defined $package) {
+      die "no package found for specification '$pkgname'!\n";
+    }
+
+    $package->enable_bootstrap($bsbase);
+    $package->phase_unpack();
+    $package->phase_patch();
+    $package->phase_compile();
+    $package->phase_install();
+    $package->disable_bootstrap();
   }
 
-  ### step 3: mirrors
+  # create empty dpkg database
+  &execute("mkdir -p $basepath/var/lib/dpkg");
+  &execute("touch $basepath/var/lib/dpkg/status");
+  &execute("touch $basepath/var/lib/dpkg/available");
 
-  $listinfo = &read_properties("$basepath/fink/mirror/_list");
 
-  foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
-    next if $mirrorname =~ /^\s*$/;
+  print "\n";
+  &print_breaking("BOOTSTRAP PHASE THREE: installing essential packages to ".
+		  "$basepath with package management.");
+  print "\n";
 
-    $mirrorfile = "$basepath/fink/mirror/$mirrorname";
-    $mirrortitle = $mirrorname;
-    if (exists $listinfo->{lc $mirrorname}) {
-      $mirrortitle = $listinfo->{lc $mirrorname};
-    }
+  # use normal install routines
+  Fink::Engine::cmd_install(@elist);
 
-    $all_mirrors = &read_properties_multival($mirrorfile);
 
-    @mirrors = ();
-    $mirror_labels = {};
+  print "\n";
+  &print_breaking("BOOTSTRAP DONE. Cleaning up.");
+  print "\n";
+  &execute("rm -rf $bsbase");
 
-    if (exists $all_mirrors->{primary}) {
-      foreach $site (@{$all_mirrors->{primary}}) {
-	push @mirrors, $site;
-	$mirror_labels->{$site} = "Primary: $site";
-      }
-    }
-    if ($country ne $continent and exists $all_mirrors->{$country}) {
-      foreach $site (@{$all_mirrors->{$country}}) {
-	push @mirrors, $site;
-	$mirror_labels->{$site} = $keyinfo->{$country}.": $site";
-      }
-    }
-    if (exists $all_mirrors->{$continent}) {
-      foreach $site (@{$all_mirrors->{$continent}}) {
-	push @mirrors, $site;
-	$mirror_labels->{$site} = $keyinfo->{$continent}.": $site";
-      }
-    }
-
-    print "\n";
-    &print_breaking("Choose a mirror for '$mirrortitle':");
-    $answer = &prompt_selection("Mirror for $mirrortitle?", 1,
-				$mirror_labels, @mirrors);
-    $config->set_param("Mirror-$mirrorname", $answer);
-  }
+  $ENV{PATH} = $save_path;
 }
 
 

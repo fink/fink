@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# install.sh - install fink package
+# install.sh - install fink-base package
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -34,9 +34,10 @@ echo "Creating directories..."
 mkdir -p $basepath
 chmod 755 $basepath
 
-for dir in bin lib lib/fink lib/fink/perlmod lib/fink/perlmod/Fink \
-	   lib/fink/mirror lib/fink/update \
-	   share share/doc share/doc/fink ; do
+for dir in etc bin sbin lib libexec include \
+	   share share/info share/man share/doc \
+	   info man \
+	   var var/run var/spool src ; do
   mkdir $basepath/$dir
   chmod 755 $basepath/$dir
 done
@@ -44,37 +45,13 @@ done
 
 echo "Copying files..."
 
-cp fink $basepath/bin/
-chmod 755 $basepath/bin/fink
+cp init.sh $basepath/bin/
+chmod 644 $basepath/bin/init.sh
+cp init.csh $basepath/bin/
+chmod 644 $basepath/bin/init.csh
 
-for file in perlmod/Fink/*.pm ; do
-  if [ -f $file ]; then
-    cp $file $basepath/lib/fink/perlmod/Fink/
-    chmod 644 $basepath/lib/fink/$file
-  fi
-done
-
-for file in mirror/* ; do
-  if [ -f $file ]; then
-    cp $file $basepath/lib/fink/mirror/
-    chmod 644 $basepath/lib/fink/$file
-  fi
-done
-
-for file in update/config.guess update/config.sub update/ltconfig ; do
-  cp $file $basepath/lib/fink/update/
-  chmod 755 $basepath/lib/fink/$file
-done
-
-for file in update/ltmain.sh ; do
-  cp $file $basepath/lib/fink/update/
-  chmod 644 $basepath/lib/fink/$file
-done
-
-for file in COPYING README INSTALL USAGE ; do
-  cp $file $basepath/share/doc/fink/
-  chmod 644 $basepath/share/doc/fink/$file
-done
+cp fink-release $basepath/etc/
+chmod 644 $basepath/etc/fink-release
 
 
 echo "Done."

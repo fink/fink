@@ -1,0 +1,16 @@
+Package: gettext
+Version: 0.10.35
+Revision: 4
+Source: gnu
+Essential: yes
+Depends: base-files
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+Patch: %f.patch
+ConfigureParams: --infodir=%p/share/info --with-included-gettext
+InstallScript: make install DESTDIR=%d
+CommentPort: Uses autoconf. Checks the host type - the usual
+ fix. Uses an evil hack to actually build and install a shared libintl
+ library and link against it.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
