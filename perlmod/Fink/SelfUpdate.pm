@@ -26,7 +26,7 @@ use Fink::Config qw($config $basepath);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
-use Fink::FinkVersion;
+use Fink::FinkVersion qw(&distribution_version);
 
 use strict;
 use warnings;
@@ -49,7 +49,7 @@ END { }       # module clean-up code here (global destructor)
 
 sub check {
   my ($destdir, $dir);
-  my ($latest_fink, $pkgtarball, $url);
+  my ($latest_fink, $installed_version, $pkgtarball, $url);
   my ($verbosity, $unpack_cmd);
 
   $destdir = "$basepath/src";
@@ -63,15 +63,16 @@ sub check {
   # check if we need to upgrade
   $latest_fink = `cat LATEST-FINK`;
   chomp($latest_fink);
-  if (&version_cmp($latest_fink, $fink_version) <= 0) {
+  $installed_version = &distribution_version();
+  if (&version_cmp($latest_fink, $installed_version) <= 0) {
     print "\n";
     &print_breaking("You already have the latest Fink release. ".
-		    "(installed:$fink_version available:$latest_fink)");
+		    "(installed:$installed_version available:$latest_fink)");
     return;
   }
 
   print "\n";
-  &print_breaking("A new Fink release is available. ".
+  &print_breaking("A new Fink distribution release is available. ".
 		  "I will now download the package descriptions for ".
 		  "Fink $latest_fink and update the core packages. ".
 		  "After that, you should update the other packages ".
@@ -120,8 +121,8 @@ sub check {
   Fink::Package->forget_packages();
   Fink::Package->require_packages();
 
-  # update fink and base-files first
-  Fink::Engine::cmd_install("base-files", "fink");
+  # update the package manager itself first
+  Fink::Engine::cmd_install("fink");
 
   # re-execute ourselves before we update the rest
   print "Re-executing fink to use the new version...";

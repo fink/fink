@@ -31,8 +31,8 @@ BEGIN {
   our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
   $VERSION = 1.00;
   @ISA         = qw(Exporter);
-  @EXPORT      = qw($fink_version);
-  @EXPORT_OK   = qw();  # eg: qw($Var1 %Hashit &func3);
+  @EXPORT      = qw();
+  @EXPORT_OK   = qw(&fink_version &distribution_version);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;

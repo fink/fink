@@ -1,5 +1,8 @@
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
+	* SelfUpdate.pm (check): Adapted to the new structure, check
+	against the distribution version.
+
 	* FinkVersion.pm.in: Added functions to retreive package manager
 	and distribution versions.
 
