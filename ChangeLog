@@ -1,8 +1,8 @@
-2004-08-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2004-08-07  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.21.1, a release
 	on branch_0_21 updating VirtPackage.pm for system-java and the
-	new cctools from XCode 1.5
+	new cctools from XCode 1.5, and correcting the regex in Config.pm
 
 2004-08-03  Daniel Macks  <dmacks@netspace.org>
 
