@@ -192,7 +192,7 @@ sub choose_mirrors {
 					  "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
 	
 	$mirror_order = &prompt_selection_new("What mirror order should fink use when downloading sources?",
-					      [number=>1], 
+					      [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
 					      ( "Search \"Master\" source mirrors first." => "MasterFirst",
 						"Search \"Master\" source mirrors last." => "MasterLast",
 						"Never use \"Master\" source mirrors." => "MasterNever",

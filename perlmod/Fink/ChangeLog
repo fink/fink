@@ -1,3 +1,7 @@
+2004-07-18  Max Horn <max@quendi.de>
+
+	* Configure.pm: Fix default value for the master mirror configure option.
+
 2004-07-18  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Change get_tarball to return undef (instead of
