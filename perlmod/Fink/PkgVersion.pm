@@ -821,34 +821,35 @@ sub resolve_depends {
 			$loopcount = 0;
 			$found = 0;
 			BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
-			$loopcount++;
-			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-				$depname = $1;
-				$versionspec = $2;
-			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-				$depname = $1;
-				$versionspec = "";
-			} else {
-				die "Illegal spec format: $depspec\n";
-			}
-			$package = Fink::Package->package_by_name($depname);
-			$found = 1 if defined $package;
-			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-			}
-			if (not defined $package) {
-				next BUILDDEPENDSLOOP;
-			}
-			my ($currentpackage, @dependslist, $dependent, $dependentname);
-			$currentpackage = $self->get_name();
-			@dependslist = $package->get_all_providers();
-			foreach $dependent (@dependslist) {
-				$dependentname = $dependent->get_name();
-				if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
-					if ($dependentname eq $depname) {
-						print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
-					} else {
-						print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+				$loopcount++;
+				if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+					$depname = $1;
+					$versionspec = $2;
+				} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+					$depname = $1;
+					$versionspec = "";
+				} else {
+					die "Illegal spec format: $depspec\n";
+				}
+				$package = Fink::Package->package_by_name($depname);
+				$found = 1 if defined $package;
+				if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
+					print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				}
+				if (not defined $package) {
+					next BUILDDEPENDSLOOP;
+				}
+				my ($currentpackage, @dependslist, $dependent, $dependentname);
+				$currentpackage = $self->get_name();
+				@dependslist = $package->get_all_providers();
+				foreach $dependent (@dependslist) {
+					$dependentname = $dependent->get_name();
+					if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
+						if ($dependentname eq $depname) {
+							print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
+						} else {
+							print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+						}
 					}
 				}
 			}
