@@ -1,3 +1,7 @@
+2001-09-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink-release: Bumped to 0.2.6.
+
 2001-08-31  Christoph Pfisterer  <cp@chrisp.de>
 
 	* install.sh: Don't create deprecated directories.

@@ -1,5 +1,7 @@
 2001-09-04  Christoph Pfisterer  <cp@chrisp.de>
 
+	* VERSION: Bumped fink version to 0.2.6.
+
 	* README, README.html, INSTALL, INSTALL.html, USAGE, USAGE.html:
 	Updated for the 0.2.6 release via the XML document system.
 
