@@ -1,3 +1,8 @@
+2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Don't print the output of linking the
+	-single_module test we only care about pass/fail.
+
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm, PkgVersion.pm: reverting changes from 2003-07-02
