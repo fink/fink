@@ -149,7 +149,9 @@ sub initialize {
 		$parentdestdir = $destdir;
 		$self->{_splitoffs} = [];
 	}
-	$expand = { 'n' => $pkgname,
+	$self->{package_invariant} = $pkgname unless exists $self->{package_invariant};  # virtual packages don't know to set this field
+	$expand = { 'n' => $self->{package_invariant},
+				'Vn'=> $pkgname,
 				'e' => $epoch,
 				'v' => $version,
 				'r' => $revision,
@@ -560,7 +562,7 @@ sub get_info_filename {
 sub get_source_count {
 	my $self = shift;
 
-	if (exists $self->{_parent}) {
+	if (exists $self->{parent}) {
 		# SplitOff packages have no sources of their own
 		return 0;
 	}
