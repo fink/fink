@@ -1,3 +1,7 @@
+2004-08-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Recognize darwin 7.5.0.
+
 2004-08-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Config.pm: correct the regex for parsing Trees in write_sources_list
