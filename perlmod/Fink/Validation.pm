@@ -359,12 +359,17 @@ sub validate_dpkg_file {
     # process
     if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
       $filename = $6;
-      #print "$6\n";
-      foreach $bad_dir (@bad_dirs) {
-        if ($6 =~ /^$bad_dir/) {
-          print "WARNING: File installed into deprecated directory $bad_dir\n";
-          print "         Offender is $filename\n";
-          last;
+      #print "$filename\n";
+      next if $filename eq "/";
+      if (not $filename =~ /^$basepath/) {
+            print "Warning: File \"$filename\" installed outside of $basepath\n";
+      } else {
+        foreach $bad_dir (@bad_dirs) {
+          if ($filename =~ /^$bad_dir/) {
+            print "Warning: File installed into deprecated directory $bad_dir\n";
+            print "         Offender is $filename\n";
+            last;
+          }
         }
       }
     }
