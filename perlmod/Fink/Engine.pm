@@ -554,12 +554,15 @@ sub real_install {
   my (%candidates, @candidates, $pnode);
   my ($oversion, $opackage, $v, $ep, $dp, $dname);
   my ($answer, $s);
+  my (%already_rebuilt);
 
   if (Fink::Config::is_verbose()) {
     $showlist = 1;
   }
 
   %deps = ();   # hash by package name
+
+  %already_rebuilt = ();
 
   # add requested packages
   foreach $pkgspec (@_) {
@@ -568,11 +571,6 @@ sub real_install {
     $package = Fink::PkgVersion->match_package($pkgspec);
     unless (defined $package) {
       die "no package found for specification '$pkgspec'!\n";
-    }
-    # if we rebuild a splitoff, rebuild the parent instead
-    if ($op == $OP_REBUILD
-        and $package->{_type} eq "splitoff") {
-      $package = $package->{parent};
     }
     # no duplicates here
     #  (dependencies is different, but those are checked later)
@@ -810,18 +808,28 @@ sub real_install {
       $any_installed = 1;
       $package = $item->[2];
 
-      if ($item->[3] == $OP_REBUILD or not $package->is_present()) {
+
+      if (($item->[3] == $OP_REBUILD and not $already_rebuilt{$pkgname})
+          or not $package->is_present()) {
 	$package->phase_unpack();
 	$package->phase_patch();
 	$package->phase_compile();
 	$package->phase_install();
 	$package->phase_build();
 
-        # if we just rebuilt a splitoff master package, then reinstall  
-        # all its splitoff if necessary.
-        if ($item->[3] == $OP_REBUILD and @{$package->{_splitoffs}} > 0) {
+        $already_rebuilt{$pkgname} = 1;
+
+	my $parent;
+	if (@{$package->{_splitoffs}} > 0) {
+	  $parent = $package;
+	} elsif (exists $package->{parent}) {
+	  $parent = $package->{parent};
+	}
+	if (defined $parent) {
           my $splitoff;
+          $already_rebuilt{$parent->get_name()} = 1;
           foreach $splitoff (@{$package->{_splitoffs}}) {
+            $already_rebuilt{$splitoff->get_name()} = 1;
             if ($splitoff->is_installed()) {
               $splitoff->phase_activate();
             }
