@@ -1,0 +1,26 @@
+The fink project has a unique buildsystem for its various releasable CVS
+modules (including fink, base-files, fix-fink, and fink-mirrors).
+
+Within each such module there is a script "inject.pl" which can be used
+to install the current CVS version of the module into a working Fink
+installation.
+
+Releases, on the other hand, are made using the scripts in scripts/srcdist.
+The script "dist-module.sh" is used to create the release version.
+
+This buildsystem depends on the following items being present for package foo:
+
+  VERSION: a file specifiying the version in the form <number>.cvs
+  foo.info.in: a raw version of the package description file foo.info,
+               with the following lines that are modified by the scripts
+               (it's best to put NoSourceDirectory at the end of the file):
+       Version: @VERSION@
+       Revision: @REVISION@
+       Source: %n-%v.tar
+       Source-MD5: @MD5@
+       NoSourceDirectory: true
+  inject.pl: this script must be customized with the name of the package,
+      a list of the files which are to be included in the package tarball,
+      and a script listing any non-standard commands which should be executed
+      as the package description file is being copied to the bootstrap area
+

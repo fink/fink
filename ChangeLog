@@ -4,6 +4,8 @@
 	separate out the common code from inject.pl and bootstrap.pl
 	into subroutines that can be used by both
 
+	* README.buildsystem: documenting fink's build system
+
 2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* inject.pl: Rearranged subroutines
