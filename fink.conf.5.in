@@ -1,0 +1,259 @@
+.\" -*- nroff -*-
+.Dd January 15, 2003
+.Dt FINK.CONF 5
+.Sh NAME
+.Nm fink.conf
+.Nd configuration file for
+.Xr fink 8
+.Sh SYNOPSIS
+@PREFIX@/etc/fink.conf
+.\"
+.\"
+.\" DESCRIPTION
+.\"
+.\"
+.Sh DESCRIPTION
+When
+.Xr fink 8
+is initially installed it prompts you for the answers to some questions to set 
+up your configuration file, such as which mirrors you want to use for 
+downloading files and how to acquire super-user rights. You can re-run this 
+process by calling the
+.Cm fink configure
+command. In order to set some options, you may need to edit your 
+.Nm
+by hand. In general, these options are meant for advanced users only.
+.Pp
+Your
+.Nm
+consists of multiple lines, in the format
+.Bl -tag -width flag -offset indent -compact
+.It OptionName: Value 
+.El
+.Pp
+Options are one per line, and the option name is separated from its value by a : 
+and a single space. The contents of value depends on the option, but it is 
+normally either a boolean ("True" or "False"), a string, or a list of strings 
+delimited by a space.  
+For example: 
+.Bl -tag -width flag -offset indent -compact
+.It BooleanOption: True
+.It StringOption: Something
+.It ListOption: Option1 Option2 Option3
+.El
+.\"
+.\"
+.\" REQUIRED SETTINGS
+.\"
+.\"
+.Sh REQUIRED SETTINGS
+Some of the settings in the fink.conf are mandatory. Without them Fink cannot to 
+function properly. The following settings belong to this category. 
+.Bl -tag -width flag
+.It Cm Basepath: Ar path 
+Tells
+.Nm fink
+where it was installed. You should not change this value after installation, 
+it will confuse
+.Nm fink.
+.El
+.\"
+.\"
+.\" OPTIONAL USER SETTINGS
+.\"
+.\"
+.Sh OPTIONAL USER SETTINGS
+There are various optional settings which users can customize to change the 
+behaviour of Fink. 
+.Bl -tag -width flag
+.It Cm RootMethod: Ar su or sudo or none
+For some operations,
+.Nm fink
+needs super user rights. Recognized values are
+.Nm sudo
+or
+.Nm su. 
+You can also set this to
+.Nm none,
+in which case you must run Fink as root yourself. The default value is
+.Nm sudo
+and in most cases it should not be changed. 
+.It Cm Trees: Ar list of trees 
+Available trees are:
+.Bl -tag -width flag -offset indent -compact
+.It local/main      - any local packages you want to install
+.It local/bootstrap - packages used in the installation of fink
+.It stable/crypto   - stable cryptographic packages
+.It stable/main     - other stable packages
+.It unstable/crypto - unstable cryptographic packages
+.It unstable/main   - other unstable packages 
+.El
+You may also add your own trees in the 
+.Pa @PREFIX@/fink/dists
+directory for your own purposes, 
+but this is not necessary in most circumstances. The default trees are 
+"local/main local/bootstrap stable/main". This list should be kept in sync with 
+.Pa @PREFIX@/etc/apt/sources.list.
+.It Cm Distribution: Ar 10.1 or 10.2 
+Fink needs to know which version of Mac OS X you are running. The 10.1 
+distribution is meant for users of Mac OS X 10.1, while 10.2 will only work for 
+those who run Mac OS X 10.2 "Jaguar" on their systems. Mac OS X 10.0 and earlier 
+are not supported. You should not need to alter this value. 
+.It Cm FetchAltDir: Ar path 
+Usually fink will store the sources it fetches in 
+.Pa @PREFIX@/src.
+You can specify an alernate directory to look for downloaded source code in 
+using this option. For example:
+.Bl -tag -width flag -offset indent -compact
+.It FetchAltDir: /usr/src
+.El
+.It Cm Verbose: Ar a number from 0 to 3 
+This option sets how much information Fink tells you about what it is doing. The 
+values are: 
+.Bl -tag -width flag -offset indent -compact
+.It 0 - Quiet (don't show download stats)
+.It 1 - Low (don't show tarballs being expanded) 
+.It 2 - Medium (shows almost everything)
+.It 3 - High (shows everything) 
+.El
+The default value is 3. 
+.It Cm NoAutoIndex: Ar boolean 
+Fink caches its package descripition files in 
+.Pa @PREFIX@/var/db/fink.db
+to save it having to read 
+and parse them all every time it runs. Fink checks whether or not the package 
+index needs to be updated unless this option is set to "True". It defaults to 
+"False" and it is not recommended that you change it. 
+If you do, you may need to manually run the
+.Nm fink index 
+command to update the index. 
+.It Cm SelfUpdateNoCVS: Ar boolean 
+The command fink selfupdate upgrades Fink package manager to the latest release. 
+This option makes sure that the Concurrent Version System (CVS) is not used to 
+achieve this when set to True. It is set automatically by the fink 
+selfupdate-cvs command, so you should not need to change it manually. 
+.El
+.\"
+.\"
+.\" DOWNLOAD SETTINGS
+.\"
+.\"
+.Sh DOWNLOAD SETTINGS
+There are various settings which influence the way Fink downloads package data. 
+.Bl -tag -width flag
+.It Cm ProxyPassiveFTP: Ar boolean 
+This option makes Fink use "passive" mode for FTP downloads. Some FTP server or 
+network configurations require this option to be set to True. It is recommended 
+that you leave this option on at all times since active FTP is deprecated. 
+.It Cm ProxyFTP: Ar url 
+If you use a FTP proxy then you should enter its address here, for example:
+.Bl -tag -width flag -offset indent -compact
+.It ProxyFTP: ftp://yourhost.com:2121/ 
+.El
+Leave if blank if you do not use a FTP proxy. 
+.It Cm ProxyHTTP: Ar url 
+If you use a HTTP proxy then you should enter its address here, for example: 
+.Bl -tag -width flag -offset indent -compact
+.It ProxyHTTP: http://yourhost.com:3128/ 
+.El
+Leave if blank if you do not use a HTTP proxy. 
+.It Cm DownloadMethod: Ar wget or curl or axel or axelautomirror 
+Fink can use three different applications to download files from the Internet - 
+.Nm wget,
+.Nm curl,
+or 
+.Nm axel.
+The value 
+.Nm axelautomirror
+uses an experimental mode of the 
+.Xr axel 1
+application which tries to determine the closest server that has a certain file. 
+The use of axelautomirror is not recommended at this time. The default value is
+.Nm curl.
+The application you chose as DownloadMethod MUST be installed!
+.El
+.\"
+.\"
+.\" MIRROR SETTINGS
+.\"
+.\"
+.Sh MIRROR SETTINGS
+Getting software from the Internet can be tedious thing and often downloads are 
+not as fast as we would like them to be. Mirror servers host copies of files 
+available on other servers, but may have a faster connection to the Internet or 
+be geographically closer to you, thus enabling you to download files faster. 
+They also help reduce load on busy primary servers, for example ftp.gnu.org, and 
+they provide an alternative should one
+server not be reachable.
+.Pp
+In order for Fink to pick the best mirror for you, you must tell it which 
+continent and which country you reside in. If downloads from one server fail, it 
+will prompt you if you want to retry from the same mirror, a different mirror in 
+the same country or continent, or a different mirror anywhere in the world. 
+.Pp
+.Nm
+holds settings about which mirrors you would like to use. 
+.Bl -tag -width flag
+.It Cm MirrorContinent: Ar three letter code 
+You should change this value using the
+.Nm fink configure
+command. The three letter code is one found in 
+.Pa @PREFIX@/lib/fink/mirror/_keys.
+For example, if you live in europe: 
+.Bl -tag -width flag -offset indent -compact
+.It MirrorContinent: eur
+.El
+.It Cm MirrorCountry: Tt six letter code 
+You should change this value using the
+.Nm fink configure
+command. The three letter code is one found in 
+.Pa @PREFIX@/lib/fink/mirror/_keys.
+For example, if you live in Austria: 
+.Bl -tag -width flag -offset indent -compact
+.It MirrorCountry: eur-AT 
+.El
+.\"
+.\"
+.\" DEVELOPER SETTINGS
+.\"
+.\"
+.Sh DEVELOPER SETTINGS
+Some options in
+.Nm
+are only useful to developers. We do not recommend that conventional Fink users modify them. The following options
+fall into this category.
+.Bl -tag -width flag
+.It Cm KeepRootDir: Ar boolean
+Causes Fink not to delete the
+.Pa @PREFIX@/src/root-name-version
+directory after building a package. Defaults to false. 
+Be careful, this option can fill your hard-disk quickly! 
+.It Cm KeepBuildDir: Ar boolean 
+Causes Fink not to delete the
+.Pa @PREFIX@/src/name-version
+directory after building a package. Defaults to false. 
+Be careful, this option can fill your hard-disk quickly! 
+.El
+.\"
+.\"
+.\" AUTHOR
+.\"
+.\"
+.Sh AUTHOR
+Finlay Dobbie <finlayd@users.sourceforge.net>.
+.\"
+.\"
+.\" ACKNOWLEDGEMENTS
+.\"
+.\"
+.Sh ACKNOWLEDGEMENTS
+.Nm fink
+is developed and maintained by The Fink Project (http://fink.sourceforge.net).
+.\"
+.\"
+.\" SEE ALSO
+.\"
+.\"
+.Sh "SEE ALSO"
+.Xr apt-get 8 ,
+.Xr fink 8
