@@ -1,3 +1,14 @@
+2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* SelfUpdate.pm: Enable the Trees: hack for rsync'ing multiple
+	dists inside a fink dists tree.
+
+2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* SelfUpdate.pm: Check that a directory exists on the server
+	before trying to rsync it.  Also some more quoting to make
+	things a bit more sane.
+
 2003-10-10  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* VirtPackage.pm: PATH paranoia. Always use full paths here.
@@ -18,6 +29,17 @@
 2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: handle panther 5.8.1 perl modules properly.
+
+2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* SelfUpdate.pm: Added some bounds-checking to paths in the
+	dists tree and such for rsync, also changed all mkdir's to
+	mkdir -p, and change ownership of files so that rsync can pass.
+
+2003-10-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Temporary change for the 0.14.1 beta release:
+	enables the 10.2-gcc3.3 and 10.3 trees
 
 2003-10-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

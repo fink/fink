@@ -308,7 +308,7 @@ sub setup_direct_cvs {
 						 die "Can't create symlink \"$tempfinkdir/$rel\"\n";
 					 }
 				 } elsif (-d and not -d "$tempfinkdir/$rel") {
-					 if (&execute("mkdir '$tempfinkdir/$rel'")) {
+					 if (&execute("mkdir -p '$tempfinkdir/$rel'")) {
 						 die "Can't create directory \"$tempfinkdir/$rel\"\n";
 					 }
 				 } elsif (-f and not -f "$tempfinkdir/$rel") {
@@ -525,7 +525,7 @@ sub do_direct_rsync {
 
 	# If the Distributions line has been updated...
 	if (! -d "$descdir/$dist") {
-		mkdir "$descdir/$dist";
+		&execute("mkdir -p '$descdir/$dist'")
 	}
 	@sb = stat("$descdir/$dist");
 
@@ -535,25 +535,43 @@ sub do_direct_rsync {
 	# selfupdate-cvs.  However, don't actually do the removal until
 	# we've tried to put something there.
 	$rmcmd = "find . -name CVS | xargs rm -rf ";
-	$vercmd = "rsync -az $verbosity $rsynchost/VERSION VERSION";
+	$vercmd = "rsync -az $verbosity $rsynchost/VERSION $basepath/fink/VERSION";
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
 	&print_breaking($msg);
 	foreach $tree ($config->get_treelist()) {
-		if( !grep(/stable/,$tree) ) {
-			next;
+		next unless ($tree =~ /stable/);
+
+		$rsynchost =~ s/\/*$//;
+		$dist      =~ s/\/*$//;
+		$tree      =~ s/\/*$//;
+
+		my $rsyncpath;
+
+		if ($tree =~ m#/[^/]*/#) {
+			# the user specificed a dist as well as a tree in their Trees: line
+			$rsyncpath = "$rsynchost/$tree/finkinfo";
+		} else {
+			# a standard Trees: entry
+			$rsyncpath = "$rsynchost/$dist/$tree/finkinfo";
 		}
-		$cmd = "rsync -az --delete-after $verbosity $rsynchost/$dist/$tree/finkinfo $dist/$tree/";
-		if (! -d "$dist/$tree/" ) {
-			mkdir "$dist/$tree/";
+
+		$cmd = "rsync -az --delete-after $verbosity '$rsyncpath' '$basepath/fink/$dist/$tree/'";
+		if (! -d "$basepath/fink/$dist/$tree" ) {
+			&execute("mkdir -p '$basepath/fink/$dist/$tree'")
 		}
-		$msg = "Updating $tree \n";
-		if ($sb[4] != 0 and $> != $sb[4]) {
-			($username) = getpwuid($sb[4]);
-			$cmd = "su $username -c '$cmd'";
-		}
-		&print_breaking($msg);
-		if (&execute($cmd)) {
-			die "Updating $tree using rsync failed. Check the error messages above.\n";
+		if (system("rsync '$rsyncpath' >/dev/null 2>&1") == 0) {
+			$msg = "Updating $tree \n";
+			if ($sb[4] != 0 and $> != $sb[4]) {
+				($username) = getpwuid($sb[4]);
+				$cmd = "su $username -c \"$cmd\"";
+				system("chown -R $username '$basepath/fink/$dist'");
+			}
+			&print_breaking($msg);
+			if (&execute($cmd)) {
+				die "Updating $tree using rsync failed. Check the error messages above.\n";
+			}
+		} else {
+			print "Warning: $tree exists in fink.conf, but is not on rsync server.  Skipping.\n";
 		}
 	}
 	&execute($rmcmd);
