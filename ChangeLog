@@ -1,5 +1,8 @@
 2001-09-04  Christoph Pfisterer  <cp@chrisp.de>
 
+	* README, README.html, INSTALL, INSTALL.html, USAGE, USAGE.html:
+	Updated for the 0.2.6 release via the XML document system.
+
 	* bootstrap.pl: Delay loading of modules until the package has
 	been checked for completeness. Changed stable/bootstrap to
 	local/bootstrap. Runs the scanpackages command at the end of

@@ -1,6 +1,6 @@
-Generated from $Fink: readme.xml,v 1.5 2001/08/23 10:12:39 chrisp Exp $
+Generated from $Fink: readme.xml,v 1.6 2001/09/04 12:06:13 chrisp Exp $
 
- Fink 0.2.5 ReadMe
+ Fink 0.2.6 ReadMe
 ===================
 
 This is Fink, a package management system that aims to bring the full world
@@ -12,7 +12,7 @@ them for Darwin and compiles and installs them. The information about
 available packages and the neccessary patches are included with this
 distribution, everything else is downloaded off the Internet.
 
-This is version 0.2.5, a development release. It has rough edges everywhere,
+This is version 0.2.6, a development release. It has rough edges everywhere,
 and lacks lots of useful features. The package list is also quite short.
 You're walking on thin ground. Read the instructions carefully. You have
 been warned.
@@ -25,16 +25,17 @@ file COPYING for details.
 --------------
 You need:
 
- * An installed Mac OS X system, version 10.0 or later. (There may be some
-   stray linker-related problems with 10.1.) Darwin 1.3.1 should also work,
-   but this has not been tested. Earlier versions of both will _not_ work.
+ * An installed Mac OS X system, version 10.0 or later. (There may still be
+   some stray linker-related problems with 10.1.) Darwin 1.3.1 should also
+   work, but this has not been tested. Earlier versions of both will _not_
+   work.
 
  * Development tools. On Mac OS X, install the Developer.pkg package from
    the Developer Tools CD. On Darwin, the tools should be present in the
    default install.
 
  * Many other things that come with Mac OS X and the Developer Tools. This
-   includes perl 5.6, wget and autoconf.
+   includes perl 5.6 and either wget or curl.
 
  * Internet access. All source code is downloaded from mirror sites.
 

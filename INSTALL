@@ -1,10 +1,10 @@
-Generated from $Fink: install.xml,v 1.7 2001/08/23 10:12:39 chrisp Exp $
+Generated from $Fink: install.xml,v 1.9 2001/09/04 12:15:12 chrisp Exp $
 
- Fink 0.2.5 Installation
+ Fink 0.2.6 Installation
 =========================
 
 These are the installation instructions for the "source" distribution of
-Fink 0.2.5. This document does not apply to the "binary" distribution. There
+Fink 0.2.6. This document does not apply to the "binary" distribution. There
 are insttructions for both first time installation and upgrading from a
 previous version. Fast track instructions for the impatient are at the top.
 
@@ -22,22 +22,22 @@ can still use this section as an example.)
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.2.5-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.2.6-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
 "normal face" , your input is in "_bold_face_" (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of the
 output have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.2.5-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.2.5-full_
-   [frodo:~/fink-0.2.5-full] testuser% _./bootstrap.sh_/sw_
+   [frodo:~] testuser% _tar_xzf_fink-0.2.6-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.2.6-full_
+   [frodo:~/fink-0.2.6-full] testuser% _./bootstrap.sh_/sw_
    
    Welcome to Fink.
    
    ...
    Choose a method: [1] _1_
    
-   sudo /Users/testuser/fink-0.2.5-full/bootstrap.pl .sudo '/sw'
+   sudo /Users/testuser/fink-0.2.6-full/bootstrap.pl .sudo '/sw'
    Password:_(your_normal_password_here)_
    ...
    OK, I'll ask you some questions and update the configuration file in
@@ -53,7 +53,7 @@ output have been omitted ( "..." ).
    Enter the URL of the proxy to use for FTP, or 'none' for no proxy. The URL
    should start with http:// and may contain username, password or port
    specifications. [none] _(press_return)_
-   Use passive mode FTP transfers (to get through a firewall)? [y/N] _y_
+   Use passive mode FTP transfers (to get through a firewall)? [Y/n] _y_
    
    Mirror selection
    Choose a continent:
@@ -65,12 +65,16 @@ output have been omitted ( "..." ).
    ...
    _(take_a_coffee_break_while_Fink_downloads_and_compiles_the_base_packages)_
    ...
-   cp -f wget-ssl-1.7-1.patch /sw/fink/dists/stable/crypto/finkinfo/
    
-   You should now have a working Fink installation in '/sw'. Use
-   '/sw/bin/init.csh' to set up your environment to use it. Enjoy.
+   You should now have a working Fink installation in '/sw'.
    
-   [frodo:~/fink-0.2.5-full] testuser% _cd_
+   Run 'source /sw/bin/init.csh ; rehash' to set up this Terminal's environment
+   to use Fink. To make the software installed by Fink available in all of your
+   shells, add 'source /sw/bin/init.csh' to the init script '.cshrc' in your
+   home directory. Enjoy.
+   
+   [frodo:~/fink-0.2.6-full] testuser% _cd_
+   [frodo:~] testuser% _rm_-r_fink-0.2.6-full_
    [frodo:~] testuser% _pico_.cshrc_
 
 The last command launches you into a text file editor. Type "source
@@ -107,15 +111,15 @@ well-documented.
 
  Update Fast Track
 -------------------
-Start out by copying the "fink-0.2.5-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.2.6-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
 "normal face" , your input is in "_bold_face_" (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of the
 output have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.2.5-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.2.5-full_
-   [frodo:~/fink-0.2.5-full] testuser% _./inject.pl_/sw_
+   [frodo:~] testuser% _tar_xzf_fink-0.2.6-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.2.6-full_
+   [frodo:~/fink-0.2.6-full] testuser% _./inject.pl_/sw_
    sudo ./inject.pl /sw
    Password:_(your_normal_password_here)_
    Copying package descriptions
@@ -124,8 +128,8 @@ output have been omitted ( "..." ).
    
    Your Fink installation in '/sw' was updated with new fink packages.
    
-   [frodo:~/fink-0.2.5-full] testuser% _cd_pkginfo_
-   [frodo:~/fink-0.2.5-full/pkginfo] testuser% _./inject.pl_/sw_
+   [frodo:~/fink-0.2.6-full] testuser% _cd_pkginfo_
+   [frodo:~/fink-0.2.6-full/pkginfo] testuser% _./inject.pl_/sw_
    sudo ./inject.pl /sw
    Copying...
    ...
@@ -134,7 +138,8 @@ output have been omitted ( "..." ).
    files. Use appropriate fink commands to update the packages, e.g. 'fink
    update-all'.
    
-   [frodo:~/fink-0.2.5-full/pkginfo] testuser% _cd_
+   [frodo:~/fink-0.2.6-full/pkginfo] testuser% _cd_
+   [frodo:~] testuser% _rm_-r_fink-0.2.6-full_
    [frodo:~] testuser% _fink_update-all_
    ...
 
@@ -146,16 +151,17 @@ output have been omitted ( "..." ).
 --------------
 You need:
 
- * An installed Mac OS X system, version 10.0 or later. (There may be some
-   stray linker-related problems with 10.1.) Darwin 1.3.1 should also work,
-   but this has not been tested. Earlier versions of both will _not_ work.
+ * An installed Mac OS X system, version 10.0 or later. (There may still be
+   some stray linker-related problems with 10.1.) Darwin 1.3.1 should also
+   work, but this has not been tested. Earlier versions of both will _not_
+   work.
 
  * Development tools. On Mac OS X, install the Developer.pkg package from
    the Developer Tools CD. On Darwin, the tools should be present in the
    default install.
 
  * Many other things that come with Mac OS X and the Developer Tools. This
-   includes perl 5.6, wget and autoconf.
+   includes perl 5.6 and either wget or curl.
 
  * Internet access. All source code is downloaded from mirror sites.
 
@@ -190,20 +196,20 @@ back to a working system when things break. You have been warned.
 
  Installation
 --------------
-First, you need to unpack the fink-0.2.5-full.tar.gz tarball. It is
+First, you need to unpack the fink-0.2.6-full.tar.gz tarball. It is
 recommended that you do this from the command line - StuffIt Expander has a
 tendency to screw up text files. So, go to the directory where you put the
 tarball, and run this command:
 
-   tar xzf fink-0.2.5-full.tar.gz
+   tar xzf fink-0.2.6-full.tar.gz
 
-You now have a directory named fink-0.2.5-full. Change to it with "cd
-fink-0.2.5-full" .
+You now have a directory named fink-0.2.6-full. Change to it with "cd
+fink-0.2.6-full" .
 
 The actual installation is performed by the perl script bootstrap.pl. It is
 accompanied by a small shell script, bootstrap.sh, which checks some basic
 requirements and then hands over control to the perl script. So, to start
-installation, go to the fink-0.2.5-full directory and run this command:
+installation, go to the fink-0.2.6-full directory and run this command:
 
    ./bootstrap.sh
 
@@ -264,7 +270,7 @@ on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/].
 ===========================
 
 If you already have Fink 0.2.x installed, you can update your installation
-to 0.2.5 with this package.
+to 0.2.6 with this package.
 
 Actually, there are two pieces that are updated independently: the package
 manager and the package descriptions. It is recommended to update the
@@ -274,7 +280,7 @@ package manager first.
  Updating The Package Manager
 ------------------------------
 To update the package manager, run the inject.pl script in the
-fink-0.2.5-full directory, like this:
+fink-0.2.6-full directory, like this:
 
    ./inject.pl
 
@@ -291,7 +297,7 @@ itself. ":-)" )
 
  Updating The Package Descriptions
 -----------------------------------
-If you downloaded the fink-0.2.5-full tarball, the package descriptions are
+If you downloaded the fink-0.2.6-full tarball, the package descriptions are
 in the subdirectory pkginfo. To install them, run the inject.pl script in
 that directory:
 
@@ -301,7 +307,7 @@ that directory:
 This inject.pl script works just like the one for the package manager.
 
 You can also grab the package descriptions as a separate tarball,
-packages-0.2.5. If you did that, just unpack it and run the inject.pl script
+packages-0.2.6. If you did that, just unpack it and run the inject.pl script
 inside.
 
 
