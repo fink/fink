@@ -1,3 +1,8 @@
+2001-04-09  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Create more directories in <prefix>/fink. Avoid
+	warning from cp when copying bootstrap package info.
+
 2001-04-05  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink: Changed paths to reflect the new layout.
