@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH fink 8 "August 14, 2001" "Version @VERSION@"
+.TH FINK 8 "August 25, 2001" "Version @VERSION@"
 .SH NAME
 fink \- a package management system
 .SH SYNOPSIS
@@ -183,6 +183,21 @@ Reruns the
 .B fink
 configuration process. This will let you change your mirror
 sites and proxy settings, among others.
+.\"
+.\"
+.TP
+.B fink selfupdate
+This command automates the process of upgrading to a new
+.B fink
+release. It checks the
+.B fink
+website to see if a new version is available. It then downloads the package
+descriptions and updates the core packages, including
+.B fink
+itself. This command can only upgrade to regular releases, but you can
+use it to upgrade from a CVS version to a later regular release. It will
+refuse to run if you have @PREFIX@/fink set up to get package descriptions
+directly from CVS.
 .\"
 .\"
 .\" FILES
