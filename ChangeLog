@@ -1,3 +1,7 @@
+2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.in, fink.info.in: Missed one spot while changing names
+
 2004-12-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.8.in, fink.conf.5.in, fink.in, fink.info.in:  Rename 
