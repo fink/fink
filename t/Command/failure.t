@@ -64,7 +64,7 @@ use Fink::Command qw(:ALL);
 
 
 SKIP: {
-    skip "You must be root to run the rm_rf failure test", 5 unless $> == 0;
+    skip "You must be root", 5 unless $> == 0;
 
     mkdir 'foo';
     mkdir 'bar';
@@ -101,8 +101,8 @@ rm_rf 'bar';
     $! = 0;
     ok( !rm_f 'foo' );
     TODO: {
-        local $TODO = 'Unlinking a directory not setting $!';
-
+        local $TODO = 'Unlinking a directory not setting $! when root' 
+          if $> == 0;
         cmp_ok( $!, '!=', 0 );
     }
     ok( -e 'foo' );
@@ -111,7 +111,8 @@ rm_rf 'bar';
     ok( !rm_f 'foo', 'bar' );
 
     TODO: {
-        local $TODO = 'Unlinking a directory not setting $!';
+        local $TODO = 'Unlinking a directory not setting $! when root' 
+          if $> == 0;
         cmp_ok( $!, '!=', 0 );
     }
     ok( !-e 'bar' );
@@ -122,7 +123,7 @@ rm_rf 'bar';
     
 
 SKIP: {
-    skip "You must be root to run the touch failure test", 2 unless $> == 0;
+    skip "You must be root", 2 unless $> == 0;
 
     touch 'foo';
     chmod 0400, 'foo';
@@ -157,7 +158,7 @@ unlink 'foo';
 
 
 SKIP: {
-    skip "You must be root to run the symlink_f failure test", 2
+    skip "You must be root", 2
       unless $> == 0;
 
     touch 'foo';
