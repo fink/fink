@@ -1,3 +1,7 @@
+2005-01-19  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document --build-as-nobody
+
 2005-01-09  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Document 'fink list' "p" status flag.
