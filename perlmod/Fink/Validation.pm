@@ -209,8 +209,8 @@ sub validate_info_file {
   
   # License should always be specified!
   unless ($properties->{license}
-       or $properties->{type} eq "nosource"
-       or $properties->{type} eq "bundle") {
+       or defined($properties->{type}) and
+       ($properties->{type} eq "nosource" or $properties->{type} eq "bundle")) {
     print "Warning: No license specified. ($filename)\n";
     $looks_good = 0;
   }
