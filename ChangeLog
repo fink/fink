@@ -1,3 +1,8 @@
+2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.4; this release
+	does not contain the 10.3-ready code or the fink-prebinding
+
 2003-07-07  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: Made this more bulletproof.
