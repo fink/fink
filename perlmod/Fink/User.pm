@@ -81,7 +81,7 @@ sub get_perms {
 		### Don't add DEBIAN dir
 		next if ($file =~ /DEBIAN/);
 		### Skip the rootdir
-		next if ($file == $rootdir);
+		next if ($file eq $rootdir);
 	  
 		($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
 
