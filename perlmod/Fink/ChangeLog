@@ -1,3 +1,10 @@
+2004-07-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Parse .deb control early; make data available in
+	$deb_control. For scrollkeeper-update check: make sure it's called
+	by *both* control scripts; remove circular dependency requirement
+	for scrollkeeper.deb.
+
 2004-07-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: handle newer cctools that don't contain the
