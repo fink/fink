@@ -1,3 +1,10 @@
+2004-04-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: All Type are now converted to all-lowercase. Make
+	sure Type has been parsed into _type_hash during is_type() and
+	get_subtype() calls.
+	* Engine.pm: Simplified initial command routing.
+
 2004-04-11  Daniel Macks  <dmacks@netspace.org>
 
 	Engine.pm: dumpinfo improvements: list parent or splitoff

@@ -133,7 +133,6 @@ sub process {
 	my $self = shift;
 	my $options = shift;
 	my $cmd = shift;
-	my ($cmdname, $cmdinfo, $info);
 	my ($proc, $pkgflag, $rootflag);
 
 	unless (defined $cmd) {
@@ -141,18 +140,11 @@ sub process {
 		return;
 	}
 
-	$cmdinfo = undef;
-	while (($cmdname, $info) = each %commands) {
-		if ($cmd eq $cmdname) {
-			$cmdinfo = $info;
-			last;
-		}
-	}
-	if (not defined $cmdinfo) {
+	if (not exists $commands{$cmd}) {
 		die "fink: unknown command \"$cmd\".\nType 'fink --help' for more information.\n";
 	}
 
-	($proc, $pkgflag, $rootflag) = @$cmdinfo;
+	($proc, $pkgflag, $rootflag) = @{$commands{$cmd}};
 
 	# check if we need to be root
 	if ($rootflag and $> != 0) {
