@@ -94,11 +94,10 @@ directory for your own purposes,
 but this is not necessary in most circumstances. The default trees are 
 "local/main local/bootstrap stable/main". This list should be kept in sync with 
 .Pa @PREFIX@/etc/apt/sources.list.
-.It Cm Distribution: Ar 10.1 or 10.2 
-Fink needs to know which version of Mac OS X you are running. The 10.1 
-distribution is meant for users of Mac OS X 10.1, while 10.2 will only work for 
-those who run Mac OS X 10.2 "Jaguar" on their systems. Mac OS X 10.0 and earlier 
-are not supported. You should not need to alter this value. 
+.It Cm Distribution: Ar 10.1, 10.2, 10.2-gcc3.3, or 10.3
+Fink needs to know which version of Mac OS X you are running. Mac OS X 10.0 and earlier are not supported, and 10.1 is no longer supported by this version of fink. Mac OS X 10.2 is only still supported if the August 2003 Developer Tools update is installed. This field is set by running the
+.Cm @PREFIX@/lib/fink/postinstall.pl
+script. You should not need to alter this value manually. 
 .It Cm FetchAltDir: Ar path 
 Usually fink will store the sources it fetches in 
 .Pa @PREFIX@/src.
@@ -131,6 +130,15 @@ The command fink selfupdate upgrades Fink package manager to the latest release.
 This option makes sure that the Concurrent Version System (CVS) is not used to 
 achieve this when set to True. It is set automatically by the fink 
 selfupdate-cvs command, so you should not need to change it manually. 
+.It Cm Buildpath Ar path
+Fink needs to create several temporary directories for each package it compiles from source. By default, they are placed in
+.Pa @PREFIX@/src
+but if you want them to be somewhere else, specify the path here.
+See the descriptions of the
+.Cm KeepRootDir
+and
+.Cm KeepBuildDir
+fields later in this document for more information about these temporary directories.
 .El
 .\"
 .\"

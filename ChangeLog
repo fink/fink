@@ -1,3 +1,8 @@
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Documented "Buildpath". Fixed "Distribution" to
+	include all known trees and use of postinstall.pl to set it.
+
 2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.19.2, a release
