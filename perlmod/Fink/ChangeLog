@@ -1,3 +1,8 @@
+2004-02-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: stash InfoN value as 'infon' not '_info_level' since
+	elements with leading _ are lost during new_from_properties().
+
 2004-02-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: expand_percent: protect regex metachars in % keys.

@@ -619,7 +619,7 @@ sub handle_infon_block {
 	}
 	# okay, parse InfoN and promote it to the top level
 	my $new_properties = &read_properties_var("$infon of \"$filename\"", $properties->{$infon});
-	$new_properties->{_info_level} = $info_level;
+	$new_properties->{infon} = $info_level;
 	return $new_properties;
 }
 
