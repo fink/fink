@@ -754,12 +754,18 @@ sub validate_info_component {
 	}
 
 	# dpkg install-time script stuff
-	foreach $field (qw/preinstscript postinstscript preinstrm postinstrm/) {
+	foreach $field (qw/preinstscript postinstscript prermscript postrmscript/) {
 		next unless defined ($value = $properties->{$field});
 
 		# A #! line is worthless
-		if ($value =~ /^\s*\#!/) {
-			print "Warning: Useless use of explicit interpretter in \"$field\"$splitoff_field. ($filename)\n";
+		if ($value =~ /^\s*\#!\s*(.*)/) {
+			my $real_interp = '/bin/sh';
+			if ($1 eq $real_interp) {
+				print 'Warning: Useless use of explicit interpretter';
+			} else {
+				print "Error: ignoring explicit interpretter (will use \"$real_interp\" instead)";
+			}
+			print " in \"$field\"$splitoff_field. ($filename)\n";
 			$looks_good = 0;
 		}
 

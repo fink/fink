@@ -1,4 +1,9 @@
-2005-02-17  Daniel Macks  <dmacks@netspace.org>
+2005-02-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: dpkg script #! test: fix fieldnames, be louder if
+	mismatch.
+
+2005-02-18  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Also store $timestamp in _lockpkg; *always*
 	verify timestamp before removing lockpkg.
