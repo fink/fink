@@ -2,6 +2,8 @@
 
 	* Bootstrap.pm: fix error which prevented &enforce_gcc from working
 	properly on 10.2.
+	* Configure.pm: existing users who run "fink configure" get a default
+	answer of "no" for the UseBinaryDist question.
 
 2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
