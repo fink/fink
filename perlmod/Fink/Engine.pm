@@ -295,19 +295,19 @@ my ($OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
   (0, 1, 2, 3);
 
 sub cmd_build {
-  &real_install($OP_BUILD, @_);
+  &real_install($OP_BUILD, 0, @_);
 }
 
 sub cmd_rebuild {
-  &real_install($OP_REBUILD, @_);
+  &real_install($OP_REBUILD, 0, @_);
 }
 
 sub cmd_install {
-  &real_install($OP_INSTALL, @_);
+  &real_install($OP_INSTALL, 0, @_);
 }
 
 sub cmd_reinstall {
-  &real_install($OP_REINSTALL, @_);
+  &real_install($OP_REINSTALL, 0, @_);
 }
 
 sub cmd_update_all {
@@ -320,15 +320,20 @@ sub cmd_update_all {
     }
   }
 
-  &real_install($OP_INSTALL, @plist);
+  &real_install($OP_INSTALL, 1, @plist);
 }
 
 sub real_install {
   my $op = shift;
+  my $showlist = shift;
   my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $all_installed);
-  my (%deps, @queue, @deplist, @vlist, @additionals, @elist);
+  my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
   my ($oversion, $opackage, $v, $ep, $dp, $dname);
-  my ($answer);
+  my ($answer, $s);
+
+  if ($config->param_boolean("Verbose")) {
+    $showlist = 1;
+  }
 
   %deps = ();   # hash by package name
 
@@ -436,8 +441,8 @@ sub real_install {
       @vlist = ();
       foreach $dp (@$dep) {
 	if ($dp->get_name() eq $dname) {
-            push @vlist, $dp->get_fullversion();
-          }
+	  push @vlist, $dp->get_fullversion();
+	}
       }
       
       # add node to graph
@@ -452,14 +457,39 @@ sub real_install {
   }
 
   # generate summary
+  @requested = ();
   @additionals = ();
   foreach $pkgname (sort keys %deps) {
     $item = $deps{$pkgname};
     if ($item->[4] == 0) {
       push @additionals, $pkgname;
+    } elsif ($item->[4] == 1) {
+      push @requested, $pkgname;
     }
   }
 
+  # display list of requested packages
+  if ($showlist) {
+    $s = "The following ";
+    if ($#requested > 0) {
+      $s .= scalar(@requested)." packages";
+    } else {
+      $s .= "package";
+    }
+    $s .= " will be ";
+    if ($op == $OP_INSTALL) {
+      $s .= "installed or updated";
+    } elsif ($op == $OP_BUILD) {
+      $s .= "built";
+    } elsif ($op == $OP_REBUILD) {
+      $s .= "rebuilt";
+    } elsif ($op == $OP_REINSTALL) {
+      $s .= "reinstalled";
+    }
+    $s .= ":";
+    &print_breaking($s);
+    &print_breaking_prefix(join(" ",@requested), 1, " ");
+  }
   # ask user when additional packages are to be installed
   if ($#additionals >= 0) {
     if ($#additionals > 0) {
