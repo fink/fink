@@ -84,19 +84,17 @@ sub initialize {
 	# now find the cctools version
 	print STDERR "- checking for cctools version... " if ($options{debug});
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		foreach(`/usr/bin/what /usr/bin/ld`) {
-			if (/cctools-(\d+)/) {
+		foreach(`/usr/bin/what /usr/bin/ld; /usr/bin/ld -v 2>/dev/null`) {
+			if (/^.*PROJECT:\s*cctools-(\d+).*$/) {
+				$cctools_version = $1;
+				last;
+			} elsif (/^.*version cctools-(\d+).*$/) {
 				$cctools_version = $1;
 				last;
 			}
 		}
-		if (defined $cctools_version) {
-			print STDERR $cctools_version, "\n" if ($options{debug});
-		} else {
-			print STDERR "unknown\n" if ($options{debug});
-		}
 	} else {
-		print STDERR "/usr/bin/ld or /usr/bin/what not executable\n" if ($options{debug});
+		print STDERR "/usr/bin/ld or /usr/bin/what not executable... " if ($options{debug});
 	}
 
 	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam() and -x "/usr/bin/touch") {
