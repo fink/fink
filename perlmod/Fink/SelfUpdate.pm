@@ -125,7 +125,7 @@ sub check {
   Fink::Engine::cmd_install("base-files", "fink");
 
   # re-execute ourselves before we update the rest
-  print "Re-executing fink to use the new version..."
+  print "Re-executing fink to use the new version...";
   exec "$basepath/bin/fink selfupdate-finish";
 
   # the exec doesn't return, but just in case...
