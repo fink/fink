@@ -76,16 +76,25 @@ sub new_from_name {
 	$self->{name} = $name;
 
 	my $mirrorfile = "$libpath/mirror/$name";
+        # set default values for critical mirrors, in case mirror directory
+        # is not present
+	my %mirrordefaults = (
+	    "master" => "Primary: http://distfiles.master.finkmirrors.net/",
+            "rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
+            "sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
+			      );
+	my ($key, $mirrordefault);
 	if (not -f $mirrorfile) {
-	    if ($name eq "master") {
-        # set a default value for Master mirror, if config file not present
-		$self->{data} = &read_properties_lines("Primary: http://distfiles.master.finkmirrors.net/\n");
-		$self->initialize();
-		return $self;
-	    } else {
-		die "No mirror site list file found for mirror '$name'.\n";
+	    foreach $key ( keys %mirrordefaults ) {
+		if ($name eq $key) {
+		    $mirrordefault = $mirrordefaults{$key}."\n";
+		    $self->{data} = &read_properties_lines($mirrordefault);
+		    $self->initialize();
+		    return $self;
+		}
 	    }
-}	
+	    die "No mirror site list file found for mirror '$name'.\n";
+	}
 	$self->{data} = &read_properties_multival($mirrorfile);
 
 	# Extract the timestamp, and delete it from the hash.
