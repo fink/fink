@@ -1,24 +1,27 @@
 Package: ncurses
-Version: 5.3
+Version: 5.3-20030308
 Revision: 1
 GCC: 3.1
-Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source: mirror:sourceforge:fink/%n-5.3.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
-PatchScript: perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
-Patch: %n.patch
+Source2: mirror:sourceforge:fink/%n-%v-patch.sh.bz2
+Source2ExtractDir: %n-5.3
+PatchScript: <<
+perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
+bunzip2 %n-%v-patch.sh.bz2
+chmod +x %n-%v-patch.sh
+./%n-%v-patch.sh
+patch -p1 < %a/%n.patch
+<<
 Essential: yes
 Depends: base-files
 BuildDepends: fink-prebinding
-ConfigureParams: --with-libtool --without-ada --with-shared --without-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo"
+ConfigureParams: --with-libtool=/usr/bin/glibtool --without-ada --with-shared --without-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo"
 NoSetCFLAGS: true
 NoSetLDFLAGS: true
 SetCFLAGS: -Wno-deprecated -isystem %p/include/ncurses
 NoSetCPPFLAGS: true
 SetCPPFLAGS: -no-cpp-precomp
-CompileScript: <<
-  LIBTOOL=/usr/bin/glibtool ./configure %c
-  make
-<<
 
 InstallScript: <<
   make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib
@@ -37,7 +40,8 @@ Description: Full-screen ascii drawing library
 DescPort: <<
 The -no-cpp-precomp is strictly needed.
 More changes by Chris Zubrzycki to be more compatable with apple's lib
-Stupid bug in configure enables broken support, which breaks ncurses. I removed it.
+ -Stupid bug in configure enables broken support, which breaks ncurses. I removed it.
+ -udates to the monthly releases of ncurses (in patch form)
 <<
 DescPackaging: <<
 First revision by David Ross.
