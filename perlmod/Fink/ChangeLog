@@ -1,5 +1,9 @@
 2004-02-24  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: add return values for validate_*_file
+
+2004-02-24  Daniel Macks  <dmacks@netspace.org>
+
 	* VirtPackage.pm: Make InstallScript output stand out better
 
 2004-02-24  Daniel Macks  <dmacks@netspace.org>

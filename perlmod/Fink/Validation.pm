@@ -247,8 +247,10 @@ our %splitoff_valid_fields = map {$_, 1}
 
 END { }				# module clean-up code here (global destructor)
 
-
-
+#
+# Check a given .deb file for standard compliance
+# returns boolean of whether everything is okay
+# 
 # Should check/verifies the following in .info files:
 #	+ the filename matches %f.info
 #	+ patch file (from Patch and PatchScript) is present
@@ -311,19 +313,17 @@ sub validate_info_file {
 	close INPUT or die "Couldn't read $filename: $!\n";
 	if ($info_file_content =~ m/\r\n/s) {
 		print "Error: Info file has DOS line endings. ($filename)\n";
-		$looks_good = 0;
+		return 0;
 	}
-	return unless ($looks_good);
 	if ($info_file_content =~ m/\r/s) {
 		print "Error: Info file has Mac line endings. ($filename)\n";
-		$looks_good = 0;
+		return 0;
 	}
-	return unless ($looks_good);
 
 	# read the file properties
 	$properties = &read_properties($filename);
 	$properties = Fink::Package->handle_infon_block($properties, $filename);
-	return unless keys %$properties;
+	return 0 unless keys %$properties;
 	
 	# determine the base path
 	if (defined $val_prefix) {
@@ -341,8 +341,7 @@ sub validate_info_file {
 			next if /^splitoff\d*$/;  # SplitOffs checked later
 			if ($properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
 				print "Error: Use of %type_ expansions (field \"$_\") requires InfoN level 2 or higher. ($filename)\n";
-				$looks_good = 0;
-				return;
+				return 0;
 			}
 		}
 	}
@@ -393,7 +392,7 @@ sub validate_info_file {
 	#  - make sure syntax is okay
 	#  - make sure each type appears as a type_*[] in Package
 
-	return unless ($looks_good);
+	return 0 unless ($looks_good);
 
 	#
 	# Now check for other mistakes
@@ -549,7 +548,7 @@ sub validate_info_file {
 					if ($splitoff_properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
 						print "Error: Use of %type_ expansions (field \"$_\" of \"$field\") requires InfoN level 2 or higher. ($filename)\n";
 						$looks_good = 0;
-						return;
+						return 0;
 					}
 				}
 			}
@@ -717,6 +716,8 @@ sub validate_info_file {
 	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
+
+	return $looks_good;
 }
 
 # checks that are common to a parent and a splitoff package of a .info file
@@ -825,6 +826,7 @@ sub validate_info_component {
 
 #
 # Check a given .deb file for standard compliance
+# returns boolean of whether everything is okay
 #
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
 # - usage of other non-standard subdirs 
@@ -1068,6 +1070,8 @@ sub validate_dpkg_file {
 	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
+
+	return $looks_good;
 }
 
 
