@@ -229,8 +229,11 @@ sub cmd_description {
     die "no package specified for command 'description'!\n";
   }
 
+  print "\n";
   foreach $package (@plist) {
-    print "\n" . $package->get_description() . "\n";
+    print $package->get_fullname().":\n";
+    print " ".$package->get_description();
+    print "\n";
   }
 }
 

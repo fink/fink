@@ -265,13 +265,72 @@ sub get_build_directory {
   return $self->{_builddir};
 }
 
+### generate description
+
+sub format_description {
+  my $s = shift;
+
+  # remove last newline (if any)
+  chomp $s;
+  # replace empty lines with "."
+  $s =~ s/^\s*$/\./mg;
+  # add leading space
+  $s =~ s/^/ /mg;
+
+  return "$s\n";
+}
+
+sub format_oneline {
+  my $s = shift;
+  my $maxlen = shift || 0;
+
+  chomp $s;
+  $s =~ s/\s*\n\s*/ /sg;
+  $s =~ s/^\s+//g;
+  $s =~ s/\s+$//g;
+
+  if ($maxlen && length($s) > $maxlen) {
+    $s = substr($s, 0, $maxlen-3)."...";
+  }
+
+  return $s;
+}
+
 sub get_description {
   my $self = shift;
+  my ($desc, $s);
+
   if ($self->has_param("Description")) {
-    return $self->param_default("Description","") . "\n";
+    $desc = &format_oneline($self->param("Description"), 75);
   } else {
-    return "no description for package '" . $self->get_name() . "'\n";
+    $desc = "[Package ".$self->get_name()." version ".$self->get_fullversion()."]";
   }
+  $desc .= "\n";
+
+  if ($self->has_param("DescDetail")) {
+    $desc .= &format_description($self->param("DescDetail"));
+  }
+
+  if ($self->has_param("DescUsage")) {
+    $desc .= " .\n Usage Notes:\n";
+    $desc .= &format_description($self->param("DescUsage"));
+  }
+
+  if ($self->has_param("Homepage")) {
+    $desc .= " .\n Web site: ".&format_oneline($self->param("Homepage"))."\n";
+  }
+
+  if ($self->has_param("DescPackaging")) {
+    $desc .= " .\n Packaging Notes:\n";
+    $desc .= &format_description($self->param("DescPackaging"));
+  }
+
+  if ($self->has_param("DescPort")) {
+    $desc .= " .\n Porting Notes:\n";
+    $desc .= &format_description($self->param("DescPort"));
+  }
+
+  return $desc;
 }
 
 ### get installation state
@@ -758,18 +817,17 @@ sub phase_build {
 
   # generate dpkg "control" file
 
-  my ($pkgname, $version, $depends);
+  my ($pkgname, $version);
   $pkgname = $self->get_name();
   $version = $self->get_fullversion();
-  $depends = join(", ", @{$self->{_depends}});
   $control = <<EOF;
 Package: $pkgname
 Source: $pkgname
 Version: $version
-Depends: $depends
 Architecture: $debarch
-Description: Package $pkgname version $version
 EOF
+  $control .= "Depends: ".join(", ", @{$self->{_depends}})."\n";
+  $control .= "Description: ".$self->get_description();
   if ($self->has_param("Maintainer")) {
     $control .= "Maintainer: ".$self->param("Maintainer")."\n";
   }

@@ -1,3 +1,10 @@
+2001-06-01  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_build): Use get_description to get the
+	package description for the dpkg control file.
+	(get_description): Improved formatting and added new fields.
+	* Engine.pm (cmd_description): Improved formatting.
+
 2001-05-26  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: Do percent expansion on SourceDirectory and
