@@ -5,6 +5,8 @@
 	* PkgVersion.pm: Propagate epoch to splitoffs.
 	* Validation.pm: Improved validation of splitoffs. Check more fields for
 	  hardcoded /sw.
+	* PkgVersion.pm: Factored out duplicated perl handling code into a new
+	  method get_perl_version_dir_arch().
 
 2003-11-08  Max Horn  <max@quendi.de>
 
