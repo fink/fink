@@ -55,11 +55,9 @@ sub bootstrap {
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560";
 	} elsif ("$]" == "5.006001") {
-		push @addlist, "system-perl561", "storable-pm561";
+		push @addlist, "storable-pm561";
 	} elsif ("$]" == "5.008") {
-		push @addlist, "system-perl580";
 	} elsif ("$]" == "5.008001") {
-		push @addlist, "system-perl581";
 	} else {
 		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
 	}
@@ -156,32 +154,32 @@ sub check_host {
 	my $host = shift @_;
 	my ($distribution, $gcc, $build);
 
-# We check to see if gcc 3.3 is installed, and if it is the correct version.
-# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
-#
-# (Note: the June 2003 Developer Tools had build 1435, the August 2003 ones
-#  had build 1493.)
+	# We check to see if gcc 3.3 is installed, and if it is the correct version.
+	# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
+	#
+	# (Note: the June 2003 Developer Tools had build 1435, the August 2003 ones
+	#  had build 1493.)
 
-	$gcc="";
+	$gcc = "";
 	if (-x '/usr/bin/gcc-3.3') {
-	    foreach(`/usr/bin/gcc-3.3 --version`){
-		if (/build (\d+)\)/) {
-		    $build = $1;
-		    last;
+		foreach(`/usr/bin/gcc-3.3 --version`) {
+			if (/build (\d+)\)/) {
+				$build = $1;
+				last;
+			}
 		}
-	    }
-	    ($build >= 1493) or die <<END;
+		($build >= 1493) or die <<END;
 
 Your version of the gcc 3.3 compiler is out of date.  Please update to the 
 August 2003 Developer Tools update, or to Xcode, and try again.
 
 END
-	    chomp(my $gcc_select = `gcc_select`);
-	    if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
-		$gcc_select = 'an unknown version';
-	    }
-	    if ($gcc_select !~ /^3.3/) {
-		die <<END;
+		chomp(my $gcc_select = `gcc_select`);
+		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
+			$gcc_select = 'an unknown version';
+		}
+		if ($gcc_select !~ /^3.3/) {
+			die <<END;
 
 Since you have gcc 3.3 installed, fink must be bootstrapped or updated using 
 that compiler.  However, you currently have gcc $gcc_select selected.  To correct 
@@ -190,15 +188,15 @@ this problem, run the command:
   sudo gcc_select 3.3 
 
 END
-	    }
-	    $gcc = "-gcc3.3";
+		}
+		$gcc = "-gcc3.3";
 	}
 
 # 10.2 users who do not have gcc at all are installing binary only, so they get
 # to move to 10.2-gcc3.3 also
 
 	if (not -x '/usr/bin/gcc') {
-	    $gcc = "-gcc3.3";
+		$gcc = "-gcc3.3";
 	}
 
 	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
