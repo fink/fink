@@ -265,9 +265,11 @@ END { }				# module clean-up code here (global destructor)
 #		(excluded from this are fields like Description, Homepage etc.)
 #	+ warn if unknown fields are encountered
 #	+ warn if /sw is hardcoded in the script or set fields
+#	+ correspondence between source* and source*-md5 fields
+#	+ if type is nosource - warn about usage of "Source" etc.
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#	- if type is bundle/nosource - warn about usage of "Source" etc.
+#	- if type is bundle - warn about usage of "Source" etc.
 #	- better validation of splitoffs
 #	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
 #	  it uses ">" instead of ">>".
