@@ -55,14 +55,16 @@ sub do_notify {
 	my $self  = shift;
 	my %args  = @_;
 	my $image = $basepath . '/share/fink/images/' . $args{'event'} . '.png';
+	my $sticky = 0;
 
 	$image = undef unless (-r $basepath . '/share/fink/images/' . $args{'event'} . '.png');
+	$sticky = 1 if ($args{'event'} =~ /(Failed|Failure)/);
 
 	eval {
 		if (defined $image) {
-			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, 0, -2, $image);
+			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0, $image);
 		} else {
-			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, 0, -2);
+			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0);
 		}
 	};
 

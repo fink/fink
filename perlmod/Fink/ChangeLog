@@ -1,3 +1,7 @@
+2005-02-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Notify/Growl.pm: add support for new images, and sticky defaults
+
 2005-02-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Only notify on success if Fink has been around for a
