@@ -1,0 +1,17 @@
+Package: sitecopy
+Version: 0.10.12
+Revision: 1
+Source: http://www.lyra.org/sitecopy/sitecopy-%v.tar.gz
+Depends: libxml, gettext
+ConfigureParams: --enable-libxml --with-included-neon
+SetCFLAGS: -I%p/include
+CommentPort: Uses autoconf, but custom Makefiles. Not all Makefiles
+ use CPPFLAGS, so we put the include path in CFLAGS, too.
+ .
+ GNOME frontend is disabled for now, it requires glade.
+ .
+ This package doesn't build SSL support, use sitecopy-ssl
+ instead.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.lyra.org/sitecopy/

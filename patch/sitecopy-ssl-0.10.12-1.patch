@@ -1,0 +1,11 @@
+--- sitecopy-0.10.12/Makefile.in.orig	Fri Mar  2 11:37:02 2001
++++ sitecopy-0.10.12/Makefile.in	Fri Mar  2 11:37:32 2001
+@@ -41,7 +41,7 @@
+ DEFS = @SDEFS@
+ INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/lib @CPPFLAGS@
+ CFLAGS = @CFLAGS@ $(DEFS) $(INCLUDES)
+-LIBS = @LIBS@ @NEONLIBS@
++LIBS = @NEONLIBS@ @LIBS@
+ CC = @CC@
+ EXE = @EXEEXT@
+ 

@@ -1,0 +1,122 @@
+diff -ru sendfile-2.1a/develop/configure.in sendfile-2.1a-patched/develop/configure.in
+--- sendfile-2.1a/develop/configure.in	Fri Feb 16 14:59:52 2001
++++ sendfile-2.1a-patched/develop/configure.in	Fri Mar  2 12:53:50 2001
+@@ -38,7 +38,7 @@
+ dnl Checks for libraries.
+ AC_CHECK_LIB(socket, socket)
+ AC_CHECK_LIB(nsl, gethostbyname)
+-AC_CHECK_LIB(readline, readline, , , -ltermcap)
++AC_CHECK_LIB(readline, readline, , , )
+ 
+ dnl Checks for typedefs, structures, and compiler characteristics.
+ AC_C_CONST
+diff -ru sendfile-2.1a/makeconfig sendfile-2.1a-patched/makeconfig
+--- sendfile-2.1a/makeconfig	Thu Aug 26 20:53:32 1999
++++ sendfile-2.1a-patched/makeconfig	Fri Mar  2 14:41:23 2001
+@@ -10,17 +10,17 @@
+ # or simply call: makeconfig CC=gcc ...
+ 
+ # default compiling settings
+-CC=gcc
+-CFLAGS=-O2
+-LDFLAGS=-s
++CC=cc
++CFLAGS="-O2 -I@PREFIX@/include -DHAVE_STRERROR"
++LDFLAGS=-L@PREFIX@/lib
+ 
+ # default installation settings
+-SPOOL=/var/spool/sendfile
+-BINDIR=/usr/local/bin
+-MANDIR=/usr/local/man
+-CONFIG=/usr/local/etc
+-SERVERDIR=/usr/local/sbin
+-INETDCONF=/etc/inetd.conf
++SPOOL=@PREFIX@/var/spool/sendfile
++BINDIR=@PREFIX@/bin
++MANDIR=@PREFIX@/man
++CONFIG=@PREFIX@/etc
++SERVERDIR=@PREFIX@/sbin
++INETDCONF=@PREFIX@/etc/inetd.conf
+ SERVICES=/etc/services
+ 
+ ############################# OPTIONAL SETTINGS ##############################
+@@ -82,7 +82,7 @@
+     --sysconfdir=$CONFIG \
+   || exit $?
+ 
+-if [ -d /var/run ]; then FIFODIR=/var/run/sfm; fi
++if [ -d @PREFIX@/var/run ]; then FIFODIR=@PREFIX@/var/run/sfm; fi
+ 
+ SYSTEM=`./config.guess`
+ 
+@@ -100,6 +100,7 @@
+   *convex*)	SYSTEM=CONVEXOS;;
+   *osf*)	SYSTEM=OSF1;;
+   *bsd*)	SYSTEM=BSD;;
++  *darwin*)	SYSTEM=DARWIN;;
+   *)		SYSTEM=UNKNOWN;;
+ #  *)		SYSTEM=`uname -a | tr '[a-z]' '[A-Z]'`
+ #  		case "$SYSTEM" in
+@@ -116,8 +117,12 @@
+ for i in nsl socket readline; do
+   if grep -i "have_lib$i 1" config.h >/dev/null; then LIBS="$LIBS -l$i"; fi
+ done
+-case "$LIBS" in
+-  *readline*) LIBS="$LIBS -ltermcap";;
++case "$SYSTEM" in
++  *DARWIN*)	;;
++  *)
++      case "$LIBS" in
++        *readline*) LIBS="$LIBS -ltermcap";;
++      esac
+ esac
+ 
+ echo creating globals.h
+diff -ru sendfile-2.1a/src/sendfiled.c sendfile-2.1a-patched/src/sendfiled.c
+--- sendfile-2.1a/src/sendfiled.c	Tue Feb  6 00:42:53 2001
++++ sendfile-2.1a-patched/src/sendfiled.c	Fri Mar  2 14:25:45 2001
+@@ -341,7 +341,7 @@
+ int send_file(int);
+ 
+ /* open user log file */  
+-int openlog(const char *);
++int open_log(const char *);
+ 
+ /* clean termination routine */
+ void cleanexit();
+@@ -1351,7 +1351,7 @@
+       /* convert back to UTF-7 and write to log file */
+       if (msglog && check_userspool(recipient,userconfighome)==0 && 
+ 	  chdir(userspool)==0) {
+-	if ((lfd=openlog("msglog"))) {
++	if ((lfd=open_log("msglog"))) {
+ 	  iso2utf(tmp,msg);
+ 	  timetick=time(0);
+ 	  strftime(currentdate,20,"%Y-%m-%d %H:%M:%S",localtime(&timetick));
+@@ -1664,7 +1664,7 @@
+       if (!test) {
+       
+ 	/* write to the log file */
+-	if ((lfd=openlog("log"))) {
++	if ((lfd=open_log("log"))) {
+ 	  writeheader(lfd,"FROM",logsender);
+ 	  writeheader(lfd,"FILE",filename);
+ 	  writeheader(lfd,"DATE",currentdate);
+@@ -3867,7 +3867,7 @@
+ 
+ 
+ /*
+- * openlog  - open user log file
++ * open_log  - open user log file
+  * 
+  * INPUT:  log - name of log file
+  * 
+@@ -3875,7 +3875,7 @@
+  * 
+  * Be sure to call this function with correct seteuid/setegid settings!
+  */
+-int openlog(const char *log) {
++int open_log(const char *log) {
+   int 
+     n,			/* simple loop counter */
+     lfd;		/* log file descriptor */
