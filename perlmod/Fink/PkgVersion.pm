@@ -129,13 +129,19 @@ sub initialize {
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 	# percent-expansions
 	if ($self->param("_type") eq "perl") {
-		my $perlversion = "";
+		my $perlversion   = "";
 		my $perldirectory = "";
+		my $perlarchdir   = "darwin";
+
 		if ($self->has_param("_perlversion")) {
 			$perlversion = $self->param("_perlversion");
 			$perldirectory = "/" . $perlversion;
+			if ($perlversion ge "5.8.1") {
+				$perlarchdir = "darwin-thread-multi-2level";
+			}
 		}
-		$configure_params = "PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
+
+		$configure_params = "PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
 			$self->param_default("ConfigureParams", "");
 	} else {
 		$configure_params = "--prefix=\%p ".
@@ -1355,26 +1361,39 @@ sub phase_install {
 			$self->run_script($self->param("InstallScript"), "installing");
 		} elsif ($self->param("_type") eq "perl") {
 			# grab perl version, if present
+			my $perlversion   = "";
 			my $perldirectory = "";
+			my $perlarchdir   = "darwin";
+
 			if ($self->has_param("_perlversion")) {
-				$perldirectory = "/" . $self->param("_perlversion");
+				$perlversion = $self->param("_perlversion");
+				$perldirectory = "/" . $perlversion;
+				if ($perlversion ge "5.8.1") {
+					$perlarchdir = "darwin-thread-multi-2level";
+				}
 			}
 			$install_script .= 
-				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
+				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
 		} elsif (not $do_splitoff) {
 			$install_script .= "make install prefix=\%i\n";
 		} 
 
 		if ($self->param_boolean("UpdatePOD")) { 
 			# grab perl version, if present
+			my $perlversion   = "";
 			my $perldirectory = "";
+			my $perlarchdir   = "darwin";
 			if ($self->has_param("_perlversion")) {
-				$perldirectory = "/" . $self->param("_perlversion");
+				$perlversion = $self->param("_perlversion");
+				$perldirectory = "/" . $perlversion;
+				if ($perlversion ge "5.8.1") {
+					$perlarchdir = "darwin-thread-multi-2level";
+				}
 			}
 			$install_script .= 
 				"mkdir -p \%i/share/podfiles$perldirectory\n".
-				"cat \%i/lib/perl5$perldirectory/darwin/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod\n".
-				"rm -rf \%i/lib/perl5$perldirectory/darwin/perllocal.pod\n";
+				"cat \%i/lib/perl5$perldirectory/$perlarchdir/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod\n".
+				"rm -rf \%i/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
 		}
 	}
 
@@ -1673,18 +1692,24 @@ EOF
 		# add UpdatePOD Code
 		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present
-			my $perldirectory ="";
+			my $perlversion   = "";
+			my $perldirectory = "";
+			my $perlarchdir   = "darwin";
 			if ($self->has_param("_perlversion")) {
-				$perldirectory = "/" . $self->param("_perlversion");
+				$perlversion = $self->param("_perlversion");
+				$perldirectory = "/" . $perlversion;
+				if ($perlversion ge "5.8.1") {
+					$perlarchdir = "darwin-thread-multi-2level";
+				}
 			}
 			if ($scriptname eq "postinst") {
 				$scriptbody .=
-					"\n\n# Updating \%p/lib/perl5/darwin$perldirectory/perllocal.pod\n".
-					"mkdir -p \%p/lib/perl5$perldirectory/darwin\n".
-					"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/darwin/perllocal.pod\n";
+					"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
+					"mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
+					"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
 			} elsif ($scriptname eq "postrm") {
 				$scriptbody .=
-					"\n\n# Updating \%p/lib/perl5$perldirectory/darwin/perllocal.pod\n\n".
+					"\n\n# Updating \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n\n".
 					"###\n".
 					"### check to see if any .pod files exist in \%p/share/podfiles.\n".
 					"###\n\n".
@@ -1692,7 +1717,7 @@ EOF
 					"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
 					"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
 					"	 if (\$#files >= 0) {\n".
-					"		 exec \"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/darwin/perllocal.pod\";\n".
+					"		 exec \"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
 					"	 }\n".
 					"}\n\n".
 					"END_PERL\n";
