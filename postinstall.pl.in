@@ -27,6 +27,8 @@ $| = 1;
 use v5.6.0;  # perl 5.6.0 or newer required
 use strict;
 
+use lib "@PREFIX@/lib/perl5";
+
 use Fink::Services qw(&print_breaking &prompt &prompt_boolean
                          &prompt_selection &read_config &execute);
 

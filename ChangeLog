@@ -1,3 +1,7 @@
+2003-05-03  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* bootstrap.pl, postinstall.pl.in: Fix bootstrap.
+
 2003-04-15  Ben Hines <bhines@alumni.ucsd.edu>
 
 	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.5.

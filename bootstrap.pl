@@ -56,7 +56,8 @@ unshift @INC, "$FindBin::RealBin/perlmod";
 
 require Fink::Services;
 import Fink::Services qw(&print_breaking &prompt &prompt_boolean
-						 &prompt_selection &read_config &execute);
+						 &prompt_selection &read_config &execute
+						 &file_MD5_checksum);
 
 ### get version
 
@@ -322,25 +323,6 @@ foreach $dir (@dirlist) {
 
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
 
-### copy package info needed for bootstrap
-
-print "Copying package descriptions...\n";
-
-$script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
-
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's|\@PREFIX\@|$installto|' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-
-$script .= "chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
-
-foreach $cmd (split(/\n/,$script)) {
-	next unless $cmd;		# skip empty lines
-
-	if (&execute($cmd)) {
-		print "ERROR: Can't copy package descriptions.\n";
-		exit 1;
-	}
-}
-
 ### create fink tarball for bootstrap
 
 print "Creating fink tarball...\n";
@@ -356,6 +338,24 @@ foreach $cmd (split(/\n/,$script)) {
 
 	if (&execute($cmd)) {
 		print "ERROR: Can't create tarball.\n";
+		exit 1;
+	}
+}
+
+### copy package info needed for bootstrap
+
+print "Copying package descriptions...\n";
+
+$script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
+my $md5 = &file_MD5_checksum("$installto/src/fink-$packageversion.tar");
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+$script .= "chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
+
+foreach $cmd (split(/\n/,$script)) {
+	next unless $cmd;		# skip empty lines
+
+	if (&execute($cmd)) {
+		print "ERROR: Can't copy package descriptions.\n";
 		exit 1;
 	}
 }
