@@ -1,3 +1,7 @@
+2003-06-11  Ben Hines <benh57@users.sourceforge.net>
+
+	* Services.pm: Clarify nesting too deep error.
+
 2003-06-11  Justin F. Hallett <thesin@users.sourceforge.net>
 
 	* Selfupdate.pm: added -q to cvs commands based on verbosity level
