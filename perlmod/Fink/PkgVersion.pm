@@ -205,12 +205,8 @@ sub initialize {
 		}
 	} else {
 		# handle splitoff(s)
-		# FIXME-dmacks: should not require consecutive N
-		if ($self->has_param('splitoff')) {
-			$self->add_splitoff($self->{'splitoff'},"");
-		}
-		for ($i = 2; $self->has_param('splitoff'.$i); $i++) {
-			$self->add_splitoff($self->{'splitoff'.$i},$i);
+		foreach ($self->params_matching('SplitOff\d*')) {
+			push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
 		}
 	}
 
@@ -382,7 +378,7 @@ sub clear_self_from_list {
 sub add_splitoff {
 	my $self = shift;
 	my $splitoff_data = shift;
-	my $splitoff_num = shift;
+	my $fieldname = shift;
 	my $filename = $self->{_filename};
 	my ($properties, $package, $pkgname, @splitoffs);
 	
@@ -390,10 +386,10 @@ sub add_splitoff {
 	$splitoff_data =~ s/^\s+//gm;
 	
 	# get the splitoff package name
-	$properties = &read_properties_var("splitoff$splitoff_num of \"$filename\"", $splitoff_data);
+	$properties = &read_properties_var("$fieldname of \"$filename\"", $splitoff_data);
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
-		print "No package name for SplitOff$splitoff_num in $filename\n";
+		print "No package name for $fieldname in $filename\n";
 	}
 	
 	# copy version information
@@ -416,8 +412,8 @@ sub add_splitoff {
 	# instantiate the splitoff
 	@splitoffs = Fink::Package->setup_package_object($properties, $filename);
 	
-	# add it to the list of splitoffs
-	push @{$self->{_splitoffs}}, @splitoffs;
+	# return the new object(s)
+	return @splitoffs;
 }
 
 ### merge duplicate package description
