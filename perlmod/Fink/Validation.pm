@@ -88,6 +88,12 @@ our %name_version_fields = map {$_, 1}
 		 patch
 		);
 
+# Free-form text fields which display in 'fink describe'
+our %text_describe_fields = map {$_, 1}
+	qw(
+		 descdetail descusage
+		);
+
 # Allowed values for the type field
 # keys are major types, values are refs to lists of minor types
 our %allowed_type_values = 
@@ -269,6 +275,7 @@ END { }				# module clean-up code here (global destructor)
 #		(from Patch and PatchScript)
 #	+ correspondence between source* and source*-md5 fields
 #	+ if type is bundle/nosource - warn about usage of "Source" etc.
+#	+ if 'fink describe' output will display poorly on vt100
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -445,6 +452,24 @@ sub validate_info_file {
 				 print "Warning: Field \"$field\" contains package version. Use %v instead. ($filename)\n";
 				 $looks_good = 0;
 			 }
+		}
+
+		# these fields are printed verbatim, so check to make sure
+		# they won't look weird on an 80-column plain-text terminal
+		if ($text_describe_fields{$field} and $value) {
+			# no intelligent word-wrap so warn for long lines
+			foreach my $line (split /\n/, $value) {
+				if (length $line > 77) {
+					print "Warning: \"$field\" contains line(s) exceeding 78 characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
+					$looks_good = 0;
+					last;
+				}
+			}
+			# warn for non-plain-text chars
+			if ($value =~ /[^[:ascii:]]/) {
+				print "Warning: \"$field\" contains non-standard characters. ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 
 		# Error if there is a source without an MD5
