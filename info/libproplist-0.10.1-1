@@ -1,0 +1,10 @@
+Package: libproplist
+Version: 0.10.1
+Revision: 1
+Source: http://www.windowmaker.org/pub/beta/srcs/libPropList-%v.tar.gz
+UpdateConfigGuess: true
+UpdateLibtool: true
+CommentPort: Uses autoconf and libtool - the usual fixes.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.windowmaker.org/

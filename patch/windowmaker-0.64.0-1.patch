@@ -1,0 +1,64 @@
+--- WindowMaker-0.64.0/configure.in.orig	Sun Feb 18 22:43:50 2001
++++ WindowMaker-0.64.0/configure.in	Sun Feb 18 22:46:00 2001
+@@ -610,7 +610,7 @@
+ 
+ 
+ if test "$png" = yes ; then
+-    WM_CHECK_LIB(png, png_get_valid, [-lz -lm])
++    WM_CHECK_LIB(png, png_get_valid, [-lz])
+ 
+     if test "x$ac_cv_lib_png_png_get_valid" = xyes; then
+     	WM_CHECK_HEADER(png.h)
+@@ -701,7 +701,7 @@
+ 
+ if test "$tif" = yes; then
+     my_libname=""
+-    WM_CHECK_LIB(tiff, TIFFGetVersion, [-lm])
++    WM_CHECK_LIB(tiff, TIFFGetVersion, [])
+     if test "x$ac_cv_lib_tiff_TIFFGetVersion" = xyes; then
+     	my_libname="-ltiff"
+     fi
+@@ -710,14 +710,14 @@
+ dnl
+     unset ac_cv_lib_tiff_TIFFGetVersion
+     if test "x$my_libname" = x; then
+-    	WM_CHECK_LIB(tiff, TIFFGetVersion, [$ljpeg -lz -lm])
++    	WM_CHECK_LIB(tiff, TIFFGetVersion, [$ljpeg -lz])
+ 	if test "x$ac_cv_lib_tiff_TIFFGetVersion" = xyes; then
+ 	    my_libname="-ltiff -lz"
+ 	fi
+     fi
+ 
+     if test "x$my_libname" = x; then
+-	WM_CHECK_LIB(tiff34, TIFFGetVersion, [$ljpeg -lm])
++	WM_CHECK_LIB(tiff34, TIFFGetVersion, [$ljpeg])
+ 	if test "x$ac_cv_lib_tiff34_TIFFGetVersion" = xyes; then
+ 	    my_libname="-ltiff34"
+ 	fi
+@@ -876,7 +876,7 @@
+ dnl
+ 
+ dnl echo "WFLAGS=\"$LIBPL_INC_PATH -I$prefix/include\"" > WINGs-flags
+-dnl echo "WLIBS=\"-L$exec_prefix/lib -lWINGs -lwraster $LIBPL_LIBS $GFXLIBS -lm\""\
++dnl echo "WLIBS=\"-L$exec_prefix/lib -lWINGs -lwraster $LIBPL_LIBS $GFXLIBS\""\
+ dnl 	| sed -e 's|\$(prefix)|'"$prefix|" >> WINGs-flags
+ 
+ dnl The #lp# and #rp# stuff below is a hack because [ and ] get lost when
+@@ -890,7 +890,7 @@
+ 
+ WCFLAGS="-I\$prefix/include $inc_search_path"
+ WLFLAGS="-L\$exec_prefix/lib $lib_search_path"
+-WLIBS="-lwraster $GFXLIBS $XLIBS -lm"
++WLIBS="-lwraster $GFXLIBS $XLIBS"
+ 
+ usage="Usage: get-wraster-flags #lp#--cflags#rp# #lp#--ldflags#rp# #lp#--libs#rp#"
+ 
+@@ -929,7 +929,7 @@
+ 
+ WCFLAGS="-I\$prefix/include $inc_search_path"
+ WLFLAGS="-L\$exec_prefix/lib $lib_search_path"
+-WLIBS="-lWINGs -lwraster $GFXLIBS $XLIBS -lm $NETLIBS -lPropList"
++WLIBS="-lWINGs -lwraster $GFXLIBS $XLIBS $NETLIBS -lPropList"
+ 
+ usage="Usage: get-wings-flags #lp#--cflags#rp# #lp#--ldflags#rp# #lp#--libs#rp#"
+ 

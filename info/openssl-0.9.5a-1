@@ -1,0 +1,15 @@
+Package: openssl
+Version: 0.9.5a
+Revision: 1
+Source: http://www.openssl.org/source/openssl-%v.tar.gz
+Depends: zlib
+Patch: %f.patch
+CompileScript: ./config --prefix=%p --openssldir=%p/etc/ssl
+ make
+InstallScript: make install INSTALLTOP=%i OPENSSLDIR=%i/etc/ssl
+CommentPort: Uses a custom configure script, which is patched to
+ recognize Darwin. The patches are taken from Apple's Darwin
+ source repository. No thread support and no shared library yet.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.openssl.org/
