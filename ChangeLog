@@ -1,3 +1,7 @@
+2002-02-14  Ben Hines <bhines@alumni.ucsd.edu>
+
+	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.4.
+
 2003-01-28  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* fink.in: added mention of fink list --help
