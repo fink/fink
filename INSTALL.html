@@ -1,45 +1,15 @@
-<html><head><meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type"><title>Fink Documentation - Fink 0.4.0 Installation</title></head><body><h1 align="center">Fink 0.4.0 Installation</h1>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><title>Fink Documentation - Fink 0.5.2 Installation</title></head><body><h1 style="text-align: center;">Fink 0.5.2 Installation</h1>
 <p>
 These are the installation instructions for the &quot;source&quot; distribution
-of Fink 0.4.0.
-This document does not apply to the &quot;binary&quot; distribution.
+of Fink 0.5.2.
+This document does not apply to the &quot;<a href="http://fink.sourceforge.net/download/index.php">binary</a>&quot; distribution.
 There are instructions for both first time installation and upgrading
 from a previous version.
 Fast track instructions for the impatient are at the top.
 </p>
-<h2>Contents</h2><ul>
-<li><a href="#install-fast"><b>1 The Fast Track</b></a></li>
-<ul>
-<li><a href="#install-fast.install">1.1 First Time Installation Fast
-Track</a></li>
-<li><a href="#install-fast.update">1.2 Update Fast Track</a></li>
-</ul>
-<li><a href="#install-first"><b>2 First Time Installation</b></a></li>
-<ul>
-<li><a href="#install-first.req">2.1 Requirements</a></li>
-<li><a href="#install-first.directory">2.2 Choosing A Directory</a></li>
-<li><a href="#install-first.install">2.3 Installation</a></li>
-<li><a href="#install-first.x11">2.4 Getting X11 Sorted Out</a></li>
-</ul>
-<li><a href="#install-up03"><b>3 Upgrading From Fink 0.3.x</b></a></li>
-<ul>
-<li><a href="#install-up03.packman">3.1 Updating The Package Manager</a></li>
-<li><a href="#install-up03.tetex">3.2 Getting tetex Sorted Out</a></li>
-<li><a href="#install-up03.update-all">3.3 Updating Packages</a></li>
-</ul>
-<li><a href="#install-up02"><b>4 Upgrading From Fink 0.2.x</b></a></li>
-<ul>
-<li><a href="#install-up02.packman">4.1 Updating The Package Manager</a></li>
-<li><a href="#install-up02.descriptions">4.2 Updating The Package Descriptions</a></li>
-<li><a href="#install-up02.x11">4.3 Getting X11 Sorted Out</a></li>
-<li><a href="#install-up02.update-all">4.4 Updating Packages</a></li>
-<li><a href="#install-up02.other">4.5 Other Notes</a></li>
-</ul>
-<li><a href="#install-up01"><b>5 Upgrading From Fink 0.1.x</b></a></li>
-<ul>
-<li><a href="#install-up01.upgrade-01">5.1 Clean cut</a></li>
-</ul>
-</ul><a name="install-fast"><h2>1 The Fast Track</h2></a>
+<h2>Contents</h2><ul><li><a href="#install-fast"><b>1 The Fast Track</b></a><ul><li><a href="#install-fast.install">1.1 First Time Installation Fast
+Track</a></li><li><a href="#install-fast.update">1.2 Update Fast Track</a></li></ul></li><li><a href="#install-first"><b>2 First Time Installation</b></a><ul><li><a href="#install-first.req">2.1 Requirements</a></li><li><a href="#install-first.directory">2.2 Choosing A Directory</a></li><li><a href="#install-first.install">2.3 Installation</a></li><li><a href="#install-first.x11">2.4 Getting X11 Sorted Out</a></li></ul></li><li><a href="#install-up03"><b>3 Upgrading From Fink 0.3.x</b></a><ul><li><a href="#install-up03.packman">3.1 Updating The Package Manager</a></li><li><a href="#install-up03.tetex">3.2 Getting tetex Sorted Out</a></li><li><a href="#install-up03.update-all">3.3 Updating Packages</a></li></ul></li><li><a href="#install-up02"><b>4 Upgrading From Fink 0.2.x</b></a><ul><li><a href="#install-up02.packman">4.1 Updating The Package Manager</a></li><li><a href="#install-up02.descriptions">4.2 Updating The Package Descriptions</a></li><li><a href="#install-up02.x11">4.3 Getting X11 Sorted Out</a></li><li><a href="#install-up02.update-all">4.4 Updating Packages</a></li><li><a href="#install-up02.other">4.5 Other Notes</a></li></ul></li><li><a href="#install-up01"><b>5 Upgrading From Fink 0.1.x</b></a><ul><li><a href="#install-up01.upgrade-01">5.1 Clean cut</a></li></ul></li></ul><h2><a name="install-fast">1 The Fast Track</a></h2>
 
 
 
@@ -56,27 +26,27 @@ If you're looking for the real instructions, skip to the <a href="#install-first
 
 
 
-<a name="install-fast.install"><h3>1.1 First Time Installation Fast
-Track</h3></a>
+<h3><a name="install-fast.install">1.1 First Time Installation Fast
+Track</a></h3>
 <p>
-Start out by copying the <tt><nobr>fink-0.4.0-full.tar.gz</nobr></tt>
+Start out by copying the <tt style="white-space: nowrap;">fink-0.5.2-full.tar.gz</tt>
 file to your home folder.
 Then, open Terminal.app and follow the session below.
-Computer output is in <tt><nobr>normal face</nobr></tt>, your input is in
-<tt><nobr><b>bold face</b></nobr></tt> (or otherwise highlighted).
+Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your input is in
+<tt style="white-space: nowrap;"><b>bold face</b></tt> (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of
-the output have been omitted (<tt><nobr>...</nobr></tt>).
+the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
-<pre>[frodo:~] testuser% <b>tar xzf fink-0.4.0-full.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.4.0-full</b>
-[frodo:~/fink-0.4.0-full] testuser% <b>./bootstrap.sh /sw</b>
+<pre>[frodo:~] testuser% <b>tar xzf fink-0.5.2-full.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.5.2-full</b>
+[frodo:~/fink-0.5.2-full] testuser% <b>./bootstrap.sh /sw</b>
 
 Welcome to Fink.
 
 ...
 Choose a method: [1] <b>1</b>
 
-sudo /Users/testuser/fink-0.4.0-full/bootstrap.pl .sudo '/sw'
+sudo /Users/testuser/fink-0.5.2-full/bootstrap.pl .sudo '/sw'
 Password:<b>(your normal password here)</b>
 ...
 OK, I'll ask you some questions and update the configuration file in
@@ -112,12 +82,12 @@ to use Fink. To make the software installed by Fink available in all of your
 shells, add 'source /sw/bin/init.csh' to the init script '.cshrc' in your
 home directory. Enjoy.
 
-[frodo:~/fink-0.4.0-full] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.4.0-full</b>
+[frodo:~/fink-0.5.2-full] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.5.2-full</b>
 [frodo:~] testuser% <b>pico .cshrc</b></pre>
 <p>
 The last command launches you into a text file editor.
-Type <tt><nobr>source /sw/bin/init.csh</nobr></tt>, press return, press
+Type <tt style="white-space: nowrap;">source /sw/bin/init.csh</tt>, press return, press
 control-O, press return, press control-X.
 You're now back at the prompt:
 </p>
@@ -129,7 +99,7 @@ If you have several Terminal.app windows open, close the other ones.
 That's it, you now have a base system installed.
 </p>
 <p>
-You can now install additional packages with the <tt><nobr>fink</nobr></tt>
+You can now install additional packages with the <tt style="white-space: nowrap;">fink</tt>
 command, like this:
 </p>
 <pre>[frodo:~] testuser% <b>fink install xfree86-server gimp</b>
@@ -152,19 +122,19 @@ documentation when your problem actually is well-documented.
 
 
 
-<a name="install-fast.update"><h3>1.2 Update Fast Track</h3></a>
+<h3><a name="install-fast.update">1.2 Update Fast Track</a></h3>
 <p>
-Start out by copying the <tt><nobr>fink-0.4.0-full.tar.gz</nobr></tt>
+Start out by copying the <tt style="white-space: nowrap;">fink-0.5.2-full.tar.gz</tt>
 file to your home folder.
 Then, open Terminal.app and follow the session below.
-Computer output is in <tt><nobr>normal face</nobr></tt>, your input is in
-<tt><nobr><b>bold face</b></nobr></tt> (or otherwise highlighted).
+Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your input is in
+<tt style="white-space: nowrap;"><b>bold face</b></tt> (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of
-the output have been omitted (<tt><nobr>...</nobr></tt>).
+the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
-<pre>[frodo:~] testuser% <b>tar xzf fink-0.4.0-full.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.4.0-full</b>
-[frodo:~/fink-0.4.0-full] testuser% <b>./inject.pl /sw</b>
+<pre>[frodo:~] testuser% <b>tar xzf fink-0.5.2-full.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.5.2-full</b>
+[frodo:~/fink-0.5.2-full] testuser% <b>./inject.pl /sw</b>
 sudo ./inject.pl /sw
 Password:<b>(your normal password here)</b>
 Copying package descriptions
@@ -173,8 +143,8 @@ Done.
 
 Your Fink installation in '/sw' was updated with new fink packages.
 
-[frodo:~/fink-0.4.0-full] testuser% <b>cd pkginfo</b>
-[frodo:~/fink-0.4.0-full/pkginfo] testuser% <b>./inject.pl /sw</b>
+[frodo:~/fink-0.5.2-full] testuser% <b>cd pkginfo</b>
+[frodo:~/fink-0.5.2-full/pkginfo] testuser% <b>./inject.pl /sw</b>
 sudo ./inject.pl /sw
 Copying...
 ...
@@ -183,18 +153,18 @@ Your Fink installation in '/sw' was updated with new package description
 files. Use appropriate fink commands to update the packages, e.g. 'fink
 update-all'.
 
-[frodo:~/fink-0.4.0-full/pkginfo] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.4.0-full</b>
+[frodo:~/fink-0.5.2-full/pkginfo] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.5.2-full</b>
 [frodo:~] testuser% <b>fink update-all</b>
 ...</pre>
 
 
 
-<a name="install-first"><h2>2 First Time Installation</h2></a>
+<h2><a name="install-first">2 First Time Installation</a></h2>
 
 
 
-<a name="install-first.req"><h3>2.1 Requirements</h3></a>
+<h3><a name="install-first.req">2.1 Requirements</a></h3>
 <p>
 You need:
 </p>
@@ -227,7 +197,7 @@ I'm talking hours or even days here.
 </ul>
 
 
-<a name="install-first.directory"><h3>2.2 Choosing A Directory</h3></a>
+<h3><a name="install-first.directory">2.2 Choosing A Directory</a></h3>
 <p>
 Before you install, you must decide where Fink's directory hierarchy
 will live. The recommended place is /sw, and all examples in this
@@ -259,18 +229,18 @@ have been warned.
 </p>
 
 
-<a name="install-first.install"><h3>2.3 Installation</h3></a>
+<h3><a name="install-first.install">2.3 Installation</a></h3>
 <p>
-First, you need to unpack the fink-0.4.0-full.tar.gz tarball.
+First, you need to unpack the fink-0.5.2-full.tar.gz tarball.
 It is recommended that you do this from the command line -
 StuffIt Expander has a tendency to screw up text files.
 So, go to the directory where you put the tarball, and run this
 command:
 </p>
-<pre>tar xzf fink-0.4.0-full.tar.gz</pre>
+<pre>tar xzf fink-0.5.2-full.tar.gz</pre>
 <p>
-You now have a directory named fink-0.4.0-full.
-Change to it with <tt><nobr>cd fink-0.4.0-full</nobr></tt>.
+You now have a directory named fink-0.5.2-full.
+Change to it with <tt style="white-space: nowrap;">cd fink-0.5.2-full</tt>.
 </p>
 <p>
 The actual installation is performed by the perl script
@@ -278,7 +248,7 @@ bootstrap.pl.
 It is accompanied by a small shell script, bootstrap.sh, which checks
 some basic requirements and then hands over control to the perl
 script.
-So, to start installation, go to the fink-0.4.0-full directory and run
+So, to start installation, go to the fink-0.5.2-full directory and run
 this command:
 </p>
 <pre>./bootstrap.sh</pre>
@@ -316,7 +286,7 @@ manager, you first must have the package manager available.
 </p>
 
 
-<a name="install-first.x11"><h3>2.4 Getting X11 Sorted Out</h3></a>
+<h3><a name="install-first.x11">2.4 Getting X11 Sorted Out</a></h3>
 <p>
 Fink uses virtual packages to declare dependencies on X11.
 As there are several X11 implementations available for Mac OS X
@@ -365,18 +335,18 @@ and Mac OS X document</a>.
 </p>
 
 
-<a name="install-up03"><h2>3 Upgrading From Fink 0.3.x</h2></a>
+<h2><a name="install-up03">3 Upgrading From Fink 0.3.x</a></h2>
 
 
 
 
 <p>
 If you already have Fink 0.3.x installed, you can update your
-installation to 0.4.0 with the built-in 'selfupdate' command.
+installation to 0.5.2 with the built-in 'selfupdate' command.
 </p>
 
 
-<a name="install-up03.packman"><h3>3.1 Updating The Package Manager</h3></a>
+<h3><a name="install-up03.packman">3.1 Updating The Package Manager</a></h3>
 <p>
 To update Fink, run the following command:
 </p>
@@ -388,7 +358,7 @@ packages. However, it will not update any other packages.
 </p>
 
 
-<a name="install-up03.tetex"><h3>3.2 Getting tetex Sorted Out</h3></a>
+<h3><a name="install-up03.tetex">3.2 Getting tetex Sorted Out</a></h3>
 <p>
 If you are upgrading from a Fink release prior to 0.3.1, and you have
 tetex installed, you should run the command &quot;fink remove tetex&quot; before
@@ -398,7 +368,7 @@ you can again install tetex and the other packages you removed.
 </p>
 
 
-<a name="install-up03.update-all"><h3>3.3 Updating Packages</h3></a>
+<h3><a name="install-up03.update-all">3.3 Updating Packages</a></h3>
 <p>
 The above updating steps will not update the actual packages, they
 only provide you with the means to do so. The easiest way to get the
@@ -412,14 +382,14 @@ individual packages with the 'update' command.
 </p>
 
 
-<a name="install-up02"><h2>4 Upgrading From Fink 0.2.x</h2></a>
+<h2><a name="install-up02">4 Upgrading From Fink 0.2.x</a></h2>
 
 
 
 
 <p>
 If you already have Fink 0.2.x installed, you can update your
-installation to 0.4.0 with this package.
+installation to 0.5.2 with this package.
 </p>
 <p>
 Actually, there are two pieces that are updated independently: the
@@ -428,10 +398,10 @@ update the package manager first.
 </p>
 
 
-<a name="install-up02.packman"><h3>4.1 Updating The Package Manager</h3></a>
+<h3><a name="install-up02.packman">4.1 Updating The Package Manager</a></h3>
 <p>
 To update the package manager, run the inject.pl script in the
-fink-0.4.0-full directory, like this:
+fink-0.5.2-full directory, like this:
 </p>
 <pre>./inject.pl</pre>
 <p>
@@ -443,13 +413,13 @@ can't find it, you can pass the path as a parameter, like this:
 The script copies the package descriptions into the appropriate
 directory, creates tarballs in /sw/src and then runs fink to install
 the new versions of the fink and base-files packages.
-(Yes, that means that fink updates itself. <tt><nobr>:-)</nobr></tt> )
+(Yes, that means that fink updates itself. <tt style="white-space: nowrap;">:-)</tt> )
 </p>
 
 
-<a name="install-up02.descriptions"><h3>4.2 Updating The Package Descriptions</h3></a>
+<h3><a name="install-up02.descriptions">4.2 Updating The Package Descriptions</a></h3>
 <p>
-If you downloaded the fink-0.4.0-full tarball, the package
+If you downloaded the fink-0.5.2-full tarball, the package
 descriptions are in the subdirectory pkginfo. To install them, run the
 inject.pl script in that directory:
 </p>
@@ -461,7 +431,7 @@ manager.
 </p>
 <p>
 You can also grab the package descriptions as a separate tarball,
-packages-0.4.0. If you did that, just unpack it and run the inject.pl
+packages-0.5.2. If you did that, just unpack it and run the inject.pl
 script inside.
 </p>
 <p>
@@ -471,7 +441,7 @@ the latest set of package descriptions by issuing the following command:
 <pre>fink selfupdate</pre>
 
 
-<a name="install-up02.x11"><h3>4.3 Getting X11 Sorted Out</h3></a>
+<h3><a name="install-up02.x11">4.3 Getting X11 Sorted Out</a></h3>
 <p>
 The first thing you should do after updating the package descriptions
 is getting the X11 dependencies settled (unless you already did that
@@ -481,7 +451,7 @@ Installation&quot; above.
 </p>
 
 
-<a name="install-up02.update-all"><h3>4.4 Updating Packages</h3></a>
+<h3><a name="install-up02.update-all">4.4 Updating Packages</a></h3>
 <p>
 The above updating steps will not update the actual packages, they
 only provide you with the means to do so. The easiest way to get the
@@ -495,7 +465,7 @@ individual packages with the 'update' command.
 </p>
 
 
-<a name="install-up02.other"><h3>4.5 Other Notes</h3></a>
+<h3><a name="install-up02.other">4.5 Other Notes</a></h3>
 <p>
 IMPORTANT! When you update from Fink 0.2.0 or a CVS version before
 0.2.1, the first thing you should do after running the inject.pl
@@ -510,11 +480,11 @@ re-install the .deb package files.
 </p>
 
 
-<a name="install-up01"><h2>5 Upgrading From Fink 0.1.x</h2></a>
+<h2><a name="install-up01">5 Upgrading From Fink 0.1.x</a></h2>
 
 
 
-<a name="install-up01.upgrade-01"><h3>5.1 Clean cut</h3></a>
+<h3><a name="install-up01.upgrade-01">5.1 Clean cut</a></h3>
 <p>
 There is no direct upgrade path from Fink 0.1.x to Fink 0.2.x, because
 they use different methods for underlying package management (stow
@@ -527,14 +497,14 @@ Save any changes you have made to configuration files etc.
 </p></li>
 <li><p>
 Save a list of packages you had installed. Hint: Try
-<tt><nobr>ls /sw/var/fink-stamp</nobr></tt>.
+<tt style="white-space: nowrap;">ls /sw/var/fink-stamp</tt>.
 </p></li>
 <li><p>
 If you have the source tarballs still lying around in /sw/src and
 don't want to download them again, move them to another directory.
 </p></li>
 <li><p>
-Wipe out the /sw directory, i.e. <tt><nobr>cd / ; rm -rf /sw</nobr></tt>.
+Wipe out the /sw directory, i.e. <tt style="white-space: nowrap;">cd / ; rm -rf /sw</tt>.
 Do this as root if neccessary.
 </p></li>
 <li><p>
@@ -550,11 +520,9 @@ Reinstall the packages you need.
 </ul>
 
 
-
-<hr><h2>Copyright Notice</h2>
-<p>Copyright (c) 2001 Christoph Pfisterer.
+<hr><h2>Copyright Notice</h2><p>Copyright (c) 2001 Christoph Pfisterer,
+Copyright (c) 2001-2003 The Fink Project.
 You may distribute this document in print for private purposes,
 provided the document and this copyright notice remain complete and
 unmodified. Any commercial reproduction and any online publication
-requires the explicit consent of the author.</p>
-<p><hr>Generated from <i>$Fink: install.xml,v 1.15 2002/04/15 19:53:09 fingolfin Exp $</i></p></body></html>
+requires the explicit consent of the author.</p><hr><p>Generated from <i>$Fink: install.xml,v 1.16 2003/02/26 14:51:52 alexkhansen Exp $</i></p></body></html>
