@@ -150,8 +150,6 @@ sub initialize {
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$self->{$hash->{package}} = $hash;
-				} else {
-					warn "WARNING: you have Java $dir but no corresponding SDK!\n";
 				}
 			}
 		}
