@@ -15,9 +15,19 @@ InstallScript: make install G= ZCAT=zcat prefix=%i
  ln -s zcat.1 %i/share/man/man1/gzcat.1
  ln -s zmore %i/bin/zless
  ln -s zmore.1 %i/share/man/man1/zless.1
-CommentPort: Uses autoconf. Works fine, but needs some tweaking to put
- documentation in <prefix>/share.
- The configure script tries to be adaptive with gzcat and the like, we
- force the Makefile to do the right thing regardless.
+Description: The gzip file compressor
+DescPort: <<
+The file INSTALL clashes with the Makefile target install on
+file-insensitive file systems. Fixed by renaming INSTALL to
+INSTALL.txt.
+<<
+DescPackaging: <<
+Needs some tweaking to put documentation in <prefix>/share.
+
+The configure script tries to be adaptive with gzcat and the like, we
+force the Makefile to do the right thing regardless.
+
+We also add some alternate names for the commands.
+<<
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
 Homepage: http://www.gzip.org/

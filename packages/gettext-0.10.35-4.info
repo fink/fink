@@ -10,7 +10,14 @@ SetCPPFLAGS: -traditional-cpp
 Patch: %f.patch
 ConfigureParams: --infodir=%p/share/info --with-included-gettext
 InstallScript: make install DESTDIR=%d
-CommentPort: Uses autoconf. Checks the host type - the usual
- fix. Uses an evil hack to actually build and install a shared libintl
- library and link against it.
+Description: Localization support
+DescDetail: <<
+The gettext package provides the i18n and l10n support used by many
+GNU programs but missing from the system C library.
+<<
+DescPort: <<
+Uses autoconf. Checks the host type - the usual fix. Uses an evil hack
+to actually build and install a shared libintl library and link
+against it.
+<<
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

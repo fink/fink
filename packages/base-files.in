@@ -6,4 +6,10 @@ NoSourceDirectory: true
 Essential: yes
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
+Description: Directory infrastructure
+DescDetail: <<
+The base-files package contains the basic directory infrastructure for
+a Fink installation. It makes sure the usual directories are present
+and have the right permissions.
+<<
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

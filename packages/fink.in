@@ -7,4 +7,10 @@ Depends: base-files
 Essential: yes
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
+Description: The Fink package manager
+DescDetail: <<
+fink is the Fink project's package manager. It is responsible for
+downloading and compiling source and building binary packages from
+it. Binary package handling is then delegated to dpkg.
+<<
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
