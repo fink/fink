@@ -420,7 +420,7 @@ sub update_db {
 			unless (-d "$basepath/var/db") {
 				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 			}
-			Storable::store ($packages, "$basepath/var/db/fink.db.tmp");
+			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
 			print "done.\n";
 		} else {
