@@ -1,8 +1,0 @@
-Package: blackbox
-Version: 0.61.1
-Revision: 2
-Source: ftp://portal.alug.org/pub/blackbox/0.6x.x/%n-%v.tar.gz
-ConfigureParams: --disable-nls
-Patch: %f.patch
-Maintainer: Finlay Dobbie <finlay.dobbie@btinternet.com>
-Homepage: http://blackbox.alug.org/

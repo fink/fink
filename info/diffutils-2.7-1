@@ -1,6 +1,0 @@
-Package: diffutils
-Version: 2.7
-Revision: 1
-Source: gnu
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
-Homepage: http://www.gnu.org/software/diffutils/diffutils.html

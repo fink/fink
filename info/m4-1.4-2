@@ -1,9 +1,0 @@
-Package: m4
-Version: 1.4
-Revision: 1
-Source: gnu
-InstallScript: make install prefix=%i
- ( cd %i/bin ; ln -s m4 gm4 )
-CommentPort: Uses autoconf. Works fine.
-CommentStow: No issues.
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

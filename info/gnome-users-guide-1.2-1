@@ -1,8 +1,0 @@
-Package: gnome-users-guide
-Version: 1.2
-Revision: 1
-Source: mirror:gnome:stable/sources/users-guide/users-guide-%v.tar.gz
-CommentPort: Just documentation...
-CommentStow: No issues.
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
-Homepage: http://www.gnome.org/
