@@ -1,3 +1,9 @@
+2003-11-10  Michael G Schwern <schwern@pobox.com>
+
+	* PkgVersion.pm: Change below broke get_perl_dir_arch(), didn't
+	  parse the output from -V:archname.  Fixed by using Config.pm
+	  instead.  Tested.
+
 2003-11-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage: fall back to XFree86 -version if we can't figure
