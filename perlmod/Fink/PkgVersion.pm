@@ -639,6 +639,7 @@ sub get_checksum {
 
 sub get_custom_mirror {
 	my $self = shift;
+	my $suffix = shift || "";
 
 	if (exists $self->{_custom_mirror}) {
 		return $self->{_custom_mirror};
@@ -1275,7 +1276,7 @@ sub fetch_source {
 		}
 	}
 	
-	if (&fetch_url_to_file($url, $file, $self->get_custom_mirror(), 
+	if (&fetch_url_to_file($url, $file, $self->get_custom_mirror($suffix), 
 						   $tries, $continue, $nomirror, $dryrun)) {
 
 		if (0) {
