@@ -26,7 +26,7 @@ package Fink::Command;
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT    = ();
-@EXPORT_OK = qw(mv cp cat mkdir_p rm_rf rm_f touch chowname symlink_f);
+@EXPORT_OK = qw(mv cp cat mkdir_p rm_rf rm_f touch chowname symlink_f du_sk);
 %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
@@ -290,6 +290,47 @@ sub symlink_f {
 	
 	rm_f $dest or return;
 	return symlink($src, $dest);
+}
+
+=item du_sk
+
+  du_sk @dirs;
+
+Like C<du -sk>, though slower.
+
+On success returns the disk usage of @dirs in kilobytes. This is not the
+sum of file-sizes, rather the total size of the blocks used. Thus it can
+change on a filesystem with support for sparse files, or an OS with a
+different block size.
+
+On failure returns "Error: <description>".
+
+=cut
+
+# FIXME: Can this be made faster?
+sub du_sk {
+	my @dirs = @_;
+	my $total_size = 0;
+	
+	# Depends on OS. Pretty much only HP-UX, SCO and (rarely) AIX are not 512 bytes.
+	my $blocksize = 512;
+	
+	require File::Find;
+	
+	# Must catch warnings for this block
+	my $err = "";
+	use warnings;
+	local $SIG{__WARN__} = sub { $err = "Error: $_[0]" if not $err };
+	
+	File::Find::finddepth(
+		sub {
+			# Use lstat first, so the -f refers to the link and not the target.
+			my $file_blocks = (lstat $_)[12];
+			$total_size += ($blocksize * $file_blocks) if -f _;
+		},
+		@dirs) if @dirs;
+	
+	return ( $err or int($total_size / 1024) );
 }
 
 =begin private

@@ -1,0 +1,4 @@
+2004-03-16  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* du_sk.t: New test for &du_sk, replacement for 'du -sk'
+

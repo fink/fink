@@ -37,7 +37,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
-use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f);
+use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk);
 
 use File::Basename qw(&dirname);
 
@@ -520,19 +520,17 @@ sub get_section {
 	return $self->{_section};
 }
 
+# get_instsize DIR
+#
+# Gets the size of a directory in kilobytes (not bytes!)
 sub get_instsize {
 	my $self = shift;
 	my $path = shift;
-
-	### FIXME ### This should be done in perl
-	### Need to get the full size in bytes of %i
-	my ($size) = split(/\s+/, `/usr/bin/du -sk "$path" 2>/dev/null`);
-	if ($size =~ /^(\d+)$/) {
-		$size = ($1 * 1024);
-	} else {
-		$size = 0;
+	
+	my $size = du_sk($path);
+	if ( $size =~ /^Error:/ ) {
+		die $size;
 	}
-
 	return $size;
 }
 
@@ -1897,7 +1895,7 @@ sub phase_build {
 	$pkgname = $self->get_name();
 	$version = $self->get_fullversion();
 	$section = $self->get_section();
-	$instsize = $self->get_instsize("$destdir$basepath");
+	$instsize = $self->get_instsize("$destdir$basepath");	# kilobytes!
 	$control = <<EOF;
 Package: $pkgname
 Source: $pkgname
