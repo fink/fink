@@ -49,6 +49,7 @@ sub initialize {
   my $self = shift;
   my ($pkgname, $version, $revision, $source);
   my ($depspec, $deplist, $dep, $expand, $configure_params);
+  my ($i);
 
   $self->SUPER::initialize();
 
@@ -95,6 +96,12 @@ sub initialize {
 
   $source = &expand_percent($source, $expand);
   $self->{source} = $source;
+  $self->{_sourcecount} = 1;
+
+  for ($i = 2; $self->has_param('source'.$i); $i++) {
+    $self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
+    $self->{_sourcecount} = $i;
+  }
 }
 
 ### get package name, version etc.
@@ -133,14 +140,31 @@ sub get_fullname {
 
 ### other accessors
 
+sub is_multisource {
+  my $self = shift;
+  return $self->{_sourcecount} > 1;
+}
+
 sub get_source {
   my $self = shift;
-  return $self->param("Source");
+  my $index = shift || 1;
+  if ($index < 2) {
+    return $self->param("Source");
+  } elsif ($index <= $self->{_sourcecount}) {
+    return $self->param("Source".$index);
+  }
+  return "-";
 }
 
 sub get_tarball {
   my $self = shift;
-  return &filename($self->param("Source"));
+  my $index = shift || 1;
+  if ($index < 2) {
+    return &filename($self->param("Source"));
+  } elsif ($index <= $self->{_sourcecount}) {
+    return &filename($self->param("Source".$index));
+  }
+  return "-";
 }
 
 sub get_build_directory {
@@ -177,11 +201,14 @@ sub get_build_directory {
 
 sub is_fetched {
   my $self = shift;
+  my ($i);
 
-  if (defined $self->find_tarball()) {
-    return 1;
+  for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+    if (not defined $self->find_tarball($i)) {
+      return 0;
+    }
   }
-  return 0;
+  return 1;
 }
 
 sub is_present {
@@ -209,10 +236,14 @@ sub is_installed {
 
 sub find_tarball {
   my $self = shift;
+  my $index = shift || 1;
   my ($archive, $found_archive);
   my (@search_dirs, $search_dir);
 
-  $archive = $self->get_tarball();
+  $archive = $self->get_tarball($index);
+  if ($archive eq "-") {  # bad index
+    return undef;
+  }
 
   # compile list of dirs to search
   @search_dirs = ( "$basepath/src" );
@@ -325,46 +356,40 @@ sub match_package {
 
 sub phase_fetch {
   my $self = shift;
+  my ($i);
+
+  for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+    $self->fetch_source($i);
+  }
+}
+
+sub fetch_source {
+  my $self = shift;
+  my $index = shift;
   my ($url, $file);
 
-  $url = &expand_url($self->get_source());
-  print "$url\n";
-
   chdir "$basepath/src";
-  $file = $self->get_tarball();
+
+  $url = &expand_url($self->get_source($index));
+  $file = $self->get_tarball($index);
+
   if (-f $file) {
     &execute("rm -f $file");
   }
   &execute("wget $url");
-  # TODO: check file exists
+  if (not -f $file) {
+    die "file download failed for $file\n";
+  }
 }
 
 ### unpack
 
 sub phase_unpack {
   my $self = shift;
-  my ($archive, $found_archive, $bdir, $tar_cmd);
+  my ($archive, $found_archive, $bdir, $destdir, $tar_cmd);
+  my ($i);
 
-  $archive = $self->get_tarball();
   $bdir = $self->get_fullname();
-
-  # search for archive, try fetching if not found
-  $found_archive = $self->find_tarball();
-  if (not defined $found_archive) {
-    $self->phase_fetch();
-    $found_archive = $self->find_tarball();
-  }
-  if (not defined $found_archive) {
-    die "can't find source tarball $archive!\n";
-  }
-
-  # determine unpacking command
-  $tar_cmd = "tar -xvf $found_archive";
-  if ($archive =~ /[\.\-]tar\.(gz|Z)$/ or $archive =~ /\.tgz$/) {
-    $tar_cmd = "gzip -dc $found_archive | tar -xvf -";
-  } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
-    $tar_cmd = "bzip2 -dc $found_archive | tar -xvf -";
-  }
 
   # remove dir if it exists
   chdir "$basepath/src";
@@ -373,12 +398,46 @@ sub phase_unpack {
       die "can't remove existing directory $bdir\n";
     }
   }
-  if (&execute("mkdir $bdir")) {
-    die "can't create directory $bdir\n";
-  }
-  chdir "$basepath/src/$bdir";
-  if (&execute($tar_cmd)) {
-    die "unpacking failed\n";
+
+  for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+    $archive = $self->get_tarball($i);
+
+    # search for archive, try fetching if not found
+    $found_archive = $self->find_tarball($i);
+    if (not defined $found_archive) {
+      $self->fetch_source($i);
+      $found_archive = $self->find_tarball($i);
+    }
+    if (not defined $found_archive) {
+      die "can't find source tarball $archive!\n";
+    }
+
+    # determine unpacking command
+    $tar_cmd = "tar -xvf $found_archive";
+    if ($archive =~ /[\.\-]tar\.(gz|Z)$/ or $archive =~ /\.tgz$/) {
+      $tar_cmd = "gzip -dc $found_archive | tar -xvf -";
+    } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
+      $tar_cmd = "bzip2 -dc $found_archive | tar -xvf -";
+    }
+
+    # calculate destination directory
+    $destdir = "$basepath/src/$bdir";
+    if ($i > 1) {
+      if ($self->has_param("Source".$i."ExtractDir")) {
+	$destdir .= "/".$self->param("Source".$i."ExtractDir");
+      }
+    }
+
+    # create directory
+    if (&execute("mkdir -p $destdir")) {
+      die "can't create directory $destdir\n";
+    }
+
+    # unpack it
+    chdir $destdir;
+    if (&execute($tar_cmd)) {
+      die "unpacking failed\n";
+    }
   }
 }
 
