@@ -116,6 +116,7 @@ our %known_fields = map {$_, 1}
      gcc
      compilescript
      installscript
+     shlibs
      runtimevars
      splitoff
      jarfiles

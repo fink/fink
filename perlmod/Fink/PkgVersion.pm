@@ -1413,6 +1413,7 @@ sub phase_build {
   my $do_splitoff = shift || 0;
   my ($ddir, $destdir, $control);
   my ($scriptname, $scriptfile, $scriptbody);
+  my ($shlibsfile, $shlibsbody);
   my ($conffiles, $listfile, $infodoc);
   my ($daemonicname, $daemonicfile);
   my ($cmd);
@@ -1563,6 +1564,24 @@ exit 0
 EOF
     close(SCRIPT) or die "can't write $scriptname script for ".$self->get_fullname().": $!\n";
     chmod 0755, $scriptfile;
+  }
+
+  ### shlibs file
+
+  if ($self->has_param("Shlibs")) {
+      $shlibsbody = $self->param("Shlibs");
+      chomp $shlibsbody;
+      $shlibsbody = &expand_percent($shlibsbody, $self->{_expand});
+      $shlibsfile = "$destdir/DEBIAN/shlibs";
+
+      print "Writing shlibs file...\n";
+
+      open(SHLIBS,">$shlibsfile") or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
+      print SHLIBS <<EOF;
+$shlibsbody
+EOF
+close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
+      chmod 0644, $shlibsfile;
   }
 
   ### config file list

@@ -1,6 +1,14 @@
+2002-10-12 Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* shlibs.default.in: new file to provide defaults for shlibs system
+
+	* setup.sh: create the shlibs.default file from shlibs.default.in
+
+	* install.sh: install shlibs.default in $basepath/etc/dpkg/
+
 2002-10-10 Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* packages: obsolete packages directory removed
+	* packages: contents of obsolete packages directory removed
 
 2002-10-03  Max Horn  <max@quendi.de>
 
