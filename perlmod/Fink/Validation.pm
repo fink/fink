@@ -204,6 +204,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 descusage
 		 descpackaging
 		 descport
+		 homepage
 		 license
 		)
 	);
