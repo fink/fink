@@ -573,9 +573,13 @@ sub update_db {
 				sleep $wait;
 				if (! -f $lockfile) {
 					print STDERR " done.\n";
-					$packages = Storable::lock_retrieve($dbfile);
-					$db_outdated = 0;
-					return;
+					if ($writable_cache) {
+						# nearly-concurrent indexing run finished so
+						# just grab its results
+						$packages = Storable::lock_retrieve($dbfile);
+						$db_outdated = 0;
+						return;
+					}
 				}
 			}
 		}
