@@ -24,9 +24,9 @@ InstallScript: mkdir -p %i/share
  make -f Makefile1 install 
  make -f Makefile2 install 
 CommentPort: Had to split Makefile into two parts for install phase.
- User must add /sw/bin/powerpc-apple-darwin1.2 to PATH, then run 
- "texconfig init" after instalation.
- read INSTALL in source directory for other post-installation configuration
+ User must run "texconfig init" after instalation.
+ Read INSTALL in source directory for other post-installation configuration
  steps (setting up paper size, font generation etc).
-CommentStow: Conflicts with texinfo package. No other issues known.
+CommentStow: The datadir parameter may cause problems. No other
+ issues.
 Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
