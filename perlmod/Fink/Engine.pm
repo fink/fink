@@ -410,7 +410,7 @@ EOF
 			$description = $vo->get_shortdescription($desclen);
 		}
 		if (defined $buildonly) {
-			next unless ( $vo->has_param("builddependsonly") );
+			next unless ( $vo->param_boolean("builddependsonly") );
 		}
 		if (defined $section) {
 			$section =~ s/[\=]?(.*)/$1/;
@@ -740,13 +740,13 @@ EOF
 		}
 
 		# shouldn't be able to remove or purge esstential pkgs
-		if ( $vo->has_param("essential") ) {
+		if ( $vo->param_boolean("essential") ) {
 			print "WARNING: $pname is essential, skipping.\n";
 			next;
 		}
 
                 if (defined $buildonly) {
-                        next unless ( $vo->has_param("builddependsonly") );
+                        next unless ( $vo->param_boolean("builddependsonly") );
                 }
 
 		push @packages, $package->get_name();

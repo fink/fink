@@ -5,6 +5,8 @@
 	Also made it so if the pkgs to be removed are the same as the ones
 	in ARGV then don't ask first.  And added a print_breaking for long
 	package listings. Disabled parent essential params on splitoffs.
+	Changed BuildDependsOnly and Essential checks from has_param to
+	param_boolean, in case it's there and set to false.
 
 2003-12-03  Daniel Macks <dmacks@netspace.org>
 
