@@ -1,3 +1,7 @@
+2005-03-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Corrected my typo in the AppBundles backport.
+
 2005-03-25  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Backport of AIDA Shinra's AppBundles symlink fix.

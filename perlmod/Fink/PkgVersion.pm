@@ -2617,7 +2617,7 @@ EOF
 				$scriptbody .=
 					"\nif \! test -e /Applications/Fink; then".
 					"\n  /usr/bin/install -d -m 755 /Applications/Fink".
-					"\nfi;
+					"\nfi";
 
 				for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
 					$bundle =~ s/\'/\\\'/gsi;
