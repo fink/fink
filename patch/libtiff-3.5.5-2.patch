@@ -1,0 +1,88 @@
+diff -ru tiff-v3.5.5/config.site tiff-v3.5.5-patched/config.site
+--- tiff-v3.5.5/config.site	Mon Sep 27 00:03:46 1999
++++ tiff-v3.5.5-patched/config.site	Mon Mar 26 18:24:02 2001
+@@ -37,12 +37,15 @@
+ # interactive prompting done by the configure script.
+ #
+ 
++PREFIX=@PREFIX@
++STOWDIR=@STOWDIR@
++
+ #
+ # Package controls.
+ #
+-#DSO="auto"			# auto|IRIX|IRIX52 enable DSO support for system
+-#JPEG="no"			# yes|no configure JPEG support (see below)
+-#ZIP="no"			# yes|no configure Deflate support (see below)
++DSO="auto"			# auto|IRIX|IRIX52 enable DSO support for system
++JPEG="yes"			# yes|no configure JPEG support (see below)
++ZIP="yes"			# yes|no configure Deflate support (see below)
+ #LIBGL="auto"			# yes|no|auto configure IRIS GL-based tools
+ #LIBIMAGE="auto"		# yes|no|auto configure SGI RGB image tools
+ #HTML="no"			# yes|no install HTML documentation
+@@ -50,10 +53,10 @@
+ #
+ # Directory parameters.
+ #
+-#DIR_BIN="/usr/local/bin"		# directory for tools
+-#DIR_LIB="/usr/local/lib"		# directory for libraries
+-#DIR_INC="/usr/local/include"		# directory for include files
+-#DIR_MAN="/usr/local/man"		# directory for manual pages
++DIR_BIN="$STOWDIR/bin"		# directory for tools
++DIR_LIB="$STOWDIR/lib"		# directory for libraries
++DIR_INC="$STOWDIR/include"		# directory for include files
++DIR_MAN="$STOWDIR/man"		# directory for manual pages
+ #DIR_HTML="/var/httpd/htdocs/tiff"	# directory for HTML documentation
+ 
+ #
+@@ -95,7 +98,9 @@
+ # which you can find on the Internet at ftp.uu.net:/graphics/jpeg/.
+ #
+ #DIRS_LIBINC="$DIRS_LIBINC ../src/jpeg-6b" # directory for jpeg include files
++DIRS_LIBINC="$DIRS_LIBINC $PREFIX/include"
+ #DIR_JPEGLIB=../src/jpeg-6b		# directory for libjpeg
++DIR_JPEGLIB="$PREFIX/lib"
+ 
+ #
+ # Deflate-specific parameters; used when Deflate support is enabled (see above).
+@@ -110,7 +115,9 @@
+ #     Look for it also at ftp://ftp.uu.net/pub/archiving/zip/zlib.
+ #
+ #DIRS_LIBINC="$DIRS_LIBINC ../zlib"	# directory for zlib include files
++DIRS_LIBINC="$DIRS_LIBINC $PREFIX/include"	# directory for zlib include files
+ #DIR_GZLIB="../zlib"			# directory for libz
++DIR_GZLIB="$PREFIX/lib"			# directory for libz
+ 
+ #
+ # Miscellaneous parameters.
+diff -ru tiff-v3.5.5/configure tiff-v3.5.5-patched/configure
+--- tiff-v3.5.5/configure	Mon Mar 20 19:20:42 2000
++++ tiff-v3.5.5-patched/configure	Mon Mar 26 18:28:09 2001
+@@ -1169,6 +1169,13 @@
+ 	DSOOPTS='-shared'
+ 	DSO=OSF
+ 	;;
++    *-darwin*)
++	DSOSUF=${DIST_MAJOR}.dylib
++	DSOLD=cc
++	DSOOPTS='-dynamiclib -undefined suppress'
++	LIBCOPTS='-fno-common'
++	DSO=DARWIN
++	;;
+     esac
+ fi
+ if [ "$DSO" != no ]; then
+diff -ru tiff-v3.5.5/libtiff/Makefile.in tiff-v3.5.5-patched/libtiff/Makefile.in
+--- tiff-v3.5.5/libtiff/Makefile.in	Sun Nov 28 21:15:36 1999
++++ tiff-v3.5.5-patched/libtiff/Makefile.in	Mon Mar 26 18:29:24 2001
+@@ -215,6 +215,10 @@
+ # OSF/1 3.2 shared lib rule
+ OSFdso: ${OBJS}
+ 	${LD} -o libtiff.@DSOSUF@ -shared -error_unresolved ${OBJS} @LIBJPEG@ @LIBGZ@ -lc -lm
++# Darwin 1.2 shared lib rule
++DARWINdso: ${OBJS}
++	${CC} -dynamiclib -undefined suppress -install_name @DIR_LIB@/libtiff.@DSOSUF@ -o libtiff.@DSOSUF@ ${OBJS} @LIBJPEG@ @LIBGZ@
++	touch $@
+ 
+ 
+ ${OBJS}: ${SRCDIR}/tiffio.h ${SRCDIR}/tiff.h ${SRCDIR}/tif_dir.h
