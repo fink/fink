@@ -181,6 +181,16 @@ Downloads
 .Em all
 package source files. This command will only download files
 that are not present on the system.
+.Pp
+fink
+.Cm fetch-missing
+has one flag:
+.Bl -tag -width flag -offset indent -compact
+.It Cm -i,--ignore-restrictive
+Do not fetch packages that are "License: Restrictive". Useful for mirrors, because
+some restrictive packages do not allow source mirroring.
+.El
+.Pp
 .It Cm build Ar package...
 Builds a package, but does not install it. As usual, the source tarballs are
 downloaded if they can not be found. The result of this command is an
