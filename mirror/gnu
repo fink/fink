@@ -20,7 +20,6 @@ nam-US: ftp://thales.memphis.edu/pub/gnu/
 nam-US: ftp://ftp.uu.net/archive/systems/gnu/
 nam-US: ftp://ftp.nodomainname.net/pub/mirrors/gnu/
 nam-US: ftp://ftp.twtelecom.net/pub/GNU/
-nam-US: http://download.sourceforge.net/mirrors/gnu/
 afr-ZA: ftp://ftp.sun.ac.za/gnu/
 sam-BR: ftp://ftp.unicamp.br/pub/gnu/
 sam-BR: ftp://master.softaplic.com.br/pub/gnu/

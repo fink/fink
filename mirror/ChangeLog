@@ -1,5 +1,10 @@
 2002-03-29  Max Horn  <max@quendi.de>
 
+	* cpan, gimp, gnome, gnu: removed all SourceForge mirrors again,
+	  they just don't work properly
+
+2002-03-29  Max Horn  <max@quendi.de>
+
 	* gimp: Added SourceForge mirror
 
 	* gnu: Added SourceForge mirror
