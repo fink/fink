@@ -835,7 +835,7 @@ sub real_install {
       # We are building an item without going to install it
       # -> only include pure build-time dependencies
       @deplist = $item->[2]->resolve_depends(2);
-    } elsif (not $item->[2]->is_present()) {
+    } elsif (not $item->[2]->is_present() or $item->[3] == $OP_REBUILD) {
       # We want to install this package and have to build it for that
       # -> include both life-time & build-time dependencies
       @deplist = $item->[2]->resolve_depends(1);

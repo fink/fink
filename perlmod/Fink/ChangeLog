@@ -1,3 +1,7 @@
+2002-11-13  Max Horn  <max@quendi.de>
+
+	* Engine.pm: Install build dependencies when doing a rebuild (bug #637689).
+
 2002-11-13  Chris Zubrzycki <beren12@users.sf.net>
 
 	* PkgVersion.pm: Fix the path of install-info. It is in %p/sbin, not %p/bin
