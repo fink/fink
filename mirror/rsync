@@ -1,4 +1,5 @@
-Timestamp: 2003-10-23
+Timestamp: 2003-10-29
 Primary: rsync://master.us.finkmirrors.net/finkinfo/
 nam-US: rsync://master.us.finkmirrors.net/finkinfo/
 nam-US: rsync://atl.ga.us.finkmirrors.net/finkinfo/
+eu-hr: rsync://rjk.hr.eu.finkmirrors.net/finkinfo/
