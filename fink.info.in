@@ -2,7 +2,7 @@ Package: fink
 Version: @VERSION@
 Revision: @REVISION@
 Depends: base-files
-Suggests: storable-pm, term-readkey-pm
+Suggests: storable-pm, term-readkey-pm560 | term-readkey-pm581
 Essential: yes
 Source: %n-%v.tar
 Source-MD5: @MD5@

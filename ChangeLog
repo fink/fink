@@ -1,3 +1,8 @@
+2004-05-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in: Now suggests term-readkey-pm560 | term-readkey-pm581
+	(since the term-readkey-pm package itself is becoming obsolete)
+
 2004-04-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: Use /usr/bin/perl for tests since that's how fink runs.
