@@ -183,7 +183,7 @@ END
 		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
 			$gcc_select = 'an unknown version';
 		}
-		if ($gcc_select !~ /^3.3/) {
+		if (($gcc_select !~ /^3.3/) and ($gcc_select !~ /^4.0/)) {
 			die <<END;
 
 Since you have gcc 3.3 installed, fink must be bootstrapped or updated using 
