@@ -1,3 +1,8 @@
+2003-12-04  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Fixed double building issue in my dep check code. And
+	removed a few more prints on secondary builds.
+
 2003-12-03  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: made it so fink can't remove or purge essential pkgs

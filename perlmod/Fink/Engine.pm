@@ -965,7 +965,7 @@ sub cmd_update_all {
 		}
 	}
 
-	&real_install($OP_INSTALL, 1, @plist);
+	&real_install($OP_INSTALL, 1, 0, @plist);
 }
 
 use constant PKGNAME => 0;
@@ -977,7 +977,7 @@ use constant FLAG    => 4;
 sub real_install {
 	my $op = shift;
 	my $showlist = shift;
-	my $forceoff = shift;
+	my $forceoff = shift; # check if this is a secondary loop
 	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $con, $cn);
 	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
@@ -1306,7 +1306,7 @@ sub real_install {
 			
 
 	# display list of requested packages
-	if ($showlist) {
+	if ($showlist && not $forceoff) {
 		$s = "The following ";
 		if ($#requested > 0) {
 			$s .= scalar(@requested)." packages";
@@ -1454,12 +1454,12 @@ sub real_install {
 				### only asks once at the begining
 				unless ($forceoff) {
 					&real_install($OP_BUILD, 0, 1, $package->get_name());
-				}
 				$package->phase_unpack();
 				$package->phase_patch();
 				$package->phase_compile();
 				$package->phase_install();
 				$package->phase_build();
+				}
 			}
 
 			# Install the package unless we already did that in a previous
