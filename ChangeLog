@@ -1,3 +1,9 @@
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in: bring into sync with .info file currently being
+	used; also, move NoSourceDirectory line to the end
+	(Note: CustomMirror is handled by scripts/srcdist/dist-module.sh)
+
 2003-12-28  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.17.4, stay in sync
