@@ -180,6 +180,7 @@ sub initialize {
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
+				$hash->{provides}    = 'system-java';
 				$self->{$hash->{package}} = $hash;
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
