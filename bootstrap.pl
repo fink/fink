@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -33,10 +33,25 @@ my ($script, $cmd);
 
 ### check the perl version
 
-if ("$]" == "5.006" or "$]" == "5.006001" or "$]" == "5.008" or "$]" == "5.008001") {
+# acceptable perl versions: "$] value" => "human-readable version string"
+my %ok_perl_versions = (
+    "5.006"    => "5.6.0",
+    "5.006001" => "5.6.1",
+    "5.008"    => "5.8.0",
+    "5.008001" => "5.8.1",
+    "5.008002" => "5.8.2",
+    "5.008006" => "5.8.6"
+);
+
+if (exists $ok_perl_versions{"$]"}) {
     print "Found perl version $].\n";
 } else {
-die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.6.1 (5.006001), 5.8.0 (5.008), or 5.8.1 (5.008001).\n\n";
+    die "\nSorry, your /usr/bin/perl is version $], but Fink can only use" . (
+	join "", map {
+	    ( $ok_perl_versions{$_} =~ /0$/ ? "\n  " : ", " ) .
+	    "$ok_perl_versions{$_} ($_)"
+	} sort keys %ok_perl_versions
+    )."\n\n";
 }
 
 if ("$]" == "5.006001") {
@@ -46,7 +61,7 @@ die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.
 	die "\nYour /usr/bin/perl5.6.1 is not functional; you must repair this problem\nbefore installing Fink.\n\n"}
 }
 
-### check if we're unharmed
+### check if we are unharmed
 
 print "Checking package...";
 my ($homebase, $file);
@@ -96,6 +111,13 @@ if ($distribution eq "unknown") {
 
 print "Distribution $distribution\n";
 
+### check for a perl compatible with the Distribution:
+
+if (("$]" lt "5.008") and ($distribution gt "10.2-gcc3.3")) {
+    &print_breaking("\nSorry, you are using the 10.3 distribution or later along with perl 5.6.x.  Fink no longer supports bootstrapping with this combination; please upgrade your /usr/bin/perl.\n\n");
+    exit 1;
+}
+
 ### choose root method
 
 my ($rootmethod);
@@ -125,7 +147,7 @@ if ($> != 0) {
 		exit 1;
 	}
 	print "\n";
-	exit &execute($cmd, 1);
+	exit &execute($cmd, quiet=>1);
 } else {
 	if (defined $ARGV[0] and substr($ARGV[0],0,1) eq ".") {
 		$rootmethod = shift;
@@ -201,12 +223,13 @@ if (-x "/usr/bin/head") {
 }
 
 ### setup the correct packages directory
-
-if (-e "packages") {
-		rename "packages", "packages-old";
-		unlink "packages";
-}
-symlink "$distribution", "packages" or die "Cannot create symlink";
+# (no longer needed: we just use $distribution directly...)
+#
+#if (-e "packages") {
+#		rename "packages", "packages-old";
+#		unlink "packages";
+#}
+#symlink "$distribution", "packages" or die "Cannot create symlink";
 
 ### choose installation path
 
@@ -286,7 +309,7 @@ print "Creating directories...\n";
 my ($dir, @dirlist);
 
 if (not -d $installto) {
-	if (&execute("mkdir -p $installto")) {
+	if (&execute("/bin/mkdir -p -m755 $installto")) {
 		print "ERROR: Can't create directory '$installto'.\n";
 		exit 1;
 	}
@@ -294,20 +317,22 @@ if (not -d $installto) {
 
 my $arch = get_arch();
 
-@dirlist = qw(etc etc/alternatives src fink fink/debs);
+@dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs);
 push @dirlist, "fink/$distribution", "fink/$distribution/stable", "fink/$distribution/local";
-foreach $dir (qw(local/bootstrap stable/main stable/crypto local/main)) {
+foreach $dir (qw(stable/main stable/crypto local/main)) {
 	push @dirlist, "fink/$distribution/$dir", "fink/$distribution/$dir/finkinfo",
 		"fink/$distribution/$dir/binary-darwin-$arch";
 }
 foreach $dir (@dirlist) {
 	if (not -d "$installto/$dir") {
-		if (&execute("mkdir $installto/$dir")) {
+		if (&execute("/bin/mkdir -m755 $installto/$dir")) {
 			print "ERROR: Can't create directory '$installto/$dir'.\n";
 			exit 1;
 		}
 	}
 }
+
+unlink "$installto/fink/dists";
 
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
 
@@ -322,9 +347,12 @@ if ($result == 1 ) {
 
 ### copy package info needed for bootstrap
 
-$script = "/bin/cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
+$script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
+$script .= "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
+$script .= "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/libs/perlmods\n";
+$script .= "/bin/mv $installto/fink/dists/stable/main/finkinfo/base/*-pm*.* $installto/fink/dists/stable/main/finkinfo/libs/perlmods/\n";
 
-$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision);
+$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base");
 if ($result == 1 ) {
 	exit 1;
 }
@@ -347,7 +375,7 @@ print CONFIG <<"EOF";
 # Fink configuration, initially created by bootstrap.pl
 Basepath: $installto
 RootMethod: $rootmethod
-Trees: local/main stable/main stable/crypto local/bootstrap
+Trees: local/main stable/main stable/crypto
 Distribution: $distribution
 EOF
 close(CONFIG) or die "can't write configuration: $!";
@@ -366,6 +394,10 @@ Fink::Configure::configure();
 ### bootstrap
 
 Fink::Bootstrap::bootstrap();
+
+### remove dpkg-bootstrap.info, to avoid later confusion
+
+&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info");
 
 ### copy included package info tree if present
 
@@ -428,3 +460,5 @@ print "\n";
 
 ### eof
 exit 0;
+
+

@@ -4,5 +4,6 @@ fink-virtual-pkgs
 fink.8
 fink.conf.5
 pathsetup.command
+pathsetup.sh
 postinstall.pl
 shlibs.default

@@ -1,7 +1,37 @@
-2003-12-05  Justin F. Hallett  <thesin@users.sourceforge.net>
+2005-01-20  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
-	* all packages: changed Depends field to use ${SHLIB_DEPS}
+	* storable-pm.info: allow perl 5.8.6
 
+2005-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* cctools-extra.info: force gcc3.3
+
+2005-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* cctools-extra.info: sync with stable (1:525-1) (same .patch)
+
+2004-11-17  Daniel Macks  <dmacks@netspace.org>
+
+	* tar.info: sync with version in stable tree (1.14-1)
+
+2004-10-25  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* storable-pm.info: Allow opendarwin's perl582.
+
+2004-03-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* unzip.info: change download location to fink, for reliable
+	bootstrapping
+
+2004-03-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* apt.info: sync with version in stable tree
+
+2004-01-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* dpkg.info, dpkg.patch, dpkg-bootstrap.info: fix hardcoded /sw
+	in patch, make flat namespace.
+	
 2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* system-perl*: removed these, which are no longer needed with

@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -36,11 +36,11 @@ sed "s|@BASEPATH@|$basepath|g" <fink.in >fink
 echo "Creating fink-virtual-pkgs..."
 sed "s|@BASEPATH@|$basepath|g" <fink-virtual-pkgs.in >fink-virtual-pkgs
 
-echo "Creating pathsetup.command..."
-sed "s|@PREFIX@|$basepath|g" <pathsetup.command.in >pathsetup.command
+echo "Creating pathsetup.sh..."
+sed "s|@PREFIX@|$basepath|g" <pathsetup.sh.in >pathsetup.sh
 
 echo "Creating FinkVersion.pm..."
-sed -e "s|@VERSION@|$version|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
+sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
 
 echo "Creating man page..."
 sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8

@@ -61,5 +61,5 @@ charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
 <<
 License: LGPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://www.gnu.org/software/libiconv/

@@ -3,7 +3,7 @@ Version: 1.14
 Revision: 1
 Essential: yes
 GCC: 3.3
-Depends: gettext, gzip, bzip2, base-files
+Depends: {SHLIB_DEPS}, gettext, gzip, bzip2, base-files
 BuildDepends: gettext-dev
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 3094544702b1affa32d969f0b6459663 

@@ -1,3 +1,356 @@
+2005-01-31  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document flags for fetch* modes
+
+2005-01-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: allow bootstrapping with perl 5.8.6, not perl 5.8.4
+
+2005-01-21  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document show-deps
+
+2005-01-19  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document --build-as-nobody
+
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document 'fink list' "p" status flag.
+
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: use absolute path to local perlmod (in case a test
+	changes current dir)
+
+2005-01-06  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* postinstall.pl.in: Ask the user to rerun configure if the
+	  fink.conf file compatibility version has changed.
+
+2005-01-06  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: update to new Services::execute() API
+
+2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2004-12-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Do not show developers' note during 'make test'
+
+2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.5, a bugfix
+	release on branch_0_23
+
+2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.4, a release
+	on branch_0_23 which modifies UseBinaryDist functionality and
+	recognizes Mac OS X 10.3.7.
+
+2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.in, fink.info.in: Missed one spot while changing names
+
+2004-12-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.8.in, fink.conf.5.in, fink.in, fink.info.in:  Rename 
+	'--compile-from-source' to '--no-use-binary-dist'
+
+2004-12-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in: Modify "Suggests" for running under perl 5.8.4
+	
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Document Verbose=1 is default.
+
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Document Verbose=4.
+	* fink.in: -v sets verbose=4.
+
+2004-12-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.in: Add new option '--compile-from-source', '-c' that causes 
+	fink to compile package from source, overriding the UseBinaryDist
+	configuration option on a per-package basis.
+	* fink.8.in: Document '--compile-from-source', '-c' options
+	* fink.conf.5.in: Modify documentation of 'UseBinaryDist'
+	* fink.info.in: Use "fink -c" in postinstall to avoid invoking
+	UseBinaryDist when installing fink itself
+
+2004-11-28  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Add global flag --build-as-nobody
+
+2004-11-21  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.info.in: Make sure *this* fink reindexes after install.
+
+2004-11-21  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Clean up error messages.
+
+2004-11-19  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Use uname(0) instead of hardcoding
+	kernel=darwin for kernel pkg, and have this pkg Provides:kernel
+
+2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: add --version
+
+2004-11-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.3, a release
+	on branch_0_23 which no longer automatically updates gettext-bin
+
+2004-11-10  Daniel Macks  <dmacks@netspace.org>
+
+	* VERSION: Bumped package manager version to 0.23.2, a release
+	on branch_0_23 which works on 10.3.6 and clarifies some wording
+	(sync with branch)
+
+2004-11-06  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: 'fink remove' *can* work without .info.
+
+2004-11-05  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Re-enable passing of BuildDependsOnly
+	virtual pkgs to apt/dpkg.
+
+2004-11-04  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* fink.8.in: Document 'fink remove --recursive' and 
+	'fink purge --recursive', which also removes packages that depend 
+	on the package(s) to be removed.
+
+2004-11-04  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: remove unused variable.
+
+2004-10-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.1, a bugfix
+	release on branch_0_23
+
+2004-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.0, a new release
+
+2004-10-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.22.4, a bugfix
+	release on branch_0_22
+
+2004-10-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.22.3, a release
+	on branch_0_22 which warns users about the bad gcc
+
+2004-10-15  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* fink.in: Add description of 'b, --use-binary-dist' to 'fink -h'
+
+2004-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.info.in: Add Recommends:apt (needed by --use-binary-dist)
+	(>=0.5.4-41 to get "apt-get --ignore-breakage" support). Moved
+	storable-pm from Suggests to Recommends.
+
+2004-10-12  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* fink.in: Add new option '--use-binary-dist', '-b' that causes fink 
+	to try to download pre-compiled binary packages from the binary 
+	distribution if available and if deb is not already on the system
+	* fink.8.in: Document '--use-binary-dist', '-b' options
+	* fink.conf.5.in: Document 'UseBinaryDist'
+	(Original idea and started by bbraun, Patches: #1037296)
+
+2004-09-28  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Implemented 'fink show-deps'.
+
+2004-09-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* pathsetup.sh.in: new version which works for both CLI and GUI
+	(released in version 0.21.3 for the 0.7.1 installer)
+
+2004-09-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.22.2, a bugfix
+	release on branch_0_22
+
+2004-08-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.22.1, a bugfix
+	release on branch_0_22 addressing the rsync problem
+
+2004-08-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.22.0, a new release
+
+2004-08-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.21.2, a release
+	on branch_0_21 recognizing OS X 10.3.5, and with minor boostrapping
+	updates
+
+2004-08-13  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Undocument 'fink checksums'
+
+2004-08-12  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Undocument 'fink checksums'
+
+2004-08-07  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.21.1, a release
+	on branch_0_21 updating VirtPackage.pm for system-java and the
+	new cctools from XCode 1.5, and correcting the regex in Config.pm
+
+2004-08-03  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: merge cond_config_params branch: more flexible
+	installing of perl modules, include Fink/Text subdir.
+
+2004-07-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* pathsetup.sh.in: Martin Costabel's new version of pathsetup.sh
+	* VERSION: Bumped package manager version to 0.21.0, a new release
+
+2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: avoid unneeded symlink when bootstrapping; improved
+	ability to re-run bootstrap when it didn't get very far the first 
+	time; no longer use the local/bootstrap tree; put perl modules in 
+	the correct place, and don't allow perl 5.6.x with 10.3; install 
+	$basepath/etc/apt/ during bootstrap
+	* postinstall.pl.in: manipulation of sources.list file is now done 
+	in Config.pm, not here
+
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document new --prefix flag to "fink validate".
+
+2004-07-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: Changed to not honor/print descdetail
+	and compilescript.
+
+2004-07-16  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Changed apt mode to respect "status"
+	(parallel to that method in Status.pm) instead of assuming
+	presence of package entry is equivalent to it being installed.
+
+2004-07-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.6, a release
+	on branch_0_20 implementing %default_script, better handling of
+	checksum failures when downloading, and allowing bootstrap with
+	perl 5.8.2 and 5.8.4.
+
+2004-07-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: Allow bootstrapping with perl 5.8.2 and perl 5.8.4.
+	
+2004-06-30  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: remove redundancy in perl version checking.
+
+2004-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.5, a release
+	on branch_0_20 with a modification to the BuildDependsOnly test,
+	and other validation fixes
+
+2004-06-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.4, a release
+	on branch_0_20 with validation fixes
+
+2004-06-07  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.3, a release
+	on branch_0_20 which improves validation of the BuildDependsOnly
+	field (including a change in .deb's created by fink), and bugfixes
+
+2004-05-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.2, a release
+	on branch_0_20 which modifies the Provides of system-perl packages
+
+2004-05-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: 'test': run tests in sorted order.
+
+2004-05-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in: Now suggests term-readkey-pm560 | term-readkey-pm581
+	(since the term-readkey-pm package itself is becoming obsolete)
+
+2004-04-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Use /usr/bin/perl for tests since that's how fink runs.
+
+2004-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.1, a release
+	on branch_0_20 which adds Provides to system-perl packages >= 5.8.0
+
+2004-04-25  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Added flags for 'dumpinfo'.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document 'dumpinfo' mode, and the -K and -k flags.
+	* fink.conf.5.in: Mention -K and -k in the Keep*Dir sections.
+
+2004-04-07  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Documented 'fink dumpinfo'
+
+2004-04-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.0
+
+2004-03-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.18.4, a release
+	on branch_0_18 with bootstrapping improvements
+
+2004-03-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: Be careful about permissions when creating directories
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Documented "Buildpath". Fixed "Distribution" to
+	include all known trees and use of postinstall.pl to set it.
+
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.19.2, a release
+	on branch_0_19 which incorporates the pathsetup change
+
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.18.3, a release
+	on branch_0_18 which incorporates the pathsetup change
+
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* INDEX, INDEX.html, install.sh, setup.sh: change from 
+	pathsetup.command to pathsetup.sh
+
 2004-03-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.in: Updated copyright notice displayed by fink

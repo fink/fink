@@ -1,7 +1,21 @@
-diff -uNbr cctools/misc/seg_addr_table.c cctools-new/misc/seg_addr_table.c
---- cctools/misc/seg_addr_table.c	Fri Sep  6 21:28:06 2002
-+++ cctools-new/misc/seg_addr_table.c	Fri May 16 10:46:48 2003
-@@ -20,13 +20,13 @@
+diff -uNr cctools-495/libstuff/guess_short_name.c cctools-495-new/libstuff/guess_short_name.c
+--- cctools-495/libstuff/guess_short_name.c	Tue Aug 12 20:18:00 2003
++++ cctools-495-new/libstuff/guess_short_name.c	Sun Jan 18 15:10:54 2004
+@@ -205,6 +205,10 @@
+ 		*return_suffix = allocate(s + 1);
+ 		strncpy(*return_suffix, suffix, s);
+ 		(*return_suffix)[s] = '\0';
++		if (strcmp(*return_suffix, "_debug") != 0 && strcmp(*return_suffix, "_profile") != 0) {
++		    l = l + strlen(*return_suffix);
++		    *return_suffix = NULL;
++		}
+ 	    }
+ 	    else
+ 		l = a - (b+1);
+diff -uNr cctools-495/misc/seg_addr_table.c cctools-495-new/misc/seg_addr_table.c
+--- cctools-495/misc/seg_addr_table.c	Fri Aug 29 20:23:53 2003
++++ cctools-495-new/misc/seg_addr_table.c	Sun Jan 18 15:12:32 2004
+@@ -42,13 +42,13 @@
   * These are the default addresses use when re-laying out the images.  These
   * changed in Mac OS X in the 10.2 release.
   */
@@ -20,4 +34,4 @@ diff -uNbr cctools/misc/seg_addr_table.c cctools-new/misc/seg_addr_table.c
 +#define DEFAULT_READ_WRITE_ADDR_X10_2	0x60000000
  
  /*
-  * The 256meg regions can only have at most 128meg allocated from them leaving
+  * Starting in 10.3, we will put all the debug and profile libraries together,

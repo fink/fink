@@ -2,7 +2,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -32,11 +32,13 @@ use Getopt::Long;
 
 my %options =
   (
-   "dontask" => 0,
-   "interactive" => 0,
-   "verbosity" => 0,
-   "keep_build" => 0,
-   "keep_root" => 0,
+   "dontask"         => 0,
+   "interactive"     => 0,
+   "verbosity"       => 0,
+   "keep_build"      => 0,
+   "keep_root"       => 0,
+   "use_binary"      => 0,
+   "build_as_nobody" => 0,
   );
 my $optionsString = '';
 
@@ -48,7 +50,7 @@ GetOptions(
 	 'quiet|q'          => sub { $options{verbosity} = -1 ;  
                                  $optionsString .= '--quiet ' 
                                },
-     'verbose|v'        => sub { $options{verbosity} = 3 ;  
+     'verbose|v'        => sub { $options{verbosity} = 4 ;  
                                  $optionsString .= '--verbose ' 
                                },
      'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  
@@ -56,6 +58,15 @@ GetOptions(
                                },
      'keep-root-dir|K'  => sub { $options{keep_root} = 1 ;  
                                  $optionsString .= '--keep-root-dir ' 
+                               },
+     'use-binary-dist|b'  => sub { $options{use_binary} = 1 ;  
+                                 $optionsString .= '--use-binary-dist ' 
+                               },
+     'no-use-binary-dist'  => sub { $options{use_binary} = -1 ;  
+                                 $optionsString .= '--no-use-binary-dist ' 
+                               },
+     'build-as-nobody'    => sub { $options{build_as_nobody} = 1 ;  
+                                 $optionsString .= '--build-as-nobody ' 
                                },
 #	 'interactive|i'    => sub { $options{interactive} = 1 ;  
 #                                $optionsString .= '--interactive ' 
@@ -78,7 +89,7 @@ sub show_version {
   print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2004 The Fink Package Manager Team
+Copyright (c) 2001-2005 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -112,17 +123,24 @@ Common commands:
   apropos      - list packages matching a search keyword
   describe     - display a detailed description of the named packages
   index        - force rebuild of package cache
-  validate     - performs various checks on .info and .deb files.
+  validate     - performs various checks on .info and .deb files
   scanpackages - rescans the list of binary packages on the system
-  checksums    - validates the md5 digest of all tarballs already downloaded
   cleanup      - removes obsolete package files if newer versions are available
+  dumpinfo     - show how fink parses parts of a package's .info file
+  show-deps    - list run-time and compile-time package dependencies
 
 Options:
-  -h, --help     - display this help text
-  -q, --quiet    - causes fink to be less verbose, opposite of --verbose
-  -V, --version  - display version information
-  -v, --verbose  - causes fink to be more verbose, opposite of --quiet
-  -y, --yes      - assume default answer for all interactive questions
+  -h, --help            - display this help text
+  -q, --quiet           - causes fink to be less verbose, opposite of --verbose
+  -V, --version         - display version information
+  -v, --verbose         - causes fink to be more verbose, opposite of --quiet
+  -y, --yes             - assume default answer for all interactive questions
+  -b, --use-binary-dist - download pre-compiled packages from the binary 
+                          distribution if available
+  --no-use-binary-dist  - don't use pre-compiled packages from the binary 
+                          distribution (opposite of -b)
+  --build-as-nobody     - do unpack/patch/compile/install phases as non-root
+                          (*only* use for package development/deugging!)
 
 See the fink(8) manual page for more commands and options.
 Visit http://fink.sourceforge.net/ for further information.
@@ -144,7 +162,7 @@ sub load_config {
     $configpath = "$basepath/etc/fink.conf";
     if (-f $configpath) {
         $Config = &Fink::Services::read_config($configpath, 
-                                               { Basepath => '$basepath' }
+                                               { Basepath => "$basepath" }
                                               );
     } else {
         print "ERROR: Configuration file \"$configpath\" not found.\n";
