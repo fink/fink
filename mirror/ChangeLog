@@ -1,7 +1,13 @@
+2003-11-21 David H. <dmalloc@users.sourceforge.net>
+	* New rsync policy is in effect. The flags
+		--delete --delete-after -az
+		are now mandatory.
+		Mailed all mirrors so they can heed this.
+		
 2003-11-20 David H. <dmalloc@users.sourceforge.net>
 	* Corrected all entries to have upper case ISO
 		country codes, because the _keys file
-		says so
+		says so.
 
 2003-11-20 David H. <dmalloc@users.sourceforge.net>
 	* Added full mirror in Norway (rsync/distfiles)
