@@ -1,5 +1,9 @@
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.16.0
+
+2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* postinstall.pl.in: Compare the distribution written in sources.list
 	file with the Distribution in fink.conf, and offer to modify
 	sources.list when needed
