@@ -1,3 +1,8 @@
+2003-11-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.17.1, a bugfix
+	release on branch_0_17
+
 2003-11-16  Max Horn <max@quendi.de>
 
 	* fink.info.in, inject.pl: Automatically run the tests are part of
