@@ -24,12 +24,11 @@ package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
-					  &print_breaking
-					  &prompt_boolean &prompt_selection_new
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;

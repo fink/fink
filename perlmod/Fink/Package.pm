@@ -23,7 +23,8 @@
 package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &latest_version &version_cmp 
-                      &parse_fullversion &print_breaking &expand_percent);
+                      &parse_fullversion &expand_percent);
+use Fink::CLI qw(&print_breaking);
 use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
 use File::Find;

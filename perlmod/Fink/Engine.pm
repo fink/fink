@@ -22,10 +22,8 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&print_breaking
-					  &prompt_boolean &prompt_selection_new
-					  &latest_version &execute &get_term_width
-					  &file_MD5_checksum &get_arch);
+use Fink::Services qw(&latest_version &execute &file_MD5_checksum &get_arch);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);

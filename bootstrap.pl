@@ -67,9 +67,9 @@ print " looks good.\n";
 ### load some modules
 
 require Fink::Services;
-import Fink::Services qw(&print_breaking &prompt &prompt_boolean
-						 &prompt_selection_new &read_config &execute
-						 &get_arch);
+import Fink::Services qw(&read_config &execute &get_arch);
+require Fink::CLI;
+import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection_new);
 import Fink::Bootstrap qw(&get_packageversion &create_tarball &fink_packagefiles &copy_description);
 
 ### get version
