@@ -1,5 +1,9 @@
 2004-07-26  Daniel Macks  <dmacks@netspace.org>
 
+	* install.sh: Remembered that perlmod/Fink isn't flat.
+
+2004-07-26  Daniel Macks  <dmacks@netspace.org>
+
 	* install.sh: Added perlmod/Fink/Text/*.pm
 
 2004-07-24  Benjamin Reed  <rangerrick@users.sourceforge.net>

@@ -60,7 +60,7 @@ install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 for subdir in . Text ; do
   for file in perlmod/Fink/${subdir}/*.pm ; do
     if [ -f $file ]; then
-      install -c -p -m 644 $file "$basepath/lib/perl5/Fink/"
+      install -c -p -m 644 $file "$basepath/lib/perl5/Fink/$subdir"
     fi
   done
 done
