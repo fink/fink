@@ -1,3 +1,8 @@
+2003-10-29  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: check for threaded X, and check for the file
+	before trying to read the xterm man page.
+
 2003-10-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: make system-xfree86 virtual complain if you're

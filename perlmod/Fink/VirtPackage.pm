@@ -229,6 +229,18 @@ sub initialize {
 									readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
 									-f '/usr/X11R6/include/fontconfig/fontconfig.h');
 				push(@provides, 'fontconfig1-shlibs') if has_lib('/usr/X11R6/lib/libfontconfig.1.dylib');
+
+				if (grep(/^x11/, @provides) and open(NM, '/usr/bin/nm /usr/X11R6/lib/libXt.6.dylib |')) {
+					while (<NM>) {
+						if (/_pthread_mutex_lock/) {
+							push(@provides, 'xfree86-base-threaded-shlibs');
+							push(@provides, 'xfree86-base-threaded') if (grep(/^x11$/, @provides));
+							close(NM);
+							last;
+						}
+					}
+					close(NM);
+				}
 				$hash->{provides} = join(', ', @provides);
 
 				if (not grep(/^x11$/, @provides) or not grep(/^(xft1|xft2)$/, @provides)) {
@@ -320,7 +332,7 @@ sub has_lib {
 ### Check the installed x11 version
 sub check_x11_version {
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
-	if (open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
+	if (-f "/usr/X11R6/man/man1/xterm.1" and open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
 		while (<XTERM>) {
 			if (/^.*Version\S* ([^\s]+) .*$/) {
 				$XF_VERSION = $1;
