@@ -29,8 +29,19 @@ use lib "$FindBin::RealBin/../lib/perl5";
 ### quick check so see if all the user wants is the version number
 
 if ($#ARGV >= 0 and $ARGV[0] =~ /^-?-v(ersion)?$/i) {
+  # version of the package manager
   use Fink::FinkVersion;
-  print "$fink_version\n";
+  print "Package manager version: $fink_version\n";
+
+  # distribution version
+  my $dv;
+  if (-f "$FindBin::RealBin/../etc/fink-release") {
+    chomp($dv = `cat $FindBin::RealBin/../etc/fink-release`);
+  } else {
+    $dv = "unknown";
+  }
+  print "Distribution version: $dv\n";
+
   exit 0;
 }
 
