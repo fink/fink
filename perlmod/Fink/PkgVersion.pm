@@ -686,7 +686,7 @@ sub get_source {
 #
 # Returns the name of the source tarball for a given SourceN suffix.
 # If no suffix is given, returns the primary source tarball's name.
-# On error (eg: nonexistent suffix) returns "none".
+# On error (eg: nonexistent suffix) returns undef.
 sub get_tarball {
 	my $self = shift;
 	my $suffix = shift || "";
@@ -694,8 +694,9 @@ sub get_tarball {
 	if ($self->has_param("Source".$suffix."Rename")) {
 		return $self->param_expanded("Source".$suffix."Rename");
 	} else {
-		# This does the right thing for "none", too.
-		return &filename($self->get_source($suffix));
+		my $tarball = &filename($self->get_source($suffix));
+		return undef if $tarball eq 'none';
+		return $tarball;
 	}
 }
 
@@ -707,7 +708,10 @@ sub get_tarball {
 sub get_checksum {
 	my $self = shift;
 	my $suffix = shift || "";
-	return $self->param_default("Source".$suffix."-MD5", undef);
+	
+	my $field = "Source".$suffix."-MD5";
+	return undef if not $self->has_param($field);
+	return $self->param($field);
 }
 
 sub get_custom_mirror {
@@ -745,7 +749,7 @@ sub get_build_directory {
 			$self->param_expanded("SourceDirectory");
 	}
 	else {
-		$dir = $self->get_tarball();
+		$dir = $self->get_tarball(); # never undef b/c never get here if no source
 		if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
 			$dir = $1;
 		}
@@ -976,9 +980,7 @@ sub find_tarball {
 	my (@search_dirs, $search_dir);
 
 	$archive = $self->get_tarball($suffix);
-	if ($archive eq "none") {	# bad suffix
-		return undef;
-	}
+	return undef if !defined $archive;   # bad suffix
 
 	# compile list of dirs to search
 	@search_dirs = ( "$basepath/src" );

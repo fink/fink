@@ -1,5 +1,11 @@
 2004-07-18  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Change get_tarball to return undef (instead of
+	"none") if no such suffix. Fix get_checksum to really return undef
+	if field not in .info.
+	
+2004-07-18  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Restrict use of %a to PatchScript.
 
 2004-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
