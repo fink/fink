@@ -47,52 +47,55 @@ BEGIN {
 our @EXPORT_OK;
 
 # The list of commands. Maps command names to a list containing
-# a function reference, and two flags. The first flag indicates
+# a function reference, and three flags. The first flag indicates
 # whether this command requires the package descriptions to be
-# read, the second flag whether root permissions are needed.
+# read, the second flag whether root permissions are needed the
+# third flag whether apt-get might be called if the UseBinaryDist
+# option is enabled. 1, if apt-get is called without the 
+# '--ignore-breakage' option, 2, if it is called with '--ignore-breakage'
 our %commands =
-	( 'index'             => [\&cmd_index,             0, 1],
-	  'rescan'            => [\&cmd_rescan,            0, 0],
-	  'configure'         => [\&cmd_configure,         0, 1],
-	  'bootstrap'         => [\&cmd_bootstrap,         0, 1],
-	  'fetch'             => [\&cmd_fetch,             1, 1],
-	  'fetch-all'         => [\&cmd_fetch_all,         1, 1],
-	  'fetch-missing'     => [\&cmd_fetch_all_missing, 1, 1],
-	  'build'             => [\&cmd_build,             1, 1],
-	  'rebuild'           => [\&cmd_rebuild,           1, 1],
-	  'install'           => [\&cmd_install,           1, 1],
-	  'reinstall'         => [\&cmd_reinstall,         1, 1],
-	  'update'            => [\&cmd_install,           1, 1],
-	  'update-all'        => [\&cmd_update_all,        1, 1],
-	  'enable'            => [\&cmd_install,           1, 1],
-	  'activate'          => [\&cmd_install,           1, 1],
-	  'use'               => [\&cmd_install,           1, 1],
-	  'disable'           => [\&cmd_remove,            1, 1],
-	  'deactivate'        => [\&cmd_remove,            1, 1],
-	  'unuse'             => [\&cmd_remove,            1, 1],
-	  'remove'            => [\&cmd_remove,            1, 1],
-	  'delete'            => [\&cmd_remove,            1, 1],
-	  'purge'             => [\&cmd_purge,             1, 1],
-	  'apropos'           => [\&cmd_apropos,           0, 0],
-	  'describe'          => [\&cmd_description,       1, 0],
-	  'description'       => [\&cmd_description,       1, 0],
-	  'desc'              => [\&cmd_description,       1, 0],
-	  'info'              => [\&cmd_description,       1, 0],
-	  'scanpackages'      => [\&cmd_scanpackages,      1, 1],
-	  'list'              => [\&cmd_list,              0, 0],
-	  'listpackages'      => [\&cmd_listpackages,      1, 0],
-	  'selfupdate'        => [\&cmd_selfupdate,        0, 1],
-	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1],
-	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1],
-	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
-	  'validate'          => [\&cmd_validate,          0, 0],
-	  'check'             => [\&cmd_validate,          0, 0],
-	  'cleanup'           => [\&cmd_cleanup,           1, 1],
-	  'splitoffs'         => [\&cmd_splitoffs,         1, 0],
-	  'splits'            => [\&cmd_splitoffs,         1, 0],
-	  'showparent'        => [\&cmd_showparent,        1, 0],
-	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0],
-	  'show-deps'         => [\&cmd_show_deps,         1, 0],
+	( 'index'             => [\&cmd_index,             0, 1, 1],
+	  'rescan'            => [\&cmd_rescan,            0, 0, 0],
+	  'configure'         => [\&cmd_configure,         0, 1, 0],
+	  'bootstrap'         => [\&cmd_bootstrap,         0, 1, 0],
+	  'fetch'             => [\&cmd_fetch,             1, 1, 0],
+	  'fetch-all'         => [\&cmd_fetch_all,         1, 1, 0],
+	  'fetch-missing'     => [\&cmd_fetch_all_missing, 1, 1, 0],
+	  'build'             => [\&cmd_build,             1, 1, 2],
+	  'rebuild'           => [\&cmd_rebuild,           1, 1, 2],
+	  'install'           => [\&cmd_install,           1, 1, 2],
+	  'reinstall'         => [\&cmd_reinstall,         1, 1, 2],
+	  'update'            => [\&cmd_install,           1, 1, 2],
+	  'update-all'        => [\&cmd_update_all,        1, 1, 2],
+	  'enable'            => [\&cmd_install,           1, 1, 2],
+	  'activate'          => [\&cmd_install,           1, 1, 2],
+	  'use'               => [\&cmd_install,           1, 1, 2],
+	  'disable'           => [\&cmd_remove,            1, 1, 0],
+	  'deactivate'        => [\&cmd_remove,            1, 1, 0],
+	  'unuse'             => [\&cmd_remove,            1, 1, 0],
+	  'remove'            => [\&cmd_remove,            1, 1, 0],
+	  'delete'            => [\&cmd_remove,            1, 1, 0],
+	  'purge'             => [\&cmd_purge,             1, 1, 0],
+	  'apropos'           => [\&cmd_apropos,           0, 0, 0],
+	  'describe'          => [\&cmd_description,       1, 0, 0],
+	  'description'       => [\&cmd_description,       1, 0, 0],
+	  'desc'              => [\&cmd_description,       1, 0, 0],
+	  'info'              => [\&cmd_description,       1, 0, 0],
+	  'scanpackages'      => [\&cmd_scanpackages,      1, 1, 1],
+	  'list'              => [\&cmd_list,              0, 0, 0],
+	  'listpackages'      => [\&cmd_listpackages,      1, 0, 0],
+	  'selfupdate'        => [\&cmd_selfupdate,        0, 1, 1],
+	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1, 1],
+	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1, 1],
+	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1, 1],
+	  'validate'          => [\&cmd_validate,          0, 0, 0],
+	  'check'             => [\&cmd_validate,          0, 0, 0],
+	  'cleanup'           => [\&cmd_cleanup,           1, 1, 1],
+	  'splitoffs'         => [\&cmd_splitoffs,         1, 0, 0],
+	  'splits'            => [\&cmd_splitoffs,         1, 0, 0],
+	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
+	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0, 0],
+	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -133,7 +136,7 @@ sub process {
 	my $self = shift;
 	my $options = shift;
 	my $cmd = shift;
-	my ($proc, $pkgflag, $rootflag);
+	my ($proc, $pkgflag, $rootflag, $aptgetflag);
 
 	unless (defined $cmd) {
 		print "NOP\n";
@@ -144,13 +147,57 @@ sub process {
 		die "fink: unknown command \"$cmd\".\nType 'fink --help' for more information.\n";
 	}
 
-	($proc, $pkgflag, $rootflag) = @{$commands{$cmd}};
+	($proc, $pkgflag, $rootflag, $aptgetflag) = @{$commands{$cmd}};
 
 	# check if we need to be root
 	if ($rootflag and $> != 0) {
 		&restart_as_root($options, $cmd, @_);
 	}
 
+	# check if we need apt-get
+	if ($aptgetflag > 0 and 
+	   ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary"))) {
+		my $apt_problem = 0;
+		# check if we are installed at '/sw'
+		if (not $basepath eq '/sw') {
+				print "\n";
+				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but Fink ".
+				    "is not installed under '/sw'. This is not currently allowed.");
+				$apt_problem = 1;
+		}
+		# check if apt-get is available
+		if (not $apt_problem) {
+			if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", 1)) {
+				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled ".
+				    "but apt-get could not be run. Try to install the 'apt' Fink package ".
+				    "(with e.g. 'fink install apt').");
+				$apt_problem = 1;
+			}
+		}
+		# check if 'apt-get --ignore-breakage' is implemented
+		if ($aptgetflag == 2 and not $apt_problem) {
+			# only for the commands that needs them
+			if (&execute("$basepath/bin/apt-get --ignore-breakage 1>/dev/null 2>/dev/null", 1)) {
+				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but the ".
+				   "'apt-get' tool installed on this system doesn't support it. Please ".
+				   "update your Fink installation (with e.g. 'fink selfupdate').");
+				$apt_problem = 1;
+			}
+		}
+		if($apt_problem) {
+			my $prompt = "Continue with the 'UseBinaryDist' option temporarely disabled?";
+			my $continue = prompt_boolean($prompt, 1, 60);
+			if ($continue) {
+				# temporarely disable UseBinaryDist
+				$config->set_param("UseBinaryDist", "false");
+				Fink::Config::set_options( { 'use_binary' => 0 } );
+			}
+			else {
+				die "Failed to execute '$cmd'!\n";
+			}
+		}
+	}
+	
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
@@ -977,7 +1024,7 @@ EOF
 	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
 		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
 		# 'apt-get autoclean'
-		my $aptcmd = "apt-get ";
+		my $aptcmd = "$basepath/bin/apt-get ";
 		if (Fink::Config::verbosity_level() == 0) {
 			$aptcmd .= "-qq ";
 		}

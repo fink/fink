@@ -428,7 +428,7 @@ sub update_aptdb {
 	shift;
 
 	my ($pkg, $ver);
-	open(APTDUMP, "apt-cache dump |") || die "Can't run apt-cache dump: $!\n";
+	open(APTDUMP, "$basepath/bin/apt-cache dump |") || die "Can't run apt-cache dump: $!\n";
 	$aptdb = {};
 	while(<APTDUMP>) {
 		if (grep(/Package:/,$_)) {

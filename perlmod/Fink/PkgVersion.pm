@@ -1490,21 +1490,10 @@ sub fetch_deb {
 	my $continue = shift || 0;
 	my $dryrun = shift || 0;
 
-	# Test if we are using a version of apt-get that allows the
-	# '--ignore-breakage' option
-	my $aptcmd = "apt-get --ignore-breakage 2>&1 1>/dev/null";
-	if (&execute($aptcmd, 1)) {
-		&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but the ".
-		    "'apt-get' tool installed on this system doesn't support it, or the ".
-		    "apt package is not installed at all. Please update your Fink ".
-		    "installation (with e.g. 'fink selfupdate').");
-		die "Downloading the binary package '" . $self->get_debname() . "' failed.\n";
-	}
-
 	if (Fink::Config::verbosity_level() > 2) {
 		print "Downloading " . $self->get_debname() . " from binary dist.\n";
 	}
-	$aptcmd = "apt-get ";
+	my $aptcmd = "$basepath/bin/apt-get ";
 	if (Fink::Config::verbosity_level() == 0) {
 		$aptcmd .= "-qq ";
 	}

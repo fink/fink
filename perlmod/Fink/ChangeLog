@@ -1,3 +1,14 @@
+2004-10-14  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Engine.pm: Introduce new column in the commands matrix indicating if
+	  a command needs apt-get or apt-get with the --ignore-breakage option
+	  if the UseBinaryDist option is enabled. This requirement is then 
+	  checked before the command is executed. 
+	  Also use full path to call apt-get and apt-cache.
+	* Package.pm: Use full path to call apt-get.
+	* PkgVersion.pm, SelfUpdate.pm: Remove obsolete tests for apt-get. 
+	  Use the full path to apt-get.
+
 2004-10-12  David Höhn <dmalloc@users.sourceforge.net>
 
 	* Configure.pm: Chnage the prompt for proxy selection slightly.
