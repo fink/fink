@@ -1,3 +1,7 @@
+2002-04-03  Max Horn  <max@quendi.de>
+
+	* fink.info.in: Added Suggests field with storable-pm and term-readkey-pm 
+
 2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* fink.in: Added brief note about index to command listing.

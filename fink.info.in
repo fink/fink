@@ -5,6 +5,7 @@ Source: %n-%v.tar
 NoSourceDirectory: true
 Depends: base-files
 Essential: yes
+Suggests: storable-pm, term-readkey-pm
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 #
