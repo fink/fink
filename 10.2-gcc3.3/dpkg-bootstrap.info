@@ -1,17 +1,18 @@
 Package: dpkg-bootstrap
-Version: 1.10.9
+Version: 1.10.21
 Revision: 100
 Depends: gettext, gzip, tar
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
-Source-MD5: ecd7d51416837f8910314ccb62e39dc2
+Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
+SourceDirectory: dpkg-%v
+Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/dpkg.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 CompileScript: <<
- ./configure %m-apple-darwin %c
+ ./configure --build=%m-apple-darwin %c
  make EXEFLAGS=-force_flat_namespace
 <<
 InstallScript: <<

@@ -1,6 +1,6 @@
 Package: gettext
 Version: 0.10.40
-Revision: 17
+Revision: 18
 Source: mirror:gnu:gettext/gettext-%v.tar.gz
 Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: yes
@@ -22,6 +22,7 @@ InstallScript: <<
  sed 's;-L%b/intl/.libs;;' <%i/lib/libintl.la >%i/lib/libintl.la.tmp
  mv -f %i/lib/libintl.la.tmp %i/lib/libintl.la
  rm -f %i/lib/charset.alias
+ rm -f %i/share/emacs/site-lisp/po-mode.elc
 <<
 DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
 SplitOff: <<
@@ -63,6 +64,9 @@ temporary build directory.
 
 charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
+
+po-mode.elc is deleted to comply with fink's emacs policy.  Better
+compliance must wait for a further revision.
 <<
 License: GPL/LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
