@@ -7,6 +7,8 @@ Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
 Source-MD5: ecd7d51416837f8910314ccb62e39dc2
 PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/dpkg.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
 ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 CompileScript: <<
  ./configure %m-apple-darwin %c

@@ -10,6 +10,8 @@ SourceDirectory: %n-%v
 Source-MD5: ecd7d51416837f8910314ccb62e39dc2
 PatchScript: sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
 CompileScript: <<
  %p/bin/fink -y install gettext-dev libiconv-dev ncurses-dev
  ./configure powerpc-apple-darwin %c
