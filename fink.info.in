@@ -25,8 +25,17 @@ InstallScript: <<
 PostInstScript: <<
  %p/lib/fink/postinstall.pl
  %p/bin/fink --no-use-binary-dist index
+
+ # try to clean up left-overs from previous versions (old location)
  rm -f %p/var/db/fink.db
  rm -f %p/var/db/shlibs.db
+<<
+PreRmScript: <<
+ # clean up package indexes
+ rm -f %p/var/lib/fink/fink.db
+ rm -f %p/var/lib/fink/fink.db.lock
+ rm -f %p/var/lib/fink/shlibs.db
+ rm -f %p/var/lib/fink/shlibs.db.lock
 <<
 #
 Description: The Fink package manager
