@@ -2,7 +2,7 @@
 
 	* gnu: update to latest from http://www.gnu.org_order/ftp.html having
 	checked that they actuall work.
-	* _keys: add Boznia & Herzegovina
+	* _keys: add Bosnia & Herzegovina
 
 2004-09-24  David H. <dmalloc@users.sourceforge.net>
 	* master: Removing  distfiles.lha.uk.eu.finkmirrors.net
