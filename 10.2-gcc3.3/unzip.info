@@ -1,7 +1,7 @@
 Package: unzip
 Version: 5.50
 Revision: 4
-Maintainer: Dave Vasilevsky <vasi@users.sourceforge.net>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 License: BSD
 Essential: yes
 CustomMirror: <<
