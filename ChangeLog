@@ -1,3 +1,8 @@
+2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink: Removed dead code. Automatically add <prefix>/bin and
+	<prefix>/sbin to PATH.
+
 2001-03-29  Christoph Pfisterer  <cp@chrisp.de>
 
 	* init.sh.in, init.csh.in: Removed LD_LIBRARY_PATH and
