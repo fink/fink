@@ -1,3 +1,7 @@
+2003-11-06  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* SelfUpdate.pm: Make this work with rsync-hfs.
+
 2003-11-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* SelfUpdate.pm: Always regenerate the index on a

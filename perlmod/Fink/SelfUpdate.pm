@@ -518,10 +518,13 @@ sub do_direct_rsync {
 	my $touchcmd = "/usr/bin/touch stamp-rsync-live && /bin/rm -f stamp-cvs-live";
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
+	my $nohfs ="";
 	if (Fink::Config::verbosity_level() > 1) {
 		$verbosity = "-v";
 	}
-
+	if (system("rsync -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {
+		$nohfs = "--nohfs";
+	}
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
@@ -536,7 +539,7 @@ sub do_direct_rsync {
 	# there will thoroughly confuse things if someone later does 
 	# selfupdate-cvs.  However, don't actually do the removal until
 	# we've tried to put something there.
-	$vercmd = "rsync -az $verbosity $rsynchost/VERSION $basepath/fink/VERSION";
+	$vercmd = "rsync -az $verbosity $nohfs $rsynchost/VERSION $basepath/fink/VERSION";
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
 	&print_breaking($msg);
 	foreach $tree ($config->get_treelist()) {
@@ -556,11 +559,11 @@ sub do_direct_rsync {
 			$rsyncpath = "$rsynchost/$dist/$tree/finkinfo";
 		}
 
-		$cmd = "rsync -az --delete-after $verbosity '$rsyncpath' '$basepath/fink/$dist/$tree/'";
+		$cmd = "rsync -az --delete-after $verbosity $nohfs '$rsyncpath' '$basepath/fink/$dist/$tree/'";
 		if (! -d "$basepath/fink/$dist/$tree" ) {
 			&execute("/bin/mkdir -p '$basepath/fink/$dist/$tree'")
 		}
-		if (system("rsync '$rsyncpath' >/dev/null 2>&1") == 0) {
+		if (system("rsync $nohfs '$rsyncpath' >/dev/null 2>&1") == 0) {
 			$msg = "Updating $tree \n";
 			if ($sb[4] != 0 and $> != $sb[4]) {
 				($username) = getpwuid($sb[4]);
