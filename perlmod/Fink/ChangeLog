@@ -1,3 +1,8 @@
+2004-10-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Add the broken-gcc package, currently detects
+	XCode 1.5 build 1666.
+
 2004-09-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Handle xorg in system-xfree86 checks.

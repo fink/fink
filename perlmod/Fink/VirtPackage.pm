@@ -489,7 +489,56 @@ END
 		print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
 	}
 
-	print STDERR "- checking for gimp-print... " if ($options{debug});
+=item broken-gcc
+
+This package represents broken versions of the GCC compiler
+as shipped by Apple.  Currently it checks for the XCode 1.5
+cc1plus.
+
+=cut
+
+	my @badbuilds = qw(1666);
+
+	print STDERR "- checking for broken GCCs:\n" if ($options{debug});
+	$hash = {};
+	$hash->{package} = "broken-gcc";
+	$hash->{status} = STATUS_ABSENT;
+	$hash->{version} = "3.3-1";
+	$hash->{description} = "[virtual package representing a broken gcc compiler]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{compilescript} = $compile_script;
+	$hash->{builddependsonly} = "true";
+	$hash->{descdetail} = <<END;
+This package represents broken versions of the GCC compiler
+as shipped by Apple.
+END
+
+	if (-x '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus') {
+		if (open(GCC, '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus --version 2>&1 |')) {
+			while (my $line = <GCC>) {
+				if ($line =~ /build (\d+)/gsi) {
+					my $build = $1;
+					print STDERR "  - found build $build" if ($options{debug});
+					if (grep(/^${build}$/, @badbuilds)) {
+						print STDERR " (bad)" if ($options{debug});
+						$hash->{status}      = STATUS_PRESENT;
+						$hash->{version}     = '3.3-' . $build;
+					}
+					print STDERR "\n" if ($options{debug});
+					last;
+				}
+			}
+			close(GCC);
+		} else {
+			warn "couldn't run cc1plus: $!\n";
+		}
+	} else {
+		warn "/usr/libexec/gcc/darwin/ppc/3.3/cc1plus is not executable!\n";
+	}
+	$self->{$hash->{package}} = $hash;
+
+
+
 	$hash = {};
 	$hash->{package} = "gimp-print-shlibs";
 	$hash->{version} = "4.2.5-1";
@@ -504,7 +553,7 @@ package that came with your Mac OS X CDs.
 END
 
 	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
-		print STDERR "4.2.5-1\n" if ($options{debug});
+		print STDERR "- found gimp-print-shlibs 4.2.5-1\n" if ($options{debug});
 		$hash->{status} = STATUS_PRESENT;
 	} else {
 		$hash->{status} = STATUS_ABSENT;
