@@ -374,15 +374,6 @@ sub real_install {
       $package->phase_build();
 
       if (($item->[3] & 4) == 0) {
-	# check for installed version
-	@vlist = $item->[1]->list_installed_versions();
-	foreach $oversion (@vlist) {
-	  if ($oversion ne $package->get_fullversion()) {
-	    $opackage = $item->[1]->get_version($oversion);
-	    $opackage->phase_deactivate();
-	  }
-	}
-
 	$package->phase_activate();
       }
 

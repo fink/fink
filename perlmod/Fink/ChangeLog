@@ -1,3 +1,9 @@
+2001-04-12  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (real_install): Don't deactivate older revisions of a
+	package before installing the new revision. dpkg takes care of
+	upgrading itself, and refuses to violate dependencies.
+
 2001-04-11  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: Handle duplicate package descriptions in
