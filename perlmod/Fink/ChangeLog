@@ -1,3 +1,8 @@
+2004-01-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Empirically determined that 79 chars is the
+	maximum safe line length for DescDetail.
+
 2004-01-13  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Fix for regex /$file/ not do what we want if

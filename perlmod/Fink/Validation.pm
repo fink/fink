@@ -465,9 +465,10 @@ sub validate_info_file {
 		# they won't look weird on an 80-column plain-text terminal
 		if ($text_describe_fields{$field} and $value) {
 			# no intelligent word-wrap so warn for long lines
+			my $maxlinelen = 79;
 			foreach my $line (split /\n/, $value) {
-				if (length $line > 77) {
-					print "Warning: \"$field\" contains line(s) exceeding 77 characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
+				if (length $line > $maxlinelen) {
+					print "Warning: \"$field\" contains line(s) exceeding $maxlinelen characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
 					$looks_good = 0;
 					last;
 				}
