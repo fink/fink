@@ -1,3 +1,8 @@
+2004-05-04  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fixed bug in Depends processing where packages
+	with version requirements could get dropped if field had conditionals.
+
 2004-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VirtPackage.pm: add Provides to system-perl packages >= 5.8.0

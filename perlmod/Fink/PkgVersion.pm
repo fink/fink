@@ -28,7 +28,7 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
-					  &get_path &eval_conditional);
+					  &get_path);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -64,7 +64,7 @@ END { }				# module clean-up code here (global destructor)
 sub initialize {
 	my $self = shift;
 	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type_hash);
-	my ($depspec, $deplist, $dep, $expand, $destdir);
+	my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
 	my ($parentpkgname, $parentdestdir, $parentinvname);
 	my ($i, $path, @parts, $finkinfo_index, $section, @splitofffields);
 	my $arch = get_arch();
@@ -128,7 +128,17 @@ sub initialize {
 	$self->{_fullversion} = (($epoch ne "0") ? "$epoch:" : "").$version."-".$revision;
 	$self->{_fullname} = $pkgname."-".$version."-".$revision;
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
-	# prepare percent-expansion map
+	# percent-expansions
+	if ($self->is_type('perl')) {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+
+		$configure_params = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
+			$self->param_default("ConfigureParams", "");
+	} else {
+		$configure_params = "--prefix=\%p ".
+			$self->param_default("ConfigureParams", "");
+	}
 	$destdir = "$buildpath/root-".$self->{_fullname};
 	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
@@ -160,6 +170,7 @@ sub initialize {
 				'I' => $parentdestdir.$basepath,
 
 				'a' => $self->{_patchpath},
+				'c' => $configure_params,
 				'b' => '.'
 			};
 
@@ -170,10 +181,6 @@ sub initialize {
 	$self->{_expand} = $expand;
 
 	$self->{_bootstrap} = 0;
-
-	# Description is used by 'fink list' so better to get it expanded now
-	# also keeps %type_[] out of all list and search fields of pdb
-	$self->expand_percent_if_available("Description");
 
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if (exists $self->{parent}) {
@@ -305,6 +312,16 @@ sub param_default_expanded {
 ### to be conditional-free (remove conditional expressions, remove
 ### packages for which expression was false). No percent expansion is
 ### performed (i.e., do it yourself before calling this method).
+{
+# need some private variables, may as well define 'em here once
+	my %compare_subs = ( '>>' => sub { $_[0] gt $_[1] },
+			     '<<' => sub { $_[0] lt $_[1] },
+			     '>=' => sub { $_[0] ge $_[1] },
+			     '<=' => sub { $_[0] le $_[1] },
+			     '=' => sub { $_[0] eq $_[1] },
+			     '!=' => sub { $_[0] ne $_[1] }
+			   );
+	my $compare_ops = join "|", keys %compare_subs;
 
 sub conditional_pkg_list {
 	my $self = shift;
@@ -317,12 +334,22 @@ sub conditional_pkg_list {
 #	print "\toriginal: $value\n";
 	my @atoms = split /([,|])/, $value; # break apart the field
 	map {
-		if (s/\s*\((.*?)\)(\s*.*)/$2/) {
+		if (s/^\s*\((.*?)\)(\s*.*)/$2/) {
 			# we have a conditional; remove the cond expression
 			my $cond = $1;
 #			print "\tfound conditional '$cond'\n";
 			# if cond is false, clear entire atom
-			$_ = "" if not &eval_conditional($cond, "$field of ".$self->get_info_filename);
+			if ($cond =~ /^(\S+)\s*($compare_ops)\s*(\S+)$/) {
+				# syntax 1: (string1 op string2)
+#				print "\t\ttesting '$1' '$2' '$3'\n";
+				$_ = "" unless $compare_subs{$2}->($1,$3);
+			} elsif ($cond !~ /\s/) {
+				#syntax 2: (string): string must be non-null
+#				print "\t\ttesting '$cond'\n";
+				$_ = "" unless length $cond;
+			} else {
+				print "Error: Invalid conditional expression \"$cond\" in $field of ".$self->get_info_filename.". Treating as true.\n";
+			}
 		}
 	} @atoms;
 	$value = join "", @atoms; # reconstruct field
@@ -342,6 +369,9 @@ sub conditional_pkg_list {
 	return;
 }
 
+# remember we were in a block for this method
+}
+
 ### Remove our own package name from a given package-list field
 ### (Conflicts or Replaces, indicated by $field). This must be called
 ### after conditional dependencies are cleared. The field is re-set.
@@ -359,99 +389,6 @@ sub clear_self_from_list {
 
 	$value = join ", ", ( grep { /([a-z0-9.+\-]+)/ ; $1 ne $pkgname } split /,\s*/, $value);
 	$self->set_param($field, $value);
-}
-
-# Process ConfigureParams (including Type-specific defaults) and
-# eventually conditionals, set {_expand}->{c}, and return result.
-# Does not change {configureparams}.
-#
-# NOTE:
-#   You must set _expand before calling!
-#   You must make sure this method has been called before ever calling
-#     expand_percent if it could involve %c!
-#
-# Okay to call repeatedly (uses {_expand}->{c} as run-once semaphore)
-
-sub parse_configureparams {
-	my $self = shift;
-
-	return  $self->{_expand}->{'c'} if exists $self->{_expand}->{'c'};
-
-	if ($self->is_type('perl')) {
-		# grab perl version, if present
-		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-
-		$self->{_expand}->{'c'} = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
-	} else {
-		$self->{_expand}->{'c'} = "--prefix=\%p ";
-	}
-	$self->{_expand}->{'c'} .= $self->param_default("ConfigureParams", "");
-#	$self->{_expand}->{'c'} .= $self->get_configureparams("");
-}
-
-# actually handle the conditional processing of ConfigureParams
-
-our $warned_delimmatch;  # defined if user has been warned
-
-sub get_configureparams {
-	my $self = shift;
-	my $default = shift;
-
-	my $string = $self->param_default_expanded('ConfigureParams', $default);
-	return $string unless defined $string and $string =~ /\(/; # short-circuit
-
-	if (not eval { require Text::DelimMatch }) {
-		# this is not an Essential package
-		if (not $warned_delimmatch) {
-			print "Could not load Text::DelimMatch so cannot handle ConfigureParam conditionals.\n";
-			print "(note: this feature is not needed for any packages in the official Fink trees)\n";
-			$warned_delimmatch = 1;  # only warn once per indexing run
-		}
-		return $string;
-	}
-	import Text::DelimMatch;
-
-	use Text::ParseWords;    # part of perl5 itself
-
-	# prepare the paren-balancing parser
-	my $mc = Text::DelimMatch->new( '\s*\(\s*', '\s*\)\s*' );
-	$mc->quote("'");
-	$mc->escape("\\");
-	$mc->returndelim(0);
-	$mc->keep(0);
-
-	my($stash, $prefix, $cond, @words);  # scratches used in loop
-	my $result;
-
-	# this is a constant within loop; no reason to keep redefining it
-	my $where = "ConfigureParams of ".$self->get_info_filename;
-
-	while (defined $string) {
-		$stash = $string;  # save in case no parens (parsing clobbers string)
-
-		($prefix, $cond, $string) = $mc->match($string);  # pluck off first paren set
-		$result .= $prefix if defined $prefix;  # leading non-paren things
-		if (defined $cond) {
-			# found a conditional (string in balanced parens)
-			if (defined $string) {
-				# grab first word after it
-				@words = &parse_line('\s+', 1, $string);
-				if (defined $words[0]) {
-					# only keep it if conditional is true
-					$result .= " $words[0]" if &eval_conditional($cond, $where);
-					$string =~ s/^\Q$words[0]//;  # already dealt with this now
-				} else {
-					print "Conditional \"$cond\" controls nothing in $where!\n";
-				}
-			} else {
-				print "Conditional \"$cond\" controls nothing in $where!\n";
-			}
-		} else {
-			$result .= $stash;
-		}
-	}
-
-	$result;
 }
 
 ### add a splitoff package
@@ -789,18 +726,11 @@ sub get_splitoffs {
 }
 
 # returns whether this fink package is of a given Type:
+# presumes the field is already been parsed into $self->{_type_hash}
 
 sub is_type {
 	my $self = shift;
 	my $type = shift;
-
-	return 0 unless defined $type;
-	return 0 unless length $type;
-	$type = lc $type;
-
-	if (!exists $self->{_type_hash}) {
-		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
-	}
 
 	if (defined $self->{_type_hash}->{$type} and length $self->{_type_hash}->{$type}) {
 		return 1;
@@ -814,10 +744,6 @@ sub is_type {
 sub get_subtype {
 	my $self = shift;
 	my $type = shift;
-
-	if (!exists $self->{_type_hash}) {
-		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
-	}
 
 	return $self->{_type_hash}->{$type};
 }
@@ -835,10 +761,10 @@ sub type_hash_from_string {
 	foreach (split /\s*,\s*/, $string) {
 		if (/^(\S+)$/) {
 			# no subtype so use type as subtype
-			$hash{lc $1} = lc $1;
+			$hash{$1} = $1;
 		} elsif (/^(\S+)\s+(\S+)$/) {
 			# have subtype
-			$hash{lc $1} = $2;
+			$hash{$1} = $2;
 		} else {
 			warn "Bad Type specifier '$_' in $filename\n";
 		}
@@ -1602,8 +1528,6 @@ sub phase_patch {
 	my $self = shift;
 	my ($dir, $patch_script, $cmd, $patch, $subdir);
 
-	$self->parse_configureparams;
-
 	if ($self->is_type('bundle')) {
 		return;
 	}
@@ -1690,8 +1614,6 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 
-	$self->parse_configureparams;
-
 	if ($self->is_type('bundle')) {
 		return;
 	}
@@ -1745,8 +1667,6 @@ sub phase_install {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
-
-	$self->parse_configureparams;
 
 	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
@@ -1973,15 +1893,14 @@ sub phase_build {
 
 	# generate dpkg "control" file
 
-	my ($pkgname, $parentpkgname, $version, $field, $section, $instsize);
-	$parentpkgname = $pkgname = $self->get_name();
-	$parentpkgname = $self->{parent}->get_name() if exists $self->{parent};
+	my ($pkgname, $version, $field, $section, $instsize);
+	$pkgname = $self->get_name();
 	$version = $self->get_fullversion();
 	$section = $self->get_section();
 	$instsize = $self->get_instsize("$destdir$basepath");	# kilobytes!
 	$control = <<EOF;
 Package: $pkgname
-Source: $parentpkgname
+Source: $pkgname
 Version: $version
 Section: $section
 Installed-Size: $instsize
