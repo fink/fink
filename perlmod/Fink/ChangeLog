@@ -1,3 +1,8 @@
+2005-03-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Implemented 'ignore_INT' option for execute().
+	* PkgVersion.pm: Added ignore_INT for all dpkg calls.
+
 2005-03-18  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Better sanity-check of user input to prompt_selection

@@ -445,6 +445,12 @@ Never delete
 
 =back
 
+=item ignore_INT
+
+If true, ignore SIGINT (control-C interrupt) while executing. Note
+that this applies to the $script as a whole, not to each individual
+line in it.
+
 =back
 
 =cut
@@ -487,6 +493,9 @@ EOSCRIPT
 	# preprocess the script, making executable tempfile if necessary
 	my $is_tempfile = &prepare_script(\$script);
 	return 0 if not defined $script;
+
+	# ignore SIGINT if requested
+	local $SIG{INT} = 'IGNORE' if $options{ignore_INT};
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
