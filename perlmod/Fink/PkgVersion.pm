@@ -756,7 +756,7 @@ sub phase_unpack {
 
 sub phase_patch {
   my $self = shift;
-  my ($dir, $patch_script, $cmd, $patch);
+  my ($dir, $patch_script, $cmd, $patch, $subdir);
 
   if ($self->{_type} eq "bundle") {
     return;
@@ -781,6 +781,14 @@ sub phase_patch {
       "cp -f $libpath/update/config.guess .\n".
       "cp -f $libpath/update/config.sub .\n";
   }
+  if ($self->has_param("UpdateConfigGuessInDirs")) {
+    foreach $subdir (split(/\s+/, $self->param("UpdateConfigGuessInDirs"))) {
+      next unless $subdir;
+      $patch_script .=
+	"cp -f $libpath/update/config.guess $subdir\n".
+	"cp -f $libpath/update/config.sub $subdir\n";
+    }
+  }
 
   ### copy libtool scripts (ltconfig and ltmain.sh) if required
 
@@ -788,6 +796,14 @@ sub phase_patch {
     $patch_script .=
       "cp -f $libpath/update/ltconfig .\n".
       "cp -f $libpath/update/ltmain.sh .\n";
+  }
+  if ($self->has_param("UpdateLibtoolInDirs")) {
+    foreach $subdir (split(/\s+/, $self->param("UpdateLibtoolInDirs"))) {
+      next unless $subdir;
+      $patch_script .=
+	"cp -f $libpath/update/ltconfig $subdir\n".
+        "cp -f $libpath/update/ltmain.sh $subdir\n";
+    }
   }
 
   ### copy po/Makefile.in.in if required

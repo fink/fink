@@ -1,3 +1,9 @@
+2001-09-27  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_patch): New fields UpdateConfigGuessInDirs
+	and UpdateLibtoolInDirs to copy the replacement files directly
+	into a list of subdirectories.
+
 2001-09-21  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (phase_install): Create a small README for bundle
