@@ -44,13 +44,13 @@ BEGIN {
 our @EXPORT_OK;
 
 our ($have_packages, @package_list, @essential_packages, $essential_valid, %package_hash, 
-        $use_cache, $db_outdated, $db_mtime);
+        $use_cache, $db_modified, $db_mtime);
 $have_packages = 0;
 @package_list = ();
 %package_hash = ();
 @essential_packages = ();
 $essential_valid = 0;
-$db_outdated = 1;
+$db_modified = 0;
 $db_mtime = 0;
 
 END { }       # module clean-up code here (global destructor)
@@ -112,7 +112,7 @@ sub add_version {
   my $version_object = shift;
 
   my $version = $version_object->get_fullversion();
-  if (exists $self->{_versions}->{$version}) {
+  if (exists $self->{_versions}->{$version} && $self->{_versions}->{$version}->{_type} eq 'dummy') {
     $self->{_versions}->{$version}->merge($version_object);
   } else {
     $self->{_versions}->{$version} = $version_object;
@@ -315,7 +315,6 @@ sub forget_packages {
   %package_hash = ();
   @essential_packages = ();
   $essential_valid = 0;
-  $db_outdated = 1;
 }
 
 ### read list of packages, either from cache or files
@@ -323,45 +322,56 @@ sub forget_packages {
 sub scan_all {
   shift;  # class method - ignore first parameter
   my ($time) = time;
-  my ($dlist, $pkgname, $po, $hash, $fullversion);
+  my ($dlist, $pkgname, $po, $hash, $fullversion, $pkgtmp);
+  my ($tree, $dir);
 
   Fink::Package->forget_packages();
-  
-  # If we have the Storable perl module, try to use the package index
+  print "Reading package info...\n";
+
+  # if we have the Storable perl module, try to use the package index
   if (-e "$basepath/var/db/fink.db") {
     eval {
       require Storable; 
 
       # We assume the DB is up-to-date unless proven otherwise
-      $db_outdated = 0;
-    
-      # Unless the NoAutoIndex option is set, check whether we should regenerate
-      # the index based on its modification date and that of the package descs.
-      if (not $config->param_boolean("NoAutoIndex")) {
-	$db_mtime = (stat("$basepath/var/db/fink.db"))[9];       
-	if (((lstat("$basepath/etc/fink.conf"))[9] > $db_mtime)
-	  or ((stat("$basepath/etc/fink.conf"))[9] > $db_mtime)) {
-	  $db_outdated = 1;
-	} else {
-	  $db_outdated = &search_comparedb( "$basepath/fink/dists" );
-	}
-      }
-      
-      # If the index is not outdated, we can use it, and thus safe a lot of time
-      if (not $db_outdated) {
-	%package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
-	my ($pkgtmp);
-	foreach $pkgtmp (keys %package_hash) {
-	  push @package_list, $package_hash{$pkgtmp};
-	}
+      $db_modified = 0;
+      $db_mtime = (stat("$basepath/var/db/fink.db"))[9];
+            
+      # Retrieve the pkg db from storable.
+      %package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
+      foreach $pkgtmp (keys %package_hash) {
+        push @package_list, $package_hash{$pkgtmp};
       }
     }
+  } else {
+    $db_mtime = 0;
+  }
+    
+  # scan each tree in turn
+  foreach $tree ($config->get_treelist()) {
+    $dir = "$basepath/fink/dists/$tree/finkinfo";
+    Fink::Package->scan($dir);
   }
   
-  # Regenerate the DB if it is outdated
-  if ($db_outdated) {
-    Fink::Package->update_db();
+  # save the db if it has been modified
+  if ($db_modified) {
+    eval {
+      require Storable; 
+      if ($> == 0) {
+	print "Updating package index... ";
+	unless (-d "$basepath/var/db") {
+	  mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
+	}
+	Storable::store (\%package_hash, "$basepath/var/db/fink.db");
+	print "done.\n";
+      } else {
+	&print_breaking( "\nFink has detected that your package cache is out of date and needs" .
+	  " an update, but does not have privileges to modify it. Please re-run fink as root," .
+	  " for example with a \"fink index\" command.\n" );
+      }
+    };
   }
+  $db_modified = 0;
 
   # Get data from dpkg's status file. Note that we do *not* store this 
   # information into the package database.
@@ -389,66 +399,14 @@ sub scan_all {
     (time - $time), " seconds.\n\n";
 }
 
-### scan for info files and compare to $db_mtime
+### force the database to be regenerated
 
-sub search_comparedb {
-  my $path = shift;
-  my (@files, $file, $newpath, @stats);
-
-  opendir(DIR, $path) || die "can't opendir $path: $!";
-  @files = readdir(DIR);
-  closedir DIR;
-  
-  foreach $file (@files) {
-    next if substr($file, 0, 1) eq ".";
-    next if $file eq "CVS";
-    
-    $newpath = "$path/$file"; 
-
-    @stats = stat($newpath);
-
-    if (S_ISDIR($stats[2])) {
-      return 1 if (&search_comparedb($newpath));
-    }
-    
-    if (substr($file, length($file)-5) eq ".info") {
-      return 1 if ($stats[9] > $db_mtime);
-    }
+sub force_update_db {
+  shift; # class method - ignore first parameter
+  if (-e "$basepath/var/db/fink.db") {
+    unlink "$basepath/var/db/fink.db";
   }
-  
-  return 0;
-}
-
-### read the packages and update the database, if needed and we are root
-
-sub update_db {
-  shift;  # class method - ignore first parameter
-  my ($tree, $dir);
-  
-  print "Reading package info...\n";
-  
-  # read data from descriptions
-  foreach $tree ($config->get_treelist()) {
-    $dir = "$basepath/fink/dists/$tree/finkinfo";
-    Fink::Package->scan($dir);
-  }
-  
-  eval {
-    require Storable; 
-    if ($> == 0) {
-      print "Updating package index... ";
-      unless (-d "$basepath/var/db") {
-        mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
-      }
-      Storable::store (\%package_hash, "$basepath/var/db/fink.db");
-      print "done.\n";
-    } else {
-      &print_breaking( "\nFink has detected that your package cache is out of date and needs" .
-        " an update, but does not have privileges to modify it. Please re-run fink as root," .
-        " for example with a \"fink index\" command.\n" );
-    }
-  };
-  $db_outdated = 0;
+  Fink::Package->scan_all;
 }
 
 ### scan one tree for package desccriptions
@@ -472,6 +430,9 @@ sub scan {
   find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
 
   foreach $filename (@filelist) {
+    # skip file if it's older than the db
+    next unless ((stat($filename))[9] > $db_mtime);
+    
     # read the file and get the package name
     $properties = &read_properties($filename);
     $pkgname = $properties->{package};
@@ -490,6 +451,7 @@ sub scan {
     # create object for this particular version
     $properties->{thefilename} = $filename;
     Fink::Package->inject_description($package, $properties);
+    $db_modified = 1;
   }
 }
 

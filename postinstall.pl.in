@@ -39,10 +39,10 @@ use File::Basename;
 my ($config, $configpath);
 $configpath = "@PREFIX@/etc/fink.conf";
 if (-f $configpath) {
-    $config = &Fink::Services::read_config($configpath);
+  $config = &Fink::Services::read_config($configpath);
 } else {
-    print "ERROR: Configuration file \"$configpath\" not found.\n";
-    exit 1;
+  print "ERROR: Configuration file \"$configpath\" not found.\n";
+  exit 1;
 }
 
 my ($basepath);
@@ -98,10 +98,10 @@ $distdir = "$basepath/fink/dists" ;
 $username = "root" ;
 
 if (-d "$distdir/CVS") {
-    @sb = stat("$distdir/CVS");
-    if ($sb[4] != 0 and $> != $sb[4]) {
-	($username) = getpwuid($sb[4]);
-    }
+  @sb = stat("$distdir/CVS");
+  if ($sb[4] != 0 and $> != $sb[4]) {
+    ($username) = getpwuid($sb[4]);
+  }
 }
 
 ### If the old dists directory has not yet been moved to $basepath/fink/10.1:
@@ -116,28 +116,28 @@ my ($aptfile, $basenm) ;
 $aptfile = "$basepath/etc/apt/sources.list" ;
 
 if (not -l $distdir) {
-    print "Needs an update...\n";
-    rename $distdir, "$basepath/fink/10.1" or die "cannot rename $distdir to $basepath/fink/10.2";
-    symlink "$basepath/fink/10.1", "$distdir" or die "ERROR: Can't create link from $basepath/fink/10.1 to $distdir\n";
+  print "Needs an update...\n";
+  rename $distdir, "$basepath/fink/10.1" or die "cannot rename $distdir to $basepath/fink/10.2";
+  symlink "$basepath/fink/10.1", "$distdir" or die "ERROR: Can't create link from $basepath/fink/10.1 to $distdir\n";
 
-### we create a place where apt can find the old deb files (via symlink)
+  ### we create a place where apt can find the old deb files (via symlink)
 
-    mkdir "$basepath/fink/old";
-    unlink "$basepath/fink/old/dists";
-    symlink "$basepath/fink/10.1", "$basepath/fink/old/dists" or die "ERROR: Can't create link from $basepath/fink/10.1 to $basepath/fink/old/dists\n";
+  mkdir "$basepath/fink/old";
+  unlink "$basepath/fink/old/dists";
+  symlink "$basepath/fink/10.1", "$basepath/fink/old/dists" or die "ERROR: Can't create link from $basepath/fink/10.1 to $basepath/fink/old/dists\n";
 
 
-### Now we work on apt ...
-###
-### First step is to change the URL for the bindist if necessary...
+  ### Now we work on apt ...
+  ###
+  ### First step is to change the URL for the bindist if necessary...
 
-    if (-f $aptfile) {
-	if (&execute("sed 's|fink.sourceforge.net/bindist|us.dl.sourceforge.net/fink/direct_download|g' < $aptfile > $aptfile.old")) {
-	    print "ERROR: Can't make substitutions on $aptfile, writing them to $aptfile.old\n";
-	    exit 1;
-	}
-	open(SOURCES, ">$aptfile") or die "can't create $aptfile";
-	print SOURCES <<"EOF";
+  if (-f $aptfile) {
+    if (&execute("sed 's|fink.sourceforge.net/bindist|us.dl.sourceforge.net/fink/direct_download|g' < $aptfile > $aptfile.old")) {
+      print "ERROR: Can't make substitutions on $aptfile, writing them to $aptfile.old\n";
+      exit 1;
+    }
+    open(SOURCES, ">$aptfile") or die "can't create $aptfile";
+    print SOURCES <<"EOF";
 # Allow APT to find pre-10.2 deb files
 deb file:$basepath/fink/old local main
 deb file:$basepath/fink/old stable main crypto
@@ -145,113 +145,117 @@ deb file:$basepath/fink/old stable main crypto
 
 EOF
     close(SOURCES) or die "can't write $aptfile";
-	if (&execute("cat $aptfile.old >> $aptfile")) {
-	    print "ERROR: Can't concatentate $aptfile and $aptfile.old\n";
-	    exit 1;
-	}
-	if (&execute("rm $aptfile.old")) {
-	    print "ERROR: Can't remove $aptfile.old\n";
-	    exit 1;
-	}
+    if (&execute("cat $aptfile.old >> $aptfile")) {
+      print "ERROR: Can't concatentate $aptfile and $aptfile.old\n";
+      exit 1;
     }
+    if (&execute("rm $aptfile.old")) {
+      print "ERROR: Can't remove $aptfile.old\n";
+      exit 1;
+    }
+  }
 
 
-### Now see if CVS is present...
-### If it is, we need to create $basepath/fink/10.2 as well as setup CVS
-### in both $basepath/fink/10.1 and $basepath/fink/10.2
+  ### Now see if CVS is present...
+  ### If it is, we need to create $basepath/fink/10.2 as well as setup CVS
+  ### in both $basepath/fink/10.1 and $basepath/fink/10.2
 
-	if (-d $basepath."/fink/CVS") {
-	    print "\n NOTE: You have fink set up to use CVS for updates, and with this\n version of fink, the CVS setup has slightly changed.  After fink has\n finished setting up, you should immediately run 'fink selfupdate-cvs',\n 'fink scanpackages', and then 'apt-get update' in order to \n complete your upgrade.\n\n";
-	    if (not -d $basepath."/fink/10.2") {
-		if(&execute("mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
-		    print "ERROR: couldn't create directory $basepath/fink/10.2/local/main/finkinfo\n";
-		    exit 1;
-		}
-		if (&execute("chown -R $username $basepath/fink/10.2")) {
-		    print "ERROR: couldn't change ownership of $basepath/fink/10.2 to $username\n";
-		    exit 1;
-		}
-	    }
-### clear out files which will be recreated by CVS:
+  if (-d $basepath."/fink/CVS") {
+    print "\n NOTE: You have fink set up to use CVS for updates, and with this\n version of fink, the CVS setup has slightly changed.  After fink has\n finished setting up, you should immediately run 'fink selfupdate-cvs',\n 'fink scanpackages', and then 'apt-get update' in order to \n complete your upgrade.\n\n";
+    if (not -d $basepath."/fink/10.2") {
+      if(&execute("mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
+	print "ERROR: couldn't create directory $basepath/fink/10.2/local/main/finkinfo\n";
+	exit 1;
+      }
+      if (&execute("chown -R $username $basepath/fink/10.2")) {
+	print "ERROR: couldn't change ownership of $basepath/fink/10.2 to $username\n";
+	exit 1;
+      }
+    }
+    
+    ### clear out files which will be recreated by CVS:
+    unlink "$basepath/fink/.cvsignore", "$basepath/fink/ChangeLog", "$basepath/fink/README", "$basepath/fink/VERSION", "$basepath/fink/inject.pl", "$basepath/fink/stamp-cvs-live";
 
-	    unlink "$basepath/fink/.cvsignore", "$basepath/fink/ChangeLog", "$basepath/fink/README", "$basepath/fink/VERSION", "$basepath/fink/inject.pl", "$basepath/fink/stamp-cvs-live";
+    ### clear out CVS files which we are going to rewrite
+    unlink "$basepath/fink/CVS/Entries", "$basepath/fink/CVS/Repository";
 
-### clear out CVS files which we are going to rewrite
 
-	    unlink "$basepath/fink/CVS/Entries", "$basepath/fink/CVS/Repository";
+    ### write CVS files by hand
 
-### write CVS files by hand
-
-	    open(REPOSITORY, ">$basepath/fink/CVS/Repository") or die "can't create $basepath/fink/CVS/Repository";
-	    print REPOSITORY <<"EOF";
+    open(REPOSITORY, ">$basepath/fink/CVS/Repository") or die "can't create $basepath/fink/CVS/Repository";
+    print REPOSITORY <<"EOF";
 /cvsroot/fink/dists
 EOF
     close(REPOSITORY) or die "can't write $basepath/fink/CVS/Repository";
-	    open(ENTRIES, ">$basepath/fink/CVS/Entries") or die "can't create $basepath/fink/CVS/Entries";
-	    print ENTRIES <<"EOF";
+    open(ENTRIES, ">$basepath/fink/CVS/Entries") or die "can't create $basepath/fink/CVS/Entries";
+    print ENTRIES <<"EOF";
 D/10.1////
 D/10.2////
 /.cvsignore/1.1/Tue Aug 20 22:01:32 2002//
 EOF
     close(ENTRIES) or die "can't write $basepath/fink/CVS/Entries";
-	    if (&execute("mkdir $basepath/fink/10.2/CVS")) {
-		print "ERROR: Can't create directory $basepath/fink/10.2/CVS\n";
-		exit 1;
-	    }
-	    if (&execute("cp $basepath/fink/10.1/CVS/Root $basepath/fink/10.2/CVS")) {
-		print "ERROR: Can't copy $basepath/fink/10.1/CVS/Root to $basepath/fink/10.2/CVS\n";
-		exit 1;
-	    }
-	    open(REPOSITORY, ">$basepath/fink/10.2/CVS/Repository") or die "can't create $basepath/fink/10.2/CVS/Repository";
-	    print REPOSITORY <<"EOF";
+    if (&execute("mkdir $basepath/fink/10.2/CVS")) {
+      print "ERROR: Can't create directory $basepath/fink/10.2/CVS\n";
+      exit 1;
+    }
+    if (&execute("cp $basepath/fink/10.1/CVS/Root $basepath/fink/10.2/CVS")) {
+      print "ERROR: Can't copy $basepath/fink/10.1/CVS/Root to $basepath/fink/10.2/CVS\n";
+      exit 1;
+    }
+    open(REPOSITORY, ">$basepath/fink/10.2/CVS/Repository") or die "can't create $basepath/fink/10.2/CVS/Repository";
+    print REPOSITORY <<"EOF";
 /cvsroot/fink/dists/10.2
 EOF
     close(REPOSITORY) or die "can't write $basepath/fink/10.2/CVS/Repository";
-	    open(ENTRIES, ">$basepath/fink/10.2/CVS/Entries") or die "can't create $basepath/fink/10.2/CVS/Entries";
-	    print ENTRIES <<"EOF";
+    open(ENTRIES, ">$basepath/fink/10.2/CVS/Entries") or die "can't create $basepath/fink/10.2/CVS/Entries";
+    print ENTRIES <<"EOF";
 D
 EOF
     close(ENTRIES) or die "can't write $basepath/fink/10.2/CVS/Entries";
-	    if (&execute("chown -R $username $basepath/fink/10.2/CVS")) {
-		print "ERROR: Can't change ownership of $basepath/fink/10.2/CVS to $username\n";
-		exit 1;
-	    }
-	}
-
-### We create new symlinks in $basepath/fink/debs to point to the existing
-### debs in the 10.1 tree
-
-    find ({ wanted => \&process, follow => 1,  no_chdir => 1 }, "$basepath/fink/10.1");
-sub process {
-        if (($File::Find::fullname =~ /\.deb$/)) {    
-	    $basenm = basename($File::Find::fullname);
-	    unlink "$basepath/fink/debs/$basenm" ;
-	    symlink "$File::Find::fullname", "$basepath/fink/debs/$basenm" or die "ERROR: Can't create link from $File::Find::fullname to $basepath/fink/debs/$basenm";
-	}
+    if (&execute("chown -R $username $basepath/fink/10.2/CVS")) {
+      print "ERROR: Can't change ownership of $basepath/fink/10.2/CVS to $username\n";
+      exit 1;
     }
+  }
 
-
+  ### We create new symlinks in $basepath/fink/debs to point to the existing
+  ### debs in the 10.1 tree
+  
+  my $wanted = 
+    sub {
+      if (($File::Find::fullname =~ /\.deb$/)) {    
+	$basenm = basename($File::Find::fullname);
+	unlink "$basepath/fink/debs/$basenm" ;
+	symlink "$File::Find::fullname", "$basepath/fink/debs/$basenm" or die "ERROR: Can't create link from $File::Find::fullname to $basepath/fink/debs/$basenm";
+      }
+    };
+  find ({ wanted => $wanted, follow => 1,  no_chdir => 1 }, "$basepath/fink/10.1");
 }
 
 ### Now, if we are running 10.2, we need to create $basepath/fink/10.2 if
 ### still needed, and then make a symlink
 
 if ($distribution =~ /10.2/) {
-    if (not -d $basepath."/fink/10.2") {
-	if(&execute("mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
-	    print "ERROR: couldn't create directory $basepath/fink/10.2/local/main/finkinfo\n";
-	    exit 1;
-	}
-	if (&execute("chown -R $username $basepath/fink/10.2")) {
-	    print "ERROR: couldn't change ownership of $basepath/fink/10.2 to $username\n";
-	    exit 1;
-	}
+  if (not -d $basepath."/fink/10.2") {
+    if(&execute("mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
+      print "ERROR: couldn't create directory $basepath/fink/10.2/local/main/finkinfo\n";
+      exit 1;
     }
-    unlink $distdir;
-    if (&execute("ln -s 10.2 $distdir")) {
-	print "ERROR: Can't create link from 10.2 to $distdir\n";
-	exit 1;
+    if (&execute("chown -R $username $basepath/fink/10.2")) {
+      print "ERROR: couldn't change ownership of $basepath/fink/10.2 to $username\n";
+      exit 1;
     }
+  }
+  unlink $distdir;
+  if (&execute("ln -s 10.2 $distdir")) {
+    print "ERROR: Can't create link from 10.2 to $distdir\n";
+    exit 1;
+  }
+}
+
+if (&execute("fink reindex")) {
+  print "ERROR: Can't re-index fink db.";
+  exit 1;
 }
 
 exit 0;

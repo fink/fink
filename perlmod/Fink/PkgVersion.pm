@@ -284,7 +284,8 @@ sub add_splitoff {
 sub merge {
   my $self = shift;
   my $dup = shift;
-
+  
+  print "Warning! Not a dummy package\n" if $self->{_type} ne 'dummy';
   push @{$self->{_debpaths}}, @{$dup->{_debpaths}};
 }
 

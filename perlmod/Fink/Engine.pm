@@ -51,6 +51,7 @@ our @EXPORT_OK;
 # read, the second flag whether root permissions are needed.
 our %commands =
   ( 'index' => [\&cmd_index, 0, 1],
+    'reindex' => [\&cmd_index, 0, 1],
     'rescan' => [\&cmd_rescan, 0, 0],
     'configure' => [\&cmd_configure, 0, 1],
     'bootstrap' => [\&cmd_bootstrap, 0, 1],
@@ -203,7 +204,7 @@ sub restart_as_root {
 ### simple commands
 
 sub cmd_index {
-  Fink::Package->update_db();
+  Fink::Package->force_update_db();
 }
 
 sub cmd_rescan {
