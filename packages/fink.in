@@ -1,6 +1,6 @@
 Package: fink
-Version: 0.2.0
-Revision: 1
+Version: @VERSION@
+Revision: @REVISION@
 Source: %n-%v.tar
 NoSourceDirectory: true
 Depends: base-files
