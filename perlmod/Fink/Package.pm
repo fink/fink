@@ -481,6 +481,14 @@ sub scan {
 			print "No version number for package $pkgname in $filename\n";
 			next;
 		}
+		# fields that should be converted from multiline to
+		# single-line
+		for my $field ('builddepends', 'depends', 'files') {
+			if (exists $properties->{$field}) {
+				$properties->{$field} =~ s/[\r\n]+/ /gs;
+				$properties->{$field} =~ s/\s+/ /gs;
+			}
+		}
 
 		# get/create package object
 		$package = Fink::Package->package_by_name_create($pkgname);

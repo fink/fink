@@ -1,3 +1,11 @@
+2003-09-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Package.pm: reformat a few fields so that they can have
+	carriage returns and such without confusing things
+
+	* Services.pm: cleaned up some rare cases where uninitialized
+	values can show up.
+
 2003-09-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: don't do update-prebinding on files that are
