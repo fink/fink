@@ -1,3 +1,8 @@
+2004-03-28  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: When extracting tarballs, do not preserve
+	permissions or ownership.
+
 2004-03-26  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: handle SplitOff(N) in numerical order.

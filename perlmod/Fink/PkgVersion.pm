@@ -1450,7 +1450,7 @@ END
 		$renamelist = "";
 
 		# Determine the rename list (if any)
-		$tarflags = "-x${verbosity}f -";
+		$tarflags = "-x${verbosity}f - --no-same-owner --no-same-permissions";
 		$tarcommand = "/usr/bin/gnutar $tarflags"; # Default to Apple's GNU Tar
 		if ($self->has_param($renamefield)) {
 			@renamefiles = split(/\s+/, $self->param($renamefield));
