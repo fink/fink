@@ -2849,18 +2849,15 @@ EOF
 		die $error . "\n";
 	}
 
-	my $looksgood = 1;
 	if (Fink::Config::get_option("maintainermode")) {
-		my $tempverb = Fink::Config::get_option("verbosity");
-		Fink::Config::set_options( { 'verbosity' => 3 } );
-		Fink::Config::set_options( { 'Pedantic' => 1 } );
-		$looksgood = Fink::Validation::validate_dpkg_file($self->get_debpath()."/".$self->get_debname());
-		Fink::Config::set_options( { 'verbosity' => $tempverb } );
-		Fink::Config::set_options( { 'Pedantic' => 0 } );
-	}
-
-	unless ($looksgood) {
-		die "Please correct the above problems and try again!\n";
+		my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
+		Fink::Config::set_options( {
+			'verbosity' => 3,
+			'Pedantic'  => 1
+			} );
+		Fink::Validation::validate_dpkg_file($self->get_debpath()."/".$self->get_debname())
+			or die "Please correct the above problems and try again!\n";
+		Fink::Config::set_options(\%saved_options);
 	}
 
 	unless (symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname()) {

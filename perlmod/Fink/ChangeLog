@@ -1,5 +1,12 @@
 2005-02-27  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm, PkgVersion.pm: Better scoping and more flexible
+	handling of Config options for automatic validation with -m
+	* Engine.pm: Allow -m for 'fink update'. Allow synonyms for fink
+	cmds when checking whether -m is allowed.
+
+2005-02-27  Daniel Macks  <dmacks@netspace.org>
+
 	* VirtPackage.pm: add Homepage to the install script failure for
 	virtual packages.
 

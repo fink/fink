@@ -223,11 +223,13 @@ sub process {
 		Fink::Shlibs->require_packages();
 	}
 
-	if (Fink::Config::get_option("maintainermode") && ($cmd =~ /install/i || $cmd =~ /build/i)) {
-		print STDERR "Running in Maintainer Mode\n";
-	} elsif (Fink::Config::get_option("maintainermode")) {
-		&print_breaking("Maintainer mode is only available for (re)build and (re)install, continuing $cmd without maintainer mode.");
-		Fink::Config::set_options( { "maintainermode" => 0 } );
+	if (Fink::Config::get_option("maintainermode")) {
+		if (grep { $commands{$_}->[0] eq $proc } qw/ build rebuild install reinstall update /) {
+			print STDERR "Running in Maintainer Mode\n";
+		} else {
+			&print_breaking("Maintainer mode is only available for (re)build, (re)install, and update. Continuing $cmd without maintainer mode...");
+			Fink::Config::set_options( { "maintainermode" => 0 } );
+		}
 	}
 
 	$::SIG{INT} = sub { die "User interrupt.\n" };
@@ -1339,23 +1341,21 @@ sub real_install {
 		unless (defined $package) {
 			die "no package found for specification '$pkgspec'!\n";
 		}
+
+		if (Fink::Config::get_option("maintainermode")) {
+			my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
+			Fink::Config::set_options( {
+				'verbosity' => 3,
+				'Pedantic'  => 1
+				} );
+			Fink::Validation::validate_info_file($package->get_info_filename())
+				or die "Please correct the above problems and try again!\n";
+			Fink::Config::set_options(\%saved_options);
+		}
+
 		# no duplicates here
 		#	 (dependencies is different, but those are checked later)
 		$pkgname = $package->get_name();
-		my $looksgood = 1;
-		if (Fink::Config::get_option("maintainermode")) {
-			my $tempverb = Fink::Config::get_option("verbosity");
-			Fink::Config::set_options( { 'verbosity' => 3 } );
-			Fink::Config::set_options( { 'Pedantic' => 1 } );
-			$looksgood = Fink::Validation::validate_info_file($package->get_info_filename());
-			Fink::Config::set_options( { 'verbosity' => $tempverb } );
-			Fink::Config::set_options( { 'Pedantic' => 0 } );
-		}
-
-		unless ($looksgood) {
-			die "Please correct the above problems and try again!\n";
-		}
-
 		if (exists $deps{$pkgname}) {
 			print "Duplicate request for package '$pkgname' ignored.\n";
 			next;
