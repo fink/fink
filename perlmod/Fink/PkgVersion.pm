@@ -985,6 +985,14 @@ sub phase_unpack {
 		return;
 	}
 
+	my ($gcc);
+	my %gcchash = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3');
+
+	if ($self->has_param("GCC")) {
+	    $gcc = $self->param("GCC");
+	    die "\n\nYou have the wrong version of gcc selected; run the command\n\n     sudo gcc_select " . $gcchash{$gcc} . "\n\n(and/or install a more recent version of the Developer Tools)\nto correct this problem.\n" unless (`gcc_select` =~ /version\ $gcc/);
+	}
+
 	$bdir = $self->get_fullname();
 
 	$verbosity = "";
@@ -1553,8 +1561,11 @@ EOF
 	close(CONTROL) or die "can't write control file for ".$self->get_fullname().": $!\n";
 
 	### update Mach-O Object List
+	###
+	### (but not for distributions prior to 10.3)
 
 	our %prebound_files = ();
+	if ($config->param("Distribution") > 10.2) {
 
 	eval {
 		require File::Find;
@@ -1629,6 +1640,7 @@ EOF
 			close(DEPS);
 		}
 	}
+    } # conditional on distribution > 10.2
 
 	### create scripts as neccessary
 
