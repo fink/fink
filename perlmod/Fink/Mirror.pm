@@ -39,7 +39,7 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK	 = qw(&fetch_url &fetch_url_to_file);
+	@EXPORT_OK	 = qw();
 }
 our @EXPORT_OK;
 
@@ -142,7 +142,7 @@ sub new_from_url {
 
   $self->{name} = "Original URL";
   $self->{package} = $package;
-    
+
   $self->{data}->{"primary"} = [ $url ];
 
   $self->initialize();
@@ -160,13 +160,14 @@ sub merge_master_mirror {
 	$DB::single = 1;	
 
 	foreach $key (keys %{$mirror->{data}}){	
-		s/^/master:/ for @{ $mirror->{data}->{$key} };
 		if (exists $self->{data}->{$key}) {
 			for $url (@{ $mirror->{data}->{$key} }) {
-				push @{$self->{data}->{$key}}, $url;
+				(my $masterurl = $url) =~ s/^/master:/;
+				push @{$self->{data}->{$key}}, $masterurl;
 			}
 		} else {
-			$self->{data}->{$key} = $mirror->{data}->{$key};
+			@{ $self->{data}->{$key} } = @{ $mirror->{data}->{$key} };
+			s/^/master:/ for (@{ $self->{data}->{$key} });
 		}
 	}
  	
@@ -191,7 +192,7 @@ sub get_site {
 
 	if ($self->{lastused}) {
 		$url = $self->{lastused};
-  	    $url .= "/" unless $url =~ /\/$/;
+		$url .= "/" unless $url =~ /\/$/;
 		return $url;
 	}
 
@@ -280,10 +281,10 @@ sub get_site_retry {
 	}
 	# ask the user
 	if($printmode) {
-		#just printing URLs, never ask, never retry same mirror
-	    if($default == 2) {
-	    	$default = 1;
-	    }
+		# just printing URLs, never ask, never retry same mirror
+		if($default == 2) {
+			$default = 1;
+		}
 		$result = $choice_list[$default - 1];
 	} else {
 		my $nexttext;

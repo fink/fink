@@ -23,13 +23,14 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp &print_breaking
-					  &prompt &prompt_boolean);
+					  &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
 use Fink::Shlibs;
 use Fink::FinkVersion qw(&pkginfo_version);
+use Fink::Mirror;
 
 use File::Find;
 
@@ -53,107 +54,125 @@ END { }				# module clean-up code here (global destructor)
 ### check for new Fink release
 
 sub check {
-	my $usecvs = shift || 0;
+	my $useopt = shift || 0;
 	my ($srcdir, $finkdir, $latest_fink, $installed_version, $answer);
 
 	$srcdir = "$basepath/src";
 	$finkdir = "$basepath/fink";
+	if ($useopt != 0) {
+		&print_breaking("\n Please note: the command 'fink selfupdate' "
+				. "should be used for routine updating; you only need to use " 
+				. "'fink selfupdate-cvs' or 'fink selfupdate-rsync' if you are "
+				. "changing your update method. \n\n");
+	}
+	if ((! defined($config->param("SelfUpdateMethod") )) and ! $useopt == 0){
+		if ($useopt == 1) {
+			$answer = "cvs";	
+		}
+		elsif ($useopt == 2) {
+			$answer = "rsync";
+		}
+		else {
+		    $answer = "point";
+		}
+		&print_breaking("fink is setting your default update method to $answer \n");
+		$config->set_param("SelfUpdateMethod", $answer);
+		$config->save();
+	}
 
-	if (-d "$finkdir/CVS") {
-		if ($usecvs) {
-			$answer = 1;
+	# The user has not chosen a selfupdatemethod yet, always ask
+	# if the fink.conf setting is not there.
+	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
+		&print_breaking("fink needs you to choose a SelfUpdateMethod. \n");
+		$answer = &prompt_selection("Choose an update method", 1, {"rsync" => "rsync",
+			"cvs" => "cvs", "point" => "Stick to point releases"}, "rsync","cvs","point");
+		$config->set_param("SelfUpdateMethod", $answer);
+		$config->save();	
+	    }
+
+	# By now the config param SelfUpdateMethod should be set.
+	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
+		if (-f "$finkdir/stamp-rsync-live") {
+			unlink "$finkdir/stamp-rsync-live";
+		}
+		if (-d "$finkdir/dists/CVS") {
+			&do_direct_cvs();
+			&do_finish();
+			return;
 		} else {
-			print "\n";
-			$answer =
-				&prompt_boolean("Your Fink installation is set up to update package ".
-								"descriptions directly from CVS. Do you want to ".
-								"use this setup and update now?", 1);
-		}
-		if (not $answer) {
+			&setup_direct_cvs();
+			&do_finish();
 			return;
 		}
-
-		&do_direct_cvs();
+	}
+	elsif (($config->param("SelfUpdateMethod") eq "rsync") and $useopt != 1){
+		&do_direct_rsync();
 		&do_finish();
 		return;
 	}
-
+	# Hm, we were called with a different option than the default :(
 	$installed_version = &pkginfo_version();
-	if ($installed_version eq "cvs" or -d "$finkdir/dists/CVS") {
-		print "\n";
+	my $selfupdatemethod = $config->param("SelfUpdateMethod");
+	if (($selfupdatemethod ne "rsync") and $useopt == 2) {
 		$answer =
-			&prompt_boolean("You have previously used CVS to update package ".
-							"descriptions, but your Fink installation is not ".
-							"set up for direct CVS updating (without inject.pl). ".
-							"Do you want to set up direct CVS updating now?", 1);
-		if (not $answer) {
+			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
+					. "Do you wish to change the default selfupdate method ".
+				"to rsync?",1);
+		if (! $answer) {
+			return;
+		    }
+		$config->set_param("SelfUpdateMethod", "rsync");
+		$config->save();	
+		&do_direct_rsync();
+		&do_finish();
+		return;		
+	    }
+	if (($selfupdatemethod ne "cvs") and $useopt == 1) {
+		$answer =
+			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
+					. "Do you wish to change the default selfupdate method ".
+				"to cvs?",1);
+		if (! $answer) {
 			return;
 		}
-
+		$config->set_param("SelfUpdateMethod", "cvs");
+		$config->save();	
 		&setup_direct_cvs();
 		&do_finish();
 		return;
 	}
-
-
-	if ($usecvs or not $config->param_boolean("SelfUpdateNoCVS")) {
-		print "\n";
-		$answer =
-			&prompt_boolean("The selfupdate function can track point releases ".
-							"or it can set up your Fink installation to update ".
-							"package descriptions from CVS. Updating from CVS ".
-							"has the advantage that it is more up to date than ".
-							"the last point release. On the other hand, ".
-							"the point release may be more mature or have ".
-							"less bugs. Nevertheless, CVS is recommended. ".
-							"Do you want to set up direct CVS updating?",
-							$usecvs);
-		if (not $answer) {
-			print "\n";
-			&print_breaking("Okay, the selfupdate command will stick to point ".
-							"releases from now on. If you ever rethink your ".
-							"decision, run 'fink selfupdate-cvs' to be asked ".
-							"again.");
-			print "\n";
+	if (($config->param("SelfUpdateMethod") eq "point")) {
+		# get the file with the current release number
+		my $distro = $Fink::Config::distribution;
+		my $currentfink;
+		$currentfink = "CURRENT-FINK-$distro";
+		### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
+		if ($distro =~ /10.1/) {
+				$currentfink = "LATEST-FINK";
 		}
-	} else {
-		$answer = 0;
-	}
-	if ($answer) {
-		&setup_direct_cvs();
+	
+		if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
+			die "Can't get latest version info\n";
+		}
+		$latest_fink = `/bin/cat $srcdir/$currentfink`;
+		chomp($latest_fink);
+		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" )
+		{
+			# check if we need to upgrade
+			if (&version_cmp($latest_fink . '-1', '<=', $installed_version . '-1')) {
+				print "\n";
+				&print_breaking("You already have the package descriptions from ".
+								"the latest Fink point release. ".
+								"(installed:$installed_version available:$latest_fink)");
+				return;
+			}
+		} else {
+			&execute("/bin/rm -f $finkdir/stamp-rsync-live $finkdir/stamp-cvs-live");
+			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
+		}
+		&do_tarball($latest_fink);
 		&do_finish();
-		return;
 	}
-
-	# remember the choice
-	$config->set_param("SelfUpdateNoCVS", "true");
-	$config->save();
-
-	# get the file with the current release number
-	my $currentfink;
-	$currentfink = "CURRENT-FINK";
-	### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
-	if ($Fink::Config::distribution =~ /10.1/) {
-			$currentfink = "LATEST-FINK";
-	}
-
-	if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
-		die "Can't get latest version info\n";
-	}
-
-	# check if we need to upgrade
-	$latest_fink = `cat $srcdir/$currentfink`;
-	chomp($latest_fink);
-	if (&version_cmp($latest_fink . '-1', '<=', $installed_version . '-1')) {
-		print "\n";
-		&print_breaking("You already have the package descriptions from ".
-						"the latest Fink point release. ".
-						"(installed:$installed_version available:$latest_fink)");
-		return;
-	}
-
-	&do_tarball($latest_fink);
-	&do_finish();
 }
 
 ### set up direct cvs
@@ -201,15 +220,15 @@ sub setup_direct_cvs {
 	$tempfinkdir = "$tempdir/fink";
 
 	if (-d $tempdir) {
-		if (&execute("rm -rf $tempdir")) {
+		if (&execute("/bin/rm -rf $tempdir")) {
 			die "Can't remove left-over temporary directory '$tempdir'\n";
 		}
 	}
-	if (&execute("mkdir -p $tempdir")) {
+	if (&execute("/bin/mkdir -p $tempdir")) {
 		die "Can't create temporary directory '$tempdir'\n";
 	}
 	if ($username ne "root") {
-		if (&execute("chown $username $tempdir")) {
+		if (&execute("/usr/sbin/chown $username $tempdir")) {
 			die "Can't set ownership of temporary directory '$tempdir'\n";
 		}
 	}
@@ -218,7 +237,7 @@ sub setup_direct_cvs {
 	&print_breaking("Checking to see if we can use hard links to merge ".
 					"the existing tree. Please ignore errors on the next ".
 					"few lines.");
-	if (&execute("touch $finkdir/README; ln $finkdir/README $tempdir/README")) {
+	if (&execute("/usr/bin/touch $finkdir/README; /bin/ln $finkdir/README $tempdir/README")) {
 		$use_hardlinks = 0;
 	} else {
 		$use_hardlinks = 1;
@@ -239,7 +258,7 @@ sub setup_direct_cvs {
 						"is empty).");
 		$cmd = "cvs -d:pserver:anonymous\@cvs.sourceforge.net:/cvsroot/fink login";
 		if ($username ne "root") {
-			$cmd = "su $username -c '$cmd'";
+			$cmd = "/usr/bin/su $username -c '$cmd'";
 		}
 		if (&execute($cmd)) {
 			die "Logging into the CVS server for anonymous read-only access failed.\n";
@@ -252,7 +271,7 @@ sub setup_direct_cvs {
 	}
 	$cmdd = "$cmd checkout -d fink dists";
 	if ($username ne "root") {
-		$cmdd = "su $username -c '$cmdd'";
+		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
 	&print_breaking("Now downloading package descriptions...");
 	if (&execute($cmdd)) {
@@ -262,7 +281,7 @@ sub setup_direct_cvs {
 			chdir "fink" or die "Can't cd to fink\n";
 			$cmdd = "$cmd checkout -d 10.1 packages/dists";
 			if ($username ne "root") {
-					$cmdd = "su $username -c '$cmdd'";
+					$cmdd = "/usr/bin/su $username -c '$cmdd'";
 			}
 			&print_breaking("Now downloading more package descriptions...");
 			if (&execute($cmdd)) {
@@ -288,11 +307,11 @@ sub setup_direct_cvs {
 					 my $linkto;
 					 $linkto = readlink($_)
 						 or die "Can't read target of symlink $File::Find::name: $!\n";
-					 if (&execute("ln -s '$linkto' '$tempfinkdir/$rel'")) {
+					 if (&execute("/bin/ln -s '$linkto' '$tempfinkdir/$rel'")) {
 						 die "Can't create symlink \"$tempfinkdir/$rel\"\n";
 					 }
 				 } elsif (-d and not -d "$tempfinkdir/$rel") {
-					 if (&execute("mkdir '$tempfinkdir/$rel'")) {
+					 if (&execute("/bin/mkdir -p '$tempfinkdir/$rel'")) {
 						 die "Can't create directory \"$tempfinkdir/$rel\"\n";
 					 }
 				 } elsif (-f and not -f "$tempfinkdir/$rel") {
@@ -311,14 +330,14 @@ sub setup_direct_cvs {
 
 	# switch $tempfinkdir to $finkdir
 	chdir $basepath or die "Can't cd to $basepath: $!\n";
-	if (&execute("mv $finkdir $finkdir.old")) {
+	if (&execute("/bin/mv $finkdir $finkdir.old")) {
 		die "Can't move \"$finkdir\" out of the way\n";
 	}
-	if (&execute("mv $tempfinkdir $finkdir")) {
+	if (&execute("/bin/mv $tempfinkdir $finkdir")) {
 		die "Can't move new tree \"$tempfinkdir\" into place at \"$finkdir\". ".
 			"Warning: Your Fink installation is in an inconsistent state now.\n";
 	}
-	&execute("rm -rf $tempdir");
+	&execute("/bin/rm -rf $tempdir");
 
 	print "\n";
 	&print_breaking("Your Fink installation was successfully set up for ".
@@ -351,7 +370,7 @@ sub do_direct_cvs {
 
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
-		$cmd = "su $username -c '$cmd'";
+		$cmd = "/usr/bin/su $username -c '$cmd'";
 		$msg .= "The 'su' command will be used to run the cvs command as the ".
 				"user '$username'. ";
 	}
@@ -408,7 +427,7 @@ sub do_tarball {
 
 	# unpack it
 	if (-e $dir) {
-		if (&execute("rm -rf $dir")) {
+		if (&execute("/bin/rm -rf $dir")) {
 			die "can't remove existing directory $dir\n";
 		}
 	}
@@ -429,7 +448,7 @@ sub do_tarball {
 	}
 	chdir $downloaddir or die "Can't cd to $downloaddir: $!\n";
 	if (-e $dir) {
-		&execute("rm -rf $dir");
+		&execute("/bin/rm -rf $dir");
 	}
 }
 
@@ -438,12 +457,23 @@ sub do_tarball {
 sub do_finish {
 	my $package;
 
-	# re-read package info
+	# forget the package info
 	Fink::Package->forget_packages();
-	Fink::Package->require_packages();
 	Fink::Shlibs->forget_shlibs();
-	Fink::Shlibs->require_shlibs();
 
+	# delete the old package DB
+	if (-e "$basepath/var/db/fink.db") {
+		unlink "$basepath/var/db/fink.db";
+	}
+
+	# delete the old shlibs DB
+	if (-e "$basepath/var/db/shlibs.db") {
+		unlink "$basepath/var/db/shlibs.db";
+	}
+
+	# ...and then read it back in
+	Fink::Package->require_packages();
+	Fink::Shlibs->require_shlibs();
 
 	# update the package manager itself first if necessary (that is, if a
 	# newer version is available).
@@ -451,11 +481,6 @@ sub do_finish {
 	if (not $package->is_installed()) {
 		Fink::Engine::cmd_install("fink");
 	
-		# delete the old package DB, so that the new package manager rebuilds it
-		if (-e "$basepath/var/db/fink.db") {
-			unlink "$basepath/var/db/fink.db";
-		}
-		
 		# re-execute ourselves before we update the rest
 		print "Re-executing fink to use the new version...\n";
 		exec "$basepath/bin/fink selfupdate-finish";
@@ -477,7 +502,7 @@ sub finish {
 	@elist = Fink::Package->list_essential_packages();
 
 	# add some non-essential but important ones
-	push @elist, qw(apt apt-shlibs storable-pm);
+	push @elist, qw(apt apt-shlibs storable-pm bzip2-dev gettext-dev gettext-bin libiconv-dev ncurses-dev);
 
 	# update them
 	Fink::Engine::cmd_install(@elist);	
@@ -488,6 +513,145 @@ sub finish {
 					"You should now update the other packages ".
 					"using commands like 'fink update-all'.");
 	print "\n";
+}
+
+sub rsync_check {
+	&do_direct_rsync();
+	&do_finish();
+}
+
+sub do_direct_rsync {
+	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
+	my ($timecmd, $oldts, $newts);
+	my $origmirror;
+	my $dist = $Fink::Config::distribution;
+	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://master.us.finkmirrors.net/finkinfo/");
+	my $touchcmd = "/usr/bin/touch stamp-rsync-live && /bin/rm -f stamp-cvs-live";
+	# add rsync quiet flag if verbosity level permits
+	my $verbosity = "-q";
+	my $nohfs ="";
+	if (Fink::Config::verbosity_level() > 1) {
+		$verbosity = "-v";
+	}
+	if (system("rsync -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {
+		$nohfs = "--nohfs";
+	}
+	$descdir = "$basepath/fink";
+	chdir $descdir or die "Can't cd to $descdir: $!\n";
+
+
+	$origmirror = Fink::Mirror->get_by_name("rsync");
+
+RSYNCAGAIN:
+	$rsynchost = $origmirror->get_site_retry("", 0);
+	if( !grep(/^rsync:/,$rsynchost) ) {
+		print "No mirrors worked!  Bailing.\n";
+		exit 1;
+	}
+
+	# Fetch the timestamp for comparison
+	$timecmd = "rsync -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp";
+	if (&execute($timecmd)) {
+		print "Failed to fetch the timestamp file from the rsync server: $rsynchost.  Check the error messages above.\n";
+		goto RSYNCAGAIN;
+	}
+	# If there's no TIMESTAMP file, then we haven't synced from rsync
+	# before, so there's no checking we can do.  Blaze on past.
+	if ( -f "$descdir/TIMESTAMP" ) {
+		open TS, "$descdir/TIMESTAMP";
+		$oldts = <TS>;
+		close TS;
+		chomp $oldts;
+		# Make sure the timestamp only contains digits
+		if ($oldts =~ /\D/) {
+			unlink("$descdir/TIMESTAMP.tmp");
+			die "The timestamp file $descdir/TIMESTAMP contains non-numeric characters.  This is illegal.  Refusing to continue.\n";
+		}
+
+		open TS, "$descdir/TIMESTAMP.tmp";
+		$newts = <TS>;
+		close TS;
+		chomp $newts;
+		# Make sure the timestamp only contains digits
+		if ($oldts =~ /\D/) {
+			unlink("$descdir/TIMESTAMP.tmp");
+			die "The timestamp file fetched from $rsynchost contains non-numeric characters.  This is illegal.  Refusing to continue.\n";
+		}
+		
+		if ( $oldts > $newts ) {
+			# error out complaining that we're trying to update
+			# from something older than what we already have.
+			unlink("$descdir/TIMESTAMP.tmp");
+			print "The timestamp of the server is older than what you already have.\n";
+			exit 1;
+		}
+
+	} 
+
+	# If the Distributions line has been updated...
+	if (! -d "$descdir/$dist") {
+		&execute("/bin/mkdir -p '$descdir/$dist'")
+	}
+	@sb = stat("$descdir/$dist");
+
+	# We need to remove the CVS directories, since what we're
+	# going to put there isn't from cvs.  Leaving those directories
+	# there will thoroughly confuse things if someone later does 
+	# selfupdate-cvs.  However, don't actually do the removal until
+	# we've tried to put something there.
+	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
+	
+	my $rinclist = "";
+	foreach $tree ($config->get_treelist()) {
+		next unless ($tree =~ /stable/);
+
+		$rsynchost =~ s/\/*$//;
+		$dist      =~ s/\/*$//;
+		$tree      =~ s/\/*$//;
+
+		my $oldpart = "";
+		my @line = split /\//,$tree;
+
+		$rinclist .= " --include='$dist/'";
+		$oldpart = "$dist";
+		for(my $i = 0; defined $line[$i]; $i++) {
+			$oldpart = "$oldpart/$line[$i]";
+			$rinclist .= " --include='$oldpart/'";
+		}
+		$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/*' --include='$oldpart/finkinfo/**/*'";
+
+		if (! -d "$basepath/fink/$dist/$tree" ) {
+			&execute("/bin/mkdir -p '$basepath/fink/$dist/$tree'")
+		}
+	}
+	$cmd = "rsync -az --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
+	if ($sb[4] != 0 and $> != $sb[4]) {
+		($username) = getpwuid($sb[4]);
+		$cmd = "/usr/bin/su $username -c \"$cmd\"";
+		system("/usr/sbin/chown -R $username '$basepath/fink/$dist'");
+	}
+	&print_breaking($msg);
+
+	if (&execute($cmd)) {
+		print "Updating $tree using rsync failed. Check the error messages above.\n";
+		goto RSYNCAGAIN;
+	} else {
+		foreach $tree ($config->get_treelist()) {
+			next unless ($tree =~ /stable/);
+
+			$rsynchost =~ s/\/*$//;
+			$dist      =~ s/\/*$//;
+			$tree      =~ s/\/*$//;
+			&execute("/usr/bin/find '$basepath/fink/$dist/$tree' -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
+		}
+	}
+
+	&execute("/bin/rm -rf '$basepath/fink/$dist/CVS'");
+	&execute("/bin/rm -rf '$basepath/fink/CVS'");
+	&execute($touchcmd);
+	# cleanup after ourselves and continue with the update.
+	unlink("$descdir/TIMESTAMP");
+	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
 }
 
 

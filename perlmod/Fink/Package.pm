@@ -22,36 +22,24 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(&read_properties &latest_version &version_cmp &parse_fullversion
-					  &print_breaking &execute);
+use Fink::Services qw(&read_properties &latest_version &version_cmp 
+                      &parse_fullversion &print_breaking);
 use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
 use File::Find;
-use Fcntl ':mode'; # for search_comparedb
 
 use strict;
 use warnings;
 
-BEGIN {
-	use Exporter ();
-	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION	 = 1.00;
-	@ISA		 = qw(Exporter Fink::Base);
-	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw();	# eg: qw($Var1 %Hashit &func3);
-	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
-}
-our @EXPORT_OK;
+our $VERSION = 1.00;
+our @ISA = qw(Fink::Base);
 
-our ($have_packages, @package_list, @essential_packages, $essential_valid, %package_hash, 
-				$use_cache, $db_outdated, $db_mtime);
-$have_packages = 0;
-@package_list = ();
-%package_hash = ();
-@essential_packages = ();
-$essential_valid = 0;
-$db_outdated = 1;
-$db_mtime = 0;
+our $have_packages = 0;
+our $packages = {};
+our @essential_packages = ();
+our $essential_valid = 0;
+our $db_outdated = 1;
+our $db_mtime = 0;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -85,8 +73,7 @@ sub initialize {
 	$self->{_virtual} = 1;
 	$self->{_providers} = [];
 
-	push @package_list, $self;
-	$package_hash{$self->{package}} = $self;
+	$packages->{$self->{package}} = $self;
 }
 
 ### get package name
@@ -100,8 +87,13 @@ sub get_name {
 ### get pure virtual package flag
 
 sub is_virtual {
+	use Fink::VirtPackage;
 	my $self = shift;
 
+	if (Fink::VirtPackage->query_package($self->{_name})) {
+		# Fix to set VirtPackage.pm pkgs as virtuals level 2
+		$self->{_virtual} = 2;
+	}
 	return $self->{_virtual};
 }
 
@@ -153,7 +145,7 @@ sub get_matching_versions {
 	my @include_list = @_;
 	my (@list, $version, $vo, $relation, $reqversion);
 
-	if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+	if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
 		$relation = $1;
 		$reqversion = $2;
 	} else {
@@ -214,6 +206,17 @@ sub is_any_installed {
 	return 0;
 }
 
+sub is_any_present{
+	my $self = shift;
+	my ($version);
+
+	foreach $version (keys %{$self->{_versions}}) {
+		return 1
+			if $self->{_versions}->{$version}->is_present();
+	}
+	return 0;
+}
+
 ### get version object by exact name
 
 sub get_version {
@@ -237,7 +240,7 @@ sub package_by_name {
 	my $pkgname = shift;
 	my $package;
 
-	return $package_hash{lc $pkgname};
+	return $packages->{lc $pkgname};
 }
 
 ### get package by exact name, create when not found
@@ -247,7 +250,7 @@ sub package_by_name_create {
 	my $pkgname = shift;
 	my $package;
 
-	return $package_hash{lc $pkgname} || Fink::Package->new_with_name($pkgname);
+	return $packages->{lc $pkgname} || Fink::Package->new_with_name($pkgname);
 }
 
 ### list all packages
@@ -255,7 +258,7 @@ sub package_by_name_create {
 sub list_packages {
 	shift;	# class method - ignore first parameter
 
-	return keys %package_hash;
+	return keys %$packages;
 }
 
 ### list essential packages
@@ -266,7 +269,7 @@ sub list_essential_packages {
 
 	if (not $essential_valid) {
 		@essential_packages = ();
-		foreach $package (@package_list) {
+		foreach $package (values %$packages) {
 			$version = &latest_version($package->list_versions());
 			$vnode = $package->get_version($version);
 			if (defined($vnode) && $vnode->param_boolean("Essential")) {
@@ -294,8 +297,7 @@ sub forget_packages {
 	shift;	# class method - ignore first parameter
 
 	$have_packages = 0;
-	@package_list = ();
-	%package_hash = ();
+	%$packages = ();
 	@essential_packages = ();
 	$essential_valid = 0;
 	$db_outdated = 1;
@@ -332,11 +334,7 @@ sub scan_all {
 			
 			# If the index is not outdated, we can use it, and thus safe a lot of time
 			 if (not $db_outdated) {
-				%package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
-				my ($pkgtmp);
-				foreach $pkgtmp (keys %package_hash) {
-					push @package_list, $package_hash{$pkgtmp};
-				}
+				$packages = Storable::retrieve("$basepath/var/db/fink.db");
 			 }
 		}
 	}
@@ -356,9 +354,9 @@ sub scan_all {
 
 		# create dummy object
 		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0];
-			$hash->{version} = $versions[1];
-			$hash->{revision} = $versions[2];
+			$hash->{epoch} = $versions[0] if defined($versions[0]);
+			$hash->{version} = $versions[1] if defined($versions[1]);
+			$hash->{revision} = $versions[2] if defined($versions[2]);
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
@@ -375,9 +373,9 @@ sub scan_all {
 
 		# create dummy object
 		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0];
-			$hash->{version} = $versions[1];
-			$hash->{revision} = $versions[2];
+			$hash->{epoch} = $versions[0] if defined($versions[0]);
+			$hash->{version} = $versions[1] if defined($versions[1]);
+			$hash->{revision} = $versions[2] if defined($versions[2]);
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
@@ -386,37 +384,21 @@ sub scan_all {
 	}
 	$have_packages = 1;
 
-	print "Information about ".($#package_list+1)." packages read in ",
-		(time - $time), " seconds.\n";
+	printf "Information about %d packages read in %d seconds.\n", 
+               scalar(values %$packages), (time - $time);
 }
 
 ### scan for info files and compare to $db_mtime
 
 sub search_comparedb {
 	my $path = shift;
-	my (@files, $file, $fullpath, @stats);
+	$path .= "/";  # forces find to follow the symlink
 
-	# FIXME: should probably just check dirs of $config->get_treelist()
-	opendir(DIR, $path) || die "can't opendir $path: $!";
-	@files = grep { !/^[\.#]/ } readdir(DIR);
-	closedir DIR;
-
-	foreach $file (@files) {
-		$fullpath = "$path/$file"; 
-
-		if (-d $fullpath) {
-			next if $file eq "binary-$debarch";
-			next if $file eq "CVS";
-			return 1 if (&search_comparedb($fullpath));
-		}
-		else {
-			next if !(substr($file, length($file)-5) eq ".info");
-			@stats = stat($fullpath);
-			return 1 if ($stats[9] > $db_mtime);
-		}
-	}
-	
-	return 0;
+	# Using find is much faster than doing it in Perl
+	return
+	  (grep !m{/(CVS|binary-$debarch)/},
+	   `/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db`)
+		 ? 1 : 0;
 }
 
 ### read the packages and update the database, if needed and we are root
@@ -438,7 +420,8 @@ sub update_db {
 			unless (-d "$basepath/var/db") {
 				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 			}
-			Storable::store (\%package_hash, "$basepath/var/db/fink.db");
+			Storable::store ($packages, "$basepath/var/db/fink.db.tmp");
+			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
 			print "done.\n";
 		} else {
 			&print_breaking( "\nFink has detected that your package cache is out of date and needs" .
@@ -481,6 +464,14 @@ sub scan {
 			print "No version number for package $pkgname in $filename\n";
 			next;
 		}
+		# fields that should be converted from multiline to
+		# single-line
+		for my $field ('builddepends', 'depends', 'files') {
+			if (exists $properties->{$field}) {
+				$properties->{$field} =~ s/[\r\n]+/ /gs;
+				$properties->{$field} =~ s/\s+/ /gs;
+			}
+		}
 
 		# get/create package object
 		$package = Fink::Package->package_by_name_create($pkgname);
@@ -519,5 +510,4 @@ sub inject_description {
 }
 
 
-### EOF
 1;

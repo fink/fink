@@ -22,7 +22,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &expand_percent &get_arch);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch);
 use Fink::Config qw($config $basepath $buildpath);
 
 use strict;
@@ -41,7 +41,12 @@ our @EXPORT_OK;
 
 # Currently, the Set* and NoSet* fields only support a limited list of variables.
 our @set_vars =
-	qw(cc cflags cpp cppflags cxx cxxflags dyld_library_path ld ldflags library_path libs macosx_deployment_target make mflags);
+	qw(
+		cc cflags cpp cppflags cxx cxxflags dyld_library_path
+		ld_prebind ld_prebind_allow_overlap ld_force_no_prebind
+		ld_seg_addr_table ld ldflags library_path libs
+		macosx_deployment_target make mflags makeflags
+	);
 
 # Required fields.
 our @required_fields =
@@ -50,7 +55,7 @@ our @required_fields =
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
 	(
-		qw(essential nosourcedirectory updateconfigguess updatelibtool updatepod),
+		qw(essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests),
 		map {"noset".$_} @set_vars
 	);
 
@@ -61,8 +66,18 @@ our %obsolete_fields = map {$_, 1}
 # Fields to check for hardcoded /sw
 our %check_hardcode_fields = map {$_, 1}
 	( 
-	    qw(patchscript compilescript installscript),
-	    (map {"set".$_} @set_vars)
+		qw(
+		 patchscript
+		 compilescript
+		 installscript
+		 shlibs
+		 preinstscript
+		 postinstscript
+		 prermscript
+		 postrmscript
+		 conffiles
+		),
+		(map {"set".$_} @set_vars)
 	);
 
 # Fields in which %n/%v can and should be used
@@ -77,7 +92,7 @@ our %name_version_fields = map {$_, 1}
 our %allowed_type_values = map {$_, 1}
 	(
 	 "nosource", "bundle", "perl", 
-	 "perl 5.6.0", "perl 5.6.1", "perl 5.8.0"
+	 "perl 5.6.0", "perl 5.6.1", "perl 5.8.0", "perl 5.8.1"
 	 );
 
 
@@ -90,8 +105,8 @@ our %allowed_license_values = map {$_, 1}
 	 "Restrictive", "Commercial"
 	);
 
-# List of all known fields.
-our %known_fields = map {$_, 1}
+# List of all valid fields.
+our %valid_fields = map {$_, 1}
 	(
 		qw(
 		 package
@@ -102,6 +117,7 @@ our %known_fields = map {$_, 1}
 		 maintainer
 		 depends
 		 builddepends
+		 buildconflicts
 		 provides
 		 conflicts
 		 replaces
@@ -123,6 +139,7 @@ our %known_fields = map {$_, 1}
 		 updatelibtoolindirs
 		 updatepomakefile
 		 updatepod
+		 noperltests
 		 patch
 		 patchscript
 		 configureparams
@@ -157,28 +174,74 @@ our %known_fields = map {$_, 1}
 		)
 	);
 
+# List of all fields which are legal in a splitoff
+our %splitoff_valid_fields = map {$_, 1}
+	(
+		qw(
+		 package
+		 files
+		 type
+		 depends
+		 builddepends
+		 buildconflicts
+		 provides
+		 conflicts
+		 replaces
+		 recommends
+		 suggests
+		 enhances
+		 pre-depends
+		 essential
+		 builddependsonly
+		 installscript
+		 shlibs
+		 runtimevars
+		 jarfiles
+		 preinstscript
+		 postinstscript
+		 prermscript
+		 postrmscript
+		 conffiles
+		 infodocs
+		 docfiles
+		 daemonicfile
+		 daemonicname
+		 description
+		 descdetail
+		 descusage
+		 descpackaging
+		 descport
+		 homepage
+		 license
+		)
+	);
+
+
+
 END { }				# module clean-up code here (global destructor)
 
 
 
 # Should check/verifies the following in .info files:
-#		+ the filename matches %f.info
-#		+ patch file is present
-#		+ all required fields are present
-#		+ warn if obsolete fields are encountered
-#		+ warn about missing Description/Maintainer/License fields
-#		+ warn about overlong Description fields
-#		+ warn about Description starting with "A" or "An" or containing the package name
-#		+ warn if boolean fields contain bogus values
-#		+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
-#			(excluded from this are fields like Description, Homepage etc.)
-#		+ warn if unknown fields are encountered
-#		+ warn if /sw is hardcoded in the script or set fields
+#	+ the filename matches %f.info
+#	+ patch file is present
+#	+ all required fields are present
+#	+ warn if obsolete fields are encountered
+#	+ warn about missing Description/Maintainer/License fields
+#	+ warn about overlong Description fields
+#	+ warn about Description starting with "A" or "An" or containing the package name
+#	+ warn if boolean fields contain bogus values
+#	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
+#		(excluded from this are fields like Description, Homepage etc.)
+#	+ warn if unknown fields are encountered
+#	+ warn if /sw is hardcoded in the script or set fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#		- error if format is violated (e.g. bad here-doc)
-#		- if type is bundle/nosource - warn about usage of "Source" etc.
-# ... other things, make suggestions ;)
+#	- if type is bundle/nosource - warn about usage of "Source" etc.
+#	- better validation of splitoffs
+#	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
+#	  it uses ">" instead of ">>".
+#	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
 	my $filename = shift;
@@ -294,10 +357,10 @@ sub validate_info_file {
 
 		# If this field permits percent expansion, check if %f/%n/%v should be used
 		if ($name_version_fields{$field} and $value) {
-			 if ($value =~ /\Q$pkgfullname\E/) {
+			 if ($value =~ /\b\Q$pkgfullname\E\b/) {
 				 print "Warning: Field \"$field\" contains full package name. Use %f instead. ($filename)\n";
 				 $looks_good = 0;
-			 } elsif ($value =~ /\Q$pkgversion\E/) {
+			 } elsif ($value =~ /\b\Q$pkgversion\E\b/) {
 				 print "Warning: Field \"$field\" contains package version. Use %v instead. ($filename)\n";
 				 $looks_good = 0;
 			 }
@@ -309,14 +372,64 @@ sub validate_info_file {
 			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
 			$looks_good = 0;
 		}
+
+		if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {
+			print "Warning: Field \"$field\" contains entries that end in \"/\" ($filename)\n";
+			$looks_good = 0;
+		}
+
 		# Check for hardcoded /sw.
 		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
-		    print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
-		    $looks_good = 0;
-		    next;
+			print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
+			$looks_good = 0;
+			next;
 		}
+
+		# Validate splitoffs
+		if ($field =~ m/^splitoff([2-9]|\d\d)?$/) {
+			# Parse the splitoff properties
+			my $splitoff_properties = $properties->{$field};
+			my $splitoff_field = $field;
+			$splitoff_properties =~ s/^\s+//gm;
+			$splitoff_properties = &read_properties_var($filename, $splitoff_properties);
+			# Right now, only 'Package' is a required field for a splitoff.
+			foreach $field (qw(package)) {
+				unless ($splitoff_properties->{lc $field}) {
+					print "Error: Required field \"$field\" missing for \"$splitoff_field\". ($filename)\n";
+					$looks_good = 0;
+				}
+			}
+		
+			foreach $field (keys %$splitoff_properties) {
+				$value = $splitoff_properties->{$field};
+
+				if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {
+					print "Warning: Field \"$field\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
+					$looks_good = 0;
+				}
+
+				# Check for hardcoded /sw.
+				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
+					print "Warning: Field \"$field\" of \"$splitoff_field\" appears to contain a hardcoded /sw. ($filename)\n";
+					$looks_good = 0;
+					next;
+				}
+
+				# Warn if field is unknown or invalid within a splitoff
+				unless ($splitoff_valid_fields{$field}) {
+					if ($valid_fields{$field}) {
+						print "Warning: Field \"$field\" of \"$splitoff_field\" is not valid in splitoff. ($filename)\n";
+					} else {
+						print "Warning: Field \"$field\" of \"$splitoff_field\" is unknown. ($filename)\n";
+					}
+					$looks_good = 0;
+					next;
+				}
+			}
+		}
+
 		# Warn if field is unknown
-		unless ($known_fields{$field}
+		unless ($valid_fields{$field}
 				 or $field =~ m/^splitoff([2-9]|\d\d)$/
 				 or $field =~ m/^source([2-9]|\d\d)$/
 				 or $field =~ m/^source([2-9]|\d\d)-md5$/
@@ -327,7 +440,6 @@ sub validate_info_file {
 			$looks_good = 0;
 			next;
 		}
-
 	}
 
 	# Warn for missing / overlong package descriptions
@@ -356,7 +468,7 @@ sub validate_info_file {
 			print "Warning: Description starts with lower case. ($filename)\n";
 			$looks_good = 0;
 		}
-		if ($value =~ /\b\Q$pkgname\E\b/) {
+		if ($value =~ /\b\Q$pkgname\E\b/i) {
 			print "Warning: Description contains package name. ($filename)\n";
 			$looks_good = 0;
 		}
@@ -422,18 +534,23 @@ sub validate_info_file {
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
 # - usage of other non-standard subdirs 
 # - storage of a .bundle inside /sw/lib/perl5/darwin or /sw/lib/perl5/auto
+# - Emacs packages
+#     - installation of .elc files
+#     - installing files directly in /sw/share/emacs/site-lisp
 # - ideas?
 #
 sub validate_dpkg_file {
-	my $filename = shift;
+	my $dpkg_filename = shift;
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/");
 	my ($pid, $bad_dir);
-	
-	print "Validating .deb file $filename...\n";
+	my $filename;
+	my $looks_good = 1;
+
+	print "Validating .deb file $dpkg_filename...\n";
 	
 	# Quick & Dirty solution!!!
-	# This is a potential security risk, we should maybe filter $filename...
-	$pid = open(DPKG_CONTENTS, "dpkg --contents $filename |") or die "Couldn't run dpkg: $!\n";
+	# This is a potential security risk, we should maybe filter $dpkg_filename...
+	$pid = open(DPKG_CONTENTS, "dpkg --contents $dpkg_filename |") or die "Couldn't run dpkg: $!\n";
 	while (<DPKG_CONTENTS>) {
 		# process
 		if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
@@ -442,10 +559,22 @@ sub validate_dpkg_file {
 			next if $filename eq "/";
 			if (not $filename =~ /^$basepath/) {
 				print "Warning: File \"$filename\" installed outside of $basepath\n";
+				$looks_good = 0;
 			} elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
-				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n"
+				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
+				$looks_good = 0;
 			} elsif ( $filename =~/^($basepath\/lib\/perl5\/darwin\/.*\.bundle)/ ) {
-				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n"
+				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
+				$looks_good = 0;
+			} elsif ( ($filename =~/^($basepath\/.*\.elc)$/) &&
+				  (not (($dpkg_filename =~ /^emacs[0-9][0-9]/) ||
+					($dpkg_filename =~ /xemacs/)))) {
+				$looks_good = 0;
+				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
+			} elsif ( ($filename =~/^($basepath\/share\/emacs\/site-lisp\/[^\/]+)$/) &&
+				  (not $dpkg_filename =~ /^emacsen-common_/)) {
+				$looks_good = 0;
+				print "Warning: File installed directly in $basepath/share/emacs/site-lisp. Files should be installed in a package subdirectory.\n  Offending file: $1\n";
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.
@@ -453,6 +582,7 @@ sub validate_dpkg_file {
 					if ($filename =~ /^$bad_dir/ and not $filename eq "$basepath/src/") {
 						print "Warning: File installed into deprecated directory $bad_dir\n";
 						print "					Offender is $filename\n";
+						$looks_good = 0;
 						last;
 					}
 				}
@@ -460,6 +590,10 @@ sub validate_dpkg_file {
 		}
 	}
 	close(DPKG_CONTENTS) or die "Error on close: $!\n";
+	
+	if ($looks_good and Fink::Config::verbosity_level() == 3) {
+		print "Package looks good!\n";
+	}
 }
 
 

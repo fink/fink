@@ -52,15 +52,13 @@ sub bootstrap {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
 	my @plist = ("gettext", "tar", "dpkg-bootstrap");
-	my @addlist = ("apt", "apt-shlibs", "storable-pm");
+	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "ncurses-dev");
 	if ("$]" == "5.006") {
-		push @addlist, "storable-pm560";
+		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
 	} elsif ("$]" == "5.006001") {
-		push @addlist, "system-perl561", "storable-pm561";
+		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
 	} elsif ("$]" == "5.008") {
-		push @addlist, "system-perl580";
 	} elsif ("$]" == "5.008001") {
-		push @addlist, "system-perl581";
 	} else {
 		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
 	}
@@ -70,18 +68,18 @@ sub bootstrap {
 
 	# create directories
 	if (-e $bsbase) {
-		&execute("rm -rf $bsbase");
+		&execute("/bin/rm -rf $bsbase");
 	}
-	&execute("mkdir -p $bsbase");
-	&execute("mkdir -p $bsbase/bin");
-	&execute("mkdir -p $bsbase/sbin");
-	&execute("mkdir -p $bsbase/lib");
+	&execute("/bin/mkdir -p $bsbase");
+	&execute("/bin/mkdir -p $bsbase/bin");
+	&execute("/bin/mkdir -p $bsbase/sbin");
+	&execute("/bin/mkdir -p $bsbase/lib");
 
 	# create empty dpkg database
-	&execute("mkdir -p $basepath/var/lib/dpkg");
-	&execute("touch $basepath/var/lib/dpkg/status");
-	&execute("touch $basepath/var/lib/dpkg/available");
-	&execute("touch $basepath/var/lib/dpkg/diversions");
+	&execute("/bin/mkdir -p $basepath/var/lib/dpkg");
+	&execute("/usr/bin/touch $basepath/var/lib/dpkg/status");
+	&execute("/usr/bin/touch $basepath/var/lib/dpkg/available");
+	&execute("/usr/bin/touch $basepath/var/lib/dpkg/diversions");
 
 	# set paths so that everything is found
 	$save_path = $ENV{PATH};
@@ -138,7 +136,7 @@ sub bootstrap {
 	print "\n";
 	&print_breaking("BOOTSTRAP DONE. Cleaning up.");
 	print "\n";
-	&execute("rm -rf $bsbase");
+	&execute("/bin/rm -rf $bsbase");
 
 	$ENV{PATH} = $save_path;
 }
@@ -156,7 +154,52 @@ sub get_bsbase {
 # determine the distribution.
 sub check_host {
 	my $host = shift @_;
-	my $distribution;
+	my ($distribution, $gcc, $build);
+
+	# We check to see if gcc 3.3 is installed, and if it is the correct version.
+	# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
+	#
+	# (Note: the June 2003 Developer Tools had build 1435, the August 2003 ones
+	#  had build 1493.)
+
+	$gcc = "";
+	if (-x '/usr/bin/gcc-3.3') {
+		foreach(`/usr/bin/gcc-3.3 --version`) {
+			if (/build (\d+)\)/) {
+				$build = $1;
+				last;
+			}
+		}
+		($build >= 1493) or die <<END;
+
+Your version of the gcc 3.3 compiler is out of date.  Please update to the 
+August 2003 Developer Tools update, or to Xcode, and try again.
+
+END
+		chomp(my $gcc_select = `gcc_select`);
+		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
+			$gcc_select = 'an unknown version';
+		}
+		if ($gcc_select !~ /^3.3/) {
+			die <<END;
+
+Since you have gcc 3.3 installed, fink must be bootstrapped or updated using 
+that compiler.  However, you currently have gcc $gcc_select selected.  To correct 
+this problem, run the command: 
+
+  sudo gcc_select 3.3 
+
+END
+		}
+		$gcc = "-gcc3.3";
+	}
+
+# 10.2 users who do not have gcc at all are installing binary only, so they get
+# to move to 10.2-gcc3.3 also
+
+	if (not -x '/usr/bin/gcc') {
+		$gcc = "-gcc3.3";
+	}
 
 	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 		&print_breaking("This system is supported and tested.");
@@ -164,16 +207,25 @@ sub check_host {
 	} elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.1";
-	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-6]/) {
+	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-8]/) {
 		&print_breaking("This system is supported and tested.");
-		$distribution = "10.2";
-	} elsif ($host =~ /^powerpc-apple-darwin(6\.[7-9]\.)/) {
+		$distribution = "10.2$gcc";
+	} elsif ($host =~ /^powerpc-apple-darwin6\..*/) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
-		$distribution = "10.2";
-	} elsif ($host =~ /^powerpc-apple-darwin(7\.[0-9]\.)/) {
+		$distribution = "10.2$gcc";
+	} elsif ($host =~ /^powerpc-apple-darwin7\.0\.0/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "10.3";
+	} elsif ($host =~ /^powerpc-apple-darwin7\..*/) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
+		$distribution = "10.3";
+	} elsif ($host =~ /^powerpc-apple-darwin[8-9]\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of Mac OS X might work with Fink, but there are no " .
+			"guarantees.");
 		$distribution = "10.3";
 	} elsif ($host =~ /^i386-apple-darwin(6\.[0-6]|[7-9]\.)/) {
 		&print_breaking("Fink is currently not supported on x86 ".

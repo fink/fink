@@ -25,20 +25,39 @@ package Fink::Base;
 use strict;
 use warnings;
 
-BEGIN {
-	use Exporter ();
-	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION	 = 1.00;
-	@ISA		 = qw(Exporter);
-	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw();	# eg: qw($Var1 %Hashit &func3);
-	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
-}
-our @EXPORT_OK;
+require Exporter;
+our $VERSION	 = 1.00;
+our @ISA	 = qw(Exporter);
 
-END { }				# module clean-up code here (global destructor)
+=head1 NAME
 
-### empty constructor
+Fink::Base - basic parameter handling
+
+=head1 SYNOPSIS
+
+  package My::Fink;
+  require Fink::Base;
+  @ISA = qw(Fink::Base);
+
+  my $obj = My::Fink->new_from_properties({ key1 => val1, ...});
+  my $val = $obj->param($param);
+  $obj->set_param($param, $val);
+
+=head1 DESCRIPTION
+
+Basic parameter handling for fink objects.
+
+=head2 Constructors
+
+=over 4
+
+=item new
+
+  my $obj = Fink::Base->new;
+
+Create a new, empty fink object.
+
+=cut
 
 sub new {
 	my $proto = shift;
@@ -52,20 +71,25 @@ sub new {
 	return $self;
 }
 
-### contruct from hashref
+
+=item new_from_properties
+
+  my $obj = Fink::Base->new_from_properties({ key1 => val1, ...});
+
+Create a new fink object setting its parameters to the given hash.
+
+Any key with a leading _ is ignored.
+
+=cut
 
 sub new_from_properties {
-	my $proto = shift;
+	my($proto, $props) = @_;
 	my $class = ref($proto) || $proto;
-	my $properties = shift;
 
-	my $self = {};
-	bless($self, $class);
+	my $self = bless({}, $class);
 
-	my ($key, $value);
-	while (($key, $value) = each %$properties) {
-		$self->{$key} = $value
-			unless substr($key,0,1) eq "_";
+	while (my($key, $value) = each %$props) {
+		$self->{$key} = $value unless $key =~ /^_/;
 	}
 
 	$self->initialize();
@@ -73,12 +97,38 @@ sub new_from_properties {
 	return $self;
 }
 
-### self-initialization
+=item initialize
 
-sub initialize {
-}
+  $obj->initialize;
 
-### retrieve parameter, returns undef if not found
+I<Protected method, do not call directly>.
+
+All Fink::Base constructors will call initialize() just before returning
+the object.
+
+The default initialize() is empty.  You may override.
+
+=cut
+
+sub initialize { }
+
+
+=back
+
+
+=head2 Parameter queries
+
+All keys are used case insensitively.
+
+=over 4
+
+=item param
+
+  my $value = $obj->param($param);
+
+Returns the $value of the given $param.
+
+=cut
 
 sub param {
 	my $self = shift;
@@ -90,7 +140,33 @@ sub param {
 	return undef;
 }
 
-### retreive parameter, return default value if not found
+=item set_param
+
+  $obj->set_param($param, $value);
+
+Sets the $param to $value.  If $value is undef or '' the $param is deleted.
+
+=cut
+
+sub set_param {
+	my($self, $key, $value) = @_;
+
+	if (not defined($value) or $value eq "") {
+		delete $self->{lc $key};
+	} else {
+		$self->{lc $key} = $value;
+	}
+}
+
+
+=item param_default
+
+  my $value = $obj->param_default($param, $default_value);
+
+Like param() but if the $param does not exist as a parameter $default_value
+will be used.
+
+=cut
 
 sub param_default {
 	my $self = shift;
@@ -106,7 +182,15 @@ sub param_default {
 	return $default_value;
 }
 
-### retreive boolean parameter, false if not found
+
+=item param_boolean
+
+  my $value = $obj->param_boolean($param);
+
+Interprets the value of $param as a boolean.  "True", "Yes", "On" and "1" are
+all considered true while everything else is false.
+
+=cut
 
 sub param_boolean {
 	my $self = shift;
@@ -122,7 +206,13 @@ sub param_boolean {
 	return 0;
 }
 
-### check if parameter exists
+=item has_param
+
+  my $exists = $obj->has_param($param);
+
+Checks to see if the given $param has been set.
+
+=cut
 
 sub has_param {
 	my $self = shift;
@@ -134,7 +224,9 @@ sub has_param {
 	return 0;
 }
 
+=back
+
+=cut
 
 
-### EOF
 1;

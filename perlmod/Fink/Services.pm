@@ -37,37 +37,78 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
 					  &read_properties_multival
-					  &filename &execute &execute_script &expand_percent
-					  &print_breaking &print_breaking_prefix
-					  &print_breaking_twoprefix
+					  &execute &execute_script &expand_percent
+					  &filename &print_breaking
 					  &prompt &prompt_boolean &prompt_selection
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
-					  &file_MD5_checksum &get_arch);
+					  &file_MD5_checksum &get_arch &get_sw_vers
+					  &get_system_perl_version &get_path);
 }
 our @EXPORT_OK;
 
 # non-exported package globals go here
 our $linelength = 77;
 our $arch;
+our $system_perl_version;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
 
-### create configuration
+Fink::Services - functions for text processing and user interaction
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+These functions handle a variety of text (file and string) parsing,
+outupt formatting, and user interaction/response tasks.
+
+=head2 Functions
+
+No functions are exported by default. You can get whichever ones you
+need with things like:
+
+    use Fink::Services '&read_config';
+    use Fink::Services qw(&execute_script &expand_percent);
+
+=over 4
+
+=item read_config
+
+    my $config = read_config $filename;
+    my $config = read_config $filename, \%defaults;
+
+Reads a fink.conf file given by $filename into a new Fink::Config
+object and initializes Fink::Config globals from it. If %defaults is
+given they will be used as defaults for any keys not in the config
+file. The new object is returned.
+
+=cut
 
 sub read_config {
-	my $filename = shift;
-	my ($config_object);
+	my($filename, $defaults) = @_;
 
 	require Fink::Config;
 
-	$config_object = Fink::Config->new_with_path($filename);
+	my $config_object = Fink::Config->new_with_path($filename, $defaults);
 
 	return $config_object;
 }
 
-### read properties file
+=item read_properties
+
+    my $property_hash = read_properties $filename;
+    my $property_hash = read_properties $filename, $notLC;
+
+Reads a text file $filename and returns a ref to a hash of its
+fields. See the description of read_properties_lines for more
+information.
+
+If $filename cannot be read, program will die with an error message.
+
+=cut
 
 sub read_properties {
 	 my ($file) = shift;
@@ -81,7 +122,17 @@ sub read_properties {
 	 return read_properties_lines($file, $notLC, @lines);
 }
 
-### read properties from a variable with text
+=item read_properties_var
+
+    my $property_hash = read_properties_var $filename, $string;
+    my $property_hash = read_properties_var $filename, $string, $notLC;
+
+Parses the multiline text $string and returns a ref to a hash of
+its fields. See the description of read_properties_lines for more
+information. The string $filename is used in parsing-error messages
+but the file is not accessed.
+
+=cut
 
 sub read_properties_var {
 	 my ($file) = shift;
@@ -95,7 +146,50 @@ sub read_properties_var {
 	 return read_properties_lines($file, $notLC, @lines);
 }
 
-### read properties from a list of lines.
+=begin private
+
+=item read_properties_lines
+
+    my $property_hash = read_properties_lines $filename, $notLC, @lines;
+
+Parses the list of text strings @lines and returns a ref to a hash of
+its fields. The string $filename is used in parsing-error messages but
+the file is not accessed.
+
+If $notLC is true, fields are treated in a case-sensitive manner. If
+$notLC is false (including undef), field case is ignored (and
+cannonicalized to lower-case). In functions where passing $notLC is
+optional, not passing is equivalent to false.
+
+See the Fink Packaging Manual, section 2.2 "File Format" for
+information about the format of @lines text.
+
+If errors are encountered while parsing @lines, messages are sent to
+STDOUT, but whatever (possibly incorrect) parsing is returned anyway.
+The following situations are checked:
+
+  More than one occurance of a key. In this situation, the last
+  occurance encountered in @lines is the one returned. Note that the
+  same key can occur in the main package and/or different splitoff
+  packages, up to one time in each.
+
+  Use of RFC-822-style multilining (whitespace indent of second and
+  subsequent lines). This notation has been deprecated in favor of
+  heredoc notation.
+
+  Any unknown/invalid syntax.
+
+  Reaching the end of @lines while a heredoc multiline value is still
+  open.
+
+Note that no check is made for the validity of the fields being in the
+file in which they were encountered. The filetype (fink.conf, *.info,
+etc.) is not necessarily known and this routine is used for many
+different filetypes.
+
+=end private
+
+=cut
 
 sub read_properties_lines {
 	my ($file) = shift;
@@ -111,15 +205,33 @@ sub read_properties_lines {
 	foreach (@lines) {
 		chomp;
 		if ($heredoc > 0) {
+			# We are inside a HereDoc
 			if (/^\s*<<\s*$/) {
+				# The heredoc ends here; decrese the nesting level
 				$heredoc--;
-				$hash->{$lastkey} .= $_."\n" if ($heredoc > 0);
+				if ($heredoc > 0) {
+					# This was the end of an inner/nested heredoc. Just append
+					# it to the data of its parent heredoc.
+					$hash->{$lastkey} .= $_."\n";
+				} else {
+					# The heredoc really ended; remove trailing empty lines.
+					$hash->{$lastkey} =~ s/\s+$//;
+					$hash->{$lastkey} .= "\n";
+				}
 			} else {
+				# Append line to the heredoc.
 				$hash->{$lastkey} .= $_."\n";
+
+				# Did a nested heredoc start here? This commonly occurs when
+				# using splitoffs in a package. We need to detect it, else the
+				# parser would have no way to distinguish the end of the inner
+				# heredoc(s) and the end of the top heredoc, since both are
+				# marked by '<<'.
 				$heredoc++ if (/<<\s*$/);
 			}
 		} else {
 			next if /^\s*\#/;		# skip comments
+			next if /^\s*$/;		# skip empty lines
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
 				if (exists $hash->{$lastkey}) {
@@ -132,19 +244,46 @@ sub read_properties_lines {
 					$hash->{$lastkey} = $2;
 				}
 			} elsif (/^\s+(\S.*?)\s*$/) {
+				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
+				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in \"$file\".\n";
+			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
+				# For now tolerate empty fields.
+			} else {
+				print "WARNING: Unable to parse the line \"".$_."\" in \"$file\".\n";
 			}
 		}
 	}
 
 	if ($heredoc > 0) {
-			print "WARNING: End of file reached during here-document in \"$file\".\n";
+		print "WARNING: End of file reached during here-document in \"$file\".\n";
 	}
 
 	return $hash;
 }
 
-### read properties file with multiple values per key
+=item read_properties_multival
+
+    my $property_hash = read_properties_multival $filename;
+    my $property_hash = read_properties_multival $filename, $notLC;
+
+Reads a text file $filename and returns a ref to a hash of its
+fields. See the description of read_properties_lines for more
+information, with the following differences:
+
+  Multiline values are can only be given in RFC-822 style notation,
+  not with heredoc.
+
+  No sanity-checking is performed. Lines that could not be parsed are
+  silently ignored.
+
+  Multiple occurances of a field are allowed. In this case, the value
+  returned in the hash is a ref to an array of the values (in the
+  order as they were encountered in $filename).
+
+If $filename cannot be read, program will die with an error message.
+
+=cut
 
 sub read_properties_multival {
 	my ($file) = shift;
@@ -176,6 +315,20 @@ sub read_properties_multival {
 	return $hash;
 }
 
+=item execute
+
+    my $retval = execute $cmd;
+    my $retval = execute $cmd, $quiet;
+
+Executes $cmd as a single string via a perl system() call and returns
+the exit code from it. The command is printed on STDOUT before being
+executed. If $cmd begins with a # (preceeded optionally by whitespace)
+it is treated as a comment and is not executed. If $quiet is false (or
+not given) and the command failed, a message including the return code
+is sent to STDOUT.
+
+=cut
+
 ### execute a single command
 
 sub execute {
@@ -194,7 +347,27 @@ sub execute {
 	return $?;
 }
 
-### execute a full script
+=item execute_script
+
+     my $retval = execute_script $script;
+     my $retval = execute_script $script, $quiet;
+
+Executes the multiline script $script.
+
+If $script appears to specify an interpretter (i.e., the first line
+begins with #!) the whole thing is stored in a temp file which is made
+chmod +x and executed. If the tempfile could not be created, the
+program dies with an error message. If executing the script fails, the
+tempfile is not deleted and the failure code is returned.
+
+If $script does not specify an interpretter, each line is executed
+individually. In this latter case, the first line that fails causes
+further lines to not be executed and the failure code is returned.
+
+In either case, execution is performed by Fink::Services::execute
+(which see for more information, including the meaning of $quiet).
+
+=cut
 
 sub execute_script {
 	my $script = shift;
@@ -221,7 +394,7 @@ sub execute_script {
 		}
 		return $retval;
 	} elsif (defined $script and $script ne "") {
-		# Execute each line as a seperate command.
+		# Execute each line as a separate command.
 		foreach $cmd (split(/\n/,$script)) {
 			$retval = execute($cmd, $quiet);
 			if ($retval) {
@@ -235,28 +408,97 @@ sub execute_script {
 	}
 }
 
-### do % substitutions on a string
+=item expand_percent
+
+    my $string = expand_percent $template;
+    my $string = expand_percent $template, \%map;
+
+
+Performs percent-expansion on the given multiline $template according
+to %map (if one is defined). If a line in $template begins with #
+(possibly preceeded with whitespace) it is treated as a comment and no
+expansion is performed on that line.
+
+The %map is a hash where the keys are the strings to be replaced (not
+including the percent char). The mapping can be recursive (i.e., a
+value that itself has a percent char), and multiple substitution
+passes are made to deal with this situation. Recursing is currently
+limitted to a single additional level (only (up to) two passes are
+made). If there are still % chars left after the recursion, that means
+$template needs more passes (beyond the recursion limit) or there are
+% patterns in $template that are not in %map. If either of these two
+cases occurs, the program will die with an error message.
+
+To get an actual percent char in the string, protect it as %% in
+$template (similar to printf()). This occurs whether or not there is a
+%map.  This behavior is implemented internally in the function, so you
+should not have ('%'=>'%') in %map. Pecent-delimited percent chars are
+left-associative (again as in printf()). Currently, this %% treatment
+is implemented using a temporary sentinel string of "@PERCENT@", so if
+$template contains @PERCENT@ that will also be replaced with %.
+
+Expansion keys are not limitted to single letters, however, having one
+expansion key that is the beginning of a longer one (d and dir) will
+cause unpredictable results (i.e., "a" and "arch" is bad but "c" and
+"arch" is okay). Note that no such keys are in use at this point.
+
+=cut
 
 sub expand_percent {
 	my $s = shift;
-	my $map = shift;
-	my ($key, $value, $i);
+	my $map = shift || {};
+	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
-	# Values for percent signs expansion may be nested once, to allow
-	# e.g. the definition of %N in terms of %n (used a lot for splitoffs
-	# which do stuff like %N = %n-shlibs). Hence we repeate the expansion
-	# if necessary.
-	my $percent_keys = join('|', keys %$map);
-	for ($i = 0; $i < 2 ; $i++) {
-		$s =~ s/\%($percent_keys)/$map->{$1}/eg;
-		last if not $s =~ /\%/; # Abort early if no percent symbols are left
-	}
+	return $s if (not defined $s);
+	# Bail if there is nothing to expand
+	return $s unless ($s =~ /\%/);
+
+	%map = ( %$map, '%' => '@PERCENT@' );  # Don't touch the caller's copy
+	$percent_keys = join('|', keys %map);
+
+	# split multi lines to process each line incase of comments
+	@lines = split(/\r?\n/, $s);
+
+	foreach $s (@lines) {
+		# if line is a comment don't expand
+		unless ($s =~ /^\s*#/) {
+
+			# Values for percent signs expansion may be nested
+			# once, to allow e.g. the definition of %N in terms of
+			# %n (used a lot for splitoffs which do stuff like
+			# %N = %n-shlibs). Hence we repeate the expansion if
+			# necessary.
+			# Abort as soon as no substitution performed.
+			for ($i = 0; $i < 2 ; $i++) {
+				$s =~ s/\%($percent_keys)/$map{$1}/eg || last;
+				# Abort early if no percent symbols are left
+				last if not $s =~ /\%/;
+			}
 	
-	# If ther are still unexpanded percents left, error out
-	die "Error performing percent expansion: unknown % expansion or nesting too deep!" if $s =~ /\%/;
+			# If ther are still unexpanded percents left, error out
+			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /\%/;
+
+			# Change @PERCENT@ back to % as it should be
+			$s =~ s/\@PERCENT\@/\%/g;
+		}
+		push(@newlines, $s);
+	}
+
+	$s = join("\n", @newlines);
 
 	return $s;
 }
+
+=item filename
+
+    my $file = filename $source_field;
+
+Treats $source_field as a URL or "mirror:" construct as might be found
+in Source: fields of a .info file and returns just the filename (skips
+URL proto/host or mirror-type, and directory hierarchy). Note that the
+presence of colons in the filename will break this function.
+
+=cut
 
 ### isolate filename from path
 
@@ -269,34 +511,32 @@ sub filename {
 	return $s;
 }
 
-### user interaction
+=item print_breaking
+
+    print_breaking $string;
+    print_breaking $string, $linebreak;
+    print_breaking $string, $linebreak, $prefix1;
+    print_breaking $string, $linebreak, $prefix1, $prefix2;
+
+Wraps $string, breaking at word-breaks, and prints it on STDOUT. The
+screen width used is the package global variable $linelength. Breaking
+is performed only at space chars. If $linebreak is true, a linefeed
+will be appended to the last line printed, otherwise one will not be
+appended. Optionally, prefixes can be defined to prepend to each line
+printed: $prefix1 is prepended to the first line, $prefix2 is
+prepended to all other lines. If only $prefix1 is defined, that will
+be prepended to all lines.
+
+=cut
 
 sub print_breaking {
-	my $s = shift;
-	my $linebreak = shift;
-	$linebreak = 1 unless defined $linebreak;
-
-	print_breaking_twoprefix($s, $linebreak, "", "");
-}
-
-sub print_breaking_prefix {
-	my $s = shift;
-	my $linebreak = shift;
-	$linebreak = 1 unless defined $linebreak;
-	my $prefix = shift;
-	$prefix = "" unless defined $prefix;
-
-	print_breaking_twoprefix($s, $linebreak, $prefix, $prefix);
-}
-
-sub print_breaking_twoprefix {
 	my $s = shift;
 	my $linebreak = shift;
 	$linebreak = 1 unless defined $linebreak;
 	my $prefix1 = shift;
 	$prefix1 = "" unless defined $prefix1;
 	my $prefix2 = shift;
-	$prefix2 = "" unless defined $prefix2;
+	$prefix2 = $prefix1 unless defined $prefix2;
 	my ($pos, $t, $reallength, $prefix, $first);
 
 	chomp($s);
@@ -324,6 +564,19 @@ sub print_breaking_twoprefix {
 	print "\n" if $linebreak;
 }
 
+=item prompt
+    my $answer = prompt $prompt;
+    my $answer = prompt $prompt, $default;
+
+Ask the user a question and return the answer. The user is prompted
+via STDOUT/STDIN using $prompt (which is word-wrapped). If the user
+returns a null string or Fink is configured to automatically accept
+defaults (i.e., bin/fink was invoked with the -y or --yes option), the
+default answer $default is returned (or a null string if no $default
+is not defined).
+
+=cut
+
 sub prompt {
 	my $prompt = shift;
 	my $default_value = shift;
@@ -338,12 +591,26 @@ sub prompt {
 		print "(assuming default)\n";
 		$answer = $default_value;
 	} else {
-		$answer = <STDIN>;
+		$answer = <STDIN> || "";
 		chomp($answer);
 		$answer = $default_value if $answer eq "";
 	}
 	return $answer;
 }
+
+=item prompt_boolean
+    my $answer = prompt_boolean $prompt;
+    my $answer = prompt_boolean $prompt, $default_true;
+
+Ask the user a yes/no question and return the logical value of the
+answer. The user is prompted via STDOUT/STDIN using $prompt (which is
+word-wrapped). If $default_true is true or undef, the default answer
+is true, otherwise it is false. If the user returns a null string or
+Fink is configured to automatically accept defaults (i.e., bin/fink
+was invoked with the -y or --yes option), the default answer is
+returned.
+
+=cut
 
 sub prompt_boolean {
 	my $prompt = shift;
@@ -361,7 +628,7 @@ sub prompt_boolean {
 			$meaning = $default_value;
 			last;
 		}
-		$answer = <STDIN>;
+		$answer = <STDIN> || "";
 		chomp($answer);
 		if ($answer eq "") {
 			$meaning = $default_value;
@@ -378,13 +645,27 @@ sub prompt_boolean {
 	return $meaning;
 }
 
-# select from a list of choices
-# parameters:
-#	 prompt					- a string
-#	 default_value	- a number between 1 and the number of choices
-#	 names					- a hashref containing display names for the choices,
-#										indexed by the choices themselves (not their index)
-#	 the choices		- a list of choices; one of these will be returned
+=item prompt_selection
+    my $answer = prompt_selection $prompt, $default, \%names, @choices;
+
+Ask the user a multiple-choice question and return the answer. The
+user is prompted via STDOUT/STDIN using $prompt (which is
+word-wrapped) and a list of choices (the values of %names). The
+choices are numbered (beginning with 1) and the user selects by
+number. The list @choices is the keys of %names listed in the order
+they are to be presented to the user, and the value returned is the
+item in @choices corresponding to the choice number. If the user
+returns a null string or Fink is configured to automatically accept
+defaults (i.e., bin/fink was invoked with the -y or --yes option), the
+answer-number $default is used.
+
+This seems ripe for replacement by an ordered hash or an array of
+array-refs ([key1,val1],[key2,val2],...) or a simple pairwise list
+(key1,val1,key2,val2,...) and the actual default value instead of
+default value-number (abstracting for an interface other than
+numbered-choices).
+
+=cut
 
 sub prompt_selection {
 	my $prompt = shift;
@@ -413,7 +694,7 @@ sub prompt_selection {
 	if ($dontask) {
 		print "(assuming default)\n";
 	} else {
-		$answer = <STDIN>;
+		$answer = <STDIN> || "";
 		chomp($answer);
 		if (!$answer) {
 			$answer = 0;
@@ -426,31 +707,54 @@ sub prompt_selection {
 	return $choices[$default_value-1];
 }
 
-### comparing versions
+=item version_cmp
 
+    my $bool = version_cmp $fullversion1, $op, $fullversion2;
+
+Compares the two debian version strings $fullversion1 and
+$fullversion2 according to the binary operator $op. Each version
+string is of the form epoch:version-revision (though one or more of
+these components may be omitted as usual--see the Debian Policy
+Manual, section 5.6.11 "Version" for more information). The operators
+are those used in the debian-package world: << and >> for
+strictly-less-than and strictly-greater-than, <= and >= for
+less-than-or-equal-to and greater-than-or-equal-to, and = for
+equal-to.
+
+The results of the basic comparison (similar to the perl <=> and cmp
+operators) are cached in a package variable so repeated queries about
+the same two version strings does not require repeated parsing and
+element-by-element comparison. The result is cached in both the order
+the packages are given and the reverse, so these later requests can be
+either direction.
+
+=cut
+
+# Caching the results makes fink much faster.
+my %Version_Cmp_Cache = ();
 sub version_cmp {
 	my ($a, $b, $op, $i, $res, @avers, @bvers);
 	$a = shift;
 	$op = shift;
 	$b = shift;
 	
-	@avers = parse_fullversion($a);
-	@bvers = parse_fullversion($b);
-	#compare them in version array order: Epoch, Version, Revision
-	for ($i = 0; $i<=$#avers; $i++ )
-	{
-		if(! defined $avers[$i])
-		{
-			$avers[$i] = "";
+	if (exists($Version_Cmp_Cache{$a}{$b})) {
+		$res = $Version_Cmp_Cache{$a}{$b};
+	} else {
+		@avers = parse_fullversion($a);
+		@bvers = parse_fullversion($b);
+		# compare them in version array order: Epoch, Version, Revision
+		for ($i = 0; $i <= $#avers; $i++) {
+			$avers[$i] = "" if (not defined $avers[$i]);
+			$bvers[$i] = "" if (not defined $bvers[$i]);
+			$res = raw_version_cmp($avers[$i], $bvers[$i]);
+			last if $res;
 		}
-		if(! defined $bvers[$i])
-		{
-			$bvers[$i] = "";
-		}
-		$res = raw_version_cmp($avers[$i], $bvers[$i]);
-		last if $res;
-	}				
-					
+
+		$Version_Cmp_Cache{$a}{$b} = $res;
+		$Version_Cmp_Cache{$b}{$a} = - $res;
+	}
+	
 	if ($op eq "<<") {
 		$res = $res < 0 ? 1 : 0;	
 	} elsif ($op eq "<=") {
@@ -462,8 +766,21 @@ sub version_cmp {
 	} elsif ($op eq ">>") {
 		$res = $res > 0 ? 1 : 0;
 	}
+
 	return $res;
 }
+
+=begin private
+
+=item raw_version_cmp
+    my $cmp = raw_version_cmp $item1, $item2;
+
+Compare $item1 and $item2 as debian epoch or version or revision
+strings and return -1, 0, 1 as for the perl <=> or cmp operators.
+
+=end private
+
+=cut
 
 sub raw_version_cmp {
 	my ($a1, $b1, $a2, $b2, @ca, @cb, $res);
@@ -480,7 +797,7 @@ sub raw_version_cmp {
 		@cb = unpack("C*", $1);
 		$b1 = substr($b1,length($1));
 
-		while ($#ca >= 0 and $#cb >= 0) {
+		while (int(@ca) and int(@cb)) {
 			$res = chr($a2 = shift @ca);
 			$a2 += 256 if $res !~ /[A-Za-z]/;
 			$res = chr($b2 = shift @cb);
@@ -509,11 +826,22 @@ sub raw_version_cmp {
 	return $a1 cmp $b1;
 }
 
+=item latest_version
+
+    my $latest = latest_version @versionstrings;
+
+Given a list of one or more debian version strings, return the one
+that is the highest. See the Debian Policy Manual, section 5.6.11
+"Version" for more information.
+
+=cut
+
 sub latest_version {
 	my ($latest, $v);
 
 	$latest = shift;
-	while (defined($v = shift)) {
+	foreach $v (@_) {
+		next unless defined $v;
 		if (version_cmp($v, '>>', $latest)) {
 			$latest = $v;
 		}
@@ -521,22 +849,37 @@ sub latest_version {
 	return $latest;
 }
 
-### parsing full versions
+=item parse_fullversion
 
-# return an array with this pattern : ($epoch, $version, $revision)
-# return undef if a parse error occur
+    my ($epoch, $version, $revision) = parse_fullversion $versionstring;
+
+Parses the given $versionstring of the form epoch:version-revision and
+returns a list of the three components. Epoch and revision are each
+optional and default to zero if absent. Epoch must contain only
+numbers and revision must not contain any hyphens.
+
+If there is an error parsing $versionstring, () is returned.
+
+=cut
+
 sub parse_fullversion {
 	my $fv = shift;
-	if ($fv =~ /^((\d+):)?(.+)-([^-]+)$/) {
+	if ($fv =~ /^(?:(\d+):)?(.+?)(?:-([^-]+))?$/) {
 			# not all package have an epoch
-			return ($2 ? $2 : '0', $3, $4);
+			return ($1 ? $1 : '0', $2, $3 ? $3 : '0');
 	} else {
-			return undef;
+			return ();
 	}
 }
 
+=item collapse_space
 
-### collapse white space inside a string (removes newlines)
+    my $pretty_text = collapse_space $original_text;
+
+Collapses whitespace inside a string. All whitespace sequences are
+converted to a single space char. Newlines are removed.
+
+=cut
 
 sub collapse_space {
 	my $s = shift;
@@ -544,11 +887,18 @@ sub collapse_space {
 	return $s;
 }
 
+=item get_term_width
+
+  my $width = get_term_width;
+
+This function returns the width of the terminal window, or zero if STDOUT 
+is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
+env var if ReadKey is not installed, tries tput if neither are available,
+and if nothing works just returns 80.
+
+=cut
+
 sub get_term_width {
-# This function returns the width of the terminal window, or zero if STDOUT 
-# is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
-# env var if ReadKey is not installed, tries tput if neither are available,
-# and if nothing works just returns 80.
 	my ($width, $dummy);
 	use POSIX qw(isatty);
 	if (isatty(fileno STDOUT))
@@ -582,7 +932,17 @@ sub get_term_width {
 	return $width;
 }
 
-### compute the MD5 checksum for a given file
+=item file_MD5_checksum
+
+    my $md5 = file_MD5_checksum $filename;
+
+Returns the MD5 checksum of the given $filename. Uses /sbin/md5 if it
+is available, otherwise uses the first md5sum in PATH. The output of
+the chosen command is read via an open() pipe and matched against the
+appropriate regexp. If the match fails, a '-' char is returned. If the
+command fails, the program dies with an error message.
+
+=cut
 
 sub file_MD5_checksum {
 	my $filename = shift;
@@ -608,9 +968,15 @@ sub file_MD5_checksum {
 	return $checksum;
 }
 
-# get_arch
-# Returns the architecture string to be used on this platform.
-# For example, "powerpc" for ppc.
+=item get_arch
+
+    my $arch = get_arch;
+
+Returns the architecture string to be used on this platform. For
+example, "powerpc" for ppc.
+
+=cut
+
 sub get_arch {
 	if(not defined $arch) {
 	  $arch = `/usr/bin/uname -p`;
@@ -618,6 +984,90 @@ sub get_arch {
 	}
 	return $arch;
 }
+
+=item get_sw_vers
+
+    my $os_x_version = get_sw_vers;
+
+Returns OS X version (if that's what this platform appears to be, as
+indicated by being able to run /usr/bin/sw_vers). The output of that
+command is parsed and cached in a global configuration option in the
+Fink::Config package so that multiple calls to this function do not
+result in repeated spawning of sw_vers processes.
+
+=cut
+
+sub get_sw_vers {
+	if (not defined Fink::Config::get_option('sw_vers') or Fink::Config::get_option('sw_vers') eq "0" and -x '/usr/bin/sw_vers') {
+		if (open(SWVERS, "sw_vers |")) {
+			while (<SWVERS>) {
+				if (/^ProductVersion:\s*([^\s]+)\s*$/) {
+					Fink::Config::set_options( { 'sw_vers' => $1 } );
+					last;
+				}
+			}
+			close(SWVERS);
+		}
+	}
+	return Fink::Config::get_option('sw_vers');
+}
+
+=item get_system_perl_version
+
+    my $perlversion = get_system_perl_version;
+
+
+Returns the version of perl in that is /usr/bin/perl by running a
+program with it to return its $^V variable. The value is cached, so
+multiple calls to this function do not result in repeated spawning of
+perl processes.
+
+=cut
+
+sub get_system_perl_version {
+	if (not defined $system_perl_version) {
+		if (open(PERL, "/usr/bin/perl -e 'printf \"\%vd\", \$^V' 2>/dev/null |")) {
+			chomp($system_perl_version = <PERL>);
+			close(PERL);
+		}
+	}
+	return $system_perl_version;
+}
+
+=item get_path
+
+    my $path_to_file = get_path $filename;
+
+Returns the full pathname of the first executable occurance of
+$filename in PATH. The correct platform-dependent pathname separator
+is used. This is an all-perl routine that emulates 'which' in csh.
+
+=cut
+
+sub get_path {
+	use File::Spec;
+
+	my $file = shift;
+	my $path = $file;
+	my (@path, $base);
+
+	### Get current user path env
+	@path = File::Spec->path();
+
+	### Get matches and return first match in order of path
+	for $base (map { File::Spec->catfile($_, $file) } @path) {
+		if (-x $base and !-d $base) {
+			$path = $base;
+			last;
+		}
+	}
+
+	return $path;
+}
+
+=back
+
+=cut
 
 ### EOF
 1;

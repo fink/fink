@@ -22,7 +22,7 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&print_breaking &print_breaking_prefix
+use Fink::Services qw(&print_breaking
 					  &prompt_boolean &prompt_selection
 					  &latest_version &execute &get_term_width
 					  &file_MD5_checksum &get_arch);
@@ -84,6 +84,7 @@ our %commands =
 	  'listpackages' => [\&cmd_listpackages, 1, 0],
 	  'selfupdate' => [\&cmd_selfupdate, 0, 1],
 	  'selfupdate-cvs' => [\&cmd_selfupdate_cvs, 0, 1],
+	  'selfupdate-rsync' => [\&cmd_selfupdate_rsync, 0, 1],
 	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
 	  'validate' => [\&cmd_validate, 0, 0],
 	  'check' => [\&cmd_validate, 0, 0],
@@ -91,10 +92,6 @@ our %commands =
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
 	  'depends' => [\&cmd_depends, 1, 0],
 	);
-
-our (%deb_list, %src_list);
-%deb_list = ();
-%src_list = ();
 
 END { }				# module clean-up code here (global destructor)
 
@@ -197,9 +194,9 @@ sub restart_as_root {
 	}
 
 	if ($method eq "sudo") {
-		$cmd = "sudo $cmd";
+		$cmd = "/usr/bin/sudo $cmd";
 	} elsif ($method eq "su") {
-		$cmd = "su root -c '$cmd'";
+		$cmd = "/usr/bin/su root -c '$cmd'";
 	} else {
 		die "Fink is not configured to become root automatically.\n";
 	}
@@ -241,6 +238,11 @@ sub cmd_selfupdate_cvs {
 	Fink::SelfUpdate::check(1);
 }
 
+sub cmd_selfupdate_rsync {
+	require Fink::SelfUpdate;
+	Fink::SelfUpdate::check(2);
+}
+
 sub cmd_selfupdate_finish {
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::finish();
@@ -253,7 +255,8 @@ sub cmd_list {
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag, $description);
-	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer, $pkgtree);
+	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer);
+	my ($buildonly, $pkgtree);
 	my %options =
 	(
 	 "installedstate" => 0
@@ -274,6 +277,7 @@ sub do_real_list {
 				   'uptodate|u'		=> sub {$options{installedstate} |=2;},
 				   'outdated|o'		=> sub {$options{installedstate} |=1;},
 				   'notinstalled|n'	=> sub {$options{installedstate} |=4;},
+				   'buildonly|b'	=> \$buildonly,
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
 				   'tree|r=s'		=> \$pkgtree,
@@ -306,6 +310,7 @@ Options:
   -o, --outdated       - Only list packages for which a newer version is
                          available.
   -n, --notinstalled   - Only list packages which are not installed.
+  -b, --buildonly      - Only list packages which are Build Only Depends
   -s=expr,             - Only list packages in the section(s) matching expr
     --section=expr       (example: fink list --section=x11).
   -m=expr,             - Only list packages with the maintainer(s) matching expr
@@ -389,7 +394,7 @@ EOF
 
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
-		if ($package->is_virtual()) {
+		if ($package->is_virtual() == 1) {
 			$lversion = "";
 			$iflag = "   ";
 			$description = "[virtual package]";
@@ -410,6 +415,9 @@ EOF
 			}
 
 			$description = $vo->get_shortdescription($desclen);
+		}
+		if (defined $buildonly) {
+			next unless ( $vo->param_boolean("builddependsonly") );
 		}
 		if (defined $section) {
 			$section =~ s/[\=]?(.*)/$1/;
@@ -493,7 +501,7 @@ sub cmd_scanpackages {
 		}
 
 		if (! -d $treedir) {
-			if (&execute("mkdir -p $treedir")) {
+			if (&execute("/bin/mkdir -p $treedir")) {
 				die "can't create directory $treedir\n";
 			}
 		}
@@ -660,39 +668,127 @@ sub cmd_fetch_all_missing {
 }
 
 sub cmd_remove {
-	my ($package, @plist);
-	my (@packages);
-
-	@plist = &expand_packages(@_);
-	if ($#plist < 0) {
-		die "no package specified for command 'remove'!\n";
-	}
-	
-	foreach $package (@plist) {
-		push @packages, $package->get_name();
-	}
+	my @packages = get_pkglist("remove", @_);
 
 	Fink::PkgVersion::phase_deactivate(@packages);
 	Fink::Status->invalidate();
 }
 
-sub cmd_purge {
-	my ($package, @plist, @packages, $answer);
+sub get_pkglist {
+	my $cmd = shift;
+	my ($package, @plist, $pname, @selected, $pattern, @packages);
+	my ($vo, @versions);
+	my ($buildonly, $wanthelp);
 
-	@plist = &expand_packages(@_);		 
-	if ($#plist < 0) {
-		die "no package specified for command 'purge'!\n";
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'buildonly|b'	=> \$buildonly,
+		'help|h'	=> \$wanthelp
+	) or die "fink $cmd: unknown option\nType 'fink $cmd --help' for more information.\n";
+
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+
+		print <<"EOF";
+Fink $version
+
+Usage: fink $cmd [options] [string]
+
+Options:
+  -b, --buildonly      - Only packages which are Build Depends Only
+  -h, --help           - This help text.
+
+EOF
+		exit 0;
 	}
 
-	foreach $package (@plist) {
+	Fink::Package->require_packages();
+	Fink::Shlibs->require_shlibs();
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+	@plist = Fink::Package->list_packages();
+	if ($#_ < 0) {
+		if (defined $buildonly) {
+			@selected = @plist;
+		} else {
+			die "no package specified for command '$cmd'!\n";
+		}
+	} else {
+		@selected = ();
+		while (defined($pattern = shift)) {
+			$pattern = lc quotemeta $pattern; # fixes bug about ++ etc in search string.
+			push @selected, grep(/^$pattern$/, @plist);
+		}
+	}
+
+	if ($#selected < 0 ) {
+		die "no package specified for command '$cmd'!\n";
+	}
+
+	foreach $pname (sort @selected) {
+		$package = Fink::Package->package_by_name($pname);
+
+		# Can't purge or remove virtuals
+		next if $package->is_virtual();
+
+		# Can only remove/purge installed pkgs
+		unless ( $package->is_any_installed($package->list_installed_versions()) ) {
+			print "WARNING: $pname is not installed, skipping.\n";
+			next;
+		}
+
+		# shouldn't be able to remove or purge esstential pkgs
+		@versions = $package->list_installed_versions();
+		$vo = $package->get_version($versions[0]);
+		if ( $vo->param_boolean("essential") ) {
+			print "WARNING: $pname is essential, skipping.\n";
+			next;
+		}
+
+		if (defined $buildonly) {
+			next unless ( $vo->param_boolean("builddependsonly") );
+		}
+
 		push @packages, $package->get_name();
 	}
+
+	# Incase no packages meet the requirements above.
+	if ($#packages < 0) {
+		print "Nothing ".$cmd."d\n";
+		exit(0);
+	}
+
+	my $cmp1 = join(" ", $cmd, @packages);
+	my $cmp2 = join(" ", @ARGV);
+
+	if ($cmp1 ne $cmp2) {
+		my $pkglist = join(", ", @packages);
+		my $rmcount = $#packages + 1;
+		print "Fink will attempt to $cmd $rmcount package(s).\n";
+		&print_breaking("$pkglist\n\n");
+
+		my $answer = &prompt_boolean("Do you want to continue?", 1);
+		if (! $answer) {
+			die "$cmd not performed!\n";
+		}
+	}
+
+	return @packages;
+}
+
+sub cmd_purge {
+	my @packages = get_pkglist("purge", @_);
+
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
  
-	$answer = &prompt_boolean("Do you want to continue?", 1);			
+	my $answer = &prompt_boolean("Do you want to continue?", 1);			
 	if (! $answer) {
-		die "Purge not performed\n";
+		die "Purge not performed!\n";
 	} else {
 		Fink::PkgVersion::phase_purge(@packages);
 		Fink::Status->invalidate();
@@ -762,8 +858,33 @@ sub cmd_cleanup {
 	#				 achieved each with single line CLI commands.
 	
 	# Reset list of non-obsolete debs/source files
-	%deb_list = ();
-	%src_list = ();
+	my %deb_list = ();
+	my %src_list = ();
+	
+	# Initialize file counter
+	my %file_count = (
+		'deb' => 0,
+		'symlink' => 0,
+		'src' => 0,
+	);
+	
+	# Anonymous subroutine to find/nuke obsolete debs
+	my $kill_obsolete_debs = sub {
+		if (/^.*\.deb\z/s ) {
+			if (not $deb_list{$File::Find::name}) {
+				# Obsolete deb
+				unlink $File::Find::name and $file_count{'deb'}++;
+			}
+		}
+	};
+	
+	# Anonymous subroutine to find/nuke broken deb symlinks
+	my $kill_broken_links = sub {
+		if(-l && !-e) {
+			# Broken link
+			unlink $File::Find::name and $file_count{'symlink'}++;
+		}
+	};
 
 	# Iterate over all packages and collect the deb files, as well
 	# as all their source files.
@@ -788,11 +909,11 @@ sub cmd_cleanup {
 	}
 	
 	# Now search through all .deb files in /sw/fink/dists/
-	find (\&kill_obsolete_debs, "$basepath/fink/dists");
+	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
 	
 	# Remove broken symlinks in /sw/fink/debs (i.e. those that pointed to 
 	# the .deb files we deleted above).
-	find (\&kill_broken_links, "$basepath/fink/debs");
+	find ($kill_broken_links, "$basepath/fink/debs");
 	
 
 	# Remove obsolete source files. We do not delete immediatly because that
@@ -812,55 +933,13 @@ sub cmd_cleanup {
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
 		if (-f $file) {
-			unlink $file;
-		}
+			unlink $file and $file_count{'src'}++;
 	}
 }
 
-sub kill_obsolete_debs {
-	if (/^.*\.deb\z/s ) {
-		if (not $deb_list{$File::Find::name}) {
-			# Obsolete deb
-			unlink $File::Find::name;
-		}
-	}
-}
-
-### Display the depends for a package
-
-sub cmd_depends {
-	my ($pkg, $package, @deplist, $fullname);
-
-	foreach $pkg (@_) {
-		$package = Fink::PkgVersion->match_package($pkg);
-                unless (defined $package) {
-			print "no package found for specification '$pkg'!\n";
-			next;
-		}
-
-		$fullname = $package->get_fullname();
-		if ($package->find_debfile()) {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "Reading dependencies from ".$fullname." deb file...\n";
-			}
-			@deplist = split(/\s*\,\s*/, $package->get_debdeps());
-		} else {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "Reading dependencies from ".$fullname." info file...\n";
-			}
-			@deplist = split(/\s*\,\s*/, $package->param_default("Depends", ""));
-		}
-
-		print "Depends for $fullname are...\n";
-		print join(', ', @deplist)."\n\n";
-	}
-}
-
-sub kill_broken_links {
-	if(-l && !-e) {
-		# Broken link
-		unlink $File::Find::name;
-	}
+	print 'Obsolete deb packages deleted: ' . $file_count{'deb'} . "\n";
+	print 'Obsolete symlinks deleted: ' . $file_count{'symlink'} . "\n";
+	print 'Obsolete sources deleted: ' . $file_count{'src'} . "\n\n";
 }
 
 ### building and installing
@@ -869,19 +948,19 @@ my ($OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
 	(0, 1, 2, 3);
 
 sub cmd_build {
-	&real_install($OP_BUILD, 0, @_);
+	&real_install($OP_BUILD, 0, 0, @_);
 }
 
 sub cmd_rebuild {
-	&real_install($OP_REBUILD, 0, @_);
+	&real_install($OP_REBUILD, 0, 0, @_);
 }
 
 sub cmd_install {
-	&real_install($OP_INSTALL, 0, @_);
+	&real_install($OP_INSTALL, 0, 0, @_);
 }
 
 sub cmd_reinstall {
-	&real_install($OP_REINSTALL, 0, @_);
+	&real_install($OP_REINSTALL, 0, 0, @_);
 }
 
 sub cmd_update_all {
@@ -894,16 +973,23 @@ sub cmd_update_all {
 		}
 	}
 
-	&real_install($OP_INSTALL, 1, @plist);
+	&real_install($OP_INSTALL, 1, 0, @plist);
 }
+
+use constant PKGNAME => 0;
+use constant PKGOBJ  => 1;  # $item->[1] unused?
+use constant PKGVER  => 2;
+use constant OP      => 3;
+use constant FLAG    => 4;
 
 sub real_install {
 	my $op = shift;
 	my $showlist = shift;
-	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep);
-	my ($all_installed, $any_installed);
+	my $forceoff = shift; # check if this is a secondary loop
+	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $con, $cn);
+	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
-	my (%candidates, @candidates, $pnode);
+	my (%candidates, @candidates, $pnode, $found);
 	my ($oversion, $opackage, $v, $ep, $dp, $dname);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
@@ -913,6 +999,7 @@ sub real_install {
 	}
 
 	%deps = ();		# hash by package name
+	%cons = ();		# hash by package name
 
 	%to_be_rebuilt = ();
 	%already_activated = ();
@@ -950,7 +1037,9 @@ sub real_install {
 
 	@queue = keys %deps;
 	if ($#queue < 0) {
-		print "No packages to install.\n";
+		unless ($forceoff) {
+			print "No packages to install.\n";
+		}
 		return;
 	}
 
@@ -967,31 +1056,34 @@ sub real_install {
 		$item = $deps{$pkgname};
 
 		# check installation state
-		if ($item->[2]->is_installed() and $item->[3] != $OP_REBUILD) {
-			if ($item->[4] == 0) {
-				$item->[4] = 2;
+		if ($item->[PKGVER]->is_installed() and $item->[OP] != $OP_REBUILD) {
+			if ($item->[FLAG] == 0) {
+				$item->[FLAG] = 2;
 			}
 			# already installed, don't think about it any more
 			next;
 		}
 
 		# get list of dependencies
-		if ($item->[3] == $OP_BUILD or
-				($item->[3] == $OP_REBUILD and not $item->[2]->is_installed())) {
+		if ($item->[OP] == $OP_BUILD or
+				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[2]->resolve_depends(2, $op);
-		} elsif (not $item->[2]->is_present() or $item->[3] == $OP_REBUILD) {
+			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends");
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts");
+		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
-			@deplist = $item->[2]->resolve_depends(1, $op);
+			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends");
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts");
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			@deplist = $item->[2]->resolve_depends(0, $op);
+			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends");
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts");
 		}
 		# add essential packages (being careful about packages whose parent is essential)
-		if (not $item->[2]->param_boolean("Essential") and not $item->[2]->param_boolean("_ParentEssential")) {
+		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {
 			push @deplist, @elist;
 		}
 	DEPLOOP: foreach $dep (@deplist) {
@@ -1001,8 +1093,8 @@ sub real_install {
 			foreach $dp (@$dep) {
 				$dname = $dp->get_name();
 				if (exists $deps{$dname} and $deps{$dname}->[2] == $dp) {
-					if ($deps{$dname}->[3] < $OP_INSTALL) {
-						$deps{$dname}->[3] = $OP_INSTALL;
+					if ($deps{$dname}->[OP] < $OP_INSTALL) {
+						$deps{$dname}->[OP] = $OP_INSTALL;
 					}
 					# add a link
 					push @$item, $deps{$dname};
@@ -1036,7 +1128,7 @@ sub real_install {
 				$candidates{$dp->get_name()} = 1;
 				push @candidates, $dp->get_name();
 			}
-			my $found = 0;
+			$found = 0;
 
 			if ($#candidates == 0) {	# only one candidate
 				$dname = $candidates[0];
@@ -1082,24 +1174,51 @@ sub real_install {
 					}
 				}
 			}
-
-			if ($found != 1) {
+			if (not $found) {
+				# See if the user has a regexp to match in fink.conf
+				my $matchstr = $config->param("MatchPackageRegEx");
+				my $matchcount =0;
+				my $usename;
+				if (defined $matchstr) {
+					foreach $dname (@candidates) {
+						if ( $dname =~ $matchstr ) {
+							$matchcount++;
+							$usename = $dname;
+						}
+					}
+					if (1 == $matchcount ) {
+						$dname = $usename;
+						$found = 1;
+					}
+				}
+			}
+			if (not $found) {
 				# let the user pick one
 
 				my $labels = {};
+				my $pkgindex = 1;
+				my $choice = 1;
+				my $founddebcnt = 0;
 				foreach $dname (@candidates) {
 					my $package = Fink::Package->package_by_name($dname);
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
 					my $description = $vo->get_shortdescription(60);
 					$labels->{$dname} = "$dname: $description";
+					if ($package->is_any_present()) {
+						$choice = $pkgindex;
+						$founddebcnt++;
+				   }
+				   $pkgindex++;
 				}
-
+				if ($founddebcnt > 1) {
+				   $choice = 1; # Do not select anything if more than one choice is available
+				}
 				print "\n";
 				&print_breaking("fink needs help picking an alternative to satisfy ".
 								"a virtual dependency. The candidates:");
 				$dname =
-					&prompt_selection("Pick one:", 1, $labels, @candidates);
+					&prompt_selection("Pick one:", $choice, $labels, @candidates);
 			}
 
 			# the dice are rolled...
@@ -1157,20 +1276,45 @@ sub real_install {
 		}
 	}
 
+	CONLOOP: foreach $con (@conlist) {
+		next if $#$con < 0;			# skip empty lists
+
+		# check for installed pkgs (exact revision)
+		foreach $cn (@$con) {
+			if ($cn->is_installed()) {
+				$cname = $cn->get_name();
+				if (exists $cons{$cname}) {
+					die "Internal error: node for $cname already exists\n";
+				}
+				# add node to graph
+				$cons{$cname} = [ $cname, Fink::Package->package_by_name($cname),
+						$cn, $OP_INSTALL, 2 ];
+				next CONLOOP;
+			}
+		}
+	}
+
+
 	# generate summary
 	@requested = ();
 	@additionals = ();
+	@removals = ();
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
-		if ($item->[4] == 0) {
+		if ($item->[FLAG] == 0) {
 			push @additionals, $pkgname;
-		} elsif ($item->[4] == 1) {
+		} elsif ($item->[FLAG] == 1) {
 			push @requested, $pkgname;
 		}
 	}
 
+	foreach $pkgname (sort keys %cons) {
+		push @removals, $pkgname;
+	}
+			
+
 	# display list of requested packages
-	if ($showlist) {
+	if ($showlist && not $forceoff) {
 		$s = "The following ";
 		if ($#requested > 0) {
 			$s .= scalar(@requested)." packages";
@@ -1189,30 +1333,44 @@ sub real_install {
 		}
 		$s .= ":";
 		&print_breaking($s);
-		&print_breaking_prefix(join(" ",@requested), 1, " ");
+		&print_breaking(join(" ",@requested), 1, " ");
 	}
-	# ask user when additional packages are to be installed
-	if ($#additionals >= 0) {
-		if ($#additionals > 0) {
-			&print_breaking("The following ".scalar(@additionals).
+	unless ($forceoff) {
+		# ask user when additional packages are to be installed
+		if ($#additionals >= 0 || $#removals >= 0) {
+			if ($#additionals >= 0) {
+				if ($#additionals > 0) {
+					&print_breaking("The following ".scalar(@additionals).
 							" additional packages will be installed:");
-		} else {
-			&print_breaking("The following additional package ".
+				} else {
+					&print_breaking("The following additional package ".
 							"will be installed:");
-		}
-		&print_breaking_prefix(join(" ",@additionals), 1, " ");
-		$answer = &prompt_boolean("Do you want to continue?", 1);
-		if (! $answer) {
-			die "Dependencies not satisfied\n";
+				}
+				&print_breaking(join(" ",@additionals), 1, " ");
+			}
+			if ($#removals >= 0) {
+				if ($#removals > 0) {
+					&print_breaking("The following ".scalar(@removals).
+							" packages will be removed:");
+				} else {
+					&print_breaking("The following package ".
+							"will be removed:");
+				}
+				&print_breaking(join(" ",@removals), 1, " ");
+			}
+			$answer = &prompt_boolean("Do you want to continue?", 1);
+			if (! $answer) {
+				die "Package requirements not satisfied\n";
+			}
 		}
 	}
 
 	# fetch all packages that need fetching
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
-		next if $item->[3] == $OP_INSTALL and $item->[2]->is_installed();
-		if ($item->[3] == $OP_REBUILD or not $item->[2]->is_present()) {
-			$item->[2]->phase_fetch(1, 0);
+		next if $item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed();
+		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
+			$item->[PKGVER]->phase_fetch(1, 0);
 		}
 	}
 
@@ -1222,10 +1380,10 @@ sub real_install {
 		$any_installed = 0;
 	PACKAGELOOP: foreach $pkgname (sort keys %deps) {
 			$item = $deps{$pkgname};
-			next if (($item->[4] & 2) == 2);	 # already installed
+			next if (($item->[FLAG] & 2) == 2);	 # already installed
 			$all_installed = 0;
 
-			$package = $item->[2];
+			$package = $item->[PKGVER];
 			my $pkg;
 
 			# concatinate dependencies of package and its relatives
@@ -1234,7 +1392,7 @@ sub real_install {
 			my @extendeddeps = ();
 			foreach $dpp (@{$item}[5..$#{$item}]) {
 				$isgood = 1;
-				$dppname = $dpp->[0];
+				$dppname = $dpp->[PKGNAME];
 				if (exists $package->{_relatives}) {
 					foreach $pkgg (@{$package->{_relatives}}){
 						$pkggname = $pkgg->get_name();
@@ -1252,7 +1410,7 @@ sub real_install {
 					if (exists $deps{$name}) {
 						foreach $dpp (@{$deps{$name}}[5..$#{$deps{$name}}]) {
 							$isgood = 1;
-							$dppname = $dpp->[0];
+							$dppname = $dpp->[PKGNAME];
 							foreach $pkgg (@{$package->{_relatives}}){
 								$pkggname = $pkgg->get_name();
 								if ($pkggname eq $dppname) {
@@ -1267,7 +1425,7 @@ sub real_install {
 
 			# check dependencies
 			foreach $dep (@extendeddeps) {
-				next PACKAGELOOP if (($dep->[4] & 2) == 0);
+				next PACKAGELOOP if (($dep->[FLAG] & 2) == 0);
 			}
 
 			my @batch_install;
@@ -1275,7 +1433,7 @@ sub real_install {
 			$any_installed = 1;
 
 			# Mark item as done (FIXME - why can't we just delete it from %deps?)
-			$item->[4] |= 2;
+			$item->[FLAG] |= 2;
 
 			next if $already_activated{$pkgname};
 
@@ -1298,17 +1456,29 @@ sub real_install {
 			# Now (re)build the package if we determined above that it is necessary.
 			my $is_build = $to_be_rebuilt{$pkgname};
 			if ($is_build) {
-				$package->phase_unpack();
-				$package->phase_patch();
-				$package->phase_compile();
-				$package->phase_install();
-				$package->phase_build();
+				### only run one deep per depend
+				### set forceoff to count depth of depends
+				### and to silence the dep engine so it
+				### only asks once at the begining
+				unless ($forceoff) {
+					&real_install($OP_BUILD, 0, 1, $package->get_name());
+					### Double check it didn't already get
+					### installed in an other loop
+					unless ($package->is_installed() &&
+						$op != $OP_REBUILD) {
+						$package->phase_unpack();
+						$package->phase_patch();
+						$package->phase_compile();
+						$package->phase_install();
+						$package->phase_build();
+					}
+				}
 			}
 
 			# Install the package unless we already did that in a previous
 			# iteration, and if the command issued by the user was an "install"
 			# or a "reinstall" or a "rebuild" of an currently installed pkg.
-			if (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
+			if (($item->[OP] == $OP_INSTALL or $item->[OP] == $OP_REINSTALL)
 					 or ($is_build and $package->is_installed())) {
 				push(@batch_install, $package);
 				$already_activated{$pkgname} = 1;
@@ -1325,7 +1495,7 @@ sub real_install {
 					$to_be_rebuilt{$name} = 0;
 					next if $already_activated{$name};
 					# Reinstall any installed splitoff if we just rebuilt
-					if ($is_build and $package->is_installed()) {
+					if ($is_build and $pkg->is_installed()) {
 						push(@batch_install, $pkg);
 						$already_activated{$name} = 1;
 						next;
@@ -1333,8 +1503,8 @@ sub real_install {
 					# Also (re)install if that was requested by the user
 					next unless exists $deps{$name};
 					$item = $deps{$name};
-					if ((($item->[4] & 2) != 2) and
-							($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)) {
+					if ((($item->[FLAG] & 2) != 2) and
+							($item->[OP] == $OP_INSTALL or $item->[OP] == $OP_REINSTALL)) {
 						push(@batch_install, $pkg);
 						$already_activated{$name} = 1;
 					}
@@ -1348,7 +1518,7 @@ sub real_install {
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {
-					$deps{$pkg->get_name()}->[4] |= 2;
+					$deps{$pkg->get_name()}->[FLAG] |= 2;
 			}
 
 		}
@@ -1376,6 +1546,35 @@ sub expand_packages {
 	return @package_list;
 }
 
+### Display the depends for a package
+
+sub cmd_depends {
+	my ($pkg, $package, @deplist, $fullname);
+
+	foreach $pkg (@_) {
+		$package = Fink::PkgVersion->match_package($pkg);
+		unless (defined $package) {
+			print "no package found for specification '$pkg'!\n";
+			next;
+		}
+
+		$fullname = $package->get_fullname();
+		if ($package->find_debfile()) {
+			if (Fink::Config::verbosity_level() > 2) {
+				print "Reading dependencies from ".$fullname." deb file...\n";
+			}
+			@deplist = split(/\s*\,\s*/, $package->get_debdeps());
+		} else {
+			if (Fink::Config::verbosity_level() > 2) {
+				print "Reading dependencies from ".$fullname." info file...\n";
+			}
+			@deplist = split(/\s*\,\s*/, $package->param_default("Depends", ""));
+		}
+
+		print "Depends for $fullname are...\n";
+		print join(', ', @deplist)."\n\n";
+	}
+}
 
 ### EOF
 1;

@@ -24,11 +24,12 @@ package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
-					  &print_breaking &print_breaking_twoprefix
+					  &print_breaking
 					  &prompt_boolean &prompt_selection
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
-					  &get_arch);
+					  &get_arch &get_system_perl_version
+					  &get_path);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -38,6 +39,8 @@ use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 
 use File::Basename qw(&dirname);
+
+use POSIX qw(uname);
 
 use strict;
 use warnings;
@@ -79,7 +82,6 @@ sub initialize {
 	}
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
-
 
 	# path handling
 	if ($filename) {
@@ -128,8 +130,16 @@ sub initialize {
 	$self->{_fullname} = $pkgname."-".$version."-".$revision;
 	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 	# percent-expansions
-	$configure_params = "--prefix=\%p ".
-		$self->param_default("ConfigureParams", "");
+	if ($self->param("_type") eq "perl") {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+
+		$configure_params = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
+			$self->param_default("ConfigureParams", "");
+	} else {
+		$configure_params = "--prefix=\%p ".
+			$self->param_default("ConfigureParams", "");
+	}
 	$destdir = "$buildpath/root-".$self->{_fullname};
 	if ($self->{_type} eq "splitoff") {
 		my $parent = $self->{parent};
@@ -185,16 +195,13 @@ sub initialize {
 		if ($parent->has_param('maintainer')) {
 			$self->{'maintainer'} = $parent->{'maintainer'};
 		}
-		if ($parent->has_param('homepage')) {
-			$self->{'homepage'} = $parent->{'homepage'};
-		}
 		if ($parent->has_param('essential')) {
 		    $self->{'_parentessential'} = $parent->{'essential'};
 		}
 
 		# handle inherited fields
 		our @inherited_fields =
-		 qw(Description DescDetail License);
+		 qw(Description DescDetail Homepage License);
 
 		foreach $field (@inherited_fields) {
 			$field = lc $field;
@@ -277,6 +284,7 @@ sub add_splitoff {
 	# copy version information
 	$properties->{'version'} = $self->{_version};
 	$properties->{'revision'} = $self->{_revision};
+	$properties->{'epoch'} = $self->{_epoch};
 	
 	# set the type, and link the splitoff to its "parent" (=us)
 	$properties->{'type'} = "splitoff";
@@ -395,6 +403,22 @@ sub get_debfile {
 sub get_section {
 	my $self = shift;
 	return $self->{_section};
+}
+
+sub get_instsize {
+	my $self = shift;
+	my $path = shift;
+
+	### FIXME ### This should be done in perl
+	### Need to get the full size in bytes of %i
+	my ($size) = split(/\s+/, `/usr/bin/du -sk "$path" 2>/dev/null`);
+	if ($size =~ /^(\d+)$/) {
+		$size = ($1 * 1024);
+	} else {
+		$size = 0;
+	}
+
+	return $size;
 }
 
 sub get_tree {
@@ -670,10 +694,16 @@ sub find_debfile {
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
-        my $op = shift || 0;
+	my $field = shift;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
+	my ($oper);
+	if (lc($field) eq "conflicts") {
+		$oper = "conflict";
+	} elsif (lc($field) eq "depends") {
+		$oper = "dependency";
+	}
 
 	@deplist = ();
 
@@ -683,45 +713,88 @@ sub resolve_depends {
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list. In 
 	if ($include_build and $self->{_type} eq "splitoff") {
-		push @deplist, ($self->{parent})->resolve_depends(2, $op);
+		push @deplist, ($self->{parent})->resolve_depends(2, $field);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
 		}
 	}
 	
-        ### Add rebuild check here.
-	if ($self->find_debfile() && $op != 2) {
+	unless (lc($field) eq "conflicts" && $include_build == 2) {
 		if (Fink::Config::verbosity_level() > 2) {
-			print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+			print "Reading $oper from ".$self->get_fullname()." ";
 		}
-		@speclist = split(/\s*\,\s*/, $self->get_debdeps());
-	} else {
-                if (Fink::Config::verbosity_level() > 2) {
-			print "Reading dependencies from ".$self->get_fullname()." info file...\n";
+		if ($self->find_debfile() && $op != 2 && lc($field) eq "depends") {
+			if (Fink::Config::verbosity_level() > 2) {
+				print "deb file...\n";
+			}
+			@speclist = split(/\s*\,\s*/, $self->get_debdeps());
+		} else {
+			if (Fink::Config::verbosity_level() > 2) {
+				print "info file...\n";
+			}
+			@speclist = split(/\s*\,\s*/, $self->param_default("$field", ""));
 		}
-
-		@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+# with this primitive form of @speclist, we verify that the "BuildDependsOnly"
+# declarations have not been violated
+		foreach $altspec (@speclist){
+		    BUILDDEPENDSLOOP: foreach $depspec (split(/\s*\|\s*/, $altspec)) {
+			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+			    $depname = $1;
+			    $versionspec = $2;
+			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+			    $depname = $1;
+			    $versionspec = "";
+			} else {
+			    die "Illegal spec format: $depspec\n";
+			}
+			$package = Fink::Package->package_by_name($depname);
+			if (not defined $package) {
+			    print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+			    next; # BUILDDEPENDSLOOP
+			}
+			my ($currentpackage, @dependslist, $dependent, $dependentname);
+			$currentpackage = $self->get_name();
+			@dependslist = $package->get_all_providers();
+			foreach $dependent (@dependslist) {
+			    $dependentname = $dependent->get_name();
+			    if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
+				if ($dependentname eq $depname) {
+				    print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
+				} else {
+				    print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+				}
+			    }
+			}
+		    }
+		}
 	}
+# now we continue to assemble the larger @speclist
 	if ($include_build) {
 		push @speclist,
-			split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
+			split(/\s*\,\s*/, $self->param_default("Build".$field, ""));
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our aplitoffs.
 		# We remember the offset at which we added these in $split_idx, so that we
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
-		foreach	 $splitoff (@{$self->{_splitoffs}}) {
-			if ($splitoff->find_debfile() && $op != 2) {
+		unless (lc($field) eq "conflicts") {
+			foreach	 $splitoff (@{$self->{_splitoffs}}) {
 				if (Fink::Config::verbosity_level() > 2) {
-					print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+					print "Reading $oper from ".$self->get_fullname()." ";
 				}
-				push @speclist,
-					split(/\s*\,\s*/, $splitoff->get_debdeps());
-			} else {
-				push @speclist,
-					split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+				if ($splitoff->find_debfile() && $op != 2 && lc($field) eq "depends") {
+					if (Fink::Config::verbosity_level() > 2) {
+						print "deb file...\n";
+					}
+					push @speclist, split(/\s*\,\s*/, $splitoff->get_debdeps($field));
+				} else {
+					if (Fink::Config::verbosity_level() > 2) {
+						print "info file...\n";
+					}
+					push @speclist, split(/\s*\,\s*/, $splitoff->param_default($field, ""));
+				}
 			}
 		}
 	}
@@ -757,7 +830,7 @@ sub resolve_depends {
 			$package = Fink::Package->package_by_name($depname);
 
 			if (not defined $package) {
-				print "WARNING: While resolving dependency \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 				next;
 			}
 
@@ -769,8 +842,8 @@ sub resolve_depends {
 				push @$altlist, $package->get_all_providers();
 			}
 		}
-		if (scalar(@$altlist) <= 0) {
-			die "Can't resolve dependency \"$altspec\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
+		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
+			die "Can't resolve $oper \"$altspec\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
 		}
 		push @deplist, $altlist;
 		$idx++;
@@ -959,15 +1032,15 @@ sub fetch_source {
 		print "\n";
 		&print_breaking("Downloading '$file' from the URL '$url' failed. ".
 						"There can be several reasons for this:");
-		&print_breaking_twoprefix("The server is too busy to let you in or ".
+		&print_breaking("The server is too busy to let you in or ".
 						"is temporarily down. Try again later.",
 						1, "- ", "	");
-		&print_breaking_twoprefix("There is a network problem. If you are ".
+		&print_breaking("There is a network problem. If you are ".
 						"behind a firewall you may want to check ".
 						"the proxy and passive mode FTP ".
 						"settings. Then try again.",
 						1, "- ", "	");
-		&print_breaking_twoprefix("The file was removed from the server or ".
+		&print_breaking("The file was removed from the server or ".
 						"moved to another directory. The package ".
 						"description must be updated.",
 						1, "- ", "	");
@@ -993,7 +1066,7 @@ sub phase_unpack {
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
 	my ($i, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
-	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip);
+	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
 	if ($self->{_type} eq "bundle") {
 		return;
@@ -1007,6 +1080,33 @@ sub phase_unpack {
 		return;
 	}
 
+	my ($gcc);
+	my %gcchash = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3');
+
+	if ($self->has_param("GCC")) {
+		$gcc = $self->param("GCC");
+		chomp(my $gcc_select = `gcc_select`);
+		if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
+			$gcc_select = 'an unknown version';
+		}
+		if (not exists $gcchash{$gcc}) {
+			$gcchash{$gcc} = $gcc;
+		}
+		if ($gcc_select !~ /^$gcc/) {
+			die <<END;
+
+This package must be compiled with GCC $gcc, but you currently have $gcc_select selected.
+To correct this problem, run the command:
+
+	sudo gcc_select $gcchash{$gcc}
+
+You may need to install a more recent version of the Developer Tools to be able
+to do so.
+
+END
+		}
+	}
+
 	$bdir = $self->get_fullname();
 
 	$verbosity = "";
@@ -1017,14 +1117,14 @@ sub phase_unpack {
 	# remove dir if it exists
 	chdir "$buildpath";
 	if (-e $bdir) {
-		if (&execute("rm -rf $bdir")) {
+		if (&execute("/bin/rm -rf $bdir")) {
 			die "can't remove existing directory $bdir\n";
 		}
 	}
 
 	if ($self->{_type} eq "nosource") {
 		$destdir = "$buildpath/$bdir";
-		if (&execute("mkdir -p $destdir")) {
+		if (&execute("/bin/mkdir -p $destdir")) {
 			die "can't create directory $destdir\n";
 		}
 		return;
@@ -1047,16 +1147,17 @@ sub phase_unpack {
 		
 		# verify the MD5 checksum, if specified
 		$checksum = $self->get_checksum($i);
-		if ($checksum ne "-" ) { # Checksum was specified 
+		$found_archive_sum = &file_MD5_checksum($found_archive);
+		if ($checksum ne "-" ) { # Checksum was specified
 		# compare to the MD5 checksum of the tarball
-			if ($checksum ne &file_MD5_checksum($found_archive)) {
+			if ($checksum ne $found_archive_sum) {
 				# mismatch, ask user what to do
 				$tries++;
-				
 				&print_breaking("The checksum of the file $archive of package ".
 								$self->get_fullname()." is incorrect. The most likely ".
-								"cause for this is a corrupted or incomplete ".
-								"download. It is recommended that you download it ".
+								"cause for this is a corrupted or incomplete download\n".
+								"Expected: $checksum \nActual: $found_archive_sum \n".
+								"It is recommended that you download it ".
 								"again. How do you want to proceed?");
 				$answer =
 					&prompt_selection("Make your choice: ",
@@ -1067,12 +1168,12 @@ sub phase_unpack {
 									"continue" => "Don't download, use existing file" },
 								( "error", "redownload", "continuedownload", "continue" ));
 				if ($answer eq "redownload") {
-					&execute("rm -f $found_archive");
+					&execute("/bin/rm -f $found_archive");
 					$i--;
 					# Axel leaves .st files around for partial files, need to remove
 					if($config->param_default("DownloadMethod") =~ /^axel/)
 					{
-									&execute("rm -f $found_archive.st");
+									&execute("/bin/rm -f $found_archive.st");
 					}
 					next;		# restart loop with same tarball
 				} elsif($answer eq "error") {
@@ -1083,6 +1184,9 @@ sub phase_unpack {
 					next;		# restart loop with same tarball			
 				}
 			}
+		} else {
+		# No checksum was specifed in the .info file, die die die
+			die "No checksum specifed for ".$self->get_fullname()." I got a sum of $found_archive_sum \n";
 		}
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
@@ -1114,7 +1218,7 @@ sub phase_unpack {
 		$bzip2 = "bzip2";
 		$unzip = "unzip";
 		$gzip = "gzip";
-		$cat = "cat";
+		$cat = "/bin/cat";
 
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive .";
@@ -1138,7 +1242,7 @@ sub phase_unpack {
 
 		# create directory
 		if (! -d $destdir) {
-			if (&execute("mkdir -p $destdir")) {
+			if (&execute("/bin/mkdir -p $destdir")) {
 				die "can't create directory $destdir\n";
 			}
 		}
@@ -1156,7 +1260,7 @@ sub phase_unpack {
 								"and download it again?",
 								($tries >= 3) ? 0 : 1);
 			if ($answer) {
-				&execute("rm -f $found_archive");
+				&execute("/bin/rm -f $found_archive");
 				$i--;
 				next;		# restart loop with same tarball
 			} else {
@@ -1281,22 +1385,20 @@ sub phase_compile {
 	# generate compilation script
 	if ($self->has_param("CompileScript")) {
 		$compile_script = $self->param("CompileScript");
-	} elsif ($self->param("_type") eq "perl") {
-		# grab perl version, if present
-		my $perlversion = "";
-		my $perldirectory = "";
-		if ($self->has_param("_perlversion")) {
-			$perlversion = $self->param("_perlversion");
-			$perldirectory = "/" . $perlversion;
-		}
-		$compile_script =
-			"perl$perlversion Makefile.PL PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin\n".
-			"make\n".
-			"make test";
 	} else {
-		$compile_script = 
-			"./configure \%c\n".
-			"make";
+		if ($self->param("_type") eq "perl") {
+		    my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			$compile_script =
+				"$perlcmd Makefile.PL \%c\n".
+				"make\n";
+			unless ($self->param_boolean("NoPerlTests")) {
+				$compile_script .= "make test\n";
+			}
+		} else {
+			$compile_script = 
+				"./configure \%c\n".
+				"make\n";
+		}
 	}	 
 
 	### compile
@@ -1335,14 +1437,14 @@ sub phase_install {
 
 	$install_script = "";
 	unless ($self->{_bootstrap}) {
-		$install_script .= "rm -rf \%d\n";
+		$install_script .= "/bin/rm -rf \%d\n";
 	}
-	$install_script .= "mkdir -p \%i\n";
+	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
-		$install_script .= "mkdir -p \%d/DEBIAN\n";
+		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 	}
 	if ($self->{_type} eq "bundle") {
-		$install_script .= "mkdir -p \%i/share/doc/\%n\n";
+		$install_script .= "/bin/mkdir -p \%i/share/doc/\%n\n";
 		$install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 	} else {
 		if ($self->has_param("InstallScript")) {
@@ -1353,26 +1455,21 @@ sub phase_install {
 			$self->run_script($self->param("InstallScript"), "installing");
 		} elsif ($self->param("_type") eq "perl") {
 			# grab perl version, if present
-			my $perldirectory = "";
-			if ($self->has_param("_perlversion")) {
-				$perldirectory = "/" . $self->param("_perlversion");
-			}
+			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+
 			$install_script .= 
-				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
+				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
 		} elsif (not $do_splitoff) {
 			$install_script .= "make install prefix=\%i\n";
 		} 
 
-		if ($self->param_boolean("UpdatePOD")) { 
+		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present
-			my $perldirectory = "";
-			if ($self->has_param("_perlversion")) {
-				$perldirectory = "/" . $self->param("_perlversion");
-			}
+			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+
 			$install_script .= 
-				"mkdir -p \%i/share/podfiles$perldirectory\n".
-				"cat \%i/lib/perl5$perldirectory/darwin/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod\n".
-				"rm -rf \%i/lib/perl5$perldirectory/darwin/perllocal.pod\n";
+				"/bin/mkdir -p \%i/share/podfiles$perldirectory\n".
+				"for i in `find \%i -name perllocal.pod`; do /bin/cat \$i | sed -e s,\%i/lib/perl5,\%p/lib/perl5, >> \%i/share/podfiles$perldirectory/perllocal.\%n.pod; /bin/rm -rf \$i; done;\n";
 		}
 	}
 
@@ -1404,27 +1501,27 @@ sub phase_install {
 			}
 
 			$target_dir = dirname($target);
-			$install_script .= "\ninstall -d -m 755 $target_dir";
-			$install_script .= "\nmv $source $target_dir/";
+			$install_script .= "\n/usr/bin/install -d -m 755 $target_dir";
+			$install_script .= "\n/bin/mv $source $target_dir/";
 		}
 	}
 
 	# generate commands to install documentation files
 	if ($self->has_param("DocFiles")) {
 		my (@docfiles, $docfile, $docfilelist);
-		$install_script .= "\ninstall -d -m 755 %i/share/doc/%n";
+		$install_script .= "\n/usr/bin/install -d -m 755 %i/share/doc/%n";
 
 		@docfiles = split(/\s+/, $self->param("DocFiles"));
 		$docfilelist = "";
 		foreach $docfile (@docfiles) {
 			if ($docfile =~ /^(.+)\:(.+)$/) {
-				$install_script .= "\ninstall -c -p -m 644 $1 %i/share/doc/%n/$2";
+				$install_script .= "\n/usr/bin/install -c -p -m 644 $1 %i/share/doc/%n/$2";
 			} else {
 				$docfilelist .= " $docfile";
 			}
 		}
 		if ($docfilelist ne "") {
-			$install_script .= "\ninstall -c -p -m 644$docfilelist %i/share/doc/%n/";
+			$install_script .= "\n/usr/bin/install -c -p -m 644$docfilelist %i/share/doc/%n/";
 		}
 	}
 
@@ -1440,21 +1537,21 @@ sub phase_install {
 		$properties = &read_properties_var($self->{_filename}, $vars, 1);
 
 		if(scalar keys %$properties > 0){
-			$install_script .= "\ninstall -d -m 755 %i/etc/profile.d";
+			$install_script .= "\n/usr/bin/install -d -m 755 %i/etc/profile.d";
 			while (($var, $value) = each %$properties) {
 				$install_script .= "\necho \"setenv $var '$value'\" >> %i/etc/profile.d/%n.csh.env";
 				$install_script .= "\necho \"export $var='$value'\" >> %i/etc/profile.d/%n.sh.env";
 			}
 			# make sure the scripts exist
-			$install_script .= "\ntouch %i/etc/profile.d/%n.csh";
-			$install_script .= "\ntouch %i/etc/profile.d/%n.sh";
+			$install_script .= "\n/usr/bin/touch %i/etc/profile.d/%n.csh";
+			$install_script .= "\n/usr/bin/touch %i/etc/profile.d/%n.sh";
 			# prepend *.env to *.[c]sh
-			$install_script .= "\ncat %i/etc/profile.d/%n.csh >> %i/etc/profile.d/%n.csh.env";
-			$install_script .= "\ncat %i/etc/profile.d/%n.sh >> %i/etc/profile.d/%n.sh.env";
-			$install_script .= "\nmv -f %i/etc/profile.d/%n.csh.env %i/etc/profile.d/%n.csh";
-			$install_script .= "\nmv -f %i/etc/profile.d/%n.sh.env %i/etc/profile.d/%n.sh";
+			$install_script .= "\n/bin/cat %i/etc/profile.d/%n.csh >> %i/etc/profile.d/%n.csh.env";
+			$install_script .= "\n/bin/cat %i/etc/profile.d/%n.sh >> %i/etc/profile.d/%n.sh.env";
+			$install_script .= "\n/bin/mv -f %i/etc/profile.d/%n.csh.env %i/etc/profile.d/%n.csh";
+			$install_script .= "\n/bin/mv -f %i/etc/profile.d/%n.sh.env %i/etc/profile.d/%n.sh";
 			# make them executable (to allow them to be sourced by /sw/bin.init.[c]sh)
-			$install_script .= "\nchmod 755 %i/etc/profile.d/%n.*";
+			$install_script .= "\n/bin/chmod 755 %i/etc/profile.d/%n.*";
 		}
 	}
 
@@ -1462,22 +1559,22 @@ sub phase_install {
 	if ($self->has_param("JarFiles")) {
 		my (@jarfiles, $jarfile, $jarfilelist);
 		# install jarfiles
-		$install_script .= "\ninstall -d -m 755 %i/share/java/%n";
+		$install_script .= "\n/usr/bin/install -d -m 755 %i/share/java/%n";
 		@jarfiles = split(/\s+/, $self->param("JarFiles"));
 		$jarfilelist = "";
 		foreach $jarfile (@jarfiles) {
 			if ($jarfile =~ /^(.+)\:(.+)$/) {
-				$install_script .= "\ninstall -c -p -m 644 $1 %i/share/java/%n/$2";
+				$install_script .= "\n/usr/bin/install -c -p -m 644 $1 %i/share/java/%n/$2";
 			} else {
 				$jarfilelist .= " $jarfile";
 			}
 		}
 		if ($jarfilelist ne "") {
-			$install_script .= "\ninstall -c -p -m 644$jarfilelist %i/share/java/%n/";
+			$install_script .= "\n/usr/bin/install -c -p -m 644$jarfilelist %i/share/java/%n/";
 		}
 	}
 
-	$install_script .= "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
+	$install_script .= "\n/bin/rm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
 	### install
 
@@ -1497,7 +1594,7 @@ sub phase_install {
 		$bdir = $self->get_fullname();
 		chdir "$buildpath";
 		if (not $config->param_boolean("KeepBuildDir") and not Fink::Config::get_option("keep_build") and -e $bdir) {
-			if (&execute("rm -rf $bdir")) {
+			if (&execute("/bin/rm -rf $bdir")) {
 				&print_breaking("WARNING: Can't remove build directory $bdir. ".
 								"This is not fatal, but you may want to remove ".
 								"the directory manually to save disk space. ".
@@ -1533,22 +1630,24 @@ sub phase_build {
 	$destdir = "$buildpath/$ddir";
 
 	if (not -d "$destdir/DEBIAN") {
-		if (&execute("mkdir -p $destdir/DEBIAN")) {
+		if (&execute("/bin/mkdir -p $destdir/DEBIAN")) {
 			die "can't create directory for control files for package ".$self->get_fullname()."\n";
 		}
 	}
 
 	# generate dpkg "control" file
 
-	my ($pkgname, $version, $field, $section);
+	my ($pkgname, $version, $field, $section, $instsize);
 	$pkgname = $self->get_name();
 	$version = $self->get_fullversion();
 	$section = $self->get_section();
+	$instsize = $self->get_instsize("$destdir$basepath");
 	$control = <<EOF;
 Package: $pkgname
 Source: $pkgname
 Version: $version
 Section: $section
+Installed-Size: $instsize
 Architecture: $debarch
 EOF
 	if ($self->param_boolean("Essential")) {
@@ -1581,11 +1680,35 @@ EOF
 
 		### 3) replace it in the debian control file
 		if ($depline =~ /\$\{SHLIB_DEPS\}, / &&
-		    length($shlibstr) <= 0) {
+			length($shlibstr) <= 0) {
 			$depline =~ s/\$\{SHLIB_DEPS\}, //;
 		} else {
 			$depline =~ s/\$\{SHLIB_DEPS\}/$shlibstr/;
 		}
+	}
+
+# Add a dependency on the darwin version (if not already present).
+#   We depend on the major version only, in order to prevent users from
+#   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
+#   value.
+# FIXME: Actually, if the package states a darwin version we should combine
+#   the version given by the package with the one we want to impose.
+#   Instead, right now, we just use the package's version but this means
+#   that a package will need to be revised if the darwin major version changes.
+
+	my ($dummy, $darwin_version, $darwin_major_version);
+	($dummy,$dummy,$darwin_version) = uname();
+	if ($darwin_version =~ /(\d+)/) {
+	    $darwin_major_version = $1;
+	} else {
+	    die "No major version number for darwin!";
+	}
+
+	if (not $depline =~ /\bdarwin\b/) {
+	    if (not $depline eq '') {
+		$depline = $depline . ", ";
+	    }
+	    $depline = $depline . "darwin (>= $darwin_major_version-1)";
 	}
 
 	# FIXME: make sure there are no linebreaks in the following fields
@@ -1608,78 +1731,105 @@ EOF
 	close(CONTROL) or die "can't write control file for ".$self->get_fullname().": $!\n";
 
 	### update Mach-O Object List
+	###
+	### (but not for distributions prior to 10.2-gcc3.3)
 
+	my $skip_prebinding = 0;
+	my $pkgref = ($self);
+	$skip_prebinding++ unless ($config->param("Distribution") ge "10.2-gcc3.3");
+
+	# Why do this?  On the off-chance the parent relationship is recursive (ie, a splitoff
+	# depends on a splitoff, instead of the top-level package in the splitoff)
+	# we work our way back to the top level, and skip prebinding if things are set
+	# anywhere along the way (since the LD_* variables are normally set in the top-level
+	# but need to take effect in, say, -shlibs)
+
+	while (exists $pkgref->{_parent}) {
+		$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
+		$skip_prebinding++ if ($pkgref->has_param("NoSetLD_PREBIND"));
+		$pkgref = $pkgref->{_parent};
+	}
+	$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
+	$skip_prebinding++ if ($pkgref->has_param("NoSetLD_PREBIND"));
+
+	# "our" instead of "my", so that it can be referenced later in the post-install script
 	our %prebound_files = ();
+	unless ($skip_prebinding) {
 
-	print "Finding prebound objects...\n";
-	my ($is_prebound, $is_exe, $name);
-	find({ wanted => sub {
-		return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
-		#print "\$_ = $_\n";
-		$is_prebound = 0;
-		$is_exe      = 0;
-		$name        = undef;
-		my @dep_list;
-		if (open(OTOOL, "otool -hLv '$_' |")) {
-			while (<OTOOL>) {
-				if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
-					# executable has no install_name, add to the list
-					$name = $File::Find::name;
-					$name =~ s/^$destdir//;
-					$is_exe = 1;
-					$is_prebound = 1;
-				} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
-					# if the last didn't match, but this did, it's a
-					# non-prebound executable, so skip it
-					last;
-				} elsif (/^\s*MH_MAGIC.*PREBOUND.*$/) {
-					# otherwise it's a dylib of some form, mark it
-					# so we can pull the install_name in a few lines
-					$is_prebound = 1;
-				} elsif (/^\s*MH_MAGIC.*$/) {
-					# if it wasn't an executable, and the last didn't
-					# match, then it's not a prebound lib
-					last;
-				} elsif (my ($lib) = $_ =~ /^\s*(.+?) \(compatibility.*$/ and $is_prebound) {
-					# we hit the install_name, add it to the list
-					unless ($lib =~ /\/libSystem/ or $lib =~ /^\/+[Ss]ystem/ or $lib =~ /^\/usr\/lib/) {
-						push(@dep_list, $lib);
+		print "Finding prebound objects...\n";
+		my ($is_prebound, $is_exe, $name);
+		find({ wanted => sub {
+			# common things that shouldn't be objects
+			return if (/\.(bz2|c|cfg|conf|class|cpp|csh|db|dll|gif|gz|h|html|info|ini|jpg|m4|mng|pdf|pl|png|po|py|sh|tar|tcl|txt|wav|xml)$/i);
+			return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
+			return if (readlink $_ =~ /\/usr\/lib/); # don't re-prebind stuff in /usr/lib
+			#print "\$_ = $_\n";
+			$is_prebound = 0;
+			$is_exe      = 0;
+			$name        = undef;
+			my @dep_list;
+			if (open(OTOOL, "otool -hLv '$_' |")) {
+				while (<OTOOL>) {
+					if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
+						# executable has no install_name, add to the list
+						$name = $File::Find::name;
+						my $destmeta = quotemeta($destdir);
+						$name =~ s/^$destmeta//;
+						$is_exe = 1;
+						$is_prebound = 1;
+					} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
+						# if the last didn't match, but this did, it's a
+						# non-prebound executable, so skip it
+						last;
+					} elsif (/^\s*MH_MAGIC.*PREBOUND.*$/) {
+						# otherwise it's a dylib of some form, mark it
+						# so we can pull the install_name in a few lines
+						$is_prebound = 1;
+					} elsif (/^\s*MH_MAGIC.*$/) {
+						# if it wasn't an executable, and the last didn't
+						# match, then it's not a prebound lib
+						last;
+					} elsif (my ($lib) = $_ =~ /^\s*(.+?) \(compatibility.*$/ and $is_prebound) {
+						# we hit the install_name, add it to the list
+						unless ($lib =~ /\/libSystem/ or $lib =~ /^\/+[Ss]ystem/ or $lib =~ /^\/usr\/lib/) {
+							push(@dep_list, $lib);
+						}
 					}
 				}
+				close(OTOOL);
+				if ($is_exe) {
+					$prebound_files{$name} = \@dep_list;
+				} else {
+					$name = shift(@dep_list);
+					return if (not defined $name);
+					$prebound_files{$name} = \@dep_list;
+				}
 			}
-			close(OTOOL);
-			if ($is_exe) {
-				$prebound_files{$name} = \@dep_list;
-			} else {
-				$name = shift(@dep_list);
-				return if (not defined $name);
-				$prebound_files{$name} = \@dep_list;
+		} }, $destdir);
+
+		if (keys %prebound_files) {
+			system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/files') == 0 or
+				die "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!\n";
+			open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') or
+				die "can't write " . $self->get_name() . '.pblist';
+			print PREBOUND join("\n", sort keys %prebound_files), "\n";
+			close(PREBOUND);
+		}
+
+		print "Writing dependencies...\n";
+		for my $key (sort keys %prebound_files) {
+			for my $file (@{$prebound_files{$key}}) {
+				$file =~ s/\//-/g;
+				$file =~ s/^-+//;
+				system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/deps/'. $file) == 0 or
+					die "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!\n";
+				open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') or
+					die "can't write " . $self->get_name() . '.deplist';
+				print DEPS $key, "\n";
+				close(DEPS);
 			}
 		}
-	} }, $destdir);
-
-	if (keys %prebound_files) {
-		system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/files') == 0 or
-			die "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!\n";
-		open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') or
-			die "can't write " . $self->get_name() . '.pblist';
-		print PREBOUND join("\n", sort keys %prebound_files), "\n";
-		close(PREBOUND);
-	}
-
-	print "Writing dependencies...\n";
-	for my $key (sort keys %prebound_files) {
-		for my $file (@{$prebound_files{$key}}) {
-			$file =~ s/\//-/g;
-			$file =~ s/^-+//;
-			system('install', '-d', '-m', '755', $destdir . $basepath . '/var/lib/fink/prebound/deps/'. $file) == 0 or
-				die "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!\n";
-			open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') or
-				die "can't write " . $self->get_name() . '.deplist';
-			print DEPS $key, "\n";
-			close(DEPS);
-		}
-	}
+	} # unless ($skip_prebinding)
 
 	### create scripts as neccessary
 
@@ -1694,18 +1844,16 @@ EOF
 		# add UpdatePOD Code
 		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present
-			my $perldirectory ="";
-			if ($self->has_param("_perlversion")) {
-				$perldirectory = "/" . $self->param("_perlversion");
-			}
+			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+
 			if ($scriptname eq "postinst") {
 				$scriptbody .=
-					"\n\n# Updating \%p/lib/perl5/darwin$perldirectory/perllocal.pod\n".
-					"mkdir -p \%p/lib/perl5$perldirectory/darwin\n".
-					"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/darwin/perllocal.pod\n";
+					"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
+					"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
+					"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
 			} elsif ($scriptname eq "postrm") {
 				$scriptbody .=
-					"\n\n# Updating \%p/lib/perl5$perldirectory/darwin/perllocal.pod\n\n".
+					"\n\n# Updating \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n\n".
 					"###\n".
 					"### check to see if any .pod files exist in \%p/share/podfiles.\n".
 					"###\n\n".
@@ -1713,7 +1861,7 @@ EOF
 					"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
 					"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
 					"	 if (\$#files >= 0) {\n".
-					"		 exec \"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/darwin/perllocal.pod\";\n".
+					"		 exec \"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
 					"	 }\n".
 					"}\n\n".
 					"END_PERL\n";
@@ -1724,13 +1872,13 @@ EOF
 		if ($self->has_param("JarFiles")) {
 			if (($scriptname eq "postinst") || ($scriptname eq "postrm")) {
 				$scriptbody.=
-						"\nmkdir -p %p/share/java".
-						"\njars=`find %p/share/java -name '*.jar'`".
+						"\n/bin/mkdir -p %p/share/java".
+						"\njars=`/usr/bin/find %p/share/java -name '*.jar'`".
 						"\n".'if (test -n "$jars")'.
 						"\nthen".
 						"\n".'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'.
 						"\nelse".
-						"\nrm -f %p/share/java/classpath".
+						"\n/bin/rm -f %p/share/java/classpath".
 						"\nfi".
 						"\nunset jars";
 			}
@@ -1820,8 +1968,8 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 	if ($self->has_param("conffiles")) {
 		$listfile = "$destdir/DEBIAN/conffiles";
-		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")))."\n";
-		$conffiles = &expand_percent($conffiles, $self->{_expand});
+		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")));
+		$conffiles = &expand_percent($conffiles, $self->{_expand})."\n";
 
 		print "Writing conffiles list...\n";
 
@@ -1840,7 +1988,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 		print "Writing daemonic info file $daemonicname...\n";
 
-		if (&execute("mkdir -p $destdir$basepath/etc/daemons")) {
+		if (&execute("/bin/mkdir -p $destdir$basepath/etc/daemons")) {
 			die "can't write daemonic info file for ".$self->get_fullname()."\n";
 		}
 		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
@@ -1852,7 +2000,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	### create .deb using dpkg-deb
 
 	if (not -d $self->get_debpath()) {
-		if (&execute("mkdir -p ".$self->get_debpath())) {
+		if (&execute("/bin/mkdir -p ".$self->get_debpath())) {
 			die "can't create directory for packages\n";
 		}
 	}
@@ -1861,7 +2009,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		die "can't create package ".$self->get_debname()."\n";
 	}
 
-	if (&execute("ln -sf ".$self->get_debpath()."/".$self->get_debname()." ".
+	if (&execute("/bin/ln -sf ".$self->get_debpath()."/".$self->get_debname()." ".
 							 "$basepath/fink/debs/")) {
 		die "can't symlink package ".$self->get_debname()." into pool directory\n";
 	}
@@ -1877,12 +2025,12 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	### remove root dir
 
 	if (not $config->param_boolean("KeepRootDir") and not Fink::Config::get_option("keep_root") and -e $destdir) {
-		if (&execute("rm -rf $destdir")) {
+		if (&execute("/bin/rm -rf $destdir")) {
 			&print_breaking("WARNING: Can't remove package root directory ".
-											"$destdir. ".
-											"This is not fatal, but you may want to remove ".
-											"the directory manually to save disk space. ".
-											"Continuing with normal procedure.");
+							"$destdir. ".
+							"This is not fatal, but you may want to remove ".
+							"the directory manually to save disk space. ".
+							"Continuing with normal procedure.");
 		}
 	}
 }
@@ -1954,9 +2102,27 @@ sub phase_purge {
 sub set_env {
 	my $self = shift;
 	my ($varname, $s, $expand);
-	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
-					 "LDFLAGS" => "-L\%p/lib" );
+	my %defaults = (
+		"CPPFLAGS"                 => "-I\%p/include",
+		"LDFLAGS"                  => "-L\%p/lib",
+		"LD_PREBIND"               => 1,
+		"LD_PREBIND_ALLOW_OVERLAP" => 1,
+		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
+	);
 	my $bsbase = Fink::Bootstrap::get_bsbase();
+
+	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
+		system("mkdir -p '$basepath/var/lib/fink/prebound'");
+		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
+			print FILEOUT <<END;
+0x90000000  0xa0000000  <<< Next split address to assign >>>
+0x20000000  <<< Next flat address to assign >>>
+END
+			close(FILEOUT);
+		} else {
+			warn "couldn't create seg_addr_table, this may cause compilation to fail!\n";
+		}
+	}
 
 	# clean the environment
 	%ENV = ("HOME" => $ENV{"HOME"});
@@ -1978,14 +2144,19 @@ sub set_env {
 
 	# set variables according to the info file
 	$expand = $self->{_expand};
-	foreach $varname ("CC", "CFLAGS",
-					  "CPP", "CPPFLAGS",
-					  "CXX", "CXXFLAGS",
-					  "DYLD_LIBRARY_PATH",
-					  "LD", "LDFLAGS", 
-					  "LIBRARY_PATH", "LIBS",
-					  "MACOSX_DEPLOYMENT_TARGET",
-					  "MAKE", "MFLAGS") {
+	foreach $varname (
+			"CC", "CFLAGS",
+			"CPP", "CPPFLAGS",
+			"CXX", "CXXFLAGS",
+			"DYLD_LIBRARY_PATH",
+			"LD_PREBIND",
+			"LD_PREBIND_ALLOW_OVERLAP",
+			"LD_FORCE_NO_PREBIND",
+			"LD_SEG_ADDR_TABLE",
+			"LD", "LDFLAGS", 
+			"LIBRARY_PATH", "LIBS",
+			"MACOSX_DEPLOYMENT_TARGET",
+			"MAKE", "MFLAGS", "MAKEFLAGS") {
 		if ($self->has_param("Set$varname")) {
 			$s = $self->param("Set$varname");
 			if (exists $defaults{$varname} and
@@ -1995,12 +2166,22 @@ sub set_env {
 			$ENV{$varname} = &expand_percent($s, $expand);
 		} else {
 			if (exists $defaults{$varname} and
+					defined $defaults{$varname} and 
 					not $self->param_boolean("NoSet$varname")) {
 				$s = $defaults{$varname};
 				$ENV{$varname} = &expand_percent($s, $expand);
 			} else {
 				delete $ENV{$varname};
 			}
+		}
+	}
+	my $sw_vers = Fink::Services::get_sw_vers();
+	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined $sw_vers and $sw_vers ne "0") {
+		$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
+		if ($sw_vers eq "10.2") {
+			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
+		} else {
+			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
 }
@@ -2031,8 +2212,38 @@ sub run_script {
 	%ENV = %env_bak;
 }
 
+
+
+### get_perl_version_dir_arch
+
+sub get_perl_dir_arch {
+	my $self = shift;
+
+	# grab perl version, if present
+	my $perlversion   = "";
+#get_system_perl_version();
+	my $perldirectory = "";
+	my $perlarchdir;
+	if ($self->has_param("_perlversion")) {
+		$perlversion = $self->param("_perlversion");
+		$perldirectory = "/" . $perlversion;
+	    }
+	### PERL= needs a full path or you end up with
+	### perlmods trying to run ../perl$perlversion
+	my $perlcmd = get_path('perl'.$perlversion);
+
+	if ($perlversion ge "5.8.1") {
+		$perlarchdir = 'darwin-thread-multi-2level';
+	} else {
+		$perlarchdir = 'darwin';
+	}
+
+	return ($perldirectory, $perlarchdir,$perlcmd);
+}
+
 sub get_debdeps {
 	my $wantedpkg = shift;
+	my $field = "Depends";
 	my $deps = "";
 
 	### get deb file
@@ -2041,12 +2252,12 @@ sub get_debdeps {
 	open (DPKGINFO, "dpkg -I $deb |") or die "Can't get deb info: $!\n";
 		while (<DPKGINFO>) {
 			chomp($_);
-			if ($_ =~ /^ +Depends: +(.*)$/) {
+			if ($_ =~ /^ +$field: +(.*)$/) {
 				$deps = $1;
 			}
 		}
 	close (DPKGINFO);
-	
+
 	return $deps;
 }
 
