@@ -56,7 +56,7 @@ our @required_fields =
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
 	(
-		qw(essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests),
+		qw(builddependsonly essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests),
 		map {"noset".$_} @set_vars
 	);
 
@@ -411,7 +411,7 @@ sub validate_info_file {
 		}
 
 		# Boolean field?
-		if ($boolean_fields{$field} and not (lc $value) =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
+		if ($boolean_fields{$field} and not ((lc $value) =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/)) {
 			print "Warning: Boolean field \"$field\" contains suspicious value \"$value\". ($filename)\n";
 			$looks_good = 0;
 			next;
