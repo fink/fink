@@ -1,3 +1,7 @@
+2004-09-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Handle xorg in system-xfree86 checks.
+
 2004-09-09  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: only set cctools_single_module version if it exists.
