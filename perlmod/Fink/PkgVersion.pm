@@ -466,6 +466,79 @@ sub conditional_space_list {
 	$result;
 }
 
+
+# returns the requested *Script field (or default value, etc.)
+# percent expansion is performed
+sub get_script {
+	my $self = shift;
+	my $field = shift;
+	$field = lc $field;
+
+	my $default_script; # Type-based script (%{default_script})
+	my $field_default;  # .info field contents
+
+	if ($field eq 'patchscript') {
+		return "" if exists $self->{parent};  # shortcut: SplitOffs do not patch
+		$field_default = '%{default_script}';
+
+		$default_script = "";
+
+	} elsif ($field eq 'compilescript') {
+		return "" if exists $self->{parent};  # shortcut: SplitOffs do not compile
+		$field_default = '%{default_script}';
+
+		if ($self->is_type('perl')) {
+			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			$default_script =
+				"$perlcmd Makefile.PL \%c\n".
+				"make\n";
+			unless ($self->param_boolean("NoPerlTests")) {
+				$default_script .= "make test\n";
+			}
+		} elsif ($self->is_type('ruby')) {
+			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
+			$default_script =
+				"$rubycmd extconf.rb\n".
+				"make\n";
+		} else {
+			$default_script =
+				"./configure \%c\n".
+				"make\n";
+		}
+
+	} elsif ($field eq 'installscript') {
+		$field_default = exists $self->{parent}
+			? ''                  # SplitOffs default to blank script
+			: '%{default_script}';
+
+		if ($self->is_type('perl')) {
+			# grab perl version, if present
+			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+			$default_script = 
+				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
+		} else {
+			$default_script = "make install prefix=\%i\n";
+		} 
+
+	} else {
+		# should never get here
+		die "Invalid script field for get_script: $field\n";
+	}
+
+	# need to pre-expand default_script so not have to change
+	# expand_percent() to go a third level deep
+	$self->prepare_percent_c;
+	$self->{_expand}->{default_script} = &expand_percent(
+		$default_script,
+		$self->{_expand},
+		$self->get_info_filename." ".lc $field
+	);
+	my $script = $self->param_default_expanded($field, $field_default);
+	delete $self->{_expand}->{default_script};  # this key must stay local
+
+	return $script;
+}
+
 ### add a splitoff package
 
 sub add_splitoff {
@@ -1694,32 +1767,7 @@ sub phase_patch {
 	$self->run_script($patch_script, "patching (patchfiles)", 0);
 
 	### Deal with PatchScript field
-	$self->run_script($self->get_patchscript, "patching", 1);
-}
-
-sub get_patchscript {
-	my $self = shift;
-
-	return "" if exists $self->{parent};
-
-	my $default_script = "";
-
-	# need to pre-expand default_script so not have to change
-	# expand_percent() to go a third level deep
-	$self->prepare_percent_c;
-	$self->{_expand}->{default_script} = &expand_percent(
-		$default_script,
-		$self->{_expand},
-		$self->get_info_filename." PatchScript"
-	);
-
-	my $script = $self->param_default_expanded(
-		"PatchScript",
-		'%{default_script}'
-	);
-	delete $self->{_expand}->{default_script};  # this key must stay local
-
-	return $script;
+	$self->run_script($self->get_script("PatchScript"), "patching", 1);
 }
 
 ### compile
@@ -1751,52 +1799,7 @@ sub phase_compile {
 	}
 
 	### construct CompileScript and execute it
-	$compile_script = $self->get_compilescript;
-	$self->run_script($compile_script, "compiling", 1);
-}
-
-# return the CompileScript (or implicit default) after percent-expansion
-sub get_compilescript {
-	my $self = shift;
-
-	return "" if exists $self->{parent};
-
-	my $default_script;
-	if ($self->is_type('perl')) {
-		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-		$default_script =
-			"$perlcmd Makefile.PL \%c\n".
-			"make\n";
-		unless ($self->param_boolean("NoPerlTests")) {
-			$default_script .= "make test\n";
-		}
-	} elsif ($self->is_type('ruby')) {
-		my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
-		$default_script =
-			"$rubycmd extconf.rb\n".
-			"make\n";
-	} else {
-		$default_script =
-			"./configure \%c\n".
-			"make\n";
-	}
-
-	# need to pre-expand default_script so not have to change
-	# expand_percent() to go a third level deep
-	$self->prepare_percent_c;
-	$self->{_expand}->{default_script} = &expand_percent(
-		$default_script,
-		$self->{_expand},
-		$self->get_info_filename." CompileScript"
-	);
-
-	my $script = $self->param_default_expanded(
-		"CompileScript",
-		'%{default_script}'
-	);
-	delete $self->{_expand}->{default_script};  # this key must stay local
-
-	return $script;
+	$self->run_script($self->get_script("CompileScript"), "compiling", 1);
 }
 
 ### install
@@ -1843,7 +1846,7 @@ sub phase_install {
 		# Run the script part we have so far
 		$self->run_script($install_script, "installing", 0);
 		# Now run the actual InstallScript
-		$self->run_script($self->get_installscript, "installing", 1);
+		$self->run_script($self->get_script("InstallScript"), "installing", 1);
 		$install_script = ""; # reset it
 		# Handle remaining fields that affect installation
 		if ($self->param_boolean("UpdatePOD")) {
@@ -1990,40 +1993,6 @@ sub phase_install {
 								"Continuing with normal procedure.");
 		}
 	}
-}
-
-# return the InstallScript (or implicit default) after percent-expansion
-sub get_installscript {
-	my $self = shift;
-
-	my $default_script;
-	if ($self->is_type('perl')) {
-		# grab perl version, if present
-		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
-		$default_script = 
-			"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
-	} else {
-		$default_script = "make install prefix=\%i\n";
-	} 
-
-	# need to pre-expand default_script so not have to change
-	# expand_percent() to go a third level deep
-	$self->prepare_percent_c;
-	$self->{_expand}->{default_script} = &expand_percent(
-		$default_script,
-		$self->{_expand},
-		$self->get_info_filename." InstallScript"
-	);
-
-	my $script = $self->param_default_expanded(
-		"InstallScript",
-		exists $self->{parent}
-			? ''                  # SplitOffs default to no script
-			: '%{default_script}'
-	);
-	delete $self->{_expand}->{default_script};  # this key must stay local
-
-	return $script;
 }
 
 ### build .deb

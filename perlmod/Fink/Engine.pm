@@ -1872,23 +1872,9 @@ EOF
 					$value =~ s/^/ /gm;
 					printf "%s:\n%s\n", $_, $value;
 				}
-			} elsif ($_ eq 'patchscript') {
-				# multiline field, but has own accessor
-				my $value = $pkg->get_patchscript;
-				if (length $value) {
-					$value =~ s/^/ /gm;
-					printf "%s:\n%s\n", $_, $value;
-				}
-			} elsif ($_ eq 'compilescript') {
-				# multiline field, but has own accessor
-				my $value = $pkg->get_compilescript;
-				if (length $value) {
-					$value =~ s/^/ /gm;
-					printf "%s:\n%s\n", $_, $value;
-				}
-			} elsif ($_ eq 'installscript') {
-				# multiline field, but has own accessor
-				my $value = $pkg->get_installscript;
+			} elsif ($_ =~ /^(patch|compile|install)script$/) {
+				# multiline field with specific accessor
+				my $value = $pkg->get_script($_);
 				if (length $value) {
 					$value =~ s/^/ /gm;
 					printf "%s:\n%s\n", $_, $value;
