@@ -1,3 +1,7 @@
+2005-02-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Alphabetize and remove duplicates in output of show-deps.
+
 2005-02-03  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Change set_buildlock so that Depends are not

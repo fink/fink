@@ -2395,8 +2395,8 @@ sub show_deps_display_list {
 	}
 
 	my $field_value;    # used in dep processing loop (string from pkglist())
+	my %results;        # hash so duplicates are removed automatically
 
-	my $did_print = 0;  # did we print anything at all?
 	foreach my $field (@$fields) {
 		foreach (@$pkgs) {
 			next unless defined( $field_value = $_->pkglist($field) );
@@ -2410,16 +2410,17 @@ sub show_deps_display_list {
 					s/^\s*\|\s*//;
 					s/\s*\|\s*$//;
 				}
-
-				if (length $_) {
-					printf "    %s\n", $_;
-					$did_print++;
-				}
+				$results{$_} = 1 if length $_;  # save what we found
 			}
 		}
 	}
-	print "    [none]\n" unless $did_print;
 
+	# organize and display the list of packages
+	if (%results) {
+		print map "    $_\n", sort keys %results;
+	} else {
+		print "    [none]\n";
+	}
 }
 
 ### EOF
