@@ -211,13 +211,14 @@ END
 "for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
 	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-8]/) {
-		&print_breaking("This system is supported and tested.");
+		if (not $gcc =~ /gcc3.3/) {
+             &print_breaking("\nFink no longer supports the old Developer " .
+             "Tools on 10.2. Please update to the August 2003 Developer " .
+             "Tools, and try again.\n");
+							} else {
+		     &print_breaking("This system is supported and tested.");
+		 }
 		$distribution = "10.2$gcc";
-                if (not $gcc =~ /gcc3.3/) {
-                    &print_breaking("\n\nWARNING: Fink will soon stop " .
-"supporting older Developer Tools.  Please upgrade to the August 2003 " .
-"Tools, including gcc 3.3, before the next fink update.\n\n");
-                }
 	} elsif ($host =~ /^powerpc-apple-darwin6\..*/) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
