@@ -2397,36 +2397,28 @@ sub show_deps_display_list {
 	my $pkgs = shift;
 	my $exclude_selves = shift;
 
-	my $family_regex;
-	if ($exclude_selves) {
-		# regex for any ("or") package name from the given pkgs
-		$family_regex = join '|', map { qr/\Q$_\E/i } map { $_->get_name() } (@$pkgs);
-	}
-
-	my $field_value;    # used in dep processing loop (string from pkglist())
-	my %results;        # hash so duplicates are removed automatically
-
+	my @lol;    # combination of all requested fields of all PkgVersion objs
 	foreach my $field (@$fields) {
 		foreach (@$pkgs) {
-			next unless defined( $field_value = $_->pkglist($field) );
-			foreach (split /\s*,\s*/, $field_value) {
-				# take each requested field of each requested pkg
-				# and parse apart "and"-separated "or" groups
+			push @lol, @{ &pkglist2lol( $_->pkglist_default($field, "") ) };
+		}
+	}
+	&cleanup_lol(\@lol);  # remove duplicates
 
-				if (defined $family_regex) {
-					# optionally remove own family from build-time deps
-					while (s/(\A|\|)\s*($family_regex)\s*(\(.*?\))?\s*(\||\Z)/|/) {};
-					s/^\s*\|\s*//;
-					s/\s*\|\s*$//;
-				}
-				$results{$_} = 1 if length $_;  # save what we found
-			}
+	if ($exclude_selves) {
+		foreach (@$pkgs) {
+			$_->lol_remove_self(\@lol);
 		}
 	}
 
+	# stringify each still-existing OR cluster
+	# (cleanup_lol is overkill for simple undef removal, especially
+	# since we want stringified values anyway)
+	my @results = map { join ' | ', @$_ } grep defined $_, @lol;
+
 	# organize and display the list of packages
-	if (%results) {
-		print map "    $_\n", sort keys %results;
+	if (@results) {
+		print map "    $_\n", sort @results;
 	} else {
 		print "    [none]\n";
 	}
