@@ -1,14 +1,9 @@
 Package: fink-mirrors
-Version: 0.0.4
+Version: 0.20.0.1
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: edaaf174affcfd7ca5a17c71f9dacefa
-CustomMirror: <<
- Primary: http://west.dl.sourceforge.net/sourceforge/
- nam-US: http://us.dl.sourceforge.net/sourceforge/
- eur: http://eu.dl.sourceforge.net/sourceforge/
-<<
+Source-MD5: 30d9d4b671a8b568c41e426af03e5092
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|" < postinstall.pl.in > postinstall.pl
@@ -24,3 +19,8 @@ License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://fink.sourceforge.net/
 
+CustomMirror: <<
+ Primary: http://west.dl.sourceforge.net/sourceforge/
+ nam-US: http://us.dl.sourceforge.net/sourceforge/
+ eur: http://eu.dl.sourceforge.net/sourceforge/
+<<
