@@ -43,12 +43,13 @@ print "Checking package...";
 my ($homebase, $file);
 
 $homebase = $FindBin::RealBin;
+chdir $homebase;
 
 foreach $file (qw(fink install.sh COPYING VERSION
 		  perlmod/Fink mirror update base-files packages
 		  update/config.guess perlmod/Fink/Config.pm mirror/_keys
 		 )) {
-  if (not -e "$homebase/$file") {
+  if (not -e $file) {
     print " INCOMPLETE: '$file' missing\n";
     exit 1;
   }
@@ -72,7 +73,7 @@ if ($packageversion =~ /cvs/) {
 print "Checking system...";
 my ($host);
 
-$host = `$homebase/update/config.guess`;
+$host = `update/config.guess`;
 chomp($host);
 if ($host =~ /^\s*$/) {
   print " ERROR: Can't determine host type.\n";
@@ -325,8 +326,9 @@ if ($packageversion !~ /cvs/) {
   $showversion = "-$packageversion";
 }
 
+chdir $homebase;
 if (-d "pkginfo") {
-  if (&execute("cd pkginfo && ./inject.pl")) {
+  if (&execute("cd pkginfo && ./inject.pl $installto")) {
     # inject failed
     print "\n";
     &print_breaking("Copying the package description tree failed. This ".
