@@ -118,7 +118,7 @@ sub new_from_field {
 	my $self = {};
 	bless($self, $class);
 
-	$self->{name} = "Custom Mirror";
+	$self->{name} = "Custom (package-defined) servers";
 	$self->{package} = $package;
 
 	my ($key, $url);
