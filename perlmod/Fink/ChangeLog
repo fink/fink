@@ -2,6 +2,9 @@
 
 	* Services.pm: Remove trailing empty lines in heredocs (Bug #670712). Also
 	  made .info parsing stricter, which discovers more illegal .info files.
+	* Validation.pm: When checking whether a field contains the package name
+	  or version, only report a warning if they occur as full words (and not
+	  just as substring of a longer name/version).
 
 2003-11-07  Benjamin Reed  <rangerrick@users.sourceforge.net>
 

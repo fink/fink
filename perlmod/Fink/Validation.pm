@@ -295,10 +295,10 @@ sub validate_info_file {
 
 		# If this field permits percent expansion, check if %f/%n/%v should be used
 		if ($name_version_fields{$field} and $value) {
-			 if ($value =~ /\Q$pkgfullname\E/) {
+			 if ($value =~ /\b\Q$pkgfullname\E\b/) {
 				 print "Warning: Field \"$field\" contains full package name. Use %f instead. ($filename)\n";
 				 $looks_good = 0;
-			 } elsif ($value =~ /\Q$pkgversion\E/) {
+			 } elsif ($value =~ /\b\Q$pkgversion\E\b/) {
 				 print "Warning: Field \"$field\" contains package version. Use %v instead. ($filename)\n";
 				 $looks_good = 0;
 			 }
