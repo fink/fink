@@ -1,0 +1,10 @@
+Package: links-ssl
+Version: 0.95
+Revision: 1
+Source: http://artax.karlin.mff.cuni.cz/~mikulas/links/download/links-%v.tar.gz
+Depends: openssl
+ConfigureParams: --with-ssl
+CommentPort: Configured for SSL support. Unfortunately, SSL doesn't
+ seem to work.
+Maintainer: Finlay Dobbie <finlay.dobbie@btinternet.com>
+Homepage: http://artax.karlin.mff.cuni.cz/~mikulas/links/

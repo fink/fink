@@ -1,0 +1,9 @@
+Package: links
+Version: 0.95
+Revision: 1
+Source: http://artax.karlin.mff.cuni.cz/~mikulas/links/download/links-%v.tar.gz
+ConfigureParams: --without-ssl
+CommentPort: No SSL support. Install the links-ssl package instead to
+ get SSL support.
+Maintainer: Finlay Dobbie <finlay.dobbie@btinternet.com>
+Homepage: http://artax.karlin.mff.cuni.cz/~mikulas/links/
