@@ -25,8 +25,6 @@ $| = 1;
 use v5.6.0;  # perl 5.6.0 or newer required
 use strict;
 
-my $packageversion = "0.2.0";
-
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use Fink::Services qw(&print_breaking &prompt &prompt_boolean &prompt_selection
@@ -36,7 +34,7 @@ use Fink::Engine;
 use Fink::Configure;
 use Fink::Bootstrap;
 
-my ($answer);
+my ($answer, $packageversion, $packagerevision);
 
 ### check if we're unharmed
 
@@ -45,7 +43,7 @@ my ($homebase, $file);
 
 $homebase = $FindBin::RealBin;
 
-foreach $file (qw(fink install.sh COPYING
+foreach $file (qw(fink install.sh COPYING VERSION
 		  perlmod/Fink mirror update info patch base-files
 		  update/config.guess perlmod/Fink/Config.pm mirror/_keys
 		 )) {
@@ -55,6 +53,18 @@ foreach $file (qw(fink install.sh COPYING
   }
 }
 print " looks good.\n";
+
+### get version
+
+chomp($packageversion = `VERSION`);
+if ($packageversion =~ /cvs/) {
+  my @now = gmtime(time);
+  $packagerevision = sprintf("%04d%02d%02d-%02d%02d",
+			     $now[5]+1900, $now[4]+1, $now[3],
+			     $now[2], $now[1]);
+} else {
+  $packagerevision = "1";
+}
 
 ### check if we like this system
 
@@ -230,25 +240,52 @@ foreach $dir (@dirlist) {
 ### copy package info needed for bootstrap
 
 print "Copying package descriptions...\n";
-if (&execute("cp packages/*.info packages/*.patch $installto/fink/dists/stable/bootstrap/finkinfo/")) {
-  print "ERROR: Can't copy package descriptions.\n";
-  exit 1;
+my ($script, $cmd);
+
+$script = "cp packages/*.info packages/*.patch $installto/fink/dists/stable/bootstrap/finkinfo/\n";
+
+if (-f "packages/base-files.in") {
+  $script .= "rm -f $installto/fink/dists/stable/bootstrap/finkinfo/base-files*\n";
+  $script .= "sed -e 's/@VERSION@/$packageversion/' -e 's/@REVISION@/$packagerevision/' <packages/base-files.in >$installto/fink/dists/stable/bootstrap/finkinfo/base-files-$packageversion.info\n";
+}
+if (-f "packages/fink.in") {
+  $script .= "rm -f $installto/fink/dists/stable/bootstrap/finkinfo/fink*\n";
+  $script .= "sed -e 's/@VERSION@/$packageversion/' -e 's/@REVISION@/$packagerevision/' <packages/fink.in >$installto/fink/dists/stable/bootstrap/finkinfo/fink-$packageversion.info\n";
+}
+
+foreach $cmd (split(/\n/,$script)) {
+  next unless $cmd;   # skip empty lines
+
+  if (&execute($cmd)) {
+    print "ERROR: Can't copy package descriptions.\n";
+    exit 1;
+  }
 }
 
 ### create tarballs for bootstrap
 
 print "Creating tarballs...\n";
-if (&execute("tar -cf $installto/src/fink-$packageversion.tar ".
-	     "COPYING README ChangeLog fink install.sh setup.sh ".
-	     "perlmod update mirror")) {
-  print "ERROR: Can't create tarball for fink.\n";
-  exit 1;
-}
-if (&execute("cd base-files && ".
-	     "tar -cf $installto/src/base-files-$packageversion.tar ".
-	     "fink-release init.csh.in init.sh.in install.sh setup.sh")) {
-  print "ERROR: Can't create tarball for base-files.\n";
-  exit 1;
+
+$script =
+  "sed -e 's/@VERSION@/$packageversion/' ".
+  "<perlmod/Fink/FinkVersion.pm.in ".
+  ">perlmod/Fink/FinkVersion.pm\n";
+$script .=
+  "tar -cf $installto/src/fink-$packageversion.tar ".
+  "COPYING INSTALL README ChangeLog fink install.sh setup.sh ".
+  "perlmod update mirror\n";
+$script .=
+  "cd base-files && ".
+  "tar -cf $installto/src/base-files-$packageversion.tar ".
+  "fink-release init.csh.in init.sh.in install.sh setup.sh\n";
+
+foreach $cmd (split(/\n/,$script)) {
+  next unless $cmd;   # skip empty lines
+
+  if (&execute($cmd)) {
+    print "ERROR: Can't create tarballs.\n";
+    exit 1;
+  }
 }
 
 ### setup initial configuration
@@ -262,6 +299,7 @@ print CONFIG <<"EOF";
 # Fink configuration, initially created by bootstrap.pl
 Basepath: $installto
 RootMethod: $rootmethod
+Trees: local/main stable/main stable/crypto stable/bootstrap
 EOF
 close(CONFIG) or die "can't write configuration: $!";
 
@@ -277,12 +315,42 @@ Fink::Configure::configure();
 
 Fink::Bootstrap::bootstrap();
 
-### inform the user
+### copy included package info tree if present
 
-print "\n";
-&print_breaking("You should now have a working Fink installation in ".
-		"'$installto'. Use '$installto/bin/init.csh' to set up ".
-		"your environment to use it. Enjoy.");
+$my $showversion = "";
+if ($packageversion !~ /cvs/) {
+  $showversion = "-$packageversion";
+}
+
+if (-d "pkginfo") {
+  if (&execute("cd pkginfo && ./inject.pl")) {
+    # inject failed
+    print "\n";
+    &print_breaking("Copying the package description tree failed. This ".
+		    "is no big harm; your Fink installation should work ".
+		    "nonetheless. Use '$installto/bin/init.csh' to set up ".
+                    "your environment to use it. You still need package ".
+                    "descriptions if you want to compile packages yourself. ".
+                    "You can get them from CVS or by installing the ".
+                    "packages$showversion.tar.gz tarball. Enjoy.");
+  } else {
+    # inject worked
+    print "\n";
+    &print_breaking("You should now have a working Fink installation in ".
+		    "'$installto'. Use '$installto/bin/init.csh' to set up ".
+		    "your environment to use it. Enjoy.");
+  }
+} else {
+  # this was not the 'full' tarball
+  print "\n";
+  &print_breaking("You should now have a working Fink installation in ".
+		  "'$installto'. Use '$installto/bin/init.csh' to set up ".
+		  "your environment to use it. You still need package ".
+		  "descriptions if you want to compile packages yourself. ".
+		  "You can get them from CVS or by installing the ".
+		  "packages$showversion.tar.gz tarball. Enjoy.");
+}
+
 print "\n";
 
 ### eof

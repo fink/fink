@@ -1,3 +1,13 @@
+2001-04-20  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Added auto-versioning. Added support for
+	all-in-one distribution tarball.
+	* mkrelease.sh: New script to create the release tarballs.
+	* VERSION: New file holding the version number for
+	auto-versioning.
+
+	* install.sh: Only install .pm files in perlmod/Fink.
+
 2001-04-13  Christoph Pfisterer  <cp@chrisp.de>
 
 	* INSTALL: New file for installation instructions.
