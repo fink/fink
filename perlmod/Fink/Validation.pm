@@ -282,7 +282,7 @@ END { }				# module clean-up code here (global destructor)
 sub validate_info_file {
 	my $filename = shift;
 	my ($properties, @parts);
-	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
+	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
 	my ($basepath, $buildpath);
 	my ($type, $type_hash);
@@ -321,8 +321,7 @@ sub validate_info_file {
 	$basepath = $config->param_default("basepath", "/sw");
 	$buildpath = $config->param_default("buildpath", "$basepath/src");
 
-	$pkgname = $properties->{package};
-
+	( $pkginvarname = $pkgname = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
 	# right now we don't know how to deal with variants too well
 	if (defined ($type = $properties->{type}) ) {
 		$type =~ s/(\S+?)\s*\(:?.*?\)/$1 ./g;  # use . for all subtype lists
@@ -632,7 +631,9 @@ sub validate_info_file {
 				'a' => $pkgpatchpath,
 				'b' => '.',
 				'm' => $arch,
-				%{$expand}
+				%{$expand},
+				'ni' => $pkginvarname,
+				'Ni' => $pkginvarname
 	};
 
 	# Verify the patch file(s) exist and check some things
@@ -656,7 +657,7 @@ sub validate_info_file {
 
 	# now check each one in turn
 	foreach $value (@patchfiles) {
-		$value = &expand_percent($value, $expand);
+		$value = &expand_percent($value, $expand, $filename.' Patch');
 		unless (-f $value) {
 			print "Error: can't find patchfile \"$value\"\n";
 			$looks_good = 0;

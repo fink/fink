@@ -1,3 +1,7 @@
+2004-04-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Remembered to handle %ni and %Ni in $expand map.
+
 2004-04-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Fixed parsing of .info that do not have a Type field.
