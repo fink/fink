@@ -572,8 +572,8 @@ sub update_shlib_db {
 					if ($writable_cache) {
 						# nearly-concurrent indexing run finished so
 						# just grab its results
-						$packages = Storable::lock_retrieve($dbfile);
-						$db_outdated = 0;
+						$shlibs = Storable::lock_retrieve($dbfile);
+						$shlib_db_outdated = 0;
 						return;
 					}
 				}
