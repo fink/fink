@@ -1,8 +1,9 @@
 Package: tar
 Version: 1.13.25
-Revision: 1
+Revision: 2
 Essential: yes
-Depends: gettext, gzip, bzip2, base-files
+Depends: ${SHLIB_DEPS}, gzip, base-files
+BuildDepends: gettext-dev, bzip2-dev
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 6ef8c906e81eee441f8335652670ac4a
 UpdateConfigGuess: true

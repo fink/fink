@@ -1,13 +1,13 @@
 Package: cctools-extra
 Version: 20030516
-Revision: 2
+Revision: 3
 
 Source: mirror:sourceforge:fink/cctools-%v.tar.bz2
 Source-MD5: a78b299dea5a9cf0fb051a7805c040e6
 Patch: %n.patch
 SourceDirectory: cctools
 Essential: yes
-Depends: base-files
+Depends: ${SHLIB_DEPS}, base-files
 CompileScript: <<
 #!/bin/sh
 

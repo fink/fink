@@ -1,6 +1,6 @@
 Package: ncurses
 Version: 5.3-20031018
-Revision: 2
+Revision: 3
 GCC: 3.3
 Source: mirror:sourceforge:fink/%n-5.3.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
@@ -18,7 +18,7 @@ PatchScript: <<
   echo "***********************************************************************"
 <<
 Essential: yes
-Depends: %N-shlibs (= %v-%r)
+Depends: ${SHLIB_DEPS}
 BuildDepends: fink (>= 0.13.0)
 ConfigureParams: --without-ada --without-debug --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs
 NoSetCFLAGS: true
