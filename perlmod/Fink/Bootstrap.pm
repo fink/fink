@@ -713,8 +713,9 @@ sub copy_description {
 Copy the file $original to $target, supplying the correct version and
 revision (from get_version_revision($package_source,$distribution)) and 
 $source_location as well as an MD5 sum calculated from 
-$tarball.  Evaluate any conditionals using $distribution as the value 
-of %{Distribution}.  Append $coda to the end of the file.
+$tarball.  Pre-evaluate any conditionals containing %{Distribution}, using
+$distribution as the value of %{Distribution}.  Append $coda to the end 
+of the file.
 
 Returns 0 on success, 1 on failure.
 
@@ -746,16 +747,18 @@ sub modify_description {
 		$_ =~ s/\@REVISION\@/$revision/;
 		$_ =~ s/\@SOURCE\@/$source_location/;
 		$_ =~ s/\@MD5\@/$md5/;
-		if (s/^(\s*)\((.*?)\)\s*(.*)/$1$3/) {
-            # we have a conditional; remove the cond expression
-			my $cond = $2;
-#            print "\tfound conditional '$cond'\n";
-			$cond =~ s/%\{Distribution\}/$distribution/;
-#            print "\tfound conditional '$cond'\n";
+# only remove conditionals which match "%{Distribution}" (and we will
+# remove the entire line if the condition fails)
+		if ($_ =~ s/%\{Distribution\}/$distribution/) {
+			if (s/^(\s*)\((.*?)\)\s*(.*)/$1$3/) {
+            # we have a conditional; remove the cond expression,
+				my $cond = $2;
+#               print "\tfound conditional '$cond'\n";
             # if cond is false, clear entire line
-			undef $_ unless &eval_conditional($cond, "modify_description");
+				undef $_ unless &eval_conditional($cond, "modify_description");
+			}
 		}
-			print OUT "$_\n" if defined($_);
+		print OUT "$_\n" if defined($_);
 	}
 	close(IN);
 	print OUT "$coda\n";
