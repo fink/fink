@@ -743,6 +743,7 @@ sub phase_build {
   my $self = shift;
   my ($ddir, $destdir, $control);
   my ($scriptname, $scriptfile, $scriptbody);
+  my ($conffiles, $listfile);
   my ($cmd);
 
   chdir "$basepath/src";
@@ -808,6 +809,21 @@ exit 0
 EOF
     close(SCRIPT) or die "can't write $scriptname script: $!\n";
     chmod 0755, $scriptfile;
+  }
+
+  ### config file list
+
+  if ($self->has_param("conffiles")) {
+    $listfile = "$destdir/DEBIAN/conffiles";
+    $conffiles = join("\n", split(/\s+/, $self->param("conffiles")))."\n";
+    $conffiles = &expand_percent($conffiles, $self->{_expand});
+
+    print "Writing conffiles list...\n";
+
+    open(SCRIPT,">$listfile") or die "can't write conffiles: $!\n";
+    print SCRIPT $conffiles;
+    close(SCRIPT) or die "can't write conffiles: $!\n";
+    chmod 0644, $listfile;
   }
 
   ### create .deb using dpkg-deb
