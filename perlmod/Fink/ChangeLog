@@ -1,3 +1,8 @@
+2004-07-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: handle newer cctools that don't contain the
+	cctools version in the "what" information anymore
+
 2004-07-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: For .deb, check scrollkeeper-update usage: must

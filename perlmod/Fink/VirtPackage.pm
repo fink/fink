@@ -315,8 +315,11 @@ END
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		foreach(`/usr/bin/what /usr/bin/ld`) {
-			if (/cctools-(\d+)/) {
+		foreach(`/usr/bin/what /usr/bin/ld; /usr/bin/strings /usr/bin/ld 2>/dev/null`) {
+			if (/PROJECT:\s*cctools-(\d+)/) {
+				$cctools_version = $1;
+				last;
+			} elsif (/^cctools-(\d+)/) {
 				$cctools_version = $1;
 				last;
 			}
