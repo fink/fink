@@ -1110,19 +1110,16 @@ sub phase_patch {
     }
   }
 
-  ### any additional commands
-
-  if ($self->has_param("PatchScript")) {
-    $patch_script .= $self->param("PatchScript");
-  }
-
-  $patch_script = &expand_percent($patch_script, $self->{_expand});
-
   ### patch
 
-  $self->set_env();
-  if (&execute_script($patch_script)) {
-    die "patching ".$self->get_fullname()." failed\n";
+  if ($patch_script ne "") {
+    $self->run_script($patch_script, "patching");
+  }
+
+  ### run custom patch script (if any)
+
+  if ($self->has_param("PatchScript")) {
+    $self->run_script($self->param("PatchScript"), "patching");
   }
 }
 
@@ -1164,14 +1161,9 @@ sub phase_compile {
       "make";
   }  
 
-  $compile_script = &expand_percent($compile_script, $self->{_expand});
-
   ### compile
 
-  $self->set_env();
-  if (&execute_script($compile_script)) {
-    die "compiling ".$self->get_fullname()." failed\n";
-  }
+  $self->run_script($compile_script, "compiling");
 }
 
 ### install
@@ -1216,7 +1208,11 @@ sub phase_install {
     $install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
   } else {
     if ($self->has_param("InstallScript")) {
-      $install_script .= $self->param("InstallScript");
+      # Run the script part we have so far, then reset it.
+      $self->run_script($install_script, "installing");
+      $install_script = "";
+      # Now run the custom install script
+      $self->run_script($self->param("InstallScript"), "installing");
     } elsif ($self->param("_type") eq "perl") {
       $install_script .= 
         "make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5 INSTALLARCHLIB=\%i/lib/perl5/darwin INSTALLSITELIB=\%i/lib/perl5 INSTALLSITEARCH=\%i/lib/perl5/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
@@ -1274,14 +1270,9 @@ sub phase_install {
 
   $install_script .= "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
-  $install_script = &expand_percent($install_script, $self->{_expand});
-
   ### install
 
-  $self->set_env();
-  if (&execute_script($install_script)) {
-    die "installing ".$self->get_fullname()." failed\n";
-  }
+  $self->run_script($install_script, "installing");
 
   ### splitoffs
   
@@ -1584,6 +1575,19 @@ sub set_env {
   }
 }
 
+### run script
+
+sub run_script {
+  my $self = shift;
+  my $script = shift;
+  my $phase = shift;
+
+  $script = &expand_percent($script, $self->{_expand});
+  $self->set_env();
+  if (&execute_script($script)) {
+    die $phase." ".$self->get_fullname()." failed\n";
+  }
+}
 
 ### EOF
 1;
