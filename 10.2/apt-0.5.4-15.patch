@@ -1,6 +1,6 @@
-diff -uNbr apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
---- apt-0.5.4.orig/apt-inst/makefile	Tue Feb 27 13:16:05 2001
-+++ apt-0.5.4/apt-inst/makefile	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-inst/makefile apt-0.5.4-patched/apt-inst/makefile
+--- apt-0.5.4/apt-inst/makefile	Mon Feb 26 23:16:05 2001
++++ apt-0.5.4-patched/apt-inst/makefile	Sun Nov  9 14:02:47 2003
 @@ -10,6 +10,7 @@
  include ../buildlib/defaults.mak
  
@@ -9,9 +9,9 @@ diff -uNbr apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
  LIBRARY=apt-inst
  LIBEXT=$(GLIBC_VER)$(LIBSTDCPP_VER)
  MAJOR=1.0
-diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap.cc
---- apt-0.5.4.orig/apt-pkg/contrib/mmap.cc	Sun May 27 14:19:30 2001
-+++ apt-0.5.4/apt-pkg/contrib/mmap.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/contrib/mmap.cc apt-0.5.4-patched/apt-pkg/contrib/mmap.cc
+--- apt-0.5.4/apt-pkg/contrib/mmap.cc	Sun May 27 01:19:30 2001
++++ apt-0.5.4-patched/apt-pkg/contrib/mmap.cc	Sun Nov  9 14:02:47 2003
 @@ -41,7 +41,7 @@
  // ---------------------------------------------------------------------
  /* */
@@ -103,9 +103,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap
  #endif   
     return true;
  }
-diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.h apt-0.5.4/apt-pkg/contrib/mmap.h
---- apt-0.5.4.orig/apt-pkg/contrib/mmap.h	Mon May 14 14:16:43 2001
-+++ apt-0.5.4/apt-pkg/contrib/mmap.h	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/contrib/mmap.h apt-0.5.4-patched/apt-pkg/contrib/mmap.h
+--- apt-0.5.4/apt-pkg/contrib/mmap.h	Mon May 14 01:16:43 2001
++++ apt-0.5.4-patched/apt-pkg/contrib/mmap.h	Sun Nov  9 14:02:47 2003
 @@ -46,6 +46,7 @@
     unsigned long Flags;
     unsigned long iSize;
@@ -114,9 +114,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.h apt-0.5.4/apt-pkg/contrib/mmap.
  
     bool Map(FileFd &Fd);
     bool Close(bool DoSync = true);
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debindexfile.cc
---- apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc	Sun Apr 29 14:13:51 2001
-+++ apt-0.5.4/apt-pkg/deb/debindexfile.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/deb/debindexfile.cc apt-0.5.4-patched/apt-pkg/deb/debindexfile.cc
+--- apt-0.5.4/apt-pkg/deb/debindexfile.cc	Sun Apr 29 01:13:51 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debindexfile.cc	Sun Nov  9 14:02:47 2003
 @@ -505,3 +505,11 @@
  }
  
@@ -129,10 +129,10 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debi
 +  (void)_apt_Pkg;
 +  (void)_apt_Status;
 +}
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsystem.cc
---- apt-0.5.4.orig/apt-pkg/deb/debsystem.cc	Sun Apr 29 14:13:51 2001
-+++ apt-0.5.4/apt-pkg/deb/debsystem.cc	Mon Jul  7 13:31:04 2003
-@@ -27,6 +27,106 @@
+diff -ruN apt-0.5.4/apt-pkg/deb/debsystem.cc apt-0.5.4-patched/apt-pkg/deb/debsystem.cc
+--- apt-0.5.4/apt-pkg/deb/debsystem.cc	Sun Apr 29 01:13:51 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debsystem.cc	Sun Nov  9 14:02:47 2003
+@@ -27,6 +27,108 @@
  #include <dirent.h>
  #include <errno.h>
  									/*}}}*/
@@ -144,6 +144,8 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
 +
 +extern void init_deb2();
 +extern void init_deb3();
++
++#define FINKSTATUSFILE "/tmp/finkaptstatus"
 +
 +struct versionrevision {
 +  unsigned long epoch;
@@ -239,15 +241,16 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
  
  debSystem debSys;
  
-@@ -48,6 +148,7 @@
+@@ -48,6 +150,8 @@
  debSystem::~debSystem()
  {
     delete StatusFile;
 +   delete FinkStatusFile;
++   unlink(FINKSTATUSFILE);
  }
  									/*}}}*/
  // System::Lock - Get the lock						/*{{{*/
-@@ -161,8 +262,8 @@
+@@ -161,8 +265,8 @@
        which is yet to be determined. The functions in pkgcachegen should
        be the only users of these */
     Cnf.CndSet("Dir::State::userstatus","status.user"); // Defunct
@@ -258,7 +261,7 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
     
     return true;
  }
-@@ -185,9 +286,9 @@
+@@ -185,9 +289,9 @@
  signed debSystem::Score(Configuration const &Cnf)
  {
     signed Score = 0;
@@ -270,12 +273,12 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
        Score += 10;
     if (FileExists("/etc/debian_version") == true)
        Score += 10;
-@@ -202,6 +303,44 @@
+@@ -202,6 +306,44 @@
     if (StatusFile == 0)
        StatusFile = new debStatusIndex(_config->FindFile("Dir::State::status"));
     List.push_back(StatusFile);
 +/* FINK LOCAL begin */
-+#define FINKSTATUSFILE "/tmp/finkaptstatus"
++
 +   if (FinkStatusFile == 0) {
 +      struct stat unused_sbuf;
 +      int sys_ok=0;
@@ -315,7 +318,7 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
     return true;
  }
  									/*}}}*/
-@@ -216,6 +355,10 @@
+@@ -216,6 +358,10 @@
     if (StatusFile->FindInCache(*File.Cache()) == File)
     {
        Found = StatusFile;
@@ -326,9 +329,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
        return true;
     }
     
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.h apt-0.5.4/apt-pkg/deb/debsystem.h
---- apt-0.5.4.orig/apt-pkg/deb/debsystem.h	Sun Apr 29 14:13:51 2001
-+++ apt-0.5.4/apt-pkg/deb/debsystem.h	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/deb/debsystem.h apt-0.5.4-patched/apt-pkg/deb/debsystem.h
+--- apt-0.5.4/apt-pkg/deb/debsystem.h	Sun Apr 29 01:13:51 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debsystem.h	Sun Nov  9 14:02:47 2003
 @@ -25,6 +25,7 @@
     bool CheckUpdates();
     
@@ -337,9 +340,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.h apt-0.5.4/apt-pkg/deb/debsyste
     
     public:
  
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debversion.cc apt-0.5.4/apt-pkg/deb/debversion.cc
---- apt-0.5.4.orig/apt-pkg/deb/debversion.cc	Mon May  7 14:14:53 2001
-+++ apt-0.5.4/apt-pkg/deb/debversion.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/deb/debversion.cc apt-0.5.4-patched/apt-pkg/deb/debversion.cc
+--- apt-0.5.4/apt-pkg/deb/debversion.cc	Mon May  7 01:14:53 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debversion.cc	Sun Nov  9 14:02:47 2003
 @@ -24,6 +24,11 @@
  
  debVersioningSystem debVS;
@@ -352,9 +355,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debversion.cc apt-0.5.4/apt-pkg/deb/debver
  // debVS::debVersioningSystem - Constructor				/*{{{*/
  // ---------------------------------------------------------------------
  /* */
-diff -uNbr apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
---- apt-0.5.4.orig/apt-pkg/init.cc	Tue Mar 13 15:51:46 2001
-+++ apt-0.5.4/apt-pkg/init.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/init.cc apt-0.5.4-patched/apt-pkg/init.cc
+--- apt-0.5.4/apt-pkg/init.cc	Tue Mar 13 01:51:46 2001
++++ apt-0.5.4-patched/apt-pkg/init.cc	Sun Nov  9 14:02:47 2003
 @@ -15,6 +15,8 @@
  #include <apti18n.h>
  #include <config.h>
@@ -391,9 +394,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
     Sys = 0;
     string Label = Cnf.Find("Apt::System","");
     if (Label.empty() == false)
-diff -uNbr apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
---- apt-0.5.4.orig/apt-pkg/policy.cc	Mon May 28 08:40:56 2001
-+++ apt-0.5.4/apt-pkg/policy.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/policy.cc apt-0.5.4-patched/apt-pkg/policy.cc
+--- apt-0.5.4/apt-pkg/policy.cc	Sun May 27 19:40:56 2001
++++ apt-0.5.4-patched/apt-pkg/policy.cc	Sun Nov  9 14:02:47 2003
 @@ -183,7 +183,7 @@
     Pin *P = 0;
     
@@ -412,9 +415,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
        }
        else
        {
-diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.cc apt-0.5.4/apt-pkg/tagfile.cc
---- apt-0.5.4.orig/apt-pkg/tagfile.cc	Mon May 14 14:56:26 2001
-+++ apt-0.5.4/apt-pkg/tagfile.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/tagfile.cc apt-0.5.4-patched/apt-pkg/tagfile.cc
+--- apt-0.5.4/apt-pkg/tagfile.cc	Mon May 14 01:56:26 2001
++++ apt-0.5.4-patched/apt-pkg/tagfile.cc	Sun Nov  9 14:02:47 2003
 @@ -197,7 +197,7 @@
        return false;
     
@@ -440,9 +443,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.cc apt-0.5.4/apt-pkg/tagfile.cc
  	 return true;
        }
        
-diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.h apt-0.5.4/apt-pkg/tagfile.h
---- apt-0.5.4.orig/apt-pkg/tagfile.h	Sun Apr 22 14:42:52 2001
-+++ apt-0.5.4/apt-pkg/tagfile.h	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/apt-pkg/tagfile.h apt-0.5.4-patched/apt-pkg/tagfile.h
+--- apt-0.5.4/apt-pkg/tagfile.h	Sun Apr 22 01:42:52 2001
++++ apt-0.5.4-patched/apt-pkg/tagfile.h	Sun Nov  9 14:02:47 2003
 @@ -34,7 +34,7 @@
     
     // We have a limit of 256 tags per section.
@@ -452,9 +455,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.h apt-0.5.4/apt-pkg/tagfile.h
     
     unsigned int TagCount;
       
-diff -uNbr apt-0.5.4.orig/buildlib/environment.mak.in apt-0.5.4/buildlib/environment.mak.in
---- apt-0.5.4.orig/buildlib/environment.mak.in	Tue May 29 14:11:03 2001
-+++ apt-0.5.4/buildlib/environment.mak.in	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/buildlib/environment.mak.in apt-0.5.4-patched/buildlib/environment.mak.in
+--- apt-0.5.4/buildlib/environment.mak.in	Tue May 29 01:11:03 2001
++++ apt-0.5.4-patched/buildlib/environment.mak.in	Sun Nov  9 14:02:47 2003
 @@ -11,8 +11,8 @@
  LIBSTDCPP_VER = @LIBSTDCPP_VER@
  
@@ -487,9 +490,9 @@ diff -uNbr apt-0.5.4.orig/buildlib/environment.mak.in apt-0.5.4/buildlib/environ
 +SONAME_MAGIC=-install_name @PREFIX@/lib/
 +LFLAGS_SO=-dynamiclib
  	
-diff -uNbr apt-0.5.4.orig/buildlib/library.mak apt-0.5.4/buildlib/library.mak
---- apt-0.5.4.orig/buildlib/library.mak	Tue Feb 27 13:16:05 2001
-+++ apt-0.5.4/buildlib/library.mak	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/buildlib/library.mak apt-0.5.4-patched/buildlib/library.mak
+--- apt-0.5.4/buildlib/library.mak	Mon Feb 26 23:16:05 2001
++++ apt-0.5.4-patched/buildlib/library.mak	Sun Nov  9 14:02:47 2003
 @@ -15,17 +15,17 @@
  # See defaults.mak for information about LOCAL
  
@@ -542,9 +545,9 @@ diff -uNbr apt-0.5.4.orig/buildlib/library.mak apt-0.5.4/buildlib/library.mak
  	   $(filter %.opic,$^) \
  	   $($(@F)-SLIBS) 
  
-diff -uNbr apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
---- apt-0.5.4.orig/buildlib/ostable	Tue Feb 20 16:03:17 2001
-+++ apt-0.5.4/buildlib/ostable	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/buildlib/ostable apt-0.5.4-patched/buildlib/ostable
+--- apt-0.5.4/buildlib/ostable	Tue Feb 20 02:03:17 2001
++++ apt-0.5.4-patched/buildlib/ostable	Sun Nov  9 14:02:47 2003
 @@ -14,6 +14,7 @@
  hp-hpux[^-]*	    hp-ux
  sun-solaris[^-]*    solaris
@@ -553,9 +556,9 @@ diff -uNbr apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
  
  # Catch all
  .*	unknown
-diff -uNbr apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
---- apt-0.5.4.orig/cmdline/apt-cache.cc	Mon Jul  2 09:10:32 2001
-+++ apt-0.5.4/cmdline/apt-cache.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/cmdline/apt-cache.cc apt-0.5.4-patched/cmdline/apt-cache.cc
+--- apt-0.5.4/cmdline/apt-cache.cc	Sun Jul  1 20:10:32 2001
++++ apt-0.5.4-patched/cmdline/apt-cache.cc	Sun Nov  9 14:02:47 2003
 @@ -374,8 +374,10 @@
     if (ReadPinFile(Plcy) == false)
        return false;
@@ -578,9 +581,9 @@ diff -uNbr apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
  
     // Iterate over all the package files and write them out.
     char *Buffer = new char[Cache.HeaderP->MaxVerFileSize+10];
-diff -uNbr apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
---- apt-0.5.4.orig/cmdline/apt-get.cc	Mon Jul  2 07:59:04 2001
-+++ apt-0.5.4/cmdline/apt-get.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/cmdline/apt-get.cc apt-0.5.4-patched/cmdline/apt-get.cc
+--- apt-0.5.4/cmdline/apt-get.cc	Sun Jul  1 18:59:04 2001
++++ apt-0.5.4-patched/cmdline/apt-get.cc	Sun Nov  9 14:02:47 2003
 @@ -113,6 +113,8 @@
        return true;
     }
@@ -606,9 +609,9 @@ diff -uNbr apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
  		     else
  			out << _("but it is a virtual package");
  		  }		  
-diff -uNbr apt-0.5.4.orig/configure apt-0.5.4/configure
---- apt-0.5.4.orig/configure	Sun Aug 19 09:46:43 2001
-+++ apt-0.5.4/configure	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/configure apt-0.5.4-patched/configure
+--- apt-0.5.4/configure	Sat Aug 18 20:46:43 2001
++++ apt-0.5.4-patched/configure	Sun Nov  9 14:02:48 2003
 @@ -2394,7 +2394,7 @@
  
  ac_given_srcdir=$srcdir
@@ -636,18 +639,18 @@ diff -uNbr apt-0.5.4.orig/configure apt-0.5.4/configure
  exit 0
  EOF
  chmod +x $CONFIG_STATUS
-diff -uNbr apt-0.5.4.orig/configure.in apt-0.5.4/configure.in
---- apt-0.5.4.orig/configure.in	Mon Jun 18 14:56:32 2001
-+++ apt-0.5.4/configure.in	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/configure.in apt-0.5.4-patched/configure.in
+--- apt-0.5.4/configure.in	Mon Jun 18 01:56:32 2001
++++ apt-0.5.4-patched/configure.in	Sun Nov  9 14:02:48 2003
 @@ -163,4 +163,4 @@
  rc_LIBSTDCPP_VER
  ah_GCC3DEP
  
 -AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile:buildlib/makefile.in,make -s dirs)
 +AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile.wrap:buildlib/makefile.in,make -f makefile.wrap -s dirs)
-diff -uNbr apt-0.5.4.orig/dselect/install apt-0.5.4/dselect/install
---- apt-0.5.4.orig/dselect/install	Tue Feb 20 16:03:17 2001
-+++ apt-0.5.4/dselect/install	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/dselect/install apt-0.5.4-patched/dselect/install
+--- apt-0.5.4/dselect/install	Tue Feb 20 02:03:17 2001
++++ apt-0.5.4-patched/dselect/install	Sun Nov  9 14:02:48 2003
 @@ -3,8 +3,8 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -659,9 +662,9 @@ diff -uNbr apt-0.5.4.orig/dselect/install apt-0.5.4/dselect/install
  DPKG_OPTS="--admindir=$1"
  APT_OPT0="-oDir::State::status=$1/status"
  APT_OPT1="-oDPkg::Options::=$DPKG_OPTS"
-diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
---- apt-0.5.4.orig/dselect/setup	Thu Jan 27 13:15:10 2000
-+++ apt-0.5.4/dselect/setup	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/dselect/setup apt-0.5.4-patched/dselect/setup
+--- apt-0.5.4/dselect/setup	Wed Jan 26 23:15:10 2000
++++ apt-0.5.4-patched/dselect/setup	Sun Nov  9 14:36:03 2003
 @@ -23,15 +23,17 @@
  my $vardir=$ARGV[0];
  my $method=$ARGV[1];
@@ -680,7 +683,7 @@ diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
  my @known_access         = ('http', 'ftp', 'file');
 -my @typical_distributions = ('stable', 'unstable', 'frozen', 'non-US');
 -my @typical_components    = ('main', 'contrib', 'non-free');
-+my @typical_distributions = ('release', 'current');
++my @typical_distributions = ('10.2/release', '10.2/current');
 +my @typical_components    = ('main', 'crypto');
  
  my %known_access           = map {($_,$_)} @known_access;
@@ -693,7 +696,7 @@ diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
 -  $distribution = "stable" unless $distribution;
 -  $components   = "main contrib non-free" unless $components;
 +  $urn          = "http://us.dl.sourceforge.net/fink/direct_download" unless $urn;
-+  $distribution = "release" unless $distribution;
++  $distribution = "10.2/release" unless $distribution;
 +  $components   = "main" unless $components;
  
      
@@ -721,9 +724,21 @@ diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
    print "\n";
  
    my $index = 0;
-diff -uNbr apt-0.5.4.orig/dselect/update apt-0.5.4/dselect/update
---- apt-0.5.4.orig/dselect/update	Tue Mar 13 10:45:36 2001
-+++ apt-0.5.4/dselect/update	Wed Jul  2 08:37:41 2003
+@@ -269,7 +265,10 @@
+     print "-" x 72, "\n";
+     &print_config('Config' => \@Oldconfig);
+     print "-" x 72, "\n";
+-    print "$boldon Do you wish to change (overwrite) it?[y/N]$boldoff ";
++    print "$boldon In most cases, this file was installed by Fink or by apt,"
++	." and$boldoff\n";
++        print "$boldon should NOT be changed.  " .
++        "Do you wish to change (overwrite) it?[y/N]$boldoff ";
+     my $answer = <STDIN>;
+     chomp ($answer);
+     $answer =~ s/\s+/ /og;
+diff -ruN apt-0.5.4/dselect/update apt-0.5.4-patched/dselect/update
+--- apt-0.5.4/dselect/update	Mon Mar 12 20:45:36 2001
++++ apt-0.5.4-patched/dselect/update	Sun Nov  9 14:02:48 2003
 @@ -4,13 +4,13 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -742,9 +757,9 @@ diff -uNbr apt-0.5.4.orig/dselect/update apt-0.5.4/dselect/update
  PROMPT="false"
  RES=`apt-config shell CLEAN DSelect::Clean OPTS DSelect::UpdateOptions \
  		      DPKG Dir::Bin::dpkg/f APTGET Dir::Bin::apt-get/f \
-diff -uNbr apt-0.5.4.orig/methods/connect.cc apt-0.5.4/methods/connect.cc
---- apt-0.5.4.orig/methods/connect.cc	Tue Feb 20 16:03:18 2001
-+++ apt-0.5.4/methods/connect.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/methods/connect.cc apt-0.5.4-patched/methods/connect.cc
+--- apt-0.5.4/methods/connect.cc	Tue Feb 20 02:03:18 2001
++++ apt-0.5.4-patched/methods/connect.cc	Sun Nov  9 14:02:48 2003
 @@ -90,7 +90,7 @@
  
     // Check the socket for an error condition
@@ -754,9 +769,9 @@ diff -uNbr apt-0.5.4.orig/methods/connect.cc apt-0.5.4/methods/connect.cc
     if (getsockopt(Fd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
        return _error->Errno("getsockopt","Failed");
     
-diff -uNbr apt-0.5.4.orig/methods/ftp.cc apt-0.5.4/methods/ftp.cc
---- apt-0.5.4.orig/methods/ftp.cc	Tue May 22 13:02:00 2001
-+++ apt-0.5.4/methods/ftp.cc	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/methods/ftp.cc apt-0.5.4-patched/methods/ftp.cc
+--- apt-0.5.4/methods/ftp.cc	Tue May 22 00:02:00 2001
++++ apt-0.5.4-patched/methods/ftp.cc	Sun Nov  9 14:02:48 2003
 @@ -694,7 +694,7 @@
        if (WaitFd(DataFd,true,TimeOut) == false)
  	 return _error->Error("Could not connect data socket, connection timed out");
@@ -784,9 +799,9 @@ diff -uNbr apt-0.5.4.orig/methods/ftp.cc apt-0.5.4/methods/ftp.cc
     DataFd = accept(DataListenFd,(struct sockaddr *)&Addr,&Len);
     if (DataFd < 0)
        return _error->Errno("accept","Unable to accept connection");
-diff -uNbr apt-0.5.4.orig/methods/ftp.h apt-0.5.4/methods/ftp.h
---- apt-0.5.4.orig/methods/ftp.h	Tue Mar  6 16:15:29 2001
-+++ apt-0.5.4/methods/ftp.h	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/methods/ftp.h apt-0.5.4-patched/methods/ftp.h
+--- apt-0.5.4/methods/ftp.h	Tue Mar  6 02:15:29 2001
++++ apt-0.5.4-patched/methods/ftp.h	Sun Nov  9 14:02:48 2003
 @@ -26,11 +26,11 @@
     
     // Generic Peer Address
@@ -801,9 +816,9 @@ diff -uNbr apt-0.5.4.orig/methods/ftp.h apt-0.5.4/methods/ftp.h
     
     // Private helper functions
     bool ReadLine(string &Text);      
-diff -uNbr apt-0.5.4.orig/methods/rfc2553emu.h apt-0.5.4/methods/rfc2553emu.h
---- apt-0.5.4.orig/methods/rfc2553emu.h	Sun Jun 18 15:04:45 2000
-+++ apt-0.5.4/methods/rfc2553emu.h	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/methods/rfc2553emu.h apt-0.5.4-patched/methods/rfc2553emu.h
+--- apt-0.5.4/methods/rfc2553emu.h	Sun Jun 18 02:04:45 2000
++++ apt-0.5.4-patched/methods/rfc2553emu.h	Sun Nov  9 14:02:48 2003
 @@ -26,6 +26,11 @@
  #include <sys/types.h>
  #include <sys/socket.h>
@@ -835,9 +850,9 @@ diff -uNbr apt-0.5.4.orig/methods/rfc2553emu.h apt-0.5.4/methods/rfc2553emu.h
    #endif
  
    #define sockaddr_storage sockaddr_in
-diff -uNbr apt-0.5.4.orig/patch_flush apt-0.5.4/patch_flush
---- apt-0.5.4.orig/patch_flush	Thu Jan  1 09:00:00 1970
-+++ apt-0.5.4/patch_flush	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/patch_flush apt-0.5.4-patched/patch_flush
+--- apt-0.5.4/patch_flush	Wed Dec 31 19:00:00 1969
++++ apt-0.5.4-patched/patch_flush	Sun Nov  9 14:02:48 2003
 @@ -0,0 +1,11 @@
 +#!/bin/sh
 +set -e
@@ -850,9 +865,9 @@ diff -uNbr apt-0.5.4.orig/patch_flush apt-0.5.4/patch_flush
 +done
 +
 +exit 0
-diff -uNbr apt-0.5.4.orig/sources.list.fink apt-0.5.4/sources.list.fink
---- apt-0.5.4.orig/sources.list.fink	Thu Jan  1 09:00:00 1970
-+++ apt-0.5.4/sources.list.fink	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/sources.list.fink apt-0.5.4-patched/sources.list.fink
+--- apt-0.5.4/sources.list.fink	Wed Dec 31 19:00:00 1969
++++ apt-0.5.4-patched/sources.list.fink	Sun Nov  9 14:02:48 2003
 @@ -0,0 +1,8 @@
 +# Default APT sources configuration for Fink
 +
@@ -862,9 +877,9 @@ diff -uNbr apt-0.5.4.orig/sources.list.fink apt-0.5.4/sources.list.fink
 +deb file:@PREFIX@/fink local main
 +deb file:@PREFIX@/fink stable main crypto
 +#deb file:@PREFIX@/fink unstable main crypto
-diff -uNbr apt-0.5.4.orig/sources.list.fink-bindist apt-0.5.4/sources.list.fink-bindist
---- apt-0.5.4.orig/sources.list.fink-bindist	Thu Jan  1 09:00:00 1970
-+++ apt-0.5.4/sources.list.fink-bindist	Wed Jul  2 08:37:41 2003
+diff -ruN apt-0.5.4/sources.list.fink-bindist apt-0.5.4-patched/sources.list.fink-bindist
+--- apt-0.5.4/sources.list.fink-bindist	Wed Dec 31 19:00:00 1969
++++ apt-0.5.4-patched/sources.list.fink-bindist	Sun Nov  9 14:33:50 2003
 @@ -0,0 +1,8 @@
 +
 +# Official binary distribution: download location for packages
