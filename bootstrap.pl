@@ -319,7 +319,7 @@ if (not -d $installto) {
 
 my $arch = get_arch();
 
-@dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs);
+@dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs var var/lib var/lib/fink);
 push @dirlist, "fink/$distribution", "fink/$distribution/stable", "fink/$distribution/local";
 foreach $dir (qw(stable/main stable/crypto local/main)) {
 	push @dirlist, "fink/$distribution/$dir", "fink/$distribution/$dir/finkinfo",

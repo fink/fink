@@ -1,3 +1,7 @@
+2005-03-07  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* bootstrap.pl: added var/lib/fink to mkdir to fix bootstraping
+
 2005-03-30  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.info.in: add PreRm that removes package and shlibs databases
