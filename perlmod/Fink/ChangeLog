@@ -1,7 +1,8 @@
 2001-08-28  Max Horn  <max@quendi.de>
 
 	* Validation.pm: made sure that validate also works when the
-	specified filename contains a path.
+	specified filename contains a path; upped limit for Description
+	field to 45 chars, seems to be sufficient for "fink list"
 
 	
 2001-08-26  Max Horn  <max@quendi.de>

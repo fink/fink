@@ -205,8 +205,8 @@ sub validate_info_file {
     print "Warning: No package description supplied.\n";
     $looks_good = 0;
   }
-  elsif (length($value) > 40) {
-    print "Warning: Length of package description exceeds 40 characters.\n";
+  elsif (length($value) > 45) {
+    print "Warning: Length of package description exceeds 45 characters.\n";
     $looks_good = 0;
   }
   
