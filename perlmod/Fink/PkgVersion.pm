@@ -764,7 +764,7 @@ sub match_package {
   my ($pkgname, $package, $version, $pkgversion);
   my ($found, @parts, $i, @vlist, $v, @rlist);
 
-  if (not Fink::Config::is_verbose()) {
+  if (Fink::Config::verbosity_level() < 3) {
     $quiet = 1;
   }
 
@@ -921,7 +921,7 @@ sub phase_unpack {
   $bdir = $self->get_fullname();
 
   $verbosity = "";
-  if (Fink::Config::is_verbose()) {
+  if (Fink::Config::verbosity_level() > 1) {
     $verbosity = "v";
   }
 

@@ -171,7 +171,7 @@ sub validate_info_file {
   my $looks_good = 1;
   my $error_found = 0;
 
-  if (Fink::Config::is_verbose()) {
+  if (Fink::Config::verbosity_level() == 3) {
     print "Validating package file $filename...\n";
   }
   
@@ -292,7 +292,7 @@ sub validate_info_file {
     print "Error: Length of package description exceeds 60 characters. ($filename)\n";
     $looks_good = 0;
   }
-  elsif (length($value) > 45 and Fink::Config::is_verbose()) {
+  elsif (length($value) > 45 and Fink::Config::verbosity_level() == 3) {
     print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
     $looks_good = 0;
   }
@@ -338,7 +338,7 @@ sub validate_info_file {
     }
   }
   
-  if ($looks_good and Fink::Config::is_verbose()) {
+  if ($looks_good and Fink::Config::verbosity_level() == 3) {
     print "Package looks good!\n";
   }
 }

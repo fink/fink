@@ -214,7 +214,7 @@ sub download_cmd {
   # check if we have curl
   if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
     $cmd = "curl -f -L";
-    if (not Fink::Config::is_verbose()) {
+    if (Fink::Config::verbosity_level() == 0) {
       $cmd .= " -s -S";
     }
     if (not $config->param_boolean("ProxyPassiveFTP")) {
@@ -234,7 +234,7 @@ sub download_cmd {
   if ((!$cmd or $config->param_default("DownloadMethod") eq "wget") and
       (-x "$basepath/bin/wget" or -x "/usr/bin/wget")) {
     $cmd = "wget";
-    if (Fink::Config::is_verbose()) {
+    if (Fink::Config::verbosity_level() >= 1) {
       $cmd .= " --verbose";
     } else {
       $cmd .= " --non-verbose";
@@ -258,7 +258,7 @@ sub download_cmd {
     if ($config->param_default("DownloadMethod") eq "axelautomirror") {
       $cmd = "axel -S 1";
     }
-    if (Fink::Config::is_verbose()) {
+    if (Fink::Config::verbosity_level() >= 1) {
       $cmd .= " --verbose";
     }
     if ($file ne &filename($url)) {

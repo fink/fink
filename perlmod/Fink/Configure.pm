@@ -65,10 +65,13 @@ sub configure {
   }
 
   $verbose =
-    &prompt_boolean("Always print verbose messages?",
-		    $config->param_boolean("Verbose"));
-  $config->set_param("Verbose", $verbose ? "true" : "false");
-
+    &prompt_selection("How verbose should Fink be?", 3, # Default option at index 4 -> "Low"
+                     { 3 => "High (shows everything)",
+                       2 => "Medium (shows almost everything)",
+                       1 => "Low (don't show tarballs being expanded)",
+                       0 => "Quiet (don't show download stats)" },
+                     3, 2, 1, 0);
+  $config->set_param("Verbose", $verbose);
 
   # proxy settings
   print "\n";

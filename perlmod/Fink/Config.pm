@@ -36,7 +36,7 @@ BEGIN {
   @ISA         = qw(Exporter Fink::Base);
   @EXPORT      = qw();
   @EXPORT_OK   = qw($config $basepath $libpath $debarch $darwin_version $macosx_version
-                    &get_option &set_options &is_verbose);
+                    &get_option &set_options &verbosity_level);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -229,17 +229,30 @@ sub get_option {
   return $default;
 }
 
-### determine whether verbose mode is on or off
+### determine the current verbosity level. This is affected by the
+### --verbose and --quiet command line options as well as by the
+### "Verbose" setting in fink.conf
 
-sub is_verbose {
-  my $verbosity;
+sub verbosity_level {
+  my ($verbosity, $verblevel);
 
+  $verblevel = $config->param("Verbose");
   $verbosity = get_option("verbosity");
-  
-  if ($verbosity != 0) {
-    return ($verbosity>0)
+ 
+  if ($verbosity != -1 && ($verbosity == 3 || $verblevel eq "3" || $verblevel eq "true" || $verblevel eq "high")) {
+    ### Sets Verbose mode to Full
+    $verbosity = 3;
+  } elsif ($verbosity != -1 && $verblevel eq "2" || $verblevel eq "medium") {
+    ### Sets Verbose mode to download and tarballs
+    $verbosity = 2;
+  } elsif ($verbosity != -1 && $verblevel eq "1" || $verblevel eq "low") {
+    ### Sets Verbose mode to download
+    $verbosity = 1;
+  } else {
+    ### Sets Verbose mode to none
+    $verbosity = 0;
   }
-  return $config->param_boolean("Verbose");
+  return $verbosity;
 }
 
 

@@ -179,10 +179,10 @@ sub restart_as_root {
   if (Fink::Config::get_option("dontask")) {
     $cmd .= " --yes";
   }
-  if (Fink::Config::get_option("verbosity")>0) {
+  if (Fink::Config::get_option("verbosity") == 3) {
     $cmd .= " --verbose";
   }
-  elsif (Fink::Config::get_option("verbosity")<0) {
+  elsif (Fink::Config::get_option("verbosity") == -1) {
     $cmd .= " --quiet";
   }
   if (Fink::Config::get_option("interactive")) {
@@ -756,7 +756,7 @@ sub real_install {
   my ($answer, $s);
   my (%already_rebuilt, %already_activated);
 
-  if (Fink::Config::is_verbose()) {
+  if (Fink::Config::verbosity_level() > -1) {
     $showlist = 1;
   }
 

@@ -374,7 +374,7 @@ sub do_tarball {
   }
 
   $verbosity = "";
-  if (Fink::Config::is_verbose()) {
+  if (Fink::Config::verbosity_level() > 1) {
     $verbosity = "v";
   }
   $unpack_cmd = "tar -xz${verbosity}f $pkgtarball";

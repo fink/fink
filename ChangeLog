@@ -1,3 +1,7 @@
+2002-06-22  Max Horn  <max@quendi.de>
+
+	* fink.in: Applied Justin's multi-level verbosity patch.
+
 2002-06-07  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: Report Darwin 5.5 (OS X 10.1.5) as supported

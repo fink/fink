@@ -38,8 +38,8 @@ my %options =
 
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
 GetOptions('yes|y' => \$options{dontask},
-	   'quiet|q' => sub { $options{verbosity}-- },
-	   'verbose|v' => sub { $options{verbosity}++ },
+	   'quiet|q' => sub { $options{verbosity} = -1 },
+	   'verbose|v' => sub { $options{verbosity} = 3 },
 #	   'interactive|i' => \$options{interactive},
 	   'version|V' => \&show_version,
 	   'help|h|?' => \&show_help)

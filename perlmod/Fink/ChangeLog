@@ -1,3 +1,7 @@
+2002-07-22  Max Horn  <max@quendi.de>
+
+	* Various files: Applied Justin's multi-level verbosity patch.
+
 2002-07-06  Max Horn  <max@quendi.de>
 
 	* Package.pm (scan_all, update_db): Fixed index'ing bug.
