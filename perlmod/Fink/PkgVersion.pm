@@ -2509,7 +2509,7 @@ sub get_env {
 	my %script_env;
 
 	# just return cached copy if there is one
-	if (exists $self->{_script_env}) {
+	if (exists $self->{_script_env} and not $self->{_bootstrap}) {
 		# return ref to a copy, so caller changes do not modify cached value
 		return \%{$self->{_script_env}};
 	}
@@ -2647,8 +2647,11 @@ END
 		}
 	}
 
-	# cache a copy for next time
-	$self->{_script_env} = { %script_env };
+	# cache a copy so caller's changes to returned val don't touch cached val
+	if (not $self->{_bootstrap}) {
+		$self->{_script_env} = { %script_env };
+	}
+
 	return \%script_env;
 }
 
