@@ -1,3 +1,7 @@
+2004-08-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Remove 'fink checksums'.
+
 2004-08-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Recognize darwin 7.5.0.

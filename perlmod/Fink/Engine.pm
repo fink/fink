@@ -87,7 +87,6 @@ our %commands =
 	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
 	  'validate' => [\&cmd_validate, 0, 0],
 	  'check' => [\&cmd_validate, 0, 0],
-	  'checksums' => [\&cmd_checksums, 1, 0],
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
 	  'splitoffs' => [\&cmd_splitoffs, 1, 0],
 	  'splits' => [\&cmd_splitoffs, 1, 0],
@@ -834,34 +833,6 @@ EOF
 			Fink::Validation::validate_dpkg_file($filename, $val_prefix);
 		} else {
 			die "Don't know how to validate $filename!\n";
-		}
-	}
-}
-
-# HACK HACK HACK
-# This is to be removed soon again, only a temporary tool to allow
-# checking of all available MD5 values in all packages.
-sub cmd_checksums {
-	my ($pname, $package, $vo, $suffix, $file, $chk);
-
-	# Iterate over all packages
-	foreach $pname (Fink::Package->list_packages()) {
-		$package = Fink::Package->package_by_name($pname);
-		foreach $vo ($package->get_all_versions()) {
-			# Skip packages that do not have source files
-			next unless scalar($vo->get_source_suffices);
-		
-			# For each tar ball, if a checksum was specified, locate it and
-			# verify the checksum.
-			foreach $suffix ( $vo->get_source_suffices() ) {
-				$chk = $vo->get_checksum($suffix);
-				if (defined $chk) {
-					$file = $vo->find_tarball($suffix);
-					if (defined($file) and $chk ne &file_MD5_checksum($file)) {
-						print "Checksum of tarball $file of package ".$vo->get_fullname()." is incorrect.\n";
-					}
-				}
-			}
 		}
 	}
 }
