@@ -51,7 +51,7 @@ sub bootstrap {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
 	my @plist = ("gettext", "tar", "dpkg-bootstrap");
-	my @addlist = ("apt", "apt-shlibs", "storable-pm");
+	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "libiconv-dev", "ncurses-dev");
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560";
 	} elsif ("$]" == "5.006001") {

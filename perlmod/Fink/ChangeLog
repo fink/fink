@@ -1,3 +1,8 @@
+2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm, SelfUpdate.pm: Add bzip2-dev, gettext-dev, 
+	libiconv-dev, ncurses-dev to the bootstrap and update lists
+
 2003-07-14  Max Horn  <max@quendi.de>
 
 	* VirtPackage.pm: Explicitly check for the existence of 'what' and 'cc'

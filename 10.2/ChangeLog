@@ -1,3 +1,8 @@
+2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* updated to splitoff version: bzip2-1.0.2-2, gettext-0.10.40-5,
+	libiconv-1.7-7, ncurses-5.3-2
+
 2003-07-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* updated gettext to 0.10.40-4 and libiconv to 1.7-6, matching 
