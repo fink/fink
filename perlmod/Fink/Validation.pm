@@ -61,8 +61,8 @@ our %obsolete_fields = map {$_, 1}
 # Fields to check for hardcoded /sw
 our %check_hardcode_fields = map {$_, 1}
 	( 
-	    qw(patchscript compilescript installscript),
-	    (map {"set".$_} @set_vars)
+		qw(patchscript compilescript installscript),
+		(map {"set".$_} @set_vars)
 	);
 
 # Fields in which %n/%v can and should be used
@@ -312,9 +312,9 @@ sub validate_info_file {
 		}
 		# Check for hardcoded /sw.
 		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
-		    print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
-		    $looks_good = 0;
-		    next;
+			print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
+			$looks_good = 0;
+			next;
 		}
 		# Warn if field is unknown
 		unless ($known_fields{$field}
@@ -423,19 +423,23 @@ sub validate_info_file {
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
 # - usage of other non-standard subdirs 
 # - storage of a .bundle inside /sw/lib/perl5/darwin or /sw/lib/perl5/auto
+# - Emacs packages
+#     - installation of .elc files
+#     - installing files directly in /sw/share/emacs/site-lisp
 # - ideas?
 #
 sub validate_dpkg_file {
-	my $filename = shift;
+	my $dpkg_filename = shift;
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/");
 	my ($pid, $bad_dir);
+	my $filename;
 	my $looks_good = 1;
-	
-	print "Validating .deb file $filename...\n";
+
+	print "Validating .deb file $dpkg_filename...\n";
 	
 	# Quick & Dirty solution!!!
-	# This is a potential security risk, we should maybe filter $filename...
-	$pid = open(DPKG_CONTENTS, "dpkg --contents $filename |") or die "Couldn't run dpkg: $!\n";
+	# This is a potential security risk, we should maybe filter $dpkg_filename...
+	$pid = open(DPKG_CONTENTS, "dpkg --contents $dpkg_filename |") or die "Couldn't run dpkg: $!\n";
 	while (<DPKG_CONTENTS>) {
 		# process
 		if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
@@ -451,6 +455,15 @@ sub validate_dpkg_file {
 			} elsif ( $filename =~/^($basepath\/lib\/perl5\/darwin\/.*\.bundle)/ ) {
 				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
 				$looks_good = 0;
+			} elsif ( ($filename =~/^($basepath\/.*\.elc)$/) &&
+				  (not (($dpkg_filename =~ /^emacs[0-9][0-9]/) ||
+					($dpkg_filename =~ /xemacs/)))) {
+				$looks_good = 0;
+				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
+			} elsif ( ($filename =~/^($basepath\/share\/emacs\/site-lisp\/[^\/]+)$/) &&
+				  (not $dpkg_filename =~ /^emacsen-common_/)) {
+				$looks_good = 0;
+				print "Warning: File installed directly in $basepath/share/emacs/site-lisp. Files should be installed in a package subdirectory.\n  Offending file: $1\n";
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.

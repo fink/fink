@@ -4,6 +4,7 @@
 	  rebuilding splitoff packages (Bug #645841).
 	* Package.pm: Fink::Package %package_hash -> $packages (Patch #831573).
 	* Base.pm, Config.pm: Fink::Config cleanup & documentation (Patch #832063).
+	* Validation.pm: Validate emacs packages (Patch #748665).
 
 2003-11-06  Ben Hines <benh57@users.sourceforge.net>
 
@@ -1386,7 +1387,7 @@
 
 	* NetAccess.pm: converted tabs to spaces
 	(fetch_url_to_file): some  clean up, now handles "custom" mirrors,
-	code that determines the download cmd moved to a seperate function
+	code that determines the download cmd moved to a separate function
 	so that it will be easier to enhance this.
 
 2001-10-09  Christoph Pfisterer  <cp@chrisp.de>
