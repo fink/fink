@@ -269,7 +269,7 @@ diff -uNbr apt-0.5.4/apt-pkg/deb/debsystem.cc apt-0.5.4-new/apt-pkg/deb/debsyste
        Score += 10;
     if (FileExists("/etc/debian_version") == true)
        Score += 10;
-@@ -202,6 +302,37 @@
+@@ -202,6 +302,18 @@
     if (StatusFile == 0)
        StatusFile = new debStatusIndex(_config->FindFile("Dir::State::status"));
     List.push_back(StatusFile);
@@ -277,29 +277,10 @@ diff -uNbr apt-0.5.4/apt-pkg/deb/debsystem.cc apt-0.5.4-new/apt-pkg/deb/debsyste
 +#define FINKSTATUSFILE "/tmp/finkaptstatus"
 +   if (FinkStatusFile == 0) {
 +      unlink(FINKSTATUSFILE);
-+      std::ofstream finkstatus(FINKSTATUSFILE);
-+      if(macosx_version.version != 0)
-+      {
-+        finkstatus << "Package: macosx" << endl;
-+        finkstatus << "Status: install ok installed" << endl;      
-+        finkstatus << "Priority: optional" << endl;
-+        finkstatus << "Section: base" << endl;
-+        finkstatus << "Maintainer: None" << endl;
-+        finkstatus << "Source: macosx" << endl;
-+        finkstatus << "Version: " << macosx_version.version << endl;
-+        finkstatus << "Description: Pseudo package representing Mac OS X" << endl;
-+        finkstatus << " Pseudo package representing Mac OS X" << endl << endl;
-+      }
-+      finkstatus << "Package: darwin" << endl;
-+      finkstatus << "Status: install ok installed" << endl;
-+      finkstatus << "Priority: optional" << endl;
-+      finkstatus << "Section: base" << endl;
-+      finkstatus << "Maintainer: None" << endl;
-+      finkstatus << "Source: darwin" << endl;
-+      finkstatus << "Version: " << darwin_version.version  << endl;
-+      finkstatus << "Description: Pseudo package representing Darwin" << endl;
-+      finkstatus << " Pseudo package representing Darwin" << endl << endl;
-+      finkstatus.close();
++      if (system("@PREFIX@/bin/fink-virtual-pkgs --apt")) {
++          cerr << "Could not run fink-virtual-pkgs" << endl;
++          exit(1);
++      }		
 +      FinkStatusFile = new debStatusIndex(FINKSTATUSFILE);       
 +   }
 +   List.push_back(FinkStatusFile);

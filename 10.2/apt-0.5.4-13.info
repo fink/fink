@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 12
+Revision: 13
 GCC: 3.1
 Depends: %N-shlibs (= %v-%r)
 Source: mirror:sourceforge:fink/%n_%v.tar.gz

@@ -33,6 +33,9 @@ version=`cat VERSION`
 echo "Creating fink..."
 sed "s|@BASEPATH@|$basepath|g" <fink.in >fink
 
+echo "Creating fink-virtual-pkgs..."
+sed "s|@BASEPATH@|$basepath|g" <fink-virtual-pkgs.in >fink-virtual-pkgs
+
 echo "Creating pathsetup.command..."
 sed "s|@PREFIX@|$basepath|g" <pathsetup.command.in >pathsetup.command
 
