@@ -1,3 +1,9 @@
+2004-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.5, a release
+	on branch_0_20 with a modification to the BuildDependsOnly test,
+	and other validation fixes
+
 2004-06-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.20.4, a release
