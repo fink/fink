@@ -870,6 +870,7 @@ sub fetch_source {
   my $self = shift;
   my $index = shift;
   my $tries = shift || 0;
+  my $continue = shift || 0;
   my ($url, $file);
 
   chdir "$basepath/src";
@@ -877,7 +878,7 @@ sub fetch_source {
   $url = $self->get_source($index);
   $file = $self->get_tarball($index);
 
-  if (&fetch_url_to_file($url, $file, $self->get_custom_mirror(), $tries)) {
+  if (&fetch_url_to_file($url, $file, $self->get_custom_mirror(), $tries, $continue)) {
     if (0) {
     print "\n";
     &print_breaking("Downloading '$file' from the URL '$url' failed. ".
@@ -909,7 +910,7 @@ sub fetch_source {
 sub phase_unpack {
   my $self = shift;
   my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-  my ($i, $verbosity, $answer, $tries, $checksum);
+  my ($i, $verbosity, $answer, $tries, $checksum, $continue);
   my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
   my ($tar, $bzip2, $unzip);
 
@@ -955,11 +956,12 @@ sub phase_unpack {
     # search for archive, try fetching if not found
     $found_archive = $self->find_tarball($i);
     if (not defined $found_archive or $tries > 0) {
-      $self->fetch_source($i, $tries);
+      $self->fetch_source($i, $tries, $continue);
+      $continue = 0;
       $found_archive = $self->find_tarball($i);
     }
     if (not defined $found_archive) {
-      die "can't find source tarball $archive for package ".$self->get_fullname()."\n";
+      die "can't find source file $archive for package ".$self->get_fullname()."\n";
     }
     
     # verify the MD5 checksum, if specified
@@ -970,7 +972,7 @@ sub phase_unpack {
 	# mismatch, ask user what to do
 	$tries++;
 	
-	&print_breaking("The checksum of the tarball $archive of package ".
+	&print_breaking("The checksum of the file $archive of package ".
 			$self->get_fullname()." is incorrect. The most likely ".
 			"cause for this is a corrupted or incomplete ".
 			"download. It is recommended that you download it ".
@@ -979,15 +981,25 @@ sub phase_unpack {
 	  &prompt_selection("Make your choice: ",
 			    ($tries >= 3) ? 1 : 2,
 			    { "error" => "Give up",
-			      "redownload" => "Download again",
-			      "continue" => "Use tarball anyway" },
-			    ( "error", "redownload", "continue" ));
+			      "redownload" => "Delete it and download again", 			      
+			      "continuedownload" => "Assume it is a partial download and try to continue",
+			      "continue" => "Don't download, use existing file" },
+			    ( "error", "redownload", "continuedownload", "continue" ));
 	if ($answer eq "redownload") {
 	  &execute("rm -f $found_archive");
 	  $i--;
+	  # Axel leaves .st files around for partial files, need to remove
+	  if($config->param_default("DownloadMethod") =~ /^axel/)
+	  {
+		  &execute("rm -f $found_archive.st");
+	  }
 	  next;	  # restart loop with same tarball
 	} elsif($answer eq "error") {
-	  die "checksum of tarball $archive of package ".$self->get_fullname()." incorrect\n";
+	  die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
+	} elsif($answer eq "continuedownload") {
+	  $continue = 1;
+	  $i--;
+	  next;	  # restart loop with same tarball	
 	}
       }
     }
@@ -1053,7 +1065,7 @@ sub phase_unpack {
       $tries++;
 
       $answer =
-	&prompt_boolean("Unpacking the tarball $archive of package ".
+	&prompt_boolean("Unpacking the file $archive of package ".
 			$self->get_fullname()." failed. The most likely ".
 			"cause for this is a corrupted or incomplete ".
 			"download. Do you want to delete the tarball ".
@@ -1064,7 +1076,7 @@ sub phase_unpack {
 	$i--;
 	next;	# restart loop with same tarball
       } else {
-	die "unpacking tarball $archive of package ".$self->get_fullname()." failed\n";
+	die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
       }
     }
 

@@ -56,7 +56,7 @@ sub fetch_url {
   my ($file, $cmd);
 
   $file = &filename($url);
-  return &fetch_url_to_file($url, $file, 0, 0, $destdir);
+  return &fetch_url_to_file($url, $file, 0, 0, 0, $destdir);
 }
 
 ### download a file to the designated directory and save it under the
@@ -68,10 +68,10 @@ sub fetch_url_to_file {
   my $file = shift;
   my $custom_mirror = shift || 0;
   my $tries = shift || 0;
+  my $cont = shift || 0;  
   my $destdir = shift || "$basepath/src";
   my ($http_proxy, $ftp_proxy);
   my ($url, $cmd, $cont_cmd, $result);
-  my $cont = 0;
 
   # create destination directory if necessary
   if (not -d $destdir) {
@@ -104,7 +104,7 @@ sub fetch_url_to_file {
     $path = $2;
     if ($mirrorname eq "custom") {
       if (not $custom_mirror) {
-	die "Source tarball \"$file\" uses mirror:custom, but the ".
+	die "Source file \"$file\" uses mirror:custom, but the ".
 	  "package doesn't specify a mirror site list.\n";
       }
       $mirror = $custom_mirror;
@@ -124,8 +124,7 @@ sub fetch_url_to_file {
   }
 
   ### if the file already exists, ask user what to do
-
-  if (-f $file) {
+  if (-f $file && !$cont) {
     $result =
       &prompt_selection("The file \"$file\" already exists, how do you want to proceed?",
 			1, # Play it save, assume redownload as default
@@ -264,9 +263,7 @@ sub download_cmd {
     if ($file ne &filename($url)) {
       $cmd .= " -o $file";
     }
-    if ($cont) {
-      print "WARNING: not possible to continue a previously started download with axel\n";
-    }
+    # Axel always continues downloads, by default
   }
   
   if (!$cmd) {
