@@ -4,6 +4,16 @@
 	or building and a deb is present, that made no sense what was I
 	thinking?
 
+2005-02-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: lol_remove_self(): skip clusters after removing them
+
+2005-02-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Rewrite show_deps_display_list using lol_remove_self().
+	* PkgVersion.pm: Implement lol_remove_self() (also handles Provides).
+	* Services.pm: Implement cleanup_lol().
+
 2005-02-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Removed ref to {SHLIB_DEPS} and added RunTimeDepends to
@@ -12,12 +22,6 @@
 	* PkgVersion.pm: Removed refs to {SHLIB_DEPS}, added check for
 	AddShlibDeps to run auto adding of depends for deb file creation. Added
 	RunTimeDepends to PkgVersion.pm.
-
-2005-02-08  Daniel Macks  <dmacks@netspace.org>
-
-	* Engine.pm: Rewrite show_deps_display_list using lol_remove_self().
-	* PkgVersion.pm: Implement lol_remove_self() (also handles Provides).
-	* Services.pm: Implement cleanup_lol().
 
 2005-02-08  Daniel Macks  <dmacks@netspace.org>
 
