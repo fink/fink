@@ -482,17 +482,22 @@ sub get_script {
 	$field = lc $field;
 
 	my $default_script; # Type-based script (%{default_script})
-	my $field_default;  # .info field contents
+	my $field_value;    # .info field contents
 
 	if ($field eq 'patchscript') {
 		return "" if exists $self->{parent};  # shortcut: SplitOffs do not patch
-		$field_default = '%{default_script}';
+		return "" if $self->is_type('dummy');  # Type:dummy never patch
+		return "" if $self->is_type('bundle'); # Type:bundle never patch
+
+		$field_value = $self->param_default($field, '%{default_script}');
 
 		$default_script = "";
 
 	} elsif ($field eq 'compilescript') {
 		return "" if exists $self->{parent};  # shortcut: SplitOffs do not compile
-		$field_default = '%{default_script}';
+		return "" if $self->is_type('bundle'); # Type:bundle never compile
+
+		$field_value = $self->param_default($field, '%{default_script}');
 
 		if ($self->is_type('perl')) {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
@@ -507,6 +512,8 @@ sub get_script {
 			$default_script =
 				"$rubycmd extconf.rb\n".
 				"make\n";
+		} elsif ($self->is_type('dummy')) {
+			$default_script = "";
 		} else {
 			$default_script =
 				"./configure \%c\n".
@@ -514,15 +521,29 @@ sub get_script {
 		}
 
 	} elsif ($field eq 'installscript') {
-		$field_default = exists $self->{parent}
-			? ''                  # SplitOffs default to blank script
-			: '%{default_script}';
+		return "" if $self->is_type('dummy');  # Type:dummy never install
+
+		if (exists $self->{parent}) {
+			# SplitOffs default to blank script
+			$field_value = $self->param_default($field, '');
+		} elsif ($self->is_type('bundle')) {
+			# Type:bundle always uses predefined script
+			$field_value = 
+				"/bin/mkdir -p \%i/share/doc/\%n\n".
+				"echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
+		} else {
+			$field_value = $self->param_default($field, '%{default_script}');
+		}
 
 		if ($self->is_type('perl')) {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 			$default_script = 
 				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
+		} elsif ($self->is_type('bundle')) {
+			$default_script = 
+				"/bin/mkdir -p \%i/share/doc/\%n\n".
+				"echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 		} else {
 			$default_script = "make install prefix=\%i\n";
 		} 
@@ -540,7 +561,8 @@ sub get_script {
 		$self->{_expand},
 		$self->get_info_filename." ".lc $field
 	);
-	my $script = $self->param_default_expanded($field, $field_default);
+	my $script = &expand_percent($field_value, $self->{_expand},
+								 $self->get_info_filename." \"$field\"");
 	delete $self->{_expand}->{default_script};  # this key must stay local
 
 	return $script;
@@ -1846,15 +1868,12 @@ sub phase_install {
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 	}
-	if ($self->is_type('bundle')) {
-		$install_script .= "/bin/mkdir -p \%i/share/doc/\%n\n";
-		$install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
-	} else {
-		# Run the script part we have so far
-		$self->run_script($install_script, "installing", 0);
-		# Now run the actual InstallScript
-		$self->run_script($self->get_script("InstallScript"), "installing", 1);
-		$install_script = ""; # reset it
+	# Run the script part we have so far
+	$self->run_script($install_script, "installing", 0);
+	$install_script = ""; # reset it
+	# Now run the actual InstallScript
+	$self->run_script($self->get_script("InstallScript"), "installing", 1);
+	if (!$self->is_type('bundle')) {
 		# Handle remaining fields that affect installation
 		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present

@@ -1,3 +1,8 @@
+2004-09-23  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Implemented Type:bundle and Type:dummy support in
+	get_script. Adjusted phase_install to use get_script even for Type:bundle.
+
 2004-09-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Documented all of the tests, did a little
