@@ -694,6 +694,7 @@ sub find_debfile {
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
+	my $op = shift;
 	my $field = shift;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
