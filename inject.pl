@@ -22,7 +22,7 @@
 #
 
 $| = 1;
-use v5.6.0;  # perl 5.6.0 or newer required
+use 5.006;  # perl 5.6.0 or newer required
 use strict;
 
 use FindBin;
