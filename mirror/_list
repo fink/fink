@@ -9,6 +9,7 @@ Order: gnu gnome gimp ctan cpan sourceforge
 gnu: GNU software
 gnome: GNOME
 gimp: The GIMP
+kde: KDE
 ctan: Comprehensive TeX Archive Network
 cpan: Comprehensive Perl Archive Network
 sourceforge: SourceForge
