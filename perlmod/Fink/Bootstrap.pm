@@ -220,7 +220,7 @@ END
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.2$gcc";
-	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-2]\.0/) {
+	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-3]\.0/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.3";
 	} elsif ($host =~ /^powerpc-apple-darwin7\..*/) {
