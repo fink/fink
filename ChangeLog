@@ -1,3 +1,9 @@
+2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.13.5; this release
+	contains a fix for spurious output from the cctools -single_module
+	check
+
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.13.4; this release

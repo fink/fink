@@ -95,7 +95,7 @@ sub initialize {
 
 	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam()) {
 		system("touch ${cctestfile}.c");
-		if (system("cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module") == 0) {
+		if (system("cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1") == 0) {
 			$cctools_single_module = '1.0';
 		} else {
 			$cctools_single_module = undef;
