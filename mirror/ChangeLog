@@ -1,3 +1,14 @@
+2004-05-31  David H. <dmalloc@users.sourceforge.net>
+
+	* master, rsync: Added new Master mirror for 
+	Oceania in Australia,
+		*bne.qld.au.finkmirrors.net
+		Maintainer:
+		Dan Goodes
+		support@planetmirror.com
+	Changed the master rsync servers DNS for the
+	Master record of each continent
+
 2004-05-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* gnu: Only use mirrors which my tests showed have libtool-1.5.6.
