@@ -1,0 +1,24 @@
+Package: lynx-ssl
+Version: 2.8.3rel.1
+Revision: 1
+Source: ftp://lynx.isc.org/lynx-2.8.3/lynx2.8.3rel.1.tar.gz
+Depends: gettext, openssl
+SourceDirectory: lynx2-8-3
+UpdateConfigGuess: true
+UsesGettext: true
+PatchScript: patch -p1 <%a/lynx-283-ssl.patch
+ patch -p1 <%a/%f.patch
+ConfigureParams: --enable-nls
+CompileScript: ./configure %c
+ make SSL_DIR=%p
+InstallScript: make install prefix=%i
+ make install-help prefix=%i
+ make install-doc prefix=%i
+CommentPort: Uses autoconf. Checks the host type - the usual
+ fix. Doesn't do color yet - maybe we need ncurses for that.
+ .
+ Uses a patch by Mark Mentovai <mark@moxienet.com> to incorporate SSL
+ support. Needs additional tweaking because Darwin doesn't have the
+ *rand48 functions.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
