@@ -11,6 +11,12 @@ use Fink::Command qw(:ALL);
 
 my $Unprivledged_UID = getpwnam('nobody') || getpwnam('unknown');
 
+my $scratch_dir = 'Command/scratch';
+mkdir_p $scratch_dir;
+chmod 0755, $scratch_dir;
+ok( chdir $scratch_dir );
+END { chdir '../..';  rm_rf $scratch_dir }
+
 {
     eval { mv() };
     like( $@, qr/^Insufficient arguments / );
@@ -93,7 +99,7 @@ SKIP: {
     mkdir 'foo';
     mkdir 'bar';
 
-    chmod 0600, 'foo';
+    chmod 0500, 'foo';
     chmod 0777, 'bar';
     chowname 'nobody:nobody', 'bar';
     touch 'bar/baz';
@@ -105,11 +111,13 @@ SKIP: {
 
     $! = 0;
     ok( !rm_rf('foo') );
+    ok( -e 'foo' );
     cmp_ok( $!, '!=', 0 );
 
     $! = 0;
     ok( !rm_rf('bar/baz', 'foo') );
     cmp_ok( $!, '!=', 0 );
+    ok( -e 'foo' );
     ok( !-e 'bar/baz' );
 }
 rm_rf 'foo';
@@ -152,6 +160,7 @@ SKIP: {
     touch 'foo';
     chmod 0444, 'foo';
     my $mtime = (stat 'foo')[9];
+    is( (stat 'foo')[2] & 0777, 0444, 'chmod succeeded' );
 
     # drop privs
     local $> = $Unprivledged_UID;
