@@ -4,7 +4,7 @@ Revision: 5
 Source: http://fink.sourceforge.net/files/dpkg-%v.tar.gz
 Depends: gettext, gzip, tar
 PatchScript: sed 's|@PREFIX@|%p|g' <%a/dpkg-%v-%r.patch | patch -p1
-SetCFLAGS: -traditional-cpp -I%p/include
+SetCFLAGS: -no-cpp-precomp -I%p/include
 SetCC: cc
 ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info
 CompileScript: ./configure powerpc-apple-darwin %c

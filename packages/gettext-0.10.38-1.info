@@ -5,7 +5,7 @@ Source: gnu
 Essential: yes
 Depends: base-files
 UpdateLibtool: true
-SetCPPFLAGS: -traditional-cpp
+SetCPPFLAGS: -no-cpp-precomp
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext

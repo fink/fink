@@ -5,7 +5,7 @@ Source: http://fink.sourceforge.net/files/%n-%v.tar.gz
 Depends: gettext, gzip, tar, ncurses
 Essential: yes
 PatchScript: sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1
-SetCFLAGS: -traditional-cpp -I%p/include
+SetCFLAGS: -no-cpp-precomp -I%p/include
 SetCC: cc
 ConfigureParams: --without-zlib --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info
 CompileScript: ./configure powerpc-apple-darwin %c
