@@ -158,7 +158,7 @@ sub check_host {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.2";
-	} elsif ($host =~ /^i386-apple-darwin(6\.[0-5]|[7-9]\.)/) {
+	} elsif ($host =~ /^i386-apple-darwin(6\.[0-6]|[7-9]\.)/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".
 			"and assume to run on a PowerPC based operating ".

@@ -1,3 +1,7 @@
+2003-05-23  Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* Bootstrap.pm: Handle (Open)Darwin 6.6
+
 2003-05-23  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* Validation.pm: Allow <package>.info.
