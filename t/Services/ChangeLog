@@ -1,5 +1,9 @@
 2004-12-22  Daniel Macks  <dmacks@netspace.org>
 
+	* execute_nonroot_okay.t: Explicitly use correct perl interp
+
+2004-12-22  Daniel Macks  <dmacks@netspace.org>
+
 	* prepare_script.t: Improved test for blank line removal.
 
 2004-12-21  Daniel Macks  <dmacks@netspace.org>

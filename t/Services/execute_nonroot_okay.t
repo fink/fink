@@ -52,8 +52,10 @@ eval { $result = &execute("touch $tmpdir/f4 >/dev/null 2>&1", nonroot_okay=>1) }
    TODO: {
        local $TODO = "cannot fully drop root yet";
 
+     # this test should use the exact same perl binary as is running
+     # this test (which is the same as the one to be used to run fink)
      Fink::Config::set_options( {'build_as_nobody' => 1} );
-     eval { $result = &execute('perl -e \'print "hello\n"\' > /dev/null', nonroot_okay=>1) };
+     eval { $result = &execute('/usr/bin/perl -e \'print "hello\n"\' > /dev/null', nonroot_okay=>1) };
      like("$result: $@", '/^0: /', 'command is not run under setuid');
    }
 }
