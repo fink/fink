@@ -77,6 +77,9 @@ Optimization for performance:
 	
 	- Add required fields, so they can be added all at once instead of in
 		many selects.
+		
+	- Add fields guaranteed not to be complex structures, to save on thawing
+		and storing.
 	
 	- Investigate not storing some fields, rather reading them from files when
 		needed. Eg: InstallScript rarely needed.
@@ -87,4 +90,5 @@ Optimization for performance:
 	- Cache table existence, make some assumptions.
 	
 	- Change size of memory cache?
+	
 	
