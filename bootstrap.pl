@@ -39,7 +39,7 @@ my ($homebase, $file);
 $homebase = $FindBin::RealBin;
 chdir $homebase;
 
-unshift @INC, "$FindBin::RealBin/perlmod";
+use lib "$FindBin::RealBin/perlmod";
 require Fink::Bootstrap;
 import Fink::Bootstrap qw(&check_host &check_files);
 

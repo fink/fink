@@ -26,7 +26,7 @@ use v5.6.0;  # perl 5.6.0 or newer required
 use strict;
 
 use FindBin;
-unshift @INC, "$FindBin::RealBin/perlmod";
+use lib "$FindBin::RealBin/perlmod";
 use Fink::Bootstrap qw(&check_files);
 
 my ($basepath, $packageversion, $packagerevision);
