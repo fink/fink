@@ -1,3 +1,9 @@
+2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+        * Services.pm: export "read_properties_lines"
+        * Mirror.pm: set a default value for Master mirror, if config file 
+        not present
+
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Configure.pm: export "choose_mirrors", and enlarge the dialogue

@@ -36,7 +36,7 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
-					  &read_properties_multival
+					  &read_properties_multival &read_properties_lines
 					  &execute &execute_script &expand_percent
 					  &filename &print_breaking
 					  &prompt &prompt_boolean &prompt_selection &prompt_selection_new

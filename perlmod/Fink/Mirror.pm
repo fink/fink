@@ -23,7 +23,7 @@
 package Fink::Mirror;
 
 use Fink::Services qw(&prompt_selection
-					  &read_properties &read_properties_multival);
+					  &read_properties &read_properties_lines &read_properties_multival);
 use Fink::Config qw($config $libpath);
 
 use strict;
@@ -77,8 +77,15 @@ sub new_from_name {
 
 	my $mirrorfile = "$libpath/mirror/$name";
 	if (not -f $mirrorfile) {
+	    if ($name eq "master") {
+        # set a default value for Master mirror, if config file not present
+		$self->{data} = &read_properties_lines("Primary: http://distfiles.master.finkmirrors.net/\n");
+		$self->initialize();
+		return $self;
+	    } else {
 		die "No mirror site list file found for mirror '$name'.\n";
-	}
+	    }
+}	
 	$self->{data} = &read_properties_multival($mirrorfile);
 
 	# Extract the timestamp, and delete it from the hash.
