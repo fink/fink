@@ -145,6 +145,7 @@ sub initialize {
 		$hash->{status} = "install ok installed";
 		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
 		$hash->{description} = "[virtual package representing perl]";
+		$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 
 		my $shortver = Fink::Services::get_system_perl_version();
 		$shortver =~ s/\.//g;
@@ -174,6 +175,7 @@ sub initialize {
 				$hash->{status}      = "install ok installed";
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
+				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 				$self->{$hash->{package}} = $hash;
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
@@ -183,6 +185,7 @@ sub initialize {
 					$hash->{status}      = "install ok installed";
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
+					$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 					$self->{$hash->{package}} = $hash;
 				}
 				print STDERR "\n" if ($options{debug});
@@ -202,6 +205,7 @@ sub initialize {
 		$hash->{status}      = "install ok installed";
 		$hash->{version}     = "0-1";
 		$hash->{description} = "[virtual package representing Java3D]";
+		$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 		$self->{$hash->{package}} = $hash;
 		if (open(FILEIN, '/Library/Receipts/Java3D.pkg/Contents/Info.plist')) {
 			local $/ = undef;
@@ -223,6 +227,7 @@ sub initialize {
 		$hash->{status}      = "install ok installed";
 		$hash->{version}     = "0-1";
 		$hash->{description} = "[virtual package representing Java Advanced Imaging]";
+		$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
 		$self->{$hash->{package}} = $hash;
 		if (open(FILEIN, '/Library/Receipts/JavaAdvancedImaging.pkg/Contents/Info.plist')) {
 			local $/ = undef;
@@ -271,6 +276,7 @@ sub initialize {
 						$hash->{status} = "install ok installed";
 						$hash->{version} = "$version-1";
 						$hash->{description} = "[virtual package representing the gcc $version compiler]";
+						$hash->{homepage} = "http://fink.sourceforge.net/faq/comp-general.php?phpLang=en#gcc2";
 						$hash->{builddependsonly} = "true";
 						$self->{$hash->{package}} = $hash;
 					}
@@ -435,6 +441,7 @@ sub initialize {
 							'status'      => "install ok installed",
 							'version'     => "2:${xver}-2",
 							'description' => "[placeholder for user installed x11]",
+							'homepage'    => "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage",
 							'provides'    => join(', ', @{$provides->{$pkg}}),
 						};
 						if ($pkg eq "system-xfree86-shlibs") {
@@ -505,7 +512,7 @@ sub list {
 		next unless exists $hash->{version};
 
 		$newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
-		foreach $field (qw(depends provides conflicts maintainer description status builddependsonly)) {
+		foreach $field (qw(depends provides conflicts maintainer description homepage status builddependsonly)) {
 			if (exists $hash->{$field}) {
 				$newhash->{$field} = $hash->{$field};
 			}

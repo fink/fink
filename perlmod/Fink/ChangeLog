@@ -1,5 +1,10 @@
 2004-04-11  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: Added relevant FAQ entry as Homepage for gcc2
+	and the system-* packages.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Perform %-expansion on Description (during indexing).
 	* Validation.pm: When constructing allowed .info filenames, clear out
 	strings of multiple hyphens or hyphens at the end. Also resolve some
