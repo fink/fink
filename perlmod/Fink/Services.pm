@@ -139,12 +139,12 @@ sub read_properties_lines {
   foreach (@lines) {
     chomp;
     if ($heredoc > 0) {
-      if (/^\s*<<$/) {
+      if (/^\s*<<\s*$/) {
 	$heredoc--;
 	$hash->{$lastkey} .= $_."\n" if ($heredoc > 0);
       } else {
 	$hash->{$lastkey} .= $_."\n";
-	$heredoc++ if (/<<$/);
+	$heredoc++ if (/<<\s*$/);
       }
     } else {
       next if /^\s*\#/;   # skip comments

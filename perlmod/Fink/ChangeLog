@@ -1,3 +1,7 @@
+2002-12-19  Ben Hines <benh57@users.sourceforge.net>
+
+	* Services.pm: Allow whitespace after here-document separators.
+	
 2002-12-11  Ben Hines <benh57@users.sourceforge.net>
 
 	* Services.pm, PkgVersion.pm: Pass filename to read_properties_var to 
