@@ -545,19 +545,23 @@ sub do_direct_rsync {
 		$rsynchost =~ s/\/*$//;
 		$dist      =~ s/\/*$//;
 		$tree      =~ s/\/*$//;
-		$cmd = "rsync -az --delete-after $verbosity $rsynchost/$dist/$tree/finkinfo $basepath/fink/$dist/$tree/";
+		$cmd = "rsync -az --delete-after $verbosity '$rsynchost/$dist/$tree/finkinfo' '$basepath/fink/$dist/$tree/'";
 		if (! -d "$basepath/fink/$dist/$tree/" ) {
 			&execute("mkdir -p '$basepath/fink/$dist/$tree'")
 		}
-		$msg = "Updating $tree \n";
-		if ($sb[4] != 0 and $> != $sb[4]) {
-			($username) = getpwuid($sb[4]);
-			$cmd = "su $username -c '$cmd'";
-			&execute("chown -R $username '$basepath/fink/$dist'");
-		}
-		&print_breaking($msg);
-		if (&execute($cmd)) {
-			die "Updating $tree using rsync failed. Check the error messages above.\n";
+		if (system("rsync '$rsynchost/$dist/$tree/finkinfo' >/dev/null 2>&1") == 0) {
+			$msg = "Updating $tree \n";
+			if ($sb[4] != 0 and $> != $sb[4]) {
+				($username) = getpwuid($sb[4]);
+				$cmd = "su $username -c \"$cmd\"";
+				system("chown -R $username '$basepath/fink/$dist'");
+			}
+			&print_breaking($msg);
+			if (&execute($cmd)) {
+				die "Updating $tree using rsync failed. Check the error messages above.\n";
+			}
+		} else {
+			print "Warning: $tree exists in fink.conf, but is not on rsync server.  Skipping.\n";
 		}
 	}
 	&execute($rmcmd);
