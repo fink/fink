@@ -527,11 +527,11 @@ sub latest_version {
 # return undef if a parse error occur
 sub parse_fullversion {
 	my $fv = shift;
-	if ($fv =~ /^((\d+):)?(.+)-([^-]+)$/) {
+	if ($fv =~ /^(?:(\d+):)?(.+?)(?:-([^-]+))?$/) {
 			# not all package have an epoch
-			return ($2 ? $2 : '0', $3, $4);
+			return ($1 ? $1 : '0', $2, $3 ? $3 : '0');
 	} else {
-			return undef;
+			return ();
 	}
 }
 

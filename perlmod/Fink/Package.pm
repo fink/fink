@@ -356,9 +356,9 @@ sub scan_all {
 
 		# create dummy object
 		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0];
-			$hash->{version} = $versions[1];
-			$hash->{revision} = $versions[2];
+			$hash->{epoch} = $versions[0] if defined($versions[0]);
+			$hash->{version} = $versions[1] if defined($versions[1]);
+			$hash->{revision} = $versions[2] if defined($versions[2]);
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
@@ -375,9 +375,9 @@ sub scan_all {
 
 		# create dummy object
 		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0];
-			$hash->{version} = $versions[1];
-			$hash->{revision} = $versions[2];
+			$hash->{epoch} = $versions[0] if defined($versions[0]);
+			$hash->{version} = $versions[1] if defined($versions[1]);
+			$hash->{revision} = $versions[2] if defined($versions[2]);
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
