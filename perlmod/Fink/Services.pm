@@ -353,25 +353,35 @@ sub prompt_selection {
 ### comparing versions
 
 sub version_cmp {
-  my ($a1, $b1, $a2, $b2, $res);
+  my ($a1, $b1, $a2, $b2, @ca, @cb, $res);
   $a1 = shift;
   $b1 = shift;
 
-  # pull from the left
   while ($a1 ne "" and $b1 ne "") {
-    # get all non-digit chars
+    # pull a string of non-digit chars from the left
+    # compare it left-to-right, sorting non-letters higher than letters
     $a1 =~ /^(\D*)/;
-    $a2 = $1;
-    $a1 = substr($a1,length($a2));
+    @ca = unpack("C*", $1);
+    $a1 = substr($a1,length($1));
     $b1 =~ /^(\D*)/;
-    $b2 = $1;
-    $b1 = substr($b1,length($b2));
-    $res = $a2 cmp $b2;
+    @cb = unpack("C*", $1);
+    $b1 = substr($b1,length($1));
+
+    while ($#ca >= 0 and $#cb >= 0) {
+      $res = chr($a2 = shift @ca);
+      $a2 += 256 if $res !~ /[A-Za-z]/;
+      $res = chr($b2 = shift @cb);
+      $b2 += 256 if $res !~ /[A-Za-z]/;
+      $res = $a2 <=> $b2;
+      return $res if $res;
+    }
+    $res = $#ca <=> $#cb;   # terminate when exactly one is exhausted
     return $res if $res;
 
     last unless ($a1 ne "" and $b1 ne "");
 
-    # get all digits
+    # pull a string of digits from the left
+    # compare it numerically
     $a1 =~ /^(\d*)/;
     $a2 = $1;
     $a1 = substr($a1,length($a2));
