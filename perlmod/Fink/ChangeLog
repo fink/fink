@@ -1,3 +1,7 @@
+2003-04-15	Ben Hines <benh57@users.sourceforge.net>
+
+    * SelfUpdate.pm: Allow distribution upgrades to work (append fake revision)
+    
 2003-04-08	Ben Hines <benh57@users.sourceforge.net>
 
     * Services.pm: Allow comments (#) in fink Script fields
