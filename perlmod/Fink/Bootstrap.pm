@@ -88,9 +88,8 @@ sub bootstrap {
 				 "$bsbase/sbin:$bsbase/bin:".
 				 $save_path;
 
-				# temporarily disable UseBinaryDist
-				$config->set_param("UseBinaryDist", "false");
-				Fink::Config::set_options( { 'use_binary' => 0 } );
+	# disable UseBinaryDist during bootstrap
+	Fink::Config::set_options( { 'use_binary' => -1 });
 
 	# make sure we have the package descriptions
 	Fink::Package->require_packages();

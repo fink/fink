@@ -19,6 +19,16 @@
 	* Configure.pm: Default to Verbose=3 (sync with fink.conf manpage).
 	* Validation.pm: Require Verbose>3 to do pedantic Description checks.
 	
+2004-12-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm, Engine.pm, Package.pm PkgVersion.pm, SelfUpdate.pm: 
+	Refactor 'UseBinaryDist' to use a new binary_requested function
+	which takes into account the per-package -b and -c flags as well
+	as the global UseBinaryDist option.
+	* Bootstrap.pm: Disable 'UseBinaryDist' during bootstrap
+	* Configure.pm: Set 'UseBinaryDist' to be false if we are not 
+	installed in /sw
+
 2004-12-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Also catch libtool files pointing to %i and %I

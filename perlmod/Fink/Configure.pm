@@ -73,13 +73,18 @@ sub configure {
 	}
 
 	$binary_dist = $config->param_boolean("UseBinaryDist");
-	# new users should use the binary dist
-	if (!$config->has_param("UseBinaryDist")) {
-		$binary_dist = 1;
+	# if we are not installed in /sw, $binary_dist must be 0:
+	if (not $basepath eq '/sw') {
+		$binary_dist = 0;
+	} else {
+		# new users should use the binary dist
+		if (!$config->has_param("UseBinaryDist")) {
+			$binary_dist = 1;
+		}
+		$binary_dist =
+			&prompt_boolean("Should Fink try to download pre-compiled packages from ".
+							"the binary distribution if available?", $binary_dist);
 	}
-	$binary_dist =
-		&prompt_boolean("Should Fink try to download pre-compiled packages from ".
-		                "the binary distribution if available?", $binary_dist);
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
 	$verbose = $config->param_default("Verbose", 1);

@@ -27,7 +27,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
-use Fink::Config qw($config $basepath $debarch);
+use Fink::Config qw($config $basepath $debarch binary_requested);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
 use File::Find;
@@ -490,7 +490,7 @@ sub update_db {
 			}
 			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
-			if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+			if (Fink::Config::binary_requested()) {
 				Fink::Package->update_aptdb();
 			}
 			print "done.\n";

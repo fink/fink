@@ -25,7 +25,7 @@ package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection_new);
-use Fink::Config qw($config $basepath $distribution);
+use Fink::Config qw($config $basepath $distribution binary_requested);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
@@ -507,7 +507,7 @@ sub finish {
 	# update them
 	Fink::Engine::cmd_install(@elist);	
 
-	if ($config->param_boolean("UseBinaryDist") or Fink::Config::get_option("use_binary")) {
+	if (Fink::Config::binary_requested()) {
 		print "Downloading the indexes of available packages in the binary distribution.\n";
 		my $aptcmd = "$basepath/bin/apt-get ";
 		if (Fink::Config::verbosity_level() == 0) {

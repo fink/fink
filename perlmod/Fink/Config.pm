@@ -35,8 +35,7 @@ require Exporter;
 our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath
                       $distribution $ignore_errors
-                      get_option set_options verbosity_level
-
+                      get_option set_options verbosity_level binary_requested
                      );
 our $VERSION	 = 1.00;
 
@@ -558,6 +557,33 @@ sub verbosity_level {
 		$verbosity = 0;
 	}
 	return $verbosity;
+}
+
+=item binary_requested
+
+	my $boolean = binary_requested;
+
+Determine whether the binary distribution or compilation has been requested.
+This is affected by the --use-binary-dist and --compile-from-source
+command line options as well as by the "UseBinaryDist" setting in fink.conf.
+Returns 1 for binary distribution, 0 for compile-from-source.
+
+=cut
+
+sub binary_requested {
+	my $runtime_request = get_option("use_binary");
+	my $binary_request;
+
+	if ($runtime_request == -1) {
+		$binary_request = 0;
+	} elsif ($runtime_request == 1) {
+		$binary_request = 1;
+	} elsif ($config->param_boolean("UseBinaryDist")) {
+		$binary_request = 1;
+	} else {
+		$binary_request = 0;
+	}
+	return $binary_request;
 }
 
 =back
