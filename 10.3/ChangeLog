@@ -1,5 +1,9 @@
 2005-01-12  Daniel Macks  <dmacks@netspace.org>
 
+        * cctools-extra.info: force gcc3.3
+
+2005-01-12  Daniel Macks  <dmacks@netspace.org>
+
         * cctools-extra.info: sync with stable (1:525-1) (same .patch)
 
 2004-11-17  Daniel Macks  <dmacks@netspace.org>
