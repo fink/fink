@@ -4,7 +4,6 @@ Revision: 1
 
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
 Source-MD5: 8eef8d0c66f47dec3169397ed3b858c8
-SourceDirectory: %n
 Essential: yes
 Depends: base-files, cctools-extra (>= 20030516-2)
 CompileScript: make PREFIX='%p' MANDIR='%p/share/man'
