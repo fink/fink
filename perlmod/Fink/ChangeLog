@@ -1,5 +1,8 @@
 2004-01-06  Max Horn  <max@quendi.de>
 
+	* Engine.pm: Fixed a case where fink would rebuild a package twice. Also
+	  clarified some comments.
+
 	* Validation.pm: BuildDepends and BuildConflicts are actually not valid in
 	  splitoffs.
 

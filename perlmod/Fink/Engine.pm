@@ -1439,15 +1439,23 @@ sub real_install {
 
 			next if $already_activated{$pkgname};
 
-			# Check whether package has to be (re)built. For normal packages that
-			# means the user explicitly requested the rebuild; but for splitoffs
-			# and their parents, we also have to check if any of their "relatives"
-			# is scheduled for rebuilding.
-			# But first, check if there is no .deb present - in that case we have
-			# to build in any case.
+			# Check whether package has to be (re)built. Defaults to false.
 			$to_be_rebuilt{$pkgname} = 0 unless exists $to_be_rebuilt{$pkgname};
+
+			# If there is no .deb present, we definitely have to (re)built.
 			$to_be_rebuilt{$pkgname} |= not $package->is_present();
+
 			if (not $to_be_rebuilt{$pkgname} and exists $package->{_relatives}) {
+				# So far, it seems the package doesn't have to be rebuilt. However,
+				# it has splitoff relatives. If any of those is going to be rebuilt,
+				# then rebuild the package, too!
+				# Reasoning: If any splitoff is rebuilt, then fink automatically 
+				# will rebuild all others splitoffs (including master), too. This
+				# check here essential is there to make the dependency engine
+				# properly aware of that fact. Without it, odd things can happen
+				# (like for example an old version of a splitoff being installed,
+				# then its package being rebuilt, then a new version of one of its
+				# relatives being installed).
 				foreach $pkg (@{$package->{_relatives}}) {
 					next unless exists $to_be_rebuilt{$pkg->get_name()};
 					$to_be_rebuilt{$pkgname} |= $to_be_rebuilt{$pkg->get_name()};
@@ -1490,8 +1498,9 @@ sub real_install {
 			# Mark the package and all its "relatives" as being rebuilt if we just
 			# did perform a build - this way we won't rebuild packages twice when
 			# we process another splitoff of the same parent.
-			# In addition, we check for the splitoffs whether they have to be reinstalled.
-			# That is the case if they are currently installed and where rebuild just now.
+			# In addition, we check for all splitoffs whether they have to be reinstalled.
+			# That is the case if they are currently installed and were just rebuilt.
+			$to_be_rebuilt{$pkgname} = 0;
 			if (exists $package->{_relatives}) {
 				foreach $pkg (@{$package->{_relatives}}) {
 					my $name = $pkg->get_name();
@@ -1512,8 +1521,6 @@ sub real_install {
 						$already_activated{$name} = 1;
 					}
 				}
-			} else {
-				$to_be_rebuilt{$pkgname} = 0;
 			}
 
 			# Finally perform the actually installation
