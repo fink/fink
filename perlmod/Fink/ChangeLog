@@ -1,3 +1,7 @@
+2004-07-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Implement %default_script for all *Script fields.
+
 2004-07-02  Daniel Macks  <dmacks@netspace.org>
 
 	* NetAccess.pm: Add checksum argument to fetch_url_to_file; if it
