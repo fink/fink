@@ -2497,6 +2497,7 @@ sub phase_purge {
 }
 
 ### set environment variables according to spec
+# changes %ENV, so caller should backup/restore as necessary
 
 sub set_env {
 	my $self = shift;
