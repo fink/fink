@@ -327,7 +327,6 @@ sub validate_info_file {
 		$looks_good = 0;
 		return;
 	}
-#	print map "$_\t".$package->{$_}."\n", sort keys %$properties;
 
 	( $pkginvarname = $pkgname = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
 	# right now we don't know how to deal with variants too well
@@ -572,26 +571,36 @@ sub validate_info_file {
 				chomp @shlibs;
 				my %shlibs;
 				foreach (@shlibs) {
-					if (not /^\s*(\S+)\s+(\S+)\s+(\S+)\s*\(\s*>=\s*(\S+)\s*\)\s*$/) {
-#						print "Warning: Malformed line in field \"shlibs\" of \"$field\". ($filename)\n  $_\n";
-#						$looks_good = 0;
-					} else {
-						my @shlibs_parts = ($1, $2, $3, $4);
-						if (not /^(\%p)?\//) {
-							print "Warning: Pathname \"$shlibs_parts[0]\" is not basolute and is not in \%p in field \"shlibs\" of \"$field\". ($filename)\n";
+					my @shlibs_parts;
+					if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
+						print "Warning: Malformed line in field \"shlibs\" of \"$field\". ($filename)\n  $_\n";
+						$looks_good = 0;
+						next;
+					}
+					if (not /^(\%p)?\//) {
+						print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\" of \"$field\". ($filename)\n";
+						$looks_good = 0;
+					}
+					if ($shlibs{$shlibs_parts[0]}++) {
+						print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\" of \"$field\". ($filename)\n";
+						$looks_good = 0;
+					}
+					if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
+						print "Warning: Malformed compatibility_version for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
+						$looks_good = 0;
+					}
+					my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
+					foreach (@shlib_deps) {
+						if (not /^\S+\s+\(>=\s*(\S+-\S+)\)$/) {
+							print "Warning: Malformed dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
 							$looks_good = 0;
+							next;
 						}
-						if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
-							print "Warning: Malformed compatibility_version for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
+						my $shlib_dep_vers = $1;
+						if ($shlib_dep_vers =~ /\%/) {
+							print "Warning: Non-hardcoded version in dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
 							$looks_good = 0;
-						}
-						if ($shlibs_parts[3] =~ /%/) {
-							print "Warning: Package version for \"$shlibs_parts[0]\" must be hard-coded in field \"shlibs\" of \"$field\". ($filename)\n";
-							$looks_good = 0;
-						}
-						if ($shlibs{$shlibs_parts[0]}++) {
-							print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\" of \"$field\". ($filename)\n";
-							$looks_good = 0;
+							next;
 						}
 					}
 				}

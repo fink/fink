@@ -1,4 +1,8 @@
-2004-06-23 Daniel Macks  <dmacks@netspace.org>
+2004-06-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Very strict check of Shlibs formatting.
+
+2004-06-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: If have %type_*[*] in Package, error if not InfoN>=2.
 
