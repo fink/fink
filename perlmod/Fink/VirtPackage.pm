@@ -162,6 +162,7 @@ sub initialize {
 	# create dummy object for java
 	print STDERR "- checking Java directories:\n" if ($options{debug});
 	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+	my $latest_java;
 	if (opendir(DIR, $javadir)) {
 		for my $dir ( sort readdir(DIR)) {
 			chomp($dir);
@@ -179,7 +180,11 @@ sub initialize {
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{provides}    = 'system-java';
+				if ($ver >= 14) {
+					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
+				}
 				$self->{$hash->{package}} = $hash;
+				$latest_java = $dir;
 
 				if (-d $javadir . '/' . $dir . '/Headers') {
 					print STDERR "$dir/Headers " if ($options{debug});
@@ -196,6 +201,15 @@ sub initialize {
 			}
 		}
 		closedir(DIR);
+	}
+
+	if (defined $latest_java) {
+		$hash = {};
+		$hash->{package}     = "system-java";
+		$hash->{status}      = "install ok installed";
+		$hash->{version}     = $latest_java . "-1";
+		$hash->{description} = "[virtual package representing Java $latest_java]";
+		$self->{$hash->{package}} = $hash;
 	}
 
 	# create dummy object for Java3D
