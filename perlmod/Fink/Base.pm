@@ -90,6 +90,21 @@ sub param {
 	return undef;
 }
 
+### set parameter
+
+sub set_param {
+	my $self = shift;
+	my $key = shift;
+	my $value = shift;
+
+	if (not defined($value) or $value eq "") {
+		delete $self->{lc $key};
+	} else {
+		$self->{lc $key} = $value;
+	}
+}
+
+
 ### retreive parameter, return default value if not found
 
 sub param_default {

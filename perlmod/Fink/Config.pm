@@ -28,55 +28,87 @@ use Fink::Services;
 use strict;
 use warnings;
 
-BEGIN {
-	use Exporter ();
-	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION	 = 1.00;
-	@ISA		 = qw(Exporter Fink::Base);
-	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw($config $basepath $libpath $debarch
-				$distribution &get_option &set_options &verbosity_level
-				$buildpath);
-	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
-}
-our @EXPORT_OK;
+require Exporter;
 
-our ($config, $basepath, $libpath, $debarch, $distribution, $buildpath);
+our @ISA	 = qw(Exporter Fink::Base);
+our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath
+                      $distribution
+                      get_option set_options verbosity_level
+                     );
+our $VERSION	 = 1.00;
+
+
+our ($config, $basepath, $libpath, $distribution, $buildpath);
 my $_arch = Fink::Services::get_arch();
-$debarch = "darwin-$_arch";
+our $debarch = "darwin-$_arch";
 
-my %globals = ();
-
-END { }				# module clean-up code here (global destructor)
+my %options = ();
 
 
-### construct from path
+
+=head1 NAME
+
+Fink::Config - Read/write the fink configuration
+
+=head1 SYNOPSIS
+
+  use Fink::Config;
+  my $config = Fink::Config->new_with_path($config_file);
+
+  my $value = $config->param($key);
+  $config->set_param($key, $value);
+  $config->save;
+
+=head1 DESCRIPTION
+
+A class representing the fink configuration file as well as any command
+line options.
+
+Fink::Config inherits from Fink::Base.
+
+
+=head2 Constructors
+
+=over 4
+
+=item new
+
+=item new_from_properties
+
+Inherited from Fink::Base.
+
+=item new_with_path
+
+  my $config = Fink::Config->new_with_path($config_file);
+
+Reads a fink.conf file into a new Fink::Config object and initializes
+Fink::Config globals from it.
+
+=cut
 
 sub new_with_path {
-	my $proto = shift;
+	my($proto, $path) = @_;
 	my $class = ref($proto) || $proto;
-	my $path = shift;
-	my ($properties);
 
-	my $self = {};
-	bless($self, $class);
-
-	$properties = Fink::Services::read_properties($path);
-
-	my ($key, $value);
-	while (($key, $value) = each %$properties) {
-		$self->{$key} = $value
-			unless substr($key,0,1) eq "_";
-	}
-
+	my $properties = Fink::Services::read_properties($path);
+	my $self = $class->new_from_properties($properties);
 	$self->{_path} = $path;
-
-	$self->initialize();
 
 	return $self;
 }
 
-### self-initialization
+
+=begin private
+
+=item initialize
+
+  $self->initialize;
+
+Initialize Fink::Config globals.  To be called from any constructors.
+
+=end private
+
+=cut
 
 sub initialize {
 	my $self = shift;
@@ -88,7 +120,7 @@ sub initialize {
 	die "Basepath not set in config file \"".$self->{_path}."\"!\n"
 		unless (defined $basepath and $basepath);
 
-	$buildpath = $config->param_default("Buildpath", "$basepath/src");
+	$buildpath = $self->param_default("Buildpath", "$basepath/src");
 
 	$libpath = "$basepath/lib/fink";
 	$distribution = $self->param("Distribution");
@@ -99,8 +131,19 @@ sub initialize {
 	$self->{_queue} = [];
 }
 
+=back
 
-### get path
+=head2 Configuration queries
+
+=over 4
+
+=item get_path
+
+  my $path = $config->get_path;
+
+Returns the path to the configuration file which $config represents.
+
+=cut
 
 sub get_path {
 	my $self = shift;
@@ -108,30 +151,53 @@ sub get_path {
 	return $self->{_path};
 }
 
-### get list of trees
+
+=item get_treelist
+
+  my @trees = $config->get_treelist;
+
+Returns the Trees config value split into a handy list.
+
+=cut
 
 sub get_treelist {
 	my $self = shift;
 
-	return grep(!/^(\/|.*\.\.\/)/, split(/\s+/, $self->param_default("Trees", "local/main stable/main stable/bootstrap")));
+	return grep !m{^(/|.*\.\./)},
+               split /\s+/, 
+                 $self->param_default("Trees", 
+                         "local/main stable/main stable/bootstrap"
+                 );
 }
 
-### set parameter
+=item param
+
+=item param_default
+
+=item param_boolean
+
+=item has_param
+
+=item set_param
+
+Inherited from Fink::Base.
+
+=cut
 
 sub set_param {
-	my $self = shift;
-	my $key = shift;
-	my $value = shift;
-
-	if (not defined($value) or $value eq "") {
-		delete $self->{lc $key};
-	} else {
-		$self->{lc $key} = $value;
-	}
-	push @{$self->{_queue}}, $key;
+    my $self = shift;
+    my $key  = shift;
+    $self->SUPER::set_param($key, @_);
+    push @{$self->{_queue}}, $key;
 }
 
-### save changes
+=item save
+
+  $config->save;
+
+Saves any changes made with set_param() to the config file.
+
+=cut
 
 sub save {
 	my $self = shift;
@@ -197,38 +263,64 @@ sub save {
 	$self->{_queue} = [];
 }
 
-### inject run-time options
+=back
+
+=head2 Exported Functions
+
+These functions are exported only on request
+
+=over 4
+
+=item set_options
+
+  set_options({ key1 => val1, key2 => val2, ...});
+
+Sets global configuration options, mostly used for command line options.
+
+=cut
 
 sub set_options {
 	my $hashref = shift;
 
 	my ($key, $value);
 	while (($key, $value) = each %$hashref) {
-		$globals{lc $key} = $value;
+		$options{lc $key} = $value;
 	}
 }
 
-### retrieve a run-time option
+=item get_option
+
+  my $value = get_option($key);
+  my $value = get_option($key, $default_value);
+
+Gets a global configuration option.  If the $key was never set,
+$default_value is returned.
+
+=cut
 
 sub get_option {
 	my $option = shift;
 	my $default = shift || 0;
 
-	if (exists $globals{lc $option}) {
-		return $globals{lc $option};
+	if (exists $options{lc $option}) {
+		return $options{lc $option};
 	}
 	return $default;
 }
 
-### determine the current verbosity level. This is affected by the
-### --verbose and --quiet command line options as well as by the
-### "Verbose" setting in fink.conf
+=item verbosity_level
+
+  my $level = verbosity_level;
+
+Determine the current verbosity level. This is affected by the
+--verbose and --quiet command line options as well as by the "Verbose"
+setting in fink.conf.
+
+=cut
 
 sub verbosity_level {
-	my ($verbosity, $verblevel);
-
-	$verblevel = $config->param_default("Verbose", 1);
-	$verbosity = get_option("verbosity");
+	my $verblevel = $config->param_default("Verbose", 1);
+	my $verbosity = get_option("verbosity");
 
 	if ($verbosity != -1 && ($verbosity == 3 || $verblevel eq "3" || $verblevel eq "true" || $verblevel eq "high")) {
 		### Sets Verbose mode to Full
@@ -246,6 +338,12 @@ sub verbosity_level {
 	return $verbosity;
 }
 
+=back
 
-### EOF
+=head1 SEE ALSO
+
+L<Fink::Base>
+
+=cut
+
 1;
