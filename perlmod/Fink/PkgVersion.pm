@@ -299,7 +299,7 @@ sub get_param_with_expansion {
 			     '<<' => sub { $_[0] lt $_[1] },
 			     '>=' => sub { $_[0] ge $_[1] },
 			     '<=' => sub { $_[0] le $_[1] },
-			     '==' => sub { $_[0] eq $_[1] },
+			     '=' => sub { $_[0] eq $_[1] },
 			     '!=' => sub { $_[0] ne $_[1] }
 			   );
 	my $compare_ops = join "|", keys %compare_subs;
