@@ -411,13 +411,42 @@ sub validate_info_file {
 		$looks_good = 0;
 	}
 
-	# error if using the default source but there is no MD5
-	# (not caught later b/c there is no "source")
+	# check SourceN and corresponding fields
+
+	# find them all
+	my %source_fields = map { lc $_, 1 } grep { /^Source(|[2-9]|[1-9]\d+)$/i } keys %$properties;
+
+	# have Source or SourceN when we shouldn't
 	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
-	# nosource and bundle are supposed to not have source
-	} elsif (not $properties->{source} and not $properties->{"source-md5"}) {
-		print "Error: No MD5 checksum specified for implicitly defined \"source\". ($filename)\n";
+		if (keys %source_fields) {
+			print "Warning: Source and/or SourceN field(s) found for \"Type: nosource\" or \"Type: bundle\". ($filename)\n";
+			$looks_good = 0;
+		}
+	} else {
+		$source_fields{source} = 1;  # always have Source (could be implicit)
+	}
+	if (exists $properties->{source} and $properties->{source} =~ /^none$/i and keys %source_fields > 1) {
+		print "Error: \"Source: none\" but found SourceN field(s). ($filename)\n";
 		$looks_good = 0;
+	}
+
+	# check for bogus "none" sources and sources without MD5
+	# remove "none" from %source_fields (will use in main field loop)
+	foreach (keys %source_fields) {
+		if (exists $properties->{$_} and $properties->{$_} =~ /^none$/i) {
+			delete $source_fields{$_};  # keep just real ones
+			if (/\d+/) {
+				print "Warning: \"$_: none\" is a no-op. ($filename)\n";
+				$looks_good = 0;
+			}
+		} else {
+			my $md5_field = $_ . "-md5";
+			if (!exists $properties->{$md5_field} and !defined $properties->{$md5_field}) {
+				print "Error: \"$_\" does not have a corresponding \"$md5_field\" field. ($filename)\n";
+				$ looks_good = 0;
+			}
+		}
+		
 	}
 
 	# Loop over all fields and verify them
@@ -458,7 +487,7 @@ sub validate_info_file {
 				if (length $line > $maxlinelen) {
 					print "Warning: \"$field\" contains line(s) exceeding $maxlinelen characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
 					$looks_good = 0;
-					last;
+					next;
 				}
 			}
 			# warn for non-plain-text chars
@@ -468,35 +497,19 @@ sub validate_info_file {
 			}
 		}
 
-		# Error if there is a source for Type:nosource or Type:bundle
-		# Error if there is a source without an associated MD5
- 		if ($field =~ /^source\d*$/) {
-			if ($field =~ /\d/ and $value =~ /^none$/i) {
-				print "Error: \"$field: none\" is a no-op. ($filename)\n";
-				$looks_good = 0;
-			} elsif (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
-				print "Error: \"$field\" specified for \"type: $1\". ($filename)\n";
-				$looks_good = 0;
-			} elsif ($value !~ /^none$/i and not $properties->{$field."-md5"}) {
-				print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
-				$looks_good = 0;
-			}
-		}
-
-		# Error if there is an MD5 without a source
-		# Error if there is an MD5 for a source "none"
- 		if ($field =~ /^(source\d*)-md5$/) {
-			my $sourcefield = $1;
-			if (not $properties->{$sourcefield}) {
-				if ($sourcefield =~ /\d/) {
-					# Source (but not SourceN) can be implicit
-					print "Error: MD5 checksum specified non-existent \"$sourcefield\". ($filename)\n";
+		# Check for any source-related field without associated Source(N) field
+		if ($field =~ /^Source(\d*)-MD5|Source(\d*)Rename|Tar(\d*)FilesRename|Source(\d+)ExtractDir$/i) {
+			my $sourcefield = defined $+  # corresponding Source(N) field
+				? "source$+"
+				: "source";  
+			if (!exists $source_fields{$sourcefield}) {
+				my $msg = $field =~ /-MD5$/i
+					? "Warning" # no big deal
+					: "Error";  # probably means typo, giving broken behavior
+					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
 					$looks_good = 0;
 				}
-			} elsif ($properties->{$sourcefield} =~ /^none$/i) {
-				print "Error: MD5 checksum specified for \"$sourcefield: none\". ($filename)\n";
-				$looks_good = 0;
-			}
+			next;
 		}
 
 		if ($field eq "files" and ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/)) {
@@ -578,16 +591,12 @@ sub validate_info_file {
 					next;
 				}
 			}
+			next;
 		}
 
 		# Warn if field is unknown
 		unless ($valid_fields{$field}
-				 or $field =~ m/^splitoff([2-9]|[1-9]\d+)$/
-				 or $field =~ m/^source([2-9]|[1-9]\d+)$/
-				 or $field =~ m/^source([2-9]|[1-9]\d+)-md5$/
-				 or $field =~ m/^source([2-9]|[1-9]\d+)extractdir$/
-				 or $field =~ m/^source([2-9]|[1-9]\d+)rename$/
-				 or $field =~ m/^tar([2-9]|[1-9]\d+)filesrename$/) {
+				 or $field =~ m/^source([2-9]|[1-9]\d+)$/) {
 			print "Warning: Field \"$field\" is unknown. ($filename)\n";
 			$looks_good = 0;
 			next;
