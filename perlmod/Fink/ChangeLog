@@ -1,3 +1,8 @@
+2003-08-20  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* PkgVersion.pm: Print the expected an actual checksums when comparison
+	fails. Saves me typing "md5 /sw/src".
+
 2003-08-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Check gcc_select when the GCC field is present,
