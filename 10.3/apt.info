@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 35
+Revision: 36
 GCC: 3.3
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding

@@ -1,3 +1,7 @@
+2004-03-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* apt.info: sync with version in stable tree
+
 2004-01-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* dpkg.info, dpkg.patch, dpkg-bootstrap.info: fix hardcoded /sw
