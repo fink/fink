@@ -726,11 +726,18 @@ sub get_splitoffs {
 }
 
 # returns whether this fink package is of a given Type:
-# presumes the field is already been parsed into $self->{_type_hash}
 
 sub is_type {
 	my $self = shift;
 	my $type = shift;
+
+	return 0 unless defined $type;
+	return 0 unless length $type;
+	$type = lc $type;
+
+	if (!exists $self->{_type_hash}) {
+		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
+	}
 
 	if (defined $self->{_type_hash}->{$type} and length $self->{_type_hash}->{$type}) {
 		return 1;
@@ -744,6 +751,10 @@ sub is_type {
 sub get_subtype {
 	my $self = shift;
 	my $type = shift;
+
+	if (!exists $self->{_type_hash}) {
+		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
+	}
 
 	return $self->{_type_hash}->{$type};
 }
@@ -761,10 +772,10 @@ sub type_hash_from_string {
 	foreach (split /\s*,\s*/, $string) {
 		if (/^(\S+)$/) {
 			# no subtype so use type as subtype
-			$hash{$1} = $1;
+			$hash{lc $1} = lc $1;
 		} elsif (/^(\S+)\s+(\S+)$/) {
 			# have subtype
-			$hash{$1} = $2;
+			$hash{lc $1} = $2;
 		} else {
 			warn "Bad Type specifier '$_' in $filename\n";
 		}

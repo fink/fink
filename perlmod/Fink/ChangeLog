@@ -1,5 +1,11 @@
 2004-05-04  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: All Type are now converted to all-lowercase. Make
+	sure Type has been parsed into _type_hash during is_type() and
+	get_subtype() calls (backport from HEAD).
+
+2004-05-04  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: .deb/control Source field corrected to contain
 	parent pkg (if there is one) instead of always same as pkg itself.
 	See fink-devel "Source field in var/lib/dpkg/available" April 2004
