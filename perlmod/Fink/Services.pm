@@ -508,6 +508,9 @@ expansion key that is the beginning of a longer one (d and dir) will
 cause unpredictable results (i.e., "a" and "arch" is bad but "c" and
 "arch" is okay).
 
+Curly-braces can be used to explicitly delimit a key. If both %f and
+%foo exist, one should use %{foo} and %{f} to avoid ambiguity.
+
 =cut
 
 sub expand_percent {
@@ -520,7 +523,12 @@ sub expand_percent {
 	# Bail if there is nothing to expand
 	return $s unless ($s =~ /\%/);
 
-	%map = %$map;  # avoid lots of dereferencing later
+	# allow %{var} to prevent ambiguity
+	# work with a copy of $map so not touch caller's data
+	%map = map { ( $_     => $map->{$_} ,
+				   "{$_}" => $map->{$_}
+				 ) } keys %$map;
+
 	$percent_keys = join('|', map "\Q$_\E", keys %map);
 
 	# split multi lines to process each line incase of comments
