@@ -3,7 +3,8 @@
 	* Shlibs.pm: Removed ref to {SHLIB_DEPS} and added comment for upcoming
 	RunTimeDepends
 	* PkgVersion.pm: Removed refs to {SHLIB_DEPS}, added check for
-	AddShlibDeps to run auto adding of depends for deb file creation
+	AddShlibDeps to run auto adding of depends for deb file creation. Added
+	RunTimeDepends to PkgVersion.pm.
 
 2005-02-08  Daniel Macks  <dmacks@netspace.org>
 

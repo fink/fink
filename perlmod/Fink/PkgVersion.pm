@@ -1458,12 +1458,19 @@ sub resolve_conflicts {
 # in pkglist()
 sub get_binary_depends {
 	my $self = shift;
-	my ($depspec);
+	my ($depspec1, $depspec2, $depspec);
 
 	# TODO: modify dependency list on the fly to account for minor
 	#	 library versions
 
-	$depspec = $self->pkglist_default("Depends", "");
+	$depspec1 = $self->pkglist_default("RunTimeDepends", "");
+	$depspec2 = $self->pkglist_default("Depends", "");
+
+	if ($depspec1 && $depspec2) {
+		$depspec = $depspec1.", ".$depspec2;
+	} else {
+		$depspec = $depspec1.$depspec2
+	}
 
 	return &collapse_space($depspec);
 }
@@ -2367,7 +2374,6 @@ EOF
 		## Might need follow_skip but then need to change fullname
 		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
 
-		### get_binary_depends above.
 		my @shlib_deps = Fink::Shlibs->get_shlibs($pkgname, @filelist);
 
 		### foreach loop and push into @$struct
