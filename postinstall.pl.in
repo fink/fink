@@ -248,8 +248,8 @@ if ($distribution =~ /10.2/) {
 	}
     }
     unlink $distdir;
-    if (&execute("ln -s $basepath/fink/10.2 $distdir")) {
-	print "ERROR: Can't create link from $basepath/fink/10.2 to $distdir\n";
+    if (&execute("ln -s 10.2 $distdir")) {
+	print "ERROR: Can't create link from 10.2 to $distdir\n";
 	exit 1;
     }
 }

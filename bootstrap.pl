@@ -314,7 +314,7 @@ foreach $dir (@dirlist) {
   }
 }
 
-symlink "$installto/fink/$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
+symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
 
 ### copy package info needed for bootstrap
 

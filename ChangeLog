@@ -1,5 +1,11 @@
 2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
 
+	* bootstrap.pl, postinstall.pl.in: Simplify the symlink to point
+	from %p/fink/dists to 10.1 or 10.2 (suggested by Ben Hines)
+	
+
+2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
+
 	Create a CVS branch "isystem" to isolate the proposed changes in 
 	default values for environment variables from the main CVS branch.
 
