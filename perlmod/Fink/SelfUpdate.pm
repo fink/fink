@@ -311,7 +311,7 @@ sub do_direct_cvs {
 
   @sb = stat("$descdir/CVS");
   $cmd = "cvs -z3 update -d -P";
-  $msg = "I will now run the cvs command to retreive the latest package ".
+  $msg = "I will now run the cvs command to retrieve the latest package ".
     "descriptions. ";
 
   if ($sb[4] != 0 and $> != $sb[4]) {
