@@ -1,5 +1,10 @@
 2002-03-16  Max Horn  <max@quendi.de>
 	
+	* Validation.pm: Added "BuildDependsOnly" to the list of known fields
+	
+	* PkgVersion.pm (resolve_depends): Fixed this so that splitoffs and splitoff
+	masters always return the same (correct) build dependencies.
+	
 	* PkgVersion.pm (add_splitoff): Removed debug output ("Found a splitoff")
 		
 	* Services.pm (read_properties_lines): Handle nested heredocs correctly,

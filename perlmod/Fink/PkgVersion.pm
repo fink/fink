@@ -595,11 +595,13 @@ sub resolve_depends {
   my $include_build = shift || 0;
   my (@speclist, @deplist, $altlist);
   my ($altspec, $depspec, $depname, $versionspec, $package);
+  my $splitoff;
 
-  # TODO - if this is a splitoff, and we are asked for build depends, return
+  # If this is a splitoff, and we are asked for build depends, return
   # the build depend list of the master packager
-  # If OTOH this is a master package with splitoffs, and build deps are requested,
-  # then add to the list the deps of all aplitoffs.
+  if ($include_build and $self->{_type} eq "splitoff") {
+    return ($self->{parent})->resolve_depends(1);
+  }
   
   @deplist = ();
 
@@ -607,9 +609,16 @@ sub resolve_depends {
   if ($include_build) {
     push @speclist,
       split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
+
+    # If this is a master package with splitoffs, and build deps are requested,
+    # then add to the list the runtime deps of all our aplitoffs.
+    foreach  $splitoff (@{$self->{_splitoffs}}) {
+      push @speclist,
+        split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+    }
   }
 
-  foreach $altspec (@speclist) {
+  SPECLOOP: foreach $altspec (@speclist) {
     $altlist = [];
     foreach $depspec (split(/\s*\|\s*/, $altspec)) {
       if ($depspec =~ /^([0-9a-zA-Z.\+-]+)\s*\((.+)\)$/) {
@@ -618,6 +627,14 @@ sub resolve_depends {
       } else {
 	$depname = $depspec;
 	$versionspec = "";
+      }
+
+      if ($include_build and @{$self->{_splitoffs}} > 0) {
+	# To prevent loops in the build dependency graph, we have to remove all
+	# our splitoffs from the graph.
+	foreach  $splitoff (@{$self->{_splitoffs}}) {
+	   next SPECLOOP if ($depname eq $splitoff->get_name());
+	}
       }
 
       $package = Fink::Package->package_by_name($depname);

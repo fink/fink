@@ -97,6 +97,7 @@ our %known_fields = map {$_, 1}
      enhances
      pre-depends
      essential
+     builddependsonly
      source
      custommirror
      sourcedirectory
