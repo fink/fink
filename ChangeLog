@@ -1,3 +1,7 @@
+2003-01-28  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* fink.in: added mention of fink list --help
+
 2003-01-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.11.2
