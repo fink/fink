@@ -2974,6 +2974,9 @@ EOF
 	}
 
 	$deplist = &lol2pkglist(\@pkglist);
+	### FIXME shlibs, remove {SHLIB_DEPS} need to fix this regex
+	$deplist =~ s/^\{SHLIB_DEPS\},? ?//g;
+	$deplist =~ s/,? ?\{SHLIB_DEPS\}//g;
 	$control .= "Depends: $deplist\n" if length $deplist;
 
 	### write "control" file

@@ -139,6 +139,8 @@ sub process {
 	my $options = shift;
 	my $cmd = shift;
 	my @args = @_;
+
+	my $start = time;
 	my ($proc, $pkgflag, $rootflag, $aptgetflag);
 
 	unless (defined $cmd) {
@@ -234,11 +236,13 @@ sub process {
 		);
 		return $proc_rc->{'$?'} || 1;
 	}
-
+	
+	# FIXME: min_notify_secs should be less arbitrary! Option?
+	my $min_notify_secs = 60;
 	$notifier->notify(
 		event => 'finkDoneSuccess',
 		description => $commandline
-	);
+	) if time() - $start > $min_notify_secs;
 	return 0;
 }
 
