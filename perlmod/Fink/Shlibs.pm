@@ -87,13 +87,6 @@ sub check_files {
 			# first two lines
 			while (<OTOOL>) {
 				chomp();
-				# Nuke first line and errors
-				#next if ("$_" =~ /\:/);
-				# Nuke the end
-				#$_ =~ s/\ \(.*$//;
-				# Remove space at the beginning and end
-				#$_ =~ s/^\s*//;
-				#$_ =~ s/\s*$//;
 				# Get lib
 				$_ =~ s/^\s*(\S+)\s+.*$/$1/;
 				# Make sure it's a lib and is installed.

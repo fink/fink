@@ -3,6 +3,14 @@
 	* Shlibs.pm: Added condition to display Information line on reading
 	shlibs.  I will no longer appear between builds. Changed ${SHLIB_DEPS}
 	to {SHLIB_DEPS} so perl doesn't think it' s a variable.
+	* Engine.pm: Adding "fink splits", shows parent and splitoffs in a pkg
+	* PkgVersion.pm: Adding sub get_splitoffs() has two switches, to
+	include self in list and include parent.
+
+2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Properly fixed essential and builddependsonly checks in
+	cmd_remove.
 
 2003-12-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 

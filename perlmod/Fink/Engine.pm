@@ -91,6 +91,7 @@ our %commands =
 	  'checksums' => [\&cmd_checksums, 1, 0],
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
 	  'depends' => [\&cmd_depends, 1, 0],
+	  'splits' => [\&cmd_splits, 1, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -677,8 +678,7 @@ sub cmd_remove {
 sub get_pkglist {
 	my $cmd = shift;
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
-	my ($vo, @versions);
-	my ($buildonly, $wanthelp);
+	my ($buildonly, $wanthelp, $po);
 
 	use Getopt::Long;
 	my @temp_ARGV = @ARGV;
@@ -742,15 +742,14 @@ EOF
 		}
 
 		# shouldn't be able to remove or purge esstential pkgs
-		@versions = $package->list_installed_versions();
-		$vo = $package->get_version($versions[0]);
-		if ( $vo->param_boolean("essential") ) {
+		$po = Fink::PkgVersion->match_package($pname);
+		if ( $po->param_boolean("essential") ) {
 			print "WARNING: $pname is essential, skipping.\n";
 			next;
 		}
 
 		if (defined $buildonly) {
-			next unless ( $vo->param_boolean("builddependsonly") );
+			next unless ( $po->param_boolean("builddependsonly") );
 		}
 
 		push @packages, $package->get_name();
@@ -1547,6 +1546,33 @@ sub expand_packages {
 		push @package_list, $package;
 	}
 	return @package_list;
+}
+
+### Display pkgs in an info file based on and pkg name
+
+sub cmd_splits {
+	my ($pkg, $package, @pkgs, $arg);
+
+	foreach $arg (@_) {
+		$package = Fink::PkgVersion->match_package($arg);
+		unless (defined $package) {
+			print "no package found for specification '$arg'!\n";
+			next;
+		}
+
+		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
+		print "splitoffs for $pkgs[0] are:\n";
+		if ($pkgs[1]) {
+			foreach $pkg (@pkgs) {
+				unless ($pkg eq $pkgs[0]) {
+					print "\t-> $pkg\n";
+				}
+			}
+		} else {
+			print "\t-> none\n";
+		}
+		print "\n";
+	}
 }
 
 ### Display the depends for a package

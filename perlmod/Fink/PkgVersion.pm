@@ -2266,5 +2266,38 @@ sub get_debdeps {
 	return $deps;
 }
 
+### Return all pkg names in a single info file
+
+sub get_splitoffs {
+        my $self = shift;
+	my $name = shift;
+        my $include_parent = shift || 0;
+	my $include_self = shift || 0;
+        my (@splits) = ();
+        my ($pkg, $parent, $i, $package, $split);
+
+	unless ($name) {
+		die("Must specify at least one package name.\n");
+	}
+
+	$package = Fink::PkgVersion->match_package($name);
+
+        if ($include_parent) {
+		$pkg = $package->param('package');
+		unless ($name eq $pkg && not $include_self) {
+			push(@splits, $pkg);
+		}
+	}
+
+	foreach $split (@{$package->{_splitoffs}}) {
+		$pkg = $split->param("package");
+		unless ($name eq $pkg && not $include_self) {
+			push(@splits, $pkg);
+		}
+        }
+
+        return @splits;
+}
+
 ### EOF
 1;
