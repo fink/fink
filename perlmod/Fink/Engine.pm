@@ -794,8 +794,7 @@ sub real_install {
       next;
     }
     # for build, also skip if present, but not installed
-    if ($op == $OP_BUILD
-	and $package->is_present()) {
+    if ($op == $OP_BUILD and $package->is_present()) {
       next;
     }
     # add to table
@@ -831,10 +830,18 @@ sub real_install {
     }
 
     # get list of dependencies
-    if ($item->[3] == $OP_REBUILD or not $item->[2]->is_present()) {
-      # include build-time dependencies
+    if ($item->[3] == $OP_BUILD or
+        ($item->[3] == $OP_REBUILD and not $item->[2]->is_installed())) {
+      # We are building an item without going to install it
+      # -> only include pure build-time dependencies
+      @deplist = $item->[2]->resolve_depends(2);
+    } elsif (not $item->[2]->is_present()) {
+      # We want to install this package and have to build it for that
+      # -> include both life-time & build-time dependencies
       @deplist = $item->[2]->resolve_depends(1);
     } else {
+      # We want to install this package and already have a .deb for it
+      # -> only include life-time dependencies
       @deplist = $item->[2]->resolve_depends(0);
     }
     # add essential packages

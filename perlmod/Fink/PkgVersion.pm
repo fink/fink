@@ -656,9 +656,13 @@ sub resolve_depends {
   $split_idx = 0;
 
   # If this is a splitoff, and we are asked for build depends, add the build deps
-  # of the master package to the list.
+  # of the master package to the list. In 
   if ($include_build and $self->{_type} eq "splitoff") {
     push @deplist, ($self->{parent})->resolve_depends(2);
+    if ($include_build == 2) {
+      # The pure build deps of a splitoff are equivalent to those of the parent.
+      return @deplist;
+    }
   }
   
   @speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
@@ -667,7 +671,7 @@ sub resolve_depends {
       split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
 
     # If this is a master package with splitoffs, and build deps are requested,
-    # then add to the list the runtime deps of all our aplitoffs.
+    # then add to the list the deps of all our aplitoffs.
     # We remember the offset at which we added these in $split_idx, so that we
     # can remove any inter-splitoff deps that would otherwise be introduced by this.
     $split_idx = @speclist;

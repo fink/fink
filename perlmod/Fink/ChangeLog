@@ -1,5 +1,12 @@
 2002-10-31  Max Horn  <max@quendi.de>
 
+	* Engine.pm: When we we build a package which we are not going to install
+	  (e.g. as consequence of a 'fink build foo'), only resolve the build time
+	  dependencies, not install-time deps (currently this only affects splitoffs
+	  which depends on a sibling).
+
+	* PkgVersion.pm: Build deps of a splitoff are equivalent to the parent's.
+	
 	* PkgVersion.pm: Fixed typos, clarified/extended some comments.
 
 	* PkgVersion.pm: Set DYLD_LIBRARY_PATH, too. This  allows libtool to find
@@ -29,7 +36,7 @@
 
 2002-10-21  Ben Hines <bhines@alumni.ucsd.edu>
 
-	* Services.pm, Fix typo in nesting too deep error.
+	* Services.pm: Fix typo in nesting too deep error.
 	
 2002-10-15  Max Horn  <max@quendi.de>
 
