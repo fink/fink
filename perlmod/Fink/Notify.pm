@@ -24,7 +24,7 @@
 package Fink::Notify;
 
 use Fink::Config qw($config);
-use Scalar::Util qw(blessed);
+use UNIVERSAL qw(isa);
 
 BEGIN {
         use Exporter ();
@@ -115,7 +115,7 @@ sub new {
 	eval "require Fink::Notify::$plugin";
 	eval "\$self = Fink::Notify::$plugin->new()";
 
-	if (not blessed $self) {
+	unless (isa $self, "Fink::Notify") {
 		$self = bless({}, $class);
 	}
 
@@ -132,7 +132,9 @@ The default events are:
 	finkPackageInstallationFailed
 	finkPackageRemovalPassed
 	finkPackageRemovalFailed
-
+	finkDoneSuccess
+	finkDoneFailure
+	
 Notifier modules may supply an alternate list of supported events by
 providing their own events() method.
 
@@ -145,6 +147,8 @@ our @events = qw(
 	finkPackageInstallationFailed
 	finkPackageRemovalPassed
 	finkPackageRemovalFailed
+	finkDoneSuccess
+	finkDoneFailure
 );
 
 sub events {
@@ -192,6 +196,8 @@ sub notify {
 		finkPackageInstallationFailed => 'Fink Installation Failed!',
 		finkPackageRemovalPassed      => 'Fink Removal Passed.',
 		finkPackageRemovalFailed      => 'Fink Removal Failed!',
+		finkDoneSuccess               => 'Fink Finished Successfully.',
+		finkDoneFailure               => 'Fink Finished With Failure!',
 	);
 
 	return undef if (not defined $args{'event'} or not defined $args{'description'});

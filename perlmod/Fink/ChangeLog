@@ -1,3 +1,8 @@
+2005-02-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Notify.pm: Fixed dmacks' breakage, plus better test for new() failure.
+	* Notify.pm, Engine.pm: Add notifications for complete success, failure.
+
 2005-02-02  Daniel Macks  <dmacks@netspace.org>
 
 	* Notify.pm: Improved handling of failures of notifier new().

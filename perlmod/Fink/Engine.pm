@@ -31,6 +31,7 @@ use Fink::Config qw($config $basepath $debarch binary_requested);
 use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p);
+use Fink::Notify;
 
 use strict;
 use warnings;
@@ -136,6 +137,7 @@ sub process {
 	my $self = shift;
 	my $options = shift;
 	my $cmd = shift;
+	my @args = @_;
 	my ($proc, $pkgflag, $rootflag, $aptgetflag);
 
 	unless (defined $cmd) {
@@ -151,7 +153,7 @@ sub process {
 
 	# check if we need to be root
 	if ($rootflag and $> != 0) {
-		&restart_as_root($options, $cmd, @_);
+		&restart_as_root($options, $cmd, @args);
 	}
 
 	# check if we need apt-get
@@ -210,15 +212,31 @@ sub process {
 		Fink::Package->require_packages();
 	}
 	$::SIG{INT} = sub { die "User interrupt.\n" };
-	eval { &$proc(@_); };
+	eval { &$proc(@args); };
 	$::SIG{INT} = 'DEFAULT';
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
 	Fink::PkgVersion->clear_buildlock();       # always clean up
+	
+	# Rebuild the command line, for user viewing
+	my $commandline = 'fink';
+	$commandline .= " $options" if $options;
+	$commandline .= " $cmd" if $cmd;
+	$commandline .= join('', map { " $_" } @args) if @args;
+	
+	my $notifier = Fink::Notify->new();
 	if ($proc_rc->{'$@'}) {                    # now deal with eval results
 		print "Failed: " . $proc_rc->{'$@'};
+		$notifier->notify(
+			event => 'finkDoneFailure',
+			description => "$commandline\n$proc_rc->{'$@'}"
+		);
 		return $proc_rc->{'$?'} || 1;
 	}
 
+	$notifier->notify(
+		event => 'finkDoneSuccess',
+		description => $commandline
+	);
 	return 0;
 }
 
