@@ -1,3 +1,7 @@
+2004-10-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Use named constants for fink list/apropos option bits.
+
 2004-10-22  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Fixed ignoring of null OR clusters in lol2pkglist.

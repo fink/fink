@@ -298,6 +298,10 @@ sub do_real_list {
 	(
 	 "installedstate" => 0
 	);
+	# bits used by $options{intalledstate}
+	my $ISTATE_OUTDATED = 1;
+	my $ISTATE_CURRENT  = 2;
+	my $ISTATE_ABSENT   = 4;
 	my ($width, $namelen, $verlen, $dotab);
 	my $cmd = shift;
 	use Getopt::Long;
@@ -310,10 +314,10 @@ sub do_real_list {
 		GetOptions(
 				   'width|w=s'		=> \$width,
 				   'tab|t'			=> \$dotab,
-				   'installed|i'	=> sub {$options{installedstate} |=3;},
-				   'uptodate|u'		=> sub {$options{installedstate} |=2;},
-				   'outdated|o'		=> sub {$options{installedstate} |=1;},
-				   'notinstalled|n'	=> sub {$options{installedstate} |=4;},
+				   'installed|i'	=> sub {$options{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
+				   'uptodate|u'		=> sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
+				   'outdated|o'		=> sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
+				   'notinstalled|n'	=> sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
 				   'buildonly|b'	=> \$buildonly,
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
@@ -327,7 +331,9 @@ sub do_real_list {
 				   'help|h'			=> sub {&help_list_apropos($cmd)}
 		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}
-	if ($options{installedstate} == 0) {$options{installedstate} = 7;}
+	if ($options{installedstate} == 0) {
+		$options{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT | $ISTATE_ABSENT;
+	}
 
 	# By default or if --width=auto, compute the output width to fit exactly into the terminal
 	if ((not defined $width and not $dotab) or (defined $width and
@@ -388,7 +394,7 @@ sub do_real_list {
 			$iflag = "   ";
 			$description = "[virtual package]";
 			next if ($cmd eq "apropos"); 
-			next unless ($options{installedstate} & 4);
+			next unless ($options{installedstate} & $ISTATE_ABSENT);
 			next if (defined $buildonly);
 			next if (defined $section);
 			next if (defined $maintainer);
@@ -397,14 +403,14 @@ sub do_real_list {
 			$lversion = &latest_version($package->list_versions());
 			$vo = $package->get_version($lversion);
 			if ($vo->is_installed()) {
-				next unless ($options{installedstate} & 2);
+				next unless ($options{installedstate} & $ISTATE_CURRENT);
 				$iflag = " i ";
 			} elsif ($package->is_any_installed()) {
 				$iflag = "(i)";
-				next unless ($options{installedstate} & 1);
+				next unless ($options{installedstate} & $ISTATE_OUTDATED);
 			} else {
 				$iflag = "   ";
-				next unless ($options{installedstate} & 4);
+				next unless ($options{installedstate} & $ISTATE_ABSENT);
 			}
 
 			$description = $vo->get_shortdescription($desclen);
