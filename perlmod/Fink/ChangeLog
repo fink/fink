@@ -7,6 +7,7 @@
 	  hardcoded /sw.
 	* PkgVersion.pm: Factored out duplicated perl handling code into a new
 	  method get_perl_version_dir_arch().
+	* Validation.pm: Allow type "perl 5.8.1". Allow "License" in splitoffs.
 
 2003-11-08  Max Horn  <max@quendi.de>
 

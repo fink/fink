@@ -87,7 +87,7 @@ our %name_version_fields = map {$_, 1}
 our %allowed_type_values = map {$_, 1}
 	(
 	 "nosource", "bundle", "perl", 
-	 "perl 5.6.0", "perl 5.6.1", "perl 5.8.0"
+	 "perl 5.6.0", "perl 5.6.1", "perl 5.8.0", "perl 5.8.1"
 	 );
 
 
@@ -204,6 +204,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 descusage
 		 descpackaging
 		 descport
+		 license
 		)
 	);
 
