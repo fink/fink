@@ -1,20 +1,33 @@
 Package: test-simple-pm561
 Version: 0.47
-Revision: 14
+Revision: 15
 ###
 Depends: perl561-core, file-spec-pm561
 BuildDepends: fink (>= 0.20.2.1-1), test-harness-pm561, file-spec-pm561, perl561-core
-Replaces: test-simple-pm (<= 0.47-14), perl560, perl580, perl584, perl585, test-simple-pm560, test-simple-pm561, test-simple-pm580, test-simple-pm581, test-simple-pm584, test-simple-pm585
-Provides: test-simple-pm
+Replaces: test-simple-pm (<= 0.47-14)
 ###
 Source: mirror:cpan:authors/id/M/MS/MSCHWERN/Test-Simple-%v.tar.gz
 Source-MD5: 4a6c12685bfeadfe8ff6fca70825f90c
 ###
-Type: perl 5.6.0
+Type: perl 5.6.1
 UpdatePOD: true
 ###
 DocFiles: Changes MANIFEST* README* TODO
 ###
+InstallScript: <<
+make install \
+ INSTALLPRIVLIB=%i/lib/perl5/5.6.1 \
+ INSTALLARCHLIB=%i/lib/perl5/5.6.1/darwin-thread-multi-2level \
+ INSTALLSITELIB=%i/lib/perl5/5.6.1 \
+ INSTALLSITEARCH=%i/lib/perl5/5.6.1/darwin-thread-multi-2level \
+ INSTALLMAN1DIR=%i/share/man/man1 \
+ INSTALLMAN3DIR=%i/lib/perl5/5.6.1/man/man3 \
+ INSTALLSITEMAN1DIR=%i/share/man/man1 \
+ INSTALLSITEMAN3DIR=%i/lib/perl5/5.6.1/man/man3 \
+ INSTALLBIN=%i/bin \
+ INSTALLSITEBIN=%i/bin \
+ INSTALLSCRIPT=%i/bin
+<<
 Description: Basic utilities for writing tests
 DescDetail: <<
   This is an extremely simple, extremely basic module for writing tests

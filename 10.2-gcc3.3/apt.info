@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 26
+Revision: 41
 GCC: 3.3
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
@@ -8,10 +8,11 @@ Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
+ sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.2-gcc3.3|g' <%a/%n.patch | patch -p1
  sh patch_flush
- for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
- for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i ; done
+ for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
+ for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i ; done
+ perl -pi.bak -e 's/socklen_t/int/' methods/ftp.h methods/ftp.cc
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
@@ -133,6 +134,11 @@ Ben Hines - added patch to make apt recognize macosx and darwin pkgs
 
 The sources.list file is now supplied by the fink program rather than
 by apt-get.
+
+socklen_t exists starting in OS X 10.3
+
+dmacks - Implemented "--ignore-breakage" cmdline flag to 'apt-get install'
+(first appears in: 10.2-gcc3.3/0.5.4-41, 10.3/0.5.4-51)
 <<
 DescPackaging: <<
 Previous versions by Christoph Pfisterer.

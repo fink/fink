@@ -3,7 +3,7 @@ Version: 0.82
 Revision: 2
 Source: mirror:sourceforge:fink/File-Spec-%v.tar.gz
 #Source: mirror:cpan:authors/id/R/RB/RBS/File-Spec-%v.tar.gz
-BuildDepends: fink (>= 0.20.1-1), darwin (<< 7.0.0-1) | perl561-core
+BuildDepends: fink (>= 0.20.1-1), perl561-core
 Replaces: perl560-core, perl561-core, perl580, perl584, file-spec-pm (<= 0.82-2)
 Type: perl 5.6.1
 UpdatePOD: True
