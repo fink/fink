@@ -93,11 +93,7 @@ sub initialize {
   }
 
   print "Reading package info...\n";
-  Fink::Package->scan($basepath."/fink/info");
-
-  if ($config->has_param("umask")) {
-    umask oct($config->param("umask"));
-  }
+  Fink::Package->scan($basepath."/fink/dists/stable/bootstrap/finkinfo");
 }
 
 ### process command

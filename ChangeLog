@@ -1,3 +1,16 @@
+2001-04-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink: Changed paths to reflect the new layout.
+	* bootstrap.sh, bootstrap.pl: New scripts to install and bootstrap
+	Fink on a virgin system.
+	* install.sh: Complete overhaul. This is now used to install fink,
+	the package manager, as a package, not to install a new Fink tree.
+	* upgrade.sh: Removed.
+	* setup.sh: New script, also used in installing fink as a
+	package. Empty for now.
+
+	* init.sh.in, init.csh.in: Moved to the base-files directory.
+
 2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink: Added code to become root automatically and to setup a

@@ -21,8 +21,10 @@
 
 package Fink::Configure;
 
-use Fink::Config qw($config $basepath);
-use Fink::Services qw(&prompt &prompt_boolean &prompt_selection &print_breaking &read_properties &read_properties_multival &filename);
+use Fink::Config qw($config $basepath $libpath);
+use Fink::Services qw(&prompt &prompt_boolean &prompt_selection
+                      &print_breaking &read_properties
+                      &read_properties_multival &filename);
 
 use strict;
 use warnings;
@@ -51,18 +53,10 @@ sub configure {
 		  "configuration file in '".$config->get_path()."'.");
 
   # normal configuration
-  $umask =
-    &prompt("What umask should be used by Fink? If you don't want ".
-	    "Fink to set a umask, type 'none'.",
-	    $config->get_param_default("Umask", "022"));
-  if ($umask !~ /none/i) {
-    $config->set_param("UMask", $umask);
-    umask oct($umask);
-  }
   $otherdir =
     &prompt("In what additional directory should Fink look for downloaded ".
 	    "tarballs?",
-	    $config->get_param_default("FetchAltDir", ""));
+	    $config->param_default("FetchAltDir", ""));
   if ($otherdir) {
     $config->set_param("FetchAltDir", $otherdir);
   }
@@ -88,7 +82,7 @@ sub choose_mirrors {
   my ($all_mirrors, @mirrors, $mirror_labels, $site);
 
   &print_breaking("Mirror selection");
-  $keyinfo = &read_properties("$basepath/fink/mirror/_keys");
+  $keyinfo = &read_properties("$libpath/mirror/_keys");
 
   ### step 1: choose a continent
 
@@ -123,12 +117,12 @@ sub choose_mirrors {
 
   ### step 3: mirrors
 
-  $listinfo = &read_properties("$basepath/fink/mirror/_list");
+  $listinfo = &read_properties("$libpath/mirror/_list");
 
   foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
     next if $mirrorname =~ /^\s*$/;
 
-    $mirrorfile = "$basepath/fink/mirror/$mirrorname";
+    $mirrorfile = "$libpath/mirror/$mirrorname";
     $mirrortitle = $mirrorname;
     if (exists $listinfo->{lc $mirrorname}) {
       $mirrortitle = $listinfo->{lc $mirrorname};

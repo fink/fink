@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# install.sh - the Fink installation shells script
+# install.sh - install fink package
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -20,66 +20,62 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-if [ $# -lt 1 ]; then
-  echo "Usage: ./install.sh <directory>"
+if [ $# -ne 1 ]; then
+  echo "Usage: ./install.sh <prefix>"
   echo "  Example: ./install.sh /sw"
   exit 1
 fi
 
 basepath=$1
 
-if [ ! -d $basepath ]; then
-  echo "Creating directories..."
-  mkdir -p $basepath
-else
-  if [ -d $basepath/fink ]; then
-    echo "The directory $basepath already exists and seems to"
-    echo "contain a Fink installation. This script will not touch this. Use upgrade.sh"
-    echo "instead to upgrade an existing Fink installation."
-    exit 1
-  fi
-  if [ -d $basepath/bin -o -d $basepath/lib -o -d $basepath/include ]; then
-    echo "The directory $basepath already exists and seems to"
-    echo "contain software. This script will not attempt to install Fink into an"
-    echo "existing hierarchy. Either remove the software in $basepath"
-    echo "or choose another directory."
-    exit 1
-  fi
-  echo "Creating directories..."
-fi
 
-mkdir -p $basepath/fink
-mkdir -p $basepath/stow/system/bin
-mkdir -p $basepath/stow/local
-mkdir -p $basepath/var
-touch $basepath/var/.placeholder
-mkdir -p $basepath/var/run
-touch $basepath/var/run/.placeholder
-mkdir -p $basepath/etc
-touch $basepath/etc/.placeholder
-mkdir -p $basepath/src
+echo "Creating directories..."
+
+mkdir -p $basepath
+chmod 755 $basepath
+
+for dir in bin lib lib/fink lib/fink/perlmod lib/fink/perlmod/Fink \
+	   lib/fink/mirror lib/fink/update \
+	   share share/doc share/doc/fink ; do
+  mkdir $basepath/$dir
+  chmod 755 $basepath/$dir
+done
+
 
 echo "Copying files..."
-cp -R COPYING README fink info mirror patch perlmod update $basepath/fink
-( cd $basepath/stow/system/bin; ln -s ../../../fink/fink fink )
 
-echo "Creating init scripts..."
-sed "s|BASEPATH|$basepath|g" <init.sh.in >$basepath/stow/system/bin/init.sh
-sed "s|BASEPATH|$basepath|g" <init.csh.in >$basepath/stow/system/bin/init.csh
+cp fink $basepath/bin/
+chmod 755 $basepath/bin/fink
 
-echo "Setting up stow hierarchy..."
-( cd $basepath; ln -s stow/system/bin bin )
+for file in perlmod/Fink/* ; do
+  if [ -f $file ]; then
+    cp $file $basepath/lib/fink/perlmod/Fink/
+    chmod 644 $basepath/lib/fink/$file
+  fi
+done
 
-echo "Writing preliminary configuration file..."
-echo "# Fink configuration, initially created by install.sh" >$basepath/fink/config
-echo "Basepath: $basepath" >>$basepath/fink/config
-echo "# end of install.sh generated settings" >>$basepath/fink/config
+for file in mirror/* ; do
+  if [ -f $file ]; then
+    cp $file $basepath/lib/fink/mirror/
+    chmod 644 $basepath/lib/fink/$file
+  fi
+done
 
-echo ""
-echo "I will now run 'fink bootstrap' to complete setup. Fink will interactively"
-echo "create a configuration and install essential packages."
-echo ""
+for file in update/config.guess update/config.sub update/ltconfig ; do
+  cp $file $basepath/lib/fink/update/
+  chmod 755 $basepath/lib/fink/$file
+done
 
-$basepath/bin/fink bootstrap
+for file in update/ltmain.sh ; do
+  cp $file $basepath/lib/fink/update/
+  chmod 644 $basepath/lib/fink/$file
+done
 
+for file in COPYING README ; do
+  cp $file $basepath/share/doc/fink/
+  chmod 644 $basepath/share/doc/fink/$file
+done
+
+
+echo "Done."
 exit 0

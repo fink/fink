@@ -24,7 +24,7 @@ use strict;
 
 use FindBin;
 
-use lib "$FindBin::RealBin/perlmod";
+use lib "$FindBin::RealBin/../lib/fink/perlmod";
 
 ### quick check so see if all the user wants is the version number
 
@@ -43,7 +43,7 @@ use Fink::Engine;
 ### read config
 
 my ($config, $configpath);
-$configpath = "$FindBin::RealBin/config";
+$configpath = "$FindBin::RealBin/../etc/fink.conf";
 if (-f $configpath) {
   print "Reading configuration...\n";
   $config = &read_config($configpath);

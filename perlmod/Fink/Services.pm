@@ -275,7 +275,7 @@ sub prompt_boolean {
     if ($answer eq "") {
       $meaning = $default_value;
       last;
-    } elsif ($answer =~ /^y(e?s)?/i) {
+    } elsif ($answer =~ /^y(es?)?/i) {
       $meaning = 1;
       last;
     } elsif ($answer =~ /^no?/i) {

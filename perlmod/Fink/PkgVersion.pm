@@ -22,9 +22,10 @@
 package Fink::PkgVersion;
 use Fink::Base;
 
-use Fink::Services qw(&filename &expand_percent &expand_url &execute &find_stow &latest_version);
+use Fink::Services qw(&filename &expand_percent &expand_url &execute
+                      &latest_version);
 use Fink::Package;
-use Fink::Config qw($config $basepath $debarch);
+use Fink::Config qw($config $basepath $libpath $debarch);
 
 use strict;
 use warnings;
@@ -47,9 +48,9 @@ END { }       # module clean-up code here (global destructor)
 
 sub initialize {
   my $self = shift;
-  my ($pkgname, $version, $revision, $source);
+  my ($pkgname, $version, $revision, $filename, $source);
   my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
-  my ($i);
+  my ($i, $path);
 
   $self->SUPER::initialize();
 
@@ -57,6 +58,18 @@ sub initialize {
   $self->{_version} = $version = $self->param_default("Version", "0");
   $self->{_revision} = $revision = $self->param_default("Revision", "0");
   $self->{_type} = lc $self->param_default("Type", "");
+  # the following is set by Fink::Package::scan
+  $self->{_filename} = $filename = $self->{thefilename};
+
+  # path handling
+  $filename =~ /^(.*\/)[^\/]*$/;
+  $path = $1;
+  if (substr($path,-1) eq "/") {
+    $path = substr($path,0,-1);
+  }
+  $self->{_patchpath} = $path;
+  $path =~ s|/finkinfo|/binary-$debarch|;
+  $self->{_debpath} = $path;
 
   # some commonly used stuff
   $self->{_fullversion} = $version."-".$revision;
@@ -74,7 +87,7 @@ sub initialize {
 	      'p' => $basepath, 'P' => $basepath,
 	      'd' => $destdir,
 	      'i' => $destdir.$basepath,
-	      'a' => "$basepath/fink/patch",
+	      'a' => $self->{_patchpath},
 	      'c' => $configure_params};
   $self->{_expand} = $expand;
 
@@ -172,6 +185,16 @@ sub get_debname {
   return $self->{_debname};
 }
 
+sub get_debpath {
+  my $self = shift;
+  return $self->{_debpath};
+}
+
+sub get_debfile {
+  my $self = shift;
+  return $self->{_debpath}."/".$self->{_debname};
+}
+
 ### other accessors
 
 sub is_multisource {
@@ -220,7 +243,7 @@ sub get_build_directory {
   }
 
   $dir = $self->get_tarball();
-  if ($dir =~ /^(.*)\.tar\.(gz|Z|bz2)$/) {
+  if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
     $dir = $1;
   }
   if ($dir =~ /^(.*)\.tgz$/) {
@@ -252,7 +275,7 @@ sub is_fetched {
 sub is_present {
   my $self = shift;
 
-  if (-f "$basepath/debs/".$self->get_debname()) {
+  if (-f $self->get_debfile()) {
     return 1;
   }
   return 0;
@@ -457,7 +480,7 @@ sub phase_unpack {
 
     # determine unpacking command
     $tar_cmd = "tar -xvf $found_archive";
-    if ($archive =~ /[\.\-]tar\.(gz|Z)$/ or $archive =~ /\.tgz$/) {
+    if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
       $tar_cmd = "gzip -dc $found_archive | tar -xvf -";
     } elsif ($archive =~ /[\.\-]tar\.bz2$/) {
       $tar_cmd = "bzip2 -dc $found_archive | tar -xvf -";
@@ -503,16 +526,16 @@ sub phase_patch {
 
   if ($self->param_boolean("UpdateConfigGuess")) {
     $patch_script .=
-      "cp -f $basepath/fink/update/config.guess .\n".
-      "cp -f $basepath/fink/update/config.sub .\n";
+      "cp -f $libpath/update/config.guess .\n".
+      "cp -f $libpath/update/config.sub .\n";
   }
 
   ### copy libtool scripts (ltconfig and ltmain.sh) if required
 
   if ($self->param_boolean("UpdateLibtool")) {
     $patch_script .=
-      "cp -f $basepath/fink/update/ltconfig .\n".
-      "cp -f $basepath/fink/update/ltmain.sh .\n";
+      "cp -f $libpath/update/ltconfig .\n".
+      "cp -f $libpath/update/ltmain.sh .\n";
   }
 
   ### patches specifies by filename
@@ -668,12 +691,12 @@ EOF
 
   ### create .deb using dpkg-deb
 
-  if (not -d "$basepath/debs") {
-    if (&execute("mkdir -p $basepath/debs")) {
+  if (not -d $self->get_debpath()) {
+    if (&execute("mkdir -p ".$self->get_debpath())) {
       die "can't create directory for packages\n";
     }
   }
-  $cmd = "dpkg-deb -b $ddir $basepath/debs";
+  $cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
   if (&execute($cmd)) {
     die "can't create package\n";
   }
@@ -691,17 +714,16 @@ EOF
 
 sub phase_activate {
   my $self = shift;
-  my ($deb, $debpath);
+  my ($deb);
 
-  $deb = $self->get_debname();
-  $debpath = "$basepath/debs/$deb";
+  $deb = $self->get_debfile();
 
-  if (not -f $debpath) {
+  if (not -f $deb) {
     die "can't find package $deb\n";
   }
 
-  if (&execute("dpkg -i $debpath")) {
-    die "can't install package/n";
+  if (&execute("dpkg -i $deb")) {
+    die "can't install package\n";
   }
 }
 
@@ -711,7 +733,7 @@ sub phase_deactivate {
   my $self = shift;
 
   if (&execute("dpkg --remove ".$self->get_name())) {
-    die "can't remove package/n";
+    die "can't remove package\n";
   }
 }
 

@@ -22,6 +22,7 @@
 package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &latest_version);
+use File::Find;
 
 use strict;
 use warnings;
@@ -216,14 +217,21 @@ sub forget_packages {
 sub scan {
   shift;  # class method - ignore first parameter
   my $directory = shift;
+  my (@filelist, $wanted);
   my ($filename, $properties);
   my ($pkgname, $package, $version);
 
-  foreach $filename (glob $directory."/*") {
-    # skip backup files etc.
-    next if $filename =~ /^[\.\#]/ or $filename =~ /[\~\#]$/;
-    next unless -f $filename;
+  # search for .info files
+  @filelist = ();
+  $wanted =
+    sub {
+      if (-f and /\.info$/) {
+	push @filelist, $File::Find::fullname;
+      }
+    };
+  find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
 
+  foreach $filename (@filelist) {
     # read the file and get the package name
     $properties = &read_properties($filename);
     $pkgname = $properties->{package};
@@ -240,12 +248,11 @@ sub scan {
     $package = Fink::Package->package_by_name_create($pkgname);
 
     # create object for this particular version
+    $properties->{thefilename} = $filename;
     $version = Fink::PkgVersion->new_from_properties($properties);
 
     # link them together
     $package->add_version($version);
-
-##    print " ".$package->get_name()." ".$version->get_version()."\n";
   }
 
   print "Information about ".($#package_list+1)." packages read.\n";

@@ -1,3 +1,23 @@
+2001-04-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Config.pm: New variable $libpath, pointing at the directory for
+	support files.
+	* Configure.pm: Removed umask code. Use $libpath. Fixed wrong
+	method call.
+	* Engine.pm: Removed umask code. Call Fink::Package->scan on the
+	correct directory in the new layout (temporary, hardcoded
+	solution).
+	* Package.pm (scan): Use File::Find to recursively search
+	directories. Read all files with the extension '.info'. Pass the
+	filename to the PkgVersion object for processing.
+	* PkgVersion.pm: Use $libpath. Use the description file path
+	passed by Fink::Package::scan to generate paths to the patch and
+	to the binary .deb. New accessors for the .deb path. Other small
+	fixes.
+
+	* Services.pm (prompt_boolean): Fixed regular expression
+	recognizing 'yes' answers.
+
 2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (phase_activate): Removed sudo from dpkg
