@@ -166,7 +166,7 @@ sub check {
 			die "Can't get latest version info\n";
 		}
 		$latest_fink = cat "$srcdir/$currentfink";
-		Chomp($latest_fink);
+		chomp($latest_fink);
 		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" and ! "$finkdir/dists/stamp-cvs-live" and ! -f "$finkdir/dists/stamp-rsync-live")
 		{
 			# check if we need to upgrade
