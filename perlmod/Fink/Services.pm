@@ -39,7 +39,8 @@ BEGIN {
                     &print_breaking &print_breaking_prefix
                     &print_breaking_twoprefix
                     &prompt &prompt_boolean &prompt_selection
-                    &expand_url &version_cmp &latest_version);
+                    &expand_url &version_cmp &latest_version
+                    &collapse_space);
 }
 our @EXPORT_OK;
 
@@ -421,6 +422,13 @@ sub latest_version {
   return $latest;
 }
 
+### collapse white space inside a string (removes newlines)
+
+sub collapse_space {
+  my $s = shift;
+  $s =~ s/\s+/ /gs;
+  return $s;
+}
 
 ### EOF
 1;
