@@ -1,6 +1,6 @@
-Generated from $Fink: usage.xml,v 1.6 2001/07/31 16:32:50 chrisp Exp $
+Generated from $Fink: usage.xml,v 1.8 2001/08/23 10:12:39 chrisp Exp $
 
- Fink 0.2.4 Usage
+ Fink 0.2.5 Usage
 ==================
 
  Setting The Paths
@@ -12,10 +12,10 @@ use tcsh, add the following to your .cshrc:
 
    source /sw/bin/init.csh
 
-Editing .cshrc will only affect new shells (i.e. new Terminal windows), so
-you should also run this command in all Terminal windows that you opened
-before you edited the file. You'll also need to run "rehash" because tcsh
-caches the list of available commands internally.
+Editing .cshrc will only affect new shells (i.e. newly opened Terminal
+windows), so you should also run this command in all Terminal windows that
+you opened before you edited the file. You'll also need to run "rehash"
+because tcsh caches the list of available commands internally.
 
 If you use a Bourne type shell (e.g. sh, bash, zsh), use /sw/bin/init.sh
 instead.
@@ -161,6 +161,17 @@ back.
 -----------
 Reruns the Fink configuration process. This will let you change your mirror
 sites and proxy settings, among others.
+
+
+ selfupdate
+------------
+This command automates the process of upgrading to a new Fink release. It
+checks the Fink website to see if a new version is available. It then
+downloads the package descriptions and updates the core packages, including
+fink itself. This command can only upgrade to regular releases, but you can
+use it to upgrade from a CVS version to a later regular release. It will
+refuse to run if you have /sw/fink set up to get package descriptions
+directly from CVS.
 
 
  Further Questions

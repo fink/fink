@@ -1,3 +1,8 @@
+2001-08-24  Christoph Pfisterer  <cp@chrisp.de>
+
+	* README, README.html, INSTALL, INSTALL.html, USAGE, USAGE.html:
+	Updated for the 0.2.5 release via the XML document system.
+
 2001-08-22  Christoph Pfisterer  <cp@chrisp.de>
 
 	* install.sh: Added Makefile.in.in.
