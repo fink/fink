@@ -200,6 +200,12 @@ the
 .Cm -b
 flag has the same effect, but only operates on that single
 .Cm fink
+invocation.  Passing
+.Cm fink
+the
+.Cm -c
+flag overrides this, and compiles from source for that single
+.Cm fink
 invocation.
 .El
 .\"

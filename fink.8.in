@@ -53,7 +53,11 @@ Causes Fink not to delete the
 directory after building a package.
 .It Cm -b, --use-binary-dist
 Download pre-compiled binary packages from the binary distribution 
-if available and if deb is not already on the system.
+if available and if deb is not already on the system (opposite of
+--compile-from-source)
+.It Cm -c, --compile-from-source
+Don't use pre-compiled binary packages from the binary distribution
+(opposite of --use-binary-dist)
 .El
 .\"
 .\"

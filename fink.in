@@ -61,6 +61,9 @@ GetOptions(
      'use-binary-dist|b'  => sub { $options{use_binary} = 1 ;  
                                  $optionsString .= '--use-binary-dist ' 
                                },
+     'compile-from-source|c'  => sub { $options{use_binary} = -1 ;  
+                                 $optionsString .= '--compile-from-source ' 
+                               },
 #	 'interactive|i'    => sub { $options{interactive} = 1 ;  
 #                                $optionsString .= '--interactive ' 
 #                              },
@@ -129,7 +132,9 @@ Options:
   -v, --verbose         - causes fink to be more verbose, opposite of --quiet
   -y, --yes             - assume default answer for all interactive questions
   -b, --use-binary-dist - download pre-compiled packages from the binary 
-                          distribution if available
+                          distribution if available (opposite of -c)
+  -c, --compile-from-source - don't use pre-compiled packages from the binary 
+                          distribution (opposite of -b)
 
 See the fink(8) manual page for more commands and options.
 Visit http://fink.sourceforge.net/ for further information.
