@@ -398,23 +398,21 @@ sub get_depobj {
 sub get_shlib {
 	my $self = shift;
 	my $lib = shift;
-	my ($dep, $shlib, $count, $pkgnum, $vernum);
+	my $compat = shift;
+	my ($dep, $shlib, $count, $pkgnum, $vernum, $total);
 
 	$dep = "";
 
 	foreach $shlib (keys %$shlibs) {
-		if ("$shlib" eq "$lib") {
-			if ($shlibs->{$shlib}->{total} > 1) {
-				for ($count = 1; $count <= $shlibs->{$shlib}->{total}; $count++) {
-					$pkgnum = "package".$count;
-					$vernum = "version".$count;
-					$dep .= $shlibs->{$shlib}->{$pkgnum}." (".$shlibs->{$shlib}->{$vernum}.")";
-					if ($count != $shlibs->{$shlib}->{total}) {
-						$dep .= " |";
- 					}
-				}
-			} else {
-				$dep = $shlibs->{$shlib}->{package1}." (".$shlibs->{$shlib}->{version1}.")";
+		if ("$shlib" eq "$lib" && $shlibs->{$shlib}->{$compat}) {
+			$total = $shlibs->{$shlib}->{$compat}->{total};
+			for ($count = 1; $count <= $total; $count++) {
+				$pkgnum = "package".$count;
+				$vernum = "version".$count;
+				$dep .= $shlibs->{$shlib}->{$compat}->{$pkgnum}." (".$shlibs->{$shlib}->{$compat}->{$vernum}.")";
+				if ($count >= $total) {
+					$dep .= " | ";
+ 				}
 			}
 		}
 	}
@@ -600,25 +598,24 @@ sub inject_shlib {
 	my $package = shift;
 	my (@packages, $pkg, $counter, $pkgnum, $vernum);
 
-	$shlibs->{$shlibname}->{compat} = $compat;
 	if ($package =~ /\|/) {
 		@packages = split(/\s*\|\s*/, $package);
 		$counter = 0;
 		foreach $pkg (@packages) {
 			$counter++;
-			if ($pkg =~ /(.+) \((.+)\)/) {
+			if ($pkg =~ /(.+)\s+\((.+)\)/) {
 				$pkgnum = "package".$counter;
 				$vernum = "version".$counter;;
-				$shlibs->{$shlibname}->{$pkgnum} = $1;
-				$shlibs->{$shlibname}->{$vernum} = $2;
+				$shlibs->{$shlibname}->{$compat}->{$pkgnum} = $1;
+				$shlibs->{$shlibname}->{$compat}->{$vernum} = $2;
 			}
-			$shlibs->{$shlibname}->{total} = $counter;
+			$shlibs->{$shlibname}->{$compat}->{total} = $counter;
 		}
 	} else {
-		if ($package =~ /(.+) \((.+)\)/) {
-			$shlibs->{$shlibname}->{package1} = $1;
-			$shlibs->{$shlibname}->{version1} = $2;
-			$shlibs->{$shlibname}->{total} = 1;
+		if ($package =~ /(.+)\s+\((.+)\)/) {
+			$shlibs->{$shlibname}->{$compat}->{package1} = $1;
+			$shlibs->{$shlibname}->{$compat}->{version1} = $2;
+			$shlibs->{$shlibname}->{$compat}->{total} = 1;
 		}
 	}
 }

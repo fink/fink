@@ -1,3 +1,8 @@
+2003-12-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Changed shlibs hash structure a little to deal with
+	 multi compat versions of a shlib.  A few various tweaks.
+
 2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Added condition to display Information line on reading
