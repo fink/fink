@@ -1,5 +1,17 @@
 2004-03-05  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Move handling of Source(N) and Source(N)Rename
+	default-handling and percent-expansion from the initialization
+	loop to the accessor methods.
+	* Package.pm, PkgVersion.pm: Implement pkglist(), has_pkglist(),
+	pkglist_default() that are analogous to the param(), has_param(),
+	param_default() methods but also do percent-expansion and
+	conditional-clause parsing. Remove this functionality from object
+	initialization. Convert all *param*() for package-list fields to
+	*pkglist*() calls.
+
+2004-03-05  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: Remove needless {...} block syntax from frequently-
 	called function.
 	* PkgVersion.pm: Streamline handling of Vn for %-expand mapping.

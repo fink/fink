@@ -575,8 +575,8 @@ sub inject_description {
 	$po->add_version($version);
 
 	# track provided packages
-	if ($version->has_param("Provides")) {
-		foreach $vp (split(/\s*\,\s*/, $version->param("Provides"))) {
+	if ($version->has_pkglist("Provides")) {
+		foreach $vp (split(/\s*\,\s*/, $version->pkglist("Provides"))) {
 			$vpo = Fink::Package->package_by_name_create($vp);
 			$vpo->add_provider($version);
 		}

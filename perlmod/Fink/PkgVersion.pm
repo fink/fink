@@ -179,35 +179,6 @@ sub initialize {
 
 	$self->{_bootstrap} = 0;
 
-	# FIXME: Could most of this expand and conditional parsing be put
-	# off until later, perhaps as part of the param() accessor method?
-	# Provides must be done here, however, since we are possibly being
-	# called by Package::inject_description() which uses that field
-
-	# expand percents in various fields
-	$self->expand_percent_if_available('BuildDepends');
-	$self->expand_percent_if_available('Conflicts');
-	$self->expand_percent_if_available('Depends');
-	$self->expand_percent_if_available('Enhances');
-	$self->expand_percent_if_available('Pre-Depends');
-	$self->expand_percent_if_available('Provides');
-	$self->expand_percent_if_available('Recommends');
-	$self->expand_percent_if_available('Replaces');
-	$self->expand_percent_if_available('Suggests');
-
-	$self->conditional_pkg_list('BuildDepends');
-	$self->conditional_pkg_list('Conflicts');
-	$self->conditional_pkg_list('Depends');
-	$self->conditional_pkg_list('Enhances');
-	$self->conditional_pkg_list('Pre-Depends');
-	$self->conditional_pkg_list('Provides');
-	$self->conditional_pkg_list('Recommends');
-	$self->conditional_pkg_list('Replaces');
-	$self->conditional_pkg_list('Suggests');
-
-	$self->clear_self_from_list('Conflicts');
-	$self->clear_self_from_list('Replaces');
-
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if (exists $self->{parent}) {
 		# so it's a splitoff
@@ -223,34 +194,16 @@ sub initialize {
 		}
 
 		# handle inherited fields
-		our @inherited_fields =
+		our @inherited_pkglists =
 		 qw(Description DescDetail Homepage License);
 
-		foreach $field (@inherited_fields) {
+		foreach $field (@inherited_pkglists) {
 			$field = lc $field;
 			if (not $self->has_param($field) and $parent->has_param($field)) {
 				$self->{$field} = $parent->{$field};
 			}
 		}
 	} else {
-		# expand source / sourcerename fields
-		$source = $self->param_default("Source", "\%n-\%v.tar.gz");
-		if ($source eq "gnu") {
-			$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
-		} elsif ($source eq "gnome") {
-			$version =~ /(^[0-9]+\.[0-9]+)\.*/;
-			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
-		}
-		$self->{source} = $source;
-
-		$self->expand_percent_if_available("Source");
-		$self->expand_percent_if_available('SourceRename');
-	
-		for ($i = 2; $i<=$self->get_source_count; $i++) {
-			$self->expand_percent_if_available('Source'.$i);
-			$self->expand_percent_if_available('Source'.$i.'Rename');
-		}
-
 		# handle splitoff(s)
 		if ($self->has_param('splitoff')) {
 			$self->add_splitoff($self->{'splitoff'},"");
@@ -267,6 +220,51 @@ sub initialize {
 		}
 		$self->{_relatives} = $self->{_splitoffs};
 	}
+}
+
+### fields that are package lists need special treatment
+### use these accessors instead of param(), has_param(), param_default()
+
+# fields from which one's own package should be removed
+our %pkglist_no_self = ( 'conflicts' => 1,
+						 'replaces'  => 1
+					   );
+
+sub pkglist {
+	my $self = shift;
+	my $param_name = lc shift || "";
+
+	$self->expand_percent_if_available($param_name);
+	$self->conditional_pkg_list($param_name);
+	if (exists $pkglist_no_self{$param_name}) {
+		$self->clear_self_from_list($param_name);
+	}
+	$self->param($param_name);
+}
+
+sub pkglist_default {
+	my $self = shift;
+	my $param_name = lc shift || "";
+	my $default_value = shift;
+
+	$self->expand_percent_if_available($param_name);
+	$self->conditional_pkg_list($param_name);
+	if (exists $pkglist_no_self{$param_name}) {
+		$self->clear_self_from_list($param_name);
+	}
+	$self->param_default($param_name, $default_value);
+}
+
+sub has_pkglist {
+	my $self = shift;
+	my $param_name = lc shift || "";
+
+	$self->expand_percent_if_available($param_name);
+	$self->conditional_pkg_list($param_name);
+	if (exists $pkglist_no_self{$param_name}) {
+		$self->clear_self_from_list($param_name);
+	}
+	$self->has_param($param_name);
 }
 
 ### expand percent chars in the given field, if that field exists
@@ -584,9 +582,19 @@ sub get_source {
 	my $self = shift;
 	my $index = shift || 1;
 	if ($index < 2) {
-		return $self->param("Source") unless ($self->is_type('bundle') || $self->is_type('nosource'));
+		unless ($self->is_type('bundle') || $self->is_type('nosource')) {
+			my $source = $self->param_default("Source", "\%n-\%v.tar.gz");
+			if ($source eq "gnu") {
+				$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
+			} elsif ($source eq "gnome") {
+				$self->get_version =~ /(^[0-9]+\.[0-9]+)\.*/;
+				$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
+			}
+			$self->set_param("Source", $source);
+			return $self->get_param_with_expansion("Source");
+		}
 	} elsif ($index <= $self->get_source_count) {
-		return $self->param("Source".$index);
+		return $self->get_param_with_expansion("Source".$index);
 	}
 	return "none";
 }
@@ -595,7 +603,7 @@ sub get_source_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->get_source_count; $index++) {
- 	        my $source = get_source($self, $index);
+ 	        my $source = $self->get_source($index);
 	        push(@list, $source) unless $source eq "none";
 	}
 	return @list;
@@ -606,14 +614,14 @@ sub get_tarball {
 	my $index = shift || 1;
 	if ($index < 2) {
 		if ($self->has_param("SourceRename")) {
-			return $self->param("SourceRename");
+			return $self->get_param_with_expansion("SourceRename");
 		}
-		return &filename($self->param("Source")) unless ($self->is_type('bundle') || $self->is_type('nosource'));
+		return &filename($self->get_source()) unless ($self->is_type('bundle') || $self->is_type('nosource'));
 	} elsif ($index <= $self->get_source_count) {
 		if ($self->has_param("Source".$index."Rename")) {
-			return $self->param("Source".$index."Rename");
+			return $self->get_param_with_expansion("Source".$index."Rename");
 		}
-		return &filename($self->param("Source".$index));
+		return &filename($self->get_source($index));
 	}
 	return "none";
 }
@@ -622,7 +630,7 @@ sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->get_source_count; $index++) {
- 	        my $tarball = get_tarball($self, $index);
+ 	        my $tarball = $self->get_tarball($index);
 	        push(@list, $tarball) unless $tarball eq "none";
 	}
 	return @list;
@@ -972,7 +980,7 @@ sub resolve_depends {
 		# behavior differs from 'Depends'). 
 		# But right now, enabling conflicts would cause update problems (e.g.
 		# when switching between 'wget' and 'wget-ssl')
-		@speclist = split(/\s*\,\s*/, $self->param_default($field, ""));
+		@speclist = split(/\s*\,\s*/, $self->pkglist_default($field, ""));
 	}
 
 	if (lc($field) ne "conflicts") {
@@ -1026,7 +1034,7 @@ sub resolve_depends {
 	if ($include_build) {
 		# Add build time dependencies to the spec list
 		push @speclist,
-			split(/\s*\,\s*/, $self->param_default("Build".$field, ""));
+			split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our aplitoffs.
@@ -1036,7 +1044,7 @@ sub resolve_depends {
 		unless (lc($field) eq "conflicts") {
 			foreach	 $splitoff (@{$self->{_splitoffs}}) {
 				push @speclist,
-				split(/\s*\,\s*/, $splitoff->param_default($field, ""));
+				split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
 			}
 		}
 	}
@@ -1110,7 +1118,7 @@ sub resolve_conflicts {
 	@conflist = Fink::Package->package_by_name($self->get_name())->get_all_versions();
 
 	foreach $confname (split(/\s*\,\s*/,
-													 $self->param_default("Conflicts", ""))) {
+													 $self->pkglist_default("Conflicts", ""))) {
 		$package = Fink::Package->package_by_name($confname);
 		if (not defined $package) {
 			die "Can't resolve anti-dependency \"$confname\" for package \"".$self->get_fullname()."\"\n";
@@ -1128,7 +1136,7 @@ sub get_binary_depends {
 	# TODO: modify dependency list on the fly to account for minor
 	#	 library versions
 
-	$depspec = $self->param_default("Depends", "");
+	$depspec = $self->pkglist_default("Depends", "");
 
 	return &collapse_space($depspec);
 }
@@ -1929,8 +1937,12 @@ EOF
 
 	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
-										 Recommends Suggests Enhances
-										 Maintainer)) {
+										 Recommends Suggests Enhances)) {
+		if ($self->has_pkglist($field)) {
+			$control .= "$field: ".&collapse_space($self->pkglist($field))."\n";
+		}
+	}
+	foreach $field (qw(Maintainer)) {
 		if ($self->has_param($field)) {
 			$control .= "$field: ".&collapse_space($self->param($field))."\n";
 		}
