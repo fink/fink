@@ -5,6 +5,7 @@
 	* Package.pm: Fink::Package %package_hash -> $packages (Patch #831573).
 	* Base.pm, Config.pm: Fink::Config cleanup & documentation (Patch #832063).
 	* Validation.pm: Validate emacs packages (Patch #748665).
+	* Base.pm: Fink::Base docs and cleanup (Patch #832828).
 
 2003-11-06  Ben Hines <benh57@users.sourceforge.net>
 
