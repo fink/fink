@@ -1,3 +1,9 @@
+2003-11-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in:  Further sanity checking on sources.list file:
+	try to correct errors which might have been introduced when using
+	dselect to modify sources.list in the recent past.
+
 2003-11-04  Max Horn <max@quendi.de>
 
 	* Makefile: Dummy Makefile so we can do "make test" to run the unit tests.
