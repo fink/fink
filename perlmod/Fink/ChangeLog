@@ -1,3 +1,11 @@
+2003-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Type:splitoff is redundant: switch to checkiing
+	for presence of parent link. Now okay to use Type in splitoffs
+	(else inherits from parent). Added Type:none to clear.
+	* Validation.pm: Allow Type:none. Allow Type and UpdatePOD in
+	splitoffs.
+
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Service.pm: *don't* export "read_properties_lines".

@@ -75,7 +75,16 @@ sub initialize {
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
 
-	$self->{_type} = $type = lc $self->param_default("Type", "");
+	# inherit type
+	if (exists $self->{parent}) {
+		$type = lc $self->{parent}->param_default("Type", "");
+	} else {
+		$type = "";
+	}
+	$self->{_type} = $type = lc $self->param_default("Type", $type);
+	if ($type eq "none") {
+		$self->{_type} = $type = "";
+	}
 	# split off language version number, when given with the type
 	# Presume we have passed validation which is quite explicit
 	# about allowed major and minor (language version) values
@@ -150,7 +159,7 @@ sub initialize {
 			$self->param_default("ConfigureParams", "");
 	}
 	$destdir = "$buildpath/root-".$self->{_fullname};
-	if ($self->{_type} eq "splitoff") {
+	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
 		$parentpkgname = $parent->{_name};
 		$parentdestdir = "$buildpath/root-".$parent->{_fullname};
@@ -203,7 +212,7 @@ sub initialize {
 	$self->expand_percent_if_available('Package');
 
 	# from here on we have to distinguish between "real" packages and splitoffs
-	if ($self->{_type} eq "splitoff") {
+	if (exists $self->{parent}) {
 		# so it's a splitoff
 		my ($parent, $field);
 
@@ -303,8 +312,7 @@ sub add_splitoff {
 	$properties->{'revision'} = $self->{_revision};
 	$properties->{'epoch'} = $self->{_epoch};
 	
-	# set the type, and link the splitoff to its "parent" (=us)
-	$properties->{'type'} = "splitoff";
+	# link the splitoff to its "parent" (=us)
 	$properties->{parent} = $self;
 	
 	# get/create package object for the splitoff
@@ -358,7 +366,7 @@ sub disable_bootstrap {
 	$self->{_expand}->{p} = $basepath;
 	$self->{_expand}->{d} = $destdir;
 	$self->{_expand}->{i} = $destdir.$basepath;
-	if ($self->{_type} eq "splitoff") {
+	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
 		my $parentdestdir = "$buildpath/root-".$parent->{_fullname};
 		$self->{_expand}->{D} = $parentdestdir;
@@ -733,7 +741,7 @@ sub resolve_depends {
 
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list. In 
-	if ($include_build and $self->{_type} eq "splitoff") {
+	if ($include_build and exists $self->{parent}) {
 		push @deplist, ($self->{parent})->resolve_depends(2, $op, $field, $forceoff);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
@@ -1013,7 +1021,7 @@ sub phase_fetch {
 			$self->{_type} eq "dummy") {
 		return;
 	}
-	if ($self->{_type} eq "splitoff") {
+	if (exists $self->{parent}) {
 		($self->{parent})->phase_fetch($conditional, $dryrun);
 		return;
 	}
@@ -1115,7 +1123,7 @@ sub phase_unpack {
 		die "can't build ".$self->get_fullname().
 			" because no package description is available\n";
 	}
-	if ($self->{_type} eq "splitoff") {
+	if (exists $self->{parent}) {
 		($self->{parent})->phase_unpack();
 		return;
 	}
@@ -1325,7 +1333,7 @@ sub phase_patch {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
-	if ($self->{_type} eq "splitoff") {
+	if (exists $self->{parent}) {
 		($self->{parent})->phase_patch();
 		return;
 	}
@@ -1411,7 +1419,7 @@ sub phase_compile {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
-	if ($self->{_type} eq "splitoff") {
+	if (exists $self->{parent}) {
 		($self->{parent})->phase_compile();
 		return;
 	}
@@ -1457,7 +1465,7 @@ sub phase_install {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
-	if ($self->{_type} eq "splitoff" and not $do_splitoff) {
+	if (exists $self->{parent} and not $do_splitoff) {
 		($self->{parent})->phase_install();
 		return;
 	}
@@ -1493,7 +1501,7 @@ sub phase_install {
 			$install_script = "";
 			# Now run the custom install script
 			$self->run_script($self->param("InstallScript"), "installing");
-		} elsif ($self->param("_type") eq "perl") {
+		} elsif (!exists $self->{parent} and $self->param("_type") eq "perl") {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
@@ -1660,7 +1668,7 @@ sub phase_build {
 		die "can't build ".$self->get_fullname().
 				" because no package description is available\n";
 	}
-	if ($self->{_type} eq "splitoff" and not $do_splitoff) {
+	if (exists $self->{parent} and not $do_splitoff) {
 		($self->{parent})->phase_build();
 		return;
 	}
@@ -2323,7 +2331,7 @@ sub get_splitoffs {
 		die("no package found for specification '$name'!\n");
 	}
 
-	if ($package->{_type} eq "splitoff") {
+	if (exists $package->{parent}) {
 		$package = $package->{parent};
 	}
 
