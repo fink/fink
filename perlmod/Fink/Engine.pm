@@ -1074,6 +1074,7 @@ sub real_install {
       $to_be_rebuilt{$pkgname} |= not $package->is_present();
       if (not $to_be_rebuilt{$pkgname} and defined $parent) {
 	foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
+	  next unless exists $to_be_rebuilt{$pkg->get_name()};
 	  $to_be_rebuilt{$pkgname} |= $to_be_rebuilt{$pkg->get_name()};
 	  last if $to_be_rebuilt{$pkgname}; # short circuit
 	}
