@@ -374,6 +374,10 @@ sub match_package {
   my ($found, @parts, $i, @vlist, $v, @rlist);
 
 
+  if (not $config->param_boolean("Verbose")) {
+    $quiet = 1;
+  }
+
   # first, search for package
   $found = 0;
   $package = Fink::Package->package_by_name($s);
@@ -400,7 +404,6 @@ sub match_package {
     return undef;
   }
 
-  # DEBUG
   print "pkg $pkgname  version $version\n"
     unless $quiet;
 
