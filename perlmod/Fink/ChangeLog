@@ -1,3 +1,10 @@
+2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	*SelfUpdate.pm: Modify the "point" selfupdate method so that the
+	version number information which it retrieves from the Fink
+	website is specific to which distribution is the current one
+	(e.g., whether we are running 10.2 or 10.2-gcc3.3).
+
 2003-10-21  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* PkgVersion.pm: Fixed a problem with perlmodules where when
