@@ -3,6 +3,7 @@ Version: 5.50
 Revision: 1
 Maintainer: Dave Vasilevsky <vasi@users.sourceforge.net>
 License: BSD
+Essential: yes
 Source: mirror:sourceforge:%n550.tar.gz
 Source-MD5: 798592d62e37f92571184236947122ed
 SourceDirectory: %n-%v
