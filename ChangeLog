@@ -1,3 +1,7 @@
+2002-08-11  Max Horn  <max@quendi.de>
+
+	* fink.8.in, USAGE, USAGE.html: Updated description of the remove command.
+
 2002-08-05  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.10.0

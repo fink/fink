@@ -1,4 +1,4 @@
-Generated from $Fink: usage.xml,v 1.10 2002/01/24 20:32:57 fingolfin Exp $
+Generated from $Fink: usage.xml,v 1.11 2002/04/13 21:14:22 fingolfin Exp $
 
  Fink Usage
 ============
@@ -60,10 +60,10 @@ these for historic reasons.)
  remove
 --------
 The remove command removes packages from the system by calling 'dpkg
---remove'. The current implementation has several fundamental flaws. It only
-works on packages Fink knows about (i.e. .info file is present). It doesn't
-check dependencies. It makes one dpkg invocation per packages, thus not
-allowing dpkg to reorder according to dependencies.
+--remove'. The current implementation has some flaws: It only works on
+packages Fink knows about (i.e. where an .info file is present); and it
+doesn't check dependencies itself but rather completly leaves that to the
+dpkg tool (usually this poses no problem, though).
 
 The remove command only removes the actual package files, but leaves the
 .deb compressed package file intact. This means that you can re-install the

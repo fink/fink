@@ -70,10 +70,10 @@ Aliases:
 .It Cm remove Ar package...
 The remove command removes packages from the system by calling
 .Ql "dpkg --remove".
-The current implementation has several fundamental flaws. It only
-works on packages Fink knows about (i.e. .info file is present). It doesn't
-check dependencies. It makes one dpkg invocation per packages, thus not
-allowing dpkg to reorder according to dependencies.
+The current implementation has some flaws: It only works on
+packages Fink knows about (i.e. where an .info file is present); and it
+doesn't check dependencies itself but rather completly leaves that to the
+dpkg tool (usually this poses no problem, though).
 .Pp
 The remove command only removes the actual package files, but leaves the .deb
 compressed package file intact. This means that you can re-install the
