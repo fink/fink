@@ -1,4 +1,4 @@
-2003-11-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Makefile, fink.info.in: Modification of strategy for running the
 	test suite.  We now check for the presence of Test::More before
@@ -6,7 +6,7 @@
 	but will work at other times.  (Avoids the problems of introducing
 	new packages as essential.)
 
-2003-11-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.info.in, bootstrap.pl: Run the test suite while building
 	fink.  (Requires new bootstrap packages file-spec-pm, test-simple-pm, 
