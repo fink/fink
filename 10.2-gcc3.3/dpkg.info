@@ -1,23 +1,23 @@
 Package: dpkg
-Version: 1.10.9
-Revision: 100
+Version: 1.10.21
+Revision: 101
 GCC: 3.3
 Depends: gettext, libiconv, gzip, tar, ncurses (>= 5.3-12)
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
+Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: %n-%v
-Source-MD5: ecd7d51416837f8910314ccb62e39dc2
+Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchScript: sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
- %p/bin/fink -y install gettext-dev libiconv-dev ncurses-dev
- ./configure %m-apple-darwin %c
+ %p/bin/fink -y install gettext-bin gettext-dev libiconv-dev ncurses-dev
+ PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
  make EXEFLAGS=-force_flat_namespace
 <<
-ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
+ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<
  mkdir -p %i/share/doc/dpkg
  make install DESTDIR=%d
@@ -43,6 +43,10 @@ unimplemented functions on Darwin and other stuff.
 Added code to support the pseudo package 'macosx' and 'darwin'.
 
 Fix to install-info script to prevent a certain problem with section titles.
+
+Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $prefix.
+
+Patched to suppress warning about BuildDependsOnly control field.
 
 Previous versions by Christoph Pfisterer.
 <<
