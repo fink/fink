@@ -125,6 +125,39 @@ sub initialize {
 		$self->{$hash->{package}} = $hash;
 	}
 
+	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+	# create dummy object for java
+	if (opendir(DIR, $javadir)) {
+		for my $dir ( sort readdir(DIR)) {
+			chomp($dir);
+			next if ($dir =~ /^\.\.?$/);
+			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
+				# chop the version down to major/minor without dots
+				my $ver = $dir;
+				$ver =~ s/[^\d]+//g;
+				$ver =~ s/^(..).*$/$1/;
+				$hash = {};
+				$hash->{package}     = "java${ver}";
+				$hash->{status}      = "install ok installed";
+				$hash->{version}     = $dir . "-1";
+				$hash->{description} = "[virtual package representing Java $dir]";
+				$self->{$hash->{package}} = $hash;
+
+				if (-d $javadir . '/' . $dir . '/Headers') {
+					$hash = {};
+					$hash->{package}     = "java${ver}-dev";
+					$hash->{status}      = "install ok installed";
+					$hash->{version}     = $dir . "-1";
+					$hash->{description} = "[virtual package representing Java $dir development headers]";
+					$self->{$hash->{package}} = $hash;
+				} else {
+					warn "WARNING: you have Java $dir but no corresponding SDK!\n";
+				}
+			}
+		}
+		closedir(DIR);
+	}
+
 	# create dummy object for cctools version, if version was found in Config.pm
 	if (defined ($cctools_version)) {
 		$hash = {};
