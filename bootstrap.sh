@@ -47,6 +47,13 @@ if [ ! -d perlmod/Fink ]; then
   exit 1
 fi
 
+### create FinkVersion.pm for bootstrap
+
+if [ ! -f perlmod/Fink/FinkVersion.pm ]; then
+  version=`cat VERSION`
+  sed -e "s|@VERSION@|$version|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
+fi
+
 ### start bootstrap.pl
 
 if [ ! -x bootstrap.pl ]; then
