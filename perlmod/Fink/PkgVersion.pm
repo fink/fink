@@ -3368,8 +3368,7 @@ sub get_ruby_dir_arch {
 	return ($rubydirectory, $rubyarchdir, $rubycmd);
 }
 
-### FIXME shlibs, this should get renamed to get_debdeps
-### and moved to shlibs.pm or snd other pm
+### FIXME shlibs, crap no longer needed keeping for now incase the pdb needs it
 sub get_debdeps {
 	my $wantedpkg = shift;
 	my $field = "Depends";
