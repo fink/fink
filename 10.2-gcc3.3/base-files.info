@@ -1,10 +1,10 @@
 Package: base-files
-Version: 1.9.2
+Version: 1.9.4
 Revision: 1
 Source: mirror:custom:fink/%n-%v.tar.gz
 
 Essential: yes
-Source-MD5: fad89eb6ec4a27a870b1aa7eb713d9cc
+Source-MD5: 59b02defa72ea5c3c1fcabaf945b2990
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 #
@@ -29,4 +29,3 @@ CustomMirror: <<
  nam-US: http://us.dl.sourceforge.net/sourceforge/
  eur: http://eu.dl.sourceforge.net/sourceforge/
 <<
-
