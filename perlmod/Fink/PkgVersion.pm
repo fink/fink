@@ -1130,19 +1130,41 @@ sub find_debfile {
 
 ### get dependencies
 
-# Possible parameters:
-# 0 - return runtime dependencies only
-# 1 - return runtime & build dependencies
-# 2 - return build dependencies only
+# usage: @deplist = $self->resolve_depends($include_build, $field, $forceoff);
+# where:
+#   $self is a PkgVersion object
+#   $include_build indicates what type of dependencies one wants:
+#     0 - return runtime dependencies only (default if undef)
+#     1 - return runtime & build dependencies
+#     2 - return build dependencies only
+#   $field is either "depends" or "conflicts" (case-insensitive)
+#   $forceoff is a boolean (default is false) that indicates...something
+#   @deplist is list of refs to lists of PkgVersion objects
+#     @deplist joins the referenced lists as logical AND
+#     each referenced list is joined as logical OR
+#     In "depends" mode, must have at least one of each sublist installed
+#     In "conflicts" mode, must have none of any sublist installed
+#     (but makes no sense to have logical OR in a *Conflicts field)
+
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
 	my $field = shift;
 	my $forceoff = shift || 0;
-	my (@speclist, @deplist, $altlist);
-	my ($altspecs, $depspec, $depname, $versionspec, $package);
-	my ($splitoff, $idx, $split_idx);
-	my ($oper, $found, @altspec, $loopcount);
+
+	my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
+	my $altspecs;   # iterator for looping through @speclist
+	my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
+	my $depspec;    # iterator for looping through @altspec
+	my ($depname, $versionspec); # components of a single pkg specifier 
+	my $package;    # Package object for a $depname
+	my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
+	my @deplist;    # list of lists of PkgVersion objects to be returned
+
+	my ($splitoff, $idx, $split_idx); # used for merging in splitoff-pkg data
+	my ($found, $loopcount); # status while looping through an OR cluster
+	my $oper;       # used in error and warning messages
+
 	if (lc($field) eq "conflicts") {
 		$oper = "conflict";
 	} elsif (lc($field) eq "depends") {
@@ -1155,7 +1177,7 @@ sub resolve_depends {
 	$split_idx = 0;
 
 	# If this is a splitoff, and we are asked for build depends, add the build deps
-	# of the master package to the list. In 
+	# of the master package to the list.
 	if ($include_build and exists $self->{parent}) {
 		push @deplist, ($self->{parent})->resolve_depends(2, $field, $forceoff);
 		if ($include_build == 2) {
@@ -1233,7 +1255,7 @@ sub resolve_depends {
 			split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
 		# If this is a master package with splitoffs, and build deps are requested,
-		# then add to the list the deps of all our aplitoffs.
+		# then add to the list the deps of all our splitoffs.
 		# We remember the offset at which we added these in $split_idx, so that we
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;

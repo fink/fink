@@ -2000,7 +2000,7 @@ sub cmd_show_deps {
 
 		print "  The following other packages must not be installed:\n";
 		&show_deps_display_list(
-			[qw/ Conflicts BuildConflicts /],
+			[qw/ BuildConflicts /],
 			[ $pkg, @relatives ],
 			1
 		);
