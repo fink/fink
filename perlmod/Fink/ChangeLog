@@ -1,4 +1,4 @@
-2004-03-05  Daniel Macks  <dmacks@netspace.org>
+2004-03-06  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Move handling of Source(N) and Source(N)Rename
 	default-handling and percent-expansion from the initialization
