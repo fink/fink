@@ -1,6 +1,7 @@
 2004-08-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: (backport) fix XCode 1.5 cctools version detection
+	* PkgVersion.pm: Backported system-java changes from HEAD.
 
 2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
