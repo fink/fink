@@ -793,6 +793,10 @@ sub validate_info_file {
 # - If a package contains pkg-config .pc files, it should Depends:pkgconfig
 # - Check presence and execute-flag on executable specified in daemonicfile
 # - If a package contains a daemonicfile, it should Depends:daemonic
+# - Check for symptoms of running update-scrollkeeper during package building
+# - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
+# - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:scrollkeeper
+
 # - ideas?
 #
 sub validate_dpkg_file {
@@ -816,6 +820,8 @@ sub validate_dpkg_file {
 	my $looks_good = 1;
 	my $installed_headers = 0;
 	my $installed_dylibs = 0;
+	my $scrollkeeper_misuse_warned = 0;
+	my @omf_sources;
 
 	print "Validating .deb file $dpkg_filename...\n";
 	
@@ -867,6 +873,8 @@ sub validate_dpkg_file {
 				$installed_headers = 1;
  			} elsif ( $filename =~/\.dylib$/ ) {
  				$installed_dylibs = 1;
+			} elsif ( $filename =~/^$basepath\/share\/omf\/.*\.omf/ ) {
+				push @omf_sources, $filename;
 			} elsif ( $filename =~/^$basepath\/lib\/pkgconfig\/\S+$/ ) {
 				my $depends = `dpkg --field $dpkg_filename Depends`;
 				$depends =~ s/\(.*?\)//g;
@@ -912,6 +920,11 @@ sub validate_dpkg_file {
 					}
 				}
 				close(DAEMONIC_FILE) or die "Error on close: ", $?>>8, " $!\n";
+			} elsif ( $filename =~ /^$basepath\/var\/scrollkeeper/ ) {
+				if (not $scrollkeeper_misuse_warned++) {
+					print "Warning: Found $basepath/var/scrollkeeper, which usually results from calling\nscrollkeeper-update during CompileScript or InstallScript. See the\nscrollkeeper package docs for information on the correct use of that utilty.\n";
+					$looks_good = 0;
+				}
 			}
 		}
 	}
@@ -927,6 +940,24 @@ sub validate_dpkg_file {
 			print "Warning: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
 		}
+	}
+
+	# scrollkeeper-update should be called from PostInstScript and PostRmScript
+	if (grep { /^\s*scrollkeeper-update/ } `dpkg -I $dpkg_filename PreInst PreRm 2>/dev/null`) {
+		print "Warning: scrollkeeper-update in PreInstScript or PreRmScript is a no-op\nSee scrollkeeper package docs for more information\n";
+		$looks_good = 0;
+	}
+	if (grep { /^\s*scrollkeeper-update/ } `dpkg -I $dpkg_filename PostInst PostRm 2>/dev/null`) {
+		my $depends = `dpkg --field $dpkg_filename Depends`;
+		$depends =~ s/\(.*?\)//g;
+		$depends =~ s/(\A|\s*[,|]\s*|\Z)/ /g;
+		if (not $depends =~ / scrollkeeper /) {
+			print "Warning: Calling scrollkeeper-update requires \"Depends:scrollkeeper\"\n";
+			$looks_good = 0;
+		}
+	} elsif (@omf_sources) {
+		print "Warning: scrollkeeper source file(s) found, but scrollkeeper-update not called\nby control scripts. See scrollkeeper package docs for more information.\n",map "  $_\n", @omf_sources;
+		$looks_good = 0;
 	}
 
 	if ($looks_good and Fink::Config::verbosity_level() == 3) {

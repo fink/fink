@@ -1,3 +1,9 @@
+2004-07-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: For .deb, check scrollkeeper-update usage: must
+	be run by .deb control scripts (Post{Inst,Rm}), not in pkg build
+	phase; needs Depends:scrollkeeper
+
 2004-07-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: fixes to my allowed-dirs changes.
