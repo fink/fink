@@ -3068,7 +3068,9 @@ EOMSG
 
 		# Failure due to depenendecy problems leaves lockpkg in an
 		# "unpacked" state, so try to remove it entirely.
-		if (`dpkg-query -W $lockpkg 2>/dev/null` eq "$lockpkg\t$timestamp") {
+		my $old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
+		chomp $old_lock;
+		if ($old_lock eq "$lockpkg\t$timestamp") {
 			# only clean up residue from our exact lockpkg
 			&execute("dpkg -r $lockpkg") and
 				&print_breaking('You can probably ignore that last message from "dpkg -r"');
@@ -3086,7 +3088,7 @@ EOMSG
 	die "buildlock failure\n" if $lock_failed;
 
 	# successfully get lock, so record ourselves
-	$self->{_lockpkg} = $lockpkg;
+	$self->{_lockpkg} = [$lockpkg, $timestamp];
 
 	# keep global record so can remove lock if build dies
 	Fink::Config::set_options( { "Buildlock_PkgVersion" => $self } );
@@ -3116,15 +3118,28 @@ sub clear_buildlock {
 	my $lockpkg = $self->{_lockpkg};
 	return if !defined $lockpkg;
 
-	# remove $lockpkg (== clear lock for building $self)
+	my $timestamp = $lockpkg->[1];
+	$lockpkg = $lockpkg->[0];
+
+	# remove lockpkg (== clear lock for building $self)
 	print "Removing build lock...\n";
-	if (&execute("dpkg -r $lockpkg")) {
-		&print_breaking("WARNING: Can't remove package ".
-						"$lockpkg. ".
-						"This is not fatal, but you may want to remove ".
-						"the package manually as it may interfere with ".
-						"further fink operations. ".
-						"Continuing with normal procedure.");
+
+	my $old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
+	chomp $old_lock;
+	if ($old_lock ne "$lockpkg\t$timestamp") {
+		# don't trample some other timestamp's lock
+		&print_breaking("WARNING: The lock has a different timestamp. Not ".
+						" removing it, as it likely belongs to a different ".
+						"fink process. This should not ever happen.");
+	} else {
+		if (&execute("dpkg -r $lockpkg")) {
+			&print_breaking("WARNING: Can't remove package ".
+							"$lockpkg. ".
+							"This is not fatal, but you may want to remove ".
+							"the package manually as it may interfere with ".
+							"further fink operations. ".
+							"Continuing with normal procedure.");
+		}
 	}
 
 	# we're gone

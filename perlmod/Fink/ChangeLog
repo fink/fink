@@ -1,5 +1,10 @@
 2005-02-17  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Also store $timestamp in _lockpkg; *always*
+	verify timestamp before removing lockpkg.
+
+2005-02-17  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: if buildlock installation fails, only remove
 	residue if it is from the same lock.
 
