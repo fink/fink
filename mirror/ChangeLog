@@ -1,3 +1,7 @@
+2001-02-19  Christoph Pfisterer  <cp@chrisp.de>
+
+	* gnu (Primary): Typo in URL fixed.
+
 2001-02-18  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Released version 0.1.5. Started using CVS and ChangeLogs.
