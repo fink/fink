@@ -72,7 +72,7 @@ sub initialize {
   $self->{$hash->{package}} = $hash;
   
   # create dummy object for system version, if this is OS X at all
-  if ($macosx_version > 0) {
+  if ($macosx_version ne 0) {
 	$hash = {};
 	$hash->{package} = "macosx";
 	$hash->{status} = "install ok installed";
