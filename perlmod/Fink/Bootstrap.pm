@@ -176,6 +176,7 @@ sub check_host {
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.3";
+#		$distribution = "10.2";
 	} elsif ($host =~ /^i386-apple-darwin(6\.[0-6]|[7-9]\.)/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".
