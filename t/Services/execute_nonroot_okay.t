@@ -82,7 +82,11 @@ cmp_ok( &execute("touch $tmpdir/f3", nonroot_okay=>0),
  SKIP: {
      Fink::Config::set_options( {'build_as_nobody' => 1} );
      skip "You must be root for this test", 1 if $> != 0;
-     cmp_ok( &execute("/usr/bin/touch $tmpdir", nonroot_okay=>1),
+     my $file = "$tmpdir/f6";
+     open FOO, ">$file";
+     close FOO;
+     chmod 0666, $file;  # create a file that all users can touch
+     cmp_ok( &execute("touch $file", nonroot_okay=>1),
 	     '==', 0,
 	     'user "nobody" can do this and build_as_nobody enabled'
 	   );
