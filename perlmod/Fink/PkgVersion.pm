@@ -930,6 +930,15 @@ sub get_splitoffs {
 	return @list;
 }
 
+# returns the parent of the family
+
+sub get_family_parent {
+	my $self = shift;
+	return exists $self->{parent}
+		? $self->{parent}
+		: $self;
+}
+
 # returns whether this fink package is of a given Type:
 
 sub is_type {
@@ -2289,8 +2298,8 @@ sub phase_build {
 	# generate dpkg "control" file
 
 	my ($pkgname, $parentpkgname, $version, $field, $section, $instsize);
-	$parentpkgname = $pkgname = $self->get_name();
-	$parentpkgname = $self->{parent}->get_name() if exists $self->{parent};
+	$pkgname = $self->get_name();
+	$parentpkgname = $self->get_family_parent->get_name();
 	$version = $self->get_fullversion();
 	$section = $self->get_section();
 	$instsize = $self->get_instsize("$destdir$basepath");	# kilobytes!
@@ -2945,39 +2954,14 @@ Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
 Provides: fink-buildlock
 EOF
 
-	my( @pkglist, $deplist );
-
-	# BuildConflicts of parent pkg are Conflicts of lockpkg
-	if (exists $self->{parent}) {
-		@pkglist = @{pkglist2lol($self->{parent}->pkglist('BuildConflicts'))};
-	} else {
-		@pkglist = @{pkglist2lol($self->pkglist('BuildConflicts'))};
+	# build (anti)dependencies of pkg family are "real" (anti)dependencies of lockpkg
+	my $parent_pkg = $self->get_family_parent;
+	foreach my $field (qw(Conflicts Depends)) {
+		my $build_field = "Build$field";
+		if ($parent_pkg->has_pkglist($build_field)) {
+			$control .= "$field: ".&collapse_space($parent_pkg->pkglist($build_field))."\n";
+		}
 	}
-	$deplist = &lol2pkglist(\@pkglist);
-	$control .= "Conflicts: $deplist\n" if length $deplist;
-
-	# All *Depends of whole family of pkgs are Depends of lockpkg...
-	@pkglist = ();
-	foreach my $pkg ($self->get_splitoffs(1,1)) {
-		push @pkglist, map { @{&pkglist2lol($pkg->pkglist($_))} } (qw(Depends Pre-Depends BuildDepends));
-	}
-
-	# ...but remove pkgs being built now (avoid chicken-and-egg)
-	my $pkgregex = join "|", map { quotemeta($_->get_name()) } $self->get_splitoffs(1,1);
-	$pkgregex = qr/^(?:$pkgregex)(?:\s*\(|\Z)/;  # a pkglist atom of any of us
-	foreach my $deplist (@pkglist) {
-		# nuke the whole OR cluster if any atom matches
-		# ($deplist is the listref value from @depends so changing
-		# $deplist changes the list linked from @depends; no need
-		# to edit @depends directly)
-		$deplist = [] if grep { /$pkgregex/ } @$deplist;
-	}
-
-	$deplist = &lol2pkglist(\@pkglist);
-	### FIXME shlibs, remove {SHLIB_DEPS} need to fix this regex
-	$deplist =~ s/^\{SHLIB_DEPS\},? ?//g;
-	$deplist =~ s/,? ?\{SHLIB_DEPS\}//g;
-	$control .= "Depends: $deplist\n" if length $deplist;
 
 	### write "control" file
 	open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file for $lockpkg: $!\n";

@@ -1,3 +1,12 @@
+2005-02-03  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change set_buildlock so that Depends are not
+	included. Implement get_family_parent().
+
+2005-02-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Notify/Growl.pm: add support for new images, and sticky defaults
+
 2005-02-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Only notify on success if Fink has been around for a
@@ -6,11 +15,6 @@
 2005-02-02  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Warn if used debconf but no Depends:debconf.
-
-2005-02-02  Daniel Macks  <dmacks@netspace.org>
-
-	* Notify.pm: Make notify() only respond to a notifier's declared
-	events() list of events.
 
 2005-02-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
