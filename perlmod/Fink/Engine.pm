@@ -1066,7 +1066,7 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
+			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
 			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
 		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
@@ -1076,7 +1076,7 @@ sub real_install {
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
+			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)

@@ -1,6 +1,8 @@
 2003-12-23  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Fixed fink list --help output since some of it was wrong.
+	* Engine.pm: Fixed fink build only checking builddepends: this can't
+	happen since -shlibs are needed at build time as well as other things.
 
 2003-12-23  Daniel Macks <dmacks@netspace.org>
 
