@@ -1278,8 +1278,10 @@ sub phase_compile {
 		}
 		$compile_script =
 			"perl$perlversion Makefile.PL PERL=perl$perlversion PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/darwin INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/darwin INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin\n".
-			"make\n".
-			"make test";
+			"make\n";
+			unless ($self->has_param("NoPerlTests")) {
+				$compile_script .= "make test";
+			}
 	} else {
 		$compile_script = 
 			"./configure \%c\n".
