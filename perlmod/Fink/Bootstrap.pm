@@ -56,9 +56,10 @@ Fink::Bootstrap - Bootstrap a fink installation
 
   use Fink::Bootstrap qw(:ALL);
 
+	my $distribution = check_host($host);
+	my $result = inject_package($package, $packagefiles, $info_script, $param);
 	bootstrap();
 	my $bsbase = get_bsbase();
-	my $distribution = check_host($host);
 	my $result = check_files();
 	my $packagefiles = fink_packagefiles();
 	my ($notlocated, $basepath) = locate_Fink();
@@ -68,7 +69,6 @@ Fink::Bootstrap - Bootstrap a fink installation
 	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination);
-	my $result = inject_package($package, $packagefiles, $info_script, $param);
 
 =head1 DESCRIPTION
 
@@ -86,121 +86,6 @@ These functions are exported on request.  You can export them all with
 
 
 =over 4
-
-=item bootstrap 
-
-	bootstrap();
-
-The primary bootstrap routine, called by bootstrap.pl.
-
-=cut
-
-sub bootstrap {
-	my ($bsbase, $save_path);
-	my ($pkgname, $package, @elist);
-	my @plist = ("gettext", "tar", "dpkg-bootstrap");
-	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "ncurses-dev");
-	if ("$]" == "5.006") {
-		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
-	} elsif ("$]" == "5.006001") {
-		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
-	} elsif ("$]" == "5.008") {
-	} elsif ("$]" == "5.008001") {
-	} elsif ("$]" == "5.008002") {
-	} elsif ("$]" == "5.008006") {
-	} else {
-		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
-	}
-
-	$bsbase = &get_bsbase();
-	&print_breaking("Bootstrapping a base system via $bsbase.");
-
-	# create directories
-	if (-e $bsbase) {
-		rm_rf $bsbase;
-	}
-	mkdir_p "$bsbase/bin", "$bsbase/sbin", "$bsbase/lib";
-
-	# create empty dpkg database
-	mkdir_p "$basepath/var/lib/dpkg";
-	touch "$basepath/var/lib/dpkg/status",
-	      "$basepath/var/lib/dpkg/available",
-	      "$basepath/var/lib/dpkg/diversions";
-
-	# set paths so that everything is found
-	$save_path = $ENV{PATH};
-	$ENV{PATH} = "$basepath/sbin:$basepath/bin:".
-				 "$bsbase/sbin:$bsbase/bin:".
-				 $save_path;
-
-	# disable UseBinaryDist during bootstrap
-	Fink::Config::set_options( { 'use_binary' => -1 });
-
-	# make sure we have the package descriptions
-	Fink::Package->require_packages();
-
-	# determine essential packages
-	@elist = Fink::Package->list_essential_packages();
-
-
-	print "\n";
-	&print_breaking("BOOTSTRAP PHASE ONE: download tarballs.");
-	print "\n";
-
-	# use normal install routines
-	Fink::Engine::cmd_fetch_missing(@plist, @elist, @addlist);
-
-
-	print "\n";
-	&print_breaking("BOOTSTRAP PHASE TWO: installing neccessary packages to ".
-					"$bsbase without package management.");
-	print "\n";
-
-	# install the packages needed to build packages into the bootstrap tree
-	foreach $pkgname (@plist) {
-		$package = Fink::PkgVersion->match_package($pkgname);
-		unless (defined $package) {
-			die "no package found for specification '$pkgname'!\n";
-		}
-
-		$package->enable_bootstrap($bsbase);
-		$package->phase_unpack();
-		$package->phase_patch();
-		$package->phase_compile();
-		$package->phase_install();
-		$package->disable_bootstrap();
-	}
-
-
-	print "\n";
-	&print_breaking("BOOTSTRAP PHASE THREE: installing essential packages to ".
-					"$basepath with package management.");
-	print "\n";
-
-	# use normal install routines, but do not use buildlocks
-	Fink::Config::set_options( { 'no_buildlock' => 1 } );
-	Fink::Engine::cmd_install(@elist, @addlist);
-	Fink::Config::set_options( { 'no_buildlock' => 0 } );
-
-	print "\n";
-	&print_breaking("BOOTSTRAP DONE. Cleaning up.");
-	print "\n";
-	rm_rf $bsbase;
-
-	$ENV{PATH} = $save_path;
-}
-
-=item get_bsbase
-
-	my $bsbase = get_bsbase();
-
-Returns the base path for bootstrapping.  Called by bootstrap().
-
-=cut
-
-sub get_bsbase {
-	return "$basepath/bootstrap";
-}
 
 =item check_host
 
@@ -317,6 +202,212 @@ $gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrap
 	}
 
 	return $distribution;
+}
+
+=item inject_package
+
+	my $result = inject_package($package, $packagefiles, $info_script, $param);
+
+The primary routine to update a fink installation, called by inject.pl.
+Returns 0 on success, 1 on failure.
+
+=cut
+
+sub inject_package {
+	
+	import Fink::Services qw(&read_config);
+	require Fink::Config;
+	
+	my $package = shift;
+	my $packagefiles = shift;
+	my $info_script = shift;
+	
+	### locate Fink installation
+	
+	my $param = shift;
+
+my ($notlocated, $bpath) = &locate_Fink($param); 	
+
+	if ($notlocated) {
+		return 1;
+	}
+	
+	### get version
+	
+	my ($packageversion, $packagerevision) = &get_packageversion();
+	
+	### load configuration
+	
+	my $config = &read_config("$bpath/etc/fink.conf",
+							  { Basepath => $bpath });
+	
+	### parse config file for root method
+
+	&find_rootmethod($bpath);
+	
+	### check that local/injected is in the Trees list
+	
+	my $trees = $config->param("Trees");
+	if ($trees =~ /^\s*$/) {
+		print "Adding a Trees line to fink.conf...\n";
+		$config->set_param("Trees", "local/main stable/main stable/crypto local/injected");
+		$config->save();
+	} else {
+		if (grep({$_ eq "local/injected"} split(/\s+/, $trees)) < 1) {
+			print "Adding local/injected to the Trees line in fink.conf...\n";
+			$config->set_param("Trees", "$trees local/injected");
+			$config->save();
+		}
+	}
+	
+	### create tarball for the package
+	
+	my $result = &create_tarball($bpath, $package, $packageversion, $packagefiles);
+	if ($result == 1 ) {
+		return $result;
+	}
+	
+	### create and copy description file
+	
+	$result = &copy_description($info_script, $bpath, $package, $packageversion, $packagerevision);
+	if ($result == 1 ) {
+		return $result;
+	}
+	
+	### install the package
+	
+	print "Installing package...\n";
+	print "\n";
+	
+	if (&execute("$bpath/bin/fink install $package")) {
+		print "\n";
+		&print_breaking("Installing the new $package package failed. ".
+		  "The description and the tarball were installed, though. ".
+		  "You can retry at a later time by issuing the ".
+		  "appropriate fink commands.");
+	} else {
+		print "\n";
+		&print_breaking("Your Fink installation in '$bpath' was updated with ".
+		  "a new $package package.");
+	}
+	print "\n";
+	
+	return 0;
+}
+
+=item bootstrap 
+
+	bootstrap();
+
+The primary bootstrap routine, called by bootstrap.pl.
+
+=cut
+
+sub bootstrap {
+	my ($bsbase, $save_path);
+	my ($pkgname, $package, @elist);
+	my @plist = ("gettext", "tar", "dpkg-bootstrap");
+	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "ncurses-dev");
+	if ("$]" == "5.006") {
+		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
+	} elsif ("$]" == "5.006001") {
+		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
+	} elsif ("$]" == "5.008") {
+	} elsif ("$]" == "5.008001") {
+	} elsif ("$]" == "5.008002") {
+	} elsif ("$]" == "5.008006") {
+	} else {
+		die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n";
+	}
+
+	$bsbase = &get_bsbase();
+	&print_breaking("Bootstrapping a base system via $bsbase.");
+
+	# create directories
+	if (-e $bsbase) {
+		rm_rf $bsbase;
+	}
+	mkdir_p "$bsbase/bin", "$bsbase/sbin", "$bsbase/lib";
+
+	# create empty dpkg database
+	mkdir_p "$basepath/var/lib/dpkg";
+	touch "$basepath/var/lib/dpkg/status",
+	      "$basepath/var/lib/dpkg/available",
+	      "$basepath/var/lib/dpkg/diversions";
+
+	# set paths so that everything is found
+	$save_path = $ENV{PATH};
+	$ENV{PATH} = "$basepath/sbin:$basepath/bin:".
+				 "$bsbase/sbin:$bsbase/bin:".
+				 $save_path;
+
+	# disable UseBinaryDist during bootstrap
+	Fink::Config::set_options( { 'use_binary' => -1 });
+
+	# make sure we have the package descriptions
+	Fink::Package->require_packages();
+
+	# determine essential packages
+	@elist = Fink::Package->list_essential_packages();
+
+
+	print "\n";
+	&print_breaking("BOOTSTRAP PHASE ONE: download tarballs.");
+	print "\n";
+
+	# use normal install routines
+	Fink::Engine::cmd_fetch_missing(@plist, @elist, @addlist);
+
+
+	print "\n";
+	&print_breaking("BOOTSTRAP PHASE TWO: installing neccessary packages to ".
+					"$bsbase without package management.");
+	print "\n";
+
+	# install the packages needed to build packages into the bootstrap tree
+	foreach $pkgname (@plist) {
+		$package = Fink::PkgVersion->match_package($pkgname);
+		unless (defined $package) {
+			die "no package found for specification '$pkgname'!\n";
+		}
+
+		$package->enable_bootstrap($bsbase);
+		$package->phase_unpack();
+		$package->phase_patch();
+		$package->phase_compile();
+		$package->phase_install();
+		$package->disable_bootstrap();
+	}
+
+
+	print "\n";
+	&print_breaking("BOOTSTRAP PHASE THREE: installing essential packages to ".
+					"$basepath with package management.");
+	print "\n";
+
+#	# use normal install routines, but do not use buildlocks
+#	Fink::Config::set_options( { 'no_buildlock' => 1 } );
+	Fink::Engine::cmd_install(@elist, @addlist);
+#	Fink::Config::set_options( { 'no_buildlock' => 0 } );
+
+	print "\n";
+	&print_breaking("BOOTSTRAP DONE. Cleaning up.");
+	print "\n";
+	rm_rf $bsbase;
+
+	$ENV{PATH} = $save_path;
+}
+
+=item get_bsbase
+
+	my $bsbase = get_bsbase();
+
+Returns the base path for bootstrapping.  Called by bootstrap().
+
+=cut
+
+sub get_bsbase {
+	return "$basepath/bootstrap";
 }
 
 =item check_files
@@ -585,97 +676,6 @@ sub copy_description {
 	return $result;
 }
 
-
-=item inject_package
-
-	my $result = inject_package($package, $packagefiles, $info_script, $param);
-
-The primary routine to update a fink installation, called by inject.pl.
-Returns 0 on success, 1 on failure.
-
-=cut
-
-sub inject_package {
-	
-	import Fink::Services qw(&read_config);
-	require Fink::Config;
-	
-	my $package = shift;
-	my $packagefiles = shift;
-	my $info_script = shift;
-	
-	### locate Fink installation
-	
-	my $param = shift;
-
-my ($notlocated, $bpath) = &locate_Fink($param); 	
-
-	if ($notlocated) {
-		return 1;
-	}
-	
-	### get version
-	
-	my ($packageversion, $packagerevision) = &get_packageversion();
-	
-	### load configuration
-	
-	my $config = &read_config("$bpath/etc/fink.conf",
-							  { Basepath => $bpath });
-	
-	### parse config file for root method
-
-	&find_rootmethod($bpath);
-	
-	### check that local/injected is in the Trees list
-	
-	my $trees = $config->param("Trees");
-	if ($trees =~ /^\s*$/) {
-		print "Adding a Trees line to fink.conf...\n";
-		$config->set_param("Trees", "local/main stable/main stable/crypto local/injected");
-		$config->save();
-	} else {
-		if (grep({$_ eq "local/injected"} split(/\s+/, $trees)) < 1) {
-			print "Adding local/injected to the Trees line in fink.conf...\n";
-			$config->set_param("Trees", "$trees local/injected");
-			$config->save();
-		}
-	}
-	
-	### create tarball for the package
-	
-	my $result = &create_tarball($bpath, $package, $packageversion, $packagefiles);
-	if ($result == 1 ) {
-		return $result;
-	}
-	
-	### create and copy description file
-	
-	$result = &copy_description($info_script, $bpath, $package, $packageversion, $packagerevision);
-	if ($result == 1 ) {
-		return $result;
-	}
-	
-	### install the package
-	
-	print "Installing package...\n";
-	print "\n";
-	
-	if (&execute("$bpath/bin/fink install $package")) {
-		print "\n";
-		&print_breaking("Installing the new $package package failed. ".
-		  "The description and the tarball were installed, though. ".
-		  "You can retry at a later time by issuing the ".
-		  "appropriate fink commands.");
-	} else {
-		print "\n";
-		&print_breaking("Your Fink installation in '$bpath' was updated with ".
-		  "a new $package package.");
-	}
-	print "\n";
-	
-	return 0;
-}
 
 
 ### EOF
