@@ -695,7 +695,7 @@ sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
 	my $field = shift;
-	my $forceoff = shift;
+	my $forceoff = shift || 0;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
@@ -714,7 +714,7 @@ sub resolve_depends {
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list. In 
 	if ($include_build and $self->{_type} eq "splitoff") {
-		push @deplist, ($self->{parent})->resolve_depends(2, $field);
+		push @deplist, ($self->{parent})->resolve_depends(2, $field, 0);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
