@@ -4,6 +4,7 @@
 #             fink packages into an existing Fink tree
 #
 # Fink - a package manager that downloads source and installs it
+# Copyright (c) 2001 Christoph Pfisterer
 # Copyright (c) 2001-2003 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
@@ -31,18 +32,20 @@ require Fink::Bootstrap;
 
 ### which package are we injecting?
 
-my $package = "fink";
+my $package = "fink-mirrors";
 
 ### check if we're unharmed, and specify files for tarball
 
-import Fink::Bootstrap qw(&check_files &fink_packagefiles);
-
-my $res = check_files();
-if ($res == 1 ) {
+my ($file);
+foreach $file (qw(ChangeLog _keys _list)) {
+    if (not -e $file) {
+	print "ERROR: Package incomplete, '$file' is missing.\n";
 	exit 1;
+    }
 }
 
-my $packagefiles = fink_packagefiles();
+my $packagefiles = "COPYING ChangeLog README install.sh postinstall.pl.in " .
+    "_keys _list cpan ctan debian gimp gnome gnu kde master rsync sourceforge" ;
 
 my $info_script = "";
 
@@ -59,3 +62,6 @@ if ($result == 1) {
 
 ### eof
 exit 0;
+
+
+

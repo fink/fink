@@ -37,7 +37,7 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
-	   lib/fink/mirror lib/fink/update etc etc/dpkg \
+	   lib/fink/update etc etc/dpkg \
 	   share share/doc share/doc/fink share/man \
 	   share/man/man8 share/man/man5; do
   mkdir "$basepath/$dir"
@@ -62,12 +62,6 @@ for file in perlmod/Fink/*.pm ; do
   fi
 done
 
-for file in mirror/* ; do
-  if [ -f $file ]; then
-    install -c -p -m 644 $file "$basepath/lib/fink/mirror/"
-  fi
-done
-
 for file in update/config.guess update/config.sub update/ltconfig ; do
   install -c -p -m 755 $file "$basepath/lib/fink/update/"
 done
@@ -81,7 +75,6 @@ for file in COPYING README README.html INSTALL INSTALL.html \
 done
 
 install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog"
-install -c -p -m 644  mirror/ChangeLog "$basepath/share/doc/fink/ChangeLog.mirror"
 install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
 install -c -p -m 644  update/ChangeLog "$basepath/share/doc/fink/ChangeLog.update"
 

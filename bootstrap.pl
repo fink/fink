@@ -28,7 +28,7 @@ use strict;
 
 use FindBin;
 
-my ($answer, $packageversion, $packagerevision);
+my ($answer);
 my ($script, $cmd);
 
 ### check the perl version
@@ -69,19 +69,12 @@ print " looks good.\n";
 require Fink::Services;
 import Fink::Services qw(&print_breaking &prompt &prompt_boolean
 						 &prompt_selection &read_config &execute
-						 &file_MD5_checksum &get_arch);
+						 &get_arch);
+import Fink::Bootstrap qw(&get_packageversion &create_tarball &fink_packagefiles &copy_description);
 
 ### get version
 
-chomp($packageversion = `cat VERSION`);
-if ($packageversion =~ /cvs/) {
-	my @now = gmtime(time);
-	$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
-								 $now[5]+1900, $now[4]+1, $now[3],
-								 $now[2], $now[1]);
-} else {
-	$packagerevision = "1";
-}
+my ($packageversion, $packagerevision) = &get_packageversion();
 
 ### check if we like this system
 
@@ -316,40 +309,20 @@ symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create sym
 
 ### create fink tarball for bootstrap
 
-print "Creating fink tarball...\n";
+my $packagefiles = &fink_packagefiles();
 
-$script =
-	"tar -cf $installto/src/fink-$packageversion.tar ".
-	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
-	"ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-	"shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
-	"fink-virtual-pkgs.in mirror\n";
-
-foreach $cmd (split(/\n/,$script)) {
-	next unless $cmd;		# skip empty lines
-
-	if (&execute($cmd)) {
-		print "ERROR: Can't create tarball.\n";
-		exit 1;
-	}
+my $result = &create_tarball($installto, "fink", $packageversion, $packagefiles);
+if ($result == 1 ) {
+	exit 1;
 }
 
 ### copy package info needed for bootstrap
 
-print "Copying package descriptions...\n";
-
 $script = "/bin/cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
-my $md5 = &file_MD5_checksum("$installto/src/fink-$packageversion.tar");
-$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-$script .= "/bin/chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
 
-foreach $cmd (split(/\n/,$script)) {
-	next unless $cmd;		# skip empty lines
-
-	if (&execute($cmd)) {
-		print "ERROR: Can't copy package descriptions.\n";
-		exit 1;
-	}
+$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision);
+if ($result == 1 ) {
+	exit 1;
 }
 
 ### load the Fink modules

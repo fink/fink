@@ -23,7 +23,7 @@
 package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &latest_version &version_cmp 
-                      &parse_fullversion &print_breaking);
+                      &parse_fullversion &print_breaking &expand_percent);
 use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
 use File::Find;
@@ -470,6 +470,15 @@ sub scan {
 			if (exists $properties->{$field}) {
 				$properties->{$field} =~ s/[\r\n]+/ /gs;
 				$properties->{$field} =~ s/\s+/ /gs;
+			}
+		}
+
+		# allow %lv (typeversion_pkg) in Package
+		if ($properties->{type}) {
+			my $type = $properties->{type};
+			if ($type =~ s/^(\S+)\s+(\S+)/$2/) {
+				$type =~ s/\.//g;
+				$properties->{package} = $pkgname = &expand_percent($pkgname,{'lv',$type});
 			}
 		}
 

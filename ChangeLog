@@ -1,3 +1,34 @@
+2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+ 
+	* VERSION: Bumped package manager version to 0.17.3, a bugfix
+	release on branch_0_17
+ 
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.17.2, a release
+	on branch_0_17 in preparation for the fink-mirrors package
+
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* install.sh: no longer install the files in the mirror directory
+	(they are being moved to the fink-mirrors package)
+
+2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl, inject.pl: move inject.pl code into Bootstrap.pm, and
+	separate out the common code from inject.pl and bootstrap.pl
+	into subroutines that can be used by both
+
+	* README.buildsystem: documenting fink's build system
+
+2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* inject.pl: Rearranged subroutines
+
+2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl, inject.pl: Make the code modular, update copyright
+
 2003-12-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* pathsetup.command.in: echo a newline to an existing . file before

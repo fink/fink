@@ -23,7 +23,7 @@
 package Fink::Mirror;
 
 use Fink::Services qw(&prompt_selection
-					  &read_properties &read_properties_multival);
+					  &read_properties &read_properties_multival_var &read_properties_multival);
 use Fink::Config qw($config $libpath);
 
 use strict;
@@ -76,7 +76,23 @@ sub new_from_name {
 	$self->{name} = $name;
 
 	my $mirrorfile = "$libpath/mirror/$name";
+	# set default values for critical mirrors, in case mirror directory
+	# is not present
+	my %mirrordefaults = (
+		"master" => "Primary: http://distfiles.master.finkmirrors.net/",
+		"rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
+		"sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
+		);
+	my ($key, $mirrordefault);
 	if (not -f $mirrorfile) {
+		foreach $key ( keys %mirrordefaults ) {
+			if ($name eq $key) {
+				$mirrordefault = $mirrordefaults{$key}."\n";
+				$self->{data} = &read_properties_multival_var("",$mirrordefault);
+				$self->initialize();
+				return $self;
+			}
+		}
 		die "No mirror site list file found for mirror '$name'.\n";
 	}
 	$self->{data} = &read_properties_multival($mirrorfile);

@@ -94,7 +94,11 @@ our %allowed_type_values =
 	(
 	 "nosource" => [ "" ],
 	 "bundle"   => [ "" ],
-	 "perl"     => [ "", "5.6.0", "5.6.1", "5.8.0", "5.8.1" ]
+	 "perl"     => [ "", "5.6.0", "5.6.1", "5.8.0", "5.8.1" ],
+	 "python"   => [ "2.1", "2.2", "2.3" ],
+	 "guile"    => [ "", "1.4", "1.6" ],
+	 "ruby"     => [ "", "1.6", "1.8" ],
+	 "java"     => [ "1.3", "1.4" ]
 	 );
 
 
@@ -254,7 +258,7 @@ END { }				# module clean-up code here (global destructor)
 
 # Should check/verifies the following in .info files:
 #	+ the filename matches %f.info
-#	+ patch file is present
+#	+ patch file (from Patch and PatchScript) is present
 #	+ all required fields are present
 #	+ warn if obsolete fields are encountered
 #	+ warn about missing Description/Maintainer/License fields
@@ -264,7 +268,8 @@ END { }				# module clean-up code here (global destructor)
 #	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
 #		(excluded from this are fields like Description, Homepage etc.)
 #	+ warn if unknown fields are encountered
-#	+ warn if /sw is hardcoded in the script or set fields
+#	+ warn if /sw is hardcoded in the script or set fields or patch file
+#		(from Patch and PatchScript)
 #	+ correspondence between source* and source*-md5 fields
 #	+ if type is bundle/nosource - warn about usage of "Source" etc.
 #
@@ -277,7 +282,7 @@ END { }				# module clean-up code here (global destructor)
 sub validate_info_file {
 	my $filename = shift;
 	my ($properties, @parts);
-	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
+	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
 	my ($basepath, $expand, $buildpath);
 	my $looks_good = 1;
@@ -313,6 +318,15 @@ sub validate_info_file {
 	$buildpath = $config->param_default("buildpath", "$basepath/src");
 
 	$pkgname = $properties->{package};
+	# allow %lv (typeversion_pkg) in Package
+	if ($properties->{type}) {
+		my $type = $properties->{type};
+		if ($type =~ s/^(\S+)\s+(\S+)/$2/) {
+			$type =~ s/\.//g;
+			$properties->{package} = $pkgname = &expand_percent($pkgname,{'lv',$type});
+		}
+	}
+
 	$pkgversion = $properties->{version};
 	$pkgrevision = $properties->{revision};
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
@@ -563,13 +577,28 @@ sub validate_info_file {
 				'm' => $arch
 	};
 
-	# Verify the patch file exists, if specified
+	# Verify the patch file(s) exist and check some things
+	@patchfiles = ();
+	# anything in PatchScript that looks like a patch file name
+	# (i.e., strings matching the glob %a/*.patch)
+	$value = $properties->{patchscript};
+	if ($value) {
+		@patchfiles = ($value =~ /\%a\/.*?\.patch/g);
+		# strip directory if info is simple filename (in $PWD)
+		map {s/\%a\///} @patchfiles unless $pkgpatchpath;
+	}
+
+	# the contents if Patch (if any)
 	$value = $properties->{patch};
 	if ($value) {
+		# add directory if info is not simple filename (not in $PWD)
+		$value = "\%a/" .$value if $pkgpatchpath;
+		unshift @patchfiles, $value;
+	}
+
+	# now check each one in turn
+	foreach $value (@patchfiles) {
 		$value = &expand_percent($value, $expand);
-		if ($pkgpatchpath) {
-			$value = $pkgpatchpath . "/" .$value;
-		}
 		unless (-f $value) {
 			print "Error: can't find patchfile \"$value\"\n";
 			$looks_good = 0;
@@ -593,6 +622,18 @@ sub validate_info_file {
 				print "Error: Patch file has Mac line endings. ($value)\n";
 				$looks_good = 0;
 			}
+			# Check for hardcoded /sw.
+			open(INPUT, "<$value"); 
+			while (defined($patch_file_content=<INPUT>)) {
+				# only check lines being added (and skip diff header line)
+				next unless $patch_file_content =~ /^\+(?!\+\+ )/;
+				if ($patch_file_content =~ /\/sw([\s\/]|$)/) {
+					print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
+					$looks_good = 0;
+					last;
+				}
+			}
+			close INPUT;
 		}
 	}
 	

@@ -36,7 +36,7 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
-					  &read_properties_multival
+					  &read_properties_multival &read_properties_multival_var
 					  &execute &execute_script &expand_percent
 					  &filename &print_breaking
 					  &prompt &prompt_boolean &prompt_selection &prompt_selection_new
@@ -267,8 +267,68 @@ sub read_properties_lines {
     my $property_hash = read_properties_multival $filename, $notLC;
 
 Reads a text file $filename and returns a ref to a hash of its
-fields. See the description of read_properties_lines for more
-information, with the following differences:
+fields, with multiple values for each key being handled by letting
+the key refer to another hash. See the description of 
+read_properties_multival_lines for more information.
+
+If $filename cannot be read, program will die with an error message.
+
+=cut
+
+sub read_properties_multival {
+	 my ($file) = shift;
+	 # do we make the keys all lowercase
+	 my ($notLC) = shift || 0;
+	 my (@lines);
+	 
+	 open(IN,$file) or die "can't open $file: $!";
+	 @lines = <IN>;
+	 close(IN);
+	 return read_properties_multival_lines($file, $notLC, @lines);
+}
+
+=item read_properties_multival_var
+
+    my $property_hash = read_properties_multival_var $filename, $string;
+    my $property_hash = read_properties_multival_var $filename, $string, $notLC;
+
+Parses the multiline text $string and returns a ref to a hash of its
+fields, with multiple values for each key being handled by letting
+the key refer to another hash. See the description of 
+read_properties_multival_lines for more information.
+The string $filename is used in parsing-error messages
+but the file is not accessed.
+
+=cut
+
+sub read_properties_multival_var {
+
+	 my ($file) = shift;
+	 my ($var) = shift;
+	 # do we make the keys all lowercase
+	 my ($notLC) = shift || 0;
+	 my (@lines);
+	 my ($line);
+
+	 @lines = split /^/m,$var;
+	 return read_properties_multival_lines($file, $notLC, @lines);
+}
+
+=item read_properties_multival_lines
+
+    my $property_hash = read_properties_multival_lines $filename, $notLC, @lines;
+
+This is function is not exported. You should use read_properties_var,
+read_properties, read_properties_multival, or read_properties_multival_var 
+instead.
+
+Parses the list of text strings @lines and returns a ref to a hash of its
+fields, with multiple values for each key being handled by letting
+the key refer to another hash.  The string $filename is used in 
+parsing-error messages but the file is not accessed.
+
+The function is similar to read_properties_lines, with the following 
+differences:
 
   Multiline values are can only be given in RFC-822 style notation,
   not with heredoc.
@@ -280,21 +340,20 @@ information, with the following differences:
   returned in the hash is a ref to an array of the values (in the
   order as they were encountered in $filename).
 
-If $filename cannot be read, program will die with an error message.
-
 =cut
 
-sub read_properties_multival {
+sub read_properties_multival_lines {
 	my ($file) = shift;
 	my ($notLC) = shift || 0;
+	my (@lines) = @_;
 	my ($hash, $lastkey, $lastindex);
 
 	$hash = {};
 	$lastkey = "";
 	$lastindex = 0;
 
-	open(IN,$file) or die "can't open $file: $!";
-	while (<IN>) {
+	foreach (@lines) {
+	    chomp;
 		next if /^\s*\#/;		# skip comments
 		if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 			$lastkey = $notLC ? $1 : lc $1;
@@ -309,10 +368,9 @@ sub read_properties_multival {
 			$hash->{$lastkey}->[$lastindex] .= "\n".$1;
 		}
 	}
-	close(IN);
 
 	return $hash;
-}
+    }
 
 =item execute
 

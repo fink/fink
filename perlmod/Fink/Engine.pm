@@ -304,7 +304,7 @@ Fink $version
 Usage: fink list [options] [string]
 
 Options:
-  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
                          formatted for. xyz is either a numeric value or auto.
                          auto will set the width based on the terminal width.
   -t, --tab            - Outputs the list with tabs as field delimiter.
@@ -314,11 +314,11 @@ Options:
                          available.
   -n, --notinstalled   - Only list packages which are not installed.
   -b, --buildonly      - Only list packages which are Build Only Depends
-  -s=expr,             - Only list packages in the section(s) matching expr
+  -s expr,             - Only list packages in the section(s) matching expr
     --section=expr       (example: fink list --section=x11).
-  -m=expr,             - Only list packages with the maintainer(s) matching expr
+  -m expr,             - Only list packages with the maintainer(s) matching expr
     --maintainer=expr    (example: fink list --maintainer=beren12).
-  -t=expr,             - Only list packages with the tree matching expr
+  -t expr,             - Only list packages with the tree matching expr
     --tree=expr          (example: fink list --tree=stable).
   -h, --help           - This help text.
 
@@ -330,7 +330,7 @@ Fink $version
 Usage: fink apropos [options] [string]
        
 Options:
-  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
                          formatted for. xyz is either a numeric value or auto.
                          auto will set the width based on the terminal width.
   -t, --tab            - Outputs the list with tabs as field delimiter.
@@ -1074,7 +1074,7 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(2, $op, "Depends", $forceoff);
+			@deplist = $item->[PKGVER]->resolve_depends(1, $op, "Depends", $forceoff);
 			@conlist = $item->[PKGVER]->resolve_depends(2, $op, "Conflicts", $forceoff);
 		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
@@ -1084,7 +1084,7 @@ sub real_install {
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(1, $op, "Depends", $forceoff);
+			@deplist = $item->[PKGVER]->resolve_depends(0, $op, "Depends", $forceoff);
 			@conlist = $item->[PKGVER]->resolve_depends(2, $op, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)

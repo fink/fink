@@ -76,12 +76,17 @@ sub initialize {
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
 
 	$self->{_type} = $type = lc $self->param_default("Type", "");
-	# split off perl version number, when given with the type
+	# split off language version number, when given with the type
 	# Presume we have passed validation which is quite explicit
 	# about allowed major and minor (language version) values
 	if ($type =~ s/^(\S+)\s+(\S+)/$1/) {
-		$self->{_perlversion} = $2;
+		$self->{_typeversion_raw} = $self->{_typeversion_pkg} = $2;
+		$self->{_typeversion_pkg} =~ s/\.//g;
 		$self->{_type} = $type;
+		# to allow %lv (typeversion_pkg) in Package have to do
+		# this early since _name and $pkgname used before
+		# percent expansion is ordinarily done
+		$self->{_name} = $pkgname = &expand_percent($pkgname,{'lv',$self->{_typeversion_pkg}});
 	}
 
 	# the following is set by Fink::Package::scan
@@ -174,6 +179,13 @@ sub initialize {
 				'b' => '.'
 			};
 
+	# only add percent keys for language version if one was given
+	# (so fatal error if attempt to use when not set)
+	if ($self->{_typeversion_raw}) {
+		$expand->{'lV'} = $self->{_typeversion_raw};
+		$expand->{'lv'} = $self->{_typeversion_pkg};
+	}
+
 	$self->{_expand} = $expand;
 
 	$self->{_bootstrap} = 0;
@@ -188,6 +200,7 @@ sub initialize {
 	$self->expand_percent_if_available('Recommends');
 	$self->expand_percent_if_available('Replaces');
 	$self->expand_percent_if_available('Suggests');
+	$self->expand_percent_if_available('Package');
 
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if ($self->{_type} eq "splitoff") {
@@ -2253,8 +2266,8 @@ sub get_perl_dir_arch {
 #get_system_perl_version();
 	my $perldirectory = "";
 	my $perlarchdir;
-	if ($self->has_param("_perlversion")) {
-		$perlversion = $self->param("_perlversion");
+	if ($self->has_param("_typeversion_raw")) {
+		$perlversion = $self->param("_typeversion_raw");
 		$perldirectory = "/" . $perlversion;
 	    }
 	### PERL= needs a full path or you end up with
