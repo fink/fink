@@ -1,0 +1,27 @@
+Package: dpkg
+Version: 1.8.3.1
+Revision: 5
+Source: http://http.us.debian.org/debian/project/dpkg/%n-%v.tar.gz
+Depends: gettext, gzip, tar, ncurses
+Essential: yes
+PatchScript: sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1
+SetCFLAGS: -traditional-cpp -I%p/include
+SetCC: cc
+ConfigureParams: --without-zlib --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info
+CompileScript: ./configure powerpc-apple-darwin %c
+ make NLS_LIBS=-lintl
+InstallScript: mkdir -p %i/share/doc/dpkg
+ make install DESTDIR=%d
+Description: The Debian package manager
+DescDetail: <<
+dpkg installs and removes binary packages; it is the base of the
+distribution. This package also contains some helper programs and
+dselect, a full-screen console frontend to dpkg.
+<<
+DescPort: <<
+Uses autoconf. Needs fixes to use the right architecture,
+disable code that uses unimplemented functions on Darwin, work around
+a bug related to partial read()'s, put everything into DESTDIR and
+other stuff.
+<<
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
