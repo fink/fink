@@ -2,6 +2,11 @@
 
 	* Services.pm: lol2pkglist code cleanup.
 
+2004-10-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: Fix bug in code for broken gcc warning; also, add pause
+	after warning.
+	
 2004-10-16  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Implemented pkglist2lol and lol2pkglist, to convert
