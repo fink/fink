@@ -1,7 +1,7 @@
 2001-06-16  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: New methods to retreive dependency and conflict
-	lists.
+	lists. Cache result of is_installed.
 
 2001-06-14  Christoph Pfisterer  <cp@chrisp.de>
 

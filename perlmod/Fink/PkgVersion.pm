@@ -356,10 +356,16 @@ sub is_present {
 sub is_installed {
   my $self = shift;
 
-  if (-e "$basepath/var/fink-stamp/".$self->get_fullname()) {
-    return 1;
+  if (exists $self->{_installed}) {
+    return $self->{_installed};
   }
-  return 0;
+
+  if (-e "$basepath/var/fink-stamp/".$self->get_fullname()) {
+    $self->{_installed} = 1;
+  } else {
+    $self->{_installed} = 0;
+  }
+  return $self->{_installed};
 }
 
 ### source tarball finding
@@ -965,6 +971,7 @@ sub phase_activate {
   }
 
   while(1) {
+    delete $self->{_installed};
     if (&execute("dpkg -i $deb")) {
       die "can't install package\n";
     }
@@ -981,6 +988,8 @@ sub phase_activate {
 
 sub phase_deactivate {
   my $self = shift;
+
+  delete $self->{_installed};
 
   if (&execute("dpkg --remove ".$self->get_name())) {
     die "can't remove package\n";
