@@ -1,3 +1,7 @@
+2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: add --version
+
 2004-11-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.23.3, a release

@@ -24,6 +24,9 @@ use strict;
 use Getopt::Long;
 my $standalone = 0;
 my $basepath = '@BASEPATH@';
+
+our $VERSION = (qw$Revision$)[-1];
+
 UseFinkModules();
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
 my ($dlist, $hash, $pkgname, @versions, $field, $provides);
@@ -32,12 +35,14 @@ my %options =
 		"apt" => 0,
 		"debug" => 0,
 		"dpkg" => 0,
+		"version" => 0,
    );
 GetOptions(
 	'apt|a' => sub {  $options{apt} = 1},
 	'debug' => sub { $options{debug} = 1},
 	'dpkg|d' => sub { $options{dpkg} = 1},
 	'help|h' => \&usage,
+	'version|v' => \&version,
 	) or die "Unknown option";
 if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt" }
 if ($options{apt}) {
@@ -113,14 +118,27 @@ if ($options{apt}) {
 	close FH;
 }
 
+sub version {
+	print "$0 revision $VERSION\n";
+	if ($standalone) {
+		print "\t(running in standalone mode, no Fink/Fink::VirtPackage available)\n";
+	} else {
+		print "\tFink version ", Fink::FinkVersion->fink_version(), "\n";
+		print "\tFink::VirtPackage revision ", $Fink::VirtPackage::VERSION, "\n";
+	}
+
+	exit 0;
+}
+
 sub usage {
 	print <<END;
-usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-h|--help]
+usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-h|--help] [-v|--version]
 
-	--debug     Print debugging info to STDERR
-	-a/--apt    [called by apt, for internal use only]
-	-d/--dpkg   [called by dpkg, for internal use only]
-	-h/--help   This help
+	--debug       Print debugging info to STDERR
+	-a/--apt      [called by apt, for internal use only]
+	-d/--dpkg     [called by dpkg, for internal use only]
+	-h/--help     This help
+	-v/--version  Print the version
 
 END
 	exit 0;
@@ -134,6 +152,7 @@ sub UseFinkModules {
         require lib;
         import lib "$basepath/lib/perl5";
 
+		require Fink::FinkVersion;
 		require Fink::VirtPackage;
 		require Fink::Services;
 		import Fink::Services qw(parse_fullversion read_config)

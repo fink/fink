@@ -40,6 +40,8 @@ packages to satisfy dependencies outside of Fink.
 
 package Fink::VirtPackage;
 
+our $VERSION = (qw$Revision$)[-1];
+
 # Programmers' note: Please be *very* careful if you alter this file.
 # It is used by dpkg via popen(), so (among other things) that means
 # you must not print to STDOUT.
@@ -1144,7 +1146,6 @@ and running B<Xserver -version> (more expensive).
 Returns the X11 version if found.
 
 =cut
-
 
 ### Check the installed x11 version
 sub check_x11_version {
