@@ -1646,23 +1646,23 @@ EOF
 		### Add user/group check to preinst if needed
 		if ($scriptname eq "preinst" && $self->{_type} = "bundle") {
 			my ($name, $type) = (0, 0);
-			my ($desc, $pass, $shell, $home, $group, $tmp);
+			my ($desc, $shell, $home, $group, $tmp);
     
 			if ($self->has_param("Group")) {
 				$tmp = $self->param("Group");
 				$tmp = &expand_percent($tmp, $self->{_expand});
-				($name, $desc, $pass) = split(/:/, $tmp);
+				($name, $desc) = split(/:/, $tmp);
 				$type = "group";
 			} elsif ($self->has_param("User")) {
 				$tmp = $self->param("User");
 				$tmp = &expand_percent($tmp, $self->{_expand});
-				($name, $group, $desc, $pass, $shell, $home) =
+				($name, $group, $desc, $shell, $home) =
 							split(/:/, $tmp);
 				$type = "user";
 			}
             
 			my $script =  Fink::User->add_user_script($name, $type,
-					$desc, $pass, $shell, $home, $group);
+					$desc, $shell, $home, $group);
 
 			if ($script) {
 				### Add $script to top of preinstscript

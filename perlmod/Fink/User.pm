@@ -105,7 +105,6 @@ sub add_user_script {
 	my $name = shift;
 	my $type = shift;
 	my $desc = shift;
-	my $pass = shift || "*";
 	my $shell = shift || "/usr/bin/false";
 	my $home = shift;
 	my $group = shift || $name;
@@ -116,6 +115,7 @@ sub add_user_script {
 	my $chown = "/usr/sbin/chown";
 	my $mkdir = "/bin/mkdir -p";
 
+	my pass = "*";
 	my $script = "";
 
 	### FIXME need to figure a way ehre to get and set uids and gids, and
