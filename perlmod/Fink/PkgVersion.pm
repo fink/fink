@@ -1534,6 +1534,11 @@ sub phase_compile {
 			unless ($self->param_boolean("NoPerlTests")) {
 				$compile_script .= "make test\n";
 			}
+		} elsif ($self->param("_type") eq "ruby") {
+		    my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
+			$compile_script =
+				"$rubycmd extconf.rb\n".
+				"make\n";
 		} else {
 			$compile_script = 
 				"./configure \%c\n".
@@ -1599,6 +1604,11 @@ sub phase_install {
 
 			$install_script .= 
 				"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5$perldirectory INSTALLARCHLIB=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%i/lib/perl5$perldirectory INSTALLSITEARCH=\%i/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3 INSTALLSITEMAN1DIR=\%i/share/man/man1 INSTALLSITEMAN3DIR=\%i/share/man/man3 INSTALLBIN=\%i/bin INSTALLSITEBIN=\%i/bin INSTALLSCRIPT=\%i/bin\n";
+		} elsif ($self->param("_type") eq "ruby") {
+			# grab ruby version, if present
+			my ($rubydirectory, $rubyarchdir) = $self->get_ruby_dir_arch();
+
+			$install_script .= "make install prefix=\%i\n";
 		} elsif (not $do_splitoff) {
 			$install_script .= "make install prefix=\%i\n";
 		} 
@@ -2331,7 +2341,7 @@ sub run_script {
 
 
 
-### get_perl_version_dir_arch
+### get_perl_dir_arch
 
 sub get_perl_dir_arch {
 	my $self = shift;
@@ -2358,5 +2368,26 @@ sub get_perl_dir_arch {
 	return ($perldirectory, $perlarchdir,$perlcmd);
 }
 
+### get_ruby_dir_arch
+
+sub get_ruby_dir_arch {
+	my $self = shift;
+
+	# grab ruby version, if present
+	my $rubyversion   = "";
+	my $rubydirectory = "";
+	my $rubyarchdir   = "powerpc-darwin";
+	if ($self->has_param("_typeversion_raw")) {
+		$rubyversion = $self->param("_typeversion_raw");
+		$rubydirectory = "/" . $rubyversion;
+	    }
+	### ruby= needs a full path or you end up with
+	### rubymods trying to run ../ruby$rubyversion
+	my $rubycmd = get_path('ruby'.$rubyversion);
+
+	return ($rubydirectory, $rubyarchdir, $rubycmd);
+}
+
 ### EOF
+
 1;
