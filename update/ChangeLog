@@ -1,3 +1,9 @@
+2001-08-12  Christoph Pfisterer  <cp@chrisp.de>
+
+	* ltconfig: Updated from the libtool-1.3.5-7 package. Uses the
+	'-flat_namespace' flag together with '-undefined suppress' as
+	required for the upcoming Mac OS X 10.1.
+
 2001-05-08  Christoph Pfisterer  <cp@chrisp.de>
 
 	* config.guess, config.sub: Updated with latest version
