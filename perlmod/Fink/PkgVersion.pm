@@ -699,7 +699,7 @@ sub resolve_depends {
 	my (@speclist, @deplist, $altlist);
 	my ($altspecs, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
-	my ($oper, $multi, $found, @altspec, $loopcount);
+	my ($oper, $found, @altspec, $loopcount);
 	if (lc($field) eq "conflicts") {
 		$oper = "conflict";
 	} elsif (lc($field) eq "depends") {
@@ -730,7 +730,6 @@ sub resolve_depends {
 			## multi pkgs can satisfy the depend and it shouldn't
 			## warn if one isn't found, as long as one is.
 			@altspec = split(/\s*\|\s*/, $altspecs);
-			$multi = scalar(@altspec);
 			$loopcount = 0;
 			$found = 0;
 		    BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
@@ -746,11 +745,11 @@ sub resolve_depends {
 			}
 			$package = Fink::Package->package_by_name($depname);
 			$found = 1 if defined $package;
-			if ($forceoff && (($multi == 1 || $loopcount >= $multi) && $found == 0)) {
+			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
 			    print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 			}
 			if (not defined $package) {
-				next; # BUILDDEPENDSLOOP
+				next BUILDDEPENDSLOOP;
 			}
 			my ($currentpackage, @dependslist, $dependent, $dependentname);
 			$currentpackage = $self->get_name();
@@ -820,7 +819,7 @@ sub resolve_depends {
 			$package = Fink::Package->package_by_name($depname);
 
 			$found = 1 if defined $package;
-			if ($forceoff && (($multi == 1 || $loopcount >= $multi) && $found == 0)) {
+			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
 				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 			}
 			if (not defined $package) {
