@@ -1,3 +1,9 @@
+2001-09-17  Christoph Pfisterer  <cp@chrisp.de>
+
+	* VERSION: Bumped package manager version to 0.9.0. Some minor
+	features are still missing, but fink (the package manager) is
+	in the overall shape for a 1.0 release.
+
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink.in: Use methods of FinkVersion if possible.
