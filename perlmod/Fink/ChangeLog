@@ -1,3 +1,7 @@
+2004-10-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check ConfigureParams for hardcoded /sw.
+
 2004-10-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: show-deps: Conflicts are *not* considered BuildConflicts.
