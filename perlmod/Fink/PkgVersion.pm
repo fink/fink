@@ -24,7 +24,7 @@ use Fink::Base;
 
 use Fink::Services qw(&filename &expand_percent &expand_url &execute
                       &latest_version &print_breaking
-                      &print_breaking_twoprefix);
+                      &print_breaking_twoprefix &collapse_space);
 use Fink::Config qw($config $basepath $libpath $debarch);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Package;
@@ -524,9 +524,8 @@ sub get_binary_depends {
   #  library versions
 
   $depspec = $self->param_default("Depends", "");
-  $depspec =~ s/\s+/ /gs;
 
-  return $depspec;
+  return &collapse_space($depspec);
 }
 
 
@@ -997,7 +996,7 @@ EOF
                      Recommends Suggests Enhances
                      Maintainer)) {
     if ($self->has_param($field)) {
-      $control .= "$field: ".$self->param($field)."\n";
+      $control .= "$field: ".&collapse_space($self->param($field))."\n";
     }
   }
   $control .= "Description: ".$self->get_description();
@@ -1026,6 +1025,7 @@ EOF
 	$scriptbody .= "\n\n# generated from InfoDocs directive\n";
 	$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
 	foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
+	  next unless $infodoc;
 	  $infodoc = "\%p/share/info/$infodoc" unless $infodoc =~ /\//;
 	  $scriptbody .= "  install-info --infodir=\%p/share/info $infodoc\n";
 	}
@@ -1034,6 +1034,7 @@ EOF
 	$scriptbody .= "\n\n# generated from InfoDocs directive\n";
 	$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
 	foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
+	  next unless $infodoc;
 	  $scriptbody .= "  install-info --infodir=\%p/share/info --remove $infodoc\n";
 	}
 	$scriptbody .= "fi\n";
@@ -1068,7 +1069,7 @@ EOF
 
   if ($self->has_param("conffiles")) {
     $listfile = "$destdir/DEBIAN/conffiles";
-    $conffiles = join("\n", split(/\s+/, $self->param("conffiles")))."\n";
+    $conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")))."\n";
     $conffiles = &expand_percent($conffiles, $self->{_expand});
 
     print "Writing conffiles list...\n";

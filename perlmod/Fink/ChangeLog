@@ -1,5 +1,7 @@
 2001-09-17  Christoph Pfisterer  <cp@chrisp.de>
 
+	* PkgVersion.pm: More protection against unexpected white space.
+
 	* Services.pm (collapse_space): New function to collapse all white
 	space in a string into a single space. Useful to eliminate
 	newlines in fields that shouldn't have any.
