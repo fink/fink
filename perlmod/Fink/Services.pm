@@ -613,7 +613,7 @@ sub file_MD5_checksum {
 # For example, "powerpc" for ppc.
 sub get_arch {
 	if(not defined $arch) {
-	  $arch = `uname -p`;
+	  $arch = `/usr/bin/uname -p`;
 	  chomp $arch;
 	}
 	return $arch;
