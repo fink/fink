@@ -171,6 +171,7 @@ our %valid_fields = map {$_, 1}
 #  install phase:
 		 'updatepod',
 		 'installscript',
+		 'appbundles',
 		 'jarfiles',
 		 'docfiles',
 		 'shlibs',

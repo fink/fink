@@ -40,7 +40,7 @@ use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk);
 
-use File::Basename qw(&dirname);
+use File::Basename qw(&dirname &basename);
 
 use POSIX qw(uname);
 
@@ -2087,6 +2087,16 @@ sub phase_install {
 		}
 	}
 
+	# generate commands to install App bundles
+	if ($self->has_param("AppBundles")) {
+		$install_script .= "\n/usr/bin/install -d -m 755 %i/Applications";
+      for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
+        $bundle =~ s/\'/\\\'/gsi;
+        my $shortname = basename($bundle);
+        $install_script .= "\ncp -pR '$bundle' '%i/Applications/'"
+      }
+	}
+
 	# generate commands to install jar files
 	if ($self->has_param("JarFiles")) {
 		my (@jarfiles, $jarfile, $jarfilelist);
@@ -2396,6 +2406,16 @@ EOF
 						"\n/bin/rm -f %p/share/java/classpath".
 						"\nfi".
 						"\nunset jars";
+			}
+		}
+
+		# add Fink symlink Code
+		if ($self->has_param("AppBundles")) {
+			if ($scriptname eq "postinst") {
+				$scriptbody .=
+					"\nif \! test -e /Applications/Fink; then".
+					"\n  ln -s '%p/Applications' /Applications/Fink".
+					"\nfi";
 			}
 		}
 
