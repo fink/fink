@@ -265,6 +265,7 @@ END { }				# module clean-up code here (global destructor)
 #	+ if type is bundle/nosource - warn about usage of "Source" etc.
 #	+ if 'fink describe' output will display poorly on vt100
 #	+ Check Package/Version/Revision for disallowed characters
+#	+ Check if have sufficient InfoN if using their features
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -783,6 +784,9 @@ sub validate_info_file {
 #        /sw/share/emacs/site-lisp, so we no longer check for this)
 # - BuildDependsOnly: if package stores files in /sw/include, it should
 #     declare BuildDependsOnly true
+# - If a package contains pkg-config .pc files, it should Depends:pkgconfig
+# - Check presence and execute-flag on executable specified in daemonicfile
+# - If a package contains a daemonicfile, it should Depends:daemonic
 # - ideas?
 #
 sub validate_dpkg_file {
@@ -803,7 +807,10 @@ sub validate_dpkg_file {
 	# Quick & Dirty solution!!!
 	# This is a potential security risk, we should maybe filter $dpkg_filename...
 	$pid = open(DPKG_CONTENTS, "dpkg --contents $dpkg_filename |") or die "Couldn't run dpkg: $!\n";
-	while (<DPKG_CONTENTS>) {
+	my @dpkg_contents = <DPKG_CONTENTS>;
+	close(DPKG_CONTENTS) or die "Error on close: $!\n";
+
+	foreach (@dpkg_contents) {
 		# process
 		if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
 			$filename = $6;
@@ -842,6 +849,43 @@ sub validate_dpkg_file {
 					print "Warning: Package appears to contain pkg-config file but does not depend on the package \"pkgconfig\"\n  Offending file: $filename\n";
 					$looks_good = 0;
 				}
+			} elsif ( $filename =~ /^$basepath\/etc\/daemons\/\S+$/ ) {
+				my $depends = `dpkg --field $dpkg_filename Depends`;
+				$depends =~ s/\(.*?\)//g;
+				$depends =~ s/(\A|\s*[,|]\s*|\Z)/ /g;
+				if (not $depends =~ / daemonic /) {
+					print "Warning: Package appears to contain a daemonicfile but does not depend on the package \"daemonic\"\n  Offending file: $filename\n";
+					$looks_good = 0;
+				}
+				my $daemonicfile = ".$filename";
+				open(DAEMONIC_FILE, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O $daemonicfile |") or die "Couldn't run dpkg: $!\n";
+				while (<DAEMONIC_FILE>) {
+					if (/^\s*<executable.*?>(\S+)<\/executable>\s*$/) {
+						my $executable = $1;
+						my $perms;
+						map { /^(\S+)/; $perms .= $1 } grep /\s+\.$executable$/, @dpkg_contents;
+						if (defined $perms) {
+							if ($perms =~ /^-..([xs-])......$/) {
+								if ($1 eq '-') {
+									print "Error: daemonicfile executable \"$executable\" in this .deb does not have execute permissions. ($dpkg_filename)\n";
+									$looks_good = 0;
+								}
+							} else {
+								print "Warning: got confused by permissions \"$perms\" for daemonicfile executable in .deb. ($dpkg_filename)\n";
+								$looks_good = 0;
+							}
+						} else {
+							if (not -e $executable) {
+								print "Warning: daemonicfile executable \"$executable\" does not exist. ($dpkg_filename)\n";
+								$looks_good = 0;
+							} elsif (not -x $executable) {
+								print "Warning: daemonicfile executable \"$executable\" does not have execute permissions. ($dpkg_filename)\n";
+								$looks_good = 0;
+							}
+						}
+					}
+				}
+				close(DAEMONIC_FILE) or die "Error on close: $!\n";
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.
@@ -856,7 +900,6 @@ sub validate_dpkg_file {
 			}
 		}
 	}
-	close(DPKG_CONTENTS) or die "Error on close: $!\n";
 	
 # Note that if the .deb was compiled with an old version of fink which
 # does not record the BuildDependsOnly field, or with an old version

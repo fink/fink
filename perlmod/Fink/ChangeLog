@@ -1,5 +1,11 @@
 2004-06-25  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Slurp .deb contents first instead of checking
+	line-by-line. Verify presence and execute-flag on daemonicfile
+	executable and dependency on daemonic.
+
+2004-06-25  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Check for hardcoded /sw in DaemonicFile.
 
 2004-06-23  Daniel Macks  <dmacks@netspace.org>
