@@ -1,0 +1,91 @@
+diff -ru mc-4.5.51/configure.in mc-4.5.51-patched/configure.in
+--- mc-4.5.51/configure.in	Mon Jul  3 16:31:57 2000
++++ mc-4.5.51-patched/configure.in	Thu Mar 29 09:21:46 2001
+@@ -945,9 +945,9 @@
+ 
+ AC_DEFUN(AC_WITH_EDIT, [
+ 	AC_DEFINE(USE_INTERNAL_EDIT)
+-	LIBEDIT_A="libedit.a"
++	LIBEDIT_A="libedit_mc.a"
+ 	MCEDIT="mcedit"
+-	LEDIT="-ledit"
++	LEDIT="-ledit_mc"
+ 	CPPFLAGS="$CPPFLAGS -I\$(rootdir)"
+ 	EDIT_msg="yes"
+ 	AC_MSG_RESULT(will call internal editor)
+diff -ru mc-4.5.51/edit/Makefile.in mc-4.5.51-patched/edit/Makefile.in
+--- mc-4.5.51/edit/Makefile.in	Mon Jul  3 16:32:04 2000
++++ mc-4.5.51-patched/edit/Makefile.in	Thu Mar 29 09:24:40 2001
+@@ -47,14 +47,14 @@
+ 	    cd $(rootdir)/edit; find . -lname '*.[ch]' | xargs $(RM); \
+ 	fi
+ 
+-libedit.a: checklinks
++libedit_mc.a: checklinks
+ 	$(MAKE) mx
+ 	touch mx
+ 
+ mx: $(EDITOBJS)
+-	$(RMF) libedit.a
+-	$(AR) cr libedit.a $(EDITOBJS)
+-	-$(RANLIB) libedit.a
++	$(RMF) libedit_mc.a
++	$(AR) cr libedit_mc.a $(EDITOBJS)
++	-$(RANLIB) libedit_mc.a
+ 
+ mcedit:
+ 	-$(RMF) $(DESTDIR)$(bindir)/$(binprefix)mcedit
+@@ -71,7 +71,7 @@
+ 	etags $(EDITSRC)
+ 
+ clean:
+-	$(RMF) *.o core a.out libedit.a mx
++	$(RMF) *.o core a.out libedit_mc.a mx
+ 
+ realclean: clean
+ 	$(RMF) .depend
+@@ -80,7 +80,7 @@
+ 
+ distclean: cleansourcelinks
+ 	-$(RMF) $(srcdir)/*~ $(srcdir)/*.o $(srcdir)/a.out
+-	-$(RMF) $(srcdir)/core $(srcdir)/libedit.a
++	-$(RMF) $(srcdir)/core $(srcdir)/libedit_mc.a
+ 	-if test $(srcdir) = .; then $(MAKE) realclean; fi
+ 	-$(RMF) $(srcdir)/Makefile
+ 
+diff -ru mc-4.5.51/src/Makefile.in mc-4.5.51-patched/src/Makefile.in
+--- mc-4.5.51/src/Makefile.in	Mon Jul  3 16:32:11 2000
++++ mc-4.5.51-patched/src/Makefile.in	Thu Mar 29 09:25:30 2001
+@@ -93,10 +93,10 @@
+ @PCENTRULE@	-$(RMF) libmcslang.a
+ @PCENTRULE@	$(LN_S) ../slang/libmcslang.a .
+ 
+-libedit.a:
+-	cd ../edit; $(MAKE) libedit.a
+-@PCENTRULE@	-$(RMF) libedit.a
+-@PCENTRULE@	$(LN_S) ../edit/libedit.a .
++libedit_mc.a:
++	cd ../edit; $(MAKE) libedit_mc.a
++@PCENTRULE@	-$(RMF) libedit_mc.a
++@PCENTRULE@	$(LN_S) ../edit/libedit_mc.a .
+ 
+ $(srcdir)/mc.hlp: $(docdir)/mc.1.in $(mcsrclibdir)/xnc.hlp $(srcdir)/gindex.pl
+ 	$(MAKE) man2hlp
+@@ -113,7 +113,7 @@
+ 
+ clean:
+ 	$(RMF) mc cons.saver man2hlp fixhlp *.o core a.out mc.html mcmfmt
+-	$(RMF) libvfs-mc.a libedit.a libmcslang.a mfmt
++	$(RMF) libvfs-mc.a libedit_mc.a libmcslang.a mfmt
+ 
+ realclean: clean
+ 	$(RMF) .depend
+@@ -125,7 +125,7 @@
+ 	-$(RMF) $(srcdir)/mfmt
+ 	-$(RMF) $(srcdir)/man2hlp $(srcdir)/fixhlp $(srcdir)/*.o $(srcdir)/core
+ 	-$(RMF) $(srcdir)/a.out $(srcdir)/mc.html
+-	-$(RMF) $(srcdir)/libvfs-mc.a $(srcdir)/libmcslang.a $(srcdir)/libedit.a
++	-$(RMF) $(srcdir)/libvfs-mc.a $(srcdir)/libmcslang.a $(srcdir)/libedit_mc.a
+ 	-if test $(srcdir) = .; then $(MAKE) realclean; fi
+ 	-$(RMF) $(srcdir)/Makefile
+ 
