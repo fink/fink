@@ -373,13 +373,6 @@ sub validate_info_file {
 	# First check for critical errors
 	#
 
-	# Verify that all required fields are present
-	foreach $field (@required_fields) {
-		unless ($properties->{lc $field}) {
-			print "Error: Required field \"$field\" missing. ($filename)\n";
-			$looks_good = 0;
-		}
-	}
 	if ($pkgname =~ /[^+\-.a-z0-9]/) {
 		print "Error: Package name may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
@@ -479,6 +472,10 @@ sub validate_info_file {
 		
 	}
 
+	if (&validate_info_component($properties, "", $filename) == 0) {
+		$looks_good = 0;
+	}
+
 	# Loop over all fields and verify them
 	foreach $field (keys %$properties) {
 		$value = $properties->{$field};
@@ -522,12 +519,6 @@ sub validate_info_file {
 			}
 		}
 
-		# warn for non-plain-text chars
-		if ($value =~ /[^[:ascii:]]/) {
-			print "Warning: \"$field\" contains non-standard characters. ($filename)\n";
-			$looks_good = 0;
-		}
-
 		# Check for any source-related field without associated Source(N) field
 		if ($field =~ /^Source(\d*)-MD5|Source(\d*)Rename|Tar(\d*)FilesRename|Source(\d+)ExtractDir$/i) {
 			my $sourcefield = defined $+  # corresponding Source(N) field
@@ -543,39 +534,6 @@ sub validate_info_file {
 			next;
 		}
 
-		if ($field eq "files" and ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/)) {
-			print "Warning: Field \"$field\" contains entries that end in \"/\" ($filename)\n";
-			$looks_good = 0;
-		}
-
-		# Check for hardcoded /sw.
-		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
-			print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
-			$looks_good = 0;
-			next;
-		}
-
-		# Check for %p/src
-		if ($value =~ /\%p\\?\/src\\?\//) {
-			print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
-			$looks_good = 0;
-			next;
-		}
-
-		# dpkg install-time script stuff
-		if ($field =~ /^(pre|post)(inst|rm)script$/) {
-			# A #! line is worthless
-			if ($value =~ /^\s*\#!/) {
-				print "Warning: Useless use of explicit interpretter in \"$field\". ($filename)\n";
-				$looks_good = 0;
-			}
-			# must operate on %p not %i
-			if ($value =~ /\%i\//) {
-				print "Error: Use of \%i in field \"$field\". ($filename)\n";
-				$looks_good = 0;
-			}
-		}
-
 		# Validate splitoffs
 		if ($field =~ m/^splitoff([2-9]|[1-9]\d+)?$/) {
 			# Parse the splitoff properties
@@ -583,13 +541,6 @@ sub validate_info_file {
 			my $splitoff_field = $field;
 			$splitoff_properties =~ s/^\s+//gm;
 			$splitoff_properties = &read_properties_var("$field of \"$filename\"", $splitoff_properties);
-			# Right now, only 'Package' is a required field for a splitoff.
-			foreach $field (qw(package)) {
-				unless ($splitoff_properties->{lc $field}) {
-					print "Error: Required field \"$field\" missing for \"$splitoff_field\". ($filename)\n";
-					$looks_good = 0;
-				}
-			}
 
 			# make sure have InfoN (N>=2) if use Info2 features
 			if (($properties->{infon} || 1) < 2) {
@@ -602,7 +553,11 @@ sub validate_info_file {
 					}
 				}
 			}
-		
+
+			if (&validate_info_component($splitoff_properties, $splitoff_field, $filename) == 0) {
+				$looks_good = 0;
+			}
+
 			if (exists $splitoff_properties->{shlibs}) {
 				my @shlibs = split /\n/, $splitoff_properties->{shlibs};
 				chomp @shlibs;
@@ -643,60 +598,13 @@ sub validate_info_file {
 				}
 			}
 
-			foreach $field (keys %$splitoff_properties) {
-				$value = $splitoff_properties->{$field};
-
-				if ($field eq "files" and ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/)) {
+			if (defined ($value = $splitoff_properties->{files})) {
+				if ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/) {
 					print "Warning: Field \"$field\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
 					$looks_good = 0;
 				}
-
-				# Check for hardcoded /sw.
-				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
-					print "Warning: Field \"$field\" of \"$splitoff_field\" appears to contain a hardcoded /sw. ($filename)\n";
-					$looks_good = 0;
-				}
-
-				# Check for %p/src
-				if ($value =~ /\%p\\?\/src\\?\//) {
-					print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
-					$looks_good = 0;
-				}
-
-				# dpkg install-time script stuff
-				if ($field =~ /^(pre|post)(inst|rm)script$/) {
-					# A #! line is worthless
-					if ($value =~ /^\s*\#!/) {
-						print "Warning: Useless use of explicit interpretter in field \"$field\" of \"$splitoff_field\". ($filename)\n";
-						$looks_good = 0;
-					}
-					# must operate on %p not %i
-					if ($value =~ /\%i\//) {
-						print "Error: Use of \%i in field \"$field\" of \"$splitoff_field\". ($filename)\n";
-						$looks_good = 0;
-					}
-				}
-
-				# Warn if field is unknown or invalid within a splitoff
-				unless ($splitoff_valid_fields{$field}) {
-					if ($valid_fields{$field}) {
-						print "Warning: Field \"$field\" of \"$splitoff_field\" is not valid in splitoff. ($filename)\n";
-					} else {
-						print "Warning: Field \"$field\" of \"$splitoff_field\" is unknown. ($filename)\n";
-					}
-					$looks_good = 0;
-				}
 			}
-			next;
 		} # end of SplitOff field validation
-
-		# Warn if field is unknown
-		unless ($valid_fields{$field}
-				 or $field =~ m/^source([2-9]|[1-9]\d+)$/) {
-			print "Warning: Field \"$field\" is unknown. ($filename)\n";
-			$looks_good = 0;
-			next;
-		}
 	}
 
 	# Warn for missing / overlong package descriptions
@@ -813,6 +721,96 @@ sub validate_info_file {
 	if ($looks_good and Fink::Config::verbosity_level() == 3) {
 		print "Package looks good!\n";
 	}
+}
+
+# checks that are common to a parent and a splitoff package of a .info file
+# returns boolean of whether everything is okay
+sub validate_info_component {
+	my $properties = shift;      # hashref (will not be altered)
+	my $splitoff_field = shift;  # "splitoffN", or null or undef in parent
+	my $filename = shift;
+
+	my (@pkg_required_fields, %pkg_valid_fields);
+
+	my $is_splitoff = 0;
+	$splitoff_field = "" unless defined $splitoff_field;
+	if (defined $splitoff_field && length $splitoff_field) {
+		$is_splitoff = 1;
+		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
+		@pkg_required_fields = qw(package);
+		%pkg_valid_fields = %splitoff_valid_fields;
+	} else {
+		@pkg_required_fields = @required_fields;
+		%pkg_valid_fields = %valid_fields;
+	}		
+
+	my ($field, $value);
+	my $looks_good = 1;
+
+	### field-specific checks
+
+	# Verify that all required fields are present
+	foreach $field (@pkg_required_fields) {
+		unless (exists $properties->{lc $field}) {
+			print "Error: Required field \"$field\"$splitoff_field missing. ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
+	# dpkg install-time script stuff
+	foreach $field (qw/preinstscript postinstscript preinstrm postinstrm/) {
+		next unless defined ($value = $properties->{$field});
+
+		# A #! line is worthless
+		if ($value =~ /^\s*\#!/) {
+			print "Warning: Useless use of explicit interpretter in \"$field\"$splitoff_field. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# must operate on %p not %i
+		if ($value =~ /\%i\//) {
+			print "Error: Use of \%i in field \"$field\"$splitoff_field. ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
+	### checks that apply to all fields
+
+	foreach $field (keys %$properties) {
+		next if $field =~ /^splitoff/;   # we don't do recursive stuff here
+		$value = $properties->{$field};
+
+		# Check for hardcoded /sw
+		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
+			print "Warning: Field \"$field\"$splitoff_field appears to contain a hardcoded /sw. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# Check for %p/src
+		if ($value =~ /\%p\\?\/src\\?\//) {
+			print "Warning: Field \"$field\"$splitoff_field appears to contain \%p/src. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# warn for non-plain-text chars
+		if ($value =~ /[^[:ascii:]]/) {
+			print "Warning: \"$field\"$splitoff_field contains non-standard characters. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# Warn if field is unknown
+		unless ($pkg_valid_fields{$field}) {
+			unless (!$is_splitoff and
+					( $field =~ m/^source([2-9]|[1-9]\d+)(|extractdir|rename|-md5)$/
+					  or $field =~ m/^tar([2-9]|[1-9]\d+)filesrename$/
+					  ) ) {
+				print "Warning: Field \"$field\"$splitoff_field is unknown. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+	}
+
+	return $looks_good;
 }
 
 #
