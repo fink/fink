@@ -134,16 +134,12 @@
 	* Services.pm: Implement execute_nonroot_okay and
 	execute_script_nonroot_okay as wrappers that obey fink's
 	--build-as-nobody flag.
-	* PkgVersion.pm: New forth argument to run_script(): boolean
+	* PkgVersion.pm: New fourth argument to run_script(): boolean
 	whether okay to run as non-root.
 	* PkgVersion.pm: --build-as-nobody causes unnpack, patch, compile,
 	and install phases to run as user nobody, then install dir is
 	chowned back to root before setting up .deb,
 	* Engine.pm: Big fat warning if using --build-as-nobody.
-
-2004-11-24  Daniel Macks  <dmacks@netspace.org>
-
-	* PkgVersion.pm: Do not include "$epoch:" in buildlock pkgname.
 
 2004-11-24  Daniel Macks  <dmacks@netspace.org>
 
