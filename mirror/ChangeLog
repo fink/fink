@@ -1,5 +1,5 @@
 2003-11-20 David H. <dmalloc@users.sourceforge.net>
-	* Added mirror in Norway
+	* Added full mirror in Norway (rsync/distfiles)
 		trd.no.eu.finkmirrors.net
 		Maintainer:
 		Harvar Valeur
