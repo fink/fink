@@ -270,11 +270,6 @@ sub setup_direct_cvs {
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -d fink dists";
-	if ($distribution ne "10.1") {
-		# Only fetch the dist we're using. Not sure how to short-circuit
-		# 10.1 tree--good thing we can't bootstrap there any more...
-		$cmdd .= "/" . $distribution;
-	}
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -366,11 +361,6 @@ sub do_direct_cvs {
 
 	@sb = stat("$descdir/CVS");
 	$cmd = "cvs ${verbosity} -z3 update -d -P";
-	if ($distribution ne "10.1") {
-		# Only update the dist we're using. Not sure how to short-circuit
-		# 10.1 tree--good thing we can't bootstrap there any more...
-		$cmd .= " " . $distribution;
-	}
 	$msg = "I will now run the cvs command to retrieve the latest package ".
 			"descriptions. ";
 
