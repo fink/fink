@@ -1908,6 +1908,10 @@ sub set_env {
 	my ($varname, $s, $expand);
 	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
 					 "LDFLAGS" => "-L\%p/lib" );
+	my %stickydefaults;
+	if ($config->param("Distribution") > 10.2) {
+	    %stickydefaults  = ( "MACOSX_DEPLOYMENT_TARGET" => "10.3" );
+	}
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	# clean the environment
@@ -1943,14 +1947,19 @@ sub set_env {
 			if (exists $defaults{$varname} and
 					not $self->param_boolean("NoSet$varname")) {
 				$s .= " ".$defaults{$varname};
-			}
+			    } 
 			$ENV{$varname} = &expand_percent($s, $expand);
 		} else {
 			if (exists $defaults{$varname} and
-					not $self->param_boolean("NoSet$varname")) {
+					not $self->param_boolean("NoSet$varname
+")) {
 				$s = $defaults{$varname};
 				$ENV{$varname} = &expand_percent($s, $expand);
-			} else {
+			} elsif (exists $stickydefaults{$varname} and 
+					not $self->param_boolean("NoSet$varname")) {
+				$s = $stickydefaults{$varname};
+				$ENV{$varname} = &expand_percent($s, $expand);
+			    } else {
 				delete $ENV{$varname};
 			}
 		}
