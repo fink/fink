@@ -1,7 +1,14 @@
 2004-03-01  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Took out parsing of Type into %type_*[] b/c don't
+	have a way to get a single subtype from the subtype list. This
+	means %type_*[] will cause an error if used in Patch: value.
+
+2004-03-01  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Rip out old Type: validation code. Fix other
 	checks to use new multivariant Type. This is slightly fragile.
+	Remembered to switch _info_level property to infon
 
 2004-03-01  Daniel Macks  <dmacks@netspace.org>
 

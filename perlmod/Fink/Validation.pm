@@ -284,7 +284,6 @@ sub validate_info_file {
 	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
 	my ($basepath, $expand, $buildpath);
-	my ($type_hash);
 	my $looks_good = 1;
 	my $error_found = 0;
 	my $arch = get_arch();
@@ -599,15 +598,6 @@ sub validate_info_file {
 				'b' => '.',
 				'm' => $arch
 	};
-
-	if (defined $properties->{type}) {
-		$type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
-		foreach (keys %$type_hash) {
-			( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-		}
-	} else {
-		$type_hash = {};
-	}
 
 	# Verify the patch file(s) exist and check some things
 	@patchfiles = ();
