@@ -621,7 +621,7 @@ RSYNCAGAIN:
 			&execute("/bin/mkdir -p '$basepath/fink/$dist/$tree'")
 		}
 	}
-	$cmd = "rsync -rz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
+	$cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --exclude='**' '$rsynchost' '$basepath/fink/'";
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
 		if ($username) {
