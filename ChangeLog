@@ -1,3 +1,8 @@
+2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.18.1, a bugfix release 
+	on branch_0_18
+
 2004-01-10  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.conf.5.in: Removed duplicate ADVANCED SETTINGS section.
