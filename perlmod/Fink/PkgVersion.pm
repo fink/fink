@@ -896,7 +896,10 @@ sub phase_install {
   unless ($self->{_bootstrap}) {
     $install_script .= "mkdir -p \%d/DEBIAN\n";
   }
-  if ($self->{_type} ne "bundle") {
+  if ($self->{_type} eq "bundle") {
+    $install_script .= "mkdir -p \%i/share/doc/\%n\n";
+    $install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
+  } else {
     if ($self->has_param("InstallScript")) {
       $install_script .= $self->param("InstallScript");
     } else {

@@ -1,3 +1,8 @@
+2001-09-21  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_install): Create a small README for bundle
+	packages - dpkg doesn't like empty packages.
+
 2001-09-17  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: More protection against unexpected white space.
