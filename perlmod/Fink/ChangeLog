@@ -1,3 +1,7 @@
+2003-09-08  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* VirtPackage.pm: Autodetect X11 (I hope, maybe, Please test/fix)
+
 2003-09-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Allow prebinding whenever the distribution is
