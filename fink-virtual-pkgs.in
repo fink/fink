@@ -43,9 +43,11 @@ if ($options{apt}) {
 if ($standalone == 0)
 {
 	$dlist = Fink::VirtPackage->list();
-	foreach $pkgname (keys %$dlist) {
+	foreach $pkgname (sort keys %$dlist) {
 		$hash = $dlist->{$pkgname};
-		next if exists $hash->{builddependsonly}; # Do no pass builddependsonly packages to apt/dpkg
+		if ($options{'dpkg'} or $options{'apt'}) {
+			next if exists $hash->{builddependsonly}; # Do no pass builddependsonly packages to apt/dpkg
+		}
 		$epoch=0;
 		if ($options{dpkg}) {
 			if (@versions = parse_fullversion($hash->{version})) {
