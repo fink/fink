@@ -670,8 +670,7 @@ sub cmd_remove {
 sub get_pkglist {
 	my $cmd = shift;
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
-	my ($vo, @versions);
-	my ($buildonly, $wanthelp);
+	my ($buildonly, $wanthelp, $po);
 
 	use Getopt::Long;
 	my @temp_ARGV = @ARGV;
@@ -734,15 +733,14 @@ EOF
 		}
 
 		# shouldn't be able to remove or purge esstential pkgs
-		@versions = $package->list_installed_versions();
-		$vo = $package->get_version($versions[0]);
-		if ( $vo->param_boolean("essential") ) {
+		$po = Fink::PkgVersion->match_package($pname);
+		if ( $po->param_boolean("essential") ) {
 			print "WARNING: $pname is essential, skipping.\n";
 			next;
 		}
 
 		if (defined $buildonly) {
-			next unless ( $vo->param_boolean("builddependsonly") );
+			next unless ( $po->param_boolean("builddependsonly") );
 		}
 
 		push @packages, $package->get_name();
