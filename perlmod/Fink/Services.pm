@@ -211,14 +211,13 @@ sub expand_url {
   my ($mirror, $path);
 
   require Fink::Config;
-  import Fink::Config qw($config);
 
   if ($s =~ /^mirror\:(\w+)\:(.*)$/) {
     $mirror = $1;
     $path = $2;
 
-    if ($config->has_param("mirror-$mirror")) {
-      $s = $config->param("mirror-$mirror");
+    if ($Fink::Config::config->has_param("mirror-$mirror")) {
+      $s = $Fink::Config::config->param("mirror-$mirror");
       $s .= "/" unless $s =~ /\/$/;
       $s .= $path;
     } else {
