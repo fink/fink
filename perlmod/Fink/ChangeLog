@@ -9,6 +9,10 @@
 	  index code is always called after the pkg index code
 	* PkgVersion.pm: adding ${SHLIB_DEPS} replace code, had to ignore
 	  ${SHLIB_DEPS} in resolve_depends
+	* PkgVersion.pm: added check in resolve_depends for deb file, if deb
+	  file call get_debdeps
+	* PkgVersion.pm: added get_debdeps function to read the deps from a
+	  deb file and return the comma delimited string
 
 2003-07-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

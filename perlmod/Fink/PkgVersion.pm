@@ -689,7 +689,14 @@ sub resolve_depends {
 		}
 	}
 	
-	@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+	### FIXME
+	### Underconstruction
+	if ($self->find_debfile()) {
+		print "Reading dependencies from deb file...\n";
+		@speclist = split(/\s*\,\s*/, &get_debdeps());
+	} else {
+		@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+	}
 	if ($include_build) {
 		push @speclist,
 			split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
@@ -700,8 +707,14 @@ sub resolve_depends {
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
 		foreach	 $splitoff (@{$self->{_splitoffs}}) {
-			push @speclist,
-				split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+			if ($splitoff->find_debfile()) {
+				print "Reading dependencies from deb file...\n";
+				push @speclist,
+					split(/\s*\,\s*/, &get_debdeps());
+			} else {
+				push @speclist,
+					split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+			}
 		}
 	}
 
@@ -2016,6 +2029,10 @@ sub run_script {
 	
 	# Restore the environment
 	%ENV = %env_bak;
+}
+
+sub get_debdeps {
+	return "";
 }
 
 ### EOF
