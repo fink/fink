@@ -213,10 +213,10 @@ For example, if you live in Austria:
 .It MirrorCountry: eur-AT 
 .El
 .It Cm MirrorOrder: Ar MasterFirst or MasterLast or MasterNever or ClosestFirst
-fink supports 'Master' mirrors, which are mirrored repositories of the source
-tarballs for all fink packages. The advantage of using the Master mirror set is that 
+Fink supports 'Master' mirrors, which are mirrored repositories of the source
+tarballs for all Fink packages. The advantage of using the Master mirror set is that 
 the source download URLs will never break. Users can choose to use 
-these mirrors which are maintained by the fink team, or to use only the original 
+these mirrors which are maintained by the Fink team, or to use only the original 
 source URLs and external mirror sites such as the gnome, KDE, and debian mirror sites.
 Additionally users can choose to combine the two sets, which are then searched in proximity order, as 
 documented above. When using the MasterFirst or MasterLast options, the user can 'skip ahead' 
