@@ -78,7 +78,7 @@ sub initialize {
   # parse dependencies
   $depspec = $self->param_default("Depends", "");
   $deplist = [];
-  foreach $dep (split(/\,\s*|\s+/, $depspec)) {
+  foreach $dep (split(/\s*\,\s*/, $depspec)) {
     next if $dep eq "x11";
     push @$deplist, $dep;
   }

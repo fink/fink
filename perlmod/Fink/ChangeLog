@@ -1,3 +1,8 @@
+2001-04-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (initialize): Dependencies must be separated by a
+	comma now; a space is no longer sufficient.
+
 2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Bootstrap.pm (bootstrap): Added code to install all essential
