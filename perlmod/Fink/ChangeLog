@@ -1,5 +1,9 @@
 2001-06-17  Christoph Pfisterer  <cp@chrisp.de>
 
+	* PkgVersion.pm: Automatically create section name from
+	path. Search parent directories for .deb files.
+	* Engine.pm (cmd_scanpackages): Write section to override file.
+
 	* Engine.pm (real_install): Added preliminary virtual package
 	support.
 	* Package.pm (scan): Add the right object to the provider list.

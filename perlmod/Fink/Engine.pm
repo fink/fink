@@ -171,7 +171,7 @@ sub cmd_scanpackages {
     if ($pkgversion->param_boolean("Essential")) {
       $prio = "required";
     }
-    print OVERRIDE "$pkgname $prio main\n";
+    print OVERRIDE "$pkgname $prio ".$pkgversion->get_section()."\n";
   }
   close(OVERRIDE) or die "can't write override file: $!\n";
 

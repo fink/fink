@@ -51,7 +51,7 @@ sub initialize {
   my $self = shift;
   my ($pkgname, $version, $revision, $filename, $source);
   my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
-  my ($i, $path);
+  my ($i, $path, @parts, $finkinfo_index, $section);
 
   $self->SUPER::initialize();
 
@@ -63,15 +63,29 @@ sub initialize {
   $self->{_filename} = $filename = $self->{thefilename};
 
   # path handling
-  $filename =~ /^(.*\/)[^\/]*$/;
-  $path = $1;
-  if (substr($path,-1) eq "/") {
-    $path = substr($path,0,-1);
+  @parts = split(/\//, $filename);
+  pop @parts;   # remove filename
+  $self->{_patchpath} = join("/", @parts);
+  for ($finkinfo_index = $#parts;
+       $finkinfo_index > 0 and $parts[$finkinfo_index] ne "finkinfo";
+       $finkinfo_index--) {
+    # this loop intentionally left blank
   }
-  $self->{_patchpath} = $path;
-  $path =~ s|/finkinfo|/binary-$debarch|;
-  $self->{_debpath} = $path;
-  $self->{_debpaths} = [ $path ];
+  if ($finkinfo_index <= 0) {
+    die "Path \"$filename\" contains no finkinfo directory!\n";
+  }
+  $section = $parts[$finkinfo_index-1]."/";
+  if ($finkinfo_index < $#parts) {
+    $section = "" if $section eq "main/";
+    $section .= join("/", @parts[$finkinfo_index+1..$#parts])."/";
+  }
+  $self->{_section} = substr($section,0,-1);   # cut last /
+  $parts[$finkinfo_index] = "binary-$debarch";
+  $self->{_debpath} = join("/", @parts);
+  $self->{_debpaths} = [];
+  for ($i = $#parts; $i >= $finkinfo_index; $i--) {
+    push @{$self->{_debpaths}}, join("/", @parts[0..$i]);
+  }
 
   # some commonly used stuff
   $self->{_fullversion} = $version."-".$revision;
@@ -124,7 +138,7 @@ sub merge {
   my $self = shift;
   my $dup = shift;
 
-  push @{$self->{_debpaths}}, $dup->{_debpath};
+  push @{$self->{_debpaths}}, @{$dup->{_debpaths}};
 }
 
 ### bootstrap helpers
@@ -190,6 +204,11 @@ sub get_debpath {
 sub get_debfile {
   my $self = shift;
   return $self->{_debpath}."/".$self->{_debname};
+}
+
+sub get_section {
+  my $self = shift;
+  return $self->{_section};
 }
 
 ### other accessors
