@@ -1,3 +1,9 @@
+2003-11-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in, bootstrap.pl: Run the test suite while building
+	fink.  (Requires new bootstrap packages file-spec-pm, test-simple-pm, 
+	and test-harness-pm when running under perl 5.6.x.)
+
 2003-11-26  Michael G Schwern <schwern@pobox.com>
 
 	* fink.in: Last change forgot to read_config() so fink wouldn't work.

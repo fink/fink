@@ -1,3 +1,8 @@
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* file-spec-pm, test-harness-pm, test-simple-pm: new essential
+	packages, needed so that the test suite can be run during bootstrap
+
 2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* system-perl*: removed these, which are no longer needed with
