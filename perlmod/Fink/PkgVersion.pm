@@ -1394,8 +1394,7 @@ sub phase_install {
 
 			$install_script .= 
 				"/bin/mkdir -p \%i/share/podfiles$perldirectory\n".
-				"for i in `find \%i -name perllocal.pod`; do /bin/cat \$i | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod; done;\n".
-				"/bin/rm -rf \%i/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
+				"for i in `find \%i -name perllocal.pod`; do /bin/cat \$i | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod; /bin/rm -rf \$i; done;\n";
 		}
 	}
 
