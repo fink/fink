@@ -1,6 +1,7 @@
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* VERSION: Bumped package manager version to 0.16.0
+	* VERSION: Bumped package manager version to 0.16.0, which does
+	not include the perl module changes from 2003-10-21
 
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
