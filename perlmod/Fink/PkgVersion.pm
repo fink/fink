@@ -2202,7 +2202,7 @@ sub phase_build {
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		&execute("chown -R root '$destdir'") or die "\n";
+		&execute("chown -R root '$destdir'") and die "Could not revert\n";
 	}
 
 	# generate dpkg "control" file

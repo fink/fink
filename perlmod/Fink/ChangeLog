@@ -1,3 +1,8 @@
+2004-11-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fixed &execute() result-code handling when
+	--build-as-nobody reverts %i ownership to root.
+
 2004-11-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Implement execute_nonroot_okay and
