@@ -146,9 +146,9 @@ sub initialize {
 		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
 		$hash->{description} = "[virtual package representing perl]";
 
-		$hash->{provides} = Fink::Services::get_system_perl_version();
-		$hash->{provides} =~ s/\.//g;
-		$hash->{provides} = 'perl' . $hash->{provides} . '-core';
+		my $shortver = Fink::Services::get_system_perl_version();
+		$shortver =~ s/\.//g;
+		$hash->{provides} = 'perl' . $shortver . '-core, system-perl' . $shortver;
 
 		$self->{$hash->{package}} = $hash;
 	} else {
