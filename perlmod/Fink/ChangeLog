@@ -1,7 +1,11 @@
+2001-09-03  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm: Load specialized modules on demand only.
+
 2001-09-03  Max Horn  <max@quendi.de>
 
-	* Bootstrap.pm: fixed bootstrap by forcing the package descriptions
-	tp be read in.
+	* Bootstrap.pm: Fixed bootstrap by forcing the package descriptions
+	to be read in.
 
 2001-08-31  Christoph Pfisterer  <cp@chrisp.de>
 

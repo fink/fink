@@ -26,10 +26,6 @@ use Fink::Services qw(&prompt_boolean &print_breaking &print_breaking_prefix
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath);
-use Fink::Configure;
-use Fink::Bootstrap;
-use Fink::SelfUpdate;
-use Fink::Validation qw(&validate_info_file &validate_dpkg_file);
 
 use strict;
 use warnings;
@@ -156,18 +152,22 @@ sub cmd_rescan {
 }
 
 sub cmd_configure {
+  require Fink::Configure;
   Fink::Configure::configure();
 }
 
 sub cmd_bootstrap {
+  require Fink::Bootstrap;
   Fink::Bootstrap::bootstrap();
 }
 
 sub cmd_selfupdate {
+  require Fink::SelfUpdate;
   Fink::SelfUpdate::check();
 }
 
 sub cmd_selfupdate_finish {
+  require Fink::SelfUpdate;
   Fink::SelfUpdate::finish();
 }
 
@@ -368,7 +368,9 @@ sub cmd_remove {
 
 sub cmd_validate {
   my ($filename, @flist);
-  
+
+  require Fink::Validation;
+
   @flist = @_;
   if ($#flist < 0) {
     die "no input file specified for command 'validate'!\n";
@@ -378,10 +380,10 @@ sub cmd_validate {
   foreach $filename (@flist) {
     die "File \"$filename\" does not exist!\n" unless (-f $filename);
     if ($filename =~/\.info$/) {
-      &validate_info_file($filename);
+      Fink::Validation::validate_info_file($filename);
       print "\n";
     } elsif ($filename =~/\.deb$/) {
-      &validate_dpkg_file($filename);
+      Fink::Validation::validate_dpkg_file($filename);
       print "\n";
     } else {
       print "Don't know how to handle $filename, skipping\n";
