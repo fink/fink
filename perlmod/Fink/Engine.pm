@@ -389,6 +389,10 @@ EOF
 			$description = "[virtual package]";
 			next if ($cmd eq "apropos"); 
 			next unless ($options{installedstate} & 4);
+			next if (defined $buildonly);
+			next if (defined $section);
+			next if (defined $maintainer);
+			next if (defined $pkgtree);
 		} else {
 			$lversion = &latest_version($package->list_versions());
 			$vo = $package->get_version($lversion);

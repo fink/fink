@@ -1,3 +1,7 @@
+2004-08-08  Max Horn <max@quendi.de>
+
+	* Engine.pm: Fix list command with regards to virtual packages.
+
 2004-08-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Config.pm: correct the regex for parsing Trees in write_sources_list
