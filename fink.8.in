@@ -43,6 +43,29 @@ Display fink version information.
 Causes fink to be more verbose, opposite of --quiet
 .It Cm -y, --yes
 Assume default answer for all interactive questions
+.It Cm -K, --keep-root-dir
+Causes Fink not to delete the
+.Pa @PREFIX@/src/root-[name]-[version]-[revision]
+directory after building a package.
+.It Cm -k, --keep-build-dir
+Causes Fink not to delete the
+.Pa @PREFIX@/src/[name]-[version]-[revision]
+directory after building a package.
+.It Cm -b, --use-binary-dist
+Download pre-compiled binary packages from the binary distribution 
+if available and if deb is not already on the system
+.Pp
+Note that this mode instructs Fink to download the version it wants if
+that version is available for download; it does not cause Fink to
+choose a version based on its binary availability.
+.It Cm --no-use-binary-dist
+Don't use pre-compiled binary packages from the binary distribution
+(opposite of --use-binary-dist)
+.It Cm --build-as-nobody
+Drop to a non-root user when performing the unpack, patch, compile,
+and install phases. Note that packages built with this option may be
+non-functional. You should use this mode for package development and
+debugging only.
 .El
 .\"
 .\"
@@ -68,12 +91,10 @@ does so.
 Aliases:
 .Cm update, enable, activate, use
 .It Cm remove Ar package...
-The remove command removes packages from the system by calling
-.Ql "dpkg --remove".
-The current implementation has some flaws: It only works on
-packages Fink knows about (i.e. where an .info file is present); and it
+The remove command removes packages from the system.
+The current implementation has a flaw: it
 doesn't check dependencies itself but rather completly leaves that to the
-dpkg tool (usually this poses no problem, though).
+dpkg or apt-get tool (usually this poses no problem, though).
 .Pp
 The remove command removes the actual package files (excluding configuration
 files), but leaves the .deb compressed package file intact. This means that you 
@@ -82,14 +103,35 @@ If you need the disk space, you can remove the .deb from the
 .Pa @PREFIX@/fink/dists
 tree.
 .Pp
+These flags can be used with the 
+.Cm fink remove
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -r,--recursive
+Also remove packages that depend on the package(s) to be removed.
+.El
+.Pp
 Aliases:
 .Cm disable, deactivate, unuse, delete
+.Pp
 .It Cm purge Ar package...
-The purge command purges packages from the system by calling
-.Ql "dpkg --purge".
+The purge command purges packages from the system.
 This is the same as
 .Cm fink remove
 except that it removes configuration files as well.
+.Pp
+These flags can be used with the 
+.Cm fink purge
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -r,--recursive
+Also purge packages that depend on the package(s) to be purged.
+.El
+.Pp
 .It Cm update-all
 This command updates all installed packages to the latest version. It does
 not need a package list, so you just type:
@@ -109,6 +151,8 @@ not installed
 latest version is installed
 .It (i)
 installed, but a newer version is available
+.It \ p
+a virtual package provided by a package that is installed
 .El
 .Pp
 There are also some flags for the 
@@ -128,13 +172,13 @@ Show only those packages which are out of date.
 Show only packages which are up to date.
 .It Cm -n,--notinstalled
 Show packages which are not currently installed.
-.It Cm -s=expr,--section=expr
+.It Cm -s expr,--section=expr
 Show only packages in the sections matching the regular expression expr.
-.It Cm -m=expr,--maintainer=expr
+.It Cm -m expr,--maintainer=expr
 Show only packages with the maintainer  matching the regular expression expr.
-.It Cm -t=expr,--tree=expr
+.It Cm -t expr,--tree=expr
 Show only packages in the trees matching the regular expression expr.
-.It Cm -w=xyz,--width=xyz
+.It Cm -w xyz,--width=xyz
 Sets the width of the display you would like the output
 formatted for. xyz is either a numeric value or auto.
 auto will set the width based on the terminal width.
@@ -176,27 +220,65 @@ description.
 .Pp
 Aliases:
 .Cm desc, description, info
+.Pp
 .It Cm fetch Ar package...
 Downloads the named packages, but does not install it. This command will
 download the tarballs even if they were downloaded before.
+.Pp
+These flags can be used with the 
+.Cm fink fetch
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -i,--ignore-restrictive
+Do not fetch packages that are "License: Restrictive". Useful for mirrors, because
+some restrictive packages do not allow source mirroring.
+.It Cm -d,--dry-run
+Just display information about the file(s) that would be downloaded
+for the package(s) to be fetched; do not actually download anything.
+.It Cm -r,--recursive
+Also fetch packages that are dependencies of the package(s) to be fetched.
+.El
+.Pp
 .It Cm fetch-all
 Downloads
 .Em all
 package source files. Like fetch, this downloads the
 tarballs even when they were downloaded before.
+.Pp
+These flags can be used with the 
+.Cm fink fetch-all
+command
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -i,--ignore-restrictive
+Do not fetch packages that are "License: Restrictive". Useful for mirrors, because
+some restrictive packages do not allow source mirroring.
+.It Cm -d,--dry-run
+Just display information about the file(s) that would be downloaded
+for the package(s) to be fetched; do not actually download anything.
+.El
+.Pp
 .It Cm fetch-missing
 Downloads
 .Em all
 package source files. This command will only download files
 that are not present on the system.
 .Pp
-fink
-.Cm fetch-missing
-has one flag:
+These flags can be used with the 
+.Cm fink fetch-missing
+command
 .Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
 .It Cm -i,--ignore-restrictive
 Do not fetch packages that are "License: Restrictive". Useful for mirrors, because
 some restrictive packages do not allow source mirroring.
+.It Cm -d,--dry-run
+Just display information about the file(s) that would be downloaded
+for the package(s) to be fetched; do not actually download anything.
 .El
 .Pp
 .It Cm build Ar package...
@@ -248,22 +330,57 @@ for more details.
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm
 should auto-detect when it needs to be updated.
-.It Cm validate Ar file...
+.It Cm validate Ar [options] file...
 This command performs various checks on .info and .deb files. Package maintainers 
 should run this on their package descriptions and corresponding built
 packages before submitting them.
 .Pp
 Aliases:
 .Cm check
+.Pp
+The following optional
+.Ar options
+may be used:
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -p,--prefix
+Simulate an alternate Fink basepath prefix (%p) within the files being validated.
+.It Cm --pedantic, --no-pedantic
+Control the display of nitpicky formatting warnings.
+.Cm --pedantic
+is the default.
+.El
 .It Cm scanpackages Op Ar tree...
 Calls
 .Xr dpkg-scanpackages 8
 with the specified trees.
-.It Cm checksums
-Validates the MD5 digest of all packages' tarballs, where possible.
 .It Cm cleanup
-Removes obsolete package files (.info, .patch, .deb) if newer versions
-are available. This can reclaim large amounts of disk space.
+Removes obsolete and temporary files. This can reclaim large amounts of
+disk space.
+.It Cm dumpinfo Ar [options] package...
+Shows how Fink parses parts of a package's .info file. Various fields and
+percent expansions will be displayed according to
+.Ar options
+as follows:
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -a,--all
+Display all fields from the package description.
+This is the default mode when no
+.Ar --field
+or
+.Ar --percent
+flags are given.
+.It Cm -f fieldname, --field=fieldname
+Display the given fieldname(s), in the order listed.
+.It Cm -p key, --percent=key
+Display the given percent expansion key(s), in the order listed.
+.El
+.It Cm show-deps Ar package...
+Displays a human-readable list of the compile-time (build) and
+run-time (installation) dependencies of the listed package(s).
 .El
 .\"
 .\"
