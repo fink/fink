@@ -1,3 +1,8 @@
+2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm, Validation.pm:  Allow the MACOSX_DEPLOYMENT_TARGET
+	environment variable to be set in Fink. (Patch # 652716).
+
 2002-12-22  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Fix bootstrapping problem caused by giving full

@@ -1754,10 +1754,11 @@ sub set_env {
   foreach $varname ("CC", "CFLAGS",
 		    "CPP", "CPPFLAGS",
 		    "CXX", "CXXFLAGS",
-		    "LD", "LDFLAGS", "LIBS",
-		    "MAKE", "MFLAGS",
-		    "LIBRARY_PATH",
-		    "DYLD_LIBRARY_PATH") {
+		    "DYLD_LIBRARY_PATH",
+                    "LD", "LDFLAGS", 
+                    "LIBRARY_PATH", "LIBS",
+                    "MACOSX_DEPLOYMENT_TARGET",
+		    "MAKE", "MFLAGS") {
     if ($self->has_param("Set$varname")) {
       $s = $self->param("Set$varname");
       if (exists $defaults{$varname} and
