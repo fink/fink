@@ -29,7 +29,7 @@ use Fink::CLI qw(&print_breaking);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Engine;
-use Fink::Command qw(cat);
+use Fink::Command qw(cat mkdir_p rm_rf touch);
 
 use strict;
 use warnings;
@@ -70,18 +70,15 @@ sub bootstrap {
 
 	# create directories
 	if (-e $bsbase) {
-		&execute("/bin/rm -rf $bsbase");
+		rm_rf $bsbase;
 	}
-	&execute("/bin/mkdir -p $bsbase");
-	&execute("/bin/mkdir -p $bsbase/bin");
-	&execute("/bin/mkdir -p $bsbase/sbin");
-	&execute("/bin/mkdir -p $bsbase/lib");
+	mkdir_p "$bsbase/bin", "$bsbase/sbin", "$bsbase/lib";
 
 	# create empty dpkg database
-	&execute("/bin/mkdir -p $basepath/var/lib/dpkg");
-	&execute("/usr/bin/touch $basepath/var/lib/dpkg/status");
-	&execute("/usr/bin/touch $basepath/var/lib/dpkg/available");
-	&execute("/usr/bin/touch $basepath/var/lib/dpkg/diversions");
+	mkdir_p "$basepath/var/lib/dpkg";
+	touch "$basepath/var/lib/dpkg/status",
+	      "$basepath/var/lib/dpkg/available",
+	      "$basepath/var/lib/dpkg/diversions";
 
 	# set paths so that everything is found
 	$save_path = $ENV{PATH};
@@ -137,7 +134,7 @@ sub bootstrap {
 	print "\n";
 	&print_breaking("BOOTSTRAP DONE. Cleaning up.");
 	print "\n";
-	&execute("/bin/rm -rf $bsbase");
+	rm_rf $bsbase;
 
 	$ENV{PATH} = $save_path;
 }

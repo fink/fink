@@ -30,6 +30,7 @@ use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
 use File::Find;
 use Fink::Status;
+use Fink::Command qw(mkdir_p);
 
 use strict;
 use warnings;
@@ -500,9 +501,8 @@ sub cmd_scanpackages {
 		}
 
 		if (! -d $treedir) {
-			if (&execute("/bin/mkdir -p $treedir")) {
+			mkdir_p $treedir or
 				die "can't create directory $treedir\n";
-			}
 		}
 
 		$cmd = "dpkg-scanpackages $treedir override | gzip >$treedir/Packages.gz";
