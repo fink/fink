@@ -332,6 +332,9 @@ Display the given fieldname(s), in the order listed.
 .It Cm -p key, --percent=key
 Display the given percent expansion key(s), in the order listed.
 .El
+.It Cm show-deps Ar package...
+Displays a human-readable list of the compile-time (build) and
+run-time (installation) dependencies of the listed package(s).
 .El
 .\"
 .\"
