@@ -1,3 +1,9 @@
+2004-01-06  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Fixed resolve_depends code.
+	* Engine.pm: Do not use BuildConflicts for packages which are not going to
+	  be built!
+
 2004-01-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Left this file out of the giant CLI commit.

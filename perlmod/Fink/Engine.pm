@@ -1075,7 +1075,9 @@ sub real_install {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
-			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
+			
+			# Do not use BuildConflicts for packages which are not going to be built!
+#			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
 		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {

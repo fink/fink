@@ -793,10 +793,21 @@ sub resolve_depends {
 		}
 	}
 	
-	unless (lc($field) eq "conflicts" || $include_build == 2) {
+	# First, add all regular dependencies to the list.
+	if (lc($field) ne "conflicts") {
+		# FIXME: Right now we completely ignore 'Conflicts' in the dep engine.
+		# We leave handling them to dpkg. That is somewhat ugly, though, because it
+		# means that 'Conflicts' are not automatically 'BuildConflicts' (i.e. the
+		# behavior differs from 'Depends'). 
+		# But right now, enabling conflicts would cause update problems (e.g.
+		# when switching between 'wget' and 'wget-ssl')
 		@speclist = split(/\s*\,\s*/, $self->param_default($field, ""));
-# with this primitive form of @speclist, we verify that the "BuildDependsOnly"
-# declarations have not been violated
+	}
+
+	if (lc($field) ne "conflicts") {
+		# With this primitive form of @speclist, we verify that the "BuildDependsOnly"
+		# declarations have not been violated (of course we only do that when generating
+		# a 'depends' list, not for 'conflicts').
 		foreach $altspecs (@speclist){
 			## Determine if it has a multi type depends line thus
 			## multi pkgs can satisfy the depend and it shouldn't
@@ -839,8 +850,10 @@ sub resolve_depends {
 			}
 		}
 	}
-# now we continue to assemble the larger @speclist
+
+	# now we continue to assemble the larger @speclist
 	if ($include_build) {
+		# Add build time dependencies to the spec list
 		push @speclist,
 			split(/\s*\,\s*/, $self->param_default("Build".$field, ""));
 
