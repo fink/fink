@@ -453,13 +453,18 @@ sub find_debfile {
 sub resolve_depends {
   my $self = shift;
   my $include_build = shift || 0;
-  my (@deplist, $altlist);
+  my (@speclist, @deplist, $altlist);
   my ($altspec, $depspec, $depname, $versionspec, $package);
 
   @deplist = ();
 
-  foreach $altspec (split(/\s*\,\s*/,
-			  $self->param_default("Depends", ""))) {
+  @speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+  if ($include_build) {
+    push @speclist,
+      split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
+  }
+
+  foreach $altspec (@speclist) {
     $altlist = [];
     foreach $depspec (split(/\s*\|\s*/, $altspec)) {
       if ($depspec =~ /^([0-9a-zA-Z.\-]+)\s*\((.+)\)$/) {

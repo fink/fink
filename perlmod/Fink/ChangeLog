@@ -1,3 +1,10 @@
+2001-09-12  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (resolve_depends): Include build-time dependencies
+	when requested (new field BuildDepends).
+	* Engine.pm (real_install): Check build-time dependencies if the
+	package is going to be built.
+
 2001-09-12  Max Horn  <max@quendi.de>
 
 	* Engine.pm: Added 'apropos' command analog to the Unix 'apropos'

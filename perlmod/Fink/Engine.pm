@@ -539,7 +539,13 @@ sub real_install {
     }
 
     # get list of dependencies
-    @deplist = $item->[2]->resolve_depends();
+    if ($item->[3] == $OP_REBUILD or not $item->[2]->is_present()) {
+      # include build-time dependencies
+      @deplist = $item->[2]->resolve_depends(1);
+    } else {
+      @deplist = $item->[2]->resolve_depends(0);
+    }
+    # add essential packages
     if (not $item->[2]->param_boolean("Essential")) {
       push @deplist, @elist;
     }
@@ -587,7 +593,7 @@ sub real_install {
 	  push @vlist, $dp->get_fullversion();
 	}
       }
-      
+
       # add node to graph
       $deps{$dname} = [ $dname, $pnode,
 			$pnode->get_version(&latest_version(@vlist)),
