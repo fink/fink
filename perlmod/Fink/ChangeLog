@@ -1,3 +1,8 @@
+2004-04-19  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Implement new parse_cmd_options() to process 'fink'
+	subcommand options (handles --help including pretty-printing).
+
 2004-04-18  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: All Type are now converted to all-lowercase. Make

@@ -40,6 +40,7 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
 					  &prompt &prompt_boolean &prompt_selection_new
+					  &parse_cmd_options
 			      &get_term_width);
 }
 our @EXPORT_OK;
@@ -380,6 +381,86 @@ sub get_term_width {
 		$width = 80;
 	}
 	return $width;
+}
+
+=item parse_cmd_options
+
+  my @remainder = &parse_cmd_options($cmd, \@arg_info, @args);
+
+This function does Getopt::Long processing of the command-line args
+passed in @args according to the @arg_info. Each element of that array
+is a ref to a 3-element list ($flag, $action, $help) where $flag and
+$action are the key and value passed to Getopt::Long:GetOptions.  The
+--help flag is handled automatically (and does not return): $help is
+the message for each flag in $flag. The subcommand is passed in $cmd
+for use in help and error messages. The remaining (unprocessed)
+arguments from @args are returned.
+
+=cut
+
+sub parse_cmd_options {
+	my $cmd = shift;
+	my $arg_info = shift;
+
+	# GetOptions processes @ARGV so save the original
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+
+	my $wanthelp;
+
+	use Getopt::Long;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'help|h' => \$wanthelp,
+		map { $_->[0] => $_->[1] } @$arg_info
+	) or die "fink $cmd: unknown option\nType 'fink $cmd --help' for more information.\n";
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+
+		print "Fink $version\n\n";
+		print "Usage: fink [options] $cmd [options] [package(s)]\n\n";
+		print "Options:\n";
+
+		my $maxlen = 0;                          # width of flags column
+		my $maxmaxlen = int $linelength/2 - 6;   # maximum allowed $maxlen
+
+		my @flags = map { $_->[0] } @$arg_info;  # the Getopt-formatted flags
+		# convert to pretty-printing format
+		foreach (@flags) {
+			s/!\+//g;                        # clear toggle & incremental specs
+			s/[=:].//g;                      # clear value type specs
+			$_ = join ", ", map {
+				# put - before each single-char flag, -- before each multi-char
+				length $_ == 1 ? "-$_" : "--$_" 
+				} split /\|/;
+			# track longest string (but not if too long)
+			$maxlen = length $_ if $maxlen < length $_ && length $_ <= $maxmaxlen;
+		};
+
+		my $indent = ' ' x ($maxlen+4);  # spaces to get to "-" marker
+
+		my @descs = map { $_->[2] } @$arg_info;  # descriptions
+		while(defined( my $helpstring = shift @flags)) {
+			# scroll through the parallel @flags and @descs list
+			if (length $helpstring > $maxlen) {
+				# long flag strings need wrapping so put on their own line
+				&print_breaking($helpstring, 1, '  ');
+				&print_breaking("- $descs[0]", 1, $indent, "$indent  ");
+			} else {
+				# short flag strings go on same line as (start of) help msg
+				&print_breaking($helpstring.' ' x ($maxlen+2-length($helpstring))."- $descs[0]", 1, '  ', "$indent  ");
+			}
+			shift @descs;
+		}
+		print '  ', '1234567890' x 6, "\n";
+		exit 0;
+	}
+
+	@_ = @ARGV;          # whatever didn't get parsed off
+	@ARGV = @temp_ARGV;  # restore original @ARGV
+
+	return @_;
 }
 
 =back
