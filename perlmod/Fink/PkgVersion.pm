@@ -81,6 +81,8 @@ sub initialize {
     if ($finkinfo_index <= 0) {
       die "Path \"$filename\" contains no finkinfo directory!\n";
     }
+    
+    # compute the "section" of this package, e.g. "net", "devel", "crypto"...
     $section = $parts[$finkinfo_index-1]."/";
     if ($finkinfo_index < $#parts) {
       $section = "" if $section eq "main/";
@@ -93,12 +95,19 @@ sub initialize {
     for ($i = $#parts; $i >= $finkinfo_index; $i--) {
       push @{$self->{_debpaths}}, join("/", @parts[0..$i]);
     }
+    
+    # determine the package tree ("stable", "unstable", etc.)
+	@parts = split(/\//, substr($filename,length("$basepath/fink/dists/")));
+    $self->{_tree}  = $parts[0];
   } else {
     # for dummy descriptions generated from dpkg status data alone
     $self->{_patchpath} = "";
     $self->{_section} = "unknown";
     $self->{_debpath} = "";
     $self->{_debpaths} = [];
+    
+    # assume "binary" tree
+    $self->{_tree} = "binary";
   }
 
   # some commonly used stuff
@@ -334,6 +343,11 @@ sub get_debfile {
 sub get_section {
   my $self = shift;
   return $self->{_section};
+}
+
+sub get_tree {
+  my $self = shift;
+  return $self->{_tree};
 }
 
 ### other accessors

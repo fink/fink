@@ -1,5 +1,7 @@
 2002-03-21  Max Horn  <max@quendi.de>
 
+	* PkgVersion.pm: added get_tree function
+	
 	* NetAccess.pm (download_cmd): Added another download method, "axel"
 	(thanks to Alexander Strange)
 
