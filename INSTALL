@@ -1,11 +1,11 @@
-Generated from $Fink: install.xml,v 1.9 2001/09/04 12:15:12 chrisp Exp $
+Generated from $Fink: install.xml,v 1.10 2002/01/24 21:04:29 fingolfin Exp $
 
- Fink 0.2.6 Installation
-=========================
+ Fink 0.3.2a Installation
+==========================
 
 These are the installation instructions for the "source" distribution of
-Fink 0.2.6. This document does not apply to the "binary" distribution. There
-are insttructions for both first time installation and upgrading from a
+Fink 0.3.2a. This document does not apply to the "binary" distribution.
+There are instructions for both first time installation and upgrading from a
 previous version. Fast track instructions for the impatient are at the top.
 
 
@@ -22,22 +22,22 @@ can still use this section as an example.)
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.2.6-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.3.2a-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
 "normal face" , your input is in "_bold_face_" (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of the
 output have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.2.6-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.2.6-full_
-   [frodo:~/fink-0.2.6-full] testuser% _./bootstrap.sh_/sw_
+   [frodo:~] testuser% _tar_xzf_fink-0.3.2a-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.3.2a-full_
+   [frodo:~/fink-0.3.2a-full] testuser% _./bootstrap.sh_/sw_
    
    Welcome to Fink.
    
    ...
    Choose a method: [1] _1_
    
-   sudo /Users/testuser/fink-0.2.6-full/bootstrap.pl .sudo '/sw'
+   sudo /Users/testuser/fink-0.3.2a-full/bootstrap.pl .sudo '/sw'
    Password:_(your_normal_password_here)_
    ...
    OK, I'll ask you some questions and update the configuration file in
@@ -73,8 +73,8 @@ output have been omitted ( "..." ).
    shells, add 'source /sw/bin/init.csh' to the init script '.cshrc' in your
    home directory. Enjoy.
    
-   [frodo:~/fink-0.2.6-full] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.2.6-full_
+   [frodo:~/fink-0.3.2a-full] testuser% _cd_
+   [frodo:~] testuser% _rm_-r_fink-0.3.2a-full_
    [frodo:~] testuser% _pico_.cshrc_
 
 The last command launches you into a text file editor. Type "source
@@ -111,15 +111,15 @@ well-documented.
 
  Update Fast Track
 -------------------
-Start out by copying the "fink-0.2.6-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.3.2a-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
 "normal face" , your input is in "_bold_face_" (or otherwise highlighted).
 The actual input prompts from the shell may vary, and some chunks of the
 output have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.2.6-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.2.6-full_
-   [frodo:~/fink-0.2.6-full] testuser% _./inject.pl_/sw_
+   [frodo:~] testuser% _tar_xzf_fink-0.3.2a-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.3.2a-full_
+   [frodo:~/fink-0.3.2a-full] testuser% _./inject.pl_/sw_
    sudo ./inject.pl /sw
    Password:_(your_normal_password_here)_
    Copying package descriptions
@@ -128,8 +128,8 @@ output have been omitted ( "..." ).
    
    Your Fink installation in '/sw' was updated with new fink packages.
    
-   [frodo:~/fink-0.2.6-full] testuser% _cd_pkginfo_
-   [frodo:~/fink-0.2.6-full/pkginfo] testuser% _./inject.pl_/sw_
+   [frodo:~/fink-0.3.2a-full] testuser% _cd_pkginfo_
+   [frodo:~/fink-0.3.2a-full/pkginfo] testuser% _./inject.pl_/sw_
    sudo ./inject.pl /sw
    Copying...
    ...
@@ -138,8 +138,8 @@ output have been omitted ( "..." ).
    files. Use appropriate fink commands to update the packages, e.g. 'fink
    update-all'.
    
-   [frodo:~/fink-0.2.6-full/pkginfo] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.2.6-full_
+   [frodo:~/fink-0.3.2a-full/pkginfo] testuser% _cd_
+   [frodo:~] testuser% _rm_-r_fink-0.3.2a-full_
    [frodo:~] testuser% _fink_update-all_
    ...
 
@@ -196,20 +196,20 @@ back to a working system when things break. You have been warned.
 
  Installation
 --------------
-First, you need to unpack the fink-0.2.6-full.tar.gz tarball. It is
+First, you need to unpack the fink-0.3.2a-full.tar.gz tarball. It is
 recommended that you do this from the command line - StuffIt Expander has a
 tendency to screw up text files. So, go to the directory where you put the
 tarball, and run this command:
 
-   tar xzf fink-0.2.6-full.tar.gz
+   tar xzf fink-0.3.2a-full.tar.gz
 
-You now have a directory named fink-0.2.6-full. Change to it with "cd
-fink-0.2.6-full" .
+You now have a directory named fink-0.3.2a-full. Change to it with "cd
+fink-0.3.2a-full" .
 
 The actual installation is performed by the perl script bootstrap.pl. It is
 accompanied by a small shell script, bootstrap.sh, which checks some basic
 requirements and then hands over control to the perl script. So, to start
-installation, go to the fink-0.2.6-full directory and run this command:
+installation, go to the fink-0.3.2a-full directory and run this command:
 
    ./bootstrap.sh
 
@@ -266,11 +266,51 @@ For more information on installing and running X11, refer to the online X11
 on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/].
 
 
+ Upgrading From Fink 0.3.x
+===========================
+
+If you already have Fink 0.3.x installed, you can update your installation
+to 0.3.2a with the built-in 'selfupdate' command.
+
+
+ Updating The Package Manager
+------------------------------
+To update Fink, run the following command:
+
+   fink selfupdate
+
+This will automatically update your existing Fink installation to use the
+latest package manager, and also update all essential packages. However, it
+will not update any other packages.
+
+
+ Getting tetex Sorted Out
+--------------------------
+If you are upgrading from a Fink release prior to 0.3.1, and you have tetex
+installed, you should run the command "fink remove tetex" before upgrading.
+(It may also be necessary to remove the packages which depend on tetex, such
+as lyx, before tetex can be removed.) Afterwards you can again install tetex
+and the other packages you removed.
+
+
+ Updating Packages
+-------------------
+The above updating steps will not update the actual packages, they only
+provide you with the means to do so. The easiest way to get the new packages
+is to use the 'update-all' command:
+
+   fink update-all
+
+This will bring all installed packages to the latest version. If you don't
+want to do this (it may take some time), you can update individual packages
+with the 'update' command.
+
+
  Upgrading From Fink 0.2.x
 ===========================
 
 If you already have Fink 0.2.x installed, you can update your installation
-to 0.2.6 with this package.
+to 0.3.2a with this package.
 
 Actually, there are two pieces that are updated independently: the package
 manager and the package descriptions. It is recommended to update the
@@ -280,7 +320,7 @@ package manager first.
  Updating The Package Manager
 ------------------------------
 To update the package manager, run the inject.pl script in the
-fink-0.2.6-full directory, like this:
+fink-0.3.2a-full directory, like this:
 
    ./inject.pl
 
@@ -297,7 +337,7 @@ itself. ":-)" )
 
  Updating The Package Descriptions
 -----------------------------------
-If you downloaded the fink-0.2.6-full tarball, the package descriptions are
+If you downloaded the fink-0.3.2a-full tarball, the package descriptions are
 in the subdirectory pkginfo. To install them, run the inject.pl script in
 that directory:
 
@@ -307,8 +347,13 @@ that directory:
 This inject.pl script works just like the one for the package manager.
 
 You can also grab the package descriptions as a separate tarball,
-packages-0.2.6. If you did that, just unpack it and run the inject.pl script
-inside.
+packages-0.3.2a. If you did that, just unpack it and run the inject.pl
+script inside.
+
+As a third alternative, you can have Fink automatically update itself to the
+latest set of package descriptions by issuing the following command:
+
+   fink selfupdate
 
 
  Getting X11 Sorted Out
@@ -329,9 +374,7 @@ is to use the 'update-all' command:
 
 This will bring all installed packages to the latest version. If you don't
 want to do this (it may take some time), you can update individual packages
-with the 'update' command. But note that some package require specific
-versions of the packages they depend upon. Fink currently has no way to
-enforce this, so you may run into problems.
+with the 'update' command.
 
 
  Other Notes

@@ -1,11 +1,12 @@
 .\" -*- nroff -*-
-.Dd August 25, 2001
+.Dd January 26, 2002
 .Dt FINK 8
 .Sh NAME
 .Nm fink
 .Nd a package management system
 .Sh SYNOPSIS
 .Nm
+.Op Ar options
 .Ar command
 .Op Ar package
 .\"
@@ -25,6 +26,23 @@ downloads original source releases, patches them if neccessary, configures
 them for Darwin and compiles and installs them. The information about
 available packages and the neccessary patches are included with this
 distribution, everything else is downloaded off the Internet.
+.\"
+.\"
+.\" OPTIONS
+.\"
+.\"
+.Sh OPTIONS
+.Bl -tag -width flag
+.It Cm -h, --help
+Display help text.
+.It Cm -q, --quiet
+Causes fink to be less verbose, opposite of --verbose
+.It Cm -V, --version
+Display fink version information.
+.It Cm -v, --verbose
+Causes fink to be more verbose, opposite of --quiet
+.It Cm -y, --yes
+Assume default answer for all interactive questions
 .\"
 .\"
 .\" COMMANDS
@@ -193,17 +211,19 @@ for a current list of known bugs.
 .\"
 .\"
 .Sh AUTHOR
-The principal author of 
+The original author of 
 .Nm
 is Christoph Pfisterer <cp@chrisp.de>.
 .br
-This manpage was written by Max Horn <max@quendi.de>.
+The current maintainer of
+.Nm
+and author of this manpage is Max Horn <max@quendi.de>.
 .\"
 .\"
 .\" SEE ALSO
 .\"
 .\"
 .Sh "SEE ALSO"
-.Xr apt-get 8
-.Xr dselect 8
+.Xr apt-get 8 ,
+.Xr dselect 8 ,
 .Xr dpkg 8

@@ -161,10 +161,20 @@ sub restart_as_root {
 
   $cmd = "$basepath/bin/fink";
 
+  # Pass on options
   if (Fink::Config::get_option("dontask")) {
     $cmd .= " --yes";
   }
-  # TODO: add code for other options here
+  if (Fink::Config::get_option("verbosity")>0) {
+    $cmd .= " --verbose";
+  }
+  elsif (Fink::Config::get_option("verbosity")<0) {
+    $cmd .= " --quiet";
+  }
+  if (Fink::Config::get_option("interactive")) {
+    $cmd .= " --interactive";
+  }
+  # TODO: add code that automates passing on the options!
 
   foreach $arg (@_) {
     if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
@@ -483,12 +493,10 @@ sub cmd_validate {
     die "File \"$filename\" does not exist!\n" unless (-f $filename);
     if ($filename =~/\.info$/) {
       Fink::Validation::validate_info_file($filename);
-      print "\n";
     } elsif ($filename =~/\.deb$/) {
       Fink::Validation::validate_dpkg_file($filename);
-      print "\n";
     } else {
-      print "Don't know how to handle $filename, skipping\n";
+      die "Don't know how to validate $filename!\n";
     }
   }
 }
@@ -538,7 +546,7 @@ sub real_install {
   my ($oversion, $opackage, $v, $ep, $dp, $dname);
   my ($answer, $s);
 
-  if ($config->param_boolean("Verbose")) {
+  if (Fink::Config::is_verbose()) {
     $showlist = 1;
   }
 

@@ -178,10 +178,10 @@ sub download_cmd {
   # check if we have curl
   if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
     $cmd = "curl -L";
-    if (!$config->param_boolean("Verbose")) {
+    if (not Fink::Config::is_verbose()) {
       $cmd .= " -s -S";
     }
-    if (!$config->param_boolean("ProxyPassiveFTP")) {
+    if (not $config->param_boolean("ProxyPassiveFTP")) {
       $cmd .= " -P -";
     }
     if ($file ne &filename($url)) {
@@ -194,7 +194,7 @@ sub download_cmd {
   # check if we have wget
   if (!$cmd and (-x "$basepath/bin/wget" or -x "/usr/bin/wget")) {
     $cmd = "wget";
-    if ($config->param_boolean("Verbose")) {
+    if (Fink::Config::is_verbose()) {
       $cmd .= " --verbose";
     } else {
       $cmd .= " --non-verbose";

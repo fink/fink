@@ -35,7 +35,7 @@ BEGIN {
   @ISA         = qw(Exporter Fink::Base);
   @EXPORT      = qw();
   @EXPORT_OK   = qw($config $basepath $libpath $debarch $darwin_version $macosx_version
-                    &get_option &set_options);
+                    &get_option &set_options &is_verbose);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -213,7 +213,7 @@ sub set_options {
   }
 }
 
-### retreive a run-time option
+### retrieve a run-time option
 
 sub get_option {
   my $option = shift;
@@ -223,6 +223,19 @@ sub get_option {
     return $globals{lc $option};
   }
   return $default;
+}
+
+### determine whether verbose mode is on or off
+
+sub is_verbose {
+  my $verbosity;
+
+  $verbosity = get_option("verbosity");
+  
+  if ($verbosity != 0) {
+    return ($verbosity>0)
+  }
+  return $config->param_boolean("Verbose");
 }
 
 

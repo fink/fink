@@ -373,7 +373,7 @@ sub do_tarball {
   }
 
   $verbosity = "";
-  if ($config->param_boolean("Verbose")) {
+  if (Fink::Config::is_verbose()) {
     $verbosity = "v";
   }
   $unpack_cmd = "tar -xz${verbosity}f $pkgtarball";

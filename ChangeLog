@@ -1,3 +1,14 @@
+2002-01-26  Max Horn  <max@quendi.de>
+
+	* INSTALL*, README*, USAGE*: Re-generated from XML source
+
+	* fink.info.in: Changed maintainer from Christoph to me
+
+	* fink.8.in: Added information on the command line options
+
+	* fink.in (show_help): describe --yes; list short variants of all options;
+	added "update" to the list of common commands
+
 2002-01-19  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: Report Darwin 5.0 - 5.2 as supported & tested

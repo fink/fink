@@ -37,10 +37,10 @@ my %options =
 
 Getopt::Long::Configure(qw(bundling ignore_case_always));
 GetOptions('yes|y' => \$options{dontask},
-#	   'quiet|q' => sub { $options{verbosity}-- },
-#	   'verbose' => sub { $options{verbosity}++ },
+	   'quiet|q' => sub { $options{verbosity}-- },
+	   'verbose|v' => sub { $options{verbosity}++ },
 #	   'interactive|i' => \$options{interactive},
-	   'version|v' => \&show_version,
+	   'version|V' => \&show_version,
 	   'help|h|?' => \&show_help)
  or die "fink: unknown option\nType 'fink --help' for more information.\n";
 
@@ -60,11 +60,11 @@ sub show_help {
   my $version = Fink::FinkVersion::fink_version();
 
   print <<"EOF";
-fink $version, Copyright (c) 2001 Christoph Pfisterer and others.
+Fink $version, Copyright (c) 2001,2002 Christoph Pfisterer and others.
 This is free software, distributed under the GNU General Public License.
 Read @BASEPATH@/share/doc/fink/COPYING for details.
 
-fink is a package manager that automatically downloads, configures, compiles
+Fink is a package manager that automatically downloads, configures, compiles
 and installs packages using the original source code. If you want to install
 precompiled binary packages, check out dselect or apt-get instead.
 
@@ -74,6 +74,7 @@ Usage: fink [options] command [package...]
 Common commmands:
   install    - install/update the named packages
   remove     - remove the named packages
+  update     - update the named packages
   selfupdate - upgrade fink to the lastest release
   update-all - update all installed packages
   configure  - rerun the configuration process
@@ -82,8 +83,11 @@ Common commmands:
   describe   - display a detailed description of the named packages
 
 Options:
-  --help     - display this help text
-  --version  - display fink version information
+  -H, -?, --help - display this help text
+  -q, --quiet    - causes fink to be less verbose, opposite of --verbose
+  -V, --version  - display version information
+  -v, --verbose  - causes fink to be more verbose, opposite of --quiet
+  -y, --yes      - assume default answer for all interactive questions
 
 See the fink(8) manual page for more commands and options.
 Visit http://fink.sourceforge.net/ for further information.

@@ -15,4 +15,4 @@ downloading and compiling source and building binary packages from
 it. Binary package handling is then delegated to dpkg.
 <<
 License: GPL
-Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Maintainer: Max Horn <max@quendi.de>

@@ -1,6 +1,6 @@
 #
 # Fink::Validation module
-# Copyright (c) 2001 Max Horn
+# Copyright (c) 2001,2002 Max Horn
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -124,7 +124,9 @@ sub validate_info_file {
   my ($basepath, $expand);
   my $looks_good = 1;
 
-  print "Validating package file $filename...\n";
+  if (Fink::Config::is_verbose()) {
+    print "Validating package file $filename...\n";
+  }
   
   # read the file properties
   $properties = &read_properties($filename);
@@ -154,8 +156,8 @@ sub validate_info_file {
     print "Error: No revision number or revision number is 0 in $filename\n";
     return;
   }
-  if ($pkgname =~ /[^-.a-z0-9]/) {
-    print "Error: Package name may only contain lowercase letters, numbers, '.' and '-'\n";
+  if ($pkgname =~ /[^+-.a-z0-9]/) {
+    print "Error: Package name may only contain lowercase letters, numbers, '.', '+' and '-'\n";
     return;
   }
   unless ($properties->{maintainer}) {
@@ -168,6 +170,11 @@ sub validate_info_file {
     $looks_good = 0;
   }
   
+  unless ($properties->{license}) {
+    print "Warning: No license specified in $filename\n";
+    $looks_good = 0;
+  }
+
   # Check whether any of the following fields contains the package name or version,
   # and suggest that %f/%n/%v be used instead
   foreach $field (@name_version_fields) {
@@ -176,15 +183,9 @@ sub validate_info_file {
       if ($value =~ /$pkgfullname/) {
         print "Warning: Field \"$field\" contains full package name. Use %f instead.\n";
         $looks_good = 0;
-      } else {
-#       if ($value =~ /$pkgname/) {
-#         print "Warning: Field \"$field\" contains package name. Use %n instead.\n";
-#         $looks_good = 0;
-#       }
-        if ($value =~ /$pkgversion/) {
-          print "Warning: Field \"$field\" contains package version. Use %v instead.\n";
-          $looks_good = 0;
-        }
+      } elsif ($value =~ /$pkgversion/) {
+        print "Warning: Field \"$field\" contains package version. Use %v instead.\n";
+        $looks_good = 0;
       }
     }
   }
@@ -243,7 +244,7 @@ sub validate_info_file {
     }
   }
   
-  if ($looks_good) {
+  if ($looks_good and Fink::Config::is_verbose()) {
     print "Package looks good!\n";
   }
 }

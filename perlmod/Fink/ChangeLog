@@ -1,3 +1,15 @@
+2002-01-26  Max Horn  <max@quendi.de>
+
+	* Engine.pm (restart_as_root): Pass on more options to new instance
+
+	* *.pm: Changed to use new is_verbose() function to determine verbosity
+	
+	* Config.pm (is_verbose): New function, returns true if verbose mode is on
+
+	* Validation.pm: Only be verbose in verbose mode
+
+	* Validation.pm: Warn on missing license field
+
 2002-01-11  Max Horn  <max@quendi.de>
 
 	* FinkVersion.pm.in: If /sw/fink/VERSION is missing, now tries to look

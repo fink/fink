@@ -571,8 +571,7 @@ sub match_package {
   my ($pkgname, $package, $version, $pkgversion);
   my ($found, @parts, $i, @vlist, $v, @rlist);
 
-
-  if (not $config->param_boolean("Verbose")) {
+  if (not Fink::Config::is_verbose()) {
     $quiet = 1;
   }
 
@@ -721,7 +720,7 @@ sub phase_unpack {
   $bdir = $self->get_fullname();
 
   $verbosity = "";
-  if ($config->param_boolean("Verbose")) {
+  if (Fink::Config::is_verbose()) {
     $verbosity = "v";
   }
 
