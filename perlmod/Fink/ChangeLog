@@ -1,3 +1,8 @@
+2004-01-01  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* PkgVersion.pm: Added two methods to access lists of sources and 
+	tarballs used by given package
+
 2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* all: updated Copyright notice
@@ -104,6 +109,12 @@
 
 	* Services.pm: Gave prompt_selection_new more flexible default-
 	choice behavior. Not gonna change API any more so okay to use.
+
+2003-12-20  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* Engine.pm: Extended MatchPackageRegEx which resorts the
+	candidate list so that packages matching the regex are at the top
+	in case that multiple packages match the regex. 
 
 2003-12-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
