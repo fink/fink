@@ -1,3 +1,11 @@
+2001-02-27  Christoph Pfisterer  <cp@chrisp.de>
+
+	* init.sh.in, init.csh.in: Added
+	BASEPATH/bin/powerpc-apple-darwin1.2 to PATH. This needed for the
+	current tetex package. It will probably break on Mac OS X Final
+	and I hope to remove this again when the tetex package is revised
+	to put all binaries in BASEPATH/bin.
+
 2001-02-24  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink: Added code to display the version number and quit when -v
