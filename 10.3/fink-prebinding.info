@@ -1,9 +1,9 @@
 Package: fink-prebinding
-Version: 0.1
+Version: 0.2
 Revision: 1
 
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
-Source-MD5: 397617226935cb0df1b5802dfa267cd5
+Source-MD5: 776e4acd1c008ff70ba437077ba19e80
 SourceDirectory: %n
 Essential: yes
 Depends: base-files, cctools-extra (>= 20030516-2)
