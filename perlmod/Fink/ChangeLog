@@ -1,3 +1,8 @@
+2003-05-04  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Explicitly invoke get_bsbase with its full qualified name,
+	  Fink::Bootstrap::get_bsbase (Patch #731980).
+
 2003-05-03  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Check for bad (DOS or Mac) line endings in .info / .patch
@@ -7,6 +12,7 @@
 
 	* Validation.pm: Do not allow arbitrary license combinations, rather only a
 	  fixed set (which we can extend as needed). See bug #670788. 
+
 	* Services.pm: Warn if an .info file uses a field more than once (will soon
 	  be turned into an error).
 

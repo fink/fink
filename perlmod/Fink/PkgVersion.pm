@@ -1771,7 +1771,7 @@ sub set_env {
 	my ($varname, $s, $expand);
 	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
 					 "LDFLAGS" => "-L\%p/lib" );
-	my $bsbase = get_bsbase();
+	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	# clean the environment
 	%ENV = ("HOME" => $ENV{"HOME"});
