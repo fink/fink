@@ -839,8 +839,13 @@ sub cmd_depends {
 		}
 
 		$fullname = $package->get_fullname();
-		### FIXEME, need deplist here
-		@deplist = $package->resolve_depends();
+		if ($package->find_debfile()) {
+			print "Reading dependencies from ".$fullname." deb file...\n";
+			@deplist = split(/\s*\,\s*/, $package->get_debdeps());
+		} else {
+			print "Reading dependencies from ".$fullname." info file...\n";
+			@deplist = split(/\s*\,\s*/, $package->param_default("Depends", ""));
+		}
 
 		print "Depends for $fullname are...\n";
 		print join(', ', @deplist)."\n\n";
