@@ -211,8 +211,6 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'license',
 #  dependencies:
 		 'depends',
-		 'builddepends',
-		 'buildconflicts',
 		 'provides',
 		 'conflicts',
 		 'replaces',
