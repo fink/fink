@@ -281,7 +281,7 @@ sub expand_percent {
 	}
 	
 	# If ther are still unexpanded percents left, error out
-	die "Error performing percent expansion: unknown % expansion or nesting too deep!" if $s =~ /\%/;
+	die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /\%/;
 
 	return $s;
 }
