@@ -4,6 +4,10 @@
 	2003-10-21 for the 0.16 branch (reversion was only partially
 	done on 2003-10-23)
 
+2003-11-06  Ben Hines <benh57@users.sourceforge.net>
+
+	* Bootstrap.pm: Support Mac OS X 10.3 / Darwin 7.0.0
+
 2003-10-29  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: check for threaded X, and check for the file
