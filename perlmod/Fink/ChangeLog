@@ -1,5 +1,12 @@
 2004-04-11  Daniel Macks  <dmacks@netspace.org>
 
+	Engine.pm: dumpinfo improvements: list parent or splitoff
+	packages, indicate which fields are from parent, both parent and
+	splitoff InstallScript are displayed, only print field names if
+	field is present.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
 	* NetAccess.pm: Drop any leading / in Source:mirror: pathname.
 
 2004-04-11  Daniel Macks  <dmacks@netspace.org>

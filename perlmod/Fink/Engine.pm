@@ -1635,6 +1635,8 @@ sub cmd_dumpinfo {
 	my @packagelist = @_;
 
 	my $field;					# scratch variable
+	my( @suffix_list, @splitoffs );
+	my $parent;                 # parent if one exists, else the package itself
 
 	foreach my $package (@packagelist) {
 		print "\n";
@@ -1650,43 +1652,66 @@ sub cmd_dumpinfo {
 		printf "%s: %s\n", 'Package', $pkg->get_name();
 		printf "%s: %s\n", 'Version', $pkg->get_version();
 		printf "%s: %s\n", 'Revision', $pkg->get_revision();
-		print "\n";
-		print "Sources:\n";
-		
-		# this is the parent if there is one, else the package at hand
-		my $parent = $pkg->param_default("Parent", $pkg);
 
-		foreach $field ( $parent->get_source_suffices() ) {
-			printf "\tSource%s: %s\n", $field, $parent->get_source($field);
+		# [0] is parent, [1..n] are splitoffs
+		@splitoffs = $pkg->get_splitoffs(1, 1);
+
+		$parent = shift @splitoffs;
+		if ($pkg eq $parent) {
+			if (@splitoffs > 0) {
+				# we have SplitOffs
+				print "\nSplitOffs: ", join( ", ", map $_->get_name(), @splitoffs ), "\n";
+			}
+		} else {
+			print "\nParent: ", $parent->get_name(),"\n";
 		}
-		print "\n";
+
 		foreach my $field (qw/ Depends BuildDepends Provides Conflicts Replaces BuildConflicts /) {
 			if ($field =~ /^Build/) {
 				# these cannot be in a splitoff so assume parent
-				printf "%s: %s\n", $field, $parent->pkglist_default($field);
+				if ($parent->has_param($field)) {
+					printf "\n%s%s: %s\n",
+						$field,
+						$pkg eq $parent ? "" : " (from parent)",
+						$parent->pkglist_default($field);
+				}
 			} else {
 				# these could be in a splitoff
-				printf "%s: %s\n", $field, $pkg->pkglist_default($field);
+				if ($pkg->has_param($field)) {
+					printf "\n%s: %s\n", $field, $pkg->pkglist_default($field);
+				}
 			}
 		}
-		print "\n";
-		printf "Patch files:\n";
+
+		@suffix_list = $parent->get_source_suffices();
+		if (@suffix_list) {
+			printf "\nSources%s:\n", $pkg eq $parent ? "" : " (from parent)";
+			foreach $field (@suffix_list) {
+				printf "\tSource%s: %s\n", $field, $parent->get_source($field);
+			}
+		}
+
 		if ($parent->has_param("Patch")) {
+			printf "\nPatch files%s:\n", $pkg eq $parent ? "" : " (from parent)";
 			foreach my $patchfile (split(/\s+/,$parent->param("Patch"))) {
 				printf "\t%s\n", &expand_percent("\%a/$patchfile", $pkg->{_expand}, $pkg->get_info_filename." Patch");
 			}
 		}
-		foreach $field (qw/ Patch Compile /) {
+
+		foreach $field (qw/ Patch Compile Install /) {
 			# these cannot be in a splitoff so assume parent
-			printf "\n%sScript:\n", $field;
+			# InstallScript could be in both (parent runs first)
+			next if $pkg eq $parent and $field eq "Install"; # else duplicated
 			if ($parent->has_param($field.'Script')) {
+				printf "\n%sScript%s:\n", $field, $pkg eq $parent ? "" : " (from parent)";
 				print $parent->param_expanded($field.'Script'),"\n";
 			}
 		}
 		foreach $field (qw/ Install PreInst PostInst PreRm PostRm /) {
 			# these could be in a splitoff
-			printf "\n%sScript:\n", $field;
+			# InstallScript could be in both (parent runs first)
 			if ($pkg->has_param($field.'Script')) {
+				printf "\n%sScript:\n", $field;
 				print $pkg->param_expanded($field.'Script'),"\n";
 			}
 		}
