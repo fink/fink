@@ -1,3 +1,12 @@
+2004-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Move actual logical evaluation of conditional
+	expression (Depends, etc.) into its own eval_conditional() method.
+	Implemented get_configureparams() accessor, and enabled
+	conditional syntax (same as Depends, etc.). Moved definition of %c
+	in _expand later b/c need _expand (at least %type_*[]) for
+	get_configureparams() conditionals.
+	
 2004-04-19  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Use actual screen width in print_breaking(), not
