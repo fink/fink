@@ -4,7 +4,7 @@
 # during mirror selection. The individual keys list titles
 # displayed in mirror selection.
 
-Order: gnu gnome gimp ctan cpan
+Order: gnu gnome gimp ctan cpan sourceforge
 
 gnu: GNU software
 gnome: GNOME
