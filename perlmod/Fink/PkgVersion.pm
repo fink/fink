@@ -3068,8 +3068,11 @@ EOMSG
 
 		# Failure due to depenendecy problems leaves lockpkg in an
 		# "unpacked" state, so try to remove it entirely.
-		&execute("dpkg -r $lockpkg") and
-			&print_breaking('You can probably ignore that last message from "dpkg -r"');
+		if (`dpkg-query -W $lockpkg 2>/dev/null` eq "$lockpkg\t$timestamp") {
+			# only clean up residue from our exact lockpkg
+			&execute("dpkg -r $lockpkg") and
+				&print_breaking('You can probably ignore that last message from "dpkg -r"');
+		}
 	}
 
 	# Even if installation fails, no reason to keep this around

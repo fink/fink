@@ -1,5 +1,10 @@
 2005-02-17  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: if buildlock installation fails, only remove
+	residue if it is from the same lock.
+
+2005-02-17  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Catch %n (and related) in Description
 
 2005-02-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
