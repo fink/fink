@@ -1,4 +1,8 @@
-2002-02-14  Ben Hines <bhines@alumni.ucsd.edu>
+2003-02-21  Max Horn  <max@quendi.de>
+
+	* VERSION: Bumped package manager version to 0.12.0
+
+2003-02-14  Ben Hines <bhines@alumni.ucsd.edu>
 
 	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.4.
 
