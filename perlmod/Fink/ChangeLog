@@ -1,3 +1,12 @@
+2003-12-08  Daniel Macks <dmacks@netspace.org>
+
+	* Package.pm: Added note to where will have to work to implement
+	%lv in main Package of a .info.
+	PkgVersion.pm: Initial attempt to implement language versioning
+	for Type: perl. If specified, the perl version is available in %lV
+	as specified (so can say %p/bin/perl%lV) and in %lv with the
+	punctuation removed (so can say %p/share/doc/%n-pm%lv).
+
 2003-12-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* PkgVersion.pm: Added force switch to resolve_depends so duplicate

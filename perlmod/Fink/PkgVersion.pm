@@ -74,12 +74,45 @@ sub initialize {
 	$self->{_version} = $version = $self->param_default("Version", "0");
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
+
+	# Type can be a simple term or of the form "lang vers" where
+	# "vers" is a dot-delimited version string. Not going to do
+	# any validation here because 'fink validate' is already quite
+	# explicit about all allowed forms (see Fink::Validation where
+	# validate_info_file() and %allowed_type_values). It would
+	# probably be more generic to have the second form be "lang
+	# (vers)".
 	$self->{_type} = $type = lc $self->param_default("Type", "");
-	# split off perl version number, when given with the type
-	if ($type =~ s/^perl\s+([0-9]+\.[0-9]+\.[0-9]+)/perl/) {
-		$self->{_perlversion} = $1;
-		$self->{_type} = $type;
+
+	my @versionable_langs = qw(perl);
+	my $lang_pattern = join '|', @versionable_langs;
+	if ($type =~ /^($lang_pattern)\s+(.+)/) {
+		# get values from Type: field
+		$self->{_type} = $type = $1;
+		$self->{_langversion_raw} = $self->{_langversion_pkg} = $2;
+		$self->{_langversion_pkg} =~ s/\.//g;
+	} elsif ($self->{_type} eq "splitoff") {
+		# In a SplitOff that does not declare a Type, inheirit
+		# lang versioning info from parent package
+		my $parent = $self->{parent};
+		$self->{_langversion_raw} = $parent->{_langversion_raw};
+		$self->{_langversion_pkg} = $parent->{_langversion_pkg};
+	} else {
+		# default to null
+		$self->{_langversion_raw} = $self->{_langversion_pkg} = '';
 	}
+
+	# Package: in a SplitOff: has already been processed by
+	# expand_percent by this point (when the splitoff package is
+	# created), but the main (parent) Package: has not. If we want
+	# to allow the main package to see lang vers, we need to
+	# replicate the parsing for _langversion_pkg in Package:scan
+	# before the package is created. That's going to create some
+	# difficulty with the validator since it does simple equality
+	# check for main Package: vs .info filename (doesn't actually
+	# create the package, which would allow later comparison using
+	# $self->{Package}.
+
 	# the following is set by Fink::Package::scan
 	$self->{_filename} = $filename = $self->{thefilename};
 
@@ -167,7 +200,10 @@ sub initialize {
 
 				'a' => $self->{_patchpath},
 				'c' => $configure_params,
-				'b' => '.'
+				'b' => '.',
+
+				'lV' => $self->{_langversion_raw},
+				'lv' => $self->{_langversion_pkg}
 			};
 
 	$self->{_expand} = $expand;
@@ -218,7 +254,7 @@ sub initialize {
 			$version =~ /(^[0-9]+\.[0-9]+)\.*/;
 			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
 		}
-		
+	
 		$source = &expand_percent($source, $expand);
 		$self->{source} = $source;
 		$self->{_sourcecount} = 1;
@@ -2173,8 +2209,8 @@ sub get_perl_dir_arch {
 #get_system_perl_version();
 	my $perldirectory = "";
 	my $perlarchdir;
-	if ($self->has_param("_perlversion")) {
-		$perlversion = $self->param("_perlversion");
+	if ($self->has_param("_langversion_raw")) {
+		$perlversion = $self->param("_langversion_raw");
 		$perldirectory = "/" . $perlversion;
 	    }
 	### PERL= needs a full path or you end up with
