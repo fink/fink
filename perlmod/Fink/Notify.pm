@@ -64,8 +64,10 @@ happen during package installation/removal.
 
   ### a module implementing a notifier type
 
+  # all notifier modules must reside under the Fink::Notify namespace
   package Fink::Notify::NotifierClass;
 
+  # all notifier modules must be subclasses of Fink::Notifier
   use Fink::Notifier;
   @ISA = qw(Fink::Notifier);
 
@@ -157,7 +159,7 @@ sub events {
 }
 
 
-=item notify(%args) - notify the user of an event
+=item notify(%args) - notify the user of an event (public interface)
 
   $notifier->notify(
     event => 'finkPackageInstallationFailed',
@@ -182,6 +184,8 @@ The plain-text description of what has occurred.
 The title of the event.
 
 =back
+
+This method is the public interface for requesting a notification.
 
 =cut
 
@@ -225,9 +229,11 @@ sub about {
 	return wantarray? @about : \@about;
 }
 
-=item do_notify() - perform a notification (internal)
+=item do_notify(%args) - perform a notification (notifier-specific)
 
-This is an internal method used to perform a notification.
+Notifier modules must provide a do_notify() method that implements
+their notification scheme. The %args parameters are the same as for
+notify().
 
 =cut
 
