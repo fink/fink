@@ -1,3 +1,11 @@
+2004-05-08  David H. <dmalloc@users.sourceforge.net>
+	* added new Master mirror for Asia
+		University of Tokyo
+		distfiles.master.asi.finkmirrors.net
+		Maintainer:
+		Sodans
+		sodans@users.finkmirrors.net
+
 2004-04-29  David H. <dmalloc@users.sourceforge.net>
 
 	* added new full mirror in Indiana, USA
@@ -5,7 +13,7 @@
 		distfiles.sbn.in.us.finkmirrors.net
 		Maintainer:
 		Brandon and the OSM Team
-		mailto:osm@cse.nd.edu
+		osm@cse.nd.edu
 
 2004-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
