@@ -6,8 +6,9 @@
 
 2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
-	* Engine.pm: Adding "fink splits", shows parent and splitoffs in a pkg
-	Adding "fink find" which will return the parent package of a package.
+	* Engine.pm: Adding "fink splitoffs", shows parent and splitoffs in a
+	package. Adding "fink showparent" which will return the parent package
+	of a package.
 	* PkgVersion.pm: Adding sub get_splitoffs() has two switches, to
 	include self in list and include parent.
 
