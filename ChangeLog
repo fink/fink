@@ -2,6 +2,7 @@
 
 	* INSTALL, INSTALL.html: use 0.7.1 since this release will be 
 	included in the 0.7.1 tarball
+	* pathsetup.sh.in: Martin Costabel's new version of pathsetup.sh
 
 2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
