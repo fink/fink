@@ -497,6 +497,19 @@ sub update_db {
 	shift;	# class method - ignore first parameter
 	my ($tree, $dir);
 
+	# check if we should update index cache
+	my $writable_cache = 0;
+	eval "require Storable";
+	if ($@) {
+		my $perlver = sprintf '%*vd', '', $^V;
+		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the package index. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
+	} elsif ($> != 0) {
+		&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+	} else {
+		# we have Storable.pm and are root
+		$writable_cache = 1;
+	}
+
 	# read data from descriptions
 	if (&get_term_width) {
 		print STDERR "Reading package info...\n";
@@ -509,23 +522,18 @@ sub update_db {
 		Fink::Package->update_aptgetable();
 	}
 	
-	eval {
-		require Storable; 
-		if ($> == 0) {
-			if (&get_term_width) {
-				print STDERR "Updating package index... ";
-			}
-			unless (-d "$basepath/var/db") {
-				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
-			}
-			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
-			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
-			print "done.\n";
-		} else {
-			&print_breaking_stderr( "\nFink has detected that your package cache is out of date and needs" .
-				" an update, but does not have privileges to modify it. Please re-run fink as root," .
-				" for example with a \"fink index\" command.\n" );
+	if ($writable_cache) {
+		if (&get_term_width) {
+			print STDERR "Updating package index... ";
 		}
+		my $dbdir = "$basepath/var/db";
+		my $dbfile = "$dbdir/fink.db";
+		unless (-d $dbdir) {
+			mkdir($dbdir, 0755) || die "Error: Could not create directory $dbdir: $!\n";
+		}
+		Storable::lock_store ($packages, "$dbfile.tmp");
+		rename "$dbfile.tmp", $dbfile or die "Error: could not activate temporary file $dbfile.tmp: $!\n";
+		print "done.\n";
 	};
 	$db_outdated = 0;
 }
