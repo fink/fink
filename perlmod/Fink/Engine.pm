@@ -923,16 +923,46 @@ sub real_install {
 
       # the dice are rolled...
 
-      if (exists $deps{$dname}) {
-	die "Internal error: node for $dname already exists\n";
-      }
-
       $pnode = Fink::Package->package_by_name($dname);
       @vlist = ();
       foreach $dp (@$dep) {
 	if ($dp->get_name() eq $dname) {
 	  push @vlist, $dp->get_fullversion();
 	}
+      }
+
+      if (exists $deps{$dname}) {
+        # node exists, we need to generate the version list
+        # based on multiple packages
+        @vlist = ();
+
+        # first, get the current list of acceptable packages
+        # this will run get_matching_versions over every version spec
+        # for this package
+        my $package = Fink::Package->package_by_name($dname);
+        my @existing_matches;
+        for my $spec (@{$package->{_versionspecs}}) {
+          push(@existing_matches, $package->get_matching_versions($spec, @existing_matches));
+          if (@existing_matches == 0) {
+            print "unable to resolve version conflict on multiple dependencies\n";
+            for my $spec (@{$package->{_versionspecs}}) {
+              print "  $dname $spec\n";
+            }
+            exit 1;
+          }
+        }
+
+        for (@existing_matches) {
+          push(@vlist, $_->get_fullversion());
+        }
+
+        unless (@vlist > 0) {
+          print "unable to resolve version conflict on multiple dependencies\n";
+          for my $spec (@{$package->{_versionspecs}}) {
+            print "  $dname $spec\n";
+          }
+          exit 1;
+        }
       }
 
       # add node to graph

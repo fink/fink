@@ -700,6 +700,8 @@ sub resolve_depends {
       }
 
       $package = Fink::Package->package_by_name($depname);
+      push(@{$package->{_versionspecs}}, $versionspec) unless ($versionspec =~ /^\s*$/);
+
       if (not defined $package) {
 	print "WARNING: While resolving dependency \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 	next;

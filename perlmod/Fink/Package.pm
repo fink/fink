@@ -148,6 +148,7 @@ sub get_all_versions {
 sub get_matching_versions {
   my $self = shift;
   my $spec = shift;
+  my @include_list = @_;
   my (@list, $version, $vo, $relation, $reqversion);
 
   if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-]+)\s*$/) {
@@ -181,7 +182,20 @@ sub get_matching_versions {
     }
   }
 
+  if (@include_list > 0) {
+    my @match_list;
+    # if we've been given a list to choose from, return the
+    # intersection of the two
+    for my $vo (@list) {
+      my $version = $vo->get_version();
+      if (grep(/^${version}$/, @include_list)) {
+        push(@match_list, $vo);
+      }
+    }
+    return @match_list;
+  } else {
   return @list;
+  }
 }
 
 sub get_all_providers {
