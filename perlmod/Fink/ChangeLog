@@ -1,5 +1,8 @@
 2001-05-23  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Engine.pm: New command 'scanpackages' to generate Packages.gz
+	files using dpkg-scanpackages.
+
 	* PkgVersion.pm (phase_build): Apply percent expansions to package
 	scripts.
 	(match_package): Be more quiet if verbose output is not set.

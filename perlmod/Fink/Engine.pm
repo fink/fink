@@ -22,10 +22,10 @@
 package Fink::Engine;
 
 use Fink::Services qw(&prompt_boolean &print_breaking &print_breaking_prefix
-                      &latest_version);
+                      &latest_version &execute);
 use Fink::Package;
 use Fink::PkgVersion;
-use Fink::Config qw($basepath);
+use Fink::Config qw($config $basepath);
 use Fink::Configure;
 use Fink::Bootstrap;
 
@@ -67,6 +67,7 @@ our %commands =
     'purge' => \&cmd_remove,
     'describe' => \&cmd_description,
     'description' => \&cmd_description,
+    'scanpackages' => \&cmd_scanpackages,
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -131,7 +132,7 @@ sub process {
   die "unknown command: $cmd\n";
 }
 
-### the commands
+### simple commands
 
 sub cmd_rescan {
   print "Re-reading package info...\n";
@@ -146,6 +147,45 @@ sub cmd_configure {
 sub cmd_bootstrap {
   Fink::Bootstrap::bootstrap();
 }
+
+sub cmd_scanpackages {
+  my @treelist = @_;
+  my ($tree, $treedir, $cmd, $archive, $component);
+
+  if ($#treelist < 0) {
+    @treelist = $config->get_treelist();
+  }
+
+  chdir "$basepath/fink";
+  foreach $tree (@treelist) {
+    $treedir = "dists/$tree/binary-darwin-powerpc";
+    if ($tree =~ /^([^\/]+)\/(.+)$/) {
+      $archive = $1;
+      $component = $2;
+    } else {
+      $archive = $tree;
+      $component = "main";
+    }
+
+    $cmd = "dpkg-scanpackages $treedir /dev/null | gzip >$treedir/Packages.gz";
+    if (&execute($cmd)) {
+      unlink("$treedir/Packages.gz");
+      die "package scan failed\n";
+    }
+
+    open(RELEASE,">$treedir/Release") or die "can't write Release file: $!\n";
+    print RELEASE <<EOF;
+Archive: $archive
+Component: $component
+Origin: Fink
+Label: Fink
+Architecture: darwin-powerpc
+EOF
+    close(RELEASE) or die "can't write Release file: $!\n";
+  }
+}
+
+### package-related commands
 
 sub cmd_fetch {
   my ($package, @plist);
