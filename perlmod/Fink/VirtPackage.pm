@@ -763,6 +763,35 @@ END
 			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, xft2-dev, fontconfig1-dev, xfree86-base-threaded-dev';
 			$self->{$hash->{package}} = $hash;
 
+			$hash = {};
+			$hash->{package} = "system-xfree86-manual-install";
+			$hash->{version} = "0-0";
+			$hash->{status} = STATUS_ABSENT;
+			$hash->{description} = "Manually installed X11 components";
+			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{compilescript} = $compile_script;
+			$hash->{descdetail} = <<END;
+This package represents the various components of an
+X11 on your system that is not installed through Fink.
+
+You can either use a Fink-supplied X11, such as the
+xfree86 or xorg sets of packages, or you can use a
+manually-installed (non-Fink) X11, such as Apple's
+X11User and X11SDK packages. You must not mix X11
+suppliers. If you are already using some type of
+manually-installed X11, please make sure you have
+installed all components of it.
+
+For more information, please see the FAQ entry on X11
+installation at:
+
+  http://fink.sourceforge.net/faq/usage-packages.php#apple-x11-wants-xfree86
+
+END
+
+			$hash->{provides} = join ',', map $self->{$_}->{provides}, qw/ system-xfree86 system-xfree86-shlibs system-xfree86-dev /;
+			$self->{$hash->{package}} = $hash;
+
 			my ($xver) = check_x11_version();
 			if (defined $xver) {
 				$hash = {};

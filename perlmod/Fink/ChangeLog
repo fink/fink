@@ -1,5 +1,10 @@
 2005-01-17  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: Add "system-xfree86-manual-install" as a
+	(non-installed) catch-all for all of Apple X11*.pkg
+
+2005-01-17  Daniel Macks  <dmacks@netspace.org>
+
 	* CLI.pm: (Re)introduce prompt_selection() with timeout; remove
 	timeout from prompt_selection_new().
 	* PkgVersion.pm: Fix error msg for buildlock failure.
