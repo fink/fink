@@ -865,27 +865,3 @@ diff -ruN apt-0.5.4/patch_flush apt-0.5.4-patched/patch_flush
 +done
 +
 +exit 0
-diff -ruN apt-0.5.4/sources.list.fink apt-0.5.4-patched/sources.list.fink
---- apt-0.5.4/sources.list.fink	Wed Dec 31 19:00:00 1969
-+++ apt-0.5.4-patched/sources.list.fink	Sun Nov  9 14:02:48 2003
-@@ -0,0 +1,8 @@
-+# Default APT sources configuration for Fink
-+
-+# Local package trees - packages built from source locally
-+# NOTE: keep this in sync with the Trees: line in @PREFIX@/etc/fink.conf
-+# NOTE: run 'fink scanpackages' to create Packages.gz files
-+deb file:@PREFIX@/fink local main
-+deb file:@PREFIX@/fink stable main crypto
-+#deb file:@PREFIX@/fink unstable main crypto
-diff -ruN apt-0.5.4/sources.list.fink-bindist apt-0.5.4-patched/sources.list.fink-bindist
---- apt-0.5.4/sources.list.fink-bindist	Wed Dec 31 19:00:00 1969
-+++ apt-0.5.4-patched/sources.list.fink-bindist	Sun Nov  9 14:33:50 2003
-@@ -0,0 +1,8 @@
-+
-+# Official binary distribution: download location for packages
-+# from the latest release
-+deb http://us.dl.sourceforge.net/fink/direct_download 10.3/release main crypto
-+
-+# Official binary distribution: download location for updated
-+# packages built between releases
-+deb http://us.dl.sourceforge.net/fink/direct_download 10.3/current main crypto
