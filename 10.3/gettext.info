@@ -5,8 +5,8 @@ Source: gnu
 Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: yes
 BuildDepends: fink-prebinding
+#BuildDepends: libiconv-dev
 Depends: base-files, libiconv
-BuildDepends: libiconv-dev
 Patch: %n.patch
 SetCPPFLAGS: -no-cpp-precomp
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
