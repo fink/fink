@@ -1,3 +1,8 @@
+2005-02-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Only notify on success if Fink has been around for a
+	miniumum time period.
+
 2005-02-02  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Warn if used debconf but no Depends:debconf.
