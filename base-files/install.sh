@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# install.sh - install fink-base package
+# install.sh - install fink base-files package
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer

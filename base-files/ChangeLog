@@ -1,3 +1,7 @@
+2001-08-13  Christoph Pfisterer  <cp@chrisp.de>
+
+	* install.sh, setup.sh: Edited descriptive comments.
+
 2001-08-01  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink-release: Bumped to 0.2.4.
