@@ -25,10 +25,10 @@ package Fink::Engine;
 use Fink::Services qw(&print_breaking &print_breaking_prefix
 					  &prompt_boolean &prompt_selection
 					  &latest_version &execute &get_term_width
-					  &file_MD5_checksum);
+					  &file_MD5_checksum &get_arch);
 use Fink::Package;
 use Fink::PkgVersion;
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $debarch);
 use File::Find;
 
 use strict;
@@ -462,7 +462,7 @@ sub cmd_scanpackages {
 
 	chdir "$basepath/fink";
 	foreach $tree (@treelist) {
-		$treedir = "dists/$tree/binary-darwin-powerpc";
+		$treedir = "dists/$tree/binary-$debarch";
 		if ($tree =~ /^([^\/]+)\/(.+)$/) {
 			$archive = $1;
 			$component = $2;
@@ -489,7 +489,7 @@ Archive: $archive
 Component: $component
 Origin: Fink
 Label: Fink
-Architecture: darwin-powerpc
+Architecture: $debarch
 EOF
 		close(RELEASE) or die "can't write Release file: $!\n";
 	}

@@ -27,7 +27,8 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &print_breaking &print_breaking_twoprefix
 					  &prompt_boolean &prompt_selection
 					  &collapse_space &read_properties_var
-					  &file_MD5_checksum &version_cmp);
+					  &file_MD5_checksum &version_cmp
+					  &get_arch);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -61,6 +62,7 @@ sub initialize {
 	my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
 	my ($parentpkgname, $parentdestdir);
 	my ($i, $path, @parts, $finkinfo_index, $section);
+	my $arch = get_arch();
 
 	$self->SUPER::initialize();
 
@@ -140,6 +142,7 @@ sub initialize {
 				'p' => $basepath,
 				'd' => $destdir,
 				'i' => $destdir.$basepath,
+				'm' => $arch,
 
 				'N' => $parentpkgname,
 				'P' => $basepath,

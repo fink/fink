@@ -43,7 +43,7 @@ BEGIN {
 					  &prompt &prompt_boolean &prompt_selection
 					  &version_cmp &latest_version &parse_fullversion
 					  &collapse_space &get_term_width
-					  &file_MD5_checksum);
+					  &file_MD5_checksum &get_arch);
 }
 our @EXPORT_OK;
 
@@ -605,6 +605,15 @@ sub file_MD5_checksum {
 	close(MD5SUM) or die "Error on closing pipe to $md5cmd: $!\n";
 
 	return $checksum;
+}
+
+# get_arch
+# Returns the architecture string to be used on this platform.
+# For example, "powerpc" for ppc.
+sub get_arch {
+	my $arch = `uname -p`;
+	chomp $arch;
+	return $arch;
 }
 
 ### EOF

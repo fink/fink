@@ -22,7 +22,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &expand_percent);
+use Fink::Services qw(&read_properties &expand_percent &get_arch);
 use Fink::Config qw($config $basepath $buildpath);
 
 use strict;
@@ -177,6 +177,7 @@ sub validate_info_file {
 	my ($basepath, $expand, $buildpath);
 	my $looks_good = 1;
 	my $error_found = 0;
+	my $arch = get_arch();
 
 	if (Fink::Config::verbosity_level() == 3) {
 		print "Validating package file $filename...\n";
@@ -357,7 +358,8 @@ sub validate_info_file {
 				'd' => $pkgdestdir,
 				'i' => $pkgdestdir.$basepath,
 				'a' => $pkgpatchpath,
-				'b' => '.'
+				'b' => '.',
+				'm' => $arch
 	};
 	
 	# Verify the patch file exists, if specified

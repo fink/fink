@@ -9,7 +9,7 @@ PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/dpkg-%v-%r.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 CompileScript: <<
- ./configure powerpc-apple-darwin %c
+ ./configure %m-apple-darwin %c
  make
 <<
 InstallScript: <<

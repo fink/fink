@@ -54,7 +54,7 @@ print " looks good.\n";
 require Fink::Services;
 import Fink::Services qw(&print_breaking &prompt &prompt_boolean
 						 &prompt_selection &read_config &execute
-						 &file_MD5_checksum);
+						 &file_MD5_checksum &get_arch);
 
 ### get version
 
@@ -280,11 +280,13 @@ if (not -d $installto) {
 	}
 }
 
+my $arch = get_arch();
+
 @dirlist = qw(etc etc/alternatives src fink fink/debs);
 push @dirlist, "fink/$distribution", "fink/$distribution/stable", "fink/$distribution/local";
 foreach $dir (qw(local/bootstrap stable/main stable/crypto local/main)) {
 	push @dirlist, "fink/$distribution/$dir", "fink/$distribution/$dir/finkinfo",
-		"fink/$distribution/$dir/binary-darwin-powerpc";
+		"fink/$distribution/$dir/binary-darwin-$arch";
 }
 foreach $dir (@dirlist) {
 	if (not -d "$installto/$dir") {

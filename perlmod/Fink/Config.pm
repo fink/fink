@@ -42,7 +42,8 @@ BEGIN {
 our @EXPORT_OK;
 
 our ($config, $basepath, $libpath, $debarch, $darwin_version, $macosx_version, $cctools_version, $distribution, $buildpath);
-$debarch = "darwin-powerpc";
+my $_arch = Fink::Services::get_arch();
+$debarch = "darwin-$_arch";
 
 my %globals = ();
 

@@ -24,7 +24,7 @@ package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &latest_version &version_cmp &parse_fullversion
 					  &print_breaking &execute);
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
 use File::Find;
 use Fcntl ':mode'; # for search_comparedb
@@ -387,7 +387,7 @@ sub search_comparedb {
 		$fullpath = "$path/$file"; 
 
 		if (-d $fullpath) {
-			next if $file eq "binary-darwin-powerpc";
+			next if $file eq "binary-$debarch";
 			next if $file eq "CVS";
 			return 1 if (&search_comparedb($fullpath));
 		}
