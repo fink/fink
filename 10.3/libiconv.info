@@ -4,7 +4,7 @@ Revision: 12
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 0c99a05e0c3c153bac1c960f78711155
 Essential: yes
-Depends: {SHLIB_DEPS}, base-files
+Depends: {SHLIB_DEPS}, base-files, %N (= %v-%r)
 BuildDepends: fink (>= 0.13.0), fink-prebinding
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
@@ -36,7 +36,7 @@ fi
 SplitOff: <<
  Package: libiconv-bin
  Essential: true
- Depends: libiconv (= %v-%r)
+ Depends: {SHLIB_DEPS}, %N (= %v-%r)
  Replaces: libiconv (<= 1.7-6)
  Files: bin share/doc/libiconv/*.html share/man
  Description: Executables for libiconv package
@@ -44,7 +44,7 @@ SplitOff: <<
 <<
 SplitOff2: <<
  Package: libiconv-dev
- Depends: libiconv (= %v-%r)
+ Depends: {SHLIB_DEPS}, %N (= %v-%r)
  Replaces: libiconv (<= 1.7-6)
  BuildDependsOnly: true
  Files: include lib/libcharset.dylib lib/libiconv.dylib lib/*.a lib/*.la

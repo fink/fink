@@ -2,7 +2,7 @@ Package: apt
 Version: 0.5.4
 Revision: 36
 GCC: 3.3
-Depends: {SHLIB_DEPS}
+Depends: {SHLIB_DEPS}, %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
@@ -74,7 +74,7 @@ InstallScript: <<
 <<
 SplitOff: <<
   Package: %N-shlibs
-  Depends: dpkg
+  Depends: {SHLIB_DEPS}, dpkg
   Replaces: %N (<= 0.5.4-1)
   Files: lib/libapt-inst.1.0.0.dylib lib/libapt-pkg.3.2.0.dylib lib/libapt-inst.1.0.dylib lib/libapt-pkg.3.2.dylib
   Shlibs: <<
@@ -85,7 +85,7 @@ SplitOff: <<
 <<
 SplitOff2: <<
   Package: %N-dev
-  Depends: %N-shlibs (= %v-%r)
+  Depends: {SHLIB_DEPS}, %N-shlibs (= %v-%r)
   BuildDependsOnly: true
   Files: lib/libapt-inst.dylib lib/libapt-pkg.dylib include
   DocFiles: COPYING* AUTHORS
