@@ -1,3 +1,7 @@
+2002-06-07  Max Horn  <max@quendi.de>
+
+	* bootstrap.pl: Report Darwin 5.5 (OS X 10.1.5) as supported
+
 2002-05-11  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.9.12
