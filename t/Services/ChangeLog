@@ -1,4 +1,9 @@
-2004-12-28  Daniel Macks  <dmacks@netspace.org>
+2004-12-30  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: OS X 10.2 (perl 5.6.0) portability fix:
+	use /usr/bin/mktemp instead of File::Temp.
+
+2004-12-30  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: Don't use Test tests for test-suite
 	prereqs. Fix tempdir sanity-check bail-out. More output-hiding

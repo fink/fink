@@ -16,11 +16,18 @@ can_ok('Fink::Config','get_option');   # 4
 can_ok('Fink::Config','set_options');  # 5
 
 # need a a safe place to create files
-use File::Temp (qw/ tempdir /);
-my $tmpdir = tempdir( 'execute_nonroot_okay.t_XXXXX',
-		      DIR => '/tmp',  # dir itself be accessible to *all* users
-#		      CLEANUP => 1    # wish this worked:(
-		    );
+
+# OS X 10.2 comes with perl 5.6.0, but File::Temp isn't in core until 5.6.1
+#use File::Temp (qw/ tempdir /);
+#my $tmpdir = tempdir( 'execute_nonroot_okay.t_XXXXX',
+#		      DIR => '/tmp',  # dir itself be accessible to *all* users
+##		      CLEANUP => 1    # CLEANUP is unsafe (see 'rmtree' below)
+#		    );
+
+# OS X 10.2 mktemp does not have the -p flag implemented
+my $tmpdir = `/usr/bin/mktemp -d /tmp/execute_nonroot_okay.t_XXXXX`;
+chomp $tmpdir;
+
 if (!defined $tmpdir or !length $tmpdir or !-d $tmpdir) {
     print "Bail out! Cannot create scratchdir\n";
     die "\n";
