@@ -1793,12 +1793,24 @@ sub run_script {
 	my $self = shift;
 	my $script = shift;
 	my $phase = shift;
-
+	my %env_bak;
+	
+	# Backup the environment variables
+	%env_bak = %ENV;
+	
+	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand});
+	
+	# Clean the environment
 	$self->set_env();
+	
+	# Run the script
 	if (&execute_script($script)) {
 		die $phase." ".$self->get_fullname()." failed\n";
 	}
+	
+	# Restore the environment
+	%ENV = %env_bak;
 }
 
 ### EOF

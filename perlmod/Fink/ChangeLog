@@ -1,3 +1,8 @@
+2003-03-20  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm (run_script): Backup the environment before clearing it
+	  via set_env; then after running the script, restore it.
+
 2003-03-07	Ben Hines <benh57@users.sourceforge.net>
 
 	* Engine.pm: Add 'ignore-restrictive' option to "fetch-missing", 
