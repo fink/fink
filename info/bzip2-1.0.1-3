@@ -3,7 +3,6 @@ Version: 1.0.1
 Revision: 3
 Source: ftp://sourceware.cygnus.com/pub/bzip2/v100/bzip2-%v.tar.gz
 Essential: yes
-Depends: stow
 Patch: %f.patch
 CompileScript: make PREFIX=%p
 InstallScript: make install PREFIX=%i
