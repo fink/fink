@@ -2326,6 +2326,7 @@ sub phase_purge {
 sub set_env {
 	my $self = shift;
 	my ($varname, $s, $expand);
+	# Remember to update FAQ 8.3 if you change this var list!
 	my %defaults = (
 		"CPPFLAGS"                 => "-I\%p/include",
 		"LDFLAGS"                  => "-L\%p/lib",
@@ -2369,6 +2370,8 @@ END
 	}
 
 	# set variables according to the info file
+	# Remember to update "SetENVVAR" in the Packaging Manual if you
+	# change the var list!
 	$expand = $self->{_expand};
 	foreach $varname (
 			"CC", "CFLAGS",
