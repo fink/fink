@@ -1,3 +1,7 @@
+2001-12-09  Max Horn  <max@quendi.de>
+
+	* fink.8.in: added reference to dselect; updated selfupdate description
+
 2001-11-23  Max Horn  <max@quendi.de>
 
 	* fink.8.in: added reference to apt-get

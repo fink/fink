@@ -153,10 +153,10 @@ release. It checks the
 website to see if a new version is available. It then downloads the package
 descriptions and updates the core packages, including
 .Nm
-itself. This command can only upgrade to regular releases, but you can
-use it to upgrade from a CVS version to a later regular release. It will
-refuse to run if you have @PREFIX@/fink set up to get package descriptions
-directly from CVS.
+itself. This command can upgrade to regular releases, but it can also
+setup your @PREFIX@/fink/dists directory tree for direct CVS updates.
+This means that you then will be able to access the very latest
+revisions of all packages.
 .El
 .\"
 .\"
@@ -205,4 +205,5 @@ This manpage was written by Max Horn <max@quendi.de>.
 .\"
 .Sh "SEE ALSO"
 .Xr apt-get 8
+.Xr dselect 8
 .Xr dpkg 8
