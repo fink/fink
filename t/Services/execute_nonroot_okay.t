@@ -25,9 +25,9 @@ length $tmpdir or die "Bail out! cannot create scratchdir\n";
 chmod 0755, $tmpdir;  # only root can write to this dir
 
 # We cannot use tempdir(CLEANUP=>1) because that works by installing
-# an END block to do the cleanup, which breaks us because %execute
-# forks. The END block runs when each child ends not just at end of
-# (parent) test script. Damn it.
+# an END block to do the cleanup, which breaks us because %execute may
+# be implemented with forks: the END block runs when each child ends
+# not just at the end of the parent (== this test script). Damn it.
 use_ok('File::Path', 'rmtree');        # 7
 
 chdir "/tmp";         # user="nobody" must start shells in the local dir
