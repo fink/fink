@@ -242,6 +242,8 @@ sub expand_percent {
 	my $map = shift;
 	my ($key, $value, $i);
 
+	return $s if (not defined $s);
+
 	# Values for percent signs expansion may be nested once, to allow
 	# e.g. the definition of %N in terms of %n (used a lot for splitoffs
 	# which do stuff like %N = %n-shlibs). Hence we repeate the expansion
@@ -338,7 +340,7 @@ sub prompt {
 		print "(assuming default)\n";
 		$answer = $default_value;
 	} else {
-		$answer = <STDIN>;
+		$answer = <STDIN> || "";
 		chomp($answer);
 		$answer = $default_value if $answer eq "";
 	}
@@ -361,7 +363,7 @@ sub prompt_boolean {
 			$meaning = $default_value;
 			last;
 		}
-		$answer = <STDIN>;
+		$answer = <STDIN> || "";
 		chomp($answer);
 		if ($answer eq "") {
 			$meaning = $default_value;
@@ -413,7 +415,7 @@ sub prompt_selection {
 	if ($dontask) {
 		print "(assuming default)\n";
 	} else {
-		$answer = <STDIN>;
+		$answer = <STDIN> || "";
 		chomp($answer);
 		if (!$answer) {
 			$answer = 0;
@@ -480,7 +482,7 @@ sub raw_version_cmp {
 		@cb = unpack("C*", $1);
 		$b1 = substr($b1,length($1));
 
-		while ($#ca >= 0 and $#cb >= 0) {
+		while (int(@ca) and int(@cb)) {
 			$res = chr($a2 = shift @ca);
 			$a2 += 256 if $res !~ /[A-Za-z]/;
 			$res = chr($b2 = shift @cb);
