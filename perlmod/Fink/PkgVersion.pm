@@ -714,6 +714,40 @@ sub resolve_depends {
 	}
 	
 	@speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
+# with this primitive form of @speclist, we verify that the "BuildDependsOnly"
+# declarations have not been violated
+	foreach $altspec (@speclist){
+	    BUILDDEPENDSLOOP: foreach $depspec (split(/\s*\|\s*/, $altspec)) {
+		if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+		    $depname = $1;
+		    $versionspec = $2;
+		} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+		    $depname = $1;
+		    $versionspec = "";
+		} else {
+		    die "Illegal spec format: $depspec\n";
+		}
+		$package = Fink::Package->package_by_name($depname);
+		if (not defined $package) {
+		    print "WARNING: While resolving dependency \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+		    next; # BUILDDEPENDSLOOP
+		}
+		my ($currentpackage, @dependslist, $dependent, $dependentname);
+		$currentpackage = $self->get_name();
+		@dependslist = $package->get_all_providers();
+		foreach $dependent (@dependslist) {
+		    $dependentname = $dependent->get_name();
+		    if ($dependent->param_boolean("BuildDependsOnly")) {
+			if ($dependentname eq $depname) {
+			    print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
+			} else {
+			    print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
+			}
+		    }
+		}
+	    }
+	}
+# now we continue to assemble the larger @speclist
 	if ($include_build) {
 		push @speclist,
 			split(/\s*\,\s*/, $self->param_default("BuildDepends", ""));
