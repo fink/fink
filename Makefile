@@ -3,15 +3,14 @@ VERSION=`cat VERSION`
 TEST_BASEPATH=$(PWD)/t/basepath
 
 all:
-	@echo "usage: $(MAKE) <target>" && \
-		echo "" && \
-		echo -e "\tcommit         commit your changes" && \
-		echo -e "\tbootstrap      install a fresh fink installation" && \
-		echo -e "\tinstall        install to an existing fink installation" && \
-		echo -e "\ttest           perform tests on the fink code" && \
-		echo ""
-
-	@echo "This is a dummy Makefile - only useful think is 'make test'"
+	@echo    "usage: $(MAKE) <target>"
+	@echo    ""
+	@echo -e "\tcommit      commit your changes"
+	@echo -e "\tbootstrap   install a fresh fink installation"
+	@echo -e "\t            PREFIX can be set, defaults to /sw"   
+	@echo -e "\tinstall     install to an existing fink installation"
+	@echo -e "\ttest        perform tests on the fink code"
+	@echo    ""
 
 commit: test
 	@cvs commit
