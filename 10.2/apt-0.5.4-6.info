@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 5
+Revision: 6
 GCC: 3.1
 Depends: %N-shlibs (= %v-%r)
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
@@ -12,7 +12,7 @@ PatchScript: <<
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
-SetCXXFLAGS: -O2 -DEMULATE_MMAP -fno-rtti
+SetCXXFLAGS: -O2 -DEMULATE_MMAP -fno-rtti -D__USE_MISC
 CompileScript: <<
  ./configure %c
  make -f makefile.wrap

@@ -1,3 +1,7 @@
+2002-10-11  Max Horn  <max@quendi.de>
+
+	* fixed an issue with apt (preventing it from using its own timegm function)
+	
 2002-10-03  Max Horn  <max@quendi.de>
 	
 	* fixed various packages to really use the Fink copies of source files
