@@ -1,7 +1,8 @@
 2003-10-04  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
-	* Selfupdate.pm: Give the user some choice of update method; use a 
-	stamp-rsync-live file when using the rsync method.
+	* FinkVersion.pm.in, Selfupdate.pm: Give the user some choice of 
+	update method; use a stamp-rsync-live file when using the rsync 
+	method.
 	
 2003-10-02  Rob Braun <bbraun@users.sourceforge.net>
 
@@ -10,7 +11,7 @@
 
 2003-10-01  Rob Braun <bbraun@users.sourceforge.net>
 
-	* SelfUpdate.pm, Engine.pm:  Add selfupdate-rsync ption for 
+	* SelfUpdate.pm, Engine.pm:  Add selfupdate-rsync option for 
 	updating via rsync instead of cvs.
 
 2003-09-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
