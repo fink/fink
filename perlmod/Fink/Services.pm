@@ -271,8 +271,8 @@ sub expand_percent {
   # e.g. the definition of %N in terms of %n (used a lot for splitoffs
   # which do stuff like %N = %n-shlibs). Hence we repeate the expansion
   # if necessary.
+  my $percent_keys = join('|', keys %$map);
   for ($i = 0; $i < 2 ; $i++) {
-    my $percent_keys = join('|', keys %$map);
     $s =~ s/\%($percent_keys)/$map->{$1}/eg;
     last if not $s =~ /\%/; # Abort early if no percent symbols are left
   }

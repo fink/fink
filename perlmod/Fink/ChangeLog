@@ -1,3 +1,9 @@
+2003-01-24  Max Horn  <max@quendi.de>
+	
+	* Services.pm: Tiny optimization in expand_percent.
+	
+	* Validation.pm: Fix validation if not BuildPath is specified in fink.conf.
+
 2003-01-23  Max Horn  <max@quendi.de>
 
 	* Services.pm: Added Paul Gaborit's patch to speed up expand_percent and 

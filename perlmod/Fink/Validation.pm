@@ -184,8 +184,8 @@ sub validate_info_file {
   $properties = &read_properties($filename);
   
   # determine the base path
-  $basepath = $config->param("basepath");
-  $buildpath = $config->param("buildpath");
+  $basepath = $config->param_default("basepath", "/sw");
+  $buildpath = $config->param_default("buildpath", "$basepath/src");
 
   $pkgname = $properties->{package};
   $pkgversion = $properties->{version};
