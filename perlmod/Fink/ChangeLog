@@ -1,3 +1,7 @@
+2003-07-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Removed some unnecessary debug stuff
+
 2003-07-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Config.pm, Status.pm: added cctools-single-module

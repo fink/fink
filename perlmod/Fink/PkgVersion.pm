@@ -1549,7 +1549,6 @@ EOF
 	### update Mach-O Object List
 
 	our %prebound_files = ();
-	my $prebind_debug = 1;
 
 	eval {
 		require File::Find;
@@ -1570,29 +1569,24 @@ EOF
 					# executable has no install_name, add to the list
 					$name = $File::Find::name;
 					$name =~ s/^$destdir//;
-					warn "exe, prebound: adding $name ($File::Find::name)\n" if ($prebind_debug);
 					$is_exe = 1;
 					$is_prebound = 1;
 				} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
 					# if the last didn't match, but this did, it's a
 					# non-prebound executable, so skip it
-					warn "exe, not prebound: $File::Find::name\n" if ($prebind_debug);
 					last;
 				} elsif (/^\s*MH_MAGIC.*PREBOUND.*$/) {
 					# otherwise it's a dylib of some form, mark it
 					# so we can pull the install_name in a few lines
-					warn "lib, prebound: adding $File::Find::name\n" if ($prebind_debug);
 					$is_prebound = 1;
 				} elsif (/^\s*MH_MAGIC.*$/) {
 					# if it wasn't an executable, and the last didn't
 					# match, then it's not a prebound lib
-					warn "lib, not prebound: $File::Find::name\n" if ($prebind_debug);
 					last;
 				} elsif (my ($lib) = $_ =~ /^\s*(.+?) \(compatibility.*$/ and $is_prebound) {
 					# we hit the install_name, add it to the list
 					unless ($lib =~ /\/libSystem/ or $lib =~ /^\/+[Ss]ystem/ or $lib =~ /^\/usr\/lib/) {
 						push(@dep_list, $lib);
-						warn "lib, prebound: found dep $lib ($File::Find::name)\n" if ($prebind_debug);
 					}
 				}
 			}
@@ -1604,8 +1598,6 @@ EOF
 				return if (not defined $name);
 				$prebound_files{$name} = \@dep_list;
 			}
-		} else {
-			warn "couldn't check prebinding on $_\n" if ($prebind_debug);
 		}
 	} }, $destdir);
 
