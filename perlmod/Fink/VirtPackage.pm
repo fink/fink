@@ -22,6 +22,10 @@
 
 package Fink::VirtPackage;
 
+# Programmers' note: Please be *very* careful if you alter this file.
+# It is used by dpkg via popen(), so (among other things) that means
+# you must not print to STDOUT.
+
 use Fink::Config qw($config $basepath);
 use POSIX qw(uname);
 use Fink::Status;
