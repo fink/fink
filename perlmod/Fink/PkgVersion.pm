@@ -1328,16 +1328,16 @@ sub resolve_depends {
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading $oper from ".$self->get_fullname()." ";
 		}
-		if ($splitoff->find_debfile() && $include_build != 2 && lc($field) eq "depends") {
+		if ($self->find_debfile() && $include_build != 2) {
 			if (Fink::Config::verbosity_level() > 2) {
 				print "deb file...\n";
 			}
-			push @speclist, split(/\s*\,\s*/, $splitoff->get_debdeps($field));
+			push @speclist, split(/\s*\,\s*/, $self->get_debdeps("Build".$field));
 		} else {
 			if (Fink::Config::verbosity_level() > 2) {
 				print "info file...\n";
 			}
-			push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
+			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 		}
 
 		# If this is a master package with splitoffs, and build deps are requested,
@@ -1347,8 +1347,21 @@ sub resolve_depends {
 		$split_idx = @speclist;
 		unless (lc($field) eq "conflicts") {
 			foreach	 $splitoff (@{$self->{_splitoffs}}) {
-				push @speclist,
-				split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
+				### FIXME shlibs, might need to revisit this later
+				if (Fink::Config::verbosity_level() > 2) {
+					print "Reading $oper from ".$splitoff->get_fullname()." ";
+				}
+				if ($splitoff->find_debfile() && $include_build != 2) {
+					if (Fink::Config::verbosity_level() > 2) {
+						print "deb file...\n";
+					}
+					push @speclist, split(/\s*\,\s*/, $splitoff->get_debdeps($field));
+				} else {
+					if (Fink::Config::verbosity_level() > 2) {
+						print "info file...\n";
+					}
+					push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default("Build".$field, ""));
+				}
 			}
 		}
 	}
