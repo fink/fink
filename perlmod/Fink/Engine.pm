@@ -1624,128 +1624,168 @@ sub cmd_showparent {
 
 ### display a pkg's package description (parsed .info file)
 sub cmd_dumpinfo {
-	my @packagelist = @_;
 
-	my $field;					# scratch variable
-	my( @suffix_list, @splitoffs );
-	my $parent;                 # parent if one exists, else the package itself
+	my (@fields, @percents, $wantall, $wanthelp);
 
-	foreach my $package (@packagelist) {
-		print "\n";
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'all|a'	=>     \$wantall,
+		'field|f=s',   \@fields,
+		'percent|p=s', \@percents,
+		'help|h'	=> \$wanthelp
+	) or die "fink dumpinfo: unknown option\nType 'fink dumpinfo --help' for more information.\n";
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $version
 
-		my $pkg = Fink::PkgVersion->match_package($package);
-		unless (defined $pkg) {
-			print "no package found for specification '$package'!\n";
-			next;
-		}
+Usage: fink dumpinfo [options] [package(s)]
 
-		printf "%s: %s\n", 'file', $pkg->get_info_filename();
-		print "\n";
-		printf "%s: %s\n", 'Package', $pkg->get_name();
-		printf "%s: %s\n", 'Version', $pkg->get_version();
-		printf "%s: %s\n", 'Revision', $pkg->get_revision();
+Options:
+  -a, --all            - All package info fields (default behavior)
+  -f s, --field=s      - Just the specific field(s) specified
+  -p s, --percent=key  - Just the percent expansion for specific key(s)
+  -h, --help           - This help text.
 
-		# [0] is parent, [1..n] are splitoffs
-		@splitoffs = $pkg->get_splitoffs(1, 1);
+EOF
+		exit 0;
+	}
 
-		$parent = shift @splitoffs;
-		if ($pkg eq $parent) {
-			if (@splitoffs > 0) {
-				# we have SplitOffs
-				print "\nSplitOffs: ", join( ", ", map $_->get_name(), @splitoffs ), "\n";
-			}
-		} else {
-			print "\nParent: ", $parent->get_name(),"\n";
-		}
+	Fink::Package->require_packages();
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
 
-		foreach my $field (qw/ Depends BuildDepends Provides Conflicts Replaces BuildConflicts /) {
-			if ($field =~ /^Build/) {
-				# these cannot be in a splitoff so assume parent
-				if ($parent->has_param($field)) {
-					printf "\n%s%s: %s\n",
-						$field,
-						$pkg eq $parent ? "" : " (from parent)",
-						$parent->pkglist_default($field);
+	# handle clustered param values
+	@fields   = split /,/, lc ( join ',', @fields   ) if @fields;
+	@percents = split /,/,    ( join ',', @percents ) if @percents;
+
+	my @pkglist = &expand_packages(@_);
+	if (! @pkglist) {
+		die "fink dumpinfo: no package(s) specified\nType 'fink dumpinfo --help' for more information.\n";
+	}
+
+	foreach my $pkg (@pkglist) {
+
+		# default to all fields if no fields or %expands specified
+		if ($wantall or not (@fields or @percents)) {
+			@fields = (qw/
+					   info package epoch version revision parent family
+					   description type license maintainer
+					   pre-depends depends builddepends
+					   provides replaces conflicts buildconflicts
+					   recommends suggests enhances
+					   essential builddependsonly
+					   custommirror
+					   /);
+			foreach ($pkg->get_source_suffices) {
+				if ($_ eq "") {
+					push @fields, (qw/
+								   source sourcerename source-md5
+								   nosourcedirectory sourcedirectory
+								   tarfilesrename
+								   /);
+				} else {
+					push @fields, (qw/
+								   source$_ source$_rename source$_-md5
+								   source$_extractdir
+								   tar$_filesrename
+								   /);
 				}
+			}
+			push @fields, (qw/
+						   updateconfigguess updateconfigguessindirs
+						   updatelibtool updatelibtoolindirs
+						   updatepomakefile
+						   patch patchscript /,
+						   $pkg->params_matching(/^set/),
+						   $pkg->params_matching(/^noset/),
+						   qw/
+						   configureparams gcc compilescript noperltests
+						   updatepod installscript
+						   jarfiles docfiles shlibs runtimevars splitoffs files
+						   preinstscript postinstscript
+						   prermscript postrmscript
+						   conffiles infodocs daemonicfile daemonicname
+						   homepage descdetail descusage
+						   descpackaging descport
+						   /);
+		};
+
+		foreach (@fields) {
+			if ($_ eq 'info') {
+				printf "file: %s\n", $pkg->get_info_filename();
+			} elsif ($_ eq 'package') {
+				printf "%s: %s\n", $_, $pkg->get_name();
+			} elsif ($_ eq 'version') {
+				printf "%s: %s\n", $_, $pkg->get_version(); 
+			} elsif ($_ eq 'revision') {
+				printf "%s: %s\n", $_, $pkg->param_default('revision', '1');
+			} elsif ($_ eq 'parent') {
+				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
+			} elsif ($_ eq 'splitoffs') {
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->{_splitoffs}} if @{$pkg->{_splitoffs}};
+			} elsif ($_ eq 'family') {
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(1, 1);
+			} elsif ($_ eq 'description') {
+				printf "%s: %s\n", $_, $pkg->get_shortdescription;
+			} elsif ($_ =~ /^desc(detail|usage|packaging|port)$/) {
+				print "$_:\n", $pkg->format_description($pkg->param($_)) if $pkg->has_param($_);
+			} elsif ($_ eq 'type'       or $_ eq 'license' or
+					 $_ eq 'maintainer' or $_ eq 'homepage'
+					) {
+				printf "%s: %s\n", $_, $pkg->param_default($_,'[missing]');
+			} elsif ($_ eq 'pre-depends'    or $_ eq 'depends'        or
+					 $_ eq 'builddepends'   or $_ eq 'provides'       or
+					 $_ eq 'replaces'       or $_ eq 'conflicts'      or
+					 $_ eq 'buildconflicts' or $_ eq 'recommends'     or
+					 $_ eq 'suggests'       or $_ eq 'enhances'		
+					) {
+				my $deplist = $pkg->pkglist($_);
+				printf "%s: %s\n", $_, $deplist if defined $deplist;
+			} elsif ($_ eq 'essential'         or $_ eq 'builddependsonly'  or
+					 $_ eq 'nosourcedirectory' or $_ eq 'updateconfigguess' or
+					 $_ eq 'updatelibtool'     or $_ eq 'updatepomakefile'  or
+					 $_ =~ /^noset/            or $_ eq 'noperltests'       or
+					 $_ eq 'updatepod'
+					) {
+				printf "%s: %s\n", $_, $pkg->param_boolean($_) ? "true" : "false";
+			} elsif ($_ eq 'sources') {
+				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;
+				@suffixes = grep { $_ ne "none" } @suffixes;
+				if (@suffixes) {
+					print "$_:\n";
+					print map { "\t" .$pkg->get_source($_) . "\n" } @suffixes;
+				}
+			} elsif ($_ =~ /^source(\d*)$/) {
+				my $src = $pkg->get_source($1);
+				printf "%s: %s\n", $_, $src if $src ne "none";
+			} elsif ($_ eq 'gcc' or $_ eq 'epoch' or $_ =~ /^source\d*-md5$/) {
+				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
+			} elsif ($_ eq 'configureparams') {
+				my $cparams = $pkg->get_configureparams;
+				printf "%s: %s\n", $_, $cparams if defined $cparams and length $cparams;
+			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
+					 $_ =~ /^tar\d*filesrename$/ or
+					 $_ =~ /^update(configguess|libtool)indirs$/ or
+					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf|)files$/ or
+					 $_ eq 'patch' or $_ eq 'infodocs' or
+					 $_ =~ /^daemonic(file|name)$/
+					) {
+				printf "%s: %s\n", $_, $pkg->param_expanded($_) if $pkg->has_param($_);
+			} elsif ($_ =~ /^((patch|compile|install|(pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)$/) {
+				printf "$_:\n%s\n", $pkg->param_expanded($_) if $pkg->has_param($_);
 			} else {
-				# these could be in a splitoff
-				if ($pkg->has_param($field)) {
-					printf "\n%s: %s\n", $field, $pkg->pkglist_default($field);
-				}
+				die "Unknown field $_\n";
 			}
 		}
-
-		@suffix_list = $parent->get_source_suffices();
-		if (@suffix_list) {
-			printf "\nSources%s:\n", $pkg eq $parent ? "" : " (from parent)";
-			foreach $field (@suffix_list) {
-				printf "\tSource%s: %s\n", $field, $parent->get_source($field);
-			}
-		}
-
-		if ($parent->has_param("Patch")) {
-			printf "\nPatch files%s:\n", $pkg eq $parent ? "" : " (from parent)";
-			foreach my $patchfile (split(/\s+/,$parent->param("Patch"))) {
-				printf "\t%s\n", &expand_percent("\%a/$patchfile", $pkg->{_expand}, $pkg->get_info_filename." Patch");
-			}
-		}
-
-		foreach $field (qw/ Patch Compile Install /) {
-			# these cannot be in a splitoff so assume parent
-			# InstallScript could be in both (parent runs first)
-			next if $pkg eq $parent and $field eq "Install"; # else duplicated
-			if ($parent->has_param($field.'Script')) {
-				printf "\n%sScript%s:\n", $field, $pkg eq $parent ? "" : " (from parent)";
-				print $parent->param_expanded($field.'Script'),"\n";
-			}
-		}
-		foreach $field (qw/ Install PreInst PostInst PreRm PostRm /) {
-			# these could be in a splitoff
-			# InstallScript could be in both (parent runs first)
-			if ($pkg->has_param($field.'Script')) {
-				printf "\n%sScript:\n", $field;
-				print $pkg->param_expanded($field.'Script'),"\n";
-			}
+		foreach (@percents) {
+			printf "%%%s: %s\n", $_, &expand_percent("\%$_", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_fullversion);
 		}
 	}
-}
-
-sub _cmd_dumpinfo {
-	use constant {
-		OP_DESC    => 1,
-		OP_DEPENDS => 2,
-		OP_FETCH   => 4,
-		OP_BUILD   => 8,
-		OP_INSTALL => 16,
-	};
-
-	my $phases = 0;
-	my @pkglist = &parse_cmd_options(
-		'dumpinfo',
-		[
-		 [ 'describe|text|t',   sub {$phases |= OP_DESC;   },
-		   'All of the Desc* fields.' ],
-		 [ 'depends|d',         sub {$phases |= OP_DEPENDS;},
-		   'Fields relating to source downloading.' ],
-		 [ 'fetch|sources|f',   sub {$phases |= OP_FETCH;  },
-		   'All of the dependency fields.' ],
-		 [ 'build|compile|b|c', sub {$phases |= OP_BUILD;  },
-		   'Unpacking, patching, compiling, and installing into the .deb.' ],
-		 [ 'install|i',         sub {$phases |= OP_INSTALL;},
-		   '{Pre,Post}{Inst,Rm}Script, Daemonic*, and other fields that influence them.' ],
-		 [ 'all|a',             sub {$phases |= (
-										  OP_DESC    |
-										  OP_DEPENDS |
-										  OP_FETCH   |
-										  OP_BUILD   |
-										  OP_INSTALL
-									  )
-									 },
-		   'All of the above.' ]
-		], @_);
-
-	print "using old behavior untile dan implements new...\n\n";
-	&_cmd_dumpinfo(@_);
 }
 
 ### EOF
