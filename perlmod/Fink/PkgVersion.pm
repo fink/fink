@@ -1362,7 +1362,7 @@ sub fetch_source {
 	}
 	
 	if (&fetch_url_to_file($url, $file, $self->get_custom_mirror($suffix), 
-						   $tries, $continue, $nomirror, $dryrun)) {
+						   $tries, $continue, $nomirror, $dryrun, undef, $checksum)) {
 
 		if (0) {
 		print "\n";
@@ -1380,9 +1380,14 @@ sub fetch_source {
 						"moved to another directory. The package ".
 						"description must be updated.",
 						1, "- ", "	");
+		&print_breaking("The package specifies an incorrect checksum ".
+						"for the file.",
+						1, "- ", "	");
 		&print_breaking("In any case, you can download '$file' manually and ".
 						"put it in '$basepath/src', then run fink again with ".
-						"the same command.");
+						"the same command. If you have checksum problems, ".
+						"make sure you have  updated your package ".
+						"recently; contact the package maintainer.");
 		print "\n";
 		}
 		if($dryrun) {

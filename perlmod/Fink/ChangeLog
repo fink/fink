@@ -1,3 +1,10 @@
+2004-06-28  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: Add checksum argument to fetch_url_to_file; if it
+	doesn't match, consider download a failure and continue through
+	mirror list.
+	* PkgVersion.pm: Pass $checksum to fetch_url_to_file in phase_fetch.
+	
 2004-06-27  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Move PatchScript processing into new get_patchscript
