@@ -1,3 +1,7 @@
+2004-06-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check for hardcoded /sw in DaemonicFile.
+
 2004-06-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Very strict check of Shlibs formatting.

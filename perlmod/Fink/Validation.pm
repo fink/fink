@@ -77,6 +77,7 @@ our %check_hardcode_fields = map {$_, 1}
 		 prermscript
 		 postrmscript
 		 conffiles
+		 daemonicfile
 		),
 		(map {"set".$_} @set_vars)
 	);
