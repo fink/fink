@@ -21,4 +21,5 @@ sourceforge: SourceForge
 # a unique choice.  There is no need to list them during mirror selection.
 
 apt: Apt-Get Repository
+cvs-repository: CVS Repository
 website: Fink Website
