@@ -1,3 +1,13 @@
+2001-03-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: added support for bundle packages (no source,
+	only dependecies).
+
+2001-03-04  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: added code to disable the defaults for
+	environment variables (e.g. NoSetCPPFLAGS: true).
+
 2001-03-01  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: added support for multiple tarballs per package.

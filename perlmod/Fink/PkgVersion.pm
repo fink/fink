@@ -56,6 +56,7 @@ sub initialize {
   $self->{_name} = $pkgname = $self->param_default("Package", "");
   $self->{_version} = $version = $self->param_default("Version", "0");
   $self->{_revision} = $revision = $self->param_default("Revision", "0");
+  $self->{_type} = lc $self->param_default("Type", "");
 
   # some commonly used stuff
   $self->{_fullversion} = $version."-".$revision;
@@ -202,6 +203,10 @@ sub get_build_directory {
 sub is_fetched {
   my $self = shift;
   my ($i);
+
+  if ($self->{_type} eq "bundle") {
+    return 1;
+  }
 
   for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
     if (not defined $self->find_tarball($i)) {
@@ -358,6 +363,10 @@ sub phase_fetch {
   my $self = shift;
   my ($i);
 
+  if ($self->{_type} eq "bundle") {
+    return;
+  }
+
   for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
     $self->fetch_source($i);
   }
@@ -388,6 +397,10 @@ sub phase_unpack {
   my $self = shift;
   my ($archive, $found_archive, $bdir, $destdir, $tar_cmd);
   my ($i);
+
+  if ($self->{_type} eq "bundle") {
+    return;
+  }
 
   $bdir = $self->get_fullname();
 
@@ -447,6 +460,10 @@ sub phase_patch {
   my $self = shift;
   my ($dir, $patch_script, $cmd, $patch);
 
+  if ($self->{_type} eq "bundle") {
+    return;
+  }
+
   $dir = $self->get_build_directory();
   chdir "$basepath/src/$dir";
 
@@ -502,6 +519,10 @@ sub phase_compile {
   my $self = shift;
   my ($dir, $compile_script, $cmd);
 
+  if ($self->{_type} eq "bundle") {
+    return;
+  }
+
   $dir = $self->get_build_directory();
   chdir "$basepath/src/$dir";
 
@@ -533,17 +554,21 @@ sub phase_install {
   my $self = shift;
   my ($dir, $install_script, $cmd);
 
-  $dir = $self->get_build_directory();
-  chdir "$basepath/src/$dir";
+  if ($self->{_type} ne "bundle") {
+    $dir = $self->get_build_directory();
+    chdir "$basepath/src/$dir";
+  }
 
   # generate installation script
 
   $install_script = "rm -rf \%i\n".
     "mkdir -p \%i\n";
-  if ($self->has_param("InstallScript")) {
-    $install_script .= $self->param("InstallScript");
-  } else {
-    $install_script .= "make install prefix=\%i";
+  if ($self->{_type} ne "bundle") {
+    if ($self->has_param("InstallScript")) {
+      $install_script .= $self->param("InstallScript");
+    } else {
+      $install_script .= "make install prefix=\%i";
+    }
   }
   $install_script .= "\nmkdir -p \%i/var/fink-stamp".
     "\ntouch \%i/var/fink-stamp/\%f";
@@ -623,12 +648,14 @@ sub set_env {
 		    "MAKE", "MFLAGS") {
     if ($self->has_param("Set$varname")) {
       $s = $self->param("Set$varname");
-      if (exists $defaults{$varname}) {
+      if (exists $defaults{$varname} and
+	  not $self->param_boolean("NoSet$varname")) {
 	$s .= " ".$defaults{$varname};
       }
       $ENV{$varname} = &expand_percent($s, $expand);
     } else {
-      if (exists $defaults{$varname}) {
+      if (exists $defaults{$varname} and
+	  not $self->param_boolean("NoSet$varname")) {
 	$s = $defaults{$varname};
 	$ENV{$varname} = &expand_percent($s, $expand);
       } else {
