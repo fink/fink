@@ -41,6 +41,7 @@ use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname);
 use File::Basename qw(&dirname &basename);
 use Fink::Notify;
+use Fink::Validation;
 
 use POSIX qw(uname strftime);
 
@@ -2843,6 +2844,20 @@ EOF
 		my $error = "can't create package ".$self->get_debname();
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die $error . "\n";
+	}
+
+	my $looksgood = 1;
+	if (Fink::Config::get_option("maintainermode")) {
+		my $tempverb = Fink::Config::get_option("verbosity");
+		Fink::Config::set_options( { 'verbosity' => 3 } );
+		Fink::Config::set_options( { 'Pedantic' => 1 } );
+		$looksgood = Fink::Validation::validate_dpkg_file($self->get_debpath()."/".$self->get_debname());
+		Fink::Config::set_options( { 'verbosity' => $tempverb } );
+		Fink::Config::set_options( { 'Pedantic' => 0 } );
+	}
+
+	unless ($looksgood) {
+		die "Please correct the above problems and try again!\n";
 	}
 
 	unless (symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname()) {

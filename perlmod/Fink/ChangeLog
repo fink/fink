@@ -1,12 +1,18 @@
-2004-02-24  Daniel Macks  <dmacks@netspace.org>
+2005-02-25  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm, PkgVersion.pm: Adding maintainer mode, -m|--maintainer,
+	which will enable extra output for maintainers and will self validate
+	the info and deb files.
+
+2004-02-25  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: add return values for validate_*_file
 
-2004-02-24  Daniel Macks  <dmacks@netspace.org>
+2004-02-25  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: Make InstallScript output stand out better
 
-2004-02-24  Daniel Macks  <dmacks@netspace.org>
+2004-02-25  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: More-compatible syntax for open().
 

@@ -39,6 +39,7 @@ use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p);
 use Fink::Notify;
+use Fink::Validation;
 
 use strict;
 use warnings;
@@ -221,9 +222,18 @@ sub process {
 		Fink::Package->require_packages();
 		Fink::Shlibs->require_packages();
 	}
+
+	if (Fink::Config::get_option("maintainermode") && ($cmd =~ /install/i || $cmd =~ /build/i)) {
+		print STDERR "Running in Maintainer Mode\n";
+	} elsif (Fink::Config::get_option("maintainermode")) {
+		&print_breaking("Maintainer mode is only available for (re)build and (re)install, continuing $cmd without maintainer mode.");
+		Fink::Config::set_options( { "maintainermode" => 0 } );
+	}
+
 	$::SIG{INT} = sub { die "User interrupt.\n" };
 	eval { &$proc(@args); };
 	$::SIG{INT} = 'DEFAULT';
+
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
 	Fink::PkgVersion->clear_buildlock();       # always clean up
 	
@@ -1332,6 +1342,20 @@ sub real_install {
 		# no duplicates here
 		#	 (dependencies is different, but those are checked later)
 		$pkgname = $package->get_name();
+		my $looksgood = 1;
+		if (Fink::Config::get_option("maintainermode")) {
+			my $tempverb = Fink::Config::get_option("verbosity");
+			Fink::Config::set_options( { 'verbosity' => 3 } );
+			Fink::Config::set_options( { 'Pedantic' => 1 } );
+			$looksgood = Fink::Validation::validate_info_file($package->get_info_filename());
+			Fink::Config::set_options( { 'verbosity' => $tempverb } );
+			Fink::Config::set_options( { 'Pedantic' => 0 } );
+		}
+
+		unless ($looksgood) {
+			die "Please correct the above problems and try again!\n";
+		}
+
 		if (exists $deps{$pkgname}) {
 			print "Duplicate request for package '$pkgname' ignored.\n";
 			next;

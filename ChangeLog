@@ -1,3 +1,7 @@
+2005-02-25  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* fink.in: Adding maintainer mode, -m|--maintainer
+
 2005-02-24  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap.pl: Use new "intro" param to prompt_selection
