@@ -305,6 +305,7 @@ sub add_splitoff {
 	# copy version information
 	$properties->{'version'} = $self->{_version};
 	$properties->{'revision'} = $self->{_revision};
+	$properties->{'epoch'} = $self->{_epoch};
 	
 	# set the type, and link the splitoff to its "parent" (=us)
 	$properties->{'type'} = "splitoff";
