@@ -1,3 +1,8 @@
+2004-09-06  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm, VirtPackage.pm: Some tweaks to the way
+	system-java and $JAVA_HOME work.
+
 2004-08-31  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Do not save raw SplitOffN in parent pkg.

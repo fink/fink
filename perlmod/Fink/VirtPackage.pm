@@ -197,7 +197,7 @@ END
 				print STDERR "$dir/Commands " if ($options{debug});
 				$hash->{status}      = STATUS_PRESENT;
 				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
-				$latest_java = $dir;
+				$latest_java = $dir unless (defined $latest_java);
 
 				$hash = {};
 				$hash->{package}     = "system-java${ver}-dev";
