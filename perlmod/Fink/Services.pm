@@ -573,9 +573,11 @@ sub file_MD5_checksum {
 
   $pid = open(MD5SUM, "md5sum $filename |") or die "Couldn't run md5sum: $!\n";
   while (<MD5SUM>) {
-    if (/([^\s]*)\s*$filename/) {
-      $checksum = $1;
-      last;
+    if (/([^\s]*)\s*([^\s]*)/) {
+      if ($filename eq $2) {
+	$checksum = $1;
+	last;
+      }
     }
   }
   close(MD5SUM) or die "Error on closing pipe to md5sum: $!\n";

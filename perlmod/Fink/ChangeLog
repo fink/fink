@@ -1,5 +1,10 @@
 2002-05-28  Max Horn  <max@quendi.de>
 
+	* Services.pm (file_MD5_checksum): Fixed bug caused by certain special
+	characters occuring in filenames passed to this function.
+
+2002-05-28  Max Horn  <max@quendi.de>
+
 	* PkgVersion.pm (phase_patch, phase_compile, phase_install): Now use the new
 	run_script method; single-shell scripts are now actually usable inside
 	InstallScript and PatchScript.
