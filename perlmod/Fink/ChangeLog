@@ -1,3 +1,9 @@
+2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: move inject.pl code into Bootstrap.pm, and
+	separate out the common code from inject.pl and bootstrap.pl
+	into subroutines that can be used by both
+
 2003-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Recognize darwin 7.2.0.
