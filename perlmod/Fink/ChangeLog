@@ -1,3 +1,11 @@
+2003-11-20  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Service.pm: Make is so expand_percent ignores commented line so
+	we can have % in comments.  Also added the ability to have escaped
+	%, e.g. when trying to patch using perl -pi on a sprintf string that
+	uses %s or such.
+	* PkgVersion.pm: Added expansion for %%.
+
 2003-11-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: Don't generate prebinding references if the package

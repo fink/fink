@@ -265,22 +265,39 @@ sub execute_script {
 sub expand_percent {
 	my $s = shift;
 	my $map = shift;
-	my ($key, $value, $i);
+	my ($key, $value, $i, @lines, @newlines);
 
 	return $s if (not defined $s);
 
-	# Values for percent signs expansion may be nested once, to allow
-	# e.g. the definition of %N in terms of %n (used a lot for splitoffs
-	# which do stuff like %N = %n-shlibs). Hence we repeate the expansion
-	# if necessary.
-	my $percent_keys = join('|', keys %$map);
-	for ($i = 0; $i < 2 ; $i++) {
-		$s =~ s/\%($percent_keys)/$map->{$1}/eg;
-		last if not $s =~ /\%/; # Abort early if no percent symbols are left
-	}
+	# split multi lines to process each line incase of comments
+	@lines = split(/\r?\n/, $s);
+
+	foreach $s (@lines) {
+		# if line is a comment don't expand
+		unless ($s =~ /^\s*#/) {
+
+			# Values for percent signs expansion may be nested
+			# once, to allow e.g. the definition of %N in terms of
+			# %n (used a lot for splitoffs which do stuff like
+			# %N = %n-shlibs). Hence we repeate the expansion if
+			# necessary.
+			my $percent_keys = join('|', keys %$map);
+			for ($i = 0; $i < 2 ; $i++) {
+				$s =~ s/\%($percent_keys)/$map->{$1}/eg;
+				# Abort early if no percent symbols are left
+				last if not $s =~ /\%/;
+			}
 	
-	# If ther are still unexpanded percents left, error out
-	die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /\%/;
+			# If ther are still unexpanded percents left, error out
+			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /\%/;
+
+			# Change @PERCENT@ back to % as it should be
+			$s =~ s/\@PERCENT\@/\%/g;
+		}
+		push(@newlines, $s);
+	}
+
+	$s = join("\n", @newlines);
 
 	return $s;
 }
