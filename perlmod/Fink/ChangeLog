@@ -1,3 +1,8 @@
+2003-11-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Change the thread test to use grep -a, so as not to
+	  depend on nm from the dev tools.
+
 2003-11-14  Michael G Schwern <schwern@pobox.com>
 
 	* Command.pm: Adding insufficient argument checks to cp and mv

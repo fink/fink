@@ -230,16 +230,11 @@ sub initialize {
 									-f '/usr/X11R6/include/fontconfig/fontconfig.h');
 				push(@provides, 'fontconfig1-shlibs') if has_lib('/usr/X11R6/lib/libfontconfig.1.dylib');
 
-				if (grep(/^x11/, @provides) and open(NM, '/usr/bin/nm /usr/X11R6/lib/libXt.6.dylib |')) {
-					while (<NM>) {
-						if (/_pthread_mutex_lock/) {
-							push(@provides, 'xfree86-base-threaded-shlibs');
-							push(@provides, 'xfree86-base-threaded') if (grep(/^x11$/, @provides));
-							close(NM);
-							last;
-						}
+				if (-f '/usr/X11R6/lib/libXt.6.dylib' and -x '/usr/bin/grep') {
+					if (system('/usr/bin/grep', '-q', '-a', 'pthread_mutex_lock', '/usr/X11R6/lib/libXt.6.dylib') == 0) {
+						push(@provides, 'xfree86-base-threaded-shlibs');
+						push(@provides, 'xfree86-base-threaded') if (grep(/^x11$/, @provides));
 					}
-					close(NM);
 				}
 				$hash->{provides} = join(', ', @provides);
 
