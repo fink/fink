@@ -1,0 +1,170 @@
+diff -ruN imlib-1.9.9/Imlib/colors.c imlib-1.9.9-patched/Imlib/colors.c
+--- imlib-1.9.9/Imlib/colors.c	Wed Feb 14 19:49:54 2001
++++ imlib-1.9.9-patched/Imlib/colors.c	Wed Mar 28 10:46:32 2001
+@@ -3,6 +3,10 @@
+ #include "Imlib.h"
+ #include "Imlib_private.h"
+ 
++#ifdef __APPLE__
++#include <basename.h>
++#endif
++
+ #ifdef __EMX__
+ extern const char *__XOS2RedirRoot(const char*);
+ #endif
+diff -ruN imlib-1.9.9/basename.h imlib-1.9.9-patched/basename.h
+--- imlib-1.9.9/basename.h	Thu Jan  1 01:00:00 1970
++++ imlib-1.9.9-patched/basename.h	Wed Mar 28 10:44:30 2001
+@@ -0,0 +1,12 @@
++#include <string.h>
++
++static char *basename(const char *filename)
++{
++  const char *p;
++
++  if (filename == NULL)
++    return NULL;
++  if ((p = strrchr(filename, '/')) != NULL)
++    return p+1;
++  return filename;
++}
+diff -ruN imlib-1.9.9/gdk_imlib/Makefile.am imlib-1.9.9-patched/gdk_imlib/Makefile.am
+--- imlib-1.9.9/gdk_imlib/Makefile.am	Wed Feb 14 22:24:38 2001
++++ imlib-1.9.9-patched/gdk_imlib/Makefile.am	Wed Mar 28 10:45:45 2001
+@@ -1,4 +1,4 @@
+-common_ldflags = -avoid-version
++common_ldflags = -avoid-version -module
+ 
+ libimlib_gif_la_SOURCES = io-gif.c
+ libimlib_gif_la_LDFLAGS = $(common_ldflags)
+diff -ruN imlib-1.9.9/gdk_imlib/Makefile.in imlib-1.9.9-patched/gdk_imlib/Makefile.in
+--- imlib-1.9.9/gdk_imlib/Makefile.in	Thu Feb 15 05:46:34 2001
++++ imlib-1.9.9-patched/gdk_imlib/Makefile.in	Wed Mar 28 10:45:45 2001
+@@ -98,7 +98,7 @@
+ X_LIBS = @X_LIBS@
+ X_PRE_LIBS = @X_PRE_LIBS@
+ 
+-common_ldflags = -avoid-version
++common_ldflags = -avoid-version -module
+ 
+ libimlib_gif_la_SOURCES = io-gif.c
+ libimlib_gif_la_LDFLAGS = $(common_ldflags)
+diff -ruN imlib-1.9.9/gdk_imlib/colors.c imlib-1.9.9-patched/gdk_imlib/colors.c
+--- imlib-1.9.9/gdk_imlib/colors.c	Tue Oct 17 01:29:23 2000
++++ imlib-1.9.9-patched/gdk_imlib/colors.c	Wed Mar 28 10:46:21 2001
+@@ -4,6 +4,10 @@
+ #define id _gdk_imlib_data
+ #include "gdk_imlib_private.h"
+ 
++#ifdef __APPLE__
++#include <basename.h>
++#endif
++
+ static int
+ PaletteLUTGet(void)
+ {
+diff -ruN imlib-1.9.9/gdk_imlib/misc.c imlib-1.9.9-patched/gdk_imlib/misc.c
+--- imlib-1.9.9/gdk_imlib/misc.c	Sun Aug 27 03:48:25 2000
++++ imlib-1.9.9-patched/gdk_imlib/misc.c	Wed Mar 28 10:45:45 2001
+@@ -7,12 +7,12 @@
+ #include <gdk/gdkx.h>
+ #include <locale.h>
+ 
+-char                x_error;
++char                x2_error;
+ 
+ static void
+ HandleXError(Display * d, XErrorEvent * ev)
+ {
+-  x_error = 1;
++  x2_error = 1;
+ }
+ 
+ gint
+@@ -608,10 +608,10 @@
+ 		shmat(id->x.last_shminfo.shmid, 0, 0);
+ 	      id->x.last_shminfo.readOnly = False;
+ 	      preh = XSetErrorHandler((XErrorHandler) HandleXError);
+-	      x_error = 0;
++	      x2_error = 0;
+ 	      XShmAttach(id->x.disp, &id->x.last_shminfo);
+ 	      XSync(disp, False);
+-	      if (x_error)
++	      if (x2_error)
+ 		{
+ 		  id->x.shm = 0;
+ 		  id->x.shmp = 0;
+@@ -1144,10 +1144,10 @@
+ 		shmat(id->x.last_shminfo.shmid, 0, 0);
+ 	      id->x.last_shminfo.readOnly = False;
+ 	      XSetErrorHandler((XErrorHandler) HandleXError);
+-	      x_error = 0;
++	      x2_error = 0;
+ 	      XShmAttach(id->x.disp, &id->x.last_shminfo);
+ 	      XSync(disp, False);
+-	      if (x_error)
++	      if (x2_error)
+ 		{
+ 		  id->x.shm = 0;
+ 		  id->x.shmp = 0;
+diff -ruN imlib-1.9.9/gdk_imlib/utils.c imlib-1.9.9-patched/gdk_imlib/utils.c
+--- imlib-1.9.9/gdk_imlib/utils.c	Fri Aug 25 14:34:28 2000
++++ imlib-1.9.9-patched/gdk_imlib/utils.c	Wed Mar 28 10:45:45 2001
+@@ -1815,14 +1815,14 @@
+   return WEXITSTATUS(info);
+ }
+ 
+-static char         x_error = 0;
++static char         x2_error = 0;
+ 
+ static void
+ __handle_x_error(Display * d, XErrorEvent * ev)
+ {
+   d = NULL;
+   ev = NULL;
+-  x_error = 1;
++  x2_error = 1;
+ }
+ 
+ GdkImlibImage      *
+@@ -1864,18 +1864,18 @@
+     mask = 0;
+   XGrabServer(disp);
+   erh = XSetErrorHandler((XErrorHandler) __handle_x_error);
+-  x_error = 0;
++  x2_error = 0;
+   XGetWindowAttributes(disp, win, &xatt);
+   XFlush(disp);
+-  if (x_error)
++  if (x2_error)
+     {
+-      x_error = 0;
++      x2_error = 0;
+       is_pixmap = 1;
+       XGetGeometry(disp, win, &chld, &rx, &rx,
+ 		   (unsigned int *)&xatt.width, (unsigned int *)&xatt.height,
+ 		   (unsigned int *)&rx, (unsigned int *)&xatt.depth);
+       XFlush(disp);
+-      if (x_error)
++      if (x2_error)
+ 	{
+ 	  XUngrabServer(disp);
+ 	  XFlush(disp);
+@@ -1961,7 +1961,7 @@
+       if (!shm_checked)
+ 	{
+ 	  XSync(disp, False);
+-	  if (x_error)
++	  if (x2_error)
+ 	    {
+ 	      shm = 0;
+ 	      XDestroyImage(xim);
+@@ -2035,7 +2035,7 @@
+       if (!shm_checked)
+ 	{
+ 	  XSync(disp, False);
+-	  if (x_error)
++	  if (x2_error)
+ 	    {
+ 	      shm = 0;
+ 	      XDestroyImage(xim);
