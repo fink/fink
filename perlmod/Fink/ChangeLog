@@ -1,6 +1,16 @@
-2004-07-04  Daniel Macks  <dmacks@netspace.org>
+2004-07-07  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
-	* VirtPackage.pm: Sync with r1.42.
+	* PkgVersion.pm: Check whether VirtPackage's return value is
+	undefined, since "0" is a true version, undefined is a non-
+	existent one.
+
+	* Services.pm: Treat undefined values passed to a version compare
+	as a false value.
+
+	* Status.pm: Simplify status checking.
+
+	* VirtPackage.pm: Change all virtuals to exist even if they're
+	not installed, with status "purge ok not-installed".
 
 2004-05-21  Daniel Macks  <dmacks@netspace.org>
 
