@@ -1588,6 +1588,7 @@ EOF
 	find({ wanted => sub {
 		return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
 		return if (/\.class$/); # java looks like mach-o!
+		return if (readlink $_ =~ /\/usr\/lib/); # don't re-prebind stuff in /usr/lib
 		#print "\$_ = $_\n";
 		$is_prebound = 0;
 		$is_exe      = 0;
