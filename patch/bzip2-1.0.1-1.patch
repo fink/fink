@@ -1,0 +1,11 @@
+diff -ru bzip2-1.0.1/Makefile bzip2-1.0.1-patched/Makefile
+--- bzip2-1.0.1/Makefile	Fri Jun 23 22:34:47 2000
++++ bzip2-1.0.1-patched/Makefile	Fri Dec 22 14:57:24 2000
+@@ -1,6 +1,6 @@
+ 
+ SHELL=/bin/sh
+-CC=gcc
++CC=cc
+ BIGFILES=-D_FILE_OFFSET_BITS=64
+ CFLAGS=-Wall -Winline -O2 -fomit-frame-pointer -fno-strength-reduce $(BIGFILES)
+ 

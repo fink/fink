@@ -1,0 +1,23 @@
+Package: vnc
+Version: 3.3.3r2
+Revision: 0
+Source: ftp://ftp.uk.research.att.com/pub/vnc/dist/vnc-%v_unixsrc.tgz
+SourceDirectory: vnc_unixsrc
+SetCPPFLAGS: -traditional-cpp
+CompileScript: patch -p1 <%p/fink/patch/vnc-3.3.3r2-0.patch
+ xmkmf
+ make World
+ ( cd ./Xvnc; make World; cd .. )
+InstallScript: mkdir -p %i/bin
+ mkdir -p %i/vnc/classes
+ ./vncinstall %i/bin
+ cp ./classes/* %i/vnc/classes
+CommentPort: Uses Imake. 
+ Requires XFree86 development stuff (Xprog.tgz), and perl.
+ Assumes XFree86 installed in /usr/X11R6.
+ User must add /usr/X11R6/bin to PATH in order to run vncserver.
+ The "-localhost" and "-inetd" options for Xvnc are broken on MacOS X/Darwin.
+ Includes mini http server and java applet for remote access via a web browser.
+ Detailed usage instructions at http://www.uk.research.att.com/vnc.
+CommentStow: Currently hardwired for /sw, but works with stow.
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>

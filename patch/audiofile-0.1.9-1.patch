@@ -1,0 +1,12 @@
+diff -ru audiofile-0.1.9/audiofile-config.in audiofile-0.1.9-patched/audiofile-config.in
+--- audiofile-0.1.9/audiofile-config.in	Sat Nov 21 15:55:23 1998
++++ audiofile-0.1.9-patched/audiofile-config.in	Fri Feb  2 11:32:16 2001
+@@ -46,7 +46,7 @@
+       ;;
+     --libs)
+       libdirs=-L@libdir@
+-      echo $libdirs -laudiofile -lm
++      echo $libdirs -laudiofile
+       ;;
+     *)
+       echo "${usage}" 1>&2

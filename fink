@@ -1,0 +1,68 @@
+#!/usr/bin/perl -w
+#
+# Fink - a package manager that downloads source and installs it
+# Copyright (c) 2001 Christoph Pfisterer
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+$| = 1;
+use v5.6.0;  # perl 5.6.0 or newer required
+use strict;
+
+use FindBin;
+#use Getopt::Long;
+
+use lib "$FindBin::RealBin/perlmod";
+use Fink::Services qw(prompt_boolean read_config);
+use Fink::Config;
+use Fink::Engine;
+
+### read config (create on the fly if not found)
+
+my ($config, $configpath);
+$configpath = "$FindBin::RealBin/config";
+#if (! -f $configpath) {
+#  if (&prompt_boolean("Configuration file '$configpath' not found. ".
+#		      "Do you want to interactively create ".
+#		      "a configuration?", 1)) {
+#    use Fink::Bootstrap qw(bootstrap);
+#    &bootstrap($configpath);
+#  } else {
+#    exit 0;
+#  }
+#}
+if (-f $configpath) {
+  print "Reading configuration...\n";
+  $config = &read_config($configpath);
+} else {
+  print "ERROR: No configuration file found.\n";
+  exit 1;
+}
+
+### create engine
+
+my $engine = Fink::Engine->new_with_config($config);
+
+### process command line (or enter interactive mode)
+
+if ($#ARGV >= 0) {
+  $engine->process(@ARGV);
+} else {
+  # TODO: enter interactive mode
+}
+
+### eof
+exit 0;

@@ -1,0 +1,22 @@
+diff -ru libpng-1.0.8/Makefile libpng-1.0.8-patched/Makefile
+--- libpng-1.0.8/Makefile	Sat Jan 13 09:38:30 2001
++++ libpng-1.0.8-patched/Makefile	Sat Jan 13 09:42:15 2001
+@@ -6,14 +6,12 @@
+ prefix=/usr/local
+ 
+ # Where the zlib library and include files are located
+-#ZLIBLIB=/usr/local/lib
+-#ZLIBINC=/usr/local/include
+-ZLIBLIB=../zlib
+-ZLIBINC=../zlib
++ZLIBLIB=$(prefix)/lib
++ZLIBINC=$(prefix)/include
+ 
+ CC=cc
+-CFLAGS=-I$(ZLIBINC) -O # -g -DPNG_DEBUG=5
+-LDFLAGS=-L. -L$(ZLIBLIB) -lpng -lz -lm
++CFLAGS=-I$(ZLIBINC) -O2 # -g -DPNG_DEBUG=5
++LDFLAGS=-L. -L$(ZLIBLIB) -lpng -lz
+ 
+ #RANLIB=echo
+ RANLIB=ranlib

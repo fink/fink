@@ -1,0 +1,12 @@
+Package: mc
+Version: 4.5.51
+Revision: 1
+Source: gnome
+Depends: gnome-libs
+UpdateConfigGuess: true
+ConfigureParams: --with-netrc
+SetCPPFLAGS: --traditional-cpp
+CommentPort: Uses autoconf. Doesn't compile.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnome.org/

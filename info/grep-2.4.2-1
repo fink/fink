@@ -1,0 +1,11 @@
+Package: grep
+Version: 2.4.2
+Revision: 1
+Source: gnu
+UpdateConfigGuess: true
+CommentPort: Uses autoconf and checks the host type. It doesn't seem
+ to use it for anything useful, though. The usual
+ config.guess/config.sub fix.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnu.org/software/grep/grep.html

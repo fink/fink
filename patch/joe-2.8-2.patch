@@ -1,0 +1,105 @@
+diff -ru joe/Makefile joe-patched/Makefile
+--- joe/Makefile	Mon Jan 23 07:01:28 1995
++++ joe-patched/Makefile	Fri Jan 12 18:45:39 2001
+@@ -9,9 +9,9 @@
+ # to go and where you want the man page
+ # to go:
+ 
+-WHEREJOE = /usr/local/bin
+-WHERERC = /usr/local/lib
+-WHEREMAN = /usr/man/man1
++WHEREJOE = $(basepath)/bin
++WHERERC = $(basepath)/lib/joe
++WHEREMAN = $(basepath)/man/man1
+ 
+ # If you want to use TERMINFO, you have to set
+ # the following variable to 1.  Also you have to
+diff -ru joe/b.c joe-patched/b.c
+--- joe/b.c	Fri Jan 20 09:38:25 1995
++++ joe-patched/b.c	Fri Jan 12 18:41:46 2001
+@@ -121,7 +121,7 @@
+  if(qempty(H,link,&ohdrs))
+   {
+   h=(H *)alitem(&nhdrs,sizeof(H));
+-  h->seg=valloc(vmem,(long)SEGSIZ);
++  h->seg=jvalloc(vmem,(long)SEGSIZ);
+   }
+  else h=deque(H,link,ohdrs.link.next);
+  h->hole=0;
+diff -ru joe/termidx.c joe-patched/termidx.c
+--- joe/termidx.c	Thu Oct  6 07:20:35 1994
++++ joe-patched/termidx.c	Fri Jan 12 18:41:46 2001
+@@ -66,4 +66,5 @@
+ {
+ char array[65536];
+ gen(array,stdin);
++return 0;
+ }
+diff -ru joe/vfile.c joe-patched/vfile.c
+--- joe/vfile.c	Thu Oct  6 07:20:35 1994
++++ joe-patched/vfile.c	Fri Jan 12 18:41:46 2001
+@@ -351,7 +351,7 @@
+ }
+ #endif
+ 
+-long valloc(vfile,size)
++long jvalloc(vfile,size)
+ VFILE *vfile;
+ long size;
+ {
+@@ -471,7 +471,7 @@
+ long addr;
+ char c;
+ {
+-if(addr+1>vsize(vfile)) valloc(vfile,addr+1-vsize(vfile));
++if(addr+1>vsize(vfile)) jvalloc(vfile,addr+1-vsize(vfile));
+ if(vfile->vpage1) vunlock(vfile->vpage1);
+ vfile->vpage1=vlock(vfile,vfile->addr=(addr&~(long)(PGSIZE-1)));
+ return wc(vfile,addr,c);
+@@ -493,7 +493,7 @@
+ long addr;
+ short c;
+ {
+-if(addr+2>vsize(vfile)) valloc(vfile,addr+2-vsize(vfile));
++if(addr+2>vsize(vfile)) jvalloc(vfile,addr+2-vsize(vfile));
+ wc(vfile,addr,c);
+ wc(vfile,addr+1,c>>8);
+ return c;
+@@ -517,7 +517,7 @@
+ long addr;
+ long c;
+ {
+-if(addr+4>vsize(vfile)) valloc(vfile,addr+4-vsize(vfile));
++if(addr+4>vsize(vfile)) jvalloc(vfile,addr+4-vsize(vfile));
+ wc(vfile,addr,c);
+ wc(vfile,addr+1,c>>8);
+ wc(vfile,addr+2,c>>16);
+@@ -561,7 +561,7 @@
+ long addr=vtell(v);
+ char *src;
+ int x;
+-if(addr+size>vsize(v)) valloc(v,addr+size-vsize(v));
++if(addr+size>vsize(v)) jvalloc(v,addr+size-vsize(v));
+ while(size)
+  {
+  src=vlock(v,addr);
+diff -ru joe/vfile.h joe-patched/vfile.h
+--- joe/vfile.h	Thu Oct  6 07:20:35 1994
++++ joe-patched/vfile.h	Fri Jan 12 18:41:46 2001
+@@ -206,14 +206,14 @@
+ 
+ #define vupcount(vpage) ( ++vheader(vpage)->count )
+ 
+-/* long valloc(VFILE *vfile,long size);
++/* long jvalloc(VFILE *vfile,long size);
+  *
+  * Allocate space at end of file
+  *
+  * Returns file address of beginning of allocated space
+  */
+ 
+-long valloc();
++long jvalloc();
+ 
+ #ifdef junk
+ /******************************************************************************

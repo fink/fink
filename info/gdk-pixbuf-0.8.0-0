@@ -1,0 +1,16 @@
+Package: gdk-pixbuf
+Version: 0.8.0
+Revision: 0
+Source: mirror:gnome:stable/sources/%n/%n-%v.tar.gz
+Depends: gtk+, zlib, libjpeg, libtiff, libpng, gnome-libs
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -I%p/include -traditional-cpp
+SetLDFLAGS: -L%p/lib
+CompileScript: patch -p1 <%p/fink/patch/gdk-pixbuf-0.8.0-1.patch
+ autoconf
+ ./configure %c
+ make
+CommentPort: Uses autoconf and libtool - the usual fixes.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

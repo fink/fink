@@ -1,0 +1,11 @@
+diff -ru gtk+-1.2.8/gtk-config.in gtk+-1.2.8-patched/gtk-config.in
+--- gtk+-1.2.8/gtk-config.in	Thu Dec 30 04:54:04 1999
++++ gtk+-1.2.8-patched/gtk-config.in	Sun Jan  7 21:04:14 2001
+@@ -115,6 +115,6 @@
+         fi
+       done
+ 
+-      echo $libdirs @x_ldflags@ -lgtk -lgdk $my_glib_libs @INTLLIBS@ @x_libs@ @GDK_WLIBS@ -lm
++      echo $libdirs @x_ldflags@ -lgtk -lgdk $my_glib_libs @INTLLIBS@ @x_libs@ @GDK_WLIBS@
+ fi      
+ 

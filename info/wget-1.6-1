@@ -1,0 +1,12 @@
+Package: wget
+Version: 1.6
+Revision: 1
+Source: gnu
+Depends: bzip2
+UpdateConfigGuess: true
+CommentPort: Uses autoconf. Checks the host type - the usual fix. The
+ configure script uses the host type only to set compiler options on
+ non-gcc systems etc.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnu.org/software/wget/wget.html

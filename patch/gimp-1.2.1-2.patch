@@ -1,0 +1,42 @@
+diff -ru gimp-1.2.1/configure.in gimp-1.2.1-patched/configure.in
+--- gimp-1.2.1/configure.in	Mon Jan 22 03:47:54 2001
++++ gimp-1.2.1-patched/configure.in	Fri Feb  2 09:34:05 2001
+@@ -149,7 +149,7 @@
+ dnl DU4 native cc currently needs -std1 for ANSI mode (instead of K&R)
+ AC_MSG_CHECKING([for extra flags to get ANSI library prototypes])
+ gimp_save_LIBS=$LIBS
+-LIBS="$LIBS -lm"
++LIBS="$LIBS"
+ AC_TRY_RUN([#include <math.h>
+              int main (void) { return (log(1) != log(1.)); }],
+   AC_MSG_RESULT(none needed),
+@@ -222,7 +222,7 @@
+ 	  AC_CHECK_HEADER(tiffio.h,
+             TIFF='tiff'; LIBTIFF='-ltiff34 -ljpeg -lz',
+ 	    AC_MSG_WARN(*** TIFF plug-in will not be built (TIFF header files not found) ***)),
+-        AC_MSG_WARN(*** TIFF plug-in will not be built (TIFF library not found) ***), -ljpeg -lz -lm), -ljpeg -lz -lm), -lm)
++        AC_MSG_WARN(*** TIFF plug-in will not be built (TIFF library not found) ***), -ljpeg -lz), -ljpeg -lz),)
+   fi
+ 
+ dnl Test for libjpeg
+@@ -269,7 +269,7 @@
+       AC_CHECK_HEADER(png.h,
+ 	png_ok=yes,
+ 	png_ok=no),
+-      AC_MSG_WARN(*** PNG plug-in will not be built (PNG library not found) ***), -lz -lm)
++      AC_MSG_WARN(*** PNG plug-in will not be built (PNG library not found) ***), -lz)
+     if test "$png_ok" = yes; then
+       AC_MSG_CHECKING([for png_structp in png.h])
+       AC_TRY_COMPILE([#include <png.h>],
+diff -ru gimp-1.2.1/plug-ins/Makefile.in gimp-1.2.1-patched/plug-ins/Makefile.in
+--- gimp-1.2.1/plug-ins/Makefile.in	Mon Jan 22 06:03:17 2001
++++ gimp-1.2.1-patched/plug-ins/Makefile.in	Fri Feb  2 09:34:28 2001
+@@ -180,7 +180,7 @@
+ EXTRA_DIST =  	makefile.mingw			makefile.mingw.in		makefile.msc			twain/README			twain/tw_dump.c			twain/tw_dump.h			twain/tw_func.c			twain/tw_func.h			twain/tw_sess.c			twain/tw_util.c			twain/tw_util.h			twain/twain.c			twain/twain.h			winsnap/resource.h		winsnap/select.cur		winsnap/small.ico		winsnap/winsnap.c		winsnap/winsnap.h		winsnap/winsnap.ico		winsnap/winsnap.rc
+ 
+ 
+-SUBDIRS =  	libgck				dbbrowser			script-fu			$(GIMP_PERL)			FractalExplorer			Lighting			MapObject			bmp				faxg3				fits				flame				fp				gap				gdyntext			gfig			        gflare				gfli				gimpressionist			$(HELPBROWSER)			ifscompose			imagemap			maze				mosaic				pagecurl			print				rcm				sgi				sel2path			$(WEBBROWSER)			$(XJT)				common
++SUBDIRS =  	libgck				dbbrowser			script-fu			$(GIMP_PERL)			FractalExplorer			Lighting			MapObject			bmp				faxg3				fits				flame				fp				gap				gdyntext			gfig			        gflare				gfli							$(HELPBROWSER)			ifscompose			imagemap			maze				mosaic				pagecurl			print				rcm				sgi				sel2path			$(WEBBROWSER)			$(XJT)				common
+ 
+ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+ CONFIG_HEADER = ../config.h

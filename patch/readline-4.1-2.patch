@@ -1,0 +1,18 @@
+diff -ru readline-4.1/support/shobj-conf readline-4.1-patched/support/shobj-conf
+--- readline-4.1/support/shobj-conf	Tue Sep 21 19:03:43 1999
++++ readline-4.1-patched/support/shobj-conf	Tue Feb  6 19:22:27 2001
+@@ -123,6 +123,14 @@
+ 	SHLIB_LIBVERSION='$(SHLIB_LIBSUFF).$(SHLIB_MAJOR)$(SHLIB_MINOR)'
+ 	;;
+ 
++darwin*)
++	SHOBJ_CFLAGS=-fno-common
++	SHOBJ_LD='${CC}'
++	SHOBJ_LDFLAGS='-dynamiclib -undefined suppress -install_name $(libdir)/$@'
++	SHLIB_LIBSUFF='dylib'
++	SHLIB_LIBVERSION='$(SHLIB_LIBSUFF)'
++	;;
++
+ bsdi2*)
+ 	SHOBJ_CC=shlicc2
+ 	SHOBJ_CFLAGS=

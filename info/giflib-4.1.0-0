@@ -1,0 +1,10 @@
+Package: giflib
+Version: 4.1.0
+Revision: 0
+Source: ftp://prtr-13.ucsc.edu/pub/libungif/giflib-4.1.0.tar.gz
+Depends: x11
+UpdateConfigGuess: true
+UpdateLibtool: true
+CommentPort: Uses autoconf and libtool. The usual fixes.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

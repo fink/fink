@@ -1,0 +1,16 @@
+Package: xemacs
+Version: 21.1.12
+Revision: 0
+Source: ftp://ftp.xemacs.org/pub/xemacs/xemacs-21.1/xemacs-21.1.12.tar.gz
+UpdateConfigGuess: false
+UpdateLibtool: false
+SetCFLAGS: -traditional-cpp
+Depends: 
+CompileScript: patch -p1 <%p/fink/patch/xemacs-%v-%r.patch
+ ./configure %c
+ make
+CommentPort: I have had some problems with dialog boxes disappearing.
+ see http://www.stanford.edu/~parker42/xemacs.html
+ to get max functionality, install libtiff, libjpeg, libxpm and libpng first.
+CommentStow:
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>

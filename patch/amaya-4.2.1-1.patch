@@ -1,0 +1,95 @@
+--- amaya/Makefile.in	Fri Feb  2 15:12:07 2001
++++ amaya/Makefile.in	Fri Feb  2 15:12:22 2001
+@@ -17,7 +17,7 @@
+           $(AMAYA_OPTION_EXTRA_LIBS) $(IMGLIBS) $(EXPAT_LIBRARIES) \
+ 	  $(MOTIF_LIBRARIES) $(GTK_LIBRARIES) \
+ 	  $(XMLIB) $(X_LIBS) -lXt $(X_PRE_LIBS) \
+-	  -lXext -lX11 $(X_EXTRA_LIBS) @LIBS@ @EXTRA_LIBS@ -lm
++	  -lXext -lX11 $(X_EXTRA_LIBS) @LIBS@ @EXTRA_LIBS@ 
+ 
+ CONFIGFILES=XKeysymDB unix-thot.rc amaya.keyboard amaya.profiles\
+ 	    en-amayadialogue en-amayamsg en-libdialogue en-corrdialogue \
+--- thotlib/Makefile.in	Fri Feb  2 15:12:45 2001
++++ thotlib/Makefile.in	Fri Feb  2 15:13:00 2001
+@@ -14,7 +14,7 @@
+ INCLUDES= -DHAVE_CONFIG_H -I.. -I@top_srcdir@/amaya/xpm -I@top_srcdir@/tablelib/f @THOTINCLUDES@ $(X_FLAGS)
+ LIBS	= -L../tablelib -L. -L.. $(IMGLIBS) $(GTK_LIBRARIES) \
+ 	  $(X_LIBS) -lXext $(X_PRE_LIBS) \
+-          -lX11 $(X_EXTRA_LIBS) @LIBS@ $(EXTRA_LIBS) -lm 
++          -lX11 $(X_EXTRA_LIBS) @LIBS@ $(EXTRA_LIBS)  
+ 
+ prefix = @prefix@
+ exec_prefix = @exec_prefix@
+--- tools/cextract-1.7/Makefile.in	Fri Feb  2 15:34:16 2001
++++ tools/cextract-1.7/Makefile.in	Fri Feb  2 15:34:24 2001
+@@ -8,7 +8,7 @@
+ 
+ include ../../Options
+ 
+-LIBS	= @LIBS@ @EXTRA_LIBS@ -lm
++LIBS	= @LIBS@ @EXTRA_LIBS@ 
+ 
+ prefix = @prefix@
+ exec_prefix = @exec_prefix@
+--- thotlib/include/ustring.h	Fri Feb  2 15:49:25 2001
++++ thotlib/include/ustring.h	Fri Feb  2 15:49:42 2001
+@@ -5,7 +5,10 @@
+ #ifdef _WINDOWS
+ #include <windows.h>
+ #endif /* _WINDOWS */
++#ifdef _I18N_
+ #include <wchar.h>
++#endif /* _I18N_ */
++
+ 
+ #ifdef _WINDOWS
+ #define strncasecmp _strnicmp
+--- configure.in	Tue Dec  5 15:10:21 2000
++++ configure.in	Sat Feb 17 18:01:28 2001
+@@ -174,7 +174,7 @@
+ AC_CHECK_HEADERS(sys/string.h strings.h)
+ AC_CHECK_HEADERS(sys/syslog.h syslog.h)
+ AC_CHECK_HEADERS(sys/socket.h socket.h)
+-AC_CHECK_HEADERS(appkit/appkit.h appkit.h)
++dnl AC_CHECK_HEADERS(appkit/appkit.h appkit.h)
+ AC_CHECK_HEADERS(netinet/in.h in.h)
+ AC_CHECK_HEADERS(dn.h)
+ AC_CHECK_HEADERS(sys/ipc.h)
+@@ -243,6 +243,8 @@
+ test -z "$motif_direct_test_function" && motif_direct_test_function=XmCreatePushButton
+ test -z "$motif_direct_test_include" && motif_direct_test_include=Xm/Xm.h
+   for ac_dir in               \
++    $prefix/include           \
++                              \
+     /usr/include/Motif1.2     \
+     /usr/Motif1.2/include     \
+                               \
+@@ -297,6 +299,8 @@
+ LIBS="-l$motif_direct_test_library $LIBS"
+ # First see if replacing the include by lib works.
+ for ac_dir in `echo "$ac_motif_includes" | sed s/include/lib/` \
++    $prefix/lib           \
++                          \
+     /usr/lib/Motif1.2     \
+     /usr/Motif1.2/lib     \
+                           \
+@@ -335,7 +339,7 @@
+     $HOME/lesstif/lib     \
+     ; \
+ do
+-  for ac_extension in a so sl; do
++  for ac_extension in a so sl dylib; do
+     if test -r $ac_dir/lib${motif_direct_test_library}.$ac_extension; then
+       no_motif= ac_motif_libraries=$ac_dir
+       break 2
+--- ../libwww/configure.in	Sat Feb  3 05:50:24 2001
++++ ../libwww/configure.in	Sat Feb  3 05:50:34 2001
+@@ -127,7 +127,7 @@
+ AC_CHECK_LIB(dl, dlopen)
+ 
+ dnl Checks for header files:
+-AC_CHECK_HEADERS(appkit/appkit.h appkit.h)
++dnl AC_CHECK_HEADERS(appkit/appkit.h appkit.h)
+ AC_CHECK_HEADERS(arpa/inet.h inet.h)
+ AC_CHECK_HEADERS(net/errno.h sys/errno.h errno.h)
+ AC_CHECK_HEADERS(netinet/in.h in.h)

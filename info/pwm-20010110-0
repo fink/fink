@@ -1,0 +1,11 @@
+Package: pwm
+Version: 20010110
+Revision: 0
+Source: http://www.students.tut.fi/~tuomov/dl/pwm-%v.tar.gz
+CompileScript:  sed 's|<STOWDIR>|%i|g' < %p/fink/patch/pwm-%v-%r.patch > pwm.patch
+ patch -p1 < pwm.patch
+ make
+InstallScript: make install
+CommentPort: 
+CommentStow: 
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>

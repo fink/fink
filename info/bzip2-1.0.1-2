@@ -1,0 +1,16 @@
+Package: bzip2
+Version: 1.0.1
+Revision: 2
+Source: ftp://sourceware.cygnus.com/pub/bzip2/v100/bzip2-1.0.1.tar.gz
+Essential: yes
+Depends: stow
+Patch: %f.patch
+#CompileScript: patch -p1 <%p/fink/patch/bzip2-1.0.1-2.patch
+# make PREFIX=%p
+CompileScript: make PREFIX=%p
+InstallScript: make install PREFIX=%i
+CommentPort: Doesn't use autoconf, but comes with a useful
+ Makefile. Anyway, the patch modifies it to build a shared library
+ instead of a static one.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

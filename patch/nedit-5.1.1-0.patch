@@ -1,0 +1,127 @@
+--- nedit-5.1.1/makefiles/Makefile.macosx	Tue Jan 30 14:11:18 2001
++++ nedit-5.1.1/makefiles/Makefile.macosx	Tue Jan 30 15:02:23 2001
+@@ -0,0 +1,114 @@
++#
++# Prototype System-Specific Makefile for NEdit
++#
++# NEdit does not use any kind of automated configuration like the popular GNU
++# configure utility, or IMake. Instead, it has a set of hand-generated
++# system-specific Makefiles.  The Makefiles serve two purposes.  The obvious
++# purpose is to build NEdit.  The less obvious purpose is to document on which
++# systems effort has been put into verifying that NEdit actually works properly.
++# If your system is not represented here, check the nedit web site at:
++# http://nedit.org for more contributed Makefiles.
++#
++# NEdit has few dependencies, and sticks to Posix and ANSI C standards wherever
++# possible.  The only problems people generally run in to in porting NEdit are
++# related to the Motif GUI library. If you're having trouble building NEdit,
++# usually the best way to get it to work is to look at any other Motif, or at
++# least X example which builds and runs successfully, and copy the compiler
++# flags and libraries that it uses.
++#
++
++# C Compiler used to build all of the C sources.  This must be an
++# ANSI standard C compiler.
++CC=cc
++
++# Library (archive) tool used to combine groups of object files into
++# a single file.
++AR=ar
++RANLIB=ranlib
++
++# Arguments to be passed to the C compiler.
++#
++# Below are compiler flags which may be of use if you are porting NEdit to a
++# new system:
++#
++# DONT_HAVE_GLOB    Some older systems don't have the glob subroutine for
++# USE_MOTIF_GLOB    expanding file names.  If the linker complains about not
++#		    finding "glob" and "globfree", first try adding:
++#		    -DUSE_MOTIF_GLOB, which will use a private Motif routine
++#		    in place of "glob".  Being a private routine, it is not
++#		    available in all Motif implementations, and you may have
++#		    to resort to -DDONT_HAVE_GLOB, and NEdit will not be able
++#		    to expand wildcards in the "Open Selected" command (which
++#		    is no huge loss).
++#
++# USE_DIRENT	    Some Unix systems call the structure used by the readdir
++#   	    	    subroutine dirent, rather than direct.  Add -DUSE_DIRENT
++#		    to CFLAGS if your C compiler complains about the line:
++#
++#		       struct direct *DirEntryPtr;
++#
++# USE_LPR_PRINT_CMD NEdit considers the standard Unix print command to be "lp"
++#   	    	    unless told otherwise.  If the standard command on your
++#		    system type is "lpr", define this.  (This is just the last
++#		    resort default.  You can redefine the print command to be
++#		    whatever you like via X resource settings).
++#
++# USE_ACCESS	    Normally, NEdit determines the accessibility of a file, by
++#		    trying to open it.  However one of the more popular
++#		    commercial configuration management tools, ClearCase,
++#		    considers opening a file in read/write mode to be a
++#		    modification, even if no writing is ever done.  Users who
++#		    have trouble with ClearCase thinking their files have been
++#		    modified when they haven't, should add this flag.
++#
++# ROWCOLPATCH	    Patches around a problem in several versions the Solaris
++#   	    	    Motif library which can cause crashes when a wiget is
++#		    destroyed.  See comments in window.c for details.
++#
++# IBM_FWRITE_BUG    Killer AIX system bug with fwrite system call.  Only
++#   	    	    affects one release of AIX, but can cause data corruption.
++#		    IBM actually denies that this bug ever existed, but it
++#		    was pretty widespread.
++#
++# EDITRES   	    If you have the Xmu library, define this to give NEdit
++#   	    	    the capability of being probed by editres to display its
++#		    widget tree.  Editres is useful in customizing details
++#		    of X applications which their developers have deemed too
++#		    minute to document.  If you define this, you must also add
++#		    -lXmu to LIBS
++#
++# NO_XMIM	    Don't use the Motif version of the international character
++# 		    set input routines in the nedit text widget.  Turn this on
++#		    if you see crashes in routines beginning with XmIm.  Such
++#		    bugs exist in IRIX 6.5 and some older Motif versions.
++#
++# NO_FCHMOD	    Standard libraries don't include the fchmod system call.
++#		    Defining this symbol substitutes chmod.
++#
++# Some compilers need to be told to operate in ansi-standard mode, some have
++# different levels of optimization that you can select (optimization improves
++# syntax highlighting performance.   You will also often need to add locations
++# of X and/or Motif include files if they are not in the compiler's standard
++# search path.
++CFLAGS=-O -traditional-cpp
++
++# Flags for the library (archive) tool.  These are pretty much standard
++# across all Unix systems, but if your system is having trouble building or
++# rebuilding the nedit library (libNUtil.a), you can try tweaking these.
++ARFLAGS=-ur
++
++# A few C compilers have limits on the size of string constants, which NEdit's
++# built-in help may exceed.  Paradoxically, when you compile the code with one
++# of these mutants, it usually tells you how to bump up the limit, so all you
++# have to do is enter that information here.
++BIGGER_STRINGS=
++
++# Flags for the linker.  On some systems, you have to specify the locations
++# for the X and/or Motif libraries.  There may also be additional prerequisite
++# libraries which are required by the X and Motif libraries.  These vary from
++# system to system, and it helps to have a working Motif program (or at least
++# an X program) as an example.
++LIBS= -lXm -L/usr/X11R6/lib -lXpm -lXext -lXt -lSM -lICE -lX11
++
++# System independent part
++include Makefile.common
+--- nedit-5.1.1/util/Makefile.common	Tue Dec 14 20:59:38 1999
++++ nedit-5.1.1/util/Makefile.common	Tue Jan 30 14:48:56 2001
+@@ -11,6 +11,7 @@
+ 
+ libNUtil.a: $(OBJS)
+ 	$(AR) $(ARFLAGS) libNUtil.a $(OBJS)
++	$(RANLIB) libNUtil.a
+ 
+ printUtils.o: printUtils.c
+ 	$(CC) -c $(CFLAGS) $(PRINTFLAGS) printUtils.c

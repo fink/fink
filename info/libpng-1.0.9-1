@@ -1,0 +1,13 @@
+Package: libpng
+Version: 1.0.9
+Revision: 1
+Source: http://download.sourceforge.net/%n/%n-%v.tar.gz
+Depends: zlib
+Patch: %f.patch
+CompileScript: make prefix=%p
+InstallScript: make install prefix=%i
+CommentPort: Doesn't use autoconf. Comes with a big selection of
+ Makefiles instead. The included Makefile for Mac OS X only builds
+ static libraries, so we use our own Makefile.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

@@ -1,0 +1,56 @@
+# init.sh
+#
+# to use the Fink hierarchy, put the following in your .profile:
+#
+#  . BASEPATH/bin/init.sh
+#
+
+#
+# Fink - a package manager that downloads source and installs it
+# Copyright (c) 2001 Christoph Pfisterer
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+PATH=BASEPATH/bin:BASEPATH/sbin:$PATH
+export PATH
+
+if [ -z "$MANPATH" ]; then
+  MANPATH=/usr/local/share/man:/usr/local/man:/usr/share/man:/usr/man
+fi
+MANPATH=BASEPATH/man:$MANPATH
+export MANPATH
+
+if [ -z "$INFOPATH" ]; then
+  INFOPATH=/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:/usr/info
+fi
+INFOPATH=BASEPATH/info:$INFOPATH
+export INFOPATH
+
+if [ -z "$LD_LIBRARY_PATH" ]; then
+  LD_LIBRARY_PATH=BASEPATH/lib
+else
+  LD_LIBRARY_PATH=BASEPATH/lib:$LD_LIBRARY_PATH
+fi
+export LD_LIBRARY_PATH
+
+if [ -z "$DYLD_LIBRARY_PATH" ]; then
+  DYLD_LIBRARY_PATH=BASEPATH/lib
+else
+  DYLD_LIBRARY_PATH=BASEPATH/lib:$DYLD_LIBRARY_PATH
+fi
+export DYLD_LIBRARY_PATH
+
+# eof

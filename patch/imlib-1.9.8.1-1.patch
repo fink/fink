@@ -1,0 +1,167 @@
+diff -ru imlib-1.9.8.1/configure.in imlib-1.9.8.1-patched/configure.in
+--- imlib-1.9.8.1/configure.in	Sat May 20 08:24:10 2000
++++ imlib-1.9.8.1-patched/configure.in	Mon Jan 15 12:49:32 2001
+@@ -151,7 +151,7 @@
+ if test -z "$GDK_IMLIB"; then
+   # see macros/gnome-x-checks.m4, and gtk.m4
+   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+-  GX_LIBS="$X_PRE_LIBS $X_LIBS -lX11 -lm"
++  GX_LIBS="$X_PRE_LIBS $X_LIBS -lX11"
+ else
+   CPPFLAGS="$CPPFLAGS $GTK_CFLAGS"
+   GX_LIBS="$GTK_LIBS"
+@@ -283,7 +283,7 @@
+   AC_CHECK_HEADER(png.h,
+     png_ok=yes,
+     png_ok=no),
+-  AC_MSG_WARN(*** Native PNG support will not be built (PNG library not found) ***), -lz -lm $GX_LIBS)
++  AC_MSG_WARN(*** Native PNG support will not be built (PNG library not found) ***), -lz $GX_LIBS)
+ if test "$png_ok" = yes; then
+   AC_MSG_CHECKING([for png_structp in png.h])
+   AC_TRY_COMPILE([#include <png.h>],
+@@ -316,7 +316,7 @@
+ 	AC_MSG_WARN(*** Native PNG support will NOT be built (PNG version us 1.0.2, get 1.0.3) ***)
+ fi
+ 
+-SUPPORT_LIBS="$SUPPORT_LIBS -lm"
++SUPPORT_LIBS="$SUPPORT_LIBS"
+ GDK_SUPPORT_LIBS="$SUPPORT_LIBS"
+ 
+ if test $dynworks = false; then
+diff -ru imlib-1.9.8.1/gdk_imlib/misc.c imlib-1.9.8.1-patched/gdk_imlib/misc.c
+--- imlib-1.9.8.1/gdk_imlib/misc.c	Sat May 20 08:24:11 2000
++++ imlib-1.9.8.1-patched/gdk_imlib/misc.c	Mon Jan 15 14:08:07 2001
+@@ -7,12 +7,12 @@
+ #include <gdk/gdkx.h>
+ #include <locale.h>
+ 
+-char                x_error;
++char                x2_error;
+ 
+ static void
+ HandleXError(Display * d, XErrorEvent * ev)
+ {
+-  x_error = 1;
++  x2_error = 1;
+ }
+ 
+ gint
+@@ -597,10 +597,10 @@
+ 		shmat(id->x.last_shminfo.shmid, 0, 0);
+ 	      id->x.last_shminfo.readOnly = False;
+ 	      preh = XSetErrorHandler((XErrorHandler) HandleXError);
+-	      x_error = 0;
++	      x2_error = 0;
+ 	      XShmAttach(id->x.disp, &id->x.last_shminfo);
+ 	      XSync(disp, False);
+-	      if (x_error)
++	      if (x2_error)
+ 		{
+ 		  id->x.shm = 0;
+ 		  id->x.shmp = 0;
+@@ -1122,10 +1122,10 @@
+ 		shmat(id->x.last_shminfo.shmid, 0, 0);
+ 	      id->x.last_shminfo.readOnly = False;
+ 	      XSetErrorHandler((XErrorHandler) HandleXError);
+-	      x_error = 0;
++	      x2_error = 0;
+ 	      XShmAttach(id->x.disp, &id->x.last_shminfo);
+ 	      XSync(disp, False);
+-	      if (x_error)
++	      if (x2_error)
+ 		{
+ 		  id->x.shm = 0;
+ 		  id->x.shmp = 0;
+diff -ru imlib-1.9.8.1/gdk_imlib/utils.c imlib-1.9.8.1-patched/gdk_imlib/utils.c
+--- imlib-1.9.8.1/gdk_imlib/utils.c	Wed Feb 23 00:59:41 2000
++++ imlib-1.9.8.1-patched/gdk_imlib/utils.c	Mon Jan 15 14:08:32 2001
+@@ -1796,14 +1796,14 @@
+   return WEXITSTATUS(info);
+ }
+ 
+-static char         x_error = 0;
++static char         x2_error = 0;
+ 
+ static void
+-__handle_x_error(Display * d, XErrorEvent * ev)
++__handle_x2_error(Display * d, XErrorEvent * ev)
+ {
+   d = NULL;
+   ev = NULL;
+-  x_error = 1;
++  x2_error = 1;
+ }
+ 
+ GdkImlibImage      *
+@@ -1844,19 +1844,19 @@
+   else
+     mask = 0;
+   XGrabServer(disp);
+-  erh = XSetErrorHandler((XErrorHandler) __handle_x_error);
+-  x_error = 0;
++  erh = XSetErrorHandler((XErrorHandler) __handle_x2_error);
++  x2_error = 0;
+   XGetWindowAttributes(disp, win, &xatt);
+   XFlush(disp);
+-  if (x_error)
++  if (x2_error)
+     {
+-      x_error = 0;
++      x2_error = 0;
+       is_pixmap = 1;
+       XGetGeometry(disp, win, &chld, &rx, &rx,
+ 		   (unsigned int *)&xatt.width, (unsigned int *)&xatt.height,
+ 		   (unsigned int *)&rx, (unsigned int *)&xatt.depth);
+       XFlush(disp);
+-      if (x_error)
++      if (x2_error)
+ 	{
+ 	  XUngrabServer(disp);
+ 	  XFlush(disp);
+@@ -1935,14 +1935,14 @@
+     {
+       if (!shm_checked)
+ 	{
+-	  erh = XSetErrorHandler((XErrorHandler) __handle_x_error);
++	  erh = XSetErrorHandler((XErrorHandler) __handle_x2_error);
+ 	}
+       xim = XShmCreateImage(disp, vis, xatt.depth, ZPixmap, NULL,
+ 			    &shminfo, width, height);
+       if (!shm_checked)
+ 	{
+ 	  XSync(disp, False);
+-	  if (x_error)
++	  if (x2_error)
+ 	    {
+ 	      shm = 0;
+ 	      XDestroyImage(xim);
+@@ -2016,7 +2016,7 @@
+       if (!shm_checked)
+ 	{
+ 	  XSync(disp, False);
+-	  if (x_error)
++	  if (x2_error)
+ 	    {
+ 	      shm = 0;
+ 	      XDestroyImage(xim);
+diff -ru imlib-1.9.8.1/gdk_imlib/Makefile.am imlib-1.9.8.1-patched/gdk_imlib/Makefile.am
+--- imlib-1.9.8.1/gdk_imlib/Makefile.am	Sat May 20 08:24:11 2000
++++ imlib-1.9.8.1-patched/gdk_imlib/Makefile.am	Tue Jan 16 18:00:53 2001
+@@ -1,4 +1,4 @@
+-common_ldflags = -avoid-version
++common_ldflags = -avoid-version -module
+ 
+ libimlib_gif_la_SOURCES = io-gif.c
+ libimlib_gif_la_LDFLAGS = $(common_ldflags)
+diff -ru imlib-1.9.8.1/gdk_imlib/Makefile.in imlib-1.9.8.1-patched/gdk_imlib/Makefile.in
+--- imlib-1.9.8.1/gdk_imlib/Makefile.in	Sat May 20 08:51:29 2000
++++ imlib-1.9.8.1-patched/gdk_imlib/Makefile.in	Tue Jan 16 18:03:12 2001
+@@ -98,7 +98,7 @@
+ X_LIBS = @X_LIBS@
+ X_PRE_LIBS = @X_PRE_LIBS@
+ 
+-common_ldflags = -avoid-version
++common_ldflags = -avoid-version -module
+ 
+ libimlib_gif_la_SOURCES = io-gif.c
+ libimlib_gif_la_LDFLAGS = $(common_ldflags)

@@ -1,0 +1,12 @@
+Package: libxml
+Version: 1.8.11
+Revision: 1
+Source: mirror:gnome:stable/sources/%n/%n-%v.tar.gz
+Depends: zlib
+UpdateConfigGuess: true
+UpdateLibtool: true
+CommentPort: Uses autoconf and libtool - the usual fixes. Could use
+ readline.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnome.org/

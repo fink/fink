@@ -1,0 +1,15 @@
+Package: lesstif
+Version: 0.91.8
+Revision: 0
+Source: http://www.tux.org/pub/X-Windows/ftp.hungry.com/lesstif/srcdist/lesstif-%v.tar.gz
+SetCFLAGS: -traditional-cpp 
+UpdateConfigGuess: true
+UpdateLibtool: true
+ConfigureParams: --host=powerpc-apple-bsd  
+CompileScript: patch -p1 <%p/fink/patch/lesstif-%v-%r.patch
+ autoconf
+ ./configure %c
+ make
+CommentPort:
+CommentStow:
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>

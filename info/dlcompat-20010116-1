@@ -1,0 +1,13 @@
+Package: dlcompat
+Version: 20010116
+Revision: 1
+Source: http://download.sourceforge.net/fink/%n-%v.tar.gz
+CompileScript: make
+InstallScript: sudo make install
+CommentPort: Doesn't use autoconf, just a Darwin-specific
+ Makefile. Must be installed as root - it will try to use sudo.
+CommentStow: The library and the include file are actually installed
+ in /usr/local, so that they can always be found by the compiler
+ without -L or -I options. Sorry for the mess. Future versions of
+ Darwin won't need this thing...
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

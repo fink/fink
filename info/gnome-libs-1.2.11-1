@@ -1,0 +1,20 @@
+Package: gnome-libs
+Version: 1.2.11
+Revision: 1
+Source: mirror:gnome:stable/sources/%n/%n-%v.tar.gz
+Depends: gettext, x11, gtk+, zlib, libjpeg, libtiff, giflib, libpng,
+ imlib, orbit, audiofile, esound, dlcompat
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+CompileScript: patch -p1 <%p/fink/patch/gnome-libs-%v-%r.patch
+ autoconf
+ ./configure %c
+ make
+CommentPort: Uses autoconf and libtool - the usual fixes. Requires
+ dlcompat to provide dlopen() and friends. Doesn't add -lintl to the
+ appropriate line in gnome-config; some files include <malloc.h>
+ without checking HAVE_MALLOC_H first; patched.
+CommentStow: No issues known. The directory layout is quite confused.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnome.org/

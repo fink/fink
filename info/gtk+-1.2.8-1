@@ -1,0 +1,15 @@
+Package: gtk+
+Version: 1.2.8
+Revision: 1
+Source: gnome
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+Depends: x11, glib, gettext
+Patch: %f.patch
+CommentPort: Uses autoconf. Checks the host type - the usual fix. The
+ gtk-config is patched to remove the -lm flag; the patched libtool
+ scripts also help in this respect.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gtk.org/

@@ -1,0 +1,6 @@
+Package: autoconf
+Version: 2.13
+Revision: 1
+Source: gnu
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://sources.redhat.com/autoconf/

@@ -1,0 +1,59 @@
+diff -ru gnome-libs-1.2.11/configure.in gnome-libs-1.2.11-patched/configure.in
+--- gnome-libs-1.2.11/configure.in	Wed Jan 24 21:09:48 2001
++++ gnome-libs-1.2.11-patched/configure.in	Sun Feb  4 13:23:45 2001
+@@ -268,7 +268,7 @@
+     AC_CHECK_LIB(tiff34, TIFFFlushData,
+       AC_CHECK_HEADER(tiffio.h,
+         TIFF_LIBS="-ltiff34 $JPEG_LIBS $Z_LIBS"; AC_DEFINE(HAVE_LIBTIFF)),,
+-$JPEG_LIBS $Z_LIBS -lm), $JPEG_LIBS $Z_LIBS -lm), -lm)
++$JPEG_LIBS $Z_LIBS), $JPEG_LIBS $Z_LIBS), )
+ 
+ dnl Test for libgif
+ AC_CHECK_LIB(gif, DGifOpenFileName,
+@@ -284,7 +284,7 @@
+ AC_CHECK_LIB(png, png_read_info,
+   AC_CHECK_HEADER(png.h,
+     png_ok=yes,
+-    png_ok=no),,$Z_LIBS -lm)
++    png_ok=no),,$Z_LIBS)
+ if test "$png_ok" = yes; then
+   AC_MSG_CHECKING([for png_structp in png.h])
+   AC_TRY_COMPILE([#include <png.h>],
+diff -ru gnome-libs-1.2.11/gnome-config.in gnome-libs-1.2.11-patched/gnome-config.in
+--- gnome-libs-1.2.11/gnome-config.in	Wed Nov 22 02:56:27 2000
++++ gnome-libs-1.2.11-patched/gnome-config.in	Sun Feb  4 13:23:45 2001
+@@ -177,7 +177,7 @@
+   	the_flags="$the_flags @GNOME_INCLUDEDIR@ @GTK_CFLAGS@"
+ 	;;
+     gnomeui)
+-	the_libs="$the_libs @GNOME_LIBDIR@ @GNOMEUI_LIBS@"
++	the_libs="$the_libs @GNOME_LIBDIR@ @GNOMEUI_LIBS@ @INTLLIBS@"
+ 	the_flags="$the_flags @GNOME_INCLUDEDIR@ @GTK_CFLAGS@"
+ 	;;
+     gtkxmhtml)
+diff -ru gnome-libs-1.2.11/libgnomeui/gnome-canvas-load.c gnome-libs-1.2.11-patched/libgnomeui/gnome-canvas-load.c
+--- gnome-libs-1.2.11/libgnomeui/gnome-canvas-load.c	Tue Aug 24 02:24:48 1999
++++ gnome-libs-1.2.11-patched/libgnomeui/gnome-canvas-load.c	Sun Feb  4 13:23:45 2001
+@@ -12,7 +12,9 @@
+  */
+ #include <config.h>
+ #include <gdk_imlib.h>
++#ifdef HAVE_MALLOC_H
+ #include <malloc.h>
++#endif
+ #include "gnome-canvas.h"
+ #include "gnome-canvas-load.h"
+ 
+diff -ru gnome-libs-1.2.11/zvt/gnome-pty-helper.c gnome-libs-1.2.11-patched/zvt/gnome-pty-helper.c
+--- gnome-libs-1.2.11/zvt/gnome-pty-helper.c	Sat Mar 18 08:57:13 2000
++++ gnome-libs-1.2.11-patched/zvt/gnome-pty-helper.c	Sun Feb  4 13:23:45 2001
+@@ -45,7 +45,9 @@
+ #include <fcntl.h>
+ #include <termios.h>
+ #include <errno.h>
++#ifdef HAVE_MALLOC_H
+ #include <malloc.h>
++#endif
+ #include <termios.h>
+ #include <pwd.h>
+ #include <stdlib.h>

@@ -1,0 +1,13 @@
+Package: stow
+Version: 1.3.2
+Revision: 1
+Essential: yes
+Source: gnu
+Comment: This package must be installed before all other packages,
+ because stow is used to manage the fink tree. stow is actually just a
+ simple perl script, so this is no problem.
+CommentPort: Uses autoconf. Requires perl, which is preinstalled on
+ Mac OS X.
+CommentStow: stow works fine with stow :-)
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.fsf.org/software/stow/stow.html

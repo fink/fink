@@ -1,0 +1,24 @@
+Package: gimp
+Version: 1.0.4
+Revision: 1
+Source: mirror:gimp:gimp/v1.0/v1.0.4/gimp-%v.tar.gz
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCFLAGS: -traditional-cpp
+Depends: gtk+, libtiff, libjpeg, libpng
+CompileScript: patch -p1 <%p/fink/patch/gimp-1.0.4-1.patch
+ autoconf
+ ./configure %c
+ make
+InstallScript: make install prefix=%i
+ mv %i/bin/gimp %i/bin/gimp1.0-real
+ echo '#!/bin/sh' >%i/bin/gimp
+ echo 'exec %p/bin/gimp1.0-real --no-shm --no-xshm "$@"' >>%i/bin/gimp
+ chmod 755 %i/bin/gimp
+CommentPort: Uses autoconf. Checks the hosttype - the usual
+ fix. Missing libraries for plugins: aa, mpeg. A small shell-script is
+ created to make sure the parameters '--no-shm --no-xshm' are always
+ passed to the GIMP. The filters don't seem to work.
+CommentStow: There could be some issues, haven't checked yet.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gimp.org/

@@ -1,0 +1,17 @@
+Package: orbit
+Version: 0.5.6
+Revision: 1
+Source: mirror:gnome:stable/sources/ORBit/ORBit-%v.tar.gz
+Depends: glib, gettext
+UpdateLibtool: true
+UsesGettext: true
+SetCPPFLAGS: -traditional-cpp
+Patch: %f.patch
+PatchScript: cp ltconfig ltmain.sh libIDL
+ cp ltconfig ltmain.sh popt
+CommentPort: Uses autoconf and libtool. The usual fix for
+ libtool. Could use tcp_wrappers. Needs a patch to orbit-config to
+ remove a -lm. (Comments about indent, bison, flex here.)
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnome.org/

@@ -1,0 +1,13 @@
+Package: gtk-engines
+Version: 0.10
+Revision: 1
+Source: gnome
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+Depends: gtk+, imlib
+CommentPort: Uses autoconf and libtool - the usual fixes. Builds fine,
+ but doesn't work quite right. The panel and some other apps crash
+ when an engine is used...
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

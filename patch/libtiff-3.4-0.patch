@@ -1,0 +1,65 @@
+diff -ru tiff-v3.4/config.site tiff-v3.4-patched/config.site
+--- tiff-v3.4/config.site	Tue Apr 30 00:16:18 1996
++++ tiff-v3.4-patched/config.site	Sat Jan 13 12:23:50 2001
+@@ -37,22 +37,25 @@
+ # interactive prompting done by the configure script.
+ #
+ 
++PREFIX=@PREFIX@
++STOWDIR=@STOWDIR@
++
+ #
+ # Package controls.
+ #
+-#DSO="auto"			# auto|IRIX|IRIX52 enable DSO support for system
+-#JPEG="no"			# yes|no configure JPEG support (see below)
+-#ZIP="no"			# yes|no configure Deflate support (see below)
++DSO="auto"			# auto|IRIX|IRIX52 enable DSO support for system
++JPEG="yes"			# yes|no configure JPEG support (see below)
++ZIP="yes"			# yes|no configure Deflate support (see below)
+ #LIBGL="auto"			# yes|no|auto configure IRIS GL-based tools
+ #LIBIMAGE="auto"		# yes|no|auto configure SGI RGB image tools
+ 
+ #
+ # Directory parameters.
+ #
+-#DIR_BIN="/usr/local/bin"		# directory for tools
+-#DIR_LIB="/usr/local/lib"		# directory for libraries
+-#DIR_INC="/usr/local/include"		# directory for include files
+-#DIR_MAN="/usr/local/man"		# directory for manual pages
++DIR_BIN="$STOWDIR/bin"		# directory for tools
++DIR_LIB="$STOWDIR/lib"		# directory for libraries
++DIR_INC="$STOWDIR/include"		# directory for include files
++DIR_MAN="$STOWDIR/man"		# directory for manual pages
+ 
+ #
+ # Configuring supporting libraries.
+@@ -93,7 +96,9 @@
+ # which you can find on the Internet at ftp.uu.net:/graphics/jpeg/.
+ #
+ #DIRS_LIBINC="$DIRS_LIBINC ../src/jpeg-5a" # directory for jpeg include files
++DIRS_LIBINC="$DIRS_LIBINC $PREFIX/include"
+ #DIR_JPEGLIB=../src/jpeg-5a		# directory for libjpeg
++DIR_JPEGLIB="$PREFIX/lib"
+ 
+ #
+ # Deflate-specific parameters; used when Deflate support is enabled (see above).
+@@ -108,7 +113,9 @@
+ #     Look for it also at ftp://ftp.uu.net/pub/archiving/zip/zlib.
+ #
+ #DIRS_LIBINC="$DIRS_LIBINC ../zlib"	# directory for zlib include files
++DIRS_LIBINC="$DIRS_LIBINC $PREFIX/include"
+ #DIR_GZLIB="../zlib"			# directory for libz
++DIR_GZLIB="$PREFIX/lib"
+ 
+ #
+ # Miscellaneous parameters.
+@@ -131,7 +138,7 @@
+ #ENVOPTS="-Aa"				# options for getting ANSI C
+ #GCOPTS="-g"				# options to pass C compiler
+ #LIBPORT='${PORT}/libport.a'		# library with emulation code
+-#MACHDEPLIBS=""				# extra libraries for linking
++MACHDEPLIBS=""				# extra libraries for linking
+ #PORTFUNCS=""				# non-standard functions to emulate
+ #RANLIB=":"				# pathname of suitable ranlib program
+ #DSOSUF="so"				# DSO filename suffix

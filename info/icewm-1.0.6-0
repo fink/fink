@@ -1,0 +1,19 @@
+Package: icewm
+Version: 1.0.6
+Revision: 0
+Source: http://download.sourceforge.net/icewm/icewm-1.0.6-4.tar.gz
+SourceDirectory: icewm-1.0.6
+Depends: gnome-libs
+ConfigureParams: --with-gnome-menus
+#Depends: imlib, gnome-libs
+#ConfigureParams: --with-gnome-menus --with-imlib
+CompileScript: patch -p1 <%p/fink/patch/icewm-1.0.6-1.patch
+ ./configure %c
+ make
+InstallScript: make install BINDIR=%i/bin LIBDIR=%i/lib/X11/icewm CFGDIR=%i/etc/X11/icewm DOCDIR=%i/doc
+# make install-gnome WMPROPDIR=%i/share/gnome/wm-properties/
+CommentPort: Uses autoconf, but not automake. No NLS and no sound
+ support yet.
+CommentStow: It's a bit difficult to put all the files in the right
+ places when installing. But it should work.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

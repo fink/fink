@@ -1,0 +1,13 @@
+diff -ru patch-2.5.4-orig/config.hin patch-2.5.4/config.hin
+--- patch-2.5.4-orig/config.hin	Mon Aug 30 08:53:17 1999
++++ patch-2.5.4/config.hin	Fri Feb 16 18:15:58 2001
+@@ -86,9 +86,6 @@
+ /* Define if you have the rmdir function.  */
+ #undef HAVE_RMDIR
+ 
+-/* Define if you have the setmode function.  */
+-#undef HAVE_SETMODE
+-
+ /* Define if you have the sigaction function.  */
+ #undef HAVE_SIGACTION
+ 

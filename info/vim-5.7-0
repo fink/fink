@@ -1,0 +1,14 @@
+Package: vim
+Version: 5.7
+Revision: 0
+Source: ftp://ftp.vim.org/pub/editors/vim/unix/vim-%v-src.tar.gz ftp://ftp.vim.org/pub/editors/vim/unix/vim-%v-rt.tar.gz
+Depends: gtk+
+SetCFLAGS: -traditional-cpp 
+CompileScript:  gzip -dc vim-%v-src.tar.gz | tar -xvf - 
+ (cd vim-%v/src; autoconf; ./configure %c; make )
+InstallScript: rm -rf %i
+ mkdir -p %i
+ ( cd %p/src/vim-%v/src; make install prefix=%i )
+CommentPort: 
+CommentStow: 
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>

@@ -1,0 +1,18 @@
+Package: bzip2
+Version: 1.0.1
+Revision: 1
+Essential: yes
+Depends: stow
+Source: ftp://sourceware.cygnus.com/pub/bzip2/v100/bzip2-1.0.1.tar.gz
+CompileScript: patch -p1 <%p/fink/patch/bzip2-1.0.1-1.patch
+ make
+InstallScript: make install PREFIX=%i
+ ranlib %i/lib/libbz2.a
+CommentPort: Doesn't use autoconf, but comes with a useful Makefile.
+ It's hardwired for gcc, though. Mac OS X PB uses a gcc-based
+ compiler, but it's installed as "cc", not "gcc". The patch changes
+ the Makefile to use "cc".
+ .
+ The shared library is not built right now.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

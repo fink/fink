@@ -1,0 +1,15 @@
+Package: less
+Version: 358
+Revision: 1
+Source: gnu
+PatchScript: chmod u+w configure.in configure
+ patch -p1 <%a/%f.patch
+ autoconf
+CommentPort: The configure script looks for the curses functions in the
+ libraries libxcurses, libncurses and libcurses. Darwin / Mac OS X doesn't
+ have any of these libraries because curses support is built into the libc.
+ The configure script fails to detect this. I had to hack it to get it to
+ work. Note that the configure script for less 340 (distributed with
+ Darwin and Mac OS X) doesn't have this flaw...
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

@@ -1,0 +1,8 @@
+Package: m4
+Version: 1.4
+Revision: 1
+Source: gnu
+CommentPort: Uses autoconf. Works fine. TODO: add symlink from gm4 to
+ m4.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

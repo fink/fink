@@ -1,0 +1,20 @@
+Package: libtiff
+Version: 3.4
+Revision: 0
+Source: ftp://ftp.sgi.com/graphics/tiff/tiff-v3.4-tar.gz
+SourceDirectory: tiff-v3.4
+Depends: libjpeg, zlib
+UpdateConfigGuess: true
+CompileScript: chmod u+w config.site
+ patch -p1 <%p/fink/patch/libtiff-3.4-0.patch
+ sed 's|@PREFIX@|%p|g' <config.site | sed 's|@STOWDIR@|%i|g' >config.site.new
+ mv config.site.new config.site
+ echo | ./configure
+ make
+InstallScript: mkdir -p %i
+ make install
+ ( cd %i/lib ; ranlib libtiff.a )
+CommentPort: Doesn't use autoconf. Comes with a self-built configure
+ script. No shared libs yet.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

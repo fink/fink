@@ -1,0 +1,27 @@
+diff -ru gdbm-1.8.0/Makefile.in gdbm-1.8.0-patched/Makefile.in
+--- gdbm-1.8.0/Makefile.in	Wed May 19 05:16:06 1999
++++ gdbm-1.8.0-patched/Makefile.in	Tue Feb  6 16:29:11 2001
+@@ -122,18 +122,14 @@
+ install: libgdbm.la gdbm.h gdbm.info
+ 	$(srcdir)/mkinstalldirs $(libdir) $(includedir) $(man3dir) $(infodir)
+ 	$(LIBTOOL) install -c libgdbm.la $(libdir)/libgdbm.la
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) gdbm.h $(includedir)/gdbm.h
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/gdbm.3 \
+-		$(man3dir)/gdbm.3
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/gdbm.info \
+-		$(infodir)/gdbm.info
++	$(INSTALL_DATA) gdbm.h $(includedir)/gdbm.h
++	$(INSTALL_DATA) $(srcdir)/gdbm.3 $(man3dir)/gdbm.3
++	$(INSTALL_DATA) $(srcdir)/gdbm.info $(infodir)/gdbm.info
+ 
+ install-compat:
+ 	$(srcdir)/mkinstalldirs $(includedir)
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/dbm.h \
+-		$(includedir)/dbm.h
+-	$(INSTALL_DATA) -o $(BINOWN) -g $(BINGRP) $(srcdir)/ndbm.h \
+-		$(includedir)/ndbm.h
++	$(INSTALL_DATA) $(srcdir)/dbm.h $(includedir)/dbm.h
++	$(INSTALL_DATA) $(srcdir)/ndbm.h $(includedir)/ndbm.h
+ 
+ #libgdbm.a: $(OBJS) gdbm.h
+ #	rm -f libgdbm.a

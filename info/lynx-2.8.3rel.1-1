@@ -1,0 +1,16 @@
+Package: lynx
+Version: 2.8.3rel.1
+Revision: 1
+Depends: gettext
+Source: ftp://lynx.isc.org/lynx-2.8.3/lynx2.8.3rel.1.tar.gz
+SourceDirectory: lynx2-8-3
+UpdateConfigGuess: true
+UsesGettext: true
+ConfigureParams: --enable-nls
+InstallScript: make install prefix=%i
+ make install-help prefix=%i
+ make install-doc prefix=%i
+CommentPort: Uses autoconf. Checks the host type - the usual
+ fix. Doesn't do color yet - maybe we need ncurses for that.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

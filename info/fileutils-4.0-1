@@ -1,0 +1,10 @@
+Package: fileutils
+Version: 4.0
+Revision: 1
+Source: gnu
+UsesGettext: true
+CommentPort: Uses autoconf. Seems to work fine. Someone should test
+ the more exotic commands like mknod.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnu.org/software/fileutils/fileutils.html

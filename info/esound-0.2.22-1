@@ -1,0 +1,12 @@
+Package: esound
+Version: 0.2.22
+Revision: 1
+Source: gnome
+Depends: audiofile
+UpdateLibtool: true
+ConfigureParams: --disable-local-sound
+CommentPort: Uses autoconf and libtool - the usual fixes. Could use
+ tcp_wrappers. Local sound playback is disabled.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnome.org/

@@ -1,0 +1,80 @@
+--- gnome-core-1.2.4/applets/desk-guide/gwmthumbnail.c	Wed Nov 15 18:57:58 2000
++++ gnome-core-1.2.4-patched/applets/desk-guide/gwmthumbnail.c	Mon Jan 15 20:34:48 2001
+@@ -29,23 +29,29 @@
+ 
+ 
+ /* --- Gdk & GdkPixbuf compat prototypes --- */
++static
+ GdkImage*       gdk_image_get                    (GdkWindow *window,
+ 						  gint       x,
+ 						  gint       y,
+ 						  gint       width,
+ 						  gint       height);
++static
+ GdkColormap*	gdk_window_get_colormap		 (GdkWindow *window);
++static
+ GdkVisual*	gdk_window_get_visual		 (GdkWindow *window);
++static
+ GdkImage*       gdk_image_new_shared_with_pixmap (GdkWindow  *window,
+ 						  gint        width,
+ 						  gint        height,
+ 						  GdkPixmap **pixmap_p);
++static
+ GdkPixbuf*      gdk_pixbuf_from_image            (GdkImage    *image,
+ 						  guint        x,
+ 						  guint        y,
+ 						  guint        width,
+ 						  guint        height,
+ 						  GdkColormap *cmap);
++static
+ void            gdk_pixbuf_copy_from_image       (GdkPixbuf   *pixbuf,
+ 						  guint        dest_x,
+ 						  guint        dest_y,
+@@ -537,6 +543,7 @@
+ #include <sys/shm.h>
+ #endif	/* USE_SHM */
+ 
++static
+ GdkImage*
+ gdk_image_new_shared_with_pixmap (GdkWindow  *window,
+ 				  gint        width,
+@@ -616,6 +623,7 @@
+ 
+ /* fixed gdk_image_get(), so we don't crash if we get an X error
+  */
++static
+ GdkImage*
+ gdk_image_get (GdkWindow *window,
+ 	       gint       x,
+@@ -676,6 +684,7 @@
+ /* instead of bailing on NULL, return the root window's colormap,
+  * also, guard against XErrors
+  */
++static
+ GdkColormap*
+ gdk_window_get_colormap (GdkWindow *window)
+ {
+@@ -707,6 +716,7 @@
+ /* instead of bailing on NULL, return the root window's visual, also
+  * guard against XErrors
+  */
++static
+ GdkVisual*
+ gdk_window_get_visual (GdkWindow *window)
+ {
+@@ -875,6 +885,7 @@
+ 			     x, y, width, height, cmap);
+ }
+ 
++static
+ void
+ gdk_pixbuf_copy_from_image (GdkPixbuf   *pixbuf,
+ 			    guint	 dest_x,
+@@ -908,6 +919,7 @@
+ 		      cmap);
+ }
+ 
++static
+ GdkPixbuf*
+ gdk_pixbuf_from_image (GdkImage    *image,
+ 		       guint        x,

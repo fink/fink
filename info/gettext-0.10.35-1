@@ -1,0 +1,15 @@
+Package: gettext
+Version: 0.10.35
+Revision: 1
+Source: gnu
+Essential: yes
+Depends: stow
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+InstallScript: make install prefix=%i
+ ranlib %i/lib/libintl.a
+CommentPort: Uses autoconf. Checks the host type - the usual
+ fix. Doesn't build a shared library even with the updated libtool.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

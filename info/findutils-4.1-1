@@ -1,0 +1,15 @@
+Package: findutils
+Version: 4.1
+Revision: 1
+Source: gnu
+CommentPort: Uses autoconf. updatedb doesn't work well when run as a
+ normal user.
+CommentStow: The locate database causes some problems. It's stored in
+ the /var directory. However, the install script only makes sure that
+ the directory exists; the database is created by the first run of
+ updatedb. Moreover, if locatedb is a symlink, it will be replaced with
+ a regular file on the next updatedb run. This is solved by making the
+ var subdirectory a real directory and keeping the files there. The
+ fink installation script takes care of that.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnu.org/software/findutils/findutils.html

@@ -1,0 +1,15 @@
+Package: gettext
+Version: 0.10.35
+Revision: 2
+Source: gnu
+Essential: yes
+Depends: stow
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+Patch: %f.patch
+CommentPort: Uses autoconf. Checks the host type - the usual
+ fix. Uses an evil hack to actually build and install a shared libintl
+ library.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

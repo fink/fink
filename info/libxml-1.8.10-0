@@ -1,0 +1,13 @@
+Package: libxml
+Version: 1.8.10
+Revision: 0
+Source: mirror:gnome:stable/sources/%n/%n-%v.tar.gz
+Depends: zlib
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -I%p/include
+SetLDFLAGS: -L%p/lib
+CommentPort: Uses autoconf and libtool - the usual fixes. Could use
+ readline.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

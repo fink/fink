@@ -1,0 +1,13 @@
+Package: glib
+Version: 1.2.8
+Revision: 1
+Source: gnome
+Depends: dlcompat
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+CommentPort: Uses autoconf. Checks the host type - the usual
+ fix. Thread safety to be checked.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gtk.org/

@@ -1,0 +1,10 @@
+Package: make
+Version: 3.79.1
+Revision: 1
+Source: gnu
+ConfigureParams: --disable-nls
+CommentPort: Uses autoconf. Checks the hosttype and knows about
+ Darwin. Only compiles with NLS disabled.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.fsf.org/software/make/make.html

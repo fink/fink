@@ -1,0 +1,24 @@
+Package: joe
+Version: 2.8
+Revision: 1
+#Source: joe-2.8.tar.gz
+Source: ftp://ftp.std.com/src/editors/joe2.8.tar.Z
+SourceDirectory: joe
+CompileScript: patch -p1 <%p/fink/patch/joe-2.8-1.patch
+ make joe basepath=%p
+ make termidx basepath=%p
+InstallScript: mkdir -p %i/man/man1
+ mkdir -p %i/lib/joe
+ make install basepath=%p
+ %i/bin/termidx <%i/lib/joe/termcap >%i/lib/joe/termcap.idx
+CommentPort: Doesn't use autoconf. The Makefile must be changed to put
+ files in the right places. I had to rename joe's own "valloc"
+ function to "jvalloc" because it clashes with BSD's valloc(3)
+ routine.
+ .
+ We're installing joe's own termcap file (used by joe only) and
+ generate an index for it.
+CommentStow: The Makefile is patched to use the full stow path, so joe
+ will look there for its config files. Remember this when you change
+ the config files.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

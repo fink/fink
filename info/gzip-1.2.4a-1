@@ -1,0 +1,10 @@
+Package: gzip
+Version: 1.2.4a
+Revision: 1
+Source: gnu
+CommentPort: Uses autoconf. Works fine. TODO: add links from gzcat to
+ gzip, from zless to zmore. Dito for manpages.
+CommentStow: The shellscripts hardcode the stow path. However, this is
+ only to make sure they find the gzip binary, so it doesn't hurt.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gzip.org/
