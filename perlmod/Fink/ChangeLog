@@ -1,3 +1,8 @@
+2003-11-07  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Moved fink-prebinding environment-setting stuff
+	  to the fink runtime so it doesn't sit in the users' environments.
+
 2003-11-07  Max Horn  <max@quendi.de>
 
 	* Engine.pm: Fix bug causing incorrect installation of 'relatives' when

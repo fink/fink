@@ -2017,10 +2017,27 @@ sub phase_purge {
 sub set_env {
 	my $self = shift;
 	my ($varname, $s, $expand);
-	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
-			 "LDFLAGS" => "-L\%p/lib",
+	my %defaults = (
+		"CPPFLAGS"                 => "-I\%p/include",
+		"LDFLAGS"                  => "-L\%p/lib",
+		"LD_PREBIND"               => 1,
+		"LD_PREBIND_ALLOW_OVERLAP" => 1,
+		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
 	my $bsbase = Fink::Bootstrap::get_bsbase();
+
+	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
+		system("mkdir -p '$basepath/var/lib/fink/prebound'");
+		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
+			print FILEOUT <<END;
+0x90000000  0xa0000000  <<< Next split address to assign >>>
+0x20000000  <<< Next flat address to assign >>>
+END
+			close(FILEOUT);
+		} else {
+			warn "couldn't create seg_addr_table, this may cause compilation to fail!\n";
+		}
+	}
 
 	# clean the environment
 	%ENV = ("HOME" => $ENV{"HOME"});
@@ -2042,14 +2059,18 @@ sub set_env {
 
 	# set variables according to the info file
 	$expand = $self->{_expand};
-	foreach $varname ("CC", "CFLAGS",
-					  "CPP", "CPPFLAGS",
-					  "CXX", "CXXFLAGS",
-					  "DYLD_LIBRARY_PATH",
-					  "LD", "LDFLAGS", 
-					  "LIBRARY_PATH", "LIBS",
-					  "MACOSX_DEPLOYMENT_TARGET",
-					  "MAKE", "MFLAGS") {
+	foreach $varname (
+			"CC", "CFLAGS",
+			"CPP", "CPPFLAGS",
+			"CXX", "CXXFLAGS",
+			"DYLD_LIBRARY_PATH",
+			"LD_PREBIND",
+			"LD_PREBIND_ALLOW_OVERLAP",
+			"LD_SEG_ADDR_TABLE",
+			"LD", "LDFLAGS", 
+			"LIBRARY_PATH", "LIBS",
+			"MACOSX_DEPLOYMENT_TARGET",
+			"MAKE", "MFLAGS", "MAKEFLAGS") {
 		if ($self->has_param("Set$varname")) {
 			$s = $self->param("Set$varname");
 			if (exists $defaults{$varname} and
