@@ -83,7 +83,7 @@ sub fetch_url {
 
   # check if we have curl
   if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
-    $cmd = "curl";
+    $cmd = "curl -L";
     if (!$config->param_boolean("Verbose")) {
       $cmd .= " -s -S";
     }

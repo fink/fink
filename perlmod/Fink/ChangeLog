@@ -1,3 +1,7 @@
+2001-08-31  Christoph Pfisterer  <cp@chrisp.de>
+
+	* NetAccess.pm (fetch_url): Let curl follow redirects.
+
 2001-08-29  Christoph Pfisterer  <cp@chrisp.de>
 
 	* NetAccess.pm (fetch_url): Support curl as well as wget.
