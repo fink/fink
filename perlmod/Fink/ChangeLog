@@ -1,3 +1,10 @@
+2003-10-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm, Configure.pm: Change the default verbosity level from
+	"3" (high) to "1" (low)
+	* Shlibs.pm: change the DEBUG output from the Shlibs package, to 
+	output which is only shown at verbosity level 3
+
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* ChangeLog, Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm, 

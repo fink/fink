@@ -224,7 +224,7 @@ sub get_option {
 sub verbosity_level {
 	my ($verbosity, $verblevel);
 
-	$verblevel = $config->param_default("Verbose", 3);
+	$verblevel = $config->param_default("Verbose", 1);
 	$verbosity = get_option("verbosity");
 
 	if ($verbosity != -1 && ($verbosity == 3 || $verblevel eq "3" || $verblevel eq "true" || $verblevel eq "high")) {

@@ -72,7 +72,7 @@ sub configure {
 		$config->set_param("Buildpath", $builddir);
 	}
 
-	$verbose = $config->param_default("Verbose", 3);
+	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
 		&prompt_selection("How verbose should Fink be?", $verbose + 1, 
 						  { 3 => "High (shows everything)",
