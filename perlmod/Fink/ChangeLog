@@ -1,3 +1,8 @@
+2002-01-22  Ben Hines <benh57@users.sourceforge.net>
+
+	* Engine.pm, Package.pm: Match "fink list" & "install/remove/etc"
+	  items case-insensitively (Patch #622663)
+	  
 2003-01-22  Max Horn  <max@quendi.de>
 
 	* Various files: Applied Chris Zubrzycki's build directory patch which allows

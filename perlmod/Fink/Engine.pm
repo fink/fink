@@ -349,7 +349,7 @@ EOF
     } else {
       @selected = ();
       while (defined($pattern = shift)) {
-        $pattern = quotemeta $pattern; # fixes bug about ++ etc in search string.
+        $pattern = lc quotemeta $pattern; # fixes bug about ++ etc in search string.
 	if ((grep /\\\*/, $pattern) or (grep /\\\?/, $pattern)) {
 	   $pattern =~ s/\\\*/.*/g;
 	   $pattern =~ s/\\\?/./g;

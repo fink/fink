@@ -66,7 +66,7 @@ sub new_with_name {
   my $self = {};
   bless($self, $class);
 
-  $self->{package} = $pkgname;
+  $self->{package} = lc $pkgname;
 
   $self->initialize();
 
@@ -255,7 +255,7 @@ sub package_by_name {
   my $pkgname = shift;
   my $package;
 
-  return $package_hash{$pkgname};
+  return $package_hash{lc $pkgname};
 }
 
 ### get package by exact name, create when not found
@@ -265,7 +265,7 @@ sub package_by_name_create {
   my $pkgname = shift;
   my $package;
 
-  return $package_hash{$pkgname} || Fink::Package->new_with_name($pkgname);
+  return $package_hash{lc $pkgname} || Fink::Package->new_with_name($pkgname);
 }
 
 ### list all packages
