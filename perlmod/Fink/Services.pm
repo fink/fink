@@ -452,7 +452,7 @@ sub expand_percent {
 	# Bail if there is nothing to expand
 	return $s unless ($s =~ /\%/);
 
-	%map = ( %$map, '%' => '@PERCENT@' );  # Don't touch the caller's copy
+	%map = %$map;  # avoid lots of dereferencing later
 	$percent_keys = join('|', keys %map);
 
 	# split multi lines to process each line incase of comments
@@ -462,23 +462,34 @@ sub expand_percent {
 		# if line is a comment don't expand
 		unless ($s =~ /^\s*#/) {
 
-			# Values for percent signs expansion may be nested
-			# once, to allow e.g. the definition of %N in terms of
-			# %n (used a lot for splitoffs which do stuff like
-			# %N = %n-shlibs). Hence we repeate the expansion if
-			# necessary.
-			# Abort as soon as no substitution performed.
-			for ($i = 0; $i < 2 ; $i++) {
-				$s =~ s/\%($percent_keys)/$map{$1}/eg || last;
-				# Abort early if no percent symbols are left
-				last if not $s =~ /\%/;
-			}
-	
-			# If ther are still unexpanded percents left, error out
-			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /\%/;
+			if (keys %map) {
+				# only expand using $map if one was passed
 
-			# Change @PERCENT@ back to % as it should be
-			$s =~ s/\@PERCENT\@/\%/g;
+				# Values for percent signs expansion
+				# may be nested once, to allow e.g.
+				# the definition of %N in terms of %n
+				# (used a lot for splitoffs which do
+				# stuff like %N = %n-shlibs). Hence we
+				# repeat the expansion if necessary.
+				# Do not handle %% => % at this point.
+				# The regex for this hairy; to explain
+				# REGEX look at thereturn value of
+				# YAPE::Regex::Explain->new(REGEX)->explain
+				# Abort as soon as no subst performed.
+				for ($i = 0; $i < 2 ; $i++) {
+					$s =~ s/(?<!\%)\%((?:\%\%)*)($percent_keys)/$1$map{$2}/g || last;
+					# Abort early if no percent symbols are left
+					last if not $s =~ /\%/;
+				}
+			}
+
+			# The presence of a sequence of an odd number
+			# of percent chars means we have unexpanded
+			# percents besides (%% => %) left. Error out.
+			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /(?<!\%)(\%\%)*\%(?!\%)/;
+
+			# Now handle %% => %
+			$s =~ s/\%\%/\%/g;
 		}
 		push(@newlines, $s);
 	}
