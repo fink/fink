@@ -1,3 +1,7 @@
+2004-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: disable UseBinaryDist during bootstrap
+	
 2004-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Config.pm, PkgVersion.pm, Services.pm: Added some hooks to
