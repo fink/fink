@@ -121,7 +121,7 @@ sub initialize {
 	    };
   $self->{_expand} = $expand;
 
-  # expand source
+  # expand source / sourcerename fields
   $source = $self->param_default("Source", "\%n-\%v.tar.gz");
   if ($source eq "gnu") {
     $source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
@@ -133,8 +133,15 @@ sub initialize {
   $self->{source} = $source;
   $self->{_sourcecount} = 1;
 
+  if ($self->has_param('sourcerename')) {
+    $self->{'sourcerename'} = &expand_percent($self->{'sourcerename'}, $expand);
+  }
+
   for ($i = 2; $self->has_param('source'.$i); $i++) {
     $self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
+    if ($self->has_param('source'.$i.'rename')) {
+      $self->{'source'.$i.'rename'} = &expand_percent($self->{'source'.$i.'rename'}, $expand);
+    }
     $self->{_sourcecount} = $i;
   }
 
