@@ -1,3 +1,8 @@
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: use absolute path to local perlmod (in case a test
+	changes current dir)
+
 2005-01-06  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* postinstall.pl.in: Ask the user to rerun configure if the
