@@ -3203,10 +3203,12 @@ sub clear_buildlock {
 
 	my $old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
 	chomp $old_lock;
-	if ($old_lock ne "$lockpkg\t$timestamp") {
+	if ($old_lock eq "$lockpkg\t") {
+		&print_breaking("WARNING: The lock was removed by some other process.");
+	} elsif ($old_lock ne "$lockpkg\t$timestamp") {
 		# don't trample some other timestamp's lock
 		&print_breaking("WARNING: The lock has a different timestamp. Not ".
-						" removing it, as it likely belongs to a different ".
+						"removing it, as it likely belongs to a different ".
 						"fink process. This should not ever happen.");
 	} else {
 		if (&execute("dpkg -r $lockpkg")) {

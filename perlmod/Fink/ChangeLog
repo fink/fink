@@ -1,3 +1,7 @@
+2005-03-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fix warning when another process has removed buildlock
+
 2005-03-10  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: Use opendir() for reading a dir.
