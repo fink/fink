@@ -1,3 +1,8 @@
+2003-09-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: set up the dists symlink correctly for any
+	post-10.1 distribution
+
 2003-08-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.13.7; this release

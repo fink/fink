@@ -221,20 +221,20 @@ EOF
 ### Now, if we are running 10.2, we need to create $basepath/fink/10.2 if
 ### still needed, and then make a symlink
 
-if ($distribution =~ /10.2/) {
-  if (not -d $basepath."/fink/10.2") {
-    if(&execute("mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
-      print "ERROR: couldn't create directory $basepath/fink/10.2/local/main/finkinfo\n";
+if (not $distribution =~ /10.1/) {
+  if (not -d $basepath."/fink/".$distribution) {
+    if(&execute("mkdir -p $basepath/fink/$distribution/local/main/finkinfo")) {
+      print "ERROR: couldn't create directory $basepath/fink/$distribution/local/main/finkinfo\n";
       exit 1;
     }
-    if (&execute("chown -R $username $basepath/fink/10.2")) {
-      print "ERROR: couldn't change ownership of $basepath/fink/10.2 to $username\n";
+    if (&execute("chown -R $username $basepath/fink/$distribution")) {
+      print "ERROR: couldn't change ownership of $basepath/fink/$distribution to $username\n";
       exit 1;
     }
   }
   unlink $distdir;
-  if (&execute("ln -s 10.2 $distdir")) {
-    print "ERROR: Can't create link from 10.2 to $distdir\n";
+  if (&execute("ln -s $distribution $distdir")) {
+    print "ERROR: Can't create link from $distribution to $distdir\n";
     exit 1;
   }
 }
