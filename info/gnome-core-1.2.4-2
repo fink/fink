@@ -10,6 +10,9 @@ CommentPort: Uses autoconf and libtool - the usual fix for
  libtool. Could use tcp_wrappers, gtkhtml, gtkdoc. Those applets built
  as modules need changes to the Makefiles to get compiled as modules,
  not libraries.
+ .
+ gnome-terminal is broken because libzvt is broken on Darwin and can't
+ be easily fixed. See the comments in the gnome-libs package.
 CommentStow: No issues known.
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
 Homepage: http://www.gnome.org/

@@ -8,6 +8,7 @@ PatchScript: autoconf
 ConfigureParams: --enable-upgrade=no --enable-fsstd=yes
 CommentPort: Uses autoconf. Needs patches to remove -lm in various
  places and for some unguarded LC_MESSAGES usage.
-CommentStow: No issues known.
+CommentStow: Locale files are installed directly in <prefix>/lib. To
+ be fixed in the next revision.
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
 Homepage: http://www.enlightenment.org/
