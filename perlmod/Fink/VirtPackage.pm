@@ -158,12 +158,13 @@ END
 	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
 	my $latest_java;
 	if (opendir(DIR, $javadir)) {
-		chomp(my @dirs = readdir(DIR));
-		for my $dir (@dirs, '1.3', '1.4', '1.5') {
+		chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
+		for my $dir (reverse(sort(@dirs, '1.3', '1.4', '1.5'))) {
 			my $ver = $dir;
+			# chop the version down to major/minor without dots
 			$ver =~ s/[^\d]+//g;
 			$ver =~ s/^(..).*$/$1/;
-			next if ($dir =~ /^\.\.?$/ or $ver eq "");
+			next if ($ver eq "");
 			print STDERR "  - $dir... " if ($options{debug});
 
 			$hash = {};
@@ -182,8 +183,8 @@ END
 
 			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
 				print STDERR "$dir/Commands " if ($options{debug});
-				# chop the version down to major/minor without dots
 				$hash->{status}      = STATUS_PRESENT;
+				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 				$latest_java = $dir;
 
 				$hash = {};
@@ -207,12 +208,13 @@ END
 				} else {
 					$hash->{status} = STATUS_ABSENT;
 				}
-				$self->{$hash->{package}} = $hash;
+				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 				print STDERR "\n" if ($options{debug});
 			} else {
+				$hash->{status} = STATUS_ABSENT;
+				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 				print STDERR "nothing\n" if ($options{debug});
 			}
-			$self->{$hash->{package}} = $hash;
 		}
 		closedir(DIR);
 	}
