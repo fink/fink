@@ -232,28 +232,7 @@ sub initialize {
 				$hash->{provides} = join(', ', @provides);
 
 				if (not grep(/^x11$/, @provides) or not grep(/^(xft1|xft2)$/, @provides)) {
-					print <<END;
-WARNING!
-
-Fink has detected that you have X11 partially installed.  For fink to work
-properly with your system-provided X11 package, you *must* install both the
-X11 package *and* the X11 SDK.
-
-END
-					if ($darwin_version < 7) {
-						print <<END;
-If you're using the Apple X11 beta, you must install BOTH the User package
-and the X11 SDK (which can be downloaded from the same place).
-
-END
-					} else {
-						print <<END;
-If you installed X11 with Mac OS X, you must also install the X11 SDK from
-the XCode tools CD, which is *not* enabled by a default install.  Re-run
-the XCode install, and select "custom" to enable installation of the X11 SDK.
-
-END
-					}
+					print STDERR "Warning: X11 SDK missing, see http://fink.sf.net/faq/usage-packages.php#apple-x11-wants-xfree86\n";
 				}
 				$self->{$hash->{package}} = $hash;
 			}
