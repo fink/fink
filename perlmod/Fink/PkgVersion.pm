@@ -1755,7 +1755,7 @@ EOF
 			if (($scriptname eq "postinst") || ($scriptname eq "postrm")) {
 				$scriptbody.=
 						"\n/bin/mkdir -p %p/share/java".
-						"\njars=`find %p/share/java -name '*.jar'`".
+						"\njars=`/usr/bin/find %p/share/java -name '*.jar'`".
 						"\n".'if (test -n "$jars")'.
 						"\nthen".
 						"\n".'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'.

@@ -166,7 +166,7 @@ sub check {
 			}
 		} else {
 			&execute("/bin/rm -f $finkdir/stamp-rsync-live $finkdir/stamp-cvs-live");
-			&execute("find $finkdir -name \"CVS\" -type d | xargs /bin/rm -rf");
+			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 		&do_tarball($latest_fink);
 		&do_finish();
@@ -574,7 +574,7 @@ sub do_direct_rsync {
 			if (&execute($cmd)) {
 				die "Updating $tree using rsync failed. Check the error messages above.\n";
 			} else {
-				&execute("find '$basepath/fink/$dist/$tree' -type d -name CVS | xargs /bin/rm -rf");
+				&execute("/usr/bin/find '$basepath/fink/$dist/$tree' -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 			}
 		} else {
 			print "Warning: $tree exists in fink.conf, but is not on rsync server.  Skipping.\n";
