@@ -31,7 +31,11 @@
 
 	* dpkg.info, dpkg.patch, dpkg-bootstrap.info: fix hardcoded /sw
 	in patch, make flat namespace.
-	
+
+2003-12-05  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* all packages: changed Depends field to use ${SHLIB_DEPS}
+
 2003-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* system-perl*: removed these, which are no longer needed with

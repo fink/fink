@@ -1,3 +1,12 @@
+2004-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* 00compile.t: ...or don't because that makes it even worse.
+
+2004-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* 00compile.t: Quote modulename in require() so don't break if
+	punctuation
+
 2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* testmore.pl: Small script which tests for the presence of 

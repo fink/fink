@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,10 +23,11 @@
 
 package Fink::NetAccess;
 
-use Fink::Services qw(&execute &filename);
+use Fink::Services qw(&execute &filename &file_MD5_checksum);
 use Fink::CLI qw(&prompt_selection_new &print_breaking);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
+use Fink::Command qw(mkdir_p rm_f);
 
 use strict;
 use warnings;
@@ -58,7 +59,7 @@ sub fetch_url {
 	my ($file, $cmd);
 
 	$file = &filename($url);
-	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir);
+	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, undef);
 }
 
 ### download a file to the designated directory and save it under the
@@ -75,8 +76,10 @@ sub fetch_url_to_file {
 	my $nomirror = shift || 0;
 	my $dryrun = shift || 0;
 	my $downloaddir = shift || "$basepath/src";
+	my $checksum = shift;
 	my ($http_proxy, $ftp_proxy);
-	my ($url, $cmd, $cont_cmd, $result);
+	my ($url, $cmd, $cont_cmd, $result, $cmd_url);
+	my $found_archive_sum;
 
 	# create destination directory if necessary
 	if (not -d $downloaddir) {
@@ -106,10 +109,11 @@ sub fetch_url_to_file {
 	my ($path, $basename, $masterpath);
 
 	$mirrorindex = 0;
-	if ($origurl =~ m#^mirror\:(\w+)\:(.*?)([^/]+$)#g) {
+	if ($origurl =~ m/^mirror\:(\w+)\:(.*?)([^\/]+\Z)/g) {
 		$mirrorname = $1;
 		$path = $2;
 		$basename = $3;
+		$path =~ s/^\/*//;    # Mirror::get_site always returns a / at the end
 		if ($mirrorname eq "custom") {
 			if (not $custom_mirror) {
 				die "Source file \"$file\" uses mirror:custom, but the ".
@@ -124,7 +128,7 @@ sub fetch_url_to_file {
 		}
 	} elsif ($origurl =~  m|^file://   			
 							(.*?)						# (optional) Path into $1
-							([^/]+$)   					# Tarball into $2
+							([^/]+\Z)  					# Tarball into $2
 					 	 |x  ) { 
 		# file:// URLs
 		$path = "file://$1";
@@ -141,7 +145,7 @@ sub fetch_url_to_file {
 		}
 	} elsif ($origurl =~  m|^([^:]+://[^/]+/)			# Match http://domain/ into $1
 							(.*?)						# (optional) Path into $2
-							([^/]+$)   					# Tarball into $3
+							([^/]+\Z)  					# Tarball into $3
 					 	 |x  ) { 
 		# Not a custom mirror, parse a full URL
 		$path = $2;
@@ -186,8 +190,21 @@ sub fetch_url_to_file {
 
 	### if the file already exists, ask user what to do
 	if (-f $file && !$cont && !$dryrun) {
-		$result = &prompt_selection_new("The file \"$file\" already exists, how do you want to proceed?",
-						[ value => "retry" ], # Play it save, assume redownload as default
+		my $checksum_msg = ". ";
+		my $default_value = "retry"; # Play it save, assume redownload as default
+		$found_archive_sum = &file_MD5_checksum($file);
+		if (defined $checksum) {
+			if ($checksum eq $found_archive_sum) {
+				$checksum_msg = " and its checksum matches. ";
+				$default_value = "use_it"; # MD5 matches: assume okay to use it
+			} else {
+				$checksum_msg = " but its checksum does not match. The most likely ".
+								"cause for this is a corrupted or incomplete download\n".
+								"Expected: $checksum \nActual: $found_archive_sum \n";
+			}
+		}
+		$result = &prompt_selection_new("The file \"$file\" already exists".$checksum_msg."How do you want to proceed?",
+						[ value => $default_value ],
 						( "Delete it and download again" => "retry",
 						  "Assume it is a partial download and try to continue" => "continue",
 						  "Don't download, use existing file" => "use_it" ) );
@@ -215,7 +232,11 @@ sub fetch_url_to_file {
 			$url .= $masterpath . $file;    # SourceRenamed tarball name
 		} else {
 			$url .= $path . $basename;
-	}
+		}
+
+		# protect against shell metachars
+		# deprotect common URI chars that are metachars for regex not shell
+		( $cmd_url = "\Q$url\E" ) =~ s{\\([/.:\-=])}{$1}g;
 
 		### fetch $url to $file
 
@@ -230,17 +251,26 @@ sub fetch_url_to_file {
 		if ($dryrun) {
 			print " $url";
 		} elsif ($cont) {
-			$result = &execute("$cont_cmd $url");
+			$result = &execute("$cont_cmd $cmd_url");
 			$cont = 0;
 		} else {
-			$result = &execute("$cmd $url");
+			$result = &execute("$cmd $cmd_url");
 		}
 		
 		if ($dryrun or ($result or not -f $file)) {
 			# failure, continue loop
 		} else {
-			# success, return to caller
-			return 0;
+			$found_archive_sum = &file_MD5_checksum($file);
+			if (defined $checksum and $checksum ne $found_archive_sum) {
+
+				&print_breaking("The checksum of the file is incorrect. The most likely ".
+								"cause for this is a corrupted or incomplete download\n".
+								"Expected: $checksum \nActual: $found_archive_sum \n");
+				# checksum failure, continue loop
+			} else {
+				# success, return to caller
+				return 0;
+			}
 		}
 
 		### failure handling
@@ -280,7 +310,14 @@ sub download_cmd {
 	# $file is the post-SourceRename tarball name
 	my $file = shift || &filename($url);
 	my $cont = shift || 0;	# Continue a previously started download?
-	my $cmd;
+	my($cmd, $cmd_file);
+
+	# protect against shell metachars
+	# deprotect common URI chars that are metachars for regex not shell
+	if ($file =~ /\//) {
+		die "security error: Cannot use path sep in target filename (\"$file\")\n";
+	}
+	( $cmd_file = "\Q$file\E" ) =~ s{\\([/.:\-=])}{$1}g;
 
 	# determine the download command
 	$cmd = "";
@@ -295,7 +332,7 @@ sub download_cmd {
 			$cmd .= " -P -";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -o $file";
+			$cmd .= " -o $cmd_file";
 		} else {
 			$cmd .= " -O"
 		}
@@ -317,7 +354,7 @@ sub download_cmd {
 			$cmd .= " --passive-ftp";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -O $file";
+			$cmd .= " -O $cmd_file";
 		}
 		if ($cont) {
 			$cmd .= " -c"
@@ -336,7 +373,7 @@ sub download_cmd {
 			$cmd .= " --verbose";
 		}
 		if ($file ne &filename($url)) {
-			$cmd .= " -o $file";
+			$cmd .= " -o $cmd_file";
 		}
 		# Axel always continues downloads, by default
 	}

@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,6 +23,12 @@
 
 package Fink::Configure;
 
+
+###
+# Remember to up the $conf_file_compat_version constant below if you add
+# a field to the $basepath/etc/fink.conf file.
+###
+
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Services qw(&read_properties &read_properties_multival &filename);
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection_new &print_breaking);
@@ -36,19 +42,66 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&configure &choose_mirrors);
+	@EXPORT_OK	 = qw(&configure &choose_mirrors $conf_file_compat_version);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
 
-### create/change configuration interactively
+Fink::Configure - handle versioned Fink configuration files
+
+=head1 DESCRIPTION
+
+These functions handle managing changes in the fink.conf file.
+
+=cut
+
+# Compatibility version of the $basepath/etc/fink.conf file.
+# Needs to be updated whenever a new field is added to the
+# configuration file by code here. This will tell users to 
+# rerun fink configure after installing the new fink version.
+# (during postinstall.pl)
+#
+# History:
+#  0: Default value, fink < 0.24.0
+#  1: Added ConfFileCompatVersion, UseBinaryDist, fink 0.24.0
+#
+our $conf_file_compat_version  = 1;
+
+=head2 Exported Variables
+
+These variables are exported on request.  They are initialized by creating
+a Fink::Configure object.
+
+=over 4
+
+=item $conf_file_compat_version
+
+Compatibility version of the F<$basepath/etc/fink.conf> file.
+Needs to be updated whenever a new field is added to the
+configuration file by code here. This will tell users to 
+rerun fink configure after installing the new fink version.
+
+For example, C<1>.
+
+=back
+
+=head2 Functions
+
+=over 4
+
+=item configure
+
+create/change configuration interactively
+
+=cut
 
 sub configure {
 	my ($otherdir, $builddir, $verbose);
-	my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $default);
+	my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $binary_dist, $default);
 
 	print "\n";
 	&print_breaking("OK, I'll ask you some questions and update the ".
@@ -72,14 +125,40 @@ sub configure {
 		$config->set_param("Buildpath", $builddir);
 	}
 
+	$binary_dist = $config->param_boolean("UseBinaryDist");
+	# if we are not installed in /sw, $binary_dist must be 0:
+	if (not $basepath eq '/sw') {
+		$binary_dist = 0;
+	} else {
+		# New users should use the binary dist, but an existing user who
+		# is running "fink configure" should see a default answer of "no"
+		# for this question... To tell these two classes of users apart,
+		# we check to see if the "Verbose" parameter has been set yet.
+
+		if (!$config->has_param("UseBinaryDist")) {
+			if ($config->has_param("Verbose")) {
+				$binary_dist = 0;
+			} else {
+				$binary_dist = 1;
+			}
+		}
+		$binary_dist =
+			&prompt_boolean("Should Fink try to download pre-compiled packages from ".
+							"the binary distribution if available?", $binary_dist);
+	}
+	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
+
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
 		&prompt_selection_new("How verbose should Fink be?",
-				      [value=>$verbose], 
-				      ( "Quiet (don't show download stats)" => 0,
-					"Low (don't show tarballs being expanded)" => 1,
-					"Medium (shows almost everything)" => 2,
-					"High (shows everything)" => 3 ) );
+							  [value=>$verbose],
+							  (
+							   "Quiet (do not show download statistics)"   => 0,
+							   "Low (do not show tarballs being expanded)" => 1,
+							   "Medium (will show almost everything)"      => 2,
+							   "High (will show everything)"               => 3,
+							   "Pedantic (even show nitpicky details)"     => 4
+							  ) );
 	$config->set_param("Verbose", $verbose);
 
 	# proxy settings
@@ -88,10 +167,12 @@ sub configure {
 
 	$default = $config->param_default("ProxyHTTP", "");
 	$default = "none" unless $default;
+	&print_breaking("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
+        "The URL should start with http:// and may contain username, ".
+	"password or port specifications ".
+	" E.g: http://username:password\@hostname:port ");
 	$http_proxy =
-		&prompt("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
-				"The URL should start with http:// and may contain username, ".
-				"password or port specifications.",
+		&prompt("Your proxy: ".
 				$default);
 	if ($http_proxy =~ /^none$/i) {
 		$http_proxy = "";
@@ -100,7 +181,7 @@ sub configure {
 
 	if ($http_proxy) {
 		$same_for_ftp =
-			&prompt_boolean("Use the same proxy for FTP?", 0);
+			&prompt_boolean("Use the same proxy server for FTP connections?", 0);
 	} else {
 		$same_for_ftp = 0;
 	}
@@ -110,12 +191,13 @@ sub configure {
 	} else {
 		$default = $config->param_default("ProxyFTP", "");
 		$default = "none" unless $default;
-		$ftp_proxy =
-			&prompt("Enter the URL of the proxy to use for FTP, ".
-					"or 'none' for no proxy. ".
-					"The URL should start with http:// and may contain username, ".
-					"password or port specifications.",
-					$default);
+                &print_breaking("Enter the URL of the proxy to use for FTP, ".
+		                "or 'none' for no proxy. ".
+				"The URL should start with http:// and may contain username," .
+				"password or port specifications.".
+				" E.g: ftp://username:password\@hostname:port ");	
+                $ftp_proxy = &prompt("Your proxy:" , $default);
+		
 		if ($ftp_proxy =~ /^none$/i) {
 			$ftp_proxy = "";
 		}
@@ -136,6 +218,8 @@ sub configure {
 	# mirror selection
 	&choose_mirrors();
 
+	# set the conf file compatibility version to the current value 
+	$config->set_param("ConfFileCompatVersion", $conf_file_compat_version);
 
 	# write configuration
 	print "\n";
@@ -144,12 +228,17 @@ sub configure {
 	$config->save();
 }
 
-### mirror selection
+
+=item choose_mirrors
+
+mirror selection
+
+=cut
 
 sub choose_mirrors {
 	my $mirrors_postinstall = shift; # boolean value, =1 if we've been
 					# called from the postinstall script
-					# of the fink-mirrors package
+ 					# of the fink-mirrors package
 	my ($answer, $missing, $default, $def_value);
 	my ($continent, $country);
 	my ($keyinfo, $listinfo);
@@ -192,7 +281,7 @@ sub choose_mirrors {
 					  "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
 	
 	$mirror_order = &prompt_selection_new("What mirror order should fink use when downloading sources?",
-					      [number=>1], 
+					      [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
 					      ( "Search \"Master\" source mirrors first." => "MasterFirst",
 						"Search \"Master\" source mirrors last." => "MasterLast",
 						"Never use \"Master\" source mirrors." => "MasterNever",
@@ -254,6 +343,14 @@ sub choose_mirrors {
 	}
 }
 
+
+=back
+
+=head1 SEE ALSO
+
+L<Fink::Base>
+
+=cut
 
 ### EOF
 1;

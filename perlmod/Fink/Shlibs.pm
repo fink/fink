@@ -481,7 +481,7 @@ sub get_all_shlibs {
 			# If the index is not outdated, we can use it,
 			# and thus safe a lot of time
 			if (not $shlib_db_outdated) {
-				$shlibs = Storable::retrieve("$basepath/var/db/$db");
+				$shlibs = Storable::lock_retrieve("$basepath/var/db/$db");
 			}
 		}
 	}

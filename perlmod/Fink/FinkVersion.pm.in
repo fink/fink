@@ -1,9 +1,10 @@
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::FinkVersion package
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -83,7 +84,9 @@ Returns the fink distribution version you're currently using.
 
 sub distribution_version {
 	my $dv;
-	if (-f "$basepath/fink/VERSION") {
+	if (-f "$basepath/fink/dists/VERSION") {
+		chomp($dv = cat "$basepath/fink/dists/VERSION");
+	} elsif (-f "$basepath/fink/VERSION") {
 		chomp($dv = cat "$basepath/fink/VERSION");
 	} elsif (-f "$basepath/etc/fink-release") {
 		chomp($dv = cat "$basepath/etc/fink-release");
@@ -110,6 +113,19 @@ methods...
 sub pkginfo_version {
 	my $pv = "0";
 	my ($fn, $v);
+# first, look in the new location for stamp files
+	foreach $fn (glob("$basepath/fink/dists/stamp-*")) {
+		if ($fn =~ m{/stamp-rsync}) {
+			return "rsync";
+		} elsif ($fn =~ m{/stamp-cvs}) {
+			return "cvs";
+		} elsif ($fn =~ m{/stamp-rel-(.+)$}) {
+			$v = $1;
+			$pv = $v if ($v gt $pv);
+		}
+	}
+# if we haven't returned yet, and we didn't set the value of $v, look in the old location
+	if (not defined $v) {
 	foreach $fn (glob("$basepath/fink/stamp-*")) {
 		if ($fn =~ m{/stamp-rsync}) {
 			return "rsync";
@@ -119,6 +135,7 @@ sub pkginfo_version {
 			$v = $1;
 			$pv = $v if ($v gt $pv);
 		}
+				}
 	}
 	$pv = &distribution_version() if $pv eq "0";
 	return $pv;

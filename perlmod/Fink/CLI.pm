@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -39,7 +39,7 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
-					  &prompt &prompt_boolean &prompt_selection_new
+					  &prompt &prompt_boolean &prompt_selection_new &prompt_selection
 					  &print_optionlist
 			      &get_term_width);
 }
@@ -53,8 +53,6 @@ END { }				# module clean-up code here (global destructor)
 =head1 NAME
 
 Fink::CLI - functions for user interaction
-
-=head1 SYNOPSIS
 
 =head1 DESCRIPTION
 
@@ -166,13 +164,17 @@ sub print_breaking_stderr {
 
     my $answer = prompt $prompt;
     my $answer = prompt $prompt, $default;
+    my $answer = prompt $prompt, $default, $timeout;
 
 Ask the user a question and return the answer. The user is prompted
 via STDOUT/STDIN using $prompt (which is word-wrapped). If the user
 returns a null string or Fink is configured to automatically accept
 defaults (i.e., bin/fink was invoked with the -y or --yes option), the
 default answer $default is returned (or a null string if no $default
-is not defined).
+is not defined). The optional $timeout argument establishes a wait
+period (in seconds) for the prompt, after which the default answer
+will be used. If a $timeout is given, any existing alarm() is
+destroyed.
 
 =cut
 
@@ -180,10 +182,10 @@ sub prompt {
 	my $prompt = shift;
 	my $default_value = shift;
 	$default_value = "" unless defined $default_value;
-	my ($answer);
+	my $timeout = shift || 0;
 
-	$answer = &get_input("$prompt [$default_value]", 0);
-	chomp($answer);
+	my $answer = &get_input("$prompt [$default_value]", $timeout);
+	chomp $answer;
 	$answer = $default_value if $answer eq "";
 	return $answer;
 }
@@ -200,7 +202,7 @@ word-wrapped). If $default_true is true or undef, the default answer
 is true, otherwise it is false. If the user returns a null string or
 Fink is configured to automatically accept defaults (i.e., bin/fink
 was invoked with the -y or --yes option), the default answer is
-returned.  The optional $timeout argument establishes a wait period
+returned. The optional $timeout argument establishes a wait period
 (in seconds) for the prompt, after which the default answer will be
 used. If a $timeout is given, any existing alarm() is destroyed.
 
@@ -211,11 +213,11 @@ sub prompt_boolean {
 	my $default_value = shift;
 	$default_value = 1 unless defined $default_value;
 	my $timeout = shift || 0;
-	my ($answer, $meaning);
 
+	my $meaning;
 	while (1) {
-		$answer = &get_input("$prompt [".($default_value ? "Y/n" : "y/N")."]", $timeout);
-		chomp($answer);
+		my $answer = &get_input("$prompt [".($default_value ? "Y/n" : "y/N")."]", $timeout);
+		chomp $answer;
 		if ($answer eq "") {
 			$meaning = $default_value;
 			last;
@@ -235,6 +237,23 @@ sub prompt_boolean {
 
     my $answer = prompt_selection_new $prompt, \@default, @choices;
 
+Compatibility during API migration. Use prompt_selection() instead.
+
+=cut
+
+sub prompt_selection_new {
+	my $prompt = shift;
+	my $default = shift;
+	my @choices = @_;
+
+	&prompt_selection($prompt, $default, \@choices);
+}
+
+=item prompt_selection
+
+    my $answer = prompt_selection $prompt, \@default, \@choices;
+    my $answer = prompt_selection $prompt, \@default, \@choices, $timeout;
+
 Ask the user a multiple-choice question and return the answer. The
 user is prompted via STDOUT/STDIN using $prompt (which is
 word-wrapped) and a list of choices. The choices are numbered
@@ -250,16 +269,23 @@ option), the default answer is used according to the following:
   @default = ["label", $label];    # first choice with label $label
   @default = ["value", $label];    # first choice with value $value
 
+The optional $timeout argument establishes a wait period (in seconds)
+for the prompt, after which the default answer will be used. If a
+$timeout is given, any existing alarm() is destroyed.
+
 =cut
 
-sub prompt_selection_new {
+sub prompt_selection {
 	my $prompt = shift;
 	my $default = shift;
-	my @choices = @_;
-	my ($count, $index, $answer, $default_value);
+	my $choices = shift;
+	my @choices = @$choices;
+	my $timeout = shift || 0;
+
+	my ($count, $answer, $default_value);
 
 	if (@choices/2 != int(@choices/2)) {
-		confess "Odd number of elements in \@choices";
+		confess 'Odd number of elements in @choices';
 	}
 
 	if (!defined $default->[0]) {
@@ -274,7 +300,7 @@ sub prompt_selection_new {
 	}
 
 	$count = 0;
-	for ($index = 0; $index <= $#choices; $index+=2) {
+	for (my $index = 0; $index <= $#choices; $index+=2) {
 		$count++;
 		print "\n($count)	 $choices[$index]";
 		if (!defined $default_value && (
@@ -291,7 +317,7 @@ sub prompt_selection_new {
 	$default_value = 1 if !defined $default_value;
 	print "\n\n";
 
-	$answer = &get_input("$prompt [$default_value]", 0);
+	$answer = &get_input("$prompt [$default_value]", $timeout);
 	chomp($answer);
 	if (!$answer) {
 		$answer = 0;

@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ package Fink::Command;
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT    = ();
-@EXPORT_OK = qw(mv cp cat mkdir_p rm_rf rm_f touch chowname symlink_f);
+@EXPORT_OK = qw(mv cp cat mkdir_p rm_rf rm_f touch chowname symlink_f du_sk);
 %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
@@ -44,7 +44,7 @@ Fink::Command - emulate common shell commands in Perl
 
   mv @src, $dest;
   cp @src, $dest;
-  
+
   my $text = cat $file;
   my @text = cat $file;
 
@@ -211,9 +211,9 @@ sub rm_f {
 	
 	my $nok = 0;
 	foreach my $file (@files) {
-		next unless -e $file;
+		next unless lstat $file;
 		next if unlink($file);
-		chmod(0777,$file);
+		chmod(0777,$file);     # Why? A file's perm's don't affect unlink
 		next if unlink($file);
 	
 		$nok = 1;
@@ -292,6 +292,47 @@ sub symlink_f {
 	return symlink($src, $dest);
 }
 
+=item du_sk
+
+  du_sk @dirs;
+
+Like C<du -sk>, though slower.
+
+On success returns the disk usage of @dirs in kilobytes. This is not the
+sum of file-sizes, rather the total size of the blocks used. Thus it can
+change on a filesystem with support for sparse files, or an OS with a
+different block size.
+
+On failure returns "Error: <description>".
+
+=cut
+
+# FIXME: Can this be made faster?
+sub du_sk {
+	my @dirs = @_;
+	my $total_size = 0;
+	
+	# Depends on OS. Pretty much only HP-UX, SCO and (rarely) AIX are not 512 bytes.
+	my $blocksize = 512;
+	
+	require File::Find;
+	
+	# Must catch warnings for this block
+	my $err = "";
+	use warnings;
+	local $SIG{__WARN__} = sub { $err = "Error: $_[0]" if not $err };
+	
+	File::Find::finddepth(
+		sub {
+			# Use lstat first, so the -f refers to the link and not the target.
+			my $file_blocks = (lstat $_)[12];
+			$total_size += ($blocksize * $file_blocks) if -f _ or -d _;
+		},
+		@dirs) if @dirs;
+	
+	return ( $err or int($total_size / 1024) );
+}
+
 =begin private
 
 =item _expand
@@ -305,7 +346,7 @@ Expands a list of filepaths like the shell would.
 =cut
 
 sub _expand {
-	return map { /[{*?]/ ? glob($_) : $_ } @_;
+	return grep { defined and length } map { ( defined && /[{*?]/ ) ? glob($_) : $_ } @_;
 }
 
 

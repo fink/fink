@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
-use Fink::Config qw($config $basepath $debarch);
+use Fink::Config qw($config $basepath $debarch binary_requested);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
 use File::Find;
@@ -47,6 +47,26 @@ our $db_mtime = 0;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
+
+Fink::Package - manipulate Fink package objects
+
+=head1 DESCRIPTION
+
+Fink::Package contains a variety of tools for querying, manipulating, and
+navigating the Fink package database.
+
+=head2 Functions
+
+No functions are exported by default.  You should generally be getting
+a package object by interacting with this module in an object-oriented
+fashion:
+
+  my $package = Fink::Package->package_by_name('PackageName');
+
+=over 4
+
+=cut
 
 ### constructor taking a name
 
@@ -90,6 +110,8 @@ sub get_name {
 
 ### get pure virtual package flag
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub is_virtual {
 	use Fink::VirtPackage;
 	my $self = shift;
@@ -106,12 +128,21 @@ sub is_virtual {
 sub add_version {
 	my $self = shift;
 	my $version_object = shift;
-
+	
 	my $version = $version_object->get_fullversion();
 	if (exists $self->{_versions}->{$version} 
 		&& $self->{_versions}->{$version}->is_type('dummy') ) {
 		$self->{_versions}->{$version}->merge($version_object);
 	} else {
+		# $pv->fullname is currently treated as unique, even though it won't be
+		# if the version is the same but epoch isn't. So let's make sure.
+		delete $self->{_versions}->{$version};
+		my $fullname = $version_object->get_fullname();
+		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions()) {
+			die "The package full name '$fullname' is not allowed to be used"
+			 ." more than once.";
+		}
+		
 		$self->{_versions}->{$version} = $version_object;
 	}
 
@@ -128,6 +159,8 @@ sub add_provider {
 }
 
 ### list available versions
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub list_versions {
 	my $self = shift;
@@ -180,12 +213,25 @@ sub get_matching_versions {
 
 sub get_all_providers {
 	my $self = shift;
-	my (@versions);
+	my @versions;
 
 	@versions = values %{$self->{_versions}};
 	push @versions, @{$self->{_providers}};
 	return @versions;
 }
+
+# Are any of the package's providers installed?
+sub is_provided {
+	my $self = shift;
+	my $pvo;
+
+	foreach $pvo (@{$self->{_providers}}) {
+		return 1 if $pvo->is_installed();
+	}
+	return 0;
+}
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub list_installed_versions {
 	my $self = shift;
@@ -198,6 +244,8 @@ sub list_installed_versions {
 	}
 	return @versions;
 }
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub is_any_installed {
 	my $self = shift;
@@ -223,6 +271,8 @@ sub is_any_present{
 
 ### get version object by exact name
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub get_version {
 	my $self = shift;
 	my $version = shift;
@@ -238,6 +288,8 @@ sub get_version {
 
 
 ### get package by exact name, fail when not found
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub package_by_name {
 	shift;	# class method - ignore first parameter
@@ -258,6 +310,8 @@ sub package_by_name_create {
 }
 
 ### list all packages
+
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub list_packages {
 	shift;	# class method - ignore first parameter
@@ -287,6 +341,8 @@ sub list_essential_packages {
 
 ### make sure package descriptions are available
 
+### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+
 sub require_packages {
 	shift;	# class method - ignore first parameter
 
@@ -294,6 +350,34 @@ sub require_packages {
 		Fink::Package->scan_all();
 	}
 }
+
+# set the aptgetable status of packages
+
+sub update_aptgetable {
+	my $class = shift; # class method
+	my $statusfile = "$basepath/var/lib/dpkg/status";
+	
+	open APTDUMP, '-|', "$basepath/bin/apt-cache", "dump"
+		or die "Can't run apt-cache dump: $!";
+		
+	# Note: We assume here that the package DB exists already
+	my ($po, $pv);
+	while(<APTDUMP>) {
+		if (/^\s*Package:\s*(\S+)/) {
+			($po, $pv) = (Fink::Package->package_by_name($1), undef);
+		} elsif (/^\s*Version:\s*(\S+)/) {
+			$pv = $po->get_version($1) if defined $po;
+		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
+										# of apt-cache dump
+			# Avoid using debs that aren't really apt-getable
+			next if $1 eq $statusfile;
+			
+			$pv->set_aptgetable() if defined $pv;
+		}
+	}
+	close APTDUMP;
+}
+
 
 ### forget about all packages
 
@@ -336,10 +420,10 @@ sub scan_all {
 				}
 			}
 			
-			# If the index is not outdated, we can use it, and thus safe a lot of time
-			 if (not $db_outdated) {
-				$packages = Storable::retrieve("$basepath/var/db/fink.db");
-			 }
+			# If the index is not outdated, we can use it, and thus save a lot of time
+			if (not $db_outdated) {
+				$packages = Storable::lock_retrieve("$basepath/var/db/fink.db");
+			}
 		}
 	}
 	
@@ -421,6 +505,10 @@ sub update_db {
 		$dir = "$basepath/fink/dists/$tree/finkinfo";
 		Fink::Package->scan($dir);
 	}
+	if (Fink::Config::binary_requested()) {
+		Fink::Package->update_aptgetable();
+	}
+	
 	eval {
 		require Storable; 
 		if ($> == 0) {
@@ -456,17 +544,10 @@ sub scan {
 	@filelist = ();
 	$wanted =
 		sub {
-			if (-f and not /^[\.#]/ and /\.info$/) {
+			if (-f and not /^[\.\#]/ and /\.info$/) {
 				push @filelist, $File::Find::fullname;
 			}
 		};
-
-=pod
-
-    This line is a dumb hack to keep emacs paren balancing happy }
-
-=cut
-
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
 
 	foreach $filename (@filelist) {
@@ -535,15 +616,17 @@ sub setup_package_object {
 #	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
 
 
-	# store invariant portion of Package (for %n; %Vn is with variants)
+	# store invariant portion of Package
 	( $properties->{package_invariant} = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
 	if (exists $properties->{parent}) {
 		# get parent's Package for percent expansion
 		# (only splitoffs can use %N in Package)
 		$pkg_expand{'N'}  = $properties->{parent}->{package};
 		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
-		$properties->{package_invariant} = &expand_percent($properties->{package_invariant},\%pkg_expand, "$filename \"package\"");
 	}
+	# must always call expand_percent even if no Type or parent in
+	# order to make sure Maintainer doesn't have bad % constructs
+	$properties->{package_invariant} = &expand_percent($properties->{package_invariant},\%pkg_expand, "$filename \"package\"");
 
 	# must always call expand_percent even if no Type in order to make
 	# sure Maintainer doesn't have %type_*[] or other bad % constructs
@@ -595,7 +678,7 @@ file $filename, deal with the possibility that the whole thing is in a
 InfoN: block.
 
 If so, make sure this fink is new enough to understand this .info
-format (i.e., N<=max_info_level). If so, promote the fields of the
+format (i.e., NE<lt>=max_info_level). If so, promote the fields of the
 block up to the top level of %$properties and return a ref to this new
 hash. Also set a _info_level key to N.
 
@@ -638,5 +721,10 @@ sub handle_infon_block {
 	$new_properties->{infon} = $info_level;
 	return $new_properties;
 }
+
+
+=back
+
+=cut
 
 1;

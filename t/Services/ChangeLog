@@ -1,3 +1,39 @@
+2005-1-11  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: execute() may fork a process that needs
+	to find Services.pm, so make a copy of that file that is
+	guaranteed to be readable by "nobody".
+
+2005-1-5  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: delete expected tempfile.
+
+2004-12-30  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: rework a test to avoid using "touch" on
+	a dir.
+
+2004-12-30  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: OS X 10.2 (perl 5.6.0) portability fix:
+	use /usr/bin/mktemp instead of File::Temp.
+
+2004-12-30  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: Don't use Test tests for test-suite
+	prereqs. Fix tempdir sanity-check bail-out. More output-hiding
+	adjustments.
+
+2004-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: Specify /usr/bin/touch since binutils'
+	can't touch directories. Don't hide output of tests that should be
+	silent.
+
+2004-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: Majorly reworked for new execute().
+
 2004-12-22  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: Explicitly use correct perl interp

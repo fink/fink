@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -118,7 +118,7 @@ sub new_from_field {
 	my $self = {};
 	bless($self, $class);
 
-	$self->{name} = "Custom Mirror";
+	$self->{name} = "Custom (package-defined) servers";
 	$self->{package} = $package;
 
 	my ($key, $url);

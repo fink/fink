@@ -58,6 +58,7 @@ install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 install -c -p -m 644 fink.shlibs "$basepath/../DEBIAN/shlibs"
 
+# copy all perl modules
 for subdir in . Text ; do
   for file in perlmod/Fink/${subdir}/*.pm ; do
     if [ -f $file ]; then

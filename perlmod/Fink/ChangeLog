@@ -1,3 +1,1331 @@
+2005-01-31  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* VirtPackage.pm: Added Growl virtual pkg
+
+2005-01-31  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: No 64-bit-specific gcc* pkgs exist at this time.
+
+2005-01-31  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Warn for "Provides: foo (versiondata)"
+
+2005-01-31  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Implemented --recursive for fetch mode. Implemented
+	--dry-run in the engine (only available with fetch --recursive so
+	far). Improved pkgspec constants usage in real_install.
+
+2005-01-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm, Services.pm: Changed "growl" to notify.  This
+	  will be replaced with something more configurable post-0.24.
+
+2005-01-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* *.pm: Updated POD validation errors.
+
+2005-01-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Slightly rearrange order of functions, for clarity;
+	expand documentation of inject_package.
+
+2005-01-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Add documentation
+	
+2005-01-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Warn if %p/lib/charset.alias in .deb other than libgettextN.
+
+2005-01-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm, Package.pm, Engine.pm: Clean up aptdb (UseBinaryDist)
+	stuff:
+		- Normal usage of regexes, safe use of 'open', OO usage in
+		apt-cache parsing.
+		- Moved aptgetable status into regular fink DB.
+		- Fixed bug where fink would try to use apt-get to fetch a .deb when
+		the apt-cache info comes from dpkg status (not a real repo).
+		- Removed Package::is_in_apt and fixed all uses thereof.
+		- Make fink complain if two packages have the same fullname.
+
+2005-01-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fix conditional_pkg_list whitespace removal again.
+	* Services.pm: collapse_whitespace and pkglist2lol now remove
+	leading/trailing whitespace.
+
+2005-01-26  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make sure conditional_pkg_list always removes
+	leading/trailing whitespace.
+
+2005-01-25  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: gen_gcc_hash() now includes dpkg status, uses
+	%r=0 for absent pkg.
+
+2005-01-24  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Remove ncurses-dev from "important" (implied
+	dependency) list.
+
+2005-01-24  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Extract core of gcc* pkg data into new
+	gen_gcc_hash(). All expected gcc* pkgs now always exist in
+	pdb (marked "uninstalled" if not present).
+
+2005-01-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Extract core of cmd_fetch_all() and
+	cmd_fetch_all_missing() into a new do_fetch_all(), which uses
+	call_queue_*(). Fix spacing on parse_fetch_options() help. Reorder
+	some subs. Move BuildConflicts removal to after src/deb download.
+
+2005-01-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* VirtPackage.pm: Don't print messages when not in debug mode (they
+	will be seen every time apt/dpkg is run!). Eliminate repetition of
+	path to cc1plus.
+
+2005-01-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, Services.pm: Replace do_calls() with
+	call_queue_clear() and call_queue_add().
+
+2005-01-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Disallow bootstrapping with perl 5.8.4
+
+2005-01-22  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm:  Allow bootstrapping with perl 5.8.6 (maybe).
+
+2005-01-20  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: Un-quotemeta std URL chars that aren't shell metas.
+
+2005-01-20  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: quotemeta() Source values when used in shell cmd.
+
+2005-01-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: New do_calls() function processes a list of method
+	and function calls.
+	* Engine.pm: cmd_fetch, cmd_fetch_missing, and real_install now
+	use do_calls() to handle phase_fetch*() calls.
+
+2005-01-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: add new param to expand_percent() to reduce
+	unknown-% from die to warn+ignore or silent+ignore.
+	* PkgVersion.pm: param_expanded() silently ignores unknown %-exp.
+	* Engine.pm, PkgVersion.pm: allow unknown % in DescDetail and
+	DescUsage.
+
+2005-01-17  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Add "system-xfree86-manual-install" as a
+	(non-installed) catch-all for all of Apple X11*.pkg
+
+2005-01-17  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: (Re)introduce prompt_selection() with timeout; remove
+	timeout from prompt_selection_new().
+	* PkgVersion.pm: Fix error msg for buildlock failure.
+
+2005-01-16  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Add $timeout param to prompt() and prompt_selection_new().
+
+2005-01-14  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Re-add missing \n in get_description.
+
+2005-01-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, PkgVersion.pm: Do percent-expansion in DescDetail and DescUsage.
+
+2005-01-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Fixed handling of delete_tempfile flag for execute().
+
+2005-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change buildlock to always lock on parent pkg.
+
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Patch dumpinfo to display "b" if --use-binary and
+	.deb is downloadable (based on Patches #1062085).
+
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Put off variable assignments in loop until after
+	checking abort conditions.
+	* Package.pm: Add is_provided() method (Patches #1053414).
+	* Engine.pm: 'fink list' shows "p" for virtual that is installed;
+	'fink listpackages' says YES for provided pkgs (Patches #1053414).
+
+2005-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: rewrite execute() build_as_nobody to use recursive
+	wrapper (cuts down on system.log polution and fixes pipelines).
+	
+2005-01-06  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Configure.pm: Add conf_file_compat_version constant to indicate the 
+	  current compatibility version of the fink.conf file.
+	  Set the ConfFileCompatVersion to that value during configure.
+
+2005-01-05  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fixed processing of execute() return-code.
+
+2005-01-05  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Try not to leave partially-installed buildlock pkg.
+
+2005-01-05  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Do 'apt-get update' *before* rebuilding aptdb.
+
+2005-01-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Added a delete_tempfile flag for execute().
+
+2005-01-05  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* PkgVersion.pm: Change wording for failed 'fink remove'.
+
+2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2004-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Don't crash validator when given unknown filetypes.
+
+2004-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: rewrote execute() to use sudo to drop to user="nobody"
+
+2004-12-27  Chris Zubrzycki <beren12@users.sf.net>
+
+	* PkgVersion.pm: Better description for removing stuck build locks
+
+2004-12-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Fixed prepare_script() removal of blank lines from
+	middle of $script. Removed no-longer-needed hack from execute().
+
+2004-12-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: prepare_script() may be leaking blank lines, so
+	skip them in execute()'s execution loop.
+
+2004-12-21  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Services.pm: Replace execute_nonroot_okay()
+	wrapper around execute() with an %options flag to execute().
+
+2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: fix error which prevented &enforce_gcc from working
+	properly on 10.2.
+	* Configure.pm: existing users who run "fink configure" get a default
+	answer of "no" for the UseBinaryDist question.
+
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: unify execute() and execute_script() into execute().
+	Scrap execute_script_nonroot_okay().
+	* PkgVersion.pm: Adjust run_script() for new execute().
+
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Warn is pkgname field of shlibs looks like a
+	version-number.
+
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Add import for POSIX functions. Move parsing of
+	scripts from execute_script() into new prepare_script() function.
+
+2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: recognize 10.3.7
+
+2004-12-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm, PkgVersion.pm, Services.pm: Move the code which
+	verifies that the gcc version is correct to a new &enforce_gcc
+	function in Services.pm.  Make sure that this function does what
+	we want it to do for future versions of OS X.
+
+2004-12-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Change execute*() to take option=>value hash of
+	options instead of parameter-ordered values. Only option is
+	'quiet'.
+	* Engine.pm: Convert to new Services::execute*() API.
+
+2004-12-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Configure.pm: Verbose=1 *is* desired default.
+
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Default to Verbose=3.
+
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Configure.pm: New Verbose=4 setting.
+	* Configure.pm: Default to Verbose=3 (sync with fink.conf manpage).
+	* Validation.pm: Require Verbose>3 to do pedantic Description checks.
+	
+2004-12-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm, Engine.pm, Package.pm PkgVersion.pm, SelfUpdate.pm: 
+	Refactor 'UseBinaryDist' to use a new binary_requested function
+	which takes into account the per-package -b and -c flags as well
+	as the global UseBinaryDist option.
+	* Bootstrap.pm: Disable 'UseBinaryDist' during bootstrap
+	* Configure.pm: Set 'UseBinaryDist' to be false if we are not 
+	installed in /sw
+
+2004-12-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Also catch libtool files pointing to %i and %I
+
+2004-12-03  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix 'entries that end in "/"' msg.
+	Fix regex in libtool %b test.
+
+2004-12-03  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Remove test for Depends:pkgconfig when
+	lib/pkgconfig files exist.
+
+2004-12-02  Rob Braun <bbraun@opendarwin.org>
+
+	* Engine.pm: Make 'fetch' support the same arguments as 'fetch-all'.
+
+2004-11-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fixed &execute() result-code handling when
+	--build-as-nobody reverts %i ownership to root.
+
+2004-11-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Implement execute_nonroot_okay and
+	execute_script_nonroot_okay as wrappers that obey fink's
+	--build-as-nobody flag.
+	* PkgVersion.pm: New fourth argument to run_script(): boolean
+	whether okay to run as non-root.
+	* PkgVersion.pm: --build-as-nobody causes unnpack, patch, compile,
+	and install phases to run as user nobody, then install dir is
+	chowned back to root before setting up .deb,
+	* Engine.pm: Big fat warning if using --build-as-nobody.
+
+2004-11-24  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Do not include "$epoch:" in buildlock pkgname.
+
+2004-11-24  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Remove timestamp from buildlock pkgname; use
+	lockpkg's dpkg preinst scripts to prevent concurrent builds.
+
+2004-11-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: fixed .la check to look for %b/%N not %b/%n
+
+2004-11-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Allow .deb to have files in %p/Applications
+
+2004-11-22  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Validation.pm: Check for overwritten system symlinks (e.g. /var).
+
+2004-11-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check for .la files that point to their build dir.
+
+2004-11-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Refactor .info validation to consolidate
+	parent/splitoff common checks.
+
+2004-11-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: nicer formatting for growl
+
+2004-11-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Error if dpkg install-time scripts use %i
+
+2004-11-19  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Validation.pm: Check all fields for non-ascii characters.
+
+2004-11-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use uname(0) instead of hardcoding kernel=darwin
+	when setting Depends for the kernel pkg.
+	* VirtPackage.pm: Use uname(0) instead of hardcoding kernel=darwin
+	for kernel pkg, and have this pkg Provides:kernel
+
+2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add support for --version in fink-virtual-pkgs
+
+2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Fixed some annoyances in growl notification
+	and AppBundles: handling
+
+2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Make the failure message more friendly
+
+2004-11-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Apparently gcc4 is *not* binary-compat with
+	gcc3.3, even though it's supposed to be.  At least, not right
+	now.  :(
+
+2004-11-16  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use Config option no_buildlock to skip build-locking
+	* Bootstrap.pm: no_buildlock during phase 3
+
+2004-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: disable UseBinaryDist during bootstrap
+	
+2004-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Config.pm, PkgVersion.pm, Services.pm: Added some hooks to
+	allow using bits of the Fink framework with external scripts on
+	Linux.
+
+2004-11-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, PkgVersion.pm: Implemented build-time locking
+	of dependencies via fink-buildlock-* packages.
+
+2004-11-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Simplify %type test for main, correct it for
+	SplitOffs; implement dpkg install-time script interpretter check
+	for SplitOffs.
+
+2004-11-14  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: Fix my fix to regex.
+
+2004-11-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Error if %type_ *anywhere* but not InfoN>=2.
+
+2004-11-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, CLI.pm: More comprehensive trapping of SIGINT.
+	* NetAccess.pm, Package.pm, Services.pm, Validation.pm: Use \#
+	instead of # and \Z instead of $ in some regex to make emacs paren
+	balancer happy.
+
+2004-11-12  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Refactored gathering of user input. All prompt_*() now
+	hand off to new get_input() (semi-revival from Services.pm from
+	before CLI/Services split), which propagate control-C and other
+	exceptions correctly during blocking and non-blocking input.
+
+2004-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* SelfUpdate.pm: Don't automatically update gettext-bin
+	
+2004-11-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Mirror.pm: Re-reworded menu b/c must match /^Custom/
+	* CLI.pm: During blocking user input, propagate control-C as die()
+
+2004-11-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Mirror.pm: Clarified menu wording for CustomMirror set.
+
+2004-11-07  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm: We work with 10.3.6.
+
+2004-11-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Corrected regex in dpkg install-time script
+	interpretter check.
+
+2004-11-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Complain about writing (Pre|Post)(Inst|Rm)Script
+	with explicit #! call. Use \Z instead of $ so can remove emacs
+	paren balancing hack.
+
+2004-11-04  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Engine.pm: Add a '--recursive' option to the remove and purge commands,
+	  which makes fink use 'apt-get remove'.
+	* PkgVersion.pm: Added two new phases: 'phase_deactivate_recursive'
+	  and 'phase_purge_recursive'.
+
+2004-11-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: run SplitForks on AppBundles
+
+2004-11-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Bootstrap.pm, PkgVersion.pm: make gcc 4.0 count as gcc 3.3
+
+2004-11-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: make the AppBundles: stuff be smarter about
+	linking things around in a way that people can move them
+
+2004-10-29  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm, Validation.pm: Implemented AppBundles:
+	which does essentially what JarFiles does, copies an application
+	bundle to a known directory (%p/Applications)
+
+2004-10-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Services.pm, PkgVersion.pm: support for growl notifications if
+	Mac::Growl is available.
+
+2004-10-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Use named constants for fink list/apropos option bits.
+
+2004-10-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Fixed ignoring of null OR clusters in lol2pkglist.
+
+2004-10-19  David Höhn <dmalloc@users.sourceforge.net>
+
+	* Configure.pm: Use print_breaking for the extremely long
+	prompt that used to be the proxy configure prompt. This is more
+	readable and looks better.
+
+
+2004-10-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: lol2pkglist code cleanup.
+
+2004-10-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: Fix bug in code for broken gcc warning; also, add pause
+	after warning.
+	
+2004-10-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Implemented pkglist2lol and lol2pkglist, to convert
+	Depends-like fields between Debian string and a list-of-lists of
+	pkgname atoms.
+	* PkgVersion.pm: Convert conditional_pkg_list to use the new
+	Services functions. Fix check for Depends:darwin to allow pkgnames
+	to contain "darwin". Optimize BDO violation check.
+
+2004-10-15  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: conditional_pkg_list: Fix parsing so no extra whitespace.
+
+2004-10-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: Warn users with the broken gcc, whenever they compile
+	something.
+	
+2004-10-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Add the broken-gcc package, currently detects
+	XCode 1.5 build 1666.
+
+2004-10-14  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Engine.pm: Introduce new column in the commands matrix indicating if
+	  a command needs apt-get or apt-get with the --ignore-breakage option
+	  if the UseBinaryDist option is enabled. This requirement is then 
+	  checked before the command is executed. 
+	  Also use full path to call apt-get and apt-cache.
+	* Package.pm: Use full path to call apt-get.
+	* PkgVersion.pm, SelfUpdate.pm: Remove obsolete tests for apt-get. 
+	  Use the full path to apt-get.
+
+2004-10-12  David Höhn <dmalloc@users.sourceforge.net>
+
+	* Configure.pm: Chnage the prompt for proxy selection slightly.
+			Some clean up of phrases. I thinkt his prompt is
+			too long, we can easily revert if, should people
+			dislike it.
+
+2004-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Obey flock when reading db files via Storable
+
+2004-10-12  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Engine.pm: Implement 'UseBinaryDist' option that causes fink 
+	to download pre-compiled binary packages from the binary distro if
+	available and the deb is not yet on the system. The cleanup cmd will
+	also call 'apt-get autoclean' if the 'UseBinaryDist' option is enabled.
+	* Package.pm: add is_in_apt sub to find a specific package in aptdb.
+	Add update_aptdb sub to update the apt-get db file which is called 
+	from	update_db
+	* PkgVersion.pm: Add is_aptgetable sub that checks if a package is
+	available via apt-get. find_debfile now also finds debs in 
+	'$basepath/var/cache/apt/archives/' if the 'UseBinaryDist' option
+	is enabled. Add subs 'phase_fetch_deb' and 'fetch_deb' to fetch the 
+	debs from the binary distro. This uses the '--ignore-breakage' option
+	of apt-get added in apt >= 0.5.4-51 (or >= 0.5.4-41 for 10.2-gcc3.3)
+	* SelfUpdate.pm: Call 'apt-get update' during finish if the 
+	'UseBinaryDist' option is enabled. 
+	* Configure.pm: Add configuration for 'UseBinaryDist'.
+	* Services.pm: Add new sub 'count_files' to count files in a directory.
+	Used in Engine.pm to count how many files were deleted during cleanup.
+	Don't output the cmd in execute if quite is set to 1.
+	(Patches: #1037296)
+
+2004-10-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check ConfigureParams for hardcoded /sw.
+
+2004-10-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: show-deps: Conflicts are *not* considered BuildConflicts.
+	* PkgVersion.pm: resolve_depends(): Documented parameters and most
+	internal variables. Improved ordering of variable declarations.
+
+2004-09-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Implemented 'fink show-deps' (cmd_show_deps() and
+	show_deps_print_pkglist()).
+
+2004-09-27 Chris Zubrzycki <beren12@users.sourceforge.net> 
+
+	* Engine.pm: Implemented --keep-src for fink cleanup.
+
+2004-09-23  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Implemented Type:bundle and Type:dummy support in
+	get_script. Adjusted phase_install to use get_script even for Type:bundle.
+
+2004-09-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Documented all of the tests, did a little
+	rearranging to facilitate a sensible order in the docs, and
+	added system-java-dev.
+
+2004-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: fix regex for Package and Version to prohibit commas
+	(Patches #1010229)
+
+2004-09-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion,pm, Validation.pm: Add deprecated-feature warning for
+	implicit Source to indexing loop and validator.
+
+2004-09-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: remove extraneous quotes in read_properties_lines err msg.
+
+2004-09-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Handle xorg in system-xfree86 checks.
+
+2004-09-09  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: only set cctools_single_module version if it exists.
+
+2004-09-06  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm, VirtPackage.pm: Some tweaks to the way
+	system-java and $JAVA_HOME work.
+
+2004-08-31  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Do not save raw SplitOffN in parent pkg.
+
+2004-08-22  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm, Engine.pm: remove refs to non-existent function.
+	* Engine.pm: fix passing of help_list_apropos callback.
+	* PkgVersion.pm: fix phase_fetch on splitoff to download parent.
+
+2004-08-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Extract list/apropos help into separate function.
+	Pass $cmd through fetch-* to make help cmd-specific.
+
+2004-08-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: sync helpscreen and Getopt flag names.
+
+2004-08-19  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Fix Tree matching (revert r1.67->1.68 in part).
+
+2004-08-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Typo in is_fetched() for Type:bundle.
+
+2004-08-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, PkgVersion.pm: Fixed %-expansion on Files.
+
+2004-08-16  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Unify get_*script() into new get_script().
+	* Engine.pm: update dumpinfo for new get_script().
+
+2004-08-15  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Implement conditionals for Files field.
+	conditional_space_list: trim leading/trailing whitespace in return
+	value.
+	* Engine.pm: update dumpinfo for new conditionalized Files.
+
+2004-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: support for newer (and 64-bit)  versions of gcc
+
+2004-08-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Remove 'fink checksums'.
+
+2004-08-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Recognize darwin 7.5.0.
+
+2004-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: disable caching for get_env if in bootstrapping mode.
+
+2004-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: catch "%p\/src\/" also, not just "%p/src/".
+
+2004-08-08  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Rename parse_configureparams() to prepare_percent_c()
+	and: no longer consider %c cacheable and re-protect % in %c.
+	* Engine.pm: fixes for prepare_percent_c().
+
+2004-08-08  Max Horn <max@quendi.de>
+
+	* Engine.pm: Fix list command with regards to virtual packages.
+
+2004-08-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm: correct the regex for parsing Trees in write_sources_list
+
+2004-08-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: cleaner form of the existing code for detecting
+	the cctools version that doesn't use `strip`  =)
+
+2004-08-03  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: merge from cond_config_params: Activate
+	conditionals in ConfigureParams.
+	* Text/DelimMatch.pm: merge from cond_config_params: import
+	Text::DelimMatch-1.06 from CPAN into Fink:: package namespace.
+
+2004-08-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: eval_conditional: do not proceed if bad syntax
+
+2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: more modularization, to allow inject.pl in 10.3 
+	directory to call some modules; eliminate local/bootstrap; injected 
+	packages now go into local/injected
+	* Config.pm: new function write_sources_list which writes an 
+	appropriate file $basepath/etc/apt/sources.list .  (Called 
+	automatically by $config->save().); move the hook to old pre-10.2 
+	debs from postinstall script to Config.pm; allow local modifications 
+	at both the top and bottom of the sources.list file, and preserve 
+	them when the file is re-generated
+	* FinkVersion.pm.in: the VERSION file and the stamp-* files will 
+	now live in /sw/fink/dists, not /sw/fink
+	* SelfUpdate.pm: manipulate stamp-* files in new location; rsync must 
+	include DISTRIBUTION and README files; change the VERSION when
+	rsyncing to reflect rsync; store the website and cvs-repository 
+	addresses in /sw/lib/fink/URL via the fink-mirrors package, and use
+	the addresses stored there rather than hard-wired ones
+	
+2004-07-29  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: switch to perl5.6.x-safe use of constants.
+	* Validation.pm: consolidate system calls for reading .deb fields.
+
+2004-07-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Parse .deb control early; make data available in
+	$deb_control. For scrollkeeper-update check: make sure it's called
+	by *both* control scripts; remove circular dependency requirement
+	for scrollkeeper.deb.
+
+2004-07-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: handle newer cctools that don't contain the
+	cctools version in the "what" information anymore
+
+2004-07-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: For .deb, check scrollkeeper-update usage: must
+	be run by .deb control scripts (Post{Inst,Rm}), not in pkg build
+	phase; needs Depends:scrollkeeper
+
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: fixes to my allowed-dirs changes.
+
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Add --prefix to 'fink validate'.
+	* Validation.pm: Allow user-speficied alternate prefix (%p other
+	than $config->basepath). Added error checking when reading .info
+	and .patch.
+
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check that files are in allowed dirs of .deb,
+	not just not-in disallowed dirs.
+
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Move @bad_dirs check early so don't miss things
+	that get special handling (but not validation) by other matches.
+	Replace @bad_dirs explicit loop with grep {}.
+
+2004-07-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: _Un_restrict use of %a to PatchScript.
+
+2004-07-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Run CompileScript (if one is explicitly defined)
+	for dummy packages instead of just crashing.
+	* VirtPackage.pm: Add CompileScript field: crash with with error
+	message explaining to RTFDescDetail.
+
+2004-07-18  Max Horn <max@quendi.de>
+
+	* Configure.pm: Fix default value for the master mirror configure option.
+
+2004-07-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change get_tarball to return undef (instead of
+	"none") if no such suffix. Fix get_checksum to really return undef
+	if field not in .info.
+	
+2004-07-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Restrict use of %a to PatchScript.
+
+2004-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: make sure a minimum of java versions are filled
+	in so we don't get warnings.
+
+2004-07-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm, Services.pm, Status.pm, VirtPackage.pm: import
+	branch:virt_always_exists: virtual packages of non-installed
+	things now appear as "uninstalled" rather than not even existing.
+
+	* VirtPackage.pm (dmacks): Replaced dpkg "status" strings with
+	constants.  Changed query_package to respect "status" (parallel to
+	that method in Status.pm) instead of assuming presence of package
+	entry is equivalent to it being installed.
+	* PkgVersion.pm (rangerrick): Check whether VirtPackage's return
+	value is undefined, since "0" is a true version, undefined is a
+	non- existent one.
+	* Services.pm (rangerrick): Treat undefined values passed to a
+	version compare as a false value.
+	* Status.pm (rangerrick): Simplify status checking.
+	* VirtPackage.pm (rangerrick): Change all virtuals to exist even
+	if they're not installed, with status "purge ok not-installed".
+
+2004-07-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add some jdbc stuff to the provides
+
+2004-07-14  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: get_source_suffices now omits suffices for which
+	value=none.
+	* Engine.pm: fix dumpinfo for new get_source_suffices behavior.
+
+2004-07-14  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change get_checksum to return undef (instead of
+	"-") if MD5 for requested suffix is not defined.
+	* Services.pm: Make file_MD5_checksum die if checksum pipe
+	output could not be parsed.
+	* NetAccess.pm: fetch_url_to_file now takes undef instead of "-"
+	as $checksum arg meaning "do not check".
+	* Engine.pm, PkgVersion.pm: Changes for new get_checksum behavior.
+
+2004-07-12  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: convert set_env (which alters ENV) to get_env
+	(which just returns what env should be); fix run_script	accordingly.
+	* Engine.pm: dumpinfo: add 'env' pseudo-field.
+
+2004-07-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: set_env: simplify handling of NoSetENVVAR and
+	SetENVVAR; implement caching of results; factor out path (string
+	constant) for Type:java.
+
+2004-07-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: system-java
+	* PkgVersion.pm: support for Type: java
+
+2004-07-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Allow bootstrapping with perl 5.8.2 and perl 5.8.4.
+	
+2004-07-02  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Remove redundant variable usage. Replace regex-
+	match with string-equality to prevent accidental substring matches.
+
+2004-06-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Just a little rearranging to make things easier.
+
+2004-06-29  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Mention which SourceN failed if missing SourceN-MD5.
+
+2004-06-28  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: Add checksum argument to fetch_url_to_file; if it
+	doesn't match, consider download a failure and continue through
+	mirror list.
+	* PkgVersion.pm: Pass $checksum to fetch_url_to_file in phase_fetch.
+	
+2004-06-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Move PatchScript processing into new get_patchscript
+	method and enable %default_script (which is blank) in that field.
+	* Engine.pm: Use new get_patchscript accessor for dumpinfo.
+	
+2004-06-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Base.pm: param_boolean now returns undef if field is not present.
+	* Engine.pm, PkgVersion.pm: update to use new tristate param_boolean.
+
+2004-06-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Stop ccache from making root-owned files in
+	$HOME/.ccache/ of user running fink.
+
+2004-06-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Slurp .deb contents first instead of checking
+	line-by-line. Verify presence and execute-flag on daemonicfile
+	executable and dependency on daemonic.
+
+2004-06-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check for hardcoded /sw in DaemonicFile.
+
+2004-06-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Very strict check of Shlibs formatting.
+
+2004-06-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: If have %type_*[*] in Package, error if not InfoN>=2.
+
+2004-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm, Validation.pm: One more tweak to BuildDependsOnly:
+	we now write out the value "Undefined" to the .deb if it wasn't
+	defined in the .info, and test for that value when deciding whether
+	or not to warn.
+
+2004-06-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Use new accessors for CompileScript and InstallScript.
+	* PkgVersion.pm: Added parameter to run_script to control whether
+	%-expansion should be performed. Moved parsing of CompileScript
+	and InstallScript (including defaults) into new get_compilescript
+	and get_installscript accessors. Added support for %default_script
+	in these fields.
+
+2004-06-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Check that BuildDependsOnly is a boolean field.
+	* Validation.pm: Fix the validation check for boolean fields.
+
+2004-06-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: When writing the contents of the BuildDependsOnly
+	field into the .deb file, only write the contents if the field
+	exists.
+	* Validation.pm: Warn if headers are present (as well as a dylib) 
+	but BuildDependsOnly is not set to any value.
+
+2004-06-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Disable Shlibs format check, and all Shlibs
+	checks if not in single-pkg format).
+
+2004-06-20  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm Make "NoSetLD_PREBIND:false" not disable prebinding.
+	* Validation.pm: Warn if have pkg-config files but not depend on
+	pkgconfig package. In .info SplitOff sections, note all problems,
+	not just first. Check formatting of Shlibs field.
+	
+2004-06-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Modify regex so that xemacs-base, xemacs-efs
+	and xemacs-sumo are allowed to install .elc files.
+
+2004-06-17  Dainel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Add final newline to generated daemonic .xml file.
+
+2004-06-17  Dainel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Made 'dumpinfo -fdaemonicfile' use multiline format.
+
+2004-06-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: If BuildDependsOnly is not true, allow the directory
+	/sw/include/ or any subdirectory of it, but do not allow *files*
+	within that directory.
+
+2004-06-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Don't warn when the xfree86 package installs files
+	outside /sw, as long as it installs them in the right place.
+	Also, fixed the regex which lets (x)emacs install .elc files without
+	the warning.
+
+2004-06-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Recognize darwin 7.4.0.
+
+2004-06-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: When extracting tarballs, the optional flags
+	which cause permissions and ownership not to be preserved
+	should not be invoked during bootstrap (because the Apple-supplied 
+	gnutar is too old to know about these flags, in 10.2 and earlier).
+
+2004-06-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm, Validation,pm: Write the contents of the
+	BuildDependsOnly field into the .deb file, and when validating a 
+	.deb, verify that BuildDependsOnly is true whenever things are
+	installed into /sw/include.
+
+2004-05-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: don't print fields that don't apply to
+	splitoffs for splitoff pkgs.
+	* PkgVersion.pm: get_source: no default Source for splitoff
+	pkgs. get_source_suffices: no sources for splitoff pkgs.
+
+2004-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVerison.pm: get_source_suffices: Ignore SourceN for Type "bundle", "nosource", "dummy".
+
+2004-05-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VirtPackage.pm:  adjust the Provides in the system-perl packages
+
+2004-05-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: Fixed rm_f to not return failure for non-existent	files.
+	Made _expand omit globs that match nothing, undefs, and blanks.
+
+2004-05-13  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Command.pm: Fix Failed: can't symlink package due to perl's -e
+	returning false if a file is a dangling symlink. Thanks to Ben Hines.
+	
+2004-05-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Fixed problem where any commented-out line ending
+	with "<<" in a heredoc was treated as the beginning of a nested
+	heredoc.
+
+2004-05-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: overhauled Source(N) <-> *(N)* correspondence checks.
+
+2004-05-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: status, allversions: note if binary avail.
+
+2004-05-04  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fixed bug in Depends processing where packages
+	with version requirements could get dropped if field had conditionals.
+
+2004-05-03  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: status: add "have-deb", allversions: add
+	"b" if .deb file is present.
+
+2004-05-03  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: fixed display of SourceN in all-fields
+	mode, fixed display of -f sources, added "status" mode (is latest?
+	is installed?), added "allversions" mode (list all versions and
+	whether installed), all typically multiline fields always
+	displayed multiline and indented 1 additional space, all typically
+	single-line fields always displayed in-line, documented
+	pseudofields.
+	* Services.pm: version_cmp: added "<=>" op, added warning for
+	unknown op. Implemented sort_versions.
+
+2004-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VirtPackage.pm: add Provides to system-perl packages >= 5.8.0
+
+2004-04-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: corrected printing of Desc* fields and
+	of splitoffs for SplitOff packages, improved handling of -p keys,
+	better error message for %-expansion.
+	
+2004-04-26  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Grr...committed wrong file. Fixing...
+
+2004-04-26  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Pushed processing of ConfigureParams (including
+	Type-specific default and setting %c expansion) into a new
+	parse_configureparams() method. Disabled ConfigureParams
+	conditionals processing. Removed processing of ConfigureParams out
+	of indexing loop; now call parse_configureparams at the start of
+	phases where %c might conceivably be used (patch/compile/install).
+	* Engine.pm: Updated cmd_dumpinfo in accordance with new
+	PkgVersion::*_configureparams(). Allow optional leading % in
+	dumpinfo -p values.
+
+2004-04-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: New 'dumpinfo' is live (--all, --field, --percent).
+	Switched back to using Getopt.
+	* CLI,pm: Removed parse_cmd_options b/c it was very slow. Removed
+	print_optionlist since it is no longer used.
+
+2004-04-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: New flags for 'fink dumpinfo' (not live yet),
+	implemented using parse_cmd_options instead of Getopt (and simple
+	print for help).
+
+2004-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: .deb/control Source field corrected to contain
+	parent pkg (if there is one) instead of always same as pkg itself.
+	See fink-devel "Source field in var/lib/dpkg/available" April 2004
+
+2004-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Services.pm: Move eval_conditional() from an
+	instance method in PkgVersion to a package function in Services.
+
+2004-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Move actual logical evaluation of conditional
+	expression (Depends, etc.) into its own eval_conditional() method.
+	Implemented get_configureparams() accessor, and enabled
+	conditional syntax (same as Depends, etc.). Moved definition of %c
+	in _expand later b/c need _expand (at least %type_*[]) for
+	get_configureparams() conditionals.
+	
+2004-04-19  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Use actual screen width in print_breaking(), not
+	hardcoded value. Extract option/desc 2-column printing from
+	parse_cmd_options() into new print_optionlist(). Display flag
+	value type (or optional specified string) in parse_cmd_options().
+	Remove stray debugging.
+
+2004-04-19  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Implement new parse_cmd_options() to process 'fink'
+	subcommand options (handles --help including pretty-printing).
+
+2004-04-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: All Type are now converted to all-lowercase. Make
+	sure Type has been parsed into _type_hash during is_type() and
+	get_subtype() calls.
+	* Engine.pm: Simplified initial command routing.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
+	Engine.pm: dumpinfo improvements: list parent or splitoff
+	packages, indicate which fields are from parent, both parent and
+	splitoff InstallScript are displayed, only print field names if
+	field is present.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: Drop any leading / in Source:mirror: pathname.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Added relevant FAQ entry as Homepage for gcc2
+	and the system-* packages.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Perform %-expansion on Description (during indexing).
+	* Validation.pm: When constructing allowed .info filenames, clear out
+	strings of multiple hyphens or hyphens at the end. Also resolve some
+	some "use of uninitialized value" warnings when certain fields are
+	missing from the .info.
+
+2004-04-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Fix dumpinfo so when run on a SplitOff package it
+	gives the parent's fields for fields that don't make sense to have
+	in a SplitOff.
+
+2004-04-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Remembered to handle %ni and %Ni in $expand map.
+
+2004-04-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fixed parsing of .info that do not have a Type field.
+
+2004-04-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Correctly expand %type_ for single-subtype
+	types. For all multi-subtype types, use the single subtype ".".
+
+2004-04-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: fix dumpinfo to give Source(N) field, not (renamed) tarball filename.
+
+2004-04-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Implemented 'fink dumpinfo'
+
+2004-03-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: Recognize darwin 7.3.0.
+
+2004-03-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Be careful about permissions when creating directories
+
+2004-03-28  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: When extracting tarballs, do not preserve
+	permissions or ownership.
+
+2004-03-26  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: handle SplitOff(N) in numerical order.
+
+2004-03-23  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: %ni and %Ni instead of %in and %IN.
+
+2004-03-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: always expand_percent invariant portion of Package.
+	* PkgVersion.pm: %in is invariant portion of Package, %IN is
+	invariant portion of parent Package; %n reverted to whole Package.
+
+2004-03-23  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: get_custom_mirror() now takes $suffix param.
+
+2004-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Allow non-consecutive SourceN (and related
+	fields). Renamed get_param_with_expansion => param_expanded to
+	fit naming convention, and added param_default_expanded.
+	Distinguishing between SourceN fields is now done by suffix,
+	using get_source_suffices().
+	* Engine.pm: Modified to use suffix-indexed SourceN.
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Forgot to include SplitOff (i.e., N=[null]).
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fixed regex error in params_matching for SplitOffN.
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: %p/src isn't reliable (FetchAltDir and Buildpath
+	in fink.conf), so warn if it's used.
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Prohibit SourceN:none (Source:none still okay).
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Hacks to keep emacs paren balancing from getting
+	confused. Changed regex match m#pattern# to /pattern/ so it
+	doesn't look like a comment, and added POD line containing a dummy
+	closing ")" where a pattern had $) which looks like a variable.
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: improve regex to find SplitOffN fields
+	* Validation.pm: For *N* fields, improve checking of N to allow
+	any number of digits but no N=1 or leading zeros. Consolidate
+	Source* vs. Source*-MD5 correspondence checks (all Validation.pm
+	and PkgVersion.pm from or based on Comments in Patches #913842)
+	* Services.pm: check for `uname` in /bin if not in /usr/bin
+	
+2004-03-16  Ben Hines <benh57@users.sourceforge.net>
+
+	* PkgVersion.pm: Add get_filename to get the info file name (used by FinkCommander)
+
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Change from pathsetup.command to pathsetup.sh
+
+2004-03-16  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Command.pm, PkgVersion.pm: New &du_sk replacement for 'du -sk'.
+	This changes the meaning of Installed-Size in .deb's from bytes to
+	KB, in accordance with Debian policy. Apt and dpkg should now
+	understand it correctly.
+
+2004-03-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm:  it's now OK to install files directly into
+	/sw/share/emacs/site-lisp, so we no longer check for this
+
 2004-03-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Only display the warnings about BuildDependsOnly
@@ -145,7 +1473,7 @@
 	use Fink::Command calls instead of system() or &execute whenever
 	possible (based on 841381).
 
-2004-02-24  David HÃ¶hn  <dmalloc@users.sourceforge.net>
+2004-02-24  David Höhn  <dmalloc@users.sourceforge.net>
 
 	* SelfUpdate.pm: changed the rsync command to
 	explicitly preserve the timestamps using -t
@@ -441,7 +1769,7 @@
 
 2004-01-01  Remi Mommsen  <remigius.mommsen@cern.ch>
 
-	* PkgVersion.pm: Added two methods to access lists of sources and
+	* PkgVersion.pm: Added two methods to access lists of sources and 
 	tarballs used by given package
 
 2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
@@ -464,12 +1792,12 @@
 	
 2003-12-28  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVersion.pm: Type:splitoff is redundant: switch to checkiing
+	* PkgVersion.pm: Type:splitoff is redundant: switch to checking
 	for presence of parent link. Now okay to use Type in splitoffs
 	(else inherits from parent). Added Type:none to clear.
 	* Validation.pm: Allow Type:none. Allow Type and UpdatePOD in
 	splitoffs.
-
+	
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm: *don't* export "read_properties_lines".
@@ -620,7 +1948,7 @@
 
 2003-12-10  Justin F. Hallett  <thesin@users.sourceforge.net>
 
-	* Engine.pm: Fixed a problem in the dep engine where if a dep was 
+	* Engine.pm: Fixed a problem in the dep engine where if a dep was
 	installed but it's deb file was missing, fink would fail.
 
 2003-12-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
@@ -809,7 +2137,7 @@
 	vs. logically true). Changed it back.
 
 2003-11-20  Michael G Schwern <schwern@pobox.com>
-		
+
 	* FinkVersion.pm.in: Removing hard coded @BASEPATH@.  Using Fink::Config
 	instead.
 

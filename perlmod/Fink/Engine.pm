@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2004 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,14 +23,15 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&latest_version &execute &file_MD5_checksum &get_arch);
+use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent &count_files &call_queue_clear &call_queue_add);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
 use Fink::Package;
 use Fink::Shlibs;
 use Fink::PkgVersion;
-use Fink::Config qw($config $basepath $debarch);
+use Fink::Config qw($config $basepath $debarch binary_requested);
 use File::Find;
 use Fink::Status;
+use Fink::Command qw(mkdir_p);
 
 use strict;
 use warnings;
@@ -47,52 +48,55 @@ BEGIN {
 our @EXPORT_OK;
 
 # The list of commands. Maps command names to a list containing
-# a function reference, and two flags. The first flag indicates
+# a function reference, and three flags. The first flag indicates
 # whether this command requires the package descriptions to be
-# read, the second flag whether root permissions are needed.
+# read, the second flag whether root permissions are needed the
+# third flag whether apt-get might be called if the UseBinaryDist
+# option is enabled. 1, if apt-get is called without the 
+# '--ignore-breakage' option, 2, if it is called with '--ignore-breakage'
 our %commands =
-	( 'index' => [\&cmd_index, 0, 1],
-	  'rescan' => [\&cmd_rescan, 0, 0],
-	  'configure' => [\&cmd_configure, 0, 1],
-	  'bootstrap' => [\&cmd_bootstrap, 0, 1],
-	  'fetch' => [\&cmd_fetch, 1, 1],
-	  'fetch-all' => [\&cmd_fetch_all, 1, 1],
-	  'fetch-missing' => [\&cmd_fetch_all_missing, 1, 1],
-	  'build' => [\&cmd_build, 1, 1],
-	  'rebuild' => [\&cmd_rebuild, 1, 1],
-	  'install' => [\&cmd_install, 1, 1],
-	  'reinstall' => [\&cmd_reinstall, 1, 1],
-	  'update' => [\&cmd_install, 1, 1],
-	  'update-all' => [\&cmd_update_all, 1, 1],
-	  'enable' => [\&cmd_install, 1, 1],
-	  'activate' => [\&cmd_install, 1, 1],
-	  'use' => [\&cmd_install, 1, 1],
-	  'disable' => [\&cmd_remove, 1, 1],
-	  'deactivate' => [\&cmd_remove, 1, 1],
-	  'unuse' => [\&cmd_remove, 1, 1],
-	  'remove' => [\&cmd_remove, 1, 1],
-	  'delete' => [\&cmd_remove, 1, 1],
-	  'purge' => [\&cmd_purge, 1, 1],
-	  'apropos' => [\&cmd_apropos, 0, 0],
-	  'describe' => [\&cmd_description, 1, 0],
-	  'description' => [\&cmd_description, 1, 0],
-	  'desc' => [\&cmd_description, 1, 0],
-	  'info' => [\&cmd_description, 1, 0],
-	  'scanpackages' => [\&cmd_scanpackages, 1, 1],
-	  'list' => [\&cmd_list, 0, 0],
-	  'listpackages' => [\&cmd_listpackages, 1, 0],
-	  'selfupdate' => [\&cmd_selfupdate, 0, 1],
-	  'selfupdate-cvs' => [\&cmd_selfupdate_cvs, 0, 1],
-	  'selfupdate-rsync' => [\&cmd_selfupdate_rsync, 0, 1],
-	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
-	  'validate' => [\&cmd_validate, 0, 0],
-	  'check' => [\&cmd_validate, 0, 0],
-	  'checksums' => [\&cmd_checksums, 1, 0],
-	  'cleanup' => [\&cmd_cleanup, 1, 1],
-	  'depends' => [\&cmd_depends, 1, 0],
-	  'splitoffs' => [\&cmd_splitoffs, 1, 0],
-	  'splits' => [\&cmd_splitoffs, 1, 0],
-	  'showparent' => [\&cmd_showparent, 1, 0],
+	( 'index'             => [\&cmd_index,             0, 1, 1],
+	  'rescan'            => [\&cmd_rescan,            0, 0, 0],
+	  'configure'         => [\&cmd_configure,         0, 1, 0],
+	  'bootstrap'         => [\&cmd_bootstrap,         0, 1, 0],
+	  'fetch'             => [\&cmd_fetch,             1, 1, 0],
+	  'fetch-all'         => [\&cmd_fetch_all,         1, 1, 0],
+	  'fetch-missing'     => [\&cmd_fetch_all_missing, 1, 1, 0],
+	  'build'             => [\&cmd_build,             1, 1, 2],
+	  'rebuild'           => [\&cmd_rebuild,           1, 1, 2],
+	  'install'           => [\&cmd_install,           1, 1, 2],
+	  'reinstall'         => [\&cmd_reinstall,         1, 1, 2],
+	  'update'            => [\&cmd_install,           1, 1, 2],
+	  'update-all'        => [\&cmd_update_all,        1, 1, 2],
+	  'enable'            => [\&cmd_install,           1, 1, 2],
+	  'activate'          => [\&cmd_install,           1, 1, 2],
+	  'use'               => [\&cmd_install,           1, 1, 2],
+	  'disable'           => [\&cmd_remove,            1, 1, 0],
+	  'deactivate'        => [\&cmd_remove,            1, 1, 0],
+	  'unuse'             => [\&cmd_remove,            1, 1, 0],
+	  'remove'            => [\&cmd_remove,            1, 1, 0],
+	  'delete'            => [\&cmd_remove,            1, 1, 0],
+	  'purge'             => [\&cmd_purge,             1, 1, 0],
+	  'apropos'           => [\&cmd_apropos,           0, 0, 0],
+	  'describe'          => [\&cmd_description,       1, 0, 0],
+	  'description'       => [\&cmd_description,       1, 0, 0],
+	  'desc'              => [\&cmd_description,       1, 0, 0],
+	  'info'              => [\&cmd_description,       1, 0, 0],
+	  'scanpackages'      => [\&cmd_scanpackages,      1, 1, 1],
+	  'list'              => [\&cmd_list,              0, 0, 0],
+	  'listpackages'      => [\&cmd_listpackages,      1, 0, 0],
+	  'selfupdate'        => [\&cmd_selfupdate,        0, 1, 1],
+	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1, 1],
+	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1, 1],
+	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1, 1],
+	  'validate'          => [\&cmd_validate,          0, 0, 0],
+	  'check'             => [\&cmd_validate,          0, 0, 0],
+	  'cleanup'           => [\&cmd_cleanup,           1, 1, 1],
+	  'splitoffs'         => [\&cmd_splitoffs,         1, 0, 0],
+	  'splits'            => [\&cmd_splitoffs,         1, 0, 0],
+	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
+	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0, 0],
+	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -133,41 +137,88 @@ sub process {
 	my $self = shift;
 	my $options = shift;
 	my $cmd = shift;
-	my ($cmdname, $cmdinfo, $info);
-	my ($proc, $pkgflag, $rootflag);
+	my ($proc, $pkgflag, $rootflag, $aptgetflag);
 
 	unless (defined $cmd) {
 		print "NOP\n";
 		return;
 	}
 
-	$cmdinfo = undef;
-	while (($cmdname, $info) = each %commands) {
-		if ($cmd eq $cmdname) {
-			$cmdinfo = $info;
-			last;
-		}
-	}
-	if (not defined $cmdinfo) {
+	if (not exists $commands{$cmd}) {
 		die "fink: unknown command \"$cmd\".\nType 'fink --help' for more information.\n";
 	}
 
-	($proc, $pkgflag, $rootflag) = @$cmdinfo;
+	($proc, $pkgflag, $rootflag, $aptgetflag) = @{$commands{$cmd}};
 
 	# check if we need to be root
 	if ($rootflag and $> != 0) {
 		&restart_as_root($options, $cmd, @_);
 	}
 
+	# check if we need apt-get
+	if ($aptgetflag > 0 and (Fink::Config::binary_requested())) {
+		my $apt_problem = 0;
+		# check if we are installed at '/sw'
+		if (not $basepath eq '/sw') {
+				print "\n";
+				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but Fink ".
+				    "is not installed under '/sw'. This is not currently allowed.");
+				$apt_problem = 1;
+		}
+		# check if apt-get is available
+		if (not $apt_problem) {
+			if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
+				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled ".
+				    "but apt-get could not be run. Try to install the 'apt' Fink package ".
+				    "(with e.g. 'fink install apt').");
+				$apt_problem = 1;
+			}
+		}
+		# check if 'apt-get --ignore-breakage' is implemented
+		if ($aptgetflag == 2 and not $apt_problem) {
+			# only for the commands that needs them
+			if (&execute("$basepath/bin/apt-get --ignore-breakage 1>/dev/null 2>/dev/null", quiet=>1)) {
+				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but the ".
+				   "'apt-get' tool installed on this system doesn't support it. Please ".
+				   "update your Fink installation (with e.g. 'fink selfupdate').");
+				$apt_problem = 1;
+			}
+		}
+		if($apt_problem) {
+			my $prompt = "Continue with the 'UseBinaryDist' option temporarily disabled?";
+			my $continue = prompt_boolean($prompt, 1, 60);
+			if ($continue) {
+				# temporarily disable UseBinaryDist
+				$config->set_param("UseBinaryDist", "false");
+				Fink::Config::set_options( { 'use_binary' => 0 } );
+			}
+			else {
+				die "Failed to execute '$cmd'!\n";
+			}
+		}
+	}
+
+	if (Fink::Config::get_option("build_as_nobody")) {
+		&print_breaking ("WARNING: --build-as-nobody may produce non-usable ".
+						 "binary packages. This safe-mode should only be ".
+						 "used for package testing and development, not for ".
+						 "production builds.");
+		sleep(3);
+	}
+	
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
 		Fink::Shlibs->require_shlibs();
 	}
+	$::SIG{INT} = sub { die "User interrupt.\n" };
 	eval { &$proc(@_); };
-	if ($@) {
-		print "Failed: $@";
-		return $? || 1;
+	$::SIG{INT} = 'DEFAULT';
+	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
+	Fink::PkgVersion->clear_buildlock();       # always clean up
+	if ($proc_rc->{'$@'}) {                    # now deal with eval results
+		print "Failed: " . $proc_rc->{'$@'};
+		return $proc_rc->{'$?'} || 1;
 	}
 
 	return 0;
@@ -203,8 +254,12 @@ sub restart_as_root {
 		die "Fink is not configured to become root automatically.\n";
 	}
 
-	exit &execute($cmd, 1);
+	exit &execute($cmd, quiet=>1);
 }
+
+# these must be numerical and in the correct order (and should really be constants)
+my ($OP_FETCH, $OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
+	(-1, 0, 1, 2, 3);
 
 ### simple commands
 
@@ -254,6 +309,10 @@ sub cmd_list {
 	do_real_list("list",@_);
 }
 
+sub cmd_apropos {
+	do_real_list("apropos", @_);	
+}
+
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag, $description);
@@ -263,7 +322,11 @@ sub do_real_list {
 	(
 	 "installedstate" => 0
 	);
-	my ($width, $namelen, $verlen, $dotab, $wanthelp);
+	# bits used by $options{intalledstate}
+	my $ISTATE_OUTDATED = 1;
+	my $ISTATE_CURRENT  = 2;
+	my $ISTATE_ABSENT   = 4;
+	my ($width, $namelen, $verlen, $dotab);
 	my $cmd = shift;
 	use Getopt::Long;
 	$formatstr = "%s	%-15.15s	%-11.11s	%s\n";
@@ -274,72 +337,27 @@ sub do_real_list {
 	if ($cmd eq "list") {
 		GetOptions(
 				   'width|w=s'		=> \$width,
-				   'tab|t'		=> \$dotab,
-				   'installed|i'	=> sub {$options{installedstate} |=3;},
-				   'uptodate|u'		=> sub {$options{installedstate} |=2;},
-				   'outdated|o'		=> sub {$options{installedstate} |=1;},
-				   'notinstalled|n'	=> sub {$options{installedstate} |=4;},
+				   'tab|t'			=> \$dotab,
+				   'installed|i'	=> sub {$options{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
+				   'uptodate|u'		=> sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
+				   'outdated|o'		=> sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
+				   'notinstalled|n'	=> sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
 				   'buildonly|b'	=> \$buildonly,
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
 				   'tree|r=s'		=> \$pkgtree,
-				   'help|h'		=> \$wanthelp
-		) or die "fink list: unknown option\nType 'fink list --help' for more information.\n";
+				   'help|h'			=> sub {&help_list_apropos($cmd)}
+		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}	 else { # apropos
 		GetOptions(
 				   'width|w=s'		=> \$width,
 				   'tab|t'			=> \$dotab,
-				   'help|h'			=> \$wanthelp
-		) or die "fink list: unknown option\nType 'fink apropos --help' for more information.\n";
+				   'help|h'			=> sub {&help_list_apropos($cmd)}
+		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-
-		if ($cmd eq "list") {
-			print <<"EOF";
-Fink $version
-
-Usage: fink list [options] [string]
-
-Options:
-  -w xyz, --width=xyz  - Sets the width of the display you would like the output
-                         formatted for. xyz is either a numeric value or auto.
-                         auto will set the width based on the terminal width.
-  -t, --tab            - Outputs the list with tabs as field delimiter.
-  -i, --installed      - Only list packages which are currently installed.
-  -u, --uptodate       - Only list packages which are up to date.
-  -o, --outdated       - Only list packages for which a newer version is
-                         available.
-  -n, --notinstalled   - Only list packages which are not installed.
-  -b, --buildonly      - Only list packages which are Build Only Depends
-  -s expr,             - Only list packages in the section(s) matching expr
-    --section=expr       (example: fink list --section=x11).
-  -m expr,             - Only list packages with the maintainer(s) matching expr
-    --maintainer=expr    (example: fink list --maintainer=beren12).
-  -t expr,             - Only list packages with the tree matching expr
-    --tree=expr          (example: fink list --tree=stable).
-  -h, --help           - This help text.
-
-EOF
-		} else { # apropos
-			print <<"EOF";
-Fink $version
-
-Usage: fink apropos [options] [string]
-       
-Options:
-  -w xyz, --width=xyz  - Sets the width of the display you would like the output
-                         formatted for. xyz is either a numeric value or auto.
-                         auto will set the width based on the terminal width.
-  -t, --tab            - Outputs the list with tabs as field delimiter.
-  -h, --help           - This help text.
-
-EOF
-		}
-	exit 0;
+	if ($options{installedstate} == 0) {
+		$options{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT | $ISTATE_ABSENT;
 	}
-	if ($options{installedstate} == 0) {$options{installedstate} = 7;}
 
 	# By default or if --width=auto, compute the output width to fit exactly into the terminal
 	if ((not defined $width and not $dotab) or (defined $width and
@@ -354,7 +372,7 @@ EOF
 	if (defined $width) {
 		$width =~ s/[\=]?([0-9]+)/$1/;
 		$width = 40 if ($width < 40);	 # enforce minimum display width of 40 characters
-		$width = $width - 5;		 # 5 chars for the first field
+		$width = $width - 5;			 # 5 chars for the first field
 		$namelen = int($width * 0.2);	 # 20% for the name
 		$verlen = int($width * 0.15);	 # 15% for the version
 		if ($desclen != 0) {
@@ -397,40 +415,54 @@ EOF
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
 		if ($package->is_virtual() == 1) {
+			next if $cmd eq "apropos";
+			next unless $options{installedstate} & $ISTATE_ABSENT;
+			next if defined $buildonly;
+			next if defined $section;
+			next if defined $maintainer;
+			next if defined $pkgtree;
 			$lversion = "";
-			$iflag = "   ";
+			$iflag = $package->is_provided()
+				? " p "
+				: "   ";
 			$description = "[virtual package]";
-			next if ($cmd eq "apropos"); 
-			next unless ($options{installedstate} & 4);
 		} else {
 			$lversion = &latest_version($package->list_versions());
 			$vo = $package->get_version($lversion);
+			# $iflag installed pkg precedence: real-latest > real-old > provided
 			if ($vo->is_installed()) {
-				next unless ($options{installedstate} & 2);
+				next unless $options{installedstate} & $ISTATE_CURRENT;
 				$iflag = " i ";
 			} elsif ($package->is_any_installed()) {
+				next unless $options{installedstate} & $ISTATE_OUTDATED;
 				$iflag = "(i)";
-				next unless ($options{installedstate} & 1);
+			} elsif ($package->is_provided()) {
+				next if $cmd eq "apropos";
+				next unless $options{installedstate} & $ISTATE_CURRENT;
+				next if defined $buildonly;
+				next if defined $section;
+				next if defined $maintainer;
+				next if defined $pkgtree;
+				$iflag = " p ";
 			} else {
+				next unless $options{installedstate} & $ISTATE_ABSENT;
 				$iflag = "   ";
-				next unless ($options{installedstate} & 4);
 			}
-
 			$description = $vo->get_shortdescription($desclen);
 		}
 		if (defined $buildonly) {
 			next unless $vo->param_boolean("builddependsonly");
 		}
 		if (defined $section) {
-			$section =~ s/[\=]?(.*)/$1/;
 			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
+			$section =~ s/[\=]?(.*)/$1/;
 		}
 		if (defined $maintainer) {
 			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
 		}
 		if (defined $pkgtree) {
-#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
 			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
+#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
 		}
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
@@ -444,13 +476,62 @@ EOF
 	}
 }
 
+sub help_list_apropos {
+	my $cmd = shift;
+	require Fink::FinkVersion;
+	my $version = Fink::FinkVersion::fink_version();
+
+	if ($cmd eq "list") {
+		print <<"EOF";
+Fink $version
+
+Usage: fink list [options] [string]
+
+Options:
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -i, --installed      - Only list packages which are currently installed.
+  -u, --uptodate       - Only list packages which are up to date.
+  -o, --outdated       - Only list packages for which a newer version is
+                         available.
+  -n, --notinstalled   - Only list packages which are not installed.
+  -b, --buildonly      - Only list packages which are Build Only Depends
+  -s expr,             - Only list packages in the section(s) matching expr
+    --section=expr       (example: fink list --section=x11).
+  -m expr,             - Only list packages with the maintainer(s) matching expr
+    --maintainer=expr    (example: fink list --maintainer=beren12).
+  -r expr,             - Only list packages with the tree matching expr
+    --tree=expr          (example: fink list --tree=stable).
+  -h, --help           - This help text.
+
+EOF
+	} else { # apropos
+		print <<"EOF";
+Fink $version
+
+Usage: fink apropos [options] [string]
+
+Options:
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
+                         formatted for. xyz is either a numeric value or auto.
+                         auto will set the width based on the terminal width.
+  -t, --tab            - Outputs the list with tabs as field delimiter.
+  -h, --help           - This help text.
+
+EOF
+	}
+	exit 0;
+}
+
 sub cmd_listpackages {
 	my ($pname, $package);
 
 	foreach $pname (Fink::Package->list_packages()) {
 		print "$pname\n";
 		$package = Fink::Package->package_by_name($pname);
-		if ($package->is_any_installed()) {
+		if ($package->is_any_installed() or $package->is_provided()) {
 			print "YES\n";
 		} else {
 			print "NO\n";
@@ -534,14 +615,143 @@ EOF
 sub cmd_fetch {
 	my ($package, @plist);
 
+	my (%options, $norestrictive, $dryrun);
+	my @sav = @_;
+	%options = &parse_fetch_options("fetch", @_);
+	$norestrictive = $options{"norestrictive"} || 0;
+	$dryrun = $options{"dryrun"} || 0;
+
+	@_ = @sav;
+	if( $dryrun ) {
+		shift;
+	}
+	if( $norestrictive ) {
+		shift;
+	}
+
+	if( $options{"recursive"} ) {
+		shift;
+		# if we need the dep engine, may as well let it do *everything* for us
+		&real_install($OP_FETCH, 0, 0, $dryrun, @_);
+		return;
+	}
+
 	@plist = &expand_packages(@_);
 	if ($#plist < 0) {
 		die "no package specified for command 'fetch'!\n";
 	}
 
+	&call_queue_clear;
 	foreach $package (@plist) {
-		$package->phase_fetch(0, 0);
+		my $pname = $package->get_name();
+		if ($norestrictive && $package->has_param("license") && $package->param("license") =~ m/Restrictive\s*$/i) {
+				print "Ignoring $pname due to License: Restrictive\n";
+				next;
+		}
+		&call_queue_add([ $package, 'phase_fetch', 0, $dryrun ]);
 	}
+	&call_queue_clear;
+}
+
+sub parse_fetch_options {
+	my $cmd = shift;
+	my %options = (
+		"norestrictive" => 0,
+		"dryrun"        => 0,
+		"recursive"     => 0,
+		"wanthelp"      => 0,
+	);
+
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions('ignore-restrictive|i'	=> sub { $options{norestrictive} = 1 },
+			   'dry-run|d'				=> sub { $options{dryrun}        = 1 },
+			   'recursive|r'            => sub { $options{recursive}     = 1 },
+			   'help|h'					=> sub { $options{wanthelp}      = 1 }
+			  )
+		or die "fink fetch: unknown option\nType 'fink $cmd --help' for more information.\n";
+	if ($options{wanthelp} == 1) {
+		require Fink::FinkVersion;
+		my $finkversion = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $finkversion
+
+Usage: fink $cmd [options]
+
+Options:
+  -i, --ignore-restrictive  - Do not fetch sources for packages with 
+                              a "Restrictive" license. Useful for mirroring.
+  -d, --dry-run             - Prints filename, MD5, list of source URLs,
+                              Maintainer for each package
+  -r, --recursive           - Fetch dependent packages also
+  -h, --help                - This help text.
+
+EOF
+		exit 0;
+	}
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
+	return %options;
+}
+
+#This sub is currently only used for bootstrap. No command line parsing needed
+sub cmd_fetch_missing {
+	my @plist;
+
+	@plist = &expand_packages(@_);
+	if ($#plist < 0) {
+		die "no package specified for command 'cmd_fetch_missing'!\n";
+	}
+	&call_queue_clear;
+	map { &call_queue_add([ $_, 'phase_fetch', 1, 0 ]) } @plist;
+	&call_queue_clear;
+}
+
+sub cmd_fetch_all {
+	&do_fetch_all("fetch-all", @_);
+}
+
+sub cmd_fetch_all_missing {
+	&do_fetch_all("fetch-missing", @_);
+}
+
+sub do_fetch_all {
+	my $cmd = shift;
+	my ($pname, $package, $version, $vo);
+	
+	my (%options, $norestrictive, $missing_only, $dryrun);
+	%options = &parse_fetch_options($cmd, @_);
+	$norestrictive = $options{"norestrictive"} || 0;
+	$missing_only = $cmd eq "fetch-missing";
+	$dryrun = $options{"dryrun"} || 0;
+
+	if ($options{"recursive"}) {
+		print "fetch_all already fetches everything; --recursive is meaningless\n";
+	}
+
+	&call_queue_clear;
+	foreach $pname (Fink::Package->list_packages()) {
+		$package = Fink::Package->package_by_name($pname);
+		$version = &latest_version($package->list_versions());
+		$vo = $package->get_version($version);
+		if (defined $vo) {
+			if ($norestrictive && $vo->has_param("license") && $vo->param("license") =~ m/Restrictive\s*$/i) {
+				print "Ignoring $pname due to License: Restrictive\n";
+				next;
+			}
+			&call_queue_add([
+				sub {
+					eval {
+						$_[0]->phase_fetch($_[1], $_[2]);
+					};
+					warn "$@" if $@;				 # turn fatal exceptions into warnings
+				},
+				$vo, $missing_only, $dryrun ]);
+		}
+	}
+	&call_queue_clear;
 }
 
 sub cmd_description {
@@ -560,122 +770,51 @@ sub cmd_description {
 	}
 }
 
-sub cmd_apropos {
-	do_real_list("apropos", @_);	
-}
+sub cmd_remove {
+	my ($recursive, $wanthelp);
 
-sub parse_fetch_options {
-	my %options =
-	  (
-	   "norestrictive" => 0,
-	   "dryrun" => 0,
-	   "wanthelp" => 0,
-	   );
-   
+	use Getopt::Long;
 	my @temp_ARGV = @ARGV;
 	@ARGV=@_;
 	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions('ignore-restrictive|i'	=> sub {$options{norestrictive} = 1 } , 
-			   'dry-run|d'				=> sub {$options{dryrun} = 1 } , 
-			   'help|h'					=> sub {$options{wanthelp} = 1 })
-		 or die "fink fetch: unknown option\nType 'fink fetch-missing --help' or 'fetch-all --help' for more information.\n";
-		 
-	if ($options{wanthelp} == 1) {
+	GetOptions(
+		'recursive|r'	=> \$recursive,
+		'help|h'	=> \$wanthelp
+	) or die "fink remove: unknown option\nType 'fink remove --help' for more information.\n";
+	if ($wanthelp) {
 		require Fink::FinkVersion;
-		my $finkversion = Fink::FinkVersion::fink_version();
+		my $version = Fink::FinkVersion::fink_version();
 		print <<"EOF";
-Fink $finkversion
+Fink $version
 
-Usage: fink fetch-{missing,all} [options]
-       
+Usage: fink remove [options] [package(s)]
+
 Options:
-  -i, --ignore-restrictive  - Do not fetch sources for packages with 
-                            a "Restrictive" license. Useful for mirroring.
-  -p, --dry-run             - Prints filename, MD5, list of source URLs, Maintainer for each package
-  -h, --help                - This help text.
+  -r, --recursive      - Also remove packages that depend on the package(s) 
+                         to be removed.
+  -h, --help           - This help text.
 
 EOF
-		die " ";
+		exit 0;
 	}
+
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 
-	return %options;
-}
-
-#This sub is currently only used for bootstrap. No command line parsing needed
-sub cmd_fetch_missing {
-	my ($package, $options, @plist);
-
-	@plist = &expand_packages(@_);
-	if ($#plist < 0) {
-		die "no package specified for command 'fetch'!\n";
-	}
-	foreach $package (@plist) {
-		$package->phase_fetch(1, 0);
-	}
-}
-
-sub cmd_fetch_all {
-	my ($pname, $package, $version, $vo);
-	
-	my (%options, $norestrictive, $dryrun);
-	%options = &parse_fetch_options(@_);
-	$norestrictive = $options{"norestrictive"} || 0;
-	$dryrun = $options{"dryrun"} || 0;
-	
-	foreach $pname (Fink::Package->list_packages()) {
-		$package = Fink::Package->package_by_name($pname);
-		$version = &latest_version($package->list_versions());
-		$vo = $package->get_version($version);
-		if (defined $vo) {
-			if ($norestrictive && $vo->has_param("license")) {
-					if($vo->param("license") =~ m/Restrictive\s*$/i) {
-						print "Ignoring $pname due to License: Restrictive\n";
-						next;
-				}
-			}
-			eval {
-				$vo->phase_fetch(0, $dryrun);
-			};
-			warn "$@" if $@;				 # turn fatal exceptions into warnings
+	if ($recursive) {
+		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
+			&print_breaking("ERROR: Couldn't call apt-get, which is needed for ".
+			    "the recursive option. Try to install the 'apt' Fink package ".
+			    "(with e.g. 'fink install apt').");
+			die "Purge not performed!\n";
 		}
+		my @packages = get_pkglist("remove --recursive", @_);
+		Fink::PkgVersion::phase_deactivate_recursive(@packages);
 	}
-}
-
-sub cmd_fetch_all_missing {
-	my ($pname, $package, $version, $vo);
-	my (%options, $norestrictive, $dryrun);
-
-	%options = &parse_fetch_options(@_);
-	$norestrictive = $options{"norestrictive"} || 0;
-	$dryrun = $options{"dryrun"} || 0;
-
-	foreach $pname (Fink::Package->list_packages()) {
-		$package = Fink::Package->package_by_name($pname);
-		$version = &latest_version($package->list_versions());
-		$vo = $package->get_version($version);
-		if (defined $vo) {
-			if ($norestrictive) {
-				if ($vo->has_param("license")) {
-						if($vo->param("license") =~ m/Restrictive\s*$/i) {
-							print "Ignoring $pname due to License: Restrictive\n";
-							next;
-					}
-				}
-			}
-			eval {
-				$vo->phase_fetch(1, $dryrun);
-			};
-			warn "$@" if $@;				 # turn fatal exceptions into warnings
-		}
-	}	
-}
-
-sub cmd_remove {
-	my @packages = get_pkglist("remove", @_);
-
-	Fink::PkgVersion::phase_deactivate(@packages);
+	else {
+		my @packages = get_pkglist("remove", @_);
+		Fink::PkgVersion::phase_deactivate(@packages);
+	}
 	Fink::Status->invalidate();
 }
 
@@ -784,7 +923,31 @@ EOF
 }
 
 sub cmd_purge {
-	my @packages = get_pkglist("purge", @_);
+	my ($recursive, $wanthelp);
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'recursive|r'	=> \$recursive,
+		'help|h'	=> \$wanthelp
+	) or die "fink purge: unknown option\nType 'fink purge --help' for more information.\n";
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $version
+
+Usage: fink purge [options] [package(s)]
+
+Options:
+  -r, --recursive      - Also purge packages that depend on the package 
+                         to be purged.
+  -h, --help           - This help text.
+
+EOF
+		exit 0;
+	}
 
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
@@ -792,65 +955,81 @@ sub cmd_purge {
 	my $answer = &prompt_boolean("Do you want to continue?", 1);			
 	if (! $answer) {
 		die "Purge not performed!\n";
-	} else {
-		Fink::PkgVersion::phase_purge(@packages);
-		Fink::Status->invalidate();
 	}
+	
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
+	if ($recursive) {
+		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
+			&print_breaking("ERROR: Couldn't call apt-get, which is needed for ".
+			    "the recursive option. Try to install the 'apt' Fink package ".
+			    "(with e.g. 'fink install apt').");
+			die "Purge not performed!\n";
+		}
+		my @packages = get_pkglist("purge --recursive", @_);
+		Fink::PkgVersion::phase_purge_recursive(@packages);
+	}
+	else {
+		my @packages = get_pkglist("purge", @_);
+		Fink::PkgVersion::phase_purge(@packages);
+	}
+	Fink::Status->invalidate();
 }
 
 sub cmd_validate {
 	my ($filename, @flist);
 
+	my ($wanthelp, $val_prefix);
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'prefix|p=s' => \$val_prefix,
+		'help|h'     => \$wanthelp
+	) or die "fink validate: unknown option\nType 'fink validate --help' for more information.\n";
+
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+
+		print <<"EOF";
+Fink $version
+
+Usage: fink validate [options] [package(s)]
+
+Options:
+  -p, --prefix    - Simulate an alternate Fink prefix (\%p) in files.
+  -h, --help      - This help text.
+
+EOF
+		exit 0;
+	}
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
 	require Fink::Validation;
 
 	@flist = @_;
 	if ($#flist < 0) {
-		die "no input file specified for command 'validate'!\n";
+		die "fink validate: no input file specified\nType 'fink validate --help' for more information.\n";
 	}
 	
 	foreach $filename (@flist) {
-		die "File \"$filename\" does not exist!\n" unless (-f $filename);
 		if ($filename =~/\.info$/) {
-			Fink::Validation::validate_info_file($filename);
+			Fink::Validation::validate_info_file($filename, $val_prefix);
 		} elsif ($filename =~/\.deb$/) {
-			Fink::Validation::validate_dpkg_file($filename);
+			Fink::Validation::validate_dpkg_file($filename, $val_prefix);
 		} else {
-			die "Don't know how to validate $filename!\n";
-		}
-	}
-}
-
-# HACK HACK HACK
-# This is to be removed soon again, only a temporary tool to allow
-# checking of all available MD5 values in all packages.
-sub cmd_checksums {
-	my ($pname, $package, $vo, $i, $file, $chk);
-
-	# Iterate over all packages
-	foreach $pname (Fink::Package->list_packages()) {
-		$package = Fink::Package->package_by_name($pname);
-		foreach $vo ($package->get_all_versions()) {
-			# Skip packages that do not have source files
-			next unless $vo->get_source_count;
-		
-			# For each tar ball, if a checksum was specified, locate it and
-			# verify the checksum.
-			for ($i = 1; $i <= $vo->get_source_count; $i++) {
-				$chk = $vo->get_checksum($i);
-				if ($chk ne "-") {
-					$file = $vo->find_tarball($i);
-					if (defined($file) and $chk ne &file_MD5_checksum($file)) {
-						print "Checksum of tarball $file of package ".$vo->get_fullname()." is incorrect.\n";
-					}
-				}
-			}
+			print "Error: don't know how to validate $filename!\n";
 		}
 	}
 }
 
 sub cmd_cleanup {
-	my ($pname, $package, $vo, $i, $file);
-	my (@to_be_deleted);
+	my ($pname, $package, $vo, $file, $suffix);
+	my (@old_src_files);
 
 	# TODO - add option that specify whether to clean up source, .debs, or both
 	# TODO - add --dry-run option that prints out what actions would be performed
@@ -859,7 +1038,40 @@ sub cmd_cleanup {
 	#				 current version of any package; etc.
 	#				 Delete all .deb and delete all src? Not really needed, this can be
 	#				 achieved each with single line CLI commands.
+	# TODO - document --keep-src in the man page, and add a fink.conf entry for defaults
+
+	my ($wanthelp, $keep_old);
+	# dryrun is not yet used. Provided here as a starter for the --dry-run option.
+	my $dryrun = 0;
 	
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'keep-src|k' => \$keep_old,
+		'help|h'     => \$wanthelp
+	) or die "fink cleanup: unknown option\nType 'fink cleanup --help' for more information.\n";
+
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+
+		print <<"EOF";
+Fink $version
+
+Usage: fink cleanup [options]
+
+Options:
+  -k, --keep-src  - Move old source files to $basepath/src/old/.
+  -h, --help      - This help text.
+
+EOF
+		exit 0;
+	}
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
 	# Reset list of non-obsolete debs/source files
 	my %deb_list = ();
 	my %src_list = ();
@@ -902,11 +1114,9 @@ sub cmd_cleanup {
 			$deb_list{$file} = 1;
 
 			# all source files
-			if ($vo->get_source_count) {
-				for ($i = 1; $i <= $vo->get_source_count; $i++) {
-					$file = $vo->find_tarball($i);
-					$src_list{$file} = 1 if defined($file);
-				}
+			foreach $suffix ( $vo->get_source_suffices() ) {
+				$file = $vo->find_tarball($suffix);
+				$src_list{$file} = 1 if defined($file);
 			}
 		}
 	}
@@ -921,49 +1131,95 @@ sub cmd_cleanup {
 
 	# Remove obsolete source files. We do not delete immediatly because that
 	# will confuse readdir().
-	@to_be_deleted = ();
+	@old_src_files = ();
 	opendir(DIR, "$basepath/src") or die "Can't access $basepath/src: $!";
 	while (defined($file = readdir(DIR))) {
-		$file = "$basepath/src/$file";
+		# $file = "$basepath/src/$file";
 		# Skip all source files that are still used by some package
-		next if $src_list{$file};
-		push @to_be_deleted, $file;
+		next if $src_list{"$basepath/src/$file"};
+		push @old_src_files, $file;
 	}
 	closedir(DIR);
 
-	foreach $file (@to_be_deleted) {
+	if ($keep_old) {
+		unless (-d "$basepath/src/old") {
+		mkdir("$basepath/src/old") or die "Can't create $basepath/src/old: $!";
+		}
+	}
+
+	foreach $file (@old_src_files) {
 		# For now, do *not* remove directories - this could easily kill
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
-		if (-f $file) {
-			unlink $file and $file_count{'src'}++;
+		if (-f "$basepath/src/$file") {
+		print("$file\n");
+		if ($keep_old) {
+				rename("$basepath/src/$file", "$basepath/src/old/$file") and $file_count{'src'}++;
+			} else {
+				unlink "$basepath/src/$file" and $file_count{'src'}++;
+			}
+		}
 	}
-}
 
-	print 'Obsolete deb packages deleted: ' . $file_count{'deb'} . "\n";
+if (Fink::Config::binary_requested()) {
+		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
+		# 'apt-get autoclean'
+		my $aptcmd = "$basepath/bin/apt-get ";
+		if (Fink::Config::verbosity_level() == 0) {
+			$aptcmd .= "-qq ";
+		}
+		elsif (Fink::Config::verbosity_level() < 2) {
+			$aptcmd .= "-q ";
+		}
+		if($dryrun) {
+			$aptcmd .= "--dry-run ";
+		}
+		my $apt_cache_path = "$basepath/var/cache/apt/archives";
+		my $deb_regexp = "\\.deb\$";
+		my $files_before_clean = &count_files($apt_cache_path, $deb_regexp);
+
+		if (&execute($aptcmd . "--option APT::Clean-Installed=false autoclean")) {
+			print("WARNING: Cleaning deb packages in '$apt_cache_path' failed.\n");
+		}
+		my $files_deleted = $files_before_clean - &count_files($apt_cache_path, $deb_regexp);
+
+		# Running scanpackages and updating apt-get db
+		print "Updating the list of locally available binary packages.\n";
+		&cmd_scanpackages;
+		print "Updating the indexes of available binary packages.\n";
+		if (&execute($aptcmd . "update")) {
+			print("WARNING: Failure while updating indexes.\n");
+		}
+
+		print 'Obsolete deb packages deleted from apt cache: ' . $files_deleted . "\n";
+	}
+
+	print 'Obsolete deb packages deleted from fink trees: ' . $file_count{'deb'} . "\n";
 	print 'Obsolete symlinks deleted: ' . $file_count{'symlink'} . "\n";
-	print 'Obsolete sources deleted: ' . $file_count{'src'} . "\n\n";
+	if ($keep_old) {
+		print 'Obsolete sources moved: ' . $file_count{'src'} . "\n\n";
+	}
+	else {
+		print 'Obsolete sources deleted: ' . $file_count{'src'} . "\n\n";
+	}
 }
 
 ### building and installing
 
-my ($OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
-	(0, 1, 2, 3);
-
 sub cmd_build {
-	&real_install($OP_BUILD, 0, 0, @_);
+	&real_install($OP_BUILD, 0, 0, 0, @_);
 }
 
 sub cmd_rebuild {
-	&real_install($OP_REBUILD, 0, 0, @_);
+	&real_install($OP_REBUILD, 0, 0, 0, @_);
 }
 
 sub cmd_install {
-	&real_install($OP_INSTALL, 0, 0, @_);
+	&real_install($OP_INSTALL, 0, 0, 0, @_);
 }
 
 sub cmd_reinstall {
-	&real_install($OP_REINSTALL, 0, 0, @_);
+	&real_install($OP_REINSTALL, 0, 0, 0, @_);
 }
 
 sub cmd_update_all {
@@ -976,7 +1232,7 @@ sub cmd_update_all {
 		}
 	}
 
-	&real_install($OP_INSTALL, 1, 0, @plist);
+	&real_install($OP_INSTALL, 1, 0, 0, @plist);
 }
 
 use constant PKGNAME => 0;
@@ -989,13 +1245,29 @@ sub real_install {
 	my $op = shift;
 	my $showlist = shift;
 	my $forceoff = shift; # check if this is a secondary loop
-	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $con, $cn);
+	my $dryrun = shift;
+
+	my ($pkgspec, $package, $pkgname, $item, $dep, $con, $cn);
 	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
 	my (%candidates, @candidates, $pnode, $found);
 	my ($oversion, $opackage, $v, $ep, $dp, $dname);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
+
+	# if we only want to fetch, run the engine in mode=build, but
+	# abort before doing any actual building
+	my $fetch_only = 0;
+	if ($op == $OP_FETCH) {
+		$fetch_only = 1;
+		$op = $OP_BUILD;
+	}
+
+	# correct verb tense for actions
+	my $to_be = ( $fetch_only || $dryrun
+				  ? 'would be'
+				  : 'will be'
+				  );
 
 	if (Fink::Config::verbosity_level() > -1) {
 		$showlist = 1;
@@ -1007,6 +1279,20 @@ sub real_install {
 	%to_be_rebuilt = ();
 	%already_activated = ();
 
+	# should we try to download the deb from the binary distro?
+	# warn if UseBinaryDist is enabled and not installed in '/sw'
+	my $deb_from_binary_dist = 0;
+	if (Fink::Config::binary_requested()) {
+		if ($basepath eq '/sw') {
+			$deb_from_binary_dist = 1;
+		}
+		else {
+				print "\n";
+				&print_breaking("WARNING: Downloading packages from the binary distribution ".
+				                "is currently only possible if Fink is installed at '/sw'!.");
+		}
+	}
+		
 	# add requested packages
 	foreach $pkgspec (@_) {
 		# resolve package name
@@ -1022,7 +1308,6 @@ sub real_install {
 			print "Duplicate request for package '$pkgname' ignored.\n";
 			next;
 		}
-		$pkgobj = Fink::Package->package_by_name($pkgname);
 		# skip if this version/revision is installed
 		#	 (also applies to update)
 		if ($op != $OP_REBUILD and $op != $OP_REINSTALL
@@ -1034,7 +1319,10 @@ sub real_install {
 			next;
 		}
 		# add to table
-		$deps{$pkgname} = [ $pkgname, $pkgobj, $package, $op, 1 ];
+		@{$deps{$pkgname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+			$pkgname, Fink::Package->package_by_name($pkgname),
+			$package, $op, 1
+		);
 		$to_be_rebuilt{$pkgname} = ($op == $OP_REBUILD);
 	}
 
@@ -1072,20 +1360,41 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(2, $op, "Depends", $forceoff);
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built without being installed.\n";
+			}
+			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
+			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
+		} elsif ((not $item->[PKGVER]->is_present() 
+		  and not ($deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()))
+		  or $item->[OP] == $OP_REBUILD) {
+			# We want to install this package and have to build it for that
+			# -> include both life-time & build-time dependencies
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built and installed.\n";
+			}
+			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
+		} elsif (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD 
+		         and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
+			# We want to install this package and will download the .deb for it
+			# -> only include life-time dependencies
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be downloaded as a binary package and installed.\n";
+			}
+			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			
 			# Do not use BuildConflicts for packages which are not going to be built!
 #			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
-		} elsif (not $item->[PKGVER]->is_present() or $item->[OP] == $OP_REBUILD) {
-			# We want to install this package and have to build it for that
-			# -> include both life-time & build-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(1, $op, "Depends", $forceoff);
-			@conlist = $item->[PKGVER]->resolve_depends(2, $op, "Conflicts", $forceoff);
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			@deplist = $item->[PKGVER]->resolve_depends(0, $op, "Depends", $forceoff);
-			@conlist = $item->[PKGVER]->resolve_depends(2, $op, "Conflicts", $forceoff);
+			if (Fink::Config::verbosity_level() > 2) {
+				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be installed.\n";
+			}
+			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
+			
+			# Do not use BuildConflicts for packages which are not going to be built!
+#			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
 		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {
@@ -1115,8 +1424,10 @@ sub real_install {
 						die "Internal error: node for $dname already exists\n";
 					}
 					# add node to graph
-					$deps{$dname} = [ $dname, Fink::Package->package_by_name($dname),
-					                  $dp, $OP_INSTALL, 2 ];
+					@{$deps{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+						$dname, Fink::Package->package_by_name($dname),
+						$dp, $OP_INSTALL, 2
+					);
 					# add a link
 					push @$item, $deps{$dname};
 					# add to investigation queue
@@ -1198,7 +1509,7 @@ sub real_install {
 					foreach $dname (@candidates) {
 						if ( $dname =~ $matchstr ) {
 							push(@matched, $dname);
- 						} else {
+						} else {
 							push(@notmatched, $dname);
 						}
 					}
@@ -1240,7 +1551,7 @@ sub real_install {
 				&print_breaking("fink needs help picking an alternative to satisfy ".
 								"a virtual dependency. The candidates:");
 				$dname = &prompt_selection_new("Pick one:", [number=>$choice], @choices);
- 			}
+			}
 
 			# the dice are rolled...
 
@@ -1287,9 +1598,10 @@ sub real_install {
 			}
 
 			# add node to graph
-			$deps{$dname} = [ $dname, $pnode,
-			                  $pnode->get_version(&latest_version(@vlist)),
-			                  $OP_INSTALL, 0 ];
+               @{$deps{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+				   $dname, $pnode,
+				   $pnode->get_version(&latest_version(@vlist)), $OP_INSTALL, 0
+			   );
 			# add a link
 			push @$item, $deps{$dname};
 			# add to investigation queue
@@ -1308,8 +1620,10 @@ sub real_install {
 					die "Internal error: node for $cname already exists\n";
 				}
 				# add node to graph
-				$cons{$cname} = [ $cname, Fink::Package->package_by_name($cname),
-				                  $cn, $OP_INSTALL, 2 ];
+				@{$cons{$cname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+					$cname, Fink::Package->package_by_name($cname),
+					$cn, $OP_INSTALL, 2
+				);
 				next CONLOOP;
 			}
 		}
@@ -1320,6 +1634,7 @@ sub real_install {
 	@requested = ();
 	@additionals = ();
 	@removals = ();
+	my $willbuild = 0;
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
 		if ($item->[FLAG] == 0) {
@@ -1327,12 +1642,22 @@ sub real_install {
 		} elsif ($item->[FLAG] == 1) {
 			push @requested, $pkgname;
 		}
+		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
+			$willbuild = 1 unless ($item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed());
+		}
 	}
 
 	foreach $pkgname (sort keys %cons) {
 		push @removals, $pkgname;
 	}
 			
+
+	if ($willbuild) {
+		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) { 
+			&print_breaking("\nWARNING: You are using a version of gcc which is known to produce incorrect output from C++ code under certain circumstances.\n\nFor information about upgrading, see the Fink web site.\n\n");
+			sleep 10;
+		}
+	}
 
 	# display list of requested packages
 	if ($showlist && not $forceoff) {
@@ -1342,7 +1667,7 @@ sub real_install {
 		} else {
 			$s .= "package";
 		}
-		$s .= " will be ";
+		$s .= " $to_be ";
 		if ($op == $OP_INSTALL) {
 			$s .= "installed or updated";
 		} elsif ($op == $OP_BUILD) {
@@ -1359,44 +1684,56 @@ sub real_install {
 	unless ($forceoff) {
 		# ask user when additional packages are to be installed
 		if ($#additionals >= 0 || $#removals >= 0) {
-			if ($#additionals >= 0) {
+			if ($#additionals >= 0 and not $fetch_only) {
 				if ($#additionals > 0) {
 					&print_breaking("The following ".scalar(@additionals).
-							" additional packages will be installed:");
+							" additional packages $to_be installed:");
 				} else {
 					&print_breaking("The following additional package ".
-							"will be installed:");
+							"$to_be installed:");
 				}
 				&print_breaking(join(" ",@additionals), 1, " ");
 			}
-			if ($#removals >= 0) {
+			if ($#removals >= 0 and not $fetch_only) {
 				if ($#removals > 0) {
 					&print_breaking("The following ".scalar(@removals).
-							" packages will be removed:");
+							" packages $to_be removed:");
 				} else {
 					&print_breaking("The following package ".
-							"will be removed:");
+							"$to_be removed:");
 				}
 				&print_breaking(join(" ",@removals), 1, " ");
 			}
-			$answer = &prompt_boolean("Do you want to continue?", 1);
-			if (! $answer) {
-				die "Package requirements not satisfied\n";
+			if (not $dryrun) {
+				$answer = &prompt_boolean("Do you want to continue?", 1);
+				if (! $answer) {
+					die "Package requirements not satisfied\n";
+				}
 			}
 		}
 	}
 
-	# remove buildconfilcts before new builds reinstall after build
-	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
-
+	&call_queue_clear;
 	# fetch all packages that need fetching
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
 		next if $item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed();
-		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
-			$item->[PKGVER]->phase_fetch(1, 0);
+		if (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD) {
+			&call_queue_add([
+				$item->[PKGVER],
+				$deb_from_binary_dist && $item->[PKGVER]->is_aptgetable()
+					? 'phase_fetch_deb'
+					: 'phase_fetch',
+				 1, $dryrun ]);
 		}
 	}
+	&call_queue_clear;
+
+	# if we were really in fetch or dry-run modes, stop here
+	return if $fetch_only || $dryrun;
+
+	# remove buildconfilcts before new builds reinstall after build
+	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
 
 	# install in correct order...
 	while (1) {
@@ -1496,13 +1833,15 @@ sub real_install {
 					### Double check it didn't already get
 					### installed in an other loop
 					if (!$package->is_installed() || $op == $OP_REBUILD) {
+						$package->set_buildlock();
 						$package->phase_unpack();
 						$package->phase_patch();
 						$package->phase_compile();
 						$package->phase_install();
 						$package->phase_build();
+						$package->clear_buildlock();
 					} else {
-						&real_install($OP_BUILD, 0, 1, $package->get_name());
+						&real_install($OP_BUILD, 0, 1, $dryrun, $package->get_name());
 					}
 				}
 			}
@@ -1547,8 +1886,7 @@ sub real_install {
 			# Finally perform the actually installation
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 			# Reinstall buildconficts after the build
-			&real_install($OP_INSTALL, 1, 1, @removals) if (scalar(@removals) > 0);
-			# Rebuild Shlibs db before next build
+			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
 			Fink::Shlibs->forget_shlibs();
 			Fink::Shlibs->require_shlibs(1);
 			# Mark all installed items as installed
@@ -1640,34 +1978,389 @@ sub cmd_showparent {
 	}
 }
 
-### Display the depends for a package
 
-sub cmd_depends {
-	my ($pkg, $package, @deplist, $fullname);
+### display a pkg's package description (parsed .info file)
+sub cmd_dumpinfo {
 
-	foreach $pkg (@_) {
-		$package = Fink::PkgVersion->match_package($pkg);
-		unless (defined $package) {
-			print "no package found for specification '$pkg'!\n";
-			next;
-		}
+	my (@fields, @percents, $wantall, $wanthelp);
 
-		$fullname = $package->get_fullname();
-		if ($package->find_debfile()) {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "Reading dependencies from ".$fullname." deb file...\n";
-			}
-			@deplist = split(/\s*\,\s*/, $package->get_debdeps());
-		} else {
-			if (Fink::Config::verbosity_level() > 2) {
-				print "Reading dependencies from ".$fullname." info file...\n";
-			}
-			@deplist = split(/\s*\,\s*/, $package->param_default("Depends", ""));
-		}
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'all|a'	=>     \$wantall,
+		'field|f=s',   \@fields,
+		'percent|p=s', \@percents,
+		'help|h'	=> \$wanthelp
+	) or die "fink dumpinfo: unknown option\nType 'fink dumpinfo --help' for more information.\n";
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $version
 
-		print "Depends for $fullname are...\n";
-		print join(', ', @deplist)."\n\n";
+Usage: fink dumpinfo [options] [package(s)]
+
+Options:
+  -a, --all            - All package info fields (default behavior).
+  -f s, --field=s      - Just the specific field(s) specified.
+  -p s, --percent=key  - Just the percent expansion for specific key(s).
+  -h, --help           - This help text.
+
+The following pseudo-fields are available in addition to all fields
+described in the Fink Packaging Manual:
+  infofile     - Full path to package description file.
+  sources      - Source and all SourceN values in numerical order.
+  splitoffs    - Package name for SplitOff and all SplitOffN in numerical
+                 order. You cannot ask for splitoff packages by SplitOffN
+                 field name of the parentfields by field name--they are
+                 handled as full and independent packages.
+  parent       - Package name of main package (if a splitoff package).
+  family       - "splitoffs", "parent", and "splitoffs" of "parent".
+  status       - For this version of the package:
+                   "latest" if the most recent known version, or
+                   "old" if a more recent version is known;
+                 followed by:
+                   "installed" if this version is currently installed.
+  allversions  - List of all known versions of the package name in order.
+                 Currently-installed version (if any) is prefixed with "i".
+  env          - Shell environment in effect during pkg construction.
+
+EOF
+		exit 0;
 	}
+
+	Fink::Package->require_packages();
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
+	# handle clustered param values
+	@fields   = split /,/, lc ( join ',', @fields   ) if @fields;
+	@percents = split /,/,    ( join ',', @percents ) if @percents;
+
+	my @pkglist = &expand_packages(@_);
+	if (! @pkglist) {
+		die "fink dumpinfo: no package(s) specified\nType 'fink dumpinfo --help' for more information.\n";
+	}
+
+	foreach my $pkg (@pkglist) {
+
+		# default to all fields if no fields or %expands specified
+		if ($wantall or not (@fields or @percents)) {
+			@fields = (qw/
+					   infofile package epoch version revision parent family
+					   status allversions
+					   description type license maintainer
+					   pre-depends depends builddepends
+					   provides replaces conflicts buildconflicts
+					   recommends suggests enhances
+					   essential builddependsonly
+					   custommirror
+					   /);
+			foreach ($pkg->get_source_suffices) {
+				if ($_ eq "") {
+					push @fields, (qw/
+								   source sourcerename source-md5
+								   nosourcedirectory sourcedirectory
+								   tarfilesrename
+								   /);
+				} else {
+					push @fields, ("source${_}", "source${_}rename",
+								   "source${_}-md5",
+								   "source${_}extractdir",
+								   "tar${_}filesrename"
+								  );
+				}
+			}
+			push @fields, (qw/
+						   updateconfigguess updateconfigguessindirs
+						   updatelibtool updatelibtoolindirs
+						   updatepomakefile
+						   patch patchscript /,
+						   $pkg->params_matching(/^set/),
+						   $pkg->params_matching(/^noset/),
+						   qw/
+						   env
+						   configureparams gcc compilescript noperltests
+						   updatepod installscript
+						   jarfiles docfiles shlibs runtimevars splitoffs files
+						   preinstscript postinstscript
+						   prermscript postrmscript
+						   conffiles infodocs daemonicname daemonicfile
+						   homepage descdetail descusage
+						   descpackaging descport
+						   /);
+		};
+
+		foreach (@fields) {
+			if ($_ eq 'infofile') {
+				printf "infofile: %s\n", $pkg->get_info_filename();
+			} elsif ($_ eq 'package') {
+				printf "%s: %s\n", $_, $pkg->get_name();
+			} elsif ($_ eq 'version') {
+				printf "%s: %s\n", $_, $pkg->get_version(); 
+			} elsif ($_ eq 'revision') {
+				printf "%s: %s\n", $_, $pkg->param_default('revision', '1');
+			} elsif ($_ eq 'parent') {
+				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
+			} elsif ($_ eq 'splitoffs') {
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->{_splitoffs}} if defined $pkg->{_splitoffs} and @{$pkg->{_splitoffs}};
+			} elsif ($_ eq 'family') {
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(1, 1);
+			} elsif ($_ eq 'status') {
+				my $package = Fink::Package->package_by_name($pkg->get_name());
+				my $lversion = &latest_version($package->list_versions());
+				print "$_:";
+				$pkg->get_fullversion eq $lversion
+					? print " latest"
+					: print " old";
+				print " have-deb" if $pkg->is_present();
+				print " installed" if $pkg->is_installed();
+				print "\n";
+			} elsif ($_ eq 'allversions') {
+				# multiline field, so indent 1 space always
+				my $pkgname = $pkg->get_name();
+				my $package = Fink::Package->package_by_name($pkgname);
+				my $lversion = &latest_version($package->list_versions());
+				print "$_:\n";
+				foreach (&sort_versions($package->list_versions())) {
+					printf " %1s%1s\t%s\n",
+						( $package->get_version($_)->is_present() or $config->binary_requested() && $package->get_version($_)->is_aptgetable() ) ? "b" : "",
+						$package->get_version($_)->is_installed() ? "i" : "",
+						$_;
+				}
+			} elsif ($_ eq 'description') {
+				printf "%s: %s\n", $_, $pkg->get_shortdescription;
+			} elsif ($_ =~ /^desc(packaging|port)$/) {
+				# multiline field, so indent 1 space always
+				# format_description does that for us
+				print "$_:\n", Fink::PkgVersion::format_description($pkg->param($_)) if $pkg->has_param($_);
+			} elsif ($_ =~ /^desc(detail|usage)$/) {
+				# multiline field, so indent 1 space always
+				# format_description does that for us
+				print "$_:\n", Fink::PkgVersion::format_description($pkg->param_expanded($_, 2)) if $pkg->has_param($_);
+			} elsif ($_ eq 'type'       or $_ eq 'license' or
+					 $_ eq 'maintainer' or $_ eq 'homepage'
+					) {
+				printf "%s: %s\n", $_, $pkg->param_default($_,'[undefined]');
+			} elsif ($_ eq 'pre-depends'    or $_ eq 'depends'        or
+					 $_ eq 'builddepends'   or $_ eq 'provides'       or
+					 $_ eq 'replaces'       or $_ eq 'conflicts'      or
+					 $_ eq 'buildconflicts' or $_ eq 'recommends'     or
+					 $_ eq 'suggests'       or $_ eq 'enhances'		
+					) {
+				my $deplist = $pkg->pkglist($_);
+				printf "%s: %s\n", $_, $deplist if defined $deplist;
+			} elsif ($_ eq 'essential'         or $_ eq 'builddependsonly'  or
+					 $_ =~ /^noset/            or $_ eq 'noperltests'       or
+					 $_ eq 'updatepod'
+					) {
+				my $bool = $pkg->param_boolean($_);
+				if ($bool) {
+					$bool = "true";
+				} elsif (defined $bool) {
+					$bool = "false";
+				} else {
+					$bool = "[undefined]";
+				}
+				printf "%s: %s\n", $_, $bool;
+			} elsif ($_ eq 'nosourcedirectory' or $_ eq 'updateconfigguess' or
+					 $_ eq 'updatelibtool'     or $_ eq 'updatepomakefile'
+					) {
+				# these are not for SplitOff pkgs
+				my $bool = $pkg->param_boolean($_);
+				if ($bool) {
+					$bool = "true";
+				} elsif (defined $bool) {
+					$bool = "false";
+				} else {
+					$bool = "[undefined]";
+				}
+				printf "%s: %s\n", $_, $bool unless exists $pkg->{parent};
+			} elsif ($_ eq 'sources') {
+				# multiline field, so indent 1 space always
+				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;
+				if (@suffixes) {
+					print "$_:\n";
+					print map { " $_\n" } @suffixes;
+				}
+			} elsif ($_ =~ /^source(\d*)$/) {
+				my $src = $pkg->get_source($1);
+				printf "%s: %s\n", $_, $src if defined $src && $src ne "none";
+			} elsif ($_ eq 'gcc' or $_ eq 'epoch' or $_ =~ /^source\d*-md5$/) {
+				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
+			} elsif ($_ eq 'configureparams') {
+				my $cparams = &expand_percent(
+					$pkg->prepare_percent_c,
+					$pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion
+				);
+				$cparams =~ s/\n//g;
+				printf "%s: %s\n", $_, $cparams if length $cparams;
+			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
+					 $_ =~ /^tar\d*filesrename$/ or
+					 $_ =~ /^update(configguess|libtool)indirs$/ or
+					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf)files$/ or
+					 $_ eq 'patch' or $_ eq 'infodocs' or
+					 $_ =~ /^daemonicname$/
+					) {
+				# singleline fields start on the same line, have
+				# embedded newlines removed, and are not wrapped
+				if ($pkg->has_param($_)) {
+					my $value = $pkg->param_expanded($_);
+					$value =~ s/^\s+//m;
+					$value =~ s/\n/ /g; # merge into single line
+					printf "%s: %s\n", $_, $value;
+				}
+			} elsif ($_ eq 'files') {
+				# singleline fields start on the same line, have
+				# embedded newlines removed, and are not wrapped
+				# need conditionals processing
+				if ($pkg->has_param($_)) {
+					my $value = $pkg->conditional_space_list(
+						$pkg->param_expanded("Files"),
+						"Files of ".$pkg->get_fullname()." in ".$pkg->get_info_filename
+					);
+					printf "%s: %s\n", $_, $value if length $value;
+				}
+			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
+				# multiline fields start on a new line and are
+				# indented one extra space
+				if ($pkg->has_param($_)) {
+					my $value = $pkg->param_expanded($_);
+					$value =~ s/^/ /gm;
+					printf "%s:\n%s\n", $_, $value;
+				}
+			} elsif ($_ =~ /^(patch|compile|install)script$/) {
+				# multiline field with specific accessor
+				my $value = $pkg->get_script($_);
+				if (length $value) {
+					$value =~ s/^/ /gm;
+					printf "%s:\n%s\n", $_, $value;
+				}
+			} elsif ($_ eq 'env') {
+				# multiline field, but has special format and own accessor
+				my $value = $pkg->get_env;
+				printf "%s:\n", $_;
+				print map { " $_=".$value->{$_}."\n" } sort keys %$value;
+			} else {
+				die "Unknown field $_\n";
+			}
+		}
+		$pkg->prepare_percent_c;
+		foreach (@percents) {
+			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
+			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);
+		}
+	}
+}
+
+# display the dependencies "from a user's perspective" of a given package
+sub cmd_show_deps {
+	my( $field, $pkglist, $did_print );  # temps used in dep-listing loops
+
+	my @plist = &expand_packages(@_);
+	if ($#plist < 0) {
+		die "no package specified for command 'show-deps'!\n";
+	}
+
+	print "\n";
+
+	foreach my $pkg (@plist) {
+		my @relatives = ();
+		if (exists $pkg->{_relatives}) {
+			@relatives = @{$pkg->{_relatives}};
+		}
+
+		printf "Package: %s (%s)\n", $pkg->get_name(), $pkg->get_fullversion();
+
+		print "To install the compiled package...\n";
+
+		print "  The following other packages (and their dependencies) must be installed:\n";
+		&show_deps_display_list(
+			[qw/ Depends Pre-Depends /],
+			[ $pkg ],
+			0
+		);
+		
+		print "  The following other packages must not be installed:\n";
+		&show_deps_display_list(
+			[qw/ Conflicts /],
+			[ $pkg ],
+			0
+		);
+
+		print "To compile this package from source...\n";
+
+		print "  The following packages are also compiled at the same time:\n";
+		if (@relatives) {
+			foreach (@relatives) {
+				printf "    %s (%s)\n", $_->get_name(), $_->get_fullversion();
+			}
+		} else {
+			print "    [none]\n";
+		}
+
+		print "  The following other packages (and their dependencies) must be installed:\n";
+		&show_deps_display_list(
+			[qw/ Depends Pre-Depends BuildDepends /],
+			[ $pkg, @relatives ],
+			1
+		);
+
+		print "  The following other packages must not be installed:\n";
+		&show_deps_display_list(
+			[qw/ BuildConflicts /],
+			[ $pkg, @relatives ],
+			1
+		);
+
+		print "\n";
+	}
+}
+
+# pretty-print a set of PkgVersion::pkglist (each "or" group on its own line)
+# pass:
+#   ref to list of field names
+#   ref to list of PkgVersion objects
+#   boolean whether to exclude packages themselves when printing
+sub show_deps_display_list {
+	my $fields = shift;
+	my $pkgs = shift;
+	my $exclude_selves = shift;
+
+	my $family_regex;
+	if ($exclude_selves) {
+		# regex for any ("or") package name from the given pkgs
+		$family_regex = join '|', map { qr/\Q$_\E/i } map { $_->get_name() } (@$pkgs);
+	}
+
+	my $field_value;    # used in dep processing loop (string from pkglist())
+
+	my $did_print = 0;  # did we print anything at all?
+	foreach my $field (@$fields) {
+		foreach (@$pkgs) {
+			next unless defined( $field_value = $_->pkglist($field) );
+			foreach (split /\s*,\s*/, $field_value) {
+				# take each requested field of each requested pkg
+				# and parse apart "and"-separated "or" groups
+
+				if (defined $family_regex) {
+					# optionally remove own family from build-time deps
+					while (s/(\A|\|)\s*($family_regex)\s*(\(.*?\))?\s*(\||\Z)/|/) {};
+					s/^\s*\|\s*//;
+					s/\s*\|\s*$//;
+				}
+
+				if (length $_) {
+					printf "    %s\n", $_;
+					$did_print++;
+				}
+			}
+		}
+	}
+	print "    [none]\n" unless $did_print;
+
 }
 
 ### EOF
