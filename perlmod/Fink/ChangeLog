@@ -1,4 +1,10 @@
-2005-02-06  Justin F. Hallett  <thesin@users.sourceforge.net>
+2005-02-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Services.pm: Fixed read_properties_lines so that it allows white
+	spaces at the beginning of the line that should allow heredoc nested
+	heredocs to have structure.  ie: Info2: <<
+
+2005-02-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Removed ref to {SHLIB_DEPS} and added RunTimeDepends to
 	depends duplication checks (Allows for a maintainer to force a certain
