@@ -347,7 +347,7 @@ EOF
 	my ($tree, @prevcomp);
 
 	foreach $tree (split(/\s+/, $trees)) {
-		$tree =~ /(\w+)\/(\w+)/;
+		$tree =~ /(\w+)\/(.*)$/;
 		if ($prevdist eq $1) {
 			push @prevcomp, $2;
 		} else {

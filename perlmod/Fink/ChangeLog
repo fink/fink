@@ -1,3 +1,7 @@
+2004-08-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm: correct the regex for parsing Trees in write_sources_list
+
 2004-08-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: cleaner form of the existing code for detecting
