@@ -1,3 +1,8 @@
+2003-10-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.14.3, a beta release
+	for folks testing 10.2-gcc3.3 (and 10.3)
+
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.14.2, a bugfix
