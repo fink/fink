@@ -140,7 +140,7 @@ sub process {
 	my $orig_ARGV = shift;
 	my $cmd = shift;
 	my @args = @_;
-
+	
 	my $start = time;
 	my ($proc, $pkgflag, $rootflag, $aptgetflag);
 
@@ -221,7 +221,7 @@ sub process {
 	$::SIG{INT} = 'DEFAULT';
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
 	Fink::PkgVersion->clear_buildlock();       # always clean up
-
+	
 	# Rebuild the command line, for user viewing
 	my $commandline = join ' ', 'fink', @$orig_ARGV;
 	my $notifier = Fink::Notify->new();
