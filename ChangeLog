@@ -8,6 +8,8 @@
 
 	* inject.pl: include the new shlibs.default.in in the tarball
 
+	* bootstrap.pl: include new shlibs.default.in during bootstrap
+
 2002-10-10 Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* packages: contents of obsolete packages directory removed
