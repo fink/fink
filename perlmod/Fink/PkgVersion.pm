@@ -1368,7 +1368,7 @@ sub resolve_depends {
 					if (Fink::Config::verbosity_level() > 2) {
 						print "info file...\n";
 					}
-					push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default("Build".$field, ""));
+					push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
 				}
 			}
 		}
@@ -1463,6 +1463,7 @@ sub get_binary_depends {
 	# TODO: modify dependency list on the fly to account for minor
 	#	 library versions
 
+	### FIXME shlibs, added for RunTimeDepends
 	$depspec1 = $self->pkglist_default("RunTimeDepends", "");
 	$depspec2 = $self->pkglist_default("Depends", "");
 
