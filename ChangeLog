@@ -1,3 +1,7 @@
+2001-06-23  Christoph Pfisterer  <cp@chrisp.de>
+
+	* VERSION: Bumped fink version to 0.2.2.
+
 2001-06-22  Christoph Pfisterer  <cp@chrisp.de>
 
 	* README, INSTALL, USAGE: Updated for the upcoming 0.2.2 release.
