@@ -1,5 +1,9 @@
 2004-03-18  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Fixed regex error in params_matching for SplitOffN.
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: %p/src isn't reliable (FetchAltDir and Buildpath
 	in fink.conf), so warn if it's used.
 

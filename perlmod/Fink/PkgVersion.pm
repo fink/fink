@@ -205,7 +205,7 @@ sub initialize {
 		}
 	} else {
 		# handle splitoff(s)
-		foreach ($self->params_matching('SplitOff[2-9]|[1-9]\d+')) {
+		foreach ($self->params_matching('SplitOff(?:[2-9]|[1-9]\d+)')) {
 			push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
 		}
 	}
