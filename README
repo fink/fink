@@ -1,4 +1,4 @@
- Fink 0.1.5
+ Fink 0.1.6
 ============
 
 This is Fink, a package management system that aims to bring the full
@@ -12,7 +12,7 @@ them. The information about available packages and the neccessary
 patches are included with this distribution, everything else is
 downloaded off the 'net.
 
-This is version 0.1.5, an early development release. It has rough
+This is version 0.1.6, an early development release. It has rough
 edges everywhere, and some things don't work yet. Also, the list of
 packages is quite short. You're walking on thin ground. It could easily
 break your system (although it hasn't broken mine to date). You have
@@ -67,6 +67,17 @@ much has changed.
 
 To update all packages to the latest version use the 'update-all'
 command (see below).
+
+Special package update notes:
+
+- When updating the libtiff package from version 3.4, don't remove
+  /sw/stow/libtiff-3.4-1/lib/libtiff.dylib, or rebuild all packages
+  that depend on libtiff.
+- The new revision of the dlcompat package will remove the header and
+  library from /usr/local and install a symlink for compatibility with
+  binaries and libraries linked against the old package. It will try
+  to use sudo for this (as it did when the old package was
+  installed). On new installations, sudo is not needed.
 
 
  Using Fink
