@@ -1,5 +1,7 @@
 2001-08-01  Christoph Pfisterer  <cp@chrisp.de>
 
+	* VERSION: Bumped fink version to 0.2.4.
+
 	* INSTALL, INSTALL.html: Added update fast track
 
 2001-07-31  Christoph Pfisterer  <cp@chrisp.de>
