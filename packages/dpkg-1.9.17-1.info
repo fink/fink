@@ -1,9 +1,9 @@
 Package: dpkg
-Version: 1.9.16
-Revision: 3
-Source: http://http.us.debian.org/debian/project/dpkg/%n-%v.tar.gz
+Version: 1.9.17
+Revision: 1
 Depends: gettext, libiconv, gzip, tar, ncurses
 Essential: yes
+Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
 PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/%f.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 SetCC: cc

@@ -2,7 +2,7 @@ Package: apt
 Version: 0.5.3
 Revision: 5
 Depends: dpkg
-Source: http://http.us.debian.org/debian/pool/main/a/apt/%n_%v.tar.gz
+Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
 SourceDirectory: apt
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1

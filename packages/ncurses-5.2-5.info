@@ -1,7 +1,7 @@
 Package: ncurses
 Version: 5.2
 Revision: 5
-Source: gnu
+Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 Patch: %f.patch

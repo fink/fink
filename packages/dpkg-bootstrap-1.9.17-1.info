@@ -1,8 +1,8 @@
 Package: dpkg-bootstrap
-Version: 1.9.16
-Revision: 3
-Source: http://http.us.debian.org/debian/project/dpkg/dpkg-%v.tar.gz
+Version: 1.9.17
+Revision: 1
 Depends: gettext, gzip, tar
+Source: http://fink.sourceforge.net/bindist/source/dpkg-%v.tar.gz
 PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/dpkg-%v-%r.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 SetCC: cc

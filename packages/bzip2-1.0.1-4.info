@@ -1,9 +1,7 @@
 Package: bzip2
 Version: 1.0.1
 Revision: 4
-Source: http://www.digistar.com/bzip2/v100/bzip2-%v.tar.gz
-# master server is too crowded...
-#Source: ftp://sourceware.cygnus.com/pub/bzip2/v100/bzip2-%v.tar.gz
+Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 Patch: %f.patch

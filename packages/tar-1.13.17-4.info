@@ -3,7 +3,7 @@ Version: 1.13.17
 Revision: 4
 Essential: yes
 Depends: gettext, gzip, bzip2, base-files
-Source: ftp://alpha.gnu.org/gnu/%n/%n-%v.tar.gz
+Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
 UpdateConfigGuess: true
 ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib
 InstallScript: <<

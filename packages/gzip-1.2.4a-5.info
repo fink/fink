@@ -1,7 +1,7 @@
 Package: gzip
 Version: 1.2.4a
 Revision: 5
-Source: gnu
+Source: http://fink.sourceforge.net/bindist/source/%n-%v.tar.gz
 Essential: yes
 Depends: base-files
 PatchScript: mv -f INSTALL INSTALL.txt
