@@ -24,7 +24,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-PATH=BASEPATH/bin:BASEPATH/bin/powerpc-apple-darwin1.2:BASEPATH/sbin:$PATH
+PATH=BASEPATH/bin:BASEPATH/sbin:$PATH
 export PATH
 
 if [ -z "$MANPATH" ]; then

@@ -24,7 +24,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-set path = ( BASEPATH/bin BASEPATH/bin/powerpc-apple-darwin1.2 BASEPATH/sbin $path )
+set path = ( BASEPATH/bin BASEPATH/sbin $path )
 
 if ( $?MANPATH) then
   setenv MANPATH BASEPATH/man:$MANPATH

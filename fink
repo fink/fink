@@ -28,7 +28,7 @@ use lib "$FindBin::RealBin/perlmod";
 
 ### quick check so see if all the user wants is the version number
 
-if ($ARGV[0] =~ /^-?-v(ersion)?$/i) {
+if ($#ARGV >= 0 and $ARGV[0] =~ /^-?-v(ersion)?$/i) {
   use Fink::FinkVersion;
   print "$fink_version\n";
   exit 0;
