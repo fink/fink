@@ -123,15 +123,41 @@ sub fetch_url_to_file {
 		if($dryrun) {
 		  $origmirror->initialize(); # We want every mirror when printing
 		}
-	} else {
+	} elsif ($origurl =~  m|^file://   			
+							(.*?)						# (optional) Path into $1
+							([^/]+$)   					# Tarball into $2
+					 	 |x  ) { 
+		# file:// URLs
+		$path = "file://$1";
+		$basename = $2;
+		$nomirror = 1;
+		#wget does not support file::. Use curl for this fetch. All 10.2+ & 6+ have it.
+		if($config->param_default("DownloadMethod") eq "wget")
+		{	
+			&print_breaking("Notice: wget does not support file://. Using curl for this fetch.");
+			$config->set_param("DownloadMethod", "curl");
+			$cmd = &download_cmd($origurl, $file);
+			$cont_cmd = &download_cmd($origurl, $file, 1);
+			$config->set_param("DownloadMethod", "wget")
+		}
+	} elsif ($origurl =~  m|^([^:]+://[^/]+/)			# Match http://domain/ into $1
+							(.*?)						# (optional) Path into $2
+							([^/]+$)   					# Tarball into $3
+					 	 |x  ) { 
 		# Not a custom mirror, parse a full URL
-		$origurl =~  m|^([^:]+://[^/]+/)			# Match http://domain/ into $1
-						(.*?)						# (optional) Path into $2
-						([^/]+$)   					# Tarball into $3
-					  |x;  
 		$path = $2;
 		$basename = $3;
 		$origmirror = Fink::Mirror->new_from_url($1);
+	} else {
+		# $origurl did not match. Probably a bare tarball name. Check for it
+		# If its not there, fail. No need to ask, since 
+		# We don't complain if they already exists, because the bootstrap does this.
+		if (-f $file)
+		{
+			return 0;
+		} else {
+			return 1;			
+		}
 	}
 
 	# set up the mirror ordering
@@ -151,9 +177,13 @@ sub fetch_url_to_file {
 			$mirror_list[0] = $origmirror;
 		}
 	} else {
-	  push(@mirror_list, $origmirror);
+	  if(defined $origmirror) {
+		  push(@mirror_list, $origmirror);
+		}
 	}
-	$url = $mirror_list[0]->get_site();
+	if(defined $mirror_list[0]) {
+	  $url = $mirror_list[0]->get_site();
+    }
     	
 	### if the file already exists, ask user what to do
 	if (-f $file && !$cont && !$dryrun) {
@@ -182,12 +212,13 @@ sub fetch_url_to_file {
 			$nextmirror = "";
 		}
 		
-		if(($url =~ /^master:/) || ($mirror_list[$mirrorindex]->{name} eq "master")) {
+		if(defined $url && 
+		   (($url =~ /^master:/) || ($mirror_list[$mirrorindex]->{name} eq "master"))) {
 			$url =~ s/^master://;
 			$url .= $masterpath . $file;    # SourceRenamed tarball name
 		} else {
 			$url .= $path . $basename;
-    	}
+    }
     	
 		### fetch $url to $file
 
@@ -223,7 +254,12 @@ sub fetch_url_to_file {
 
 		# let the Mirror object handle this mess...
 		RETRY: {
-			$url = $mirror_list[$mirrorindex]->get_site_retry($nextmirror, $dryrun);
+			if(defined $mirror_list[$mirrorindex])
+			{
+				$url = $mirror_list[$mirrorindex]->get_site_retry($nextmirror, $dryrun);
+			} else {
+				return 1;	
+			}
 		}
 		if ($url eq "retry-next") {
 			# Start new mirror with the last used site, or first site
