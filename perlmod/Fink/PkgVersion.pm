@@ -550,8 +550,19 @@ sub get_checksum {
 	return "-";
 }
 
+# return the number of source items stored in an object
+sub get_source_items_count {
+	my $self = shift;
+	return scalar $self->get_source_items_list;
+}
+
+# return a (possibly null but always defined) list of the source items
+# stored in in an object
 sub get_source_items_list {
 	my $self = shift;
+
+	return () unless exists  $self->{_source_items};
+	return () unless defined $self->{_source_items};
 
 	# need to do deep copy because _source_items is a ref to a
 	# list of hashes and we don't want the caller to accidentally

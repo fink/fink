@@ -1,3 +1,8 @@
+2004-01-10  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Added get_source_items_count() and
+	sanity-checking for get_source_items_list().
+
 2004-01-10  Daniel Macks  <dmacks@netpace.org>
 
 	* Base.pm: Added params_matching, a method to return the names of
