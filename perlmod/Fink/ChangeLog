@@ -1,4 +1,10 @@
+2004-01-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm:  Use eval{} instead of a subroutine to implement the 
+	timeout  (and remove superfluous function stdin_timeout.)
+
 2004-01-04  David Höhn <dmalloc@users.sourceforge.net>
+
 	* Package.pm: Changed Storable method from store() to lock_store()
 	This should help use phase out problems when a fink index tries to write
 	almost at the same time

@@ -632,24 +632,6 @@ sub print_breaking {
 	print "\n" if $linebreak;
 }
 
-=item stdin_timeout
-    my $answer = stdin_timeout $timeout;
-
-This function is not exported.
-
-Prompt the user for input, but timeout after $timeout seconds.
-
-=cut
-
-sub stdin_timeout {
-    local $SIG{ALRM} = sub {print "\n\nTIMEOUT: using default answer.\n"; return };
-    my $timeout = shift;
-    alarm $timeout;
-    my $answer = <STDIN>;
-    alarm(0);
-    return $answer;
-}
-
 =item prompt
     my $answer = prompt $prompt;
     my $answer = prompt $prompt, $default;
@@ -719,7 +701,16 @@ sub prompt_boolean {
 			last;
 		}
 		if (defined $timeout) {
-		    $answer = &stdin_timeout($timeout) || "";
+		    $answer = eval {
+			local $SIG{ALRM} = sub {
+			    print "\n\nTIMEOUT: using default answer.\n";
+			    die;
+			};
+			alarm $timeout;
+			my $answer = <STDIN>;
+			alarm(0);
+			return $answer;
+		    } || "";
 		} else {
 		    $answer = <STDIN> || "";
 		}
