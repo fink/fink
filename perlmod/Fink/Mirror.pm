@@ -76,13 +76,13 @@ sub new_from_name {
 	$self->{name} = $name;
 
 	my $mirrorfile = "$libpath/mirror/$name";
-        # set default values for critical mirrors, in case mirror directory
-        # is not present
+	# set default values for critical mirrors, in case mirror directory
+	# is not present
 	my %mirrordefaults = (
 		"master" => "Primary: http://distfiles.master.finkmirrors.net/",
 		"rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
 		"sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
-			      );
+		);
 	my ($key, $mirrordefault);
 	if (not -f $mirrorfile) {
 		foreach $key ( keys %mirrordefaults ) {
