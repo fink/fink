@@ -1,0 +1,11 @@
+Package: hx
+Version: 0.1.39
+Revision: 2
+Source: http://www.hotlinex.org/hxd-%v.tar.gz
+Depends: readline
+ConfigureParams: --enable-hotline-client
+Patch: %f.patch
+InstallScript: 	mkdir -p %i/bin
+		cp hx %i/bin/
+Maintainer: Finlay Dobbie <finlay.dobbie@btinternet.com>
+Homepage: http://www.hotlinex.org/

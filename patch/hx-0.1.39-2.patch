@@ -1,0 +1,13 @@
+diff -ru hxd-0.1.39/Makefile.in hxd-0.1.39-patched/Makefile.in
+--- hxd-0.1.39/Makefile.in	Sat Jul 15 02:49:31 2000
++++ hxd-0.1.39-patched/Makefile.in	Sun Mar 18 01:31:26 2001
+@@ -9,7 +9,7 @@
+ CFLAGS = @CFLAGS@
+ DEFS = @DEFS@ -D_REENTRANT -D_GNU_SOURCE
+ GINCLUDES = @GINCLUDES@
+-INCLUDES = @INCLUDES@ $(GINCLUDES) -I$(srcdir)
++INCLUDES = @INCLUDES@ $(GINCLUDES) -I$(srcdir) -I/sw/include
+ WARN = @WARN@
+ LDFLAGS = @LDFLAGS@
+ LIBS = @LIBS@
+ 
