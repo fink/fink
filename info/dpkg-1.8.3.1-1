@@ -3,6 +3,7 @@ Version: 1.8.3.1
 Revision: 1
 Source: http://ftp.us.debian.org/debian/project/dpkg/%n-%v.tar.gz
 Depends: gettext, gzip, tar
+Essential: yes
 Patch: %f.patch
 SetCFLAGS: -traditional-cpp -I%p/include
 SetCC: cc
