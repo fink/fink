@@ -1779,7 +1779,7 @@ EOF
 			} elsif ($_ eq 'type'       or $_ eq 'license' or
 					 $_ eq 'maintainer' or $_ eq 'homepage'
 					) {
-				printf "%s: %s\n", $_, $pkg->param_default($_,'[missing]');
+				printf "%s: %s\n", $_, $pkg->param_default($_,'[undefined]');
 			} elsif ($_ eq 'pre-depends'    or $_ eq 'depends'        or
 					 $_ eq 'builddepends'   or $_ eq 'provides'       or
 					 $_ eq 'replaces'       or $_ eq 'conflicts'      or
@@ -1792,12 +1792,28 @@ EOF
 					 $_ =~ /^noset/            or $_ eq 'noperltests'       or
 					 $_ eq 'updatepod'
 					) {
-				printf "%s: %s\n", $_, $pkg->param_boolean($_) ? "true" : "false";
+				my $bool = $pkg->param_boolean($_);
+				if ($bool) {
+					$bool = "true";
+				} elsif (defined $bool) {
+					$bool = "false";
+				} else {
+					$bool = "[undefined]";
+				}
+				printf "%s: %s\n", $_, $bool;
 			} elsif ($_ eq 'nosourcedirectory' or $_ eq 'updateconfigguess' or
 					 $_ eq 'updatelibtool'     or $_ eq 'updatepomakefile'
 					) {
 				# these are not for SplitOff pkgs
-				printf "%s: %s\n", $_, $pkg->param_boolean($_) ? "true" : "false" unless exists $pkg->{parent};
+				my $bool = $pkg->param_boolean($_);
+				if ($bool) {
+					$bool = "true";
+				} elsif (defined $bool) {
+					$bool = "false";
+				} else {
+					$bool = "[undefined]";
+				}
+				printf "%s: %s\n", $_, $bool unless exists $pkg->{parent};
 			} elsif ($_ eq 'sources') {
 				# multiline field, so indent 1 space always
 				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;

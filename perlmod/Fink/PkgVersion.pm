@@ -2043,13 +2043,13 @@ Section: $section
 Installed-Size: $instsize
 Architecture: $debarch
 EOF
-if ($self->param_boolean("BuildDependsOnly")) {
-	$control .= "BuildDependsOnly: True\n";
-} elsif ($self->has_param("BuildDependsOnly")) {
-	$control .= "BuildDependsOnly: False\n";
-} else {
-	$control .= "BuildDependsOnly: Undefined\n";
-}
+	if ($self->param_boolean("BuildDependsOnly")) {
+		$control .= "BuildDependsOnly: True\n";
+	} elsif (defined $self->param_boolean("BuildDependsOnly")) {
+		$control .= "BuildDependsOnly: False\n";
+	} else {
+		$control .= "BuildDependsOnly: Undefined\n";
+	}
 	if ($self->param_boolean("Essential")) {
 		$control .= "Essential: yes\n";
 	}

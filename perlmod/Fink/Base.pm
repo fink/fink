@@ -189,7 +189,8 @@ sub param_default {
   my $value = $obj->param_boolean($param);
 
 Interprets the value of $param as a boolean.  "True", "Yes", "On" and "1" are
-all considered true while everything else is false.
+all considered true while all other values are considered false. Returns 1 for
+true, 0 for false, and undef if the field is not present at all.
 
 =cut
 
@@ -203,8 +204,9 @@ sub param_boolean {
 		if ($param_value =~ /^\s*(true|yes|on|1)\s*$/) {
 			return 1;
 		}
+		return 0;
 	}
-	return 0;
+	return undef;
 }
 
 =item has_param

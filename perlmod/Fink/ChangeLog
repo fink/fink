@@ -1,3 +1,8 @@
+2004-06-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Base.pm: param_boolean now returns undef if field is not present.
+	* Engine.pm, PkgVersion.pm: update to use new tristate param_boolean.
+
 2004-06-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Stop ccache from making root-owned files in
