@@ -1,3 +1,7 @@
+2003-12-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Detect Java3D and Java Advanced Imaging
+
 2003-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Recognize darwin 7.2.0.
