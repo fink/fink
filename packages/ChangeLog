@@ -1,3 +1,7 @@
+2002-06-14  Max Horn  <max@quendi.de>
+	
+	* updated gettext and libiconv to fix gcc3/10.2 issues
+
 2002-06-08  Max Horn  <max@quendi.de>
 	
 	* updated ncurses package to match (un)stable CVS (fixes gcc 3 build problem)
