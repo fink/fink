@@ -279,7 +279,8 @@ sub validate_info_file {
          or $field =~ m/^source([2-9]|\d\d)$/
          or $field =~ m/^source([2-9]|\d\d)-md5$/
          or $field =~ m/^source([2-9]|\d\d)extractdir$/
-         or $field =~ m/^source([2-9]|\d\d)rename$/) {
+         or $field =~ m/^source([2-9]|\d\d)rename$/
+         or $field =~ m/^tar([2-9]|\d\d)filesrename$/) {
       print "Warning: Field \"$field\" is unknown. ($filename)\n";
       $looks_good = 0;
       next;

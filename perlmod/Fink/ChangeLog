@@ -1,5 +1,7 @@
 2002-10-14  Max Horn  <max@quendi.de>
 
+	* Validation.pm: Recognize Tar??FilesRename field
+
 	* Engine.pm: Once more install all splitoffs with a single call to dpkg
 	  (this is done to avoid certain update troubles with splitoffs).
 
