@@ -1123,31 +1123,39 @@ sub real_install {
 				$candidates{$dp->get_name()} = 1;
 				push @candidates, $dp->get_name();
 			}
-			$found = 0;
 
-			if ($#candidates == 0) {	# only one candidate
+			# At this point, we are trying to fulfill a dependency. In the loop
+			# above, we determined all potential candidates, i.e. packages which
+			# would fulfill the dep. Now we have to decide which to use.
+
+			$found = 0;		# Set to true once we decided which candidate to support.
+
+
+			# Trivial case: only one candidate, nothing to be done, just use it.
+			if ($#candidates == 0) {
 				$dname = $candidates[0];
 				$found = 1;
 			}
 
+			# Next, we check if by chance one of the candidates is already
+			# installed. If so, that is the natural choice to fulfill the dep.
 			if (not $found) {
-				# check for installed pkgs (by name)
 				my $cand;
 				foreach $cand (@candidates) {
 					$pnode = Fink::Package->package_by_name($cand);
 					if ($pnode->is_any_installed()) {
 						$dname = $cand;
-						$found++;
+						$found = 1;
 						last;
 					}
 				}
 			}
 
+			# Next, check if a relative of a candidate has already been marked
+			# for installation (or is itself a dependency). If so, we use that
+			# candidate to fulfill the dep.
+			# This is a heuristic, but usually does exactly "the right thing".
 			if (not $found) {
-
-				# check if a sibling package has been marked for install
-				# if so, choose it instead of asking
-
 				my ($cand, $splitoff);
 				SIBCHECK: foreach $cand (@candidates) {
 					my $package = Fink::Package->package_by_name($cand);
@@ -1158,19 +1166,19 @@ sub real_install {
 						foreach $splitoff (@{$vo->{_relatives}}) {
 							# if the package is being installed, or is already installed,
 							# auto-choose it
-							if ( exists $deps{$splitoff->get_name()} ) {
+							if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
 								$dname = $cand;
-								$found++;
-							} elsif ( $splitoff->is_installed() ) {
-								$dname = $cand;
-								$found++;
+								$found = 1;
+								last;
 							}
 						}
 					}
 				}
 			}
+
+			# No decision has been made so far. Now see if the user has set a
+			# regexp to match in fink.conf.
 			if (not $found) {
-				# See if the user has a regexp to match in fink.conf
 				my $matchstr = $config->param("MatchPackageRegEx");
 				my (@matched, @notmatched);
 				if (defined $matchstr) {
@@ -1181,7 +1189,7 @@ sub real_install {
 							push(@notmatched, $dname);
 						}
 					}
-					if (1 == @matched ) {
+					if (1 == @matched) {
 						# we have exactly one match, use it
 						$dname = pop(@matched);
 						$found = 1;
@@ -1192,9 +1200,10 @@ sub real_install {
 					}
 				}
 			}
-			if (not $found) {
-				# let the user pick one
 
+			# None of our heuristics managed to narrow down the list to a
+			# single choice. So as a last resort, ask the use!
+			if (not $found) {
 				my @choices = ();
 				my $pkgindex = 1;
 				my $choice = 1;
@@ -1473,8 +1482,7 @@ sub real_install {
 				unless ($forceoff) {
 					### Double check it didn't already get
 					### installed in an other loop
-					unless ($package->is_installed() &&
-						$op != $OP_REBUILD) {
+					if (!$package->is_installed() || $op == $OP_REBUILD) {
 						$package->phase_unpack();
 						$package->phase_patch();
 						$package->phase_compile();
