@@ -1,6 +1,6 @@
-#! /bin/sh 
+#!/bin/sh 
 #
-# Shell script for preparing the user's shell startup scripts for Fink. CLI version.
+# Shell script for preparing the user's shell startup scripts for Fink.
 # Copyright (c) 2003-2004 Martin Costabel
 # Copyright (c) 2003-2004 The Fink Package Manager Team
 #
@@ -24,6 +24,13 @@
 # for other sh type shells it does nothing.
 
 # Function declarations:
+
+do_isconsole() {
+# Test whether we can use Finder popup windows
+    ONCONSOLE=NO
+    /bin/ps x -U $USER | grep Finder | grep -v grep >/dev/null && ONCONSOLE=YES
+    [ "x$SCRIPT_NAME" = "xpostflight" ] && ONCONSOLE=YES 
+}
 
 do_login_test () {
 # Start a login session to see whether the PATH is already set up for Fink. 
@@ -59,51 +66,107 @@ msg_create () {
     echo I will create a file named $RC in your
     echo home directory, containing one line
     echo
+    case $ONCONSOLE in
+        YES)
+    echo \\\"$SOURCECMD\\\"
+    ;;
+        NO)
     echo "   \"$SOURCECMD\""
+    ;;
+    esac
 }
 
 msg_append () {
     echo I will append a line
     echo
+    case $ONCONSOLE in 
+	YES)
+    echo \\\"$SOURCECMD\\\"
+    ;;
+	NO)
     echo "   \"$SOURCECMD\""
+    ;;
+    esac
     echo
     echo to the file $RC in your home directory.
 }		       
 
 msg_choose (){
     echo If you do not want me to do this, 
+    case $ONCONSOLE in
+        YES)
+    echo you can answer \\\"No\\\" here  
+    echo and do it later manually.
+    ;;
+	NO)
     echo "you can answer \"No\" here and do it later manually."
+    ;;
+    esac
     echo
     echo -n Continue\?
 }
 
 display_choose () {
+    case $ONCONSOLE in
+        YES)
+# display choice popup
+   osascript <<-EOF
+   tell application "Finder"
+      activate
+      set dd to display dialog "`msg_title`\nYour login shell: $LOGINSHELL\n\n`$MSG` \n\n`msg_choose`\n" buttons {"No, thanks", "YES"} default button 2 giving up after 30
+      set UserResponse to button returned of dd
+   end tell
+EOF
+   ;;
+	NO)
 # display choice dialog
     msg_title; echo "Your login shell: $LOGINSHELL"; echo ""
     $MSG; echo ""
     msg_choose
     echo -n " [Y/n] "
-    read answer
+    read -t 20 answer
     answer=`echo $answer | sed 's/^[yY].*$/y/'`
     if [ ! -z "$answer" -a "x$answer" != "xy" ]; then
-	answer="No, thanks"
+       answer="No, thanks"
     fi
+    ;;
+    esac
 }
 
 display_result (){
 # display final result
+    case $ONCONSOLE in
+        YES)
+   osascript <<-EOF
+   tell application "Finder"
+      activate
+      set dd to display dialog "`msg_title`\n$Result\n" buttons {"OK"} default button 1 with icon caution giving up after 20
+      set UserResponse to button returned of dd
+   end tell
+EOF
+   ;;
+	NO)
    printf "$Result" 
+   ;;
+    esac
 }
 
 display_choose_do (){
 # propose choice, append line to startup script, and verify if it worked
+    case $ONCONSOLE in
+        YES)
+    answer=`display_choose`
+    ;;
+	NO)
     display_choose
+    ;;
+    esac
     if [ "$answer" != "No, thanks" ]; then
 	echo "" >> $HOME/$RC
 	echo "$SOURCECMD" >> $HOME/$RC
 	do_login_test
 	if grep @PREFIX@/sbin $TMPFILE >/dev/null 2>&1 ; then
-	    Result="\n Your Fink environment should be fine now.\n\n"
+	    Result="\n Your Fink setup should be fine now.\n\n"
 	else
 	    Result="\n
 Hmm. I tried my best, but it still does not work.
@@ -126,7 +189,20 @@ msg_already_setup (){
 }
 
 display_already_setup (){
-    msg_title; echo""; msg_already_setup 
+    case $ONCONSOLE in
+        YES)
+    osascript <<-EOF
+    tell application "Finder"
+	activate
+	set dd to display dialog "`msg_title`\n\n`msg_already_setup`" buttons {"OK"} default button 1 giving up after 20 
+    set UserResponse to button returned of dd
+    end tell
+EOF
+    ;;
+	NO)
+    msg_title; echo""; msg_already_setup
+    ;;
+    esac
 }
 # End of function declarations
 
@@ -134,6 +210,9 @@ display_already_setup (){
 
 # A temporary file for communicating with a login shell 
 TMPFILE=`/usr/bin/mktemp /tmp/resu.XXXXXX`
+
+# Are we logged in at the console?
+do_isconsole
 
 # Run a login shell to see whether the fink paths are already set up.
 do_login_test
