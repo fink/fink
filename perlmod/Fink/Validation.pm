@@ -552,6 +552,36 @@ sub validate_info_file {
 				}
 			}
 		
+			if (exists $splitoff_properties->{shlibs}) {
+				my @shlibs = split /\n/, $splitoff_properties->{shlibs};
+				chomp @shlibs;
+				my %shlibs;
+				foreach (@shlibs) {
+					if (not /^\s*(\S+)\s+(\S+)\s+(\S+)\s*\(\s*>=\s*(\S+)\s*\)\s*$/) {
+						print "Warning: Malformed line in field \"shlibs\" of \"$field\". ($filename)\n  $_\n";
+						$looks_good = 0;
+					} else {
+						my @shlibs_parts = ($1, $2, $3, $4);
+						if (not /^(\%p)?\//) {
+							print "Warning: Pathname \"$shlibs_parts[0]\" is not basolute and is not in \%p in field \"shlibs\" of \"$field\". ($filename)\n";
+							$looks_good = 0;
+						}
+						if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
+							print "Warning: Malformed compatibility_version \"$shlibs_parts[1]\" for $shlibs_parts[0] in field \"shlibs\" of \"$field\". ($filename)\n";
+							$looks_good = 0;
+						}
+						if ($shlibs_parts[3] =~ /%/) {
+							print "Warning: Package version for \"$shlibs_parts[0]\n must be hard-coded in field \"shlibs\" of \"$field\". ($filename)\n";
+							$looks_good = 0;
+						}
+						if ($shlibs{$shlibs_parts[0]}++) {
+							print "Warning: File \"$shlibs_parts[0]\" listed more than once in field \"shlibs\" of \"$field\". ($filename)\n";
+							$looks_good = 0;
+						}
+					}
+				}
+			}
+
 			foreach $field (keys %$splitoff_properties) {
 				$value = $splitoff_properties->{$field};
 
@@ -564,7 +594,6 @@ sub validate_info_file {
 				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
 					print "Warning: Field \"$field\" of \"$splitoff_field\" appears to contain a hardcoded /sw. ($filename)\n";
 					$looks_good = 0;
-					next;
 				}
 
 =pod
@@ -577,7 +606,6 @@ sub validate_info_file {
 				if ($value =~ /\%p\/src\//) {
 					print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
 					$looks_good = 0;
-					next;
 				}
 
 				# Warn if field is unknown or invalid within a splitoff
@@ -588,11 +616,10 @@ sub validate_info_file {
 						print "Warning: Field \"$field\" of \"$splitoff_field\" is unknown. ($filename)\n";
 					}
 					$looks_good = 0;
-					next;
 				}
 			}
 			next;
-		}
+		} # end of SplitOff field validation
 
 		# Warn if field is unknown
 		unless ($valid_fields{$field}
@@ -779,6 +806,14 @@ sub validate_dpkg_file {
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
 			} elsif ( $filename =~/^$basepath\/include\S*[^\/]$/ ) {
 				$installed_headers = 1;
+			} elsif ( $filename =~/^$basepath\/lib\/pkgconfig\/\S+$/ ) {
+				my $depends = `dpkg --field $dpkg_filename Depends`;
+				$depends =~ s/\(.*?\)//g;
+				$depends =~ s/(\A|\s*[,|]\s*|\Z)/ /g;
+				if (not $depends =~ / pkgconfig /) {
+					print "Warning: Package appears to contain pkg-config file but does not depend on the package \"pkgconfig\"\n  Offending file: $filename\n";
+					$looks_good = 0;
+				}
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.
