@@ -418,7 +418,7 @@ sub cmd_apropos {
 	}
 	$description = $vo->get_shortdescription(46);
 
-	next unless $vo->get_shortdescription(150) =~ /$pattern/i;
+	next unless $vo->get_shortdescription(150) =~ /\Q$pattern\E/i;
 
     printf "%s %-15.15s %-11.11s %s\n",
       $iflag, $pname, $lversion, $description;

@@ -1,3 +1,7 @@
+2002-03-09  Max Horn  <max@quendi.de>
+
+	* Engine.pm (cmd_apropos): Fixed apropos commands for strings like "gtk+"
+
 2002-03-07  Max Horn  <max@quendi.de>
 
 	* Engine.pm (real_install): Fix to make rebuilding splitoffs and splitoff
