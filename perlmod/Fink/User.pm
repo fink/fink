@@ -71,7 +71,7 @@ sub add_user {
 	   $cmd .= "-f 0 -g $group -s $shell -u $uid $user";
 
 	if (&execute($cmd)) {
-        die "Can't create user '$user'\n";
+		die "Can't create user '$user'\n";
 	}
 
 	return 0;
@@ -85,7 +85,7 @@ sub del_user {
 	my $cmd = "$basepath/sbin/userdel -r $user";
 
 	if (&execute($cmd)) {
-        die "Can't remove user '$user'\n";
+		die "Can't remove user '$user'\n";
 	}
 
 	return 0;
@@ -103,7 +103,7 @@ sub add_group {
 	my $cmd = "$basepath/sbin/groupadd -g $gid $group";
 
 	if (&execute($cmd)) {
-        die "Can't create group '$group'\n";
+		die "Can't create group '$group'\n";
 	}
 
 	return 0;
@@ -117,7 +117,7 @@ sub del_group {
 	my $cmd = "$basepath/sbin/groupdel $group";
 
 	if (&execute($cmd)) {
-        die "Can't remove group '$group'\n";
+		die "Can't remove group '$group'\n";
 	}
 
 	return 0;
@@ -133,12 +133,14 @@ sub get_id {
 	### ask for uid or gid via type
 	while (not $self->is_id_free($type, $id) {
 		$id = $self->get_next_avail($type);
-		if ($type eq "group") {
-			$id = &prompt("Please enter a GID for $name ".
+		if ($config->param_boolean("AskForID")) {
+			if ($type eq "group") {
+				$id = &prompt("Please enter a GID for $name ".
 			              "[$lowGID...$highGID] ", $id);
-		} else {
-			$id = &prompt("Please enter a UID for $name ".
+			} else {
+				$id = &prompt("Please enter a UID for $name ".
 			              "[$lowUID...$highUID] ", $id);
+			}
 		}
 	}
 
