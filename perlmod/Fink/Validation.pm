@@ -226,7 +226,7 @@ sub validate_info_file {
   # License should always be specified, and must be one of the allowed set
   if ($properties->{license}) {
   	foreach $value (split /\//, $properties->{license}) {
-      if (not %allowed_license_values->{$value}) {
+      if (not $allowed_license_values{$value}) {
         print "Warning: Unknown license \"$value\". ($filename)\n";
         $looks_good = 0;
       }
@@ -238,7 +238,7 @@ sub validate_info_file {
 
   # Check value of type field
   $value = lc $properties->{type};
-  if ($value and not %allowed_type_values->{$value}) {
+  if ($value and not $allowed_type_values{$value}) {
     print "Error: Unknown value \"$value\"in field \"Type\". ($filename)\n";
     $looks_good = 0;
   }
@@ -248,21 +248,21 @@ sub validate_info_file {
     $value = $properties->{$field};
 
     # Warn if field is obsolete
-    if (%obsolete_fields->{$field}) {
+    if ($obsolete_fields{$field}) {
       print "Warning: Field \"$field\" is obsolete. ($filename)\n";
       $looks_good = 0;
       next;
     }
 
     # Boolean field?
-    if (%boolean_fields->{$field} and not (lc $value) =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
+    if ($boolean_fields{$field} and not (lc $value) =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
       print "Warning: Boolean field \"$field\" contains suspicious value \"$value\". ($filename)\n";
       $looks_good = 0;
       next;
     }
 
     # If this field permits percent expansion, check if %f/%n/%v should be used
-    if (%name_version_fields->{$field} and $value) {
+    if ($name_version_fields{$field} and $value) {
        if ($value =~ /\Q$pkgfullname\E/) {
          print "Warning: Field \"$field\" contains full package name. Use %f instead. ($filename)\n";
          $looks_good = 0;
@@ -273,7 +273,7 @@ sub validate_info_file {
     }
 
     # Warn if field is unknown
-    unless (%known_fields->{$field}
+    unless ($known_fields{$field}
          or $field =~ m/^splitoff([2-9]|\d\d)$/
          or $field =~ m/^nosource([2-9]|\d\d)directory$/
          or $field =~ m/^source([2-9]|\d\d)$/
