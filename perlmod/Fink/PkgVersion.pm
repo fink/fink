@@ -1281,7 +1281,6 @@ sub resolve_depends {
 		# declarations have not been violated (of course we only do that when generating
 		# a 'depends' list, not for 'conflicts').
 		foreach $altspecs (@speclist){
-			next if ($altspecs eq '{SHLIB_DEPS}');
 			## Determine if it has a multi type depends line thus
 			## multi pkgs can satisfy the depend and it shouldn't
 			## warn if certain ones aren't found, as long as any one of them is
@@ -1376,7 +1375,6 @@ sub resolve_depends {
 	}
 
 	SPECLOOP: foreach $altspecs (@speclist) {
-		next if ($altspecs eq '{SHLIB_DEPS}');
 		$altlist = [];
 		@altspec = split(/\s*\|\s*/, $altspecs);
 		$found = 0;
@@ -2356,9 +2354,9 @@ EOF
 		foreach (@$_) {
 			$has_kernel_dep = 1 if /^$kernel(\Z|\s|\()/;
 
-			### Add {SHLIB_DEPS} replace code here
-			### 1) check for {SHLIB_DEPS} else continue
-			if (/\{SHLIB_DEPS\}/) {
+			### Add shlib depends code here
+			### 1) check for 'AddShlibDeps: true' else continue
+			if ($self->param_boolean("AddShlibDeps")) {
 				print "Writing shared library dependencies...\n";
         
 				### 2) get a list to replace it with

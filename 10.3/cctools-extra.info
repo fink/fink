@@ -8,8 +8,9 @@ Source-MD5: 3107c790a55595c6410696ebb7ea80a9
 SourceDirectory: cctools-%v
 Patch: %n.patch
 Essential: yes
-Depends: {SHLIB_DEPS}, base-files
+Depends: base-files
 BuildDepends: gcc3.3
+AddShlibDeps: true
 SetCC: gcc-3.3
 SetCXX: g++-3.3
 CompileScript: <<

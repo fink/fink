@@ -100,6 +100,7 @@ sub check_files {
 	@splits = $pkg->get_splitoffs(1, 1);
 
 	# Get depends line and builddepends lines for compares
+	# FIXME add RunTimeDepends to this array
 	@deplines = split(/\s*\,\s*/, $pkg->param_default("Depends", ""));
 	@builddeps = split(/\s*\,\s*/, $pkg->param_default("BuildDepends", ""));
 
@@ -162,7 +163,6 @@ sub check_files {
 				### Check that a dep isn't already explicitly
 				### set
 				foreach $depline (@deplines) {
-					next if ($depline eq "{SHLIB_DEPS}");
 					if ($depline =~ /^(\S*)\s*\((.*)\)$/) {
 						$vers = $2;
 						$dep = $1;

@@ -4,7 +4,7 @@ Revision: 14
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 License: BSD
 Essential: yes
-Depends: {SHLIB_DEPS}
+AddShlibDeps: true
 #CustomMirror: <<
 #nam-US: http://uiarchive.uiuc.edu/mirrors/ftp/ftp.info-zip.org/pub/infozip/src/
 #nam-US: ftp://uiarchive.cso.uiuc.edu/pub/ftp/ftp.info-zip.org/pub/infozip/src/

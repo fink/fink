@@ -21,6 +21,7 @@ PatchScript: <<
   echo "***********************************************************************"
 <<
 Depends: libncurses5-shlibs (= %v-%r)
+AddShlibDeps: true
 Replaces: libncurses5 (<< 5.4-20041023-4)
 Essential: true
 ConfigureParams: --without-ada --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs --enable-overwrite
@@ -49,6 +50,7 @@ InstallScript: <<
 SplitOff: <<
  Package: libncurses5-shlibs
  Depends: base-files
+ AddShlibDeps: true
  Essential: true
  Files: <<
   lib/ncurses/libform.*.dylib
@@ -69,6 +71,7 @@ SplitOff2: <<
  Package: libncurses5
  Depends: libncurses5-shlibs (= %v-%r)
  BuildDepends: fink (>= 0.13.0), fink-prebinding
+ AddShlibDeps: true
  BuildDependsOnly: true
  Conflicts: ncurses (<= 5.3-20031018-2)
  Replaces: ncurses-dev, ncurses (<= 5.3-20031018-2)
