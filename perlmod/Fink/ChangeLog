@@ -1,5 +1,9 @@
 2004-11-22  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: fixed .la check to look for %b/%N not %b/%n
+
+2004-11-22  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Allow .deb to have files in %p/Applications
 
 2004-11-22  Christian Schaffner  <chris01@users.sourceforge.net>

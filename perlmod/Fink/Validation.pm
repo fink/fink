@@ -868,14 +868,14 @@ sub validate_dpkg_file {
 
 	# read some fields from the control file
 	{
-	my @deb_control_fields = qw/ builddependsonly package depends version /;
+	my @deb_control_fields = qw/ builddependsonly package depends version source/;
 	$deb_control = { map {$_, 1} (@deb_control_fields) };
 	foreach (`dpkg --field $dpkg_filename @deb_control_fields`) {
 		/^([^:]*): (.*)/;
 		$deb_control->{lc $1} = $2;
 	}
 	}
-	my $pkgbuilddir = sprintf '%s/%s-%s', $buildpath, $deb_control->{package}, $deb_control->{version};
+	my $pkgbuilddir = sprintf '%s/%s-%s', $buildpath, $deb_control->{source}, $deb_control->{version};
 
 	# read some control script files
 	foreach (qw/ preinst postinst prerm postrm /) {
