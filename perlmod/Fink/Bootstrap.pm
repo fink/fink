@@ -162,7 +162,7 @@ sub check_host {
 	} elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.1";
-	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-6]/) {
+	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-8]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.2-gcc3.3";
 #		$distribution = "10.2";

@@ -982,7 +982,7 @@ sub phase_unpack {
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
 	my ($i, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
-	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip);
+	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
 	if ($self->{_type} eq "bundle") {
 		return;
@@ -1044,9 +1044,9 @@ sub phase_unpack {
 		
 		# verify the MD5 checksum, if specified
 		$checksum = $self->get_checksum($i);
-		if ($checksum ne "-" ) { # Checksum was specified 
+                $found_archive_sum = &file_MD5_checksum($found_archive);
+		if ($checksum ne "-" ) { # Checksum was specified
 		# compare to the MD5 checksum of the tarball
-			my  $found_archive_sum = &file_MD5_checksum($found_archive);
 			if ($checksum ne $found_archive_sum) {
 				# mismatch, ask user what to do
 				$tries++;
@@ -1081,7 +1081,10 @@ sub phase_unpack {
 					next;		# restart loop with same tarball			
 				}
 			}
-		}
+		} else {
+                # No checksum was specifed in the .info file, die die die
+                    die "No checksum specifed for ".$self->get_fullname()." I got a sum of $found_archive_sum \n";
+                }
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
 		if ($i < 2) {
