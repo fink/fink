@@ -155,6 +155,8 @@ sub read_properties_lines {
 				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
 				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in \"$file\".\n";
+			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
+				# For now tolerate empty fields.
 			} else {
 				print "WARNING: Unknown sequence \"".$_."\" in \"$file\".\n";
 			}
