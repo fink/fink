@@ -856,6 +856,7 @@ sub format_description {
 	# replace empty lines with "."
 	$s =~ s/^\s*$/\./mg;
 	# add leading space
+	# (if you change this here, must compensate in Engine::cmd_dumpinfo)
 	$s =~ s/^/ /mg;
 
 	return "$s\n";
