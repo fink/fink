@@ -153,7 +153,7 @@ sub initialize {
 	$buildpath = $self->param_default("Buildpath", "$basepath/src");
 
 	$libpath = "$basepath/lib/fink";
-	$dbpath = "$basepath/var/lib/fink";
+	$dbpath = "$basepath/var/lib/fink";  # must sync with fink.info.in!
 	$distribution = $self->param("Distribution");
 	if (not defined $distribution or ($distribution =~ /^\s*$/)) {
 		die "Distribution not set in config file \"".$self->{_path}."\"!\n";
