@@ -622,7 +622,7 @@ sub get_arch {
 # get_sw_vers
 # Returns the software version if this is mac os x.
 sub get_sw_vers {
-	if (not defined Fink::Config::get_option('sw_vers') or Fink::Config::get_option('sw_vers') == 0 and -x '/usr/bin/sw_vers') {
+	if (not defined Fink::Config::get_option('sw_vers') or Fink::Config::get_option('sw_vers') eq "0" and -x '/usr/bin/sw_vers') {
 		if (open(SWVERS, "sw_vers |")) {
 			while (<SWVERS>) {
 				if (/^ProductVersion:\s*([^\s]+)\s*$/) {
