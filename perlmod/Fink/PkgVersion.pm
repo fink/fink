@@ -1763,6 +1763,9 @@ EOF
 	}
 
 	# FIXME: make sure there are no linebreaks in the following fields
+	# Why? Some packages are using heredoc multiline to make these
+	# fields more readible and changes easier to track. We should
+	# deal with this correctly, not forbid it.
 	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
 										 Recommends Suggests Enhances
