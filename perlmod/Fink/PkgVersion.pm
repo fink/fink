@@ -461,18 +461,19 @@ sub get_source {
 	my $self = shift;
 	my $index = shift || 1;
 	if ($index < 2) {
-		return $self->param("Source");
+		return $self->param("Source") unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
 	} elsif ($index <= $self->{_sourcecount}) {
 		return $self->param("Source".$index);
 	}
-	return "-";
+	return "none";
 }
 
 sub get_source_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
-	        push(@list, get_source($self, $index));
+ 	        my $source = get_source($self, $index);
+	        push(@list, $source) unless $source eq "none";
 	}
 	return @list;
 }
@@ -484,21 +485,22 @@ sub get_tarball {
 		if ($self->has_param("SourceRename")) {
 			return $self->param("SourceRename");
 		}
-		return &filename($self->param("Source"));
+		return &filename($self->param("Source")) unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
 	} elsif ($index <= $self->{_sourcecount}) {
 		if ($self->has_param("Source".$index."Rename")) {
 			return $self->param("Source".$index."Rename");
 		}
 		return &filename($self->param("Source".$index));
 	}
-	return "-";
+	return "none";
 }
 
 sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
-	        push(@list, get_tarball($self, $index));
+ 	        my $tarball = get_tarball($self, $index);
+	        push(@list, $tarball) unless $tarball eq "none";
 	}
 	return @list;
 }

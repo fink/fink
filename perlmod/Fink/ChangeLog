@@ -1,3 +1,10 @@
+2004-01-09  Remi Mommsen  <remigius.mommsen@cern.ch>
+
+	* PkgVersion.pm: get_source: Do not return the default source name
+	if there exists no source. Instead return 'none' as expected
+	elsewhere. get_source_list and get_tarball_list return an empty
+	list if there are no sources.
+
 2004-01-09  Daniel Macks  <dmacks@netpace.org>
 
 	* CLI.pm: Fixed a bug in print_breaking: was treating an embedded
