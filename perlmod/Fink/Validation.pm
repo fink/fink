@@ -729,6 +729,8 @@ sub validate_info_file {
 #     - installation of .elc files
 #     - (it's now OK to install files directly into
 #        /sw/share/emacs/site-lisp, so we no longer check for this)
+# - BuildDependsOnly: if package stores files in /sw/include, it should
+#     declare BuildDependsOnly true
 # - ideas?
 #
 sub validate_dpkg_file {
@@ -741,6 +743,7 @@ sub validate_dpkg_file {
 	my ($pid, $bad_dir);
 	my $filename;
 	my $looks_good = 1;
+	my $installed_headers = 0;
 
 	print "Validating .deb file $dpkg_filename...\n";
 	
@@ -767,6 +770,8 @@ sub validate_dpkg_file {
 					($dpkg_filename =~ /xemacs/)))) {
 				$looks_good = 0;
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
+			} elsif ( $filename =~/^$basepath\/include/ ) {
+				$installed_headers = 1;
 			} else {
 				foreach $bad_dir (@bad_dirs) {
 					# Directory from this list are not allowed to exist in the .deb.
@@ -783,6 +788,17 @@ sub validate_dpkg_file {
 	}
 	close(DPKG_CONTENTS) or die "Error on close: $!\n";
 	
+# Note that if the .deb was compiled with an old version of fink which
+# does not record the BuildDependsOnly field, the warning is not issued
+
+	if ($installed_headers) {
+		my $BDO = `dpkg --field $dpkg_filename BuildDependsOnly`;
+		if ($BDO =~ /False/) {
+			print "Warning: Headers installed in $basepath/include but package does not declare BuildDependsOnly to be true\n";
+			$looks_good = 0;
+		}
+	}
+
 	if ($looks_good and Fink::Config::verbosity_level() == 3) {
 		print "Package looks good!\n";
 	}
