@@ -1,9 +1,8 @@
 Primary: ftp://ftp.gnu.org/gnu
 Timestamp: 2001-10-04
-afr-ZA: ftp://ftp.sun.ac.za/mirrorsites/ftp.gnu.org/pub/gnu
+afr-ZA: ftp://ftp.sun.ac.za/mirrorsites/ftp.gnu.org/
 asi-CN: ftp://ftp.cs.cuhk.edu.hk/pub/gnu/gnu/
 asi-CN: ftp://sunsite.ust.hk/pub/gnu/
-asi-ID: ftp://sapi.vlsm.org/gnu
 asi-ID: http://sapi.vlsm.org/gnu/
 asi-IN: ftp://www.imtech.res.in/mirror/gnuftp/
 asi-JP: ftp://core.ring.gr.jp/pub/GNU/

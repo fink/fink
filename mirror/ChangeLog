@@ -1,3 +1,8 @@
+2003-02-21 Max Horn  <max@quendi.de>
+
+	* gnu: Updated ftp.sun.ac.za directory; removed ftp://sapi.vlsm.org
+	  (http access seems to work)
+	
 2003-01-30 Martin Costabel <costabel@wanadoo.fr>
 
 	* ctan: Updated ftp.sunsite.kth.se directory
