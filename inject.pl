@@ -1,10 +1,11 @@
 #!/usr/bin/perl -w
 #
-# inject.pl - perl script to install a CVS version of fink into
-#             an existing Fink tree
+# inject.pl - perl script to install a CVS version of one of the
+#             fink packages into an existing Fink tree
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
+# Copyright (c) 2001-2003 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,76 +28,66 @@ use strict;
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
+
+### which package are we injecting?
+
+my $package = "fink";
+
+### check if we're unharmed, and specify files for tarball
+
 use Fink::Bootstrap qw(&check_files);
-
-my ($basepath, $packageversion, $packagerevision);
-my ($script, $cmd);
-
-### check if we're unharmed
 
 my $res = check_files();
 if ($res == 1 ) {
 	exit 1;
 }
 
+my $packagefiles = &fink_packagefiles();
+
+my $info_script = "";
+
+### below this, the code should be the same no matter which package we're
+### injecting
+
 ### load some modules
 
 require Fink::Services;
 import Fink::Services qw(&print_breaking &read_config &execute &file_MD5_checksum);
+#import Fink::Services qw(&read_config &execute);
 require Fink::Config;
+
+my $param = shift;
+
+my $result = &inject_package($package, $packagefiles, $info_script, $param);
+if ($result == 1) {
+    exit 1;
+}
+
+### eof
+exit 0;
+
+sub inject_package {
+
+my $package = shift;
+my $packagefiles = shift;
+my $info_script = shift;
 
 ### locate Fink installation
 
-my ($guessed, $param, $path);
+my $param = shift;
 
-$guessed = "";
-$param = shift;
-if (defined $param) {
-  $basepath = $param;
-} else {
-  $basepath = undef;
-  if (exists $ENV{PATH}) {
-    foreach $path (split(/:/, $ENV{PATH})) {
-      if (substr($path,-1) eq "/") {
-	$path = substr($path,0,-1);
-      }
-      if (-f "$path/init.sh" and -f "$path/fink") {
-	$path =~ /^(.+)\/[^\/]+$/;
-	$basepath = $1;
-	last;
-      }
-    }
-  }
-  if (not defined $basepath or $basepath eq "") {
-    $basepath = "/sw";
-  }
-  $guessed = " (guessed)";
-}
-unless (-f "$basepath/bin/fink" and
-	-f "$basepath/bin/init.sh" and
-	-f "$basepath/etc/fink.conf" and
-	-d "$basepath/fink/dists") {
-  &print_breaking("The directory '$basepath'$guessed does not contain a ".
-		  "Fink installation. Please provide the correct path ".
-		  "as a parameter to this script.");
-  exit 1;
+my ($result, $basepath) = &locate_fink($param);
+if ($result == 1) {
+    return $result;
 }
 
 ### get version
 
-chomp($packageversion = `cat VERSION`);
-if ($packageversion =~ /cvs/) {
-  my @now = gmtime(time);
-  $packagerevision = sprintf("%04d%02d%02d.%02d%02d",
-                             $now[5]+1900, $now[4]+1, $now[3],
-                             $now[2], $now[1]);
-} else {
-  $packagerevision = "1";
-}
+my ($packageversion, $packagerevision) = &get_packageversion();
 
 ### load configuration
 
-my $config = &read_config("$basepath/etc/fink.conf", 
+my $config = &read_config("$basepath/etc/fink.conf",
                           { Basepath => $basepath });
 
 ### parse config file for root method
@@ -126,69 +117,204 @@ if ($trees =~ /^\s*$/) {
 
 ### create tarball for the package
 
-print "Creating tarball...\n";
+$result = &create_tarball($basepath, $package, $packageversion, $packagefiles);
+if ($result == 1 ) {
+    return $result;
+}
+
+### create and copy description file
+
+$result = &copy_description($info_script, $basepath, $package, $packageversion, $packagerevision);
+if ($result == 1 ) {
+    return $result;
+}
+
+### install the package
+
+&install_package($basepath, $package);
+
+return 0;
+}
+
+sub locate_fink {
+
+my ($guessed, $param, $path, $bpath);
+
+$guessed = "";
+$param = shift;
+if (defined $param) {
+  $bpath = $param;
+} else {
+  $bpath = undef;
+  if (exists $ENV{PATH}) {
+    foreach $path (split(/:/, $ENV{PATH})) {
+      if (substr($path,-1) eq "/") {
+	$path = substr($path,0,-1);
+      }
+      if (-f "$path/init.sh" and -f "$path/fink") {
+	$path =~ /^(.+)\/[^\/]+$/;
+	$bpath = $1;
+	last;
+      }
+    }
+  }
+  if (not defined $bpath or $bpath eq "") {
+    $bpath = "/sw";
+  }
+  $guessed = " (guessed)";
+}
+my $result = 0;
+unless (-f "$bpath/bin/fink" and
+	-f "$bpath/bin/init.sh" and
+	-f "$bpath/etc/fink.conf" and
+	-d "$bpath/fink/dists") {
+  &print_breaking("The directory '$bpath'$guessed does not contain a ".
+		  "Fink installation. Please provide the correct path ".
+		  "as a parameter to this script.");
+  $result = 1;
+}
+return ($result, $bpath);
+}
+
+sub get_packageversion {
+
+    my ($packageversion, $packagerevision);
+
+    chomp($packageversion = `cat VERSION`);
+    if ($packageversion =~ /cvs/) {
+	my @now = gmtime(time);
+  $packagerevision = sprintf("%04d%02d%02d.%02d%02d",
+                             $now[5]+1900, $now[4]+1, $now[3],
+                             $now[2], $now[1]);
+    } else {
+	$packagerevision = "1";
+    }
+    return ($packageversion, $packagerevision);
+}
+
+sub bootstrap_Trees {
+
+    my $bpath = shift;
+
+### load configuration
+
+my $config = &read_config("$bpath/etc/fink.conf");
+
+my $trees = $config->param("Trees");
+if ($trees =~ /^\s*$/) {
+  print "Adding a Trees line to fink.conf...\n";
+  $config->set_param("Trees", "local/main stable/main stable/crypto local/bootstrap");
+  $config->save();
+} else {
+  if (grep({$_ eq "local/bootstrap"} split(/\s+/, $trees)) < 1) {
+    print "Adding local/bootstrap to the Trees line in fink.conf...\n";
+    $config->set_param("Trees", "$trees local/bootstrap");
+    $config->save();
+  }
+}
+
+}
+
+sub create_tarball {
+
+my $bpath = shift;
+my $package = shift;
+my $packageversion = shift;
+my $packagefiles = shift;
+
+my ($cmd, $script);
+
+print "Creating $package tarball...\n";
 
 $script = "";
-if (not -d "$basepath/src") {
-  $script .= "mkdir -p $basepath/src\n";
+if (not -d "$bpath/src") {
+  $script .= "mkdir -p $bpath/src\n";
 }
 
 $script .=
-  "tar -cf $basepath/src/fink-$packageversion.tar ".
-  "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
-  "ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-  "shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in mirror\n";
+  "tar -cf $bpath/src/$package-$packageversion.tar ".
+    "$packagefiles\n";
+
+my $result = 0;
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
 
   if (&execute($cmd)) {
     print "ERROR: Can't create tarball.\n";
-    exit 1;
+    $result = 1;
   }
 }
-
-### create and copy description file
-
-print "Copying package description...\n";
-
-$script = "";
-if (not -d "$basepath/fink/debs") {
-  $script .= "mkdir -p $basepath/fink/debs\n";
+return $result;
 }
-if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
-  $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
+
+sub copy_description {
+
+my $script = shift;
+my $bpath = shift;
+my $package = shift;
+my $packageversion = shift;
+my $packagerevision = shift;
+
+my ($cmd);
+
+print "Copying package description(s)...\n";
+
+if (not -d "$bpath/fink/debs") {
+  $script .= "mkdir -p $bpath/fink/debs\n";
 }
-my $md5 = &file_MD5_checksum("$basepath/src/fink-$packageversion.tar");
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+if (not -d "$bpath/fink/dists/local/bootstrap/finkinfo") {
+  $script .= "mkdir -p $bpath/fink/dists/local/bootstrap/finkinfo\n";
+}
+my $md5 = &file_MD5_checksum("$bpath/src/$package-$packageversion.tar");
+$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <$package.info.in >$bpath/fink/dists/local/bootstrap/finkinfo/$package-$packageversion.info\n";
+$script .= "/bin/chmod 644 $bpath/fink/dists/local/bootstrap/finkinfo/*.*\n";
+
+my $result = 0;
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
 
   if (&execute($cmd)) {
-    print "ERROR: Can't copy package description.\n";
-    exit 1;
+    print "ERROR: Can't copy package description(s).\n";
+    $result = 1;
   }
 }
+return $result;
+}
 
-### install the package
+
+sub install_package {
+
+my $bpath = shift;
+my $package = shift;
 
 print "Installing package...\n";
 print "\n";
 
-if (&execute("$basepath/bin/fink install fink")) {
+if (&execute("$bpath/bin/fink install $package")) {
   print "\n";
-  &print_breaking("Installing the new fink package failed. ".
+  &print_breaking("Installing the new $package package failed. ".
 		  "The description and the tarball were installed, though. ".
 		  "You can retry at a later time by issuing the ".
 		  "appropriate fink commands.");
 } else {
   print "\n";
-  &print_breaking("Your Fink installation in '$basepath' was updated with ".
-		  "a new fink package.");
+  &print_breaking("Your Fink installation in '$bpath' was updated with ".
+		  "a new $package package.");
 }
 print "\n";
 
-### eof
-exit 0;
+}
+
+sub fink_packagefiles {
+
+my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
+  "ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
+  "shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
+  "fink-virtual-pkgs.in mirror";
+
+return $packagefiles;
+
+}
+
