@@ -209,6 +209,7 @@ sub initialize {
 					 map  { [ $_, ( (/(\d+)/)[0] || 0 ) ] } @splitofffields
 					 ) {
 				push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
+				delete $self->{$_};
 			}
 		}
 	}
