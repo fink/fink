@@ -186,6 +186,10 @@ file in which they were encountered. The filetype (fink.conf, *.info,
 etc.) is not necessarily known and this routine is used for many
 different filetypes.
 
+Multiline values (including all the lines of fields in a splitoff) are
+returned as a single multiline string (i.e., with embedded \n), not as
+a ref to another hash or array.
+
 =cut
 
 sub read_properties_lines {
