@@ -1370,6 +1370,9 @@ sub real_install {
 		}
 	}
 
+	# remove buildconfilcts before new builds reinstall after build
+	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
+
 	# fetch all packages that need fetching
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
@@ -1521,6 +1524,8 @@ sub real_install {
 
 			# Finally perform the actually installation
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
+			# Reinstall buildconficts after the build
+			&real_install($OP_INSTALL, 1, 1, @removals) if (scalar(@removals) > 0);
 			# Rebuild Shlibs db before next build
 			Fink::Shlibs->forget_shlibs();
 			Fink::Shlibs->require_shlibs(1);

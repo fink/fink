@@ -1,3 +1,8 @@
+2003-12-11  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Made BuildConflicts effective, it doesn't just tell you
+	 now, it's acctually remove and reinstall after the build.
+
 2003-12-10  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Fixed a problem in the dep engine where if a dep was 
