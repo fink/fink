@@ -1,5 +1,7 @@
 2003-05-02  Max Horn  <max@quendi.de>
 
+	* Validation.pm: Do not allow arbitrary license combinations, rather only a
+	  fixed set (which we can extend as needed). See bug #670788. 
 	* Services.pm: Warn if an .info file uses a field more than once (will soon
 	  be turned into an error).
 

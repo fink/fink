@@ -74,8 +74,9 @@ our %allowed_type_values = map {$_, 1}
 our %allowed_license_values = map {$_, 1}
 	(
 	 "GPL", "LGPL", "GFDL", "LDP", "BSD",
-	 "Artistic", "OSI-Approved", "Restrictive",
-	 "Distributable", "Commercial", "Public Domain"
+	 "Artistic", "OSI-Approved", "Public Domain",
+	 "Restrictive", "Restrictive/Distributable ", "Commercial",
+	 "Artistic/GPL", "GPL/GFDL", "GPL/LGPL", "LGPL/GFDL"
 	);
 
 # List of all known fields.
@@ -226,12 +227,11 @@ sub validate_info_file {
 	}
 	
 	# License should always be specified, and must be one of the allowed set
-	if ($properties->{license}) {
-		foreach $value (split /\//, $properties->{license}) {
-			if (not $allowed_license_values{$value}) {
-				print "Warning: Unknown license \"$value\". ($filename)\n";
-				$looks_good = 0;
-			}
+	$value = $properties->{license};
+	if ($value) {
+		if (not $allowed_license_values{$value}) {
+			print "Warning: Unknown license \"$value\". ($filename)\n";
+			$looks_good = 0;
 		}
 	} elsif (not (defined($properties->{type}) and $properties->{type} eq "bundle")) {
 		print "Warning: No license specified. ($filename)\n";
