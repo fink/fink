@@ -1,3 +1,9 @@
+2003-09-17  Dave Vasilevsky <vasi@users.sourceforge.net>
+
+	* Mirror.pm: Fix master:master:master: bug
+	* Package.pm, Services.pm: Allow non-Fink .debs to be installed
+	without having Fink-like revisions.
+
 2003-09-08  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: Allow Provides, and don't propogate
