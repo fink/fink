@@ -1,4 +1,4 @@
-2003-07-07  Peter O'Gorman <ogorman@users.sourceforge.net>
+2003-09-08  Peter O'Gorman <ogorman@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: Allow Provides, and don't propogate
 	builddependsonly virtual packages to apt/dpkg.
