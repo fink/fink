@@ -1,3 +1,7 @@
+2004-12-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Also catch libtool files pointing to %i and %I
+
 2004-12-03  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Fix 'entries that end in "/"' msg.

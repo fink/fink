@@ -874,7 +874,8 @@ sub validate_dpkg_file {
 		$deb_control->{lc $1} = $2;
 	}
 	}
-	my $pkgbuilddir = sprintf '%s/%s-%s', $buildpath, $deb_control->{source}, $deb_control->{version};
+	my $pkgbuilddir = sprintf '%s/%s-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{version};
+	my $pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $deb_control->{version};
 
 	# read some control script files
 	foreach (qw/ preinst postinst prerm postrm /) {
@@ -991,8 +992,11 @@ sub validate_dpkg_file {
 			if ( $filename =~/\.la$/ ) {
 				open(LA_FILE, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O .$filename |") or die "Couldn't run dpkg: $!\n";
 				while (<LA_FILE>) {
-					if (/\Q$pkgbuilddir\/\E/) {
+					if (/$pkgbuilddir/) {
 						print "Warning: libtool file $filename points to fink build dir. ($dpkg_filename)\n";
+						$looks_good = 0;
+					} elsif (/$pkginstdirs/) {
+						print "Warning: libtool file $filename points to fink install dir. ($dpkg_filename)\n";
 						$looks_good = 0;
 					}
 				}
