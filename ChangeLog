@@ -1,3 +1,7 @@
+2003-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.17.0
+
 2003-11-11  Michael G Schwern <schwern@pobox.com
 
 	* Makefile: tests were running against the installed version instead
