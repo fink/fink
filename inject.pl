@@ -105,6 +105,9 @@ umask oct("022");
 print "Copying package descriptions...\n";
 
 $script = "";
+if (not -d "$basepath/fink/debs") {
+  $script .= "mkdir -p $basepath/fink/debs\n";
+}
 if (not -d "$basepath/fink/dists/stable/bootstrap/finkinfo") {
   $script .= "mkdir -p $basepath/fink/dists/stable/bootstrap/finkinfo\n";
 }

@@ -1,5 +1,7 @@
 2001-05-08  Christoph Pfisterer  <cp@chrisp.de>
 
+	* inject.pl, bootstrap.pl: Create directory <prefix>/fink/debs.
+
 	* README, INSTALL, USAGE: Updated documentation.
 	* install.sh: Added INSTALL and USAGE to the list of files to
 	install.
