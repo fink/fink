@@ -217,12 +217,13 @@ if (-x "/usr/bin/head") {
 }
 
 ### setup the correct packages directory
-
-if (-e "packages") {
-		rename "packages", "packages-old";
-		unlink "packages";
-}
-symlink "$distribution", "packages" or die "Cannot create symlink";
+# (no longer needed: we just use $distribution directly...)
+#
+#if (-e "packages") {
+#		rename "packages", "packages-old";
+#		unlink "packages";
+#}
+#symlink "$distribution", "packages" or die "Cannot create symlink";
 
 ### choose installation path
 
@@ -338,7 +339,7 @@ if ($result == 1 ) {
 
 ### copy package info needed for bootstrap
 
-$script = "/bin/cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
+$script = "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
 
 $result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision);
 if ($result == 1 ) {
