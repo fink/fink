@@ -68,6 +68,8 @@ our %commands =
     'describe' => \&cmd_description,
     'description' => \&cmd_description,
     'scanpackages' => \&cmd_scanpackages,
+    'list' => \&cmd_list,
+    'listpackages' => \&cmd_listpackages,
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -146,6 +148,60 @@ sub cmd_configure {
 
 sub cmd_bootstrap {
   Fink::Bootstrap::bootstrap();
+}
+
+sub cmd_list {
+  my ($pattern, @allnames, @selected);
+  my ($pname, $package, $lversion, $vo, $iflag, $description);
+
+  @allnames = Fink::Package->list_packages();
+  if ($#_ < 0) {
+    @selected = @allnames;
+  } else {
+    @selected = ();
+    while (defined($pattern = shift)) {
+      $pattern =~ s/\*/.*/g;
+      $pattern =~ s/\?/./g;
+      push @selected, grep(/$pattern/, @allnames);
+    }
+  }
+
+  foreach $pname (sort @selected) {
+    $package = Fink::Package->package_by_name($pname);
+    if ($package->is_virtual()) {
+      $lversion = "";
+      $iflag = "   ";
+      $description = "[virtual package]";
+    } else {
+      $lversion = &latest_version($package->list_versions());
+      $vo = $package->get_version($lversion);
+      if ($vo->is_installed()) {
+	$iflag = " i ";
+      } elsif ($package->is_any_installed()) {
+	$iflag = "(i)";
+      } else {
+	$iflag = "   ";
+      }
+      $description = $vo->get_shortdescription(46);
+    }
+
+    printf "%s %-15.15s %-11.11s %s\n",
+      $iflag, $pname, $lversion, $description;
+  }
+}
+
+sub cmd_listpackages {
+  my ($pname, $package);
+
+  foreach $pname (Fink::Package->list_packages()) {
+    print "$pname\n";
+    $package = Fink::Package->package_by_name($pname);
+    if ($package->is_any_installed()) {
+      print "YES\n";
+    } else {
+      print "NO\n";
+    }
+  }
 }
 
 sub cmd_scanpackages {

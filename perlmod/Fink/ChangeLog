@@ -1,5 +1,8 @@
 2001-07-07  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Engine.pm: Added commands for a human-readable (list) and a
+	machine-readable (listpackages) package listing.
+
 	* PkgVersion.pm: Added method get_shortdescription to get just the
 	one line description.
 
