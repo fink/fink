@@ -6,7 +6,7 @@ Depends: base-files
 Conflicts: mktemp
 Replaces: mktemp, tetex
 Provides: mktemp
-Source: http://prdownloads.sourceforge.net/fink/%n_%v.tar.gz
+Source: mirror:sourceforge:fink/%n_%v.tar.gz
 SourceDirectory: %n-%v
 Patch: %f.patch
 CompileScript: make

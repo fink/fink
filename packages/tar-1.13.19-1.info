@@ -3,7 +3,7 @@ Version: 1.13.19
 Revision: 1
 Essential: yes
 Depends: gettext, gzip, bzip2, base-files
-Source: http://prdownloads.sourceforge.net/fink/%n-%v.tar.gz
+Source: mirror:sourceforge:fink/%n-%v.tar.gz
 UpdateConfigGuess: true
 ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib
 InstallScript: <<
