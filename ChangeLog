@@ -1,3 +1,8 @@
+2004-07-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* INSTALL, INSTALL.html: use 0.7.1 since this release will be 
+	included in the 0.7.1 tarball
+
 2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: avoid unneeded symlink when bootstrapping; improved
