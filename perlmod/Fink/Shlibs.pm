@@ -473,7 +473,7 @@ sub update_shlib_db {
       &print_breaking( "\nFink has detected that your shlib cache is out" .
         " of date and needs an update, but does not have privileges to" .
          " modify it. Please re-run fink as root," .
-	" for example with a \"sudo fink-depends index\" command.\n" );
+	" for example with a \"sudo fink index\" command.\n" );
     }
   };
   $shlib_db_outdated = 0;
