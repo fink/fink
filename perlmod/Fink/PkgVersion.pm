@@ -2160,7 +2160,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		die "can't create package ".$self->get_debname()."\n";
 	}
 
-	symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/" or
+	symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname() or
 		die "can't symlink package ".$self->get_debname()." into pool directory\n";
 
 	### splitoffs

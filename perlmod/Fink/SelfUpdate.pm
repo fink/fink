@@ -308,7 +308,7 @@ sub setup_direct_cvs {
 					 my $linkto;
 					 $linkto = readlink($_)
 						 or die "Can't read target of symlink $File::Find::name: $!\n";
-					 link $linkto, "$tempfinkdir/$rel" or
+					 symlink $linkto, "$tempfinkdir/$rel" or
 						 die "Can't create symlink \"$tempfinkdir/$rel\"\n";
 				 } elsif (-d and not -d "$tempfinkdir/$rel") {
 					 mkdir_p "$tempfinkdir/$rel" or

@@ -1,5 +1,16 @@
 2004-02-27  Daniel Macks  <dmacks@netspace.org>
 
+	* Command.pm: rm_f now succeeds if try to remove non-existent
+	file. symlink_f now uses native rm_f to remove a pre-existing
+	target (so doesn't fail if it doesn't exist). Fixed doc about
+	$dest being a full filename.
+	* PkgVersion.pm: fixed usage of symlink_f to include filename in
+	$dest.
+	* SelfUpdate.pm: fixed accidental hardlink/softlink swap from last
+	commit.
+
+2004-02-27  Daniel Macks  <dmacks@netspace.org>
+
 	* Command.pm: finish gaborit's patch from 841381 to cat().
 	* Bootstrap.pm,Engine.pm,NetAccess.pm,PkgVersion.pm,SelfUpdate.pm:
 	use Fink::Command calls instead of system() or &execute whenever
