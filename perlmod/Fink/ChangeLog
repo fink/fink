@@ -4,7 +4,7 @@
 	like bzip2-dev and added warnings for it and not installed packages.
 	Also made it so if the pkgs to be removed are the same as the ones
 	in ARGV then don't ask first.  And added a print_breaking for long
-	package listings.
+	package listings. Disabled parent essential params on splitoffs.
 
 2003-12-03  Daniel Macks <dmacks@netspace.org>
 

@@ -670,7 +670,7 @@ sub cmd_remove {
 sub get_pkglist {
 	my $cmd = shift;
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
-	my ($vo, @versions, $parent);
+	my ($vo, @versions);
 	my ($buildonly, $wanthelp);
 
 	use Getopt::Long;
@@ -723,8 +723,6 @@ EOF
 
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
-		# Make sure it's empty before every check
-		undef $parent;
 
 		# Can't purge or remove virtuals
 		next if $package->is_virtual();
@@ -734,9 +732,6 @@ EOF
 		@versions = $package->list_installed_versions();
 		next unless ($versions[0]);
 		$vo = $package->get_version($versions[0]);
-
-		# get parent if exists
-		$parent = $vo->{parent};
 
 		# Can only remove/purge installed pkgs
 		unless ( $vo->is_installed() ) {
@@ -748,12 +743,6 @@ EOF
 		if ( $vo->has_param("essential") ) {
 			print "WARNING: $pname is essential, skipping.\n";
 			next;
-		}
-		if (defined $parent) {
-			if ( $parent->has_param("essential") ) {
-				print "WARNING: $pname is essential, skipping.\n";
-				next;
-			}
 		}
 
                 if (defined $buildonly) {
