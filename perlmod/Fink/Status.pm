@@ -22,7 +22,7 @@
 
 package Fink::Status;
 
-use Fink::Config qw($config $basepath $darwin_version $macosx_version $cctools_version);
+use Fink::Config qw($config $basepath $darwin_version $macosx_version $cctools_version $cctools_single_module);
 
 use strict;
 use warnings;
@@ -89,6 +89,17 @@ sub initialize {
 		$hash->{status} = "install ok installed";
 		$hash->{version} = $cctools_version."-1";
 		$hash->{description} = "[virtual package representing the developer tools]";
+		$hash->{builddependsonly} = "true";
+		$self->{$hash->{package}} = $hash;
+	}
+
+	# create dummy object for cctools-single-module, if supported
+	if ($cctools_single_module) {
+		$hash = {};
+		$hash->{package} = "cctools-single-module";
+                $hash->{status} = "install ok installed";
+		$hash->{version} = $cctools_single_module."-1";
+		$hash->{description} = "[virtual package, your dev tools support -single_module]";
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
 	}

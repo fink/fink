@@ -1,3 +1,9 @@
+2003-07-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Config.pm, Status.pm: added cctools-single-module
+	  (cctools-<version>-1 is deprecated)
+	  It is better to test capabilities than versions
+
 2003-06-27  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Bootstrap.pm: Added checks for 10.3 tree
@@ -30,7 +36,7 @@
 	* Selfupdate.pm: added -q to cvs commands based on verbosity level
 	from the config file and/or command line.
 
-2003-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net
+2003-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: allow bootstrapping with either perl 5.6.0 or 
 	perl 5.8.0
