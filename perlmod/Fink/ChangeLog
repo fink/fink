@@ -1,5 +1,10 @@
 2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Bootstrap.pm (bootstrap): Added code to install all essential
+	packages, not just stow.
+	* Engine.pm (real_install): Added code to add all essential
+	packages to the dependency list of non-essential packages.
+
 	* Package.pm: New function list_essential_packages.
 
 2001-03-30  Christoph Pfisterer  <cp@chrisp.de>

@@ -24,6 +24,7 @@ package Fink::Bootstrap;
 use Fink::Config qw($config $basepath);
 use Fink::Engine;
 use Fink::Services qw(prompt prompt_boolean prompt_selection print_breaking read_properties read_properties_multival filename);
+use Fink::Package;
 
 use strict;
 use warnings;
@@ -45,7 +46,7 @@ END { }       # module clean-up code here (global destructor)
 ### create configuration interactively
 
 sub bootstrap {
-  my ($umask, $otherdir);
+  my ($umask, $otherdir, @elist);
 
   print "\n";
   &print_breaking("OK, I'll ask you some questions and update the ".
@@ -79,11 +80,11 @@ sub bootstrap {
 
 
   # install essential packages
-  # TODO: use Essential parameter of packages
   # TODO: better interface to Engine
-  &print_breaking("I'll now install stow, which is required for Fink ".
-		  "operation.");
-  Fink::Engine::cmd_install("stow");
+  &print_breaking("I'll now install some essential packages, ".
+		  "which are required for Fink operation.");
+  @elist = Fink::Package->list_essential_packages();
+  Fink::Engine::cmd_install(@elist);
 }
 
 ### mirror selection

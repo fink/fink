@@ -227,7 +227,7 @@ sub cmd_update_all {
 sub real_install {
   my $kind = shift;
   my ($pkgspec, $package, $pkgname, $item, $dep, $all_installed);
-  my (%deps, @queue, @deplist, @vlist, @additionals);
+  my (%deps, @queue, @deplist, @vlist, @additionals, @elist);
   my ($oversion, $opackage, $v);
   my ($answer);
 
@@ -264,6 +264,7 @@ sub real_install {
   }
 
   # recursively expand dependencies
+  @elist = Fink::Package->list_essential_packages();
   while ($#queue >= 0) {
     $pkgname = shift @queue;
     $item = $deps{$pkgname};
@@ -301,6 +302,9 @@ sub real_install {
 
     # get list of dependencies
     @deplist = $item->[2]->get_depends();
+    if (not $item->[2]->param_boolean("Essential")) {
+      push @deplist, @elist;
+    }
     foreach $dep (@deplist) {
       if (exists $deps{$dep}) {
 	# already in graph, just add link
