@@ -411,30 +411,41 @@ STDOUT before being executed by a system() call.
 The optional %options are given as option=>value pairs. The following
 options are known:
 
-    quiet
+=over 4
 
-        If the option 'quiet' is not given or its value is false and
-        the command failed, a message including the return code is
-        sent to STDOUT.
+=item quiet
 
-    nonroot_okay
+If the option 'quiet' is not given or its value is false and the
+command failed, a message including the return code is sent to STDOUT.
 
-        If the value of the option 'nonroot_okay' is true, fink was
-        run with the --build-as-nobody flag, drop to user=nobody
-        when running the actual commands.
+=item nonroot_okay
 
-    delete_tempfile
+If the value of the option 'nonroot_okay' is true, fink was run with
+the --build-as-nobody flag, drop to user=nobody when running the
+actual commands.
 
-        Whether to delete temp-files that are created. The following
-        values are known:
+=item delete_tempfile
 
-            -1    Always delete
+Whether to delete temp-files that are created. The following values
+are known:
 
-            0 (or not passed)
-                  Delete if script was successful, do not delete if
-                  it failed
+=over 4
 
-            1     Never delete
+=item * -1
+
+Always delete
+
+=item * 0 (or not passed)
+
+Delete if script was successful, do not delete if it failed
+
+=item * 1
+
+Never delete
+
+=back
+
+=back
 
 =cut
 

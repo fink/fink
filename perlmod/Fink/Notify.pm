@@ -147,7 +147,7 @@ The default events are:
 =item * finkDoneFailed - fink is done running and is exiting non-zero
 
 =back
-	
+
 Notifier modules may supply an alternate list of supported events by
 providing their own events() method.
 
