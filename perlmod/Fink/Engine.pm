@@ -1029,7 +1029,9 @@ sub real_install {
 
 	@queue = keys %deps;
 	if ($#queue < 0) {
-		print "No packages to install.\n";
+		unless ($forceoff) {
+			print "No packages to install.\n";
+		}
 		return;
 	}
 
@@ -1446,7 +1448,13 @@ sub real_install {
 			# Now (re)build the package if we determined above that it is necessary.
 			my $is_build = $to_be_rebuilt{$pkgname};
 			if ($is_build) {
-				#&real_install($OP_BUILD, 0, 1, $package->get_name());
+				### only run one deep per depend
+				### set forceoff to count depth of depends
+				### and to silence the dep engine so it
+				### only asks once at the begining
+				unless ($forceoff) {
+					&real_install($OP_BUILD, 0, 1, $package->get_name());
+				}
 				$package->phase_unpack();
 				$package->phase_patch();
 				$package->phase_compile();

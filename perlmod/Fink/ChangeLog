@@ -8,7 +8,8 @@
 	Changed BuildDependsOnly and Essential checks from has_param to
 	param_boolean, in case it's there and set to false. Fixed the not
 	installed warning, and prints and exits if nothing to do instead of
-	dieing.
+	dieing. Enabled the check each depend's depends before build.
+	VERY EXPERIMENTAL please test.
 
 2003-12-03  Daniel Macks <dmacks@netspace.org>
 
