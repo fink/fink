@@ -1,4 +1,10 @@
-2005-02-23  Dave Mmorrison  <dmrrsn@users.sourceforge.net>
+2005-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* base-files.info, dpkg.info, file-spec-pm561.info, fink-mirrors.info,
+	gettext.info, storable-pm560.info, storable-pm561.info, 
+	test-harness-pm561.info, test-simple-pm561.info: sync with stable
+
+2005-02-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* ncurses, ncurses-shlibs: updated to current stable versions of (old) 
 	ncurses and (new) libncurses5 packages

@@ -1,7 +1,9 @@
 Package: storable-pm560
 Version: 1.0.14
-Revision: 3
+Revision: 4
 Replaces: storable-pm (<= 1.0.14-1)
+Depends: perl560-core
+BuildDepends: perl560-core
 Source: mirror:sourceforge:fink/Storable-%v.tar.gz
 Source-MD5: 8fc38714955b08d318e723ddd4f7a6e4
 #Type: perl 5.6.0
