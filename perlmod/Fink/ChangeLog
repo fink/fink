@@ -1,4 +1,9 @@
-2003-03-05	Ben Hines <bhines@users.sourceforge.net>
+2003-03-07	Ben Hines <benh57@users.sourceforge.net>
+
+	* Engine.pm: Add 'ignore-restrictive' option to "fetch-missing", 
+	  to support creating fink mirrors.
+	
+2003-03-05	Ben Hines <benh57@users.sourceforge.net>
 
 	* PkgVersion.pm: Add section to dpkg control file (should prevent "unknown section" for 
 	  unstable locally built binaries in dselect) and correct root dir error typo.

@@ -560,19 +560,51 @@ sub cmd_fetch_all {
 }
 
 sub cmd_fetch_all_missing {
-	my ($pname, $package, $version, $vo);
+	my ($pname, $package, $version, $vo, $norestrictive, $wanthelp, @temp_ARGV);
 
+	@temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions('ignore-restrictive|i'		=> \$norestrictive, 
+			   'help|h'						=> \$wanthelp)
+		 or die "fink fetch-missing: unknown option\nType 'fink fetch-missing --help' for more information.\n";
+		 
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $finkversion = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $finkversion
+
+Usage: fink fetch-missing [options]
+       
+Options:
+  -i, --ignore-restrictive  - Do not fetch sources for packages with 
+                            a "Restrictive" license. Useful for mirroring.
+  -h, --help                - This help text.
+
+EOF
+	}
 	foreach $pname (Fink::Package->list_packages()) {
 		$package = Fink::Package->package_by_name($pname);
 		$version = &latest_version($package->list_versions());
 		$vo = $package->get_version($version);
 		if (defined $vo) {
+			if ($norestrictive) {
+				if ($vo->has_param("license")) {
+						if($vo->param("license") =~ m/Restrictive\s*$/i) {
+							print "Ignoring $pname due to License: Restrictive\n";
+							next;
+					}
+				}
+			}
 			eval {
 				$vo->phase_fetch(1);
 			};
 			warn "$@" if $@;				 # turn fatal exceptions into warnings
 		}
-	}
+	}	
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
 }
 
 sub cmd_remove {
