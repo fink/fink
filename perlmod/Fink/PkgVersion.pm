@@ -2325,7 +2325,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		mkdir_p "$destdir$basepath/etc/daemons" or
 			die "can't write daemonic info file for ".$self->get_fullname()."\n";
 		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
-		print SCRIPT $self->param_expanded("DaemonicFile");
+		print SCRIPT $self->param_expanded("DaemonicFile"), "\n";
 		close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
 		chmod 0644, $daemonicfile;
 	}

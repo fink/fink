@@ -1,5 +1,9 @@
 2004-06-17  Dainel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Add final newline to generated daemonic .xml file.
+
+2004-06-17  Dainel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Made 'dumpinfo -fdaemonicfile' use multiline format.
 
 2004-06-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
