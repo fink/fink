@@ -54,8 +54,38 @@ our $system_perl_version;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
 
-### create configuration
+Fink::Services - functions for text processing and user interaction
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+These functions handle a variety of text (file and string) parsing,
+outupt formatting, and user interaction/response tasks.
+
+=head2 Functions
+
+No functions are exported by default. You can get whichever ones you
+need with things like:
+
+    use Fink::Services '&read_config';
+    use Fink::Services qw(&execute_script &expand_percent);
+
+=over 4
+
+=item read_config
+
+    my $config = read_config $filename;
+    my $config = read_config $filename, \%defaults;
+
+Reads a fink.conf file given by $filename into a new Fink::Config
+object and initializes Fink::Config globals from it. If %defaults is
+given they will be used as defaults for any keys not in the config
+file. The new object is returned.
+
+=cut
 
 sub read_config {
 	my($filename, $defaults) = @_;
@@ -67,7 +97,18 @@ sub read_config {
 	return $config_object;
 }
 
-### read properties file
+=item read_properties
+
+    my $property_hash = read_properties $filename;
+    my $property_hash = read_properties $filename, $notLC;
+
+Reads a text file $filename and returns a ref to a hash of its
+fields. See the description of read_properties_lines for more
+information.
+
+If $filename cannot be read, program will die with an error message.
+
+=cut
 
 sub read_properties {
 	 my ($file) = shift;
@@ -81,7 +122,17 @@ sub read_properties {
 	 return read_properties_lines($file, $notLC, @lines);
 }
 
-### read properties from a variable with text
+=item read_properties_var
+
+    my $property_hash = read_properties_var $filename, $string;
+    my $property_hash = read_properties_var $filename, $string, $notLC;
+
+Parses the multiline text $string and returns a ref to a hash of
+its fields. See the description of read_properties_lines for more
+information. The string $filename is used in parsing-error messages
+but the file is not accessed.
+
+=cut
 
 sub read_properties_var {
 	 my ($file) = shift;
@@ -95,7 +146,50 @@ sub read_properties_var {
 	 return read_properties_lines($file, $notLC, @lines);
 }
 
-### read properties from a list of lines.
+=begin private
+
+=item read_properties_lines
+
+    my $property_hash = read_properties_lines $filename, $notLC, @lines;
+
+Parses the list of text strings @lines and returns a ref to a hash of
+its fields. The string $filename is used in parsing-error messages but
+the file is not accessed.
+
+If $notLC is true, fields are treated in a case-sensitive manner. If
+$notLC is false (including undef), field case is ignored (and
+cannonicalized to lower-case). In functions where passing $notLC is
+optional, not passing is equivalent to false.
+
+See the Fink Packaging Manual, section 2.2 "File Format" for
+information about the format of @lines text.
+
+If errors are encountered while parsing @lines, messages are sent to
+STDOUT, but whatever (possibly incorrect) parsing is returned anyway.
+The following situations are checked:
+
+  More than one occurance of a key. In this situation, the last
+  occurance encountered in @lines is the one returned. Note that the
+  same key can occur in the main package and/or different splitoff
+  packages, up to one time in each.
+
+  Use of RFC-822-style multilining (whitespace indent of second and
+  subsequent lines). This notation has been deprecated in favor of
+  heredoc notation.
+
+  Any unknown/invalid syntax.
+
+  Reaching the end of @lines while a heredoc multiline value is still
+  open.
+
+Note that no check is made for the validity of the fields being in the
+file in which they were encountered. The filetype (fink.conf, *.info,
+etc.) is not necessarily known and this routine is used for many
+different filetypes.
+
+=end private
+
+=cut
 
 sub read_properties_lines {
 	my ($file) = shift;
@@ -168,7 +262,28 @@ sub read_properties_lines {
 	return $hash;
 }
 
-### read properties file with multiple values per key
+=item read_properties_multival
+
+    my $property_hash = read_properties_multival $filename;
+    my $property_hash = read_properties_multival $filename, $notLC;
+
+Reads a text file $filename and returns a ref to a hash of its
+fields. See the description of read_properties_lines for more
+information, with the following differences:
+
+  Multiline values are can only be given in RFC-822 style notation,
+  not with heredoc.
+
+  No sanity-checking is performed. Lines that could not be parsed are
+  silently ignored.
+
+  Multiple occurances of a field are allowed. In this case, the value
+  returned in the hash is a ref to an array of the values (in the
+  order as they were encountered in $filename).
+
+If $filename cannot be read, program will die with an error message.
+
+=cut
 
 sub read_properties_multival {
 	my ($file) = shift;
@@ -200,6 +315,20 @@ sub read_properties_multival {
 	return $hash;
 }
 
+=item execute
+
+    my $retval = execute $cmd;
+    my $retval = execute $cmd, $quiet;
+
+Executes $cmd as a single string via a perl system() call and returns
+the exit code from it. The command is printed on STDOUT before being
+executed. If $cmd begins with a # (preceeded optionally by whitespace)
+it is treated as a comment and is not executed. If $quiet is false (or
+not given) and the command failed, a message including the return code
+is sent to STDOUT.
+
+=cut
+
 ### execute a single command
 
 sub execute {
@@ -218,7 +347,27 @@ sub execute {
 	return $?;
 }
 
-### execute a full script
+=item execute_script
+
+     my $retval = execute_script $script;
+     my $retval = execute_script $script, $quiet;
+
+Executes the multiline script $script.
+
+If $script appears to specify an interpretter (i.e., it begins with
+#!) the whole thing is stored in a temp file which is made chmod +x
+and executed. If the tempfile could not be created, the program dies
+with an error message. If executing the script fails, the tempfile is
+not deleted and the failure code is returned.
+
+If $script does not specify an interpretter, each line is executed
+individually. In this latter case, the first line that fails causes
+further lines to not be executed and the failure code is returned.
+
+In either case, execution is performed by Fink::Services::execute
+(which see for more information, including the meaning of $quiet).
+
+=cut
 
 sub execute_script {
 	my $script = shift;
@@ -259,7 +408,36 @@ sub execute_script {
 	}
 }
 
-### do % substitutions on a string
+=item expand_percent
+
+    my $string = expand_percent $template;
+    my $string = expand_percent $template, \%map;
+
+
+Performs percent-expansion on the given multiline $template according
+to %map (if one is passed). If a line in $template begins with #
+(possibly preceeded with whitespace) it is treated as a comment and no
+expansion is performed on that line.
+
+The %map is a hash where the keys are the strings to be replaced (not
+including the percent char). The map can be recursive (i.e., a value
+that itself has a percent char), and multiple substitution passes are
+made to deal with this situation. Recursing is currently limitted to a
+single additional level (only (up to) two passes are made). If there
+are still % chars left after the recursion, that means $template needs
+more passes (beyond the recursion limit) or there are % patterns in
+$template that are not in %map. If either of these two cases occurs,
+the program will die with an error message.
+
+To get an actual percent char in the string, protect it as %% in
+$template (similar to printf()). This occurs whether or not there is a
+%map.  This behavior is implemented internally in the function, so you
+should not have ('%'=>'%') in %map. Pecent-delimited percent chars are
+left-associative (again as in printf()). Currently, this %% treatment
+is implemented using a temporary sentinel string of "@PERCENT@", so if
+$template contains @PERCENT@ that will also be replaced with %.
+
+=cut
 
 sub expand_percent {
 	my $s = shift;
@@ -306,6 +484,17 @@ sub expand_percent {
 	return $s;
 }
 
+=item filename
+
+    my $file = filename $source_field;
+
+Treats $source_field as a URL or "mirror:" construct as might be found
+in Source: fields of a .info file and returns just the filename (skips
+URL proto/host or mirror-type, and directory hierarchy). Note that the
+presence of colons in the filename will break this function.
+
+=cut
+
 ### isolate filename from path
 
 sub filename {
@@ -316,6 +505,12 @@ sub filename {
 	}
 	return $s;
 }
+
+=item print_breaking
+
+TODO
+
+=cut
 
 ### user interaction
 
@@ -354,6 +549,12 @@ sub print_breaking {
 	print "\n" if $linebreak;
 }
 
+=item prompt
+
+TODO
+
+=cut
+
 sub prompt {
 	my $prompt = shift;
 	my $default_value = shift;
@@ -374,6 +575,12 @@ sub prompt {
 	}
 	return $answer;
 }
+
+=item prompt_boolean
+
+TODO
+
+=cut
 
 sub prompt_boolean {
 	my $prompt = shift;
@@ -407,6 +614,12 @@ sub prompt_boolean {
 
 	return $meaning;
 }
+
+=item prompt_selection
+
+TODO
+
+=cut
 
 # select from a list of choices
 # parameters:
@@ -456,7 +669,26 @@ sub prompt_selection {
 	return $choices[$default_value-1];
 }
 
-### comparing versions
+=item version_cmp
+
+    my $bool = version_cmp $fullversion1, $op, $fullversion2;
+
+Compares the two debian version strings $fullversion1 and
+$fullversion2 according to the binary operator $op. Each version
+string is of the form epoch:version-revision (though one or more of
+these components may be omitted as usual). The operators are those
+used in the debian-package world: << and >> for strictly-less-than and
+strictly-greater-than, <= and >= for less-than-or-equal-to and
+greater-than-or-equal-to, and = for equal-to.
+
+The results of the basic comparison (similar to the perl <=> and cmp
+operators) are cached in a package variable so repeated queries about
+the same two version strings does not require repeated parsing and
+element-by-element comparison. The result is cached in both the order
+the packages are given and the reverse, so these later requests can be
+either direction.
+
+=cut
 
 # Caching the results makes fink much faster.
 my %Version_Cmp_Cache = ();
@@ -497,6 +729,16 @@ sub version_cmp {
 
 	return $res;
 }
+
+=begin private
+
+=item raw_version_cmp
+
+TODO
+
+=end private
+
+=cut
 
 sub raw_version_cmp {
 	my ($a1, $b1, $a2, $b2, @ca, @cb, $res);
@@ -542,6 +784,12 @@ sub raw_version_cmp {
 	return $a1 cmp $b1;
 }
 
+=item latest_version
+
+TODO
+
+=cut
+
 sub latest_version {
 	my ($latest, $v);
 
@@ -554,10 +802,20 @@ sub latest_version {
 	return $latest;
 }
 
-### parsing full versions
 
-# return an array with this pattern : ($epoch, $version, $revision)
-# return undef if a parse error occur
+=item parse_fullversion
+
+    my ($epoch, $version, $revision) = parse_fullversion $versionstring;
+
+Parses the given $versionstring of the form epoch:version-revision and
+returns a list of the three components. Epoch and revision are each
+optional and default to zero if absent. Epoch must contain only
+numbers and revision must not contain any hyphens.
+
+If there is an error parsing $versionstring, () is returned.
+
+=cut
+
 sub parse_fullversion {
 	my $fv = shift;
 	if ($fv =~ /^(?:(\d+):)?(.+?)(?:-([^-]+))?$/) {
@@ -568,8 +826,14 @@ sub parse_fullversion {
 	}
 }
 
+=item collapse_space
 
-### collapse white space inside a string (removes newlines)
+    my $pretty_text = collapse_space $original_text;
+
+Collapses whitespace inside a string. All whitespace sequences are
+converted to a single space char. Newlines are removed.
+
+=cut
 
 sub collapse_space {
 	my $s = shift;
@@ -577,11 +841,18 @@ sub collapse_space {
 	return $s;
 }
 
+=item get_term_width
+
+  my $width = get_term_width;
+
+This function returns the width of the terminal window, or zero if STDOUT 
+is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
+env var if ReadKey is not installed, tries tput if neither are available,
+and if nothing works just returns 80.
+
+=cut
+
 sub get_term_width {
-# This function returns the width of the terminal window, or zero if STDOUT 
-# is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
-# env var if ReadKey is not installed, tries tput if neither are available,
-# and if nothing works just returns 80.
 	my ($width, $dummy);
 	use POSIX qw(isatty);
 	if (isatty(fileno STDOUT))
@@ -615,7 +886,17 @@ sub get_term_width {
 	return $width;
 }
 
-### compute the MD5 checksum for a given file
+=item file_MD5_checksum
+
+    my $md5 = file_MD5_checksum $filename;
+
+Returns the MD5 checksum of the given $filename. Uses /sbin/md5 if it
+is available, otherwise uses the first md5sum in PATH. The output of
+the chosen command is read via an open() pipe and matched against the
+appropriate regexp. If the match fails, a '-' char is returned. If the
+command fails, the program dies with an error message.
+
+=cut
 
 sub file_MD5_checksum {
 	my $filename = shift;
@@ -641,9 +922,15 @@ sub file_MD5_checksum {
 	return $checksum;
 }
 
-# get_arch
-# Returns the architecture string to be used on this platform.
-# For example, "powerpc" for ppc.
+=item get_arch
+
+    my $arch = get_arch;
+
+Returns the architecture string to be used on this platform. For
+example, "powerpc" for ppc.
+
+=cut
+
 sub get_arch {
 	if(not defined $arch) {
 	  $arch = `/usr/bin/uname -p`;
@@ -652,8 +939,18 @@ sub get_arch {
 	return $arch;
 }
 
-# get_sw_vers
-# Returns the software version if this is mac os x.
+=item get_sw_vers
+
+    my $os_x_version = get_sw_vers;
+
+Returns OS X version (if that's what this platform appears to be, as
+indicated by being able to run /usr/bin/sw_vers). The output of that
+command is parsed and cached in a global configuration option in the
+Fink::Config package so that multiple calls to this function do not
+result in repeated spawning of sw_vers processes.
+
+=cut
+
 sub get_sw_vers {
 	if (not defined Fink::Config::get_option('sw_vers') or Fink::Config::get_option('sw_vers') eq "0" and -x '/usr/bin/sw_vers') {
 		if (open(SWVERS, "sw_vers |")) {
@@ -669,8 +966,18 @@ sub get_sw_vers {
 	return Fink::Config::get_option('sw_vers');
 }
 
-# get_system_perl_version
-# Returns the version of perl in /usr/bin/perl
+=item get_system_perl_version
+
+    my $perlversion = get_system_perl_version;
+
+
+Returns the version of perl in that is /usr/bin/perl by running a
+program with it to return its $^V variable. The value is cached, so
+multiple calls to this function do not result in repeated spawning of
+perl processes.
+
+=cut
+
 sub get_system_perl_version {
 	if (not defined $system_perl_version) {
 		if (open(PERL, "/usr/bin/perl -e 'printf \"\%vd\", \$^V' 2>/dev/null |")) {
@@ -681,8 +988,16 @@ sub get_system_perl_version {
 	return $system_perl_version;
 }
 
-# get_path
-# an perl version of which to get the full path to a binary in your path
+=item get_path
+
+    my $path_to_file = get_path $filename;
+
+Returns the full pathname of the first executable occurance of
+$filename in PATH. The correct platform-dependent pathname separator
+is used. This is an all-perl routine that emulates 'which' in csh.
+
+=cut
+
 sub get_path {
 	use File::Spec;
 
@@ -703,5 +1018,10 @@ sub get_path {
 
 	return $path;
 }
+
+=back
+
+=cut
+
 ### EOF
 1;
