@@ -1,3 +1,8 @@
+2004-08-03  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: merge cond_config_params branch: more flexible
+	installing of perl modules, include Fink/Text subdir.
+
 2004-07-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* pathsetup.sh.in: Martin Costabel's new version of pathsetup.sh
