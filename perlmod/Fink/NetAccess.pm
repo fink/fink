@@ -23,7 +23,7 @@
 
 package Fink::NetAccess;
 
-use Fink::Services qw(&execute &filename);
+use Fink::Services qw(&execute &filename &file_MD5_checksum);
 use Fink::CLI qw(&prompt_selection_new &print_breaking);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
@@ -59,7 +59,7 @@ sub fetch_url {
 	my ($file, $cmd);
 
 	$file = &filename($url);
-	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir);
+	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, '-');
 }
 
 ### download a file to the designated directory and save it under the
@@ -76,8 +76,10 @@ sub fetch_url_to_file {
 	my $nomirror = shift || 0;
 	my $dryrun = shift || 0;
 	my $downloaddir = shift || "$basepath/src";
+	my $checksum = shift;
 	my ($http_proxy, $ftp_proxy);
 	my ($url, $cmd, $cont_cmd, $result);
+	my $found_archive_sum;
 
 	# create destination directory if necessary
 	if (not -d $downloaddir) {
@@ -111,7 +113,6 @@ sub fetch_url_to_file {
 		$mirrorname = $1;
 		$path = $2;
 		$basename = $3;
-		$path =~ s/^\/*//;    # Mirror::get_site always returns a / at the end
 		if ($mirrorname eq "custom") {
 			if (not $custom_mirror) {
 				die "Source file \"$file\" uses mirror:custom, but the ".
@@ -188,8 +189,21 @@ sub fetch_url_to_file {
 
 	### if the file already exists, ask user what to do
 	if (-f $file && !$cont && !$dryrun) {
-		$result = &prompt_selection_new("The file \"$file\" already exists, how do you want to proceed?",
-						[ value => "retry" ], # Play it save, assume redownload as default
+		my $checksum_msg = ". ";
+		my $default_value = "retry"; # Play it save, assume redownload as default
+		$found_archive_sum = &file_MD5_checksum($file);
+		if ($checksum ne "-") {
+			if ($checksum eq $found_archive_sum) {
+				$checksum_msg = " and its checksum matches. ";
+				$default_value = "use_it"; # MD5 matches: assume okay to use it
+			} else {
+				$checksum_msg = " but its checksum does not match. The most likely ".
+								"cause for this is a corrupted or incomplete download\n".
+								"Expected: $checksum \nActual: $found_archive_sum \n";
+			}
+		}
+		$result = &prompt_selection_new("The file \"$file\" already exists".$checksum_msg."How do you want to proceed?",
+						[ value => $default_value ],
 						( "Delete it and download again" => "retry",
 						  "Assume it is a partial download and try to continue" => "continue",
 						  "Don't download, use existing file" => "use_it" ) );
@@ -241,8 +255,17 @@ sub fetch_url_to_file {
 		if ($dryrun or ($result or not -f $file)) {
 			# failure, continue loop
 		} else {
-			# success, return to caller
-			return 0;
+			$found_archive_sum = &file_MD5_checksum($file);
+			if ($checksum ne "-" and $checksum ne $found_archive_sum) {
+
+				&print_breaking("The checksum of the file is incorrect. The most likely ".
+								"cause for this is a corrupted or incomplete download\n".
+								"Expected: $checksum \nActual: $found_archive_sum \n");
+				# checksum failure, continue loop
+			} else {
+				# success, return to caller
+				return 0;
+			}
 		}
 
 		### failure handling
