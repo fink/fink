@@ -21,16 +21,17 @@
 
 package Fink::PkgVersion;
 use Fink::Base;
-
 use Fink::Services qw(&filename &expand_percent &execute
                       &latest_version &print_breaking
                       &print_breaking_twoprefix &prompt_boolean
-                      &collapse_space);
+                      &collapse_space &read_properties_var);
 use Fink::Config qw($config $basepath $libpath $debarch);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
 use Fink::Status;
+
+use File::Basename qw(&dirname);
 
 use strict;
 use warnings;
@@ -55,6 +56,7 @@ sub initialize {
   my $self = shift;
   my ($pkgname, $version, $revision, $filename, $source);
   my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
+  my ($parentpkgname, $parentdestdir);
   my ($i, $path, @parts, $finkinfo_index, $section);
 
   $self->SUPER::initialize();
@@ -108,44 +110,151 @@ sub initialize {
   $configure_params = "--prefix=\%p ".
     $self->param_default("ConfigureParams", "");
   $destdir = "$basepath/src/root-".$self->{_fullname};
+  if ($self->{_type} eq "splitoff") {
+    my $parent = $self->{parent};
+    $parentpkgname = $parent->{_name};
+    $parentdestdir = "$basepath/src/root-".$parent->{_fullname};
+  } else {
+    $parentpkgname = $pkgname;
+    $parentdestdir = $destdir;
+    $self->{_splitoffs} = [];
+  }
   $expand = { 'n' => $pkgname,
 	      'v' => $version,
 	      'r' => $revision,
 	      'f' => $self->{_fullname},
-	      'p' => $basepath, 'P' => $basepath,
+	      'p' => $basepath,
 	      'd' => $destdir,
 	      'i' => $destdir.$basepath,
+
+	      'N' => $parentpkgname,
+	      'P' => $basepath,
+	      'D' => $parentdestdir,
+	      'I' => $parentdestdir.$basepath,
+
 	      'a' => $self->{_patchpath},
 	      'c' => $configure_params,
 	      'b' => '.'
 	    };
   $self->{_expand} = $expand;
 
-  # expand source / sourcerename fields
-  $source = $self->param_default("Source", "\%n-\%v.tar.gz");
-  if ($source eq "gnu") {
-    $source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
-  } elsif ($source eq "gnome") {
-    $source = "mirror:gnome:stable/sources/\%n/\%n-\%v.tar.gz";
-  }
-
-  $source = &expand_percent($source, $expand);
-  $self->{source} = $source;
-  $self->{_sourcecount} = 1;
-
-  if ($self->has_param('sourcerename')) {
-    $self->{'sourcerename'} = &expand_percent($self->{'sourcerename'}, $expand);
-  }
-
-  for ($i = 2; $self->has_param('source'.$i); $i++) {
-    $self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
-    if ($self->has_param('source'.$i.'rename')) {
-      $self->{'source'.$i.'rename'} = &expand_percent($self->{'source'.$i.'rename'}, $expand);
-    }
-    $self->{_sourcecount} = $i;
-  }
-
   $self->{_bootstrap} = 0;
+
+  # expand percents in various fields
+  $self->expand_percent_if_available('depends');
+  $self->expand_percent_if_available('builddepends');
+  $self->expand_percent_if_available('conflicts');
+  $self->expand_percent_if_available('provides');
+  $self->expand_percent_if_available('replaces');
+
+  # from here on we have to distinguish between "real" packages and splitoffs
+  if ($self->{_type} eq "splitoff") {
+    # so it's a splitoff
+    my ($parent, $field);
+
+    $parent = $self->{parent};
+    
+    if ($parent->has_param('maintainer')) {
+        $self->{'maintainer'} = $parent->{'maintainer'};
+    }
+    if ($parent->has_param('homepage')) {
+        $self->{'homepage'} = $parent->{'homepage'};
+    }
+    
+    # handle inherited fields
+    our @inherited_fields =
+     qw(Description DescDetail License);
+
+    foreach $field (@inherited_fields) {
+      $field = lc $field;
+      if (not $self->has_param($field) and $parent->has_param($field)) {
+          $self->{$field} = $parent->{$field};
+      }
+    }
+
+  } else {
+    # expand source / sourcerename fields
+    $source = $self->param_default("Source", "\%n-\%v.tar.gz");
+    if ($source eq "gnu") {
+      $source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
+    } elsif ($source eq "gnome") {
+      $source = "mirror:gnome:stable/sources/\%n/\%n-\%v.tar.gz";
+    }
+    
+    $source = &expand_percent($source, $expand);
+    $self->{source} = $source;
+    $self->{_sourcecount} = 1;
+  
+    $self->expand_percent_if_available('sourcerename');
+  
+    for ($i = 2; $self->has_param('source'.$i); $i++) {
+      $self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
+      $self->expand_percent_if_available('source'.$i.'rename');
+      $self->{_sourcecount} = $i;
+    }
+  
+    # handle splitoff(s)
+    if ($self->has_param('splitoff')) {
+      $self->add_splitoff($self->{'splitoff'});
+    }
+    for ($i = 2; $self->has_param('splitoff'.$i); $i++) {
+      $self->add_splitoff($self->{'splitoff'.$i});
+    }
+  }
+}
+
+### expand percent chars in the given field, if that field exists
+
+sub expand_percent_if_available {
+  my $self = shift;
+  my $field = shift;
+
+  if ($self->has_param($field)) {
+    $self->{$field} = &expand_percent($self->{$field}, $self->{_expand});
+  }
+}
+
+### add a splitoff package
+
+sub add_splitoff {
+  my $self = shift;
+  my $splitoff_data = shift;
+  my $filename = $self->{_filename};
+  my ($properties, $package, $pkgname, $splitoff);
+  
+  # get rid of any indention first
+  $splitoff_data =~ s/^\s+//gm;
+  
+  # get the splitoff package name
+  $properties = &read_properties_var($splitoff_data);
+  $pkgname = $properties->{'package'};
+  unless ($pkgname) {
+    print "No package name for SplitOff in $filename\n";
+  }
+  
+  # expand percents in it, to allow e.g. "%n-shlibs"
+  $properties->{'package'} = $pkgname = &expand_percent($pkgname, $self->{_expand});
+  
+  # DEBUG remove me!
+  print "Found a splitoff: $pkgname\n"; 
+  
+  # copy version information
+  $properties->{'version'} = $self->{_version};
+  $properties->{'revision'} = $self->{_revision};
+  
+  # set the type, and link the splitoff to its "parent" (=us)
+  $properties->{'type'} = "splitoff";
+  $properties->{parent} = $self;
+  
+  # get/create package object for the splitoff
+  $package = Fink::Package->package_by_name_create($pkgname);
+  
+  # create object for this particular version
+  $properties->{thefilename} = $filename;
+  $splitoff = Fink::Package->inject_description($package, $properties);
+  
+  # add it to the list of splitoffs
+  push @{$self->{_splitoffs}}, $splitoff;
 }
 
 ### merge duplicate package description
@@ -656,6 +765,10 @@ sub phase_fetch {
       $self->{_type} eq "dummy") {
     return;
   }
+  if ($self->{_type} eq "splitoff") {
+    ($self->{parent})->phase_fetch($conditional);
+    return;
+  }
 
   for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
     if (not $conditional or not defined $self->find_tarball($i)) {
@@ -715,6 +828,10 @@ sub phase_unpack {
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
         " because no package description is available\n";
+  }
+  if ($self->{_type} eq "splitoff") {
+    ($self->{parent})->phase_unpack();
+    return;
   }
 
   $bdir = $self->get_fullname();
@@ -820,6 +937,10 @@ sub phase_patch {
     die "can't build ".$self->get_fullname().
         " because no package description is available\n";
   }
+  if ($self->{_type} eq "splitoff") {
+    ($self->{parent})->phase_patch();
+    return;
+  }
 
   $dir = $self->get_build_directory();
   if (not -d "$basepath/src/$dir") {
@@ -909,6 +1030,10 @@ sub phase_compile {
     die "can't build ".$self->get_fullname().
         " because no package description is available\n";
   }
+  if ($self->{_type} eq "splitoff") {
+    ($self->{parent})->phase_compile();
+    return;
+  }
 
   $dir = $self->get_build_directory();
   if (not -d "$basepath/src/$dir") {
@@ -948,15 +1073,23 @@ sub phase_compile {
 
 sub phase_install {
   my $self = shift;
+  my $do_splitoff = shift || 0;
   my ($dir, $install_script, $cmd, $bdir);
-  my (@docfiles, $docfile, $docfilelist);
 
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
         " because no package description is available\n";
   }
+  if ($self->{_type} eq "splitoff" and not $do_splitoff) {
+    ($self->{parent})->phase_install();
+    return;
+  }
   if ($self->{_type} ne "bundle") {
-    $dir = $self->get_build_directory();
+    if ($do_splitoff) {
+      $dir = ($self->{parent})->get_build_directory();
+    } else {
+      $dir = $self->get_build_directory();
+    }
     if (not -d "$basepath/src/$dir") {
       die "directory $basepath/src/$dir doesn't exist, check the package description\n";
     }
@@ -982,7 +1115,7 @@ sub phase_install {
     } elsif ($self->param("_type") eq "perl") {
       $install_script .= 
         "make install INSTALLPRIVLIB=\%i/lib/perl5 INSTALLARCHLIB=\%i/lib/perl5/darwin INSTALLSITELIB=\%i/lib/perl5 INSTALLSITEARCH=\%i/lib/perl5/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
-    } else {
+    } elsif (not $do_splitoff) {
       $install_script .= "make install prefix=\%i\n";
     } 
 
@@ -996,6 +1129,7 @@ sub phase_install {
 
   # generate commands to install documentation files
   if ($self->has_param("DocFiles")) {
+    my (@docfiles, $docfile, $docfilelist);
     $install_script .= "\ninstall -d -m 755 %i/share/doc/%n";
 
     @docfiles = split(/\s+/, $self->param("DocFiles"));
@@ -1009,6 +1143,27 @@ sub phase_install {
     }
     if ($docfilelist ne "") {
       $install_script .= "\ninstall -c -p -m 644$docfilelist %i/share/doc/%n/";
+    }
+  }
+  
+  # splitoff 'Files' field
+  # Very similiar to docfiles, except that:
+  #  - the files are not taken from the build dir, but from the parent
+  #    package's install dir
+  #  - files are moved not copied
+  #  - target can be anywhere inside the install tree, not just inside %p/share/doc/
+  if ($do_splitoff and $self->has_param("Files")) {
+    my (@files, $file, $target);
+
+    @files = split(/\s+/, $self->param("Files"));
+    foreach $file (@files) {
+      if ($file =~ /^(.+)\:(.+)$/) {
+	$install_script .= "\nmv %I/$1 %i/$2";
+      } else {
+        $target = dirname($file)."/";
+        $install_script .= "\ninstall -d -m 755 %i/$target";
+	$install_script .= "\nmv %I/$file %i/$target";
+      }
     }
   }
 
@@ -1027,16 +1182,26 @@ sub phase_install {
     }
   }
 
+  ### splitoffs
+  
+  my $splitoff;
+  foreach  $splitoff (@{$self->{_splitoffs}}) {
+    # iterate over all splitoffs and call their build phase
+    $splitoff->phase_install(1);
+  }
+
   ### remove build dir
 
-  $bdir = $self->get_fullname();
-  chdir "$basepath/src";
-  if (not $config->param_boolean("KeepBuildDir") and -e $bdir) {
-    if (&execute("rm -rf $bdir")) {
-      &print_breaking("WARNING: Can't remove build directory $bdir. ".
-		      "This is not fatal, but you may want to remove ".
-		      "the directory manually to save disk space. ".
-		      "Continuing with normal procedure.");
+  if (not $do_splitoff) {
+    $bdir = $self->get_fullname();
+    chdir "$basepath/src";
+    if (not $config->param_boolean("KeepBuildDir") and -e $bdir) {
+      if (&execute("rm -rf $bdir")) {
+        &print_breaking("WARNING: Can't remove build directory $bdir. ".
+                        "This is not fatal, but you may want to remove ".
+                        "the directory manually to save disk space. ".
+                        "Continuing with normal procedure.");
+      }
     }
   }
 }
@@ -1045,6 +1210,7 @@ sub phase_install {
 
 sub phase_build {
   my $self = shift;
+  my $do_splitoff = shift || 0;
   my ($ddir, $destdir, $control);
   my ($scriptname, $scriptfile, $scriptbody);
   my ($conffiles, $listfile, $infodoc);
@@ -1054,6 +1220,10 @@ sub phase_build {
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
         " because no package description is available\n";
+  }
+  if ($self->{_type} eq "splitoff" and not $do_splitoff) {
+    ($self->{parent})->phase_build();
+    return;
   }
 
   chdir "$basepath/src";
@@ -1229,9 +1399,19 @@ EOF
     die "can't symlink package ".$self->get_debname()." into pool directory\n";
   }
 
+  ### splitoffs
+  
+  my $splitoff;
+  foreach  $splitoff (@{$self->{_splitoffs}}) {
+    # iterate over all splitoffs and call their build phase
+    $splitoff->phase_build(1);
+  }
+
   ### remove root dir
 
-  if (not $config->param_boolean("KeepRootDir") and -e $destdir) {
+  if (not $do_splitoff
+      and not $config->param_boolean("KeepRootDir") 
+      and -e $destdir) {
     if (&execute("rm -rf $destdir")) {
       &print_breaking("WARNING: Can't remove package build directory ".
 		      "$destdir. ".

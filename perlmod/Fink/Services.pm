@@ -34,7 +34,8 @@ BEGIN {
 
   # your exported package globals go here,
   # as well as any optionally exported functions
-  @EXPORT_OK   = qw(&read_config &read_properties &read_properties_multival
+  @EXPORT_OK   = qw(&read_config &read_properties &read_properties_var
+                    &read_properties_multival
                     &filename &execute &expand_percent
                     &print_breaking &print_breaking_prefix
                     &print_breaking_twoprefix
@@ -95,15 +96,37 @@ sub read_config {
 ### read properties file
 
 sub read_properties {
-  my ($file) = @_;
+   my ($file) = @_;
+   my (@lines);
+   
+   open(IN,$file) or die "can't open $file: $!";
+   @lines = <IN>;
+   close(IN);
+   return read_properties_lines(@lines);
+}
+
+### read properties from a variable with text
+
+sub read_properties_var {
+   my ($var) = @_;
+   my (@lines);
+   my ($line);
+
+   @lines = split /^/m,$var;
+   return read_properties_lines(@lines);
+}
+
+### read properties from a list of lines.
+
+sub read_properties_lines {
+  my (@lines) = @_;
   my ($hash, $lastkey, $heredoc);
 
   $hash = {};
   $lastkey = "";
   $heredoc = 0;
 
-  open(IN,$file) or die "can't open $file: $!";
-  while (<IN>) {
+  foreach (@lines) {
     chomp;
     if ($heredoc) {
       if ($_ eq "<<") {
@@ -111,7 +134,8 @@ sub read_properties {
       } else {
 	$hash->{$lastkey} .= $_."\n";
 	if (/<<$/) {
-	  print "WARNING: Possible unterminated here-document in \"$file\".\n";
+	  print "WARNING: Possible unterminated here-document.\n";
+#	  print "WARNING: Possible unterminated here-document in \"$file\".\n";
 	}
       }
     } else {
@@ -129,10 +153,10 @@ sub read_properties {
       }
     }
   }
-  close(IN);
 
   if ($heredoc) {
-    print "WARNING: End of file reached during here-document in \"$file\".\n";
+    print "WARNING: End of file reached during here-document.\n";
+#    print "WARNING: End of file reached during here-document in \"$file\".\n";
   }
 
   return $hash;

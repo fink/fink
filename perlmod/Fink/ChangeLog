@@ -1,3 +1,15 @@
+2002-03-06  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Multitude of changes, implementing initial splitoff 
+	support. Percent expansion is now done in all dependency related fields.
+
+	* Package.pm (inject_description): Return the created PkgVersion object
+	to the called. Used by splitoff code
+
+	* Services.pm (read_properties): Split this function, creating two new
+	called read_properties_var and read_properties_lines, which take a text
+	variable / a list of strings, instead of a file. Used by splitoff code.
+
 2002-02-23  Max Horn  <max@quendi.de>
 
 	* NetAccess.pm (fetch_url_to_file, download_cmd): Allow the user to

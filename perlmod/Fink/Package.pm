@@ -407,6 +407,8 @@ sub inject_description {
       $vpo->add_provider($version);
     }
   }
+  
+  return $version;
 }
 
 
