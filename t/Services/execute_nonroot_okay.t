@@ -29,20 +29,31 @@ eval { $result = &execute("touch $tmpdir/f1 >/dev/null 2>&1", nonroot_okay=>1) }
 like("$result: $@", qr/^0: /, 'disabling build_as_nobody causes normal execution');
 
 Fink::Config::set_options( {'build_as_nobody' => 1} );
-eval { $result = &execute("touch $tmpdir/f3 >/dev/null 2>&1") };
-like("$result: $@", qr/^0: /, 'omitting nonroot_okay option causes normal execution');
+eval { $result = &execute("touch $tmpdir/f2 >/dev/null 2>&1") };
+like("$result: $@", '/^0: /', 'omitting nonroot_okay option causes normal execution');
 
 Fink::Config::set_options( {'build_as_nobody' => 1} );
 eval { $result = &execute("touch $tmpdir/f3 >/dev/null 2>&1", nonroot_okay=>0) };
-like("$result: $@", qr/^0: /, 'false nonroot_okay option causes normal execution');
+like("$result: $@", '/^0: /', 'false nonroot_okay option causes normal execution');
 
 Fink::Config::set_options( {'build_as_nobody' => 1} );
-eval { $result = &execute("touch $tmpdir/f2 >/dev/null 2>&1", nonroot_okay=>1) };
-SKIP: {
-    skip "You must be non-root for this test", 1 if $> == 0;
-    like("$result: $@", qr/EUID/, 'try to set EUID when not root');
-}
-SKIP: {
-    skip "You must be root for this test", 1 if $> != 0;
-    unlike("$result: $@", qr/^0: /, 'requires normal user but build_as_nobody enabled');
+eval { $result = &execute("touch $tmpdir/f4 >/dev/null 2>&1", nonroot_okay=>1) };
+ SKIP: {
+     skip "You must be non-root for this test", 1 if $> == 0;
+     like("$result: $@", '/^\d+: .*EUID/', 'try to set EUID when not root');
+ }
+ SKIP: {
+     skip "You must be root for this test", 1 if $> != 0;
+     unlike("$result: $@", '/^0: /', 'requires normal user but build_as_nobody enabled');
+ }
+
+ SKIP: {
+     skip "You must be root for this test", 1 if $> != 0;
+   TODO: {
+       local $TODO = "cannot fully drop root yet";
+
+     Fink::Config::set_options( {'build_as_nobody' => 1} );
+     eval { $result = &execute('perl -e \'print "hello\n"\' > /dev/null', nonroot_okay=>1) };
+     like("$result: $@", '/^0: /', 'command is not run under setuid');
+   }
 }
