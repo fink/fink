@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 24
+Revision: 35
 GCC: 3.3
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
@@ -69,6 +69,8 @@ InstallScript: <<
  install -m 644 sources.list.fink %i/etc/apt/sources.list
  mkdir -p %i/var/cache/apt/archives/partial
  mkdir -p %i/var/lib/apt/lists/partial
+ mkdir -p %i/lib/fink
+ install -m 644 sources.list.fink %i/lib/fink
 <<
 SplitOff: <<
   Package: %N-shlibs
@@ -135,7 +137,12 @@ The -fno-rtti works around a bug in GCC 3.1 on Jaguar.
 
 Ben Hines - added patch to make apt recognize macosx and darwin pkgs
 <<
-DescPackaging: Previous versions by Christoph Pfisterer.
+DescPackaging: <<
+Previous versions by Christoph Pfisterer.
+
+Now installing a second copy of sources.list into /sw/lib/fink to use
+as a backup if the installation gets messed up.
+<<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://packages.qa.debian.org/a/apt.html
