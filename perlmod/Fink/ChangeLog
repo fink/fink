@@ -12,7 +12,12 @@
 
 	* Engine.pm: Enable BuildConflicts when running "fink install" (not
 	just when running "fink build")
-	
+
+2005-02-27  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: add Homepage to the install script failure for
+	virtual packages.
+
 2005-02-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: add DescDetail to the install script failure for
