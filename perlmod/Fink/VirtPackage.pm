@@ -73,13 +73,16 @@ sub initialize {
 	# Now the Mac OS X version
 	$macosx_version = 0;
 	if (-x "/usr/bin/sw_vers") {
-		$dummy = open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
-		while (<SW_VERS>) {
-			chomp;
-			if (/(ProductVersion\:)\s*([^\s]*)/) {
-				$macosx_version = $2;
-				last;
+		if (open(SW_VERS, "/usr/bin/sw_vers |")) {
+			while (<SW_VERS>) {
+				if (/(ProductVersion\:)\s*([^\s]*)/) {
+					$macosx_version = $2;
+					last;
+				}
 			}
+			close(SW_VERS);
+		} else {
+			die "Couldn't determine system version: $!\n";
 		}
 	}
 
@@ -122,6 +125,37 @@ sub initialize {
 		$self->{$hash->{package}} = $hash;
 	}
 
+	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+	# create dummy object for java
+	if (opendir(DIR, $javadir)) {
+		for my $dir ( sort readdir(DIR)) {
+			chomp($dir);
+			next if ($dir =~ /^\.\.?$/);
+			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
+				# chop the version down to major/minor without dots
+				my $ver = $dir;
+				$ver =~ s/[^\d]+//g;
+				$ver =~ s/^(..).*$/$1/;
+				$hash = {};
+				$hash->{package}     = "system-java${ver}";
+				$hash->{status}      = "install ok installed";
+				$hash->{version}     = $dir . "-1";
+				$hash->{description} = "[virtual package representing Java $dir]";
+				$self->{$hash->{package}} = $hash;
+
+				if (-d $javadir . '/' . $dir . '/Headers') {
+					$hash = {};
+					$hash->{package}     = "system-java${ver}-dev";
+					$hash->{status}      = "install ok installed";
+					$hash->{version}     = $dir . "-1";
+					$hash->{description} = "[virtual package representing Java $dir development headers]";
+					$self->{$hash->{package}} = $hash;
+				}
+			}
+		}
+		closedir(DIR);
+	}
+
 	# create dummy object for cctools version, if version was found in Config.pm
 	if (defined ($cctools_version)) {
 		$hash = {};
@@ -137,11 +171,60 @@ sub initialize {
 	if ($cctools_single_module) {
 		$hash = {};
 		$hash->{package} = "cctools-single-module";
-        $hash->{status} = "install ok installed";
+		$hash->{status} = "install ok installed";
 		$hash->{version} = $cctools_single_module."-1";
 		$hash->{description} = "[virtual package, your dev tools support -single_module]";
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
+	}
+	if ( -f '/usr/X11R6/lib/libX11.6.dylib' )
+	{
+		# check the status of xfree86 packages
+		my $packagecount = 0;
+		for my $packagename ('system-xfree86', 'xfree86-base', 'xfree86-rootless',
+			'xfree86-base-threaded', 'system-xfree86-43', 'system-xfree86-42',
+			'xfree86-base-shlibs', 'xfree86', 'system-xtools',
+			'xfree86-base-threaded-shlibs', 'xfree86-rootless-shlibs',
+			'xfree86-rootless-threaded-shlibs')
+		{
+			$packagecount++ if (Fink::Status->query_package($packagename));
+		}
+
+		# if no xfree86 packages are installed, put in our own placeholder
+		if ($packagecount == 0) {
+			my ($xver, $xvermaj, $xvermin, $xverrev) = check_x11_version();
+			if (defined $xver and $xvermaj == 4)
+			{
+				$hash = {};
+				$hash->{package} = "system-xfree86";
+				$hash->{status} = "install ok installed";
+				$hash->{version} = "2:${xvermaj}.${xvermin}-1";
+				$hash->{description} = "[placeholder for user installed x11]";
+
+				my @provides;
+				push(@provides, 'x11')                if (has_lib('/usr/X11R6/lib/libX11.dylib') and
+									-f '/usr/X11R6/include/X11/Xlib.h');
+				push(@provides, 'x11-shlibs')         if has_lib('/usr/X11R6/lib/libX11.6.dylib');
+				push(@provides, 'libgl')              if (has_lib('/usr/X11R6/lib/libGL.dylib') and
+									-f '/usr/X11R6/include/GL/gl.h');
+				push(@provides, 'libgl-shlibs')       if has_lib('/usr/X11R6/lib/libGL.1.dylib');
+				push(@provides, 'xft1')               if (has_lib('/usr/X11R6/lib/libXft.dylib') and
+									readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
+									-f '/usr/X11R6/include/X11/Xft/Xft.h');
+				push(@provides, 'xft2')               if (has_lib('/usr/X11R6/lib/libXft.dylib') and
+									readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
+									-f '/usr/X11R6/include/X11/Xft/XftCompat.h');
+				push(@provides, 'xft1-shlibs')        if has_lib('/usr/X11R6/lib/libXft.1.dylib');
+				push(@provides, 'xft2-shlibs')        if has_lib('/usr/X11R6/lib/libXft.2.dylib');
+				push(@provides, 'rman')               if (-x '/usr/X11R6/bin/rman');
+				push(@provides, 'fontconfig1')        if (has_lib('/usr/X11R6/lib/libfontconfig.dylib') and
+									readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
+									-f '/usr/X11R6/include/fontconfig/fontconfig.h');
+				push(@provides, 'fontconfig1-shlibs') if has_lib('/usr/X11R6/lib/libfontconfig.1.dylib');
+				$hash->{provides} = join(', ', @provides);
+				$self->{$hash->{package}} = $hash;
+			}
+		}    
 	}
 }
 
@@ -196,9 +279,8 @@ sub list {
 		$hash = $self->{$pkgname};
 		next unless exists $hash->{version};
 
-		$newhash = { 'package' => $pkgname,
-								 'version' => $hash->{version} };
-		foreach $field (qw(depends provides conflicts maintainer description)) {
+		$newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
+		foreach $field (qw(depends provides conflicts maintainer description status builddependsonly)) {
 			if (exists $hash->{$field}) {
 				$newhash->{$field} = $hash->{$field};
 			}
@@ -209,5 +291,41 @@ sub list {
 	return $list;
 }
 
+sub has_lib {
+	my $libname = shift;
+	my $dir;
+
+	if ($libname =~ /^\//) {
+		return (-f $libname);
+	} else {
+		for $dir ('/usr/X11R6/lib', $basepath . '/lib', '/usr/lib') {
+			return 1 if (-f $dir . '/' . $libname);
+		}
+	}
+	return;
+}
+
+### Check the installed x11 version
+sub check_x11_version {
+	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
+	if (open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
+		while (<XTERM>) {
+			if (/^.*Version\S* ([^\s]+) .*$/) {
+				$XF_VERSION = $1;
+				@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+				last;
+			}
+		}
+		close(XTERM);
+		if (not defined $XF_VERSION) {
+			warn "could not determine XFree86 version number\n";
+			return;
+		}
+	} else {
+		warn "could not read xterm.1: $!\n";
+		return;
+	}
+	return ($XF_VERSION, @XF_VERSION_COMPONENTS);
+}
 ### EOF
 1;

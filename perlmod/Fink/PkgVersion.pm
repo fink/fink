@@ -1287,14 +1287,14 @@ sub phase_compile {
 			}
 			$compile_script =
 				"perl$perlversion Makefile.PL \%c\n".
-				"make";
+				"make\n";
 			unless ($self->param_boolean("NoPerlTests")) {
-				$compile_script .= "make test";
+				$compile_script .= "make test\n";
 			}
 		} else {
 			$compile_script = 
 				"./configure \%c\n".
-				"make";
+				"make\n";
 		}
 	}	 
 
