@@ -1,3 +1,7 @@
+2001-09-02  Christoph Pfisterer  <cp@chrisp.de>
+
+	* mkrelease.sh: Moved to separate CVS module 'scripts'.
+
 2001-08-25  Christoph Pfisterer  <cp@chrisp.de>
 
 	* VERSION: Bumped fink version to 0.2.5.
