@@ -3,6 +3,8 @@
 	* PkgVersion.pm (initialize): Expand percents in even more fields now:
 	Suggests, Enhances, Recommends and Pre-Depends.
 	(expand_percent_if_available): First converts field parameter to lower case.
+	(phase_install): Fixed some issues with the Files field, and changed the
+	order in which it is processed (now comes before DocFiles, not after)
 
 2002-03-06  Max Horn  <max@quendi.de>
 

@@ -175,7 +175,6 @@ sub initialize {
           $self->{$field} = $parent->{$field};
       }
     }
-
   } else {
     # expand source / sourcerename fields
     $source = $self->param_default("Source", "\%n-\%v.tar.gz");
@@ -600,6 +599,11 @@ sub resolve_depends {
   my (@speclist, @deplist, $altlist);
   my ($altspec, $depspec, $depname, $versionspec, $package);
 
+  # TODO - if this is a splitoff, and we are asked for build depends, return
+  # the build depend list of the master packager
+  # If OTOH this is a master package with splitoffs, and build deps are requested,
+  # then add to the list the deps of all aplitoffs.
+  
   @deplist = ();
 
   @speclist = split(/\s*\,\s*/, $self->param_default("Depends", ""));
@@ -1131,6 +1135,27 @@ sub phase_install {
     }
   }
 
+  # splitoff 'Files' field
+  if ($do_splitoff and $self->has_param("Files")) {
+    my (@files, $file, $target);
+
+    @files = split(/\s+/, $self->param("Files"));
+    foreach $file (@files) {
+      if ($file =~ /^(.+)\:(.+)$/) {
+	$install_script .= "\nmv %I/$1 %i/$2";
+      } else {
+        $target = dirname($file);
+        if ($target ne ".") {
+          $target = "%i/$target";
+          $install_script .= "\ninstall -d -m 755 $target";
+        } else {
+          $target = "%i";
+        }
+	$install_script .= "\nmv %I/$file $target";
+      }
+    }
+  }
+
   # generate commands to install documentation files
   if ($self->has_param("DocFiles")) {
     my (@docfiles, $docfile, $docfilelist);
@@ -1147,27 +1172,6 @@ sub phase_install {
     }
     if ($docfilelist ne "") {
       $install_script .= "\ninstall -c -p -m 644$docfilelist %i/share/doc/%n/";
-    }
-  }
-  
-  # splitoff 'Files' field
-  # Very similiar to docfiles, except that:
-  #  - the files are not taken from the build dir, but from the parent
-  #    package's install dir
-  #  - files are moved not copied
-  #  - target can be anywhere inside the install tree, not just inside %p/share/doc/
-  if ($do_splitoff and $self->has_param("Files")) {
-    my (@files, $file, $target);
-
-    @files = split(/\s+/, $self->param("Files"));
-    foreach $file (@files) {
-      if ($file =~ /^(.+)\:(.+)$/) {
-	$install_script .= "\nmv %I/$1 %i/$2";
-      } else {
-        $target = dirname($file)."/";
-        $install_script .= "\ninstall -d -m 755 %i/$target";
-	$install_script .= "\nmv %I/$file %i/$target";
-      }
     }
   }
 
