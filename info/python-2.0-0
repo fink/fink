@@ -1,0 +1,16 @@
+Package: python
+Version: 2.0
+Revision: 0
+Source: http://www.python.org/ftp/python/2.0/BeOpen-Python-%v.tar.gz
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+Depends: 
+SourceDirectory: Python-2.0
+ConfigureParams: --with-cxx=c++ --with-threads --with-dyld --with-suffix=x
+CommentPort: --with-suffix=x necessary to deal with HFS+ case insensitivity.
+ Just the default modules built (no tkinter yet).
+ Interpreter installed as 'pythonx'.
+CommentStow:
+Homepage:  http://www.python.org
+Maintainer:  Jeffrey Whitaker <jsw@cdc.noaa.gov>
