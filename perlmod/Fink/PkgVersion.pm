@@ -1930,7 +1930,8 @@ sub set_env {
 	my $self = shift;
 	my ($varname, $s, $expand);
 	my %defaults = ( "CPPFLAGS" => "-I\%p/include",
-					 "LDFLAGS" => "-L\%p/lib" );
+			 "LDFLAGS" => "-L\%p/lib",
+	);
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	# clean the environment
@@ -1976,6 +1977,13 @@ sub set_env {
 			} else {
 				delete $ENV{$varname};
 			}
+		}
+	}
+	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined Fink::Services::get_sw_vers() and Fink::Services::get_sw_vers() ne "0") {
+		if (Fink::Services::get_sw_vers() eq "10.2") {
+			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
+		} else {
+			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = Fink::Services::get_sw_vers();
 		}
 	}
 }
