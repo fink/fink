@@ -91,10 +91,6 @@ our %commands =
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
 	);
 
-our (%deb_list, %src_list);
-%deb_list = ();
-%src_list = ();
-
 END { }				# module clean-up code here (global destructor)
 
 ### constructor using configuration
@@ -761,8 +757,33 @@ sub cmd_cleanup {
 	#				 achieved each with single line CLI commands.
 	
 	# Reset list of non-obsolete debs/source files
-	%deb_list = ();
-	%src_list = ();
+	my %deb_list = ();
+	my %src_list = ();
+	
+	# Initialize file counter
+	my %file_count = (
+		'deb' => 0,
+		'symlink' => 0,
+		'src' => 0,
+	);
+	
+	# Anonymous subroutine to find/nuke obsolete debs
+	my $kill_obsolete_debs = sub {
+		if (/^.*\.deb\z/s ) {
+			if (not $deb_list{$File::Find::name}) {
+				# Obsolete deb
+				unlink $File::Find::name and $file_count{'deb'}++;
+			}
+		}
+	};
+	
+	# Anonymous subroutine to find/nuke broken deb symlinks
+	my $kill_broken_links = sub {
+		if(-l && !-e) {
+			# Broken link
+			unlink $File::Find::name and $file_count{'symlink'}++;
+		}
+	};
 
 	# Iterate over all packages and collect the deb files, as well
 	# as all their source files.
@@ -787,11 +808,11 @@ sub cmd_cleanup {
 	}
 	
 	# Now search through all .deb files in /sw/fink/dists/
-	find (\&kill_obsolete_debs, "$basepath/fink/dists");
+	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
 	
 	# Remove broken symlinks in /sw/fink/debs (i.e. those that pointed to 
 	# the .deb files we deleted above).
-	find (\&kill_broken_links, "$basepath/fink/debs");
+	find ($kill_broken_links, "$basepath/fink/debs");
 	
 
 	# Remove obsolete source files. We do not delete immediatly because that
@@ -811,25 +832,13 @@ sub cmd_cleanup {
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
 		if (-f $file) {
-			unlink $file;
-		}
+			unlink $file and $file_count{'src'}++;
 	}
 }
 
-sub kill_obsolete_debs {
-	if (/^.*\.deb\z/s ) {
-		if (not $deb_list{$File::Find::name}) {
-			# Obsolete deb
-			unlink $File::Find::name;
-		}
-	}
-}
-
-sub kill_broken_links {
-	if(-l && !-e) {
-		# Broken link
-		unlink $File::Find::name;
-	}
+	print 'Obsolete deb packages deleted: ' . $file_count{'deb'} . "\n";
+	print 'Obsolete symlinks deleted: ' . $file_count{'symlink'} . "\n";
+	print 'Obsolete sources deleted: ' . $file_count{'src'} . "\n\n";
 }
 
 ### building and installing
