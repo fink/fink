@@ -1,3 +1,7 @@
+2005-01-05  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* PkgVersion.pm: Change wording for failed 'fink remove'.
+
 2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* all: updated Copyright notice

@@ -2652,9 +2652,11 @@ sub phase_deactivate {
 	my @packages = @_;
 
 	if (&execute("dpkg --remove @packages")) {
-		&print_breaking("ERROR: Can't remove package(s). Try 'fink remove --recursive " .
-		                "@packages', which will also remove packages that depend " .
-		                "on the package(s) to be removed.");
+		&print_breaking("ERROR: Can't remove package(s). If the above error message " .
+		                "mentions dependency problems, you can try\n" .
+		                "  fink remove --recursive @packages\n" .
+		                "This will attempt to remove the package(s) specified as " .
+		                "well as ALL packages that depend on it.");
 		if (@packages == 1) {
 			growl('finkPackageRemovalFailed', 'Fink removal failed.', "can't remove package ".$packages[0]);
 			die "can't remove package ".$packages[0]."\n";
