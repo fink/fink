@@ -1789,12 +1789,15 @@ EOF
 				my $deplist = $pkg->pkglist($_);
 				printf "%s: %s\n", $_, $deplist if defined $deplist;
 			} elsif ($_ eq 'essential'         or $_ eq 'builddependsonly'  or
-					 $_ eq 'nosourcedirectory' or $_ eq 'updateconfigguess' or
-					 $_ eq 'updatelibtool'     or $_ eq 'updatepomakefile'  or
 					 $_ =~ /^noset/            or $_ eq 'noperltests'       or
 					 $_ eq 'updatepod'
 					) {
 				printf "%s: %s\n", $_, $pkg->param_boolean($_) ? "true" : "false";
+			} elsif ($_ eq 'nosourcedirectory' or $_ eq 'updateconfigguess' or
+					 $_ eq 'updatelibtool'     or $_ eq 'updatepomakefile'
+					) {
+				# these are not for SplitOff pkgs
+				printf "%s: %s\n", $_, $pkg->param_boolean($_) ? "true" : "false" unless exists $pkg->{parent};
 			} elsif ($_ eq 'sources') {
 				# multiline field, so indent 1 space always
 				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;

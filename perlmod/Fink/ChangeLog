@@ -1,6 +1,13 @@
+2004-05-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: don't print fields that don't apply to
+	splitoffs for splitoff pkgs.
+	* PkgVersion.pm: get_source: no default Source for splitoff
+	pkgs. get_source_suffices: no sources for splitoff pkgs.
+
 2004-05-23  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVerison.pm: Ignore SourceN for Type "bundle", "nosource", "dummy".
+	* PkgVerison.pm: get_source_suffices: Ignore SourceN for Type "bundle", "nosource", "dummy".
 
 2004-05-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

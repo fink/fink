@@ -643,7 +643,7 @@ sub get_source_suffices {
 
 	# Cache it
 	if (!exists $self->{_source_suffices}) {
-		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') ) {
+		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') || exists $self->{parent} ) {
 			$self->{_source_suffices} = [];
 		} else {
 			my @params = $self->params_matching('source([2-9]|[1-9]\d+)');
@@ -668,7 +668,7 @@ sub get_source {
 	my $suffix = shift || "";
 	
 	# Implicit primary source
-	if ( $suffix eq "" ) {
+	if ( $suffix eq "" and !exists $self->{parent} ) {
 		my $source = $self->param_default("Source", "\%n-\%v.tar.gz");
 		if ($source eq "gnu") {
 			$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
