@@ -1872,8 +1872,8 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 	if ($self->has_param("conffiles")) {
 		$listfile = "$destdir/DEBIAN/conffiles";
-		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")))."\n";
-		$conffiles = &expand_percent($conffiles, $self->{_expand});
+		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")));
+		$conffiles = &expand_percent($conffiles, $self->{_expand})."\n";
 
 		print "Writing conffiles list...\n";
 

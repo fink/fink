@@ -1,3 +1,8 @@
+2003-11-21  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: Fixed conffiles with new expansion code, needed to
+	move the trailing new line to be added after calling expand_percent.
+
 2003-11-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Changed the X11 tracking to return major.minor.mini
