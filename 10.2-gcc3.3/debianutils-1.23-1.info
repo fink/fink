@@ -4,6 +4,7 @@ Revision: 1
 Essential: true
 Maintainer: Christian Swinehart <cswinehart@users.sourceforge.net>
 Depends: base-files
+BuildDepends: fink-prebinding
 Conflicts: mktemp
 Replaces: mktemp, tetex
 Provides: mktemp

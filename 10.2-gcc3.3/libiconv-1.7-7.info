@@ -5,7 +5,7 @@ Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: bc7029c0bc913dc297cf49afa4c0e133
 Essential: yes
 Depends: base-files
-BuildDepends: fink (>= 0.13.0)
+BuildDepends: fink (>= 0.13.0), fink-prebinding
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
  %p/lib/libiconv.2.dylib 3.0.0 %n (>= 1.7-7)
