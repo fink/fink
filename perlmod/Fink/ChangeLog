@@ -1,3 +1,8 @@
+2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
+
+	* SelfUpdate.pm: Add --delete, since it is not implied by 
+	  --delete-after with older rsyncs (10.2).
+
 2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: More changes, split up system-xfree86 into
