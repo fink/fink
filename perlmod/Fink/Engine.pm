@@ -24,7 +24,8 @@ package Fink::Engine;
 
 use Fink::Services qw(&print_breaking &print_breaking_prefix
                       &prompt_boolean &prompt_selection
-                      &latest_version &execute &get_term_width);
+                      &latest_version &execute &get_term_width
+                      &file_MD5_checksum);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath);
@@ -83,6 +84,7 @@ our %commands =
     'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1],
     'validate' => [\&cmd_validate, 0, 0],
     'check' => [\&cmd_validate, 0, 0],
+    'checksums' => [\&cmd_checksums, 1, 0],
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -614,6 +616,33 @@ sub cmd_validate {
   }
 }
 
+# HACK HACK HACK
+# This is to be removed soon again, only a temporary tool to allow
+# checking of all available MD5 values in all packages.
+sub cmd_checksums {
+  my ($pname, $package, $vo, $i, $file, $chk);
+
+  # Iterate over all packages
+  foreach $pname (Fink::Package->list_packages()) {
+    $package = Fink::Package->package_by_name($pname);
+    foreach $vo ($package->get_all_versions()) {
+      # Skip packages that do not have source files
+      next if not defined $vo->{_sourcecount};
+    
+      # For each tar ball, if a checksum was specified, locate it and
+      # verify the checksum.
+      for ($i = 1; $i <= $vo->{_sourcecount}; $i++) {
+	$chk = $vo->get_checksum($i);
+	if ($chk ne "-") {
+	  $file = $vo->find_tarball($i);
+	  if (defined($file) and $chk ne &file_MD5_checksum($file)) {
+	    print "Checksum of tarball $file of package ".$vo->get_fullname()." is incorrect.\n";
+	  }
+	}
+      }
+    }
+  }
+}
 
 ### building and installing
 
