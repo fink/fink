@@ -1,3 +1,7 @@
+2003-09-23  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* PkgVersion.pm: die if no md5 specified. You were warned!
+
 2003-09-22  Ben Hines <benh57@users.sourceforge.net>
 
 	* Bootstrap.pm: Support 10.2.8.
