@@ -182,6 +182,10 @@ sub initialize {
 
 	$self->{_bootstrap} = 0;
 
+	# Description is used by 'fink list' so better to get it expanded now
+	# also keeps %type_[] out of all list and search fields of pdb
+	$self->expand_percent_if_available("Description");
+
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if (exists $self->{parent}) {
 		# so it's a splitoff

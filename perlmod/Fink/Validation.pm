@@ -333,7 +333,9 @@ sub validate_info_file {
 	}
 
 	$pkgversion = $properties->{version};
+	$pkgversion = '' unless defined $pkgversion;
 	$pkgrevision = $properties->{revision};
+	$pkgrevision = '' unless defined $pkgrevision;
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
 	$pkgdestdir = "$buildpath/root-".$pkgfullname;
 	
@@ -377,9 +379,16 @@ sub validate_info_file {
 	#
 	# Now check for other mistakes
 	#
-	
-	unless (("$pkgfullname.info" eq $filename) || ("$pkgname.info" eq $filename)) {
-		print "Warning: File name should be $pkgfullname.info or $pkgname.info ($filename)\n";
+
+	# variants with Package: foo-%type[bar] leave escess hyphens
+	my @ok_filenames = $pkgname;
+	$ok_filenames[0] =~ s/-+/-/g;
+	$ok_filenames[0] =~ s/-*$//g;
+	$ok_filenames[1] = "$ok_filenames[0]-$pkgversion-$pkgrevision";
+	map $_ .= ".info", @ok_filenames;
+
+	unless (1 == grep $filename eq $_, @ok_filenames) {
+		print "Warning: File name should be ", join( " or ", @ok_filenames ),"\n";
 		$looks_good = 0;
 	}
 	

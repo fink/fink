@@ -1,3 +1,11 @@
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Perform %-expansion on Description (during indexing).
+	* Validation.pm: When constructing allowed .info filenames, clear out
+	strings of multiple hyphens or hyphens at the end. Also resolve some
+	some "use of uninitialized value" warnings when certain fields are
+	missing from the .info.
+
 2004-04-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Fix dumpinfo so when run on a SplitOff package it
