@@ -26,7 +26,6 @@ package Fink::Engine;
 use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width &parse_cmd_options);
 use Fink::Package;
-use Fink::Package::Mini;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
 use File::Find;
@@ -326,7 +325,7 @@ Options:
 
 EOF
 		}
-		exit 0;
+	exit 0;
 	}
 	if ($options{installedstate} == 0) {$options{installedstate} = 7;}
 
@@ -354,14 +353,14 @@ EOF
 		$formatstr = "%s\t%s\t%s\t%s\n";
 		$desclen = 0;
 	}
-	Fink::Package::Mini->require_packages();
+	Fink::Package->require_packages();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
+	@allnames = Fink::Package->list_packages();
 	if ($cmd eq "list") {
 		if ($#_ < 0) {
-			@selected = Fink::Package::Mini->list_packages();
+			@selected = @allnames;
 		} else {
-			@allnames = Fink::Package::Mini->list_packages();
 			@selected = ();
 			while (defined($pattern = shift)) {
 				$pattern = lc quotemeta $pattern; # fixes bug about ++ etc in search string.
@@ -376,22 +375,24 @@ EOF
 		}
 	} else {
 		$pattern = shift;
-		@selected = Fink::Package::Mini->list_packages();
+		@selected = @allnames;
 		unless ($pattern) {
 			die "no keyword specified for command 'apropos'!\n";
 		}
 	}
 
 	foreach $pname (sort @selected) {
-		$package = Fink::Package::Mini->package_by_name($pname);
+		$package = Fink::Package->package_by_name($pname);
 		if ($package->is_virtual() == 1) {
+			$lversion = "";
 			$iflag = "   ";
 			$description = "[virtual package]";
 			next if ($cmd eq "apropos"); 
 			next unless ($options{installedstate} & 4);
 		} else {
-			$description = $package->get_description();
-			if ($package->is_installed()) {
+			$lversion = &latest_version($package->list_versions());
+			$vo = $package->get_version($lversion);
+			if ($vo->is_installed()) {
 				next unless ($options{installedstate} & 2);
 				$iflag = " i ";
 			} elsif ($package->is_any_installed()) {
@@ -401,30 +402,32 @@ EOF
 				$iflag = "   ";
 				next unless ($options{installedstate} & 4);
 			}
+
+			$description = $vo->get_shortdescription($desclen);
 		}
 		if (defined $buildonly) {
-			next unless $package->get_builddepensonly();
+			next unless $vo->param_boolean("builddependsonly");
 		}
 		if (defined $section) {
 			$section =~ s/[\=]?(.*)/$1/;
-			next unless $package->get_section() =~ /\Q$section\E/i;
+			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
 		}
 		if (defined $maintainer) {
-			next unless ( $package->get_maintainer() ne "" && $package->get_maintainer() =~ /\Q$maintainer\E/i );
+			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
 		}
 		if (defined $pkgtree) {
 #			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
-			next unless $package->get_tree() =~ /\b\Q$pkgtree\E\b/i;
+			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
 		}
 		if ($cmd eq "apropos") {
-			next unless ( $package->get_description() ne "" && $package->get_description() =~ /\Q$pattern\E/i ) || $pname =~ /\Q$pattern\E/i;  
+			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
 		}
 		if ($namelen && length($pname) > $namelen) {
 			$pname = substr($pname, 0, $namelen - 3)."...";
 		}
 
 		printf $formatstr,
-				$iflag, $pname, $package->get_version(), $description;
+				$iflag, $pname, $lversion, $description;
 	}
 }
 
