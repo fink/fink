@@ -108,12 +108,11 @@ Common commands:
   index        - force rebuild of package cache
   validate     - performs various checks on .info and .deb files
   scanpackages - rescans the list of binary packages on the system
-  cleanup      - removes obsolete package files if newer versions are available
-  dumpinfo     - show how fink parses parts of a package's .info file
+  cleanup      - reclaims disk space used by temporary or obsolete files
   show-deps    - list run-time and compile-time package dependencies
   snapshot     - create a file detailing all of your installed packages
 
-Options:
+Common options:
   -h, --help            - display this help text
   -q, --quiet           - causes fink to be less verbose, opposite of --verbose
   -V, --version         - display version information
@@ -123,10 +122,8 @@ Options:
                           distribution if available
   --no-use-binary-dist  - don't use pre-compiled packages from the binary 
                           distribution (opposite of -b)
-  --build-as-nobody     - do unpack/patch/compile/install phases as non-root
-                          (*only* use for package development/deugging!)
 
-See the fink(8) manual page for more commands and options.
+See the fink(8) manual page for a complete list of commands and options.
 Visit http://fink.sourceforge.net/ for further information.
 EOF
   exit 0;

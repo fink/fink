@@ -1,3 +1,8 @@
+2005-02-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.in: Clean up 'fink help' output.
+	* fink.8.in: Move 'fink cleanup' description into the 21st century.
+
 2005-02-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* bootstrap.pl, postinstall.pl.in: Adjust prompt*() calls for new

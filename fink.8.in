@@ -348,8 +348,8 @@ Calls
 .Xr dpkg-scanpackages 8
 with the specified trees.
 .It Cm cleanup
-Removes obsolete package files (.info, .patch, .deb) if newer versions
-are available. This can reclaim large amounts of disk space.
+Removes obsolete and temporary files. This can reclaim large amounts of
+disk space.
 .It Cm dumpinfo Ar [options] package...
 Shows how Fink parses parts of a package's .info file. Various fields and
 percent expansions will be displayed according to
