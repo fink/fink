@@ -22,14 +22,14 @@
 
 package Fink::Persist::Base;
 
-use Fink::Persist;
-use Fink::Persist::TableHash qw(&storable);
+use Fink::Persist qw(&exists_table &getdbh);
+use Fink::Persist::TableHash qw(&check_version &freeze);
 use Fink::Base;
 use Fink::Config qw($basepath &get_option);
 
 require Exporter;
 our @ISA = qw(Exporter Fink::Base);
-our @EXPORT_OK = qw(&fink_db);
+our @EXPORT_OK = qw(&fink_dbh &fink_db);
 our %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
@@ -49,7 +49,12 @@ Fink::Persist::Base - Fink::Base optionally backed by a database
   package My::FinkBacked;
   require Fink::Base;
   @ISA = qw(Fink::Base);
-
+  
+  my $filename = fink_db;
+  my $dbh = fink_dbh;
+  my $tablename = My::FinkBacked->table_name "recs";
+  
+  
   my $obj = My::FinkBacked->new_from_properties({ key1 => val1, ...});
   my $val = $obj->param($param);
   $obj->set_param($param, $val);
@@ -68,35 +73,64 @@ Fink::Persist::Base and classes that inherit from it act almost exactly like reg
 
 =item fink_db
 
-  $dbh = fink_db;
+  $filename = fink_db;
+
+Get the database file which may be used to store Fink::Persist::Base and
+subclasses thereof.
+
+=cut 
+
+sub fink_db {
+	return "$basepath/var/db/fink.sqlite";
+}
+
+
+=item fink_dbh
+
+  $dbh = fink_dbh;
 
 Get the database handle which will be used to store Fink::Persist::Base and
 subclasses thereof. If no database will be used, a false value is returned.
 
 =cut 
 
-sub fink_db {
+sub fink_dbh {
 	return (get_option("persistence", "sqlite") eq "sqlite")
-		&& getdbh "$basepath/var/db/fink.sqlite";
+		&& getdbh fink_db;
 }
 
 
-=item table_prefix
+=item table_name
 
-  $prefix = Fink::Persist::Base->prefix;
+  $tablename = Fink::Persist::Base->table_name $type;
 
-Get the table prefix corresponding to this class.
+Get the name of a table from the type.
 
 =cut
 
-sub table_prefix {
-	my $proto = shift;
-	my $prefix = ref($proto) || $proto;
+sub table_name {
+	my ($proto, $type) = @_;
+	my $class = (ref($proto) || $proto);
 	
-	# Escape colons with underscores
-	$prefix =~ s/_/__/g;
-	$prefix =~ s/::/_c/g;
-	return $prefix;
+	return Fink::Persist::TableHash::table_name($proto->table_base, $type);
+}
+
+
+=begin private
+
+  $base = Fink::Persist::Base->table_base;
+  
+Get the basename for tables for this class.
+
+=end private
+
+=cut
+
+sub table_base {
+	my $proto = shift;
+	my $class = (ref($proto) || $proto);
+	
+	return [ __PACKAGE__, $class ];
 }
 
 
@@ -110,12 +144,13 @@ if the DB is not being used.
 =cut
 
 sub select_by_params {
-	return undef unless fink_db;
+	return undef unless fink_dbh && check_version fink_dbh;
 	
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
-	my $prefix = $proto->table_prefix;
-	my $props = "${prefix}_props";
+	
+	my $recs = $proto->table_name("recs");
+	my $props = $proto->table_name("props");
 	
 	my %params = @_;
 	my @ks = keys %params;
@@ -123,8 +158,12 @@ sub select_by_params {
 	my ($sql, @binds);
 	
 	unless (scalar(@ks)) {
-		$sql = qq{SELECT id FROM $prefix};
+		return () unless exists_table(fink_dbh, $recs);
+		
+		$sql = qq{SELECT id FROM $recs};
 	} else {
+		return () unless exists_table(fink_dbh, $props);
+
 		$sql = qq{SELECT t1.id FROM $props AS t1};
 		my @where = q{t1.key = ? AND t1.value = ?};
 		
@@ -135,13 +174,13 @@ sub select_by_params {
 		
 		$sql .= q{ WHERE } . join(q{ AND }, @where);
 		
-		map { $_ = storable $_ } values %params;
+		map { $_ = freeze $_ } values %params;
 	}
 	
 	return map {
-		bless Fink::Persist::TableHash->new(fink_db, table_prefix($class), $_),
+		bless Fink::Persist::TableHash->new(fink_dbh, table_base($class), $_),
 			$class
-	} @{ fink_db->selectcol_arrayref($sql, {}, %params) };
+	} @{ fink_dbh->selectcol_arrayref($sql, {}, %params) };
 }
 
 
@@ -165,9 +204,9 @@ use this method.
 sub new_no_init {
 	my $proto = shift;
 	
-	if (fink_db) {
+	if (fink_dbh && check_version fink_dbh) {
 		my $class = ref($proto) || $proto;
-		my $self = Fink::Persist::TableHash->new(fink_db, table_prefix($class));
+		my $self = Fink::Persist::TableHash->new(fink_dbh, table_base($class));
 		return bless($self, $class);
 	} else {
 		return $proto->SUPER::new_no_init($proto);

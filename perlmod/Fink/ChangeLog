@@ -1,3 +1,11 @@
+2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* Package.pm: Begin integration of Persist::Base
+	* Persist.pm: Add tables() method, document $thaw_dbh
+	* Persist/Base.pm: Better DB finding, integrate versioning, new table
+	naming format.
+	* Persist/TableHash.pm: Add versioning, new table naming format.
+	
 2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
 
 	* Persist.pm, Persist/Base.pm, Persist/TableHash.pm: New files,

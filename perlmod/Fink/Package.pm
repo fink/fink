@@ -22,7 +22,8 @@
 #
 
 package Fink::Package;
-use Fink::Base;
+use Fink::Persist::Base qw(&fink_dbh);
+use Fink::Persist::TableHash;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent);
@@ -36,15 +37,16 @@ use strict;
 use warnings;
 
 our $VERSION = 1.00;
-our @ISA = qw(Fink::Base);
+our @ISA = qw(Fink::Persist::Base);
 
-our $have_packages = 0;
 our $packages = {};
+our $have_packages = 0;
 our @essential_packages = ();
 our $essential_valid = 0;
 our $db_outdated = 1;
 our $db_mtime = 0;
 our $aptdb = {};
+
 
 END { }				# module clean-up code here (global destructor)
 
@@ -317,6 +319,22 @@ sub list_essential_packages {
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
+
+=begin private
+
+  my $filename = fink_store;
+  
+Get the file where Fink wants to serialize its data.
+
+=end private
+
+=cut
+
+sub fink_store {
+	return (fink_dbh() ? fink_db() : "$basepath/var/db/fink.db");
+}
+
+
 sub require_packages {
 	shift;	# class method - ignore first parameter
 
@@ -345,9 +363,9 @@ sub scan_all {
 	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
 
 	Fink::Package->forget_packages();
-	
+
 	# If we have the Storable perl module, try to use the package index
-	if (-e "$basepath/var/db/fink.db") {
+	if (-e fink_store) {
 		eval {
 			require Storable; 
 
@@ -357,7 +375,7 @@ sub scan_all {
 			# Unless the NoAutoIndex option is set, check whether we should regenerate
 			# the index based on its modification date and that of the package descs.
 			if (not $config->param_boolean("NoAutoIndex")) {
-				$db_mtime = (stat("$basepath/var/db/fink.db"))[9];			 
+				$db_mtime = (stat(fink_store))[9];			 
 				if (((lstat("$basepath/etc/fink.conf"))[9] > $db_mtime)
 					or ((stat("$basepath/etc/fink.conf"))[9] > $db_mtime)) {
 					$db_outdated = 1;
@@ -366,10 +384,14 @@ sub scan_all {
 				}
 			}
 			
-			# If the index is not outdated, we can use it, and thus save a lot of time
-			 if (not $db_outdated) {
-				$packages = Storable::lock_retrieve("$basepath/var/db/fink.db");
-			 }
+			if (fink_dbh) {
+				$db_outdated = $db_outdated || !ensure_version fink_dbh;
+				$packages = Fink::Persist::TableHash->new(fink_dbh, "packages");
+			} elsif (not $db_outdated) {
+				# If the index is not outdated, we can use it, and thus save a
+				# lot of time
+				$packages = Storable::lock_retrieve(fink_store);
+			}
 			$aptdb = Storable::lock_retrieve("$basepath/var/db/finkapt.db");
 		}
 	}
@@ -488,8 +510,18 @@ sub update_db {
 			unless (-d "$basepath/var/db") {
 				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 			}
-			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
-			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
+			
+			if (fink_dbh) {
+				eval { fink_dbh->commit };
+				if (@$) {
+					warn "Couldn't save database: $@";
+					eval { fink_dbh->rollback };
+				}
+			} else {
+				Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
+				rename "$basepath/var/db/fink.db.tmp", fink_store;
+			}
+			
 			if (Fink::Config::binary_requested()) {
 				Fink::Package->update_aptdb();
 			}

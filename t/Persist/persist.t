@@ -64,7 +64,7 @@ ok(eq_array([ sort keys %$h ], [ "arrayref", "str" ]),
 ok($dbh->commit, "Commit should work");
 
 # Hack to allow reconnecting
-my $newdb = "testdb2.sqlite";
+my $newdb = "Persist/testdb2.sqlite";
 rename $dbfile, $newdb or die "Couldn't move DB: $!";
 
 my $dbh2 = getdbh($newdb);
@@ -130,20 +130,16 @@ read_config("$basepath/etc/fink.conf");
 	my $finkdb = "Persist/fink.sqlite";
 	unlink $finkdb;
 
-	# Override so we don't need root
-	sub fink_db {
-		return (get_option("persistence", "sqlite") eq "sqlite")
-			&& getdbh $finkdb;
-	}
+	# Override so we can use something local
+	sub fink_db {	return $finkdb;		}
 }
-	
+
 
 my $obj1 = Fink::Persist::Base->new();
 ok($obj1, "Object creation works");
 
 $obj1->set_param(iggy => "Helen");
 is($obj1->param("iggy"), "Helen", "Object methods store correctly");
-
 
 my $obj2 = Fink::Persist::Base->new();
 $obj2->set_param(foo => [1, 2, 3]);

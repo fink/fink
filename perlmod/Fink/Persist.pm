@@ -27,7 +27,7 @@ use Storable;
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(&getdbh);
-our @EXPORT_OK = qw(&exists_table &freeze &thaw $thaw_dbh);
+our @EXPORT_OK = qw(&exists_table &tables &freeze &thaw $thaw_dbh);
 our %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
@@ -56,8 +56,9 @@ Fink::Persist - utilities for persistence of objects
   my $dbh = getdbh $filename;
   
   
-  use Fink::Persist qw(exists_table freeze thaw);
+  use Fink::Persist qw(&exists_table &freeze &thaw);
   
+  my @tbls = tables;
   if (exists_table $dbh, $tablename) { ... }
   
   my $val;
@@ -126,6 +127,28 @@ sub exists_table {
 	} or return 0;
 }
 
+
+=item tables
+
+  @tbls = tables $dbh;
+
+Get a list of all tables.
+
+=cut
+
+sub tables {
+	my ($dbh) = @_;
+	
+	eval {
+		# FIXME: get table_info working
+		
+		# Assume it's SQLite
+		my $sql = q{SELECT name FROM sqlite_master WHERE type='table'};
+		return @{$dbh->selectcol_arrayref($sql)};
+	} or return ();
+}
+
+
 =item freeze
 
   $frozen = freeze($val);
@@ -164,6 +187,21 @@ sub thaw {
 	local $thaw_dbh = $dbh;
 	return ${Storable::thaw($frozen)};
 }
+
+=back
+
+=head1 ATTRIBUTES
+
+=over 4
+
+=item $thaw_dbh
+
+  sub STORABLE_thaw {
+      $dbh = $thaw_dbh;
+  }
+  
+Allows a thawing object to determine the database handle it can use to help
+itself thaw.
 
 =back
 

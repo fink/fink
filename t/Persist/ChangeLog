@@ -1,3 +1,8 @@
+2005-01-05	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* persist.t: Fix overriding fink_db, make sure test files created
+	in correct directory.
+	
 2005-01-04	Dave Vasilevsky	<vasi@users.sourceforge.net>
 
 	* persist.t: New file, test routines for Fink::Persist,

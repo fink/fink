@@ -22,19 +22,22 @@
 
 package Fink::Persist::TableHash;
 
-use Fink::Persist qw(:ALL);
+use Fink::Persist qw(&getdbh &exists_table &thaw $thaw_dbh);
 use Fink::Tie::Watch;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw();
-our @EXPORT_OK = qw(&all_with_prop &all &exists_id &storable);
+our @EXPORT = qw(&check_version &ensure_version);
+our @EXPORT_OK = qw(&all_with_prop &all &exists_id &freeze &table_name);
 our %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
 use warnings;
 
 our $VERSION = 1.00;
+
+our $SCHEMA_VERSION = 1;
+
 
 END { }				# module clean-up code here (global destructor)
 
@@ -47,27 +50,33 @@ Fink::Persist::TableHash - a hash backed by a database table
 
   use Fink::Persist::TableHash;
   
-  my $hashref = Fink::Persist::TableHash->new($dbh, $prefix, $id);
+  my $data_ok = ensure_version $dbh;
+  
+  my $hashref = Fink::Persist::TableHash->new($dbh, $base, $id);
   
   my $val = $hashref->{foo};
   $hashref->{bar} = [ 1, 2, 3 ];
   
+    
+  use Fink::Persist::TableHash qw(:ALL);
   
-  if (Fink::Persist::TableHash::exists_id($dbh, $prefix, $id)) { ... }
+  my @ids = all_with_prop($dbh, $base, $key, $val);
+  my @ids = all($dbh, $base);
   
-  $id = (tied $hashref)->id;
   
+  if (Fink::Persist::TableHash::exists_id($dbh, $base, $id)) { ... }  
+  my $id = (tied $hashref)->id;
   
-  use Fink::Persist::TableHash qw(all_with_prop all);
+  my $tablename = table_name $base, "recs";
   
-  my @ids = all_with_prop($dbh, $prefix, $key, $val);
-  my @ids = all($dbh, $prefix);
-  
+  my $frozen = freeze $data;
+
+
 =head1 DESCRIPTION
 
 Fink::Persist::TableHash allows a hash to backed by tables in a DBI database. Arbitrary data structures can be stored in the hash and retrieved from it using Storable.
 
-The tables will be automatically created if needed. One table stores one record per id--it is named C<$prefix> and has a single column of type 'INTEGER PRIMARY KEY'. The second table stores the properties of a hash--it is named C<${prefix}_props> and has columns I<id>, I<key> and I<value>.
+The tables will be automatically created if needed. One table stores one record per id, another stores the properties of a hash as key, value pairs.
 
 One TableHash can easily and safely be stored as a reference in another TableHash, but the same is not always true of other complex data structures. See L</Consistency>.
 
@@ -77,13 +86,15 @@ One TableHash can easily and safely be stored as a reference in another TableHas
 
 =item new
 
-  $hashref = Fink::Persist::TableHash->new($dbh, $prefix, $id);
-  $hashref = Fink::Persist::TableHash->new($dbh, $prefix);
+  $hashref = Fink::Persist::TableHash->new($dbh, $base, $id);
+  $hashref = Fink::Persist::TableHash->new($dbh, $base);
   
-Creates a new hash using the given database handle C<$dbh>, backed by tables with the prefix C<$prefix>. The parameter C<$id> is a unique integer identifying this hash--all entries in the database with C<id> equal to C<$id> are considered to belong to this hash. If C<$id> is omitted, a new id will be generated.
+Creates a new hash using the given database handle C<$dbh>, backed by tables with the basename C<$base>. The parameter C<$id> is a unique integer identifying this hash--all entries in the database with C<id> equal to C<$id> are considered to belong to this hash. If C<$id> is omitted, a new id will be generated.
+
+Base may be an array reference, in which case the actual base will be constructed based on the items in the reference.
 
 If the hash cannot be created, false is returned.
-  
+
 =back
 
 =cut
@@ -94,7 +105,11 @@ sub new {
 	my $hashref = {};
 	eval {
 		tie %$hashref, (ref($class) || $class), @_;
-	} or return 0;
+	};
+	if ($@) {
+		warn "$@";
+		return 0;
+	}
 	
 	return $hashref;
 }
@@ -106,21 +121,162 @@ sub new {
 
 =item exists_id
 
-  $bool = Fink::Persist::TableHash::exists_id($dbh, $prefix, $id);
-  
-Checks if an object with the given id already exists.
+  $bool = exists_id $dbh, $base, $id;
+
+Checks if an object with the given id already exists. Returns undef if the databse version is bad.
+
+=cut
+
+sub exists_id {
+	my ($dbh, $base, $id) = @_;
+	return undef unless check_version($dbh);
+	
+	my $recs = table_name($base, "recs");
+	
+	return 0 unless exists_table $dbh, $recs;
+	
+	my $slct = qq{SELECT id FROM $recs WHERE id = ?};
+	return scalar($dbh->selectrow_array($slct, {}, $id));
+}
+
+
+=item ensure_version
+
+  $data_ok = ensure_version $dbh;
+
+Ensure a database is using the current format for TableHash. If so, returns true. If not, deletes the out-of-date data andd returns false.
+
+=cut
+
+sub ensure_version {
+	my $dbh = shift;
+	
+	return 1 if check_version($dbh);
+	
+	# Bad version, try to get rid of everything
+	
+	my $tablelist = table_name("tablelist");
+	if (exists_table $dbh, $tablelist) {
+		my $tbls = $dbh->selectcol_arrayref(qq{SELECT name FROM $tablelist});
+		if (defined $tbls) {
+			foreach my $table (@$tbls) {
+				$dbh->do(qq{DROP TABLE $table});
+			}
+		}
+		
+		$dbh->do(qq{DROP TABLE $tablelist});
+	}
+	
+	my $verstbl = table_name("version");
+	if (exists_table $dbh, $verstbl) {
+		$dbh->do(qq{DROP TABLE $verstbl});
+	}
+	
+	return 0;
+}
+
+
+=item check_version
+
+  $data_ok = check_version $dbh;
+
+Check if a database is using the current format for TableHash.
+
+=cut
+
+{
+	my %vers_ok;
+	
+	sub check_version {
+		my $dbh = shift;
+		
+		# Check again if it was false before
+		$vers_ok{$dbh} = real_check_version($dbh) unless $vers_ok{$dbh};
+		return $vers_ok{$dbh};
+	}
+	
+	sub real_check_version {
+		my $dbh = shift;
+		
+		my $verstbl = table_name("version");
+		
+		if (not exists_table $dbh, $verstbl) {
+			$dbh->do(qq{CREATE TABLE $verstbl (vers INTEGER PRIMARY KEY)});
+			add_table($dbh, $verstbl);
+			
+			$dbh->do(qq{INSERT INTO $verstbl VALUES(?)}, {}, $SCHEMA_VERSION);
+			return 1;
+		}
+		
+		my $vers = $dbh->selectcol_arrayref(qq{SELECT vers FROM $verstbl});
+		return (defined $vers && scalar(@$vers) && $vers->[0] == $SCHEMA_VERSION);
+	}
+}
+
+=begin private
+
+  add_table $dbh, $tblname;
+
+Ensure that the database knows that a new TableHash data table has been added.
+
+=end private
+
+=cut
+
+sub add_table {
+	my ($dbh, $tblname) = @_;
+	
+	my $tablelist = table_name("tablelist");
+	
+	if (not exists_table $dbh, $tablelist) {
+		$dbh->do(qq{CREATE TABLE $tablelist (name PRIMARY KEY)});
+		add_table($dbh, $tablelist);
+	}
+	
+	$dbh->do(qq{INSERT INTO $tablelist VALUES(?)}, {}, $tblname);
+}
+
+
+=begin private
+
+  $tablename = collapse_name [ "foo", [ "bar", "iggy" ], "blah" ];
+  $tablename = collapse_name "foo";
+
+Turn a basename (as a string or an array reference) into a table name.
+
+=end private
+
+=cut
+
+sub collapse_name {
+	my $base = shift;
+	
+	if (!ref $base) {		
+		# Escape with underscores
+		$base =~ s/_/__/g;
+		$base =~ s/::/_C/g;
+		return $base;
+	} else {
+		my @collapsed;
+		push @collapsed, collapse_name($_) foreach (@$base);
+		return join '_S', @collapsed;	
+	}
+}
+
+
+=item table_name
+
+  $tablename = table_name $base, $type;
+  $tablename = table_name $type;
+
+Get the name of a table from the basename and the type. The second form is for global tables.
 
 =back
 
 =cut
 
-sub exists_id {
-	my ($dbh, $prefix, $id) = @_;
-	
-	return 0 unless exists_table $dbh, $prefix;
-	
-	my $slct = qq{SELECT id FROM $prefix WHERE id = ?};
-	return scalar($dbh->selectrow_array($slct, {}, $id));
+sub table_name {
+	return collapse_name [ __PACKAGE__, @_ ];
 }
 
 
@@ -261,7 +417,7 @@ sub watch {
 
 =begin private
   
-  $frozen = storable $refval;
+  $frozen = freeze $refval;
   
 Freeze a reference, by-passing any extra data involved in watching it.
 
@@ -269,14 +425,14 @@ Freeze a reference, by-passing any extra data involved in watching it.
 
 =cut
 
-sub storable {
+sub freeze {
 	my ($ptr) = @_;
 	my ($type, $tied_obj, $watchable, $is_watched) = watched $ptr;
 	
-	return freeze $ptr unless $is_watched;
+	return Fink::Persist::freeze $ptr unless $is_watched;
 	
 	my %vinfo = $tied_obj->Info();
-	return freeze $vinfo{-ptr};
+	return Fink::Persist::freeze $vinfo{-ptr};
 }
 
 
@@ -300,28 +456,34 @@ sub unwatch {
 
 =begin private
   
-  my $table_hash = tie %hash, 'Fink::Persist::TableHash', $dbh, $prefix, $id;
+  my $table_hash = tie %hash, 'Fink::Persist::TableHash', $dbh, $base, $id;
 
 =end private
 
 =cut
 
 sub TIEHASH {
-	my ($class, $dbh, $prefix, $id) = (@_, undef);
-	my $props = "${prefix}_props";
+	my ($class, $dbh, $base, $id) = (@_, undef);
+	die "Bad version" unless check_version($dbh);
 	
-	if (not exists_table $dbh, $prefix) {		
+	my $recs = table_name $base, "recs";
+	my $props = table_name $base, "props";
+	
+	if (not exists_table $dbh, $recs) {		
 		# Make the basic table
-		$dbh->do(qq{CREATE TABLE $prefix (id INTEGER PRIMARY KEY)});
-		
+		$dbh->do(qq{CREATE TABLE $recs (id INTEGER PRIMARY KEY)});
+		add_table($dbh, $recs);
+	}
+	if (not exists_table $dbh, $props) {
 		# Make the property table
 		$dbh->do(qq{CREATE TABLE $props (id, key, value)});
+		add_table($dbh, $props);
 	}
 	
 	# Make sure a record exists for this hash
-	my $slct = qq{SELECT id FROM $prefix WHERE id = ?};
-	if (!defined $id || ! $dbh->selectrow_array($slct, {}, $id)) {		
-		my $insert = qq{INSERT INTO $prefix VALUES(?)};
+	my $slct = qq{SELECT id FROM $recs WHERE id = ?};
+	if (!defined $id || ! $dbh->selectrow_array($slct, {}, $id)) {	
+		my $insert = qq{INSERT INTO $recs VALUES(?)};
 		$insert =~ s/\?/NULL/ unless defined $id;
 		$dbh->do($insert, {}, defined $id ? $id : () );
 		
@@ -332,7 +494,7 @@ sub TIEHASH {
 	
 	return bless {
 		dbh => $dbh,
-		record => $prefix,
+		recs => $recs,
 		props => $props,
 		id => int($id),
 	}, $class;
@@ -379,7 +541,7 @@ sub STORE {
 	$self->DELETE($key);
 	
 	my $sql = qq{INSERT INTO $props VALUES(?, ?, ?)};
-	$dbh->do($sql, {}, $id, $key, storable($value));
+	$dbh->do($sql, {}, $id, $key, freeze($value));
 	$self->watch($key, $value)
 }
 
@@ -457,44 +619,49 @@ To allow storing these objects as references in the database, we need custom hoo
 
 =item all_with_prop
 
-  @ids = all_with_prop($dbh, $prefix, $key, $val);
+  @ids = all_with_prop($dbh, $base, $key, $val);
   
-Gets all ids whose hashes have a given key set to a given value.
-
-=back
+Gets all ids whose hashes have a given key set to a given value. Returns undef if the database is not the proper version.
 
 =cut
 
 sub all_with_prop {
-	my ($dbh, $prefix, $key, $val) = @_;
-	my $props = "${prefix}_props";
+	my ($dbh, $base, $key, $val) = @_;
+	return undef unless check_version($dbh);
+
+	my $props = table_name $base, "props";
 	
 	return () unless (exists_table $dbh, $props);
 	
 	my $sql = qq{SELECT DISTINCT id FROM $props WHERE key = ? AND value = ?};
-	my $results = $dbh->selectcol_arrayref($sql, {}, $key, storable($val));
+	my $results = $dbh->selectcol_arrayref($sql, {}, $key, freeze($val));
 	return @$results;
 }
 
+
 =item all
 
-  @ids = all($dbh, $prefix);
+  @ids = all($dbh, $base);
   
-Gets all ids in a table.
+Gets all ids in a table. Returns undef if the database is not the proper version.
 
 =back
 
 =cut
 
 sub all {
-	my ($dbh, $prefix) = @_;
+	my ($dbh, $base) = @_;
+	return undef unless check_version($dbh);
+
+	my $recs = table_name $base, "recs";
 	
-	return () unless (exists_table $dbh, $prefix);
+	return () unless (exists_table $dbh, $recs);
 	
-	my $sql = qq{SELECT DISTINCT id FROM $prefix};
+	my $sql = qq{SELECT DISTINCT id FROM $recs};
 	my $results = $dbh->selectcol_arrayref($sql, {});
 	return @$results;
 }
+
 
 =head1 CAVEATS
 
@@ -516,7 +683,7 @@ Complex structures can be stored as values, and changes to them will not necessa
   $complex->{foo} = 2; # Top-level, will be propagated to database
   
   push @{$complex->{both}}, 3; # Second level, will not be reflected in database
-  
+
 Such top-level references have restrictions on their use. They (and their referents) should not be serialized to any other location, including within other TableHashes or other keys within the same TableHash. One should also refrain from making changes to them (and their referents) after they have been removed from the hash or replaced with another value. In all these cases, prefer making a copy of the referent.
 
 =head2 Database structure
@@ -526,7 +693,7 @@ better normalization.
 
 =head2 Read-only access
 
-There is no way to specify that changes to the hash should not be propagated.
+There is no way to specify that changes to the hash should not be propagated. Workaround is to simply not commit changes.
 
 =head2 Indexing
 

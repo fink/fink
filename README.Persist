@@ -24,6 +24,8 @@ TODO (no particular order):
 	
 	- Collating method to work with versions?
 	
+	- Test database versioning
+	
 	- Turn various searches in dep-engine into SELECTs, conditional on DB
 		existence
 	
@@ -44,4 +46,8 @@ TODO (no particular order):
 	- Add ref-counting GC
 	
 	- Check locking
+	
+	- Vacuum the DB when size is too big, rescan when vacuuming doesn't help much
+	
+	- Use prepare() on SQL statements, cache 'em. (Invalidated by commit?)
 	
