@@ -1,6 +1,6 @@
 Package: debianutils
-Version: 1.15
-Revision: 4
+Version: 1.16
+Revision: 1
 Essential: true
 Depends: base-files
 Conflicts: mktemp
@@ -18,4 +18,4 @@ DescPort: Both run-parts and tempfile require the getopt() routines from glibc.
  The versions included here come from glibc-2.2.4
 Homepage: http://packages.debian.org/unstable/base/debianutils.html
 License: GPL
-Maintainer: Christian Swinehart <cswinehart@mac.com>
+Maintainer: Christian Swinehart <cswinehart@users.sourceforge.net>

@@ -1,6 +1,6 @@
-diff -Naur debianutils-1.15.orig/Makefile debianutils-1.15/Makefile
---- debianutils-1.15.orig/Makefile	Wed Dec 27 02:15:22 2000
-+++ debianutils-1.15/Makefile	Sat Sep 22 14:19:22 2001
+diff -u -Naur debianutils-1.16.orig/Makefile debianutils-1.16/Makefile
+--- debianutils-1.16.orig/Makefile	Wed Dec 27 02:15:22 2000
++++ debianutils-1.16/Makefile	Thu Apr 25 13:36:23 2002
 @@ -1,7 +1,38 @@
  CFLAGS=-O2 -g -Wall
 -TARGETS=mktemp readlink run-parts tempfile
@@ -43,9 +43,9 @@ diff -Naur debianutils-1.15.orig/Makefile debianutils-1.15/Makefile
 +	install -c -m 644 readlink.1 $(PREFIX)/share/man/man1
 +	install -m 755 tempfile $(PREFIX)/bin
 +	install -c -m 644 tempfile.1 $(PREFIX)/share/man/man1
-diff -Naur debianutils-1.15.orig/README.Fink debianutils-1.15/README.Fink
---- debianutils-1.15.orig/README.Fink	Wed Dec 31 19:00:00 1969
-+++ debianutils-1.15/README.Fink	Sat Sep 22 14:01:58 2001
+diff -u -Naur debianutils-1.16.orig/README.Fink debianutils-1.16/README.Fink
+--- debianutils-1.16.orig/README.Fink	Wed Dec 31 19:00:00 1969
++++ debianutils-1.16/README.Fink	Thu Apr 25 13:36:23 2002
 @@ -0,0 +1,17 @@
 +This package contains a subset of the utilities in the debianutils
 +package found in the Debian GNU/Linux distribution. The complete set
@@ -62,11 +62,11 @@ diff -Naur debianutils-1.15.orig/README.Fink debianutils-1.15/README.Fink
 +
 +
 +______
-+christian swinehart <cswinehart@mac.com>
++christian swinehart <cswinehart@users.sourceforge.net>
 +22 Sept. 2001
-diff -Naur debianutils-1.15.orig/getopt.c debianutils-1.15/getopt.c
---- debianutils-1.15.orig/getopt.c	Wed Dec 31 19:00:00 1969
-+++ debianutils-1.15/getopt.c	Fri Sep 21 22:06:35 2001
+diff -u -Naur debianutils-1.16.orig/getopt.c debianutils-1.16/getopt.c
+--- debianutils-1.16.orig/getopt.c	Wed Dec 31 19:00:00 1969
++++ debianutils-1.16/getopt.c	Thu Apr 25 13:36:23 2002
 @@ -0,0 +1,1055 @@
 +/* Getopt for GNU.
 +   NOTE: getopt is now part of the C library, so if you don't know what
@@ -1123,9 +1123,9 @@ diff -Naur debianutils-1.15.orig/getopt.c debianutils-1.15/getopt.c
 +}
 +
 +#endif /* TEST */
-diff -Naur debianutils-1.15.orig/getopt.h debianutils-1.15/getopt.h
---- debianutils-1.15.orig/getopt.h	Wed Dec 31 19:00:00 1969
-+++ debianutils-1.15/getopt.h	Fri Sep 21 22:06:35 2001
+diff -u -Naur debianutils-1.16.orig/getopt.h debianutils-1.16/getopt.h
+--- debianutils-1.16.orig/getopt.h	Wed Dec 31 19:00:00 1969
++++ debianutils-1.16/getopt.h	Thu Apr 25 13:36:23 2002
 @@ -0,0 +1,180 @@
 +/* Declarations for getopt.
 +   Copyright (C) 1989-1994, 1996-1999, 2001 Free Software Foundation, Inc.
@@ -1307,9 +1307,9 @@ diff -Naur debianutils-1.15.orig/getopt.h debianutils-1.15/getopt.h
 +#undef __need_getopt
 +
 +#endif /* getopt.h */
-diff -Naur debianutils-1.15.orig/getopt1.c debianutils-1.15/getopt1.c
---- debianutils-1.15.orig/getopt1.c	Wed Dec 31 19:00:00 1969
-+++ debianutils-1.15/getopt1.c	Fri Sep 21 22:06:40 2001
+diff -u -Naur debianutils-1.16.orig/getopt1.c debianutils-1.16/getopt1.c
+--- debianutils-1.16.orig/getopt1.c	Wed Dec 31 19:00:00 1969
++++ debianutils-1.16/getopt1.c	Thu Apr 25 13:36:23 2002
 @@ -0,0 +1,188 @@
 +/* getopt_long and getopt_long_only entry points for GNU getopt.
 +   Copyright (C) 1987,88,89,90,91,92,93,94,96,97,98
@@ -1499,9 +1499,28 @@ diff -Naur debianutils-1.15.orig/getopt1.c debianutils-1.15/getopt1.c
 +}
 +
 +#endif /* TEST */
-diff -Naur debianutils-1.15.orig/run-parts.c debianutils-1.15/run-parts.c
---- debianutils-1.15.orig/run-parts.c	Sun Jan  7 21:57:18 2001
-+++ debianutils-1.15/run-parts.c	Fri Sep 21 22:06:23 2001
+diff -u -Naur debianutils-1.16.orig/mktemp.c debianutils-1.16/mktemp.c
+--- debianutils-1.16.orig/mktemp.c	Tue Feb 19 00:20:33 2002
++++ debianutils-1.16/mktemp.c	Thu Apr 25 13:38:09 2002
+@@ -116,14 +116,7 @@
+ 	}
+ 
+ 	if (makedir) {
+-		if (mkdtemp(tempfile) == NULL) {
+-			if (!quiet)
+-				warn("cannot make temp dir %s", tempfile);
+-			exit(1);
+-		}
+-
+-		if (uflag)
+-			(void)rmdir(tempfile);
++	        err(1, "-d option is not supported under Fink.");
+ 	} else {
+ 		if ((fd = mkstemp(tempfile)) < 0) {
+ 			if (!quiet)
+diff -u -Naur debianutils-1.16.orig/run-parts.c debianutils-1.16/run-parts.c
+--- debianutils-1.16.orig/run-parts.c	Mon Feb 18 18:35:31 2002
++++ debianutils-1.16/run-parts.c	Thu Apr 25 13:36:23 2002
 @@ -20,7 +20,7 @@
  #include <sys/stat.h>
  #include <unistd.h>
@@ -1511,9 +1530,9 @@ diff -Naur debianutils-1.15.orig/run-parts.c debianutils-1.15/run-parts.c
  #include <string.h>
  #include <errno.h>
  #include <ctype.h>
-diff -Naur debianutils-1.15.orig/tempfile.c debianutils-1.15/tempfile.c
---- debianutils-1.15.orig/tempfile.c	Fri Sep  3 11:40:40 1999
-+++ debianutils-1.15/tempfile.c	Fri Sep 21 22:32:21 2001
+diff -u -Naur debianutils-1.16.orig/tempfile.c debianutils-1.16/tempfile.c
+--- debianutils-1.16.orig/tempfile.c	Fri Sep  3 11:40:40 1999
++++ debianutils-1.16/tempfile.c	Thu Apr 25 13:36:23 2002
 @@ -1,7 +1,7 @@
  #include <stdio.h>
  #include <unistd.h>

@@ -1,3 +1,8 @@
+2002-05-11  Max Horn  <max@quendi.de>
+	
+	* debianutils-1.15-4.*, apt-0.5.4-1.*: removed
+	* debianutils-1.16-1.*, apt-0.5.4-2.*: added
+
 2002-05-04  Max Horn  <max@quendi.de>
 	
 	* Changed all source URLs once more to use the new "sourceforge" mirror
