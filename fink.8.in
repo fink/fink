@@ -176,7 +176,7 @@ Show packages which are not currently installed.
 Show only packages in the sections matching the regular expression expr.
 .It Cm -m expr,--maintainer=expr
 Show only packages with the maintainer  matching the regular expression expr.
-.It Cm -t expr,--tree=expr
+.It Cm -r expr,--tree=expr
 Show only packages in the trees matching the regular expression expr.
 .It Cm -w xyz,--width=xyz
 Sets the width of the display you would like the output
