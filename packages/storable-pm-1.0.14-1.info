@@ -1,0 +1,16 @@
+Package: storable-pm
+Version: 1.0.14
+Revision: 1
+Source: http://www.perl.com/CPAN/authors/id/R/RA/RAM/Storable-%v.tar.gz
+Type: perl
+UpdatePOD: True
+DocFiles: MANIFEST README
+Description: Perl module for persistent data structures
+DescDetail: <<
+The Storable package brings persistency to your perl data structures
+containing SCALAR, ARRAY, HASH or REF objects, i.e. anything that can be
+convenientely stored to disk and retrieved at a later time.
+<<
+License: Artistic/GPL
+Maintainer: Matthias Neeracher <neeracher@mac.com>
+Homepage: http://www.cpan.org/

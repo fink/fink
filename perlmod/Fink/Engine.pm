@@ -447,7 +447,7 @@ sub cmd_scanpackages {
     }
 
     $prio = "optional";
-    if ($pkgname eq "apt") {
+    if ($pkgname eq "apt storable-pm") {
       $prio = "important";
     }
     if ($pkgversion->param_boolean("Essential")) {

@@ -420,7 +420,7 @@ sub finish {
   # determine essential packages
   @elist = Fink::Package->list_essential_packages();
   # add some non-essential but important ones
-  push @elist, qw(apt);  # maybe add libxpg4 in the future
+  push @elist, qw(apt storable-pm);  # maybe add libxpg4 in the future
 
   # update them
   Fink::Engine::cmd_install(@elist);  
