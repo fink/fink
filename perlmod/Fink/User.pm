@@ -219,7 +219,7 @@ sub get_perms {
 	my $script = "";
 
 	if ($name == 0) {
-		return $script;
+		return 0;
 	}
 
 	unless ($self->check_for_name($type, $name)) {

@@ -1821,9 +1821,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	}
 
 	if (my $script = Fink::User->get_perms($ddir, $name, $type)) {
-		if ($script) {
-			### Add $script to top of postinstscript
-		} 
+		### Add $script to top of postinstscript
 	}
 	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
