@@ -3,7 +3,7 @@ Version: 1.10.21
 Revision: 202
 GCC: 3.3
 Depends: gzip, tar, ncurses (>= 5.4-20041023-4)
-BuildDepends: gcc3.3, fink (>= 0.23.4-1), gettext-dev, libiconv-dev, libncurses5
+BuildDepends:  fink (>= 0.23.4-1), gettext-dev, libiconv-dev, libncurses5
 AddShlibDeps: true
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
@@ -16,8 +16,8 @@ NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
  %p/bin/fink -y --no-use-binary-dist install gettext-bin gettext-dev libiconv-dev libncurses5
- export CC=gcc-3.3; export CXX=g++-3.3; PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
- make EXEFLAGS=-force_flat_namespace CC=gcc-3.3 CXX=g++-3.3
+ PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
+ make EXEFLAGS=-force_flat_namespace
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<

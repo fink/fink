@@ -1,3 +1,8 @@
+2005-03-18  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* cctools-extra.info, dpkg-bootstrap.info, dpkg.info, dpkg.patch:
+	Do not require gcc-3.3.
+
 2005-02-24  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* all packages: Merged in Shlibs branch: changed to use new
