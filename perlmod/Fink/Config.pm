@@ -33,12 +33,13 @@ BEGIN {
   $VERSION = 1.00;
   @ISA         = qw(Exporter Fink::Base);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw($config $basepath);
+  @EXPORT_OK   = qw($config $basepath $debarch);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
-our ($config, $basepath);
+our ($config, $basepath, $debarch);
+$debarch = "darwin-powerpc";
 
 END { }       # module clean-up code here (global destructor)
 

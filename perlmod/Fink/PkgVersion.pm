@@ -24,7 +24,7 @@ use Fink::Base;
 
 use Fink::Services qw(&filename &expand_percent &expand_url &execute &find_stow &latest_version);
 use Fink::Package;
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $debarch);
 
 use strict;
 use warnings;
@@ -61,6 +61,7 @@ sub initialize {
   # some commonly used stuff
   $self->{_fullversion} = $version."-".$revision;
   $self->{_fullname} = $pkgname."-".$version."-".$revision;
+  $self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
 
   # percent-expansions
   $configure_params = "--prefix=\%p ".
@@ -166,6 +167,11 @@ sub get_fullname {
   return $self->{_fullname};
 }
 
+sub get_debname {
+  my $self = shift;
+  return $self->{_debname};
+}
+
 ### other accessors
 
 sub is_multisource {
@@ -245,11 +251,8 @@ sub is_fetched {
 
 sub is_present {
   my $self = shift;
-  my ($idir);
 
-  $idir = "$basepath/stow/".$self->get_fullname();
-
-  if (-e "$idir/var/fink-stamp/".$self->get_fullname()) {
+  if (-f "$basepath/debs/".$self->get_debname()) {
     return 1;
   }
   return 0;
@@ -635,22 +638,22 @@ sub phase_build {
   my ($cmd);
 
   chdir "$basepath/src";
-  $ddir = "root-".$self->{_fullname};
+  $ddir = "root-".$self->get_fullname();
   $destdir = "$basepath/src/$ddir";
 
   # generate dpkg "control" file
 
-  my ($pkgname, $version, $revision, $depends);
-  $pkgname = $self->{_name};
-  $version = $self->{_version};
-  $revision = $self->{_revision};
+  my ($pkgname, $version, $depends);
+  $pkgname = $self->get_name();
+  $version = $self->get_fullversion();
   $depends = join(", ", @{$self->{_depends}});
   $control = <<EOF;
 Package: $pkgname
 Source: $pkgname
-Version: $version-$revision
+Version: $version
 Depends: $depends
-Architecture: darwin-powerpc
+Architecture: $debarch
+Description: Package $pkgname version $version
 EOF
   if ($self->has_param("Maintainer")) {
     $control .= "Maintainer: ".$self->param("Maintainer")."\n";
@@ -690,7 +693,7 @@ sub phase_activate {
   my $self = shift;
   my ($deb, $debpath);
 
-  $deb = $self->get_name()."_".$self->get_fullversion()."_darwin-powerpc.deb";
+  $deb = $self->get_debname();
   $debpath = "$basepath/debs/$deb";
 
   if (not -f $debpath) {

@@ -1,3 +1,10 @@
+2001-04-01  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm: Added accessor for .deb name. Use accessors
+	wherever possible instead of direct access. Use $debarch
+	variable. Add a dummy Description to the control file.
+	* Config.pm: Added $debarch variable.
+
 2001-03-31  Christoph Pfisterer  <cp@chrisp.de>
 
 	* FinkVersion.pm: Set version number to "pre-0.2.0".
