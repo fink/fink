@@ -1,3 +1,9 @@
+2004-06-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: If BuildDependsOnly is not true, allow the directory
+	/sw/include/ or any subdirectory of it, but do not allow *files*
+	within that directory.
+
 2004-06-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Don't warn when the xfree86 package installs files

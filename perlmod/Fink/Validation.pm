@@ -777,7 +777,7 @@ sub validate_dpkg_file {
 					($dpkg_filename =~ /xemacs_/)))) {
 				$looks_good = 0;
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
-			} elsif ( $filename =~/^$basepath\/include/ ) {
+			} elsif ( $filename =~/^$basepath\/include\S*[^\/]$/ ) {
 				$installed_headers = 1;
 			} else {
 				foreach $bad_dir (@bad_dirs) {
