@@ -302,9 +302,9 @@ Options:
   -s=expr,             - Only list packages in the section(s) matching expr
     --section=expr       (example: fink list --section=x11).
   -m=expr,             - Only list packages with the maintainer(s) matching expr
-    --maintainer=expr       (example: fink list --maintainer=beren12).
+    --maintainer=expr    (example: fink list --maintainer=beren12).
   -t=expr,             - Only list packages with the tree matching expr
-    --tree=expr       (example: fink list --tree=stable).
+    --tree=expr          (example: fink list --tree=stable).
   -h, --help           - This help text.
 
 EOF
