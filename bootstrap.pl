@@ -89,7 +89,7 @@ if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 } elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
   &print_breaking("This system is supported and tested.");
   $distribution = "10.1";
-} elsif ($host =~ /^powerpc-apple-darwin6\.[01]/) {
+} elsif ($host =~ /^powerpc-apple-darwin6\.[012]/) {
   &print_breaking("This system is supported and tested.");
   $distribution = "10.2";
 } elsif ($host =~ /^powerpc-apple-darwin(6\.[2-9]|[7-9]\.)/) {
