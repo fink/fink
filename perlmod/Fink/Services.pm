@@ -23,6 +23,8 @@
 
 package Fink::Services;
 
+use POSIX qw(uname tmpnam);
+
 use strict;
 use warnings;
 
@@ -402,8 +404,6 @@ are given as option=>value pairs. The following options are known:
         the command failed, a message including the return code is
         sent to STDOUT.
 
-=back
-
 =cut
 
 ### execute a single command
@@ -447,7 +447,6 @@ In either case, execution is performed by Fink::Services::execute
 (which see for more information). The optional %options are given as
 option=>value pairs. The following options are known:
 
-
     quiet
 
         If the option 'quiet' is not given or its value is false and
@@ -459,45 +458,91 @@ option=>value pairs. The following options are known:
 sub execute_script {
 	my $script = shift;
 	my %options = ( defined $_[0] ? @_ : () );
-	my ($retval, $cmd, $tempfile);
+	my ($retval, $cmd);
 
-	# If the script starts with a shell specified (e.g. #!/bin/sh), run it 
-	# as a script. Otherwise fall back to the old behaviour for compatibility.
-	if ($script =~ /^\s*#!/) {
-		# An interpretter is specified.
-		# Strip any leading whitespace before "#!" magic
-		$script =~ s/^\s*//s;
-		# Put the script into a temporary file and run it.
-		$tempfile = POSIX::tmpnam() or die "unable to get temporary file: $!";
+	# preprocess the script, making executable tempfile if necessary
+	my $is_tempfile = &prepare_script(\$script);
+	return 0 if not defined $script;
+
+	# Execute each line as a separate command.
+	foreach my $cmd (split(/\n/,$script)) {
+		$retval = execute($cmd, $options{'quiet'});
+		if ($retval) {
+			# something went boom; give up now
+			return $retval;
+		}
+	}
+
+	# everything was successful so delete tempfile
+	# (otherwise keep it around to aide debugging)
+	unlink($script) if $is_tempfile;  # 
+	return 0;
+}
+
+=item prepare_script
+
+	my $is_tempfile = prepare_script \$script;
+
+Given a ref to a scalar containing a (possibly multiline) script,
+parse it according to the *Script field rules and leave it in
+ready-to-run form. There will be no trailing newline. Note that the
+scalar $script is changed! Save a copy if you want to see the
+original.
+
+If the first line begins with #! (with optional leading whitespace),
+dump the whole script (with leading whitespace on the #! line
+removed) into a tempfile. Die if there was a problem creating the
+tempfile. Return true and leave $script set to the fullpathname of the
+tempfile.
+
+Otherwise, remove leading whitespace from each line, join consecutive
+lines that end with \ as a continuation character, remove blank lines
+and lines beginning with #. Return false and leave $script set to the
+parsed script. If there was nothing left after parsing, $script is set
+to undef.
+
+=cut
+
+# keep this function is separate (not pulled into execute*()) so we
+# can write tests for it
+
+sub prepare_script {
+	my $script = shift;
+
+	die "prepare_script was not passed a ref!\n" if not ref $script;
+	return 0 if not defined $$script;
+
+	# If the script starts with a shell specified, dump to a tempfile
+	if ($$script =~ /^\s*\#!/) {
+		$$script =~ s/^\s*//s;  # Strip leading whitespace before "#!" magic
+		$$script .= "\n" if $$script !~ /\n$/;  # require have trailing newline
+
+		# Put the script into a temporary file
+		my $tempfile = tmpnam() or die "unable to get temporary file: $!";
 		open (OUT, ">$tempfile") or die "unable to write to $tempfile: $!";
-		print OUT "$script\n";
+		print OUT $$script;
 		close (OUT) or die "an unexpected error occurred closing $tempfile: $!";
 		chmod(0755, $tempfile);
-		$retval = execute($tempfile, %options);
-		if ($retval == 0) {
-			# Delete the temporary file, but only if it run successfully. Simplifies
-			# debugging since it allows us to look at failed scripts. 
-			unlink($tempfile);
-		}
-		return $retval;
-	} elsif (defined $script and $script ne "") {
-		# No interpretter is specified.
-		# Strip any leading white space on each line
-		$script =~ s/^\s*//mg;
-		# Unfold continuation/multiline commands into single line
-		$script =~ s/\s*\\\s*\n/ /g;
-		# Execute each line as a separate command.
-		foreach $cmd (split(/\n/,$script)) {
-			$retval = execute($cmd, $options{'quiet'});
-			if ($retval) {
-				return $retval;
-			}
-		}
-		return 0;
-	} else {
-		# Script is empty. We pretend successful execution.
-		return 0;
+
+		# tempfile filename is handle to whole script
+		$$script = $tempfile;
+		return 1;
 	}
+
+	### No interpretter is specified so process for line-by-line system()
+	$$script =~ s/^\s*//mg;        # Strip leading white space on each line
+	$$script =~ s/\s*\\\s*\n/ /g;  # Rejoin continuation/multiline commands
+	$$script =~ s/^\#.*?$//mg;     # remove comments
+	$$script =~ s/^\s*$//mg;       # remove blanks
+	chomp $$script;                # always remove trailing newline 
+
+	# sanity check
+	if ($$script =~ /\\$/s) {
+		die "illegal continuation at end of script: \n", $$script, "\n";
+	}
+
+	$$script = undef if !length $$script;
+	return 0;  # $$script is still the real thing, not a tempfile handle
 }
 
 =item execute_nonroot_okay
@@ -1051,7 +1096,7 @@ sub enforce_gcc {
 		$sw_vers =~ s/^(\d*\.\d*).*/${1}/;
 		$gcc = $osx_default{$sw_vers};
 	} else {
-        ($dummy,$dummy,$darwin_version) = POSIX::uname();
+        ($dummy,$dummy,$darwin_version) = uname();
 		$current_system = "Darwin $darwin_version";
 		$darwin_version =~ s/^(\d*).*/${1}/;
 		$gcc = $darwin_default{$darwin_version};
@@ -1059,7 +1104,7 @@ sub enforce_gcc {
 
 	if (defined $gcc_abi) {
 		if ($gcc_abi_default{$gcc} !~ /^$gcc_abi/) {
-			return $gcc_abi_default{$gcc};;
+			return $gcc_abi_default{$gcc};
 		}
 	}
 

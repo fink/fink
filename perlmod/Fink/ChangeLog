@@ -1,3 +1,8 @@
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Add import for POSIX functions. Move parsing of
+	scripts from execute_script() into new prepare_script() function.
+
 2004-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: recognize 10.3.7
