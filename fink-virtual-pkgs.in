@@ -1,0 +1,64 @@
+#! /usr/bin/perl -w
+#
+# fink-virtual-pkgs
+# Copyright (c) 2001 Christoph Pfisterer
+# Copyright (c) 2001-2003 The Fink Package Manager Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
+require 5.006;
+use strict;
+
+use lib "@BASEPATH@/lib/perl5";
+
+use Getopt::Long;
+use Fink::Status;
+use Fink::VirtPackage;
+use Fink::Services qw(&parse_fullversion);
+
+Getopt::Long::Configure(qw(bundling ignore_case require_order));
+my ($dlist, $hash, $pkgname, $epoch, @versions);
+my %options = 
+   (
+     "dpkg" => 0,
+     "apt" => 0,
+   );
+GetOptions(
+	'dpkg|d' => sub { $options{dpkg} = 1},
+	'deb|d' => sub { $options{dpkg} = 1},
+	'apt|a' => sub {  $options{apt} = 1}
+	) or die "Unknown option";
+if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt" }
+open(FH,">-");
+if ($options{apt}) {
+	open(FH,">/tmp/finkaptstatus") || die "Can not open file /tmp/finkaptstatus for writing";
+	}
+$dlist = Fink::VirtPackage->list();
+foreach $pkgname (keys %$dlist) {
+	$hash = $dlist->{$pkgname};
+	$epoch=0;
+	if ($options{dpkg}) {
+		if (@versions = parse_fullversion($hash->{version})) {
+			printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];
+		}	
+	} else {
+		printf FH "Package: %s\nStatus: install ok installed\nVersion: %s\n\n", $hash->{package},$hash->{version};
+	}	
+}
+if ($options{apt}) {
+	select STDOUT;
+	close FH;
+}		    

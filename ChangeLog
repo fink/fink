@@ -1,3 +1,8 @@
+2003-07-06  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in, bootstrap.pl, inject.pl, install.sh, setup.sh:
+	add "fink-virtual-pkgs" to the distribution for use by new apt and dpkg.
+
 2003-06-19  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* postinstall.pl.in: remove a warning under 5.8.x

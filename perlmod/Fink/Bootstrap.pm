@@ -202,7 +202,7 @@ sub check_files {
 	my ($file);
 	foreach $file (qw(fink.in install.sh COPYING VERSION
   		perlmod/Fink mirror update fink.info.in postinstall.pl.in
-  		update/config.guess perlmod/Fink/Config.pm mirror/_keys
+  		update/config.guess perlmod/Fink/Config.pm mirror/_keys fink-virtual-pkgs.in
  	)) {
 		if (not -e $file) {
 			print "ERROR: Package incomplete, '$file' is missing.\n";

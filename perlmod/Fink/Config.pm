@@ -24,7 +24,6 @@ package Fink::Config;
 use Fink::Base;
 use Fink::Services;
 
-use POSIX qw(uname);
 
 use strict;
 use warnings;
@@ -35,15 +34,14 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter Fink::Base);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw($config $basepath $libpath $debarch $darwin_version
-				$macosx_version $cctools_version $cctools_single_module
+	@EXPORT_OK	 = qw($config $basepath $libpath $debarch
 				$distribution &get_option &set_options &verbosity_level
 				$buildpath);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
-our ($config, $basepath, $libpath, $debarch, $darwin_version, $macosx_version, $cctools_version, $cctools_single_module, $distribution, $buildpath);
+our ($config, $basepath, $libpath, $debarch, $distribution, $buildpath);
 my $_arch = Fink::Services::get_arch();
 $debarch = "darwin-$_arch";
 
@@ -82,7 +80,6 @@ sub new_with_path {
 
 sub initialize {
 	my $self = shift;
-	my ($dummy);
 
 	$self->SUPER::initialize();
 
@@ -97,44 +94,6 @@ sub initialize {
 	$distribution = $self->param("Distribution");
 
 	$self->{_queue} = [];
-
-	# determine the kernel version
-	($dummy,$dummy,$darwin_version) = uname();
-
-	# Now the Mac OS X version
-	$macosx_version = 0;
-	if (-x "/usr/bin/sw_vers") {
-		$dummy = open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
-		while (<SW_VERS>) {
-			chomp;
-			if (/(ProductVersion\:)\s*([^\s]*)/) {
-				$macosx_version = $2;
-				last;
-			}
-		}
-	}
-
-	# now find the cctools version
-	if (-x "/usr/bin/ld") {
-		foreach(`what /usr/bin/ld`) {
-			if (/cctools-(\d+)/) {
-				$cctools_version = $1;
-				last;
-			}
-		}
-	}
-
-	if (my $cctestfile = POSIX::tmpnam()) {
-		system("touch ${cctestfile}.c");
-		if (system("cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module") == 0) {
-			$cctools_single_module = '1.0';
-		} else {
-			$cctools_single_module = undef;
-		}
-		unlink($cctestfile);
-		unlink("${cctestfile}.c");
-		unlink("${cctestfile}.dylib");
-	}
 }
 
 

@@ -34,6 +34,7 @@ use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
 use Fink::Status;
+use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 
 use File::Basename qw(&dirname);
@@ -609,7 +610,8 @@ sub is_present {
 sub is_installed {
 	my $self = shift;
 
-	if (&version_cmp(Fink::Status->query_package($self->{_name}), '=', $self->get_fullversion())) {
+	if ((&version_cmp(Fink::Status->query_package($self->{_name}), '=', $self->get_fullversion())) or
+	   (&version_cmp(Fink::VirtPackage->query_package($self->{_name}), '=', $self->get_fullversion()))) {
 		return 1;
 	}
 	return 0;

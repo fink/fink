@@ -30,6 +30,7 @@ use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch);
 use File::Find;
+use Fink::Status;
 
 use strict;
 use warnings;

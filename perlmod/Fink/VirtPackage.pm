@@ -1,5 +1,5 @@
 #
-# Fink::Status class
+# Fink::VirtPackage class
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -20,9 +20,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA	 02111-1307, USA.
 #
 
-package Fink::Status;
+package Fink::VirtPackage;
 
 use Fink::Config qw($config $basepath);
+use POSIX qw(uname);
+use Fink::Status;
 
 use strict;
 use warnings;
@@ -63,71 +65,84 @@ sub new {
 sub initialize {
 	my $self = shift;
 	my ($hash);
-	$self->read();
-}
+	my ($dummy);
+	my ($darwin_version, $macosx_version, $cctools_version, $cctools_single_module);
+	# determine the kernel version
+	($dummy,$dummy,$darwin_version) = uname();
 
-### read dpkg's status file
-
-sub read {
-	my $self = shift;
-	my ($file, $hash);
-
-	$file = $basepath."/var/lib/dpkg/status";
-	$hash = {};
-
-	if (! -f $file) {
-		print "WARNING: can't read dpkg status file \"$file\".\n";
-
-		$self->{_invalid} = 0;
-		return;
-	}
-
-	open(IN,$file) or die "can't open $file: $!";
-	while (<IN>) {
-		chomp;
-		if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
-			$hash->{lc $1} = $2;
-		} elsif (/^\s*$/) {
-			if (exists $hash->{package}) {
-				$self->{$hash->{package}} = $hash;
+	# Now the Mac OS X version
+	$macosx_version = 0;
+	if (-x "/usr/bin/sw_vers") {
+		$dummy = open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
+		while (<SW_VERS>) {
+			chomp;
+			if (/(ProductVersion\:)\s*([^\s]*)/) {
+				$macosx_version = $2;
+				last;
 			}
-			$hash = {};
 		}
-		# we don't care about continuation lines
 	}
-	close(IN);
 
-	if (exists $hash->{package}) {
+	# now find the cctools version
+	if (-x "/usr/bin/ld") {
+		foreach(`what /usr/bin/ld`) {
+			if (/cctools-(\d+)/) {
+				$cctools_version = $1;
+				last;
+			}
+		}
+	}
+
+	if (my $cctestfile = POSIX::tmpnam()) {
+		system("touch ${cctestfile}.c");
+		if (system("cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module") == 0) {
+			$cctools_single_module = '1.0';
+		} else {
+			$cctools_single_module = undef;
+		}
+		unlink($cctestfile);
+		unlink("${cctestfile}.c");
+		unlink("${cctestfile}.dylib");
+	}
+	# create dummy object for kernel version
+	$hash = {};
+	$hash->{package} = "darwin";
+	$hash->{status} = "install ok installed";
+	$hash->{version} = $darwin_version."-1";
+	$hash->{description} = "[virtual package representing the kernel]";
+	$self->{$hash->{package}} = $hash;
+	
+	# create dummy object for system version, if this is OS X at all
+	if ($macosx_version ne 0) {
+		$hash = {};
+		$hash->{package} = "macosx";
+		$hash->{status} = "install ok installed";
+		$hash->{version} = $macosx_version."-1";
+		$hash->{description} = "[virtual package representing the system]";
 		$self->{$hash->{package}} = $hash;
 	}
 
-	$self->{_invalid} = 0;
-}
-
-### update cached data if necessary
-
-sub validate {
-	my $self = shift;
-
-	if ($self->{_invalid}) {
-		$self->read();
-	}
-}
-
-### invalidate cached data
-
-sub invalidate {
-	my $self = shift;
-
-	if (not ref($self)) {
-		if (defined($the_instance)) {
-			$self = $the_instance;
-		} else {
-			$self = Fink::Status->new();
-		}
+	# create dummy object for cctools version, if version was found in Config.pm
+	if (defined ($cctools_version)) {
+		$hash = {};
+		$hash->{package} = "cctools";
+		$hash->{status} = "install ok installed";
+		$hash->{version} = $cctools_version."-1";
+		$hash->{description} = "[virtual package representing the developer tools]";
+		$hash->{builddependsonly} = "true";
+		$self->{$hash->{package}} = $hash;
 	}
 
-	$self->{_invalid} = 1;
+	# create dummy object for cctools-single-module, if supported
+	if ($cctools_single_module) {
+		$hash = {};
+		$hash->{package} = "cctools-single-module";
+        $hash->{status} = "install ok installed";
+		$hash->{version} = $cctools_single_module."-1";
+		$hash->{description} = "[virtual package, your dev tools support -single_module]";
+		$hash->{builddependsonly} = "true";
+		$self->{$hash->{package}} = $hash;
+	}
 }
 
 ### query by package name
@@ -143,23 +158,18 @@ sub query_package {
 		if (defined($the_instance)) {
 			$self = $the_instance;
 		} else {
-			$self = Fink::Status->new();
+			$self = Fink::VirtPackage->new();
 		}
 	}
-
-	$self->validate();
 
 	if (not exists $self->{$pkgname}) {
 		return 0;
 	}
 	$hash = $self->{$pkgname};
-	if (not exists $hash->{status} or not exists $hash->{version}) {
+	if (not exists $hash->{version}) {
 		return 0;
 	}
-	if ($hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
-		return $hash->{version};
-	}
-	return 0;
+	return $hash->{version};
 }
 
 ### retreive whole list with versions
@@ -175,11 +185,10 @@ sub list {
 		if (defined($the_instance)) {
 			$self = $the_instance;
 		} else {
-			$self = Fink::Status->new();
+			$self = Fink::VirtPackage->new();
 		}
 	}
 
-	$self->validate();
 
 	$list = {};
 	foreach $pkgname (keys %$self) {
@@ -199,7 +208,6 @@ sub list {
 
 	return $list;
 }
-
 
 ### EOF
 1;

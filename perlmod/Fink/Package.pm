@@ -365,7 +365,25 @@ sub scan_all {
 			Fink::Package->inject_description($po, $hash);
 		}
 	}
+	# Get data from VirtPackage.pm. Note that we do *not* store this 
+	# information into the package database.
+	$dlist = Fink::VirtPackage->list();
+	foreach $pkgname (keys %$dlist) {
+		$po = Fink::Package->package_by_name_create($pkgname);
+		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
+		$hash = $dlist->{$pkgname};
 
+		# create dummy object
+		if (@versions = parse_fullversion($hash->{version})) {
+			$hash->{epoch} = $versions[0];
+			$hash->{version} = $versions[1];
+			$hash->{revision} = $versions[2];
+			$hash->{type} = "dummy";
+			$hash->{filename} = "";
+
+			Fink::Package->inject_description($po, $hash);
+		}
+	}
 	$have_packages = 1;
 
 	print "Information about ".($#package_list+1)." packages read in ",
