@@ -249,7 +249,7 @@ sub get_build_directory {
   }
   if ($self->has_param("SourceDirectory")) {
     $self->{_builddir} = $self->get_fullname()."/".
-      $self->param("SourceDirectory");
+      &expand_percent($self->param("SourceDirectory"), $self->{_expand});
     return $self->{_builddir};
   }
 
@@ -561,7 +561,7 @@ sub phase_unpack {
     $destdir = "$basepath/src/$bdir";
     if ($i > 1) {
       if ($self->has_param("Source".$i."ExtractDir")) {
-	$destdir .= "/".$self->param("Source".$i."ExtractDir");
+	$destdir .= "/".&expand_percent($self->param("Source".$i."ExtractDir"), $self->{_expand});
       }
     }
 
