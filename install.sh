@@ -37,7 +37,7 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
-	   lib/fink/mirror lib/fink/update \
+	   lib/fink/mirror lib/fink/update etc etc/dpkg \
 	   share share/doc share/doc/fink share/man share/man/man8 ; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"

@@ -4,7 +4,9 @@
 
 	* setup.sh: create the shlibs.default file from shlibs.default.in
 
-	* install.sh: install shlibs.default in $basepath/etc/dpkg/
+	* install.sh: create $basepath/etc/dpkg and install shlibs.default there
+
+	* inject.pl: include the new shlibs.default.in in the tarball
 
 2002-10-10 Dave Morrison <dmrrsn@users.sourceforge.net>
 
