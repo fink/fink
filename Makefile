@@ -22,8 +22,10 @@ bootstrap: test
 install:
 	./inject.pl
 
-test:
+test_setup:
 	@./setup.sh $(TEST_BASEPATH)
+
+test: test_setup
 	@cd t && find . -name '*.t' | xargs perl -I../perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
 .PHONY: all test install
