@@ -1,3 +1,7 @@
+2004-06-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Recognize darwin 7.4.0.
+
 2004-06-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: When extracting tarballs, the optional flags
