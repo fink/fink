@@ -81,12 +81,12 @@ sub get_perms {
 		### Don't add DEBIAN dir
 		next if ($file =~ /DEBIAN/);
 		### Skip the rootdir
-		next if ($file eq $rootdir);
+		next if ($file =~ /^$rootdir$/);
 	  
 		($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
 
 		### Skip anything that doesn't have a user or group;
-		next if (not $uid or not $gid);
+		# next if (not $uid or not $gid);
 	  
 		$usr = User::pwent::getpwuid($uid);
 		$grp = User::grent::getgrgid($gid);
