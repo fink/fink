@@ -1,3 +1,10 @@
+2004-12-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm, PkgVersion.pm, Services.pm: Move the code which
+	verifies that the gcc version is correct to a new &enforce_gcc
+	function in Services.pm.  Make sure that this function does what
+	we want it to do for future versions of OS X.
+
 2004-12-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Allow bootstrap under gcc 4.0
