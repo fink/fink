@@ -1,3 +1,8 @@
+2004-05-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.20.2, a release
+	on branch_0_20 which modifies the Provides of system-perl packages
+
 2004-05-17  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: 'test': run tests in sorted order.
