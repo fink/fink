@@ -1,3 +1,7 @@
+2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* apt.patch: modify sources.list for this distribution
+
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Big revision, making sure that all files are properly coordinated

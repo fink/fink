@@ -869,8 +869,8 @@ diff -uNbr apt-0.5.4.orig/sources.list.fink-bindist apt-0.5.4/sources.list.fink-
 +
 +# Official binary distribution: download location for packages
 +# from the latest release
-+deb http://us.dl.sourceforge.net/fink/direct_download 10.2/release main crypto
++deb http://us.dl.sourceforge.net/fink/direct_download 10.2-gcc3.3/release main crypto
 +
 +# Official binary distribution: download location for updated
 +# packages built between releases
-+deb http://us.dl.sourceforge.net/fink/direct_download 10.2/current main crypto
++deb http://us.dl.sourceforge.net/fink/direct_download 10.2-gcc3.3/current main crypto
