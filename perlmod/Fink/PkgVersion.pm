@@ -342,8 +342,10 @@ sub conditional_pkg_list {
 }
 
 ### Remove our own package name from a given package-list field
-### (Conflicts or Replaces, indicated by $field). This must be called
+### (Conflicts or Replaces, indicated by $field; these fields are
+### always AND of single pkgs, no OR clustering). This must be called
 ### after conditional dependencies are cleared. The field is re-set.
+
 sub clear_self_from_list {
 	my $self = shift;
 	my $field = lc shift;
@@ -1216,7 +1218,7 @@ sub resolve_depends {
 		foreach $altspecs (@speclist){
 			## Determine if it has a multi type depends line thus
 			## multi pkgs can satisfy the depend and it shouldn't
-			## warn if one isn't found, as long as one is.
+			## warn if certain ones aren't found, as long as any one of them is
 			@altspec = split(/\s*\|\s*/, $altspecs);
 			$loopcount = 0;
 			$found = 0;
@@ -2214,7 +2216,7 @@ EOF
 	}
 
 	my $has_darwin_dep;
-	my $struct &pkglist2lol($self->get_binary_depends()); 
+	my $struct = &pkglist2lol($self->get_binary_depends()); 
 	foreach (@$struct) {
 		foreach (@$_) {
 			$has_darwin_dep = 1 if /^darwin(\Z|\s|\()/;
