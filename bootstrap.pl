@@ -204,17 +204,21 @@ print "\n";
 ### create directories
 
 print "Creating directories...\n";
-my ($dir);
+my ($dir, @dirlist);
+
 if (not -d $installto) {
   if (&execute("mkdir -p $installto")) {
     print "ERROR: Can't create directory '$installto'.\n";
     exit 1;
   }
 }
-foreach $dir (qw(etc src fink fink/dists fink/dists/stable
-		 fink/dists/stable/bootstrap
-		 fink/dists/stable/bootstrap/finkinfo
-		 fink/dists/stable/bootstrap/binary-darwin-powerpc)) {
+
+@dirlist = qw(etc src fink fink/dists fink/dists/stable fink/dists/local);
+foreach $dir (qw(stable/bootstrap stable/main stable/crypto local/main)) {
+  push @dirlist, "fink/dists/$dir", "fink/dists/$dir/finkinfo",
+    "fink/dists/$dir/binary-darwin-powerpc";
+}
+foreach $dir (@dirlist) {
   if (not -d "$installto/$dir") {
     if (&execute("mkdir $installto/$dir")) {
       print "ERROR: Can't create directory '$installto/$dir'.\n";
@@ -226,7 +230,7 @@ foreach $dir (qw(etc src fink fink/dists fink/dists/stable
 ### copy package info needed for bootstrap
 
 print "Copying package descriptions...\n";
-if (&execute("cp packages/* $installto/fink/dists/stable/bootstrap/finkinfo/")) {
+if (&execute("cp packages/*.info packages/*.patch $installto/fink/dists/stable/bootstrap/finkinfo/")) {
   print "ERROR: Can't copy package descriptions.\n";
   exit 1;
 }
