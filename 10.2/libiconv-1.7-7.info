@@ -8,7 +8,7 @@ Depends: base-files
 BuildDepends: fink (>= 0.13.0)
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
- %p/lib/libiconv.2.dylib 1.0.0 %n (>= 1.7-7)
+ %p/lib/libiconv.2.dylib 3.0.0 %n (>= 1.7-7)
 <<
 DescPackaging: <<
  Shared libraries are in libiconv for backward compatibility, to avoid
