@@ -1073,12 +1073,28 @@ sub real_install {
 	$parent = $package->{parent};
       }
 
+      # If this is a splitoff, we mark the parent and all the children as having
+      # been built now.  We then go through each sub-package and check if they're
+      # in the list of things to check to be installed.  If so, we add them to
+      # the batch queue so that all of the splitoffs that are due for installation
+      # get installed at the same time.  This fixes a number of chicken-and-egg
+      # problems with dependencies.  The parent package is then added down below.
+
+      # FIXME: This really should be turned into it's own subroutine (something
+      # like "check for parent dependency in splitoff") that can be called in a
+      # proper loop, but this should at least fix the ordering in the meantime.
+      # Grr, stupid dpkg needs the parent dep last on the command-line.  WHY?!
+
       if (defined $parent) {
 	$already_rebuilt{$parent->get_name()} = 1;
 	foreach my $splitoff (@{$parent->{_splitoffs}}) {
 	  $already_rebuilt{$splitoff->get_name()} = 1;
+	  # skip it if it's the parent, he gets added down below
+	  next if ($parent->get_name() eq $splitoff->get_name());
 	  if ($splitoff->is_installed() or exists $deps{$splitoff->get_name()}) {
-	    unless ($already_activated{$splitoff->get_name()} or $splitoff->is_installed()) {
+            if (not $already_activated{$splitoff->get_name()} and
+	        ($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL
+	         or ($item->[3] == $OP_REBUILD and $splitoff->is_installed()))) {
 	      push(@batch_install, $splitoff);
 	    $already_activated{$splitoff->get_name()} = 1;
 	    }

@@ -1,3 +1,11 @@
+2002-10-04  Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* Engine.pm: another small patch to the splitoff code.  This patch
+	  changes the checking for flags (reinstall, rebuild, etc.) to match
+	  the code used for installing the primary package, and it makes
+	  sure that the parent splitoff is the last one installed on the
+	  dpkg command-line to fix goofy dpkg ordering issues.
+
 2002-09-28  Ben Hines <bhines@alumni.ucsd.edu>
 
 	* PkgVersion.pm, NetAccess.pm: Patch 612681: Allow "continue" 
@@ -7,14 +15,14 @@
 
 	* PkgVersion.pm: Change some tarballs to "file"s.
 
-2002-09-28 Benjamin Reed <rangerrick@users.sourceforge.net>
+2002-09-28  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* Engine.pm: small patch to fix 'fink rebuild' and possibly some other
 	  buglets that could sneak through.  If a package has splitoffs, it was
 	  sometimes getting marked as "already activated" even if it was set to
 	  be explicitly reinstalled.
 
-2002-09-25 Benjamin Reed <rangerrick@users.sourceforge.net>
+2002-09-25  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* Engine.pm: fixed so that the rest of a splitoff doesn't get
 	  reinstalled if just one package from the splitoff is being installed
