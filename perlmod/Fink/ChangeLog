@@ -1,3 +1,9 @@
+2003-12-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Rearranged the list of allowed fields and added
+	some comments to make it easier to compare this list to the
+	packaging manual.
+
 2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Adding "fink splitoffs", shows parent and splitoffs in a
