@@ -1,5 +1,8 @@
 2002-02-23  Max Horn  <max@quendi.de>
 
+	* NetAccess.pm (fetch_url_to_file, download_cmd): Allow the user to
+	resume partial downloads.
+	
 	* NetAccess.pm (download_cmd): Added 'DownloadMethod' field to fink.conf
 	(thanks to Christian Swinehart).
 

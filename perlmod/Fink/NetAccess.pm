@@ -69,7 +69,8 @@ sub fetch_url_to_file {
   my $tries = shift || 0;
   my $destdir = shift || "$basepath/src";
   my ($http_proxy, $ftp_proxy);
-  my ($url, $cmd, $result);
+  my ($url, $cmd, $cont_cmd, $result);
+  my $cont = 0;
 
   # create destination directory if necessary
   if (not -d $destdir) {
@@ -82,6 +83,7 @@ sub fetch_url_to_file {
 
   # determine download command
   $cmd = &download_cmd($origurl, $file);
+  $cont_cmd = &download_cmd($origurl, $file, 1);
 
   # set proxy env vars
   $http_proxy = $config->param_default("ProxyHTTP", "");
@@ -120,14 +122,46 @@ sub fetch_url_to_file {
     $url = $origurl;
   }
 
+  ### if the file already exists, ask user what to do
+
+  if (-f $file) {
+    $result =
+      &prompt_selection("The file \"$file\" already exists, how do you want to proceed?",
+			1, # Play it save, assume redownload as default
+			{ "retry" => "Delete it and download again",
+			  "continue" => "Assume it is a partial download and try to continue",
+			  "use_it" => "Don't download, use existing file" },
+			"retry", "continue", "use_it");
+    if ($result eq "retry") {
+      &execute("rm -f $file");
+    } elsif ($result eq "continue") {
+      $cont = 1;
+    } elsif ($result eq "use_it") {
+      # pretend success, return to caller
+      return 0;
+    }
+  }
+
   while (1) {  # retry loop, left with return in case of success
 
     ### fetch $url to $file
 
     if (-f $file) {
-      &execute("rm -f $file");
+      if (not $cont) {
+        &execute("rm -f $file");
+      }
+    } else {
+      $cont = 0;
     }
-    if (&execute("$cmd $url") or not -f $file) {
+    
+    if ($cont) {
+      $result = &execute("$cont_cmd $url");
+      $cont = 0;
+    } else {
+      $result = &execute("$cmd $url");
+    }
+    
+    if ($result or not -f $file) {
       # failure, continue loop
     } else {
       # success, return to caller
@@ -170,6 +204,7 @@ sub fetch_url_to_file {
 sub download_cmd {
   my $url = shift;
   my $file = shift || &filename($url);
+  my $cont = shift || 0;  # Continue a previously started download?
   my $cmd;
 
   # determine the download command
@@ -189,6 +224,9 @@ sub download_cmd {
     } else {
       $cmd .= " -O"
     }
+    if ($cont) {
+      $cmd .= " -C -"
+    }
   }
 
   # if we would prefer wget (or didn't have curl available), check for wget
@@ -205,6 +243,9 @@ sub download_cmd {
     }
     if ($file ne &filename($url)) {
       $cmd .= " -O $file";
+    }
+    if ($cont) {
+      $cmd .= " -c"
     }
   }
 
