@@ -740,7 +740,7 @@ sub is_type {
 	$type = lc $type;
 
 	if (!exists $self->{_type_hash}) {
-		$self->{_type_hash} $self->type_hash_from_string($self->param_default("Type", ""));
+		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
 	}
 
 	if (defined $self->{_type_hash}->{$type} and length $self->{_type_hash}->{$type}) {
@@ -757,7 +757,7 @@ sub get_subtype {
 	my $type = shift;
 
 	if (!exists $self->{_type_hash}) {
-		$self->{_type_hash} $self->type_hash_from_string($self->param_default("Type", ""));
+		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
 	}
 
 	return $self->{_type_hash}->{$type};
