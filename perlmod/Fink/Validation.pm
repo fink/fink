@@ -56,7 +56,7 @@ our @required_fields =
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
 	(
-		qw(builddependsonly essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests),
+		qw(builddependsonly addshlibdeps essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests),
 		map {"noset".$_} @set_vars
 	);
 
@@ -126,6 +126,7 @@ our %valid_fields = map {$_, 1}
 		 'infon',  # set by handle_infon_block if InfoN: used
 #  dependencies:
 		 'depends',
+		 'runtimedepends',
 		 'builddepends',
 		  #  need documentation for buildconflicts
 		 'buildconflicts',
@@ -138,6 +139,7 @@ our %valid_fields = map {$_, 1}
 		 'pre-depends',
 		 'essential',
 		 'builddependsonly',
+		 'addshlibdeps',
 #  unpack phase:
 		 'custommirror',
 		 'source',

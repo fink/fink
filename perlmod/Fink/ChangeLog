@@ -5,6 +5,12 @@
 
 2005-02-25  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* Validation.pm: added runtimedepends and addshlibdeps to accepted list
+	of fields, and added addshlibdeps to boolean list.
+	* PkgVersion.pm, Shlibs.pm: Added some maintainer output
+
+2005-02-25  Justin F. Hallett  <thesin@users.sourceforge.net>
+
 	* Engine.pm, PkgVersion.pm: Adding maintainer mode, -m|--maintainer,
 	which will enable extra output for maintainers and will self validate
 	the info and deb files.

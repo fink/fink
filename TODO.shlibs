@@ -9,7 +9,6 @@ Breaks:
   must have a Depends (RunTimeDepends) on it's -shlibs.
 
 Missing:
-* remove comments and add debug code to pedantic verbosity
 * Common code for build, updating and reading the shlibs.db should get merged
 * Should move the fink.shlibs files to system.shlibs ie 10.2.shlibs and
   darwin7.shlibs enventually maybe VirtPackages could do this?

@@ -219,7 +219,9 @@ sub check_files {
 		close (OTOOL);
 	}
 
-	# print "DEBUG: before deduplication: ", join(', ', @depends), "\n";
+	if (Fink::Config::get_option("maintainermode")) {
+		print "- Depends before deduplication: ", join(', ', @depends), "\n";
+	}
 
 	# this next bit does some really strange voodoo, I will try to
 	# explain how it works.
@@ -327,7 +329,9 @@ sub check_files {
 		}
 	}
 
-	# print "DEBUG: after deduplication: ", join(', ', @depends), "\n";
+	if (Fink::Config::get_option("maintainermode")) {
+		print "- Depends after deduplication: ", join(', ', @depends), "\n";
+	}
 	return @depends;
 }
 

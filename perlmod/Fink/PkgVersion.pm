@@ -2459,6 +2459,9 @@ EOF
 		}
 	}
 	push @$struct, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
+	if (Fink::Config::get_option("maintainermode")) {
+		print "- Depends line is: " . &lol2pkglist($struct) . "\n";
+	}
 	$control .= "Depends: " . &lol2pkglist($struct) . "\n";
 
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
