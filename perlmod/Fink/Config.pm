@@ -599,7 +599,7 @@ a Fink::Config object.
 
 Path to the base of the Fink installation directory.
 
-Typically F</src>.
+Typically F</sw>.
 
 =item $buildpath
 
