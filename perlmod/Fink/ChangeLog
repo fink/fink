@@ -1,3 +1,7 @@
+2001-12-21  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm, Package.pm: Allow '+' in package names.
+
 2001-12-20  Max Horn  <max@quendi.de>
 
 	* SelfUpdate.pm (do_direct_cvs): Fixed CVS updating for core developers

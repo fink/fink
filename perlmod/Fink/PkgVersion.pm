@@ -498,7 +498,7 @@ sub resolve_depends {
   foreach $altspec (@speclist) {
     $altlist = [];
     foreach $depspec (split(/\s*\|\s*/, $altspec)) {
-      if ($depspec =~ /^([0-9a-zA-Z.\-]+)\s*\((.+)\)$/) {
+      if ($depspec =~ /^([0-9a-zA-Z.\+-]+)\s*\((.+)\)$/) {
 	$depname = $1;
 	$versionspec = $2;
       } else {

@@ -143,7 +143,7 @@ sub get_matching_versions {
   my $spec = shift;
   my (@list, $version, $vo, $relation, $reqversion);
 
-  if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\-]+)\s*$/) {
+  if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-]+)\s*$/) {
     $relation = $1;
     $reqversion = $2;
   } else {
