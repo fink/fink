@@ -89,6 +89,7 @@ our %commands =
 	  'check' => [\&cmd_validate, 0, 0],
 	  'checksums' => [\&cmd_checksums, 1, 0],
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
+	  'depends' => [\&cmd_depends, 1, 0],
 	);
 
 our (%deb_list, %src_list);
@@ -822,6 +823,27 @@ sub kill_obsolete_debs {
 			# Obsolete deb
 			unlink $File::Find::name;
 		}
+	}
+}
+
+### Display the depends for a package
+
+sub cmd_depends {
+	my ($pkg, $package, @deplist, $fullname);
+
+	foreach $pkg (@_) {
+		$package = Fink::PkgVersion->match_package($pkg);
+                unless (defined $package) {
+			print "no package found for specification '$pkg'!\n";
+			next;
+		}
+
+		$fullname = $package->get_fullname();
+		### FIXEME, need deplist here
+		@deplist = $package->resolve_depends();
+
+		print "Depends for $fullname are...\n";
+		print join(', ', @deplist)."\n\n";
 	}
 }
 

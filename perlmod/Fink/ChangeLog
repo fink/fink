@@ -1,3 +1,9 @@
+2003-07-15  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: Adding 'fink depends' to give a list of expanded depends
+	  good for maintainers since it'sll expand ${SHLIB_DEPS} if the pkg
+	  is built.
+
 2003-07-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Shlibs.pm: Evil, scary voodoo to remove duplicates in dependency

@@ -689,8 +689,6 @@ sub resolve_depends {
 		}
 	}
 	
-	### FIXME
-	### Underconstruction
 	if ($self->find_debfile()) {
 		print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
 		@speclist = split(/\s*\,\s*/, $self->get_debdeps());
