@@ -1,3 +1,7 @@
+2003-10-25  Mohammad A. Haque  <batmanppc@users.sourceforge.net>
+
+	* Engine.pm: Patch 828653 fix fink cleanup and improve user feedback
+    
 2003-10-25  Justin F. Hallett  <thesin@users.sourceforge.net
 
 	* Service.pm: Added an get_path function that is a perl version
