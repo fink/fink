@@ -1,0 +1,12 @@
+2001-04-14  Christoph Pfisterer  <cp@chrisp.de>
+
+	* init.sh.in, init.csh.in: Also add <prefix>/share/man and
+	<prefix>/share/info to the path variables.
+
+2001-04-05  Christoph Pfisterer  <cp@chrisp.de>
+
+	* init.sh.in, init.csh.in: Moved to the base-files directory.
+	* setup.sh, install.sh: Scripts to install the init.[c]sh scripts
+	as a package.
+	* fink-release: Marker file to be put in <prefix>/etc.
+

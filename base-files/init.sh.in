@@ -30,13 +30,13 @@ export PATH
 if [ -z "$MANPATH" ]; then
   MANPATH=/usr/local/share/man:/usr/local/man:/usr/share/man:/usr/man
 fi
-MANPATH=BASEPATH/man:$MANPATH
+MANPATH=BASEPATH/share/man:BASEPATH/man:$MANPATH
 export MANPATH
 
 if [ -z "$INFOPATH" ]; then
   INFOPATH=/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:/usr/info
 fi
-INFOPATH=BASEPATH/info:$INFOPATH
+INFOPATH=BASEPATH/share/info:BASEPATH/info:$INFOPATH
 export INFOPATH
 
 #if [ -z "$DYLD_LIBRARY_PATH" ]; then
