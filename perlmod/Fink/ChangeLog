@@ -1,3 +1,8 @@
+2004-02-18  Rob Braun  <bbraun@opendarwin.org>
+
+	* Bootstrap.pm: Update the i386 distribution detection code to
+	understand i386-apple-darwin 7.0.1 as 10.3 distribution.
+
 2004-02-17  Daniel Macks  <dmacks@netspace.org>
 
 	* all: add emacs tags to get perl-mode (even for .pm.in) and set
