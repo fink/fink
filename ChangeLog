@@ -1,3 +1,9 @@
+2002-03-02  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+        * fink.8.in: Added information about fink.conf
+
+        * fink.in: Changed behavior to show help if no command 
+
 2002-02-23  Max Horn  <max@quendi.de>
 
 	* VERSION: Bumped package manager version to 0.9.8

@@ -135,7 +135,8 @@ if ($#ARGV >= 0) {
   $engine->process(@ARGV);
 } else {
   # TODO: enter interactive mode
-  die "fink: no command given.\nType 'fink --help' for usage information.\n";
+#  die "fink: no command given.\nType 'fink --help' for usage information.\n";
+    show_help
 }
 
 ### eof
