@@ -1,3 +1,10 @@
+2003-02-28  Max Horn  <max@quendi.de>
+
+	* Package.pm: Reverting a "fix" from 2003-01-27 (no ChangeLog entry was made)
+	  which causes the package DB file to grow ad infinitum (unless a manual
+	  "fink index" is performed). A proper fix for the issue this was meant
+	  to fix has yet to be added.
+
 2003-02-27  Max Horn  <max@quendi.de>
 
 	* Engine.pm: Fixed "fink list" output (some whitespaces were converted to
