@@ -253,7 +253,7 @@ sub cmd_fetch_missing {
 }
 
 sub cmd_fetch_all {
-  my ($pname, $package, $version);
+  my ($pname, $package, $version, $vo);
 
   foreach $pname (Fink::Package->list_packages()) {
     $package = Fink::Package->package_by_name($pname);
