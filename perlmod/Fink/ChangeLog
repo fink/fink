@@ -1,3 +1,8 @@
+2002-31-28  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Small fix to Configure.pm for the verbosity level selection,
+          which was reported not working.  Should be fine now.
+
 2002-07-28  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Added /sbin and /usr/sbin to the clean env since some pkgs need

@@ -65,7 +65,7 @@ sub configure {
   }
 
   $verbose =
-    &prompt_selection("How verbose should Fink be?", 3, # Default option at index 4 -> "Low"
+    &prompt_selection("How verbose should Fink be?", 3, 
                      { 3 => "High (shows everything)",
                        2 => "Medium (shows almost everything)",
                        1 => "Low (don't show tarballs being expanded)",
