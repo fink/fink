@@ -1,3 +1,9 @@
+2003-11-20  Michael G Schwern <schwern@pobox.com>
+
+	* fink.info.in: Disable running tests as part of the install process
+	until the dependency on Test::More and an updated Test::Harness is
+	resolved.
+
 2003-11-19  Michael G Schwern <schwern@pobox.com>
 	
 	* Makefile: re-enabling Command.pm test.  Disabling was premature.  

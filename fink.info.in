@@ -9,7 +9,6 @@ Source-MD5: @MD5@
 NoSourceDirectory: true
 CompileScript: <<
  ./setup.sh %p
- make test
 <<
 InstallScript: ./install.sh %i
 PostInstScript: <<
