@@ -1,6 +1,7 @@
 Primary: http://west.dl.sourceforge.net/sourceforge/
 Timestamp: 2002-08-11
 nam: http://us.dl.sourceforge.net/sourceforge/
+nam-US: http://aleron.dl.sourceforge.net/sourceforge/
 nam-US: http://easynews.dl.sourceforge.net/sourceforge/
 nam-US: http://umn.dl.sourceforge.net/sourceforge/
 nam-US: http://unc.dl.sourceforge.net/sourceforge/
@@ -10,3 +11,4 @@ eur: http://eu.dl.sourceforge.net/sourceforge/
 eur-BE: http://belnet.dl.sourceforge.net/sourceforge/
 eur-CH: http://switch.dl.sourceforge.net/sourceforge/
 eur-CZ: http://cesnet.dl.sourceforge.net/sourceforge/
+aus-AU: http://flow.dl.sourceforge.net/sourceforge/
