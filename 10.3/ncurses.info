@@ -6,6 +6,7 @@ Source: mirror:sourceforge:fink/%n-5.3.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
 Source2: mirror:sourceforge:fink/%n-%v-patch.sh.bz2
 Source2ExtractDir: %n-5.3
+Source2-MD5: 63699435396950afc9499575e96eec65
 PatchScript: <<
 perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
 bunzip2 %n-%v-patch.sh.bz2
