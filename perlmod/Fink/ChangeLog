@@ -1,6 +1,9 @@
-2004-05-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2004-05-21  Daniel Macks  <dmacks@netspace.org>
 
-	* VirtPackage.pm:  adjust the Provides in the system-perl packages
+	* VirtPackage.pm: Replaced dpkg "status" strings with constants.
+	Changed query_package to respect "status" (parallel to that method
+	in Status.pm) instead of assuming presence of package entry is
+	equivalent to it being installed.
 
 2004-05-13  Daniel Macks  <dmacks@netspace.org>
 

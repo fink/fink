@@ -31,6 +31,11 @@ use Fink::Config qw($config $basepath);
 use POSIX qw(uname);
 use Fink::Status;
 
+use constant {
+	STATUS_PRESENT => "install ok installed",
+	STATUS_ABSENT  => "purge ok not-installed"
+};
+
 use vars qw(
 	%options
 );
@@ -117,7 +122,7 @@ sub initialize {
 	# create dummy object for kernel version
 	$hash = {};
 	$hash->{package} = "darwin";
-	$hash->{status} = "install ok installed";
+	$hash->{status} = STATUS_PRESENT;
 	$hash->{version} = $darwin_version."-1";
 	$hash->{description} = "[virtual package representing the kernel]";
 	$self->{$hash->{package}} = $hash;
@@ -128,7 +133,7 @@ sub initialize {
 		print STDERR Fink::Services::get_sw_vers(), "\n" if ($options{debug});
 		$hash = {};
 		$hash->{package} = "macosx";
-		$hash->{status} = "install ok installed";
+		$hash->{status} = STATUS_PRESENT;
 		$hash->{version} = Fink::Services::get_sw_vers()."-1";
 		$hash->{description} = "[virtual package representing the system]";
 		$self->{$hash->{package}} = $hash;
@@ -142,7 +147,7 @@ sub initialize {
 		print STDERR Fink::Services::get_system_perl_version(), "\n" if ($options{debug});
 		$hash = {};
 		$hash->{package} = "system-perl";
-		$hash->{status} = "install ok installed";
+		$hash->{status} = STATUS_PRESENT;
 		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
 		$hash->{description} = "[virtual package representing perl]";
 		$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
@@ -151,7 +156,7 @@ sub initialize {
 		$shortver =~ s/\.//g;
 		my $perlprovides = 'perl' . $shortver . '-core, system-perl' . $shortver;
 		if ($perlver ge '5.8.0') {
-			$perlprovides .= ', attribute-handlers-pm' . $shortver . ', cgi-pm' . $shortver . ', digest-md5-pm' . $shortver . ', file-spec-pm' . $shortver . ', file-temp-pm' . $shortver . ', filter-simple-pm' . $shortver . ', filter-util-pm' . $shortver . ', getopt-long-pm' . $shortver . ', i18n-langtags-pm' . $shortver . ', libnet-pm' . $shortver . ', locale-maketext-pm' . $shortver . ', memoize-pm' . $shortver . ', mime-base64-pm' . $shortver . ', scalar-list-utils-pm' . $shortver .', test-harness-pm' . $shortver . ', test-simple-pm' . $shortver . ', time-hires-pm' . $shortver;
+			$perlprovides .= ', attribute-handlers-pm, cgi-pm, digest-md5-pm' . $shortver . ', file-spec-pm, file-temp-pm, filter-simple-pm' . $shortver . ', filter-util-pm' . $shortver . ', getopt-long-pm, i18n-langtags-pm, libnet-pm, locale-maketext-pm, memoize-pm, mime-base64-pm' . $shortver . ', scalar-list-utils-pm' . $shortver .', test-harness-pm, test-simple-pm, time-hires-pm' . $shortver;
 		}
 		$hash->{provides} = $perlprovides;
 
@@ -176,7 +181,7 @@ sub initialize {
 				$ver =~ s/^(..).*$/$1/;
 				$hash = {};
 				$hash->{package}     = "system-java${ver}";
-				$hash->{status}      = "install ok installed";
+				$hash->{status}      = STATUS_PRESENT;
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
@@ -186,7 +191,7 @@ sub initialize {
 					print STDERR "$dir/Headers " if ($options{debug});
 					$hash = {};
 					$hash->{package}     = "system-java${ver}-dev";
-					$hash->{status}      = "install ok installed";
+					$hash->{status}      = STATUS_PRESENT;
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
@@ -206,7 +211,7 @@ sub initialize {
 		print STDERR "found /System/Library/Java/Extensions/j3dcore.jar\n" if ($options{debug});
 		$hash = {};
 		$hash->{package}     = "system-java3d";
-		$hash->{status}      = "install ok installed";
+		$hash->{status}      = STATUS_PRESENT;
 		$hash->{version}     = "0-1";
 		$hash->{description} = "[virtual package representing Java3D]";
 		$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
@@ -228,7 +233,7 @@ sub initialize {
 		print STDERR "found /System/Library/Java/Extensions/jai_core.jar\n" if ($options{debug});
 		$hash = {};
 		$hash->{package}     = "system-javaai";
-		$hash->{status}      = "install ok installed";
+		$hash->{status}      = STATUS_PRESENT;
 		$hash->{version}     = "0-1";
 		$hash->{description} = "[virtual package representing Java Advanced Imaging]";
 		$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage";
@@ -248,7 +253,7 @@ sub initialize {
 	if (defined ($cctools_version)) {
 		$hash = {};
 		$hash->{package} = "cctools";
-		$hash->{status} = "install ok installed";
+		$hash->{status} = STATUS_PRESENT;
 		$hash->{version} = $cctools_version."-1";
 		$hash->{description} = "[virtual package representing the developer tools]";
 		$hash->{builddependsonly} = "true";
@@ -259,7 +264,7 @@ sub initialize {
 	if ($cctools_single_module) {
 		$hash = {};
 		$hash->{package} = "cctools-single-module";
-		$hash->{status} = "install ok installed";
+		$hash->{status} = STATUS_PRESENT;
 		$hash->{version} = $cctools_single_module."-1";
 		$hash->{description} = "[virtual package, your dev tools support -single_module]";
 		$hash->{builddependsonly} = "true";
@@ -277,7 +282,7 @@ sub initialize {
 					if ($version eq "2.95.2") {
 						$hash = {};
 						$hash->{package} = "gcc2";
-						$hash->{status} = "install ok installed";
+						$hash->{status} = STATUS_PRESENT;
 						$hash->{version} = "$version-1";
 						$hash->{description} = "[virtual package representing the gcc $version compiler]";
 						$hash->{homepage} = "http://fink.sourceforge.net/faq/comp-general.php?phpLang=en#gcc2";
@@ -287,7 +292,7 @@ sub initialize {
 					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
 					$hash = {};
 					$hash->{package} = "gcc$shortversion";
-					$hash->{status} = "install ok installed";
+					$hash->{status} = STATUS_PRESENT;
 					$hash->{version} = "$version-1";
 					$hash->{description} = "[virtual package representing the gcc $version compiler]";
 					$hash->{builddependsonly} = "true";
@@ -306,7 +311,7 @@ sub initialize {
 	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
 	   $hash = {};
 	   $hash->{package} = "gimp-print-shlibs";
-	   $hash->{status} = "install ok installed";
+	   $hash->{status} = STATUS_PRESENT;
 	   $hash->{version} = "4.2.5-1";
 	   $hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
        $self->{$hash->{package}} = $hash;
@@ -442,7 +447,7 @@ sub initialize {
 					if (exists $provides->{$pkg}) {
 						$self->{$pkg} = {
 							'package'     => $pkg,
-							'status'      => "install ok installed",
+							'status'      => STATUS_PRESENT,
 							'version'     => "2:${xver}-2",
 							'description' => "[placeholder for user installed x11]",
 							'homepage'    => "http://fink.sourceforge.net/faq/usage-general.php?phpLang=en#virtpackage",
@@ -484,10 +489,13 @@ sub query_package {
 		return 0;
 	}
 	$hash = $self->{$pkgname};
-	if (not exists $hash->{version}) {
+	if (not exists $hash->{status} or not exists $hash->{version}) {
 		return 0;
 	}
-	return $hash->{version};
+	if ($hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
+		return $hash->{version};
+	}
+	return 0;
 }
 
 ### retrieve whole list with versions
