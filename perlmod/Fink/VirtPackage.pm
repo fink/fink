@@ -73,13 +73,16 @@ sub initialize {
 	# Now the Mac OS X version
 	$macosx_version = 0;
 	if (-x "/usr/bin/sw_vers") {
-		$dummy = open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
-		while (<SW_VERS>) {
-			chomp;
-			if (/(ProductVersion\:)\s*([^\s]*)/) {
-				$macosx_version = $2;
-				last;
+		if (open(SW_VERS, "/usr/bin/sw_vers |")) {
+			while (<SW_VERS>) {
+				if (/(ProductVersion\:)\s*([^\s]*)/) {
+					$macosx_version = $2;
+					last;
+				}
 			}
+			close(SW_VERS);
+		} else {
+			die "Couldn't determine system version: $!\n";
 		}
 	}
 
@@ -137,34 +140,34 @@ sub initialize {
 	if ($cctools_single_module) {
 		$hash = {};
 		$hash->{package} = "cctools-single-module";
-        $hash->{status} = "install ok installed";
+		$hash->{status} = "install ok installed";
 		$hash->{version} = $cctools_single_module."-1";
 		$hash->{description} = "[virtual package, your dev tools support -single_module]";
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
 	}
-	if (-f '/usr/X11R6/lib/libX11.6.dylib' ) #RANGERFIXME is .6.dylib okay for all X11R6 products?
+	if ( -f '/usr/X11R6/lib/libX11.6.dylib' )
 	{
-		# check the status file
-		if ((Fink::Status->query_package('system-xfree86') eq 0) &&
-		    (Fink::Status->query_package('xfree86-base') eq 0) &&
-		    (Fink::Status->query_package('xfree86-rootless') eq 0) &&
-		    (Fink::Status->query_package('xfree86-base-threaded') eq 0) &&
-		    (Fink::Status->query_package('system-xfree86-43') eq 0) &&
-		    (Fink::Status->query_package('system-xfree86-42') eq 0) &&
-		    (Fink::Status->query_package('xfree86-base-shlibs') eq 0) &&
-		    (Fink::Status->query_package('xfree86') eq 0) &&
-		    (Fink::Status->query_package('system-xtools') eq 0) &&
-		    (Fink::Status->query_package('xfree86-base-threaded-shlibs') eq 0) &&
-		    (Fink::Status->query_package('xfree86-rootless-shlibs') eq 0))
+		# check the status of xfree86 packages
+		my $packagecount = 0;
+		for my $packagename ('system-xfree86', 'xfree86-base', 'xfree86-rootless',
+			'xfree86-base-threaded', 'system-xfree86-43', 'system-xfree86-42',
+			'xfree86-base-shlibs', 'xfree86', 'system-xtools',
+			'xfree86-base-threaded-shlibs', 'xfree86-rootless-shlibs',
+			'xfree86-rootless-threaded-shlibs')
 		{
-			my ($xver,$xvermaj,$xvermin,$xverrev) = check_x11_version();
-			if (defined $xver)
+			$packagecount++ if (Fink::Status->query_package($packagename));
+		}
+
+		# if no xfree86 packages are installed, put in our own placeholder
+		if ($packagecount == 0) {
+			my ($xver, $xvermaj, $xvermin, $xverrev) = check_x11_version();
+			if (defined $xver and $xvermaj == 4)
 			{
 				$hash = {};
 				$hash->{package} = "system-xfree86";
-		       $hash->{status} = "install ok installed";
-				$hash->{version} = "1:1.0-1";
+				$hash->{status} = "install ok installed";
+				$hash->{version} = "2:${xvermaj}.${xvermin}-1";
 				$hash->{description} = "[placeholder for user installed x11]";
 				$self->{$hash->{package}} = $hash;
 				$hash = {};	
@@ -238,8 +241,7 @@ sub list {
 		$hash = $self->{$pkgname};
 		next unless exists $hash->{version};
 
-		$newhash = { 'package' => $pkgname,
-								 'version' => $hash->{version} };
+		$newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
 		foreach $field (qw(depends provides conflicts maintainer description status builddependsonly)) {
 			if (exists $hash->{$field}) {
 				$newhash->{$field} = $hash->{$field};
@@ -253,33 +255,33 @@ sub list {
 
 ### Check the installed x11 version
 sub check_x11_version {
-	# RANGERFIXME this is called for every invocation of fink/apt/dpkg in some cases, make me faster 
-	# and better :)
-	if ((! -f '/usr/X11R6/bin/xterm') or
-	    (! -f '/usr/X11R6/bin/xrdb') or
-	    (! -f '/usr/X11R6/bin/rman') or
+	if (
 	    (! -f '/usr/X11R6/lib/libX11.dylib') or
-	    (! -f '/usr/X11R6/lib/libXpm.dylib') or
-	    (! -f '/usr/X11R6/lib/libXaw.dylib') or
 	    (! -f '/usr/X11R6/include/X11/Xlib.h') or
-	    ( -e '/usr/X11R6/lib/libapplexp.1.dylib') or
-	    ( -e '/usr/X11R6/lib/tenon') or
 	    ((! -x '/usr/X11R6/bin/XDarwin') and
 	    (! -x '/usr/X11R6/bin/Xquartz')))
 	{
-		return undef;
+		return;
 	}
-	# RANGERFIXME eek, I am crap at perl regexes
-	my $XF_VERSION=`find /usr/X11R6/man -type f | xargs grep "Version.*XFree86" 2>/dev/null | /usr/bin/head -1`;
-	$XF_VERSION =~ s,^.*Version\S* ([^\s]+) .*$,$1,;
-	chomp $XF_VERSION;
-	my $XF_MAJOR = $XF_VERSION;
-	$XF_MAJOR =~ s/^([^\.]+).*$/$1/;
-	my $XF_MINOR = $XF_VERSION;
-	$XF_MINOR =~ s/^[^\.]+\.([^\.]+).*$/$1/;
-	my $XF_REVISION = $XF_VERSION;
-	$XF_REVISION =~ s/^[^\.]+\.[^\.]+\.([^\$]*)/$1/;
-	return ($XF_VERSION,$XF_MAJOR,$XF_MINOR,$XF_REVISION);
+	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
+	if (open(XTERM, "/usr/X11R6/man/man1/xterm.1")) {
+		while (<XTERM>) {
+			if (/^.*Version\S* ([^\s]+) .*$/) {
+				$XF_VERSION = $1;
+				@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 3);
+				last;
+			}
+		}
+		close(XTERM);
+		if (not defined $XF_VERSION) {
+			warn "could not determine XFree86 version number\n";
+			return;
+		}
+	} else {
+		warn "could not read xterm.1: $!\n";
+		return;
+	}
+	return ($XF_VERSION, @XF_VERSION_COMPONENTS);
 }
 ### EOF
 1;

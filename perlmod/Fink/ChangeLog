@@ -1,3 +1,7 @@
+2003-09-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Some cleanup/performance updates to the X11 detect.
+
 2003-09-08  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* VirtPackage.pm: Autodetect X11 (I hope, maybe, Please test/fix)
