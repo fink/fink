@@ -213,7 +213,7 @@ sub rm_f {
 	foreach my $file (@files) {
 		next unless lstat $file;
 		next if unlink($file);
-		chmod(0777,$file);
+		chmod(0777,$file);     # Why? A file's perm's don't affect unlink
 		next if unlink($file);
 	
 		$nok = 1;
