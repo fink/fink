@@ -22,7 +22,6 @@
 package Fink::Services;
 
 use Fink::Config qw($config $basepath);
-use FindBin;
 
 use strict;
 use warnings;

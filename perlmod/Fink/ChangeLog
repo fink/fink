@@ -1,5 +1,7 @@
 2001-09-03  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Services.pm: Removed obsolete FindBin import.
+
 	* Package.pm: Enable on-demand loading of package descriptions
 	through require_packages().
 	* Engine.pm: Use require_packages() for on-demand loading of
