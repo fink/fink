@@ -402,7 +402,7 @@ sub execute {
 	my $quiet = shift || 0;
 	my ($commandname);
 
-	return if ($cmd =~ /(^\s*$)|(^\s*#)/); # Ignore empty commands and comments
+	return if ($cmd =~ /(^\s*\Z)|(^\s*\#)/); # Ignore empty commands & comments
 	if (not $quiet) {
 		print "$cmd\n";
 	}

@@ -1,3 +1,10 @@
+2004-11-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, CLI.pm: More comprehensive trapping of SIGINT.
+	* NetAccess.pm, Package.pm, Services.pm, Validation.pm: Use \#
+	instead of # and \Z instead of $ in some regex to make emacs paren
+	balancer happy.
+
 2004-11-12  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Refactored gathering of user input. All prompt_*() now

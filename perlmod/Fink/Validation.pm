@@ -765,7 +765,7 @@ sub validate_info_file {
 			while (defined($patch_file_content=<INPUT>)) {
 				# only check lines being added (and skip diff header line)
 				next unless $patch_file_content =~ /^\+(?!\+\+ )/;
-				if ($patch_file_content =~ /\/sw([\s\/]|$)/) {
+				if ($patch_file_content =~ /\/sw([\s\/]|\Z)/) {
 					print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
 					$looks_good = 0;
 					last;

@@ -501,17 +501,10 @@ sub scan {
 	@filelist = ();
 	$wanted =
 		sub {
-			if (-f and not /^[\.#]/ and /\.info$/) {
+			if (-f and not /^[\.\#]/ and /\.info$/) {
 				push @filelist, $File::Find::fullname;
 			}
 		};
-
-=pod
-
-    This line is a dumb hack to keep emacs paren balancing happy }
-
-=cut
-
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
 
 	foreach $filename (@filelist) {

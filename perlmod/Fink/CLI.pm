@@ -336,7 +336,6 @@ sub get_input {
 
 	# get input, with optional timeout functionality
 	my $answer = eval {
-		local $SIG{INT}  = sub { die "SIG$_[0]\n"; };  # control-C
 		local $SIG{ALRM} = sub { die "SIG$_[0]\n"; };  # alarm() expired
 		alarm $timeout;  # alarm(0) means cancel the timer
 		my $answer = <STDIN>;
@@ -347,9 +346,7 @@ sub get_input {
 	# deal with error conditions raised by eval{}
 	if (length $@) {
 		print "\n";   # move off input-prompt line
-		if ($@ eq "SIGINT\n") {
-			die "User interrupt\n";
-		} elsif ($@ eq "SIGALRM\n") {
+		if ($@ eq "SIGALRM\n") {
 			print "TIMEOUT: using default answer.\n";
 		} else {
 			die $@;   # something else happened, so just propagate it

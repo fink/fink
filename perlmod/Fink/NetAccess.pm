@@ -109,7 +109,7 @@ sub fetch_url_to_file {
 	my ($path, $basename, $masterpath);
 
 	$mirrorindex = 0;
-	if ($origurl =~ m#^mirror\:(\w+)\:(.*?)([^/]+$)#g) {
+	if ($origurl =~ m/^mirror\:(\w+)\:(.*?)([^/]+\Z)/g) {
 		$mirrorname = $1;
 		$path = $2;
 		$basename = $3;
@@ -128,7 +128,7 @@ sub fetch_url_to_file {
 		}
 	} elsif ($origurl =~  m|^file://   			
 							(.*?)						# (optional) Path into $1
-							([^/]+$)   					# Tarball into $2
+							([^/]+\Z)  					# Tarball into $2
 					 	 |x  ) { 
 		# file:// URLs
 		$path = "file://$1";
@@ -145,7 +145,7 @@ sub fetch_url_to_file {
 		}
 	} elsif ($origurl =~  m|^([^:]+://[^/]+/)			# Match http://domain/ into $1
 							(.*?)						# (optional) Path into $2
-							([^/]+$)   					# Tarball into $3
+							([^/]+\Z)  					# Tarball into $3
 					 	 |x  ) { 
 		# Not a custom mirror, parse a full URL
 		$path = $2;

@@ -202,7 +202,9 @@ sub process {
 	if ($pkgflag) {
 		Fink::Package->require_packages();
 	}
+	$::SIG{INT} = sub { die "User interrupt.\n" };
 	eval { &$proc(@_); };
+	$::SIG{INT} = 'DEFAULT';
 	if ($@) {
 		print "Failed: $@";
 		return $? || 1;
