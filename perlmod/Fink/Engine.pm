@@ -92,6 +92,7 @@ our %commands =
 	  'splits'            => [\&cmd_splitoffs,         1, 0],
 	  'showparent'        => [\&cmd_showparent,        1, 0],
 	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0],
+	  'show-deps'         => [\&cmd_show_deps,         1, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -1942,6 +1943,114 @@ EOF
 			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);
 		}
 	}
+}
+
+# display the dependencies "from a user's perspective" of a given package
+sub cmd_show_deps {
+	my( $field, $pkglist, $did_print );  # temps used in dep-listing loops
+
+	my @plist = &expand_packages(@_);
+	if ($#plist < 0) {
+		die "no package specified for command 'show-deps'!\n";
+	}
+
+	print "\n";
+
+	foreach my $pkg (@plist) {
+		my @relatives = ();
+		if (exists $pkg->{_relatives}) {
+			@relatives = @{$pkg->{_relatives}};
+		}
+
+		printf "Package: %s (%s)\n", $pkg->get_name(), $pkg->get_fullversion();
+
+		print "To install the compiled package...\n";
+
+		print "  The following other packages (and their dependencies) must be installed:\n";
+		&show_deps_display_list(
+			[qw/ Depends Pre-Depends /],
+			[ $pkg ],
+			0
+		);
+		
+		print "  The following other packages must not be installed:\n";
+		&show_deps_display_list(
+			[qw/ Conflicts /],
+			[ $pkg ],
+			0
+		);
+
+		print "To compile this package from source...\n";
+
+		print "  The following packages are also compiled at the same time:\n";
+		if (@relatives) {
+			foreach (@relatives) {
+				printf "    %s (%s)\n", $_->get_name(), $_->get_fullversion();
+			}
+		} else {
+			print "    [none]\n";
+		}
+
+		print "  The following other packages (and their dependencies) must be installed:\n";
+		&show_deps_display_list(
+			[qw/ Depends Pre-Depends BuildDepends /],
+			[ $pkg, @relatives ],
+			1
+		);
+
+		print "  The following other packages must not be installed:\n";
+		&show_deps_display_list(
+			[qw/ Conflicts BuildConflicts /],
+			[ $pkg, @relatives ],
+			1
+		);
+
+		print "\n";
+	}
+}
+
+# pretty-print a set of PkgVersion::pkglist (each "or" group on its own line)
+# pass:
+#   ref to list of field names
+#   ref to list of PkgVersion objects
+#   boolean whether to exclude packages themselves when printing
+sub show_deps_display_list {
+	my $fields = shift;
+	my $pkgs = shift;
+	my $exclude_selves = shift;
+
+	my $family_regex;
+	if ($exclude_selves) {
+		# regex for any ("or") package name from the given pkgs
+		$family_regex = join '|', map { qr/\Q$_\E/i } map { $_->get_name() } (@$pkgs);
+	}
+
+	my $field_value;    # used in dep processing loop (string from pkglist())
+
+	my $did_print = 0;  # did we print anything at all?
+	foreach my $field (@$fields) {
+		foreach (@$pkgs) {
+			next unless defined( $field_value = $_->pkglist($field) );
+			foreach (split /\s*,\s*/, $field_value) {
+				# take each requested field of each requested pkg
+				# and parse apart "and"-separated "or" groups
+
+				if (defined $family_regex) {
+					# optionally remove own family from build-time deps
+					while (s/(\A|\|)\s*($family_regex)\s*(\(.*?\))?\s*(\||\Z)/|/) {};
+					s/^\s*\|\s*//;
+					s/\s*\|\s*$//;
+				}
+
+				if (length $_) {
+					printf "    %s\n", $_;
+					$did_print++;
+				}
+			}
+		}
+	}
+	print "    [none]\n" unless $did_print;
+
 }
 
 ### EOF

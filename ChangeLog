@@ -1,3 +1,7 @@
+2004-09-28  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Implemented 'fink show-deps'.
+
 2004-09-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* pathsetup.sh.in: new version which works for both CLI and GUI

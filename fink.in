@@ -116,6 +116,7 @@ Common commands:
   scanpackages - rescans the list of binary packages on the system
   cleanup      - removes obsolete package files if newer versions are available
   dumpinfo     - show how fink parses parts of a package's .info file
+  show-deps    - list run-time and compile-time package dependencies
 
 Options:
   -h, --help     - display this help text
