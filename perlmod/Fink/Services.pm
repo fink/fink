@@ -46,7 +46,7 @@ BEGIN {
 					  &version_cmp &latest_version &sort_versions
 					  &parse_fullversion
 					  &collapse_space
-					  &pkglist2lol &lol2pkglist
+					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
@@ -981,6 +981,36 @@ sub lol2pkglist {
 	}
 
 	return $pkglist;
+}
+
+=item cleanup_lol
+
+	cleanup_lol $struct;
+
+Given a ref to a list of lists of pkgs, remove useless entries from
+the top-level list:
+
+    Null entries (undef)
+
+    Refs to lists representing duplicate OR clusters (first one found
+    is kept)
+
+=cut
+
+sub cleanup_lol {
+	my $struct = shift;
+
+	# blank out duplicate clusters
+	my %seen;
+	foreach (@$struct) {
+		next unless defined $_;
+		undef $_ if $seen{join '|', @$_}++;
+	}
+
+	# squeeze out nulls
+	# make sure $struct is still ref to same data object!
+	my @clusters = grep { defined $_ } @$struct;
+	@$struct = @clusters;
 }
 
 =item file_MD5_checksum
