@@ -22,7 +22,7 @@
 
 package Fink::Status;
 
-use Fink::Config qw($config $basepath $darwin_version $macosx_version);
+use Fink::Config qw($config $basepath $darwin_version $macosx_version $cctools_version);
 
 use strict;
 use warnings;
@@ -81,6 +81,17 @@ sub initialize {
 	$hash->{description} = "[virtual package representing the system]";
 	$self->{$hash->{package}} = $hash;
   }
+
+  # create dummy object for cctools version, if version was found in Config.pm
+  if (defined ($cctools_version)) {
+        $hash = {};
+        $hash->{package} = "cctools";
+        $hash->{status} = "install ok installed";
+        $hash->{version} = $cctools_version."-1";
+        $hash->{description} = "[virtual package representing the developer tools]";
+        $hash->{builddependsonly} = "true";
+        $self->{$hash->{package}} = $hash;
+    }
 
   $self->read();
 }
