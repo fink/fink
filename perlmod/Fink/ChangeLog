@@ -1,3 +1,7 @@
+2001-03-30  Christoph Pfisterer  <cp@chrisp.de>
+
+	* FinkVersion.pm: Bumped version number to 0.1.7.
+
 2001-03-28  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (phase_install): Removes build dir after
