@@ -1,3 +1,7 @@
+2005-1-5  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: delete expected tempfile.
+
 2004-12-30  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: rework a test to avoid using "touch" on

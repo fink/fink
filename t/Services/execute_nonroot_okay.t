@@ -72,7 +72,7 @@ cmp_ok( &execute("touch $tmpdir/f3", nonroot_okay=>0),
      Fink::Config::set_options( {'build_as_nobody' => 1} );
      skip "You must be root for this test", 1 if $> != 0;
      # this touch should fail noisily, so redirect
-     cmp_ok( &execute("touch $tmpdir/f5 > /dev/null 2>&1", nonroot_okay=>1),
+     cmp_ok( &execute("touch $tmpdir/f5 > /dev/null 2>&1", nonroot_okay=>1, delete_tempfile=>1),
 	     '!=', 0,
 	     'requires normal user but build_as_nobody enabled'
 	   );
