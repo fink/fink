@@ -201,6 +201,17 @@ sub is_any_installed {
 	return 0;
 }
 
+sub is_any_present{
+	my $self = shift;
+	my ($version);
+
+	foreach $version (keys %{$self->{_versions}}) {
+		return 1
+			if $self->{_versions}->{$version}->is_present();
+	}
+	return 0;
+}
+
 ### get version object by exact name
 
 sub get_version {

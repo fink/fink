@@ -1,3 +1,7 @@
+2003-11-19  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* fink.conf.5.in: Document the new MatchPackageRegEx.
+	
 2003-11-19  Max Horn <max@quendi.de>
 
 	* fink.info.in: Synced with regular fink.info file.

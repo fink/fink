@@ -1,3 +1,11 @@
+2003-11-19  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Package.pm (is_any_present): Add new subroutine, returns 1 if a deb
+	is available locally, 0 if not.
+	* Engine.pm (real_install): Allow use of a regex in fink.conf to auto-
+	choose which package to install. When asking the user to make a choice
+	set the selection to an available deb, if there is only one.
+
 2003-11-18  Michael G Schwern  <schwern@pobox.com>
 
 	* Package.pm: Write the new index atomicly to avoid a corrupted

@@ -1066,24 +1066,51 @@ sub real_install {
 					}
 				}
 			}
-
-			if ($found != 1) {
+			if (not $found) {
+			        # See if the user has a regexp to match in fink.conf
+			        my $matchstr = $config->param("MatchPackageRegEx");
+				my $matchcount =0;
+				my $usename;
+				if (defined $matchstr) {
+					foreach $dname (@candidates) {
+						if ( $dname =~ $matchstr ) {
+							$matchcount++;
+							$usename = $dname;
+						}
+					}
+					if (1 == $matchcount ) {
+						$dname = $usename;
+						$found = 1;
+					}
+				}
+			}
+			if (not $found) {
 				# let the user pick one
 
 				my $labels = {};
+				my $pkgindex = 1;
+				my $choice = 1;
+				my $founddebcnt = 0;
 				foreach $dname (@candidates) {
 					my $package = Fink::Package->package_by_name($dname);
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
 					my $description = $vo->get_shortdescription(60);
 					$labels->{$dname} = "$dname: $description";
+					if ($package->is_any_present()) {
+						$choice = $pkgindex;
+						$founddebcnt++;
+				   }
+				   $pkgindex++;
+		        }
+		        if ($founddebcnt > 1) {
+				   $choice = 1; # Do not select anything if more than one choice is available
 				}
-
 				print "\n";
 				&print_breaking("fink needs help picking an alternative to satisfy ".
 								"a virtual dependency. The candidates:");
 				$dname =
-					&prompt_selection("Pick one:", 1, $labels, @candidates);
+					&prompt_selection("Pick one:", $choice, $labels, @candidates);
 			}
 
 			# the dice are rolled...
