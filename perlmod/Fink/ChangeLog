@@ -1,3 +1,59 @@
+2005-02-21  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Shlibs.pm: Added last two updates to shlibs.db calls
+
+2005-02-21  Daniel Macks  <dmacks@netspace.org>
+
+        * Package.pm: overhaul search_comparedb: stop as soon as find one
+	newer file, use piped open() so don't have to wait for `` to
+	finish before beginning to process outout.
+
+2005-02-21  Daniel Macks  <dmacks@netspace.org>
+
+        * Package.pm: overhaul update_db, including warning immediately if
+	cannot update cache
+
+2005-02-20  Daniel Macks  <dmacks@netspace.org>
+
+        * Engine.pm: backing out 'snapshot' until after 0.24
+
+2005-02-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: dpkg script #! test: fix fieldnames, be louder if
+	mismatch.
+
+2005-02-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Also store $timestamp in _lockpkg; *always*
+	verify timestamp before removing lockpkg.
+
+2005-02-17  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: if buildlock installation fails, only remove
+	residue if it is from the same lock.
+
+2005-02-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Catch %n (and related) in Description
+
+2005-02-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: be sure that the pre-expansion of conditionals
+	is only applied to ones containing "%{Distribution}"
+	* Bootstrap.pm, SelfUpdate.pm: move the list of additional packages 
+	to be installed to a new function in Bootstrap.pm, which can be
+	shared by both modules.  Add a warning when "fink selfupdate" is
+	run with an unsupported version of perl.
+	* Bootstrap.pm: update modules needed for bootstrapping in 10.2-gcc3.3
+	* Bootstrap.pm: remove "storable-pm" from the list of additional
+	packages
+
+2005-02-15  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: add new general-purpose get_depends method,
+	rewrite set_buildlock to use it
+	* Engine.pm: rewrite show-deps functions to use get_depends
+
 2005-02-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* NetAccess.pm: Remove code whose only obvious purpose is to cause

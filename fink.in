@@ -110,7 +110,6 @@ Common commands:
   scanpackages - rescans the list of binary packages on the system
   cleanup      - reclaims disk space used by temporary or obsolete files
   show-deps    - list run-time and compile-time package dependencies
-  snapshot     - create a file detailing all of your installed packages
 
 Common options:
   -h, --help            - display this help text

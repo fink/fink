@@ -24,6 +24,7 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &version_cmp);
+use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $distribution binary_requested);
 use Fink::NetAccess qw(&fetch_url);
@@ -529,7 +530,11 @@ sub finish {
 	@elist = Fink::Package->list_essential_packages();
 
 	# add some non-essential but important ones
-	push @elist, qw(apt apt-shlibs storable-pm bzip2-dev gettext-dev libiconv-dev);
+    my ($package_list, $perl_is_supported) = additional_packages();
+
+	print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  Updating anyway, but you may encounter problems.\n") unless $perl_is_supported;
+
+	push @elist, @{$package_list};
 
 	# update them
 	Fink::Engine::cmd_install(@elist);	

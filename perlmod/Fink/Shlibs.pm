@@ -27,7 +27,7 @@ package Fink::Shlibs;
 
 use Fink::Base;
 use Fink::Services qw(&version_cmp);
-use Fink::CLI qw(&print_breaking);
+use Fink::CLI qw(&get_term_width &print_breaking);
 use Fink::Config qw($config $basepath);
 use Fink::PkgVersion;
 use Fink::Command qw(mkdir_p);
@@ -475,12 +475,14 @@ sub get_all_shlibs {
 	my $forceoff = shift || 0;
 	my ($time) = time;
 	my ($shlibname);
-	my ($db) = "shlibs.db";
+
+	my $dbfile = "$basepath/var/db/shlibs.db";
+	my $conffile = "$basepath/etc/fink.conf";
 
 	$self->forget_shlibs();
 	
 	# If we have the Storable perl module, try to use the package index
-	if (-e "$basepath/var/db/$db") {
+	if (-e $dbfile) {
 		eval {
 			require Storable; 
 
@@ -491,9 +493,9 @@ sub get_all_shlibs {
 			# we should regenerate the index based on its
 			# modification date.
 			if (not $config->param_boolean("NoAutoIndex")) {
-				$shlib_db_mtime = (stat("$basepath/var/db/$db"))[9];
-
-				if (((lstat("$basepath/etc/fink.conf"))[9] > $shlib_db_mtime) or ((stat("$basepath/etc/fink.conf"))[9] > $shlib_db_mtime)) {
+				$shlib_db_mtime = (stat($dbfile))[9];
+				if (((lstat($conffile))[9] > $shlib_db_mtime)
+					or ((stat($conffile))[9] > $shlib_db_mtime)) {
 					$shlib_db_outdated = 1;
 				} else {
 					$shlib_db_outdated = &search_comparedb( "$basepath/var/lib/dpkg/info" );
@@ -503,7 +505,7 @@ sub get_all_shlibs {
 			# If the index is not outdated, we can use it,
 			# and thus safe a lot of time
 			if (not $shlib_db_outdated) {
-				$shlibs = Storable::lock_retrieve("$basepath/var/db/$db");
+				$shlibs = Storable::lock_retrieve($dbfile);
 			}
 		}
 	}
@@ -516,53 +518,71 @@ sub get_all_shlibs {
 	$have_shlibs = 1;
 
 	unless ($forceoff) {
-		printf "Information about %d shared libraries read in %d seconds.\n",
-			scalar(values %$shlibs), (time - $time);
+		if (&get_term_width) {
+			printf STDERR "Information about %d shared libraries read in %d seconds.\n",
+				scalar(values %$shlibs), (time - $time);
+		}
 	}
 }
 
-### scan for info files and compare to $db_mtime
+### scan for info files and compare to $db_shlibs_mtime
+
+# returns true if any are newer than $db_shlibs_mtime, false if not
 sub search_comparedb {
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
-	my $db = "shlibs.db";
+	my $dbfile = "$basepath/var/db/shlibs.db";
 
 	# Using find is much faster than doing it in Perl
-	return
-		(grep !m{/CVS/},
-		`/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.shlibs' -newer $basepath/var/db/$db`)
-		? 1 : 0;
+	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.shlibs' -newer $dbfile |"
+		or die "/usr/bin/find failed: $!\n";
+
+	# If there is anything on find's STDOUT, we know at least one
+	# .info is out-of-date. No reason to check them all.
+	my $file_found = defined <NEWER_FILES>;
+
+	close NEWER_FILES;
+
+	return $file_found;
 }
 
 ### read shlibs and update the database, if needed and we are root
 sub update_shlib_db {
 	my $self = shift;
 	my ($dir);
-	my $db = "shlibs.db";
+
+	# check if we should update index cache
+	my $writable_cache = 0;
+	eval "require Storable";
+	if ($@) {
+		my $perlver = sprintf '%*vd', '', $^V;
+		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the shlib cache. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
+	} elsif ($> != 0) {
+		&print_breaking_stderr( "Fink has detected that your shlib cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+	} else {
+		# we have Storable.pm and are root
+		$writable_cache = 1;
+	}
 
 	# read data from descriptions
-	print "Reading shared library info...\n";
+	if (&get_term_width) {
+		print STDERR "Reading shared library info...\n";
+	}
 	$dir = "$basepath/var/lib/dpkg/info";
 	$self->scan($dir);
 
-	eval {
-		require Storable; 
-		if ($> == 0) {
-			print "Updating shared library index... ";
-			unless (-d "$basepath/var/db") {
-				mkdir_p "$basepath/var/db" or
-					die "Error: Could not create directory $basepath/var/db";
-			}
-			Storable::lock_store($shlibs, "$basepath/var/db/$db.tmp");
-			rename "$basepath/var/db/$db.tmp", "$basepath/var/db/$db";
-			print "done.\n";
-		} else {
-			&print_breaking( "\nFink has detected that your shlib" .
-			" cache is out of date and needs an update, but does" .
-			" not have privileges to modify it. Please re-run" .
-			" fink as root, for example with a \"sudo fink" .
-			" index\" command.\n" );
+	if ($writable_cache) {
+		if (&get_term_width) {
+			print STDERR "Updating shared library index... ";
 		}
+		my $dbdir = "$basepath/var/db";
+		my $dbfile = "$dbdir/shlibs.db";
+		unless (-d $dbdir) {
+			mkdir($dbdir, 0755) || die "Error: Could not create directory $dbdir: $!\n";
+		}
+		Storable::lock_store($shlibs, "$dbfile.tmp");
+		rename "$dbfile.tmp", $dbfile or die "Error: could not activate temporary file $dbfile.tmp: $!\n";
+		print "done.\n";
 	};
 	$shlib_db_outdated = 0;
 }

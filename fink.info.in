@@ -3,7 +3,7 @@ Version: @VERSION@
 Revision: @REVISION@
 Depends: base-files
 Suggests: <<
- (%{Distribution} = 10.2-gcc3.3) term-readkey-pm560 
+ (%{Distribution} = 10.2-gcc3.3) term-readkey-pm560 | term-readkey-pm561
  (%{Distribution} = 10.3) term-readkey-pm581 
  (%{Distribution} = 10.4) term-readkey-pm586
 <<

@@ -398,10 +398,13 @@ sub scan_all {
 	my ($time) = time;
 	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
 
+	my $dbfile = "$basepath/var/db/fink.db";
+	my $conffile = "$basepath/etc/fink.conf";
+
 	Fink::Package->forget_packages();
 	
 	# If we have the Storable perl module, try to use the package index
-	if (-e "$basepath/var/db/fink.db") {
+	if (-e $dbfile) {
 		eval {
 			require Storable; 
 
@@ -411,9 +414,9 @@ sub scan_all {
 			# Unless the NoAutoIndex option is set, check whether we should regenerate
 			# the index based on its modification date and that of the package descs.
 			if (not $config->param_boolean("NoAutoIndex")) {
-				$db_mtime = (stat("$basepath/var/db/fink.db"))[9];			 
-				if (((lstat("$basepath/etc/fink.conf"))[9] > $db_mtime)
-					or ((stat("$basepath/etc/fink.conf"))[9] > $db_mtime)) {
+				$db_mtime = (stat($dbfile))[9];			 
+				if (((lstat($conffile))[9] > $db_mtime)
+					or ((stat($conffile))[9] > $db_mtime)) {
 					$db_outdated = 1;
 				} else {
 					$db_outdated = &search_comparedb( "$basepath/fink/dists" );
@@ -422,7 +425,7 @@ sub scan_all {
 			
 			# If the index is not outdated, we can use it, and thus save a lot of time
 			if (not $db_outdated) {
-				$packages = Storable::lock_retrieve("$basepath/var/db/fink.db");
+				$packages = Storable::lock_retrieve($dbfile);
 			}
 		}
 	}
@@ -480,15 +483,22 @@ sub scan_all {
 
 ### scan for info files and compare to $db_mtime
 
+# returns true if any are newer than $db_mtime, false if not
 sub search_comparedb {
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
 
 	# Using find is much faster than doing it in Perl
-	return
-	  (grep !m{/(CVS|binary-$debarch)/},
-	   `/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db`)
-		 ? 1 : 0;
+	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $basepath/var/db/fink.db |"
+		or die "/usr/bin/find failed: $!\n";
+
+	# If there is anything on find's STDOUT, we know at least one
+	# .info is out-of-date. No reason to check them all.
+	my $file_found = defined <NEWER_FILES>;
+
+	close NEWER_FILES;
+
+	return $file_found;
 }
 
 ### read the packages and update the database, if needed and we are root
@@ -496,6 +506,19 @@ sub search_comparedb {
 sub update_db {
 	shift;	# class method - ignore first parameter
 	my ($tree, $dir);
+
+	# check if we should update index cache
+	my $writable_cache = 0;
+	eval "require Storable";
+	if ($@) {
+		my $perlver = sprintf '%*vd', '', $^V;
+		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the package index. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
+	} elsif ($> != 0) {
+		&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+	} else {
+		# we have Storable.pm and are root
+		$writable_cache = 1;
+	}
 
 	# read data from descriptions
 	if (&get_term_width) {
@@ -509,23 +532,18 @@ sub update_db {
 		Fink::Package->update_aptgetable();
 	}
 	
-	eval {
-		require Storable; 
-		if ($> == 0) {
-			if (&get_term_width) {
-				print STDERR "Updating package index... ";
-			}
-			unless (-d "$basepath/var/db") {
-				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
-			}
-			Storable::lock_store ($packages, "$basepath/var/db/fink.db.tmp");
-			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
-			print "done.\n";
-		} else {
-			&print_breaking_stderr( "\nFink has detected that your package cache is out of date and needs" .
-				" an update, but does not have privileges to modify it. Please re-run fink as root," .
-				" for example with a \"fink index\" command.\n" );
+	if ($writable_cache) {
+		if (&get_term_width) {
+			print STDERR "Updating package index... ";
 		}
+		my $dbdir = "$basepath/var/db";
+		my $dbfile = "$dbdir/fink.db";
+		unless (-d $dbdir) {
+			mkdir($dbdir, 0755) || die "Error: Could not create directory $dbdir: $!\n";
+ 		}
+		Storable::lock_store ($packages, "$dbfile.tmp");
+		rename "$dbfile.tmp", $dbfile or die "Error: could not activate temporary file $dbfile.tmp: $!\n";
+		print "done.\n";
 	};
 	$db_outdated = 0;
 }
