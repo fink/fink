@@ -50,15 +50,15 @@ SplitOff: <<
   lib/libpanel.dylib.5
  <<
  Shlibs: <<
-  %p/lib/libform.5.dylib 6.0.0 %n (>= 5.3-1)
-  %p/lib/libmenu.5.dylib 6.0.0 %n (>= 5.3-1)
-  %p/lib/libncurses++.5.dylib 6.0.0 %n (>= 5.3-1)
-  %p/lib/libncurses.5.dylib 6.0.0 %n (>= 5.3-1)
-  %p/lib/libpanel.5.dylib 6.0.0 %n (>= 5.3-1)
-  %p/lib/libform.dylib.5 6.0.0 %n (>= 5.3-1)
-  %p/lib/libmenu.dylib.5 6.0.0 %n (>= 5.3-1)
-  %p/lib/libncurses.dylib.5 6.0.0 %n (>= 5.3-1)
-  %p/lib/libpanel.dylib.5 6.0.0 %n (>= 5.3-1)
+  %p/lib/libform.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libmenu.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libncurses++.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libncurses.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libpanel.5.dylib 6.0.0 %n (>= 5.3-12)
+  %p/lib/libform.dylib.5 6.0.0 %n (>= 5.3-12)
+  %p/lib/libmenu.dylib.5 6.0.0 %n (>= 5.3-12)
+  %p/lib/libncurses.dylib.5 6.0.0 %n (>= 5.3-12)
+  %p/lib/libpanel.dylib.5 6.0.0 %n (>= 5.3-12)
  <<
  DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
  Description: Shared libraries for ncurses package

@@ -76,8 +76,8 @@ SplitOff: <<
   Replaces: %N (<= 0.5.4-1)
   Files: lib/libapt-inst.1.0.0.dylib lib/libapt-pkg.3.2.0.dylib lib/libapt-inst.1.0.dylib lib/libapt-pkg.3.2.dylib
   Shlibs: <<
-    %p/lib/libapt-inst.1.0.dylib 1.0.0 %n (>= 0.5.4-5)
-    %p/lib/libapt-pkg.3.2.dylib 3.2.0 %n (>= 0.5.4-5)
+    %p/lib/libapt-inst.1.0.dylib 1.0.0 %n (>= 0.5.4-24)
+    %p/lib/libapt-pkg.3.2.dylib 3.2.0 %n (>= 0.5.4-24)
   <<
   DocFiles: COPYING* AUTHORS
 <<
