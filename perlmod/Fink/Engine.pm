@@ -89,6 +89,7 @@ our %commands =
 	  'check' => [\&cmd_validate, 0, 0],
 	  'checksums' => [\&cmd_checksums, 1, 0],
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
+	  'splits' => [\&cmd_splits, 1, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -1534,6 +1535,39 @@ sub expand_packages {
 		push @package_list, $package;
 	}
 	return @package_list;
+}
+
+### Display pkgs in an info file based on and pkg name
+
+sub cmd_splits {
+	my ($pkg, $package, @pkgs, $arg);
+
+	print "\n";
+	foreach $arg (@_) {
+		$package = Fink::PkgVersion->match_package($arg);
+		unless (defined $package) {
+			print "no package found for specification '$arg'!\n";
+			next;
+		}
+
+		@pkgs = Fink::PkgVersion->get_splitoffs($arg, 1, 1);
+		printf("%s has ", $pkgs[0]);
+		unless ($pkgs[1]) {
+			printf("no children.\n");
+		} else {
+			printf("%d child", $#pkgs);
+			if ($#pkgs > 1) {
+				print "ren";
+			}
+			print ":\n";
+			foreach $pkg (@pkgs) {
+				unless ($pkg eq $pkgs[0]) {
+					print "\t-> $pkg\n";
+				}
+			}
+		}
+		print "\n";
+	}
 }
 
 
