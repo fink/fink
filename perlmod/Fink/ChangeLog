@@ -1,3 +1,8 @@
+2005-02-03  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Change set_buildlock so that Depends are not
+	included. Implement get_family_parent().
+
 2005-02-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Notify/Growl.pm: add support for new images, and sticky defaults
