@@ -37,7 +37,7 @@ our @EXPORT_OK;
 
 
 # this is the one and only version number
-our $fink_version = "0.1.7";
+our $fink_version = "0.1.8";
 
 
 END { }       # module clean-up code here (global destructor)
