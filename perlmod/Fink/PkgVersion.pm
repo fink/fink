@@ -218,6 +218,15 @@ sub initialize {
       $self->add_splitoff($self->{'splitoff'.$i});
     }
   }
+
+  if (exists $self->{_splitoffs} and @{$self->{_splitoffs}} > 0) {
+    my ($splitoff, @sibling_list);
+    for $splitoff (@{$self->{_splitoffs}}) {
+      @sibling_list = ($self, grep {$_->get_name() ne $splitoff->get_name()} @{$self->{_splitoffs}});
+      $splitoff->{_relatives} = \@sibling_list;
+    }
+    $self->{_relatives} = $self->{_splitoffs};
+  }
 }
 
 ### expand percent chars in the given field, if that field exists

@@ -911,6 +911,33 @@ sub real_install {
       }
 
       if (not $found) {
+
+        # check if a sibling package has been marked for install
+        # if so, choose it instead of asking
+
+        my ($cand, $splitoff);
+        SIBCHECK: foreach $cand (@candidates) {
+          my $package = Fink::Package->package_by_name($cand);
+          my $lversion = &latest_version($package->list_versions());
+          my $vo = $package->get_version($lversion);
+
+	  if (exists $vo->{_relatives}) {
+	    foreach $splitoff (@{$vo->{_relatives}}) {
+	      # if the package is being installed, or is already installed,
+	      # auto-choose it
+	      if ( exists $deps{$splitoff->get_name()} ) {
+	        $dname = $cand;
+	        $found = 1;
+	      } elsif ( $splitoff->is_installed() ) {
+	        $dname = $cand;
+	        $found = 1;
+	      }
+	    }
+	  }
+        }
+      }
+
+      if (not $found) {
 	# let the user pick one
 
 	my $labels = {};
@@ -1057,7 +1084,6 @@ sub real_install {
 	next PACKAGELOOP if (($dep->[4] & 2) == 0);
       }
 
-      my $parent;
       my @batch_install;
       my $pkg;
 
@@ -1069,23 +1095,16 @@ sub real_install {
 
       next if $already_activated{$pkgname};
 
-      # Determine the splitoff parent of this package, if any (used later on)
-      if (exists $package->{_splitoffs} and @{$package->{_splitoffs}} > 0) {
-	$parent = $package;  # package is itself splitoff parent
-      } elsif (exists $package->{parent}) {
-	$parent = $package->{parent};  # package is a splitoff
-      }
-
       # Check whether package has to be (re)built. For normal packages that
       # means the user explicitly requested the rebuild; but for splitoffs
-      # and masters, we also have to check if any of their "relatives" is
-      # scheduled for rebuilding.
+      # and their parents, we also have to check if any of their "relatives"
+      # is scheduled for rebuilding.
       # But first, check if there is no .deb present - in that case we have
       # to build in any case.
       $to_be_rebuilt{$pkgname} = 0 unless exists $to_be_rebuilt{$pkgname};
       $to_be_rebuilt{$pkgname} |= not $package->is_present();
-      if (not $to_be_rebuilt{$pkgname} and defined $parent) {
-	foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
+      if (not $to_be_rebuilt{$pkgname} and exists $package->{_relatives}) {
+	foreach $pkg (@{$package->{_relatives}}) {
 	  next unless exists $to_be_rebuilt{$pkg->get_name()};
 	  $to_be_rebuilt{$pkgname} |= $to_be_rebuilt{$pkg->get_name()};
 	  last if $to_be_rebuilt{$pkgname}; # short circuit
@@ -1113,11 +1132,11 @@ sub real_install {
       
       # Mark the package and all its "relatives" as being rebuilt if we just
       # did perform a build - this way we won't rebuild packages twice when
-      # we process another splitoff of the same master.
+      # we process another splitoff of the same parent.
       # In addition, we check for the splitoffs whether they have to be reinstalled.
       # That is the case if they are currently installed and where rebuild just now.
-      if (defined $parent) {
-	foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
+      if (exists $package->{_relatives}) {
+	foreach $pkg (@{$package->{_relatives}}) {
 	  my $name = $pkg->get_name();
 	  $to_be_rebuilt{$name} = 0;
 	  next if $already_activated{$name};
