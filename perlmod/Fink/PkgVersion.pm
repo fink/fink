@@ -1382,12 +1382,11 @@ sub resolve_depends {
 				next;
 			}
 
-			push(@{$package->{_versionspecs}}, $versionspec) unless ($versionspec =~ /^\s*$/);
-
-			if ($versionspec) {
-				push @$altlist, $package->get_matching_versions($versionspec);
-			} else {
+			if ($versionspec =~ /^\s*$/) {
 				push @$altlist, $package->get_all_providers();
+			} else {
+				push @$altlist, $package->get_matching_versions($versionspec);
+				push(@{$package->{_versionspecs}}, $versionspec);
 			}
 		}
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
@@ -1434,7 +1433,7 @@ sub get_binary_depends {
 	$depspec1 = $self->pkglist_default("RunTimeDepends", "");
 	$depspec2 = $self->pkglist_default("Depends", "");
 
-	if ($depspec1 && $depspec2) {
+	if (length $depspec1 && length $depspec2) {
 		$depspec = $depspec1.", ".$depspec2;
 	} else {
 		$depspec = $depspec1.$depspec2
@@ -2331,7 +2330,7 @@ sub phase_build {
 	my ($ddir, $destdir, $control);
 	my ($scriptname, $scriptfile, $scriptbody);
 	my ($shlibsfile, $shlibsbody);
-	my ($conffiles, $listfile, $infodoc);
+	my ($conffiles, $listfile);
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
 
@@ -2671,28 +2670,43 @@ EOF
 		}
 
 		# add auto-generated parts
-		if ($self->has_param("InfoDocs")) {
+		if ($self->has_param("InfoDocs") and $scriptname eq "postinst" || $scriptname eq "prerm") {
+			my @infodocs = split(/\s+/, $self->param("InfoDocs"));
+			@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
+			my $infodir = '%p/share/info';
+
 			if ($scriptname eq "postinst") {
+
+				# FIXME: This seems brokenly implemented for @infodocs that are already absolute path
+				map { $_ = "$infodir/$_" unless $_ =~ /\//} @infodocs;
+
+				# FIXME: debian install-info seems to always omit all path components when adding
+
 				$scriptbody .= "\n\n# generated from InfoDocs directive\n";
-				$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
-				foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
-					next unless $infodoc;
-					$infodoc = " \%p/share/info/$infodoc" unless $infodoc =~ /\//;
-					$scriptbody .= "if [ -f %p/sbin/install-info ]; then\n";
-					$scriptbody .= "	%p/sbin/install-info --infodir=\%p/share/info $infodoc\n";
-					$scriptbody .= " elif [ -f %p/bootstrap/sbin/install-info ]; then\n";
-					$scriptbody .= "	%p/bootstrap/sbin/install-info --infodir=\%p/share/info $infodoc\n";
-					$scriptbody .= " fi\n";
-								}
+				$scriptbody .= "if [ -f $infodir/dir ]; then\n";
+				$scriptbody .= "\tif [ -f %p/sbin/install-info ]; then\n";
+				foreach (@infodocs) {
+					$scriptbody .= "\t\t%p/sbin/install-info --infodir=$infodir $_\n";
+				}
+				$scriptbody .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
+				foreach (@infodocs) {
+					$scriptbody .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir $_\n";
+				}
+				$scriptbody .= "\tfi\n";
 				$scriptbody .= "fi\n";
+
 			} elsif ($scriptname eq "prerm") {
+
+				# FIXME: this seems wrong for non-simple-filename $_ (since the dir only lists
+				# the filename component and could have same value in different dirs)
+
 				$scriptbody .= "\n\n# generated from InfoDocs directive\n";
-				$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
-				foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
-					next unless $infodoc;
-					$scriptbody .= "	%p/sbin/install-info --infodir=\%p/share/info --remove $infodoc\n";
+				$scriptbody .= "if [ -f $infodir/dir ]; then\n";
+				foreach (@infodocs) {
+					$scriptbody .= "\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
 				}
 				$scriptbody .= "fi\n";
+
 			}
 		}
 

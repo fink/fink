@@ -1,3 +1,8 @@
+2005-02-23  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Test length instead of logical value of strings.
+	Overhaul DocFiles handler.
+
 2005-02-23  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: removed old comments and fixed all print commands to use
@@ -5,7 +10,7 @@
 
 2005-02-23  Justin F. Hallett  <thesin@users.sourceforge.net>
 
-	* shlibs.pm: Adding changes to Storable calls from Benjamin Reed on
+	* Shlibs.pm: Adding changes to Storable calls from Benjamin Reed on
 	2005-02-22.
 
 2005-02-22  Daniel Macks  <dmacks@netspace.org>
