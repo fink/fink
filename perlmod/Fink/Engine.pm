@@ -1494,7 +1494,7 @@ sub real_install {
 
 	if ($willbuild) {
 		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) { 
-			print "\nWARNING: You are using a version of gcc which is known to produce incorrect\noutput from c++ code under certain circumstances.\n\nFor information about upgrading, see the Fink web site.\n\n" ;
+			&print_breaking("\nWARNING: You are using a version of gcc which is known to produce incorrect output from C++ code under certain circumstances.\n\nFor information about upgrading, see the Fink web site.\n\n");
 			sleep 10;
 		}
 	}
