@@ -1,11 +1,11 @@
 Package: gzip
 Version: 1.2.4a
-Revision: 7
+Revision: 6
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 39053e044b18ecd0627f80fbe7cfeaad
 Essential: yes
-Depends: {SHLIB_DEPS}, base-files
-Patch: %n.patch
+Depends: base-files
+Patch: %f.patch
 PatchScript: mv -f INSTALL INSTALL.txt
 CompileScript: <<
  ./configure %c

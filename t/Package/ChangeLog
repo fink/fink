@@ -1,0 +1,6 @@
+2005-01-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* duplicate_fullnames.t: Test for warnings upon encountering duplicate
+	full-names.
+	* duplicateduplicate_fullname_trees: Trees of .info files for testing.
+

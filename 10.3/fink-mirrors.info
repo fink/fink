@@ -1,15 +1,10 @@
 Package: fink-mirrors
-Version: 0.0.4
+Version: 0.22.1.1
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: edaaf174affcfd7ca5a17c71f9dacefa
-CustomMirror: <<
- Primary: http://west.dl.sourceforge.net/sourceforge/
- nam-US: http://us.dl.sourceforge.net/sourceforge/
- eur: http://eu.dl.sourceforge.net/sourceforge/
-<<
-Depends: {SHLIB_DEPS}, fink (>= 0.17.3-1)
+Source-MD5: f697bb021577813ac50ffec023629514
+Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|" < postinstall.pl.in > postinstall.pl
 InstallScript: ./install.sh %i
@@ -23,3 +18,10 @@ by fink to download sourcefiles.
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://fink.sourceforge.net/
+
+CustomMirror: <<
+ Primary: http://west.dl.sourceforge.net/sourceforge/
+ nam-US: http://us.dl.sourceforge.net/sourceforge/
+ eur: http://eu.dl.sourceforge.net/sourceforge/
+<<
+
