@@ -258,7 +258,10 @@ sub cmd_fetch_all {
   foreach $pname (Fink::Package->list_packages()) {
     $package = Fink::Package->package_by_name($pname);
     $version = &latest_version($package->list_versions());
-    $package->get_version($version)->phase_fetch();
+    $vo = $package->get_version($version);
+    if (defined $vo) {
+      $vo->phase_fetch();
+    }
   }
 }
 
@@ -269,7 +272,9 @@ sub cmd_fetch_all_missing {
     $package = Fink::Package->package_by_name($pname);
     $version = &latest_version($package->list_versions());
     $vo = $package->get_version($version);
-    $vo->phase_fetch(1);
+    if (defined $vo) {
+      $vo->phase_fetch(1);
+    }
   }
 }
 
