@@ -193,7 +193,9 @@ for a current list of known bugs.
 .\"
 .\"
 .Sh AUTHOR
-The principal author of is Christoph Pfisterer <cp@chrisp.de>.
+The principal author of 
+.Nm
+is Christoph Pfisterer <cp@chrisp.de>.
 .br
 This manpage was written by Max Horn <max@quendi.de>.
 .\"
