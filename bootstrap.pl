@@ -123,9 +123,9 @@ if ($> != 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
 	}
 	if ($answer eq "sudo") {
-		$cmd = "sudo $cmd";
+		$cmd = "/usr/bin/sudo $cmd";
 	} elsif ($answer eq "su") {
-		$cmd = "$cmd | su";
+		$cmd = "$cmd | /usr/bin/su";
 	} else {
 		print "ERROR: Can't continue as non-root.\n";
 		exit 1;
@@ -338,10 +338,10 @@ foreach $cmd (split(/\n/,$script)) {
 
 print "Copying package descriptions...\n";
 
-$script = "cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
+$script = "/bin/cp packages/*.info packages/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
 my $md5 = &file_MD5_checksum("$installto/src/fink-$packageversion.tar");
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-$script .= "chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
+$script .= "/usr/bin/sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$installto/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+$script .= "/bin/chmod 644 $installto/fink/dists/local/bootstrap/finkinfo/*.*\n";
 
 foreach $cmd (split(/\n/,$script)) {
 	next unless $cmd;		# skip empty lines

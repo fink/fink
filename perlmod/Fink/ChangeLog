@@ -1,5 +1,11 @@
 2003-11-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* Bootstrap.pm, Engine.pm, FinkVersion.pm.in, NetAccess.pm,
+	PkgVersion.pm, SelfUpdate.pm: just being pedantic, updating
+	our external calls to system versions, for safety.
+
+2003-11-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* Config.pm: Bomb if Distribution isn't set.
 
 2003-11-02  Daniel Macks  <dmacks@users.sourceforge.net>

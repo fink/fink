@@ -191,9 +191,9 @@ sub restart_as_root {
 	}
 
 	if ($method eq "sudo") {
-		$cmd = "sudo $cmd";
+		$cmd = "/usr/bin/sudo $cmd";
 	} elsif ($method eq "su") {
-		$cmd = "su root -c '$cmd'";
+		$cmd = "/usr/bin/su root -c '$cmd'";
 	} else {
 		die "Fink is not configured to become root automatically.\n";
 	}
@@ -488,7 +488,7 @@ sub cmd_scanpackages {
 		}
 
 		if (! -d $treedir) {
-			if (&execute("mkdir -p $treedir")) {
+			if (&execute("/bin/mkdir -p $treedir")) {
 				die "can't create directory $treedir\n";
 			}
 		}

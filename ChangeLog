@@ -1,7 +1,12 @@
+2003-11-03  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* bootstrap.pl bootstrap.sh postinstall.pl.in: just being pedantic,
+	updating our external calls to system versions, for safety.
+
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.16.0, which does
-	        not include the perl module changes from 2003-10-21
+	not include the perl module changes from 2003-10-21
 
 2003-10-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
@@ -246,7 +251,7 @@
 
 2003-01-05  Justin F. Hallett <thesin@users.sourceforge.net>
 
-        * fink.in:  Added description for purge option in show_help
+	* fink.in:  Added description for purge option in show_help
 
 2002-12-23  Dave Morrison <dmrrsn@users.sourceforge.net>
 

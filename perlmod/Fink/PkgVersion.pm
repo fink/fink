@@ -1050,14 +1050,14 @@ END
 	# remove dir if it exists
 	chdir "$buildpath";
 	if (-e $bdir) {
-		if (&execute("rm -rf $bdir")) {
+		if (&execute("/bin/rm -rf $bdir")) {
 			die "can't remove existing directory $bdir\n";
 		}
 	}
 
 	if ($self->{_type} eq "nosource") {
 		$destdir = "$buildpath/$bdir";
-		if (&execute("mkdir -p $destdir")) {
+		if (&execute("/bin/mkdir -p $destdir")) {
 			die "can't create directory $destdir\n";
 		}
 		return;
@@ -1101,12 +1101,12 @@ END
 									"continue" => "Don't download, use existing file" },
 								( "error", "redownload", "continuedownload", "continue" ));
 				if ($answer eq "redownload") {
-					&execute("rm -f $found_archive");
+					&execute("/bin/rm -f $found_archive");
 					$i--;
 					# Axel leaves .st files around for partial files, need to remove
 					if($config->param_default("DownloadMethod") =~ /^axel/)
 					{
-									&execute("rm -f $found_archive.st");
+									&execute("/bin/rm -f $found_archive.st");
 					}
 					next;		# restart loop with same tarball
 				} elsif($answer eq "error") {
@@ -1151,7 +1151,7 @@ END
 		$bzip2 = "bzip2";
 		$unzip = "unzip";
 		$gzip = "gzip";
-		$cat = "cat";
+		$cat = "/bin/cat";
 
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive .";
@@ -1175,7 +1175,7 @@ END
 
 		# create directory
 		if (! -d $destdir) {
-			if (&execute("mkdir -p $destdir")) {
+			if (&execute("/bin/mkdir -p $destdir")) {
 				die "can't create directory $destdir\n";
 			}
 		}
@@ -1193,7 +1193,7 @@ END
 								"and download it again?",
 								($tries >= 3) ? 0 : 1);
 			if ($answer) {
-				&execute("rm -f $found_archive");
+				&execute("/bin/rm -f $found_archive");
 				$i--;
 				next;		# restart loop with same tarball
 			} else {
@@ -1373,14 +1373,14 @@ sub phase_install {
 
 	$install_script = "";
 	unless ($self->{_bootstrap}) {
-		$install_script .= "rm -rf \%d\n";
+		$install_script .= "/bin/rm -rf \%d\n";
 	}
-	$install_script .= "mkdir -p \%i\n";
+	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
-		$install_script .= "mkdir -p \%d/DEBIAN\n";
+		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 	}
 	if ($self->{_type} eq "bundle") {
-		$install_script .= "mkdir -p \%i/share/doc/\%n\n";
+		$install_script .= "/bin/mkdir -p \%i/share/doc/\%n\n";
 		$install_script .= "echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 	} else {
 		if ($self->has_param("InstallScript")) {
@@ -1421,9 +1421,9 @@ sub phase_install {
 				$perlarchdir = "darwin-thread-multi-2level";
 			}
 			$install_script .= 
-				"mkdir -p \%i/share/podfiles$perldirectory\n".
-				"cat \%i/lib/perl5$perldirectory/$perlarchdir/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod\n".
-				"rm -rf \%i/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
+				"/bin/mkdir -p \%i/share/podfiles$perldirectory\n".
+				"/bin/cat \%i/lib/perl5$perldirectory/$perlarchdir/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles$perldirectory/perllocal.\%n.pod\n".
+				"/bin/rm -rf \%i/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
 		}
 	}
 
@@ -1455,27 +1455,27 @@ sub phase_install {
 			}
 
 			$target_dir = dirname($target);
-			$install_script .= "\ninstall -d -m 755 $target_dir";
-			$install_script .= "\nmv $source $target_dir/";
+			$install_script .= "\n/usr/bin/install -d -m 755 $target_dir";
+			$install_script .= "\n/bin/mv $source $target_dir/";
 		}
 	}
 
 	# generate commands to install documentation files
 	if ($self->has_param("DocFiles")) {
 		my (@docfiles, $docfile, $docfilelist);
-		$install_script .= "\ninstall -d -m 755 %i/share/doc/%n";
+		$install_script .= "\n/usr/bin/install -d -m 755 %i/share/doc/%n";
 
 		@docfiles = split(/\s+/, $self->param("DocFiles"));
 		$docfilelist = "";
 		foreach $docfile (@docfiles) {
 			if ($docfile =~ /^(.+)\:(.+)$/) {
-				$install_script .= "\ninstall -c -p -m 644 $1 %i/share/doc/%n/$2";
+				$install_script .= "\n/usr/bin/install -c -p -m 644 $1 %i/share/doc/%n/$2";
 			} else {
 				$docfilelist .= " $docfile";
 			}
 		}
 		if ($docfilelist ne "") {
-			$install_script .= "\ninstall -c -p -m 644$docfilelist %i/share/doc/%n/";
+			$install_script .= "\n/usr/bin/install -c -p -m 644$docfilelist %i/share/doc/%n/";
 		}
 	}
 
@@ -1491,21 +1491,21 @@ sub phase_install {
 		$properties = &read_properties_var($self->{_filename}, $vars, 1);
 
 		if(scalar keys %$properties > 0){
-			$install_script .= "\ninstall -d -m 755 %i/etc/profile.d";
+			$install_script .= "\n/usr/bin/install -d -m 755 %i/etc/profile.d";
 			while (($var, $value) = each %$properties) {
 				$install_script .= "\necho \"setenv $var '$value'\" >> %i/etc/profile.d/%n.csh.env";
 				$install_script .= "\necho \"export $var='$value'\" >> %i/etc/profile.d/%n.sh.env";
 			}
 			# make sure the scripts exist
-			$install_script .= "\ntouch %i/etc/profile.d/%n.csh";
-			$install_script .= "\ntouch %i/etc/profile.d/%n.sh";
+			$install_script .= "\n/usr/bin/touch %i/etc/profile.d/%n.csh";
+			$install_script .= "\n/usr/bin/touch %i/etc/profile.d/%n.sh";
 			# prepend *.env to *.[c]sh
-			$install_script .= "\ncat %i/etc/profile.d/%n.csh >> %i/etc/profile.d/%n.csh.env";
-			$install_script .= "\ncat %i/etc/profile.d/%n.sh >> %i/etc/profile.d/%n.sh.env";
-			$install_script .= "\nmv -f %i/etc/profile.d/%n.csh.env %i/etc/profile.d/%n.csh";
-			$install_script .= "\nmv -f %i/etc/profile.d/%n.sh.env %i/etc/profile.d/%n.sh";
+			$install_script .= "\n/bin/cat %i/etc/profile.d/%n.csh >> %i/etc/profile.d/%n.csh.env";
+			$install_script .= "\n/bin/cat %i/etc/profile.d/%n.sh >> %i/etc/profile.d/%n.sh.env";
+			$install_script .= "\n/bin/mv -f %i/etc/profile.d/%n.csh.env %i/etc/profile.d/%n.csh";
+			$install_script .= "\n/bin/mv -f %i/etc/profile.d/%n.sh.env %i/etc/profile.d/%n.sh";
 			# make them executable (to allow them to be sourced by /sw/bin.init.[c]sh)
-			$install_script .= "\nchmod 755 %i/etc/profile.d/%n.*";
+			$install_script .= "\n/bin/chmod 755 %i/etc/profile.d/%n.*";
 		}
 	}
 
@@ -1513,22 +1513,22 @@ sub phase_install {
 	if ($self->has_param("JarFiles")) {
 		my (@jarfiles, $jarfile, $jarfilelist);
 		# install jarfiles
-		$install_script .= "\ninstall -d -m 755 %i/share/java/%n";
+		$install_script .= "\n/usr/bin/install -d -m 755 %i/share/java/%n";
 		@jarfiles = split(/\s+/, $self->param("JarFiles"));
 		$jarfilelist = "";
 		foreach $jarfile (@jarfiles) {
 			if ($jarfile =~ /^(.+)\:(.+)$/) {
-				$install_script .= "\ninstall -c -p -m 644 $1 %i/share/java/%n/$2";
+				$install_script .= "\n/usr/bin/install -c -p -m 644 $1 %i/share/java/%n/$2";
 			} else {
 				$jarfilelist .= " $jarfile";
 			}
 		}
 		if ($jarfilelist ne "") {
-			$install_script .= "\ninstall -c -p -m 644$jarfilelist %i/share/java/%n/";
+			$install_script .= "\n/usr/bin/install -c -p -m 644$jarfilelist %i/share/java/%n/";
 		}
 	}
 
-	$install_script .= "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
+	$install_script .= "\n/bin/rm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
 	### install
 
@@ -1548,7 +1548,7 @@ sub phase_install {
 		$bdir = $self->get_fullname();
 		chdir "$buildpath";
 		if (not $config->param_boolean("KeepBuildDir") and not Fink::Config::get_option("keep_build") and -e $bdir) {
-			if (&execute("rm -rf $bdir")) {
+			if (&execute("/bin/rm -rf $bdir")) {
 				&print_breaking("WARNING: Can't remove build directory $bdir. ".
 								"This is not fatal, but you may want to remove ".
 								"the directory manually to save disk space. ".
@@ -1584,7 +1584,7 @@ sub phase_build {
 	$destdir = "$buildpath/$ddir";
 
 	if (not -d "$destdir/DEBIAN") {
-		if (&execute("mkdir -p $destdir/DEBIAN")) {
+		if (&execute("/bin/mkdir -p $destdir/DEBIAN")) {
 			die "can't create directory for control files for package ".$self->get_fullname()."\n";
 		}
 	}
@@ -1764,8 +1764,8 @@ EOF
 			if ($scriptname eq "postinst") {
 				$scriptbody .=
 					"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
-					"mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
-					"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
+					"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
+					"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
 			} elsif ($scriptname eq "postrm") {
 				$scriptbody .=
 					"\n\n# Updating \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n\n".
@@ -1776,7 +1776,7 @@ EOF
 					"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
 					"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
 					"	 if (\$#files >= 0) {\n".
-					"		 exec \"cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
+					"		 exec \"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
 					"	 }\n".
 					"}\n\n".
 					"END_PERL\n";
@@ -1787,13 +1787,13 @@ EOF
 		if ($self->has_param("JarFiles")) {
 			if (($scriptname eq "postinst") || ($scriptname eq "postrm")) {
 				$scriptbody.=
-						"\nmkdir -p %p/share/java".
+						"\n/bin/mkdir -p %p/share/java".
 						"\njars=`find %p/share/java -name '*.jar'`".
 						"\n".'if (test -n "$jars")'.
 						"\nthen".
 						"\n".'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'.
 						"\nelse".
-						"\nrm -f %p/share/java/classpath".
+						"\n/bin/rm -f %p/share/java/classpath".
 						"\nfi".
 						"\nunset jars";
 			}
@@ -1903,7 +1903,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 		print "Writing daemonic info file $daemonicname...\n";
 
-		if (&execute("mkdir -p $destdir$basepath/etc/daemons")) {
+		if (&execute("/bin/mkdir -p $destdir$basepath/etc/daemons")) {
 			die "can't write daemonic info file for ".$self->get_fullname()."\n";
 		}
 		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
@@ -1915,7 +1915,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	### create .deb using dpkg-deb
 
 	if (not -d $self->get_debpath()) {
-		if (&execute("mkdir -p ".$self->get_debpath())) {
+		if (&execute("/bin/mkdir -p ".$self->get_debpath())) {
 			die "can't create directory for packages\n";
 		}
 	}
@@ -1924,7 +1924,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		die "can't create package ".$self->get_debname()."\n";
 	}
 
-	if (&execute("ln -sf ".$self->get_debpath()."/".$self->get_debname()." ".
+	if (&execute("/bin/ln -sf ".$self->get_debpath()."/".$self->get_debname()." ".
 							 "$basepath/fink/debs/")) {
 		die "can't symlink package ".$self->get_debname()." into pool directory\n";
 	}
@@ -1940,7 +1940,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	### remove root dir
 
 	if (not $config->param_boolean("KeepRootDir") and not Fink::Config::get_option("keep_root") and -e $destdir) {
-		if (&execute("rm -rf $destdir")) {
+		if (&execute("/bin/rm -rf $destdir")) {
 			&print_breaking("WARNING: Can't remove package root directory ".
 											"$destdir. ".
 											"This is not fatal, but you may want to remove ".

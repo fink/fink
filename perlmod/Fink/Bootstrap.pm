@@ -69,18 +69,18 @@ sub bootstrap {
 
 	# create directories
 	if (-e $bsbase) {
-		&execute("rm -rf $bsbase");
+		&execute("/bin/rm -rf $bsbase");
 	}
-	&execute("mkdir -p $bsbase");
-	&execute("mkdir -p $bsbase/bin");
-	&execute("mkdir -p $bsbase/sbin");
-	&execute("mkdir -p $bsbase/lib");
+	&execute("/bin/mkdir -p $bsbase");
+	&execute("/bin/mkdir -p $bsbase/bin");
+	&execute("/bin/mkdir -p $bsbase/sbin");
+	&execute("/bin/mkdir -p $bsbase/lib");
 
 	# create empty dpkg database
-	&execute("mkdir -p $basepath/var/lib/dpkg");
-	&execute("touch $basepath/var/lib/dpkg/status");
-	&execute("touch $basepath/var/lib/dpkg/available");
-	&execute("touch $basepath/var/lib/dpkg/diversions");
+	&execute("/bin/mkdir -p $basepath/var/lib/dpkg");
+	&execute("/usr/bin/touch $basepath/var/lib/dpkg/status");
+	&execute("/usr/bin/touch $basepath/var/lib/dpkg/available");
+	&execute("/usr/bin/touch $basepath/var/lib/dpkg/diversions");
 
 	# set paths so that everything is found
 	$save_path = $ENV{PATH};
@@ -136,7 +136,7 @@ sub bootstrap {
 	print "\n";
 	&print_breaking("BOOTSTRAP DONE. Cleaning up.");
 	print "\n";
-	&execute("rm -rf $bsbase");
+	&execute("/bin/rm -rf $bsbase");
 
 	$ENV{PATH} = $save_path;
 }

@@ -131,11 +131,11 @@ deb file:$basepath/fink/old stable main crypto
 
 EOF
     close(SOURCES) or die "can't write $aptfile";
-    if (&execute("cat $aptfile.old >> $aptfile")) {
+    if (&execute("/bin/cat $aptfile.old >> $aptfile")) {
       print "ERROR: Can't concatentate $aptfile and $aptfile.old\n";
       exit 1;
     }
-    if (&execute("rm $aptfile.old")) {
+    if (&execute("/bin/rm $aptfile.old")) {
       print "ERROR: Can't remove $aptfile.old\n";
       exit 1;
     }
@@ -149,11 +149,11 @@ EOF
   if (-d $basepath."/fink/CVS") {
     print "\n NOTE: You have fink set up to use CVS for updates, and with this\n version of fink, the CVS setup has slightly changed.  After fink has\n finished setting up, you should immediately run 'fink selfupdate-cvs',\n 'fink scanpackages', and then 'apt-get update' in order to \n complete your upgrade.\n\n";
     if (not -d $basepath."/fink/10.2") {
-      if(&execute("mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
+      if(&execute("/bin/mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
 	print "ERROR: couldn't create directory $basepath/fink/10.2/local/main/finkinfo\n";
 	exit 1;
       }
-      if (&execute("chown -R $username $basepath/fink/10.2")) {
+      if (&execute("/usr/sbin/chown -R $username $basepath/fink/10.2")) {
 	print "ERROR: couldn't change ownership of $basepath/fink/10.2 to $username\n";
 	exit 1;
       }
@@ -180,7 +180,7 @@ D/10.2////
 /.cvsignore/1.1/Tue Aug 20 22:01:32 2002//
 EOF
     close(ENTRIES) or die "can't write $basepath/fink/CVS/Entries";
-    if (&execute("mkdir $basepath/fink/10.2/CVS")) {
+    if (&execute("/bin/mkdir $basepath/fink/10.2/CVS")) {
       print "ERROR: Can't create directory $basepath/fink/10.2/CVS\n";
       exit 1;
     }
@@ -198,7 +198,7 @@ EOF
 D
 EOF
     close(ENTRIES) or die "can't write $basepath/fink/10.2/CVS/Entries";
-    if (&execute("chown -R $username $basepath/fink/10.2/CVS")) {
+    if (&execute("/usr/sbin/chown -R $username $basepath/fink/10.2/CVS")) {
       print "ERROR: Can't change ownership of $basepath/fink/10.2/CVS to $username\n";
       exit 1;
     }
@@ -223,11 +223,11 @@ EOF
 
 if (not $distribution =~ /10.1/) {
   if (not -d $basepath."/fink/".$distribution) {
-    if(&execute("mkdir -p $basepath/fink/$distribution/local/main/finkinfo")) {
+    if(&execute("/bin/mkdir -p $basepath/fink/$distribution/local/main/finkinfo")) {
       print "ERROR: couldn't create directory $basepath/fink/$distribution/local/main/finkinfo\n";
       exit 1;
     }
-    if (&execute("chown -R $username $basepath/fink/$distribution")) {
+    if (&execute("/usr/sbin/chown -R $username $basepath/fink/$distribution")) {
       print "ERROR: couldn't change ownership of $basepath/fink/$distribution to $username\n";
       exit 1;
     }
@@ -260,12 +260,12 @@ if (not $distribution =~ /10.1/) {
 " to match your current Fink distribution $distribution.  Would you like".
 						  " to update this file now?",1);
 	      if ($updatequestion) {
-		  if (&execute("mv $aptfile.new $aptfile")){
+		  if (&execute("/bin/mv $aptfile.new $aptfile")){
 		      print "ERROR: Can't move $aptfile.new to $aptfile\n";
 		      exit 1;
 		  }
 	      } else {
-		  if (&execute("rm $aptfile.new")){
+		  if (&execute("/bin/rm $aptfile.new")){
 		      print "ERROR: Can't remove $aptfile.new\n";
 		      exit 1;
 		  }
