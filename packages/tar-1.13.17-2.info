@@ -1,0 +1,13 @@
+Package: tar
+Version: 1.13.17
+Revision: 2
+Source: ftp://alpha.gnu.org/gnu/%n/%n-%v.tar.gz
+Depends: gzip, bzip2, base-files
+Essential: yes
+UsesGettext: true
+UpdateConfigGuess: true
+ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info
+InstallScript: make install DESTDIR=%d
+ cd %i/bin ; ln -s gtar tar ; ln -s gtar gnutar
+CommentPort: Uses autoconf. Checks the hosttype - the usual fix.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
