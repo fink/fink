@@ -135,7 +135,7 @@ sub fetch_url_to_file {
 	}
 
 	# set up the mirror ordering
-	$mirrororder = $config->param_default("MirrorOrder", "MasterFirst");
+	$mirrororder = $config->param_default("MirrorOrder", "MasterLast");
 	if($mirrororder eq "MasterNever" || $dryrun) {
 	  $nomirror = 1;
 	}

@@ -1,3 +1,9 @@
+2003-05-10  Max Horn  <max@quendi.de>
+
+	* NetAccess.pm: Don't default to MasterFirst, but rather to MasterLast 
+	  (using MasterFirst as long as the master mirror has not all files is
+	  causing more pain than it helps).
+
 2003-05-04  Max Horn  <max@quendi.de>
 
 	* Bootstrap.pm: Added check_host and check_files, used by bootstrap.pl and
