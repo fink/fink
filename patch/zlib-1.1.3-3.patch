@@ -1,0 +1,69 @@
+diff -ru zlib-1.1.3/Makefile.in zlib-1.1.3-patched/Makefile.in
+--- zlib-1.1.3/Makefile.in	Thu Jul  9 18:07:18 1998
++++ zlib-1.1.3-patched/Makefile.in	Tue Apr  3 23:17:42 2001
+@@ -85,6 +85,12 @@
+ 	ln -s $@ $(SHAREDLIB)
+ 	ln -s $@ $(SHAREDLIB).1
+ 
++libz.$(VER).dylib: $(OBJS)
++	$(LDSHARED) -o $@ $(OBJS)
++	rm -f libz.dylib libz.1.dylib
++	ln -s $@ libz.dylib
++	ln -s $@ libz.1.dylib
++
+ example: example.o $(LIBS)
+ 	$(CC) $(CFLAGS) -o $@ example.o $(LDFLAGS)
+ 
+@@ -104,6 +110,11 @@
+ 	  ln -s $(SHAREDLIB).$(VER) $(SHAREDLIB); \
+ 	  ln -s $(SHAREDLIB).$(VER) $(SHAREDLIB).1; \
+ 	  (ldconfig || true)  >/dev/null 2>&1; \
++	fi
++	cd $(libdir); if test -f libz.$(VER).dylib; then \
++	  rm -f libz.dylib libz.1.dylib; \
++	  ln -s libz.$(VER).dylib libz.dylib; \
++	  ln -s libz.$(VER).dylib libz.1.dylib; \
+ 	fi
+ # The ranlib in install is needed on NeXTSTEP which checks file times
+ # ldconfig is for Linux
+diff -ru zlib-1.1.3/configure zlib-1.1.3-patched/configure
+--- zlib-1.1.3/configure	Wed Jul  8 20:19:35 1998
++++ zlib-1.1.3-patched/configure	Tue Apr  3 23:27:17 2001
+@@ -66,6 +66,10 @@
+ case "$cc" in
+   *gcc*) gcc=1;;
+ esac
++# special case for Darwin - cc is actually gcc, but the linker is not gld
++case `(uname -s || echo unknown) 2>/dev/null` in
++Darwin*) gcc=0;;
++esac
+ 
+ if test "$gcc" -eq 1 && ($cc -c $cflags $test.c) 2>/dev/null; then
+   CC="$cc"
+@@ -116,6 +120,11 @@
+ 	     SFLAGS=${CFLAGS-"-Kconform_pic -O"}
+ 	     CFLAGS=${CFLAGS-"-O"}
+ 	     LDSHARED=${LDSHARED-"cc -G"};;
++  Darwin*)   SFLAGS=${CFLAGS-"-O3 -fno-common"}
++             CFLAGS=${CFLAGS-"-O3"}
++	     LDSHARED=${LDSHARED-"cc -dynamiclib -undefined suppress -install_name $libdir/libz.1.dylib -compatibility_version 1.0 -current_version $VER"}
++	     shared_ext='.dylib'
++	     SHAREDLIB='libz.dylib';;
+   # send working options for other systems to support@gzip.org
+   *)         SFLAGS=${CFLAGS-"-O"}
+ 	     CFLAGS=${CFLAGS-"-O"}
+@@ -129,8 +138,12 @@
+   if test "`($CC -c $SFLAGS $test.c) 2>&1`" = "" &&
+      test "`($LDSHARED -o $test$shared_ext $test.o) 2>&1`" = ""; then
+     CFLAGS="$SFLAGS"
+-    LIBS="$SHAREDLIB.$VER"
+-    echo Building shared library $SHAREDLIB.$VER with $CC.
++    if test "$shared_ext" = ".dylib"; then
++      LIBS="libz.$VER$shared_ext"
++    else
++      LIBS="$SHAREDLIB.$VER"
++    fi
++    echo Building shared library $LIBS with $CC.
+   elif test -z "$old_cc" -a -z "$old_cflags"; then
+     echo No shared library suppport.
+     shared=0;
