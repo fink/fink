@@ -1,3 +1,7 @@
+2001-11-07  Max Horn  <max@quendi.de>
+
+	* gnome: Fixed SourceForge mirror (ftp -> ftp2)
+
 2001-11-01  Christoph Pfisterer  <cp@chrisp.de>
 
 	* ctan: New mirror list for the Comprehensive TeX Archive
