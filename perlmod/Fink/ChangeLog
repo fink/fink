@@ -1,3 +1,8 @@
+2003-08-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: Check gcc_select when the GCC field is present,
+	and exit with an error if the wrong version of gcc has been selected.
+
 2003-08-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: Disable the prebinding code unless the distribution
