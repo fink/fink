@@ -114,7 +114,6 @@ Common commands:
   index        - force rebuild of package cache
   validate     - performs various checks on .info and .deb files
   scanpackages - rescans the list of binary packages on the system
-  checksums    - validates the md5 digest of all tarballs already downloaded
   cleanup      - removes obsolete package files if newer versions are available
   dumpinfo     - show how fink parses parts of a package's .info file
 
