@@ -1,3 +1,8 @@
+2004-03-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* unzip.info: change download location to fink, for reliable
+	bootstrapping
+
 2004-01-12  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* dpkg.info, dpkg.patch, dpkg-bootstrap.info: fix hardcoded /sw
