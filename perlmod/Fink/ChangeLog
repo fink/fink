@@ -14,6 +14,10 @@
 	* PkgVersion.pm: When doing a fetch-* --dry-run, and the source
 	  doesn't have a URL, ignore the entry.
 
+2003-05-07  Ben Hines <benh57@users.sourceforge.net>
+
+	* Bootstrap.pm: support 10.2.6
+	
 2003-05-07  Rob Braun <bbraun@users.sourceforge.net>
 
 	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm,
