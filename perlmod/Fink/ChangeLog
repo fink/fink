@@ -1,3 +1,8 @@
+2003-01-28  Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: Adjust dependencies when working with multiple
+	splitoffs at the same time (fixes Bug #641462)
+
 2003-01-24  Max Horn  <max@quendi.de>
 
 	* Package.pm: Carsten Klapp's patch to speed up search_comparedb and

@@ -1105,16 +1105,54 @@ sub real_install {
       next if (($item->[4] & 2) == 2);   # already installed
       $all_installed = 0;
 
-      # check dependencies
-      foreach $dep (@$item[5..$#$item]) {
-	next PACKAGELOOP if (($dep->[4] & 2) == 0);
-      }
-
-      my @batch_install;
+      $package = $item->[2];
       my $pkg;
 
+      # concatinate dependencies of package and its relatives
+      my ($dpp, $pkgg, $isgood);
+      my ($dppname,$pkggname,$tmpname);
+      my @extendeddeps = ();
+              foreach $dpp (@{$item}[5..$#{$item}]) {
+                  $isgood = 1;
+                  $dppname = $dpp->[0];
+		  if (exists $package->{_relatives}) {
+                  foreach $pkgg (@{$package->{_relatives}}){
+                      $pkggname = $pkgg->get_name();
+                      if ($pkggname eq $dppname) {
+                          $isgood = 0;
+                      } 
+                  }
+	      }
+                  push @extendeddeps, $deps{$dppname} if $isgood;
+              }
+
+      if (exists $package->{_relatives}) {
+	foreach $pkg (@{$package->{_relatives}}) {
+	  my $name = $pkg->get_name();
+          if (exists $deps{$name}) {
+              foreach $dpp (@{$deps{$name}}[5..$#{$deps{$name}}]) {
+                  $isgood = 1;
+                  $dppname = $dpp->[0];
+                  foreach $pkgg (@{$package->{_relatives}}){
+                      $pkggname = $pkgg->get_name();
+                      if ($pkggname eq $dppname) {
+                          $isgood = 0;
+                      } 
+                  }
+                  push @extendeddeps, $deps{$dppname} if $isgood;
+              }
+	  }
+      }
+    }
+
+      # check dependencies
+      foreach $dep (@extendeddeps) {
+	next PACKAGELOOP if (($dep->[4] & 2) == 0);
+    }
+
+      my @batch_install;
+
       $any_installed = 1;
-      $package = $item->[2];
 
       # Mark item as done (FIXME - why can't we just delete it from %deps?)
       $item->[4] |= 2;
@@ -1187,6 +1225,11 @@ sub real_install {
 
       # Finally perform the actually installation
       Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
+      # Mark all installed items as installed
+
+      foreach $pkg (@batch_install) {
+	  $deps{$pkg->get_name()}->[4] |= 2;
+  }
 
     }
     last if $all_installed;
