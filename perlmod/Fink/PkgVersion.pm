@@ -28,6 +28,7 @@ use Fink::Services qw(&filename &expand_percent &execute
                       &collapse_space);
 use Fink::Config qw($config $basepath $libpath $debarch);
 use Fink::NetAccess qw(&fetch_url_to_file);
+use Fink::Mirror;
 use Fink::Package;
 use Fink::Status;
 
@@ -119,39 +120,9 @@ sub initialize {
 	      'b' => '.'
 	    };
   $self->{_expand} = $expand;
-  
-  # read custom mirrors (if any)
-  if ($self->has_param("CustomMirror")) {
-    my ($hash, $lastkey, $lastindex, $line);
-  
-    $hash = {};
-    $lastkey = "";
-    $lastindex = 0;
-  
-    foreach (split /^/m, $self->param_default("CustomMirror", "")) {
-      next if /^\s*\#/;   # skip comments
-      if (/^\s*([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
-        $lastkey = lc $1;
-        if (exists $hash->{$lastkey}) {
-          $lastindex = @{$hash->{$lastkey}};
-          $hash->{$lastkey}->[$lastindex] = $2;
-        } else {
-          $lastindex = 0;
-          $hash->{$lastkey} = [ $2 ];
-        }
-      } elsif (/^\s+(\S.*?)\s*$/) {
-        $hash->{$lastkey}->[$lastindex] .= "\n".$1;
-      }
-    }
-    $self->{_customirrors} = $hash;
-    $source = $self->param_default("Source", "mirror:custom:\%n-\%v.tar.gz");
-  } else {
-    #$self->{_customirrors} = { };
-    $source = $self->param_default("Source", "\%n-\%v.tar.gz");
-  }
 
   # expand source
-#  $source = $self->param_default("Source", "\%n-\%v.tar.gz");
+  $source = $self->param_default("Source", "\%n-\%v.tar.gz");
   if ($source eq "gnu") {
     $source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
   } elsif ($source eq "gnome") {
@@ -249,11 +220,6 @@ sub get_section {
   return $self->{_section};
 }
 
-sub get_custommirrors {
-  my $self = shift;
-  return $self->{_customirrors};
-}
-
 ### other accessors
 
 sub is_multisource {
@@ -287,6 +253,22 @@ sub get_tarball {
     return &filename($self->param("Source".$index));
   }
   return "-";
+}
+
+sub get_custom_mirror {
+  my $self = shift;
+
+  if (exists $self->{_custom_mirror}) {
+    return $self->{_custom_mirror};
+  }
+
+  if ($self->has_param("CustomMirror")) {
+    $self->{_custom_mirror} =
+      Fink::Mirror->new_from_field($self->param("CustomMirror"));
+  } else {
+    $self->{_custom_mirror} = 0;
+  }
+  return $self->{_custom_mirror};
 }
 
 sub get_build_directory {
@@ -679,15 +661,14 @@ sub fetch_source {
   my $self = shift;
   my $index = shift;
   my $tries = shift || 0;
-  my ($url, $file, $mirrors);
+  my ($url, $file);
 
   chdir "$basepath/src";
 
   $url = $self->get_source($index);
   $file = $self->get_tarball($index);
-  $mirrors = $self->get_custommirrors();
 
-  if (&fetch_url_to_file($url, $file, $mirrors, $tries)) {
+  if (&fetch_url_to_file($url, $file, $self->get_custom_mirror(), $tries)) {
     if (0) {
     print "\n";
     &print_breaking("Downloading '$file' from the URL '$url' failed. ".

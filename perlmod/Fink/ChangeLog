@@ -1,5 +1,13 @@
 2001-10-17  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Mirror.pm: New class that handles both named and package-local
+	mirror site lists. Retrying is handled more intelligently.
+	* NetAccess.pm: Another major overhaul. Handling of mirrors has
+	been moved to the new Mirror class. That greatly simplified the
+	fetch_url_to_file routine.
+	* PkgVersion.pm: Use the new Mirror class to handle package-local
+	mirrors. The mirror list is parsed on the fly when it is needed.
+
 	* Engine.pm (process): Added a "this command needs root
 	privileges" flag. Minor restructuring.
 	(restart_as_root): New function which re-executes fink as root,

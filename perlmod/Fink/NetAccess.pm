@@ -25,6 +25,7 @@ use Fink::Services qw(&prompt_selection
                       &read_properties &read_properties_multival
                       &execute &filename);
 use Fink::Config qw($config $basepath $libpath);
+use Fink::Mirror;
 
 use strict;
 use warnings;
@@ -55,7 +56,7 @@ sub fetch_url {
   my ($file, $cmd);
 
   $file = &filename($url);
-  return &fetch_url_to_file($url, $file, {}, 0, $destdir);
+  return &fetch_url_to_file($url, $file, 0, 0, $destdir);
 }
 
 ### download a file to the designated directory and save it under the
@@ -65,11 +66,11 @@ sub fetch_url {
 sub fetch_url_to_file {
   my $origurl = shift;
   my $file = shift;
-  my $custom_mirrors = shift || {};
+  my $custom_mirror = shift || 0;
   my $tries = shift || 0;
   my $destdir = shift || "$basepath/src";
   my ($http_proxy, $ftp_proxy);
-  my ($url, $cmd, $failed, $result);
+  my ($url, $cmd, $result);
 
   # create destination directory if necessary
   if (not -d $destdir) {
@@ -79,7 +80,7 @@ sub fetch_url_to_file {
     }
   }
   chdir $destdir;
-  
+
   # determine download command
   $cmd = &download_cmd($origurl, $file);
 
@@ -95,144 +96,73 @@ sub fetch_url_to_file {
     $ENV{FTP_PROXY} = $ftp_proxy;
   }
 
+  my ($mirrorname, $mirror, $path);
   if ($origurl =~ /^mirror\:(\w+)\:(.*)$/) {
-    my $mirror = $1;
-    my $path = $2;
-    my $mirror_level = 0;
-    my ($all_mirrors);
-    
-    # read the mirror list
-    if ($mirror eq "custom") {
-      $all_mirrors = $custom_mirrors;
+    $mirrorname = $1;
+    $path = $2;
+    if ($mirrorname eq "custom") {
+      if (not $custom_mirror) {
+	die "Source tarball \"$file\" uses mirror:custom, but the ".
+	  "package doesn't specify a mirror site list.\n";
+      }
+      $mirror = $custom_mirror;
     } else {
-      $all_mirrors = &read_properties_multival("$libpath/mirror/$mirror");
+      $mirror = Fink::Mirror->get_by_name($mirrorname);
     }
 
-    $url = "";
-
-    do {
-  
-      ### resolve mirror url
-  
-      if ($mirror_level <= 0 && $mirror ne "custom") {
-	# use last / preconfigured mirror
-	if (!$url) {
-	  if ($Fink::Config::config->has_param("mirror-$mirror")) {
-	    $url = $Fink::Config::config->param("mirror-$mirror");
-	    $url .= "/" unless $url =~ /\/$/;
-	    $url .= $path;
-	  } else {
-	    # FIXME: pick a mirror at random
-	    die "can't find url for mirror $mirror in configuration";
-	  }
-	}
-      } else {
-	# pick a mirror at random, $mirror_level controls the scope
-	my ($key, $site, $match, @list);
-	
-	if ($mirror_level == 1) {
-	  $match = lc $config->param_default("MirrorCountry", "nam-us");
-	} elsif ($mirror_level == 2) {
-	  $match = lc $config->param_default("MirrorContinent", "nam");
-	} else {
-	  $match = "";
-	}
-
-	@list = ();
-	foreach $key (keys %$all_mirrors) {
-	  if ($key =~ /^$match/) {
-	    foreach $site (@{$all_mirrors->{$key}}) {
-	      push @list, $site;
-	    }
-	  }
-	}
-	if ($#list < 0 && exists $all_mirrors->{primary}) {
-	  foreach $site (@{$all_mirrors->{primary}}) {
-	    push @list, $site;
-	  }
-	}
-	if ($#list < 0) {
-	  die "No mirrors found for mirror list \"$mirror\", not even a primary site. Check the mirror lists.";
-	}
-
-	$url = $list[int(rand(scalar(@list)))];
-	$url .= "/" unless $url =~ /\/$/;
-	$url .= $path;
-      }
-  
-      ### fetch $url to $file
-  
-      if (-f $file) {
-	&execute("rm -f $file");
-      }
-      if (&execute("$cmd $url") or not -f $file) {
-	$failed = 1;
-      } else {
-	$failed = 0;
-      }
-  
-      ### failure handling
-  
-      if ($failed) {
-	$result =
-	  &prompt_selection("Downloading the file \"$file\" failed. ".
-			    "How do you want to proceed?",
-			    ($tries > 5) ? 1 : (($tries > 3) ? 5 : 4),
-			    { "error" => "Give up",
-			      "retry" => "Retry the same mirror",
-			      "retry-country" => "Retry a random mirror from your country",
-			      "retry-continent" => "Retry a random mirror from your continent",
-			      "retry-world" => "Retry a random mirror" },
-			    "error", "retry", "retry-country", "retry-continent", "retry-world");
-	if ($result eq "error") {
-	  return 1;
-	} elsif ($result eq "retry") {
-	  $mirror_level = 0;
-	} elsif ($result eq "retry-country") {
-	  $mirror_level = 1;
-	} elsif ($result eq "retry-continent") {
-	  $mirror_level = 2;
-	} elsif ($result eq "retry-world") {
-	  $mirror_level = 3;
-	}
-	$tries++;
-      }
-  
-    } while ($failed);
+    $url = $mirror->get_site();
+    $url .= $path;
 
   } else {
+    $mirrorname = "";
+    $path = $origurl;
+    $mirror = 0;
+
     $url = $origurl;
+  }
 
-    do {
+  while (1) {  # retry loop, left with return in case of success
 
-      ### fetch $url to $file
-  
-      if (-f $file) {
-	&execute("rm -f $file");
+    ### fetch $url to $file
+
+    if (-f $file) {
+      &execute("rm -f $file");
+    }
+    if (&execute("$cmd $url") or not -f $file) {
+      # failure, continue loop
+    } else {
+      # success, return to caller
+      return 0;
+    }
+
+    ### failure handling
+
+    &print_breaking("Downloading the file \"$file\" failed.");
+
+    $tries++;
+
+    if ($mirror) {
+      # let the Mirror object handle this mess...
+      $url = $mirror->get_site_retry();
+      if (not $url) {
+	# user chose to give up
+	return 1;
       }
-      if (&execute("$cmd $url") or not -f $file) {
-	$failed = 1;
-      } else {
-	$failed = 0;
+      $url .= $path;
+
+    } else {
+      $result =
+	&prompt_selection("How do you want to proceed?",
+			  ($tries >= 5) ? 1 : 2,
+			  { "error" => "Give up",
+			    "retry" => "Retry" },
+			  "error", "retry");
+      if ($result eq "error") {
+	return 1;
       }
-  
-      ### failure handling
-  
-      if ($failed) {
-	$result =
-	  &prompt_selection("Downloading the file \"$file\" failed. ".
-			    "How do you want to proceed?",
-			    ($tries > 5) ? 1 : 2,
-			    { "error" => "Give up",
-			      "retry" => "Retry" },
-			    "error", "retry");
-	if ($result eq "error") {
-	  return 1;
-	}
-	$tries++;
-      }
-  
-    } while ($failed);
+
+    }  # using mirrors
+
   }
 
   return 0;
