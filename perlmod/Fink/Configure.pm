@@ -151,7 +151,7 @@ sub choose_mirrors {
 	my ($continent, $country);
 	my ($keyinfo, @continents, @countries, $key, $listinfo);
 	my ($mirrorfile, $mirrorname, $mirrortitle);
-	my ($all_mirrors, @mirrors, $mirror_labels, $site);
+	my ($all_mirrors, @mirrors, $mirror_labels, $site, $mirror_order);
 
 	print "\n";
 	&print_breaking("Mirror selection");
@@ -175,7 +175,20 @@ sub choose_mirrors {
 			return;
 		}
 	}
-
+	
+	&print_breaking("\nThe Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
+    				  "the sources for all fink packages. You can choose to use these mirrors first, ".
+					  "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
+	
+	$mirror_order =
+    &prompt_selection("What mirror order should fink use when downloading sources?", 1, 
+                     { "MasterFirst" => "Search \"Master\" source mirrors first.",
+                       "MasterLast" => "Search \"Master\" source mirrors last.",
+                       "MasterNever" => "Never use \"Master\" source mirrors.",
+                       "ClosestFirst" => "Search closest source mirrors first. (combine all mirrors into one set)" },
+                      ("MasterFirst", "MasterLast",  "MasterNever", "ClosestFirst") );
+	$config->set_param("MirrorOrder", $mirror_order);
+	
 	### step 1: choose a continent
 
 	$def_value = $config->param_default("MirrorContinent", "-");

@@ -506,7 +506,7 @@ sub cmd_fetch {
 	}
 
 	foreach $package (@plist) {
-		$package->phase_fetch();
+		$package->phase_fetch(0, 0);
 	}
 }
 
@@ -530,29 +530,79 @@ sub cmd_apropos {
 	do_real_list("apropos", @_);	
 }
 
+sub parse_fetch_options {
+	my %options =
+	  (
+	   "norestrictive" => 0,
+	   "dryrun" => 0,
+	   "wanthelp" => 0,
+	   );
+   
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions('ignore-restrictive|i'	=> sub {$options{norestrictive} = 1 } , 
+			   'dry-run|d'				=> sub {$options{dryrun} = 1 } , 
+			   'help|h'					=> sub {$options{wanthelp} = 1 })
+		 or die "fink fetch-missing: unknown option\nType 'fink fetch-missing --help' for more information.\n";
+		 
+	if ($options{wanthelp} == 1) {
+		require Fink::FinkVersion;
+		my $finkversion = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $finkversion
+
+Usage: fink fetch-{missing,all} [options]
+       
+Options:
+  -i, --ignore-restrictive  - Do not fetch sources for packages with 
+                            a "Restrictive" license. Useful for mirroring.
+  -p, --dry-run             - Prints filename, MD5, list of source URLs, Maintainer for each package
+  -h, --help                - This help text.
+
+EOF
+		die " ";
+	}
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+	
+	return %options;
+}
+
+#This sub is currently only used for bootstrap. No command line parsing needed
 sub cmd_fetch_missing {
-	my ($package, @plist);
+	my ($package, $options, @plist);
 
 	@plist = &expand_packages(@_);
 	if ($#plist < 0) {
 		die "no package specified for command 'fetch'!\n";
 	}
-
 	foreach $package (@plist) {
-		$package->phase_fetch(1);
+		$package->phase_fetch(1, 0);
 	}
 }
 
 sub cmd_fetch_all {
 	my ($pname, $package, $version, $vo);
-
+	
+	my (%options, $norestrictive, $dryrun);
+	%options = &parse_fetch_options(@_);
+	$norestrictive = $options{"norestrictive"} || 0;
+	$dryrun = $options{"dryrun"} || 0;
+	
 	foreach $pname (Fink::Package->list_packages()) {
 		$package = Fink::Package->package_by_name($pname);
 		$version = &latest_version($package->list_versions());
 		$vo = $package->get_version($version);
 		if (defined $vo) {
+			if ($norestrictive && $vo->has_param("license")) {
+					if($vo->param("license") =~ m/Restrictive\s*$/i) {
+						print "Ignoring $pname due to License: Restrictive\n";
+						next;
+				}
+			}
 			eval {
-				$vo->phase_fetch();
+				$vo->phase_fetch(0, $dryrun);
 			};
 			warn "$@" if $@;				 # turn fatal exceptions into warnings
 		}
@@ -560,30 +610,13 @@ sub cmd_fetch_all {
 }
 
 sub cmd_fetch_all_missing {
-	my ($pname, $package, $version, $vo, $norestrictive, $wanthelp, @temp_ARGV);
-
-	@temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions('ignore-restrictive|i'		=> \$norestrictive, 
-			   'help|h'						=> \$wanthelp)
-		 or die "fink fetch-missing: unknown option\nType 'fink fetch-missing --help' for more information.\n";
-		 
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $finkversion = Fink::FinkVersion::fink_version();
-		print <<"EOF";
-Fink $finkversion
-
-Usage: fink fetch-missing [options]
-       
-Options:
-  -i, --ignore-restrictive  - Do not fetch sources for packages with 
-                            a "Restrictive" license. Useful for mirroring.
-  -h, --help                - This help text.
-
-EOF
-	}
+	my ($pname, $package, $version, $vo);
+	my (%options, $norestrictive, $dryrun);
+		
+	%options = &parse_fetch_options(@_);
+	$norestrictive = $options{"norestrictive"} || 0;
+	$dryrun = $options{"dryrun"} || 0;
+	
 	foreach $pname (Fink::Package->list_packages()) {
 		$package = Fink::Package->package_by_name($pname);
 		$version = &latest_version($package->list_versions());
@@ -598,13 +631,11 @@ EOF
 				}
 			}
 			eval {
-				$vo->phase_fetch(1);
+				$vo->phase_fetch(1, $dryrun);
 			};
 			warn "$@" if $@;				 # turn fatal exceptions into warnings
 		}
 	}	
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
 }
 
 sub cmd_remove {
@@ -1130,7 +1161,7 @@ sub real_install {
 		$item = $deps{$pkgname};
 		next if $item->[3] == $OP_INSTALL and $item->[2]->is_installed();
 		if ($item->[3] == $OP_REBUILD or not $item->[2]->is_present()) {
-			$item->[2]->phase_fetch(1);
+			$item->[2]->phase_fetch(1, 0);
 		}
 	}
 

@@ -24,7 +24,7 @@ package Fink::Mirror;
 
 use Fink::Services qw(&prompt_selection
 					  &read_properties &read_properties_multival);
-use Fink::Config qw($config $basepath $libpath);
+use Fink::Config qw($config $libpath);
 
 use strict;
 use warnings;
@@ -101,7 +101,7 @@ sub new_from_field {
 	my $self = {};
 	bless($self, $class);
 
-	$self->{name} = "-";
+	$self->{name} = "Custom Mirror";
 	$self->{package} = $package;
 
 	my ($key, $url);
@@ -129,6 +129,49 @@ sub new_from_field {
 
 	return $self;
 }
+### construct from single url (for sites without mirrors, to use master mirrors also)
+
+sub new_from_url {
+  my $proto = shift;
+  my $class = ref($proto) || $proto;
+  my $url = shift;
+  my $package = shift || "unknown package";
+
+  my $self = {};
+  bless($self, $class);
+
+  $self->{name} = "Original URL";
+  $self->{package} = $package;
+    
+  $self->{data}->{"primary"} = [ $url ];
+
+  $self->initialize();
+
+  return $self;
+
+}
+
+### merge master mirror set into this one (used for master 'ClosestFirst' mirror)
+
+sub merge_master_mirror {
+	my $self = shift;
+	my $mirror = shift;
+	my ($key, $list, $url);
+	$DB::single = 1;	
+
+	foreach $key (keys %{$mirror->{data}}){	
+		s/^/master:/ for @{ $mirror->{data}->{$key} };
+		if (exists $self->{data}->{$key}) {
+			for $url (@{ $mirror->{data}->{$key} }) {
+				push @{$self->{data}->{$key}}, $url;
+			}
+		} else {
+			$self->{data}->{$key} = $mirror->{data}->{$key};
+		}
+	}
+ 	
+  	delete $self->{data}->{timestamp};
+}
 
 ### self-initialization
 
@@ -148,12 +191,12 @@ sub get_site {
 
 	if ($self->{lastused}) {
 		$url = $self->{lastused};
-		$url .= "/" unless $url =~ /\/$/;
+  	    $url .= "/" unless $url =~ /\/$/;
 		return $url;
 	}
 
 	$name = $self->{name};
-	if ($name ne "-") {
+	if ($name !~ /Custom|Original/) {
 		# check the configuration for named mirrors
 		if ($Fink::Config::config->has_param("mirror-$name")) {
 			$self->{lastused} = $url = $Fink::Config::config->param("mirror-$name");
@@ -173,7 +216,7 @@ sub get_site {
 	}
 
 	# nothing found, not even primaries
-	if ($name eq "-") {
+	if ($name =~ /Custom/) {
 		$name = "custom mirror of ".$self->{package};
 	} else {
 		$name = "mirror '$name'";
@@ -186,7 +229,9 @@ sub get_site {
 
 sub get_site_retry {
 	my $self = shift;
-	my ($result, $level, @choice_list, $default, $url);
+	my $next_set = shift || "";
+	my $printmode = shift || 0;
+	my ($result, $level, @choice_list, $default, $url, $last_set);
 	my (@list_country, @list_continent, @list_world);
 
 	# hmm, someone called us without calling get_site() on the initial try
@@ -224,20 +269,39 @@ sub get_site_retry {
 			$default = $#choice_list + 1;
 		}
 	}
-	if ($self->{tries} >= 5) {
+	if (!$printmode && $self->{tries} >= 5) {
 		$default = 1;
 	}
-
+	if ($next_set ne "") {
+		push @choice_list, "retry-next";
+		if($#choice_list == 2) {  # No more mirrors in this set, default to next
+			$default = $#choice_list + 1;
+		}
+	}
 	# ask the user
-	$result =
+	if($printmode) {
+		#just printing URLs, never ask, never retry same mirror
+	    if($default == 2) {
+	    	$default = 1;
+	    }
+		$result = $choice_list[$default - 1];
+	} else {
+		my $nexttext;
+		if($next_set eq "Original URL") {
+			$nexttext = "Retry using original source URL";
+		} else {
+			$nexttext = "Retry using next mirror set \"$next_set\"";
+		}
+		$result =
 		&prompt_selection("How do you want to proceed?", $default,
 						  { "error" => "Give up",
 							"retry" => "Retry the same mirror",
 							"retry-country" => "Retry another mirror from your country",
 							"retry-continent" => "Retry another mirror from your continent",
-							"retry-world" => "Retry another mirror" },
+							"retry-world" => "Retry another mirror",
+							"retry-next" => $nexttext  },
 						  @choice_list);
-
+	}
 	$url = $self->{lastused};
 	if ($result eq "error") {
 		return "";
@@ -255,8 +319,9 @@ sub get_site_retry {
 		if ($#list_world >= 0) {
 			$url = $list_world[int(rand(scalar(@list_world)))];
 		}
+	} elsif ($result eq "retry-next") {
+		return $result;
 	}
-
 	$self->{lastused} = $url;
 	$url .= "/" unless $url =~ /\/$/;
 	return $url;

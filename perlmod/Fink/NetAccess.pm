@@ -49,6 +49,7 @@ END { }				# module clean-up code here (global destructor)
 
 ### download a file to the designated directory
 # returns 0 on success, 1 on error
+# Does not allow master mirroring
 
 sub fetch_url {
 	my $url = shift;
@@ -56,11 +57,12 @@ sub fetch_url {
 	my ($file, $cmd);
 
 	$file = &filename($url);
-	return &fetch_url_to_file($url, $file, 0, 0, 0, $downloaddir);
+	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir);
 }
 
 ### download a file to the designated directory and save it under the
 ### given name
+# Allows custom & master mirroring
 # returns 0 on success, 1 on error
 
 sub fetch_url_to_file {
@@ -69,6 +71,8 @@ sub fetch_url_to_file {
 	my $custom_mirror = shift || 0;
 	my $tries = shift || 0;
 	my $cont = shift || 0;	
+	my $nomirror = shift || 0;
+	my $dryrun = shift || 0;
 	my $downloaddir = shift || "$basepath/src";
 	my ($http_proxy, $ftp_proxy);
 	my ($url, $cmd, $cont_cmd, $result);
@@ -97,34 +101,62 @@ sub fetch_url_to_file {
 		$ENV{ftp_proxy} = $ftp_proxy;
 		$ENV{FTP_PROXY} = $ftp_proxy;
 	}
+	
+	my ($mirrorname, $origmirror, $nextmirror);
+	my ($mirrorindex, $mirrororder, @mirror_list);
+	my ($path, $basename, $masterpath);
 
-	my ($mirrorname, $mirror, $path);
-	if ($origurl =~ /^mirror\:(\w+)\:(.*)$/) {
+	$mirrorindex = 0;
+	if ($origurl =~ m#^mirror\:(\w+)\:(.*?)([^/]+$)#g) {
 		$mirrorname = $1;
 		$path = $2;
+		$basename = $3;
 		if ($mirrorname eq "custom") {
 			if (not $custom_mirror) {
 				die "Source file \"$file\" uses mirror:custom, but the ".
 					"package doesn't specify a mirror site list.\n";
 			}
-			$mirror = $custom_mirror;
+			$origmirror = $custom_mirror;
 		} else {
-			$mirror = Fink::Mirror->get_by_name($mirrorname);
+			$origmirror = Fink::Mirror->get_by_name($mirrorname);
+		}		
+		if($dryrun) {
+		  $origmirror->initialize(); # We want every mirror when printing
 		}
-
-		$url = $mirror->get_site();
-		$url .= $path;
-
 	} else {
-		$mirrorname = "";
-		$path = $origurl;
-		$mirror = 0;
-
-		$url = $origurl;
+		# Not a custom mirror, parse a full URL
+		$origurl =~  m|^([^:]+://[^/]+/)			# Match http://domain/ into $1
+						(.*?)						# (optional) Path into $2
+						([^/]+$)   					# Tarball into $3
+					  |x;  
+		$path = $2;
+		$basename = $3;
+		$origmirror = Fink::Mirror->new_from_url($1);
 	}
 
+	# set up the mirror ordering
+	$mirrororder = $config->param_default("MirrorOrder", "MasterFirst");
+	if($mirrororder eq "MasterNever" || $dryrun) {
+	  $nomirror = 1;
+	}
+	if($nomirror == 0) {
+		push(@mirror_list, Fink::Mirror->get_by_name("master"));
+		$masterpath = ""; # Add package sections, etc here perhaps?
+		if($mirrororder eq "MasterFirst") {
+			push(@mirror_list, $origmirror);
+		} elsif($mirrororder eq "MasterLast") {
+			unshift(@mirror_list, $origmirror);
+		} elsif($mirrororder eq "ClosestFirst") {
+			$origmirror->merge_master_mirror($mirror_list[0]);
+			$mirror_list[0] = $origmirror;
+		}
+	} else {
+	  push(@mirror_list, $origmirror);
+	}
+	$url = $mirror_list[0]->get_site();
+    	
 	### if the file already exists, ask user what to do
-	if (-f $file && !$cont) {
+	if (-f $file && !$cont && !$dryrun) {
 		$result =
 			&prompt_selection("The file \"$file\" already exists, how do you want to proceed?",
 							1, # Play it save, assume redownload as default
@@ -143,10 +175,23 @@ sub fetch_url_to_file {
 	}
 
 	while (1) {	 # retry loop, left with return in case of success
-
+		
+		if($mirrorindex < $#mirror_list) { 
+		 	$nextmirror = $mirror_list[$mirrorindex + 1]->{name};
+		} else {
+			$nextmirror = "";
+		}
+		
+		if(($url =~ /^master:/) || ($mirror_list[$mirrorindex]->{name} eq "master")) {
+			$url =~ s/^master://;
+			$url .= $masterpath . $file;    # SourceRenamed tarball name
+		} else {
+			$url .= $path . $basename;
+    	}
+    	
 		### fetch $url to $file
 
-		if (-f $file) {
+		if (!$dryrun && -f $file) {
 			if (not $cont) {
 				&execute("rm -f $file");
 			}
@@ -154,14 +199,16 @@ sub fetch_url_to_file {
 			$cont = 0;
 		}
 		
-		if ($cont) {
+		if ($dryrun) {
+			print " $url";
+		} elsif ($cont) {
 			$result = &execute("$cont_cmd $url");
 			$cont = 0;
 		} else {
 			$result = &execute("$cmd $url");
 		}
 		
-		if ($result or not -f $file) {
+		if ($dryrun or ($result or not -f $file)) {
 			# failure, continue loop
 		} else {
 			# success, return to caller
@@ -169,40 +216,35 @@ sub fetch_url_to_file {
 		}
 
 		### failure handling
+		if(not $dryrun) {
+			&print_breaking("Downloading the file \"$file\" failed.");
+			$tries++;
+		}
 
-		&print_breaking("Downloading the file \"$file\" failed.");
-
-		$tries++;
-
-		if ($mirror) {
-			# let the Mirror object handle this mess...
-			$url = $mirror->get_site_retry();
-			if (not $url) {
-				# user chose to give up
-				return 1;
+		# let the Mirror object handle this mess...
+		RETRY: {
+			$url = $mirror_list[$mirrorindex]->get_site_retry($nextmirror, $dryrun);
+		}
+		if ($url eq "retry-next") {
+			# Start new mirror with the last used site, or first site
+			$url = $mirror_list[$mirrorindex + 1]->get_site();
+			$mirrorindex++;
+			if($mirrorindex < $#mirror_list) { 
+				$nextmirror = $mirror_list[$mirrorindex + 1]->{name};
+			} else {
+				$nextmirror = "";
 			}
-			$url .= $path;
-
-		} else {
-			$result =
-				&prompt_selection("How do you want to proceed?",
-								($tries >= 5) ? 1 : 2,
-								{ "error" => "Give up",
-									"retry" => "Retry" },
-								"error", "retry");
-			if ($result eq "error") {
-				return 1;
-			}
-
-		}	 # using mirrors
-
-	}
-
-	return 0;
+		} elsif (not $url) {
+		# user chose to give up/out of mirrors
+			return 1;
+		}
+  	}
+  	return 0;
 }
 
 sub download_cmd {
 	my $url = shift;
+	# $file is the post-SourceRename tarball name
 	my $file = shift || &filename($url);
 	my $cont = shift || 0;	# Continue a previously started download?
 	my $cmd;

@@ -2,6 +2,7 @@ Package: fink
 Version: @VERSION@
 Revision: @REVISION@
 Source: %n-%v.tar
+Source-MD5: @MD5@
 NoSourceDirectory: true
 Depends: base-files
 Essential: yes

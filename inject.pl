@@ -48,7 +48,7 @@ foreach $file (qw(fink.in install.sh COPYING VERSION
 unshift @INC, "$FindBin::RealBin/perlmod";
 
 require Fink::Services;
-import Fink::Services qw(&print_breaking &read_config &execute);
+import Fink::Services qw(&print_breaking &read_config &execute &file_MD5_checksum);
 require Fink::Config;
 
 ### locate Fink installation
@@ -129,29 +129,6 @@ if ($trees =~ /^\s*$/) {
   }
 }
 
-### create and copy description file
-
-print "Copying package description...\n";
-
-$script = "";
-if (not -d "$basepath/fink/debs") {
-  $script .= "mkdir -p $basepath/fink/debs\n";
-}
-if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
-  $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
-}
-
-$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
-
-foreach $cmd (split(/\n/,$script)) {
-  next unless $cmd;   # skip empty lines
-
-  if (&execute($cmd)) {
-    print "ERROR: Can't copy package description.\n";
-    exit 1;
-  }
-}
-
 ### create tarball for the package
 
 print "Creating tarball...\n";
@@ -172,6 +149,29 @@ foreach $cmd (split(/\n/,$script)) {
 
   if (&execute($cmd)) {
     print "ERROR: Can't create tarball.\n";
+    exit 1;
+  }
+}
+
+### create and copy description file
+
+print "Copying package description...\n";
+
+$script = "";
+if (not -d "$basepath/fink/debs") {
+  $script .= "mkdir -p $basepath/fink/debs\n";
+}
+if (not -d "$basepath/fink/dists/local/bootstrap/finkinfo") {
+  $script .= "mkdir -p $basepath/fink/dists/local/bootstrap/finkinfo\n";
+}
+my $md5 = &file_MD5_checksum("$basepath/src/fink-$packageversion.tar");
+$script .= "sed -e 's/\@VERSION\@/$packageversion/' -e 's/\@REVISION\@/$packagerevision/' -e 's/\@MD5\@/$md5/' <fink.info.in >$basepath/fink/dists/local/bootstrap/finkinfo/fink-$packageversion.info\n";
+
+foreach $cmd (split(/\n/,$script)) {
+  next unless $cmd;   # skip empty lines
+
+  if (&execute($cmd)) {
+    print "ERROR: Can't copy package description.\n";
     exit 1;
   }
 }

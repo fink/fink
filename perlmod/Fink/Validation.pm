@@ -274,10 +274,10 @@ sub validate_info_file {
 			 }
 		}
 
-		# Warn if there is a source without a MD5
+		# Error if there is a source without a MD5
 		if (($field eq "source" or $field =~ m/^source([2-9]|\d\d)$/)
 				and not $properties->{$field."-md5"}) {
-			print "Warning: No MD5 checksum specified for \"$field\". ($filename)\n";
+			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
 			$looks_good = 0;
 		}
 		

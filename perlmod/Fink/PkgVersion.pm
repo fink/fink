@@ -436,7 +436,7 @@ sub get_checksum {
 		if ($self->has_param("Source".$index."-MD5")) {
 			return $self->param("Source".$index."-MD5");
 		}
-	}
+	}		
 	return "-";
 }
 
@@ -856,6 +856,7 @@ sub match_package {
 sub phase_fetch {
 	my $self = shift;
 	my $conditional = shift || 0;
+	my $dryrun = shift || 0;
 	my ($i);
 
 	if ($self->{_type} eq "bundle" || $self->{_type} eq "nosource" ||
@@ -863,13 +864,13 @@ sub phase_fetch {
 		return;
 	}
 	if ($self->{_type} eq "splitoff") {
-		($self->{parent})->phase_fetch($conditional);
+		($self->{parent})->phase_fetch($conditional, $dryrun);
 		return;
 	}
 
 	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
 		if (not $conditional or not defined $self->find_tarball($i)) {
-			$self->fetch_source($i);
+			$self->fetch_source($i,0,0,0,$dryrun);
 		}
 	}
 }
@@ -879,14 +880,39 @@ sub fetch_source {
 	my $index = shift;
 	my $tries = shift || 0;
 	my $continue = shift || 0;
-	my ($url, $file);
+	my $nomirror = shift || 0;
+	my $dryrun = shift || 0;
+	my ($url, $file, $checksum);
 
 	chdir "$basepath/src";
 
 	$url = $self->get_source($index);
 	$file = $self->get_tarball($index);
+	if($self->has_param("license")) {
+		if($self->param("license") =~ /Restrictive\s*$/) {
+			$nomirror = 1;
+		} 
+	}
+	
+	$checksum = $self->get_checksum($index);
+	
+	if($dryrun) {
+		print "$file $checksum";
+	} else {
+		if($checksum eq '-') {	
+			print "WARNING: No MD5 specified for Source #".$index.
+							" of package ".$self->get_fullname();
+			if ($self->has_param("Maintainer")) {
+				print ' Maintainer: '.$self->param("Maintainer") . "\n";
+			} else {
+				print "\n";
+			}		
+		}
+	}
+	
+	if (&fetch_url_to_file($url, $file, $self->get_custom_mirror(), 
+						   $tries, $continue, $nomirror, $dryrun)) {
 
-	if (&fetch_url_to_file($url, $file, $self->get_custom_mirror(), $tries, $continue)) {
 		if (0) {
 		print "\n";
 		&print_breaking("Downloading '$file' from the URL '$url' failed. ".
@@ -908,8 +934,13 @@ sub fetch_source {
 						"the same command.");
 		print "\n";
 		}
-
-		die "file download failed for $file of package ".$self->get_fullname()."\n";
+		if($dryrun) {
+			if ($self->has_param("Maintainer")) {
+				print ' "'.$self->param("Maintainer") . "\"\n";
+			}
+		} else {
+			die "file download failed for $file of package ".$self->get_fullname()."\n";
+		}
 	}
 }
 
@@ -974,8 +1005,8 @@ sub phase_unpack {
 		
 		# verify the MD5 checksum, if specified
 		$checksum = $self->get_checksum($i);
-		if ($checksum ne "-") {	 # Checksum was specified
-			# compare to the MD5 checksum of the tarball
+		if ($checksum ne "-" ) { # Checksum was specified 
+		# compare to the MD5 checksum of the tarball
 			if ($checksum ne &file_MD5_checksum($found_archive)) {
 				# mismatch, ask user what to do
 				$tries++;
