@@ -677,7 +677,11 @@ sub validate_info_file {
 #
 sub validate_dpkg_file {
 	my $dpkg_filename = shift;
-	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/");
+
+	# these are used in a regex and are automatically prepended with ^
+	# make sure to protect regex metachars!
+	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/");
+
 	my ($pid, $bad_dir);
 	my $filename;
 	my $looks_good = 1;
