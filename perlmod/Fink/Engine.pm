@@ -28,6 +28,7 @@ use Fink::PkgVersion;
 use Fink::Config qw($config $basepath);
 use Fink::Configure;
 use Fink::Bootstrap;
+use Fink::SelfUpdate;
 
 use strict;
 use warnings;
@@ -72,6 +73,8 @@ our %commands =
     'scanpackages' => \&cmd_scanpackages,
     'list' => \&cmd_list,
     'listpackages' => \&cmd_listpackages,
+    'selfupdate' => \&cmd_selfupdate,
+    'selfupdate-finish' => \&cmd_selfupdate_finish,
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -150,6 +153,14 @@ sub cmd_configure {
 
 sub cmd_bootstrap {
   Fink::Bootstrap::bootstrap();
+}
+
+sub cmd_selfupdate {
+  Fink::SelfUpdate::check();
+}
+
+sub cmd_selfupdate_finish {
+  Fink::SelfUpdate::finish();
 }
 
 sub cmd_list {

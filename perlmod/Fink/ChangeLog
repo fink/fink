@@ -1,3 +1,13 @@
+2001-08-14  Christoph Pfisterer  <cp@chrisp.de>
+
+	* SelfUpdate.pm: New module. Contains code to let Fink update
+	itself from the Internet.
+	* Engine.pm: Added self-update commands to the command list.
+	* NetAccess.pm: New module. Encapsulates downloading files from
+	the Internet (currently done via wget).
+	* PkgVersion.pm (fetch_source): wget invocation code moved to the
+	new NetAccess module.
+
 2001-08-08  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Status.pm: New module. Parses the dpkg status file to find the

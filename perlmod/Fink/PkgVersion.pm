@@ -24,10 +24,11 @@ use Fink::Base;
 
 use Fink::Services qw(&filename &expand_percent &expand_url &execute
                       &latest_version &print_breaking
-                      &print_breaking_twoprefix &prompt_boolean);
+                      &print_breaking_twoprefix);
+use Fink::Config qw($config $basepath $libpath $debarch);
+use Fink::NetAccess qw(&fetch_url);
 use Fink::Package;
 use Fink::Status;
-use Fink::Config qw($config $basepath $libpath $debarch);
 
 use strict;
 use warnings;
@@ -591,37 +592,14 @@ sub phase_fetch {
 sub fetch_source {
   my $self = shift;
   my $index = shift;
-  my ($url, $file, $params);
-  my ($http_proxy, $ftp_proxy);
+  my ($url, $file);
 
   chdir "$basepath/src";
 
   $url = &expand_url($self->get_source($index));
-  $file = $self->get_tarball($index);
+  $file = &filename($url);
 
-  if (-f $file) {
-    &execute("rm -f $file");
-  }
-
-  $params = "";
-  if ($config->param_boolean("Verbose")) {
-    $params .= " --verbose";
-  } else {
-    $params .= " --non-verbose";
-  }
-  if ($config->param_boolean("ProxyPassiveFTP")) {
-    $params .= " --passive-ftp";
-  }
-  $http_proxy = $config->param_default("ProxyHTTP", "");
-  if ($http_proxy) {
-    $ENV{http_proxy} = $http_proxy;
-  }
-  $ftp_proxy = $config->param_default("ProxyFTP", "");
-  if ($ftp_proxy) {
-    $ENV{ftp_proxy} = $ftp_proxy;
-  }
-
-  if (&execute("wget $params $url") or not -f $file) {
+  if (&fetch_url($url)) {
     print "\n";
     &print_breaking("Downloading '$file' from the URL '$url' failed. ".
 		    "There can be several reasons for this:");
