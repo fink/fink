@@ -815,8 +815,9 @@ $pkglist). The pkgs in each list referenced by an element of @$srtuct
 are joined by logical OR (delimited by vertical-bar within a comma-
 delimited cluster). Leading and trailing whitespace are removed from
 each pkg, and null pkgs are removed. A ref to an array is always
-returned, though it may contain no elements. None of the internal
-lists will have no elements.
+returned, though it may contain no elements. Each element of @$struct
+is always an array ref, even if that list only has one element; none
+of these will have no elements.
 
 =cut
 
@@ -840,7 +841,8 @@ sub pkglist2lol {
 
 Given a ref to a list of lists of pkgs, reconstitute the Debian
 pkglist string. Blank/whitespace-only/undef elements are removed. The
-return is always defined (though it may be null).
+return is always defined (though it may be null). $struct is not
+modified.
 
 =cut
 
