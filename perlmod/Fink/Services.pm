@@ -1,3 +1,4 @@
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::Services module
 #
@@ -435,12 +436,12 @@ sub execute_script {
 	my $quiet = shift || 0;
 	my ($retval, $cmd, $tempfile);
 
-	$script =~ s/[\r\n]+$//s;			# Remove empty lines
-	$script =~ s/^\s*//;					# Remove white spaces from the start of each line
-
 	# If the script starts with a shell specified (e.g. #!/bin/sh), run it 
 	# as a script. Otherwise fall back to the old behaviour for compatibility.
-	if ($script =~ /^#!/) {
+	if ($script =~ /^\s*#!/) {
+		# An interpretter is specified.
+		# Strip any leading whitespace before "#!" magic
+		$script =~ s/^\s*//s;
 		# Put the script into a temporary file and run it.
 		$tempfile = POSIX::tmpnam() or die "unable to get temporary file: $!";
 		open (OUT, ">$tempfile") or die "unable to write to $tempfile: $!";
@@ -455,6 +456,11 @@ sub execute_script {
 		}
 		return $retval;
 	} elsif (defined $script and $script ne "") {
+		# No interpretter is specified.
+		# Strip any leading white space on each line
+		$script =~ s/^\s*//mg;
+		# Unfold continuation/multiline commands into single line
+		$script =~ s/\s*\\\s*\n/ /g;
 		# Execute each line as a separate command.
 		foreach $cmd (split(/\n/,$script)) {
 			$retval = execute($cmd, $quiet);

@@ -1,3 +1,18 @@
+2004-02-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.19.0
+
+2004-02-16  Daniel Macks  <dmacks@netspace.org>
+
+	* STYLE: a style guide for the fink core code.
+
+2004-02-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.sh, setup.sh: Create FinkVersion.pm from FinkVersion.pm.in
+	during bootstrap.  (Also, when this is created in setup.sh, don't
+	do the obsolete substitution for @BASEPATH@, which is no longer
+	necessary.)
+	
 2004-02-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink-virtual-pkgs.in: Added "debug" mode to show what's going

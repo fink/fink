@@ -1,3 +1,4 @@
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::PkgVersion class
 #
@@ -190,14 +191,25 @@ sub initialize {
 	$self->expand_percent_if_available('BuildDepends');
 	$self->expand_percent_if_available('Conflicts');
 	$self->expand_percent_if_available('Depends');
-#	$self->conditional_pkg_list('Depends');
 	$self->expand_percent_if_available('Enhances');
 	$self->expand_percent_if_available('Pre-Depends');
 	$self->expand_percent_if_available('Provides');
 	$self->expand_percent_if_available('Recommends');
 	$self->expand_percent_if_available('Replaces');
 	$self->expand_percent_if_available('Suggests');
-#	$self->expand_percent_if_available('Package');
+
+	$self->conditional_pkg_list('BuildDepends');
+	$self->conditional_pkg_list('Conflicts');
+	$self->conditional_pkg_list('Depends');
+	$self->conditional_pkg_list('Enhances');
+	$self->conditional_pkg_list('Pre-Depends');
+	$self->conditional_pkg_list('Provides');
+	$self->conditional_pkg_list('Recommends');
+	$self->conditional_pkg_list('Replaces');
+	$self->conditional_pkg_list('Suggests');
+
+	$self->clear_self_from_list('Conflicts');
+	$self->clear_self_from_list('Replaces');
 
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if (exists $self->{parent}) {
@@ -298,7 +310,7 @@ sub get_param_with_expansion {
 			     '<<' => sub { $_[0] lt $_[1] },
 			     '>=' => sub { $_[0] ge $_[1] },
 			     '<=' => sub { $_[0] le $_[1] },
-			     '==' => sub { $_[0] eq $_[1] },
+			     '=' => sub { $_[0] eq $_[1] },
 			     '!=' => sub { $_[0] ne $_[1] }
 			   );
 	my $compare_ops = join "|", keys %compare_subs;
@@ -307,10 +319,10 @@ sub conditional_pkg_list {
 	my $self = shift;
 	my $field = lc shift;
 
-	my $value = $self->{$field};
+	my $value = $self->param($field);
 	return unless defined $value and length $value;
 	return unless $value =~ /(?-:\A|,|\|)\s*\(/;  # short-cut if no conditionals
-#	print "conditional_pkg_list for ",$self->{package},"\n";
+#	print "conditional_pkg_list for ",$self->get_name,"\n";
 #	print "\toriginal: $value\n";
 	my @atoms = split /([,|])/, $value; # break apart the field
 	map {
@@ -345,11 +357,30 @@ sub conditional_pkg_list {
 	$value =~ s/^\s*[,|]\s*//;
 	$value =~ s/\s*[,|]\s*$//;
 #	print "\tnow have: $value\n";
-	$self->{$field} = $value;
+	$self->set_param($field, $value);
 	return;
 }
 
 # remember we were in a block for this method
+}
+
+### Remove our own package name from a given package-list field
+### (Conflicts or Replaces, indicated by $field). This must be called
+### after conditional dependencies are cleared. The field is re-set.
+sub clear_self_from_list {
+	my $self = shift;
+	my $field = lc shift;
+
+	my $value = $self->param($field);
+	return unless defined $value and length $value;
+	my $pkgname = $self->get_name;
+	return unless $value =~ /\Q$pkgname\E/;  # short-cut if we're not listed
+
+	# Approach: break apart comma-delimited list, reassemble only
+	# those atoms that don't match.
+
+	$value = join ", ", ( grep { /([a-z0-9.+\-]+)/ ; $1 ne $pkgname } split /,\s*/, $value);
+	$self->set_param($field, $value);
 }
 
 ### add a splitoff package
@@ -595,34 +626,6 @@ sub get_checksum {
 		}
 	}		
 	return "-";
-}
-
-# return the number of source items stored in an object
-sub get_source_items_count {
-	my $self = shift;
-	return 0 unless exists  $self->{_source_items};
-	return 0 unless defined $self->{_source_items};
-	return scalar @{$self->{_source_items}};
-}
-
-# return a (possibly null but always defined) list of the source items
-# stored in in an object
-sub get_source_items_list {
-	my $self = shift;
-
-	return () unless exists  $self->{_source_items};
-	return () unless defined $self->{_source_items};
-
-	# need to do deep copy because _source_items is a ref to a
-	# list of hashes and we don't want the caller to accidentally
-	# modify the package data
-
-	my (@source_items, $source_item);
-	foreach $source_item (@{$self->{_source_items}}) {
-		my %source_item = %$source_item;
-		push @source_items, \%source_item;
-	}
-	return @source_items;
 }
 
 sub get_custom_mirror {
@@ -1933,16 +1936,7 @@ EOF
 										 Recommends Suggests Enhances
 										 Maintainer)) {
 		if ($self->has_param($field)) {
-			my $pkgs = &collapse_space($self->param($field));
-			if ($field eq "Replaces" or $field eq "Conflicts") {
-				# Remove self from own Conflicts and Replaces.
-				# Approach: break apart comma-delimited list,
-				# reassemble only those atoms that don't match.
-				$pkgs = join ", ", ( grep { /([a-z0-9.+\-]+)/ ; $1 ne $self->get_name } split /,\s*/, $pkgs)
-			}
-			if (length $pkgs) {
-				$control .= "$field: $pkgs\n";
-			}
+			$control .= "$field: ".&collapse_space($self->param($field))."\n";
 		}
 	}
 	$control .= "Description: ".$self->get_description();

@@ -1,3 +1,7 @@
+# -*- mode: Perl; tab-width: 4; -*-
+#
+# Fink::Command module
+#
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
 # Copyright (c) 2001-2004 The Fink Package Manager Team

@@ -45,7 +45,7 @@ foreach $file (qw(ChangeLog _keys _list)) {
 }
 
 my $packagefiles = "COPYING ChangeLog README install.sh postinstall.pl.in " .
-    "_keys _list cpan ctan debian gimp gnome gnu kde master rsync sourceforge" ;
+    "_keys _list _urls apache apt cpan ctan cvs-repository debian gimp gnome gnu kde master rsync sourceforge website" ;
 
 my $info_script = "";
 

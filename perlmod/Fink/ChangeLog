@@ -1,3 +1,44 @@
+2004-02-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Stop supporting bootstrap/upgrade on 10.2 when
+	the new Developer Tools are not installed (i.e., no more non-gcc3.3
+	10.2 tree).
+
+2004-02-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Changed conditional depends syntax for "equals"
+	to "=" (like Debian version dependency syntax).
+	* PkgVersion.pm: Activated conditional depends parsing (during
+	indexing). Fixed to use accessor methods.
+	* PkgVersion.pm: Moved removal-of-self-from-Conflicts/Replaces
+	code into a new clear_self_from_list method. Fixed to use accessor
+	methods. Switch to calling it during indexing instead of .deb
+	construction (dependency engine may need Conflicts info).
+	* PkgVersion.pm: Remove more remnants of my _source_item stuff.
+	* Services.pm: Revert accidental commit of debugging code.
+	
+2004-02-18  Rob Braun  <bbraun@opendarwin.org>
+
+	* Bootstrap.pm: Update the i386 distribution detection code to
+	understand i386-apple-darwin 7.0.1 as 10.3 distribution.
+
+2004-02-17  Daniel Macks  <dmacks@netspace.org>
+
+	* all: add emacs tags to get perl-mode (even for .pm.in) and set
+	tab-width to 4 chars (in accord with fink coding style).
+
+2004-02-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: *Script parsing improvements for non-#!-specified
+	scripts: fix removal of leading whitespace, implement use of \ at
+	end of line to allow wrapping of long lines. (by Rohan Lloyd; see
+	"Folding long lines in scripts" on fink-devel)
+
+2004-02-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Added "debug" mode to show what's going on while
+	searching for various virtual bits.  (Good idea, Martin!)
+
 2004-02-12  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: conditional_pkg_list: optimized initial field
