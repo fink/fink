@@ -798,7 +798,7 @@ sub resolve_depends {
 				# If you've read till here without mental injuries, congrats :-)
 				next SPECLOOP if ($depname eq $self->{_name});
 				foreach	 $splitoff (@{$self->{_splitoffs}}) {
-					 next SPECLOOP if ($depname eq $splitoff->get_name());
+					next SPECLOOP if ($depname eq $splitoff->get_name());
 				}
 			}
 

@@ -1458,7 +1458,6 @@ sub real_install {
 				### and to silence the dep engine so it
 				### only asks once at the begining
 				unless ($forceoff) {
-					&real_install($OP_BUILD, 0, 1, $package->get_name());
 					### Double check it didn't already get
 					### installed in an other loop
 					unless ($package->is_installed() &&
@@ -1468,6 +1467,8 @@ sub real_install {
 						$package->phase_compile();
 						$package->phase_install();
 						$package->phase_build();
+					} else {
+						&real_install($OP_BUILD, 0, 1, $package->get_name());
 					}
 				}
 			}
