@@ -23,21 +23,13 @@
 #
 
 $| = 1;
-use 5.006;	 # perl 5.6.0 or newer required
+use v5.6.0;	 # perl 5.6.0 or newer required
 use strict;
 
 use FindBin;
 
 my ($answer, $packageversion, $packagerevision);
 my ($script, $cmd);
-
-### check the perl version
-
-if ("$]" == "5.006" or "$]" == "5.008" or "$]" == "5.008001") {
-    print "Found perl version $].\n";
-} else {
-die "\nSorry, your /usr/bin/perl is version $], but Fink requires either\nversion 5.6.0 (5.006), 5.8.0 (5.008), or 5.8.1 (5.008001).\n\n";
-}
 
 ### check if we're unharmed
 
@@ -315,7 +307,7 @@ $script =
 	"tar -cf $installto/src/fink-$packageversion.tar ".
 	"COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html ".
 	"ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-	"postinstall.pl.in perlmod update mirror shlibs.default.in\n";
+	"pathsetup.command.in postinstall.pl.in perlmod update mirror shlibs.default.in\n";
 
 foreach $cmd (split(/\n/,$script)) {
 	next unless $cmd;		# skip empty lines

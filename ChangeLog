@@ -1,19 +1,8 @@
-2003-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2003-06-16  Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* bootstrap.pl: allow bootstrapping with perl 5.8.1 too
-
-2003-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
-
-	* bootstrap.pl: allow bootstrapping with either perl 5.6.0 or
-	perl 5.8.0
-
-2003-06-04  Chris Zubrzycki <beren12@users.sourceforge.net>
-
-	* fink.8.in: add usage docs for maintainer and tree searches
-
-2003-05-25  Benjamin Reed <rangerrick@users.sourceforge.net>
-
-	* VERSION: Bumped package manager version to 0.13.1
+	* bootstrap.pl, inject.pl, install.sh, pathsetup.command.in, setup.sh:
+	add the "pathsetup.command" shell script, to be installed along with
+	fink, which helps users set their paths
 
 2003-05-20  Dave Morrison <dmrrsn@users.sourceforge.net>
 
