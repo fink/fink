@@ -1,4 +1,9 @@
 2003-11-20  Michael G Schwern <schwern@pobox.com>
+		
+	* FinkVersion.pm.in: Removing hard coded @BASEPATH@.  Using Fink::Config
+		instead.
+
+2003-11-20  Michael G Schwern <schwern@pobox.com>
 
 	* FinkVersion.pm.in: Documenting Fink::FinkVersion.  Removing module
 	template cruft.

@@ -108,7 +108,7 @@ methods...
 sub pkginfo_version {
 	my $pv = "0";
 	my ($fn, $v);
-	foreach $fn (glob("@BASEPATH@/fink/stamp-*")) {
+	foreach $fn (glob("$basepath/fink/stamp-*")) {
 		if ($fn =~ m{/stamp-rsync}) {
 			return "rsync";
 		} elsif ($fn =~ m{/stamp-cvs}) {
