@@ -1,3 +1,7 @@
+2004-10-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: lol2pkglist code cleanup.
+
 2004-10-16  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Implemented pkglist2lol and lol2pkglist, to convert

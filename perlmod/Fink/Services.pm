@@ -825,9 +825,7 @@ sub pkglist2lol {
 	my @lol = ();
 
 	return [] unless defined $pkglist && length $pkglist;
-#	print "pkglist2lol: '$pkglist'\n";
 	foreach (split /\s*,\s*/, $pkglist) {  # take each OR cluster
-#		print "\t'$_'\n";
 		# store ref to list of non-null pkgs
 		my @or_cluster = grep {length} split /\s*\|\s*/, $_;
 		push @lol, \@or_cluster if @or_cluster;
@@ -851,14 +849,12 @@ sub lol2pkglist {
 	my $pkglist = "";
 
 	return "" unless defined $struct && @$struct;
+
+	my $or_cluster;
+
 	foreach (@$struct) {                          # take each OR cluster
 		next unless defined $_ && @$_;            # skip empty clusters
-		my $or_cluster;
-		foreach (@$_) {                           # take each pkg in the cluster
-			next unless defined $_ && length $_;  # skip null pkgs
-			$or_cluster .= " | " if defined $or_cluster;
-			$or_cluster .= $_;                    # join pkgs in cluster by OR
-		}
+		$or_cluster = join " | ", grep {defined and length} @$_;
 		$pkglist .= ", " if length $pkglist;
 		$pkglist .= $or_cluster if defined $or_cluster;  # join clusters by AND
 	}
