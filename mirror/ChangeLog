@@ -1,3 +1,10 @@
+2004-01-02  David H. <dmalloc@users.sourceforge.net>
+	* added new rsync mirror in Los Angeles.
+		lax.finkmirrors.net
+		Maintainer:
+		Srikanth Sariapalli
+		srik@sagan.usc.edu
+		
 2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* all: updated Copyright notice
