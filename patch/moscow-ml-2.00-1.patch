@@ -1,0 +1,71 @@
+diff -ru mosml/src/Makefile.inc mosml-patched/src/Makefile.inc
+--- mosml/src/Makefile.inc	Thu Jun 29 02:28:14 2000
++++ mosml-patched/src/Makefile.inc	Sun Apr  1 11:03:05 2001
+@@ -2,7 +2,7 @@
+ 
+ # Where to install stuff
+ 
+-MOSMLHOME=${HOME}/mosml
++MOSMLHOME=@PREFIX@
+ 
+ # Various utility programs
+ INSTALL_PROGRAM=cp
+@@ -15,24 +15,24 @@
+ 
+ ADDPRIMS=dynlib.c
+ ADDOBJS=dynlib.o
+-ADDRUNLIBS=-ldl
+-ADDRUNCFLAGS=
+-ADDDYNLIBCFLAGS=
++ADDRUNLIBS=-L@PREFIX@/lib -ldl
++ADDRUNCFLAGS=-I@PREFIX@/include
++ADDDYNLIBCFLAGS=-fno-common
+ 
+ # To compile the runtime system camlrunm under Cygwin with support for
+ # dynamically loadable libraries (DDLs), uncomment these:
+ 
+-ADDPRIMS=dynlib.c
+-ADDOBJS=dynlib.o
+-ADDRUNCFLAGS=
+-ADDDYNLIBCFLAGS=
++#ADDPRIMS=dynlib.c
++#ADDOBJS=dynlib.o
++#ADDRUNCFLAGS=
++#ADDDYNLIBCFLAGS=
+ 
+ # For Linux (x86 or Alpha), use:
+ # ------------------------------
+-CPP=/lib/cpp -P -traditional -Dunix -Umsdos
+-STRIP=strip
+-LD=gcc -rdynamic
+-DYNLD=ld -shared
++# CPP=/lib/cpp -P -traditional -Dunix -Umsdos
++# STRIP=strip
++# LD=gcc -rdynamic
++# DYNLD=ld -shared
+ 
+ # For Cygwin 20.1, use:
+ # ---------------------
+@@ -104,6 +104,13 @@
+ # LD=gcc -rdynamic
+ # DYNLD=ld -shared
+ 
++# For Mac OS X, use:
++# ------------------------------
++CPP=/usr/bin/cpp -P -traditional -Dunix -Umsdos
++STRIP=echo
++LD=cc
++DYNLD=cc -bundle
++
+ SHELL=/bin/sh
+ 
+ # ---------- You shouldn't need to edit below this line ------------
+@@ -142,7 +149,7 @@
+ # For cross-compiling to Win 32 (from Linux) (development only)
+ # CPP=/lib/cpp -P -traditional -Umsdos -Uunix -Dwin32
+ 
+-CC=gcc
++CC=cc -traditional-cpp
+ 
+ .SUFFIXES :
+ .SUFFIXES : .sml .sig .ui .uo .mlp .lex .c .o
