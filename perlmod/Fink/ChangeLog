@@ -1,5 +1,9 @@
 2005-01-31  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Warn for "Provides: foo (versiondata)"
+
+2005-01-31  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Implemented --recursive for fetch mode. Implemented
 	--dry-run in the engine (only available with fetch --recursive so
 	far). Improved pkgspec constants usage in real_install.

@@ -804,6 +804,14 @@ sub validate_info_component {
 				$looks_good = 0;
 			}
 		}
+
+		# Provides is not versionable
+		if ($field =~ /^provides$/i) {
+			if ($value =~ /\)\s*(,|\Z)/) {
+				print "Warning: Not allowed to specify version information in \"Provides\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
 	}
 
 	return $looks_good;
