@@ -1417,8 +1417,7 @@ EOF
 
   ### remove root dir
 
-  if (not $do_splitoff
-      and not $config->param_boolean("KeepRootDir") 
+  if (not $config->param_boolean("KeepRootDir") 
       and -e $destdir) {
     if (&execute("rm -rf $destdir")) {
       &print_breaking("WARNING: Can't remove package build directory ".

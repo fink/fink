@@ -1,3 +1,8 @@
+2002-03-13  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm (phase_build): Fix so that root-dirs of splitoffs are
+	properly removed again.
+
 2002-03-09  Max Horn  <max@quendi.de>
 
 	* Engine.pm (cmd_apropos): Fixed apropos commands for strings like "gtk+"
