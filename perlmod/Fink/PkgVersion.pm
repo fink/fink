@@ -2883,7 +2883,7 @@ EOMSG
 						"the file manually to save disk space. ".
 						"Continuing with normal procedure.");
 
-	die("buildlock failure") if $lock_failed;
+	die "buildlock failure\n" if $lock_failed;
 
 	# successfully get lock, so record ourselves
 	$self->{_lockpkg} = $lockpkg;

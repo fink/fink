@@ -1,3 +1,9 @@
+2005-01-17  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: (Re)introduce prompt_selection() with timeout; remove
+	timeout from prompt_selection_new().
+	* PkgVersion.pm: Fix error msg for buildlock failure.
+
 2005-01-16  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Add $timeout param to prompt() and prompt_selection_new().

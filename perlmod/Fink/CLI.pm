@@ -39,7 +39,7 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
-					  &prompt &prompt_boolean &prompt_selection_new
+					  &prompt &prompt_boolean &prompt_selection_new &prompt_selection
 					  &print_optionlist
 			      &get_term_width);
 }
@@ -238,7 +238,23 @@ sub prompt_boolean {
 =item prompt_selection_new
 
     my $answer = prompt_selection_new $prompt, \@default, @choices;
-    my $answer = prompt_selection_new $prompt, \@default, @choices, $timeout;
+	
+Compatibility during API migration. Use prompt_selection() instead.
+
+=cut
+
+sub prompt_selection_new {
+	my $prompt = shift;
+	my $default = shift;
+	my @choices = @_;
+
+	&prompt_selection($prompt, $default, \@choices);
+}
+
+=item prompt_selection
+
+    my $answer = prompt_selection $prompt, \@default, \@choices;
+    my $answer = prompt_selection $prompt, \@default, \@choices, $timeout;
 
 Ask the user a multiple-choice question and return the answer. The
 user is prompted via STDOUT/STDIN using $prompt (which is
@@ -261,16 +277,17 @@ $timeout is given, any existing alarm() is destroyed.
 
 =cut
 
-sub prompt_selection_new {
+sub prompt_selection {
 	my $prompt = shift;
 	my $default = shift;
-	my @choices = @_;
+	my $choices = shift;
+	my @choices = @$choices;
 	my $timeout = shift || 0;
 
 	my ($count, $answer, $default_value);
 
 	if (@choices/2 != int(@choices/2)) {
-		confess "Odd number of elements in \@choices";
+		confess 'Odd number of elements in @choices';
 	}
 
 	if (!defined $default->[0]) {
