@@ -36,7 +36,7 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
-					  &read_properties_multival &read_properties_lines
+					  &read_properties_multival &read_properties_multival_var
 					  &filename &execute &execute_script &expand_percent
 					  &print_breaking &print_breaking_prefix
 					  &print_breaking_twoprefix
@@ -173,16 +173,46 @@ sub read_properties_lines {
 ### read properties file with multiple values per key
 
 sub read_properties_multival {
+	 my ($file) = shift;
+	 # do we make the keys all lowercase
+	 my ($notLC) = shift || 0;
+	 my (@lines);
+	 
+	 open(IN,$file) or die "can't open $file: $!";
+	 @lines = <IN>;
+	 close(IN);
+	 return read_properties_multival_lines($file, $notLC, @lines);
+}
+
+### read properties from a variable with multiple values per key
+
+sub read_properties_multival_var {
+
+	 my ($file) = shift;
+	 my ($var) = shift;
+	 # do we make the keys all lowercase
+	 my ($notLC) = shift || 0;
+	 my (@lines);
+	 my ($line);
+
+	 @lines = split /^/m,$var;
+	 return read_properties_multival_lines($file, $notLC, @lines);
+}
+
+### read properties with multiple values per key from a list of lines
+
+sub read_properties_multival_lines {
 	my ($file) = shift;
 	my ($notLC) = shift || 0;
+	my (@lines) = @_;
 	my ($hash, $lastkey, $lastindex);
 
 	$hash = {};
 	$lastkey = "";
 	$lastindex = 0;
 
-	open(IN,$file) or die "can't open $file: $!";
-	while (<IN>) {
+	foreach (@lines) {
+	    chomp;
 		next if /^\s*\#/;		# skip comments
 		if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 			$lastkey = $notLC ? $1 : lc $1;
@@ -197,10 +227,9 @@ sub read_properties_multival {
 			$hash->{$lastkey}->[$lastindex] .= "\n".$1;
 		}
 	}
-	close(IN);
 
 	return $hash;
-}
+    }
 
 ### execute a single command
 
