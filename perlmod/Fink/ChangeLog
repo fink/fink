@@ -1,5 +1,9 @@
 2003-12-16  Daniel Macks <dmacks@netspace.org>
 
+	* Validation.pm: Remembered that Type doesn't always exist
+
+2003-12-16  Daniel Macks <dmacks@netspace.org>
+
 	* PkgVersion.pm: Change to a more generic way of parsing perl
 	version info from Type
 	* Validation.pm: Change to a more structured definition of allowed
