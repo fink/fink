@@ -1,5 +1,8 @@
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
+	* FinkVersion.pm.in: Added functions to retreive package manager
+	and distribution versions.
+
 	* Services.pm: Resolved circular dependency between Services and
 	Config.
 

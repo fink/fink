@@ -21,6 +21,8 @@
 
 package Fink::FinkVersion;
 
+use Fink::Config qw($basepath);
+
 use strict;
 use warnings;
 
@@ -41,6 +43,25 @@ our $fink_version = "@VERSION@";
 
 
 END { }       # module clean-up code here (global destructor)
+
+
+### return package manager version
+
+sub fink_version {
+  return $fink_version;
+}
+
+### retreive distribution version
+
+sub distribution_version {
+  my $dv;
+  if (-f "$basepath/etc/fink-release") {
+    chomp($dv = `cat $basepath/etc/fink-release`);
+  } else {
+    $dv = "unknown";
+  }
+  return $dv;
+}
 
 
 ### EOF
