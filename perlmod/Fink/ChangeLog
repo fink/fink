@@ -1,4 +1,4 @@
-2002-01-22  Ben Hines <benh57@users.sourceforge.net>
+2003-01-22  Ben Hines <benh57@users.sourceforge.net>
 
 	* Engine.pm, Package.pm: Match "fink list" & "install/remove/etc"
 	  items case-insensitively (Patch #622663)
