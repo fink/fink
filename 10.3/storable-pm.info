@@ -2,7 +2,7 @@ Package: storable-pm
 Version: 1.0.14
 Revision: 7
 Type: bundle
-Depends: storable-pm560 | storable-pm561 | perl580-core | perl581-core | perl584-core
+Depends: storable-pm560 | storable-pm561 | perl580-core | perl581-core | perl582-core | perl584-core 
 Description: Placeholder for versioned Storable packages
 DescPackaging: <<
   This version of storable-pm can be installed when /usr/bin/perl is either 
