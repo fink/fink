@@ -1,3 +1,10 @@
+2004-12-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Change execute*() to take option=>value hash of
+	options instead of parameter-ordered values. Only option is
+	'quiet'.
+	* Engine.pm: Convert to new Services::execute*() API.
+
 2004-12-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Config.pm, Configure.pm: Verbose=1 *is* desired default.

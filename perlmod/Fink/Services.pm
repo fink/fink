@@ -386,14 +386,21 @@ sub read_properties_multival_lines {
 =item execute
 
     my $retval = execute $cmd;
-    my $retval = execute $cmd, $quiet;
+    my $retval = execute $cmd, %options;
 
 Executes $cmd as a single string via a perl system() call and returns
 the exit code from it. The command is printed on STDOUT before being
 executed. If $cmd begins with a # (preceeded optionally by whitespace)
-it is treated as a comment and is not executed. If $quiet is false (or
-not given) and the command failed, a message including the return code
-is sent to STDOUT.
+it is treated as a comment and is not executed. The optional %options
+are given as option=>value pairs. The following options are known:
+
+    quiet
+
+        If the option 'quiet' is not given or its value is false and
+        the command failed, a message including the return code is
+        sent to STDOUT.
+
+=back
 
 =cut
 
@@ -401,16 +408,16 @@ is sent to STDOUT.
 
 sub execute {
 	my $cmd = shift;
-	my $quiet = shift || 0;
+	my %options = ( defined $_[0] ? @_ : () );
 	my ($commandname);
 
 	return if ($cmd =~ /(^\s*\Z)|(^\s*\#)/); # Ignore empty commands & comments
-	if (not $quiet) {
+	if (not $options{'quiet'}) {
 		print "$cmd\n";
 	}
 	system($cmd);
 	$? >>= 8 if defined $? and $? >= 256;
-	if ($? and not $quiet) {
+	if ($? and not $options{'quiet'}) {
 		($commandname) = split(/\s+/, $cmd);
 		print "### execution of $commandname failed, exit code $?\n";
 	}
@@ -420,7 +427,7 @@ sub execute {
 =item execute_script
 
      my $retval = execute_script $script;
-     my $retval = execute_script $script, $quiet;
+     my $retval = execute_script $script, %options;
 
 Executes the multiline script $script.
 
@@ -435,13 +442,21 @@ individually. In this latter case, the first line that fails causes
 further lines to not be executed and the failure code is returned.
 
 In either case, execution is performed by Fink::Services::execute
-(which see for more information, including the meaning of $quiet).
+(which see for more information). The optional %options are given as
+option=>value pairs. The following options are known:
+
+
+    quiet
+
+        If the option 'quiet' is not given or its value is false and
+        the command failed, a message including the return code is
+        sent to STDOUT.
 
 =cut
 
 sub execute_script {
 	my $script = shift;
-	my $quiet = shift || 0;
+	my %options = ( defined $_[0] ? @_ : () );
 	my ($retval, $cmd, $tempfile);
 
 	# If the script starts with a shell specified (e.g. #!/bin/sh), run it 
@@ -456,7 +471,7 @@ sub execute_script {
 		print OUT "$script\n";
 		close (OUT) or die "an unexpected error occurred closing $tempfile: $!";
 		chmod(0755, $tempfile);
-		$retval = execute($tempfile, $quiet);
+		$retval = execute($tempfile, %options);
 		if ($retval == 0) {
 			# Delete the temporary file, but only if it run successfully. Simplifies
 			# debugging since it allows us to look at failed scripts. 
@@ -471,7 +486,7 @@ sub execute_script {
 		$script =~ s/\s*\\\s*\n/ /g;
 		# Execute each line as a separate command.
 		foreach $cmd (split(/\n/,$script)) {
-			$retval = execute($cmd, $quiet);
+			$retval = execute($cmd, $options{'quiet'});
 			if ($retval) {
 				return $retval;
 			}
@@ -486,7 +501,7 @@ sub execute_script {
 =item execute_nonroot_okay
 
     my $retval = execute_nonroot_okay $cmd;
-    my $retval = execute_nonroot_okay $cmd, $quiet;
+    my $retval = execute_nonroot_okay $cmd, %options;
 
 Wrapper for execute() to run $cmd as user "nobody" if fink was run
 with the --build-as-nobody flag.
@@ -509,7 +524,7 @@ sub execute_nonroot_okay {
 =item execute_script_nonroot_okay {
 
 	my $retval = execute_script_nonroot_okay $script;
-    my $retval = execute_script_nonroot_okay $script, $quiet;
+    my $retval = execute_script_nonroot_okay $script, %options;
 
 Wrapper for execute_script() to run $script as user "nobody" if fink
 was run with the --build-as-nobody flag.

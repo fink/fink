@@ -167,7 +167,7 @@ sub process {
 		}
 		# check if apt-get is available
 		if (not $apt_problem) {
-			if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", 1)) {
+			if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
 				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled ".
 				    "but apt-get could not be run. Try to install the 'apt' Fink package ".
 				    "(with e.g. 'fink install apt').");
@@ -177,7 +177,7 @@ sub process {
 		# check if 'apt-get --ignore-breakage' is implemented
 		if ($aptgetflag == 2 and not $apt_problem) {
 			# only for the commands that needs them
-			if (&execute("$basepath/bin/apt-get --ignore-breakage 1>/dev/null 2>/dev/null", 1)) {
+			if (&execute("$basepath/bin/apt-get --ignore-breakage 1>/dev/null 2>/dev/null", quiet=>1)) {
 				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but the ".
 				   "'apt-get' tool installed on this system doesn't support it. Please ".
 				   "update your Fink installation (with e.g. 'fink selfupdate').");
@@ -253,7 +253,7 @@ sub restart_as_root {
 		die "Fink is not configured to become root automatically.\n";
 	}
 
-	exit &execute($cmd, 1);
+	exit &execute($cmd, quiet=>1);
 }
 
 ### simple commands
@@ -781,7 +781,7 @@ EOF
 	@ARGV = @temp_ARGV;
 
 	if ($recursive) {
-		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", 1)) {
+		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
 			&print_breaking("ERROR: Couldn't call apt-get, which is needed for ".
 			    "the recursive option. Try to install the 'apt' Fink package ".
 			    "(with e.g. 'fink install apt').");
@@ -939,7 +939,7 @@ EOF
 	@ARGV = @temp_ARGV;
 
 	if ($recursive) {
-		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", 1)) {
+		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
 			&print_breaking("ERROR: Couldn't call apt-get, which is needed for ".
 			    "the recursive option. Try to install the 'apt' Fink package ".
 			    "(with e.g. 'fink install apt').");
