@@ -75,7 +75,7 @@ our %allowed_license_values = map {$_, 1}
 	(
 	 "GPL", "LGPL", "GFDL", "LDP", "BSD",
 	 "Artistic", "OSI-Approved", "Public Domain",
-	 "Restrictive", "Restrictive/Distributable ", "Commercial",
+	 "Restrictive", "Restrictive/Distributable", "Commercial",
 	 "Artistic/GPL", "GPL/GFDL", "GPL/LGPL", "LGPL/GFDL"
 	);
 
@@ -227,7 +227,7 @@ sub validate_info_file {
 	}
 	
 	# License should always be specified, and must be one of the allowed set
-	$value = lc $properties->{license};
+	$value = $properties->{license};
 	if ($value) {
 		if (not $allowed_license_values{$value}) {
 			print "Warning: Unknown license \"$value\". ($filename)\n";
