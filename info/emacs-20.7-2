@@ -1,0 +1,25 @@
+Package: emacs
+Version: 20.7
+Revision: 2
+Source: gnu
+Depends: gettext
+UpdateConfigGuess: true
+Patch: %f.patch
+PatchScript: autoconf
+ mkdir xlibs
+ cd xlibs; ln -s /usr/X11R6/lib/*.a .
+ConfigureParams: --with-x --with-x-toolkit=lucid --x-libraries=`pwd`/xlibs
+InstallScript: make install prefix=%i
+ rm -f %i/bin/ctags
+ rm -f %i/man/man1/ctags.1
+CommentPort: Uses Apple's patches to work with the Mach-O
+ format. Needs a dirty trick to link against the static X11 libraries;
+ it doesn't work when linked against the shared libraries. Note that
+ this will only work with XFree86, because Xtools is shipped with
+ shared libraries only.
+ .
+ Also needs a small patch to a Makefile to also link against Xpm,
+ which is required by the recent versions of Xaw.
+ .
+ Otherwise, "seems to work".
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
