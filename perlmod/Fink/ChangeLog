@@ -1,3 +1,7 @@
+2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Adjust the dists symlink for the 0.14.2 release
+
 2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* SelfUpdate.pm: Enable the Trees: hack for rsync'ing multiple
