@@ -1766,8 +1766,11 @@ EOF
 			} elsif ($_ eq 'gcc' or $_ eq 'epoch' or $_ =~ /^source\d*-md5$/) {
 				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
 			} elsif ($_ eq 'configureparams') {
-				my $cparams = $pkg->get_configureparams;
-				printf "%s: %s\n", $_, $cparams if defined $cparams and length $cparams;
+				my $cparams = &expand_percent(
+					$pkg->parse_configureparams,
+					$pkg->{_expand}, "fink dumpinfo " . $pkg->get_fullversion
+				);
+				printf "%s: %s\n", $_, $cparams if length $cparams;
 			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
@@ -1777,12 +1780,15 @@ EOF
 					) {
 				printf "%s: %s\n", $_, $pkg->param_expanded($_) if $pkg->has_param($_);
 			} elsif ($_ =~ /^((patch|compile|install|(pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)$/) {
+				$pkg->parse_configureparams;
 				printf "$_:\n%s\n", $pkg->param_expanded($_) if $pkg->has_param($_);
 			} else {
 				die "Unknown field $_\n";
 			}
 		}
+		$pkg->parse_configureparams;
 		foreach (@percents) {
+			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
 			printf "%%%s: %s\n", $_, &expand_percent("\%$_", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_fullversion);
 		}
 	}

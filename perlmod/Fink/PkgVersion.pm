@@ -169,18 +169,6 @@ sub initialize {
 
 	$self->{_expand} = $expand;
 
-	# ConfigureParams can contain %-expansions needed by eval_conditional
-	if ($self->is_type('perl')) {
-		# grab perl version, if present
-		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-
-		$expand->{'c'} = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ".
-			$self->get_configureparams("");
-	} else {
-		$expand->{'c'} = "--prefix=\%p ".
-			$self->get_configureparams("");
-	}
-
 	$self->{_bootstrap} = 0;
 
 	# Description is used by 'fink list' so better to get it expanded now
@@ -373,7 +361,35 @@ sub clear_self_from_list {
 	$self->set_param($field, $value);
 }
 
-# return the value of ConfigureParams (if present, if not return first param)
+# Process ConfigureParams (including Type-specific defaults) and
+# eventually conditionals, set {_expand}->{c}, and return result.
+# Does not change {configureparams}.
+#
+# NOTE:
+#   You must set _expand before calling!
+#   You must make sure this method has been called before ever calling
+#     expand_percent if it could involve %c!
+#
+# Okay to call repeatedly (uses {_expand}->{c} as run-once semaphore)
+
+sub parse_configureparams {
+	my $self = shift;
+
+	return  $self->{_expand}->{'c'} if exists $self->{_expand}->{'c'};
+
+	if ($self->is_type('perl')) {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+
+		$self->{_expand}->{'c'} = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
+	} else {
+		$self->{_expand}->{'c'} = "--prefix=\%p ";
+	}
+	$self->{_expand}->{'c'} .= $self->param_default("ConfigureParams", "");
+#	$self->{_expand}->{'c'} .= $self->get_configureparams("");
+}
+
+# actually handle the conditional processing of ConfigureParams
 
 our $warned_delimmatch;  # defined if user has been warned
 
@@ -388,6 +404,7 @@ sub get_configureparams {
 		# this is not an Essential package
 		if (not $warned_delimmatch) {
 			print "Could not load Text::DelimMatch so cannot handle ConfigureParam conditionals.\n";
+			print "(note: this feature is not needed for any packages in the official Fink trees)\n";
 			$warned_delimmatch = 1;  # only warn once per indexing run
 		}
 		return $string;
@@ -1585,6 +1602,8 @@ sub phase_patch {
 	my $self = shift;
 	my ($dir, $patch_script, $cmd, $patch, $subdir);
 
+	$self->parse_configure_params;
+
 	if ($self->is_type('bundle')) {
 		return;
 	}
@@ -1671,6 +1690,8 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 
+	$self->parse_configure_params;
+
 	if ($self->is_type('bundle')) {
 		return;
 	}
@@ -1724,6 +1745,8 @@ sub phase_install {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
+
+	$self->parse_configure_params;
 
 	if ($self->is_type('dummy')) {
 		die "can't build ".$self->get_fullname().
