@@ -1,3 +1,7 @@
+2003-11-12  Max Horn  <max@quendi.de>
+
+	* Services.pm: Simplified code a bit.
+
 2003-11-12  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Add rsync mirroring fallback with prompting, similar

@@ -301,30 +301,24 @@ sub filename {
 
 sub print_breaking {
 	my $s = shift;
-	my $linebreak = shift;
-	$linebreak = 1 unless defined $linebreak;
+	my $linebreak = shift || 1;
 
 	print_breaking_twoprefix($s, $linebreak, "", "");
 }
 
 sub print_breaking_prefix {
 	my $s = shift;
-	my $linebreak = shift;
-	$linebreak = 1 unless defined $linebreak;
-	my $prefix = shift;
-	$prefix = "" unless defined $prefix;
+	my $linebreak = shift || 1;
+	my $prefix = shift || "";
 
 	print_breaking_twoprefix($s, $linebreak, $prefix, $prefix);
 }
 
 sub print_breaking_twoprefix {
 	my $s = shift;
-	my $linebreak = shift;
-	$linebreak = 1 unless defined $linebreak;
-	my $prefix1 = shift;
-	$prefix1 = "" unless defined $prefix1;
-	my $prefix2 = shift;
-	$prefix2 = "" unless defined $prefix2;
+	my $linebreak = shift || 1;
+	my $prefix1 = shift || "";
+	my $prefix2 = shift || "";
 	my ($pos, $t, $reallength, $prefix, $first);
 
 	chomp($s);
@@ -354,8 +348,7 @@ sub print_breaking_twoprefix {
 
 sub prompt {
 	my $prompt = shift;
-	my $default_value = shift;
-	$default_value = "" unless defined $default_value;
+	my $default_value = shift || "";
 	my ($answer);
 
 	require Fink::Config;
@@ -375,8 +368,7 @@ sub prompt {
 
 sub prompt_boolean {
 	my $prompt = shift;
-	my $default_value = shift;
-	$default_value = 1 unless defined $default_value;
+	my $default_value = shift || 1;
 	my ($answer, $meaning);
 
 	require Fink::Config;
@@ -408,16 +400,15 @@ sub prompt_boolean {
 
 # select from a list of choices
 # parameters:
-#	 prompt					- a string
+#	 prompt			- a string
 #	 default_value	- a number between 1 and the number of choices
-#	 names					- a hashref containing display names for the choices,
-#										indexed by the choices themselves (not their index)
-#	 the choices		- a list of choices; one of these will be returned
+#	 names			- a hashref containing display names for the choices,
+#					  indexed by the choices themselves (not their index)
+#	 the choices	- a list of choices; one of these will be returned
 
 sub prompt_selection {
 	my $prompt = shift;
-	my $default_value = shift;
-	$default_value = 1 unless defined $default_value;
+	my $default_value = shift || 1;
 	my $names = shift;
 	my @choices = @_;
 	my ($key, $count, $answer);
