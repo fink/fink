@@ -298,7 +298,7 @@ Fink $version
 Usage: fink list [options] [string]
 
 Options:
-  -w=xyz, --width=xyz  - Sets the width of the display you would like the output
+  -w xyz, --width=xyz  - Sets the width of the display you would like the output
                          formatted for. xyz is either a numeric value or auto.
                          auto will set the width based on the terminal width.
   -t, --tab            - Outputs the list with tabs as field delimiter.
