@@ -1,3 +1,12 @@
+2003-12-09  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* inject.pl: including fink.shlibs in tar ball
+	* install.sh: Adding install bts for fink.shlibs
+	* fink.shlibs: Adding new file, installing to
+	$basepath/var/lib/dpkg/info. Should contain a full list of shlibs for
+	macosx version and darwin versions, and perhaps apple's x11 and other
+	virtuals.
+
 2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Makefile, fink.info.in: Modification of strategy for running the

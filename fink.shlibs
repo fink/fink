@@ -1,0 +1,3 @@
+/usr/lib/libSystem.B.dylib 1.0.0 darwin (>= 1.0-1)
+/usr/lib/libssl.0.9.7.dylib 0.9.7 darwin (>= 7.0-1)
+/usr/lib/libcrypto.0.9.7.dylib 0.9.7 darwin (>= 7.0-1)

@@ -138,7 +138,7 @@ $script .=
   "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
   "shlibs.default.in pathsetup.command.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in mirror\n";
+  "fink-virtual-pkgs.in mirror fink.shlibs\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines
