@@ -447,6 +447,7 @@ sub execute {
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
+		next if ($cmd =~ /(^\s*\Z)|(^\s*\#)/);  # not sure why we need this
 		if (not $options{'quiet'}) {
 			print "$cmd\n";
 		}

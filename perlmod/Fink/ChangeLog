@@ -1,5 +1,10 @@
 2004-12-21  Daniel Macks  <dmacks@netspace.org>
 
+	* Services.pm: prepare_script() may be leaking blank lines, so
+	skip them in execute()'s execution loop.
+
+2004-12-21  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm, Services.pm: Replace execute_nonroot_okay()
 	wrapper around execute() with an %options flag to execute().
 
