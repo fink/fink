@@ -1,3 +1,7 @@
+2003-10-10  Peter O'Gorman <ogorman@users.sourceforge.net>
+
+	* VirtPackage.pm: PATH paranoia. Always use full paths here.
+
 2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Services.pm, PkgVersion.pm, VirtPackage.pm: move the system

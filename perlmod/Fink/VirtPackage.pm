@@ -72,7 +72,7 @@ sub initialize {
 
 	# now find the cctools version
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		foreach(`what /usr/bin/ld`) {
+		foreach(`/usr/bin/what /usr/bin/ld`) {
 			if (/cctools-(\d+)/) {
 				$cctools_version = $1;
 				last;
@@ -80,9 +80,9 @@ sub initialize {
 		}
 	}
 
-	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam()) {
-		system("touch ${cctestfile}.c");
-		if (system("cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1") == 0) {
+	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam() and -x "/usr/bin/touch") {
+		system("/usr/bin/touch ${cctestfile}.c");
+		if (system("/usr/bin/cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1") == 0) {
 			$cctools_single_module = '1.0';
 		} else {
 			$cctools_single_module = undef;
