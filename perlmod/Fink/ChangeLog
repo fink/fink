@@ -1,3 +1,10 @@
+2003-07-29  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: added second option to resolve_depends call to specify
+	  the operation
+	* PkgVersion.pm: enabled the second option checking in resolve_depends
+	  to force dep reading from the info if rebuild is the operation
+
 2003-07-17  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* shlibs.pm: removed my debug line, left RangerRick's for now

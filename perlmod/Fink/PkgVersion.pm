@@ -670,6 +670,7 @@ sub find_debfile {
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
+        my $op = shift || 0;
 	my (@speclist, @deplist, $altlist);
 	my ($altspec, $depspec, $depname, $versionspec, $package);
 	my ($splitoff, $idx, $split_idx);
@@ -682,7 +683,7 @@ sub resolve_depends {
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list. In 
 	if ($include_build and $self->{_type} eq "splitoff") {
-		push @deplist, ($self->{parent})->resolve_depends(2);
+		push @deplist, ($self->{parent})->resolve_depends(2, $op);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
@@ -690,7 +691,7 @@ sub resolve_depends {
 	}
 	
         ### Add rebuild check here.
-	if ($self->find_debfile()) {
+	if ($self->find_debfile() && $op != 2) {
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
 		}
@@ -712,8 +713,10 @@ sub resolve_depends {
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
 		foreach	 $splitoff (@{$self->{_splitoffs}}) {
-			if ($splitoff->find_debfile()) {
-				print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+			if ($splitoff->find_debfile() && $op != 2) {
+				if (Fink::Config::verbosity_level() > 2) {
+					print "Reading dependencies from ".$self->get_fullname()." deb file...\n";
+				}
 				push @speclist,
 					split(/\s*\,\s*/, $splitoff->get_debdeps());
 			} else {
