@@ -795,6 +795,7 @@ sub validate_dpkg_file {
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/");
+	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc / );
 
 	my ($pid, $bad_dir);
 	my $filename;
@@ -815,7 +816,7 @@ sub validate_dpkg_file {
 		if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
 			$filename = $6;
 			#print "$filename\n";
-			next if $filename eq "/";
+			next if "$basepath/" =~ /^\Q$filename\E/;  # skip parent components of basepath hierarchy
 			if (not $filename =~ /^$basepath/) {
 				if (not (($dpkg_filename =~ /xfree86[_\-]/) || ($dpkg_filename =~ /xorg[_\-]/))) {
 					print "Warning: File \"$filename\" installed outside of $basepath\n";
@@ -832,6 +833,10 @@ sub validate_dpkg_file {
 				# The only exception is $basepath/src which may exist but must be empty
 				print "Warning: File installed into deprecated directory $bad_dir\n";
 				print "					Offender is $filename\n";
+				$looks_good = 0;
+			} elsif (not grep { $filename =~ /^$_/ } @good_dirs) {
+				# Directory from this list are the top-level dirs that may exist in the .deb.
+				print "Warning: File \"$filename\" installed outside of allowable subdirectories of $basepath\n";
 				$looks_good = 0;
 			} elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
 				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";

@@ -1,5 +1,10 @@
 2004-07-27  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Check that files are in allowed dirs of .deb,
+	not just not-in disallowed dirs.
+
+2004-07-27  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Move @bad_dirs check early so don't miss things
 	that get special handling (but not validation) by other matches.
 	Replace @bad_dirs explicit loop with grep {}.
