@@ -1,3 +1,9 @@
+2005-01-31  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Notify.pm, PkgVersion.pm, Services.pm, Notify/*.pm:
+	updated to a more modular notification system, including plugins
+	for growl, apple text-to-speech, quicksilver, and syslog.
+
 2005-01-31  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* VirtPackage.pm: Added Growl virtual pkg

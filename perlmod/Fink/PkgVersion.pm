@@ -29,7 +29,7 @@ use Fink::Services qw(&filename &execute
 					  &pkglist2lol &lol2pkglist
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
-					  &get_path &eval_conditional &notify &enforce_gcc);
+					  &get_path &eval_conditional &enforce_gcc);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors binary_requested);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -39,8 +39,8 @@ use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname);
-
 use File::Basename qw(&dirname &basename);
+use Fink::Notify;
 
 use POSIX qw(uname strftime);
 
@@ -60,7 +60,6 @@ our @EXPORT_OK;
 
 
 END { }				# module clean-up code here (global destructor)
-
 
 ### self-initialization
 sub initialize {
@@ -1985,12 +1984,16 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 
+	my $notifier = Fink::Notify->new();
+
 	if ($self->is_type('bundle')) {
 		return;
 	}
 	if ($self->is_type('dummy') and not $self->has_param('CompileScript')) {
-		die "compile phase: can't build ".$self->get_fullname().
-				" because no package description is available\n";
+		my $error = "can't build ".$self->get_fullname().
+				" because no package description is available";
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die "compile phase: $error\n";
 	}
 	if (exists $self->{parent}) {
 		($self->{parent})->phase_compile();
@@ -2002,7 +2005,9 @@ sub phase_compile {
 		# but they can have a CompileScript to run
 		$dir = $self->get_build_directory();
 		if (not -d "$buildpath/$dir") {
-			die "directory $buildpath/$dir doesn't exist, check the package description\n";
+			my $error = "directory $buildpath/$dir doesn't exist, check the package description";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die "compile phase: $error\n";
 		}
 		chdir "$buildpath/$dir";
 	}
@@ -2018,9 +2023,13 @@ sub phase_install {
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
 
+	my $notifier = Fink::Notify->new();
+
 	if ($self->is_type('dummy')) {
-		die "install phase: can't build ".$self->get_fullname().
-				" because no package description is available\n";
+		my $error = "can't build ".$self->get_fullname().
+				" because no package description is available";
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die "install phase: $error\n";
 	}
 	if (exists $self->{parent} and not $do_splitoff) {
 		($self->{parent})->phase_install();
@@ -2033,7 +2042,9 @@ sub phase_install {
 			$dir = $self->get_build_directory();
 		}
 		if (not -d "$buildpath/$dir") {
-			die "directory $buildpath/$dir doesn't exist, check the package description\n";
+			my $error = "directory $buildpath/$dir doesn't exist, check the package description";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die "install phase: $error\n";
 		}
 		chdir "$buildpath/$dir";
 	}
@@ -2227,10 +2238,12 @@ sub phase_build {
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
 
+	my $notifier = Fink::Notify->new();
+
 	if ($self->is_type('dummy')) {
-		die "build phase: can't build ".$self->get_fullname().
-			" build".
-				" because no package description is available\n";
+		my $error = "can't build " . $self->get_fullname() . " because no package description is available";
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die "build phase: " . $error . "\n";
 	}
 	if (exists $self->{parent} and not $do_splitoff) {
 		($self->{parent})->phase_build();
@@ -2242,14 +2255,22 @@ sub phase_build {
 	$destdir = "$buildpath/$ddir";
 
 	if (not -d "$destdir/DEBIAN") {
-		mkdir_p "$destdir/DEBIAN" or
-			die "can't create directory for control files for package ".$self->get_fullname()."\n";
+		my $error = "can't create directory for control files for package ".$self->get_fullname();
+
+		if (not mkdir_p "$destdir/DEBIAN") {
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		&execute("chown -R root '$destdir'") and die "Could not revert\n";
+		if (&execute("chown -R root '$destdir'") == 1) {
+			my $error = "Could not revert ownership of install directory to root.";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
 	}
 
 	# generate dpkg "control" file
@@ -2300,7 +2321,9 @@ EOF
 	if ($kernel_version =~ /(\d+)/) {
 		$kernel_major_version = $1;
 	} else {
-		die "Couldn't determine major version number for $kernel kernel!";
+		my $error = "Couldn't determine major version number for $kernel kernel!";
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
 	}
 
 	my $has_kernel_dep;
@@ -2357,9 +2380,14 @@ EOF
 
 	print "Writing control file...\n";
 
-	open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file for ".$self->get_fullname().": $!\n";
-	print CONTROL $control;
-	close(CONTROL) or die "can't write control file for ".$self->get_fullname().": $!\n";
+	if ( open(CONTROL,">$destdir/DEBIAN/control") ) {
+		print CONTROL $control;
+		close(CONTROL) or die "can't write control file for ".$self->get_fullname().": $!\n";
+	} else {
+		my $error = "can't write control file for ".$self->get_fullname().": $!";
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
+	}
 
 	### update Mach-O Object List
 	###
@@ -2438,12 +2466,19 @@ EOF
 		} }, $destdir);
 
 		if (keys %prebound_files) {
-			mkdir_p "$destdir$basepath/var/lib/fink/prebound/files" or
-				die "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!\n";
-			open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') or
-				die "can't write " . $self->get_name() . '.pblist';
-			print PREBOUND join("\n", sort keys %prebound_files), "\n";
-			close(PREBOUND);
+			if (not mkdir_p "$destdir$basepath/var/lib/fink/prebound/files") {
+				my $error = "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
+			if ( open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') ) {
+				print PREBOUND join("\n", sort keys %prebound_files), "\n";
+				close(PREBOUND);
+			} else {
+				my $error = "can't write " . $self->get_name() . '.pblist';
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
 		}
 
 		print "Writing dependencies...\n";
@@ -2451,12 +2486,19 @@ EOF
 			for my $file (@{$prebound_files{$key}}) {
 				$file =~ s/\//-/g;
 				$file =~ s/^-+//;
-				mkdir_p "$destdir$basepath/var/lib/fink/prebound/deps/$file" or
-					die "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!\n";
-				open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') or
-					die "can't write " . $self->get_name() . '.deplist';
-				print DEPS $key, "\n";
-				close(DEPS);
+				if (not mkdir_p "$destdir$basepath/var/lib/fink/prebound/deps/$file") {
+					my $error = "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+				if ( open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') ) {
+					print DEPS $key, "\n";
+					close(DEPS);
+				} else {
+					my $error = "can't write " . $self->get_name() . '.deplist';
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
 			}
 		}
 	} # unless ($skip_prebinding)
@@ -2578,8 +2620,8 @@ EOF
 
 		print "Writing package script $scriptname...\n";
 
-		open(SCRIPT,">$scriptfile") or die "can't write $scriptname script for ".$self->get_fullname().": $!\n";
-		print SCRIPT <<EOF;
+		if ( open(SCRIPT,">$scriptfile") ) {
+			print SCRIPT <<EOF;
 #!/bin/sh
 # $scriptname script for package $pkgname, auto-created by fink
 
@@ -2589,8 +2631,13 @@ $scriptbody
 
 exit 0
 EOF
-		close(SCRIPT) or die "can't write $scriptname script for ".$self->get_fullname().": $!\n";
-		chmod 0755, $scriptfile;
+			close(SCRIPT) or die "can't write $scriptname script for ".$self->get_fullname().": $!\n";
+			chmod 0755, $scriptfile;
+		} else {
+			my $error = "can't write $scriptname script for ".$self->get_fullname().": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
 	}
 
 	### shlibs file
@@ -2610,12 +2657,17 @@ EOF
 #    * Rejoin wrap continuation lines
 #      (use \ not heredoc multiline-field)
 
-			open(SHLIBS,">$shlibsfile") or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
-			print SHLIBS <<EOF;
+			if ( open(SHLIBS,">$shlibsfile") ) {
+				print SHLIBS <<EOF;
 $shlibsbody
 EOF
-close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
-			chmod 0644, $shlibsfile;
+				close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
+				chmod 0644, $shlibsfile;
+			} else {
+				my $error = "can't write shlibs file for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
 	}
 
 	### config file list
@@ -2627,10 +2679,15 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 		print "Writing conffiles list...\n";
 
-		open(SCRIPT,">$listfile") or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
-		print SCRIPT $conffiles;
-		close(SCRIPT) or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
-		chmod 0644, $listfile;
+		if ( open(SCRIPT,">$listfile") ) {
+			print SCRIPT $conffiles;
+			close(SCRIPT) or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
+			chmod 0644, $listfile;
+		} else {
+			my $error = "can't write conffiles list file for ".$self->get_fullname().": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
 	}
 
 	### daemonic service file
@@ -2642,27 +2699,44 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 
 		print "Writing daemonic info file $daemonicname...\n";
 
-		mkdir_p "$destdir$basepath/etc/daemons" or
-			die "can't write daemonic info file for ".$self->get_fullname()."\n";
-		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
-		print SCRIPT $self->param_expanded("DaemonicFile"), "\n";
-		close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
-		chmod 0644, $daemonicfile;
+		unless ( mkdir_p "$destdir$basepath/etc/daemons" ) {
+			my $error = "can't write daemonic info file for ".$self->get_fullname();
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
+
+		if ( open(SCRIPT,">$daemonicfile") ) {
+			print SCRIPT $self->param_expanded("DaemonicFile"), "\n";
+			close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
+			chmod 0644, $daemonicfile;
+		} else {
+			my $error = "can't write daemonic info file for ".$self->get_fullname().": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
 	}
 
 	### create .deb using dpkg-deb
 
 	if (not -d $self->get_debpath()) {
-		mkdir_p $self->get_debpath() or
-			die "can't create directory for packages\n";
+		unless (mkdir_p $self->get_debpath()) {
+			my $error = "can't create directory for packages";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
 	}
 	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
-	if (&execute($cmd)) {
-		die "can't create package ".$self->get_debname()."\n";
+	if (&execute($cmd) == 1) {
+		my $error = "can't create package ".$self->get_debname();
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
 	}
 
-	symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname() or
-		die "can't symlink package ".$self->get_debname()." into pool directory\n";
+	unless (symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname()) {
+		my $error = "can't symlink package ".$self->get_debname()." into pool directory";
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
+	}
 
 	### splitoffs
 	
@@ -2690,35 +2764,42 @@ sub phase_activate {
 	my @packages = @_;
 	my (@installable);
 
+	my $notifier = Fink::Notify->new();
+
 	for my $package (@packages) {
 		my $deb = $package->find_debfile();
 
 		unless (defined $deb and -f $deb) {
-			die "can't find package ".$package->get_debname()."\n";
+			my $error = "can't find package ".$package->get_debname();
+			$notifier->notify(event => 'finkPackageInstallationFailed', description => $error);
+			die $error . "\n";
 		}
 
 		push(@installable, $package);
 	}
 
 	if (@installable == 0) {
-		die "no installable .deb files found!\n";
+		my $error = "no installable .deb files found!";
+		$notifier->notify(event => 'finkPackageInstallationFailed', description => $error);
+		die $error . "\n";
 	}
 
 	my @deb_installable = map { $_->find_debfile() } @installable;
 	if (&execute("dpkg -i @deb_installable")) {
 		if (@installable == 1) {
-			notify('finkPackageInstallationFailed', 'Fink installation failed.', "can't install package ".$installable[0]->get_fullname());
-			die "can't install package ".$installable[0]->get_fullname()."\n";
+			my $error = "can't install package ".$installable[0]->get_fullname();
+			$notifier->notify(event => 'finkPackageInstallationFailed', description => $error);
+			die $error . "\n";
 		} else {
-			notify('finkPackageInstallationFailed', 'Fink installation of ' . int(@installable) . ' packages failed.',
-				"can't batch-install packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
+			$notifier->notify(event => 'finkPackageInstallationFailed', title => 'Fink installation of ' . int(@installable) . ' packages failed.',
+				description => "can't batch-install packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
 			die "can't batch-install packages: @deb_installable\n";
 		}
 	} else {
 		if (@installable == 1) {
-			notify('finkPackageInstallationPassed', 'Fink installation passed.', "installed " . $installable[0]->get_fullname());
+			$notifier->notify(event => 'finkPackageInstallationPassed', description => "installed " . $installable[0]->get_fullname());
 		} else {
-			notify('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
+			$notifier->notify(event => 'finkPackageInstallationPassed', title => 'Fink installation of ' . int(@installable) . ' packages passed.', description => "batch-installed packages:\n  " . join("\n  ", map { $_->get_fullname() } @installable));
 		}
 	}
 
@@ -2730,6 +2811,8 @@ sub phase_activate {
 sub phase_deactivate {
 	my @packages = @_;
 
+	my $notifier = Fink::Notify->new();
+
 	if (&execute("dpkg --remove @packages")) {
 		&print_breaking("ERROR: Can't remove package(s). If the above error message " .
 		                "mentions dependency problems, you can try\n" .
@@ -2737,19 +2820,19 @@ sub phase_deactivate {
 		                "This will attempt to remove the package(s) specified as " .
 		                "well as ALL packages that depend on it.");
 		if (@packages == 1) {
-			notifyl('finkPackageRemovalFailed', 'Fink removal failed.', "can't remove package ".$packages[0]);
+			$notifier->notify(event => 'finkPackageRemovalFailed', title => 'Fink removal failed.', description => "can't remove package ".$packages[0]);
 			die "can't remove package ".$packages[0]."\n";
 		} else {
-			notifyl('finkPackageRemovalFailed', 'Fink removal of ' . int(@packages) . ' packages failed.',
-				"can't batch-remove packages:\n  " . join("\n  ", @packages));
+			$notifier->notify(event => 'finkPackageRemovalFailed', title => 'Fink removal of ' . int(@packages) . ' packages failed.',
+				description => "can't batch-remove packages:\n  " . join("\n  ", @packages));
 			die "can't batch-remove packages: @packages\n";
 		}
 	} else {
 		if (@packages == 1) {
-			notify('finkPackageRemovalPassed', 'Fink removal passed.', "removed " . $packages[0]);
+			$notifier->notify(event => 'finkPackageRemovalPassed', title => 'Fink removal passed.', description => "removed " . $packages[0]);
 		} else {
-			notify('finkPackageRemovalPassed', 'Fink removal of ' . int(@packages) . ' packages passed.',
-				"batch-removed packages:\n  " . join("\n  ", @packages));
+			$notifier->notify(event => 'finkPackageRemovalPassed', title => 'Fink removal of ' . int(@packages) . ' packages passed.',
+				description => "batch-removed packages:\n  " . join("\n  ", @packages));
 		}
 	}
 
@@ -3182,6 +3265,8 @@ sub run_script {
 	my $nonroot_okay = shift || 0;
 	my ($script_env, %env_bak);
 
+	my $notifier = Fink::Notify->new();
+
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
 
@@ -3192,14 +3277,15 @@ sub run_script {
 
 	my $result = &execute($script, nonroot_okay=>$nonroot_okay);
 	if ($result) {
-		my $error = $phase." ".$self->get_fullname()." failed\n";
+		my $error = "phase " . $phase . ": " . $self->get_fullname()." failed";
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		if ($self->has_param('maintainer')) {
-			$error .= "\nBefore reporting any errors, please run \"fink selfupdate\" and\n" .
+			$error .= "\n\nBefore reporting any errors, please run \"fink selfupdate\" and\n" .
 				"try again.  If you continue to have issues, you can try e-mailing\n".
 				"the maintainer:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
 		}
-		die $error;
+		die $error . "\n";
 	}
 	%ENV = %env_bak;        # restore previous environment
 }

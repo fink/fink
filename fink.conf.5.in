@@ -333,6 +333,12 @@ will not set the
 environment variable and ccache will use 
 .Pa $HOME/.ccache, 
 potentially putting root-owned files into your home directory.
+.It Cm NotifyPlugin: Ar plugin
+Specify a notification plugin to tell you when packages have been installed/uninstalled.
+Defaults to
+.Pa Growl
+(requires Mac::Growl to operate).  Other plugins can be found in the
+@PREFIX@/lib/perl5/Fink/Notify directory.
 .El
 .\"
 .\"

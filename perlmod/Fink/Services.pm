@@ -50,7 +50,7 @@ BEGIN {
 					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &notify &call_queue_clear &call_queue_add);
+					  &call_queue_clear &call_queue_add);
 }
 our @EXPORT_OK;
 
@@ -1293,66 +1293,6 @@ sub eval_conditional {
 	}
 }
 
-
-=item notify
-
-    notify($notificationName, $notificationTitle, $notificationDescription);
-
-Notifies the system that $notificationName event occurred, if Growl is
-installed.  Future versions will support other notification engines as well.
-
-Currently available notifications used by fink are:
-
-=over 4
-
-=item packageInstallationPassed
-
-One or more packages was successfully installed.
-
-=item packageInstallationFailed
-
-One or more packages failed to install.
-
-=item packageRemovalPassed
-
-One or more packages was successfully removed.
-
-=item packageRemovalFailed
-
-One or more packages failed to be removed.
-
-=back
-
-=cut
-
-sub notify {
-	eval {
-		require Mac::Growl;
-	};
-	return undef if ($@);
-	my ($notificationName, $notificationTitle, $notificationDescription) = @_;
-
-	my @events = qw(
-		finkPackageInstallationPassed
-		finkPackageInstallationFailed
-		finkPackageRemovalPassed
-		finkPackageRemovalFailed
-	);
-
-	unless (grep(/^${notificationName}$/, @events)) {
-		warn "unknown notification $notificationName\n";
-		return undef;
-	}
-
-	eval {
-		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
-		# eventually, when we have a good picture  ;)
-		# Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription, 0, -2, '/Users/ranger/Pictures/ranger_rick_fink.png');
-		Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription);
-	};
-
-	return 1;
-}
 
 =item call_queue_clear
 
