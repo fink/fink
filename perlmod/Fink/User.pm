@@ -75,6 +75,17 @@ sub add_user {
 	my $self = shift;
 	my $user = shift;
 
+	my $comment = $usrgrps{usrname}->{$user}->{desc};
+	my $homedir = $usrgrps{usrname}->{$user}->{homedir};
+	my $group = $usrgrps{usrname}->{$user}->{group};
+	my $shell = $usrgrps{usrname}->{$user}->{shell};
+	my $uid = $usrgrps{usrname}->{$user}->{uid};
+
+	my $cmd  = "$basepath/sbin/useradd -c $comment -d $homedir -e 0";
+	   $cmd .= "-f 0 -g $group -s $shell -u $uid $user";
+
+	&execute($cmd);
+
 	return 1;
 }
 
@@ -85,6 +96,8 @@ sub del_user {
 
 	my $cmd = "$basepath/sbin/userdel -r $user";
 
+	&execute($cmd);
+
 	return 1;
 }
 
@@ -93,9 +106,11 @@ sub add_group {
 	my $self = shift;
 	my $group = shift;
 
-	my $gid = $usrgrps{'group'}->{$group}->{$gid};
+	my $gid = $usrgrps{grpname}->{$group}->{gid};
 
 	my $cmd = "$basepath/sbin/groupadd -g $gid $group";
+
+	&execute($cmd);
 
 	return 1;
 }
@@ -106,6 +121,8 @@ sub del_group {
 	my $group = shift;
 
 	my $cmd = "$basepath/sbin/groupdel $group";
+
+	&execute($cmd);
 
 	return 1;
 }
