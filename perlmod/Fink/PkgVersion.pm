@@ -2675,6 +2675,7 @@ EOF
 
 		print "Writing package script $scriptname...\n";
 
+		# NB: if change the automatic #! line here, must adjust validator
 		if ( open(SCRIPT,">$scriptfile") ) {
 			print SCRIPT <<EOF;
 #!/bin/sh
