@@ -1,0 +1,35 @@
+Package: dpkg-bootstrap
+Version: 1.10.9
+Revision: 4
+Depends: gettext, gzip, tar
+Maintainer: Max Horn <max@quendi.de>
+Source: mirror:sourceforge:fink/dpkg-%v.tar.gz
+Source-MD5: ecd7d51416837f8910314ccb62e39dc2
+PatchScript: sed 's|@ADMINPREFIX@|%P|g' <%a/dpkg-%v-%r.patch | patch -p1
+SetCFLAGS: -no-cpp-precomp -I%p/include
+ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
+CompileScript: <<
+ ./configure %m-apple-darwin %c
+ make
+<<
+InstallScript: <<
+ mkdir -p %i/share/doc/dpkg
+ make install DESTDIR=%d
+<<
+Description: The Debian package manager (bootstrap package)
+DescDetail: <<
+dpkg installs and removes binary packages; it is the base of the
+distribution. This package also contains some helper programs. This
+package does not build dselect and thus doesn't require ncurses. It is
+intended to be used during bootstrap.
+<<
+DescPort: <<
+Uses autoconf.
+
+Needs fixes to use the right architecture, disable code that uses
+unimplemented functions on Darwin and other stuff.
+
+Previous versions by Christoph Pfisterer.
+<<
+License: GPL
+Homepage: http://packages.qa.debian.org/d/dpkg.html
