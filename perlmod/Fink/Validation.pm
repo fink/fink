@@ -58,6 +58,13 @@ our %boolean_fields = map {$_, 1}
 our %obsolete_fields = map {$_, 1}
 	qw(comment commentport commenstow usegettext);
 
+# Fields to check for hardcoded /sw
+our %check_hardcode_fields = map {$_, 1}
+	( 
+	    qw(patchscript compilescript installscript),
+	    (map {"set".$_} @set_vars)
+	);
+
 # Fields in which %n/%v can and should be used
 our %name_version_fields = map {$_, 1}
 	qw(
@@ -166,10 +173,10 @@ END { }				# module clean-up code here (global destructor)
 #		+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
 #			(excluded from this are fields like Description, Homepage etc.)
 #		+ warn if unknown fields are encountered
+#		+ warn if /sw is hardcoded in the script or set fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #		- error if format is violated (e.g. bad here-doc)
-#		- warn if /sw is hardcoded somewhere
 #		- if type is bundle/nosource - warn about usage of "Source" etc.
 # ... other things, make suggestions ;)
 #
@@ -302,7 +309,12 @@ sub validate_info_file {
 			print "Error: No MD5 checksum specified for \"$field\". ($filename)\n";
 			$looks_good = 0;
 		}
-		
+		# Check for hardcoded /sw.
+		if ($check_hardcode_fields{$field} and $value =~ /\/sw/) {
+		    print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
+		    $looks_good = 0;
+		    next;
+		}
 		# Warn if field is unknown
 		unless ($known_fields{$field}
 				 or $field =~ m/^splitoff([2-9]|\d\d)$/
@@ -365,7 +377,7 @@ sub validate_info_file {
 				'b' => '.',
 				'm' => $arch
 	};
-	
+
 	# Verify the patch file exists, if specified
 	$value = $properties->{patch};
 	if ($value) {
