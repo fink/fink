@@ -1,3 +1,7 @@
+2003-12-23  Daniel Macks <dmacks@netspace.org>
+
+        * Validation.pm: Added support for Type java (version mandatory).
+
 2003-12-22  Daniel Macks <dmacks@netspace.org>
 
         * Validation.pm: Added support for Type python, guile, ruby
