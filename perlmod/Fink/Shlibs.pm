@@ -128,6 +128,14 @@ sub check_files {
 					$lib = $1;
 					$compat = $2;
 				}
+
+				# Add a big warning about /usr/local/lib being
+				# in the way if $basepath isn't /usr/local
+				if ($lib =~ /^\/usr\/local\/lib/ &&
+				    !$basepath =~ /^\/usr\/local[\/]?$/) {
+					die "There are files in /usr/local that will break fink, please move them out of the way and rebuild this package.\n";
+				}
+
 				# Make sure it's a lib and is installed.
 				#next unless (-x $lib);
 				### This should drop any depends on it's self
