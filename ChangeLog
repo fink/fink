@@ -1,3 +1,8 @@
+2003-12-30  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: prompt_selection -> prompt_selection_new
+	* postinstall.pl.in: remove unused Fink::Services imports
+	
 2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.info.in: bring into sync with .info file currently being
