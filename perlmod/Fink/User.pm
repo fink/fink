@@ -44,6 +44,12 @@ BEGIN {
 our @EXPORT_OK;
 
 our ($usrgrps, @users, @groups, $db_outdated);
+our ($lowUID, $highUID, $lowGID, $highGID);
+
+$lowUID = $config->param("lowUID") || 250;
+$highUID = $config->param("highUID") || 299;
+$lowGID = $config->param("lowGID") || 250;
+$highGID = $config->param("highGID") || 299;
 
 @users = ();
 @groups = ();
@@ -122,6 +128,18 @@ sub is_id_free {
 	my $self = shift;
 	my $type = shift;
 	my $id = shift;
+	my ($group);
+	my ($user);
+
+	if ($type == "user") {
+		while ($user = User::pwent::getpwuid($id)) {
+			return 1 if not $user;
+		}
+	} else {
+		while ($group = User::grent::getgrgid($id)) {
+			return 1 if not $group;
+		}
+	}
 
 	return 0;
 }
@@ -130,7 +148,22 @@ sub is_id_free {
 sub get_next_avail {
 	my $self = shift;
 	my $type = shift;
-	my ($id);
+	my ($id, $user, $uid, $group, $gid, $pass);
+
+	if ($type == "user") {
+		while (($user,$pass,$uid) = User::pwent::getpwent) {
+			next if ($uid < $lowUID) || ($uid > $highUID);
+			$id++;
+
+			break if not $user;
+		}
+	} else {
+		while (($group,$pass,$gid) = User::grent::getgrent) {
+			next if ($gid < $lowGID) || ($gid > $highGID);
+			$id++;
+
+			break if not $group;
+	}
 
 	return $id;
 }
