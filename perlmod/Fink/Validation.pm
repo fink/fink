@@ -105,114 +105,142 @@ our %allowed_license_values = map {$_, 1}
 	 "Restrictive", "Commercial"
 	);
 
-# List of all valid fields.
+# List of all valid fields, 
+# sorted in the same order as in the packaging manual.
+# (A few are handled elsewhere in this module, but are also included here,
+#  commented out, for easier reference when comparing with the manual.)
+
 our %valid_fields = map {$_, 1}
 	(
-		qw(
-		 package
-		 epoch
-		 version
-		 revision
-		 type
-		 maintainer
-		 depends
-		 builddepends
-		 buildconflicts
-		 provides
-		 conflicts
-		 replaces
-		 recommends
-		 suggests
-		 enhances
-		 pre-depends
-		 essential
-		 builddependsonly
-		 source
-		 source-md5
-		 custommirror
-		 sourcedirectory
-		 nosourcedirectory
-		 sourcerename
-		 updateconfigguess
-		 updateconfigguessindirs
-		 updatelibtool
-		 updatelibtoolindirs
-		 updatepomakefile
-		 updatepod
-		 noperltests
-		 patch
-		 patchscript
-		 configureparams
-		 gcc
-		 compilescript
-		 installscript
-		 shlibs
-		 runtimevars
-		 splitoff
-		 jarfiles
-		 tarfilesrename
+		(
+#  initial data:
+		 'package',
+		 'version',
+		 'revision',
+		 'epoch',
+		 'description',
+		 'type',
+		 'license',
+		 'maintainer',
+#  dependencies:
+		 'depends',
+		 'builddepends',
+          #  need documentation for buildconflicts
+		 'buildconflicts',
+		 'provides',
+		 'conflicts',
+		 'replaces',
+		 'recommends',
+		 'suggests',
+		 'enhances',
+		 'pre-depends',
+		 'essential',
+		 'builddependsonly',
+#  unpack phase:
+		 'custommirror',
+		 'source',
+                 #sourceN
+		 'sourcedirectory',
+		 'nosourcedirectory',
+                 #sourceNextractdir
+		 'sourcerename',
+                 #sourceNRename
+		 'source-md5',
+                 #sourceN-md5
+		 'tarfilesrename',
+                 #tarNfilesrename
+#  patch phase:
+		 'updateconfigguess',
+		 'updateconfigguessindirs',
+		 'updatelibtool',
+		 'updatelibtoolindirs',
+		 'updatepomakefile',
+		 'patch',
+		 'patchscript'
+#  compile phase:
 		),
 		(map {"set".$_} @set_vars),
 		(map {"noset".$_} @set_vars),
-		qw(
-		 preinstscript
-		 postinstscript
-		 prermscript
-		 postrmscript
-		 conffiles
-		 infodocs
-		 docfiles
-		 daemonicfile
-		 daemonicname
-		 description
-		 descdetail
-		 descusage
-		 descpackaging
-		 descport
-		 homepage
-		 license
+		(
+		 'configureparams',
+		 'gcc',
+		 'compilescript',
+		 'noperltests',
+#  install phase:
+		 'updatepod',
+		 'installscript',
+		 'jarfiles',
+		 'docfiles',
+		 'shlibs',
+		 'runtimevars',
+		 'splitoff',
+                 #splitoffN
+                 #files
+#  build phase:
+		 'preinstscript',
+		 'postinstscript',
+		 'prermscript',
+		 'postrmscript',
+		 'conffiles',
+		 'infodocs',
+		 'daemonicfile',
+		 'daemonicname',
+#  additional data:
+		 'homepage',
+		 'descdetail',
+		 'descusage',
+		 'descpackaging',
+		 'descport'
 		)
 	);
 
 # List of all fields which are legal in a splitoff
 our %splitoff_valid_fields = map {$_, 1}
 	(
-		qw(
-		 package
-		 files
-		 type
-		 depends
-		 builddepends
-		 buildconflicts
-		 provides
-		 conflicts
-		 replaces
-		 recommends
-		 suggests
-		 enhances
-		 pre-depends
-		 essential
-		 builddependsonly
-		 installscript
-		 shlibs
-		 runtimevars
-		 jarfiles
-		 preinstscript
-		 postinstscript
-		 prermscript
-		 postrmscript
-		 conffiles
-		 infodocs
-		 docfiles
-		 daemonicfile
-		 daemonicname
-		 description
-		 descdetail
-		 descusage
-		 descpackaging
-		 descport
-		 homepage
-		 license
+		(
+#  initial data:
+		 'package',
+            #documentation is ambiguous about type and license
+		 'type',
+		 'license',
+#  dependencies:
+		 'depends',
+		 'builddepends',
+		 'buildconflicts',
+		 'provides',
+		 'conflicts',
+		 'replaces',
+		 'recommends',
+		 'suggests',
+		 'enhances',
+		 'pre-depends',
+               #documentation seems incorrect about essential
+		 'essential',
+		 'builddependsonly',
+#  install phase:
+               # what about updatepod? manual says it should be here
+		 'installscript',
+		 'jarfiles',
+		 'docfiles',
+		 'shlibs',
+		 'runtimevars',
+		 'files',
+#  build phase:
+		 'preinstscript',
+		 'postinstscript',
+		 'prermscript',
+		 'postrmscript',
+		 'conffiles',
+		 'infodocs',
+		 'daemonicfile',
+		 'daemonicname',
+#  additional data:
+		 'homepage',
+		 'description',
+		 'descdetail',
+		 'descusage',
+		 'descpackaging',
+		 'descport',
 		)
 	);
 

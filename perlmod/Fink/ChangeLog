@@ -1,7 +1,20 @@
+2003-12-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Engine.pm: If the package name is being truncated in list/apropos
+	print an ellipses ("...") so that the user knows about it.
+
+	* Selfupdate.pm: Don't try to su or chown to an undefined $username.
+	
 2003-12-09  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Shlibs.pm: Changed shlibs hash structure a little to deal with
 	 multi compat versions of a shlib.  A few various tweaks.
+
+2003-12-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Rearranged the list of allowed fields and added
+	some comments to make it easier to compare this list to the
+	packaging manual.
 
 2003-12-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 

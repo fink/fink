@@ -72,6 +72,7 @@ msg_choose_do () {
     read answer
     answer=`echo $answer | sed 's/^[yY].*$/y/'`
     if [ -z "$answer" -o "x$answer" = "xy" ]; then
+	test -f $HOME/$RC && echo >> $HOME/$RC # Users . file may not end in \n
 	echo "$SOURCECMD" >> $HOME/$RC
 	echo
 	echo Done. Verifying...

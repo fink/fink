@@ -355,7 +355,7 @@ EOF
 	if (defined $width) {
 		$width =~ s/[\=]?([0-9]+)/$1/;
 		$width = 40 if ($width < 40);	 # enforce minimum display width of 40 characters
-		$width = $width - 5;					 # 5 chars for the first field
+		$width = $width - 5;		 # 5 chars for the first field
 		$namelen = int($width * 0.2);	 # 20% for the name
 		$verlen = int($width * 0.15);	 # 15% for the version
 		if ($desclen != 0) {
@@ -436,6 +436,10 @@ EOF
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
 		}
+		if ($namelen && length($pname) > $namelen) {
+			$pname = substr($pname, 0, $namelen - 3)."...";
+		}
+
 		printf $formatstr,
 				$iflag, $pname, $lversion, $description;
 	}
