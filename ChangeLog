@@ -1,3 +1,9 @@
+2005-03-20  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.info.in, install.sh: Moved installation of DEBIAN/shlibs
+	from install.sh to fink.info InstallScript, since it needs to know
+	%d but install.sh only knows %i.
+
 2005-03-07  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* install.sh, fink.info.in: removing old dbs for new location, adding

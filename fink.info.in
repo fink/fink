@@ -18,7 +18,10 @@ CompileScript: <<
  make test
  ./setup.sh %p
 <<
-InstallScript: ./install.sh %i
+InstallScript: <<
+ ./install.sh %i
+ install -c -p -m 644 fink.shlibs "%d/DEBIAN/shlibs"
+<<
 PostInstScript: <<
  %p/lib/fink/postinstall.pl
  %p/bin/fink --no-use-binary-dist index
