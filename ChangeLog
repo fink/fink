@@ -1,3 +1,8 @@
+2005-03-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.2, a bugfix
+	release on branch_0_24
+
 2005-02-28  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: fix syntax for one-char flag args (backport from head).
