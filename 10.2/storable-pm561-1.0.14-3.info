@@ -1,0 +1,52 @@
+Package: storable-pm561
+Version: 1.0.14
+Revision: 3
+Replaces: storable-pm (<= 1.0.14-1)
+Depends: perl561-core
+Source: mirror:sourceforge:fink/Storable-%v.tar.gz
+Source-MD5: 8fc38714955b08d318e723ddd4f7a6e4
+#Type: perl 5.6.1
+CompileScript: <<
+perl5.6.1 Makefile.PL PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5/5.6.1 INSTALLARCHLIB=\%p/lib/perl5/5.6.1/darwin INSTALLSITELIB=\%p/lib/perl5/5.6.1 INSTALLSITEARCH=\%p/lib/perl5/5.6.1/darwin INSTALLMAN1DIR=\%p/share/man/man1  INSTALLMAN3DIR=\%p/share/man/man3 
+make
+make test
+<<
+InstallScript: <<
+make install INSTALLPRIVLIB=\%i/lib/perl5/5.6.1  INSTALLARCHLIB=\%i/lib/perl5/5.6.1/darwin  INSTALLSITELIB=\%i/lib/perl5/5.6.1  INSTALLSITEARCH=\%i/lib/perl5/5.6.1/darwin  INSTALLMAN1DIR=\%i/share/man/man1  INSTALLMAN3DIR=\%i/share/man/man3
+mkdir -p %i/share/podfiles/5.6.1
+cat %i/lib/perl5/5.6.1/darwin/perllocal.pod | sed -e s,%i/lib/perl5,/sw/lib/perl5, > %i/share/podfiles/5.6.1/perllocal.%n.pod
+rm -rf %i/lib/perl5/5.6.1/darwin/perllocal.pod
+<<
+#UpdatePOD: True
+DocFiles: MANIFEST README
+PostInstScript: <<
+# Updating %p/lib/perl5/darwin/perllocal.pod
+mkdir -p %p/lib/perl5/5.6.1/darwin
+cat %p/share/podfiles/5.6.1/*.pod > %p/lib/perl5/5.6.1/darwin/perllocal.pod
+<<
+PostRmScript: <<
+# Updating %p/lib/perl5/5.6.1/darwin/perllocal.pod
+
+###
+### check to see if any .pod files exist in %p/share/podfiles5.6.1 .
+###
+
+perl <<'END_PERL'
+if (-e "%p/share/podfiles/5.6.1") {
+        @files = <%p/share/podfiles/5.6.1/*.pod>;
+        if ($#files >= 0) {
+                exec "cat %p/share/podfiles/5.6.1/*.pod > %p/lib/perl5/5.6.1/darwin/perllocal.pod";
+        }
+}
+END_PERL
+
+<<
+Description: Perl module for persistent data structures, v. 5.6.1
+DescDetail: <<
+The Storable package brings persistency to your perl data structures
+containing SCALAR, ARRAY, HASH or REF objects, i.e. anything that can be
+convenientely stored to disk and retrieved at a later time.
+<<
+License: Artistic/GPL
+Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>
+Homepage: http://search.cpan.org/author/RAM/
