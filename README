@@ -1,7 +1,7 @@
-Generated from $Fink: readme.xml,v 1.6 2001/09/04 12:06:13 chrisp Exp $
+Generated from $Fink: readme.xml,v 1.8 2001/10/13 11:35:23 chrisp Exp $
 
- Fink 0.2.6 ReadMe
-===================
+ Fink ReadMe
+=============
 
 This is Fink, a package management system that aims to bring the full world
 of Open Source software to Darwin and Mac OS X.
@@ -9,13 +9,15 @@ of Open Source software to Darwin and Mac OS X.
 With the help of dpkg, it maintains a separate directory hierarchy. It
 downloads original source releases, patches them if neccessary, configures
 them for Darwin and compiles and installs them. The information about
-available packages and the neccessary patches are included with this
-distribution, everything else is downloaded off the Internet.
+available packages and the necessary patches (the "package descriptions")
+are maintained separately, but are usually included with this distribution.
+The actual source code is downloaded from the Internet as necessary.
 
-This is version 0.2.6, a development release. It has rough edges everywhere,
-and lacks lots of useful features. The package list is also quite short.
-You're walking on thin ground. Read the instructions carefully. You have
-been warned.
+Although Fink cannot be considered "mature" and it has some rough edges and
+lacking features, it is successfully used by a large number of people.
+Please read the instructions carefully and don't be surprised if something
+doesn't work as expected. There are good explanations for most failures;
+check the website if you need help.
 
 Fink is released under the terms of the GNU General Public License. See the
 file COPYING for details.
@@ -31,11 +33,9 @@ You need:
    work.
 
  * Development tools. On Mac OS X, install the Developer.pkg package from
-   the Developer Tools CD. On Darwin, the tools should be present in the
-   default install.
-
- * Many other things that come with Mac OS X and the Developer Tools. This
-   includes perl 5.6 and either wget or curl.
+   the Developer Tools CD. Make sure that the tools you install match your
+   Mac OS X version. On Darwin, the tools should be present in the default
+   install.
 
  * Internet access. All source code is downloaded from mirror sites.
 
@@ -59,29 +59,22 @@ packages. It also has a complete list of available commands.
  Further Questions?
 --------------------
 If the documentation included here doesn't answer your question, stroll over
-to the Fink website at <http://fink.sourceforge.net/> and read the FAQ
-there: <http://fink.sourceforge.net/faq/>.
+to the Fink website at <http://fink.sourceforge.net/> and check out the Help
+page there: <http://fink.sourceforge.net/help/>. It will point you at the
+other documentation that is available and sources for support if you need
+it.
 
-If that still doesn't answer your questions, ask for help on the fink-users
-mailing list (see below).
+If you'd like to contribute to Fink, the Help page mentioned above also has
+a list of things you can do, like testing or creating packages.
 
 
  Staying Informed
 ------------------
-To be informed of new releases, go to
-<http://fink.sourceforge.net/lists/fink-announce.php> and subscribe yourself
-to the fink-announce mailing list. The list is moderated and low-traffic.
-
-To get help or just chat with other Fink users, subscribe to the fink-users
-mailing list at <http://fink.sourceforge.net/lists/fink-users.php>.
-
 The project's website is at <http://fink.sourceforge.net/>.
 
-
- Contributing
---------------
-If you have anything to contribute or want to join me in working on this,
-send an email to <fink@chrisp.de>.
+To be informed of new releases, go to
+<http://fink.sourceforge.net/lists/fink-announce.php> and subscribe to the
+fink-announce mailing list. The list is moderated and low-traffic.
 
 
 EOF.
