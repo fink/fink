@@ -23,7 +23,7 @@ package Fink::Engine;
 
 use Fink::Services qw(&print_breaking &print_breaking_prefix
                       &prompt_boolean &prompt_selection
-                      &latest_version &execute);
+                      &latest_version &execute &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath);
@@ -234,18 +234,135 @@ sub cmd_selfupdate_finish {
 }
 
 sub cmd_list {
+  do_real_list("list",@_);
+}
+
+sub do_real_list {
   my ($pattern, @allnames, @selected);
   my ($pname, $package, $lversion, $vo, $iflag, $description);
+  my ($formatstr, $desclen, $name, @temp_ARGV, $section);
+  my %options =
+  (
+   "installedstate" => 0
+  );
+  my ($width, $namelen, $verlen, $dotab, $wanthelp);
+  my $cmd = shift;
+  use Getopt::Long;
+  $formatstr = "%s %-15.15s %-11.11s %s\n";
+  $desclen = 46;
+  @temp_ARGV = @ARGV;
+  @ARGV=@_;
+  Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+  if ($cmd eq "list") {
+    GetOptions(
+	    'width|w=s' 	=> \$width,
+	    'tab|t'		=> \$dotab,
+	    'installed|i'	=> sub {$options{installedstate} |=3;},
+	    'uptodate|u'	=> sub {$options{installedstate} |=2;},
+	    'outdated|o'	=> sub {$options{installedstate} |=1;},
+	    'notinstalled|n'	=> sub {$options{installedstate} |=4;},
+	    'section|s=s'	=> \$section,
+	    'help|h'		=> \$wanthelp
+    ) or die "fink list: unknown option\nType 'fink list --help' for more information.\n";
+  }  else { # apropos
+    GetOptions(
+	    'width|w=s' 	=> \$width,
+	    'tab|t'		=> \$dotab,
+	    'help|h'		=> \$wanthelp
+    ) or die "fink list: unknown option\nType 'fink apropos --help' for more information.\n";  
+  }
+  if ($wanthelp) {
+    require Fink::FinkVersion;
+    my $version = Fink::FinkVersion::fink_version();
 
-  @allnames = Fink::Package->list_packages();
-  if ($#_ < 0) {
-    @selected = @allnames;
+    print <<"EOF";
+Fink $version, Copyright (c) 2001,2002 Christoph Pfisterer and others.
+This is free software, distributed under the GNU General Public License.
+
+Usage: fink [options] list [listoptions] [string]
+       fink [options] apropos [listoptions] [string]
+       
+Where listoptions are:
+  -w=xyz, --width=xyz	Sets the width of the display you would like the output
+			formatted for. xyz is either a numeric value or auto.
+			auto will set the width based on the terminal width.
+                      
+  -t, --tab		Outputs the list with the tab char as a delimiter 
+			between fields. Useful for GUI implementations.
+
+  -i, --installed	list only, lists only installed packages.
+  
+  -u, --uptodate	list only, lists only packages which are up to date.
+  
+  -o, --outofdate	list only, lists packages for which a newer version 
+			is available.
+  
+  -n, --notinstalled	list only, lists packages which are not installed.
+  
+  -s=expr, 		list only, lists packages in the sections matching
+    --section=expr 	the expr. eg fink list --section=x11
+ 
+  -h, --help		This text.
+
+EOF
+  exit 0;
+  }
+  if ($options{installedstate} == 0) {$options{installedstate} = 7;}
+
+  if (defined $width) {
+    if (($width eq "") || ($width eq "auto") || ($width eq "=auto") || ($width eq "=")) {
+      $width = &get_term_width;
+      if ($width == 0) {
+        $desclen=0;
+        $formatstr = "%s\t%s\t%s\t%s\n";
+        undef $width;
+      }
+      else {
+        if ($width < 40) { $width = 40; }
+      }
+    }  
+    $width =~ s/[\=]?([0-9]+)/$1/;
+    if ($width < 40) { $width = 40; }
+    if (defined $width) {  
+      $width = $width -5;
+      $namelen = int($width * 0.2);
+      $verlen = int($width * 0.15);
+      if ($desclen != 0) {
+        $desclen = $width - $namelen -$verlen -2;
+      }
+      $formatstr = "%s %-" . $namelen . "." . $namelen . "s %-" . $verlen . "." . $verlen . "s %s\n";
+    }
   } else {
-    @selected = ();
-    while (defined($pattern = shift)) {
-      $pattern =~ s/\*/.*/g;
-      $pattern =~ s/\?/./g;
-      push @selected, grep(/$pattern/, @allnames);
+    if ($dotab) {
+      $formatstr = "%s\t%s\t%s\t%s\n";
+      $desclen = 0;
+    }
+  }
+
+  @_=@ARGV;
+  @ARGV=@temp_ARGV;
+  @allnames = Fink::Package->list_packages();
+  if ($cmd eq "list") {
+    if ($#_ < 0) {
+      @selected = @allnames;
+    } else {
+      @selected = ();
+      while (defined($pattern = shift)) {
+        $pattern = quotemeta $pattern; # fixes bug about ++ etc in search string.
+	if ((grep /\\\*/, $pattern) or (grep /\\\?/, $pattern)) {
+	   $pattern =~ s/\\\*/.*/g;
+	   $pattern =~ s/\\\?/./g;
+           push @selected, grep(/^$pattern$/, @allnames);
+	} else {
+	   push @selected, grep(/$pattern/, @allnames);
+	}
+      }
+    }
+  } else {
+    $pattern = shift;
+    @selected = @allnames;
+    unless ($pattern) {
+      die "no keyword specified for command 'apropos'!\n";
     }
   }
 
@@ -255,21 +372,33 @@ sub cmd_list {
       $lversion = "";
       $iflag = "   ";
       $description = "[virtual package]";
+      next if ($cmd eq "apropos"); 
+      if (not ($options{installedstate} & 4)) {next; };
     } else {
       $lversion = &latest_version($package->list_versions());
       $vo = $package->get_version($lversion);
       if ($vo->is_installed()) {
+        if (not ($options{installedstate} &2)) {next;};
         $iflag = " i ";
       } elsif ($package->is_any_installed()) {
         $iflag = "(i)";
+        if (not ($options{installedstate} &1)) {next;};
       } else {
         $iflag = "   ";
+        if (not ($options{installedstate} & 4)) {next; };
       }
-      $description = $vo->get_shortdescription(46);
-    }
 
-    printf "%s %-15.15s %-11.11s %s\n",
-      $iflag, $pname, $lversion, $description;
+      $description = $vo->get_shortdescription($desclen);
+    }
+    if (defined $section) {
+      $section =~ s/[\=]?(.*)/$1/;
+      next unless $vo->get_section($vo) =~ /\Q$section\E/i;
+    }  
+    if ($cmd eq "apropos") {
+      next unless $vo->get_shortdescription(150) =~ /\Q$pattern\E/i;
+    }
+    printf $formatstr,
+	$iflag, $pname, $lversion, $description;
   }
 }
 
@@ -391,38 +520,7 @@ sub cmd_description {
 }
 
 sub cmd_apropos {
-  my ($pattern, @allnames);
-  my ($pname, $package, $lversion, $vo, $iflag, $description);
-
-  $pattern = shift;
-  unless ($pattern) {
-    die "no keyword specified for command 'apropos'!\n";
-  }
-
-  @allnames = Fink::Package->list_packages();
-  
-  print "\n";
-  foreach $pname (sort @allnames) {
-    $package = Fink::Package->package_by_name($pname);
-    next unless defined $package;
-    next if $package->is_virtual();
-
-    $lversion = &latest_version($package->list_versions());
-    $vo = $package->get_version($lversion);
-	if ($vo->is_installed()) {
-	  $iflag = " i ";
-	} elsif ($package->is_any_installed()) {
-	  $iflag = "(i)";
-	} else {
-	  $iflag = "   ";
-	}
-	$description = $vo->get_shortdescription(46);
-
-	next unless $vo->get_shortdescription(150) =~ /\Q$pattern\E/i;
-
-    printf "%s %-15.15s %-11.11s %s\n",
-      $iflag, $pname, $lversion, $description;
-  }
+  do_real_list("apropos", @_);  
 }
 
 sub cmd_fetch_missing {

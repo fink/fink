@@ -41,7 +41,7 @@ BEGIN {
                     &print_breaking_twoprefix
                     &prompt &prompt_boolean &prompt_selection
                     &version_cmp &latest_version
-                    &collapse_space);
+                    &collapse_space &get_term_width);
 }
 our @EXPORT_OK;
 
@@ -489,5 +489,32 @@ sub collapse_space {
   return $s;
 }
 
+sub get_term_width {
+# This function returns the width of the terminal window, or zero if STDOUT 
+# is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
+# env var if ReadKey is not installed returns 80 if neither are available.
+  my ($width, $dummy);
+  use POSIX qw(isatty);
+  if (isatty(fileno STDOUT))
+  {
+    if (eval { require Term::ReadKey; 1; }) {
+      import Term::ReadKey qw(&GetTerminalSize);
+      ($width, $dummy, $dummy, $dummy) = &GetTerminalSize();             
+    }
+    else {
+      $width = $ENV{TERMCAP};
+      if (defined $width) {
+        $width =~ s/.*co#([0-9]+).*/$1/;
+      }
+      else {
+        $width = 80;
+      }
+    }
+  }
+  else {
+    $width = 0;
+  }
+  return $width;
+}
 ### EOF
 1;

@@ -35,7 +35,7 @@ my %options =
    "verbosity" => 0,
   );
 
-Getopt::Long::Configure(qw(bundling ignore_case));
+Getopt::Long::Configure(qw(bundling ignore_case require_order));
 GetOptions('yes|y' => \$options{dontask},
 	   'quiet|q' => sub { $options{verbosity}-- },
 	   'verbose|v' => sub { $options{verbosity}++ },
