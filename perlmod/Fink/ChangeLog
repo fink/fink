@@ -1,5 +1,11 @@
 2005-02-10  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* Shlibs.pm: moved /usr/local/lib check to the no match from shlib file
+	loop.  So that system-package with proper Shlibs fields will still
+	work.
+
+2005-02-10  Justin F. Hallett  <thesin@users.sourceforge.net>
+
 	* Shlibs.pm: Add a check and die if something links to something
 	in /usr/local/lib and /usr/local isn't the basepath.
 
