@@ -1,3 +1,8 @@
+2001-10-09  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Updated check for supported system versions to
+	include Darwin 1.4.x (Mac OS X 10.1.x).
+
 2001-09-29  Christoph Pfisterer  <cp@chrisp.de>
 
 	* VERSION: Bumped package manager version to 0.9.1.
