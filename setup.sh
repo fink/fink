@@ -38,6 +38,7 @@ sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink/Fink
 
 echo "Creating man page..."
 sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8
+sed "s|@PREFIX@|$basepath|g" <fink.conf.5.in >fink.conf.5
 
 echo "Creating shlibs default file..."
 sed "s|@PREFIX@|$basepath|g" <shlibs.default.in >shlibs.default

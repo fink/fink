@@ -224,49 +224,9 @@ Package cache database. Don't try to edit this manually, instead update it using
 .Pp
 .Pa @PREFIX@/etc/fink.conf
 .Bd -filled -offset indent -compact
-The system wide configuration file. You should not need to edit this file 
-manually, but rather use
-.Cm fink configure
-to change fink's settings.
-The following fields are useful to know something about:
-.Bl -inset -offset
-.It Em Trees:
-Sets where fink looks for the .info files which describe the packages.
-Normally used to choose between the stable/main and unstable/main trees.
-Edit this line to use the unstable tree if you want to install packages
-from the unstable section, but remember to set it back to use stable
-afterwards if you want to use mostly stable packages.
-Remember to give some feedback to the package maintainer if you use
-unstable packages, you may be the only thing stopping the package from 
-being moved into the stable tree.
-.It Em ProxyPassiveFTP:
-It is safest to set this to true, it is the default.
-.It Em FetchAltDir:
-This is the alternative directory where fink looks for sources.
-If you download a package source file (usually .tar.gz) and put it in
-this directory, fink will find it and will not download the source again.
-.It Em DownloadMethod:
-You have a choice of using either curl or wget to download. 
-Set this to wget if you want to use wget for some reason,
-the default is currently curl.
-.It Em KeepBuildDir:
-The default is false, fink usually removes the source build directory after 
-successfully building a package. If you want to keep the build directory,
-set this to true. Usually only developers have any need for this field.
-.It Em KeepRootDir:
-Similar to the KeepBuildDir option, this allows developers to keep the root
-directory around for debugging purposes.
-.It Em ProxyHTTP:
-This line is your HTTP proxy settings. You may find it easier to edit this
-line directly rather than running fink configure.
-.It Em ProxyFTP:
-Your ftp proxy settings.
-.It Em Verbose:
-A true or false value which tells fink how verbose it should be.
-.El
-.\"
-This file also contains all of your mirror settings, which should be chosen using
-.Cm fink configure.
+The system wide configuration file. See
+.Xr fink.conf 5
+for more information.
 .Ed
 .\"
 .\"
@@ -290,13 +250,19 @@ for a current list of known bugs.
 .\"
 .\"
 .Sh AUTHOR
+The current maintainer of this manpage is Max Horn <max@quendi.de>
+.\"
+.\"
+.\" ACKNOWLEDGEMENTS
+.\"
+.\"
+.Sh ACKNOWLEDGEMENTS
 The original author of 
 .Nm
 is Christoph Pfisterer <cp@chrisp.de>.
 .br
-The current maintainer of
 .Nm
-and author of this manpage is Max Horn <max@quendi.de>.
+is developed and maintained by The Fink Project (http://fink.source-forge.net).
 .\"
 .\"
 .\" SEE ALSO
@@ -305,4 +271,5 @@ and author of this manpage is Max Horn <max@quendi.de>.
 .Sh "SEE ALSO"
 .Xr apt-get 8 ,
 .Xr dselect 8 ,
-.Xr dpkg 8
+.Xr dpkg 8 ,
+.Xr fink.conf 5
