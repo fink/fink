@@ -643,15 +643,15 @@ sub get_source_suffices {
 
 	# Cache it
 	if (!exists $self->{_source_suffices}) {
-		my @params = $self->params_matching('source([2-9]|[1-9]\d+)');
-		map { s/^source//i } @params;
-		@params = sort { $a <=> $b } @params;
-		
-		unless ( $self->is_type('bundle') || $self->is_type('nosource') ) {
+		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') ) {
+			$self->{_source_suffices} = [];
+		} else {
+			my @params = $self->params_matching('source([2-9]|[1-9]\d+)');
+			map { s/^source//i } @params;
+			@params = sort { $a <=> $b } @params;
 			unshift @params, "";
+			$self->{_source_suffices} = \@params;
 		}
-		
-		$self->{_source_suffices} = \@params;
 	}
 	
 	return @{$self->{_source_suffices}};
