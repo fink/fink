@@ -1,16 +1,7 @@
-2004-01-10  Daniel Macks  <dmacks@netspace.org>
+2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* fink.conf.5.in: Removed duplicate ADVANCED SETTINGS section.
-
-2004-01-08  Daniel Macks  <dmacks@netspace.org>
-
-	* fink-virtual-pkgs.in, fink.in: Consolidated all @BASEPATH@
-	substitutions into a single lexical variable to reduce risk of
-	typos and make easier to compare various resulting executables.
-
-2004-01-05  Daniel Macks  <dmacks@netspace.org>
-
-	* bootstrap.pl,postinstall.pl.in: Services.pm spawned CLI.pm
+	* VERSION: Bumped package manager version to 0.18.1, a bugfix release 
+	on branch_0_18
 
 2004-01-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
