@@ -1,5 +1,9 @@
 2001-10-18  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Services.pm (prompt, prompt_boolean, prompt_selection): Check
+	the "dontask" a.k.a. "--yes" option and use the default value
+	instead of prompting the user when set.
+
 	* Config.pm: Added infrastructure to propagate command line
 	options: set_options() and get_option().
 

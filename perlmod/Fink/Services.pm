@@ -277,10 +277,18 @@ sub prompt {
   $default_value = "" unless defined $default_value;
   my ($answer);
 
+  require Fink::Config;
+  my $dontask = Fink::Config::get_option("dontask");
+
   &print_breaking("$prompt [$default_value] ", 0);
-  $answer = <STDIN>;
-  chomp($answer);
-  $answer = $default_value if $answer eq "";
+  if ($dontask) {
+    print "(assuming default)\n";
+    $answer = $default_value;
+  } else {
+    $answer = <STDIN>;
+    chomp($answer);
+    $answer = $default_value if $answer eq "";
+  }
   return $answer;
 }
 
@@ -290,8 +298,16 @@ sub prompt_boolean {
   $default_value = 1 unless defined $default_value;
   my ($answer, $meaning);
 
+  require Fink::Config;
+  my $dontask = Fink::Config::get_option("dontask");
+
   while (1) {
     &print_breaking("$prompt [".($default_value ? "Y/n" : "y/N")."] ", 0);
+    if ($dontask) {
+      print "(assuming default)\n";
+      $meaning = $default_value;
+      last;
+    }
     $answer = <STDIN>;
     chomp($answer);
     if ($answer eq "") {
@@ -325,6 +341,9 @@ sub prompt_selection {
   my @choices = @_;
   my ($key, $count, $answer);
 
+  require Fink::Config;
+  my $dontask = Fink::Config::get_option("dontask");
+
   $count = 1;
   foreach $key (@choices) {
     print "\n($count)  ";
@@ -338,14 +357,18 @@ sub prompt_selection {
   print "\n\n";
 
   &print_breaking("$prompt [$default_value] ", 0);
-  $answer = <STDIN>;
-  chomp($answer);
-  if (!$answer) {
-    $answer = 0;
-  }
-  $answer = int($answer);
-  if ($answer > 0 && $answer <= $#choices + 1) {
-    return $choices[$answer-1];
+  if ($dontask) {
+    print "(assuming default)\n";
+  } else {
+    $answer = <STDIN>;
+    chomp($answer);
+    if (!$answer) {
+      $answer = 0;
+    }
+    $answer = int($answer);
+    if ($answer > 0 && $answer <= $#choices + 1) {
+      return $choices[$answer-1];
+    }
   }
   return $choices[$default_value-1];
 }
