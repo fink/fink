@@ -8,6 +8,10 @@
 	* Updated the full directory to bootstrap with libncurses5 instead
 	of ncurses
 
+2004-02-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* all packages: changed to use new AddShlibDeps field
+
 2005-01-20  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* storable-pm.info: allow perl 5.8.6
