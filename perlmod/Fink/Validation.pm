@@ -99,6 +99,7 @@ our %known_fields = map {$_, 1}
      essential
      builddependsonly
      source
+     source-md5
      custommirror
      sourcedirectory
      nosourcedirectory
@@ -271,6 +272,7 @@ sub validate_info_file {
          or $field =~ m/^splitoff([2-9]|\d\d)$/
          or $field =~ m/^nosource([2-9]|\d\d)directory$/
          or $field =~ m/^source([2-9]|\d\d)$/
+         or $field =~ m/^source([2-9]|\d\d)-md5$/
          or $field =~ m/^source([2-9]|\d\d)extractdir$/
          or $field =~ m/^source([2-9]|\d\d)rename$/) {
       print "Warning: Field \"$field\" is unknown. ($filename)\n";
