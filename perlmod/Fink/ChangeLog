@@ -1,3 +1,7 @@
+2003-12-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Recognize darwin 7.2.0.
+
 2003-11-17  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Fix a problem with syncing the crypto/ directory,
