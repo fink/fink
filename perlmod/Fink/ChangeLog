@@ -1,3 +1,8 @@
+2003-11-11  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* PkgVersion.pm: Fix "uninitialized value in chomp" Seems to
+	be popular these days.
+
 2003-11-10  Rob Braun <bbraun@users.sourceforge.net>
 	* SelfUpdate.pm: Add a TIMESTAMP check when using rsync.
 	* SelfUpdate.pm: Remove support for a Distribution in Trees.
