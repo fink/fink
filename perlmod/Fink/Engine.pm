@@ -451,16 +451,21 @@ sub cmd_fetch_all_missing {
 }
 
 sub cmd_remove {
-  my ($package, @plist);
+  my ($package, @plist, $pnames);
 
   @plist = &expand_packages(@_);
   if ($#plist < 0) {
     die "no package specified for command 'remove'!\n";
   }
 
+  $pnames = "";
   foreach $package (@plist) {
-    $package->phase_deactivate();
+    $pnames = $pnames." ".$package->get_name();
   }
+  if (&execute("dpkg --remove ".$pnames)) {
+    die "can't remove package(s)\n";
+  }
+  Fink::Status->invalidate();
 }
 
 sub cmd_validate {

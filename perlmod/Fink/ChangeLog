@@ -1,3 +1,13 @@
+2001-12-11  Max Horn  <max@quendi.de>
+
+	* Engine.pm (cmd_remove): All packages to be removed are now passed
+	at once to dpkg, thus taking advantage of the advanced dependency
+	resolving mechanism of dpkg.
+
+2001-12-02  Max Horn  <max@quendi.de>
+
+	* PkgVersion.pm: Added percent expansion for SourceRename fields
+
 2001-11-06  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (process): Get rid of the funky "Done." message.
