@@ -1,3 +1,12 @@
+2002-10-27  Max Horn  <max@quendi.de>
+
+	* Mirror.pm: Never use "retry same mirror" as initial default choice if 
+	  there are other mirrors.
+	
+	* PkgVersion.pm: CPPFLAGS=-no-cpp-precomp + CPATH doesn't work correctly
+	  with tar and probably many other packages. With -isystem, everything seems
+	  fine now.
+
 2002-10-25  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm: Fixed bootstrap (my last change broke it).

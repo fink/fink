@@ -208,15 +208,18 @@ sub get_site_retry {
 
   # assemble choices
   @choice_list = ( "error", "retry" );
+  $default = 2;
   if ($#list_country >= 0) {
     push @choice_list, "retry-country";
+    $default = 3;
   }
   if ($#list_continent > $#list_country) {
     push @choice_list, "retry-continent";
+    $default = 3;
   }
-  $default = $#choice_list + 1;
   if ($#list_world > $#list_continent) {
     push @choice_list, "retry-world";
+    $default = 3;
     if ($self->{tries} >= 3) {
       $default = $#choice_list + 1;
     }

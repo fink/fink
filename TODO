@@ -1,9 +1,6 @@
 Minor
 =====
 
-* mirror choice with three options present should not initially default to
-  option 2 (retry same mirror)
-
 Medium
 ======
 
