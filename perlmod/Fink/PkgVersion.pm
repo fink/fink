@@ -24,11 +24,12 @@ package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
 					  &expand_percent &latest_version
+					  &print_breaking
+					  &prompt_boolean &prompt_selection_new
 					  &collapse_space &read_properties_var
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -74,11 +75,27 @@ sub initialize {
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
 
-	$self->{_type} = $type = lc $self->param_default("Type", "");
-	if ($type =~ s/^\s*(\S+)\s+(\S+)\s*/$1/) {
+	# inherit type
+	if (exists $self->{parent}) {
+		$type = lc $self->{parent}->param_default("Type", "");
+	} else {
+		$type = "";
+	}
+	$self->{_type} = $type = lc $self->param_default("Type", $type);
+	if ($type eq "none") {
+		$self->{_type} = $type = "";
+	}
+	# split off language version number, when given with the type
+	# Presume we have passed validation which is quite explicit
+	# about allowed major and minor (language version) values
+	if ($type =~ s/^(\S+)\s+(\S+)/$1/) {
 		$self->{_typeversion_raw} = $self->{_typeversion_pkg} = $2;
 		$self->{_typeversion_pkg} =~ s/\.//g;
 		$self->{_type} = $type;
+		# to allow %lv (typeversion_pkg) in Package have to do
+		# this early since _name and $pkgname used before
+		# percent expansion is ordinarily done
+		$self->{_name} = $pkgname = &expand_percent($pkgname,{'lv',$self->{_typeversion_pkg}});
 	}
 
 	# the following is set by Fink::Package::scan
@@ -177,10 +194,6 @@ sub initialize {
 		$expand->{'lV'} = $self->{_typeversion_raw};
 		$expand->{'lv'} = $self->{_typeversion_pkg};
 	}
-	if (exists $self->{'parent'}) {
-		$expand->{'LV'} = $self->{'parent'}->{_typeversion_raw};
-		$expand->{'Lv'} = $self->{'parent'}->{_typeversion_pkg};
-	}
 
 	$self->{_expand} = $expand;
 
@@ -196,7 +209,7 @@ sub initialize {
 	$self->expand_percent_if_available('Recommends');
 	$self->expand_percent_if_available('Replaces');
 	$self->expand_percent_if_available('Suggests');
-#	$self->expand_percent_if_available('Package');
+	$self->expand_percent_if_available('Package');
 
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if (exists $self->{parent}) {
@@ -232,24 +245,24 @@ sub initialize {
 			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
 		}
 		
+		$source = &expand_percent($source, $expand);
 		$self->{source} = $source;
-		$self->expand_percent_if_available("Source");
 		$self->{_sourcecount} = 1;
 	
 		$self->expand_percent_if_available('SourceRename');
 	
 		for ($i = 2; $self->has_param('source'.$i); $i++) {
-			$self->expand_percent_if_available('Source'.$i);
+			$self->{'source'.$i} = &expand_percent($self->{'source'.$i}, $expand);
 			$self->expand_percent_if_available('Source'.$i.'Rename');
 			$self->{_sourcecount} = $i;
 		}
-
+	
 		# handle splitoff(s)
 		if ($self->has_param('splitoff')) {
-			$self->add_splitoff($self->{'splitoff'},"");
+			$self->add_splitoff($self->{'splitoff'});
 		}
 		for ($i = 2; $self->has_param('splitoff'.$i); $i++) {
-			$self->add_splitoff($self->{'splitoff'.$i},$i);
+			$self->add_splitoff($self->{'splitoff'.$i});
 		}
 	}
 
@@ -263,26 +276,13 @@ sub initialize {
 }
 
 ### expand percent chars in the given field, if that field exists
-### return the expanded form and store it back into the field data
 
 sub expand_percent_if_available {
 	my $self = shift;
 	my $field = lc shift;
 
 	if ($self->has_param($field)) {
-		$self->{$field} = &expand_percent($self->{$field}, $self->{_expand}, $self->get_info_filename." \"$field\"");
-	}
-}
-
-### expand percent chars in the given field, if that field exists
-### return the expanded form but do not store it back into the field data
-
-sub get_param_with_expansion {
-	my $self = shift;
-	my $field = lc shift;
-
-	if ($self->has_param($field)) {
-		&expand_percent($self->{$field}, $self->{_expand}, $self->get_info_filename." \"$field\"");
+		$self->{$field} = &expand_percent($self->{$field}, $self->{_expand});
 	}
 }
 
@@ -291,19 +291,21 @@ sub get_param_with_expansion {
 sub add_splitoff {
 	my $self = shift;
 	my $splitoff_data = shift;
-	my $splitoff_num = shift;
 	my $filename = $self->{_filename};
-	my ($properties, $package, $pkgname, @splitoffs);
+	my ($properties, $package, $pkgname, $splitoff);
 	
 	# get rid of any indention first
 	$splitoff_data =~ s/^\s+//gm;
 	
 	# get the splitoff package name
-	$properties = &read_properties_var("splitoff$splitoff_num of \"$filename\"", $splitoff_data);
+	$properties = &read_properties_var($filename, $splitoff_data);
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
 		print "No package name for SplitOff in $filename\n";
 	}
+	
+	# expand percents in it, to allow e.g. "%n-shlibs"
+	$properties->{'package'} = $pkgname = &expand_percent($pkgname, $self->{_expand});
 	
 	# copy version information
 	$properties->{'version'} = $self->{_version};
@@ -312,21 +314,16 @@ sub add_splitoff {
 	
 	# link the splitoff to its "parent" (=us)
 	$properties->{parent} = $self;
-
-	# need to inherit (maybe) Type before package gets created
-	if (not exists $properties->{'type'}) {
-		if (exists $self->{'type'}) {
-			$properties->{'type'} = $self->{'type'};
-		}
-	} elsif ($properties->{'type'} eq "none") {
-		delete $properties->{'type'};
-	}
 	
-	# instantiate the splitoff
-	@splitoffs = Fink::Package->setup_package_object($properties, $filename);
+	# get/create package object for the splitoff
+	$package = Fink::Package->package_by_name_create($pkgname);
+	
+	# create object for this particular version
+	$properties->{thefilename} = $filename;
+	$splitoff = Fink::Package->inject_description($package, $properties);
 	
 	# add it to the list of splitoffs
-	push @{$self->{_splitoffs}}, @splitoffs;
+	push @{$self->{_splitoffs}}, $splitoff;
 }
 
 ### merge duplicate package description
@@ -454,13 +451,6 @@ sub get_tree {
 	return $self->{_tree};
 }
 
-sub get_info_filename {
-	my $self = shift;
-	return "" unless exists  $self->{thefilename};
-	return "" unless defined $self->{thefilename};
-	return $self->{thefilename};
-}
-
 ### other accessors
 
 sub is_multisource {
@@ -472,19 +462,18 @@ sub get_source {
 	my $self = shift;
 	my $index = shift || 1;
 	if ($index < 2) {
-		return $self->param("Source") unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
+		return $self->param("Source");
 	} elsif ($index <= $self->{_sourcecount}) {
 		return $self->param("Source".$index);
 	}
-	return "none";
+	return "-";
 }
 
 sub get_source_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 	        my $source = get_source($self, $index);
-	        push(@list, $source) unless $source eq "none";
+	        push(@list, get_source($self, $index));
 	}
 	return @list;
 }
@@ -496,22 +485,21 @@ sub get_tarball {
 		if ($self->has_param("SourceRename")) {
 			return $self->param("SourceRename");
 		}
-		return &filename($self->param("Source")) unless ($self->{_type} eq "bundle" || $self->{_type} eq "nosource");
+		return &filename($self->param("Source"));
 	} elsif ($index <= $self->{_sourcecount}) {
 		if ($self->has_param("Source".$index."Rename")) {
 			return $self->param("Source".$index."Rename");
 		}
 		return &filename($self->param("Source".$index));
 	}
-	return "none";
+	return "-";
 }
 
 sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
 	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
- 	        my $tarball = get_tarball($self, $index);
-	        push(@list, $tarball) unless $tarball eq "none";
+	        push(@list, get_tarball($self, $index));
 	}
 	return @list;
 }
@@ -531,33 +519,6 @@ sub get_checksum {
 	return "-";
 }
 
-# return the number of source items stored in an object
-sub get_source_items_count {
-	my $self = shift;
-	return 0 unless exists  $self->{_source_items};
-	return 0 unless defined $self->{_source_items};
-	return scalar @{$self->{_source_items}};
-}
-
-# return a (possibly null but always defined) list of the source items
-# stored in in an object
-sub get_source_items_list {
-	my $self = shift;
-
- 	return () unless exists  $self->{_source_items};
-	return () unless defined $self->{_source_items};
-
-	# need to do deep copy because _source_items is a ref to a
-	# list of hashes and we don't want the caller to accidentally
-	# modify the package data
-
-	my (@source_items, $source_item);
-	foreach $source_item (@{$self->{_source_items}}) {
-		my %source_item = %$source_item;
-		push @source_items, \%source_item;
-	}
-	return @source_items;
-}
 
 sub get_custom_mirror {
 	my $self = shift;
@@ -568,7 +529,7 @@ sub get_custom_mirror {
 
 	if ($self->has_param("CustomMirror")) {
 		$self->{_custom_mirror} =
-			Fink::Mirror->new_from_field($self->get_param_with_expansion("CustomMirror"));
+			Fink::Mirror->new_from_field(&expand_percent($self->param("CustomMirror"), $self->{_expand}));
 	} else {
 		$self->{_custom_mirror} = 0;
 	}
@@ -590,7 +551,7 @@ sub get_build_directory {
 	}
 	elsif ($self->has_param("SourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname()."/".
-			$self->get_param_with_expansion("SourceDirectory");
+			&expand_percent($self->param("SourceDirectory"), $self->{_expand});
 	}
 	else {
 		$dir = $self->get_tarball();
@@ -618,7 +579,7 @@ sub get_splitoffs {
 	if (exists $self->{parent}) {
 		$parent = $self->{parent};
 	} else {
-		$parent = $self;
+	        $parent = $self;
 	}
 
 	if ($include_parent) {
@@ -856,37 +817,37 @@ sub resolve_depends {
 			$loopcount = 0;
 			$found = 0;
 			BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
-				$loopcount++;
-				if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-					$depname = $1;
-					$versionspec = $2;
-				} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-					$depname = $1;
-					$versionspec = "";
-				} else {
-					die "Illegal spec format: $depspec\n";
-				}
-				$package = Fink::Package->package_by_name($depname);
-				$found = 1 if defined $package;
-				if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-					print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-				}
-				if (not defined $package) {
-					next BUILDDEPENDSLOOP;
-				}
-				my ($currentpackage, @dependslist, $dependent, $dependentname);
-				$currentpackage = $self->get_name();
-				@dependslist = $package->get_all_providers();
-				foreach $dependent (@dependslist) {
-					$dependentname = $dependent->get_name();
-					if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
-						if ($dependentname eq $depname) {
-							print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
-						} else {
-							print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
-						}
+			$loopcount++;
+			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+				$depname = $1;
+				$versionspec = $2;
+			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+				$depname = $1;
+				$versionspec = "";
+			} else {
+				die "Illegal spec format: $depspec\n";
+			}
+			$package = Fink::Package->package_by_name($depname);
+			$found = 1 if defined $package;
+			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
+				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+			}
+			if (not defined $package) {
+				next BUILDDEPENDSLOOP;
+			}
+			my ($currentpackage, @dependslist, $dependent, $dependentname);
+			$currentpackage = $self->get_name();
+			@dependslist = $package->get_all_providers();
+			foreach $dependent (@dependslist) {
+				$dependentname = $dependent->get_name();
+				if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
+					if ($dependentname eq $depname) {
+						print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
+					} else {
+						print "\nWARNING: The package $currentpackage Depends on $depname\n\t (which is provided by $dependentname),\n\t but $dependentname only allows things to BuildDepend on it.\n\n";
 					}
 				}
+			}
 			}
 		}
 	}
@@ -1110,7 +1071,7 @@ sub fetch_source {
 	my $continue = shift || 0;
 	my $nomirror = shift || 0;
 	my $dryrun = shift || 0;
-	my ($url, $file, $checksum);
+	my ($url, $file, $checksum, $urlnofile);
 
 	chdir "$basepath/src";
 
@@ -1125,7 +1086,11 @@ sub fetch_source {
 	$checksum = $self->get_checksum($index);
 	
 	if($dryrun) {
-		return if $url eq $file; # just a simple filename
+		$urlnofile = $url;
+		$urlnofile =~ s/$file//;
+		if($urlnofile eq "") {
+			return;
+		}
 		print "$file $checksum";
 	} else {
 		if($checksum eq '-') {	
@@ -1316,7 +1281,7 @@ END
 		if ($self->has_param($renamefield)) {
 			@renamefiles = split(/\s+/, $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
-				$renamefile = &expand_percent($renamefile, $expand, $self->get_info_filename." \"$renamefield\"");
+				$renamefile = &expand_percent($renamefile, $expand);
 				if ($renamefile =~ /^(.+)\:(.+)$/) {
 					$renamelist .= " -s ,$1,$2,";
 				} else {
@@ -1348,7 +1313,7 @@ END
 		$destdir = "$buildpath/$bdir";
 		if ($i > 1) {
 			if ($self->has_param("Source".$i."ExtractDir")) {
-				$destdir .= "/".$self->get_param_with_expansion("Source".$i."ExtractDir");
+				$destdir .= "/".&expand_percent($self->param("Source".$i."ExtractDir"), $self->{_expand});
 			}
 		}
 
@@ -1506,11 +1471,6 @@ sub phase_compile {
 			unless ($self->param_boolean("NoPerlTests")) {
 				$compile_script .= "make test\n";
 			}
-		} elsif ($self->param("_type") eq "ruby") {
-			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
-			$compile_script =
-				"$rubycmd extconf.rb\n".
-				"make\n";
 		} else {
 			$compile_script = 
 				"./configure \%c\n".
@@ -1579,6 +1539,8 @@ sub phase_install {
 		} elsif (not $do_splitoff) {
 			$install_script .= "make install prefix=\%i\n";
 		} 
+
+		
 		if ($self->param_boolean("UpdatePOD")) {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
@@ -1650,7 +1612,7 @@ sub phase_install {
 		# get rid of any indention first
 		$vars =~ s/^\s+//gm;
 		# Read the set if variavkes (but don't change the keys to lowercase)
-		$properties = &read_properties_var('runtimevars of "'.$self->{_filename}.'"', $vars, 1);
+		$properties = &read_properties_var($self->{_filename}, $vars, 1);
 
 		if(scalar keys %$properties > 0){
 			$install_script .= "\n/usr/bin/install -d -m 755 %i/etc/profile.d";
@@ -1801,21 +1763,13 @@ EOF
 		$depline = $depline . "darwin (>= $darwin_major_version-1)";
 	}
 
+	# FIXME: make sure there are no linebreaks in the following fields
 	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
 										 Recommends Suggests Enhances
 										 Maintainer)) {
 		if ($self->has_param($field)) {
-			my $pkgs = &collapse_space($self->param($field));
-			if ($field eq "Replaces" or $field eq "Conflicts") {
-				# Remove self from own Conflicts and Replaces.
-				# Approach: break apart comma-delimited list,
-				# reassemble only those atoms that don't match.
-				$pkgs = join ", ", ( grep { /([a-z0-9.+\-]+)/ ; $1 ne $self->get_name } split /,\s*/, $pkgs)
-			}
-			if (length $pkgs) {
-				$control .= "$field: $pkgs\n";
-			}
+			$control .= "$field: ".&collapse_space($self->param($field))."\n";
 		}
 	}
 	$control .= "Description: ".$self->get_description();
@@ -2024,7 +1978,7 @@ EOF
 		next if $scriptbody eq "";
 
 		# no, so write it out
-		$scriptbody = &expand_percent($scriptbody, $self->{_expand}, $self->get_info_filename." \"$scriptname\"");
+		$scriptbody = &expand_percent($scriptbody, $self->{_expand});
 		$scriptfile = "$destdir/DEBIAN/$scriptname";
 
 		print "Writing package script $scriptname...\n";
@@ -2047,8 +2001,9 @@ EOF
 	### shlibs file
 
 	if ($self->has_param("Shlibs")) {
-			$shlibsbody = $self->get_param_with_expansion("Shlibs");
+			$shlibsbody = $self->param("Shlibs");
 			chomp $shlibsbody;
+			$shlibsbody = &expand_percent($shlibsbody, $self->{_expand});
 			$shlibsfile = "$destdir/DEBIAN/shlibs";
 
 			print "Writing shlibs file...\n";
@@ -2066,7 +2021,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 	if ($self->has_param("conffiles")) {
 		$listfile = "$destdir/DEBIAN/conffiles";
 		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")));
-		$conffiles = &expand_percent($conffiles, $self->{_expand}, $self->get_info_filename." \"conffiles\"")."\n";
+		$conffiles = &expand_percent($conffiles, $self->{_expand})."\n";
 
 		print "Writing conffiles list...\n";
 
@@ -2089,7 +2044,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 			die "can't write daemonic info file for ".$self->get_fullname()."\n";
 		}
 		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
-		print SCRIPT $self->get_param_with_expansion("DaemonicFile");
+		print SCRIPT &expand_percent($self->param("DaemonicFile"), $self->{_expand});
 		close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
 		chmod 0644, $daemonicfile;
 	}
@@ -2209,10 +2164,7 @@ sub set_env {
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
-
-		if (&execute("/bin/mkdir -p $basepath/var/lib/fink/prebound")) {
-			warn "couldn't create seg_addr_table directory, this may cause compilation to fail!\n";
-		}
+		system("mkdir -p '$basepath/var/lib/fink/prebound'");
 		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
 			print FILEOUT <<END;
 0x90000000  0xa0000000  <<< Next split address to assign >>>
@@ -2263,13 +2215,13 @@ END
 					not $self->param_boolean("NoSet$varname")) {
 				$s .= " ".$defaults{$varname};
 			}
-			$ENV{$varname} = &expand_percent($s, $expand, $self->get_info_filename." \"set$varname\" or \%Fink::PkgVersion::defaults");
+			$ENV{$varname} = &expand_percent($s, $expand);
 		} else {
 			if (exists $defaults{$varname} and
 					defined $defaults{$varname} and 
 					not $self->param_boolean("NoSet$varname")) {
 				$s = $defaults{$varname};
-				$ENV{$varname} = &expand_percent($s, $expand, "\%Fink::PkgVersion::defaults");
+				$ENV{$varname} = &expand_percent($s, $expand);
 			} else {
 				delete $ENV{$varname};
 			}
@@ -2298,7 +2250,7 @@ sub run_script {
 	%env_bak = %ENV;
 	
 	# Expand percent shortcuts
-	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script");
+	$script = &expand_percent($script, $self->{_expand});
 	
 	# Clean the environment
 	$self->set_env();
@@ -2314,7 +2266,7 @@ sub run_script {
 
 
 
-### get_perl_dir_arch
+### get_perl_version_dir_arch
 
 sub get_perl_dir_arch {
 	my $self = shift;
@@ -2341,26 +2293,5 @@ sub get_perl_dir_arch {
 	return ($perldirectory, $perlarchdir,$perlcmd);
 }
 
-### get_ruby_dir_arch
-
-sub get_ruby_dir_arch {
-	my $self = shift;
-
-	# grab ruby version, if present
-	my $rubyversion   = "";
-	my $rubydirectory = "";
-	my $rubyarchdir   = "powerpc-darwin";
-	if ($self->has_param("_typeversion_raw")) {
-		$rubyversion = $self->param("_typeversion_raw");
-		$rubydirectory = "/" . $rubyversion;
-	}
-	### ruby= needs a full path or you end up with
-	### rubymods trying to run ../ruby$rubyversion
-	my $rubycmd = get_path('ruby'.$rubyversion);
-
-	return ($rubydirectory, $rubyarchdir, $rubycmd);
-}
-
 ### EOF
-
 1;

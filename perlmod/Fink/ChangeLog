@@ -3,6 +3,24 @@
 	* Engine.pm: Only choose a splitoff if the candidates contain
 	only one splitoff. Fixes bug reported by chris01 on irc.
 
+2004-01-06  Max Horn  <max@quendi.de>
+
+        * PkgVersion.pm: Fixed resolve_depends code.
+        * Engine.pm: Do not use BuildConflicts for packages which are not going to
+          be built!
+
+2004-01-06  Max Horn  <max@quendi.de>
+
+        * Engine.pm: Partially undid Justin's change from Dec 23 (revision 1.144).
+          Relatives of a package can't (and mustn't) be build dependencies of the
+          package, since they are built at *exactly the same time*.
+
+        * Engine.pm: Fixed a case where fink would rebuild a package twice. Also
+          clarified some comments.
+
+        * Validation.pm: BuildDepends and BuildConflicts are actually not valid in
+          splitoffs.
+
 2004-01-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm:  Use eval{} instead of a subroutine to implement the 
