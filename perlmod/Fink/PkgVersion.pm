@@ -1586,7 +1586,7 @@ sub set_env {
   %ENV = ("HOME" => $ENV{"HOME"});
 
   # add system path
-  $ENV{"PATH"} = "/bin:/usr/bin";
+  $ENV{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";
   
   # add bootstrap path if necessary
   if (-d $bsbase) {

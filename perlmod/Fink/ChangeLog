@@ -1,3 +1,13 @@
+2002-07-28  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Added /sbin and /usr/sbin to the clean env since some pkgs need
+	  stuff like chown or chmod to install properly.
+
+2002-07-26  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Changed spacing in fink list easier to use with awk or cut
+	* added a space before pkg list for better seperation of info
+
 2002-07-26  Justin F. Hallett  <thesin@users.sourceforge.net>
 
         * Services.pm: Fix for the Jag Argument "M-?M-^?M-X" isn't numeric
