@@ -15,7 +15,7 @@ Missing:
   darwin7.shlibs enventually maybe VirtPackages could do this?
 * build tests for Shlibs.pm
 * Better checking/enforcing of the Shlibs field
-* Warning about Depends being removed in the future.
+* Warning about the Depends field being removed from info files in the future.
 * Check for depends on children packages
   This should be easy enough by:
   1) installing all the files and adding a check for the files minus %i + %p
@@ -37,3 +37,4 @@ Documentation:
   without Depends at all.  AssShlibDeps will auto add all Shared Library
   depends to RunTimeDepends line and will be versioned via Shlibs fields from
   all installed packages.
+* Maintainer Mode
