@@ -1,3 +1,7 @@
+2002-10-10 Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* packages: obsolete packages directory removed
+
 2002-10-03  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl, postinstall.pl.in: Recognize 10.2.1 / Darwin 6.1; also fixed
