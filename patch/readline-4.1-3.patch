@@ -1,0 +1,47 @@
+diff -ru readline-4.1/support/shlib-install readline-4.1-patched/support/shlib-install
+--- readline-4.1/support/shlib-install	Tue Sep 21 19:29:16 1999
++++ readline-4.1-patched/support/shlib-install	Wed Mar 21 18:57:58 2001
+@@ -82,6 +82,9 @@
+ *.[0-9])		# libname.M
+ 	LINK1=`echo $LIBNAME | sed 's:\(.*\)\.[0-9]:\1:'`		# libname
+ 	;;
++*.[0-9].dylib)		# libname.M.dylib
++	LINK1=`echo $LIBNAME | sed 's:\(.*\)\.[0-9]:\1:'`		# libname.dylib
++	;;
+ esac
+ 
+ #
+@@ -141,6 +144,15 @@
+ 		${echo} ln -s $INSTALLDIR/$LIBNAME ${INSTALLDIR}/${LINK1}.sl
+ 	fi
+ 	;;
++
++darwin*)
++	# libname.dylib -> libname.M.dylib
++	${echo} ${RM} ${INSTALLDIR}/$LINK1
++	if [ -z "$uninstall" ]; then
++		${echo} ln -s $INSTALLDIR/$LIBNAME ${INSTALLDIR}/$LINK1
++	fi
++	;;
++
+ 
+ *)	;;
+ esac
+diff -ru readline-4.1/support/shobj-conf readline-4.1-patched/support/shobj-conf
+--- readline-4.1/support/shobj-conf	Tue Sep 21 19:03:43 1999
++++ readline-4.1-patched/support/shobj-conf	Wed Mar 21 18:59:28 2001
+@@ -123,6 +123,14 @@
+ 	SHLIB_LIBVERSION='$(SHLIB_LIBSUFF).$(SHLIB_MAJOR)$(SHLIB_MINOR)'
+ 	;;
+ 
++darwin*)
++	SHOBJ_CFLAGS=-fno-common
++	SHOBJ_LD='${CC}'
++	SHOBJ_LDFLAGS='-dynamiclib -undefined suppress -install_name $(libdir)/$@ -current_version $(SHLIB_MAJOR)$(SHLIB_MINOR) -compatibility_version $(SHLIB_MAJOR)$(SHLIB_MINOR)'
++	SHLIB_LIBSUFF='dylib'
++	SHLIB_LIBVERSION='$(SHLIB_MAJOR).$(SHLIB_LIBSUFF)'
++	;;
++
+ bsdi2*)
+ 	SHOBJ_CC=shlicc2
+ 	SHOBJ_CFLAGS=

@@ -1,0 +1,19 @@
+Package: readline
+Version: 4.1
+Revision: 3
+Source: gnu
+UpdateConfigGuess: true
+Patch: %f.patch
+PatchScript: mv -f config.guess support/config.guess
+ mv -f config.sub support/config.sub
+SetCPPFLAGS: -Dxmalloc=rl_xmalloc -Dxrealloc=rl_xrealloc -Dxfree=rl_xfree
+CompileScript: ./configure %c
+ make static shared
+InstallScript: make install install-shared prefix=%i
+CommentPort: Uses autoconf, but not automake. Checks the host type -
+ the updated config.guess and config.sub must be copied to the support
+ subdirectory. Uses its own shared library support scripts, which are
+ patched to add Darwin support. The xmalloc routines are renamed via
+ the preprocessor to avoid conflicts.
+CommentStow: No issues.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
