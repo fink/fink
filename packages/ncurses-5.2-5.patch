@@ -20,7 +20,7 @@ diff -ru ncurses-5.2/configure ncurses-5.2-patched/configure
 +	darwin*)
 +		CC_SHARED_OPTS='-fno-common'
 +		test "$cf_cv_shlib_version" = auto && cf_cv_shlib_version=rel
-+		MK_SHARED_LIB='$(CC) -dynamiclib -undefined suppress -install_name $(libdir)/`basename $@ .$(REL_VERSION)`.$(ABI_VERSION) -compatibility_version $(ABI_VERSION) -current_version $(REL_VERSION) -o $@'
++		MK_SHARED_LIB='$(CC) -dynamiclib -install_name $(libdir)/`basename $@ .$(REL_VERSION)`.$(ABI_VERSION) -compatibility_version $(ABI_VERSION) -current_version $(REL_VERSION) -o $@'
 +		;;
  	osf*|mls+*)
  		# tested with OSF/1 V3.2 and 'cc'

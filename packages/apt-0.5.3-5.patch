@@ -1,6 +1,6 @@
-diff -ru apt/apt-pkg/deb/debindexfile.cc apt-patched/apt-pkg/deb/debindexfile.cc
+diff -ruN apt/apt-pkg/deb/debindexfile.cc apt-patched/apt-pkg/deb/debindexfile.cc
 --- apt/apt-pkg/deb/debindexfile.cc	Tue Feb 27 05:14:22 2001
-+++ apt-patched/apt-pkg/deb/debindexfile.cc	Tue Jul 17 19:16:07 2001
++++ apt-patched/apt-pkg/deb/debindexfile.cc	Wed Aug 22 18:26:23 2001
 @@ -496,3 +496,12 @@
  }
  
@@ -14,9 +14,9 @@ diff -ru apt/apt-pkg/deb/debindexfile.cc apt-patched/apt-pkg/deb/debindexfile.cc
 +  (void)_apt_Pkg;
 +  (void)_apt_Status;
 +}
-diff -ru apt/apt-pkg/deb/debsystem.cc apt-patched/apt-pkg/deb/debsystem.cc
+diff -ruN apt/apt-pkg/deb/debsystem.cc apt-patched/apt-pkg/deb/debsystem.cc
 --- apt/apt-pkg/deb/debsystem.cc	Tue Feb 20 08:03:17 2001
-+++ apt-patched/apt-pkg/deb/debsystem.cc	Tue Jul 17 19:16:07 2001
++++ apt-patched/apt-pkg/deb/debsystem.cc	Wed Aug 22 18:26:23 2001
 @@ -30,6 +30,15 @@
  
  debSystem debSys;
@@ -56,9 +56,9 @@ diff -ru apt/apt-pkg/deb/debsystem.cc apt-patched/apt-pkg/deb/debsystem.cc
        Score += 10;
     if (FileExists("/etc/debian_version") == true)
        Score += 10;
-diff -ru apt/apt-pkg/deb/debversion.cc apt-patched/apt-pkg/deb/debversion.cc
+diff -ruN apt/apt-pkg/deb/debversion.cc apt-patched/apt-pkg/deb/debversion.cc
 --- apt/apt-pkg/deb/debversion.cc	Tue Feb 20 08:03:17 2001
-+++ apt-patched/apt-pkg/deb/debversion.cc	Tue Jul 17 19:16:07 2001
++++ apt-patched/apt-pkg/deb/debversion.cc	Wed Aug 22 18:26:23 2001
 @@ -23,6 +23,11 @@
  
  debVersioningSystem debVS;
@@ -71,9 +71,9 @@ diff -ru apt/apt-pkg/deb/debversion.cc apt-patched/apt-pkg/deb/debversion.cc
  // debVS::debVersioningSystem - Constructor				/*{{{*/
  // ---------------------------------------------------------------------
  /* */
-diff -ru apt/apt-pkg/init.cc apt-patched/apt-pkg/init.cc
+diff -ruN apt/apt-pkg/init.cc apt-patched/apt-pkg/init.cc
 --- apt/apt-pkg/init.cc	Tue Feb 20 08:03:17 2001
-+++ apt-patched/apt-pkg/init.cc	Tue Jul 17 19:16:07 2001
++++ apt-patched/apt-pkg/init.cc	Wed Aug 22 18:26:23 2001
 @@ -15,6 +15,8 @@
  #include <apti18n.h>
  #include <config.h>
@@ -110,9 +110,9 @@ diff -ru apt/apt-pkg/init.cc apt-patched/apt-pkg/init.cc
     Sys = 0;
     string Label = Cnf.Find("Apt::System","");
     if (Label.empty() == false)
-diff -ru apt/buildlib/environment.mak.in apt-patched/buildlib/environment.mak.in
+diff -ruN apt/buildlib/environment.mak.in apt-patched/buildlib/environment.mak.in
 --- apt/buildlib/environment.mak.in	Fri Feb 23 08:25:26 2001
-+++ apt-patched/buildlib/environment.mak.in	Tue Jul 17 19:16:07 2001
++++ apt-patched/buildlib/environment.mak.in	Wed Aug 22 18:26:23 2001
 @@ -11,7 +11,7 @@
  LIBSTDCPP_VER = @LIBSTDCPP_VER@
  
@@ -141,11 +141,11 @@ diff -ru apt/buildlib/environment.mak.in apt-patched/buildlib/environment.mak.in
 +#   ONLYSTATICLIBS = yes
 +#endif
 +SONAME_MAGIC=-install_name @PREFIX@/lib/
-+LFLAGS_SO=-dynamiclib -undefined suppress
++LFLAGS_SO=-dynamiclib -flat_namespace -undefined suppress
  	
-diff -ru apt/buildlib/library.mak apt-patched/buildlib/library.mak
+diff -ruN apt/buildlib/library.mak apt-patched/buildlib/library.mak
 --- apt/buildlib/library.mak	Sun Feb 25 02:43:14 2001
-+++ apt-patched/buildlib/library.mak	Tue Jul 17 19:16:07 2001
++++ apt-patched/buildlib/library.mak	Wed Aug 22 18:26:23 2001
 @@ -15,17 +15,17 @@
  # See defaults.mak for information about LOCAL
  
@@ -198,9 +198,9 @@ diff -ru apt/buildlib/library.mak apt-patched/buildlib/library.mak
  	   $(filter %.opic,$^) \
  	   $($(@F)-SLIBS) 
  
-diff -ru apt/buildlib/ostable apt-patched/buildlib/ostable
+diff -ruN apt/buildlib/ostable apt-patched/buildlib/ostable
 --- apt/buildlib/ostable	Tue Feb 20 08:03:17 2001
-+++ apt-patched/buildlib/ostable	Tue Jul 17 19:16:07 2001
++++ apt-patched/buildlib/ostable	Wed Aug 22 18:26:23 2001
 @@ -14,6 +14,7 @@
  hp-hpux[^-]*	    hp-ux
  sun-solaris[^-]*    solaris
@@ -209,9 +209,9 @@ diff -ru apt/buildlib/ostable apt-patched/buildlib/ostable
  
  # Catch all
  .*	unknown
-diff -ru apt/cmdline/apt-cache.cc apt-patched/cmdline/apt-cache.cc
+diff -ruN apt/cmdline/apt-cache.cc apt-patched/cmdline/apt-cache.cc
 --- apt/cmdline/apt-cache.cc	Thu Mar  8 03:20:43 2001
-+++ apt-patched/cmdline/apt-cache.cc	Tue Jul 17 19:16:07 2001
++++ apt-patched/cmdline/apt-cache.cc	Wed Aug 22 18:26:23 2001
 @@ -371,9 +371,11 @@
     pkgPolicy Plcy(&Cache);
     if (ReadPinFile(Plcy) == false)
@@ -236,9 +236,9 @@ diff -ru apt/cmdline/apt-cache.cc apt-patched/cmdline/apt-cache.cc
  
     // Iterate over all the package files and write them out.
     char *Buffer = new char[Cache.HeaderP->MaxVerFileSize+10];
-diff -ru apt/cmdline/apt-get.cc apt-patched/cmdline/apt-get.cc
+diff -ruN apt/cmdline/apt-get.cc apt-patched/cmdline/apt-get.cc
 --- apt/cmdline/apt-get.cc	Sun Mar  4 03:36:26 2001
-+++ apt-patched/cmdline/apt-get.cc	Tue Jul 17 19:26:57 2001
++++ apt-patched/cmdline/apt-get.cc	Wed Aug 22 18:26:23 2001
 @@ -103,6 +103,8 @@
        c1out << Yes << endl;
        return true;
@@ -248,9 +248,9 @@ diff -ru apt/cmdline/apt-get.cc apt-patched/cmdline/apt-get.cc
     
     char C = 0;
     char Jnk = 0;
-diff -ru apt/configure apt-patched/configure
+diff -ruN apt/configure apt-patched/configure
 --- apt/configure	Thu Mar  8 03:22:14 2001
-+++ apt-patched/configure	Tue Jul 17 19:25:09 2001
++++ apt-patched/configure	Wed Aug 22 18:26:23 2001
 @@ -2374,7 +2374,7 @@
  
  ac_given_srcdir=$srcdir
@@ -278,18 +278,18 @@ diff -ru apt/configure apt-patched/configure
  exit 0
  EOF
  chmod +x $CONFIG_STATUS
-diff -ru apt/configure.in apt-patched/configure.in
+diff -ruN apt/configure.in apt-patched/configure.in
 --- apt/configure.in	Thu Mar  8 03:22:13 2001
-+++ apt-patched/configure.in	Tue Jul 17 19:16:07 2001
++++ apt-patched/configure.in	Wed Aug 22 18:26:23 2001
 @@ -162,4 +162,4 @@
  ah_GLIBC_VER
  ah_LIBSTDCPP_VER
  
 -AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile:buildlib/makefile.in,make -s dirs)
 +AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile.wrap:buildlib/makefile.in,make -f makefile.wrap -s dirs)
-diff -ru apt/dselect/install apt-patched/dselect/install
+diff -ruN apt/dselect/install apt-patched/dselect/install
 --- apt/dselect/install	Tue Feb 20 08:03:17 2001
-+++ apt-patched/dselect/install	Tue Jul 17 19:16:07 2001
++++ apt-patched/dselect/install	Wed Aug 22 18:26:23 2001
 @@ -3,8 +3,8 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -301,9 +301,9 @@ diff -ru apt/dselect/install apt-patched/dselect/install
  DPKG_OPTS="--admindir=$1"
  APT_OPT0="-oDir::State::status=$1/status"
  APT_OPT1="-oDPkg::Options::=$DPKG_OPTS"
-diff -ru apt/dselect/setup apt-patched/dselect/setup
+diff -ruN apt/dselect/setup apt-patched/dselect/setup
 --- apt/dselect/setup	Thu Jan 27 05:15:10 2000
-+++ apt-patched/dselect/setup	Tue Jul 17 19:16:07 2001
++++ apt-patched/dselect/setup	Wed Aug 22 18:26:28 2001
 @@ -23,15 +23,17 @@
  my $vardir=$ARGV[0];
  my $method=$ARGV[1];
@@ -336,9 +336,9 @@ diff -ru apt/dselect/setup apt-patched/dselect/setup
  
      
    $rec->{'Type'} = 'deb';
-diff -ru apt/dselect/update apt-patched/dselect/update
+diff -ruN apt/dselect/update apt-patched/dselect/update
 --- apt/dselect/update	Tue Feb 20 08:03:18 2001
-+++ apt-patched/dselect/update	Tue Jul 17 19:16:07 2001
++++ apt-patched/dselect/update	Wed Aug 22 18:26:23 2001
 @@ -3,13 +3,13 @@
  
  # Get the configuration from /etc/apt/apt.conf
@@ -357,47 +357,10 @@ diff -ru apt/dselect/update apt-patched/dselect/update
  PROMPT="false"
  RES=`apt-config shell OPTS DSelect::UpdateOptions \
        DPKG Dir::Bin::dpkg/f APTGET Dir::Bin::apt-get/f \
-diff -ru apt/methods/connect.cc apt-patched/methods/connect.cc
+diff -ruN apt/methods/connect.cc apt-patched/methods/connect.cc
 --- apt/methods/connect.cc	Tue Feb 20 08:03:18 2001
-+++ apt-patched/methods/connect.cc	Tue Jul 17 19:16:07 2001
-@@ -25,6 +25,36 @@
- #include "rfc2553emu.h"
- 									/*}}}*/
- 
-+int getnameinfo (const struct sockaddr *sa,
-+		 socklen_t salen, char *host,
-+		 socklen_t hostlen, char *serv,
-+		 socklen_t servlen, unsigned int flags)
-+{
-+  int ret = 0;
-+
-+  if (sa->sa_family == AF_INET) {
-+    if (host != NULL && hostlen > 0) {
-+      const unsigned char *p = (const unsigned char *)(&(((const struct sockaddr_in *)sa)->sin_addr.s_addr));
-+      ret = snprintf(host, hostlen, "%d.%d.%d.%d",
-+		     (int)(p[0]), (int)(p[1]), (int)(p[2]), (int)(p[3]));
-+    }
-+    if (ret >= 0 && serv != NULL && servlen > 0) {
-+      ret = snprintf(serv, servlen, "%d", (int)(ntohs(((const struct sockaddr_in *)sa)->sin_port)));
-+    }
-+    if (ret > 0)
-+      ret = 0;
-+  } else {
-+    if (host != NULL && hostlen > 0) {
-+      *host = 0;
-+    }
-+    if (serv != NULL && servlen > 0) {
-+      *serv = 0;
-+    }
-+  }
-+
-+  return ret;
-+}
-+
- static string LastHost;
- static int LastPort = 0;
- static struct addrinfo *LastHostAddr = 0;
-@@ -90,7 +120,7 @@
++++ apt-patched/methods/connect.cc	Wed Aug 22 18:26:23 2001
+@@ -90,7 +90,7 @@
  
     // Check the socket for an error condition
     unsigned int Err;
@@ -406,23 +369,10 @@ diff -ru apt/methods/connect.cc apt-patched/methods/connect.cc
     if (getsockopt(Fd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
        return _error->Errno("getsockopt","Failed");
     
-diff -ru apt/methods/ftp.cc apt-patched/methods/ftp.cc
+diff -ruN apt/methods/ftp.cc apt-patched/methods/ftp.cc
 --- apt/methods/ftp.cc	Thu Mar  8 03:20:43 2001
-+++ apt-patched/methods/ftp.cc	Tue Jul 17 19:16:07 2001
-@@ -40,6 +40,12 @@
- #include "ftp.h"
- 									/*}}}*/
- 
-+extern int getnameinfo (const struct sockaddr *sa,
-+			socklen_t salen, char *host,
-+			socklen_t hostlen, char *serv,
-+			socklen_t servlen, unsigned int flags);
-+
-+
- /* This table is for the EPRT and EPSV commands, it maps the OS address
-    family to the IETF address families */
- struct AFMap
-@@ -688,7 +694,7 @@
++++ apt-patched/methods/ftp.cc	Wed Aug 22 18:26:23 2001
+@@ -688,7 +688,7 @@
        if (WaitFd(DataFd,true,TimeOut) == false)
  	 return _error->Error("Could not connect data socket, connection timed out");
        unsigned int Err;
@@ -431,7 +381,7 @@ diff -ru apt/methods/ftp.cc apt-patched/methods/ftp.cc
        if (getsockopt(DataFd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
  	 return _error->Errno("getsockopt","Failed");
        if (Err != 0)
-@@ -733,7 +739,7 @@
+@@ -733,7 +733,7 @@
     
     // Determine the name to send to the remote
     struct sockaddr_storage Addr;
@@ -440,7 +390,7 @@ diff -ru apt/methods/ftp.cc apt-patched/methods/ftp.cc
     if (getsockname(DataListenFd,(sockaddr *)&Addr,&AddrLen) < 0)
        return _error->Errno("getsockname","Could not determine the socket's name");
  
-@@ -809,7 +815,7 @@
+@@ -809,7 +809,7 @@
        
     // Accept the connection
     struct sockaddr_in Addr;
@@ -449,9 +399,9 @@ diff -ru apt/methods/ftp.cc apt-patched/methods/ftp.cc
     DataFd = accept(DataListenFd,(struct sockaddr *)&Addr,&Len);
     if (DataFd < 0)
        return _error->Errno("accept","Unable to accept connection");
-diff -ru apt/methods/ftp.h apt-patched/methods/ftp.h
+diff -ruN apt/methods/ftp.h apt-patched/methods/ftp.h
 --- apt/methods/ftp.h	Thu Mar  8 03:20:43 2001
-+++ apt-patched/methods/ftp.h	Tue Jul 17 19:16:07 2001
++++ apt-patched/methods/ftp.h	Wed Aug 22 18:26:23 2001
 @@ -26,11 +26,11 @@
     
     // Generic Peer Address
@@ -466,3 +416,72 @@ diff -ru apt/methods/ftp.h apt-patched/methods/ftp.h
     
     // Private helper functions
     bool ReadLine(string &Text);      
+diff -ruN apt/methods/rfc2553emu.h apt-patched/methods/rfc2553emu.h
+--- apt/methods/rfc2553emu.h	Sun Jun 18 08:04:45 2000
++++ apt-patched/methods/rfc2553emu.h	Wed Aug 22 18:26:23 2001
+@@ -26,6 +26,11 @@
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ 
++// Always use full emulation on Darwin:
++//  netdb.h has the structures and constants, but getnameinfo() is missing
++//  and getaddrinfo() seems to be broken
++#ifndef __APPLE__
++
+ // Autosense getaddrinfo
+ #if defined(AI_PASSIVE) && defined(EAI_NONAME)
+ #define HAVE_GETADDRINFO
+@@ -36,6 +41,8 @@
+ #define HAVE_GETNAMEINFO
+ #endif
+ 
++#endif /* __APPLE__ */
++
+ // getaddrinfo support?
+ #ifndef HAVE_GETADDRINFO
+   // Renamed to advoid type clashing.. (for debugging)
+@@ -100,6 +107,9 @@
+ //  #define NI_NOFQDN (1<<2)
+   #define NI_NAMEREQD (1<<3)
+   #define NI_DATAGRAM (1<<4)
++  #endif
++  #ifndef NI_DATAGRAM
++  #define NI_DATAGRAM NI_DGRAM
+   #endif
+ 
+   #define sockaddr_storage sockaddr_in
+diff -ruN apt/patch_flush apt-patched/patch_flush
+--- apt/patch_flush	Thu Jan  1 01:00:00 1970
++++ apt-patched/patch_flush	Wed Aug 22 18:49:33 2001
+@@ -0,0 +1,11 @@
++#!/bin/sh
++set -e
++
++files=`find . -name '*.cc' -print | xargs grep -l 'flush;'`
++
++for i in $files ; do
++  sed 's/<< flush;/<< flush, fflush(NULL);/g' <$i >$i.tmp
++  mv $i.tmp $i
++done
++
++exit 0
+diff -ruN apt/sources.list.fink apt-patched/sources.list.fink
+--- apt/sources.list.fink	Thu Jan  1 01:00:00 1970
++++ apt-patched/sources.list.fink	Wed Aug 22 18:55:44 2001
+@@ -0,0 +1,16 @@
++# Default APT sources configuration for Fink
++
++# Official binary distribution: download location for packages
++# from the latest release
++deb http://fink.sourceforge.net/bindist release main crypto
++
++# Official binary distribution: download location for updated
++# packages built between releases
++deb http://fink.sourceforge.net/bindist current main crypto
++
++# Local package trees - packages built from source locally
++# NOTE: keep this in sync with the Trees: line in @PREFIX@/etc/fink.conf
++# NOTE: run 'fink scanpackages' to create Packages.gz files
++deb file:@PREFIX@/fink local main
++deb file:@PREFIX@/fink stable main crypto bootstrap
++#deb file:@PREFIX@/fink unstable main crypto

@@ -13,7 +13,7 @@ InstallScript: make install PREFIX=%i
  mv %i/man %i/share/
  mkdir -p %i/share/doc/%n
  cp LICENSE README CHANGES manual*.html %i/share/doc/%n/
-Description: The bzip2 file compressor
+Description: Block-sorting file compressor
 DescDetail: <<
 bzip2 is a portable, lossless data compressor based on the
 Burrows-Wheeler transform. It achieves good compression and runs on

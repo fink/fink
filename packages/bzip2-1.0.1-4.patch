@@ -42,7 +42,7 @@ diff -ru bzip2-1.0.1/Makefile bzip2-1.0.1-patched/Makefile
 -	fi
 +libbz2.dylib: $(OBJS)
 +	rm -f libbz2.dylib libbz2.*.dylib
-+	$(CC) -dynamiclib -undefined suppress -o libbz2.1.0.1.dylib $(OBJS) -install_name $(PREFIX)/lib/libbz2.1.dylib -compatibility_version 1.0.1 -current_version 1.0.1
++	$(CC) -dynamiclib -o libbz2.1.0.1.dylib $(OBJS) -install_name $(PREFIX)/lib/libbz2.1.dylib -compatibility_version 1.0.1 -current_version 1.0.1
 +	ln -s libbz2.1.0.1.dylib libbz2.1.dylib
 +	ln -s libbz2.1.0.1.dylib libbz2.dylib
  
