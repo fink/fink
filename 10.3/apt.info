@@ -10,8 +10,8 @@ SourceDirectory: %n-%v
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
  sh patch_flush
- for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
- for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i ; done
+ for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
+ for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i ; done
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
