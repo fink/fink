@@ -1,5 +1,9 @@
 2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* fink-mirrors.info.in: adjust dependency
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* VERSION: Releasing version 0.0.4 of fink-mirrors
 
 2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>

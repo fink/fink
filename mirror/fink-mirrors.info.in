@@ -4,7 +4,7 @@ Revision: @REVISION@
 Essential: yes
 Source: %n-%v.tar
 Source-MD5: @MD5@
-Depends: fink (>= 0.17.2-1)
+Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|" < postinstall.pl.in > postinstall.pl
 InstallScript: ./install.sh %i
