@@ -5,6 +5,7 @@ Essential: yes
 Depends: base-files
 Maintainer: Max Horn <max@quendi.de>
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source-MD5: ee76864958d568677f03db8afad92beb
 Patch: %f.patch
 CompileScript: make PREFIX=%p
 InstallScript: make install PREFIX=%i

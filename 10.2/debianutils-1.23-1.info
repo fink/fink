@@ -8,6 +8,7 @@ Conflicts: mktemp
 Replaces: mktemp, tetex
 Provides: mktemp
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
+Source-MD5: 232b5bc916a1e2af43fde890f840a304
 SourceDirectory: %n-%v
 Patch: %f.patch
 InstallScript: <<

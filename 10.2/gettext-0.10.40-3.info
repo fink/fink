@@ -2,6 +2,7 @@ Package: gettext
 Version: 0.10.40
 Revision: 3
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: yes
 Depends: base-files, libiconv
 Patch: %f.patch

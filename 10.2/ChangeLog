@@ -1,6 +1,7 @@
-2003-01-28  Max Horn  <max@quendi.de>
+2003-02-27  Max Horn  <max@quendi.de>
 
-	* synced packages with the stable tree
+	* Added MD5 values back (now that we use /sbin/md5 to calculate the MD5
+	  checksum, their presence doesn't break bootstrap anymore).
 
 2002-12-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 

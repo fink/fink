@@ -3,6 +3,7 @@ Version: 5.2
 Revision: 9
 GCC: 3.1
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source-MD5: 464d6a49010cf2a6eb9ce59a264d4d47
 Essential: yes
 Depends: base-files
 Patch: %f.patch
