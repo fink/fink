@@ -49,9 +49,13 @@ END { }				# module clean-up code here (global destructor)
 
 sub bootstrap {
 	my ($bsbase, $save_path);
-	my ($pkgname, $package, @elist);
+	my ($pkgname, $package, @elist, @addlist);
 	my @plist = ("gettext", "tar", "dpkg-bootstrap");
-	my @addlist = ("apt", "apt-shlibs", "storable-pm");
+	if ("$]" == "5.006") {
+	    @addlist = ("apt", "apt-shlibs", "storable-pm", "storable-pm560");
+	} elsif ("$]" == "5.008") {
+	    @addlist = ("apt", "apt-shlibs", "storable-pm", "system-perl580");
+	} else {die "Sorry, wrong version of perl! (This can't happen...)\n"}
 
 	$bsbase = &get_bsbase();
 	&print_breaking("Bootstrapping a base system via $bsbase.");

@@ -1,3 +1,8 @@
+2003-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net
+
+	* Bootstrap.pm: allow bootstrapping with either perl 5.6.0 or 
+	perl 5.8.0
+
 2003-06-07  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm, PkgVersion.pm:  Allow an essential package to have a 
