@@ -38,10 +38,22 @@ else
   setenv INFOPATH BASEPATH/share/info:BASEPATH/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info
 endif
 
+# setting this is not neccessary and results in performance degradation
 #if ( $?DYLD_LIBRARY_PATH ) then
 #  setenv DYLD_LIBRARY_PATH BASEPATH/lib:$DYLD_LIBRARY_PATH
 #else
 #  setenv DYLD_LIBRARY_PATH BASEPATH/lib
 #endif
+
+# read per-package scripts from BASEPATH/etc/profile.d
+if ( -d BASEPATH/etc/profile.d ) then
+  set nonomatch
+  foreach i ( BASEPATH/etc/profile.d/*.csh )
+    if ( -x $i ) then
+      source $i
+    endif
+  end
+  unset i nonomatch
+endif
 
 # eof

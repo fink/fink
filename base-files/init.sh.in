@@ -39,11 +39,22 @@ fi
 INFOPATH=BASEPATH/share/info:BASEPATH/info:$INFOPATH
 export INFOPATH
 
+# setting this is not neccessary and results in performance degradation
 #if [ -z "$DYLD_LIBRARY_PATH" ]; then
 #  DYLD_LIBRARY_PATH=BASEPATH/lib
 #else
 #  DYLD_LIBRARY_PATH=BASEPATH/lib:$DYLD_LIBRARY_PATH
 #fi
 #export DYLD_LIBRARY_PATH
+
+# read per-package scripts from BASEPATH/etc/profile.d
+if [ -d BASEPATH/etc/profile.d ]; then
+  for i in BASEPATH/etc/profile.d/*.sh ; do
+    if [ -x $i ]; then
+      . $i
+    fi
+  done
+  unset i
+fi
 
 # eof

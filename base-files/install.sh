@@ -34,7 +34,7 @@ echo "Creating directories..."
 mkdir -p $basepath
 chmod 755 $basepath
 
-for dir in etc bin sbin lib libexec include \
+for dir in etc etc/profile.d bin sbin lib libexec include \
 	   share share/info share/man share/doc \
 	   info man \
 	   var var/run var/spool src ; do
