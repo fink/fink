@@ -1,3 +1,11 @@
+2001-07-31  Christoph Pfisterer  <cp@chrisp.de>
+
+	* README, INSTALL, USAGE: Updated for the 0.2.4 release via the
+	XML document system. Some layout changes.
+	* README.html, INSTALL.html, USAGE.html: HTML versions of the
+	documentation for more comfortable reading and printing. (Rendered
+	from the same XML source.)
+
 2001-07-30  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink: Removed unnecessary babble.

@@ -1,11 +1,106 @@
-Generated from $Fink: install.xml,v 1.1 2001/07/06 20:01:53 chrisp Exp $
+Generated from $Fink: install.xml,v 1.4 2001/07/31 16:32:50 chrisp Exp $
 
- Fink 0.2.3 Installation
+ Fink 0.2.4 Installation
 =========================
 
-These are the installation instructions for Fink version 0.2.3. This
-document covers both first time installation and upgrading from a
-previous version.
+These are the installation instructions for Fink version 0.2.4. This
+document covers both first time installation and upgrading from a previous
+version. Fast track instructions for the impatient are at the top.
+
+
+ The Fast Track
+================
+
+This section is for the impatient who don't want to take the time to learn
+their way around the command line world and don't care that they don't know
+what they're actually doing.
+
+If you're looking for the real instructions, skip to the next section. (You
+can still use this section as an example.)
+
+
+ First Time Installation Fast Track
+------------------------------------
+Start out by copying the "fink-0.2.4-full.tar.gz" file to your home folder.
+Then, open Terminal.app and follow the session below. Computer output is in
+"normal face" , your input is in "_bold_face_" (or otherwise highlighted).
+The actual input prompts from the shell may vary, and some chunks of the
+output have been omitted ( "..." ).
+
+   [frodo:~] testuser% _tar_xzf_fink-0.2.4-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.2.4-full_
+   [frodo:~/fink-0.2.4-full] testuser% _./bootstrap.sh_/sw_
+   
+   Welcome to Fink.
+   
+   ...
+   Choose a method: [1] _1_
+   
+   sudo /Users/testuser/fink-0.2.4-full/bootstrap.pl .sudo '/sw'
+   Password:_(your_normal_password_here)_
+   ...
+   OK, I'll ask you some questions and update the configuration file in
+   '/sw/etc/fink.conf'.
+   
+   In what additional directory should Fink look for downloaded tarballs? [] _(press_return)_
+   Always print verbose messages? [y/N] _(press_return)_
+   
+   Proxy/Firewall settings
+   Enter the URL of the HTTP proxy to use, or 'none' for no proxy. The URL
+   should start with http:// and may contain username, password or port
+   specifications. [none] _(press_return)_
+   Enter the URL of the proxy to use for FTP, or 'none' for no proxy. The URL
+   should start with http:// and may contain username, password or port
+   specifications. [none] _(press_return)_
+   Use passive mode FTP transfers (to get through a firewall)? [y/N] _y_
+   
+   Mirror selection
+   Choose a continent:
+   ...
+   _(enter_the_numbers_corresponding_to_your_location)_
+   ...
+   Writing updated configuration to '/sw/etc/fink.conf'...
+   Bootstrapping a base system via /sw/bootstrap.
+   ...
+   _(take_a_coffee_break_while_Fink_downloads_and_compiles_the_base_packages)_
+   ...
+   cp -f wget-ssl-1.7-1.patch /sw/fink/dists/stable/crypto/finkinfo/
+   
+   You should now have a working Fink installation in '/sw'. Use
+   '/sw/bin/init.csh' to set up your environment to use it. Enjoy.
+   
+   [frodo:~/fink-0.2.4-full] testuser% _cd_
+   [frodo:~] testuser% _pico_.cshrc_
+
+The last command launches you into a text file editor. Type "source
+/sw/bin/init.csh" , press return, press control-O, press return, press
+control-X. You're now back at the prompt:
+
+   [frodo:~] testuser% _source_.cshrc_
+   [frodo:~] testuser% _rehash_
+   [frodo:~] testuser% 
+
+If you have several Terminal.app windows open, close the other ones. That's
+it. You can now install additional packages with the "fink" command, like
+this:
+
+   [frodo:~] testuser% _fink_install_xfree86-server_gimp_
+   sudo /sw/bin/fink 'install' 'xfree86-server' 'gimp'
+   Password:_(your_normal_password_here)_
+   Reading package info...
+   Information about 147 packages read.
+   The following 14 additional packages will be installed:
+    audiofile dlcompat esound giflib glib gnome-libs gtk+ imlib libjpeg libpng
+    libtiff orbit xfree86-base zlib
+   Do you want to continue? [Y/n] _y_
+   ...
+
+If these instructions don't work for you, well, you'll have to take the time
+to read through the rest of this document and the online FAQ
+[http://fink.sourceforge.net/faq/]. You can also ask on the fink-users
+mailing list [http://fink.sourceforge.net/lists/fink-users.php], but expect
+to be pointed back at the documentation when your problem actually is
+well-documented.
 
 
  First Time Installation
@@ -15,137 +110,151 @@ previous version.
 --------------
 You need:
 
- * An installed Mac OS X system, version 10.0 or later. Darwin 1.3.1
-   should also work, but this has not been tested. Earlier versions of
-   both will _not_ work.
+ * An installed Mac OS X system, version 10.0 or later. Darwin 1.3.1 should
+   also work, but this has not been tested. Earlier versions of both will
+   _not_ work.
 
- * Development tools. On Mac OS X, install the Developer.pkg package
-   from the Developer Tools CD. On Darwin, the tools should be present
-   in the default install.
+ * Development tools. On Mac OS X, install the Developer.pkg package from
+   the Developer Tools CD. On Darwin, the tools should be present in the
+   default install.
 
- * Many other things that come with Mac OS X and the Developer Tools.
-   This includes perl 5.6, wget and autoconf.
+ * Many other things that come with Mac OS X and the Developer Tools. This
+   includes perl 5.6, wget and autoconf.
 
  * Internet access. All source code is downloaded from mirror sites.
 
- * Patience. Compiling several big packages takes time. I'm talking
-   hours or even days here.
+ * Patience. Compiling several big packages takes time. I'm talking hours or
+   even days here.
 
 
  Choosing A Directory
 ----------------------
-Before you install, you must decide where Fink's directory hierarchy
-will live. The recommended place is /sw, and all examples in this
-document will use that. Any other directory should be fine as well, as
-long as you don't use existing directories like /usr/local or /usr.
-The bootstrap script tries to catch these.
+Before you install, you must decide where Fink's directory hierarchy will
+live. The recommended place is /sw, and all examples in this document will
+use that. Any other directory should be fine as well, as long as you don't
+use existing directories like /usr/local or /usr. The bootstrap script tries
+to catch these.
 
-A special note about /usr/local: While it is possible to install Fink
-in /usr/local (and the bootstrap script will let you do that after a
-confirmation), it is a bad idea. Many third party software packages
-install into /usr/local. This can cause severe problems for Fink,
-including overwriting files, dpkg refusing to install packages and
-strange build errors. Also, the /usr/local hierarchy is in the default
-search path for the shell and the compiler. That means that it is much
-more difficult to get back to a working system when things break. You
-have been warned.
+The directory that you choose must not contain any spaces or similar. Both
+Unix itself and the bulk of Unix software were written under this
+assumption. Using symlinks to trick the bootstrap script simply won't work.
+
+A special note about /usr/local: While it is possible to install Fink in
+/usr/local (and the bootstrap script will let you do that after a
+confirmation), it is a bad idea. Many third party software packages install
+into /usr/local. This can cause severe problems for Fink, including
+overwriting files, dpkg refusing to install packages and strange build
+errors. Also, the /usr/local hierarchy is in the default search path for the
+shell and the compiler. That means that it is much more difficult to get
+back to a working system when things break. You have been warned.
 
 
  Installation
 --------------
-The actual installation is performed by the perl script bootstrap.pl.
-It is accompanied by a small shell script, bootstrap.sh, which checks
-some basic requirements and then hands over control to the perl
-script. So, to start installation, run this command:
+First, you need to unpack the fink-0.2.4-full.tar.gz tarball. It is
+recommended that you do this from the command line - StuffIt Expander has a
+tendency to screw up text files. So, go to the directory where you put the
+tarball, and run this command:
+
+   tar xzf fink-0.2.4-full.tar.gz
+
+You now have a directory named fink-0.2.4-full. Change to it with "cd
+fink-0.2.4-full" .
+
+The actual installation is performed by the perl script bootstrap.pl. It is
+accompanied by a small shell script, bootstrap.sh, which checks some basic
+requirements and then hands over control to the perl script. So, to start
+installation, go to the fink-0.2.4-full directory and run this command:
 
    ./bootstrap.sh
 
-After running some tests, the script will ask you what method should
-be used to gain root privileges. The most useful choice is 'sudo'. On
-a default install of Mac OS X, sudo is already enabled for the user
-account created during installation. The script will immediately use
-the method you choose to become root. This is required for the
-installation.
+After running some tests, the script will ask you what method should be used
+to gain root privileges. The most useful choice is 'sudo'. On a default
+install of Mac OS X, sudo is already enabled for the user account created
+during installation. The script will immediately use the method you choose
+to become root. This is required for the installation.
 
-Next, the script will ask you for the installation path. See 'Choosing
-A Directory' above for hints about this. The script will create the
-directory and set it up for the bootstrap that will be done later.
+Next, the script will ask you for the installation path. See 'Choosing A
+Directory' above for hints about this. The script will create the directory
+and set it up for the bootstrap that will be done later.
 
-Next up is Fink configuration. This consists mainly of selecting
-mirror sites for downloading.
+Next up is Fink configuration. This consists mainly of setting proxies and
+selecting mirror sites for downloading. The process should be
+self-explaining. If you don't know what to say, you can just press Return
+and Fink will use a reasonable default value.
 
-Finally, the script has enough information to conduct the bootstrap
-process. That means it will now download, build and install some
-essential packages. Don't worry if you see some packages being
-compiled twice. This is required because to build a binary package of
-the package manager, you must have the package manager available.
+Finally, the script has enough information to conduct the bootstrap process.
+That means it will now download, build and install some essential packages.
+Don't worry if you see some packages being compiled twice. This is required
+because to build a binary package of the package manager, you first must
+have the package manager available.
 
 
  Getting X11 Sorted Out
 ------------------------
-Fink uses a virtual package to declare dependencies on X11. As there
-are several X11 packages available for Mac OS X (Xfree86, Tenon
-Xtools) and several ways to install them (manually or via Fink), there
-are several actual packages - one for each setup. Fink is quite bad at
-guessing what you have, so it's best to get this sorted out right at
-the beginning. Here is a list of the available packages and
-installation methods:
+Fink uses virtual packages to declare dependencies on X11. As there are
+several X11 implementations available for Mac OS X (XFree86, Tenon Xtools)
+and several ways to install them (manually or via Fink), there are several
+actual packages - one for each setup. Fink is quite bad at guessing what you
+have, so it's best to get this sorted out right at the beginning. Here is a
+list of the available packages and installation methods:
 
- * xfree86-base: This package is the real thing. It will fetch the
-   XFree86 source, compile it and install it into /usr/X11R6. For
-   maximum flexibility, this package does not contain the actual
-   XDarwin server. To get it, you can install the xfree86-server
-   package. Or you can install it manually, for example using an
-   "XAqua" release from the XonX project (not useful right now as
-   those are older than XFree86 4.1.0) or one of the "rootless"
-   servers circulating the net.
+ * xfree86-base: This package is the real thing. It will fetch the XFree86
+   source, compile it and install it into /usr/X11R6. For maximum
+   flexibility, this package does not contain the actual XDarwin server. To
+   get it, you can install the xfree86-server package. Or you can install it
+   manually, for example using an "XDarwin" test release from the XonX
+   project or one of the "rootless" servers circulating the net.
 
- * system-xfree86: This package expects that you installed XFree86
-   manually, either from source or from the official binary
-   distribution. It will just check that the installation is useful
-   and then act as a dependency placeholder. Note that XFree86 4.0.2
-   or 4.0.3 will not pass the test. You need a version that builds
-   shared libraries. Usually that will be 4.1.0, but CVS versions not
-   older than a few months will also work.
+ * system-xfree86: This package expects that you installed XFree86 manually,
+   either from source or from the official binary distribution. It will just
+   check that the installation is useful and then act as a dependency
+   placeholder. Note that XFree86 4.0.2 or 4.0.3 will not pass the test. You
+   need a version that builds shared libraries. Usually that will be 4.1.0,
+   but CVS versions not older than a few months will also work.
 
- * system-xtools: Install this if you have Tenon's Xtools product
-   installed. Like system-xfree86, this will just do a sanity check
-   and leave the actual files alone.
+ * system-xtools: Install this package if you have Tenon's Xtools product
+   installed. Like system-xfree86, this will just do a sanity check and
+   leave the actual files alone.
+
+For more information on installing and running X11, refer to the online X11
+on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/].
 
 
  Upgrading From Fink 0.2.x
 ===========================
 
-If you already have Fink 0.2.x installed, you can update your
-installation to 0.2.3 with this package.
+If you already have Fink 0.2.x installed, you can update your installation
+to 0.2.4 with this package.
 
-Actually, there are two pieces that are updated independently: the
-package manager and the package descriptions. It is recommended to
-update the package manager first.
+Actually, there are two pieces that are updated independently: the package
+manager and the package descriptions. It is recommended to update the
+package manager first.
 
 
  Updating The Package Manager
 ------------------------------
-To update the package manager, run the inject.pl script in this
-directory, like this:
+To update the package manager, run the inject.pl script in the
+fink-0.2.4-full directory, like this:
 
    ./inject.pl
 
-It will try to locate your Fink installation automatically. If it
-can't find it, you can pass the path as a parameter, like this:
+It will try to locate your Fink installation automatically. If it can't find
+it, you can pass the path as a parameter, like this:
 
    ./inject.pl /sw
 
-The script copies the package descriptions into the appropriate
-directory, creates tarballs in /sw/src and then runs fink to install
-the new versions of the fink and base-files packages.
+The script copies the package descriptions into the appropriate directory,
+creates tarballs in /sw/src and then runs fink to install the new versions
+of the fink and base-files packages. (Yes, that means that fink updates
+itself. ":-)" )
 
 
  Updating The Package Descriptions
 -----------------------------------
-If you downloaded the fink-0.2.3-full tarball, the package
-descriptions are in the subdirectory pkginfo. To install them, run the
-inject.pl script in that directory:
+If you downloaded the fink-0.2.4-full tarball, the package descriptions are
+in the subdirectory pkginfo. To install them, run the inject.pl script in
+that directory:
 
    cd pkginfo
    ./inject.pl
@@ -153,81 +262,68 @@ inject.pl script in that directory:
 This inject.pl script works just like the one for the package manager.
 
 You can also grab the package descriptions as a separate tarball,
-packages-0.2.3. If you did that, just unpack it and run the inject.pl
-script inside.
+packages-0.2.4. If you did that, just unpack it and run the inject.pl script
+inside.
 
 
  Getting X11 Sorted Out
 ------------------------
-The first thing you should do after updating the package descriptions
-is getting the X11 dependencies settled. Refer to the "Getting X11
-Sorted Out" section under "First Time Installation" above.
-
-Note that if you used the xfree86-base package before Fink 0.2.2, you
-may have to rebuild it to get correct dependency information. If you
-have xfree86-base-4.1.0-1 (and exactly that version) installed, run:
-
-   fink rebuild xfree86-base
-
-If you have an older version of the xfree86-base package, simply
-update it to 4.1.0-1:
-
-   fink update xfree86-base
+The first thing you should do after updating the package descriptions is
+getting the X11 dependencies settled (unless you already did that after
+upgrading to 0.2.3). Refer to the "Getting X11 Sorted Out" section under
+"First Time Installation" above.
 
 
  Updating Packages
 -------------------
-The above updating steps will not update the actual packages, they
-only provide you with the means to do so. The easiest way to get the
-new packages is to use the 'update-all' command:
+The above updating steps will not update the actual packages, they only
+provide you with the means to do so. The easiest way to get the new packages
+is to use the 'update-all' command:
 
    fink update-all
 
-This will bring all installed packages to the latest version. If you
-don't want to do this (it may take some time), you can update
-individual packages with the 'update' command. But note that some
-package require specific versions of the packages they depend upon.
-Fink currently has no way to enforce this, so you may run into
-problems.
+This will bring all installed packages to the latest version. If you don't
+want to do this (it may take some time), you can update individual packages
+with the 'update' command. But note that some package require specific
+versions of the packages they depend upon. Fink currently has no way to
+enforce this, so you may run into problems.
 
 
  Other Notes
 -------------
-IMPORTANT! When you update from Fink 0.2.0 or a CVS version before
-0.2.1, the first thing you should do after running the inject.pl
-scripts is this:
+IMPORTANT! When you update from Fink 0.2.0 or a CVS version before 0.2.1,
+the first thing you should do after running the inject.pl scripts is this:
 
    fink update dpkg
 
-There was a bug in dpkg that could lead to partially extracted
-packages. If you had unusual trouble with installed packages,
-especially missing symlinks, use 'fink reinstall' on them to
-re-install the .deb package files.
+There was a bug in dpkg that could lead to partially extracted packages. If
+you had unusual trouble with installed packages, especially missing
+symlinks, use 'fink reinstall' on them to re-install the .deb package files.
 
 
  Upgrading From Fink 0.1.x
 ===========================
 
-There is no direct upgrade path from Fink 0.1.x to Fink 0.2.x, because
-they use different methods for underlying package management (stow vs.
-dpkg). The only way to upgrade is to do a complete reinstall. The
-procedure is as follows:
+There is no direct upgrade path from Fink 0.1.x to Fink 0.2.x, because they
+use different methods for underlying package management (stow vs. dpkg). The
+only way to upgrade is to do a complete reinstall. The procedure is as
+follows:
 
  * Save any changes you have made to configuration files etc.
 
- * Save a list of packages you had installed. Hint: Try 'ls
-   /sw/var/fink-stamp'.
+ * Save a list of packages you had installed. Hint: Try "ls
+   /sw/var/fink-stamp" .
 
- * If you have the source tarballs still lying around in /sw/src and
-   don't want to download them again, move them to another directory.
+ * If you have the source tarballs still lying around in /sw/src and don't
+   want to download them again, move them to another directory.
 
- * Wipe out the /sw directory, i.e. 'cd / ; rm -rf /sw'. Do this as
-   root if neccessary.
+ * Wipe out the /sw directory, i.e. "cd / ; rm -rf /sw" . Do this as root if
+   neccessary.
 
  * Follow the procedures for a first time installation above.
 
- * When you're asked for an 'additional directory for downloaded
-   tarballs', enter the directory you moved the tarballs to.
+ * When you're asked for an 'additional directory for downloaded tarballs',
+   enter the directory you moved the tarballs to.
 
  * Reinstall the packages you need.
 
