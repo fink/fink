@@ -1,3 +1,7 @@
+2005-02-05  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* fink.in: backing out last change till it's complete and works
+
 2005-02-05  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: Instead of decomposing and rebuilding cmdline, just

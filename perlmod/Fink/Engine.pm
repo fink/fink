@@ -136,7 +136,7 @@ sub initialize {
 
 sub process {
 	my $self = shift;
-	my $orig_ARGV = shift;
+	my $options = shift;
 	my $cmd = shift;
 	my @args = @_;
 	
@@ -156,7 +156,7 @@ sub process {
 
 	# check if we need to be root
 	if ($rootflag and $> != 0) {
-		&restart_as_root(@$orig_ARGV);
+		&restart_as_root($options, $cmd, @args);
 	}
 
 	# check if we need apt-get
@@ -221,7 +221,11 @@ sub process {
 	Fink::PkgVersion->clear_buildlock();       # always clean up
 	
 	# Rebuild the command line, for user viewing
-	my $commandline = join ' ', 'fink', @$orig_ARGV;
+	my $commandline = 'fink';
+	$commandline .= " $options" if $options;
+	$commandline .= " $cmd" if $cmd;
+	$commandline .= join('', map { " $_" } @args) if @args;
+
 	my $notifier = Fink::Notify->new();
 	if ($proc_rc->{'$@'}) {                    # now deal with eval results
 		print "Failed: " . $proc_rc->{'$@'};
@@ -250,11 +254,14 @@ sub restart_as_root {
 
 	$cmd = "$basepath/bin/fink";
 
+	# Pass on options
+	$cmd .= ' ' . shift;
+
 	foreach $arg (@_) {
 		if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
 			$cmd .= " $arg";
 		} else {
-			# safety first (protect shell metachars, quote whole string)
+			# safety first
 			$arg =~ s/[\$\`\'\"|;]/_/g;
 			$cmd .= " \"$arg\"";
 		}

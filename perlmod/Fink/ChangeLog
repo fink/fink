@@ -1,3 +1,7 @@
+2005-02-05  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* Engine.pm: backing out last change till it's complete and works
+
 2005-02-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: first arg to process() is ref to original @ARGV not

@@ -45,17 +45,35 @@ my $optionsString = '';
 
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
 GetOptions(
-	'yes|y'              => sub { $options{dontask} = 1         },
-	'quiet|q'            => sub { $options{verbosity} = -1      },
-	'verbose|v'          => sub { $options{verbosity} = 4       },
-	'keep-build-dir|k'   => sub { $options{keep_build} = 1      },
-	'keep-root-dir|K'    => sub { $options{keep_root} = 1       },
-	'use-binary-dist|b'  => sub { $options{use_binary} = 1      },
-	'no-use-binary-dist' => sub { $options{use_binary} = -1     },
-	'build-as-nobody'    => sub { $options{build_as_nobody} = 1 },
-#	'interactive|i'      => sub { $options{interactive} = 1     },
-	'version|V'          => \&show_version,
-	'help|h'             => \&show_help
+	'yes|y'            => sub { $options{dontask} = 1 ;  
+								$optionsString .= '--yes ' 
+							  },
+	'quiet|q'          => sub { $options{verbosity} = -1 ;  
+								$optionsString .= '--quiet ' 
+							  },
+	'verbose|v'        => sub { $options{verbosity} = 4 ;  
+								$optionsString .= '--verbose ' 
+							  },
+	'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  
+								$optionsString .= '--keep-build-dir ' 
+							  },
+	'keep-root-dir|K'  => sub { $options{keep_root} = 1 ;  
+								$optionsString .= '--keep-root-dir ' 
+							  },
+	'use-binary-dist|b'  => sub { $options{use_binary} = 1 ;  
+								  $optionsString .= '--use-binary-dist ' 
+								},
+	'no-use-binary-dist'  => sub { $options{use_binary} = -1 ;  
+								   $optionsString .= '--no-use-binary-dist ' 
+								 },
+	'build-as-nobody'    => sub { $options{build_as_nobody} = 1 ;  
+								  $optionsString .= '--build-as-nobody ' 
+								},
+#	'interactive|i'    => sub { $options{interactive} = 1 ;  
+#                                $optionsString .= '--interactive ' 
+#                              },
+	'version|V'        => \&show_version,
+	'help|h'           => \&show_help
 )
 	or die <<UNKNOWN;
 fink: unknown option
