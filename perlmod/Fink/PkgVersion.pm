@@ -2611,7 +2611,8 @@ EOF
 		$scriptbody = "";
 
 		### Check for Group/User, if exists then process
-		if ($self->has_param("Group") || $self->has_param("User")) {
+		if (($self->has_param("Group") || $self->has_param("User"))
+		    && $self->is_type('bundle')) {
 			### Add user/group check to preinst if needed
 			my ($name, $type) = (0, 0);
 			my ($desc, $shell, $home, $group);
@@ -2654,16 +2655,16 @@ EOF
 					$scriptbody = $script;
 				}
 			}
+		}
 
-			### Add chown script to postinst script if needed
-			if ($scriptname eq "postinst") {
-				my $script = Fink::User->get_perms($ddir);
+		### Add chown script to postinst script if needed
+		if ($scriptname eq "postinst") {
+			my $script = Fink::User->get_perms($ddir);
 
-				if ($script) {
-					### Add to top of postinstscript
-					$script .= "\n";
-					$scriptbody = $script;
-				}
+			if ($script) {
+				### Add to top of postinstscript
+				$script .= "\n";
+				$scriptbody = $script;
 			}
 		}
 
