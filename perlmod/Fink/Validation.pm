@@ -288,7 +288,7 @@ sub validate_info_file {
       print "Warning: Description starts with lower case. ($filename)\n";
       $looks_good = 0;
   	}
-    if ($value =~ /\Q$pkgname\E/) {
+    if ($value =~ /\b\Q$pkgname\E\b/) {
       print "Warning: Description contains package name. ($filename)\n";
       $looks_good = 0;
     }
