@@ -1,0 +1,11 @@
+# This file lists the available mirror lists
+#
+# NOTE: Only the lists mentioned in the Order line will be used
+# during mirror selection. The individual keys list titles
+# displayed in mirror selection.
+
+Order: gnu gnome gimp
+
+gnu: GNU software
+gnome: GNOME
+gimp: The GIMP
