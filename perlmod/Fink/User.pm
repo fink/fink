@@ -74,11 +74,14 @@ sub get_perms {
     
 	foreach $file (@filelist) {
 		### Remove $basepath/src/root-...
-		$file =~ s/^$basepath\/src\/root-.+$basepath/$basepath/g;
+		$file =~ s/^$rootdir/$basepath/g;
 		### Don't add DEBIAN dir
 		next if ($file =~ /DEBIAN/);
 	  
 		($dev, $ino, $mode, $nlink, $uid, $gid) = lstat($file);
+
+		### Skip anything that doesn't have a user or group;
+		next if (not $uid or not $gid);
 	  
 		$usr = User::pwent::getpwuid($uid);
 		$grp = User::grent::getgrgid($gid);
@@ -181,7 +184,7 @@ $niutil -createprop . /users/$name shell "$shell"
 $niutil -createprop . /users/$name change 0
 $niutil -createprop . /users/$name expire 0
 $mkdir "$home"
-$chown "$name.$group" "$home"
+$chown $name:$group "$home"
 
 EOF
 	} else {
@@ -281,7 +284,7 @@ sub get_chown {
 	my @groups = split(/:/, $groups);
 
 	foreach $file (@files) {
-		$script .= "/usr/sbin/chown \"$users[$i].$groups[$i]\" \"$file\"\n";
+		$script .= "/usr/sbin/chown $users[$i]:$groups[$i] \"$file\"\n";
 		$i++;
 	}
     
@@ -298,7 +301,7 @@ sub set_perms {
 	my @files = split(/:/, $files);
 	
 	foreach $file (@files) {
-		if (&execute("/usr/sbin/chown \"0.0\" \"$file\"")) {
+		if (&execute("/usr/sbin/chown 0:0 \"$rootdir$file\"")) {
 			die "Couldn't change ownership of $file!\n";
 		}
 	}
