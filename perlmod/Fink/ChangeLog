@@ -1,5 +1,8 @@
 2003-01-14  Max Horn  <max@quendi.de>
 
+	* Engine.pm: 'fink apropos' command now also matches the package name,
+	  not just the package description (Patch #661169).
+
 	* Services.pm: Added terminal width fix from patch #598402.
 
 2003-01-13  Finlay Dobbie <finlay@users.sourceforge.net>

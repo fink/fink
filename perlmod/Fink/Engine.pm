@@ -393,7 +393,7 @@ EOF
       next unless $vo->get_section($vo) =~ /\Q$section\E/i;
     }  
     if ($cmd eq "apropos") {
-      next unless $vo->get_shortdescription(150) =~ /\Q$pattern\E/i;
+      next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;
     }
     printf $formatstr,
 	$iflag, $pname, $lversion, $description;
