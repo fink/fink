@@ -1,3 +1,8 @@
+2001-04-20  Christoph Pfisterer  <cp@chrisp.de>
+
+	* PkgVersion.pm (phase_install): Remove dir files in the info
+	directories (was removed during the dpkg move).
+
 2001-04-14  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm: Changed internals of real_install. The first

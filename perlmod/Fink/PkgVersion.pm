@@ -655,7 +655,8 @@ sub phase_install {
     }
   }
   $install_script .= "\nmkdir -p \%i/var/fink-stamp".
-    "\ntouch \%i/var/fink-stamp/\%f";
+    "\ntouch \%i/var/fink-stamp/\%f".
+    "\nrm -f %i/info/dir %i/share/info/dir";
 
   $install_script = &expand_percent($install_script, $self->{_expand});
 
