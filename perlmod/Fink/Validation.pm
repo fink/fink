@@ -42,7 +42,7 @@ our @EXPORT_OK;
 our @boolean_fields = qw(Essential NoSourceDirectory UpdateConfigGuess UpdateLibtool); # add NoSet* !
 our @obsolete_fields = qw(Comment CommentPort CommenStow UseGettext);
 our @name_version_fields = qw(Source SourceDirectory SourceN SourceNExtractDir Patch);
-out @type_field_values = qw(nosource bundle perl)
+our @type_field_values = qw(nosource bundle perl);
 our @recommended_field_order =
   qw(
     Package

@@ -1,5 +1,7 @@
 2002-01-05  Max Horn  <max@quendi.de>
 
+	* Validation.pm: fixed stupid mistake
+
 	* Validation.pm: Added /sw/lib/locale to list of deprecated directories;
 	added some new fields to list of allowed fields (not yet used)
 
