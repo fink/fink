@@ -277,8 +277,6 @@ Simulate an alternate Fink basepath prefix (%p) within the files being validated
 Calls
 .Xr dpkg-scanpackages 8
 with the specified trees.
-.It Cm checksums
-Validates the MD5 digest of all packages' tarballs, where possible.
 .It Cm cleanup
 Removes obsolete package files (.info, .patch, .deb) if newer versions
 are available. This can reclaim large amounts of disk space.
