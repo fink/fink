@@ -918,11 +918,12 @@ EOF
 
 	if ($cmp1 ne $cmp2) {
 		my $pkglist = join(", ", @packages);
-		my $rmcount = $#packages + 1;
-		print "Fink will attempt to $cmd $rmcount package(s).\n";
-		&print_breaking("$pkglist\n\n");
-
-		my $answer = &prompt_boolean("Do you want to continue?", default => 1);
+		my $pkgcount = $#packages + 1;
+		my $prompt = "Fink will attempt to $cmd $pkgcount package" .
+			( $pkgcount > 1 ? "s" : "" ) .
+			"\n\n" .
+			"Do you want to continue?";
+		my $answer = &prompt_boolean($prompt, default => 1);
 		if (! $answer) {
 			die "$cmd not performed!\n";
 		}

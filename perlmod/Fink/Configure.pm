@@ -101,7 +101,7 @@ create/change configuration interactively
 
 sub configure {
 	my ($otherdir, $builddir, $verbose);
-	my ($http_proxy, $ftp_proxy, $passive_ftp, $same_for_ftp, $binary_dist, $default);
+	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
 
 	print "\n";
 	&print_breaking("OK, I'll ask you some questions and update the ".
@@ -113,22 +113,25 @@ sub configure {
 		&prompt("In what additional directory should Fink look for downloaded ".
 				"tarballs?",
 				default => $config->param_default("FetchAltDir", ""));
-	if ($otherdir) {
+	if ($otherdir =~ /\S/) {
 		$config->set_param("FetchAltDir", $otherdir);
 	}
 
+	print "\n";
 	$builddir =
 		&prompt("Which directory should Fink use to build packages? \(If you don't ".
 				"know what this means, it is safe to leave it at its default.\)",
 				default => $config->param_default("Buildpath", ""));
-	if ($builddir) {
+	if ($builddir =~ /\S/) {
 		$config->set_param("Buildpath", $builddir);
 	}
 
+	print "\n";
 	$binary_dist = $config->param_boolean("UseBinaryDist");
 	# if we are not installed in /sw, $binary_dist must be 0:
 	if (not $basepath eq '/sw') {
 		$binary_dist = 0;
+		&print_breaking('Setting UseBinaryDist to "false". This option can be used only when fink is installed in /sw.');
 	} else {
 		# New users should use the binary dist, but an existing user who
 		# is running "fink configure" should see a default answer of "no"
@@ -167,49 +170,42 @@ sub configure {
 	print "\n";
 	&print_breaking("Proxy/Firewall settings");
 
-	$default = $config->param_default("ProxyHTTP", "");
-	$default = "none" unless $default;
-	&print_breaking("Enter the URL of the HTTP proxy to use, or 'none' for no proxy. ".
-        "The URL should start with http:// and may contain username, ".
-	"password or port specifications ".
-	" E.g: http://username:password\@hostname:port ");
-	$http_proxy =
-		&prompt("Your proxy: ".
-				default => $default);
-	if ($http_proxy =~ /^none$/i) {
-		$http_proxy = "";
-	}
-	$config->set_param("ProxyHTTP", $http_proxy);
+	$proxy_prompt =
+		"Enter the URL of the %s proxy to use, or 'none' for no proxy. " .
+		"The URL should start with http:// and may contain username, " .
+		"password, and/or port specifications. " .
+		"Note that this value will be visible to all users on your computer.\n".
+		"Example, http://username:password\@hostname:port\n" .
+		"Your proxy: ";
 
-	if ($http_proxy) {
+	$proxy = $config->param_default("ProxyHTTP", "none");
+	$proxy = &prompt(sprintf($proxy_prompt, "HTTP"), default => $proxy);
+	if ($proxy =~ /^\s*none\s*$/i) {
+		$proxy = "";
+	}
+	$config->set_param("ProxyHTTP", $proxy);
+
+	if (length $proxy) {
 		$same_for_ftp =
 			&prompt_boolean("Use the same proxy server for FTP connections?",
-			default => 0);
+							default => 0);
 	} else {
 		$same_for_ftp = 0;
 	}
 
-	if ($same_for_ftp) {
-		$ftp_proxy = $http_proxy;
-	} else {
-		$default = $config->param_default("ProxyFTP", "");
-		$default = "none" unless $default;
-                &print_breaking("Enter the URL of the proxy to use for FTP, ".
-		                "or 'none' for no proxy. ".
-				"The URL should start with http:// and may contain username," .
-				"password or port specifications.".
-				" E.g: ftp://username:password\@hostname:port ");	
-                $ftp_proxy = &prompt("Your proxy:" , default => $default);
-		
-		if ($ftp_proxy =~ /^none$/i) {
-			$ftp_proxy = "";
+	if (not $same_for_ftp) {
+		$proxy = $config->param_default("ProxyFTP", "none");
+		$proxy = &prompt(sprintf($proxy_prompt, "FTP"), default => $proxy);
+		if ($proxy =~ /^\s*none\s*$/i) {
+			$proxy = "";
 		}
 	}
-	$config->set_param("ProxyFTP", $ftp_proxy);
+	$config->set_param("ProxyFTP", $proxy);
 
-	$passive_ftp = $config->param_boolean("ProxyPassiveFTP");
-	# passive FTP is the safe default
-	if (!$config->has_param("ProxyPassiveFTP")) {
+	if ($config->has_param("ProxyPassiveFTP")) {
+		$passive_ftp = $config->param_boolean("ProxyPassiveFTP");
+	} else {
+		# passive FTP is the safe default
 		$passive_ftp = 1;
 	}
 	$passive_ftp =
@@ -267,15 +263,16 @@ sub choose_mirrors {
 	}
 	if (!$missing) {
 		if ($mirrors_postinstall) {
+			# called from dpkg postinst script of fink-mirrors pkg
 			print "\n";
 			$answer = &prompt_boolean("The list of possible mirrors in fink has" .
 				" been updated.  Do you want to review and change your choices?",
 				default => 0, timeout => 60);
-	} else {
-		$answer =
-			&prompt_boolean("All mirrors are set. Do you want to change them?",
-			default => 0);
-	}
+		} else {
+			$answer =
+				&prompt_boolean("All mirrors are set. Do you want to change them?",
+								default => 0);
+		}
 		if (!$answer) {
 			return;
 		}

@@ -1,5 +1,12 @@
 2005-02-08  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Fix plural in package count msg.
+	* Configure.pm: Rework proxy prompting: consolidate whole msg into
+	$prompt, add note about value visibility, clean up variable usage.
+	Ignore whitespace in answers. Add msg if skipping UseBinaryDist.
+
+2005-02-08  Daniel Macks  <dmacks@netspace.org>
+
 	* CLI.pm: don't export obsoleted prompt_selection_new
 	* PkgVersion.pm: fixed a prompt*() API-change straggler.
 
