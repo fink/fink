@@ -1,5 +1,9 @@
 2004-11-21  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Check for .la files that point to their build dir.
+
+2004-11-21  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Refactor .info validation to consolidate
 	parent/splitoff common checks.
 

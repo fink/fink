@@ -838,11 +838,14 @@ sub validate_dpkg_file {
 	my $dpkg_filename = shift;
 	my $val_prefix = shift;
 
-	my $basepath;
+	my ($basepath, $buildpath);
+	# determine the base path
 	if (defined $val_prefix) {
 		$basepath = $val_prefix;
+		$buildpath = "$basepath/src";
 	} else {
 		$basepath = $config->param_default("basepath", "/sw");
+		$buildpath = $config->param_default("buildpath", "$basepath/src");
 	}
 
 	# these are used in a regex and are automatically prepended with ^
@@ -864,11 +867,15 @@ sub validate_dpkg_file {
 	# This is a potential security risk, we should maybe filter $dpkg_filename...
 
 	# read some fields from the control file
-	$deb_control = { map {$_, 1} (qw/ builddependsonly package depends /) };
-	foreach (`dpkg --field $dpkg_filename builddependsonly package depends`) {
+	{
+	my @deb_control_fields = qw/ builddependsonly package depends version /;
+	$deb_control = { map {$_, 1} (@deb_control_fields) };
+	foreach (`dpkg --field $dpkg_filename @deb_control_fields`) {
 		/^([^:]*): (.*)/;
 		$deb_control->{lc $1} = $2;
 	}
+	}
+	my $pkgbuilddir = sprintf '%s/%s-%s', $buildpath, $deb_control->{package}, $deb_control->{version};
 
 	# read some control script files
 	foreach (qw/ preinst postinst prerm postrm /) {
@@ -980,6 +987,16 @@ sub validate_dpkg_file {
 					print "Warning: Found $basepath/var/scrollkeeper, which usually results from calling\nscrollkeeper-update during CompileScript or InstallScript. See the\nscrollkeeper package docs for information on the correct use of that utility.\n";
 					$looks_good = 0;
 				}
+			}
+			if ( $filename =~/\.la$/ ) {
+				open(LA_FILE, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O .$filename |") or die "Couldn't run dpkg: $!\n";
+				while (<LA_FILE>) {
+					if (/$pkgbuilddir\//) {
+						print "Warning: libtool file $filename points to fink build dir. ($dpkg_filename)\n";
+						$looks_good = 0;
+					}
+				}
+				close(LA_FILE) or die "Error on close: ", $?>>8, " $!\n";
 			}
 		}
 	}
