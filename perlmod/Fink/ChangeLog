@@ -1,3 +1,7 @@
+2003-05-23  Ben Hines <benh57@users.sourceforge.net>
+
+	* Engine.pm: Use full path to uname to prevent build problems.
+	
 2003-05-23  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* Bootstrap.pm: Handle (Open)Darwin 6.6
