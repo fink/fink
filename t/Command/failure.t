@@ -7,6 +7,8 @@ use Test::More 'no_plan';
 
 use Fink::Command qw(:ALL);
 
+($<,$>) = (0,0) if $< == 0 or $> == 0;
+
 my $Unprivledged_UID = getpwnam('nobody') || getpwnam('unknown');
 
 {
@@ -100,14 +102,13 @@ SKIP: {
 
     # drop privledges
     local $> = $Unprivledged_UID;
-    local $< = $Unprivledged_UID;  
 
     $! = 0;
     ok( !rm_rf('foo') );
     cmp_ok( $!, '!=', 0 );
 
     $! = 0;
-    ok( rm_rf('foo', 'bar/baz') );
+    ok( !rm_rf('bar/baz', 'foo') );
     cmp_ok( $!, '!=', 0 );
     ok( !-e 'bar/baz' );
 }
@@ -149,12 +150,11 @@ SKIP: {
     skip "Can't find an unprivledged user", 2 unless $Unprivledged_UID;
 
     touch 'foo';
-    chmod 0400, 'foo';
+    chmod 0444, 'foo';
     my $mtime = (stat 'foo')[9];
 
     # drop privs
     local $> = $Unprivledged_UID;
-    local $< = $Unprivledged_UID;
 
     sleep 1;
     ok( !touch 'foo' );
@@ -185,11 +185,10 @@ SKIP: {
     skip "Can't find an unprivledged user", 2 unless $Unprivledged_UID;
 
     touch 'foo';
-    chmod 0400, 'foo';
+    chmod 0444, 'foo';
 
     # drop privs
     local $> = $Unprivledged_UID;
-    local $< = $Unprivledged_UID;
 
     touch 'bar';
 

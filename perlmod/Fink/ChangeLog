@@ -1,5 +1,10 @@
 2003-11-21  Michael G Schwern <schwern@pobox.com>
 
+	* Command.pm: rm_rf() not returning false when it deletes some 
+	directories but fails to delete another.  Tests were incorrect.
+
+2003-11-21  Michael G Schwern <schwern@pobox.com>
+
 	* FinkVersion.pm.in: Fixed ":ALL" target.  Changed from using
 	/bin/cat to Fink::Command::cat().  Tested.
 

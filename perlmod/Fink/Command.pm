@@ -185,10 +185,13 @@ Like C<rm -rf>
 =cut
 
 sub rm_rf {
-	my @dirs = _expand(@_);
+	my @dirs = grep -e, _expand(@_);
 	require File::Path;
 	local $SIG{__WARN__} = sub {};  # rmtree is noisy on failure.  Shut up.
-	return File::Path::rmtree([grep -e $_, @dirs]);
+
+        File::Path::rmtree(\@dirs);
+
+        return !scalar(grep -e, @dirs);
 }
 
 =item rm_f
