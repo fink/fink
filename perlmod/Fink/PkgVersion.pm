@@ -2478,7 +2478,7 @@ sub phase_purge {
 
 sub set_env {
 	my $self = shift;
-	my ($varname, $s, $expand);
+	my ($varname, $s, $expand, $ccache_dir);
 	# Remember to update FAQ 8.3 if you change this var list!
 	my %defaults = (
 		"CPPFLAGS"                 => "-I\%p/include",
@@ -2513,6 +2513,18 @@ END
 	# add bootstrap path if necessary
 	if (-d $bsbase) {
 		$ENV{"PATH"} = "$bsbase/bin:$bsbase/sbin:" . $ENV{"PATH"};
+	}
+	
+	# Stop ccache stompage
+	$ccache_dir = $config->param_default("CCacheDir", "$basepath/var/ccache");
+	unless ( lc $ccache_dir eq "none" ) {
+		if ( not -d $ccache_dir and not mkdir_p($ccache_dir) ) {
+			die "WARNING: Something is preventing the creation of " .
+				"\"$ccache_dir\" for CCacheDir, so CCACHE_DIR will not ".
+				"be set.\n";
+		} else {
+			$ENV{CCACHE_DIR} = $ccache_dir;
+		}
 	}
 
 	# run init.sh script which will set the path and other additional variables
