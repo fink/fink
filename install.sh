@@ -34,7 +34,7 @@ echo "Creating directories..."
 mkdir -p $basepath
 chmod 755 $basepath
 
-for dir in bin lib lib/fink lib/fink/perlmod lib/fink/perlmod/Fink \
+for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   lib/fink/mirror lib/fink/update \
 	   share share/doc share/doc/fink ; do
   mkdir $basepath/$dir
@@ -49,8 +49,8 @@ chmod 755 $basepath/bin/fink
 
 for file in perlmod/Fink/*.pm ; do
   if [ -f $file ]; then
-    cp $file $basepath/lib/fink/perlmod/Fink/
-    chmod 644 $basepath/lib/fink/$file
+    cp $file $basepath/lib/perl5/Fink/
+    chmod 644 $basepath/lib/perl5/Fink/`basename $file`
   fi
 done
 

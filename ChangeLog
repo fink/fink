@@ -1,3 +1,8 @@
+2001-07-13  Christoph Pfisterer  <cp@chrisp.de>
+
+	* install.sh: Install perl modules into <prefix>/lib/perl5 to make
+	them generally available.
+
 2001-07-12  Christoph Pfisterer  <cp@chrisp.de>
 
 	* inject.pl: Add dir-base to the base-files tarball.
