@@ -35,7 +35,7 @@ GetOptions('yes' => \$dontask,
 	   'version|v' => \&show_version)
  or die "Can't parse command line\n";
 
-### display the version numbers
+### display version numbers if requested
 
 sub show_version {
   require Fink::FinkVersion;
@@ -44,36 +44,7 @@ sub show_version {
   exit 0;
 }
 
-### now load the useful modules
-
-require Fink::Services;
- import Fink::Services qw(&read_config &execute);
-require Fink::Engine;
-
-### read config
-
-my ($config, $configpath);
-$configpath = "@BASEPATH@/etc/fink.conf";
-if (-f $configpath) {
-  $config = &read_config($configpath);
-} else {
-  print "ERROR: Configuration file \"$configpath\" not found.\n";
-  exit 1;
-}
-
 ### setup environment
-
-# are we root?
-if ($> != 0) {
-  # TODO: add a config value to control what method is used
-
-  my $cmd = "@BASEPATH@/bin/fink";
-  if ($#ARGV >= 0) {
-    $cmd .= " '".join("' '", @ARGV)."'";
-  }
-  $cmd = "sudo $cmd";
-  exit &execute($cmd, 1);
-}
 
 # set useful umask
 umask oct("022");
@@ -81,11 +52,29 @@ umask oct("022");
 # set PATH so we find dpkg and *-config scripts
 $ENV{PATH} = "@BASEPATH@/sbin:@BASEPATH@/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
 
-### create engine
+# get rid of CDPATH
+delete $ENV{CDPATH};
 
+### now load the actual engine
+
+# load the modules
+require Fink::Services;
+require Fink::Engine;
+
+# read the configuration file
+my ($config, $configpath);
+$configpath = "@BASEPATH@/etc/fink.conf";
+if (-f $configpath) {
+  $config = &Fink::Services::read_config($configpath);
+} else {
+  print "ERROR: Configuration file \"$configpath\" not found.\n";
+  exit 1;
+}
+
+# create the command-processing engine
 my $engine = Fink::Engine->new_with_config($config);
 
-### process command line (or enter interactive mode)
+### process the command line (or enter interactive mode)
 
 if ($#ARGV >= 0) {
   $engine->process(@ARGV);
