@@ -1,0 +1,16 @@
+Package: xpdf
+Version: 0.92
+Revision: 1
+Source: ftp://www.foolabs.com/pub/xpdf/xpdf-%v.tgz
+Depends: freetype
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCXX: c++
+SetCXXFLAGS: -I%p/include
+PatchScript: patch -p0 < %a/%f.patch
+CommentPort: Usual patches to remove '-lm' from Makefiles and 
+ configure scripts. Also commented out some weird stuff in configure script
+ that caused infinite looping.
+CommentStow: No issues known, works fine.
+Maintainer: Jeffrey S. Whitaker <jsw@cdc.noaa.gov>
+Homepage:  http://www.foolabs.com/xpdf
