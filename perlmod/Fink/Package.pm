@@ -21,7 +21,7 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(read_properties);
+use Fink::Services qw(&read_properties &latest_version);
 
 use strict;
 use warnings;
@@ -37,8 +37,10 @@ BEGIN {
 }
 our @EXPORT_OK;
 
-our (@package_list);
+our (@package_list, @essential_packages, $essential_valid);
 @package_list = ();
+@essential_packages = ();
+$essential_valid = 0;
 
 END { }       # module clean-up code here (global destructor)
 
@@ -180,12 +182,33 @@ sub list_packages {
   return @list;
 }
 
+### list essential packages
+
+sub list_essential_packages {
+  shift;  # class method - ignore first parameter
+  my ($package, $version, $node);
+
+  if (not $essential_valid) {
+    @essential_packages = ();
+    foreach $package (@package_list) {
+      $version = &latest_version($package->list_versions());
+      if ($package->get_version($version)->param_boolean("Essential")) {
+	push @essential_packages, $package->get_name();
+      }
+    }
+    $essential_valid = 1;
+  }
+  return @essential_packages;
+}
+
 ### forget about all packages
 
 sub forget_packages {
   shift;  # class method - ignore first parameter
 
   @package_list = ();
+  @essential_packages = ();
+  $essential_valid = 0;
 }
 
 ### read list of packages from files

@@ -23,6 +23,7 @@ package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
 use Fink::Services qw(&print_breaking &execute);
+use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Engine;
 
@@ -47,7 +48,7 @@ END { }       # module clean-up code here (global destructor)
 
 sub bootstrap {
   my ($bsbase, $save_path);
-  my ($pkgname, $package);
+  my ($pkgname, $package, @elist);
   my @plist = ("gettext", "tar", "dpkg");
 
   $bsbase = "$basepath/bootstrap";
@@ -89,16 +90,24 @@ sub bootstrap {
     $package->disable_bootstrap();
   }
 
+  &execute("touch $bsbase/var/lib/dpkg/status");
+  &execute("touch $bsbase/var/lib/dpkg/available");
+
 
   print "\n";
   &print_breaking("BOOTSTRAP PHASE TWO: installing essential packages to ".
 		  "$basepath with package management.");
   print "\n";
 
-  Fink::Engine::cmd_install(@plist);
+  @elist = Fink::Package->get_essential_packages();
+  Fink::Engine::cmd_install(@elist);
 
 
-  #&execute("rm -rf $bsbase");
+  print "\n";
+  &print_breaking("BOOTSTRAP DONE. Cleaning up.");
+  print "\n";
+  &execute("rm -rf $bsbase");
+
   $ENV{PATH} = $save_path;
 }
 

@@ -149,12 +149,13 @@ sub read_properties_multival {
 
 sub execute {
   my $cmd = shift;
+  my $quiet = shift || 0;
   my ($retval, $prog);
 
   print "$cmd\n";
   $retval = system($cmd);
   $retval >>= 8 if defined $retval and $retval >= 256;
-  if ($retval) {
+  if ($retval and not $quiet) {
     ($prog) = split(/\s+/, $cmd);
     print "### $prog failed, exit code $retval\n";
   }

@@ -1,3 +1,9 @@
+2001-04-03  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Bootstrap.pm: Refined bootstrap.
+	* Package.pm: New function list_essential_packages.
+	* Services.pm (execute): Added quiet flag.
+
 2001-04-01  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm: Added accessor for .deb name. Use accessors
