@@ -1,5 +1,7 @@
 2002-01-10  Max Horn  <max@quendi.de>
 
+	* FinkVersion.pm: moved fink-release from /sw/etc to /sw/fink
+
 	* SelfUpdate.pm: fixed selfupdate, it would hang when trying to
 	uncompress the package tar ball.
 
