@@ -1,3 +1,7 @@
+2004-04-25  Dainel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Added flags for 'dumpinfo'.
+
 2004-04-11  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Document 'dumpinfo' mode, and the -K and -k flags.
