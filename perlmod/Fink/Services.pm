@@ -687,7 +687,7 @@ sub get_path {
 	use File::Spec;
 
 	my $file = shift;
-	my $path = undef;
+	my $path = $file;
 	my (@path, $base);
 
 	### Get current user path env
@@ -695,8 +695,9 @@ sub get_path {
 
 	### Get matches and return first match in order of path
 	for $base (map { File::Spec->catfile($_, $file) } @path) {
-		if (-x $base and !-d $base and !$path) {
+		if (-x $base and !-d $base) {
 			$path = $base;
+			last;
 		}
 	}
 

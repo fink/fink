@@ -1,3 +1,8 @@
+2003-11-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Services.pm: No point in continuing to search through the path if
+	  we have a match.
+
 2003-11-10  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Make the check for package-name in Description:
