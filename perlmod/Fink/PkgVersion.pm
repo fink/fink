@@ -1534,7 +1534,7 @@ EOF
 	foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
 	  next unless $infodoc;
 	  $infodoc = "\%p/share/info/$infodoc" unless $infodoc =~ /\//;
-	  $scriptbody .= "  install-info --infodir=\%p/share/info $infodoc\n";
+	  $scriptbody .= "  install-info --info-dir=\%p/share/info $infodoc\n";
 	}
 	$scriptbody .= "fi\n";
       } elsif ($scriptname eq "prerm") {
@@ -1542,7 +1542,7 @@ EOF
 	$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
 	foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
 	  next unless $infodoc;
-	  $scriptbody .= "  install-info --infodir=\%p/share/info --remove $infodoc\n";
+	  $scriptbody .= "  install-info --info-dir=\%p/share/info --remove $infodoc\n";
 	}
 	$scriptbody .= "fi\n";
       }
