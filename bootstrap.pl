@@ -335,7 +335,7 @@ $script .=
 $script .=
   "cd base-files && ".
   "tar -cf $installto/src/base-files-$packageversion.tar ".
-  "fink-release init.csh.in init.sh.in install.sh setup.sh\n";
+  "fink-release init.csh.in init.sh.in dir-base install.sh setup.sh\n";
 
 foreach $cmd (split(/\n/,$script)) {
   next unless $cmd;   # skip empty lines

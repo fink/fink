@@ -1,3 +1,7 @@
+2001-07-15  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Add dir-base to the base-files tarball.
+
 2001-07-14  Christoph Pfisterer  <cp@chrisp.de>
 
 	* bootstrap.pl: Added more pre-flight checks (cc, make, head).
