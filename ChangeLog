@@ -1,7 +1,12 @@
+2002-10-03  Max Horn  <max@quendi.de>
+
+	* bootstrap.pl, postinstall.pl.in: Recognize 10.2.1 / Darwin 6.1; also fixed
+	  some heavily outdated regex.
+
 2002-09-18 Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: modified so that bootstrap can be run twice in the
-   	  same directory
+   	  same directory.
 
 2002-09-08 Dave Morrison <dmrrsn@users.sourceforge.net>
 
