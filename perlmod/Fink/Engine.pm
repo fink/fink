@@ -1043,6 +1043,7 @@ sub real_install {
   PACKAGELOOP: foreach $pkgname (sort keys %deps) {
       $item = $deps{$pkgname};
       next if (($item->[4] & 2) == 2);   # already installed
+      next if $already_activated{$pkgname};
       $all_installed = 0;
 
       # check dependencies
@@ -1081,7 +1082,8 @@ sub real_install {
       }
 
       # Now (re)build the package if we determined above that it is necessary.
-      if ($to_be_rebuilt{$pkgname}) {
+      my $is_build = $to_be_rebuilt{$pkgname};
+      if ($is_build) {
 	$package->phase_unpack();
 	$package->phase_patch();
 	$package->phase_compile();
@@ -1092,38 +1094,39 @@ sub real_install {
       # Install the package unless we already did that in a previous
       # iteration, and if the command issued by the user was an "install"
       # or a "reinstall" or a "rebuild" of an currently installed pkg.
-      if (not $already_activated{$pkgname} and
-	  (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
-	   or ($to_be_rebuilt{$pkgname} and $package->is_installed()))) {
+      if (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
+	   or ($is_build and $package->is_installed())) {
         push(@batch_install, $package);
 	$already_activated{$pkgname} = 1;
       }
+      
+      # Mark item as done (FIXME - why can't we just delete it from %deps?)
+      $item->[4] |= 2;
 
       # Mark the package and all its "relatives" as being rebuilt if we just
       # did perform a build - this way we won't rebuild packages twice when
       # we process another splitoff of the same master.
       # In addition, we check for the splitoffs whether they have to be reinstalled.
       # That is the case if they are currently installed and where rebuild just now.
-      if ($to_be_rebuilt{$pkgname}) {
-        if (defined $parent) {
-	  foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
-	    my $name = $pkg->get_name();
-	    $to_be_rebuilt{$name} = 0; # not necessary to rebuild this, we already did it
-	    if (not $already_activated{$name} and $pkg->is_installed()) {
-	      push(@batch_install, $pkg);
-	      $already_activated{$name} = 1;
-	    }
+      if (defined $parent) {
+	foreach $pkg ($parent, @{$parent->{_splitoffs}}) {
+	  my $name = $pkg->get_name();
+	  $to_be_rebuilt{$name} = 0; # not necessary to rebuild this, we already did it
+	  next if $already_activated{$name};
+	  $item = $deps{$name} || [0, 0, 0, 0, 0];
+	  if (($item->[3] == $OP_INSTALL or $item->[3] == $OP_REINSTALL)
+	       or ($is_build and $package->is_installed())) {
+	    push(@batch_install, $pkg);
+	    $already_activated{$name} = 1;
 	  }
-	} else {
-	  $to_be_rebuilt{$pkgname} = 0;
 	}
+      } else {
+	$to_be_rebuilt{$pkgname} = 0;
       }
 
       # Finally perform the actually installation
       Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 
-      # Mark item as installed
-      $item->[4] |= 2;
     }
     last if $all_installed;
 

@@ -1,5 +1,8 @@
 2002-10-14  Max Horn  <max@quendi.de>
 
+	* Engine.pm: Once more install all splitoffs with a single call to dpkg
+	  (this is done to avoid certain update troubles with splitoffs).
+
 	* PkgVersion.pm: Allow percent expansion in CustomMirror field
 	 (patch #621175, thanks to Ben Hines)
 
