@@ -61,7 +61,7 @@ Don't use pre-compiled binary packages from the binary distribution
 Drop to a non-root user when performing the unpack, patch, compile,
 and install phases. Note that packages built with this option may be
 non-functional. You should use this mode for package development and
-bugging only.
+debugging only.
 .El
 .\"
 .\"
