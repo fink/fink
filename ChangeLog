@@ -1,3 +1,9 @@
+2003-05-14  Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in: add "fink index" at end of postinstall, for
+	transition to allowing versioned perl module packages (see Patch
+	#725415) 
+
 2003-05-07  Rob Braun <bbraun@users.sourceforge.net>
 
 	* bootstrap.pl:Remove hard coded references
