@@ -358,7 +358,7 @@ sub do_tarball {
   # first, download the packages tarball
   $dir = "packages-$newversion";
   $pkgtarball = "$dir.tar.gz";
-  $url = "http://prdownloads.sourceforge.net/fink/$pkgtarball";
+  $url = "mirror:sourceforge:fink/$pkgtarball";
 
   if (not -f $pkgtarball) {
     if (&fetch_url($url, $destdir)) {
