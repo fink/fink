@@ -1,3 +1,7 @@
+2004-11-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Mirror.pm: Re-reworded menu b/c must match /^Custom/
+
 2004-11-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Mirror.pm: Clarified menu wording for CustomMirror set.
