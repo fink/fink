@@ -1,3 +1,7 @@
+2001-08-31  Christoph Pfisterer  <cp@chrisp.de>
+
+	* install.sh: Don't create deprecated directories.
+
 2001-08-25  Christoph Pfisterer  <cp@chrisp.de>
 
 	* install.sh: Install a dummy file in .../etc/profile.d to avoid
