@@ -108,6 +108,12 @@ sub check_files {
     close (OTOOL);
   }
 
+  ### FIXME
+  ### add code to go through the array and split by , then by |
+  ### then seperate by pkg name and versions and then reassemble
+  ### and each pkg may only be listed once, with the highest reported
+  ### version
+
   return @depends;
 }
 
@@ -115,14 +121,9 @@ sub check_files {
 sub get_shlib {
   my $self = shift;
   my $lib = shift;
-  my ($dep, $shlib, $count, $pkgnum, $vernum, %pkgs);
+  my ($dep, $shlib, $count, $pkgnum, $vernum);
 
   $dep = "";
-
-  ###FIXME
-  ### add a hash here, to gather the pkgs, then re run a loop to get
-  ### versions, this will solve the same pkg with multi versions, make
-  ### sure to take the highest version
 
   foreach $shlib (keys %shlib_hash) {
     if ("$shlib" eq "$lib") {
