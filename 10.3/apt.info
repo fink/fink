@@ -1,7 +1,7 @@
 Package: apt
 Version: 0.5.4
 Revision: 14
-GCC: 3.1
+GCC: 3.3
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
