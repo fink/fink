@@ -459,10 +459,27 @@ sub do_tarball {
 	}
 }
 
-### last steps: reread descriptions, update fink, re-exec
+### last steps: update apt indices, reread descriptions, update fink, re-exec
 
 sub do_finish {
 	my $package;
+
+	# update apt-get's database if using -b mode
+	if (Fink::Config::binary_requested()) {
+		print "Downloading the indexes of available packages in the binary distribution.\n";
+		my $aptcmd = "$basepath/bin/apt-get ";
+		if (Fink::Config::verbosity_level() == 0) {
+			$aptcmd .= "-qq ";
+		}
+		elsif (Fink::Config::verbosity_level() < 2) {
+			$aptcmd .= "-q ";
+		}
+		$aptcmd .= "update";
+		if (&execute($aptcmd)) {
+			&print_breaking("WARNING: Failure while downloading indexes.".
+			                "Running 'fink scanpackages' may fix this.");
+		}
+	}
 
 	# forget the package info
 	Fink::Package->forget_packages();
@@ -506,22 +523,6 @@ sub finish {
 
 	# update them
 	Fink::Engine::cmd_install(@elist);	
-
-	if (Fink::Config::binary_requested()) {
-		print "Downloading the indexes of available packages in the binary distribution.\n";
-		my $aptcmd = "$basepath/bin/apt-get ";
-		if (Fink::Config::verbosity_level() == 0) {
-			$aptcmd .= "-qq ";
-		}
-		elsif (Fink::Config::verbosity_level() < 2) {
-			$aptcmd .= "-q ";
-		}
-		$aptcmd .= "update";
-		if (&execute($aptcmd)) {
-			&print_breaking("WARNING: Failure while downloading indexes.".
-			                "Running 'fink scanpackages' may fix this.");
-		}
-	}
 
 	# tell the user what has happened
 	print "\n";

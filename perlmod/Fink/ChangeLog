@@ -1,5 +1,9 @@
 2005-1-05  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm: Do 'apt-get update' *before* rebuilding aptdb.
+
+2005-1-05  Daniel Macks  <dmacks@netspace.org>
+
 	* Services.pm: Added a delete_tempfile flag for execute().
 
 2005-01-05  Christian Schaffner  <chris01@users.sourceforge.net>
