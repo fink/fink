@@ -89,8 +89,9 @@ our %commands =
 	  'check' => [\&cmd_validate, 0, 0],
 	  'checksums' => [\&cmd_checksums, 1, 0],
 	  'cleanup' => [\&cmd_cleanup, 1, 1],
-	  'splits' => [\&cmd_splits, 1, 0],
-	  'find' => [\&cmd_findpkg, 1, 0],
+	  'splitoffs' => [\&cmd_splitoffs, 1, 0],
+	  'splits' => [\&cmd_splitoffs, 1, 0],
+	  'showparent' => [\&cmd_showparent, 1, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -1540,7 +1541,7 @@ sub expand_packages {
 
 ### Display pkgs in an info file based on and pkg name
 
-sub cmd_splits {
+sub cmd_splitoffs {
 	my ($pkg, $package, @pkgs, $arg);
 
 	print "\n";
@@ -1576,7 +1577,7 @@ sub cmd_splits {
 
 ### Display a pkg's parent
 
-sub cmd_findpkg {
+sub cmd_showparent {
 	my ($pkg, $package, @pkgs, $arg);
 
 	print "\n";
