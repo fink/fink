@@ -139,7 +139,12 @@ sub check_files {
 				### Checking for dep on own shlibs
 				### force to =%v-%r
 				foreach $split (@splits) {
+					# FIXME
 					# get just the unversioned dep
+					# this won't work until the splits are
+					# installed, need to check the shlibs
+					# in the root and splitoff roots at this
+					# point
 					if ($split eq $tmpdep) {
 						print "DEBUG: forcing =%v-%r\n";
 					}
