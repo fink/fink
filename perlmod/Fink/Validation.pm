@@ -369,12 +369,12 @@ sub validate_info_file {
 			$looks_good = 0;
 		}
 	}
-	if ($pkgname =~ /[^+-.a-z0-9]/) {
+	if ($pkgname =~ /[^+\-.a-z0-9]/) {
 		print "Error: Package name may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
-	if ($pkgversion =~ /[^+-.a-z0-9]/) {
+	if ($pkgversion =~ /[^+\-.a-z0-9]/) {
 		print "Error: Package version may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;

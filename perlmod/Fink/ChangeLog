@@ -1,3 +1,8 @@
+2004-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: fix regex for Package and Version to prohibit commas
+	(Patches #1010229)
+
 2004-09-19  Daniel Macks  <dmacks@netspace.org>
 
         * PkgVersion,pm, Validation.pm: Add deprecated-feature warning for
