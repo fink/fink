@@ -205,9 +205,11 @@ sub process {
 	$::SIG{INT} = sub { die "User interrupt.\n" };
 	eval { &$proc(@_); };
 	$::SIG{INT} = 'DEFAULT';
-	if ($@) {
-		print "Failed: $@";
-		return $? || 1;
+	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
+	Fink::PkgVersion->clear_buildlock();       # always clean up
+	if ($proc_rc->{'$@'}) {                    # now deal with eval results
+		print "Failed: " . $proc_rc->{'$@'};
+		return $proc_rc->{'$?'} || 1;
 	}
 
 	return 0;
@@ -1756,11 +1758,13 @@ sub real_install {
 					### Double check it didn't already get
 					### installed in an other loop
 					if (!$package->is_installed() || $op == $OP_REBUILD) {
+						$package->set_buildlock();
 						$package->phase_unpack();
 						$package->phase_patch();
 						$package->phase_compile();
 						$package->phase_install();
 						$package->phase_build();
+						$package->clear_buildlock();
 					} else {
 						&real_install($OP_BUILD, 0, 1, $package->get_name());
 					}

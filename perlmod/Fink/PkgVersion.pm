@@ -42,7 +42,7 @@ use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk);
 
 use File::Basename qw(&dirname &basename);
 
-use POSIX qw(uname);
+use POSIX qw(uname strftime);
 
 use strict;
 use warnings;
@@ -1817,6 +1817,7 @@ END
 		if (&execute($unpack_cmd)) {
 			$tries++;
 
+			# FIXME: this is not the likely problem now since we already checked MD5
 			$answer =
 				&prompt_boolean("Unpacking the file $archive of package ".
 								$self->get_fullname()." failed. The most likely ".
@@ -2698,6 +2699,159 @@ sub phase_purge_recursive {
 		}
 	}
 	Fink::Status->invalidate();
+}
+
+# create an exclusive lock for the %f of the parent using dpkg
+sub set_buildlock {
+	my $self = shift;
+
+	# bootstrapping occurs before we have package-management tools needed for buildlock
+	return if $self->{_bootstrap};
+
+	my $lockpkg_minor = 'fink-buildlock-' . $self->get_fullname();
+	my $lockpkg = $lockpkg_minor . '-' .  strftime "%Y.%m.%d-%H.%M.%S", localtime;
+	$self->{_lockpkg} = $lockpkg;
+
+	my $destdir = "$buildpath/root-$lockpkg";
+
+	if (not -d "$destdir/DEBIAN") {
+		mkdir_p "$destdir/DEBIAN" or
+			die "can't create directory for control files for package $lockpkg\n";
+	}
+
+	# generate dpkg "control" file
+
+	my $control = <<EOF;
+Package: $lockpkg
+Source: fink
+Version: 0-0
+Section: unknown
+Installed-Size: 0
+Architecture: $debarch
+Description: Package compile-time lockfile
+Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
+Provides: fink-buildlock, $lockpkg_minor
+EOF
+
+	my @pkglist;
+
+	# BuildConflicts of parent pkg are Conflicts of lockpkg
+	if (exists $self->{parent}) {
+		@pkglist = @{pkglist2lol($self->{parent}->pkglist('BuildConflicts'))};
+	} else {
+		@pkglist = @{pkglist2lol($self->pkglist('BuildConflicts'))};
+	}
+	push @pkglist, [$lockpkg_minor];  # prevent concurrent builds of the family
+	$control .= 'Conflicts: ' . &lol2pkglist(\@pkglist) . "\n";
+
+	# All *Depends of whole family of pkgs are Depends of lockpkg...
+	@pkglist = ();
+	foreach my $pkg ($self->get_splitoffs(1,1)) {
+		push @pkglist, map { @{&pkglist2lol($pkg->pkglist($_))} } (qw(Depends Pre-Depends BuildDepends));
+	}
+
+	# ...but remove pkgs being built now (avoid chicken-and-egg)
+	my $pkgregex = join "|", map { quotemeta($_->get_name()) } $self->get_splitoffs(1,1);
+	$pkgregex = qr/^(?:$pkgregex)(?:\s*\(|\Z)/;  # a pkglist atom of any of us
+	foreach my $deplist (@pkglist) {
+		# nuke the whole OR cluster if any atom matches
+		# ($deplist is the listref value from @depends so changing
+		# $deplist changes the list linked from @depends; no need
+		# to edit @depends directly)
+		$deplist = [] if grep { /$pkgregex/ } @$deplist;
+	}
+
+	my $deplist = &lol2pkglist(\@pkglist);
+	$control .= "Depends: $deplist\n" if length $deplist;
+
+	### write "control" file
+	open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file for $lockpkg: $!\n";
+	print CONTROL $control;
+	close(CONTROL) or die "can't write control file for $lockpkg: $!\n";
+
+	### create .deb using dpkg-deb (in buildpath so apt doesn't see it)
+	if (&execute("dpkg-deb -b $destdir $buildpath")) {
+		die "can't create package $lockpkg\n";
+	}
+	rm_rf $destdir or
+		&print_breaking("WARNING: Can't remove package root directory ".
+						"$destdir. ".
+						"This is not fatal, but you may want to remove ".
+						"the directory manually to save disk space. ".
+						"Continuing with normal procedure.");
+
+	# install lockpkg (== set lockfile for building ourself)
+	print "Setting build lock...\n";
+	my $debfile = $buildpath.'/'.$lockpkg.'_0-0_'.$debarch.'.deb';
+	my $lock_failed = &execute("dpkg -i $debfile");
+	rm_f $debfile or
+		&print_breaking("WARNING: Can't remove binary package file ".
+						"$debfile. ".
+						"This is not fatal, but you may want to remove ".
+						"the file manually to save disk space. ".
+						"Continuing with normal procedure.");
+	if ($lock_failed) {
+		print "Trying to clean up...\n";
+		&execute("dpkg -r $lockpkg");
+		my $fullname = $self->get_fullname();
+		die <<EOMSG
+Can't set build lock for $fullname.
+
+There are two common causes for this, depending on the error message
+following "Setting build lock..." above:
+
+1. Problems with dependencies: fink has probably gotten confused by
+   trying to build many packages at once. Try building just this
+   current package. When that has completed successfully, retry
+   whatever you did that led to the present error.
+
+2. Conflicts among several fink-buildlock packages: fink thinks that
+   the package it is about to build is currently being built by
+   another fink process. If that is not true (perhaps a previous build
+   attempt crashed?), just use fink to remove the currently-installed
+   $lockpkg_minor- package(s).
+   Then retry whatever you did that led to the present error.
+
+In either case, don't worry, you have not wasted compiling time:
+Packages that had been completely built before this error occurred
+will not have to be recompiled.
+EOMSG
+	}
+
+	# save ref to ourself in global config so can remove lock if build dies
+	Fink::Config::set_options( { "Buildlock_PkgVersion" => $self } );
+}
+
+# remove the lock created by set_buildlock
+# okay to call as a package method (will pull PkgVersion object from Config)
+# or as object method (will use its own PkgVersion object)
+sub clear_buildlock {
+	my $self = shift;
+
+	if (!ref $self) {
+		# called as package method...look up PkgVersion object that locked
+		$self = Fink::Config::get_option("Buildlock_PkgVersion");
+		return if !ref $self;   # get out if there's no lock recorded
+	}
+
+	# bootstrapping occurs before we have package-management tools needed for buildlock
+	return if $self->{_bootstrap};
+
+	my $lockpkg = $self->{_lockpkg};
+
+	# remove $lockpkg (== clear lock for building $self)
+	print "Removing build lock...\n";
+	if (&execute("dpkg -r $lockpkg")) {
+		&print_breaking("WARNING: Can't remove package ".
+						"$lockpkg. ".
+						"This is not fatal, but you may want to remove ".
+						"the package manually as it may interfere with ".
+						"further fink operations. ".
+						"Continuing with normal procedure.");
+	}
+
+	# we're gone
+	Fink::Config::set_options( { "Buildlock_PkgVersion" => undef } );
 }
 
 # returns hashref for the ENV to be used while running package scripts
