@@ -143,7 +143,7 @@ sub check {
 	# check if we need to upgrade
 	$latest_fink = `cat $srcdir/$currentfink`;
 	chomp($latest_fink);
-	if (&version_cmp($latest_fink, '<=', $installed_version)) {
+	if (&version_cmp($latest_fink . '-1', '<=', $installed_version . '-1')) {
 		print "\n";
 		&print_breaking("You already have the package descriptions from ".
 						"the latest Fink point release. ".
