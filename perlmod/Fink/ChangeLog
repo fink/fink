@@ -1,5 +1,10 @@
 2004-03-18  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: %p/src isn't reliable (FetchAltDir and Buildpath
+	in fink.conf), so warn if it's used.
+
+2004-03-18  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Prohibit SourceN:none (Source:none still okay).
 
 2004-03-18  Daniel Macks  <dmacks@netspace.org>

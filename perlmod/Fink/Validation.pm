@@ -496,6 +496,13 @@ sub validate_info_file {
 
 =cut
 
+		# Check for %p/src
+		if ($value =~ /\%p\/src\//) {
+			print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
+			$looks_good = 0;
+			next;
+		}
+
 		# Validate splitoffs
 		if ($field =~ m/^splitoff([2-9]|[1-9]\d+)?$/) {
 			# Parse the splitoff properties
@@ -531,6 +538,13 @@ sub validate_info_file {
 			This line is a dumb hack to keep emacs paren balancing happy );
 
 =cut
+
+				# Check for %p/src
+				if ($value =~ /\%p\/src\//) {
+					print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
+					$looks_good = 0;
+					next;
+				}
 
 				# Warn if field is unknown or invalid within a splitoff
 				unless ($splitoff_valid_fields{$field}) {
