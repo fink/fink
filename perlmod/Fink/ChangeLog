@@ -1,5 +1,11 @@
 2005-03-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
+	* Package.pm: refactoring require_packages
+	* Bootstrap.pm, Engine.pm, Selfupdate.pm: Removing calls to
+	Fink::Shlibs->require_packages
+
+2005-03-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
 	* Bootstrap.pm, Engine.pm: Adding missing calls to rebuilt the
 	shlibs.db
 	* Package.pm: Fixed require_packages from 2005-02-23 commit to

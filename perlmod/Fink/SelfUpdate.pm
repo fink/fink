@@ -500,8 +500,7 @@ sub do_finish {
 	}
 
 	# ...and then read it back in
-	Fink::Package->require_packages();
-	Fink::Shlibs->require_packages();
+	Fink::Package->require_packages(0);
 
 	# update the package manager itself first if necessary (that is, if a
 	# newer version is available).

@@ -30,6 +30,7 @@ use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $dbpath $debarch binary_requested);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
+use Fink::Shlibs;
 use File::Find;
 
 use strict;
@@ -39,6 +40,7 @@ our $VERSION = 1.00;
 our @ISA = qw(Fink::Base);
 
 our $have_packages = 0;
+our $have_shlibs;
 our $packages = {};
 our @essential_packages = ();
 our $essential_valid = 0;
@@ -344,12 +346,16 @@ sub list_essential_packages {
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub require_packages {
-	my $self = shift;	# class method - ignore first parameter
+	shift;	# class method - ignore first parameter
+	my $shlibs_only = shift;
 
-	### Removed if, since if it runs once for packages, shilbs won't run
-	#if (!$have_packages) {
-		$self->scan_all(@_);
-	#}
+	### Check and get both packages and shlibs (one call)
+	if (!$have_packages && !$shlibs_only) {
+		Fink::Package->scan_all(@_);
+	}
+	if (!$have_shlibs) {
+		Fink::Shlibs->scan_all(@_);
+	}
 }
 
 # set the aptgetable status of packages

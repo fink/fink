@@ -391,8 +391,7 @@ sub bootstrap {
 	Fink::Config::set_options( { 'use_binary' => -1 });
 
 	# make sure we have the package descriptions and shlibs
-	Fink::Package->require_packages();
-	Fink::Shlibs->require_packages();
+	Fink::Package->require_packages(0);
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
