@@ -1,5 +1,10 @@
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.17.2, a release
+	on branch_0_17 in preparation for the fink-mirrors package
+
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* install.sh: no longer install the files in the mirror directory
 	(they are being moved to the fink-mirrors package)
 
