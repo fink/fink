@@ -1,3 +1,9 @@
+2003-10-09  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* SelfUpdate.pm: Added some bounds-checking to paths in the
+	dists tree and such for rsync, also changed all mkdir's to
+	mkdir -p, and change ownership of files so that rsync can pass.
+
 2003-10-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Temporary change for the 0.14.1 beta release:
