@@ -111,6 +111,7 @@ sub fetch_url_to_file {
 		$mirrorname = $1;
 		$path = $2;
 		$basename = $3;
+		$path =~ s/^\/*//;    # Mirror::get_site always returns a / at the end
 		if ($mirrorname eq "custom") {
 			if (not $custom_mirror) {
 				die "Source file \"$file\" uses mirror:custom, but the ".

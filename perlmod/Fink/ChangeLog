@@ -1,5 +1,9 @@
 2004-04-11  Daniel Macks  <dmacks@netspace.org>
 
+	* NetAccess.pm: Drop any leading / in Source:mirror: pathname.
+
+2004-04-11  Daniel Macks  <dmacks@netspace.org>
+
 	* VirtPackage.pm: Added relevant FAQ entry as Homepage for gcc2
 	and the system-* packages.
 
