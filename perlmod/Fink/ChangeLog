@@ -1,3 +1,8 @@
+2001-08-26  Max Horn  <max@quendi.de>
+
+	* Engine.pm: added new command "validate" (alias "check") which
+	validates a given package .info file or .deb file. Not finished.
+
 2001-08-24  Christoph Pfisterer  <cp@chrisp.de>
 
 	* PkgVersion.pm (get_description): Added the Maintainer field to

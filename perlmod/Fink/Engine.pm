@@ -412,8 +412,6 @@ sub cmd_remove {
   }
 }
 
-### .info/.deb file validation
-
 # Should check/verifies the following in .info files:
 #   + the filename matches %f.info
 #   + patch file is present
@@ -433,185 +431,186 @@ sub cmd_remove {
 # ... other things, make suggestions ;)
 #
 sub cmd_validate {
-	my ($filename, @flist);
-	
-	@flist = @_;
-	if ($#flist < 0) {
-		die "no input file specified for command 'validate'!\n";
-	}
-	
-	print "\n";
-	foreach $filename (@flist) {
-		die "File \"$filename\" does not exist!\n" unless (-f $filename);
-		if ($filename =~/\.info$/) {
-			&validate_info_file($filename);
-			print "\n";
-		} elsif ($filename =~/\.deb$/) {
-			&validate_dpkg_file($filename);
-			print "\n";
-		} else {
-			print "Don't know how to handle $filename, skipping\n";
-		}
-	}
+  my ($filename, @flist);
+  
+  @flist = @_;
+  if ($#flist < 0) {
+    die "no input file specified for command 'validate'!\n";
+  }
+  
+  print "\n";
+  foreach $filename (@flist) {
+    die "File \"$filename\" does not exist!\n" unless (-f $filename);
+    if ($filename =~/\.info$/) {
+      &validate_info_file($filename);
+      print "\n";
+    } elsif ($filename =~/\.deb$/) {
+      &validate_dpkg_file($filename);
+      print "\n";
+    } else {
+      print "Don't know how to handle $filename, skipping\n";
+    }
+  }
 }
 
 sub validate_info_file {
-	my $filename = shift;
-	my ($properties, @parts);
-	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
-	my ($field, $value);
-	my ($expand);
-	my $looks_good = 1;
+  my $filename = shift;
+  my ($properties, @parts);
+  my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
+  my ($field, $value);
+  my ($expand);
+  my $looks_good = 1;
 
-	print "Validating package file $filename...\n";
-	
-	# read the file properties
-	$properties = &read_properties($filename);
-	
-	$pkgname = $properties->{package};
-	$pkgversion = $properties->{version};
-	$pkgrevision = $properties->{revision};
-	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
-	$pkgdestdir = "$basepath/src/root-".$pkgfullname;
-	
-	@parts = split(/\//, $filename);
-	pop @parts;   # remove filename
-	$pkgpatchpath = join("/", @parts);
-	
-	unless ($pkgname) {
-		print "Error: No package name in $filename\n";
-		return;
-	}
-	unless ($pkgversion) {
-		print "Error: No version number in $filename\n";
-		return;
-	}
-	unless ($pkgrevision) {
-		print "Error: No revision number or revision number is 0 in $filename\n";
-		return;
-	}
-	if ($pkgname =~ /[^-.a-z0-9]/) {
-		print "Error: Package name may only contain lowercase letters, numbers, '.' and '-'\n";
-		return;
-	}
-	unless ($properties->{maintainer}) {
-		print "Error: No maintainer specified in $filename\n";
-		$looks_good = 0;
-	}
+  print "Validating package file $filename...\n";
+  
+  # read the file properties
+  $properties = &read_properties($filename);
+  
+  $pkgname = $properties->{package};
+  $pkgversion = $properties->{version};
+  $pkgrevision = $properties->{revision};
+  $pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
+  $pkgdestdir = "$basepath/src/root-".$pkgfullname;
+  
+  @parts = split(/\//, $filename);
+  pop @parts;   # remove filename
+  $pkgpatchpath = join("/", @parts);
+  
+  unless ($pkgname) {
+    print "Error: No package name in $filename\n";
+    return;
+  }
+  unless ($pkgversion) {
+    print "Error: No version number in $filename\n";
+    return;
+  }
+  unless ($pkgrevision) {
+    print "Error: No revision number or revision number is 0 in $filename\n";
+    return;
+  }
+  if ($pkgname =~ /[^-.a-z0-9]/) {
+    print "Error: Package name may only contain lowercase letters, numbers, '.' and '-'\n";
+    return;
+  }
+  unless ($properties->{maintainer}) {
+    print "Error: No maintainer specified in $filename\n";
+    $looks_good = 0;
+  }
 
-	unless ("$pkgfullname.info" eq $filename) {
-		print "Warning: File name should be $pkgfullname.info but is $filename\n";
-		$looks_good = 0;
-	}
-	
-	# Check whether any of the following fields contains the package name or version,
-	# and suggest that %f/%n/%v be used instead
-	foreach $field (@name_version_fields) {
-		$value = $properties->{lc $field};
-		if ($value) {
-			if ($value =~ /$pkgfullname/) {
-				print "Warning: Field \"$field\" contains full package name. Use %f instead.\n";
-				$looks_good = 0;
-			} else {
-#				if ($value =~ /$pkgname/) {
-#					print "Warning: Field \"$field\" contains package name. Use %n instead.\n";
-#					$looks_good = 0;
-#				}
-				if ($value =~ /$pkgversion/) {
-					print "Warning: Field \"$field\" contains package version. Use %v instead.\n";
-					$looks_good = 0;
-				}
-			}
-		}
-	}
-	
-	# Check if any obsolete fields are used
-	foreach $field (@obsolete_fields) {
-		if ($properties->{lc $field}) {
-			print "Warning: Field \"$field\" is obsolete.\n";
-			$looks_good = 0;
-		}
-	}
+  unless ("$pkgfullname.info" eq $filename) {
+    print "Warning: File name should be $pkgfullname.info but is $filename\n";
+    $looks_good = 0;
+  }
+  
+  # Check whether any of the following fields contains the package name or version,
+  # and suggest that %f/%n/%v be used instead
+  foreach $field (@name_version_fields) {
+    $value = $properties->{lc $field};
+    if ($value) {
+      if ($value =~ /$pkgfullname/) {
+        print "Warning: Field \"$field\" contains full package name. Use %f instead.\n";
+        $looks_good = 0;
+      } else {
+#       if ($value =~ /$pkgname/) {
+#         print "Warning: Field \"$field\" contains package name. Use %n instead.\n";
+#         $looks_good = 0;
+#       }
+        if ($value =~ /$pkgversion/) {
+          print "Warning: Field \"$field\" contains package version. Use %v instead.\n";
+          $looks_good = 0;
+        }
+      }
+    }
+  }
+  
+  # Check if any obsolete fields are used
+  foreach $field (@obsolete_fields) {
+    if ($properties->{lc $field}) {
+      print "Warning: Field \"$field\" is obsolete.\n";
+      $looks_good = 0;
+    }
+  }
 
-	# Boolean fields
-	foreach $field (@boolean_fields) {
-		$value = $properties->{lc $field};
-		if ($value) {
-			unless ($value =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
-				print "Warning: Boolean field \"$field\" contains suspicious value \"$value\".\n";
-				$looks_good = 0;
-			}
-		}
-	}
-	
-	# Warn for missing / overlong package descriptions
-	$value = $properties->{description};
-	unless ($value) {
-		print "Warning: No package description supplied.\n";
-		$looks_good = 0;
-	}
-	elsif (length($value) > 40) {
-		print "Warning: Length of package description exceeds 40 characters.\n";
-		$looks_good = 0;
-	}
-			
-	$expand = { 'n' => $pkgname,
-				'v' => $pkgversion,
-				'r' => $pkgrevision,
-				'f' => $pkgfullname,
-				'p' => $basepath, 'P' => $basepath,
-				'd' => $pkgdestdir,
-				'i' => $pkgdestdir.$basepath,
-				'a' => $pkgpatchpath,
-				'b' => '.'
-	};
-	
-	# Verify the patch file exists, if specified
-	$value = $properties->{patchfile};
-	if ($value) {
-		$value = &expand_percent($value, $expand);
-		unless (-f $value) {
-			print "Error: can't find patchfile \"$value\"\n";
-			$looks_good = 0;
-		}
-	}
-	
-	if ($looks_good) {
-		print "Package looks good!\n";
-	}
+  # Boolean fields
+  foreach $field (@boolean_fields) {
+    $value = $properties->{lc $field};
+    if ($value) {
+      unless ($value =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/) {
+        print "Warning: Boolean field \"$field\" contains suspicious value \"$value\".\n";
+        $looks_good = 0;
+      }
+    }
+  }
+  
+  # Warn for missing / overlong package descriptions
+  $value = $properties->{description};
+  unless ($value) {
+    print "Warning: No package description supplied.\n";
+    $looks_good = 0;
+  }
+  elsif (length($value) > 40) {
+    print "Warning: Length of package description exceeds 40 characters.\n";
+    $looks_good = 0;
+  }
+      
+  $expand = { 'n' => $pkgname,
+        'v' => $pkgversion,
+        'r' => $pkgrevision,
+        'f' => $pkgfullname,
+        'p' => $basepath, 'P' => $basepath,
+        'd' => $pkgdestdir,
+        'i' => $pkgdestdir.$basepath,
+        'a' => $pkgpatchpath,
+        'b' => '.'
+  };
+  
+  # Verify the patch file exists, if specified
+  $value = $properties->{patch};
+  if ($value) {
+    $value = &expand_percent($value, $expand);
+    unless (-f $value) {
+      print "Error: can't find patchfile \"$value\"\n";
+      $looks_good = 0;
+    }
+  }
+  
+  if ($looks_good) {
+    print "Package looks good!\n";
+  }
 }
 
 #
 # Check a given .deb file for standard compliance
 #
-#	- usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec)
-#	- usage of other non-standard subdirs 
-#	- ideas?
+# - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec)
+# - usage of other non-standard subdirs 
+# - ideas?
 #
 sub validate_dpkg_file {
-	my $filename = shift;
-	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/");
-	my ($pid, $bad_dir);
-	
-	print "Validating .deb file $filename...\n";
-	
-	# Quick & Dirty solution!!!
-	$pid = open(README, "dpkg --contents $filename |") or die "Couldn't run dpkg: $!\n";
-	while (<README>) {
-		# process
-		if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
-			$filename = $6;
-			#print "$6\n";
-			foreach $bad_dir (@bad_dirs) {
-				if ($6 =~ /^$bad_dir/) {
-					print "Warning: File installed into depracted directory $bad_dir\n";
-					print "         Offender is $filename\n";
-					last;
-				}
-			}
-		}
-	}
-	close(README) or die "Error on close: $!\n";
+  my $filename = shift;
+  my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/");
+  my ($pid, $bad_dir);
+  
+  print "Validating .deb file $filename...\n";
+  
+  # Quick & Dirty solution!!!
+  # This is a potential security risk, we should maybe filter $filename...
+  $pid = open(DPKG_CONTENTS, "dpkg --contents $filename |") or die "Couldn't run dpkg: $!\n";
+  while (<DPKG_CONTENTS>) {
+    # process
+    if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
+      $filename = $6;
+      #print "$6\n";
+      foreach $bad_dir (@bad_dirs) {
+        if ($6 =~ /^$bad_dir/) {
+          print "Warning: File installed into depracted directory $bad_dir\n";
+          print "         Offender is $filename\n";
+          last;
+        }
+      }
+    }
+  }
+  close(DPKG_CONTENTS) or die "Error on close: $!\n";
 }
 
 ### building and installing
