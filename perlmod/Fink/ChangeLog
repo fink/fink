@@ -1,4 +1,8 @@
-2005-04-01  Daniel Macks  <dmacks@netspace.org>
+2005-04-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, Shlibs.pm: Check defined($FH) not defined(fileno($FH))
+
+2005-04-04  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm, Shlibs.pm: Only enforce non-concurrent indexing when
 	cache is writable.

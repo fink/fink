@@ -604,7 +604,7 @@ sub update_db {
 		print STDERR "done.\n";
 	};
 
-	close $lockfile_FH if defined fileno $lockfile_FH;
+	close $lockfile_FH if defined $lockfile_FH;
 
 	$db_outdated = 0;
 }
