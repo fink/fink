@@ -999,18 +999,25 @@ For more info on this package see http://growl.info/.
 				}
 				close(FILEIN);
 			}
-		} elsif (-f "/Library/Receipts/Growl.pkg/Contents/Info.plist") {
-			if (open(FILEIN, '/Library/Receipts/Growl.pkg/Contents/Info.plist')) {
-				local $/ = undef;
-				if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
-					$growl_version = $1;
-				}
-				close(FILEIN);
-			} 
-		} else {
-			print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
+                } else {
 			print STDERR "/Library/Receipts/Growl.pkg/Contents/Info.plist not found... " if ($options{debug});
 			$growl_version = "0";
+                }
+
+		### This check is for growl's less then 0.6
+		if ($growl_version eq "1.0") {
+			if (-f "/Library/Receipts/Growl.pkg/Contents/Info.plist") {
+				if (open(FILEIN, '/Library/Receipts/Growl.pkg/Contents/Info.plist')) {
+					local $/ = undef;
+					if (<FILEIN> =~ /<key>CFBundleShortVersionString<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
+						$growl_version = $1;
+					}
+					close(FILEIN);
+				} 
+			} else {
+				print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
+				$growl_version = "0";
+			}
 		}
 	} else {
 		print STDERR "missing\n" if ($options{debug});
