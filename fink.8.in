@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH fink 8 "November 19, 2000" "Version @VERSION@"
+.TH fink 8 "August 14, 2001" "Version @VERSION@"
 .SH NAME
 fink \- a package management system
 .SH SYNOPSIS
