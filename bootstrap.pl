@@ -141,6 +141,60 @@ if ($> != 0) {
 }
 umask oct("022");
 
+### run some more system tests
+
+my ($response);
+
+print "Checking cc...";
+if (-x "/usr/bin/cc") {
+  print " looks good.\n";
+} else {
+  print " not found.\n";
+  &print_breaking("ERROR: There is no C compiler on your system. ".
+		  "Make sure that the Developer Tools are installed.");
+  exit 1;
+}
+
+print "Checking make...";
+if (-x "/usr/bin/make") {
+  $response = `/usr/bin/make --version 2>&1`;
+  if ($response =~ /GNU Make/si) {
+    print " looks good.\n";
+  } else {
+    print " is not GNU make.\n";
+    &print_breaking("ERROR: /usr/bin/make exists, but is not the ".
+		    "GNU version. You must correct this situation before ".
+		    "installing Fink. /usr/bin/make should be a symlink ".
+		    "pointing to /usr/bin/gnumake.");
+    exit 1;
+  }
+} else {
+  print " not found.\n";
+  &print_breaking("ERROR: There is no make utility on your system. ".
+		  "Make sure that the Developer Tools are installed.");
+  exit 1;
+}
+
+print "Checking head...";
+if (-x "/usr/bin/head") {
+  $response = `/usr/bin/head -1 /dev/null 2>&1`;
+  if ($response =~ /Unknown option/si) {
+    print " is broken.\n";
+    &print_breaking("ERROR: /usr/bin/head seems to be corrupted. ".
+		    "This can happen if you manually installed Perl libwww. ".
+		    "You'll have to restore /usr/bin/head from another ".
+		    "machine or from installation media.");
+    exit 1;
+  } else {
+    print " looks good.\n";
+  }
+} else {
+  print " not found.\n";
+  &print_breaking("ERROR: There is no head utility on your system. ".
+		  "Make sure that the Developer Tools are installed.");
+  exit 1;
+}
+
 ### choose installation path
 
 my ($installto, $forbidden);

@@ -1,3 +1,7 @@
+2001-07-14  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Added more pre-flight checks (cc, make, head).
+
 2001-07-13  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink: Look for modules in the correct path. (For people that
