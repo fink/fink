@@ -1,3 +1,7 @@
+2004-07-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Allow bootstrapping with perl 5.8.2 and perl 5.8.4.
+	
 2004-07-02  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Remove redundant variable usage. Replace regex-
