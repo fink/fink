@@ -152,9 +152,30 @@ sub cmd_scanpackages {
   my @treelist = @_;
   my ($tree, $treedir, $cmd, $archive, $component);
 
+  # do all trees by default
   if ($#treelist < 0) {
     @treelist = $config->get_treelist();
   }
+
+  # create a global override file
+
+  my ($pkgname, $package, $pkgversion, $prio);
+  open(OVERRIDE,">$basepath/fink/override") or die "can't write override file: $!\n";
+  foreach $pkgname (Fink::Package->list_packages()) {
+    $package = Fink::Package->package_by_name($pkgname);
+    next unless defined $package;
+    $pkgversion = $package->get_version(&latest_version($package->list_versions()));
+    next unless defined $pkgversion;
+
+    $prio = "optional";
+    if ($pkgversion->param_boolean("Essential")) {
+      $prio = "required";
+    }
+    print OVERRIDE "$pkgname $prio main\n";
+  }
+  close(OVERRIDE) or die "can't write override file: $!\n";
+
+  # create the Packages.gz and Release files for each tree
 
   chdir "$basepath/fink";
   foreach $tree (@treelist) {
@@ -167,7 +188,7 @@ sub cmd_scanpackages {
       $component = "main";
     }
 
-    $cmd = "dpkg-scanpackages $treedir /dev/null | gzip >$treedir/Packages.gz";
+    $cmd = "dpkg-scanpackages $treedir override | gzip >$treedir/Packages.gz";
     if (&execute($cmd)) {
       unlink("$treedir/Packages.gz");
       die "package scan failed\n";

@@ -1,5 +1,8 @@
 2001-05-24  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Engine.pm (cmd_scanpackages): Generate and use an override
+	file.
+
 	* PkgVersion.pm (phase_build): Added conffiles handling.
 
 2001-05-23  Christoph Pfisterer  <cp@chrisp.de>
