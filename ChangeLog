@@ -1,3 +1,7 @@
+2003-08-15  Justin F. Hallett <thesin@users.sourceforge.net>
+
+        * VERSION: upped version to match head
+
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.13.5; this release
