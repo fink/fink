@@ -4,7 +4,7 @@ Revision: 1
 Essential: yes
 Depends: base-files
 Maintainer: Max Horn <max@quendi.de>
-Source: ftp://sources.redhat.com/pub/bzip2/v102/bzip2-%v.tar.gz
+Source: http://prdownloads.sourceforge.net/fink/%n-%v.tar.gz
 Patch: %f.patch
 CompileScript: make PREFIX=%p
 InstallScript: make install PREFIX=%i

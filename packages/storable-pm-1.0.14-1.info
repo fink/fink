@@ -1,7 +1,7 @@
 Package: storable-pm
 Version: 1.0.14
 Revision: 1
-Source: http://www.perl.com/CPAN/authors/id/R/RA/RAM/Storable-%v.tar.gz
+Source: http://prdownloads.sourceforge.net/fink/Storable-%v.tar.gz
 Type: perl
 UpdatePOD: True
 DocFiles: MANIFEST README
