@@ -1,5 +1,9 @@
 2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Releasing version 0.0.4 of fink-mirrors
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* postinstall.pl.in:  Write the new mirror choices to the config file
 	at the end of the process! (oops)
 
