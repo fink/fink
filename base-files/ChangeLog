@@ -1,3 +1,7 @@
+2001-07-09  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink-release: Bumped to 0.2.3.
+
 2001-07-02  Christoph Pfisterer  <cp@chrisp.de>
 
 	* install.sh: Create <prefix>/lib/perl5 and subdirectories.
