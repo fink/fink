@@ -1329,6 +1329,25 @@ sub phase_install {
     }
   }
 
+  # generate commands to install jar files
+  if ($self->has_param("JarFiles")) {
+    my (@jarfiles, $jarfile, $jarfilelist);
+    # install jarfiles
+    $install_script .= "\ninstall -d -m 755 %i/share/java/%n";
+    @jarfiles = split(/\s+/, $self->param("JarFiles"));
+    $jarfilelist = "";
+    foreach $jarfile (@jarfiles) {
+      if ($jarfile =~ /^(.+)\:(.+)$/) {
+	$install_script .= "\ninstall -c -p -m 644 $1 %i/share/java/%n/$2";
+      } else {
+	$jarfilelist .= " $jarfile";
+      }
+    }
+    if ($jarfilelist ne "") {
+      $install_script .= "\ninstall -c -p -m 644$jarfilelist %i/share/java/%n/";
+    }
+  }
+
   $install_script .= "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
   ### install
@@ -1454,6 +1473,22 @@ EOF
           "}\n\n".
           "END_PERL\n";
       } 
+    }
+
+    # add JarFiles Code
+    if ($self->has_param("JarFiles")) {
+      if (($scriptname eq "postinst") || ($scriptname eq "postrm")) {
+        $scriptbody.=
+            "\nmkdir -p %p/share/java".
+            "\njars=`find %p/share/java -name '*.jar'`".
+            "\n".'if (test -n "$jars")'.
+            "\nthen".
+            "\n".'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'.
+            "\nelse".
+            "\nrm -f %p/share/java/classpath".
+            "\nfi".
+            "\nunset jars";
+      }
     }
 
     # add auto-generated parts
