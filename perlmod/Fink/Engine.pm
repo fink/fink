@@ -926,19 +926,19 @@ my ($OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
 	(0, 1, 2, 3);
 
 sub cmd_build {
-	&real_install($OP_BUILD, 0, @_);
+	&real_install($OP_BUILD, 0, 0, @_);
 }
 
 sub cmd_rebuild {
-	&real_install($OP_REBUILD, 0, @_);
+	&real_install($OP_REBUILD, 0, 0, @_);
 }
 
 sub cmd_install {
-	&real_install($OP_INSTALL, 0, @_);
+	&real_install($OP_INSTALL, 0, 0, @_);
 }
 
 sub cmd_reinstall {
-	&real_install($OP_REINSTALL, 0, @_);
+	&real_install($OP_REINSTALL, 0, 0, @_);
 }
 
 sub cmd_update_all {
@@ -963,6 +963,7 @@ use constant FLAG    => 4;
 sub real_install {
 	my $op = shift;
 	my $showlist = shift;
+	my $forceoff = shift;
 	my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep, $con, $cn);
 	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
@@ -1310,31 +1311,33 @@ sub real_install {
 		&print_breaking($s);
 		&print_breaking(join(" ",@requested), 1, " ");
 	}
-	# ask user when additional packages are to be installed
-	if ($#additionals >= 0 || $#removals >= 0) {
-		if ($#additionals >= 0) {
-			if ($#additionals > 0) {
-				&print_breaking("The following ".scalar(@additionals).
-						" additional packages will be installed:");
-			} else {
-				&print_breaking("The following additional package ".
-						"will be installed:");
+	unless ($forceoff) {
+		# ask user when additional packages are to be installed
+		if ($#additionals >= 0 || $#removals >= 0) {
+			if ($#additionals >= 0) {
+				if ($#additionals > 0) {
+					&print_breaking("The following ".scalar(@additionals).
+							" additional packages will be installed:");
+				} else {
+					&print_breaking("The following additional package ".
+							"will be installed:");
+				}
+				&print_breaking(join(" ",@additionals), 1, " ");
 			}
-			&print_breaking(join(" ",@additionals), 1, " ");
-		}
-		if ($#removals >= 0) {
-			if ($#removals > 0) {
-				&print_breaking("The following ".scalar(@removals).
-						" packages will be removed:");
-			} else {
-				&print_breaking("The following package ".
-						"will be removed:");
+			if ($#removals >= 0) {
+				if ($#removals > 0) {
+					&print_breaking("The following ".scalar(@removals).
+							" packages will be removed:");
+				} else {
+					&print_breaking("The following package ".
+							"will be removed:");
+				}
+				&print_breaking(join(" ",@removals), 1, " ");
 			}
-			&print_breaking(join(" ",@removals), 1, " ");
-		}
-		$answer = &prompt_boolean("Do you want to continue?", 1);
-		if (! $answer) {
-			die "Package requirements not satisfied\n";
+			$answer = &prompt_boolean("Do you want to continue?", 1);
+			if (! $answer) {
+				die "Package requirements not satisfied\n";
+			}
 		}
 	}
 
@@ -1429,6 +1432,7 @@ sub real_install {
 			# Now (re)build the package if we determined above that it is necessary.
 			my $is_build = $to_be_rebuilt{$pkgname};
 			if ($is_build) {
+				#&real_install($OP_BUILD, 0, 1, $package->get_name());
 				$package->phase_unpack();
 				$package->phase_patch();
 				$package->phase_compile();
