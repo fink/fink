@@ -38,7 +38,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&get_perms &add_user_script &remove_user_script);
+	@EXPORT_OK	 = qw(&get_perms &add_user &remove_user);
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -94,13 +94,13 @@ sub get_perms {
 
 	$self->set_perms($rootdir, $file);
 
-	$script = $self->build_chown_script($file, $usr, $grp);
+	$script = $self->get_chown($file, $usr, $grp);
 
 	return $script;
 }
 
 ### add check/add user script and then set perms
-sub add_user_script {
+sub add_user {
 	my $self = shift;
 	my $name = shift;
 	my $type = shift;
@@ -159,7 +159,7 @@ sub add_user_script {
 }
 
 ### Check remove user/group
-sub remove_user_script {
+sub remove_user {
 	my $self = shift;
 	my $name = shift;
 	my $type = shift;
@@ -188,7 +188,7 @@ sub remove_user_script {
 }
 
 ### build script to set user/groups
-sub build_chown_script {
+sub get_chown {
 	my $self = shift;
 	my $files = shift;
 	my $users = shift;

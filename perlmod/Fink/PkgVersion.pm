@@ -36,7 +36,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
-use Fink::User qw(&get_perms &add_user_script &remove_user_script);
+use Fink::User qw(&get_perms &add_user &remove_user);
 
 use File::Basename qw(&dirname);
 
@@ -1644,9 +1644,9 @@ EOF
         ### Check for Group/User, if exists then process
 	if ($self->has_param("Group") || $self->has_param("User")) {
 		### Add user/group check to preinst if needed
-		if ($scriptname eq "preinst" && $self->{_type} = "bundle") {
+		if ($self->{_type} = "bundle") {
 			my ($name, $type) = (0, 0);
-			my ($desc, $shell, $home, $group, $tmp);
+			my ($desc, $shell, $home, $group, $tmp, $script);
     
 			if ($self->has_param("Group")) {
 				$tmp = $self->param("Group");
@@ -1661,13 +1661,26 @@ EOF
 				$type = "user";
 			}
             
-			my $script =  Fink::User->add_user_script($name, $type,
-					$desc, $shell, $home, $group);
+			if ($scriptname eq "preinst") {
+				$script = "";
+				$script = Fink::User->add_user($name, $type,
+						$desc, $shell, $home, $group);
 
-			if ($script) {
-				### Add $script to top of preinstscript
-				$script .= "\n";
-				$scriptbody = $script;
+				if ($script) {
+					### Add $script to top of preinstscript
+					$script .= "\n";
+					$scriptbody = $script;
+				}
+			}
+			if($scriptname eq "postrm") {
+				$script = "";
+				$script = Fink::User->remove_user($name, $type);
+
+				if ($script) {
+					### Add $script to top of postrmscript
+					$script .= "\n";
+					$scriptbody = $script;
+				}
 			}
 		}
         
