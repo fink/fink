@@ -1521,7 +1521,7 @@ END
 			}
 		} else {
 		# No checksum was specifed in the .info file, die die die
-			die "No checksum specifed for ".$self->get_fullname()." I got a sum of $found_archive_sum \n";
+			die "No MD5 specifed for Source$suffix of ".$self->get_fullname()." I got a checksum of $found_archive_sum \n";
 		}
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
