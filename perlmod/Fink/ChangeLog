@@ -1,3 +1,10 @@
+2004-11-12  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Refactored gathering of user input. All prompt_*() now
+	hand off to new get_input() (semi-revival from Services.pm from
+	before CLI/Services split), which propagate control-C and other
+	exceptions correctly during blocking and non-blocking input.
+
 2004-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* SelfUpdate.pm: Don't automatically update gettext-bin

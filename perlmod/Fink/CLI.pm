@@ -182,24 +182,9 @@ sub prompt {
 	$default_value = "" unless defined $default_value;
 	my ($answer);
 
-	require Fink::Config;
-	my $dontask = Fink::Config::get_option("dontask");
-
-	&print_breaking("$prompt [$default_value] ", 0);
-	if ($dontask) {
-		print "(assuming default)\n";
-		$answer = $default_value;
-	} else {
-		{
-			local $SIG{INT} = sub {
-				print "\n";
-				die "User interrupt\n";
-			};
-			$answer = <STDIN> || "";
-		}
-		chomp($answer);
-		$answer = $default_value if $answer eq "";
-	}
+	$answer = &get_input("$prompt [$default_value]", 0);
+	chomp($answer);
+	$answer = $default_value if $answer eq "";
 	return $answer;
 }
 
@@ -217,7 +202,7 @@ Fink is configured to automatically accept defaults (i.e., bin/fink
 was invoked with the -y or --yes option), the default answer is
 returned.  The optional $timeout argument establishes a wait period
 (in seconds) for the prompt, after which the default answer will be
-used.
+used. If a $timeout is given, any existing alarm() is destroyed.
 
 =cut
 
@@ -225,37 +210,11 @@ sub prompt_boolean {
 	my $prompt = shift;
 	my $default_value = shift;
 	$default_value = 1 unless defined $default_value;
-	my $timeout = shift;
+	my $timeout = shift || 0;
 	my ($answer, $meaning);
 
-	require Fink::Config;
-	my $dontask = Fink::Config::get_option("dontask");
-
 	while (1) {
-		&print_breaking("$prompt [".($default_value ? "Y/n" : "y/N")."] ", 0);
-		if ($dontask) {
-			print "(assuming default)\n";
-			$meaning = $default_value;
-			last;
-		}
-		if (defined $timeout) {
-			$answer = eval {
-				local $SIG{ALRM} = sub {
-					print "\n\nTIMEOUT: using default answer.\n";
-					die;
-				};
-				alarm $timeout;
-				my $answer = <STDIN>;
-				alarm(0);
-				return $answer;
-			} || "";
-		} else {
-			local $SIG{INT} = sub {
-				print "\n";
-				die "User interrupt\n";
-			};
-		    $answer = <STDIN> || "";
-		}
+		$answer = &get_input("$prompt [".($default_value ? "Y/n" : "y/N")."]", $timeout);
 		chomp($answer);
 		if ($answer eq "") {
 			$meaning = $default_value;
@@ -314,9 +273,6 @@ sub prompt_selection_new {
 		confess "Unknown default type ",$default->[0];
 	}
 
-	require Fink::Config;
-	my $dontask = Fink::Config::get_option("dontask");
-
 	$count = 0;
 	for ($index = 0; $index <= $#choices; $index+=2) {
 		$count++;
@@ -335,28 +291,72 @@ sub prompt_selection_new {
 	$default_value = 1 if !defined $default_value;
 	print "\n\n";
 
-	&print_breaking("$prompt [$default_value] ", 0);
-	if ($dontask) {
-		print "(assuming default)\n";
+	$answer = &get_input("$prompt [$default_value]", 0);
+	chomp($answer);
+	if (!$answer) {
+		$answer = 0;
+	}
+	$answer = int($answer);
+	if ($answer < 1 || $answer > $count) {
 		$answer = $default_value;
-	} else {
-		{
-			local $SIG{INT} = sub {
-				print "\n";
-				die "\nUser interrupt\n";
-			};
-			$answer = <STDIN> || "";
-		}
-		chomp($answer);
-		if (!$answer) {
-			$answer = 0;
-		}
-		$answer = int($answer);
-		if ($answer < 1 || $answer > $count) {
-			$answer = $default_value;
-		}
 	}
 	return $choices[2*$answer-1];
+}
+
+=item get_input
+
+    my $answer = get_input $prompt;
+    my $answer = get_input $prompt, $timeout;
+
+Prints the string $prompt, then gets a single line of input from
+STDIN. If $timeout is zero or not given, will block forever waiting
+for input. If $timeout is given and is positive, will only wait that
+many seconds for input before giving up. Returns the entered string
+(including the trailing newline), or a null string if the timeout
+expires or immediately (without waiting for input) if fink is run with
+the -y option. If not -y, this function destroys any pre-existing
+alarm().
+
+=cut
+
+sub get_input {
+	my $prompt = shift;
+	my $timeout = shift || 0;
+
+	# print the prompt string (leaving cursor on the same line)
+	$prompt = "" if !defined $prompt;
+	&print_breaking("$prompt ", 0);
+
+	# handle -y if given
+	require Fink::Config;
+	if (Fink::Config::get_option("dontask")) {
+		print "(assuming default)\n";
+		return "";
+	}
+
+	# get input, with optional timeout functionality
+	my $answer = eval {
+		local $SIG{INT}  = sub { die "SIG$_[0]\n"; };  # control-C
+		local $SIG{ALRM} = sub { die "SIG$_[0]\n"; };  # alarm() expired
+		alarm $timeout;  # alarm(0) means cancel the timer
+		my $answer = <STDIN>;
+		alarm 0;
+		return $answer;
+	} || "";
+
+	# deal with error conditions raised by eval{}
+	if (length $@) {
+		print "\n";   # move off input-prompt line
+		if ($@ eq "SIGINT\n") {
+			die "User interrupt\n";
+		} elsif ($@ eq "SIGALRM\n") {
+			print "TIMEOUT: using default answer.\n";
+		} else {
+			die $@;   # something else happened, so just propagate it
+		}
+	}
+
+	return $answer;
 }
 
 =item get_term_width
