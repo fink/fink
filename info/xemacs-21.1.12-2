@@ -1,0 +1,16 @@
+Package: xemacs
+Version: 21.1.12
+Revision: 2
+Source: ftp://ftp.xemacs.org/pub/xemacs/xemacs-21.1/xemacs-%v.tar.gz
+Depends: zlib, libpng, libtiff, libjpeg, gdbm
+SetCFLAGS: -traditional-cpp
+Patch: %f.patch
+#ConfigureParams: --with-menubars=lucid --with-scrollbars=athena --with-dialogs=athena
+ConfigureParams: --with-menubars=lucid --with-scrollbars=lucid --with-dialogs=athena --with-shlib=no
+InstallScript: make install prefix=%i
+ rm -f %i/bin/ctags
+ rm -f %i/man/man1/ctags.1
+CommentPort: I have had some problems with dialog boxes disappearing.
+ see http://www.stanford.edu/~parker42/xemacs.html
+CommentStow:
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
