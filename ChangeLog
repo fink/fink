@@ -1,3 +1,8 @@
+2001-10-18  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink.in: Added a --help option and some hints towards it
+	(contributed by Justin Hallett).
+
 2001-10-17  Christoph Pfisterer  <cp@chrisp.de>
 
 	* fink.in: Becoming root is now handled by Fink::Engine. Remove

@@ -32,8 +32,9 @@ my $dontask = 0;
 
 Getopt::Long::Configure(qw(bundling ignore_case_always));
 GetOptions('yes' => \$dontask,
-	   'version|v' => \&show_version)
- or die "Can't parse command line\n";
+	   'version|v' => \&show_version,
+	   'help|h|?' => \&show_help)
+ or die "fink: unknown option\nType 'fink --help' for more information.\n";
 
 ### display version numbers if requested
 
@@ -41,6 +42,44 @@ sub show_version {
   require Fink::FinkVersion;
   print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
   print "Distribution version: ".Fink::FinkVersion::distribution_version()."\n";
+  exit 0;
+}
+
+### display usage if requested
+
+sub show_help {
+  require Fink::FinkVersion;
+  my $version = Fink::FinkVersion::fink_version();
+
+  print <<"EOF";
+fink $version, Copyright (c) 2001 Christoph Pfisterer and others.
+This is free software, distributed under the GNU General Public License.
+Read @BASEPATH@/share/doc/fink/COPYING for details.
+
+fink is a package manager that automatically downloads, configures, compiles
+and installs packages using the original source code. If you want to install
+precompiled binary packages, check out dselect or apt-get instead.
+
+Usage: fink [options] command [package...]
+       fink install pkg1 [pkg2 ...]
+
+Common commmands:
+  install    - install/update the named packages
+  remove     - remove the named packages
+  selfupdate - upgrade fink to the lastest release
+  update-all - update all installed packages
+  configure  - rerun the configuration process
+  list       - list available packages, optionally filtering by name
+  apropos    - list packages matching a search keyword
+  describe   - display a detailed description of the named packages
+
+Options:
+  --help     - display this help text
+  --version  - display fink version information
+
+See the fink(8) manual page for more commands and options.
+Visit http://fink.sourceforge.net/ for further information.
+EOF
   exit 0;
 }
 
@@ -80,6 +119,7 @@ if ($#ARGV >= 0) {
   $engine->process(@ARGV);
 } else {
   # TODO: enter interactive mode
+  die "fink: no command given.\nType 'fink --help' for usage information.\n";
 }
 
 ### eof

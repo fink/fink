@@ -130,7 +130,7 @@ sub process {
     }
   }
   if (not defined $cmdinfo) {
-    die "unknown command: $cmd\n";
+    die "fink: unknown command \"$cmd\".\nType 'fink --help' for more information.\n";
   }
 
   ($proc, $pkgflag, $rootflag) = @$cmdinfo;
