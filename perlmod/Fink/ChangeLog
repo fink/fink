@@ -1,3 +1,8 @@
+2003-11-12  Michael G Schwern <schwern@pobox.com>
+
+	* Package.pm: Does not use execute() so don't import it from
+	Fink::Services.
+
 2003-11-12  Max Horn  <max@quendi.de>
 
 	* Services.pm: Simplified code a bit.
