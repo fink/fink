@@ -27,7 +27,7 @@
 set path = ( BASEPATH/bin BASEPATH/sbin $path /usr/X11R6/bin )
 
 if ( $?MANPATH) then
-  setenv MANPATH BASEPATH/share/man:BASEPATH/man:$MANPATH:/usr/X11R6/man
+  setenv MANPATH BASEPATH/share/man:BASEPATH/man:${MANPATH}:/usr/X11R6/man
 else
   setenv MANPATH BASEPATH/share/man:BASEPATH/man:/usr/local/share/man:/usr/local/man:/usr/share/man:/usr/X11R6/man
 endif
