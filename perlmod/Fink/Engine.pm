@@ -21,7 +21,8 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&prompt_boolean &print_breaking &print_breaking_prefix
+use Fink::Services qw(&print_breaking &print_breaking_prefix
+                      &prompt_boolean &prompt_selection
                       &latest_version &execute);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -524,6 +525,7 @@ sub real_install {
   my ($pkgspec, $package, $pkgname, $pkgobj, $item, $dep);
   my ($all_installed, $any_installed);
   my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
+  my (%candidates, @candidates, $pnode);
   my ($oversion, $opackage, $v, $ep, $dp, $dname);
   my ($answer, $s);
 
@@ -614,7 +616,7 @@ sub real_install {
 	}
       }
 
-      # check for installed pkgs
+      # check for installed pkgs (exact revision)
       foreach $dp (@$dep) {
 	if ($dp->is_installed()) {
 	  $dname = $dp->get_name();
@@ -632,13 +634,55 @@ sub real_install {
 	}
       }
 
-      # else choose one arbitrarily
-      $dname = $dep->[0]->get_name();
+      # make list of package names (preserve order)
+      %candidates = ();
+      @candidates = ();
+      foreach $dp (@$dep) {
+	next if exists $candidates{$dp->get_name()};
+	$candidates{$dp->get_name()} = 1;
+	push @candidates, $dp->get_name();
+      }
+      my $found = 0;
+
+      if ($#candidates == 0) {  # only one candidate
+	$dname = $candidates[0];
+	$found = 1;
+      }
+
+      if (not $found) {
+	# check for installed pkgs (by name)
+	my $cand;
+	foreach $cand (@candidates) {
+	  $pnode = Fink::Package->package_by_name($cand);
+	  if ($pnode->is_any_installed()) {
+	    $dname = $cand;
+	    $found = 1;
+	    last;
+	  }
+	}
+      }
+
+      if (not $found) {
+	# let the user pick one
+
+	my $labels = {};
+	foreach $dname (@candidates) {
+	  $labels->{$dname} = $dname;
+	}
+
+	print "\n";
+	&print_breaking("fink needs help picking an alternative to satisfy ".
+			"a virtual dependency. The candidates:");
+	$dname =
+	  &prompt_selection("Pick one:", 1, $labels, @candidates);
+      }
+
+      # the dice are rolled...
+
       if (exists $deps{$dname}) {
 	die "Internal error: node for $dname already exists\n";
       }
 
-      my (@vlist, $pnode);
       $pnode = Fink::Package->package_by_name($dname);
       @vlist = ();
       foreach $dp (@$dep) {

@@ -1,3 +1,8 @@
+2001-10-20  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (real_install): Let the user pick one alternative when
+	resolving dependencies with virtual packages.
+
 2001-10-18  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (restart_as_root): Propagate the "--yes" option when
