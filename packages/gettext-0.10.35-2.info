@@ -8,8 +8,9 @@ UpdateConfigGuess: true
 UpdateLibtool: true
 SetCPPFLAGS: -traditional-cpp
 Patch: %f.patch
+ConfigureParams: --infodir=%p/share/info
+InstallScript: make install DESTDIR=%d
 CommentPort: Uses autoconf. Checks the host type - the usual
  fix. Uses an evil hack to actually build and install a shared libintl
  library.
-CommentStow: No issues known.
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

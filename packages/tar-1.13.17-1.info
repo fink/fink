@@ -6,9 +6,8 @@ Depends: gzip, bzip2, base-files
 Essential: yes
 UsesGettext: true
 UpdateConfigGuess: true
-ConfigureParams: --program-transform-name=s/tar/gtar/
-InstallScript: make install prefix=%i
+ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info
+InstallScript: make install DESTDIR=%d
  cd %i/bin ; ln -s gtar tar ; ln -s gtar gnutar
 CommentPort: Uses autoconf. Checks the hosttype - the usual fix.
-CommentStow: No issues.
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>

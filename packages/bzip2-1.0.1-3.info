@@ -7,8 +7,9 @@ Depends: base-files
 Patch: %f.patch
 CompileScript: make PREFIX=%p
 InstallScript: make install PREFIX=%i
+ mkdir -p %i/share
+ mv %i/man %i/share/
 CommentPort: Doesn't use autoconf, but comes with a useful
  Makefile. Anyway, the patch modifies it to build a shared library
  instead of a static one.
-CommentStow: No issues.
 Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
