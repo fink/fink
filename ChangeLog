@@ -1,5 +1,10 @@
 2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.18.4, a release
+	on branch_0_18 with bootstrapping improvements
+
+2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* bootstrap.pl: Be careful about permissions when creating directories
 
 2004-03-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
