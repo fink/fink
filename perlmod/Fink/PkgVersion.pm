@@ -645,7 +645,7 @@ sub phase_install {
   }
   $install_script .= "mkdir -p \%i\n";
   unless ($self->{_bootstrap}) {
-    $install_script .= "mkdir -p \%i/DEBIAN\n";
+    $install_script .= "mkdir -p \%d/DEBIAN\n";
   }
   if ($self->{_type} ne "bundle") {
     if ($self->has_param("InstallScript")) {
