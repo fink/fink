@@ -895,7 +895,7 @@ sub cmd_cleanup {
 			$deb_list{$file} = 1;
 
 			# all source files
-			if ($vo->get_source_count}) {
+			if ($vo->get_source_count) {
 				for ($i = 1; $i <= $vo->get_source_count; $i++) {
 					$file = $vo->find_tarball($i);
 					$src_list{$file} = 1 if defined($file);
