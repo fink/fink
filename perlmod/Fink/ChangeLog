@@ -5,9 +5,9 @@
 
 2005-03-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 
-	* Package.pm: refactoring require_packages
+	* Package.pm: refactoring require_packages and forget_packages
 	* Bootstrap.pm, Engine.pm, Selfupdate.pm: Removing calls to
-	Fink::Shlibs->require_packages
+	Fink::Shlibs->require_packages, Fink::Shlibs->forget_packages
 
 2005-03-08  Justin F. Hallett  <thesin@users.sourceforge.net>
 

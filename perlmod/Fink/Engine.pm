@@ -219,7 +219,7 @@ sub process {
 	
 	# read package descriptions if needed
 	if ($pkgflag) {
-		Fink::Package->require_packages(0);
+		Fink::Package->require_packages();
 	}
 
 	if (Fink::Config::get_option("maintainermode")) {
@@ -302,8 +302,7 @@ sub cmd_index {
 
 sub cmd_rescan {
 	Fink::Package->forget_packages();
-	Fink::Shlibs->forget_packages();
-	Fink::Package->require_packages(0);
+	Fink::Package->require_packages();
 }
 
 sub cmd_configure {
@@ -414,7 +413,7 @@ sub do_real_list {
 		$formatstr = "%s\t%s\t%s\t%s\n";
 		$desclen = 0;
 	}
-	Fink::Package->require_packages(0);
+	Fink::Package->require_packages();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
@@ -879,7 +878,7 @@ EOF
 		exit 0;
 	}
 
-	Fink::Package->require_packages(0);
+	Fink::Package->require_packages();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
@@ -1936,7 +1935,8 @@ sub real_install {
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 			# Reinstall buildconficts after the build
 			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
-			Fink::Shlibs->forget_packages();
+			### Update shlibs after each install for next build
+			Fink::Package->forget_packages(1);
 			Fink::Package->require_packages(1, quiet => 1);
 			# Mark all installed items as installed
 
@@ -2080,7 +2080,7 @@ EOF
 		exit 0;
 	}
 
-	Fink::Package->require_packages(0);
+	Fink::Package->require_packages();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 

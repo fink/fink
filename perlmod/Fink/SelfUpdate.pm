@@ -487,7 +487,6 @@ sub do_finish {
 
 	# forget the package info
 	Fink::Package->forget_packages();
-	Fink::Shlibs->forget_packages();
 
 	# delete the old package DB
 	if (-e "$dbpath/fink.db") {
@@ -500,7 +499,7 @@ sub do_finish {
 	}
 
 	# ...and then read it back in
-	Fink::Package->require_packages(0);
+	Fink::Package->require_packages();
 
 	# update the package manager itself first if necessary (that is, if a
 	# newer version is available).

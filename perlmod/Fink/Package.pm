@@ -347,13 +347,16 @@ sub list_essential_packages {
 
 sub require_packages {
 	shift;	# class method - ignore first parameter
-	my $shlibs_only = shift;
+	# 0 = both
+	# 1 = shlibs only
+	# 2 = packages only
+	my $oper = shift || 0;
 
 	### Check and get both packages and shlibs (one call)
-	if (!$have_packages && !$shlibs_only) {
+	if (!$have_packages && $oper != 1) {
 		Fink::Package->scan_all(@_);
 	}
-	if (!$have_shlibs) {
+	if (!$have_shlibs && $oper != 2) {
 		Fink::Shlibs->scan_all(@_);
 	}
 }
@@ -390,12 +393,22 @@ sub update_aptgetable {
 
 sub forget_packages {
 	shift;	# class method - ignore first parameter
+	# 0 = both
+	# 1 = shlibs only
+	# 2 = packages only
+	my $oper = shift || 0;
 
-	$have_packages = 0;
-	%$packages = ();
-	@essential_packages = ();
-	$essential_valid = 0;
-	$db_outdated = 1;
+	if ($oper != 1) {
+		$have_packages = 0;
+		%$packages = ();
+		@essential_packages = ();
+		$essential_valid = 0;
+		$db_outdated = 1;
+	}
+
+	if ($oper != 2) {
+        	Fink::Shlibs->forget_packages();
+	}
 }
 
 ### read list of packages, either from cache or files
@@ -408,7 +421,7 @@ sub scan_all {
 	my $dbfile = "$dbpath/fink.db";
 	my $conffile = "$basepath/etc/fink.conf";
 
-	Fink::Package->forget_packages();
+	Fink::Package->forget_packages(2);
 	
 	# If we have the Storable perl module, try to use the package index
 	if (-e $dbfile) {
