@@ -4,7 +4,7 @@
 
 2003-02-16  Ben Hines <benh57@users.sourceforge.net>
 
-	* Services.pm: Use /bin/md5 for md5sums if present (Patch #675893).
+	* Services.pm: Use /sbin/md5 for md5sums if present (Patch #675893).
 	  
 2003-02-16  Max Horn  <max@quendi.de>
 
