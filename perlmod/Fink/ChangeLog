@@ -1,3 +1,12 @@
+2001-04-14  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm: Changed internals of real_install. The first
+	parameter to real_install is now one of the defined constants
+	designating an operation. New commands: rebuild, reinstall.
+
+	* PkgVersion.pm: Create DEBIAN directory during install
+	phase. Mark essential packages as essential in dpkg control file.
+
 2001-04-12  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Engine.pm (real_install): Don't deactivate older revisions of a

@@ -21,7 +21,8 @@
 
 package Fink::Engine;
 
-use Fink::Services qw(&prompt_boolean &print_breaking &print_breaking_prefix &latest_version);
+use Fink::Services qw(&prompt_boolean &print_breaking &print_breaking_prefix
+                      &latest_version);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($basepath);
@@ -47,18 +48,23 @@ our %commands =
     'configure' => \&cmd_configure,
     'bootstrap' => \&cmd_bootstrap,
     'fetch' => \&cmd_fetch,
-    'build' => \&cmd_build,
-    'install' => \&cmd_install,
-    'enable' => \&cmd_activate,
-    'activate' => \&cmd_activate,
-    'use' => \&cmd_activate,
-    'disable' => \&cmd_deactivate,
-    'deactivate' => \&cmd_deactivate,
-    'unuse' => \&cmd_deactivate,
-    'update' => \&cmd_update,
-    'update-all' => \&cmd_update_all,
     'fetch-all' => \&cmd_fetch_all,
     'fetch-missing' => \&cmd_fetch_missing,
+    'build' => \&cmd_build,
+    'rebuild' => \&cmd_rebuild,
+    'install' => \&cmd_install,
+    'reinstall' => \&cmd_reinstall,
+    'update' => \&cmd_install,
+    'update-all' => \&cmd_update_all,
+    'enable' => \&cmd_install,
+    'activate' => \&cmd_install,
+    'use' => \&cmd_install,
+    'disable' => \&cmd_remove,
+    'deactivate' => \&cmd_remove,
+    'unuse' => \&cmd_remove,
+    'remove' => \&cmd_remove,
+    'delete' => \&cmd_remove,
+    'purge' => \&cmd_remove,
   );
 
 END { }       # module clean-up code here (global destructor)
@@ -175,25 +181,12 @@ sub cmd_fetch_missing {
   }
 }
 
-sub cmd_activate {
+sub cmd_remove {
   my ($package, @plist);
 
   @plist = &expand_packages(@_);
   if ($#plist < 0) {
-    die "no package specified for command 'activate'!\n";
-  }
-
-  foreach $package (@plist) {
-    $package->phase_activate();
-  }
-}
-
-sub cmd_deactivate {
-  my ($package, @plist);
-
-  @plist = &expand_packages(@_);
-  if ($#plist < 0) {
-    die "no package specified for command 'deactivate'!\n";
+    die "no package specified for command 'remove'!\n";
   }
 
   foreach $package (@plist) {
@@ -201,16 +194,25 @@ sub cmd_deactivate {
   }
 }
 
+### building and installing
+
+my ($OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
+  (0, 1, 2, 3);
+
 sub cmd_build {
-  &real_install(4, @_);
+  &real_install($OP_BUILD, @_);
+}
+
+sub cmd_rebuild {
+  &real_install($OP_REBUILD, @_);
 }
 
 sub cmd_install {
-  &real_install(0, @_);
+  &real_install($OP_INSTALL, @_);
 }
 
-sub cmd_update {
-  &real_install(8, @_);
+sub cmd_reinstall {
+  &real_install($OP_REINSTALL, @_);
 }
 
 sub cmd_update_all {
@@ -223,11 +225,11 @@ sub cmd_update_all {
     }
   }
 
-  &real_install(8, @plist);
+  &real_install($OP_INSTALL, @plist);
 }
 
 sub real_install {
-  my $kind = shift;
+  my $op = shift;
   my ($pkgspec, $package, $pkgname, $item, $dep, $all_installed);
   my (%deps, @queue, @deplist, @vlist, @additionals);
   my ($oversion, $opackage, $v);
@@ -252,11 +254,17 @@ sub real_install {
     }
     # skip if this version/revision is installed
     #  (also applies to update)
-    next if $package->is_installed();
+    if ($op != $OP_REBUILD and $op != $OP_REINSTALL
+	and $package->is_installed()) {
+      next;
+    }
     # for build, also skip if present, but not installed
-    next if ($kind == 4 and $package->is_present());
+    if ($op == $OP_BUILD
+	and $package->is_present()) {
+      next;
+    }
     # add to table
-    $deps{$pkgname} = [ $pkgname, undef, $package, $kind | 1 ];
+    $deps{$pkgname} = [ $pkgname, undef, $package, $op, 1 ];
   }
 
   @queue = keys %deps;
@@ -296,7 +304,9 @@ sub real_install {
 
     # check installation state
     if ($item->[2]->is_installed()) {
-      $item->[3] |= 2;
+      if ($item->[4] == 0) {
+	$item->[4] = 2;
+      }
       # already installed, don't think about it any more
       next;
     }
@@ -309,7 +319,7 @@ sub real_install {
 	push @$item, $deps{$dep};
       } else {
 	# create a node
-	$deps{$dep} = [ $dep, undef, undef, 0 ];
+	$deps{$dep} = [ $dep, undef, undef, $OP_INSTALL, 0 ];
 	# add a link
 	push @$item, $deps{$dep};
 	# add to investigation queue
@@ -322,7 +332,7 @@ sub real_install {
   @additionals = ();
   foreach $pkgname (sort keys %deps) {
     $item = $deps{$pkgname};
-    if ((($item->[3] & 1) == 0) and (($item->[3] & 2) == 0)) {
+    if ($item->[4] == 0) {
       push @additionals, $pkgname;
     }
   }
@@ -346,7 +356,7 @@ sub real_install {
   # fetch all packages that need fetching
   foreach $pkgname (sort keys %deps) {
     $item = $deps{$pkgname};
-    next if (($item->[3] & 2) == 2);   # already installed
+    next if (($item->[4] & 2) == 2);   # already installed
     next if $item->[2]->is_fetched();
     $item->[2]->phase_fetch();
   }
@@ -356,29 +366,31 @@ sub real_install {
     $all_installed = 1;
   PACKAGELOOP: foreach $pkgname (sort keys %deps) {
       $item = $deps{$pkgname};
-      next if (($item->[3] & 2) == 2);   # already installed
+      next if (($item->[4] & 2) == 2);   # already installed
       $all_installed = 0;
 
       # check dependencies
-      foreach $dep (@$item[4..$#$item]) {
-	next PACKAGELOOP if (($dep->[3] & 2) == 0);
+      foreach $dep (@$item[5..$#$item]) {
+	next PACKAGELOOP if (($dep->[4] & 2) == 0);
       }
 
       # build it
       $package = $item->[2];
 
-      $package->phase_unpack();
-      $package->phase_patch();
-      $package->phase_compile();
-      $package->phase_install();
-      $package->phase_build();
-
-      if (($item->[3] & 4) == 0) {
+      if ($item->[3] == $OP_REBUILD or not $package->is_present()) {
+	$package->phase_unpack();
+	$package->phase_patch();
+	$package->phase_compile();
+	$package->phase_install();
+	$package->phase_build();
+      }
+      if ($item->[3] != $OP_BUILD
+	  and ($item->[3] != $OP_REBUILD or $package->is_installed())) {
 	$package->phase_activate();
       }
 
       # mark it as installed
-      $item->[3] |= 2;
+      $item->[4] |= 2;
     }
     last if $all_installed;
   }

@@ -644,6 +644,9 @@ sub phase_install {
     $install_script .= "rm -rf \%d\n";
   }
   $install_script .= "mkdir -p \%i\n";
+  unless ($self->{_bootstrap}) {
+    $install_script .= "mkdir -p \%i/DEBIAN\n";
+  }
   if ($self->{_type} ne "bundle") {
     if ($self->has_param("InstallScript")) {
       $install_script .= $self->param("InstallScript");
@@ -706,9 +709,14 @@ EOF
   if ($self->has_param("Maintainer")) {
     $control .= "Maintainer: ".$self->param("Maintainer")."\n";
   }
+  if ($self->param_boolean("Essential")) {
+    $control .= "Essential: yes\n";
+  }
 
-  if (&execute("mkdir -p $destdir/DEBIAN")) {
-    die "can't create directory for control files\n";
+  if (not -d "$destdir/DEBIAN") {
+    if (&execute("mkdir -p $destdir/DEBIAN")) {
+      die "can't create directory for control files\n";
+    }
   }
   open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file: $!\n";
   print CONTROL $control;
