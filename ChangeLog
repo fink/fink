@@ -1,5 +1,8 @@
 2001-09-11  Christoph Pfisterer  <cp@chrisp.de>
 
+	* install.sh: Updated usage message. Switched from cp/chmod to
+	install.
+
 	* fink: Print both the package manager version and the
 	distribution version on 'fink --version'.
 

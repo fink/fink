@@ -22,7 +22,9 @@
 
 if [ $# -ne 1 ]; then
   echo "Usage: ./install.sh <prefix>"
-  echo "  Example: ./install.sh /sw"
+  echo "  Example: ./install.sh /tmp/builddirectory/sw"
+  echo "WARNING: Don't call install.sh directly, use inject.pl instead."
+  echo "         You have been warned."
   exit 1
 fi
 
@@ -44,40 +46,31 @@ done
 
 echo "Copying files..."
 
-cp fink $basepath/bin/
-chmod 755 $basepath/bin/fink
-
-cp fink.8 $basepath/share/man/man8/
-chmod 644 $basepath/share/man/man8/fink.8
+install -c -p -m 755 fink $basepath/bin/
+install -c -p -m 644 fink.8 $basepath/share/man/man8/
 
 for file in perlmod/Fink/*.pm ; do
   if [ -f $file ]; then
-    cp $file $basepath/lib/perl5/Fink/
-    chmod 644 $basepath/lib/perl5/Fink/`basename $file`
+    install -c -p -m 644 $file $basepath/lib/perl5/Fink/
   fi
 done
 
 for file in mirror/* ; do
   if [ -f $file ]; then
-    cp $file $basepath/lib/fink/mirror/
-    chmod 644 $basepath/lib/fink/$file
+    install -c -p -m 644 $file $basepath/lib/fink/mirror/
   fi
 done
 
 for file in update/config.guess update/config.sub update/ltconfig ; do
-  cp $file $basepath/lib/fink/update/
-  chmod 755 $basepath/lib/fink/$file
+  install -c -p -m 755 $file $basepath/lib/fink/update/
 done
-
 for file in update/ltmain.sh update/Makefile.in.in ; do
-  cp $file $basepath/lib/fink/update/
-  chmod 644 $basepath/lib/fink/$file
+  install -c -p -m 644 $file $basepath/lib/fink/update/
 done
 
 for file in COPYING README README.html INSTALL INSTALL.html \
             USAGE USAGE.html ; do
-  cp $file $basepath/share/doc/fink/
-  chmod 644 $basepath/share/doc/fink/$file
+  install -c -p -m 644  $file $basepath/share/doc/fink/
 done
 
 
