@@ -1,3 +1,7 @@
+2004-07-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Restrict use of %a to PatchScript.
+
 2004-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: make sure a minimum of java versions are filled
