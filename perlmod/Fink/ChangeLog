@@ -1,3 +1,10 @@
+2004-02-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: *Script parsing improvements for non-#!-specified
+	scripts: fix removal of leading whitespace, implement use of \ at
+	end of line to allow wrapping of long lines. (by Rohan Lloyd; see
+	"Folding long lines in scripts" on fink-devel)
+
 2004-02-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Added "debug" mode to show what's going on while
