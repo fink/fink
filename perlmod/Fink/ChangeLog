@@ -4,7 +4,9 @@
 	is > 10.2.
 	* Bootstrap.pm, SelfUpdate.pm: Add gettext-bin to the bootstrap and
 	update lists (in preparation for making it non-essential)
-
+	* Bootstrap.pm: Move the code which enables the 10.3 distribution to
+	a new branch, "10.3_test"
+	
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Don't print the output of linking the
