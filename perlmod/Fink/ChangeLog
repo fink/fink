@@ -1,3 +1,11 @@
+2001-10-14  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Services.pm (version_cmp): Hopefully get it right this
+	time. dpkg implicitly separates version and revision before
+	comparing them. As a result the change to fink's comparison
+	function that should fix openssh's version ordering broke
+	openssl's ordering.
+
 2001-10-13  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Services.pm (filename): More general solution to handle mirror:

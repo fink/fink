@@ -353,6 +353,32 @@ sub prompt_selection {
 ### comparing versions
 
 sub version_cmp {
+  my ($a, $b, $aver, $arev, $bver, $brev, $res);
+  $a = shift;
+  $b = shift;
+
+  if ($a =~ /^(.+)\-([^-]+)$/) {
+    $aver = $1;
+    $arev = $2;
+  } else {
+    $aver = $a;
+    $arev = "";
+  }
+
+  if ($b =~ /^(.+)\-([^-]+)$/) {
+    $bver = $1;
+    $brev = $2;
+  } else {
+    $bver = $b;
+    $brev = "";
+  }
+
+  $res = &raw_version_cmp($aver, $bver);
+  return $res if $res;
+  return &raw_version_cmp($arev, $brev);
+}
+
+sub raw_version_cmp {
   my ($a1, $b1, $a2, $b2, @ca, @cb, $res);
   $a1 = shift;
   $b1 = shift;
