@@ -1,0 +1,14 @@
+Package: mgv
+Version: 3.1.5
+Revision: 1
+Source: http://www.trends.net/~mu/srcs/mgv-%v.tar.gz
+Depends: lesstif,ghostscript
+SetCFLAGS: -traditional-cpp
+PatchScript: patch -p0 <%a/%f.patch
+CompileScript: ./configure %c
+ make
+InstallScript:  make install-data prefix=%i
+ mkdir -p %i/bin
+ install -c mgv %i/bin/mgv
+Comment: MGv is a Motif PostScript viewer loosely based on Ghostview 1.5.
+Maintainer: Jeffrey S. Whitaker <jsw@cdc.noaa.gov>

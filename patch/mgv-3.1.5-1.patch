@@ -1,0 +1,30 @@
+--- configure	Mon Sep 28 03:54:01 1998
++++ configure	Mon Feb 26 11:02:14 2001
+@@ -827,7 +827,7 @@
+ 
+ if test "x${OPTFLAG}" != "x"; then
+ 	if test "x${DEBUGFLAG}" = "x"; then
+-		LDFLAGS="${STRIPFLAG:--s} $LDFLAGS"
++		LDFLAGS="$LDFLAGS"
+ 	fi
+ fi
+ 
+@@ -2450,7 +2450,7 @@
+   xpm_includes_result="(none)"
+ echo "$ac_t""libraries $xpm_libraries_result, headers $xpm_includes_result" 1>&6
+ 
+-LIBS="$LIBS $X_EXTRA_LIBS"
++LIBS="$LIBS $X_EXTRA_LIBS -lICE -lSM"
+ CFLAGS="$CFLAGS $X_CFLAGS"
+ CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+ LDFLAGS="$LDFLAGS $X_LIBS"
+--- wlib/about.c.orig	Tue Sep  1 22:49:44 1998
++++ wlib/about.c	Thu Mar  8 09:49:37 2001
+@@ -25,6 +25,7 @@
+ MU_ID("$Mu: wlib/about.c 1.33 1998/09/01 20:49:44 $")
+ 
+ #include <assert.h>
++#include <stdio.h>
+ #include <string.h>
+ #include <Xm/Text.h>
+ 
