@@ -84,9 +84,11 @@ sub add_user {
 	my $cmd  = "$basepath/sbin/useradd -c $comment -d $homedir -e 0";
 	   $cmd .= "-f 0 -g $group -s $shell -u $uid $user";
 
-	&execute($cmd);
+	if (&execute($cmd)) {
+        die "Can't create user '$user'\n";
+	}
 
-	return 1;
+	return 0;
 }
 
 ### Remove User
@@ -96,9 +98,11 @@ sub del_user {
 
 	my $cmd = "$basepath/sbin/userdel -r $user";
 
-	&execute($cmd);
+	if (&execute($cmd)) {
+        die "Can't remove user '$user'\n";
+	}
 
-	return 1;
+	return 0;
 }
 
 ### Create Group
@@ -110,9 +114,11 @@ sub add_group {
 
 	my $cmd = "$basepath/sbin/groupadd -g $gid $group";
 
-	&execute($cmd);
+	if (&execute($cmd)) {
+        die "Can't create group '$group'\n";
+	}
 
-	return 1;
+	return 0;
 }
 
 ### Remove Group
@@ -122,26 +128,29 @@ sub del_group {
 
 	my $cmd = "$basepath/sbin/groupdel $group";
 
-	&execute($cmd);
+	if (&execute($cmd)) {
+        die "Can't remove group '$group'\n";
+	}
 
-	return 1;
+	return 0;
 }
 
 ### Get uid or gid
 sub get_id {
 	my $self = shift;
 	my $type = shift;
+	my $name = shift;
 	my $id = 0;		### set to 0 so first value is false
 
 	### ask for uid or gid via type
-	while (! $self->is_id_free($type, $id) {
+	while (not $self->is_id_free($type, $id) {
 		$id = $self->get_next_avail($type);
 		if ($type == "group") {
-			$id = &prompt("".
-				"", $id);
+			$id = &prompt("Please enter a GID for $name ".
+			              "[$lowGID...$highGID] ", $id);
 		} else {
-			$id = &prompt("".
-				"", $id);
+			$id = &prompt("Please enter a UID for $name ".
+			              "[$lowUID...$highUID] ", $id);
 		}
 	}
 
@@ -153,16 +162,15 @@ sub is_id_free {
 	my $self = shift;
 	my $type = shift;
 	my $id = shift;
-	my ($group);
-	my ($user);
+	my ($name);
 
 	if ($type == "user") {
-		while ($user = User::pwent::getpwuid($id)) {
-			return 1 if not $user;
+		while ($name = User::pwent::getpwuid($id)) {
+			return 1 if not $name;
 		}
 	} else {
-		while ($group = User::grent::getgrgid($id)) {
-			return 1 if not $group;
+		while ($name = User::grent::getgrgid($id)) {
+			return 1 if not $name;
 		}
 	}
 
