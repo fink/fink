@@ -1,3 +1,7 @@
+2004-08-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: eval_conditional: do not proceed if bad syntax
+
 2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: more modularization, to allow inject.pl in 10.3 

@@ -951,8 +951,8 @@ sub get_path {
     my $bool = &eval_conditional($expr, $where);
 
 Evaluates the logical expression passed as a string in $expr and
-returns its logical value. If there is a parsing error, "true" is
-returned and a message (including $where) is printed. Two syntaxes are
+returns its logical value. If there is a parsing error, abort and
+print a message (including $where) is printed. Two syntaxes are
 supported:
 
 =over 4
@@ -978,7 +978,7 @@ characters). "True" indicates the string is non-null.
 
 =back
 
-Leading and trailing whitespace is ignored. The strings must not
+Leading and trailing whitespace is ignored. The strings themselves cannot
 contain whitespace or any of the op operators (no quoting, delimiting,
 or protection syntax is implemented).
 
@@ -1000,15 +1000,18 @@ sub eval_conditional {
 
 	if ($expr =~ /^\s*(\S+)\s*($compare_ops)\s*(\S+)\s*$/) {
 		# syntax 1: (string1 op string2)
-#		print "\t\ttesting '$1' '$2' '$3'\n";
+#		print "\t\ttesting syntax 1 '$1' '$2' '$3'\n";
 		return $compare_subs{$2}->($1,$3);
-	} elsif ($expr !~ /\s/) {
-		# syntax 2: (string): string must be non-null
-#		print "\t\ttesting '$expt'\n";
-		return length $expr > 0;
-	} else {
-		print "Error: Invalid conditional expression \"$expr\"\nin $where. Treating as true.\n";
+	} elsif ($expr =~ /^\s*\S+\s*$/) {
+		# syntax 2: (string): true if string is non-null
+#		print "\t\ttesting syntax 2 '$expr': non-null\n";
 		return 1;
+	} elsif ($expr =~ /^\s*$/ ) {
+		# syntax 2: (string): false if string is null
+#		print "\t\ttesting syntax 2 '$expr': null\n";
+		return 0;
+	} else {
+		die "Error: Invalid conditional expression \"$expr\"\nin $where.\n";
 	}
 }
 
