@@ -1,3 +1,7 @@
+2004-06-30  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: remove redundancy in perl version checking.
+
 2004-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.20.5, a release
