@@ -165,13 +165,6 @@ sub get_name {
 }
 
 sub get_version {
-  # return version or version-revision here ?
-
-  my $self = shift;
-  return $self->{_version};
-}
-
-sub get_onlyversion {
   my $self = shift;
   return $self->{_version};
 }
@@ -486,7 +479,7 @@ sub match_package {
     @vlist = $package->list_versions();
     @rlist = ();
     foreach $v (@vlist)  {
-      if ($package->get_version($v)->get_onlyversion() eq $version) {
+      if ($package->get_version($v)->get_version() eq $version) {
 	push @rlist, $v;
       }
     }
