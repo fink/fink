@@ -4,7 +4,7 @@ Revision: 2
 Maintainer: Dave Vasilevsky <vasi@users.sourceforge.net>
 License: BSD
 Essential: yes
-Source: mirror:sourceforge:%n550.tar.gz
+Source: mirror:sourceforge:fink/%n550.tar.gz
 Source-MD5: 798592d62e37f92571184236947122ed
 SourceDirectory: %n-%v
 DocFiles: BUGS INSTALL LICENSE README ToDo WHERE
