@@ -575,7 +575,7 @@ sub update_db {
 		print STDERR "done.\n";
 	};
 
-	$SIG{'INT'} = $oldsig;
+	$SIG{'INT'} = $oldsig if (defined $oldsig);
 	unlink($lockfile);
 
 	$db_outdated = 0;
