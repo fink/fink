@@ -1,3 +1,10 @@
+2001-08-08  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Status.pm: New module. Parses the dpkg status file to find the
+	installation status of packages.
+	* PkgVersion.pm: Use Fink::Status to get the installed status of
+	packages. Got rid of .../var/fink-stamp.
+
 2001-08-06  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Services.pm (read_properties): Fixed regular expressions to

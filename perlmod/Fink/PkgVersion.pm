@@ -26,6 +26,7 @@ use Fink::Services qw(&filename &expand_percent &expand_url &execute
                       &latest_version &print_breaking
                       &print_breaking_twoprefix &prompt_boolean);
 use Fink::Package;
+use Fink::Status;
 use Fink::Config qw($config $basepath $libpath $debarch);
 
 use strict;
@@ -388,16 +389,10 @@ sub is_present {
 sub is_installed {
   my $self = shift;
 
-  if (exists $self->{_installed}) {
-    return $self->{_installed};
+  if (Fink::Status->query_package($self->{_name}) eq $self->{_fullversion}) {
+    return 1;
   }
-
-  if (-e "$basepath/var/fink-stamp/".$self->get_fullname()) {
-    $self->{_installed} = 1;
-  } else {
-    $self->{_installed} = 0;
-  }
-  return $self->{_installed};
+  return 0;
 }
 
 ### source tarball finding
@@ -862,9 +857,7 @@ sub phase_install {
       $install_script .= "make install prefix=\%i";
     }
   }
-  $install_script .= "\nmkdir -p \%i/var/fink-stamp".
-    "\ntouch \%i/var/fink-stamp/\%f".
-    "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
+  $install_script .= "\nrm -f %i/info/dir %i/info/dir.old %i/share/info/dir %i/share/info/dir.old";
 
   $install_script = &expand_percent($install_script, $self->{_expand});
 
@@ -1072,18 +1065,10 @@ sub phase_activate {
     die "can't find package ".$self->get_debname()."\n";
   }
 
-  while(1) {
-    delete $self->{_installed};
-    if (&execute("dpkg -i $deb")) {
-      die "can't install package ".$self->get_fullname()."\n";
-    }
-    last if $self->is_installed();
-
-    $answer =
-      &prompt_boolean("WARNING: dpkg malfunction detected. Not all files ".
-		      "were extracted. Retry installing?");
-    last if not $answer;
+  if (&execute("dpkg -i $deb")) {
+    die "can't install package ".$self->get_fullname()."\n";
   }
+  Fink::Status->invalidate();
 }
 
 ### deactivate
@@ -1091,11 +1076,10 @@ sub phase_activate {
 sub phase_deactivate {
   my $self = shift;
 
-  delete $self->{_installed};
-
   if (&execute("dpkg --remove ".$self->get_name())) {
     die "can't remove package ".$self->get_fullname()."\n";
   }
+  Fink::Status->invalidate();
 }
 
 ### set environment variables according to spec
