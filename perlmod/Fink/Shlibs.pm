@@ -91,8 +91,8 @@ sub check_files {
         chomp();
         next if ("$_" =~ /\:/);                 # Nuke first line and errors
         $_ =~ s/\ \(.*$//;                      # Nuke the end
-        $_ =~ s/^[\s|\t]+//;
-        $_ =~ s/[\s|\t]+$//;
+        $_ =~ s/^\s*//;
+        $_ =~ s/\s*$//;
         ### This should drop any depends on it's self
         foreach $currentlib (@files) {
           if ($currentlib eq $_) {
@@ -299,8 +299,8 @@ sub scan {
         @lines = split(/\n/, $_);
         foreach $line (@lines) {
           chomp($line);
-          $line =~ s/^[\s|\t]+//;
-          $line =~ s/[\s|\t]+$//;
+          $line =~ s/^\s*//;
+          $line =~ s/\s*$//;
           if ($line =~ /^(.+) ([.0-9]+) (.*)$/) {
             $shlibname = $1;
             $compat = $2;
