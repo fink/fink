@@ -2,7 +2,7 @@ Package: bzip2
 Version: 1.0.2
 Revision: 2
 Essential: yes
-Depends: base-files, %N-shlibs (%v-%r)
+Depends: base-files, %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
 Maintainer: Max Horn <max@quendi.de>
 Source: mirror:sourceforge:fink/%n-%v.tar.gz

@@ -706,6 +706,7 @@ sub resolve_depends {
 	}
 
 	SPECLOOP: foreach $altspec (@speclist) {
+		next if ($altspec eq '${SHLIB_DEPS}');
 		$altlist = [];
 		foreach $depspec (split(/\s*\|\s*/, $altspec)) {
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
@@ -1539,7 +1540,7 @@ EOF
 	my $depline = $self->get_binary_depends();
 
 	if ($depline =~ /\$\{SHLIB_DEPS\}/) {
-		print "Writting Depends...\n";
+		print "Writing shared library dependencies...\n";
 
 		### 2) get a list to replace it with
 		my $shlibstr = "";
