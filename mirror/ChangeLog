@@ -1,3 +1,7 @@
+2002-12-29 Martin Costabel <costabel@wanadoo.fr>
+
+	* cpan: Updated cloud9 URLs (Bug #642355) 
+	
 2002-10-31 Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* kde: Removed unreachable and/or out-of-date KDE mirrors on...

@@ -212,7 +212,8 @@ nam-US: http://cpan.mirrorcentral.com/
 nam-US: ftp://ftp-mirror.internap.com/pub/CPAN/
 nam-US: http://ftp.sedl.org/pub/mirrors/CPAN/
 nam-US: ftp://ftp.cise.ufl.edu/pub/mirrors/CPAN/
-nam-US: ftp://mirrors.cloud9.net/pub/mirrors/CPAN/
+nam-US: http://mirrors.cloud9.net/CPAN/
+nam-US: ftp://mirrors.cloud9.net/pub/CPAN/
 nam-US: http://ftp.lug.udel.edu/pub/CPAN
 nam-US: ftp://ftp.lug.udel.edu/pub/CPAN
 nam-US: http://mirrors.gossamer-threads.com/CPAN
