@@ -8,7 +8,7 @@ previous version.
 Fast track instructions for the impatient are at the top.
 </p>
 <h2>Contents</h2><ul><li><a href="#install-fast"><b>The Fast Track</b></a></li><ul><li><a href="#install-fast.install">First Time Installation Fast
-Track</a></li></ul><li><a href="#install-first"><b>First Time Installation</b></a></li><ul><li><a href="#install-first.req">Requirements</a></li><li><a href="#install-first.directory">Choosing A Directory</a></li><li><a href="#install-first.install">Installation</a></li><li><a href="#install-first.x11">Getting X11 Sorted Out</a></li></ul><li><a href="#install-up02"><b>Upgrading From Fink 0.2.x</b></a></li><ul><li><a href="#install-up02.packman">Updating The Package Manager</a></li><li><a href="#install-up02.descriptions">Updating The Package Descriptions</a></li><li><a href="#install-up02.x11">Getting X11 Sorted Out</a></li><li><a href="#install-up02.update-all">Updating Packages</a></li><li><a href="#install-up02.other">Other Notes</a></li></ul><li><a href="#install-up01"><b>Upgrading From Fink 0.1.x</b></a></li><ul></ul></ul><a name="install-fast"><h2>The Fast Track</h2></a>
+Track</a></li><li><a href="#install-fast.update">Update Fast Track</a></li></ul><li><a href="#install-first"><b>First Time Installation</b></a></li><ul><li><a href="#install-first.req">Requirements</a></li><li><a href="#install-first.directory">Choosing A Directory</a></li><li><a href="#install-first.install">Installation</a></li><li><a href="#install-first.x11">Getting X11 Sorted Out</a></li></ul><li><a href="#install-up02"><b>Upgrading From Fink 0.2.x</b></a></li><ul><li><a href="#install-up02.packman">Updating The Package Manager</a></li><li><a href="#install-up02.descriptions">Updating The Package Descriptions</a></li><li><a href="#install-up02.x11">Getting X11 Sorted Out</a></li><li><a href="#install-up02.update-all">Updating Packages</a></li><li><a href="#install-up02.other">Other Notes</a></li></ul><li><a href="#install-up01"><b>Upgrading From Fink 0.1.x</b></a></li><ul></ul></ul><a name="install-fast"><h2>The Fast Track</h2></a>
 
 
 
@@ -22,6 +22,7 @@ don't know what they're actually doing.
 If you're looking for the real instructions, skip to the <a href="#install-first">next section</a>.
 (You can still use this section as an example.)
 </p>
+
 
 
 <a name="install-fast.install"><h3>First Time Installation Fast
@@ -111,6 +112,44 @@ You can also ask on the <a href="http://fink.sourceforge.net/lists/fink-users.ph
 mailing list</a>, but expect to be pointed back at the
 documentation when your problem actually is well-documented.
 </p>
+
+
+
+<a name="install-fast.update"><h3>Update Fast Track</h3></a>
+<p>
+Start out by copying the <tt><nobr>fink-0.2.4-full.tar.gz</nobr></tt> file to
+your home folder.
+Then, open Terminal.app and follow the session below.
+Computer output is in <tt><nobr>normal face</nobr></tt>, your input is in
+<tt><nobr><b>bold face</b></nobr></tt> (or otherwise highlighted).
+The actual input prompts from the shell may vary, and some chunks of
+the output have been omitted (<tt><nobr>...</nobr></tt>).
+</p>
+<pre>[frodo:~] testuser% <b>tar xzf fink-0.2.4-full.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.2.4-full</b>
+[frodo:~/fink-0.2.4-full] testuser% <b>./inject.pl /sw</b>
+sudo ./inject.pl /sw
+Password:<b>(your normal password here)</b>
+Copying package descriptions
+...
+Done.
+
+Your Fink installation in '/sw' was updated with new fink packages.
+
+[frodo:~/fink-0.2.4-full] testuser% <b>cd pkginfo</b>
+[frodo:~/fink-0.2.4-full/pkginfo] testuser% <b>./inject.pl /sw</b>
+sudo ./inject.pl /sw
+Copying...
+...
+
+Your Fink installation in '/sw' was updated with new package description
+files. Use appropriate fink commands to update the packages, e.g. 'fink
+update-all'.
+
+[frodo:~/fink-0.2.4-full/pkginfo] testuser% <b>cd</b>
+[frodo:~] testuser% <b>fink update-all</b>
+...</pre>
+
 
 
 <a name="install-first"><h2>First Time Installation</h2></a>
@@ -416,4 +455,4 @@ Reinstall the packages you need.
 </p></li>
 </ul>
 
-<p><hr>Generated from <i>$Fink: install.xml,v 1.4 2001/07/31 16:32:50 chrisp Exp $</i></p></body></html>
+<p><hr>Generated from <i>$Fink: install.xml,v 1.5 2001/08/01 05:38:04 chrisp Exp $</i></p></body></html>

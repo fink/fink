@@ -1,3 +1,7 @@
+2001-08-01  Christoph Pfisterer  <cp@chrisp.de>
+
+	* INSTALL, INSTALL.html: Added update fast track
+
 2001-07-31  Christoph Pfisterer  <cp@chrisp.de>
 
 	* inject.pl, bootstrap.pl: Include HTML documentation in

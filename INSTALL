@@ -1,4 +1,4 @@
-Generated from $Fink: install.xml,v 1.4 2001/07/31 16:32:50 chrisp Exp $
+Generated from $Fink: install.xml,v 1.5 2001/08/01 05:38:04 chrisp Exp $
 
  Fink 0.2.4 Installation
 =========================
@@ -101,6 +101,40 @@ to read through the rest of this document and the online FAQ
 mailing list [http://fink.sourceforge.net/lists/fink-users.php], but expect
 to be pointed back at the documentation when your problem actually is
 well-documented.
+
+
+ Update Fast Track
+-------------------
+Start out by copying the "fink-0.2.4-full.tar.gz" file to your home folder.
+Then, open Terminal.app and follow the session below. Computer output is in
+"normal face" , your input is in "_bold_face_" (or otherwise highlighted).
+The actual input prompts from the shell may vary, and some chunks of the
+output have been omitted ( "..." ).
+
+   [frodo:~] testuser% _tar_xzf_fink-0.2.4-full.tar.gz_
+   [frodo:~] testuser% _cd_fink-0.2.4-full_
+   [frodo:~/fink-0.2.4-full] testuser% _./inject.pl_/sw_
+   sudo ./inject.pl /sw
+   Password:_(your_normal_password_here)_
+   Copying package descriptions
+   ...
+   Done.
+   
+   Your Fink installation in '/sw' was updated with new fink packages.
+   
+   [frodo:~/fink-0.2.4-full] testuser% _cd_pkginfo_
+   [frodo:~/fink-0.2.4-full/pkginfo] testuser% _./inject.pl_/sw_
+   sudo ./inject.pl /sw
+   Copying...
+   ...
+   
+   Your Fink installation in '/sw' was updated with new package description
+   files. Use appropriate fink commands to update the packages, e.g. 'fink
+   update-all'.
+   
+   [frodo:~/fink-0.2.4-full/pkginfo] testuser% _cd_
+   [frodo:~] testuser% _fink_update-all_
+   ...
 
 
  First Time Installation
