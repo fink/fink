@@ -1,3 +1,8 @@
+2002-10-04  Max Horn  <max@quendi.de>
+
+	* gnu: Completly redid the gnu mirror list based on the current information
+	  from the GNU homepage (there were many bad entries in the old list).
+
 2002-09-19  Max Horn  <max@quendi.de>
 
 	* sourceforge: Added two new mirrors, switch (Swiss) and easynews (USA)
