@@ -1,3 +1,7 @@
+2004-10-15  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: conditional_pkg_list: Fix parsing so no extra whitespace.
+
 2004-10-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm: Warn users with the broken gcc, whenever they compile

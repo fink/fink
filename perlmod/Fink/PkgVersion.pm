@@ -320,11 +320,11 @@ sub conditional_pkg_list {
 	my $value = $self->param($field);
 	return unless defined $value and length $value;
 	return unless $value =~ /(?-:\A|,|\|)\s*\(/;  # short-cut if no conditionals
-#	print "conditional_pkg_list for ",$self->get_name,"\n";
-#	print "\toriginal: $value\n";
+#	print "conditional_pkg_list for ",$self->get_name,": $field\n";
+#	print "\toriginal: '$value'\n";
 	my @atoms = split /([,|])/, $value; # break apart the field
 	map {
-		if (s/^\s*\((.*?)\)(\s*.*)/$2/) {
+		if (s/^\s*\((.*?)\)\s*(.*)/$2/) {
 			# we have a conditional; remove the cond expression
 			my $cond = $1;
 #			print "\tfound conditional '$cond'\n";
@@ -334,17 +334,17 @@ sub conditional_pkg_list {
 	} @atoms;
 	$value = join "", @atoms; # reconstruct field
 	# if atoms were removed, we have consecutive [,|] chars; merge them
-#	print "\tnow have: $value\n";
+#	print "\tnow have: '$value'\n";
 	while ($value =~ s/,\s*,/,/g   or
 	       $value =~ s/,\s*\|/,/g  or
 	       $value =~ s/\|\s*,/,/g  or
 	       $value =~ s/\|\s*\|/|/g
 	      ) {};
-#	print "\tnow have: $value\n";
+#	print "\tnow have: '$value'\n";
 	# also any leading or trailing separator chars
 	$value =~ s/^\s*[,|]\s*//;
 	$value =~ s/\s*[,|]\s*$//;
-#	print "\tnow have: $value\n";
+#	print "\tnow have: '$value'\n";
 	$self->set_param($field, $value);
 	return;
 }
