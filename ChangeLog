@@ -1,3 +1,8 @@
+2005-02-05  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: Instead of decomposing and rebuilding cmdline, just
+	save original @ARGV
+
 2005-01-31  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* install.sh, fink.conf.5.in: add Fink::Notify modules to install

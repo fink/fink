@@ -1,5 +1,11 @@
 2005-02-05  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: first arg to process() is ref to original @ARGV not
+	scalar concat of canonical getopt flags. First restart_as_root arg
+	is no longer handled as specially-preprocessed text.
+
+2005-02-05  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Alphabetize and remove duplicates in output of show-deps.
 
 2005-02-03  Daniel Macks  <dmacks@netspace.org>
