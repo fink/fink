@@ -1,3 +1,8 @@
+2001-04-24  Christoph Pfisterer  <cp@chrisp.de>
+
+	* bootstrap.pl: Call inject.pl with -quiet to suppress some
+	misleading messages.
+
 2001-04-21  Christoph Pfisterer  <cp@chrisp.de>
 
 	* bootstrap.pl: Fixed package revision for CVS snapshots to use

@@ -328,7 +328,7 @@ if ($packageversion !~ /cvs/) {
 
 chdir $homebase;
 if (-d "pkginfo") {
-  if (&execute("cd pkginfo && ./inject.pl $installto")) {
+  if (&execute("cd pkginfo && ./inject.pl $installto -quiet")) {
     # inject failed
     print "\n";
     &print_breaking("Copying the package description tree failed. This ".
