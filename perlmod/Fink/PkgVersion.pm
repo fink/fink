@@ -12,7 +12,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -23,11 +23,11 @@
 package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute &execute_script
-                      &expand_percent &latest_version
-                      &print_breaking &print_breaking_twoprefix
-                      &prompt_boolean &prompt_selection
-                      &collapse_space &read_properties_var
-                      &file_MD5_checksum);
+		      &expand_percent &latest_version
+		      &print_breaking &print_breaking_twoprefix
+		      &prompt_boolean &prompt_selection
+		      &collapse_space &read_properties_var
+		      &file_MD5_checksum);
 use Fink::Config qw($config $basepath $libpath $debarch);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -44,14 +44,14 @@ BEGIN {
   use Exporter ();
   our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
   $VERSION = 1.00;
-  @ISA         = qw(Exporter Fink::Base);
+  @ISA	       = qw(Exporter Fink::Base);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw();  # eg: qw($Var1 %Hashit &func3);
-  %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
+  @EXPORT_OK   = qw();	# eg: qw($Var1 %Hashit &func3);
+  %EXPORT_TAGS = ( );	# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
-END { }       # module clean-up code here (global destructor)
+END { }	      # module clean-up code here (global destructor)
 
 
 ### self-initialization
@@ -75,7 +75,7 @@ sub initialize {
   # path handling
   if ($filename) {
     @parts = split(/\//, $filename);
-    pop @parts;   # remove filename
+    pop @parts;	  # remove filename
     $self->{_patchpath} = join("/", @parts);
     for ($finkinfo_index = $#parts;
 	 $finkinfo_index > 0 and $parts[$finkinfo_index] ne "finkinfo";
@@ -92,7 +92,7 @@ sub initialize {
       $section = "" if $section eq "main/";
       $section .= join("/", @parts[$finkinfo_index+1..$#parts])."/";
     }
-    $self->{_section} = substr($section,0,-1);   # cut last /
+    $self->{_section} = substr($section,0,-1);	 # cut last /
     $parts[$finkinfo_index] = "binary-$debarch";
     $self->{_debpath} = join("/", @parts);
     $self->{_debpaths} = [];
@@ -172,10 +172,10 @@ sub initialize {
     $parent = $self->{parent};
     
     if ($parent->has_param('maintainer')) {
-        $self->{'maintainer'} = $parent->{'maintainer'};
+	$self->{'maintainer'} = $parent->{'maintainer'};
     }
     if ($parent->has_param('homepage')) {
-        $self->{'homepage'} = $parent->{'homepage'};
+	$self->{'homepage'} = $parent->{'homepage'};
     }
     
     # handle inherited fields
@@ -185,7 +185,7 @@ sub initialize {
     foreach $field (@inherited_fields) {
       $field = lc $field;
       if (not $self->has_param($field) and $parent->has_param($field)) {
-          $self->{$field} = $parent->{$field};
+	  $self->{$field} = $parent->{$field};
       }
     }
   } else {
@@ -670,7 +670,7 @@ sub resolve_depends {
     $split_idx = @speclist;
     foreach  $splitoff (@{$self->{_splitoffs}}) {
       push @speclist,
-        split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
+	split(/\s*\,\s*/, $splitoff->param_default("Depends", ""));
     }
   }
 
@@ -694,7 +694,7 @@ sub resolve_depends {
 	# dependencies" of it, then we again filter out all splitoffs.
 	# If you've read till here without mental injuries, congrats :-)
 	next SPECLOOP if ($depname eq $self->{_name});
-	foreach  $splitoff (@{$self->{_splitoffs}}) {
+	foreach	 $splitoff (@{$self->{_splitoffs}}) {
 	   next SPECLOOP if ($depname eq $splitoff->get_name());
 	}
       }
@@ -817,7 +817,7 @@ sub match_package {
 
     @vlist = $package->list_versions();
     @rlist = ();
-    foreach $v (@vlist)  {
+    foreach $v (@vlist)	 {
       if ($package->get_version($v)->get_version() eq $version) {
 	push @rlist, $v;
       }
@@ -914,7 +914,7 @@ sub phase_unpack {
   }
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
-        " because no package description is available\n";
+	" because no package description is available\n";
   }
   if ($self->{_type} eq "splitoff") {
     ($self->{parent})->phase_unpack();
@@ -963,10 +963,10 @@ sub phase_unpack {
     if ($checksum ne "-") {  # Checksum was specified
       # compare to the MD5 checksum of the tarball
       if ($checksum ne &file_MD5_checksum($found_archive)) {
-        # mismatch, ask user what to do
+	# mismatch, ask user what to do
 	$tries++;
-  	
-  	&print_breaking("The checksum of the tarball $archive of package ".
+	
+	&print_breaking("The checksum of the tarball $archive of package ".
 			$self->get_fullname()." is incorrect. The most likely ".
 			"cause for this is a corrupted or incomplete ".
 			"download. It is recommended that you download it ".
@@ -981,7 +981,7 @@ sub phase_unpack {
 	if ($answer eq "redownload") {
 	  &execute("rm -f $found_archive");
 	  $i--;
-	  next;   # restart loop with same tarball
+	  next;	  # restart loop with same tarball
 	} elsif($answer eq "error") {
 	  die "checksum of tarball $archive of package ".$self->get_fullname()." incorrect\n";
 	}
@@ -1002,12 +1002,12 @@ sub phase_unpack {
     if ($self->has_param($renamefield)) {
       @renamefiles = split(/\s+/, $self->param($renamefield));
       foreach $renamefile (@renamefiles) {
-        $renamefile = &expand_percent($renamefile, $expand);
-        if ($renamefile =~ /^(.+)\:(.+)$/) {
-          $renamelist .= " -s ,$1,$2,";
-        } else {
-          $renamelist .= " -s ,${renamefile},${renamefile}_tmp,";
-        }
+	$renamefile = &expand_percent($renamefile, $expand);
+	if ($renamefile =~ /^(.+)\:(.+)$/) {
+	  $renamelist .= " -s ,$1,$2,";
+	} else {
+	  $renamelist .= " -s ,${renamefile},${renamefile}_tmp,";
+	}
       }
       $tar = "/usr/bin/tar"; # Use BSD Tar not GNU Tar (only BSD Tar has the rename feature)
     } elsif ( -e "$basepath/bin/tar" ) {
@@ -1058,7 +1058,7 @@ sub phase_unpack {
       if ($answer) {
 	&execute("rm -f $found_archive");
 	$i--;
-	next;   # restart loop with same tarball
+	next;	# restart loop with same tarball
       } else {
 	die "unpacking tarball $archive of package ".$self->get_fullname()." failed\n";
       }
@@ -1079,7 +1079,7 @@ sub phase_patch {
   }
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
-        " because no package description is available\n";
+	" because no package description is available\n";
   }
   if ($self->{_type} eq "splitoff") {
     ($self->{parent})->phase_patch();
@@ -1122,7 +1122,7 @@ sub phase_patch {
       next unless $subdir;
       $patch_script .=
 	"cp -f $libpath/update/ltconfig $subdir\n".
-        "cp -f $libpath/update/ltmain.sh $subdir\n";
+	"cp -f $libpath/update/ltmain.sh $subdir\n";
     }
   }
 
@@ -1165,7 +1165,7 @@ sub phase_compile {
   }
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
-        " because no package description is available\n";
+	" because no package description is available\n";
   }
   if ($self->{_type} eq "splitoff") {
     ($self->{parent})->phase_compile();
@@ -1206,7 +1206,7 @@ sub phase_install {
 
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
-        " because no package description is available\n";
+	" because no package description is available\n";
   }
   if ($self->{_type} eq "splitoff" and not $do_splitoff) {
     ($self->{parent})->phase_install();
@@ -1246,16 +1246,16 @@ sub phase_install {
       $self->run_script($self->param("InstallScript"), "installing");
     } elsif ($self->param("_type") eq "perl") {
       $install_script .= 
-        "make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5 INSTALLARCHLIB=\%i/lib/perl5/darwin INSTALLSITELIB=\%i/lib/perl5 INSTALLSITEARCH=\%i/lib/perl5/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
+	"make install PREFIX=\%i INSTALLPRIVLIB=\%i/lib/perl5 INSTALLARCHLIB=\%i/lib/perl5/darwin INSTALLSITELIB=\%i/lib/perl5 INSTALLSITEARCH=\%i/lib/perl5/darwin INSTALLMAN1DIR=\%i/share/man/man1 INSTALLMAN3DIR=\%i/share/man/man3\n";
     } elsif (not $do_splitoff) {
       $install_script .= "make install prefix=\%i\n";
     } 
 
     if ($self->param_boolean("UpdatePOD")) { 
       $install_script .= 
-        "mkdir -p \%i/share/podfiles/\n".
-        "cat \%i/lib/perl5/darwin/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles/perllocal.\%n.pod\n".
-        "rm -rf \%i/lib/perl5/darwin/perllocal.pod\n";
+	"mkdir -p \%i/share/podfiles/\n".
+	"cat \%i/lib/perl5/darwin/perllocal.pod | sed -e s,\%i/lib/perl5,\%p/lib/perl5, > \%i/share/podfiles/perllocal.\%n.pod\n".
+	"rm -rf \%i/lib/perl5/darwin/perllocal.pod\n";
     }
   }
 
@@ -1268,13 +1268,13 @@ sub phase_install {
       if ($file =~ /^(.+)\:(.+)$/) {
 	$install_script .= "\nmv %I/$1 %i/$2";
       } else {
-        $target = dirname($file);
-        if ($target ne ".") {
-          $target = "%i/$target";
-          $install_script .= "\ninstall -d -m 755 $target";
-        } else {
-          $target = "%i";
-        }
+	$target = dirname($file);
+	if ($target ne ".") {
+	  $target = "%i/$target";
+	  $install_script .= "\ninstall -d -m 755 $target";
+	} else {
+	  $target = "%i";
+	}
 	$install_script .= "\nmv %I/$file $target";
       }
     }
@@ -1313,8 +1313,8 @@ sub phase_install {
     if(scalar keys %$properties > 0){
       $install_script .= "\ninstall -d -m 755 %i/etc/profile.d";
       while (($var, $value) = each %$properties) {
-        $install_script .= "\necho \"setenv $var '$value'\" >> %i/etc/profile.d/%n.csh.env";
-        $install_script .= "\necho \"export $var='$value'\" >> %i/etc/profile.d/%n.sh.env";
+	$install_script .= "\necho \"setenv $var '$value'\" >> %i/etc/profile.d/%n.csh.env";
+	$install_script .= "\necho \"export $var='$value'\" >> %i/etc/profile.d/%n.sh.env";
       }
       # make sure the scripts exist
       $install_script .= "\ntouch %i/etc/profile.d/%n.csh";
@@ -1369,10 +1369,10 @@ sub phase_install {
     chdir "$basepath/src";
     if (not $config->param_boolean("KeepBuildDir") and -e $bdir) {
       if (&execute("rm -rf $bdir")) {
-        &print_breaking("WARNING: Can't remove build directory $bdir. ".
-                        "This is not fatal, but you may want to remove ".
-                        "the directory manually to save disk space. ".
-                        "Continuing with normal procedure.");
+	&print_breaking("WARNING: Can't remove build directory $bdir. ".
+			"This is not fatal, but you may want to remove ".
+			"the directory manually to save disk space. ".
+			"Continuing with normal procedure.");
       }
     }
   }
@@ -1391,7 +1391,7 @@ sub phase_build {
 
   if ($self->{_type} eq "dummy") {
     die "can't build ".$self->get_fullname().
-        " because no package description is available\n";
+	" because no package description is available\n";
   }
   if ($self->{_type} eq "splitoff" and not $do_splitoff) {
     ($self->{parent})->phase_build();
@@ -1425,8 +1425,8 @@ EOF
   # FIXME: make sure there are no linebreaks in the following fields
   $control .= "Depends: ".$self->get_binary_depends()."\n";
   foreach $field (qw(Provides Replaces Conflicts Pre-Depends
-                     Recommends Suggests Enhances
-                     Maintainer)) {
+		     Recommends Suggests Enhances
+		     Maintainer)) {
     if ($self->has_param($field)) {
       $control .= "$field: ".&collapse_space($self->param($field))."\n";
     }
@@ -1454,40 +1454,40 @@ EOF
     # add UpdatePOD Code
     if ($self->param_boolean("UpdatePOD")) {
       if ($scriptname eq "postinst") {
-        $scriptbody .=
-          "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n".
-          "mkdir -p \%p/lib/perl5/darwin\n".
-          "cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\n";
+	$scriptbody .=
+	  "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n".
+	  "mkdir -p \%p/lib/perl5/darwin\n".
+	  "cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\n";
       } elsif ($scriptname eq "postrm") {
-        $scriptbody .=
-          "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n\n".
-          "###\n".
-          "### check to see if any .pod files exist in \%p/share/podfiles.\n".
-          "###\n\n".
-          "perl <<'END_PERL'\n\n".
-          "if (-e \"\%p/share/podfiles\") {\n".
-          "  \@files = <\%p/share/podfiles/*.pod>;\n".
-          "  if (\$#files >= 0) {\n".
-          "    exec \"cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\";\n".
-          "  }\n".
-          "}\n\n".
-          "END_PERL\n";
+	$scriptbody .=
+	  "\n\n# Updating \%p/lib/perl5/darwin/perllocal.pod\n\n".
+	  "###\n".
+	  "### check to see if any .pod files exist in \%p/share/podfiles.\n".
+	  "###\n\n".
+	  "perl <<'END_PERL'\n\n".
+	  "if (-e \"\%p/share/podfiles\") {\n".
+	  "  \@files = <\%p/share/podfiles/*.pod>;\n".
+	  "  if (\$#files >= 0) {\n".
+	  "    exec \"cat \%p/share/podfiles/*.pod > \%p/lib/perl5/darwin/perllocal.pod\";\n".
+	  "  }\n".
+	  "}\n\n".
+	  "END_PERL\n";
       } 
     }
 
     # add JarFiles Code
     if ($self->has_param("JarFiles")) {
       if (($scriptname eq "postinst") || ($scriptname eq "postrm")) {
-        $scriptbody.=
-            "\nmkdir -p %p/share/java".
-            "\njars=`find %p/share/java -name '*.jar'`".
-            "\n".'if (test -n "$jars")'.
-            "\nthen".
-            "\n".'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'.
-            "\nelse".
-            "\nrm -f %p/share/java/classpath".
-            "\nfi".
-            "\nunset jars";
+	$scriptbody.=
+	    "\nmkdir -p %p/share/java".
+	    "\njars=`find %p/share/java -name '*.jar'`".
+	    "\n".'if (test -n "$jars")'.
+	    "\nthen".
+	    "\n".'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'.
+	    "\nelse".
+	    "\nrm -f %p/share/java/classpath".
+	    "\nfi".
+	    "\nunset jars";
       }
     }
 
