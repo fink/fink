@@ -26,8 +26,15 @@ my $result;
 
 Fink::Config::set_options( {'build_as_nobody' => 0} );
 eval { $result = &execute("touch $tmpdir/f1 >/dev/null 2>&1", nonroot_okay=>1) };
-like("$result: $@", qr/^0: /, 'requires normal user; build_as_nobody disabled');
+like("$result: $@", qr/^0: /, 'disabling build_as_nobody causes normal execution');
 
+Fink::Config::set_options( {'build_as_nobody' => 1} );
+eval { $result = &execute("touch $tmpdir/f3 >/dev/null 2>&1") };
+like("$result: $@", qr/^0: /, 'omitting nonroot_okay option causes normal execution');
+
+Fink::Config::set_options( {'build_as_nobody' => 1} );
+eval { $result = &execute("touch $tmpdir/f3 >/dev/null 2>&1", nonroot_okay=>0) };
+like("$result: $@", qr/^0: /, 'false nonroot_okay option causes normal execution');
 
 Fink::Config::set_options( {'build_as_nobody' => 1} );
 eval { $result = &execute("touch $tmpdir/f2 >/dev/null 2>&1", nonroot_okay=>1) };
@@ -39,15 +46,3 @@ SKIP: {
     skip "You must be root for this test", 1 if $> != 0;
     unlike("$result: $@", qr/^0: /, 'requires normal user but build_as_nobody enabled');
 }
-
-Fink::Config::set_options( {'build_as_nobody' => 1} );
-$result = &execute("touch $tmpdir/f3 >/dev/null 2>&1");
-isnt($result, 'option nonroot_okay is omitted causes normal execution');
-
-Fink::Config::set_options( {'build_as_nobody' => 1} );
-$result = &execute("touch $tmpdir/f3 >/dev/null 2>&1", nonroot_okay=>0);
-isnt($result, 'option nonroot_okay is false causes normal execution');
-
-Fink::Config::set_options( {'build_as_nobody' => 0} );
-$result = &execute("touch $tmpdir/f4 >/dev/null 2>&1", nonroot_okay=>1);
-isnt($result, 'build_as_nobody is disabled causes normal execution');
