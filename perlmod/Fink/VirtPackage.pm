@@ -304,12 +304,12 @@ sub initialize {
 	}
 
 	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
-	   $hash = {};
-	   $hash->{package} = "gimp-print-shlibs";
-	   $hash->{status} = "install ok installed";
-	   $hash->{version} = "4.2.5-1";
-	   $hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
-       $self->{$hash->{package}} = $hash;
+		$hash = {};
+		$hash->{package} = "gimp-print-shlibs";
+		$hash->{status} = "install ok installed";
+		$hash->{version} = "4.2.5-1";
+		$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
+		$self->{$hash->{package}} = $hash;
 	}
 	
 	if ( has_lib('libX11.6.dylib') )
@@ -372,33 +372,24 @@ sub initialize {
 					print STDERR "  - system-xfree86-dev provides libgl-dev\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-dev'}}, 'libgl-dev');
 				}
-				if ( has_lib('libXft.dylib') and
-						defined readlink('/usr/X11R6/lib/libXft.dylib') and
-						readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
-						has_header('X11/Xft/Xft.h') ) {
-					print STDERR "  - libXft points to Xft1\n" if ($options{debug});
-					print STDERR "    - system-xfree86-dev provides xft1-dev\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86-dev'}}, 'xft1-dev');
-					print STDERR "    - system-xfree86 provides xft1\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86'}}, 'xft1');
+				if ( has_lib('libXft.dylib') ) {
+					if ( defined readlink('/usr/X11R6/lib/libXft.dylib') ) {
+						my $link = readlink('/usr/X11R6/lib/libXft.dylib');
+						if ($link =~ /libXft\.(\d)/) {
+							my $major_version = $1;
+							print STDERR "  - libXft points to Xft${major_version}\n" if ($options{debug});
+							print STDERR "    - system-xfree86-dev provides xft${major_version}-dev\n" if ($options{debug});
+							push(@{$provides->{'system-xfree86-dev'}}, "xft${major_version}-dev");
+							print STDERR "    - system-xfree86 provides xft${major_version}\n" if ($options{debug});
+							push(@{$provides->{'system-xfree86'}}, "xft${major_version}");
+						}
+					}
 				}
-				if ( has_lib('libXft.1.dylib') ) {
-					print STDERR "  - system-xfree86-shlibs provides xft1-shlibs\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86-shlibs'}}, 'xft1-shlibs');
-				}
-				if ( has_lib('libXft.dylib') and
-						defined readlink('/usr/X11R6/lib/libXft.dylib') and
-						readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
-						has_header('X11/Xft/Xft.h') ) {
-					print STDERR "  - libXft points to Xft2\n" if ($options{debug});
-					print STDERR "    - system-xfree86-dev provides xft2-dev\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86-dev'}}, 'xft2-dev');
-					print STDERR "    - system-xfree86 provides xft2\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86'}}, 'xft2');
-				}
-				if ( has_lib('libXft.2.dylib') ) {
-					print STDERR "  - system-xfree86-shlibs provides xft2-shlibs\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86-shlibs'}}, 'xft2-shlibs');
+				for my $ver (1, 2) {
+					if ( has_lib("libXft.${ver}.dylib") ) {
+						print STDERR "  - system-xfree86-shlibs provides xft${ver}-shlibs\n" if ($options{debug});
+						push(@{$provides->{'system-xfree86-shlibs'}}, "xft${ver}-shlibs");
+					}
 				}
 				if ( has_lib('libfontconfig.dylib') and
 						defined readlink('/usr/X11R6/lib/libfontconfig.dylib') and

@@ -1,5 +1,9 @@
 2004-06-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* VirtPackage.pm: Just a little rearranging to make things easier.
+
+2004-06-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* Engine.pm, Package.pm, Package/Mini.pm: Create a mini package index
 	used (currently) only for 'fink list' operations.
 
