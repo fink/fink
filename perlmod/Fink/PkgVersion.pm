@@ -636,19 +636,20 @@ sub get_info_filename {
 
 # get_source_suffices
 #
-# Returns an ordered list of all "N"s used in SourceN fields.
+# Returns an ordered list of all "N"s for which there are non-"none" SourceN
 # Note that the primary source will always be at the front.
 sub get_source_suffices {
 	my $self = shift;
 
 	# Cache it
 	if (!exists $self->{_source_suffices}) {
-		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') || exists $self->{parent} ) {
+		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') || exists $self->{parent} || ( defined $self->param("Source") && lc $self->param("Source") eq 'none' ) ) {
 			$self->{_source_suffices} = [];
 		} else {
 			my @params = $self->params_matching('source([2-9]|[1-9]\d+)');
 			map { s/^source//i } @params;
 			@params = sort { $a <=> $b } @params;
+			@params = grep { defined $self->param("Source$_") && lc $self->param("Source$_") ne 'none' } @params;
 			unshift @params, "";
 			$self->{_source_suffices} = \@params;
 		}
@@ -703,7 +704,7 @@ sub get_tarball {
 #
 # Returns the checksum of the source tarball for a given SourceN suffix.
 # If no suffix is given, returns the primary source tarball's checksum.
-# On error (eg: checksum for the requested suffix) returns undef.
+# On error (eg: no checksum for the requested suffix) returns undef.
 sub get_checksum {
 	my $self = shift;
 	my $suffix = shift || "";

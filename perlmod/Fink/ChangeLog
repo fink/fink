@@ -1,5 +1,11 @@
 2004-07-14  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: get_source_suffices now omits suffices for which
+	value=none.
+	* Engine.pm: fix dumpinfo for new get_source_suffices behavior.
+
+2004-07-14  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Change get_checksum to return undef (instead of
 	"-") if MD5 for requested suffix is not defined.
 	* Services.pm: Make file_MD5_checksum die if checksum pipe

@@ -1819,14 +1819,13 @@ EOF
 			} elsif ($_ eq 'sources') {
 				# multiline field, so indent 1 space always
 				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;
-				@suffixes = grep { $_ ne "none" } @suffixes;
 				if (@suffixes) {
 					print "$_:\n";
 					print map { " $_\n" } @suffixes;
 				}
 			} elsif ($_ =~ /^source(\d*)$/) {
 				my $src = $pkg->get_source($1);
-				printf "%s: %s\n", $_, $src if $src ne "none";
+				printf "%s: %s\n", $_, $src if defined $src && $src ne "none";
 			} elsif ($_ eq 'gcc' or $_ eq 'epoch' or $_ =~ /^source\d*-md5$/) {
 				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
 			} elsif ($_ eq 'configureparams') {
