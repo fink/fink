@@ -29,7 +29,7 @@ use Fink::Services qw(&filename &execute &execute_script
 					  &pkglist2lol &lol2pkglist
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
-					  &get_path &eval_conditional);
+					  &get_path &eval_conditional &growl);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -2575,9 +2575,18 @@ sub phase_activate {
 	my @deb_installable = map { $_->find_debfile() } @installable;
 	if (&execute("dpkg -i @deb_installable")) {
 		if (@installable == 1) {
+			growl('finkPackageInstallationFailed', 'Fink installation failed.', "can't install package ".$installable[0]->get_fullname());
 			die "can't install package ".$installable[0]->get_fullname()."\n";
 		} else {
+			growl('finkPackageInstallationFailed', 'Fink installation of ' . int(@installable) . ' packages failed.',
+				"can't batch-install packages: @deb_installable");
 			die "can't batch-install packages: @deb_installable\n";
+		}
+	} else {
+		if (@installable == 1) {
+			growl('finkPackageInstallationPassed', 'Fink installation passed.', "installed " . $installable[0]->get_fullname());
+		} else {
+			growl('finkPackageInstallationPassed', 'Fink installation of ' . int(@installable) . ' packages passed.', "batch-installed packages: @deb_installable");
 		}
 	}
 
@@ -2591,11 +2600,22 @@ sub phase_deactivate {
 
 	if (&execute("dpkg --remove @packages")) {
 		if (@packages == 1) {
+			growl('finkPackageRemovalFailed', 'Fink removal failed.', "can't remove package ".$packages[0]);
 			die "can't remove package ".$packages[0]."\n";
 		} else {
+			growl('finkPackageRemovalFailed', 'Fink removal of ' . int(@packages) . ' packages failed.',
+				"can't batch-remove packages: @packages");
 			die "can't batch-remove packages: @packages\n";
 		}
+	} else {
+		if (@packages == 1) {
+			growl('finkPackageRemovalPassed', 'Fink removal passed.', "removed " . $packages[0]);
+		} else {
+			growl('finkPackageRemovalPassed', 'Fink removal of ' . int(@packages) . ' packages passed.',
+				"batch-removed packages: @packages");
+		}
 	}
+
 	Fink::Status->invalidate();
 }
 

@@ -46,7 +46,8 @@ BEGIN {
 					  &pkglist2lol &lol2pkglist
 					  &file_MD5_checksum &get_arch &get_sw_vers
 					  &get_system_perl_version &get_path
-					  &eval_conditional &count_files);
+					  &eval_conditional &count_files
+					  &growl);
 }
 our @EXPORT_OK;
 
@@ -1106,6 +1107,65 @@ sub eval_conditional {
 	} else {
 		die "Error: Invalid conditional expression \"$expr\"\nin $where.\n";
 	}
+}
+
+
+=item growl
+
+    growl($notificationName, $notificationTitle, $notificationDescription);
+
+Notifies the system that $notificationName event occurred, if Growl is
+installed.
+
+Currently available notifications used by fink are:
+
+=over 4
+
+=item packageInstallationPassed
+
+One or more packages was successfully installed.
+
+=item packageInstallationFailed
+
+One or more packages failed to install.
+
+=item packageRemovalPassed
+
+One or more packages was successfully removed.
+
+=item packageRemovalFailed
+
+One or more packages failed to be removed.
+
+=back
+
+=cut
+
+sub growl {
+	eval {
+		require Mac::Growl;
+	};
+	return undef if ($@);
+	my ($notificationName, $notificationTitle, $notificationDescription) = @_;
+
+	my @events = qw(
+		finkPackageInstallationPassed
+		finkPackageInstallationFailed
+		finkPackageRemovalPassed
+		finkPackageRemovalFailed
+	);
+
+	unless (grep(/^${notificationName}$/, @events)) {
+		warn "unknown notification $notificationName\n";
+		return undef;
+	}
+
+	eval {
+		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
+		Mac::Growl::PostNotification("Fink", $notificationName, $notificationTitle, $notificationDescription);
+	};
+
+	return 1;
 }
 
 =back
