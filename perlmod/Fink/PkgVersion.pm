@@ -2600,6 +2600,24 @@ END
 			$ENV{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
+
+	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
+		if ($self->is_type('java')) {
+			my ($subtype, $dir, $found);
+			if ($subtype = $self->get_subtype('java')) {
+				if (opendir(DIR, '/System/Library/Frameworks/JavaVM.framework/Versions')) {
+					for $dir (sort(readdir(DIR))) {
+						if ($dir =~ /^${subtype}/ and -f '/System/Library/Frameworks/JavaVM.framework/Versions/' . $dir . '/Headers/jni.h') {
+							$ENV{'JAVA_HOME'} = '/System/Library/Frameworks/JavaVM.framework/Versions/' . $dir . '/Home' unless $self->has_param('SetJAVA_HOME');
+							$ENV{'PATH'} = '/System/Library/Frameworks/JavaVM.framework/Versions/' . $dir . '/Home/bin:' . $ENV{'PATH'} unless $self->has_param('SetPATH');
+							$found++;
+						}
+					}
+					closedir(DIR);
+				}
+			}
+		}
+	}
 }
 
 ### run script
