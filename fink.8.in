@@ -154,7 +154,7 @@ list all packages that start with 'gnome'.
 The quotes in the last example are necessary to stop the shell from
 interpreting the pattern itself.
 .Pp
-.It Cm fink apropos Ar package...
+.It Cm apropos Ar package...
 This command behaves similarly to
 .Cm fink list
 except that
