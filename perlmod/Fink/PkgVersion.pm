@@ -1015,6 +1015,7 @@ sub get_shortdescription {
 	my ($desc);
 
 	if ($self->has_param("Description")) {
+		# "Description" was %-expanded when the PkgVersion object was created
 		$desc = &format_oneline($self->param("Description"), $limit);
 	} else {
 		$desc = "[Package ".$self->get_name()." version ".$self->get_fullversion()."]";
@@ -1027,23 +1028,17 @@ sub get_shortdescription {
 sub get_description {
 	my $self = shift;
 	my $style = shift || 0;
-	my ($desc, $s);
 
-	if ($self->has_param("Description")) {
-		$desc = &format_oneline($self->param("Description"), 75);
-	} else {
-		$desc = "[Package ".$self->get_name()." version ".$self->get_fullversion()."]";
-	}
-	$desc .= "\n";
+	my $desc = $self->get_shortdescription(75);  # "Description" (already %-exp)
 
 	if ($self->has_param("DescDetail")) {
-		$desc .= &format_description($self->param("DescDetail"));
+		$desc .= &format_description($self->param_expanded("DescDetail"));
 	}
 
 	if ($style != 1) {
 		if ($self->has_param("DescUsage")) {
 			$desc .= " .\n Usage Notes:\n";
-			$desc .= &format_description($self->param("DescUsage"));
+			$desc .= &format_description($self->param_expanded("DescUsage"));
 		}
 
 		if ($self->has_param("Homepage")) {

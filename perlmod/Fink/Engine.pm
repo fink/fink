@@ -2091,10 +2091,14 @@ EOF
 				}
 			} elsif ($_ eq 'description') {
 				printf "%s: %s\n", $_, $pkg->get_shortdescription;
-			} elsif ($_ =~ /^desc(detail|usage|packaging|port)$/) {
+			} elsif ($_ =~ /^desc(packaging|port)$/) {
 				# multiline field, so indent 1 space always
 				# format_description does that for us
 				print "$_:\n", Fink::PkgVersion::format_description($pkg->param($_)) if $pkg->has_param($_);
+			} elsif ($_ =~ /^desc(detail|usage)$/) {
+				# multiline field, so indent 1 space always
+				# format_description does that for us
+				print "$_:\n", Fink::PkgVersion::format_description($pkg->param_expanded($_)) if $pkg->has_param($_);
 			} elsif ($_ eq 'type'       or $_ eq 'license' or
 					 $_ eq 'maintainer' or $_ eq 'homepage'
 					) {
