@@ -1,3 +1,7 @@
+2003-03-11  Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.12.1
+
 2003-03-07  Ben Hines <benh57@users.sourceforge.net>
 
 	* AUTHORS: Add some more contributors.
