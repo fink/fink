@@ -56,7 +56,7 @@ sub do_notify {
 	my %args  = @_;
 	my $image = $basepath . '/share/fink/images/' . $args{'event'} . '.png';
 
-	$image = undef unless (-f $basepath . '/share/fink/images/' . $args{'event'} . '.png');
+	$image = undef unless (-r $basepath . '/share/fink/images/' . $args{'event'} . '.png');
 
 	eval {
 		if (defined $image) {

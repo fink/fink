@@ -42,7 +42,7 @@ sub new {
 	my $self = bless({}, $class);
 	my @events = $self->events();
 
-	return undef unless (-f '/usr/bin/osascript');
+	return undef unless (-x '/usr/bin/osascript');
 
 	return $self;
 }

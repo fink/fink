@@ -42,7 +42,7 @@ sub new {
 	my $self = bless({}, $class);
 	my @events = $self->events();
 
-	return undef unless (-f '/usr/bin/logger');
+	return undef unless (-x '/usr/bin/logger');
 
 	return $self;
 }
