@@ -4,7 +4,7 @@
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
 #
-# This program is free software; you can redistribute it and/or
+# This proram is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
@@ -21,8 +21,9 @@
 
 package Fink::Config;
 use Fink::Base;
-
 use Fink::Services;
+
+use POSIX qw(uname);
 
 use strict;
 use warnings;
@@ -33,13 +34,13 @@ BEGIN {
   $VERSION = 1.00;
   @ISA         = qw(Exporter Fink::Base);
   @EXPORT      = qw();
-  @EXPORT_OK   = qw($config $basepath $libpath $debarch
+  @EXPORT_OK   = qw($config $basepath $libpath $debarch $darwin_version $macosx_version
                     &get_option &set_options);
   %EXPORT_TAGS = ( );   # eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
 
-our ($config, $basepath, $libpath, $debarch);
+our ($config, $basepath, $libpath, $debarch, $darwin_version, $macosx_version);
 $debarch = "darwin-powerpc";
 
 my %globals = ();
@@ -77,6 +78,7 @@ sub new_with_path {
 
 sub initialize {
   my $self = shift;
+  my ($dummy);
 
   $self->SUPER::initialize();
 
@@ -87,6 +89,19 @@ sub initialize {
   $libpath = "$basepath/lib/fink";
 
   $self->{_queue} = [];
+
+  # determine the kernel version
+  ($dummy,$dummy,$darwin_version) = uname();
+
+  # Now the Mac OS X version
+  $dummy = open(SW_VERS, "sw_vers |") or die "Couldn't determine system version: $!\n";
+  while (<SW_VERS>) {
+    chomp;
+    if (/(ProductVersion\:)\s*([^\s]*)/) {
+      $macosx_version = $2;
+      last;
+    }
+  }
 }
 
 

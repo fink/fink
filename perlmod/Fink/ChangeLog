@@ -1,3 +1,11 @@
+2001-12-27  Max Horn  <max@quendi.de>
+
+	* Config.pm: Added $darwin_version and $macosx_version, reflecting
+	the kernel/system versions.
+
+	* Status.pm (initialize): Added pseudo packages 'darwin' and 'macosx'
+	which can be used for dependencies on specific kernel/system versions.
+
 2001-12-23  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm (phase_install): Fixed bug occuring when removing the

@@ -21,7 +21,7 @@
 
 package Fink::Status;
 
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $darwin_version $macosx_version);
 
 use strict;
 use warnings;
@@ -61,6 +61,23 @@ sub new {
 
 sub initialize {
   my $self = shift;
+  my ($hash);
+
+  # create dummy object for kernel version
+  $hash = {};
+  $hash->{package} = "darwin";
+  $hash->{status} = "install ok installed";
+  $hash->{version} = $darwin_version."-1";
+  $hash->{description} = "[virtual package representing the kernel]";
+  $self->{$hash->{package}} = $hash;
+  
+  # create dummy object for system version
+  $hash = {};
+  $hash->{package} = "macosx";
+  $hash->{status} = "install ok installed";
+  $hash->{version} = $macosx_version."-1";
+  $hash->{description} = "[virtual package representing the system]";
+  $self->{$hash->{package}} = $hash;
 
   $self->read();
 }
