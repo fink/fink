@@ -1,5 +1,11 @@
 2004-03-23  Daniel Macks  <dmacks@netspace.org>
 
+	* Package.pm: always expand_percent invariant portion of Package.
+	* PkgVersion.pm: %in is invariant portion of Package, %IN is
+	invariant portion of parent Package; %n reverted to whole Package.
+
+2004-03-23  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: get_custom_mirror() now takes $suffix param.
 
 2004-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>

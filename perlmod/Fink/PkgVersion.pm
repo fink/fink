@@ -65,7 +65,7 @@ sub initialize {
 	my $self = shift;
 	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type_hash);
 	my ($depspec, $deplist, $dep, $expand, $configure_params, $destdir);
-	my ($parentpkgname, $parentdestdir);
+	my ($parentpkgname, $parentdestdir, $parentinvname);
 	my ($i, $path, @parts, $finkinfo_index, $section);
 	my $arch = get_arch();
 
@@ -144,14 +144,16 @@ sub initialize {
 		my $parent = $self->{parent};
 		$parentpkgname = $parent->{_name};
 		$parentdestdir = "$buildpath/root-".$parent->{_fullname};
+		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
 	} else {
 		$parentpkgname = $pkgname;
 		$parentdestdir = $destdir;
+		$parentinvname = $self->param_default("package_invariant", $pkgname);
 		$self->{_splitoffs} = [];
 	}
 
-	$expand = { 'n' => $self->param_default("package_invariant", $pkgname),
-				'Vn'=> $pkgname,
+	$expand = { 'n' => $pkgname,
+				'in'=> $self->param_default("package_invariant", $pkgname),
 				'e' => $epoch,
 				'v' => $version,
 				'r' => $revision,
@@ -162,6 +164,7 @@ sub initialize {
 				'm' => $arch,
 
 				'N' => $parentpkgname,
+				'IN'=> $parentinvname,
 				'P' => $basepath,
 				'D' => $parentdestdir,
 				'I' => $parentdestdir.$basepath,
