@@ -279,7 +279,7 @@ END { }				# module clean-up code here (global destructor)
 sub validate_info_file {
 	my $filename = shift;
 	my ($properties, @parts);
-	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
+	my ($pkgname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my ($field, $value);
 	my ($basepath, $expand, $buildpath);
 	my $looks_good = 1;
@@ -572,13 +572,28 @@ sub validate_info_file {
 				'm' => $arch
 	};
 
-	# Verify the patch file exists, if specified in Patch
+	# Verify the patch file(s) exist and check some things
+	@patchfiles = ();
+	# anything in PatchScript that looks like a patch file name
+	# (i.e., strings matching the glob %a/*.patch)
+	$value = $properties->{patchscript};
+	if ($value) {
+		@patchfiles = ($value =~ /\%a\/.*?\.patch/g);
+		# strip directory if info is simple filename (in $PWD)
+		map {s/\%a\///} @patchfiles unless $pkgpatchpath;
+	}
+
+	# the contents if Patch (if any)
 	$value = $properties->{patch};
 	if ($value) {
+		# add directory if info is not simple filename (not in $PWD)
+		$value = "\%a/" .$value if $pkgpatchpath;
+		unshift @patchfiles, $value;
+	}
+
+	# now check each one in turn
+	foreach $value (@patchfiles) {
 		$value = &expand_percent($value, $expand);
-		if ($pkgpatchpath) {
-			$value = $pkgpatchpath . "/" .$value;
-		}
 		unless (-f $value) {
 			print "Error: can't find patchfile \"$value\"\n";
 			$looks_good = 0;
@@ -605,7 +620,8 @@ sub validate_info_file {
 			# Check for hardcoded /sw.
 			open(INPUT, "<$value"); 
 			while (defined($patch_file_content=<INPUT>)) {
-				next if $patch_file_content =~ /^(diff|---|\+\+\+) /;  # skip diff headers
+				# only check lines being added (and skip diff header line)
+				next unless $patch_file_content =~ /^\+(?!\+\+ )/;
 				if ($patch_file_content =~ /\/sw([\s\/]|$)/) {
 					print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
 					$looks_good = 0;

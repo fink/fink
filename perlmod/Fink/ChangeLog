@@ -1,5 +1,11 @@
 2003-12-22  Daniel Macks <dmacks@netspace.org>
 
+	* Validation.pm: All patch file tests now also applied to files
+	used in PatchScript. Hardcoded /sw test fixed to skip diff
+	context- and being-replaced lines.
+
+2003-12-22  Daniel Macks <dmacks@netspace.org>
+
 	* Validation.pm: Was only checking first line of .patch. Fixed.
 
 2003-12-22  Daniel Macks <dmacks@netspace.org>
