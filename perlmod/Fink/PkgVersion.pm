@@ -159,6 +159,7 @@ sub initialize {
 				'D' => $parentdestdir,
 				'I' => $parentdestdir.$basepath,
 
+				'a' => $self->{_patchpath},
 				'b' => '.'
 			};
 
@@ -1674,9 +1675,6 @@ sub phase_patch {
 	$self->run_script($patch_script, "patching (Update* flags)", 0);
 	$patch_script = "";
 
-	### %a expansion only used for processing Patch and in PatchScript
-	$self->{_expand}->{a} = $self->{_patchpath};
-
 	### patches specified by filename
 	if ($self->has_param("Patch")) {
 		foreach $patch (split(/\s+/,$self->param("Patch"))) {
@@ -1687,8 +1685,6 @@ sub phase_patch {
 
 	### Deal with PatchScript field
 	$self->run_script($self->get_patchscript, "patching", 1);
-
-	delete $self->{_expand}->{a};  # don't leak %a expansion
 }
 
 sub get_patchscript {

@@ -1,3 +1,7 @@
+2004-07-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: _Un_restrict use of %a to PatchScript.
+
 2004-07-19  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Run CompileScript (if one is explicitly defined)
