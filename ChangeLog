@@ -1,3 +1,8 @@
+2003-05-04  Max Horn <max@quendi.de>
+
+	* bootstrap.pl, inject.pl, postinstall.pl.in: Moved shared code into
+	  Bootstrap.pm (Patch #731980).
+
 2003-05-03  Max Horn <max@quendi.de>
 
 	* bootstrap.pl, postinstall.pl.in: Updated x86 case (thanks to bbraun2), and

@@ -26,26 +26,20 @@ use v5.6.0;  # perl 5.6.0 or newer required
 use strict;
 
 use FindBin;
+unshift @INC, "$FindBin::RealBin/perlmod";
+use Fink::Bootstrap qw(&check_files);
 
 my ($basepath, $packageversion, $packagerevision);
 my ($script, $cmd);
 
 ### check if we're unharmed
 
-my ($file);
-foreach $file (qw(fink.in install.sh COPYING VERSION
-                  perlmod/Fink mirror update fink.info.in postinstall.pl.in
-                  update/config.guess perlmod/Fink/Config.pm mirror/_keys
-                 )) {
-  if (not -e $file) {
-    print "ERROR: Package incomplete, '$file' is missing.\n";
-    exit 1;
-  }
+my $res = check_files();
+if ($res == 1 ) {
+	exit 1;
 }
 
 ### load some modules
-
-unshift @INC, "$FindBin::RealBin/perlmod";
 
 require Fink::Services;
 import Fink::Services qw(&print_breaking &read_config &execute &file_MD5_checksum);

@@ -39,20 +39,17 @@ my ($homebase, $file);
 $homebase = $FindBin::RealBin;
 chdir $homebase;
 
-foreach $file (qw(fink.in install.sh COPYING VERSION
-					perlmod/Fink mirror update 10.1 10.2 fink.info.in
-					update/config.guess perlmod/Fink/Config.pm mirror/_keys
-				 )) {
-	if (not -e $file) {
-		print " INCOMPLETE: '$file' missing\n";
-		exit 1;
-	}
+unshift @INC, "$FindBin::RealBin/perlmod";
+require Fink::Bootstrap;
+import Fink::Bootstrap qw(&check_host &check_files);
+
+my $res = check_files();
+if( $res == 1 ) {
+	exit 1;
 }
 print " looks good.\n";
 
 ### load some modules
-
-unshift @INC, "$FindBin::RealBin/perlmod";
 
 require Fink::Services;
 import Fink::Services qw(&print_breaking &prompt &prompt_boolean
@@ -84,32 +81,9 @@ if ($host =~ /^\s*$/) {
 }
 print " $host\n";
 
-if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
-	&print_breaking("This system is supported and tested.");
-	$distribution = "10.1";
-} elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
-	&print_breaking("This system is supported and tested.");
-	$distribution = "10.1";
-} elsif ($host =~ /^powerpc-apple-darwin6\.[0-5]/) {
-	&print_breaking("This system is supported and tested.");
-	$distribution = "10.2";
-} elsif ($host =~ /^powerpc-apple-darwin(6\.[6-9]|[7-9]\.)/) {
-	&print_breaking("This system was not released at the time this Fink ".
-					"release was made, but should work.");
-	$distribution = "10.2";
-} elsif ($host =~ /^i386-apple-darwin(6\.[0-5]|[7-9]\.)/) {
-	&print_breaking("Fink is currently not supported on x86 Darwin. ".
-					"Various parts of Fink hardcode 'powerpc' and assume ".
-					"to run on a PowerPC based operating system. Use Fink ".
-					"on this system at your own risk!");
-	$distribution = "10.2";
-} elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
-	&print_breaking("This system is outdated and not supported by this Fink ".
-					"release. Please update to Mac OS X 10.0 or Darwin 1.3.");
-	exit 1;
-} else {
-	&print_breaking("This system is unrecognized and not supported by Fink.");
-	exit 1;
+$distribution = check_host($host);
+if ($distribution eq "unknown") {
+	exit(1);
 }
 
 print "Distribution $distribution\n";
