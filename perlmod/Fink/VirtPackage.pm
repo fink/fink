@@ -542,19 +542,16 @@ the successful execution of "gcc --version".
 					$version =~ s/[\.\-]*$//;
 					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
 					if ($version eq "2.95.2") {
-						$hash = &gen_gcc_hash('gcc2', $version, 0);
-						$hash->{status} = STATUS_PRESENT;
+						$hash = &gen_gcc_hash('gcc2', $version, 0, STATUS_PRESENT);
 						$self->{$hash->{package}} = $hash;
 					}
 					if ($version =~ s/^(.*)-64$/$1/) {
-						$hash = &gen_gcc_hash("gcc$shortversion-64", $version, 1);
-						$hash->{status} = STATUS_PRESENT;
+						$hash = &gen_gcc_hash("gcc$shortversion-64", $version, 1, STATUS_PRESENT);
 						$self->{$hash->{package}} = $hash;
 						print STDERR "  - found 64-bit $version\n" if ($options{debug});
 						next;
 					}
-					$hash = &gen_gcc_hash("gcc$shortversion", $version, 0);
-					$hash->{status} = STATUS_PRESENT;
+					$hash = &gen_gcc_hash("gcc$shortversion", $version, 0, STATUS_PRESENT);
 					$self->{$hash->{package}} = $hash;
 					print STDERR "  - found $version\n" if ($options{debug});
 				} else {
@@ -577,8 +574,7 @@ the successful execution of "gcc --version".
 		);
 		foreach (sort keys %expected_gcc) {
 			if (!exists $self->{$_}) {
-				$hash = &gen_gcc_hash($_, $expected_gcc{$_}, 0);
-				$hash->{status} = STATUS_ABSENT;
+				$hash = &gen_gcc_hash($_, $expected_gcc{$_}, 0, STATUS_ABSENT);
 				$self->{$hash->{package}} = $hash;
 				print STDERR "  - missing $expected_gcc{$_}\n" if ($options{debug});
 			}
@@ -1198,7 +1194,7 @@ sub check_x11_version {
 	}
 }
 
-=item &gen_gcc_hash(I<$package>, I<$version>, I<$is_64bit>)
+=item &gen_gcc_hash(I<$package>, I<$version>, I<$is_64bit>, I<$dpkg_status>)
 
 Return a ref to a hash representing a gcc* package pdb structure. The
 passed values are will not be altered.
@@ -1209,11 +1205,16 @@ sub gen_gcc_hash {
 	my $package = shift;
 	my $version = shift;
 	my $is_64bit = shift;
+	my $status = shift;
 	$is_64bit = $is_64bit ? ' 64-bit' : '';
 
 	return {
 		package          => $package,
-		version          => "$version-1",
+		version          => $version
+                            . ($status eq STATUS_PRESENT
+                                ? '-1'
+                                : '-0'
+							  ),
 		description      => "[virtual package representing the$is_64bit gcc $version compiler]",
 		homepage         => 'http://fink.sourceforge.net/faq/'
 		                    . ($package eq 'gcc2'
@@ -1222,7 +1223,7 @@ sub gen_gcc_hash {
 							  ),
 		compilescript    => $compile_script,
 		builddependsonly => 'true',
-		descdetail       => <<END
+		descdetail       => <<END,
 This package represents the$is_64bit gcc $version compiler,
 which is part of the Apple developer tools (also known as
 XCode on Mac OS X 10.3 and above).  The latest versions of
@@ -1232,6 +1233,7 @@ the Apple developer tools are always available from Apple at:
 
 (free registration required)
 END
+		status           => $status
 	}
 }
 
