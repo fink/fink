@@ -1,3 +1,9 @@
+2003-11-12  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Changed warnings about fields in splitoffs to say
+	in which splitoff they occurred (could be multiple splitoffs, and
+	some warnings could occur in the parent as well).
+
 2003-11-11  Michael G Schwern <schwern@pobox.com>
 
 	* PkgVersion.pm: "uninitialized value in chomp" warning below

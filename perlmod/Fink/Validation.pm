@@ -386,7 +386,7 @@ sub validate_info_file {
 			# Right now, only 'Package' is a required field for a splitoff.
 			foreach $field (qw(package)) {
 				unless ($splitoff_properties->{lc $field}) {
-					print "Error: Required field \"$field\" missing. ($filename)\n";
+					print "Error: Required field \"$field\" missing for \"$splitoff_field\". ($filename)\n";
 					$looks_good = 0;
 				}
 			}
@@ -395,13 +395,13 @@ sub validate_info_file {
 				$value = $splitoff_properties->{$field};
 
 				if ($field eq "files" and ($value =~ m#/[\s\r\n]# or $value =~ m#/$#)) {
-					print "Warning: Field \"$field\" contains entries that end in \"/\" ($filename)\n";
+					print "Warning: Field \"$field\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
 					$looks_good = 0;
 				}
 
 				# Check for hardcoded /sw.
 				if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|$)/) {
-					print "Warning: Field \"$field\" appears to contain a hardcoded /sw. ($filename)\n";
+					print "Warning: Field \"$field\" of \"$splitoff_field\" appears to contain a hardcoded /sw. ($filename)\n";
 					$looks_good = 0;
 					next;
 				}
@@ -409,9 +409,9 @@ sub validate_info_file {
 				# Warn if field is unknown or invalid within a splitoff
 				unless ($splitoff_valid_fields{$field}) {
 					if ($valid_fields{$field}) {
-						print "Warning: Field \"$field\" is not valid in splitoff. ($filename)\n";
+						print "Warning: Field \"$field\" of \$splitoff_field\" is not valid in splitoff. ($filename)\n";
 					} else {
-						print "Warning: Field \"$field\" is unknown. ($filename)\n";
+						print "Warning: Field \"$field\" of \"$splitoff_field\" is unknown. ($filename)\n";
 					}
 					$looks_good = 0;
 					next;
