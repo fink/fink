@@ -1277,8 +1277,8 @@ sub real_install {
 
 			# add node to graph
 			$deps{$dname} = [ $dname, $pnode,
-												$pnode->get_version(&latest_version(@vlist)),
-												$OP_INSTALL, 0 ];
+			                  $pnode->get_version(&latest_version(@vlist)),
+			                  $OP_INSTALL, 0 ];
 			# add a link
 			push @$item, $deps{$dname};
 			# add to investigation queue
@@ -1298,7 +1298,7 @@ sub real_install {
 				}
 				# add node to graph
 				$cons{$cname} = [ $cname, Fink::Package->package_by_name($cname),
-						$cn, $OP_INSTALL, 2 ];
+				                  $cn, $OP_INSTALL, 2 ];
 				next CONLOOP;
 			}
 		}
