@@ -317,7 +317,7 @@ diff -urN dpkg-1.10.9.orig/main/help.c dpkg-1.10.9/main/help.c
    struct stat stab;
 diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
 --- dpkg-1.10.9.orig/main/main.c	Sun Sep  1 13:47:05 2002
-+++ dpkg-1.10.9/main/main.c	Sun Jul  6 16:55:46 2003
++++ dpkg-1.10.9/main/main.c	Mon Jul  7 21:29:58 2003
 @@ -38,6 +38,12 @@
  #include <version.h>
  #include <myopt.h>
@@ -331,7 +331,7 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
  #include "main.h"
  
  static void printversion(void) {
-@@ -543,6 +549,143 @@
+@@ -543,6 +549,152 @@
    }
  }
  
@@ -360,50 +360,62 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
 +    CFStringRef string;
 +    static char buffer[256];	// This is static, to ensure the buffer stays around
 +
-+    static struct utsname ver;	// This is static, to ensure the buffer stays around	
++    static struct utsname ver;	// This is static, to ensure the buffer stays around
 +	if (0 == stat("@PREFIX@/bin/fink-virtual-pkgs", &sb))
 +	{
 +	  virt_pkg_stream =popen("@PREFIX@/bin/fink-virtual-pkgs --dpkg","r");
 +  	  if (virt_pkg_stream)
 +	  {
-+
 +	    while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version, revision) == 4)
 +	    {
 +	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	      if (!pkg)
++	      if (pkg)
 +	      {
-+	        fprintf(stderr, "Could not allocate memory\n");
-+	        exit(1);
++			  pkg->next = fink_virt_pkg;
++			  pkg->pkgname = strdup(name);
++			  pkg->version.epoch = epoch;
++			  pkg->version.version = strdup(version);
++			  pkg->version.revision = strdup(revision);
++			  /* Quick and simple sanity check */
++			  if ((NULL != pkg->pkgname) && (0 != strlen(pkg->pkgname)) &&
++			      (NULL != pkg->version.version) && (0 != strlen(pkg->version.version)) &&
++			      (NULL != pkg->version.revision) && (0 != strlen(pkg->version.revision)))
++			  {
++			  	/* We are leaking here if something fails the sanity check above */
++			  	fink_virt_pkg = pkg;
++			  }
 +	      }
-+	      pkg->next = fink_virt_pkg;
-+	      pkg->pkgname = strdup(name);
-+	      pkg->version.epoch = epoch;
-+	      pkg->version.version = strdup(version);
-+	      pkg->version.revision = strdup(revision);
-+	      fink_virt_pkg = pkg;
 +	    }
-+	    pclose(virt_pkg_stream);
++	    if (pclose(virt_pkg_stream))
++	    {
++	    	/* The fink-virtual-pkgs script returned a non zero exit status *
++	    	 * clean up and try the old way.                                */
++	    	while(NULL != fink_virt_pkg)
++	    	{
++	    		pkg = fink_virt_pkg;
++	    		if (NULL != pkg->pkgname) free(pkg->pkgname);
++	    		if (NULL != pkg->version.version) free(pkg->version.version);
++	    		if (NULL != pkg->version.revision) free(pkg->version.revision);
++	    		fink_virt_pkg = pkg->next;
++	    		free(pkg);
++	    	}
++	    }
 +	  }
 +	} 
-+	else
++	if (NULL == fink_virt_pkg)
 +	{
-+
-+	  
 +	  /* Determine system version */
 +	  /* TODO - should maybe check if this is really Darwin? */
 +	  if (!uname(&ver)) {
 +	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	      if (!pkg)
-+	      {
-+	        fprintf(stderr, "Could not allocate memory\n");
-+	        exit(1);
-+	      }
-+	      pkg->next = fink_virt_pkg;
-+	      pkg->pkgname = strdup("darwin");
-+	      pkg->version.epoch = 0;
-+	      pkg->version.version = ver.release;
-+	      pkg->version.revision = NULL;
-+	      fink_virt_pkg = pkg;	  
++	      if (pkg) {
++			  pkg->next = fink_virt_pkg;
++			  pkg->pkgname = strdup("darwin");
++			  pkg->version.epoch = 0;
++			  pkg->version.version = ver.release;
++			  pkg->version.revision = NULL;
++			  fink_virt_pkg = pkg;
++	      }  
 +	  }
 +	
 +	  /* Check whether this is Mac OS X, and which version of it */
@@ -449,18 +461,15 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
 +	  if (!status)
 +		goto BAIL;
 +	  pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	  if (!pkg)
++	  if (pkg)
 +	  {
-+		fprintf(stderr, "Could not allocate memory\n");
-+		exit(1);
++		  pkg->next = fink_virt_pkg;
++		  pkg->pkgname = strdup("macosx");
++		  pkg->version.epoch = 0;
++		  pkg->version.version = buffer;
++		  pkg->version.revision = NULL;
++		  fink_virt_pkg = pkg;
 +	  }
-+	  pkg->next = fink_virt_pkg;
-+	  pkg->pkgname = strdup("macosx");
-+	  pkg->version.epoch = 0;
-+	  pkg->version.version = buffer;
-+	  pkg->version.revision = NULL;
-+	  fink_virt_pkg = pkg;
-+	  
 +	BAIL:
 +	  // Release all of the CF objects we're responsible for.
 +	  if (fileURL)
@@ -475,7 +484,7 @@ diff -urN dpkg-1.10.9.orig/main/main.c dpkg-1.10.9/main/main.c
  
  int main(int argc, const char *const *argv) {
    jmp_buf ejbuf;
-@@ -553,7 +696,9 @@
+@@ -553,7 +705,9 @@
  
    setvbuf(stdout,0,_IONBF,0);
    filesdbinit();

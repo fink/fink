@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.9
-Revision: 3
+Revision: 4
 GCC: 3.1
 Depends: gettext, libiconv, gzip, tar, ncurses
 #BuildDepends: gettext-dev, libiconv-dev, ncurses-dev
@@ -13,7 +13,7 @@ Source-MD5: ecd7d51416837f8910314ccb62e39dc2
 PatchScript: sed 's|@PREFIX@|%p|g' <%a/%f.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 CompileScript: <<
- ./configure %m-apple-darwin %c
+ ./configure powerpc-apple-darwin %c
  make
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
