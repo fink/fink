@@ -1,0 +1,13 @@
+Package: control-center
+Version: 1.2.3
+Revision: 1
+Source: gnome
+Depends: gettext, gnome-libs, orbit, gdk-pixbuf, imlib, esound
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+CommentPort: Uses autoconf and libtool - the usual fixes. Requires
+ dlcompat to provide dlopen() and friends.
+CommentStow: No issues known.
+Maintainer: Christoph Pfisterer <chrisp@users.sourceforge.net>
+Homepage: http://www.gnome.org/
