@@ -1727,13 +1727,13 @@ EOF
 			} elsif ($_ eq 'parent') {
 				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
 			} elsif ($_ eq 'splitoffs') {
-				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->{_splitoffs}} if @{$pkg->{_splitoffs}};
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->{_splitoffs}} if defined $pkg->{_splitoffs} and @{$pkg->{_splitoffs}};
 			} elsif ($_ eq 'family') {
 				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(1, 1);
 			} elsif ($_ eq 'description') {
 				printf "%s: %s\n", $_, $pkg->get_shortdescription;
 			} elsif ($_ =~ /^desc(detail|usage|packaging|port)$/) {
-				print "$_:\n", $pkg->format_description($pkg->param($_)) if $pkg->has_param($_);
+				print "$_:\n", Fink::PkgVersion::format_description($pkg->param($_)) if $pkg->has_param($_);
 			} elsif ($_ eq 'type'       or $_ eq 'license' or
 					 $_ eq 'maintainer' or $_ eq 'homepage'
 					) {
