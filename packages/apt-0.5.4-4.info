@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 3
+Revision: 4
 Depends: %N-shlibs (= %v-%r)
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
 SourceDirectory: %n-%v
@@ -11,7 +11,7 @@ PatchScript: <<
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
-SetCXXFLAGS: -O2 -DEMULATE_MMAP
+SetCXXFLAGS: -O2 -DEMULATE_MMAP -fno-rtti
 CompileScript: <<
  ./configure %c
  make -f makefile.wrap
@@ -120,6 +120,8 @@ The patch also fixes some potential and some real crashing bugs.
 Oh, one more thing: mmap() is broken for non-trivial uses in OS X
 10.1. Luckily apt uses a wrapper class that can be equipped with a
 workaround (malloc() + read() + write()...).
+
+The -fno-rtti works around a bug in GCC 3.1 on Jaguar.
 <<
 DescPackaging: Previous versions by Christoph Pfisterer.
 License: GPL
