@@ -2198,8 +2198,6 @@ EOF
 		import File::Find;
 	};
 
-	my $depline = $self->get_binary_depends();
-
 # Add a dependency on the darwin version (if not already present).
 #   We depend on the major version only, in order to prevent users from
 #   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
@@ -2225,9 +2223,8 @@ EOF
 		}
 	}
 	push @$struct, ["darwin (>= $darwin_major_version-1)"] if not $has_darwin_dep;
-	$depline = &lol2pkglist($struct);
+	$control .= "Depends: " . &lol2pkglist($struct) . "\n";
 
-	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
 										 Recommends Suggests Enhances)) {
 		if ($self->has_pkglist($field)) {
