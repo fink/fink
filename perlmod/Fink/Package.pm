@@ -349,13 +349,13 @@ sub scan_all {
       }
       
       # If the index is not outdated, we can use it, and thus safe a lot of time
-      if (not $db_outdated) {
+#      if (not $db_outdated) {
 	%package_hash = %{Storable::retrieve("$basepath/var/db/fink.db")};
 	my ($pkgtmp);
 	foreach $pkgtmp (keys %package_hash) {
 	  push @package_list, $package_hash{$pkgtmp};
 	}
-      }
+#      }
     }
   }
   
