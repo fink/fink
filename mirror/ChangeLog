@@ -1,4 +1,16 @@
-2004-08-01 David H. <dmalloc@users.sourceforge.net>
+2004-08-17 David H. <dmalloc@users.sourceforge.net>
+	* master, rsync: Added new mirror for Europe
+	Maintainer: bernard.grymonpon@belnet.be
+	Info: Belnet, the Belgian Education and Research network. 
+	Our network spans across Belgium and is connected to several
+	international networks and on several exchange points 
+	[Bnix, Ams-ix, Linx, Sfinx,... Our public FTP server is 
+	running on a SunFire V440 with 3 StorEdge 3510 Arrays, 
+	offering +4TB storage and is connected to our backbone 
+	through a double 1000Mbps link. We are located in 
+	Brussels-Belgium. 
+	
+	2004-08-01 David H. <dmalloc@users.sourceforge.net>
 	* master, rsync: Suspended trd and per mirrors.
 	Continued failures, maintainers not really responsive
 	pending removal in 30 days.
