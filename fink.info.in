@@ -14,7 +14,7 @@ CompileScript: <<
 InstallScript: ./install.sh %i
 PostInstScript: <<
  %p/lib/fink/postinstall.pl
- fink -c index
+ %p/bin/fink --no-use-binary-dist index
 <<
 #
 Description: The Fink package manager
