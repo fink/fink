@@ -176,16 +176,15 @@ sub initialize {
 		$hash->{builddependsonly} = "true";
 		$self->{$hash->{package}} = $hash;
 	}
-        if ( -x '/usr/bin/gcc2' )
-        {
-                $hash = {};
-                $hash->{package} = "gcc2";
-                $hash->{status} = "install ok installed";
-                $hash->{version} = "2.9.5-1";
-                $hash->{description} = "[virtual package representing the gcc2 compiler]";
-                $hash->{builddependsonly} = "true";
-                $self->{$hash->{package}} = $hash;
-        }
+	if ( -x '/usr/bin/gcc2' ) {
+		$hash = {};
+		$hash->{package} = "gcc2";
+		$hash->{status} = "install ok installed";
+		$hash->{version} = "2.9.5-1";
+		$hash->{description} = "[virtual package representing the gcc2 compiler]";
+		$hash->{builddependsonly} = "true";
+		$self->{$hash->{package}} = $hash;
+	}
 	if ( -f '/usr/X11R6/lib/libX11.6.dylib' )
 	{
 		# check the status of xfree86 packages
@@ -231,6 +230,31 @@ sub initialize {
 									-f '/usr/X11R6/include/fontconfig/fontconfig.h');
 				push(@provides, 'fontconfig1-shlibs') if has_lib('/usr/X11R6/lib/libfontconfig.1.dylib');
 				$hash->{provides} = join(', ', @provides);
+
+				if (not grep(/^x11$/, @provides) or not grep(/^(xft1|xft2)$/, @provides)) {
+					print <<END;
+WARNING!
+
+Fink has detected that you have X11 partially installed.  For fink to work
+properly with your system-provided X11 package, you *must* install both the
+X11 package *and* the X11 SDK.
+
+END
+					if ($darwin_version < 7) {
+						print <<END;
+If you're using the Apple X11 beta, you must install BOTH the User package
+and the X11 SDK (which can be downloaded from the same place).
+
+END
+					} else {
+						print <<END;
+If you installed X11 with Mac OS X, you must also install the X11 SDK from
+the XCode tools CD, which is *not* enabled by a default install.  Re-run
+the XCode install, and select "custom" to enable installation of the X11 SDK.
+
+END
+					}
+				}
 				$self->{$hash->{package}} = $hash;
 			}
 		}    

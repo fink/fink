@@ -1,3 +1,8 @@
+2003-10-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: make system-xfree86 virtual complain if you're
+	missing important SDK bits.  =)
+    
 2003-10-25  Mohammad A. Haque  <batmanppc@users.sourceforge.net>
 
 	* Engine.pm: Patch 828653 fix fink cleanup and improve user feedback
