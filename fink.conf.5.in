@@ -207,6 +207,10 @@ the
 flag overrides this, and compiles from source for that single
 .Cm fink
 invocation.
+.Pp
+Note that this mode instructs Fink to download the version it wants if
+that version is available for download; it does not cause Fink to
+choose a version based on its binary availability.
 .El
 .\"
 .\"

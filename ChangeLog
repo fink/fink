@@ -1,3 +1,8 @@
+2005-02-23  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in, fink.conf.5.in: Note that -b effect is *after*
+	resolver chooses the version.
+
 2005-02-22  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in, fink.conf.5.in: Removed Verbosity:4 (pendantic) level
