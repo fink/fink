@@ -1,3 +1,8 @@
+2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Stop supporting bootstrap/upgrade on 10.1, and
+	warn users that support will soon cease for non-gcc3.3 10.2.
+
 2004-02-03  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* Engine.pm: Only choose a splitoff if the candidates contain
