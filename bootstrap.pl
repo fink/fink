@@ -209,11 +209,9 @@ if (-x "/usr/bin/head") {
 
 ### setup the correct packages directory
 
-if (-d "packages") {
-    rename "packages", "packages-old" or die "Can't rename 'packages'";
-}
 if (-e "packages") {
-    unlink "packages" or die "Cannot unlink 'packages'";
+    rename "packages", "packages-old";
+    unlink "packages";
 }
 symlink "$distribution", "packages" or die "Cannot create symlink";
 
