@@ -1167,6 +1167,7 @@ sub real_install {
 			# This is a heuristic, but usually does exactly "the right thing".
 			if (not $found) {
 				my ($cand, $splitoff);
+				my $candcount=0;
 				SIBCHECK: foreach $cand (@candidates) {
 					my $package = Fink::Package->package_by_name($cand);
 					my $lversion = &latest_version($package->list_versions());
@@ -1178,11 +1179,13 @@ sub real_install {
 							# auto-choose it
 							if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
 								$dname = $cand;
-								$found = 1;
-								last;
+								$candcount++;
 							}
 						}
 					}
+				}
+				if ($candcount == 1) {
+				    $found=1;
 				}
 			}
 

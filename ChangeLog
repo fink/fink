@@ -1,3 +1,28 @@
+2004-02-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-virtual-pkgs.in: Added "debug" mode to show what's going
+	on while searching for various virtual bits.  (Good idea, Martin!)
+
+2004-02-12  Rob Braun  <bbraun@users.sourceforge.net>
+
+	* fink.in: Fixed a spelling error in the usage statement, and
+	added several commands documented in the User Guide, but omitted
+	from the usage statement.
+
+2004-02-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.18.2, a bugfix release 
+	on branch_0_18
+
+2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.18.1, a bugfix release 
+	on branch_0_18
+
+2004-01-10  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Removed duplicate ADVANCED SETTINGS section.
+
 2004-01-08  Daniel Macks  <dmacks@netspace.org>
 
 	* fink-virtual-pkgs.in, fink.in: Consolidated all @BASEPATH@

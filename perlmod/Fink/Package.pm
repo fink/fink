@@ -22,11 +22,13 @@
 
 package Fink::Package;
 use Fink::Base;
-use Fink::Services qw(&read_properties &latest_version &version_cmp 
-                      &parse_fullversion &expand_percent);
-use Fink::CLI qw(&print_breaking);
+use Fink::Services qw(&read_properties &read_properties_var
+		      &latest_version &version_cmp &parse_fullversion
+		      &expand_percent);
+use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $debarch);
 use Fink::PkgVersion;
+use Fink::FinkVersion;
 use File::Find;
 
 use strict;
@@ -385,8 +387,10 @@ sub scan_all {
 	}
 	$have_packages = 1;
 
-	printf "Information about %d packages read in %d seconds.\n", 
-               scalar(values %$packages), (time - $time);
+	if (&get_term_width) {
+		printf STDERR "Information about %d packages read in %d seconds.\n", 
+			scalar(values %$packages), (time - $time);
+	}
 }
 
 ### scan for info files and compare to $db_mtime
@@ -409,7 +413,9 @@ sub update_db {
 	my ($tree, $dir);
 
 	# read data from descriptions
-	print "Reading package info...\n";
+	if (&get_term_width) {
+		print STDERR "Reading package info...\n";
+	}
 	foreach $tree ($config->get_treelist()) {
 		$dir = "$basepath/fink/dists/$tree/finkinfo";
 		Fink::Package->scan($dir);
@@ -417,7 +423,9 @@ sub update_db {
 	eval {
 		require Storable; 
 		if ($> == 0) {
-			print "Updating package index... ";
+			if (&get_term_width) {
+				print STDERR "Updating package index... ";
+			}
 			unless (-d "$basepath/var/db") {
 				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 			}
@@ -425,7 +433,7 @@ sub update_db {
 			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
 			print "done.\n";
 		} else {
-			&print_breaking( "\nFink has detected that your package cache is out of date and needs" .
+			&print_breaking_stderr( "\nFink has detected that your package cache is out of date and needs" .
 				" an update, but does not have privileges to modify it. Please re-run fink as root," .
 				" for example with a \"fink index\" command.\n" );
 		}
@@ -451,11 +459,20 @@ sub scan {
 				push @filelist, $File::Find::fullname;
 			}
 		};
+
+=pod
+
+    This line is a dumb hack to keep emacs paren balancing happy }
+
+=cut
+
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
 
 	foreach $filename (@filelist) {
 		# read the file and get the package name
 		$properties = &read_properties($filename);
+		$properties = Fink::Package->handle_infon_block($properties, $filename);
+		next unless keys %$properties;
 		$pkgname = $properties->{package};
 		unless ($pkgname) {
 			print "No package name in $filename\n";
@@ -474,22 +491,54 @@ sub scan {
 			}
 		}
 
-		# allow %lv (typeversion_pkg) in Package
-		if ($properties->{type}) {
-			my $type = $properties->{type};
-			if ($type =~ s/^(\S+)\s+(\S+)/$2/) {
-				$type =~ s/\.//g;
-				$properties->{package} = $pkgname = &expand_percent($pkgname,{'lv',$type});
+		Fink::Package->setup_package_object($properties, $filename);
+	}
+}
+
+# Given $properties as a ref to a hash of .info lines in $filename,
+# instantiate the package(s) and return an array of Fink::PkgVersion
+# object(s) (i.e., the results of Fink::Package::inject_description().
+sub setup_package_object {
+	shift;	# class method - ignore first parameter
+	my $properties = shift;
+	my $filename = shift;
+
+	my %pkg_expand;
+	if (exists $properties->{type}) {
+		if ($properties->{type} =~ s/\((.*)\)//) {
+			# if we were fed multiple language versions in Type,
+			# remove and refeed ourselves with each one in turn
+			my $types = $1;
+			my @pkgversions;
+			foreach my $this_type (split ' ', $types) {
+				# need new copy, not copy of ref to original
+				my $this_properties = {%{$properties}};
+				$this_properties->{type} .= " ".$this_type;
+				push @pkgversions, Fink::Package->setup_package_object($this_properties, $filename);
+			};
+			return @pkgversions;
+		} else {
+			if ($properties->{type} =~ /^\s*\S+\s+(\S+)\s*$/) {
+				# a single language version in Type
+				( $pkg_expand{'lv'} = $1 ) =~ s/\.//g; # prepare for %lv
 			}
 		}
-
-		# get/create package object
-		$package = Fink::Package->package_by_name_create($pkgname);
-
-		# create object for this particular version
-		$properties->{thefilename} = $filename;
-		Fink::Package->inject_description($package, $properties);
 	}
+	if (exists $properties->{parent}) {
+		# get parent's Package and Type info for percent expansion
+		$pkg_expand{'N'}  = $properties->{parent}->{package};
+		$pkg_expand{'Lv'} = $properties->{parent}->{_typeversion_pkg};
+		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
+	}
+	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
+
+	# get/create package object
+	my $package = Fink::Package->package_by_name_create($properties->{package});
+
+	# create object for this particular version
+	$properties->{thefilename} = $filename;
+	my $pkgversion = Fink::Package->inject_description($package, $properties);
+	return ($pkgversion);
 }
 
 ### create a version object from a properties hash and link it
@@ -519,5 +568,58 @@ sub inject_description {
 	return $version;
 }
 
+=item handle_infon_block
+
+    my $properties = &read_properties($filename);
+    $properties = &handle_infon_block($properties, $filename);
+
+For the .info file lines processed into the hash ref $properties from
+file $filename, deal with the possibility that the whole thing is in a
+InfoN: block.
+
+If so, make sure this fink is new enough to understand this .info
+format (i.e., N<=max_info_level). If so, promote the fields of the
+block up to the top level of %$properties and return a ref to this new
+hash. Also set a _info_level key to N.
+
+If an error with InfoN occurs (N>max_info_level, more than one InfoN
+block, or part of $properties existing outside the InfoN block) print
+a warning message and return a ref to an empty hash (i.e., ignore the
+.info file).
+
+=cut
+
+sub handle_infon_block {
+	shift;	# class method - ignore first parameter
+	my $properties = shift;
+	my $filename = shift;
+
+	my($infon,@junk) = grep {/^info\d+$/i} keys %$properties;
+	if (not defined $infon) {
+		return $properties;
+	}
+	# file contains an InfoN block
+	if (@junk) {
+		print "Multiple InfoN blocks in $filename; skipping\n";
+		return {};
+	}
+	unless (keys %$properties == 1) {
+		# if InfoN, entire file must be within block (avoids
+		# having to merge InfoN block with top-level fields)
+		print "Field(s) outside $infon block! Skipping $filename\n";
+		return {};
+	}
+	my ($info_level) = ($infon =~ /(\d+)/);
+	my $max_info_level = &Fink::FinkVersion::max_info_level;
+	if ($info_level > $max_info_level) {
+		# make sure we can handle this InfoN
+		print "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename\n";
+		return {};
+	}
+	# okay, parse InfoN and promote it to the top level
+	my $new_properties = &read_properties_var("$infon of \"$filename\"", $properties->{$infon});
+	$new_properties->{_info_level} = $info_level;
+	return $new_properties;
+}
 
 1;

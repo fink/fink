@@ -553,7 +553,7 @@ RSYNCAGAIN:
 	}
 
 	# Fetch the timestamp for comparison
-	$timecmd = "rsync -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp";
+	$timecmd = "rsync -rz $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp";
 	if (&execute($timecmd)) {
 		print "Failed to fetch the timestamp file from the rsync server: $rsynchost.  Check the error messages above.\n";
 		goto RSYNCAGAIN;

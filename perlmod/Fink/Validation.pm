@@ -135,6 +135,7 @@ our %valid_fields = map {$_, 1}
 		 'type',
 		 'license',
 		 'maintainer',
+		 '_info_level',  # set by handle_infon_block if InfoN: used
 #  dependencies:
 		 'depends',
 		 'builddepends',
@@ -276,11 +277,19 @@ END { }				# module clean-up code here (global destructor)
 #	+ correspondence between source* and source*-md5 fields
 #	+ if type is bundle/nosource - warn about usage of "Source" etc.
 #	+ if 'fink describe' output will display poorly on vt100
+#	+ Check Package/Version/Revision for disallowed characters
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
 #	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
 #	  it uses ">" instead of ">>".
+#	- correct format of Shlibs: (including misuse of %v-%r)
+#	- use of %n in SplitOff:Package: (should be %N)
+#	- use of SplitOff:Depends: %n (should be %N (tracker Bugs #622810)
+#	- actually instantiate the Package or PkgVersion object
+#	  (easier to try it than to check for some broken-ness here)
+#	- run a mock build phase (catch typos in dependencies,
+#	  BuildDependsOnly violations, etc.)
 #	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
@@ -316,6 +325,8 @@ sub validate_info_file {
 
 	# read the file properties
 	$properties = &read_properties($filename);
+	$properties = Fink::Package->handle_infon_block($properties, $filename);
+	return unless keys %$properties;
 	
 	# determine the base path
 	$basepath = $config->param_default("basepath", "/sw");
@@ -354,6 +365,16 @@ sub validate_info_file {
 	if ($pkgname =~ /[^+-.a-z0-9]/) {
 		print "Error: Package name may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
+		$looks_good = 0;
+	}
+	if ($pkgversion =~ /[^+-.a-z0-9]/) {
+		print "Error: Package version may only contain lowercase letters, numbers,";
+		print "'.', '+' and '-' ($filename)\n";
+		$looks_good = 0;
+	}
+	if ($pkgrevision =~ /[^+.a-z0-9]/) {
+		print "Error: Package revision may only contain lowercase letters, numbers,";
+		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
 	}
 	return unless ($looks_good);
@@ -465,10 +486,11 @@ sub validate_info_file {
 		# they won't look weird on an 80-column plain-text terminal
 		if ($text_describe_fields{$field} and $value) {
 			# no intelligent word-wrap so warn for long lines
+			my $maxlinelen = 79;
 			foreach my $line (split /\n/, $value) {
-				if (length $line > 77) {
-					print "Warning: \"$field\" contains line(s) exceeding 77 characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
-					$looks_good = 0;
+				if (length $line > $maxlinelen) {
+					print "Warning: \"$field\" contains line(s) exceeding $maxlinelen characters. ($filename)\nThis field may be displayed with line-breaks in the middle of words.\n";
+ 					$looks_good = 0;
 					last;
 				}
 			}
@@ -514,7 +536,7 @@ sub validate_info_file {
 			my $splitoff_properties = $properties->{$field};
 			my $splitoff_field = $field;
 			$splitoff_properties =~ s/^\s+//gm;
-			$splitoff_properties = &read_properties_var($filename, $splitoff_properties);
+			$splitoff_properties = &read_properties_var("$field of \"$filename\"", $splitoff_properties);
 			# Right now, only 'Package' is a required field for a splitoff.
 			foreach $field (qw(package)) {
 				unless ($splitoff_properties->{lc $field}) {

@@ -1,3 +1,153 @@
+2004-02-12  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: conditional_pkg_list: optimized initial field
+	parsing and fixed consecutive puctuation replacement. Remembered
+	to save value back to hash. Changed syntax to:
+	  Depends: (string1 op string2) foo
+	where op is one of (<< >> <= >= == !=) for string comparison or:
+	  Depends: (string) foo
+	where string must be non-null.
+	
+2004-02-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Wrote conditional_pkg_list which processes
+	conditionals in Depends (and similarly formatted fields) according
+	to 'Depends: (a b) foo', where foo is only a dependency if a and b
+	are stringwise equal. Will probably need to bump max_info_level.
+	Tested and seems to work, but not actually calling it from main
+	code yet.
+
+2004-02-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm, Packages.pm, Validation.pm: Changed handle_infon_block
+	from being a function in Services to being a class method in Packages.
+
+2004-02-10  Daniel Macks  <dmacks@netspace.org>
+
+	* FinkVersion.pm.in: Implemented max_info_level(): returns largest
+	.info version this fink can handle. Initial value is 1 (same
+	format as non-InfoN file).
+	* Services.pm: Implemented handle_infon_block: Reprocess .info to
+	account for it consisting entirely of a InfoN: multiline field. If
+	N larger than max_info_level, warn and scrap the file.
+	* Package.pm, Validation.pm: Call handle_infon_block after reading
+	.info.
+	
+2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Stop supporting bootstrap/upgrade on 10.1, and
+	warn users that support will soon cease for non-gcc3.3 10.2.
+
+2004-02-03  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Engine.pm: Only choose a splitoff if the candidates contain
+	only one splitoff. Fixes bug reported by chris01 on irc.
+
+2004-02-01  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Implemented print_breaking_stderr, a wrapper around
+	print_breaking that causes output to go to STDERR.
+	* Package.pm: For all diagnostic/status messages from 'fink list',
+	send to STDERR. For all that are not critical, don't output unless
+	output is a  terminal (i.e., hide if a Unix pipeline).
+	
+2004-02-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Resuscitated RangerRick's idea from CVS r1.95 of
+	adding line numbers to parser error messages.
+
+2004-02-01  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Services.pm, Validation.pm: finished implementing
+	splittoffN (etc.) passing to read_properties_var() and fixed
+	quotation mark placement in its messages.
+
+2004-01-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Added second parameter to add_splitoff() for
+	splitoff #, and pass it as part of $file to read_properties_var()
+	so parsing-error error messages note which splitoff is broken.
+
+2004-01-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Error if Version or Revision contain forbidden
+	characters (according to Debian docs).
+
+2004-01-26  Rob Braun  <bbraun@users.sourceforge.net>
+
+	* Selfupdate.pm: rsync with the -r flag instead of the -a flag.
+	the difference is that -r will not preserve ownership/groups,
+	permissions, links, times, and device files.  None of this 
+	matters for .info and .patch files, since there are no links
+	or device files, and the ownership, permissions, and times
+	on the server don't matter to the client.  However, we will
+	continue using -a on the TIMESTAMP file to preserve the time
+	on that.
+
+2004-01-21  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: If a package lists itself in its own Conflicts or
+	Replaces, remove it from that list (needed for writing mutually
+	exclusive variants).
+
+2004-01-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Added new $err_info parameter to expand_percent that
+	will be printed if there's an expansion error. Remembered \n in
+	that die to prevent stack backtrace. Doc-cleanup expand_percent.
+	* PkgVersion.pm: Implemented new get_param_with_expansion and
+	get_info_filename methods.
+	* Package.pm, PkgVersion.pm: added $err_info to expand_percent calls.
+	
+2004-01-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Treat typo of %n in SplitOff:Package: as %N. Remove
+	debugging.
+	* PkgVersion.pm: Remove remnants of my _source_item stuff.
+
+2004-01-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, PkgVersion.pm: Consolidated common code for
+	instantiating a package into a new Package->setup_package_object
+	function. Moved Type inheiritance and %-expansion in Package there
+	also. Evaluate SplitOff Package in SplitOff scope instead of
+	parent scope. Added support for multiple language versions: 'Type:
+	perl (5.6.1 5.8.1)' gives a clone of the .info that has
+	each (single) Type.
+
+2004-01-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Empirically determined that 79 chars is the
+	maximum safe line length for DescDetail.
+	* Package.pm: Dumb hack to keep emacs paren balancing happy (was
+	interpretting # in a few lines before as comment symbol).
+
+2004-01-13  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fix for regex /$file/ not do what we want if
+	$file is the literal filename when it contains regex
+	metacharacters. (bugs #875876).
+
+2004-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Base.pm: params_matching() now defaults to case-insensitive.
+
+2004-01-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgConfig.pm: Improved get_source_items_count(). Improved
+	construction of _source_items. Disabled construction of
+	_source_items for now.
+
+2004-01-11  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Removed antiquated prompt_selection(). Improved
+	fink-code error checking by use of Carp::confess.
+
+2004-01-10  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Added get_source_items_count() and
+	sanity-checking for get_source_items_list().
+
 2004-01-10  Daniel Macks  <dmacks@netpace.org>
 
 	* Base.pm: Added params_matching, a method to return the names of

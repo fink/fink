@@ -1,6 +1,0 @@
-Package: libiconv-dev
-Version: 1.7
-Revision: 6
-Type: bundle
-Maintainer: Dave Morrison <dmrrsn@users.sourceforge.net>
-Description: Placeholder for transition to splitoffs for essential pkgs

@@ -28,12 +28,15 @@ Getopt::Long::Configure(qw(bundling ignore_case require_order));
 my ($dlist, $hash, $pkgname, $epoch, @versions, $field, $provides);
 my %options = 
    (
-     "dpkg" => 0,
-     "apt" => 0,
+		"apt" => 0,
+		"debug" => 0,
+		"dpkg" => 0,
    );
 GetOptions(
+	'apt|a' => sub {  $options{apt} = 1},
+	'debug' => sub { $options{debug} = 1},
 	'dpkg|d' => sub { $options{dpkg} = 1},
-	'apt|a' => sub {  $options{apt} = 1}
+	'help|h' => \&usage,
 	) or die "Unknown option";
 if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt" }
 if ($options{apt}) {
@@ -42,7 +45,7 @@ if ($options{apt}) {
 	}
 if ($standalone == 0)
 {
-	$dlist = Fink::VirtPackage->list();
+	$dlist = Fink::VirtPackage->list(%options);
 	foreach $pkgname (sort keys %$dlist) {
 		$hash = $dlist->{$pkgname};
 		if ($options{'dpkg'} or $options{'apt'}) {
@@ -113,6 +116,18 @@ if ($options{apt}) {
 	close FH;
 }
 
+sub usage {
+	print <<END;
+usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-h|--help]
+
+	--debug     Print debugging info to STDERR
+	-a/--apt    [called by apt, for internal use only]
+	-d/--dpkg   [called by dpkg, for internal use only]
+	-h/--help   This help
+
+END
+	exit 0;
+}
 
 sub UseFinkModules {
 	# Be careful about using fink modules

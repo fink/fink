@@ -117,7 +117,7 @@ sub read_properties {
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
-	 return read_properties_lines($file, $notLC, @lines);
+	 return read_properties_lines("\"$file\"", $notLC, @lines);
 }
 
 =item read_properties_var
@@ -186,6 +186,10 @@ file in which they were encountered. The filetype (fink.conf, *.info,
 etc.) is not necessarily known and this routine is used for many
 different filetypes.
 
+Multiline values (including all the lines of fields in a splitoff) are
+returned as a single multiline string (i.e., with embedded \n), not as
+a ref to another hash or array.
+
 =cut
 
 sub read_properties_lines {
@@ -193,13 +197,15 @@ sub read_properties_lines {
 	# do we make the keys all lowercase
 	my ($notLC) = shift || 0;
 	my (@lines) = @_;
-	my ($hash, $lastkey, $heredoc);
+	my ($hash, $lastkey, $heredoc, $linenum);
 
 	$hash = {};
 	$lastkey = "";
 	$heredoc = 0;
+	$linenum = 0;
 
 	foreach (@lines) {
+		$linenum++;
 		chomp;
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
@@ -232,7 +238,7 @@ sub read_properties_lines {
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
 				if (exists $hash->{$lastkey}) {
-					print "WARNING: Field \"$lastkey\" occurs more than once in \"$file\".\n";
+					print "WARNING: Repeated occurrence of field \"$lastkey\" at line $linenum of $file.\n";
 				}
 				if ($2 eq "<<") {
 					$hash->{$lastkey} = "";
@@ -243,11 +249,11 @@ sub read_properties_lines {
 			} elsif (/^\s+(\S.*?)\s*$/) {
 				# Old multi-line property format. Deprecated! Use heredocs instead.
 				$hash->{$lastkey} .= "\n".$1;
-				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" in \"$file\".\n";
+				#print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
 			} else {
-				print "WARNING: Unable to parse the line \"".$_."\" in \"$file\".\n";
+				print "WARNING: Unable to parse the line \"".$_."\" at line $linenum of $file.\n";
 			}
 		}
 	}
@@ -467,7 +473,7 @@ sub execute_script {
 
     my $string = expand_percent $template;
     my $string = expand_percent $template, \%map;
-
+    my $string = expand_percent $template, \%map, $err_info;
 
 Performs percent-expansion on the given multiline $template according
 to %map (if one is defined). If a line in $template begins with #
@@ -482,26 +488,26 @@ limitted to a single additional level (only (up to) two passes are
 made). If there are still % chars left after the recursion, that means
 $template needs more passes (beyond the recursion limit) or there are
 % patterns in $template that are not in %map. If either of these two
-cases occurs, the program will die with an error message.
+cases occurs, the program will die with an error message. If given,
+$err_info will be appended to this error message.
 
 To get an actual percent char in the string, protect it as %% in
 $template (similar to printf()). This occurs whether or not there is a
 %map.  This behavior is implemented internally in the function, so you
 should not have ('%'=>'%') in %map. Pecent-delimited percent chars are
-left-associative (again as in printf()). Currently, this %% treatment
-is implemented using a temporary sentinel string of "@PERCENT@", so if
-$template contains @PERCENT@ that will also be replaced with %.
+left-associative (again as in printf()).
 
 Expansion keys are not limitted to single letters, however, having one
 expansion key that is the beginning of a longer one (d and dir) will
 cause unpredictable results (i.e., "a" and "arch" is bad but "c" and
-"arch" is okay). Note that no such keys are in use at this point.
+"arch" is okay).
 
 =cut
 
 sub expand_percent {
 	my $s = shift;
 	my $map = shift || {};
+	my $err_info = shift;
 	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
 	return $s if (not defined $s);
@@ -542,8 +548,12 @@ sub expand_percent {
 			# The presence of a sequence of an odd number
 			# of percent chars means we have unexpanded
 			# percents besides (%% => %) left. Error out.
-			die "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"." if $s =~ /(?<!\%)(\%\%)*\%(?!\%)/;
-
+			if ($s =~ /(?<!\%)(\%\%)*\%(?!\%)/) {
+				my $errmsg = "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"";
+				$errmsg .= " ($err_info)" if defined $err_info;
+				$errmsg .= "\n";
+				die $errmsg;
+			}
 			# Now handle %% => %
 			$s =~ s/\%\%/\%/g;
 		}

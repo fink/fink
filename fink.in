@@ -99,19 +99,23 @@ Fink $version
 Usage: fink [options] command [package...]
        fink install pkg1 [pkg2 ...]
 
-Common commmands:
-  install    - install/update the named packages
-  remove     - remove the named packages
-  purge      - same as remove but also removes all configuration files
-  update     - update the named packages
-  selfupdate - upgrade fink to the lastest release
-  update-all - update all installed packages
-  configure  - rerun the configuration process
-  list       - list available packages, optionally filtering by name,
-               see 'fink list --help' for more options
-  apropos    - list packages matching a search keyword
-  describe   - display a detailed description of the named packages
-  index      - force rebuild of package cache
+Common commands:
+  install      - install/update the named packages
+  remove       - remove the named packages
+  purge        - same as remove but also removes all configuration files
+  update       - update the named packages
+  selfupdate   - upgrade fink to the lastest release
+  update-all   - update all installed packages
+  configure    - rerun the configuration process
+  list         - list available packages, optionally filtering by name,
+                 see 'fink list --help' for more options
+  apropos      - list packages matching a search keyword
+  describe     - display a detailed description of the named packages
+  index        - force rebuild of package cache
+  validate     - performs various checks on .info and .deb files.
+  scanpackages - rescans the list of binary packages on the system
+  checksums    - validates the md5 digest of all tarballs already downloaded
+  cleanup      - removes obsolete package files if newer versions are available
 
 Options:
   -h, --help     - display this help text
