@@ -1,5 +1,8 @@
 2001-07-13  Christoph Pfisterer  <cp@chrisp.de>
 
+	* PkgVersion.pm (get_description): Added optional style
+	parameter.
+
 	* Package.pm: Make sure the PkgVersion.pm module is loaded.
 
 	* PkgVersion.pm (phase_build): Added support to automatically

@@ -316,6 +316,7 @@ sub get_shortdescription {
 
 sub get_description {
   my $self = shift;
+  my $style = shift || 0;
   my ($desc, $s);
 
   if ($self->has_param("Description")) {
@@ -329,23 +330,25 @@ sub get_description {
     $desc .= &format_description($self->param("DescDetail"));
   }
 
-  if ($self->has_param("DescUsage")) {
-    $desc .= " .\n Usage Notes:\n";
-    $desc .= &format_description($self->param("DescUsage"));
-  }
+  if ($style != 1) {
+    if ($self->has_param("DescUsage")) {
+      $desc .= " .\n Usage Notes:\n";
+      $desc .= &format_description($self->param("DescUsage"));
+    }
 
-  if ($self->has_param("Homepage")) {
-    $desc .= " .\n Web site: ".&format_oneline($self->param("Homepage"))."\n";
-  }
+    if ($self->has_param("Homepage")) {
+      $desc .= " .\n Web site: ".&format_oneline($self->param("Homepage"))."\n";
+    }
 
-  if ($self->has_param("DescPackaging")) {
-    $desc .= " .\n Packaging Notes:\n";
-    $desc .= &format_description($self->param("DescPackaging"));
-  }
+    if ($self->has_param("DescPackaging")) {
+      $desc .= " .\n Packaging Notes:\n";
+      $desc .= &format_description($self->param("DescPackaging"));
+    }
 
-  if ($self->has_param("DescPort")) {
-    $desc .= " .\n Porting Notes:\n";
-    $desc .= &format_description($self->param("DescPort"));
+    if ($self->has_param("DescPort")) {
+      $desc .= " .\n Porting Notes:\n";
+      $desc .= &format_description($self->param("DescPort"));
+    }
   }
 
   return $desc;
