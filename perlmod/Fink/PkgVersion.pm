@@ -1016,7 +1016,11 @@ sub resolve_depends {
 				@dependslist = $package->get_all_providers();
 				foreach $dependent (@dependslist) {
 					$dependentname = $dependent->get_name();
-					if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
+
+# only issue the warning about BuildDependsOnly if we are more
+# verbose than the default
+
+					if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends" &&  Fink::Config::verbosity_level() > 1 ) {
 						if ($dependentname eq $depname) {
 							print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
 						} else {
