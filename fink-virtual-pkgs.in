@@ -49,9 +49,6 @@ if ($standalone == 0)
 	$dlist = Fink::VirtPackage->list(%options);
 	foreach $pkgname (sort keys %$dlist) {
 		$hash = $dlist->{$pkgname};
-		if ($options{'dpkg'} or $options{'apt'}) {
-			next if exists $hash->{builddependsonly}; # Do no pass builddependsonly packages to apt/dpkg
-		}
 		if ($options{dpkg}) {
 			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
 				printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];

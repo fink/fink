@@ -1,3 +1,8 @@
+2004-11-05  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Re-enable passing of BuildDependsOnly
+	virtual pkgs to apt/dpkg.
+
 2004-11-04  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* fink.8.in: Document 'fink remove --recursive' and 
@@ -6,7 +11,7 @@
 
 2004-11-04  Daniel Macks  <dmacks@netspace.org>
 
-	* fink-virt-packages.in: remove unused variable.
+	* fink-virtual-pkgs.in: remove unused variable.
 
 2004-10-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
