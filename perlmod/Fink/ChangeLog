@@ -1,3 +1,8 @@
+2003-12-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Engine.pm: If the package name is being truncated in list/apropos
+	print an ellipses ("...") so that the user knows about it.
+
 2003-12-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Rearranged the list of allowed fields and added
