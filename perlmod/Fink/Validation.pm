@@ -221,23 +221,25 @@ END { }				# module clean-up code here (global destructor)
 
 
 # Should check/verifies the following in .info files:
-#		+ the filename matches %f.info
-#		+ patch file is present
-#		+ all required fields are present
-#		+ warn if obsolete fields are encountered
-#		+ warn about missing Description/Maintainer/License fields
-#		+ warn about overlong Description fields
-#		+ warn about Description starting with "A" or "An" or containing the package name
-#		+ warn if boolean fields contain bogus values
-#		+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
-#			(excluded from this are fields like Description, Homepage etc.)
-#		+ warn if unknown fields are encountered
-#		+ warn if /sw is hardcoded in the script or set fields
+#	+ the filename matches %f.info
+#	+ patch file is present
+#	+ all required fields are present
+#	+ warn if obsolete fields are encountered
+#	+ warn about missing Description/Maintainer/License fields
+#	+ warn about overlong Description fields
+#	+ warn about Description starting with "A" or "An" or containing the package name
+#	+ warn if boolean fields contain bogus values
+#	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
+#		(excluded from this are fields like Description, Homepage etc.)
+#	+ warn if unknown fields are encountered
+#	+ warn if /sw is hardcoded in the script or set fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
-#		- if type is bundle/nosource - warn about usage of "Source" etc.
-#       - validate splitoffs!!! Very important
-# ... other things, make suggestions ;)
+#	- if type is bundle/nosource - warn about usage of "Source" etc.
+#	- better validation of splitoffs
+#	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
+#	  it uses ">" instead of ">>".
+#	- ... other things, make suggestions ;)
 #
 sub validate_info_file {
 	my $filename = shift;
