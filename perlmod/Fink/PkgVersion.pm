@@ -1259,7 +1259,6 @@ sub resolve_depends {
 		# behavior differs from 'Depends'). 
 		# But right now, enabling conflicts would cause update problems (e.g.
 		# when switching between 'wget' and 'wget-ssl')
-		### FIXME shlibs, might need to revisit this later
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading $oper for ".$self->get_fullname()."...\n";
 		}
@@ -1322,7 +1321,6 @@ sub resolve_depends {
 	# now we continue to assemble the larger @speclist
 	if ($include_build) {
 		# Add build time dependencies to the spec list
-		### FIXME shlibs, might need to revisit this later
 		if (Fink::Config::verbosity_level() > 2) {
 			print "Reading build $oper for ".$self->get_fullname()."...\n";
 		}
@@ -1335,7 +1333,6 @@ sub resolve_depends {
 		$split_idx = @speclist;
 		unless (lc($field) eq "conflicts") {
 			foreach	 $splitoff (@{$self->{_splitoffs}}) {
-				### FIXME shlibs, might need to revisit this later
 				if (Fink::Config::verbosity_level() > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
@@ -1433,7 +1430,7 @@ sub get_binary_depends {
 	# TODO: modify dependency list on the fly to account for minor
 	#	 library versions
 
-	### FIXME shlibs, added for RunTimeDepends
+	### This is an ugly way to accomplish this, FIXME
 	$depspec1 = $self->pkglist_default("RunTimeDepends", "");
 	$depspec2 = $self->pkglist_default("Depends", "");
 
@@ -2429,7 +2426,6 @@ EOF
 	my $has_kernel_dep;
 	my $struct = &pkglist2lol($self->get_binary_depends()); 
 
-	### FIXME shlibs, Add shlib depends code here
 	### 1) check for 'AddShlibDeps: true' else continue
 	if ($self->param_boolean("AddShlibDeps")) {
 		print "Writing shared library dependencies...\n";
