@@ -27,7 +27,7 @@ package Fink::Shlibs;
 
 use Fink::Base;
 use Fink::Services qw(&version_cmp);
-use Fink::CLI qw(&get_term_width &print_breaking);
+use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $dbpath);
 use Fink::PkgVersion;
 use Fink::Command qw(mkdir_p);
