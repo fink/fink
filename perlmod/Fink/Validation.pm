@@ -771,6 +771,7 @@ sub validate_dpkg_file {
 	my $filename;
 	my $looks_good = 1;
 	my $installed_headers = 0;
+	my $installed_dylibs = 0;
 
 	print "Validating .deb file $dpkg_filename...\n";
 	
@@ -806,6 +807,8 @@ sub validate_dpkg_file {
 				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
 			} elsif ( $filename =~/^$basepath\/include\S*[^\/]$/ ) {
 				$installed_headers = 1;
+ 			} elsif ( $filename =~/\.dylib$/ ) {
+ 				$installed_dylibs = 1;
 			} elsif ( $filename =~/^$basepath\/lib\/pkgconfig\/\S+$/ ) {
 				my $depends = `dpkg --field $dpkg_filename Depends`;
 				$depends =~ s/\(.*?\)//g;
@@ -833,10 +836,10 @@ sub validate_dpkg_file {
 # Note that if the .deb was compiled with an old version of fink which
 # does not record the BuildDependsOnly field, the warning is not issued
 
-	if ($installed_headers) {
+	if ($installed_headers and $installed_dylibs) {
 		my $BDO = `dpkg --field $dpkg_filename BuildDependsOnly`;
-		if ($BDO =~ /False/) {
-			print "Warning: Headers installed in $basepath/include but package does not declare BuildDependsOnly to be true\n";
+		if (not $BDO =~ /True/ and not $BDO =~ /False/) {
+			print "Warning: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
 		}
 	}
