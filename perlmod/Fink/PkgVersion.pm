@@ -700,12 +700,13 @@ sub resolve_depends {
       }
 
       $package = Fink::Package->package_by_name($depname);
-      push(@{$package->{_versionspecs}}, $versionspec) unless ($versionspec =~ /^\s*$/);
 
       if (not defined $package) {
 	print "WARNING: While resolving dependency \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 	next;
       }
+
+      push(@{$package->{_versionspecs}}, $versionspec) unless ($versionspec =~ /^\s*$/);
 
       if ($versionspec) {
 	push @$altlist, $package->get_matching_versions($versionspec);
@@ -1636,18 +1637,19 @@ sub phase_activate {
 	  die "can't find package ".$package->get_debname()."\n";
 	}
 
-    push(@installable, $deb);
+    push(@installable, $package);
   }
 
   if (@installable == 0) {
     die "no installable .deb files found!\n";
   }
 
-  if (&execute("dpkg -i @installable")) {
+  my @deb_installable = map { $_->find_debfile() } @installable;
+  if (&execute("dpkg -i @deb_installable")) {
     if (@installable == 1) {
       die "can't install package ".$installable[0]->get_fullname()."\n";
     } else {
-      die "can't batch-install packages: @installable\n";
+      die "can't batch-install packages: @deb_installable\n";
     }
   }
 

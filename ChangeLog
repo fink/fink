@@ -1,3 +1,16 @@
+2002-09-25 Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* Engine.pm: fixed so that the rest of a splitoff doesn't get
+	  reinstalled if just one package from the splitoff is being installed
+
+	* PkgVersion.pm: fixes the get_fullname bug when a dependency
+	  doesn't exist
+
+	* PkgVersion.pm: moved the code that checks for existing versions
+	  in the package tree when resolving dependencies -- in some cases
+	  it could die because a package that wasn't supposed to exist was
+	  getting marked as being there
+
 2002-09-18 Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: modified so that bootstrap can be run twice in the

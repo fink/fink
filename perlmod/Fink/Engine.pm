@@ -1078,7 +1078,7 @@ sub real_install {
 	foreach my $splitoff (@{$parent->{_splitoffs}}) {
 	  $already_rebuilt{$splitoff->get_name()} = 1;
 	  if ($splitoff->is_installed() or exists $deps{$splitoff->get_name()}) {
-	    push(@batch_install, $splitoff) unless ($already_activated{$splitoff->get_name()});
+	    push(@batch_install, $splitoff) unless ($already_activated{$splitoff->get_name()} or $splitoff->is_installed());
 	    $already_activated{$splitoff->get_name()} = 1;
 	  }
 	}
