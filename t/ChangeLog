@@ -1,3 +1,7 @@
+2005-02-02  David H. <dmalloc@users.sourceforge.net>
+
+	* Notify:	Added Subdirectory for Notify tests.
+
 2004-12-28  Daniel Macks  <dmacks@netspace.org>
 
 	* 00compile.t: ...or don't because that makes it even worse.

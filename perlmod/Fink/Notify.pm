@@ -24,6 +24,7 @@
 package Fink::Notify;
 
 use Fink::Config qw($config);
+use UNIVERSAL qw(isa);
 
 BEGIN {
         use Exporter ();
@@ -51,6 +52,8 @@ happen during package installation/removal.
 
 =head1 SYNOPSIS
 
+  ### a program that generates notifications
+
   use Fink::Notify;
 
   my $notifier = Fink::Notify->new('Growl');
@@ -58,6 +61,33 @@ happen during package installation/removal.
     event       => 'finkPackageInstallationPassed',
     description => 'Installation of package [foo] passed!',
   );
+
+  ### a module implementing a notifier type
+
+  package Fink::Notify::NotifierClass;
+
+  use Fink::Notifier;
+  @ISA = qw(Fink::Notifier);
+
+  sub new {
+    my class = shift;
+    return bless {}, $class;
+  }
+
+  sub about {
+    my @about = ("NotifierClass", "1.1");
+	return wantarray? @about : \@about;
+  }
+
+  sub do_notify {
+    my $self = shift;
+    my %args = @_;
+
+    print "Alert: $args{event}: $event{title}\n";
+    print "\t$args{description}\n" if defined $args{description};
+
+    return 1;
+  }
 
 =head1 METHODS
 
@@ -67,7 +97,11 @@ happen during package installation/removal.
 
 Get a new notifier object, optionally specifying the notification
 plugin to use.  If one is not specified, it will use the default
-plugin specified in the user's fink.conf.
+plugin specified in the user's fink.conf.  The returned object is
+that of the specific notifier itself, not the class of the new() here.
+
+Notifier modules must provide a new() method that returns a blessed
+ref for their object.
 
 =cut
 
@@ -81,7 +115,7 @@ sub new {
 	eval "require Fink::Notify::$plugin";
 	eval "\$self = Fink::Notify::$plugin->new()";
 
-	if ($@) {
+	unless (isa $self, "Fink::Notify") {
 		$self = bless({}, $class);
 	}
 
@@ -98,8 +132,11 @@ The default events are:
 	finkPackageInstallationFailed
 	finkPackageRemovalPassed
 	finkPackageRemovalFailed
-
-These events can be overridden in a plugin by overriding the events() method.
+	finkDoneSuccess
+	finkDoneFailure
+	
+Notifier modules may supply an alternate list of supported events by
+providing their own events() method.
 
 =cut
 
@@ -110,10 +147,13 @@ our @events = qw(
 	finkPackageInstallationFailed
 	finkPackageRemovalPassed
 	finkPackageRemovalFailed
+	finkDoneSuccess
+	finkDoneFailure
 );
 
 sub events {
-	return wantarray? @events : \@events;
+    my @eventlist = @events;  # return a copy so caller can't modify original
+	return wantarray? @eventlist : \@eventlist;
 }
 
 
@@ -131,11 +171,11 @@ Supported Arguments:
 
 =item * event
 
-The event name to notify on.
+The event name to notify on: values as declared in $notifier->events().
 
 =item * description
 
-The description of what has occurred.
+The plain-text description of what has occurred.
 
 =item * title (optional)
 
@@ -156,10 +196,12 @@ sub notify {
 		finkPackageInstallationFailed => 'Fink Installation Failed!',
 		finkPackageRemovalPassed      => 'Fink Removal Passed.',
 		finkPackageRemovalFailed      => 'Fink Removal Failed!',
+		finkDoneSuccess               => 'Fink Finished Successfully.',
+		finkDoneFailure               => 'Fink Finished With Failure!',
 	);
 
-	return undef if (not exists $args{'event'} or not exists $args{'description'});
-	$args{'title'} = $default_titles{$args{'event'}} unless (exists $args{'title'} and defined $args{'title'});
+	return undef if (not defined $args{'event'} or not defined $args{'description'});
+	$args{'title'} = $default_titles{$args{'event'}} unless defined $args{'title'};
 
 	$self->do_notify(%args);
 }
@@ -168,7 +210,11 @@ sub notify {
 =item about() - about the output plugin
 
 This method returns the name and version of the output plugin
-currently loaded.
+currently loaded. The return either as a list (notifier-type, version)
+or a ref to that list, depending on caller context.
+
+Notifier modules must provide an about() method that returns data for
+their module.
 
 =cut
 
