@@ -1,5 +1,9 @@
 2004-01-06  Max Horn  <max@quendi.de>
 
+	* Engine.pm: Partially undid Justin's change from Dec 23 (revision 1.144).
+	  Relatives of a package can't (and mustn't) be build dependencies of the
+	  package, since they are built at *exactly the same time*.
+
 	* Engine.pm: Fixed a case where fink would rebuild a package twice. Also
 	  clarified some comments.
 
