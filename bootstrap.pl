@@ -313,7 +313,7 @@ my $arch = get_arch();
 
 @dirlist = qw(etc etc/alternatives src fink fink/debs);
 push @dirlist, "fink/$distribution", "fink/$distribution/stable", "fink/$distribution/local";
-foreach $dir (qw(local/bootstrap stable/main stable/crypto local/main)) {
+foreach $dir (qw(stable/main stable/crypto local/main)) {
 	push @dirlist, "fink/$distribution/$dir", "fink/$distribution/$dir/finkinfo",
 		"fink/$distribution/$dir/binary-darwin-$arch";
 }
@@ -341,9 +341,10 @@ if ($result == 1 ) {
 
 ### copy package info needed for bootstrap
 
-$script = "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/local/bootstrap/finkinfo/\n";
+$script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n ";
+$script .= "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
 
-$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision);
+$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base");
 if ($result == 1 ) {
 	exit 1;
 }
@@ -366,7 +367,7 @@ print CONFIG <<"EOF";
 # Fink configuration, initially created by bootstrap.pl
 Basepath: $installto
 RootMethod: $rootmethod
-Trees: local/main stable/main stable/crypto local/bootstrap
+Trees: local/main stable/main stable/crypto
 Distribution: $distribution
 EOF
 close(CONFIG) or die "can't write configuration: $!";
@@ -385,6 +386,10 @@ Fink::Configure::configure();
 ### bootstrap
 
 Fink::Bootstrap::bootstrap();
+
+### remove dpkg-bootstrap.info, to avoid later confusion
+
+&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info");
 
 ### copy included package info tree if present
 
