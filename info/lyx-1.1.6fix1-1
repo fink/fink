@@ -1,0 +1,15 @@
+Package: lyx
+Version: 1.1.6fix1
+Revision: 1
+Source: ftp://ftp.lyx.org/pub/lyx/stable/lyx-%v.tar.gz
+Depends: xforms, tetex
+UpdateConfigGuess: true
+UpdateLibtool: true
+SetCPPFLAGS: -traditional-cpp
+SetCXX: c++
+PatchScript: mv -f config.guess config.sub ltconfig ltmain.sh config
+InstallScript: make install prefix=%i
+ chmod ugo+w %i/share/lyx/configure
+CommentPort:
+CommentStow: No issues.
+Maintainer: Jeffrey Whitaker <jsw@cdc.noaa.gov>
