@@ -1,3 +1,13 @@
+2004-02-12  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: conditional_pkg_list: optimized initial field
+	parsing and fixed consecutive puctuation replacement. Remembered
+	to save value back to hash. Changed syntax to:
+	  Depends: (string1 op string2) foo
+	where op is one of (<< >> <= >= == !=) for string comparison or:
+	  Depends: (string) foo
+	where string must be non-null.
+	
 2004-02-11  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Wrote conditional_pkg_list which processes

@@ -294,32 +294,38 @@ sub get_param_with_expansion {
 ### performed (i.e., do it yourself before calling this method).
 {
 # need some private variables, may as well define 'em here once
-	my %sep_fix_map = ( ',\s*,' =>   ',',
-			    ',\s*\|' =>  ',',
-			    '\|\s*\|' => '|',
-			    '\|\s*,' =>  ','
-			  );
-	my $sep_fix_match = join "|", keys %sep_fix_map;
+	my %compare_subs = ( '>>' => sub { $_[0] gt $_[1] },
+			     '<<' => sub { $_[0] lt $_[1] },
+			     '>=' => sub { $_[0] ge $_[1] },
+			     '<=' => sub { $_[0] le $_[1] },
+			     '==' => sub { $_[0] eq $_[1] },
+			     '!=' => sub { $_[0] ne $_[1] }
+			   );
+	my $compare_ops = join "|", keys %compare_subs;
 
 sub conditional_pkg_list {
 	my $self = shift;
-	my $field = shift;
+	my $field = lc shift;
 
-	my $value = $self->param($field);
+	my $value = $self->{$field};
 	return unless defined $value and length $value;
 	return unless $value =~ /(?-:\A|,|\|)\s*\(/;  # short-cut if no conditionals
 #	print "conditional_pkg_list for ",$self->{package},"\n";
 #	print "\toriginal: $value\n";
 	my @atoms = split /([,|])/, $value; # break apart the field
 	map {
-		if (s/(\s*)\((.*?)\)\s*(.*)/$1$3/) {
+		if (s/\s*\((.*?)\)(\s*.*)/$2/) {
 		    # we have a conditional; remove the cond expression
-		    my $cond = $2;
+		    my $cond = $1;
 #		    print "\tfound conditional '$cond'\n";
-		    if ($cond =~ /^(\S+)\s+(\S+)$/) {
+		    if ($cond =~ /^(\S+)\s*($compare_ops)\s*(\S+)$/) {
+			# syntax 1: (string1 op string2)
 #			print "\t\ttesting '$1'$2'\n";
 			# if cond is false, clear entire atom
-			$_ = "" if $1 ne $2;
+			$_ = "" unless $compare_subs{$2}->($1,$3);
+		    } elsif ($cond !~ /\s/) {
+			#syntax 2: (string): string must be non-null
+			$_ = "" unless length $cond;
 		    } else {
 			print "Error: Invalid conditional expression \"$cond\" in $field of ".$self->get_info_filename.". Treating as true.\n";
 		    }
@@ -328,11 +334,17 @@ sub conditional_pkg_list {
 	$value = join "", @atoms; # reconstruct field
 	# if atoms were removed, we have consecutive [,|] chars; merge them
 #	print "\tnow have: $value\n";
-	while ($value =~ s/($sep_fix_match)/$sep_fix_map{$1}/) {};
+	while ($value =~ s/,\s*,/,/g   or
+	       $value =~ s/,\s*\|/,/g  or
+	       $value =~ s/\|\s*,/,/g  or
+	       $value =~ s/\|\s*\|/|/g
+	      ) {};
+#	print "\tnow have: $value\n";
 	# also any leading or trailing separator chars
 	$value =~ s/^\s*[,|]\s*//;
 	$value =~ s/\s*[,|]\s*$//;
 #	print "\tnow have: $value\n";
+	$self->{$field} = $value;
 	return;
 }
 
