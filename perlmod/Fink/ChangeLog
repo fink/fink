@@ -1,5 +1,9 @@
 2004-04-07  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: fix dumpinfo to give Source(N) field, not (renamed) tarball filename.
+
+2004-04-07  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Implemented 'fink dumpinfo'
 
 2004-03-30  Daniel Macks  <dmacks@netspace.org>

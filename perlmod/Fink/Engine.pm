@@ -1651,9 +1651,9 @@ sub cmd_dumpinfo {
 		printf "%s: %s\n", 'Version', $pkg->get_version();
 		printf "%s: %s\n", 'Revision', $pkg->get_revision();
 		print "\n";
-		print "Sources (SourceRename applied):\n";
+		print "Sources:\n";
 		foreach $field ( $pkg->get_source_suffices() ) {
-			printf "\tSource%s: %s\n", $field, $pkg->get_tarball($field);
+			printf "\tSource%s: %s\n", $field, $pkg->get_source($field);
 		}
 		print "\n";
 		foreach my $field (qw/ Depends BuildDepends Provides Conflicts Replaces BuildConflicts /) {
