@@ -27,7 +27,7 @@ use Fink::Notify;
 use Fink::Config qw($basepath);
 
 our @ISA = qw(Fink::Notify);
-our $VERSION = (qw$Revision$)[-1];
+our $VERSION = ( qw$Revision$ )[-1];
 
 sub about {
 	my $self = shift;
@@ -46,31 +46,20 @@ sub new {
 		require Mac::Growl;
 		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
 	};
-	return undef if ($@);
-
-	return $self;
+	return $@ ? undef : $self;
 }
 
 sub do_notify {
 	my $self  = shift;
 	my %args  = @_;
-	my $image = $basepath . '/share/fink/images/' . $args{'event'} . '.png';
-	my $sticky = 0;
 
-	$image = undef unless (-r $basepath . '/share/fink/images/' . $args{'event'} . '.png');
-	$sticky = 1 if ($args{'event'} =~ /Failed$/);
+	my $image = $basepath . '/share/fink/images/' . $args{'event'} . '.png';
+	$image = undef unless -r $image;
+
+	my $sticky = ($args{'event'} =~ /Failed$/);
 
 	eval {
-		if (defined $image) {
-			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0, $image);
-		} else {
-			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0);
-		}
+		Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0, $image);
 	};
-
-	if ($@) {
-		return undef;
-	} else {
-		return 1;
-	}
+	return $@ ? undef : 1;
 }

@@ -27,7 +27,9 @@ use Fink::Notify;
 use Fink::Config qw($basepath);
 
 our @ISA = qw(Fink::Notify);
-our $VERSION = (qw$Revision$)[-1];
+our $VERSION = ( qw$Revision$ )[-1];
+
+our $command = '/usr/bin/osascript';
 
 sub about {
 	my $self = shift;
@@ -42,9 +44,7 @@ sub new {
 	my $self = bless({}, $class);
 	my @events = $self->events();
 
-	return undef unless (-x '/usr/bin/osascript');
-
-	return $self;
+	return -x $command ? $self : undef;
 }
 
 sub do_notify {
@@ -56,12 +56,9 @@ sub do_notify {
 
 	$text = sprintf('say "%s"', $text);
 
-	if (open(COMMAND, "| osascript")) {
-		print COMMAND $text;
-		close(COMMAND);
-	} else {
-		return undef;
-	}
+	open(COMMAND, "| $command") or return undef;
+	print COMMAND $text;
+	close(COMMAND) or return undef;
 
 	return 1;
 }

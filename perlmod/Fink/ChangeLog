@@ -1,3 +1,13 @@
+2005-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Notify/QuickSilver.pm: thought it was the Say module. Corrected
+	to QuickSilver.
+	* Notify/Growl.pm: Simplify do_notify
+	* Notify/*.pm: Fix $VERSION for emacs paren balancer.
+	* Notify/QuickSilver.pm, Notify/Say.pm, Notify/Syslog.pm: use
+	package global variable for Unix command. Improved error checking
+	during writing to pipe.
+
 2005-02-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Improved wording for scorllkeeper misuse warnings.

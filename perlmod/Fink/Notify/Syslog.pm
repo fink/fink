@@ -27,7 +27,9 @@ use Fink::Notify;
 use Fink::Config qw($basepath);
 
 our @ISA = qw(Fink::Notify);
-our $VERSION = (qw$Revision$)[-1];
+our $VERSION = ( qw$Revision$ )[-1];
+
+our $command = '/usr/bin/logger';
 
 sub about {
 	my $self = shift;
@@ -42,9 +44,7 @@ sub new {
 	my $self = bless({}, $class);
 	my @events = $self->events();
 
-	return undef unless (-x '/usr/bin/logger');
-
-	return $self;
+	return -x $command ? $self : undef;
 }
 
 sub do_notify {
@@ -58,15 +58,11 @@ sub do_notify {
 	my $errors = 0;
 
 	for my $line (split(/\s*\n+/, $args{'description'})) {
-		my $return = system('/usr/bin/logger', '-t', 'Fink', $args{'description'});
+		my $return = system($command, '-t', 'Fink', $args{'description'});
 		if ($return >> 8) {
 			$errors++;
 		}
 	}
 
-	if ($errors) {
-		return undef;
-	} else {
-		return 1;
-	}
+	return $errors ? undef : 1;
 }
