@@ -655,7 +655,7 @@ sub copy_description {
 	}
 	if (-e "$bpath/fink/dists/$destination/$package.info") {
 #		if (-e "$bpath/fink/dists/$destination/$package.info.bak") {
-#			my $answer = &prompt_boolean("\nWARNING: The file $bpath/fink/dists/$destination/$package.info.bak exists and will be overwritten.  Do you wish to continue?", 1);
+#			my $answer = &prompt_boolean("\nWARNING: The file $bpath/fink/dists/$destination/$package.info.bak exists and will be overwritten.  Do you wish to continue?", default => 1);
 #			if (not $answer) {
 #				die "\nOK, you can re-run ./inject.pl after moving the file.\n\n";
 #			}

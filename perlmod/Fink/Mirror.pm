@@ -24,7 +24,7 @@
 package Fink::Mirror;
 
 use Fink::Services qw(&read_properties &read_properties_multival_var &read_properties_multival);
-use Fink::CLI qw(&prompt_selection_new);
+use Fink::CLI qw(&prompt_selection);
 use Fink::Config qw($config $libpath);
 
 use strict;
@@ -318,9 +318,9 @@ sub get_site_retry {
 				"retry-next" => $nexttext );
 		my @choices = map { ( $choices{$_} => $_ ) } @choice_list;
 		$result =
-		&prompt_selection_new("How do you want to proceed?",
-				      [ number => $default ],
-				      @choices );
+		&prompt_selection("How do you want to proceed?",
+				      default => [ number => $default ],
+				      choices => \@choices );
 	}
 	$url = $self->{lastused};
 	if ($result eq "error") {

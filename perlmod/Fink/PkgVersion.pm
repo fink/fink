@@ -1868,7 +1868,7 @@ Fink::Services::enforce_gcc("This package must be compiled with GCC EXPECTED_GCC
 								"cause for this is a corrupted or incomplete ".
 								"download. Do you want to delete the tarball ".
 								"and download it again?",
-								($tries >= 3) ? 0 : 1);
+								default => ($tries >= 3) ? 0 : 1);
 			if ($answer) {
 				rm_f $found_archive;
 				redo;		# restart loop with same tarball

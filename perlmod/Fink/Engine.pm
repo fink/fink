@@ -24,7 +24,7 @@
 package Fink::Engine;
 
 use Fink::Services qw(&latest_version &sort_versions &execute &file_MD5_checksum &get_arch &expand_percent &count_files &call_queue_clear &call_queue_add);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection_new &get_term_width);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection &get_term_width);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch binary_requested);
@@ -190,7 +190,7 @@ sub process {
 		}
 		if($apt_problem) {
 			my $prompt = "Continue with the 'UseBinaryDist' option temporarily disabled?";
-			my $continue = prompt_boolean($prompt, 1, 60);
+			my $continue = prompt_boolean($prompt, default => 1, timeout => 60);
 			if ($continue) {
 				# temporarily disable UseBinaryDist
 				$config->set_param("UseBinaryDist", "false");
@@ -922,7 +922,7 @@ EOF
 		print "Fink will attempt to $cmd $rmcount package(s).\n";
 		&print_breaking("$pkglist\n\n");
 
-		my $answer = &prompt_boolean("Do you want to continue?", 1);
+		my $answer = &prompt_boolean("Do you want to continue?", default => 1);
 		if (! $answer) {
 			die "$cmd not performed!\n";
 		}
@@ -961,7 +961,7 @@ EOF
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
  
-	my $answer = &prompt_boolean("Do you want to continue?", 1);			
+	my $answer = &prompt_boolean("Do you want to continue?", default => 1);			
 	if (! $answer) {
 		die "Purge not performed!\n";
 	}
@@ -1559,7 +1559,8 @@ sub real_install {
 				print "\n";
 				&print_breaking("fink needs help picking an alternative to satisfy ".
 								"a virtual dependency. The candidates:");
-				$dname = &prompt_selection_new("Pick one:", [number=>$choice], @choices);
+				$dname = &prompt_selection("Pick one:",
+					default => [number=>$choice], choices => \@choices);
 			}
 
 			# the dice are rolled...
@@ -1714,7 +1715,8 @@ sub real_install {
 				&print_breaking(join(" ",@removals), 1, " ");
 			}
 			if (not $dryrun) {
-				$answer = &prompt_boolean("Do you want to continue?", 1);
+				$answer = &prompt_boolean("Do you want to continue?",
+						  				  default => 1);
 				if (! $answer) {
 					die "Package requirements not satisfied\n";
 				}

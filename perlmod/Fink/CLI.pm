@@ -163,63 +163,91 @@ sub print_breaking_stderr {
 =item prompt
 
     my $answer = prompt $prompt;
-    my $answer = prompt $prompt, $default;
-    my $answer = prompt $prompt, $default, $timeout;
+    my $answer = prompt $prompt, %options;
 
 Ask the user a question and return the answer. The user is prompted
-via STDOUT/STDIN using $prompt (which is word-wrapped). If the user
-returns a null string or Fink is configured to automatically accept
-defaults (i.e., bin/fink was invoked with the -y or --yes option), the
-default answer $default is returned (or a null string if no $default
-is not defined). The optional $timeout argument establishes a wait
-period (in seconds) for the prompt, after which the default answer
-will be used. If a $timeout is given, any existing alarm() is
-destroyed.
+via STDOUT/STDIN using $prompt (which is word-wrapped).
+
+The %options are given as option => value pairs. The following
+options are known:
+
+	default (optional)
+	
+		If the option 'default' is given, then its value will be
+		returned if no input is detected.
+		
+		This can occur if the user enters a null string, or if Fink
+		is configured to automatically accept defaults (i.e., bin/fink
+		was invoked with the -y or --yes option).
+		
+		Default value: null string
+		
+	timeout (optional)
+	
+		The 'timeout' option establishes a wait period (in seconds) for
+		the prompt, after which the default answer will be used.
+		If a timeout is given, any existing alarm() is destroyed.
+		
+		Default value: no timeout
 
 =cut
 
 sub prompt {
 	my $prompt = shift;
-	my $default_value = shift;
-	$default_value = "" unless defined $default_value;
-	my $timeout = shift || 0;
+	my %opts = (default => "", timeout => 0, @_);
 
-	my $answer = &get_input("$prompt [$default_value]", $timeout);
+	my $answer = &get_input("$prompt [$opts{default}]", $opts{timeout});
 	chomp $answer;
-	$answer = $default_value if $answer eq "";
+	$answer = $opts{default} if $answer eq "";
 	return $answer;
 }
 
 =item prompt_boolean
 
     my $answer = prompt_boolean $prompt;
-    my $answer = prompt_boolean $prompt, $default_true;
-    my $answer = prompt_boolean $prompt, $default_true, $timeout;
+    my $answer = prompt_boolean $prompt, %options;
 
-Ask the user a yes/no question and return the logical value of the
+Ask the user a yes/no question and return the B<truth>-value of the
 answer. The user is prompted via STDOUT/STDIN using $prompt (which is
-word-wrapped). If $default_true is true or undef, the default answer
-is true, otherwise it is false. If the user returns a null string or
-Fink is configured to automatically accept defaults (i.e., bin/fink
-was invoked with the -y or --yes option), the default answer is
-returned. The optional $timeout argument establishes a wait period
-(in seconds) for the prompt, after which the default answer will be
-used. If a $timeout is given, any existing alarm() is destroyed.
+word-wrapped).
+
+The %options are given as option => value pairs. The following
+options are known:
+
+	default (optional)
+	
+		If the option 'default' is given, then its B<truth>-value will be
+		returned if no input is detected.
+		
+		This can occur if the user enters a null string, or if Fink
+		is configured to automatically accept defaults (i.e., bin/fink
+		was invoked with the -y or --yes option).
+		
+		Default value: true
+		
+	timeout (optional)
+	
+		The 'timeout' option establishes a wait period (in seconds) for
+		the prompt, after which the default answer will be used.
+		If a timeout is given, any existing alarm() is destroyed.
+		
+		Default value: no timeout
 
 =cut
 
 sub prompt_boolean {
 	my $prompt = shift;
-	my $default_value = shift;
-	$default_value = 1 unless defined $default_value;
-	my $timeout = shift || 0;
+	my %opts = (default => 1, timeout => 0, @_);
 
 	my $meaning;
 	while (1) {
-		my $answer = &get_input("$prompt [".($default_value ? "Y/n" : "y/N")."]", $timeout);
+		my $answer = &get_input(
+			"$prompt [".($opts{default} ? "Y/n" : "y/N")."]",
+			$opts{timeout}
+		);
 		chomp $answer;
 		if ($answer eq "") {
-			$meaning = $default_value;
+			$meaning = $opts{default};
 			last;
 		} elsif ($answer =~ /^y(es?)?/i) {
 			$meaning = 1;
@@ -233,54 +261,58 @@ sub prompt_boolean {
 	return $meaning;
 }
 
-=item prompt_selection_new
-
-    my $answer = prompt_selection_new $prompt, \@default, @choices;
-
-Compatibility during API migration. Use prompt_selection() instead.
-
-=cut
-
-sub prompt_selection_new {
-	my $prompt = shift;
-	my $default = shift;
-	my @choices = @_;
-
-	&prompt_selection($prompt, $default, \@choices);
-}
-
 =item prompt_selection
 
-    my $answer = prompt_selection $prompt, \@default, \@choices;
-    my $answer = prompt_selection $prompt, \@default, \@choices, $timeout;
+    my $answer = prompt_selection $prompt, %options;
 
 Ask the user a multiple-choice question and return the answer. The
 user is prompted via STDOUT/STDIN using $prompt (which is
 word-wrapped) and a list of choices. The choices are numbered
-(beginning with 1) and the user selects by number. The list @choices
-is an ordered pairwise list (label1,value1,label2,value2,...). If the
-user returns a null string or Fink is configured to automatically
-accept defaults (i.e., bin/fink was invoked with the -y or --yes
-option), the default answer is used according to the following:
+(beginning with 1) and the user selects by number.
 
-  @default = undef;                # choice 1
-  @default = [];                   # choice 1
-  @default = ["number", $number];  # choice $number
-  @default = ["label", $label];    # first choice with label $label
-  @default = ["value", $label];    # first choice with value $value
-
-The optional $timeout argument establishes a wait period (in seconds)
-for the prompt, after which the default answer will be used. If a
-$timeout is given, any existing alarm() is destroyed.
+The %options are given as option => value pairs. The following
+options are known:
+	
+	choices (required)
+		
+		The option 'choices' must be a reference to an ordered pairwise
+		array [ label1 => value1, label2 => value2, ... ]. The labels will
+		be displayed to the user; the values are the return values if that
+		option is chosen.
+	
+	default (optional)
+	
+		If the option 'default' is given, then it determines which choice
+		will be returned if no input is detected.
+		
+		This can occur if the user enters a null string, or if Fink
+		is configured to automatically accept defaults (i.e., bin/fink
+		was invoked with the -y or --yes option).
+		
+		The following formats are recognized for the 'default' option:
+		
+		  @default = [];                   # choice 1
+		  @default = ["number", $number];  # choice $number
+		  @default = ["label", $label];    # first choice with label $label
+		  @default = ["value", $label];    # first choice with value $value
+		
+		Default value: choice 1
+		
+	timeout (optional)
+	
+		The 'timeout' option establishes a wait period (in seconds) for
+		the prompt, after which the default answer will be used.
+		If a timeout is given, any existing alarm() is destroyed.
+		
+		Default value: no timeout
 
 =cut
 
 sub prompt_selection {
 	my $prompt = shift;
-	my $default = shift;
-	my $choices = shift;
-	my @choices = @$choices;
-	my $timeout = shift || 0;
+	my %opts = (default => [], timeout => 0, @_);
+	my @choices = @{$opts{choices}};
+	my $default = $opts{default};
 
 	my ($count, $answer, $default_value);
 
@@ -317,7 +349,7 @@ sub prompt_selection {
 	$default_value = 1 if !defined $default_value;
 	print "\n\n";
 
-	$answer = &get_input("$prompt [$default_value]", $timeout);
+	$answer = &get_input("$prompt [$default_value]", $opts{timeout});
 	chomp($answer);
 	if (!$answer) {
 		$answer = 0;
