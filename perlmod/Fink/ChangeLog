@@ -8,9 +8,9 @@
 
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-        * Mirror.pm: setting default values for rsync and sourceforge 
-        mirror sets, as well as master mirror set, in case the mirror
-        directory is absent or damaged.
+	* Mirror.pm: setting default values for rsync and sourceforge 
+	mirror sets, as well as master mirror set, in case the mirror
+	directory is absent or damaged.
 
 2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
