@@ -1,18 +1,20 @@
- Fink 0.1.7
+$Id$   -*- text -*-
+
+ Fink 0.2.0
 ============
 
 This is Fink, a package management system that aims to bring the full
 world of GNU and other common Open Source software to Darwin and
 Mac OS X.
 
-With the help of GNU stow, it maintains a separate directory
-hierarchy. It downloads original source releases, patches them if
-neccessary, configures them for Darwin and compiles and installs
-them. The information about available packages and the neccessary
-patches are included with this distribution, everything else is
-downloaded off the 'net.
+With the help of dpkg, it maintains a separate directory hierarchy. It
+downloads original source releases, patches them if neccessary,
+configures them for Darwin and compiles and installs them. The
+information about available packages and the neccessary patches are
+included with this distribution, everything else is downloaded off the
+'net.
 
-This is version 0.1.7, an early development release. It has rough
+This is version 0.2.0, an early development release. It has rough
 edges everywhere, and some things don't work yet. Also, the list of
 packages is quite short. You're walking on thin ground. It could easily
 break your system (although it hasn't broken mine to date). You have
@@ -37,47 +39,7 @@ You need:
 
  Installation
 --------------
-First, you must decide where Fink's directory hierarchy will live. I
-recommend /sw, because that's what I'm using. Theoretically, anything
-should be fine, but don't use common, existing directories like
-/usr/local or even /usr - that _will_ break your system.
-
-This version of Fink comes with a small installation script,
-install.sh. It takes the installation base path as the first
-argument. To install Fink in the recommended location, type:
-
-   ./install.sh /sw
-
-The script will create the neccessary directories and copy the files
-there. Then, it will run Fink and let it bootstrap itself. This
-includes an interactive configuration, mirror selection and the
-installation of essential packages (currently the stow package).
-
-
- Upgrading from previous releases
-----------------------------------
-You can upgrade from release 0.1.2 and later by using the upgrade.sh
-script. It is called like the install.sh script, with the installation
-path as the first (and only) parameter, e.g.:
-
-   ./upgrade.sh /sw
-
-Upgrading from releases prior to 0.1.2 is not possible. Sorry, too
-much has changed.
-
-To update all packages to the latest version use the 'update-all'
-command (see below).
-
-Special package update notes:
-
-- When updating the libtiff package from version 3.4, either keep the
-  file /sw/stow/libtiff-3.4-1/lib/libtiff.dylib, or rebuild all
-  packages that depend on libtiff.
-- The new revision of the dlcompat package will remove the header and
-  library from /usr/local and install a symlink for compatibility with
-  binaries and libraries linked against the old package. It will try
-  to use sudo for this (as it did when the old package was
-  installed). On new installations, sudo is not needed.
+The installation process is described in detail in the file INSTALL.
 
 
  Using Fink

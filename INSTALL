@@ -1,0 +1,100 @@
+$Id$   -*- text -*-
+
+ Fink 0.2.0 Installation
+=========================
+
+These are the installation instructions for Fink version 0.2.0. This
+document covers two procedures:
+
+ * First time installation
+ * Upgrading from Fink 0.1.x
+
+
+ First Time Installation
+=========================
+
+ Requirements
+--------------
+You need:
+ * An installed Mac OS X, version 10.0 system. Darwin 1.3 may also
+   work once it's released.
+ * Development tools. On Mac OS X, install the Developer.pkg package
+   from the Developer Tools CD. On Darwin, the tools should be present
+   in the default install.
+ * Many other things that come with Mac OS X. This includes perl 5.6,
+   wget and autoconf.
+ * Internet access. All source code is downloaded from mirror sites.
+
+
+ Choosing A Directory
+----------------------
+Before you install, you must decide where Fink's directory hierarchy
+will live. The recommended place is /sw, and all examples in this
+document will use that. Any other directory should be fine as well, as
+long as you don't use existing directories like /usr/local or
+/usr. The bootstrap script tries to catch these.
+
+A special note about /usr/local: While it is possible to install Fink
+in /usr/local (and the bootstrap script will let you do that after a
+confirmation), it is a bad idea. Many third party software packages
+install into /usr/local. This can cause severe problems for Fink,
+ranging from dpkg getting confused and refusing to install packages to
+strange build errors. Also, the /usr/local hierarchy is in the default
+search path for the shell and the compiler. That means that it is much
+more difficult to get back to a working system when things break. You
+have been warned.
+
+
+ Installation
+--------------
+The actual installation is performed by the perl script
+bootstrap.pl. It is accompanied by a small shell script, bootstrap.sh,
+which checks some basic requirements and then hands over control to
+the perl script. So, to start installation, run this command:
+
+   ./bootstrap.sh
+
+After running some tests, the script will ask you what method should
+be used to gain root privileges. The most useful choice is 'sudo'. On
+a default install of Mac OS X, sudo is already enabled for the user
+account created during installation. The script will immediately use
+the method you choose to become root. This is required for the
+installation.
+
+Next, the script will ask you for the installation path. See
+'Choosing A Directory' above for hints about this. The script will
+create the directory and set it up for the bootstrap that will be done
+later.
+
+Next up is Fink configuration. This consists mainly of selecting
+mirror sites for downloading.
+
+Finally, the script has enough information to conduct the bootstrap
+process. That means it will now download, build and install some
+essential packages. Don't worry if you see some packages being
+compiled twice. This is required because to build a binary package of
+the package manager, you must have the package manager available.
+
+
+ Upgrading From Fink 0.1.x
+===========================
+
+There is no direct upgrade path from Fink 0.1.x to Fink 0.2.x, because
+they use different methods for underlying package management (stow
+vs. dpkg). The only way to upgrade is to do a complete reinstall. The
+procedure is as follows:
+
+ * Save any changes you have made to configuration files etc.
+ * Save a list of packages you had installed. Hint: Try
+   'ls /sw/var/fink-stamp'.
+ * If you have the source tarballs still lying around in /sw/src and
+   don't want to download them again, move them to another directory.
+ * Wipe out the /sw directory, i.e. 'cd / ; rm -rf /sw'. Do this as
+   root if neccessary.
+ * Follow the procedures for a first time installation above.
+ * When you're asked for an 'additional directory for downloaded
+   tarballs', enter the directory you moved the tarballs to.
+ * Reinstall the packages you need.
+
+
+EOF.

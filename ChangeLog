@@ -1,3 +1,9 @@
+2001-04-13  Christoph Pfisterer  <cp@chrisp.de>
+
+	* INSTALL: New file for installation instructions.
+	* README: Some adaptions. Moved installation instructions to
+	INSTALL.
+
 2001-04-09  Christoph Pfisterer  <cp@chrisp.de>
 
 	* bootstrap.pl: Create more directories in <prefix>/fink. Avoid
