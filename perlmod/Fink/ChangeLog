@@ -1,3 +1,7 @@
+2004-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: catch "%p\/src\/" also, not just "%p/src/".
+
 2004-08-08  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Rename parse_configureparams() to prepare_percent_c()

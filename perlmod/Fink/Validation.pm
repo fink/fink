@@ -546,7 +546,7 @@ sub validate_info_file {
 =cut
 
 		# Check for %p/src
-		if ($value =~ /\%p\/src\//) {
+		if ($value =~ /\%p\\?\/src\\?\//) {
 			print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
 			$looks_good = 0;
 			next;
@@ -635,7 +635,7 @@ sub validate_info_file {
 =cut
 
 				# Check for %p/src
-				if ($value =~ /\%p\/src\//) {
+				if ($value =~ /\%p\\?\/src\\?\//) {
 					print "Warning: Field \"$field\" appears to contain \%p/src. ($filename)\n";
 					$looks_good = 0;
 				}
