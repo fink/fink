@@ -663,7 +663,7 @@ sub cmd_fetch_all_missing {
 sub cmd_remove {
 	my @packages = get_pkglist("remove", @_);
 
-        Fink::PkgVersion::phase_deactivate(@packages);
+	Fink::PkgVersion::phase_deactivate(@packages);
 	Fink::Status->invalidate();
 }
 
@@ -714,7 +714,7 @@ EOF
 		while (defined($pattern = shift)) {
 			$pattern = lc quotemeta $pattern; # fixes bug about ++ etc in search string.
 			push @selected, grep(/^$pattern$/, @plist);
-                }
+		}
 	}
 
 	if ($#selected < 0 ) {
@@ -741,9 +741,9 @@ EOF
 			next;
 		}
 
-                if (defined $buildonly) {
-                        next unless ( $vo->param_boolean("builddependsonly") );
-                }
+		if (defined $buildonly) {
+			next unless ( $vo->param_boolean("builddependsonly") );
+		}
 
 		push @packages, $package->get_name();
 	}
@@ -1167,8 +1167,8 @@ sub real_install {
 				}
 			}
 			if (not $found) {
-			        # See if the user has a regexp to match in fink.conf
-			        my $matchstr = $config->param("MatchPackageRegEx");
+				# See if the user has a regexp to match in fink.conf
+				my $matchstr = $config->param("MatchPackageRegEx");
 				my $matchcount =0;
 				my $usename;
 				if (defined $matchstr) {
@@ -1202,8 +1202,8 @@ sub real_install {
 						$founddebcnt++;
 				   }
 				   $pkgindex++;
-		        }
-		        if ($founddebcnt > 1) {
+				}
+				if ($founddebcnt > 1) {
 				   $choice = 1; # Do not select anything if more than one choice is available
 				}
 				print "\n";

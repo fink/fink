@@ -421,7 +421,7 @@ sub update_db {
 				mkdir("$basepath/var/db", 0755) || die "Error: Could not create directory $basepath/var/db";
 			}
 			Storable::store ($packages, "$basepath/var/db/fink.db.tmp");
-                        rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
+			rename "$basepath/var/db/fink.db.tmp", "$basepath/var/db/fink.db";
 			print "done.\n";
 		} else {
 			&print_breaking( "\nFink has detected that your package cache is out of date and needs" .

@@ -97,13 +97,13 @@ config file.  For example...
 
 sub new_with_path {
 	my($proto, $path, $defaults) = @_;
-        $defaults = {} unless ref $defaults eq 'HASH';
+	$defaults = {} unless ref $defaults eq 'HASH';
 	my $class = ref($proto) || $proto;
 
 	my $props = Fink::Services::read_properties($path);
 
-        my $self = { _path => $path };
-        @{$self}{map lc, keys %$defaults} = values %$defaults;
+	my $self = { _path => $path };
+	@{$self}{map lc, keys %$defaults} = values %$defaults;
 
 	while (my($key, $value) = each %$props) {
 		$self->{$key} = $value unless $key =~ /^_/;
@@ -136,17 +136,17 @@ sub initialize {
 	$config = $self;
 
 	$basepath = $self->param("Basepath");
-        unless (defined $basepath and $basepath) {
-            my $error = 'Basepath not set';
-            if( $self->{_path} ) {
-                $error .= qq{ in config file "$self->{_path}"};
-            }
-            else {
-                $error .= qq{, no config file};
-            }
-            $error .= "!\n";
-            die $error;
-        }
+	unless (defined $basepath and $basepath) {
+		my $error = 'Basepath not set';
+		if( $self->{_path} ) {
+			$error .= qq{ in config file "$self->{_path}"};
+		}
+		else {
+			$error .= qq{, no config file};
+		}
+		$error .= "!\n";
+		die $error;
+	}
 
 	$buildpath = $self->param_default("Buildpath", "$basepath/src");
 
@@ -192,10 +192,10 @@ sub get_treelist {
 	my $self = shift;
 
 	return grep !m{^(/|.*\.\./)},
-               split /\s+/, 
-                 $self->param_default("Trees", 
-                         "local/main stable/main stable/bootstrap"
-                 );
+	           split /\s+/, 
+	             $self->param_default("Trees", 
+	                     "local/main stable/main stable/bootstrap"
+	             );
 }
 
 =item param
