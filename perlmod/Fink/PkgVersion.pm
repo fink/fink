@@ -2163,7 +2163,10 @@ sub set_env {
 	my $bsbase = Fink::Bootstrap::get_bsbase();
 
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
-		system("mkdir -p '$basepath/var/lib/fink/prebound'");
+
+		if (&execute("/bin/mkdir -p $basepath/var/lib/fink/prebound")) {
+			warn "couldn't create seg_addr_table directory, this may cause compilation to fail!\n";
+		}
 		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
 			print FILEOUT <<END;
 0x90000000  0xa0000000  <<< Next split address to assign >>>

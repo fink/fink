@@ -30,6 +30,7 @@ use Fink::Engine;
 use Fink::Package;
 use Fink::FinkVersion qw(&pkginfo_version);
 use Fink::Mirror;
+use Fink::Command qw(cat);
 
 use File::Find;
 
@@ -156,7 +157,7 @@ sub check {
 		if (&fetch_url("http://fink.sourceforge.net/$currentfink", $srcdir)) {
 			die "Can't get latest version info\n";
 		}
-		$latest_fink = `/bin/cat $srcdir/$currentfink`;
+		$latest_fink = cat "$srcdir/$currentfink";
 		chomp($latest_fink);
 		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" )
 		{

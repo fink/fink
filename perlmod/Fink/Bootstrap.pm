@@ -28,6 +28,7 @@ use Fink::CLI qw(&print_breaking);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Engine;
+use Fink::Command qw(cat);
 
 use strict;
 use warnings;
@@ -280,7 +281,7 @@ sub get_packageversion {
 
 	my ($packageversion, $packagerevision);
 	
-	chomp($packageversion = `cat VERSION`);
+	chomp($packageversion = cat "VERSION");
 	if ($packageversion =~ /cvs/) {
 	my @now = gmtime(time);
 		$packagerevision = sprintf("%04d%02d%02d.%02d%02d",

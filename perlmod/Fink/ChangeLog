@@ -1,3 +1,9 @@
+2004-01-09  Daniel Macks  <dmacks@netpace.org>
+
+	* Bootstrap.pm, SelfUpdate.pm: Swiched `cat` to Fink::Command::cat.
+	* PkgVersion.pm: Improved check for failure when creating
+	seg_addr_table file. Switched one system("mkdir") to &execute.
+	
 2004-01-08  Daniel Macks  <dmacks@netpace.org>
 
 	* Validation.pm: Warning for DescDetail and DescUsage that will
