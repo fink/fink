@@ -2031,6 +2031,7 @@ END
 			$ENV{$varname} = &expand_percent($s, $expand);
 		} else {
 			if (exists $defaults{$varname} and
+					defined $defaults{$varname} and 
 					not $self->param_boolean("NoSet$varname")) {
 				$s = $defaults{$varname};
 				$ENV{$varname} = &expand_percent($s, $expand);
