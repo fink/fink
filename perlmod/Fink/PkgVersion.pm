@@ -2115,6 +2115,7 @@ EOF
 	my $skip_prebinding = 0;
 	my $pkgref = ($self);
 	$skip_prebinding++ unless ($config->param("Distribution") ge "10.2-gcc3.3");
+	$skip_prebinding++ if ($config->param("Distribution") ge "10.4");
 
 	# Why do this?  On the off-chance the parent relationship is recursive (ie, a splitoff
 	# depends on a splitoff, instead of the top-level package in the splitoff)
@@ -2496,6 +2497,7 @@ sub get_env {
 		"CPP", "CPPFLAGS",
 		"CXX", "CXXFLAGS",
 		"DYLD_LIBRARY_PATH",
+		"JAVA_HOME",
 		"LD_PREBIND",
 		"LD_PREBIND_ALLOW_OVERLAP",
 		"LD_FORCE_NO_PREBIND",
@@ -2532,6 +2534,8 @@ END
 	}
 
 	# start with a clean the environment
+	# uncomment this to be able to use distcc -- not officially supported!
+	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	%script_env = ("HOME" => $ENV{"HOME"});
 
 	# add system path
@@ -2605,20 +2609,23 @@ END
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
 		if ($self->is_type('java')) {
-			my ($subtype, $dir, $found);
+			my ($JAVA_HOME, $subtype, $dir, $versions_dir, @dirs);
 			if ($subtype = $self->get_subtype('java')) {
-				my $versions_dir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+				$subtype = '' if ($subtype eq 'java');
+				$versions_dir = '/System/Library/Frameworks/JavaVM.framework/Versions';
 				if (opendir(DIR, $versions_dir)) {
-					for $dir (sort(readdir(DIR))) {
+					@dirs = sort(grep(/^${subtype}/, readdir(DIR)));
+					@dirs = reverse(@dirs) if ($subtype eq "");
+					for $dir (@dirs) {
 						if ($dir =~ /^${subtype}/ and -f "$versions_dir/$dir/Headers/jni.h") {
-							$script_env{'JAVA_HOME'} = "$versions_dir/$dir/Home" unless $self->has_param('SetJAVA_HOME');
-							$script_env{'PATH'} = "$versions_dir/$dir/Home/bin:" . $script_env{'PATH'} unless $self->has_param('SetPATH');
-							$found++;
+							$JAVA_HOME = "$versions_dir/$dir/Home";
 						}
 					}
 					closedir(DIR);
 				}
 			}
+			$script_env{'JAVA_HOME'} = $JAVA_HOME unless $self->has_param('SetJAVA_HOME');
+			$script_env{'PATH'}      = $JAVA_HOME . '/bin:' . $script_env{'PATH'} unless $self->has_param('SetPATH');
 		}
 	}
 
