@@ -222,8 +222,7 @@ sub initialize {
   if (exists $self->{_splitoffs} and @{$self->{_splitoffs}} > 0) {
     my ($splitoff, @sibling_list);
     for $splitoff (@{$self->{_splitoffs}}) {
-      @sibling_list = ($self, grep {$_->get_name() ne $splitoff->get_name()} @{$self->{_splitoffs}});
-      $splitoff->{_relatives} = \@sibling_list;
+      @{$splitoff->{_relatives}} = ($self, grep {$_->get_name() ne $splitoff->get_name()} @{$self->{_splitoffs}});
     }
     $self->{_relatives} = $self->{_splitoffs};
   }
