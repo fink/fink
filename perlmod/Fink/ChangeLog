@@ -1,5 +1,13 @@
 2004-04-19  Daniel Macks  <dmacks@netspace.org>
 
+	* CLI.pm: Use actual screen width in print_breaking(), not
+	hardcoded value. Extract option/desc 2-column printing from
+	parse_cmd_options() into new print_optionlist(). Display flag
+	value type (or optional specified string) in parse_cmd_options().
+	Remove stray debugging.
+
+2004-04-19  Daniel Macks  <dmacks@netspace.org>
+
 	* CLI.pm: Implement new parse_cmd_options() to process 'fink'
 	subcommand options (handles --help including pretty-printing).
 

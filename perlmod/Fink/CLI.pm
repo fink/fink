@@ -40,7 +40,7 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
 					  &prompt &prompt_boolean &prompt_selection_new
-					  &parse_cmd_options
+					  &parse_cmd_options &print_optionlist
 			      &get_term_width);
 }
 our @EXPORT_OK;
@@ -79,13 +79,14 @@ need with things like:
     print_breaking $string, $linebreak, $prefix1, $prefix2;
 
 Wraps $string, breaking at word-breaks, and prints it on STDOUT. The
-screen width used is the package global variable $linelength. Breaking
-is performed only at space chars. If $linebreak is true, a linefeed
-will be appended to the last line printed, otherwise one will not be
-appended. Optionally, prefixes can be defined to prepend to each line
-printed: $prefix1 is prepended to the first line, $prefix2 is
-prepended to all other lines. If only $prefix1 is defined, that will
-be prepended to all lines.
+screen width is determined by get_term_width, or if that fails, the
+package global variable $linelength. Breaking is performed only at
+space chars. If $linebreak is true, a linefeed will be appended to the
+last line printed, otherwise one will not be appended. Optionally,
+prefixes can be defined to prepend to each line printed: $prefix1 is
+prepended to the first line, $prefix2 is prepended to all other
+lines. If only $prefix1 is defined, that will be prepended to all
+lines.
 
 If $string is a multiline string (i.e., it contains embedded newlines
 other than an optional one at the end of the whole string), the prefix
@@ -105,6 +106,9 @@ sub print_breaking {
 	$prefix2 = $prefix1 unless defined $prefix2;
 	my ($pos, $t, $reallength, $prefix, $first);
 
+	my $width = &get_term_width - 1;    # some termcaps need a char for \n
+	$width = $linelength if $width < 1;
+
 	chomp($s);
 
 	# if string has embedded newlines, handle each line separately
@@ -122,7 +126,7 @@ sub print_breaking {
 
 	$first = 1;
 	$prefix = $prefix1;
-	$reallength = $linelength - length($prefix);
+	$reallength = $width - length($prefix);
 	while (length($s) > $reallength) {
 		$pos = rindex($s," ",$reallength);
 		if ($pos < 0) {
@@ -136,7 +140,7 @@ sub print_breaking {
 		if ($first) {
 			$first = 0;
 			$prefix = $prefix2;
-			$reallength = $linelength - length($prefix);
+			$reallength = $width - length($prefix);
 		}
 	}
 	print "$prefix$s";
@@ -389,12 +393,14 @@ sub get_term_width {
 
 This function does Getopt::Long processing of the command-line args
 passed in @args according to the @arg_info. Each element of that array
-is a ref to a 3-element list ($flag, $action, $help) where $flag and
-$action are the key and value passed to Getopt::Long:GetOptions.  The
---help flag is handled automatically (and does not return): $help is
-the message for each flag in $flag. The subcommand is passed in $cmd
-for use in help and error messages. The remaining (unprocessed)
-arguments from @args are returned.
+is a ref to a 3- or 4-element list ($flag, $action, $help (, $example)
+) where $flag and $action are the key and value passed to
+Getopt::Long:GetOptions. The --help flag is handled automatically (and
+does not return): $help is the message for each flag in $flag and
+$example (if given) is used instead of the generic "s", "i", or "f"
+flag value. The subcommand is passed in $cmd for use in help and error
+messages. The remaining (unprocessed) arguments from @args are
+returned.
 
 =cut
 
@@ -422,38 +428,33 @@ sub parse_cmd_options {
 		print "Usage: fink [options] $cmd [options] [package(s)]\n\n";
 		print "Options:\n";
 
-		my $maxlen = 0;                          # width of flags column
-		my $maxmaxlen = int $linelength/2 - 6;   # maximum allowed $maxlen
+		my @optlist;
 
-		my @flags = map { $_->[0] } @$arg_info;  # the Getopt-formatted flags
-		# convert to pretty-printing format
-		foreach (@flags) {
+		# convert from Getopt format to pretty-printing format
+		my $val;  # for flag value string
+		for( my $i=0; $i<=$#{$arg_info}; $i++ ) {
+			$_ = $arg_info->[$i]->[0];
 			s/!\+//g;                        # clear toggle & incremental specs
-			s/[=:].//g;                      # clear value type specs
-			$_ = join ", ", map {
-				# put - before each single-char flag, -- before each multi-char
-				length $_ == 1 ? "-$_" : "--$_" 
-				} split /\|/;
-			# track longest string (but not if too long)
-			$maxlen = length $_ if $maxlen < length $_ && length $_ <= $maxmaxlen;
-		};
-
-		my $indent = ' ' x ($maxlen+4);  # spaces to get to "-" marker
-
-		my @descs = map { $_->[2] } @$arg_info;  # descriptions
-		while(defined( my $helpstring = shift @flags)) {
-			# scroll through the parallel @flags and @descs list
-			if (length $helpstring > $maxlen) {
-				# long flag strings need wrapping so put on their own line
-				&print_breaking($helpstring, 1, '  ');
-				&print_breaking("- $descs[0]", 1, $indent, "$indent  ");
+			if (s/[=:](.)//) {
+				# flag takes a value
+				$val = $arg_info->[$i]->[3];   # allow optional user string
+				$val = 1 unless defined $val;
+				$_ = join ", ", map {
+					# - before each single-char flag, -- before each multi-char
+					# append value string
+					length $_ == 1 ? "-$_ $val" : "--$_=$val"
+					} split /\|/;
 			} else {
-				# short flag strings go on same line as (start of) help msg
-				&print_breaking($helpstring.' ' x ($maxlen+2-length($helpstring))."- $descs[0]", 1, '  ', "$indent  ");
+				# simple flag
+				$_ = join ", ", map {
+					# - before each single-char flag, -- before each multi-char
+					length $_ == 1 ? "-$_" : "--$_"
+					} split /\|/;
 			}
-			shift @descs;
+			push @optlist, [ $_, $arg_info->[$i]->[2] ];
 		}
-		print '  ', '1234567890' x 6, "\n";
+
+		&print_optionlist( \@optlist , '  ' );
 		exit 0;
 	}
 
@@ -461,6 +462,71 @@ sub parse_cmd_options {
 	@ARGV = @temp_ARGV;  # restore original @ARGV
 
 	return @_;
+}
+
+=item print_optionlist
+
+  &print_optionlist( \@rows );
+  &print_optionlist( \@rows, $prefix );
+  &print_optionlist( \@col1, \@col2 );
+  &print_optionlist( \@col1, \@col2, $prefix );
+
+Print output in two columns (with wrapping). In the first form, @rows
+is a list of refs to ($col1,$col2) lists. In the second form, @col1
+and @col2 are parallel lists of the data. The first column is made as
+wide as necessary to accomodate the longest string that does not
+require more than about half the screen width. The second column
+begins on the same line and is wrapped in that column to take up the
+rest of the screen width. For longer first-column strings, the full
+screen width is used and the second-column string is started on a new
+line (still in second-column position). The optional $prefix is placed
+before all lines (defaults to null).
+
+=cut
+
+sub print_optionlist {
+	my $colref = shift;
+
+	my( @col1, @col2 );
+
+	if (not ref $_[0]) {
+		# if called as @_==(\@rows) massage into @col1,@col2 form
+		foreach (@$colref) {  # rotate the array
+			push @col1, $_->[0];
+			push @col2, $_->[1];
+		}
+	} else {
+		# called as @_==(\@col1,\@col2) so just deref the two arrays
+		@col1 = @$colref;
+		$colref = shift;
+		@col2 = @$colref;
+	}
+
+	my $prefix = shift;
+	$prefix = '' unless defined $prefix;
+
+	my $maxlen = 0;                          # width of flags column
+	# maximum allowed $maxlen: half screen for [ prefix + col1 + bullet ]
+	my $maxmaxlen = int $linelength/2 - (length $prefix) - 4;
+
+	foreach (@col1) {
+		# track longest string (but not if too long)
+		$maxlen = length $_ if $maxlen < length $_ && length $_ <= $maxmaxlen;
+	};
+
+	my $prefixb = $prefix . ' ' x $maxlen . '  ';  # for bullet
+	my $prefix2 = $prefixb . '  ';                 # for col 2
+
+	for(my $i=0; $i<=$#col1; $i++) {
+		if (length $col1[$i] > $maxlen) {
+			# long col1 strings need wrapping so put on their own line
+			&print_breaking($col1[$i], 1, $prefix);
+			&print_breaking("- $col2[0]", 1, $prefixb, $prefix2);
+		} else {
+			# short flag strings go on same line as (start of) help msg
+			&print_breaking(sprintf("%-${maxlen}s  - %s", $col1[$i], $col2[$i]), 1, $prefix, $prefix2 );
+		}
+	}
 }
 
 =back
