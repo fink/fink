@@ -1552,8 +1552,11 @@ EOF
 	close(CONTROL) or die "can't write control file for ".$self->get_fullname().": $!\n";
 
 	### update Mach-O Object List
+	###
+	### (but not for distributions prior to 10.3)
 
 	our %prebound_files = ();
+	if ($config->param("Distribution") > 10.2) {
 
 	eval {
 		require File::Find;
@@ -1628,6 +1631,7 @@ EOF
 			close(DEPS);
 		}
 	}
+    } # conditional on distribution > 10.2
 
 	### create scripts as neccessary
 
