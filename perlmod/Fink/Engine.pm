@@ -1089,7 +1089,7 @@ sub real_install {
 			# check the graph
 			foreach $dp (@$dep) {
 				$dname = $dp->get_name();
-				if (exists $deps{$dname} and $deps{$dname}->[2] == $dp) {
+				if (exists $deps{$dname} and $deps{$dname}->[PKGVER] == $dp) {
 					if ($deps{$dname}->[OP] < $OP_INSTALL) {
 						$deps{$dname}->[OP] = $OP_INSTALL;
 					}
@@ -1108,7 +1108,7 @@ sub real_install {
 					}
 					# add node to graph
 					$deps{$dname} = [ $dname, Fink::Package->package_by_name($dname),
-														$dp, $OP_INSTALL, 2 ];
+					                  $dp, $OP_INSTALL, 2 ];
 					# add a link
 					push @$item, $deps{$dname};
 					# add to investigation queue
@@ -1399,7 +1399,7 @@ sub real_install {
 			$package = $item->[PKGVER];
 			my $pkg;
 
-			# concatinate dependencies of package and its relatives
+			# concatenate dependencies of package and its relatives
 			my ($dpp, $pkgg, $isgood);
 			my ($dppname,$pkggname,$tmpname);
 			my @extendeddeps = ();
