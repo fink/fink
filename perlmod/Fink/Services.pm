@@ -49,6 +49,7 @@ our @EXPORT_OK;
 
 # non-exported package globals go here
 our $linelength = 77;
+our $arch;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -611,8 +612,10 @@ sub file_MD5_checksum {
 # Returns the architecture string to be used on this platform.
 # For example, "powerpc" for ppc.
 sub get_arch {
-	my $arch = `uname -p`;
-	chomp $arch;
+	if(not defined $arch) {
+	  $arch = `uname -p`;
+	  chomp $arch;
+	}
 	return $arch;
 }
 
