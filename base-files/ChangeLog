@@ -1,3 +1,7 @@
+2001-08-01  Christoph Pfisterer  <cp@chrisp.de>
+
+	* fink-release: Bumped to 0.2.4.
+
 2001-07-12  Christoph Pfisterer  <cp@chrisp.de>
 
 	* dir-base: Added, serves as a skeleton for the Info system's dir
