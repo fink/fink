@@ -243,7 +243,7 @@ sub read_properties_lines {
 		} else {
 			next if /^\s*\#/;		# skip comments
 			next if /^\s*$/;		# skip empty lines
-			if (/^\s*([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
+			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 				$lastkey = $notLC ? $1 : lc $1;
 				if (exists $hash->{$lastkey}) {
 					print "WARNING: Repeated occurrence of field \"$lastkey\" at line $linenum of $file.\n";
