@@ -1,0 +1,10 @@
+Package: gnomemm
+Version: 1.1.16
+Revision: 1
+Source: http://prdownloads.sourceforge.net/gtkmm/gnomemm-1.1.16.tar.gz
+Depends: gtk+, libsigc++, gnome-libs, gtkmm
+UpdateLibtool: true
+PatchScript: mv -f ltconfig ltmain.sh scripts/
+ConfigureParams: --disable-shared
+SetCPPFLAGS: -traditional-cpp
+Maintainer: Jeremy Higgs <jhiggs@iprsystems.com>
