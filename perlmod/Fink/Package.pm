@@ -350,11 +350,11 @@ sub scan_all {
 				}
 			}
 			
-			# If the index is not outdated, we can use it, and thus safe a lot of time
+			# If the index is not outdated, we can use it, and thus save a lot of time
 			 if (not $db_outdated) {
-				$packages = Storable::retrieve("$basepath/var/db/fink.db");
+				$packages = Storable::lock_retrieve("$basepath/var/db/fink.db");
 			 }
-			$aptdb = Storable::retrieve("$basepath/var/db/finkapt.db");
+			$aptdb = Storable::lock_retrieve("$basepath/var/db/finkapt.db");
 		}
 	}
 	

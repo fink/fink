@@ -1,3 +1,7 @@
+2004-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Obey flock when reading db files via Storable
+
 2004-10-12  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* Engine.pm: Implement 'UseBinaryDist' option that causes fink 
