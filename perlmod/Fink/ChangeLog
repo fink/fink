@@ -1,3 +1,8 @@
+2005-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: gettext-tools installed during bootstrap (on
+	branch_0_23 only)
+
 2005-02-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: be sure that the pre-expansion of conditionals
