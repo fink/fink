@@ -5,8 +5,12 @@ Breaks:
   Both are based on the same function, and since Depends aren't fully known for
   packages using AddShlibDeps till deb building phase.
 
+  The solution for buildlock is to enforce the policy that all -dev packages
+  must have a Depends (RunTimeDepends) on it's -shlibs.
+
 Missing:
 * remove comments and add debug code to pedantic verbosity
+* Common code for build, updating and reading the shlibs.db should get merged
 * Better checking/enforcing of the Shlibs field
 * Warning about Depends being removed in the future.
 * Check for depends on children packages
