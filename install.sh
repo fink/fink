@@ -73,6 +73,10 @@ for file in COPYING README README.html INSTALL INSTALL.html \
   install -c -p -m 644  $file "$basepath/share/doc/fink/"
 done
 
+install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog"
+install -c -p -m 644  mirror/ChangeLog "$basepath/share/doc/fink/ChangeLog.mirror"
+install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
+install -c -p -m 644  update/ChangeLog "$basepath/share/doc/fink/ChangeLog.update"
 
 echo "Done."
 exit 0

@@ -1,3 +1,10 @@
+2002-08-04  Max Horn  <max@quendi.de>
+
+	* fink.in: Patch #588705: Automates passing on the options
+	  (by Sylvain Cuaz)
+
+	* install.sh: Install the various ChangeLogs along with Fink.
+
 2002-06-22  Max Horn  <max@quendi.de>
 
 	* fink.in: Applied Justin's multi-level verbosity patch.

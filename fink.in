@@ -35,12 +35,13 @@ my %options =
    "interactive" => 0,
    "verbosity" => 0,
   );
+my $optionsString = '';
 
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
-GetOptions('yes|y' => \$options{dontask},
-	   'quiet|q' => sub { $options{verbosity} = -1 },
-	   'verbose|v' => sub { $options{verbosity} = 3 },
-#	   'interactive|i' => \$options{interactive},
+GetOptions('yes|y' => sub { $options{dontask} = 1 ;  $optionsString .= '--yes ' },
+	   'quiet|q' => sub { $options{verbosity} = -1 ;  $optionsString .= '--quiet ' },
+	   'verbose|v' => sub { $options{verbosity} = 3 ;  $optionsString .= '--verbose ' },
+#	   'interactive|i' => sub { $options{interactive} = 1 ;  $optionsString .= '--interactive ' },
 	   'version|V' => \&show_version,
 	   'help|h|?' => \&show_help)
  or die "fink: unknown option\nType 'fink --help' for more information.\n";
@@ -134,7 +135,7 @@ my $engine = Fink::Engine->new_with_config($config);
 ### process the command line (or enter interactive mode)
 
 if ($#ARGV >= 0) {
-  $engine->process(@ARGV);
+  $engine->process($optionsString,@ARGV);
 } else {
   # TODO: enter interactive mode
 #  die "fink: no command given.\nType 'fink --help' for usage information.\n";

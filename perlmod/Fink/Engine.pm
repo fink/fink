@@ -129,6 +129,7 @@ sub initialize {
 
 sub process {
   my $self = shift;
+  my $options = shift;
   my $cmd = shift;
   my ($cmdname, $cmdinfo, $info);
   my ($proc, $pkgflag, $rootflag);
@@ -153,7 +154,7 @@ sub process {
 
   # check if we need to be root
   if ($rootflag and $> != 0) {
-    &restart_as_root($cmd, @_);
+    &restart_as_root($options, $cmd, @_);
   }
 
   # read package descriptions if needed
@@ -176,19 +177,7 @@ sub restart_as_root {
   $cmd = "$basepath/bin/fink";
 
   # Pass on options
-  if (Fink::Config::get_option("dontask")) {
-    $cmd .= " --yes";
-  }
-  if (Fink::Config::get_option("verbosity") == 3) {
-    $cmd .= " --verbose";
-  }
-  elsif (Fink::Config::get_option("verbosity") == -1) {
-    $cmd .= " --quiet";
-  }
-  if (Fink::Config::get_option("interactive")) {
-    $cmd .= " --interactive";
-  }
-  # TODO: add code that automates passing on the options!
+  $cmd .= ' ' . shift;
 
   foreach $arg (@_) {
     if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
