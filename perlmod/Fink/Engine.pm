@@ -841,7 +841,7 @@ EOF
 
 sub cmd_cleanup {
 	my ($pname, $package, $vo, $file, $suffix);
-	my (@to_be_deleted);
+	my (@old_src_files);
 
 	# TODO - add option that specify whether to clean up source, .debs, or both
 	# TODO - add --dry-run option that prints out what actions would be performed
@@ -850,7 +850,37 @@ sub cmd_cleanup {
 	#				 current version of any package; etc.
 	#				 Delete all .deb and delete all src? Not really needed, this can be
 	#				 achieved each with single line CLI commands.
-	
+	# TODO - document --keep-src in the man page, and add a fink.conf entry for defaults
+
+	my ($wanthelp, $keep_old);
+	use Getopt::Long;
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions(
+		'keep-src|k' => \$keep_old,
+		'help|h'     => \$wanthelp
+	) or die "fink cleanup: unknown option\nType 'fink cleanup --help' for more information.\n";
+
+	if ($wanthelp) {
+		require Fink::FinkVersion;
+		my $version = Fink::FinkVersion::fink_version();
+
+		print <<"EOF";
+Fink $version
+
+Usage: fink cleanup [options]
+
+Options:
+  -k, --keep-src  - Move old source files to $basepath/src/old/.
+  -h, --help      - This help text.
+
+EOF
+		exit 0;
+	}
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+
 	# Reset list of non-obsolete debs/source files
 	my %deb_list = ();
 	my %src_list = ();
@@ -910,28 +940,44 @@ sub cmd_cleanup {
 
 	# Remove obsolete source files. We do not delete immediatly because that
 	# will confuse readdir().
-	@to_be_deleted = ();
+	@old_src_files = ();
 	opendir(DIR, "$basepath/src") or die "Can't access $basepath/src: $!";
 	while (defined($file = readdir(DIR))) {
-		$file = "$basepath/src/$file";
+		# $file = "$basepath/src/$file";
 		# Skip all source files that are still used by some package
-		next if $src_list{$file};
-		push @to_be_deleted, $file;
+		next if $src_list{"$basepath/src/$file"};
+		push @old_src_files, $file;
 	}
 	closedir(DIR);
 
-	foreach $file (@to_be_deleted) {
+	if ($keep_old) {
+		unless (-d "$basepath/src/old") {
+		mkdir("$basepath/src/old") or die "Can't create $basepath/src/old: $!";
+		}
+	}
+
+	foreach $file (@old_src_files) {
 		# For now, do *not* remove directories - this could easily kill
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
-		if (-f $file) {
-			unlink $file and $file_count{'src'}++;
+		if (-f "$basepath/src/$file") {
+		print("$file\n");
+		if ($keep_old) {
+				rename("$basepath/src/$file", "$basepath/src/old/$file") and $file_count{'src'}++;
+			} else {
+				unlink "$basepath/src/$file" and $file_count{'src'}++;
+			}
+		}
 	}
-}
 
 	print 'Obsolete deb packages deleted: ' . $file_count{'deb'} . "\n";
 	print 'Obsolete symlinks deleted: ' . $file_count{'symlink'} . "\n";
-	print 'Obsolete sources deleted: ' . $file_count{'src'} . "\n\n";
+	if ($keep_old) {
+		print 'Obsolete sources moved: ' . $file_count{'src'} . "\n\n";
+	}
+	else {
+		print 'Obsolete sources deleted: ' . $file_count{'src'} . "\n\n";
+	}
 }
 
 ### building and installing
