@@ -2,7 +2,6 @@ Package: fink
 Version: @VERSION@
 Revision: @REVISION@
 Depends: base-files
-BuildDepends: test-simple-pm | perl580-core | perl581-core
 Suggests: storable-pm, term-readkey-pm
 Essential: yes
 Source: %n-%v.tar
@@ -24,10 +23,6 @@ DescPackaging: <<
  the setup script itself, but pointed at the testing directory.
  The second run of setup.sh properly points fink at the installed
  configuration file.
-
- Had to make test-simple-pm, test-harness-pm, and file-spec-pm into
- Essential packages so that things are built in the right order
- during bootstrap or upgrades.
 <<
 DescDetail: <<
 fink is the Fink project's package manager. It is responsible for

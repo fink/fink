@@ -1,3 +1,8 @@
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Add file-spec-pm, test-harness-pm, and test-simple-pm
+	when bootstrapping under perl 5.6.x.
+
 2003-12-04  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: Fixed double building issue in my dep check code. And

@@ -53,9 +53,9 @@ sub bootstrap {
 	my @plist = ("gettext", "tar", "dpkg-bootstrap");
 	my @addlist = ("apt", "apt-shlibs", "storable-pm", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "ncurses-dev");
 	if ("$]" == "5.006") {
-		push @addlist, "storable-pm560";
+		push @addlist, "storable-pm560", "file-spec-pm", "test-harness-pm", "test-simple-pm";
 	} elsif ("$]" == "5.006001") {
-		push @addlist, "storable-pm561";
+		push @addlist, "storable-pm561", "file-spec-pm", "test-harness-pm", "test-simple-pm";
 	} elsif ("$]" == "5.008") {
 	} elsif ("$]" == "5.008001") {
 	} else {

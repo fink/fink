@@ -1,0 +1,5 @@
+2003-12-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* testmore.pl: Small script which tests for the presence of 
+	Test::More.  (Our Makefile uses this script to decide whether
+	to run the tests or not.)
