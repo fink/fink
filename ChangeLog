@@ -1,3 +1,7 @@
+2004-02-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.19.0
+
 2004-02-16  Daniel Macks  <dmacks@netspace.org>
 
 	* STYLE: a style guide for the fink core code.
