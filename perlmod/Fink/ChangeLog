@@ -1,5 +1,9 @@
 2005-01-16  Daniel Macks  <dmacks@netspace.org>
 
+	* Services.pm: execute() output indicates if using sudo.
+
+2005-01-16  Daniel Macks  <dmacks@netspace.org>
+
 	* CLI.pm: Add $timeout param to prompt() and prompt_selection_new().
 
 2005-01-14  Daniel Macks  <dmacks@netspace.org>

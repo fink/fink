@@ -429,12 +429,12 @@ options are known:
         Whether to delete temp-files that are created. The following
         values are known:
 
-            -1         Always delete
+            -1    Always delete
 
-            undef, 0   Delete if script was successful, do not delete
-                       if it failed
+            0 (or not passed)
+                  Delete if script was successful, do not delete if it failed
 
-            1          Never delete
+            1     Never delete
 
 =cut
 
@@ -479,11 +479,7 @@ EOSCRIPT
 
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
-		if (not $options{'quiet'}) {
-			$drop_root
-				? print "sudo -u nobody sh -c $cmd\n"
-				: print "$cmd\n";
-		}
+		print "sudo -u nobody sh -c $cmd\n" unless $options{'quiet'};
 		$drop_root
 			? system(qw/ sudo -u nobody sh -c /, $cmd)
 			: system($cmd);
