@@ -36,7 +36,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&configure);
+	@EXPORT_OK	 = qw(&configure &choose_mirrors);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -147,6 +147,9 @@ sub configure {
 ### mirror selection
 
 sub choose_mirrors {
+    my $mirrors_postinstall = shift; # boolean value, =1 if we've been
+                                     # called from the postinstall script
+                                     # of the fink-mirrors package
 	my ($answer, $missing, $default, $def_value);
 	my ($continent, $country);
 	my ($keyinfo, @continents, @countries, $key, $listinfo);
@@ -155,7 +158,9 @@ sub choose_mirrors {
 
 	print "\n";
 	&print_breaking("Mirror selection");
+    die "File $libpath/mirror/_keys not found.  Please install the fink-mirrors package and try again.\n" unless (-f "$libpath/mirror/_keys");
 	$keyinfo = &read_properties("$libpath/mirror/_keys");
+    die "File $libpath/mirror/_list not found.  Please install the fink-mirrors package and try again.\n" unless (-f "$libpath/mirror/_list");
 	$listinfo = &read_properties("$libpath/mirror/_list");
 
 	### step 0: determine and ask if we need to change anything
@@ -169,8 +174,14 @@ sub choose_mirrors {
 		}
 	}
 	if (!$missing) {
+	    if ($mirrors_postinstall) {
+		print "\n";
+		$answer = &prompt_boolean("The list of possible mirrors in fink has" .
+" been updated.  Do you want to review and change your choices?", 0);
+	    } else {
 		$answer =
 			&prompt_boolean("All mirrors are set. Do you want to change them?", 0);
+	    }
 		if (!$answer) {
 			return;
 		}

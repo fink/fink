@@ -1,3 +1,8 @@
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* install.sh: no longer install the files in the mirror directory
+	(they are being moved to the fink-mirrors package)
+
 2003-12-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl, inject.pl: move inject.pl code into Bootstrap.pm, and
