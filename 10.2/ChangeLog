@@ -1,6 +1,5 @@
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* README-gcc3.3: a file with notes about what to do for the 3.3 upgrade
 	* gettext-0.10.40-7, latest version from stable
 	* convert to new file format: base-files, storable-pm*, unzip
 
