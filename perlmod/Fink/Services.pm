@@ -494,7 +494,7 @@ EOSCRIPT
 				my ($commandname) = split(/\s+/, $cmd);
 				print "### execution of $commandname failed, exit code $rc\n";
 			}	
-			if (defined $options{'delete_script'} and $options{'delete_script'} == 1) {
+			if (defined $options{'delete_tempfile'} and $options{'delete_tempfile'} == 1) {
 				# probably keep tempfile around (to aide debugging)
 				unlink($script) if $is_tempfile;
 			}
@@ -503,7 +503,7 @@ EOSCRIPT
 	}
 
 	# everything was successful so probably delete tempfile
-	if (!defined $options{'delete_script'} or $options{'delete_script'} != -1) {
+	if (!defined $options{'delete_tempfile'} or $options{'delete_tempfile'} != -1) {
 		unlink($script) if $is_tempfile;
 	}
 	return 0;

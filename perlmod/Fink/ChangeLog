@@ -1,3 +1,7 @@
+2005-01-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Fixed handling of delete_tempfile flag for execute().
+
 2005-01-12  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Change buildlock to always lock on parent pkg.
