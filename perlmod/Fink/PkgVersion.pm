@@ -740,6 +740,7 @@ sub resolve_depends {
 # declarations have not been violated
 		foreach $altspec (@speclist){
 		    BUILDDEPENDSLOOP: foreach $depspec (split(/\s*\|\s*/, $altspec)) {
+			next if ($altspec eq '${SHLIB_DEPS}');
 			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
 			    $depname = $1;
 			    $versionspec = $2;
