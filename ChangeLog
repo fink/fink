@@ -1,5 +1,9 @@
 2003-06-19  Dave Morrison <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.13.3
+
+2003-06-19  Dave Morrison <dmrrsn@users.sourceforge.net>
+
 	* bootstrap.pl:  Allow bootstrapping with perl 5.6.1 (subjected
 	to a test to make sure /usr/bin/perl5.6.1 is functional)
 
