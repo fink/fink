@@ -71,10 +71,7 @@ use Fink::Command qw(:ALL);
     $! = 0;
     touch 'foo';
     ok( !mkdir_p('foo'), 'mkdir_p: file already exists' );
-    TODO: {
-        local $TODO = 'mkdir_p doesnt set $! on failure';
-        cmp_ok( $!, '!=', 0 ); 
-    }
+    cmp_ok( $!, '!=', 0 ); 
 
     ok( !mkdir_p('foo', 'bar'), '          one failure, one success' );
     ok( -d 'bar' );
