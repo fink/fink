@@ -1,3 +1,7 @@
+2005-02-25 David H <dmalloc@users.sourceforge.net>
+	* master, rsync: New mirror in Mississippi
+	rsync as well as distfiles, thanks to mdjoy@phy.olemiss.edu
+
 2005-01-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Releasing version 0.23.5.2 of fink-mirrors
