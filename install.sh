@@ -52,6 +52,11 @@ mkdir -p $basepath/fink
 mkdir -p $basepath/stow/system/bin
 mkdir -p $basepath/stow/local
 mkdir -p $basepath/var
+touch $basepath/var/.placeholder
+mkdir -p $basepath/var/run
+touch $basepath/var/run/.placeholder
+mkdir -p $basepath/etc
+touch $basepath/etc/.placeholder
 mkdir -p $basepath/src
 
 echo "Copying files..."
@@ -64,7 +69,6 @@ sed "s|BASEPATH|$basepath|g" <init.csh.in >$basepath/stow/system/bin/init.csh
 
 echo "Setting up stow hierarchy..."
 ( cd $basepath; ln -s stow/system/bin bin )
-touch $basepath/var/.placeholder
 
 echo "Writing preliminary configuration file..."
 echo "# Fink configuration, initially created by install.sh" >$basepath/fink/config

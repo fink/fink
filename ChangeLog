@@ -1,3 +1,10 @@
+2001-02-23  Christoph Pfisterer  <cp@chrisp.de>
+
+	* upgrade.sh: Added code to create some directories that should be
+	real directories.
+	* install.sh: Added directories to be created as real directories
+	on installation.
+
 2001-02-18  Christoph Pfisterer  <cp@chrisp.de>
 
 	* Released version 0.1.5. Started using CVS and ChangeLogs.

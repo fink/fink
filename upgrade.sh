@@ -38,6 +38,14 @@ if [ ! -d $basepath/fink ]; then
   exit 1
 fi
 
+echo "Creating directories..."
+mkdir -p $basepath/var/run
+touch $basepath/var/run/.placeholder
+if [ ! -d $basepath/etc ]; then
+  mkdir $basepath/etc
+  touch $basepath/etc/.placeholder
+fi
+
 echo "Copying files..."
 cp -Rf COPYING README fink info mirror patch perlmod update $basepath/fink
 
