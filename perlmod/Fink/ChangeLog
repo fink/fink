@@ -1,3 +1,8 @@
+2003-08-08  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* User.pm: adding User.pm for all user/group functions, started
+	  template for it, doesn't do anything yet.
+
 2003-07-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Don't print the output of linking the
