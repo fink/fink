@@ -1,3 +1,8 @@
+2001-05-18  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Engine.pm (real_install): Fixed the don't-fetch-unless-needed
+	check.
+
 2001-05-11  Finlay Dobbie  <finlay.dobbie@btinternet.com>
 
 	* PkgVersion.pm: get_description() implemented, for use in fink
