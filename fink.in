@@ -78,7 +78,7 @@ if ($> != 0) {
 umask oct("022");
 
 # set PATH so we find dpkg and *-config scripts
-$ENV{PATH} = "$basepath/sbin:$basepath/bin:".$ENV{PATH};
+$ENV{PATH} = "$basepath/sbin:$basepath/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
 
 ### create engine
 
