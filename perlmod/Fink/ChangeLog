@@ -1,5 +1,7 @@
 2002-08-04  Max Horn  <max@quendi.de>
 
+	* Config.pm, Configure.pm: Fixed verbosity level selection.
+
 	* PkgVersion.pm: Patch #588476 (Java support) by Sylvain Cuaz.
 
 	* Fixed bug #548373 (package DB read thrice). It is not only read twice

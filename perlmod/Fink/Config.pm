@@ -236,9 +236,9 @@ sub get_option {
 sub verbosity_level {
   my ($verbosity, $verblevel);
 
-  $verblevel = $config->param("Verbose");
+  $verblevel = $config->param_default("Verbose", 3);
   $verbosity = get_option("verbosity");
- 
+
   if ($verbosity != -1 && ($verbosity == 3 || $verblevel eq "3" || $verblevel eq "true" || $verblevel eq "high")) {
     ### Sets Verbose mode to Full
     $verbosity = 3;

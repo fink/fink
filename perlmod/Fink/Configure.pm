@@ -64,13 +64,15 @@ sub configure {
     $config->set_param("FetchAltDir", $otherdir);
   }
 
+  $verbose = $config->param_default("Verbose", 3);
   $verbose =
-    &prompt_selection("How verbose should Fink be?", 3, 
+    &prompt_selection("How verbose should Fink be?", $verbose + 1, 
                      { 3 => "High (shows everything)",
                        2 => "Medium (shows almost everything)",
                        1 => "Low (don't show tarballs being expanded)",
                        0 => "Quiet (don't show download stats)" },
-                     3, 2, 1, 0);
+                     0, 1, 2, 3);
+  print "You chose $verbose\n";
   $config->set_param("Verbose", $verbose);
 
   # proxy settings
