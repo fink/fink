@@ -2,8 +2,6 @@
 
 	* bootstrap.pl, postinstall.pl.in: Recognize Mac OS X 10.2.2.
 
-	* fink.in: Patch #608920: Add --keep-root-dir and --keep-build-dir.
-
 2002-11-05  Max Horn  <max@quendi.de>
 
 	* bootstrap.pl: Fix a bootstrapping problem that occured if the path leading
