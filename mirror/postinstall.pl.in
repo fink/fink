@@ -28,11 +28,16 @@ use strict;
 
 use lib "@PREFIX@/lib/perl5";
 
+use Fink::Config qw($config);
 use Fink::Services qw(&read_config);
 use Fink::Configure qw(&choose_mirrors);
 
 read_config("@PREFIX@/etc/fink.conf");
+
 choose_mirrors(1);
+
+#write new configuration file
+$config->save();
 
 
 
