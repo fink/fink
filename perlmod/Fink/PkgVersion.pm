@@ -1542,9 +1542,13 @@ EOF
 	$scriptbody .= "if [ -f %p/share/info/dir ]; then\n";
 	foreach $infodoc (split(/\s+/, $self->param("InfoDocs"))) {
 	  next unless $infodoc;
-	  $infodoc = "\%p/share/info/$infodoc" unless $infodoc =~ /\//;
-	  $scriptbody .= "  %p/sbin/install-info --infodir=\%p/share/info $infodoc\n";
-	}
+	  $infodoc = " \%p/share/info/$infodoc" unless $infodoc =~ /\//;
+	  $scriptbody .= "if [ -f %p/sbin/install-info ]; then\n";
+          $scriptbody .= "  %p/sbin/install-info --infodir=\%p/share/info $infodoc\n";
+          $scriptbody .= " elif [ -f %p/bootstrap/sbin/install-info ]; then\n";
+          $scriptbody .= "  %p/bootstrap/sbin/install-info --infodir=\%p/share/info $infodoc\n";
+          $scriptbody .= " fi\n";
+          	}
 	$scriptbody .= "fi\n";
       } elsif ($scriptname eq "prerm") {
 	$scriptbody .= "\n\n# generated from InfoDocs directive\n";

@@ -1,3 +1,8 @@
+2002-12-22  Dave Morrison
+
+	* PkgVersion.pm: Fix bootstrapping problem caused by giving full
+	path-name to install-info.
+
 2002-12-19  Ben Hines <benh57@users.sourceforge.net>
 
 	* Services.pm: Allow whitespace after here-document separators.
