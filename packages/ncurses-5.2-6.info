@@ -19,9 +19,10 @@ DescPort: <<
 Needs heavy hacking to build shared libraries. The -no-cpp-precomp is
 not strictly needed, but gets rid of the myriad of bogus error
 messages. Also needs a small patch for case-insensitive file systems.
-
-First revision by David Ross.
 <<
-DescPackaging: Previous versions by Christoph Pfisterer.
+DescPackaging: <<
+First revision by David Ross.
+Previous versions by Christoph Pfisterer.
+<<
 License: OSI-Approved
 Maintainer: Max Horn <max@quendi.de>
