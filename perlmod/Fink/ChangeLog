@@ -1,3 +1,8 @@
+2005-04-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, Shlibs.pm: Only enforce non-concurrent indexing when
+	cache is writable.
+
 2005-03-30  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm, Shlibs.pm: Switch to flock()-based concurrent-index lock

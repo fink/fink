@@ -547,6 +547,7 @@ sub update_db {
 
 	my $dbfile = "$dbpath/fink.db";
 	my $lockfile = "$dbfile.lock";
+	my $lockfile_FH;
 
 	# check if we should update index cache
 	my $writable_cache = 0;
@@ -561,22 +562,22 @@ sub update_db {
 		$writable_cache = 1;
 	}
 
-	my $index_lock_FH = Symbol::gensym();
-	open $index_lock_FH, "+>> $lockfile" or die "Can't access indexer lock $lockfile: $!\n";
-	unless (flock $index_lock_FH, LOCK_EX | LOCK_NB) {
+	if ($writable_cache) {
+	$lockfile_FH = Symbol::gensym();
+	open $lockfile_FH, "+>> $lockfile" or die "Can't access indexer lock $lockfile: $!\n";
+	unless (flock $lockfile_FH, LOCK_EX | LOCK_NB) {
 		# couldn't get exclusive lock, meaning another fink process has it
 		print STDERR "\nWaiting for another reindex to finish...";
-		flock $index_lock_FH, LOCK_EX or die "can't lock $lockfile: $!\n";
+		flock $lockfile_FH, LOCK_EX or die "can't lock $lockfile: $!\n";
 		print STDERR " done.\n";
-		if ($writable_cache) {
 			# nearly-concurrent indexing run finished so just grab its results
 			$packages = Storable::lock_retrieve($dbfile);
-			close $index_lock_FH;
+			close $lockfile_FH;
 			$db_outdated = 0;
 			return;
-		}
 	}
 	# getting here means we got the lock on the first try
+	}
 
 	# read data from descriptions
 	if (&get_term_width) {
@@ -603,7 +604,7 @@ sub update_db {
 		print STDERR "done.\n";
 	};
 
-	close $index_lock_FH;
+	close $lockfile_FH if defined fileno $lockfile_FH;
 
 	$db_outdated = 0;
 }
