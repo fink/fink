@@ -1,5 +1,8 @@
 2001-07-13  Christoph Pfisterer  <cp@chrisp.de>
 
+	* fink: Look for modules in the correct path. (For people that
+	don't use the init.(sh|csh) script.)
+
 	* install.sh: Install perl modules into <prefix>/lib/perl5 to make
 	them generally available.
 

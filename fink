@@ -24,7 +24,7 @@ use strict;
 
 use FindBin;
 
-use lib "$FindBin::RealBin/../lib/fink/perlmod";
+use lib "$FindBin::RealBin/../lib/perl5";
 
 ### quick check so see if all the user wants is the version number
 
