@@ -549,6 +549,9 @@ sub get_term_width {
     }
     else {
       $width = $ENV{TERMCAP};
+      if ((defined $width and $width !~ /^[0-9]+$/) or (not defined $width)) {
+        $width = $ENV{COLUMNS};
+      }
       if (defined $width) {
         $width =~ s/.*co#([0-9]+).*/$1/;
       }

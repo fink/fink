@@ -1,3 +1,9 @@
+2002-07-26  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+        * Services.pm: Fix for the Jag Argument "M-?M-^?M-X" isn't numeric
+          in numeric eq (==) at /sw/lib/perl5/Fink/Engine.pm line 330, <SW_VERS>
+          line 2. Bug.  But COLUMNS needs to bet exported in init.{csh, sh}
+
 2002-07-25  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Services.pm: Temp Fix for the Jag Argument "M-?M-^?M-X" isn't numeric

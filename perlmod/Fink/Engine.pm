@@ -262,8 +262,8 @@ sub do_real_list {
   my ($width, $namelen, $verlen, $dotab, $wanthelp);
   my $cmd = shift;
   use Getopt::Long;
-  $formatstr = "%s %-15.15s %-11.11s %s\n";
-  $desclen = 46;
+  $formatstr = "%s  %-15.15s  %-11.11s  %s\n";
+  $desclen = 43;
   @temp_ARGV = @ARGV;
   @ARGV=@_;
   Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
@@ -340,9 +340,9 @@ EOF
     $namelen = int($width * 0.2);  # 20% for the name
     $verlen = int($width * 0.15);  # 15% for the version
     if ($desclen != 0) {
-      $desclen = $width - $namelen - $verlen - 2;
+      $desclen = $width - $namelen - $verlen - 5;
     }
-    $formatstr = "%s %-" . $namelen . "." . $namelen . "s %-" . $verlen . "." . $verlen . "s %s\n";
+    $formatstr = "%s  %-" . $namelen . "." . $namelen . "s  %-" . $verlen . "." . $verlen . "s  %s\n";
   } elsif ($dotab) {
     $formatstr = "%s\t%s\t%s\t%s\n";
     $desclen = 0;
