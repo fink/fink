@@ -1,3 +1,8 @@
+2001-12-20  Max Horn  <max@quendi.de>
+
+	* SelfUpdate.pm (do_direct_cvs): Fixed CVS updating for core developers
+	(CVS_RSH now always is set to 'ssh').
+
 2001-12-12  Justin F. Hallett  <thesin@southofheaven.net>
 
 	* PkgVersion.pm: Added UpdatePOD field, and added value "Perl" for

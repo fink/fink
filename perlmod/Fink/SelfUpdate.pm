@@ -329,6 +329,7 @@ sub do_direct_cvs {
   &print_breaking($msg);
   print "\n";
 
+  $ENV{CVS_RSH} = "ssh";
   if (&execute($cmd)) {
     die "Updating using CVS failed. Check the error messages above.\n";
   }
