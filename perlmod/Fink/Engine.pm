@@ -544,7 +544,7 @@ sub parse_fetch_options {
 	GetOptions('ignore-restrictive|i'	=> sub {$options{norestrictive} = 1 } , 
 			   'dry-run|d'				=> sub {$options{dryrun} = 1 } , 
 			   'help|h'					=> sub {$options{wanthelp} = 1 })
-		 or die "fink fetch-missing: unknown option\nType 'fink fetch-missing --help' for more information.\n";
+		 or die "fink fetch: unknown option\nType 'fink fetch-missing --help' or 'fetch-all --help' for more information.\n";
 		 
 	if ($options{wanthelp} == 1) {
 		require Fink::FinkVersion;
