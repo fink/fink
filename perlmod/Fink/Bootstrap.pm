@@ -55,6 +55,8 @@ sub bootstrap {
 	    @addlist = ("apt", "apt-shlibs", "storable-pm", "storable-pm560");
 	} elsif ("$]" == "5.008") {
 	    @addlist = ("apt", "apt-shlibs", "storable-pm", "system-perl580");
+	} elsif ("$]" == "5.008001") {
+	    @addlist = ("apt", "apt-shlibs", "storable-pm", "system-perl581");
 	} else {die "Sorry, wrong version of perl! (This can't happen...)\n"}
 
 	$bsbase = &get_bsbase();

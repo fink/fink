@@ -1,3 +1,7 @@
+2003-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: allow bootstrapping with perl 5.8.1 too
+
 2003-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: allow bootstrapping with either perl 5.6.0 or

@@ -1,3 +1,12 @@
+2003-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* updated storable-pm to 1.0.14-5, and added the system-perl581 package
+
+2003-06-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* updated base-files to 1.8.0, updated storable-pm to 1.0.14-3,
+	and added the storable-pm560 and system-perl580 packages
+
 2003-04-28  Max Horn  <max@quendi.de>
 
 	* updated base-files package to 1.7.1, matching (un)stable CVS
