@@ -116,7 +116,7 @@ sub read_properties {
       }
     } else {
       next if /^\s*\#/;   # skip comments
-      if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*)$/) {
+      if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*)\s*$/) {
 	$lastkey = lc $1;
 	if ($2 eq "<<") {
 	  $hash->{$lastkey} = "";
@@ -124,7 +124,7 @@ sub read_properties {
 	} else {
 	  $hash->{$lastkey} = $2;
 	}
-      } elsif (/^\s+(\S.*)$/) {
+      } elsif (/^\s+(\S.*)\s*$/) {
 	$hash->{$lastkey} .= "\n".$1;
       }
     }
@@ -151,7 +151,7 @@ sub read_properties_multival {
   open(IN,$file) or die "can't open $file: $!";
   while (<IN>) {
     next if /^\s*\#/;   # skip comments
-    if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*)$/) {
+    if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*)\s*$/) {
       $lastkey = lc $1;
       if (exists $hash->{$lastkey}) {
 	$lastindex = @{$hash->{$lastkey}};
@@ -160,7 +160,7 @@ sub read_properties_multival {
 	$lastindex = 0;
 	$hash->{$lastkey} = [ $2 ];
       }
-    } elsif (/^\s+(\S.*)$/) {
+    } elsif (/^\s+(\S.*)\s*$/) {
       $hash->{$lastkey}->[$lastindex] .= "\n".$1;
     }
   }

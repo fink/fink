@@ -1,5 +1,8 @@
 2001-07-07  Christoph Pfisterer  <cp@chrisp.de>
 
+	* Services.pm (read_properties): Ignore trailing white space.
+	(read_properties_multival): Likewise.
+
 	* Engine.pm: Added commands for a human-readable (list) and a
 	machine-readable (listpackages) package listing.
 
