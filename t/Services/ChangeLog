@@ -1,3 +1,7 @@
+2004-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* prepare_script.t: Wrote a test suite.
+
 2004-11-23  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t,execute_script_nonroot_okay.t: Wrote some
