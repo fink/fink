@@ -193,7 +193,7 @@ sub rm_rf {
 	require File::Path;
 	local $SIG{__WARN__} = sub {};  # rmtree is noisy on failure.  Shut up.
 
-	File::Path::rmtree(\@dirs);
+	File::Path::rmtree(\@dirs, 0, 1);
 
 	return !scalar(grep -e, @dirs);
 }

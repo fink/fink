@@ -1,5 +1,10 @@
 2004-03-11  Daniel Macks  <dmacks@netspace.org>
 
+	* Command.pm: Pass third param TRUE (more secure, according to
+	File::Path docs).
+
+2004-03-11  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: SplitOff(N) no longer have to be consecutive (now
 	use all fields matching /splitoff\d*/), but must still be unique.
 	add_splitoff() now returns the PkgVersion objects so that the
