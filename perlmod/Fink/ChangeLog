@@ -1,3 +1,7 @@
+2004-09-27 Chris Zubrzycki <beren12@users.sourceforge.net> 
+
+	* Engine.pm: Implemented --keep-src for fink cleanup.
+
 2004-09-23  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Implemented Type:bundle and Type:dummy support in
