@@ -40,6 +40,7 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+my @xservers     = ('XDarwin', 'Xquartz', 'XDarwinQuartz');
 my $the_instance = undef;
 
 END { }				# module clean-up code here (global destructor)
@@ -210,37 +211,66 @@ sub initialize {
 				$hash->{description} = "[placeholder for user installed x11]";
 
 				my @provides;
-				push(@provides, 'x11')                if (has_lib('/usr/X11R6/lib/libX11.dylib') and
-									-f '/usr/X11R6/include/X11/Xlib.h');
-				push(@provides, 'x11-shlibs')         if has_lib('/usr/X11R6/lib/libX11.6.dylib');
-				push(@provides, 'libgl')              if (has_lib('/usr/X11R6/lib/libGL.dylib') and
-									-f '/usr/X11R6/include/GL/gl.h');
-				push(@provides, 'libgl-shlibs')       if has_lib('/usr/X11R6/lib/libGL.1.dylib');
-				push(@provides, 'xft1')               if (has_lib('/usr/X11R6/lib/libXft.dylib') and
-									readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
-									-f '/usr/X11R6/include/X11/Xft/Xft.h');
-				push(@provides, 'xft2')               if (has_lib('/usr/X11R6/lib/libXft.dylib') and
-									readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
-									-f '/usr/X11R6/include/X11/Xft/XftCompat.h');
-				push(@provides, 'xft1-shlibs')        if has_lib('/usr/X11R6/lib/libXft.1.dylib');
-				push(@provides, 'xft2-shlibs')        if has_lib('/usr/X11R6/lib/libXft.2.dylib');
-				push(@provides, 'rman')               if (-x '/usr/X11R6/bin/rman');
-				push(@provides, 'fontconfig1')        if (has_lib('/usr/X11R6/lib/libfontconfig.dylib') and
-									readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
-									-f '/usr/X11R6/include/fontconfig/fontconfig.h');
-				push(@provides, 'fontconfig1-shlibs') if has_lib('/usr/X11R6/lib/libfontconfig.1.dylib');
 
+				my $found_xserver = 0;
+				for my $xserver (@xservers) {
+					if (-x '/usr/X11R6/bin/' . $xserver) {
+						$found_xserver++;
+						push(@provides, 'xserver');
+						last;
+					}
+				}
+
+				# "x11" is a regular x11 environment, shlibs + x server
+				# "x11-shlibs" is provided for backwards-compatibility
+				if ( has_lib('libX11.6.dylib') and $found_xserver ) {
+					push(@provides, 'x11', 'x11-shlibs');
+				}
+				# "x11-dev" is for BuildDepends: on x11 packages
+				if ( has_header('X11/Xlib.h') and has_lib('libX11.6.dylib') ) {
+					push(@provides, 'x11-dev');
+				}
+				# now we do the same for libgl
+				if ( has_lib('libGL.1.dylib') ) {
+					push(@provides, 'libgl', 'libgl-shlibs');
+				}
+				if ( has_header('GL/gl.h') and has_lib('libGL.dylib') ) {
+					push(@provides, 'libgl-dev');
+				}
+				if ( has_lib('libXft.dylib') and
+						readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.1/ and
+						has_header('X11/Xft/Xft.h') ) {
+					push(@provides, 'xft1', 'xft1-dev');
+				}
+				if ( has_lib('libXft.1.dylib') ) {
+					push(@provides, 'xft1-shlibs');
+				}
+				if ( has_lib('libXft.dylib') and
+						readlink('/usr/X11R6/lib/libXft.dylib') =~ /libXft\.2/ and
+						has_header('X11/Xft/XftCompat.h') ) {
+					push(@provides, 'xft2', 'xft2-dev');
+				}
+				if ( has_lib('libXft.2.dylib') ) {
+					push(@provides, 'xft2-shlibs');
+				}
+				if ( has_lib('libfontconfig.dylib') and
+						readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
+						has_header('fontconfig/fontconfig.h') ) {
+					push(@provides, 'fontconfig1', 'fontconfig1-dev');
+				}
+				if ( has_lib('libfontconfig.1.dylib') ) {
+					push(@provides, 'fontconfig1-shlibs');
+				}
+
+				push(@provides, 'rman')               if (-x '/usr/X11R6/bin/rman');
 				if (-f '/usr/X11R6/lib/libXt.6.dylib' and -x '/usr/bin/grep') {
 					if (system('/usr/bin/grep', '-q', '-a', 'pthread_mutex_lock', '/usr/X11R6/lib/libXt.6.dylib') == 0) {
 						push(@provides, 'xfree86-base-threaded-shlibs');
 						push(@provides, 'xfree86-base-threaded') if (grep(/^x11$/, @provides));
 					}
 				}
-				$hash->{provides} = join(', ', @provides);
 
-				if (not grep(/^x11$/, @provides) or not grep(/^(xft1|xft2)$/, @provides)) {
-					print STDERR "Warning: X11 SDK missing, see http://fink.sf.net/faq/usage-packages.php#apple-x11-wants-xfree86\n";
-				}
+				$hash->{provides} = join(', ', @provides);
 				$self->{$hash->{package}} = $hash;
 			}
 		}    
@@ -291,7 +321,6 @@ sub list {
 		}
 	}
 
-
 	$list = {};
 	foreach $pkgname (keys %$self) {
 		next if $pkgname =~ /^_/;
@@ -308,6 +337,20 @@ sub list {
 	}
 
 	return $list;
+}
+
+sub has_header {
+	my $headername = shift;
+	my $dir;
+
+	if ($headername =~ /^\//) {
+		return (-f $headername);
+	} else {
+		for $dir ('/usr/X11R6/include', $basepath . '/include', '/usr/include') {
+			return 1 if (-f $dir . '/' . $includename);
+		}
+	}
+	return;
 }
 
 sub has_lib {

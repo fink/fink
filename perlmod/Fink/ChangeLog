@@ -1,3 +1,13 @@
+2003-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Totally reworked the provides of the system-xfree86
+	  virtual packages, so that "x11" is provided when the shared libraries
+	  and an X server are present, and "x11-dev" is provided when headers
+	  and development libraries are present.  This will require changes to
+	  the BuildDepends: of all x11-using packages.  This is a major change
+	  (considering how many files it will end up touching) so this change
+	  is going into HEAD.
+
 2003-11-14  Max Horn  <max@quendi.de>
 
 	* Engine.pm, PkgVersion.pm, Services.pm: Removed old print_breaking and
