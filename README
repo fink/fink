@@ -1,6 +1,6 @@
 $Id$   -*- text -*-
 
- Fink 0.2.2
+ Fink 0.2.3
 ============
 
 This is Fink, a package management system that aims to bring the full
@@ -14,7 +14,7 @@ information about available packages and the neccessary patches are
 included with this distribution, everything else is downloaded off the
 Internet.
 
-This is version 0.2.2, a development release. It has rough edges
+This is version 0.2.3, a development release. It has rough edges
 everywhere, and lacks lots of useful features. The package list is
 also quite short. You're walking on thin ground. It could easily break
 your system (although it hasn't broken mine to date). You have been
@@ -27,15 +27,20 @@ License. See the file COPYING for details.
  Requirements
 --------------
 You need:
+
  * An installed Mac OS X system, version 10.0 or later. Darwin 1.3.1
    should also work, but this has not been tested. Earlier versions of
    both will _not_ work.
+
  * Development tools. On Mac OS X, install the Developer.pkg package
    from the Developer Tools CD. On Darwin, the tools should be present
    in the default install.
- * Many other things that come with Mac OS X. This includes perl 5.6,
-   wget and autoconf.
+
+ * Many other things that come with Mac OS X and the Developer Tools.
+   This includes perl 5.6, wget and autoconf.
+
  * Internet access. All source code is downloaded from mirror sites.
+
  * Patience. Compiling several big packages takes time. I'm talking
    hours or even days here.
 
@@ -43,7 +48,8 @@ You need:
  Installation
 --------------
 The installation process is described in detail in the file
-INSTALL. Please read it first, the process is non-trivial.
+INSTALL. Please read it first, the process is non-trivial. It also
+describes the upgrade procedure.
 
 
  Using Fink
