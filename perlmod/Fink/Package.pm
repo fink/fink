@@ -505,6 +505,7 @@ sub setup_package_object {
 	my $filename = shift;
 
 	my %pkg_expand;
+
 	if (exists $properties->{type}) {
 		if ($properties->{type} =~ /([a-z0-9+.\-]*)\s*\((.*?)\)/) {
 			# if we were fed a list of subtypes, remove the list and
@@ -523,22 +524,29 @@ sub setup_package_object {
 				push @pkgversions, Fink::Package->setup_package_object($this_properties, $filename);
 			};
 			return @pkgversions;
-		} else {
-			# we have only single-value subtypes
-#			print "Type: ",$properties->{type},"\n";
-			my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
-			foreach (keys %$type_hash) {
-				( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-			}
+		}
+		# we have only single-value subtypes
+#		print "Type: ",$properties->{type},"\n";
+		my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
+		foreach (keys %$type_hash) {
+			( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 		}
 	}
 #	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
+
+
+	# store invariant portion of Package (for %n; %Vn is with variants)
+	( $properties->{package_invariant} = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
 	if (exists $properties->{parent}) {
 		# get parent's Package for percent expansion
+		# (only splitoffs can use %N in Package)
 		$pkg_expand{'N'}  = $properties->{parent}->{package};
 		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
+		$properties->{package_invariant} = &expand_percent($properties->{package_invariant},\%pkg_expand, "$filename \"package\"");
 	}
 
+	# must always call expand_percent even if no Type in order to make
+	# sure Maintainer doesn't have %type_*[] or other bad % constructs
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
 	# get/create package object
@@ -567,8 +575,8 @@ sub inject_description {
 	$po->add_version($version);
 
 	# track provided packages
-	if ($version->has_param("Provides")) {
-		foreach $vp (split(/\s*\,\s*/, $version->param("Provides"))) {
+	if ($version->has_pkglist("Provides")) {
+		foreach $vp (split(/\s*\,\s*/, $version->pkglist("Provides"))) {
 			$vpo = Fink::Package->package_by_name_create($vp);
 			$vpo->add_provider($version);
 		}

@@ -149,7 +149,9 @@ sub initialize {
 		$parentdestdir = $destdir;
 		$self->{_splitoffs} = [];
 	}
-	$expand = { 'n' => $pkgname,
+
+	$expand = { 'n' => $self->param_default("package_invariant", $pkgname),
+				'Vn'=> $pkgname,
 				'e' => $epoch,
 				'v' => $version,
 				'r' => $revision,
@@ -177,35 +179,6 @@ sub initialize {
 
 	$self->{_bootstrap} = 0;
 
-	# FIXME: Could most of this expand and conditional parsing be put
-	# off until later, perhaps as part of the param() accessor method?
-	# Provides must be done here, however, since we are possibly being
-	# called by Package::inject_description() which uses that field
-
-	# expand percents in various fields
-	$self->expand_percent_if_available('BuildDepends');
-	$self->expand_percent_if_available('Conflicts');
-	$self->expand_percent_if_available('Depends');
-	$self->expand_percent_if_available('Enhances');
-	$self->expand_percent_if_available('Pre-Depends');
-	$self->expand_percent_if_available('Provides');
-	$self->expand_percent_if_available('Recommends');
-	$self->expand_percent_if_available('Replaces');
-	$self->expand_percent_if_available('Suggests');
-
-	$self->conditional_pkg_list('BuildDepends');
-	$self->conditional_pkg_list('Conflicts');
-	$self->conditional_pkg_list('Depends');
-	$self->conditional_pkg_list('Enhances');
-	$self->conditional_pkg_list('Pre-Depends');
-	$self->conditional_pkg_list('Provides');
-	$self->conditional_pkg_list('Recommends');
-	$self->conditional_pkg_list('Replaces');
-	$self->conditional_pkg_list('Suggests');
-
-	$self->clear_self_from_list('Conflicts');
-	$self->clear_self_from_list('Replaces');
-
 	# from here on we have to distinguish between "real" packages and splitoffs
 	if (exists $self->{parent}) {
 		# so it's a splitoff
@@ -221,43 +194,19 @@ sub initialize {
 		}
 
 		# handle inherited fields
-		our @inherited_fields =
+		our @inherited_pkglists =
 		 qw(Description DescDetail Homepage License);
 
-		foreach $field (@inherited_fields) {
+		foreach $field (@inherited_pkglists) {
 			$field = lc $field;
 			if (not $self->has_param($field) and $parent->has_param($field)) {
 				$self->{$field} = $parent->{$field};
 			}
 		}
 	} else {
-		# expand source / sourcerename fields
-		$source = $self->param_default("Source", "\%n-\%v.tar.gz");
-		if ($source eq "gnu") {
-			$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
-		} elsif ($source eq "gnome") {
-			$version =~ /(^[0-9]+\.[0-9]+)\.*/;
-			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
-		}
-		
-		$self->{source} = $source;
-		$self->expand_percent_if_available("Source");
-		$self->{_sourcecount} = 1;
-	
-		$self->expand_percent_if_available('SourceRename');
-	
-		for ($i = 2; $self->has_param('source'.$i); $i++) {
-			$self->expand_percent_if_available('Source'.$i);
-			$self->expand_percent_if_available('Source'.$i.'Rename');
-			$self->{_sourcecount} = $i;
-		}
-
 		# handle splitoff(s)
-		if ($self->has_param('splitoff')) {
-			$self->add_splitoff($self->{'splitoff'},"");
-		}
-		for ($i = 2; $self->has_param('splitoff'.$i); $i++) {
-			$self->add_splitoff($self->{'splitoff'.$i},$i);
+		foreach ($self->params_matching('SplitOff\d*')) {
+			push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
 		}
 	}
 
@@ -268,6 +217,52 @@ sub initialize {
 		}
 		$self->{_relatives} = $self->{_splitoffs};
 	}
+}
+
+### fields that are package lists need special treatment
+### use these accessors instead of param(), has_param(), param_default()
+# FIXME-dmacks: need a syntax like foo(-ssl?) that expands to foo|foo-ssl
+
+# fields from which one's own package should be removed
+our %pkglist_no_self = ( 'conflicts' => 1,
+						 'replaces'  => 1
+					   );
+
+sub pkglist {
+	my $self = shift;
+	my $param_name = lc shift || "";
+
+	$self->expand_percent_if_available($param_name);
+	$self->conditional_pkg_list($param_name);
+	if (exists $pkglist_no_self{$param_name}) {
+		$self->clear_self_from_list($param_name);
+	}
+	$self->param($param_name);
+}
+
+sub pkglist_default {
+	my $self = shift;
+	my $param_name = lc shift || "";
+	my $default_value = shift;
+
+	$self->expand_percent_if_available($param_name);
+	$self->conditional_pkg_list($param_name);
+	if (exists $pkglist_no_self{$param_name}) {
+		$self->clear_self_from_list($param_name);
+	}
+	$self->param_default($param_name, $default_value);
+}
+
+sub has_pkglist {
+	my $self = shift;
+	my $param_name = lc shift || "";
+
+	$self->expand_percent_if_available($param_name);
+	$self->conditional_pkg_list($param_name);
+	if (exists $pkglist_no_self{$param_name}) {
+		$self->clear_self_from_list($param_name);
+	}
+	$self->has_param($param_name);
 }
 
 ### expand percent chars in the given field, if that field exists
@@ -383,7 +378,7 @@ sub clear_self_from_list {
 sub add_splitoff {
 	my $self = shift;
 	my $splitoff_data = shift;
-	my $splitoff_num = shift;
+	my $fieldname = shift;
 	my $filename = $self->{_filename};
 	my ($properties, $package, $pkgname, $splitoff);
 	
@@ -391,10 +386,10 @@ sub add_splitoff {
 	$splitoff_data =~ s/^\s+//gm;
 	
 	# get the splitoff package name
-	$properties = &read_properties_var("splitoff$splitoff_num of \"$filename\"", $splitoff_data);
+	$properties = &read_properties_var("$fieldname of \"$filename\"", $splitoff_data);
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
-		print "No package name for SplitOff in $filename\n";
+		print "No package name for $fieldname in $filename\n";
 	}
 	
 	# copy version information
@@ -417,8 +412,8 @@ sub add_splitoff {
 	# instantiate the splitoff
 	@splitoffs = Fink::Package->setup_package_object($properties, $filename);
 	
-	# add it to the list of splitoffs
-	push @{$self->{_splitoffs}}, @splitoffs;
+	# return the new object(s)
+	return @splitoffs;
 }
 
 ### merge duplicate package description
@@ -555,18 +550,49 @@ sub get_info_filename {
 
 ### other accessors
 
-sub is_multisource {
+# Returns the number of source tarballs for the package. Actually it
+# gives the highest *consecutive* N of SourceN, or 1 if no SourceN
+# (even if no Source b/c it's a nosource or bundle).
+# FIXME-dmacks: that's pretty weird.
+
+sub get_source_count {
 	my $self = shift;
-	return $self->{_sourcecount} > 1;
+
+	if (exists $self->{parent}) {
+		# SplitOff packages have no sources of their own
+		return 0;
+	}
+
+	if (!exists $self->{_sourcecount}) {
+		# have not calculated it before
+		my $count = 1;
+		while ($self->has_param('source'.($count+1))) {
+			$count++;
+		}
+		# save the result for next time
+		$self->{_sourcecount} = $count;
+	}
+
+	return $self->{_sourcecount};
 }
 
 sub get_source {
 	my $self = shift;
 	my $index = shift || 1;
 	if ($index < 2) {
-		return $self->param("Source") unless ($self->is_type('bundle') || $self->is_type('nosource'));
- 	} elsif ($index <= $self->{_sourcecount}) {
-		return $self->param("Source".$index);
+		unless ($self->is_type('bundle') || $self->is_type('nosource')) {
+			my $source = $self->param_default("Source", "\%n-\%v.tar.gz");
+			if ($source eq "gnu") {
+				$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
+			} elsif ($source eq "gnome") {
+				$self->get_version =~ /(^[0-9]+\.[0-9]+)\.*/;
+				$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
+			}
+			$self->set_param("Source", $source);
+			return $self->get_param_with_expansion("Source");
+		}
+	} elsif ($index <= $self->get_source_count) {
+		return $self->get_param_with_expansion("Source".$index);
 	}
 	return "none";
 }
@@ -574,8 +600,8 @@ sub get_source {
 sub get_source_list {
 	my $self = shift;
 	my @list = ();
-	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
-		my $source = get_source($self, $index);
+	for (my $index = 1; $index<=$self->get_source_count; $index++) {
+	        my $source = $self->get_source($index);
 		push(@list, $source) unless $source eq "none";
 	}
 	return @list;
@@ -586,14 +612,14 @@ sub get_tarball {
 	my $index = shift || 1;
 	if ($index < 2) {
 		if ($self->has_param("SourceRename")) {
-			return $self->param("SourceRename");
+			return $self->get_param_with_expansion("SourceRename");
 		}
-		return &filename($self->param("Source")) unless ($self->is_type('bundle') || $self->is_type('nosource'));
-	} elsif ($index <= $self->{_sourcecount}) {
+		return &filename($self->get_source()) unless ($self->is_type('bundle') || $self->is_type('nosource'));
+	} elsif ($index <= $self->get_source_count) {
 		if ($self->has_param("Source".$index."Rename")) {
-			return $self->param("Source".$index."Rename");
+			return $self->get_param_with_expansion("Source".$index."Rename");
 		}
-		return &filename($self->param("Source".$index));
+		return &filename($self->get_source($index));
 	}
 	return "none";
 }
@@ -601,8 +627,8 @@ sub get_tarball {
 sub get_tarball_list {
 	my $self = shift;
 	my @list = ();
-	for (my $index = 1; $index<=$self->{_sourcecount}; $index++) {
-		my $tarball = get_tarball($self, $index);
+	for (my $index = 1; $index<=$self->get_source_count; $index++) {
+	        my $tarball = $self->get_tarball($index);
 		push(@list, $tarball) unless $tarball eq "none";
 	}
 	return @list;
@@ -615,7 +641,7 @@ sub get_checksum {
 		if ($self->has_param("Source-MD5")) {
 			return $self->param("Source-MD5");
 		}
-	} elsif ($index >= 2 and $index <= $self->{_sourcecount}) {
+	} elsif ($index >= 2 and $index <= $self->get_source_count) {
 		if ($self->has_param("Source".$index."-MD5")) {
 			return $self->param("Source".$index."-MD5");
 		}
@@ -837,7 +863,7 @@ sub is_fetched {
 		return 1;
 	}
 
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+	for ($i = 1; $i <= $self->get_source_count; $i++) {
 		if (not defined $self->find_tarball($i)) {
 			return 0;
 		}
@@ -965,7 +991,7 @@ sub resolve_depends {
 			if (Fink::Config::verbosity_level() > 2) {
 				print "info file...\n";
 			}
-			@speclist = split(/\s*\,\s*/, $self->param_default("$field", ""));
+			@speclist = split(/\s*\,\s*/, $self->pkglist_default($field, ""));
 		}
 	}
 
@@ -1005,7 +1031,11 @@ sub resolve_depends {
 				@dependslist = $package->get_all_providers();
 				foreach $dependent (@dependslist) {
 					$dependentname = $dependent->get_name();
-					if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends") {
+
+# only issue the warning about BuildDependsOnly if we are more
+# verbose than the default
+
+					if ($dependent->param_boolean("BuildDependsOnly") && lc($field) eq "depends" &&  Fink::Config::verbosity_level() > 1 ) {
 						if ($dependentname eq $depname) {
 							print "\nWARNING: The package $currentpackage Depends on $depname,\n\t but $depname only allows things to BuildDepend on it.\n\n";
 						} else {
@@ -1021,7 +1051,7 @@ sub resolve_depends {
 	if ($include_build) {
 		# Add build time dependencies to the spec list
 		push @speclist,
-			split(/\s*\,\s*/, $self->param_default("Build".$field, ""));
+			split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our aplitoffs.
@@ -1042,7 +1072,7 @@ sub resolve_depends {
 					if (Fink::Config::verbosity_level() > 2) {
 						print "info file...\n";
 					}
-					push @speclist, split(/\s*\,\s*/, $splitoff->param_default($field, ""));
+					push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
 				}
 			}
 		}
@@ -1136,7 +1166,7 @@ sub get_binary_depends {
 	# TODO: modify dependency list on the fly to account for minor
 	#	 library versions
 
-	$depspec = $self->param_default("Depends", "");
+	$depspec = $self->pkglist_default("Depends", "");
 
 	return &collapse_space($depspec);
 }
@@ -1235,7 +1265,7 @@ sub phase_fetch {
 		return;
 	}
 
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+	for ($i = 1; $i <= $self->get_source_count; $i++) {
 		if (not $conditional or not defined $self->find_tarball($i)) {
 			$self->fetch_source($i,0,0,0,$dryrun);
 		}
@@ -1382,7 +1412,7 @@ END
 	}
 
 	$tries = 0;
-	for ($i = 1; $i <= $self->{_sourcecount}; $i++) {
+	for ($i = 1; $i <= $self->get_source_count; $i++) {
 		$archive = $self->get_tarball($i);
 
 		# search for archive, try fetching if not found
@@ -1736,6 +1766,10 @@ sub phase_install {
 
 		@files = split(/\s+/, $self->param("Files"));
 		foreach $file (@files) {
+
+# FIXME:
+#   * prefix conditional syntax
+
 			if ($file =~ /^(.+)\:(.+)$/) {
 				$source = $1;
 				$target = $2;
@@ -1970,8 +2004,12 @@ EOF
 
 	$control .= "Depends: ".$depline."\n";
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
-										 Recommends Suggests Enhances
-										 Maintainer)) {
+										 Recommends Suggests Enhances)) {
+		if ($self->has_pkglist($field)) {
+			$control .= "$field: ".&collapse_space($self->pkglist($field))."\n";
+		}
+	}
+	foreach $field (qw(Maintainer)) {
 		if ($self->has_param($field)) {
 			$control .= "$field: ".&collapse_space($self->param($field))."\n";
 		}
@@ -2210,6 +2248,14 @@ EOF
 			$shlibsfile = "$destdir/DEBIAN/shlibs";
 
 			print "Writing shlibs file...\n";
+
+# FIXME-dmacks:
+#    * Make sure each file is actually present in $destdir
+#    * Remove file if package isn't listed as a provider
+#      (needed since only some variants may provide but we don't
+#      have any condiitonal syntax in Shlibs)
+#    * Rejoin wrap continuation lines
+#      (use \ not heredoc multiline-field)
 
 			open(SHLIBS,">$shlibsfile") or die "can't write shlibs file for ".$self->get_fullname().": $!\n";
 			print SHLIBS <<EOF;

@@ -1,3 +1,11 @@
+2004-03-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.in: Updated copyright notice displayed by fink
+
+2004-03-05  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Reworded FetchAltDir description.
+
 2004-02-25  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.19.1, a bugfix release 

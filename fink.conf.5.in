@@ -102,8 +102,7 @@ are not supported. You should not need to alter this value.
 .It Cm FetchAltDir: Ar path 
 Usually fink will store the sources it fetches in 
 .Pa @PREFIX@/src.
-You can specify an alernate directory to look for downloaded source code in 
-using this option. For example:
+Using this option, you can specify an alternate directory in which fink should look for downloaded source code. For example:
 .Bl -tag -width flag -offset indent -compact
 .It FetchAltDir: /usr/src
 .El

@@ -1,3 +1,76 @@
+2004-03-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: Only display the warnings about BuildDependsOnly
+	if we are more verbose than the default
+
+2004-03-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: Pass third param TRUE (more secure, according to
+	File::Path docs).
+
+2004-03-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: SplitOff(N) no longer have to be consecutive (now
+	use all fields matching /splitoff\d*/), but must still be unique.
+	add_splitoff() now returns the PkgVersion objects so that the
+	_splitoffs instance variable is handled in fewer different places.
+
+2004-03-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Warn if CVS or RCS directories in a .deb
+
+2004-03-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Service.pm: expand_percent: allow braces to explicitly delimit keys.
+
+2004-03-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Move handling of Source(N) and Source(N)Rename
+	default-handling and percent-expansion from the initialization
+	loop to the accessor methods.
+	* Package.pm, PkgVersion.pm: Implement pkglist(), has_pkglist(),
+	pkglist_default() that are analogous to the param(), has_param(),
+	param_default() methods but also do percent-expansion and
+	conditional-clause parsing. Remove this functionality from object
+	initialization. Convert all *param*() for package-list fields to
+	*pkglist*() calls.
+
+2004-03-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Remove needless {...} block syntax from frequently-
+	called function.
+	* PkgVersion.pm: Streamline handling of Vn for %-expand mapping.
+
+2004-03-04  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: provide all gcc's in /usr/bin (based on the
+	output of foo --version)
+
+2004-03-04  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: provide system-perlXXX
+
+2004-03-03  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: typo in get_source_count shortcut for SplitOffs.
+	* Package.pm, PkgVersion.pm: %n is now non-variant portion of
+	Package (i.e., %type_*[] blanked out). %Vn is full (with %type_*[]
+	already expanded) Package. %N is %Vn of parent.
+	
+2004-03-02  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: fix error message for missing Package: in
+	SplitOffN:. Caching by object ref is not safe so revert to
+	_sourcecount internally in get_source_count() (but must not be
+	used in other places b/c may not be saved to package db).
+	
+2004-03-02  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Implement get_source_count() accessor. Remove
+	is_multisource() accessor (leftover from long-gone SourceItems).
+	* Engine.pm, PkgVersion.pm: abolish _sourcecount instance
+	variable; useg get_source_count() instead.
+
 2004-03-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Took out parsing of Type into %type_*[] b/c don't
