@@ -50,7 +50,7 @@ BEGIN {
 					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &growl &do_calls);
+					  &growl &call_queue_clear &call_queue_add);
 }
 our @EXPORT_OK;
 
@@ -1355,59 +1355,83 @@ sub growl {
 	return 1;
 }
 
-=item do_calls
+=item call_queue_clear
 
-	&do_calls(\@call_list);
+=item call_queue_add
 
-Loop through the method and function calls specified in @call_list,
-running each one in turn. Each element of @call_list is a ref to a
-list having one of two forms:
+	&call_queue_clear;
+	# some loop {
+		&call_queue_add \@call;
+	# }
+	&call_queue_clear;
 
-  $call_list[n] = [ $object, $method, @params ]
+This implements a primitive function/method call queue for potential
+future parallelization. Using this model, there is a single queue. One
+calls call_queue_clear to make sure there are no calls left from a
+previous queue usage, then call_queue_add to add calls to the queue,
+then call_queue_clear to make sure all the calls are complete.
+
+call_queue_clear blocks until there are no calls pending.
+
+call_queue_add blocks until there is an agent available to handle the
+call, then hands it off to the agent. Each call is specified by a ref
+to a list having one of two forms:
+
+  [ $object, $method, @params ]
 
     In this form, a call will be made to the specified $method name
     (given as a string, i.e., a symbolic ref) of (blessed) object
     $obj, that is, $object->$method(@params).
 
-  $call_list[n] = [ \&function, @params ]
+  [ \&function, @params ]
 
     In this form, a call will be made to function &function (unblessed
     CODE ref), that is, &$function(@params).
 
 In both cases, the thing is called with parameter list @params (if
-given, otherwise an empty list). Return values are discarded.
-
-The anonymous list referenced from $call_list[n] will be clobbered. At
-some point, this function may be rewritten using fork(), so you should
-not expect sane results if your functions and methods change
-parameters passed by reference, (object) instance variables, or other
-runtime data structures.
+given, otherwise an empty list). Return values are discarded. The lis
+@call will be clobbered. Unless you are extremely careful to check the
+underlying function or method for thread safety and the use of
+whatever var are declared "shared", you should not expect sane results
+if your functions and methods change parameters passed by reference,
+(object) instance variables, or other runtime data structures.
 
 =cut
 
-# should rewrite this as a queue where the API is an add_call function
-# that blocks until an agent is available to run it (to save memory in
-# the parent).
+# At this time, there is no parallelization. Each call is handled in
+# the main thread and call_queue_add does not return until the call
+# returns.
 
-sub do_calls {
-	my $call_list = shift;
-	my( $object, $method, $function );
+# Should rewrite using multithreading with the pdb and aptdb as shared
+# vars. But perl doesn't implement modern threading until 5.8 so can't
+# do it until we drop support for OS X 10.2.
 
-	foreach my $call (@$call_list) {
-		$function = shift @$call;
-		if (ref($function) ne 'CODE') {
-			# not an unblessed CODE ref so assume it is an object
-			$object = $function;
-			$method = shift @$call;
-			$function = $object->can($method);  # CODE ref for pkg function
-			unshift @$call, $object;  # handle $obj->$method as &function($obj)
-			if (not defined $function) {
-				warn "$object does not appear to have a \"$method\" method...will skip\n";
-				next;
-			}
+# If we get a real queue and use it for many purposes, should rewrite
+# it as a queue object so can have multiple queues
+
+sub call_queue_clear {
+	return;
+}
+
+sub call_queue_add {
+	my $call = shift;
+
+	# get function CODE ref and convert object form to function form
+	my $function = shift @$call;
+	if (ref($function) ne 'CODE') {
+		# not an unblessed CODE ref so assume it is an object
+		my $object = $function;
+		my $method = shift @$call;
+		$function = $object->can($method);  # CODE ref for pkg function
+		unshift @$call, $object;  # handle $obj->$method as &function($obj)
+		if (not defined $function) {
+			warn "$object does not appear to have a \"$method\" method...will skip\n";
+			next;
 		}
-		&$function(@$call);
 	}
+
+	# no ||ization, so just call and wait for return
+	&$function(@$call);
 }
 
 =back
