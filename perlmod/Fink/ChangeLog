@@ -1,3 +1,12 @@
+2004-03-22	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Allow non-consecutive SourceN (and related
+	fields). Renamed get_param_with_expansion => param_expanded to
+	fit naming convention, and added param_default_expanded.
+	Distinguishing between SourceN fields is now done by suffix,
+	using get_source_suffices().
+	* Engine.pm: Modified to use suffix-indexed SourceN.
+
 2004-03-18  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Forgot to include SplitOff (i.e., N=[null]).

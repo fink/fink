@@ -280,13 +280,21 @@ sub expand_percent_if_available {
 ### expand percent chars in the given field, if that field exists
 ### return the expanded form but do not store it back into the field data
 
-sub get_param_with_expansion {
+sub param_expanded {
 	my $self = shift;
-	my $field = lc shift;
+	return &expand_percent($self->param(@_), $self->{_expand},
+		$self->get_info_filename." \"$_[0]\"");
+}
 
-	if ($self->has_param($field)) {
-		&expand_percent($self->{$field}, $self->{_expand}, $self->get_info_filename." \"$field\"");
-	}
+# param_default_expanded FIELD, DEFAULT
+#
+# Expand percent chars in the given field, if that field exists.
+# Return the expanded form but do not store it back into the field data.
+# If the field doesn't exist, return the default.
+sub param_default_expanded {
+	my $self = shift;
+	return &expand_percent($self->param_default(@_), $self->{_expand},
+		$self->get_info_filename." \"$_[0]\"");
 }
 
 ### Process a Depends (or other field that is a list of packages,
@@ -553,103 +561,80 @@ sub get_info_filename {
 
 ### other accessors
 
-# Returns the number of source tarballs for the package. Actually it
-# gives the highest *consecutive* N of SourceN, or 1 if no SourceN
-# (even if no Source b/c it's a nosource or bundle).
-# FIXME-dmacks: that's pretty weird.
-
-sub get_source_count {
+# get_source_suffices
+#
+# Returns an ordered list of all "N"s used in SourceN fields.
+# Note that the primary source will always be at the front.
+sub get_source_suffices {
 	my $self = shift;
 
-	if (exists $self->{parent}) {
-		# SplitOff packages have no sources of their own
-		return 0;
-	}
-
-	if (!exists $self->{_sourcecount}) {
-		# have not calculated it before
-		my $count = 1;
-		while ($self->has_param('source'.($count+1))) {
-			$count++;
+	# Cache it
+	if (!exists $self->{_source_suffices}) {
+		my @params = $self->params_matching('source([2-9]|[1-9]\d+)');
+		map { s/^source//i } @params;
+		@params = sort { $a <=> $b } @params;
+		
+		unless ( $self->is_type('bundle') || $self->is_type('nosource') ) {
+			unshift @params, "";
 		}
-		# save the result for next time
-		$self->{_sourcecount} = $count;
+		
+		$self->{_source_suffices} = \@params;
 	}
-
-	return $self->{_sourcecount};
+	
+	return @{$self->{_source_suffices}};
 }
 
+# get_source [ SUFFIX ]
+#
+# Returns the source for a given SourceN suffix. If no suffix is given,
+# returns the primary source.
+# On error (eg: nonexistent suffix) returns "none".
+# May contain mirror information, don't expect a normal URL. 
 sub get_source {
 	my $self = shift;
-	my $index = shift || 1;
-	if ($index < 2) {
-		unless ($self->is_type('bundle') || $self->is_type('nosource')) {
-			my $source = $self->param_default("Source", "\%n-\%v.tar.gz");
-			if ($source eq "gnu") {
-				$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
-			} elsif ($source eq "gnome") {
-				$self->get_version =~ /(^[0-9]+\.[0-9]+)\.*/;
-				$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
-			}
-			$self->set_param("Source", $source);
-			return $self->get_param_with_expansion("Source");
+	my $suffix = shift || "";
+	
+	# Implicit primary source
+	if ( $suffix eq "" ) {
+		my $source = $self->param_default("Source", "\%n-\%v.tar.gz");
+		if ($source eq "gnu") {
+			$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
+		} elsif ($source eq "gnome") {
+			$self->get_version =~ /(^[0-9]+\.[0-9]+)\.*/;
+			$source = "mirror:gnome:sources/\%n/$1/\%n-\%v.tar.gz";
 		}
-	} elsif ($index <= $self->get_source_count) {
-		return $self->get_param_with_expansion("Source".$index);
+		$self->set_param("Source", $source);
 	}
-	return "none";
+	
+	return $self->param_default_expanded("Source".$suffix, "none");
 }
 
-sub get_source_list {
-	my $self = shift;
-	my @list = ();
-	for (my $index = 1; $index<=$self->get_source_count; $index++) {
- 	        my $source = $self->get_source($index);
-	        push(@list, $source) unless $source eq "none";
-	}
-	return @list;
-}
-
+# get_tarball [ SUFFIX ]
+#
+# Returns the name of the source tarball for a given SourceN suffix.
+# If no suffix is given, returns the primary source tarball's name.
+# On error (eg: nonexistent suffix) returns "none".
 sub get_tarball {
 	my $self = shift;
-	my $index = shift || 1;
-	if ($index < 2) {
-		if ($self->has_param("SourceRename")) {
-			return $self->get_param_with_expansion("SourceRename");
-		}
-		return &filename($self->get_source()) unless ($self->is_type('bundle') || $self->is_type('nosource'));
-	} elsif ($index <= $self->get_source_count) {
-		if ($self->has_param("Source".$index."Rename")) {
-			return $self->get_param_with_expansion("Source".$index."Rename");
-		}
-		return &filename($self->get_source($index));
+	my $suffix = shift || "";
+
+	if ($self->has_param("Source".$suffix."Rename")) {
+		return $self->param_expanded("Source".$suffix."Rename");
+	} else {
+		# This does the right thing for "none", too.
+		return &filename($self->get_source($suffix));
 	}
-	return "none";
 }
 
-sub get_tarball_list {
-	my $self = shift;
-	my @list = ();
-	for (my $index = 1; $index<=$self->get_source_count; $index++) {
- 	        my $tarball = $self->get_tarball($index);
-	        push(@list, $tarball) unless $tarball eq "none";
-	}
-	return @list;
-}
-
+# get_checksum [ SUFFIX ]
+#
+# Returns the checksum of the source tarball for a given SourceN suffix.
+# If no suffix is given, returns the primary source tarball's checksum.
+# On error (eg: nonexistent suffix) returns "-".
 sub get_checksum {
 	my $self = shift;
-	my $index = shift || 1;
-	if ($index == 1) {
-		if ($self->has_param("Source-MD5")) {
-			return $self->param("Source-MD5");
-		}
-	} elsif ($index >= 2 and $index <= $self->get_source_count) {
-		if ($self->has_param("Source".$index."-MD5")) {
-			return $self->param("Source".$index."-MD5");
-		}
-	}		
-	return "-";
+	my $suffix = shift || "";
+	return $self->param_default("Source".$suffix."-MD5", "-");
 }
 
 sub get_custom_mirror {
@@ -661,7 +646,7 @@ sub get_custom_mirror {
 
 	if ($self->has_param("CustomMirror")) {
 		$self->{_custom_mirror} =
-			Fink::Mirror->new_from_field($self->get_param_with_expansion("CustomMirror"));
+			Fink::Mirror->new_from_field($self->param_expanded("CustomMirror"));
 	} else {
 		$self->{_custom_mirror} = 0;
 	}
@@ -677,13 +662,13 @@ sub get_build_directory {
 	}
 
 	if ($self->is_type('bundle') || $self->is_type('nosource')
-			|| lc $self->get_source(1) eq "none"
+			|| lc $self->get_source() eq "none"
 			|| $self->param_boolean("NoSourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname();
 	}
 	elsif ($self->has_param("SourceDirectory")) {
 		$self->{_builddir} = $self->get_fullname()."/".
-			$self->get_param_with_expansion("SourceDirectory");
+			$self->param_expanded("SourceDirectory");
 	}
 	else {
 		$dir = $self->get_tarball();
@@ -858,16 +843,16 @@ sub get_description {
 
 sub is_fetched {
 	my $self = shift;
-	my ($i);
+	my ($suffix);
 
 	if ($self->is__type('bundle') || $self->is_type('nosource') ||
-			lc $self->get_source(1) eq "none" ||
+			lc $self->get_source() eq "none" ||
 			$self->is_type('dummy')) {
 		return 1;
 	}
 
-	for ($i = 1; $i <= $self->get_source_count; $i++) {
-		if (not defined $self->find_tarball($i)) {
+	foreach $suffix ($self->get_source_suffices) {
+		if (not defined $self->find_tarball($suffix)) {
 			return 0;
 		}
 	}
@@ -893,16 +878,19 @@ sub is_installed {
 	return 0;
 }
 
-### source tarball finding
-
+# find_tarball [ SUFFIX ]
+#
+# Returns the path of the downloaded tarball for a given SourceN suffix.
+# If no suffix is given, returns the primary source tarball's path.
+# On error (eg: nonexistent suffix) returns undef.
 sub find_tarball {
 	my $self = shift;
-	my $index = shift || 1;
+	my $suffix = shift || "";
 	my ($archive, $found_archive);
 	my (@search_dirs, $search_dir);
 
-	$archive = $self->get_tarball($index);
-	if ($archive eq "-") {	# bad index
+	$archive = $self->get_tarball($suffix);
+	if ($archive eq "none") {	# bad suffix
 		return undef;
 	}
 
@@ -1228,10 +1216,10 @@ sub phase_fetch {
 	my $self = shift;
 	my $conditional = shift || 0;
 	my $dryrun = shift || 0;
-	my ($i);
+	my ($suffix);
 
 	if ($self->is_type('bundle') || $self->is_type('nosource') ||
-			lc $self->get_source(1) eq "none" ||
+			lc $self->get_source() eq "none" ||
 			$self->is_type('dummy')) {
 		return;
 	}
@@ -1240,16 +1228,20 @@ sub phase_fetch {
 		return;
 	}
 
-	for ($i = 1; $i <= $self->get_source_count; $i++) {
-		if (not $conditional or not defined $self->find_tarball($i)) {
-			$self->fetch_source($i,0,0,0,$dryrun);
+	foreach $suffix ($self->get_source_suffices) {
+		if (not $conditional or not defined $self->find_tarball($suffix)) {
+			$self->fetch_source($suffix,0,0,0,$dryrun);
 		}
 	}
 }
 
+# fetch_source SUFFIX, [ TRIES ], [ CONTINUE ], [ NOMIRROR ], [ DRYRUN ]
+#
+# Unconditionally download the source for a given SourceN suffix, dying on
+# failure.
 sub fetch_source {
 	my $self = shift;
-	my $index = shift;
+	my $suffix = shift;
 	my $tries = shift || 0;
 	my $continue = shift || 0;
 	my $nomirror = shift || 0;
@@ -1258,22 +1250,22 @@ sub fetch_source {
 
 	chdir "$basepath/src";
 
-	$url = $self->get_source($index);
-	$file = $self->get_tarball($index);
+	$url = $self->get_source($suffix);
+	$file = $self->get_tarball($suffix);
 	if($self->has_param("license")) {
 		if($self->param("license") =~ /Restrictive\s*$/) {
 			$nomirror = 1;
 		} 
 	}
 	
-	$checksum = $self->get_checksum($index);
+	$checksum = $self->get_checksum($suffix);
 	
 	if($dryrun) {
 		return if $url eq $file; # just a simple filename
 		print "$file $checksum";
 	} else {
 		if($checksum eq '-') {	
-			print "WARNING: No MD5 specified for Source #".$index.
+			print "WARNING: No MD5 specified for Source".$suffix.
 							" of package ".$self->get_fullname();
 			if ($self->has_param("Maintainer")) {
 				print ' Maintainer: '.$self->param("Maintainer") . "\n";
@@ -1322,7 +1314,7 @@ sub fetch_source {
 sub phase_unpack {
 	my $self = shift;
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-	my ($i, $verbosity, $answer, $tries, $checksum, $continue);
+	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
@@ -1379,7 +1371,7 @@ END
 			die "can't remove existing directory $bdir\n";
 	}
 
-	if ($self->is_type('nosource') || lc $self->get_source(1) eq "none") {
+	if ($self->is_type('nosource') || lc $self->get_source() eq "none") {
 		$destdir = "$buildpath/$bdir";
 		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
@@ -1387,22 +1379,22 @@ END
 	}
 
 	$tries = 0;
-	for ($i = 1; $i <= $self->get_source_count; $i++) {
-		$archive = $self->get_tarball($i);
+	foreach $suffix ($self->get_source_suffices) {
+		$archive = $self->get_tarball($suffix);
 
 		# search for archive, try fetching if not found
-		$found_archive = $self->find_tarball($i);
+		$found_archive = $self->find_tarball($suffix);
 		if (not defined $found_archive or $tries > 0) {
-			$self->fetch_source($i, $tries, $continue);
+			$self->fetch_source($suffix, $tries, $continue);
 			$continue = 0;
-			$found_archive = $self->find_tarball($i);
+			$found_archive = $self->find_tarball($suffix);
 		}
 		if (not defined $found_archive) {
 			die "can't find source file $archive for package ".$self->get_fullname()."\n";
 		}
 		
 		# verify the MD5 checksum, if specified
-		$checksum = $self->get_checksum($i);
+		$checksum = $self->get_checksum($suffix);
 		$found_archive_sum = &file_MD5_checksum($found_archive);
 		if ($checksum ne "-" ) { # Checksum was specified
 		# compare to the MD5 checksum of the tarball
@@ -1423,19 +1415,17 @@ END
 								  "Don't download, use existing file" => "continue" ) );
 				if ($answer eq "redownload") {
 					rm_f $found_archive;
-					$i--;
 					# Axel leaves .st files around for partial files, need to remove
 					if($config->param_default("DownloadMethod") =~ /^axel/)
 					{
 									rm_f "$found_archive.st";
 					}
-					next;		# restart loop with same tarball
+					redo;		# restart loop with same tarball
 				} elsif($answer eq "error") {
 					die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
 				} elsif($answer eq "continuedownload") {
 					$continue = 1;
-					$i--;
-					next;		# restart loop with same tarball			
+					redo;		# restart loop with same tarball			
 				}
 			}
 		} else {
@@ -1444,11 +1434,7 @@ END
 		}
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
-		if ($i < 2) {
-			$renamefield = "TarFilesRename";
-		} else {
-			$renamefield = "Tar".$i."FilesRename";
-		}
+		$renamefield = "Tar".$suffix."FilesRename";
 
 		$renamelist = "";
 
@@ -1488,9 +1474,10 @@ END
 	
 		# calculate destination directory
 		$destdir = "$buildpath/$bdir";
-		if ($i > 1) {
-			if ($self->has_param("Source".$i."ExtractDir")) {
-				$destdir .= "/".$self->get_param_with_expansion("Source".$i."ExtractDir");
+		if ($suffix ne "") {	# Primary sources have no special extract dir
+			my $extractparam = "Source".$suffix."ExtractDir";
+			if ($self->has_param($extractparam)) {
+				$destdir .= "/".$self->param_expanded($extractparam);
 			}
 		}
 
@@ -1514,8 +1501,7 @@ END
 								($tries >= 3) ? 0 : 1);
 			if ($answer) {
 				rm_f $found_archive;
-				$i--;
-				next;		# restart loop with same tarball
+				redo;		# restart loop with same tarball
 			} else {
 				die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
 			}
@@ -2185,7 +2171,7 @@ EOF
 	### shlibs file
 
 	if ($self->has_param("Shlibs")) {
-			$shlibsbody = $self->get_param_with_expansion("Shlibs");
+			$shlibsbody = $self->param_expanded("Shlibs");
 			chomp $shlibsbody;
 			$shlibsfile = "$destdir/DEBIAN/shlibs";
 
@@ -2234,7 +2220,7 @@ close(SHLIBS) or die "can't write shlibs file for ".$self->get_fullname().": $!\
 		mkdir_p "$destdir$basepath/etc/daemons" or
 			die "can't write daemonic info file for ".$self->get_fullname()."\n";
 		open(SCRIPT,">$daemonicfile") or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
-		print SCRIPT $self->get_param_with_expansion("DaemonicFile");
+		print SCRIPT $self->param_expanded("DaemonicFile");
 		close(SCRIPT) or die "can't write daemonic info file for ".$self->get_fullname().": $!\n";
 		chmod 0644, $daemonicfile;
 	}

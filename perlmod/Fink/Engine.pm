@@ -817,21 +817,21 @@ sub cmd_validate {
 # This is to be removed soon again, only a temporary tool to allow
 # checking of all available MD5 values in all packages.
 sub cmd_checksums {
-	my ($pname, $package, $vo, $i, $file, $chk);
+	my ($pname, $package, $vo, $suffix, $file, $chk);
 
 	# Iterate over all packages
 	foreach $pname (Fink::Package->list_packages()) {
 		$package = Fink::Package->package_by_name($pname);
 		foreach $vo ($package->get_all_versions()) {
 			# Skip packages that do not have source files
-			next unless $vo->get_source_count;
+			next unless scalar($vo->get_source_suffices);
 		
 			# For each tar ball, if a checksum was specified, locate it and
 			# verify the checksum.
-			for ($i = 1; $i <= $vo->get_source_count; $i++) {
-				$chk = $vo->get_checksum($i);
+			foreach $suffix ( $vo->get_source_suffices() ) {
+				$chk = $vo->get_checksum($suffix);
 				if ($chk ne "-") {
-					$file = $vo->find_tarball($i);
+					$file = $vo->find_tarball($suffix);
 					if (defined($file) and $chk ne &file_MD5_checksum($file)) {
 						print "Checksum of tarball $file of package ".$vo->get_fullname()." is incorrect.\n";
 					}
@@ -842,7 +842,7 @@ sub cmd_checksums {
 }
 
 sub cmd_cleanup {
-	my ($pname, $package, $vo, $i, $file);
+	my ($pname, $package, $vo, $file, $suffix);
 	my (@to_be_deleted);
 
 	# TODO - add option that specify whether to clean up source, .debs, or both
@@ -895,11 +895,9 @@ sub cmd_cleanup {
 			$deb_list{$file} = 1;
 
 			# all source files
-			if ($vo->get_source_count) {
-				for ($i = 1; $i <= $vo->get_source_count; $i++) {
-					$file = $vo->find_tarball($i);
-					$src_list{$file} = 1 if defined($file);
-				}
+			foreach $suffix ( $vo->get_source_suffices() ) {
+				$file = $vo->find_tarball($suffix);
+				$src_list{$file} = 1 if defined($file);
 			}
 		}
 	}
