@@ -1,3 +1,9 @@
+2004-08-08  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Rename parse_configureparams() to prepare_percent_c()
+	and: no longer consider %c cacheable and re-protect % in %c.
+	* Engine.pm: fixes for prepare_percent_c().
+
 2004-08-08  Max Horn <max@quendi.de>
 
 	* Engine.pm: Fix list command with regards to virtual packages.

@@ -1862,7 +1862,7 @@ EOF
 				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
 			} elsif ($_ eq 'configureparams') {
 				my $cparams = &expand_percent(
-					$pkg->parse_configureparams,
+					$pkg->prepare_percent_c,
 					$pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion
 				);
 				$cparams =~ s/\n//g;
@@ -1885,7 +1885,6 @@ EOF
 			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
 				# multiline fields start on a new line and are
 				# indented one extra space
-				$pkg->parse_configureparams;
 				if ($pkg->has_param($_)) {
 					my $value = $pkg->param_expanded($_);
 					$value =~ s/^/ /gm;
@@ -1921,7 +1920,7 @@ EOF
 				die "Unknown field $_\n";
 			}
 		}
-		$pkg->parse_configureparams;
+		$pkg->prepare_percent_c;
 		foreach (@percents) {
 			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
 			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);

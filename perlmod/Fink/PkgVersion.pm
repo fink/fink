@@ -362,37 +362,50 @@ sub clear_self_from_list {
 }
 
 # Process ConfigureParams (including Type-specific defaults) and
-# eventually conditionals, set {_expand}->{c}, and return result.
+# conditionals, set {_expand}->{c}, and return result.
 # Does not change {configureparams}.
 #
 # NOTE:
 #   You must set _expand before calling!
 #   You must make sure this method has been called before ever calling
 #     expand_percent if it could involve %c!
-#
-# Okay to call repeatedly (uses {_expand}->{c} as run-once semaphore)
 
-sub parse_configureparams {
+sub prepare_percent_c {
 	my $self = shift;
 
-	return  $self->{_expand}->{'c'} if exists $self->{_expand}->{'c'};
-
+	my $pct_c;
 	if ($self->is_type('perl')) {
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 
-		$self->{_expand}->{'c'} = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
+		$pct_c = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
 	} else {
-		$self->{_expand}->{'c'} = "--prefix=\%p ";
+		$pct_c = "--prefix=\%p ";
 	}
-#	$self->{_expand}->{'c'} .= $self->param_default("ConfigureParams", "");
-	$self->{_expand}->{'c'} .= $self->conditional_space_list(
-		$self->param_default_expanded("ConfigureParams", ""),
+	$pct_c .= $self->param_default("ConfigureParams", "");
+
+	# need to expand here so can use %-keys in conditionals
+	$pct_c = &expand_percent(
+		$pct_c,
+		$self->{_expand},
 		"ConfigureParams of ".$self->get_info_filename
 	);
+
+	$pct_c = $self->conditional_space_list(
+		$pct_c,
+		"ConfigureParams of ".$self->get_info_filename
+	);
+
+	# reprotect "%" b/c %c used in *Script and get_*script() does %-exp
+	$pct_c =~ s/\%/\%\%/g;
+	$self->{_expand}->{c} = $pct_c;
 }
 
 # handle conditionals processing in a list of space-separated atoms
+# 
+# NOTE:
+#   Percent-expansion is *not* performed here; you must do it yourself
+#     if necessary before calling this method!
 
 sub conditional_space_list {
 	my $self = shift;    # unused
@@ -1611,8 +1624,6 @@ sub phase_patch {
 	my $self = shift;
 	my ($dir, $patch_script, $cmd, $patch, $subdir);
 
-	$self->parse_configureparams;
-
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
 	}
@@ -1693,7 +1704,7 @@ sub get_patchscript {
 
 	# need to pre-expand default_script so not have to change
 	# expand_percent() to go a third level deep
-	$self->parse_configureparams;
+	$self->prepare_percent_c;
 	$self->{_expand}->{default_script} = &expand_percent(
 		$default_script,
 		$self->{_expand},
@@ -1714,8 +1725,6 @@ sub get_patchscript {
 sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
-
-	$self->parse_configureparams;
 
 	if ($self->is_type('bundle')) {
 		return;
@@ -1772,7 +1781,7 @@ sub get_compilescript {
 
 	# need to pre-expand default_script so not have to change
 	# expand_percent() to go a third level deep
-	$self->parse_configureparams;
+	$self->prepare_percent_c;
 	$self->{_expand}->{default_script} = &expand_percent(
 		$default_script,
 		$self->{_expand},
@@ -1794,8 +1803,6 @@ sub phase_install {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
-
-	$self->parse_configureparams;
 
 	if ($self->is_type('dummy')) {
 		die "install phase: can't build ".$self->get_fullname().
@@ -1997,7 +2004,7 @@ sub get_installscript {
 
 	# need to pre-expand default_script so not have to change
 	# expand_percent() to go a third level deep
-	$self->parse_configureparams;
+	$self->prepare_percent_c;
 	$self->{_expand}->{default_script} = &expand_percent(
 		$default_script,
 		$self->{_expand},
