@@ -444,7 +444,7 @@ sub cmd_scanpackages {
     }
 
     $prio = "optional";
-    if ($pkgname eq "apt" or $pkgname eq "storable-pm") {
+    if ($pkgname eq "apt" or $pkgname eq "apt-shlibs" or $pkgname eq "storable-pm") {
       $prio = "important";
     }
     if ($pkgversion->param_boolean("Essential")) {

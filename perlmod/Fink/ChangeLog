@@ -1,3 +1,16 @@
+2002-06-08  Max Horn  <max@quendi.de>
+
+	* Bootstrap.pm (bootstrap): Added apt-shlibs to the list of packages that are
+	automatically installed during bootstrap.
+	
+	* Engine.pm (cmd_scanpackages): Made apt-shlibs an "important" package.
+
+	* Package.pm: Implemented use_cache flag - can later be used to add an
+	option to turn off the package cacher temporarily.
+	
+	* SelfUpdate.pm (finish): Include apt-shlibs in the list of packags that are
+	updated upon a selfupdate.
+
 2002-05-28  Max Horn  <max@quendi.de>
 
 	* Services.pm (file_MD5_checksum): Fixed bug caused by certain special
