@@ -1,3 +1,11 @@
+2005-01-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm:  Disallow bootstrapping with perl 5.8.4
+
+2005-01-22  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm:  Allow bootstrapping with perl 5.8.6 (maybe).
+
 2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* all: updated Copyright notice
