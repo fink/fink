@@ -142,9 +142,9 @@ The default events are:
 
 =item * finkPackageRemovalFailed - deactivation phase has failed
 
-=item * finkDonePassed - fink is done running and exiting
+=item * finkDonePassed - fink is done running and is exiting
 
-=item * finkDoneFailed - fink is done running and exiting non-zero
+=item * finkDoneFailed - fink is done running and is exiting non-zero
 
 =back
 	
