@@ -553,9 +553,9 @@ sub validate_info_file {
 		}
 
 		# A #! line is worthless in dpkg install-time scripts
-		if ($field =~ /^{pre,post}{inst,rm}script$/) {
+		if ($field =~ /^(pre|post)(inst|rm)script$/) {
 			if ($value =~ /^\s*\#!/) {   # emacs misparses # in a pattern:(
-				print "Warning: Field \"$field\" explicitly calls for an interpretter. ($filename)\nFink always prefixes this field with an explicit \"#!/bin/sh\".\n";
+				print "Warning: Useless use of explicit interpretter in \"$field\". ($filename)\n";
 				$looks_good = 0;
 			}
 		}
