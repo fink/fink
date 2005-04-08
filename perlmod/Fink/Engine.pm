@@ -419,20 +419,24 @@ sub do_real_list {
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
 	if ($cmd eq "list") {
-		if ($#_ < 0) {
-			@selected = @allnames;
-		} else {
-			@selected = ();
-			while (defined($pattern = shift)) {
-				$pattern = lc quotemeta $pattern; # fixes bug about ++ etc in search string.
-				if ((grep /\\\*/, $pattern) or (grep /\\\?/, $pattern)) {
-					 $pattern =~ s/\\\*/.*/g;
-					 $pattern =~ s/\\\?/./g;
-					 push @selected, grep(/^$pattern$/, @allnames);
-				} else {
-					 push @selected, grep(/$pattern/, @allnames);
+		if (@_) {
+			# prepare the regex patterns
+			foreach (@_) {
+				# will be using in regex, so mask regex chars
+				$_ = lc quotemeta $_;
+				# we accept shell filename-glob wildcards (* and ?)
+				# convert them to perl regex form
+				if (s/\\\*/.*/g or s/\\\?/./g) {
+					# no automatic substringing for a glob
+					$_ = '\A' . $_ . '\Z';
 				}
 			}
+			# match all patterns in a single go
+			$pattern = join '|', @_;
+			@selected = grep /$pattern/, @allnames;
+		} else {
+			# no patterns specified, so list them all
+			@selected = @allnames;
 		}
 	} else {
 		$pattern = shift;
