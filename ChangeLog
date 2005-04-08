@@ -1,3 +1,7 @@
+2005-04-08  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: improved description of 'list' and 'apropos' patterns.
+
 2005-04-04  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* bootstrap.pl: added var/lib/fink to mkdir to fix bootstraping

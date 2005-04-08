@@ -139,8 +139,10 @@ not need a package list, so you just type:
 .It Cm list Op Ar package...
 This command produces a list of available packages, listing installation
 status, the latest version and a short description. If you call it without
-parameters, it will list all available packages. You can also pass a name or
-a shell pattern, and fink will list all packages that match.
+parameters, it will list all available packages. If you pass one
+or more package names, fink will list only those packages that match
+the given names. You can use shell globs (? and * wildcards); if you
+do not, then the pattern is searched as a substring.
 .Pp
 The first column displays the installation state with the following meanings:
 .Pp
@@ -212,7 +214,7 @@ This command behaves similarly to
 except that
 .Ar package...
 must be supplied and it searches package descriptions as well as package
-names.
+names for the given strings (no wildcards).
 .It Cm describe Ar package...
 This command displays a description of the package you name on the command
 line. Note that only a small part of the packages currently have a
