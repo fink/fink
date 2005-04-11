@@ -1,14 +1,17 @@
 Package: cctools-extra
 Epoch: 1
-Version: 495
-Revision: 3
+Version: 525
+Revision: 1
 
-Source: mirror:sourceforge:fink/cctools-%v.tar.bz2
-Source-MD5: 4fc18896b958d17864cc2d001e595ff0
+Source: mirror:sourceforge:fink/cctools-%v.tar.gz
+Source-MD5: 3107c790a55595c6410696ebb7ea80a9
 SourceDirectory: cctools-%v
 Patch: %n.patch
 Essential: yes
 Depends: base-files
+BuildDepends: gcc3.3
+SetCC: gcc-3.3
+SetCXX: g++-3.3
 CompileScript: <<
 #!/bin/sh
 
