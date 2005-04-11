@@ -1,3 +1,7 @@
+2005-04-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: add a default for CXXFLAGS for recent distributions
+
 2005-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: gettext-tools installed during bootstrap (on

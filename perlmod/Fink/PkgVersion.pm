@@ -2638,6 +2638,13 @@ sub get_env {
 		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
 
+	# add a default for CXXFLAGS for recent distributions
+	if (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional")) {
+		$defaults{"CXXFLAGS"} = "-fabi-version=1";
+	} elsif ($config->param("Distribution") ge "10.4") {
+		$defaults{"CXXFLAGS"} = "-fabi-version=2";
+	}
+
 	# lay the groundwork for prebinding
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
 		mkdir_p "$basepath/var/lib/fink/prebound" or
