@@ -3201,7 +3201,13 @@ sub clear_buildlock {
 	# remove lockpkg (== clear lock for building $self)
 	print "Removing build lock...\n";
 
-	my $old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
+
+	
+	my $old_lock;
+	{
+		local $SIG{INT} = 'IGNORE';
+		$old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
+	}
 	chomp $old_lock;
 	if ($old_lock eq "$lockpkg\t") {
 		&print_breaking("WARNING: The lock was removed by some other process.");
