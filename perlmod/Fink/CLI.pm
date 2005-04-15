@@ -40,6 +40,7 @@ BEGIN {
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
 					  &prompt &prompt_boolean &prompt_selection_new
+					  &prompt_selection
 					  &print_optionlist
 			      &get_term_width);
 }
@@ -338,6 +339,106 @@ sub prompt_selection_new {
 		if ($answer < 1 || $answer > $count) {
 			$answer = $default_value;
 		}
+	}
+	return $choices[2*$answer-1];
+}
+
+=item prompt_selection
+
+    my $answer = prompt_selection $prompt, %options;
+
+Ask the user a multiple-choice question and return the answer. The
+user is prompted via STDOUT/STDIN using $prompt (which is
+word-wrapped) and a list of choices. The choices are numbered
+(beginning with 1) and the user selects by number.
+
+The %options are given as option => value pairs. The following
+options are known:
+	
+	choices (required)
+		
+		The option 'choices' must be a reference to an ordered pairwise
+		array [ label1 => value1, label2 => value2, ... ]. The labels will
+		be displayed to the user; the values are the return values if that
+		option is chosen.
+	
+	default (optional)
+	
+		If the option 'default' is given, then it determines which choice
+		will be returned if no input is detected.
+		
+		This can occur if the user enters a null string, or if Fink
+		is configured to automatically accept defaults (i.e., bin/fink
+		was invoked with the -y or --yes option).
+		
+		The following formats are recognized for the 'default' option:
+		
+		  @default = [];                   # choice 1
+		  @default = ["number", $number];  # choice $number
+		  @default = ["label", $label];    # first choice with label $label
+		  @default = ["value", $label];    # first choice with value $value
+		
+		Default value: choice 1
+		
+	timeout (optional)
+	
+		The 'timeout' option establishes a wait period (in seconds) for
+		the prompt, after which the default answer will be used.
+		If a timeout is given, any existing alarm() is destroyed.
+		
+		Default value: no timeout
+
+=cut
+
+sub prompt_selection {
+	my $prompt = shift;
+	my %opts = (default => [], timeout => 0, @_);
+	my @choices = @{$opts{choices}};
+	my $default = $opts{default};
+
+	my ($count, $answer, $default_value);
+
+	if (@choices/2 != int(@choices/2)) {
+		confess 'Odd number of elements in @choices';
+	}
+
+	if (!defined $default->[0]) {
+		$default_value = 1;
+	} elsif ($default->[0] eq "number") {
+		$default_value = $default->[1];
+		$default_value = 1 if $default_value < 1 || $default_value > @choices/2;
+	} elsif ($default->[0] =~ /^(label|value)$/) {
+		# will be handled later
+	} else {
+		confess "Unknown default type ",$default->[0];
+	}
+
+	$count = 0;
+	for (my $index = 0; $index <= $#choices; $index+=2) {
+		$count++;
+		print "\n($count)	 $choices[$index]";
+		if (!defined $default_value && (
+						(
+						 ($default->[0] eq "label" && $choices[$index]   eq $default->[1])
+						 ||
+						 ($default->[0] eq "value" && $choices[$index+1] eq $default->[1])
+						 )
+						)) {
+			$default_value = $count;
+		}
+
+	}
+	$default_value = 1 if !defined $default_value;
+	print "\n\n";
+
+	$answer = &get_input("$prompt [$default_value]", $opts{timeout});
+	chomp($answer);
+	if (!$answer) {
+		$answer = 0;
+	}
+	$answer = int($answer);
+	if ($answer < 1 || $answer > $count) {
+		$answer = $default_value;
 	}
 	return $choices[2*$answer-1];
 }
