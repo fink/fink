@@ -6,7 +6,7 @@ Source: @SOURCE@
 Source-MD5: @MD5@
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
-CompileScript:  sed -e "s|@PREFIX@|%p|" < postinstall.pl.in > postinstall.pl
+CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
 InstallScript: ./install.sh %i
 PostInstScript: %p/lib/fink/mirror/postinstall.pl
 #

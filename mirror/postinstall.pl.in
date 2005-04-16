@@ -34,5 +34,9 @@ use Fink::Configure qw(&choose_mirrors);
 
 read_config("@PREFIX@/etc/fink.conf");
 
+#back up the configuration file
+`cp @PREFIX@/etc/fink.conf @PREFIX@/etc/fink.conf.bak`;
+
 #get mirror selections, write write new configuration file if changed
 choose_mirrors(1) || $config->save();
+
