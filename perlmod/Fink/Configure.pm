@@ -269,13 +269,10 @@ sub choose_mirrors {
 			$current_value = $config->param("Mirror-$mirrorname");
 			$is_obsolete = 1;
 			$list_of_mirrors = &read_properties_multival("$libpath/mirror/$mirrorname");
-#			print "\n mirrorname: $mirrorname, current value: $current_value\n";
 			foreach $property_value (values %{$list_of_mirrors}) {
 				foreach $mirror_item (@{$property_value}) {
-#					print " $mirror_item ";
 					if ($current_value eq $mirror_item) {
 						$is_obsolete = 0;
-#						print "current value $current_value; mirrorname $mirrorname \n";
 					}
 				}
 			}
@@ -285,7 +282,6 @@ sub choose_mirrors {
 		}
 	}
 
-#	print "obsolete mirrors\n %obsolete_mirrors \n";
 
 	if (!$missing) {
 		if ($mirrors_postinstall) {
@@ -377,7 +373,6 @@ if ((!$obsolete_only) or (!$config->has_param("MirrorCountry"))) {
 
 	if ($obsolete_only) {
 		@mirrors_to_choose = keys %obsolete_mirrors;
-#		print "mirrors to choose @mirrors_to_choose\n";
 	} else {
 		@mirrors_to_choose = split(/\s+/, $listinfo->{order});
 	}
