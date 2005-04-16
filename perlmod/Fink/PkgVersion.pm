@@ -3327,6 +3327,7 @@ END
 	# script when starting with the (purified) ENV we have so far
 	if (-r "$basepath/bin/init.sh") {
 		my %temp_ENV = %ENV;  # need to activatescript_env, so save ENV for later
+
 		%ENV = %script_env;
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
 		%ENV = %temp_ENV;     # restore previous ENV
@@ -3334,6 +3335,9 @@ END
 		%script_env = map { split /=/,$_,2 } @vars;
 		delete $script_env{_};  # artifact of how we fetch init.sh results
 	}
+
+	# preserve TERM
+	$script_env{"TERM"} = $ENV{"TERM"};
 
 	# set variables according to the info file
 	$expand = $self->{_expand};
