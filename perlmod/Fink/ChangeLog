@@ -1,3 +1,13 @@
+2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Configure.pm: choose_mirrors now examines the current choices 
+	for outdated entires, and prompts the user about this; the default
+	values (chosen after a timeout when running in the fink-mirrors
+	postinstall script) will replace any outdated choices of the user
+	by currently acceptable choices
+	* Configure.pm: also backported the binary return value for
+	choose_mirrors
+
 2005-04-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: add a default for CXXFLAGS for recent distributions
