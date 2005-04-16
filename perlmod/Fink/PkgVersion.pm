@@ -1823,8 +1823,8 @@ sub phase_unpack {
 Fink::Services::enforce_gcc("This package must be compiled with GCC EXPECTED_GCC, but you currently have\n" .
 "GCC INSTALLED_GCC selected.  To correct this problem, run the command:\n\n" .
 "    sudo gcc_select GCC_SELECT_COMMAND\n\n" .
-"(You may need to install a more recent version of the Developer Tools to be\n" .
-							"able to do so.)\n", $gcc_abi);
+"You may need to install a more recent version of the Developer Tools\n" .
+"(Apple's XCode) to be able to do so.\n", $gcc_abi);
 	}
 
 	$bdir = $self->get_fullname();

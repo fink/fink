@@ -1128,8 +1128,8 @@ GCC INSTALLED_GCC selected.  To correct this problem, run the command:
 
     sudo gcc_select GCC_SELECT_COMMAND
 
-(You may need to install a more recent version of the Developer Tools to be 
-able to do so.)
+You may need to install a more recent version of the Developer Tools
+(Apple's XCode) to be able to do so.
 
 =cut
 
@@ -1150,12 +1150,12 @@ sub enforce_gcc {
 	my $sw_vers = get_sw_vers();
 	if ($sw_vers ne 0) {
 		$current_system = "Mac OS X $sw_vers";
-		$sw_vers =~ s/^(\d*\.\d*).*/${1}/;
+		$sw_vers =~ s/^(\d*\.\d*).*/$1/;
 		$gcc = $osx_default{$sw_vers};
 	} else {
         ($dummy,$dummy,$darwin_version) = uname();
 		$current_system = "Darwin $darwin_version";
-		$darwin_version =~ s/^(\d*).*/${1}/;
+		$darwin_version =~ s/^(\d*).*/$1/;
 		$gcc = $darwin_default{$darwin_version};
 	}
 
@@ -1165,9 +1165,13 @@ sub enforce_gcc {
 		}
 	}
 
-	chomp($gcc_select = `gcc_select`);
+	if (-x '/usr/sbin/gcc_select') {
+		chomp($gcc_select = `/usr/sbin/gcc_select`);
+	} else {
+		$gcc_select = '';
+	}
 	if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
-		$gcc_select = 'an unknown version';
+		$gcc_select = '(unknown version)';
 	}
 
 	$gcc_command = $gcc_name{$gcc};
