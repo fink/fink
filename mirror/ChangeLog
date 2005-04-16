@@ -1,5 +1,9 @@
 2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: releasing version 0.24.3.1 of fink-mirrors
+
+2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* fink-mirrors.info.in: allow multiple replacements of @PREFIX@
 	* postinstall.pl.in: back up fink.conf before updating configuration
 
