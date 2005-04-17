@@ -133,22 +133,28 @@ Your version of the gcc 3.3 compiler is out of date.  Please update to the
 August 2003 Developer Tools update, or to Xcode, and try again.
 
 END
-}
+	}
 
 	# We check to see if gcc is installed, and if it is the correct version.
 	# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
 
 	if (-x '/usr/bin/gcc') {
-$gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrapped or updated using\n" .
-"gcc EXPECTED_GCC.  However, you currently have gcc INSTALLED_GCC selected.\n" .
-"To correct this problem, run the command:\n\n" .
-								   "    sudo gcc_select GCC_SELECT_COMMAND\n\n");
+		$gcc = Fink::Services::enforce_gcc(<<GCC_MSG);
+Under CURRENT_SYSTEM, Fink must be bootstrapped or updated with gcc EXPECTED_GCC,
+however, you currently have gcc INSTALLED_GCC selected. To correct
+this problem, run the command:
+
+    sudo gcc_select GCC_SELECT_COMMAND
+
+You may need to install a more recent version of the Developer Tools
+(Apple's XCode) to be able to do so.
+GCC_MSG
 		$gcc = "-gcc" . $gcc;
-} else {
+	} else {
 ## 10.2 users who do not have gcc at all are installing binary only, so they get
 ## to move to 10.2-gcc3.3 also
-	$gcc = "-gcc3.3";
-}
+		$gcc = "-gcc3.3";
+	}
 
 	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 		&print_breaking("\nThis system is no longer supported " .
