@@ -1,7 +1,12 @@
+2005-04-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Configure.pm: choose_mirrors stops searching for current as soon
+	as found, and ignores Timestamp field in mirror files.
+
 2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Configure.pm: choose_mirrors now examines the current choices 
-	for outdated entires, and prompts the user about this; the default
+	for outdated entries, and prompts the user about this; the default
 	values (chosen after a timeout when running in the fink-mirrors
 	postinstall script) will replace any outdated choices of the user
 	by currently acceptable choices

@@ -269,10 +269,13 @@ sub choose_mirrors {
 			$current_value = $config->param("Mirror-$mirrorname");
 			$is_obsolete = 1;
 			$list_of_mirrors = &read_properties_multival("$libpath/mirror/$mirrorname");
+			delete $list_of_mirrors->{timestamp};
+		  MIRROR_GEOG_LOOP:
 			foreach $property_value (values %{$list_of_mirrors}) {
 				foreach $mirror_item (@{$property_value}) {
 					if ($current_value eq $mirror_item) {
 						$is_obsolete = 0;
+						last MIRROR_GEOG_LOOP;
 					}
 				}
 			}
