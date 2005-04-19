@@ -3196,12 +3196,12 @@ sub get_env {
 		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
 
-	# add a default for CXXFLAGS for recent distributions
-	if (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional")) {
-		$defaults{"CXXFLAGS"} = "-fabi-version=1";
-	} elsif ($config->param("Distribution") ge "10.4") {
-		$defaults{"CXXFLAGS"} = "-fabi-version=2";
-	}
+#	# add a default for CXXFLAGS for recent distributions
+#	if (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional")) {
+#		$defaults{"CXXFLAGS"} = "-fabi-version=1";
+#	} elsif ($config->param("Distribution") ge "10.4") {
+#		$defaults{"CXXFLAGS"} = "-fabi-version=2";
+#	}
 
 
 	# lay the groundwork for prebinding
@@ -3291,6 +3291,15 @@ END
 			$script_env{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
+
+
+	# force CXX to be g++-3.3 for the 10.3 and 10.4-transitional trees, unless
+	# the package has sepcified it with SetCXX
+
+	if (not $self->has_param("SetCXX") and (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional"))) {
+		$script_env{'CXX'} = 'g++-3.3';
+	}
+
 
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {

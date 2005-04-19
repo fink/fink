@@ -1,3 +1,8 @@
+2005-04-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: backed out the default value for CXXFLAGS, added
+	a default value for CXX instead
+
 2005-04-17  Daniel Macks  <dmacks@netspace.org>
 
 	* Configure.pm: choose_mirrors stops searching for current as soon
