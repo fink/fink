@@ -170,7 +170,7 @@ $gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrap
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.2$gcc";
-	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-8]\.0/) {
+	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-9]\.0/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.3";
 	} elsif ($host =~ /^powerpc-apple-darwin7\..*/) {
