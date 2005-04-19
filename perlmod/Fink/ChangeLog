@@ -3,6 +3,7 @@
 	* PkgVersion.pm: backed out the default value for CXXFLAGS, added
 	a default value for CXX instead
 	* Bootstrap.pm:  recognize 10.3.9
+	* PkgVersion.pm: make sure NoSetCXX still works
 
 2005-04-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
