@@ -1,4 +1,8 @@
-2005-04-17  Daniel Macks  <dmacks@netspace.org>
+2005-04-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: put an actual file in the buildlock package.
+
+2005-04-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Whine if a perl-versioned package installs a file
 	whose path does not encode the version.
