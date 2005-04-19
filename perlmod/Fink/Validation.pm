@@ -857,6 +857,7 @@ sub validate_info_component {
 # - only gettext should should have charset.alias
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
+# - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
 # - any other ideas?
 #
 sub validate_dpkg_file {
@@ -918,6 +919,19 @@ sub validate_dpkg_file {
 	$pid = open(DPKG_CONTENTS, "dpkg --contents $dpkg_filename |") or die "Couldn't run dpkg: $!\n";
 	my @dpkg_contents = <DPKG_CONTENTS>;
 	close(DPKG_CONTENTS) or die "Error on close: ", $?>>8, " $!\n";
+
+	# -pmXXX packages must install XXX-localized paths only
+	my $perlver_re;
+	if ($deb_control->{package} =~ /-pm(\d+)$/) {
+		$perlver_re = $1;
+		if ($perlver_re =~ /^(\d)(\d)(\d)$/) {
+			# -pmXYZ is perlX.Y.Z
+			$perlver_re = "(?:$perlver_re|$1.$2.$3)";
+		} elsif ($perlver_re =~ /^(\d)(\d)(\d)(\d)$/) {
+			# -pmWXYZ is perlW.X.YZ or perlW.XY.Z
+			$perlver_re = "(?:$perlver_re|$1.$2.$3$4|$1.$2$3.$4)";
+		}
+	}
 
 	foreach (@dpkg_contents) {
 		# process
@@ -1035,6 +1049,10 @@ sub validate_dpkg_file {
 			if ( $filename eq "$basepath/share/locale/charset.alias" ) {
 				# this seems to be a common bug in pkgs using gettext
 				print "Warning: The file $filename seems misplaced.\n";
+				$looks_good = 0;
+			}
+			if (defined $perlver_re and $filename !~ /$perlver_re/ and $filename !~ /\/$/) {
+				print "Warning: File in a perl-versioned package is neither versioned nor in a versioned directory.\n  Offending file: $filename\n";
 				$looks_good = 0;
 			}
 		}
