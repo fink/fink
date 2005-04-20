@@ -1804,11 +1804,17 @@ sub phase_unpack {
 
 	if ($self->has_param("GCC")) {
 		my $gcc_abi = $self->param("GCC");
-Fink::Services::enforce_gcc("This package must be compiled with GCC EXPECTED_GCC, but you currently have\n" .
-"GCC INSTALLED_GCC selected.  To correct this problem, run the command:\n\n" .
-"    sudo gcc_select GCC_SELECT_COMMAND\n\n" .
-"(You may need to install a more recent version of the Developer Tools to be\n" .
-							"able to do so.)\n", $gcc_abi);
+		my $name = $self->get_fullname();
+		Fink::Services::enforce_gcc(<<GCC_MSG, $gcc_abi);
+The package $name must be compiled with gcc EXPECTED_GCC,
+however, you currently have gcc INSTALLED_GCC selected. To correct
+this problem, run the command:
+
+    sudo gcc_select GCC_SELECT_COMMAND
+
+You may need to install a more recent version of the Developer Tools
+(Apple's XCode) to be able to do so.
+GCC_MSG
 	}
 
 	$bdir = $self->get_fullname();
