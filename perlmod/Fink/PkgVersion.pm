@@ -38,7 +38,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
-use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname);
+use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
 use File::Basename qw(&dirname &basename);
 use Fink::Notify;
 
@@ -3043,10 +3043,19 @@ esac
 EOSCRIPT
 
 	### write "prerm" file
-	open(PREINST,">$destdir/DEBIAN/prerm") or die "can't write prerm script file for $lockpkg: $!\n";
-	print PREINST $script;
-	close(PREINST) or die "can't write prerm script file for $lockpkg: $!\n";
+	open(PRERM,">$destdir/DEBIAN/prerm") or die "can't write prerm script file for $lockpkg: $!\n";
+	print PRERM $script;
+	close(PRERM) or die "can't write prerm script file for $lockpkg: $!\n";
 	chmod 0755, "$destdir/DEBIAN/prerm";
+
+	### add an actual file to the buildlock package
+	my $lockdir = "$destdir$basepath/var/run/fink";
+	if (not -d $lockdir) {
+		mkdir_p $lockdir or
+			die "can't create directory for lockfile for package $lockpkg\n";
+	}
+	touch $lockdir . '/' . $self->get_name() . '-' . $self->get_fullversion() . '.buildlock' or
+		die "can't create lockfile for package $lockpkg\n";
 
 	### create .deb using dpkg-deb (in buildpath so apt doesn't see it)
 	if (&execute("dpkg-deb -b $destdir $buildpath")) {

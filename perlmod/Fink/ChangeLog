@@ -1,5 +1,9 @@
 2005-04-20  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: create an actual file in the buildlock package.
+
+2005-04-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Bootstrap.pm, PkgVersion.pm, Services.pm: Overhauled enforce_gcc
 	error messages.
 

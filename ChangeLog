@@ -1,3 +1,7 @@
+2005-04-20  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: create dirs for buildlock lockfiles
+
 2005-04-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.4, a release
