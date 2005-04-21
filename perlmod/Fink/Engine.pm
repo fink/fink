@@ -64,7 +64,6 @@ our @EXPORT_OK;
 # '--ignore-breakage' option, 2, if it is called with '--ignore-breakage'
 our %commands =
 	( 'index'             => [\&cmd_index,             0, 1, 1],
-	  'rescan'            => [\&cmd_rescan,            0, 0, 0],
 	  'configure'         => [\&cmd_configure,         0, 1, 0],
 	  'bootstrap'         => [\&cmd_bootstrap,         0, 1, 0],
 	  'fetch'             => [\&cmd_fetch,             1, 1, 0],
@@ -299,11 +298,6 @@ my ($OP_FETCH, $OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
 sub cmd_index {
 	Fink::Package->update_db();
 	Fink::Shlibs->update_shlib_db();
-}
-
-sub cmd_rescan {
-	Fink::Package->forget_packages();
-	Fink::Package->require_packages();
 }
 
 sub cmd_configure {

@@ -468,45 +468,8 @@ sub scan_all {
 	if ($db_outdated) {
 		Fink::Package->update_db();
 	}
-
-	# Get data from dpkg's status file. Note that we do *not* store this 
-	# information into the package database.
-	$dlist = Fink::Status->list();
-	foreach $pkgname (keys %$dlist) {
-		$po = Fink::Package->package_by_name_create($pkgname);
-		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
-		$hash = $dlist->{$pkgname};
-
-		# create dummy object
-		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0] if defined($versions[0]);
-			$hash->{version} = $versions[1] if defined($versions[1]);
-			$hash->{revision} = $versions[2] if defined($versions[2]);
-			$hash->{type} = "dummy";
-			$hash->{filename} = "";
-
-			Fink::Package->inject_description($po, $hash);
-		}
-	}
-	# Get data from VirtPackage.pm. Note that we do *not* store this 
-	# information into the package database.
-	$dlist = Fink::VirtPackage->list();
-	foreach $pkgname (keys %$dlist) {
-		$po = Fink::Package->package_by_name_create($pkgname);
-		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
-		$hash = $dlist->{$pkgname};
-
-		# create dummy object
-		if (@versions = parse_fullversion($hash->{version})) {
-			$hash->{epoch} = $versions[0] if defined($versions[0]);
-			$hash->{version} = $versions[1] if defined($versions[1]);
-			$hash->{revision} = $versions[2] if defined($versions[2]);
-			$hash->{type} = "dummy";
-			$hash->{filename} = "";
-
-			Fink::Package->inject_description($po, $hash);
-		}
-	}
+	
+	Fink::Package->insert_runtime_packages;
 	$have_packages = 1;
 
 	if (&get_term_width) {
@@ -617,7 +580,7 @@ sub update_db {
 	$db_outdated = 0;
 }
 
-### scan one tree for package desccriptions
+### scan one tree for package descriptions
 
 sub scan {
 	shift;	# class method - ignore first parameter
@@ -638,36 +601,117 @@ sub scan {
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
 
 	foreach $filename (@filelist) {
-		# read the file and get the package name
-		$properties = &read_properties($filename);
-		$properties = Fink::Package->handle_infon_block($properties, $filename);
-		next unless keys %$properties;
-		$pkgname = $properties->{package};
-		unless ($pkgname) {
-			print "No package name in $filename\n";
-			next;
-		}
-		unless ($properties->{version}) {
-			print "No version number for package $pkgname in $filename\n";
-			next;
-		}
-		# fields that should be converted from multiline to
-		# single-line
-		for my $field ('builddepends', 'depends', 'files') {
-			if (exists $properties->{$field}) {
-				$properties->{$field} =~ s/[\r\n]+/ /gs;
-				$properties->{$field} =~ s/\s+/ /gs;
-			}
-		}
-
-		Fink::Package->setup_package_object($properties, $filename);
+		my @pvs = Fink::Package->packages_from_info_file($filename);
+		Fink::Package->insert_pkgversions(@pvs);
 	}
 }
 
-# Given $properties as a ref to a hash of .info lines in $filename,
-# instantiate the package(s) and return an array of Fink::PkgVersion
-# object(s) (i.e., the results of Fink::Package::inject_description().
-sub setup_package_object {
+=item packages_from_info_file
+
+  my @packages = Fink::Package->packages_from_info_file $filename;
+  
+Create Fink::PkgVersion objects based on a .info file. Do not
+yet add these packages to the current package database.
+
+Returns all packages created, including split-offs.
+
+=cut
+
+sub packages_from_info_file {
+	shift;	# class method - ignore first parameter
+	my $filename = shift;
+	
+	# read the file and get the package name
+	my $properties = &read_properties($filename);
+	$properties = Fink::Package->handle_infon_block($properties, $filename);
+	return () unless keys %$properties;
+	
+	my $pkgname = $properties->{package};
+	unless ($pkgname) {
+		print "No package name in $filename\n";
+		next;
+	}
+	unless ($properties->{version}) {
+		print "No version number for package $pkgname in $filename\n";
+		next;
+	}
+	# fields that should be converted from multiline to
+	# single-line
+	for my $field ('builddepends', 'depends', 'files') {
+		if (exists $properties->{$field}) {
+			$properties->{$field} =~ s/[\r\n]+/ /gs;
+			$properties->{$field} =~ s/\s+/ /gs;
+		}
+	}
+
+	return Fink::Package->packages_from_properties($properties, $filename);
+}
+
+
+=item insert_runtime_packages
+
+  Fink::Package->insert_runtime_packages;
+  
+Add all packages to the database which are dynamically generated, rather than
+created from .info files.
+
+=cut
+
+sub insert_runtime_packages {
+	# Get data from dpkg's status file. Note that we do *not* store this 
+	# information into the package database.
+	Fink::Package->insert_runtime_packages_hash(Fink::Status->list());
+
+	# Get data from VirtPackage.pm. Note that we do *not* store this 
+	# information into the package database.
+	Fink::Package->insert_runtime_packages_hash(Fink::VirtPackage->list());
+}
+
+=item insert_runtime_package_hash
+
+  Fink::Package->insert_runtime_package_hash $hashref;
+  
+Given a hash of package-name => property-list, insert the packages into the
+in-memory database.
+
+=cut
+
+sub insert_runtime_packages_hash {
+	shift;	# class method - ignore first parameter
+	
+	my $dlist = shift;
+	foreach my $pkgname (keys %$dlist) {
+		my $po = Fink::Package->package_by_name_create($pkgname);
+		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
+		my $hash = $dlist->{$pkgname};
+
+		# create dummy object
+		if (my @versions = parse_fullversion($hash->{version})) {
+			$hash->{epoch} = $versions[0] if defined($versions[0]);
+			$hash->{version} = $versions[1] if defined($versions[1]);
+			$hash->{revision} = $versions[2] if defined($versions[2]);
+			$hash->{type} = "dummy";
+			$hash->{filename} = "";
+
+			Fink::Package->insert_pkgversions(
+				Fink::Package->packages_from_properties($hash));
+		}
+	}
+}
+
+=item packages_from_properties
+
+  my $properties = { field => $val, ... };
+  my @packages = Fink::Package->packages_from_properties $properties, $filename;
+
+Create Fink::PkgVersion objects based on a hash-ref of properties. Do not
+yet add these packages to the current package database.
+
+Returns all packages created, including split-offs.
+
+=cut
+
+sub packages_from_properties {
 	shift;	# class method - ignore first parameter
 	my $properties = shift;
 	my $filename = shift;
@@ -689,7 +733,7 @@ sub setup_package_object {
 				# need new copy, not copy of ref to original
 				my $this_properties = {%{$properties}};
 				$this_properties->{type} =~ s/($type\s*)\(.*?\)/$type $_/;
-				push @pkgversions, Fink::Package->setup_package_object($this_properties, $filename);
+				push @pkgversions, Fink::Package->packages_from_properties($this_properties, $filename);
 			};
 			return @pkgversions;
 		}
@@ -719,40 +763,41 @@ sub setup_package_object {
 	# sure Maintainer doesn't have %type_*[] or other bad % constructs
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
-	# get/create package object
-	my $package = Fink::Package->package_by_name_create($properties->{package});
-
 	# create object for this particular version
 	$properties->{thefilename} = $filename;
-	my $pkgversion = Fink::Package->inject_description($package, $properties);
-	return ($pkgversion);
+	
+	my $pkgversion = Fink::PkgVersion->new_from_properties($properties);
+	
+	return $pkgversion->get_splitoffs(1, 1);
 }
 
-### create a version object from a properties hash and link it
-# first parameter: existing Package object
-# second parameter: ref to hash with fields
+=item insert_pkgversions
 
-sub inject_description {
+  Fink::Package->insert_pkgversions @pkgversions;
+
+Insert a list of Fink::PkgVersion into the current in-memory package database.
+
+=cut
+
+sub insert_pkgversions {
 	shift;	# class method - ignore first parameter
-	my $po = shift;
-	my $properties = shift;
-	my ($version, $vp, $vpo);
+	my @pvs = @_;
+	
+	for my $pv (@pvs) {
+		# get/create package object
+		my $po = Fink::Package->package_by_name_create($pv->get_name);
+	
+		# link them together
+		$po->add_version($pv);
 
-	# create version object
-	$version = Fink::PkgVersion->new_from_properties($properties);
-
-	# link them together
-	$po->add_version($version);
-
-	# track provided packages
-	if ($version->has_pkglist("Provides")) {
-		foreach $vp (split(/\s*\,\s*/, $version->pkglist("Provides"))) {
-			$vpo = Fink::Package->package_by_name_create($vp);
-			$vpo->add_provider($version);
+		# track provided packages
+		if ($pv->has_pkglist("Provides")) {
+			foreach my $vp (split(/\s*\,\s*/, $pv->pkglist("Provides"))) {
+				my $vpo = Fink::Package->package_by_name_create($vp);
+				$vpo->add_provider($pv);
+			}
 		}
 	}
-	
-	return $version;
 }
 
 =item handle_infon_block

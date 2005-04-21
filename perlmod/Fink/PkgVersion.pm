@@ -624,7 +624,7 @@ sub add_splitoff {
 	}
 	
 	# instantiate the splitoff
-	@splitoffs = Fink::Package->setup_package_object($properties, $filename);
+	@splitoffs = Fink::Package->packages_from_properties($properties, $filename);
 	
 	# return the new object(s)
 	return @splitoffs;
