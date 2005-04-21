@@ -727,7 +727,7 @@ sub insert_runtime_packages_hash {
 Create Fink::PkgVersion objects based on a hash-ref of properties. Do not
 yet add these packages to the current package database.
 
-Returns all packages created, including split-offs.
+Returns all packages created, including split-offs if this is a parent package.
 
 =cut
 
@@ -789,7 +789,13 @@ sub packages_from_properties {
 	
 	my $pkgversion = Fink::PkgVersion->new_from_properties($properties);
 	
-	return $pkgversion->get_splitoffs(1, 1);
+	# Only return splitoffs for the parent. Otherwise, PkgVersion::add_splitoff
+	# goes crazy.
+	if ($pkgversion->has_param('parent')) { # It's a splitoff
+		return ($pkgversion);
+	} else {								# It's a parent
+		return $pkgversion->get_splitoffs(1, 1);
+	}
 }
 
 =item insert_pkgversions
