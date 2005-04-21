@@ -433,7 +433,7 @@ sub forget_packages {
 	my $oper = shift || 0;
 
 	if ($oper != 1) {
-		$packages = { };
+		$packages = undef;
 		@essential_packages = ();
 		$essential_valid = 0;
 		
