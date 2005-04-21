@@ -44,7 +44,8 @@ for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   share share/doc share/doc/fink share/man \
 	   share/man/man8 share/man/man5 \
 		share/fink share/fink/images \
-		var var/lib var/run var/lib/fink var/run/fink; do
+		var var/lib var/run var/lib/fink var/run/fink \
+		var/lib/fink/path-prefix; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -60,6 +61,8 @@ install -c -p -m 755 pathsetup.sh "$basepath/bin/"
 install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 install -c -p -m 644 images/*.png "$basepath/share/fink/images/"
+install -c -p -m 755 path-prefix/g++ "$basepath/var/lib/fink/path-prefix"
+ln -sfn "g++" "$basepath/var/lib/fink/path-prefix/c++"
 
 # copy all perl modules
 for subdir in . Text Notify ; do

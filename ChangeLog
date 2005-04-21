@@ -1,3 +1,9 @@
+2005-04-21	Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* path-prefix: New dir, containing executables that fink wishes to
+	put in the front of the path while building. For now that's just g++
+	* install.sh: Install the new path-prefix dir and symlink
+
 2005-04-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.4, a release

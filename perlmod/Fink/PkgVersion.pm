@@ -3394,7 +3394,15 @@ END
 	if (not $self->has_param("SetCXX") and not $self->param_boolean("NoSetCXX") and (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional"))) {
 		$script_env{'CXX'} = 'g++-3.3';
 	}
-
+		
+	# Enforce g++-3.3 even for uncooperative packages, by making it the
+	# first g++ in the path
+	unless ($self->has_param('NoSetPATH')) {
+		my $pathprefix = "$basepath/var/lib/fink/path-prefix";
+		die "No path prefix!\n" unless -d $pathprefix;
+		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
+	}
+	
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
 		if ($self->is_type('java')) {
