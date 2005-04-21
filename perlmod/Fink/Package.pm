@@ -60,9 +60,6 @@ Fink::Package - manipulate Fink package objects
 Fink::Package contains a variety of tools for querying, manipulating, and
 navigating the Fink package database.
 
-Fink::Package is also a base package for Fink::Shlibs. Check for usage
-there before modifying any functionality or API here!
-
 =head2 Functions
 
 No functions are exported by default.  You should generally be getting

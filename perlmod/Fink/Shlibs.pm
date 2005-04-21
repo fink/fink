@@ -46,7 +46,7 @@ BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 	$VERSION	= 1.00;
-	@ISA		= qw(Fink::Package Exporter Fink::Base);
+	@ISA		= qw(Exporter Fink::Base);
 	@EXPORT		= qw();
 	@EXPORT_OK	= qw(&get_shlibs);
 	%EXPORT_TAGS	= ( );
