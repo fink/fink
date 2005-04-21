@@ -23,8 +23,12 @@ my @tests = (
 for my $test (@tests) {
 	Fink::Package->forget_packages();
 	eval {
-		Fink::Package->scan("Package/duplicate_fullname_trees/$_")
-			foreach @{$test->{trees}};
+		foreach ( @{$test->{trees}} ) {
+			my $file = "Package/duplicate_fullname_trees/$_/finkinfo/" .
+				"duplicate-fullname.info";
+			my @pv = Fink::Package->packages_from_info_file($file);
+			Fink::Package->insert_pkgversions(@pv);
+		}
 	};
 	if (!$@ && scalar(Fink::Package->list_packages())) {
 		ok($test->{works}, "Scanning " . $test->{msg} . " succeeded");

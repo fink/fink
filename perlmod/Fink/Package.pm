@@ -553,8 +553,7 @@ sub update_db {
 		print STDERR "Reading package info...\n";
 	}
 	foreach $tree ($config->get_treelist()) {
-		$dir = "$basepath/fink/dists/$tree/finkinfo";
-		Fink::Package->scan($dir);
+		Fink::Package->insert_tree($tree);
 	}
 	if (Fink::Config::binary_requested()) {
 		Fink::Package->update_aptgetable();
@@ -580,31 +579,51 @@ sub update_db {
 	$db_outdated = 0;
 }
 
-### scan one tree for package descriptions
+=item insert_tree
 
-sub scan {
-	shift;	# class method - ignore first parameter
-	my $directory = shift;
-	my (@filelist, $wanted);
-	my ($filename, $properties, $pkgname, $package);
+  Fink::Package->insert_tree $treename;
 
-	return if not -d $directory;
+Insert the packages from the .info files in the given tree into the package
+database.
 
-	# search for .info files
-	@filelist = ();
-	$wanted =
-		sub {
-			if (-f and not /^[\.\#]/ and /\.info$/) {
-				push @filelist, $File::Find::fullname;
-			}
-		};
-	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
+=cut
 
-	foreach $filename (@filelist) {
-		my @pvs = Fink::Package->packages_from_info_file($filename);
-		Fink::Package->insert_pkgversions(@pvs);
+sub insert_tree {
+	my $class = shift;
+	my $tree = shift;
+	
+	foreach my $filename ($class->tree_infos($tree)) {
+		my @pvs = $class->packages_from_info_file($filename);
+		$class->insert_pkgversions(@pvs);
 	}
 }
+
+=item tree_infos
+
+  my @files = tree_infos $treename;
+  
+Get the full pathnames to all the .info files in a Fink tree.
+
+=cut
+
+sub tree_infos {
+	my $class = shift;
+	my $treename = shift;
+	
+	my $treedir = "$basepath/fink/dists/$treename/finkinfo";
+	return () unless -d $treedir;
+
+	my @filelist = ();
+	my $wanted = sub {
+		if (-f and not /^[\.\#]/ and /\.info$/) {
+			push @filelist, $File::Find::fullname;
+		}
+	};
+	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $treedir);
+	
+	return @filelist;
+}		
+
 
 =item packages_from_info_file
 
@@ -618,12 +637,12 @@ Returns all packages created, including split-offs.
 =cut
 
 sub packages_from_info_file {
-	shift;	# class method - ignore first parameter
+	my $class = shift;
 	my $filename = shift;
 	
 	# read the file and get the package name
 	my $properties = &read_properties($filename);
-	$properties = Fink::Package->handle_infon_block($properties, $filename);
+	$properties = $class->handle_infon_block($properties, $filename);
 	return () unless keys %$properties;
 	
 	my $pkgname = $properties->{package};
@@ -644,7 +663,7 @@ sub packages_from_info_file {
 		}
 	}
 
-	return Fink::Package->packages_from_properties($properties, $filename);
+	return $class->packages_from_properties($properties, $filename);
 }
 
 
@@ -658,13 +677,15 @@ created from .info files.
 =cut
 
 sub insert_runtime_packages {
+	my $class = shift;
+	
 	# Get data from dpkg's status file. Note that we do *not* store this 
 	# information into the package database.
-	Fink::Package->insert_runtime_packages_hash(Fink::Status->list());
+	$class->insert_runtime_packages_hash(Fink::Status->list());
 
 	# Get data from VirtPackage.pm. Note that we do *not* store this 
 	# information into the package database.
-	Fink::Package->insert_runtime_packages_hash(Fink::VirtPackage->list());
+	$class->insert_runtime_packages_hash(Fink::VirtPackage->list());
 }
 
 =item insert_runtime_package_hash
@@ -677,11 +698,11 @@ in-memory database.
 =cut
 
 sub insert_runtime_packages_hash {
-	shift;	# class method - ignore first parameter
+	my $class = shift;
 	
 	my $dlist = shift;
 	foreach my $pkgname (keys %$dlist) {
-		my $po = Fink::Package->package_by_name_create($pkgname);
+		my $po = $class->package_by_name_create($pkgname);
 		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
 		my $hash = $dlist->{$pkgname};
 
@@ -693,8 +714,7 @@ sub insert_runtime_packages_hash {
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
-			Fink::Package->insert_pkgversions(
-				Fink::Package->packages_from_properties($hash));
+			$class->insert_pkgversions($class->packages_from_properties($hash));
 		}
 	}
 }
@@ -712,7 +732,7 @@ Returns all packages created, including split-offs.
 =cut
 
 sub packages_from_properties {
-	shift;	# class method - ignore first parameter
+	my $class = shift;
 	my $properties = shift;
 	my $filename = shift;
 
@@ -733,7 +753,8 @@ sub packages_from_properties {
 				# need new copy, not copy of ref to original
 				my $this_properties = {%{$properties}};
 				$this_properties->{type} =~ s/($type\s*)\(.*?\)/$type $_/;
-				push @pkgversions, Fink::Package->packages_from_properties($this_properties, $filename);
+				push @pkgversions,
+					$class->packages_from_properties($this_properties, $filename);
 			};
 			return @pkgversions;
 		}
@@ -780,12 +801,12 @@ Insert a list of Fink::PkgVersion into the current in-memory package database.
 =cut
 
 sub insert_pkgversions {
-	shift;	# class method - ignore first parameter
+	my $class = shift;
 	my @pvs = @_;
 	
 	for my $pv (@pvs) {
 		# get/create package object
-		my $po = Fink::Package->package_by_name_create($pv->get_name);
+		my $po = $class->package_by_name_create($pv->get_name);
 	
 		# link them together
 		$po->add_version($pv);
@@ -793,7 +814,7 @@ sub insert_pkgversions {
 		# track provided packages
 		if ($pv->has_pkglist("Provides")) {
 			foreach my $vp (split(/\s*\,\s*/, $pv->pkglist("Provides"))) {
-				my $vpo = Fink::Package->package_by_name_create($vp);
+				my $vpo = $class->package_by_name_create($vp);
 				$vpo->add_provider($pv);
 			}
 		}

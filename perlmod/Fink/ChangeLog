@@ -1,5 +1,9 @@
 2005-04-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: More cleanup.
+
+2005-04-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: Remove 'rescan' command, nobody knows what it's for and
 	nobody uses it.
 	* Package.pm, PkgVersion.pm: Cleanup and document. More cleaning to come!
