@@ -41,13 +41,10 @@ use warnings;
 our $VERSION = 1.00;
 our @ISA = qw(Fink::Base);
 
-our $have_packages = 0;
 our $have_shlibs;
-our $packages = {};
+our $packages = undef;
 our @essential_packages = ();
 our $essential_valid = 0;
-our $db_outdated = 1;
-our $db_mtime = 0;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -367,8 +364,8 @@ sub require_packages {
 	my $oper = shift || 0;
 
 	### Check and get both packages and shlibs (one call)
-	if (!$have_packages && $oper != 1) {
-		Fink::Package->scan_all(@_);
+	if (!defined $packages && $oper != 1) {
+		Fink::Package->load_packages;
 	}
 	if (!$have_shlibs && $oper != 2) {
 		Fink::Shlibs->scan_all(@_);
@@ -403,21 +400,46 @@ sub update_aptgetable {
 }
 
 
-### forget about all packages
+=item dbfile
+
+  my $path = Fink::Package->dbfile;
+  
+Get the path to the file that can store the Fink cached database.
+
+=cut
+
+sub dbfile {
+	my $class = shift;
+	
+	return "$dbpath/fink.db";
+}
+
+
+=item forget_packages
+
+  Fink::Package->forget_packages;
+  
+Removes the in-memory package database. Also invalidates any cache of package
+database that currently exists on disk.
+
+=cut
 
 sub forget_packages {
-	shift;	# class method - ignore first parameter
+	my $class = shift;
+	
 	# 0 = both
 	# 1 = shlibs only
 	# 2 = packages only
 	my $oper = shift || 0;
 
 	if ($oper != 1) {
-		$have_packages = 0;
-		%$packages = ();
+		$packages = { };
 		@essential_packages = ();
 		$essential_valid = 0;
-		$db_outdated = 1;
+		
+		if ($> == 0) {	# Only if we're root
+			unlink($class->dbfile);
+		}
 	}
 
 	if ($oper != 2) {
@@ -425,17 +447,22 @@ sub forget_packages {
 	}
 }
 
-### read list of packages, either from cache or files
+=item load_packages
 
-sub scan_all {
-	shift;	# class method - ignore first parameter
+  Fink::Package->load_packages;
+
+Load the package database, updating any on-disk cache if necessary and 
+possible.
+
+=cut
+
+sub load_packages {
+	my $class = shift;
 	my ($time) = time;
-	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions);
+	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions, $db_outdated);
 
-	my $dbfile = "$dbpath/fink.db";
+	my $dbfile = $class->dbfile;
 	my $conffile = "$basepath/etc/fink.conf";
-
-	Fink::Package->forget_packages(2);
 	
 	# If we have the Storable perl module, try to use the package index
 	if (-e $dbfile) {
@@ -448,12 +475,13 @@ sub scan_all {
 			# Unless the NoAutoIndex option is set, check whether we should regenerate
 			# the index based on its modification date and that of the package descs.
 			if (not $config->param_boolean("NoAutoIndex")) {
-				$db_mtime = (stat($dbfile))[9];
+				my $db_mtime = (stat($dbfile))[9];
 				if (((lstat($conffile))[9] > $db_mtime)
 					or ((stat($conffile))[9] > $db_mtime)) {
 					$db_outdated = 1;
 				} else {
-					$db_outdated = &search_comparedb( "$basepath/fink/dists" );
+					$db_outdated = $class->search_comparedb(
+						"$basepath/fink/dists");
 				}
 			}
 			
@@ -466,11 +494,10 @@ sub scan_all {
 	
 	# Regenerate the DB if it is outdated
 	if ($db_outdated) {
-		Fink::Package->update_db();
+		$class->update_db();
 	}
 	
-	Fink::Package->insert_runtime_packages;
-	$have_packages = 1;
+	$class->insert_runtime_packages;
 
 	if (&get_term_width) {
 		printf STDERR "Information about %d packages read in %d seconds.\n", 
@@ -478,12 +505,21 @@ sub scan_all {
 	}
 }
 
-### scan for info files and compare to $db_mtime
+=item search_comparedb
 
-# returns true if any are newer than $db_mtime, false if not
+  Fink::Package->search_comparedb $dir;
+
+Checks if any .info files in the directory $dir are never than the on-disk
+package database cache. Returns true if the cache is out of date.
+
+=cut
+
 sub search_comparedb {
+	my $class = shift;
+	
 	my $path = shift;
 	$path .= "/";  # forces find to follow the symlink
+		
 	my $dbfile = "$dbpath/fink.db";
 
 	# Using find is much faster than doing it in Perl
@@ -499,13 +535,19 @@ sub search_comparedb {
 	return $file_found;
 }
 
-### read the packages and update the database, if needed and we are root
+=item update_db
+
+  Fink::Package->update_db;
+
+Updates the on-disk package database cache unconditionally.
+
+=cut
 
 sub update_db {
-	shift;	# class method - ignore first parameter
+	my $class = shift;
 	my ($tree, $dir);
 
-	my $dbfile = "$dbpath/fink.db";
+	my $dbfile = $class->dbfile;
 	my $lockfile = "$dbfile.lock";
 	my $lockfile_FH;
 	my $dbtemp = "$dbfile.tmp";
@@ -540,7 +582,6 @@ sub update_db {
 				# nearly-concurrent indexing run finished so just grab its results
 				$packages = Storable::lock_retrieve($dbfile);
 				close $lockfile_FH;
-				$db_outdated = 0;
 				return;
 			}
 			print STDERR "error: could not lock $lockfile: $!\n";
@@ -552,11 +593,12 @@ sub update_db {
 	if (&get_term_width) {
 		print STDERR "Reading package info...\n";
 	}
+	$packages = { };
 	foreach $tree ($config->get_treelist()) {
-		Fink::Package->insert_tree($tree);
+		$class->insert_tree($tree);
 	}
 	if (Fink::Config::binary_requested()) {
-		Fink::Package->update_aptgetable();
+		$class->update_aptgetable();
 	}
 	
 	if ($writable_cache) {
@@ -576,7 +618,6 @@ sub update_db {
 		close $lockfile_FH;
 	};
 
-	$db_outdated = 0;
 }
 
 =item insert_tree
@@ -734,7 +775,7 @@ Returns all packages created, including split-offs if this is a parent package.
 sub packages_from_properties {
 	my $class = shift;
 	my $properties = shift;
-	my $filename = shift;
+	my $filename = shift || "runtime";
 
 	my %pkg_expand;
 
@@ -785,7 +826,7 @@ sub packages_from_properties {
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
 	# create object for this particular version
-	$properties->{thefilename} = $filename;
+	$properties->{thefilename} = $filename unless $filename eq "runtime";
 	
 	my $pkgversion = Fink::PkgVersion->new_from_properties($properties);
 	

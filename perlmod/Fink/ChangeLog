@@ -1,5 +1,9 @@
 2005-04-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Finished cleanup, consolidated globals.
+
+2005-04-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Indexing doesn't break now.
 
 2005-04-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
