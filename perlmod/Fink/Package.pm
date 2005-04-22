@@ -540,6 +540,7 @@ sub do_lock {
 			print STDERR "\nWaiting for another Fink to finish...";
 			
 			while (!$is_timeout || time < $timeout) {
+				sleep 3;
 				if (flock $lockfile_FH, $mode | LOCK_NB) {
 					print STDERR " done.\n";
 					return $lockfile_FH;
@@ -548,10 +549,10 @@ sub do_lock {
 			
 			if ($is_timeout && time > $timeout) {
 				&print_breaking_stderr("Timed out, continuing anyway.");
-				return $lockfile;
+				return $lockfile_FH;
 			} else {
 				&print_breaking_stderr("Error: Could not lock $lockfile: $!");
-				close $lockfile;
+				close $lockfile_FH;
 				return 0;
 			}
 		}

@@ -1,5 +1,9 @@
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Make locking nicer.
+
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm, Engine.pm: Fix some relatives and splitoffs calls.
 
 2005-04-22  Daniel Macks  <dmacks@netspace.org>
