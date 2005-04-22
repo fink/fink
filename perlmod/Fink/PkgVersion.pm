@@ -646,7 +646,7 @@ sub enable_bootstrap {
 
 	$self->{_bootstrap} = 1;
 	
-	foreach	 $splitoff (get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
 		$splitoff->enable_bootstrap($bsbase);
 	}
 
@@ -673,7 +673,7 @@ sub disable_bootstrap {
 	
 	$self->{_bootstrap} = 0;
 	
-	foreach	 $splitoff (get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
 		$splitoff->disable_bootstrap();
 	}
 }
@@ -920,7 +920,7 @@ sub get_splitoffs {
 	} else {
 		$parent = $self;
 	}
-
+	
 	if ($include_parent) {
 		unless ($self eq $parent && not $include_self) {
 			push(@list, $parent);
@@ -1379,7 +1379,7 @@ sub resolve_depends {
 				die "Illegal spec format: $depspec\n";
 			}
 
-			if ($include_build and get_splitoffs(0, 0) > 0 and
+			if ($include_build and $self->get_splitoffs(0, 0) > 0 and
 				 ($idx >= $split_idx or $include_build == 2)) {
 				# To prevent circular refs in the build dependency graph, we have to
 				# remove all our splitoffs from the graph. Exception: any splitoffs
@@ -1388,7 +1388,7 @@ sub resolve_depends {
 				# dependencies" of it, then we again filter out all splitoffs.
 				# If you've read till here without mental injuries, congrats :-)
 				next SPECLOOP if ($depname eq $self->{_name});
-				foreach	 $splitoff (get_splitoffs(0, 0)) {
+				foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
 					next SPECLOOP if ($depname eq $splitoff->get_name());
 				}
 			}
@@ -2330,7 +2330,7 @@ sub phase_install {
 	### splitoffs
 	
 	my $splitoff;
-	foreach	 $splitoff (get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
 		# iterate over all splitoffs and call their build phase
 		$splitoff->phase_install(1);
 	}
@@ -2897,7 +2897,7 @@ EOF
 	### splitoffs
 	
 	my $splitoff;
-	foreach	 $splitoff (get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
 		# iterate over all splitoffs and call their build phase
 		$splitoff->phase_build(1);
 	}
