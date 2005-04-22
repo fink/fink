@@ -28,10 +28,12 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &expand_percent);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $dbpath $debarch binary_requested);
+use Fink::Command qw(&touch &mkdir_p);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
 use Fink::Shlibs;
 use File::Find;
+use DB_File;
 use Symbol qw();
 use Fcntl qw(:flock);
 
@@ -400,18 +402,45 @@ sub update_aptgetable {
 }
 
 
-=item dbfile
+=item db_dir
 
-  my $path = Fink::Package->dbfile;
+  my $path = Fink::Package->db_dir;
   
-Get the path to the file that can store the Fink cached database.
+Get the path to the directory that can store the Fink cached package database.
 
 =cut
 
-sub dbfile {
+sub db_dir {
 	my $class = shift;
-	
-	return "$dbpath/fink.db";
+	return "$dbpath/finkinfodb";
+}
+
+
+=item db_index
+
+  my $path = Fink::Package->db_index;
+  
+Get the path to the file that can store the Fink global database index.
+
+=cut
+
+sub db_index {
+	my $class = shift;
+	return "$dbpath/info.db";
+}
+
+
+=item db_lockfile
+
+  my $path = Fink::Package->db_lockfile;
+  
+Get the path to the pdb lock file.
+
+=cut
+
+sub db_lockfile {
+	my $class = shift;
+	return $class->db_index . ".lock";
 }
 
 
@@ -438,7 +467,10 @@ sub forget_packages {
 		$essential_valid = 0;
 		
 		if ($> == 0) {	# Only if we're root
-			unlink($class->dbfile);
+			my $lock = $class->do_lock(1);
+			rm_rf($class->db_dir);
+			rm_f($class->db_index);
+			close $lock if $lock;
 		}
 	}
 
@@ -459,44 +491,8 @@ possible.
 sub load_packages {
 	my $class = shift;
 	my ($time) = time;
-	my ($dlist, $pkgname, $po, $hash, $fullversion, @versions, $db_outdated);
 
-	my $dbfile = $class->dbfile;
-	my $conffile = "$basepath/etc/fink.conf";
-	
-	# If we have the Storable perl module, try to use the package index
-	if (-e $dbfile) {
-		eval {
-			require Storable; 
-
-			# We assume the DB is up-to-date unless proven otherwise
-			$db_outdated = 0;
-		
-			# Unless the NoAutoIndex option is set, check whether we should regenerate
-			# the index based on its modification date and that of the package descs.
-			if (not $config->param_boolean("NoAutoIndex")) {
-				my $db_mtime = (stat($dbfile))[9];
-				if (((lstat($conffile))[9] > $db_mtime)
-					or ((stat($conffile))[9] > $db_mtime)) {
-					$db_outdated = 1;
-				} else {
-					$db_outdated = $class->search_comparedb(
-						"$basepath/fink/dists");
-				}
-			}
-			
-			# If the index is not outdated, we can use it, and thus save a lot of time
-			if (not $db_outdated) {
-				$packages = Storable::lock_retrieve($dbfile);
-			}
-		}
-	}
-	
-	# Regenerate the DB if it is outdated
-	if ($db_outdated) {
-		$class->update_db();
-	}
-	
+	$class->update_db(1);
 	$class->insert_runtime_packages;
 
 	if (&get_term_width) {
@@ -505,138 +501,274 @@ sub load_packages {
 	}
 }
 
-=item search_comparedb
+=item do_lock
 
-  Fink::Package->search_comparedb $dir;
+  my $fh = Fink::Package->do_lock $write;
 
-Checks if any .info files in the directory $dir are never than the on-disk
-package database cache. Returns true if the cache is out of date.
+Acquire a lock on the pdb lock file. If $write is true gets an exclusive lock,
+otherwise gets a shared lock. Returns a filehandle to be closed in order to
+relinquish the lock. If unsuccessful, returns false.
 
 =cut
 
-sub search_comparedb {
+sub do_lock {
+	my $class = shift;
+	my $write = shift;
+
+	# Make sure we can access the lock
+	my $lockfile = $class->db_lockfile;
+	my $lockfile_FH = Symbol::gensym();
+	{
+		my $mode = $write ? "+>>" : "<";
+		unless (open $lockfile_FH, "$mode $lockfile") {
+			return 0;
+		}
+	}
+	
+	# Get the lock
+	{
+		my $mode = $write ? LOCK_EX : LOCK_SH;
+		unless (flock $lockfile_FH, $mode | LOCK_NB) {
+			# Couldn't get lock, meaning another fink process has it
+			
+			# If non-root, we could be stuck here forever with no way to 
+			# stop a broken root process. Need a timeout!
+			my $is_timeout = ($> != 0);
+			my $timeout = time + (60 * 5);
+			
+			print STDERR "\nWaiting for another Fink to finish...";
+			
+			while (!$is_timeout || time < $timeout) {
+				if (flock $lockfile_FH, $mode | LOCK_NB) {
+					print STDERR " done.\n";
+					return $lockfile_FH;
+				}
+			}
+			
+			if ($is_timeout && time > $timeout) {
+				&print_breaking_stderr("Timed out, continuing anyway.");
+				return $lockfile;
+			} else {
+				&print_breaking_stderr("Error: Could not lock $lockfile: $!");
+				close $lockfile;
+				return 0;
+			}
+		}
+		return $lockfile_FH;
+	}
+}
+
+=item can_read_write_db
+
+  my ($read, $write) = Fink::Package->can_read_write_db;
+
+Determines whether Fink can read or write the package database cache.
+
+=cut
+
+sub can_read_write_db {
 	my $class = shift;
 	
-	my $path = shift;
-	$path .= "/";  # forces find to follow the symlink
+	my ($read, $write) = (1, 0);
+	
+	eval "require Storable";
+	if ($@) {
+		my $perlver = sprintf '%*vd', '', $^V;
+		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the package index. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
+		$read = 0;
+	} elsif ($> != 0) {
+	} else {
+		$write = 1;
+	}
+	
+	return ($read, $write);
+}
+
+=item store_rename
+
+  my $success = Fink::Package->store_rename $ref, $file;
+  
+Store $ref in $file using Storable, but using a write-t-o-temp-and-atomically-
+rename strategy. Return true on success.
+
+=cut
+
+sub store_rename {
+	my ($class, $ref, $file) = @_;
+	my $tmp = "${file}.tmp";
+	
+	if (Storable::lock_store ($ref, $tmp)) {
+		unless (rename $tmp, $file) {
+			print_breaking_stderr("Error: could not activate temporary file $tmp: $!");
+			return 0;
+		}
+		return 1;
+	} else {
+		print_breaking_stderr("Error: could not write temporary file $tmp: $!");
+		return 0;
+	}
+}
+
+=item pass1_update
+
+  my ($loaded, $override_idx)
+  		= Fink::Package->pass1_update $ops, $idx, $infos;
+
+Load any .info files whose cache isn't up to date and available for reading.
+If $ops{write} is true, update the cache as well.
+
+Return a hashref of .info -> list of Fink::PkgVersion for all the .info files
+loaded.
+
+=cut
+
+sub pass1_update {
+	my ($class, $ops, $idx, $infos) = @_;
+	my %loaded;
+	
+	my $uncached = 0;
+	my $confage = -M "$basepath/etc/fink.conf";
+	my $noauto = $config->param_boolean("NoAutoIndex");
+	
+	for my $info (@$infos) {
+		my $load = 0;
+		my $fidx = $idx->{infos}{$info};
 		
-	my $dbfile = "$dbpath/fink.db";
+		# Do we need to load?
+		$load = 1 if $ops->{load} && !$ops->{read}; # Can't read it, must load
+		
+		# Check if it's cached
+		if (!$load) {
+			unless (defined $fidx) {
+				$load = 1;
+			} elsif (!$noauto) {
+				my $cache = $fidx->{cache};
+				my $cacheage = -M $cache;
+				
+				$load = 1 if $cacheage > $confage || $cacheage > -M $info;
+			}
+		}
+		
+		unless ($load) {
+#			print "Not reading: $info\n";
+			next;
+		}
+#		print "Reading: $info\n";
+		
+		# Print a nice message
+		if (!$uncached && &get_term_width) {
+			if ($> != 0) {
+				&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+			}
 
-	# Using find is much faster than doing it in Perl
-	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.info' -newer $dbfile |"
-		or die "/usr/bin/find failed: $!\n";
-
-	# If there is anything on find's STDOUT, we know at least one
-	# .info is out-of-date. No reason to check them all.
-	my $file_found = defined <NEWER_FILES>;
-
-	close NEWER_FILES;
-
-	return $file_found;
+			print STDERR "Reading package info...";
+			$uncached = 1;
+		}
+		
+		# Load the file
+		my @pvs = $class->packages_from_info_file($info);
+		$loaded{$info} = [ @pvs ];
+		
+		# Update the index
+		my @fullnames = map { $_->get_fullname } @pvs;
+		if (defined $fidx) {
+			$fidx->{fullnames} = \@fullnames;
+		} else {
+			my $cache = $class->db_dir . "/" . $idx->{next_idx}++;
+			$fidx = $idx->{infos}{$info} = {
+				fullnames => \@fullnames, cache => $cache };
+		}
+		
+		# Update the cache
+		if ($ops->{write}) {
+			unless ($class->store_rename(\@pvs, $fidx->{cache})) {
+				delete $idx->{infos}{$info};
+			}
+		}
+	}
+	
+	# Finish up;
+	if ($uncached) {
+		print_breaking_stderr("done.");
+		
+		if ($ops->{write}) {
+			$class->update_aptgetable() if Fink::Config::binary_requested();
+			$class->store_rename($idx, $class->db_index);
+		}
+	}
+	return \%loaded;
 }
 
 =item update_db
 
-  Fink::Package->update_db;
+  Fink::Package->update_db $load;
 
-Updates the on-disk package database cache unconditionally.
+Updates the on-disk package database cache if possible. If $load is true,
+reads the current package database to memory as well.
 
 =cut
 
 sub update_db {
 	my $class = shift;
-	my ($tree, $dir);
-
-	my $dbfile = $class->dbfile;
-	my $lockfile = "$dbfile.lock";
-	my $lockfile_FH;
-	my $dbtemp = "$dbfile.tmp";
-
-	# check if we should update index cache
-	my $writable_cache = 0;
-	eval "require Storable";
-	if ($@) {
-		my $perlver = sprintf '%*vd', '', $^V;
-		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the package index. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
-	} elsif ($> != 0) {
-		&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
-	} else {
-		# we have Storable.pm and are root
-		$writable_cache = 1;
-	}
-
-	if ($writable_cache) {
-		$lockfile_FH = Symbol::gensym();
-		unless (open $lockfile_FH, "+>> $lockfile") {
-			&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lock $lockfile: $!");
-			$writable_cache = 0;
+	my $load = shift || 1;
+		
+	my %ops = ( load => $load );
+	@ops{'read', 'write'} = $class->can_read_write_db;
+	# If we can't write and don't want to read, what's the point?
+	return if !$ops{load} && !$ops{write}; 
+	
+	# Get the lock
+	my $lock = 0;
+	if ($ops{read} || $ops{write}) {
+		$lock = $class->do_lock($ops{write});
+		unless ($lock) {
+			&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lockfile: $!");
+			@ops{'read', 'write'} = (0, 0);
+			return unless $ops{load};
 		}
-	}
-
-	if ($writable_cache) {
-		unless (flock $lockfile_FH, LOCK_EX | LOCK_NB) {
-			# couldn't get exclusive lock, meaning another fink process has it
-			print STDERR "\nWaiting for another reindex to finish...";
-			if (flock $lockfile_FH, LOCK_EX) {
-				print STDERR " done.\n";
-				# nearly-concurrent indexing run finished so just grab its results
-				$packages = Storable::lock_retrieve($dbfile);
-				close $lockfile_FH;
-				return;
-			}
-			print STDERR "error: could not lock $lockfile: $!\n";
-		}
-		# getting here means we got the lock on the first try
-	}
-
-	# read data from descriptions
-	if (&get_term_width) {
-		print STDERR "Reading package info...\n";
-	}
-	$packages = { };
-	foreach $tree ($config->get_treelist()) {
-		$class->insert_tree($tree);
-	}
-	if (Fink::Config::binary_requested()) {
-		$class->update_aptgetable();
 	}
 	
-	if ($writable_cache) {
-		if (&get_term_width) {
-			print STDERR "Updating package index... ";
-		}
+	# Get the cache dir
+	my $dbdir = $class->db_dir;
+	mkdir_p($dbdir) if $ops{write} && !-d $dbdir;
 
-		if (Storable::lock_store ($packages, $dbtemp)) {
-			if (rename $dbtemp, $dbfile) {
-				print STDERR "done.\n";
-			} else {
-				print STDERR "error: could not activate temporary file $dbtemp: $!\n";
-			}
+	# Load the index
+	my $idx = { infos => { }, next => 1 };
+	if (($ops{read} || $ops{write}) && -f $class->db_index) {
+		$idx = Storable::lock_retrieve($class->db_index);
+	}
+	
+	# Get the .info files
+	my $infos = [ map { $class->tree_infos($_) } $config->get_treelist() ];
+	
+	# Pass 1: Load outdated infos
+	my $loaded = $class->pass1_update(\%ops, $idx, $infos);
+	return unless $load;
+	
+	# Pass 2: Scan for files to load: Last one reached for each fullname
+	my %name2latest;
+	for my $info (@$infos) {
+		my @fullnames = @{ $idx->{infos}{$info}{fullnames} };
+		@name2latest{@fullnames} = ($info) x scalar(@fullnames);
+	}
+	my %loadinfos = map { $_ => 1} values %name2latest;	# uniqify
+	my @loadinfos = keys %loadinfos;
+	
+	# Pass 3: Load and insert the .info files
+	for my $info (@loadinfos) {
+		my @pvs;
+		if (exists $loaded->{$info}) {
+#			print "Memory: $info\n";
+			@pvs = @{ $loaded->{$info} };
 		} else {
-			print STDERR "error: could not write temporary file $dbtemp: $!\n";
+			# Only get here if can read
+#			print "Cache: $info\n";
+			@pvs = @{ Storable::lock_retrieve($idx->{infos}{$info}{cache}) };
 		}
-		close $lockfile_FH;
-	};
-
-}
-
-=item insert_tree
-
-  Fink::Package->insert_tree $treename;
-
-Insert the packages from the .info files in the given tree into the package
-database.
-
-=cut
-
-sub insert_tree {
-	my $class = shift;
-	my $tree = shift;
-	
-	foreach my $filename ($class->tree_infos($tree)) {
-		my @pvs = $class->packages_from_info_file($filename);
 		$class->insert_pkgversions(@pvs);
 	}
+	
+	close $lock if $lock;
 }
 
 =item tree_infos
@@ -775,7 +907,7 @@ Returns all packages created, including split-offs if this is a parent package.
 sub packages_from_properties {
 	my $class = shift;
 	my $properties = shift;
-	my $filename = shift || "runtime";
+	my $filename = shift || "";
 
 	my %pkg_expand;
 
@@ -826,7 +958,7 @@ sub packages_from_properties {
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
 	# create object for this particular version
-	$properties->{thefilename} = $filename unless $filename eq "runtime";
+	$properties->{thefilename} = $filename if $filename;
 	
 	my $pkgversion = Fink::PkgVersion->new_from_properties($properties);
 	

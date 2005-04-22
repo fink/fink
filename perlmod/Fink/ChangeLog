@@ -1,3 +1,8 @@
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Incremental indexing. Not well tested, some operations
+	still kinda slow.
+
 2005-04-21  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Reduce direct access to private {_*} fields that
