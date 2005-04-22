@@ -30,6 +30,7 @@ PostInstScript: <<
  # try to clean up left-overs from previous versions (old location)
  rm -f %p/var/db/fink.db
  rm -f %p/var/db/shlibs.db
+ rm -f %p/var/lib/fink/fink.db
 <<
 PreRmScript: <<
  # clean up package indexes

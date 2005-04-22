@@ -296,6 +296,36 @@ my ($OP_FETCH, $OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
 ### simple commands
 
 sub cmd_index {
+	my ($full, $help);
+	
+	my @temp_ARGV = @ARGV;
+	@ARGV=@_;
+	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	GetOptions('full|f'		=> \$full,
+			   'help|h'		=> \$help,
+			  )
+		or die "fink index: unknown option\nType 'fink index --help' for more information.\n";
+	if ($help) {
+		require Fink::FinkVersion;
+		my $finkversion = Fink::FinkVersion::fink_version();
+		print <<"EOF";
+Fink $finkversion
+
+Usage: fink index [options]
+
+Options:
+  -f, --full                - Do a full reindex, discarding even valid caches.
+  -h, --help                - This help text.
+
+EOF
+		exit 0;
+	}
+	@_ = @ARGV;
+	@ARGV = @temp_ARGV;
+	
+	if ($full) {
+		Fink::Package->forget_packages();
+	}
 	Fink::Package->update_db();
 	Fink::Shlibs->update_shlib_db();
 }

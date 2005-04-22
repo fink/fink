@@ -1,5 +1,9 @@
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Add options to index command.
+
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Put index files in multiple dirs.
 	* PkgVersion.pm, Engine.pm: Clean up splitoffs and relatives.
 

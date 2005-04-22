@@ -1,3 +1,7 @@
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.info.in: Remove old index
+
 2005-04-22  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.info.in: Don't use path-prefix when building fink
