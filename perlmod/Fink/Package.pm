@@ -33,6 +33,7 @@ use Fink::PkgVersion;
 use Fink::FinkVersion;
 use Fink::Shlibs;
 use File::Find;
+use File::Basename;
 use DB_File;
 use Symbol qw();
 use Fcntl qw(:flock);
@@ -597,7 +598,7 @@ sub store_rename {
 	my ($class, $ref, $file) = @_;
 	my $tmp = "${file}.tmp";
 	
-	if (Storable::lock_store ($ref, $tmp)) {
+	if (Storable::lock_store($ref, $tmp)) {
 		unless (rename $tmp, $file) {
 			print_breaking_stderr("Error: could not activate temporary file $tmp: $!");
 			return 0;
@@ -674,13 +675,19 @@ sub pass1_update {
 		if (defined $fidx) {
 			$fidx->{fullnames} = \@fullnames;
 		} else {
-			my $cache = $class->db_dir . "/" . $idx->{next_idx}++;
+			my $cidx = $idx->{next_idx}++;
+			my $dir = sprintf "%03d00", $cidx / 100;
+			
+			# Split things into dirs
+			my $cache = $class->db_dir . "/$dir/$cidx";
 			$fidx = $idx->{infos}{$info} = {
 				fullnames => \@fullnames, cache => $cache };
 		}
 		
 		# Update the cache
 		if ($ops->{write}) {
+			my $dir = dirname $fidx->{cache};
+			mkdir_p($dir) unless -f $dir;
 			unless ($class->store_rename(\@pvs, $fidx->{cache})) {
 				delete $idx->{infos}{$info};
 			}

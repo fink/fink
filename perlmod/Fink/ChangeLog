@@ -1,5 +1,10 @@
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Put index files in multiple dirs.
+	* PkgVersion.pm, Engine.pm: Clean up splitoffs and relatives.
+
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Incremental indexing. Not well tested, some operations
 	still kinda slow.
 

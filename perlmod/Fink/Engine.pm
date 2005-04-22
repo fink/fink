@@ -1531,14 +1531,12 @@ sub real_install {
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
 					
-					if (exists $vo->{_relatives}) {
-						foreach $splitoff (@{$vo->{_relatives}}) {
-							# if the package is being installed, or is already installed,
-							# auto-choose it
-							if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
-								$dname = $cand;
-								$candcount++;
-							}
+					foreach $splitoff (@{$vo->get_relatives}) {
+						# if the package is being installed, or is already installed,
+						# auto-choose it
+						if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
+							$dname = $cand;
+							$candcount++;
 						}
 					}
 				}
@@ -1802,32 +1800,28 @@ sub real_install {
 			foreach $dpp (@{$item}[5..$#{$item}]) {
 				$isgood = 1;
 				$dppname = $dpp->[PKGNAME];
-				if (exists $package->{_relatives}) {
-					foreach $pkgg (@{$package->{_relatives}}){
-						$pkggname = $pkgg->get_name();
-						if ($pkggname eq $dppname) {
-							$isgood = 0;
-						} 
-					}
+				foreach $pkgg (@{$package->get_relatives}){
+					$pkggname = $pkgg->get_name();
+					if ($pkggname eq $dppname) {
+						$isgood = 0;
+					} 
 				}
 				push @extendeddeps, $deps{$dppname} if $isgood;
 			}
 
-			if (exists $package->{_relatives}) {
-				foreach $pkg (@{$package->{_relatives}}) {
-					my $name = $pkg->get_name();
-					if (exists $deps{$name}) {
-						foreach $dpp (@{$deps{$name}}[5..$#{$deps{$name}}]) {
-							$isgood = 1;
-							$dppname = $dpp->[PKGNAME];
-							foreach $pkgg (@{$package->{_relatives}}){
-								$pkggname = $pkgg->get_name();
-								if ($pkggname eq $dppname) {
-									$isgood = 0;
-								} 
-							}
-							push @extendeddeps, $deps{$dppname} if $isgood;
+			foreach $pkg (@{$package->get_relatives}) {
+				my $name = $pkg->get_name();
+				if (exists $deps{$name}) {
+					foreach $dpp (@{$deps{$name}}[5..$#{$deps{$name}}]) {
+						$isgood = 1;
+						$dppname = $dpp->[PKGNAME];
+						foreach $pkgg (@{$package->get_relatives}){
+							$pkggname = $pkgg->get_name();
+							if ($pkggname eq $dppname) {
+								$isgood = 0;
+							} 
 						}
+						push @extendeddeps, $deps{$dppname} if $isgood;
 					}
 				}
 			}
@@ -1863,7 +1857,7 @@ sub real_install {
 			# If there is no .deb present, we definitely have to (re)built.
 			$to_be_rebuilt{$pkgname} |= not $package->is_present();
 
-			if (not $to_be_rebuilt{$pkgname} and exists $package->{_relatives}) {
+			if (not $to_be_rebuilt{$pkgname}) {
 				# So far, it seems the package doesn't have to be rebuilt. However,
 				# it has splitoff relatives. If any of those is going to be rebuilt,
 				# then rebuild the package, too!
@@ -1874,7 +1868,7 @@ sub real_install {
 				# (like for example an old version of a splitoff being installed,
 				# then its package being rebuilt, then a new version of one of its
 				# relatives being installed).
-				foreach $pkg (@{$package->{_relatives}}) {
+				foreach $pkg (@{$package->get_relatives}) {
 					next unless exists $to_be_rebuilt{$pkg->get_name()};
 					$to_be_rebuilt{$pkgname} |= $to_be_rebuilt{$pkg->get_name()};
 					last if $to_be_rebuilt{$pkgname}; # short circuit
@@ -1920,25 +1914,23 @@ sub real_install {
 			# In addition, we check for all splitoffs whether they have to be reinstalled.
 			# That is the case if they are currently installed and were just rebuilt.
 			$to_be_rebuilt{$pkgname} = 0;
-			if (exists $package->{_relatives}) {
-				foreach $pkg (@{$package->{_relatives}}) {
-					my $name = $pkg->get_name();
-					$to_be_rebuilt{$name} = 0;
-					next if $already_activated{$name};
-					# Reinstall any installed splitoff if we just rebuilt
-					if ($is_build and $pkg->is_installed()) {
-						push(@batch_install, $pkg);
-						$already_activated{$name} = 1;
-						next;
-					}
-					# Also (re)install if that was requested by the user
-					next unless exists $deps{$name};
-					$item = $deps{$name};
-					if ((($item->[FLAG] & 2) != 2) and
-							($item->[OP] == $OP_INSTALL or $item->[OP] == $OP_REINSTALL)) {
-						push(@batch_install, $pkg);
-						$already_activated{$name} = 1;
-					}
+			foreach $pkg (@{$package->get_relatives}) {
+				my $name = $pkg->get_name();
+				$to_be_rebuilt{$name} = 0;
+				next if $already_activated{$name};
+				# Reinstall any installed splitoff if we just rebuilt
+				if ($is_build and $pkg->is_installed()) {
+					push(@batch_install, $pkg);
+					$already_activated{$name} = 1;
+					next;
+				}
+				# Also (re)install if that was requested by the user
+				next unless exists $deps{$name};
+				$item = $deps{$name};
+				if ((($item->[FLAG] & 2) != 2) and
+						($item->[OP] == $OP_INSTALL or $item->[OP] == $OP_REINSTALL)) {
+					push(@batch_install, $pkg);
+					$already_activated{$name} = 1;
 				}
 			}
 
@@ -2165,7 +2157,7 @@ EOF
 			} elsif ($_ eq 'parent') {
 				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
 			} elsif ($_ eq 'splitoffs') {
-				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->{_splitoffs}} if defined $pkg->{_splitoffs} and @{$pkg->{_splitoffs}};
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->get_splitoffs(0, 0)};
 			} elsif ($_ eq 'family') {
 				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(1, 1);
 			} elsif ($_ eq 'status') {
@@ -2325,10 +2317,7 @@ sub cmd_show_deps {
 	print "\n";
 
 	foreach my $pkg (@plist) {
-		my @relatives = ();
-		if (exists $pkg->{_relatives}) {
-			@relatives = @{$pkg->{_relatives}};
-		}
+		my @relatives = $pkg->get_relatives;
 
 		printf "Package: %s (%s)\n", $pkg->get_name(), $pkg->get_fullversion();
 

@@ -226,18 +226,10 @@ sub initialize {
 					 map  { [ $_, ( (/(\d+)/)[0] || 0 ) ] } @splitofffields
 					 ) {
 				# form splitoff pkg as its own PkgVersion object
-				push @{$self->{_splitoffs}}, $self->add_splitoff($self->param($_),$_);
+				$self->add_splitoff($self->param($_),$_);
 				delete $self->{$_};  # no need to keep the raw fields in the parent
 			}
 		}
-	}
-
-	if (exists $self->{_splitoffs} and @{$self->{_splitoffs}} > 0) {
-		my $splitoff;
-		for $splitoff (@{$self->{_splitoffs}}) {
-			@{$splitoff->{_relatives}} = ($self, grep {$_->get_name() ne $splitoff->get_name()} @{$self->{_splitoffs}});
-		}
-		$self->{_relatives} = $self->{_splitoffs};
 	}
 }
 
@@ -626,7 +618,7 @@ sub add_splitoff {
 	@splitoffs = Fink::Package->packages_from_properties($properties, $filename);
 	
 	# return the new object(s)
-	return @splitoffs;
+	push @{$self->{_splitoffs}}, @splitoffs;
 }
 
 ### merge duplicate package description
@@ -654,7 +646,7 @@ sub enable_bootstrap {
 
 	$self->{_bootstrap} = 1;
 	
-	foreach	 $splitoff (@{$self->{_splitoffs}}) {
+	foreach	 $splitoff (@{$self->get_splitoffs(0, 0)}) {
 		$splitoff->enable_bootstrap($bsbase);
 	}
 
@@ -681,7 +673,7 @@ sub disable_bootstrap {
 	
 	$self->{_bootstrap} = 0;
 	
-	foreach	 $splitoff (@{$self->{_splitoffs}}) {
+	foreach	 $splitoff (@{$self->get_splitoffs(0, 0)}) {
 		$splitoff->disable_bootstrap();
 	}
 }
@@ -943,6 +935,12 @@ sub get_splitoffs {
 
 	return @list;
 }
+
+sub get_relatives {
+	my $self = shift;
+	return $self->get_splitoffs(1, 0);
+}
+
 
 # returns the parent of the family
 
@@ -1355,7 +1353,7 @@ sub resolve_depends {
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
 		unless (lc($field) eq "conflicts") {
-			foreach	 $splitoff (@{$self->{_splitoffs}}) {
+			foreach	 $splitoff (@{$self->get_splitoffs(0, 0)}) {
 				if (Fink::Config::verbosity_level() > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
@@ -1381,7 +1379,7 @@ sub resolve_depends {
 				die "Illegal spec format: $depspec\n";
 			}
 
-			if ($include_build and @{$self->{_splitoffs}} > 0 and
+			if ($include_build and @{$self->get_splitoffs(0, 0)} > 0 and
 				 ($idx >= $split_idx or $include_build == 2)) {
 				# To prevent circular refs in the build dependency graph, we have to
 				# remove all our splitoffs from the graph. Exception: any splitoffs
@@ -1390,7 +1388,7 @@ sub resolve_depends {
 				# dependencies" of it, then we again filter out all splitoffs.
 				# If you've read till here without mental injuries, congrats :-)
 				next SPECLOOP if ($depname eq $self->{_name});
-				foreach	 $splitoff (@{$self->{_splitoffs}}) {
+				foreach	 $splitoff (@{$self->get_splitoffs(0, 0)}) {
 					next SPECLOOP if ($depname eq $splitoff->get_name());
 				}
 			}
@@ -2332,7 +2330,7 @@ sub phase_install {
 	### splitoffs
 	
 	my $splitoff;
-	foreach	 $splitoff (@{$self->{_splitoffs}}) {
+	foreach	 $splitoff (@{$self->get_splitoffs(0, 0)}) {
 		# iterate over all splitoffs and call their build phase
 		$splitoff->phase_install(1);
 	}
@@ -2899,7 +2897,7 @@ EOF
 	### splitoffs
 	
 	my $splitoff;
-	foreach	 $splitoff (@{$self->{_splitoffs}}) {
+	foreach	 $splitoff (@{$self->get_splitoffs(0, 0)}) {
 		# iterate over all splitoffs and call their build phase
 		$splitoff->phase_build(1);
 	}
