@@ -1,5 +1,9 @@
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* fink.info.in: Remove new index in PreRm
+
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* fink.info.in: Remove old index
 
 2005-04-22  Daniel Macks  <dmacks@netspace.org>
