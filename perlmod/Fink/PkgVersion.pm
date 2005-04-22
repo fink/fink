@@ -66,7 +66,8 @@ END { }				# module clean-up code here (global destructor)
 ### self-initialization
 sub initialize {
 	my $self = shift;
-	my ($pkgname, $epoch, $version, $revision, $filename, $source, $type_hash);
+	my ($pkgname, $epoch, $version, $revision, $fullname);
+	my ($filename, $source, $type_hash);
 	my ($depspec, $deplist, $dep, $expand, $destdir);
 	my ($parentpkgname, $parentdestdir, $parentinvname);
 	my ($i, $path, @parts, $finkinfo_index, $section, @splitofffields);
@@ -138,15 +139,13 @@ sub initialize {
 	}
 
 	# some commonly used stuff
-	$self->{_fullversion} = (($epoch ne "0") ? "$epoch:" : "").$version."-".$revision;
-	$self->{_fullname} = $pkgname."-".$version."-".$revision;
-	$self->{_debname} = $pkgname."_".$version."-".$revision."_".$debarch.".deb";
+	$fullname = $pkgname."-".$version."-".$revision;
 	# prepare percent-expansion map
-	$destdir = "$buildpath/root-".$self->{_fullname};
+	$destdir = "$buildpath/root-$fullname";
 	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
-		$parentpkgname = $parent->{_name};
-		$parentdestdir = "$buildpath/root-".$parent->{_fullname};
+		$parentpkgname = $parent->get_name();
+		$parentdestdir = "$buildpath/root-".$parent->get_fullname();
 		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
 	} else {
 		$parentpkgname = $pkgname;
@@ -160,7 +159,7 @@ sub initialize {
 				'e' => $epoch,
 				'v' => $version,
 				'r' => $revision,
-				'f' => $self->{_fullname},
+				'f' => $fullname,
 				'p' => $basepath,
 				'd' => $destdir,
 				'i' => $destdir.$basepath,
@@ -666,13 +665,13 @@ sub disable_bootstrap {
 	my ($destdir);
 	my $splitoff;
 
-	$destdir = "$buildpath/root-".$self->{_fullname};
+	$destdir = "$buildpath/root-".$self->get_fullname();
 	$self->{_expand}->{p} = $basepath;
 	$self->{_expand}->{d} = $destdir;
 	$self->{_expand}->{i} = $destdir.$basepath;
 	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
-		my $parentdestdir = "$buildpath/root-".$parent->{_fullname};
+		my $parentdestdir = "$buildpath/root-".$parent->get_fullname();
 		$self->{_expand}->{D} = $parentdestdir;
 		$self->{_expand}->{I} = $parentdestdir.$basepath;
 	} else {
@@ -706,11 +705,19 @@ sub get_revision {
 
 sub get_fullversion {
 	my $self = shift;
+	exists $self->{_fullversion} or $self->{_fullversion} = sprintf '%s%s-%s',
+		$self->{_epoch} ne '0' ? $self->{_epoch}.':' : '',
+		$self->get_version(),
+		$self->get_revision();
 	return $self->{_fullversion};
 }
 
 sub get_fullname {
 	my $self = shift;
+	exists $self->{_fullname} or $self->{_fullname} = sprintf '%s-%s-%s',
+		$self->get_name(),
+		$self->get_version(),
+		$self->get_revision();
 	return $self->{_fullname};
 }
 
@@ -723,6 +730,11 @@ sub get_filename {
 
 sub get_debname {
 	my $self = shift;
+	exists $self->{_debname} or $self->{_debname} = sprintf '%s_%s-%s_%s.deb',
+		$self->get_name(),
+		$self->get_version(),
+		$self->get_revision(),
+		$debarch;
 	return $self->{_debname};
 }
 
@@ -733,7 +745,7 @@ sub get_debpath {
 
 sub get_debfile {
 	my $self = shift;
-	return $self->{_debpath}."/".$self->{_debname};
+	return $self->{_debpath} . '/' . $self->get_debname();
 }
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
@@ -1170,28 +1182,37 @@ sub find_tarball {
 
 ### binary package finding
 
+
 sub find_debfile {
 	my $self = shift;
-	my ($path, $fn);
+	my ($path, $fn, $debname);
 
+	# first try a local .deb in the dists/ tree
+	$debname = $self->get_debname();
 	foreach $path (@{$self->{_debpaths}}, "$basepath/fink/debs") {
-		$fn = $path."/".$self->{_debname};
-		if (-f $fn) {
-			return $fn;
-		}
-	}
-	if (Fink::Config::binary_requested()) {
-		# the colon (':') for the epoch needs to be url encoded to '%3a' since apt-get
-		# likes to store the debs in its cache like this.
-		# FIXME: add a _encfulldebname variable or similar, to make the next 
-		# line look nicer.
-		my $debfile = $self->{_name}."_".(($self->{_epoch} ne "0") ? $self->{_epoch}."%3a" : "").$self->{_version}."-".$self->{_revision}."_".$debarch.".deb";
-		$fn = "$basepath/var/cache/apt/archives/$debfile";
+		$fn = "$path/$debname";
 		if (-f $fn) {
 			return $fn;
 		}
 	}
 
+	# maybe it's available from the bindist?
+	if (Fink::Config::binary_requested()) {
+		# the colon (':') for the epoch needs to be url encoded to
+		# '%3a' since likes to store the debs in its cache like this
+		$fn = sprintf "%s/%s_%s%s-%s_%s.deb",
+			"$basepath/var/cache/apt/archives",
+			$self->get_name(),
+			$self->{_epoch} ne '0' ? $self->{_epoch}.'%3a' : '',
+			$self->get_version(),
+			$self->get_revision(),
+			$debarch;
+		if (-f $fn) {
+			return $fn;
+		}
+	}
+
+	# not found
 	return undef;
 }
 

@@ -1,3 +1,9 @@
+2005-04-21  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Reduce direct access to private {_*} fields that
+	have their own accessor methods. Remove private fields that can
+	easily be generated on-the-fly by their accessor methods.
+
 2005-04-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm, SelfUpdate.pm: Finished cleanup, consolidated globals.
