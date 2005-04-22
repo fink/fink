@@ -28,7 +28,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &expand_percent);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $dbpath $debarch binary_requested);
-use Fink::Command qw(&touch &mkdir_p);
+use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
 use Fink::Shlibs;
