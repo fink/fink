@@ -2733,12 +2733,12 @@ END
 		}
 	}
 
-	# force CXX to be g++-3.3 for the 10.3 and 10.4-transitional trees, unless
-	# the package has sepcified it with SetCXX
-
-	if (not $self->has_param("SetCXX") and not $self->param_boolean("NoSetCXX") and (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional"))) {
-		$script_env{'CXX'} = 'g++-3.3';
-	}
+#	# force CXX to be g++-3.3 for the 10.3 and 10.4-transitional trees, unless
+#	# the package has sepcified it with SetCXX
+#
+#	if (not $self->has_param("SetCXX") and not $self->param_boolean("NoSetCXX") and (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional"))) {
+#		$script_env{'CXX'} = 'g++-3.3';
+#	}
 
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
