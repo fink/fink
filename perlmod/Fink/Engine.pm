@@ -1561,7 +1561,7 @@ sub real_install {
 					my $lversion = &latest_version($package->list_versions());
 					my $vo = $package->get_version($lversion);
 					
-					foreach $splitoff (@{$vo->get_relatives}) {
+					foreach $splitoff ($vo->get_relatives) {
 						# if the package is being installed, or is already installed,
 						# auto-choose it
 						if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
@@ -1830,7 +1830,7 @@ sub real_install {
 			foreach $dpp (@{$item}[5..$#{$item}]) {
 				$isgood = 1;
 				$dppname = $dpp->[PKGNAME];
-				foreach $pkgg (@{$package->get_relatives}){
+				foreach $pkgg ($package->get_relatives){
 					$pkggname = $pkgg->get_name();
 					if ($pkggname eq $dppname) {
 						$isgood = 0;
@@ -1839,13 +1839,13 @@ sub real_install {
 				push @extendeddeps, $deps{$dppname} if $isgood;
 			}
 
-			foreach $pkg (@{$package->get_relatives}) {
+			foreach $pkg ($package->get_relatives) {
 				my $name = $pkg->get_name();
 				if (exists $deps{$name}) {
 					foreach $dpp (@{$deps{$name}}[5..$#{$deps{$name}}]) {
 						$isgood = 1;
 						$dppname = $dpp->[PKGNAME];
-						foreach $pkgg (@{$package->get_relatives}){
+						foreach $pkgg ($package->get_relatives){
 							$pkggname = $pkgg->get_name();
 							if ($pkggname eq $dppname) {
 								$isgood = 0;
@@ -1898,7 +1898,7 @@ sub real_install {
 				# (like for example an old version of a splitoff being installed,
 				# then its package being rebuilt, then a new version of one of its
 				# relatives being installed).
-				foreach $pkg (@{$package->get_relatives}) {
+				foreach $pkg ($package->get_relatives) {
 					next unless exists $to_be_rebuilt{$pkg->get_name()};
 					$to_be_rebuilt{$pkgname} |= $to_be_rebuilt{$pkg->get_name()};
 					last if $to_be_rebuilt{$pkgname}; # short circuit
@@ -1944,7 +1944,7 @@ sub real_install {
 			# In addition, we check for all splitoffs whether they have to be reinstalled.
 			# That is the case if they are currently installed and were just rebuilt.
 			$to_be_rebuilt{$pkgname} = 0;
-			foreach $pkg (@{$package->get_relatives}) {
+			foreach $pkg ($package->get_relatives) {
 				my $name = $pkg->get_name();
 				$to_be_rebuilt{$name} = 0;
 				next if $already_activated{$name};
@@ -2187,7 +2187,7 @@ EOF
 			} elsif ($_ eq 'parent') {
 				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
 			} elsif ($_ eq 'splitoffs') {
-				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } @{$pkg->get_splitoffs(0, 0)};
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(0, 0);
 			} elsif ($_ eq 'family') {
 				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(1, 1);
 			} elsif ($_ eq 'status') {
