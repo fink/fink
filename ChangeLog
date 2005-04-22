@@ -1,4 +1,9 @@
-2005-04-21	Dave Vasilevsky  <vasi@users.sourceforge.net>
+2005-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.info.in: Don't use path-prefix when building fink
+	itself (avoids catch-22 if user has broken installation)
+
+2005-04-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* path-prefix: New dir, containing executables that fink wishes to
 	put in the front of the path while building. For now that's just g++
