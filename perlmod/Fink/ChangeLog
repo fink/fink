@@ -1,5 +1,9 @@
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Timeout using alarm, rather than busy-waiting.
+
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Make locking nicer.
 
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>

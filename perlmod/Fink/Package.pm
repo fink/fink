@@ -532,22 +532,30 @@ sub do_lock {
 		unless (flock $lockfile_FH, $mode | LOCK_NB) {
 			# Couldn't get lock, meaning another fink process has it
 			
-			# If non-root, we could be stuck here forever with no way to 
-			# stop a broken root process. Need a timeout!
-			my $is_timeout = ($> != 0);
-			my $timeout = time + (60 * 5);
-			
 			print STDERR "\nWaiting for another Fink to finish...";
 			
-			while (!$is_timeout || time < $timeout) {
-				sleep 3;
-				if (flock $lockfile_FH, $mode | LOCK_NB) {
-					print STDERR " done.\n";
-					return $lockfile_FH;
+			my $success = 0;
+			my $alarm = 0;
+			
+			eval {
+				# If non-root, we could be stuck here forever with no way to 
+				# stop a broken root process. Need a timeout!
+				alarm (60 * 5) if ($> != 0);
+				$success = flock $lockfile_FH, $mode;
+				alarm 0;
+			};
+			if ($@) {
+				if ($@ !~ /alarm clock restart/) {
+					$alarm = 1;
+				} else {
+					die;
 				}
 			}
 			
-			if ($is_timeout && time > $timeout) {
+			if ($success) {
+					print STDERR " done.\n";
+					return $lockfile_FH;
+			} elsif ($alarm) {
 				&print_breaking_stderr("Timed out, continuing anyway.");
 				return $lockfile_FH;
 			} else {
