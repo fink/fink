@@ -1,3 +1,8 @@
+2005-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: More intelligent warning if parsing a file with CVS
+	conflicts.
+
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: Timeout using alarm, rather than busy-waiting.

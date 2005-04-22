@@ -206,6 +206,7 @@ sub read_properties_lines {
 	my ($notLC) = shift || 0;
 	my (@lines) = @_;
 	my ($hash, $lastkey, $heredoc, $linenum);
+	my $cvs_conflicts;
 
 	$hash = {};
 	$lastkey = "";
@@ -260,6 +261,8 @@ sub read_properties_lines {
 				print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
+			} elsif (/^(<<<<<<< .+|=======\Z|>>>>>>> .+)/) {
+				$cvs_conflicts++ or	print "WARNING: Unresolved CVS conflicts in $file.\n";
 			} else {
 				print "WARNING: Unable to parse the line \"".$_."\" at line $linenum of $file.\n";
 			}
