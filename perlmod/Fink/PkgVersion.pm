@@ -3420,7 +3420,7 @@ END
 	# first g++ in the path
 	unless ($self->has_param('NoSetPATH')) {
 		my $pathprefix = "$basepath/var/lib/fink/path-prefix";
-		die "No path prefix!\n" unless -d $pathprefix;
+		die "Path-prefix dir $pathprefix does not exist!\n" unless -d $pathprefix;
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 	
