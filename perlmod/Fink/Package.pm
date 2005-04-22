@@ -27,7 +27,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
-use Fink::Config qw($config $basepath $dbpath $debarch binary_requested);
+use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
@@ -699,7 +699,7 @@ sub pass1_update {
 		print_breaking_stderr("done.");
 		
 		if ($ops->{write}) {
-			$class->update_aptgetable() if Fink::Config::binary_requested();
+			$class->update_aptgetable() if $config->binary_requested();
 			$class->store_rename($idx, $class->db_index);
 		}
 	}

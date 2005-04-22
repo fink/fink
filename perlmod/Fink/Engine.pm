@@ -34,7 +34,7 @@ use Fink::CLI qw(&print_breaking
 use Fink::Package;
 use Fink::Shlibs;
 use Fink::PkgVersion;
-use Fink::Config qw($config $basepath $debarch binary_requested);
+use Fink::Config qw($config $basepath $debarch);
 use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p);
@@ -166,7 +166,7 @@ sub process {
 	}
 
 	# check if we need apt-get
-	if ($aptgetflag > 0 and (Fink::Config::binary_requested())) {
+	if ($aptgetflag > 0 and ($self->{config}->binary_requested())) {
 		my $apt_problem = 0;
 		# check if we are installed at '/sw'
 		if (not $basepath eq '/sw') {
@@ -199,7 +199,7 @@ sub process {
 			my $continue = prompt_boolean($prompt, default => 1, timeout => 60);
 			if ($continue) {
 				# temporarily disable UseBinaryDist
-				$config->set_param("UseBinaryDist", "false");
+				$self->{config}->set_param("UseBinaryDist", "false");
 				Fink::Config::set_options( { 'use_binary' => 0 } );
 			}
 			else {
@@ -1225,7 +1225,7 @@ EOF
 		}
 	}
 
-if (Fink::Config::binary_requested()) {
+	if ($config->binary_requested()) {
 		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
 		# 'apt-get autoclean'
 		my $aptcmd = "$basepath/bin/apt-get ";
@@ -1346,7 +1346,7 @@ sub real_install {
 	# should we try to download the deb from the binary distro?
 	# warn if UseBinaryDist is enabled and not installed in '/sw'
 	my $deb_from_binary_dist = 0;
-	if (Fink::Config::binary_requested()) {
+	if ($config->binary_requested()) {
 		if ($basepath eq '/sw') {
 			$deb_from_binary_dist = 1;
 		}

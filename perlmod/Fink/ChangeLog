@@ -1,3 +1,8 @@
+2005-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm, SelfUpdate.pm:
+	Convert binary_requested() from a function to an object method.
+
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Add options to index command.

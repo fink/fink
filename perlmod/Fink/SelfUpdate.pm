@@ -26,7 +26,7 @@ package Fink::SelfUpdate;
 use Fink::Services qw(&execute &version_cmp);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
-use Fink::Config qw($config $basepath $dbpath $distribution binary_requested);
+use Fink::Config qw($config $basepath $dbpath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
@@ -469,7 +469,7 @@ sub do_finish {
 	my $package;
 
 	# update apt-get's database if using -b mode
-	if (Fink::Config::binary_requested()) {
+	if ($config->binary_requested()) {
 		print "Downloading the indexes of available packages in the binary distribution.\n";
 		my $aptcmd = "$basepath/bin/apt-get ";
 		if (Fink::Config::verbosity_level() == 0) {

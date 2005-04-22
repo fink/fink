@@ -31,7 +31,7 @@ use Fink::Services qw(&filename &execute
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection);
-use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors binary_requested);
+use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
@@ -1195,7 +1195,7 @@ sub find_debfile {
 	}
 
 	# maybe it's available from the bindist?
-	if (Fink::Config::binary_requested()) {
+	if ($config->binary_requested()) {
 		# the colon (':') for the epoch needs to be url encoded to
 		# '%3a' since likes to store the debs in its cache like this
 		$fn = sprintf "%s/%s_%s%s-%s_%s.deb",
