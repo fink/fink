@@ -646,7 +646,7 @@ sub enable_bootstrap {
 
 	$self->{_bootstrap} = 1;
 	
-	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->parent_splitoffs) {
 		$splitoff->enable_bootstrap($bsbase);
 	}
 
@@ -673,7 +673,7 @@ sub disable_bootstrap {
 	
 	$self->{_bootstrap} = 0;
 	
-	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->parent_splitoffs) {
 		$splitoff->disable_bootstrap();
 	}
 }
@@ -906,6 +906,12 @@ sub get_build_directory {
 
 	$self->{_expand}->{b} = "$buildpath/".$self->{_builddir};
 	return $self->{_builddir};
+}
+
+# get splitoffs only for parent, empty list for others
+sub parent_splitoffs {
+	my $self = shift;
+	return @{$self->{_splitoffs}};
 }
 
 sub get_splitoffs {
@@ -1353,7 +1359,7 @@ sub resolve_depends {
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
 		unless (lc($field) eq "conflicts") {
-			foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
+			foreach	 $splitoff ($self->parent_splitoffs) {
 				if (Fink::Config::verbosity_level() > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
@@ -1379,7 +1385,7 @@ sub resolve_depends {
 				die "Illegal spec format: $depspec\n";
 			}
 
-			if ($include_build and $self->get_splitoffs(0, 0) > 0 and
+			if ($include_build and $self->parent_splitoffs > 0 and
 				 ($idx >= $split_idx or $include_build == 2)) {
 				# To prevent circular refs in the build dependency graph, we have to
 				# remove all our splitoffs from the graph. Exception: any splitoffs
@@ -1388,7 +1394,7 @@ sub resolve_depends {
 				# dependencies" of it, then we again filter out all splitoffs.
 				# If you've read till here without mental injuries, congrats :-)
 				next SPECLOOP if ($depname eq $self->{_name});
-				foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
+				foreach	 $splitoff ($self->parent_splitoffs) {
 					next SPECLOOP if ($depname eq $splitoff->get_name());
 				}
 			}
@@ -2330,7 +2336,7 @@ sub phase_install {
 	### splitoffs
 	
 	my $splitoff;
-	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->parent_splitoffs) {
 		# iterate over all splitoffs and call their build phase
 		$splitoff->phase_install(1);
 	}
@@ -2897,7 +2903,7 @@ EOF
 	### splitoffs
 	
 	my $splitoff;
-	foreach	 $splitoff ($self->get_splitoffs(0, 0)) {
+	foreach	 $splitoff ($self->parent_splitoffs) {
 		# iterate over all splitoffs and call their build phase
 		$splitoff->phase_build(1);
 	}

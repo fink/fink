@@ -2187,7 +2187,7 @@ EOF
 			} elsif ($_ eq 'parent') {
 				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
 			} elsif ($_ eq 'splitoffs') {
-				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(0, 0);
+				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->parent_splitoffs;
 			} elsif ($_ eq 'family') {
 				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->get_splitoffs(1, 1);
 			} elsif ($_ eq 'status') {

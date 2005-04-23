@@ -1,5 +1,9 @@
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: Fix another get_splitoffs error.
+
+2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Fix get_splitoffs error.
 
 2005-04-22  Daniel Macks  <dmacks@netspace.org>
