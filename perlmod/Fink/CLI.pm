@@ -443,6 +443,59 @@ sub prompt_selection {
 	return $choices[2*$answer-1];
 }
 
+=item get_input
+
+    my $answer = get_input $prompt;
+    my $answer = get_input $prompt, $timeout;
+
+Prints the string $prompt, then gets a single line of input from
+STDIN. If $timeout is zero or not given, will block forever waiting
+for input. If $timeout is given and is positive, will only wait that
+many seconds for input before giving up. Returns the entered string
+(including the trailing newline), or a null string if the timeout
+expires or immediately (without waiting for input) if fink is run with
+the -y option. If not -y, this function destroys any pre-existing
+alarm().
+
+=cut
+
+sub get_input {
+	my $prompt = shift;
+	my $timeout = shift || 0;
+
+	# print the prompt string (leaving cursor on the same line)
+	$prompt = "" if !defined $prompt;
+	&print_breaking("$prompt ", 0);
+
+	# handle -y if given
+	require Fink::Config;
+	if (Fink::Config::get_option("dontask")) {
+		print "(assuming default)\n";
+		return "";
+	}
+
+	# get input, with optional timeout functionality
+	my $answer = eval {
+		local $SIG{ALRM} = sub { die "SIG$_[0]\n"; };  # alarm() expired
+		alarm $timeout;  # alarm(0) means cancel the timer
+		my $answer = <STDIN>;
+		alarm 0;
+		return $answer;
+	} || "";
+
+	# deal with error conditions raised by eval{}
+	if (length $@) {
+		print "\n";   # move off input-prompt line
+		if ($@ eq "SIGALRM\n") {
+			print "TIMEOUT: using default answer.\n";
+		} else {
+			die $@;   # something else happened, so just propagate it
+		}
+	}
+
+	return $answer;
+}
+
 =item get_term_width
 
   my $width = get_term_width;

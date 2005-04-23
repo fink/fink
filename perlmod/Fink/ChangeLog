@@ -1,3 +1,14 @@
+2005-04-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* CLI.pm: backport backport get_input to branch_0_23 for use in
+	the revised choose_mirrors
+	* Configure.pm: choose_mirrors now examines the current choices 
+	for outdated entries, and prompts the user about this; the default
+	values (chosen after a timeout when running in the fink-mirrors
+	postinstall script) will replace any outdated choices of the user
+	by currently acceptable choices; also backported the binary return 
+	value for choose_mirrors
+
 2005-04-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: back out the CXX default from branch_0_23 for
