@@ -911,7 +911,7 @@ sub get_build_directory {
 # get splitoffs only for parent, empty list for others
 sub parent_splitoffs {
 	my $self = shift;
-	return @{$self->{_splitoffs}};
+	return exists $self->{_splitoffs} ? @{$self->{_splitoffs}} : ();
 }
 
 sub get_splitoffs {
@@ -1385,7 +1385,7 @@ sub resolve_depends {
 				die "Illegal spec format: $depspec\n";
 			}
 
-			if ($include_build and $self->parent_splitoffs > 0 and
+			if ($include_build and $self->parent_splitoffs and
 				 ($idx >= $split_idx or $include_build == 2)) {
 				# To prevent circular refs in the build dependency graph, we have to
 				# remove all our splitoffs from the graph. Exception: any splitoffs
