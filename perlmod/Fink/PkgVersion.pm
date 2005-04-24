@@ -3420,10 +3420,15 @@ END
 		$script_env{'CXX'} = 'g++-3.3';
 	}
 		
-	# Enforce g++-3.3 even for uncooperative packages, by making it the
-	# first g++ in the path
+	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
+	# it the first g++ in the path
+	my $pathprefix;
 	unless ($self->has_param('NoSetPATH')) {
-		my $pathprefix = "$basepath/var/lib/fink/path-prefix";
+		if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
+			$pathprefix = "$basepath/var/lib/fink/path-prefix-g++-3.3";
+		} else {
+			$pathprefix = "$basepath/var/lib/fink/path-prefix-g++-4.0";
+		}
 		die "Path-prefix dir $pathprefix does not exist!\n" unless -d $pathprefix;
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}

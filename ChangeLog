@@ -1,3 +1,10 @@
+2005-04-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* path-prefix-g++-3.3 path-prefix-g++-4.0, install.sh: use two 
+	possible path prefixes, path-prefix-g++-3.3 and path-prefix-g++-4.0, 
+	depending on the current Distribution
+	* path-prefix: empty out this (obsolete) directory
+
 2005-04-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink.info.in: Remove new index in PreRm
