@@ -1,3 +1,10 @@
+2005-04-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: restore the CXX default
+	* PkgVersion.pm, Bootstrap.pm: use two possible path prefixes,
+	path-prefix-g++-3.3 and path-prefix-g++-4.0, depending on the
+	current Distribution
+
 2005-04-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* CLI.pm: backport backport get_input to branch_0_23 for use in
