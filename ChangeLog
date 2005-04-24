@@ -1,3 +1,9 @@
+2005-04-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* path-prefix-g++-3.3 path-prefix-g++-4.0, install.sh: use two 
+	possible path prefixes, path-prefix-g++-3.3 and path-prefix-g++-4.0, 
+	depending on the current Distribution
+
 2005-04-20  Daniel Macks  <dmacks@netspace.org>
 
 	* install.sh: create dirs for buildlock lockfiles
