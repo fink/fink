@@ -2185,7 +2185,7 @@ EOF
 			} elsif ($_ eq 'revision') {
 				printf "%s: %s\n", $_, $pkg->param_default('revision', '1');
 			} elsif ($_ eq 'parent') {
-				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
+				printf "%s: %s\n", $_, $pkg->get_parent->get_name() if $pkg->has_parent;
 			} elsif ($_ eq 'splitoffs') {
 				printf "%s: %s\n", $_, join ', ', map { $_->get_name() } $pkg->parent_splitoffs;
 			} elsif ($_ eq 'family') {
@@ -2259,7 +2259,7 @@ EOF
 				} else {
 					$bool = "[undefined]";
 				}
-				printf "%s: %s\n", $_, $bool unless exists $pkg->{parent};
+				printf "%s: %s\n", $_, $bool unless $pkg->has_parent;
 			} elsif ($_ eq 'sources') {
 				# multiline field, so indent 1 space always
 				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;

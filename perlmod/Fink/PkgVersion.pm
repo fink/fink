@@ -63,6 +63,109 @@ our @EXPORT_OK;
 
 END { }				# module clean-up code here (global destructor)
 
+
+=item new_backed
+
+  my $pv = Fink::PkgVersion->new_backed $file, $hashref;
+  
+Create a disk-backed PkgVersion, with initial properties from $hashref. 
+Other properties will be loaded as needed from $file.
+
+
+When a PkgVersion object is created with new_backed, the first access to the
+object MUST be with one of these methods:
+
+Package: get_version, get_all_versions, get_matching_versions, get_all_providers
+PkgVersion: get_parent, get_splitoffs, parent_splitoffs	
+
+Many of these methods take a $noload flag to allow callers to disable loading.
+This should only be done rarely, when the caller is CERTAIN that no unloaded
+fields will be used and when it results in many fewer loads. There should be
+always be a comment nearby with the text 'noload'.
+
+
+In addition, the following fields should be accessed exclusively through
+accessors:
+
+Package: _providers, _versions
+PkgVersion: _splitoffs, parent
+
+=cut
+
+sub new_backed {
+	my ($proto, $file, $init) = @_;
+	my $class = ref($proto) || $proto;
+	
+	$init->{_backed_file} = $file;
+	$init->{_backed_loaded} = 0;
+	return bless $init, $class;	
+}
+
+=item load_fields
+
+  my $same_pv = $pv->load_fields;
+  
+Load any unloaded fields into this PkgVersion object. Loads are shared among
+different PkgVersion objects. Returns this object.
+
+=cut
+
+{
+	my %shared_loads;
+	
+	sub load_fields {
+		my $self = shift;
+		return $self if !$self->has_param('_backed_file')
+			|| $self->param('_backed_loaded')
+			|| !eval { require Storable };
+		
+		$self->set_param('_backed_loaded', 1);
+		my $file = $self->param('_backed_file');
+		my $loaded;
+		if (exists $shared_loads{$file}) {
+#			print "Sharing PkgVersion " . $self->get_fullname . " from $file\n";
+			$loaded = $shared_loads{$file};
+		} else {
+#			print "Loading PkgVersion " . $self->get_fullname . " from: $file\n";
+			unless ($loaded = Storable::lock_retrieve($file)) {
+				$shared_loads{$file} = { }; # Don't try again
+				return $self;
+			}
+			$shared_loads{$file} = $loaded;
+		}
+		
+		return $self unless exists $loaded->{$self->get_fullname};
+		my $href = $loaded->{$self->get_fullname};
+		@$self{keys %$href} = values %$href;
+		return $self;
+	}
+}
+			
+
+=item get_init_fields
+
+  my $hashref = $pv->get_init_fields;
+  
+Get the minimum fields necessary for inserting a PkgVersion.
+
+=cut
+
+{
+	# Fields required to add a package to $packages
+	my @keepfields = qw(_name _epoch _version _revision _filename
+		_pkglist_provides essential);
+		
+	sub get_init_fields {
+		my $self = shift;
+		
+		return {
+			map { exists $self->{$_} ? ( $_ => $self->{$_} ) : () }
+				@keepfields
+		};
+	}
+}
+
+
 ### self-initialization
 sub initialize {
 	my $self = shift;
@@ -86,6 +189,7 @@ sub initialize {
 	# the following is set by Fink::Package::scan
 	### Do not change meaning of _filename! This is used by FinkCommander (fpkg_list.pl)
 	$self->{_filename} = $filename = $self->{thefilename};
+	delete $self->{thefilename}; # No longer needed
 
 	# path handling
 	if ($filename) {
@@ -231,6 +335,14 @@ sub initialize {
 			}
 		}
 	}
+	
+	# Cache Provides pkglist, so we don't need percent-expansion to insert a
+	# PkgVersion
+	$self->set_param('_provides_no_cache', 1);
+	if ($self->has_pkglist('Provides')) {
+		$self->set_param('_pkglist_provides', $self->pkglist('Provides'));
+	};
+	delete $self->{_provides_no_cache};
 }
 
 ### fields that are package lists need special treatment
@@ -245,7 +357,11 @@ our %pkglist_no_self = ( 'conflicts' => 1,
 sub pkglist {
 	my $self = shift;
 	my $param_name = lc shift || "";
-
+	
+	# This is cached, to make loading faster
+	return $self->param('_pkglist_provides')
+		if $param_name eq 'provides' && !$self->has_param('_provides_no_cache');
+	
 	$self->expand_percent_if_available($param_name);
 	$self->conditional_pkg_list($param_name);
 	if (exists $pkglist_no_self{$param_name}) {
@@ -259,6 +375,9 @@ sub pkglist_default {
 	my $param_name = lc shift || "";
 	my $default_value = shift;
 
+	return $self->param_default('_pkglist_provides', $default_value)
+		if $param_name eq 'provides' && !$self->has_param('_provides_no_cache');
+	
 	$self->expand_percent_if_available($param_name);
 	$self->conditional_pkg_list($param_name);
 	if (exists $pkglist_no_self{$param_name}) {
@@ -270,7 +389,10 @@ sub pkglist_default {
 sub has_pkglist {
 	my $self = shift;
 	my $param_name = lc shift || "";
-
+	
+	return $self->has_param('_pkglist_provides')
+		if $param_name eq 'provides' && !$self->has_param('_provides_no_cache');
+	
 	$self->expand_percent_if_available($param_name);
 	$self->conditional_pkg_list($param_name);
 	if (exists $pkglist_no_self{$param_name}) {
@@ -495,7 +617,7 @@ sub get_script {
 	my $field_value;    # .info field contents
 
 	if ($field eq 'patchscript') {
-		return "" if exists $self->{parent};  # shortcut: SplitOffs do not patch
+		return "" if $self->has_parent;  # shortcut: SplitOffs do not patch
 		return "" if $self->is_type('dummy');  # Type:dummy never patch
 		return "" if $self->is_type('bundle'); # Type:bundle never patch
 
@@ -504,7 +626,7 @@ sub get_script {
 		$default_script = "";
 
 	} elsif ($field eq 'compilescript') {
-		return "" if exists $self->{parent};  # shortcut: SplitOffs do not compile
+		return "" if $self->has_parent;  # shortcut: SplitOffs do not compile
 		return "" if $self->is_type('bundle'); # Type:bundle never compile
 
 		$field_value = $self->param_default($field, '%{default_script}');
@@ -533,7 +655,7 @@ sub get_script {
 	} elsif ($field eq 'installscript') {
 		return "" if $self->is_type('dummy');  # Type:dummy never install
 
-		if (exists $self->{parent}) {
+		if ($self->has_parent) {
 			# SplitOffs default to blank script
 			$field_value = $self->param_default($field, '');
 		} elsif ($self->is_type('bundle')) {
@@ -661,8 +783,8 @@ sub disable_bootstrap {
 	$self->{_expand}->{p} = $basepath;
 	$self->{_expand}->{d} = $destdir;
 	$self->{_expand}->{i} = $destdir.$basepath;
-	if (exists $self->{parent}) {
-		my $parent = $self->{parent};
+	if ($self->has_parent) {
+		my $parent = $self->get_parent;
 		my $parentdestdir = "$buildpath/root-".$parent->get_fullname();
 		$self->{_expand}->{D} = $parentdestdir;
 		$self->{_expand}->{I} = $parentdestdir.$basepath;
@@ -770,9 +892,9 @@ sub get_tree {
 
 sub get_info_filename {
 	my $self = shift;
-	return "" unless exists  $self->{thefilename};
-	return "" unless defined $self->{thefilename};
-	return $self->{thefilename};
+	return "" unless exists  $self->{_filename};
+	return "" unless defined $self->{_filename};
+	return $self->{_filename};
 }
 
 ### other accessors
@@ -786,7 +908,7 @@ sub get_source_suffices {
 
 	# Cache it
 	if (!exists $self->{_source_suffices}) {
-		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') || exists $self->{parent} || ( defined $self->param("Source") && lc $self->param("Source") eq 'none' ) ) {
+		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') || $self->has_parent || ( defined $self->param("Source") && lc $self->param("Source") eq 'none' ) ) {
 			$self->{_source_suffices} = [];
 		} else {
 			my @params = $self->params_matching('source([2-9]|[1-9]\d+)');
@@ -812,7 +934,7 @@ sub get_source {
 	my $suffix = shift || "";
 	
 	# Implicit primary source
-	if ( $suffix eq "" and !exists $self->{parent} ) {
+	if ( $suffix eq "" and !$self->has_parent ) {
 		my $source = $self->param_default("Source", "\%n-\%v.tar.gz");
 		if ($source eq "gnu") {
 			$source = "mirror:gnu:\%n/\%n-\%v.tar.gz";
@@ -908,10 +1030,23 @@ sub get_build_directory {
 	return $self->{_builddir};
 }
 
+# Accessors for parent
+sub has_parent {
+	my $self = shift;
+	return exists $self->{parent};
+}
+sub get_parent {
+	my $self = shift;
+	$self->{parent}->load_fields if exists $self->{parent};
+	return $self->{parent};
+}
+
 # get splitoffs only for parent, empty list for others
 sub parent_splitoffs {
 	my $self = shift;
-	return exists $self->{_splitoffs} ? @{$self->{_splitoffs}} : ();
+	return exists $self->{_splitoffs}
+		? map { $_->load_fields } @{$self->{_splitoffs}}
+		: ();
 }
 
 sub get_splitoffs {
@@ -921,8 +1056,8 @@ sub get_splitoffs {
 	my @list = ();
 	my ($splitoff, $parent);
 
-	if (exists $self->{parent}) {
-		$parent = $self->{parent};
+	if ($self->has_parent) {
+		$parent = $self->get_parent;
 	} else {
 		$parent = $self;
 	}
@@ -939,7 +1074,7 @@ sub get_splitoffs {
 		}
 	}
 
-	return @list;
+	return map { $_->load_fields } @list;
 }
 
 sub get_relatives {
@@ -952,8 +1087,8 @@ sub get_relatives {
 
 sub get_family_parent {
 	my $self = shift;
-	return exists $self->{parent}
-		? $self->{parent}
+	return $self->has_parent
+		? $self->get_parent
 		: $self;
 }
 
@@ -1270,8 +1405,8 @@ sub resolve_depends {
 
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list.
-	if ($include_build and exists $self->{parent}) {
-		push @deplist, ($self->{parent})->resolve_depends(2, $field, $forceoff);
+	if ($include_build and $self->has_parent) {
+		push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
 		if ($include_build == 2) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
@@ -1730,8 +1865,8 @@ sub phase_fetch {
 	my $dryrun = shift || 0;
 	my ($suffix);
 
-	if (exists $self->{parent}) {
-		($self->{parent})->phase_fetch($conditional, $dryrun);
+	if ($self->has_parent) {
+		($self->get_parent)->phase_fetch($conditional, $dryrun);
 		return;
 	}
 	if ($self->is_type('bundle') || $self->is_type('nosource') ||
@@ -1838,8 +1973,8 @@ sub phase_unpack {
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
 	}
-	if (exists $self->{parent}) {
-		($self->{parent})->phase_unpack();
+	if ($self->has_parent) {
+		($self->get_parent)->phase_unpack();
 		return;
 	}
 
@@ -2040,8 +2175,8 @@ sub phase_patch {
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
 	}
-	if (exists $self->{parent}) {
-		($self->{parent})->phase_patch();
+	if ($self->has_parent) {
+		($self->get_parent)->phase_patch();
 		return;
 	}
 
@@ -2125,8 +2260,8 @@ sub phase_compile {
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die "compile phase: $error\n";
 	}
-	if (exists $self->{parent}) {
-		($self->{parent})->phase_compile();
+	if ($self->has_parent) {
+		($self->get_parent)->phase_compile();
 		return;
 	}
 
@@ -2161,13 +2296,13 @@ sub phase_install {
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die "install phase: $error\n";
 	}
-	if (exists $self->{parent} and not $do_splitoff) {
-		($self->{parent})->phase_install();
+	if ($self->has_parent and not $do_splitoff) {
+		($self->get_parent)->phase_install();
 		return;
 	}
 	if (not $self->is_type('bundle')) {
 		if ($do_splitoff) {
-			$dir = ($self->{parent})->get_build_directory();
+			$dir = ($self->get_parent)->get_build_directory();
 		} else {
 			$dir = $self->get_build_directory();
 		}
@@ -2374,8 +2509,8 @@ sub phase_build {
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die "build phase: " . $error . "\n";
 	}
-	if (exists $self->{parent} and not $do_splitoff) {
-		($self->{parent})->phase_build();
+	if ($self->has_parent and not $do_splitoff) {
+		($self->get_parent)->phase_build();
 		return;
 	}
 
@@ -2536,9 +2671,9 @@ EOF
 	# anywhere along the way (since the LD_* variables are normally set in the top-level
 	# but need to take effect in, say, -shlibs)
 
-	while (exists $pkgref->{_parent}) {
+	while ($pkgref->has_parent) {
 		$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
-		$pkgref = $pkgref->{_parent};
+		$pkgref = $pkgref->get_parent;
 	}
 	$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
 
@@ -3054,8 +3189,8 @@ sub set_buildlock {
 	my $self = shift;
 
 	# lock on parent pkg
-	if (exists $self->{parent}) {
-		return $self->{parent}->set_buildlock();
+	if ($self->has_parent) {
+		return $self->get_parent->set_buildlock();
 	}
 
 	# bootstrapping occurs before we have package-management tools needed for buildlock
@@ -3219,8 +3354,8 @@ sub clear_buildlock {
 
 	if (ref $self) {
 		# pkg object knows to lock on parent pkg
-		if (exists $self->{parent}) {
-			return $self->{parent}->clear_buildlock();
+		if ($self->has_parent) {
+			return $self->get_parent->clear_buildlock();
 		}
 	} else {
 		# called as package method...look up PkgVersion object that locked

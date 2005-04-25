@@ -142,7 +142,9 @@ sub add_version {
 		# if the version is the same but epoch isn't. So let's make sure.
 		delete $self->{_versions}->{$version};
 		my $fullname = $version_object->get_fullname();
-		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions()) {
+		
+		# noload
+		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions(1)) {
 			# avoid overhead of allocating for and storing the grep
 			# results in if() since it's rare we'll need it
 			my $msg = "A package name is not allowed to have the same ".
@@ -188,8 +190,11 @@ sub list_versions {
 
 sub get_all_versions {
 	my $self = shift;
-
-	return values %{$self->{_versions}};
+	my $noload = shift || 0;
+	
+	my @vers = values %{$self->{_versions}};
+	map { $_->load_fields } @vers unless $noload;
+	return @vers;
 }
 
 sub get_matching_versions {
@@ -221,18 +226,20 @@ sub get_matching_versions {
 				push(@match_list, $vo);
 			}
 		}
-		return @match_list;
+		return map { $_->load_fields } @match_list;
 	} else {
-	return @list;
+		return map { $_->load_fields } @list;
 	}
 }
 
 sub get_all_providers {
 	my $self = shift;
+	my $noload = shift || 0;
 	my @versions;
 
 	@versions = values %{$self->{_versions}};
 	push @versions, @{$self->{_providers}};
+	map { $_->load_fields } @versions unless $noload;
 	return @versions;
 }
 
@@ -292,12 +299,15 @@ sub is_any_present{
 sub get_version {
 	my $self = shift;
 	my $version = shift;
+	my $noload = shift || 0;
 
 	unless (defined($version) && $version) {
 		return undef;
 	}
 	if (exists $self->{_versions}->{$version}) {
-		return $self->{_versions}->{$version};
+		my $pv = $self->{_versions}->{$version};
+		$pv->load_fields unless $noload;
+		return $pv;
 	}
 	return undef;
 }
@@ -345,7 +355,7 @@ sub list_essential_packages {
 		@essential_packages = ();
 		foreach $package (values %$packages) {
 			$version = &latest_version($package->list_versions());
-			$vnode = $package->get_version($version);
+			$vnode = $package->get_version($version, 1); # noload
 			if (defined($vnode) && $vnode->param_boolean("Essential")) {
 				push @essential_packages, $package->get_name();
 			}
@@ -427,7 +437,21 @@ Get the path to the file that can store the Fink global database index.
 
 sub db_index {
 	my $class = shift;
-	return "$dbpath/info.db";
+	return "$dbpath/index.db";
+}
+
+
+=item db_infolist
+
+  my $path = Fink::Package->db_infolist;
+  
+Get the path to the file that can store a list of info files.
+
+=cut
+
+sub db_infolist {
+	my $class = shift;
+	return "$dbpath/infolist";
 }
 
 
@@ -442,6 +466,39 @@ Get the path to the pdb lock file.
 sub db_lockfile {
 	my $class = shift;
 	return $class->db_index . ".lock";
+}
+
+
+=item search_comparedb
+
+  Fink::Package->search_comparedb;
+
+Checks if any .info files are never than the on-disk package database cache.
+Returns true if the cache is out of date.
+
+Note that in several cases, this can miss changes. For example, a .info file
+older than the PDB cache that is moved into the dists will not be found.
+
+=cut
+
+sub search_comparedb {
+	my $class = shift;
+	my $path = "/sw/fink/dists/";  # extra '/' forces find to follow the symlink
+		
+	my $dbfile = $class->db_infolist;
+
+	# Using find is much faster than doing it in Perl
+	open NEWER_FILES, "/usr/bin/find $path \\( \\( \\( -type f -or -type l \\) " .
+		"-name '*.info' \\) -o -type d \\) -newer $dbfile |"
+		or die "/usr/bin/find failed: $!\n";
+
+	# If there is anything on find's STDOUT, we know at least one
+	# .info is out-of-date. No reason to check them all.
+	my $file_found = defined <NEWER_FILES>;
+
+	close NEWER_FILES;
+
+	return $file_found;
 }
 
 
@@ -619,10 +676,42 @@ sub store_rename {
 	}
 }
 
+=item update_index
+
+  my $fidx = Fink::Package->update_index $fidx, $info, @pvs;
+  
+Update the package index $idx with the results of loading PkgVersions @pvs from
+.info file $info.
+
+Returns the new index item for the .info file.
+
+=cut
+
+sub update_index {
+	my ($class, $idx, $info, @pvs) = @_;
+	
+	my %new_idx = (
+		inits => { map { $_->get_fullname => $_->get_init_fields } @pvs },
+	);
+	
+	if (defined $idx->{infos}{$info}) {
+		@{ $idx->{infos}{$info} }{keys %new_idx} = values %new_idx;
+	} else {
+		# Split things into dirs
+		my $cidx = $idx->{next_idx}++;
+		my $dir = sprintf "%03d00", $cidx / 100;		
+		my $cache = $class->db_dir . "/$dir/$cidx";
+		
+		$new_idx{cache} = $cache;
+		$idx->{infos}{$info} = \%new_idx;
+	}
+	
+	return $idx->{infos}{$info};
+}	
+
 =item pass1_update
 
-  my ($loaded, $override_idx)
-  		= Fink::Package->pass1_update $ops, $idx, $infos;
+  my $loaded = Fink::Package->pass1_update $ops, $idx, $infos;
 
 Load any .info files whose cache isn't up to date and available for reading.
 If $ops{write} is true, update the cache as well.
@@ -635,7 +724,7 @@ loaded.
 sub pass1_update {
 	my ($class, $ops, $idx, $infos) = @_;
 	my %loaded;
-	
+		
 	my $uncached = 0;
 	my $confage = -M "$basepath/etc/fink.conf";
 	my $noauto = $config->param_boolean("NoAutoIndex");
@@ -664,55 +753,115 @@ sub pass1_update {
 			next;
 		}
 #		print "Reading: $info\n";
-		
-		# Print a nice message
-		if (!$uncached && &get_term_width) {
-			if ($> != 0) {
-				&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
-			}
-
-			print STDERR "Reading package info...";
-			$uncached = 1;
-		}
+		$uncached = 1;
 		
 		# Load the file
 		my @pvs = $class->packages_from_info_file($info);
 		$loaded{$info} = [ @pvs ];
 		
 		# Update the index
-		my @fullnames = map { $_->get_fullname } @pvs;
-		if (defined $fidx) {
-			$fidx->{fullnames} = \@fullnames;
-		} else {
-			my $cidx = $idx->{next_idx}++;
-			my $dir = sprintf "%03d00", $cidx / 100;
-			
-			# Split things into dirs
-			my $cache = $class->db_dir . "/$dir/$cidx";
-			$fidx = $idx->{infos}{$info} = {
-				fullnames => \@fullnames, cache => $cache };
-		}
+		$fidx = $class->update_index($idx, $info, @pvs);
 		
 		# Update the cache
 		if ($ops->{write}) {
 			my $dir = dirname $fidx->{cache};
 			mkdir_p($dir) unless -f $dir;
-			unless ($class->store_rename(\@pvs, $fidx->{cache})) {
+			
+			my %store = map { $_->get_fullname => $_ } @pvs; 
+			unless ($class->store_rename(\%store, $fidx->{cache})) {
 				delete $idx->{infos}{$info};
 			}
 		}
 	}
 	
 	# Finish up;
-	if ($uncached) {
-		print_breaking_stderr("done.");
-		
+	if ($uncached) {		
 		if ($ops->{write}) {
 			$class->update_aptgetable() if $config->binary_requested();
 			$class->store_rename($idx, $class->db_index);
 		}
 	}
 	return \%loaded;
+}
+
+=item pass3_insert
+
+  Fink::Package->pass3_insert $idx, $loaded, @infos;
+  
+Ensure that the .info files @infos are loaded and inserted into the PDB.
+Information about the .info files is to be found in the index $idx, and
+$loaded is a hash-ref of already-loaded .info files.
+
+=cut
+
+sub pass3_insert {
+	my ($class, $idx, $loaded, @infos) = @_;
+		
+	for my $info (@infos) {
+		my @pvs;
+		
+		if (exists $loaded->{$info}) {
+		
+#			print "Memory: $info\n";
+			@pvs = @{ $loaded->{$info} };
+		} else {
+			# Only get here if can read caches
+			
+#			print "Cache: $info\n";
+			my $fidx = $idx->{infos}{$info};
+			
+			@pvs = map { Fink::PkgVersion->new_backed($fidx->{cache}, $_) }
+				values %{ $fidx->{inits} };
+		}
+		
+		$class->insert_pkgversions(@pvs);
+	}
+
+}
+
+=item get_all_infos
+
+  my ($infos, $need_update) = Fink::Package->get_all_infos $ops;
+  
+Get a list of all the .info files. Returns an array-ref of paths to the .info
+files, and whether any of the files needs to be updated.
+
+=cut
+
+sub get_all_infos {
+	my ($class, $ops) = @_;
+	
+	my $infolist = $class->db_infolist;
+	my $uptodate = $ops->{read} && -f $infolist && ! $class->search_comparedb;
+	
+	my @infos;
+	unless ($uptodate) { # Is this worth it?
+		# Print a nice message
+		if (&get_term_width) {
+			if ($> != 0) {
+				&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+			}
+
+			print STDERR "Reading package info...";
+		}
+		
+		@infos = map { $class->tree_infos($_) } $config->get_treelist();
+		
+		# Store 'em
+		if ($ops->{write}) {
+			if (open INFOLIST, ">$infolist") {
+				print INFOLIST map { "$_\n" } @infos;
+				close INFOLIST;
+			}
+		}
+	} else {
+		open INFOLIST, "<$infolist" or die "Can't open info list\n";
+		@infos = <INFOLIST>;
+		close INFOLIST;
+		chomp @infos;
+	}
+	
+	return (\@infos, !$uptodate);
 }
 
 =item update_db
@@ -753,36 +902,29 @@ sub update_db {
 	if (($ops{read} || $ops{write}) && -f $class->db_index) {
 		$idx = Storable::lock_retrieve($class->db_index);
 	}
-	
+
 	# Get the .info files
-	my $infos = [ map { $class->tree_infos($_) } $config->get_treelist() ];
+	my ($infos, $need_update) = $class->get_all_infos(\%ops);
 	
 	# Pass 1: Load outdated infos
-	my $loaded = $class->pass1_update(\%ops, $idx, $infos);
+	my $loaded = { };
+	if ($need_update) {
+		$loaded = $class->pass1_update(\%ops, $idx, $infos);
+		print_breaking_stderr("done.") if &get_term_width;
+	}
 	return unless $load;
 	
 	# Pass 2: Scan for files to load: Last one reached for each fullname
 	my %name2latest;
 	for my $info (@$infos) {
-		my @fullnames = @{ $idx->{infos}{$info}{fullnames} };
+		my @fullnames = keys %{ $idx->{infos}{$info}{inits} };
 		@name2latest{@fullnames} = ($info) x scalar(@fullnames);
 	}
 	my %loadinfos = map { $_ => 1} values %name2latest;	# uniqify
 	my @loadinfos = keys %loadinfos;
 	
 	# Pass 3: Load and insert the .info files
-	for my $info (@loadinfos) {
-		my @pvs;
-		if (exists $loaded->{$info}) {
-#			print "Memory: $info\n";
-			@pvs = @{ $loaded->{$info} };
-		} else {
-			# Only get here if can read
-#			print "Cache: $info\n";
-			@pvs = @{ Storable::lock_retrieve($idx->{infos}{$info}{cache}) };
-		}
-		$class->insert_pkgversions(@pvs);
-	}
+	$class->pass3_insert($idx, $loaded, @loadinfos);
 	
 	close $lock if $lock;
 }
@@ -980,7 +1122,7 @@ sub packages_from_properties {
 	
 	# Only return splitoffs for the parent. Otherwise, PkgVersion::add_splitoff
 	# goes crazy.
-	if ($pkgversion->has_param('parent')) { # It's a splitoff
+	if ($pkgversion->has_parent) { # It's a splitoff
 		return ($pkgversion);
 	} else {								# It's a parent
 		return $pkgversion->get_splitoffs(1, 1);
