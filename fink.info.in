@@ -35,8 +35,9 @@ PostInstScript: <<
 PreRmScript: <<
  # clean up package indexes
  rm -rf %p/var/lib/fink/finkinfodb
- rm -f %p/var/lib/fink/info.db
- rm -f %p/var/lib/fink/info.db.lock
+ rm -f %p/var/lib/fink/index.db
+ rm -f %p/var/lib/fink/index.db.lock
+ rm -f %p/var/lib/fink/infolist
  rm -f %p/var/lib/fink/shlibs.db
  rm -f %p/var/lib/fink/shlibs.db.lock
 <<
