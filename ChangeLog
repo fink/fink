@@ -1,3 +1,8 @@
+2005-04-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* path-prefix-g++-3.3 path-prefix-g++-4.0: remove obsolete directories
+	* install.sh: Stop installing path-prefix dirs
+
 2005-04-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* path-prefix-g++-3.3 path-prefix-g++-4.0, install.sh: use two 

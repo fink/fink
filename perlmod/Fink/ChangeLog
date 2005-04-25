@@ -1,5 +1,11 @@
 2005-04-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Bootstrap.pm: Stop installing path-prefix dirs
+	* PkgVersion.pm: Create path-prefix dirs dynamically, so they work even
+	during bootstrap.
+
+2005-04-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm, Package.pm, Engine.pm: Make folks use get_parent instead
 	of $pkg->{parent}
 	* PkgVersion.pm, Package.pm: Use proxy objects to make package info read
