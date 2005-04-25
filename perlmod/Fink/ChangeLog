@@ -1,5 +1,9 @@
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Remove silly warning
+
+2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Make info-file-searching respect NoAutoIndex
 
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>

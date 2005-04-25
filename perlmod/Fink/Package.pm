@@ -889,7 +889,9 @@ sub update_db {
 	if ($ops{read} || $ops{write}) {
 		$lock = $class->do_lock($ops{write});
 		unless ($lock) {
-			&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lockfile: $!");
+			if ($! !~ /no such file/i || $> == 0) { # Don't warn if just no perms
+				&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lockfile: $!");
+			}
 			@ops{'read', 'write'} = (0, 0);
 			return unless $ops{load};
 		}
