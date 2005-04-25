@@ -791,7 +791,6 @@ sub pass1_update {
 			$class->update_aptgetable() if $config->binary_requested();
 			$class->store_rename($idx, $class->db_index);
 		}
-		print_breaking_stderr("done.") if &get_term_width;
 	}
 	return \%loaded;
 }
@@ -926,6 +925,7 @@ sub update_db {
 		my $loaded = { };
 		if ($need_update) {
 			$loaded = $class->pass1_update(\%ops, $idx, $infos);
+			print_breaking_stderr("done.") if &get_term_width;
 		}
 		return unless $load;
 		
