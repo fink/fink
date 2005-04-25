@@ -1,25 +1,3 @@
-2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
-
-	* PkgVersion.pm: Use the g++ prefix for gcc as well.
-
-2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
-
-	* Package.pm: Retry load if files are missing
-
-2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
-
-	* Package.pm: Remove silly warning
-
-2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
-
-	* Package.pm: Make info-file-searching respect NoAutoIndex
-
-2005-04-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
-
-	* Bootstrap.pm: Stop installing path-prefix dirs
-	* PkgVersion.pm: Create path-prefix dirs dynamically, so they work even
-	during bootstrap.
-
 2005-04-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm, Bootstrap.pm: use two possible path prefixes,
