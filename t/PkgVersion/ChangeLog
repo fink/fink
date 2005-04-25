@@ -1,3 +1,8 @@
+2005-04-25  Daniel Macks  <dmacks@netspace.org>
+
+	* get_splitoffs.t, get_splitoffs-tree/finkinfo/*: Check all arg
+	combinations get_splitoffs() for various pkg/splitoff layouts.
+
 2004-11-21  Daniel Macks  <dmacks@netspace.org>
 
 	* buildlocks.t: Check fink-virtual-pkgs revision >= 1.14.

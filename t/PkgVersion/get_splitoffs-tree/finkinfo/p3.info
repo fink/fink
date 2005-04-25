@@ -1,0 +1,15 @@
+Package: p3
+Version: 1.0
+Revision: 1
+Maintainer: Danile Macks <dmacks@netspace.org>
+License: GPL
+Description: Test whether get_splitoffs calls work
+Type: nosource
+
+SplitOff: <<
+  Package: %N.s1
+<<
+
+SplitOff2: <<
+  Package: %N.s2
+<<
