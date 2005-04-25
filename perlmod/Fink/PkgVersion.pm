@@ -3453,7 +3453,7 @@ EOF
 		chmod 0755, $gcc or die "Path-prefix file $gcc cannot be made executable!\n";
 	}
 	
-	my $cc = "$dir/ccc";
+	my $cc = "$dir/cc";
 	unless (-l $cc) {
 		symlink 'gcc', $cc or die "Path-prefix link $cc cannot be created!\n";
 	}
