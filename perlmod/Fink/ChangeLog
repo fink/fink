@@ -1,5 +1,9 @@
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Retry load if files are missing
+
+2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Remove silly warning
 
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>

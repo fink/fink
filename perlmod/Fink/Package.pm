@@ -528,6 +528,7 @@ sub forget_packages {
 			my $lock = $class->do_lock(1);
 			rm_rf($class->db_dir);
 			rm_f($class->db_index);
+			rm_f($class->db_infolist);
 			close $lock if $lock;
 		}
 	}
@@ -744,7 +745,8 @@ sub pass1_update {
 				my $cache = $fidx->{cache};
 				my $cacheage = -M $cache;
 				
-				$load = 1 if $cacheage > $confage || $cacheage > -M $info;
+				$load = 1 if !-f $cache ||
+					$cacheage > $confage || $cacheage > -M $info;
 			}
 		}
 		
@@ -786,7 +788,7 @@ sub pass1_update {
 
 =item pass3_insert
 
-  Fink::Package->pass3_insert $idx, $loaded, @infos;
+  my $success = Fink::Package->pass3_insert $idx, $loaded, @infos;
   
 Ensure that the .info files @infos are loaded and inserted into the PDB.
 Information about the .info files is to be found in the index $idx, and
@@ -809,31 +811,37 @@ sub pass3_insert {
 			
 #			print "Cache: $info\n";
 			my $fidx = $idx->{infos}{$info};
+			my $cache = $fidx->{cache};
+			return 0 unless -r $cache;
 			
-			@pvs = map { Fink::PkgVersion->new_backed($fidx->{cache}, $_) }
+			@pvs = map { Fink::PkgVersion->new_backed($cache, $_) }
 				values %{ $fidx->{inits} };
 		}
 		
 		$class->insert_pkgversions(@pvs);
 	}
-
+	
+	return 1;
 }
 
 =item get_all_infos
 
-  my ($infos, $need_update) = Fink::Package->get_all_infos $ops;
+  my ($infos, $need_update) = Fink::Package->get_all_infos $ops, $nocache;
   
 Get a list of all the .info files. Returns an array-ref of paths to the .info
 files, and whether any of the files needs to be updated.
+
+If $nocache is true, does not use the infolist cache.
 
 =cut
 
 sub get_all_infos {
 	my ($class, $ops) = @_;
+	my $nocache = shift || 0;
 	
 	my $infolist = $class->db_infolist;
 	my $noauto = $config->param_boolean("NoAutoIndex");
-	my $uptodate = $ops->{read} && -f $infolist;
+	my $uptodate = !$nocache && $ops->{read} && -f $infolist;
 	$uptodate &&= ! $class->search_comparedb unless $noauto;
 	
 	my @infos;
@@ -877,7 +885,8 @@ reads the current package database to memory as well.
 
 sub update_db {
 	my $class = shift;
-	my $load = shift || 1;
+	my $load = shift;
+	$load = 1 unless defined $load;
 		
 	my %ops = ( load => $load );
 	@ops{'read', 'write'} = $class->can_read_write_db;
@@ -906,32 +915,40 @@ sub update_db {
 	if (($ops{read} || $ops{write}) && -f $class->db_index) {
 		$idx = Storable::lock_retrieve($class->db_index);
 	}
-
-	# Get the .info files
-	my ($infos, $need_update) = $class->get_all_infos(\%ops);
 	
-	# Pass 1: Load outdated infos
-	my $loaded = { };
-	if ($need_update) {
-		$loaded = $class->pass1_update(\%ops, $idx, $infos);
-		print_breaking_stderr("done.") if &get_term_width;
-	}
-	return unless $load;
-	
-	# Pass 2: Scan for files to load: Last one reached for each fullname
-	my %name2latest;
-	for my $info (@$infos) {
-		my @fullnames = keys %{ $idx->{infos}{$info}{inits} };
-		@name2latest{@fullnames} = ($info) x scalar(@fullnames);
-	}
-	my %loadinfos = map { $_ => 1} values %name2latest;	# uniqify
-	my @loadinfos = keys %loadinfos;
-	
-	# Pass 3: Load and insert the .info files
-	$class->pass3_insert($idx, $loaded, @loadinfos);
+	my $try_cache = 1;
+	{
+		# Get the .info files
+		my ($infos, $need_update) = $class->get_all_infos(\%ops, !$try_cache);
+		
+		# Pass 1: Load outdated infos
+		my $loaded = { };
+		if ($need_update) {
+			$loaded = $class->pass1_update(\%ops, $idx, $infos);
+			print_breaking_stderr("done.") if &get_term_width;
+		}
+		return unless $load;
+		
+		# Pass 2: Scan for files to load: Last one reached for each fullname
+		my %name2latest;
+		for my $info (@$infos) {
+			my @fullnames = keys %{ $idx->{infos}{$info}{inits} };
+			@name2latest{@fullnames} = ($info) x scalar(@fullnames);
+		}
+		my %loadinfos = map { $_ => 1} values %name2latest;	# uniqify
+		my @loadinfos = keys %loadinfos;
+		
+		# Pass 3: Load and insert the .info files
+		if ($try_cache && !$class->pass3_insert($idx, $loaded, @loadinfos)) {
+			$try_cache = 0;
+			$class->forget_packages;
+			print_breaking_stderr("Missing file, reloading...") if &get_term_width;
+			redo;	# Probably a missing finkinfodb file. Non-efficient fix!
+		}
+	}		
 	
 	close $lock if $lock;
-}
+} 
 
 =item tree_infos
 
