@@ -1,3 +1,7 @@
+2005-4-25  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: more platform-portable `mktemp`
+
 2005-1-11  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: execute() may fork a process that needs

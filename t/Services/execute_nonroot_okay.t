@@ -25,7 +25,19 @@ can_ok('Fink::Config','set_options');  # 5
 #		    );
 
 # OS X 10.2 mktemp does not have the -p flag implemented
-my $tmpdir = `/usr/bin/mktemp -d /tmp/execute_nonroot_okay.t_XXXXX`;
+my $mktemp;
+foreach (qw| /usr/bin/mktemp /bin/mktemp |) {
+    if (-x $_) {
+	$mktemp = $_;
+	last;
+    }
+}
+if (!defined $mktemp) {
+    print "Bail out! Cannot create scratchdir (no mktemp found)\n";
+    die "\n";
+}
+
+my $tmpdir = `$mktemp -d /tmp/execute_nonroot_okay.t_XXXXX`;
 chomp $tmpdir;
 
 if (!defined $tmpdir or !length $tmpdir or !-d $tmpdir) {
