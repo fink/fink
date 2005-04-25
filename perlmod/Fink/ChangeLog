@@ -1,5 +1,9 @@
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Move message to better place
+
+2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Use the g++ prefix for gcc as well.
 
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>

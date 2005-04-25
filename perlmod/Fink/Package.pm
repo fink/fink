@@ -755,7 +755,16 @@ sub pass1_update {
 			next;
 		}
 #		print "Reading: $info\n";
-		$uncached = 1;
+		
+		# Print a nice message
+		if ($uncached == 0 && &get_term_width) {
+			if ($> != 0) {
+				&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
+			}
+
+			print STDERR "Reading package info...";
+			$uncached = 1;
+		}
 		
 		# Load the file
 		my @pvs = $class->packages_from_info_file($info);
@@ -782,6 +791,7 @@ sub pass1_update {
 			$class->update_aptgetable() if $config->binary_requested();
 			$class->store_rename($idx, $class->db_index);
 		}
+		print_breaking_stderr("done.") if &get_term_width;
 	}
 	return \%loaded;
 }
@@ -846,15 +856,6 @@ sub get_all_infos {
 	
 	my @infos;
 	unless ($uptodate) { # Is this worth it?
-		# Print a nice message
-		if (&get_term_width) {
-			if ($> != 0) {
-				&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
-			}
-
-			print STDERR "Reading package info...";
-		}
-		
 		@infos = map { $class->tree_infos($_) } $config->get_treelist();
 		
 		# Store 'em
@@ -925,7 +926,6 @@ sub update_db {
 		my $loaded = { };
 		if ($need_update) {
 			$loaded = $class->pass1_update(\%ops, $idx, $infos);
-			print_breaking_stderr("done.") if &get_term_width;
 		}
 		return unless $load;
 		
