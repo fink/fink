@@ -832,7 +832,9 @@ sub get_all_infos {
 	my ($class, $ops) = @_;
 	
 	my $infolist = $class->db_infolist;
-	my $uptodate = $ops->{read} && -f $infolist && ! $class->search_comparedb;
+	my $noauto = $config->param_boolean("NoAutoIndex");
+	my $uptodate = $ops->{read} && -f $infolist;
+	$uptodate &&= ! $class->search_comparedb unless $noauto;
 	
 	my @infos;
 	unless ($uptodate) { # Is this worth it?

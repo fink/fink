@@ -1,4 +1,8 @@
-2005-04-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Make info-file-searching respect NoAutoIndex
+
+2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Bootstrap.pm: Stop installing path-prefix dirs
 	* PkgVersion.pm: Create path-prefix dirs dynamically, so they work even
