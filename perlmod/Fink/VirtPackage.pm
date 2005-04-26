@@ -118,7 +118,7 @@ uname(1) call.  This should *always* exist.
 	$hash->{package} = lc((uname())[0]);
 	$hash->{provides} = "kernel";
 	$hash->{status} = STATUS_PRESENT;
-	$hash->{version} = lc((uname())[2]) . "-1";
+	$hash->{version} = Fink::Services::get_kernel_vers_long() . "-1";
 	$hash->{description} = "[virtual package representing the kernel]";
 	$hash->{descdetail} = <<END;
 This package represents the kernel (XNU (Darwin) on Mac OS X),

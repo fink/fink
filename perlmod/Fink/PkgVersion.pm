@@ -2580,15 +2580,7 @@ EOF
 #   that a package will need to be revised if the kernel major version changes.
 
 	my $kernel = lc((uname())[0]);
-	my $kernel_version = lc((uname())[2]);
-	my $kernel_major_version;
-	if ($kernel_version =~ /(\d+)/) {
-		$kernel_major_version = $1;
-	} else {
-		my $error = "Couldn't determine major version number for $kernel kernel!";
-		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-		die $error . "\n";
-	}
+	my $kernel_major_version = Fink::Services::get_kernel_vers();
 
 	my $has_kernel_dep;
 	my $struct = &pkglist2lol($self->get_binary_depends()); 

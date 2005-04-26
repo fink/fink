@@ -1198,9 +1198,13 @@ do not result in repeated spawning of sw_vers processes.
 
 =cut
 
-sub get_osx_vers {
-	(my $sw_vers = get_osx_vers_long()) =~ s/^(\d+\.\d+).*$/$1/;
-	return $sw_vers
+sub get_osx_vers
+{
+	my $sw_vers = get_osx_vers_long();
+	my $darwin_osx = get_darwin_equiv();
+	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
+	($sw_vers == $darwin_osx) or die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+	return $sw_vers;
 }
 
 =item get_osx_vers_long
@@ -1239,8 +1243,15 @@ sub get_darwin_equiv
 
 sub get_kernel_vers
 {
-	(my $darwin_version = get_kernel_vers_long()) =~ s/^(\d*).*/$1/;
-	return $darwin_version
+	my $darwin_version = get_kernel_vers_long();
+	if ($darwin_version =~ s/^(\d*).*/$1/)
+	{
+		return $darwin_version;
+	} else {
+		my $error = "Couldn't determine major version number for $darwin_version kernel!";
+		my $notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
+	}
 }
 
 sub get_kernel_vers_long
