@@ -1,5 +1,9 @@
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* fink.conf.5.in: Document AutoScanpackages, minor fixes.
+
+2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* fink.info.in: Remove new index at uninstall
 
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>

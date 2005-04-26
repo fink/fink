@@ -598,6 +598,7 @@ sub cmd_listpackages {
 }
 
 sub cmd_scanpackages {
+	my $quiet = shift || 0;
 	my @treelist = @_;
 	my ($tree, $treedir, $cmd, $archive, $component);
 
@@ -649,9 +650,23 @@ sub cmd_scanpackages {
 			mkdir_p $treedir or
 				die "can't create directory $treedir\n";
 		}
-
-		$cmd = "dpkg-scanpackages $treedir override | gzip >$treedir/Packages.gz";
-		if (&execute($cmd)) {
+		
+		# apt-ftparchive with caching is super fast
+		my $ftparchive = "$basepath/bin/apt-ftparchive";
+		if (-x $ftparchive) {
+			my $cachedir = "$basepath/var/db";
+			mkdir_p $cachedir unless -d $cachedir;
+			
+			my $cachedb = "$cachedir/apt-ftparchive.db";
+			$cmd = "$ftparchive -d $cachedb"
+				. " -o Dir::Bin::gzip=$basepath/bin/gzip packages $treedir"
+				. " override";
+		} else {
+			$cmd = "dpkg-scanpackages $treedir override";
+		}
+		$cmd .= " | gzip > $treedir/Packages.gz";
+		
+		if (&execute($cmd, quiet => $quiet)) {
 			unlink("$treedir/Packages.gz");
 			die "package scan failed in $treedir\n";
 		}
@@ -1249,7 +1264,7 @@ EOF
 
 		# Running scanpackages and updating apt-get db
 		print "Updating the list of locally available binary packages.\n";
-		&cmd_scanpackages;
+		&cmd_scanpackages(1);
 		print "Updating the indexes of available binary packages.\n";
 		if (&execute($aptcmd . "update")) {
 			print("WARNING: Failure while updating indexes.\n");
@@ -1982,6 +1997,21 @@ sub real_install {
 
 		if (!$any_installed) {
 			die "Problem resolving dependencies. Check for circular dependencies.\n";
+		}
+	}
+	
+	if ($willbuild && $config->param_boolean("AutoScanpackages")) {
+		print "Updating the list of locally available binary packages.\n";
+		&cmd_scanpackages(1);
+		print "Updating the indexes of available binary packages.\n";
+		my $aptcmd = "$basepath/bin/apt-get ";
+		if (Fink::Config::verbosity_level() == 0) {
+			$aptcmd .= "-qq ";
+		} elsif (Fink::Config::verbosity_level() < 2) {
+			$aptcmd .= "-q ";
+		}
+		if (&execute($aptcmd . "update")) {
+			print("WARNING: Failure while updating indexes.\n");
 		}
 	}
 }
