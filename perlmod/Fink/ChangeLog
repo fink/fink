@@ -1,3 +1,7 @@
+2005-04-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, PkgVersion.pm: Add new accessor get_epoch().
+
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm, Engine.pm: Revamp update_db args, make cmd_index reject the

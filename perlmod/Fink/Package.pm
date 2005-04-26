@@ -155,7 +155,7 @@ sub add_version {
 			) {
 				my $infofile = $_->get_info_filename();
 				$msg .= sprintf "  epoch %d\t%s\n", 
-					$_->param_default('epoch',0),
+					$_->get_epoch(),
 					length $infofile ? "fink virtual or dpkg status" : $infofile;
 			};
 			die $msg;
