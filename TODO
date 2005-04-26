@@ -1,6 +1,11 @@
 Minor
 =====
 
+* de-converge Shlibs and Package
+
+* respect dpkg's database lock, so that fink doesn't error when another build
+is installing something.
+
 * make sure the man pages are complete and up-to-date
 
 * validator should error if a field is there more than once
@@ -22,13 +27,27 @@ Medium
 
 * add a mirror check utillity that given some testcases will verify that all mirrors
   do still work
+  
+* when Fink asks a user to choose between alternatives, it should remember the
+choice. (But will this ever break building?)
+
+* when a package is very new, the source is not yet on a master. This case is
+very common and needs to be dealt with much better.
 
 Major
 =====
 * rewrite the dependency code
   -> added Conflicts / BuildConflicts support
 
-* rewrite indexing code: dmalloc and dmacks in #fink said:
-  Currently we scrap the DB and rebuild from scratch.
-  Read current DB and then Only process "new" .info files; merge and save.
-  'fink index -f' to really rebuild the whole thing.
+* it might be useful to sync the finkinfodb as a single file per-tree, via
+rsync. This way users don't have to download all the .info files. Profiling
+would be needed. And what about .patch?
+
+* Spotlight might be able to notice new .info files for Fink, so updating can
+happen in the background.
+
+* there should be a better way than passwd for packages to use new user/groups.
+See branch UID/GID.
+
+* as much as possible of fink should work as non-root. Especially important that
+'fink build' should work, in case we ever want to use a build farm.
