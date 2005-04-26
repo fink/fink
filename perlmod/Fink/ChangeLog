@@ -1,3 +1,8 @@
+2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Changes to fink.conf should no longer invalidate the PDB
+	cache.
+
 2005-04-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: reverting vasi's path-prefix change of 4/25: we 

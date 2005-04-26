@@ -732,7 +732,6 @@ sub pass1_update {
 	my %loaded;
 		
 	my $uncached = 0;
-	my $confage = -M "$basepath/etc/fink.conf";
 	my $noauto = $config->param_boolean("NoAutoIndex");
 	
 	for my $info (@$infos) {
@@ -748,10 +747,7 @@ sub pass1_update {
 				$load = 1;
 			} elsif (!$noauto) {
 				my $cache = $fidx->{cache};
-				my $cacheage = -M $cache;
-				
-				$load = 1 if !-f $cache ||
-					$cacheage > $confage || $cacheage > -M $info;
+				$load = 1 if !-f $cache || -M $cache > -M $info;
 			}
 		}
 		
