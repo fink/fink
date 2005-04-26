@@ -1146,21 +1146,18 @@ sub enforce_gcc {
 # Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
 # specify default values for these.
 
-	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0.0');
-	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0.0');
+	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0.0');
 	my %gcc_name = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3', '4.0.0' => '4.0');
 	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0.0' => '3.3');
 
-	my $sw_vers = get_osx_vers_long();
-	if ($sw_vers ne 0) {
+	if (my $sw_vers = get_osx_vers_long())
+	{
 		$current_system = "Mac OS X $sw_vers";
-		$sw_vers =~ s/^(\d*\.\d*).*/$1/;
-		$gcc = $osx_default{$sw_vers};
-	} else {
-        my $darwin_version = (uname())[2];
-		$current_system = "Darwin $darwin_version";
-		$darwin_version =~ s/^(\d*).*/$1/;
-		$gcc = $darwin_default{$darwin_version};
+		$gcc = $system_gcc_default{get_osx_vers()};
+	} else
+	{
+		$current_system = "Darwin " . get_kernel_vers_long();
+		$gcc = $system_gcc_default{get_kernel_vers()};
 	}
 
 	if (defined $gcc_abi) {
@@ -1242,7 +1239,13 @@ sub get_darwin_equiv
 
 sub get_kernel_vers
 {
-	(my $darwin_version = lc((uname())[2])) =~ s/^(\d*).*/$1/;
+	(my $darwin_version = get_kernel_vers_long()) =~ s/^(\d*).*/$1/;
+	return $darwin_version
+}
+
+sub get_kernel_vers_long
+{
+	(my $darwin_version = lc((uname())[2]));
 	return $darwin_version
 }
 =item get_system_perl_version
