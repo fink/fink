@@ -47,10 +47,12 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
+					  &file_MD5_checksum &get_arch &get_osx_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &call_queue_clear &call_queue_add);
+					  &call_queue_clear &call_queue_add
+					  &get_osx_vers_long &get_kernel_vers
+					  &get_darwin_equiv);
 }
 our @EXPORT_OK;
 
@@ -1149,7 +1151,7 @@ sub enforce_gcc {
 	my %gcc_name = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3', '4.0.0' => '4.0');
 	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0.0' => '3.3');
 
-	my $sw_vers = get_sw_vers();
+	my $sw_vers = get_osx_vers_long();
 	if ($sw_vers ne 0) {
 		$current_system = "Mac OS X $sw_vers";
 		$sw_vers =~ s/^(\d*\.\d*).*/$1/;
@@ -1187,33 +1189,62 @@ sub enforce_gcc {
 	return $gcc;
 }
 
-=item get_sw_vers
+=item get_osx_vers
 
-    my $os_x_version = get_sw_vers;
+    my $os_x_version = get_osx_vers;
 
-Returns OS X version (if that's what this platform appears to be, as
-indicated by being able to run /usr/bin/sw_vers). The output of that
+Returns OS X major and minor versions (if that's what this platform
+appears to be, as indicated by being able to run /usr/bin/sw_vers).
+The output of that command is parsed and cached in a global configuration
+option in the Fink::Config package so that multiple calls to this function
+do not result in repeated spawning of sw_vers processes.
+
+=cut
+
+sub get_osx_vers {
+	(my $sw_vers = get_osx_vers_long()) =~ s/^(\d+\.\d+).*$/$1/;
+	return $sw_vers
+}
+
+=item get_osx_vers_long
+
+    my $os_x_version = get_osx_vers_long;
+
+Returns full OS X version (if that's what this platform appears to be,
+as indicated by being able to run /usr/bin/sw_vers). The output of that
 command is parsed and cached in a global configuration option in the
 Fink::Config package so that multiple calls to this function do not
 result in repeated spawning of sw_vers processes.
 
 =cut
 
-sub get_sw_vers {
-	if (not defined Fink::Config::get_option('sw_vers') or Fink::Config::get_option('sw_vers') eq "0" and -x '/usr/bin/sw_vers') {
+sub get_osx_vers_long {
+	if (not defined Fink::Config::get_option('sw_vers_long') or Fink::Config::get_option('sw_vers_long') eq "0" and -x '/usr/bin/sw_vers') {
 		if (open(SWVERS, "sw_vers |")) {
 			while (<SWVERS>) {
 				if (/^ProductVersion:\s*([^\s]+)\s*$/) {
-					Fink::Config::set_options( { 'sw_vers' => $1 } );
+					(my $prodvers = $1) =~ s/^(\d+\.\d+)$/$1.0/;
+					Fink::Config::set_options( { 'sw_vers_long' => $prodvers } );
 					last;
 				}
 			}
 			close(SWVERS);
 		}
 	}
-	return Fink::Config::get_option('sw_vers');
+	return Fink::Config::get_option('sw_vers_long');
 }
 
+sub get_darwin_equiv
+{
+	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4');
+	return $darwin_osx{get_kernel_vers()};
+}
+
+sub get_kernel_vers
+{
+	(my $darwin_version = lc((uname())[2])) =~ s/^(\d*).*/$1/;
+	return $darwin_version
+}
 =item get_system_perl_version
 
     my $perlversion = get_system_perl_version;

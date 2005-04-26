@@ -103,7 +103,7 @@ our %commands =
 	  'splits'            => [\&cmd_splitoffs,         1, 0, 0],
 	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
 	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0, 0],
-	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
+	  'dist-upgrade'      => [\&cmd_dist_upgrade,      1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -343,16 +343,19 @@ sub cmd_bootstrap {
 sub cmd_selfupdate {
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check();
+	Fink::SelfUpdate::finish();
 }
 
 sub cmd_selfupdate_cvs {
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check(1);
+	Fink::SelfUpdate::finish();
 }
 
 sub cmd_selfupdate_rsync {
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check(2);
+	Fink::SelfUpdate::finish();
 }
 
 sub cmd_selfupdate_finish {
@@ -362,6 +365,11 @@ sub cmd_selfupdate_finish {
 
 sub cmd_list {
 	do_real_list("list",@_);
+}
+
+sub cmd_dist_upgrade {
+	cmd_selfupdate();	
+	print("Nothing else to do, yet")
 }
 
 sub cmd_apropos {

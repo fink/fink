@@ -3593,9 +3593,13 @@ END
 	}
 
 	# handle MACOSX_DEPLOYMENT_TARGET
-	my $sw_vers = Fink::Services::get_sw_vers();
+	#TODO: allow setting on darwin, and make generic short and long $sw_vers functions.
+	my $sw_vers = Fink::Services::get_osx_vers();
+	unless ($sw_vers)
+		{
+		$sw_vers = Fink::Services::get_darwin_equiv();
+		}
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined $sw_vers and $sw_vers ne "0") {
-		$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 		if ($sw_vers eq "10.2") {
 			$script_env{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
 		} else {

@@ -143,9 +143,9 @@ installations (but not pure Darwin systems).
 	$hash->{package} = "macosx";
 	$hash->{description} = "[virtual package representing the system]";
 	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
-	if (Fink::Services::get_sw_vers() ne 0) {
+	if (Fink::Services::get_osx_vers_long() ne 0) {
 		$hash->{status} = STATUS_PRESENT;
-		$hash->{version} = Fink::Services::get_sw_vers()."-1";
+		$hash->{version} = Fink::Services::get_osx_vers_long()."-1";
 		print STDERR $hash->{version}, "\n" if ($options{debug});
 	} else {
 		$hash->{status} = STATUS_ABSENT;
