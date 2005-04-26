@@ -1,5 +1,10 @@
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm, Engine.pm: Revamp update_db args, make cmd_index reject the
+	cached infolist.
+
+2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: But they do invalidate the infolist cache.
 
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>

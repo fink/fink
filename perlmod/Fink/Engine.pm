@@ -326,7 +326,7 @@ EOF
 	if ($full) {
 		Fink::Package->forget_packages(2);
 	}
-	Fink::Package->update_db();
+	Fink::Package->update_db(no_load => 1, no_infolist => 1);
 	Fink::Shlibs->update_shlib_db();
 }
 

@@ -557,7 +557,7 @@ sub load_packages {
 	my $class = shift;
 	my ($time) = time;
 
-	$class->update_db(1);
+	$class->update_db();
 	$class->insert_runtime_packages;
 
 	if (&get_term_width) {
@@ -879,17 +879,30 @@ sub get_all_infos {
 
 =item update_db
 
-  Fink::Package->update_db $load;
+  Fink::Package->update_db %options;
 
-Updates the on-disk package database cache if possible. If $load is true,
-reads the current package database to memory as well.
+Updates the on-disk package database cache if possible. Options is a hash, where
+the following elements are valid:
+
+=over 4
+
+=item no_load
+
+If B<no_load> is present and true, the current package database will not be read
+in to memory, but will only be updated.
+
+=item no_infolist
+
+If B<no_infolist> is present and true, the cached list of existing .info files
+will be discarded and not used.
 
 =cut
 
 sub update_db {
 	my $class = shift;
-	my $load = shift;
-	$load = 1 unless defined $load;
+	my %options = @_;
+	my $load = !$options{no_load};
+	my $try_cache = !$options{no_infolist};
 		
 	my %ops = ( load => $load );
 	@ops{'read', 'write'} = $class->can_read_write_db;
@@ -919,7 +932,6 @@ sub update_db {
 		$idx = Storable::lock_retrieve($class->db_index);
 	}
 	
-	my $try_cache = 1;
 	{
 		# Get the .info files
 		my ($infos, $need_update) = $class->get_all_infos(\%ops, !$try_cache);
