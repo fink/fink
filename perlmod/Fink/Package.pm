@@ -486,6 +486,7 @@ sub search_comparedb {
 	my $path = "/sw/fink/dists/";  # extra '/' forces find to follow the symlink
 		
 	my $dbfile = $class->db_infolist;
+	return 1 if -M $dbfile > -M "$basepath/etc/fink.conf";
 
 	# Using find is much faster than doing it in Perl
 	open NEWER_FILES, "/usr/bin/find $path \\( \\( \\( -type f -or -type l \\) " .

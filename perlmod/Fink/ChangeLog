@@ -1,5 +1,9 @@
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: But they do invalidate the infolist cache.
+
+2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Changes to fink.conf should no longer invalidate the PDB
 	cache.
 
