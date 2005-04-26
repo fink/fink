@@ -3169,6 +3169,43 @@ sub clear_buildlock {
 	delete $self->{_lockpkg};
 }
 
+=item ensure_gpp_prefix
+
+  my $prefix_path = ensure_gpp_prefix $gpp_version;
+  
+Ensures that a path-prefix directory exists for the given version of g++.
+Returns the path to the resulting directory.
+
+=cut
+
+sub ensure_gpp_prefix {
+	my $vers = shift;
+	
+	my $dir = "$basepath/var/lib/fink/path-prefix-g++-$vers";
+	unless (-d $dir) {
+		mkdir_p $dir or	die "Path-prefix dir $dir cannot be created!\n";
+	}
+	
+	my $gpp = "$dir/g++";
+	unless (-x $gpp) {
+		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
+		print GPP <<EOF;
+#!/bin/sh
+exec g++-$vers "\$@"
+EOF
+		close GPP;
+		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
+	}
+	
+	my $cpp = "$dir/c++";
+	unless (-l $cpp) {
+		symlink 'g++', $cpp or die "Path-prefix link $cpp cannot be created!\n";
+	}
+	
+	return $dir;
+}
+
+
 # returns hashref for the ENV to be used while running package scripts
 # does not alter global ENV
 
@@ -3236,7 +3273,7 @@ END
 
 	# start with a clean the environment
 	# uncomment this to be able to use distcc -- not officially supported!
-	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	%script_env = ("HOME" => $ENV{"HOME"});
 
 	# add system path
@@ -3315,17 +3352,16 @@ END
 		$script_env{'CXX'} = 'g++-3.3';
 	}
 
-
 	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
 	# it the first g++ in the path
-	my $pathprefix;
 	unless ($self->has_param('NoSetPATH')) {
+		my $vers;
 		if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
-			$pathprefix = "$basepath/var/lib/fink/path-prefix-g++-3.3";
+			$vers = '3.3';
 		} else {
-			$pathprefix = "$basepath/var/lib/fink/path-prefix-g++-4.0";
+			$vers = '4.0';
 		}
-		die "Path-prefix dir $pathprefix does not exist!\n" unless -d $pathprefix;
+		my $pathprefix = ensure_gpp_prefix($vers);
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 	
