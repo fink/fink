@@ -486,7 +486,7 @@ sub do_finish {
 	}
 
 	# forget the package info
-	Fink::Package->forget_packages();
+	Fink::Package->forget_packages(2, 1);
 
 	# delete the old shlibs DB
 	if (-e "$dbpath/shlibs.db") {

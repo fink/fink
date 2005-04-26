@@ -505,9 +505,13 @@ sub search_comparedb {
 =item forget_packages
 
   Fink::Package->forget_packages;
+  Fink::Package->forget_packages $type, $just_memory;
   
-Removes the in-memory package database. Also invalidates any cache of package
-database that currently exists on disk.
+Removes the in-memory package database. If $type is 1, just removes the shlibs
+database, if it is 2 removes just the package database, if it is 0 removes both.
+
+If $just_memory is not true, also invalidates any cache of package database
+that currently exists on disk.
 
 =cut
 
@@ -518,13 +522,14 @@ sub forget_packages {
 	# 1 = shlibs only
 	# 2 = packages only
 	my $oper = shift || 0;
+	my $just_memory = shift || 0;
 
 	if ($oper != 1) {
 		$packages = undef;
 		@essential_packages = ();
 		$essential_valid = 0;
 		
-		if ($> == 0) {	# Only if we're root
+		if (!$just_memory && $> == 0) {	# Only if we're root
 			my $lock = $class->do_lock(1);
 			rm_rf($class->db_dir);
 			rm_f($class->db_index);
@@ -791,6 +796,7 @@ sub pass1_update {
 			$class->update_aptgetable() if $config->binary_requested();
 			$class->store_rename($idx, $class->db_index);
 		}
+		print_breaking_stderr("done.") if &get_term_width;
 	}
 	return \%loaded;
 }
@@ -925,7 +931,6 @@ sub update_db {
 		my $loaded = { };
 		if ($need_update) {
 			$loaded = $class->pass1_update(\%ops, $idx, $infos);
-			print_breaking_stderr("done.") if &get_term_width;
 		}
 		return unless $load;
 		
@@ -941,7 +946,7 @@ sub update_db {
 		# Pass 3: Load and insert the .info files
 		if ($try_cache && !$class->pass3_insert($idx, $loaded, @loadinfos)) {
 			$try_cache = 0;
-			$class->forget_packages;
+			$class->forget_packages(2, 1);
 			print_breaking_stderr("Missing file, reloading...") if &get_term_width;
 			redo;	# Probably a missing finkinfodb file. Non-efficient fix!
 		}

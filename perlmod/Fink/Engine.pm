@@ -324,7 +324,7 @@ EOF
 	@ARGV = @temp_ARGV;
 	
 	if ($full) {
-		Fink::Package->forget_packages();
+		Fink::Package->forget_packages(2);
 	}
 	Fink::Package->update_db();
 	Fink::Shlibs->update_shlib_db();

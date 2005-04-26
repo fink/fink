@@ -1,3 +1,7 @@
+2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm, Engine.pm, SelfUpdate.pm: Fix up forget_packages().
+
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Have cmd_scanpackages() use apt-ftparchive with caching if it
