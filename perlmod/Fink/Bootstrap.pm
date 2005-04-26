@@ -493,7 +493,7 @@ sub fink_packagefiles {
 
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in install.sh setup.sh ".
-  "shlibs.default.in path-prefix-g++-3.3 path-prefix-g++-4.0 pathsetup.sh.in postinstall.pl.in perlmod update t ".
+  "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
   "fink-virtual-pkgs.in";
 
 return $packagefiles;
