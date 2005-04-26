@@ -3414,8 +3414,6 @@ sub clear_buildlock {
 Ensures that a path-prefix directory exists for the given version of g++.
 Returns the path to the resulting directory.
 
-Now does gcc too!
-
 =cut
 
 sub ensure_gpp_prefix {
@@ -3440,22 +3438,6 @@ EOF
 	my $cpp = "$dir/c++";
 	unless (-l $cpp) {
 		symlink 'g++', $cpp or die "Path-prefix link $cpp cannot be created!\n";
-	}
-	
-	my $gcc = "$dir/gcc";
-	unless (-x $gcc) {
-		open GCC, ">$gcc" or die "Path-prefix file $gcc cannot be created!\n";
-		print GCC <<EOF;
-#!/bin/sh
-exec gcc-$vers "\$@"
-EOF
-		close GCC;
-		chmod 0755, $gcc or die "Path-prefix file $gcc cannot be made executable!\n";
-	}
-	
-	my $cc = "$dir/cc";
-	unless (-l $cc) {
-		symlink 'gcc', $cc or die "Path-prefix link $cc cannot be created!\n";
 	}
 	
 	return $dir;
@@ -3608,9 +3590,6 @@ END
 
 	if (not $self->has_param("SetCXX") and not $self->param_boolean("NoSetCXX") and (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional"))) {
 		$script_env{'CXX'} = 'g++-3.3';
-	}
-	if (not $self->has_param("SetCC") and not $self->param_boolean("NoSetCC") and (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional"))) {
-		$script_env{'CC'} = 'gcc-3.3';
 	}
 		
 	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
