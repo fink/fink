@@ -2217,10 +2217,12 @@ EOF
 				printf "infofile: %s\n", $pkg->get_info_filename();
 			} elsif ($_ eq 'package') {
 				printf "%s: %s\n", $_, $pkg->get_name();
+			} elsif ($_ eq 'epoch') {
+				printf "%s: %s\n", $_, $pkg->get_epoch();
 			} elsif ($_ eq 'version') {
-				printf "%s: %s\n", $_, $pkg->get_version(); 
+				printf "%s: %s\n", $_, $pkg->get_version();
 			} elsif ($_ eq 'revision') {
-				printf "%s: %s\n", $_, $pkg->param_default('revision', '1');
+				printf "%s: %s\n", $_, $pkg->get_revision();
 			} elsif ($_ eq 'parent') {
 				printf "%s: %s\n", $_, $pkg->get_parent->get_name() if $pkg->has_parent;
 			} elsif ($_ eq 'splitoffs') {
@@ -2307,7 +2309,7 @@ EOF
 			} elsif ($_ =~ /^source(\d*)$/) {
 				my $src = $pkg->get_source($1);
 				printf "%s: %s\n", $_, $src if defined $src && $src ne "none";
-			} elsif ($_ eq 'gcc' or $_ eq 'epoch' or $_ =~ /^source\d*-md5$/) {
+			} elsif ($_ eq 'gcc' or $_ =~ /^source\d*-md5$/) {
 				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
 			} elsif ($_ eq 'configureparams') {
 				my $cparams = &expand_percent(
