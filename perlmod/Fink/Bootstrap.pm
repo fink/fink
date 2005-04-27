@@ -177,12 +177,16 @@ $gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrap
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.3";
+	} elsif ($host =~ /^powerpc-apple-darwin8\.[0]\.0/) {
+		&print_breaking("This brand new system is still being tested " .
+            "but should work.");
+		$distribution = "10.4-transitional";
 	} elsif ($host =~ /^powerpc-apple-darwin[8-9]\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
-		$distribution = "10.3";
+		$distribution = "10.4-transitional";
 	} elsif ($host =~ /^i386-apple-darwin7\.[0-2]\.[0-1]/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".
