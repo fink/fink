@@ -1,3 +1,8 @@
+2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm, PkgVersion.pm, SelfUpdate.pm, Services.pm: Use
+	-lockwait versions of dpkg and apt-get.
+
 2005-04-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Better accessor usage in dumpinfo

@@ -1,3 +1,8 @@
+2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* lockwait.in, .cvsignore, setup.sh, install.sh: Install -lockwait
+	versions of dpkg and apt-get.
+
 2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.5, a release

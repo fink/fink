@@ -51,7 +51,8 @@ BEGIN {
 					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &call_queue_clear &call_queue_add &lock_wait);
+					  &call_queue_clear &call_queue_add &lock_wait
+					  &dpkg_lockwait &aptget_lockwait);
 }
 our @EXPORT_OK;
 
@@ -1526,16 +1527,13 @@ sub lock_wait {
 		eval {
 			# If non-root, we could be stuck here forever with no way to 
 			# stop a broken root process. Need a timeout!
-			alarm $timeout if $really_timeout;
+			local $SIG{ALRM} = sub { die "alarm\n" };
 			$success = flock $lockfile_FH, $mode;
 			alarm 0;
 		};
 		if ($@) {
-			if ($@ !~ /alarm clock restart/) {
-				$alarm = 1;
-			} else {
-				die;
-			}
+			die unless $@ eq "alarm\n";
+			$alarm = 1;
 		}
 		
 		if ($success) {
@@ -1552,6 +1550,39 @@ sub lock_wait {
 		}
 	}
 }
+
+=item dpkg_lockwait
+
+  my $path = dpkg_lockwait;
+  
+Gets the path to dpkg-lockwait (a dpkg which will wait for a lock rather than
+just dying). Safely falls back to regular dpkg if dpkg-lockwait is not
+available.
+
+=cut
+
+sub dpkg_lockwait {
+	require Fink::Config;
+	my $path = "$Fink::Config::basepath/bin/dpkg-lockwait";
+	return $path if -x $path;
+	return "$Fink::Config::basepath/bin/dpkg";
+}
+
+=item aptget_lockwait
+
+  my $path = aptget_lockwait;
+  
+Just like dpkg_lockwait, but for apt-get.
+
+=cut
+
+sub aptget_lockwait {
+	require Fink::Config;
+	my $path = "$Fink::Config::basepath/bin/apt-get-lockwait";
+	return $path if -x $path;
+	return "$Fink::Config::basepath/bin/apt-get";
+}
+
 
 =back
 

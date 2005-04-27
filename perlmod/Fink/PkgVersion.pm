@@ -29,7 +29,8 @@ use Fink::Services qw(&filename &execute
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
-					  &get_path &eval_conditional &enforce_gcc);
+					  &get_path &eval_conditional &enforce_gcc
+					  &dpkg_lockwait &aptget_lockwait);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -1874,7 +1875,7 @@ sub fetch_deb {
 	if (Fink::Config::verbosity_level() > 2) {
 		print "Downloading " . $self->get_debname() . " from binary dist.\n";
 	}
-	my $aptcmd = "$basepath/bin/apt-get ";
+	my $aptcmd = aptget_lockwait() . " ";
 	if (Fink::Config::verbosity_level() == 0) {
 		$aptcmd .= "-qq ";
 	}
@@ -3138,7 +3139,7 @@ sub phase_activate {
 	}
 
 	my @deb_installable = map { $_->find_debfile() } @installable;
-	if (&execute("dpkg -i @deb_installable", ignore_INT=>1)) {
+	if (&execute(dpkg_lockwait() . " -i @deb_installable", ignore_INT=>1)) {
 		if (@installable == 1) {
 			my $error = "can't install package ".$installable[0]->get_fullname();
 			$notifier->notify(event => 'finkPackageInstallationFailed', description => $error);
@@ -3166,7 +3167,7 @@ sub phase_deactivate {
 
 	my $notifier = Fink::Notify->new();
 
-	if (&execute("dpkg --remove @packages", ignore_INT=>1)) {
+	if (&execute(dpkg_lockwait() . " --remove @packages", ignore_INT=>1)) {
 		&print_breaking("ERROR: Can't remove package(s). If the above error message " .
 		                "mentions dependency problems, you can try\n" .
 		                "  fink remove --recursive @packages\n" .
@@ -3197,7 +3198,7 @@ sub phase_deactivate {
 sub phase_deactivate_recursive {
 	my @packages = @_;
 
-	if (&execute("apt-get remove @packages")) {
+	if (&execute(aptget_lockwait() . " remove @packages")) {
 		if (@packages == 1) {
 			die "can't remove package ".$packages[0]."\n";
 		} else {
@@ -3212,7 +3213,7 @@ sub phase_deactivate_recursive {
 sub phase_purge {
 	my @packages = @_;
 
-	if (&execute("dpkg --purge @packages", ignore_INT=>1)) {
+	if (&execute(dpkg_lockwait() . " --purge @packages", ignore_INT=>1)) {
 		&print_breaking("ERROR: Can't purge package(s). Try 'fink purge --recursive " .
 		                "@packages', which will also purge packages that depend " .
 		                "on the package to be purged.");
@@ -3230,7 +3231,7 @@ sub phase_purge {
 sub phase_purge_recursive {
 	my @packages = @_;
 
-	if (&execute("apt-get remove --purge @packages")) {
+	if (&execute(aptget_lockwait() . " remove --purge @packages")) {
 		if (@packages == 1) {
 			die "can't purge package ".$packages[0]."\n";
 		} else {
@@ -3357,7 +3358,7 @@ EOSCRIPT
 	# install lockpkg (== set lockfile for building ourself)
 	print "Setting build lock...\n";
 	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
-	my $lock_failed = &execute("dpkg -i $debfile", ignore_INT=>1);
+	my $lock_failed = &execute(dpkg_lockwait() . " -i $debfile", ignore_INT=>1);
 	if ($lock_failed) {
 		&print_breaking(<<EOMSG);
 Can't set build lock for $pkgname ($pkgvers)
@@ -3380,7 +3381,7 @@ EOMSG
 		chomp $old_lock;
 		if ($old_lock eq "$lockpkg\t$timestamp") {
 			# only clean up residue from our exact lockpkg
-			&execute("dpkg -r $lockpkg", ignore_INT=>1) and
+			&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1) and
 				&print_breaking('You can probably ignore that last message from "dpkg -r"');
 		}
 	}
@@ -3448,7 +3449,7 @@ sub clear_buildlock {
 						"removing it, as it likely belongs to a different ".
 						"fink process. This should not ever happen.");
 	} else {
-		if (&execute("dpkg -r $lockpkg", ignore_INT=>1)) {
+		if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
 			&print_breaking("WARNING: Can't remove package ".
 							"$lockpkg. ".
 							"This is not fatal, but you may want to remove ".

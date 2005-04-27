@@ -1,0 +1,55 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+use Fcntl qw(:DEFAULT :seek);
+use POSIX qw(:errno_h);
+
+my $basepath = "@PREFIX@";
+my $exec = "$basepath/bin/@PROG@";
+my $timeout = 10;
+my $debug = 0;
+
+print STDERR "exec = $exec, timeout = $timeout\n" if $debug;
+
+if ($> == 0) {
+	print STDERR "We're root, gonna pre-lock\n" if $debug;
+
+	print STDERR "Opening the lockfile\n" if $debug;
+	my $lockfile = "$basepath/var/lib/dpkg/lock";
+	open LOCK, ">$lockfile" or die "lockwait: Can't open: $!";
+	
+	print STDERR "Locking it\n" if $debug;
+	### Note this pack() is specific  to OS X and Darwin!!!
+	my $struct_flock = pack("lllliss", (0, 0), (0, 0), 0, F_WRLCK, SEEK_SET);
+	unless (fcntl(LOCK, F_SETLK, $struct_flock)) {
+		die "lockwait: Can't get lock: $!" unless $! == EAGAIN || $! == EACCES;
+		
+		my $msg = $timeout ? "$timeout seconds " : "";
+		print STDERR "Waiting ${msg}for access to the dpkg database... ";
+		eval {
+			local $SIG{ALRM} = sub { die "alarm\n" };
+			alarm $timeout if $timeout;
+			print STDERR "Waiting for lock, timeout = $timeout\n" if $debug;
+			fcntl(LOCK, F_SETLKW, $struct_flock) or
+				die "lockwait: Can't get lock or wait: $!";
+			alarm 0;
+		};
+		if ($@) {
+			die unless $@ eq "alarm\n";
+			print STDERR "\nTimed out, cancelling operation!\n";
+			exit(1);
+		}
+		print STDERR "done.\n";
+	}
+	print STDERR "Got the lock\n" if $debug;
+	
+	print STDERR "Clear close-on-exec, so exec'ed process gets the lock\n"
+		if $debug;
+	fcntl(LOCK, F_SETFD, 0) or die "lockwait: Can't clear close-on-exec: $!";
+} else {
+	print STDERR "Non-root, can't pre-lock\n" if $debug;
+}
+
+print STDERR "Execing $exec with args: ", join(' ', @ARGV), "\n" if $debug;
+exec($exec, @ARGV) or die "lockwait: Exec failed: $!";

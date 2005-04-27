@@ -7,3 +7,6 @@ pathsetup.command
 pathsetup.sh
 postinstall.pl
 shlibs.default
+dpkg-lockwait
+apt-get-lockwait
+
