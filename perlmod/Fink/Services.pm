@@ -1480,6 +1480,11 @@ This option overrides 'timeout'.
 
 If present and true, no messages will be printed by this function.
 
+=item desc => $desc
+
+A description of the process that the lock is synchronizing. This is used in
+messages printed by this function, eg: "Waiting for $desc to finish".
+
 =back
 
 =cut
@@ -1493,6 +1498,9 @@ sub lock_wait {
 	$timeout = $options{root_timeout} if exists $options{root_timeout};
 	my $root_timeout = $options{root_timeout} || 0;
 	my $quiet = $options{quiet} || 0;
+	my $desc = $options{desc} || "another process";
+	
+	my $really_timeout = $> != 0 || $root_timeout;
 
 	# Make sure we can access the lock
 	my $lockfile_FH = Symbol::gensym();
@@ -1508,8 +1516,8 @@ sub lock_wait {
 		return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
 	} else {
 		# Couldn't get lock, meaning process has it
-		my $waittime = $timeout ? "$timeout seconds " : "";
-		print STDERR "\nWaiting ${waittime}for another process to finish..."
+		my $waittime = $really_timeout ? "$timeout seconds " : "";
+		print STDERR "Waiting ${waittime}for $desc to finish..."
 			unless $quiet;
 		
 		my $success = 0;
@@ -1518,7 +1526,7 @@ sub lock_wait {
 		eval {
 			# If non-root, we could be stuck here forever with no way to 
 			# stop a broken root process. Need a timeout!
-			alarm $timeout if $> != 0 || $root_timeout;
+			alarm $timeout if $really_timeout;
 			$success = flock $lockfile_FH, $mode;
 			alarm 0;
 		};
@@ -1537,7 +1545,8 @@ sub lock_wait {
 			print STDERR " timed out!\n" unless $quiet;
 			return wantarray ? ($lockfile_FH, 1) : $lockfile_FH;
 		} else {
-			&print_breaking_stderr("Error: Could not lock $lockfile: $!");
+			&print_breaking_stderr("Error: Could not lock $lockfile: $!")
+				unless $quiet;
 			close $lockfile_FH;
 			return wantarray ? (0, 0) : 0;
 		}

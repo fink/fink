@@ -530,7 +530,8 @@ sub forget_packages {
 		$essential_valid = 0;
 		
 		if (!$just_memory && $> == 0) {	# Only if we're root
-			my $lock = lock_wait($class->db_lockfile, exclusive => 1);
+			my $lock = lock_wait($class->db_lockfile, exclusive => 1,
+				desc => "another Fink's indexing");
 			rm_rf($class->db_dir);
 			rm_f($class->db_index);
 			rm_f($class->db_infolist);
@@ -846,7 +847,8 @@ sub update_db {
 	# Get the lock
 	my $lock = 0;
 	if ($ops{read} || $ops{write}) {
-		$lock = lock_wait($class->db_lockfile, exclusive => $ops{write});
+		$lock = lock_wait($class->db_lockfile, exclusive => $ops{write},
+			desc => "another Fink's indexing");
 		unless ($lock) {
 			if ($! !~ /no such file/i || $> == 0) { # Don't warn if just no perms
 				&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lockfile: $!");

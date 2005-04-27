@@ -27,8 +27,8 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &pkglist2lol &cleanup_lol
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
-					  &call_queue_clear &call_queue_add);
-use Fink::CLI qw(&print_breaking
+					  &call_queue_clear &call_queue_add &lock_wait);
+use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
 use Fink::Package;
@@ -601,7 +601,12 @@ sub cmd_scanpackages {
 	my $quiet = shift || 0;
 	my @treelist = @_;
 	my ($tree, $treedir, $cmd, $archive, $component);
-
+	
+	# two scanpackages at once sucks, so sync on a lockfile
+	my $lockfile = "$basepath/fink/override.lock";
+	my $fh = lock_wait($lockfile, exclusive => 1,
+		desc => "another Fink's scanpackages") or die "Can't get lock!\n";
+	
 	# do all trees by default
 	if ($#treelist < 0) {
 		@treelist = $config->get_treelist();
@@ -681,6 +686,8 @@ Architecture: $debarch
 EOF
 		close(RELEASE) or die "can't write Release file: $!\n";
 	}
+	
+	close $fh;
 }
 
 ### package-related commands

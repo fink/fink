@@ -1,5 +1,10 @@
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Services.pm, Package.pm: Fix up lock_wait a bit.
+	* Engine.pm: Lock-synchronize scanpackages.
+
+2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm, Services.pm: Generalize do_lock(). It's now in Services and
 	called lock_wait().
 
