@@ -1,3 +1,8 @@
+2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm, Services.pm: Generalize do_lock(). It's now in Services and
+	called lock_wait().
+
 2005-04-26  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm, PkgVersion.pm: Add new accessor get_epoch().

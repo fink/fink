@@ -24,6 +24,7 @@
 package Fink::Services;
 
 use POSIX qw(uname tmpnam);
+use Fcntl qw(:flock);
 
 use strict;
 use warnings;
@@ -50,7 +51,7 @@ BEGIN {
 					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &call_queue_clear &call_queue_add);
+					  &call_queue_clear &call_queue_add &lock_wait);
 }
 our @EXPORT_OK;
 
@@ -1432,6 +1433,115 @@ sub call_queue_add {
 
 	# no ||ization, so just call and wait for return
 	&$function(@$call);
+}
+
+=item lock_wait
+
+  my $fh = lock_wait $file, %options;
+  my ($fh, $timedout) = do_lock $file, %options;
+
+Acquire a lock on file $file, waiting until the lock is available or a timeout
+occurs.
+
+Returns a filehandle, which must be closed in order to relinquish the lock. This filehandle can be read from or written to. If unsuccessful, returns false.
+
+In list context, also returns whether the operation timed out.
+
+The %options hash can contain the following keys:
+
+=over
+
+=item exclusive => $exclusive
+
+If present and true, an exclusive write lock will be obtained. Otherwise, a
+shared read lock will be obtained.
+
+Any number of shared locks can coexist, and they can all be used for reading.
+However, an exclusive lock cannot coexist with any other lock, exclusive or
+shared, and it is required for writing.
+
+=item timeout => $timeout
+
+If running as B<non-root> user, the locking operation will time-out 
+if the lock cannot be obtained for $timeout seconds. An open filehandle (which 
+must be closed) will still be returned. 
+
+This option has no effect on the root user.
+
+By default, $timeout is 300, so that a user will not get stuck when root
+refuses to relinquish the lock. To disable timeouts, pass zero for $timeout.
+
+=item root_timeout => $timeout
+
+Just like 'timeout', but the timeout applies to the root user as well. 
+This option overrides 'timeout'.
+
+=item quiet => $quiet
+
+If present and true, no messages will be printed by this function.
+
+=back
+
+=cut
+
+sub lock_wait {
+	my $lockfile = shift;
+	
+	my %options = @_;
+	my $write = $options{exclusive} || 0;
+	my $timeout = exists $options{timeout} ? $options{timeout} : 300;
+	$timeout = $options{root_timeout} if exists $options{root_timeout};
+	my $root_timeout = $options{root_timeout} || 0;
+	my $quiet = $options{quiet} || 0;
+
+	# Make sure we can access the lock
+	my $lockfile_FH = Symbol::gensym();
+	{
+		my $mode = $write ? "+>>" : "<";
+		unless (open $lockfile_FH, "$mode $lockfile") {
+			return wantarray ? (0, 0) : 0;
+		}
+	}
+	
+	my $mode = $write ? LOCK_EX : LOCK_SH;
+	if (flock $lockfile_FH, $mode | LOCK_NB) {
+		return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
+	} else {
+		# Couldn't get lock, meaning process has it
+		my $waittime = $timeout ? "$timeout seconds " : "";
+		print STDERR "\nWaiting ${waittime}for another process to finish..."
+			unless $quiet;
+		
+		my $success = 0;
+		my $alarm = 0;
+		
+		eval {
+			# If non-root, we could be stuck here forever with no way to 
+			# stop a broken root process. Need a timeout!
+			alarm $timeout if $> != 0 || $root_timeout;
+			$success = flock $lockfile_FH, $mode;
+			alarm 0;
+		};
+		if ($@) {
+			if ($@ !~ /alarm clock restart/) {
+				$alarm = 1;
+			} else {
+				die;
+			}
+		}
+		
+		if ($success) {
+			print STDERR " done.\n" unless $quiet;
+			return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
+		} elsif ($alarm) {
+			print STDERR " timed out!\n" unless $quiet;
+			return wantarray ? ($lockfile_FH, 1) : $lockfile_FH;
+		} else {
+			&print_breaking_stderr("Error: Could not lock $lockfile: $!");
+			close $lockfile_FH;
+			return wantarray ? (0, 0) : 0;
+		}
+	}
 }
 
 =back

@@ -25,7 +25,7 @@ package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
-		      &expand_percent);
+		      &expand_percent &lock_wait);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
@@ -36,7 +36,6 @@ use File::Find;
 use File::Basename;
 use DB_File;
 use Symbol qw();
-use Fcntl qw(:flock);
 
 use strict;
 use warnings;
@@ -531,7 +530,7 @@ sub forget_packages {
 		$essential_valid = 0;
 		
 		if (!$just_memory && $> == 0) {	# Only if we're root
-			my $lock = $class->do_lock(1);
+			my $lock = lock_wait($class->db_lockfile, exclusive => 1);
 			rm_rf($class->db_dir);
 			rm_f($class->db_index);
 			rm_f($class->db_infolist);
@@ -566,71 +565,6 @@ sub load_packages {
 	}
 }
 
-=item do_lock
-
-  my $fh = Fink::Package->do_lock $write;
-
-Acquire a lock on the pdb lock file. If $write is true gets an exclusive lock,
-otherwise gets a shared lock. Returns a filehandle to be closed in order to
-relinquish the lock. If unsuccessful, returns false.
-
-=cut
-
-sub do_lock {
-	my $class = shift;
-	my $write = shift;
-
-	# Make sure we can access the lock
-	my $lockfile = $class->db_lockfile;
-	my $lockfile_FH = Symbol::gensym();
-	{
-		my $mode = $write ? "+>>" : "<";
-		unless (open $lockfile_FH, "$mode $lockfile") {
-			return 0;
-		}
-	}
-	
-	# Get the lock
-	{
-		my $mode = $write ? LOCK_EX : LOCK_SH;
-		unless (flock $lockfile_FH, $mode | LOCK_NB) {
-			# Couldn't get lock, meaning another fink process has it
-			
-			print STDERR "\nWaiting for another Fink to finish...";
-			
-			my $success = 0;
-			my $alarm = 0;
-			
-			eval {
-				# If non-root, we could be stuck here forever with no way to 
-				# stop a broken root process. Need a timeout!
-				alarm (60 * 5) if ($> != 0);
-				$success = flock $lockfile_FH, $mode;
-				alarm 0;
-			};
-			if ($@) {
-				if ($@ !~ /alarm clock restart/) {
-					$alarm = 1;
-				} else {
-					die;
-				}
-			}
-			
-			if ($success) {
-					print STDERR " done.\n";
-					return $lockfile_FH;
-			} elsif ($alarm) {
-				&print_breaking_stderr("Timed out, continuing anyway.");
-				return $lockfile_FH;
-			} else {
-				&print_breaking_stderr("Error: Could not lock $lockfile: $!");
-				close $lockfile_FH;
-				return 0;
-			}
-		}
-		return $lockfile_FH;
-	}
-}
 
 =item can_read_write_db
 
@@ -912,7 +846,7 @@ sub update_db {
 	# Get the lock
 	my $lock = 0;
 	if ($ops{read} || $ops{write}) {
-		$lock = $class->do_lock($ops{write});
+		$lock = lock_wait($class->db_lockfile, exclusive => $ops{write});
 		unless ($lock) {
 			if ($! !~ /no such file/i || $> == 0) { # Don't warn if just no perms
 				&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lockfile: $!");
