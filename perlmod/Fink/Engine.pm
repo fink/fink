@@ -34,12 +34,13 @@ use Fink::CLI qw(&print_breaking
 use Fink::Package;
 use Fink::Shlibs;
 use Fink::PkgVersion;
-use Fink::Config qw($config $basepath $debarch);
+use Fink::Config qw($config $basepath $debarch $distribution);
 use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p);
 use Fink::Notify;
 use Fink::Validation;
+
 
 use strict;
 use warnings;
@@ -1397,6 +1398,16 @@ sub real_install {
 		if ($op != $OP_REBUILD and $op != $OP_REINSTALL
 				and $package->is_installed()) {
 			next;
+		}
+		# for build, check sanity of Distribution. Skip if present, but not installed
+		if ($op == $OP_BUILD and not ($package->is_present() or ($pkgname eq "fink")))
+		{
+			unless (Fink::Services::checkDistribution())
+			{
+				print("Your current Fink distribution ($distribution is not compatible with OS X " . Fink::Services::get_osx_vers() . ")\n");
+				print("Please run `fink dist-upgrade` to upgrade to a compatable version for your system.\n");
+				exit;
+			}
 		}
 		# for build, also skip if present, but not installed
 		if ($op == $OP_BUILD and $package->is_present()) {

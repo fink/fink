@@ -1259,6 +1259,12 @@ sub get_kernel_vers_long
 	(my $darwin_version = lc((uname())[2]));
 	return $darwin_version
 }
+
+sub checkDistribution
+{
+	return 1
+}
+
 =item get_system_perl_version
 
     my $perlversion = get_system_perl_version;
