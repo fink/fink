@@ -1,3 +1,7 @@
+2005-04-26  Ben Hines <benh57@users.sourceforge.net>
+
+	* Config.pm: Properly handle Verbose set >= 3.
+	
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm, Package.pm: Fix up lock_wait a bit.
