@@ -1,5 +1,9 @@
 2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Always use new cache files.
+
+2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Bootstrap.pm, Engine.pm, PkgVersion.pm, SelfUpdate.pm, Services.pm: Use
 	-lockwait versions of dpkg and apt-get.
 

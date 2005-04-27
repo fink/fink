@@ -632,23 +632,23 @@ Returns the new index item for the .info file.
 sub update_index {
 	my ($class, $idx, $info, @pvs) = @_;
 	
+	# Always use a new file, so an old fink doesn't accidentally read a newer
+	# file in the same place.
+	
+	# TODO: This leaves old cache files sitting around, perhaps if the atime
+	# gets old enough we should delete them?
+	my $cidx = $idx->{next_idx}++;
+
+	# Split things into dirs
+	my $dir = sprintf "%03d00", $cidx / 100;		
+	my $cache = $class->db_dir . "/$dir/$cidx";
+
 	my %new_idx = (
 		inits => { map { $_->get_fullname => $_->get_init_fields } @pvs },
+		cache => $cache.
 	);
 	
-	if (defined $idx->{infos}{$info}) {
-		@{ $idx->{infos}{$info} }{keys %new_idx} = values %new_idx;
-	} else {
-		# Split things into dirs
-		my $cidx = $idx->{next_idx}++;
-		my $dir = sprintf "%03d00", $cidx / 100;		
-		my $cache = $class->db_dir . "/$dir/$cidx";
-		
-		$new_idx{cache} = $cache;
-		$idx->{infos}{$info} = \%new_idx;
-	}
-	
-	return $idx->{infos}{$info};
+	return ($idx->{infos}{$info} = \%new_idx);
 }	
 
 =item pass1_update
