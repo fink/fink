@@ -1,4 +1,5 @@
 # -*- mode: Perl; tab-width: 4; -*-
+# vim: ts=4 sw=4 noet
 #
 # Fink::Services module
 #
@@ -1491,3 +1492,4 @@ sub call_queue_add {
 
 ### EOF
 1;
+# vim: ts=4 sw=4 noet

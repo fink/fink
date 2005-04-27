@@ -63,3 +63,4 @@ sub do_notify {
 	};
 	return $@ ? undef : 1;
 }
+# vim: ts=4 sw=4 noet

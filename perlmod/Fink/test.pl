@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+# vim: ts=4 sw=4 noet
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
 # Copyright (c) 2001-2005 The Fink Package Manager Team

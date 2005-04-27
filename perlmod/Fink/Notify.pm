@@ -278,3 +278,4 @@ sub do_notify {
 =back
 
 =cut
+# vim: ts=4 sw=4 noet

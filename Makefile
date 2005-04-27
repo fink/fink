@@ -30,3 +30,4 @@ test: test_setup
 	@cd t && ./testmore.pl || find . -name '*.t' | sort | xargs /usr/bin/perl -I${PWD}/perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
 .PHONY: all test install
+# vim: ts=4 sw=4 noet

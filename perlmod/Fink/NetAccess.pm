@@ -391,3 +391,4 @@ sub download_cmd {
 
 ### EOF
 1;
+# vim: ts=4 sw=4 noet
