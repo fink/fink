@@ -10,7 +10,7 @@
 	* Package.pm: Use multi-dir finkinfodb system to avoid accidentally
 	deleting another Fink's DB.
 
-2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+2005-04-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: New lockwait_executable (with better PATH
 	searching) back-end for *_lockwait()
