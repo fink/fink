@@ -1562,10 +1562,10 @@ available.
 =cut
 
 sub dpkg_lockwait {
-	require Fink::Config;
-	my $path = "$Fink::Config::basepath/bin/dpkg-lockwait";
-	return $path if -x $path;
-	return "$Fink::Config::basepath/bin/dpkg";
+	my $name = "dpkg";
+	return ((grep { -f "$_/$name-lockwait" && -x _ } split /:/, $ENV{PATH})
+		? "$name-lockwait"
+		: $name);
 }
 
 =item aptget_lockwait
@@ -1577,10 +1577,10 @@ Just like dpkg_lockwait, but for apt-get.
 =cut
 
 sub aptget_lockwait {
-	require Fink::Config;
-	my $path = "$Fink::Config::basepath/bin/apt-get-lockwait";
-	return $path if -x $path;
-	return "$Fink::Config::basepath/bin/apt-get";
+	my $name = "apt-get";
+	return ((grep { -f "$_/$name-lockwait" && -x _ } split /:/, $ENV{PATH})
+		? "$name-lockwait"
+		: $name);
 }
 
 
