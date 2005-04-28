@@ -1,4 +1,8 @@
-2005-04-26  Dave Morrison  <dmrrsn@users.sourceforeg.net>
+2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: include gettext-tools among the additional pkgs
+
+2005-04-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm, Bootstrap.pm: backporting the final version of
 	path prefixes
