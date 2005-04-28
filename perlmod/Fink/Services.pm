@@ -1554,35 +1554,53 @@ sub lock_wait {
 =item dpkg_lockwait
 
   my $path = dpkg_lockwait;
-  
-Gets the path to dpkg-lockwait (a dpkg which will wait for a lock rather than
-just dying). Safely falls back to regular dpkg if dpkg-lockwait is not
-available.
+
+Returns path to dpkg-lockwait, or dpkg (see lockwait_executable
+for more information).
 
 =cut
 
 sub dpkg_lockwait {
-	my $name = "dpkg";
-	return ((grep { -f "$_/$name-lockwait" && -x _ } split /:/, $ENV{PATH})
-		? "$name-lockwait"
-		: $name);
+	&lockwait_executable('dpkg');
 }
 
 =item aptget_lockwait
 
   my $path = aptget_lockwait;
-  
-Just like dpkg_lockwait, but for apt-get.
+
+Returns path to apt-get-lockwait, or apt-get (see lockwait_executable
+for more information).
 
 =cut
 
 sub aptget_lockwait {
-	my $name = "apt-get";
-	return ((grep { -f "$_/$name-lockwait" && -x _ } split /:/, $ENV{PATH})
-		? "$name-lockwait"
-		: $name);
+	&lockwait_executable('apt-get');
 }
 
+=item lockwait_executable
+
+  my $path = lockwait_executable($basename);
+
+Finds an executable file named $basename with "-lockwait" appended in
+the current PATH. If found, returns the full path to it. If not,
+returns just the given $basename. The *-lockwait executables are
+wrappers around the parent executables, but only a single instance of
+them can run at a time. Other calls to any of the *-lockwait
+executables wait until no other instances of them are running before
+launching the parent executable.
+
+=cut
+
+sub lockwait_executable {
+	my $basename = shift;
+
+	my $lockname = $basename . '-lockwait';
+	my $fullpath = &get_path($lockname);
+
+	return $fullpath eq $lockname
+		? $basename
+		: $fullpath;
+}
 
 =back
 

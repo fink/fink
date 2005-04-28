@@ -1,5 +1,10 @@
 2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Services.pm: New lockwait_executable (with better PATH
+	searching) back-end for *_lockwait()
+
+2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Services.pm: Don't restrict dpkg/apt-get to %p/bin.
 
 2005-04-27  Daniel Macks  <dmacks@netspace.org>
