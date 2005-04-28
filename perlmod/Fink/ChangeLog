@@ -1,5 +1,11 @@
 2005-04-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Mirror.pm: When master is first, and fails twice, assume it's a file
+	that hasn't yet gotten sync'ed to the masters and just move to the next
+	set.
+
+2005-04-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Services.pm: Add no_block (non-blocking) ability to lock_wait.
 	* Package.pm: Use multi-dir finkinfodb system to avoid accidentally
 	deleting another Fink's DB.
