@@ -64,47 +64,49 @@ our @EXPORT_OK;
 # option is enabled. 1, if apt-get is called without the 
 # '--ignore-breakage' option, 2, if it is called with '--ignore-breakage'
 our %commands =
-	( 'index'             => [\&cmd_index,             0, 1, 1],
-	  'configure'         => [\&cmd_configure,         0, 1, 0],
-	  'bootstrap'         => [\&cmd_bootstrap,         0, 1, 0],
-	  'fetch'             => [\&cmd_fetch,             1, 1, 0],
-	  'fetch-all'         => [\&cmd_fetch_all,         1, 1, 0],
-	  'fetch-missing'     => [\&cmd_fetch_all_missing, 1, 1, 0],
-	  'build'             => [\&cmd_build,             1, 1, 2],
-	  'rebuild'           => [\&cmd_rebuild,           1, 1, 2],
-	  'install'           => [\&cmd_install,           1, 1, 2],
-	  'reinstall'         => [\&cmd_reinstall,         1, 1, 2],
-	  'update'            => [\&cmd_install,           1, 1, 2],
-	  'update-all'        => [\&cmd_update_all,        1, 1, 2],
-	  'enable'            => [\&cmd_install,           1, 1, 2],
-	  'activate'          => [\&cmd_install,           1, 1, 2],
-	  'use'               => [\&cmd_install,           1, 1, 2],
-	  'disable'           => [\&cmd_remove,            1, 1, 0],
-	  'deactivate'        => [\&cmd_remove,            1, 1, 0],
-	  'unuse'             => [\&cmd_remove,            1, 1, 0],
-	  'remove'            => [\&cmd_remove,            1, 1, 0],
-	  'delete'            => [\&cmd_remove,            1, 1, 0],
-	  'purge'             => [\&cmd_purge,             1, 1, 0],
-	  'apropos'           => [\&cmd_apropos,           0, 0, 0],
-	  'describe'          => [\&cmd_description,       1, 0, 0],
-	  'description'       => [\&cmd_description,       1, 0, 0],
-	  'desc'              => [\&cmd_description,       1, 0, 0],
-	  'info'              => [\&cmd_description,       1, 0, 0],
-	  'scanpackages'      => [\&cmd_scanpackages,      1, 1, 1],
-	  'list'              => [\&cmd_list,              0, 0, 0],
-	  'listpackages'      => [\&cmd_listpackages,      1, 0, 0],
-	  'selfupdate'        => [\&cmd_selfupdate,        0, 1, 1],
-	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1, 1],
-	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1, 1],
-	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1, 1],
-	  'validate'          => [\&cmd_validate,          0, 0, 0],
-	  'check'             => [\&cmd_validate,          0, 0, 0],
-	  'cleanup'           => [\&cmd_cleanup,           1, 1, 1],
-	  'splitoffs'         => [\&cmd_splitoffs,         1, 0, 0],
-	  'splits'            => [\&cmd_splitoffs,         1, 0, 0],
-	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
-	  'dumpinfo'          => [\&cmd_dumpinfo,          1, 0, 0],
-	  'dist-upgrade'      => [\&cmd_dist_upgrade,      1, 0, 0],
+	( 'index'					=> [\&cmd_index,             0, 1, 1],
+	  'configure'				=> [\&cmd_configure,         0, 1, 0],
+	  'bootstrap'				=> [\&cmd_bootstrap,         0, 1, 0],
+	  'fetch'					=> [\&cmd_fetch,             1, 1, 0],
+	  'fetch-all'				=> [\&cmd_fetch_all,         1, 1, 0],
+	  'fetch-missing'			=> [\&cmd_fetch_all_missing, 1, 1, 0],
+	  'build'					=> [\&cmd_build,             1, 1, 2],
+	  'rebuild'					=> [\&cmd_rebuild,           1, 1, 2],
+	  'install'					=> [\&cmd_install,           1, 1, 2],
+	  'reinstall'				=> [\&cmd_reinstall,         1, 1, 2],
+	  'update'					=> [\&cmd_install,           1, 1, 2],
+	  'update-all'				=> [\&cmd_update_all,        1, 1, 2],
+	  'enable'					=> [\&cmd_install,           1, 1, 2],
+	  'activate'				=> [\&cmd_install,           1, 1, 2],
+	  'use'						=> [\&cmd_install,           1, 1, 2],
+	  'disable'					=> [\&cmd_remove,            1, 1, 0],
+	  'deactivate'				=> [\&cmd_remove,            1, 1, 0],
+	  'unuse'					=> [\&cmd_remove,            1, 1, 0],
+	  'remove'					=> [\&cmd_remove,            1, 1, 0],
+	  'delete'					=> [\&cmd_remove,            1, 1, 0],
+	  'purge'					=> [\&cmd_purge,             1, 1, 0],
+	  'apropos'					=> [\&cmd_apropos,           0, 0, 0],
+	  'describe'				=> [\&cmd_description,       1, 0, 0],
+	  'description'				=> [\&cmd_description,       1, 0, 0],
+	  'desc'					=> [\&cmd_description,       1, 0, 0],
+	  'info'					=> [\&cmd_description,       1, 0, 0],
+	  'scanpackages'			=> [\&cmd_scanpackages,      1, 1, 1],
+	  'list'					=> [\&cmd_list,              0, 0, 0],
+	  'listpackages'			=> [\&cmd_listpackages,      1, 0, 0],
+	  'selfupdate'				=> [\&cmd_selfupdate,        0, 1, 1],
+	  'selfupdate-cvs'			=> [\&cmd_selfupdate_cvs,    0, 1, 1],
+	  'selfupdate-rsync'		=> [\&cmd_selfupdate_rsync,  0, 1, 1],
+	  'selfupdate-finish'		=> [\&cmd_selfupdate_finish, 1, 1, 1],
+	  'selfupdate-finish-fink'	=> [\&cmd_selfupdate_finish_fink, 1, 1, 1],
+	  'validate'				=> [\&cmd_validate,          0, 0, 0],
+	  'check'					=> [\&cmd_validate,          0, 0, 0],
+	  'cleanup'					=> [\&cmd_cleanup,           1, 1, 1],
+	  'splitoffs'				=> [\&cmd_splitoffs,         1, 0, 0],
+	  'splits'					=> [\&cmd_splitoffs,         1, 0, 0],
+	  'showparent'				=> [\&cmd_showparent,        1, 0, 0],
+	  'dumpinfo'				=> [\&cmd_dumpinfo,				1, 0, 0],
+	  'dist-upgrade'			=> [\&cmd_dist_upgrade,			1, 0, 0],
+	  'dist-upgrade-cont'		=> [\&cmd_dist_upgrade_cont,	1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -364,13 +366,32 @@ sub cmd_selfupdate_finish {
 	Fink::SelfUpdate::finish();
 }
 
-sub cmd_list {
-	do_real_list("list",@_);
+sub cmd_selfupdate_finish_fink {
+	require Fink::SelfUpdate;
+	Fink::SelfUpdate::finish(1);
 }
 
-sub cmd_dist_upgrade {
-	cmd_selfupdate();	
-	print("Nothing else to do, yet")
+sub cmd_list {
+	&do_real_list("list",@_);
+}
+
+sub cmd_dist_upgrade
+{
+	require Fink::SelfUpdate;
+	&Fink::SelfUpdate::check(3);
+	&cmd_dist_upgrade_cont();
+}
+
+sub cmd_dist_upgrade
+{
+	unless Fink::Services::checkDistribution()
+	{
+		print("FOO!!!!!");
+		print("Fink::Services::checkDistribution: " . Fink::Services::checkDistribution())
+		#my $distribution = "10.4-transitional";
+		#$config->set_param("Distribution", $distribution);
+		#$config->save();
+	}
 }
 
 sub cmd_apropos {

@@ -1261,6 +1261,15 @@ sub get_kernel_vers_long
 	return $darwin_version
 }
 
+sub get_system_version
+{
+	if get_osx_vers()
+	{
+		return get_osx_vers();
+	} else {
+		return get_darwin_equiv();
+	}
+
 sub checkDistribution
 {
 	return 1
