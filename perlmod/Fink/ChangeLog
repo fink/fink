@@ -1,3 +1,7 @@
+2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: include gettext-tools among the additional pkgs
+
 2005-04-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Mirror.pm: When master is first, and fails twice, assume it's a file
