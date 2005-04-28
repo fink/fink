@@ -5,7 +5,6 @@ Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 39053e044b18ecd0627f80fbe7cfeaad
 Essential: yes
 Depends: base-files
-AddShlibDeps: true
 Patch: %f.patch
 PatchScript: mv -f INSTALL INSTALL.txt
 CompileScript: <<

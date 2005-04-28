@@ -7,7 +7,6 @@ Source-MD5: 6ab0e97ca25dbe9359eb1e0e5b44e851
 Essential: yes
 BuildDepends: fink (>= 0.17.0-1)
 Depends: base-files, fink (>= 0.17.0-1), cctools-extra (>= 1:495-1)
-AddShlibDeps: true
 CompileScript: make PREFIX='%p' MANDIR='%p/share/man'
 InstallScript: make PREFIX='%p' MANDIR='%p/share/man' DESTDIR='%d' install
 Description: Tools for enabling prebinding in Fink

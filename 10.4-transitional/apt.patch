@@ -1,6 +1,6 @@
-diff -urN apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
---- apt-0.5.4.orig/apt-inst/makefile	2001-02-27 13:16:05.000000000 +0900
-+++ apt-0.5.4/apt-inst/makefile	2005-03-08 13:00:37.000000000 +0900
+diff -ruN apt-0.5.4/apt-inst/makefile apt-0.5.4-patched/apt-inst/makefile
+--- apt-0.5.4/apt-inst/makefile	Mon Feb 26 23:16:05 2001
++++ apt-0.5.4-patched/apt-inst/makefile	Sun Nov  9 14:02:47 2003
 @@ -10,6 +10,7 @@
  include ../buildlib/defaults.mak
  
@@ -9,9 +9,9 @@ diff -urN apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
  LIBRARY=apt-inst
  LIBEXT=$(GLIBC_VER)$(LIBSTDCPP_VER)
  MAJOR=1.0
-diff -urN apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap.cc
---- apt-0.5.4.orig/apt-pkg/contrib/mmap.cc	2001-05-27 14:19:30.000000000 +0900
-+++ apt-0.5.4/apt-pkg/contrib/mmap.cc	2005-03-08 13:00:37.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/contrib/mmap.cc apt-0.5.4-patched/apt-pkg/contrib/mmap.cc
+--- apt-0.5.4/apt-pkg/contrib/mmap.cc	Sun May 27 01:19:30 2001
++++ apt-0.5.4-patched/apt-pkg/contrib/mmap.cc	Sun Nov  9 14:02:47 2003
 @@ -41,7 +41,7 @@
  // ---------------------------------------------------------------------
  /* */
@@ -89,7 +89,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap.
     return true;
  }
  									/*}}}*/
-@@ -133,12 +153,14 @@
+@@ -133,11 +153,13 @@
     if ((Flags & UnMapped) == UnMapped)
        return true;
     
@@ -99,14 +99,13 @@ diff -urN apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap.
     if ((Flags & ReadOnly) != ReadOnly)
        if (msync((char *)Base+(int)(Start/PSize)*PSize,Stop - Start,MS_SYNC) != 0)
  	 return _error->Errno("msync","Unable to write mmap");
- #endif   
 +#endif   
+ #endif   
     return true;
  }
- 									/*}}}*/
-diff -urN apt-0.5.4.orig/apt-pkg/contrib/mmap.h apt-0.5.4/apt-pkg/contrib/mmap.h
---- apt-0.5.4.orig/apt-pkg/contrib/mmap.h	2001-05-14 14:16:43.000000000 +0900
-+++ apt-0.5.4/apt-pkg/contrib/mmap.h	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/contrib/mmap.h apt-0.5.4-patched/apt-pkg/contrib/mmap.h
+--- apt-0.5.4/apt-pkg/contrib/mmap.h	Mon May 14 01:16:43 2001
++++ apt-0.5.4-patched/apt-pkg/contrib/mmap.h	Sun Nov  9 14:02:47 2003
 @@ -46,6 +46,7 @@
     unsigned long Flags;
     unsigned long iSize;
@@ -115,9 +114,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/contrib/mmap.h apt-0.5.4/apt-pkg/contrib/mmap.h
  
     bool Map(FileFd &Fd);
     bool Close(bool DoSync = true);
-diff -urN apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debindexfile.cc
---- apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc	2001-04-29 14:13:51.000000000 +0900
-+++ apt-0.5.4/apt-pkg/deb/debindexfile.cc	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/deb/debindexfile.cc apt-0.5.4-patched/apt-pkg/deb/debindexfile.cc
+--- apt-0.5.4/apt-pkg/deb/debindexfile.cc	Sun Apr 29 01:13:51 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debindexfile.cc	Sun Nov  9 14:02:47 2003
 @@ -505,3 +505,11 @@
  }
  
@@ -130,10 +129,10 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debin
 +  (void)_apt_Pkg;
 +  (void)_apt_Status;
 +}
-diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsystem.cc
---- apt-0.5.4.orig/apt-pkg/deb/debsystem.cc	2001-04-29 14:13:51.000000000 +0900
-+++ apt-0.5.4/apt-pkg/deb/debsystem.cc	2005-03-08 13:50:12.000000000 +0900
-@@ -27,6 +27,109 @@
+diff -ruN apt-0.5.4/apt-pkg/deb/debsystem.cc apt-0.5.4-patched/apt-pkg/deb/debsystem.cc
+--- apt-0.5.4/apt-pkg/deb/debsystem.cc	Sun Apr 29 01:13:51 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debsystem.cc	Sun Nov  9 14:02:47 2003
+@@ -27,6 +27,108 @@
  #include <dirent.h>
  #include <errno.h>
  									/*}}}*/
@@ -204,10 +203,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
 +    goto BAIL;
 +  
 +  /* Try to read the system version from it. */
-+  status = CFDictionaryGetValueIfPresent( 
-+		(CFDictionaryRef) propertyList,
-+		(const void *) CFSTR("ProductVersion"),
-+		(const void**) &string);
++  status = CFDictionaryGetValueIfPresent( propertyList,
++		CFSTR("ProductVersion"),
++		(void*)&string);
 +  if (!status)
 +    goto BAIL;
 +  
@@ -243,7 +241,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
  
  debSystem debSys;
  
-@@ -48,6 +151,8 @@
+@@ -48,6 +150,8 @@
  debSystem::~debSystem()
  {
     delete StatusFile;
@@ -252,7 +250,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
  }
  									/*}}}*/
  // System::Lock - Get the lock						/*{{{*/
-@@ -161,8 +266,8 @@
+@@ -161,8 +265,8 @@
        which is yet to be determined. The functions in pkgcachegen should
        be the only users of these */
     Cnf.CndSet("Dir::State::userstatus","status.user"); // Defunct
@@ -263,7 +261,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
     
     return true;
  }
-@@ -185,9 +290,9 @@
+@@ -185,9 +289,9 @@
  signed debSystem::Score(Configuration const &Cnf)
  {
     signed Score = 0;
@@ -275,7 +273,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
        Score += 10;
     if (FileExists("/etc/debian_version") == true)
        Score += 10;
-@@ -202,6 +307,44 @@
+@@ -202,6 +306,44 @@
     if (StatusFile == 0)
        StatusFile = new debStatusIndex(_config->FindFile("Dir::State::status"));
     List.push_back(StatusFile);
@@ -320,20 +318,20 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
     return true;
  }
  									/*}}}*/
-@@ -217,6 +360,10 @@
+@@ -216,6 +358,10 @@
+    if (StatusFile->FindInCache(*File.Cache()) == File)
     {
        Found = StatusFile;
-       return true;
++      return true;
 +   }  else if ((FinkStatusFile != 0) && (FinkStatusFile->FindInCache(*File.Cache()) == File))
 +   {
 +      Found = FinkStatusFile;
-+      return true;
+       return true;
     }
     
-    return false;
-diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.h apt-0.5.4/apt-pkg/deb/debsystem.h
---- apt-0.5.4.orig/apt-pkg/deb/debsystem.h	2001-04-29 14:13:51.000000000 +0900
-+++ apt-0.5.4/apt-pkg/deb/debsystem.h	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/deb/debsystem.h apt-0.5.4-patched/apt-pkg/deb/debsystem.h
+--- apt-0.5.4/apt-pkg/deb/debsystem.h	Sun Apr 29 01:13:51 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debsystem.h	Sun Nov  9 14:02:47 2003
 @@ -25,6 +25,7 @@
     bool CheckUpdates();
     
@@ -342,9 +340,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.h apt-0.5.4/apt-pkg/deb/debsystem
     
     public:
  
-diff -urN apt-0.5.4.orig/apt-pkg/deb/debversion.cc apt-0.5.4/apt-pkg/deb/debversion.cc
---- apt-0.5.4.orig/apt-pkg/deb/debversion.cc	2001-05-07 14:14:53.000000000 +0900
-+++ apt-0.5.4/apt-pkg/deb/debversion.cc	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/deb/debversion.cc apt-0.5.4-patched/apt-pkg/deb/debversion.cc
+--- apt-0.5.4/apt-pkg/deb/debversion.cc	Mon May  7 01:14:53 2001
++++ apt-0.5.4-patched/apt-pkg/deb/debversion.cc	Sun Nov  9 14:02:47 2003
 @@ -24,6 +24,11 @@
  
  debVersioningSystem debVS;
@@ -357,9 +355,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debversion.cc apt-0.5.4/apt-pkg/deb/debvers
  // debVS::debVersioningSystem - Constructor				/*{{{*/
  // ---------------------------------------------------------------------
  /* */
-diff -urN apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
---- apt-0.5.4.orig/apt-pkg/init.cc	2001-03-13 15:51:46.000000000 +0900
-+++ apt-0.5.4/apt-pkg/init.cc	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/init.cc apt-0.5.4-patched/apt-pkg/init.cc
+--- apt-0.5.4/apt-pkg/init.cc	Tue Mar 13 01:51:46 2001
++++ apt-0.5.4-patched/apt-pkg/init.cc	Sun Nov  9 14:02:47 2003
 @@ -15,6 +15,8 @@
  #include <apti18n.h>
  #include <config.h>
@@ -396,9 +394,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
     Sys = 0;
     string Label = Cnf.Find("Apt::System","");
     if (Label.empty() == false)
-diff -urN apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
---- apt-0.5.4.orig/apt-pkg/policy.cc	2001-05-28 08:40:56.000000000 +0900
-+++ apt-0.5.4/apt-pkg/policy.cc	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/policy.cc apt-0.5.4-patched/apt-pkg/policy.cc
+--- apt-0.5.4/apt-pkg/policy.cc	Sun May 27 19:40:56 2001
++++ apt-0.5.4-patched/apt-pkg/policy.cc	Sun Nov  9 14:02:47 2003
 @@ -183,7 +183,7 @@
     Pin *P = 0;
     
@@ -417,9 +415,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
        }
        else
        {
-diff -urN apt-0.5.4.orig/apt-pkg/tagfile.cc apt-0.5.4/apt-pkg/tagfile.cc
---- apt-0.5.4.orig/apt-pkg/tagfile.cc	2001-05-14 14:56:26.000000000 +0900
-+++ apt-0.5.4/apt-pkg/tagfile.cc	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/tagfile.cc apt-0.5.4-patched/apt-pkg/tagfile.cc
+--- apt-0.5.4/apt-pkg/tagfile.cc	Mon May 14 01:56:26 2001
++++ apt-0.5.4-patched/apt-pkg/tagfile.cc	Sun Nov  9 14:02:47 2003
 @@ -197,7 +197,7 @@
        return false;
     
@@ -445,9 +443,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/tagfile.cc apt-0.5.4/apt-pkg/tagfile.cc
  	 return true;
        }
        
-diff -urN apt-0.5.4.orig/apt-pkg/tagfile.h apt-0.5.4/apt-pkg/tagfile.h
---- apt-0.5.4.orig/apt-pkg/tagfile.h	2001-04-22 14:42:52.000000000 +0900
-+++ apt-0.5.4/apt-pkg/tagfile.h	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/apt-pkg/tagfile.h apt-0.5.4-patched/apt-pkg/tagfile.h
+--- apt-0.5.4/apt-pkg/tagfile.h	Sun Apr 22 01:42:52 2001
++++ apt-0.5.4-patched/apt-pkg/tagfile.h	Sun Nov  9 14:02:47 2003
 @@ -34,7 +34,7 @@
     
     // We have a limit of 256 tags per section.
@@ -457,9 +455,9 @@ diff -urN apt-0.5.4.orig/apt-pkg/tagfile.h apt-0.5.4/apt-pkg/tagfile.h
     
     unsigned int TagCount;
       
-diff -urN apt-0.5.4.orig/buildlib/environment.mak.in apt-0.5.4/buildlib/environment.mak.in
---- apt-0.5.4.orig/buildlib/environment.mak.in	2001-05-29 14:11:03.000000000 +0900
-+++ apt-0.5.4/buildlib/environment.mak.in	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/buildlib/environment.mak.in apt-0.5.4-patched/buildlib/environment.mak.in
+--- apt-0.5.4/buildlib/environment.mak.in	Tue May 29 01:11:03 2001
++++ apt-0.5.4-patched/buildlib/environment.mak.in	Sun Nov  9 14:02:47 2003
 @@ -11,8 +11,8 @@
  LIBSTDCPP_VER = @LIBSTDCPP_VER@
  
@@ -492,9 +490,9 @@ diff -urN apt-0.5.4.orig/buildlib/environment.mak.in apt-0.5.4/buildlib/environm
 +SONAME_MAGIC=-install_name @PREFIX@/lib/
 +LFLAGS_SO=-dynamiclib
  	
-diff -urN apt-0.5.4.orig/buildlib/library.mak apt-0.5.4/buildlib/library.mak
---- apt-0.5.4.orig/buildlib/library.mak	2001-02-27 13:16:05.000000000 +0900
-+++ apt-0.5.4/buildlib/library.mak	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/buildlib/library.mak apt-0.5.4-patched/buildlib/library.mak
+--- apt-0.5.4/buildlib/library.mak	Mon Feb 26 23:16:05 2001
++++ apt-0.5.4-patched/buildlib/library.mak	Sun Nov  9 14:02:47 2003
 @@ -15,17 +15,17 @@
  # See defaults.mak for information about LOCAL
  
@@ -547,9 +545,9 @@ diff -urN apt-0.5.4.orig/buildlib/library.mak apt-0.5.4/buildlib/library.mak
  	   $(filter %.opic,$^) \
  	   $($(@F)-SLIBS) 
  
-diff -urN apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
---- apt-0.5.4.orig/buildlib/ostable	2001-02-20 16:03:17.000000000 +0900
-+++ apt-0.5.4/buildlib/ostable	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/buildlib/ostable apt-0.5.4-patched/buildlib/ostable
+--- apt-0.5.4/buildlib/ostable	Tue Feb 20 02:03:17 2001
++++ apt-0.5.4-patched/buildlib/ostable	Sun Nov  9 14:02:47 2003
 @@ -14,6 +14,7 @@
  hp-hpux[^-]*	    hp-ux
  sun-solaris[^-]*    solaris
@@ -558,9 +556,9 @@ diff -urN apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
  
  # Catch all
  .*	unknown
-diff -urN apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
---- apt-0.5.4.orig/cmdline/apt-cache.cc	2001-07-02 09:10:32.000000000 +0900
-+++ apt-0.5.4/cmdline/apt-cache.cc	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/cmdline/apt-cache.cc apt-0.5.4-patched/cmdline/apt-cache.cc
+--- apt-0.5.4/cmdline/apt-cache.cc	Sun Jul  1 20:10:32 2001
++++ apt-0.5.4-patched/cmdline/apt-cache.cc	Sun Nov  9 14:02:47 2003
 @@ -374,8 +374,10 @@
     if (ReadPinFile(Plcy) == false)
        return false;
@@ -583,9 +581,9 @@ diff -urN apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
  
     // Iterate over all the package files and write them out.
     char *Buffer = new char[Cache.HeaderP->MaxVerFileSize+10];
-diff -urN apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
---- apt-0.5.4.orig/cmdline/apt-get.cc	2001-07-02 07:59:04.000000000 +0900
-+++ apt-0.5.4/cmdline/apt-get.cc	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/cmdline/apt-get.cc apt-0.5.4-patched/cmdline/apt-get.cc
+--- apt-0.5.4/cmdline/apt-get.cc	2001-07-01 18:59:04.000000000 -0400
++++ apt-0.5.4-patched/cmdline/apt-get.cc	2004-10-12 13:48:09.000000000 -0400
 @@ -113,6 +113,8 @@
        return true;
     }
@@ -712,9 +710,9 @@ diff -urN apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
     
     // Deal with stdout not being a tty
     if (ttyname(STDOUT_FILENO) == 0 && _config->FindI("quiet",0) < 1)
-diff -urN apt-0.5.4.orig/configure apt-0.5.4/configure
---- apt-0.5.4.orig/configure	2001-08-19 09:46:43.000000000 +0900
-+++ apt-0.5.4/configure	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/configure apt-0.5.4-patched/configure
+--- apt-0.5.4/configure	Sat Aug 18 20:46:43 2001
++++ apt-0.5.4-patched/configure	Sun Nov  9 14:02:48 2003
 @@ -2394,7 +2394,7 @@
  
  ac_given_srcdir=$srcdir
@@ -742,18 +740,18 @@ diff -urN apt-0.5.4.orig/configure apt-0.5.4/configure
  exit 0
  EOF
  chmod +x $CONFIG_STATUS
-diff -urN apt-0.5.4.orig/configure.in apt-0.5.4/configure.in
---- apt-0.5.4.orig/configure.in	2001-06-18 14:56:32.000000000 +0900
-+++ apt-0.5.4/configure.in	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/configure.in apt-0.5.4-patched/configure.in
+--- apt-0.5.4/configure.in	Mon Jun 18 01:56:32 2001
++++ apt-0.5.4-patched/configure.in	Sun Nov  9 14:02:48 2003
 @@ -163,4 +163,4 @@
  rc_LIBSTDCPP_VER
  ah_GCC3DEP
  
 -AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile:buildlib/makefile.in,make -s dirs)
 +AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile.wrap:buildlib/makefile.in,make -f makefile.wrap -s dirs)
-diff -urN apt-0.5.4.orig/doc/apt-cache.8 apt-0.5.4/doc/apt-cache.8
---- apt-0.5.4.orig/doc/apt-cache.8	2001-08-19 09:48:24.000000000 +0900
-+++ apt-0.5.4/doc/apt-cache.8	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/doc/apt-cache.8 apt-0.5.4-patched/doc/apt-cache.8
+--- apt-0.5.4/doc/apt-cache.8	2001-08-18 20:48:24.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-cache.8	2004-10-07 01:08:45.000000000 -0400
 @@ -277,16 +277,16 @@
  option. The syntax is \fB-o Foo::Bar=bar\fR.
  .SH "FILES"
@@ -774,9 +772,9 @@ diff -urN apt-0.5.4.orig/doc/apt-cache.8 apt-0.5.4/doc/apt-cache.8
  storage area for state information in transit.
  Configuration Item: Dir::State::Lists (implicit partial).
  .SH "SEE ALSO"
-diff -urN apt-0.5.4.orig/doc/apt-cdrom.8 apt-0.5.4/doc/apt-cdrom.8
---- apt-0.5.4.orig/doc/apt-cdrom.8	2001-08-19 09:48:25.000000000 +0900
-+++ apt-0.5.4/doc/apt-cdrom.8	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/doc/apt-cdrom.8 apt-0.5.4-patched/doc/apt-cdrom.8
+--- apt-0.5.4/doc/apt-cdrom.8	2001-08-18 20:48:25.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-cdrom.8	2004-10-07 01:10:19.000000000 -0400
 @@ -32,7 +32,7 @@
  
  APT uses a CDROM ID to track which disc is currently in the drive and
@@ -786,9 +784,9 @@ diff -urN apt-0.5.4.orig/doc/apt-cdrom.8 apt-0.5.4/doc/apt-cdrom.8
  .TP
  \fBident\fR
  A debugging tool to report the identity of the current disc as well
-diff -urN apt-0.5.4.orig/doc/apt-config.8 apt-0.5.4/doc/apt-config.8
---- apt-0.5.4.orig/doc/apt-config.8	2001-08-19 09:48:27.000000000 +0900
-+++ apt-0.5.4/doc/apt-config.8	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/doc/apt-config.8 apt-0.5.4-patched/doc/apt-config.8
+--- apt-0.5.4/doc/apt-config.8	2001-08-18 20:48:27.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-config.8	2004-10-07 01:09:29.000000000 -0400
 @@ -13,7 +13,7 @@
  .PP
  \fBapt-config\fR is an internal program used by various portions of
@@ -798,9 +796,9 @@ diff -urN apt-0.5.4.orig/doc/apt-config.8 apt-0.5.4/doc/apt-config.8
  easy to use by scripted applications.
  .PP
  Unless the \fB-h\fR, or \fB--help\fR option is given one of the
-diff -urN apt-0.5.4.orig/doc/apt-get.8 apt-0.5.4/doc/apt-get.8
---- apt-0.5.4.orig/doc/apt-get.8	2001-08-19 09:48:25.000000000 +0900
-+++ apt-0.5.4/doc/apt-get.8	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/doc/apt-get.8 apt-0.5.4-patched/doc/apt-get.8
+--- apt-0.5.4/doc/apt-get.8	2001-08-18 20:48:25.000000000 -0400
++++ apt-0.5.4-patched/doc/apt-get.8	2004-10-07 01:16:25.000000000 -0400
 @@ -20,7 +20,7 @@
  \fBupdate\fR
  update is used to resynchronize the package index files from
@@ -929,9 +927,9 @@ diff -urN apt-0.5.4.orig/doc/apt-get.8 apt-0.5.4/doc/apt-get.8
  storage area for state information in transit.
  Configuration Item: Dir::State::Lists (implicit partial).
  .SH "SEE ALSO"
-diff -urN apt-0.5.4.orig/doc/apt_preferences.5 apt-0.5.4/doc/apt_preferences.5
---- apt-0.5.4.orig/doc/apt_preferences.5	2001-08-19 09:48:28.000000000 +0900
-+++ apt-0.5.4/doc/apt_preferences.5	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/doc/apt_preferences.5 apt-0.5.4-patched/doc/apt_preferences.5
+--- apt-0.5.4/doc/apt_preferences.5	2001-08-18 20:48:28.000000000 -0400
++++ apt-0.5.4-patched/doc/apt_preferences.5	2004-10-07 01:12:21.000000000 -0400
 @@ -12,7 +12,7 @@
  It is meant to be user editable and manipulatable from software. The file
  consists of a number of records formed like the dpkg status file, space
@@ -941,9 +939,9 @@ diff -urN apt-0.5.4.orig/doc/apt_preferences.5 apt-0.5.4/doc/apt_preferences.5
  .SH "VERSIONING"
  .PP
  One purpose of the preferences file is to let the user select which version
-diff -urN apt-0.5.4.orig/doc/sources.list.5 apt-0.5.4/doc/sources.list.5
---- apt-0.5.4.orig/doc/sources.list.5	2001-08-19 09:48:26.000000000 +0900
-+++ apt-0.5.4/doc/sources.list.5	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/doc/sources.list.5 apt-0.5.4-patched/doc/sources.list.5
+--- apt-0.5.4/doc/sources.list.5	2001-08-18 20:48:26.000000000 -0400
++++ apt-0.5.4-patched/doc/sources.list.5	2004-10-07 01:06:21.000000000 -0400
 @@ -11,7 +11,7 @@
  The package resource list is used to locate archives of the package
  distribution system in use on the system. At this time, this manual page
@@ -965,9 +963,9 @@ diff -urN apt-0.5.4.orig/doc/sources.list.5 apt-0.5.4/doc/sources.list.5
  deb-src type describes a debian distribution's source code in 
  the same form as the deb type. A deb-src line is 
  required to fetch source indexes.
-diff -urN apt-0.5.4.orig/dselect/install apt-0.5.4/dselect/install
---- apt-0.5.4.orig/dselect/install	2001-02-20 16:03:17.000000000 +0900
-+++ apt-0.5.4/dselect/install	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/dselect/install apt-0.5.4-patched/dselect/install
+--- apt-0.5.4/dselect/install	Tue Feb 20 02:03:17 2001
++++ apt-0.5.4-patched/dselect/install	Sun Nov  9 14:02:48 2003
 @@ -3,8 +3,8 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -979,9 +977,9 @@ diff -urN apt-0.5.4.orig/dselect/install apt-0.5.4/dselect/install
  DPKG_OPTS="--admindir=$1"
  APT_OPT0="-oDir::State::status=$1/status"
  APT_OPT1="-oDPkg::Options::=$DPKG_OPTS"
-diff -urN apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
---- apt-0.5.4.orig/dselect/setup	2000-01-27 13:15:10.000000000 +0900
-+++ apt-0.5.4/dselect/setup	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/dselect/setup apt-0.5.4-patched/dselect/setup
+--- apt-0.5.4/dselect/setup	Wed Jan 26 23:15:10 2000
++++ apt-0.5.4-patched/dselect/setup	Sun Nov  9 14:36:03 2003
 @@ -23,15 +23,17 @@
  my $vardir=$ARGV[0];
  my $method=$ARGV[1];
@@ -1053,9 +1051,9 @@ diff -urN apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
      my $answer = <STDIN>;
      chomp ($answer);
      $answer =~ s/\s+/ /og;
-diff -urN apt-0.5.4.orig/dselect/update apt-0.5.4/dselect/update
---- apt-0.5.4.orig/dselect/update	2001-03-13 10:45:36.000000000 +0900
-+++ apt-0.5.4/dselect/update	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/dselect/update apt-0.5.4-patched/dselect/update
+--- apt-0.5.4/dselect/update	Mon Mar 12 20:45:36 2001
++++ apt-0.5.4-patched/dselect/update	Sun Nov  9 14:02:48 2003
 @@ -4,13 +4,13 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -1074,41 +1072,33 @@ diff -urN apt-0.5.4.orig/dselect/update apt-0.5.4/dselect/update
  PROMPT="false"
  RES=`apt-config shell CLEAN DSelect::Clean OPTS DSelect::UpdateOptions \
  		      DPKG Dir::Bin::dpkg/f APTGET Dir::Bin::apt-get/f \
-diff -urN apt-0.5.4.orig/methods/connect.cc apt-0.5.4/methods/connect.cc
---- apt-0.5.4.orig/methods/connect.cc	2001-02-20 16:03:18.000000000 +0900
-+++ apt-0.5.4/methods/connect.cc	2005-03-08 13:10:40.000000000 +0900
-@@ -90,7 +90,11 @@
+diff -ruN apt-0.5.4/methods/connect.cc apt-0.5.4-patched/methods/connect.cc
+--- apt-0.5.4/methods/connect.cc	Tue Feb 20 02:03:18 2001
++++ apt-0.5.4-patched/methods/connect.cc	Sun Nov  9 14:02:48 2003
+@@ -90,7 +90,7 @@
  
     // Check the socket for an error condition
     unsigned int Err;
 -   unsigned int Len = sizeof(Err);
-+#ifndef HAVE_SOCKLEN_T
 +   int Len = sizeof(Err);
-+#else
-+   socklen_t Len = sizeof(Err);
-+#endif
     if (getsockopt(Fd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
        return _error->Errno("getsockopt","Failed");
     
-diff -urN apt-0.5.4.orig/methods/ftp.cc apt-0.5.4/methods/ftp.cc
---- apt-0.5.4.orig/methods/ftp.cc	2001-05-22 13:02:00.000000000 +0900
-+++ apt-0.5.4/methods/ftp.cc	2005-03-08 13:09:26.000000000 +0900
-@@ -694,7 +694,11 @@
+diff -ruN apt-0.5.4/methods/ftp.cc apt-0.5.4-patched/methods/ftp.cc
+--- apt-0.5.4/methods/ftp.cc	Tue May 22 00:02:00 2001
++++ apt-0.5.4-patched/methods/ftp.cc	Sun Nov  9 14:02:48 2003
+@@ -694,7 +694,7 @@
        if (WaitFd(DataFd,true,TimeOut) == false)
  	 return _error->Error("Could not connect data socket, connection timed out");
        unsigned int Err;
 -      unsigned int Len = sizeof(Err);
-+#ifndef HAVE_SOCKLEN_T
 +      int Len = sizeof(Err);
-+#else
-+      socklen_t Len = sizeof(Err);
-+#endif
        if (getsockopt(DataFd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
  	 return _error->Errno("getsockopt","Failed");
        if (Err != 0)
-diff -urN apt-0.5.4.orig/methods/rfc2553emu.h apt-0.5.4/methods/rfc2553emu.h
---- apt-0.5.4.orig/methods/rfc2553emu.h	2000-06-18 15:04:45.000000000 +0900
-+++ apt-0.5.4/methods/rfc2553emu.h	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/methods/rfc2553emu.h apt-0.5.4-patched/methods/rfc2553emu.h
+--- apt-0.5.4/methods/rfc2553emu.h	Sun Jun 18 02:04:45 2000
++++ apt-0.5.4-patched/methods/rfc2553emu.h	Sun Nov  9 14:02:48 2003
 @@ -26,6 +26,11 @@
  #include <sys/types.h>
  #include <sys/socket.h>
@@ -1130,19 +1120,19 @@ diff -urN apt-0.5.4.orig/methods/rfc2553emu.h apt-0.5.4/methods/rfc2553emu.h
  // getaddrinfo support?
  #ifndef HAVE_GETADDRINFO
    // Renamed to advoid type clashing.. (for debugging)
-@@ -101,6 +108,9 @@
+@@ -100,6 +107,9 @@
+ //  #define NI_NOFQDN (1<<2)
    #define NI_NAMEREQD (1<<3)
    #define NI_DATAGRAM (1<<4)
-   #endif
++  #endif
 +  #ifndef NI_DATAGRAM
 +  #define NI_DATAGRAM NI_DGRAM
-+  #endif
+   #endif
  
    #define sockaddr_storage sockaddr_in
- #endif
-diff -urN apt-0.5.4.orig/patch_flush apt-0.5.4/patch_flush
---- apt-0.5.4.orig/patch_flush	1970-01-01 09:00:00.000000000 +0900
-+++ apt-0.5.4/patch_flush	2005-03-08 13:00:38.000000000 +0900
+diff -ruN apt-0.5.4/patch_flush apt-0.5.4-patched/patch_flush
+--- apt-0.5.4/patch_flush	Wed Dec 31 19:00:00 1969
++++ apt-0.5.4-patched/patch_flush	Sun Nov  9 14:02:48 2003
 @@ -0,0 +1,11 @@
 +#!/bin/sh
 +set -e
