@@ -3,7 +3,7 @@ Version: 0.24.4.1
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: 889d85d472cec8ca8fafc5d99c106d2d
+Source-MD5: 1496ac9bf8efee017ece2a81d504cd11
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
