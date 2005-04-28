@@ -1,3 +1,9 @@
+2005-04-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* lockwait.in: Use any dpkg/apt-get in the path
+	* fink.info.in: Don't remove the finkinfodb dir, just touch a file to tell
+	Fink to invalidate the current DB dir.
+
 2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* lockwait.in, .cvsignore, setup.sh, install.sh: Install -lockwait

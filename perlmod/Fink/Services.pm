@@ -1486,6 +1486,11 @@ If present and true, no messages will be printed by this function.
 A description of the process that the lock is synchronizing. This is used in
 messages printed by this function, eg: "Waiting for $desc to finish".
 
+=item no_block => $no_block
+
+If present and true, lock_wait will forget the 'wait' part of its name. If the
+lock cannot be acquired immediately, failure will be returned.
+
 =back
 
 =cut
@@ -1494,28 +1499,31 @@ sub lock_wait {
 	my $lockfile = shift;
 	
 	my %options = @_;
-	my $write = $options{exclusive} || 0;
+	my $exclusive = $options{exclusive} || 0;
 	my $timeout = exists $options{timeout} ? $options{timeout} : 300;
 	$timeout = $options{root_timeout} if exists $options{root_timeout};
 	my $root_timeout = $options{root_timeout} || 0;
 	my $quiet = $options{quiet} || 0;
 	my $desc = $options{desc} || "another process";
+	my $no_block = $options{no_block} || 0;
 	
 	my $really_timeout = $> != 0 || $root_timeout;
 
 	# Make sure we can access the lock
 	my $lockfile_FH = Symbol::gensym();
 	{
-		my $mode = $write ? "+>>" : "<";
+		my $mode = ($exclusive || ! -e $lockfile) ? "+>>" : "<";
 		unless (open $lockfile_FH, "$mode $lockfile") {
 			return wantarray ? (0, 0) : 0;
 		}
 	}
 	
-	my $mode = $write ? LOCK_EX : LOCK_SH;
+	my $mode = $exclusive ? LOCK_EX : LOCK_SH;
 	if (flock $lockfile_FH, $mode | LOCK_NB) {
 		return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
 	} else {
+		return (wantarray ? (0, 0) : 0) if $no_block;
+		
 		# Couldn't get lock, meaning process has it
 		my $waittime = $really_timeout ? "$timeout seconds " : "";
 		print STDERR "Waiting ${waittime}for $desc to finish..."

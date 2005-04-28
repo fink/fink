@@ -412,19 +412,129 @@ sub update_aptgetable {
 }
 
 
-=item db_dir
+=private comment
 
-  my $path = Fink::Package->db_dir;
-  
-Get the path to the directory that can store the Fink cached package database.
+When Fink uses a DB dir, it needs continued access to what's inside (since it
+likely is using 'backed' PkgVersions). So when the DB is invalidated, we can't
+just delete it.
+
+Instead, we mark it as 'old' by creating a brand new DB dir. These dirs all
+look like 'db.#', eg: db.1234, and the one that has the largest # is the
+current one.
+
+But how do we ever delete a DB dir? Each Fink gets a shared lock on its DB
+dir; then if a DB dir is old and has no shared locks, it's no longer in use
+and can be deleted.
+
+=item check_dbdirs
+
+  my ($path, $fh) = Fink::Package->check_dbdirs $write, $force_create;
+
+Process the DB dirs. Returns the good directory found/created, and the lock
+already acquired.
+
+If $write is true, will create a new directory if one does not exist, and will
+delete any old dirs.
+
+If $force_create is true, will always create a new directory (invalidating any
+previous PDB dirs).
 
 =cut
 
-sub db_dir {
-	my $class = shift;
-	return "$dbpath/finkinfodb";
-}
+sub check_dbdirs {
+	my ($class, $write, $force_create) = @_;
+	
+	# This directory holds multiple 'db.#' dirs
+	my $multidir = "$dbpath/finkinfodb";
+	
+	# Special case: If the file "$multidir/invalidate" exists, it means
+	# a shell script wants us to invalidate the DB
+	my $inval = "$multidir/invalidate";
+	if (-e $inval) {
+		$force_create = 1;
+		rm_f($inval) if $write;
+	}
+	
+	# Get the db.# numbers in high-to-low order.
+	my @nums;
+	if (opendir MULTI, $multidir) {
+		@nums = sort { $b <=> $a} map { /^db\.(\d+)$/ ? $1 : () } readdir MULTI;
+	}
+	# Find a number higher than all existing, for new dir
+	my $higher = @nums ? $nums[0] + 1 : 1;
+	my $newdir = "$multidir/db.$higher";
+	
+	# Get the current dir
+	my @dirs = grep { -d $_ } map { "$multidir/db.$_" } @nums;
+	my $use_existing = !$force_create && @dirs;
+	my ($current, $fh);
+	
+	# Try to lock on an existing dir, if applicable
+	if ($use_existing) {
+		$current = $dirs[0];
+		$fh = lock_wait("$current.lock", exclusive => 0, no_block => 1);
+		# Failure ok, will try a new dir
+	}
+	
+	# Use and lock a new dir, if needed
+	if (!$fh) {
+		$current = $newdir;
+		if ($write) { # If non-write, it's just a fake new dir
+			mkdir_p($multidir) unless -d $multidir;
+			$fh = lock_wait("$current.lock", exclusive => 0, no_block => 1)
+				or die "Can't make new DB dir $current: $!\n";
+			mkdir_p($current);
+		}
+	}
+			
+	# Try to delete old dirs
+	my @old = grep { $_ ne $current } @dirs;
+	if ($write) {
+		for my $dir (@old) {
+			if (my $fh = lock_wait("$dir.lock", exclusive => 1, no_block => 1)) {
+				rm_rf($dir);
+				close $fh;
+			}
+		}
+	}
+	
+	return ($current, $fh);
+}		
 
+=item db_dir
+
+  my $path = Fink::Package->db_dir $write;
+
+Get the path to the directory that can store the Fink cached package database.
+Creates it if it does not exist and $write is true.
+
+=item forget_db_dir
+
+  Fink::Package->forget_db_dir;
+  
+Forget the current DB directory.
+
+=cut
+
+{
+	my $cache_db_dir = undef;
+	my $cache_db_dir_fh = undef;
+
+	sub db_dir {
+		my $class = shift;
+		my $write = shift || 0;
+		
+		unless (defined $cache_db_dir) {
+			($cache_db_dir, $cache_db_dir_fh) = $class->check_dbdirs($write, 0);
+		}
+		return $cache_db_dir;
+	}
+	
+	sub forget_db_dir {
+		close $cache_db_dir_fh if $cache_db_dir_fh;
+		($cache_db_dir, $cache_db_dir_fh) = (undef, undef);
+	}
+}
 
 =item db_index
 
@@ -532,7 +642,11 @@ sub forget_packages {
 		if (!$just_memory && $> == 0) {	# Only if we're root
 			my $lock = lock_wait($class->db_lockfile, exclusive => 1,
 				desc => "another Fink's indexing");
-			rm_rf($class->db_dir);
+			
+			# Create a new DB dir (possibly deleting the old one)
+			$class->forget_db_dir();
+			$class->check_dbdirs(1, 1);
+			
 			rm_f($class->db_index);
 			rm_f($class->db_infolist);
 			close $lock if $lock;
@@ -645,7 +759,7 @@ sub update_index {
 
 	my %new_idx = (
 		inits => { map { $_->get_fullname => $_->get_init_fields } @pvs },
-		cache => $cache
+		cache => $cache,
 	);
 	
 	return ($idx->{infos}{$info} = \%new_idx);
@@ -859,8 +973,7 @@ sub update_db {
 	}
 	
 	# Get the cache dir
-	my $dbdir = $class->db_dir;
-	mkdir_p($dbdir) if $ops{write} && !-d $dbdir;
+	my $dbdir = $class->db_dir($ops{write});
 
 	# Load the index
 	my $idx = { infos => { }, next => 1 };

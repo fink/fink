@@ -1,3 +1,9 @@
+2005-04-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Add no_block (non-blocking) ability to lock_wait.
+	* Package.pm: Use multi-dir finkinfodb system to avoid accidentally
+	deleting another Fink's DB.
+
 2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm: New lockwait_executable (with better PATH

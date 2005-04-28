@@ -6,7 +6,7 @@ use Fcntl qw(:DEFAULT :seek);
 use POSIX qw(:errno_h);
 
 my $basepath = "@PREFIX@";
-my $exec = "$basepath/bin/@PROG@";
+my $exec = "@PROG@";
 my $timeout = 10;
 my $debug = 0;
 
