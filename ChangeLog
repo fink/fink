@@ -1,3 +1,8 @@
+2005-04-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.9, a release
+	on branch_0_23 intended for 10.4-transitional/stable only
+
 2005-04-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* install.sh: backporting the final version of path prefixes
