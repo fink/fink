@@ -1,11 +1,6 @@
 Minor
 =====
 
-* de-converge Shlibs and Package
-
-* respect dpkg's database lock, so that fink doesn't error when another build
-is installing something.
-
 * make sure the man pages are complete and up-to-date
 
 * validator should error if a field is there more than once
