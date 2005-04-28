@@ -645,7 +645,7 @@ sub update_index {
 
 	my %new_idx = (
 		inits => { map { $_->get_fullname => $_->get_init_fields } @pvs },
-		cache => $cache.
+		cache => $cache
 	);
 	
 	return ($idx->{infos}{$info} = \%new_idx);

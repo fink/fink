@@ -1,3 +1,7 @@
+2005-04-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Typo in cache param.
+
 2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: Always use new cache files.
