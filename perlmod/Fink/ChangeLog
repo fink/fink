@@ -1,3 +1,7 @@
+2005-04-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Remove hardcoded /sw from .info search path.
+
 2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: include gettext-tools among the additional pkgs

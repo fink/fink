@@ -592,7 +592,7 @@ older than the PDB cache that is moved into the dists will not be found.
 
 sub search_comparedb {
 	my $class = shift;
-	my $path = "/sw/fink/dists/";  # extra '/' forces find to follow the symlink
+	my $path = "$basepath/fink/dists/";  # extra '/' forces find to follow the symlink
 		
 	my $dbfile = $class->db_infolist;
 	return 1 if -M $dbfile > -M "$basepath/etc/fink.conf";
