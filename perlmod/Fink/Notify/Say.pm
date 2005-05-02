@@ -34,7 +34,7 @@ our $command = '/usr/bin/osascript';
 sub about {
 	my $self = shift;
 
-	my @about = ('Say', $VERSION);
+	my @about = ('Say', $VERSION, 'Text-to-speech audible notification');
 	return wantarray? @about : \@about;
 }
 

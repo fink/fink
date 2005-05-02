@@ -34,7 +34,7 @@ our $command = '/usr/bin/logger';
 sub about {
 	my $self = shift;
 
-	my @about = ('Syslog', $VERSION);
+	my @about = ('Syslog', $VERSION, 'Log notifications to /var/log/system.log');
 	return wantarray? @about : \@about;
 }
 

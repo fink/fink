@@ -1,3 +1,11 @@
+2005-05-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm, Notify.pm, Notify/*.pm: Update notifications plugins
+	to enumerate a short description and optional URL describing the
+	plugin, as well as a command to list the available plugins and their
+	versions.  We could use "fink plugin" in the future to list other
+	plugins if there is such a thing later on...
+
 2005-04-29  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: Remove hardcoded /sw from .info search path.

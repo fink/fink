@@ -32,7 +32,7 @@ our $VERSION = ( qw$Revision$ )[-1];
 sub about {
 	my $self = shift;
 
-	my @about = ('Growl', $VERSION);
+	my @about = ('Growl', $VERSION, 'Growl on-screen notification', 'http://www.growl.info/');
 	return wantarray? @about : \@about;
 }
 

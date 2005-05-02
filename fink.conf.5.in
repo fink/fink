@@ -351,8 +351,8 @@ potentially putting root-owned files into your home directory.
 Specify a notification plugin to tell you when packages have been installed/uninstalled.
 Defaults to
 .Pa Growl
-(requires Mac::Growl to operate).  Other plugins can be found in the
-@PREFIX@/lib/perl5/Fink/Notify directory.
+(requires Mac::Growl to operate).  The available plugins are listed in the output of
+"fink plugins".
 .El
 .\"
 .\"

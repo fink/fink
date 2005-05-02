@@ -93,6 +93,7 @@ our %commands =
 	  'scanpackages'      => [\&cmd_scanpackages,      1, 1, 1],
 	  'list'              => [\&cmd_list,              0, 0, 0],
 	  'listpackages'      => [\&cmd_listpackages,      1, 0, 0],
+     'plugins'           => [\&cmd_listplugins,       0, 0, 0],
 	  'selfupdate'        => [\&cmd_selfupdate,        0, 1, 1],
 	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1, 1],
 	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1, 1],
@@ -363,6 +364,12 @@ sub cmd_selfupdate_finish {
 
 sub cmd_list {
 	do_real_list("list",@_);
+}
+
+sub cmd_listplugins {
+	print "Notification Plugins:\n\n";
+	Fink::Notify->list_plugins();
+	print "\n";
 }
 
 sub cmd_apropos {
