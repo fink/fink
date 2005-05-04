@@ -716,7 +716,7 @@ END
 
 This package represents the GIMP printing libraries
 provided by Apple on Mac OS X 10.3 and higher.  They
-are considered present if libgimpprint.*.dylib exists
+are considered present if libgimpprint.1.dylib exists
 in /usr/lib.
 
 =cut
@@ -734,14 +734,44 @@ package that came with your Mac OS X CDs.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-	if ( has_lib('libgimpprint.1.1.0.dylib') ) {
+	if ( has_lib('libgimpprint.1.dylib') ) {
 		print STDERR "- found gimp-print-shlibs 4.2.5-1\n" if ($options{debug});
 		$hash->{status} = STATUS_PRESENT;
 	} else {
 		$hash->{status} = STATUS_ABSENT;
 	}
 	$self->{$hash->{package}} = $hash;
-	
+
+=item gimp-print7-shlibs
+
+This package represents the GIMP printing libraries
+provided by Apple on Mac OS X 10.4 and higher.  They
+are considered present if libgimpprint.7.dylib exists
+in /usr/lib.
+
+=cut
+
+	$hash = {};
+	$hash->{package} = "gimp-print7-shlibs";
+	$hash->{version} = "4.2.6-1";
+	$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{descdetail} = <<END;
+This package represents the version of Gimp-Print that
+comes with Mac OS X 10.4 and above.  If it shows as not
+installed, you must install the GimpPrintPrinterDrivers
+package that came with your Mac OS X CDs.
+END
+	$hash->{compilescript} = &gen_compile_script($hash);
+
+	if ( has_lib('libgimpprint.7.dylib') ) {
+		print STDERR "- found gimp-print7-shlibs 4.2.6-1\n" if ($options{debug});
+		$hash->{status} = STATUS_PRESENT;
+	} else {
+		$hash->{status} = STATUS_ABSENT;
+	}
+	$self->{$hash->{package}} = $hash;
+
 	if ( has_lib('libX11.6.dylib') )
 	{
 		# check the status of xfree86 packages
@@ -1275,7 +1305,7 @@ sub has_lib {
 			}
 		}
 	}
-	print "missing\n" if ($options{debug});
+	print STDERR "missing\n" if ($options{debug});
 	return;
 }
 
