@@ -1,3 +1,7 @@
+2005-05-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Engnie.pm: Delay loading of all fields until we need them
+
 2005-05-04  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: fix up gimp-print stuff for 10.4

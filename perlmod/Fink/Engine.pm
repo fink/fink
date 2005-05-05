@@ -378,7 +378,7 @@ sub cmd_apropos {
 
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
-	my ($pname, $package, $lversion, $vo, $iflag, $description);
+	my ($pname, $package, $lversion, $vo, $iflag);
 	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer);
 	my ($buildonly, $pkgtree);
 	my %options =
@@ -480,6 +480,8 @@ sub do_real_list {
 
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
+
+		my $description;
 		if ($package->is_virtual() == 1) {
 			next if $cmd eq "apropos";
 			next unless $options{installedstate} & $ISTATE_ABSENT;
@@ -494,7 +496,8 @@ sub do_real_list {
 			$description = "[virtual package]";
 		} else {
 			$lversion = &latest_version($package->list_versions());
-			$vo = $package->get_version($lversion);
+			# noload: don't bother loading fields until we know we need them
+			$vo = $package->get_version($lversion, 1);
 			# $iflag installed pkg precedence: real-latest > real-old > provided
 			if ($vo->is_installed()) {
 				next unless $options{installedstate} & $ISTATE_CURRENT;
@@ -514,8 +517,12 @@ sub do_real_list {
 				next unless $options{installedstate} & $ISTATE_ABSENT;
 				$iflag = "   ";
 			}
-			$description = $vo->get_shortdescription($desclen);
 		}
+		$vo = $package->get_version($lversion); # okay, now we need all fields
+
+		# non-virtuals didn't get desc earlier
+		$description = $vo->get_shortdescription($desclen) unless defined $description;
+
 		if (defined $buildonly) {
 			next unless $vo->param_boolean("builddependsonly");
 		}
@@ -533,7 +540,9 @@ sub do_real_list {
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
 		}
+
 		if ($namelen && length($pname) > $namelen) {
+			# truncate pkg name if wider than its field
 			$pname = substr($pname, 0, $namelen - 3)."...";
 		}
 
