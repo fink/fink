@@ -528,14 +528,12 @@ sub do_real_list {
 		}
 		if (defined $section) {
 			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
-			$section =~ s/[\=]?(.*)/$1/;
 		}
 		if (defined $maintainer) {
 			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
 		}
 		if (defined $pkgtree) {
 			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
-#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
 		}
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  

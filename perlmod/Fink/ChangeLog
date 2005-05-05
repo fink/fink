@@ -1,11 +1,15 @@
 2005-05-05  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Don't bother fixing "=" for single-char 'fink list' flags
+
+2005-05-05  Daniel Macks  <dmacks@netspace.org>
+
 	* Base.pm: param_default: Don't sanitize $default unless it's
 	actually needed.
 
 2005-05-05  Daniel Macks  <dmacks@netspace.org>
 
-	* Engnie.pm: Delay loading of all fields until we need them
+	* Engine.pm: Delay loading of all fields until we need them
 
 2005-05-04  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
