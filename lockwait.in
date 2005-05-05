@@ -5,10 +5,10 @@ use strict;
 use Fcntl qw(:DEFAULT :seek);
 use POSIX qw(:errno_h);
 
-my $basepath = "@PREFIX@";
-my $exec = "@PROG@";
-my $timeout = 10;
-my $debug = 0;
+my $basepath = "@PREFIX@";		# Prefix for finding dpkg lockfile
+my $exec = "@PROG@";			# Program path to execute
+my $timeout = 5 * 60;			# Seconds to wait before failing
+my $debug = 0;					# Print nice debug messages?
 
 print STDERR "exec = $exec, timeout = $timeout\n" if $debug;
 
