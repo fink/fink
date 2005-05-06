@@ -1207,6 +1207,22 @@ sub type_hash_from_string {
 	return \%hash;
 }
 
+=item get_license
+
+This accessor returns the License field for the package, or a null
+string if no license (the return is *always* defined). Leading and
+trailing whitespace is removed. No case-sanitizing is performed.
+
+=cut
+
+sub get_license {
+	my $self = shift;
+	my $license = $self->param_default('License', '');
+	$license =~ s/^\s+//;
+	$license =~ s/\s+$//;
+	return $license;
+}
+
 ### generate description
 
 sub format_description {
@@ -1957,11 +1973,7 @@ sub fetch_source {
 
 	$url = $self->get_source($suffix);
 	$file = $self->get_tarball($suffix);
-	if($self->has_param("license")) {
-		if($self->param("license") =~ /Restrictive\s*$/) {
-			$nomirror = 1;
-		} 
-	}
+	$nomirror = 1 if $self->get_mirror() =~ /^Restrictive$/i;
 	
 	$checksum = $self->get_checksum($suffix);
 	

@@ -739,7 +739,7 @@ sub cmd_fetch {
 	&call_queue_clear;
 	foreach $package (@plist) {
 		my $pname = $package->get_name();
-		if ($norestrictive && $package->has_param("license") && $package->param("license") =~ m/Restrictive\s*$/i) {
+		if ($norestrictive && $package->get_license() =~ /Restrictive$/i) {
 				print "Ignoring $pname due to License: Restrictive\n";
 				next;
 		}
@@ -832,7 +832,7 @@ sub do_fetch_all {
 		$version = &latest_version($package->list_versions());
 		$vo = $package->get_version($version);
 		if (defined $vo) {
-			if ($norestrictive && $vo->has_param("license") && $vo->param("license") =~ m/Restrictive\s*$/i) {
+			if ($norestrictive && $vo->get_license() =~ m/Restrictive$/i) {
 				print "Ignoring $pname due to License: Restrictive\n";
 				next;
 			}
@@ -2277,10 +2277,12 @@ EOF
 				# multiline field, so indent 1 space always
 				# format_description does that for us
 				print "$_:\n", Fink::PkgVersion::format_description($pkg->param_expanded($_, 2)) if $pkg->has_param($_);
-			} elsif ($_ eq 'type'       or $_ eq 'license' or
-					 $_ eq 'maintainer' or $_ eq 'homepage'
-					) {
+			} elsif ($_ eq 'type' or $_ eq 'maintainer' or $_ eq 'homepage') {
 				printf "%s: %s\n", $_, $pkg->param_default($_,'[undefined]');
+			} elsif ($_ eq 'license') {
+				my $license = $pkg->get_license();
+				$license = '[undefined]' if not length $license;
+				printf "%s: %s\n", $_, $license;
 			} elsif ($_ eq 'pre-depends'    or $_ eq 'depends'        or
 					 $_ eq 'builddepends'   or $_ eq 'provides'       or
 					 $_ eq 'replaces'       or $_ eq 'conflicts'      or
