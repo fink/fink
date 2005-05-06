@@ -1,3 +1,7 @@
+2005-05-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Call to get_mirror() should be get_license().
+
 2005-05-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm, PkgVersion.pm: Added new get_license() accessor.

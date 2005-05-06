@@ -1973,7 +1973,7 @@ sub fetch_source {
 
 	$url = $self->get_source($suffix);
 	$file = $self->get_tarball($suffix);
-	$nomirror = 1 if $self->get_mirror() =~ /^Restrictive$/i;
+	$nomirror = 1 if $self->get_license() =~ /^Restrictive$/i;
 	
 	$checksum = $self->get_checksum($suffix);
 	
