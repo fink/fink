@@ -1,3 +1,11 @@
+2005-05-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.conf.5: Document SkipPrompts.
+
+2005-05-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* lockwait.in: Set 5-minute timeout for lockwaits.
+
 2005-05-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink.8.in, fink.conf.5.in: added documentation for 'fink plugins'

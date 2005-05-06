@@ -1,3 +1,10 @@
+2005-05-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Add SkipPrompts ability.
+	* Engine.pm: Create SkipPrompts category 'virtualdep'.
+	* Mirror.pm, NetAccess.pm, PkgVersion.pm: Create SkipPrompts category
+	'fetch'.
+
 2005-05-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Don't bother fixing "=" for single-char 'fink list' flags

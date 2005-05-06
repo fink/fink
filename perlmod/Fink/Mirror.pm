@@ -329,7 +329,8 @@ sub get_site_retry {
 		$result =
 		&prompt_selection("How do you want to proceed?",
 				      default => [ number => $default ],
-				      choices => \@choices );
+				      choices => \@choices,
+				      category => 'fetch',);
 	}
 	$url = $self->{lastused};
 	if ($result eq "error") {

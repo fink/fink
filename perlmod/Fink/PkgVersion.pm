@@ -31,7 +31,8 @@ use Fink::Services qw(&filename &execute
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection
+					&should_skip_prompt);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -2076,6 +2077,7 @@ GCC_MSG
 	}
 
 	$tries = 0;
+	my $maxtries = should_skip_prompt('fetch') ? 2 : 3;
 	foreach $suffix ($self->get_source_suffices) {
 		$archive = $self->get_tarball($suffix);
 
@@ -2106,13 +2108,14 @@ GCC_MSG
 					"again. How do you want to proceed?";
 				$answer = &prompt_selection("Make your choice: ",
 								intro   => $sel_intro,
-								default => [ value => ($tries >= 3) ? "error" : "redownload" ],
+								default => [ value => ($tries >= $maxtries) ? "error" : "redownload" ],
 								choices => [
 								  "Give up" => "error",
 								  "Delete it and download again" => "redownload",
 								  "Assume it is a partial download and try to continue" => "continuedownload",
 								  "Don't download, use existing file" => "continue"
-								] );
+								],
+								category => 'fetch',);
 				if ($answer eq "redownload") {
 					rm_f $found_archive;
 					# Axel leaves .st files around for partial files, need to remove
@@ -2210,7 +2213,8 @@ GCC_MSG
 								"cause for this is a corrupted or incomplete ".
 								"download. Do you want to delete the tarball ".
 								"and download it again?",
-								default => ($tries >= 3) ? 0 : 1);
+								default => ($tries >= $maxtries) ? 0 : 1,
+								category => 'fetch',);
 			if ($answer) {
 				rm_f $found_archive;
 				redo;		# restart loop with same tarball

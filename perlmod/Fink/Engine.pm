@@ -1661,7 +1661,8 @@ sub real_install {
 				}
 				$dname = &prompt_selection("Pick one:",
 					intro   => "fink needs help picking an alternative to satisfy a virtual dependency. The candidates:",
-					default => [number=>$choice], choices => \@choices);
+					default => [number=>$choice], choices => \@choices,
+					category => 'virtualdep',);
 			}
 
 			# the dice are rolled...

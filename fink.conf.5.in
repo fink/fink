@@ -115,6 +115,18 @@ values are:
 .It 3 - High (shows everything) 
 .El
 The default value is 1. 
+.It Cm SkipPrompts: Ar a comma-delimited list 
+This option instructs Fink to refrain from asking for input when the user does
+not want to be prompted. Each prompt belongs to a category. If a prompt's 
+category is in the SkipPrompts list then the default option will be chosen 
+within a very short period of time.
+.Pp
+Currently, the following categories of prompts exist:
+.Bl -tag -width flag -offset indent -compact
+.It fetch - Downloads and mirrors
+.It virtualdep - Choosing between alternative packages
+.El
+By default, no prompts are skipped.
 .It Cm NoAutoIndex: Ar boolean 
 Fink caches its package descripition files to save it having to read 
 and parse them all every time it runs. Fink checks whether or not the package 
