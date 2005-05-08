@@ -753,19 +753,19 @@ in /usr/lib.
 
 	$hash = {};
 	$hash->{package} = "gimp-print7-shlibs";
-	$hash->{version} = "4.2.6-1";
+	$hash->{version} = "5.0.0-beta2-1";
 	$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
 	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 This package represents the version of Gimp-Print that
 comes with Mac OS X 10.4 and above.  If it shows as not
 installed, you must install the GimpPrintPrinterDrivers
-package that came with your Mac OS X CDs.
+package that came with your Mac OS X DVD.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
 	if ( has_lib('libgimpprint.7.dylib') ) {
-		print STDERR "- found gimp-print7-shlibs 4.2.6-1\n" if ($options{debug});
+		print STDERR "- found gimp-print7-shlibs 5.0.0-beta2-1\n" if ($options{debug});
 		$hash->{status} = STATUS_PRESENT;
 	} else {
 		$hash->{status} = STATUS_ABSENT;
