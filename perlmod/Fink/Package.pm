@@ -582,7 +582,7 @@ sub db_lockfile {
 
   Fink::Package->search_comparedb;
 
-Checks if any .info files are never than the on-disk package database cache.
+Checks if any .info files are newer than the on-disk package database cache.
 Returns true if the cache is out of date.
 
 Note that in several cases, this can miss changes. For example, a .info file
