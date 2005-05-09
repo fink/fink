@@ -1210,16 +1210,25 @@ sub type_hash_from_string {
 =item get_license
 
 This accessor returns the License field for the package, or a null
-string if no license (the return is *always* defined). Leading and
-trailing whitespace is removed. No case-sanitizing is performed.
+string if no license could be determined (the return is *always*
+defined). This field can be given as a comma-delimitted list of
+values, and each value may be controlled by a conditional. The first
+value for which the conditional is true or that has no conditional is
+used. Leading and trailing whitespace is removed. No case-sanitizing
+is performed.
 
 =cut
 
 sub get_license {
 	my $self = shift;
-	my $license = $self->param_default('License', '');
-	$license =~ s/^\s+//;
+
+	$self->expand_percent_if_available('license');
+	$self->conditional_pkg_list('license');  # syntax is close to a Depends!
+
+	$self->param_default('License', '') =~ /^\s*([^,]*)/;
+	my $license = $1;  # keep first comma-delimited field
 	$license =~ s/\s+$//;
+
 	return $license;
 }
 

@@ -421,10 +421,18 @@ sub validate_info_file {
 
 	# License should always be specified, and must be one of the allowed set
 	$value = $properties->{license};
-	if ($value) {
-		if (not $allowed_license_values{$value}) {
-			print "Warning: Unknown license \"$value\". ($filename)\n";
+	if (defined $value) {
+		if ($value =~ /,\s*\([^,]*$/) {
+			print "Warning: Last license in list must not be conditional. ($filename)\n";
 			$looks_good = 0;
+		}
+		$value =~ s/\(.*?\)//g;  # remove all conditionals
+		$value =~ s/^\s*//;      # ...which sometimes leaves leading whitespace
+		foreach (split /\s*,\s*/, $value) {
+			if (not $allowed_license_values{$_}) {
+				print "Warning: Unknown license \"$_\". ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 	} elsif (not (defined($properties->{type}) and $properties->{type} =~ /\bbundle\b/i)) {
 		print "Warning: No license specified. ($filename)\n";

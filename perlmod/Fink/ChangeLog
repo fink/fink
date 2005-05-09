@@ -1,3 +1,9 @@
+2005-05-08  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Validation.pm: Add support for conditional
+	License options.
+
+
 2005-05-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Call to get_mirror() should be get_license().
