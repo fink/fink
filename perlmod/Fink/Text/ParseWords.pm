@@ -1,4 +1,9 @@
-package Text::ParseWords;
+# This file is based on Text::ParseWords v3.23 from perl5.8.6 from CPAN.
+# It was converted to Fink::Text::ParseWords and further modified 
+# for use by Fink. You can read about these changes in the accompanying
+# ChangeLog files and by browsing the CVS repository.
+
+package Fink::Text::ParseWords;
 
 use vars qw($VERSION @ISA @EXPORT $PERL_SINGLE_QUOTE);
 $VERSION = "3.23";
@@ -143,11 +148,11 @@ __END__
 
 =head1 NAME
 
-Text::ParseWords - parse text into an array of tokens or array of arrays
+Fink::Text::ParseWords - parse text into an array of tokens or array of arrays
 
 =head1 SYNOPSIS
 
-  use Text::ParseWords;
+  use Fink::Text::ParseWords;
   @lists = &nested_quotewords($delim, $keep, @lines);
   @words = &quotewords($delim, $keep, @lines);
   @words = &shellwords(@lines);
@@ -188,7 +193,7 @@ Unix shells.
 
 The sample program:
 
-  use Text::ParseWords;
+  use Fink::Text::ParseWords;
   @words = &quotewords('\s+', 0, q{this   is "a test" of\ quotewords \"for you});
   $i = 0;
   foreach (@words) {
@@ -254,5 +259,12 @@ everybody!  Special thanks to Michael Schwern <schwern@envirolink.org>
 for assuring me that a &nested_quotewords() would be useful, and to 
 Jeff Friedl <jfriedl@yahoo-inc.com> for telling me not to worry about
 error-checking (sort of-- you had to be there).
+
+For the changes by Fink:
+Copyright (C) 2005 The Fink Package Manager Team.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
 =cut

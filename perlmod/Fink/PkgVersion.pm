@@ -44,6 +44,8 @@ use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
 use File::Basename qw(&dirname &basename);
 use Fink::Notify;
 use Fink::Validation;
+use Fink::Text::DelimMatch;
+use Fink::Text::ParseWords qw(&parse_line);
 
 use POSIX qw(uname strftime);
 use Hash::Util;
@@ -554,10 +556,6 @@ sub conditional_space_list {
 	my $where = shift;   # used in warning messages
 
 	return $string unless defined $string and $string =~ /\(/; # short-circuit
-
-	use Fink::Text::DelimMatch;
-
-	use Text::ParseWords;    # part of perl5 itself
 
 	# prepare the paren-balancing parser
 	my $mc = Fink::Text::DelimMatch->new( '\s*\(\s*', '\s*\)\s*' );
