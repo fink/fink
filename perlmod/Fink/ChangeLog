@@ -1,3 +1,9 @@
+2005-05-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Text/ParseWords.pm: import Text::ParseWords-3.23 from perl5.8.6
+	into Fink:: package namespace.
+	* PkgVersion.pm: Use our own ParseWords (perl5.8.1's is buggy)
+
 2005-05-04  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: fix up gimp-print stuff for 10.4
