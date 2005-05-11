@@ -34,7 +34,7 @@ our $command = '/usr/bin/osascript';
 sub about {
 	my $self = shift;
 
-	my @about = ('QuickSilver', $VERSION);
+	my @about = ('QuickSilver', $VERSION, 'QuickSilver on-screen notification', 'http://quicksilver.blacktree.com/');
 	return wantarray? @about : \@about;
 }
 

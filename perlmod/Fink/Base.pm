@@ -173,12 +173,13 @@ sub param_default {
 	my $self = shift;
 	my $param_name = lc shift || "";
 	my $default_value = shift;
-	if (not defined $default_value) {
-		$default_value = "";
-	}
 
 	if (exists $self->{$param_name}) {
 		return $self->{$param_name};
+	}
+
+	if (not defined $default_value) {
+		$default_value = "";
 	}
 	return $default_value;
 }

@@ -209,7 +209,8 @@ sub fetch_url_to_file {
 				"Delete it and download again" => "retry",
 				"Assume it is a partial download and try to continue" => "continue",
 				"Don't download, use existing file" => "use_it"
-			]
+			],
+			category => 'fetch',
 		);
 		if ($result eq "retry") {
 			rm_f $file;

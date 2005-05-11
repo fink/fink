@@ -1,3 +1,45 @@
+2005-05-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.6, a release
+	on branch_0_24
+
+2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
+
+        * postinstall.pl.in: create 10.4 tree as a symlink to 
+	10.4-transitional (temporary, until we create a real 10.4 tree)
+
+2005-05-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.conf.5: Document SkipPrompts.
+
+2005-05-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* lockwait.in: Set 5-minute timeout for lockwaits.
+
+2005-05-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink.8.in, fink.conf.5.in: added documentation for 'fink plugins'
+
+2005-04-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* lockwait.in: Use any dpkg/apt-get in the path
+	* fink.info.in: Don't remove the finkinfodb dir, just touch a file to tell
+	Fink to invalidate the current DB dir.
+
+2005-04-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* lockwait.in, .cvsignore, setup.sh, install.sh: Install -lockwait
+	versions of dpkg and apt-get.
+
+2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.5, a release
+	on branch_0_24 which is ready for 10.4
+
+2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.conf.5.in: Document AutoScanpackages, minor fixes.
+
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink.info.in: Remove new index at uninstall

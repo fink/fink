@@ -115,22 +115,44 @@ values are:
 .It 3 - High (shows everything) 
 .El
 The default value is 1. 
+.It Cm SkipPrompts: Ar a comma-delimited list 
+This option instructs Fink to refrain from asking for input when the user does
+not want to be prompted. Each prompt belongs to a category. If a prompt's 
+category is in the SkipPrompts list then the default option will be chosen 
+within a very short period of time.
+.Pp
+Currently, the following categories of prompts exist:
+.Bl -tag -width flag -offset indent -compact
+.It fetch - Downloads and mirrors
+.It virtualdep - Choosing between alternative packages
+.El
+By default, no prompts are skipped.
 .It Cm NoAutoIndex: Ar boolean 
-Fink caches its package descripition files in 
-.Pa @PREFIX@/var/lib/fink/fink.db
-to save it having to read 
+Fink caches its package descripition files to save it having to read 
 and parse them all every time it runs. Fink checks whether or not the package 
 index needs to be updated unless this option is set to "True". It defaults to 
 "False" and it is not recommended that you change it. 
 If you do, you may need to manually run the
 .Nm fink index 
 command to update the index. 
+.It Cm AutoScanpackages: Ar boolean 
+When fink builds new packages, apt-get does not yet know about them.
+Typically, the commands 
+.Nm fink scanpackages 
+and
+.Nm apt-get update 
+must be run for apt-get to notice the new packages. If this option is true,
+then these commands will be automatically run by fink whenever a new package
+is built. It is highly recommended to have the fink package 
+.Nm apt-ftparchive 
+installed if you are using this option, as otherwise the scanpackages step
+will take a very long time.
 .It Cm SelfUpdateNoCVS: Ar boolean 
 The command fink selfupdate upgrades Fink package manager to the latest release. 
 This option makes sure that the Concurrent Version System (CVS) is not used to 
 achieve this when set to True. It is set automatically by the fink 
 selfupdate-cvs command, so you should not need to change it manually. 
-.It Cm Buildpath Ar path
+.It Cm Buildpath: Ar path
 Fink needs to create several temporary directories for each package it compiles from source. By default, they are placed in
 .Pa @PREFIX@/src
 but if you want them to be somewhere else, specify the path here.
@@ -341,8 +363,8 @@ potentially putting root-owned files into your home directory.
 Specify a notification plugin to tell you when packages have been installed/uninstalled.
 Defaults to
 .Pa Growl
-(requires Mac::Growl to operate).  Other plugins can be found in the
-@PREFIX@/lib/perl5/Fink/Notify directory.
+(requires Mac::Growl to operate).  The available plugins are listed in the output of
+"fink plugins".
 .El
 .\"
 .\"

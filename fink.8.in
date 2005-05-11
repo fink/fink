@@ -223,6 +223,10 @@ description.
 Aliases:
 .Cm desc, description, info
 .Pp
+.It Cm plugins
+List the (optional) plugins available to the fink program.  Currently lists
+the available notification plugins.
+.Pp
 .It Cm fetch Ar package...
 Downloads the named packages, but does not install it. This command will
 download the tarballs even if they were downloaded before.

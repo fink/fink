@@ -541,7 +541,7 @@ sub verbosity_level {
 	my $verblevel = $config->param_default("Verbose", 1);
 	my $verbosity = get_option("verbosity");
 
-	if ($verbosity != -1 && ($verbosity == 3 || $verblevel eq "3" || $verblevel eq "true" || $verblevel eq "high")) {
+	if ($verbosity != -1 && ($verbosity >= 3 || $verblevel =~ /([3-9]|true|high)/)) {
 		### Sets Verbose mode to Full
 		$verbosity = 3;
 	} elsif ($verbosity != -1 && $verblevel eq "2" || $verblevel eq "medium") {

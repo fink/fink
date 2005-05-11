@@ -23,7 +23,7 @@
 
 package Fink::SelfUpdate;
 
-use Fink::Services qw(&execute &version_cmp);
+use Fink::Services qw(&execute &version_cmp &aptget_lockwait);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $dbpath $distribution);
@@ -58,10 +58,18 @@ END { }				# module clean-up code here (global destructor)
 
 sub check {
 	my $useopt = shift || 0;
-	my ($srcdir, $finkdir, $latest_fink, $installed_version, $answer);
+	my ($srcdir, $finkdir, $latest_fink, $installed_version, $answer, $dist_upgrade);
 
 	$srcdir = "$basepath/src";
 	$finkdir = "$basepath/fink";
+
+	# Take note if dist-upgrade being done, reset $useopt to 0
+	if ($useopt = 3)
+		{
+		$dist_upgrade = 1;
+		$useopt = 0;
+		}
+
 	if ($useopt != 0) {
 		&print_breaking("\n Please note: the command 'fink selfupdate' "
 				. "should be used for routine updating; you only need to use " 
@@ -185,7 +193,7 @@ sub check {
 			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 		&do_tarball($latest_fink);
-		&do_finish();
+		&do_finish($dist_upgrade);
 	}
 }
 
@@ -466,12 +474,13 @@ sub do_tarball {
 ### last steps: update apt indices, reread descriptions, update fink, re-exec
 
 sub do_finish {
+	my $useopt = shift || 0;
 	my $package;
 
 	# update apt-get's database if using -b mode
 	if ($config->binary_requested()) {
 		print "Downloading the indexes of available packages in the binary distribution.\n";
-		my $aptcmd = "$basepath/bin/apt-get ";
+		my $aptcmd = aptget_lockwait() . " ";
 		if (Fink::Config::verbosity_level() == 0) {
 			$aptcmd .= "-qq ";
 		}
@@ -486,7 +495,7 @@ sub do_finish {
 	}
 
 	# forget the package info
-	Fink::Package->forget_packages();
+	Fink::Package->forget_packages(2, 1);
 
 	# delete the old shlibs DB
 	if (-e "$dbpath/shlibs.db") {
@@ -499,18 +508,28 @@ sub do_finish {
 	# update the package manager itself first if necessary (that is, if a
 	# newer version is available).
 	$package = Fink::PkgVersion->match_package("fink");
-	if (not $package->is_installed()) {
+	if (not $package->is_installed())
+	{
 		Fink::Engine::cmd_install("fink");
 	
-		# re-execute ourselves before we update the rest
-		print "Re-executing fink to use the new version...\n";
-		exec "$basepath/bin/fink selfupdate-finish";
-	
-		# the exec doesn't return, but just in case...
-		die "re-executing fink failed, run 'fink selfupdate-finish' manually\n";
-	} else {
-		# package manager was not updated, just finish selfupdate directly
-		&finish();
+		if ($useopt)
+		{
+			# re-execute ourselves before we update the rest
+			print "Re-executing fink to use the new version...\n";
+			exec "$basepath/bin/fink dist-upgrade-cont";
+
+			# the exec doesn't return, but just in case...
+			die "re-executing fink failed, run `fink dist-upgrade-cont` manually\n";
+
+		} else {
+			# re-execute ourselves before we update the rest
+			print "Re-executing fink to use the new version...\n";
+			exec "$basepath/bin/fink selfupdate-finish";
+
+			# the exec doesn't return, but just in case...
+			die "re-executing fink failed, run 'fink selfupdate-finish' manually\n";
+		}
+
 	}
 }
 

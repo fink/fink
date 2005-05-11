@@ -52,4 +52,8 @@ sed "s|@PREFIX@|$basepath|g" <shlibs.default.in >shlibs.default
 echo "Creating postinstall script..."
 sed "s|@PREFIX@|$basepath|g" <postinstall.pl.in >postinstall.pl
 
+echo "Creating lockwait wrappers..."
+sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|dpkg|g" <lockwait.in >dpkg-lockwait
+sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|apt-get|g" <lockwait.in >apt-get-lockwait
+
 exit 0

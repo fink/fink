@@ -41,7 +41,7 @@ BEGIN {
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
 					  &prompt &prompt_boolean &prompt_selection
 					  &print_optionlist
-					  &get_term_width);
+					  &get_term_width &should_skip_prompt);
 }
 our @EXPORT_OK;
 
@@ -193,15 +193,20 @@ If a timeout is given, any existing alarm() is destroyed.
 
 Default value: no timeout
 
+=item category (optional)
+
+A string to categorize this prompt.
+
 =back
 
 =cut
 
 sub prompt {
 	my $prompt = shift;
-	my %opts = (default => "", timeout => 0, @_);
+	my %opts = (default => "", timeout => 0, category => '', @_);
 
-	my $answer = &get_input("$prompt [$opts{default}]", $opts{timeout});
+	my $answer = &get_input("$prompt [$opts{default}]",
+		map { $_ => $opts{$_} } qw(timeout category));
 	chomp $answer;
 	$answer = $opts{default} if $answer eq "";
 	return $answer;
@@ -240,20 +245,24 @@ If a timeout is given, any existing alarm() is destroyed.
 
 Default value: no timeout
 
+=item category (optional)
+
+A string to categorize this prompt.
+
 =back
 
 =cut
 
 sub prompt_boolean {
 	my $prompt = shift;
-	my %opts = (default => 1, timeout => 0, @_);
+	my %opts = (default => 1, timeout => 0, category => '', @_);
 
 	my $choice_prompt = $opts{default} ? "Y/n" : "y/N";
 
 	my $meaning;
 	my $answer = &get_input(
 		"$prompt [$choice_prompt]",
-		$opts{timeout}
+		map { $_ => $opts{$_} } qw(timeout category),
 	);
 	while (1) {
 		chomp $answer;
@@ -269,7 +278,7 @@ sub prompt_boolean {
 		}
 		$answer = &get_input(
 			"Invalid choice. Please try again [$choice_prompt]",
-			$opts{timeout}
+			map { $_ => $opts{$_} } qw(timeout category),
 		);
 	}
 
@@ -328,13 +337,17 @@ Default value: no timeout
 A text block that will be displayed before the list of options. This
 contrasts with the $prompt, which is goes afterwards.
 
+=item category (optional)
+
+A string to categorize this prompt.
+
 =back
 
 =cut
 
 sub prompt_selection {
 	my $prompt = shift;
-	my %opts = (default => [], timeout => 0, @_);
+	my %opts = (default => [], timeout => 0, category => '', @_);
 	my @choices = @{$opts{choices}};
 	my $default = $opts{default};
 
@@ -382,7 +395,7 @@ sub prompt_selection {
 
 	my $answer = &get_input(
 		"$prompt [$default_value]",
-		$opts{timeout}
+		map { $_ => $opts{$_} } qw(timeout category),
 	);
 	while (1) {
 		chomp $answer;
@@ -394,40 +407,98 @@ sub prompt_selection {
 		}
 		$answer = &get_input(
 			"Invalid choice. Please try again [$default_value]",
-			$opts{timeout}
+			map { $_ => $opts{$_} } qw(timeout category),
 		);
 	}
 
 	return $choices[2*$answer-1];
 }
 
+=item should_skip_prompt
+
+  my $bool = should_skip_prompt $category;
+  
+Returns whether or not Fink should skip prompts of the given category.
+A false $category represents an uncategorized prompt.
+
+=cut
+
+{
+	my $skip_cats = undef;
+	
+	sub should_skip_prompt {
+		my $cat = lc shift;
+		return 0 unless $cat;
+		
+		if (!defined $skip_cats) {
+			my $str = $Fink::Config::config->param_default(
+				'SkipPrompts', '');
+			$skip_cats = {
+				map { s/^\s+(.*?)\s+$/$1/; lc $_ => 1 } # Trim
+				split /,/, $str
+			};
+		}
+		return exists $skip_cats->{$cat};
+	}
+}
+
 =item get_input
 
     my $answer = get_input $prompt;
-    my $answer = get_input $prompt, $timeout;
+    my $answer = get_input $prompt, %options;
 
 Prints the string $prompt, then gets a single line of input from
-STDIN. If $timeout is zero or not given, will block forever waiting
-for input. If $timeout is given and is positive, will only wait that
-many seconds for input before giving up. Returns the entered string
+STDIN.
+
+Returns the entered string
 (including the trailing newline), or a null string if the timeout
-expires or immediately (without waiting for input) if fink is run with
-the -y option. If not -y, this function destroys any pre-existing
-alarm().
+expires or immediately (without waiting for input) if fink is suppressing
+the prompt (run with the -y option or with an appropriate SuppressPrompts).
+If not suppressing a prompt, this function destroys any pre-existing alarm().
+
+The options hash can contain the following keys:
+
+=item timeout => $timeout (optional)
+
+If $timeout is zero or not given, will block forever waiting
+for input. If $timeout is given and is positive, will only wait that
+many seconds for input before giving up.
+
+=item category => $category (optional)
+
+Categorizes this prompt. If $category is listed in the comma-delimited
+SuppressPrompts in fink.conf, will use the default value and not prompt the
+user.
+
+=back
 
 =cut
 
 sub get_input {
 	my $prompt = shift;
-	my $timeout = shift || 0;
+	my %opts = (timeout => 0, category => '', @_);
 
-	# print the prompt string (leaving cursor on the same line)
-	$prompt = "" if !defined $prompt;
-	&print_breaking("$prompt ", 0);
-
-	# handle -y if given
+	# Don't really skip SkipPrompts, just make them short
+	my $skip_timeout = 7;
+	if ( should_skip_prompt($opts{category})
+			&& ($opts{timeout} == 0 || $opts{timeout} > $skip_timeout) ) {
+		$opts{timeout} = $skip_timeout;
+	}
+	
+	# handle suppressed prompts
+	my $dontask = 0;
 	require Fink::Config;
 	if (Fink::Config::get_option("dontask")) {
+		$dontask = 1;
+	}
+	
+	# print the prompt string (leaving cursor on the same line)
+	&print_breaking("Default answer will be chosen in $opts{timeout} "
+		. "seconds...\n") if $opts{timeout} && !$dontask;
+	$prompt = "" if !defined $prompt;
+	&print_breaking("$prompt ", 0);
+	
+	if ($dontask) {
 		print "(assuming default)\n";
 		return "";
 	}
@@ -435,7 +506,7 @@ sub get_input {
 	# get input, with optional timeout functionality
 	my $answer = eval {
 		local $SIG{ALRM} = sub { die "SIG$_[0]\n"; };  # alarm() expired
-		alarm $timeout;  # alarm(0) means cancel the timer
+		alarm $opts{timeout};  # alarm(0) means cancel the timer
 		my $answer = <STDIN>;
 		alarm 0;
 		return $answer;

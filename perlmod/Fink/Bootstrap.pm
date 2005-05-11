@@ -184,12 +184,21 @@ GCC_MSG
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.3";
+	} elsif ($host =~ /^powerpc-apple-darwin8\.[0]\.0/) {
+		&print_breaking("This brand new system is still being tested " .
+            "but should work.");
+		if($ENV{FINK_NOTRANS}) {
+			&print_breaking("Using the non-transitional tree...");
+			$distribution = "10.4";
+		} else {
+			$distribution = "10.4-transitional";
+		}
 	} elsif ($host =~ /^powerpc-apple-darwin[8-9]\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
-		$distribution = "10.3";
+		$distribution = "10.4-transitional";
 	} elsif ($host =~ /^i386-apple-darwin7\.[0-2]\.[0-1]/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".
@@ -338,7 +347,7 @@ sub additional_packages {
 
 	my $perl_is_supported = 1;
 
-	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
+	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "gettext-tools", "libiconv-dev", "libncurses5");
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560", "file-spec-pm560", "test-harness-pm560", "test-simple-pm560";
 	} elsif ("$]" == "5.006001") {
@@ -501,7 +510,7 @@ sub fink_packagefiles {
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in images install.sh setup.sh ".
   "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in fink.shlibs";
+  "fink-virtual-pkgs.in fink.shlibs lockwait.in";
 
 return $packagefiles;
 

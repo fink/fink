@@ -25,7 +25,7 @@ package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
-		      &expand_percent);
+		      &expand_percent &lock_wait);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
@@ -36,7 +36,6 @@ use File::Find;
 use File::Basename;
 use DB_File;
 use Symbol qw();
-use Fcntl qw(:flock);
 
 use strict;
 use warnings;
@@ -155,7 +154,7 @@ sub add_version {
 			) {
 				my $infofile = $_->get_info_filename();
 				$msg .= sprintf "  epoch %d\t%s\n", 
-					$_->param_default('epoch',0),
+					$_->get_epoch(),
 					length $infofile ? "fink virtual or dpkg status" : $infofile;
 			};
 			die $msg;
@@ -413,19 +412,129 @@ sub update_aptgetable {
 }
 
 
-=item db_dir
+=private comment
 
-  my $path = Fink::Package->db_dir;
-  
-Get the path to the directory that can store the Fink cached package database.
+When Fink uses a DB dir, it needs continued access to what's inside (since it
+likely is using 'backed' PkgVersions). So when the DB is invalidated, we can't
+just delete it.
+
+Instead, we mark it as 'old' by creating a brand new DB dir. These dirs all
+look like 'db.#', eg: db.1234, and the one that has the largest # is the
+current one.
+
+But how do we ever delete a DB dir? Each Fink gets a shared lock on its DB
+dir; then if a DB dir is old and has no shared locks, it's no longer in use
+and can be deleted.
+
+=item check_dbdirs
+
+  my ($path, $fh) = Fink::Package->check_dbdirs $write, $force_create;
+
+Process the DB dirs. Returns the good directory found/created, and the lock
+already acquired.
+
+If $write is true, will create a new directory if one does not exist, and will
+delete any old dirs.
+
+If $force_create is true, will always create a new directory (invalidating any
+previous PDB dirs).
 
 =cut
 
-sub db_dir {
-	my $class = shift;
-	return "$dbpath/finkinfodb";
-}
+sub check_dbdirs {
+	my ($class, $write, $force_create) = @_;
+	
+	# This directory holds multiple 'db.#' dirs
+	my $multidir = "$dbpath/finkinfodb";
+	
+	# Special case: If the file "$multidir/invalidate" exists, it means
+	# a shell script wants us to invalidate the DB
+	my $inval = "$multidir/invalidate";
+	if (-e $inval) {
+		$force_create = 1;
+		rm_f($inval) if $write;
+	}
+	
+	# Get the db.# numbers in high-to-low order.
+	my @nums;
+	if (opendir MULTI, $multidir) {
+		@nums = sort { $b <=> $a} map { /^db\.(\d+)$/ ? $1 : () } readdir MULTI;
+	}
+	# Find a number higher than all existing, for new dir
+	my $higher = @nums ? $nums[0] + 1 : 1;
+	my $newdir = "$multidir/db.$higher";
+	
+	# Get the current dir
+	my @dirs = grep { -d $_ } map { "$multidir/db.$_" } @nums;
+	my $use_existing = !$force_create && @dirs;
+	my ($current, $fh);
+	
+	# Try to lock on an existing dir, if applicable
+	if ($use_existing) {
+		$current = $dirs[0];
+		$fh = lock_wait("$current.lock", exclusive => 0, no_block => 1);
+		# Failure ok, will try a new dir
+	}
+	
+	# Use and lock a new dir, if needed
+	if (!$fh) {
+		$current = $newdir;
+		if ($write) { # If non-write, it's just a fake new dir
+			mkdir_p($multidir) unless -d $multidir;
+			$fh = lock_wait("$current.lock", exclusive => 0, no_block => 1)
+				or die "Can't make new DB dir $current: $!\n";
+			mkdir_p($current);
+		}
+	}
+			
+	# Try to delete old dirs
+	my @old = grep { $_ ne $current } @dirs;
+	if ($write) {
+		for my $dir (@old) {
+			if (my $fh = lock_wait("$dir.lock", exclusive => 1, no_block => 1)) {
+				rm_rf($dir);
+				close $fh;
+			}
+		}
+	}
+	
+	return ($current, $fh);
+}		
 
+=item db_dir
+
+  my $path = Fink::Package->db_dir $write;
+
+Get the path to the directory that can store the Fink cached package database.
+Creates it if it does not exist and $write is true.
+
+=item forget_db_dir
+
+  Fink::Package->forget_db_dir;
+  
+Forget the current DB directory.
+
+=cut
+
+{
+	my $cache_db_dir = undef;
+	my $cache_db_dir_fh = undef;
+
+	sub db_dir {
+		my $class = shift;
+		my $write = shift || 0;
+		
+		unless (defined $cache_db_dir) {
+			($cache_db_dir, $cache_db_dir_fh) = $class->check_dbdirs($write, 0);
+		}
+		return $cache_db_dir;
+	}
+	
+	sub forget_db_dir {
+		close $cache_db_dir_fh if $cache_db_dir_fh;
+		($cache_db_dir, $cache_db_dir_fh) = (undef, undef);
+	}
+}
 
 =item db_index
 
@@ -473,7 +582,7 @@ sub db_lockfile {
 
   Fink::Package->search_comparedb;
 
-Checks if any .info files are never than the on-disk package database cache.
+Checks if any .info files are newer than the on-disk package database cache.
 Returns true if the cache is out of date.
 
 Note that in several cases, this can miss changes. For example, a .info file
@@ -483,9 +592,10 @@ older than the PDB cache that is moved into the dists will not be found.
 
 sub search_comparedb {
 	my $class = shift;
-	my $path = "/sw/fink/dists/";  # extra '/' forces find to follow the symlink
+	my $path = "$basepath/fink/dists/";  # extra '/' forces find to follow the symlink
 		
 	my $dbfile = $class->db_infolist;
+	return 1 if -M $dbfile > -M "$basepath/etc/fink.conf";
 
 	# Using find is much faster than doing it in Perl
 	open NEWER_FILES, "/usr/bin/find $path \\( \\( \\( -type f -or -type l \\) " .
@@ -505,9 +615,13 @@ sub search_comparedb {
 =item forget_packages
 
   Fink::Package->forget_packages;
+  Fink::Package->forget_packages $type, $just_memory;
   
-Removes the in-memory package database. Also invalidates any cache of package
-database that currently exists on disk.
+Removes the in-memory package database. If $type is 1, just removes the shlibs
+database, if it is 2 removes just the package database, if it is 0 removes both.
+
+If $just_memory is not true, also invalidates any cache of package database
+that currently exists on disk.
 
 =cut
 
@@ -518,15 +632,21 @@ sub forget_packages {
 	# 1 = shlibs only
 	# 2 = packages only
 	my $oper = shift || 0;
+	my $just_memory = shift || 0;
 
 	if ($oper != 1) {
 		$packages = undef;
 		@essential_packages = ();
 		$essential_valid = 0;
 		
-		if ($> == 0) {	# Only if we're root
-			my $lock = $class->do_lock(1);
-			rm_rf($class->db_dir);
+		if (!$just_memory && $> == 0) {	# Only if we're root
+			my $lock = lock_wait($class->db_lockfile, exclusive => 1,
+				desc => "another Fink's indexing");
+			
+			# Create a new DB dir (possibly deleting the old one)
+			$class->forget_db_dir();
+			$class->check_dbdirs(1, 1);
+			
 			rm_f($class->db_index);
 			rm_f($class->db_infolist);
 			close $lock if $lock;
@@ -551,7 +671,7 @@ sub load_packages {
 	my $class = shift;
 	my ($time) = time;
 
-	$class->update_db(1);
+	$class->update_db();
 	$class->insert_runtime_packages;
 
 	if (&get_term_width) {
@@ -560,71 +680,6 @@ sub load_packages {
 	}
 }
 
-=item do_lock
-
-  my $fh = Fink::Package->do_lock $write;
-
-Acquire a lock on the pdb lock file. If $write is true gets an exclusive lock,
-otherwise gets a shared lock. Returns a filehandle to be closed in order to
-relinquish the lock. If unsuccessful, returns false.
-
-=cut
-
-sub do_lock {
-	my $class = shift;
-	my $write = shift;
-
-	# Make sure we can access the lock
-	my $lockfile = $class->db_lockfile;
-	my $lockfile_FH = Symbol::gensym();
-	{
-		my $mode = $write ? "+>>" : "<";
-		unless (open $lockfile_FH, "$mode $lockfile") {
-			return 0;
-		}
-	}
-	
-	# Get the lock
-	{
-		my $mode = $write ? LOCK_EX : LOCK_SH;
-		unless (flock $lockfile_FH, $mode | LOCK_NB) {
-			# Couldn't get lock, meaning another fink process has it
-			
-			print STDERR "\nWaiting for another Fink to finish...";
-			
-			my $success = 0;
-			my $alarm = 0;
-			
-			eval {
-				# If non-root, we could be stuck here forever with no way to 
-				# stop a broken root process. Need a timeout!
-				alarm (60 * 5) if ($> != 0);
-				$success = flock $lockfile_FH, $mode;
-				alarm 0;
-			};
-			if ($@) {
-				if ($@ !~ /alarm clock restart/) {
-					$alarm = 1;
-				} else {
-					die;
-				}
-			}
-			
-			if ($success) {
-					print STDERR " done.\n";
-					return $lockfile_FH;
-			} elsif ($alarm) {
-				&print_breaking_stderr("Timed out, continuing anyway.");
-				return $lockfile_FH;
-			} else {
-				&print_breaking_stderr("Error: Could not lock $lockfile: $!");
-				close $lockfile_FH;
-				return 0;
-			}
-		}
-		return $lockfile_FH;
-	}
-}
 
 =item can_read_write_db
 
@@ -691,23 +746,23 @@ Returns the new index item for the .info file.
 sub update_index {
 	my ($class, $idx, $info, @pvs) = @_;
 	
+	# Always use a new file, so an old fink doesn't accidentally read a newer
+	# file in the same place.
+	
+	# TODO: This leaves old cache files sitting around, perhaps if the atime
+	# gets old enough we should delete them?
+	my $cidx = $idx->{next_idx}++;
+
+	# Split things into dirs
+	my $dir = sprintf "%03d00", $cidx / 100;		
+	my $cache = $class->db_dir . "/$dir/$cidx";
+
 	my %new_idx = (
 		inits => { map { $_->get_fullname => $_->get_init_fields } @pvs },
+		cache => $cache,
 	);
 	
-	if (defined $idx->{infos}{$info}) {
-		@{ $idx->{infos}{$info} }{keys %new_idx} = values %new_idx;
-	} else {
-		# Split things into dirs
-		my $cidx = $idx->{next_idx}++;
-		my $dir = sprintf "%03d00", $cidx / 100;		
-		my $cache = $class->db_dir . "/$dir/$cidx";
-		
-		$new_idx{cache} = $cache;
-		$idx->{infos}{$info} = \%new_idx;
-	}
-	
-	return $idx->{infos}{$info};
+	return ($idx->{infos}{$info} = \%new_idx);
 }	
 
 =item pass1_update
@@ -727,7 +782,6 @@ sub pass1_update {
 	my %loaded;
 		
 	my $uncached = 0;
-	my $confage = -M "$basepath/etc/fink.conf";
 	my $noauto = $config->param_boolean("NoAutoIndex");
 	
 	for my $info (@$infos) {
@@ -743,10 +797,7 @@ sub pass1_update {
 				$load = 1;
 			} elsif (!$noauto) {
 				my $cache = $fidx->{cache};
-				my $cacheage = -M $cache;
-				
-				$load = 1 if !-f $cache ||
-					$cacheage > $confage || $cacheage > -M $info;
+				$load = 1 if !-f $cache || -M $cache > -M $info;
 			}
 		}
 		
@@ -877,17 +928,30 @@ sub get_all_infos {
 
 =item update_db
 
-  Fink::Package->update_db $load;
+  Fink::Package->update_db %options;
 
-Updates the on-disk package database cache if possible. If $load is true,
-reads the current package database to memory as well.
+Updates the on-disk package database cache if possible. Options is a hash, where
+the following elements are valid:
+
+=over 4
+
+=item no_load
+
+If B<no_load> is present and true, the current package database will not be read
+in to memory, but will only be updated.
+
+=item no_infolist
+
+If B<no_infolist> is present and true, the cached list of existing .info files
+will be discarded and not used.
 
 =cut
 
 sub update_db {
 	my $class = shift;
-	my $load = shift;
-	$load = 1 unless defined $load;
+	my %options = @_;
+	my $load = !$options{no_load};
+	my $try_cache = !$options{no_infolist};
 		
 	my %ops = ( load => $load );
 	@ops{'read', 'write'} = $class->can_read_write_db;
@@ -897,7 +961,8 @@ sub update_db {
 	# Get the lock
 	my $lock = 0;
 	if ($ops{read} || $ops{write}) {
-		$lock = $class->do_lock($ops{write});
+		$lock = lock_wait($class->db_lockfile, exclusive => $ops{write},
+			desc => "another Fink's indexing");
 		unless ($lock) {
 			if ($! !~ /no such file/i || $> == 0) { # Don't warn if just no perms
 				&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lockfile: $!");
@@ -908,8 +973,7 @@ sub update_db {
 	}
 	
 	# Get the cache dir
-	my $dbdir = $class->db_dir;
-	mkdir_p($dbdir) if $ops{write} && !-d $dbdir;
+	my $dbdir = $class->db_dir($ops{write});
 
 	# Load the index
 	my $idx = { infos => { }, next => 1 };
@@ -917,7 +981,6 @@ sub update_db {
 		$idx = Storable::lock_retrieve($class->db_index);
 	}
 	
-	my $try_cache = 1;
 	{
 		# Get the .info files
 		my ($infos, $need_update) = $class->get_all_infos(\%ops, !$try_cache);
@@ -941,7 +1004,7 @@ sub update_db {
 		# Pass 3: Load and insert the .info files
 		if ($try_cache && !$class->pass3_insert($idx, $loaded, @loadinfos)) {
 			$try_cache = 0;
-			$class->forget_packages;
+			$class->forget_packages(2, 1);
 			print_breaking_stderr("Missing file, reloading...") if &get_term_width;
 			redo;	# Probably a missing finkinfodb file. Non-efficient fix!
 		}

@@ -25,6 +25,7 @@
 package Fink::Services;
 
 use POSIX qw(uname tmpnam);
+use Fcntl qw(:flock);
 
 use strict;
 use warnings;
@@ -51,9 +52,10 @@ BEGIN {
 					  &file_MD5_checksum &get_arch &get_osx_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
-					  &call_queue_clear &call_queue_add
 					  &get_osx_vers_long &get_kernel_vers
-					  &get_darwin_equiv);
+					  &get_darwin_equiv
+					  &call_queue_clear &call_queue_add &lock_wait
+					  &dpkg_lockwait &aptget_lockwait);
 }
 our @EXPORT_OK;
 
@@ -1493,6 +1495,180 @@ sub call_queue_add {
 
 	# no ||ization, so just call and wait for return
 	&$function(@$call);
+}
+
+=item lock_wait
+
+  my $fh = lock_wait $file, %options;
+  my ($fh, $timedout) = do_lock $file, %options;
+
+Acquire a lock on file $file, waiting until the lock is available or a timeout
+occurs.
+
+Returns a filehandle, which must be closed in order to relinquish the lock. This filehandle can be read from or written to. If unsuccessful, returns false.
+
+In list context, also returns whether the operation timed out.
+
+The %options hash can contain the following keys:
+
+=over
+
+=item exclusive => $exclusive
+
+If present and true, an exclusive write lock will be obtained. Otherwise, a
+shared read lock will be obtained.
+
+Any number of shared locks can coexist, and they can all be used for reading.
+However, an exclusive lock cannot coexist with any other lock, exclusive or
+shared, and it is required for writing.
+
+=item timeout => $timeout
+
+If running as B<non-root> user, the locking operation will time-out 
+if the lock cannot be obtained for $timeout seconds. An open filehandle (which 
+must be closed) will still be returned. 
+
+This option has no effect on the root user.
+
+By default, $timeout is 300, so that a user will not get stuck when root
+refuses to relinquish the lock. To disable timeouts, pass zero for $timeout.
+
+=item root_timeout => $timeout
+
+Just like 'timeout', but the timeout applies to the root user as well. 
+This option overrides 'timeout'.
+
+=item quiet => $quiet
+
+If present and true, no messages will be printed by this function.
+
+=item desc => $desc
+
+A description of the process that the lock is synchronizing. This is used in
+messages printed by this function, eg: "Waiting for $desc to finish".
+
+=item no_block => $no_block
+
+If present and true, lock_wait will forget the 'wait' part of its name. If the
+lock cannot be acquired immediately, failure will be returned.
+
+=back
+
+=cut
+
+sub lock_wait {
+	my $lockfile = shift;
+	
+	my %options = @_;
+	my $exclusive = $options{exclusive} || 0;
+	my $timeout = exists $options{timeout} ? $options{timeout} : 300;
+	$timeout = $options{root_timeout} if exists $options{root_timeout};
+	my $root_timeout = $options{root_timeout} || 0;
+	my $quiet = $options{quiet} || 0;
+	my $desc = $options{desc} || "another process";
+	my $no_block = $options{no_block} || 0;
+	
+	my $really_timeout = $> != 0 || $root_timeout;
+
+	# Make sure we can access the lock
+	my $lockfile_FH = Symbol::gensym();
+	{
+		my $mode = ($exclusive || ! -e $lockfile) ? "+>>" : "<";
+		unless (open $lockfile_FH, "$mode $lockfile") {
+			return wantarray ? (0, 0) : 0;
+		}
+	}
+	
+	my $mode = $exclusive ? LOCK_EX : LOCK_SH;
+	if (flock $lockfile_FH, $mode | LOCK_NB) {
+		return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
+	} else {
+		return (wantarray ? (0, 0) : 0) if $no_block;
+		
+		# Couldn't get lock, meaning process has it
+		my $waittime = $really_timeout ? "$timeout seconds " : "";
+		print STDERR "Waiting ${waittime}for $desc to finish..."
+			unless $quiet;
+		
+		my $success = 0;
+		my $alarm = 0;
+		
+		eval {
+			# If non-root, we could be stuck here forever with no way to 
+			# stop a broken root process. Need a timeout!
+			local $SIG{ALRM} = sub { die "alarm\n" };
+			$success = flock $lockfile_FH, $mode;
+			alarm 0;
+		};
+		if ($@) {
+			die unless $@ eq "alarm\n";
+			$alarm = 1;
+		}
+		
+		if ($success) {
+			print STDERR " done.\n" unless $quiet;
+			return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
+		} elsif ($alarm) {
+			print STDERR " timed out!\n" unless $quiet;
+			return wantarray ? ($lockfile_FH, 1) : $lockfile_FH;
+		} else {
+			&print_breaking_stderr("Error: Could not lock $lockfile: $!")
+				unless $quiet;
+			close $lockfile_FH;
+			return wantarray ? (0, 0) : 0;
+		}
+	}
+}
+
+=item dpkg_lockwait
+
+  my $path = dpkg_lockwait;
+
+Returns path to dpkg-lockwait, or dpkg (see lockwait_executable
+for more information).
+
+=cut
+
+sub dpkg_lockwait {
+	&lockwait_executable('dpkg');
+}
+
+=item aptget_lockwait
+
+  my $path = aptget_lockwait;
+
+Returns path to apt-get-lockwait, or apt-get (see lockwait_executable
+for more information).
+
+=cut
+
+sub aptget_lockwait {
+	&lockwait_executable('apt-get');
+}
+
+=item lockwait_executable
+
+  my $path = lockwait_executable($basename);
+
+Finds an executable file named $basename with "-lockwait" appended in
+the current PATH. If found, returns the full path to it. If not,
+returns just the given $basename. The *-lockwait executables are
+wrappers around the parent executables, but only a single instance of
+them can run at a time. Other calls to any of the *-lockwait
+executables wait until no other instances of them are running before
+launching the parent executable.
+
+=cut
+
+sub lockwait_executable {
+	my $basename = shift;
+
+	my $lockname = $basename . '-lockwait';
+	my $fullpath = &get_path($lockname);
+
+	return $fullpath eq $lockname
+		? $basename
+		: $fullpath;
 }
 
 =back

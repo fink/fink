@@ -292,7 +292,16 @@ sub get_site_retry {
 	}
 	if ($next_set ne "") {
 		push @choice_list, "retry-next";
-		if($#choice_list == 2) {  # No more mirrors in this set, default to next
+		
+		# If two masters fail, and the masters come first, assume it's a new
+		# file that hasn't yet reached the masters rather than going through
+		# every single master.
+		my $finish_master = $self->{name} eq 'master'
+			&& $config->param_default('MirrorOrder', '') eq 'MasterFirst'
+			&& $self->{tries} >= 2;
+		
+		# No more mirrors in this set or finished master, default to next
+		if($#choice_list == 2 || $finish_master) {
 			$default = $#choice_list + 1;
 		}
 	}
@@ -320,7 +329,8 @@ sub get_site_retry {
 		$result =
 		&prompt_selection("How do you want to proceed?",
 				      default => [ number => $default ],
-				      choices => \@choices );
+				      choices => \@choices,
+				      category => 'fetch',);
 	}
 	$url = $self->{lastused};
 	if ($result eq "error") {

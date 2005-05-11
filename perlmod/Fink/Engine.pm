@@ -27,8 +27,9 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &pkglist2lol &cleanup_lol
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
-					  &call_queue_clear &call_queue_add);
-use Fink::CLI qw(&print_breaking
+					  &call_queue_clear &call_queue_add &lock_wait
+					  &aptget_lockwait);
+use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
 use Fink::Package;
@@ -106,7 +107,8 @@ our %commands =
 	  'showparent'				=> [\&cmd_showparent,        1, 0, 0],
 	  'dumpinfo'				=> [\&cmd_dumpinfo,				1, 0, 0],
 	  'dist-upgrade'			=> [\&cmd_dist_upgrade,			1, 0, 0],
-	  'dist-upgrade-cont'		=> [\&cmd_dist_upgrade_cont,	1, 0, 0],
+	  'dist-upgrade-cont'		=> [\&cmd_dist_upgrade_cont, 1, 0, 0],
+	  'show-deps'				=> [\&cmd_show_deps,		1, 0, 0],
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -327,9 +329,9 @@ EOF
 	@ARGV = @temp_ARGV;
 	
 	if ($full) {
-		Fink::Package->forget_packages();
+		Fink::Package->forget_packages(2);
 	}
-	Fink::Package->update_db();
+	Fink::Package->update_db(no_load => 1, no_infolist => 1);
 	Fink::Shlibs->update_shlib_db();
 }
 
@@ -394,13 +396,19 @@ sub cmd_dist_upgrade
 	}
 }
 
+sub cmd_listplugins {
+	print "Notification Plugins:\n\n";
+	Fink::Notify->list_plugins();
+	print "\n";
+}
+
 sub cmd_apropos {
 	do_real_list("apropos", @_);	
 }
 
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
-	my ($pname, $package, $lversion, $vo, $iflag, $description);
+	my ($pname, $package, $lversion, $vo, $iflag);
 	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer);
 	my ($buildonly, $pkgtree);
 	my %options =
@@ -502,6 +510,8 @@ sub do_real_list {
 
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
+
+		my $description;
 		if ($package->is_virtual() == 1) {
 			next if $cmd eq "apropos";
 			next unless $options{installedstate} & $ISTATE_ABSENT;
@@ -516,7 +526,8 @@ sub do_real_list {
 			$description = "[virtual package]";
 		} else {
 			$lversion = &latest_version($package->list_versions());
-			$vo = $package->get_version($lversion);
+			# noload: don't bother loading fields until we know we need them
+			$vo = $package->get_version($lversion, 1);
 			# $iflag installed pkg precedence: real-latest > real-old > provided
 			if ($vo->is_installed()) {
 				next unless $options{installedstate} & $ISTATE_CURRENT;
@@ -536,26 +547,30 @@ sub do_real_list {
 				next unless $options{installedstate} & $ISTATE_ABSENT;
 				$iflag = "   ";
 			}
-			$description = $vo->get_shortdescription($desclen);
 		}
+		$vo = $package->get_version($lversion); # okay, now we need all fields
+
+		# non-virtuals didn't get desc earlier
+		$description = $vo->get_shortdescription($desclen) unless defined $description;
+
 		if (defined $buildonly) {
 			next unless $vo->param_boolean("builddependsonly");
 		}
 		if (defined $section) {
 			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
-			$section =~ s/[\=]?(.*)/$1/;
 		}
 		if (defined $maintainer) {
 			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
 		}
 		if (defined $pkgtree) {
 			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
-#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
 		}
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
 		}
+
 		if ($namelen && length($pname) > $namelen) {
+			# truncate pkg name if wider than its field
 			$pname = substr($pname, 0, $namelen - 3)."...";
 		}
 
@@ -628,9 +643,15 @@ sub cmd_listpackages {
 }
 
 sub cmd_scanpackages {
+	my $quiet = shift || 0;
 	my @treelist = @_;
 	my ($tree, $treedir, $cmd, $archive, $component);
-
+	
+	# two scanpackages at once sucks, so sync on a lockfile
+	my $lockfile = "$basepath/fink/override.lock";
+	my $fh = lock_wait($lockfile, exclusive => 1,
+		desc => "another Fink's scanpackages") or die "Can't get lock!\n";
+	
 	# do all trees by default
 	if ($#treelist < 0) {
 		@treelist = $config->get_treelist();
@@ -679,9 +700,23 @@ sub cmd_scanpackages {
 			mkdir_p $treedir or
 				die "can't create directory $treedir\n";
 		}
-
-		$cmd = "dpkg-scanpackages $treedir override | gzip >$treedir/Packages.gz";
-		if (&execute($cmd)) {
+		
+		# apt-ftparchive with caching is super fast
+		my $ftparchive = "$basepath/bin/apt-ftparchive";
+		if (-x $ftparchive) {
+			my $cachedir = "$basepath/var/db";
+			mkdir_p $cachedir unless -d $cachedir;
+			
+			my $cachedb = "$cachedir/apt-ftparchive.db";
+			$cmd = "$ftparchive -d $cachedb"
+				. " -o Dir::Bin::gzip=$basepath/bin/gzip packages $treedir"
+				. " override";
+		} else {
+			$cmd = "dpkg-scanpackages $treedir override";
+		}
+		$cmd .= " | gzip > $treedir/Packages.gz";
+		
+		if (&execute($cmd, quiet => $quiet)) {
 			unlink("$treedir/Packages.gz");
 			die "package scan failed in $treedir\n";
 		}
@@ -696,6 +731,8 @@ Architecture: $debarch
 EOF
 		close(RELEASE) or die "can't write Release file: $!\n";
 	}
+	
+	close $fh;
 }
 
 ### package-related commands
@@ -732,7 +769,7 @@ sub cmd_fetch {
 	&call_queue_clear;
 	foreach $package (@plist) {
 		my $pname = $package->get_name();
-		if ($norestrictive && $package->has_param("license") && $package->param("license") =~ m/Restrictive\s*$/i) {
+		if ($norestrictive && $package->get_license() =~ /Restrictive$/i) {
 				print "Ignoring $pname due to License: Restrictive\n";
 				next;
 		}
@@ -825,7 +862,7 @@ sub do_fetch_all {
 		$version = &latest_version($package->list_versions());
 		$vo = $package->get_version($version);
 		if (defined $vo) {
-			if ($norestrictive && $vo->has_param("license") && $vo->param("license") =~ m/Restrictive\s*$/i) {
+			if ($norestrictive && $vo->get_license() =~ m/Restrictive$/i) {
 				print "Ignoring $pname due to License: Restrictive\n";
 				next;
 			}
@@ -1258,7 +1295,7 @@ EOF
 	if ($config->binary_requested()) {
 		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
 		# 'apt-get autoclean'
-		my $aptcmd = "$basepath/bin/apt-get ";
+		my $aptcmd = aptget_lockwait() . " ";
 		if (Fink::Config::verbosity_level() == 0) {
 			$aptcmd .= "-qq ";
 		}
@@ -1279,7 +1316,7 @@ EOF
 
 		# Running scanpackages and updating apt-get db
 		print "Updating the list of locally available binary packages.\n";
-		&cmd_scanpackages;
+		&cmd_scanpackages(1);
 		print "Updating the indexes of available binary packages.\n";
 		if (&execute($aptcmd . "update")) {
 			print("WARNING: Failure while updating indexes.\n");
@@ -1664,7 +1701,8 @@ sub real_install {
 				}
 				$dname = &prompt_selection("Pick one:",
 					intro   => "fink needs help picking an alternative to satisfy a virtual dependency. The candidates:",
-					default => [number=>$choice], choices => \@choices);
+					default => [number=>$choice], choices => \@choices,
+					category => 'virtualdep',);
 			}
 
 			# the dice are rolled...
@@ -2024,6 +2062,21 @@ sub real_install {
 			die "Problem resolving dependencies. Check for circular dependencies.\n";
 		}
 	}
+	
+	if ($willbuild && $config->param_boolean("AutoScanpackages")) {
+		print "Updating the list of locally available binary packages.\n";
+		&cmd_scanpackages(1);
+		print "Updating the indexes of available binary packages.\n";
+		my $aptcmd = "$basepath/bin/apt-get ";
+		if (Fink::Config::verbosity_level() == 0) {
+			$aptcmd .= "-qq ";
+		} elsif (Fink::Config::verbosity_level() < 2) {
+			$aptcmd .= "-q ";
+		}
+		if (&execute($aptcmd . "update")) {
+			print("WARNING: Failure while updating indexes.\n");
+		}
+	}
 }
 
 ### helper routines
@@ -2220,10 +2273,12 @@ EOF
 				printf "infofile: %s\n", $pkg->get_info_filename();
 			} elsif ($_ eq 'package') {
 				printf "%s: %s\n", $_, $pkg->get_name();
+			} elsif ($_ eq 'epoch') {
+				printf "%s: %s\n", $_, $pkg->get_epoch();
 			} elsif ($_ eq 'version') {
-				printf "%s: %s\n", $_, $pkg->get_version(); 
+				printf "%s: %s\n", $_, $pkg->get_version();
 			} elsif ($_ eq 'revision') {
-				printf "%s: %s\n", $_, $pkg->param_default('revision', '1');
+				printf "%s: %s\n", $_, $pkg->get_revision();
 			} elsif ($_ eq 'parent') {
 				printf "%s: %s\n", $_, $pkg->get_parent->get_name() if $pkg->has_parent;
 			} elsif ($_ eq 'splitoffs') {
@@ -2262,10 +2317,12 @@ EOF
 				# multiline field, so indent 1 space always
 				# format_description does that for us
 				print "$_:\n", Fink::PkgVersion::format_description($pkg->param_expanded($_, 2)) if $pkg->has_param($_);
-			} elsif ($_ eq 'type'       or $_ eq 'license' or
-					 $_ eq 'maintainer' or $_ eq 'homepage'
-					) {
+			} elsif ($_ eq 'type' or $_ eq 'maintainer' or $_ eq 'homepage') {
 				printf "%s: %s\n", $_, $pkg->param_default($_,'[undefined]');
+			} elsif ($_ eq 'license') {
+				my $license = $pkg->get_license();
+				$license = '[undefined]' if not length $license;
+				printf "%s: %s\n", $_, $license;
 			} elsif ($_ eq 'pre-depends'    or $_ eq 'depends'        or
 					 $_ eq 'builddepends'   or $_ eq 'provides'       or
 					 $_ eq 'replaces'       or $_ eq 'conflicts'      or
@@ -2310,7 +2367,7 @@ EOF
 			} elsif ($_ =~ /^source(\d*)$/) {
 				my $src = $pkg->get_source($1);
 				printf "%s: %s\n", $_, $src if defined $src && $src ne "none";
-			} elsif ($_ eq 'gcc' or $_ eq 'epoch' or $_ =~ /^source\d*-md5$/) {
+			} elsif ($_ eq 'gcc' or $_ =~ /^source\d*-md5$/) {
 				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
 			} elsif ($_ eq 'configureparams') {
 				my $cparams = &expand_percent(

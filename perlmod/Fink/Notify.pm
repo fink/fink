@@ -77,7 +77,7 @@ happen during package installation/removal.
   }
 
   sub about {
-    my @about = ("NotifierClass", "1.1");
+    my @about = ("NotifierClass", "1.1", "Short Description", "URL");
 	return wantarray? @about : \@about;
   }
 
@@ -248,7 +248,8 @@ sub notify {
 =item about() - about the output plugin
 
 This method returns the name and version of the output plugin
-currently loaded. The return either as a list (notifier-type, version)
+currently loaded. The return either as a list (notifier-type, version,
+short description, URL)
 or a ref to that list, depending on caller context.
 
 Notifier modules must provide an about() method that returns data for
@@ -259,7 +260,7 @@ their module.
 sub about {
 	my $self = shift;
 
-	my @about = ('Null', $VERSION);
+	my @about = ('Null', $VERSION, 'Empty notification plugin (do nothing)');
 	return wantarray? @about : \@about;
 }
 
@@ -273,6 +274,60 @@ notify().
 
 sub do_notify {
 	return 1;
+}
+
+=item list_plugins() - list the available notification plugins
+
+This method will list the available notification plugins for
+Fink::Notify to use.
+
+=cut
+
+sub list_plugins {
+	my $self = shift;
+
+	my %plugins;
+
+	for my $directory (reverse @INC) {
+		if (-d $directory . '/Fink/Notify') {
+			if (opendir(DIR, $directory . '/Fink/Notify')) {
+				for my $plugin (grep(/\.pm$/, readdir(DIR))) {
+					my $plugin_obj;
+					my $plugname = "Fink::Notify::$plugin";
+					$plugname =~ s/\.pm$//;
+					eval "require $plugname; \$plugins{$plugname}->{'about'} = $plugname->about;";
+					eval "\$plugin_obj = $plugname->new()";
+					if (defined $plugin_obj) {
+						$plugins{$plugname}->{'enabled'} = 1;
+					}
+				}
+			}
+		}
+	}
+
+	$plugins{'Fink::Notify::Null'} = {
+		about   => scalar $self->about(),
+		enabled => 1,
+	};
+
+	my $active_plugin = Fink::Notify->new();
+
+	for my $key (sort keys %plugins) {
+		my ($shortname) = $key =~ /^.*\:\:([^\:]*)$/;
+
+		my $installed = "";
+		$installed = "(i)" if ($plugins{$key}->{'enabled'});
+		$installed = " i " if ($shortname eq $active_plugin->about()->[0]);
+
+		my @about = @{$plugins{$key}->{'about'}};
+		for (0..3) {
+			$about[$_] = "" if (not defined $about[$_]);
+		}
+
+		$about[2] = substr($about[2], 0, 44);
+		printf("%3s %-15.15s %-11.11s %s\n", $installed, $shortname, $about[1], $about[2]);
+		print(" " x 32, $about[3], "\n") if ($about[3] ne "");
+	}
 }
 
 =back
