@@ -1,3 +1,8 @@
+2005-05-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.23.10, a release
+	on branch_0_23 intended for 10.4-transitional/stable only
+
 2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
 
         * postinstall.pl.in: create 10.4 tree as a symlink to 
