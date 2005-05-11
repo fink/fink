@@ -6,7 +6,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,26 +30,45 @@ use strict;
 use lib "@PREFIX@/lib/perl5";
 
 use Fink::Bootstrap qw(&check_host);
-use Fink::Services qw(&print_breaking &prompt &prompt_boolean
-                         &prompt_selection &read_config &execute);
+use Fink::Services qw(&read_config &execute);
+use Fink::CLI qw(&print_breaking &prompt_boolean);
 
-use Fink::Config qw($config $basepath $libpath);
+use Fink::Config qw($config);
+use Fink::Configure qw($conf_file_compat_version);
 
 use File::Find;
 use File::Basename;
 
+my ($basepath);
+$basepath = "@PREFIX@";
+
 # read the configuration file
-my ($config, $configpath);
-$configpath = "@PREFIX@/etc/fink.conf";
+my $config;
+my $configpath = "@PREFIX@/etc/fink.conf";
+my $configNeedsUpdate = 0;
 if (-f $configpath) {
-  $config = &Fink::Services::read_config($configpath);
+  $config = &Fink::Services::read_config($configpath, 
+                                         { Basepath => '@PREFIX@' }
+                                        );
 } else {
   print "ERROR: Configuration file \"$configpath\" not found.\n";
   exit 1;
 }
 
-my ($basepath);
-$basepath = "@PREFIX@";
+
+### check if we need to rerun configure since the fink.conf file
+### compatibility version has changed.
+my $expectedConfFileCompatVersion = $Fink::Configure::conf_file_compat_version;
+my $actualConfFileCompatVersion = $config->param_default("ConfFileCompatVersion", "0");
+if ($expectedConfFileCompatVersion > $actualConfFileCompatVersion) {
+  $configNeedsUpdate = 1;
+}
+elsif ($expectedConfFileCompatVersion < $actualConfFileCompatVersion) {
+  &print_breaking("\nWARNING: Your fink configuration file \"$configpath\" " . 
+        "was created from a fink version newer than this one! Try to run " .
+        "'fink configure' or reinstall the latest fink to correct this.\n\n");
+}
+
 
 ### check if we like this system
 
@@ -92,14 +111,11 @@ if (-d "$distdir/CVS") {
 
 ### If the old dists directory has not yet been moved to $basepath/fink/10.1:
 ###  1) move it there, add appropriate symlinks to dists
-###  2) add a line to $basepath/etc/apt/sources.list so that apt finds old
-###     debs
-###  3) re-do the symlinks in /sw/fink/debs to point to the new locations
+###  2) re-do the symlinks in /sw/fink/debs to point to the new locations
+###  3) to enable apt to find these old debs, we need some additions to
+###     $basepath/etc/apt/sources.list which are made in Config.pm
 
-
-my ($aptfile, $basenm) ;
-
-$aptfile = "$basepath/etc/apt/sources.list" ;
+my $basenm;
 
 if (not -l $distdir) {
   print "Needs an update...\n";
@@ -113,35 +129,6 @@ if (not -l $distdir) {
   symlink "$basepath/fink/10.1", "$basepath/fink/old/dists" or die "ERROR: Can't create link from $basepath/fink/10.1 to $basepath/fink/old/dists\n";
 
 
-  ### Now we work on apt ...
-  ###
-  ### First step is to change the URL for the bindist if necessary...
-
-  if (-f $aptfile) {
-    if (&execute("sed 's|fink.sourceforge.net/bindist|us.dl.sourceforge.net/fink/direct_download|g' < $aptfile > $aptfile.old")) {
-      print "ERROR: Can't make substitutions on $aptfile, writing them to $aptfile.old\n";
-      exit 1;
-    }
-    open(SOURCES, ">$aptfile") or die "can't create $aptfile";
-    print SOURCES <<"EOF";
-# Allow APT to find pre-10.2 deb files
-deb file:$basepath/fink/old local main
-deb file:$basepath/fink/old stable main crypto
-#deb file:$basepath/fink/old unstable main crypto
-
-EOF
-    close(SOURCES) or die "can't write $aptfile";
-    if (&execute("cat $aptfile.old >> $aptfile")) {
-      print "ERROR: Can't concatentate $aptfile and $aptfile.old\n";
-      exit 1;
-    }
-    if (&execute("rm $aptfile.old")) {
-      print "ERROR: Can't remove $aptfile.old\n";
-      exit 1;
-    }
-  }
-
-
   ### Now see if CVS is present...
   ### If it is, we need to create $basepath/fink/10.2 as well as setup CVS
   ### in both $basepath/fink/10.1 and $basepath/fink/10.2
@@ -149,11 +136,11 @@ EOF
   if (-d $basepath."/fink/CVS") {
     print "\n NOTE: You have fink set up to use CVS for updates, and with this\n version of fink, the CVS setup has slightly changed.  After fink has\n finished setting up, you should immediately run 'fink selfupdate-cvs',\n 'fink scanpackages', and then 'apt-get update' in order to \n complete your upgrade.\n\n";
     if (not -d $basepath."/fink/10.2") {
-      if(&execute("mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
+      if(&execute("/bin/mkdir -p $basepath/fink/10.2/local/main/finkinfo")) {
 	print "ERROR: couldn't create directory $basepath/fink/10.2/local/main/finkinfo\n";
 	exit 1;
       }
-      if (&execute("chown -R $username $basepath/fink/10.2")) {
+      if (&execute("/usr/sbin/chown -R $username $basepath/fink/10.2")) {
 	print "ERROR: couldn't change ownership of $basepath/fink/10.2 to $username\n";
 	exit 1;
       }
@@ -180,7 +167,7 @@ D/10.2////
 /.cvsignore/1.1/Tue Aug 20 22:01:32 2002//
 EOF
     close(ENTRIES) or die "can't write $basepath/fink/CVS/Entries";
-    if (&execute("mkdir $basepath/fink/10.2/CVS")) {
+    if (&execute("/bin/mkdir $basepath/fink/10.2/CVS")) {
       print "ERROR: Can't create directory $basepath/fink/10.2/CVS\n";
       exit 1;
     }
@@ -198,11 +185,11 @@ EOF
 D
 EOF
     close(ENTRIES) or die "can't write $basepath/fink/10.2/CVS/Entries";
-    if (&execute("chown -R $username $basepath/fink/10.2/CVS")) {
+    if (&execute("/usr/sbin/chown -R $username $basepath/fink/10.2/CVS")) {
       print "ERROR: Can't change ownership of $basepath/fink/10.2/CVS to $username\n";
       exit 1;
     }
-  }
+}
 
   ### We create new symlinks in $basepath/fink/debs to point to the existing
   ### debs in the 10.1 tree
@@ -218,16 +205,24 @@ EOF
   find ({ wanted => $wanted, follow => 1,  no_chdir => 1 }, "$basepath/fink/10.1");
 }
 
-### Now, if we are running 10.2, we need to create $basepath/fink/10.2 if
+### Now, if we are running 10.2 or later, we need to create $basepath/fink/10.2 if
 ### still needed, and then make a symlink
 
 if (not $distribution =~ /10.1/) {
+  # For now, 10.4 should be a link to 10.4-transitional
+  if($distribution eq "10.4" and not -d "10.4") {
+    if (&execute("ln -s 10.4-transitional 10.4")) {
+      print "ERROR: Can't create link from 10.4-transitional to 10.4\n";
+      exit 1;
+    }
+  }
+
   if (not -d $basepath."/fink/".$distribution) {
-    if(&execute("mkdir -p $basepath/fink/$distribution/local/main/finkinfo")) {
+    if(&execute("/bin/mkdir -p $basepath/fink/$distribution/local/main/finkinfo")) {
       print "ERROR: couldn't create directory $basepath/fink/$distribution/local/main/finkinfo\n";
       exit 1;
     }
-    if (&execute("chown -R $username $basepath/fink/$distribution")) {
+    if (&execute("/usr/sbin/chown -R $username $basepath/fink/$distribution")) {
       print "ERROR: couldn't change ownership of $basepath/fink/$distribution to $username\n";
       exit 1;
     }
@@ -237,7 +232,25 @@ if (not $distribution =~ /10.1/) {
     print "ERROR: Can't create link from $distribution to $distdir\n";
     exit 1;
   }
+ 
 }
+
+
+if ($configNeedsUpdate) {
+  &print_breaking("\nThis fink version introduces new settings stored in the " .
+        "fink configuration file \"$configpath\". You should rerun the " .
+        "configuration process.\n");
+  my $answer = &prompt_boolean("Do you want to configure now?", default => 0,
+  	timeout => 60);
+  if ($answer) {
+    require Fink::Configure;
+    Fink::Configure::configure();
+  }
+  else {
+    print "Please remember to call 'fink configure' later!\n\n";
+  }
+}
+
 
 exit 0;
 

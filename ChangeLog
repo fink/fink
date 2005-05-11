@@ -1,3 +1,8 @@
+2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
+
+        * postinstall.pl.in: create 10.4 tree as a symlink to 
+	10.4-transitional (temporary, until we create a real 10.4 tree)
+
 2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.5, a release
