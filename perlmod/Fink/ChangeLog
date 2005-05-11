@@ -1,3 +1,9 @@
+2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
+
+	* PkgVersion.pm: better checking for SetCXX
+	* Bootstrap.pm: use 10.4 distro instead of 10.4-transitional if
+	the environment variable FINK_NOTRANS is set
+	
 2005-05-10  Daniel Macks  <dmacks@netspace.org>
 
 	* Text/ParseWords.pm: import Text::ParseWords-3.23 from perl5.8.6
