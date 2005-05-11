@@ -2772,7 +2772,9 @@ END
 	# the package has sepcified it with SetCXX
 
 	if (not $self->has_param("SetCXX") and not $self->param_boolean("NoSetCXX") and (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional"))) {
-		$script_env{'CXX'} = 'g++-3.3';
+		if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
+			$script_env{'CXX'} = 'g++-3.3';
+		}
 	}
 
 	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 

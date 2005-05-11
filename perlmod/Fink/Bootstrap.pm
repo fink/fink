@@ -180,7 +180,12 @@ $gcc = Fink::Services::enforce_gcc("Under CURRENT_SYSTEM, Fink must be bootstrap
 	} elsif ($host =~ /^powerpc-apple-darwin8\.[0]\.0/) {
 		&print_breaking("This brand new system is still being tested " .
             "but should work.");
-		$distribution = "10.4-transitional";
+		if($ENV{FINK_NOTRANS}) {
+			&print_breaking("Using the non-transitional tree...");
+			$distribution = "10.4";
+		} else {
+			$distribution = "10.4-transitional";
+		}
 	} elsif ($host =~ /^powerpc-apple-darwin[8-9]\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
