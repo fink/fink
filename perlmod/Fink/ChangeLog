@@ -1,3 +1,7 @@
+2005-05-15  Dave Morrison  <dmrrsn@sourceforge.net>
+
+	* VirtPackage.pm: correction of gimp-print7-shlibs entry
+
 2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
 
         * PkgVersion.pm: better checking for SetCXX

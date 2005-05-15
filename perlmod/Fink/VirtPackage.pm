@@ -716,7 +716,7 @@ comes with Mac OS X 10.4 and above.  If it shows as not
 installed, you must install the GimpPrintPrinterDrivers
 package that came with your Mac OS X CDs.
 END
-	$hash->{compilescript} = &gen_compile_script($hash);
+	$hash->{compilescript} = $compile_script;
 
 	if ( has_lib('libgimpprint.7.dylib') ) {
 		print STDERR "- found gimp-print7-shlibs 4.2.6-1\n" if ($options{debug});
