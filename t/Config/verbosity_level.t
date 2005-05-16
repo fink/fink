@@ -3,11 +3,11 @@
 use strict;
 use Test::More 'no_plan';
 
-use Fink::Config qw(verbosity_level set_options);
+use Fink::Config qw(set_options);
 
 my $config = Fink::Config->new_with_path("basepath/etc/fink.conf");
 
-is( verbosity_level(), 0 );
+is( $config->verbosity_level(), 0 );
 
 # We take highest among verbosity and verbose
 my @Verbosity_Levels = (
@@ -24,6 +24,6 @@ foreach my $test (@Verbosity_Levels) {
 
     $config->set_param('Verbose', $verbose);
     set_options( { verbosity => $verbosity } );
-    is( verbosity_level(), $level, "$verbose + $verbosity == $level" );
+    is( $config->verbosity_level(), $level, "$verbose + $verbosity == $level" );
 }
 

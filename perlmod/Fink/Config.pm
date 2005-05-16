@@ -35,7 +35,7 @@ require Exporter;
 our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath $dbpath
                       $distribution $ignore_errors
-                      get_option set_options verbosity_level
+                      get_option set_options
                      );
 our $VERSION	 = 1.00;
 
@@ -529,7 +529,7 @@ sub get_option {
 
 =item verbosity_level
 
-  my $level = verbosity_level();
+  my $level = $config->verbosity_level();
 
 Return the current verbosity level as a value 0-3, where 0 is the
 quietest. This is affected by the --verbose and --quiet command line
@@ -570,8 +570,10 @@ my %verb_names = (
 );
 
 sub verbosity_level {
+	my $self = shift;
+
 	# fink.conf field (see Configure.pm)
-	my $verbosity = $config->param_default("Verbose", 1);
+	my $verbosity = $self->param_default("Verbose", 1);
 
 	# cmdline flags (see fink.in)
 	my $runtime = get_option("verbosity");

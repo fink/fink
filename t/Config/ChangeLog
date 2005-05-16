@@ -1,6 +1,10 @@
 2005-05-16  Daniel Macks  <dmacks@netspace.org>
 
-	* Config/verbosity_level.t: always pick highest value
+	* exports.t, verbosity_level.t: verbosity_level is now an object method
+
+2005-05-16  Daniel Macks  <dmacks@netspace.org>
+
+	* verbosity_level.t: always pick highest value
 
 2004-12-7  Daniel Macks  <dmacks@netspace.org>
 

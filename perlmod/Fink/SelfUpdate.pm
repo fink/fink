@@ -260,7 +260,7 @@ sub setup_direct_cvs {
 
 	# add cvs quiet flag if verbosity level permits
 	my $verbosity = "-q";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
 	my $cvsrepository = "cvs.sourceforge.net";
@@ -368,7 +368,7 @@ sub do_direct_cvs {
 
 	# add cvs quiet flag if verbosity level permits
 	my $verbosity = "-q";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
 
@@ -444,7 +444,7 @@ sub do_tarball {
 	}
 
 	$verbosity = "";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "v";
 	}
 	$unpack_cmd = "tar -xz${verbosity}f $pkgtarball";
@@ -472,10 +472,10 @@ sub do_finish {
 	if ($config->binary_requested()) {
 		print "Downloading the indexes of available packages in the binary distribution.\n";
 		my $aptcmd = aptget_lockwait() . " ";
-		if (Fink::Config::verbosity_level() == 0) {
+		if ($config->verbosity_level() == 0) {
 			$aptcmd .= "-qq ";
 		}
-		elsif (Fink::Config::verbosity_level() < 2) {
+		elsif ($config->verbosity_level() < 2) {
 			$aptcmd .= "-q ";
 		}
 		$aptcmd .= "update";
@@ -554,7 +554,7 @@ sub do_direct_rsync {
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
 	my $nohfs ="";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "-v";
 	}
 	if (system("rsync -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {
