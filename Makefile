@@ -1,6 +1,7 @@
 PREFIX=/sw
 VERSION=`cat VERSION`
 TEST_BASEPATH=$(PWD)/t/basepath
+TESTS=.
 
 all:
 	@echo    "usage: $(MAKE) <target>"
@@ -27,6 +28,6 @@ test_setup:
 test: test_setup
 	@# must test with same perl binary as the one to be used to run fink
 	@# (which also must be coded into t/Services/execute_nonroot_okay.t)
-	@cd t && ./testmore.pl || find . -name '*.t' | sort | xargs /usr/bin/perl -I${PWD}/perlmod -MTest::Harness -e 'runtests(@ARGV)'
+	@cd t && ./testmore.pl || find ${TESTS} -name '*.t' | sort | xargs /usr/bin/perl -I${PWD}/perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
 .PHONY: all test install
