@@ -9,13 +9,13 @@ my $config = Fink::Config->new_with_path("basepath/etc/fink.conf");
 
 is( verbosity_level(), 0 );
 
-# XXX Who wins, verbosity or verbose?  Should it pick the highest?
+# We take highest among verbosity and verbose
 my @Verbosity_Levels = (
                         ['true',   0,     3],
                         ['high',   0,     3],
                         ['medium', 0,     2],
                         ['low',    0,     1],
-                        ['low',    2,     1],  # XXX should this be 2?
+                        ['low',    2,     2],
                         [3,       -1,     0],
 );
 
