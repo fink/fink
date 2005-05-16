@@ -1,3 +1,7 @@
+2005-05-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Config/verbosity_level.t: always pick highest value
+
 2004-12-7  Daniel Macks  <dmacks@netspace.org>
 
 	* verbosity_level.t: Correct for new highest level is 4.

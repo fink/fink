@@ -1,7 +1,3 @@
-2005-05-16  Daniel Macks  <dmacks@netspace.org>
-
-	* Config/verbosity_level.t: always pick highest value
-
 2005-02-02  David H. <dmalloc@users.sourceforge.net>
 
 	* Notify: Added Subdirectory for Notify tests.
