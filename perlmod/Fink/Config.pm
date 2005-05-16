@@ -529,32 +529,68 @@ sub get_option {
 
 =item verbosity_level
 
-  my $level = verbosity_level;
+  my $level = verbosity_level();
 
-Determine the current verbosity level. This is affected by the
---verbose and --quiet command line options as well as by the "Verbose"
-setting in fink.conf.
+Return the current verbosity level as a value 0-3, where 0 is the
+quietest. This is affected by the --verbose and --quiet command line
+options as well as by the "Verbose" setting in fink.conf. A --quiet
+always takes precedence; otherwise the more verbose of the fink.conf
+and cmdline values is used. The former documentation here described
+the values as:
+
+=over 4
+
+=item 3
+
+full
+
+=item 2
+
+download and tarballs
+
+=item 1
+
+download
+
+=item 0
+
+none
+
+=back
 
 =cut
 
-sub verbosity_level {
-	my $verblevel = $config->param_default("Verbose", 1);
-	my $verbosity = get_option("verbosity");
+{
 
-	if ($verbosity != -1 && ($verbosity >= 3 || $verblevel =~ /([3-9]|true|high)/)) {
-		### Sets Verbose mode to Full
-		$verbosity = 3;
-	} elsif ($verbosity != -1 && $verblevel eq "2" || $verblevel eq "medium") {
-		### Sets Verbose mode to download and tarballs
-		$verbosity = 2;
-	} elsif ($verbosity != -1 && $verblevel eq "1" || $verblevel eq "low") {
-		### Sets Verbose mode to download
-		$verbosity = 1;
-	} else {
-		### Sets Verbose mode to none
-		$verbosity = 0;
+my %verb_names = (
+	true   => 3,
+	high   => 3,
+	medium => 2,
+	low    => 1,
+);
+
+sub verbosity_level {
+	# fink.conf field (see Configure.pm)
+	my $verbosity = $config->param_default("Verbose", 1);
+
+	# cmdline flags (see fink.in)
+	my $runtime = get_option("verbosity");
+
+	return 0 if $runtime == -1;
+
+	# convert keywords to values (or 0 if keyword is bogus)
+	if ($verbosity =~ /\D/) {
+		$verbosity = exists $verb_names{lc $verbosity} ? $verb_names{lc $verbosity} : 0;
 	}
+
+	# take higher value (== more verbose) of fink.conf and cmdline
+	$verbosity = $runtime if $runtime > $verbosity;
+
+	# sanity check: don't exceed maximum known value
+	$verbosity = 3 if $verbosity > 3;
+
 	return $verbosity;
+}
 }
 
 =item binary_requested
