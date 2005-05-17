@@ -303,7 +303,7 @@ sub validate_info_file {
 	my $error_found = 0;
 	my $arch = get_arch();
 
-	if (Fink::Config::verbosity_level() >= 3) {
+	if ($config->verbosity_level() >= 3) {
 		print "Validating package file $filename...\n";
 	}
 	
@@ -733,7 +733,7 @@ sub validate_info_file {
 		}
 	}
 	
-	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
+	if ($looks_good and $config->verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
 
@@ -1105,7 +1105,7 @@ sub validate_dpkg_file {
 		}
 	}
 
-	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
+	if ($looks_good and $config->verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
 

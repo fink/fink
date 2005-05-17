@@ -20,7 +20,7 @@ my $config_obj = Fink::Config->new_with_path('basepath/etc/fink.conf');
     BEGIN {
         @optional_exports = qw($config $basepath $libpath $debarch	
                                $distribution $buildpath
-                               get_option set_options verbosity_level
+                               get_option set_options
                               );
     }
     use Fink::Config @optional_exports;

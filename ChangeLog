@@ -1,3 +1,19 @@
+2005-05-16  Matthew Sachs  <msachs@apple.com>
+
+	* postinstall.pl.in: Use ln -sf instead of ln -s
+	to make the 10.4 symlink; otherwise "fink rebuild fink"
+	will fail under FINK_NOTRANS since the symlink will
+	already exist.
+
+2005-05-16  Chris Zubrzycki <beren12@users.sourceforge.net>
+
+	* postinstall.pl.in: Make fink aware of dist-upgrade and do not
+	change the Dist of fink without a dist-upgrade
+
+2005-05-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: 'test' target takes TESTS var to only run subset of tests
+
 2005-05-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.6, a release

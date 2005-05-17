@@ -379,14 +379,7 @@ sub cmd_list {
 
 sub cmd_dist_upgrade
 {
-	require Fink::SelfUpdate;
-	&Fink::SelfUpdate::check(3);
-	&cmd_dist_upgrade_cont();
-}
-
-sub cmd_dist_upgrade
-{
-	unless Fink::Services::checkDistribution()
+	unless (Fink::Services::checkDistribution())
 	{
 		print("FOO!!!!!");
 		print("Fink::Services::checkDistribution: " . Fink::Services::checkDistribution())
@@ -1296,10 +1289,10 @@ EOF
 		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
 		# 'apt-get autoclean'
 		my $aptcmd = aptget_lockwait() . " ";
-		if (Fink::Config::verbosity_level() == 0) {
+		if ($config->verbosity_level() == 0) {
 			$aptcmd .= "-qq ";
 		}
-		elsif (Fink::Config::verbosity_level() < 2) {
+		elsif ($config->verbosity_level() < 2) {
 			$aptcmd .= "-q ";
 		}
 		if($dryrun) {
@@ -1400,9 +1393,8 @@ sub real_install {
 				  : 'will be'
 				  );
 
-	if (Fink::Config::verbosity_level() > -1) {
-		$showlist = 1;
-	}
+	my $verbosity = $config->verbosity_level();
+	$showlist = 1 if $verbosity > -1;
 
 	%deps = ();		# hash by package name
 	%cons = ();		# hash by package name
@@ -1513,7 +1505,7 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built without being installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
@@ -1523,7 +1515,7 @@ sub real_install {
 		  or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
@@ -1532,7 +1524,7 @@ sub real_install {
 		         and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
 			# We want to install this package and will download the .deb for it
 			# -> only include life-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be downloaded as a binary package and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
@@ -1542,7 +1534,7 @@ sub real_install {
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
@@ -2068,9 +2060,9 @@ sub real_install {
 		&cmd_scanpackages(1);
 		print "Updating the indexes of available binary packages.\n";
 		my $aptcmd = "$basepath/bin/apt-get ";
-		if (Fink::Config::verbosity_level() == 0) {
+		if ($verbosity == 0) {
 			$aptcmd .= "-qq ";
-		} elsif (Fink::Config::verbosity_level() < 2) {
+		} elsif ($verbosity < 2) {
 			$aptcmd .= "-q ";
 		}
 		if (&execute($aptcmd . "update")) {

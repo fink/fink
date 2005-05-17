@@ -1479,6 +1479,8 @@ sub resolve_depends {
 		$oper = "dependency";
 	}
 
+	my $verbosity = $config->verbosity_level();
+
 	@deplist = ();
 
 	$idx = 0;
@@ -1502,7 +1504,7 @@ sub resolve_depends {
 		# behavior differs from 'Depends'). 
 		# But right now, enabling conflicts would cause update problems (e.g.
 		# when switching between 'wget' and 'wget-ssl')
-		if (Fink::Config::verbosity_level() > 2) {
+		if ($verbosity > 2) {
 			print "Reading $oper for ".$self->get_fullname()."...\n";
 		}
 		@speclist = split(/\s*\,\s*/, $self->pkglist_default($field, ""));
@@ -1532,14 +1534,14 @@ sub resolve_depends {
 				}
 				$package = Fink::Package->package_by_name($depname);
 				$found = 1 if defined $package;
-				if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
+				if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
 					print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 				}
 				if (not defined $package) {
 					next BUILDDEPENDSLOOP;
 				}
 
-				if (lc($field) eq "depends" && Fink::Config::verbosity_level() > 1) {
+				if (lc($field) eq "depends" && $verbosity > 1) {
 					# only bother to check for BuildDependsOnly
 					# violations if we are more verbose than default
 
@@ -1564,7 +1566,7 @@ sub resolve_depends {
 	# now we continue to assemble the larger @speclist
 	if ($include_build) {
 		# Add build time dependencies to the spec list
-		if (Fink::Config::verbosity_level() > 2) {
+		if ($verbosity > 2) {
 			print "Reading build $oper for ".$self->get_fullname()."...\n";
 		}
 		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
@@ -1576,7 +1578,7 @@ sub resolve_depends {
 		$split_idx = @speclist;
 		unless (lc($field) eq "conflicts") {
 			foreach	 $splitoff ($self->parent_splitoffs) {
-				if (Fink::Config::verbosity_level() > 2) {
+				if ($verbosity > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
 				push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
@@ -1618,7 +1620,7 @@ sub resolve_depends {
 			$package = Fink::Package->package_by_name($depname);
 
 			$found = 1 if defined $package;
-			if ((Fink::Config::verbosity_level() > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
+			if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
 				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 			}
 			if (not defined $package) {
@@ -1746,7 +1748,7 @@ sub match_package {
 	my ($pkgname, $package, $version, $pkgversion);
 	my ($found, @parts, $i, @vlist, $v, @rlist);
 
-	if (Fink::Config::verbosity_level() < 3) {
+	if ($config->verbosity_level() < 3) {
 		$quiet = 1;
 	}
 
@@ -1896,14 +1898,14 @@ sub fetch_deb {
 	my $continue = shift || 0;
 	my $dryrun = shift || 0;
 
-	if (Fink::Config::verbosity_level() > 2) {
+	if ($config->verbosity_level() > 2) {
 		print "Downloading " . $self->get_debname() . " from binary dist.\n";
 	}
 	my $aptcmd = aptget_lockwait() . " ";
-	if (Fink::Config::verbosity_level() == 0) {
+	if ($config->verbosity_level() == 0) {
 		$aptcmd .= "-qq ";
 	}
-	elsif (Fink::Config::verbosity_level() < 2) {
+	elsif ($config->verbosity_level() < 2) {
 		$aptcmd .= "-q ";
 	}
 	if($dryrun) {
@@ -2073,7 +2075,7 @@ GCC_MSG
 	$bdir = $self->get_fullname();
 
 	$verbosity = "";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "v";
 	}
 
@@ -2686,7 +2688,7 @@ EOF
 		### 3) replace it in the debian control file
 		foreach my $shlib_dep (@shlib_deps) {
 			push @$struct, ["$shlib_dep"];
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($config->verbosity_level() > 2) {
 				print "- Adding $shlib_dep to 'Depends' line\n";
 			}
 		}

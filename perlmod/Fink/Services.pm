@@ -1191,7 +1191,7 @@ sub enforce_gcc {
 
 =item get_osx_vers
 
-    my $os_x_version = get_osx_vers;
+    my $os_x_version = get_osx_vers();
 
 Returns OS X major and minor versions (if that's what this platform
 appears to be, as indicated by being able to run /usr/bin/sw_vers).
@@ -1206,13 +1206,13 @@ sub get_osx_vers
 	my $sw_vers = get_osx_vers_long();
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
-	($sw_vers == $darwin_osx) or die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+	($sw_vers == $darwin_osx) or exit "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
 	return $sw_vers;
 }
 
 =item get_osx_vers_long
 
-    my $os_x_version = get_osx_vers_long;
+    my $os_x_version = get_osx_vers_long();
 
 Returns full OS X version (if that's what this platform appears to be,
 as indicated by being able to run /usr/bin/sw_vers). The output of that
@@ -1260,17 +1260,18 @@ sub get_kernel_vers
 sub get_kernel_vers_long
 {
 	(my $darwin_version = lc((uname())[2]));
-	return $darwin_version
+	return $darwin_version;
 }
 
 sub get_system_version
 {
-	if get_osx_vers()
+	if (get_osx_vers())
 	{
 		return get_osx_vers();
 	} else {
 		return get_darwin_equiv();
 	}
+}
 
 sub checkDistribution
 {
@@ -1677,4 +1678,3 @@ sub lockwait_executable {
 
 ### EOF
 1;
-# vim: ts=4 sw=4 noet

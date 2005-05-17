@@ -58,17 +58,10 @@ END { }				# module clean-up code here (global destructor)
 
 sub check {
 	my $useopt = shift || 0;
-	my ($srcdir, $finkdir, $latest_fink, $installed_version, $answer, $dist_upgrade);
+	my ($srcdir, $finkdir, $latest_fink, $installed_version, $answer);
 
 	$srcdir = "$basepath/src";
 	$finkdir = "$basepath/fink";
-
-	# Take note if dist-upgrade being done, reset $useopt to 0
-	if ($useopt = 3)
-		{
-		$dist_upgrade = 1;
-		$useopt = 0;
-		}
 
 	if ($useopt != 0) {
 		&print_breaking("\n Please note: the command 'fink selfupdate' "
@@ -193,7 +186,6 @@ sub check {
 			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 		&do_tarball($latest_fink);
-		&do_finish($dist_upgrade);
 	}
 }
 
@@ -268,7 +260,7 @@ sub setup_direct_cvs {
 
 	# add cvs quiet flag if verbosity level permits
 	my $verbosity = "-q";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
 	my $cvsrepository = "cvs.sourceforge.net";
@@ -376,7 +368,7 @@ sub do_direct_cvs {
 
 	# add cvs quiet flag if verbosity level permits
 	my $verbosity = "-q";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
 
@@ -452,7 +444,7 @@ sub do_tarball {
 	}
 
 	$verbosity = "";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "v";
 	}
 	$unpack_cmd = "tar -xz${verbosity}f $pkgtarball";
@@ -481,10 +473,10 @@ sub do_finish {
 	if ($config->binary_requested()) {
 		print "Downloading the indexes of available packages in the binary distribution.\n";
 		my $aptcmd = aptget_lockwait() . " ";
-		if (Fink::Config::verbosity_level() == 0) {
+		if ($config->verbosity_level() == 0) {
 			$aptcmd .= "-qq ";
 		}
-		elsif (Fink::Config::verbosity_level() < 2) {
+		elsif ($config->verbosity_level() < 2) {
 			$aptcmd .= "-q ";
 		}
 		$aptcmd .= "update";
@@ -512,23 +504,12 @@ sub do_finish {
 	{
 		Fink::Engine::cmd_install("fink");
 	
-		if ($useopt)
-		{
-			# re-execute ourselves before we update the rest
-			print "Re-executing fink to use the new version...\n";
-			exec "$basepath/bin/fink dist-upgrade-cont";
-
-			# the exec doesn't return, but just in case...
-			die "re-executing fink failed, run `fink dist-upgrade-cont` manually\n";
-
-		} else {
 			# re-execute ourselves before we update the rest
 			print "Re-executing fink to use the new version...\n";
 			exec "$basepath/bin/fink selfupdate-finish";
 
 			# the exec doesn't return, but just in case...
 			die "re-executing fink failed, run 'fink selfupdate-finish' manually\n";
-		}
 
 	}
 }
@@ -573,7 +554,7 @@ sub do_direct_rsync {
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
 	my $nohfs ="";
-	if (Fink::Config::verbosity_level() > 1) {
+	if ($config->verbosity_level() > 1) {
 		$verbosity = "-v";
 	}
 	if (system("rsync -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {

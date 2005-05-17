@@ -33,7 +33,7 @@ use Fink::Bootstrap qw(&check_host);
 use Fink::Services qw(&read_config &execute);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 
-use Fink::Config qw($config);
+use Fink::Config qw($config &get_option);
 use Fink::Configure qw($conf_file_compat_version);
 
 use File::Find;
@@ -46,10 +46,11 @@ $basepath = "@PREFIX@";
 my $config;
 my $configpath = "@PREFIX@/etc/fink.conf";
 my $configNeedsUpdate = 0;
+
 if (-f $configpath) {
-  $config = &Fink::Services::read_config($configpath, 
-                                         { Basepath => '@PREFIX@' }
-                                        );
+	$config = &Fink::Services::read_config($configpath, 
+										  { Basepath => '@PREFIX@' }
+										  );
 } else {
   print "ERROR: Configuration file \"$configpath\" not found.\n";
   exit 1;
@@ -60,11 +61,12 @@ if (-f $configpath) {
 ### compatibility version has changed.
 my $expectedConfFileCompatVersion = $Fink::Configure::conf_file_compat_version;
 my $actualConfFileCompatVersion = $config->param_default("ConfFileCompatVersion", "0");
+
 if ($expectedConfFileCompatVersion > $actualConfFileCompatVersion) {
-  $configNeedsUpdate = 1;
+	$configNeedsUpdate = 1;
 }
 elsif ($expectedConfFileCompatVersion < $actualConfFileCompatVersion) {
-  &print_breaking("\nWARNING: Your fink configuration file \"$configpath\" " . 
+	&print_breaking("\nWARNING: Your fink configuration file \"$configpath\" " .
         "was created from a fink version newer than this one! Try to run " .
         "'fink configure' or reinstall the latest fink to correct this.\n\n");
 }
@@ -90,10 +92,25 @@ if ($distribution eq "unknown") {
 	exit(1);
 }
 
-### save $distribution in the config file
+### save $distribution in the config file, making sure not to stomp current settings
 
-$config->set_param("Distribution", $distribution);
-$config->save();
+my $current_dist = get_option("Distribution", $distribution);
+print("$distribution $current_dist \n");
+exit 1;
+if ($current_dist ne $distribution) {
+	print("\nYou seem to be running a fink tree that is not designed for " .
+	"this system version. Feel free to continue using fink, but you will be " .
+	"unable to build any new packages until you do a `fink dist-upgrade' and " .
+	"upgrade your fink install to the aproproiate tree.");
+
+	### Don't change current Dist setting. Only change on dist-upgrade
+	$distribution = $current_dist;
+	$config->set_param("Distribution", $distribution);
+	$config->save();
+} else {
+	$config->set_param("Distribution", $distribution);
+	$config->save();
+}
 
 ### Find the user who owns dists
 
@@ -205,13 +222,13 @@ EOF
   find ({ wanted => $wanted, follow => 1,  no_chdir => 1 }, "$basepath/fink/10.1");
 }
 
-### Now, if we are running 10.2 or later, we need to create $basepath/fink/10.2 if
-### still needed, and then make a symlink
+### Now, if we are running 10.2 or later, we need to create $basepath/fink/10.2
+### if still needed, and then make a symlink
 
 if (not $distribution =~ /10.1/) {
   # For now, 10.4 should be a link to 10.4-transitional
   if($distribution eq "10.4" and not -d "10.4") {
-    if (&execute("ln -s 10.4-transitional 10.4")) {
+    if (&execute("ln -sf 10.4-transitional 10.4")) {
       print "ERROR: Can't create link from 10.4-transitional to 10.4\n";
       exit 1;
     }

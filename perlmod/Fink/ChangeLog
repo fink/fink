@@ -1,3 +1,16 @@
+2005-05-16  Daniel Macks  <dmacks@netspace.org>
+
+	* *: verbosity_level() is now a $config object method
+
+2005-05-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Refactor and make a more coherent verbosity_level
+
+2005-05-14  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Disable copyfile when creating tarballs (otherwise we get
+	nasty dot-underscore files if we expand them with Fink's tar).
+
 2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
 
 	* PkgVersion.pm: better checking for SetCXX
