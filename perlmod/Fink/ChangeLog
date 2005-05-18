@@ -1,5 +1,9 @@
 2005-05-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm, Package.pm: Load apt DB as needed, don't try caching it.
+
+2005-05-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Services.pm, Package.pm: Move store_rename into Services.
 
 2005-05-16  Daniel Macks  <dmacks@netspace.org>

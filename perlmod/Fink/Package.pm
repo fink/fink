@@ -384,34 +384,6 @@ sub require_packages {
 	}
 }
 
-# set the aptgetable status of packages
-
-sub update_aptgetable {
-	my $class = shift; # class method
-	my $statusfile = "$basepath/var/lib/dpkg/status";
-	
-	open APTDUMP, "$basepath/bin/apt-cache dump |"
-		or die "Can't run apt-cache dump: $!";
-		
-	# Note: We assume here that the package DB exists already
-	my ($po, $pv);
-	while(<APTDUMP>) {
-		if (/^\s*Package:\s*(\S+)/) {
-			($po, $pv) = (Fink::Package->package_by_name($1), undef);
-		} elsif (/^\s*Version:\s*(\S+)/) {
-			$pv = $po->get_version($1) if defined $po;
-		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
-										# of apt-cache dump
-			# Avoid using debs that aren't really apt-getable
-			next if $1 eq $statusfile;
-			
-			$pv->set_aptgetable() if defined $pv;
-		}
-	}
-	close APTDUMP;
-}
-
-
 =private comment
 
 When Fink uses a DB dir, it needs continued access to what's inside (since it
@@ -814,7 +786,6 @@ sub pass1_update {
 	# Finish up;
 	if ($uncached) {		
 		if ($ops->{write}) {
-			$class->update_aptgetable() if $config->binary_requested();
 			store_rename($idx, $class->db_index);
 		}
 		print_breaking_stderr("done.") if &get_term_width;

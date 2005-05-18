@@ -30,10 +30,12 @@ use Fink::Services qw(&filename &execute
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
-					  &dpkg_lockwait &aptget_lockwait);
+					  &dpkg_lockwait &aptget_lockwait &lock_wait
+					  &store_rename);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection
 					&should_skip_prompt);
-use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors);
+use Fink::Config qw($config $basepath $libpath $debarch $buildpath
+					$dbpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
@@ -48,6 +50,7 @@ use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
 
 use POSIX qw(uname strftime);
+use DB_File;
 use Hash::Util;
 
 use strict;
@@ -1329,20 +1332,64 @@ sub is_fetched {
 	return 1;
 }
 
+=item
 
-### Is this package available via apt?
+  my $hashref = get_aptdb();
+  
+Get a hashref with the current packages available via apt-get
 
-sub is_aptgetable {
-	my $self = shift;
-	return defined $self->{_aptgetable};
+=cut
+
+sub get_aptdb {
+	my %db;
+	
+	my $statusfile = "$basepath/var/lib/dpkg/status";
+	open APTDUMP, "$basepath/bin/apt-cache dump |"
+		or die "Can't run apt-cache dump: $!";
+	my ($pkg, $vers);
+	while(<APTDUMP>) {
+		if (/^\s*Package:\s*(\S+)/) {
+			($pkg, $vers) = ($1, undef);
+		} elsif (/^\s*Version:\s*(\S+)/) {
+			$vers = $1;
+		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
+										# of apt-cache dump
+			# Avoid using debs that aren't really apt-getable
+			next if $1 eq $statusfile;
+			
+			$db{"$pkg-$vers"} = 1 if defined $pkg && defined $vers;
+		}
+	}
+	close APTDUMP;
+	
+	return \%db;
 }
 
+=item
 
-### Note that this package *is* available via apt
+  my $aptgetable = $pv->is_aptgetable;
+  
+Get whether or not this package is available via apt-get.
 
-sub set_aptgetable {
-	my $self = shift;
-	$self->{_aptgetable} = 1;
+=cut
+
+{
+	my $aptdb = undef;
+	
+	sub is_aptgetable {
+		my $self = shift;
+		
+		if (!defined $aptdb) { # Load it
+			if ($config->binary_requested()) {
+				$aptdb = get_aptdb();
+			} else {
+				$aptdb = {};
+			}
+		}
+		
+		# Return cached value
+		return exists $aptdb->{$self->get_name . "-" . $self->get_fullversion};
+	}
 }
 
 
