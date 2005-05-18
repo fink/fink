@@ -1454,8 +1454,8 @@ sub real_install {
 		{
 			unless (Fink::Services::checkDistribution())
 			{
-				print("Your current Fink distribution ($distribution is not compatible with OS X " . Fink::Services::get_osx_vers() . ")\n");
-				print("Please run `fink dist-upgrade` to upgrade to a compatable version for your system.\n");
+				print("Your current Fink distribution ($distribution) is not compatible with OS X " . Fink::Services::get_osx_vers() . "\n");
+				print("Please run `fink dist-upgrade' to upgrade to a compatable version for your system.\n");
 				exit;
 			}
 		}

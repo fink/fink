@@ -94,9 +94,7 @@ if ($distribution eq "unknown") {
 
 ### save $distribution in the config file, making sure not to stomp current settings
 
-my $current_dist = get_option("Distribution", $distribution);
-print("$distribution $current_dist \n");
-exit 1;
+my $current_dist = $config->param("Distribution", $distribution);
 if ($current_dist ne $distribution) {
 	print("\nYou seem to be running a fink tree that is not designed for " .
 	"this system version. Feel free to continue using fink, but you will be " .
@@ -105,12 +103,9 @@ if ($current_dist ne $distribution) {
 
 	### Don't change current Dist setting. Only change on dist-upgrade
 	$distribution = $current_dist;
-	$config->set_param("Distribution", $distribution);
-	$config->save();
-} else {
-	$config->set_param("Distribution", $distribution);
-	$config->save();
 }
+	$config->set_param("Distribution", $distribution);
+	$config->save();
 
 ### Find the user who owns dists
 

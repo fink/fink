@@ -1275,7 +1275,7 @@ sub get_system_version
 
 sub checkDistribution
 {
-	return 1
+	return 0
 }
 
 =item get_system_perl_version

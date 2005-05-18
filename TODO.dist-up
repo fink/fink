@@ -1,0 +1,7 @@
+** make checkDistribution do something
+** prevent building and rebuilding from working if current tree doesn't match what fink thinks it should
+** make dist-upgrade change the Distribution line in fink.conf
+
+*  add ability too have list of functions to be called when changing Dists with dist-upgrade
+*  add function to scan active trees, find c++ packages, and create empty dummy packages in order to enable migrating between g++ abi versions
+*   spelling
