@@ -1,3 +1,7 @@
+2005-05-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, Package.pm: Move store_rename into Services.
+
 2005-05-16  Daniel Macks  <dmacks@netspace.org>
 
 	* *: verbosity_level() is now a $config object method
