@@ -863,7 +863,7 @@ sub validate_info_component {
 				}
 				my $cond = $1;
 				# no logical AND (OR would be split() and give broken atoms)
-				if ($cond =~ /&/) {
+				if (defined $cond and $cond =~ /&/) {
 					print "Warning: bad syntax in \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
 				}
 			}
