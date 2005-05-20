@@ -2260,11 +2260,12 @@ EOF
 				my $package = Fink::Package->package_by_name($pkgname);
 				my $lversion = &latest_version($package->list_versions());
 				print "$_:\n";
-				foreach (&sort_versions($package->list_versions())) {
+				foreach my $vers (&sort_versions($package->list_versions())) {
+					my $pv = $package->get_version($vers);
 					printf " %1s%1s\t%s\n",
-						( $package->get_version($_)->is_present() or $config->binary_requested() && $package->get_version($_)->is_aptgetable() ) ? "b" : "",
-						$package->get_version($_)->is_installed() ? "i" : "",
-						$_;
+						( $pv->is_present() or $config->binary_requested() && $pv->is_aptgetable() ) ? "b" : "",
+						$pv->is_installed() ? "i" : "",
+						$vers;
 				}
 			} elsif ($_ eq 'description') {
 				printf "%s: %s\n", $_, $pkg->get_shortdescription;
