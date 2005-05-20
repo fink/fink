@@ -50,8 +50,10 @@ our @set_vars =
 	);
 
 # Required fields.
-our @required_fields =
+our @required_fields = map {lc $_}
 	qw(Package Version Revision Maintainer);
+our @splitoff_required_fields = map {lc $_}
+	qw(Package);
 
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
@@ -726,12 +728,12 @@ sub validate_info_component {
 	if (defined $splitoff_field && length $splitoff_field) {
 		$is_splitoff = 1;
 		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
-		@pkg_required_fields = qw(package);
+		@pkg_required_fields = @splitoff_required_fields;
 		%pkg_valid_fields = %splitoff_valid_fields;
 	} else {
 		@pkg_required_fields = @required_fields;
 		%pkg_valid_fields = %valid_fields;
-	}		
+	}
 
 	my $value;
 	my $looks_good = 1;

@@ -1,5 +1,9 @@
 2005-05-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Finish fieldname all-lc fixes.
+
+2005-05-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Move .info Shlibs syntax check into
 	validate_info_component. Move Provides and Shlibs checks out of
 	field loop. Control scoping of $field. Remember read_properties
