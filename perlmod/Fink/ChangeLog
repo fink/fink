@@ -1,3 +1,7 @@
+2005-05-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check pkglist-field syntax.
+
 2005-05-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Fix bug with is_aptgetable changing $_.

@@ -245,7 +245,18 @@ our %splitoff_valid_fields = map {$_, 1}
 		)
 	);
 
-
+# fields that are dpkg "Depends"-style lists of packages
+our %pkglist_fields = map {lc $_, 1}
+	(
+	 'Depends',
+	 'BuildDepends',
+	 'Conflicts',
+	 'BuildConflicts',
+	 'Provides',
+	 'Suggests',
+	 'Recommends',
+	 'Enhances',
+	);
 
 END { }				# module clean-up code here (global destructor)
 
@@ -275,6 +286,7 @@ END { }				# module clean-up code here (global destructor)
 #   + Warn if shbang in dpkg install-time scripts
 #   + Error if %i used in dpkg install-time scripts
 #   + Warn if non-ASCII chars in any field
+#   + Check syntax of dpkg Depends-style fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -837,6 +849,23 @@ sub validate_info_component {
 			if ($value =~ /\)\s*(,|\Z)/) {
 				print "Warning: Not allowed to specify version information in \"Provides\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
+			}
+		}
+
+		# check dpkg Depends-style field syntax
+		if ($pkglist_fields{$field}) {
+			(my $pkglist = $value) =~ tr/\n//d; # convert to sinle line
+			foreach (split /[,|]/, $pkglist) {
+				# each atom must be  '(optional cond) pkg (optional vers)'
+				unless (/\A\s*(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)\s*\Z/) {
+					print "Warning: bad syntax in \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+				}
+				my $cond = $1;
+				# no logical AND (OR would be split() and give broken atoms)
+				if ($cond =~ /&/) {
+					print "Warning: bad syntax in \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+				}
 			}
 		}
 	}
