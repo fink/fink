@@ -307,7 +307,7 @@ sub validate_info_file {
 	my $val_prefix = shift;
 	my ($properties, @parts);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
-	my ($field, $value);
+	my $value;
 	my ($basepath, $buildpath);
 	my ($type, $type_hash);
 	my $expand = {};
@@ -498,7 +498,7 @@ sub validate_info_file {
 	}
 
 	# Loop over all fields and verify them
-	foreach $field (keys %$properties) {
+	foreach my $field (keys %$properties) {
 		$value = $properties->{$field};
 
 		# Warn if field is obsolete
@@ -541,12 +541,12 @@ sub validate_info_file {
 		}
 
 		# Check for any source-related field without associated Source(N) field
-		if ($field =~ /^Source(\d*)-MD5|Source(\d*)Rename|Tar(\d*)FilesRename|Source(\d+)ExtractDir$/i) {
+		if ($field =~ /^Source(\d*)-MD5|Source(\d*)Rename|Tar(\d*)FilesRename|Source(\d+)ExtractDir$/) {
 			my $sourcefield = defined $+  # corresponding Source(N) field
 				? "source$+"
 				: "source";  
 			if (!exists $source_fields{$sourcefield}) {
-				my $msg = $field =~ /-MD5$/i
+				my $msg = $field =~ /-md5$/
 					? "Warning" # no big deal
 					: "Error";  # probably means typo, giving broken behavior
 					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
@@ -577,46 +577,6 @@ sub validate_info_file {
 
 			if (&validate_info_component($splitoff_properties, $splitoff_field, $filename) == 0) {
 				$looks_good = 0;
-			}
-
-			if (exists $splitoff_properties->{shlibs}) {
-				my @shlibs = split /\n/, $splitoff_properties->{shlibs};
-				chomp @shlibs;
-				my %shlibs;
-				foreach (@shlibs) {
-					my @shlibs_parts;
-					if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
-						print "Warning: Malformed line in field \"shlibs\" of \"$field\". ($filename)\n  $_\n";
-						$looks_good = 0;
-						next;
-					}
-					if (not /^(\%p)?\//) {
-						print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\" of \"$field\". ($filename)\n";
-						$looks_good = 0;
-					}
-					if ($shlibs{$shlibs_parts[0]}++) {
-						print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\" of \"$field\". ($filename)\n";
-						$looks_good = 0;
-					}
-					if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
-						print "Warning: Malformed compatibility_version for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
-						$looks_good = 0;
-					}
-					my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
-					foreach (@shlib_deps) {
-						if (not /^[a-z%]\S*\s+\(>=\s*(\S+-\S+)\)$/) {
-							print "Warning: Malformed dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
-							$looks_good = 0;
-							next;
-						}
-						my $shlib_dep_vers = $1;
-						if ($shlib_dep_vers =~ /\%/) {
-							print "Warning: Non-hardcoded version in dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
-							$looks_good = 0;
-							next;
-						}
-					}
-				}
 			}
 
 			if (defined ($value = $splitoff_properties->{files})) {
@@ -773,21 +733,21 @@ sub validate_info_component {
 		%pkg_valid_fields = %valid_fields;
 	}		
 
-	my ($field, $value);
+	my $value;
 	my $looks_good = 1;
 
 	### field-specific checks
 
 	# Verify that all required fields are present
-	foreach $field (@pkg_required_fields) {
-		unless (exists $properties->{lc $field}) {
+	foreach my $field (@pkg_required_fields) {
+		unless (exists $properties->{$field}) {
 			print "Error: Required field \"$field\"$splitoff_field missing. ($filename)\n";
 			$looks_good = 0;
 		}
 	}
 
 	# dpkg install-time script stuff
-	foreach $field (qw/preinstscript postinstscript prermscript postrmscript/) {
+	foreach my $field (qw/preinstscript postinstscript prermscript postrmscript/) {
 		next unless defined ($value = $properties->{$field});
 
 		# A #! line is worthless
@@ -811,7 +771,7 @@ sub validate_info_component {
 
 	### checks that apply to all fields
 
-	foreach $field (keys %$properties) {
+	foreach my $field (keys %$properties) {
 		next if $field =~ /^splitoff/;   # we don't do recursive stuff here
 		$value = $properties->{$field};
 
@@ -844,27 +804,70 @@ sub validate_info_component {
 			}
 		}
 
-		# Provides is not versionable
-		if ($field =~ /^provides$/i) {
-			if ($value =~ /\)\s*(,|\Z)/) {
-				print "Warning: Not allowed to specify version information in \"Provides\"$splitoff_field. ($filename)\n";
-				$looks_good = 0;
-			}
-		}
-
 		# check dpkg Depends-style field syntax
 		if ($pkglist_fields{$field}) {
 			(my $pkglist = $value) =~ tr/\n//d; # convert to sinle line
 			foreach (split /[,|]/, $pkglist) {
 				# each atom must be  '(optional cond) pkg (optional vers)'
 				unless (/\A\s*(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)\s*\Z/) {
-					print "Warning: bad syntax in \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Warning: invalid dependency \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
 				my $cond = $1;
 				# no logical AND (OR would be split() and give broken atoms)
 				if (defined $cond and $cond =~ /&/) {
-					print "Warning: bad syntax in \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Warning: invalid dependency \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+				}
+			}
+		}
+	}
+
+	# Provides is not versionable
+	$value = $properties->{provides};
+	if (defined $value) {
+		if ($value =~ /\)\s*(,|\Z)/) {
+			print "Warning: Not allowed to specify version information in \"Provides\"$splitoff_field. ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
+	# check syntax of each line of Shlibs field
+	$value = $properties->{shlibs};
+	if (defined $value) {
+		my @shlibs = split /\n/, $value;
+		my %shlibs;
+		foreach (@shlibs) {
+			next unless /\S/;
+			my @shlibs_parts;
+			if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
+				print "Warning: Malformed line in field \"shlibs\"$splitoff_field. ($filename)\n  $_\n";
+				$looks_good = 0;
+				next;
+			}
+			if (not $shlibs_parts[0] =~ /^(\%p)?\//) {
+				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+			if ($shlibs{$shlibs_parts[0]}++) {
+				print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+			if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
+				print "Warning: Malformed compatibility_version for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+			my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
+			foreach (@shlib_deps) {
+				if (not /^[a-z%]\S*\s+\(>=\s*(\S+-\S+)\)$/) {
+					print "Warning: Malformed dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+					next;
+				}
+				my $shlib_dep_vers = $1;
+				if ($shlib_dep_vers =~ /\%/) {
+					print "Warning: Non-hardcoded version in dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+					next;
 				}
 			}
 		}
