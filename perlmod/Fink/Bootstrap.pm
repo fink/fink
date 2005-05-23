@@ -241,6 +241,7 @@ Returns 0 on success, 1 on failure.
 sub inject_package {
 	
 	import Fink::Services qw(&read_config);
+	require Fink::Config;
 	
 	my $package = shift;
 	my $packagefiles = shift;
@@ -250,7 +251,7 @@ sub inject_package {
 	
 	my $param = shift;
 
-	my ($notlocated, $bpath) = &locate_Fink($param); 	
+my ($notlocated, $bpath) = &locate_Fink($param); 	
 
 	if ($notlocated) {
 		return 1;

@@ -1,5 +1,9 @@
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 
+	* Bootstrap.pm, CLI.pm, Services.pm: Roll back last commit.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
 	* Bootstrap.pm, CLI.pm, Services.pm: Adjust Fink:: importing to
 	match what is used.
 

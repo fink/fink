@@ -33,7 +33,7 @@ use Fink::Bootstrap qw(&check_host);
 use Fink::Services qw(&read_config &execute);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 
-use Fink::Config;
+use Fink::Config qw($config);
 use Fink::Configure qw($conf_file_compat_version);
 
 use File::Find;

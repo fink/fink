@@ -1,5 +1,9 @@
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.in, postinstall.pl.in: Roll back last commit.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.in, postinstall.pl.in: Adjust Fink:: importing to match
 	what is used.
 

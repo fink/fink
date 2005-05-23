@@ -23,8 +23,6 @@
 
 package Fink::Services;
 
-use Fink::Config;
-
 use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
 
@@ -100,6 +98,8 @@ file. The new object is returned.
 
 sub read_config {
 	my($filename, $defaults) = @_;
+
+	require Fink::Config;
 
 	my $config_object = Fink::Config->new_with_path($filename, $defaults);
 

@@ -137,7 +137,7 @@ my $Config_Loaded = 0;
 sub load_config {
     return 1 if $Config_Loaded++;
 
-    require Fink::Services;
+    require Fink::Config;
 
     # read the configuration file
     my $configpath;
@@ -165,7 +165,7 @@ delete $ENV{CDPATH};
 ### now load the actual engine
 
 # load the modules
-require Fink::Config;
+require Fink::Services;
 require Fink::Engine;
 
 load_config();
