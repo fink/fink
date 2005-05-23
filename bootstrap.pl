@@ -451,11 +451,14 @@ $endmsg =~ s/ $//;
 print "\n";
 &print_breaking($endmsg);
 print "\n";
-&print_breaking("Run 'source $installto/bin/init.csh ; rehash' to set ".
-				"up this Terminal's environment to use Fink. To make the ".
-				"software installed by Fink available in all of your ".
-				"shells, add 'source $installto/bin/init.csh' to the ".
-				"init script '.cshrc' in your home directory. Enjoy.");
+&print_breaking(
+    "Run '. $installto/bin/init.sh' to set up this terminal session ".
+    "environment to use Fink. To make the software installed by Fink ".
+    "available in all of your future terminal shells, add ".
+    "'. $installto/bin/init.sh' to the init script '.profile' or ".
+    "'.bash_profile' in your home directory. The program ".
+    "$installto/bin/pathsetup.sh can help with this. Enjoy."
+);
 print "\n";
 
 ### eof
