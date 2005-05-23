@@ -1,3 +1,8 @@
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in, postinstall.pl.in: Adjust Fink:: importing to match
+	what is used.
+
 2005-05-20  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Add notes about prebuilt binaries and version status
