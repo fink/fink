@@ -607,6 +607,7 @@ sub verbosity_level {
 Determine whether the binary distribution or compilation has been requested.
 This is affected by the --use-binary-dist and --compile-from-source
 command line options as well as by the "UseBinaryDist" setting in fink.conf.
+A command-line flag takes precedence over a fink.conf setting.
 Returns 1 for binary distribution, 0 for compile-from-source.
 
 =cut
