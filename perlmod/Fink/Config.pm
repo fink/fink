@@ -213,6 +213,9 @@ sub get_treelist {
 
 Inherited from Fink::Base.
 
+set_param also keeps a list of params that have been change since the
+$config object was originally initialized or last did $config->save()
+
 =cut
 
 sub set_param {
@@ -225,7 +228,9 @@ sub set_param {
 
   $config->save;
 
-Saves any changes made with set_param() to the config file.
+Saves any changes made with set_param() to the config file. Only lines
+of the file that correspond to params that were changed by set_param()
+are altered.
 
 =cut
 
