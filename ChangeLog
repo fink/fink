@@ -1,3 +1,7 @@
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: Suggest the bash shell setups instead of csh.
+
 2005-05-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.6, a release
