@@ -23,6 +23,8 @@
 
 package Fink::CLI;
 
+use Fink::Config qw($config);
+
 use Carp;
 
 use strict;
@@ -431,8 +433,9 @@ A false $category represents an uncategorized prompt.
 		return 0 unless $cat;
 		
 		if (!defined $skip_cats) {
-			my $str = $Fink::Config::config->param_default(
-				'SkipPrompts', '');
+			my $str = '';
+			$str = $config->param_default('SkipPrompts', '') if defined $config;
+			
 			$skip_cats = {
 				map { s/^\s+(.*?)\s+$/$1/; lc $_ => 1 } # Trim
 				split /,/, $str
@@ -487,7 +490,6 @@ sub get_input {
 	
 	# handle suppressed prompts
 	my $dontask = 0;
-	require Fink::Config;
 	if (Fink::Config::get_option("dontask")) {
 		$dontask = 1;
 	}

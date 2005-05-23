@@ -1,5 +1,10 @@
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 
+	* Bootstrap.pm, CLI.pm, Services.pm: Adjust Fink:: importing to
+	match what is used.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
 	* Config.pm: Use new_from_properties as back end for new_with_path
 
 2005-05-22  Dave Morrison  <dmrrsn@sourceforge.net>
