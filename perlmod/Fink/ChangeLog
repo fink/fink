@@ -1,6 +1,6 @@
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 
-	* Bootstrap.pm, CLI.pm, Services.pm: Roll back last commit.
+	* Bootstrap.pm, CLI.pm, Services.pm: Roll back last two commits.
 
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 

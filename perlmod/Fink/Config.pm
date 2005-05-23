@@ -95,8 +95,6 @@ config file.  For example...
 
     my $config = Fink::Config->new_with_path($file, { Basepath => "/sw" });
 
-See new_from_properties for more information.
-
 =cut
 
 sub new_with_path {
@@ -106,8 +104,15 @@ sub new_with_path {
 
 	my $props = Fink::Services::read_properties($path);
 
-	my $self = $class->new_from_properties({%$defaults, %$props});
-	$self->{_path} = $path;
+	my $self = { _path => $path };
+	@{$self}{map lc, keys %$defaults} = values %$defaults;
+
+	while (my($key, $value) = each %$props) {
+		$self->{$key} = $value unless $key =~ /^_/;
+	}
+
+	$self = bless $self, $class;
+	$self->initialize();
 
 	return $self;
 }
