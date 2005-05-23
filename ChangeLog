@@ -1,5 +1,9 @@
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 
+	* bootstrap.pl: Suggest the bash shell setups instead of csh.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.in, postinstall.pl.in: Roll back last commit.
 
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
