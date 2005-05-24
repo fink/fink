@@ -2710,11 +2710,14 @@ sub phase_build {
 
 	# generate dpkg "control" file
 
-	my ($pkgname, $parentpkgname, $version, $field, $section, $instsize);
+	my ($pkgname, $parentpkgname, $version, $field, $section, $instsize, $prio);
 	$pkgname = $self->get_name();
 	$parentpkgname = $self->get_family_parent->get_name();
 	$version = $self->get_fullversion();
-	$section = $self->get_section();
+	
+	$section = $self->get_control_section();
+	$prio = $self->get_priority();
+	
 	$instsize = $self->get_instsize("$destdir$basepath");	# kilobytes!
 	$control = <<EOF;
 Package: $pkgname
@@ -2723,6 +2726,7 @@ Version: $version
 Section: $section
 Installed-Size: $instsize
 Architecture: $debarch
+Priority: $prio
 EOF
 	if ($self->param_boolean("BuildDependsOnly")) {
 		$control .= "BuildDependsOnly: True\n";
@@ -3915,7 +3919,7 @@ sub get_debdeps {
 	return $deps;
 }
 
-=item
+=item get_install_directory
 
   my $dir = $pv->get_install_directory;
   my $dir = $pv->get_install_directory $pkg;
@@ -3930,6 +3934,43 @@ sub get_install_directory {
 	my $pkg = shift || $self->get_fullname();
 	return "$buildpath/root-$pkg";
 }
+
+=item get_control_section
+
+  my $section = $pv->get_control_section();
+
+Get the section of the package for the purposes of .deb control files. May be
+distinct from get_section.
+
+=cut
+
+sub get_control_section {
+	my $self = shift;
+	my $section = $self->get_section();
+	$section = "base" if $section eq "bootstrap";
+	return $section;
+}
+
+=item get_priority
+
+  my $prio = $pv->get_priority();
+  
+Get the apt priority of this package.
+
+=cut
+
+sub get_priority {
+	my $self = shift;
+	my $prio = "optional";
+	if (grep { $_ eq $self->get_name() } qw(apt apt-shlibs storable)) {
+		$prio = "important";
+	}
+	if ($self->param_boolean("Essential")) {
+		$prio = "required";
+	}
+	return $prio;
+}
+
 
 ### EOF
 
