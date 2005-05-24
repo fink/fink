@@ -2963,6 +2963,7 @@ EOF
 			"###\n".
 			"### check to see if any .pod files exist in \%p/share/podfiles.\n".
 			"###\n\n".
+			"echo -n '' > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n".
 			"perl <<'END_PERL'\n\n".
 			"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
 			"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".

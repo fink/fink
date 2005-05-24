@@ -1,3 +1,7 @@
+2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Empty perllocal.pod when the last perlmod is removed.
+
 2005-05-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: Give more details when a dependency on a virtual fails.
