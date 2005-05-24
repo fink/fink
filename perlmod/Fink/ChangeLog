@@ -1,5 +1,9 @@
 2005-05-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
+	* PkgVersion.pm: Give more details when a dependency on a virtual fails.
+
+2005-05-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
 	* SelfUpdate.pm: changed CVS to only check out $distribution
 	(or whatever is set in SelfUpdateCVSTrees in fink.conf) rather
 	than everything under dists.

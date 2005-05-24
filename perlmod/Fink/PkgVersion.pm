@@ -1649,20 +1649,13 @@ sub resolve_depends {
 
 	SPECLOOP: foreach $altspecs (@speclist) {
 		$altlist = [];
-		@altspec = split(/\s*\|\s*/, $altspecs);
+		@altspec = $self->get_altspec($altspecs);
 		$found = 0;
 		$loopcount = 0;
 		foreach $depspec (@altspec) {
+			$depname = $depspec->{'depname'};
+			$versionspec = $depspec->{'versionspec'};
 			$loopcount++;
-			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-				$depname = $1;
-				$versionspec = $2;
-			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-				$depname = $1;
-				$versionspec = "";
-			} else {
-				die "Illegal spec format: $depspec\n";
-			}
 
 			if ($include_build and $self->parent_splitoffs and
 				 ($idx >= $split_idx or $include_build == 2)) {
@@ -1672,17 +1665,17 @@ sub resolve_depends {
 				# exception: if we were called by a splitoff to determine the "meta
 				# dependencies" of it, then we again filter out all splitoffs.
 				# If you've read till here without mental injuries, congrats :-)
-				next SPECLOOP if ($depname eq $self->{_name});
+				next SPECLOOP if ($depspec->{'depname'} eq $self->{_name});
 				foreach	 $splitoff ($self->parent_splitoffs) {
-					next SPECLOOP if ($depname eq $splitoff->get_name());
+					next SPECLOOP if ($depspec->{'depname'} eq $splitoff->get_name());
 				}
 			}
 
-			$package = Fink::Package->package_by_name($depname);
+			$package = Fink::Package->package_by_name($depspec->{'depname'});
 
 			$found = 1 if defined $package;
 			if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				print "WARNING: While resolving $oper \"" . $depspec->{'depname'} . " " . $depspec->{'versionspec'} . "\" for package \"".$self->get_fullname()."\", package \"" . $depspec->{'depname'} . "\" was not found.\n";
 			}
 			if (not defined $package) {
 				next;
@@ -1696,13 +1689,48 @@ sub resolve_depends {
 			}
 		}
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
-			die "Can't resolve $oper \"$altspecs\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
+			my $package = Fink::Package->package_by_name($altspec[0]->{'depname'});
+			my $diemessage = "Can't resolve $oper \"$altspecs\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
+			if (defined $package and $package->is_virtual()) {
+				my $version = &latest_version($package->list_versions());
+				$package = $package->get_version($version);
+				$diemessage .= "\nAt least one of the dependencies required (" . $package->get_name() . ") is a virtual package, you might need\n" .
+					"to manually upgrade or install it.  The package details below should have more information\n" .
+					"on where to find an installer:\n\n" .
+					$package->get_description() . "\n";
+			}
+			die $diemessage;
 		}
 		push @deplist, $altlist;
 		$idx++;
 	}
 
 	return @deplist;
+}
+
+sub get_altspec {
+	my $self     = shift;
+	my $altspecs = shift;
+
+	my ($depspec, $depname, $versionspec);
+	my @specs;
+
+	my @altspec = split(/\s*\|\s*/, $altspecs);
+	foreach $depspec (@altspec) {
+		$depname = $versionspec = undef;
+		if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+			$depname = $1;
+			$versionspec = $2;
+		} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+			$depname = $1;
+			$versionspec = "";
+		}
+		if (defined $depname) {
+			push(@specs, { depname => $depname, versionspec => $versionspec });
+		}
+	}
+
+	return @specs;
 }
 
 sub resolve_conflicts {
