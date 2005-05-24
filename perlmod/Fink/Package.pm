@@ -463,8 +463,10 @@ sub check_dbdirs {
 	my @old = grep { $_ ne $current } @dirs;
 	if ($write) {
 		for my $dir (@old) {
-			if (my $fh = lock_wait("$dir.lock", exclusive => 1, no_block => 1)) {
+			my $lock = "$dir.lock";
+			if (my $fh = lock_wait($lock, exclusive => 1, no_block => 1)) {
 				rm_rf($dir);
+				rm_f($lock);
 				close $fh;
 			}
 		}

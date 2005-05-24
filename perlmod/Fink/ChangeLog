@@ -1,3 +1,8 @@
+2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Don't leave .lock files around.
+	* PkgVersion.pm: Don't break index if buildpath changes.
+
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm, CLI.pm, Services.pm: Roll back last two commits.

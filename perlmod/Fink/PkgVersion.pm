@@ -43,7 +43,6 @@ use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
-use File::Basename qw(&dirname &basename);
 use Fink::Notify;
 use Fink::Validation;
 use Fink::Text::DelimMatch;
@@ -52,6 +51,7 @@ use Fink::Text::ParseWords qw(&parse_line);
 use POSIX qw(uname strftime);
 use DB_File;
 use Hash::Util;
+use File::Basename qw(&dirname &basename);
 
 use strict;
 use warnings;
@@ -142,12 +142,26 @@ different PkgVersion objects. Returns this object.
 		}
 		
 		return $self unless exists $loaded->{$self->get_fullname};
+		
+		# Insert the loaded fields
 		my $href = $loaded->{$self->get_fullname};
 		@$self{keys %$href} = values %$href;
+		
+		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
+		my $destdir = $self->get_install_directory();
+		my $pdestdir = $self->has_parent()
+			? $self->get_parent()->get_install_directory()
+			: $destdir;
+		my %entries = (
+			'd' => $destdir,			'D' => $pdestdir,
+			'i' => $destdir.$basepath,	'I' => $pdestdir.$basepath,
+		);
+		@{$self->{_expand}}{keys %entries} = values %entries;
+		
 		return $self;
 	}
 }
-			
+
 
 =item get_init_fields
 
@@ -252,11 +266,11 @@ sub initialize {
 	# some commonly used stuff
 	$fullname = $pkgname."-".$version."-".$revision;
 	# prepare percent-expansion map
-	$destdir = "$buildpath/root-$fullname";
+	$destdir = $self->get_install_directory();
 	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
 		$parentpkgname = $parent->get_name();
-		$parentdestdir = "$buildpath/root-".$parent->get_fullname();
+		$parentdestdir = $parent->get_install_directory();
 		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
 	} else {
 		$parentpkgname = $pkgname;
@@ -782,13 +796,13 @@ sub disable_bootstrap {
 	my ($destdir);
 	my $splitoff;
 
-	$destdir = "$buildpath/root-".$self->get_fullname();
+	$destdir = $self->get_install_directory();
 	$self->{_expand}->{p} = $basepath;
 	$self->{_expand}->{d} = $destdir;
 	$self->{_expand}->{i} = $destdir.$basepath;
 	if ($self->has_parent) {
 		my $parent = $self->get_parent;
-		my $parentdestdir = "$buildpath/root-".$parent->get_fullname();
+		my $parentdestdir = $parent->get_install_directory();
 		$self->{_expand}->{D} = $parentdestdir;
 		$self->{_expand}->{I} = $parentdestdir.$basepath;
 	} else {
@@ -2644,8 +2658,8 @@ sub phase_build {
 	}
 
 	chdir "$buildpath";
-	$ddir = "root-".$self->get_fullname();
-	$destdir = "$buildpath/$ddir";
+	$destdir = $self->get_install_directory();
+	$ddir = basename $destdir;
 
 	if (not -d "$destdir/DEBIAN") {
 		my $error = "can't create directory for control files for package ".$self->get_fullname();
@@ -3333,7 +3347,7 @@ sub set_buildlock {
 	my $lockpkg = "fink-buildlock-$pkgname-" . $self->get_version() . '-' . $self->get_revision();
 	my $timestamp = strftime "%Y.%m.%d-%H.%M.%S", localtime;
 
-	my $destdir = "$buildpath/root-$lockpkg";
+	my $destdir = $self->get_install_directory($lockpkg);
 
 	if (not -d "$destdir/DEBIAN") {
 		mkdir_p "$destdir/DEBIAN" or
@@ -3870,6 +3884,22 @@ sub get_debdeps {
 	}
 
 	return $deps;
+}
+
+=item
+
+  my $dir = $pv->get_install_directory;
+  my $dir = $pv->get_install_directory $pkg;
+  
+Get the directory into which the install phase will put files. If $pkg is
+specified, will get get the destdir for a package of that full-name.
+
+=cut
+
+sub get_install_directory {
+	my $self = shift;
+	my $pkg = shift || $self->get_fullname();
+	return "$buildpath/root-$pkg";
 }
 
 ### EOF
