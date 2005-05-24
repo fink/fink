@@ -285,26 +285,34 @@ sub setup_direct_cvs {
 		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository:/cvsroot/fink";
 		$ENV{CVS_RSH} = "ssh";
 	}
-	$cmdd = "$cmd checkout -d fink dists";
+	$cmdd = "$cmd checkout -l -d fink dists";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
-	&print_breaking("Now downloading package descriptions...");
+	&print_breaking("Setting up base Fink directory...");
 	if (&execute($cmdd)) {
 		die "Downloading package descriptions from CVS failed.\n";
 	}
-	if ($distribution eq "10.1") { #must do a second checkout in this case
-			chdir "fink" or die "Can't cd to fink\n";
-			$cmdd = "$cmd checkout -d 10.1 packages/dists";
-			if ($username ne "root") {
-					$cmdd = "/usr/bin/su $username -c '$cmdd'";
-			}
-			&print_breaking("Now downloading more package descriptions...");
-			if (&execute($cmdd)) {
-					die "Downloading package descriptions from CVS failed.\n";
-			}
-			chdir $tempdir or die "Can't cd to $tempdir: $!\n";
+
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateCVSTrees", $distribution));
+	chdir "fink" or die "Can't cd to fink\n";
+
+	for my $tree (@trees) {
+		&print_breaking("Checking out $tree tree...");
+
+		my $cvsdir = "dists/$tree";
+		$cvsdir = "packages/dists" if ($tree eq "10.1");
+		$cmdd = "$cmd checkout -d $tree $cvsdir";
+
+		if ($username ne "root") {
+			$cmdd = "/usr/bin/su $username -c '$cmdd'";
+		}
+		if (&execute($cmdd)) {
+			die "Downloading package descriptions from CVS failed.\n";
+		}
 	}
+	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
+
 	if (not -d $tempfinkdir) {
 		die "The CVS didn't report an error, but the directory '$tempfinkdir' ".
 			"doesn't exist as expected. Strange.\n";
@@ -364,7 +372,7 @@ sub setup_direct_cvs {
 ### call cvs update
 
 sub do_direct_cvs {
-	my ($descdir, @sb, $cmd, $username, $msg);
+	my ($descdir, @sb, $cmd, $cmd_recursive, $username, $msg);
 
 	# add cvs quiet flag if verbosity level permits
 	my $verbosity = "-q";
@@ -376,13 +384,13 @@ sub do_direct_cvs {
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
 	@sb = stat("$descdir/CVS");
-	$cmd = "cvs ${verbosity} -z3 update -d -P";
-	$msg = "I will now run the cvs command to retrieve the latest package ".
-			"descriptions. ";
+
+	$cmd = "cvs ${verbosity} -z3 update -d -P -l";
+
+	$msg = "I will now run the cvs command to retrieve the latest package descriptions. ";
 
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
-		$cmd = "/usr/bin/su $username -c '$cmd'";
 		$msg .= "The 'su' command will be used to run the cvs command as the ".
 				"user '$username'. ";
 	}
@@ -396,9 +404,25 @@ sub do_direct_cvs {
 	print "\n";
 
 	$ENV{CVS_RSH} = "ssh";
+
+	# first, update the top-level stuff
+
+	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		die "Updating using CVS failed. Check the error messages above.\n";
 	}
+
+	# then, update the trees
+
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateCVSTrees", $distribution));
+	for my $tree (@trees) {
+		$cmd = "cvs ${verbosity} -z3 update -d -P ${tree}";
+		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
+		if (&execute($cmd)) {
+			die "Updating using CVS failed. Check the error messages above.\n";
+		}
+	}
+
 }
 
 ### update from packages tarball
