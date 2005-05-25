@@ -42,7 +42,8 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&configure &choose_mirrors $conf_file_compat_version);
+	@EXPORT_OK	 = qw(&configure &choose_mirrors $conf_file_compat_version
+					  &spotlight_warning);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -125,6 +126,7 @@ sub configure {
 	if ($builddir =~ /\S/) {
 		$config->set_param("Buildpath", $builddir);
 	}
+	&spotlight_warning();
 
 	print "\n";
 	$binary_dist = $config->param_boolean("UseBinaryDist");
@@ -226,6 +228,38 @@ sub configure {
 	$config->save();
 }
 
+=item spotlight_warning
+
+Warn the user if they are choosing a build path which will be indexed by
+Spotlight. Returns true if the user heeded the warning. This warning
+will only be seen once.
+
+=cut
+
+sub spotlight_warning {
+	my $builddir = $config->param_default("Buildpath",
+										  "$basepath/src/fink.build");
+	my $result = 0;
+	
+	if ( $> == 0
+			&& !$config->has_flag('SpotlightWarning')
+			&& $builddir !~ /\.build$/
+			&& $config->param("distribution") ge "10.4") {
+		$config->set_flag('SpotlightWarning');
+		print "\n";
+		$result =
+			prompt_boolean("Your current build directory '$builddir' will be ".
+				"indexed by Spotlight, which can make packages build quite ".
+				"slowly.\n\n".
+				"Would you like to add '.build' to the end of your build ".
+				"directory, so that Spotlight will not index it?",
+				default => 1);
+		
+		$config->set_param("Buildpath", $builddir . ".build") if $result;
+		print "\n";	
+	}
+	return $result;
+}	
 
 =item choose_mirrors
 

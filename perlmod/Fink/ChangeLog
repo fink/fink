@@ -1,5 +1,11 @@
 2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Config.pm, Validation.pm: Make default buildpath %p/fink/src/fink.build
+	* Configure.pm, Engine.pm: Warn about Spotlight indexing builds.
+	* Config.pm: New *_flag API.
+
+2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Insert the priority into .debs.
 	* Engine.pm: Try not to put everything into the override. On first run,
 	find all the debs without prio inside, and for the future put only them
