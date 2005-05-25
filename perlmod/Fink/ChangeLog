@@ -1,3 +1,7 @@
+2005-05-25  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm: Maybe allow bootstrap on darwin8.
+
 2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Config.pm, Validation.pm: Make default buildpath %p/fink/src/fink.build

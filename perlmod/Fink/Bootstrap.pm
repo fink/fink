@@ -198,6 +198,17 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.4-transitional";
+	} elsif ($host =~ /^i386-apple-darwin8\.[0-2]\.[0-1]/) {
+		&print_breaking("Fink is currently not supported on x86 ".
+			"Darwin. Various parts of Fink hardcode 'powerpc' ".
+			"and assume to run on a PowerPC based operating ".
+			"system. Use Fink on this system at your own risk!");
+		if($ENV{FINK_NOTRANS}) {
+			&print_breaking("Using the non-transitional tree...");
+			$distribution = "10.4";
+		} else {
+			$distribution = "10.4-transitional";
+		}
 	} elsif ($host =~ /^i386-apple-darwin7\.[0-2]\.[0-1]/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".
