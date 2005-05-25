@@ -1,3 +1,7 @@
+2005-05-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* postinstall.pl.in: Also warn about Spotlight in the postinstall.
+
 2005-05-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink.conf.5.in: added SelfUpdateCVSTrees doc
