@@ -407,9 +407,11 @@ sub do_direct_cvs {
 
 	# first, update the top-level stuff
 
+	my $errors = 0;
+
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
-		die "Updating using CVS failed. Check the error messages above.\n";
+		$errors++;
 	}
 
 	# then, update the trees
@@ -419,9 +421,11 @@ sub do_direct_cvs {
 		$cmd = "cvs ${verbosity} -z3 update -d -P ${tree}";
 		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 		if (&execute($cmd)) {
-			die "Updating using CVS failed. Check the error messages above.\n";
+			$errors++;
 		}
 	}
+
+	die "Updating using CVS failed. Check the error messages above.\n" if ($errors);
 
 }
 
