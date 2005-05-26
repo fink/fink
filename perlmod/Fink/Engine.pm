@@ -1494,6 +1494,13 @@ sub real_install {
 		if ($op == $OP_BUILD and $package->is_present()) {
 			next;
 		}
+		# if asked to reinstall but have no .deb, have to rebuild it
+		if ($op == $OP_REINSTALL and not $package->is_present()) {
+			if ($verbosity > 2) {
+				printf "No .deb found so %s must be rebuilt\n", $package->get_fullname();
+			}
+			$op = $OP_REBUILD;
+		}
 		# add to table
 		@{$deps{$pkgname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
 			$pkgname, Fink::Package->package_by_name($pkgname),

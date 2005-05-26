@@ -1,3 +1,7 @@
+2005-05-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Convert "reinstall" to "rebuild" if no .deb present.
+
 2005-05-25  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* Bootstrap.pm: Maybe allow bootstrap on darwin8.
