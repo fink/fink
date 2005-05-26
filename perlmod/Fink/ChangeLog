@@ -1,6 +1,10 @@
+2005-05-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Configure.pm: Fix Spotlight warning.
+
 2005-05-26  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVernios.pm: Better err if qpkg-query fails while removing buildlock
+	* PkgVersion.pm: Better err if qpkg-query fails while removing buildlock
 
 2005-05-26  Daniel Macks  <dmacks@netspace.org>
 

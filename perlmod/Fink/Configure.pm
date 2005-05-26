@@ -231,34 +231,36 @@ sub configure {
 =item spotlight_warning
 
 Warn the user if they are choosing a build path which will be indexed by
-Spotlight. Returns true if the user heeded the warning. This warning
-will only be seen once.
+Spotlight. Returns true if changes have been made to the Fink configuration,
+which will need to be saved.
 
 =cut
 
 sub spotlight_warning {
 	my $builddir = $config->param_default("Buildpath",
-										  "$basepath/src/fink.build");
-	my $result = 0;
-	
+										  "$basepath/src/fink.build");	
 	if ( $> == 0
 			&& !$config->has_flag('SpotlightWarning')
 			&& $builddir !~ /\.build$/
 			&& $config->param("distribution") ge "10.4") {
+		
 		$config->set_flag('SpotlightWarning');
+		
 		print "\n";
-		$result =
+		my $response =
 			prompt_boolean("Your current build directory '$builddir' will be ".
 				"indexed by Spotlight, which can make packages build quite ".
 				"slowly.\n\n".
-				"Would you like to add '.build' to the end of your build ".
+				"Would you like to use '$builddir.build' as your new build ".
 				"directory, so that Spotlight will not index it?",
 				default => 1);
-		
-		$config->set_param("Buildpath", $builddir . ".build") if $result;
 		print "\n";	
+		
+		$config->set_param("Buildpath", $builddir . ".build") if $response;
+		return 1;
 	}
-	return $result;
+	
+	return 0;
 }	
 
 =item choose_mirrors
