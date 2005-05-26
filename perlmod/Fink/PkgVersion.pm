@@ -3552,21 +3552,18 @@ sub clear_buildlock {
 	# remove lockpkg (== clear lock for building $self)
 	print "Removing build lock...\n";
 
-
-	
-	my $old_lock;
-	{
-		local $SIG{INT} = 'IGNORE';
-		$old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
-	}
+	my $old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
 	chomp $old_lock;
 	if ($old_lock eq "$lockpkg\t") {
 		&print_breaking("WARNING: The lock was removed by some other process.");
+	} elsif ($old_lock eq '') {
+		# this is weird, man...qpkg-query crashed or lock never got installed
+		&print_breaking("WARNING: Could not read lock timestamp. Not removing it.");
 	} elsif ($old_lock ne "$lockpkg\t$timestamp") {
 		# don't trample some other timestamp's lock
-		&print_breaking("WARNING: The lock has a different timestamp. Not ".
-						"removing it, as it likely belongs to a different ".
-						"fink process. This should not ever happen.");
+		&print_breaking("WARNING: The lock has a different timestamp than the ".
+						"one we set. Not removing it, as it likely belongs to ".
+						"a different fink process.");
 	} else {
 		if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
 			&print_breaking("WARNING: Can't remove package ".
