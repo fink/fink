@@ -1275,7 +1275,15 @@ sub get_system_version
 
 sub checkDistribution
 {
-	return 0
+	use Fink::Config qw($distribution);
+	our $distribution;
+	
+	if (get_system_version() =~ /^\Q$distribution\E.*/)
+	{
+		return 0;
+	} else {
+		return 1;
+	}
 }
 
 =item get_system_perl_version

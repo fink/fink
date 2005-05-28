@@ -106,8 +106,7 @@ our %commands =
 	  'splits'					=> [\&cmd_splitoffs,         1, 0, 0],
 	  'showparent'				=> [\&cmd_showparent,        1, 0, 0],
 	  'dumpinfo'				=> [\&cmd_dumpinfo,				1, 0, 0],
-	  'dist-upgrade'			=> [\&cmd_dist_upgrade,			1, 0, 0],
-	  'dist-upgrade-cont'		=> [\&cmd_dist_upgrade_cont, 1, 0, 0],
+	  'dist-upgrade'			=> [\&cmd_dist_upgrade,			1, 1, 0],
 	  'show-deps'				=> [\&cmd_show_deps,		1, 0, 0],
 	);
 
@@ -379,13 +378,34 @@ sub cmd_list {
 
 sub cmd_dist_upgrade
 {
-	unless (Fink::Services::checkDistribution())
+	if (Fink::Services::checkDistribution())
 	{
-		print("FOO!!!!!");
-		print("Fink::Services::checkDistribution: " . Fink::Services::checkDistribution())
-		#my $distribution = "10.4-transitional";
-		#$config->set_param("Distribution", $distribution);
-		#$config->save();
+		my $host = `$basepath/lib/fink/update/config.guess`;
+		chomp($host);
+		if ($host =~ /^\s*$/)
+		{
+	  		print " ERROR: Can't determine host type.\n";
+	    	exit 1;
+		}
+
+		my $distribution = Fink::Bootstrap::check_host($host);
+		$config->set_param("Distribution", $distribution);
+		$config->save();
+
+		my $distdir = "$basepath/fink/dists";
+		# fix dists symlink
+		unlink $distdir;
+		if (&execute("ln -s $distribution $distdir"))
+		{
+			print "ERROR: Can't create link from $distribution to $distdir\n";
+			exit 1;
+		}
+		print("Fink's distribution is now set to $distribution. Please run ".
+				"`fink selfupdate' followed by `fink update-all' to be ".
+				"completely up to date.\n");
+
+	} else {
+		print("Nothing to do at this time.\n\n");
 	}
 }
 
@@ -1449,16 +1469,7 @@ sub real_install {
 				and $package->is_installed()) {
 			next;
 		}
-		# for build, check sanity of Distribution. Skip if present, but not installed
-		if ($op == $OP_BUILD and not ($package->is_present() or ($pkgname eq "fink")))
-		{
-			unless (Fink::Services::checkDistribution())
-			{
-				print("Your current Fink distribution ($distribution) is not compatible with OS X " . Fink::Services::get_osx_vers() . "\n");
-				print("Please run `fink dist-upgrade' to upgrade to a compatable version for your system.\n");
-				exit;
-			}
-		}
+
 		# for build, also skip if present, but not installed
 		if ($op == $OP_BUILD and $package->is_present()) {
 			next;

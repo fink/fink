@@ -2049,6 +2049,15 @@ sub phase_unpack {
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
+	unless ($self->get_name() eq "fink")
+	{
+		if (Fink::Services::checkDistribution())
+		{
+			my $msg = "\n\nThe Fink Distribution currently set is not compatable with your current system version.\nPlease run `fink selfupdate' and then `fink dist-upgrade' to\nmigrate to the latest fink distribution for your OS.\n\n";
+			die $msg;
+		}
+	}
+
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
 	}

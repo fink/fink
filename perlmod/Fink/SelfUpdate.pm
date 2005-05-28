@@ -529,15 +529,26 @@ sub finish {
 
 	push @elist, @{$package_list};
 
-	# update them
-	Fink::Engine::cmd_install(@elist);	
-
-	# tell the user what has happened
-	print "\n";
-	&print_breaking("The core packages have been updated. ".
-					"You should now update the other packages ".
-					"using commands like 'fink update-all'.");
-	print "\n";
+	# update them, only fink if dist-upgrade must be done
+	if (Fink::Services::checkDistribution())
+	{
+		Fink::Engine::cmd_install(@elist);	
+		# tell the user what has happened
+		print "\n";
+		&print_breaking("The core packages have been updated. ".
+						"You should now update the other packages ".
+						"using commands like 'fink update-all'.");
+		print "\n";
+	} else {
+		# tell the user what has happened
+		print "\n";
+		&print_breaking("The fink package has been updated. ".
+						"You will be unable to build any new packages ".
+						"until you so `fink dist-upgrade', because you ".
+						"are running an old fink distribution on ".
+						"an incompatible system.");
+		print "\n";
+	}
 }
 
 sub rsync_check {

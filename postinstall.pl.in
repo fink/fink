@@ -99,7 +99,7 @@ if ($current_dist ne $distribution) {
 	print("\nYou seem to be running a fink tree that is not designed for " .
 	"this system version. Feel free to continue using fink, but you will be " .
 	"unable to build any new packages until you do a `fink dist-upgrade' and " .
-	"upgrade your fink install to the aproproiate tree.");
+	"upgrade your fink install to the aproproiate tree.\n\n");
 
 	### Don't change current Dist setting. Only change on dist-upgrade
 	$distribution = $current_dist;
