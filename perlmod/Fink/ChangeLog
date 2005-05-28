@@ -1,3 +1,100 @@
+2005-05-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Configure.pm: Fix Spotlight warning.
+
+2005-05-26  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Better err if qpkg-query fails while removing buildlock
+
+2005-05-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Convert "reinstall" to "rebuild" if no .deb present.
+
+2005-05-25  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm: Maybe allow bootstrap on darwin8.
+
+2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Config.pm, Validation.pm: Make default buildpath %p/fink/src/fink.build
+	* Configure.pm, Engine.pm: Warn about Spotlight indexing builds.
+	* Config.pm: New *_flag API.
+
+2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Insert the priority into .debs.
+	* Engine.pm: Try not to put everything into the override. On first run,
+	find all the debs without prio inside, and for the future put only them
+	into override.
+
+2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Empty perllocal.pod when the last perlmod is removed.
+
+2005-05-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: Give more details when a dependency on a virtual fails.
+
+2005-05-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* SelfUpdate.pm: changed CVS to only check out $distribution
+	(or whatever is set in SelfUpdateCVSTrees in fink.conf) rather
+	than everything under dists.
+
+2005-05-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Don't leave .lock files around.
+	* PkgVersion.pm: Don't break index if buildpath changes.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm, CLI.pm, Services.pm: Roll back last two commits.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm, CLI.pm, Services.pm: Adjust Fink:: importing to
+	match what is used.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Use new_from_properties as back end for new_with_path
+
+2005-05-22  Dave Morrison  <dmrrsn@sourceforge.net>
+
+	* Bootstrap.pm: recognize 10.4.1; also, say that 10.4 is "supported
+	and tested"
+
+2005-05-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Finish fieldname all-lc fixes.
+
+2005-05-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Move .info Shlibs syntax check into
+	validate_info_component. Move Provides and Shlibs checks out of
+	field loop. Control scoping of $field. Remember read_properties
+	returns all-lc keys. Better pkglist-field syntax warning.
+
+2005-05-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix pkglist-field syntax check when no conditional.
+
+2005-05-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check pkglist-field syntax.
+
+2005-05-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Fix bug with is_aptgetable changing $_.
+
+2005-05-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm, Package.pm: Load apt DB as needed, don't try caching it.
+
+2005-05-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, Package.pm: Move store_rename into Services.
+
 2005-05-16  Daniel Macks  <dmacks@netspace.org>
 
 	* *: verbosity_level() is now a $config object method

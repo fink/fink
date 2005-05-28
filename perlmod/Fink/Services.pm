@@ -55,7 +55,8 @@ BEGIN {
 					  &get_osx_vers_long &get_kernel_vers
 					  &get_darwin_equiv
 					  &call_queue_clear &call_queue_add &lock_wait
-					  &dpkg_lockwait &aptget_lockwait);
+					  &dpkg_lockwait &aptget_lockwait
+					  &store_rename);
 }
 our @EXPORT_OK;
 
@@ -1678,6 +1679,32 @@ sub lockwait_executable {
 	return $fullpath eq $lockname
 		? $basename
 		: $fullpath;
+}
+
+=item store_rename
+
+  my $success = store_rename $ref, $file;
+  
+Store $ref in $file using Storable. Use a write-to-temp-and-atomically-
+rename strategy, to prevent corruption. Return true on success.
+
+=cut
+
+sub store_rename {
+	my ($ref, $file) = @_;
+	my $tmp = "${file}.tmp";
+	
+	return 0 unless eval { require Storable };
+	if (Storable::lock_store($ref, $tmp)) {
+		unless (rename $tmp, $file) {
+			print_breaking_stderr("Error: could not activate temporary file $tmp: $!");
+			return 0;
+		}
+		return 1;
+	} else {
+		print_breaking_stderr("Error: could not write temporary file $tmp: $!");
+		return 0;
+	}
 }
 
 =back

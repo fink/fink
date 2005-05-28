@@ -1,3 +1,29 @@
+2005-05-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* postinstall.pl.in: Also warn about Spotlight in the postinstall.
+
+2005-05-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink.conf.5.in: added SelfUpdateCVSTrees doc
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: Suggest the bash shell setups instead of csh.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in, postinstall.pl.in: Roll back last commit.
+
+2005-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in, postinstall.pl.in: Adjust Fink:: importing to match
+	what is used.
+
+2005-05-20  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Add notes about prebuilt binaries and version status
+	given by list vs. dumpinfo. Grammar cleanups.
+
 2005-05-16  Matthew Sachs  <msachs@apple.com>
 
 	* postinstall.pl.in: Use ln -sf instead of ln -s

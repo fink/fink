@@ -21,6 +21,8 @@ of GNU and other common Open Source software to Darwin and Mac OS X.
 .Pp
 With the help of
 .Xr dpkg 8
+and
+.Xr apt 8
 it maintains a separate directory hierarchy. It
 downloads original source releases, patches them if neccessary, configures
 them for Darwin and compiles and installs them. The information about
@@ -83,8 +85,10 @@ specified.
 .\" List of commands
 .Bl -tag -width flag
 .It Cm install Ar package...
-The install command is used to install packages. It downloads, configure,
-builds and installs the packages you name. It will also install required
+The install command is used to install packages. It downloads, configures,
+and builds, or downloads prebuilt (see the
+.Cm Ar --use-binary-dist
+flag) and installs the packages you name. It will also install required
 dependencies automatically, but will ask you for confirmation before it
 does so.
 .Pp
@@ -152,10 +156,16 @@ not installed
 .It \ i
 latest version is installed
 .It (i)
-installed, but a newer version is available
+some version is installed, but a newer version is available
 .It \ p
 a virtual package provided by a package that is installed
 .El
+.Pp
+The version column always lists the latest (highest) version known for
+the package, regardless of what version (if any) you have
+installed. To see all versions of a package available on your system
+along with more detailed status information about each, use
+.Cm fink dumpinfo -fallversions
 .Pp
 There are also some flags for the 
 .Cm fink list
@@ -228,7 +238,7 @@ List the (optional) plugins available to the fink program.  Currently lists
 the available notification plugins.
 .Pp
 .It Cm fetch Ar package...
-Downloads the named packages, but does not install it. This command will
+Downloads the named packages, but does not install them. This command will
 download the tarballs even if they were downloaded before.
 .Pp
 These flags can be used with the 

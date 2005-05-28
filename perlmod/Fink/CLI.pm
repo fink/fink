@@ -64,8 +64,8 @@ interaction/response tasks.
 No functions are exported by default. You can get whichever ones you
 need with things like:
 
-    use Fink::Services '&prompt_boolean';
-    use Fink::Services qw(&print_breaking &prompt);
+    use Fink::CLI '&prompt_boolean';
+    use Fink::CLI qw(&print_breaking &prompt);
 
 =over 4
 

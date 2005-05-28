@@ -25,7 +25,7 @@ package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
-		      &expand_percent &lock_wait);
+		      &expand_percent &lock_wait &store_rename);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
@@ -384,34 +384,6 @@ sub require_packages {
 	}
 }
 
-# set the aptgetable status of packages
-
-sub update_aptgetable {
-	my $class = shift; # class method
-	my $statusfile = "$basepath/var/lib/dpkg/status";
-	
-	open APTDUMP, "$basepath/bin/apt-cache dump |"
-		or die "Can't run apt-cache dump: $!";
-		
-	# Note: We assume here that the package DB exists already
-	my ($po, $pv);
-	while(<APTDUMP>) {
-		if (/^\s*Package:\s*(\S+)/) {
-			($po, $pv) = (Fink::Package->package_by_name($1), undef);
-		} elsif (/^\s*Version:\s*(\S+)/) {
-			$pv = $po->get_version($1) if defined $po;
-		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
-										# of apt-cache dump
-			# Avoid using debs that aren't really apt-getable
-			next if $1 eq $statusfile;
-			
-			$pv->set_aptgetable() if defined $pv;
-		}
-	}
-	close APTDUMP;
-}
-
-
 =private comment
 
 When Fink uses a DB dir, it needs continued access to what's inside (since it
@@ -491,8 +463,10 @@ sub check_dbdirs {
 	my @old = grep { $_ ne $current } @dirs;
 	if ($write) {
 		for my $dir (@old) {
-			if (my $fh = lock_wait("$dir.lock", exclusive => 1, no_block => 1)) {
+			my $lock = "$dir.lock";
+			if (my $fh = lock_wait($lock, exclusive => 1, no_block => 1)) {
 				rm_rf($dir);
+				rm_f($lock);
 				close $fh;
 			}
 		}
@@ -707,31 +681,6 @@ sub can_read_write_db {
 	return ($read, $write);
 }
 
-=item store_rename
-
-  my $success = Fink::Package->store_rename $ref, $file;
-  
-Store $ref in $file using Storable, but using a write-t-o-temp-and-atomically-
-rename strategy. Return true on success.
-
-=cut
-
-sub store_rename {
-	my ($class, $ref, $file) = @_;
-	my $tmp = "${file}.tmp";
-	
-	if (Storable::lock_store($ref, $tmp)) {
-		unless (rename $tmp, $file) {
-			print_breaking_stderr("Error: could not activate temporary file $tmp: $!");
-			return 0;
-		}
-		return 1;
-	} else {
-		print_breaking_stderr("Error: could not write temporary file $tmp: $!");
-		return 0;
-	}
-}
-
 =item update_index
 
   my $fidx = Fink::Package->update_index $fidx, $info, @pvs;
@@ -830,7 +779,7 @@ sub pass1_update {
 			mkdir_p($dir) unless -f $dir;
 			
 			my %store = map { $_->get_fullname => $_ } @pvs; 
-			unless ($class->store_rename(\%store, $fidx->{cache})) {
+			unless (store_rename(\%store, $fidx->{cache})) {
 				delete $idx->{infos}{$info};
 			}
 		}
@@ -839,8 +788,7 @@ sub pass1_update {
 	# Finish up;
 	if ($uncached) {		
 		if ($ops->{write}) {
-			$class->update_aptgetable() if $config->binary_requested();
-			$class->store_rename($idx, $class->db_index);
+			store_rename($idx, $class->db_index);
 		}
 		print_breaking_stderr("done.") if &get_term_width;
 	}
@@ -1295,7 +1243,6 @@ sub handle_infon_block {
 	$new_properties->{infon} = $info_level;
 	return $new_properties;
 }
-
 
 =back
 

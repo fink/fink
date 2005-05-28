@@ -33,8 +33,8 @@ use Fink::Bootstrap qw(&check_host);
 use Fink::Services qw(&read_config &execute);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 
-use Fink::Config qw($config &get_option);
-use Fink::Configure qw($conf_file_compat_version);
+use Fink::Config qw($config);
+use Fink::Configure qw($conf_file_compat_version &spotlight_warning);
 
 use File::Find;
 use File::Basename;
@@ -261,6 +261,11 @@ if ($configNeedsUpdate) {
   else {
     print "Please remember to call 'fink configure' later!\n\n";
   }
+} else {
+	# Only ask if not configuring, configure will ask later
+	if (&spotlight_warning()) {
+		$config->save;
+	}
 }
 
 

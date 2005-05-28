@@ -1,6 +1,6 @@
 Package: unzip
-Version: 5.50
-Revision: 14
+Version: 5.52
+Revision: 11
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 License: BSD
 Essential: yes
@@ -13,9 +13,9 @@ Essential: yes
 #eur-CH: ftp://sunsite.cnlab-switch.ch/mirror/infozip/src/
 #Primary: ftp://ftp.info-zip.org/pub/infozip/src/
 #<<
-#Source: mirror:custom:%n550.tar.gz
-Source: mirror:sourceforge:fink/%n550.tar.gz
-Source-MD5: 798592d62e37f92571184236947122ed
+#Source: mirror:custom:%n552.tar.gz
+Source: mirror:sourceforge:fink/%n552.tar.gz
+Source-MD5: 9d23919999d6eac9217d1f41472034a9
 SourceDirectory: %n-%v
 DocFiles: BUGS INSTALL LICENSE README ToDo WHERE
 Homepage: http://www.info-zip.org/pub/infozip/UnZip.html

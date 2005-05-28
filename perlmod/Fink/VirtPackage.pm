@@ -1157,6 +1157,11 @@ display an attractive message on your screen. Growl
 currently works with a growing number of applications.
 
   http://growl.info/
+
+Please note that this virtual package expects you to have
+Growl installed system-wide in the
+/Library/PreferencePanes directory, rather than in a
+per-user ~/Library/PreferencePanes directory.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 

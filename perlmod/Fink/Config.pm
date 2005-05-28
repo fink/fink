@@ -56,10 +56,26 @@ Fink::Config - Read/write the fink configuration
 
   use Fink::Config;
   my $config = Fink::Config->new_with_path($config_file);
-
+  
+  # General configuration file parameters
   my $value = $config->param($key);
   $config->set_param($key, $value);
   $config->save;
+  
+  # Configuration flags
+  my $bool		= $config->has_flag($flag);
+  $config->set_flag($flag);
+  $config->clear_flag($flag);
+  
+  # Specific configuration options
+  my $path		= $config->get_path;
+  my @trees		= $config->get_treelist;
+  my $verbosity	= $config->verbosity_level;
+  my $use_apt	= $config->binary_requested;
+  
+  # Command-line parameters
+  my $value = $config->get_option($key, $default);
+  $config->set_options({ $key => $value, $key2 => ... });
 
 =head1 DESCRIPTION
 
@@ -150,7 +166,7 @@ sub initialize {
 		die $error;
 	}
 
-	$buildpath = $self->param_default("Buildpath", "$basepath/src");
+	$buildpath = $self->param_default("Buildpath", "$basepath/src/fink.build");
 
 	$libpath = "$basepath/lib/fink";
 	$dbpath = "$basepath/var/lib/fink";  # must sync with fink.info.in!
@@ -213,6 +229,9 @@ sub get_treelist {
 
 Inherited from Fink::Base.
 
+set_param also keeps a list of params that have been change since the
+$config object was originally initialized or last did $config->save()
+
 =cut
 
 sub set_param {
@@ -225,7 +244,9 @@ sub set_param {
 
   $config->save;
 
-Saves any changes made with set_param() to the config file.
+Saves any changes made with set_param() to the config file. Only lines
+of the file that correspond to params that were changed by set_param()
+are altered.
 
 =cut
 
@@ -602,6 +623,7 @@ sub verbosity_level {
 Determine whether the binary distribution or compilation has been requested.
 This is affected by the --use-binary-dist and --compile-from-source
 command line options as well as by the "UseBinaryDist" setting in fink.conf.
+A command-line flag takes precedence over a fink.conf setting.
 Returns 1 for binary distribution, 0 for compile-from-source.
 
 =cut
@@ -622,6 +644,54 @@ sub binary_requested {
 		$binary_request = 0;
 	}
 	return $binary_request;
+}
+
+=item has_flag
+
+  my $bool = $config->has_flag($flag);
+  
+Check for the existence of a configuration flag.
+
+=item set_flag
+
+  $config->set_flag($flag);
+  
+Set a configuration flag. Modified configuration can be saved with save().
+
+=item clear_flag
+
+  $config->clear_flag($flag);
+  
+Clear a configuration flag. Modified configuration can be saved with save().
+
+=cut
+
+sub read_flags {
+	my $self = shift;
+	unless (defined $self->{_flags}) {
+		my @flags = split(' ', $self->param_default('Flags', ''));
+		$self->{_flags} = { map { $_ => 1 } @flags };
+	}
+}	
+
+sub has_flag {
+	my ($self, $flag) = @_;
+	$self->read_flags;
+	return exists $self->{_flags}->{$flag};
+}
+
+sub set_flag {
+	my ($self, $flag) = @_;
+	$self->read_flags;
+	$self->{_flags}->{$flag} = 1;
+	$self->set_param('Flags', join(' ', keys %{$self->{_flags}}));
+}
+
+sub clear_flag {
+	my ($self, $flag) = @_;
+	$self->read_flags;
+	delete $self->{_flags}->{$flag};
+	$self->set_param('Flags', join(' ', keys %{$self->{_flags}}));
 }
 
 =back

@@ -30,10 +30,12 @@ use Fink::Services qw(&filename &execute
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
-					  &dpkg_lockwait &aptget_lockwait);
+					  &dpkg_lockwait &aptget_lockwait &lock_wait
+					  &store_rename);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection
 					&should_skip_prompt);
-use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors);
+use Fink::Config qw($config $basepath $libpath $debarch $buildpath
+					$dbpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;
@@ -41,14 +43,15 @@ use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
-use File::Basename qw(&dirname &basename);
 use Fink::Notify;
 use Fink::Validation;
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
 
 use POSIX qw(uname strftime);
+use DB_File;
 use Hash::Util;
+use File::Basename qw(&dirname &basename);
 
 use strict;
 use warnings;
@@ -139,12 +142,26 @@ different PkgVersion objects. Returns this object.
 		}
 		
 		return $self unless exists $loaded->{$self->get_fullname};
+		
+		# Insert the loaded fields
 		my $href = $loaded->{$self->get_fullname};
 		@$self{keys %$href} = values %$href;
+		
+		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
+		my $destdir = $self->get_install_directory();
+		my $pdestdir = $self->has_parent()
+			? $self->get_parent()->get_install_directory()
+			: $destdir;
+		my %entries = (
+			'd' => $destdir,			'D' => $pdestdir,
+			'i' => $destdir.$basepath,	'I' => $pdestdir.$basepath,
+		);
+		@{$self->{_expand}}{keys %entries} = values %entries;
+		
 		return $self;
 	}
 }
-			
+
 
 =item get_init_fields
 
@@ -249,11 +266,11 @@ sub initialize {
 	# some commonly used stuff
 	$fullname = $pkgname."-".$version."-".$revision;
 	# prepare percent-expansion map
-	$destdir = "$buildpath/root-$fullname";
+	$destdir = $self->get_install_directory();
 	if (exists $self->{parent}) {
 		my $parent = $self->{parent};
 		$parentpkgname = $parent->get_name();
-		$parentdestdir = "$buildpath/root-".$parent->get_fullname();
+		$parentdestdir = $parent->get_install_directory();
 		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
 	} else {
 		$parentpkgname = $pkgname;
@@ -779,13 +796,13 @@ sub disable_bootstrap {
 	my ($destdir);
 	my $splitoff;
 
-	$destdir = "$buildpath/root-".$self->get_fullname();
+	$destdir = $self->get_install_directory();
 	$self->{_expand}->{p} = $basepath;
 	$self->{_expand}->{d} = $destdir;
 	$self->{_expand}->{i} = $destdir.$basepath;
 	if ($self->has_parent) {
 		my $parent = $self->get_parent;
-		my $parentdestdir = "$buildpath/root-".$parent->get_fullname();
+		my $parentdestdir = $parent->get_install_directory();
 		$self->{_expand}->{D} = $parentdestdir;
 		$self->{_expand}->{I} = $parentdestdir.$basepath;
 	} else {
@@ -1329,20 +1346,64 @@ sub is_fetched {
 	return 1;
 }
 
+=item
 
-### Is this package available via apt?
+  my $hashref = get_aptdb();
+  
+Get a hashref with the current packages available via apt-get
 
-sub is_aptgetable {
-	my $self = shift;
-	return defined $self->{_aptgetable};
+=cut
+
+sub get_aptdb {
+	my %db;
+	
+	my $statusfile = "$basepath/var/lib/dpkg/status";
+	open APTDUMP, "$basepath/bin/apt-cache dump |"
+		or die "Can't run apt-cache dump: $!";
+	my ($pkg, $vers);
+	while(<APTDUMP>) {
+		if (/^\s*Package:\s*(\S+)/) {
+			($pkg, $vers) = ($1, undef);
+		} elsif (/^\s*Version:\s*(\S+)/) {
+			$vers = $1;
+		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
+										# of apt-cache dump
+			# Avoid using debs that aren't really apt-getable
+			next if $1 eq $statusfile;
+			
+			$db{"$pkg-$vers"} = 1 if defined $pkg && defined $vers;
+		}
+	}
+	close APTDUMP;
+	
+	return \%db;
 }
 
+=item
 
-### Note that this package *is* available via apt
+  my $aptgetable = $pv->is_aptgetable;
+  
+Get whether or not this package is available via apt-get.
 
-sub set_aptgetable {
-	my $self = shift;
-	$self->{_aptgetable} = 1;
+=cut
+
+{
+	my $aptdb = undef;
+	
+	sub is_aptgetable {
+		my $self = shift;
+		
+		if (!defined $aptdb) { # Load it
+			if ($config->binary_requested()) {
+				$aptdb = get_aptdb();
+			} else {
+				$aptdb = {};
+			}
+		}
+		
+		# Return cached value
+		return exists $aptdb->{$self->get_name . "-" . $self->get_fullversion};
+	}
 }
 
 
@@ -1588,20 +1649,13 @@ sub resolve_depends {
 
 	SPECLOOP: foreach $altspecs (@speclist) {
 		$altlist = [];
-		@altspec = split(/\s*\|\s*/, $altspecs);
+		@altspec = $self->get_altspec($altspecs);
 		$found = 0;
 		$loopcount = 0;
 		foreach $depspec (@altspec) {
+			$depname = $depspec->{'depname'};
+			$versionspec = $depspec->{'versionspec'};
 			$loopcount++;
-			if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-				$depname = $1;
-				$versionspec = $2;
-			} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-				$depname = $1;
-				$versionspec = "";
-			} else {
-				die "Illegal spec format: $depspec\n";
-			}
 
 			if ($include_build and $self->parent_splitoffs and
 				 ($idx >= $split_idx or $include_build == 2)) {
@@ -1611,17 +1665,17 @@ sub resolve_depends {
 				# exception: if we were called by a splitoff to determine the "meta
 				# dependencies" of it, then we again filter out all splitoffs.
 				# If you've read till here without mental injuries, congrats :-)
-				next SPECLOOP if ($depname eq $self->{_name});
+				next SPECLOOP if ($depspec->{'depname'} eq $self->{_name});
 				foreach	 $splitoff ($self->parent_splitoffs) {
-					next SPECLOOP if ($depname eq $splitoff->get_name());
+					next SPECLOOP if ($depspec->{'depname'} eq $splitoff->get_name());
 				}
 			}
 
-			$package = Fink::Package->package_by_name($depname);
+			$package = Fink::Package->package_by_name($depspec->{'depname'});
 
 			$found = 1 if defined $package;
 			if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-				print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				print "WARNING: While resolving $oper \"" . $depspec->{'depname'} . " " . $depspec->{'versionspec'} . "\" for package \"".$self->get_fullname()."\", package \"" . $depspec->{'depname'} . "\" was not found.\n";
 			}
 			if (not defined $package) {
 				next;
@@ -1635,13 +1689,48 @@ sub resolve_depends {
 			}
 		}
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
-			die "Can't resolve $oper \"$altspecs\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
+			my $package = Fink::Package->package_by_name($altspec[0]->{'depname'});
+			my $diemessage = "Can't resolve $oper \"$altspecs\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
+			if (defined $package and $package->is_virtual()) {
+				my $version = &latest_version($package->list_versions());
+				$package = $package->get_version($version);
+				$diemessage .= "\nAt least one of the dependencies required (" . $package->get_name() . ") is a virtual package, you might need\n" .
+					"to manually upgrade or install it.  The package details below should have more information\n" .
+					"on where to find an installer:\n\n" .
+					$package->get_description() . "\n";
+			}
+			die $diemessage;
 		}
 		push @deplist, $altlist;
 		$idx++;
 	}
 
 	return @deplist;
+}
+
+sub get_altspec {
+	my $self     = shift;
+	my $altspecs = shift;
+
+	my ($depspec, $depname, $versionspec);
+	my @specs;
+
+	my @altspec = split(/\s*\|\s*/, $altspecs);
+	foreach $depspec (@altspec) {
+		$depname = $versionspec = undef;
+		if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+			$depname = $1;
+			$versionspec = $2;
+		} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+			$depname = $1;
+			$versionspec = "";
+		}
+		if (defined $depname) {
+			push(@specs, { depname => $depname, versionspec => $versionspec });
+		}
+	}
+
+	return @specs;
 }
 
 sub resolve_conflicts {
@@ -2606,8 +2695,8 @@ sub phase_build {
 	}
 
 	chdir "$buildpath";
-	$ddir = "root-".$self->get_fullname();
-	$destdir = "$buildpath/$ddir";
+	$destdir = $self->get_install_directory();
+	$ddir = basename $destdir;
 
 	if (not -d "$destdir/DEBIAN") {
 		my $error = "can't create directory for control files for package ".$self->get_fullname();
@@ -2630,11 +2719,14 @@ sub phase_build {
 
 	# generate dpkg "control" file
 
-	my ($pkgname, $parentpkgname, $version, $field, $section, $instsize);
+	my ($pkgname, $parentpkgname, $version, $field, $section, $instsize, $prio);
 	$pkgname = $self->get_name();
 	$parentpkgname = $self->get_family_parent->get_name();
 	$version = $self->get_fullversion();
-	$section = $self->get_section();
+	
+	$section = $self->get_control_section();
+	$prio = $self->get_priority();
+	
 	$instsize = $self->get_instsize("$destdir$basepath");	# kilobytes!
 	$control = <<EOF;
 Package: $pkgname
@@ -2643,6 +2735,7 @@ Version: $version
 Section: $section
 Installed-Size: $instsize
 Architecture: $debarch
+Priority: $prio
 EOF
 	if ($self->param_boolean("BuildDependsOnly")) {
 		$control .= "BuildDependsOnly: True\n";
@@ -2875,6 +2968,7 @@ EOF
 			"###\n".
 			"### check to see if any .pod files exist in \%p/share/podfiles.\n".
 			"###\n\n".
+			"echo -n '' > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n".
 			"perl <<'END_PERL'\n\n".
 			"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
 			"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
@@ -3287,7 +3381,7 @@ sub set_buildlock {
 	my $lockpkg = "fink-buildlock-$pkgname-" . $self->get_version() . '-' . $self->get_revision();
 	my $timestamp = strftime "%Y.%m.%d-%H.%M.%S", localtime;
 
-	my $destdir = "$buildpath/root-$lockpkg";
+	my $destdir = $self->get_install_directory($lockpkg);
 
 	if (not -d "$destdir/DEBIAN") {
 		mkdir_p "$destdir/DEBIAN" or
@@ -3459,21 +3553,18 @@ sub clear_buildlock {
 	# remove lockpkg (== clear lock for building $self)
 	print "Removing build lock...\n";
 
-
-	
-	my $old_lock;
-	{
-		local $SIG{INT} = 'IGNORE';
-		$old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
-	}
+	my $old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
 	chomp $old_lock;
 	if ($old_lock eq "$lockpkg\t") {
 		&print_breaking("WARNING: The lock was removed by some other process.");
+	} elsif ($old_lock eq '') {
+		# this is weird, man...qpkg-query crashed or lock never got installed
+		&print_breaking("WARNING: Could not read lock timestamp. Not removing it.");
 	} elsif ($old_lock ne "$lockpkg\t$timestamp") {
 		# don't trample some other timestamp's lock
-		&print_breaking("WARNING: The lock has a different timestamp. Not ".
-						"removing it, as it likely belongs to a different ".
-						"fink process. This should not ever happen.");
+		&print_breaking("WARNING: The lock has a different timestamp than the ".
+						"one we set. Not removing it, as it likely belongs to ".
+						"a different fink process.");
 	} else {
 		if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
 			&print_breaking("WARNING: Can't remove package ".
@@ -3829,6 +3920,59 @@ sub get_debdeps {
 
 	return $deps;
 }
+
+=item get_install_directory
+
+  my $dir = $pv->get_install_directory;
+  my $dir = $pv->get_install_directory $pkg;
+  
+Get the directory into which the install phase will put files. If $pkg is
+specified, will get get the destdir for a package of that full-name.
+
+=cut
+
+sub get_install_directory {
+	my $self = shift;
+	my $pkg = shift || $self->get_fullname();
+	return "$buildpath/root-$pkg";
+}
+
+=item get_control_section
+
+  my $section = $pv->get_control_section();
+
+Get the section of the package for the purposes of .deb control files. May be
+distinct from get_section.
+
+=cut
+
+sub get_control_section {
+	my $self = shift;
+	my $section = $self->get_section();
+	$section = "base" if $section eq "bootstrap";
+	return $section;
+}
+
+=item get_priority
+
+  my $prio = $pv->get_priority();
+  
+Get the apt priority of this package.
+
+=cut
+
+sub get_priority {
+	my $self = shift;
+	my $prio = "optional";
+	if (grep { $_ eq $self->get_name() } qw(apt apt-shlibs storable)) {
+		$prio = "important";
+	}
+	if ($self->param_boolean("Essential")) {
+		$prio = "required";
+	}
+	return $prio;
+}
+
 
 ### EOF
 

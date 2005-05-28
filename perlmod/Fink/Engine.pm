@@ -28,14 +28,15 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
 					  &call_queue_clear &call_queue_add &lock_wait
-					  &aptget_lockwait);
+					  &aptget_lockwait &store_rename);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
+use Fink::Configure qw(&spotlight_warning);
 use Fink::Package;
 use Fink::Shlibs;
 use Fink::PkgVersion;
-use Fink::Config qw($config $basepath $debarch $distribution);
+use Fink::Config qw($config $basepath $debarch $distribution $dbpath);
 use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p);
@@ -218,6 +219,12 @@ sub process {
 						 "used for package testing and development, not for ".
 						 "production builds.");
 		sleep(3);
+	}
+	
+	# Warn about Spotlight
+	if (&spotlight_warning()) {
+		$config->save;
+		$config->initialize;
 	}
 	
 	# read package descriptions if needed
@@ -655,6 +662,86 @@ sub cmd_listpackages {
 	}
 }
 
+=item create_override
+
+  create_override(@trees);
+
+Create an override file for the Fink .debs. The override lock must be locked
+for this method to work.
+
+=cut
+
+sub create_override {
+	my @trees = @_;
+	my @pkgs;
+	
+	if (eval { require Storable; }) {
+		# Cache the old files. Not the most efficient system, but it has the
+		# benefit of only needing to fully scan a tree once, ever.
+		
+		my %pkgs;
+		my $dbpath = "$dbpath/override.db";
+		my $db = -f $dbpath ? Storable::lock_retrieve($dbpath) : { };
+		
+		for my $tree (@trees) {
+			if (exists $db->{$tree}) {		# Use the cached debs
+				my $debs = $db->{$tree};
+				for my $deb (keys %$debs) {
+					if (-f $deb) {
+						$pkgs{$debs->{$deb}} = 1;
+#						print "Using no-prio: $deb\n";
+					} else {
+						delete $debs->{$deb};
+#						print "No-prio no longer exists: $deb\n";
+					}
+				}
+			} else {						# Get the no-prio debs
+				find(sub {
+					return unless /\.deb$/;
+					my %fields;
+					open DEB, "dpkg-deb -f \Q$_\E package priority |"
+						or return;
+					while (<DEB>) {
+						chomp;
+						if (/^(\S+)\s*:\s*(.*)$/) {
+							$fields{lc $1} = $2;
+						}
+					}
+					close DEB;
+					
+					unless (exists $fields{priority}) {
+						$db->{$tree}->{$File::Find::name} = $fields{'package'};
+						$pkgs{$fields{'package'}} = 1;
+#						print "Found no-prio: $File::Find::name\n";
+					} else {
+#						print "Have prio in: $File::Find::name\n";
+					}
+				}, "$basepath/fink/dists/$tree/binary-$debarch/");
+			}
+		}
+		
+		store_rename($db, $dbpath);
+		@pkgs = keys %pkgs;
+	} else {
+		@pkgs = Fink::Package->list_packages();
+	}
+	
+	open(OVERRIDE,">$basepath/fink/override") or die "can't write override file: $!\n";
+	foreach my $pkgname (@pkgs) {
+		my ($package, $pkgversion, $prio, $section);
+		$package = Fink::Package->package_by_name($pkgname);
+		next unless defined $package;
+		$pkgversion = $package->get_version(&latest_version($package->list_versions()));
+		next unless defined $pkgversion;
+
+		$section = $pkgversion->get_control_section();
+		$prio = $pkgversion->get_priority();
+		print OVERRIDE "$pkgname $prio $section\n";
+	}
+	close(OVERRIDE) or die "can't write override file: $!\n";
+}
+
+
 sub cmd_scanpackages {
 	my $quiet = shift || 0;
 	my @treelist = @_;
@@ -671,30 +758,7 @@ sub cmd_scanpackages {
 	}
 
 	# create a global override file
-
-	my ($pkgname, $package, $pkgversion, $prio, $section);
-	open(OVERRIDE,">$basepath/fink/override") or die "can't write override file: $!\n";
-	foreach $pkgname (Fink::Package->list_packages()) {
-		$package = Fink::Package->package_by_name($pkgname);
-		next unless defined $package;
-		$pkgversion = $package->get_version(&latest_version($package->list_versions()));
-		next unless defined $pkgversion;
-
-		$section = $pkgversion->get_section();
-		if ($section eq "bootstrap") {
-			$section = "base";
-		}
-
-		$prio = "optional";
-		if ($pkgname eq "apt" or $pkgname eq "apt-shlibs" or $pkgname eq "storable-pm") {
-			$prio = "important";
-		}
-		if ($pkgversion->param_boolean("Essential")) {
-			$prio = "required";
-		}
-		print OVERRIDE "$pkgname $prio $section\n";
-	}
-	close(OVERRIDE) or die "can't write override file: $!\n";
+	create_override(@treelist);
 
 	# create the Packages.gz and Release files for each tree
 
@@ -1473,6 +1537,13 @@ sub real_install {
 		# for build, also skip if present, but not installed
 		if ($op == $OP_BUILD and $package->is_present()) {
 			next;
+		}
+		# if asked to reinstall but have no .deb, have to rebuild it
+		if ($op == $OP_REINSTALL and not $package->is_present()) {
+			if ($verbosity > 2) {
+				printf "No .deb found so %s must be rebuilt\n", $package->get_fullname();
+			}
+			$op = $OP_REBUILD;
 		}
 		# add to table
 		@{$deps{$pkgname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
@@ -2304,11 +2375,12 @@ EOF
 				my $package = Fink::Package->package_by_name($pkgname);
 				my $lversion = &latest_version($package->list_versions());
 				print "$_:\n";
-				foreach (&sort_versions($package->list_versions())) {
+				foreach my $vers (&sort_versions($package->list_versions())) {
+					my $pv = $package->get_version($vers);
 					printf " %1s%1s\t%s\n",
-						( $package->get_version($_)->is_present() or $config->binary_requested() && $package->get_version($_)->is_aptgetable() ) ? "b" : "",
-						$package->get_version($_)->is_installed() ? "i" : "",
-						$_;
+						( $pv->is_present() or $config->binary_requested() && $pv->is_aptgetable() ) ? "b" : "",
+						$pv->is_installed() ? "i" : "",
+						$vers;
 				}
 			} elsif ($_ eq 'description') {
 				printf "%s: %s\n", $_, $pkg->get_shortdescription;
