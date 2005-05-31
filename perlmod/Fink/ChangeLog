@@ -1,3 +1,7 @@
+2005-06-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: work around an apple java installer bug
+
 2005-05-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	*VirtPackage.pm: perl packages now Provide digest-pm (when >= 5.8.0)
@@ -14,9 +18,9 @@
 
 2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
 
-        * PkgVersion.pm: better checking for SetCXX
-        * Bootstrap.pm: use 10.4 distro instead of 10.4-transitional if
-        the environment variable FINK_NOTRANS is set
+	* PkgVersion.pm: better checking for SetCXX
+	* Bootstrap.pm: use 10.4 distro instead of 10.4-transitional if
+	the environment variable FINK_NOTRANS is set
 
 2005-05-10  Daniel Macks  <dmacks@netspace.org>
 
