@@ -32,53 +32,53 @@ can still use this section as an example.)
 ------------------------------------
 Start out by copying the "fink-0.7.1-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "_bold_face_" (or otherwise highlighted).
-The actual input prompts from the shell may vary, and some chunks of the
-output have been omitted ( "..." ).
+"normal face" , your input is in "bold_face" (or otherwise highlighted). The
+actual input prompts from the shell may vary, and some chunks of the output
+have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.7.1-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.7.1-full_
-   [frodo:~/fink-0.7.1-full] testuser% _./bootstrap.sh_/sw_
+   [frodo:~] testuser% tar_xzf_fink-0.7.1-full.tar.gz
+   [frodo:~] testuser% cd_fink-0.7.1-full
+   [frodo:~/fink-0.7.1-full] testuser% ./bootstrap.sh_/sw
    
    Welcome to Fink.
    
    ...
-   Choose a method: [1] _1_
+   Choose a method: [1] 1
    
    sudo /Users/testuser/fink-0.7.1-full/bootstrap.pl .sudo '/sw'
-   Password:_(your_normal_password_here)_
+   Password:(your_normal_password_here)
    ...
    OK, I'll ask you some questions and update the configuration file in
    '/sw/etc/fink.conf'.
    
-   In what additional directory should Fink look for downloaded tarballs? [] _(press_return)_
-   Always print verbose messages? [y/N] _(press_return)_
+   In what additional directory should Fink look for downloaded tarballs? [] (press_return)
+   Always print verbose messages? [y/N] (press_return)
    
    Proxy/Firewall settings
    Enter the URL of the HTTP proxy to use, or 'none' for no proxy. The URL
    should start with http:// and may contain username, password or port
-   specifications. [none] _(press_return)_
+   specifications. [none] (press_return)
    Enter the URL of the proxy to use for FTP, or 'none' for no proxy. The URL
    should start with http:// and may contain username, password or port
-   specifications. [none] _(press_return)_
-   Use passive mode FTP transfers (to get through a firewall)? [Y/n] _y_
+   specifications. [none] (press_return)
+   Use passive mode FTP transfers (to get through a firewall)? [Y/n] y
    
    Mirror selection
    Choose a continent:
    ...
-   _(enter_the_numbers_corresponding_to_your_location)_
+   (enter_the_numbers_corresponding_to_your_location)
    ...
    Writing updated configuration to '/sw/etc/fink.conf'...
    Bootstrapping a base system via /sw/bootstrap.
    ...
-   _(take_a_coffee_break_while_Fink_downloads_and_compiles_the_base_packages)_
+   (take_a_coffee_break_while_Fink_downloads_and_compiles_the_base_packages)
    ...
    
    You should now have a working Fink installation in '/sw'.
    
-   [frodo:~/fink-0.7.1-full] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.7.1-full_
-   [frodo:~] testuser% _/sw/bin/pathsetup.sh_
+   [frodo:~/fink-0.7.1-full] testuser% cd
+   [frodo:~] testuser% rm_-r_fink-0.7.1-full
+   [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and
 other things) for use with Fink. In most cases, it will run automatically,
@@ -97,15 +97,15 @@ all other ones. That's it, you now have a base system installed.
 
 You can now install additional packages with the "fink" command, like this:
 
-   [frodo:~] testuser% _fink_install_xfree86-server_gimp_
+   [frodo:~] testuser% fink_install_xfree86-server_gimp
    sudo /sw/bin/fink 'install' 'xfree86-server' 'gimp'
-   Password:_(your_normal_password_here)_
+   Password:(your_normal_password_here)
    Reading package info...
    Information about 147 packages read.
    The following 14 additional packages will be installed:
     audiofile dlcompat esound giflib glib gnome-libs gtk+ imlib libjpeg libpng
     libtiff orbit xfree86-base zlib
-   Do you want to continue? [Y/n] _y_
+   Do you want to continue? [Y/n] y
    ...
 
 If these instructions don't work for you, well, you'll have to take the time
@@ -120,23 +120,23 @@ well-documented.
 -------------------
 Start out by copying the "fink-0.7.1-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "_bold_face_" (or otherwise highlighted).
-The actual input prompts from the shell may vary, and some chunks of the
-output have been omitted ( "..." ).
+"normal face" , your input is in "bold_face" (or otherwise highlighted). The
+actual input prompts from the shell may vary, and some chunks of the output
+have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.7.1-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.7.1-full_
-   [frodo:~/fink-0.7.1-full] testuser% _./inject.pl_/sw_
+   [frodo:~] testuser% tar_xzf_fink-0.7.1-full.tar.gz
+   [frodo:~] testuser% cd_fink-0.7.1-full
+   [frodo:~/fink-0.7.1-full] testuser% ./inject.pl_/sw
    sudo ./inject.pl /sw
-   Password:_(your_normal_password_here)_
+   Password:(your_normal_password_here)
    Copying package descriptions
    ...
    Done.
    
    Your Fink installation in '/sw' was updated with new fink packages.
    
-   [frodo:~/fink-0.7.1-full] testuser% _cd_pkginfo_
-   [frodo:~/fink-0.7.1-full/pkginfo] testuser% _./inject.pl_/sw_
+   [frodo:~/fink-0.7.1-full] testuser% cd_pkginfo
+   [frodo:~/fink-0.7.1-full/pkginfo] testuser% ./inject.pl_/sw
    sudo ./inject.pl /sw
    Copying...
    ...
@@ -145,9 +145,9 @@ output have been omitted ( "..." ).
    files. Use appropriate fink commands to update the packages, e.g. 'fink
    update-all'.
    
-   [frodo:~/fink-0.7.1-full/pkginfo] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.7.1-full_
-   [frodo:~] testuser% _fink_update-all_
+   [frodo:~/fink-0.7.1-full/pkginfo] testuser% cd
+   [frodo:~] testuser% rm_-r_fink-0.7.1-full
+   [frodo:~] testuser% fink_update-all
    ...
 
 
@@ -160,7 +160,7 @@ You need:
 
  * An installed Mac OS X system, version 10.1 or later. Darwin 5.0 and later
    should also work, but this has not been tested. Earlier versions of both
-   are not supported and probably will _not_ work.
+   are not supported and probably will not work.
 
  * Development tools. On Mac OS X, install the Developer.pkg package from
    the Developer Tools CD. On Darwin, the tools should be present in the
