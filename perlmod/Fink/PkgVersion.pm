@@ -1756,6 +1756,7 @@ sub resolve_conflicts {
 # TODO: this method is superfluous and incomplete. Should inline it
 # into callers, and (eventually) implement minor-libversion handling
 # in pkglist()
+
 sub get_binary_depends {
 	my $self = shift;
 	my ($depspec1, $depspec2, $depspec);
@@ -3791,7 +3792,9 @@ END
 					@dirs = sort(grep(/^${subtype}/, readdir(DIR)));
 					@dirs = reverse(@dirs) if ($subtype eq "");
 					for $dir (@dirs) {
+
 						if ($dir =~ /^${subtype}/ and -f "$versions_dir/$dir/Headers/jni.h") {
+							symlink("../Headers", "$versions_dir/$dir/include") unless (-l "$versions_dir/$dir/include");
 							$JAVA_HOME = "$versions_dir/$dir/Home";
 						}
 					}
