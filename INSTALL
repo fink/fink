@@ -1,4 +1,5 @@
-Generated from $Fink: install.xml,v 1.20 2004/07/30 15:53:31 dmrrsn Exp $
+Generated from $Fink: install.xml,v 1.21 2005/05/31 15:36:05 rangerrick Exp
+$
 
  Fink 0.7.1 Installation
 =========================
@@ -74,11 +75,6 @@ output have been omitted ( "..." ).
    ...
    
    You should now have a working Fink installation in '/sw'.
-   
-   Run 'source /sw/bin/init.csh ; rehash' to set up this Terminal's environment
-   to use Fink. To make the software installed by Fink available in all of your
-   shells, add 'source /sw/bin/init.csh' to the init script '.cshrc' in your
-   home directory. Enjoy.
    
    [frodo:~/fink-0.7.1-full] testuser% _cd_
    [frodo:~] testuser% _rm_-r_fink-0.7.1-full_

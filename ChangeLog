@@ -1,3 +1,8 @@
+2005-06-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* INSTALL, INSTALL.html: remove some faulty old csh junk from
+	the install doc.
+
 2005-05-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* postinstall.pl.in: Also warn about Spotlight in the postinstall.
