@@ -35,7 +35,7 @@ my $config_obj = Fink::Config->new_with_path('basepath/etc/fink.conf');
     ::is( $debarch,   'darwin-'.Fink::Services::get_arch );
 
     # need a buildpath() method
-    ::is( $buildpath, $config->param_default("Buildpath", "$basepath/src") );
+    ::is( $buildpath, $config->param_default("Buildpath", "$basepath/src/fink.build") );
           
     ::is( $distribution, $config->param('Distribution') );
 }

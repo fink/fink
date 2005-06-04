@@ -36,7 +36,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&configure &choose_mirrors);
+	@EXPORT_OK	 = qw(&configure &choose_mirrors &spotlight_warning);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -71,6 +71,7 @@ sub configure {
 	if ($builddir) {
 		$config->set_param("Buildpath", $builddir);
 	}
+	&spotlight_warning();
 
 	$binary_dist = $config->param_boolean("UseBinaryDist");
 	# if we are not installed in /sw, $binary_dist must be 0:
@@ -169,7 +170,47 @@ sub configure {
 	$config->save();
 }
 
-### mirror selection
+=item spotlight_warning
+
+Warn the user if they are choosing a build path which will be indexed by
+Spotlight. Returns true if changes have been made to the Fink configuration,
+which will need to be saved.
+
+=cut
+
+sub spotlight_warning {
+	my $builddir = $config->param_default("Buildpath",
+										  "$basepath/src/fink.build");	
+	if ( $> == 0
+			&& !$config->has_flag('SpotlightWarning')
+			&& $builddir !~ /\.build$/
+			&& $config->param("distribution") ge "10.4") {
+		
+		$config->set_flag('SpotlightWarning');
+		
+		print "\n";
+		my $response =
+			prompt_boolean("Your current build directory '$builddir' will be ".
+				"indexed by Spotlight, which can make packages build quite ".
+				"slowly.\n\n".
+				"Would you like to use '$builddir.build' as your new build ".
+				"directory, so that Spotlight will not index it?",
+				1);
+		print "\n";	
+		
+		$config->set_param("Buildpath", $builddir . ".build") if $response;
+		return 1;
+	}
+	
+	return 0;
+}	
+
+=item choose_mirrors
+
+mirror selection (returns boolean indicating if mirror selections are
+unchanged: true means no changes, false means changed)
+
+=cut
 
 sub choose_mirrors {
 	my $mirrors_postinstall = shift; # boolean value, =1 if we've been
