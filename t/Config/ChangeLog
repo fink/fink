@@ -1,0 +1,8 @@
+2005-06-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+        * exports.t, flag.t: backport Spotlight warning
+
+2004-12-7  Daniel Macks  <dmacks@netspace.org>
+
+	* verbosity_level.t: Correct for new highest level is 4.
+

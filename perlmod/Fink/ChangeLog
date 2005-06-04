@@ -1,3 +1,7 @@
+2005-06-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Configure.pm, Config.pm: backport Spotlight warning
+
 2005-06-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: work around an apple java installer bug
