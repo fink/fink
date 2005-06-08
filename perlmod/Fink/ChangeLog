@@ -1,3 +1,7 @@
+2005-06-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: we no longer support 10.2
+
 2005-06-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: work around an apple java installer bug
