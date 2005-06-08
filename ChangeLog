@@ -1,3 +1,8 @@
+2005-06-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.7, a release
+	on branch_0_24
+
 2005-06-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* INSTALL, INSTALL.html: remove some faulty old csh junk from
