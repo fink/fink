@@ -210,9 +210,9 @@ EOF
 
 if (not $distribution =~ /10.1/) {
   # For now, 10.4 should be a link to 10.4-transitional
-  if($distribution eq "10.4" and not -d "10.4") {
-    if (&execute("ln -s 10.4-transitional 10.4")) {
-      print "ERROR: Can't create link from 10.4-transitional to 10.4\n";
+  if($distribution eq "10.4" and not -d "$basepath/fink/10.4" and not -l "$basepath/fink/10.4") {
+    if (&execute("ln -s 10.4-transitional $basepath/fink/10.4")) {
+      print "ERROR: Can't create link from 10.4-transitional to $basepath/fink/10.4\n";
       exit 1;
     }
   }
