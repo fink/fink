@@ -167,12 +167,10 @@ GCC_MSG
 	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-8]/) {
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
-		 }
 		$distribution = "10.2$gcc";
 	} elsif ($host =~ /^powerpc-apple-darwin6\..*/) {
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
-		 }
 		$distribution = "10.2$gcc";
 	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-9]\.0/) {
 		&print_breaking("This system is supported and tested.");
