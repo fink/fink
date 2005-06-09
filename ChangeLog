@@ -1,3 +1,8 @@
+2005-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: must use full path for 10.4 tree symlink; also,
+	test for its presence before creating it
+
 2005-05-23  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap.pl: Suggest the bash shell setups instead of csh.
