@@ -2702,7 +2702,7 @@ sub phase_build {
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		if (&execute("chown -R root '$destdir'") == 1) {
+		if (&execute("chown -R -h root '$destdir'") == 1) {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
