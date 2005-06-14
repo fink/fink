@@ -123,13 +123,13 @@ download the tarballs even if they were downloaded before.
 
  fetch-all
 -----------
-Downloads _all_ package source files. Like fetch, this downloads the
-tarballs even when they were downloaded before.
+Downloads all package source files. Like fetch, this downloads the tarballs
+even when they were downloaded before.
 
 
  fetch-missing
 ---------------
-Downloads _all_ package source files. This command will only download files
+Downloads all package source files. This command will only download files
 that are not present on the system.
 
 
@@ -139,7 +139,7 @@ Builds a package, but does not install it. As usual, the source tarballs are
 downloaded if they can not be found. The result of this command is an
 installable .deb package file, which you can quickly install later with the
 install command. This command will do nothing if the .deb already exists.
-Note that dependencies are still _installed_, not just built.
+Note that dependencies are still installed, not just built.
 
 
  rebuild

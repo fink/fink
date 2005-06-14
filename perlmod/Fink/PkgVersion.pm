@@ -74,7 +74,7 @@ END { }				# module clean-up code here (global destructor)
 =item new_backed
 
   my $pv = Fink::PkgVersion->new_backed $file, $hashref;
-  
+
 Create a disk-backed PkgVersion, with initial properties from $hashref. 
 Other properties will be loaded as needed from $file.
 
@@ -111,7 +111,7 @@ sub new_backed {
 =item load_fields
 
   my $same_pv = $pv->load_fields;
-  
+
 Load any unloaded fields into this PkgVersion object. Loads are shared among
 different PkgVersion objects. Returns this object.
 
@@ -166,7 +166,7 @@ different PkgVersion objects. Returns this object.
 =item get_init_fields
 
   my $hashref = $pv->get_init_fields;
-  
+
 Get the minimum fields necessary for inserting a PkgVersion.
 
 =cut
@@ -1346,10 +1346,10 @@ sub is_fetched {
 	return 1;
 }
 
-=item
+=item get_aptdb
 
   my $hashref = get_aptdb();
-  
+
 Get a hashref with the current packages available via apt-get
 
 =cut
@@ -1379,10 +1379,10 @@ sub get_aptdb {
 	return \%db;
 }
 
-=item
+=item is_aptgetable
 
   my $aptgetable = $pv->is_aptgetable;
-  
+
 Get whether or not this package is available via apt-get.
 
 =cut
@@ -1756,6 +1756,7 @@ sub resolve_conflicts {
 # TODO: this method is superfluous and incomplete. Should inline it
 # into callers, and (eventually) implement minor-libversion handling
 # in pkglist()
+
 sub get_binary_depends {
 	my $self = shift;
 	my ($depspec1, $depspec2, $depspec);
@@ -2710,7 +2711,7 @@ sub phase_build {
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		if (&execute("chown -R root '$destdir'") == 1) {
+		if (&execute("chown -R -h root '$destdir'") == 1) {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
@@ -3584,7 +3585,7 @@ sub clear_buildlock {
 =item ensure_gpp_prefix
 
   my $prefix_path = ensure_gpp_prefix $gpp_version;
-  
+
 Ensures that a path-prefix directory exists for the given version of g++.
 Returns the path to the resulting directory.
 
@@ -3796,7 +3797,9 @@ END
 					@dirs = sort(grep(/^${subtype}/, readdir(DIR)));
 					@dirs = reverse(@dirs) if ($subtype eq "");
 					for $dir (@dirs) {
+
 						if ($dir =~ /^${subtype}/ and -f "$versions_dir/$dir/Headers/jni.h") {
+							symlink("../Headers", "$versions_dir/$dir/include") unless (-l "$versions_dir/$dir/include");
 							$JAVA_HOME = "$versions_dir/$dir/Home";
 						}
 					}
@@ -3925,7 +3928,7 @@ sub get_debdeps {
 
   my $dir = $pv->get_install_directory;
   my $dir = $pv->get_install_directory $pkg;
-  
+
 Get the directory into which the install phase will put files. If $pkg is
 specified, will get get the destdir for a package of that full-name.
 
@@ -3956,7 +3959,7 @@ sub get_control_section {
 =item get_priority
 
   my $prio = $pv->get_priority();
-  
+
 Get the apt priority of this package.
 
 =cut

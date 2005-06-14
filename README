@@ -29,7 +29,7 @@ You need:
 
  * An installed Mac OS X system, version 10.0 or later. (There may still be
    some stray linker-related problems with 10.1.) Darwin 1.3.1 should also
-   work, but this has not been tested. Earlier versions of both will _not_
+   work, but this has not been tested. Earlier versions of both will not
    work.
 
  * Development tools. On Mac OS X, install the Developer.pkg package from

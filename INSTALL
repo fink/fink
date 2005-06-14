@@ -1,13 +1,14 @@
-Generated from $Fink: install.xml,v 1.20 2004/07/30 15:53:31 dmrrsn Exp $
+Generated from $Fink: install.xml,v 1.21 2005/05/31 15:36:05 rangerrick Exp
+$
 
- Fink 0.7.1 Installation
+ Fink 0.8.0 Installation
 =========================
 
 These are the installation instructions for the "source" distribution of
-Fink 0.7.1, intended for use with OS X v.10.3 and later. The instructions
-can also be used for installation on OS X v.10.2 (replacing 0.7.1 by 0.6.3
+Fink 0.8.0, intended for use with OS X v.10.3 and later. The instructions
+can also be used for installation on OS X v.10.2 (replacing 0.8.0 by 0.6.3
 throughout the document) and for installation on OS X v.10.1 (replacing
-0.7.1 by 0.4.1a).
+0.8.0 by 0.4.1a).
 
 This document does not apply to the "binary
 [http://fink.sourceforge.net/download/index.php]" distribution.
@@ -29,60 +30,55 @@ can still use this section as an example.)
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.7.1-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.8.0-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "_bold_face_" (or otherwise highlighted).
-The actual input prompts from the shell may vary, and some chunks of the
-output have been omitted ( "..." ).
+"normal face" , your input is in "bold_face" (or otherwise highlighted). The
+actual input prompts from the shell may vary, and some chunks of the output
+have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.7.1-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.7.1-full_
-   [frodo:~/fink-0.7.1-full] testuser% _./bootstrap.sh_/sw_
+   [frodo:~] testuser% tar_xzf_fink-0.8.0-full.tar.gz
+   [frodo:~] testuser% cd_fink-0.8.0-full
+   [frodo:~/fink-0.8.0-full] testuser% ./bootstrap.sh_/sw
    
    Welcome to Fink.
    
    ...
-   Choose a method: [1] _1_
+   Choose a method: [1] 1
    
-   sudo /Users/testuser/fink-0.7.1-full/bootstrap.pl .sudo '/sw'
-   Password:_(your_normal_password_here)_
+   sudo /Users/testuser/fink-0.8.0-full/bootstrap.pl .sudo '/sw'
+   Password:(your_normal_password_here)
    ...
    OK, I'll ask you some questions and update the configuration file in
    '/sw/etc/fink.conf'.
    
-   In what additional directory should Fink look for downloaded tarballs? [] _(press_return)_
-   Always print verbose messages? [y/N] _(press_return)_
+   In what additional directory should Fink look for downloaded tarballs? [] (press_return)
+   Always print verbose messages? [y/N] (press_return)
    
    Proxy/Firewall settings
    Enter the URL of the HTTP proxy to use, or 'none' for no proxy. The URL
    should start with http:// and may contain username, password or port
-   specifications. [none] _(press_return)_
+   specifications. [none] (press_return)
    Enter the URL of the proxy to use for FTP, or 'none' for no proxy. The URL
    should start with http:// and may contain username, password or port
-   specifications. [none] _(press_return)_
-   Use passive mode FTP transfers (to get through a firewall)? [Y/n] _y_
+   specifications. [none] (press_return)
+   Use passive mode FTP transfers (to get through a firewall)? [Y/n] y
    
    Mirror selection
    Choose a continent:
    ...
-   _(enter_the_numbers_corresponding_to_your_location)_
+   (enter_the_numbers_corresponding_to_your_location)
    ...
    Writing updated configuration to '/sw/etc/fink.conf'...
    Bootstrapping a base system via /sw/bootstrap.
    ...
-   _(take_a_coffee_break_while_Fink_downloads_and_compiles_the_base_packages)_
+   (take_a_coffee_break_while_Fink_downloads_and_compiles_the_base_packages)
    ...
    
    You should now have a working Fink installation in '/sw'.
    
-   Run 'source /sw/bin/init.csh ; rehash' to set up this Terminal's environment
-   to use Fink. To make the software installed by Fink available in all of your
-   shells, add 'source /sw/bin/init.csh' to the init script '.cshrc' in your
-   home directory. Enjoy.
-   
-   [frodo:~/fink-0.7.1-full] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.7.1-full_
-   [frodo:~] testuser% _/sw/bin/pathsetup.sh_
+   [frodo:~/fink-0.8.0-full] testuser% cd
+   [frodo:~] testuser% rm_-r_fink-0.8.0-full
+   [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and
 other things) for use with Fink. In most cases, it will run automatically,
@@ -101,15 +97,15 @@ all other ones. That's it, you now have a base system installed.
 
 You can now install additional packages with the "fink" command, like this:
 
-   [frodo:~] testuser% _fink_install_xfree86-server_gimp_
+   [frodo:~] testuser% fink_install_xfree86-server_gimp
    sudo /sw/bin/fink 'install' 'xfree86-server' 'gimp'
-   Password:_(your_normal_password_here)_
+   Password:(your_normal_password_here)
    Reading package info...
    Information about 147 packages read.
    The following 14 additional packages will be installed:
     audiofile dlcompat esound giflib glib gnome-libs gtk+ imlib libjpeg libpng
     libtiff orbit xfree86-base zlib
-   Do you want to continue? [Y/n] _y_
+   Do you want to continue? [Y/n] y
    ...
 
 If these instructions don't work for you, well, you'll have to take the time
@@ -122,25 +118,25 @@ well-documented.
 
  Update Fast Track
 -------------------
-Start out by copying the "fink-0.7.1-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.8.0-full.tar.gz" file to your home folder.
 Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "_bold_face_" (or otherwise highlighted).
-The actual input prompts from the shell may vary, and some chunks of the
-output have been omitted ( "..." ).
+"normal face" , your input is in "bold_face" (or otherwise highlighted). The
+actual input prompts from the shell may vary, and some chunks of the output
+have been omitted ( "..." ).
 
-   [frodo:~] testuser% _tar_xzf_fink-0.7.1-full.tar.gz_
-   [frodo:~] testuser% _cd_fink-0.7.1-full_
-   [frodo:~/fink-0.7.1-full] testuser% _./inject.pl_/sw_
+   [frodo:~] testuser% tar_xzf_fink-0.8.0-full.tar.gz
+   [frodo:~] testuser% cd_fink-0.8.0-full
+   [frodo:~/fink-0.8.0-full] testuser% ./inject.pl_/sw
    sudo ./inject.pl /sw
-   Password:_(your_normal_password_here)_
+   Password:(your_normal_password_here)
    Copying package descriptions
    ...
    Done.
    
    Your Fink installation in '/sw' was updated with new fink packages.
    
-   [frodo:~/fink-0.7.1-full] testuser% _cd_pkginfo_
-   [frodo:~/fink-0.7.1-full/pkginfo] testuser% _./inject.pl_/sw_
+   [frodo:~/fink-0.8.0-full] testuser% cd_pkginfo
+   [frodo:~/fink-0.8.0-full/pkginfo] testuser% ./inject.pl_/sw
    sudo ./inject.pl /sw
    Copying...
    ...
@@ -149,9 +145,9 @@ output have been omitted ( "..." ).
    files. Use appropriate fink commands to update the packages, e.g. 'fink
    update-all'.
    
-   [frodo:~/fink-0.7.1-full/pkginfo] testuser% _cd_
-   [frodo:~] testuser% _rm_-r_fink-0.7.1-full_
-   [frodo:~] testuser% _fink_update-all_
+   [frodo:~/fink-0.8.0-full/pkginfo] testuser% cd
+   [frodo:~] testuser% rm_-r_fink-0.8.0-full
+   [frodo:~] testuser% fink_update-all
    ...
 
 
@@ -164,7 +160,7 @@ You need:
 
  * An installed Mac OS X system, version 10.1 or later. Darwin 5.0 and later
    should also work, but this has not been tested. Earlier versions of both
-   are not supported and probably will _not_ work.
+   are not supported and probably will not work.
 
  * Development tools. On Mac OS X, install the Developer.pkg package from
    the Developer Tools CD. On Darwin, the tools should be present in the
@@ -206,20 +202,20 @@ back to a working system when things break. You have been warned.
 
  Installation
 --------------
-First, you need to unpack the fink-0.7.1-full.tar.gz tarball. It is
+First, you need to unpack the fink-0.8.0-full.tar.gz tarball. It is
 recommended that you do this from the command line - StuffIt Expander has a
 tendency to screw up text files. So, go to the directory where you put the
 tarball, and run this command:
 
-   tar xzf fink-0.7.1-full.tar.gz
+   tar xzf fink-0.8.0-full.tar.gz
 
-You now have a directory named fink-0.7.1-full. Change to it with "cd
-fink-0.7.1-full" .
+You now have a directory named fink-0.8.0-full. Change to it with "cd
+fink-0.8.0-full" .
 
 The actual installation is performed by the perl script bootstrap.pl. It is
 accompanied by a small shell script, bootstrap.sh, which checks some basic
 requirements and then hands over control to the perl script. So, to start
-installation, go to the fink-0.7.1-full directory and run this command:
+installation, go to the fink-0.8.0-full directory and run this command:
 
    ./bootstrap.sh
 
@@ -280,7 +276,7 @@ on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/].
 ===========================
 
 If you already have Fink 0.3.x installed, you can update your installation
-to 0.7.1 with the built-in 'selfupdate' command.
+to 0.8.0 with the built-in 'selfupdate' command.
 
 
  Updating The Package Manager
@@ -320,7 +316,7 @@ with the 'update' command.
 ===========================
 
 If you already have Fink 0.2.x installed, you can update your installation
-to 0.7.1 with this package.
+to 0.8.0 with this package.
 
 Actually, there are two pieces that are updated independently: the package
 manager and the package descriptions. It is recommended to update the
@@ -330,7 +326,7 @@ package manager first.
  Updating The Package Manager
 ------------------------------
 To update the package manager, run the inject.pl script in the
-fink-0.7.1-full directory, like this:
+fink-0.8.0-full directory, like this:
 
    ./inject.pl
 
@@ -347,7 +343,7 @@ itself. ":-)" )
 
  Updating The Package Descriptions
 -----------------------------------
-If you downloaded the fink-0.7.1-full tarball, the package descriptions are
+If you downloaded the fink-0.8.0-full tarball, the package descriptions are
 in the subdirectory pkginfo. To install them, run the inject.pl script in
 that directory:
 
@@ -357,7 +353,7 @@ that directory:
 This inject.pl script works just like the one for the package manager.
 
 You can also grab the package descriptions as a separate tarball,
-packages-0.7.1. If you did that, just unpack it and run the inject.pl script
+packages-0.8.0. If you did that, just unpack it and run the inject.pl script
 inside.
 
 As a third alternative, you can have Fink automatically update itself to the

@@ -417,7 +417,7 @@ sub prompt_selection {
 =item should_skip_prompt
 
   my $bool = should_skip_prompt $category;
-  
+
 Returns whether or not Fink should skip prompts of the given category.
 A false $category represents an uncategorized prompt.
 
@@ -457,6 +457,8 @@ the prompt (run with the -y option or with an appropriate SuppressPrompts).
 If not suppressing a prompt, this function destroys any pre-existing alarm().
 
 The options hash can contain the following keys:
+
+=over 4
 
 =item timeout => $timeout (optional)
 

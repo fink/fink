@@ -252,8 +252,10 @@ sub touch {
   chowname "$user:$group", @files;
   chowname ":$group", @files;
 
-Like C<chowname> but the user/group specification is a bit simpler.  Dot is not
-supported as a seperator.
+Like C<chowname> but the user/group specification is a bit simpler,
+since it takes user/group names instead of numbers like the the Unix
+C<chown> command. Either (or both) can be omitted, in which case that
+parameter is not changed. Dot is not supported as a separator.
 
 =cut
 

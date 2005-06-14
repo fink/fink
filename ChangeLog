@@ -1,3 +1,22 @@
+2005-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: must use full path for 10.4 tree symlink; also,
+	test for its presence before creating it
+
+2005-06-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* REVISION: no more versions for 10.2-gcc3.3
+
+2005-06-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.7, a release
+	on branch_0_24
+
+2005-06-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* INSTALL, INSTALL.html: remove some faulty old csh junk from
+	the install doc.
+
 2005-05-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* postinstall.pl.in: Also warn about Spotlight in the postinstall.
