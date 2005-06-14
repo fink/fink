@@ -74,7 +74,7 @@ END { }				# module clean-up code here (global destructor)
 =item new_backed
 
   my $pv = Fink::PkgVersion->new_backed $file, $hashref;
-  
+
 Create a disk-backed PkgVersion, with initial properties from $hashref. 
 Other properties will be loaded as needed from $file.
 
@@ -111,7 +111,7 @@ sub new_backed {
 =item load_fields
 
   my $same_pv = $pv->load_fields;
-  
+
 Load any unloaded fields into this PkgVersion object. Loads are shared among
 different PkgVersion objects. Returns this object.
 
@@ -166,7 +166,7 @@ different PkgVersion objects. Returns this object.
 =item get_init_fields
 
   my $hashref = $pv->get_init_fields;
-  
+
 Get the minimum fields necessary for inserting a PkgVersion.
 
 =cut
@@ -1346,10 +1346,10 @@ sub is_fetched {
 	return 1;
 }
 
-=item
+=item get_aptdb
 
   my $hashref = get_aptdb();
-  
+
 Get a hashref with the current packages available via apt-get
 
 =cut
@@ -1379,10 +1379,10 @@ sub get_aptdb {
 	return \%db;
 }
 
-=item
+=item is_aptgetable
 
   my $aptgetable = $pv->is_aptgetable;
-  
+
 Get whether or not this package is available via apt-get.
 
 =cut
@@ -3584,7 +3584,7 @@ sub clear_buildlock {
 =item ensure_gpp_prefix
 
   my $prefix_path = ensure_gpp_prefix $gpp_version;
-  
+
 Ensures that a path-prefix directory exists for the given version of g++.
 Returns the path to the resulting directory.
 
@@ -3923,7 +3923,7 @@ sub get_debdeps {
 
   my $dir = $pv->get_install_directory;
   my $dir = $pv->get_install_directory $pkg;
-  
+
 Get the directory into which the install phase will put files. If $pkg is
 specified, will get get the destdir for a package of that full-name.
 
@@ -3954,7 +3954,7 @@ sub get_control_section {
 =item get_priority
 
   my $prio = $pv->get_priority();
-  
+
 Get the apt priority of this package.
 
 =cut

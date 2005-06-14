@@ -384,7 +384,20 @@ sub require_packages {
 	}
 }
 
-=private comment
+=item check_dbdirs
+
+  my ($path, $fh) = Fink::Package->check_dbdirs $write, $force_create;
+
+Process the DB dirs. Returns the good directory found/created, and the lock
+already acquired.
+
+If $write is true, will create a new directory if one does not exist, and will
+delete any old dirs.
+
+If $force_create is true, will always create a new directory (invalidating any
+previous PDB dirs).
+
+=begin comment
 
 When Fink uses a DB dir, it needs continued access to what's inside (since it
 likely is using 'backed' PkgVersions). So when the DB is invalidated, we can't
@@ -398,18 +411,7 @@ But how do we ever delete a DB dir? Each Fink gets a shared lock on its DB
 dir; then if a DB dir is old and has no shared locks, it's no longer in use
 and can be deleted.
 
-=item check_dbdirs
-
-  my ($path, $fh) = Fink::Package->check_dbdirs $write, $force_create;
-
-Process the DB dirs. Returns the good directory found/created, and the lock
-already acquired.
-
-If $write is true, will create a new directory if one does not exist, and will
-delete any old dirs.
-
-If $force_create is true, will always create a new directory (invalidating any
-previous PDB dirs).
+=end comment
 
 =cut
 
@@ -485,7 +487,7 @@ Creates it if it does not exist and $write is true.
 =item forget_db_dir
 
   Fink::Package->forget_db_dir;
-  
+
 Forget the current DB directory.
 
 =cut
@@ -513,7 +515,7 @@ Forget the current DB directory.
 =item db_index
 
   my $path = Fink::Package->db_index;
-  
+
 Get the path to the file that can store the Fink global database index.
 
 =cut
@@ -527,7 +529,7 @@ sub db_index {
 =item db_infolist
 
   my $path = Fink::Package->db_infolist;
-  
+
 Get the path to the file that can store a list of info files.
 
 =cut
@@ -541,7 +543,7 @@ sub db_infolist {
 =item db_lockfile
 
   my $path = Fink::Package->db_lockfile;
-  
+
 Get the path to the pdb lock file.
 
 =cut
@@ -590,7 +592,7 @@ sub search_comparedb {
 
   Fink::Package->forget_packages;
   Fink::Package->forget_packages $type, $just_memory;
-  
+
 Removes the in-memory package database. If $type is 1, just removes the shlibs
 database, if it is 2 removes just the package database, if it is 0 removes both.
 
@@ -684,7 +686,7 @@ sub can_read_write_db {
 =item update_index
 
   my $fidx = Fink::Package->update_index $fidx, $info, @pvs;
-  
+
 Update the package index $idx with the results of loading PkgVersions @pvs from
 .info file $info.
 
@@ -798,7 +800,7 @@ sub pass1_update {
 =item pass3_insert
 
   my $success = Fink::Package->pass3_insert $idx, $loaded, @infos;
-  
+
 Ensure that the .info files @infos are loaded and inserted into the PDB.
 Information about the .info files is to be found in the index $idx, and
 $loaded is a hash-ref of already-loaded .info files.
@@ -836,7 +838,7 @@ sub pass3_insert {
 =item get_all_infos
 
   my ($infos, $need_update) = Fink::Package->get_all_infos $ops, $nocache;
-  
+
 Get a list of all the .info files. Returns an array-ref of paths to the .info
 files, and whether any of the files needs to be updated.
 
@@ -892,6 +894,8 @@ in to memory, but will only be updated.
 
 If B<no_infolist> is present and true, the cached list of existing .info files
 will be discarded and not used.
+
+=back
 
 =cut
 
@@ -964,7 +968,7 @@ sub update_db {
 =item tree_infos
 
   my @files = tree_infos $treename;
-  
+
 Get the full pathnames to all the .info files in a Fink tree.
 
 =cut
@@ -991,7 +995,7 @@ sub tree_infos {
 =item packages_from_info_file
 
   my @packages = Fink::Package->packages_from_info_file $filename;
-  
+
 Create Fink::PkgVersion objects based on a .info file. Do not
 yet add these packages to the current package database.
 
@@ -1033,7 +1037,7 @@ sub packages_from_info_file {
 =item insert_runtime_packages
 
   Fink::Package->insert_runtime_packages;
-  
+
 Add all packages to the database which are dynamically generated, rather than
 created from .info files.
 
@@ -1054,7 +1058,7 @@ sub insert_runtime_packages {
 =item insert_runtime_package_hash
 
   Fink::Package->insert_runtime_package_hash $hashref;
-  
+
 Given a hash of package-name => property-list, insert the packages into the
 in-memory database.
 

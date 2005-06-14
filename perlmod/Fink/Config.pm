@@ -56,23 +56,23 @@ Fink::Config - Read/write the fink configuration
 
   use Fink::Config;
   my $config = Fink::Config->new_with_path($config_file);
-  
+
   # General configuration file parameters
   my $value = $config->param($key);
   $config->set_param($key, $value);
   $config->save;
-  
+
   # Configuration flags
   my $bool		= $config->has_flag($flag);
   $config->set_flag($flag);
   $config->clear_flag($flag);
-  
+
   # Specific configuration options
   my $path		= $config->get_path;
   my @trees		= $config->get_treelist;
   my $verbosity	= $config->verbosity_level;
   my $use_apt	= $config->binary_requested;
-  
+
   # Command-line parameters
   my $value = $config->get_option($key, $default);
   $config->set_options({ $key => $value, $key2 => ... });
@@ -649,19 +649,19 @@ sub binary_requested {
 =item has_flag
 
   my $bool = $config->has_flag($flag);
-  
+
 Check for the existence of a configuration flag.
 
 =item set_flag
 
   $config->set_flag($flag);
-  
+
 Set a configuration flag. Modified configuration can be saved with save().
 
 =item clear_flag
 
   $config->clear_flag($flag);
-  
+
 Clear a configuration flag. Modified configuration can be saved with save().
 
 =cut

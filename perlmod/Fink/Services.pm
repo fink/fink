@@ -1614,7 +1614,7 @@ sub lockwait_executable {
 =item store_rename
 
   my $success = store_rename $ref, $file;
-  
+
 Store $ref in $file using Storable. Use a write-to-temp-and-atomically-
 rename strategy, to prevent corruption. Return true on success.
 
