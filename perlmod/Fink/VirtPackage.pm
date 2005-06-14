@@ -615,9 +615,13 @@ the successful execution of "gcc --version".
 	print STDERR "- checking for various GCC versions:\n" if ($options{debug});
 	if (opendir(DIR, "/usr/bin")) {
 		for my $gcc (grep(/^gcc/, readdir(DIR))) {
-			if (open(GCC, $gcc . ' --version |')) {
-				chomp(my $version = <GCC>);
+			if (open(GCC, $gcc . ' --version 2>&1 |')) {
+				my $version = <GCC>;
 				close(GCC);
+				if( ! defined $version ) {
+					next;
+				}
+				chomp($version);
 				if ($version =~ /^([\d\.]+)$/ or $version =~ /^.*? \(GCC\) ([\d\.\-]+)/) {
 					$version = $1;
 					$version =~ s/[\.\-]*$//;
