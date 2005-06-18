@@ -2181,8 +2181,11 @@ GCC_MSG
 		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
 		if (Fink::Config::get_option("build_as_nobody")) {
-			chowname 'nobody', $destdir or
-				die "can't chown 'nobody' $destdir\n";
+			chowname 'nobody:nobody', $destdir or
+				die "can't chown 'nobody:nobody' $destdir\n";
+		} else {
+			chowname ':admin', $destdir or
+				die "can't grp 'admin' $destdir\n";
 		}
 		return;
 	}
@@ -2307,8 +2310,11 @@ GCC_MSG
 			mkdir_p $destdir or
 				die "can't create directory $destdir\n";
 			if (Fink::Config::get_option("build_as_nobody")) {
-				chowname 'nobody', $destdir or
-					die "can't chown 'nobody' $destdir\n";
+				chowname 'nobody:nobody', $destdir or
+					die "can't chown 'nobody:nobody' $destdir\n";
+			} else {
+				chowname ':admin', $destdir or
+					die "can't chgrp 'admin' $destdir\n";
 			}
 		}
 
@@ -2497,7 +2503,9 @@ sub phase_install {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 	}
 	if (Fink::Config::get_option("build_as_nobody")) {
-		$install_script .= "/usr/sbin/chown -R nobody \%d\n";
+		$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
+	} else {
+		$install_script .= "/usr/sbin/chown -R :admin \%d\n";
 	}
 	# Run the script part we have so far
 	$self->run_script($install_script, "installing", 0, 0);
@@ -2702,7 +2710,7 @@ sub phase_build {
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		if (&execute("chown -R -h root '$destdir'") == 1) {
+		if (&execute("chown -R -h root:admin '$destdir'") == 1) {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";

@@ -1,4 +1,11 @@
+2005-06-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: chgrp->admin (->nobody if build-as-nobody) %d and
+	builddir (more secure and deterministic, because "files are always
+	created with group of their parent dir")
+
 2005-06-14  Rob Braun <bbraun@opendarwin.org>
+
 	* VirtPackage.pm: Be slightly more robust on what outputs (if any)
 	are accepted from executing /usr/bin/gcc*.
 
