@@ -1277,12 +1277,13 @@ sub get_system_version
 sub checkDistribution
 {
 	use Fink::Config qw($distribution);
-	our $distribution;
 	
-	if (get_system_version() =~ /^\Q$distribution\E.*/)
+	if (get_system_version() =~ /^\Q$distribution\E/)
 	{
+		# all is good, current os matches current dist.
 		return 0;
 	} else {
+		# do not let the user build anything, only install.
 		return 1;
 	}
 }
