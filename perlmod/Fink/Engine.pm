@@ -2458,6 +2458,7 @@ EOF
 			}
 		}
 		$pkg->prepare_percent_c;
+		$pkg->get_build_directory;
 		
 		# Allow 'all' for all percents
 		my @pkgpercents = (scalar(@percents) == 1 && $percents[0] eq 'all')
