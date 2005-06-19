@@ -1,3 +1,8 @@
+2005-06-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Fix bug with params_matching in dumpinfo. Also add
+	'-p all' option for all percent expansions.
+
 2005-06-18  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: chgrp->admin (->nobody if build-as-nobody) %d and

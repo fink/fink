@@ -271,7 +271,7 @@ sub process {
 ### restart as root with command
 
 sub restart_as_root {
-	my ($method, $cmd, $arg);
+	my ($method, $cmd $arg);
 
 	$method = $config->param_default("RootMethod", "sudo");
 
@@ -2283,8 +2283,8 @@ EOF
 						   updatelibtool updatelibtoolindirs
 						   updatepomakefile
 						   patch patchscript /,
-						   $pkg->params_matching(/^set/),
-						   $pkg->params_matching(/^noset/),
+						   $pkg->params_matching("^set"),
+						   $pkg->params_matching("^noset"),
 						   qw/
 						   env
 						   configureparams gcc compilescript noperltests
@@ -2458,7 +2458,12 @@ EOF
 			}
 		}
 		$pkg->prepare_percent_c;
-		foreach (@percents) {
+		
+		# Allow 'all' for all percents
+		my @pkgpercents = (scalar(@percents) == 1 && $percents[0] eq 'all')
+			? keys %{$pkg->{_expand}}
+			: @percents;
+		foreach (@pkgpercents) {
 			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
 			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);
 		}
