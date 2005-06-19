@@ -1277,8 +1277,9 @@ sub get_system_version
 sub checkDistribution
 {
 	use Fink::Config qw($distribution);
-	
-	if (get_system_version() =~ /^\Q$distribution\E/)
+	my $system_version = get_system_version();
+
+	if ($distribution =~ /^\Q$system_version\E/)
 	{
 		# all is good, current os matches current dist.
 		return 0;
