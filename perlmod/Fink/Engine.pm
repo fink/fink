@@ -271,7 +271,7 @@ sub process {
 ### restart as root with command
 
 sub restart_as_root {
-	my ($method, $cmd $arg);
+	my ($method, $cmd, $arg);
 
 	$method = $config->param_default("RootMethod", "sudo");
 
@@ -2250,6 +2250,8 @@ EOF
 	}
 
 	foreach my $pkg (@pkglist) {
+		$pkg->prepare_percent_c;
+		$pkg->get_build_directory;
 
 		# default to all fields if no fields or %expands specified
 		if ($wantall or not (@fields or @percents)) {
@@ -2457,14 +2459,14 @@ EOF
 				die "Unknown field $_\n";
 			}
 		}
-		$pkg->prepare_percent_c;
-		$pkg->get_build_directory;
 		
 		# Allow 'all' for all percents
-		my @pkgpercents = (scalar(@percents) == 1 && $percents[0] eq 'all')
-			? keys %{$pkg->{_expand}}
-			: @percents;
-		foreach (@pkgpercents) {
+		if (scalar(@percents) == 1 && $percents[0] eq 'all') {
+			# sort them by disctionary ordering (D d I i)
+			@percents = sort {lc $a cmp lc $b || $a cmp $b} keys %{$pkg->{_expand}};
+		}
+
+		foreach (@percents) {
 			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
 			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);
 		}

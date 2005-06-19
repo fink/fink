@@ -1,5 +1,9 @@
 2005-06-19  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Sort dumpinfo -pall output.
+
+2005-06-19  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Fix dumpinfo %b to give actual value not dummy db value.
 
 2005-06-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
