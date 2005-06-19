@@ -57,6 +57,18 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+=head1 NAME
+
+Fink::Engine - high-level actions for fink to perform
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
+
+=cut
+
 # The list of commands. Maps command names to a list containing
 # a function reference, and three flags. The first flag indicates
 # whether this command requires the package descriptions to be
@@ -2539,6 +2551,10 @@ sub show_deps_display_list {
 		print "    [none]\n";
 	}
 }
+
+=back
+
+=cut
 
 ### EOF
 1;

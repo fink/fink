@@ -780,6 +780,7 @@ sub pass1_update {
 			my $dir = dirname $fidx->{cache};
 			mkdir_p($dir) unless -f $dir;
 			
+			map { $_->_disconnect } @pvs; # Don't keep obj references
 			my %store = map { $_->get_fullname => $_ } @pvs; 
 			unless (store_rename(\%store, $fidx->{cache})) {
 				delete $idx->{infos}{$info};
@@ -1137,10 +1138,10 @@ sub packages_from_properties {
 
 	# store invariant portion of Package
 	( $properties->{package_invariant} = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
-	if (exists $properties->{parent}) {
+	if (exists $properties->{parent_obj}) {
 		# get parent's Package for percent expansion
 		# (only splitoffs can use %N in Package)
-		$pkg_expand{'N'}  = $properties->{parent}->{package};
+		$pkg_expand{'N'}  = $properties->{parent_obj}->{package};
 		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
 	}
 	# must always call expand_percent even if no Type or parent in

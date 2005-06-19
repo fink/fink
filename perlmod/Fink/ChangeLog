@@ -1,3 +1,10 @@
+2005-06-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm, PkgVersion.pm: POD fixes.
+	* Package.pm, PkgVersion.pm: Package DB no longer stores reference to
+	package objects inside other packages, all references are now done using
+	unique specifiers.
+
 2005-06-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Sort dumpinfo -pall output.

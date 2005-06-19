@@ -52,6 +52,7 @@ use POSIX qw(uname strftime);
 use DB_File;
 use Hash::Util;
 use File::Basename qw(&dirname &basename);
+use Carp qw(confess);
 
 use strict;
 use warnings;
@@ -70,6 +71,15 @@ our @EXPORT_OK;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
+
+Fink::PkgVersion - a single version of a package
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
 
 =item new_backed
 
@@ -95,7 +105,7 @@ In addition, the following fields should be accessed exclusively through
 accessors:
 
 Package: _providers, _versions
-PkgVersion: _splitoffs, parent
+PkgVersion: _splitoffs_obj, parent_obj
 
 =cut
 
@@ -267,8 +277,8 @@ sub initialize {
 	$fullname = $pkgname."-".$version."-".$revision;
 	# prepare percent-expansion map
 	$destdir = $self->get_install_directory();
-	if (exists $self->{parent}) {
-		my $parent = $self->{parent};
+	if ($self->has_parent) {
+		my $parent = $self->get_parent;
 		$parentpkgname = $parent->get_name();
 		$parentdestdir = $parent->get_install_directory();
 		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
@@ -313,11 +323,11 @@ sub initialize {
 	$self->expand_percent_if_available("Description");
 
 	# from here on we have to distinguish between "real" packages and splitoffs
-	if (exists $self->{parent}) {
+	if ($self->has_parent) {
 		# so it's a splitoff
 		my ($parent, $field);
 
-		$parent = $self->{parent};
+		$parent = $self->get_parent;
 		
 		if ($parent->has_param('maintainer')) {
 			$self->{'maintainer'} = $parent->{'maintainer'};
@@ -742,7 +752,7 @@ sub add_splitoff {
 	$properties->{'epoch'}    = $self->{_epoch};
 	
 	# link the splitoff to its "parent" (=us)
-	$properties->{parent} = $self;
+	$properties->{parent_obj} = $self;
 
 	# need to inherit (maybe) Type before package gets created
 	if (not exists $properties->{'type'}) {
@@ -756,8 +766,8 @@ sub add_splitoff {
 	# instantiate the splitoff
 	@splitoffs = Fink::Package->packages_from_properties($properties, $filename);
 	
-	# return the new object(s)
-	push @{$self->{_splitoffs}}, @splitoffs;
+	# return the new object(s). NOTE: This is actually adding objects!
+	push @{$self->{_splitoffs_obj}}, @splitoffs;
 }
 
 ### merge duplicate package description
@@ -1105,24 +1115,39 @@ sub get_build_directory {
 # Accessors for parent
 sub has_parent {
 	my $self = shift;
-	return exists $self->{parent};
+	return exists $self->{parent} || exists $self->{parent_obj};
 }
 sub get_parent {
 	my $self = shift;
-	$self->{parent}->load_fields if exists $self->{parent};
-	return $self->{parent};
+	$self->{parent_obj} = $self->resolve_spec($self->{parent})
+		unless exists $self->{parent_obj};
+	return $self->{parent_obj};
+}
+
+# PRIVATE: Ensure splitoff object list is around
+sub _ensure_splitoffs {
+	my $self = shift;
+	if (!exists $self->{_splitoffs_obj} && exists $self->{_splitoffs}) {
+		$self->{_splitoffs_obj} = [
+			# Don't load fields yet
+			map { $self->resolve_spec($_, 0) } @{$self->{_splitoffs}}
+		];
+	}
 }
 
 # get splitoffs only for parent, empty list for others
 sub parent_splitoffs {
 	my $self = shift;
+	$self->_ensure_splitoffs;
 	return exists $self->{_splitoffs}
-		? map { $_->load_fields } @{$self->{_splitoffs}}
+		? map { $_->load_fields } @{$self->{_splitoffs_obj}}
 		: ();
 }
 
 sub get_splitoffs {
 	my $self = shift;
+	$self->_ensure_splitoffs;
+	
 	my $include_parent = shift || 0;
 	my $include_self = shift || 0;
 	my @list = ();
@@ -1140,7 +1165,7 @@ sub get_splitoffs {
 		}
 	}
 
-	foreach $splitoff (@{$parent->{_splitoffs}}) {
+	foreach $splitoff (@{$parent->{_splitoffs_obj}}) {
 		unless ($self eq $splitoff && not $include_self) {
 			push(@list, $splitoff);
 		}
@@ -3979,6 +4004,61 @@ sub get_priority {
 	return $prio;
 }
 
+=item make_spec
+
+  my $spec = $pv-make_spec;
+
+Make a unique specifier for this package object.
+
+=cut
+
+sub make_spec {
+	my $self = shift;
+	return { name => $self->get_name, version => $self->get_fullversion };
+}
+
+=item resolve_spec
+
+  my $pv = Fink::PkgVersion->resolve_spec($spec);
+
+Find the PkgVersion corresponding to the given specifier. If none exists,
+die! Invalid specifiers should NOT exist.
+
+=cut
+
+sub resolve_spec {
+	my $class = shift;
+	my $spec = shift;
+	
+	# Don't use this unless you know what you're doing!
+	my $noload = shift || 0;
+	
+	my $pv = undef;
+	my $po = Fink::Package->package_by_name($spec->{name});
+	$pv = $po->get_version($spec->{version}, $noload) if $po;
+	
+	confess "FATAL: Could not resolve package spec $spec->{name} $spec->{version}"
+		unless $pv;
+	return $pv;
+}
+
+# PRIVATE: Disconnect this package from other package objects.
+# Magic happens here, do not use from outside of Fink::Package.
+sub _disconnect {
+	my $self = shift;
+	
+	if ($self->has_parent) {
+		$self->{parent} = $self->get_parent->make_spec;
+		delete $self->{parent_obj};
+	} else {
+		$self->{_splitoffs} = [ map { $_->make_spec } $self->parent_splitoffs ];
+		delete $self->{_splitoffs_obj};
+	}
+}
+
+=back
+
+=cut
 
 ### EOF
 
