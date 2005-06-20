@@ -1,3 +1,10 @@
+2005-06-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: If a candidate to satisfy a virtual dep has multiple siblings
+	to be installed, that's just as good as ne sibling.
+	* PkgVersion.pm: _ensure_splitoffs should be called on the parent, not the
+	splitoff.
+
 2005-06-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm, PkgVersion.pm: POD fixes.

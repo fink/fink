@@ -1146,7 +1146,6 @@ sub parent_splitoffs {
 
 sub get_splitoffs {
 	my $self = shift;
-	$self->_ensure_splitoffs;
 	
 	my $include_parent = shift || 0;
 	my $include_self = shift || 0;
@@ -1159,6 +1158,7 @@ sub get_splitoffs {
 		$parent = $self;
 	}
 	
+	$parent->_ensure_splitoffs;
 	if ($include_parent) {
 		unless ($self eq $parent && not $include_self) {
 			push(@list, $parent);
