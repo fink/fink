@@ -2530,7 +2530,7 @@ sub phase_install {
 	if (Fink::Config::get_option("build_as_nobody")) {
 		$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
 	} else {
-		$install_script .= "/usr/sbin/chown -R :admin \%d\n";
+		$install_script .= "/usr/sbin/chown -R root:admin \%d\n";
 	}
 	# Run the script part we have so far
 	$self->run_script($install_script, "installing", 0, 0);

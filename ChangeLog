@@ -1,3 +1,8 @@
+2005-06-24  Matthew Sachs  <msachs@apple.com>
+
+	* chown was missing a username (just had a group) in phase_install
+	when not building as nobody
+
 2005-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* postinstall.pl.in: must use full path for 10.4 tree symlink; also,
