@@ -158,20 +158,29 @@ different PkgVersion objects. Returns this object.
 		@$self{keys %$href} = values %$href;
 		
 		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
-		my $destdir = $self->get_install_directory();
-		my $pdestdir = $self->has_parent()
-			? $self->get_parent()->get_install_directory()
-			: $destdir;
-		my %entries = (
-			'd' => $destdir,			'D' => $pdestdir,
-			'i' => $destdir.$basepath,	'I' => $pdestdir.$basepath,
-		);
-		@{$self->{_expand}}{keys %entries} = values %entries;
+		$self->_set_destdirs;
 		
 		return $self;
 	}
 }
 
+# PRIVATE: $pv->_set_destdirs
+# (Re)set the destination (install) directories for this package.
+# This is necessary for loading old finkinfodb caches, and for recovering
+# from bootstrap mode.
+sub _set_destdirs {
+	my $self = shift;
+
+	my $destdir = $self->get_install_directory();
+	my $pdestdir = $self->has_parent()
+		? $self->get_parent()->get_install_directory()
+		: $destdir;
+	my %entries = (
+		'd' => $destdir,			'D' => $pdestdir,
+		'i' => $destdir.$basepath,	'I' => $pdestdir.$basepath,
+	);
+	@{$self->{_expand}}{keys %entries} = values %entries;
+}
 
 =item get_init_fields
 
@@ -276,15 +285,12 @@ sub initialize {
 	# some commonly used stuff
 	$fullname = $pkgname."-".$version."-".$revision;
 	# prepare percent-expansion map
-	$destdir = $self->get_install_directory();
 	if ($self->has_parent) {
 		my $parent = $self->get_parent;
 		$parentpkgname = $parent->get_name();
-		$parentdestdir = $parent->get_install_directory();
 		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
 	} else {
 		$parentpkgname = $pkgname;
-		$parentdestdir = $destdir;
 		$parentinvname = $self->param_default("package_invariant", $pkgname);
 		$self->{_splitoffs} = [];
 	}
@@ -296,15 +302,11 @@ sub initialize {
 				'r' => $revision,
 				'f' => $fullname,
 				'p' => $basepath,
-				'd' => $destdir,
-				'i' => $destdir.$basepath,
 				'm' => $arch,
 
 				'N' => $parentpkgname,
 				'Ni'=> $parentinvname,
 				'P' => $basepath,
-				'D' => $parentdestdir,
-				'I' => $parentdestdir.$basepath,
 
 				'a' => $self->{_patchpath},
 				'b' => '.'
@@ -315,6 +317,7 @@ sub initialize {
 	}
 
 	$self->{_expand} = $expand;
+	$self->_set_destdirs;
 
 	$self->{_bootstrap} = 0;
 
@@ -806,20 +809,7 @@ sub disable_bootstrap {
 	my ($destdir);
 	my $splitoff;
 
-	$destdir = $self->get_install_directory();
-	$self->{_expand}->{p} = $basepath;
-	$self->{_expand}->{d} = $destdir;
-	$self->{_expand}->{i} = $destdir.$basepath;
-	if ($self->has_parent) {
-		my $parent = $self->get_parent;
-		my $parentdestdir = $parent->get_install_directory();
-		$self->{_expand}->{D} = $parentdestdir;
-		$self->{_expand}->{I} = $parentdestdir.$basepath;
-	} else {
-		$self->{_expand}->{D} = $self->{_expand}->{d};
-		$self->{_expand}->{I} = $self->{_expand}->{i};
-	};
-	
+	$self->_set_destdirs;
 	$self->{_bootstrap} = 0;
 	
 	foreach	 $splitoff ($self->parent_splitoffs) {
@@ -2526,11 +2516,11 @@ sub phase_install {
 	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
-	}
-	if (Fink::Config::get_option("build_as_nobody")) {
-		$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
-	} else {
-		$install_script .= "/usr/sbin/chown -R root:admin \%d\n";
+		if (Fink::Config::get_option("build_as_nobody")) {
+			$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
+		} else {
+			$install_script .= "/usr/sbin/chown -R root:admin \%d\n";
+		}
 	}
 	# Run the script part we have so far
 	$self->run_script($install_script, "installing", 0, 0);
@@ -4042,7 +4032,8 @@ sub resolve_spec {
 	return $pv;
 }
 
-# PRIVATE: Disconnect this package from other package objects.
+# PRIVATE: $pv->_disconnect
+# Disconnect this package from other package objects.
 # Magic happens here, do not use from outside of Fink::Package.
 sub _disconnect {
 	my $self = shift;

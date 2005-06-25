@@ -1,3 +1,9 @@
+2005-06-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Refactor the destdir re-setting code into a method, so
+	the same effective code isn't in three places!
+	* PkgVersion.pm: Make chown'ing the destdir conditional on not-bootstrap.
+
 2005-06-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: If a candidate to satisfy a virtual dep has multiple siblings
