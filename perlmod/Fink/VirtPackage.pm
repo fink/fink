@@ -455,6 +455,7 @@ as part of the XCode tools.
 		MacOSX10.1.0.sdk
 		MacOSX10.2.0.sdk
 		MacOSX10.3.0.sdk
+		MacOSX10.3.9.sdk
 		MacOSX10.4.0.sdk
 	);
 
