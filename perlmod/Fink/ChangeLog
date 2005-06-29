@@ -1,3 +1,10 @@
+2005-06-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* VirtPackage.pm: If old XCode is not removed on upgrade to Tiger, a
+	gcc3 (version 3.1) still remains. This causes Fink to add a virtual
+	package which will overwrite a real gcc3.1 package, which confuses
+	apt-get. Now virtual gcc packages will no longer overwrite real ones.
+
 2005-06-29  David H. <dmalloc@users.sourceforge.net>
 	* VirtPkg.pm: Added 10.3.9 SDK
 

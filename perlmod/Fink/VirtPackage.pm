@@ -627,11 +627,17 @@ the successful execution of "gcc --version".
 					$version = $1;
 					$version =~ s/[\.\-]*$//;
 					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
-					if ($version eq "2.95.2") {
-						$hash = &gen_gcc_hash('gcc2', $version, 0, STATUS_PRESENT);
-						$self->{$hash->{package}} = $hash;
+					my $pkgname = $version eq "2.95.2"
+						? 'gcc2' : "gcc$shortversion";
+					
+					# Don't interfere with real packages
+					if (Fink::Status->query_package($pkgname)) {
+						print STDERR "  - skipping $pkgname, there's a real package\n" if ($options{debug});
+						next;
 					}
-					$hash = &gen_gcc_hash("gcc$shortversion", $version, 0, STATUS_PRESENT);
+					
+					$hash = &gen_gcc_hash($pkgname, $version, 0,
+						STATUS_PRESENT);
 					$self->{$hash->{package}} = $hash;
 					print STDERR "  - found $version\n" if ($options{debug});
 				} else {
@@ -653,7 +659,7 @@ the successful execution of "gcc --version".
 			'gcc3.3'  => '3.3',
 		);
 		foreach (sort keys %expected_gcc) {
-			if (!exists $self->{$_}) {
+			if (!exists $self->{$_} && !Fink::Status->query_package($_)) {
 				$hash = &gen_gcc_hash($_, $expected_gcc{$_}, 0, STATUS_ABSENT);
 				$self->{$hash->{package}} = $hash;
 				print STDERR "  - missing $expected_gcc{$_}\n" if ($options{debug});
