@@ -809,7 +809,8 @@ sub disable_bootstrap {
 	my $self = shift;
 	my ($destdir);
 	my $splitoff;
-
+	
+	$self->{_expand}->{p} = $basepath;
 	$self->_set_destdirs;
 	$self->{_bootstrap} = 0;
 	

@@ -1,3 +1,8 @@
+2005-06-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: We need to set %p in disable_bootstrap. This should fix
+	the gettext bootstrapping bug.
+
 2005-06-30  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Call prepare_percent_c whenever we assign %d and
