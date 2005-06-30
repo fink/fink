@@ -180,6 +180,7 @@ sub _set_destdirs {
 		'i' => $destdir.$basepath,	'I' => $pdestdir.$basepath,
 	);
 	@{$self->{_expand}}{keys %entries} = values %entries;
+	$self->prepare_percent_c;
 }
 
 =item get_init_fields
@@ -717,7 +718,6 @@ sub get_script {
 
 	# need to pre-expand default_script so not have to change
 	# expand_percent() to go a third level deep
-	$self->prepare_percent_c;
 	$self->{_expand}->{default_script} = &expand_percent(
 		$default_script,
 		$self->{_expand},
@@ -795,6 +795,7 @@ sub enable_bootstrap {
 	$self->{_expand}->{i} = $bsbase;
 	$self->{_expand}->{D} = "";
 	$self->{_expand}->{I} = $bsbase;
+	$self->prepare_percent_c;
 
 	$self->{_bootstrap} = 1;
 	

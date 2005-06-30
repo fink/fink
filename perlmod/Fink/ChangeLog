@@ -1,3 +1,8 @@
+2005-06-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Call prepare_percent_c whenever we assign %d and
+	other path-related _expand keys
+
 2005-06-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* VirtPackage.pm: If old XCode is not removed on upgrade to Tiger, a
@@ -6,6 +11,7 @@
 	apt-get. Now virtual gcc packages will no longer overwrite real ones.
 
 2005-06-29  David H. <dmalloc@users.sourceforge.net>
+
 	* VirtPkg.pm: Added 10.3.9 SDK
 
 2005-06-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
