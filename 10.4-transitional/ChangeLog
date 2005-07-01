@@ -1,3 +1,7 @@
+2005-07-01  Daniel Macks  <dmacks@netspace.org>
+
+	* apt.info, apt.patch: sync with stable and 10.3/bootstrap
+
 2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* initializing 10.4-transitional tree
