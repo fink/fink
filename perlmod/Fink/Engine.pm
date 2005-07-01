@@ -685,7 +685,7 @@ sub create_override {
 					} else {
 #						print "Have prio in: $File::Find::name\n";
 					}
-				}, "$basepath/fink/dists/$tree/binary-$debarch/");
+				}, "$basepath/fink/dists/$tree/binary-$debarch/") if (-d "$basepath/fink/dists/$tree/binary-$debarch/");
 			}
 		}
 		
