@@ -1,3 +1,7 @@
+2005-07-01  Daniel Macks  <dmacks@netspace.org>
+
+	* apt.info: This pkg matches r52 in stable, so let's call it r52 here.
+
 2005-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* gettext: sync with stable
