@@ -1,13 +1,13 @@
 Package: fink-mirrors
-Version: 0.22.1.1
+Version: 0.24.4.1
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: f697bb021577813ac50ffec023629514
+Source-MD5: 1496ac9bf8efee017ece2a81d504cd11
 Depends: fink (>= 0.17.3-1)
 AddShlibDeps: true
 Replaces: fink (<< 0.17.2-1)
-CompileScript:  sed -e "s|@PREFIX@|%p|" < postinstall.pl.in > postinstall.pl
+CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
 InstallScript: ./install.sh %i
 PostInstScript: %p/lib/fink/mirror/postinstall.pl
 #
