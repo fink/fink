@@ -1,3 +1,8 @@
+2005-07-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Notify/Growl.pm: move event registration out of the constructor,
+	for the purposes of speed.
+
 2005-07-01  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Implement new function rejoin_text().
