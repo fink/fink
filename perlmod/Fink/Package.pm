@@ -574,13 +574,16 @@ sub search_comparedb {
 	return 1 if -M $dbfile > -M "$basepath/etc/fink.conf";
 
 	# Using find is much faster than doing it in Perl
-	open NEWER_FILES, "/usr/bin/find $path \\( \\( \\( -type f -or -type l \\) " .
-		"-name '*.info' \\) -o -type d \\) -newer $dbfile |"
-		or die "/usr/bin/find failed: $!\n";
+	my $prune_bin = "\\( -name 'binary-$debarch' -prune \\)";
+	my $file_test = "\\( \\( -type f -o -type l \\) -name '*.info' \\)";
+	my $cmd = "/usr/bin/find $path \\! $prune_bin \\( $file_test -o -type d \\) "
+		. " -newer $dbfile";
+	open NEWER_FILES, "$cmd |" or die "/usr/bin/find failed: $!\n";
 
 	# If there is anything on find's STDOUT, we know at least one
 	# .info is out-of-date. No reason to check them all.
-	my $file_found = defined <NEWER_FILES>;
+	my $file = <NEWER_FILES>;
+	my $file_found = defined $file;
 
 	close NEWER_FILES;
 
@@ -848,7 +851,8 @@ If $nocache is true, does not use the infolist cache.
 =cut
 
 sub get_all_infos {
-	my ($class, $ops) = @_;
+	my $class = shift;
+	my $ops = shift;
 	my $nocache = shift || 0;
 	
 	my $infolist = $class->db_infolist;
@@ -983,7 +987,7 @@ sub tree_infos {
 
 	my @filelist = ();
 	my $wanted = sub {
-		if (-f and not /^[\.\#]/ and /\.info$/) {
+		if (-f _ and not /^[\.\#]/ and /\.info$/) {
 			push @filelist, $File::Find::fullname;
 		}
 	};
