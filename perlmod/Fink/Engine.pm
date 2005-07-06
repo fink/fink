@@ -2110,7 +2110,7 @@ sub real_install {
 		print "Updating the list of locally available binary packages.\n";
 		&cmd_scanpackages(1);
 		print "Updating the indexes of available binary packages.\n";
-		my $aptcmd = "$basepath/bin/apt-get ";
+		my $aptcmd = aptget_lockwait() . " ";
 		if ($verbosity == 0) {
 			$aptcmd .= "-qq ";
 		} elsif ($verbosity < 2) {

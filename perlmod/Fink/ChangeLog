@@ -1,6 +1,11 @@
+2005-07-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Use apt-get-lockwait for AutoScanpackages.
+
 2005-07-05  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* Bootstrap.pm (bootstrap): Remove tar from phase 1 of bootstrap. 
+
 2005-07-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: Er, make the info-list caching actually work. I'll be taking
