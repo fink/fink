@@ -1,3 +1,8 @@
+2005-07-07  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, PkgVersion.pm: Automagically fix bug caused by Repair
+	Permissions on Tiger.
+
 2005-07-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Use apt-get-lockwait for AutoScanpackages.

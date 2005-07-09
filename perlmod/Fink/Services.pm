@@ -23,6 +23,8 @@
 
 package Fink::Services;
 
+use Fink::Command qw(&rm_f);
+
 use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
 
@@ -53,7 +55,7 @@ BEGIN {
 					  &eval_conditional &count_files
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
-					  &store_rename);
+					  &store_rename &fix_gcc_repairperms);
 }
 our @EXPORT_OK;
 
@@ -1107,6 +1109,23 @@ sub get_arch {
 		}
 	}
 	return $arch;
+}
+
+=item fix_gcc_repairperms
+
+  fix_gcc_repairperms;
+
+In Tiger, the 'repair permissions' feature of Disk Utility can cause GCC
+breakage. This function checks for such breakage and fixes it if necessary.
+
+=cut
+
+sub fix_gcc_repairperms {
+	require Fink::Config;
+	next unless $Fink::Config::distribution =~ /^10\.4/;
+	my @links = ( '/usr/lib/gcc/darwin/default',
+		map { "/usr/lib/lib$_.a" } qw/cc_dynamic cc_kext gcc stdc++ supc++/ );
+	rm_f(@links) or die "Can't fix GCC after Repair Permissions: $!\n";
 }
 
 =item enforce_gcc
