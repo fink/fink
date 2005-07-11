@@ -1,3 +1,7 @@
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Put path-prefix	stuff in Fink's .deb.
+
 2005-07-07  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm, PkgVersion.pm: Automagically fix bug caused by Repair
