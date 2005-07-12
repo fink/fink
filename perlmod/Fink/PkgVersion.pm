@@ -3171,12 +3171,14 @@ sub clear_buildlock {
 =item ensure_gpp_prefix
 
   my $prefix_path = ensure_gpp_prefix $gpp_version;
-  
+
 Ensures that a path-prefix directory exists for the given version of g++.
 Returns the path to the resulting directory.
 
 =cut
 
+# NOTE: If you change this, you also must change the matching script in
+# g++-wrapper.in!
 sub ensure_gpp_prefix {
 	my $vers = shift;
 	

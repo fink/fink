@@ -310,7 +310,7 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	print "Installing package...\n";
 	print "\n";
 	
-	if (&execute("$bpath/bin/fink install $package")) {
+	if (&execute("$bpath/bin/fink install $package-$packageversion-$packagerevision")) {
 		print "\n";
 		&print_breaking("Installing the new $package package failed. ".
 		  "The description and the tarball were installed, though. ".
@@ -508,7 +508,7 @@ sub fink_packagefiles {
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in images install.sh setup.sh ".
   "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in";
+  "fink-virtual-pkgs.in g++-wrapper.in";
 
 return $packagefiles;
 

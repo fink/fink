@@ -1,1 +1,11 @@
 config*
+fink
+fink-virtual-pkgs
+fink.8
+fink.conf.5
+pathsetup.command
+pathsetup.sh
+postinstall.pl
+shlibs.default
+g++-wrapper-3.3
+g++-wrapper-4.0

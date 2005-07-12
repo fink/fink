@@ -1,3 +1,8 @@
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Backport inject exact version.
+	* Bootstrap.pm, PkgVersion.pm: Backport path-prefix in .deb.
+
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Deprecate 'fink rescan'

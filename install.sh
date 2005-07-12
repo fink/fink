@@ -44,7 +44,9 @@ for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   share share/doc share/doc/fink share/man \
 	   share/man/man8 share/man/man5 \
 		share/fink share/fink/images \
-		var var/lib var/run var/lib/fink var/run/fink; do
+		var var/lib var/run var/lib/fink var/run/fink \
+		var/lib/fink/path-prefix-g++-3.3 \
+		var/lib/fink/path-prefix-g++-4.0; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -85,6 +87,12 @@ done
 install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog"
 install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
 install -c -p -m 644  update/ChangeLog "$basepath/share/doc/fink/ChangeLog.update"
+
+for gccvers in 3.3 4.0; do
+	install -c -p -m 755 "g++-wrapper-$gccvers" \
+		"$basepath/var/lib/fink/path-prefix-g++-$gccvers/g++"
+	ln -s -n -f g++ "$basepath/var/lib/fink/path-prefix-g++-$gccvers/c++" 
+done
 
 echo "Done."
 exit 0
