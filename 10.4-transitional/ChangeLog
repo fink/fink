@@ -1,0 +1,8 @@
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* apt.info, apt.patch, cctools-extra.info, dpkg-bootstrap.info, dpkg.info,
+	dpkg.patch, gettext.info, tar.info, unzip.info: Sync with HEAD
+
+2005-04-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* initializing 10.4-transitional tree

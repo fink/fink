@@ -1,22 +1,21 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 204
+Revision: 217
 GCC: 3.3
-Depends: gettext, libiconv, gzip, tar, ncurses (>= 5.3-12)
-BuildDepends: gcc3.3
+Depends: gettext, libiconv, gzip, tar, libncurses5-shlibs
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
-SourceDirectory: %n-%v
+SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchScript: sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
+PatchScript: sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
- %p/bin/fink -y install gettext-bin gettext-dev gettext-tools libiconv-dev ncurses-dev
- export CC=gcc-3.3; export CXX=g++-3.3; PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
- make EXEFLAGS=-force_flat_namespace CC=gcc-3.3 CXX=g++-3.3
+ %p/bin/fink -y install gettext-bin gettext-dev gettext-tools libiconv-dev libncurses5
+ PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
+ make EXEFLAGS=-force_flat_namespace
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<
@@ -50,6 +49,11 @@ Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $pref
 Patched to suppress warning about BuildDependsOnly control field.
 
 Previous versions by Christoph Pfisterer.
+
+Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
+
+Patched to hardcode complete paths to our component executables
+instead of relying on PATH
 <<
 #
 PostInstScript: <<
