@@ -31,6 +31,7 @@ use Fink::Services qw(&latest_version &sort_versions
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
+use Fink::Configure qw(&spotlight_warning);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch binary_requested);
@@ -213,6 +214,12 @@ sub process {
 						 "used for package testing and development, not for ".
 						 "production builds.");
 		sleep(3);
+	}
+	
+	# Warn about Spotlight
+	if (&spotlight_warning()) {
+		$config->save;
+		$config->initialize;
 	}
 	
 	# read package descriptions if needed

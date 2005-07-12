@@ -1,5 +1,9 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* postinstall.pl.in: Backport rest of spotlight protection.
+	
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* g++-wrapper.in, .cvsignore, install.sh, setup.sh: Backport
 	path-prefix in .deb.
 
