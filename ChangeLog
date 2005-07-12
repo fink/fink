@@ -1,5 +1,9 @@
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* g++-wrapper.in: Note PkgVersion code duplication
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* g++-wrapper.in, setup.sh, install.sh, .cvsignore: Put path-prefix
 	stuff in Fink's .deb.
 

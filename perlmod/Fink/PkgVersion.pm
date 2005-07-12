@@ -3620,6 +3620,8 @@ Returns the path to the resulting directory.
 
 =cut
 
+# NOTE: If you change this, you also must change the matching script in
+# g++-wrapper.in!
 sub ensure_gpp_prefix {
 	my $vers = shift;
 	

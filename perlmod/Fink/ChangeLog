@@ -1,5 +1,9 @@
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: Note g++-wrapper code duplication.
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Bootstrap.pm: Put path-prefix	stuff in Fink's .deb.
 
 2005-07-07  Dave Vasilevsky  <vasi@users.sourceforge.net>
