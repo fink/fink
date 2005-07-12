@@ -1522,6 +1522,7 @@ sub real_install {
 							if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
 								$dname = $cand;
 								$candcount++;
+								next SIBCHECK; # Don't count multiple siblings
 							}
 						}
 					}

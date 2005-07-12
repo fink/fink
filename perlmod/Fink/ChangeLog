@@ -1,5 +1,10 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Backport fix for alternative-dependency heuristic finding
+	multiple siblings.
+	
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* VirtPackage.pm: Backport fix for gcc3.1 virt pkg overriding installed
 	package.
 	
