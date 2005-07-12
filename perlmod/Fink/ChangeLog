@@ -1,3 +1,8 @@
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Reimplement Repair Permissions bug fix using gcc_select
+	--force, for better reliability (we hope!)
+
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Note g++-wrapper code duplication.

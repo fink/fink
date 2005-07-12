@@ -1111,6 +1111,48 @@ sub get_arch {
 	return $arch;
 }
 
+=item gcc_select_arg
+
+  my $arg = gcc_select_arg $gccvers;
+  
+Finds the argument to gcc_select which corresponds to a given version of GCC.
+IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
+
+=cut
+
+{
+	my %gcc_select_table = (
+		'2.95.2' => '2',
+		'2.95' => '2',
+		'3.1' => '3',
+		'3.3' => '3.3',
+		'4.0.0' => '4.0'
+	);
+	
+	sub gcc_select_arg {
+		my $vers = shift;
+		return $gcc_select_table{$vers};
+	}
+}
+	
+
+=item gcc_selected
+
+  my $selected = gcc_selected;
+  
+Finds the version of GCC currently selected with gcc_select. Returns the
+version of GCC selected, eg: 4.0.0 . Yields a false value if the current
+selection cannot be determined.
+
+=cut
+
+sub gcc_selected {
+	return 0 unless -x '/usr/sbin/gcc_select';
+	chomp(my $gcc_select = `/usr/sbin/gcc_select`);
+	return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
+	return 0;
+}
+
 =item fix_gcc_repairperms
 
   fix_gcc_repairperms;
@@ -1121,11 +1163,9 @@ breakage. This function checks for such breakage and fixes it if necessary.
 =cut
 
 sub fix_gcc_repairperms {
-	require Fink::Config;
-	next unless $Fink::Config::distribution =~ /^10\.4/;
-	my @links = ( '/usr/lib/gcc/darwin/default',
-		map { "/usr/lib/lib$_.a" } qw/cc_dynamic cc_kext gcc stdc++ supc++/ );
-	rm_f(@links) or die "Can't fix GCC after Repair Permissions: $!\n";
+	return unless gcc_select_arg(gcc_selected) eq '4.0';
+	system('gcc_select --force 4.0') == 0
+		or die "Can't fix GCC after Repair Permissions: $!\n";
 }
 
 =item enforce_gcc
@@ -1168,7 +1208,6 @@ sub enforce_gcc {
 
 	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0.0');
 	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0.0');
-	my %gcc_name = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3', '4.0.0' => '4.0');
 	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0.0' => '3.3');
 
 	my $sw_vers = get_sw_vers();
@@ -1189,20 +1228,14 @@ sub enforce_gcc {
 		}
 	}
 
-	if (-x '/usr/sbin/gcc_select') {
-		chomp($gcc_select = `/usr/sbin/gcc_select`);
-	} else {
-		$gcc_select = '';
-	}
-	if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
-		$gcc_select = '(unknown version)';
-	}
+	$gcc_select = gcc_selected() || '(unknown version)';
 
 	if ($gcc_select !~ /^$gcc/) {
+		my $gcc_name = gcc_select_arg($gcc);
 		$message =~ s/CURRENT_SYSTEM/$current_system/g;
 		$message =~ s/INSTALLED_GCC/$gcc_select/g;
 		$message =~ s/EXPECTED_GCC/$gcc/g;
-		$message =~ s/GCC_SELECT_COMMAND/$gcc_name{$gcc}/g;
+		$message =~ s/GCC_SELECT_COMMAND/$gcc_name/g;
 		die $message;
 	}
 
