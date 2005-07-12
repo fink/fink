@@ -1,5 +1,9 @@
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Deprecate 'fink rescan'
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Bootstrap.pm: Backport copyfile disabling
 
 2005-06-03  Dave Morrison  <dmrrsn@users.sourceforge.net>

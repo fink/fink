@@ -28,7 +28,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
 					  &call_queue_clear &call_queue_add);
-use Fink::CLI qw(&print_breaking
+use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
 use Fink::Package;
@@ -287,6 +287,8 @@ sub cmd_index {
 }
 
 sub cmd_rescan {
+	print_breaking_stderr "WARNING: The command 'fink rescan' is deprecated and will be removed in a future version of fink, because nobody can remember what it's supposed to do. If you still use this command, please notify fink-core\@lists.sourceforge.net.";
+	print_breaking_stderr '';
 	Fink::Package->forget_packages();
 	Fink::Package->require_packages();
 }
