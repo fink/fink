@@ -1,5 +1,9 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Mirror.pm: Backport giving up on master after two tries.
+	
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Backport perllocal.pod emptying on removal of last
 	versioned perlmod.
 	

@@ -1,9 +1,10 @@
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::Mirror module
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,8 +23,8 @@
 
 package Fink::Mirror;
 
-use Fink::Services qw(&prompt_selection
-					  &read_properties &read_properties_multival);
+use Fink::Services qw(&read_properties &read_properties_multival_var &read_properties_multival);
+use Fink::CLI qw(&prompt_selection);
 use Fink::Config qw($config $libpath);
 
 use strict;
@@ -39,7 +40,7 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK	 = qw(&fetch_url &fetch_url_to_file);
+	@EXPORT_OK	 = qw();
 }
 our @EXPORT_OK;
 
@@ -76,7 +77,23 @@ sub new_from_name {
 	$self->{name} = $name;
 
 	my $mirrorfile = "$libpath/mirror/$name";
+	# set default values for critical mirrors, in case mirror directory
+	# is not present
+	my %mirrordefaults = (
+		"master" => "Primary: http://distfiles.master.finkmirrors.net/",
+		"rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
+		"sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
+		);
+	my ($key, $mirrordefault);
 	if (not -f $mirrorfile) {
+		foreach $key ( keys %mirrordefaults ) {
+			if ($name eq $key) {
+				$mirrordefault = $mirrordefaults{$key}."\n";
+				$self->{data} = &read_properties_multival_var("",$mirrordefault);
+				$self->initialize();
+				return $self;
+			}
+		}
 		die "No mirror site list file found for mirror '$name'.\n";
 	}
 	$self->{data} = &read_properties_multival($mirrorfile);
@@ -101,7 +118,7 @@ sub new_from_field {
 	my $self = {};
 	bless($self, $class);
 
-	$self->{name} = "Custom Mirror";
+	$self->{name} = "Custom (package-defined) servers";
 	$self->{package} = $package;
 
 	my ($key, $url);
@@ -142,7 +159,7 @@ sub new_from_url {
 
   $self->{name} = "Original URL";
   $self->{package} = $package;
-    
+
   $self->{data}->{"primary"} = [ $url ];
 
   $self->initialize();
@@ -192,7 +209,7 @@ sub get_site {
 
 	if ($self->{lastused}) {
 		$url = $self->{lastused};
-  	    $url .= "/" unless $url =~ /\/$/;
+		$url .= "/" unless $url =~ /\/$/;
 		return $url;
 	}
 
@@ -275,16 +292,25 @@ sub get_site_retry {
 	}
 	if ($next_set ne "") {
 		push @choice_list, "retry-next";
-		if($#choice_list == 2) {  # No more mirrors in this set, default to next
+		
+		# If two masters fail, and the masters come first, assume it's a new
+		# file that hasn't yet reached the masters rather than going through
+		# every single master.
+		my $finish_master = $self->{name} eq 'master'
+			&& $config->param_default('MirrorOrder', '') eq 'MasterFirst'
+			&& $self->{tries} >= 2;
+		
+		# No more mirrors in this set or finished master, default to next
+		if($#choice_list == 2 || $finish_master) {
 			$default = $#choice_list + 1;
 		}
 	}
 	# ask the user
 	if($printmode) {
-		#just printing URLs, never ask, never retry same mirror
-	    if($default == 2) {
-	    	$default = 1;
-	    }
+		# just printing URLs, never ask, never retry same mirror
+		if($default == 2) {
+			$default = 1;
+		}
 		$result = $choice_list[$default - 1];
 	} else {
 		my $nexttext;
@@ -293,15 +319,17 @@ sub get_site_retry {
 		} else {
 			$nexttext = "Retry using next mirror set \"$next_set\"";
 		}
+		my %choices = ( "error" => "Give up",
+				"retry" => "Retry the same mirror",
+				"retry-country" => "Retry another mirror from your country",
+				"retry-continent" => "Retry another mirror from your continent",
+				"retry-world" => "Retry another mirror",
+				"retry-next" => $nexttext );
+		my @choices = map { ( $choices{$_} => $_ ) } @choice_list;
 		$result =
-		&prompt_selection("How do you want to proceed?", $default,
-						  { "error" => "Give up",
-							"retry" => "Retry the same mirror",
-							"retry-country" => "Retry another mirror from your country",
-							"retry-continent" => "Retry another mirror from your continent",
-							"retry-world" => "Retry another mirror",
-							"retry-next" => $nexttext  },
-						  @choice_list);
+		&prompt_selection("How do you want to proceed?",
+				      default => [ number => $default ],
+				      choices => \@choices );
 	}
 	$url = $self->{lastused};
 	if ($result eq "error") {
