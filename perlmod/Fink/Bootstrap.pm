@@ -317,7 +317,7 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	print "Installing package...\n";
 	print "\n";
 	
-	if (&execute("$bpath/bin/fink install $package")) {
+	if (&execute("$bpath/bin/fink install $package-$packageversion-$packagerevision")) {
 		print "\n";
 		&print_breaking("Installing the new $package package failed. ".
 		  "The description and the tarball were installed, though. ".

@@ -1,5 +1,9 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Bootstrap.pm: Install exactly the version that's being injected.
+
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Services.pm: Reimplement Repair Permissions bug fix using gcc_select
 	--force, for better reliability (we hope!)
 
