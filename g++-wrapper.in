@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# NOTE: If you change this, you also must change the matching code in
+# Fink::PkgVersion::ensure_gpp_prefix!
+exec g++-@GCCVERS@ "$@"
