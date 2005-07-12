@@ -1114,7 +1114,7 @@ sub get_arch {
 =item gcc_select_arg
 
   my $arg = gcc_select_arg $gccvers;
-  
+
 Finds the argument to gcc_select which corresponds to a given version of GCC.
 IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 
@@ -1139,7 +1139,7 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 =item gcc_selected
 
   my $selected = gcc_selected;
-  
+
 Finds the version of GCC currently selected with gcc_select. Returns the
 version of GCC selected, eg: 4.0.0 . Yields a false value if the current
 selection cannot be determined.

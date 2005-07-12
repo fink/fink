@@ -166,7 +166,7 @@ sub print_breaking_stderr {
 	print_reaking rejoin_text <<EOMSG
     Here is paragraph
     one.
-    
+
     And
     two.
     EOMSG
