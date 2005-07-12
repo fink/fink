@@ -1,5 +1,10 @@
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* VERSION: Make fink HEAD always >> 0.24.x, since that has already
+	branched.
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* g++-wrapper.in: Note PkgVersion code duplication
 
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
