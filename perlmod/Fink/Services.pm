@@ -1126,7 +1126,8 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 		'2.95' => '2',
 		'3.1' => '3',
 		'3.3' => '3.3',
-		'4.0.0' => '4.0'
+		'4.0.0' => '4.0',
+		'4.0.1' => '4.0',
 	);
 	
 	sub gcc_select_arg {
@@ -1206,9 +1207,9 @@ sub enforce_gcc {
 # Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
 # specify default values for these.
 
-	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0.0');
-	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0.0');
-	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0.0' => '3.3');
+	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0');
+	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0');
+	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3');
 
 	my $sw_vers = get_sw_vers();
 	if ($sw_vers ne 0) {
@@ -1216,7 +1217,7 @@ sub enforce_gcc {
 		$sw_vers =~ s/^(\d*\.\d*).*/$1/;
 		$gcc = $osx_default{$sw_vers};
 	} else {
-        my $darwin_version = (uname())[2];
+		my $darwin_version = (uname())[2];
 		$current_system = "Darwin $darwin_version";
 		$darwin_version =~ s/^(\d*).*/$1/;
 		$gcc = $darwin_default{$darwin_version};
@@ -1229,6 +1230,9 @@ sub enforce_gcc {
 	}
 
 	$gcc_select = gcc_selected() || '(unknown version)';
+
+	# We don't want to differentiate between 4.0.0 and 4.0.1 here
+	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
 
 	if ($gcc_select !~ /^$gcc/) {
 		my $gcc_name = gcc_select_arg($gcc);
