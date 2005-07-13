@@ -1,6 +1,7 @@
 afr: Africa
 afr-EG: Egypt
 afr-ZA: South Africa
+afr-NA: Namibia
 
 nam: North America
 nam-CA: Canada
@@ -11,10 +12,12 @@ sam: South America, Middle America and Caribbean
 sam-AR: Argentinia
 sam-BR: Brazil
 sam-CL: Chile
+sam-CO: Colombia
 sam-CR: Costa Rica
 
 eur: Europe
 eur-AT: Austria
+eur-BA: Bosnia & Herzegovina
 eur-BE: Belgium
 eur-BG: Bulgaria
 eur-CH: Switzerland

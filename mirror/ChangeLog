@@ -1,3 +1,257 @@
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* all: Sync with 0.24.4.1
+
+2005-01-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.23.5.2 of fink-mirrors
+
+2005-01-12	David H <dmalloc@users.sourceforge.net>
+	* master, rsync: Ne HE-Net mirror.
+	rsync as well as distfiles, thanks to colm.maccarthaigh@heanet.ie
+
+2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.23.5.1 of fink-mirrors
+
+2004-12-03  Peter O'Gorman  <peter@pogma.com>
+
+	* gnu: update to latest from http://www.gnu.org_order/ftp.html having
+	checked that they actuall work.
+	* _keys: add Bosnia & Herzegovina
+
+2004-09-24  David H. <dmalloc@users.sourceforge.net>
+	* master: Removing  distfiles.lha.uk.eu.finkmirrors.net
+	failure to comply with our mirror rules, admin has been warned often
+	enough. Belnet mirror makes more than up for this.
+
+2004-08-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.22.1.1 of fink-mirrors
+
+2004-08-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.21.1.1 of fink-mirrors
+
+2004-08-17 David H. <dmalloc@users.sourceforge.net>
+	* master, rsync: Added new mirror for Europe
+	Maintainer: bernard.grymonpon@belnet.be
+	Info: Belnet, the Belgian Education and Research network. 
+	Our network spans across Belgium and is connected to several
+	international networks and on several exchange points 
+	[Bnix, Ams-ix, Linx, Sfinx,... Our public FTP server is 
+	running on a SunFire V440 with 3 StorEdge 3510 Arrays, 
+	offering +4TB storage and is connected to our backbone 
+	through a double 1000Mbps link. We are located in 
+	Brussels-Belgium. 
+	
+	2004-08-01 David H. <dmalloc@users.sourceforge.net>
+	* master, rsync: Suspended trd and per mirrors.
+	Continued failures, maintainers not really responsive
+	pending removal in 30 days.
+
+2004-07-19  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* gimp: .nl is correct, not .ml. thanks to Martijn Dekker.
+
+2004-07-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.6.1 of fink-mirrors
+
+2004-07-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _list, apt: add mirror list for apt-get repository
+	* website, cvs-repository, _urls, inject.pl, install.sh: store the 
+	URL's for fink-related sites in /sw/lib/fink/URL
+
+2004-05-31  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.2.1 of fink-mirrors
+
+2004-05-31  David H. <dmalloc@users.sourceforge.net>
+
+	* master, rsync: Added new Master mirror for 
+	Oceania in Australia,
+		*bne.qld.au.finkmirrors.net
+		Maintainer:
+		Dan Goodes
+		support@planetmirror.com
+	Changed the master rsync servers DNS for the
+	Master record of each continent
+
+2004-05-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* gnu: Only use mirrors which my tests showed have libtool-1.5.6.
+	It looks like a whole bunch of gnu mirrors have not been updated
+	since June 2003, when gnu stopped rsync updating.
+
+2004-05-08  David H. <dmalloc@users.sourceforge.net>
+	* added new Master mirror for Asia
+		University of Tokyo
+		distfiles.master.asi.finkmirrors.net
+		Maintainer:
+		Sodans
+		sodans@users.finkmirrors.net
+
+2004-04-29  David H. <dmalloc@users.sourceforge.net>
+
+	* added new full mirror in Indiana, USA
+		University of Notre Dame
+		distfiles.sbn.in.us.finkmirrors.net
+		Maintainer:
+		Brandon and the OSM Team
+		osm@cse.nd.edu
+
+2004-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.0.1 of fink-mirrors
+
+2004-04-04 Alexander Strange <astrange@ithinksw.com>
+	* sync GIMP mirror list to list on website
+
+2004-04-01  David H. <dmalloc@users.sourceforge.net>
+	* added new full mirror in Sweden
+		arn.se.eu.finkmirrors.net
+		Maintainer:
+		Stefan Cars
+		stefan@snowfall.se
+
+2004-03-11  David H. <dmalloc@users.sourceforge.net>
+	* added Japanese sourceforge download mirror
+	* changed rsync to default to tos for european users
+	* changed distfiles to default to lha for european users
+
+2004-03-01  David H. <dmalloc@users.sourceforge.net>
+	* added new rsync mirror in Hartford, CT, USA
+		bdl.ct.us.finkmirrors.net
+		Maintainer:
+		Christopher Molnar
+		molnar@kde.org
+
+2004-02-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.19.0.1 of fink-mirrors
+	* README.versioning: explanation of the versioning of this package
+
+2004-02-23 David H. <dmalloc@users.sourceforge.net>
+	* added new full mirror in Tromsoe, Norway
+		tos.no.eu.finkmirrors.net
+		Maintainer:
+		Tage Stabell-Kulo
+		task@ifi.uit.no
+
+2004-01-23  David H. <dmalloc@users.sourceforge.net>
+	* added new full mirror in Lisbon, Portugal
+		lis.pt.eu.finkmirrors.net
+		Maintainer:
+		 Nuno Goncalo dos Santos Monteiro
+		  suporte-mirrors@isp.novis.pt
+
+2004-01-02  David H. <dmalloc@users.sourceforge.net>
+	* added new rsync mirror in Los Angeles.
+		lax.finkmirrors.net
+		Maintainer:
+		Srikanth Sariapalli
+		srik@sagan.usc.edu
+		
+2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink-mirrors.info.in: adjust dependency
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.0.4 of fink-mirrors
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in:  Write the new mirror choices to the config file
+	at the end of the process! (oops)
+
+2003-12-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.0.3 of fink-mirrors
+
+2003-12-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: Explicitly include the perl library path
+
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.0.2 of fink-mirrors
+
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* COPYING, README, README.buildsystem, VERSION, fink-mirrors.info.in, 
+	inject.pl, install.sh, postinstall.pl.in: files to create a separate 
+	fink-mirrors package which can be updated independently of fink 
+	releases.
+
+2003-11-28 David H. <dmalloc@users.sourceforge.net>
+	* Adding full mirror in Perth, Austrial
+		Maintainer:
+		Matthew Healey
+		matt_h@mac.com
+	* Addding distfiles mirror in Lancester, UK
+		Maintainer:
+		Yang He
+		 tech-staff@mirror.ac.uk
+	This is part of mirrors.ac.uk.
+
+2003-11-24 David H. <dmalloc@users.sourceforge.net>
+	* rjk admin reported that the server is now fixed.
+
+2003-11-21 David H. <dmalloc@users.sourceforge.net>
+	* New rsync policy is in effect. The flags
+		--delete --delete-after -az
+		are now mandatory.
+		Mailed all mirrors so they can heed this.
+		
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Corrected all entries to have upper case ISO
+		country codes, because the _keys file
+		says so.
+
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Added full mirror in Norway (rsync/distfiles)
+		trd.no.eu.finkmirrors.net
+		Maintainer:
+		Harvar Valeur
+		havarv@idi.ntnu.no
+		
+2003-11-19 David H. <dmalloc@users.sourceforge.net>
+	* Corrected the distfiles entry for San Fran
+		from .sf. to .sfo. to follow policy
+2003-11-05 David H. <dmalloc@users.sourceforge.net>
+	* Changed eu-hr to eur-hr to follow the
+		common scheme we use.
+
+2003-10-31 David H. <dmalloc@users.sourceforge.net>
+
+	* This is a cumulative update
+	* rsync Update Added:
+		Hrvoje Dogan, Rijeka Croatia
+		hdogan@dir.hr
+		Dave Schroeder, Madison WI
+		This is a dedicated 100Mbit
+		secondary Master
+		Dave Schroeder
+		das@doit.wisc.edu
+		A. J. Wright, Knoxville TN
+		SunSITE@UTK mirror
+		ajw@utk.edu
+		Rus Foster, Atlanta GA
+		jvsd.com
+	* distfile Update Added:
+		All of the above except for Atlanta
+
 2003-04-14 Max Horn  <max@quendi.de>
 
 	* sourceforge: Added new mirror heanet (Ireland)
