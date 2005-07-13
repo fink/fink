@@ -1,5 +1,10 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Services.pm, PkgVersion.pm: Backport fix for after Repair Perms screws
+	up gcc_select.
+	
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* CLI.pm, PkgVersion.pm: Backport buildlock failure wording change.
 	
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>

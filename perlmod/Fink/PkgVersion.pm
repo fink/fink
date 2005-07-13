@@ -2072,6 +2072,9 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 
+	# Fix repair permissions bug on Tiger
+	Fink::Services::fix_gcc_repairperms();
+	
 	my $notifier = Fink::Notify->new();
 
 	if ($self->is_type('bundle')) {
