@@ -505,6 +505,8 @@ sub get_input {
 	my $prompt = shift;
 	my %opts = (timeout => 0, category => '', @_);
 
+	use POSIX qw(:termios_h tcflush);
+
 	# Don't really skip SkipPrompts, just make them short
 	my $skip_timeout = 7;
 	if ( should_skip_prompt($opts{category})
@@ -534,6 +536,7 @@ sub get_input {
 	my $answer = eval {
 		local $SIG{ALRM} = sub { die "SIG$_[0]\n"; };  # alarm() expired
 		alarm $opts{timeout};  # alarm(0) means cancel the timer
+		tcflush(fileno(STDIN),TCIFLUSH);
 		my $answer = <STDIN>;
 		alarm 0;
 		return $answer;

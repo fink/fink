@@ -1,3 +1,7 @@
+2005-07-13  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: flush STDIN before reading each user input.
+
 2005-07-12  Matthew Sachs  <msachs@apple.com>
 
 	* Services.pm: Looser checking of GCC version in enforce_gcc;
