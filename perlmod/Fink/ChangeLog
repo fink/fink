@@ -1,3 +1,7 @@
+2005-07-12  Matthew Sachs  <msachs@apple.com>
+
+	* Services.pm: Backport fix for looser checking of GCC version.
+
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm, PkgVersion.pm: Backport fix for after Repair Perms screws
