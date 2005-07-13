@@ -1,5 +1,9 @@
 2005-07-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Bootstrap.pm: Support 10.4.2.
+
+2005-07-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* CLI.pm: Backport more robust input.
 
 2005-07-12  Matthew Sachs  <msachs@apple.com>
