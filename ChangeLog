@@ -1,8 +1,3 @@
-2005-07-12  Matthew Sachs  <msachs@apple.com>
-
-	* Services.pm: When checking the GCC version, only test two
-	decimal places out (so we test for 4.0, not 4.0.0.)
-
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* VERSION: Make fink HEAD always >> 0.24.x, since that has already
