@@ -480,6 +480,8 @@ Returns the entered string
 expires or immediately (without waiting for input) if fink is suppressing
 the prompt (run with the -y option or with an appropriate SuppressPrompts).
 If not suppressing a prompt, this function destroys any pre-existing alarm().
+STDIN is flushed before accepting input, so stray keystrokes prior to
+the prompt are ignored.
 
 The options hash can contain the following keys:
 
@@ -505,7 +507,7 @@ sub get_input {
 	my $prompt = shift;
 	my %opts = (timeout => 0, category => '', @_);
 
-	use POSIX qw(:termios_h tcflush);
+	use POSIX qw(tcflush TCIFLUSH);
 
 	# Don't really skip SkipPrompts, just make them short
 	my $skip_timeout = 7;
