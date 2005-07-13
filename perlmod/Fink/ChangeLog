@@ -1,3 +1,8 @@
+2005-07-12  Matthew Sachs  <msachs@apple.com>
+
+	* Services.pm: Looser checking of GCC version in enforce_gcc;
+	we don't want to differentiate between 4.0.0 and 4.0.1.
+
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Bootstrap.pm: Install exactly the version that's being injected.
