@@ -7,5 +7,7 @@ pathsetup.command
 pathsetup.sh
 postinstall.pl
 shlibs.default
+dpkg-lockwait
+apt-get-lockwait
 g++-wrapper-3.3
 g++-wrapper-4.0

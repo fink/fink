@@ -27,7 +27,8 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &pkglist2lol &cleanup_lol
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
-					  &call_queue_clear &call_queue_add);
+					  &call_queue_clear &call_queue_add
+					  &aptget_lockwait);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
@@ -1194,7 +1195,7 @@ EOF
 if (Fink::Config::binary_requested()) {
 		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
 		# 'apt-get autoclean'
-		my $aptcmd = "$basepath/bin/apt-get ";
+		my $aptcmd = aptget_lockwait() . " ";
 		if (Fink::Config::verbosity_level() == 0) {
 			$aptcmd .= "-qq ";
 		}

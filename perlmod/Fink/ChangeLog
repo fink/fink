@@ -1,5 +1,10 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Bootstrap.pm, Engine.pm, PkgVersion.pm, SelfUpdate.pm, Services.pm:
+	Backport lockwait wrappers.
+	
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Validation.pm: Backport checking for unversioned files in versioned
 	perlmods.
 	

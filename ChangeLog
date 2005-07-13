@@ -1,5 +1,10 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* lockwait.in, .cvsignore, install.sh, setup.sh: Backport lockwait
+	wrappers.
+	
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* postinstall.pl.in: Backport rest of spotlight protection.
 	
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
