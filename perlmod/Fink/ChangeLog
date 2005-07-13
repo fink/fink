@@ -1,5 +1,9 @@
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* CLI.pm, PkgVersion.pm: Backport buildlock failure wording change.
+	
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Bootstrap.pm, Engine.pm, PkgVersion.pm, SelfUpdate.pm, Services.pm:
 	Backport lockwait wrappers.
 	

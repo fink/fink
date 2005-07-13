@@ -31,7 +31,7 @@ use Fink::Services qw(&filename &execute
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection &rejoin_text);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors binary_requested);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -3074,11 +3074,12 @@ EOSCRIPT
 	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
 	my $lock_failed = &execute(dpkg_lockwait() . " -i $debfile");
 	if ($lock_failed) {
-		&print_breaking(<<EOMSG);
+		print_breaking rejoin_text <<EOMSG;
 Can't set build lock for $pkgname ($pkgvers)
 
-If any of the above dpkg error messages mention conflicting packages --
-for example, telling you that fink-buildlock-$pkgname-$pkgvers
+If any of the above dpkg error messages mention conflicting packages or
+missing dependencies -- for example, telling you that the package
+fink-buildlock-$pkgname-$pkgvers
 conflicts with something else -- fink has probably gotten confused by trying 
 to build many packages at once. Try building just this current package
 $pkgname (i.e, "fink build $pkgname"). When that has completed successfully, 
