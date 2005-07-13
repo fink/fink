@@ -263,23 +263,29 @@ sub prompt_boolean {
 	my $prompt = shift;
 	my %opts = (default => 1, timeout => 0, @_);
 
+	my $choice_prompt = $opts{default} ? "Y/n" : "y/N";
+
 	my $meaning;
+	my $answer = &get_input(
+		"$prompt [$choice_prompt]",
+		$opts{timeout},
+	);
 	while (1) {
-		my $answer = &get_input(
-			"$prompt [".($opts{default} ? "Y/n" : "y/N")."]",
-			$opts{timeout}
-		);
 		chomp $answer;
 		if ($answer eq "") {
 			$meaning = $opts{default};
 			last;
-		} elsif ($answer =~ /^y(es?)?/i) {
+		} elsif ($answer =~ /^y(es?)?$/i) {
 			$meaning = 1;
 			last;
-		} elsif ($answer =~ /^no?/i) {
+		} elsif ($answer =~ /^no?$/i) {
 			$meaning = 0;
 			last;
 		}
+		$answer = &get_input(
+			"Invalid choice. Please try again [$choice_prompt]",
+			$opts{timeout},
+		);
 	}
 
 	return $meaning;
@@ -338,7 +344,7 @@ sub prompt_selection {
 	my @choices = @{$opts{choices}};
 	my $default = $opts{default};
 
-	my ($count, $answer, $default_value);
+	my ($count, $default_value);
 
 	if (@choices/2 != int(@choices/2)) {
 		confess 'Odd number of elements in @choices';
@@ -358,7 +364,7 @@ sub prompt_selection {
 	$count = 0;
 	for (my $index = 0; $index <= $#choices; $index+=2) {
 		$count++;
-		print "\n($count)	 $choices[$index]";
+		print "($count)\t$choices[$index]\n";
 		if (!defined $default_value && (
 						(
 						 ($default->[0] eq "label" && $choices[$index]   eq $default->[1])
@@ -371,17 +377,26 @@ sub prompt_selection {
 
 	}
 	$default_value = 1 if !defined $default_value;
-	print "\n\n";
+	print "\n";
 
-	$answer = &get_input("$prompt [$default_value]", $opts{timeout});
-	chomp($answer);
-	if (!$answer) {
-		$answer = 0;
+	my $answer = &get_input(
+		"$prompt [$default_value]",
+		$opts{timeout},
+	);
+	while (1) {
+		chomp $answer;
+		if ($answer eq "") {
+			$answer = $default_value;
+			last;
+		} elsif ($answer =~ /^[1-9]\d*$/ and $answer >= 1 && $answer <= $count) {
+			last;
+		}
+		$answer = &get_input(
+			"Invalid choice. Please try again [$default_value]",
+			$opts{timeout},
+		);
 	}
-	$answer = int($answer);
-	if ($answer < 1 || $answer > $count) {
-		$answer = $default_value;
-	}
+
 	return $choices[2*$answer-1];
 }
 
@@ -405,6 +420,8 @@ sub get_input {
 	my $prompt = shift;
 	my $timeout = shift || 0;
 
+	use POSIX qw(:termios_h tcflush);
+	
 	# print the prompt string (leaving cursor on the same line)
 	$prompt = "" if !defined $prompt;
 	&print_breaking("$prompt ", 0);
@@ -420,6 +437,7 @@ sub get_input {
 	my $answer = eval {
 		local $SIG{ALRM} = sub { die "SIG$_[0]\n"; };  # alarm() expired
 		alarm $timeout;  # alarm(0) means cancel the timer
+		tcflush(fileno(STDIN),TCIFLUSH);
 		my $answer = <STDIN>;
 		alarm 0;
 		return $answer;
