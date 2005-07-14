@@ -249,6 +249,9 @@ END { }				# module clean-up code here (global destructor)
 
 
 
+#
+# Check a given .deb file for standard compliance
+# 
 # Should check/verifies the following in .info files:
 #	+ the filename matches %f.info
 #	+ patch file (from Patch and PatchScript) is present
@@ -843,6 +846,7 @@ sub validate_info_component {
 # - only gettext should should have charset.alias
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
+# - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
 # - any other ideas?
 #
 sub validate_dpkg_file {

@@ -412,30 +412,41 @@ STDOUT before being executed by a system() call.
 The optional %options are given as option=>value pairs. The following
 options are known:
 
-    quiet
+=over 4
 
-        If the option 'quiet' is not given or its value is false and
-        the command failed, a message including the return code is
-        sent to STDOUT.
+=item quiet
 
-    nonroot_okay
+If the option 'quiet' is not given or its value is false and the
+command failed, a message including the return code is sent to STDOUT.
 
-        If the value of the option 'nonroot_okay' is true, fink was
-        run with the --build-as-nobody flag, drop to user=nobody
-        when running the actual commands.
+=item nonroot_okay
 
-    delete_tempfile
+If the value of the option 'nonroot_okay' is true, fink was run with
+the --build-as-nobody flag, drop to user=nobody when running the
+actual commands.
 
-        Whether to delete temp-files that are created. The following
-        values are known:
+=item delete_tempfile
 
-            -1    Always delete
+Whether to delete temp-files that are created. The following values
+are known:
 
-            0 (or not passed)
-                  Delete if script was successful, do not delete if
-                  it failed
+=over 4
 
-            1     Never delete
+=item * -1
+
+Always delete
+
+=item * 0 (or not passed)
+
+Delete if script was successful, do not delete if it failed
+
+=item * 1
+
+Never delete
+
+=back
+
+=back
 
 =cut
 
@@ -1100,7 +1111,7 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 		'3.1' => '3',
 		'3.3' => '3.3',
 		'4.0.0' => '4.0',
-		'4.0.1' => '4.0'
+		'4.0.1' => '4.0',
 	);
 	
 	sub gcc_select_arg {
@@ -1190,7 +1201,7 @@ sub enforce_gcc {
 		$sw_vers =~ s/^(\d*\.\d*).*/$1/;
 		$gcc = $osx_default{$sw_vers};
 	} else {
-        my $darwin_version = (uname())[2];
+		my $darwin_version = (uname())[2];
 		$current_system = "Darwin $darwin_version";
 		$darwin_version =~ s/^(\d*).*/$1/;
 		$gcc = $darwin_default{$darwin_version};
@@ -1203,6 +1214,7 @@ sub enforce_gcc {
 	}
 
 	$gcc_select = gcc_selected() || '(unknown version)';
+	# We don't want to differentiate between 4.0.0 and 4.0.1 here
 	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
 
 	if ($gcc_select !~ /^$gcc/) {

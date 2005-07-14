@@ -54,6 +54,17 @@ BEGIN {
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
+=head1 NAME
+
+Fink::Engine - high-level actions for fink to perform
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
+
+=cut
 
 # The list of commands. Maps command names to a list containing
 # a function reference, and three flags. The first flag indicates
@@ -493,6 +504,7 @@ sub do_real_list {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
 		}
 		if ($namelen && length($pname) > $namelen) {
+			# truncate pkg name if wider than its field
 			$pname = substr($pname, 0, $namelen - 3)."...";
 		}
 
@@ -2357,6 +2369,10 @@ sub show_deps_display_list {
 		print "    [none]\n";
 	}
 }
+
+=back
+
+=cut
 
 ### EOF
 1;
