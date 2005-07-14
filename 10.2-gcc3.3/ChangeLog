@@ -1,3 +1,7 @@
+2005-07-13  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg-bootstrap.info: sync with HEAD
+
 2005-06-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* gettext.info, gettext.patch, fink-mirrors.info, base-files.info, 
