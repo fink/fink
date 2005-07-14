@@ -1,3 +1,7 @@
+2005-07-13  Daniel Macks  <dmacks@netspace.org>
+
+	* INSTALL, INSTALL.html: sync with HEAD (install.xml,v 1.20)
+
 2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* lockwait.in, .cvsignore, install.sh, setup.sh: Backport lockwait
