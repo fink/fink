@@ -31,7 +31,8 @@ use Fink::Services qw(&filename &execute
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection &rejoin_text);
+use Fink::CLI qw(&print_breaking &rejoin_text
+				 &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath $ignore_errors binary_requested);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -40,12 +41,12 @@ use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
-use File::Basename qw(&dirname &basename);
 use Fink::Notify;
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
 
 use POSIX qw(uname strftime);
+use File::Basename qw(&dirname &basename);
 
 use strict;
 use warnings;
@@ -718,6 +719,13 @@ sub get_filename {
 	return $self->{_filename};
 }
 
+sub get_info_filename {
+	my $self = shift;
+	return "" unless exists  $self->{thefilename};
+	return "" unless defined $self->{thefilename};
+	return $self->{thefilename};
+}
+
 sub get_debname {
 	my $self = shift;
 	return $self->{_debname};
@@ -759,13 +767,6 @@ sub get_instsize {
 sub get_tree {
 	my $self = shift;
 	return $self->{_tree};
-}
-
-sub get_info_filename {
-	my $self = shift;
-	return "" unless exists  $self->{thefilename};
-	return "" unless defined $self->{thefilename};
-	return $self->{thefilename};
 }
 
 ### other accessors
