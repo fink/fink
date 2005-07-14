@@ -1,3 +1,7 @@
+2005-07-13  Daniel Macks  <dmacks@netspace.org>
+
+	* base-files.info, fink-mirrors.info: Latest version
+
 2005-02-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* gettext.info: Sync with stable
