@@ -1,3 +1,8 @@
+2005-07-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Backport: cups-dev, system-sdk-*, gimp-print7,
+	growl changes
+
 2005-07-14  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Backports: Cleaner SIGINT handler. Remove cruft from

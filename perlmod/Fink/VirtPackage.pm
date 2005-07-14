@@ -40,7 +40,7 @@ packages to satisfy dependencies outside of Fink.
 
 package Fink::VirtPackage;
 
-our $VERSION = (qw$Revision$)[-1];
+our $VERSION = ( qw$Revision$ )[-1];
 
 # Programmers' note: Please be *very* careful if you alter this file.
 # It is used by dpkg via popen(), so (among other things) that means
@@ -157,6 +157,46 @@ This package represents the Mac OS X software release.
 It will not show as installed on pure Darwin systems.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
+	$self->{$hash->{package}} = $hash;
+
+=item cups-dev
+
+This package represents and existing installation of the CUPS
+headers in /usr/include/cups.
+
+It is called "cups-dev" instead of "system-cups-dev" for the
+purposes of versioned cups-dev dependencies.
+
+=cut
+
+	print STDERR "- checking for cups headers... " if ($options{debug});
+
+	$hash = {};
+	$hash->{package} = "cups-dev";
+	$hash->{version} = '0-0';
+	$hash->{status} = STATUS_ABSENT;
+	$hash->{description} = "[virtual package representing CUPS headers]";
+	$hash->{provides} = "system-cups-dev";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{descdetail} = <<END;
+This package represents the version of CUPS headers installed
+in /usr/include/cups.
+END
+	$hash->{compilescript} = &gen_compile_script($hash);
+
+	if (open(FILEIN, '/usr/include/cups/cups.h')) {
+		while (<FILEIN>) {
+			if (/\#\s*define\s+CUPS_VERSION\s+(.*?)\s*$/) {
+				$hash->{version} = $1 . '-1';
+				last;
+			}
+		}
+		close(FILEIN);
+		$hash->{status} = STATUS_PRESENT;
+		print STDERR $hash->{version}, "\n" if ($options{debug});
+	} else {
+		print STDERR "no\n" if ($options{debug});
+	}
 	$self->{$hash->{package}} = $hash;
 
 =item system-perl
@@ -402,6 +442,58 @@ END
 		print STDERR "missing /System/Library/Java/Extensions/jai_core.jar\n" if ($options{debug});
 	}
 	$self->{$hash->{package}} = $hash;
+
+=item system-sdk-*
+
+These packages represent the SDKs available in /Developer/SDKs, available
+as part of the XCode tools.
+
+=cut
+
+	my @SDKDIRS = qw(
+		MacOSX10.0.0.sdk
+		MacOSX10.1.0.sdk
+		MacOSX10.2.0.sdk
+		MacOSX10.3.0.sdk
+		MacOSX10.3.9.sdk
+		MacOSX10.4.0.sdk
+	);
+
+	if (opendir(DIR, '/Developer/SDKs')) {
+		push(@SDKDIRS, grep(/MacOSX.*.sdk/, readdir(DIR)));
+		closedir DIR;
+	}
+	for my $dir (sort @SDKDIRS) {
+		if ($dir =~ /MacOSX([\d\.]+)\.sdk/) {
+			my $version = $1;
+			my ($shortversion) = $version =~ /^(\d+\.\d+)/;
+
+			$hash = {};
+			$hash->{version} = $version . '-1';
+			$hash->{package} = "system-sdk-$shortversion";
+			$hash->{status} = STATUS_ABSENT;
+			$hash->{description} = "[virtual package representing the Mac OS X SDKs]";
+			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{builddependsonly} = "true";
+			$hash->{descdetail} = <<END;
+This package represents the Mac OS X $shortversion SDK provided
+by Apple, as part of XCode.  If it does not show as
+installed, you can download XCode from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+			$hash->{compilescript} = &gen_compile_script($hash);
+			if (-d '/Developer/SDKs/' . $dir) {
+				$hash->{status} = STATUS_PRESENT;
+				$self->{$hash->{package}} = $hash;
+			} else {
+				$self->{$hash->{package}} = $hash
+					unless (exists $self->{$hash->{package}}->{status} and $self->{$hash->{package}}->{status} eq STATUS_PRESENT);
+			}
+		}
+	}
 
 =item cctools-I<XXX>
 
@@ -672,19 +764,19 @@ in /usr/lib.
 
 	$hash = {};
 	$hash->{package} = "gimp-print7-shlibs";
-	$hash->{version} = "4.2.6-1";
+	$hash->{version} = "5.0.0-beta2-1";
 	$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
 	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 This package represents the version of Gimp-Print that
 comes with Mac OS X 10.4 and above.  If it shows as not
 installed, you must install the GimpPrintPrinterDrivers
-package that came with your Mac OS X CDs.
+package that came with your Mac OS X DVD.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
 	if ( has_lib('libgimpprint.7.dylib') ) {
-		print STDERR "- found gimp-print7-shlibs 4.2.6-1\n" if ($options{debug});
+		print STDERR "- found gimp-print7-shlibs 5.0.0-beta2-1\n" if ($options{debug});
 		$hash->{status} = STATUS_PRESENT;
 	} else {
 		$hash->{status} = STATUS_ABSENT;
@@ -1040,9 +1132,9 @@ For more info on this package see http://growl.info/.
 				close(FILEIN);
 			}
 		} else {
-				print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
+			print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
  			$growl_version = "0";
-                }
+		}
 
 		### This check is for growl's less then 0.6
 		### Growl team told me 1.0 would be versioned 1.00
@@ -1076,6 +1168,11 @@ display an attractive message on your screen. Growl
 currently works with a growing number of applications.
 
   http://growl.info/
+
+Please note that this virtual package expects you to have
+Growl installed system-wide in the
+/Library/PreferencePanes directory, rather than in a
+per-user ~/Library/PreferencePanes directory.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
