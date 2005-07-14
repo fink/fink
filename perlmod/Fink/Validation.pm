@@ -974,7 +974,7 @@ sub validate_dpkg_file {
 				foreach (qw/ postinst postrm /) {
 					next if $_ eq "postrm" && $deb_control->{package} eq "scrollkeeper"; # circular dep
 					if (not grep { /^\s*scrollkeeper-update/ } @{$deb_control->{$_}}) {
-						print "Warning: scrollkeeper source file found, but scrollkeeper-update not called\nin $_. See scrollkeeper package docs for information. Offending file:\n  $filename\n";
+						print "Warning: scrollkeeper source file found, but scrollkeeper-update not called\nin $_. See scrollkeeper package docs, starting with 'fink info scrollkeeper', for information. Offending file:\n  $filename\n";
 						$looks_good = 0;
 					}
 				}
@@ -1014,7 +1014,7 @@ sub validate_dpkg_file {
 				close(DAEMONIC_FILE) or die "Error on close: ", $?>>8, " $!\n";
 			} elsif ( $filename =~ /^$basepath\/var\/scrollkeeper/ ) {
 				if (not $scrollkeeper_misuse_warned++) {
-					print "Warning: Found $basepath/var/scrollkeeper, which usually results from calling\nscrollkeeper-update during CompileScript or InstallScript. See the\nscrollkeeper package docs for information on the correct use of that utility.\n";
+					print "Warning: Found $basepath/var/scrollkeeper, which usually results from calling\nscrollkeeper-update during CompileScript or InstallScript. See the\nscrollkeeper package docs, starting with 'fink info scrollkeeper', for information on the correct use of that utility.\n";
 					$looks_good = 0;
 				}
 			}
@@ -1071,7 +1071,7 @@ sub validate_dpkg_file {
 	# scrollkeeper-update should be called from PostInstScript and PostRmScript
 	foreach (qw/ preinst prerm /) {
 		if (grep { /^\s*scrollkeeper-update/ } @{$deb_control->{$_}}) {
-			print "Warning: scrollkeeper-update in $_ is a no-op\nSee scrollkeeper package docs for information.\n";
+			print "Warning: scrollkeeper-update in $_ is a no-op\nSee scrollkeeper package docs, starting with 'fink info scrollkeeper', for information.\n";
 			$looks_good = 0;
 		}
 	}

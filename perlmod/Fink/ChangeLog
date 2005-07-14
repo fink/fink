@@ -1,3 +1,12 @@
+2005-07-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Backports: Cleaner SIGINT handler. Remove cruft from
+	fink list section and maintainer searches. Fixed params_matching
+	parameters in dumpinfo. Cleaner -fallversions loop in dumpinfo.
+	* PkgVersion.pm: Backports: Set group of %b and %d. Improved
+	buildlock-removal failure messages. Don't pass MAKEFLAGS env var.
+	* Validation.pm: Backports: Improved scrollkeeper warning msg.
+	
 2005-07-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Bootstrap.pm: Support 10.4.2.

@@ -238,9 +238,11 @@ sub process {
 	if ($pkgflag) {
 		Fink::Package->require_packages();
 	}
-	$::SIG{INT} = sub { die "User interrupt.\n" };
-	eval { &$proc(@args); };
-	$::SIG{INT} = 'DEFAULT';
+	{
+		local $SIG{'INT'} = sub { die "User interrupt.\n" };
+		eval { &$proc(@args); };
+	}
+
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
 	Fink::PkgVersion->clear_buildlock();       # always clean up
 	
@@ -491,14 +493,12 @@ sub do_real_list {
 		}
 		if (defined $section) {
 			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
-			$section =~ s/[\=]?(.*)/$1/;
 		}
 		if (defined $maintainer) {
 			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
 		}
 		if (defined $pkgtree) {
 			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
-#			$pkgtree =~ s/[\=]?(.*)/$1/;    # not sure if needed...
 		}
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
@@ -2123,8 +2123,8 @@ EOF
 						   updatelibtool updatelibtoolindirs
 						   updatepomakefile
 						   patch patchscript /,
-						   $pkg->params_matching(/^set/),
-						   $pkg->params_matching(/^noset/),
+						   $pkg->params_matching("^set"),
+						   $pkg->params_matching("^noset"),
 						   qw/
 						   env
 						   configureparams gcc compilescript noperltests
@@ -2169,11 +2169,12 @@ EOF
 				my $package = Fink::Package->package_by_name($pkgname);
 				my $lversion = &latest_version($package->list_versions());
 				print "$_:\n";
-				foreach (&sort_versions($package->list_versions())) {
+				foreach my $vers (&sort_versions($package->list_versions())) {
+					my $pv = $package->get_version($vers);
 					printf " %1s%1s\t%s\n",
-						( $package->get_version($_)->is_present() or $config->binary_requested() && $package->get_version($_)->is_aptgetable() ) ? "b" : "",
-						$package->get_version($_)->is_installed() ? "i" : "",
-						$_;
+						( $pv->is_present() or $config->binary_requested() && $pv->is_aptgetable() ) ? "b" : "",
+						$pv->is_installed() ? "i" : "",
+						$vers;
 				}
 			} elsif ($_ eq 'description') {
 				printf "%s: %s\n", $_, $pkg->get_shortdescription;

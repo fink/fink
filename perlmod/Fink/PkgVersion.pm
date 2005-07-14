@@ -131,9 +131,9 @@ sub initialize {
 	} else {
 		# for dummy descriptions generated from dpkg status data alone
 		$self->{_patchpath} = "";
-		$self->{_section} = "unknown";
-		$self->{_debpath} = "";
-		$self->{_debpaths} = [];
+		$self->{_section}   = "unknown";
+		$self->{_debpath}   = "";
+		$self->{_debpaths}  = [];
 		
 		# assume "binary" tree
 		$self->{_tree} = "binary";
@@ -605,9 +605,9 @@ sub add_splitoff {
 	}
 	
 	# copy version information
-	$properties->{'version'} = $self->{_version};
+	$properties->{'version'}  = $self->{_version};
 	$properties->{'revision'} = $self->{_revision};
-	$properties->{'epoch'} = $self->{_epoch};
+	$properties->{'epoch'}    = $self->{_epoch};
 	
 	# link the splitoff to its "parent" (=us)
 	$properties->{parent} = $self;
@@ -1190,6 +1190,7 @@ sub find_debfile {
 		}
 	}
 
+	# not found
 	return undef;
 }
 
@@ -1837,8 +1838,11 @@ GCC_MSG
 		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
 		if (Fink::Config::get_option("build_as_nobody")) {
-			chowname 'nobody', $destdir or
-				die "can't chown 'nobody' $destdir\n";
+			chowname 'nobody:nobody', $destdir or
+				die "can't chown 'nobody:nobody' $destdir\n";
+		} else {
+			chowname ':admin', $destdir or
+				die "can't grp 'admin' $destdir\n";
 		}
 		return;
 	}
@@ -1960,8 +1964,11 @@ GCC_MSG
 			mkdir_p $destdir or
 				die "can't create directory $destdir\n";
 			if (Fink::Config::get_option("build_as_nobody")) {
-				chowname 'nobody', $destdir or
-					die "can't chown 'nobody' $destdir\n";
+				chowname 'nobody:nobody', $destdir or
+					die "can't chown 'nobody:nobody' $destdir\n";
+			} else {
+				chowname ':admin', $destdir or
+					die "can't chgrp 'admin' $destdir\n";
 			}
 		}
 
@@ -2072,7 +2079,7 @@ sub phase_patch {
 sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
-
+	
 	# Fix repair permissions bug on Tiger
 	Fink::Services::fix_gcc_repairperms();
 	
@@ -2150,9 +2157,11 @@ sub phase_install {
 	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
-	}
-	if (Fink::Config::get_option("build_as_nobody")) {
-		$install_script .= "/usr/sbin/chown -R nobody \%d\n";
+		if (Fink::Config::get_option("build_as_nobody")) {
+			$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
+		} else {
+			$install_script .= "/usr/sbin/chown -R root:admin \%d\n";
+		}
 	}
 	# Run the script part we have so far
 	$self->run_script($install_script, "installing", 0, 0);
@@ -2358,7 +2367,7 @@ sub phase_build {
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		if (&execute("chown -R root '$destdir'") == 1) {
+		if (&execute("chown -R -h root:admin '$destdir'") == 1) {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
@@ -3154,11 +3163,16 @@ sub clear_buildlock {
 
 	my $old_lock = `dpkg-query -W $lockpkg 2>/dev/null`;
 	chomp $old_lock;
-	if ($old_lock ne "$lockpkg\t$timestamp") {
+	if ($old_lock eq "$lockpkg\t") {
+		&print_breaking("WARNING: The lock was removed by some other process.");
+	} elsif ($old_lock eq '') {
+		# this is weird, man...qpkg-query crashed or lock never got installed
+		&print_breaking("WARNING: Could not read lock timestamp. Not removing it.");
+	} elsif ($old_lock ne "$lockpkg\t$timestamp") {
 		# don't trample some other timestamp's lock
-		&print_breaking("WARNING: The lock has a different timestamp. Not ".
-						" removing it, as it likely belongs to a different ".
-						"fink process. This should not ever happen.");
+		&print_breaking("WARNING: The lock has a different timestamp than the ".
+						"one we set. Not removing it, as it likely belongs to ".
+						"a different fink process.");
 	} else {
 		if (&execute(dpkg_lockwait() . " -r $lockpkg")) {
 			&print_breaking("WARNING: Can't remove package ".
@@ -3281,7 +3295,7 @@ END
 
 	# start with a clean the environment
 	# uncomment this to be able to use distcc -- not officially supported!
-	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 	%script_env = ("HOME" => $ENV{"HOME"});
 
 	# add system path
@@ -3361,7 +3375,7 @@ END
 			$script_env{'CXX'} = 'g++-3.3';
 		}
 	}
-
+		
 	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
 	# it the first g++ in the path
 	unless ($self->has_param('NoSetPATH')) {
