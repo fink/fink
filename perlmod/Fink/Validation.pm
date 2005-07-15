@@ -331,10 +331,10 @@ sub validate_info_file {
 	# determine the base path
 	if (defined $val_prefix) {
 		$basepath = $val_prefix;
-		$buildpath = "$basepath/src";
+		$buildpath = "$basepath/src/fink.build";
 	} else {
 		$basepath = $config->param_default("basepath", "/sw");
-		$buildpath = $config->param_default("buildpath", "$basepath/src");
+		$buildpath = $config->param_default("buildpath", "$basepath/src/fink.build");
 	}
 
 	# make sure have InfoN (N>=2) if use Info2 features
