@@ -1,3 +1,7 @@
+2005-07-15  Daniel Macks  <dmacks@netspace.org>
+
+	* path-prefix-g++-*/g++: deleted; these are created dynamically.
+
 2005-07-13  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in, fink.conf.5.in: sync grammar and explantion improvements w/HEAD
