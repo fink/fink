@@ -1,4 +1,4 @@
-Generated from $Fink: usage.xml,v 1.11 2002/04/13 21:14:22 fingolfin Exp $
+Generated from $Fink: usage.xml,v 1.14 2004/03/05 15:40:26 fingolfin Exp $
 
  Fink Usage
 ============
@@ -17,8 +17,9 @@ windows), so you should also run this command in all Terminal windows that
 you opened before you edited the file. You'll also need to run "rehash"
 because tcsh caches the list of available commands internally.
 
-If you use a Bourne type shell (e.g. sh, bash, zsh), use /sw/bin/init.sh
-instead.
+If you use a Bourne type shell (e.g. sh, bash, zsh), use instead:
+
+   source /sw/bin/init.sh
 
 Note that the scripts also add /usr/X11R6/bin and /usr/X11R6/man to your
 path so you can use X11 when it is installed. Packages have the ability to
@@ -122,13 +123,13 @@ download the tarballs even if they were downloaded before.
 
  fetch-all
 -----------
-Downloads _all_ package source files. Like fetch, this downloads the
-tarballs even when they were downloaded before.
+Downloads all package source files. Like fetch, this downloads the tarballs
+even when they were downloaded before.
 
 
  fetch-missing
 ---------------
-Downloads _all_ package source files. This command will only download files
+Downloads all package source files. This command will only download files
 that are not present on the system.
 
 
@@ -138,7 +139,7 @@ Builds a package, but does not install it. As usual, the source tarballs are
 downloaded if they can not be found. The result of this command is an
 installable .deb package file, which you can quickly install later with the
 install command. This command will do nothing if the .deb already exists.
-Note that dependencies are still _installed_, not just built.
+Note that dependencies are still installed, not just built.
 
 
  rebuild
