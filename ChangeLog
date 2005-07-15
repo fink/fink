@@ -1,3 +1,8 @@
+2005-07-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Add a "clean" target: recursively find .cvsignore
+	files and remove files that are matched by them
+
 2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* VERSION: Make fink HEAD always >> 0.24.x, since that has already

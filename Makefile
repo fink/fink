@@ -30,4 +30,13 @@ test: test_setup
 	@# (which also must be coded into t/Services/execute_nonroot_okay.t)
 	@cd t && ./testmore.pl || find ${TESTS} -name '*.t' | sort | xargs /usr/bin/perl -I${PWD}/perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
+# remove all files that are ignored by CVS
+clean:
+	# BUG: this for...`find` breaks if any dirname relative to the
+	# current one contains whitespace
+	@for ignorefile in `find . -name .cvsignore`; do \
+		echo "cleaning $$ignorefile"; \
+		( cd `dirname $$ignorefile` && rm -f `cat .cvsignore` ); \
+	done
+
 .PHONY: all test install
