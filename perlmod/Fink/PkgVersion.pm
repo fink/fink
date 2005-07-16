@@ -2153,7 +2153,7 @@ sub fetch_source {
 sub phase_unpack {
 	my $self = shift;
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
+	my ($suffix, $verbosity, $answer, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
@@ -2208,9 +2208,9 @@ GCC_MSG
 		return;
 	}
 
-	$tries = 0;
 	my $maxtries = should_skip_prompt('fetch') ? 2 : 3;
 	foreach $suffix ($self->get_source_suffices) {
+		my $tries = 0;
 		$archive = $self->get_tarball($suffix);
 
 		# search for archive, try fetching if not found
@@ -2339,26 +2339,8 @@ GCC_MSG
 		# unpack it
 		chdir $destdir;
 		if (&execute($unpack_cmd, nonroot_okay=>1)) {
-			$tries++;
-
-			# FIXME: this is not the likely problem now since we already checked MD5
-			$answer =
-				&prompt_boolean("Unpacking the file $archive of package ".
-								$self->get_fullname()." failed. The most likely ".
-								"cause for this is a corrupted or incomplete ".
-								"download. Do you want to delete the tarball ".
-								"and download it again?",
-								default => ($tries >= $maxtries) ? 0 : 1,
-								category => 'fetch',);
-			if ($answer) {
-				rm_f $found_archive;
-				redo;		# restart loop with same tarball
-			} else {
-				die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
-			}
+			die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
 		}
-
-		$tries = 0;
 	}
 }
 

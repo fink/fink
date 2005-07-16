@@ -1,3 +1,7 @@
+2005-07-16  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make failed unpacking of source a fatal error.
+
 2005-07-13  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Improve POSIX symbol imports.
