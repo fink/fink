@@ -2153,7 +2153,7 @@ sub fetch_source {
 sub phase_unpack {
 	my $self = shift;
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-	my ($suffix, $verbosity, $answer, $checksum, $continue);
+	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
 
@@ -2208,9 +2208,9 @@ GCC_MSG
 		return;
 	}
 
+	$tries = 0;
 	my $maxtries = should_skip_prompt('fetch') ? 2 : 3;
 	foreach $suffix ($self->get_source_suffices) {
-		my $tries = 0;
 		$archive = $self->get_tarball($suffix);
 
 		# search for archive, try fetching if not found
@@ -2341,6 +2341,8 @@ GCC_MSG
 		if (&execute($unpack_cmd, nonroot_okay=>1)) {
 			die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
 		}
+
+		$tries = 0;
 	}
 }
 
