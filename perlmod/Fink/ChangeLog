@@ -1,5 +1,9 @@
 2005-07-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: cleanup_sources: improved diagnostics.
+
+2005-07-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: cmd_cleanup: also accept less-technical mode names.
 	cleanup_debs: improved diagnostics.
 

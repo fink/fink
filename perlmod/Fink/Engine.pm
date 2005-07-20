@@ -1335,12 +1335,21 @@ sub cleanup_sources {
 
 	my $print_it = $opts{dryrun} || $config->verbosity_level() > 1;
 
+	my $verb;
+	if ($opts{dryrun}) {
+		$verb = 'Obsolete';
+	} elsif ($opts{keep_old}) {
+		$verb = 'Moving obsolete';
+	} else {
+		$verb = 'Removing obsolete';
+	}
+
 	foreach my $file (@old_src_files) {
 		# For now, do *not* remove directories - this could easily kill
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
 		if (-f "$srcdir/$file") {
-				print "Obsolete source: $srcdir/$file\n" if $print_it;
+			print "$verb source: $srcdir/$file\n" if $print_it;
 			if (!$opts{dryrun}) {
 				if ($opts{keep_old}) {
 					rename("$srcdir/$file", "$oldsrcdir/$file") and $file_count++;
