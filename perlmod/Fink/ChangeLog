@@ -1,3 +1,9 @@
+2005-07-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Backports: Host checking deprecates 10.2*, includes
+	i386. No more tar in bootstrap phase 1.
+	* Validation.pm: Backports: Misc fixes, dependency-type-field checking.
+
 2005-07-15 Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: default builddir is now src/fink.build (backport)

@@ -164,17 +164,12 @@ GCC_MSG
 "for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
 	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-8]/) {
-		if (not $gcc =~ /gcc3.3/) {
-             &print_breaking("\nFink no longer supports the old Developer " .
-             "Tools on 10.2. Please update to the August 2003 Developer " .
-             "Tools, and try again.\n");
-							} else {
-		     &print_breaking("This system is supported and tested.");
-		 }
+		&print_breaking("\nThis system is no longer supported " .
+"for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
 		$distribution = "10.2$gcc";
 	} elsif ($host =~ /^powerpc-apple-darwin6\..*/) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made, but should work.");
+		&print_breaking("\nThis system is no longer supported " .
+"for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
 		$distribution = "10.2$gcc";
 	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-9]\.0/) {
 		&print_breaking("This system is supported and tested.");
@@ -374,7 +369,7 @@ The primary bootstrap routine, called by bootstrap.pl.
 sub bootstrap {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
-	my @plist = ("gettext", "tar", "dpkg-bootstrap");
+	my @plist = ("gettext", "dpkg-bootstrap");
 	my ($package_list, $perl_is_supported) = additional_packages();
 	my @addlist = @{$package_list};
 	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless $perl_is_supported;

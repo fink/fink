@@ -50,8 +50,10 @@ our @set_vars =
 	);
 
 # Required fields.
-our @required_fields =
+our @required_fields = map {lc $_}
 	qw(Package Version Revision Maintainer);
+our @splitoff_required_fields = map {lc $_}
+	qw(Package);
 
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
@@ -103,7 +105,7 @@ our %allowed_license_values = map {$_, 1}
 	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL", 
 	 "GPL/GFDL", "LGPL/GFDL", "GPL/LGPL/GFDL", "LDP", "GPL/LGPL/LDP", 
 	 "OSI-Approved", "Public Domain", "Restrictive/Distributable", 
-	 "Restrictive", "Commercial"
+	 "Restrictive", "Commercial", "DFSG-Approved"
 	);
 
 # List of all valid fields, 
@@ -243,7 +245,18 @@ our %splitoff_valid_fields = map {$_, 1}
 		)
 	);
 
-
+# fields that are dpkg "Depends"-style lists of packages
+our %pkglist_fields = map {lc $_, 1}
+	(
+	 'Depends',
+	 'BuildDepends',
+	 'Conflicts',
+	 'BuildConflicts',
+	 'Provides',
+	 'Suggests',
+	 'Recommends',
+	 'Enhances',
+	);
 
 END { }				# module clean-up code here (global destructor)
 
@@ -251,6 +264,7 @@ END { }				# module clean-up code here (global destructor)
 
 #
 # Check a given .deb file for standard compliance
+# returns boolean of whether everything is okay
 # 
 # Should check/verifies the following in .info files:
 #	+ the filename matches %f.info
@@ -274,6 +288,7 @@ END { }				# module clean-up code here (global destructor)
 #   + Warn if shbang in dpkg install-time scripts
 #   + Error if %i used in dpkg install-time scripts
 #   + Warn if non-ASCII chars in any field
+#   + Check syntax of dpkg Depends-style fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -294,7 +309,7 @@ sub validate_info_file {
 	my $val_prefix = shift;
 	my ($properties, @parts);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
-	my ($field, $value);
+	my $value;
 	my ($basepath, $buildpath);
 	my ($type, $type_hash);
 	my $expand = {};
@@ -314,19 +329,17 @@ sub validate_info_file {
 	close INPUT or die "Couldn't read $filename: $!\n";
 	if ($info_file_content =~ m/\r\n/s) {
 		print "Error: Info file has DOS line endings. ($filename)\n";
-		$looks_good = 0;
+		return 0;
 	}
-	return unless ($looks_good);
 	if ($info_file_content =~ m/\r/s) {
 		print "Error: Info file has Mac line endings. ($filename)\n";
-		$looks_good = 0;
+		return 0;
 	}
-	return unless ($looks_good);
 
 	# read the file properties
 	$properties = &read_properties($filename);
 	$properties = Fink::Package->handle_infon_block($properties, $filename);
-	return unless keys %$properties;
+	return 0 unless keys %$properties;
 	
 	# determine the base path
 	if (defined $val_prefix) {
@@ -344,8 +357,7 @@ sub validate_info_file {
 			next if /^splitoff\d*$/;  # SplitOffs checked later
 			if ($properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
 				print "Error: Use of %type_ expansions (field \"$_\") requires InfoN level 2 or higher. ($filename)\n";
-				$looks_good = 0;
-				return;
+				return 0;
 			}
 		}
 	}
@@ -396,7 +408,7 @@ sub validate_info_file {
 	#  - make sure syntax is okay
 	#  - make sure each type appears as a type_*[] in Package
 
-	return unless ($looks_good);
+	return 0 unless ($looks_good);
 
 	#
 	# Now check for other mistakes
@@ -480,7 +492,7 @@ sub validate_info_file {
 	}
 
 	# Loop over all fields and verify them
-	foreach $field (keys %$properties) {
+	foreach my $field (keys %$properties) {
 		$value = $properties->{$field};
 
 		# Warn if field is obsolete
@@ -523,12 +535,12 @@ sub validate_info_file {
 		}
 
 		# Check for any source-related field without associated Source(N) field
-		if ($field =~ /^Source(\d*)-MD5|Source(\d*)Rename|Tar(\d*)FilesRename|Source(\d+)ExtractDir$/i) {
+		if ($field =~ /^Source(\d*)-MD5|Source(\d*)Rename|Tar(\d*)FilesRename|Source(\d+)ExtractDir$/) {
 			my $sourcefield = defined $+  # corresponding Source(N) field
 				? "source$+"
 				: "source";  
 			if (!exists $source_fields{$sourcefield}) {
-				my $msg = $field =~ /-MD5$/i
+				my $msg = $field =~ /-md5$/
 					? "Warning" # no big deal
 					: "Error";  # probably means typo, giving broken behavior
 					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
@@ -552,7 +564,7 @@ sub validate_info_file {
 					if ($splitoff_properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {
 						print "Error: Use of %type_ expansions (field \"$_\" of \"$field\") requires InfoN level 2 or higher. ($filename)\n";
 						$looks_good = 0;
-						return;
+						return 0;
 					}
 				}
 			}
@@ -561,53 +573,23 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 
-			if (exists $splitoff_properties->{shlibs}) {
-				my @shlibs = split /\n/, $splitoff_properties->{shlibs};
-				chomp @shlibs;
-				my %shlibs;
-				foreach (@shlibs) {
-					my @shlibs_parts;
-					if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
-						print "Warning: Malformed line in field \"shlibs\" of \"$field\". ($filename)\n  $_\n";
-						$looks_good = 0;
-						next;
-					}
-					if (not /^(\%p)?\//) {
-						print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\" of \"$field\". ($filename)\n";
-						$looks_good = 0;
-					}
-					if ($shlibs{$shlibs_parts[0]}++) {
-						print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\" of \"$field\". ($filename)\n";
-						$looks_good = 0;
-					}
-					if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
-						print "Warning: Malformed compatibility_version for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
-						$looks_good = 0;
-					}
-					my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
-					foreach (@shlib_deps) {
-						if (not /^[a-z%]\S*\s+\(>=\s*(\S+-\S+)\)$/) {
-							print "Warning: Malformed dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
-							$looks_good = 0;
-							next;
-						}
-						my $shlib_dep_vers = $1;
-						if ($shlib_dep_vers =~ /\%/) {
-							print "Warning: Non-hardcoded version in dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\" of \"$field\". ($filename)\n";
-							$looks_good = 0;
-							next;
-						}
-					}
-				}
-			}
-
 			if (defined ($value = $splitoff_properties->{files})) {
 				if ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/) {
 					print "Warning: Field \"files\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
+						$looks_good = 0;
+					}
+				}
+		} # end of SplitOff field validation
+			}
+
+	# error for having %p/lib in RuntimeVars
+	if (exists $properties->{runtimevars} and defined $properties->{runtimevars}) {
+		for my $line (split(/\n/, $properties->{runtimevars})) {
+			if ($line =~ m,^\s*(DYLD_LIBRARY_PATH:\s+($basepath|\%p)/lib/?)\s*$,) {
+				print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
 					$looks_good = 0;
 				}
 			}
-		} # end of SplitOff field validation
 	}
 
 	# Warn for missing / overlong package descriptions
@@ -720,6 +702,8 @@ sub validate_info_file {
 	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
+
+	return $looks_good;
 }
 
 # checks that are common to a parent and a splitoff package of a .info file
@@ -736,28 +720,28 @@ sub validate_info_component {
 	if (defined $splitoff_field && length $splitoff_field) {
 		$is_splitoff = 1;
 		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
-		@pkg_required_fields = qw(package);
+		@pkg_required_fields = @splitoff_required_fields;
 		%pkg_valid_fields = %splitoff_valid_fields;
 	} else {
 		@pkg_required_fields = @required_fields;
 		%pkg_valid_fields = %valid_fields;
 	}		
 
-	my ($field, $value);
+	my $value;
 	my $looks_good = 1;
 
 	### field-specific checks
 
 	# Verify that all required fields are present
-	foreach $field (@pkg_required_fields) {
-		unless (exists $properties->{lc $field}) {
+	foreach my $field (@pkg_required_fields) {
+		unless (exists $properties->{$field}) {
 			print "Error: Required field \"$field\"$splitoff_field missing. ($filename)\n";
 			$looks_good = 0;
 		}
 	}
 
 	# dpkg install-time script stuff
-	foreach $field (qw/preinstscript postinstscript prermscript postrmscript/) {
+	foreach my $field (qw/preinstscript postinstscript prermscript postrmscript/) {
 		next unless defined ($value = $properties->{$field});
 
 		# A #! line is worthless
@@ -781,7 +765,7 @@ sub validate_info_component {
 
 	### checks that apply to all fields
 
-	foreach $field (keys %$properties) {
+	foreach my $field (keys %$properties) {
 		next if $field =~ /^splitoff/;   # we don't do recursive stuff here
 		$value = $properties->{$field};
 
@@ -814,11 +798,71 @@ sub validate_info_component {
 			}
 		}
 
+		# check dpkg Depends-style field syntax
+		if ($pkglist_fields{$field}) {
+			(my $pkglist = $value) =~ tr/\n//d; # convert to sinle line
+			foreach (split /[,|]/, $pkglist) {
+				# each atom must be  '(optional cond) pkg (optional vers)'
+				unless (/\A\s*(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)\s*\Z/) {
+					print "Warning: invalid dependency \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+				}
+				my $cond = $1;
+				# no logical AND (OR would be split() and give broken atoms)
+				if (defined $cond and $cond =~ /&/) {
+					print "Warning: invalid dependency \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+				}
+			}
+		}
+	}
+
 		# Provides is not versionable
-		if ($field =~ /^provides$/i) {
+	$value = $properties->{provides};
+	if (defined $value) {
 			if ($value =~ /\)\s*(,|\Z)/) {
 				print "Warning: Not allowed to specify version information in \"Provides\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
+			}
+		}
+
+	# check syntax of each line of Shlibs field
+	$value = $properties->{shlibs};
+	if (defined $value) {
+		my @shlibs = split /\n/, $value;
+		my %shlibs;
+		foreach (@shlibs) {
+			next unless /\S/;
+			my @shlibs_parts;
+			if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
+				print "Warning: Malformed line in field \"shlibs\"$splitoff_field. ($filename)\n  $_\n";
+				$looks_good = 0;
+				next;
+			}
+			if (not $shlibs_parts[0] =~ /^(\%p)?\//) {
+				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+			if ($shlibs{$shlibs_parts[0]}++) {
+				print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+			if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
+				print "Warning: Malformed compatibility_version for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+			my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
+			foreach (@shlib_deps) {
+				if (not /^[a-z%]\S*\s+\(>=\s*(\S+-\S+)\)$/) {
+					print "Warning: Malformed dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+					next;
+				}
+				my $shlib_dep_vers = $1;
+				if ($shlib_dep_vers =~ /\%/) {
+					print "Warning: Non-hardcoded version in dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+					next;
+				}
 			}
 		}
 	}
@@ -828,6 +872,7 @@ sub validate_info_component {
 
 #
 # Check a given .deb file for standard compliance
+# returns boolean of whether everything is okay
 #
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
 # - usage of other non-standard subdirs 
@@ -857,10 +902,10 @@ sub validate_dpkg_file {
 	# determine the base path
 	if (defined $val_prefix) {
 		$basepath = $val_prefix;
-		$buildpath = "$basepath/src";
+		$buildpath = "$basepath/src/fink.build";
 	} else {
 		$basepath = $config->param_default("basepath", "/sw");
-		$buildpath = $config->param_default("buildpath", "$basepath/src");
+		$buildpath = $config->param_default("buildpath", "$basepath/src/fink.build");
 	}
 
 	# these are used in a regex and are automatically prepended with ^
@@ -1089,6 +1134,8 @@ sub validate_dpkg_file {
 	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
+
+	return $looks_good;
 }
 
 
