@@ -279,6 +279,11 @@ sub choose_mirrors {
 	my ($keyinfo, $listinfo);
 	my ($mirrorfile, $mirrorname, $mirrortitle);
 	my ($all_mirrors, @mirrors, $site, $mirror_order);
+	my %obsolete_mirrors = ();
+	my ($current_value, $list_of_mirrors, $property_value);
+	my ($mirror_item, $is_obsolete, $obsolete_only);
+	my @mirrors_to_choose;
+	my ($current_prompt, $default_response, $obsolete_question);
 
 	print "\n";
 	&print_breaking("Mirror selection");
@@ -295,8 +300,27 @@ sub choose_mirrors {
 
 		if (!$config->has_param("Mirror-$mirrorname")) {
 			$missing = 1;
+		} else {
+			$current_value = $config->param("Mirror-$mirrorname");
+			$is_obsolete = 1;
+			$list_of_mirrors = &read_properties_multival("$libpath/mirror/$mirrorname");
+			delete $list_of_mirrors->{timestamp};
+		  MIRROR_GEOG_LOOP:
+			foreach $property_value (values %{$list_of_mirrors}) {
+				foreach $mirror_item (@{$property_value}) {
+					if ($current_value eq $mirror_item) {
+						$is_obsolete = 0;
+						last MIRROR_GEOG_LOOP;
+					}
+				}
+			}
+			if ($is_obsolete) {
+				$obsolete_mirrors{$mirrorname} = 1;
+			}
 		}
 	}
+	
+	
 	if (!$missing) {
 		if ($mirrors_postinstall) {
 			# called from dpkg postinst script of fink-mirrors pkg
@@ -310,50 +334,78 @@ sub choose_mirrors {
 								default => 0);
 		}
 		if (!$answer) {
-			return 1;
+			if (%obsolete_mirrors) {
+				$obsolete_question = "One or more of your mirrors is set to a value which is not on the current list of mirror choices.  Do you want to leave these as you have set them?";
+				if ($mirrors_postinstall) {
+					$obsolete_only = !&prompt_boolean($obsolete_question, default => 0, timeout => 60);
+				} else {
+					$obsolete_only = !&prompt_boolean($obsolete_question, default => 0);
+				}
+			}
+			if (!$obsolete_only) {
+				return 1;
+			}
 		}
 	}
 	
-	$mirror_order = &prompt_selection(
-		"What mirror order should fink use when downloading sources?",
-		intro   => "The Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
-		           "the sources for all fink packages. You can choose to use these mirrors first, ".
-		           "last, never, or mixed in with regular mirrors. If you don't care, just select the default.",
-		default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
-		choices => [
-			"Search \"Master\" source mirrors first." => "MasterFirst",
-			"Search \"Master\" source mirrors last." => "MasterLast",
-			"Never use \"Master\" source mirrors." => "MasterNever",
-			"Search closest source mirrors first. (combine all mirrors into one set)"
-				=> "ClosestFirst"
-		]);
-	$config->set_param("MirrorOrder", $mirror_order);
+	if ((!$obsolete_only) or (!$config->has_param("MirrorOrder"))) {	
+		$mirror_order = &prompt_selection(
+			"What mirror order should fink use when downloading sources?",
+			intro   => "The Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
+					   "the sources for all fink packages. You can choose to use these mirrors first, ".
+					   "last, never, or mixed in with regular mirrors. If you don't care, just select the default.",
+			default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
+			choices => [
+				"Search \"Master\" source mirrors first." => "MasterFirst",
+				"Search \"Master\" source mirrors last." => "MasterLast",
+				"Never use \"Master\" source mirrors." => "MasterNever",
+				"Search closest source mirrors first. (combine all mirrors into one set)"
+					=> "ClosestFirst"
+			]);
+		$config->set_param("MirrorOrder", $mirror_order);
+	} else {
+		$mirror_order = $config->param("MirrorOrder");
+	}
 	
 	### step 1: choose a continent
-	$continent = &prompt_selection("Your continent?",
-		intro   => "Choose a continent:",
-		default => [ value => $config->param_default("MirrorContinent", "-") ],
-		choices => [
-			map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
-				sort keys %$keyinfo
-		]
-	);
-	$config->set_param("MirrorContinent", $continent);
+	if ((!$obsolete_only) or (!$config->has_param("MirrorContinent"))) {	
+		$continent = &prompt_selection("Your continent?",
+			intro   => "Choose a continent:",
+			default => [ value => $config->param_default("MirrorContinent", "-") ],
+			choices => [
+				map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
+					sort keys %$keyinfo
+			]
+		);
+		$config->set_param("MirrorContinent", $continent);
+	} else {
+		$continent = $config->param("MirrorContinent");
+	}
 
 	### step 2: choose a country
-	$country = &prompt_selection("Your country?",
-		intro   => "Choose a country:",
-		default => [ value => $config->param_default("MirrorCountry", $continent) ],
-		choices => [
-			"No selection - display all mirrors on the continent" => $continent,
-			map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo
-		]
-	);
-	$config->set_param("MirrorCountry", $country);
+	if ((!$obsolete_only) or (!$config->has_param("MirrorCountry"))) {	
+		$country = &prompt_selection("Your country?",
+			intro   => "Choose a country:",
+			default => [ value => $config->param_default("MirrorCountry", $continent) ],
+			choices => [
+				"No selection - display all mirrors on the continent" => $continent,
+				map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo
+			]
+		);
+		$config->set_param("MirrorCountry", $country);
+	} else {
+		$country = $config->param("MirrorCountry");
+	}
 
 	### step 3: mirrors
 
-	foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
+	if ($obsolete_only) {
+		@mirrors_to_choose = keys %obsolete_mirrors;
+	} else {
+		@mirrors_to_choose = split(/\s+/, $listinfo->{order});
+	}
+
+	foreach $mirrorname (@mirrors_to_choose) {
 		next if $mirrorname =~ /^\s*$/;
 
 		$mirrorfile = "$libpath/mirror/$mirrorname";
@@ -366,9 +418,16 @@ sub choose_mirrors {
 
 		@mirrors = ();
 
+		if ($obsolete_mirrors{$mirrorname}) {
+			$current_prompt = "Current setting (not on current list of mirrors):\n\t\t ";
+			$default_response = 2;
+		} else {
+			$current_prompt = "Current setting:";
+			$default_response = 1;
+		}
 		$def_value = $config->param_default("Mirror-$mirrorname", "");
 		if ($def_value) {
-			push @mirrors, ( "Current setting: $def_value" => $def_value );
+			push @mirrors, ( "$current_prompt $def_value" => $def_value );
 		}
 
 		if (exists $all_mirrors->{primary}) {
@@ -381,10 +440,12 @@ sub choose_mirrors {
 			push @mirrors, map { ( $keyinfo->{$continent}.": $_" => $_ ) } @{$all_mirrors->{$continent}};
 		}
 
+		my @timeout = $mirrors_postinstall ? (timeout => 60) : (); 
 		$answer = &prompt_selection("Mirror for $mirrortitle?",
 						intro   => "Choose a mirror for '$mirrortitle':",
 						default => [ number => 1 ],
-						choices => \@mirrors );
+						choices => \@mirrors,
+						@timeout,);
 		$config->set_param("Mirror-$mirrorname", $answer);
 	}
 
