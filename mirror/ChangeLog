@@ -1,6 +1,43 @@
-2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+2006-07-18 Max Horn  <max@quendi.de>
 
-	* all: Sync with 0.24.4.1
+	* debian: Fixed primary mirror URL; updated list to most current.
+
+2005-04-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* apt: switch from sourceforge to bindist.finkmirrors.net
+	* VERSION: releasing version 0.24.4.1 of fink-mirrors
+
+2005-04-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+	* _keys: added Colombia
+
+2005-04-16  David H <dmalloc@users.sourceforge.net>
+	* rsync: Clean up of dead and unmaintained mirrors
+
+2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: releasing version 0.24.3.1 of fink-mirrors
+
+2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink-mirrors.info.in: allow multiple replacements of @PREFIX@
+	* postinstall.pl.in: back up fink.conf before updating configuration
+
+2005-03-03  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Automatic compatibility for when enhanced
+	choose_mirrors is released.
+
+2005-03-03  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Prepare for enhanced choose_mirrors functionality
+
+2005-03-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* README.buildsystem, fink-mirrors.info.in: minor revision to buildsystem
+
+2005-02-25 David H <dmalloc@users.sourceforge.net>
+	* master, rsync: New mirror in Mississippi
+	rsync as well as distfiles, thanks to mdjoy@phy.olemiss.edu
 
 2005-01-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
