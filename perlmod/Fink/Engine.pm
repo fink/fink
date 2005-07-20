@@ -1229,7 +1229,7 @@ sub cmd_cleanup {
 		'dry-run|d'  => \$opts{dryrun}
 	) or die "fink cleanup: unknown option\nType 'fink cleanup --help' for more information.\n";
 
-	if ($wanthelp) {
+	if ($wanthelp || ! scalar(grep {$_} values %modes)) {
 		require Fink::FinkVersion;
 		my $version = Fink::FinkVersion::fink_version();
 
@@ -1391,26 +1391,21 @@ sub cleanup_debs {
 		}
 	}
 	
-	my $print_it = $opts{dryrun} || $config->verbosity_level() > 1;
-
 	# Handle obsolete debs (files matching the glob *.deb that are not
 	# associated with an active package description)
-	my $kill_obsolete_debs = $opts{dryrun}
-		? sub {
+	my $kill_obsolete_debs = <<'EOFUNC';
+		sub {
 			if (/^.*\.deb\z/s ) {
 				if (not $deb_list{$File::Find::name}) {
-					print "Obsolete deb: $File::Find::name\n" if $print_it;
-					unlink $File::Find::name and $file_count++;
+					print "Obsolete deb: $File::Find::name\n";  # PRINT_IT
+					unlink $File::Find::name and $file_count++;  # UNLINK_IT
 				}
 			}
 		}
-		: sub {
-			if (/^.*\.deb\z/s ) {
-				if (not $deb_list{$File::Find::name}) {
-					print "Obsolete deb: $File::Find::name\n";
-				}
-			}
-		};
+EOFUNC
+	$kill_obsolete_debs =~ s/.*PRINT_IT// unless $opts{dryrun} || $config->verbosity_level() > 1;
+	$kill_obsolete_debs =~ s/.*UNLINK_IT// if $opts{dryrun};
+	$kill_obsolete_debs = eval $kill_obsolete_debs;
 	$file_count = 0;
 	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
 	if (!$opts{dryrun}) {

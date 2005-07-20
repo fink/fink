@@ -1,5 +1,10 @@
 2005-07-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: cleanup requires one or more modes. Move
+	constant-valued conditional checks out of a File::Find function.
+
+2005-07-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: cleanup_* display file-lists also if verbosity>1
 
 2005-07-20  Daniel Macks  <dmacks@netspace.org>
