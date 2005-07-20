@@ -1221,12 +1221,12 @@ sub cmd_cleanup {
 	@ARGV=@_;
 	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
 	GetOptions(
-		'srcs'       => \$modes{srcs},
-		'debs'       => \$modes{debs},
-		'bl'         => \$modes{bl},
-		'keep-src|k' => \$opts{keep_old},
-		'help|h'     => \$wanthelp,
-		'dry-run|d'  => \$opts{dryrun}
+		'sources|srcs'  => \$modes{srcs},
+		'debs'          => \$modes{debs},
+		'buildlocks|bl' => \$modes{bl},
+		'keep-src|k'    => \$opts{keep_old},
+		'help|h'        => \$wanthelp,
+		'dry-run|d'     => \$opts{dryrun}
 	) or die "fink cleanup: unknown option\nType 'fink cleanup --help' for more information.\n";
 
 	if ($wanthelp || ! scalar(grep {$_} values %modes)) {
@@ -1240,8 +1240,10 @@ Usage: fink cleanup [mode(s) and options]
 
 One or more of the following modes must be specified:
   --debs  - Delete .deb (compiled binary package) files
-  --srcs  - Delete source files
-  --bl    - Delete buildlock packages (not implemented)
+  --sources, -srcs
+          - Delete source files
+  --buildlocks, --bl
+          - Delete buildlock packages (not implemented)
 
 Options:
   -k, --keep-src  - Move old source files to $basepath/src/old/ instead
@@ -1397,15 +1399,21 @@ sub cleanup_debs {
 		sub {
 			if (/^.*\.deb\z/s ) {
 				if (not $deb_list{$File::Find::name}) {
-					print "Obsolete deb: $File::Find::name\n";  # PRINT_IT
+					print "REMOVE deb: $File::Find::name\n";  # PRINT_IT
 					unlink $File::Find::name and $file_count++;  # UNLINK_IT
 				}
 			}
 		}
 EOFUNC
+	$opts{dryrun}
+		? $kill_obsolete_debs =~ s/REMOVE/Obsolete/
+		: $kill_obsolete_debs =~ s/REMOVE/Removing obsolete/;
 	$kill_obsolete_debs =~ s/.*PRINT_IT// unless $opts{dryrun} || $config->verbosity_level() > 1;
 	$kill_obsolete_debs =~ s/.*UNLINK_IT// if $opts{dryrun};
 	$kill_obsolete_debs = eval $kill_obsolete_debs;
+#	use B::Deparse;
+#	my $deparser = new B::Deparse;
+#	print "sub ", $deparser->coderef2text($kill_obsolete_debs), "\n";
 	$file_count = 0;
 	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
 	if (!$opts{dryrun}) {
@@ -1421,7 +1429,7 @@ EOFUNC
 		# the to the .deb files we just deleted
 		my $kill_broken_links = sub {
 			if(-l && !-e) {
-				unlink $File::Find::name and $file_count;
+				unlink $File::Find::name and $file_count++;
 			}
 		};
 		$file_count = 0;
