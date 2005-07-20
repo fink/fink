@@ -1294,7 +1294,7 @@ actually being deleted.
 =cut
 
 sub cleanup_sources {
-	my %opts = (dryrun => 0, @_);
+	my %opts = (dryrun => 0, keep_old => 0, @_);
 
 	my $srcdir = "$basepath/src";
 	my $oldsrcdir = "$srcdir/old";
@@ -1331,15 +1331,15 @@ sub cleanup_sources {
 		}
 	}
 
+	my $print_it = $opts{dryrun} || $config->verbosity_level() > 1;
+
 	foreach my $file (@old_src_files) {
 		# For now, do *not* remove directories - this could easily kill
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
 		if (-f "$srcdir/$file") {
-			if ($opts{dryrun}) {
-				print "Obsolete source: $srcdir/$file\n";
-				$file_count++;
-			} else {
+				print "Obsolete source: $srcdir/$file\n" if $print_it;
+			if (!$opts{dryrun}) {
 				if ($opts{keep_old}) {
 					rename("$srcdir/$file", "$oldsrcdir/$file") and $file_count++;
 				} else {
@@ -1348,11 +1348,11 @@ sub cleanup_sources {
 			}
 		}
 	}
-
-	print 'Obsolete sources ',
-		  ($opts{dryrun} ? 'would be ' : ''),
-		  ($opts{keep_old} ? "moved to $oldsrcdir" : "deleted from $srcdir"),
-		  ": $file_count\n\n";
+	if (!$opts{dryrun}) {
+		print 'Obsolete sources ',
+			  ($opts{keep_old} ? "moved to $oldsrcdir" : "deleted from $srcdir"),
+			  ": $file_count\n\n";
+	}
 }
 
 =item cleanup_debs
@@ -1391,12 +1391,15 @@ sub cleanup_debs {
 		}
 	}
 	
+	my $print_it = $opts{dryrun} || $config->verbosity_level() > 1;
+
 	# Handle obsolete debs (files matching the glob *.deb that are not
 	# associated with an active package description)
 	my $kill_obsolete_debs = $opts{dryrun}
 		? sub {
 			if (/^.*\.deb\z/s ) {
 				if (not $deb_list{$File::Find::name}) {
+					print "Obsolete deb: $File::Find::name\n" if $print_it;
 					unlink $File::Find::name and $file_count++;
 				}
 			}
@@ -1405,15 +1408,16 @@ sub cleanup_debs {
 			if (/^.*\.deb\z/s ) {
 				if (not $deb_list{$File::Find::name}) {
 					print "Obsolete deb: $File::Find::name\n";
-					$file_count++;
 				}
 			}
 		};
 	$file_count = 0;
 	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
-	print "Obsolete deb packages ",
-		  ($opts{dryrun} ? "found in" : "deleted from"),
-		  "fink trees: $file_count\n\n";
+	if (!$opts{dryrun}) {
+		print "Obsolete deb packages ",
+			  ($opts{dryrun} ? "found in" : "deleted from"),
+			  "fink trees: $file_count\n\n";
+	}
 	
 	if ($opts{dryrun}) {
 		print "Skipping symlink cleanup in dryrun mode\n";

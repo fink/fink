@@ -1,5 +1,9 @@
 2005-07-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: cleanup_* display file-lists also if verbosity>1
+
+2005-07-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Overhaul cmd_cleanup: cmdline opts control what is
 	cleaned; move each type of cleaning into its own cleanup_*
 	function; implement --dry-run
