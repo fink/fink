@@ -1,3 +1,7 @@
+2005-07-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Support 10.4.2.
+
 2005-06-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Configure.pm, Config.pm: backport Spotlight warning
