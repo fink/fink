@@ -1,3 +1,7 @@
+2005-07-21  Daniel Macks  <dmacks@netspace.org>
+
+	* apt.*, dpkg*.*: latest version from HEAD
+
 2005-07-13  Daniel Macks  <dmacks@netspace.org>
 
 	* base-files.info, fink-mirrors.info: Latest version

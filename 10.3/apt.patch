@@ -1,6 +1,6 @@
-diff -uNbr apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
---- apt-0.5.4.orig/apt-inst/makefile	Tue Feb 27 13:16:05 2001
-+++ apt-0.5.4/apt-inst/makefile	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
+--- apt-0.5.4.orig/apt-inst/makefile	2001-02-27 13:16:05.000000000 +0900
++++ apt-0.5.4/apt-inst/makefile	2005-03-08 13:00:37.000000000 +0900
 @@ -10,6 +10,7 @@
  include ../buildlib/defaults.mak
  
@@ -9,9 +9,9 @@ diff -uNbr apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
  LIBRARY=apt-inst
  LIBEXT=$(GLIBC_VER)$(LIBSTDCPP_VER)
  MAJOR=1.0
-diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap.cc
---- apt-0.5.4.orig/apt-pkg/contrib/mmap.cc	Sun May 27 14:19:30 2001
-+++ apt-0.5.4/apt-pkg/contrib/mmap.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap.cc
+--- apt-0.5.4.orig/apt-pkg/contrib/mmap.cc	2001-05-27 14:19:30.000000000 +0900
++++ apt-0.5.4/apt-pkg/contrib/mmap.cc	2005-03-08 13:00:37.000000000 +0900
 @@ -41,7 +41,7 @@
  // ---------------------------------------------------------------------
  /* */
@@ -89,7 +89,7 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap
     return true;
  }
  									/*}}}*/
-@@ -133,11 +153,13 @@
+@@ -133,12 +153,14 @@
     if ((Flags & UnMapped) == UnMapped)
        return true;
     
@@ -99,13 +99,14 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.cc apt-0.5.4/apt-pkg/contrib/mmap
     if ((Flags & ReadOnly) != ReadOnly)
        if (msync((char *)Base+(int)(Start/PSize)*PSize,Stop - Start,MS_SYNC) != 0)
  	 return _error->Errno("msync","Unable to write mmap");
-+#endif   
  #endif   
++#endif   
     return true;
  }
-diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.h apt-0.5.4/apt-pkg/contrib/mmap.h
---- apt-0.5.4.orig/apt-pkg/contrib/mmap.h	Mon May 14 14:16:43 2001
-+++ apt-0.5.4/apt-pkg/contrib/mmap.h	Wed Jul  2 08:37:41 2003
+ 									/*}}}*/
+diff -urN apt-0.5.4.orig/apt-pkg/contrib/mmap.h apt-0.5.4/apt-pkg/contrib/mmap.h
+--- apt-0.5.4.orig/apt-pkg/contrib/mmap.h	2001-05-14 14:16:43.000000000 +0900
++++ apt-0.5.4/apt-pkg/contrib/mmap.h	2005-03-08 13:00:38.000000000 +0900
 @@ -46,6 +46,7 @@
     unsigned long Flags;
     unsigned long iSize;
@@ -114,9 +115,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/contrib/mmap.h apt-0.5.4/apt-pkg/contrib/mmap.
  
     bool Map(FileFd &Fd);
     bool Close(bool DoSync = true);
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debindexfile.cc
---- apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc	Sun Apr 29 14:13:51 2001
-+++ apt-0.5.4/apt-pkg/deb/debindexfile.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debindexfile.cc
+--- apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc	2001-04-29 14:13:51.000000000 +0900
++++ apt-0.5.4/apt-pkg/deb/debindexfile.cc	2005-03-08 13:00:38.000000000 +0900
 @@ -505,3 +505,11 @@
  }
  
@@ -129,10 +130,10 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debi
 +  (void)_apt_Pkg;
 +  (void)_apt_Status;
 +}
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsystem.cc
---- apt-0.5.4.orig/apt-pkg/deb/debsystem.cc	Sun Apr 29 14:13:51 2001
-+++ apt-0.5.4/apt-pkg/deb/debsystem.cc	Mon Jul  7 13:31:04 2003
-@@ -27,6 +27,106 @@
+diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsystem.cc
+--- apt-0.5.4.orig/apt-pkg/deb/debsystem.cc	2001-04-29 14:13:51.000000000 +0900
++++ apt-0.5.4/apt-pkg/deb/debsystem.cc	2005-03-08 13:50:12.000000000 +0900
+@@ -27,6 +27,109 @@
  #include <dirent.h>
  #include <errno.h>
  									/*}}}*/
@@ -144,6 +145,8 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
 +
 +extern void init_deb2();
 +extern void init_deb3();
++
++#define FINKSTATUSFILE "/tmp/finkaptstatus"
 +
 +struct versionrevision {
 +  unsigned long epoch;
@@ -201,9 +204,10 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
 +    goto BAIL;
 +  
 +  /* Try to read the system version from it. */
-+  status = CFDictionaryGetValueIfPresent( propertyList,
-+		CFSTR("ProductVersion"),
-+		(void*)&string);
++  status = CFDictionaryGetValueIfPresent( 
++		(CFDictionaryRef) propertyList,
++		(const void *) CFSTR("ProductVersion"),
++		(const void**) &string);
 +  if (!status)
 +    goto BAIL;
 +  
@@ -239,15 +243,16 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
  
  debSystem debSys;
  
-@@ -48,6 +148,7 @@
+@@ -48,6 +151,8 @@
  debSystem::~debSystem()
  {
     delete StatusFile;
 +   delete FinkStatusFile;
++   unlink(FINKSTATUSFILE);
  }
  									/*}}}*/
  // System::Lock - Get the lock						/*{{{*/
-@@ -161,8 +262,8 @@
+@@ -161,8 +266,8 @@
        which is yet to be determined. The functions in pkgcachegen should
        be the only users of these */
     Cnf.CndSet("Dir::State::userstatus","status.user"); // Defunct
@@ -258,7 +263,7 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
     
     return true;
  }
-@@ -185,9 +286,9 @@
+@@ -185,9 +290,9 @@
  signed debSystem::Score(Configuration const &Cnf)
  {
     signed Score = 0;
@@ -270,12 +275,12 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
        Score += 10;
     if (FileExists("/etc/debian_version") == true)
        Score += 10;
-@@ -202,6 +303,44 @@
+@@ -202,6 +307,44 @@
     if (StatusFile == 0)
        StatusFile = new debStatusIndex(_config->FindFile("Dir::State::status"));
     List.push_back(StatusFile);
 +/* FINK LOCAL begin */
-+#define FINKSTATUSFILE "/tmp/finkaptstatus"
++
 +   if (FinkStatusFile == 0) {
 +      struct stat unused_sbuf;
 +      int sys_ok=0;
@@ -315,20 +320,20 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyst
     return true;
  }
  									/*}}}*/
-@@ -216,6 +355,10 @@
-    if (StatusFile->FindInCache(*File.Cache()) == File)
+@@ -217,6 +360,10 @@
     {
        Found = StatusFile;
-+      return true;
+       return true;
 +   }  else if ((FinkStatusFile != 0) && (FinkStatusFile->FindInCache(*File.Cache()) == File))
 +   {
 +      Found = FinkStatusFile;
-       return true;
++      return true;
     }
     
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.h apt-0.5.4/apt-pkg/deb/debsystem.h
---- apt-0.5.4.orig/apt-pkg/deb/debsystem.h	Sun Apr 29 14:13:51 2001
-+++ apt-0.5.4/apt-pkg/deb/debsystem.h	Wed Jul  2 08:37:41 2003
+    return false;
+diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.h apt-0.5.4/apt-pkg/deb/debsystem.h
+--- apt-0.5.4.orig/apt-pkg/deb/debsystem.h	2001-04-29 14:13:51.000000000 +0900
++++ apt-0.5.4/apt-pkg/deb/debsystem.h	2005-03-08 13:00:38.000000000 +0900
 @@ -25,6 +25,7 @@
     bool CheckUpdates();
     
@@ -337,9 +342,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debsystem.h apt-0.5.4/apt-pkg/deb/debsyste
     
     public:
  
-diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debversion.cc apt-0.5.4/apt-pkg/deb/debversion.cc
---- apt-0.5.4.orig/apt-pkg/deb/debversion.cc	Mon May  7 14:14:53 2001
-+++ apt-0.5.4/apt-pkg/deb/debversion.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-pkg/deb/debversion.cc apt-0.5.4/apt-pkg/deb/debversion.cc
+--- apt-0.5.4.orig/apt-pkg/deb/debversion.cc	2001-05-07 14:14:53.000000000 +0900
++++ apt-0.5.4/apt-pkg/deb/debversion.cc	2005-03-08 13:00:38.000000000 +0900
 @@ -24,6 +24,11 @@
  
  debVersioningSystem debVS;
@@ -352,9 +357,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/deb/debversion.cc apt-0.5.4/apt-pkg/deb/debver
  // debVS::debVersioningSystem - Constructor				/*{{{*/
  // ---------------------------------------------------------------------
  /* */
-diff -uNbr apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
---- apt-0.5.4.orig/apt-pkg/init.cc	Tue Mar 13 15:51:46 2001
-+++ apt-0.5.4/apt-pkg/init.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
+--- apt-0.5.4.orig/apt-pkg/init.cc	2001-03-13 15:51:46.000000000 +0900
++++ apt-0.5.4/apt-pkg/init.cc	2005-03-08 13:00:38.000000000 +0900
 @@ -15,6 +15,8 @@
  #include <apti18n.h>
  #include <config.h>
@@ -391,9 +396,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
     Sys = 0;
     string Label = Cnf.Find("Apt::System","");
     if (Label.empty() == false)
-diff -uNbr apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
---- apt-0.5.4.orig/apt-pkg/policy.cc	Mon May 28 08:40:56 2001
-+++ apt-0.5.4/apt-pkg/policy.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
+--- apt-0.5.4.orig/apt-pkg/policy.cc	2001-05-28 08:40:56.000000000 +0900
++++ apt-0.5.4/apt-pkg/policy.cc	2005-03-08 13:00:38.000000000 +0900
 @@ -183,7 +183,7 @@
     Pin *P = 0;
     
@@ -412,9 +417,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
        }
        else
        {
-diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.cc apt-0.5.4/apt-pkg/tagfile.cc
---- apt-0.5.4.orig/apt-pkg/tagfile.cc	Mon May 14 14:56:26 2001
-+++ apt-0.5.4/apt-pkg/tagfile.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-pkg/tagfile.cc apt-0.5.4/apt-pkg/tagfile.cc
+--- apt-0.5.4.orig/apt-pkg/tagfile.cc	2001-05-14 14:56:26.000000000 +0900
++++ apt-0.5.4/apt-pkg/tagfile.cc	2005-03-08 13:00:38.000000000 +0900
 @@ -197,7 +197,7 @@
        return false;
     
@@ -440,9 +445,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.cc apt-0.5.4/apt-pkg/tagfile.cc
  	 return true;
        }
        
-diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.h apt-0.5.4/apt-pkg/tagfile.h
---- apt-0.5.4.orig/apt-pkg/tagfile.h	Sun Apr 22 14:42:52 2001
-+++ apt-0.5.4/apt-pkg/tagfile.h	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/apt-pkg/tagfile.h apt-0.5.4/apt-pkg/tagfile.h
+--- apt-0.5.4.orig/apt-pkg/tagfile.h	2001-04-22 14:42:52.000000000 +0900
++++ apt-0.5.4/apt-pkg/tagfile.h	2005-03-08 13:00:38.000000000 +0900
 @@ -34,7 +34,7 @@
     
     // We have a limit of 256 tags per section.
@@ -452,9 +457,9 @@ diff -uNbr apt-0.5.4.orig/apt-pkg/tagfile.h apt-0.5.4/apt-pkg/tagfile.h
     
     unsigned int TagCount;
       
-diff -uNbr apt-0.5.4.orig/buildlib/environment.mak.in apt-0.5.4/buildlib/environment.mak.in
---- apt-0.5.4.orig/buildlib/environment.mak.in	Tue May 29 14:11:03 2001
-+++ apt-0.5.4/buildlib/environment.mak.in	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/buildlib/environment.mak.in apt-0.5.4/buildlib/environment.mak.in
+--- apt-0.5.4.orig/buildlib/environment.mak.in	2001-05-29 14:11:03.000000000 +0900
++++ apt-0.5.4/buildlib/environment.mak.in	2005-03-08 13:00:38.000000000 +0900
 @@ -11,8 +11,8 @@
  LIBSTDCPP_VER = @LIBSTDCPP_VER@
  
@@ -487,9 +492,9 @@ diff -uNbr apt-0.5.4.orig/buildlib/environment.mak.in apt-0.5.4/buildlib/environ
 +SONAME_MAGIC=-install_name @PREFIX@/lib/
 +LFLAGS_SO=-dynamiclib
  	
-diff -uNbr apt-0.5.4.orig/buildlib/library.mak apt-0.5.4/buildlib/library.mak
---- apt-0.5.4.orig/buildlib/library.mak	Tue Feb 27 13:16:05 2001
-+++ apt-0.5.4/buildlib/library.mak	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/buildlib/library.mak apt-0.5.4/buildlib/library.mak
+--- apt-0.5.4.orig/buildlib/library.mak	2001-02-27 13:16:05.000000000 +0900
++++ apt-0.5.4/buildlib/library.mak	2005-03-08 13:00:38.000000000 +0900
 @@ -15,17 +15,17 @@
  # See defaults.mak for information about LOCAL
  
@@ -542,9 +547,9 @@ diff -uNbr apt-0.5.4.orig/buildlib/library.mak apt-0.5.4/buildlib/library.mak
  	   $(filter %.opic,$^) \
  	   $($(@F)-SLIBS) 
  
-diff -uNbr apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
---- apt-0.5.4.orig/buildlib/ostable	Tue Feb 20 16:03:17 2001
-+++ apt-0.5.4/buildlib/ostable	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
+--- apt-0.5.4.orig/buildlib/ostable	2001-02-20 16:03:17.000000000 +0900
++++ apt-0.5.4/buildlib/ostable	2005-03-08 13:00:38.000000000 +0900
 @@ -14,6 +14,7 @@
  hp-hpux[^-]*	    hp-ux
  sun-solaris[^-]*    solaris
@@ -553,9 +558,9 @@ diff -uNbr apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
  
  # Catch all
  .*	unknown
-diff -uNbr apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
---- apt-0.5.4.orig/cmdline/apt-cache.cc	Mon Jul  2 09:10:32 2001
-+++ apt-0.5.4/cmdline/apt-cache.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
+--- apt-0.5.4.orig/cmdline/apt-cache.cc	2001-07-02 09:10:32.000000000 +0900
++++ apt-0.5.4/cmdline/apt-cache.cc	2005-03-08 13:00:38.000000000 +0900
 @@ -374,8 +374,10 @@
     if (ReadPinFile(Plcy) == false)
        return false;
@@ -578,9 +583,9 @@ diff -uNbr apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
  
     // Iterate over all the package files and write them out.
     char *Buffer = new char[Cache.HeaderP->MaxVerFileSize+10];
-diff -uNbr apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
---- apt-0.5.4.orig/cmdline/apt-get.cc	Mon Jul  2 07:59:04 2001
-+++ apt-0.5.4/cmdline/apt-get.cc	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
+--- apt-0.5.4.orig/cmdline/apt-get.cc	2001-07-02 07:59:04.000000000 +0900
++++ apt-0.5.4/cmdline/apt-get.cc	2005-03-08 13:00:38.000000000 +0900
 @@ -113,6 +113,8 @@
        return true;
     }
@@ -606,9 +611,110 @@ diff -uNbr apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
  		     else
  			out << _("but it is a virtual package");
  		  }		  
-diff -uNbr apt-0.5.4.orig/configure apt-0.5.4/configure
---- apt-0.5.4.orig/configure	Sun Aug 19 09:46:43 2001
-+++ apt-0.5.4/configure	Wed Jul  2 08:37:41 2003
+@@ -569,7 +578,9 @@
+       return false;
+    
+    // Nothing is broken
+-   if (DCache->BrokenCount() == 0 || AllowBroken == true)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (DCache->BrokenCount() == 0 || AllowBroken == true
++       || _config->FindB("APT::Get::Ignore-Breakage") == true)
+       return true;
+ 
+    // Attempt to fix broken things
+@@ -634,7 +645,9 @@
+    Stats(c1out,Cache);
+    
+    // Sanity check
+-   if (Cache->BrokenCount() != 0)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (Cache->BrokenCount() != 0
++       && _config->FindB("APT::Get::Ignore-Breakage",false) == false)
+    {
+       ShowBroken(c1out,Cache,false);
+       return _error->Error("Internal Error, InstallPackages was called with broken packages!");
+@@ -1019,7 +1032,9 @@
+       ExpectedInst++;
+    
+    // Install it with autoinstalling enabled.
+-   if (State.InstBroken() == true && BrokenFix == false)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (State.InstBroken() == true && BrokenFix == false
++      && _config->FindB("APT::Get::Ignore-Breakage") == false)
+       Cache.MarkInstall(Pkg,true);
+    return true;
+ }
+@@ -1366,7 +1381,9 @@
+    /* If we are in the Broken fixing mode we do not attempt to fix the
+       problems. This is if the user invoked install without -f and gave
+       packages */
+-   if (BrokenFix == true && Cache->BrokenCount() != 0)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (BrokenFix == true && Cache->BrokenCount() != 0
++       && _config->FindB("APT::Get::Ignore-Breakage") == false)
+    {
+       c1out << _("You might want to run `apt-get -f install' to correct these:") << endl;
+       ShowBroken(c1out,Cache,false);
+@@ -1376,11 +1393,13 @@
+    
+    // Call the scored problem resolver
+    Fix.InstallProtect();
+-   if (Fix.Resolve(true) == false)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (_config->FindB("APT::Get::Ignore-Breakage") == false && Fix.Resolve(true) == false)
+       _error->Discard();
+ 
+    // Now we check the state of the packages,
+-   if (Cache->BrokenCount() != 0)
++   // FINK LOCAL added APT::Get::Ignore-Breakage test
++   if (Cache->BrokenCount() != 0 && _config->FindB("APT::Get::Ignore-Breakage") == false)
+    {
+       c1out << 
+        _("Some packages could not be installed. This may mean that you have\n" 
+@@ -2057,6 +2076,8 @@
+    _config->Set("APT::Get::Simulate",false);
+    _config->Set("APT::Get::Assume-Yes",false);
+    _config->Set("APT::Get::Fix-Broken",false);
++   // FINK LOCAL added APT::Get::Ignore-Breakage
++   _config->Set("APT::Get::Ignore-Breakage",false);
+    _config->Set("APT::Get::Force-Yes",false);
+    _config->Set("APT::Get::APT::Get::No-List-Cleanup",true);
+ }
+@@ -2094,6 +2115,8 @@
+       {'y',"yes","APT::Get::Assume-Yes",0},
+       {'y',"assume-yes","APT::Get::Assume-Yes",0},      
+       {'f',"fix-broken","APT::Get::Fix-Broken",0},
++      // FINK LOCAL added APT::Get::Ignore-Breakage
++      {0,"ignore-breakage","APT::Get::Ignore-Breakage",0},
+       {'u',"show-upgraded","APT::Get::Show-Upgraded",0},
+       {'m',"ignore-missing","APT::Get::Fix-Missing",0},
+       {'t',"target-release","APT::Default-Release",CommandLine::HasArg},
+@@ -2151,6 +2174,22 @@
+       ShowHelp(CmdL);
+       return 0;
+    }
++
++   /* FINK LOCAL begin */
++   if (_config->FindB("APT::Get::Ignore-Breakage",false) == true) {
++     if (_config->FindB("APT::Get::Print-URIs",false) == false &&
++	 _config->FindB("APT::Get::Download-Only",false) == false) {
++       _error->Error("--ignore-breakage can only be used with --print-uris or --download-only");
++       _error->DumpErrors();
++       return 100;
++     }
++     if (strcmp(CmdL.FileList[0],"install") != 0) {
++       _error->Error("--ignore-breakage can only be used with apt-get install");
++       _error->DumpErrors();
++       return 100;
++     }
++   }
++   /* FINK LOCAL end */
+    
+    // Deal with stdout not being a tty
+    if (ttyname(STDOUT_FILENO) == 0 && _config->FindI("quiet",0) < 1)
+diff -urN apt-0.5.4.orig/configure apt-0.5.4/configure
+--- apt-0.5.4.orig/configure	2001-08-19 09:46:43.000000000 +0900
++++ apt-0.5.4/configure	2005-03-08 13:00:38.000000000 +0900
 @@ -2394,7 +2394,7 @@
  
  ac_given_srcdir=$srcdir
@@ -636,18 +742,232 @@ diff -uNbr apt-0.5.4.orig/configure apt-0.5.4/configure
  exit 0
  EOF
  chmod +x $CONFIG_STATUS
-diff -uNbr apt-0.5.4.orig/configure.in apt-0.5.4/configure.in
---- apt-0.5.4.orig/configure.in	Mon Jun 18 14:56:32 2001
-+++ apt-0.5.4/configure.in	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/configure.in apt-0.5.4/configure.in
+--- apt-0.5.4.orig/configure.in	2001-06-18 14:56:32.000000000 +0900
++++ apt-0.5.4/configure.in	2005-03-08 13:00:38.000000000 +0900
 @@ -163,4 +163,4 @@
  rc_LIBSTDCPP_VER
  ah_GCC3DEP
  
 -AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile:buildlib/makefile.in,make -s dirs)
 +AC_OUTPUT(environment.mak:buildlib/environment.mak.in makefile.wrap:buildlib/makefile.in,make -f makefile.wrap -s dirs)
-diff -uNbr apt-0.5.4.orig/dselect/install apt-0.5.4/dselect/install
---- apt-0.5.4.orig/dselect/install	Tue Feb 20 16:03:17 2001
-+++ apt-0.5.4/dselect/install	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/doc/apt-cache.8 apt-0.5.4/doc/apt-cache.8
+--- apt-0.5.4.orig/doc/apt-cache.8	2001-08-19 09:48:24.000000000 +0900
++++ apt-0.5.4/doc/apt-cache.8	2005-03-08 13:00:38.000000000 +0900
+@@ -277,16 +277,16 @@
+ option. The syntax is \fB-o Foo::Bar=bar\fR.
+ .SH "FILES"
+ .TP
+-\fB\fI/etc/apt/sources.list\fB\fR
++\fB\fI@PREFIX@/etc/apt/sources.list\fB\fR
+ locations to fetch packages from.
+ Configuration Item: Dir::Etc::SourceList.
+ .TP
+-\fB\fI/var/lib/apt/lists/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/\fB\fR
+ storage area for state information for each package resource specified in
+ \fB\fIsources.list\fB\fR(5)
+ Configuration Item: Dir::State::Lists.
+ .TP
+-\fB\fI/var/lib/apt/lists/partial/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/partial/\fB\fR
+ storage area for state information in transit.
+ Configuration Item: Dir::State::Lists (implicit partial).
+ .SH "SEE ALSO"
+diff -urN apt-0.5.4.orig/doc/apt-cdrom.8 apt-0.5.4/doc/apt-cdrom.8
+--- apt-0.5.4.orig/doc/apt-cdrom.8	2001-08-19 09:48:25.000000000 +0900
++++ apt-0.5.4/doc/apt-cdrom.8	2005-03-08 13:00:38.000000000 +0900
+@@ -32,7 +32,7 @@
+ 
+ APT uses a CDROM ID to track which disc is currently in the drive and
+ maintains a database of these IDs in 
+-\fI/var/lib/apt/cdroms.list\fR
++\fI@PREFIX@/var/lib/apt/cdroms.list\fR
+ .TP
+ \fBident\fR
+ A debugging tool to report the identity of the current disc as well
+diff -urN apt-0.5.4.orig/doc/apt-config.8 apt-0.5.4/doc/apt-config.8
+--- apt-0.5.4.orig/doc/apt-config.8	2001-08-19 09:48:27.000000000 +0900
++++ apt-0.5.4/doc/apt-config.8	2005-03-08 13:00:38.000000000 +0900
+@@ -13,7 +13,7 @@
+ .PP
+ \fBapt-config\fR is an internal program used by various portions of
+ the APT suite to provide consistent configurability. It accesses the main 
+-configuarion file \fI/etc/apt/apt.conf\fR in a manner that is 
++configuarion file \fI@PREFIX@/etc/apt/apt.conf\fR in a manner that is 
+ easy to use by scripted applications.
+ .PP
+ Unless the \fB-h\fR, or \fB--help\fR option is given one of the
+diff -urN apt-0.5.4.orig/doc/apt-get.8 apt-0.5.4/doc/apt-get.8
+--- apt-0.5.4.orig/doc/apt-get.8	2001-08-19 09:48:25.000000000 +0900
++++ apt-0.5.4/doc/apt-get.8	2005-03-08 13:00:38.000000000 +0900
+@@ -20,7 +20,7 @@
+ \fBupdate\fR
+ update is used to resynchronize the package index files from
+ their sources. The indexes of available packages are fetched from the
+-location(s) specified in \fI/etc/apt/sources.list\fR.
++location(s) specified in \fI@PREFIX@/etc/apt/sources.list\fR.
+ For example, when using a Debian archive, this command retrieves and
+ scans the \fIPackages.gz\fR files, so that information about new 
+ and updated packages is available. An update should always be 
+@@ -31,7 +31,7 @@
+ \fBupgrade\fR
+ upgrade is used to install the newest versions of all packages 
+ currently installed on the system from the sources enumerated in
+-\fI/etc/apt/sources.list\fR. Packages currently installed with 
++\fI@PREFIX@/etc/apt/sources.list\fR. Packages currently installed with 
+ new versions available are retrieved and upgraded; under no circumstances 
+ are currently installed packages removed, or packages not already installed 
+ retrieved and installed. New versions of currently installed packages that 
+@@ -54,7 +54,7 @@
+ with new versions of packages; \fBapt-get\fR has a "smart" conflict 
+ resolution system, and it will attempt to upgrade the most important 
+ packages at the expense of less important ones if necessary. 
+-The \fI/etc/apt/sources.list\fR file contains a list of locations 
++The \fI@PREFIX@/etc/apt/sources.list\fR file contains a list of locations 
+ from which to retrieve desired package files.
+ .TP
+ \fBinstall\fR
+@@ -63,7 +63,7 @@
+ filename (for instance, in a Debian GNU/Linux system, libc6 would be the 
+ argument provided, not em(libc6_1.9.6-2.deb)). All packages required 
+ by the package(s) specified for installation will also be retrieved and 
+-installed. The \fI/etc/apt/sources.list\fR file is used to locate 
++installed. The \fI@PREFIX@/etc/apt/sources.list\fR file is used to locate 
+ the desired packages. If a hyphen is appended to the package name (with 
+ no intervening space), the identified package will be removed if it is 
+ installed. Similarly a plus sign can be used to designate a package to 
+@@ -75,7 +75,7 @@
+ to select. This will cause that version to be located and selected for
+ install. Alternatively a specific distribution can be selected by 
+ following the package name with a slash and the version of the 
+-distribution or the Archive name (stable, frozen, unstable).
++distribution or the Archive name (@DIST@/release or @DIST@/current).
+ 
+ Both of the version selection mechanisms can downgrade packages and must
+ be used with care.
+@@ -126,8 +126,8 @@
+ \fBclean\fR
+ clean clears out the local repository of retrieved package 
+ files. It removes everything but the lock file from 
+-\fI/var/cache/apt/archives/\fR and 
+-\fI/var/cache/apt/archive/partial/\fR. When APT is used as a 
++\fI@PREFIX@/var/cache/apt/archives/\fR and 
++\fI@PREFIX@/var/cache/apt/archive/partial/\fR. When APT is used as a 
+ \fBdselect\fR(8) method, clean is run automatically.
+ Those who do not use dselect will likely want to run apt-get clean
+ from time to time to free up disk space.
+@@ -169,6 +169,17 @@
+ error in some situations. 
+ Configuration Item: APT::Get::Fix-Broken.
+ .TP
++\fB--ignore-breakage\fR
++For mode \fBinstall\fR, ignore dependency problems. This option is
++useful if you want to perform actions on just a particular package,
++not its whole dependency tree. It must be used in conjunction with
++\fB--download-only\fR or \fB--print-uris\fR.  Configuration Item:
++APT::Get::Ignore-Breakage.
++
++Note: The \fB--ignore-breakage\fR option was added by The Fink Project
++and hence is only available in the \fBapt-get\fR provided by Fink's
++\fBapt\fR package.
++.TP
+ \fB-m\fR
+ .TP
+ \fB--ignore-missing\fR
+@@ -284,7 +295,7 @@
+ \fB--list-cleanup\fR
+ This option defaults to on, use --no-list-cleanup to turn it 
+ off. When on \fBapt-get\fR will automatically manage the contents of 
+-\fI/var/lib/apt/lists\fR to ensure that obsolete files are erased. 
++\fI@PREFIX@/var/lib/apt/lists\fR to ensure that obsolete files are erased. 
+ The only reason to turn it off is if you frequently change your source 
+ list. 
+ Configuration Item: APT::Get::List-Cleanup.
+@@ -349,36 +360,36 @@
+ option. The syntax is \fB-o Foo::Bar=bar\fR.
+ .SH "FILES"
+ .TP
+-\fB\fI/etc/apt/sources.list\fB\fR
++\fB\fI@PREFIX@/etc/apt/sources.list\fB\fR
+ locations to fetch packages from.
+ Configuration Item: Dir::Etc::SourceList.
+ .TP
+-\fB\fI/etc/apt/apt.conf\fB\fR
++\fB\fI@PREFIX@/etc/apt/apt.conf\fB\fR
+ APT configuration file.
+ Configuration Item: Dir::Etc::Main.
+ .TP
+-\fB\fI/etc/apt/apt.conf.d/\fB\fR
++\fB\fI@PREFIX@/etc/apt/apt.conf.d/\fB\fR
+ APT configuration file fragments
+ Configuration Item: Dir::Etc::Parts.
+ .TP
+-\fB\fI/etc/apt/preferences\fB\fR
++\fB\fI@PREFIX@/etc/apt/preferences\fB\fR
+ version preferences file
+ Configuration Item: Dir::Etc::Preferences.
+ .TP
+-\fB\fI/var/cache/apt/archives/\fB\fR
++\fB\fI@PREFIX@/var/cache/apt/archives/\fB\fR
+ storage area for retrieved package files.
+ Configuration Item: Dir::Cache::Archives.
+ .TP
+-\fB\fI/var/cache/apt/archives/partial/\fB\fR
++\fB\fI@PREFIX@/var/cache/apt/archives/partial/\fB\fR
+ storage area for package files in transit.
+ Configuration Item: Dir::Cache::Archives (implicit partial). 
+ .TP
+-\fB\fI/var/lib/apt/lists/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/\fB\fR
+ storage area for state information for each package resource specified in
+ \fB\fIsources.list\fB\fR(5)
+ Configuration Item: Dir::State::Lists.
+ .TP
+-\fB\fI/var/lib/apt/lists/partial/\fB\fR
++\fB\fI@PREFIX@/var/lib/apt/lists/partial/\fB\fR
+ storage area for state information in transit.
+ Configuration Item: Dir::State::Lists (implicit partial).
+ .SH "SEE ALSO"
+diff -urN apt-0.5.4.orig/doc/apt_preferences.5 apt-0.5.4/doc/apt_preferences.5
+--- apt-0.5.4.orig/doc/apt_preferences.5	2001-08-19 09:48:28.000000000 +0900
++++ apt-0.5.4/doc/apt_preferences.5	2005-03-08 13:00:38.000000000 +0900
+@@ -12,7 +12,7 @@
+ It is meant to be user editable and manipulatable from software. The file
+ consists of a number of records formed like the dpkg status file, space
+ seperated sections of text with at the start of each line tags seperated 
+-by a colon. It is stored in \fI/etc/apt/preferences\fR.
++by a colon. It is stored in \fI@PREFIX@/etc/apt/preferences\fR.
+ .SH "VERSIONING"
+ .PP
+ One purpose of the preferences file is to let the user select which version
+diff -urN apt-0.5.4.orig/doc/sources.list.5 apt-0.5.4/doc/sources.list.5
+--- apt-0.5.4.orig/doc/sources.list.5	2001-08-19 09:48:26.000000000 +0900
++++ apt-0.5.4/doc/sources.list.5	2005-03-08 13:00:38.000000000 +0900
+@@ -11,7 +11,7 @@
+ The package resource list is used to locate archives of the package
+ distribution system in use on the system. At this time, this manual page
+ documents only the packaging system used by the Debian GNU/Linux system.
+-This control file is located in \fI/etc/apt/sources.list\fR
++This control file is located in \fI@PREFIX@/etc/apt/sources.list\fR
+ .PP
+ The source list is designed to support any number of active sources and a
+ variety of source media. The file lists one source per line, with the
+@@ -25,9 +25,8 @@
+ .PP
+ The deb type describes a typical two-level Debian archive,
+ \fIdistribution/component\fR. Typically, distribution is 
+-generally one of stable, unstable, or 
+-frozen, while component is one of main, 
+-contrib, non-free, or non-us. The 
++generally one of @DIST@/release or @DIST@/current,
++while component is one of main or crypto. The
+ deb-src type describes a debian distribution's source code in 
+ the same form as the deb type. A deb-src line is 
+ required to fetch source indexes.
+diff -urN apt-0.5.4.orig/dselect/install apt-0.5.4/dselect/install
+--- apt-0.5.4.orig/dselect/install	2001-02-20 16:03:17.000000000 +0900
++++ apt-0.5.4/dselect/install	2005-03-08 13:00:38.000000000 +0900
 @@ -3,8 +3,8 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -659,9 +979,9 @@ diff -uNbr apt-0.5.4.orig/dselect/install apt-0.5.4/dselect/install
  DPKG_OPTS="--admindir=$1"
  APT_OPT0="-oDir::State::status=$1/status"
  APT_OPT1="-oDPkg::Options::=$DPKG_OPTS"
-diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
---- apt-0.5.4.orig/dselect/setup	Thu Jan 27 13:15:10 2000
-+++ apt-0.5.4/dselect/setup	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
+--- apt-0.5.4.orig/dselect/setup	2000-01-27 13:15:10.000000000 +0900
++++ apt-0.5.4/dselect/setup	2005-03-08 13:00:38.000000000 +0900
 @@ -23,15 +23,17 @@
  my $vardir=$ARGV[0];
  my $method=$ARGV[1];
@@ -680,7 +1000,7 @@ diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
  my @known_access         = ('http', 'ftp', 'file');
 -my @typical_distributions = ('stable', 'unstable', 'frozen', 'non-US');
 -my @typical_components    = ('main', 'contrib', 'non-free');
-+my @typical_distributions = ('release', 'current');
++my @typical_distributions = ('@DIST@/release', '@DIST@/current');
 +my @typical_components    = ('main', 'crypto');
  
  my %known_access           = map {($_,$_)} @known_access;
@@ -693,7 +1013,7 @@ diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
 -  $distribution = "stable" unless $distribution;
 -  $components   = "main contrib non-free" unless $components;
 +  $urn          = "http://us.dl.sourceforge.net/fink/direct_download" unless $urn;
-+  $distribution = "release" unless $distribution;
++  $distribution = "@DIST@/release" unless $distribution;
 +  $components   = "main" unless $components;
  
      
@@ -721,9 +1041,21 @@ diff -uNbr apt-0.5.4.orig/dselect/setup apt-0.5.4/dselect/setup
    print "\n";
  
    my $index = 0;
-diff -uNbr apt-0.5.4.orig/dselect/update apt-0.5.4/dselect/update
---- apt-0.5.4.orig/dselect/update	Tue Mar 13 10:45:36 2001
-+++ apt-0.5.4/dselect/update	Wed Jul  2 08:37:41 2003
+@@ -269,7 +265,10 @@
+     print "-" x 72, "\n";
+     &print_config('Config' => \@Oldconfig);
+     print "-" x 72, "\n";
+-    print "$boldon Do you wish to change (overwrite) it?[y/N]$boldoff ";
++    print "$boldon In most cases, this file was installed by Fink or by apt,"
++	." and$boldoff\n";
++        print "$boldon should NOT be changed.  " .
++        "Do you wish to change (overwrite) it?[y/N]$boldoff ";
+     my $answer = <STDIN>;
+     chomp ($answer);
+     $answer =~ s/\s+/ /og;
+diff -urN apt-0.5.4.orig/dselect/update apt-0.5.4/dselect/update
+--- apt-0.5.4.orig/dselect/update	2001-03-13 10:45:36.000000000 +0900
++++ apt-0.5.4/dselect/update	2005-03-08 13:00:38.000000000 +0900
 @@ -4,13 +4,13 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -742,68 +1074,41 @@ diff -uNbr apt-0.5.4.orig/dselect/update apt-0.5.4/dselect/update
  PROMPT="false"
  RES=`apt-config shell CLEAN DSelect::Clean OPTS DSelect::UpdateOptions \
  		      DPKG Dir::Bin::dpkg/f APTGET Dir::Bin::apt-get/f \
-diff -uNbr apt-0.5.4.orig/methods/connect.cc apt-0.5.4/methods/connect.cc
---- apt-0.5.4.orig/methods/connect.cc	Tue Feb 20 16:03:18 2001
-+++ apt-0.5.4/methods/connect.cc	Wed Jul  2 08:37:41 2003
-@@ -90,7 +90,7 @@
+diff -urN apt-0.5.4.orig/methods/connect.cc apt-0.5.4/methods/connect.cc
+--- apt-0.5.4.orig/methods/connect.cc	2001-02-20 16:03:18.000000000 +0900
++++ apt-0.5.4/methods/connect.cc	2005-03-08 13:10:40.000000000 +0900
+@@ -90,7 +90,11 @@
  
     // Check the socket for an error condition
     unsigned int Err;
 -   unsigned int Len = sizeof(Err);
++#ifndef HAVE_SOCKLEN_T
 +   int Len = sizeof(Err);
++#else
++   socklen_t Len = sizeof(Err);
++#endif
     if (getsockopt(Fd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
        return _error->Errno("getsockopt","Failed");
     
-diff -uNbr apt-0.5.4.orig/methods/ftp.cc apt-0.5.4/methods/ftp.cc
---- apt-0.5.4.orig/methods/ftp.cc	Tue May 22 13:02:00 2001
-+++ apt-0.5.4/methods/ftp.cc	Wed Jul  2 08:37:41 2003
-@@ -694,7 +694,7 @@
+diff -urN apt-0.5.4.orig/methods/ftp.cc apt-0.5.4/methods/ftp.cc
+--- apt-0.5.4.orig/methods/ftp.cc	2001-05-22 13:02:00.000000000 +0900
++++ apt-0.5.4/methods/ftp.cc	2005-03-08 13:09:26.000000000 +0900
+@@ -694,7 +694,11 @@
        if (WaitFd(DataFd,true,TimeOut) == false)
  	 return _error->Error("Could not connect data socket, connection timed out");
        unsigned int Err;
 -      unsigned int Len = sizeof(Err);
++#ifndef HAVE_SOCKLEN_T
 +      int Len = sizeof(Err);
++#else
++      socklen_t Len = sizeof(Err);
++#endif
        if (getsockopt(DataFd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
  	 return _error->Errno("getsockopt","Failed");
        if (Err != 0)
-@@ -739,7 +739,7 @@
-    
-    // Determine the name to send to the remote
-    struct sockaddr_storage Addr;
--   socklen_t AddrLen = sizeof(Addr);
-+   int AddrLen = sizeof(Addr);
-    if (getsockname(DataListenFd,(sockaddr *)&Addr,&AddrLen) < 0)
-       return _error->Errno("getsockname","Could not determine the socket's name");
- 
-@@ -815,7 +815,7 @@
-       
-    // Accept the connection
-    struct sockaddr_in Addr;
--   socklen_t Len = sizeof(Addr);
-+   int Len = sizeof(Addr);
-    DataFd = accept(DataListenFd,(struct sockaddr *)&Addr,&Len);
-    if (DataFd < 0)
-       return _error->Errno("accept","Unable to accept connection");
-diff -uNbr apt-0.5.4.orig/methods/ftp.h apt-0.5.4/methods/ftp.h
---- apt-0.5.4.orig/methods/ftp.h	Tue Mar  6 16:15:29 2001
-+++ apt-0.5.4/methods/ftp.h	Wed Jul  2 08:37:41 2003
-@@ -26,11 +26,11 @@
-    
-    // Generic Peer Address
-    struct sockaddr_storage PeerAddr;
--   socklen_t PeerAddrLen;
-+   int PeerAddrLen;
-    
-    // Generic Server Address (us)
-    struct sockaddr_storage ServerAddr;
--   socklen_t ServerAddrLen;
-+   int ServerAddrLen;
-    
-    // Private helper functions
-    bool ReadLine(string &Text);      
-diff -uNbr apt-0.5.4.orig/methods/rfc2553emu.h apt-0.5.4/methods/rfc2553emu.h
---- apt-0.5.4.orig/methods/rfc2553emu.h	Sun Jun 18 15:04:45 2000
-+++ apt-0.5.4/methods/rfc2553emu.h	Wed Jul  2 08:37:41 2003
+diff -urN apt-0.5.4.orig/methods/rfc2553emu.h apt-0.5.4/methods/rfc2553emu.h
+--- apt-0.5.4.orig/methods/rfc2553emu.h	2000-06-18 15:04:45.000000000 +0900
++++ apt-0.5.4/methods/rfc2553emu.h	2005-03-08 13:00:38.000000000 +0900
 @@ -26,6 +26,11 @@
  #include <sys/types.h>
  #include <sys/socket.h>
@@ -825,19 +1130,19 @@ diff -uNbr apt-0.5.4.orig/methods/rfc2553emu.h apt-0.5.4/methods/rfc2553emu.h
  // getaddrinfo support?
  #ifndef HAVE_GETADDRINFO
    // Renamed to advoid type clashing.. (for debugging)
-@@ -100,6 +107,9 @@
- //  #define NI_NOFQDN (1<<2)
+@@ -101,6 +108,9 @@
    #define NI_NAMEREQD (1<<3)
    #define NI_DATAGRAM (1<<4)
-+  #endif
+   #endif
 +  #ifndef NI_DATAGRAM
 +  #define NI_DATAGRAM NI_DGRAM
-   #endif
++  #endif
  
    #define sockaddr_storage sockaddr_in
-diff -uNbr apt-0.5.4.orig/patch_flush apt-0.5.4/patch_flush
---- apt-0.5.4.orig/patch_flush	Thu Jan  1 09:00:00 1970
-+++ apt-0.5.4/patch_flush	Wed Jul  2 08:37:41 2003
+ #endif
+diff -urN apt-0.5.4.orig/patch_flush apt-0.5.4/patch_flush
+--- apt-0.5.4.orig/patch_flush	1970-01-01 09:00:00.000000000 +0900
++++ apt-0.5.4/patch_flush	2005-03-08 13:00:38.000000000 +0900
 @@ -0,0 +1,11 @@
 +#!/bin/sh
 +set -e
@@ -850,27 +1155,3 @@ diff -uNbr apt-0.5.4.orig/patch_flush apt-0.5.4/patch_flush
 +done
 +
 +exit 0
-diff -uNbr apt-0.5.4.orig/sources.list.fink apt-0.5.4/sources.list.fink
---- apt-0.5.4.orig/sources.list.fink	Thu Jan  1 09:00:00 1970
-+++ apt-0.5.4/sources.list.fink	Wed Jul  2 08:37:41 2003
-@@ -0,0 +1,8 @@
-+# Default APT sources configuration for Fink
-+
-+# Local package trees - packages built from source locally
-+# NOTE: keep this in sync with the Trees: line in @PREFIX@/etc/fink.conf
-+# NOTE: run 'fink scanpackages' to create Packages.gz files
-+deb file:@PREFIX@/fink local main
-+deb file:@PREFIX@/fink stable main crypto
-+#deb file:@PREFIX@/fink unstable main crypto
-diff -uNbr apt-0.5.4.orig/sources.list.fink-bindist apt-0.5.4/sources.list.fink-bindist
---- apt-0.5.4.orig/sources.list.fink-bindist	Thu Jan  1 09:00:00 1970
-+++ apt-0.5.4/sources.list.fink-bindist	Wed Jul  2 08:37:41 2003
-@@ -0,0 +1,8 @@
-+
-+# Official binary distribution: download location for packages
-+# from the latest release
-+deb http://us.dl.sourceforge.net/fink/direct_download 10.2/release main crypto
-+
-+# Official binary distribution: download location for updated
-+# packages built between releases
-+deb http://us.dl.sourceforge.net/fink/direct_download 10.2/current main crypto
