@@ -3669,10 +3669,17 @@ sub get_env {
 	my %defaults = (
 		"CPPFLAGS"                 => "-I\%p/include",
 		"LDFLAGS"                  => "-L\%p/lib",
-		"LD_PREBIND"               => 1,
+#		"LD_PREBIND"               => 1,
 		"LD_PREBIND_ALLOW_OVERLAP" => 1,
 		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
+
+# default value of LD_PREBIND depends on the distribution
+	if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
+		$defaults{"LD_PREBIND"} = "1";
+	} else {
+		$defaults{"LD_PREBIND"} = "0";
+	}
 
 #	# add a default for CXXFLAGS for recent distributions
 #	if (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional")) {
