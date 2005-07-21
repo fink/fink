@@ -1,18 +1,32 @@
 # Official mirror list: http://ftp.gnome.org/pub/GNOME/MIRRORS
-Timestamp: 2001-05-04
+Timestamp: 2005-07-21
 
 Primary: ftp://ftp.gnome.org/pub/GNOME/
 
+# Note: the list given below follows the order used in the official
+# mirror list given above. This makes it slightly easier to update it.
+
 nam: ftp://ftp.cse.buffalo.edu/pub/Gnome
-nam: ftp://ftp.rpmfind.net/linux/gnome.org/
-nam: ftp://ftp.yggdrasil.com/mirrors/site/ftp.gnome.org/pub/GNOME/
-nam: ftp://gnome.eazel.com/pub/GNOME/
-eur: ftp://fr.rpmfind.net/linux/gnome.org
-eur: ftp://fr2.rpmfind.net/pub/GNOME/
-eur: ftp://ftp.acc.umu.se/pub/GNOME/
-eur: ftp://ftp.codefactory.se/pub/GNOME/
-eur: ftp://ftp.dataplus.se/pub/GNOME/
-eur: ftp://ftp.dit.upm.es/pub/GNOME/
-eur: ftp://ftp.no.gnome.org/pub/GNOME/
-eur: ftp://ftp.sunet.se/pub/X11/GNOME/
-eur: ftp://ftp.tr.gnome.org/pub/GNOME
+nam: http://ftp.rpmfind.net/linux/gnome.org/
+nam: ftp://ftp.ussg.iu.edu/pub/gnome/
+nam: http://archive.progeny.com/GNOME/
+nam: http://mirror.clarkson.edu/pub/gnome/
+
+aus-AU: http://planetmirror.com/pub/GNOME/
+aus-AU: http://mirror.aarnet.edu.au/pub/GNOME/
+aus-AU: ftp://mirror.pacific.net.au/linux/GNOME/
+
+eur-DE: http://www.download-ftp-center.com/mirrors/gnome.org/
+eur-IT: http://ftp.unina.it/pub/linux/GNOME
+eur-FR: http://fr.rpmfind.net/linux/gnome.org/
+eur-FR: http://fr2.rpmfind.net/linux/gnome.org/
+eur-SE: http://ftp.acc.umu.se/pub/GNOME/
+eur-BE: http://ftp.belnet.be/mirror/ftp.gnome.org/
+eur-SE: ftp://ftp.dataplus.se/pub/GNOME/
+eur-ES: ftp://ftp.dit.upm.es/pub/GNOME/
+eur-UK: http://ftp.linux.org.uk/mirrors/ftp.gnome.org/
+eur-NO: ftp://ftp.no.gnome.org/pub/GNOME/
+eur-UK: http://www.mirror.ac.uk/sites/ftp.gnome.org/pub/GNOME/
+
+asi-tw: ftp://ftp.isu.edu.tw/pub/Unix/Desktop/GNOME/
+asi: http://www.zentek-international.com/mirrors/gnome/
