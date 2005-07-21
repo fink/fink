@@ -1,6 +1,8 @@
+# Official mirror list: http://www.apache.org/mirrors/
 Timestamp: 2004-07-17
 
 Primary: http://www.apache.org/dist
+
 nam-US: http://www.apache.org/dist
 nam-US: http://mirrors.xtria.com/apache
 nam-US: http://apache.secsup.org/dist

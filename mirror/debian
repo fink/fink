@@ -1,5 +1,8 @@
-Primary: http://ftp.debian.org/debian/
+# Official mirror list: http://ftp.debian.org/README.mirrors.txt
 Timestamp: 2005-07-18
+
+Primary: http://ftp.debian.org/debian/
+
 eur-AT: http://ftp.at.debian.org/debian/
 aus-AU: http://ftp.au.debian.org/debian/
 aus-AU: http://ftp.wa.au.debian.org/debian/

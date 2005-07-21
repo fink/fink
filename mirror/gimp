@@ -1,5 +1,8 @@
-Primary: ftp://ftp.gimp.org/pub/gimp/
+# Official mirror list: http://www.gimp.org/downloads/#mirrors
 Timestamp: 2004-04-04
+
+Primary: ftp://ftp.gimp.org/pub/gimp/
+
 afr: ftp://ftp.is.co.za/applications/gimp/
 aus-AU: ftp://ftp.planetmirror.com/pub/gimp/
 aus-AU: ftp://gimp.zeta.org.au/

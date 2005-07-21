@@ -1,4 +1,8 @@
+# Official mirror list: http://mirror.cpan.org/
+Timestamp: 2002-12-29
+
 Primary: ftp://ftp.funet.fi/pub/languages/perl/CPAN/
+
 afr-ZA: ftp://ftp.is.co.za/programming/perl/CPAN/
 afr-ZA: ftp://ftp.mweb.co.za/pub/mirrors/cpan/
 afr-ZA: ftp://ftp.saix.net/pub/CPAN/
