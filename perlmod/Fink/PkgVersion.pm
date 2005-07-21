@@ -128,41 +128,39 @@ different PkgVersion objects. Returns this object.
 
 =cut
 
-{
-	my %shared_loads;
+our %shared_loads;
 	
-	sub load_fields {
-		my $self = shift;
-		return $self if !$self->has_param('_backed_file')
-			|| $self->param('_backed_loaded')
-			|| !eval { require Storable };
-		
-		$self->set_param('_backed_loaded', 1);
-		my $file = $self->param('_backed_file');
-		my $loaded;
-		if (exists $shared_loads{$file}) {
+sub load_fields {
+	my $self = shift;
+	return $self if !$self->has_param('_backed_file')
+		|| $self->param('_backed_loaded')
+		|| !eval { require Storable };
+	
+	$self->set_param('_backed_loaded', 1);
+	my $file = $self->param('_backed_file');
+	my $loaded;
+	if (exists $shared_loads{$file}) {
 #			print "Sharing PkgVersion " . $self->get_fullname . " from $file\n";
-			$loaded = $shared_loads{$file};
-		} else {
+		$loaded = $shared_loads{$file};
+	} else {
 #			print "Loading PkgVersion " . $self->get_fullname . " from: $file\n";
-			unless ($loaded = Storable::lock_retrieve($file)) {
-				$shared_loads{$file} = { }; # Don't try again
-				return $self;
-			}
-			$shared_loads{$file} = $loaded;
+		unless ($loaded = Storable::lock_retrieve($file)) {
+			$shared_loads{$file} = { }; # Don't try again
+			return $self;
 		}
-		
-		return $self unless exists $loaded->{$self->get_fullname};
-		
-		# Insert the loaded fields
-		my $href = $loaded->{$self->get_fullname};
-		@$self{keys %$href} = values %$href;
-		
-		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
-		$self->_set_destdirs;
-		
-		return $self;
+		$shared_loads{$file} = $loaded;
 	}
+	
+	return $self unless exists $loaded->{$self->get_fullname};
+	
+	# Insert the loaded fields
+	my $href = $loaded->{$self->get_fullname};
+	@$self{keys %$href} = values %$href;
+	
+	# We need to update %d, %D, %i and %I to adapt to changes in buildpath
+	$self->_set_destdirs;
+	
+	return $self;
 }
 
 # PRIVATE: $pv->_set_destdirs

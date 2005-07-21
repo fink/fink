@@ -1,3 +1,10 @@
+2005-07-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Use super-fast loading if DB hasn't changed. Still much
+	cleanup needed.
+	* PkgVersion.pm: Make shared_loads global for now.
+	* Engine.pm: Adapt to changes in Package
+
 2005-07-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* NetAccess.pm: prompt_selection API fix for wrong-checksum
