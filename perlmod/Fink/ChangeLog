@@ -5,7 +5,7 @@
 	* PkgVersion.pm: Make shared_loads global for now.
 	* Engine.pm: Adapt to changes in Package
 
-2005-07-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
+2005-07-17  Daniel Macks  <dmacks@netspace.org>
 
 	* NetAccess.pm: prompt_selection API fix for wrong-checksum
 
