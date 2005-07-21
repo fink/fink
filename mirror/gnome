@@ -1,5 +1,8 @@
-Primary: ftp://ftp.gnome.org/pub/GNOME/
+# Official mirror list: http://ftp.gnome.org/pub/GNOME/MIRRORS
 Timestamp: 2001-05-04
+
+Primary: ftp://ftp.gnome.org/pub/GNOME/
+
 nam: ftp://ftp.cse.buffalo.edu/pub/Gnome
 nam: ftp://ftp.rpmfind.net/linux/gnome.org/
 nam: ftp://ftp.yggdrasil.com/mirrors/site/ftp.gnome.org/pub/GNOME/
