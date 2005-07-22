@@ -1,11 +1,12 @@
 Package: cctools-extra
-Version: 20030516
-Revision: 2
+Epoch: 1
+Version: 525
+Revision: 1
 
-Source: mirror:sourceforge:fink/cctools-%v.tar.bz2
-Source-MD5: a78b299dea5a9cf0fb051a7805c040e6
+Source: mirror:sourceforge:fink/cctools-%v.tar.gz
+Source-MD5: 3107c790a55595c6410696ebb7ea80a9
+SourceDirectory: cctools-%v
 Patch: %n.patch
-SourceDirectory: cctools
 Essential: yes
 Depends: base-files
 CompileScript: <<
@@ -43,5 +44,5 @@ This package contains some extra tools from the cctools source
 distribution that aren't part of Apple's official dev tools.
 <<
 License: OSI-Approved
-Maintainer: Benjamin Reed <ranger@befunk.com>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://www.opendarwin.org/

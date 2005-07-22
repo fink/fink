@@ -1,3 +1,7 @@
+2005-07-22  Daniel Macks  <dmacks@netspace.org>
+
+	* cctools-extra.info: No gcc3.3 needed
+
 2005-07-21  Daniel Macks  <dmacks@netspace.org>
 
 	* apt.*, dpkg*.*: latest version from HEAD
