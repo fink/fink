@@ -1,3 +1,8 @@
+2005-07-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Fix cleanup_sources source filename parsing. Better
+	diagnostics during cleanup_sources and cleanup_debs dead time.
+
 2005-07-25  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: only provide default values for LD_PREBIND,

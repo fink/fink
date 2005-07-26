@@ -1303,13 +1303,16 @@ sub cleanup_sources {
 	my $file_count = 0;
 	
 	# Iterate over all packages and collect all their source files.
+	if ($config->verbosity_level() > 0) {
+		print "Collecting active source filenames...\n";
+	}
 	my %src_list = ();
 	foreach my $pname (Fink::Package->list_packages()) {
 		my $package = Fink::Package->package_by_name($pname);
 		foreach my $vo ($package->get_all_versions()) {
 			next if $vo->is_type('dummy');  # Skip dummy packages
 			foreach my $suffix ($vo->get_source_suffices()) {
-				$src_list{$vo->get_source($suffix)} = 1;
+				$src_list{$vo->get_tarball($suffix)} = 1;
 			}
 		}
 	}
@@ -1322,7 +1325,7 @@ sub cleanup_sources {
 	opendir(DIR, $srcdir) or die "Can't access $srcdir: $!";
 	while (defined($file = readdir(DIR))) {
 		# Collect sources that are not in use
-		push @old_src_files, $file if not $src_list{"$srcdir/$file"};
+		push @old_src_files, $file if not $src_list{$file};
 	}
 	closedir(DIR);
 
@@ -1343,7 +1346,7 @@ sub cleanup_sources {
 		$verb = 'Removing obsolete';
 	}
 
-	foreach my $file (@old_src_files) {
+	foreach my $file (sort @old_src_files) {
 		# For now, do *not* remove directories - this could easily kill
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
@@ -1392,6 +1395,9 @@ sub cleanup_debs {
 	my $file_count;
 
 	# Iterate over all packages and collect the deb files
+	if ($config->verbosity_level() > 0) {
+		print "Collecting active deb names...\n";
+	}
 	my %deb_list;
 	foreach my $pname (Fink::Package->list_packages()) {
 		my $package = Fink::Package->package_by_name($pname);
