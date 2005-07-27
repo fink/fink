@@ -1,3 +1,7 @@
+2005-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Stash the fink PID in the buildlock package.
+
 2005-07-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm: Get rid of gensym, not needed in perl >= 5.6.0.

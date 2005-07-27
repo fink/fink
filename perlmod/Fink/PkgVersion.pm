@@ -3466,14 +3466,18 @@ EOSCRIPT
 	close(PRERM) or die "can't write prerm script file for $lockpkg: $!\n";
 	chmod 0755, "$destdir/DEBIAN/prerm";
 
-	### add an actual file to the buildlock package
+	### store our PID in a file in the buildlock package
 	my $lockdir = "$destdir$basepath/var/run/fink";
 	if (not -d $lockdir) {
 		mkdir_p $lockdir or
 			die "can't create directory for lockfile for package $lockpkg\n";
 	}
-	touch $lockdir . '/' . $self->get_name() . '-' . $self->get_fullversion() . '.buildlock' or
-		die "can't create lockfile for package $lockpkg\n";
+	if (open my $lockfh, ">$lockdir/$lockpkg.pid") {
+		print $lockfh $$,"\n";
+		close $lockfh or die "can't create pid file for package $lockpkg: $!\n";
+	} else {
+		die "can't create pid file for package $lockpkg: $!\n";
+	}
 
 	### create .deb using dpkg-deb (in buildpath so apt doesn't see it)
 	if (&execute("dpkg-deb -b $destdir $buildpath")) {
