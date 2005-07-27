@@ -1,3 +1,7 @@
+2005-07-27  Max Horn <max@quendi.de>
+
+	* NEWS: Removed NEWS file since (sadly) nobody ever updates it anyway.s
+
 2005-07-15  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: Add a "clean" target: recursively find .cvsignore
