@@ -1,3 +1,7 @@
+2005-07-27  Max Horn <max@quendi.de>
+
+	* NEWS: Removed NEWS file since (sadly) nobody ever updates it anyway.s
+
 2005-07-15  Daniel Macks  <dmacks@netspace.org>
 
 	* path-prefix-g++-*/g++: deleted; these are created dynamically.
