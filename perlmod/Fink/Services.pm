@@ -1567,7 +1567,7 @@ sub lock_wait {
 	my $really_timeout = $> != 0 || $root_timeout;
 
 	# Make sure we can access the lock
-	my $lockfile_FH = Symbol::gensym();
+	my $lockfile_FH;
 	{
 		my $mode = ($exclusive || ! -e $lockfile) ? "+>>" : "<";
 		unless (open $lockfile_FH, "$mode $lockfile") {

@@ -1,3 +1,7 @@
+2005-07-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Get rid of gensym, not needed in perl >= 5.6.0.
+
 2005-07-26  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Fix cleanup_sources source filename parsing. Better
