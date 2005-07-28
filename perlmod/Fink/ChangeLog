@@ -1,3 +1,10 @@
+2005-07-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: revised "switch debs during long builds" code: if a 
+	needed .deb exists but is not installed, we install it without 
+	asking.  (If it doesn't exist, we allow the process to continue --
+	it will quit with an error, and the user must then start over.)
+	
 2005-07-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: cleanup_debs: don't delete .deb of pkgs that are

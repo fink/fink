@@ -2116,15 +2116,14 @@ sub real_install {
 			# check dependencies
 			foreach $dep (@extendeddeps) {
 				next PACKAGELOOP if (($dep->[FLAG] & 2) == 0);
-				### FIXME switch debs during long builds
+				### switch debs during long builds
 				if (!$dep->[PKGVER]->is_installed()) {
-					### Guess we should build/install it then
-					my $prompt = "To continue ".$dep->[PKGNAME]." is required, do you want to install it now?";
-					my $continue = prompt_boolean($prompt, default => 1, timeout => 60);
-					if ($continue) {
+					### If the deb exists, we install it without asking.
+					### If it doesn't exist, we allow the process to continue
+					### (it will quit with an error, and the user must then
+					### start over)
+					if ($dep->[PKGVER]->is_present()) {
 						&real_install($OP_INSTALL, 0, 1, $dryrun, $dep->[PKGVER]->get_name());
-					} else {
-						die "Failed to switch in ".$dep->[PKGNAME]."!\n";
 					}
 				}
 			}
