@@ -1402,8 +1402,18 @@ sub cleanup_debs {
 	foreach my $pname (Fink::Package->list_packages()) {
 		my $package = Fink::Package->package_by_name($pname);
 		foreach my $vo ($package->get_all_versions()) {
-			next if $vo->is_type('dummy');  # Skip dummy packages
-			$deb_list{$vo->get_debfile()} = 1;
+			if ($vo->is_type('dummy')) {
+				# $vo data is from dpkg status db (no .info file) so
+				# $vo has no directory for deb. Try to guess it.
+				my $debfile = "$basepath/fink/debs/" . $vo->get_debname();
+				if (-l $debfile and -e readlink $debfile) {
+					$deb_list{readlink $debfile} = 1;
+				} elsif (-e $debfile) {
+					$deb_list{$debfile} = 1;
+				}
+			} else {
+				$deb_list{$vo->get_debfile()} = 1;
+			}
 		}
 	}
 	
