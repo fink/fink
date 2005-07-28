@@ -1,3 +1,8 @@
+2005-07-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.8, a release
+	on branch_0_24
+
 2005-07-27  Max Horn <max@quendi.de>
 
 	* NEWS: Removed NEWS file since (sadly) nobody ever updates it anyway.s
