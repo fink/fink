@@ -11,6 +11,7 @@ all:
 	@echo -e "\t            PREFIX can be set, defaults to /sw"   
 	@echo -e "\tinstall     install to an existing fink installation"
 	@echo -e "\ttest        perform tests on the fink code"
+	@echo -e "\tclean       remove all extraneous files"
 	@echo    ""
 
 commit: test

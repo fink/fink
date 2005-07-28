@@ -1,3 +1,7 @@
+2005-07-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Makefile: Document 'make clean'
+
 2005-07-27  Max Horn <max@quendi.de>
 
 	* NEWS: Removed NEWS file since (sadly) nobody ever updates it anyway.s
