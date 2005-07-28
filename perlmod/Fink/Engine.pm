@@ -2124,9 +2124,10 @@ sub real_install {
 			}
 
 			# check dependencies
+			next PACKAGELOOP if grep { ($_->[FLAG] & 2) == 0 } @extendeddeps;
+			
+			### switch debs during long builds
 			foreach $dep (@extendeddeps) {
-				next PACKAGELOOP if (($dep->[FLAG] & 2) == 0);
-				### switch debs during long builds
 				if (!$dep->[PKGVER]->is_installed()) {
 					### If the deb exists, we install it without asking.
 					### If it doesn't exist, we allow the process to continue

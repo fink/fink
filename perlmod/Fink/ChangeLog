@@ -1,3 +1,8 @@
+2005-07-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Separate dep checking and dep switching, so we don't switch
+	unnecessarily.
+
 2005-07-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm: revised "switch debs during long builds" code: if a 
