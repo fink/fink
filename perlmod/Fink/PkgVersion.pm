@@ -1949,8 +1949,10 @@ sub match_package {
 			return $package if $opts{provides};
 			
 			# there's nothing we can do here...
-			print "no version info available for $pkgname\n"
-				unless $opts{quiet};
+			print_breaking rejoin_text <<VIRT unless $opts{quiet};
+Package $pkgname is a virtual package. For a list of packages which provide it,
+try 'fink info $pkgname'.
+VIRT
 			return undef;
 		}
 	} elsif (not defined $package->get_version($version)) {

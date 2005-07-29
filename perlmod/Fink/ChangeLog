@@ -1,5 +1,10 @@
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: Print a nicer message if someone calls match_package
+	and gets a virtual package (but doesn't want virtuals).
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Add 'provides' option to match_package, to find packages
 	that are only virtual.
 	* Engine.pm: Enable 'fink desc foo' finding provided packages, fixing bug
