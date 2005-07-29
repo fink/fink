@@ -1,5 +1,10 @@
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Remove build-as-nobody warning, it's been well enough
+	tested by now I'd say.
+
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Document some functions.
 	* PkgVersion.pm, Engine.pm: Replace 'parentessential' concept with
 	built_with_essential function, which should make it possible for an

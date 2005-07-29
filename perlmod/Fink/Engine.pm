@@ -223,14 +223,6 @@ sub process {
 		}
 	}
 
-	if (Fink::Config::get_option("build_as_nobody")) {
-		&print_breaking ("WARNING: --build-as-nobody may produce non-usable ".
-						 "binary packages. This safe-mode should only be ".
-						 "used for package testing and development, not for ".
-						 "production builds.");
-		sleep(3);
-	}
-	
 	# Warn about Spotlight
 	if (&spotlight_warning()) {
 		$config->save;
