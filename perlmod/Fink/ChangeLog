@@ -1,5 +1,11 @@
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: is_present() doesn't exactly check for any dependencies that
+	could be pulled in with real_install. So restrict this to single packages
+	and use phase_activate.
+
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Remove leading whitespace in Info2, without breaking
 	RFC-822. All of 10.4-transitional indexes fine with this. dmacks, please
 	check that this is ok!

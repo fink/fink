@@ -2126,7 +2126,7 @@ sub real_install {
 					### (it will quit with an error, and the user must then
 					### start over)
 					if ($dep->[PKGVER]->is_present()) {
-						&real_install($OP_INSTALL, 0, 1, $dryrun, $dep->[PKGVER]->get_name());
+						Fink::PkgVersion::phase_activate($dep->[PKGVER]);
 					}
 				}
 			}
