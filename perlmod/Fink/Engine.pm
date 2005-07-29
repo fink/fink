@@ -1739,7 +1739,7 @@ sub real_install {
 #			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
-		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {
+		if (not $item->[PKGVER]->built_with_essential) {
 			push @deplist, @elist;
 		}
 	DEPLOOP: foreach $dep (@deplist) {

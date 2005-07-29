@@ -335,9 +335,6 @@ sub initialize {
 		if ($parent->has_param('maintainer')) {
 			$self->{'maintainer'} = $parent->{'maintainer'};
 		}
-		if ($parent->has_param('essential')) {
-			$self->{'_parentessential'} = $parent->{'essential'};
-		}
 
 		# handle inherited fields
 		our @inherited_pkglists =
@@ -1126,7 +1123,15 @@ sub _ensure_splitoffs {
 	}
 }
 
-# get splitoffs only for parent, empty list for others
+=item parent_splitoffs
+
+  my @splitoffs = $pv->parent_splitoffs;
+  
+Returns the splitoffs of this package, not including itself, if this is
+a parent package. Otherwise, returns false.
+
+=cut
+
 sub parent_splitoffs {
 	my $self = shift;
 	$self->_ensure_splitoffs;
@@ -1134,6 +1139,21 @@ sub parent_splitoffs {
 		? map { $_->load_fields } @{$self->{_splitoffs_obj}}
 		: ();
 }
+
+=item get_splitoffs
+
+  my @splitoffs = $pv->get_splitoffs;
+  my $splitoffs = $pv->get_splitoffs $with_parent, $with_self;
+
+Get a list of the splitoffs of this package, or of its parent if this package
+is a splitoff.
+
+If $with_parent is true, includes the parent package (defaults false).
+If $with_self is true, includes this package (defaults false).
+If this package is the parent package, both $with_self and $with_parent must
+both be true for this package to be included.
+
+=cut
 
 sub get_splitoffs {
 	my $self = shift;
@@ -1164,6 +1184,16 @@ sub get_splitoffs {
 
 	return map { $_->load_fields } @list;
 }
+
+=item get_relatives
+
+  my @relatives = $pv->get_relatives;
+
+Get the other packages that are splitoffs of this one (of of its parent, if
+this package is a splitoff). Does not include this package, but does include
+the parent.
+
+=cut
 
 sub get_relatives {
 	my $self = shift;
@@ -4047,6 +4077,33 @@ sub _disconnect {
 		$self->{_splitoffs} = [ map { $_->make_spec } $self->parent_splitoffs ];
 		delete $self->{_splitoffs_obj};
 	}
+}
+
+=item is_essential
+
+  my $bool = $pv->is_essential;
+
+Returns whether or not this package is essential.
+
+=cut
+
+sub is_essential {
+	my $self = shift;
+	return $self->param_boolean('Essential');
+}
+
+=item built_with_essential
+
+  my $bool = $pv->built_with_essential;
+
+Returns true if and only if building this package involves also building an
+essential package.
+
+=cut
+
+sub built_with_essential {
+	my $self = shift;
+	return scalar(grep { $_->is_essential } $self->get_splitoffs(1, 1));
 }
 
 =back
