@@ -917,18 +917,33 @@ sub do_fetch_all {
 	&call_queue_clear;
 }
 
+=item cmd_description
+
+  cmd_description @pkgspecs;
+
+Print the description of the given packages.
+
+=cut
+
 sub cmd_description {
 	my ($package, @plist);
 
-	@plist = &expand_packages(@_);
+	@plist = &expand_packages({ provides => 1 }, @_);
 	if ($#plist < 0) {
 		die "no package specified for command 'description'!\n";
 	}
 
 	print "\n";
 	foreach $package (@plist) {
-		print $package->get_fullname().": ";
-		print $package->get_description();
+		if ($package->isa('Fink::Package')) {
+			printf "%s is a virtual package, provided by:\n",
+				$package->get_name();
+			printf "  %s\n", $_->get_fullname()
+				for $package->get_all_providers();
+		} else {
+			print $package->get_fullname().": ";
+			print $package->get_description();
+		}
 		print "\n";
 	}
 }
@@ -2262,12 +2277,23 @@ sub real_install {
 
 ### helper routines
 
+=item expand_packages
+
+  my @pkglist = expand_packages @pkgspecs;
+  my @pkglist = expand_packages $opts, @pkgspecs;
+
+Expand a list of package specifications into objects. Options are the same
+as for Fink::PkgVersion::match_package.
+
+=cut
+
 sub expand_packages {
 	my ($pkgspec, $package, @package_list);
-
+	my $opts = UNIVERSAL::isa($_[0], 'HASH') ? shift : {};
+	
 	@package_list = ();
 	foreach $pkgspec (@_) {
-		$package = Fink::PkgVersion->match_package($pkgspec);
+		$package = Fink::PkgVersion->match_package($pkgspec, %$opts);
 		unless (defined $package) {
 			die "no package found for specification '$pkgspec'!\n";
 		}

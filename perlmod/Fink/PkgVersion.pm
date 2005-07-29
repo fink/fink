@@ -1126,7 +1126,7 @@ sub _ensure_splitoffs {
 =item parent_splitoffs
 
   my @splitoffs = $pv->parent_splitoffs;
-  
+
 Returns the splitoffs of this package, not including itself, if this is
 a parent package. Otherwise, returns false.
 
@@ -1874,18 +1874,41 @@ sub get_depends {
 	return &pkglist2lol($self->pkglist_default("Depends",""));
 }
 
-### find package and version by matching a specification
+=item match_package
+
+  my $result = Fink::PkgVersion::match_package($pkgspec, %opts);
+
+Find a PkgVersion by matching a specification. Return undef
+on failure.
+
+Valid options are:
+
+=over 4
+
+=item quiet
+
+Don't print messages. Defaults to false.
+
+=item provides
+
+If no PkgVersion corresponds to the given specification, try to match a
+provided Package. Test with $result->isa('Fink::Package') on return!
+Defaults to false.
+
+=back
+
+=cut
 
 sub match_package {
 	shift;	# class method - ignore first parameter
 	my $s = shift;
-	my $quiet = shift || 0;
+	my %opts = (quiet => 0, provides => 0, @_);
 
 	my ($pkgname, $package, $version, $pkgversion);
 	my ($found, @parts, $i, @vlist, $v, @rlist);
 
 	if ($config->verbosity_level() < 3) {
-		$quiet = 1;
+		$opts{quiet} = 1;
 	}
 
 	# first, search for package
@@ -1910,7 +1933,7 @@ sub match_package {
 	}
 	if (not $found) {
 		print "no package found for \"$s\"\n"
-			unless $quiet;
+			unless $opts{quiet};
 		return undef;
 	}
 
@@ -1922,8 +1945,13 @@ sub match_package {
 
 		$version = &latest_version($package->list_versions());
 		if (not defined $version) {
+			# i guess it's provided then?
+			return $package if $opts{provides};
+			
 			# there's nothing we can do here...
-			die "no version info available for $pkgname\n";
+			print "no version info available for $pkgname\n"
+				unless $opts{quiet};
+			return undef;
 		}
 	} elsif (not defined $package->get_version($version)) {
 		# try to match the version
@@ -1938,7 +1966,9 @@ sub match_package {
 		$version = &latest_version(@rlist);
 		if (not defined $version) {
 			# there's nothing we can do here...
-			die "no matching version found for $pkgname\n";
+			print "no matching version found for $pkgname\n"
+				unless $opts{quiet};
+			return undef;
 		}
 	}
 
