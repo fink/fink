@@ -1,5 +1,9 @@
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Only use Info3 feature with Info3 or higher.
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* FinkVersion.pm.in: Say hello to Info3.
 	
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
