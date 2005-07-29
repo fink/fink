@@ -1,5 +1,9 @@
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* FinkVersion.pm.in: Say hello to Info3.
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Print a nicer message if someone calls match_package
 	and gets a virtual package (but doesn't want virtuals).
 	
