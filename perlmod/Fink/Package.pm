@@ -1217,8 +1217,16 @@ sub handle_infon_block {
 		print "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename\n";
 		return {};
 	}
+	
+	# Remove leading whitespace: Use python-like method, where the first line
+	# sets the max amount of whitespace to remove.
+	my $content = $properties->{$infon};
+	$content =~ m/^(\s*)/;
+	my $spacecount = length($1);
+	$content =~ s/^\s{0,$spacecount}//gm;
+	
 	# okay, parse InfoN and promote it to the top level
-	my $new_properties = &read_properties_var("$infon of \"$filename\"", $properties->{$infon});
+	my $new_properties = &read_properties_var("$infon of \"$filename\"", $content);
 	$new_properties->{infon} = $info_level;
 	return $new_properties;
 }

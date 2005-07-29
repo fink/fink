@@ -1,5 +1,11 @@
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: Remove leading whitespace in Info2, without breaking
+	RFC-822. All of 10.4-transitional indexes fine with this. dmacks, please
+	check that this is ok!
+
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: Remove build-as-nobody warning, it's been well enough
 	tested by now I'd say.
 
