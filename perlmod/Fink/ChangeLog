@@ -1,5 +1,9 @@
 2005-07-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: infon isn't always present.
+
+2005-07-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Services.pm, PkgVersion.pm: Have read_properties* use an options hash
 	rather than ordered parameters. Add an option for python-style whitespace
 	removal on both top-level and heredocs.

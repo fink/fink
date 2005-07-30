@@ -736,11 +736,12 @@ sub add_splitoff {
 	my ($properties, $package, $pkgname, @splitoffs);
 	
 	# if we're not Info3+, use old-style whitespace removal
-	$splitoff_data =~ s/^\s+//gm if $self->{infon} < 3;
+	$splitoff_data =~ s/^\s+//gm if $self->info_level < 3;
 	
 	# get the splitoff package name
 	$properties = &read_properties_var("$fieldname of \"$filename\"",
-		$splitoff_data, { remove_space => ($self->{infon} >= 3) });
+		$splitoff_data,
+		{ remove_space => ($self->info_level >= 3) });
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
 		print "No package name for $fieldname in $filename\n";
@@ -4139,6 +4140,21 @@ essential package.
 sub built_with_essential {
 	my $self = shift;
 	return scalar(grep { $_->is_essential } $self->get_splitoffs(1, 1));
+}
+
+=item info_level
+
+  my $info_level = $pv->info_level;
+
+Get the value of N in the InfoN that wrapped this package, or 1 (one) if no
+InfoN wrapper was used.
+
+=cut
+
+sub info_level {
+	my $self = shift;
+	my $parent = $self->has_parent ? $self->get_parent : $self;
+	return $parent->param_default('infon', 1);
 }
 
 =back
