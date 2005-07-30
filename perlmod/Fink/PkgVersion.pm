@@ -735,11 +735,12 @@ sub add_splitoff {
 	my $filename = $self->{_filename};
 	my ($properties, $package, $pkgname, @splitoffs);
 	
-	# get rid of any indention first
-	$splitoff_data =~ s/^\s+//gm;
+	# if we're not Info3+, use old-style whitespace removal
+	$splitoff_data =~ s/^\s+//gm if $self->{infon} < 3;
 	
 	# get the splitoff package name
-	$properties = &read_properties_var("$fieldname of \"$filename\"", $splitoff_data);
+	$properties = &read_properties_var("$fieldname of \"$filename\"",
+		$splitoff_data, { remove_space => ($self->{infon} >= 3) });
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
 		print "No package name for $fieldname in $filename\n";
@@ -2656,7 +2657,9 @@ sub phase_install {
 		# get rid of any indention first
 		$vars =~ s/^\s+//gm;
 		# Read the set if variavkes (but don't change the keys to lowercase)
-		$properties = &read_properties_var('runtimevars of "'.$self->{_filename}.'"', $vars, 1);
+		$properties = &read_properties_var(
+			'runtimevars of "'.$self->{_filename}.'"', $vars,
+			{ case_sensitive => 1});
 
 		if(scalar keys %$properties > 0){
 			$install_script .= "\n/usr/bin/install -d -m 755 %i/etc/profile.d";

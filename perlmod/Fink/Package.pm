@@ -1218,17 +1218,9 @@ sub handle_infon_block {
 		return {};
 	}
 	
-	my $content = $properties->{$infon};
-	if ($info_level >= 3) {
-		# Remove leading whitespace: Use python-like method, where the
-		# first line sets the max amount of whitespace to remove.
-		$content =~ m/^(\s*)/;
-		my $spacecount = length($1);
-		$content =~ s/^\s{0,$spacecount}//gm;
-	}
-	
 	# okay, parse InfoN and promote it to the top level
-	my $new_properties = &read_properties_var("$infon of \"$filename\"", $content);
+	my $new_properties = &read_properties_var("$infon of \"$filename\"",
+		$properties->{$infon}, { remove_space => ($info_level >= 3) });
 	$new_properties->{infon} = $info_level;
 	return $new_properties;
 }

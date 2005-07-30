@@ -1,3 +1,12 @@
+2005-07-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, PkgVersion.pm: Have read_properties* use an options hash
+	rather than ordered parameters. Add an option for python-style whitespace
+	removal on both top-level and heredocs.
+	* Package.pm, PkgVersion.pm: Use new option for Info3+
+	* PkgVersion.pm: Don't strip whitespace from SplitOffs if Info3+, let
+	read_properties* do that.
+	
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: Only use Info3 feature with Info3 or higher.

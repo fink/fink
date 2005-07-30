@@ -111,7 +111,7 @@ sub read_config {
 =item read_properties
 
     my $property_hash = read_properties $filename;
-    my $property_hash = read_properties $filename, $notLC;
+    my $property_hash = read_properties $filename, $opts;
 
 Reads a text file $filename and returns a ref to a hash of its
 fields. See the description of read_properties_lines for more
@@ -124,19 +124,19 @@ If $filename cannot be read, program will die with an error message.
 sub read_properties {
 	 my ($file) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
-	 return read_properties_lines("\"$file\"", $notLC, @lines);
+	 return read_properties_lines("\"$file\"", $opts, @lines);
 }
 
 =item read_properties_var
 
     my $property_hash = read_properties_var $filename, $string;
-    my $property_hash = read_properties_var $filename, $string, $notLC;
+    my $property_hash = read_properties_var $filename, $string, $opts;
 
 Parses the multiline text $string and returns a ref to a hash of
 its fields. See the description of read_properties_lines for more
@@ -149,17 +149,18 @@ sub read_properties_var {
 	 my ($file) = shift;
 	 my ($var) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 my ($line);
 
 	 @lines = split /^/m,$var;
-	 return read_properties_lines($file, $notLC, @lines);
+	 return read_properties_lines($file, $opts, @lines);
 }
 
 =item read_properties_lines
 
-    my $property_hash = read_properties_lines $filename, $notLC, @lines;
+    my $property_hash = read_properties_lines $filename, @lines;
+    my $property_hash = read_properties_lines $filename, $opts, @lines;
 
 This is function is not exported. You should use read_properties_var,
 read_properties, or read_properties_multival instead.
@@ -167,11 +168,6 @@ read_properties, or read_properties_multival instead.
 Parses the list of text strings @lines and returns a ref to a hash of
 its fields. The string $filename is used in parsing-error messages but
 the file is not accessed.
-
-If $notLC is true, fields are treated in a case-sensitive manner. If
-$notLC is false (including undef), field case is ignored (and
-cannonicalized to lower-case). In functions where passing $notLC is
-optional, not passing is equivalent to false.
 
 See the Fink Packaging Manual, section 2.2 "File Format" for
 information about the format of @lines text.
@@ -203,12 +199,48 @@ Multiline values (including all the lines of fields in a splitoff) are
 returned as a single multiline string (i.e., with embedded \n), not as
 a ref to another hash or array.
 
+The following options can be put in an $opts hash:
+
+=over 4
+
+=item case_sensitive
+
+If true, fields are treated in a case-sensitive manner. If
+false (including undef), field case is ignored (and
+cannonicalized to lower-case). Defaults to false.
+
+=item remove_space
+
+If true, will do doing python-style leading whitespace removal, on both the
+top level and any heredocs.
+In this technique, the first line of a heredoc establishes the number of
+whitespace characters that are removed from subsequent lines. Defaults to
+false.
+
 =cut
+
+# PRIVATE: Given a line in $_, and a ref to a leading-space var, remove
+# leading space appropriately
+sub _remove_space {
+	my $count = shift;
+	if (defined $$count) {
+		s/^\s{0,$$count}//;
+	} else {
+		s/^(\s*)//;
+		$$count = length($1);
+#		print "LEADING $$count: $_\n";
+	}
+}
 
 sub read_properties_lines {
 	my ($file) = shift;
+	my %opts = (
+		case_sensitive	=> 0,
+		remove_space	=> 0,
+		UNIVERSAL::isa($_[0], 'HASH') ? %{shift @_} : (),
+	);
 	# do we make the keys all lowercase
-	my ($notLC) = shift || 0;
+	my ($notLC) = $opts{case_sensitive};
 	my (@lines) = @_;
 	my ($hash, $lastkey, $heredoc, $linenum);
 	my $cvs_conflicts;
@@ -217,12 +249,17 @@ sub read_properties_lines {
 	$lastkey = "";
 	$heredoc = 0;
 	$linenum = 0;
-
+	my ($spacecount, $hdoc_spacecount); # Both top-level and heredocs
+	
 	foreach (@lines) {
 		$linenum++;
 		chomp;
+		_remove_space(\$spacecount) if ($opts{remove_space});
+			
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
+			_remove_space(\$hdoc_spacecount) if ($opts{remove_space});
+
 			if (/^\s*<<\s*$/) {
 				# The heredoc ends here; decrese the nesting level
 				$heredoc--;
@@ -234,6 +271,7 @@ sub read_properties_lines {
 					# The heredoc really ended; remove trailing empty lines.
 					$hash->{$lastkey} =~ s/\s+$//;
 					$hash->{$lastkey} .= "\n";
+					$hdoc_spacecount = undef; # Next heredoc different?
 				}
 			} else {
 				# Append line to the heredoc.
@@ -284,7 +322,7 @@ sub read_properties_lines {
 =item read_properties_multival
 
     my $property_hash = read_properties_multival $filename;
-    my $property_hash = read_properties_multival $filename, $notLC;
+    my $property_hash = read_properties_multival $filename, $opts;
 
 Reads a text file $filename and returns a ref to a hash of its fields,
 with each value being a ref to a list of values for that field. See
@@ -298,19 +336,19 @@ If $filename cannot be read, program will die with an error message.
 sub read_properties_multival {
 	 my ($file) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
-	 return read_properties_multival_lines($file, $notLC, @lines);
+	 return read_properties_multival_lines($file, $opts, @lines);
 }
 
 =item read_properties_multival_var
 
     my $property_hash = read_properties_multival_var $filename, $string;
-    my $property_hash = read_properties_multival_var $filename, $string, $notLC;
+    my $property_hash = read_properties_multival_var $filename, $string, $opts;
 
 Parses the multiline text $string and returns a ref to a hash of its
 fields, with each value being a ref to a list of values for that
@@ -325,17 +363,18 @@ sub read_properties_multival_var {
 	 my ($file) = shift;
 	 my ($var) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 my ($line);
 
 	 @lines = split /^/m,$var;
-	 return read_properties_multival_lines($file, $notLC, @lines);
+	 return read_properties_multival_lines($file, $opts, @lines);
 }
 
 =item read_properties_multival_lines
 
-    my $property_hash = read_properties_multival_lines $filename, $notLC, @lines;
+    my $property_hash = read_properties_multival_lines $filename, @lines;
+    my $property_hash = read_properties_multival_lines $filename, $opts, @lines;
 
 This is function is not exported. You should use read_properties_var,
 read_properties, read_properties_multival, or read_properties_multival_var 
@@ -365,7 +404,11 @@ differences:
 
 sub read_properties_multival_lines {
 	my ($file) = shift;
-	my ($notLC) = shift || 0;
+	my %opts = (
+		case_sensitive	=> 0,
+		UNIVERSAL::isa($_[0], 'HASH') ? %{shift @_} : (),
+	);
+	my $notLC = $opts{case_sensitive};
 	my (@lines) = @_;
 	my ($hash, $lastkey, $lastindex);
 
