@@ -1832,8 +1832,19 @@ sub real_install {
 			}
 
 			# check dependencies
+			next PACKAGELOOP if grep { ($_->[FLAG] & 2) == 0 } @extendeddeps;
+			
+			### switch debs during long builds
 			foreach $dep (@extendeddeps) {
-				next PACKAGELOOP if (($dep->[FLAG] & 2) == 0);
+				if (!$dep->[PKGVER]->is_installed()) {
+					### If the deb exists, we install it without asking.
+					### If it doesn't exist, we allow the process to continue
+					### (it will quit with an error, and the user must then
+					### start over)
+					if ($dep->[PKGVER]->is_present()) {
+						Fink::PkgVersion::phase_activate($dep->[PKGVER]);
+					}
+				}
 			}
 
 			my @batch_install;
