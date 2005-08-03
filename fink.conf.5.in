@@ -336,7 +336,7 @@ flag has the same effect, but only operates on that single
 invocation.
 .It Cm KeepBuildDir: Ar boolean 
 Causes Fink not to delete the directory
-.Pa @PREFIX@/src/[name]-[version]-[revision]
+.Pa [name]-[version]-[revision]
 in the
 .Cm Buildpath 
 after building a package. Defaults to false. 
