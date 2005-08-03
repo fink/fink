@@ -1,3 +1,7 @@
+2005-08-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.conf.5.in: Document new Buildpath on Tiger.
+
 2005-07-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Makefile: Document 'make clean'
