@@ -263,6 +263,37 @@ sub spotlight_warning {
 	return 0;
 }	
 
+=item default_location
+
+  my ($continent_code, $country_code) = default_location $keyinfo;
+
+Find the default location for this system. The parameter $keyinfo must be a
+hash-ref of the available country and continent codes.
+
+=cut
+
+# If we can't find a real location (eg: if the user is using pure Darwin?)
+# use the US since that's where most users are. 
+our @fallback_location = ('nam', 'nam-us');
+
+sub default_location {
+	my ($keyinfo) = @_;
+	
+	# Find what the system thinks the country is
+	my $syscountry =
+		`defaults read /Library/Preferences/.GlobalPreferences Country`;
+	chomp $syscountry;
+	return @fallback_location if $? != 0 || !defined $syscountry
+		|| $syscountry !~ /^[A-Z]{2}$/;
+	
+	$syscountry = lc $syscountry;
+	my @loc = grep { /^[a-z]{3}-$syscountry$/ } keys %$keyinfo;
+	return @fallback_location unless scalar(@loc);
+	
+	$loc[0] =~ /^(\w{3})/;
+	return ($1, "$1-$syscountry");
+}
+
 =item choose_mirrors
 
 mirror selection (returns boolean indicating if mirror selections are
@@ -368,10 +399,12 @@ sub choose_mirrors {
 	}
 	
 	### step 1: choose a continent
+	my ($default_continent, $default_country) = default_location $keyinfo;
 	if ((!$obsolete_only) or (!$config->has_param("MirrorContinent"))) {	
 		$continent = &prompt_selection("Your continent?",
 			intro   => "Choose a continent:",
-			default => [ value => $config->param_default("MirrorContinent", "-") ],
+			default => [ value => $config->param_default("MirrorContinent",
+				$default_continent) ],
 			choices => [
 				map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
 					sort keys %$keyinfo
@@ -386,7 +419,8 @@ sub choose_mirrors {
 	if ((!$obsolete_only) or (!$config->has_param("MirrorCountry"))) {	
 		$country = &prompt_selection("Your country?",
 			intro   => "Choose a country:",
-			default => [ value => $config->param_default("MirrorCountry", $continent) ],
+			default => [ value => $config->param_default("MirrorCountry",
+				$default_country) ], # Fails gracefully if continent wrong for country
 			choices => [
 				"No selection - display all mirrors on the continent" => $continent,
 				map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo

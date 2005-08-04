@@ -1,3 +1,11 @@
+2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* bootstrap.pl: When selecting the basepath:
+		- Don't make /sw the default if we'll refuse it later (but warn users
+		that we're giving them a non-standard default.)
+		- Tell users that if they're not in /sw, they won't get the bindist.
+		- If we refuse a basepath, ask for a new one instead of dying.
+
 2005-08-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink.conf.5.in: Document new Buildpath on Tiger.
