@@ -1,3 +1,8 @@
+2004-08-04  Daniel Macks  <dmacks@netspace.org>
+
+        * remove the contents of this directory, since we no longer
+        support bootstrapping on 10.2-gcc3.
+
 2005-07-13  Daniel Macks  <dmacks@netspace.org>
 
 	* dpkg-bootstrap.info: sync with HEAD
