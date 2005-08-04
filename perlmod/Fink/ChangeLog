@@ -1,3 +1,7 @@
+2005-08-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: Clean up darwin version check.
+
 2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Configure.pm: Auto-detect user's country.
