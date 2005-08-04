@@ -1,3 +1,8 @@
+2004-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* remove the contents of this directory, since we no longer
+	support bootstrapping on 10.2-gcc3.
+
 2005-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* base-files.info, dpkg.info, file-spec-pm561.info, fink-mirrors.info,
