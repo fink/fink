@@ -54,6 +54,7 @@ use DB_File;
 use Hash::Util;
 use File::Basename qw(&dirname &basename);
 use Carp qw(confess);
+use File::Temp qw(tempdir);
 
 use strict;
 use warnings;
@@ -3707,8 +3708,6 @@ EOF
 
 sub get_env {
 	my $self = shift;
-	my ($varname, $expand, $ccache_dir);
-	my %script_env;
 
 	# just return cached copy if there is one
 	if (exists $self->{_script_env} and not $self->{_bootstrap}) {
@@ -3758,6 +3757,9 @@ sub get_env {
 #		$defaults{"CXXFLAGS"} = "-fabi-version=2";
 #	}
 
+	# uncomment this to be able to use distcc -- not officially supported!
+	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+
 	# lay the groundwork for prebinding
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
 		mkdir_p "$basepath/var/lib/fink/prebound" or
@@ -3773,10 +3775,12 @@ END
 		}
 	}
 
-	# start with a clean the environment
-	# uncomment this to be able to use distcc -- not officially supported!
-	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
-	%script_env = ("HOME" => $ENV{"HOME"});
+	# start with a clean environment
+	my %script_env = ();
+
+	# create a dummy HOME directory
+	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
+	$script_env{"HOME"} = tempdir( CLEANUP => 1 );
 
 	# add system path
 	$script_env{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";
@@ -3788,7 +3792,7 @@ END
 	}
 	
 	# Stop ccache stompage: allow user to specify directory via fink.conf
-	$ccache_dir = $config->param_default("CCacheDir", "$basepath/var/ccache");
+	my $ccache_dir = $config->param_default("CCacheDir", "$basepath/var/ccache");
 	unless ( lc $ccache_dir eq "none" ) {
 		# make sure directory exists
 		if ( not -d $ccache_dir and not mkdir_p($ccache_dir) ) {
@@ -3817,8 +3821,8 @@ END
 	$script_env{"TERM"} = $ENV{"TERM"};
 
 	# set variables according to the info file
-	$expand = $self->{_expand};
-	foreach $varname (@setable_env_vars) {
+	my $expand = $self->{_expand};
+	foreach my $varname (@setable_env_vars) {
 		my $s;
 		# start with fink's default unless .info says not to
 		$s = $defaults{$varname} unless $self->param_boolean("NoSet$varname");
