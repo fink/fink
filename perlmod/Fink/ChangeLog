@@ -1,3 +1,7 @@
+2005-08-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: Clean up darwin version check.
+
 2005-08-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm: backport code which switches debs during long builds
