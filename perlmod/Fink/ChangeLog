@@ -1,3 +1,8 @@
+2005-08-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm, Package.pm, SelfUpdate.pm, Services.pm:
+	Naively decouple Shlibs and Package.
+
 2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm, Engine.pm, PkgVersion.pm: Incremental indexing improvements:

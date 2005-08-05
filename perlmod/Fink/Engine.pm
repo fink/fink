@@ -232,6 +232,7 @@ sub process {
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
+		Fink::Shlibs->scan_all();
 	}
 
 	if (Fink::Config::get_option("maintainermode")) {
@@ -339,7 +340,7 @@ EOF
 	# Need to auto-index if specifically running 'fink index'!
 	$config->set_param("NoAutoIndex", 0);
 	if ($full) {
-		Fink::Package->forget_packages(2);
+		Fink::Package->forget_packages();
 	}
 	Fink::Package->update_db(no_load => 1, no_fastload => 1);
 	Fink::Shlibs->update_shlib_db();
@@ -460,6 +461,7 @@ sub do_real_list {
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
@@ -1029,7 +1031,8 @@ EOF
 		exit 0;
 	}
 
-	Fink::Package->require_packages(0, quiet => 1);
+	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all(quiet => 1);
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
@@ -2245,8 +2248,8 @@ sub real_install {
 			# Reinstall buildconficts after the build
 			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
 			### Update shlibs after each install for next build
-			Fink::Package->forget_packages(1);
-			Fink::Package->require_packages(1, quiet => 1);
+			Fink::Shlibs->forget_packages();
+			Fink::Shlibs->scan_all(quiet => 1);
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {
@@ -2416,6 +2419,7 @@ EOF
 	}
 
 	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 

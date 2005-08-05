@@ -217,6 +217,8 @@ In this technique, the first line of a heredoc establishes the number of
 whitespace characters that are removed from subsequent lines. Defaults to
 false.
 
+=back
+
 =cut
 
 # PRIVATE: Given a line in $_, and a ref to a leading-space var, remove

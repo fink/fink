@@ -408,6 +408,7 @@ sub bootstrap {
 
 	# make sure we have the package descriptions and shlibs
 	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all();
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();

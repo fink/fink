@@ -373,20 +373,23 @@ sub list_essential_packages {
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
-sub require_packages {
-	shift;	# class method - ignore first parameter
-	# 0 = both
-	# 1 = shlibs only
-	# 2 = packages only
-	my $oper = shift || 0;
+=item require_packages
 
-	### Check and get both packages and shlibs (one call)
-	if (!defined $packages && $oper != 1) {
-		Fink::Package->load_packages;
-	}
-	if (!$have_shlibs && $oper != 2) {
-		Fink::Shlibs->scan_all(@_);
-	}
+  Fink::Package->require_packages;
+
+Load the package database into memory
+
+=cut
+
+sub require_packages {
+	my $class = shift;
+# 0 => both
+# 1 => shlibs
+# 2 => package
+	$class->load_packages unless defined $packages;
+#	if (!$have_shlibs && $oper != 2) {
+#		Fink::Shlibs->scan_all(@_);
+#	}
 }
 
 =item check_dbdirs
@@ -612,48 +615,49 @@ sub search_comparedb {
 =item forget_packages
 
   Fink::Package->forget_packages;
-  Fink::Package->forget_packages $type, $just_memory;
+  Fink::Package->forget_packages $options;
 
-Removes the in-memory package database. If $type is 1, just removes the shlibs
-database, if it is 2 removes just the package database, if it is 0 removes both.
+Removes the package database from memory. The hash-ref $options can contain the
+following keys:
 
-If $just_memory is not true, also invalidates any cache of package database
-that currently exists on disk.
+=over 4
+
+=item disk
+
+If B<disk> is present and true, in addition to removing the package database
+from memory, any on-disk cache is removed as well. This option defaults to
+false and should be used sparingly.
+
+=back
 
 =cut
 
 sub forget_packages {
 	my $class = shift;
-	
-	# 0 = both
-	# 1 = shlibs only
-	# 2 = packages only
-	my $oper = shift || 0;
-	my $just_memory = shift || 0;
-
-	if ($oper != 1) {
-		$packages = undef;
-		@essential_packages = ();
-		$essential_valid = 0;
-		%Fink::PkgVersion::shared_loads = ();
-		$valid_since = undef;
-		
-		if (!$just_memory && $> == 0) {	# Only if we're root
-			my $lock = lock_wait($class->db_lockfile, exclusive => 1,
-				desc => "another Fink's indexing");
-			
-			# Create a new DB dir (possibly deleting the old one)
-			$class->forget_db_dir();
-			$class->check_dbdirs(1, 1);
-			
-			rm_f($class->db_index);
-			rm_f($class->db_proxies);
-			close $lock if $lock;
-		}
+	my $optarg = shift || {};
+	if (ref($optarg) ne 'HASH') {
+		die "There's a new API for forget_packages, please use it, I won't "
+			. "change it again.\n";
 	}
-
-	if ($oper != 2) {
-        	Fink::Shlibs->forget_packages();
+	my %opts = (disk => 0, %$optarg);
+	
+	$packages = undef;
+	@essential_packages = ();
+	$essential_valid = 0;
+	%Fink::PkgVersion::shared_loads = ();
+	$valid_since = undef;
+	
+	if ($opts{disk} && $> == 0) {	# Only if we're root
+		my $lock = lock_wait($class->db_lockfile, exclusive => 1,
+			desc => "another Fink's indexing");
+		
+		# Create a new DB dir (possibly deleting the old one)
+		$class->forget_db_dir();
+		$class->check_dbdirs(1, 1);
+		
+		rm_f($class->db_index);
+		rm_f($class->db_proxies);
+		close $lock if $lock;
 	}
 }
 
@@ -950,7 +954,8 @@ sub update_db {
 			eval { $idx = Storable::lock_retrieve($class->db_index); };
 			if ($@ || !defined $idx) {
 				close $lock if $lock;
-				$class->forget_packages(2, 0); # Try to force a re-gen next time
+				# Try to force a re-gen next time
+				$class->forget_packages({ disk => 1 });
 				die "It appears that Fink's package database is corrupted. "
 					. "Please run 'fink index -f' to recreate it.\n";
 			}
