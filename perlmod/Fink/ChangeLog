@@ -1,3 +1,7 @@
+2005-08-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: .info fieldnames are canonically lower-case
+
 2005-08-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Bootstrap.pm, Engine.pm, Package.pm, SelfUpdate.pm, Services.pm:
