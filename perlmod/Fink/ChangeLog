@@ -1,3 +1,7 @@
+2005-08-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: .info fieldnames are canonically lower-case
+
 2005-08-04  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: Clean up darwin version check.

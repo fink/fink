@@ -260,8 +260,6 @@ our %pkglist_fields = map {lc $_, 1}
 
 END { }				# module clean-up code here (global destructor)
 
-
-
 #
 # Check a given .deb file for standard compliance
 # returns boolean of whether everything is okay
@@ -448,7 +446,7 @@ sub validate_info_file {
 	# check SourceN and corresponding fields
 
 	# find them all
-	my %source_fields = map { lc $_, 1 } grep { /^Source(|[2-9]|[1-9]\d+)$/i } keys %$properties;
+	my %source_fields = map { lc $_, 1 } grep { /^source(|[2-9]|[1-9]\d+)$/ } keys %$properties;
 
 	# have Source or SourceN when we shouldn't
 	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
@@ -535,7 +533,7 @@ sub validate_info_file {
 		}
 
 		# Check for any source-related field without associated Source(N) field
-		if ($field =~ /^Source(\d*)-MD5|Source(\d*)Rename|Tar(\d*)FilesRename|Source(\d+)ExtractDir$/) {
+		if ($field =~ /^source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
 			my $sourcefield = defined $+  # corresponding Source(N) field
 				? "source$+"
 				: "source";  
@@ -725,7 +723,7 @@ sub validate_info_component {
 	} else {
 		@pkg_required_fields = @required_fields;
 		%pkg_valid_fields = %valid_fields;
-	}		
+	}
 
 	my $value;
 	my $looks_good = 1;
