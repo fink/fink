@@ -1,3 +1,7 @@
+2005-08-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: t/testmore.pl now returns true on success
+
 2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* bootstrap.pl: When selecting the basepath:
