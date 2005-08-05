@@ -26,7 +26,8 @@ use Fink::Base;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent &lock_wait &store_rename);
-use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
+use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr
+				 &rejoin_text);
 use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
@@ -35,6 +36,7 @@ use Fink::Shlibs;
 use File::Find;
 use File::Basename;
 use Symbol qw();
+use Fcntl qw(:mode);
 
 use strict;
 use warnings;
@@ -42,8 +44,12 @@ use warnings;
 our $VERSION = 1.00;
 our @ISA = qw(Fink::Base);
 
-our $have_shlibs;
-our $packages = undef;
+our $have_shlibs; # Have we loaded the shlibs?
+
+our $packages = undef;		# The loaded packages (undef if unloaded)
+our $valid_since = undef;	# The earliest time with the same DB as now
+
+# Cache of essential packages
 our @essential_packages = ();
 our $essential_valid = 0;
 
@@ -385,7 +391,7 @@ sub require_packages {
 
 =item check_dbdirs
 
-  my ($path, $fh) = Fink::Package->check_dbdirs $write, $force_create;
+  my ($path, $fh, $new) = Fink::Package->check_dbdirs $write, $force_create;
 
 Process the DB dirs. Returns the good directory found/created, and the lock
 already acquired.
@@ -459,7 +465,7 @@ sub check_dbdirs {
 			mkdir_p($current);
 		}
 	}
-			
+		
 	# Try to delete old dirs
 	my @old = grep { $_ ne $current } @dirs;
 	if ($write) {
@@ -489,6 +495,13 @@ Creates it if it does not exist and $write is true.
 
 Forget the current DB directory.
 
+=item is_new_db_dir
+
+  my $bool = Fink::Package->is_new_db_dir;
+
+Returns true if the current DB directory is new (as opposed to already used
+and containing a DB).
+
 =cut
 
 {
@@ -500,14 +513,20 @@ Forget the current DB directory.
 		my $write = shift || 0;
 		
 		unless (defined $cache_db_dir) {
-			($cache_db_dir, $cache_db_dir_fh) = $class->check_dbdirs($write, 0);
+			($cache_db_dir, $cache_db_dir_fh) =
+				$class->check_dbdirs($write, 0);
 		}
 		return $cache_db_dir;
 	}
 	
 	sub forget_db_dir {
 		close $cache_db_dir_fh if $cache_db_dir_fh;
-		($cache_db_dir, $cache_db_dir_fh) = (undef, undef);
+		($cache_db_dir, $cache_db_dir_fh) = (undef) x 2;
+	}
+	
+	sub is_new_db_dir {
+		my $class = shift;
+		return !-f ($class->db_dir . "/used");
 	}
 }
 
@@ -616,6 +635,8 @@ sub forget_packages {
 		$packages = undef;
 		@essential_packages = ();
 		$essential_valid = 0;
+		%Fink::PkgVersion::shared_loads = ();
+		$valid_since = undef;
 		
 		if (!$just_memory && $> == 0) {	# Only if we're root
 			my $lock = lock_wait($class->db_lockfile, exclusive => 1,
@@ -713,6 +734,7 @@ sub update_index {
 	my %new_idx = (
 		inits => { map { $_->get_fullname => $_->get_init_fields } @pvs },
 		cache => $cache,
+		info_mtime => (stat($info))[9] || 0,
 	);
 	
 	return ($idx->{infos}{$info} = \%new_idx);
@@ -745,8 +767,8 @@ sub pass1_update {
 			unless (defined $fidx) {
 				$load = 1;
 			} elsif (!$noauto) {
-				my $cache = $fidx->{cache};
-				$load = 1 if !-f $cache || -M $cache > -M $info;
+				$load = 1 if !-f $fidx->{cache}
+					|| $fidx->{info_mtime} < (stat($info))[9];
 			}
 		}
 		
@@ -759,9 +781,12 @@ sub pass1_update {
 		# Print a nice message
 		if ($uncached == 0 && &get_term_width) {
 			if ($> != 0) {
-				&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
-			}
-
+				print_breaking_stderr rejoin_text <<END;
+Fink has detected that your package index cache is missing or out of date, but
+does not have privileges to modify it. Re-run fink as root, for example with a
+\"fink index\" command, to update the cache.\n
+END
+			}				
 			print STDERR "Reading package info...";
 			$uncached = 1;
 		}
@@ -780,8 +805,9 @@ sub pass1_update {
 		# Update the cache
 		if ($ops->{write}) {
 			my $dir = dirname $fidx->{cache};
-			mkdir_p($dir) unless -f $dir;
+			mkdir_p($dir) unless -d $dir;
 			
+			touch($class->db_dir . "/used"); # No longer clean
 			unless (store_rename(\%store, $fidx->{cache})) {
 				delete $idx->{infos}{$info};
 			}
@@ -868,10 +894,10 @@ sub update_db {
 	my %options = @_;
 	my $load = !$options{no_load};
 	my $try_cache = !$options{no_fastload};
-		
+	
 	my %ops = ( load => $load );
 	@ops{'read', 'write'} = $class->can_read_write_db;
-	# If we can't write and don't want to read, what's the point?
+	# If we can't write and don't want to load, what's the point?
 	return if !$ops{load} && !$ops{write}; 
 	
 	# Get the lock
@@ -895,31 +921,50 @@ sub update_db {
 	# Get the cache dir; also notifies fink that the PDB is in use
 	my $dbdir = $class->db_dir($ops{write});
 	
-	# Can we use the index?
-	my $idx_ok = ($ops{read} || $ops{write}) && -r $class->db_index;
+	# Can we use the index? Definitely not if we have a whole new db_dir.
+	my $idx_ok = ($ops{read} || $ops{write}) && !$class->is_new_db_dir();
 	
 	# Can we use the proxy DB?
 	my $proxy_ok = $idx_ok && $try_cache && -r $class->db_proxies;
+	# Proxy must be newer, otherwise it could be out of date from a load-only
+	$proxy_ok &&= (-M $class->db_proxies < (-M $class->db_index || 0));
 	$proxy_ok &&= !$class->search_comparedb
 		unless $config->param_boolean("NoAutoIndex");
 	
 	if ($proxy_ok) {
-		$packages = Storable::lock_retrieve($class->db_proxies);
+		# Just use the proxies
+		$valid_since = (stat($class->db_proxies))[9];
+		eval { $packages = Storable::lock_retrieve($class->db_proxies); };
+		if ($@ || !defined $packages) {
+			die "It appears that part of Fink's package database is corrupted. "
+				. "Please run 'fink index' to correct the problem.\n";
+		}
 		close $lock if $lock;
 	} else {
+		rm_f($class->db_proxies); # Probably not valid anymore
+		
 		# Load the index
-		my $idx = { infos => { }, 'next' => 1 };
+		$valid_since = time;
+		my $idx;
 		if ($idx_ok) {
-			$idx = Storable::lock_retrieve($class->db_index);
+			eval { $idx = Storable::lock_retrieve($class->db_index); };
+			if ($@ || !defined $idx) {
+				close $lock if $lock;
+				$class->forget_packages(2, 0); # Try to force a re-gen next time
+				die "It appears that Fink's package database is corrupted. "
+					. "Please run 'fink index -f' to recreate it.\n";
+			}
+		} else {
+			$idx = { infos => { }, 'next' => 1, };
 		}
-	
+		
 		# Get the .info files
 		my @infos = $class->get_all_infos;
 		
 		# Pass 1: Load outdated infos
 		$class->pass1_update(\%ops, $idx, @infos);
 		close $lock if $lock;
-		return unless $load;
+		return unless $ops{load};
 		
 		# Pass 2: Scan for files to load: Last one reached for each fullname
 		my %name2latest;
@@ -939,6 +984,21 @@ sub update_db {
 		}
 	}		
 } 
+
+=item db_valid_since
+
+  my $time = Fink::Package->db_valid_since;
+
+Get earliest time (in seconds since the epoch) at which the DB is known to be
+exactly the same as now. This allows clients to cache the contents of the DB,
+only reloading if $cache_time < Fink::Package->db_valid_since;
+
+=cut
+
+sub db_valid_since {
+	my $class = shift;
+	return $valid_since;
+}
 
 =item tree_infos
 
@@ -989,11 +1049,11 @@ sub packages_from_info_file {
 	
 	my $pkgname = $properties->{package};
 	unless ($pkgname) {
-		print "No package name in $filename\n";
+		print_breaking_stderr "No package name in $filename";
 		next;
 	}
 	unless ($properties->{version}) {
-		print "No version number for package $pkgname in $filename\n";
+		print_breaking_stderr "No version number for package $pkgname in $filename";
 		next;
 	}
 	# fields that should be converted from multiline to
@@ -1201,20 +1261,20 @@ sub handle_infon_block {
 	}
 	# file contains an InfoN block
 	if (@junk) {
-		print "Multiple InfoN blocks in $filename; skipping\n";
+		print_breaking_stderr "Multiple InfoN blocks in $filename; skipping";
 		return {};
 	}
 	unless (keys %$properties == 1) {
 		# if InfoN, entire file must be within block (avoids
 		# having to merge InfoN block with top-level fields)
-		print "Field(s) outside $infon block! Skipping $filename\n";
+		print_breaking_stderr "Field(s) outside $infon block! Skipping $filename";
 		return {};
 	}
 	my ($info_level) = ($infon =~ /(\d+)/);
 	my $max_info_level = &Fink::FinkVersion::max_info_level;
 	if ($info_level > $max_info_level) {
 		# make sure we can handle this InfoN
-		print "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename\n";
+		print_breaking_stderr "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename";
 		return {};
 	}
 	

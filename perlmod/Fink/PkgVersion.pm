@@ -145,9 +145,11 @@ sub load_fields {
 		$loaded = $shared_loads{$file};
 	} else {
 #			print "Loading PkgVersion " . $self->get_fullname . " from: $file\n";
-		unless ($loaded = Storable::lock_retrieve($file)) {
-			$shared_loads{$file} = { }; # Don't try again
-			return $self;
+		eval { $loaded = Storable::lock_retrieve($file); };
+		if ($@ || !defined $loaded) {
+			die "It appears that part of Fink's package database is corrupted "
+				. "or missing. Please run 'fink index' to correct the "
+				. "problem.\n";
 		}
 		$shared_loads{$file} = $loaded;
 	}

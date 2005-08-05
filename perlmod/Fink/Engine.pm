@@ -336,6 +336,8 @@ EOF
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	
+	# Need to auto-index if specifically running 'fink index'!
+	$config->set_param("NoAutoIndex", 0);
 	if ($full) {
 		Fink::Package->forget_packages(2);
 	}

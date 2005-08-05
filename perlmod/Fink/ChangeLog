@@ -1,3 +1,13 @@
+2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm, Engine.pm, PkgVersion.pm: Incremental indexing improvements:
+		- Race condition removal
+		- Nice error messages if part of DB is missing or corrupt
+		- Takes into account date of .info file, so should now work with
+		selfupdate-rsync
+		- Has db_valid_since method to be used by FinkCommander for caching DB
+		- forget_packages should actually forget everything
+
 2005-08-04  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Use a dummy HOME when running *Script.
