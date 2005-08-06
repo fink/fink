@@ -200,9 +200,6 @@ sub initialize {
 		if ($parent->has_param('maintainer')) {
 			$self->{'maintainer'} = $parent->{'maintainer'};
 		}
-		if ($parent->has_param('essential')) {
-			$self->{'_parentessential'} = $parent->{'essential'};
-		}
 
 		# handle inherited fields
 		our @inherited_pkglists =
@@ -3513,6 +3510,33 @@ sub get_ruby_dir_arch {
 	my $rubycmd = get_path('ruby'.$rubyversion);
 
 	return ($rubydirectory, $rubyarchdir, $rubycmd);
+}
+
+=item is_essential
+
+  my $bool = $pv->is_essential;
+
+Returns whether or not this package is essential.
+
+=cut
+
+sub is_essential {
+	my $self = shift;
+	return $self->param_boolean('Essential');
+}
+
+=item built_with_essential
+
+  my $bool = $pv->built_with_essential;
+
+Returns true if and only if building this package involves also building an
+essential package.
+
+=cut
+
+sub built_with_essential {
+	my $self = shift;
+	return scalar(grep { $_->is_essential } $self->get_splitoffs(1, 1));
 }
 
 ### EOF
