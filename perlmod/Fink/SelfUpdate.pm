@@ -515,7 +515,7 @@ sub do_finish {
 	}
 
 	# forget the package info
-	Fink::Package->forget_packages(2, 1);
+	Fink::Package->forget_packages();
 
 	# delete the old shlibs DB
 	if (-e "$dbpath/shlibs.db") {
@@ -524,6 +524,7 @@ sub do_finish {
 
 	# ...and then read it back in
 	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all();
 
 	# update the package manager itself first if necessary (that is, if a
 	# newer version is available).
@@ -558,7 +559,7 @@ sub finish {
 	push @elist, @{$package_list};
 
 	# update them, only fink if dist-upgrade must be done
-	if (Fink::Services::checkDistribution())		#returns true if incompat
+	if (Fink::Config::checkDistribution())		#returns true if incompat
 	{
 		# tell the user what has happened
 		print "\n";

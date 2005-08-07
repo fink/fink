@@ -1,5 +1,8 @@
-Primary: ftp://ftp.gnu.org/gnu
+# Official mirror list: http://www.gnu.org/server/list-mirrors.html
 Timestamp: 2004-12-03
+
+Primary: ftp://ftp.gnu.org/gnu
+
 afr-ZA: ftp://ftp.sun.ac.za/mirrorsites/ftp.gnu.org/
 asi-CN: ftp://ftp.cs.cuhk.edu.hk/pub/gnu/gnu/
 asi-CN: ftp://sunsite.ust.hk/pub/gnu/

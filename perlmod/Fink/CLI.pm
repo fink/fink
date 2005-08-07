@@ -39,6 +39,7 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
+					  &rejoin_text
 					  &prompt &prompt_boolean &prompt_selection
 					  &print_optionlist
 					  &get_term_width &should_skip_prompt);
@@ -158,6 +159,30 @@ sub print_breaking_stderr {
 	my $old_fh = select STDERR;
 	&print_breaking(@_);
 	select $old_fh;
+}
+
+=item rejoin_text
+
+	print_reaking rejoin_text <<EOMSG
+    Here is paragraph
+    one.
+
+    And
+    two.
+    EOMSG
+
+This function takes text in which multiple newlines are used to
+delimit paragraphs and removes newlines from within paragraphs.
+Multiple newlines (and any intervening whitespace) become a double
+newline. Each "internal" newline becomes a single space.
+
+=cut
+
+sub rejoin_text {
+	my $s = shift;
+	my @pars = split /\n\s*\n/, $s;
+	map { s/\n/ /g } @pars;
+	return join "\n\n", @pars;
 }
 
 =item prompt
@@ -455,6 +480,8 @@ Returns the entered string
 expires or immediately (without waiting for input) if fink is suppressing
 the prompt (run with the -y option or with an appropriate SuppressPrompts).
 If not suppressing a prompt, this function destroys any pre-existing alarm().
+STDIN is flushed before accepting input, so stray keystrokes prior to
+the prompt are ignored.
 
 The options hash can contain the following keys:
 
@@ -479,6 +506,8 @@ user.
 sub get_input {
 	my $prompt = shift;
 	my %opts = (timeout => 0, category => '', @_);
+
+	use POSIX qw(tcflush TCIFLUSH);
 
 	# Don't really skip SkipPrompts, just make them short
 	my $skip_timeout = 7;
@@ -509,6 +538,7 @@ sub get_input {
 	my $answer = eval {
 		local $SIG{ALRM} = sub { die "SIG$_[0]\n"; };  # alarm() expired
 		alarm $opts{timeout};  # alarm(0) means cancel the timer
+		tcflush(fileno(STDIN),TCIFLUSH);
 		my $answer = <STDIN>;
 		alarm 0;
 		return $answer;

@@ -2,7 +2,6 @@ Package: tar
 Version: 1.14
 Revision: 1
 Essential: yes
-GCC: 3.3
 Depends: gettext, gzip, bzip2, base-files
 BuildDepends: gettext-dev
 Source: mirror:sourceforge:fink/%n-%v.tar.gz

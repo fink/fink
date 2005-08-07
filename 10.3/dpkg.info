@@ -8,9 +8,9 @@ AddShlibDeps: true
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
-SourceDirectory: %n-%v
+SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchScript: sed 's|@PREFIX@|%p|g' <%a/%n.patch | patch -p1
+PatchScript: sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1

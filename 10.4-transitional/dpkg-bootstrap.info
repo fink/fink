@@ -1,6 +1,6 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
-Revision: 201
+Revision: 217
 Depends: gzip, tar
 BuildDepends: gettext-dev
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>

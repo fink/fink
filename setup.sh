@@ -56,4 +56,10 @@ echo "Creating lockwait wrappers..."
 sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|dpkg|g" <lockwait.in >dpkg-lockwait
 sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|apt-get|g" <lockwait.in >apt-get-lockwait
 
+echo "Creating g++ wrappers..."
+for gccvers in 3.3 4.0; do
+	sed -e "s|@GCCVERS@|$gccvers|g" <g++-wrapper.in \
+		>"g++-wrapper-$gccvers"
+done
+
 exit 0

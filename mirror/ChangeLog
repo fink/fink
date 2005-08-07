@@ -1,4 +1,14 @@
-2005-04-22  Dave Morrison
+2006-07-21 Max Horn  <max@quendi.de>
+
+	* all mirror files: Added URL pointing to the official mirror list
+	for that mirror set.
+	* gnome: Updated mirror list.
+
+2006-07-18 Max Horn  <max@quendi.de>
+
+	* debian: Fixed primary mirror URL; updated list to most current.
+
+2005-04-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* apt: switch from sourceforge to bindist.finkmirrors.net
 	* VERSION: releasing version 0.24.4.1 of fink-mirrors

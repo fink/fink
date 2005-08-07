@@ -24,6 +24,8 @@
 
 package Fink::Services;
 
+use Fink::Command qw(&rm_f);
+
 use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
 
@@ -56,7 +58,7 @@ BEGIN {
 					  &get_darwin_equiv
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
-					  &store_rename);
+					  &store_rename &fix_gcc_repairperms);
 }
 our @EXPORT_OK;
 
@@ -112,7 +114,7 @@ sub read_config {
 =item read_properties
 
     my $property_hash = read_properties $filename;
-    my $property_hash = read_properties $filename, $notLC;
+    my $property_hash = read_properties $filename, $opts;
 
 Reads a text file $filename and returns a ref to a hash of its
 fields. See the description of read_properties_lines for more
@@ -125,19 +127,19 @@ If $filename cannot be read, program will die with an error message.
 sub read_properties {
 	 my ($file) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
-	 return read_properties_lines("\"$file\"", $notLC, @lines);
+	 return read_properties_lines("\"$file\"", $opts, @lines);
 }
 
 =item read_properties_var
 
     my $property_hash = read_properties_var $filename, $string;
-    my $property_hash = read_properties_var $filename, $string, $notLC;
+    my $property_hash = read_properties_var $filename, $string, $opts;
 
 Parses the multiline text $string and returns a ref to a hash of
 its fields. See the description of read_properties_lines for more
@@ -150,17 +152,18 @@ sub read_properties_var {
 	 my ($file) = shift;
 	 my ($var) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 my ($line);
 
 	 @lines = split /^/m,$var;
-	 return read_properties_lines($file, $notLC, @lines);
+	 return read_properties_lines($file, $opts, @lines);
 }
 
 =item read_properties_lines
 
-    my $property_hash = read_properties_lines $filename, $notLC, @lines;
+    my $property_hash = read_properties_lines $filename, @lines;
+    my $property_hash = read_properties_lines $filename, $opts, @lines;
 
 This is function is not exported. You should use read_properties_var,
 read_properties, or read_properties_multival instead.
@@ -168,11 +171,6 @@ read_properties, or read_properties_multival instead.
 Parses the list of text strings @lines and returns a ref to a hash of
 its fields. The string $filename is used in parsing-error messages but
 the file is not accessed.
-
-If $notLC is true, fields are treated in a case-sensitive manner. If
-$notLC is false (including undef), field case is ignored (and
-cannonicalized to lower-case). In functions where passing $notLC is
-optional, not passing is equivalent to false.
 
 See the Fink Packaging Manual, section 2.2 "File Format" for
 information about the format of @lines text.
@@ -204,12 +202,50 @@ Multiline values (including all the lines of fields in a splitoff) are
 returned as a single multiline string (i.e., with embedded \n), not as
 a ref to another hash or array.
 
+The following options can be put in an $opts hash:
+
+=over 4
+
+=item case_sensitive
+
+If true, fields are treated in a case-sensitive manner. If
+false (including undef), field case is ignored (and
+cannonicalized to lower-case). Defaults to false.
+
+=item remove_space
+
+If true, will do doing python-style leading whitespace removal, on both the
+top level and any heredocs.
+In this technique, the first line of a heredoc establishes the number of
+whitespace characters that are removed from subsequent lines. Defaults to
+false.
+
+=back
+
 =cut
+
+# PRIVATE: Given a line in $_, and a ref to a leading-space var, remove
+# leading space appropriately
+sub _remove_space {
+	my $count = shift;
+	if (defined $$count) {
+		s/^\s{0,$$count}//;
+	} else {
+		s/^(\s*)//;
+		$$count = length($1);
+#		print "LEADING $$count: $_\n";
+	}
+}
 
 sub read_properties_lines {
 	my ($file) = shift;
+	my %opts = (
+		case_sensitive	=> 0,
+		remove_space	=> 0,
+		UNIVERSAL::isa($_[0], 'HASH') ? %{shift @_} : (),
+	);
 	# do we make the keys all lowercase
-	my ($notLC) = shift || 0;
+	my ($notLC) = $opts{case_sensitive};
 	my (@lines) = @_;
 	my ($hash, $lastkey, $heredoc, $linenum);
 	my $cvs_conflicts;
@@ -218,12 +254,17 @@ sub read_properties_lines {
 	$lastkey = "";
 	$heredoc = 0;
 	$linenum = 0;
-
+	my ($spacecount, $hdoc_spacecount); # Both top-level and heredocs
+	
 	foreach (@lines) {
 		$linenum++;
 		chomp;
+		_remove_space(\$spacecount) if ($opts{remove_space});
+			
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
+			_remove_space(\$hdoc_spacecount) if ($opts{remove_space});
+
 			if (/^\s*<<\s*$/) {
 				# The heredoc ends here; decrese the nesting level
 				$heredoc--;
@@ -235,6 +276,7 @@ sub read_properties_lines {
 					# The heredoc really ended; remove trailing empty lines.
 					$hash->{$lastkey} =~ s/\s+$//;
 					$hash->{$lastkey} .= "\n";
+					$hdoc_spacecount = undef; # Next heredoc different?
 				}
 			} else {
 				# Append line to the heredoc.
@@ -285,7 +327,7 @@ sub read_properties_lines {
 =item read_properties_multival
 
     my $property_hash = read_properties_multival $filename;
-    my $property_hash = read_properties_multival $filename, $notLC;
+    my $property_hash = read_properties_multival $filename, $opts;
 
 Reads a text file $filename and returns a ref to a hash of its fields,
 with each value being a ref to a list of values for that field. See
@@ -299,19 +341,19 @@ If $filename cannot be read, program will die with an error message.
 sub read_properties_multival {
 	 my ($file) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
-	 return read_properties_multival_lines($file, $notLC, @lines);
+	 return read_properties_multival_lines($file, $opts, @lines);
 }
 
 =item read_properties_multival_var
 
     my $property_hash = read_properties_multival_var $filename, $string;
-    my $property_hash = read_properties_multival_var $filename, $string, $notLC;
+    my $property_hash = read_properties_multival_var $filename, $string, $opts;
 
 Parses the multiline text $string and returns a ref to a hash of its
 fields, with each value being a ref to a list of values for that
@@ -326,17 +368,18 @@ sub read_properties_multival_var {
 	 my ($file) = shift;
 	 my ($var) = shift;
 	 # do we make the keys all lowercase
-	 my ($notLC) = shift || 0;
+	 my ($opts) = shift || {};
 	 my (@lines);
 	 my ($line);
 
 	 @lines = split /^/m,$var;
-	 return read_properties_multival_lines($file, $notLC, @lines);
+	 return read_properties_multival_lines($file, $opts, @lines);
 }
 
 =item read_properties_multival_lines
 
-    my $property_hash = read_properties_multival_lines $filename, $notLC, @lines;
+    my $property_hash = read_properties_multival_lines $filename, @lines;
+    my $property_hash = read_properties_multival_lines $filename, $opts, @lines;
 
 This is function is not exported. You should use read_properties_var,
 read_properties, read_properties_multival, or read_properties_multival_var 
@@ -366,7 +409,11 @@ differences:
 
 sub read_properties_multival_lines {
 	my ($file) = shift;
-	my ($notLC) = shift || 0;
+	my %opts = (
+		case_sensitive	=> 0,
+		UNIVERSAL::isa($_[0], 'HASH') ? %{shift @_} : (),
+	);
+	my $notLC = $opts{case_sensitive};
 	my (@lines) = @_;
 	my ($hash, $lastkey, $lastindex);
 
@@ -1112,6 +1159,64 @@ sub get_arch {
 	return $arch;
 }
 
+=item gcc_select_arg
+
+  my $arg = gcc_select_arg $gccvers;
+
+Finds the argument to gcc_select which corresponds to a given version of GCC.
+IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
+
+=cut
+
+{
+	my %gcc_select_table = (
+		'2.95.2' => '2',
+		'2.95' => '2',
+		'3.1' => '3',
+		'3.3' => '3.3',
+		'4.0.0' => '4.0',
+		'4.0.1' => '4.0',
+	);
+	
+	sub gcc_select_arg {
+		my $vers = shift;
+		return $gcc_select_table{$vers};
+	}
+}
+	
+
+=item gcc_selected
+
+  my $selected = gcc_selected;
+
+Finds the version of GCC currently selected with gcc_select. Returns the
+version of GCC selected, eg: 4.0.0 . Yields a false value if the current
+selection cannot be determined.
+
+=cut
+
+sub gcc_selected {
+	return 0 unless -x '/usr/sbin/gcc_select';
+	chomp(my $gcc_select = `/usr/sbin/gcc_select`);
+	return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
+	return 0;
+}
+
+=item fix_gcc_repairperms
+
+  fix_gcc_repairperms;
+
+In Tiger, the 'repair permissions' feature of Disk Utility can cause GCC
+breakage. This function checks for such breakage and fixes it if necessary.
+
+=cut
+
+sub fix_gcc_repairperms {
+	return unless gcc_select_arg(gcc_selected) eq '4.0';
+	system('gcc_select --force 4.0') == 0
+		or die "Can't fix GCC after Repair Permissions: $!\n";
+}
+
 =item enforce_gcc
 
 	my $gcc = enforce_gcc($message);
@@ -1150,9 +1255,9 @@ sub enforce_gcc {
 # Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
 # specify default values for these.
 
-	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0.0');
-	my %gcc_name = ('2.95.2' => '2', '2.95' => '2', '3.1' => '3', '3.3' => '3.3', '4.0.0' => '4.0');
-	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0.0' => '3.3');
+	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0');
+	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0');
+	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3');
 
 	if (my $sw_vers = get_osx_vers_long())
 	{
@@ -1170,20 +1275,17 @@ sub enforce_gcc {
 		}
 	}
 
-	if (-x '/usr/sbin/gcc_select') {
-		chomp($gcc_select = `/usr/sbin/gcc_select`);
-	} else {
-		$gcc_select = '';
-	}
-	if (not $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs) {
-		$gcc_select = '(unknown version)';
-	}
+	$gcc_select = gcc_selected() || '(unknown version)';
+
+	# We don't want to differentiate between 4.0.0 and 4.0.1 here
+	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
 
 	if ($gcc_select !~ /^$gcc/) {
+		my $gcc_name = gcc_select_arg($gcc);
 		$message =~ s/CURRENT_SYSTEM/$current_system/g;
 		$message =~ s/INSTALLED_GCC/$gcc_select/g;
 		$message =~ s/EXPECTED_GCC/$gcc/g;
-		$message =~ s/GCC_SELECT_COMMAND/$gcc_name{$gcc}/g;
+		$message =~ s/GCC_SELECT_COMMAND/$gcc_name/g;
 		die $message;
 	}
 
@@ -1271,21 +1373,6 @@ sub get_system_version
 		return get_osx_vers();
 	} else {
 		return get_darwin_equiv();
-	}
-}
-
-sub checkDistribution
-{
-	use Fink::Config qw($distribution);
-	my $system_version = get_system_version();
-
-	if ($distribution =~ /^\Q$system_version\E/)
-	{
-		# all is good, current os matches current dist.
-		return 0;
-	} else {
-		# do not let the user build anything, only install.
-		return 1;
 	}
 }
 
@@ -1583,7 +1670,7 @@ sub lock_wait {
 	my $really_timeout = $> != 0 || $root_timeout;
 
 	# Make sure we can access the lock
-	my $lockfile_FH = Symbol::gensym();
+	my $lockfile_FH;
 	{
 		my $mode = ($exclusive || ! -e $lockfile) ? "+>>" : "<";
 		unless (open $lockfile_FH, "$mode $lockfile") {

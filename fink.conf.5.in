@@ -155,12 +155,18 @@ selfupdate-cvs command, so you should not need to change it manually.
 .It Cm Buildpath: Ar path
 Fink needs to create several temporary directories for each package it compiles from source. By default, they are placed in
 .Pa @PREFIX@/src
-but if you want them to be somewhere else, specify the path here.
+on Panther and earlier, and
+.Pa @PREFIX@/src/fink.build
+on Tiger. If you want them to be somewhere else, specify the path here.
 See the descriptions of the
 .Cm KeepRootDir
 and
 .Cm KeepBuildDir
 fields later in this document for more information about these temporary directories.
+.Pp
+On Tiger, it is recommended that the Buildpath end with .noindex or .build.
+Otherwise, Spotlight will attempt to index the temporary files in the
+Buildpath, slowing down builds.
 .El
 .\"
 .\"
@@ -315,9 +321,11 @@ are only useful to developers. We do not recommend that conventional Fink users 
 fall into this category.
 .Bl -tag -width flag
 .It Cm KeepRootDir: Ar boolean
-Causes Fink not to delete the
-.Pa @PREFIX@/src/root-[name]-[version]-[revision]
-directory after building a package. Defaults to false. 
+Causes Fink not to delete the directory
+.Pa root-[name]-[version]-[revision]
+in the
+.Cm Buildpath 
+after building a package. Defaults to false. 
 Be careful, this option can fill your hard-disk quickly! 
 Passing
 .Cm fink
@@ -327,9 +335,11 @@ flag has the same effect, but only operates on that single
 .Cm fink
 invocation.
 .It Cm KeepBuildDir: Ar boolean 
-Causes Fink not to delete the
-.Pa @PREFIX@/src/[name]-[version]-[revision]
-directory after building a package. Defaults to false. 
+Causes Fink not to delete the directory
+.Pa [name]-[version]-[revision]
+in the
+.Cm Buildpath 
+after building a package. Defaults to false. 
 Be careful, this option can fill your hard-disk quickly! 
 Passing
 .Cm fink

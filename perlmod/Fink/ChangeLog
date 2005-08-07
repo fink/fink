@@ -1,4 +1,285 @@
+2005-08-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: .info fieldnames are canonically lower-case
+
+2005-08-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm, Package.pm, SelfUpdate.pm, Services.pm:
+	Naively decouple Shlibs and Package.
+
+2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm, Engine.pm, PkgVersion.pm: Incremental indexing improvements:
+		- Race condition removal
+		- Nice error messages if part of DB is missing or corrupt
+		- Takes into account date of .info file, so should now work with
+		selfupdate-rsync
+		- Has db_valid_since method to be used by FinkCommander for caching DB
+		- forget_packages should actually forget everything
+
+2005-08-04  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use a dummy HOME when running *Script.
+
+2005-08-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: Clean up darwin version check.
+
+2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Configure.pm: Auto-detect user's country.
+
+2005-07-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: infon isn't always present.
+
+2005-07-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, PkgVersion.pm: Have read_properties* use an options hash
+	rather than ordered parameters. Add an option for python-style whitespace
+	removal on both top-level and heredocs.
+	* Package.pm, PkgVersion.pm: Use new option for Info3+
+	* PkgVersion.pm: Don't strip whitespace from SplitOffs if Info3+, let
+	read_properties* do that.
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Only use Info3 feature with Info3 or higher.
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* FinkVersion.pm.in: Say hello to Info3.
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Print a nicer message if someone calls match_package
+	and gets a virtual package (but doesn't want virtuals).
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Add 'provides' option to match_package, to find packages
+	that are only virtual.
+	* Engine.pm: Enable 'fink desc foo' finding provided packages, fixing bug
+	#755128 .
+	
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: is_present() doesn't exactly check for any dependencies that
+	could be pulled in with real_install. So restrict this to single packages
+	and use phase_activate.
+
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Remove leading whitespace in Info2, without breaking
+	RFC-822. All of 10.4-transitional indexes fine with this. dmacks, please
+	check that this is ok!
+
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Remove build-as-nobody warning, it's been well enough
+	tested by now I'd say.
+
+2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Document some functions.
+	* PkgVersion.pm, Engine.pm: Replace 'parentessential' concept with
+	built_with_essential function, which should make it possible for an
+	essential package to be a splitoff.
+
+2005-07-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Separate dep checking and dep switching, so we don't switch
+	unnecessarily.
+
+2005-07-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Engine.pm: revised "switch debs during long builds" code: if a 
+	needed .deb exists but is not installed, we install it without 
+	asking.  (If it doesn't exist, we allow the process to continue --
+	it will quit with an error, and the user must then start over.)
+	
+2005-07-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: cleanup_debs: don't delete .deb of pkgs that are
+	installed but have no .info.
+
+2005-07-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Stash the fink PID in the buildlock package.
+
+2005-07-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Get rid of gensym, not needed in perl >= 5.6.0.
+
+2005-07-26  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Fix cleanup_sources source filename parsing. Better
+	diagnostics during cleanup_sources and cleanup_debs dead time.
+
+2005-07-25  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: only provide default values for LD_PREBIND,
+	LD_PREBIND_ALLOW_OVERLAP, and LD_SEG_ADDR_TABLE when the distribution
+	is 10.4-transitional and earlier
+
+2005-07-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: merge in cleanup_modes branch: orthogonal control
+	for deb vs src, --dry-run flag.
+
+2005-07-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* PkgVersion.pm: make the default value of LD_PREBIND depend on the 
+	distribution (1 for 10.4-transitional and earlier; 0 for 10.4 and 
+	later)
+
+2005-07-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Use super-fast loading if DB hasn't changed. Still much
+	cleanup needed.
+	* PkgVersion.pm: Make shared_loads global for now.
+	* Engine.pm: Adapt to changes in Package
+
+2005-07-20  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: prompt_selection API fix for wrong-checksum
+
+2005-07-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Configure.pm: Forward-port the obsolete-mirrors handling.
+
+2005-07-17  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: ...but don't break continuation option.
+
+2005-07-16  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make failed unpacking of source a fatal error.
+
+2005-07-13  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Improve POSIX symbol imports.
+
+2005-07-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Support 10.4.2.
+
+2005-07-13  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: flush STDIN before reading each user input.
+
+2005-07-12  Matthew Sachs  <msachs@apple.com>
+
+	* Services.pm: Looser checking of GCC version in enforce_gcc;
+	we don't want to differentiate between 4.0.0 and 4.0.1.
+
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Install exactly the version that's being injected.
+
+2005-07-12  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Reimplement Repair Permissions bug fix using gcc_select
+	--force, for better reliability (we hope!)
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Note g++-wrapper code duplication.
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm: Put path-prefix	stuff in Fink's .deb.
+
+2005-07-07  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, PkgVersion.pm: Automagically fix bug caused by Repair
+	Permissions on Tiger.
+
+2005-07-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Use apt-get-lockwait for AutoScanpackages.
+
+2005-07-05  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* Bootstrap.pm (bootstrap): Remove tar from phase 1 of bootstrap. 
+
+2005-07-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Er, make the info-list caching actually work. I'll be taking
+	that out soon anyhow.
+
+2005-07-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Notify/Growl.pm: move event registration out of the constructor,
+	for the purposes of speed.
+
+2005-07-01  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm: Implement new function rejoin_text().
+	* PkgVersion.pm: Improve error message when buildlock fails.
+
+2005-06-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: We need to set %p in disable_bootstrap. This should fix
+	the gettext bootstrapping bug.
+
+2005-06-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Call prepare_percent_c whenever we assign %d and
+	other path-related _expand keys
+
+2005-06-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* VirtPackage.pm: If old XCode is not removed on upgrade to Tiger, a
+	gcc3 (version 3.1) still remains. This causes Fink to add a virtual
+	package which will overwrite a real gcc3.1 package, which confuses
+	apt-get. Now virtual gcc packages will no longer overwrite real ones.
+
+2005-06-29  David H. <dmalloc@users.sourceforge.net>
+
+	* VirtPkg.pm: Added 10.3.9 SDK
+
+2005-06-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Refactor the destdir re-setting code into a method, so
+	the same effective code isn't in three places!
+	* PkgVersion.pm: Make chown'ing the destdir conditional on not-bootstrap.
+
+2005-06-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: If a candidate to satisfy a virtual dep has multiple siblings
+	to be installed, that's just as good as ne sibling.
+	* PkgVersion.pm: _ensure_splitoffs should be called on the parent, not the
+	splitoff.
+
+2005-06-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm, PkgVersion.pm: POD fixes.
+	* Package.pm, PkgVersion.pm: Package DB no longer stores reference to
+	package objects inside other packages, all references are now done using
+	unique specifiers.
+
+2005-06-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Sort dumpinfo -pall output.
+
+2005-06-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Fix dumpinfo %b to give actual value not dummy db value.
+
+2005-06-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Fix bug with params_matching in dumpinfo. Also add
+	'-p all' option for all percent expansions.
+
+2005-06-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: chgrp->admin (->nobody if build-as-nobody) %d and
+	builddir (more secure and deterministic, because "files are always
+	created with group of their parent dir")
+
 2005-06-14  Rob Braun <bbraun@opendarwin.org>
+
 	* VirtPackage.pm: Be slightly more robust on what outputs (if any)
 	are accepted from executing /usr/bin/gcc*.
 

@@ -694,6 +694,20 @@ sub clear_flag {
 	$self->set_param('Flags', join(' ', keys %{$self->{_flags}}));
 }
 
+sub checkDistribution
+{
+	my $system_version = Fink::Services::get_system_version();
+
+	if ($distribution =~ /^\Q$system_version\E/)
+	{
+		# all is good, current os matches current dist.
+		return 0;
+	} else {
+		# do not let the user build anything, only install.
+		return 1;
+	}
+}
+
 =back
 
 =head2 Exported Variables

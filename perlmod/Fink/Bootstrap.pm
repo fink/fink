@@ -164,10 +164,6 @@ GCC_MSG
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
-	} elsif ($host =~ /^powerpc-apple-darwin6\.[0-8]/) {
-		&print_breaking("\nThis system is no longer supported " .
-"for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
-		$distribution = "10.2$gcc";
 	} elsif ($host =~ /^powerpc-apple-darwin6\..*/) {
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
@@ -179,7 +175,7 @@ GCC_MSG
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.3";
-	} elsif ($host =~ /^powerpc-apple-darwin8\.[0-1]\.0/) {
+	} elsif ($host =~ /^powerpc-apple-darwin8\.[0-2]\.0/) {
 		&print_breaking("This system is supported and tested.");
 		if($ENV{FINK_NOTRANS}) {
 			&print_breaking("Using the non-transitional tree...");
@@ -317,7 +313,7 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	print "Installing package...\n";
 	print "\n";
 	
-	if (&execute("$bpath/bin/fink install $package")) {
+	if (&execute("$bpath/bin/fink install $package-$packageversion-$packagerevision")) {
 		print "\n";
 		&print_breaking("Installing the new $package package failed. ".
 		  "The description and the tarball were installed, though. ".
@@ -381,7 +377,7 @@ The primary bootstrap routine, called by bootstrap.pl.
 sub bootstrap {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
-	my @plist = ("gettext", "tar", "dpkg-bootstrap");
+	my @plist = ("gettext", "dpkg-bootstrap");
 	my ($package_list, $perl_is_supported) = additional_packages();
 	my @addlist = @{$package_list};
 	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless $perl_is_supported;
@@ -412,6 +408,7 @@ sub bootstrap {
 
 	# make sure we have the package descriptions and shlibs
 	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all();
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
@@ -515,7 +512,7 @@ sub fink_packagefiles {
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in images install.sh setup.sh ".
   "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in fink.shlibs lockwait.in";
+  "fink-virtual-pkgs.in fink.shlibs lockwait.in g++-wrapper.in";
 
 return $packagefiles;
 

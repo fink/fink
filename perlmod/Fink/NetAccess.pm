@@ -202,8 +202,8 @@ sub fetch_url_to_file {
 								"Expected: $checksum \nActual: $found_archive_sum \n";
 			}
 		}
-		$result = &prompt_selection(
-			"The file \"$file\" already exists".$checksum_msg."How do you want to proceed?",
+		$result = &prompt_selection("How do you want to proceed?",
+			intro   => "The file \"$file\" already exists".$checksum_msg,
 			default => [ value => $default_value ],
 			choices => [
 				"Delete it and download again" => "retry",

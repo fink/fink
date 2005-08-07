@@ -26,7 +26,8 @@ use Fink::Base;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent &lock_wait &store_rename);
-use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
+use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr
+				 &rejoin_text);
 use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
@@ -34,8 +35,8 @@ use Fink::FinkVersion;
 use Fink::Shlibs;
 use File::Find;
 use File::Basename;
-use DB_File;
 use Symbol qw();
+use Fcntl qw(:mode);
 
 use strict;
 use warnings;
@@ -43,8 +44,12 @@ use warnings;
 our $VERSION = 1.00;
 our @ISA = qw(Fink::Base);
 
-our $have_shlibs;
-our $packages = undef;
+our $have_shlibs; # Have we loaded the shlibs?
+
+our $packages = undef;		# The loaded packages (undef if unloaded)
+our $valid_since = undef;	# The earliest time with the same DB as now
+
+# Cache of essential packages
 our @essential_packages = ();
 our $essential_valid = 0;
 
@@ -368,25 +373,28 @@ sub list_essential_packages {
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
-sub require_packages {
-	shift;	# class method - ignore first parameter
-	# 0 = both
-	# 1 = shlibs only
-	# 2 = packages only
-	my $oper = shift || 0;
+=item require_packages
 
-	### Check and get both packages and shlibs (one call)
-	if (!defined $packages && $oper != 1) {
-		Fink::Package->load_packages;
-	}
-	if (!$have_shlibs && $oper != 2) {
-		Fink::Shlibs->scan_all(@_);
-	}
+  Fink::Package->require_packages;
+
+Load the package database into memory
+
+=cut
+
+sub require_packages {
+	my $class = shift;
+# 0 => both
+# 1 => shlibs
+# 2 => package
+	$class->load_packages unless defined $packages;
+#	if (!$have_shlibs && $oper != 2) {
+#		Fink::Shlibs->scan_all(@_);
+#	}
 }
 
 =item check_dbdirs
 
-  my ($path, $fh) = Fink::Package->check_dbdirs $write, $force_create;
+  my ($path, $fh, $new) = Fink::Package->check_dbdirs $write, $force_create;
 
 Process the DB dirs. Returns the good directory found/created, and the lock
 already acquired.
@@ -460,7 +468,7 @@ sub check_dbdirs {
 			mkdir_p($current);
 		}
 	}
-			
+		
 	# Try to delete old dirs
 	my @old = grep { $_ ne $current } @dirs;
 	if ($write) {
@@ -490,6 +498,13 @@ Creates it if it does not exist and $write is true.
 
 Forget the current DB directory.
 
+=item is_new_db_dir
+
+  my $bool = Fink::Package->is_new_db_dir;
+
+Returns true if the current DB directory is new (as opposed to already used
+and containing a DB).
+
 =cut
 
 {
@@ -501,14 +516,20 @@ Forget the current DB directory.
 		my $write = shift || 0;
 		
 		unless (defined $cache_db_dir) {
-			($cache_db_dir, $cache_db_dir_fh) = $class->check_dbdirs($write, 0);
+			($cache_db_dir, $cache_db_dir_fh) =
+				$class->check_dbdirs($write, 0);
 		}
 		return $cache_db_dir;
 	}
 	
 	sub forget_db_dir {
 		close $cache_db_dir_fh if $cache_db_dir_fh;
-		($cache_db_dir, $cache_db_dir_fh) = (undef, undef);
+		($cache_db_dir, $cache_db_dir_fh) = (undef) x 2;
+	}
+	
+	sub is_new_db_dir {
+		my $class = shift;
+		return !-f ($class->db_dir . "/used");
 	}
 }
 
@@ -526,20 +547,6 @@ sub db_index {
 }
 
 
-=item db_infolist
-
-  my $path = Fink::Package->db_infolist;
-
-Get the path to the file that can store a list of info files.
-
-=cut
-
-sub db_infolist {
-	my $class = shift;
-	return "$dbpath/infolist";
-}
-
-
 =item db_lockfile
 
   my $path = Fink::Package->db_lockfile;
@@ -551,6 +558,20 @@ Get the path to the pdb lock file.
 sub db_lockfile {
 	my $class = shift;
 	return $class->db_index . ".lock";
+}
+
+
+=item db_proxies
+
+  my $path = Fink::Package->db_proxies;
+
+Get the path to the quick-startup cache of the proxy-db.
+
+=cut
+
+sub db_proxies {
+	my $class = shift;
+	return "$dbpath/proxies.db";
 }
 
 
@@ -569,18 +590,21 @@ older than the PDB cache that is moved into the dists will not be found.
 sub search_comparedb {
 	my $class = shift;
 	my $path = "$basepath/fink/dists/";  # extra '/' forces find to follow the symlink
-		
-	my $dbfile = $class->db_infolist;
+	
+	my $dbfile = $class->db_proxies;
 	return 1 if -M $dbfile > -M "$basepath/etc/fink.conf";
 
 	# Using find is much faster than doing it in Perl
-	open NEWER_FILES, "/usr/bin/find $path \\( \\( \\( -type f -or -type l \\) " .
-		"-name '*.info' \\) -o -type d \\) -newer $dbfile |"
-		or die "/usr/bin/find failed: $!\n";
+	my $prune_bin = "\\( -name 'binary-$debarch' -prune \\)";
+	my $file_test = "\\( \\( -type f -o -type l \\) -name '*.info' \\)";
+	my $cmd = "/usr/bin/find $path \\! $prune_bin \\( $file_test -o -type d \\) "
+		. " -newer $dbfile";
+	open NEWER_FILES, "$cmd |" or die "/usr/bin/find failed: $!\n";
 
 	# If there is anything on find's STDOUT, we know at least one
 	# .info is out-of-date. No reason to check them all.
-	my $file_found = defined <NEWER_FILES>;
+	my $file = <NEWER_FILES>;
+	my $file_found = defined $file;
 
 	close NEWER_FILES;
 
@@ -591,46 +615,49 @@ sub search_comparedb {
 =item forget_packages
 
   Fink::Package->forget_packages;
-  Fink::Package->forget_packages $type, $just_memory;
+  Fink::Package->forget_packages $options;
 
-Removes the in-memory package database. If $type is 1, just removes the shlibs
-database, if it is 2 removes just the package database, if it is 0 removes both.
+Removes the package database from memory. The hash-ref $options can contain the
+following keys:
 
-If $just_memory is not true, also invalidates any cache of package database
-that currently exists on disk.
+=over 4
+
+=item disk
+
+If B<disk> is present and true, in addition to removing the package database
+from memory, any on-disk cache is removed as well. This option defaults to
+false and should be used sparingly.
+
+=back
 
 =cut
 
 sub forget_packages {
 	my $class = shift;
-	
-	# 0 = both
-	# 1 = shlibs only
-	# 2 = packages only
-	my $oper = shift || 0;
-	my $just_memory = shift || 0;
-
-	if ($oper != 1) {
-		$packages = undef;
-		@essential_packages = ();
-		$essential_valid = 0;
-		
-		if (!$just_memory && $> == 0) {	# Only if we're root
-			my $lock = lock_wait($class->db_lockfile, exclusive => 1,
-				desc => "another Fink's indexing");
-			
-			# Create a new DB dir (possibly deleting the old one)
-			$class->forget_db_dir();
-			$class->check_dbdirs(1, 1);
-			
-			rm_f($class->db_index);
-			rm_f($class->db_infolist);
-			close $lock if $lock;
-		}
+	my $optarg = shift || {};
+	if (ref($optarg) ne 'HASH') {
+		die "There's a new API for forget_packages, please use it, I won't "
+			. "change it again.\n";
 	}
-
-	if ($oper != 2) {
-        	Fink::Shlibs->forget_packages();
+	my %opts = (disk => 0, %$optarg);
+	
+	$packages = undef;
+	@essential_packages = ();
+	$essential_valid = 0;
+	%Fink::PkgVersion::shared_loads = ();
+	$valid_since = undef;
+	
+	if ($opts{disk} && $> == 0) {	# Only if we're root
+		my $lock = lock_wait($class->db_lockfile, exclusive => 1,
+			desc => "another Fink's indexing");
+		
+		# Create a new DB dir (possibly deleting the old one)
+		$class->forget_db_dir();
+		$class->check_dbdirs(1, 1);
+		
+		rm_f($class->db_index);
+		rm_f($class->db_proxies);
+		close $lock if $lock;
 	}
 }
 
@@ -711,6 +738,7 @@ sub update_index {
 	my %new_idx = (
 		inits => { map { $_->get_fullname => $_->get_init_fields } @pvs },
 		cache => $cache,
+		info_mtime => (stat($info))[9] || 0,
 	);
 	
 	return ($idx->{infos}{$info} = \%new_idx);
@@ -718,24 +746,20 @@ sub update_index {
 
 =item pass1_update
 
-  my $loaded = Fink::Package->pass1_update $ops, $idx, $infos;
+  Fink::Package->pass1_update $ops, $idx, $infos;
 
 Load any .info files whose cache isn't up to date and available for reading.
 If $ops{write} is true, update the cache as well.
 
-Return a hashref of .info -> list of Fink::PkgVersion for all the .info files
-loaded.
-
 =cut
 
 sub pass1_update {
-	my ($class, $ops, $idx, $infos) = @_;
-	my %loaded;
+	my ($class, $ops, $idx, @infos) = @_;
 		
 	my $uncached = 0;
 	my $noauto = $config->param_boolean("NoAutoIndex");
 	
-	for my $info (@$infos) {
+	for my $info (@infos) {
 		my $load = 0;
 		my $fidx = $idx->{infos}{$info};
 		
@@ -747,8 +771,8 @@ sub pass1_update {
 			unless (defined $fidx) {
 				$load = 1;
 			} elsif (!$noauto) {
-				my $cache = $fidx->{cache};
-				$load = 1 if !-f $cache || -M $cache > -M $info;
+				$load = 1 if !-f $fidx->{cache}
+					|| $fidx->{info_mtime} < (stat($info))[9];
 			}
 		}
 		
@@ -761,26 +785,33 @@ sub pass1_update {
 		# Print a nice message
 		if ($uncached == 0 && &get_term_width) {
 			if ($> != 0) {
-				&print_breaking_stderr( "Fink has detected that your package index cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
-			}
-
+				print_breaking_stderr rejoin_text <<END;
+Fink has detected that your package index cache is missing or out of date, but
+does not have privileges to modify it. Re-run fink as root, for example with a
+\"fink index\" command, to update the cache.\n
+END
+			}				
 			print STDERR "Reading package info...";
 			$uncached = 1;
 		}
 		
 		# Load the file
 		my @pvs = $class->packages_from_info_file($info);
-		$loaded{$info} = [ @pvs ];
+		map { $_->_disconnect } @pvs;	# Don't keep obj references
 		
 		# Update the index
 		$fidx = $class->update_index($idx, $info, @pvs);
 		
+		# Turn it into a storable format, and cache it
+		my %store = map { $_->get_fullname => $_ } @pvs;
+		$Fink::PkgVersion::shared_loads{$fidx->{cache}} = \%store;
+		
 		# Update the cache
 		if ($ops->{write}) {
 			my $dir = dirname $fidx->{cache};
-			mkdir_p($dir) unless -f $dir;
+			mkdir_p($dir) unless -d $dir;
 			
-			my %store = map { $_->get_fullname => $_ } @pvs; 
+			touch($class->db_dir . "/used"); # No longer clean
 			unless (store_rename(\%store, $fidx->{cache})) {
 				delete $idx->{infos}{$info};
 			}
@@ -794,40 +825,28 @@ sub pass1_update {
 		}
 		print_breaking_stderr("done.") if &get_term_width;
 	}
-	return \%loaded;
 }
 
 =item pass3_insert
 
-  my $success = Fink::Package->pass3_insert $idx, $loaded, @infos;
+  my $success = Fink::Package->pass3_insert $idx, @infos;
 
 Ensure that the .info files @infos are loaded and inserted into the PDB.
-Information about the .info files is to be found in the index $idx, and
-$loaded is a hash-ref of already-loaded .info files.
+Information about the .info files is to be found in the index $idx..
 
 =cut
 
 sub pass3_insert {
-	my ($class, $idx, $loaded, @infos) = @_;
+	my ($class, $idx, @infos) = @_;
 		
 	for my $info (@infos) {
 		my @pvs;
-		
-		if (exists $loaded->{$info}) {
-		
-#			print "Memory: $info\n";
-			@pvs = @{ $loaded->{$info} };
-		} else {
-			# Only get here if can read caches
+					
+		my $fidx = $idx->{infos}{$info};
+		my $cache = $fidx->{cache};
 			
-#			print "Cache: $info\n";
-			my $fidx = $idx->{infos}{$info};
-			my $cache = $fidx->{cache};
-			return 0 unless -r $cache;
-			
-			@pvs = map { Fink::PkgVersion->new_backed($cache, $_) }
-				values %{ $fidx->{inits} };
-		}
+		@pvs = map { Fink::PkgVersion->new_backed($cache, $_) }
+			values %{ $fidx->{inits} };
 		
 		$class->insert_pkgversions(@pvs);
 	}
@@ -837,43 +856,17 @@ sub pass3_insert {
 
 =item get_all_infos
 
-  my ($infos, $need_update) = Fink::Package->get_all_infos $ops, $nocache;
+  my @infos = Fink::Package->get_all_infos;
 
-Get a list of all the .info files. Returns an array-ref of paths to the .info
-files, and whether any of the files needs to be updated.
-
-If $nocache is true, does not use the infolist cache.
+Get a list of all the .info files. Returns an array of paths to the .info
+files.
 
 =cut
 
 sub get_all_infos {
-	my ($class, $ops) = @_;
-	my $nocache = shift || 0;
+	my $class = shift;
 	
-	my $infolist = $class->db_infolist;
-	my $noauto = $config->param_boolean("NoAutoIndex");
-	my $uptodate = !$nocache && $ops->{read} && -f $infolist;
-	$uptodate &&= ! $class->search_comparedb unless $noauto;
-	
-	my @infos;
-	unless ($uptodate) { # Is this worth it?
-		@infos = map { $class->tree_infos($_) } $config->get_treelist();
-		
-		# Store 'em
-		if ($ops->{write}) {
-			if (open INFOLIST, ">$infolist") {
-				print INFOLIST map { "$_\n" } @infos;
-				close INFOLIST;
-			}
-		}
-	} else {
-		open INFOLIST, "<$infolist" or die "Can't open info list\n";
-		@infos = <INFOLIST>;
-		close INFOLIST;
-		chomp @infos;
-	}
-	
-	return (\@infos, !$uptodate);
+	return map { $class->tree_infos($_) } $config->get_treelist();
 }
 
 =item update_db
@@ -890,10 +883,11 @@ the following elements are valid:
 If B<no_load> is present and true, the current package database will not be read
 in to memory, but will only be updated.
 
-=item no_infolist
+=item no_fastload
 
-If B<no_infolist> is present and true, the cached list of existing .info files
-will be discarded and not used.
+If B<no_fastload> is present and true, the fast-load cache will not be used,
+instead all the .info files will be scanned (but not necessarily read). The
+main cache will still be used.
 
 =back
 
@@ -903,50 +897,83 @@ sub update_db {
 	my $class = shift;
 	my %options = @_;
 	my $load = !$options{no_load};
-	my $try_cache = !$options{no_infolist};
-		
+	my $try_cache = !$options{no_fastload};
+	
 	my %ops = ( load => $load );
 	@ops{'read', 'write'} = $class->can_read_write_db;
-	# If we can't write and don't want to read, what's the point?
+	# If we can't write and don't want to load, what's the point?
 	return if !$ops{load} && !$ops{write}; 
 	
 	# Get the lock
 	my $lock = 0;
-	if ($ops{read} || $ops{write}) {
+	if ($ops{write} || $ops{read}) {
 		$lock = lock_wait($class->db_lockfile, exclusive => $ops{write},
 			desc => "another Fink's indexing");
 		unless ($lock) {
-			if ($! !~ /no such file/i || $> == 0) { # Don't warn if just no perms
+			if ($! !~ /no such file/i && $> == 0) { # Don't warn if just no perms
 				&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lockfile: $!");
 			}
 			@ops{'read', 'write'} = (0, 0);
 			return unless $ops{load};
 		}
 	}
-	
-	# Get the cache dir
-	my $dbdir = $class->db_dir($ops{write});
-
-	# Load the index
-	my $idx = { infos => { }, next => 1 };
-	if (($ops{read} || $ops{write}) && -f $class->db_index) {
-		$idx = Storable::lock_retrieve($class->db_index);
+	if (!$ops{write}) {	# If reading, we just wanted to wait, we don't really
+		close $lock if $lock;	# need to keep the lock.
+		$lock = 0;
 	}
 	
-	{
+	# Get the cache dir; also notifies fink that the PDB is in use
+	my $dbdir = $class->db_dir($ops{write});
+	
+	# Can we use the index? Definitely not if we have a whole new db_dir.
+	my $idx_ok = ($ops{read} || $ops{write}) && !$class->is_new_db_dir();
+	
+	# Can we use the proxy DB?
+	my $proxy_ok = $idx_ok && $try_cache && -r $class->db_proxies;
+	# Proxy must be newer, otherwise it could be out of date from a load-only
+	$proxy_ok &&= (-M $class->db_proxies < (-M $class->db_index || 0));
+	$proxy_ok &&= !$class->search_comparedb
+		unless $config->param_boolean("NoAutoIndex");
+	
+	if ($proxy_ok) {
+		# Just use the proxies
+		$valid_since = (stat($class->db_proxies))[9];
+		eval { $packages = Storable::lock_retrieve($class->db_proxies); };
+		if ($@ || !defined $packages) {
+			die "It appears that part of Fink's package database is corrupted. "
+				. "Please run 'fink index' to correct the problem.\n";
+		}
+		close $lock if $lock;
+	} else {
+		rm_f($class->db_proxies); # Probably not valid anymore
+		
+		# Load the index
+		$valid_since = time;
+		my $idx;
+		if ($idx_ok) {
+			eval { $idx = Storable::lock_retrieve($class->db_index); };
+			if ($@ || !defined $idx) {
+				close $lock if $lock;
+				# Try to force a re-gen next time
+				$class->forget_packages({ disk => 1 });
+				die "It appears that Fink's package database is corrupted. "
+					. "Please run 'fink index -f' to recreate it.\n";
+			}
+		} else {
+			$idx = { infos => { }, 'next' => 1, };
+		}
+		
 		# Get the .info files
-		my ($infos, $need_update) = $class->get_all_infos(\%ops, !$try_cache);
+		my @infos = $class->get_all_infos;
 		
 		# Pass 1: Load outdated infos
-		my $loaded = { };
-		if ($need_update) {
-			$loaded = $class->pass1_update(\%ops, $idx, $infos);
-		}
-		return unless $load;
+		$class->pass1_update(\%ops, $idx, @infos);
+		close $lock if $lock;
+		return unless $ops{load};
 		
 		# Pass 2: Scan for files to load: Last one reached for each fullname
 		my %name2latest;
-		for my $info (@$infos) {
+		for my $info (@infos) {
 			my @fullnames = keys %{ $idx->{infos}{$info}{inits} };
 			@name2latest{@fullnames} = ($info) x scalar(@fullnames);
 		}
@@ -954,16 +981,29 @@ sub update_db {
 		my @loadinfos = keys %loadinfos;
 		
 		# Pass 3: Load and insert the .info files
-		if ($try_cache && !$class->pass3_insert($idx, $loaded, @loadinfos)) {
-			$try_cache = 0;
-			$class->forget_packages(2, 1);
-			print_breaking_stderr("Missing file, reloading...") if &get_term_width;
-			redo;	# Probably a missing finkinfodb file. Non-efficient fix!
+		$class->pass3_insert($idx, @loadinfos);
+		
+		# Store the proxy db
+		if ($ops{write}) {
+			store_rename($packages, $class->db_proxies);
 		}
 	}		
-	
-	close $lock if $lock;
 } 
+
+=item db_valid_since
+
+  my $time = Fink::Package->db_valid_since;
+
+Get earliest time (in seconds since the epoch) at which the DB is known to be
+exactly the same as now. This allows clients to cache the contents of the DB,
+only reloading if $cache_time < Fink::Package->db_valid_since;
+
+=cut
+
+sub db_valid_since {
+	my $class = shift;
+	return $valid_since;
+}
 
 =item tree_infos
 
@@ -982,7 +1022,7 @@ sub tree_infos {
 
 	my @filelist = ();
 	my $wanted = sub {
-		if (-f and not /^[\.\#]/ and /\.info$/) {
+		if (-f _ and not /^[\.\#]/ and /\.info$/) {
 			push @filelist, $File::Find::fullname;
 		}
 	};
@@ -1014,11 +1054,11 @@ sub packages_from_info_file {
 	
 	my $pkgname = $properties->{package};
 	unless ($pkgname) {
-		print "No package name in $filename\n";
+		print_breaking_stderr "No package name in $filename";
 		next;
 	}
 	unless ($properties->{version}) {
-		print "No version number for package $pkgname in $filename\n";
+		print_breaking_stderr "No version number for package $pkgname in $filename";
 		next;
 	}
 	# fields that should be converted from multiline to
@@ -1137,10 +1177,10 @@ sub packages_from_properties {
 
 	# store invariant portion of Package
 	( $properties->{package_invariant} = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
-	if (exists $properties->{parent}) {
+	if (exists $properties->{parent_obj}) {
 		# get parent's Package for percent expansion
 		# (only splitoffs can use %N in Package)
-		$pkg_expand{'N'}  = $properties->{parent}->{package};
+		$pkg_expand{'N'}  = $properties->{parent_obj}->{package};
 		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
 	}
 	# must always call expand_percent even if no Type or parent in
@@ -1226,24 +1266,26 @@ sub handle_infon_block {
 	}
 	# file contains an InfoN block
 	if (@junk) {
-		print "Multiple InfoN blocks in $filename; skipping\n";
+		print_breaking_stderr "Multiple InfoN blocks in $filename; skipping";
 		return {};
 	}
 	unless (keys %$properties == 1) {
 		# if InfoN, entire file must be within block (avoids
 		# having to merge InfoN block with top-level fields)
-		print "Field(s) outside $infon block! Skipping $filename\n";
+		print_breaking_stderr "Field(s) outside $infon block! Skipping $filename";
 		return {};
 	}
 	my ($info_level) = ($infon =~ /(\d+)/);
 	my $max_info_level = &Fink::FinkVersion::max_info_level;
 	if ($info_level > $max_info_level) {
 		# make sure we can handle this InfoN
-		print "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename\n";
+		print_breaking_stderr "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename";
 		return {};
 	}
+	
 	# okay, parse InfoN and promote it to the top level
-	my $new_properties = &read_properties_var("$infon of \"$filename\"", $properties->{$infon});
+	my $new_properties = &read_properties_var("$infon of \"$filename\"",
+		$properties->{$infon}, { remove_space => ($info_level >= 3) });
 	$new_properties->{infon} = $info_level;
 	return $new_properties;
 }

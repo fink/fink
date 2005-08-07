@@ -32,8 +32,9 @@ use Fink::Services qw(&filename &execute
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
 					  &store_rename);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection
-					&should_skip_prompt);
+use Fink::CLI qw(&print_breaking &rejoin_text
+				 &prompt_boolean &prompt_selection
+				 &should_skip_prompt);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath
 					$dbpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -52,6 +53,8 @@ use POSIX qw(uname strftime);
 use DB_File;
 use Hash::Util;
 use File::Basename qw(&dirname &basename);
+use Carp qw(confess);
+use File::Temp qw(tempdir);
 
 use strict;
 use warnings;
@@ -70,6 +73,15 @@ our @EXPORT_OK;
 
 END { }				# module clean-up code here (global destructor)
 
+=head1 NAME
+
+Fink::PkgVersion - a single version of a package
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
 
 =item new_backed
 
@@ -95,7 +107,7 @@ In addition, the following fields should be accessed exclusively through
 accessors:
 
 Package: _providers, _versions
-PkgVersion: _splitoffs, parent
+PkgVersion: _splitoffs_obj, parent_obj
 
 =cut
 
@@ -117,51 +129,61 @@ different PkgVersion objects. Returns this object.
 
 =cut
 
-{
-	my %shared_loads;
+our %shared_loads;
 	
-	sub load_fields {
-		my $self = shift;
-		return $self if !$self->has_param('_backed_file')
-			|| $self->param('_backed_loaded')
-			|| !eval { require Storable };
-		
-		$self->set_param('_backed_loaded', 1);
-		my $file = $self->param('_backed_file');
-		my $loaded;
-		if (exists $shared_loads{$file}) {
+sub load_fields {
+	my $self = shift;
+	return $self if !$self->has_param('_backed_file')
+		|| $self->param('_backed_loaded')
+		|| !eval { require Storable };
+	
+	$self->set_param('_backed_loaded', 1);
+	my $file = $self->param('_backed_file');
+	my $loaded;
+	if (exists $shared_loads{$file}) {
 #			print "Sharing PkgVersion " . $self->get_fullname . " from $file\n";
-			$loaded = $shared_loads{$file};
-		} else {
+		$loaded = $shared_loads{$file};
+	} else {
 #			print "Loading PkgVersion " . $self->get_fullname . " from: $file\n";
-			unless ($loaded = Storable::lock_retrieve($file)) {
-				$shared_loads{$file} = { }; # Don't try again
-				return $self;
-			}
-			$shared_loads{$file} = $loaded;
+		eval { $loaded = Storable::lock_retrieve($file); };
+		if ($@ || !defined $loaded) {
+			die "It appears that part of Fink's package database is corrupted "
+				. "or missing. Please run 'fink index' to correct the "
+				. "problem.\n";
 		}
-		
-		return $self unless exists $loaded->{$self->get_fullname};
-		
-		# Insert the loaded fields
-		my $href = $loaded->{$self->get_fullname};
-		@$self{keys %$href} = values %$href;
-		
-		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
-		my $destdir = $self->get_install_directory();
-		my $pdestdir = $self->has_parent()
-			? $self->get_parent()->get_install_directory()
-			: $destdir;
-		my %entries = (
-			'd' => $destdir,			'D' => $pdestdir,
-			'i' => $destdir.$basepath,	'I' => $pdestdir.$basepath,
-		);
-		@{$self->{_expand}}{keys %entries} = values %entries;
-		
-		return $self;
+		$shared_loads{$file} = $loaded;
 	}
+	
+	return $self unless exists $loaded->{$self->get_fullname};
+	
+	# Insert the loaded fields
+	my $href = $loaded->{$self->get_fullname};
+	@$self{keys %$href} = values %$href;
+	
+	# We need to update %d, %D, %i and %I to adapt to changes in buildpath
+	$self->_set_destdirs;
+	
+	return $self;
 }
 
+# PRIVATE: $pv->_set_destdirs
+# (Re)set the destination (install) directories for this package.
+# This is necessary for loading old finkinfodb caches, and for recovering
+# from bootstrap mode.
+sub _set_destdirs {
+	my $self = shift;
+
+	my $destdir = $self->get_install_directory();
+	my $pdestdir = $self->has_parent()
+		? $self->get_parent()->get_install_directory()
+		: $destdir;
+	my %entries = (
+		'd' => $destdir,			'D' => $pdestdir,
+		'i' => $destdir.$basepath,	'I' => $pdestdir.$basepath,
+	);
+	@{$self->{_expand}}{keys %entries} = values %entries;
+	$self->prepare_percent_c;
+}
 
 =item get_init_fields
 
@@ -266,15 +288,12 @@ sub initialize {
 	# some commonly used stuff
 	$fullname = $pkgname."-".$version."-".$revision;
 	# prepare percent-expansion map
-	$destdir = $self->get_install_directory();
-	if (exists $self->{parent}) {
-		my $parent = $self->{parent};
+	if ($self->has_parent) {
+		my $parent = $self->get_parent;
 		$parentpkgname = $parent->get_name();
-		$parentdestdir = $parent->get_install_directory();
 		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
 	} else {
 		$parentpkgname = $pkgname;
-		$parentdestdir = $destdir;
 		$parentinvname = $self->param_default("package_invariant", $pkgname);
 		$self->{_splitoffs} = [];
 	}
@@ -286,15 +305,11 @@ sub initialize {
 				'r' => $revision,
 				'f' => $fullname,
 				'p' => $basepath,
-				'd' => $destdir,
-				'i' => $destdir.$basepath,
 				'm' => $arch,
 
 				'N' => $parentpkgname,
 				'Ni'=> $parentinvname,
 				'P' => $basepath,
-				'D' => $parentdestdir,
-				'I' => $parentdestdir.$basepath,
 
 				'a' => $self->{_patchpath},
 				'b' => '.'
@@ -305,6 +320,7 @@ sub initialize {
 	}
 
 	$self->{_expand} = $expand;
+	$self->_set_destdirs;
 
 	$self->{_bootstrap} = 0;
 
@@ -313,17 +329,14 @@ sub initialize {
 	$self->expand_percent_if_available("Description");
 
 	# from here on we have to distinguish between "real" packages and splitoffs
-	if (exists $self->{parent}) {
+	if ($self->has_parent) {
 		# so it's a splitoff
 		my ($parent, $field);
 
-		$parent = $self->{parent};
+		$parent = $self->get_parent;
 		
 		if ($parent->has_param('maintainer')) {
 			$self->{'maintainer'} = $parent->{'maintainer'};
-		}
-		if ($parent->has_param('essential')) {
-			$self->{'_parentessential'} = $parent->{'essential'};
 		}
 
 		# handle inherited fields
@@ -704,7 +717,6 @@ sub get_script {
 
 	# need to pre-expand default_script so not have to change
 	# expand_percent() to go a third level deep
-	$self->prepare_percent_c;
 	$self->{_expand}->{default_script} = &expand_percent(
 		$default_script,
 		$self->{_expand},
@@ -726,11 +738,13 @@ sub add_splitoff {
 	my $filename = $self->{_filename};
 	my ($properties, $package, $pkgname, @splitoffs);
 	
-	# get rid of any indention first
-	$splitoff_data =~ s/^\s+//gm;
+	# if we're not Info3+, use old-style whitespace removal
+	$splitoff_data =~ s/^\s+//gm if $self->info_level < 3;
 	
 	# get the splitoff package name
-	$properties = &read_properties_var("$fieldname of \"$filename\"", $splitoff_data);
+	$properties = &read_properties_var("$fieldname of \"$filename\"",
+		$splitoff_data,
+		{ remove_space => ($self->info_level >= 3) });
 	$pkgname = $properties->{'package'};
 	unless ($pkgname) {
 		print "No package name for $fieldname in $filename\n";
@@ -742,7 +756,7 @@ sub add_splitoff {
 	$properties->{'epoch'}    = $self->{_epoch};
 	
 	# link the splitoff to its "parent" (=us)
-	$properties->{parent} = $self;
+	$properties->{parent_obj} = $self;
 
 	# need to inherit (maybe) Type before package gets created
 	if (not exists $properties->{'type'}) {
@@ -756,8 +770,8 @@ sub add_splitoff {
 	# instantiate the splitoff
 	@splitoffs = Fink::Package->packages_from_properties($properties, $filename);
 	
-	# return the new object(s)
-	push @{$self->{_splitoffs}}, @splitoffs;
+	# return the new object(s). NOTE: This is actually adding objects!
+	push @{$self->{_splitoffs_obj}}, @splitoffs;
 }
 
 ### merge duplicate package description
@@ -782,6 +796,7 @@ sub enable_bootstrap {
 	$self->{_expand}->{i} = $bsbase;
 	$self->{_expand}->{D} = "";
 	$self->{_expand}->{I} = $bsbase;
+	$self->prepare_percent_c;
 
 	$self->{_bootstrap} = 1;
 	
@@ -795,21 +810,9 @@ sub disable_bootstrap {
 	my $self = shift;
 	my ($destdir);
 	my $splitoff;
-
-	$destdir = $self->get_install_directory();
-	$self->{_expand}->{p} = $basepath;
-	$self->{_expand}->{d} = $destdir;
-	$self->{_expand}->{i} = $destdir.$basepath;
-	if ($self->has_parent) {
-		my $parent = $self->get_parent;
-		my $parentdestdir = $parent->get_install_directory();
-		$self->{_expand}->{D} = $parentdestdir;
-		$self->{_expand}->{I} = $parentdestdir.$basepath;
-	} else {
-		$self->{_expand}->{D} = $self->{_expand}->{d};
-		$self->{_expand}->{I} = $self->{_expand}->{i};
-	};
 	
+	$self->{_expand}->{p} = $basepath;
+	$self->_set_destdirs;
 	$self->{_bootstrap} = 0;
 	
 	foreach	 $splitoff ($self->parent_splitoffs) {
@@ -1105,24 +1108,61 @@ sub get_build_directory {
 # Accessors for parent
 sub has_parent {
 	my $self = shift;
-	return exists $self->{parent};
+	return exists $self->{parent} || exists $self->{parent_obj};
 }
 sub get_parent {
 	my $self = shift;
-	$self->{parent}->load_fields if exists $self->{parent};
-	return $self->{parent};
+	$self->{parent_obj} = $self->resolve_spec($self->{parent})
+		unless exists $self->{parent_obj};
+	return $self->{parent_obj};
 }
 
-# get splitoffs only for parent, empty list for others
+# PRIVATE: Ensure splitoff object list is around
+sub _ensure_splitoffs {
+	my $self = shift;
+	if (!exists $self->{_splitoffs_obj} && exists $self->{_splitoffs}) {
+		$self->{_splitoffs_obj} = [
+			# Don't load fields yet
+			map { $self->resolve_spec($_, 0) } @{$self->{_splitoffs}}
+		];
+	}
+}
+
+=item parent_splitoffs
+
+  my @splitoffs = $pv->parent_splitoffs;
+
+Returns the splitoffs of this package, not including itself, if this is
+a parent package. Otherwise, returns false.
+
+=cut
+
 sub parent_splitoffs {
 	my $self = shift;
+	$self->_ensure_splitoffs;
 	return exists $self->{_splitoffs}
-		? map { $_->load_fields } @{$self->{_splitoffs}}
+		? map { $_->load_fields } @{$self->{_splitoffs_obj}}
 		: ();
 }
 
+=item get_splitoffs
+
+  my @splitoffs = $pv->get_splitoffs;
+  my $splitoffs = $pv->get_splitoffs $with_parent, $with_self;
+
+Get a list of the splitoffs of this package, or of its parent if this package
+is a splitoff.
+
+If $with_parent is true, includes the parent package (defaults false).
+If $with_self is true, includes this package (defaults false).
+If this package is the parent package, both $with_self and $with_parent must
+both be true for this package to be included.
+
+=cut
+
 sub get_splitoffs {
 	my $self = shift;
+	
 	my $include_parent = shift || 0;
 	my $include_self = shift || 0;
 	my @list = ();
@@ -1134,13 +1174,14 @@ sub get_splitoffs {
 		$parent = $self;
 	}
 	
+	$parent->_ensure_splitoffs;
 	if ($include_parent) {
 		unless ($self eq $parent && not $include_self) {
 			push(@list, $parent);
 		}
 	}
 
-	foreach $splitoff (@{$parent->{_splitoffs}}) {
+	foreach $splitoff (@{$parent->{_splitoffs_obj}}) {
 		unless ($self eq $splitoff && not $include_self) {
 			push(@list, $splitoff);
 		}
@@ -1148,6 +1189,16 @@ sub get_splitoffs {
 
 	return map { $_->load_fields } @list;
 }
+
+=item get_relatives
+
+  my @relatives = $pv->get_relatives;
+
+Get the other packages that are splitoffs of this one (of of its parent, if
+this package is a splitoff). Does not include this package, but does include
+the parent.
+
+=cut
 
 sub get_relatives {
 	my $self = shift;
@@ -1828,18 +1879,41 @@ sub get_depends {
 	return &pkglist2lol($self->pkglist_default("Depends",""));
 }
 
-### find package and version by matching a specification
+=item match_package
+
+  my $result = Fink::PkgVersion::match_package($pkgspec, %opts);
+
+Find a PkgVersion by matching a specification. Return undef
+on failure.
+
+Valid options are:
+
+=over 4
+
+=item quiet
+
+Don't print messages. Defaults to false.
+
+=item provides
+
+If no PkgVersion corresponds to the given specification, try to match a
+provided Package. Test with $result->isa('Fink::Package') on return!
+Defaults to false.
+
+=back
+
+=cut
 
 sub match_package {
 	shift;	# class method - ignore first parameter
 	my $s = shift;
-	my $quiet = shift || 0;
+	my %opts = (quiet => 0, provides => 0, @_);
 
 	my ($pkgname, $package, $version, $pkgversion);
 	my ($found, @parts, $i, @vlist, $v, @rlist);
 
 	if ($config->verbosity_level() < 3) {
-		$quiet = 1;
+		$opts{quiet} = 1;
 	}
 
 	# first, search for package
@@ -1864,7 +1938,7 @@ sub match_package {
 	}
 	if (not $found) {
 		print "no package found for \"$s\"\n"
-			unless $quiet;
+			unless $opts{quiet};
 		return undef;
 	}
 
@@ -1876,8 +1950,15 @@ sub match_package {
 
 		$version = &latest_version($package->list_versions());
 		if (not defined $version) {
+			# i guess it's provided then?
+			return $package if $opts{provides};
+			
 			# there's nothing we can do here...
-			die "no version info available for $pkgname\n";
+			print_breaking rejoin_text <<VIRT unless $opts{quiet};
+Package $pkgname is a virtual package. For a list of packages which provide it,
+try 'fink info $pkgname'.
+VIRT
+			return undef;
 		}
 	} elsif (not defined $package->get_version($version)) {
 		# try to match the version
@@ -1892,7 +1973,9 @@ sub match_package {
 		$version = &latest_version(@rlist);
 		if (not defined $version) {
 			# there's nothing we can do here...
-			die "no matching version found for $pkgname\n";
+			print "no matching version found for $pkgname\n"
+				unless $opts{quiet};
+			return undef;
 		}
 	}
 
@@ -2141,7 +2224,7 @@ sub phase_unpack {
 
 	unless ($self->get_name() eq "fink")
 	{
-		if (Fink::Services::checkDistribution())
+		if (Fink::Config::checkDistribution())
 		{
 			my $msg = "\n\nThe Fink Distribution currently set is not compatable with your current system version.\nPlease run `fink selfupdate' and then `fink dist-upgrade' to\nmigrate to the latest fink distribution for your OS.\n\n";
 			die $msg;
@@ -2190,8 +2273,11 @@ GCC_MSG
 		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
 		if (Fink::Config::get_option("build_as_nobody")) {
-			chowname 'nobody', $destdir or
-				die "can't chown 'nobody' $destdir\n";
+			chowname 'nobody:nobody', $destdir or
+				die "can't chown 'nobody:nobody' $destdir\n";
+		} else {
+			chowname ':admin', $destdir or
+				die "can't grp 'admin' $destdir\n";
 		}
 		return;
 	}
@@ -2316,31 +2402,18 @@ GCC_MSG
 			mkdir_p $destdir or
 				die "can't create directory $destdir\n";
 			if (Fink::Config::get_option("build_as_nobody")) {
-				chowname 'nobody', $destdir or
-					die "can't chown 'nobody' $destdir\n";
+				chowname 'nobody:nobody', $destdir or
+					die "can't chown 'nobody:nobody' $destdir\n";
+			} else {
+				chowname ':admin', $destdir or
+					die "can't chgrp 'admin' $destdir\n";
 			}
 		}
 
 		# unpack it
 		chdir $destdir;
 		if (&execute($unpack_cmd, nonroot_okay=>1)) {
-			$tries++;
-
-			# FIXME: this is not the likely problem now since we already checked MD5
-			$answer =
-				&prompt_boolean("Unpacking the file $archive of package ".
-								$self->get_fullname()." failed. The most likely ".
-								"cause for this is a corrupted or incomplete ".
-								"download. Do you want to delete the tarball ".
-								"and download it again?",
-								default => ($tries >= $maxtries) ? 0 : 1,
-								category => 'fetch',);
-			if ($answer) {
-				rm_f $found_archive;
-				redo;		# restart loop with same tarball
-			} else {
-				die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
-			}
+			die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
 		}
 
 		$tries = 0;
@@ -2429,7 +2502,10 @@ sub phase_patch {
 sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
-
+	
+	# Fix repair permissions bug on Tiger
+	Fink::Services::fix_gcc_repairperms();
+	
 	my $notifier = Fink::Notify->new();
 
 	if ($self->is_type('bundle')) {
@@ -2504,9 +2580,11 @@ sub phase_install {
 	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
-	}
-	if (Fink::Config::get_option("build_as_nobody")) {
-		$install_script .= "/usr/sbin/chown -R nobody \%d\n";
+		if (Fink::Config::get_option("build_as_nobody")) {
+			$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
+		} else {
+			$install_script .= "/usr/sbin/chown -R root:admin \%d\n";
+		}
 	}
 	# Run the script part we have so far
 	$self->run_script($install_script, "installing", 0, 0);
@@ -2592,7 +2670,9 @@ sub phase_install {
 		# get rid of any indention first
 		$vars =~ s/^\s+//gm;
 		# Read the set if variavkes (but don't change the keys to lowercase)
-		$properties = &read_properties_var('runtimevars of "'.$self->{_filename}.'"', $vars, 1);
+		$properties = &read_properties_var(
+			'runtimevars of "'.$self->{_filename}.'"', $vars,
+			{ case_sensitive => 1});
 
 		if(scalar keys %$properties > 0){
 			$install_script .= "\n/usr/bin/install -d -m 755 %i/etc/profile.d";
@@ -2711,7 +2791,7 @@ sub phase_build {
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		if (&execute("chown -R -h root '$destdir'") == 1) {
+		if (&execute("chown -R -h root:admin '$destdir'") == 1) {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
@@ -3456,14 +3536,18 @@ EOSCRIPT
 	close(PRERM) or die "can't write prerm script file for $lockpkg: $!\n";
 	chmod 0755, "$destdir/DEBIAN/prerm";
 
-	### add an actual file to the buildlock package
+	### store our PID in a file in the buildlock package
 	my $lockdir = "$destdir$basepath/var/run/fink";
 	if (not -d $lockdir) {
 		mkdir_p $lockdir or
 			die "can't create directory for lockfile for package $lockpkg\n";
 	}
-	touch $lockdir . '/' . $self->get_name() . '-' . $self->get_fullversion() . '.buildlock' or
-		die "can't create lockfile for package $lockpkg\n";
+	if (open my $lockfh, ">$lockdir/$lockpkg.pid") {
+		print $lockfh $$,"\n";
+		close $lockfh or die "can't create pid file for package $lockpkg: $!\n";
+	} else {
+		die "can't create pid file for package $lockpkg: $!\n";
+	}
 
 	### create .deb using dpkg-deb (in buildpath so apt doesn't see it)
 	if (&execute("dpkg-deb -b $destdir $buildpath")) {
@@ -3481,11 +3565,12 @@ EOSCRIPT
 	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
 	my $lock_failed = &execute(dpkg_lockwait() . " -i $debfile", ignore_INT=>1);
 	if ($lock_failed) {
-		&print_breaking(<<EOMSG);
+		print_breaking rejoin_text <<EOMSG;
 Can't set build lock for $pkgname ($pkgvers)
 
-If any of the above dpkg error messages mention conflicting packages --
-for example, telling you that fink-buildlock-$pkgname-$pkgvers
+If any of the above dpkg error messages mention conflicting packages or
+missing dependencies -- for example, telling you that the package
+fink-buildlock-$pkgname-$pkgvers
 conflicts with something else -- fink has probably gotten confused by trying 
 to build many packages at once. Try building just this current package
 $pkgname (i.e, "fink build $pkgname"). When that has completed successfully, 
@@ -3591,6 +3676,8 @@ Returns the path to the resulting directory.
 
 =cut
 
+# NOTE: If you change this, you also must change the matching script in
+# g++-wrapper.in!
 sub ensure_gpp_prefix {
 	my $vers = shift;
 	
@@ -3624,8 +3711,6 @@ EOF
 
 sub get_env {
 	my $self = shift;
-	my ($varname, $expand, $ccache_dir);
-	my %script_env;
 
 	# just return cached copy if there is one
 	if (exists $self->{_script_env} and not $self->{_bootstrap}) {
@@ -3656,10 +3741,17 @@ sub get_env {
 	my %defaults = (
 		"CPPFLAGS"                 => "-I\%p/include",
 		"LDFLAGS"                  => "-L\%p/lib",
-		"LD_PREBIND"               => 1,
-		"LD_PREBIND_ALLOW_OVERLAP" => 1,
-		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
+#		"LD_PREBIND"               => 1,
+#		"LD_PREBIND_ALLOW_OVERLAP" => 1,
+#		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
+
+# default value of LD_PREBIND depends on the distribution
+	if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
+		$defaults{"LD_PREBIND"} = "1";
+		$defaults{"LD_PREBIND_ALLOW_OVERLAP"} = "1";
+		$defaults{"LD_SEG_ADDR_TABLE"} = "$basepath/var/lib/fink/prebound/seg_addr_table";
+	}
 
 #	# add a default for CXXFLAGS for recent distributions
 #	if (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional")) {
@@ -3667,6 +3759,9 @@ sub get_env {
 #	} elsif ($config->param("Distribution") ge "10.4") {
 #		$defaults{"CXXFLAGS"} = "-fabi-version=2";
 #	}
+
+	# uncomment this to be able to use distcc -- not officially supported!
+	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 
 	# lay the groundwork for prebinding
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
@@ -3683,10 +3778,12 @@ END
 		}
 	}
 
-	# start with a clean the environment
-	# uncomment this to be able to use distcc -- not officially supported!
-	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
-	%script_env = ("HOME" => $ENV{"HOME"});
+	# start with a clean environment
+	my %script_env = ();
+
+	# create a dummy HOME directory
+	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
+	$script_env{"HOME"} = tempdir( CLEANUP => 1 );
 
 	# add system path
 	$script_env{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";
@@ -3698,7 +3795,7 @@ END
 	}
 	
 	# Stop ccache stompage: allow user to specify directory via fink.conf
-	$ccache_dir = $config->param_default("CCacheDir", "$basepath/var/ccache");
+	my $ccache_dir = $config->param_default("CCacheDir", "$basepath/var/ccache");
 	unless ( lc $ccache_dir eq "none" ) {
 		# make sure directory exists
 		if ( not -d $ccache_dir and not mkdir_p($ccache_dir) ) {
@@ -3727,8 +3824,8 @@ END
 	$script_env{"TERM"} = $ENV{"TERM"};
 
 	# set variables according to the info file
-	$expand = $self->{_expand};
-	foreach $varname (@setable_env_vars) {
+	my $expand = $self->{_expand};
+	foreach my $varname (@setable_env_vars) {
 		my $s;
 		# start with fink's default unless .info says not to
 		$s = $defaults{$varname} unless $self->param_boolean("NoSet$varname");
@@ -3976,6 +4073,104 @@ sub get_priority {
 	return $prio;
 }
 
+=item make_spec
+
+  my $spec = $pv-make_spec;
+
+Make a unique specifier for this package object.
+
+=cut
+
+sub make_spec {
+	my $self = shift;
+	return { name => $self->get_name, version => $self->get_fullversion };
+}
+
+=item resolve_spec
+
+  my $pv = Fink::PkgVersion->resolve_spec($spec);
+
+Find the PkgVersion corresponding to the given specifier. If none exists,
+die! Invalid specifiers should NOT exist.
+
+=cut
+
+sub resolve_spec {
+	my $class = shift;
+	my $spec = shift;
+	
+	# Don't use this unless you know what you're doing!
+	my $noload = shift || 0;
+	
+	my $pv = undef;
+	my $po = Fink::Package->package_by_name($spec->{name});
+	$pv = $po->get_version($spec->{version}, $noload) if $po;
+	
+	confess "FATAL: Could not resolve package spec $spec->{name} $spec->{version}"
+		unless $pv;
+	return $pv;
+}
+
+# PRIVATE: $pv->_disconnect
+# Disconnect this package from other package objects.
+# Magic happens here, do not use from outside of Fink::Package.
+sub _disconnect {
+	my $self = shift;
+	
+	if ($self->has_parent) {
+		$self->{parent} = $self->get_parent->make_spec;
+		delete $self->{parent_obj};
+	} else {
+		$self->{_splitoffs} = [ map { $_->make_spec } $self->parent_splitoffs ];
+		delete $self->{_splitoffs_obj};
+	}
+}
+
+=item is_essential
+
+  my $bool = $pv->is_essential;
+
+Returns whether or not this package is essential.
+
+=cut
+
+sub is_essential {
+	my $self = shift;
+	return $self->param_boolean('Essential');
+}
+
+=item built_with_essential
+
+  my $bool = $pv->built_with_essential;
+
+Returns true if and only if building this package involves also building an
+essential package.
+
+=cut
+
+sub built_with_essential {
+	my $self = shift;
+	return scalar(grep { $_->is_essential } $self->get_splitoffs(1, 1));
+}
+
+=item info_level
+
+  my $info_level = $pv->info_level;
+
+Get the value of N in the InfoN that wrapped this package, or 1 (one) if no
+InfoN wrapper was used.
+
+=cut
+
+sub info_level {
+	my $self = shift;
+	my $parent = $self->has_parent ? $self->get_parent : $self;
+	return $parent->param_default('infon', 1);
+}
+
+=back
+
+=cut
 
 ### EOF
 

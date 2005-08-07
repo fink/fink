@@ -235,31 +235,57 @@ if (-x "/usr/bin/head") {
 
 ### choose installation path
 
+# Check if a location has installed software
+sub has_installed_software {
+	my $loc = shift;
+	return (-d "$loc/bin" or -d "$loc/lib" or -d "$loc/include");
+}
+
 my ($installto, $forbidden);
+my $retrying = 0;
+my $nonstandard_warning = 0;
 
 $installto = shift || "";
 
+{ ### install path redo block
+
 # ask if the path wasn't passed as a parameter
-if (not $installto) {
+if ($retrying || not $installto) {
+	my $default = '/sw';
+	while (1) {
+		last if !has_installed_software($default);
+		$default =~ /^(.*?)(\d*)$/;
+		$default = $1 . (($2 || 1) + 1);
+	}
+	
 	print "\n";
+	if ($default ne '/sw' && !$nonstandard_warning) {
+		print "It looks like you already have Fink installed in /sw, trying "
+		.	"$default instead.\n\n"
+		.	"WARNING: This is a non-standard location.\n\n";
+		$nonstandard_warning = 1;
+	}
+	my $prompt = "Please choose the path where Fink should be installed. Note "
+		. "that you will be able to use the binary distribution only if you "
+		. "choose '/sw'.";
 	$installto =
-		&prompt("Please choose the path where Fink should be installed.",
-				default => "/sw");
+		&prompt($prompt, default => $default);
 }
+$retrying = 1;
 print "\n";
 
 # catch formal errors
 if ($installto eq "") {
 	print "ERROR: Install path is empty.\n";
-	exit 1;
+	redo;
 }
 if (substr($installto,0,1) ne "/") {
 	print "ERROR: Install path '$installto' doesn't start with a slash.\n";
-	exit 1;
+	redo;
 }
 if ($installto =~ /\s/) {
 	print "ERROR: Install path '$installto' contains whitespace.\n";
-	exit 1;
+	redo;
 }
 
 # remove trailing slash
@@ -273,7 +299,7 @@ foreach $forbidden (qw(/ /etc /usr /var /bin /sbin /lib /tmp /dev
 					   /root /private /cores /boot)) {
 	if ($installto eq $forbidden) {
 		print "ERROR: Refusing to install into '$installto'.\n";
-		exit 1;
+		redo;
 	}
 }
 if ($installto eq "/usr/local") {
@@ -287,14 +313,14 @@ if ($installto eq "/usr/local") {
 		&print_breaking("You have been warned. Think twice before reporting ".
 						"problems as a bug.");
 	} else {
-		exit 1;
+		redo;
 	}
 } elsif (-d $installto) {
 	# check existing contents
-	if (-d "$installto/bin" or -d "$installto/lib" or -d "$installto/include") {
+	if (has_installed_software $installto) {
 		&print_breaking("ERROR: '$installto' exists and contains installed ".
 						"software. Refusing to install there.");
-		exit 1;
+		redo;
 	} else {
 		&print_breaking("WARNING: '$installto' already exists. If bootstrapping ".
 						"fails, try removing the directory altogether and ".
@@ -304,6 +330,7 @@ if ($installto eq "/usr/local") {
 	&print_breaking("OK, installing into '$installto'.");
 }
 print "\n";
+}
 
 ### create directories
 

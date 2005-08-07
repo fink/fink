@@ -42,16 +42,30 @@ sub new {
 	my $self = bless({}, $class);
 	my @events = $self->events();
 
+	$self->initialized(0);
+
 	eval {
-		require Mac::Growl;
-		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
+			require Mac::Growl;
 	};
-	return $@ ? undef : $self;
+
+	return $@? undef : $self;
+}
+
+sub initialized {
+	if (@_) {
+		$self->{_initialized} = shift;
+	}
+	return $self->{_initialized};
 }
 
 sub do_notify {
 	my $self  = shift;
 	my %args  = @_;
+
+	if (not $self->initialized()) {
+		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
+		$self->initialized(1);
+	}
 
 	my $image = $basepath . '/share/fink/images/' . $args{'event'} . '.png';
 	$image = undef unless -r $image;

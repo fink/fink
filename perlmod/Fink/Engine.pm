@@ -58,6 +58,18 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+=head1 NAME
+
+Fink::Engine - high-level actions for fink to perform
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
+
+=cut
+
 # The list of commands. Maps command names to a list containing
 # a function reference, and three flags. The first flag indicates
 # whether this command requires the package descriptions to be
@@ -213,14 +225,6 @@ sub process {
 		}
 	}
 
-	if (Fink::Config::get_option("build_as_nobody")) {
-		&print_breaking ("WARNING: --build-as-nobody may produce non-usable ".
-						 "binary packages. This safe-mode should only be ".
-						 "used for package testing and development, not for ".
-						 "production builds.");
-		sleep(3);
-	}
-	
 	# Warn about Spotlight
 	if (&spotlight_warning()) {
 		$config->save;
@@ -230,6 +234,7 @@ sub process {
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
+		Fink::Shlibs->scan_all();
 	}
 
 	if (Fink::Config::get_option("maintainermode")) {
@@ -334,10 +339,12 @@ EOF
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	
+	# Need to auto-index if specifically running 'fink index'!
+	$config->set_param("NoAutoIndex", 0);
 	if ($full) {
-		Fink::Package->forget_packages(2);
+		Fink::Package->forget_packages();
 	}
-	Fink::Package->update_db(no_load => 1, no_infolist => 1);
+	Fink::Package->update_db(no_load => 1, no_fastload => 1);
 	Fink::Shlibs->update_shlib_db();
 }
 
@@ -385,7 +392,7 @@ sub cmd_list {
 
 sub cmd_dist_upgrade
 {
-	if (Fink::Services::checkDistribution())
+	if (Fink::Config::checkDistribution())
 	{
 		my $host = `$basepath/lib/fink/update/config.guess`;
 		chomp($host);
@@ -497,6 +504,7 @@ sub do_real_list {
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
@@ -716,7 +724,7 @@ sub create_override {
 					} else {
 #						print "Have prio in: $File::Find::name\n";
 					}
-				}, "$basepath/fink/dists/$tree/binary-$debarch/");
+				}, "$basepath/fink/dists/$tree/binary-$debarch/") if (-d "$basepath/fink/dists/$tree/binary-$debarch/");
 			}
 		}
 		
@@ -956,18 +964,33 @@ sub do_fetch_all {
 	&call_queue_clear;
 }
 
+=item cmd_description
+
+  cmd_description @pkgspecs;
+
+Print the description of the given packages.
+
+=cut
+
 sub cmd_description {
 	my ($package, @plist);
 
-	@plist = &expand_packages(@_);
+	@plist = &expand_packages({ provides => 1 }, @_);
 	if ($#plist < 0) {
 		die "no package specified for command 'description'!\n";
 	}
 
 	print "\n";
 	foreach $package (@plist) {
-		print $package->get_fullname().": ";
-		print $package->get_description();
+		if ($package->isa('Fink::Package')) {
+			printf "%s is a virtual package, provided by:\n",
+				$package->get_name();
+			printf "  %s\n", $_->get_fullname()
+				for $package->get_all_providers();
+		} else {
+			print $package->get_fullname().": ";
+			print $package->get_description();
+		}
 		print "\n";
 	}
 }
@@ -1051,7 +1074,8 @@ EOF
 		exit 0;
 	}
 
-	Fink::Package->require_packages(0, quiet => 1);
+	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all(quiet => 1);
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
@@ -1236,42 +1260,50 @@ EOF
 }
 
 sub cmd_cleanup {
-	my ($pname, $package, $vo, $file, $suffix);
-	my (@old_src_files);
-
-	# TODO - add option that specify whether to clean up source, .debs, or both
-	# TODO - add --dry-run option that prints out what actions would be performed
 	# TODO - option that steers which file to keep/delete: keep all files that
 	#				 are refered by any .info file; keep only those refered to by the
 	#				 current version of any package; etc.
 	#				 Delete all .deb and delete all src? Not really needed, this can be
 	#				 achieved each with single line CLI commands.
 	# TODO - document --keep-src in the man page, and add a fink.conf entry for defaults
+	# TODO - document --dry-run option that prints out what actions would be performed
 
-	my ($wanthelp, $keep_old);
-	# dryrun is not yet used. Provided here as a starter for the --dry-run option.
-	my $dryrun = 0;
+	my(%opts, %modes, $wanthelp);
 	
 	use Getopt::Long;
 	my @temp_ARGV = @ARGV;
 	@ARGV=@_;
 	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
 	GetOptions(
-		'keep-src|k' => \$keep_old,
-		'help|h'     => \$wanthelp
+		'sources|srcs'  => \$modes{srcs},
+		'debs'          => \$modes{debs},
+		'buildlocks|bl' => \$modes{bl},
+		'keep-src|k'    => \$opts{keep_old},
+		'help|h'        => \$wanthelp,
+		'dry-run|d'     => \$opts{dryrun}
 	) or die "fink cleanup: unknown option\nType 'fink cleanup --help' for more information.\n";
 
-	if ($wanthelp) {
+	if ($wanthelp || ! scalar(grep {$_} values %modes)) {
 		require Fink::FinkVersion;
 		my $version = Fink::FinkVersion::fink_version();
 
 		print <<"EOF";
 Fink $version
 
-Usage: fink cleanup [options]
+Usage: fink cleanup [mode(s) and options]
+
+One or more of the following modes must be specified:
+  --debs  - Delete .deb (compiled binary package) files
+  --sources, -srcs
+          - Delete source files
+  --buildlocks, --bl
+          - Delete buildlock packages (not implemented)
 
 Options:
-  -k, --keep-src  - Move old source files to $basepath/src/old/.
+  -k, --keep-src  - Move old source files to $basepath/src/old/ instead
+                    of deleting them.
+  -d, --dry-run   - Print the files that would be removed, but do not
+                    actually remove them.
   -h, --help      - This help text.
 
 EOF
@@ -1280,94 +1312,209 @@ EOF
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 
-	# Reset list of non-obsolete debs/source files
-	my %deb_list = ();
+	$modes{srcs} && &cleanup_sources(%opts);
+	$modes{debs} && &cleanup_debs(%opts);
+	$modes{bl}   && &cleanup_buildlocks(%opts);
+}
+
+=item cleanup_*
+
+    &cleanup_sources(%opts);
+
+These functions each remove some kind of obsolete files or data
+structures. Each function may take one or more options, typically
+due to various command-line flags.
+
+=over 4
+
+=item cleanup_sources
+
+Remove files from %p/src that are not listed as a Source or SourceN of
+any package in the active Trees of the active Distribution. The
+following options are known:
+
+=over 4
+
+=item dryrun
+
+If true, just print the names of the sources, don't actually delete or
+move them.
+
+=item keep_old
+
+If true, the files are moved to a subdirectory %p/src/old instead of
+actually being deleted.
+
+=back
+
+=cut
+
+sub cleanup_sources {
+	my %opts = (dryrun => 0, keep_old => 0, @_);
+
+	my $srcdir = "$basepath/src";
+	my $oldsrcdir = "$srcdir/old";
+
+	my $file_count = 0;
+	
+	# Iterate over all packages and collect all their source files.
+	if ($config->verbosity_level() > 0) {
+		print "Collecting active source filenames...\n";
+	}
 	my %src_list = ();
-	
-	# Initialize file counter
-	my %file_count = (
-		'deb' => 0,
-		'symlink' => 0,
-		'src' => 0,
-	);
-	
-	# Anonymous subroutine to find/nuke obsolete debs
-	my $kill_obsolete_debs = sub {
-		if (/^.*\.deb\z/s ) {
-			if (not $deb_list{$File::Find::name}) {
-				# Obsolete deb
-				unlink $File::Find::name and $file_count{'deb'}++;
-			}
-		}
-	};
-	
-	# Anonymous subroutine to find/nuke broken deb symlinks
-	my $kill_broken_links = sub {
-		if(-l && !-e) {
-			# Broken link
-			unlink $File::Find::name and $file_count{'symlink'}++;
-		}
-	};
-
-	# Iterate over all packages and collect the deb files, as well
-	# as all their source files.
-	foreach $pname (Fink::Package->list_packages()) {
-		$package = Fink::Package->package_by_name($pname);
-		foreach $vo ($package->get_all_versions()) {
-			# Skip dummy packages
-			next if $vo->is_type('dummy');
-
-			# deb file 
-			$file = $vo->get_debfile();
-			$deb_list{$file} = 1;
-
-			# all source files
-			foreach $suffix ( $vo->get_source_suffices() ) {
-				$file = $vo->find_tarball($suffix);
-				$src_list{$file} = 1 if defined($file);
+	foreach my $pname (Fink::Package->list_packages()) {
+		my $package = Fink::Package->package_by_name($pname);
+		foreach my $vo ($package->get_all_versions()) {
+			next if $vo->is_type('dummy');  # Skip dummy packages
+			foreach my $suffix ($vo->get_source_suffices()) {
+				$src_list{$vo->get_tarball($suffix)} = 1;
 			}
 		}
 	}
-	
-	# Now search through all .deb files in /sw/fink/dists/
-	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
-	
-	# Remove broken symlinks in /sw/fink/debs (i.e. those that pointed to 
-	# the .deb files we deleted above).
-	find ($kill_broken_links, "$basepath/fink/debs");
-	
 
-	# Remove obsolete source files. We do not delete immediatly because that
-	# will confuse readdir().
-	@old_src_files = ();
-	opendir(DIR, "$basepath/src") or die "Can't access $basepath/src: $!";
+	# Remove obsolete source files. We do not delete immediatly
+	# because that will confuse readdir().
+	# can't use File::Find here...has no maxdepth setting:(
+	my @old_src_files = ();
+	my $file;
+	opendir(DIR, $srcdir) or die "Can't access $srcdir: $!";
 	while (defined($file = readdir(DIR))) {
-		# $file = "$basepath/src/$file";
-		# Skip all source files that are still used by some package
-		next if $src_list{"$basepath/src/$file"};
-		push @old_src_files, $file;
+		# Collect sources that are not in use
+		push @old_src_files, $file if not $src_list{$file};
 	}
 	closedir(DIR);
 
-	if ($keep_old) {
-		unless (-d "$basepath/src/old") {
-		mkdir("$basepath/src/old") or die "Can't create $basepath/src/old: $!";
+	if ($opts{keep_old} && !$opts{dryrun}) {
+		unless (-d $oldsrcdir) {
+			mkdir($oldsrcdir) or die "Can't create $oldsrcdir: $!";
 		}
 	}
 
-	foreach $file (@old_src_files) {
+	my $print_it = $opts{dryrun} || $config->verbosity_level() > 1;
+
+	my $verb;
+	if ($opts{dryrun}) {
+		$verb = 'Obsolete';
+	} elsif ($opts{keep_old}) {
+		$verb = 'Moving obsolete';
+	} else {
+		$verb = 'Removing obsolete';
+	}
+
+	foreach my $file (sort @old_src_files) {
 		# For now, do *not* remove directories - this could easily kill
 		# a build running in another process. In the future, we might want
 		# to add a --dirs switch that will also delete directories.
-		if (-f "$basepath/src/$file") {
-		print("$file\n");
-		if ($keep_old) {
-				rename("$basepath/src/$file", "$basepath/src/old/$file") and $file_count{'src'}++;
-			} else {
-				unlink "$basepath/src/$file" and $file_count{'src'}++;
+		if (-f "$srcdir/$file") {
+			print "$verb source: $srcdir/$file\n" if $print_it;
+			if (!$opts{dryrun}) {
+				if ($opts{keep_old}) {
+					rename("$srcdir/$file", "$oldsrcdir/$file") and $file_count++;
+				} else {
+					unlink "$srcdir/$file" and $file_count++;
+				}
 			}
 		}
 	}
+	if (!$opts{dryrun}) {
+		print 'Obsolete sources ',
+			  ($opts{keep_old} ? "moved to $oldsrcdir" : "deleted from $srcdir"),
+			  ": $file_count\n\n";
+	}
+}
+
+=item cleanup_debs
+
+Remove .deb from the Distribution that are not associated with package
+descriptions in the active Trees of the current Distribution. Also
+remove the symlinks from %p/fink/debs to these files, and any other
+dangling symlinks that may be present. If we are in UsebinaryDist
+mode, also remove .deb from apt's download cache. The following option
+is known:
+
+=over 4
+
+=item dryrun
+
+Just print the names of the .deb files, don't actually delete them.
+Skip the symlink check. Pass --dry-run to apt-cache when removing
+obsolete downloaded .deb.
+
+=back
+
+=cut
+
+sub cleanup_debs {
+	my %opts = (dryrun => 0, @_);
+
+	my $file_count;
+
+	# Iterate over all packages and collect the deb files
+	if ($config->verbosity_level() > 0) {
+		print "Collecting active deb names...\n";
+	}
+	my %deb_list;
+	foreach my $pname (Fink::Package->list_packages()) {
+		my $package = Fink::Package->package_by_name($pname);
+		foreach my $vo ($package->get_all_versions()) {
+			if ($vo->is_type('dummy')) {
+				# $vo data is from dpkg status db (no .info file) so
+				# $vo has no directory for deb. Try to guess it.
+				my $debfile = "$basepath/fink/debs/" . $vo->get_debname();
+				if (-l $debfile and -e readlink $debfile) {
+					$deb_list{readlink $debfile} = 1;
+				} elsif (-e $debfile) {
+					$deb_list{$debfile} = 1;
+				}
+			} else {
+				$deb_list{$vo->get_debfile()} = 1;
+			}
+		}
+	}
+	
+	# Handle obsolete debs (files matching the glob *.deb that are not
+	# associated with an active package description)
+	my $kill_obsolete_debs = <<'EOFUNC';
+		sub {
+			if (/^.*\.deb\z/s ) {
+				if (not $deb_list{$File::Find::name}) {
+					print "REMOVE deb: $File::Find::name\n";  # PRINT_IT
+					unlink $File::Find::name and $file_count++;  # UNLINK_IT
+				}
+			}
+		}
+EOFUNC
+	$opts{dryrun}
+		? $kill_obsolete_debs =~ s/REMOVE/Obsolete/
+		: $kill_obsolete_debs =~ s/REMOVE/Removing obsolete/;
+	$kill_obsolete_debs =~ s/.*PRINT_IT// unless $opts{dryrun} || $config->verbosity_level() > 1;
+	$kill_obsolete_debs =~ s/.*UNLINK_IT// if $opts{dryrun};
+	$kill_obsolete_debs = eval $kill_obsolete_debs;
+#	use B::Deparse;
+#	my $deparser = new B::Deparse;
+#	print "sub ", $deparser->coderef2text($kill_obsolete_debs), "\n";
+	$file_count = 0;
+	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
+	if (!$opts{dryrun}) {
+		print "Obsolete deb packages ",
+			  ($opts{dryrun} ? "found in" : "deleted from"),
+			  "fink trees: $file_count\n\n";
+	}
+	
+	if ($opts{dryrun}) {
+		print "Skipping symlink cleanup in dryrun mode\n";
+	} else {
+		# Remove broken symlinks in %p/fink/debs, such as ones pointing to
+		# the to the .deb files we just deleted
+		my $kill_broken_links = sub {
+			if(-l && !-e) {
+				unlink $File::Find::name and $file_count++;
+			}
+		};
+		$file_count = 0;
+		find ($kill_broken_links, "$basepath/fink/debs");
+		print "Obsolete symlinks deleted: $file_count\n\n";
+	};
 
 	if ($config->binary_requested()) {
 		# Delete obsolete .deb files in $basepath/var/cache/apt/archives using 
@@ -1379,7 +1526,7 @@ EOF
 		elsif ($config->verbosity_level() < 2) {
 			$aptcmd .= "-q ";
 		}
-		if($dryrun) {
+		if($opts{dryrun}) {
 			$aptcmd .= "--dry-run ";
 		}
 		my $apt_cache_path = "$basepath/var/cache/apt/archives";
@@ -1389,28 +1536,51 @@ EOF
 		if (&execute($aptcmd . "--option APT::Clean-Installed=false autoclean")) {
 			print("WARNING: Cleaning deb packages in '$apt_cache_path' failed.\n");
 		}
-		my $files_deleted = $files_before_clean - &count_files($apt_cache_path, $deb_regexp);
-
-		# Running scanpackages and updating apt-get db
-		print "Updating the list of locally available binary packages.\n";
-		&cmd_scanpackages(1);
-		print "Updating the indexes of available binary packages.\n";
-		if (&execute($aptcmd . "update")) {
-			print("WARNING: Failure while updating indexes.\n");
+		if (!$opts{dryrun}) {
+			print "Obsolete deb packages deleted from apt cache: ",
+				  $files_before_clean - &count_files($apt_cache_path, $deb_regexp),
+				  "\n\n";
 		}
 
-		print 'Obsolete deb packages deleted from apt cache: ' . $files_deleted . "\n";
-	}
-
-	print 'Obsolete deb packages deleted from fink trees: ' . $file_count{'deb'} . "\n";
-	print 'Obsolete symlinks deleted: ' . $file_count{'symlink'} . "\n";
-	if ($keep_old) {
-		print 'Obsolete sources moved: ' . $file_count{'src'} . "\n\n";
-	}
-	else {
-		print 'Obsolete sources deleted: ' . $file_count{'src'} . "\n\n";
+		if ($opts{dryrun}) {
+			print "Skipping scanpackages and apt update in dryrun mode\n";
+		} else {
+			# Running scanpackages and updating apt-get db
+			print "Updating the list of locally available binary packages.\n";
+			&cmd_scanpackages(1);
+			print "Updating the indexes of available binary packages.\n";
+			if (&execute($aptcmd . "update")) {
+				print("WARNING: Failure while updating indexes.\n");
+			}
+		}
 	}
 }
+
+=item cleanup_buildlocks
+
+*NOT YET IMPLEMENTED*
+
+Remove any installed buildlock packages. The following option is known:
+
+=over 4
+
+=item dryrun
+
+If true, just list them.
+
+=back
+
+=cut
+
+sub cleanup_buildlocks {
+	my %opts = (dryrun => 0, @_);
+	
+	print "fink cleanup --bl is not implemented yet.\n\n";
+}
+
+=back
+
+=cut
 
 ### building and installing
 
@@ -1625,7 +1795,7 @@ sub real_install {
 #			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
-		if (not $item->[PKGVER]->param_boolean("Essential") and not $item->[PKGVER]->param_boolean("_ParentEssential")) {
+		if (not $item->[PKGVER]->built_with_essential) {
 			push @deplist, @elist;
 		}
 	DEPLOOP: foreach $dep (@deplist) {
@@ -1718,6 +1888,7 @@ sub real_install {
 						if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
 							$dname = $cand;
 							$candcount++;
+							next SIBCHECK; # Don't count multiple siblings
 						}
 					}
 				}
@@ -2009,17 +2180,17 @@ sub real_install {
 			}
 
 			# check dependencies
+			next PACKAGELOOP if grep { ($_->[FLAG] & 2) == 0 } @extendeddeps;
+			
+			### switch debs during long builds
 			foreach $dep (@extendeddeps) {
-				next PACKAGELOOP if (($dep->[FLAG] & 2) == 0);
-				### FIXME switch debs during long builds
 				if (!$dep->[PKGVER]->is_installed()) {
-					### Guess we should build/install it then
-					my $prompt = "To continue ".$dep->[PKGNAME]." is required, do you want to install it now?";
-					my $continue = prompt_boolean($prompt, default => 1, timeout => 60);
-					if ($continue) {
-						&real_install($OP_INSTALL, 0, 1, $dryrun, $dep->[PKGVER]->get_name());
-					} else {
-						die "Failed to switch in ".$dep->[PKGNAME]."!\n";
+					### If the deb exists, we install it without asking.
+					### If it doesn't exist, we allow the process to continue
+					### (it will quit with an error, and the user must then
+					### start over)
+					if ($dep->[PKGVER]->is_present()) {
+						Fink::PkgVersion::phase_activate($dep->[PKGVER]);
 					}
 				}
 			}
@@ -2121,8 +2292,8 @@ sub real_install {
 			# Reinstall buildconficts after the build
 			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
 			### Update shlibs after each install for next build
-			Fink::Package->forget_packages(1);
-			Fink::Package->require_packages(1, quiet => 1);
+			Fink::Shlibs->forget_packages();
+			Fink::Shlibs->scan_all(quiet => 1);
 			# Mark all installed items as installed
 
 			foreach $pkg (@batch_install) {
@@ -2141,7 +2312,7 @@ sub real_install {
 		print "Updating the list of locally available binary packages.\n";
 		&cmd_scanpackages(1);
 		print "Updating the indexes of available binary packages.\n";
-		my $aptcmd = "$basepath/bin/apt-get ";
+		my $aptcmd = aptget_lockwait() . " ";
 		if ($verbosity == 0) {
 			$aptcmd .= "-qq ";
 		} elsif ($verbosity < 2) {
@@ -2155,12 +2326,23 @@ sub real_install {
 
 ### helper routines
 
+=item expand_packages
+
+  my @pkglist = expand_packages @pkgspecs;
+  my @pkglist = expand_packages $opts, @pkgspecs;
+
+Expand a list of package specifications into objects. Options are the same
+as for Fink::PkgVersion::match_package.
+
+=cut
+
 sub expand_packages {
 	my ($pkgspec, $package, @package_list);
-
+	my $opts = UNIVERSAL::isa($_[0], 'HASH') ? shift : {};
+	
 	@package_list = ();
 	foreach $pkgspec (@_) {
-		$package = Fink::PkgVersion->match_package($pkgspec);
+		$package = Fink::PkgVersion->match_package($pkgspec, %$opts);
 		unless (defined $package) {
 			die "no package found for specification '$pkgspec'!\n";
 		}
@@ -2281,6 +2463,7 @@ EOF
 	}
 
 	Fink::Package->require_packages();
+	Fink::Shlibs->scan_all();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 
@@ -2294,6 +2477,8 @@ EOF
 	}
 
 	foreach my $pkg (@pkglist) {
+		$pkg->prepare_percent_c;
+		$pkg->get_build_directory;
 
 		# default to all fields if no fields or %expands specified
 		if ($wantall or not (@fields or @percents)) {
@@ -2327,8 +2512,8 @@ EOF
 						   updatelibtool updatelibtoolindirs
 						   updatepomakefile
 						   patch patchscript /,
-						   $pkg->params_matching(/^set/),
-						   $pkg->params_matching(/^noset/),
+						   $pkg->params_matching("^set"),
+						   $pkg->params_matching("^noset"),
 						   qw/
 						   env
 						   configureparams gcc compilescript noperltests
@@ -2501,7 +2686,13 @@ EOF
 				die "Unknown field $_\n";
 			}
 		}
-		$pkg->prepare_percent_c;
+		
+		# Allow 'all' for all percents
+		if (scalar(@percents) == 1 && $percents[0] eq 'all') {
+			# sort them by disctionary ordering (D d I i)
+			@percents = sort {lc $a cmp lc $b || $a cmp $b} keys %{$pkg->{_expand}};
+		}
+
 		foreach (@percents) {
 			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
 			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);
@@ -2575,6 +2766,10 @@ sub show_deps_display_list {
 		print "    [none]\n";
 	}
 }
+
+=back
+
+=cut
 
 ### EOF
 1;

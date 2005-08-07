@@ -1,3 +1,56 @@
+2005-08-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: t/testmore.pl now returns true on success
+
+2005-08-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* bootstrap.pl: When selecting the basepath:
+		- Don't make /sw the default if we'll refuse it later (but warn users
+		that we're giving them a non-standard default.)
+		- Tell users that if they're not in /sw, they won't get the bindist.
+		- If we refuse a basepath, ask for a new one instead of dying.
+
+2005-08-02  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.conf.5.in: Document new Buildpath on Tiger.
+
+2005-07-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Makefile: Document 'make clean'
+
+2005-07-27  Max Horn <max@quendi.de>
+
+	* NEWS: Removed NEWS file since (sadly) nobody ever updates it anyway.s
+
+2005-07-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Add a "clean" target: recursively find .cvsignore
+	files and remove files that are matched by them
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* VERSION: Make fink HEAD always >> 0.24.x, since that has already
+	branched.
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* g++-wrapper.in: Note PkgVersion code duplication
+
+2005-07-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* g++-wrapper.in, setup.sh, install.sh, .cvsignore: Put path-prefix
+	stuff in Fink's .deb.
+
+2005-06-24  Matthew Sachs  <msachs@apple.com>
+
+	* Revert previous change.  There's something deeper breaking
+	bootstrap, but I can't figure out what...
+
+2005-06-24  Matthew Sachs  <msachs@apple.com>
+
+	* chown was missing a username (just had a group) in phase_install
+	when not building as nobody
+
 2005-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* postinstall.pl.in: must use full path for 10.4 tree symlink; also,
