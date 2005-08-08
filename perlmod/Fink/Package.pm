@@ -1238,6 +1238,7 @@ sub insert_pkgversions {
 
     my $properties = &read_properties($filename);
     $properties = &handle_infon_block($properties, $filename);
+    ($properties,$info_level) = &handle_infon_block($properties, $filename);
 
 For the .info file lines processed into the hash ref $properties from
 file $filename, deal with the possibility that the whole thing is in a
@@ -1246,7 +1247,10 @@ InfoN: block.
 If so, make sure this fink is new enough to understand this .info
 format (i.e., NE<lt>=max_info_level). If so, promote the fields of the
 block up to the top level of %$properties and return a ref to this new
-hash. Also set a _info_level key to N.
+hash. If called in a scalar context, the InfoN level is returned in
+the "infon" field of the $properties hash. If called in an array
+context, the InfoN level (or 1 if not an InfoN construct) is returned
+as the second element.
 
 If an error with InfoN occurs (N>max_info_level, more than one InfoN
 block, or part of $properties existing outside the InfoN block) print
@@ -1262,7 +1266,7 @@ sub handle_infon_block {
 
 	my($infon,@junk) = grep {/^info\d+$/i} keys %$properties;
 	if (not defined $infon) {
-		return $properties;
+		wantarray ? return $properties, 1 : return $properties;
 	}
 	# file contains an InfoN block
 	if (@junk) {
@@ -1286,8 +1290,12 @@ sub handle_infon_block {
 	# okay, parse InfoN and promote it to the top level
 	my $new_properties = &read_properties_var("$infon of \"$filename\"",
 		$properties->{$infon}, { remove_space => ($info_level >= 3) });
-	$new_properties->{infon} = $info_level;
-	return $new_properties;
+	if (wantarray) {
+		return $new_properties, $info_level;
+	} else {
+		$new_properties->{infon} = $info_level;
+		return $new_properties;
+	}
 }
 
 =back

@@ -125,7 +125,6 @@ our %valid_fields = map {$_, 1}
 		 'type',
 		 'license',
 		 'maintainer',
-		 'infon',  # set by handle_infon_block if InfoN: used
 #  dependencies:
 		 'depends',
 		 'runtimedepends',
@@ -307,7 +306,7 @@ END { }				# module clean-up code here (global destructor)
 sub validate_info_file {
 	my $filename = shift;
 	my $val_prefix = shift;
-	my ($properties, @parts);
+	my ($properties, $info_level);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my $value;
 	my ($basepath, $buildpath);
@@ -338,7 +337,7 @@ sub validate_info_file {
 
 	# read the file properties
 	$properties = &read_properties($filename);
-	$properties = Fink::Package->handle_infon_block($properties, $filename);
+	($properties,$info_level) = Fink::Package->handle_infon_block($properties, $filename);
 	return 0 unless keys %$properties;
 	
 	# determine the base path
@@ -351,7 +350,7 @@ sub validate_info_file {
 	}
 
 	# make sure have InfoN (N>=2) if use Info2 features
-	if (($properties->{infon} || 1) < 2) {
+	if ($info_level < 2) {
 		# fink-0.16.1 can't even index if unknown %-exp in *any* field!
 		foreach (sort keys %$properties) {
 			next if /^splitoff\d*$/;  # SplitOffs checked later
@@ -380,9 +379,11 @@ sub validate_info_file {
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
 	$pkgdestdir = "$buildpath/root-".$pkgfullname;
 	
-	@parts = split(/\//, $filename);
+	{
+	my @parts = split(/\//, $filename);
 	$filename = pop @parts;		# remove filename
 	$pkgpatchpath = join("/", @parts);
+	}
 
 	#
 	# First check for critical errors
@@ -428,7 +429,7 @@ sub validate_info_file {
 	
 	# Make sure Maintainer is in the correct format: Joe Bob <jbob@foo.com>
 	$value = $properties->{maintainer};
-	if ($value !~ /^[^<>@]+\s+<\S+\@\S+>$/) {
+	if (!defined $value or $value !~ /^[^<>@]+\s+<\S+\@\S+>$/) {
 		print "Warning: Malformed value for \"maintainer\". ($filename)\n";
 		$looks_good = 0;
 	}
@@ -566,7 +567,7 @@ sub validate_info_file {
 			$splitoff_properties = &read_properties_var("$field of \"$filename\"", $splitoff_properties);
 
 			# make sure have InfoN (N>=2) if use Info2 features
-			if (($properties->{infon} || 1) < 2) {
+			if ($info_level < 2) {
 				# fink-0.16.1 can't even index if unknown %-exp in *any* field!
 				foreach (sort keys %$splitoff_properties) {
 					if ($splitoff_properties->{$_} =~ /\%type_(raw|pkg)\[.*?\]/) {

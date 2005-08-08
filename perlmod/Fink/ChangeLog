@@ -1,3 +1,9 @@
+2005-08-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Make handle_infon_block() return InfoN level
+	out-of-band if called in array context.
+	* Validation.pm: Don't allow literal "InfoN" field.
+
 2005-08-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: .info fieldnames are canonically lower-case
