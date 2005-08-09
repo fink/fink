@@ -3338,6 +3338,38 @@ sub phase_activate {
 		die $error . "\n";
 	}
 
+	# For each package to be installed, gather all PV for packages
+	# listed in both Conflicts and Replaces that are BDO:true.
+
+	my %must_die; # must store pv in value (hash keys lose magic)
+	foreach my $package (@installable) {
+		next unless $package->param_boolean('BuildDependsOnly');
+		my %pkgs;
+		foreach my $field (qw/ Conflicts Replaces /) {
+			my $lol = &pkglist2lol($package->param_default($field, ''));       # get dpkg spec set
+			$lol = Fink::Package->lol_pkglist2pv($lol, "$field of $package");  # convert to PkgVersion satisfiers
+			$pkgs{$field} = [ map {@$_} @$lol ];                               # flatten (these fields can't have OR)
+		}
+		foreach my $pkg (@{$pkgs{Conflicts}}) {
+			next unless grep {$pkg eq $_} @{$pkgs{Replaces}};     # pkg must be in both Conflicts and Replaces
+			next unless $pkg->is_installed();                     # only try to remove if installed (duh)
+			next unless $pkg->param_boolean('BuildDependsOnly');  # only auto-recurse via initial BDO:true
+			$must_die{$pkg->get_name()} = $pkg;
+		}
+	}
+
+	# A BDO:true is only a Depends of other BDO:true packages, so we
+	# extend the Conflicts/Replaces of what we are about to install to
+	# be recursive.
+	my @must_die = sort keys %must_die;
+	if (@must_die) {
+		print "Installation of\n";
+		print_breaking join(' ', map $_->get_name(), @packages), 1, ' ';
+		print_breaking "requires recursive removal of\n";
+		print_breaking join(' ', @must_die), 1, ' ';
+		&phase_deactivate_recursive(@must_die);
+	}
+
 	my @deb_installable = map { $_->find_debfile() } @installable;
 	if (&execute(dpkg_lockwait() . " -i @deb_installable", ignore_INT=>1)) {
 		if (@installable == 1) {

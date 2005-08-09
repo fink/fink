@@ -1298,6 +1298,85 @@ sub handle_infon_block {
 	}
 }
 
+=item lol_pkglist2pv
+
+	my $pv_lol = Fink::Package->lol_pkglist2pv($pkglist_lol);
+	my $pv_lol = Fink::Package->lol_pkglist2pv($pkglist_lol, $source);
+
+Convert a ref to a list-of-lists structure representing a debian-style
+package-list (see Fink::Services::pkglist2lol) to one representing
+Fink::PkgVersion objects that satisfy it. Order in the top-level-list
+and each sublist will be preserved, but list index numbers will not be
+preserved. The optional string $source is used in error messages.
+
+=cut
+
+sub lol_pkglist2pv {
+	my $class = shift;
+	my $pkglist_lol = shift;
+	my $source = shift;
+
+	return {} unless defined $pkglist_lol && @$pkglist_lol;
+
+	my $pv_lol;
+
+	# convert each OR set of pkg specs into an OR set of PV objects
+	foreach my $pkg_set (@$pkglist_lol) {
+		next unless defined $pkg_set && @$pkg_set;   # skip empty clusters
+		my @pv_set = map {$class->spec2pv($_, $source)} @$pkg_set;
+		push @$pv_lol, \@pv_set if @pv_set;
+	}
+
+	return $pv_lol;
+}
+
+=item spec2pv
+
+	my @pkgs = Fink::Package->spec2pv($spec);
+	my @pkgs = Fink::Package->spec2pv($spec, $source);
+
+Given a depends-style package specifier atom $spec (package name with
+optional version requirement), return a list (possibly empty) of all
+Fink::PkgVersion objects that satisfy it. The optional string $source
+is used in error messages.
+
+=cut
+
+sub spec2pv {
+	my $class = shift;
+	my $spec = shift;
+	my $source = shift;
+	$source = defined $source ? " in $source" : '';
+
+	return () unless defined $spec && length $spec;
+
+	# parse apart the package spec
+	my ($name, $vers);
+	if ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+		$name = $1;
+		$vers = $2;
+	} elsif ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+		$name = $1;
+		$vers = "";
+	} else {
+		die "Illegal spec format: \"$spec\"$source\n";
+	}
+
+	# find the satisfier(s)
+	my $package = Fink::Package->package_by_name($name);
+	if (!defined $package) {
+		if ($config->verbosity_level > 2) {
+			print "WARNING: While resolving \"$spec\"$source, package \"$name\" was not found.\n";
+		}
+		return ();
+	}
+	if ($vers =~ /^\s*$/) {
+		return $package->get_all_providers();
+	} else {
+		return $package->get_matching_versions($vers);
+	}
+}
+
 =back
 
 =cut
