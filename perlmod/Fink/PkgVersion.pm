@@ -1668,6 +1668,9 @@ sub resolve_depends {
 								print "\n\t (which is provided by $dep_providername)";
 							}
 							print ",\n\t but $depname only allows things to BuildDepend on it.\n\n";
+							if (Fink::Config::get_option("maintainermode")) {
+								die "Please correct the above problems and try again!\n";
+							}
 						}
 					}
 				}
