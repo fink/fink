@@ -1654,7 +1654,8 @@ sub resolve_depends {
 				}
 
 				# Make sure no Depends on BuildDependsOnly:true pkgs
-				if (lc($field) eq "depends" && $verbosity > 1) {
+				# except by other BuildDependsOnly:true pkgs
+				if (lc($field) eq "depends" && !$self->param_boolean('BuildDependsOnly') && $verbosity > 1) {
 					# only bother to check for BuildDependsOnly
 					# violations if we are more verbose than default
 

@@ -1,5 +1,9 @@
 2005-08-09  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Allow BDO:true pkg to Depends on BDO:true pkgs
+
+2005-08-09  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Make BDO violations fatal in maintainermode.
 
 2005-08-09  Daniel Macks  <dmacks@netspace.org>
