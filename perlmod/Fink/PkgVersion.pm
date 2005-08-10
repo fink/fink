@@ -1653,6 +1653,7 @@ sub resolve_depends {
 					next BUILDDEPENDSLOOP;
 				}
 
+				# Make sure no Depends on BuildDependsOnly:true pkgs
 				if (lc($field) eq "depends" && $verbosity > 1) {
 					# only bother to check for BuildDependsOnly
 					# violations if we are more verbose than default
@@ -1787,6 +1788,9 @@ sub get_altspec {
 	return @specs;
 }
 
+# resolve_conflicts cannot handle verisoned conflicts, and crashes if
+# there are any present in the field. OTOH, this method does not
+# appear to be used anywhere at this time.
 sub resolve_conflicts {
 	my $self = shift;
 	my ($confname, $package, @conflist);
@@ -1831,28 +1835,36 @@ sub get_binary_depends {
 	return &collapse_space($depspec);
 }
 
-# usage: $lol_struct = $self->get_depends($run_or_build, $dep_or_confl)
-# where:
-#   $self is a PkgVersion object
-#   $run_or_build - 0=runtime pkgs, 1=buildtime pkgs
-#   $dep_or_confl - 0=dependencies, 1=antidependencies (conflicts)
-#
-# A package's buildtime includes buildtime of its whole family.
-# NB: In no other sense is this method recursive!
-#
-# This gives pkgnames and other Depends-style string data, unlike
-# resolve_depends and resolve_conflicts, which give PkgVersion
-# objects.
-#
+=item get_depends
+
+	my $lol_struct = $self->get_depends($want_build, $want_conflicts)
+
+Get the dependency (or conflicts) package list. If $want_build is
+true, return the compile-time package list; if it is false, return
+only the runtime package list. If $dep_or_confl is true, return the
+antidependencies (conflicts) list; if it is false, return the
+dependencies.
+
+Compile-time dependencies (1,0) is the union of the BuildDepends of
+the package family's parent package and the Depends of the whole
+package family. Compile-time conflicts (1,1) is the BuildConflicts of
+the parent of the package family. This method is not recursive in any
+other sense.
+
+This method return pkgnames and other Depends-style string data in a
+list-of-lists structure, unlike resolve_depends, which gives a flat
+list of PkgVersion objects.
+
+=cut
 
 sub get_depends {
 	my $self = shift;
-	my $run_or_build = shift;   # boolean for want_build
-	my $dep_or_confl = shift;   # boolean for want_conflicts
+	my $want_build = shift;
+	my $want_conflicts = shift;
 
 	# antidependencies require no special processing
-	if ($dep_or_confl) {
-		if ($run_or_build) {
+	if ($want_conflicts) {
+		if ($want_build) {
 			# BuildConflicts is attribute of parent pkg only
 			return &pkglist2lol($self->get_family_parent->pkglist_default("BuildConflicts",""));
 		} else {
@@ -1861,7 +1873,7 @@ sub get_depends {
 		}
 	}
 
-	if ($run_or_build) {
+	if ($want_build) {
 		# build-time dependencies need to include whole family and
 		# to remove whole family from also-runtime deplist
 
