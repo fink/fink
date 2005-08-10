@@ -1,3 +1,8 @@
+2005-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document --maintainermode; remove warning from
+	--build-as-nobody.
+
 2005-08-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: t/testmore.pl now returns true on success

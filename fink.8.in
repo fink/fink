@@ -65,9 +65,11 @@ Don't use pre-compiled binary packages from the binary distribution
 (opposite of --use-binary-dist)
 .It Cm --build-as-nobody
 Drop to a non-root user when performing the unpack, patch, compile,
-and install phases. Note that packages built with this option may be
-non-functional. You should use this mode for package development and
-debugging only.
+and install phases.
+.It Cm -m, --maintainermode
+Perform actions useful to package maintainers: run validation on
+the .info file before building and on the .deb after building a
+package; turn certain build-time warnings into fatal errors.
 .El
 .\"
 .\"
