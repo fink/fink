@@ -121,7 +121,7 @@ sub check_host {
 	#  had build 1493.)
 
 	if (-x '/usr/bin/gcc-3.3') {
-		foreach(`/usr/bin/gcc-3.3 --version`) {
+		foreach(`/usr/bin/gcc-3.3 --version 2>&1`) {
 			if (/build (\d+)\)/) {
 				$build = $1;
 				last;

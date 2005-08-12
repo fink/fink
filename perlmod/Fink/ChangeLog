@@ -1,3 +1,8 @@
+2005-08-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Bootstrap.pm, Services.pm: fix some output redirect stuff on
+	external commands.
+
 2005-08-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Make BDO violations fatal in maintainermode.
