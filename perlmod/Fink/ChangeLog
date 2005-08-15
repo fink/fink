@@ -1,3 +1,7 @@
+2005-08-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Catch misuse of -Wl,-framework in .pc files.
+
 2005-08-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Bootstrap.pm, Services.pm: fix some output redirect stuff on

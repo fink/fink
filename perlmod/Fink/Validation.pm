@@ -901,6 +901,7 @@ sub validate_info_component {
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
 # - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
+# - Catch common error relating to usage of -framework flag in .pc file
 # - any other ideas?
 #
 sub validate_dpkg_file {
@@ -1097,6 +1098,20 @@ sub validate_dpkg_file {
 			if (defined $perlver_re and $filename !~ /$perlver_re/ and $filename !~ /\/$/) {
 				print "Warning: File in a perl-versioned package is neither versioned nor in a versioned directory.\n  Offending file: $filename\n";
 				$looks_good = 0;
+			}
+			if ($filename =~ /\.pc$/) {
+				# Check for common programmer mistakes relating to
+				# passing -framework flags in pkg-config files
+				my $pc_file;
+				open($pc_file, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O .$filename |") or die "Couldn't run dpkg: $!\n";
+				while (<$pc_file>) {
+					chomp;
+					if (/(-W.,-framework)[^,]/) {
+						print "Warning: $1 flag may get munged. See the gcc manpage for information about passing options to flags for specific compiler passes.\n  Offending file: $filename\n  Offending line: $_\n";
+						$looks_good = 0;
+					}
+				}
+				close($pc_file) or die "Error on close: ", $?>>8, " $!\n";
 			}
 		}
 	}
