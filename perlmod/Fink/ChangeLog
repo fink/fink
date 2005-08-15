@@ -1,3 +1,9 @@
+2005-08-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Fix lol_pkglist2pv return type when list is null.
+	* PkgVersion.pm: Fix parsing of Conflicts/Replaces fields during
+	BDO:true recursive-removal handler.
+
 2005-08-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Allow BDO:true pkg to Depends on BDO:true pkgs

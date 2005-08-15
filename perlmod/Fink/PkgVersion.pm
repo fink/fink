@@ -3362,8 +3362,8 @@ sub phase_activate {
 		next unless $package->param_boolean('BuildDependsOnly');
 		my %pkgs;
 		foreach my $field (qw/ Conflicts Replaces /) {
-			my $lol = &pkglist2lol($package->param_default($field, ''));       # get dpkg spec set
-			$lol = Fink::Package->lol_pkglist2pv($lol, "$field of $package");  # convert to PkgVersion satisfiers
+			my $lol = &pkglist2lol($package->pkglist_default($field, ''));       # get dpkg spec set
+			$lol = Fink::Package->lol_pkglist2pv($lol, "\"$field\" of ".$package->get_fullname());  # convert to PkgVersion satisfiers
 			$pkgs{$field} = [ map {@$_} @$lol ];                               # flatten (these fields can't have OR)
 		}
 		foreach my $pkg (@{$pkgs{Conflicts}}) {

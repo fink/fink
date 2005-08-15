@@ -1316,7 +1316,7 @@ sub lol_pkglist2pv {
 	my $pkglist_lol = shift;
 	my $source = shift;
 
-	return {} unless defined $pkglist_lol && @$pkglist_lol;
+	return [] unless defined $pkglist_lol && @$pkglist_lol;
 
 	my $pv_lol;
 
