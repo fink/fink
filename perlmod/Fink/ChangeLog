@@ -1,5 +1,9 @@
 2005-08-17  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: DaemonicFile executable presence/perms checks
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Fix BDO check when field is missing from
 	control. Report the name of shouldn't-be-present *.omf file
 

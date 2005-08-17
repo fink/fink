@@ -1113,8 +1113,8 @@ sub validate_dpkg_unpacked {
 				while (<$daemonicfile>) {
 					if (/^\s*<executable.*?>(\S+)<\/executable>\s*$/) {
 						my $executable = $1;
-						if (-f $File::Find::name) {
-							unless (-x $File::Find::name) {
+						if (-f "$destdir$executable") {
+							unless (-x "$destdir$executable") {
 								print "Error: daemonicfile executable \"$executable\" in this .deb does not have execute permissions.\n";
 								$looks_good = 0;
 							}
