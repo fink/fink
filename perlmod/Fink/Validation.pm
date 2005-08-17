@@ -912,7 +912,7 @@ sub validate_dpkg_file {
 }
 
 #
-# Check a given unpacked .deb file for standard compliance
+# Check a given unpacked .deb file for standards compliance
 # returns boolean of whether everything is okay
 #
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
@@ -1091,7 +1091,7 @@ sub validate_dpkg_unpacked {
 			foreach (qw/ postinst postrm /) {
 				next if $_ eq "postrm" && $deb_control->{package} eq "scrollkeeper"; # circular dep
 				if (not grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}}) {
-					print "Error: scrollkeeper source file found, but scrollkeeper-update not called\nin $_. See scrollkeeper package docs, starting with 'fink info scrollkeeper', for information.\n";
+					print "Error: scrollkeeper source file found, but scrollkeeper-update not called\nin $_. See scrollkeeper package docs, starting with 'fink info scrollkeeper', for information.\n  Offending file: $filename\n";
 					$looks_good = 0;
 				}
 			}
@@ -1204,7 +1204,7 @@ sub validate_dpkg_unpacked {
 	# which did not use the "Undefined" value for the BuildDependsOnly field,
 	# the warning is not issued
 	if ($installed_headers and $installed_dylibs) {
-		if ($deb_control->{builddependsonly} =~ /Undefined/) {
+		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
 			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
 		}
