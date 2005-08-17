@@ -27,6 +27,7 @@ use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get
 use Fink::Config qw($config);
 use Cwd qw(getcwd);
 use File::Find qw(find);
+use File::Path qw(rmtree);
 use File::Temp qw(tempdir);
 
 use strict;
@@ -891,7 +892,7 @@ sub validate_dpkg_file {
 
 	# create a dummy packaging directory (%d)
 	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
-	my $destdir = tempdir( CLEANUP => 1 );
+	my $destdir = tempdir();
 
 	print "Validating .deb file $dpkg_filename...\n";
 	
@@ -908,7 +909,14 @@ sub validate_dpkg_file {
 	}
 
 	# we now have the equivalent of %d after phase_install for the family
-	&validate_dpkg_unpacked($val_prefix, $destdir);
+	my $looks_good = &validate_dpkg_unpacked($val_prefix, $destdir);
+
+	# clean up...need better implementation?
+	#   File::Temp::tempdir(CLEANUP) only runs when whole perl program exits
+	#   Fink::Command::rm_rf leaves behind things that aren't chmod +w
+	rmtree [$destdir], 0, 0;
+
+	return $looks_good;
 }
 
 #
