@@ -39,7 +39,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&validate_info_file &validate_dpkg_file);
+	@EXPORT_OK	 = qw(&validate_info_file &validate_dpkg_file &validate_dpkg_unpacked);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -884,7 +884,8 @@ sub validate_info_component {
 }
 
 #
-# Unpack a .deb file then passes it off to validate_dpkg_unpacked
+# Public function to validate a .deb, given its .deb filename
+# returns boolean of whether everything is okay
 #
 sub validate_dpkg_file {
 	my $dpkg_filename = shift;
@@ -909,7 +910,7 @@ sub validate_dpkg_file {
 	}
 
 	# we now have the equivalent of %d after phase_install for the family
-	my $looks_good = &validate_dpkg_unpacked($destdir, $val_prefix);
+	my $looks_good = &_validate_dpkg($destdir, $val_prefix);
 
 	# clean up...need better implementation?
 	#   File::Temp::tempdir(CLEANUP) only runs when whole perl program exits
@@ -920,6 +921,23 @@ sub validate_dpkg_file {
 }
 
 #
+# Public function to validate a .deb, given a dir that contains its
+# unpacked or (pre-packed) contents (both filesystem and control)
+# returns boolean of whether everything is okay
+#
+sub validate_dpkg_unpacked {
+	my $destdir = shift;
+	my $val_prefix = shift;
+
+	print "Validating .deb dir $destdir...\n";
+	
+	my $looks_good = &_validate_dpkg($destdir, $val_prefix);
+
+	return $looks_good;
+}
+
+#
+# Private function that performs the actual .deb validation checks
 # Check a given unpacked .deb file for standards compliance
 # returns boolean of whether everything is okay
 #
@@ -944,7 +962,7 @@ sub validate_dpkg_file {
 # - Catch common error relating to usage of -framework flag in .pc file
 # - any other ideas?
 #
-sub validate_dpkg_unpacked {
+sub _validate_dpkg {
 	my $destdir = shift;  # %d, or its moral equivalent
 	my $val_prefix = shift;
 
@@ -1029,8 +1047,9 @@ sub validate_dpkg_unpacked {
 		}
 	}
 
+	# prepare regexes to check for use of %b, and %d or %D
 	my $pkgbuilddir = sprintf '%s/%s-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{version};  # %b
-	my $pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $deb_control->{version};  # %d
+	my $pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $deb_control->{version};  # %d or %D
 
 	# this sub gets called by File::Find::find for each file in the .deb
 	# expects cwd==%d and File::Find::find to be called with no_chdir=1

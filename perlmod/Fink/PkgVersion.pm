@@ -45,7 +45,7 @@ use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
 use Fink::Notify;
-use Fink::Validation;
+use Fink::Validation qw(validate_dpkg_unpacked);
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
 
@@ -3290,7 +3290,6 @@ EOF
 			'verbosity' => 3,
 			'Pedantic'  => 1
 			} );
-		print "Validating .deb dir $buildpath/$ddir...\n";
 		Fink::Validation::validate_dpkg_unpacked($ddir)
 			or die "Please correct the above problems and try again!\n";
 		Fink::Config::set_options(\%saved_options);
