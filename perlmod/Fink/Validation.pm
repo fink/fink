@@ -1002,7 +1002,7 @@ sub validate_dpkg_unpacked {
 		if (-f $filename) {
 			if (open my $script, '<', $filename) {
 				# slurp an array of lines
-				$dpkg_script->{$scriptfile} = [ $script ];
+				$dpkg_script->{$scriptfile} = [<$script>];
 				close $script;
 			} else {
 				print "Error: could not read dpkg script $scriptfile: $!\n";

@@ -1,5 +1,9 @@
 2005-08-17  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Fix reading of pre/postinst/rm scripts.
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: move validation to before building the .deb
 	* Validation.pm: swap parameters for validate_dpkg_unpacked; fix
 	initial-directory handling.
