@@ -909,7 +909,7 @@ sub validate_dpkg_file {
 	}
 
 	# we now have the equivalent of %d after phase_install for the family
-	my $looks_good = &validate_dpkg_unpacked($val_prefix, $destdir);
+	my $looks_good = &validate_dpkg_unpacked($destdir, $val_prefix);
 
 	# clean up...need better implementation?
 	#   File::Temp::tempdir(CLEANUP) only runs when whole perl program exits
@@ -945,8 +945,8 @@ sub validate_dpkg_file {
 # - any other ideas?
 #
 sub validate_dpkg_unpacked {
-	my $val_prefix = shift;
 	my $destdir = shift;  # %d, or its moral equivalent
+	my $val_prefix = shift;
 
 	my $basepath;   # %p
 	my $buildpath;  # BuildPath from fink.conf
@@ -1036,7 +1036,7 @@ sub validate_dpkg_unpacked {
 	# expects cwd==%d and File::Find::find to be called with no_chdir=1
 	my $perform_dpkg_file_checks = sub {
 		# the full path/filename as it will be installed at its real location
-		my($filename) = $File::Find::name =~ /^\Q$destdir\E(.*)/;
+		my($filename) = $File::Find::name =~ /^\.(.*)/;
 		return if not length $filename;              # skip top-level directory
 		$filename .= '/' if -d $File::Find::name;    # add trailing slash to dirnames
 		return if $filename =~ /^\/DEBIAN/;          # skip dpkg control module
@@ -1121,8 +1121,8 @@ sub validate_dpkg_unpacked {
 				while (<$daemonicfile>) {
 					if (/^\s*<executable.*?>(\S+)<\/executable>\s*$/) {
 						my $executable = $1;
-						if (-f "$destdir$executable") {
-							unless (-x "$destdir$executable") {
+						if (-f ".$executable") {
+							unless (-x ".$executable") {
 								print "Error: daemonicfile executable \"$executable\" in this .deb does not have execute permissions.\n";
 								$looks_good = 0;
 							}
@@ -1176,7 +1176,7 @@ sub validate_dpkg_unpacked {
 
 		# check for files in a -pmXXX package that would conflict among different XXX variants
 		if (defined $perlver_re and $filename !~ /$perlver_re/ and !-d $File::Find::name) {
-			print "Error: The file \"filename\" is in a perl-versioned package but is neither versioned nor in a versioned directory.\n";
+			print "Error: The file \"$filename\" is in a perl-versioned package but is neither versioned nor in a versioned directory.\n";
 			$looks_good = 0;
 		}
 
@@ -1202,7 +1202,7 @@ sub validate_dpkg_unpacked {
 	{
 		my $curdir = getcwd();
 		chdir $destdir;
-		find ({wanted=>$perform_dpkg_file_checks, no_chdir=>1}, $destdir);
+		find ({wanted=>$perform_dpkg_file_checks, no_chdir=>1}, '.');
 		chdir $curdir;
 	}
 
