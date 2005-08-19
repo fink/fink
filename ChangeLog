@@ -1,3 +1,7 @@
+2005-08-18  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document new cleanup syntax.
+
 2005-08-09  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Document --maintainermode; remove warning from

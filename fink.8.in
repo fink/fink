@@ -373,9 +373,29 @@ is the default.
 Calls
 .Xr dpkg-scanpackages 8
 with the specified trees.
-.It Cm cleanup
+.It Cm cleanup Ar [mode(s) and options]
 Removes obsolete and temporary files. This can reclaim large amounts of
-disk space.
+disk space. One or more modes must be specified:
+.Bl -tag -width flag -offset indent -compact
+.It Cm --debs
+Delete .deb files (compiled binary package archives) corresponding to
+versions of packages that are neither described by a package
+description (.info) file in the currently-active trees nor presently
+installed.
+.It Cm --sources,--srcs
+Delete sources (tarballs, etc.) that are not used by any package
+description (.info) file in the currently-active trees.
+.El
+In addition, the following options may be used:
+.Bl -tag -width flag -offset indent -compact
+.It Cm -k,--keep-src
+Move old source files to @PREFIX@/src/old/ instead of deleting them.
+.It Cm -d,--dry-run
+Print the names of the files that would be deleted, but do not
+actually delete them.
+.It Cm -h,--help
+Show the modes and options which are available.
+.El
 .It Cm dumpinfo Ar [options] package...
 Shows how Fink parses parts of a package's .info file. Various fields and
 percent expansions will be displayed according to
