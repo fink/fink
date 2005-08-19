@@ -1251,7 +1251,7 @@ Usage: fink cleanup [mode(s) and options]
 
 One or more of the following modes must be specified:
   --debs  - Delete .deb (compiled binary package) files
-  --sources, -srcs
+  --sources, --srcs
           - Delete source files
   --buildlocks, --bl
           - Delete buildlock packages (not implemented)
