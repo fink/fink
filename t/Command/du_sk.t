@@ -27,5 +27,13 @@ rmdir 'foo';
 # User better not touch anything for a moment
 (my $dirsize = `/usr/bin/du -sk .`) =~ s/\D.*$//s;
 is( du_sk('.'), $dirsize, "agrees with du");							# 4
-is( du_sk(qw(. .)), 2 * $dirsize, "works on lists");					# 5
+
+# If block size is less than 1K, then rounding effects can cause size of
+# $dir twice to not equal twice size of $dir.
+my @ok_sizes = (2 * $dirsize);
+push @ok_sizes, 2 * $dirsize - 1 if $smallsize == 1;
+my $listsize = du_sk(qw(. .));
+ok( (grep { $_ == $listsize } @ok_sizes) , "works on lists");				# 5
+
+
 is( du_sk(), 0, "works with no arguments");								# 6
