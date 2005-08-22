@@ -1,5 +1,15 @@
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm, Engine.pm: Make fink do the right thing when multiple
+	version specs are encountered. Note that bad things can still happen if
+	Fink processes a package's dependencies before a new spec modifies the
+	version we should be looking at.
+	* Engine.pm: Fix call to get_matching_versions.
+	* Package.pm: Re-write get_matching_versions for brevity and correctness.
+	Fixes @choose_from parameter not working.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: Sort initial queue of dependencies, so that bugs in dep
 	engine are reproducible!
 

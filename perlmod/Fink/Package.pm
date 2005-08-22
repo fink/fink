@@ -201,39 +201,37 @@ sub get_all_versions {
 	return @vers;
 }
 
+=item get_matching_versions
+
+  my @pvs = $po->get_matching_versions($spec);
+  my @pvs = $po->get_matching_versions($spec, @choose_from);
+
+Find all versions of this package which satisfy the given Debian version
+specification. See Fink::Services::version_cmp for details on version
+specifications.
+
+If a list @choose_from of Fink::PkgVersions objects is given, return only
+items in the list which satisfy the given specification.
+
+=cut
+
 sub get_matching_versions {
 	my $self = shift;
 	my $spec = shift;
 	my @include_list = @_;
-	my (@list, $version, $vo, $relation, $reqversion);
-
+	
+	my ($relation, $reqversion);
 	if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
 		$relation = $1;
 		$reqversion = $2;
 	} else {
 		die "Illegal version specification '".$spec."' for package ".$self->get_name()."\n";
 	}
-
-	@list = ();
 	
-	while (($version, $vo) = each %{$self->{_versions}}) {
-		push @list, $vo if &version_cmp($version, $relation, $reqversion);
-	}
-
-	if (@include_list > 0) {
-		my @match_list;
-		# if we've been given a list to choose from, return the
-		# intersection of the two
-		for my $vo (@list) {
-			my $version = $vo->get_version();
-			if (grep(/^${version}$/, @include_list)) {
-				push(@match_list, $vo);
-			}
-		}
-		return map { $_->load_fields } @match_list;
-	} else {
-		return map { $_->load_fields } @list;
-	}
+	@include_list = values %{$self->{_versions}} unless @include_list;
+	return map { $_->load_fields }
+		grep { version_cmp($_->get_fullversion, $relation, $reqversion) }
+		@include_list;
 }
 
 sub get_all_providers {

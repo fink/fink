@@ -1924,7 +1924,7 @@ sub real_install {
 				my $package = Fink::Package->package_by_name($dname);
 				my @existing_matches;
 				for my $spec (@{$package->{_versionspecs}}) {
-					push(@existing_matches, $package->get_matching_versions($spec, @existing_matches));
+					@existing_matches = $package->get_matching_versions($spec, @existing_matches);
 					if (@existing_matches == 0) {
 						print "unable to resolve version conflict on multiple dependencies\n";
 						for my $spec (@{$package->{_versionspecs}}) {
@@ -1947,6 +1947,9 @@ sub real_install {
 				}
 			}
 
+#			printf "*** Choosing version %s for package %s\n",
+#				latest_version(@vlist), $dname;
+			
 			# add node to graph
                @{$deps{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
 				   $dname, $pnode,
