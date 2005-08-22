@@ -1,5 +1,11 @@
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Package.pm: New convenience method get_latest_version, document
+	is_virtual.
+	* Engine.pm: Move asking for an alternative into a function.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm, Engine.pm: Make fink do the right thing when multiple
 	version specs are encountered. Note that bad things can still happen if
 	Fink processes a package's dependencies before a new spec modifies the

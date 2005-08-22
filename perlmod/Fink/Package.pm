@@ -116,7 +116,17 @@ sub get_name {
 	return $self->{_name};
 }
 
-### get pure virtual package flag
+=item is_virtual
+
+  my $bool = $po->is_virtual;
+
+Return true if this package is "virtual", ie: it cannot be built or installed
+by Fink.
+
+Note that even virtual packages can have versions, if those versions are
+themselves virtual (from Status or VirtPackage).
+
+=cut
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
@@ -199,6 +209,22 @@ sub get_all_versions {
 	my @vers = values %{$self->{_versions}};
 	map { $_->load_fields } @vers unless $noload;
 	return @vers;
+}
+
+=item get_latest_version
+
+  my $pv = $po->get_latest_version;
+
+Convenience method to get the highest version of this package. Returns undef
+if the package is has no versions.
+
+=cut
+
+sub get_latest_version {
+	my $self = shift;
+	my @vers = $self->list_versions;
+	return undef unless @vers;
+	return $self->get_version(latest_version(@vers));
 }
 
 =item get_matching_versions

@@ -1878,29 +1878,7 @@ sub real_install {
 			# None of our heuristics managed to narrow down the list to a
 			# single choice. So as a last resort, ask the use!
 			if (not $found) {
-				my @choices = ();
-				my $pkgindex = 1;
-				my $choice = 1;
-				my $founddebcnt = 0;
-				foreach $dname (@candidates) {
-					my $package = Fink::Package->package_by_name($dname);
-					my $lversion = &latest_version($package->list_versions());
-					my $vo = $package->get_version($lversion);
-					my $description = $vo->get_shortdescription(60);
-					push @choices, ( "$dname: $description" => $dname );
-					if ($package->is_any_present()) {
-						$choice = $pkgindex;
-						$founddebcnt++;
-				   }
-				   $pkgindex++;
-				}
-				if ($founddebcnt > 1) {
-				   $choice = 1; # Do not select anything if more than one choice is available
-				}
-				$dname = &prompt_selection("Pick one:",
-					intro   => "fink needs help picking an alternative to satisfy a virtual dependency. The candidates:",
-					default => [number=>$choice], choices => \@choices,
-					category => 'virtualdep',);
+				$dname = alternative_ask(\@candidates);
 			}
 
 			# the dice are rolled...
@@ -2722,6 +2700,43 @@ sub show_deps_display_list {
 		print "    [none]\n";
 	}
 }
+
+=item alternative_ask
+
+  my $pkgname = alternative_ask \@candidates;
+
+Ask the user to pick between candidate packages which satisfy a dependency.
+The parameter @candidates is a list of package names.
+
+=cut
+
+sub alternative_ask {
+	my $candidates = shift;
+	
+	# Get the choices
+	my @pos = map { Fink::Package->package_by_name($_) } @$candidates;
+	my @choices = map {
+		my $name = $_->get_name;
+		my $desc = $_->get_latest_version->get_shortdescription(60);
+		"$name: $desc" => $name
+	} @pos;
+	
+	# If just one package has a deb available, make it the default
+	my @have_deb = grep { $_->is_any_present } @pos;
+	my $default = scalar(@have_deb == 1)
+		? [ "value" => $have_deb[0]->get_name ]
+		: [];
+	
+	return prompt_selection("Pick one:",
+		intro	=> "fink needs help picking an alternative to satisfy a "
+			. "virtual dependency. The candidates:",
+		choices	=> \@choices,
+		default	=> $default,
+		category => 'virtualdep',
+	);
+}
+	
+
 
 =back
 
