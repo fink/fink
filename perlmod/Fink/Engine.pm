@@ -1924,7 +1924,7 @@ sub real_install {
 				my $package = Fink::Package->package_by_name($dname);
 				my @existing_matches;
 				for my $spec (@{$package->{_versionspecs}}) {
-					@existing_matches = $package->get_matching_versions($spec, @existing_matches);
+					push(@existing_matches, $package->get_matching_versions($spec, @existing_matches));
 					if (@existing_matches == 0) {
 						print "unable to resolve version conflict on multiple dependencies\n";
 						for my $spec (@{$package->{_versionspecs}}) {

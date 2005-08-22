@@ -1,5 +1,10 @@
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Revert part of a separate patch that for some reason I
+	let slip in.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm, Package.pm: Make print_virtual_pkg a method of Package.
 	* Engine.pm: Use print_virtual_pkg for descriptions of virtuals.
 	* PkgVersion.pm: If a virtual package is found and virtuals are undesired,
