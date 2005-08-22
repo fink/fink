@@ -1298,6 +1298,32 @@ sub handle_infon_block {
 	}
 }
 
+=item print_virtual_pkg
+
+  $po->print_virtual_pkg;
+
+Pretty print a message indicating that a given package is virtual, and
+what packages provide it.
+
+=cut
+
+sub print_virtual_pkg {
+	my $self = shift;
+	
+	printf "The requested package '%s' is a virtual package, provided by:\n",
+		$self->get_name();
+	
+	# Find providers, but only one version per package
+	my %providers;
+	for my $pv ($self->get_all_providers) {
+		$providers{$pv->get_name}{$pv->get_fullversion} = $pv;
+	}
+	for my $pkg (sort keys %providers) {
+		my $vers = latest_version keys %{$providers{$pkg}};
+		printf "  %s\n", $providers{$pkg}{$vers}->get_fullname;
+	}
+}
+
 =back
 
 =cut

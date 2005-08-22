@@ -1,3 +1,11 @@
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm, Package.pm: Make print_virtual_pkg a method of Package.
+	* Engine.pm: Use print_virtual_pkg for descriptions of virtuals.
+	* PkgVersion.pm: If a virtual package is found and virtuals are undesired,
+	print a nice warning. This lets 'fink install something-virtual' and such
+	behave more nicely.
+
 2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Refactor pretty-printing virtual packages into a function.

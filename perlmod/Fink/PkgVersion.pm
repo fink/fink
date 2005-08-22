@@ -1911,9 +1911,16 @@ Don't print messages. Defaults to false.
 
 =item provides
 
-If no PkgVersion corresponds to the given specification, try to match a
-provided Package. Test with $result->isa('Fink::Package') on return!
-Defaults to false.
+This parameter controls what happens if no PkgVersion matches the 
+given specification, but a virtual package does.
+
+If this parameter is 'return', then the Fink::Package object for the virtual
+package is returned. The caller should test with $result->isa('Fink::Package')
+to determine what sort of result it is looking at.
+
+Otherwise, undef will be returned, just as if the specification could not
+be resolved. The user will be warned that a virtual package was encountered
+if not in quiet mode. This is the default.
 
 =back
 
@@ -1966,13 +1973,16 @@ sub match_package {
 		$version = &latest_version($package->list_versions());
 		if (not defined $version) {
 			# i guess it's provided then?
-			return $package if $opts{provides};
+			if ($opts{provides} eq 'return') {
+				return $package;
+			}
 			
 			# there's nothing we can do here...
-			print_breaking rejoin_text <<VIRT unless $opts{quiet};
-Package $pkgname is a virtual package. For a list of packages which provide it,
-try 'fink info $pkgname'.
-VIRT
+			unless ($opts{quiet}) {
+				print "\n";
+				$package->print_virtual_pkg;
+				print "\n";
+			}
 			return undef;
 		}
 	} elsif (not defined $package->get_version($version)) {

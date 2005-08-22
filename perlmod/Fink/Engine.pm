@@ -932,7 +932,7 @@ Print the description of the given packages.
 sub cmd_description {
 	my ($package, @plist);
 
-	@plist = &expand_packages({ provides => 1 }, @_);
+	@plist = &expand_packages({ provides => 'return' }, @_);
 	if ($#plist < 0) {
 		die "no package specified for command 'description'!\n";
 	}
@@ -940,7 +940,7 @@ sub cmd_description {
 	print "\n";
 	foreach $package (@plist) {
 		if ($package->isa('Fink::Package')) {
-			print_virtual_pkg($package);
+			$package->print_virtual_pkg;
 		} else {
 			print $package->get_fullname().": ";
 			print $package->get_description();
@@ -1924,7 +1924,7 @@ sub real_install {
 				my $package = Fink::Package->package_by_name($dname);
 				my @existing_matches;
 				for my $spec (@{$package->{_versionspecs}}) {
-					push(@existing_matches, $package->get_matching_versions($spec, @existing_matches));
+					@existing_matches = $package->get_matching_versions($spec, @existing_matches);
 					if (@existing_matches == 0) {
 						print "unable to resolve version conflict on multiple dependencies\n";
 						for my $spec (@{$package->{_versionspecs}}) {
@@ -2719,32 +2719,6 @@ sub show_deps_display_list {
 		print "    [none]\n";
 	}
 }
-
-=item print_virtual_pkg
-
-  print_virtual_pkg $pkgobject;
-
-Pretty print a message indicating that a given package is virtual, and
-what packages provide it.
-
-=cut
-
-sub print_virtual_pkg {
-	my ($pkg) = @_;
-	
-	printf "%s is a virtual package, provided by:\n", $pkg->get_name();
-	
-	# Find providers, but only one version per package
-	my %providers;
-	for my $pv ($pkg->get_all_providers) {
-		$providers{$pv->get_name}{$pv->get_fullversion} = $pv;
-	}
-	for my $pkg (sort keys %providers) {
-		my $vers = latest_version keys %{$providers{$pkg}};
-		printf "  %s\n", $providers{$pkg}{$vers}->get_fullname;
-	}
-}
-
 
 =back
 
