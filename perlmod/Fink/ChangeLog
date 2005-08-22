@@ -1,5 +1,10 @@
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Sort initial queue of dependencies, so that bugs in dep
+	engine are reproducible!
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: Revert part of a separate patch that for some reason I
 	let slip in.
 

@@ -1676,7 +1676,7 @@ sub real_install {
 		$to_be_rebuilt{$pkgname} = ($op == $OP_REBUILD);
 	}
 
-	@queue = keys %deps;
+	@queue = sort keys %deps;
 	if ($#queue < 0) {
 		unless ($forceoff) {
 			print "No packages to install.\n";
