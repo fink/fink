@@ -1582,8 +1582,7 @@ sub real_install {
 	my ($pkgspec, $package, $pkgname, $item, $dep, $con, $cn);
 	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
-	my (%candidates, @candidates, $pnode, $found);
-	my ($oversion, $opackage, $v, $ep, $dp, $dname);
+	my ($ep);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
 
@@ -1755,8 +1754,8 @@ sub real_install {
 			next if $#$dep < 0;		# skip empty lists
 
 			# check the graph
-			foreach $dp (@$dep) {
-				$dname = $dp->get_name();
+			foreach my $dp (@$dep) {
+				my $dname = $dp->get_name();
 				if (exists $deps{$dname} and $deps{$dname}->[PKGVER] == $dp) {
 					if ($deps{$dname}->[OP] < $OP_INSTALL) {
 						$deps{$dname}->[OP] = $OP_INSTALL;
@@ -1768,9 +1767,9 @@ sub real_install {
 			}
 
 			# check for installed pkgs (exact revision)
-			foreach $dp (@$dep) {
+			foreach my $dp (@$dep) {
 				if ($dp->is_installed()) {
-					$dname = $dp->get_name();
+					my $dname = $dp->get_name();
 					if (exists $deps{$dname}) {
 						die "Internal error: node for $dname already exists\n";
 					}
@@ -1788,25 +1787,26 @@ sub real_install {
 			}
 
 			# make list of package names (preserve order)
-			%candidates = ();
-			@candidates = ();
-			foreach $dp (@$dep) {
-				next if exists $candidates{$dp->get_name()};
-				$candidates{$dp->get_name()} = 1;
-				push @candidates, $dp->get_name();
+			my @candidates = ();
+			{
+				my %candidates;
+				foreach my $dp (@$dep) {
+					next if exists $candidates{$dp->get_name()};
+					$candidates{$dp->get_name()} = 1;
+					push @candidates, $dp->get_name();
+				}
 			}
 
 			# At this point, we are trying to fulfill a dependency. In the loop
 			# above, we determined all potential candidates, i.e. packages which
 			# would fulfill the dep. Now we have to decide which to use.
 
-			$found = 0;		# Set to true once we decided which candidate to support.
+			my $found = 0;		# Set to name of candidate, if one has been found
 
 
 			# Trivial case: only one candidate, nothing to be done, just use it.
 			if ($#candidates == 0) {
-				$dname = $candidates[0];
-				$found = 1;
+				$found = $candidates[0];
 			}
 
 			# Next, we check if by chance one of the candidates is already
@@ -1814,10 +1814,9 @@ sub real_install {
 			if (not $found) {
 				my $cand;
 				foreach $cand (@candidates) {
-					$pnode = Fink::Package->package_by_name($cand);
+					my $pnode = Fink::Package->package_by_name($cand);
 					if ($pnode->is_any_installed()) {
-						$dname = $cand;
-						$found = 1;
+						$found = $cand;
 						last;
 					}
 				}
@@ -1830,6 +1829,7 @@ sub real_install {
 			if (not $found) {
 				my ($cand, $splitoff);
 				my $candcount=0;
+				my $auto_choose;
 				SIBCHECK: foreach $cand (@candidates) {
 					my $package = Fink::Package->package_by_name($cand);
 					my $lversion = &latest_version($package->list_versions());
@@ -1839,14 +1839,14 @@ sub real_install {
 						# if the package is being installed, or is already installed,
 						# auto-choose it
 						if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
-							$dname = $cand;
+							$auto_choose = $cand;
 							$candcount++;
 							next SIBCHECK; # Don't count multiple siblings
 						}
 					}
 				}
 				if ($candcount == 1) {
-				    $found=1;
+				    $found = $auto_choose;
 				}
 			}
 
@@ -1856,7 +1856,7 @@ sub real_install {
 				my $matchstr = $config->param("MatchPackageRegEx");
 				my (@matched, @notmatched);
 				if (defined $matchstr) {
-					foreach $dname (@candidates) {
+					foreach my $dname (@candidates) {
 						if ( $dname =~ $matchstr ) {
 							push(@matched, $dname);
 						} else {
@@ -1865,8 +1865,7 @@ sub real_install {
 					}
 					if (1 == @matched) {
 						# we have exactly one match, use it
-						$dname = pop(@matched);
-						$found = 1;
+						$found = pop(@matched);
 					} elsif (@matched > 1) {
 						# we have multiple matches
 						# reorder list so that matched ones are at the top
@@ -1874,24 +1873,20 @@ sub real_install {
 					}
 				}
 			}
-
+			
 			# None of our heuristics managed to narrow down the list to a
-			# single choice. So as a last resort, ask the use!
-			if (not $found) {
-				$dname = alternative_ask(\@candidates);
-			}
+			# single choice. So as a last resort, ask the user!
+			$found = alternative_ask(\@candidates) if not $found;
 
-			# the dice are rolled...
-
-			$pnode = Fink::Package->package_by_name($dname);
+			my $pnode = Fink::Package->package_by_name($found);
 			@vlist = ();
-			foreach $dp (@$dep) {
-				if ($dp->get_name() eq $dname) {
+			foreach my $dp (@$dep) {
+				if ($dp->get_name() eq $found) {
 					push @vlist, $dp->get_fullversion();
 				}
 			}
 
-			if (exists $deps{$dname}) {
+			if (exists $deps{$found}) {
 				# node exists, we need to generate the version list
 				# based on multiple packages
 				@vlist = ();
@@ -1899,14 +1894,14 @@ sub real_install {
 				# first, get the current list of acceptable packages
 				# this will run get_matching_versions over every version spec
 				# for this package
-				my $package = Fink::Package->package_by_name($dname);
+				my $package = Fink::Package->package_by_name($found);
 				my @existing_matches;
 				for my $spec (@{$package->{_versionspecs}}) {
 					@existing_matches = $package->get_matching_versions($spec, @existing_matches);
 					if (@existing_matches == 0) {
 						print "unable to resolve version conflict on multiple dependencies\n";
 						for my $spec (@{$package->{_versionspecs}}) {
-							print "	 $dname $spec\n";
+							print "	 $found $spec\n";
 						}
 						exit 1;
 					}
@@ -1919,24 +1914,24 @@ sub real_install {
 				unless (@vlist > 0) {
 					print "unable to resolve version conflict on multiple dependencies\n";
 					for my $spec (@{$package->{_versionspecs}}) {
-						print "	 $dname $spec\n";
+						print "	 $found $spec\n";
 					}
 					exit 1;
 				}
 			}
 
 #			printf "*** Choosing version %s for package %s\n",
-#				latest_version(@vlist), $dname;
+#				latest_version(@vlist), $found;
 			
 			# add node to graph
-               @{$deps{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
-				   $dname, $pnode,
+               @{$deps{$found}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+				   $found, $pnode,
 				   $pnode->get_version(&latest_version(@vlist)), $OP_INSTALL, 0
 			   );
 			# add a link
-			push @$item, $deps{$dname};
+			push @$item, $deps{$found};
 			# add to investigation queue
-			push @queue, $dname;
+			push @queue, $found;
 		}
 	}
 

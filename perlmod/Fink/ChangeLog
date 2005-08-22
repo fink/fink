@@ -1,5 +1,10 @@
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Use smaller scopes for variables, so code can be refactored
+	without inadvertantly stomping on other code.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: New convenience method get_latest_version, document
 	is_virtual.
 	* Engine.pm: Move asking for an alternative into a function.
