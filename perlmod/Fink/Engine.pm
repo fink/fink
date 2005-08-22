@@ -940,10 +940,7 @@ sub cmd_description {
 	print "\n";
 	foreach $package (@plist) {
 		if ($package->isa('Fink::Package')) {
-			printf "%s is a virtual package, provided by:\n",
-				$package->get_name();
-			printf "  %s\n", $_->get_fullname()
-				for $package->get_all_providers();
+			print_virtual_pkg($package);
 		} else {
 			print $package->get_fullname().": ";
 			print $package->get_description();
@@ -2722,6 +2719,32 @@ sub show_deps_display_list {
 		print "    [none]\n";
 	}
 }
+
+=item print_virtual_pkg
+
+  print_virtual_pkg $pkgobject;
+
+Pretty print a message indicating that a given package is virtual, and
+what packages provide it.
+
+=cut
+
+sub print_virtual_pkg {
+	my ($pkg) = @_;
+	
+	printf "%s is a virtual package, provided by:\n", $pkg->get_name();
+	
+	# Find providers, but only one version per package
+	my %providers;
+	for my $pv ($pkg->get_all_providers) {
+		$providers{$pv->get_name}{$pv->get_fullversion} = $pv;
+	}
+	for my $pkg (sort keys %providers) {
+		my $vers = latest_version keys %{$providers{$pkg}};
+		printf "  %s\n", $providers{$pkg}{$vers}->get_fullname;
+	}
+}
+
 
 =back
 

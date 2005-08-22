@@ -1,5 +1,9 @@
 2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Refactor pretty-printing virtual packages into a function.
+
+2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Command.pm: du_sk rounds up, just as du does.
 
 2005-08-18  Matthew Sachs  <msachs@apple.com>
