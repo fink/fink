@@ -1,5 +1,10 @@
 2005-08-23  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: stoe error messages during the .deb parsing, then
+	later display a single list of all offending files for each msg.
+
+2005-08-23  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: fix special handling of xfree86* and xorg*
 	outside-of-%p checks; allow *.elc in emacs\d\d-*.
 
