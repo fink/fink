@@ -1826,57 +1826,16 @@ sub real_install {
 			# for installation (or is itself a dependency). If so, we use that
 			# candidate to fulfill the dep.
 			# This is a heuristic, but usually does exactly "the right thing".
-			if (not $found) {
-				my ($cand, $splitoff);
-				my $candcount=0;
-				my $auto_choose;
-				SIBCHECK: foreach $cand (@candidates) {
-					my $package = Fink::Package->package_by_name($cand);
-					my $lversion = &latest_version($package->list_versions());
-					my $vo = $package->get_version($lversion);
-					
-					foreach $splitoff ($vo->get_relatives) {
-						# if the package is being installed, or is already installed,
-						# auto-choose it
-						if (exists $deps{$splitoff->get_name()} or $splitoff->is_installed()) {
-							$auto_choose = $cand;
-							$candcount++;
-							next SIBCHECK; # Don't count multiple siblings
-						}
-					}
-				}
-				if ($candcount == 1) {
-				    $found = $auto_choose;
-				}
-			}
+			$found = choose_alternative_from_relatives(\@candidates,
+				sub { exists $deps{$_->get_name} }) if not $found;
 
 			# No decision has been made so far. Now see if the user has set a
 			# regexp to match in fink.conf.
-			if (not $found) {
-				my $matchstr = $config->param("MatchPackageRegEx");
-				my (@matched, @notmatched);
-				if (defined $matchstr) {
-					foreach my $dname (@candidates) {
-						if ( $dname =~ $matchstr ) {
-							push(@matched, $dname);
-						} else {
-							push(@notmatched, $dname);
-						}
-					}
-					if (1 == @matched) {
-						# we have exactly one match, use it
-						$found = pop(@matched);
-					} elsif (@matched > 1) {
-						# we have multiple matches
-						# reorder list so that matched ones are at the top
-						@candidates = (@matched, @notmatched);
-					}
-				}
-			}
+			$found = choose_alternative_conf(\@candidates) if not $found;
 			
 			# None of our heuristics managed to narrow down the list to a
 			# single choice. So as a last resort, ask the user!
-			$found = alternative_ask(\@candidates) if not $found;
+			$found = choose_alternative_ask(\@candidates) if not $found;
 
 			my $pnode = Fink::Package->package_by_name($found);
 			@vlist = ();
@@ -2696,16 +2655,18 @@ sub show_deps_display_list {
 	}
 }
 
-=item alternative_ask
+=item choose_alternative_ask
 
-  my $pkgname = alternative_ask \@candidates;
+  my $pkgname = choose_alternative_ask $candidates;
 
 Ask the user to pick between candidate packages which satisfy a dependency.
-The parameter @candidates is a list of package names.
+This is used as a last resort, if no other selection heuristic has worked.
+
+The parameter $candidates is a list-ref of package names.
 
 =cut
 
-sub alternative_ask {
+sub choose_alternative_ask {
 	my $candidates = shift;
 	
 	# Get the choices
@@ -2730,8 +2691,101 @@ sub alternative_ask {
 		category => 'virtualdep',
 	);
 }
-	
 
+=item choose_filter
+
+  my $pkgname = choose_filter $candidates, $filter;
+
+Try to pick a package from a set candidates using a filter.
+
+The parameter @candidates is a list-ref of package names.
+
+The parameter $filter should be a coderef that returns a boolean value
+dependent on the package name in $_.
+
+If the filter returns true for just one candidate, that candidate is returned.
+Otherwise returns false, and $candidates is re-ordered so that
+matching candidates are earlier than non-matching ones.
+
+=cut
+
+sub choose_filter {
+	my ($candidates, $filter) = @_;
+	my (@matched, @unmatched);
+	
+	foreach (@$candidates) {
+		if (&$filter()) {
+			push @matched, $_;
+		} else {
+			push @unmatched, $_;
+		}
+	}
+	if (@matched == 1) {
+		return $matched[0];
+	} else {
+		@$candidates = (@matched, @unmatched);
+		return 0;
+	}
+}
+
+
+=item choose_alternative_conf
+
+  my $pkgname = choose_alternative_conf $candidates;
+
+Try to pick between candidate packages which satisfy a dependency, by using
+elements of Fink's configuration. Currently, the way to do this is with the
+MatchPackageRegex option.
+
+The parameter $candidates is a list-ref of package names. It may be re-ordered
+to reflect that certain candidates are more desirable than others.
+
+If a single package is found, returns its name. Otherwise returns false.
+
+=cut
+
+sub choose_alternative_conf {
+	my $candidates = shift;	
+	my $matchstr = $config->param("MatchPackageRegEx");
+	return 0 unless defined $matchstr;
+	return choose_filter($candidates, sub { /$matchstr/ });
+}
+
+=item choose_alternative_from_relatives
+
+  my $pkgname = choose_alternative_from_relatives $candidates;
+  my $pkgname = choose_alternative_from_relatives $candidates,
+      $marked_predicate;
+
+Try to pick between candidate packages which satisfy a dependency, by using
+the status of a package's relatives as a heuristic.
+
+If one package has a relative that is either installed, or marked for
+installation, then usually that package is the right alternative to choose.
+
+The parameter $candidates is a list-ref of package names. It may be re-ordered
+to reflect that certain candidates are more desirable than others.
+
+The parameter $marked_predicate is a function or coderef which can be used
+to determine if a PkgVersion is marked for installation. If omitted, it is
+assumed that no packages are marked. The predicate should operate on the
+PkgVersion in $_, and should be callable with no arguments.
+
+If a single package is found, this function returns its name.
+Otherwise returns false.
+
+=cut
+
+sub choose_alternative_from_relatives {
+	my $candidates = shift;
+	my $marked_predicate = shift || sub { 0 };
+	
+	return choose_filter($candidates, sub {
+		grep { $_->is_installed || &$marked_predicate() }
+			Fink::Package->package_by_name($_)->get_latest_version
+				->get_relatives
+	});
+}
 
 =back
 

@@ -1,5 +1,9 @@
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Move some more parts of alternative resolution into functions.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: Use smaller scopes for variables, so code can be refactored
 	without inadvertantly stomping on other code.
 
