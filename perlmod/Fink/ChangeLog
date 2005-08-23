@@ -1,3 +1,8 @@
+2005-08-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: fix special handling of xfree86* and xorg*
+	outside-of-%p checks; allow *.elc in emacs\d\d-*.
+
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Move some more parts of alternative resolution into functions.
@@ -53,6 +58,44 @@
 
 	* Don't fall through to 10.2 for i386-apple-darwin8.FOO for
 	values of FOO which we don't know about.
+
+2005-08-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: validate_dpkg_unpacked is now also a wrapper (in
+	analogy to validate_dpkg_file); actual validation moved to new
+	private _validate_dpkg used by both.
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix reading of pre/postinst/rm scripts.
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: move validation to before building the .deb
+	* Validation.pm: swap parameters for validate_dpkg_unpacked; fix
+	initial-directory handling.
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Erase tempdir after each .deb validation; don't
+	wait for automatic END handler.
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: DaemonicFile executable presence/perms checks
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix BDO check when field is missing from
+	control. Report the name of shouldn't-be-present *.omf file
+
+2005-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: validate_dpkg_file is now just a wrapper that
+	unpacks the .deb into a temp dir. Actual validation moved into
+	validate_dpkg_unpacked, which operates on an unpacked archive.
+	Also clean up that validator code.
+	
 
 2005-08-13  Daniel Macks  <dmacks@netspace.org>
 
