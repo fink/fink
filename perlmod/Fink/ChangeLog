@@ -1,45 +1,59 @@
-2005-08-23  Daniel Macks  <dmacks@netspace.org>
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* Validation.pm: fix special handling of xfree86* and xorg*
-	outside-of-%p checks; allow *.elc in emacs\d\d-*.
+	* Engine.pm: Move some more parts of alternative resolution into functions.
 
-2005-08-18  Daniel Macks  <dmacks@netspace.org>
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* Validation.pm: validate_dpkg_unpacked is now also a wrapper (in
-	analogy to validate_dpkg_file); actual validation moved to new
-	private _validate_dpkg used by both.
+	* Engine.pm: Use smaller scopes for variables, so code can be refactored
+	without inadvertantly stomping on other code.
 
-2005-08-17  Daniel Macks  <dmacks@netspace.org>
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* Validation.pm: Fix reading of pre/postinst/rm scripts.
+	* Package.pm: New convenience method get_latest_version, document
+	is_virtual.
+	* Engine.pm: Move asking for an alternative into a function.
 
-2005-08-17  Daniel Macks  <dmacks@netspace.org>
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* PkgVersion.pm: move validation to before building the .deb
-	* Validation.pm: swap parameters for validate_dpkg_unpacked; fix
-	initial-directory handling.
+	* Package.pm, Engine.pm: Make fink do the right thing when multiple
+	version specs are encountered. Note that bad things can still happen if
+	Fink processes a package's dependencies before a new spec modifies the
+	version we should be looking at.
+	* Engine.pm: Fix call to get_matching_versions.
+	* Package.pm: Re-write get_matching_versions for brevity and correctness.
+	Fixes @choose_from parameter not working.
 
-2005-08-17  Daniel Macks  <dmacks@netspace.org>
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* Validation.pm: Erase tempdir after each .deb validation; don't
-	wait for automatic END handler.
+	* Engine.pm: Sort initial queue of dependencies, so that bugs in dep
+	engine are reproducible!
 
-2005-08-17  Daniel Macks  <dmacks@netspace.org>
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* Validation.pm: DaemonicFile executable presence/perms checks
+	* Engine.pm: Revert part of a separate patch that for some reason I
+	let slip in.
 
-2005-08-17  Daniel Macks  <dmacks@netspace.org>
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* Validation.pm: Fix BDO check when field is missing from
-	control. Report the name of shouldn't-be-present *.omf file
+	* Engine.pm, Package.pm: Make print_virtual_pkg a method of Package.
+	* Engine.pm: Use print_virtual_pkg for descriptions of virtuals.
+	* PkgVersion.pm: If a virtual package is found and virtuals are undesired,
+	print a nice warning. This lets 'fink install something-virtual' and such
+	behave more nicely.
 
-2005-08-17  Daniel Macks  <dmacks@netspace.org>
+2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* Validation.pm: validate_dpkg_file is now just a wrapper that
-	unpacks the .deb into a temp dir. Actual validation moved into
-	validate_dpkg_unpacked, which operates on an unpacked archive.
-	Also clean up that validator code.
-	
+	* Engine.pm: Refactor pretty-printing virtual packages into a function.
+
+2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Command.pm: du_sk rounds up, just as du does.
+
+2005-08-18  Matthew Sachs  <msachs@apple.com>
+
+	* Don't fall through to 10.2 for i386-apple-darwin8.FOO for
+	values of FOO which we don't know about.
+
 2005-08-13  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Catch misuse of -Wl,-framework in .pc files.
