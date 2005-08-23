@@ -1,3 +1,8 @@
+2005-08-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: fix special handling of xfree86* and xorg*
+	outside-of-%p checks; allow *.elc in emacs\d\d-*.
+
 2005-08-18  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: validate_dpkg_unpacked is now also a wrapper (in

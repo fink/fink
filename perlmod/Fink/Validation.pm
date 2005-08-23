@@ -1069,12 +1069,12 @@ sub _validate_dpkg {
 			} elsif ($filename =~ /^\/mach/) {
 				print "Error: File \"$filename\" is overwriting essential system symlink pointing to /mach.sym\n";
 				$looks_good = 0;
-			} elsif (not (($deb_control->{package} =~ /xfree86[_\-]/) || ($deb_control->{package} =~ /xorg[_\-]/))) {
+			} elsif ($deb_control->{package} !~ /^(xfree86|xorg)/) {
 				print "Error: File \"$filename\" installed outside of $basepath\n";
 				$looks_good = 0;
 			} else {
 				if (not (($filename =~ /^\/Applications\/XDarwin.app/) || ($filename =~ /^\/usr\/X11R6/) || ($filename =~ /^\/private\/etc\/fonts/) )) {
-					next if (($filename eq "/Applications/") || ($filename eq "/private/") || ($filename eq "/private/etc/") || ($filename eq "/usr/"));
+					return if (($filename eq "/Applications/") || ($filename eq "/private/") || ($filename eq "/private/etc/") || ($filename eq "/usr/"));
 					print "Error: File \"$filename\" installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, and /usr/X11R6\n";
 					$looks_good = 0;
 				}
@@ -1098,7 +1098,7 @@ sub _validate_dpkg {
 
 		# check for compiled emacs libs
 		if ($filename =~ /\.elc$/ &&
-			$deb_control->{package} !~ /^emacs[0-9][0-9]$/ &&
+			$deb_control->{package} !~ /^emacs\d\d(|-.*)$/ &&
 			$deb_control->{package} !~ /^xemacs(|-.*)$/
 		   ) {
 			$looks_good = 0;
