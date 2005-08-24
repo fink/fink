@@ -1581,7 +1581,7 @@ sub real_install {
 
 	my ($pkgspec, $package, $pkgname, $item, $dep, $con, $cn);
 	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
-	my (%deps, @queue, @deplist, @vlist, @requested, @additionals, @elist);
+	my (%deps, @queue, @deplist, @requested, @additionals, @elist);
 	my ($ep);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
@@ -1750,147 +1750,9 @@ sub real_install {
 		if (not $item->[PKGVER]->built_with_essential) {
 			push @deplist, @elist;
 		}
-	DEPLOOP: foreach $dep (@deplist) {
-			next if $#$dep < 0;		# skip empty lists
-
-			# check the graph
-			foreach my $dp (@$dep) {
-				my $dname = $dp->get_name();
-				if (exists $deps{$dname} and $deps{$dname}->[PKGVER] == $dp) {
-					if ($deps{$dname}->[OP] < $OP_INSTALL) {
-						$deps{$dname}->[OP] = $OP_INSTALL;
-					}
-					# add a link
-					push @$item, $deps{$dname};
-					next DEPLOOP;
-				}
-			}
-
-			# check for installed pkgs (exact revision)
-			foreach my $dp (@$dep) {
-				if ($dp->is_installed()) {
-					my $dname = $dp->get_name();
-					if (exists $deps{$dname}) {
-						die "Internal error: node for $dname already exists\n";
-					}
-					# add node to graph
-					@{$deps{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
-						$dname, Fink::Package->package_by_name($dname),
-						$dp, $OP_INSTALL, 2
-					);
-					# add a link
-					push @$item, $deps{$dname};
-					# add to investigation queue
-					push @queue, $dname;
-					next DEPLOOP;
-				}
-			}
-
-			# make list of package names (preserve order)
-			my @candidates = ();
-			{
-				my %candidates;
-				foreach my $dp (@$dep) {
-					next if exists $candidates{$dp->get_name()};
-					$candidates{$dp->get_name()} = 1;
-					push @candidates, $dp->get_name();
-				}
-			}
-
-			# At this point, we are trying to fulfill a dependency. In the loop
-			# above, we determined all potential candidates, i.e. packages which
-			# would fulfill the dep. Now we have to decide which to use.
-
-			my $found = 0;		# Set to name of candidate, if one has been found
-
-
-			# Trivial case: only one candidate, nothing to be done, just use it.
-			if ($#candidates == 0) {
-				$found = $candidates[0];
-			}
-
-			# Next, we check if by chance one of the candidates is already
-			# installed. If so, that is the natural choice to fulfill the dep.
-			if (not $found) {
-				my $cand;
-				foreach $cand (@candidates) {
-					my $pnode = Fink::Package->package_by_name($cand);
-					if ($pnode->is_any_installed()) {
-						$found = $cand;
-						last;
-					}
-				}
-			}
-
-			# Next, check if a relative of a candidate has already been marked
-			# for installation (or is itself a dependency). If so, we use that
-			# candidate to fulfill the dep.
-			# This is a heuristic, but usually does exactly "the right thing".
-			$found = choose_alternative_from_relatives(\@candidates,
-				sub { exists $deps{$_->get_name} }) if not $found;
-
-			# No decision has been made so far. Now see if the user has set a
-			# regexp to match in fink.conf.
-			$found = choose_alternative_conf(\@candidates) if not $found;
-			
-			# None of our heuristics managed to narrow down the list to a
-			# single choice. So as a last resort, ask the user!
-			$found = choose_alternative_ask(\@candidates) if not $found;
-
-			my $pnode = Fink::Package->package_by_name($found);
-			@vlist = ();
-			foreach my $dp (@$dep) {
-				if ($dp->get_name() eq $found) {
-					push @vlist, $dp->get_fullversion();
-				}
-			}
-
-			if (exists $deps{$found}) {
-				# node exists, we need to generate the version list
-				# based on multiple packages
-				@vlist = ();
-
-				# first, get the current list of acceptable packages
-				# this will run get_matching_versions over every version spec
-				# for this package
-				my $package = Fink::Package->package_by_name($found);
-				my @existing_matches;
-				for my $spec (@{$package->{_versionspecs}}) {
-					@existing_matches = $package->get_matching_versions($spec, @existing_matches);
-					if (@existing_matches == 0) {
-						print "unable to resolve version conflict on multiple dependencies\n";
-						for my $spec (@{$package->{_versionspecs}}) {
-							print "	 $found $spec\n";
-						}
-						exit 1;
-					}
-				}
-
-				for (@existing_matches) {
-					push(@vlist, $_->get_fullversion());
-				}
-
-				unless (@vlist > 0) {
-					print "unable to resolve version conflict on multiple dependencies\n";
-					for my $spec (@{$package->{_versionspecs}}) {
-						print "	 $found $spec\n";
-					}
-					exit 1;
-				}
-			}
-
-#			printf "*** Choosing version %s for package %s\n",
-#				latest_version(@vlist), $found;
-			
-			# add node to graph
-               @{$deps{$found}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
-				   $found, $pnode,
-				   $pnode->get_version(&latest_version(@vlist)), $OP_INSTALL, 0
-			   );
-			# add a link
-			push @$item, $deps{$found};
-			# add to investigation queue
-			push @queue, $found;
+		
+		foreach $dep (@deplist) {
+			choose_pkgversion(\%deps, \@queue, $item, @$dep);
 		}
 	}
 
@@ -2655,9 +2517,9 @@ sub show_deps_display_list {
 	}
 }
 
-=item choose_alternative_ask
+=item choose_package_ask
 
-  my $pkgname = choose_alternative_ask $candidates;
+  my $pkgname = choose_package_ask $candidates;
 
 Ask the user to pick between candidate packages which satisfy a dependency.
 This is used as a last resort, if no other selection heuristic has worked.
@@ -2666,7 +2528,7 @@ The parameter $candidates is a list-ref of package names.
 
 =cut
 
-sub choose_alternative_ask {
+sub choose_package_ask {
 	my $candidates = shift;
 	
 	# Get the choices
@@ -2694,17 +2556,17 @@ sub choose_alternative_ask {
 
 =item choose_filter
 
-  my $pkgname = choose_filter $candidates, $filter;
+  my $result = choose_filter $candidates, $filter;
 
-Try to pick a package from a set candidates using a filter.
+Find the unique item in a list that matches a given filter.
 
-The parameter @candidates is a list-ref of package names.
+The parameter $candidates is a list-ref of items to choose from.
 
 The parameter $filter should be a coderef that returns a boolean value
-dependent on the package name in $_.
+dependent on the value of $_.
 
 If the filter returns true for just one candidate, that candidate is returned.
-Otherwise returns false, and $candidates is re-ordered so that
+Otherwise this function returns false, and $candidates is re-ordered so that
 matching candidates are earlier than non-matching ones.
 
 =cut
@@ -2729,9 +2591,9 @@ sub choose_filter {
 }
 
 
-=item choose_alternative_conf
+=item choose_package_conf
 
-  my $pkgname = choose_alternative_conf $candidates;
+  my $pkgname = choose_package_conf $candidates;
 
 Try to pick between candidate packages which satisfy a dependency, by using
 elements of Fink's configuration. Currently, the way to do this is with the
@@ -2744,18 +2606,18 @@ If a single package is found, returns its name. Otherwise returns false.
 
 =cut
 
-sub choose_alternative_conf {
+sub choose_package_conf {
 	my $candidates = shift;	
 	my $matchstr = $config->param("MatchPackageRegEx");
 	return 0 unless defined $matchstr;
 	return choose_filter($candidates, sub { /$matchstr/ });
 }
 
-=item choose_alternative_from_relatives
+=item choose_package_from_relatives
 
-  my $pkgname = choose_alternative_from_relatives $candidates;
-  my $pkgname = choose_alternative_from_relatives $candidates,
-      $marked_predicate;
+  my $pkgname = choose_package_from_relatives $candidates;
+  my $pkgname = choose_package_from_relatives $candidates,
+      $will_install;
 
 Try to pick between candidate packages which satisfy a dependency, by using
 the status of a package's relatives as a heuristic.
@@ -2766,9 +2628,9 @@ installation, then usually that package is the right alternative to choose.
 The parameter $candidates is a list-ref of package names. It may be re-ordered
 to reflect that certain candidates are more desirable than others.
 
-The parameter $marked_predicate is a function or coderef which can be used
+The parameter $will_install is a function or coderef which can be used
 to determine if a PkgVersion is marked for installation. If omitted, it is
-assumed that no packages are marked. The predicate should operate on the
+assumed that no packages are marked. It should operate on the
 PkgVersion in $_, and should be callable with no arguments.
 
 If a single package is found, this function returns its name.
@@ -2776,15 +2638,224 @@ Otherwise returns false.
 
 =cut
 
-sub choose_alternative_from_relatives {
+sub choose_package_from_relatives {
 	my $candidates = shift;
-	my $marked_predicate = shift || sub { 0 };
+	my $will_install = shift || sub { 0 };
 	
 	return choose_filter($candidates, sub {
-		grep { $_->is_installed || &$marked_predicate() }
+		grep { $_->is_installed || &$will_install() }
 			Fink::Package->package_by_name($_)->get_latest_version
 				->get_relatives
 	});
+}
+
+=item choose_package_installed
+
+  my $pkgname = choose_package_installed $candidates;
+
+Try to pick between candidate packages which satisfy a dependency, by choosing
+any package that is currently installed. (Even if it's a different version.)
+
+The parameter $candidates is a list-ref of package names. Returns a package
+name if one is found, otherwise false.
+
+=cut
+
+sub choose_package_installed {
+	my $candidates = shift;
+	foreach my $pkg (@$candidates) {
+		return $pkg if Fink::Package->package_by_name($pkg)->is_any_installed;
+	}
+	return 0;
+}
+
+=item choose_package
+
+  my $po = choose_package $candidates;
+  my $po = choose_package $candidates, $will_install;
+  
+Pick between candidate packages which satisfy a dependency, using all
+means available. See choose_package_from_relatives for parameters.
+
+Returns a package object.
+
+=cut
+
+sub choose_package {
+	my $candidates = shift;
+	my $will_install = shift;
+	my $found = 0;		# Set to name of candidate, if one has been found
+
+	# Trivial case: only one candidate, nothing to be done, just use it.
+	if (@$candidates == 1) {
+		$found = $candidates->[0];
+	}
+
+	# Next, we check if by chance one of the candidates is already installed.
+	# This would be a different version from any of the alternative PkgVersions
+	# we looked at before, probably an upgrade is needed?
+	$found = choose_package_installed($candidates) if not $found;
+
+	# Next, check if a relative of a candidate has already been marked
+	# for installation (or is itself a dependency). If so, we use that
+	# candidate to fulfill the dep.
+	# This is a heuristic, but usually does exactly "the right thing".
+	$found = choose_package_from_relatives($candidates,
+		$will_install) if not $found;
+
+	# Now see if the user has set a regexp to match in fink.conf.
+	$found = choose_package_conf($candidates) if not $found;
+	
+	# As a last resort, ask the user!
+	$found = choose_package_ask($candidates) if not $found;
+	
+	return Fink::Package->package_by_name($found);
+}
+
+=item choose_pkgversion_marked
+
+  my $did_find = choose_pkgversion_marked $dep_graph, $queue_item, @pkgversions;
+
+Try to choose a PkgVersion to install, by choosing one already marked in the
+dependency graph.
+
+If a PkgVersion is chosen it is returned, and any necessary
+modifications made to the dependency graph and the current dependency queue
+item.
+
+Otherwise, a false value is returned.
+
+=cut
+
+sub choose_pkgversion_marked {
+	my ($deps, $item, @pvs) = @_;
+	for my $dp (@pvs) {
+		my $dname = $dp->get_name();
+		if (exists $deps->{$dname} and $deps->{$dname}->[PKGVER] == $dp) {
+			if ($deps->{$dname}->[OP] < $OP_INSTALL) {
+				$deps->{$dname}->[OP] = $OP_INSTALL;
+			}
+			# add a link
+			push @$item, $deps->{$dname};
+			return $dp;
+		}
+	}
+	return 0;
+}
+
+=item choose_pkgversion_installed
+
+  my $did_find = choose_pkgversion_installed $dep_graph, $dep_queue,
+    $queue_item, @pkgversions;
+
+Try to choose a PkgVersion to install, by choosing one already installed.
+
+If a PkgVersion is chosen it is returned, and any necessary
+modifications made to the dependency graph, the dependency queue and the
+current dependency queue item.
+
+Otherwise, a false value is returned.
+
+=cut
+
+sub choose_pkgversion_installed {
+	my ($deps, $queue, $item, @pvs) = @_;
+	foreach my $dp (@pvs) {
+		if ($dp->is_installed()) {
+			my $dname = $dp->get_name();
+			if (exists $deps->{$dname}) {
+				die "Internal error: node for $dname already exists\n";
+			}
+			# add node to graph
+			@{$deps->{$dname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+				$dname, Fink::Package->package_by_name($dname),
+				$dp, $OP_INSTALL, 2
+			);
+			# add a link
+			push @$item, $deps->{$dname};
+			# add to investigation queue
+			push @$queue, $dname;
+			return $dp;
+		}
+	}
+	return 0;
+}
+
+=item pvs2pkgnames
+
+  my @pkgnames = pvs2pkgnames @pvs;
+
+Given a set of PkgVersions, find the unique package names B<preserving order>.
+
+=cut
+
+sub pvs2pkgnames {
+	my %seen;
+	my @results;
+	for my $pv (@_) {
+		push @results, $pv->get_name unless $seen{$pv->get_name}++;
+	}
+	return @results;
+}
+
+=item choose_pkgversion_by_package
+
+  choose_pkgversion_by_package $dep_graph, $dep_queue, $queue_item,
+    @pkgversions;
+
+Choose a PkgVersion to install, by determining a preferred Package.
+
+Any necessary modifications will be made to the dependency graph, the
+dependency queue and the current dependency queue item.
+
+=cut
+
+sub choose_pkgversion_by_package {
+	my ($deps, $queue, $item, @pvs) = @_;
+	
+	# We turn our PkgVersions into a list of candidate package names,
+	my @candidates = pvs2pkgnames @pvs;
+	
+	# Find the best package
+	my $po = choose_package(\@candidates, sub { exists $deps->{$_->get_name} });
+	
+	# Find best version
+	my $pv = $po->resolve_version(@pvs);
+	
+	# add node to graph
+	@{$deps->{$po->get_name}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+	   $po->get_name, $po, $pv, $OP_INSTALL, 0
+	);
+	# add a link
+	push @$item, $deps->{$po->get_name};
+	# add to investigation queue
+	push @$queue, $po->get_name;
+}
+
+=item choose_pkgversion
+
+  choose_pkgversion $dep_graph, $dep_queue, $queue_item, @pkgversions;
+
+Choose a PkgVersion to install, using all available methods. The parameter
+@pkgversions is a list of alternative PkgVersions to choose from.
+
+Any necessary modifications will be made to the dependency graph, the
+dependency queue and the current dependency queue item.
+
+=cut
+
+sub choose_pkgversion {
+	my ($deps, $queue, $item, @pvs) = @_;	
+	return unless @pvs;		# skip empty lists
+	
+	# Check if any of the PkgVersions is already in the dep graph.
+	return if choose_pkgversion_marked($deps, $item, @pvs);
+
+	# Check if any of the PkgVersions is already installed
+	return if choose_pkgversion_installed($deps, $queue, $item, @pvs);
+	
+	# Find the best PkgVersion by finding the best Package
+	choose_pkgversion_by_package($deps, $queue, $item, @pvs);	
 }
 
 =back

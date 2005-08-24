@@ -1,3 +1,9 @@
+2005-08-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: New method to resolve the best version to install.
+	* Engine.pm: Finish factoring out alternative-resolution code. Over 250
+	lines are gone from real_install!
+
 2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Move some more parts of alternative resolution into functions.
