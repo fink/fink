@@ -11,6 +11,8 @@ Recommends: <<
  (%{Distribution} = 10.2-gcc3.3) storable-pm560 | storable-pm561, 
  apt (>= 0.5.4-41)
 <<
+Conflicts: gcc3.1 (= 1175-6)
+Replaces: gcc3.1 (= 1175-6)
 Essential: yes
 Source: @SOURCE@
 Source-MD5: @MD5@
@@ -51,6 +53,10 @@ DescPackaging: <<
  the setup script itself, but pointed at the testing directory.
  The second run of setup.sh properly points fink at the installed
  configuration file.
+
+ We are using Conflicts/Replaces against gcc3.1 so that the Fink gcc3.1 
+ package is removed (in favor of an Apple-supplied gcc 3.1, represented
+ by a virtual package).
 <<
 DescDetail: <<
 fink is the Fink project's package manager. It is responsible for
