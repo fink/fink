@@ -1,3 +1,8 @@
+2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	*  VirtPackage.pm: Add note about XCode Legacy Compilers to
+	description of gcc virtual packages
+
 2005-08-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: New method to resolve the best version to install.

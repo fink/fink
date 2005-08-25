@@ -1428,6 +1428,9 @@ Note that some versions of GCC are *not* installed by default
 when installing XCode.  Make sure you customize your install
 and check all GCC versions to ensure proper compatibility
 with Fink.
+
+Note also that older compilers for 10.4 can be obtained by installing
+the "XCode Legacy Compilers" package available at the same address.
 END
 		status           => $status
 	};
