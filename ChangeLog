@@ -1,5 +1,10 @@
 2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: Bumped package manager version to 0.24.10, a release
+	on branch_0_24
+
+2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* fink.info.in:  Use Conflicts/Replaces against gcc3.1 so that the 
 	Fink gcc3.1 package is removed (in favor of an Apple-supplied 
 	gcc 3.1, represented by a virtual package).
