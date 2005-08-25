@@ -1,3 +1,7 @@
+2005-08-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: check version-dep syntax in .info pkglist lines.
+
 2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	*  VirtPackage.pm: Add note about XCode Legacy Compilers to
