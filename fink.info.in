@@ -1,24 +1,50 @@
 Package: fink
 Version: @VERSION@
 Revision: @REVISION@
-Source: %n-%v.tar
-Source-MD5: @MD5@
-NoSourceDirectory: true
 Depends: base-files
+Suggests: <<
+ (%{Distribution} = 10.2-gcc3.3) term-readkey-pm560 | term-readkey-pm561
+ (%{Distribution} = 10.3) term-readkey-pm581 
+ (%{Distribution} = 10.4) term-readkey-pm586
+<<
+Recommends: <<
+ (%{Distribution} = 10.2-gcc3.3) storable-pm560 | storable-pm561, 
+ apt (>= 0.5.4-41)
+<<
+Conflicts: gcc3.1 (= 1175-6)
+Replaces: gcc3.1 (= 1175-6)
 Essential: yes
-Suggests: storable-pm, term-readkey-pm
-CompileScript: ./setup.sh %p
+Source: @SOURCE@
+Source-MD5: @MD5@
+CompileScript: <<
+ make test
+ ./setup.sh %p
+<<
 InstallScript: ./install.sh %i
 PostInstScript: <<
  %p/lib/fink/postinstall.pl
- fink index
+ %p/bin/fink --no-use-binary-dist index
 <<
 #
 Description: The Fink package manager
+DescPackaging: <<
+ Don't use mirror:sourceforge so that older package manager versions
+ which do not know that mirror can still selfupdate.
+
+ Must put "make test" before "./setup.sh %p", because make test runs
+ the setup script itself, but pointed at the testing directory.
+ The second run of setup.sh properly points fink at the installed
+ configuration file.
+
+ We are using Conflicts/Replaces against gcc3.1 so that the Fink gcc3.1 
+ package is removed (in favor of an Apple-supplied gcc 3.1, represented
+ by a virtual package).
+<<
 DescDetail: <<
 fink is the Fink project's package manager. It is responsible for
 downloading and compiling source and building binary packages from
 it. Binary package handling is then delegated to dpkg.
 <<
 License: GPL
-Maintainer: Max Horn <max@quendi.de>
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://fink.sourceforge.net/
