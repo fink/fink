@@ -292,11 +292,10 @@ END { }				# module clean-up code here (global destructor)
 #   + Error if %i used in dpkg install-time scripts
 #   + Warn if non-ASCII chars in any field
 #   + Check syntax of dpkg Depends-style fields
+#	+ validate dependency syntax
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
-#	- validate dependencies, e.g. "foo (> 1.0-1)" should generate an error since
-#	  it uses ">" instead of ">>".
 #	- correct format of Shlibs: (including misuse of %v-%r)
 #	- use of %n in SplitOff:Package: (should be %N)
 #	- use of SplitOff:Depends: %n (should be %N (tracker Bugs #622810)
@@ -813,17 +812,31 @@ sub validate_info_component {
 
 		# check dpkg Depends-style field syntax
 		if ($pkglist_fields{$field}) {
-			(my $pkglist = $value) =~ tr/\n//d; # convert to sinle line
-			foreach (split /[,|]/, $pkglist) {
+			(my $pkglist = $value) =~ tr/\n//d; # convert to single line
+			foreach my $atom (split /[,|]/, $pkglist) {
+				$atom =~ s/\A\s*//;
+				$atom =~ s/\s*\Z//;
 				# each atom must be  '(optional cond) pkg (optional vers)'
-				unless (/\A\s*(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)\s*\Z/) {
-					print "Warning: invalid dependency \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+				unless ($atom =~ /\A(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)/) {
+					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
 				my $cond = $1;
 				# no logical AND (OR would be split() and give broken atoms)
 				if (defined $cond and $cond =~ /&/) {
-					print "Warning: invalid dependency \"$_\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
+				}
+				if (my($verspec) = $atom =~ /.*\(\s*(.*?)\s*\)\Z/) {
+					# yes, we *do* need the seemingly useless initial .* there
+					if (my($ver) = $verspec =~ /^(?:<<|<=|=|!=|>=|>>)\s*(.*)/) {
+						unless ($ver =~ /\A\S+\Z/) {
+							print "Warning: invalid version in \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
+							$looks_good = 0;
+						}
+					} else {
+						print "Warning: invalid version comparator in \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
+						$looks_good = 0;
+					}
 				}
 			}
 		}

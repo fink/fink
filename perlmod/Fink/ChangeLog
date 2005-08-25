@@ -1,6 +1,10 @@
+2005-08-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: check version-dep syntax in .info pkglist lines.
+
 2005-08-23  Daniel Macks  <dmacks@netspace.org>
 
-	* Validation.pm: stoe error messages during the .deb parsing, then
+	* Validation.pm: store error messages during the .deb parsing, then
 	later display a single list of all offending files for each msg.
 
 2005-08-23  Daniel Macks  <dmacks@netspace.org>
