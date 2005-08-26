@@ -217,6 +217,8 @@ In this technique, the first line of a heredoc establishes the number of
 whitespace characters that are removed from subsequent lines. Defaults to
 false.
 
+This option also B<DOES NOT> allow RFC-822 multi-line syntax.
+
 =back
 
 =cut
@@ -251,12 +253,11 @@ sub read_properties_lines {
 	$lastkey = "";
 	$heredoc = 0;
 	$linenum = 0;
-	my ($spacecount, $hdoc_spacecount); # Both top-level and heredocs
+	my $hdoc_spacecount; # number of spaces to remove in heredoc
 	
 	foreach (@lines) {
 		$linenum++;
 		chomp;
-		_remove_space(\$spacecount) if ($opts{remove_space});
 			
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
@@ -287,6 +288,8 @@ sub read_properties_lines {
 				$heredoc++ if (/<<\s*$/ and not /^\s*#/);
 			}
 		} else {
+			s/^\s+// if $opts{remove_space};
+			
 			next if /^\s*\#/;		# skip comments
 			next if /^\s*$/;		# skip empty lines
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {

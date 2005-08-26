@@ -1,3 +1,8 @@
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Don't exit method with 'next'.
+	* Services.pm, FinkVersion.pm.in: Remove RFC-822 from Info3, yay!
+
 2005-08-25  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: check version-dep syntax in .info pkglist lines.

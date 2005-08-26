@@ -1113,11 +1113,11 @@ sub packages_from_info_file {
 	my $pkgname = $properties->{package};
 	unless ($pkgname) {
 		print_breaking_stderr "No package name in $filename";
-		next;
+		return ();
 	}
 	unless ($properties->{version}) {
 		print_breaking_stderr "No version number for package $pkgname in $filename";
-		next;
+		return ();
 	}
 	# fields that should be converted from multiline to
 	# single-line
