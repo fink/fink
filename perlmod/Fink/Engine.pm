@@ -994,7 +994,6 @@ EOF
 		my @packages = get_pkglist("remove", @_);
 		Fink::PkgVersion::phase_deactivate(@packages);
 	}
-	Fink::Status->invalidate();
 }
 
 sub get_pkglist {
@@ -1154,7 +1153,6 @@ EOF
 		my @packages = get_pkglist("purge", @_);
 		Fink::PkgVersion::phase_purge(@packages);
 	}
-	Fink::Status->invalidate();
 }
 
 sub cmd_validate {

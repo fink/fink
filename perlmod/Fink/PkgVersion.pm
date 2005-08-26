@@ -3413,7 +3413,7 @@ sub phase_activate {
 		}
 	}
 
-	Fink::Status->invalidate();
+	Fink::PkgVersion->dpkg_changed;
 }
 
 ### deactivate
@@ -3446,7 +3446,7 @@ sub phase_deactivate {
 		}
 	}
 
-	Fink::Status->invalidate();
+	Fink::PkgVersion->dpkg_changed;
 }
 
 ### deactivate recursive
@@ -3461,7 +3461,7 @@ sub phase_deactivate_recursive {
 			die "can't batch-remove packages: @packages\n";
 		}
 	}
-	Fink::Status->invalidate();
+	Fink::PkgVersion->dpkg_changed;
 }
 
 ### purge
@@ -3479,7 +3479,7 @@ sub phase_purge {
 			die "can't batch-purge packages: @packages\n";
 		}
 	}
-	Fink::Status->invalidate();
+	Fink::PkgVersion->dpkg_changed;
 }
 
 ### purge recursive
@@ -3494,7 +3494,7 @@ sub phase_purge_recursive {
 			die "can't batch-purge packages: @packages\n";
 		}
 	}
-	Fink::Status->invalidate();
+	Fink::PkgVersion->dpkg_changed;
 }
 
 # create an exclusive lock for the %f of the parent using dpkg
@@ -4219,6 +4219,20 @@ sub info_level {
 	return $parent->param_default('infon', 1);
 }
 
+=item dpkg_changed
+
+  Fink::PkgVersion->dpkg_changed;
+
+This method should be called whenever the state of dpkg has changed,
+ie: whenever packages are installed or removed. It makes sure that caches
+of dpkg information are regenerated.
+
+=cut
+
+sub dpkg_changed {
+	Fink::Status->invalidate();
+	# Shlibs?
+}
 =back
 
 =cut

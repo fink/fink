@@ -1,5 +1,10 @@
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: Abstract out invalidating caches when dpkg state changes.
+	* Engine.pm: Remove redundant invalidate calls.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Document some methods, add is_locally_present.
 	* Engine.pm: Revamp prefetching. Also make 'fink build' always build
 	something unless there's a .deb presen that has been built by the local
