@@ -1860,22 +1860,9 @@ sub real_install {
 			}
 		}
 	}
-
-	&call_queue_clear;
-	# fetch all packages that need fetching
-	foreach $pkgname (sort keys %deps) {
-		$item = $deps{$pkgname};
-		next if $item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed();
-		if (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD) {
-			&call_queue_add([
-				$item->[PKGVER],
-				$deb_from_binary_dist && $item->[PKGVER]->is_aptgetable()
-					? 'phase_fetch_deb'
-					: 'phase_fetch',
-				 1, $dryrun ]);
-		}
-	}
-	&call_queue_clear;
+	
+	# Pre-fetch all the stuff we'll need
+	prefetch($deb_from_binary_dist, $dryrun, values %deps);
 
 	# if we were really in fetch or dry-run modes, stop here
 	return if $fetch_only || $dryrun;
@@ -2856,6 +2843,62 @@ sub choose_pkgversion {
 	
 	# Find the best PkgVersion by finding the best Package
 	choose_pkgversion_by_package($deps, $queue, $item, @pvs);	
+}
+
+=item prefetch
+
+  prefetch $use_bindist, $dryrun, @dep_items;
+
+For each of the given deps, determine if we'll need to fetch the source or
+download the .deb via apt-get, and then do all the fetching.
+
+=cut
+
+sub prefetch {
+	my ($use_bindist, $dryrun, @dep_items) = @_;
+	
+	&call_queue_clear;
+	
+	my ($FETCH_NONE, $FETCH_SRC, $FETCH_APTGET) = 0..2;
+	foreach my $dep (@dep_items) {
+		my $action;
+		
+		# What action do we take?
+		if (grep { $dep->[OP] == $_ } ($OP_REINSTALL, $OP_INSTALL)) {
+			if ($dep->[PKGVER]->is_installed || $dep->[PKGVER]->is_present) {
+				$action = $FETCH_NONE;
+			} elsif ($use_bindist && $dep->[PKGVER]->is_aptgetable) {
+				$action = $FETCH_APTGET;
+			} elsif ($dep->[OP] == $OP_REINSTALL) {
+				# Shouldn't get here!
+				die "Can't reinstall a package without a .deb\n";
+			} else {
+				$action = $FETCH_SRC;
+			}
+		} elsif (grep { $dep->[OP] == $_ }
+						($OP_FETCH, $OP_BUILD, $OP_REBUILD)) {
+			$action = $FETCH_SRC;
+		} else {
+			die "Don't know about operation number $dep->[OP]!\n";
+		}
+		
+		# Find the corresponding function
+		my $func_name;
+		if ($action == $FETCH_NONE) {
+			next;
+		} elsif ($action == $FETCH_SRC) {
+			$func_name = 'phase_fetch';
+		} elsif ($action == $FETCH_APTGET) {
+			$func_name = 'phase_fetch_deb';
+		} else {
+			die "Don't know about fetch action number $action!\n";
+		}
+		
+		# Queue it
+		&call_queue_add([ $dep->[PKGVER], $func_name, 1, $dryrun ]);
+	}
+	
+	&call_queue_clear;
 }
 
 =back

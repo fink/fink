@@ -1,5 +1,10 @@
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Attempt to make prefetching work the way it should, someone
+	who knows the dep engine should look at this.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Package.pm: Don't exit method with 'next'.
 	* Services.pm, FinkVersion.pm.in: Remove RFC-822 from Info3, yay!
 
