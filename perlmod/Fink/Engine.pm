@@ -34,7 +34,6 @@ use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &get_term_width);
 use Fink::Configure qw(&spotlight_warning);
 use Fink::Package;
-use Fink::Shlibs;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch $dbpath);
 use File::Find;
@@ -232,7 +231,6 @@ sub process {
 	# read package descriptions if needed
 	if ($pkgflag) {
 		Fink::Package->require_packages();
-		Fink::Shlibs->scan_all();
 	}
 
 	if (Fink::Config::get_option("maintainermode")) {
@@ -343,7 +341,6 @@ EOF
 		Fink::Package->forget_packages();
 	}
 	Fink::Package->update_db(no_load => 1, no_fastload => 1);
-	Fink::Shlibs->update_shlib_db();
 }
 
 sub cmd_configure {
@@ -461,7 +458,6 @@ sub do_real_list {
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
-	Fink::Shlibs->scan_all();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
@@ -1028,7 +1024,6 @@ EOF
 	}
 
 	Fink::Package->require_packages();
-	Fink::Shlibs->scan_all(quiet => 1);
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
@@ -2026,11 +2021,8 @@ sub real_install {
 			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
 			# Reinstall buildconficts after the build
 			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
-			### Update shlibs after each install for next build
-			Fink::Shlibs->forget_packages();
-			Fink::Shlibs->scan_all(quiet => 1);
-			# Mark all installed items as installed
 
+			# Mark all installed items as installed
 			foreach $pkg (@batch_install) {
 					$deps{$pkg->get_name()}->[FLAG] |= 2;
 			}
@@ -2198,7 +2190,6 @@ EOF
 	}
 
 	Fink::Package->require_packages();
-	Fink::Shlibs->scan_all();
 	@_ = @ARGV;
 	@ARGV = @temp_ARGV;
 

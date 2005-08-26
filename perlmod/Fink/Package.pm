@@ -32,7 +32,6 @@ use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
-use Fink::Shlibs;
 use File::Find;
 use File::Basename;
 use Symbol qw();
@@ -445,9 +444,6 @@ sub require_packages {
 # 1 => shlibs
 # 2 => package
 	$class->load_packages unless defined $packages;
-#	if (!$have_shlibs && $oper != 2) {
-#		Fink::Shlibs->scan_all(@_);
-#	}
 }
 
 =item check_dbdirs

@@ -1,5 +1,19 @@
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Bootstrap.pm, Engine.pm, Package.pm, SelfUpdate.pm: Remove unneeded
+	references to Shlibs.
+	* PkgVersion.pm: Remove unused method for getting Depends from deb, a more
+	general solution for all pkglists is needed, see bug #1249916.
+	* PkgVersion.pm: When dpkg status changes, invalidate Shlibs.
+	* PkgVersion.pm: Cleanup of Shlibs getting.
+	* Shlibs.pm: Don't use a DB, since it the shlibs list needs to be
+	regenerated so often (every time a package is installed or removed!).
+	Instead re-generate on demand, like Fink::Status.
+	* Shlibs.pm: Remove random autoflush until somebody tells me what it's for,
+	or it's documented.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Abstract out invalidating caches when dpkg state changes.
 	* Engine.pm: Remove redundant invalidate calls.
 

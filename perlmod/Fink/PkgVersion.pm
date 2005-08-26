@@ -45,6 +45,7 @@ use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
 use Fink::Notify;
+use Fink::Shlibs;
 use Fink::Validation;
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
@@ -2881,15 +2882,15 @@ EOF
 		import File::Find;
 	};
 
-# Add a dependency on the kernel version (if not already present).
-#   We depend on the major version only, in order to prevent users from
-#   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
-#   value.
-# TODO: move all this kernel-dependency stuff into pkglist()
-# FIXME: Actually, if the package states a kernel version we should combine
-#   the version given by the package with the one we want to impose.
-#   Instead, right now, we just use the package's version but this means
-#   that a package will need to be revised if the kernel major version changes.
+	# Add a dependency on the kernel version (if not already present).
+	#   We depend on the major version only, in order to prevent users from
+	#   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
+	#   value.
+	# TODO: move all this kernel-dependency stuff into pkglist()
+	# FIXME: Actually, if the package states a kernel version we should combine
+	#   the version given by the package with the one we want to impose.
+	#   Instead, right now, we just use the package's version but this means
+	#   that a package will need to be revised if the kernel major version changes.
 
 	my $kernel = lc((uname())[0]);
 	my $kernel_version = lc((uname())[2]);
@@ -2903,45 +2904,45 @@ EOF
 	}
 
 	my $has_kernel_dep;
-	my $struct = &pkglist2lol($self->get_binary_depends()); 
+	my $deps = &pkglist2lol($self->get_binary_depends()); 
 
-	### 1) check for 'AddShlibDeps: true' else continue
+	foreach (@$deps) {
+		foreach (@$_) {
+			$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
+		}
+	}
+	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
+
+	### Automatically add dependencies based on shlibs, if requested
 	if ($self->param_boolean("AddShlibDeps")) {
-		print "Writing shared library dependencies...\n";
+		print_breaking "Writing shared library dependencies...";
 
-		### 2) get a list to replace it with
-		my @filelist = ();
+		# Get all the files to be installed
+		my @filelist;
 		my $wanted = sub {
 			if (-f) {
 				# print "DEBUG: file: $File::Find::fullname\n";
 				push @filelist, $File::Find::fullname;
 			}
 		};
-		## Might need follow_skip but then need to change fullname
-		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 }, "$destdir"."$basepath");
+		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 },
+			"$destdir$basepath"); # Do we want to use follow_skip instead?
 
-		my @shlib_deps = Fink::Shlibs->get_shlibs($pkgname, @filelist);
-
-		### foreach loop and push into @$struct
-		### 3) replace it in the debian control file
-		foreach my $shlib_dep (@shlib_deps) {
-			push @$struct, ["$shlib_dep"];
+		# Add the deps based on the files
+		foreach my $shlib_dep (Fink::Shlibs->get_shlibs($self, @filelist)) {
+			push @$deps, [ $shlib_dep ];
 			if ($config->verbosity_level() > 2) {
 				print "- Adding $shlib_dep to 'Depends' line\n";
 			}
 		}
 	}
-	foreach (@$struct) {
-		foreach (@$_) {
-			$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
-		}
-	}
-	push @$struct, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
+	
+	$control .= "Depends: " . &lol2pkglist($deps) . "\n";
 	if (Fink::Config::get_option("maintainermode")) {
-		print "- Depends line is: " . &lol2pkglist($struct) . "\n";
+		print "- Depends line is: " . &lol2pkglist($deps) . "\n";
 	}
-	$control .= "Depends: " . &lol2pkglist($struct) . "\n";
 
+	### Look at other pkglists
 	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
 										 Recommends Suggests Enhances)) {
 		if ($self->has_pkglist($field)) {
@@ -4053,25 +4054,6 @@ sub get_ruby_dir_arch {
 	return ($rubydirectory, $rubyarchdir, $rubycmd);
 }
 
-### FIXME shlibs, crap no longer needed keeping for now incase the pdb needs it
-sub get_debdeps {
-	my $wantedpkg = shift;
-	my $field = "Depends";
-	my $deps = "";
-
-	### get deb file
-	my $deb = $wantedpkg->find_debfile();
-
-	if (-f $deb) {
-		$deps = `dpkg-deb -f $deb $field 2> /dev/null`;
-		chomp($deps);
-	} else {
-		die "Can't find deb file: $deb\n";
-	}
-
-	return $deps;
-}
-
 =item get_install_directory
 
   my $dir = $pv->get_install_directory;
@@ -4231,7 +4213,7 @@ of dpkg information are regenerated.
 
 sub dpkg_changed {
 	Fink::Status->invalidate();
-	# Shlibs?
+	Fink::Shlibs->invalidate();
 }
 =back
 

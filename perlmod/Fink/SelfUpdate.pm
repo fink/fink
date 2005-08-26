@@ -30,7 +30,6 @@ use Fink::Config qw($config $basepath $dbpath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
-use Fink::Shlibs;
 use Fink::FinkVersion qw(&pkginfo_version);
 use Fink::Mirror;
 use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
@@ -516,14 +515,8 @@ sub do_finish {
 	# forget the package info
 	Fink::Package->forget_packages();
 
-	# delete the old shlibs DB
-	if (-e "$dbpath/shlibs.db") {
-		unlink "$dbpath/shlibs.db";
-	}
-
 	# ...and then read it back in
 	Fink::Package->require_packages();
-	Fink::Shlibs->scan_all();
 
 	# update the package manager itself first if necessary (that is, if a
 	# newer version is available).
