@@ -1,5 +1,12 @@
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: Document some methods, add is_locally_present.
+	* Engine.pm: Revamp prefetching. Also make 'fink build' always build
+	something unless there's a .deb presen that has been built by the local
+	Fink.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: Attempt to make prefetching work the way it should, someone
 	who knows the dep engine should look at this.
 

@@ -1457,6 +1457,31 @@ Get whether or not this package is available via apt-get.
 	}
 }
 
+=item is_locally_present
+
+  my $bool = $pv->is_locally_present;
+
+Find whether or not there is a .deb built locally which can be used to
+install this package.
+
+=cut
+
+sub is_locally_present {
+	my $self = shift;
+	
+	my $deb = $self->find_debfile;
+	return (defined $deb && $deb !~ m,^$basepath/var/cache/apt/archives,);
+}
+
+
+=item is_present
+
+  my $bool = $pv->is_present;
+
+Find whether or not there is an existing .deb that can be used to install
+this package.
+
+=cut
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
@@ -1511,8 +1536,14 @@ sub find_tarball {
 	return undef;
 }
 
-### binary package finding
+=item find_debfile
 
+  my $path = $pv->find_debfile;
+
+Find a path to an existing .deb for this package. If no such .deb exists,
+return undef.
+
+=cut
 
 sub find_debfile {
 	my $self = shift;

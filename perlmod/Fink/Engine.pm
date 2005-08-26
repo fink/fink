@@ -1657,7 +1657,7 @@ sub real_install {
 			next;
 		}
 		# for build, also skip if present, but not installed
-		if ($op == $OP_BUILD and $package->is_present()) {
+		if ($op == $OP_BUILD and $package->is_locally_present()) {
 			next;
 		}
 		# if asked to reinstall but have no .deb, have to rebuild it
@@ -1672,7 +1672,7 @@ sub real_install {
 			$pkgname, Fink::Package->package_by_name($pkgname),
 			$package, $op, 1
 		);
-		$to_be_rebuilt{$pkgname} = ($op == $OP_REBUILD);
+		$to_be_rebuilt{$pkgname} = ($op == $OP_REBUILD || $op == $OP_BUILD);
 	}
 
 	@queue = sort keys %deps;
@@ -1789,7 +1789,7 @@ sub real_install {
 		} elsif ($item->[FLAG] == 1) {
 			push @requested, $pkgname;
 		}
-		if ($item->[OP] == $OP_REBUILD or not $item->[PKGVER]->is_present()) {
+		if ($item->[OP] == $OP_REBUILD || $item->[OP] == $OP_BUILD || not $item->[PKGVER]->is_present()) {
 			$willbuild = 1 unless ($item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed());
 		}
 	}
@@ -2859,43 +2859,31 @@ sub prefetch {
 	
 	&call_queue_clear;
 	
-	my ($FETCH_NONE, $FETCH_SRC, $FETCH_APTGET) = 0..2;
 	foreach my $dep (@dep_items) {
-		my $action;
+		my $func;
 		
 		# What action do we take?
 		if (grep { $dep->[OP] == $_ } ($OP_REINSTALL, $OP_INSTALL)) {
 			if ($dep->[PKGVER]->is_installed || $dep->[PKGVER]->is_present) {
-				$action = $FETCH_NONE;
+				next; # We have what we need, skip it
 			} elsif ($use_bindist && $dep->[PKGVER]->is_aptgetable) {
-				$action = $FETCH_APTGET;
-			} elsif ($dep->[OP] == $OP_REINSTALL) {
-				# Shouldn't get here!
+				# Use apt
+				&call_queue_add([ $dep->[PKGVER], 'phase_fetch_deb',
+								1, $dryrun ]);
+			} elsif ($dep->[OP] == $OP_REINSTALL) {	# Shouldn't get here!
 				die "Can't reinstall a package without a .deb\n";
 			} else {
-				$action = $FETCH_SRC;
+				# Fetch source
+				&call_queue_add([ $dep->[PKGVER], 'phase_fetch',
+								1, $dryrun ]);
 			}
 		} elsif (grep { $dep->[OP] == $_ }
 						($OP_FETCH, $OP_BUILD, $OP_REBUILD)) {
-			$action = $FETCH_SRC;
+			# Fetch source
+			&call_queue_add([ $dep->[PKGVER], 'phase_fetch', 1, $dryrun ]);
 		} else {
 			die "Don't know about operation number $dep->[OP]!\n";
 		}
-		
-		# Find the corresponding function
-		my $func_name;
-		if ($action == $FETCH_NONE) {
-			next;
-		} elsif ($action == $FETCH_SRC) {
-			$func_name = 'phase_fetch';
-		} elsif ($action == $FETCH_APTGET) {
-			$func_name = 'phase_fetch_deb';
-		} else {
-			die "Don't know about fetch action number $action!\n";
-		}
-		
-		# Queue it
-		&call_queue_add([ $dep->[PKGVER], $func_name, 1, $dryrun ]);
 	}
 	
 	&call_queue_clear;
