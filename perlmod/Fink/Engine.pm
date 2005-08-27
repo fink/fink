@@ -338,7 +338,7 @@ EOF
 	# Need to auto-index if specifically running 'fink index'!
 	$config->set_param("NoAutoIndex", 0);
 	if ($full) {
-		Fink::Package->forget_packages();
+		Fink::Package->forget_packages({ disk => 1 });
 	}
 	Fink::Package->update_db(no_load => 1, no_fastload => 1);
 }
@@ -544,7 +544,7 @@ sub do_real_list {
 			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
 		}
 		if (defined $pkgtree) {
-			next unless $vo->get_tree($vo) =~ /\b\Q$pkgtree\E\b/i;
+			next unless $vo->in_tree($pkgtree);
 		}
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
@@ -2184,6 +2184,7 @@ described in the Fink Packaging Manual:
   allversions  - List of all known versions of the package name in order.
                  Currently-installed version (if any) is prefixed with "i".
   env          - Shell environment in effect during pkg construction.
+  trees        - Trees in which this package (same version) exists.
 
 EOF
 		exit 0;
@@ -2210,7 +2211,7 @@ EOF
 		if ($wantall or not (@fields or @percents)) {
 			@fields = (qw/
 					   infofile package epoch version revision parent family
-					   status allversions
+					   status allversions trees
 					   description type license maintainer
 					   pre-depends depends builddepends
 					   provides replaces conflicts buildconflicts
@@ -2408,6 +2409,8 @@ EOF
 				my $value = $pkg->get_env;
 				printf "%s:\n", $_;
 				print map { " $_=".$value->{$_}."\n" } sort keys %$value;
+			} elsif ($_ eq 'trees') {
+				printf "%s: %s\n", $_, join(' ', $pkg->get_trees);
 			} else {
 				die "Unknown field $_\n";
 			}

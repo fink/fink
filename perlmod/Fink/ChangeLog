@@ -1,5 +1,19 @@
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Don't just promise to remove on-disk cache in 'index --full',
+	actually do it.
+	* Package.pm, PkgVersion.pm: Don't allow user to interrupt when Storable
+	is loading part of the DB, to eliminate spurious warnings about corruption.
+	* Package.pm, PkgVersion.pm: Remove dead code related to merging PkgVersions
+	into the DB. Make new merge method to merge trees.
+	* PkgVersion.pm: Add new methods to examine trees, also store trees in
+	index.db.
+	* Engine.pm: Use new in_tree method in list. Add 'trees' item to dumpinfo.
+	
+	*** DB FORMAT CHANGE, YOU WILL NEED A FULL REINDEX ***
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Bootstrap.pm, Engine.pm, Package.pm, SelfUpdate.pm: Remove unneeded
 	references to Shlibs.
 	* PkgVersion.pm: Remove unused method for getting Depends from deb, a more

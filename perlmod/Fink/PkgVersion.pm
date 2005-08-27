@@ -131,40 +131,50 @@ different PkgVersion objects. Returns this object.
 =cut
 
 our %shared_loads;
+
+{
+	# Some things we don't want to load, if we'd rather keep what's already in
+	# the database.
+	my %dont_load = map { $_ => 1 } qw(_trees);
 	
-sub load_fields {
-	my $self = shift;
-	return $self if !$self->has_param('_backed_file')
-		|| $self->param('_backed_loaded')
-		|| !eval { require Storable };
-	
-	$self->set_param('_backed_loaded', 1);
-	my $file = $self->param('_backed_file');
-	my $loaded;
-	if (exists $shared_loads{$file}) {
+	sub load_fields {
+		my $self = shift;
+		return $self if !$self->has_param('_backed_file')
+			|| $self->param('_backed_loaded')
+			|| !eval { require Storable };
+		
+		$self->set_param('_backed_loaded', 1);
+		my $file = $self->param('_backed_file');
+		my $loaded;
+		if (exists $shared_loads{$file}) {
 #			print "Sharing PkgVersion " . $self->get_fullname . " from $file\n";
-		$loaded = $shared_loads{$file};
-	} else {
+			$loaded = $shared_loads{$file};
+		} else {
 #			print "Loading PkgVersion " . $self->get_fullname . " from: $file\n";
-		eval { $loaded = Storable::lock_retrieve($file); };
-		if ($@ || !defined $loaded) {
-			die "It appears that part of Fink's package database is corrupted "
-				. "or missing. Please run 'fink index' to correct the "
-				. "problem.\n";
+			eval {
+				local $SIG{INT} = 'IGNORE'; # No user interrupts
+				$loaded = Storable::lock_retrieve($file);
+			};
+			if ($@ || !defined $loaded) {
+				die "It appears that part of Fink's package database is corrupted "
+					. "or missing. Please run 'fink index' to correct the "
+					. "problem.\n";
+			}
+			$shared_loads{$file} = $loaded;
 		}
-		$shared_loads{$file} = $loaded;
+		
+		return $self unless exists $loaded->{$self->get_fullname};
+		
+		# Insert the loaded fields
+		my $href = $loaded->{$self->get_fullname};
+		my @load_keys = grep { !exists $dont_load{$_} } keys %$href;
+		@$self{@load_keys} = @$href{@load_keys};
+		
+		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
+		$self->_set_destdirs;
+		
+		return $self;
 	}
-	
-	return $self unless exists $loaded->{$self->get_fullname};
-	
-	# Insert the loaded fields
-	my $href = $loaded->{$self->get_fullname};
-	@$self{keys %$href} = values %$href;
-	
-	# We need to update %d, %D, %i and %I to adapt to changes in buildpath
-	$self->_set_destdirs;
-	
-	return $self;
 }
 
 # PRIVATE: $pv->_set_destdirs
@@ -197,7 +207,7 @@ Get the minimum fields necessary for inserting a PkgVersion.
 {
 	# Fields required to add a package to $packages
 	my @keepfields = qw(_name _epoch _version _revision _filename
-		_pkglist_provides essential);
+		_pkglist_provides essential _trees);
 		
 	sub get_init_fields {
 		my $self = shift;
@@ -252,7 +262,7 @@ sub initialize {
 				$self->{_section}  = 'unknown';
 				$self->{_debpath}  = '/tmp';
 				$self->{_debpaths} = ['/tmp'];
-				$self->{_tree}     = 'unknown';
+				$self->{_trees}    = [ 'unknown' ];
 			} else {
 				die "Path \"$filename\" contains no finkinfo directory!\n";
 			}
@@ -272,8 +282,8 @@ sub initialize {
 			}
 			
 			# determine the package tree ("stable", "unstable", etc.)
-					@parts = split(/\//, substr($filename,length("$basepath/fink/dists/")));
-			$self->{_tree}	= $parts[0];
+			@parts = split(/\//, substr($filename,length("$basepath/fink/dists/")));
+			$self->{_trees}	= [ $parts[0] ];
 		}
 	} else {
 		# for dummy descriptions generated from dpkg status data alone
@@ -283,7 +293,7 @@ sub initialize {
 		$self->{_debpaths}  = [];
 		
 		# assume "binary" tree
-		$self->{_tree} = "binary";
+		$self->{_trees} = [ "binary" ];
 	}
 
 	# some commonly used stuff
@@ -775,14 +785,39 @@ sub add_splitoff {
 	push @{$self->{_splitoffs_obj}}, @splitoffs;
 }
 
-### merge duplicate package description
+=item merge
+
+  $new_pv->merge($old_pv);
+
+When one PkgVersion supplants another one, some properties of the old one may
+still be relevant. This call method gives the new one a chance to examine the
+old one and take things from it.
+
+=cut
 
 sub merge {
-	my $self = shift;
-	my $dup = shift;
+	my ($self, $old) = @_;
 	
-	print "Warning! Not a dummy package\n" if $self->is_type('dummy');
-	push @{$self->{_debpaths}}, @{$dup->{_debpaths}};
+	# Insert new trees
+	{
+		my %seen = map { $_ => 1 } $self->get_trees;
+		foreach my $tree ($old->get_trees) {
+			unshift @{$self->{_trees}}, $tree unless $seen{$tree}++;
+		}
+	}
+	
+	# FIXME: Should we merge in the debpaths, as we (possibly) once did? It
+	# would make sense, since a deb in the wrong tree should still be fine.
+	# *BUT*, it would require storing the debpaths in the index.db, that
+	# might be overkill. (Will UseBinaryDist find them anyhow?)
+	
+### NOTE: This method used to do something different, and it looks
+### like that code path is dead. Code is left here until we're sure.
+#	my $self = shift;
+#	my $dup = shift;
+#	
+#	print "Warning! Not a dummy package\n" if $self->is_type('dummy');
+#	push @{$self->{_debpaths}}, @{$dup->{_debpaths}};
 }
 
 ### bootstrap helpers
@@ -966,12 +1001,47 @@ sub get_instsize {
 	return $size;
 }
 
+=item get_tree
+
+  my $tree = $pv->get_tree;
+
+Get the last (highest priority) tree in which this package can be found.
+
+=cut
+
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub get_tree {
 	my $self = shift;
-	return $self->{_tree};
+	return( ($self->get_trees)[-1] );
 }
+
+=item get_trees
+
+  my @trees = $pv->get_trees;
+
+Get a list of every tree in which this package can be found.
+
+=cut
+
+sub get_trees {
+	my $self = shift;
+	return @{$self->{_trees}};
+}
+
+=item in_tree
+
+  my $bool = $pv->in_tree($tree);
+
+Get whether or not this package can be found in the given tree.
+
+=cut
+
+sub in_tree {
+	my ($self, $tree) = @_;
+	return scalar(grep { $_ eq $tree } $self->get_trees);
+}
+
 
 ### other accessors
 

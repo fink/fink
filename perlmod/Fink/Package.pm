@@ -147,36 +147,42 @@ sub add_version {
 	my $version_object = shift;
 	
 	my $version = $version_object->get_fullversion();
-	if (exists $self->{_versions}->{$version} 
-		&& $self->{_versions}->{$version}->is_type('dummy') ) {
-		$self->{_versions}->{$version}->merge($version_object);
-	} else {
-		# $pv->fullname is currently treated as unique, even though it won't be
-		# if the version is the same but epoch isn't. So let's make sure.
-		delete $self->{_versions}->{$version};
-		my $fullname = $version_object->get_fullname();
-		
-		# noload
-		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions(1)) {
-			# avoid overhead of allocating for and storing the grep
-			# results in if() since it's rare we'll need it
-			my $msg = "A package name is not allowed to have the same ".
-				"version-revision but different epochs: $fullname\n";
-			foreach (
-				grep { $_->get_fullname() eq $fullname } $self->get_all_versions(),
-				$version_object
-			) {
-				my $infofile = $_->get_info_filename();
-				$msg .= sprintf "  epoch %d\t%s\n", 
-					$_->get_epoch(),
-					length $infofile ? "fink virtual or dpkg status" : $infofile;
-			};
-			die $msg;
-		}
-		
-		$self->{_versions}->{$version} = $version_object;
-	}
 
+### FIXME: It doesn't look like this can occur, is it dead code?
+#	if (exists $self->{_versions}->{$version} 
+#		&& $self->{_versions}->{$version}->is_type('dummy') ) {
+#		$self->{_versions}->{$version}->merge($version_object);
+	
+	if (exists $self->{_versions}->{$version}) {
+		# Use the new version, but merge in the old one
+		my $old = $self->{_versions}->{$version};
+		delete $self->{_versions}->{$version};
+		$version_object->merge($old);
+	}
+	
+	# $pv->fullname is currently treated as unique, even though it won't be
+	# if the version is the same but epoch isn't. So let's make sure.
+	my $fullname = $version_object->get_fullname();
+	
+	# noload
+	if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions(1)) {
+		# avoid overhead of allocating for and storing the grep
+		# results in if() since it's rare we'll need it
+		my $msg = "A package name is not allowed to have the same ".
+			"version-revision but different epochs: $fullname\n";
+		foreach (
+			grep { $_->get_fullname() eq $fullname } $self->get_all_versions(),
+			$version_object
+		) {
+			my $infofile = $_->get_info_filename();
+			$msg .= sprintf "  epoch %d\t%s\n", 
+				$_->get_epoch(),
+				length $infofile ? "fink virtual or dpkg status" : $infofile;
+		};
+		die $msg;
+	}
+	
+	$self->{_versions}->{$version} = $version_object;
 	$self->{_virtual} = 0;
 }
 
@@ -221,9 +227,10 @@ if the package is has no versions.
 
 sub get_latest_version {
 	my $self = shift;
+	my $noload = shift || 0;
 	my @vers = $self->list_versions;
 	return undef unless @vers;
-	return $self->get_version(latest_version(@vers));
+	return $self->get_version(latest_version(@vers), $noload);
 }
 
 =item get_matching_versions
@@ -992,7 +999,10 @@ sub update_db {
 	if ($proxy_ok) {
 		# Just use the proxies
 		$valid_since = (stat($class->db_proxies))[9];
-		eval { $packages = Storable::lock_retrieve($class->db_proxies); };
+		eval {
+			local $SIG{INT} = 'IGNORE'; # No user interrupts
+			$packages = Storable::lock_retrieve($class->db_proxies);
+		};
 		if ($@ || !defined $packages) {
 			die "It appears that part of Fink's package database is corrupted. "
 				. "Please run 'fink index' to correct the problem.\n";
@@ -1005,7 +1015,10 @@ sub update_db {
 		$valid_since = time;
 		my $idx;
 		if ($idx_ok) {
-			eval { $idx = Storable::lock_retrieve($class->db_index); };
+			eval {
+				local $SIG{INT} = 'IGNORE'; # No user interrupts
+				$idx = Storable::lock_retrieve($class->db_index);
+			};
 			if ($@ || !defined $idx) {
 				close $lock if $lock;
 				# Try to force a re-gen next time
@@ -1025,17 +1038,12 @@ sub update_db {
 		close $lock if $lock;
 		return unless $ops{load};
 		
-		# Pass 2: Scan for files to load: Last one reached for each fullname
-		my %name2latest;
-		for my $info (@infos) {
-			my @fullnames = keys %{ $idx->{infos}{$info}{inits} };
-			@name2latest{@fullnames} = ($info) x scalar(@fullnames);
-		}
-		my %loadinfos = map { $_ => 1} values %name2latest;	# uniqify
-		my @loadinfos = keys %loadinfos;
+		# Pass 2: This used to narrow down the list of files so only the
+		# 'current' .info files are loaded. We don't do this anymore, since
+		# we want to know every tree a .info file is in.
 		
 		# Pass 3: Load and insert the .info files
-		$class->pass3_insert($idx, @loadinfos);
+		$class->pass3_insert($idx, @infos);
 		
 		# Store the proxy db
 		if ($ops{write}) {
@@ -1163,8 +1171,10 @@ sub insert_runtime_packages_hash {
 	
 	my $dlist = shift;
 	foreach my $pkgname (keys %$dlist) {
-		my $po = $class->package_by_name_create($pkgname);
+		# Skip it if it's already there
+		my $po = $class->package_by_name_create($pkgname);		
 		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
+		
 		my $hash = $dlist->{$pkgname};
 
 		# create dummy object
