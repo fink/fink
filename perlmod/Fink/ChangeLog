@@ -1,5 +1,13 @@
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Configure.pm: Mirror choosing improvements:
+		- Really default to the second option when the current one is obsolete
+		- Actually print all mirrors on the continent when the user asked for it
+		- Sort by country name rather than by country code (eg: de -> Germany)
+		- Don't show mirrors twice.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: Don't just promise to remove on-disk cache in 'index --full',
 	actually do it.
 	* Package.pm, PkgVersion.pm: Don't allow user to interrupt when Storable

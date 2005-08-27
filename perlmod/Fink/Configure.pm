@@ -407,7 +407,7 @@ sub choose_mirrors {
 				$default_continent) ],
 			choices => [
 				map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
-					sort keys %$keyinfo
+					sort { $keyinfo->{$a} cmp $keyinfo->{$b} } keys %$keyinfo
 			]
 		);
 		$config->set_param("MirrorContinent", $continent);
@@ -423,7 +423,8 @@ sub choose_mirrors {
 				$default_country) ], # Fails gracefully if continent wrong for country
 			choices => [
 				"No selection - display all mirrors on the continent" => $continent,
-				map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo
+				map { /^$continent-/ ? ($keyinfo->{$_},$_) : () }
+					sort { $keyinfo->{$a} cmp $keyinfo->{$b} } keys %$keyinfo
 			]
 		);
 		$config->set_param("MirrorCountry", $country);
@@ -451,7 +452,9 @@ sub choose_mirrors {
 		$all_mirrors = &read_properties_multival($mirrorfile);
 
 		@mirrors = ();
-
+		my %seen;
+		
+		# Add current setting
 		if ($obsolete_mirrors{$mirrorname}) {
 			$current_prompt = "Current setting (not on current list of mirrors):\n\t\t ";
 			$default_response = 2;
@@ -462,22 +465,38 @@ sub choose_mirrors {
 		$def_value = $config->param_default("Mirror-$mirrorname", "");
 		if ($def_value) {
 			push @mirrors, ( "$current_prompt $def_value" => $def_value );
+			$seen{$def_value} = 1;
 		}
-
+		
+		# Add primary
 		if (exists $all_mirrors->{primary}) {
-			push @mirrors, map { ( "Primary: $_" => $_ ) } @{$all_mirrors->{primary}};
+			push @mirrors, map { ( "Primary: $_" => $_ ) }
+				grep { !$seen{$_}++ } @{$all_mirrors->{primary}};
 		}
-		if ($country ne $continent and exists $all_mirrors->{$country}) {
-			push @mirrors, map { ( $keyinfo->{$country}.": $_" => $_ ) } @{$all_mirrors->{$country}};
+		
+		# Add local mirrors
+		my @places;
+		if ($country ne $continent) {	# We chose a country
+			@places = ($country, $continent);
+		} else {						# We want everything on the continent
+			@places = ($continent, sort { $keyinfo->{$a} cmp $keyinfo->{$b} }
+				grep { /^$continent-/ } keys %$all_mirrors);
 		}
-		if (exists $all_mirrors->{$continent}) {
-			push @mirrors, map { ( $keyinfo->{$continent}.": $_" => $_ ) } @{$all_mirrors->{$continent}};
+		for my $place (@places) {
+			next unless exists $all_mirrors->{$place};
+			push @mirrors, map { $keyinfo->{$place} . ": $_" => $_ }
+				grep { !$seen{$_}++ } @{$all_mirrors->{$place}};
 		}
-
+		
+		# Should we limit the number of mirrors?
+		
+		# Can't pick second result if there isn't one! (2 cuz it's doubled)
+		$default_response = 1 unless scalar(@mirrors) > 2;
+		
 		my @timeout = $mirrors_postinstall ? (timeout => 60) : (); 
 		$answer = &prompt_selection("Mirror for $mirrortitle?",
 						intro   => "Choose a mirror for '$mirrortitle':",
-						default => [ number => 1 ],
+						default => [ number => $default_response ],
 						choices => \@mirrors,
 						@timeout,);
 		$config->set_param("Mirror-$mirrorname", $answer);
