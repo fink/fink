@@ -2851,6 +2851,7 @@ sub prefetch {
 	
 	&call_queue_clear;
 	
+	my @aptget; # Batch 'em
 	foreach my $dep (@dep_items) {
 		my $func;
 		
@@ -2860,8 +2861,7 @@ sub prefetch {
 				next; # We have what we need, skip it
 			} elsif ($use_bindist && $dep->[PKGVER]->is_aptgetable) {
 				# Use apt
-				&call_queue_add([ $dep->[PKGVER], 'phase_fetch_deb',
-								1, $dryrun ]);
+				push @aptget, $dep->[PKGVER];
 			} elsif ($dep->[OP] == $OP_REINSTALL) {	# Shouldn't get here!
 				die "Can't reinstall a package without a .deb\n";
 			} else {
@@ -2877,6 +2877,8 @@ sub prefetch {
 			die "Don't know about operation number $dep->[OP]!\n";
 		}
 	}
+	&call_queue_add([ $aptget[0], 'phase_fetch_deb', 1, $dryrun, @aptget ])
+		if @aptget;
 	
 	&call_queue_clear;
 }

@@ -1540,8 +1540,7 @@ install this package.
 sub is_locally_present {
 	my $self = shift;
 	
-	my $deb = $self->find_debfile;
-	return (defined $deb && $deb !~ m,^$basepath/var/cache/apt/archives,);
+	return defined $self->find_local_debfile();
 }
 
 
@@ -1607,16 +1606,16 @@ sub find_tarball {
 	return undef;
 }
 
-=item find_debfile
+=item find_local_debfile
 
-  my $path = $pv->find_debfile;
+  my $path = $pv->find_local_debfile;
 
-Find a path to an existing .deb for this package. If no such .deb exists,
-return undef.
+Find a path to an existing .deb for this package, which is known to be built
+on this system. If no such .deb exists, return undef.
 
 =cut
 
-sub find_debfile {
+sub find_local_debfile {
 	my $self = shift;
 	my ($path, $fn, $debname);
 
@@ -1628,7 +1627,25 @@ sub find_debfile {
 			return $fn;
 		}
 	}
+	return undef;
+}
 
+=item find_debfile
+
+  my $path = $pv->find_debfile;
+
+Find a path to an existing .deb for this package. If no such .deb exists,
+return undef.
+
+=cut
+
+sub find_debfile {
+	my $self = shift;
+	
+	# first try a local .deb in the dists/ tree
+	my $fn = $self->find_local_debfile();
+	return $fn if defined $fn;
+	
 	# maybe it's available from the bindist?
 	if ($config->binary_requested()) {
 		my $epoch = $self->get_epoch();
@@ -1644,8 +1661,41 @@ sub find_debfile {
 		if (-f $fn) {
 			return $fn;
 		}
-	}
 
+		# maybe it's from a local apt repository
+		unless (defined $self->{_apt_local}) {	# cache it
+			my $aptcmd = aptget_lockwait() . " ";
+			if ($config->verbosity_level() == 0) {
+				$aptcmd .= "-qq ";
+			} elsif ($config->verbosity_level() < 2) {
+				$aptcmd .= "-q ";
+			}
+			$aptcmd .= "--ignore-breakage --print-uris install "
+				. $self->get_name() . "=" .$self->get_fullversion();
+			unless (open APT, "-|", $aptcmd) {
+				$self->{_apt_local} = 0; # Don't try again
+				return undef;
+			}
+			
+			my $found = 0;
+			while (<APT>) {
+				if (m,^'file:(/\S+\.deb)',) {
+					$found = $1;
+					last;
+				}
+			}
+			close APT;
+			
+			if ($found) {
+				$self->{_apt_local} = $found;
+			} else {
+				# Do try again later, maybe it's installed now
+			}	# and therefore won't print. Damn apt.
+		}
+		$fn = $self->{_apt_local};
+		return $fn if defined $fn && $fn && -f $fn;
+	}
+	
 	# not found
 	return undef;
 }
@@ -2163,80 +2213,112 @@ sub lol_remove_self {
 ### PHASES
 ###
 
-### fetch_deb
+=item phase_fetch_deb
+
+  $self->phase_fetch_deb();
+  $self->phase_fetch_deb($conditional, $dryrun);
+  $self->phase_fetch_deb($conditional, $dryrun, @packages);
+
+Download the .deb files for some packages. If @packages is not specified, will
+fetch the .deb for only this packages.
+
+If $conditional is true, .deb files will only be fetched if they're not already
+present (defaults to false).
+
+If $dryrun is true, .deb files won't actually be fetched, but the process will
+be simulated (defaults to false).
+
+=cut
 
 sub phase_fetch_deb {
 	my $self = shift;
 	my $conditional = shift || 0;
 	my $dryrun = shift || 0;
-
+	my @packages = @_ ? @_ : ($self);
+	
 	# check if $basepath is really '/sw' since the debs are built with 
 	# '/sw' hardcoded
+	#
+	# FIXME: Private repositories could easily have different basepaths. Can
+	# we keep UseBinaryDist enabled with $basepath ne '/sw' but just restrict
+	# use to non-official repos?
 	if (not $basepath eq '/sw') {
 		print "\n";
 		&print_breaking("ERROR: Downloading packages from the binary distribution ".
 		                "is currently only possible if Fink is installed at '/sw'!.");
 		die "Downloading the binary package '" . $self->get_debname() . "' failed.\n";
 	}
-
-	if (not $conditional) {
-		# delete already downloaded deb
-		my $found_deb = $self->find_debfile();
-		if ($found_deb) {
-			rm_f $found_deb;
+	
+	for my $pkg (@packages) {
+		if (not $conditional) {
+			# delete already downloaded deb
+			my $found_deb = $pkg->find_debfile();
+			if ($found_deb) {
+				rm_f $found_deb;
+			}
 		}
 	}
-	$self->fetch_deb(0, 0, $dryrun);
+	$self->fetch_deb($dryrun, @packages);
 }
 
-# fetch_deb [ TRIES ], [ CONTINUE ], [ DRYRUN ]
-#
-# Unconditionally download the deb, dying on failure.
+=item phase_fetch_deb
+
+  $self->fetch_deb($dryrun, @packages);
+
+Unconditionally download the .deb files for some packages. Die if apt-get
+fails.
+
+=cut
+
 sub fetch_deb {
 	my $self = shift;
-	my $tries = shift || 0;
-	my $continue = shift || 0;
 	my $dryrun = shift || 0;
-
+	my @packages = @_;
+	next unless @packages;
+	
+	my @names = sort map { $_->get_debname() } @packages;
 	if ($config->verbosity_level() > 2) {
-		print "Downloading " . $self->get_debname() . " from binary dist.\n";
+		print "Downloading " . join(', ', @names) . " from binary dist.\n";
 	}
 	my $aptcmd = aptget_lockwait() . " ";
 	if ($config->verbosity_level() == 0) {
 		$aptcmd .= "-qq ";
-	}
-	elsif ($config->verbosity_level() < 2) {
+	} elsif ($config->verbosity_level() < 2) {
 		$aptcmd .= "-q ";
 	}
 	if($dryrun) {
 		$aptcmd .= "--dry-run ";
 	}
-	$aptcmd .= "--ignore-breakage --download-only install " . $self->get_name() . "=" .$self->get_fullversion();
+	$aptcmd .= "--ignore-breakage --download-only install " .
+		join(' ', map {
+			sprintf "%s=%s", $_->get_name(), $_->get_fullversion
+		} @packages);
 	if (&execute($aptcmd)) {
-		if (0) {
-		print "\n";
-		&print_breaking("Downloading '".$self->get_debname()."' failed. ".
-		                "There can be several reasons for this:");
-		&print_breaking("The server is too busy to let you in or ".
-		                "is temporarily down. Try again later.",
-		                1, "- ", "	");
-		&print_breaking("There is a network problem. If you are ".
-		                "behind a firewall you may want to check ".
-		                "the proxy and passive mode FTP ".
-		                "settings. Then try again.",
-		                1, "- ", "	");
-		&print_breaking("The file was removed from the server or ".
-		                "moved to another directory. The package ".
-		                "description must be updated.");
-		print "\n";
-		}
+#		print "\n";
+#		&print_breaking("Downloading '".$self->get_debname()."' failed. ".
+#		                "There can be several reasons for this:");
+#		&print_breaking("The server is too busy to let you in or ".
+#		                "is temporarily down. Try again later.",
+#		                1, "- ", "	");
+#		&print_breaking("There is a network problem. If you are ".
+#		                "behind a firewall you may want to check ".
+#		                "the proxy and passive mode FTP ".
+#		                "settings. Then try again.",
+#		                1, "- ", "	");
+#		&print_breaking("The file was removed from the server or ".
+#		                "moved to another directory. The package ".
+#		                "description must be updated.");
+#		print "\n";
+		my $msg = "Downloading the following binary packages failed:\n"
+			. join('', map { sprintf "  %s\n", $_ } @names);
 		if($dryrun) {
-			if ($self->has_param("Maintainer")) {
-				print ' "'.$self->param("Maintainer") . "\"\n";
-			}
+			print $msg;
 		} else {
-			die "Downloading the binary package '" . $self->get_debname() . "' failed.\n";
+			die $msg;
 		}
+		
+		# FIXME: Should we check is_present to make sure the download really
+		# succeeded? Or just fail silently and hope things work out in the end?
 	}
 }
 
