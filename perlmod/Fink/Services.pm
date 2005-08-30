@@ -1631,7 +1631,7 @@ sub lock_wait {
 		
 		# Couldn't get lock, meaning process has it
 		my $waittime = $really_timeout ? "$timeout seconds " : "";
-		print STDERR "Waiting ${waittime}for $desc to finish..."
+		print STDERR "Waiting up to ${waittime}for $desc to finish..."
 			unless $quiet;
 		
 		my $success = 0;
