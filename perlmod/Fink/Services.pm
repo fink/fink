@@ -1213,7 +1213,8 @@ breakage. This function checks for such breakage and fixes it if necessary.
 
 sub fix_gcc_repairperms {
 	return unless gcc_select_arg(gcc_selected) eq '4.0';
-	system('gcc_select --force 4.0 >/dev/null 2>&1') == 0
+	system('/usr/bin/env PATH=/usr/sbin:/usr/bin:/sbin:/bin '
+		. 'gcc_select --force 4.0 >/dev/null 2>&1') == 0
 		or die "Can't fix GCC after Repair Permissions: $!\n";
 }
 

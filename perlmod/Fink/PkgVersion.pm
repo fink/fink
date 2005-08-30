@@ -1472,9 +1472,13 @@ sub is_fetched {
 
   my $hashref = get_aptdb();
 
-Get a hashref with the current packages available via apt-get
+Get a hashref with the current packages available via apt-get, and the way apt
+wants to get those packages: downloading from a remote site, or using a local
+.deb.
 
 =cut
+
+our ($APT_REMOTE, $APT_LOCAL) = (1, 2);
 
 sub get_aptdb {
 	my %db;
@@ -1491,9 +1495,16 @@ sub get_aptdb {
 		} elsif (/^\s+File:\s*(\S+)/) { # Need \s+ so we don't get crap at end
 										# of apt-cache dump
 			# Avoid using debs that aren't really apt-getable
-			next if $1 eq $statusfile;
+			next if $1 eq $statusfile or $1 eq "/tmp/finkaptstatus";
 			
-			$db{"$pkg-$vers"} = 1 if defined $pkg && defined $vers;
+			if (defined $pkg && defined $vers) {
+				next if $db{"$pkg-$vers"}; # Use the first one
+				if ($1 =~ m,/_[^/]*Packages$,) {
+					$db{"$pkg-$vers"} = $APT_LOCAL;
+				} else {
+					$db{"$pkg-$vers"} = $APT_REMOTE;
+				}
+			}
 		}
 	}
 	close APTDUMP;
@@ -1504,8 +1515,13 @@ sub get_aptdb {
 =item is_aptgetable
 
   my $aptgetable = $pv->is_aptgetable;
+  my $aptgetable = $pv->is_aptgetable $type;
 
 Get whether or not this package is available via apt-get.
+
+If a type is specified, will only return true if apt get will get the .deb
+in the desired way. Specify one of $APT_LOCAL or $APT_REMOTE, or zero for any
+type. Defaults to $APT_REMOTE.
 
 =cut
 
@@ -1514,6 +1530,8 @@ Get whether or not this package is available via apt-get.
 	
 	sub is_aptgetable {
 		my $self = shift;
+		my $wanttype = shift;
+		$wanttype = $APT_REMOTE unless defined $wanttype;
 		
 		if (!defined $aptdb) { # Load it
 			if ($config->binary_requested()) {
@@ -1524,8 +1542,56 @@ Get whether or not this package is available via apt-get.
 		}
 		
 		# Return cached value
-		return exists $aptdb->{$self->get_name . "-" . $self->get_fullversion};
+		my $type = $aptdb->{$self->get_name . "-" . $self->get_fullversion};
+		return 0 unless $type;
+		return 1 if $wanttype == 0;
+		return $type == $wanttype;
 	}
+
+=item local_apt_location
+
+  my $path = $pv->local_apt_location;
+
+Find the local path where apt says a deb can be found. Returns undef if none
+found.
+
+For packages that have a local non-apt deb file available, the local deb
+should be preferred, so this method returns undef.
+
+=cut
+
+sub local_apt_location {
+	my $self = shift;
+	
+	if (!exists $self->{_apt_loc}) {
+		# Apt won't tell us the location if it's installed
+		return undef if $self->is_installed();
+		
+		if ($self->is_locally_present() || !$self->is_aptgetable($APT_LOCAL)) {
+			$self->{_apt_loc} = undef;
+		} else {
+			# Need --force-yes --yes to bypass downgrade warning
+			my $aptcmd = aptget_lockwait()	. " --ignore-breakage --force-yes "
+				. "--yes --print-uris install "
+				. sprintf("\Q%s=%s", $self->get_name(), $self->get_fullversion())
+				. " 2>/dev/null";
+			
+			my $line;
+			open APT, "-|", $aptcmd or return undef; # Fail silently
+			$line = $_ while (<APT>);
+			close APT;
+			
+			if ($line =~ m,^'file:(/\S+\.deb)',) {
+				$self->{_apt_loc} = $1;
+			} else {
+				$self->{_apt_loc} = undef;
+			}
+		}
+	}
+	
+	return $self->{_apt_loc};
+}
+
 }
 
 =item is_locally_present
@@ -1661,39 +1727,10 @@ sub find_debfile {
 		if (-f $fn) {
 			return $fn;
 		}
-
-		# maybe it's from a local apt repository
-		unless (defined $self->{_apt_local}) {	# cache it
-			my $aptcmd = aptget_lockwait() . " ";
-			if ($config->verbosity_level() == 0) {
-				$aptcmd .= "-qq ";
-			} elsif ($config->verbosity_level() < 2) {
-				$aptcmd .= "-q ";
-			}
-			$aptcmd .= "--ignore-breakage --print-uris install "
-				. $self->get_name() . "=" .$self->get_fullversion();
-			unless (open APT, "-|", $aptcmd) {
-				$self->{_apt_local} = 0; # Don't try again
-				return undef;
-			}
-			
-			my $found = 0;
-			while (<APT>) {
-				if (m,^'file:(/\S+\.deb)',) {
-					$found = $1;
-					last;
-				}
-			}
-			close APT;
-			
-			if ($found) {
-				$self->{_apt_local} = $found;
-			} else {
-				# Do try again later, maybe it's installed now
-			}	# and therefore won't print. Damn apt.
-		}
-		$fn = $self->{_apt_local};
-		return $fn if defined $fn && $fn && -f $fn;
+		
+		# Try the local apt location
+		$fn = $self->local_apt_location();
+		return $fn if defined $fn;
 	}
 	
 	# not found
@@ -2309,8 +2346,8 @@ sub fetch_deb {
 #		                "moved to another directory. The package ".
 #		                "description must be updated.");
 #		print "\n";
-		my $msg = "Downloading the following binary packages failed:\n"
-			. join('', map { sprintf "  %s\n", $_ } @names);
+		my $msg = "Downloading at least one of the following binary packages "
+			. "failed:\n" . join('', map { sprintf "  %s\n", $_ } @names);
 		if($dryrun) {
 			print $msg;
 		} else {

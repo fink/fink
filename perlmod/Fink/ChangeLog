@@ -1,11 +1,11 @@
 2005-08-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* PkgVersion.pm, Engine.pm: Batch calls to fetch_deb, so it goes faster.
-	* PkgVersion.pm: Check for debs fetched via apt-get from local repos.
-		- FIXME: Should we allow UseBinaryDist for non-official repos even if
-		basepath is not /sw?
-		- FIXME: Should we check the value of is_present immediately after
-		calling fetch_deb to detect failure? Or just hope things work out?
+	* Services.pm: Force gcc_select in fix_gcc_repairperms to use a restricted
+	PATH.
+	* PkgVersion.pm: Improve handling of local apt repos:
+		- Don't --print-uris unless we know to expect a local location.
+		- Don't let apt print to stderr
+		- Don't ignore debs that are a downgrade
 
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
