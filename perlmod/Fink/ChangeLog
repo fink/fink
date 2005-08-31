@@ -1,5 +1,9 @@
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Config.pm: Fixed bug causing 0 to be taken as array ref.
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Config.pm: Allow filtering of treelist via command line option.
 	* Package.pm: Don't use/store proxy db if using custom treelist.
 	* Package.pm: Don't include Status packages that aren't installed in Fink's

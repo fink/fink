@@ -218,8 +218,8 @@ sub _standard_treelist {
 sub get_treelist {
 	my $self = shift;
 	my @avail = $self->_standard_treelist;
-
-	my @cmdline = split /,/, join ',', @{get_option('trees')};
+	
+	my @cmdline = split /,/, join ',', @{get_option('trees', [])};
 	return @avail unless @cmdline; # use all by default
 	
 	# Make filter hash using command-line options
