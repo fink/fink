@@ -438,7 +438,7 @@ sub initialize {
 	my %options = (info_level => 1, filename => "", @_);
 	
 	my ($pkgname, $epoch, $version, $revision, $fullname);
-	my ($filename, $source, $type_hash);
+	my ($source, $type_hash);
 	my ($depspec, $deplist, $dep, $expand, $destdir);
 	my ($parentpkgname, $parentdestdir, $parentinvname);
 	my ($i, $path, @parts, $finkinfo_index, $section, @splitofffields);
@@ -451,6 +451,7 @@ sub initialize {
 		### Do not change meaning of _filename! This is used by FinkCommander (fpkg_list.pl)
 		$self->{"_$opt"} = $options{$opt};
 	}
+	my $filename = $options{filename};
 	
 	# set parent
 	$self->{parent_obj} = $options{parent_obj} if exists $options{parent_obj};

@@ -1,5 +1,12 @@
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: Fix deb-building breakage.
+	
+	*** Rebuild your DB with 'fink index -f' if you used Fink from HEAD since
+	2005-08-30 ***
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Config.pm: Fixed bug causing 0 to be taken as array ref.
 
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
