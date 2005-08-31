@@ -1,3 +1,8 @@
+2005-08-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* get_perl.t, get_ruby.t, get_splitoffs.t, non_consecutive_source.t:
+	Adapt to changed methods in Package/PkgVersion.
+
 2005-04-25  Daniel Macks  <dmacks@netspace.org>
 
 	* get_splitoffs.t, get_splitoffs-tree/finkinfo/*: Check all arg

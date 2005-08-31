@@ -857,7 +857,7 @@ END
 		}
 		
 		# Load the file
-		my @pvs = $class->packages_from_info_file($info);
+		my @pvs = Fink::PkgVersion->pkgversions_from_info_file($info);
 		map { $_->_disconnect } @pvs;	# Don't keep obj references
 		
 		# Update the index
@@ -1093,46 +1093,16 @@ sub tree_infos {
 	return @filelist;
 }		
 
+=item packages_from_properties
 
-=item packages_from_info_file
-
-  my @packages = Fink::Package->packages_from_info_file $filename;
-
-Create Fink::PkgVersion objects based on a .info file. Do not
-yet add these packages to the current package database.
-
-Returns all packages created, including split-offs.
+This function is now part of Fink::PkgVersion, but remains here for
+compatibility reasons. It will eventually be deprecated.
 
 =cut
 
 sub packages_from_info_file {
 	my $class = shift;
-	my $filename = shift;
-	
-	# read the file and get the package name
-	my $properties = &read_properties($filename);
-	$properties = $class->handle_infon_block($properties, $filename);
-	return () unless keys %$properties;
-	
-	my $pkgname = $properties->{package};
-	unless ($pkgname) {
-		print_breaking_stderr "No package name in $filename";
-		return ();
-	}
-	unless ($properties->{version}) {
-		print_breaking_stderr "No version number for package $pkgname in $filename";
-		return ();
-	}
-	# fields that should be converted from multiline to
-	# single-line
-	for my $field ('builddepends', 'depends', 'files') {
-		if (exists $properties->{$field}) {
-			$properties->{$field} =~ s/[\r\n]+/ /gs;
-			$properties->{$field} =~ s/\s+/ /gs;
-		}
-	}
-
-	return $class->packages_from_properties($properties, $filename);
+	return Fink::PkgVersion->pkgversions_from_info_file(@_);
 }
 
 
@@ -1185,88 +1155,22 @@ sub insert_runtime_packages_hash {
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
-			$class->insert_pkgversions($class->packages_from_properties($hash));
+			$class->insert_pkgversions(
+				Fink::PkgVersion->pkgversions_from_properties($hash));
 		}
 	}
 }
 
 =item packages_from_properties
 
-  my $properties = { field => $val, ... };
-  my @packages = Fink::Package->packages_from_properties $properties, $filename;
-
-Create Fink::PkgVersion objects based on a hash-ref of properties. Do not
-yet add these packages to the current package database.
-
-Returns all packages created, including split-offs if this is a parent package.
+This function is now part of Fink::PkgVersion, but remains here for
+compatibility reasons. It will eventually be deprecated.
 
 =cut
 
 sub packages_from_properties {
 	my $class = shift;
-	my $properties = shift;
-	my $filename = shift || "";
-
-	my %pkg_expand;
-
-	if (exists $properties->{type}) {
-		if ($properties->{type} =~ /([a-z0-9+.\-]*)\s*\((.*?)\)/) {
-			# if we were fed a list of subtypes, remove the list and
-			# refeed ourselves with each one in turn
-			my $type = $1;
-			my @subtypes = split ' ', $2;
-			if ($subtypes[0] =~ /^boolean$/i) {
-				# a list of (boolean) has special meaning
-				@subtypes = ('','.');
-			}
-			my @pkgversions;
-			foreach (@subtypes) {
-				# need new copy, not copy of ref to original
-				my $this_properties = {%{$properties}};
-				$this_properties->{type} =~ s/($type\s*)\(.*?\)/$type $_/;
-				push @pkgversions,
-					$class->packages_from_properties($this_properties, $filename);
-			};
-			return @pkgversions;
-		}
-		# we have only single-value subtypes
-#		print "Type: ",$properties->{type},"\n";
-		my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
-		foreach (keys %$type_hash) {
-			( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-		}
-	}
-#	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
-
-
-	# store invariant portion of Package
-	( $properties->{package_invariant} = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
-	if (exists $properties->{parent_obj}) {
-		# get parent's Package for percent expansion
-		# (only splitoffs can use %N in Package)
-		$pkg_expand{'N'}  = $properties->{parent_obj}->{package};
-		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
-	}
-	# must always call expand_percent even if no Type or parent in
-	# order to make sure Maintainer doesn't have bad % constructs
-	$properties->{package_invariant} = &expand_percent($properties->{package_invariant},\%pkg_expand, "$filename \"package\"");
-
-	# must always call expand_percent even if no Type in order to make
-	# sure Maintainer doesn't have %type_*[] or other bad % constructs
-	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
-
-	# create object for this particular version
-	$properties->{thefilename} = $filename if $filename;
-	
-	my $pkgversion = Fink::PkgVersion->new_from_properties($properties);
-	
-	# Only return splitoffs for the parent. Otherwise, PkgVersion::add_splitoff
-	# goes crazy.
-	if ($pkgversion->has_parent) { # It's a splitoff
-		return ($pkgversion);
-	} else {								# It's a parent
-		return $pkgversion->get_splitoffs(1, 1);
-	}
+	return Fink::PkgVersion->pkgversions_from_properties(@_);
 }
 
 =item insert_pkgversions
@@ -1300,66 +1204,14 @@ sub insert_pkgversions {
 
 =item handle_infon_block
 
-    my $properties = &read_properties($filename);
-    $properties = &handle_infon_block($properties, $filename);
-    ($properties,$info_level) = &handle_infon_block($properties, $filename);
-
-For the .info file lines processed into the hash ref $properties from
-file $filename, deal with the possibility that the whole thing is in a
-InfoN: block.
-
-If so, make sure this fink is new enough to understand this .info
-format (i.e., NE<lt>=max_info_level). If so, promote the fields of the
-block up to the top level of %$properties and return a ref to this new
-hash. If called in a scalar context, the InfoN level is returned in
-the "infon" field of the $properties hash. If called in an array
-context, the InfoN level (or 1 if not an InfoN construct) is returned
-as the second element.
-
-If an error with InfoN occurs (N>max_info_level, more than one InfoN
-block, or part of $properties existing outside the InfoN block) print
-a warning message and return a ref to an empty hash (i.e., ignore the
-.info file).
+This function is now part of Fink::PkgVersion, but remains here for
+compatibility reasons. It will eventually be deprecated.
 
 =cut
 
 sub handle_infon_block {
-	shift;	# class method - ignore first parameter
-	my $properties = shift;
-	my $filename = shift;
-
-	my($infon,@junk) = grep {/^info\d+$/i} keys %$properties;
-	if (not defined $infon) {
-		wantarray ? return $properties, 1 : return $properties;
-	}
-	# file contains an InfoN block
-	if (@junk) {
-		print_breaking_stderr "Multiple InfoN blocks in $filename; skipping";
-		return {};
-	}
-	unless (keys %$properties == 1) {
-		# if InfoN, entire file must be within block (avoids
-		# having to merge InfoN block with top-level fields)
-		print_breaking_stderr "Field(s) outside $infon block! Skipping $filename";
-		return {};
-	}
-	my ($info_level) = ($infon =~ /(\d+)/);
-	my $max_info_level = &Fink::FinkVersion::max_info_level;
-	if ($info_level > $max_info_level) {
-		# make sure we can handle this InfoN
-		print_breaking_stderr "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename";
-		return {};
-	}
-	
-	# okay, parse InfoN and promote it to the top level
-	my $new_properties = &read_properties_var("$infon of \"$filename\"",
-		$properties->{$infon}, { remove_space => ($info_level >= 3) });
-	if (wantarray) {
-		return $new_properties, $info_level;
-	} else {
-		$new_properties->{infon} = $info_level;
-		return $new_properties;
-	}
+	my $class = shift;
+	return Fink::PkgVersion->handle_infon_block(@_);
 }
 
 =item print_virtual_pkg

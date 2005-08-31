@@ -336,7 +336,7 @@ sub validate_info_file {
 
 	# read the file properties
 	$properties = &read_properties($filename);
-	($properties,$info_level) = Fink::Package->handle_infon_block($properties, $filename);
+	($properties, $info_level) = Fink::PkgVersion->handle_infon_block($properties, $filename);
 	return 0 unless keys %$properties;
 	
 	# determine the base path

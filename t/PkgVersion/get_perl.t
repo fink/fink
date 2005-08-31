@@ -17,9 +17,9 @@ my %perlversions = (
 
 
 while( my($info, $version) = each %perlversions ) {
-    my $pv = Fink::PkgVersion->new_from_properties(
-                                read_properties("PkgVersion/$info.info")
-                               );
+    my $pv = (Fink::PkgVersion->pkgversions_from_info_file(
+                                "PkgVersion/$info.info"
+                               ))[0];
 
     isa_ok( $pv, "Fink::PkgVersion", $info );
 

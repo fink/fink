@@ -11,9 +11,9 @@ require_ok('Fink::PkgVersion');	# 1
 
 # Can't test validation?
 
-my $pv = Fink::PkgVersion->new_from_properties(
-	read_properties("PkgVersion/non-consecutive-test.info")
-);
+my $pv = (Fink::PkgVersion->pkgversions_from_info_file(
+	"PkgVersion/non-consecutive-test.info"
+))[0];
 
 isa_ok( $pv, "Fink::PkgVersion", "non-consecutive-test.info" );	# 2
 
@@ -32,9 +32,9 @@ is($pv->get_checksum(13), 43, "gets checksums by N");				# 7
 like($pv->get_tarball(), qr/gz$/,
 	"can generate implicit tarball");								# 8
 
-$pv = Fink::PkgVersion->new_from_properties(
-	read_properties("PkgVersion/non-consecutive-test2.info")
-);
+$pv = (Fink::PkgVersion->pkgversions_from_info_file(
+	"PkgVersion/non-consecutive-test2.info"
+))[0];
 is($pv->get_source(),
 	"mirror:gnu:non-consecutive-test2/non-consecutive-test2-1.0.tar.gz",
 	"old gnu/gnome mirror syntax works");								# 9

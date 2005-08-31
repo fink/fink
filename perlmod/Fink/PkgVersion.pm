@@ -25,14 +25,14 @@ package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute
 					  &expand_percent &latest_version
-					  &collapse_space &read_properties_var
+					  &collapse_space &read_properties &read_properties_var
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &version_cmp
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
 					  &store_rename);
-use Fink::CLI qw(&print_breaking &rejoin_text
+use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
 				 &should_skip_prompt);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath
@@ -91,24 +91,28 @@ Fink::PkgVersion - a single version of a package
 Create a disk-backed PkgVersion, with initial properties from $hashref. 
 Other properties will be loaded as needed from $file.
 
+Note that this constructor does B<not> initialize the PkgVersion, since it
+already has an initialized object on-disk.
+
+
+B<WARNING:>
 
 When a PkgVersion object is created with new_backed, the first access to the
 object MUST be with one of these methods:
 
-Package: get_version, get_all_versions, get_matching_versions, get_all_providers
-PkgVersion: get_parent, get_splitoffs, parent_splitoffs	
+  Package: get_version, get_all_versions, get_matching_versions, get_all_providers
+  PkgVersion: get_parent, get_splitoffs, parent_splitoffs	
 
 Many of these methods take a $noload flag to allow callers to disable loading.
 This should only be done rarely, when the caller is CERTAIN that no unloaded
 fields will be used and when it results in many fewer loads. There should be
 always be a comment nearby with the text 'noload'.
 
-
 In addition, the following fields should be accessed exclusively through
 accessors:
 
-Package: _providers, _versions
-PkgVersion: _splitoffs_obj, parent_obj
+  Package: _providers, _versions
+  PkgVersion: _splitoffs_obj, parent_obj
 
 =cut
 
@@ -219,10 +223,186 @@ Get the minimum fields necessary for inserting a PkgVersion.
 	}
 }
 
+=item handle_infon_block
 
-### self-initialization
+    my $properties = &read_properties($filename);
+    ($properties, $info_level) =
+    	Fink::PkgVersion->handle_infon_block($properties, $filename);
+
+For the .info file lines processed into the hash ref $properties from
+file $filename, deal with the possibility that the whole thing is in a
+InfoN: block.
+
+If so, make sure this fink is new enough to understand this .info
+format (i.e., NE<lt>=max_info_level). If so, promote the fields of the
+block up to the top level of %$properties and return a ref to this new
+hash. If called in a scalar context, the InfoN level is returned in
+the "infon" field of the $properties hash. If called in an array
+context, the InfoN level (or 1 if not an InfoN construct) is returned
+as the second element.
+
+If an error with InfoN occurs (N>max_info_level, more than one InfoN
+block, or part of $properties existing outside the InfoN block) print
+a warning message and return a ref to an empty hash (i.e., ignore the
+.info file).
+
+=cut
+
+sub handle_infon_block {
+	shift;	# class method - ignore first parameter
+	my $properties = shift;
+	my $filename = shift;
+
+	my($infon,@junk) = grep {/^info\d+$/i} keys %$properties;
+	if (not defined $infon) {
+		wantarray ? return $properties, 1 : return $properties;
+	}
+	# file contains an InfoN block
+	if (@junk) {
+		print_breaking_stderr "Multiple InfoN blocks in $filename; skipping";
+		return {};
+	}
+	unless (keys %$properties == 1) {
+		# if InfoN, entire file must be within block (avoids
+		# having to merge InfoN block with top-level fields)
+		print_breaking_stderr "Field(s) outside $infon block! Skipping $filename";
+		return {};
+	}
+	my ($info_level) = ($infon =~ /(\d+)/);
+	my $max_info_level = &Fink::FinkVersion::max_info_level;
+	if ($info_level > $max_info_level) {
+		# make sure we can handle this InfoN
+		print_breaking_stderr "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename";
+		return {};
+	}
+	
+	# okay, parse InfoN and promote it to the top level
+	my $new_properties = &read_properties_var("$infon of \"$filename\"",
+		$properties->{$infon}, { remove_space => ($info_level >= 3) });
+	return ($new_properties, $info_level);
+}
+
+=item pkgversions_from_properties
+
+  my $properties = { field => $val, ... };
+  my @packages = Fink::Package->pkgversions_from_properties
+   					$properties, %options;
+
+Create Fink::PkgVersion objects based on a hash-ref of properties. Do not
+yet add these packages to the current package database.
+
+Returns all packages created, including split-offs if this is a parent package.
+
+Options are info_level and filename, and optionally parent.
+
+=cut
+
+sub pkgversions_from_properties {
+	my $class = shift;
+	my $properties = shift;
+	my %options = @_;
+	my $filename = $options{filename} || "";
+	
+	my %pkg_expand;
+	
+	# Handle variant types
+	if (exists $properties->{type}) {
+		if ($properties->{type} =~ /([a-z0-9+.\-]*)\s*\((.*?)\)/) {
+			# if we were fed a list of subtypes, remove the list and
+			# refeed ourselves with each one in turn
+			my $type = $1;
+			my @subtypes = split ' ', $2;
+			if ($subtypes[0] =~ /^boolean$/i) {
+				# a list of (boolean) has special meaning
+				@subtypes = ('','.');
+			}
+			my @pkgversions;
+			foreach (@subtypes) {
+				# need new copy, not copy of ref to original
+				my $this_properties = {%{$properties}};
+				$this_properties->{type} =~ s/($type\s*)\(.*?\)/$type $_/;
+				push @pkgversions,
+					$class->pkgversions_from_properties($this_properties, %options);
+			};
+			return @pkgversions;
+		}
+		
+		# we have only single-value subtypes
+#		print "Type: ",$properties->{type},"\n";
+	}
+#	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
+
+	# create object for this particular version
+	my $pkgversion = $class->new_from_properties($properties, %options);
+	
+	# Only return splitoffs for the parent. Otherwise, PkgVersion::add_splitoff
+	# goes crazy.
+	if ($pkgversion->has_parent) { # It's a splitoff
+		return ($pkgversion);
+	} else {								# It's a parent
+		return $pkgversion->get_splitoffs(1, 1);
+	}
+}
+
+sub pkgversions_from_info_file {
+	my $class = shift;
+	my $filename = shift;
+	
+	# read the file and get the package name
+	my $properties = &read_properties($filename);
+	my $info_level;
+	($properties, $info_level) = $class->handle_infon_block($properties, $filename);
+	return () unless keys %$properties;
+	
+	my $pkgname = $properties->{package};
+	unless ($pkgname) {
+		print_breaking_stderr "No package name in $filename";
+		return ();
+	}
+	unless ($properties->{version}) {
+		print_breaking_stderr "No version number for package $pkgname in $filename";
+		return ();
+	}
+
+	return $class->pkgversions_from_properties($properties,
+		filename => $filename, info_level => $info_level);
+}
+
+=item initialize
+
+  $pv->initialize(%options);
+
+I<Protected method, do not call directly>.
+
+Object initializer as specified in Fink:::Base.
+
+The following elements may be in the options-hash for the
+new_from_properties constructor.
+
+=over 4
+
+=item filename
+
+The name of the file from which this PkgVersion's properties were read.
+Omission of this option is strongly discouraged.
+
+=item info_level
+
+The level of the package description syntax used to describe this PkgVersion,
+ie: the InfoN field. Omission of this option is strongly discouraged.
+
+=item parent_obj
+
+The parent PkgVersion of this package, if it has one.
+
+=back
+
+=cut
+
 sub initialize {
 	my $self = shift;
+	my %options = (info_level => 1, filename => "", @_);
+	
 	my ($pkgname, $epoch, $version, $revision, $fullname);
 	my ($filename, $source, $type_hash);
 	my ($depspec, $deplist, $dep, $expand, $destdir);
@@ -231,20 +411,63 @@ sub initialize {
 	my $arch = get_arch();
 
 	$self->SUPER::initialize();
-
+	
+	# handle options
+	for my $opt (qw(info_level filename)) {
+		### Do not change meaning of _filename! This is used by FinkCommander (fpkg_list.pl)
+		$self->{"_$opt"} = $options{$opt};
+	}
+	
+	# set parent
+	$self->{parent_obj} = $options{parent_obj} if exists $options{parent_obj};
+	
+	
+	### Handle types
+	
+	# Setup restricted expansion hash. NOTE: multivalue lists were already cleared
+	$expand = { };
+	$self->{_type_hash} = $type_hash = $self->type_hash_from_string($self->param_default("Type", ""));
+	foreach (keys %$type_hash) {
+		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+	}
+	if ($self->has_parent()) {
+		# get parent's Package for percent expansion
+		# (only splitoffs can use %N in Package)
+		$expand->{'N'}  = $self->get_parent()->get_name();
+		$expand->{'n'}  = $expand->{'N'};  # allow for a typo
+	}
+	
+	# Setup basic package name
+	# must always call expand_percent even if no Type in order to make
+	# sure we don't have %type_*[] or other bad % constructs
+	$self->{package} = &expand_percent($self->{package},
+		$expand, "$self->{_filename} \"package\"");
+	
+	# Setup invariant name
+	$self->{_package_invariant} = $self->{package};
+	$self->{_package_invariant} =~ s/\%type_(raw|pkg)\[.*?\]//g;
+	# must always call expand_percent even if no Type or parent in
+	# order to make sure Maintainer doesn't have bad % constructs
+	$self->{_package_invariant} = &expand_percent($self->{_package_invariant},
+		$expand, "$self->{_filename} \"package\"");
+	
+	### END handle types
+	
+	
+	# setup basic fields
 	$self->{_name} = $pkgname = $self->param_default("Package", "");
 	$self->{_version} = $version = $self->param_default("Version", "0");
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
-
-	# multivalue lists were already cleared
-	$self->{_type_hash} = $type_hash = Fink::PkgVersion->type_hash_from_string($self->param_default("Type", ""));
-
-	# the following is set by Fink::Package::scan
-	### Do not change meaning of _filename! This is used by FinkCommander (fpkg_list.pl)
-	$self->{_filename} = $filename = $self->{thefilename};
-	delete $self->{thefilename}; # No longer needed
-
+	
+	# fields that should be converted from multiline to single-line
+	for my $field ('builddepends', 'depends', 'files') {
+		if (exists $self->{$field}) {
+			$self->{$field} =~ s/[\r\n]+/ /gs;
+			$self->{$field} =~ s/\s+/ /gs;
+		}
+	}
+	
 	# path handling
 	if ($filename) {
 		@parts = split(/\//, $filename);
@@ -302,15 +525,17 @@ sub initialize {
 	if ($self->has_parent) {
 		my $parent = $self->get_parent;
 		$parentpkgname = $parent->get_name();
-		$parentinvname = $parent->param_default("package_invariant", $parentpkgname);
+		$parentinvname = $parent->param_default("_package_invariant", $parentpkgname);
 	} else {
 		$parentpkgname = $pkgname;
-		$parentinvname = $self->param_default("package_invariant", $pkgname);
+		$parentinvname = $self->param_default("_package_invariant", $pkgname);
 		$self->{_splitoffs} = [];
 	}
 
-	$expand = { 'n' => $pkgname,
-				'ni'=> $self->param_default("package_invariant", $pkgname),
+	# Add remaining values to expansion-hash
+	$expand = { %$expand,
+				'n' => $pkgname,
+				'ni'=> $self->param_default("_package_invariant", $pkgname),
 				'e' => $epoch,
 				'v' => $version,
 				'r' => $revision,
@@ -325,10 +550,6 @@ sub initialize {
 				'a' => $self->{_patchpath},
 				'b' => '.'
 			};
-
-	foreach (keys %$type_hash) {
-		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-	}
 
 	$self->{_expand} = $expand;
 	$self->_set_destdirs;
@@ -779,7 +1000,9 @@ sub add_splitoff {
 	}
 	
 	# instantiate the splitoff
-	@splitoffs = Fink::Package->packages_from_properties($properties, $filename);
+	@splitoffs = $self->pkgversions_from_properties($properties,
+		filename => $filename, info_level => $self->info_level(),
+		parent_obj => $self);
 	
 	# return the new object(s). NOTE: This is actually adding objects!
 	push @{$self->{_splitoffs_obj}}, @splitoffs;
@@ -4386,8 +4609,7 @@ InfoN wrapper was used.
 
 sub info_level {
 	my $self = shift;
-	my $parent = $self->has_parent ? $self->get_parent : $self;
-	return $parent->param_default('infon', 1);
+	return $self->param('_info_level', 1);
 }
 
 =item dpkg_changed
