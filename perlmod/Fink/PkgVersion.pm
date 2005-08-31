@@ -506,16 +506,12 @@ sub initialize {
 			# this loop intentionally left blank
 		}
 		if ($finkinfo_index <= 0) {
-			if ($ignore_errors) {
-				# put some dummy info in for scripts that want
-				# to parse info files outside of Fink
-				$self->{_section}  = 'unknown';
-				$self->{_debpath}  = '/tmp';
-				$self->{_debpaths} = ['/tmp'];
-				$self->{_trees}    = [ 'unknown' ];
-			} else {
-				die "Path \"$filename\" contains no finkinfo directory!\n";
-			}
+			# put some dummy info in for scripts that want
+			# to parse info files outside of Fink
+			$self->{_section}  = 'unknown';
+			$self->{_debpath}  = '/tmp';
+			$self->{_debpaths} = ['/tmp'];
+			$self->{_trees}    = [ 'unknown' ];
 		} else {
 			# compute the "section" of this package, e.g. "net", "devel", "crypto"...
 			$section = $parts[$finkinfo_index-1]."/";
