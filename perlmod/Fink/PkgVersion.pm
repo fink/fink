@@ -344,6 +344,17 @@ sub pkgversions_from_properties {
 	}
 }
 
+=item pkgversions_from_info_file
+
+  my @packages = Fink::Package->pkgversions_from_info_file $filename;
+
+Create Fink::PkgVersion objects based on a .info file. Do not
+yet add these packages to the current package database.
+
+Returns all packages created, including split-offs.
+
+=cut
+
 sub pkgversions_from_info_file {
 	my $class = shift;
 	my $filename = shift;
@@ -367,6 +378,29 @@ sub pkgversions_from_info_file {
 	return $class->pkgversions_from_properties($properties,
 		filename => $filename, info_level => $info_level);
 }
+
+=item one_pkgversion_from_info_file
+
+  my $pv = Fink::Package->one_pkgversion_from_info_file $filename;
+  my @pvs = Fink::Package->one_pkgversion_from_info_file $filename;
+
+Convenience method to get a single Fink::PkgVersion object from a .info
+file. Does B<not> return splitoffs, only parents.
+
+If the .info file uses variants, multiple objects will be returned. By
+capturing just one, information may be lost, but at least the caller will
+have a useful parent object.
+
+=cut
+
+sub one_pkgversion_from_info_file {
+	my $class = shift;
+	my $filename = shift;
+	my @pvs = $class->pkgversions_from_info_file($filename);
+	@pvs = grep { ! $_->has_parent() } @pvs;
+	return wantarray ? @pvs : $pvs[-1];
+}
+
 
 =item initialize
 
@@ -459,14 +493,6 @@ sub initialize {
 	$self->{_version} = $version = $self->param_default("Version", "0");
 	$self->{_revision} = $revision = $self->param_default("Revision", "0");
 	$self->{_epoch} = $epoch = $self->param_default("Epoch", "0");
-	
-	# fields that should be converted from multiline to single-line
-	for my $field ('builddepends', 'depends', 'files') {
-		if (exists $self->{$field}) {
-			$self->{$field} =~ s/[\r\n]+/ /gs;
-			$self->{$field} =~ s/\s+/ /gs;
-		}
-	}
 	
 	# path handling
 	if ($filename) {
@@ -620,51 +646,57 @@ our %pkglist_no_self = ( 'conflicts' => 1,
 						 'replaces'  => 1
 					   );
 
-sub pkglist {
-	my $self = shift;
-	my $param_name = lc shift || "";
-	
+sub pkglist_common {
+	my ($self, $method, $param, @etc) = @_;
+	$method = $self->can($method);
+	$param = lc $param || "";
+
 	# This is cached, to make loading faster
-	return $self->param('_pkglist_provides')
-		if $param_name eq 'provides' && !$self->has_param('_provides_no_cache');
+	return $self->$method('_pkglist_provides', @etc)
+		if $param eq 'provides' && !$self->has_param('_provides_no_cache');
 	
-	$self->expand_percent_if_available($param_name);
-	$self->conditional_pkg_list($param_name);
-	if (exists $pkglist_no_self{$param_name}) {
-		$self->clear_self_from_list($param_name);
+	$self->_remove_extraneous_chars($param);
+	$self->expand_percent_if_available($param);
+	$self->conditional_pkg_list($param);
+	if (exists $pkglist_no_self{$param}) {
+		$self->clear_self_from_list($param);
 	}
-	$self->param($param_name);
+	return $self->$method($param, @etc);
+}
+
+sub pkglist {
+	my ($self, @etc) = @_;
+	$self->pkglist_common('param', @etc);
 }
 
 sub pkglist_default {
-	my $self = shift;
-	my $param_name = lc shift || "";
-	my $default_value = shift;
-
-	return $self->param_default('_pkglist_provides', $default_value)
-		if $param_name eq 'provides' && !$self->has_param('_provides_no_cache');
-	
-	$self->expand_percent_if_available($param_name);
-	$self->conditional_pkg_list($param_name);
-	if (exists $pkglist_no_self{$param_name}) {
-		$self->clear_self_from_list($param_name);
-	}
-	$self->param_default($param_name, $default_value);
+	my ($self, @etc) = @_;
+	$self->pkglist_common('param_default', @etc);
 }
 
 sub has_pkglist {
+	my ($self, @etc) = @_;
+	$self->pkglist_common('has_param', @etc);
+}
+
+## remove excess chars:
+##  - comments, from # to end of line
+##  - normalize whitespace
+##  - remove trailing comma
+
+sub _remove_extraneous_chars {
 	my $self = shift;
-	my $param_name = lc shift || "";
-	
-	return $self->has_param('_pkglist_provides')
-		if $param_name eq 'provides' && !$self->has_param('_provides_no_cache');
-	
-	$self->expand_percent_if_available($param_name);
-	$self->conditional_pkg_list($param_name);
-	if (exists $pkglist_no_self{$param_name}) {
-		$self->clear_self_from_list($param_name);
+	my $field = lc shift;
+	if ($self->has_param($field)) {
+		my $val = $self->param($field);
+		if ($self->info_level() >= 3) {
+			$val =~ s/#.*$//mg;	# comments are from # to end of line
+			$val =~ s/,\s*$//;
+		}
+		$val =~ s/\s+/ /g;
+		$val =~ s/^\s*(.*?)\s*$/$1/sg;
+		$self->set_param($field => $val);
 	}
-	$self->has_param($param_name);
 }
 
 ### expand percent chars in the given field, if that field exists
@@ -3065,8 +3097,9 @@ sub phase_install {
 
 	# splitoff 'Files' field
 	if ($do_splitoff and $self->has_param("Files")) {
-		my $files = $self->conditional_space_list(
-			$self->param_expanded("Files"),
+		my $files = $self->param_expanded("Files");
+		$files =~ s/\s+/ /g; # Make it one line
+		$files = $self->conditional_space_list($files,
 			"Files of ".$self->get_fullname()." in ".$self->get_info_filename
 		);
 

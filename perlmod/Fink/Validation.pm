@@ -495,7 +495,7 @@ sub validate_info_file {
 		
 	}
 
-	if (&validate_info_component($properties, "", $filename) == 0) {
+	if (&validate_info_component($properties, "", $filename, $info_level) == 0) {
 		$looks_good = 0;
 	}
 
@@ -577,7 +577,7 @@ sub validate_info_file {
 				}
 			}
 
-			if (&validate_info_component($splitoff_properties, $splitoff_field, $filename) == 0) {
+			if (&validate_info_component($splitoff_properties, $splitoff_field, $filename, $info_level) == 0) {
 				$looks_good = 0;
 			}
 
@@ -720,6 +720,7 @@ sub validate_info_component {
 	my $properties = shift;      # hashref (will not be altered)
 	my $splitoff_field = shift;  # "splitoffN", or null or undef in parent
 	my $filename = shift;
+	my $info_level = shift;
 
 	my (@pkg_required_fields, %pkg_valid_fields);
 
@@ -809,6 +810,19 @@ sub validate_info_component {
 		# check dpkg Depends-style field syntax
 		if ($pkglist_fields{$field}) {
 			(my $pkglist = $value) =~ tr/\n//d; # convert to single line
+			if ($info_level >= 3) {
+				$pkglist =~ s/#.*$//mg;
+				$pkglist =~ s/,\s*$//;
+			} else {
+				if ($pkglist =~ /#/) {
+					print "Warning: bad character \"#\" in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($pkglist =~ /,\s*$/) {
+					print "Warning: trailing \",\" in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+				}
+			}
 			foreach my $atom (split /[,|]/, $pkglist) {
 				$atom =~ s/\A\s*//;
 				$atom =~ s/\s*\Z//;
