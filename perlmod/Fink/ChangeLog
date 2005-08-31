@@ -1,4 +1,4 @@
-2005-08-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Add convenience method to get just one PkgVersion from
 	a .info file.
@@ -12,7 +12,7 @@
 
 	* PkgVersion.pm: allow overriding of bzip2 path in fink.conf
 
-2005-08-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+2005-08-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Base.pm: Allow initializers and constructors to have arguments.
 	* PkgVersion.pm: Use initializer arguments to get metadata into PkgVersion
