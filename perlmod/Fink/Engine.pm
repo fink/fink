@@ -391,7 +391,7 @@ sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag);
 	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer);
-	my ($buildonly, $pkgtree);
+	my ($buildonly);
 	my %options =
 	(
 	 "installedstate" => 0
@@ -400,6 +400,7 @@ sub do_real_list {
 	my $ISTATE_OUTDATED = 1;
 	my $ISTATE_CURRENT  = 2;
 	my $ISTATE_ABSENT   = 4;
+	my $ISTATE_TOONEW   = 8; # FIXME: Add option details!
 	my ($width, $namelen, $verlen, $dotab);
 	my $cmd = shift;
 	use Getopt::Long;
@@ -412,14 +413,15 @@ sub do_real_list {
 		GetOptions(
 				   'width|w=s'		=> \$width,
 				   'tab|t'			=> \$dotab,
-				   'installed|i'	=> sub {$options{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
+				   'installed|i'	=> sub {$options{installedstate} |=
+                                     $ISTATE_OUTDATED | $ISTATE_CURRENT | $ISTATE_TOONEW ;},
+				   'toonew'         => sub {$options{installedstate} |= $ISTATE_TOONEW   ;},
 				   'uptodate|u'		=> sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
 				   'outdated|o'		=> sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
 				   'notinstalled|n'	=> sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
 				   'buildonly|b'	=> \$buildonly,
 				   'section|s=s'	=> \$section,
 				   'maintainer|m=s'	=> \$maintainer,
-				   'tree|r=s'		=> \$pkgtree,
 				   'help|h'			=> sub {&help_list_apropos($cmd)}
 		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}	 else { # apropos
@@ -430,7 +432,8 @@ sub do_real_list {
 		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
 	}
 	if ($options{installedstate} == 0) {
-		$options{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT | $ISTATE_ABSENT;
+		$options{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT
+			| $ISTATE_ABSENT | $ISTATE_TOONEW;
 	}
 
 	# By default or if --width=auto, compute the output width to fit exactly into the terminal
@@ -499,7 +502,6 @@ sub do_real_list {
 			next if defined $buildonly;
 			next if defined $section;
 			next if defined $maintainer;
-			next if defined $pkgtree;
 			$lversion = "";
 			$iflag = $package->is_provided()
 				? " p "
@@ -511,8 +513,15 @@ sub do_real_list {
 			$vo = $package->get_version($lversion, 1);
 			# $iflag installed pkg precedence: real-latest > real-old > provided
 			if ($vo->is_installed()) {
-				next unless $options{installedstate} & $ISTATE_CURRENT;
-				$iflag = " i ";
+				my $virtvers = Fink::VirtPackage->query_package($pname) || '';
+				if ($vo->is_type('dummy') && $virtvers ne $lversion) {
+					# Newer version than fink knows about
+					next unless $options{installedstate} & $ISTATE_TOONEW;
+					$iflag = "*i*";
+				} else {
+					next unless $options{installedstate} & $ISTATE_CURRENT;
+					$iflag = " i ";
+				}
 			} elsif ($package->is_any_installed()) {
 				next unless $options{installedstate} & $ISTATE_OUTDATED;
 				$iflag = "(i)";
@@ -522,7 +531,6 @@ sub do_real_list {
 				next if defined $buildonly;
 				next if defined $section;
 				next if defined $maintainer;
-				next if defined $pkgtree;
 				$iflag = " p ";
 			} else {
 				next unless $options{installedstate} & $ISTATE_ABSENT;
@@ -542,9 +550,6 @@ sub do_real_list {
 		}
 		if (defined $maintainer) {
 			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
-		}
-		if (defined $pkgtree) {
-			next unless $vo->in_tree($pkgtree);
 		}
 		if ($cmd eq "apropos") {
 			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  

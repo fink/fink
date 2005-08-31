@@ -203,18 +203,58 @@ sub get_path {
 
   my @trees = $config->get_treelist;
 
-Returns the Trees config value split into a handy list.
+Returns the trees which should be currently used. This depends on the
+value of Trees in fink.conf, as well as any trees specified at the command
+line.
 
 =cut
 
+sub _standard_treelist {
+	my $self = shift;
+	return grep !m{^(/|.*\.\./)}, split /\s+/, $self->param_default(
+		"Trees", "local/main stable/main stable/bootstrap");
+}
+
 sub get_treelist {
 	my $self = shift;
+	my @avail = $self->_standard_treelist;
 
-	return grep !m{^(/|.*\.\./)},
-	           split /\s+/, 
-	             $self->param_default("Trees", 
-	                     "local/main stable/main stable/bootstrap"
-	             );
+	my @cmdline = split /,/, join ',', @{get_option('trees')};
+	return @avail unless @cmdline; # use all by default
+	
+	# Make filter hash using command-line options
+	my %want;
+	for my $filt (@cmdline) {
+		my $match = ($filt =~ m,/,)
+			? sub { $_ eq $filt }		# Exact match
+			: sub { m,^\Q$filt\E/, };	# Partial match
+		my @ok = grep { &$match() } @avail;
+		print "WARNING: No tree matching \"$filt\" found!\n" unless @ok;
+		@want{@ok} = (1) x @ok;
+	}
+	
+	return grep { $want{$_} } @avail;
+}
+
+=item custom_treelist
+
+  my $bool = $config->custom_treelist;
+
+Returns whether or not we're using a custom list of trees specified at the
+command line.
+
+=cut
+
+sub custom_treelist {
+	my $self = shift;
+	my @avail = $self->_standard_treelist;
+	my @current = $self->get_treelist;
+	
+	# If lists are unequal (ordered!), return true
+	while (@avail && @current) {
+		return 1 unless (shift @avail) eq (shift @current);
+	}
+	return @avail || @current;
 }
 
 =item param

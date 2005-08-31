@@ -1,3 +1,7 @@
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.in: Add new global --trees option. Still needs doc.
+
 2005-08-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink.conf.5.in: Document Bzip2path

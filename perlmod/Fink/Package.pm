@@ -993,6 +993,8 @@ sub update_db {
 	my $proxy_ok = $idx_ok && $try_cache && -r $class->db_proxies;
 	# Proxy must be newer, otherwise it could be out of date from a load-only
 	$proxy_ok &&= (-M $class->db_proxies < (-M $class->db_index || 0));
+	# If we specify trees at command-line, bad idea to use proxy
+	$proxy_ok &&= !$config->custom_treelist;
 	$proxy_ok &&= !$class->search_comparedb
 		unless $config->param_boolean("NoAutoIndex");
 	
@@ -1046,7 +1048,7 @@ sub update_db {
 		$class->pass3_insert($idx, @infos);
 		
 		# Store the proxy db
-		if ($ops{write}) {
+		if ($ops{write} && !$config->custom_treelist) {
 			store_rename($packages, $class->db_proxies);
 		}
 	}		
@@ -1120,16 +1122,16 @@ sub insert_runtime_packages {
 	
 	# Get data from dpkg's status file. Note that we do *not* store this 
 	# information into the package database.
-	$class->insert_runtime_packages_hash(Fink::Status->list());
+	$class->insert_runtime_packages_hash(Fink::Status->list(), 'status');
 
 	# Get data from VirtPackage.pm. Note that we do *not* store this 
 	# information into the package database.
-	$class->insert_runtime_packages_hash(Fink::VirtPackage->list());
+	$class->insert_runtime_packages_hash(Fink::VirtPackage->list(), 'virtual');
 }
 
 =item insert_runtime_package_hash
 
-  Fink::Package->insert_runtime_package_hash $hashref;
+  Fink::Package->insert_runtime_package_hash $hashref, $type;
 
 Given a hash of package-name => property-list, insert the packages into the
 in-memory database.
@@ -1140,7 +1142,11 @@ sub insert_runtime_packages_hash {
 	my $class = shift;
 	
 	my $dlist = shift;
+	my $type = shift;
 	foreach my $pkgname (keys %$dlist) {
+		# Don't add uninstalled status packages to package DB
+		next if $type eq 'status' && !Fink::Status->query_package($pkgname);
+		
 		# Skip it if it's already there
 		my $po = $class->package_by_name_create($pkgname);		
 		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};

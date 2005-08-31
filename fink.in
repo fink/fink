@@ -41,6 +41,7 @@ my %options =
    "use_binary"      => 0,
    "build_as_nobody" => 0,
    "maintainermode"  => 0,
+   "trees"           => [ ],
   );
 my @orig_ARGV = @ARGV;
 
@@ -55,6 +56,7 @@ GetOptions(
 	'no-use-binary-dist' => sub { $options{use_binary} = -1     },
 	'build-as-nobody'    => sub { $options{build_as_nobody} = 1 },
 	'maintainer|m'       => sub { $options{maintainermode} = 1  },
+	'trees|t=s@'         => $options{trees}                     ,
 #	'interactive|i'      => sub { $options{interactive} = 1     },
 	'version|V'          => \&show_version,
 	'help|h'             => \&show_help

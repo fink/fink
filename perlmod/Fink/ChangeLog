@@ -1,5 +1,16 @@
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Config.pm: Allow filtering of treelist via command line option.
+	* Package.pm: Don't use/store proxy db if using custom treelist.
+	* Package.pm: Don't include Status packages that aren't installed in Fink's
+	DB. It's confusing to do 'fink list blah' and find a package, and then
+	'fink install blah' makes the dep engine get confused and die.
+	* Engine.pm: Use *i* to indicate a package newer than the newest package
+	fink knows about (not including status, of course!). Option 'toonew'
+	needs decision on whether we keep it, and docs.
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Add convenience method to get just one PkgVersion from
 	a .info file.
 	* PkgVersion.pm, Validation.pm, FinkVersion.pm.in: Info3 enhancements
