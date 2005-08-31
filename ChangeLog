@@ -1,3 +1,7 @@
+2005-08-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink.conf.5.in: Document Bzip2path
+
 2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink.info.in:  Use Conflicts/Replaces against gcc3.1 so that the 

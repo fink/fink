@@ -167,6 +167,11 @@ fields later in this document for more information about these temporary directo
 On Tiger, it is recommended that the Buildpath end with .noindex or .build.
 Otherwise, Spotlight will attempt to index the temporary files in the
 Buildpath, slowing down builds.
+.It Cm Bzip2Path: Ar the path to your bzip2 (or compatible) binary
+The Bzip2Path option lets you override the default path for the bzip2 command-line
+tool.  This allows you to specify an alternate location to your bzip2 executable,
+pass optional command-line options, or use a drop-in replacement like pbzip2 for
+decompressing .bz2 archives.
 .El
 .\"
 .\"

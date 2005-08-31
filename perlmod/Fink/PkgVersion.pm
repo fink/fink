@@ -2608,7 +2608,7 @@ GCC_MSG
 		} elsif ( -e "$basepath/bin/tar" ) {
 			$tarcommand = "$basepath/bin/tar $tarflags $permissionflags"; # Use Fink's GNU Tar if available
 		}
-		$bzip2 = "bzip2";
+		$bzip2 = $config->param_default("Bzip2path", "bzip2");
 		$unzip = "unzip";
 		$gzip = "gzip";
 		$cat = "/bin/cat";
