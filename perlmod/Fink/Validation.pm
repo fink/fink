@@ -25,6 +25,10 @@ package Fink::Validation;
 
 use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch);
 use Fink::Config qw($config);
+use Cwd qw(getcwd);
+use File::Find qw(find);
+use File::Path qw(rmtree);
+use File::Temp qw(tempdir);
 
 use strict;
 use warnings;
@@ -35,7 +39,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&validate_info_file &validate_dpkg_file);
+	@EXPORT_OK	 = qw(&validate_info_file &validate_dpkg_file &validate_dpkg_unpacked);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -907,7 +911,61 @@ sub validate_info_component {
 }
 
 #
-# Check a given .deb file for standard compliance
+# Public function to validate a .deb, given its .deb filename
+# returns boolean of whether everything is okay
+#
+sub validate_dpkg_file {
+	my $dpkg_filename = shift;
+	my $val_prefix = shift;
+
+	# create a dummy packaging directory (%d)
+	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
+	my $destdir = tempdir();
+
+	print "Validating .deb file $dpkg_filename...\n";
+	
+	# unpack the actual filesystem
+	if (system('dpkg', '-x', $dpkg_filename, $destdir)) {
+		print "Error: couldn't unpack .deb\n";
+		return 0;
+	}
+
+	# unpack the dpkg control module
+	if (system('dpkg', '-e', $dpkg_filename, "$destdir/DEBIAN")) {
+		print "Error: couldn't unpack .deb control\n";
+		return 0;
+	}
+
+	# we now have the equivalent of %d after phase_install for the family
+	my $looks_good = &_validate_dpkg($destdir, $val_prefix);
+
+	# clean up...need better implementation?
+	#   File::Temp::tempdir(CLEANUP) only runs when whole perl program exits
+	#   Fink::Command::rm_rf leaves behind things that aren't chmod +w
+	rmtree [$destdir], 0, 0;
+
+	return $looks_good;
+}
+
+#
+# Public function to validate a .deb, given a dir that contains its
+# unpacked or (pre-packed) contents (both filesystem and control)
+# returns boolean of whether everything is okay
+#
+sub validate_dpkg_unpacked {
+	my $destdir = shift;
+	my $val_prefix = shift;
+
+	print "Validating .deb dir $destdir...\n";
+	
+	my $looks_good = &_validate_dpkg($destdir, $val_prefix);
+
+	return $looks_good;
+}
+
+#
+# Private function that performs the actual .deb validation checks
+# Check a given unpacked .deb file for standards compliance
 # returns boolean of whether everything is okay
 #
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
@@ -931,11 +989,12 @@ sub validate_info_component {
 # - Catch common error relating to usage of -framework flag in .pc file
 # - any other ideas?
 #
-sub validate_dpkg_file {
-	my $dpkg_filename = shift;
+sub _validate_dpkg {
+	my $destdir = shift;  # %d, or its moral equivalent
 	my $val_prefix = shift;
 
-	my ($basepath, $buildpath);
+	my $basepath;   # %p
+	my $buildpath;  # BuildPath from fink.conf
 	# determine the base path
 	if (defined $val_prefix) {
 		$basepath = $val_prefix;
@@ -950,48 +1009,59 @@ sub validate_dpkg_file {
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/");
 	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications / );
 
-	my ($pid, @found_bad_dir);
-	my $filename;
-	my $looks_good = 1;
+	my @found_bad_dir;
 	my $installed_headers = 0;
 	my $installed_dylibs = 0;
-	my $scrollkeeper_misuse_warned = 0;
-	my $deb_control;
 
-	print "Validating .deb file $dpkg_filename...\n";
+	# the whole control module is loaded and pre-precessed before any actual validation
+	my $deb_control;        # key:value of all %d/DEBIAN/control fields
+	my $control_processed;  # parsed data from $deb_control
+	my $dpkg_script;        # key={pre,post}{inst,rm}, value=ref to array of file's lines
 
-	# Quick & Dirty solution!!!
-	# This is a potential security risk, we should maybe filter $dpkg_filename...
-
+	my $looks_good = 1;
 	# read some fields from the control file
-	{
-	my @deb_control_fields = qw/ builddependsonly package depends version source/;
-	$deb_control = { map {$_, 1} (@deb_control_fields) };
-	foreach (`dpkg --field $dpkg_filename @deb_control_fields`) {
-		/^([^:]*): (.*)/;
-		$deb_control->{lc $1} = $2;
+	if (open my $control, '<', "$destdir/DEBIAN/control") {
+		while (<$control>) {
+			chomp;
+			if (/^([0-9A-Za-z_.\-]+):\s*(.*?)\s*$/) {
+				$deb_control->{lc $1} = $2;
+			} elsif (/^\s/) {
+				# we don't care about continuation lines
+				# {description} will only be Description not other Desc*
+			} else {
+				print "Error: malformed line in control file. Offending line:\n$_\n";
+				$looks_good = 0;
+			}
+		}
+		close $control;
+	} else {
+		print "Error: could not read control file!\n";
+		$looks_good = 0;
 	}
-	}
-	my $pkgbuilddir = sprintf '%s/%s-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{version};
-	my $pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $deb_control->{version};
 
 	# read some control script files
-	foreach (qw/ preinst postinst prerm postrm /) {
-		$deb_control->{$_} = [ `dpkg -I $dpkg_filename $_ 2>/dev/null` ];
-#		print "control file $_:\n", @{$deb_control->{$_}};
-#		print "control file $_:\n", map { /^\s*scrollkeeper-update/ ? "+$_" : "-$_" } @{$deb_control->{$_}};
+	foreach my $scriptfile (qw/ preinst postinst prerm postrm /) {
+		# values for all normal scriptfiles are always valid array refs
+		$dpkg_script->{$scriptfile} = [];
+		my $filename = "$destdir/DEBIAN/$scriptfile";
+		if (-f $filename) {
+			if (open my $script, '<', $filename) {
+				# slurp an array of lines
+				$dpkg_script->{$scriptfile} = [<$script>];
+				close $script;
+			} else {
+				print "Error: could not read dpkg script $scriptfile: $!\n";
+				$looks_good = 0;
+			}
+		}
 	}
 
 	# create hash where keys are names of packages listed in Depends
-	$deb_control->{depends_pkgs} = {
+	$control_processed->{depends_pkgs} = {
 		map { /\s*([^ \(]*)/, undef } split /[|,]/, $deb_control->{depends}
 	};
 
-	$pid = open(DPKG_CONTENTS, "dpkg --contents $dpkg_filename |") or die "Couldn't run dpkg: $!\n";
-	my @dpkg_contents = <DPKG_CONTENTS>;
-	close(DPKG_CONTENTS) or die "Error on close: ", $?>>8, " $!\n";
-
-	# -pmXXX packages must install XXX-localized paths only
+	# prepare to chek -pmXXX packages must install XXX-localized paths only
 	my $perlver_re;
 	if ($deb_control->{package} =~ /-pm(\d+)$/) {
 		$perlver_re = $1;
@@ -1004,179 +1074,215 @@ sub validate_dpkg_file {
 		}
 	}
 
-	foreach (@dpkg_contents) {
-		# process
-		if (/([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*\.([^\s]*)/) {
-			$filename = $6;
-			#print "$filename\n";
-			next if "$basepath/" =~ /^\Q$filename\E/;  # skip parent components of basepath hierarchy
-			if (not $filename =~ /^$basepath/) {
-				if (($filename =~ /^\/etc/) || ($filename =~ /^\/tmp/) || ($filename =~ /^\/var/)) {
-					print "Error: File \"$filename\" is overwriting essential system symlink pointing to /private/...\n";
-					$looks_good = 0;
-				} elsif ($filename =~ /^\/mach/) {
-					print "Error: File \"$filename\" is overwriting essential system symlink pointing to /mach.sym\n";
-					$looks_good = 0;
-				} elsif (not (($dpkg_filename =~ /xfree86[_\-]/) || ($dpkg_filename =~ /xorg[_\-]/))) {
-					print "Warning: File \"$filename\" installed outside of $basepath\n";
-					$looks_good = 0;
-				} else {
-					if (not (($filename =~ /^\/Applications\/XDarwin.app/) || ($filename =~ /^\/usr\/X11R6/) || ($filename =~ /^\/private\/etc\/fonts/) )) {
-						next if (($filename eq "/Applications/") || ($filename eq "/private/") || ($filename eq "/private/etc/") || ($filename eq "/usr/"));
-						print "Warning: File \"$filename\" installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, and /usr/X11R6\n";
-						$looks_good = 0;
-					}
+	# prepare regexes to check for use of %b, and %d or %D
+	my $pkgbuilddir = sprintf '%s/%s-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{version};  # %b
+	my $pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $deb_control->{version};  # %d or %D
+
+	# during File::Find loop, we stack all error msgs
+	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
+
+	# this sub gets called by File::Find::find for each file in the .deb
+	# expects cwd==%d and File::Find::find to be called with no_chdir=1
+	my $perform_dpkg_file_checks = sub {
+		# the full path/filename as it will be installed at its real location
+		my($filename) = $File::Find::name =~ /^\.(.*)/;
+		return if not length $filename;              # skip top-level directory
+		$filename .= '/' if -d $File::Find::name;    # add trailing slash to dirnames
+		return if $filename =~ /^\/DEBIAN/;          # skip dpkg control module
+		return if "$basepath/" =~ /^\Q$filename\E/;  # skip parent components of basepath hierarchy
+
+		# check for files in well-known bad locations
+		if (not $filename =~ /^$basepath\//) {
+			if (($filename =~ /^\/etc/) || ($filename =~ /^\/tmp/) || ($filename =~ /^\/var/)) {
+				&stack_msg($msgs, "Overwriting essential system symlink pointing to /private$filename", $filename);
+			} elsif ($filename =~ /^\/mach/) {
+				&stack_msg($msgs, "Overwriting essential system symlink pointing to /mach.sym", $filename);
+			} elsif ($deb_control->{package} !~ /^(xfree86|xorg)/) {
+				&stack_msg($msgs, "File installed outside of $basepath", $filename);
+			} else {
+				if (not (($filename =~ /^\/Applications\/XDarwin.app/) || ($filename =~ /^\/usr\/X11R6/) || ($filename =~ /^\/private\/etc\/fonts/) )) {
+					return if (($filename eq "/Applications/") || ($filename eq "/private/") || ($filename eq "/private/etc/") || ($filename eq "/usr/"));
+					&stack_msg($msgs, "File installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, and /usr/X11R6", $filename);
 				}
-			} elsif ($filename ne "$basepath/src/" and @found_bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
-				# Directory from this list are not allowed to exist in the .deb.
-				# The only exception is $basepath/src which may exist but must be empty
-				print "Warning: File installed into deprecated directory $found_bad_dir[0]\n";
-				print "					Offender is $filename\n";
-				$looks_good = 0;
-			} elsif (not grep { $filename =~ /^$_/ } @good_dirs) {
-				# Directory from this list are the top-level dirs that may exist in the .deb.
-				print "Warning: File \"$filename\" installed outside of allowable subdirectories of $basepath\n";
-				$looks_good = 0;
-			} elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
-				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
-				$looks_good = 0;
-			} elsif ( $filename =~/^($basepath\/lib\/perl5\/darwin\/.*\.bundle)/ ) {
-				print "Warning: Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.\n  Offending file: $1\n";
-				$looks_good = 0;
-			} elsif ( ($filename =~/^($basepath\/.*\.elc)$/) &&
-				  (not (($dpkg_filename =~ /emacs[0-9][0-9][_\-]/) ||
-					($dpkg_filename =~ /xemacs[_\-]/)))) {
-				$looks_good = 0;
-				print "Warning: Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.\n  Offending file: $1\n";
-			} elsif ( $filename =~/^$basepath\/include\S*[^\/]$/ ) {
-				$installed_headers = 1;
- 			} elsif ( $filename =~/\.dylib$/ ) {
- 				$installed_dylibs = 1;
-			} elsif ( $filename =~/^$basepath\/share\/omf\/.*\.omf/ ) {
-				foreach (qw/ postinst postrm /) {
-					next if $_ eq "postrm" && $deb_control->{package} eq "scrollkeeper"; # circular dep
-					if (not grep { /^\s*scrollkeeper-update/ } @{$deb_control->{$_}}) {
-						print "Warning: scrollkeeper source file found, but scrollkeeper-update not called\nin $_. See scrollkeeper package docs, starting with 'fink info scrollkeeper', for information. Offending file:\n  $filename\n";
-						$looks_good = 0;
-					}
+			}
+		} elsif ($filename ne "$basepath/src/" and @found_bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
+			# Directories from this list are not allowed to exist in the .deb.
+			# The only exception is $basepath/src which may exist but must be empty
+			&stack_msg($msgs, "File installed into deprecated directory $found_bad_dir[0]", $filename);
+		} elsif (not grep { $filename =~ /^$_/ } @good_dirs) {
+			# Directories from this list are the top-level dirs that may exist in the .deb.
+			&stack_msg($msgs, "File installed outside of allowable subdirectories of $basepath", $filename);
+		}
+
+		# check for compiled-perl modules in unversioned place
+		if ($filename =~ /^$basepath\/lib\/perl5\/(auto|darwin)\/.*\.bundle/) {
+			&stack_msg($msgs, "Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.", $filename);
+		}
+
+		# check for compiled emacs libs
+		if ($filename =~ /\.elc$/ &&
+			$deb_control->{package} !~ /^emacs\d\d(|-.*)$/ &&
+			$deb_control->{package} !~ /^xemacs(|-.*)$/
+		   ) {
+			&stack_msg($msgs, "Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.", $filename);
+		}
+
+		# track whether BuildDependsOnly will be needed
+		if ($filename =~/^$basepath\/include\// && !-d $File::Find::name) {
+			$installed_headers = 1;
+		}
+		if ($filename =~/\.dylib$/) {
+			$installed_dylibs = 1;
+		}
+
+		# make sure scrollkeeper is being used according to its documentation
+		if ( $filename =~/^$basepath\/share\/omf\/.*\.omf$/ ) {
+			foreach (qw/ postinst postrm /) {
+				next if $_ eq "postrm" && $deb_control->{package} eq "scrollkeeper"; # circular dep
+				if (not grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}}) {
+					&stack_msg($msgs, "Scrollkeeper source file found, but scrollkeeper-update not called in $_. See scrollkeeper package docs, starting with 'fink info scrollkeeper', for information.", $filename);
 				}
-			} elsif ( $filename =~ /^$basepath\/etc\/daemons\/\S+$/ ) {
-				if (not exists $deb_control->{depends_pkgs}->{daemonic}) {
-					print "Warning: Package appears to contain a daemonicfile but does not depend on the package \"daemonic\"\n  Offending file: $filename\n";
-					$looks_good = 0;
-				}
-				my $daemonicfile = ".$filename";
-				open(DAEMONIC_FILE, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O $daemonicfile |") or die "Couldn't run dpkg: $!\n";
-				while (<DAEMONIC_FILE>) {
+			}
+		}
+
+		# check for presence of compiled scrollkeeper
+		if ($filename =~ /^$basepath\/var\/scrollkeeper\/.+/) {
+			&stack_msg($msgs, "Runtime scrollkeeper file installed, which usually results from calling scrollkeeper-update during CompileScript or InstallScript. See the\nscrollkeeper package docs, starting with 'fink info scrollkeeper', for information on the correct use of that utility.", $filename);
+		}
+
+		# special checks for daemonic files
+		if ($filename =~ /^$basepath\/etc\/daemons\/.+/) {
+			if (not exists $control_processed->{depends_pkgs}->{daemonic}) {
+				&stack_msg($msgs, "Package contains a DaemonicFile but does not depend on the package \"daemonic\"", $filename);
+			}
+			if (open my $daemonicfile, '<', $File::Find::name) {
+				while (<$daemonicfile>) {
 					if (/^\s*<executable.*?>(\S+)<\/executable>\s*$/) {
 						my $executable = $1;
-						my $perms;
-						map { /^(\S+)/; $perms .= $1 } grep /\s+\.$executable$/, @dpkg_contents;
-						if (defined $perms) {
-							if ($perms =~ /^-..([xs-])......$/) {
-								if ($1 eq '-') {
-									print "Error: daemonicfile executable \"$executable\" in this .deb does not have execute permissions. ($dpkg_filename)\n";
-									$looks_good = 0;
-								}
-							} else {
-								print "Warning: got confused by permissions \"$perms\" for daemonicfile executable in .deb. ($dpkg_filename)\n";
-								$looks_good = 0;
+						if (-f ".$executable") {
+							unless (-x ".$executable") {
+								&stack_msg($msgs, "DaemonicFile executable in this .deb does not have execute permissions.", $executable);
 							}
 						} else {
-							if (not -e $executable) {
-								print "Warning: daemonicfile executable \"$executable\" does not exist. ($dpkg_filename)\n";
+							if (!-e $executable) {
+								&stack_msg($msgs, "DaemonicFile executable \"$executable\" does not exist.");
 								$looks_good = 0;
-							} elsif (not -x $executable) {
-								print "Warning: daemonicfile executable \"$executable\" does not have execute permissions. ($dpkg_filename)\n";
-								$looks_good = 0;
+							} elsif (!-x $executable) {
+								&stack_msg($msgs, "DaemonicFile executable \"$executable\" does not have execute permissions.");
 							}
 						}
 					}
 				}
-				close(DAEMONIC_FILE) or die "Error on close: ", $?>>8, " $!\n";
-			} elsif ( $filename =~ /^$basepath\/var\/scrollkeeper/ ) {
-				if (not $scrollkeeper_misuse_warned++) {
-					print "Warning: Found $basepath/var/scrollkeeper, which usually results from calling\nscrollkeeper-update during CompileScript or InstallScript. See the\nscrollkeeper package docs, starting with 'fink info scrollkeeper', for information on the correct use of that utility.\n";
-					$looks_good = 0;
-				}
+				close $daemonicfile;
+			} else {
+				&stack_msg($msgs, "Couldn't read DaemonicFile $File::Find::name: $!");
 			}
-			if ( $filename =~/\.la$/ ) {
-				open(LA_FILE, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O .$filename |") or die "Couldn't run dpkg: $!\n";
-				while (<LA_FILE>) {
+		}
+
+		# check that libtool files don't link to temp locations
+		if ($filename =~/\.la$/) {
+			if (open my $la_file, '<', $File::Find::name) {
+				while (<$la_file>) {
 					if (/$pkgbuilddir/) {
-						print "Warning: libtool file $filename points to fink build dir. ($dpkg_filename)\n";
-						$looks_good = 0;
+						&stack_msg($msgs, "Libtool file points to fink build dir.", $filename);
 					} elsif (/$pkginstdirs/) {
-						print "Warning: libtool file $filename points to fink install dir. ($dpkg_filename)\n";
-						$looks_good = 0;
+						&stack_msg(&msgs, "Libtool file points to fink install dir.", $filename);
 					}
 				}
-				close(LA_FILE) or die "Error on close: ", $?>>8, " $!\n";
+				close $la_file;
+			} else {
+				&stack_msg($msgs, "Couldn't read libtool file \"$filename\": $!");
 			}
-			if ( $filename eq "$basepath/lib/charset.alias" and $deb_control->{package} !~ /^libgettext\d*/ ) {
-				print "Warning: The file $filename should only exist in the \"libgettextN\" packages.\n";
-				$looks_good = 0;
-			}
-			if ( $filename eq "$basepath/share/locale/charset.alias" ) {
-				# this seems to be a common bug in pkgs using gettext
-				print "Warning: The file $filename seems misplaced.\n";
-				$looks_good = 0;
-			}
-			if (defined $perlver_re and $filename !~ /$perlver_re/ and $filename !~ /\/$/) {
-				print "Warning: File in a perl-versioned package is neither versioned nor in a versioned directory.\n  Offending file: $filename\n";
-				$looks_good = 0;
-			}
-			if ($filename =~ /\.pc$/) {
-				# Check for common programmer mistakes relating to
-				# passing -framework flags in pkg-config files
-				my $pc_file;
-				open($pc_file, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O .$filename |") or die "Couldn't run dpkg: $!\n";
+		}
+
+		# check for privately installed copies of files provided by gettext
+		if ($filename eq "$basepath/lib/charset.alias" and $deb_control->{package} !~ /^libgettext\d*/) {
+			&stack_msg($msgs, "File should only exist in the \"libgettextN\" packages.", $filename);
+		} elsif ($filename eq "$basepath/share/locale/charset.alias") {
+			# this seems to be a common bug in pkgs using gettext
+			&stack_msg($msgs, "Gettext file seems misplaced.", $filename);
+		}
+
+		# check for files in a -pmXXX package that would conflict among different XXX variants
+		if (defined $perlver_re and $filename !~ /$perlver_re/ and !-d $File::Find::name) {
+			&stack_msg($msgs, "File in a perl-versioned package is neither versioned nor in a versioned directory.", $filename);
+		}
+
+		# Check for common programmer mistakes relating to passing -framework flags in pkg-config files
+		if ($filename =~ /\.pc$/) {
+			if (open my $pc_file, '<', $File::Find::name) {
 				while (<$pc_file>) {
 					chomp;
 					if (/(-W.,-framework)[^,]/) {
-						print "Warning: $1 flag may get munged. See the gcc manpage for information about passing options to flags for specific compiler passes.\n  Offending file: $filename\n  Offending line: $_\n";
-						$looks_good = 0;
+						&stack_msg($msgs, "The $1 flag may get munged by pkg-config. See the gcc manpage for information about passing options to flags for specific compiler passes.", $filename, $_);
 					}
 				}
-				close($pc_file) or die "Error on close: ", $?>>8, " $!\n";
+				close $pc_file;
+			} else {
+				&stack_msg($msgs, "Couldn't read pkg-config file \"$filename\": $!");
+			}
+		}
+	};  # end of CODE ref block
+
+	# check each file in the %d hierarchy according to the above-defined sub
+	{
+		my $curdir = getcwd();
+		chdir $destdir;
+		find ({wanted=>$perform_dpkg_file_checks, no_chdir=>1}, '.');
+		chdir $curdir;
+	}
+
+	# handle messages generated during the File::Find loop
+	{
+		# when we switch to Tie::IxHash, we won't need to know the internal details of $msgs
+		my @msgs_ordered = @{$msgs->[0]};
+		my %msgs_details = %{$msgs->[1]};
+		if (@msgs_ordered) {
+			$looks_good = 0;  # we have errors in the stack!
+			foreach my $msg (@msgs_ordered) {
+				print "Error: $msg\n";
+				foreach (@{$msgs_details{$msg}}) {
+					print "\tOffending file: ", $_->[0], "\n" if defined $_->[0];
+					print "\tOffending line: ", $_->[1], "\n" if defined $_->[1];
+				}
 			}
 		}
 	}
 
-# Note that if the .deb was compiled with an old version of fink which
-# does not record the BuildDependsOnly field, or with an old version
-# which did not use the "Undefined" value for the BuildDependsOnly field,
-# the warning is not issued
-
+	# handle BuildDependsOnly flags set during file-by-file checks
+	# Note that if the .deb was compiled with an old version of fink which
+	# does not record the BuildDependsOnly field, or with an old version
+	# which did not use the "Undefined" value for the BuildDependsOnly field,
+	# the warning is not issued
 	if ($installed_headers and $installed_dylibs) {
-		if ($deb_control->{builddependsonly} =~ /Undefined/) {
-			print "Warning: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
+		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
+			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
 		}
 	}
 
-	# verify Depends:scrollkeeper
+	# make sure we have Depends:scrollkeeper if scrollkeeper is called in dpkg scripts
 	foreach (qw/ preinst postinst prerm postrm /) {
 		next if $deb_control->{package} eq "scrollkeeper"; # circular dep
-		if ( grep { /^\s*scrollkeeper-update/ } @{$deb_control->{$_}} and not exists $deb_control->{depends_pkgs}->{scrollkeeper}) {
-			print "Warning: Calling scrollkeeper-update in $_ requires \"Depends:scrollkeeper\"\n";
+		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}} and not exists $control_processed->{depends_pkgs}->{scrollkeeper}) {
+			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:scrollkeeper\"\n";
 			$looks_good = 0;
 		}
 	}
 
 	# scrollkeeper-update should be called from PostInstScript and PostRmScript
 	foreach (qw/ preinst prerm /) {
-		if (grep { /^\s*scrollkeeper-update/ } @{$deb_control->{$_}}) {
+		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}}) {
 			print "Warning: scrollkeeper-update in $_ is a no-op\nSee scrollkeeper package docs, starting with 'fink info scrollkeeper', for information.\n";
 			$looks_good = 0;
 		}
 	}
 
 	# check debconf usage
-	if ($deb_control->{package} ne "debconf" and !exists $deb_control->{depends_pkgs}->{debconf}) {
+	if ($deb_control->{package} ne "debconf" and !exists $control_processed->{depends_pkgs}->{debconf}) {
 		foreach (qw/ preinst postinst prerm postrm /) {
-			if (grep { /debconf/i } @{$deb_control->{$_}}) {
-				print "Warning: Package appears to use debconf in $_ but does not depend on the package \"debconf\"\n";
+			if (grep { /debconf/i } @{$dpkg_script->{$_}}) {
+				print "Error: Package appears to use debconf in $_ but does not depend on the package \"debconf\"\n";
 				$looks_good = 0;
 			}
 		}
@@ -1187,6 +1293,20 @@ sub validate_dpkg_file {
 	}
 
 	return $looks_good;
+}
+
+
+# implements somehting like Tie::IxHash STORE, but each value-set is
+# pushed onto list instead of replacing the existing value for the key
+sub stack_msg {
+	my $queue = shift;     # ref to list: [\@msgs, \%msgs]
+	# @msgs lists order of first occurrence of each unique $message
+	# %msgs is keyed by $message, value is ref to list of additional details
+	my $message = shift;   # the message to store
+	my @details = @_;      # additional details about this instance of the msg
+
+	push @{$queue->[0]}, $message unless exists $queue->[1]->{$message};
+	push @{$queue->[1]->{$message}}, \@details;
 }
 
 

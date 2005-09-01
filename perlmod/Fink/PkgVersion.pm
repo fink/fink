@@ -46,7 +46,7 @@ use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
 use Fink::Notify;
 use Fink::Shlibs;
-use Fink::Validation;
+use Fink::Validation qw(validate_dpkg_unpacked);
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
 
@@ -3767,12 +3767,6 @@ EOF
 			die $error . "\n";
 		}
 	}
-	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
-	if (&execute($cmd)) {
-		my $error = "can't create package ".$self->get_debname();
-		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-		die $error . "\n";
-	}
 
 	if (Fink::Config::get_option("maintainermode")) {
 		my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
@@ -3780,9 +3774,16 @@ EOF
 			'verbosity' => 3,
 			'Pedantic'  => 1
 			} );
-		Fink::Validation::validate_dpkg_file($self->get_debpath()."/".$self->get_debname())
+		Fink::Validation::validate_dpkg_unpacked($ddir)
 			or die "Please correct the above problems and try again!\n";
 		Fink::Config::set_options(\%saved_options);
+	}
+
+	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
+	if (&execute($cmd)) {
+		my $error = "can't create package ".$self->get_debname();
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
 	}
 
 	unless (symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname()) {

@@ -1,3 +1,9 @@
+2005-09-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation: dpkg validation now performed on an unpacked archive
+	with a wrapper to unpack a .deb (merge in val-unpack branch).
+	* PkgVersion.pm: -m mode validates %d *before* constructing .deb.
+
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Set invariant name *before* package name is expanded.
