@@ -472,18 +472,18 @@ sub initialize {
 		$expand->{'n'}  = $expand->{'N'};  # allow for a typo
 	}
 	
-	# Setup basic package name
-	# must always call expand_percent even if no Type in order to make
-	# sure we don't have %type_*[] or other bad % constructs
-	$self->{package} = &expand_percent($self->{package},
-		$expand, "$self->{_filename} \"package\"");
-	
 	# Setup invariant name
 	$self->{_package_invariant} = $self->{package};
 	$self->{_package_invariant} =~ s/\%type_(raw|pkg)\[.*?\]//g;
 	# must always call expand_percent even if no Type or parent in
 	# order to make sure Maintainer doesn't have bad % constructs
 	$self->{_package_invariant} = &expand_percent($self->{_package_invariant},
+		$expand, "$self->{_filename} \"package\"");
+	
+	# Setup basic package name
+	# must always call expand_percent even if no Type in order to make
+	# sure we don't have %type_*[] or other bad % constructs
+	$self->{package} = &expand_percent($self->{package},
 		$expand, "$self->{_filename} \"package\"");
 	
 	### END handle types

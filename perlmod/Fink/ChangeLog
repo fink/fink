@@ -1,5 +1,9 @@
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm: Set invariant name *before* package name is expanded.
+	
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Don't error if .info file not in 'finkinfo'. For a
 	regular index, it's enforced by only looking there. For scripts, we don't
 	care anyhow.

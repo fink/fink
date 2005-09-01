@@ -415,7 +415,7 @@ sub do_real_list {
 				   'tab|t'			=> \$dotab,
 				   'installed|i'	=> sub {$options{installedstate} |=
                                      $ISTATE_OUTDATED | $ISTATE_CURRENT | $ISTATE_TOONEW ;},
-				   'toonew'         => sub {$options{installedstate} |= $ISTATE_TOONEW   ;},
+				   'newer|N'        => sub {$options{installedstate} |= $ISTATE_TOONEW   ;},
 				   'uptodate|u'		=> sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
 				   'outdated|o'		=> sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
 				   'notinstalled|n'	=> sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
@@ -585,14 +585,14 @@ Options:
   -u, --uptodate       - Only list packages which are up to date.
   -o, --outdated       - Only list packages for which a newer version is
                          available.
+  -N, --newer          - Only  list packages whose installed version is newer
+                         than anything fink knows about.
   -n, --notinstalled   - Only list packages which are not installed.
   -b, --buildonly      - Only list packages which are Build Only Depends
   -s expr,             - Only list packages in the section(s) matching expr
     --section=expr       (example: fink list --section=x11).
   -m expr,             - Only list packages with the maintainer(s) matching expr
     --maintainer=expr    (example: fink list --maintainer=beren12).
-  -r expr,             - Only list packages with the tree matching expr
-    --tree=expr          (example: fink list --tree=stable).
   -h, --help           - This help text.
 
 EOF
