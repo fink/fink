@@ -4063,6 +4063,8 @@ EOSCRIPT
 	print "Setting build lock...\n";
 	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
 	my $lock_failed = &execute(dpkg_lockwait() . " -i $debfile", ignore_INT=>1);
+	Fink::PkgVersion->dpkg_changed;
+
 	if ($lock_failed) {
 		print_breaking rejoin_text <<EOMSG;
 Can't set build lock for $pkgname ($pkgvers)
