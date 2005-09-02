@@ -1217,8 +1217,6 @@ sub cmd_cleanup {
 	#				 current version of any package; etc.
 	#				 Delete all .deb and delete all src? Not really needed, this can be
 	#				 achieved each with single line CLI commands.
-	# TODO - document --keep-src in the man page, and add a fink.conf entry for defaults
-	# TODO - document --dry-run option that prints out what actions would be performed
 
 	my(%opts, %modes, $wanthelp);
 	
@@ -1249,7 +1247,7 @@ One or more of the following modes must be specified:
   --sources, --srcs
           - Delete source files
   --buildlocks, --bl
-          - Delete buildlock packages (not implemented)
+          - Delete stale buildlock packages
 
 Options:
   -k, --keep-src  - Move old source files to $basepath/src/old/ instead
@@ -1510,15 +1508,17 @@ EOFUNC
 
 =item cleanup_buildlocks
 
-*NOT YET IMPLEMENTED*
-
-Remove any installed buildlock packages. The following option is known:
+Check for all processes corresponding to each buildlock pid-file.
+Optionally remove those buildlocks whose processes do not
+exist. Returns a boolean indicating whether there any active
+buildlocks are still present after cleanup. The following option is
+known:
 
 =over 4
 
 =item dryrun
 
-If true, just list them.
+If true, don't actually remove the locks.
 
 =back
 
@@ -1526,8 +1526,74 @@ If true, just list them.
 
 sub cleanup_buildlocks {
 	my %opts = (dryrun => 0, @_);
-	
-	print "fink cleanup --bl is not implemented yet.\n\n";
+
+	# gather all .pid files
+
+	print "Reading buildlocks...\n";
+	my $pidfile_dir = "$basepath/var/run/fink";
+	my @pidfiles = ();
+	if (opendir my $dirhandle, $pidfile_dir) {
+		@pidfiles = grep { /^fink-buildlock-.+\.pid$/ } readdir $dirhandle;
+		close $dirhandle;
+	} else {
+		print "Warning: could not read buildlock pid directory $pidfile_dir: $!\n";
+		return 0;
+	}
+
+	# collect pid from each .pid file
+
+	my %pids;  # pid of each buildlock pkg
+	foreach my $pidfile (@pidfiles) {
+		if ($pidfile =~ /^fink-buildlock-(.+)\.pid$/) {
+			my $fullname = $1;
+			if (open my $pidhandle, '<', "$pidfile_dir/$pidfile") {
+				my $pid = <$pidhandle>;
+				chomp $pid;
+				if ($pid =~ /^\d+$/) {
+					$pids{$fullname} = $pid;
+				} else {
+					print "Warning: skipping pidfile $pidfile: could not parse it.\n";
+				}
+				close $pidhandle;
+			} else {
+				print "Warning: skipping pidfile $pidfile: could not read it: $!\n";
+			}
+		} else {
+			# should never get here!
+			print "Warning: skipping pidfile $pidfile: could not parse its name.\n";
+		}
+	}
+
+	if (!%pids) {
+		print "No buildlocks found\n";
+		return 0;
+	}
+
+	# check if each pid is still present
+
+	my $locks_left = 0;
+	foreach my $pkg (sort keys %pids) {
+		print "Found buildlock for $pkg...\n";
+		if (kill 0, $pids{$pkg}) {
+			# successfully signaled, so pid still exists
+			&execute("ps -p $pids{$pkg}");
+			print "Not removing lock\n" if not $opts{dryrun};
+			$locks_left++;
+		} else {
+			my $msg = "Process $pids{$pkg} does not exist.";
+			if ($opts{dryrun}) {
+				print $msg, "\n";
+			} else {
+				if (&prompt_boolean("$msg Remove the lock?", default => 1)) {
+					Fink::PkgVersion::phase_deactivate("fink-buildlock-$pkg");
+				  } else {
+					  $locks_left++;
+				  }
+			}
+		}
+	}
+
+	return $locks_left;
 }
 
 =back
