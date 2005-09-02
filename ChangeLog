@@ -1,3 +1,7 @@
+2005-09-02  Daniel Macks  <dmacks@netspace.org>
+
+	fink.8.in: Documente cleanup --buildlocks
+
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink.in: Add new global --trees option. Still needs doc.

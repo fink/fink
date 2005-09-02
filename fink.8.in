@@ -385,6 +385,8 @@ installed.
 .It Cm --sources,--srcs
 Delete sources (tarballs, etc.) that are not used by any package
 description (.info) file in the currently-active trees.
+.It Cm --buildlocks, --bl
+Delete stale buildlock packages.
 .El
 In addition, the following options may be used:
 .Bl -tag -width flag -offset indent -compact
