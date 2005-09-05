@@ -1756,7 +1756,7 @@ On error, an exception is thrown.
 
 =cut
 
-sub _spec2struct {
+sub spec2struct {
 	my $spec = shift;
 	my %ret;
 	
