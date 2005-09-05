@@ -1768,7 +1768,7 @@ sub spec2struct {
 		} else {
 			die "Fink::Services: Illegal version specification: $verspec\n";
 		}
-	} elsif ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+	} elsif ($spec =~ /^\s*([0-9a-zA-Z][0-9a-zA-Z.\+-]+)\s*$/) {
 		$ret{package} = $1;
 	} else {
 		die "Fink::Services: Illegal specification format: $spec\n";
@@ -1781,13 +1781,18 @@ sub spec2struct {
 
 	my $spec_string = spec2string($spec_struct);
 
-Reverse spec2struct.
+Reverse spec2struct. On error, and exception is thrown.
 
 =cut
 
 sub spec2string {
 	my $spec = shift;
-	if (defined $spec->{version}) {
+	die "Fink::Services: Missing package name in spec struct\n"
+		unless defined $spec->{package};
+	if (defined $spec->{version} || defined $spec->{relation}) {
+		die "Fink::Services: Only one of version and relation present in "
+			. "spec struct\n"
+			unless defined $spec->{version} && defined $spec->{relation};
 		return sprintf "%s (%s %s)", @$spec{qw(package relation version)};
 	} else {
 		return $spec->{package};

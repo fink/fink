@@ -1,3 +1,7 @@
+2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* spec2struct.t: New tests for spec2struct and spec2string functions.
+
 2005-4-25  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: more platform-portable `mktemp`
