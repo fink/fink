@@ -55,7 +55,8 @@ BEGIN {
 					  &eval_conditional &count_files
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
-					  &store_rename &fix_gcc_repairperms);
+					  &store_rename &fix_gcc_repairperms
+					  &spec2struct &spec2string);
 }
 our @EXPORT_OK;
 
@@ -1739,6 +1740,57 @@ sub store_rename {
 	} else {
 		print_breaking_stderr("Error: could not write temporary file $tmp: $!");
 		return 0;
+	}
+}
+
+=item spec2struct
+
+	my $spec_struct = spec2struct($spec_string);
+
+Turn a package specification such as 'foo (>= 1.0)' into a structural form.
+
+The hash returned always contains the field 'package', and optionally contains
+the fields 'version' and 'relation' to indicate a version restriction.
+
+On error, an exception is thrown.
+
+=cut
+
+sub _spec2struct {
+	my $spec = shift;
+	my %ret;
+	
+	if ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+		$ret{package} = $1;
+		my $verspec = $2;
+		if ($verspec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
+			@ret{qw(relation version)} = ($1, $2);
+		} else {
+			die "Fink::Services: Illegal version specification: $verspec\n";
+		}
+	} elsif ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
+		$ret{package} = $1;
+	} else {
+		die "Fink::Services: Illegal specification format: $spec\n";
+	}
+	
+	return \%ret;
+}
+
+=item spec2string
+
+	my $spec_string = spec2string($spec_struct);
+
+Reverse spec2struct.
+
+=cut
+
+sub spec2string {
+	my $spec = shift;
+	if (defined $spec->{version}) {
+		return sprintf "%s (%s %s)", @$spec{qw(package relation version)};
+	} else {
+		return $spec->{package};
 	}
 }
 

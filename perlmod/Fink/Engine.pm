@@ -2512,7 +2512,7 @@ sub choose_package_installed {
 
   my $po = choose_package $candidates;
   my $po = choose_package $candidates, $will_install;
-  
+
 Pick between candidate packages which satisfy a dependency, using all
 means available. See choose_package_from_relatives for parameters.
 
@@ -2782,18 +2782,18 @@ format can be defined. This is simply a string, with a some special constructs:
 
   %opts{opt1,opt2,...}	Prints the default usage and description for the
 						given options 'opt1', 'opt2', etc.
-  
+
   %all{}				Prints the default usage and description for all
   						options.
-  
+
   %align{opt,desc}		Prints the option 'opt' and its description 'desc',
 						aligned with other options.
-  
+
   %intro{args}			Print a help introduction, with 'args' as a short way
   						to describe this command's arguments.
-  
+
   %%					Print a literal percent character.
-  
+
   Percent can also be used to escape comma and curly brackets inside an
   expansion.
 

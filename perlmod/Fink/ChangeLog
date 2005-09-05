@@ -1,5 +1,11 @@
 2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* CLI.pm, Engine.pm, PkgVersion.pm, Shlibs.pm: Podchecker fixes.
+	* Services.pm: spec2string and spec2struct: Parse package specifications,
+	eg: 'foo (>= 1.0-1)'.
+
+2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* CLI.pm: Abstract out word-wrapping part of print_breaking into its own
 	method.
 	* Engine.pm: New get_options wrapper for Getopt::Long:

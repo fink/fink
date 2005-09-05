@@ -4659,6 +4659,7 @@ sub dpkg_changed {
 	Fink::Status->invalidate();
 	Fink::Shlibs->invalidate();
 }
+
 =back
 
 =cut

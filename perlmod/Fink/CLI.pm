@@ -75,7 +75,7 @@ need with things like:
 
     my @lines = word_wrap $string, $length;
     my @lines = word_wrap $string, $length, $prefix1, $prefix2;
-    
+
 Word wraps a single-line string $string to maximum length $length, and returns
 the resulting lines. Breaking is performed only at space characters.
 

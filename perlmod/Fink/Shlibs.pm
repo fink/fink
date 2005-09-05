@@ -59,7 +59,7 @@ Fink::Shlibs - Find dependencies based on shared libs.
 
   # Get the dependencies for the files to be installed
   my @deps = Fink::Shlibs->get_shlibs $pkgname, @files;
-  
+
   # Invalidate the current internal cache of shlibs when dpkg changes
   Fink::Shlibs->invalidate;
 
@@ -123,7 +123,7 @@ sub invalidate {
 =begin private
 
   my @depspecs = Fink::Shlibs->_check_files $pv, @filelist;
-  
+
 Similar to get_shlibs, but unchecked output, so depspecs may be empty or
 duplicate.
 
@@ -497,7 +497,7 @@ sub _get_shlib {
 =begin private
 
   Fink::Shlibs->_validate;
-  
+
 Ensure that the current shlib cache is valid.
 
 =end private
