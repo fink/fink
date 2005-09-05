@@ -1,3 +1,13 @@
+2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Abstract out word-wrapping part of print_breaking into its own
+	method.
+	* Engine.pm: New get_options wrapper for Getopt::Long:
+		- No more explicit @ARGV swapping.
+		- Option definition and help text right next to each other, so they
+		don't get out of sync.
+		- Word wrap help nicely for screen width.
+	
 2005-09-02  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Invalidate dpkg cache after installing buildlock pkg

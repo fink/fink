@@ -42,7 +42,8 @@ BEGIN {
 					  &rejoin_text
 					  &prompt &prompt_boolean &prompt_selection
 					  &print_optionlist
-					  &get_term_width &should_skip_prompt);
+					  &get_term_width &should_skip_prompt
+					  &word_wrap);
 }
 our @EXPORT_OK;
 
@@ -69,6 +70,53 @@ need with things like:
     use Fink::CLI qw(&print_breaking &prompt);
 
 =over 4
+
+=item word_wrap
+
+    my @lines = word_wrap $string, $length;
+    my @lines = word_wrap $string, $length, $prefix1, $prefix2;
+    
+Word wraps a single-line string $string to maximum length $length, and returns
+the resulting lines. Breaking is performed only at space characters.
+
+Optionally, prefixes can be defined to prepend to each line printed:
+$prefix1 is prepended to the first line, $prefix2 is prepended to all
+other lines. If only $prefix1 is defined, that will be prepended to
+all lines.
+
+=cut
+
+sub word_wrap {
+	my ($s, $length, $prefix1, $prefix2) = @_;
+	$prefix1 = "" unless defined $prefix1;
+	$prefix2 = "" unless defined $prefix2;
+	
+	my @lines;
+	
+	my $first = 1;
+	my $prefix = $prefix1;
+	my $reallength = $length - length($prefix);
+	while (length($s) > $reallength) {
+		my $t;
+		my $pos = rindex($s," ",$reallength);
+		if ($pos < 0) {
+			$t = substr($s,0,$reallength);
+			$s = substr($s,$reallength);
+		} else {
+			$t = substr($s,0,$pos);
+			$s = substr($s,$pos+1);
+		}
+		push @lines, "$prefix$t";
+		if ($first) {
+			$first = 0;
+			$prefix = $prefix2;
+			$reallength = $length - length($prefix);
+		}
+	}
+	push @lines, "$prefix$s";
+	
+	return @lines;
+}
 
 =item print_breaking
 
@@ -104,7 +152,6 @@ sub print_breaking {
 	$prefix1 = "" unless defined $prefix1;
 	my $prefix2 = shift;
 	$prefix2 = $prefix1 unless defined $prefix2;
-	my ($pos, $t, $reallength, $prefix, $first);
 
 	my $width = &get_term_width - 1;    # some termcaps need a char for \n
 	$width = $linelength if $width < 1;
@@ -123,27 +170,11 @@ sub print_breaking {
 
 	# at this point we have either a single line or only the last
 	# line of a multiline, so wrap and print
-
-	$first = 1;
-	$prefix = $prefix1;
-	$reallength = $width - length($prefix);
-	while (length($s) > $reallength) {
-		$pos = rindex($s," ",$reallength);
-		if ($pos < 0) {
-			$t = substr($s,0,$reallength);
-			$s = substr($s,$reallength);
-		} else {
-			$t = substr($s,0,$pos);
-			$s = substr($s,$pos+1);
-		}
-		print "$prefix$t\n";
-		if ($first) {
-			$first = 0;
-			$prefix = $prefix2;
-			$reallength = $width - length($prefix);
-		}
+	my @lines = word_wrap $s, $width, $prefix1, $prefix2;
+	for (my $i = 0; $i < $#lines; ++$i) {
+		print "$lines[$i]\n";
 	}
-	print "$prefix$s";
+	print $lines[$#lines];
 	print "\n" if $linebreak;
 }
 

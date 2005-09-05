@@ -31,7 +31,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &aptget_lockwait &store_rename);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
-				 &get_term_width);
+				 &get_term_width &word_wrap);
 use Fink::Configure qw(&spotlight_warning);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -41,6 +41,8 @@ use Fink::Status;
 use Fink::Command qw(mkdir_p);
 use Fink::Notify;
 use Fink::Validation;
+
+use Getopt::Long;
 
 use strict;
 use warnings;
@@ -308,32 +310,11 @@ my ($OP_FETCH, $OP_BUILD, $OP_INSTALL, $OP_REBUILD, $OP_REINSTALL) =
 ### simple commands
 
 sub cmd_index {
-	my ($full, $help);
+	my $full;
 	
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions('full|f'		=> \$full,
-			   'help|h'		=> \$help,
-			  )
-		or die "fink index: unknown option\nType 'fink index --help' for more information.\n";
-	if ($help) {
-		require Fink::FinkVersion;
-		my $finkversion = Fink::FinkVersion::fink_version();
-		print <<"EOF";
-Fink $finkversion
-
-Usage: fink index [options]
-
-Options:
-  -f, --full                - Do a full reindex, discarding even valid caches.
-  -h, --help                - This help text.
-
-EOF
-		exit 0;
-	}
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
+	get_options('index', [
+		[ 'full|f' => \$full, 'Do a full reindex, discarding even valid caches.' ],
+	], \@_);
 	
 	# Need to auto-index if specifically running 'fink index'!
 	$config->set_param("NoAutoIndex", 0);
@@ -390,7 +371,7 @@ sub cmd_apropos {
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($pname, $package, $lversion, $vo, $iflag);
-	my ($formatstr, $desclen, $name, @temp_ARGV, $section, $maintainer);
+	my ($formatstr, $desclen, $name, $section, $maintainer);
 	my ($buildonly);
 	my %options =
 	(
@@ -406,31 +387,48 @@ sub do_real_list {
 	use Getopt::Long;
 	$formatstr = "%s	%-15.15s	%-11.11s	%s\n";
 	$desclen = 43;
-	@temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+	
+	
+	my @options = (
+		[ 'width|w=s'	=> \$width,
+			'Sets the width of the display you would like the output ' .
+			'formatted for. NUM is either a numeric value or auto. auto will ' .
+			'set the width based on the terminal width.', 'NUM' ],
+		[ 'tab|t'		=> \$dotab,
+			'Outputs the list with tabs as field delimiter.' ],
+	);
+
 	if ($cmd eq "list") {
-		GetOptions(
-				   'width|w=s'		=> \$width,
-				   'tab|t'			=> \$dotab,
-				   'installed|i'	=> sub {$options{installedstate} |=
-                                     $ISTATE_OUTDATED | $ISTATE_CURRENT | $ISTATE_TOONEW ;},
-				   'newer|N'        => sub {$options{installedstate} |= $ISTATE_TOONEW   ;},
-				   'uptodate|u'		=> sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
-				   'outdated|o'		=> sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
-				   'notinstalled|n'	=> sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
-				   'buildonly|b'	=> \$buildonly,
-				   'section|s=s'	=> \$section,
-				   'maintainer|m=s'	=> \$maintainer,
-				   'help|h'			=> sub {&help_list_apropos($cmd)}
-		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
-	}	 else { # apropos
-		GetOptions(
-				   'width|w=s'		=> \$width,
-				   'tab|t'			=> \$dotab,
-				   'help|h'			=> sub {&help_list_apropos($cmd)}
-		) or die "fink list: unknown option\nType 'fink $cmd --help' for more information.\n";
-	}
+		@options = ( @options,
+			[ 'installed|i'		=>
+				sub {$options{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
+				'Only list packages which are currently installed.' ],
+			[ 'uptodate|u'		=>
+				sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
+				'Only list packages which are up to date.' ],
+			[ 'outdated|o'		=>
+				sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
+				'Only list packages for which a newer version is available.' ],
+			[ 'notinstalled|n'	=>
+				sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
+				'Only list packages which are not installed.' ],
+			[ 'newer|N'			=>
+				sub {$options{installedstate} |= $ISTATE_TOONEW   ;},
+				'Only list packages whose installed version is newer than '
+				. 'anything fink knows about.' ],
+			[ 'buildonly|b'		=> \$buildonly,
+				'Only list packages which are Build Depends Only' ],
+			[ 'section|s=s'		=> \$section,
+				"Only list packages in the section(s) matching EXPR\n" .
+				"(example: fink list --section=x11).", 'EXPR'],
+			[ 'maintainer|m=s'	=> \$maintainer,
+				"Only list packages with the maintainer(s) matching EXPR\n" .
+				"(example: fink list --maintainer=beren12).", 'EXPR'],
+		);
+	}		
+	get_options($cmd, \@options, \@_, "%intro{[options] [string]}\n%all{}\n");
+	
+	
 	if ($options{installedstate} == 0) {
 		$options{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT
 			| $ISTATE_ABSENT | $ISTATE_TOONEW;
@@ -461,8 +459,6 @@ sub do_real_list {
 		$desclen = 0;
 	}
 	Fink::Package->require_packages();
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
 	@allnames = Fink::Package->list_packages();
 	if ($cmd eq "list") {
 		if (@_) {
@@ -563,55 +559,6 @@ sub do_real_list {
 		printf $formatstr,
 				$iflag, $pname, $lversion, $description;
 	}
-}
-
-sub help_list_apropos {
-	my $cmd = shift;
-	require Fink::FinkVersion;
-	my $version = Fink::FinkVersion::fink_version();
-
-	if ($cmd eq "list") {
-		print <<"EOF";
-Fink $version
-
-Usage: fink list [options] [string]
-
-Options:
-  -w xyz, --width=xyz  - Sets the width of the display you would like the output
-                         formatted for. xyz is either a numeric value or auto.
-                         auto will set the width based on the terminal width.
-  -t, --tab            - Outputs the list with tabs as field delimiter.
-  -i, --installed      - Only list packages which are currently installed.
-  -u, --uptodate       - Only list packages which are up to date.
-  -o, --outdated       - Only list packages for which a newer version is
-                         available.
-  -N, --newer          - Only  list packages whose installed version is newer
-                         than anything fink knows about.
-  -n, --notinstalled   - Only list packages which are not installed.
-  -b, --buildonly      - Only list packages which are Build Only Depends
-  -s expr,             - Only list packages in the section(s) matching expr
-    --section=expr       (example: fink list --section=x11).
-  -m expr,             - Only list packages with the maintainer(s) matching expr
-    --maintainer=expr    (example: fink list --maintainer=beren12).
-  -h, --help           - This help text.
-
-EOF
-	} else { # apropos
-		print <<"EOF";
-Fink $version
-
-Usage: fink apropos [options] [string]
-
-Options:
-  -w xyz, --width=xyz  - Sets the width of the display you would like the output
-                         formatted for. xyz is either a numeric value or auto.
-                         auto will set the width based on the terminal width.
-  -t, --tab            - Outputs the list with tabs as field delimiter.
-  -h, --help           - This help text.
-
-EOF
-	}
-	exit 0;
 }
 
 sub cmd_listpackages {
@@ -823,44 +770,18 @@ sub cmd_fetch {
 
 sub parse_fetch_options {
 	my $cmd = shift;
-	my %options = (
-		"norestrictive" => 0,
-		"dryrun"        => 0,
-		"recursive"     => 0,
-		"wanthelp"      => 0,
-	);
-
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions('ignore-restrictive|i'	=> sub { $options{norestrictive} = 1 },
-			   'dry-run|d'				=> sub { $options{dryrun}        = 1 },
-			   'recursive|r'            => sub { $options{recursive}     = 1 },
-			   'help|h'					=> sub { $options{wanthelp}      = 1 }
-			  )
-		or die "fink fetch: unknown option\nType 'fink $cmd --help' for more information.\n";
-	if ($options{wanthelp} == 1) {
-		require Fink::FinkVersion;
-		my $finkversion = Fink::FinkVersion::fink_version();
-		print <<"EOF";
-Fink $finkversion
-
-Usage: fink $cmd [options]
-
-Options:
-  -i, --ignore-restrictive  - Do not fetch sources for packages with 
-                              a "Restrictive" license. Useful for mirroring.
-  -d, --dry-run             - Prints filename, MD5, list of source URLs,
-                              Maintainer for each package
-  -r, --recursive           - Fetch dependent packages also
-  -h, --help                - This help text.
-
-EOF
-		exit 0;
-	}
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
-
+	my %options = map { $_ => 0 } qw(norestrictive dryrun recursive);
+	
+	get_options($cmd, [
+	 	[ 'ignore-restrictive|i'	=> \$options{norestrictive},
+	 		'Do not fetch sources for packages with a "Restrictive" license. ' .
+	 		'Useful for mirroring.' ],
+		[ 'dry-run|d'				=> \$options{dryrun},
+			'Prints filename, MD5, list of source URLs, maintainer for each ' .
+			'package.' ],
+		[ 'recursive|r'				=> \$options{recursive},
+			'Fetch dependent packages also.' ],
+	], \@_);
 	return %options;
 }
 
@@ -951,35 +872,12 @@ sub cmd_description {
 }
 
 sub cmd_remove {
-	my ($recursive, $wanthelp);
-
-	use Getopt::Long;
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions(
-		'recursive|r'	=> \$recursive,
-		'help|h'	=> \$wanthelp
-	) or die "fink remove: unknown option\nType 'fink remove --help' for more information.\n";
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-		print <<"EOF";
-Fink $version
-
-Usage: fink remove [options] [package(s)]
-
-Options:
-  -r, --recursive      - Also remove packages that depend on the package(s) 
-                         to be removed.
-  -h, --help           - This help text.
-
-EOF
-		exit 0;
-	}
-
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
+	my $recursive;
+	
+	get_options('remove', [
+		[ 'recursive|r' => \$recursive,
+			'Also remove packages that depend on the package(s) to be removed.' ],
+	], \@_, "%intro{[options] [package(s)]}\n%all{}\n");
 
 	if ($recursive) {
 		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
@@ -1000,37 +898,13 @@ EOF
 sub get_pkglist {
 	my $cmd = shift;
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
-	my ($buildonly, $wanthelp, $po);
-
-	use Getopt::Long;
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions(
-		'buildonly|b'	=> \$buildonly,
-		'help|h'	=> \$wanthelp
-	) or die "fink $cmd: unknown option\nType 'fink $cmd --help' for more information.\n";
-
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-
-		print <<"EOF";
-Fink $version
-
-Usage: fink $cmd [options] [string]
-
-Options:
-  -b, --buildonly      - Only packages which are Build Depends Only
-  -h, --help           - This help text.
-
-EOF
-		exit 0;
-	}
-
+	my ($buildonly, $po);
+	
+	get_options($cmd, [
+		[ 'buildonly|b'	=> \$buildonly, "Only packages which are Build Depends Only" ],
+	], \@_, "%intro{[options] [string]}\n%all{}\n");
+			
 	Fink::Package->require_packages();
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
 	@plist = Fink::Package->list_packages();
 	if ($#_ < 0) {
 		if (defined $buildonly) {
@@ -1102,31 +976,11 @@ EOF
 }
 
 sub cmd_purge {
-	my ($recursive, $wanthelp);
-	use Getopt::Long;
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions(
-		'recursive|r'	=> \$recursive,
-		'help|h'	=> \$wanthelp
-	) or die "fink purge: unknown option\nType 'fink purge --help' for more information.\n";
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-		print <<"EOF";
-Fink $version
-
-Usage: fink purge [options] [package(s)]
-
-Options:
-  -r, --recursive      - Also purge packages that depend on the package 
-                         to be purged.
-  -h, --help           - This help text.
-
-EOF
-		exit 0;
-	}
+	my $recursive;
+	get_options('remove', [
+		[ 'recursive|r' => \$recursive,
+			'Also remove packages that depend on the package(s) to be removed.' ],
+	], \@_, "%intro{[options] [package(s)]}\n%all{}\n");
 
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
@@ -1136,9 +990,6 @@ EOF
 		die "Purge not performed!\n";
 	}
 	
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
-
 	if ($recursive) {
 		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
 			&print_breaking("ERROR: Couldn't call apt-get, which is needed for ".
@@ -1158,39 +1009,20 @@ EOF
 sub cmd_validate {
 	my ($filename, @flist);
 
-	my ($wanthelp, $val_prefix);
+	my ($val_prefix);
 	my $pedantic = 1;
-	use Getopt::Long;
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions(
-		'prefix|p=s'  => \$val_prefix,
-		'pedantic!'   => \$pedantic,
-		'help|h'      => \$wanthelp
-	) or die "fink validate: unknown option\nType 'fink validate --help' for more information.\n";
-
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-
-		print <<"EOF";
-Fink $version
-
-Usage: fink validate [options] [package(s)]
-
+	
+	get_options('validate', [
+		[ 'prefix|p=s'	=> \$val_prefix, "Simulate an alternate Fink prefix (%p) in files." ],
+		[ 'pedantic!'	=> \$pedantic, "Display even the most nitpicky warnings (default)." ],
+	], \@_, <<FORMAT);
+%intro{[options] [files]}
 Options:
-  -p, --prefix    - Simulate an alternate Fink prefix (\%p) in files.
-  --pedantic      - Display even the most nitpicky warnings (default).
-  --no-pedantic   - Do not display the pedantic warnings.
-  -h, --help      - This help text.
+%opts{prefix,pedantic}
+%align{--no-pedantic,Do not display the pedantic warnings.}
 
-EOF
-		exit 0;
-	}
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
-
+FORMAT
+	
 	Fink::Config::set_options( { "Pedantic" => $pedantic } );
 
 	require Fink::Validation;
@@ -1218,49 +1050,26 @@ sub cmd_cleanup {
 	#				 Delete all .deb and delete all src? Not really needed, this can be
 	#				 achieved each with single line CLI commands.
 
-	my(%opts, %modes, $wanthelp);
+	my(%opts, %modes);
 	
-	use Getopt::Long;
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions(
-		'sources|srcs'  => \$modes{srcs},
-		'debs'          => \$modes{debs},
-		'buildlocks|bl' => \$modes{bl},
-		'keep-src|k'    => \$opts{keep_old},
-		'help|h'        => \$wanthelp,
-		'dry-run|d'     => \$opts{dryrun}
-	) or die "fink cleanup: unknown option\nType 'fink cleanup --help' for more information.\n";
-
-	if ($wanthelp || ! scalar(grep {$_} values %modes)) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-
-		print <<"EOF";
-Fink $version
-
-Usage: fink cleanup [mode(s) and options]
-
+	get_options('cleanup', [
+		[ 'sources|srcs'  => \$modes{srcs},	"Delete source files." ],
+		[ 'debs'          => \$modes{debs},
+			"Delete .deb (compiled binary package) files." ],
+		[ 'buildlocks|bl' => \$modes{bl},	"Delete stale buildlock packages." ],
+		[ 'keep-src|k'    => \$opts{keep_old},
+			"Move old source files to $basepath/src/old/ instead of deleting them." ],
+		[ 'dry-run|d'     => \$opts{dryrun},
+			"Print the files that would be removed, but do not actually remove them." ],
+	], \@_, <<FORMAT);
+%intro{[mode(s) and options]}
 One or more of the following modes must be specified:
-  --debs  - Delete .deb (compiled binary package) files
-  --sources, --srcs
-          - Delete source files
-  --buildlocks, --bl
-          - Delete stale buildlock packages
+%opts{debs,sources,buildlocks}
 
 Options:
-  -k, --keep-src  - Move old source files to $basepath/src/old/ instead
-                    of deleting them.
-  -d, --dry-run   - Print the files that would be removed, but do not
-                    actually remove them.
-  -h, --help      - This help text.
+%opts{keep-src,dry-run,buildlocks,help}
 
-EOF
-		exit 0;
-	}
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
+FORMAT
 
 	$modes{srcs} && &cleanup_sources(%opts);
 	$modes{debs} && &cleanup_debs(%opts);
@@ -1642,7 +1451,7 @@ sub real_install {
 	my $showlist = shift;
 	my $forceoff = shift; # check if this is a secondary loop
 	my $dryrun = shift;
-
+		
 	my ($pkgspec, $package, $pkgname, $item, $dep, $con, $cn);
 	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
 	my (%deps, @queue, @deplist, @requested, @additionals, @elist);
@@ -2211,31 +2020,15 @@ sub cmd_showparent {
 ### display a pkg's package description (parsed .info file)
 sub cmd_dumpinfo {
 
-	my (@fields, @percents, $wantall, $wanthelp);
-
-	use Getopt::Long;
-	my @temp_ARGV = @ARGV;
-	@ARGV=@_;
-	Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-	GetOptions(
-		'all|a'	=>     \$wantall,
-		'field|f=s',   \@fields,
-		'percent|p=s', \@percents,
-		'help|h'	=> \$wanthelp
-	) or die "fink dumpinfo: unknown option\nType 'fink dumpinfo --help' for more information.\n";
-	if ($wanthelp) {
-		require Fink::FinkVersion;
-		my $version = Fink::FinkVersion::fink_version();
-		print <<"EOF";
-Fink $version
-
-Usage: fink dumpinfo [options] [package(s)]
-
-Options:
-  -a, --all            - All package info fields (default behavior).
-  -f s, --field=s      - Just the specific field(s) specified.
-  -p s, --percent=key  - Just the percent expansion for specific key(s).
-  -h, --help           - This help text.
+	my (@fields, @percents, $wantall);
+	
+	get_options('dumpinfo', [
+		[ 'all|a'		=> \$wantall,	"All package info fields (default behavior)."		],
+		[ 'field|f=s'	=> \@fields,	"Just the specific field(s) specified."				],
+		[ 'percent|p=s'	=> \@percents,	"Just the percent expansion for specific key(s)."	],
+	], \@_, <<FORMAT);
+%intro{[options] [package(s)]}
+%all{}
 
 The following pseudo-fields are available in addition to all fields
 described in the Fink Packaging Manual:
@@ -2257,13 +2050,9 @@ described in the Fink Packaging Manual:
   env          - Shell environment in effect during pkg construction.
   trees        - Trees in which this package (same version) exists.
 
-EOF
-		exit 0;
-	}
-
+FORMAT
+	
 	Fink::Package->require_packages();
-	@_ = @ARGV;
-	@ARGV = @temp_ARGV;
 
 	# handle clustered param values
 	@fields   = split /,/, lc ( join ',', @fields   ) if @fields;
@@ -2952,6 +2741,200 @@ sub prefetch {
 		if @aptget;
 	
 	&call_queue_clear;
+}
+
+=item get_options
+
+  get_options $command, $options, $args;
+  get_options $command, $options, $args, $helpformat;
+
+Convenience method to parse arguments for a Fink command.
+
+
+The $command parameter should simply contain the name of the current Fink
+command, eg: 'index'.
+
+
+The $options array-ref should contain sub-arrays describing options. Each
+sub-array should contain, in order:
+
+* Two items which could be passed to Getopt::Long::GetOptions.
+
+* A third item with descriptive text appropriate for the --help option. If no
+help should be printed for this option, pass undef.
+
+* An optional fourth item, with a suitable name for the option's value if
+it takes a value.
+
+Eg:  [ 'option|o' => \$opt, 'Descriptive text', 'value' ]
+
+
+The $args array-ref should contain the list of command-line argument to be
+examined for options. The array will be modified to remove the arguments
+found, make a copy if you want to retain the original list.
+
+
+Standard errors such as invalid options and --help are handled automagically,
+by printing a help message and exiting the program.
+
+If the standard help format is not good enough for your purposes, a custom
+format can be defined. This is simply a string, with a some special constructs:
+
+  %opts{opt1,opt2,...}	Prints the default usage and description for the
+						given options 'opt1', 'opt2', etc.
+  
+  %all{}				Prints the default usage and description for all
+  						options.
+  
+  %align{opt,desc}		Prints the option 'opt' and its description 'desc',
+						aligned with other options.
+  
+  %intro{args}			Print a help introduction, with 'args' as a short way
+  						to describe this command's arguments.
+  
+  %%					Print a literal percent character.
+  
+  Percent can also be used to escape comma and curly brackets inside an
+  expansion.
+
+=cut
+
+# my $str = _get_option_usage $opt;
+#
+# Get usage and description for an option item.
+sub _get_option_usage {
+	my $opt = shift;
+	
+	my $opttxt;
+	if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
+		# Try each way to specify option (eg: -f, --full)
+		my @alts = sort { length($a) <=> length($b) } split /\|/, $1;
+		foreach my $alt (@alts) {
+			if (length($alt) == 1) {
+				$alt = "-$alt";
+				$alt .= " $opt->[3]" if defined $opt->[3];
+			} else {
+				$alt = "--$alt";
+				$alt .= "=$opt->[3]" if defined $opt->[3];
+			}
+		}
+		return join ', ', @alts;
+	} else {
+		return $opt; # Don't know what to do, just punt
+	}
+}
+
+# my $str = _align_option_text $usage, $desc;
+#
+# Aligns the usage and desc with other options
+sub _align_option_text {
+	my ($opttxt, $desctxt) = @_;
+	my $ret = "";
+	
+	# Word wrap things
+	my $optlen = 22;
+	my $desclen; # Ensure there's a reasonable size
+	for my $width (get_term_width(), 80) {
+		$desclen = $width - $optlen - 3;
+		last if $desclen > 5;
+	}
+	
+	my @optlines = word_wrap $opttxt, $optlen, '  ', '    ';
+	my @desclines = map { word_wrap $_, $desclen }
+		split /\n/, $desctxt; # Respect newlines
+	
+	# Add 'em to the message by pairs
+	my $first = 1;
+	while (1) {
+		my $optpart = shift @optlines;
+		my $descpart = shift @desclines;
+		last unless defined $optpart || defined $descpart;
+		$optpart = ' ' x $optlen unless defined $optpart;
+		$descpart = '' unless defined $descpart;
+		
+		my $midpart = $first ? ' - ' : '   ';
+		$first = 0 if $first;
+		
+		$ret .= sprintf "%-${optlen}s%s%s\n", $optpart, $midpart, $descpart;
+	}
+	
+	return $ret;
+}
+
+# my $str = _expand_help $command, $options, $helpformat;
+#
+# Expand the help format
+sub _expand_help {
+	my ($command, $options, $helpformat) = @_;
+	
+	# Option table
+	my %opts;
+	foreach my $opt (@$options) {
+		if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
+			my @names = split /\|/, $1;
+			@opts{@names} = ($opt) x scalar(@names);
+		}
+	}
+	
+	# Expansion table
+	my %exp = (
+		all => sub {
+			"Options:\n" . join '',
+				map { _align_option_text(_get_option_usage($_), $_->[2]) } @$options;
+		},
+		opts => sub {
+			chomp (my $ret = join '', map {
+				_align_option_text(_get_option_usage($_), $_->[2]) } @opts{@_} );
+			$ret;
+		},
+		align	=> sub { chomp (my $ret = _align_option_text(@_)); $ret },
+		intro	=> sub {
+			require Fink::FinkVersion;
+			"Fink " . Fink::FinkVersion::fink_version() . "\n\n" .
+			"Usage: fink $command " . join(' ', @_) . "\n";
+		},
+	);
+
+	# Do the format
+	$helpformat =~ s"(?<!\%)((?:\%\%)*)\%(\w+)\{(|.*?[^%])\}"
+		return $& unless exists $exp{$2};
+		my @args = map { s/(?<!\%)((?:\%\%)*)%([{},])/$1$2/g; $_ }
+			split /(?<!%),/, $3;
+		$1 . &{$exp{$2}}(@args);
+	"ge;
+	$helpformat =~ s/%%/%/g;
+	return $helpformat;
+}
+
+
+sub get_options {
+	my ($command, $options, $args, $helpformat) = @_;
+	
+	# Insert help after last option, if it's not already in the list
+	my $wanthelp = 0;
+	if (!grep { $_->[0] =~ /(^|\|)h(elp)?(\||$)/ } @$options) {
+		push @$options, [ 'h|help' => \$wanthelp, 'This help text.' ];
+	}
+	
+	# Call GetOptions. Switch args into @ARGV so GetOptions can work
+	{
+		local @ARGV = @$args;	
+		Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+		GetOptions( map { @$_[0, 1] } @$options )
+			or die <<"DIE";
+fink $command: unknown option
+Type 'fink $command --help' for more information.
+DIE
+		@$args = @ARGV;
+	}
+	
+	return unless $wanthelp;
+	
+	# Now we're doing the help
+	$helpformat = "%intro{[options]}\n%all{}\n" unless defined $helpformat;
+	print _expand_help($command, $options, $helpformat);
+	
+	exit 0;
 }
 
 =back
