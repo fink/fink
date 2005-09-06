@@ -1255,8 +1255,7 @@ sub enforce_gcc {
 # Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
 # specify default values for these.
 
-	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0');
-	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0');
+	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0');
 	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3');
 
 	if (my $sw_vers = get_osx_vers_long())
