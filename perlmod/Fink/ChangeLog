@@ -1,7 +1,12 @@
 2005-09-06  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVersion.pm, Valdiation.pm: use more descriptive tempdir names.
+	* PkgVersion.pm: Add a new parameter to get_description to force
+	parsing of DescDetail/DescUsage as if %p="/sw". Document the
+	description accessors and formatting functions.
 
+2005-09-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Valdiation.pm: use more descriptive tempdir names.
 
 2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
 

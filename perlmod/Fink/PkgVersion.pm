@@ -1621,7 +1621,15 @@ sub get_license {
 	return $license;
 }
 
-### generate description
+=item format_description
+
+	my $string_formatted = format_description $string;
+
+Formats the multiline plain-text $string as a dpkg field value. That
+means every line indented by 1 space and blank lines in $string get
+converted to a line containing period character (" .\n").
+
+=cut
 
 sub format_description {
 	my $s = shift;
@@ -1636,6 +1644,20 @@ sub format_description {
 
 	return "$s\n";
 }
+
+=item format_oneline
+
+	my $trunc_string = format_oneline $string;
+	my $trunc_string = format_oneline $string, $maxlen;
+
+Force $string to fit into the given width $maxlen (if defined and
+>0). Embedded newlines and leading and trailing whitespace is
+removed. If the resulting string is wider than $maxlen, it is
+truncated and an elipses ("...") is added to give a string of the
+correct size. This function does *not* respect word-breaks when it
+truncates the string.
+
+=cut
 
 sub format_oneline {
 	my $s = shift;
@@ -1653,6 +1675,18 @@ sub format_oneline {
 	return $s;
 }
 
+=item get_shortdescription
+
+	my $desc = $self->get_shortdescription;
+	my $desc = $self->get_shortdescription $limit;
+
+Returns the Description field for the PkgVersion object or a standard
+dummy string if that field does not exist. The value is truncated to
+$limit chars if $limit is passed, otherwise it it truncated to 75
+chars.
+
+=cut
+
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub get_shortdescription {
@@ -1669,23 +1703,52 @@ sub get_shortdescription {
 	return $desc;
 }
 
-### Do not change API! This is used by FinkCommander (fpkg_list.pl)
+=item get_description
+
+	my $desc = $self->get_description;
+	my $desc = $self->get_description $style;
+	my $desc = $self->get_description $style, $canonical_prefix;
+
+Returns the description of the package. The Description field
+(truncated to 75 chars) is always returned. If $style is not 1,
+DescDetail and DescUsage (formatted for dpkg) and Homepage and
+Maintainer are also included. If $canonical_prefix is true, the
+description will use the canonical "/sw" for %p when parsing the
+DescDetail and DescUsage fields, otherwise the local fink's normal
+prefix will be used.
+
+=cut
+
+### Do not change the meaning of the $style parameter!
+### This part of the API is used by FinkCommander (fpkg_list.pl)
 
 sub get_description {
 	my $self = shift;
 	my $style = shift || 0;
+	my $canonical_prefix = shift || 0;
 
 	my $desc = $self->get_shortdescription(75);  # "Description" (already %-exp)
 	$desc .= "\n";
 
+	my $expand = $self->{_expand};
+	if ($canonical_prefix) {
+		$expand->{p} = '/sw';
+	}
+
 	if ($self->has_param("DescDetail")) {
-		$desc .= &format_description($self->param_expanded("DescDetail", 2));
+		$desc .= &format_description(
+			&expand_percent($self->param('DescDetail'), $expand,
+							$self->get_info_filename.' "DescDetail"', 2)
+		);
 	}
 
 	if ($style != 1) {
 		if ($self->has_param("DescUsage")) {
 			$desc .= " .\n Usage Notes:\n";
-			$desc .= &format_description($self->param_expanded("DescUsage", 2));
+			$desc .= &format_description(
+				&expand_percent($self->param('DescUsage'), $expand,
+								$self->get_info_filename.' "DescUsage"', 2)
+			);
 		}
 
 		if ($self->has_param("Homepage")) {
