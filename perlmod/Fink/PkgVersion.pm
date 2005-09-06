@@ -4284,7 +4284,7 @@ END
 
 	# create a dummy HOME directory
 	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
-	$script_env{"HOME"} = tempdir( CLEANUP => 1 );
+	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', TMPDIR => 1, CLEANUP => 1 );
 
 	# add system path
 	$script_env{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";

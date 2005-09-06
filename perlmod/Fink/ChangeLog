@@ -1,3 +1,8 @@
+2005-09-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Valdiation.pm: use more descriptive tempdir names.
+
+
 2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm: Fix up spec2struct and spec2string to conform to tests.
