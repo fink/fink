@@ -1,3 +1,8 @@
+2005-09-07  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: get_description needs to make a copy of the whole
+	_expand struct
+
 2005-09-06  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Add a new parameter to get_description to force

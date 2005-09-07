@@ -1730,14 +1730,15 @@ sub get_description {
 	my $desc = $self->get_shortdescription(75);  # "Description" (already %-exp)
 	$desc .= "\n";
 
-	my $expand = $self->{_expand};
+	# need local copy of the %-exp map so we can change it
+	my %expand = %{$self->{_expand}};
 	if ($canonical_prefix) {
-		$expand->{p} = '/sw';
+		$expand{p} = '/sw';
 	}
 
 	if ($self->has_param("DescDetail")) {
 		$desc .= &format_description(
-			&expand_percent($self->param('DescDetail'), $expand,
+			&expand_percent($self->param('DescDetail'), \%expand,
 							$self->get_info_filename.' "DescDetail"', 2)
 		);
 	}
@@ -1746,7 +1747,7 @@ sub get_description {
 		if ($self->has_param("DescUsage")) {
 			$desc .= " .\n Usage Notes:\n";
 			$desc .= &format_description(
-				&expand_percent($self->param('DescUsage'), $expand,
+				&expand_percent($self->param('DescUsage'), \%expand,
 								$self->get_info_filename.' "DescUsage"', 2)
 			);
 		}
