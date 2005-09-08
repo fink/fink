@@ -114,7 +114,7 @@ our %commands =
 	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1, 1],
 	  'validate'          => [\&cmd_validate,          0, 0, 0],
 	  'check'             => [\&cmd_validate,          0, 0, 0],
-	  'cleanup'           => [\&cmd_cleanup,           1, 1, 1],
+	  'cleanup'           => [\&cmd_cleanup,           0, 1, 1],
 	  'splitoffs'         => [\&cmd_splitoffs,         1, 0, 0],
 	  'splits'            => [\&cmd_splitoffs,         1, 0, 0],
 	  'showparent'        => [\&cmd_showparent,        1, 0, 0],
@@ -1067,10 +1067,10 @@ One or more of the following modes must be specified:
 %opts{debs,sources,buildlocks}
 
 Options:
-%opts{keep-src,dry-run,buildlocks,help}
+%opts{keep-src,dry-run,help}
 
 FORMAT
-
+	
 	$modes{srcs} && &cleanup_sources(%opts);
 	$modes{debs} && &cleanup_debs(%opts);
 	$modes{bl}   && &cleanup_buildlocks(%opts);
@@ -1110,7 +1110,8 @@ actually being deleted.
 
 sub cleanup_sources {
 	my %opts = (dryrun => 0, keep_old => 0, @_);
-
+	Fink::Package->require_packages();
+	
 	my $srcdir = "$basepath/src";
 	my $oldsrcdir = "$srcdir/old";
 
@@ -1205,6 +1206,7 @@ obsolete downloaded .deb.
 
 sub cleanup_debs {
 	my %opts = (dryrun => 0, @_);
+	Fink::Package->require_packages();
 
 	my $file_count;
 

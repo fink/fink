@@ -43,8 +43,6 @@ use warnings;
 our $VERSION = 1.00;
 our @ISA = qw(Fink::Base);
 
-our $have_shlibs; # Have we loaded the shlibs?
-
 our $packages = undef;		# The loaded packages (undef if unloaded)
 our $valid_since = undef;	# The earliest time with the same DB as now
 
@@ -447,9 +445,6 @@ Load the package database into memory
 
 sub require_packages {
 	my $class = shift;
-# 0 => both
-# 1 => shlibs
-# 2 => package
 	$class->load_packages unless defined $packages;
 }
 
