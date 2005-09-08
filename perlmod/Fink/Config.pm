@@ -40,12 +40,14 @@ our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath $dbpath
 our $VERSION	 = 1.00;
 
 
-our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors);
-my $_arch = Fink::Services::get_arch();
-our $debarch = "darwin-$_arch";
+our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors, $debarch);
+
+{
+	my $_arch = Fink::Services::get_arch();
+	$debarch = "darwin-$_arch";
+}
 
 my %options = ();
-
 
 
 =head1 NAME
@@ -69,13 +71,16 @@ Fink::Config - Read/write the fink configuration
 
   # Specific configuration options
   my $path		= $config->get_path;
-  my @trees		= $config->get_treelist;
   my $verbosity	= $config->verbosity_level;
   my $use_apt	= $config->binary_requested;
 
+  # Tree management
+  my @trees		= $config->get_treelist();
+  my $bool      = $config->want_magic_tree($tree);
+  
   # Command-line parameters
-  my $value = $config->get_option($key, $default);
-  $config->set_options({ $key => $value, $key2 => ... });
+  my $value = get_option($key, $default);
+  set_options({ $key => $value, $key2 => ... });
 
 =head1 DESCRIPTION
 
@@ -199,6 +204,78 @@ sub get_path {
 }
 
 
+# Get the list of all available trees from the conf file. 
+sub _standard_treelist {
+	my $self = shift;
+	return grep !m{^(/|.*\.\./)}, split /\s+/, $self->param_default(
+		"Trees", "local/main stable/main stable/bootstrap");
+}
+
+=private
+
+Figure out what to do with the --trees and --exclude-trees command line
+arguments.
+
+Some tree names are 'magic', and cannot be completely excluded in a safe way.
+However, certain commands know to ignore them if they're 'excluded'.
+
+=end private
+
+=cut
+
+{
+	# FIXME: What if there's a real tree with one of these names?
+	my %is_magic = map { $_ => 1 } qw(virtual status);
+	
+	# Get match CODE-ref for given spec
+	sub _match_trees {
+		my $spec = shift;
+		if ($spec =~ m,/, || $is_magic{$spec}) {	# If there's a / in it...
+			return sub { $_ eq $spec };				# ... must match exactly.
+		} else {
+			return sub { m,^\Q$spec\E/, };			# Otherwise, match front
+		}
+	}
+	
+	sub _process_trees_arg {
+		my $self = shift;
+		return if get_option('_magic_trees'); # Already done this
+		
+		# Get trees specified on command line, all trees available
+		my @include = split /,/, join ',', @{get_option('include_trees', [])};
+		my @exclude = split /,/, join ',', @{get_option('exclude_trees', [])};
+		my @avail = ($self->_standard_treelist(), keys %is_magic);
+		
+		# First include
+		my (@trees, %seen);
+		if (@include) {
+			foreach my $spec (@include) {
+				my @match = grep { &{_match_trees($spec)}() } @avail;
+				print "WARNING: No tree matching \"$spec\" found!\n"
+					unless @match;
+				push @trees, grep { !$seen{$_}++ } @match;
+			}
+		} else {
+			@trees = @avail; # By default, include all
+		}
+				
+		# Then exclude
+		foreach my $spec (@exclude) {
+			# Ignore failed excludes, suspect it's best this way
+			@trees = grep { !&{_match_trees($spec)} } @trees;
+		}
+		
+		# Store results
+		my @magic = grep { $is_magic{$_} } @trees;
+		@trees = grep { !$is_magic{$_} } @trees;
+		set_options({
+			_magic_trees	=> { map { $_ => 1 } @magic },
+			_trees			=> \@trees,
+		});
+	}
+}
+
+
 =item get_treelist
 
   my @trees = $config->get_treelist;
@@ -209,31 +286,39 @@ line.
 
 =cut
 
-sub _standard_treelist {
-	my $self = shift;
-	return grep !m{^(/|.*\.\./)}, split /\s+/, $self->param_default(
-		"Trees", "local/main stable/main stable/bootstrap");
-}
 
 sub get_treelist {
 	my $self = shift;
-	my @avail = $self->_standard_treelist;
+	$self->_process_trees_arg();
+	return @{get_option('_trees')};
+}
+
+=item want_magic_tree
+
+  my $bool = $config->want_magic_tree($tree);
+
+Get whether or not the user desires the given magic tree to be used. Current 
+magic trees are:
+
+=over 4
+
+=item virtual
+
+The virtual packages created dynamically by Fink.
+
+=item status
+
+The packages discovered by their presence in the dpkg status file, including
+all currently installed packages.
+
+=back
+
+=cut
 	
-	my @cmdline = split /,/, join ',', @{get_option('trees', [])};
-	return @avail unless @cmdline; # use all by default
-	
-	# Make filter hash using command-line options
-	my %want;
-	for my $filt (@cmdline) {
-		my $match = ($filt =~ m,/,)
-			? sub { $_ eq $filt }		# Exact match
-			: sub { m,^\Q$filt\E/, };	# Partial match
-		my @ok = grep { &$match() } @avail;
-		print "WARNING: No tree matching \"$filt\" found!\n" unless @ok;
-		@want{@ok} = (1) x @ok;
-	}
-	
-	return grep { $want{$_} } @avail;
+sub want_magic_tree {
+	my ($self, $tree) = @_;
+	$self->_process_trees_arg();
+	return get_option('_magic_trees')->{$tree};
 }
 
 =item custom_treelist

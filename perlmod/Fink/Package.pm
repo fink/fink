@@ -131,10 +131,6 @@ sub is_virtual {
 	use Fink::VirtPackage;
 	my $self = shift;
 
-	if (Fink::VirtPackage->query_package($self->{_name})) {
-		# Fix to set VirtPackage.pm pkgs as virtuals level 2
-		$self->{_virtual} = 2;
-	}
 	return $self->{_virtual};
 }
 
@@ -181,7 +177,7 @@ sub add_version {
 	}
 	
 	$self->{_versions}->{$version} = $version_object;
-	$self->{_virtual} = 0;
+	$self->{_virtual} = 0 unless $version_object->is_type('dummy');
 }
 
 ### add a providing version object of another package
@@ -1153,7 +1149,7 @@ sub insert_runtime_packages_hash {
 			$hash->{epoch} = $versions[0] if defined($versions[0]);
 			$hash->{version} = $versions[1] if defined($versions[1]);
 			$hash->{revision} = $versions[2] if defined($versions[2]);
-			$hash->{type} = "dummy";
+			$hash->{type} = "dummy ($type)";
 			$hash->{filename} = "";
 
 			$class->insert_pkgversions(

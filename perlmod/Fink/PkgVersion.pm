@@ -125,6 +125,12 @@ sub new_backed {
 	return bless $init, $class;	
 }
 
+# Are we loaded?
+sub _is_loaded {
+	my $self = shift;
+	return !$self->has_param('_backed_file') || $self->param('_backed_loaded');
+}
+
 =item load_fields
 
   my $same_pv = $pv->load_fields;
@@ -143,9 +149,7 @@ our %shared_loads;
 	
 	sub load_fields {
 		my $self = shift;
-		return $self if !$self->has_param('_backed_file')
-			|| $self->param('_backed_loaded')
-			|| !eval { require Storable };
+		return $self if $self->_is_loaded || !eval { require Storable };
 		
 		$self->set_param('_backed_loaded', 1);
 		my $file = $self->param('_backed_file');
@@ -1538,6 +1542,21 @@ sub get_family_parent {
 		: $self;
 }
 
+# Set up the type hash, and deal with consequences if the type hash cannot
+# be setup. Returns 0 if type hash cannot be set up.
+sub _setup_type_hash {
+	my ($self, $type) = @_;
+	return 1 if exists $self->{_type_hash};
+	
+	unless ($self->_is_loaded()) {
+		return 0 if $type eq 'dummy'; # Allow checking dummy for unloaded obj
+		die "Can't check non-dummy type of unloaded PkgVersion\n";
+	}
+	
+	$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
+	return 1;
+}
+
 # returns whether this fink package is of a given Type:
 
 sub is_type {
@@ -1547,11 +1566,8 @@ sub is_type {
 	return 0 unless defined $type;
 	return 0 unless length $type;
 	$type = lc $type;
-
-	if (!exists $self->{_type_hash}) {
-		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
-	}
-
+	
+	return 0 if $self->_setup_type_hash($type) == 0;
 	if (defined $self->{_type_hash}->{$type} and length $self->{_type_hash}->{$type}) {
 		return 1;
 	}
@@ -1565,10 +1581,7 @@ sub get_subtype {
 	my $self = shift;
 	my $type = shift;
 
-	if (!exists $self->{_type_hash}) {
-		$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
-	}
-
+	return undef if $self->_setup_type_hash($type) == 0;
 	return $self->{_type_hash}->{$type};
 }
 

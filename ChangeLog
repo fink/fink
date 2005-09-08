@@ -1,3 +1,8 @@
+2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.in: Add --exclude-trees option, short form -T. Also put --trees
+	into include_trees.
+
 2005-09-02  Daniel Macks  <dmacks@netspace.org>
 
 	fink.8.in: Documente cleanup --buildlocks

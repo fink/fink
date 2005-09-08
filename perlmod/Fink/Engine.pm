@@ -368,9 +368,24 @@ sub cmd_apropos {
 	do_real_list("apropos", @_);	
 }
 
+
+# Given a list of PkgVersions, find the versions which should be visible to
+# the user. PkgVersions passed in do NOT have to be loaded!
+sub _user_visible_versions {
+	my @pvs = @_;
+	foreach my $magic (qw(status virtual)) {
+		unless ($config->want_magic_tree($magic)) {
+			# Filter out versions of type: dummy ($magic)
+			@pvs = grep {
+				!$_->is_type('dummy') || $_->get_subtype('dummy') ne $magic
+			} @pvs;
+		}
+	}
+	return @pvs;
+}
+
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
-	my ($pname, $package, $lversion, $vo, $iflag);
 	my ($formatstr, $desclen, $name, $section, $maintainer);
 	my ($buildonly);
 	my %options =
@@ -487,69 +502,67 @@ sub do_real_list {
 			die "no keyword specified for command 'apropos'!\n";
 		}
 	}
+	
+	foreach my $pname (sort @selected) {
+		my $package = Fink::Package->package_by_name($pname);
+		
+		# Look only in versions the user should see. noload
+		my @pvs = _user_visible_versions($package->get_all_versions(1));
+		my @provs = _user_visible_versions($package->get_all_providers(1));
+		next unless @provs; # if no providers, it doesn't really exist!
+		
+		my @vers = map { $_->get_fullversion() } @pvs;
+		my $lversion = @vers ? latest_version(@vers) : '';
 
-	foreach $pname (sort @selected) {
-		$package = Fink::Package->package_by_name($pname);
-
-		my $description;
-		if ($package->is_virtual() == 1) {
-			next if $cmd eq "apropos";
-			next unless $options{installedstate} & $ISTATE_ABSENT;
-			next if defined $buildonly;
-			next if defined $section;
-			next if defined $maintainer;
-			$lversion = "";
-			$iflag = $package->is_provided()
-				? " p "
-				: "   ";
-			$description = "[virtual package]";
-		} else {
-			$lversion = &latest_version($package->list_versions());
-			# noload: don't bother loading fields until we know we need them
-			$vo = $package->get_version($lversion, 1);
-			# $iflag installed pkg precedence: real-latest > real-old > provided
-			if ($vo->is_installed()) {
-				my $virtvers = Fink::VirtPackage->query_package($pname) || '';
-				if ($vo->is_type('dummy') && $virtvers ne $lversion) {
-					# Newer version than fink knows about
-					next unless $options{installedstate} & $ISTATE_TOONEW;
-					$iflag = "*i*";
-				} else {
-					next unless $options{installedstate} & $ISTATE_CURRENT;
-					$iflag = " i ";
-				}
-			} elsif ($package->is_any_installed()) {
-				next unless $options{installedstate} & $ISTATE_OUTDATED;
-				$iflag = "(i)";
-			} elsif ($package->is_provided()) {
-				next if $cmd eq "apropos";
-				next unless $options{installedstate} & $ISTATE_CURRENT;
-				next if defined $buildonly;
-				next if defined $section;
-				next if defined $maintainer;
-				$iflag = " p ";
+		# noload: don't bother loading fields until we know we need them
+		my $vo = $lversion ? $package->get_version($lversion, 1) : 0;
+		
+		my $iflag;
+		if ($vo && $vo->is_installed()) {
+			if ($vo->is_type('dummy') && $vo->get_subtype('dummy') eq 'status') {
+				# Newer version than fink knows about
+				next unless $options{installedstate} & $ISTATE_TOONEW;
+				$iflag = "*i*";
 			} else {
-				next unless $options{installedstate} & $ISTATE_ABSENT;
-				$iflag = "   ";
+				next unless $options{installedstate} & $ISTATE_CURRENT;
+				$iflag = " i ";
 			}
+		} elsif (grep { $_->is_installed() } @pvs) {
+			next unless $options{installedstate} & $ISTATE_OUTDATED;
+			$iflag = "(i)";
+		} elsif (grep { $_->is_installed() } @provs) {
+			next unless $options{installedstate} & $ISTATE_CURRENT;
+			$iflag = " p ";
+			$lversion = ''; # no version for provided
+		} else {
+			next unless $options{installedstate} & $ISTATE_ABSENT;
+			$iflag = "   ";
 		}
-		$vo = $package->get_version($lversion); # okay, now we need all fields
-
-		# non-virtuals didn't get desc earlier
-		$description = $vo->get_shortdescription($desclen) unless defined $description;
-
+		
+		# Now load the fields
+		$vo = $lversion ? $package->get_version($lversion) : 0;
+		
+		my $description = $vo
+			? $vo->get_shortdescription($desclen)
+			: '[virtual package]';
+		
 		if (defined $buildonly) {
-			next unless $vo->param_boolean("builddependsonly");
+			next unless $vo && $vo->param_boolean("builddependsonly");
 		}
 		if (defined $section) {
-			next unless $vo->get_section($vo) =~ /\Q$section\E/i;
+			next unless $vo && $vo->get_section($vo) =~ /\Q$section\E/i;
 		}
 		if (defined $maintainer) {
-			next unless ( $vo->has_param("maintainer") && $vo->param("maintainer")  =~ /\Q$maintainer\E/i );
+			next unless $vo && $vo->has_param("maintainer")
+				&& $vo->param("maintainer")  =~ /\Q$maintainer\E/i ;
 		}
 		if ($cmd eq "apropos") {
-			next unless ( $vo->has_param("Description") && $vo->param("Description") =~ /\Q$pattern\E/i ) || $vo->get_name() =~ /\Q$pattern\E/i;  
-		}
+			next unless $vo;
+			my $ok = $vo->has_param("Description")
+				&& $vo->param("Description") =~ /\Q$pattern\E/i;
+			$ok ||= $vo->get_name() =~ /\Q$pattern\E/i;;
+			next unless $ok;
+		}			
 
 		if ($namelen && length($pname) > $namelen) {
 			# truncate pkg name if wider than its field

@@ -1,3 +1,19 @@
+2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm, Validation.pm:
+	Get --trees working properly:
+		- Config.pm: Allow both inclusion and exclusion of trees at the command
+		line. Recognize 'magic trees': virtual, status.
+		- PkgVersion.pm: Allow callers to check is_type('dummy') on an unloaded
+		object. Only works for type 'dummy'! Also some minor refactoring.
+		- Package.pm: Give 'dummy' packages from magic trees a subtype of
+		'status' or 'virtual'. Also remove undocumented multiple
+		return values from is_virtual().
+		- Engine.pm: Make list and apropos respect whether or not user desires
+		each magic tree. Other commands do *not* yet respect this, nor is it
+		clear that there is any benefit to making them do so.
+		- Validation.pm: Disallow type 'dummy' in .info files.
+
 2005-09-07  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: Remove stray references to Shlibs

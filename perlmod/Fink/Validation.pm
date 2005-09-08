@@ -293,6 +293,7 @@ END { }				# module clean-up code here (global destructor)
 #   + Warn if non-ASCII chars in any field
 #   + Check syntax of dpkg Depends-style fields
 #	+ validate dependency syntax
+#	+ Type is not 'dummy'
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -709,6 +710,12 @@ sub validate_info_file {
 			}
 			close INPUT or die "Couldn't read $value: $!\n";
 		}
+	}
+	
+	# Check for Type: dummy, only allowed for internal use
+	if (exists $type_hash->{dummy}) {
+		print "Error: Package has type \"dummy\". ($filename)\n";
+		$looks_good = 0;
 	}
 	
 	if ($looks_good and $config->verbosity_level() >= 3) {
