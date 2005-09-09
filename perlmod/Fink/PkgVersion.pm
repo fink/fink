@@ -3914,7 +3914,12 @@ sub phase_activate {
 		$notifier->notify(event => 'finkPackageInstallationFailed', description => $error);
 		die $error . "\n";
 	}
-
+	
+	# Ensure consistency is maintained. May die!
+	require Fink::SysState;
+	my $state = Fink::SysState->new();
+	@installable = (@installable, $state->resolve_install(@installable));
+	
 	my @deb_installable = map { $_->find_debfile() } @installable;
 	if (&execute(dpkg_lockwait() . " -i @deb_installable", ignore_INT=>1)) {
 		if (@installable == 1) {
