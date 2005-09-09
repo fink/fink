@@ -23,8 +23,8 @@
 
 package Fink::Config;
 use Fink::Base;
-use Fink::Command qw(cp);
-use Fink::Services;
+use Fink::Command 	qw(cp);
+use Fink::Services	qw(&get_options $VALIDATE_HELP);
 
 
 use strict;
@@ -79,6 +79,7 @@ Fink::Config - Read/write the fink configuration
   my $bool      = $config->want_magic_tree($tree);
   
   # Command-line parameters
+  my @args_left = $config->parse_options(@args);
   my $value = get_option($key, $default);
   set_options({ $key => $value, $key2 => ... });
 
@@ -181,6 +182,107 @@ sub initialize {
 	}
 
 	$self->{_queue} = [];
+}
+
+=back
+
+=head2 Fink initialization
+
+=over 4
+
+=item parse_options
+
+  my @args_left = $config->parse_options(@args);
+
+Parse the global command-line options for Fink.
+
+=cut
+
+sub parse_options {
+	my $class = shift;
+	my @args = @_;
+	
+	my %opts = (
+		map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
+			use_binary build_as_nobody maintainermode showversion) ),
+		map ( { $_ => [] } qw(include_trees exclude_trees) ),
+	);
+	
+	my $comlen =  14;
+	get_options('', [
+		[ 'yes|y'              => \$opts{dontask},
+			'assume default answer for all interactive questions'			],
+		[ 'quiet|q'            => sub { $opts{verbosity} = -1	},
+			'causes fink to be less verbose, opposite of --verbose'			],
+		[ 'verbose|v'          => sub { $opts{verbosity} = 3	},
+			'causes fink to be more verbose, opposite of --quiet'			],
+		[ 'keep-build-dir|k'   => \$opts{keep_build}, 		'see man page'	],
+		[ 'keep-root-dir|K'    => \$opts{keep_root}, 		'see man page'	],
+		[ 'use-binary-dist|b'  => \$opts{use_binary},
+			'download pre-compiled packages from the binary distribution '
+			. 'if available'	],
+		[ 'no-use-binary-dist' => sub { $opts{use_binary} = -1	},
+			"don't use pre-compiled packages from the binary distribution "
+			. "(opposite of -b)"											],
+		[ 'build-as-nobody'    => \$opts{build_as_nobody},	'see man page'	],
+		[ 'maintainer|m'       => \$opts{maintainermode},	'see man page'	],
+		[ 'trees|t=s@'         => $opts{include_trees},		'see man page'	],
+		[ 'exclude-trees|T=s@' => $opts{exclude_trees},		'see man page'	],
+#		[ 'interactive|i'      => \$opts{interactive}, 'see man page'		],
+		[ 'version|V'          => \$opts{showversion},
+			'display version information'									],
+	], \@args, helpformat => <<FORMAT, optwidth => 23, # lines up better with 23
+%intro{[options] command [package...],install pkg1 [pkg2 ...]}
+Common commands:
+%align{install,install/update the named packages,$comlen}
+%align{remove,remove the named packages,$comlen}
+%align{purge,same as remove but also removes all configuration files,$comlen}
+%align{update,update the named packages,$comlen}
+%align{selfupdate,upgrade fink to the lastest release,$comlen}
+%align{update-all,update all installed packages,$comlen}
+%align{configure,rerun the configuration process,$comlen}
+%align{list,list available packages%, optionally filtering by name%, see 'fink list --help' for more options,$comlen}
+%align{apropos,list packages matching a search keyword,$comlen}
+%align{describe,display a detailed description of the named packages,$comlen}
+%align{index,force rebuild of package cache,$comlen}
+%align{validate,performs various checks on .info and .deb files,$comlen}
+%align{scanpackages,rescans the list of binary packages on the system,$comlen}
+%align{cleanup,reclaims disk space used by temporary or obsolete files,$comlen}
+%align{show-deps,list run-time and compile-time package dependencies,$comlen}
+
+Common options:
+%opts{help,quiet,version,verbose,yes,use-binary-dist,no-use-binary-dist}
+
+See the fink(8) manual page for a complete list of commands and options.
+Visit http://fink.sourceforge.net/ for further information.
+
+FORMAT
+		# Err if no command
+		validate => sub {
+			!scalar(@args) && !$opts{showversion} && $VALIDATE_HELP }
+	); 
+	
+	if ($opts{showversion}) {
+		require Fink::FinkVersion;
+		print "Package manager version: "
+			. Fink::FinkVersion::fink_version() . "\n";
+		print "Distribution version: "
+			. Fink::FinkVersion::distribution_version() . "\n";
+		print <<"EOF";
+
+Copyright (c) 2001 Christoph Pfisterer
+Copyright (c) 2001-2005 The Fink Package Manager Team
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+EOF
+		exit 0;
+	}
+	
+	set_options(\%opts);
+	
+	return @args;
 }
 
 =back

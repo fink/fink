@@ -1,0 +1,5 @@
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Fink.pm.in: New module, so scripts can 'use Fink'.
+	* .cvsignore: Ignore Fink.pm (created from Fink.pm.in)
+

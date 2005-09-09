@@ -58,7 +58,8 @@ BEGIN {
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
 					  &store_rename &fix_gcc_repairperms
-					  &spec2struct &spec2string &get_options);
+					  &spec2struct &spec2string &get_options
+					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK);
 }
 our @EXPORT_OK;
 
@@ -1872,12 +1873,22 @@ format can be defined. This is simply a string, with a some special constructs:
 =item validate
 
 If the options can be invalid under unusual circumstances, pass in a code-ref
-here which will validate the results of option-parsing. If this code-ref
-returns false, it will be treated as an error condition.
+here which will validate the results of option-parsing. This code-ref should
+return one of the $VALIDATE_* constants.
+
+It is guaranteed that $VALIDATE_OK is a false value, and other $VALIDATE_* are
+true.
+
+=item optwidth
+
+The width of the screen given to showing the options (as opposed to their
+descriptions). The default should usually be fine.
 
 =back
 
 =cut
+
+our ($VALIDATE_OK, $VALIDATE_HELP, $VALIDATE_ERROR) = 0..20;
 
 # my $str = _get_option_usage $optitem;
 #
@@ -1904,12 +1915,11 @@ sub _get_option_usage {
 	}
 }
 
-# my $str = _align_option_text $usage, $desc, [$optlen];
+# my $str = _align_option_text $usage, $desc, $optlen;
 #
 # Aligns the usage and desc with other options
 sub _align_option_text {
 	my ($opttxt, $desctxt, $optlen) = @_;
-	$optlen ||= 22;
 	my $ret = "";
 	
 	# Word wrap things
@@ -1941,11 +1951,11 @@ sub _align_option_text {
 	return $ret;
 }
 
-# my $str = _expand_help $command, $optionlist, $helpformat;
+# my $str = _expand_help $command, $optionlist, $helpformat, $optlen;
 #
 # Expand the help format
 sub _expand_help {
-	my ($command, $options, $helpformat) = @_;
+	my ($command, $options, $helpformat, $optlen) = @_;
 	
 	# Option table
 	my %opts;
@@ -1960,11 +1970,14 @@ sub _expand_help {
 	my %exp = (
 		all => sub {
 			"Options:\n" . join '',
-				map { _align_option_text(_get_option_usage($_), $_->[2]) } @$options;
+				map { _align_option_text(
+					_get_option_usage($_), $_->[2], $optlen
+				) } @$options;
 		},
 		opts => sub {
 			chomp (my $ret = join '', map {
-				_align_option_text(_get_option_usage($_), $_->[2]) } @opts{@_} );
+				_align_option_text(_get_option_usage($_), $_->[2], $optlen)
+			} @opts{@_} );
 			$ret;
 		},
 		align	=> sub { chomp (my $ret = _align_option_text(@_)); $ret },
@@ -1993,14 +2006,15 @@ sub get_options {
 	my ($command, $options, $args, %optional) = @_;
 	%optional = (
 		helpformat	=> "%intro{[options]}\n%all{}\n",
-		validate	=> sub { 1 },
+		validate	=> sub { $VALIDATE_OK },
+		optwidth	=> 22,
 		%optional,
 	);
 	
 	# Insert help after last option, if it's not already in the list
 	my $wanthelp = 0;
 	if (!grep { $_->[0] =~ /(^|\|)h(elp)?(\||$)/ } @$options) {
-		push @$options, [ 'h|help' => \$wanthelp, 'This help text.' ];
+		push @$options, [ 'h|help' => \$wanthelp, 'Display this help text.' ];
 	}
 	
 	# Allow blank $command for global options.
@@ -2019,12 +2033,13 @@ DIE
 		@$args = @ARGV;
 	}
 	
-	unless ($wanthelp) {
-		&{$optional{validate}}() ? return : die $die;
+	my $val = &{$optional{validate}}();
+	unless ($wanthelp || $val == $VALIDATE_HELP) {
+		($val == $VALIDATE_OK) ? return : die $die;
 	}
 	
 	# Now we're doing the help
-	print _expand_help($command, $options, $optional{helpformat});
+	print _expand_help($command, $options, @optional{qw(helpformat optwidth)});
 	
 	exit 0;
 }

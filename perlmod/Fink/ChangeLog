@@ -1,3 +1,11 @@
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, Engine.pm: Allow get_options validate routine to request
+	either help or error message. Add new option to specify width of option
+	help.
+	* Config.pm: New parse_options sub to deal with global options (moved from
+	fink.in). Rewritten to use Services::get_options.
+
 2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm, Services.pm: Move get_options to Services.

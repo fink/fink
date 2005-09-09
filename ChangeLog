@@ -1,3 +1,10 @@
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.in: Rewrite to 'use Fink'. Move options handling to Config.pm, most
+	other stuff to Fink.pm.in.
+	* install.sh: Install Fink.pm
+	* setup.sh: Dynamically create Fink.pm from Fink.pm.in.
+
 2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink.in: Add --exclude-trees option, short form -T. Also put --trees

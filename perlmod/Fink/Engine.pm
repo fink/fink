@@ -28,7 +28,8 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
 					  &call_queue_clear &call_queue_add &lock_wait
-					  &aptget_lockwait &store_rename &get_options);
+					  &aptget_lockwait &store_rename &get_options
+					  $VALIDATE_HELP);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
@@ -1082,7 +1083,9 @@ Options:
 %opts{keep-src,dry-run,help}
 
 FORMAT
-		validate => sub { scalar(grep { $_ } values %modes) },
+		validate => sub {
+			!scalar(grep { $_ } values %modes) && $VALIDATE_HELP
+		},
 	);
 	
 	$modes{srcs} && &cleanup_sources(%opts);

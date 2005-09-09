@@ -66,10 +66,10 @@ install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 install -c -p -m 644 images/*.png "$basepath/share/fink/images/"
 
 # copy all perl modules
-for subdir in . Text Notify ; do
-  for file in perlmod/Fink/${subdir}/*.pm ; do
+for subdir in . Fink Fink/Text Fink/Notify ; do
+  for file in perlmod/${subdir}/*.pm ; do
     if [ -f $file ]; then
-      install -c -p -m 644 $file "$basepath/lib/perl5/Fink/$subdir"
+      install -c -p -m 644 $file "$basepath/lib/perl5/$subdir"
     fi
   done
 done
