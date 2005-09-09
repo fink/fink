@@ -306,6 +306,59 @@ sub _provides {
 		sub { $_ = $_->[0] });
 }
 
+=begin private
+
+_replaces
+
+	$state->_replaces($pkgname);
+
+Gets the packages replaced by a package in structural format.
+
+The structure is an array of specification structures as returned by
+spec2struct.
+
+If a package replaces nothing, returns an empty list. Throws an exception
+on other errors.
+
+=end private
+
+=cut
+
+sub _replaces {
+	my ($self, $pkgname) = @_;
+	return $self->_pkglist($pkgname, 'replaces',
+		sub { $_ = spec2struct $_->[0] });
+}
+
+
+=begin private
+
+_satisfiers
+
+  my @satnames = $state->_satisfiers($spec);
+
+Find all package names that satisfy the given specification struct. Names are
+of real packages, not virtual ones.
+
+=end private
+
+=cut
+
+sub _satisfiers {
+	my ($self, $spec) = @_;
+	my @sat;
+	
+	my $name = $spec->{package};
+	my $vers = $self->installed($name);
+	if (exists $spec->{version}) {
+		return ( ($vers && version_cmp($vers, @$spec{qw(relation version)}))
+			? ($name) : () );
+	} else {
+		return ($vers ? ($name) : (), $self->providers($name));
+	}
+}
+
+
 =over 4
 
 =item installed
@@ -469,7 +522,7 @@ other errors.
 
 {
 	my @fields_required = qw(package version);
-	my @fields_pkglist = qw(depends conflicts provides);
+	my @fields_pkglist = qw(depends conflicts provides replaces);
 	my %fields_allowed = map { $_ => 1 } @fields_required, @fields_pkglist;
 	
 	sub add {
@@ -495,6 +548,15 @@ other errors.
 				$self->{provides}{$provided}{$pkgname} = 1;
 			}
 			$self->_made_change(added => $pkgname);
+			
+			# Remove anything that's replaced/conflicted
+			my %repl = map { $_ => 1 } map { $self->_satisfiers($_) }
+				@{ $self->_replaces($pkgname) };
+			my %con = map { $_ => 1 } map { $self->_satisfiers($_) }
+				@{ $self->_conflicts($pkgname) };
+			delete $repl{$pkgname}; # Don't remove what we just added!
+			my @repcon = grep { $con{$_} } keys %repl;
+			$self->remove(@repcon);
 		}
 		
 		$self->_stop_changing;
@@ -698,6 +760,11 @@ structures.
 A textual description that can be shown to a user to describe the failed
 dependency.
 
+=item conflictors
+
+If the field is conflicts, then this is a list of package names causing the
+conflict.
+
 =back
 
 The $options hash-ref can contain the following keys:
@@ -741,14 +808,9 @@ sub check {
 		
 		# Depends
 		REQ: for my $req (@{ $self->_depends($pkgname) }) { # next if match 
-			for my $alt (@$req) { # next if no match
-				if (defined $alt->{version}) {
-					next unless (my $vers = $self->installed($alt->{package}));
-					next REQ if version_cmp($vers, @$alt{qw(relation version)});
-				} else {
-					next REQ if $self->installed($alt->{package})
-						|| $self->providers($alt->{package});
-				}
+			for my $alt (@$req) {
+				my @sat = $self->_satisfiers($alt);
+				next REQ if @sat;
 			}
 			
 			# Nothing found!
@@ -762,24 +824,17 @@ sub check {
 		
 		# Conflicts
 		for my $con (@{ $self->_conflicts($pkgname) }) { # next if no match
-			my $vers = $self->installed($con->{package});
-			if (defined $con->{version}) {
-				next unless defined $vers
-					&& version_cmp($vers, @$con{qw(relation version)});
-			} else {
-				unless (defined $vers) {
-					my @provs = $self->providers($con->{package});
-					next unless @provs;
-					
-					# It's ok for something to conflict on what it provides
-					next if @provs == 1 && $provs[0] eq $pkgname;
-				}
-			}
+			my @sat = $self->_satisfiers($con);
 			
-			my $desc = "Unsatisfied conflicts in $pkgname: "
-				. spec2string($con);
+			# It's ok for something to conflict on what it provides
+			@sat = grep { $_ ne $pkgname } @sat;
+			next unless @sat;
+			
+			# Found a conflict
+			my $desc = "Conflict of $pkgname: " . spec2string($con)
+				. " is satisfied by " . join(', ', @sat);
 			push @probs, { package => $pkgname, field => 'conflicts',
-				spec => $con, desc => $desc };
+				spec => $con, desc => $desc, conflictors => \@sat };
 			print_breaking_stderr("Fink::SysState: $desc") if $opts{verbose};
 			next PKG if $opts{detail} <= $DETAIL_PACKAGE;
 		}
@@ -858,7 +913,7 @@ sub _satisfied_combo {
 	$chosen = [] unless $chosen; # What's already been chosen?
 	
 	# We're at a final state, is it ok?
-	return $self->unsatisfied() ? 0 : @$chosen unless @$alterns;
+	return $self->unsatisfied() ? () : @$chosen unless @$alterns;
 	
 	# Try all the candidates for one unsatisfied package
 	my $cands = pop @$alterns;
@@ -874,7 +929,7 @@ sub _satisfied_combo {
 		$self->undo();
 	}
 	
-	return 0;	# Options exhausted
+	return ();	# Options exhausted
 }
 
 =item resolve_install

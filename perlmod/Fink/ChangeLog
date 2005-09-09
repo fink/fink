@@ -1,5 +1,9 @@
 2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* SysState.pm: Add Replaces support.
+
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* SysState.pm: New module for examining the state of the installed packages,
 	discovering and solving dependency problems.
 	* PkgVersion.pm: Tie into SysState to solve bug in dpkg, see bug #992093.
