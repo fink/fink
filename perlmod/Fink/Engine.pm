@@ -28,10 +28,10 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &execute &expand_percent
 					  &file_MD5_checksum &count_files &get_arch
 					  &call_queue_clear &call_queue_add &lock_wait
-					  &aptget_lockwait &store_rename);
+					  &aptget_lockwait &store_rename &get_options);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
-				 &get_term_width &word_wrap);
+				 &get_term_width);
 use Fink::Configure qw(&spotlight_warning);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -41,8 +41,6 @@ use Fink::Status;
 use Fink::Command qw(mkdir_p);
 use Fink::Notify;
 use Fink::Validation;
-
-use Getopt::Long;
 
 use strict;
 use warnings;
@@ -441,7 +439,8 @@ sub do_real_list {
 				"(example: fink list --maintainer=beren12).", 'EXPR'],
 		);
 	}		
-	get_options($cmd, \@options, \@_, "%intro{[options] [string]}\n%all{}\n");
+	get_options($cmd, \@options, \@_,
+		helpformat => "%intro{[options] [string],foo bar}\n%all{}\n");
 	
 	
 	if ($options{installedstate} == 0) {
@@ -890,7 +889,7 @@ sub cmd_remove {
 	get_options('remove', [
 		[ 'recursive|r' => \$recursive,
 			'Also remove packages that depend on the package(s) to be removed.' ],
-	], \@_, "%intro{[options] [package(s)]}\n%all{}\n");
+	], \@_, helpformat => "%intro{[options] [package(s)]}\n%all{}\n");
 
 	if ($recursive) {
 		if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
@@ -915,7 +914,7 @@ sub get_pkglist {
 	
 	get_options($cmd, [
 		[ 'buildonly|b'	=> \$buildonly, "Only packages which are Build Depends Only" ],
-	], \@_, "%intro{[options] [string]}\n%all{}\n");
+	], \@_, helpformat => "%intro{[options] [string]}\n%all{}\n");
 			
 	Fink::Package->require_packages();
 	@plist = Fink::Package->list_packages();
@@ -993,7 +992,7 @@ sub cmd_purge {
 	get_options('remove', [
 		[ 'recursive|r' => \$recursive,
 			'Also remove packages that depend on the package(s) to be removed.' ],
-	], \@_, "%intro{[options] [package(s)]}\n%all{}\n");
+	], \@_, helpformat => "%intro{[options] [package(s)]}\n%all{}\n");
 
 	print "WARNING: this command will remove the package(s) and remove any\n";
 	print "         global configure files, even if you modified them!\n\n";
@@ -1028,7 +1027,7 @@ sub cmd_validate {
 	get_options('validate', [
 		[ 'prefix|p=s'	=> \$val_prefix, "Simulate an alternate Fink prefix (%p) in files." ],
 		[ 'pedantic!'	=> \$pedantic, "Display even the most nitpicky warnings (default)." ],
-	], \@_, <<FORMAT);
+	], \@_, helpformat => <<FORMAT);
 %intro{[options] [files]}
 Options:
 %opts{prefix,pedantic}
@@ -1074,7 +1073,7 @@ sub cmd_cleanup {
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
 		[ 'dry-run|d'     => \$opts{dryrun},
 			"Print the files that would be removed, but do not actually remove them." ],
-	], \@_, <<FORMAT);
+	], \@_, helpformat => <<FORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
 %opts{debs,sources,buildlocks}
@@ -1083,6 +1082,8 @@ Options:
 %opts{keep-src,dry-run,help}
 
 FORMAT
+		validate => sub { scalar(grep { $_ } values %modes) },
+	);
 	
 	$modes{srcs} && &cleanup_sources(%opts);
 	$modes{debs} && &cleanup_debs(%opts);
@@ -2041,7 +2042,7 @@ sub cmd_dumpinfo {
 		[ 'all|a'		=> \$wantall,	"All package info fields (default behavior)."		],
 		[ 'field|f=s'	=> \@fields,	"Just the specific field(s) specified."				],
 		[ 'percent|p=s'	=> \@percents,	"Just the percent expansion for specific key(s)."	],
-	], \@_, <<FORMAT);
+	], \@_, helpformat => <<FORMAT);
 %intro{[options] [package(s)]}
 %all{}
 
@@ -2756,200 +2757,6 @@ sub prefetch {
 		if @aptget;
 	
 	&call_queue_clear;
-}
-
-=item get_options
-
-  get_options $command, $options, $args;
-  get_options $command, $options, $args, $helpformat;
-
-Convenience method to parse arguments for a Fink command.
-
-
-The $command parameter should simply contain the name of the current Fink
-command, eg: 'index'.
-
-
-The $options array-ref should contain sub-arrays describing options. Each
-sub-array should contain, in order:
-
-* Two items which could be passed to Getopt::Long::GetOptions.
-
-* A third item with descriptive text appropriate for the --help option. If no
-help should be printed for this option, pass undef.
-
-* An optional fourth item, with a suitable name for the option's value if
-it takes a value.
-
-Eg:  [ 'option|o' => \$opt, 'Descriptive text', 'value' ]
-
-
-The $args array-ref should contain the list of command-line argument to be
-examined for options. The array will be modified to remove the arguments
-found, make a copy if you want to retain the original list.
-
-
-Standard errors such as invalid options and --help are handled automagically,
-by printing a help message and exiting the program.
-
-If the standard help format is not good enough for your purposes, a custom
-format can be defined. This is simply a string, with a some special constructs:
-
-  %opts{opt1,opt2,...}	Prints the default usage and description for the
-						given options 'opt1', 'opt2', etc.
-
-  %all{}				Prints the default usage and description for all
-  						options.
-
-  %align{opt,desc}		Prints the option 'opt' and its description 'desc',
-						aligned with other options.
-
-  %intro{args}			Print a help introduction, with 'args' as a short way
-  						to describe this command's arguments.
-
-  %%					Print a literal percent character.
-
-  Percent can also be used to escape comma and curly brackets inside an
-  expansion.
-
-=cut
-
-# my $str = _get_option_usage $opt;
-#
-# Get usage and description for an option item.
-sub _get_option_usage {
-	my $opt = shift;
-	
-	my $opttxt;
-	if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
-		# Try each way to specify option (eg: -f, --full)
-		my @alts = sort { length($a) <=> length($b) } split /\|/, $1;
-		foreach my $alt (@alts) {
-			if (length($alt) == 1) {
-				$alt = "-$alt";
-				$alt .= " $opt->[3]" if defined $opt->[3];
-			} else {
-				$alt = "--$alt";
-				$alt .= "=$opt->[3]" if defined $opt->[3];
-			}
-		}
-		return join ', ', @alts;
-	} else {
-		return $opt; # Don't know what to do, just punt
-	}
-}
-
-# my $str = _align_option_text $usage, $desc;
-#
-# Aligns the usage and desc with other options
-sub _align_option_text {
-	my ($opttxt, $desctxt) = @_;
-	my $ret = "";
-	
-	# Word wrap things
-	my $optlen = 22;
-	my $desclen; # Ensure there's a reasonable size
-	for my $width (get_term_width(), 80) {
-		$desclen = $width - $optlen - 3;
-		last if $desclen > 5;
-	}
-	
-	my @optlines = word_wrap $opttxt, $optlen, '  ', '    ';
-	my @desclines = map { word_wrap $_, $desclen }
-		split /\n/, $desctxt; # Respect newlines
-	
-	# Add 'em to the message by pairs
-	my $first = 1;
-	while (1) {
-		my $optpart = shift @optlines;
-		my $descpart = shift @desclines;
-		last unless defined $optpart || defined $descpart;
-		$optpart = ' ' x $optlen unless defined $optpart;
-		$descpart = '' unless defined $descpart;
-		
-		my $midpart = $first ? ' - ' : '   ';
-		$first = 0 if $first;
-		
-		$ret .= sprintf "%-${optlen}s%s%s\n", $optpart, $midpart, $descpart;
-	}
-	
-	return $ret;
-}
-
-# my $str = _expand_help $command, $options, $helpformat;
-#
-# Expand the help format
-sub _expand_help {
-	my ($command, $options, $helpformat) = @_;
-	
-	# Option table
-	my %opts;
-	foreach my $opt (@$options) {
-		if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
-			my @names = split /\|/, $1;
-			@opts{@names} = ($opt) x scalar(@names);
-		}
-	}
-	
-	# Expansion table
-	my %exp = (
-		all => sub {
-			"Options:\n" . join '',
-				map { _align_option_text(_get_option_usage($_), $_->[2]) } @$options;
-		},
-		opts => sub {
-			chomp (my $ret = join '', map {
-				_align_option_text(_get_option_usage($_), $_->[2]) } @opts{@_} );
-			$ret;
-		},
-		align	=> sub { chomp (my $ret = _align_option_text(@_)); $ret },
-		intro	=> sub {
-			require Fink::FinkVersion;
-			"Fink " . Fink::FinkVersion::fink_version() . "\n\n" .
-			"Usage: fink $command " . join(' ', @_) . "\n";
-		},
-	);
-
-	# Do the format
-	$helpformat =~ s"(?<!\%)((?:\%\%)*)\%(\w+)\{(|.*?[^%])\}"
-		return $& unless exists $exp{$2};
-		my @args = map { s/(?<!\%)((?:\%\%)*)%([{},])/$1$2/g; $_ }
-			split /(?<!%),/, $3;
-		$1 . &{$exp{$2}}(@args);
-	"ge;
-	$helpformat =~ s/%%/%/g;
-	return $helpformat;
-}
-
-
-sub get_options {
-	my ($command, $options, $args, $helpformat) = @_;
-	
-	# Insert help after last option, if it's not already in the list
-	my $wanthelp = 0;
-	if (!grep { $_->[0] =~ /(^|\|)h(elp)?(\||$)/ } @$options) {
-		push @$options, [ 'h|help' => \$wanthelp, 'This help text.' ];
-	}
-	
-	# Call GetOptions. Switch args into @ARGV so GetOptions can work
-	{
-		local @ARGV = @$args;	
-		Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-		GetOptions( map { @$_[0, 1] } @$options )
-			or die <<"DIE";
-fink $command: unknown option
-Type 'fink $command --help' for more information.
-DIE
-		@$args = @ARGV;
-	}
-	
-	return unless $wanthelp;
-	
-	# Now we're doing the help
-	$helpformat = "%intro{[options]}\n%all{}\n" unless defined $helpformat;
-	print _expand_help($command, $options, $helpformat);
-	
-	exit 0;
 }
 
 =back

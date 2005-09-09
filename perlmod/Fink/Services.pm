@@ -23,10 +23,12 @@
 
 package Fink::Services;
 
-use Fink::Command qw(&rm_f);
+use Fink::Command	qw(&rm_f);
+use Fink::CLI		qw(&word_wrap &get_term_width);
 
 use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
+use Getopt::Long;
 
 use strict;
 use warnings;
@@ -56,7 +58,7 @@ BEGIN {
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
 					  &store_rename &fix_gcc_repairperms
-					  &spec2struct &spec2string);
+					  &spec2struct &spec2string &get_options);
 }
 our @EXPORT_OK;
 
@@ -1797,6 +1799,234 @@ sub spec2string {
 	} else {
 		return $spec->{package};
 	}
+}
+
+=item get_options
+
+  get_options $command, $optiondesc, $args;
+  get_options $command, $optiondesc, $args, %optional;
+
+Convenience method to parse arguments for a Fink command.
+
+Standard errors such as invalid options and --help are handled automagically.
+
+
+The $command parameter should simply contain the name of the current Fink
+command, eg: 'index'.
+
+
+The $optiondesc array-ref should contain sub-arrays describing options. Each
+sub-array should contain, in order:
+
+* Two items which could be passed to Getopt::Long::GetOptions.
+
+* A third item with descriptive text appropriate for the --help option. If no
+help should be printed for this option, pass undef.
+
+* An optional fourth item, with a suitable name for the option's value if
+it takes a value.
+
+Eg:  [ 'option|o' => \$opt, 'Descriptive text', 'value' ]
+
+It is not necessary to include the --help item, it will be added automatically.
+
+
+The $args array-ref should contain the list of command-line argument to be
+examined for options. The array will be modified to remove the arguments
+found, make a copy if you want to retain the original list.
+
+
+The following elements of %optional are available:
+
+=over 4
+
+=item helpformat
+
+If the standard help format is not good enough for your purposes, a custom
+format can be defined. This is simply a string, with a some special constructs:
+
+  %opts{opt1,opt2,...}	Prints the default usage and description for the
+						given options 'opt1', 'opt2', etc.
+
+  %all{}				Prints the default usage and description for all
+  						options.
+
+  %align{opt,desc}		Prints the option 'opt' and its description 'desc',
+						aligned with other options.
+
+  %align{opt,desc,optspace}
+  						Prints the option 'opt' and its description 'desc',
+						aligned such that the option part takes up a width
+						of optspace characters.
+
+  %intro{ex,...}		Print a help introduction, with 'ex' as a very short
+  						generic example of calling this command, such as:
+  						'[options] [packages]'. With multiple examples, will
+  						print one per line.
+
+  %%					Print a literal percent character.
+
+  Percent can also be used to escape comma and curly brackets inside an
+  expansion.
+
+=item validate
+
+If the options can be invalid under unusual circumstances, pass in a code-ref
+here which will validate the results of option-parsing. If this code-ref
+returns false, it will be treated as an error condition.
+
+=back
+
+=cut
+
+# my $str = _get_option_usage $optitem;
+#
+# Get usage and description for an option item.
+sub _get_option_usage {
+	my $opt = shift;
+	
+	my $opttxt;
+	if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
+		# Try each way to specify option (eg: -f, --full)
+		my @alts = sort { length($a) <=> length($b) } split /\|/, $1;
+		foreach my $alt (@alts) {
+			if (length($alt) == 1) {
+				$alt = "-$alt";
+				$alt .= " $opt->[3]" if defined $opt->[3];
+			} else {
+				$alt = "--$alt";
+				$alt .= "=$opt->[3]" if defined $opt->[3];
+			}
+		}
+		return join ', ', @alts;
+	} else {
+		return $opt; # Don't know what to do, just punt
+	}
+}
+
+# my $str = _align_option_text $usage, $desc, [$optlen];
+#
+# Aligns the usage and desc with other options
+sub _align_option_text {
+	my ($opttxt, $desctxt, $optlen) = @_;
+	$optlen ||= 22;
+	my $ret = "";
+	
+	# Word wrap things
+	my $desclen; # Ensure there's a reasonable size
+	for my $width (get_term_width(), 80) {
+		$desclen = $width - $optlen - 3;
+		last if $desclen > 5;
+	}
+	
+	my @optlines = word_wrap $opttxt, $optlen, '  ', '    ';
+	my @desclines = map { word_wrap $_, $desclen }
+		split /\n/, $desctxt; # Respect newlines
+	
+	# Add 'em to the message by pairs
+	my $first = 1;
+	while (1) {
+		my $optpart = shift @optlines;
+		my $descpart = shift @desclines;
+		last unless defined $optpart || defined $descpart;
+		$optpart = ' ' x $optlen unless defined $optpart;
+		$descpart = '' unless defined $descpart;
+		
+		my $midpart = $first ? ' - ' : '   ';
+		$first = 0 if $first;
+		
+		$ret .= sprintf "%-${optlen}s%s%s\n", $optpart, $midpart, $descpart;
+	}
+	
+	return $ret;
+}
+
+# my $str = _expand_help $command, $optionlist, $helpformat;
+#
+# Expand the help format
+sub _expand_help {
+	my ($command, $options, $helpformat) = @_;
+	
+	# Option table
+	my %opts;
+	foreach my $opt (@$options) {
+		if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
+			my @names = split /\|/, $1;
+			@opts{@names} = ($opt) x scalar(@names);
+		}
+	}
+	
+	# Expansion table
+	my %exp = (
+		all => sub {
+			"Options:\n" . join '',
+				map { _align_option_text(_get_option_usage($_), $_->[2]) } @$options;
+		},
+		opts => sub {
+			chomp (my $ret = join '', map {
+				_align_option_text(_get_option_usage($_), $_->[2]) } @opts{@_} );
+			$ret;
+		},
+		align	=> sub { chomp (my $ret = _align_option_text(@_)); $ret },
+		intro	=> sub {
+			my $first = shift;
+			require Fink::FinkVersion;
+			"Fink " . Fink::FinkVersion::fink_version() . "\n\n" .
+				"Usage: fink$command $first\n" .
+				join '', map { "       fink$command $_\n" } @_;
+		},
+	);
+
+	# Do the format
+	$helpformat =~ s"(?<!\%)((?:\%\%)*)\%(\w+)\{(|.*?[^%])\}"
+		return $& unless exists $exp{$2};
+		my @args = map { s/(?<!\%)((?:\%\%)*)%([{},])/$1$2/g; $_ }
+			split /(?<!%),/, $3;
+		$1 . &{$exp{$2}}(@args);
+	"ge;
+	$helpformat =~ s/%%/%/g;
+	return $helpformat;
+}
+
+
+sub get_options {
+	my ($command, $options, $args, %optional) = @_;
+	%optional = (
+		helpformat	=> "%intro{[options]}\n%all{}\n",
+		validate	=> sub { 1 },
+		%optional,
+	);
+	
+	# Insert help after last option, if it's not already in the list
+	my $wanthelp = 0;
+	if (!grep { $_->[0] =~ /(^|\|)h(elp)?(\||$)/ } @$options) {
+		push @$options, [ 'h|help' => \$wanthelp, 'This help text.' ];
+	}
+	
+	# Allow blank $command for global options.
+	$command = " $command" if $command;
+	
+	# Call GetOptions. Switch args into @ARGV so GetOptions can work
+	my $die = <<DIE;
+fink$command: unknown option
+Type 'fink$command --help' for more information.
+DIE
+	{
+		local @ARGV = @$args;	
+		Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+		GetOptions( map { @$_[0, 1] } @$options )
+			or die $die;
+		@$args = @ARGV;
+	}
+	
+	unless ($wanthelp) {
+		&{$optional{validate}}() ? return : die $die;
+	}
+	
+	# Now we're doing the help
+	print _expand_help($command, $options, $optional{helpformat});
+	
+	exit 0;
 }
 
 =back

@@ -1,5 +1,10 @@
 2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm, Services.pm: Move get_options to Services.
+	* Services.pm: Add some more features to get_options.
+
+2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm, Validation.pm:
 	Get --trees working properly:
 		- Config.pm: Allow both inclusion and exclusion of trees at the command
