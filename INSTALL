@@ -1,5 +1,4 @@
-Generated from $Fink: install.xml,v 1.21 2005/05/31 15:36:05 rangerrick Exp
-$
+Generated from $Fink: install.xml,v 1.22 2005/09/09 19:10:31 dmrrsn Exp $
 
  Fink 0.8.0 Installation
 =========================
@@ -31,10 +30,12 @@ can still use this section as an example.)
  First Time Installation Fast Track
 ------------------------------------
 Start out by copying the "fink-0.8.0-full.tar.gz" file to your home folder.
-Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "bold_face" (or otherwise highlighted). The
-actual input prompts from the shell may vary, and some chunks of the output
-have been omitted ( "..." ).
+(Note: If you have OS X 10.4 and XCode 2.1, you should use
+"fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes
+below.) Then, open Terminal.app and follow the session below. Computer
+output is in "normal face" , your input is in "bold_face" (or otherwise
+highlighted). The actual input prompts from the shell may vary, and some
+chunks of the output have been omitted ( "..." ).
 
    [frodo:~] testuser% tar_xzf_fink-0.8.0-full.tar.gz
    [frodo:~] testuser% cd_fink-0.8.0-full
@@ -119,10 +120,12 @@ well-documented.
  Update Fast Track
 -------------------
 Start out by copying the "fink-0.8.0-full.tar.gz" file to your home folder.
-Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "bold_face" (or otherwise highlighted). The
-actual input prompts from the shell may vary, and some chunks of the output
-have been omitted ( "..." ).
+(Note: If you have OS X 10.4 and XCode 2.1, you should use
+"fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes
+below.) Then, open Terminal.app and follow the session below. Computer
+output is in "normal face" , your input is in "bold_face" (or otherwise
+highlighted). The actual input prompts from the shell may vary, and some
+chunks of the output have been omitted ( "..." ).
 
    [frodo:~] testuser% tar_xzf_fink-0.8.0-full.tar.gz
    [frodo:~] testuser% cd_fink-0.8.0-full
@@ -202,10 +205,12 @@ back to a working system when things break. You have been warned.
 
  Installation
 --------------
-First, you need to unpack the fink-0.8.0-full.tar.gz tarball. It is
-recommended that you do this from the command line - StuffIt Expander has a
-tendency to screw up text files. So, go to the directory where you put the
-tarball, and run this command:
+First, you need to unpack the fink-0.8.0-full.tar.gz tarball. (Note: If you
+have OS X 10.4 and XCode 2.1, you should use
+"fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes
+below.) It is recommended that you do this from the command line - StuffIt
+Expander has a tendency to screw up text files. So, go to the directory
+where you put the tarball, and run this command:
 
    tar xzf fink-0.8.0-full.tar.gz
 
