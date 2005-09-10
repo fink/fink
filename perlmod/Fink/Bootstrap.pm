@@ -363,7 +363,7 @@ sub additional_packages {
 
 	my $perl_is_supported = 1;
 
-	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "gettext-tools", "libiconv-dev", "libncurses5");
+	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560", "file-spec-pm560", "test-harness-pm560", "test-simple-pm560";
 	} elsif ("$]" == "5.006001") {
