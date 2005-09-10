@@ -1,3 +1,8 @@
+2005-09-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Since gettext-tools is no longer a splitoff of an
+	essential package, we do not need it on the update list.
+
 2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	*  VirtPackage.pm: Add note about XCode Legacy Compilers to
