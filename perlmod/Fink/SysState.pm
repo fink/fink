@@ -256,7 +256,7 @@ on other errors.
 sub _depends {
 	my ($self, $pkgname) = @_;
 	return $self->_pkglist($pkgname, 'depends',
-		sub { map { $_ = spec2struct $_ } @$_ });
+		sub { map { $_ = spec2struct($_, "'$_' in $pkgname") } @$_ });
 }
 
 =begin private
@@ -280,7 +280,7 @@ on other errors.
 sub _conflicts {
 	my ($self, $pkgname) = @_;
 	return $self->_pkglist($pkgname, 'conflicts',
-		sub { $_ = spec2struct $_->[0] });
+		sub { $_ = spec2struct($_->[0], "'$_->[0]' in $pkgname") });
 }
 
 =begin private
@@ -327,7 +327,7 @@ on other errors.
 sub _replaces {
 	my ($self, $pkgname) = @_;
 	return $self->_pkglist($pkgname, 'replaces',
-		sub { $_ = spec2struct $_->[0] });
+		sub { $_ = spec2struct($_->[0], "'$_->[0]' in $pkgname") });
 }
 
 
@@ -981,17 +981,16 @@ sub resolve_install {
 		}
 		return @extras;
 	} else {		# Failure
-		if ($verbose) {
-			print_breaking_stderr("Could not resolve inconsistency! The "
-				. "following dependency errors remain:");
-			my @aptspecs;
-			foreach my $problem ($self->check()) {
-				print_breaking_stderr("  " . $problem->{desc});
-			}
-			my $aptpkgs = join (' ', 
-				map { $_->get_name() . "=" . $_->get_fullversion() }
-				@install_pvs);
-			print_breaking_stderr(<<FAIL);
+		print_breaking_stderr("Could not resolve inconsistent dependencies! "
+			. "The following errors remain:");
+		my @aptspecs;
+		foreach my $problem ($self->check()) {
+			print_breaking_stderr("  " . $problem->{desc});
+		}
+		my $aptpkgs = join (' ', 
+			map { $_->get_name() . "=" . $_->get_fullversion() }
+			@install_pvs);
+		print_breaking_stderr(<<FAIL);
 
 To fix manually, run:
   fink scanpackages
@@ -999,7 +998,6 @@ To fix manually, run:
   sudo apt-get install $aptpkgs
 
 FAIL
-		} # END if $verbose
 		die "Fink::SysState: Could not resolve inconsistent dependencies\n";
 	}
 }

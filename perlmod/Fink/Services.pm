@@ -29,6 +29,7 @@ use Fink::CLI		qw(&word_wrap &get_term_width);
 use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
 use Getopt::Long;
+use Data::Dumper;
 
 use strict;
 use warnings;
@@ -1749,11 +1750,15 @@ sub store_rename {
 =item spec2struct
 
 	my $spec_struct = spec2struct($spec_string);
+	my $spec_struct = spec2struct($spec_string, $where);
 
 Turn a package specification such as 'foo (>= 1.0)' into a structural form.
 
 The hash returned always contains the field 'package', and optionally contains
 the fields 'version' and 'relation' to indicate a version restriction.
+
+The $where field is used in case of error, to indicate to the user where the
+error occurred.
 
 On error, an exception is thrown.
 
@@ -1761,6 +1766,8 @@ On error, an exception is thrown.
 
 sub spec2struct {
 	my $spec = shift;
+	my $where = shift || $spec;
+	$where = " at $where" if $where;
 	my %ret;
 	
 	if ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
@@ -1769,12 +1776,13 @@ sub spec2struct {
 		if ($verspec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
 			@ret{qw(relation version)} = ($1, $2);
 		} else {
-			die "Fink::Services: Illegal version specification: $verspec\n";
+			die "Fink::Services: Illegal version specification: "
+				. "$verspec$where\n";
 		}
 	} elsif ($spec =~ /^\s*([0-9a-zA-Z][0-9a-zA-Z.\+-]+)\s*$/) {
 		$ret{package} = $1;
 	} else {
-		die "Fink::Services: Illegal specification format: $spec\n";
+		die "Fink::Services: Illegal specification format: $spec$where\n";
 	}
 	
 	return \%ret;
@@ -1783,18 +1791,22 @@ sub spec2struct {
 =item spec2string
 
 	my $spec_string = spec2string($spec_struct);
+	my $spec_string = spec2string($spec_struct, $where);
 
-Reverse spec2struct. On error, and exception is thrown.
+Reverse spec2struct. On error, an exception is thrown.
 
 =cut
 
 sub spec2string {
 	my $spec = shift;
-	die "Fink::Services: Missing package name in spec struct\n"
+	my $where = shift || Dumper($spec);
+	$where = " at $where" if $where;
+	
+	die "Fink::Services: Missing package name in spec struct$where\n"
 		unless defined $spec->{package};
 	if (defined $spec->{version} || defined $spec->{relation}) {
 		die "Fink::Services: Only one of version and relation present in "
-			. "spec struct\n"
+			. "spec struct$where\n"
 			unless defined $spec->{version} && defined $spec->{relation};
 		return sprintf "%s (%s %s)", @$spec{qw(package relation version)};
 	} else {
