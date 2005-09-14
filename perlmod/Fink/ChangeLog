@@ -1,3 +1,7 @@
+2005-09-14  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use chowname_hr when reverting %i to root:admin.
+
 2005-09-14  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* SysState.pm: Clean up documentation of private subs.

@@ -43,7 +43,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
-use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname touch);
+use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname chowname_hr touch);
 use Fink::Notify;
 use Fink::Shlibs;
 use Fink::Validation qw(validate_dpkg_unpacked);
@@ -3358,7 +3358,7 @@ sub phase_build {
 	# switch everything back to root ownership if we were --build-as-nobody
 	if (Fink::Config::get_option("build_as_nobody")) {
 		print "Reverting ownership of install dir to root\n";
-		if (&execute("chown -R -h root:admin '$destdir'") == 1) {
+		unless (chowname_hr 'root:admin', $destdir) {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
