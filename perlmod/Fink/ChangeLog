@@ -1,3 +1,10 @@
+2005-09-14  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* SysState.pm: Clean up documentation of private subs.
+	* SysState.pm: Don't try to correct pre-existing dependency problems.
+	* PkgVersion.pm: Just skip the dep-resolution if there's a fatal problem
+	(eg: bad '<' in version spec inside the dpkg status file).
+
 2005-09-13  Daniel Macks  <dmacks@netspace.org>
 
 	* Command.pm: Implemented chowname_hr.

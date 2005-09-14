@@ -45,7 +45,14 @@ use Fink::Services	qw(&pkglist2lol &version_cmp &spec2struct &spec2string
 use Fink::Status;
 use Fink::VirtPackage;
 
-use Carp;
+use Carp;	
+use Storable qw(&freeze);
+
+### GLOBALS
+
+# How detailed a dep-check should we do?
+our ($DETAIL_FIRST, $DETAIL_PACKAGE, $DETAIL_ALL) = 0..20;
+
 
 =head1 NAME
 
@@ -78,10 +85,7 @@ packages are really added or removed by this package.
 
 
 	# Look for dependency problems
-	my @unsatisfied = $state->unsatisfied();		# Check all packages
-	@unsatisfied = $state->unsatisfied({
-		verbose => 1 }, @pkgnames);					# Just a few packages
-	my @problems = $state->check();					# More detailed results
+	my @problems = $state->check();
 
 
 	# Add and remove items. 
@@ -144,18 +148,9 @@ sub new {
 	return $self;
 }
 
-=begin private
-
-_initialize
-
-	$state->_initialize();
-
-Initialize this state to the current state of the system.
-
-=end private
-
-=cut
-
+# $self->_initialize();
+#
+# Initialize this state to the current state of the system.
 sub _initialize {
 	my $self = shift;
 	
@@ -174,20 +169,12 @@ sub _initialize {
 
 =head2 Examining the state
 
-=begin private
-
-_package
-
-	my $pkg_item = $state->_package($pkgname);
-
-Gets the package-item hash (like an argument to &add) for the given package.
-
-If the package does not exist, throws an exception.
-
-=end private
-
 =cut
 
+# my $pkg_item = $self->_package($pkgname);
+#
+# Gets the package-item hash (like an argument to &add) for the given package.
+# If the package does not exist, throws an exception.
 sub _package {
 	my ($self, $pkgname) = @_;
 	
@@ -196,26 +183,17 @@ sub _package {
 	return $self->{packages}{$pkgname};
 }
 
-=begin private
-
-_pkglist
-
-	$state->_pkglist($pkgname, $field, $transform);
-
-Gets the contents of the package-listing field $field of package $pkgname in
-structural format.
-
-Requires a transformation code-ref that operates on $_, and turns each item of
-the package list from an array of alternative specification strings into the 
-desired format.
-
-Returns an empty list if the field does not exist. Throws an exception on other
-errors.
-
-=end private
-
-=cut
-
+# my $content = $self->_pkglist($pkgname, $field, $transform);
+#
+# Gets the contents of the package-listing field $field of package $pkgname in
+# structural format.
+#
+# Requires a transformation code-ref that operates on $_, and turns each item of
+# the package list from an array of alternative specification strings into the 
+# desired format.
+#
+# Returns an empty list if the field does not exist. Throws an exception on 
+# other errors.
 sub _pkglist {
 	my ($self, $pkgname, $field, $transform) = @_;
 	my $pkg = $self->_package($pkgname);
@@ -234,116 +212,70 @@ sub _pkglist {
 	return $pkg->{$field};
 }
 
-=begin private
-
-_depends
-
-	$state->_depends($pkgname);
-
-Gets the dependencies of a package in structural format.
-
-The structure is an array of requirements, each containing a array of
-alternatives that can satisfy the requirement. Each alternative is a
-specification structure as returned by spec2struct.
-
-If a package has no dependencies, returns an empty list. Throws an exception
-on other errors.
-
-=end private
-
-=cut
-
+# my $depends = $self->_depends($pkgname);
+#
+# Gets the dependencies of a package in structural format.
+#
+# The structure is an array of requirements, each containing a array of
+# alternatives that can satisfy the requirement. Each alternative is a
+# specification structure as returned by spec2struct.
+#
+# If a package has no dependencies, returns an empty list. Throws an exception
+# on other errors.
 sub _depends {
 	my ($self, $pkgname) = @_;
 	return $self->_pkglist($pkgname, 'depends',
 		sub { map { $_ = spec2struct($_, "'$_' in $pkgname") } @$_ });
 }
 
-=begin private
-
-_conflicts
-
-	$state->_conflicts($pkgname);
-
-Gets the conflicting packages of a package in structural format.
-
-The structure is an array of specification structures as returned by
-spec2struct.
-
-If a package has no conflicts, returns an empty list. Throws an exception
-on other errors.
-
-=end private
-
-=cut
-
+# my $conflicts = $self->_conflicts($pkgname);
+#
+# Gets the conflicting packages of a package in structural format.
+#
+# The structure is an array of specification structures as returned by
+# spec2struct.
+#
+# If a package has no conflicts, returns an empty list. Throws an exception
+# on other errors.
 sub _conflicts {
 	my ($self, $pkgname) = @_;
 	return $self->_pkglist($pkgname, 'conflicts',
 		sub { $_ = spec2struct($_->[0], "'$_->[0]' in $pkgname") });
 }
 
-=begin private
-
-_provides
-
-	$state->_provides($pkgname);
-
-Gets the packages provided by a package in structural format.
-
-The structure is an array of package names.
-
-If a package provides nothing, returns an empty list. Throws an exception
-on other errors.
-
-=end private
-
-=cut
-
+# my $provides = $self->_provides($pkgname);
+#
+# Gets the packages provided by a package in structural format.
+#
+# The structure is an array of package names.
+#
+# If a package provides nothing, returns an empty list. Throws an exception
+# on other errors.
 sub _provides {
 	my ($self, $pkgname) = @_;
 	return $self->_pkglist($pkgname, 'provides',
 		sub { $_ = $_->[0] });
 }
 
-=begin private
-
-_replaces
-
-	$state->_replaces($pkgname);
-
-Gets the packages replaced by a package in structural format.
-
-The structure is an array of specification structures as returned by
-spec2struct.
-
-If a package replaces nothing, returns an empty list. Throws an exception
-on other errors.
-
-=end private
-
-=cut
-
+# my $replaces = $self->_replaces($pkgname);
+#
+# Gets the packages replaced by a package in structural format.
+#
+# The structure is an array of specification structures as returned by
+# spec2struct.
+#
+# If a package replaces nothing, returns an empty list. Throws an exception
+# on other errors.
 sub _replaces {
 	my ($self, $pkgname) = @_;
 	return $self->_pkglist($pkgname, 'replaces',
 		sub { $_ = spec2struct($_->[0], "'$_->[0]' in $pkgname") });
 }
 
-
-=begin private
-
-_satisfiers
-
-  my @satnames = $state->_satisfiers($spec);
-
-Find all package names that satisfy the given specification struct. Names are
-of real packages, not virtual ones.
-
-=end private
-
-=cut
-
+# my @satnames = $self->_satisfiers($spec);
+#
+# Find all package names that satisfy the given specification struct. Names are
+# of real packages, not virtual ones.
 sub _satisfiers {
 	my ($self, $spec) = @_;
 	my @sat;
@@ -423,21 +355,14 @@ sub provided {
 
 =head2 Changing the system state
 
-=begin private
-
-_start_changing
-
-	$state->_start_changing();
-
-Start making changes to the system.
-
-Any internal method that may change the system state should call this method
-before making any changes, and call _stop_changing when it's done.
-
-=end private
-
 =cut
 
+# $self->_start_changing();
+#
+# Start making changes to the system.
+#
+# Any internal method that may change the system state should call this method
+# before making any changes, and call _stop_changing when it's done.
 sub _start_changing {
 	my $self = shift;
 	unless ($self->{change_level}++) {
@@ -445,23 +370,14 @@ sub _start_changing {
 	}
 }
 
-=begin private
-
-_made_change
-
-	$state->_made_change(added => $pkgname);
-	$state->_made_change(removed => $pkg_hash);
-
-Every time an internal method B<directly> makes a change to the system state,
-it should call this method to notify the reversion system.
-
-If another method is called to make the change, this method should B<not> be
-called, that's an indirect change.
-
-=end private
-
-=cut
-
+# $self->_made_change(added => $pkgname);
+# $self->_made_change(removed => $pkg_hash);
+#
+# Every time an internal method B<directly> makes a change to the system state,
+# it should call this method to notify the reversion system.
+#
+# If another method is called to make the change, this method should B<not> be
+# called, that's an indirect change.
 sub _made_change {
 	my ($self, $action, $item) = @_;
 	
@@ -476,24 +392,37 @@ sub _made_change {
 	}
 }
 
-=begin private
-
-_stop_changing
-
-	$state->_stop_changing();
-
-Stop making changes to the system.
-
-=end private
-
-=cut
-
+# $self->_stop_changing();
+#
+# Stop making changes to the system.
 sub _stop_changing {
 	my $self = shift;
 	unless (--$self->{change_level}) {
 		push @{$self->{history}}, { changes => $self->{current_change} };
 	}
 }
+
+{
+	# Various categories of fields
+	my @fields_required = qw(package version);
+	my @fields_pkglist = qw(depends conflicts provides replaces);
+	my %fields_allowed = map { $_ => 1 } @fields_required, @fields_pkglist;
+	
+	# $self->_remove_replaced_conflicts($pkgname);
+	#
+	# Remove packages that are replaced and conflicted by the given package.
+	sub _remove_replaced_conflicts {
+		my ($self, $pkgname) = @_;
+		
+		my %repl = map { $_ => 1 } map { $self->_satisfiers($_) }
+			@{ $self->_replaces($pkgname) };
+		my %con = map { $_ => 1 } map { $self->_satisfiers($_) }
+			@{ $self->_conflicts($pkgname) };
+		delete $repl{$pkgname}; # Don't remove what we just added!
+		
+		my @repcon = grep { $con{$_} } keys %repl;
+		$self->remove(@repcon);
+	};
 
 =over 4
 
@@ -520,11 +449,6 @@ other errors.
 
 =cut
 
-{
-	my @fields_required = qw(package version);
-	my @fields_pkglist = qw(depends conflicts provides replaces);
-	my %fields_allowed = map { $_ => 1 } @fields_required, @fields_pkglist;
-	
 	sub add {
 		my $self = shift;
 		$self->_start_changing();
@@ -550,13 +474,7 @@ other errors.
 			$self->_made_change(added => $pkgname);
 			
 			# Remove anything that's replaced/conflicted
-			my %repl = map { $_ => 1 } map { $self->_satisfiers($_) }
-				@{ $self->_replaces($pkgname) };
-			my %con = map { $_ => 1 } map { $self->_satisfiers($_) }
-				@{ $self->_conflicts($pkgname) };
-			delete $repl{$pkgname}; # Don't remove what we just added!
-			my @repcon = grep { $con{$_} } keys %repl;
-			$self->remove(@repcon);
+			$self->_remove_replaced_conflicts($pkgname);
 		}
 		
 		$self->_stop_changing;
@@ -725,6 +643,73 @@ sub undo {
 
 =over 4
 
+=cut
+
+# my @problems = $self->_check_depends($opts, $pkgname);
+#
+# Check if a package has a problem with a dependency
+sub _check_depends {
+	my ($self, $opts, $pkgname) = @_;
+	my @probs;
+	
+	REQ: for my $req (@{ $self->_depends($pkgname) }) { # next if match 
+		for my $alt (@$req) {
+			my @sat = $self->_satisfiers($alt);
+			next REQ if @sat;
+		}
+		
+		# Nothing found to satisfy us.
+		my $desc = "Unsatisfied dependency in $pkgname: "
+			. join(' | ', map { spec2string($_) } @$req);
+		
+		push @probs, {
+			package	=> $pkgname,
+			field	=> 'depends',
+			spec	=> $req,
+			desc	=> $desc,
+		};
+		
+		print_breaking_stderr("Fink::SysState: $desc") if $opts->{verbose};
+		return @probs if $opts->{detail} <= $DETAIL_PACKAGE;
+	}
+	
+	return @probs;
+}
+
+# my @problems = $self->_check_conflicts($opts, $pkgname);
+#
+# Check if a package has a problem with a conflicts
+sub _check_conflicts {
+	my ($self, $opts, $pkgname) = @_;
+	my @probs;
+	
+	for my $con (@{ $self->_conflicts($pkgname) }) { # next if no match
+		my @sat = $self->_satisfiers($con);
+		
+		# It's ok for something to conflict on what it provides
+		@sat = grep { $_ ne $pkgname } @sat;
+		
+		# Found some conflicts (one per conflictor!)
+		for my $sat (@sat) {
+			my $desc = "Conflict of $pkgname: " . spec2string($con)
+				. " is satisfied by $sat";
+			
+			push @probs, {
+				package	=> $pkgname,
+				field	=> 'conflicts',
+				spec	=> $con,
+				desc	=> $desc,
+				conflictor => $sat,
+			};
+			
+			print_breaking_stderr("Fink::SysState: $desc") if $opts->{verbose};
+			return @probs if $opts->{detail} <= $DETAIL_PACKAGE;
+		}
+	}
+	
+	return @probs;
+}
+
 =item check
 
 	my @problems = $state->check();
@@ -760,9 +745,9 @@ structures.
 A textual description that can be shown to a user to describe the failed
 dependency.
 
-=item conflictors
+=item conflictor
 
-If the field is conflicts, then this is a list of package names causing the
+If the field is conflicts, then this is the name of the package causing the
 conflict.
 
 =back
@@ -791,8 +776,6 @@ is the default.
 
 =cut
 
-our ($DETAIL_FIRST, $DETAIL_PACKAGE, $DETAIL_ALL) = 0..20;
-
 sub check {
 	my $self = shift;
 	my $optref = shift || { };
@@ -804,82 +787,23 @@ sub check {
 	
 	my @probs;
 	PKG: for my $pkgname (@_ ? @_ : $self->list_packages()) {
-		last if @probs && $opts{detail} <= $DETAIL_FIRST;
+		my @pkgprobs = $self->_check_depends(\%opts, $pkgname);
+		push @pkgprobs, $self->_check_conflicts(\%opts, $pkgname)
+			unless @pkgprobs && $opts{detail} <= $DETAIL_PACKAGE;
 		
-		# Depends
-		REQ: for my $req (@{ $self->_depends($pkgname) }) { # next if match 
-			for my $alt (@$req) {
-				my @sat = $self->_satisfiers($alt);
-				next REQ if @sat;
-			}
-			
-			# Nothing found!
-			my $desc = "Unsatisfied dependency in $pkgname: "
-				. join(' | ', map { spec2string($_) } @$req);
-			push @probs, { package => $pkgname, field => 'depends',
-				spec => $req, desc => $desc };
-			print_breaking_stderr("Fink::SysState: $desc") if $opts{verbose};
-			next PKG if $opts{detail} <= $DETAIL_PACKAGE;
-		}
-		
-		# Conflicts
-		for my $con (@{ $self->_conflicts($pkgname) }) { # next if no match
-			my @sat = $self->_satisfiers($con);
-			
-			# It's ok for something to conflict on what it provides
-			@sat = grep { $_ ne $pkgname } @sat;
-			next unless @sat;
-			
-			# Found a conflict
-			my $desc = "Conflict of $pkgname: " . spec2string($con)
-				. " is satisfied by " . join(', ', @sat);
-			push @probs, { package => $pkgname, field => 'conflicts',
-				spec => $con, desc => $desc, conflictors => \@sat };
-			print_breaking_stderr("Fink::SysState: $desc") if $opts{verbose};
-			next PKG if $opts{detail} <= $DETAIL_PACKAGE;
-		}
+		push @probs, @pkgprobs;
+		return @probs if @probs && $opts{detail} <= $DETAIL_FIRST;		
 	}
 
 	return @probs;
 }
 
-=item unsatisfied
-
-	my @unsatisfied = $state->unsatisfied();
-	@unsatisfied = $state->unsatisfied($options);
-	@unsatisfied = $state->unsatisfied($options, @pkgnames);
-
-Check for packages with unsatisfied dependencies or conflicts, and return
-their names. If passed package names, only checks those packages, otherwise
-checks all packages.
-
-The $options hash-ref can contain the following keys:
-
-=over 4
-
-=item verbose
-
-If true, print detailed messages to stderr when a dependency problem is found.
-Defaults to false.
-
-=back
-
-=cut
-
-sub unsatisfied {
-	my $self = shift;
-	my $optref = shift || { };
-	my %opts = ( %$optref, detail => $DETAIL_PACKAGE );
-	my @probs = $self->check(\%opts, @_);
-	return map { $_->{package} } @probs;
-}
-
-# my @pvs = $state->_satisfied_versions($pkgname);
+# my @pvs = $state->_satisfied_versions($pkgname, $ignore);
 #
 # Get PkgVersions of the given package name that would individually be
 # satisfied.
 sub _satisfied_versions {
-	my ($self, $pkgname) = @_;
+	my ($self, $pkgname, $ignore) = @_;
 	
 	require Fink::Package;
 	my $po = Fink::Package->package_by_name($pkgname);
@@ -896,7 +820,7 @@ sub _satisfied_versions {
 	my @finalcands;
 	foreach my $cand (@cands) {
 		$self->add_pkgversion($cand);
-		my $nok = $self->unsatisfied({}, $pkgname);
+		my $nok = grep { $_ eq $pkgname } $self->_unsatisfied_ignoring($ignore);
 		$self->undo();
 		push @finalcands, $cand unless $nok;
 	}
@@ -904,16 +828,17 @@ sub _satisfied_versions {
 	return @finalcands;
 }	
 
-# my @extras = _satisfied_combo($altern_lol)
+# my @extras = $self->_satisfied_combo($altern_lol, $ignore)
 #
 # Find a combination of alternatives which satisfies everything, return the
 # list of alternatives on success or an empty list on failure.
 sub _satisfied_combo {
-	my ($self, $alterns, $chosen) = @_;
+	my ($self, $alterns, $ignore, $chosen) = @_;
 	$chosen = [] unless $chosen; # What's already been chosen?
 	
 	# We're at a final state, is it ok?
-	return $self->unsatisfied() ? () : @$chosen unless @$alterns;
+	return $self->_unsatisfied_ignoring($ignore) ? () : @$chosen
+		unless @$alterns;
 	
 	# Try all the candidates for one unsatisfied package
 	my $cands = pop @$alterns;
@@ -922,7 +847,7 @@ sub _satisfied_combo {
 		$self->add_pkgversion($cand);
 		
 		# Recurse through the next package
-		my @ok = $self->_satisfied_combo($alterns, $chosen);
+		my @ok = $self->_satisfied_combo($alterns, $ignore, $chosen);
 		return @ok if @ok;
 		
 		pop @$chosen;			# Undo the attempt
@@ -930,6 +855,63 @@ sub _satisfied_combo {
 	}
 	
 	return ();	# Options exhausted
+}
+
+# my $uid = $self->_problem_uid($problem);
+#
+# Get a unique identifier for the given problem.
+sub _problem_uid {
+	my ($self, $problem) = @_;
+	
+	local $Storable::canonical = 1; # temporary
+	return freeze($problem);
+}
+
+# my @probs = $self->_check_ignoring($ignore);
+#
+# Get all problems whose uids aren't in $ignore.
+sub _check_ignoring {
+	my ($self, $ignore) = @_;
+	
+	return grep { !$ignore->{$self->_problem_uid($_)} } $self->check();	
+}
+
+# my @unsat = $self->_unsatisfied_ignoring($ignore);
+#
+# Get the names of packages that have unsatisfied dependencies (or satisfied
+# conflicts). Only look at problems whose uids aren't in $ignore.
+sub _unsatisfied_ignoring {
+	my ($self, $ignore) = @_;
+	
+	my %seen;
+	return grep { !$seen{$_}++ } map { $_->{package} }
+		$self->_check_ignoring($ignore);
+}
+
+# $self->_resolve_install_failure($ignore, @install_pvs);
+#
+# Handle failure to resolve an inconsistent state on installation.
+sub _resolve_install_failure {
+	my ($self, $ignore, @install_pvs) = @_;
+	
+	print_breaking_stderr("Could not resolve inconsistent dependencies!");
+	print_breaking_stderr("The following errors remain:");
+	print_breaking_stderr("  " . $_->{desc})
+		for $self->_check_ignoring($ignore);
+	
+	my $aptpkgs = join ( ' ',
+		map { $_->get_name() . "=" . $_->get_fullversion() } @install_pvs );
+		
+	print_breaking_stderr(<<FAIL);
+
+To fix manually, run:
+fink scanpackages
+sudo apt-get update
+sudo apt-get install $aptpkgs
+
+FAIL
+	
+	die "Fink::SysState: Could not resolve inconsistent dependencies\n";
 }
 
 =item resolve_install
@@ -956,8 +938,12 @@ sub resolve_install {
 	my ($self, @install_pvs) = @_;
 	my $verbose = ($config->verbosity_level() > 1);
 	
+	# Ignore pre-existing problems
+	my $ignore = { map { $self->_problem_uid($_) => 1 } $self->check() };
+	
+	# Add the packages
 	$self->add_pkgversion(@install_pvs);
-	my @unsat = $self->unsatisfied();
+	my @unsat = $self->_unsatisfied_ignoring($ignore);
 	return () unless @unsat; # We're ok!
 	
 	# We need to resolve some deps
@@ -965,40 +951,23 @@ sub resolve_install {
 		if $verbose;
 	
 	# For each unsatisfied package, find alternative versions
-	my %alterns = map { $_ => [ $self->_satisfied_versions($_) ] } @unsat;
+	my %alterns = map {
+		$_ => [ $self->_satisfied_versions($_, $ignore) ]
+	} @unsat;
 	
 	# If there's at least one alternative for each unsat, try to find a combo
 	# that will satisfy all.
-	my @extras = $self->_satisfied_combo([ values %alterns ]);
+	my @extras = $self->_satisfied_combo([ values %alterns ], $ignore);
 	
 	if (@extras) {	# Found a solution!
 		if ($verbose) {
 			print_breaking_stderr("Solution resolved. Will install extra "
 				. "packages:");
-			foreach my $package (@extras) {
-				print_breaking_stderr("  " . $package->get_fullname());
-			}
+			print_breaking_stderr("  " . $_->get_fullname()) foreach @extras;
 		}
 		return @extras;
 	} else {		# Failure
-		print_breaking_stderr("Could not resolve inconsistent dependencies! "
-			. "The following errors remain:");
-		my @aptspecs;
-		foreach my $problem ($self->check()) {
-			print_breaking_stderr("  " . $problem->{desc});
-		}
-		my $aptpkgs = join (' ', 
-			map { $_->get_name() . "=" . $_->get_fullversion() }
-			@install_pvs);
-		print_breaking_stderr(<<FAIL);
-
-To fix manually, run:
-  fink scanpackages
-  sudo apt-get update
-  sudo apt-get install $aptpkgs
-
-FAIL
-		die "Fink::SysState: Could not resolve inconsistent dependencies\n";
+		$self->_resolve_install_failure($ignore, @install_pvs);
 	}
 }
 

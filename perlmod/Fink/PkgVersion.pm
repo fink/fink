@@ -3916,9 +3916,18 @@ sub phase_activate {
 	}
 	
 	# Ensure consistency is maintained. May die!
-	require Fink::SysState;
-	my $state = Fink::SysState->new();
-	@installable = (@installable, $state->resolve_install(@installable));
+	eval {
+		require Fink::SysState;
+		my $state = Fink::SysState->new();
+		@installable = (@installable, $state->resolve_install(@installable));
+	};
+	if ($@) {
+		die if $@ =~ /Fink::SysState/;	# Die if resolution failed
+		
+		# Some packages have serious  errors in them which can confuse dep
+		# resolution. It's not obvious what safe action we can take!
+		print_breaking_stderr "WARNING: $@";
+	}
 	
 	my @deb_installable = map { $_->find_debfile() } @installable;
 	if (&execute(dpkg_lockwait() . " -i @deb_installable", ignore_INT=>1)) {
