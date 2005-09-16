@@ -1,3 +1,7 @@
+2005-09-16  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* apt: Add todai teams bindist mirror. Thanks Asari-san.
+
 2005-08-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: releasing version 0.24.8.1 of fink-mirrors
