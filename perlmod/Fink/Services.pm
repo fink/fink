@@ -30,6 +30,8 @@ use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
 use Getopt::Long;
 use Data::Dumper;
+use File::Find;
+use File::Spec;
 
 use strict;
 use warnings;
@@ -60,7 +62,8 @@ BEGIN {
 					  &dpkg_lockwait &aptget_lockwait
 					  &store_rename &fix_gcc_repairperms
 					  &spec2struct &spec2string &get_options
-					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK);
+					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
+					  &find_subpackages);
 }
 our @EXPORT_OK;
 
@@ -2054,6 +2057,49 @@ DIE
 	print _expand_help($command, $options, @optional{qw(helpformat optwidth)});
 	
 	exit 0;
+}
+
+=item find_subpackages
+
+  my @package_names = find_subpackages(__PACKAGE__);
+
+Find the sub-packages of a package. For example, the package -I<Foo::Bar> could
+have sub-packages -I<Foo::Bar::Baz>, -I<Foo::Bar::Two::Levels>, etc.
+
+A list of package-names will be returned, with each package having already been
+require'd. One can then call -I<new>, or some other class method, to create new
+objects of a sub-package.
+
+=cut
+
+sub find_subpackages {
+	my $pkg = shift;
+	(my $pkgdir = $pkg) =~ s,::,/,g;
+	
+	my %found;
+	my @found; # keep ordered
+	for my $dir (@INC) {
+		my $subdir = File::Spec->catdir($dir, $pkgdir);
+		next unless -d $subdir;
+		
+		find({
+			follow => 1,
+			wanted => sub {
+				return unless /\.pm$/;
+				
+				my $subpkg = File::Spec->abs2rel($File::Find::name, $dir);
+				$subpkg =~ s,/,::,g;
+				$subpkg =~ s,\.pm$,,;
+				return if exists $found{$subpkg};
+				
+				eval "require $subpkg";
+				$found{$subpkg} = 1;
+				push @found, $subpkg;
+			}
+		}, $subdir);
+	}
+	
+	return @found;
 }
 
 =back

@@ -23,7 +23,8 @@
 
 package Fink::Notify;
 
-use Fink::Config qw($config);
+use Fink::Config	qw($config);
+use Fink::Services	qw(&find_subpackages);
 use UNIVERSAL qw(isa);
 
 BEGIN {
@@ -285,31 +286,18 @@ Fink::Notify to use.
 
 sub list_plugins {
 	my $self = shift;
-
+	
 	my %plugins;
-
-	for my $directory (reverse @INC) {
-		if (-d $directory . '/Fink/Notify') {
-			if (opendir(DIR, $directory . '/Fink/Notify')) {
-				for my $plugin (grep(/\.pm$/, readdir(DIR))) {
-					my $plugin_obj;
-					my $plugname = "Fink::Notify::$plugin";
-					$plugname =~ s/\.pm$//;
-					eval "require $plugname; \$plugins{$plugname}->{'about'} = $plugname->about;";
-					eval "\$plugin_obj = $plugname->new()";
-					if (defined $plugin_obj) {
-						$plugins{$plugname}->{'enabled'} = 1;
-					}
-				}
-			}
-		}
+	foreach my $plugname ( find_subpackages(__PACKAGE__) ) {
+		$plugins{$plugname}{about} = $plugname->about();
+		$plugins{$plugname}{enabled} = 1 if defined $plugname->new();
 	}
 
 	$plugins{'Fink::Notify::Null'} = {
 		about   => scalar $self->about(),
 		enabled => 1,
 	};
-
+	
 	my $active_plugin = Fink::Notify->new();
 
 	for my $key (sort keys %plugins) {

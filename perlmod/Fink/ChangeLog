@@ -1,3 +1,7 @@
+2005-09-16  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Notify.pm, Services.pm: Use generic way to find "sub-packages".
+
 2005-09-14  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Use chowname_hr when reverting %i to root:admin.
