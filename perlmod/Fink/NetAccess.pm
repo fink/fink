@@ -352,7 +352,7 @@ sub download_cmd {
 		if ($config->verbosity_level() >= 1) {
 			$cmd .= " --verbose";
 		} else {
-			$cmd .= " --non-verbose";
+			$cmd .= " -nv";
 		}
 		if ($config->param_boolean("ProxyPassiveFTP")) {
 			$cmd .= " --passive-ftp";

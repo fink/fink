@@ -1,3 +1,10 @@
+2005-09-21	Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* NetAccess.pm:	wget versions >= 1.10 use -no-verbose instead of 
+	--non-verbose (arguably more GNU-standard).  In order that we may release
+	a 1.10.x package use the short flag (-nv) instead as that is usable by both 
+	wget < 1.10 and wget >= 1.10.
+
 2005-09-16  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Notify.pm, Services.pm: Use generic way to find "sub-packages".
