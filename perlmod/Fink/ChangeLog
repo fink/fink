@@ -1,4 +1,9 @@
-2005-09-21	Alexander Hansen <alexkhansen@users.sourceforge.net>
+2005-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: DocFiles handles conditionals, recursive copying
+	of dirs, and implicit renaming dir1/dir2/file: to file.dir1.dir2
+
+2005-09-21  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* NetAccess.pm:	wget versions >= 1.10 use -no-verbose instead of 
 	--non-verbose (arguably more GNU-standard).  In order that we may release

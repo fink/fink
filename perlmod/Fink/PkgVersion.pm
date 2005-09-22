@@ -3211,20 +3211,34 @@ sub phase_install {
 
 	# generate commands to install documentation files
 	if ($self->has_param("DocFiles")) {
-		my (@docfiles, $docfile, $docfilelist);
+		my $files = $self->param_expanded("DocFiles");
+		$files =~ s/\s+/ /g; # Make it one line
+		$files = $self->conditional_space_list($files,
+			"DocFiles of ".$self->get_fullname()." in ".$self->get_info_filename
+		);
+
 		$install_script .= "\n/usr/bin/install -d -m 755 %i/share/doc/%n";
 
-		@docfiles = split(/\s+/, $self->param("DocFiles"));
-		$docfilelist = "";
-		foreach $docfile (@docfiles) {
-			if ($docfile =~ /^(.+)\:(.+)$/) {
-				$install_script .= "\n/usr/bin/install -c -p -m 644 $1 %i/share/doc/%n/$2";
+		my ($file, $source, $target);
+		foreach $file (split /\s+/, $files) {
+			$file =~ s/\%/\%\%/g;   # reprotect for later %-expansion
+			if ($file =~ /^(.+)\:(.+)$/) {
+				# simple renaming
+				# globs in source okay, dirs in target not auto-created
+				$source = $1;
+				$target = $2;
+			} elsif ($file =~ /^(.+):$/) {
+				# flatten declared nesting with automatic renaming
+				# (dir1/dir2/.../foo => foo.dir1.dir2....)
+				$source = $1;
+				my @dirs = split /\//, $source;
+				$target = join '.', (pop @dirs), @dirs;
 			} else {
-				$docfilelist .= " $docfile";
+				# simple copying (nesting maintained, globs okay)
+				$source = $file;
+				$target = '';
 			}
-		}
-		if ($docfilelist ne "") {
-			$install_script .= "\n/usr/bin/install -c -p -m 644$docfilelist %i/share/doc/%n/";
+			$install_script .= "\n/bin/cp -r $source %i/share/doc/%n/$target";
 		}
 	}
 
