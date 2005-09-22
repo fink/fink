@@ -3217,7 +3217,8 @@ sub phase_install {
 			"DocFiles of ".$self->get_fullname()." in ".$self->get_info_filename
 		);
 
-		$install_script .= "\n/usr/bin/install -d -m 755 %i/share/doc/%n";
+		my $target_dir = '%i/share/doc/%n';
+		$install_script .= "\n/usr/bin/install -d -m 700 $target_dir";
 
 		my ($file, $source, $target);
 		foreach $file (split /\s+/, $files) {
@@ -3238,8 +3239,9 @@ sub phase_install {
 				$source = $file;
 				$target = '';
 			}
-			$install_script .= "\n/bin/cp -r $source %i/share/doc/%n/$target";
+			$install_script .= "\n/bin/cp -r $source $target_dir/$target";
 		}
+		$install_script .= "\n/bin/chmod -R go=u-w $target_dir";
 	}
 
 	# generate commands to install profile.d scripts
