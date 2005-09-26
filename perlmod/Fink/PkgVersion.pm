@@ -850,6 +850,9 @@ sub conditional_space_list {
 	my $string = shift;  # the string to parse
 	my $where = shift;   # used in warning messages
 
+	$string =~ s/^\s*//;
+	$string =~ s/\s*$//;
+
 	return $string unless defined $string and $string =~ /\(/; # short-circuit
 
 	# prepare the paren-balancing parser

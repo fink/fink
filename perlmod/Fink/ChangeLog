@@ -1,3 +1,8 @@
+2005-09-26  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make conditional_space_list remove
+	leading/trailing whitespace.
+
 2005-09-25  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* PkgVersion.pm: Both of the axel versions that we have in Fin
