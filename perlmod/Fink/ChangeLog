@@ -1,3 +1,6 @@
+2005-09-25  Alexander Hansen <alexkhansen@users.sourceforge.net>
+	* NetAccess.pm: Backport wget nonverbose flag change from HEAD.
+
 2005-09-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Since gettext-tools is no longer a splitoff of an
