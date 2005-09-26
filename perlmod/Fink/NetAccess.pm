@@ -374,7 +374,7 @@ sub download_cmd {
 			$cmd = "axel -S 1";
 		}
 		if ($config->verbosity_level() >= 1) {
-			$cmd .= " --verbose";
+			$cmd .= " -v";
 		}
 		if ($file ne &filename($url)) {
 			$cmd .= " -o $cmd_file";
