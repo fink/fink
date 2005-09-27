@@ -1,3 +1,7 @@
+2005-09-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Explain what goes into additional_packages
+
 2005-09-26  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Make conditional_space_list remove
