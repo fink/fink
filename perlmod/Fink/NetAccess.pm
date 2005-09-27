@@ -373,7 +373,7 @@ sub download_cmd {
 			$cmd = "axel -S 1";
 		}
 		if (Fink::Config::verbosity_level() >= 1) {
-			$cmd .= " --verbose";
+			$cmd .= " -v";
 		}
 		if ($file ne &filename($url)) {
 			$cmd .= " -o $cmd_file";

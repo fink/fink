@@ -1,3 +1,6 @@
+2005-09-27  Alexander Hansen <alexkhansen@users.sourceforge.net>
+	* NetAccess.pm:  Backport axel verbose flag (-v vs --verbose) from HEAD.
+
 2005-09-25  Alexander Hansen <alexkhansen@users.sourceforge.net>
 	* NetAccess.pm: Backport wget nonverbose flag change from HEAD.
 
