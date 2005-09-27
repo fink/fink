@@ -9,7 +9,7 @@
 
 2005-09-25  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
-	* PkgVersion.pm: Both of the axel versions that we have in Fin
+	* PkgVersion.pm: Both of the axel versions that we have in Fink
 	don't take --verbose.  Change flag to -v (which works) instead.
 
 2005-09-21  Daniel Macks  <dmacks@netspace.org>
