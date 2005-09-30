@@ -1,5 +1,10 @@
 2005-09-30  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Patch checks for %b and %d (%D) in .deb to remove
+	%e from control Version field
+	
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Add check for .py[c] that hard-code %d.
 	Early-exit from line-by-line checks once we find one match.
 	

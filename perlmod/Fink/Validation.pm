@@ -1082,8 +1082,14 @@ sub _validate_dpkg {
 	}
 
 	# prepare regexes to check for use of %b, and %d or %D
-	my $pkgbuilddir = sprintf '%s/%s-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{version};  # %b
-	my $pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $deb_control->{version};  # %d or %D
+	my ($pkgbuilddir, $pkginstdirs);
+	{
+		my $vers = $deb_control->{version};
+		$vers = $1 if $vers =~ /:(.*)/;  # epoch not used in %b or %d
+		
+		$pkgbuilddir = sprintf '%s/%s-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $vers;  # %b
+		$pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $vers;  # %d or %D
+	}
 
 	# during File::Find loop, we stack all error msgs
 	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
