@@ -1,4 +1,9 @@
-2005-09-29  Daniel Macks  <dmacks@netspace.org>
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Add check for .py[c] that hard-code %d.
+	Early-exit from line-by-line checks once we find one match.
+	
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
 
 	* Config.pm: Add new --log-output|-l top-level flag.
 	* Engine.pm: Allow logging of build process for each package.

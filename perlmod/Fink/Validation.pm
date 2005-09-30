@@ -1192,13 +1192,33 @@ sub _validate_dpkg {
 				while (<$la_file>) {
 					if (/$pkgbuilddir/) {
 						&stack_msg($msgs, "Libtool file points to fink build dir.", $filename);
+						last;
 					} elsif (/$pkginstdirs/) {
-						&stack_msg(&msgs, "Libtool file points to fink install dir.", $filename);
+						&stack_msg($msgs, "Libtool file points to fink install dir.", $filename);
+						last;
 					}
 				}
 				close $la_file;
 			} else {
 				&stack_msg($msgs, "Couldn't read libtool file \"$filename\": $!");
+			}
+		}
+
+		# check that compiled python modules files don't self-identify using temp locations
+		if ($filename =~/\.py[co]$/) {
+			if (open my $py_file, "strings $File::Find::name |") {
+				while (<$py_file>) {
+					if (/$pkgbuilddir/) {
+						&stack_msg($msgs, "Compiled python module points to fink build dir.", $filename);
+						last;
+					} elsif (/$pkginstdirs/) {
+						&stack_msg($msgs, "Compiled python module points to fink install dir.", $filename);
+						last;
+					}
+				}
+				close $py_file;
+			} else {
+				&stack_msg($msgs, "Couldn't read compiled python module file \"$filename\": $!");
 			}
 		}
 
