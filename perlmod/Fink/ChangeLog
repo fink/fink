@@ -1,3 +1,10 @@
+2005-09-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Add new --log-output|-l top-level flag.
+	* Engine.pm: Allow logging of build process for each package.
+	* PkgVersion.pm: Add log_output stub method that will log output
+	iff --log-output.
+
 2005-09-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Sort before pre-fetching, for reproducibility.
