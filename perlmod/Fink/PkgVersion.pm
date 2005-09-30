@@ -56,6 +56,7 @@ use Hash::Util;
 use File::Basename qw(&dirname &basename);
 use Carp qw(confess);
 use File::Temp qw(tempdir);
+use Fcntl;
 
 use strict;
 use warnings;
@@ -4774,43 +4775,36 @@ sub dpkg_changed {
 
 	$self->log_output;
 	$self->log_output $loggable;
-	$self->log_output $loggable, $new_log;
 
 If the $loggable is true, open a logfile in /tmp and begin sending a
-copy of all STDOUT and STDERR to it. If $new_log is true, the logfile
-is overwritten. If $new_log is false (or not given), the logfile is
-appended. If $loggable is false (or not given), the logfile is closed.
+copy of all STDOUT and STDERR to it. The logfile must not already
+exist (there is no "append" or "overwrite" mode). If $loggable is
+false (or not given), the logfile is closed. Multiple logfiles cannot
+be chained together. If one is already active, from B<any> PkgVersion
+object, attempting to open another one will first close the
+previously-opened one (eventually!).
 
 =cut
 
 sub log_output {
 	my $self = shift;
 	my $loggable = shift;
-	my $new_log = shift;
 
 	return if not Fink::Config::get_option("log_output");
 
-	my $logfile = 'fink-build-log_' . $self->get_name() . '_' .
+	my $logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
 		$self->get_fullversion() . '_' .
 		strftime('%Y.%m.%d-%H.%M.%S', localtime);
 
 	if ($loggable) {
-		if ($logfile =~ /\//) {
-			# prevent trojan .info from causing overwrite of arbitrary files
-			die "logfile filename contains path separator!\n  $logfile\n";
-		}
+		# make sure logfile does not already exist (blindly writing to
+		# a file with a predictable filename in a world-writable
+		# directory as root is Bad)
+		sysopen my $log_fh, $logfile, O_WRONLY | O_CREAT | O_EXCL
+			or die "can't write logfile $logfile: $!\n";
+		close $log_fh;
 
-		# make sure logfile is writable and world-readable
-		# truncate if new log is requested
-		$logfile = "/tmp/$logfile";
-		if (open my $log_fh, ($new_log ? '>' : '>>'), $logfile) {
-			close $log_fh;
-			chmod 0644, $logfile;
-		} else {
-			die "can't write logfile $logfile: $!\n";
-		}
-
-		print 'Logging output to ', ($new_log ? 'new ' : ''), "logfile $logfile\n";
+		print "Logging output to logfile $logfile\n";
 		print "Logging not yet implemented!\n";
 		# insert tees for STDOUT and STDERR into $logfile
 	} else {

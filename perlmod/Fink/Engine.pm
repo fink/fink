@@ -1871,7 +1871,7 @@ sub real_install {
 					### Double check it didn't already get
 					### installed in an other loop
 					if (!$package->is_installed() || $op == $OP_REBUILD) {
-						$package->log_output(1,1);
+						$package->log_output(1);
 						$package->set_buildlock();
 						$package->phase_unpack();
 						$package->phase_patch();

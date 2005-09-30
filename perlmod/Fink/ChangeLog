@@ -1,5 +1,10 @@
 2005-09-30  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm, PkgVersion.pm: log_output always creates new
+	logfile (and crashes if it already exists).
+
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Patch checks for %b and %d (%D) in .deb to remove
 	%e from control Version field
 	
