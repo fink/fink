@@ -939,25 +939,28 @@ sub get_pkglist {
 
 	foreach $pname (sort @selected) {
 		$package = Fink::Package->package_by_name($pname);
-
-		# Can't purge or remove virtuals
-		next if $package->is_virtual();
-
+		
 		# Can only remove/purge installed pkgs
-		unless ( $package->is_any_installed($package->list_installed_versions()) ) {
+		my ($vers) = $package->list_installed_versions();		
+		unless (defined $vers) {
 			print "WARNING: $pname is not installed, skipping.\n";
 			next;
 		}
+		my $pv = $package->get_version($vers);
+		
+		# Can't purge or remove virtuals (but status packages are ok!)
+		if ($pv->is_type('dummy') && $pv->get_subtype('dummy') eq 'virtual') {
+			print "WARNING: $pname is a virtual package, skipping.\n";
+		}
 
 		# shouldn't be able to remove or purge essential pkgs
-		$po = Fink::PkgVersion->match_package($pname);
-		if ( $po->param_boolean("essential") ) {
+		if ($pv->param_boolean('essential')) {
 			print "WARNING: $pname is essential, skipping.\n";
 			next;
 		}
 
 		if (defined $buildonly) {
-			next unless ( $po->param_boolean("builddependsonly") );
+			next unless ( $pv->param_boolean("builddependsonly") );
 		}
 
 		push @packages, $package->get_name();
@@ -2731,7 +2734,7 @@ sub prefetch {
 	&call_queue_clear;
 	
 	my @aptget; # Batch 'em
-	foreach my $dep (@dep_items) {
+	foreach my $dep (sort { $a->[PKGNAME] cmp $b->[PKGNAME] } @dep_items) {
 		my $func;
 		
 		# What action do we take?

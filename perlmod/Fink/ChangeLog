@@ -1,3 +1,9 @@
+2005-09-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Sort before pre-fetching, for reproducibility.
+	* Engine.pm: Fixup get_pkglist, so it doesn't barf on packages available
+	only in the status db.
+
 2005-09-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: Explain what goes into additional_packages
