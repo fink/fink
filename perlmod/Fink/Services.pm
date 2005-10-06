@@ -1847,7 +1847,7 @@ Eg:  [ 'option|o' => \$opt, 'Descriptive text', 'value' ]
 It is not necessary to include the --help item, it will be added automatically.
 
 
-The $args array-ref should contain the list of command-line argument to be
+The $args array-ref should contain the list of command-line arguments to be
 examined for options. The array will be modified to remove the arguments
 found, make a copy if you want to retain the original list.
 
@@ -1901,33 +1901,33 @@ descriptions). The default should usually be fine.
 
 =back
 
+
+If an option has the form "foo!", then a --no-foo help string will also be
+created as part of %all{}. Other special features of Getopt may be adopted in
+the future
+
 =cut
 
 our ($VALIDATE_OK, $VALIDATE_HELP, $VALIDATE_ERROR) = 0..20;
 
 # my $str = _get_option_usage $optitem;
 #
-# Get usage and description for an option item.
+# Get usage and for an option item. Does not include the description.
 sub _get_option_usage {
 	my $opt = shift;
 	
-	my $opttxt;
-	if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
-		# Try each way to specify option (eg: -f, --full)
-		my @alts = sort { length($a) <=> length($b) } split /\|/, $1;
-		foreach my $alt (@alts) {
-			if (length($alt) == 1) {
-				$alt = "-$alt";
-				$alt .= " $opt->[3]" if defined $opt->[3];
-			} else {
-				$alt = "--$alt";
-				$alt .= "=$opt->[3]" if defined $opt->[3];
-			}
+	# Try each way to specify option (eg: -f, --full)
+	my @alts = sort { length($a) <=> length($b) } @{$opt->{names}};
+	foreach my $alt (@alts) {
+		if (length($alt) == 1) {
+			$alt = "-$alt";
+			$alt .= " $opt->{value}" if defined $opt->{value};
+		} else {
+			$alt = "--$alt";
+			$alt .= "=$opt->{value}" if defined $opt->{value};
 		}
-		return join ', ', @alts;
-	} else {
-		return $opt; # Don't know what to do, just punt
 	}
+	return join ', ', @alts;
 }
 
 # my $str = _align_option_text $usage, $desc, $optlen;
@@ -1966,6 +1966,33 @@ sub _align_option_text {
 	return $ret;
 }
 
+# my $str = _get_option_help $optitem, $optlen;
+#
+# Get the complete help for an option. May be multi-line!
+sub _get_option_help {
+	my ($opt, $optlen) = @_;
+	my @realopts;
+	$DB::single = 1 if grep { $_ eq 'use-binary-dist' } @{$opt->{names}};
+	if ($opt->{modifiers} =~ /!/) {
+		require Storable;
+		my $negopt = Storable::dclone($opt);
+		$negopt->{names} = [
+			map { length($_) > 1 ? "no-$_" : () } @{$opt->{names}}
+		];
+		$negopt->{help} = "Opposite of $opt->{names}->[0]";
+		@realopts = ($opt, $negopt);
+	} else {
+		@realopts = $opt;
+	}
+	
+	my $text = '';
+	for my $ropt (@realopts) {
+		my $usage = _get_option_usage($ropt);
+		$text .= _align_option_text($usage, $ropt->{help}, $optlen);
+	}
+	return $text;
+}	
+
 # my $str = _expand_help $command, $optionlist, $helpformat, $optlen;
 #
 # Expand the help format
@@ -1975,27 +2002,25 @@ sub _expand_help {
 	# Option table
 	my %opts;
 	foreach my $opt (@$options) {
-		if ($opt->[0] =~ /^((?:[-\w]+\|)*[-\w]+)/) {
-			my @names = split /\|/, $1;
-			@opts{@names} = ($opt) x scalar(@names);
-		}
+		my @names = @{$opt->{names}};
+		@opts{@names} = ($opt) x scalar(@names);
 	}
 	
 	# Expansion table
 	my %exp = (
 		all => sub {
-			"Options:\n" . join '',
-				map { _align_option_text(
-					_get_option_usage($_), $_->[2], $optlen
-				) } @$options;
+			"Options:\n" . join '', map { _get_option_help($_, $optlen) }
+				@$options;
 		},
 		opts => sub {
-			chomp (my $ret = join '', map {
-				_align_option_text(_get_option_usage($_), $_->[2], $optlen)
-			} @opts{@_} );
+			chomp (my $ret = join '', map { _get_option_help($_, $optlen) }
+				@opts{@_} );
 			$ret;
 		},
-		align	=> sub { chomp (my $ret = _align_option_text(@_)); $ret },
+		align	=> sub {
+			chomp (my $ret = _align_option_text(@_, $optlen));
+			$ret
+		},
 		intro	=> sub {
 			my $first = shift;
 			require Fink::FinkVersion;
@@ -2016,6 +2041,18 @@ sub _expand_help {
 	return $helpformat;
 }
 
+# my $opthash = _new_option(@optarray);
+#
+# Get an option-item as a hash, given an option-item as an array.
+sub _new_option {
+	my $opthash;
+	@$opthash{qw(spec dest help value)} = @_;
+	$opthash->{spec} =~ /^([\w-]+(\|[\w-]+)*)(.*)$/
+		or die "Bad option specification: $opthash->{spec}\n";
+	$opthash->{names} = [ split /\|/, $1 ];
+	$opthash->{modifiers} = $3;
+	return $opthash;
+}
 
 sub get_options {
 	my ($command, $options, $args, %optional) = @_;
@@ -2026,10 +2063,15 @@ sub get_options {
 		%optional,
 	);
 	
+	# Turn the options into hashes
+	my @optitems = map { _new_option(@$_) } @$options;
+	
 	# Insert help after last option, if it's not already in the list
 	my $wanthelp = 0;
-	if (!grep { $_->[0] =~ /(^|\|)h(elp)?(\||$)/ } @$options) {
-		push @$options, [ 'h|help' => \$wanthelp, 'Display this help text.' ];
+	
+	if (!grep { grep { $_ eq 'help' || $_ eq 'h' } @{$_->{names}} } @optitems) {
+		push @optitems, _new_option('h|help' => \$wanthelp,
+			'Display this help text.');
 	}
 	
 	# Allow blank $command for global options.
@@ -2043,7 +2085,7 @@ DIE
 	{
 		local @ARGV = @$args;	
 		Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
-		GetOptions( map { @$_[0, 1] } @$options )
+		GetOptions( map { @$_{qw(spec dest)} } @optitems )
 			or die $die;
 		@$args = @ARGV;
 	}
@@ -2054,7 +2096,8 @@ DIE
 	}
 	
 	# Now we're doing the help
-	print _expand_help($command, $options, @optional{qw(helpformat optwidth)});
+	print _expand_help($command, \@optitems,
+		@optional{qw(helpformat optwidth)});
 	
 	exit 0;
 }

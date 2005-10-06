@@ -1,3 +1,9 @@
+2005-10-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Refactor get_options so it doesn't use ugly arrays so much.
+	* Services.pm: Make get_options automagically deal with negative-options.
+	* Config.pm, Engine.pm: Use negative options.
+
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: Add new "dev-tools" pkg representing presence of

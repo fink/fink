@@ -1031,13 +1031,7 @@ sub cmd_validate {
 	get_options('validate', [
 		[ 'prefix|p=s'	=> \$val_prefix, "Simulate an alternate Fink prefix (%p) in files." ],
 		[ 'pedantic!'	=> \$pedantic, "Display even the most nitpicky warnings (default)." ],
-	], \@_, helpformat => <<FORMAT);
-%intro{[options] [files]}
-Options:
-%opts{prefix,pedantic}
-%align{--no-pedantic,Do not display the pedantic warnings.}
-
-FORMAT
+	], \@_);
 	
 	Fink::Config::set_options( { "Pedantic" => $pedantic } );
 

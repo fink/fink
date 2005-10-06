@@ -218,12 +218,9 @@ sub parse_options {
 			'causes fink to be more verbose, opposite of --quiet'			],
 		[ 'keep-build-dir|k'   => \$opts{keep_build}, 		'see man page'	],
 		[ 'keep-root-dir|K'    => \$opts{keep_root}, 		'see man page'	],
-		[ 'use-binary-dist|b'  => \$opts{use_binary},
+		[ 'use-binary-dist|b!' => \$opts{use_binary},
 			'download pre-compiled packages from the binary distribution '
 			. 'if available'	],
-		[ 'no-use-binary-dist' => sub { $opts{use_binary} = -1	},
-			"don't use pre-compiled packages from the binary distribution "
-			. "(opposite of -b)"											],
 		[ 'build-as-nobody'    => \$opts{build_as_nobody},	'see man page'	],
 		[ 'maintainer|m'       => \$opts{maintainermode},	'see man page'	],
 		[ 'log-output|l'       => \$opts{log_output},		'see man page'	],
@@ -252,7 +249,7 @@ Common commands:
 %align{show-deps,list run-time and compile-time package dependencies,$comlen}
 
 Common options:
-%opts{help,quiet,version,verbose,yes,use-binary-dist,no-use-binary-dist}
+%opts{help,quiet,version,verbose,yes,use-binary-dist}
 
 See the fink(8) manual page for a complete list of commands and options.
 Visit http://fink.sourceforge.net/ for further information.
