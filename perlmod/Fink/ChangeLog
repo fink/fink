@@ -1,5 +1,10 @@
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: OutputTee can't be chained, so current logging
+	status must be package-global not instance data.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Use Fink::Tie::OutputTee for --log-output.
 	* Tie::OutputTee.pm: Import from exp/dmacks IOFilter.pm. This new
 	package enables one to "tee" a writable filehandle into a file.

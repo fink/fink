@@ -4790,6 +4790,8 @@ previously-opened one.
 
 =cut
 
+our $output_logfile = undef;
+
 sub log_output {
 	my $self = shift;
 	my $loggable = shift;
@@ -4797,30 +4799,29 @@ sub log_output {
 	return if not Fink::Config::get_option("log_output");
 
 	# close already-opened logfile
-	if (exists $self->{_logfile}) {
-		print "Closing logfile " . $self->{_logfile} . "\n";
+	if (defined $output_logfile) {
 		Fink::Tie::OutputTee->tee_stop(*STDOUT);
 		Fink::Tie::OutputTee->tee_stop(*STDERR);
-		delete $self->{_logfile};
+		print "Closed logfile $output_logfile\n";
+		undef $output_logfile;
 	}
 
 	if ($loggable) {
-		my $logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
+		$output_logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
 			$self->get_fullversion() . '_' .
 			strftime('%Y.%m.%d-%H.%M.%S', localtime);
 
 		# make sure logfile does not already exist (blindly writing to
 		# a file with a predictable filename in a world-writable
 		# directory as root is Bad)
-		sysopen my $log_fh, $logfile, O_WRONLY | O_CREAT | O_EXCL
-			or die "can't write logfile $logfile: $!\n";
+		sysopen my $log_fh, $output_logfile, O_WRONLY | O_CREAT | O_EXCL
+			or die "can't write logfile $output_logfile: $!\n";
 		close $log_fh;
 
 		# set up the logging handle tees
-		print "Logging output to logfile $logfile\n";
-		$self->{_logfile} = $logfile;
-		Fink::Tie::OutputTee->tee_start(*STDOUT, $logfile);
-		Fink::Tie::OutputTee->tee_start(*STDERR, $logfile);
+		print "Logging output to logfile $output_logfile\n";
+		Fink::Tie::OutputTee->tee_start(*STDOUT, $output_logfile);
+		Fink::Tie::OutputTee->tee_start(*STDERR, $output_logfile);
 	}
 }
 

@@ -42,7 +42,9 @@ Fink::Tie::OutputTee - a 'tee'ed tied-filehandle
 =head1 DESCRIPTION
 
 Fink::Tie::OutputTee is a tied filehandle for redirecting output into
-multiple places at once.
+multiple places at once. The tie mechanism allows multiple filehandles
+can be bound to the same filehandle and/or file. However, a filehandle
+apparently cannot be bound to a tied filehandle.
 
 =head2 Methods
 
