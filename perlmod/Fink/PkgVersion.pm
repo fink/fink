@@ -2209,6 +2209,9 @@ sub resolve_depends {
 		}
 		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
+		# dev-tools is an implicit BuildDepends of all packages
+		push @speclist, 'dev-tools' if lc($field) eq 'depends' && $self->get_name() ne 'dev-tools';
+
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our splitoffs.
 		# We remember the offset at which we added these in $split_idx, so that we

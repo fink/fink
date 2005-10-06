@@ -1,3 +1,14 @@
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Add new "dev-tools" pkg representing presence of
+	/usr/bin/{gcc,make} executables.
+	* PkgVersion.pm: Make "dev-tools" an implicit BuildDepends of all
+	packages.
+	* Engine.pm: Make "dev-tools" not implicitly depend on
+	essentials (avoids circular dep).
+	* SelfUpdate.pm: Require "dev-tools" in order to to selfupdate via
+	rsync of cvs.
+
 2005-09-30  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm, PkgVersion.pm: log_output always creates new
