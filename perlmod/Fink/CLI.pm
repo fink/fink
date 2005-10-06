@@ -74,6 +74,7 @@ need with things like:
 =item word_wrap
 
     my @lines = word_wrap $string, $length;
+    my @lines = word_wrap $string, $length, $prefix1;
     my @lines = word_wrap $string, $length, $prefix1, $prefix2;
 
 Word wraps a single-line string $string to maximum length $length, and returns
