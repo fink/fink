@@ -1,5 +1,11 @@
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Use Fink::Tie::OutputTee for --log-output.
+	* Tie::OutputTee.pm: Import from exp/dmacks IOFilter.pm. This new
+	package enables one to "tee" a writable filehandle into a file.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
 	* Config.pm: Add --no-log-output (default).
 
 2005-10-06  Dave Vasilevsky  <vasi@users.sourceforge.net>

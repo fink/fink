@@ -1,3 +1,8 @@
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document --log-output
+	* install.sh: Add Fink/Tie perlmod subdirectory.
+
 2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink.in: Rewrite to 'use Fink'. Move options handling to Config.pm, most

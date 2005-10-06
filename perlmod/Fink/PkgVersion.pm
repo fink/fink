@@ -49,6 +49,7 @@ use Fink::Shlibs;
 use Fink::Validation qw(validate_dpkg_unpacked);
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
+use Fink::Tie::OutputTee;
 
 use POSIX qw(uname strftime);
 use DB_File;
@@ -4785,7 +4786,7 @@ exist (there is no "append" or "overwrite" mode). If $loggable is
 false (or not given), the logfile is closed. Multiple logfiles cannot
 be chained together. If one is already active, from B<any> PkgVersion
 object, attempting to open another one will first close the
-previously-opened one (eventually!).
+previously-opened one.
 
 =cut
 
@@ -4795,11 +4796,19 @@ sub log_output {
 
 	return if not Fink::Config::get_option("log_output");
 
-	my $logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
-		$self->get_fullversion() . '_' .
-		strftime('%Y.%m.%d-%H.%M.%S', localtime);
+	# close already-opened logfile
+	if (exists $self->{_logfile}) {
+		print "Closing logfile " . $self->{_logfile} . "\n";
+		Fink::Tie::OutputTee->tee_stop(*STDOUT);
+		Fink::Tie::OutputTee->tee_stop(*STDERR);
+		delete $self->{_logfile};
+	}
 
 	if ($loggable) {
+		my $logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
+			$self->get_fullversion() . '_' .
+			strftime('%Y.%m.%d-%H.%M.%S', localtime);
+
 		# make sure logfile does not already exist (blindly writing to
 		# a file with a predictable filename in a world-writable
 		# directory as root is Bad)
@@ -4807,12 +4816,11 @@ sub log_output {
 			or die "can't write logfile $logfile: $!\n";
 		close $log_fh;
 
+		# set up the logging handle tees
 		print "Logging output to logfile $logfile\n";
-		print "Logging not yet implemented!\n";
-		# insert tees for STDOUT and STDERR into $logfile
-	} else {
-		print "Closing logfile $logfile\n";
-		# remove STDOUT and STDERR tees
+		$self->{_logfile} = $logfile;
+		Fink::Tie::OutputTee->tee_start(*STDOUT, $logfile);
+		Fink::Tie::OutputTee->tee_start(*STDERR, $logfile);
 	}
 }
 

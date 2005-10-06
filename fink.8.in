@@ -70,6 +70,14 @@ and install phases.
 Perform actions useful to package maintainers: run validation on
 the .info file before building and on the .deb after building a
 package; turn certain build-time warnings into fatal errors.
+.It Cm -l, --log-output
+Save a copy of the terminal output during each package building
+process to a file in
+.Pa /tmp
+named for the package and version being built.
+.It Cm --no-log-outut
+Don't save a copy of the output during package-building (opposite of
+--log-output)
 .El
 .\"
 .\"
