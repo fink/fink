@@ -191,11 +191,11 @@ sub initialize {
 	my %orig_fd = ();
 	my $tmp_fh;
 	open $tmp_fh, '>', '/dev/null' or die "Couldn't open temp 1 /dev/null: $!\n";
-	$^F<fileno($tmp_fh) && $^F=fileno($tmp_fh);  # make sure $^F covers new fh
+	$^F=fileno($tmp_fh) if $^F<fileno($tmp_fh);  # make sure $^F covers new fh
 	close $tmp_fh;
 	open $orig_fd{stdout}, '>&STDOUT' or die "Couldn't dup STDOUT: $!\n";
 	open $tmp_fh, '>', '/dev/null' or die "Couldn't open temp 2 /dev/null: $!\n";
-	$^F<fileno($tmp_fh) && $^F=fileno($tmp_fh);  # make sure $^F covers new fh
+	$^F=fileno($tmp_fh) if $^F<fileno($tmp_fh);  # make sure $^F covers new fh
 	close $tmp_fh;
 	open $orig_fd{stderr}, '>&STDERR' or die "Couldn't dup STDERR: $!\n";
 	set_options({_orig_fd => \%orig_fd});
