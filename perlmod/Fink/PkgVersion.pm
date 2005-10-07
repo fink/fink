@@ -4791,6 +4791,7 @@ previously-opened one.
 =cut
 
 our $output_logfile = undef;
+our %orig_fh = ();
 
 sub log_output {
 	my $self = shift;
@@ -4798,19 +4799,19 @@ sub log_output {
 
 	return if not Fink::Config::get_option("log_output");
 
-	my %orig_fd = %{Fink::Config::get_option('_orig_fd')};
-	foreach (qw/ STDOUT STDERR /) {
-		fileno($orig_fd{lc $_}) or die "Bogus saved $_!\n";
-	}
-
-	# close already-opened logfile
+	# stop logging if we were doing so
+	# (redirect STD* back to their original file descriptors)
 	if (defined $output_logfile) {
-		open STDOUT, '>&=', $orig_fd{stdout};
-		open STDERR, '>&=', $orig_fd{stderr};
+		foreach (qw/ STDOUT STDERR /) {
+			fileno($orig_fh{lc $_}) or die "Bogus saved $_!\n";
+		}
+		open STDOUT, '>&=', $orig_fh{stdout};
+		open STDERR, '>&=', $orig_fh{stderr};
 		print "Closed logfile $output_logfile\n";
 		undef $output_logfile;
 	}
 
+	# start logging if caller wants us to do so
 	if ($loggable) {
 		$output_logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
 			$self->get_fullversion() . '_' .
@@ -4820,13 +4821,21 @@ sub log_output {
 		# a file with a predictable filename in a world-writable
 		# directory as root is Bad)
 		sysopen my $log_fh, $output_logfile, O_WRONLY | O_CREAT | O_EXCL
-			or die "can't write logfile $output_logfile: $!\n";
+			or die "Can't write logfile $output_logfile: $!\n";
 		close $log_fh;
+
+		# stash original STD* file descriptors
+		open $orig_fh{stdout}, '>&', STDOUT
+			or die "Can't dup STDOUT: $!\n";
+		open $orig_fh{stderr}, '>&', STDERR
+			or die "Can't dup STDERR: $!\n";
 
 		# set up the logging handle tees
 		print "Logging output to logfile $output_logfile\n";
-		open STDOUT, "| tee -i -a $output_logfile";
-		open STDERR, "| tee -i -a $output_logfile >& " . fileno($orig_fd{stderr});
+		open STDOUT, "| tee -i -a $output_logfile"
+			or die "Can't log STDOUT: $!\n";
+		open STDERR, "| tee -i -a $output_logfile >&2"
+			or die "Can't log STDERR: $!\n";
 	}
 }
 

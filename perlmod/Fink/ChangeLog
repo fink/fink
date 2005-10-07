@@ -1,5 +1,12 @@
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
+	* Config.pm, PkgVersion.pm: Store copies of filehandles as
+	PkgVersion package-globals instead of in Config. When setting
+	STDERR tee filter, child process's STDERR is always fd 2 (don't
+	use fd of parent's stashed copy of STDERR).
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
 	* Config.pm: Never lower $^F.
 
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
