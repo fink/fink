@@ -325,7 +325,7 @@ sub cmd_index {
 
 sub cmd_configure {
 	require Fink::Configure;
-	Fink::Configure::configure();
+	Fink::Configure::configure(@_);
 }
 
 sub cmd_bootstrap {

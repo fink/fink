@@ -30,7 +30,8 @@ package Fink::Configure;
 ###
 
 use Fink::Config qw($config $basepath $libpath);
-use Fink::Services qw(&read_properties &read_properties_multival &filename);
+use Fink::Services qw(&read_properties &read_properties_multival &filename
+				&get_options);
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
 use strict;
@@ -101,13 +102,39 @@ create/change configuration interactively
 =cut
 
 sub configure {
-	my ($otherdir, $builddir, $verbose);
-	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
-
+	my $just_mirrors = 0;
+	get_options('configure', [
+		[ 'mirrors|m' => \$just_mirrors, "Only configure the mirrors" ]
+	], \@_);
+		
+	
 	print "\n";
 	&print_breaking("OK, I'll ask you some questions and update the ".
 					"configuration file in '".$config->get_path()."'.");
 	print "\n";
+	
+	choose_misc() unless $just_mirrors;
+	choose_mirrors(0, quick => $just_mirrors);
+
+	# set the conf file compatibility version to the current value 
+	$config->set_param("ConfFileCompatVersion", $conf_file_compat_version);
+
+	# write configuration
+	print "\n";
+	&print_breaking("Writing updated configuration to '".$config->get_path().
+					"'...");
+	$config->save();
+}
+
+=item choose_misc
+
+Configure everything but the mirrors
+
+=cut
+
+sub choose_misc {
+	my ($otherdir, $builddir, $verbose);
+	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
 
 	# normal configuration
 	$otherdir =
@@ -214,18 +241,6 @@ sub configure {
 						"firewall)?", default => $passive_ftp);
 	$config->set_param("ProxyPassiveFTP", $passive_ftp ? "true" : "false");
 
-
-	# mirror selection
-	&choose_mirrors();
-
-	# set the conf file compatibility version to the current value 
-	$config->set_param("ConfFileCompatVersion", $conf_file_compat_version);
-
-	# write configuration
-	print "\n";
-	&print_breaking("Writing updated configuration to '".$config->get_path().
-					"'...");
-	$config->save();
 }
 
 =item spotlight_warning
@@ -296,8 +311,12 @@ sub default_location {
 
 =item choose_mirrors
 
+my $didnt_change = choose_mirrors $postinstall, %options;
+
 mirror selection (returns boolean indicating if mirror selections are
 unchanged: true means no changes, false means changed)
+
+Options include 'quick' to expedite choices.
 
 =cut
 
@@ -305,6 +324,8 @@ sub choose_mirrors {
 	my $mirrors_postinstall = shift; # boolean value, =1 if we've been
 					# called from the postinstall script
  					# of the fink-mirrors package
+ 	my %options = (quick => 0, @_);
+ 	
 	my ($answer, $missing, $default, $def_value);
 	my ($continent, $country);
 	my ($keyinfo, $listinfo);
@@ -352,7 +373,7 @@ sub choose_mirrors {
 	}
 	
 	
-	if (!$missing) {
+	if (!$missing && !$options{quick}) {
 		if ($mirrors_postinstall) {
 			# called from dpkg postinst script of fink-mirrors pkg
 			print "\n";
@@ -399,8 +420,9 @@ sub choose_mirrors {
 	}
 	
 	### step 1: choose a continent
+	my $choose_location = !$obsolete_only && !$options{quick};
 	my ($default_continent, $default_country) = default_location $keyinfo;
-	if ((!$obsolete_only) or (!$config->has_param("MirrorContinent"))) {	
+	if ($choose_location or (!$config->has_param("MirrorContinent"))) {	
 		$continent = &prompt_selection("Your continent?",
 			intro   => "Choose a continent:",
 			default => [ value => $config->param_default("MirrorContinent",
@@ -416,7 +438,7 @@ sub choose_mirrors {
 	}
 
 	### step 2: choose a country
-	if ((!$obsolete_only) or (!$config->has_param("MirrorCountry"))) {	
+	if ($choose_location or (!$config->has_param("MirrorCountry"))) {	
 		$country = &prompt_selection("Your country?",
 			intro   => "Choose a country:",
 			default => [ value => $config->param_default("MirrorCountry",

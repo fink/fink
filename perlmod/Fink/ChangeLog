@@ -1,3 +1,8 @@
+2005-10-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Configure.pm, Engine.pm: Add --mirrors option to 'fink configure', to
+	allow configuring only the mirrors.
+
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: OutputTee can't be chained, so current logging
