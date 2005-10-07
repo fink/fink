@@ -4797,7 +4797,9 @@ sub log_output {
 	my $self = shift;
 	my $loggable = shift;
 
-	return if not Fink::Config::get_option("log_output");
+	# if user gave logfile filename, assume he meant to log output
+	return unless Fink::Config::get_option("log_output")
+		||        Fink::Config::get_option("logfile");
 
 	# stop logging if we were doing so
 	# (redirect STD* back to their original file descriptors)
@@ -4813,16 +4815,29 @@ sub log_output {
 
 	# start logging if caller wants us to do so
 	if ($loggable) {
-		$output_logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
-			$self->get_fullversion() . '_' .
-			strftime('%Y.%m.%d-%H.%M.%S', localtime);
+		$output_logfile = Fink::Config::get_option("logfile");
+		if ($output_logfile) {
+			$output_logfile = &expand_percent(
+				$output_logfile,
+				$self->{_expand},
+				'build log filename'
+			);
 
-		# make sure logfile does not already exist (blindly writing to
-		# a file with a predictable filename in a world-writable
-		# directory as root is Bad)
-		sysopen my $log_fh, $output_logfile, O_WRONLY | O_CREAT | O_EXCL
-			or die "Can't write logfile $output_logfile: $!\n";
-		close $log_fh;
+			# No tests of explicitly given filename...trust that user
+			# knows what he's doing.
+		} else {
+			# no user-specified, so we'll use default
+			$output_logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
+				$self->get_fullversion() . '_' .
+				strftime('%Y.%m.%d-%H.%M.%S', localtime);
+
+			# make sure logfile does not already exist (blindly writing to
+			# a file with a predictable filename in a world-writable
+			# directory as root is Bad)
+			sysopen my $log_fh, $output_logfile, O_WRONLY | O_CREAT | O_EXCL
+				or die "Can't write logfile $output_logfile: $!\n";
+			close $log_fh;
+		}
 
 		# stash original STD* file descriptors
 		open $orig_fh{stdout}, '>&', STDOUT

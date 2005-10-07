@@ -1,3 +1,8 @@
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, PkgVersion.pm: Implement --logfile cmdline flag to
+	specify buildlog filename (with %-expansion)
+
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Config.pm, PkgVersion.pm: Store copies of filehandles as

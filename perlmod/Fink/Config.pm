@@ -224,6 +224,7 @@ sub parse_options {
 		[ 'build-as-nobody'    => \$opts{build_as_nobody},	'see man page'	],
 		[ 'maintainer|m'       => \$opts{maintainermode},	'see man page'	],
 		[ 'log-output|l!'      => \$opts{log_output},		'see man page'	],
+		[ 'logfile=s'          => \$opts{logfile},			'see man page'	],
 		[ 'trees|t=s@'         => $opts{include_trees},		'see man page'	],
 		[ 'exclude-trees|T=s@' => $opts{exclude_trees},		'see man page'	],
 #		[ 'interactive|i'      => \$opts{interactive}, 'see man page'		],
