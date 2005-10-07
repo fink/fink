@@ -1,5 +1,9 @@
 2005-10-07  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Quote --logfile as shell arg.
+
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
 	* Config.pm, PkgVersion.pm: Implement --logfile cmdline flag to
 	specify buildlog filename (with %-expansion)
 

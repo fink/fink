@@ -4847,9 +4847,9 @@ sub log_output {
 
 		# set up the logging handle tees
 		print "Logging output to logfile $output_logfile\n";
-		open STDOUT, "| tee -i -a $output_logfile"
+		open STDOUT, "| tee -i -a \"$output_logfile\""
 			or die "Can't log STDOUT: $!\n";
-		open STDERR, "| tee -i -a $output_logfile >&2"
+		open STDERR, "| tee -i -a \"$output_logfile\" >&2"
 			or die "Can't log STDERR: $!\n";
 	}
 }
