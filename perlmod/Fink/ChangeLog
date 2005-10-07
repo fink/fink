@@ -1,3 +1,13 @@
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Tie::OutputTee.pm: Removed.
+	* Config.pm: Store dup's of STDOUT and STDERR file descriptors
+	during initialization.
+	* PkgVersion.pm: Rewrite log_output to just reopen STDOUT and
+	STDERR as pipes to 'tee $logfile' (or reopen back to Config's
+	saved original file descriptors) instead of messing with tied
+	filehandles.
+
 2005-10-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Configure.pm, Engine.pm: Add --mirrors option to 'fink configure', to

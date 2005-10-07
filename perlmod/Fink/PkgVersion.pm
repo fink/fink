@@ -49,7 +49,7 @@ use Fink::Shlibs;
 use Fink::Validation qw(validate_dpkg_unpacked);
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
-use Fink::Tie::OutputTee;
+#use Fink::Tie::OutputTee;
 
 use POSIX qw(uname strftime);
 use DB_File;
@@ -4798,10 +4798,15 @@ sub log_output {
 
 	return if not Fink::Config::get_option("log_output");
 
+	my %orig_fd = %{Fink::Config::get_option('_orig_fd')};
+	foreach (qw/ STDOUT STDERR /) {
+		fileno($orig_fd{lc $_}) or die "Bogus saved $_!\n";
+	}
+
 	# close already-opened logfile
 	if (defined $output_logfile) {
-		Fink::Tie::OutputTee->tee_stop(*STDOUT);
-		Fink::Tie::OutputTee->tee_stop(*STDERR);
+		open STDOUT, '>&=', $orig_fd{stdout};
+		open STDERR, '>&=', $orig_fd{stderr};
 		print "Closed logfile $output_logfile\n";
 		undef $output_logfile;
 	}
@@ -4820,8 +4825,8 @@ sub log_output {
 
 		# set up the logging handle tees
 		print "Logging output to logfile $output_logfile\n";
-		Fink::Tie::OutputTee->tee_start(*STDOUT, $output_logfile);
-		Fink::Tie::OutputTee->tee_start(*STDERR, $output_logfile);
+		open STDOUT, "| tee -i -a $output_logfile";
+		open STDERR, "| tee -i -a $output_logfile >& " . fileno($orig_fd{stderr});
 	}
 }
 
