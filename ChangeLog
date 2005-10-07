@@ -1,5 +1,9 @@
 2005-10-07  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in: The flag is "--maintainer" not "--maintainermode".
+
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.8.in: Document --logfile. Also misc nroff cleanups.
 
 2005-10-07  Daniel Macks  <dmacks@netspace.org>
