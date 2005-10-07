@@ -1,5 +1,9 @@
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
+	* Config.pm: Never lower $^F.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
 	* Tie::OutputTee.pm: Removed.
 	* Config.pm: Store dup's of STDOUT and STDERR file descriptors
 	during initialization.
