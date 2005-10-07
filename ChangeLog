@@ -1,3 +1,9 @@
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: Add new ChangeLog from perlmod/ as ChangeLog.perlmod
+	and move perlmod/Fink/ChangeLog from that install-name to to
+	ChangeLog.perlmod.Fink.
+
 2005-10-06  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Document --log-output

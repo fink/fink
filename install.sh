@@ -88,7 +88,8 @@ for file in COPYING README README.html INSTALL INSTALL.html \
 done
 
 install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog"
-install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
+install -c -p -m 644  perlmod/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
+install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod.Fink"
 install -c -p -m 644  update/ChangeLog "$basepath/share/doc/fink/ChangeLog.update"
 
 for gccvers in 3.3 4.0; do
