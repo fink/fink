@@ -39,7 +39,7 @@ use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch $dbpath);
 use File::Find;
 use Fink::Status;
-use Fink::Command qw(mkdir_p);
+use Fink::Command qw(mkdir_p rm_f);
 use Fink::Notify;
 use Fink::Validation;
 
@@ -249,7 +249,6 @@ sub process {
 	}
 
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
-	Fink::PkgVersion->clear_buildlock();       # always clean up
 	
 	# Rebuild the command line, for user viewing
 	my $commandline = join ' ', 'fink', @$orig_ARGV;
@@ -1355,68 +1354,52 @@ sub cleanup_buildlocks {
 	# gather all .pid files
 
 	print "Reading buildlocks...\n";
-	my $pidfile_dir = "$basepath/var/run/fink";
-	my @pidfiles = ();
-	if (opendir my $dirhandle, $pidfile_dir) {
-		@pidfiles = grep { /^fink-buildlock-.+\.pid$/ } readdir $dirhandle;
+	my $lockdir = "$basepath/var/run/fink/buildlock";
+
+	my @lockfiles = ();
+	if (opendir my $dirhandle, $lockdir) {
+		@lockfiles = grep { /^.+\.lock$/ } readdir $dirhandle;
 		close $dirhandle;
 	} else {
-		print "Warning: could not read buildlock pid directory $pidfile_dir: $!\n";
+		print "Warning: could not read buildlock directory $lockdir: $!\n";
 		return 0;
 	}
 
-	# collect pid from each .pid file
-
-	my %pids;  # pid of each buildlock pkg
-	foreach my $pidfile (@pidfiles) {
-		if ($pidfile =~ /^fink-buildlock-(.+)\.pid$/) {
-			my $fullname = $1;
-			if (open my $pidhandle, '<', "$pidfile_dir/$pidfile") {
-				my $pid = <$pidhandle>;
-				chomp $pid;
-				if ($pid =~ /^\d+$/) {
-					$pids{$fullname} = $pid;
-				} else {
-					print "Warning: skipping pidfile $pidfile: could not parse it.\n";
-				}
-				close $pidhandle;
-			} else {
-				print "Warning: skipping pidfile $pidfile: could not read it: $!\n";
-			}
-		} else {
-			# should never get here!
-			print "Warning: skipping pidfile $pidfile: could not parse its name.\n";
-		}
-	}
-
-	if (!%pids) {
+	if (!@lockfiles) {
 		print "No buildlocks found\n";
 		return 0;
 	}
 
-	# check if each pid is still present
-
 	my $locks_left = 0;
-	foreach my $pkg (sort keys %pids) {
-		print "Found buildlock for $pkg...\n";
-		if (kill 0, $pids{$pkg}) {
-			# successfully signaled, so pid still exists
-			&execute("ps -p $pids{$pkg}");
-			print "Not removing lock\n" if not $opts{dryrun};
-			$locks_left++;
-		} else {
-			my $msg = "Process $pids{$pkg} does not exist.";
+	my %lockpkgs = ();
+	foreach my $lockfile (sort @lockfiles) {
+		my ($fullname) = $lockfile =~ /^(.+)\.lock$/;
+		my $lock_FH = lock_wait("$lockdir/$lockfile", exclusive => 1, no_block => 1);
+		if ($lock_FH) {
+			# got flock so buildlock is not in use
 			if ($opts{dryrun}) {
-				print $msg, "\n";
+				print "Buildlock for $fullname is dead.\n";
 			} else {
-				if (&prompt_boolean("$msg Remove the lock?", default => 1)) {
-					Fink::PkgVersion::phase_deactivate("fink-buildlock-$pkg");
-				  } else {
-					  $locks_left++;
-				  }
+				print "Buildlock for $fullname is dead...will clear\n";
+				$lockpkgs{$fullname} = $lock_FH;
 			}
+		} else {
+			print "Buildlock for $fullname is still in use.\n";
+			$locks_left++;
 		}
 	}
+
+	my @lockpkgs = sort keys %lockpkgs;
+	if (@lockpkgs) {
+		# found dead locks and we are not dry-run...
+		print "Clearing " . scalar @lockpkgs . " dead buildlock(s)...\n";
+		# remove lock packages
+		Fink::PkgVersion::phase_deactivate(map "fink-buildlock-$_", @lockpkgs);
+		print "...and removing the dead runtime lockfiles...\n";
+		rm_f map "$lockdir/$_.lock", @lockpkgs;
+	}
+
+	# cleanup's runtime locks go away when %lockpkgs goes out of scope...
 
 	return $locks_left;
 }

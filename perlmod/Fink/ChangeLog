@@ -1,3 +1,12 @@
+2005-10-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Add a flock-based outer layer around the
+	dpkg-based buildlocks. Now "the lock" automatically goes away when
+	fink process dies, so buildlock pkgs don't need to prevent
+	self-replacement.
+	* Engine.pm: Buildlock cleanup can now check for flockable
+	lockfiles instead of dealing with stored pids.
+
 2005-10-07  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Quote --logfile as shell arg.

@@ -1,3 +1,7 @@
+2005-10-11   Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: add buildlock dir to fink.deb
+
 2005-10-07  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: The flag is "--maintainer" not "--maintainermode".

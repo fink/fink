@@ -45,7 +45,7 @@ for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
 	   share share/doc share/doc/fink share/man \
 	   share/man/man8 share/man/man5 \
 		share/fink share/fink/images \
-		var var/lib var/run var/lib/fink var/run/fink \
+		var var/lib var/run var/lib/fink var/run/fink/buildlock \
 		var/lib/fink/path-prefix-g++-3.3 \
 		var/lib/fink/path-prefix-g++-4.0; do
   mkdir "$basepath/$dir"
