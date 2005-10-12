@@ -35,7 +35,7 @@ Fink - Compile and install UNIX applications for Mac OS X
 =head1 SYNOPSIS
 
   use Fink;
-  
+
   # Do something with the other Fink modules
 
 =head1 DESCRIPTION

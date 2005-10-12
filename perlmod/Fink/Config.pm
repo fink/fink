@@ -77,7 +77,7 @@ Fink::Config - Read/write the fink configuration
   # Tree management
   my @trees		= $config->get_treelist();
   my $bool      = $config->want_magic_tree($tree);
-  
+
   # Command-line parameters
   my @args_left = $config->parse_options(@args);
   my $value = get_option($key, $default);
@@ -312,7 +312,7 @@ sub _standard_treelist {
 		"Trees", "local/main stable/main stable/bootstrap");
 }
 
-=private
+=begin comment
 
 Figure out what to do with the --trees and --exclude-trees command line
 arguments.
@@ -320,7 +320,7 @@ arguments.
 Some tree names are 'magic', and cannot be completely excluded in a safe way.
 However, certain commands know to ignore them if they're 'excluded'.
 
-=end private
+=end comment
 
 =cut
 
@@ -415,7 +415,7 @@ all currently installed packages.
 =back
 
 =cut
-	
+
 sub want_magic_tree {
 	my ($self, $tree) = @_;
 	$self->_process_trees_arg();
