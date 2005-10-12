@@ -4070,7 +4070,8 @@ sub set_buildlock {
 
 	print "Setting runtime build-lock...\n";
 
-	# use flock to get an exlusive lock for the the %n-%v-%r
+	# get an exlusive lock for the the %n-%v-%r
+	Fink::Package->control_buildlocks(1);
 	my $lockdir = "$basepath/var/run/fink/buildlock";
 	mkdir_p $lockdir or
 		die "can't create $lockdir directory for buildlocks\n";
@@ -4081,7 +4082,10 @@ sub set_buildlock {
 
 	# bootstrapping occurs before we have package-management tools
 	# needed for buildlock package so don't create one
-	return if $self->{_bootstrap};
+	if ($self->{_bootstrap}) {
+		Fink::Package->control_buildlocks(0);
+		return;
+	}
 
 	my $pkgname = $self->get_name();
 	my $pkgvers = $self->get_fullversion();
@@ -4188,6 +4192,8 @@ EOMSG
 
 	die "buildlock failure\n" if $lock_failed;
 
+	Fink::Package->control_buildlocks(0);
+
 	# record buildlock package name so we can remove it during clear_buildkock
 	$self->{_lockpkg} = $lockpkg;
 }
@@ -4202,6 +4208,8 @@ sub clear_buildlock {
 	if ($self->has_parent) {
 		return $self->get_parent->clear_buildlock();
 	}
+
+	Fink::Package->control_buildlocks(0);
 
 	if (exists $self->{_lockpkg}) {
 		print "Removing build-lock package...\n";
@@ -4224,6 +4232,8 @@ sub clear_buildlock {
 		unlink $self->{_lockfile}->[0];  # try to clean up
 		delete $self->{_lockfile};
 	}
+
+	Fink::Package->control_buildlocks(0);
 }
 
 =item ensure_gpp_prefix

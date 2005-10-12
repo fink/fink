@@ -1351,7 +1351,7 @@ If true, don't actually remove the locks.
 sub cleanup_buildlocks {
 	my %opts = (dryrun => 0, @_);
 
-	# gather all .pid files
+	Fink::Package->control_buildlocks(1);
 
 	print "Reading buildlocks...\n";
 	my $lockdir = "$basepath/var/run/fink/buildlock";
@@ -1362,44 +1362,52 @@ sub cleanup_buildlocks {
 		close $dirhandle;
 	} else {
 		print "Warning: could not read buildlock directory $lockdir: $!\n";
+		Fink::Package->control_buildlocks(0);
 		return 0;
 	}
 
 	if (!@lockfiles) {
 		print "No buildlocks found\n";
+		Fink::Package->control_buildlocks(0);
 		return 0;
 	}
 
 	my $locks_left = 0;
-	my %lockpkgs = ();
+	my %lock_FHs = ();
+	my @lock_pkgs = ();
 	foreach my $lockfile (sort @lockfiles) {
 		my ($fullname) = $lockfile =~ /^(.+)\.lock$/;
 		my $lock_FH = lock_wait("$lockdir/$lockfile", exclusive => 1, no_block => 1);
 		if ($lock_FH) {
 			# got flock so buildlock is not in use
 			if ($opts{dryrun}) {
-				print "Buildlock for $fullname is dead.\n";
+				print "Runtime buildlock for $fullname is dead.\n";
 			} else {
-				print "Buildlock for $fullname is dead...will clear\n";
-				$lockpkgs{$fullname} = $lock_FH;
+				print "Runtime buildlock for $fullname is dead...will clear.\n";
+				$lock_FHs{"$lockdir/$lockfile"} = $lock_FH;
+			}
+			if (-e "$lockdir/$fullname.pid") {
+				print "...and its lock package too.\n";
+				push @lock_pkgs, "fink-buildlock-$fullname" if !$opts{dryrun};
 			}
 		} else {
 			print "Buildlock for $fullname is still in use.\n";
-			$locks_left++;
+			$locks_left = 1;
 		}
 	}
 
-	my @lockpkgs = sort keys %lockpkgs;
-	if (@lockpkgs) {
-		# found dead locks and we are not dry-run...
-		print "Clearing " . scalar @lockpkgs . " dead buildlock(s)...\n";
-		# remove lock packages
-		Fink::PkgVersion::phase_deactivate(map "fink-buildlock-$_", @lockpkgs);
-		print "...and removing the dead runtime lockfiles...\n";
-		rm_f map "$lockdir/$_.lock", @lockpkgs;
+	if (@lock_pkgs) {
+		printf "Removing %i dead buildlock package(s)...\n", scalar @lock_pkgs;
+		Fink::PkgVersion::phase_deactivate(@lock_pkgs);  # doesn't return if failure
 	}
 
-	# cleanup's runtime locks go away when %lockpkgs goes out of scope...
+	if (%lock_FHs) {
+		printf "Removing %i dead lockfile(s)...\n", scalar keys %lock_FHs;
+		rm_f keys %lock_FHs or $locks_left = 1;
+		%lock_FHs = ();
+	}
+
+	Fink::Package->control_buildlocks(0);
 
 	return $locks_left;
 }

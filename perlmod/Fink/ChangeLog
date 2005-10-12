@@ -1,3 +1,10 @@
+2005-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, Package.pm, PkgVersion.pm: New Package::control_buildlocks
+	class method used to control access to whole buildlock system.
+	* Engine.pm: During buildlock cleanup, only remove lockpkgs that
+	are installed (indicated by presence of their .pid files).
+
 2005-10-11  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Add a flock-based outer layer around the
