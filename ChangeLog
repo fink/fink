@@ -1,4 +1,8 @@
-2005-10-11   Daniel Macks  <dmacks@netspace.org>
+2005-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: perlmod/Fink/Tie was backed out. Fix buildlock dir.
+
+2005-10-11  Daniel Macks  <dmacks@netspace.org>
 
 	* install.sh: add buildlock dir to fink.deb
 
