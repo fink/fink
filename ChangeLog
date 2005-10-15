@@ -1,3 +1,10 @@
+2005-10-15  Martin Costabel <costabel@wanadoo.fr>
+
+	* pathsetup.sh.in: Fix two bugs that have been annoying users
+	running the Fink binary installer for the first time: 
+	The creation of a bash startup script with wrong root ownership, 
+	and a wrong failure message.
+ 
 2005-10-12  Daniel Macks  <dmacks@netspace.org>
 
 	* install.sh: perlmod/Fink/Tie was backed out. Fix buildlock dir.

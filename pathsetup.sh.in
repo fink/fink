@@ -1,7 +1,7 @@
 #!/bin/sh 
 #
 # Shell script for preparing the user's shell startup scripts for Fink.
-# Copyright (c) 2003-2004 Martin Costabel
+# Copyright (c) 2003-2005 Martin Costabel
 # Copyright (c) 2003-2005 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@ do_login_test () {
 # PATH and SHELL are written into TMPFILE.
 # We have to use basic shell speak here, because we don't know
 # which shell will come up.
-    /usr/bin/login -f $USER >$TMPFILE <<EOF
+    /usr/bin/login -f $USER >$TMPFILE <<"EOF"
     /bin/echo -n LOGINSHELL= 
     /usr/bin/printenv SHELL
     /usr/bin/printenv PATH
@@ -164,6 +164,7 @@ display_choose_do (){
     if [ "$answer" != "No, thanks" ]; then
 	echo "" >> $HOME/$RC
 	echo "$SOURCECMD" >> $HOME/$RC
+	chown $USER $HOME/$RC
 	do_login_test
 	if grep @PREFIX@/sbin $TMPFILE >/dev/null 2>&1 ; then
 	    Result="\n Your Fink setup should be fine now.\n\n"
