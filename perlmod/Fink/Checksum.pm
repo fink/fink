@@ -104,15 +104,13 @@ ref for their object.
 sub new {
 	my $class = shift;
 
-	my $plugin = shift;
+	my $plugin = shift || "MD5";
 
 	my $self;
 
 	if ($plugin) {
 		eval "require Fink::Checksum::$plugin";
 		eval "\$self = Fink::Checksum::$plugin->new()";
-	} else {
-		$self = bless {}, $class;
 	}
 
 	if ($@) {
