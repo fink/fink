@@ -39,7 +39,7 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin \
-	lib lib/perl5 lib/perl5/Fink lib/perl5/Fink/{Text,Notify} \
+	lib lib/perl5 lib/perl5/Fink lib/perl5/Fink/{Text,Notify,Checksum} \
 	lib/fink lib/fink/update \
 	etc etc/dpkg \
 	share share/doc share/doc/fink \

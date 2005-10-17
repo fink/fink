@@ -1,3 +1,7 @@
+2005-10-16  Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* install.sh: add plugins/Fink/Checksum/ to the install list
+
 2005-10-15  Martin Costabel <costabel@wanadoo.fr>
 
 	* pathsetup.sh.in: Fix two bugs that have been annoying users

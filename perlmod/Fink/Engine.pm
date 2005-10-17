@@ -41,6 +41,7 @@ use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p rm_f);
 use Fink::Notify;
+use Fink::Checksum;
 use Fink::Validation;
 
 use strict;
@@ -359,6 +360,9 @@ sub cmd_list {
 sub cmd_listplugins {
 	print "Notification Plugins:\n\n";
 	Fink::Notify->list_plugins();
+	print "\n";
+	print "Checksum Plugins:\n\n";
+	Fink::Checksum->list_plugins();
 	print "\n";
 }
 

@@ -1102,7 +1102,7 @@ sub cleanup_lol {
 	@$struct = @clusters;
 }
 
-=item file_MD5_checksum
+=item file_MD5_checksum (deprecated)
 
     my $md5 = file_MD5_checksum $filename;
 
@@ -1112,33 +1112,15 @@ the chosen command is read via an open() pipe and matched against the
 appropriate regexp. If the command returns failure or its output was
 not in the expected format, the program dies with an error message.
 
+Note: this method is deprecated; use Fink::Checksum->new('MD5') instead.
+
 =cut
 
 sub file_MD5_checksum {
 	my $filename = shift;
-	my ($pid, $checksum, $md5cmd, $match);
 
-	if(-e "/sbin/md5") {
-		$md5cmd = "/sbin/md5";
-		$match = '= ([^\s]+)$';
-	} else {
-		$md5cmd = "md5sum";
-		$match = '([^\s]*)\s*(:?[^\s]*)';
-	}
-	
-	$pid = open(MD5SUM, "$md5cmd $filename |") or die "Couldn't run $md5cmd: $!\n";
-	while (<MD5SUM>) {
-		if (/$match/) {
-			$checksum = $1;
-		}
-	}
-	close(MD5SUM) or die "Error on closing pipe  $md5cmd: $!\n";
-
-	if (not defined $checksum) {
-		die "Could not parse results of '$md5cmd $filename'\n";
-	}
-
-	return $checksum;
+	my $checksum = Fink::Checksum->new('MD5');
+	return $checksum->get_checksum($filename);
 }
 
 =item get_arch

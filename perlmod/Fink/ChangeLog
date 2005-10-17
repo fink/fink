@@ -1,3 +1,15 @@
+2005-10-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm, Services.pm, Checksum.pm, Checksum/MD5.pm: refactored the
+	MD5sum stuff into a checksum module.  Still TODO: implement code to
+	have each @ISA(Fink::Checksum) know where it should be in the mirror
+	system (for when we have multiple checksum types for a package), also
+	change the checksum code around to actually use this in a
+	non-MD5-specific way (right now it's just a behind-the-scenes
+	drop-in replacement for the existing MD5 code) but hey, it's a start.
+	Now we just need to decide on a standard for the mirror servers
+	w/ the OD folks.  ;)
+
 2005-10-12  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: During finish(), only update "important" (but not
