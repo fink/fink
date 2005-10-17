@@ -26,7 +26,7 @@ package Fink::Engine;
 use Fink::Services qw(&latest_version &sort_versions
 					  &pkglist2lol &cleanup_lol
 					  &execute &expand_percent
-					  &file_MD5_checksum &count_files &get_arch
+					  &count_files &get_arch
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &aptget_lockwait &store_rename &get_options
 					  $VALIDATE_HELP);
@@ -41,8 +41,8 @@ use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p rm_f);
 use Fink::Notify;
-use Fink::Checksum;
 use Fink::Validation;
+use Fink::Checksum;
 
 use strict;
 use warnings;
@@ -793,7 +793,7 @@ sub parse_fetch_options {
 	 		'Do not fetch sources for packages with a "Restrictive" license. ' .
 	 		'Useful for mirroring.' ],
 		[ 'dry-run|d'				=> \$options{dryrun},
-			'Prints filename, MD5, list of source URLs, maintainer for each ' .
+			'Prints filename, checksum, list of source URLs, maintainer for each ' .
 			'package.' ],
 		[ 'recursive|r'				=> \$options{recursive},
 			'Fetch dependent packages also.' ],

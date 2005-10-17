@@ -57,6 +57,7 @@ file types.
   my $checksum = Fink::Checksum->new('MD5');
   my $md5 = $checksum->get_checksum($filename);
 
+
   ### a module implementing a notifier type
 
   # all notifier modules must reside under the Fink::Checksum namespace
@@ -79,7 +80,7 @@ file types.
   sub get_checksum {
     my $class = shift;
     my $filename = shift;
-    my $output = $class->get_output('/some/command', $filename);
+    my $output = `run-some-command`;
     if ($output =~ /(some-matching-regex)/) {
       return $1;
     } else {
@@ -103,38 +104,69 @@ ref for their object.
 sub new {
 	my $class = shift;
 
-	my $plugin = shift || die "no checksum plugin type specified!\n";
+	my $plugin = shift;
 
 	my $self;
 
-	eval "require Fink::Checksum::$plugin";
-	eval "\$self = Fink::Checksum::$plugin->new()";
+	if ($plugin) {
+		eval "require Fink::Checksum::$plugin";
+		eval "\$self = Fink::Checksum::$plugin->new()";
+	} else {
+		$self = bless {}, $class;
+	}
 
-	unless (isa $self, "Fink::Checksum") {
-		die "unable to load '$plugin' checksum module\n";
+	if ($@) {
+		die "unable to load checksum plugin ($plugin): $@\n";
+	} elsif (not isa($self, "Fink::Checksum")) {
+		die "unknown checksum plugin: $plugin\n";
 	}
 
 	return $self;
 }
 
+=item get_checksum($filename) - get the checksum for a file
+
+Get the checksum for a given file, based on the Fink::Checksum::E<OBJ>
+object which represents a given algorithm.
+
+This method cannot be used directly from a Fink::Checksum object,
+it is designed to be overridden in the subclass.
+
+=cut
+
 sub get_checksum {
 	die "no checksum module loaded\n";
 }
 
-sub get_output {
-	my $class = shift;
+=item validate($filename, $checksum, [$algorithm]) - validate a file
 
-	my ($return, $pid);
-	my @command = @_;
+Validate that the $checksum for file $filename validates, when
+using $algorithm.
 
-	$pid = open(COMMAND, "@command |") or die "Couldn't run @command: $!\n";
-	{
-		local $/ = undef;
-		$return = <COMMAND>;
+If $checksum is specified in the format used in the Source-Checksum
+field (ie, the MD5(string) format), then $algorithm will be detected
+automatically.
+
+=cut
+
+sub validate {
+	my $class     = shift;
+	my $filename  = shift;
+	my $checksum  = shift;
+	my $algorithm = shift;
+
+	if ($checksum =~ /^\s*(\w+)\((\w+)\)\s*$/) {
+		($algorithm, $checksum) = ($1, $2);
 	}
-	close(COMMAND) or die "Error on closing pipe @command: $!\n";
 
-	return $return;
+	#print "validating $algorithm($checksum) for $filename\n";
+	my $plugin = Fink::Checksum->new($algorithm);
+	my $file_checksum = $plugin->get_checksum($filename);
+
+	if ($file_checksum eq $checksum) {
+		return 1;
+	}
+	return undef;
 }
 
 =item list_plugins() - list the available checksum plugins

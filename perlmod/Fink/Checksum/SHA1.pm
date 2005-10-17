@@ -1,6 +1,6 @@
 # -*- mode: Perl; tab-width: 4; -*-
 #
-# Fink::Checksum::MD5 module
+# Fink::Checksum::SHA1 module
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2005 The Fink Package Manager Team
@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA      02111-1307, USA.
 #
 
-package Fink::Checksum::MD5;
+package Fink::Checksum::SHA1;
 
 use Fink::Checksum;
 use Fink::Config qw($basepath);
@@ -28,13 +28,14 @@ use Fink::Config qw($basepath);
 our @ISA = qw(Fink::Checksum);
 our $VERSION = ( qw$Revision$ )[-1];
 
-our $md5cmd;
+our $sha1cmd;
+our $sha1pm;
 our $match;
 
 sub about {
 	my $self = shift;
 
-	my @about = ('MD5', $VERSION, 'MD5 checksum');
+	my @about = ('SHA1', $VERSION, 'SHA1 checksum', [ 'textutils', 'md5deep' ] );
 	return wantarray? @about : \@about;
 }
 
@@ -43,22 +44,28 @@ sub new {
 
 	my $self = bless({}, $class);
 
-	if(-e "/sbin/md5") {
-		$md5cmd = "/sbin/md5";
-		$match = '= ([^\s]+)$';
-	} elsif (-e "$basepath/bin/md5deep") {
-		$md5cmd = "$basepath/bin/md5deep";
-		$match = '([^\s]*)\s*(:?[^\s]*)';
-	} else {
-		$md5cmd = "md5sum";
-		$match = '([^\s]*)\s*(:?[^\s]*)';
+	$match = '([^\s]*)\s*(:?[^\s]*)';
+
+	if (-e "$basepath/bin/sha1deep") {
+		$sha1cmd = "$basepath/bin/sha1deep";
+	} elsif (-e "$basepath/bin/sha1sum") {
+		$sha1cmd = "$basepath/bin/sha1sum";
+	}
+
+	if (not -x $sha1cmd) {
+		eval "require Digest::SHA1";
+		if (defined $Digest::SHA1::VERSION) {
+			$sha1pm = 1;
+		} else {
+			die "unable to find sufficient sha1 implementation\n";
+		}
 	}
 
 	return $self;
 }
 
-# Returns the MD5 checksum of the given $filename. Uses /sbin/md5 if it
-# is available, otherwise uses the first md5sum in PATH. The output of
+# Returns the SHA1 checksum of the given $filename. Uses $basepath/bin/sha1deep
+# if it is available, otherwise uses uses $basepath/bin/sha1sum. The output of
 # the chosen command is read via an open() pipe and matched against the
 # appropriate regexp. If the command returns failure or its output was
 # not in the expected format, the program dies with an error message.
@@ -69,16 +76,24 @@ sub get_checksum {
 
 	my ($pid, $checksum);
 
-	$pid = open(MD5SUM, "$md5cmd $filename |") or die "Couldn't run $md5cmd: $!\n";
-	while (<MD5SUM>) {
-		if (/$match/) {
-			$checksum = $1;
+	if ($sha1pm) {
+		my $sha1 = Digest::SHA1->new();
+		open (FILEIN, $filename) or die "unable to read from $filename: $!\n";
+		$sha1->addfile(*FILEIN);
+		$checksum = $sha1->hexdigest;
+		close(FILEIN) or die "Error closing $filename: $!\n";
+	} else {
+		$pid = open(SHA1SUM, "$sha1cmd $filename |") or die "Couldn't run $sha1cmd: $!\n";
+		while (<SHA1SUM>) {
+			if (/$match/) {
+				$checksum = $1;
+			}
 		}
+		close(SHA1SUM) or die "Error on closing pipe: $sha1cmd: $!\n";
 	}
-	close(MD5SUM) or die "Error on closing pipe  $md5cmd: $!\n";
 
 	if (not defined $checksum) {
-		die "Could not parse results of '$md5cmd $filename'\n";
+		die "Could not get sha1 digest of $filename\n";
 	}
 
 	return lc($checksum);

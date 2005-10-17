@@ -23,6 +23,7 @@
 
 package Fink::Services;
 
+#use Fink::Checksum;
 use Fink::Command	qw(&rm_f);
 use Fink::CLI		qw(&word_wrap &get_term_width);
 

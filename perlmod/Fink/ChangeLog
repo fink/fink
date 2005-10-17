@@ -1,3 +1,11 @@
+2005-10-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Bootstrap.pm, Checksum.pm, Engine.pm, NetAccess.pm, PkgVersion.pm,
+	Services.pm, Validation.pm, Checksum/*.pm: now handles MD5, SHA1,
+	and SHA256 as plugins; packages using Source*-Checksum: now work
+	properly; what's left to do is handle mirror URLs, and whether I
+	care to do dep-checking.
+
 2005-10-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Engine.pm, Services.pm, Checksum.pm, Checksum/MD5.pm: refactored the

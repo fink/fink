@@ -24,12 +24,13 @@
 package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
-use Fink::Services qw(&execute &file_MD5_checksum &enforce_gcc &eval_conditional);
+use Fink::Services qw(&execute &enforce_gcc &eval_conditional);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Engine;
 use Fink::Command qw(cat mkdir_p rm_rf touch);
+use Fink::Checksum;
 
 use strict;
 use warnings;
@@ -808,7 +809,8 @@ sub modify_description {
 
 	my ($version, $revision) = get_version_revision($package_source,$distribution);
 	print "Modifying package description...\n";
-	my $md5 = &file_MD5_checksum($tarball);
+	my $md5obj = Fink::Checksum->new('MD5');
+	my $md5 = $md5obj->get_checksum($tarball);
 
 	my $result = 0;
 

@@ -23,7 +23,7 @@
 
 package Fink::NetAccess;
 
-use Fink::Services qw(&execute &filename &file_MD5_checksum);
+use Fink::Services qw(&execute &filename);
 use Fink::CLI qw(&prompt_selection &print_breaking);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
@@ -190,12 +190,11 @@ sub fetch_url_to_file {
 	### if the file already exists, ask user what to do
 	if (-f $file && !$cont && !$dryrun) {
 		my $checksum_msg = ". ";
-		my $default_value = "retry"; # Play it save, assume redownload as default
-		$found_archive_sum = &file_MD5_checksum($file);
+		my $default_value = "retry"; # Play it safe, assume redownload as default
 		if (defined $checksum) {
-			if ($checksum eq $found_archive_sum) {
+			if (Fink::Checksum->validate($file, $checksum)) {
 				$checksum_msg = " and its checksum matches. ";
-				$default_value = "use_it"; # MD5 matches: assume okay to use it
+				$default_value = "use_it"; # checksum matches: assume okay to use it
 			} else {
 				$checksum_msg = " but its checksum does not match. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
@@ -264,9 +263,7 @@ sub fetch_url_to_file {
 		if ($dryrun or ($result or not -f $file)) {
 			# failure, continue loop
 		} else {
-			$found_archive_sum = &file_MD5_checksum($file);
-			if (defined $checksum and $checksum ne $found_archive_sum) {
-
+			if (defined $checksum and (not Fink::Checksum->validate($file, $checksum))) {
 				&print_breaking("The checksum of the file is incorrect. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
 								"Expected: $checksum \nActual: $found_archive_sum \n");

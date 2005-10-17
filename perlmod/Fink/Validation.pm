@@ -154,6 +154,8 @@ our %valid_fields = map {$_, 1}
 		 #sourceNextractdir
 		 'sourcerename',
 		 #sourceNRename
+		 'source-checksum',
+		 #sourceN-checksum
 		 'source-md5',
 		 #sourceN-md5
 		 'tarfilesrename',
@@ -491,10 +493,11 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 		} else {
-			my $md5_field = $_ . "-md5";
-			if (!exists $properties->{$md5_field} and !defined $properties->{$md5_field}) {
-				print "Error: \"$_\" does not have a corresponding \"$md5_field\" field. ($filename)\n";
-				$ looks_good = 0;
+			my $md5_field      = $_ . "-md5";
+			my $checksum_field = $_ . "-checksum";
+			if (!exists $properties->{$md5_field} and !defined $properties->{$md5_field} and !exists $properties->{$checksum_field} and !defined $properties->{$checksum_field}) {
+				print "Error: \"$_\" does not have a corresponding \"$md5_field\" or \"$checksum_field\" field. ($filename)\n";
+				$looks_good = 0;
 			}
 		}
 		
@@ -548,12 +551,12 @@ sub validate_info_file {
 		}
 
 		# Check for any source-related field without associated Source(N) field
-		if ($field =~ /^source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
+		if ($field =~ /^source(\d*)-checksum|source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
 			my $sourcefield = defined $+  # corresponding Source(N) field
 				? "source$+"
 				: "source";  
 			if (!exists $source_fields{$sourcefield}) {
-				my $msg = $field =~ /-md5$/
+				my $msg = $field =~ /-(checksum|md5)$/
 					? "Warning" # no big deal
 					: "Error";  # probably means typo, giving broken behavior
 					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
@@ -810,7 +813,7 @@ sub validate_info_component {
 		# Warn if field is unknown
 		unless ($pkg_valid_fields{$field}) {
 			unless (!$is_splitoff and
-					( $field =~ m/^source([2-9]|[1-9]\d+)(|extractdir|rename|-md5)$/
+					( $field =~ m/^source([2-9]|[1-9]\d+)(|extractdir|rename|-md5|-checksum)$/
 					  or $field =~ m/^tar([2-9]|[1-9]\d+)filesrename$/
 					  ) ) {
 				print "Warning: Field \"$field\"$splitoff_field is unknown. ($filename)\n";

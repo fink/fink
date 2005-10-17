@@ -49,7 +49,7 @@ use Fink::Shlibs;
 use Fink::Validation qw(validate_dpkg_unpacked);
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
-#use Fink::Tie::OutputTee;
+use Fink::Checksum;
 
 use POSIX qw(uname strftime);
 use DB_File;
@@ -1382,9 +1382,15 @@ sub get_checksum {
 	my $self = shift;
 	my $suffix = shift || "";
 	
-	my $field = "Source".$suffix."-MD5";
-	return undef if not $self->has_param($field);
-	return $self->param($field);
+	my $sourcefield = 'Source' . $suffix;
+
+	if ($self->has_param($sourcefield . '-Checksum')) {
+		return $self->param($sourcefield . '-Checksum');
+	} elsif ($self->has_param($sourcefield . '-MD5')) {
+		return $self->param($sourcefield . '-MD5');
+	}
+
+	return undef;
 }
 
 sub get_custom_mirror {
@@ -2747,7 +2753,7 @@ sub fetch_source {
 		print "$file ", (defined $checksum ? $checksum : "-");
 	} else {
 		if(not defined $checksum) {	
-			print "WARNING: No MD5 specified for Source".$suffix.
+			print "WARNING: No checksum specified for Source".$suffix.
 							" of package ".$self->get_fullname();
 			if ($self->has_param("Maintainer")) {
 				print ' Maintainer: '.$self->param("Maintainer") . "\n";
@@ -2874,10 +2880,10 @@ GCC_MSG
 		
 		# verify the MD5 checksum, if specified
 		$checksum = $self->get_checksum($suffix);
-		$found_archive_sum = &file_MD5_checksum($found_archive);
+
 		if (defined $checksum) { # Checksum was specified
-		# compare to the MD5 checksum of the tarball
-			if ($checksum ne $found_archive_sum) {
+			# compare to the MD5 checksum of the tarball
+			if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
 				# mismatch, ask user what to do
 				$tries++;
 				my $sel_intro = "The checksum of the file $archive of package ".
@@ -2913,7 +2919,7 @@ GCC_MSG
 			}
 		} else {
 		# No checksum was specifed in the .info file, die die die
-			die "No MD5 specifed for Source$suffix of ".$self->get_fullname()." I got a checksum of $found_archive_sum \n";
+			die "No checksum specifed for Source$suffix of ".$self->get_fullname()." I got a checksum of $found_archive_sum \n";
 		}
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
