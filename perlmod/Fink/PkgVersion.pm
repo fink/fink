@@ -1393,6 +1393,22 @@ sub get_checksum {
 	return undef;
 }
 
+# get_checksum_type [ SUFFIX ]
+#
+# Returns the type of checksum in the given SourceN checksum entry.
+sub get_checksum_type {
+	my $self = shift;
+	my $suffix = shift || "";
+
+	my $checksum = $self->get_checksum($suffix);
+
+	if ($checksum =~ /^\s*(\w+)\((.*)\)\s*$/) {
+		return $1;
+	} else {
+		return 'MD5';
+	}
+}
+
 sub get_custom_mirror {
 	my $self = shift;
 	my $suffix = shift || "";
@@ -2747,10 +2763,11 @@ sub fetch_source {
 	$nomirror = 1 if $self->get_license() =~ /^Restrictive$/i;
 	
 	$checksum = $self->get_checksum($suffix);
+	$checksum =~ s/^\s*\w+\((.*)\)\s*$/$1/;
 	
 	if($dryrun) {
 		return if $url eq $file; # just a simple filename
-		print "$file ", (defined $checksum ? $checksum : "-");
+		print "$file ", (defined $checksum ? lc($self->get_checksum_type($suffix)) . '=' . $checksum : "-");
 	} else {
 		if(not defined $checksum) {	
 			print "WARNING: No checksum specified for Source".$suffix.
