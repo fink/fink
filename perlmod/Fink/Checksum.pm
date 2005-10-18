@@ -136,10 +136,32 @@ sub get_checksum {
 	die "no checksum module loaded\n";
 }
 
+=item get_all_checksums($filename) - get all possible checksums for a file
+
+This class method returns a ref to a hash of algorithm=>checksum pairs
+for all available algorithms for the given $filename.
+
+=cut
+
+sub get_all_checksums {
+	my $class = shift;
+	my $filename = shift;
+
+	my %checksums;
+
+	foreach my $algorithm ( find_subpackages($class) ) {
+		$algorithm =~ s/${class}:://;
+		my $plugin = Fink::Checksum->new($algorithm);
+		$checksums{$algorithm} = $plugin->get_checksum($filename) if defined $plugin;
+	}
+
+	return \%checksums;
+}
+
 =item validate($filename, $checksum, [$algorithm]) - validate a file
 
-Validate that the $checksum for file $filename validates, when
-using $algorithm.
+Returns a boolean indicating whether the $checksum for file $filename
+is correctw hen using $algorithm.0
 
 If $checksum is specified in the format used in the Source-Checksum
 field (ie, the MD5(string) format), then $algorithm will be detected
@@ -153,9 +175,7 @@ sub validate {
 	my $checksum  = shift;
 	my $algorithm = shift;
 
-	if ($checksum =~ /^\s*(\w+)\((\w+)\)\s*$/) {
-		($algorithm, $checksum) = ($1, $2);
-	}
+	($algorithm, $checksum) = $class->parse_checksum($checksum, $algorithm);
 
 	#print "validating $algorithm($checksum) for $filename\n";
 	my $plugin = Fink::Checksum->new($algorithm);
@@ -165,6 +185,36 @@ sub validate {
 		return 1;
 	}
 	return undef;
+}
+
+=item parse_checksum($checksum, [$algorithm]) - tease apart different syntaxes
+
+This class method returns a (algorithm=>checksum) pair. If the passed
+$checksum has the form of ALGORITHM(CHECKSUM), the ALGORITHM and
+CHECKSUM components are returned separately. If the passed $checksum
+is just a checksum string, $algorithm is used as the algorithm. If the
+algorithm is not contained in the passed $checksum and no $algorithm
+is passed, "MD5" is returned as the algorithm.
+
+=cut
+
+sub parse_checksum {
+	my $class = shift;
+	my $checksum = shift;
+	my $algorithm = shift || '';
+
+	if ($checksum =~ /^\s*(\w+)\((\w+)\)\s*$/) {
+		# first try to pull apart ALGORITHM(CHECKSUM)
+		($algorithm, $checksum) = ($1, $2);
+	} elsif (length $algorithm) {
+		# next try separate ALGORITHM parameter
+		$algorithm = $algorithm;
+	} else {
+		# nothing yet? default to MD5
+		$algorithm = 'MD5';
+	}
+
+	return ($algorithm=>$checksum);
 }
 
 =item list_plugins() - list the available checksum plugins

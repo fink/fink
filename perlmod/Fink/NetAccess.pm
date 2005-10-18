@@ -79,7 +79,6 @@ sub fetch_url_to_file {
 	my $checksum = shift;
 	my ($http_proxy, $ftp_proxy);
 	my ($url, $cmd, $cont_cmd, $result, $cmd_url);
-	my $found_archive_sum;
 
 	# create destination directory if necessary
 	if (not -d $downloaddir) {
@@ -196,9 +195,11 @@ sub fetch_url_to_file {
 				$checksum_msg = " and its checksum matches. ";
 				$default_value = "use_it"; # checksum matches: assume okay to use it
 			} else {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
 				$checksum_msg = " but its checksum does not match. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
-								"Expected: $checksum \nActual: $found_archive_sum \n";
+								"Expected: $checksum\nActual: " .
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
 			}
 		}
 		$result = &prompt_selection("How do you want to proceed?",
@@ -264,9 +265,11 @@ sub fetch_url_to_file {
 			# failure, continue loop
 		} else {
 			if (defined $checksum and (not Fink::Checksum->validate($file, $checksum))) {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
 				&print_breaking("The checksum of the file is incorrect. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
-								"Expected: $checksum \nActual: $found_archive_sum \n");
+								"Expected: $checksum\nActual: " . 
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
 				# checksum failure, continue loop
 			} else {
 				# success, return to caller

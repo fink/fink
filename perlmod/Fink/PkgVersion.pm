@@ -2903,10 +2903,13 @@ GCC_MSG
 			if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
 				# mismatch, ask user what to do
 				$tries++;
+
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
 				my $sel_intro = "The checksum of the file $archive of package ".
 					$self->get_fullname()." is incorrect. The most likely ".
 					"cause for this is a corrupted or incomplete download\n".
-					"Expected: $checksum\nActual: $found_archive_sum\n".
+					"Expected: $checksum\nActual: " . 
+					join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
 					"It is recommended that you download it ".
 					"again. How do you want to proceed?";
 				$answer = &prompt_selection("Make your choice: ",

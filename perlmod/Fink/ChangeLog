@@ -1,3 +1,9 @@
+2005-10-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum.pm: new class methods get_all_checksums and parse_checksum.
+	NetAccess.pm, PkgVersion.pm: use get_all_checksums to look up
+	actual checksum when it doesn't match expected.
+
 2005-10-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Bootstrap.pm, Checksum.pm, Engine.pm, NetAccess.pm, PkgVersion.pm,
