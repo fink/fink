@@ -92,7 +92,7 @@ file types.
 
 =over 4
 
-=item new(E<PluginType>) - get a new checksum object
+=item new(B<PluginType>) - get a new checksum object
 
 Get a new checksum object, specifying the checksum method to use.
 
@@ -124,7 +124,7 @@ sub new {
 
 =item get_checksum($filename) - get the checksum for a file
 
-Get the checksum for a given file, based on the Fink::Checksum::E<OBJ>
+Get the checksum for a given file, based on the Fink::Checksum::B<OBJ>
 object which represents a given algorithm.
 
 This method cannot be used directly from a Fink::Checksum object,
@@ -230,7 +230,9 @@ sub list_plugins {
 	my %plugins;
 	foreach my $plugname ( find_subpackages(__PACKAGE__) ) {
 		$plugins{$plugname}{about} = $plugname->about();
-		$plugins{$plugname}{enabled} = 1 if defined $plugname->new();
+		eval {
+			$plugins{$plugname}{enabled} = 1 if defined $plugname->new();
+		};
 	}
 
 	for my $key (sort keys %plugins) {
@@ -246,7 +248,6 @@ sub list_plugins {
 
 		$about[2] = substr($about[2], 0, 44);
 		printf("%3s %-15.15s %-11.11s %s\n", $installed, $shortname, $about[1], $about[2]);
-		print(" " x 32, $about[3], "\n") if ($about[3] ne "");
 	}
 }
 

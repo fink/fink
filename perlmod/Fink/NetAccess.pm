@@ -59,7 +59,7 @@ sub fetch_url {
 	my ($file, $cmd);
 
 	$file = &filename($url);
-	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, undef);
+	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, undef, undef);
 }
 
 ### download a file to the designated directory and save it under the
@@ -77,6 +77,7 @@ sub fetch_url_to_file {
 	my $dryrun = shift || 0;
 	my $downloaddir = shift || "$basepath/src";
 	my $checksum = shift;
+	my $checksum_type = shift;
 	my ($http_proxy, $ftp_proxy);
 	my ($url, $cmd, $cont_cmd, $result, $cmd_url);
 
@@ -190,8 +191,10 @@ sub fetch_url_to_file {
 	if (-f $file && !$cont && !$dryrun) {
 		my $checksum_msg = ". ";
 		my $default_value = "retry"; # Play it safe, assume redownload as default
-		if (defined $checksum) {
-			if (Fink::Checksum->validate($file, $checksum)) {
+		if (defined $checksum and defined $checksum_type) {
+			my $checksum_obj = Fink::Checksum->new($checksum_type);
+			my $found_archive_sum = $checksum_obj->get_checksum($file);
+			if ($checksum eq $found_archive_sum) {
 				$checksum_msg = " and its checksum matches. ";
 				$default_value = "use_it"; # checksum matches: assume okay to use it
 			} else {

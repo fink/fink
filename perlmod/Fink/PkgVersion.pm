@@ -2754,7 +2754,7 @@ sub fetch_source {
 	my $continue = shift || 0;
 	my $nomirror = shift || 0;
 	my $dryrun = shift || 0;
-	my ($url, $file, $checksum);
+	my ($url, $file, $checksum, $checksum_type);
 
 	chdir "$basepath/src";
 
@@ -2764,6 +2764,7 @@ sub fetch_source {
 	
 	$checksum = $self->get_checksum($suffix);
 	$checksum =~ s/^\s*\w+\((.*)\)\s*$/$1/;
+	$checksum_type = $self->get_checksum_type($suffix);
 	
 	if($dryrun) {
 		return if $url eq $file; # just a simple filename
@@ -2781,7 +2782,7 @@ sub fetch_source {
 	}
 	
 	if (&fetch_url_to_file($url, $file, $self->get_custom_mirror($suffix), 
-						   $tries, $continue, $nomirror, $dryrun, undef, $checksum)) {
+						   $tries, $continue, $nomirror, $dryrun, undef, $checksum, $checksum_type)) {
 
 		if (0) {
 		print "\n";
