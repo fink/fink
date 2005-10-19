@@ -267,7 +267,7 @@ Aliases:
 .Pp
 .It Cm plugins
 List the (optional) plugins available to the fink program.  Currently lists
-the available notification plugins.
+the notification mechanisms and the source-tarball checksum algorithms.
 .Pp
 .It Cm fetch Ar package...
 Downloads the named packages, but does not install them. This command will
