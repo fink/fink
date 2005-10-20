@@ -1,3 +1,8 @@
+2005-10-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum/SHA1.pm, Checksum/SHA256.pm: don't try to -x if there
+	is no command defined.
+
 2005-10-17  Daniel Macks  <dmacks@netspace.org>
 
 	* Checksum.pm: new class methods get_all_checksums and parse_checksum.

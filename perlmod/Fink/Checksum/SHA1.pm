@@ -52,7 +52,7 @@ sub new {
 		$sha1cmd = "$basepath/bin/sha1sum";
 	}
 
-	if (not -x $sha1cmd) {
+	if (!defined $sha1cmd or not -x $sha1cmd) {
 		eval "require Digest::SHA1";
 		if (defined $Digest::SHA1::VERSION) {
 			$sha1pm = 1;

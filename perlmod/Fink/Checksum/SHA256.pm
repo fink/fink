@@ -49,7 +49,7 @@ sub new {
 		$sha256cmd = "$basepath/bin/sha256deep";
 	}
 
-	if (not -x $sha256cmd) {
+	if (!defined $sha256cmd or not -x $sha256cmd) {
 		die "unable to find sha256 implementation\n";
 	}
 
