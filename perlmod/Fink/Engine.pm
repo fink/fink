@@ -28,7 +28,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &execute &expand_percent
 					  &count_files &get_arch
 					  &call_queue_clear &call_queue_add &lock_wait
-					  &aptget_lockwait &store_rename &get_options
+					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
 					  $VALIDATE_HELP);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
@@ -1402,7 +1402,10 @@ sub cleanup_buildlocks {
 
 	if (@lock_pkgs) {
 		printf "Removing %i dead buildlock package(s)...\n", scalar @lock_pkgs;
-		Fink::PkgVersion::phase_deactivate(@lock_pkgs);  # doesn't return if failure
+		if (&execute(dpkg_lockwait() . " --force-remove-essential -r @lock_pkgs 2>/dev/null", ignore_INT=>1)) {
+			print "Warning: could not remove all buildlock packages!\n";
+			$locks_left = 1;
+		}
 	}
 
 	if (%lock_FHs) {

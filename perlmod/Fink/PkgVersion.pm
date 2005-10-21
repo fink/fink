@@ -4159,6 +4159,7 @@ Architecture: $debarch
 Description: Package compile-time lockfile
 Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
 Provides: fink-buildlock
+Essential: yes
 EOF
 
 	# buildtime (anti)dependencies of pkg are runtime (anti)dependencies of lockpkg
@@ -4226,8 +4227,7 @@ EOMSG
 
 		# Failure due to depenendecy problems leaves lockpkg in an
 		# "unpacked" state, so try to remove it entirely.
-		&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1) and
-			&print_breaking('You can probably ignore that last message from "dpkg -r"');
+		&execute(dpkg_lockwait() . " --force-remove-essential -r $lockpkg 2>/dev/null", ignore_INT=>1);
 	}
 
 	# Even if installation fails, no reason to keep this around
@@ -4262,7 +4262,8 @@ sub clear_buildlock {
 	if (exists $self->{_lockpkg}) {
 		print "Removing build-lock package...\n";
 		my $lockpkg = $self->{_lockpkg};
-		if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
+
+		if (&execute(dpkg_lockwait() . " --force-remove-essential -r $lockpkg 2>/dev/null", ignore_INT=>1)) {
 			&print_breaking("WARNING: Can't remove package ".
 							"$lockpkg. ".
 							"This is not fatal, but you may want to remove ".
