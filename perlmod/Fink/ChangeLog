@@ -1,5 +1,9 @@
 2005-10-19  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Switch get_description API to use named options.
+
+2005-10-19  Daniel Macks  <dmacks@netspace.org>
+
 	* Checksum/SHA1.pm, Checksum/SHA256.pm: don't try to -x if there
 	is no command defined.
 

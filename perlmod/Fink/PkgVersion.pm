@@ -1747,15 +1747,30 @@ sub get_shortdescription {
 
 	my $desc = $self->get_description;
 	my $desc = $self->get_description $style;
-	my $desc = $self->get_description $style, $canonical_prefix;
+	my $desc = $self->get_description $style, $canonical_prefix; # deprecated!
+	my $desc = $self->get_description %options;
 
-Returns the description of the package. The Description field
-(truncated to 75 chars) is always returned. If $style is not 1,
-DescDetail and DescUsage (formatted for dpkg) and Homepage and
-Maintainer are also included. If $canonical_prefix is true, the
-description will use the canonical "/sw" for %p when parsing the
-DescDetail and DescUsage fields, otherwise the local fink's normal
-prefix will be used.
+Returns the description of the package, formatted for dpkg. The exact
+fields used depend on the full_desc_only value in %options. The $style
+and $canonical_prefix parameters have the same effect as the
+full_desc_only and canonical_prefix values in %options, respectively.
+The $canonical_prefix parameter is deprecated and will be removed from
+the API soon. The following %options may be used:
+
+=over 4
+
+=item full_desc_only (optional)
+
+If the value is true, only return Description (truncated to 75 chars)
+and DescDetail. If false, also include DescUsage, Homepage, and
+Maintainer.
+
+=item canonical_prefix (optional)
+
+If the value is true, use "/sw" for %p when parsing the DescDetail and
+DescUsage fields instead of the local fink's normal installation path.
+
+=back
 
 =cut
 
@@ -1764,15 +1779,21 @@ prefix will be used.
 
 sub get_description {
 	my $self = shift;
-	my $style = shift || 0;
-	my $canonical_prefix = shift || 0;
+
+	my %options;
+	if (ref $_[0]) {
+		%options = @_;
+	} else {
+		$options{full_desc_only} = 1 if shift;
+		$options{canonical_prefix} = 1 if shift;  # <-- kill this one soon
+	}
 
 	my $desc = $self->get_shortdescription(75);  # "Description" (already %-exp)
 	$desc .= "\n";
 
 	# need local copy of the %-exp map so we can change it
 	my %expand = %{$self->{_expand}};
-	if ($canonical_prefix) {
+	if ($options{canonical_prefix}) {
 		$expand{p} = '/sw';
 	}
 
@@ -1783,7 +1804,7 @@ sub get_description {
 		);
 	}
 
-	if ($style != 1) {
+	if (not $options{full_desc_only}) {
 		if ($self->has_param("DescUsage")) {
 			$desc .= " .\n Usage Notes:\n";
 			$desc .= &format_description(
