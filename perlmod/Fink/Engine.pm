@@ -1406,6 +1406,7 @@ sub cleanup_buildlocks {
 			print "Warning: could not remove all buildlock packages!\n";
 			$locks_left = 1;
 		}
+		Fink::PkgVersion->dpkg_changed;
 	}
 
 	if (%lock_FHs) {
