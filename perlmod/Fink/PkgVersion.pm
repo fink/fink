@@ -4428,11 +4428,8 @@ END
 	# get full environment: parse what a shell has after sourcing init.sh
 	# script when starting with the (purified) ENV we have so far
 	if (-r "$basepath/bin/init.sh") {
-		my %temp_ENV = %ENV;  # need to activatescript_env, so save ENV for later
-
-		%ENV = %script_env;
+		local %ENV = %script_env;
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
-		%ENV = %temp_ENV;     # restore previous ENV
 		chomp @vars;
 		%script_env = map { split /=/,$_,2 } @vars;
 		delete $script_env{_};  # artifact of how we fetch init.sh results
@@ -4538,20 +4535,18 @@ sub run_script {
 	my $phase = shift;
 	my $no_expand = shift || 0;
 	my $nonroot_okay = shift || 0;
-	my ($script_env, %env_bak);
-
-	my $notifier = Fink::Notify->new();
 
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
 
-	# Run the script
-	$script_env = $self->get_env();# fetch script environment
-	%env_bak = %ENV;        # backup existing environment
-	%ENV = %$script_env;    # run under modified environment
-
-	my $result = &execute($script, nonroot_okay=>$nonroot_okay);
+	# Run the script under the modified environment
+	my $result;
+	{
+		local %ENV = %{$self->get_env()};
+		$result = &execute($script, nonroot_okay=>$nonroot_okay);
+	}
 	if ($result) {
+		my $notifier = Fink::Notify->new();
 		my $error = "phase " . $phase . ": " . $self->get_fullname()." failed";
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		if ($self->has_param('maintainer')) {
@@ -4564,7 +4559,6 @@ sub run_script {
 		}
 		die $error . "\n";
 	}
-	%ENV = %env_bak;        # restore previous environment
 }
 
 
