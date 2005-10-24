@@ -151,8 +151,10 @@ sub get_all_checksums {
 
 	foreach my $algorithm ( find_subpackages($class) ) {
 		$algorithm =~ s/${class}:://;
-		my $plugin = Fink::Checksum->new($algorithm);
-		$checksums{$algorithm} = $plugin->get_checksum($filename) if defined $plugin;
+		eval {
+			my $plugin = Fink::Checksum->new($algorithm);
+			$checksums{$algorithm} = $plugin->get_checksum($filename) if defined $plugin;
+		};
 	}
 
 	return \%checksums;
