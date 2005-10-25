@@ -1,5 +1,9 @@
 2005-10-24  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Add new buildlocks wiki URL to buildlock msgs.
+
+2005-10-24  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Use local() instead of temp var when we need to
 	swap %ENV temporarily to prevent runtime warning from certain
 	versions of perl.
