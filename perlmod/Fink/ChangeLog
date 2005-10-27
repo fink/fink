@@ -1,3 +1,7 @@
+2005-10-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* SelfUpdate.pm: Fix some scoping problems.
+
 2005-10-24  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Add new buildlocks wiki URL to buildlock msgs.
