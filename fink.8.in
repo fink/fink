@@ -64,8 +64,11 @@ that version is available for download; it does not cause Fink to
 choose a version based on its binary availability.
 .It Cm --no-use-binary-dist
 Don't use pre-compiled binary packages from the binary distribution,
-opposite of
+opposite of the
 .Cm --use-binary-dist
+flag. This is the default unless overridden by a setting in
+.Pa fink.conf
+configuration file.
 .It Cm --build-as-nobody
 Drop to a non-root user when performing the unpack, patch, compile,
 and install phases.
@@ -81,13 +84,16 @@ but one can use the
 .Cm --logfile
 flag to specify an alternate filename.
 .It Cm --no-log-outut
-Don't save a copy of the output during package-building, opposite of
+Don't save a copy of the output during package-building, opposite of the
 .Cm --log-output
+flag. This is the default.
 .It Cm -l, --logfile=filename
 Save package build logs to the file
 .Pa filename
-instead of the default (see the
+instead of the default file (see the
 .Cm --log-output
+flag, which is implicitly set by the
+.Cm --logfile
 flag). You can use percent-expansion codes to include specific package
 information automatically. A complete list of percent-expanions is
 available in the Fink Packaging Manual; some common percent-expansions

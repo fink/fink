@@ -1,5 +1,10 @@
 2005-10-19  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in: Document the default action when we have both --foo
+	and --no-foo flags.
+
+2005-10-19  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.8.in: Document that 'fink plugins' lists of checksum algos.
 
 2005-10-16  Daniel Macks  <dmacks@netspace.org>
