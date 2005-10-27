@@ -1,3 +1,7 @@
+2005-10-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: added proper URL for JavaAI and Java3D
+
 2005-10-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* SelfUpdate.pm: Fix some scoping problems.

@@ -378,9 +378,7 @@ the system Java extensions directory.
 This package represents the Java3D API.  If it does not show
 as installed, you can download it from Apple at:
 
-  http://connect.apple.com/
-
-(free registration required)
+  http://www.apple.com/downloads/macosx/apple/java3dandjavaadvancedimagingupdate.html
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -420,9 +418,7 @@ file exists in the system Java extensions directory.
 This package represents the Java Advanced Imaging API.  If it
 does not show as installed, you can download it from Apple at:
 
-  http://connect.apple.com/
-
-(free registration required)
+  http://www.apple.com/downloads/macosx/apple/java3dandjavaadvancedimagingupdate.html
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
