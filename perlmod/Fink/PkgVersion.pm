@@ -4202,6 +4202,10 @@ EOF
 	my $prerm = <<EOF;
 #!/bin/bash -e
 
+if [ failed-upgrade = "\$1" ]; then
+  exit 1
+fi
+
 if perl -Mlib=$basepath/lib/perl5 -MFink::Services=lock_wait -e 'lock_wait("$lockfile", exclusive => 1, no_block => 1) ? exit 0 : exit 1' ; then
   rm -f $lockfile
   exit 0
@@ -4273,11 +4277,11 @@ this error occurred will not have to be recompiled.
 See http://wiki.opendarwin.org/index.php/Fink:buildlocks for more information.
 EOMSG
 
-		# Failure due to depenendecy problems leaves lockpkg in an
+		# Failure due to dependency problems leaves lockpkg in an
 		# "unpacked" state, so try to remove it entirely.
 		unlink $lockfile;
 		close $lock_FH;
-		&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1);
+		&execute(dpkg_lockwait() . " -r $lockpkg >/dev/null", ignore_INT=>1);
 	}
 
 	# Even if installation fails, no reason to keep this around

@@ -1369,7 +1369,6 @@ sub cleanup_buildlocks {
 		close $dirhandle;
 	} else {
 		print "Warning: could not read buildlock directory $lockdir: $!\n";
-		$locks_left = 1;
 	}
 	# lock packages are named fink-buildlock-%n-%v-%r and install %n-%v-%r.pid
 	@locks = grep { s/(.+)\.pid$/fink-buildlock-$1/ } @locks;
@@ -1386,7 +1385,6 @@ sub cleanup_buildlocks {
 		} else {
 			if (&execute(dpkg_lockwait() . " -r @locks", ignore_INT=>1)) {
 				print "Warning: could not remove all buildlock packages!\n";
-				$locks_left = 1;
 			}
 			Fink::PkgVersion->dpkg_changed;
 		}

@@ -1,3 +1,10 @@
+2005-10-31  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Completely disallow use of new buildlock pkg's
+	PreRm if old one's fails when installing a concurrent one. Hide
+	fink's own unwinding msg too.
+	* Engine.pm: No buildlock dir is not fatal to cleanup_buildlocks
+
 2005-10-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* CLI.pm: Add die_breaking method to die with a nicely formatted message.
