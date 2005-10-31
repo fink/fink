@@ -38,7 +38,7 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
+	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr &die_breaking
 					  &rejoin_text
 					  &prompt &prompt_boolean &prompt_selection
 					  &print_optionlist
@@ -191,6 +191,25 @@ sub print_breaking_stderr {
 	my $old_fh = select STDERR;
 	&print_breaking(@_);
 	select $old_fh;
+}
+
+=item die_breaking
+
+  die_breaking $message;
+
+Raises an exception like 'die', but formats the error message with
+print_breaking.
+
+Note that this does not have all the special features of 'die', such as adding
+the line number on which the error occurs or propagating previous errors if
+no argument is passed.
+
+=cut
+
+sub die_breaking {
+	my $msg = shift;
+	print_breaking_stderr $msg;
+	die "\n";
 }
 
 =item rejoin_text

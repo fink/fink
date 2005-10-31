@@ -255,10 +255,14 @@ sub process {
 	my $commandline = join ' ', 'fink', @$orig_ARGV;
 	my $notifier = Fink::Notify->new();
 	if ($proc_rc->{'$@'}) {                    # now deal with eval results
-		print "Failed: " . $proc_rc->{'$@'};
+		my $msg = $proc_rc->{'$@'};
+		$msg = '' if $msg =~ /^\s*$/; # treat empty messages nicely
+		
+		print ($msg ? "Failed: $msg" : "Exiting with failure.\n");
+		my $notifydesc = $commandline . ($msg ? "\n$msg" : '');
 		$notifier->notify(
 			event => 'finkDoneFailed',
-			description => "$commandline\n$proc_rc->{'$@'}"
+			description => $notifydesc,
 		);
 		return $proc_rc->{'$?'} || 1;
 	}

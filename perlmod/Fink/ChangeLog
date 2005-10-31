@@ -1,3 +1,11 @@
+2005-10-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Add die_breaking method to die with a nicely formatted message.
+	* Engine.pm: Treat empty death messages nicely, to enable die_breaking to
+	work.
+	* PkgVersion.pm: Only warn that a package may need manual installation when
+	we have a PkgVersion object to get the instructions from.
+
 2005-10-31  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: overhaul buildlocks again. Now we set/unset lock

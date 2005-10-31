@@ -34,7 +34,7 @@ use Fink::Services qw(&filename &execute
 					  &store_rename);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
-				 &should_skip_prompt);
+				 &should_skip_prompt &die_breaking);
 use Fink::Config qw($config $basepath $libpath $debarch $buildpath
 					$dbpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
@@ -2314,16 +2314,17 @@ sub resolve_depends {
 		}
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
 			my $package = Fink::Package->package_by_name($altspec[0]->{'depname'});
-			my $diemessage = "Can't resolve $oper \"$altspecs\" for package \"".$self->get_fullname()."\" (no matching packages/versions found)\n";
-			if (defined $package and $package->is_virtual()) {
-				my $version = &latest_version($package->list_versions());
-				$package = $package->get_version($version);
-				$diemessage .= "\nAt least one of the dependencies required (" . $package->get_name() . ") is a virtual package, you might need\n" .
-					"to manually upgrade or install it.  The package details below should have more information\n" .
-					"on where to find an installer:\n\n" .
-					$package->get_description() . "\n";
+			my $msg = "Can't resolve $oper \"$altspecs\" for package \""
+				. $self->get_fullname()
+				. "\" (no matching packages/versions found)\n";
+			if (defined $package and (my $pv = $package->get_latest_version)) {
+				$msg .= "\nAt least one of the dependencies required ("
+					. $pv->get_name . ") is a virtual package, you might need "
+					. "to manually upgrade or install it.  The package details "
+					. "below should have more information on where to find an "
+					. "installer:\n\n" . $pv->get_description . "\n";
 			}
-			die $diemessage;
+			die_breaking $msg;
 		}
 		push @deplist, $altlist;
 		$idx++;
