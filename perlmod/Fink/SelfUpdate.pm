@@ -526,7 +526,13 @@ sub finish {
 
 	print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  Updating anyway, but you may encounter problems.\n") unless $perl_is_supported;
 
-	push @elist, @{$package_list};
+	foreach my $important (@$package_list) {
+		my $po = Fink::Package->package_by_name($important);
+		if ($po && $po->is_any_installed()) {
+			# only worry about "important" ones that are already installed
+			push @elist, $important;
+		}
+	}
 
 	# update them
 	Fink::Engine::cmd_install(@elist);	

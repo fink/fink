@@ -1,3 +1,8 @@
+2005-10-31  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: During finish(), only update "important" (but not
+	Essential) packages if they are already installed (backport from HEAD)
+
 2005-09-27  Alexander Hansen <alexkhansen@users.sourceforge.net>
 	* NetAccess.pm:  Backport axel verbose flag (-v vs --verbose) from HEAD.
 

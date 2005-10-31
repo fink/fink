@@ -336,6 +336,12 @@ sub additional_packages {
 
 	my $perl_is_supported = 1;
 
+# note: we must install any package which is a splitoff of an essential
+# package here.  If we fail to do so, we could find ourselves in the
+# situation where foo-shlibs has been updated, but foo-dev was left at
+# the old version (and is installed as the old version).  This could lead
+# to problems the next time foo was used to compile something.
+
 	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560", "file-spec-pm560", "test-harness-pm560", "test-simple-pm560";
