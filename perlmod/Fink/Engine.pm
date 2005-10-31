@@ -1336,17 +1336,16 @@ EOFUNC
 
 =item cleanup_buildlocks
 
-Check for all processes corresponding to each buildlock pid-file.
-Optionally remove those buildlocks whose processes do not
-exist. Returns a boolean indicating whether there any active
-buildlocks are still present after cleanup. The following option is
-known:
+Search for all present lockfiles and all installed lockpkgs Optionally
+have lockpkgs remove themselves and nuke unlocked lockfiles. Returns a
+boolean indicating whether there any active buildlocks are still
+present after cleanup. The following option is known:
 
 =over 4
 
 =item dryrun
 
-If true, don't actually remove the locks.
+If true, don't actually remove things.
 
 =back
 
@@ -1355,67 +1354,73 @@ If true, don't actually remove the locks.
 sub cleanup_buildlocks {
 	my %opts = (dryrun => 0, @_);
 
-	Fink::Package->control_buildlocks(1);
-
-	print "Reading buildlocks...\n";
 	my $lockdir = "$basepath/var/run/fink/buildlock";
+	my @locks;
+	my $locks_left = 0;  # return value (set to 1 if an error occurs)
 
-	my @lockfiles = ();
+	print "Reading buildlock packages...\n";
+	@locks = ();
 	if (opendir my $dirhandle, $lockdir) {
-		@lockfiles = grep { /^.+\.lock$/ } readdir $dirhandle;
+		@locks = readdir $dirhandle;
 		close $dirhandle;
 	} else {
 		print "Warning: could not read buildlock directory $lockdir: $!\n";
-		Fink::Package->control_buildlocks(0);
-		return 0;
+		$locks_left = 1;
+	}
+	# lock packages are named fink-buildlock-%n-%v-%r and install %n-%v-%r.pid
+	@locks = grep { s/(.+)\.pid$/fink-buildlock-$1/ } @locks;
+
+	if ($opts{dryrun}) {
+		print map "\t$_\n", @locks;
+	} else {
+		print map "\t$_... will remove\n", @locks;
 	}
 
-	if (!@lockfiles) {
-		print "No buildlocks found\n";
-		Fink::Package->control_buildlocks(0);
-		return 0;
+	if (@locks) {
+		if ($opts{dryrun}) {
+			$locks_left = 1;
+		} else {
+			if (&execute(dpkg_lockwait() . " -r @locks", ignore_INT=>1)) {
+				print "Warning: could not remove all buildlock packages!\n";
+				$locks_left = 1;
+			}
+			Fink::PkgVersion->dpkg_changed;
+		}
 	}
 
-	my $locks_left = 0;
-	my %lock_FHs = ();
-	my @lock_pkgs = ();
-	foreach my $lockfile (sort @lockfiles) {
-		my ($fullname) = $lockfile =~ /^(.+)\.lock$/;
+	print "Reading buildlock lockfiles...\n";
+	@locks = ();
+	if (opendir my $dirhandle, $lockdir) {
+		@locks = readdir $dirhandle;
+		close $dirhandle;
+	} else {
+		print "Warning: could not read buildlock directory $lockdir: $!\n";
+		$locks_left = 1;
+	}
+	# lock lockfiles are named %n-%v-%r_$timestamp.lock
+	@locks = grep { /\.lock$/ } @locks;
+
+	foreach my $lockfile (@locks) {
+		printf "\t$lockfile";
 		my $lock_FH = lock_wait("$lockdir/$lockfile", exclusive => 1, no_block => 1);
 		if ($lock_FH) {
 			# got flock so buildlock is not in use
-			if ($opts{dryrun}) {
-				print "Runtime buildlock for $fullname is dead.\n";
+			print "... dead";
+			if (not $opts{dryrun}) {
+				print "... deleting";
+				if (not unlink "$lockdir/$lockfile") {
+					print "... failed";
+					$locks_left = 1;
+				}
 			} else {
-				print "Runtime buildlock for $fullname is dead...will clear.\n";
-				$lock_FHs{"$lockdir/$lockfile"} = $lock_FH;
+				$locks_left = 1;
 			}
-			if (-e "$lockdir/$fullname.pid") {
-				print "...and its lock package too.\n";
-				push @lock_pkgs, "fink-buildlock-$fullname" if !$opts{dryrun};
-			}
+			print "\n";
 		} else {
-			print "Buildlock for $fullname is still in use.\n";
+			print "... still in use\n";
 			$locks_left = 1;
 		}
 	}
-
-	if (@lock_pkgs) {
-		printf "Removing %i dead buildlock package(s)...\n", scalar @lock_pkgs;
-		if (&execute(dpkg_lockwait() . " --force-remove-essential -r @lock_pkgs 2>/dev/null", ignore_INT=>1)) {
-			print "Warning: could not remove all buildlock packages!\n";
-			$locks_left = 1;
-		}
-		Fink::PkgVersion->dpkg_changed;
-	}
-
-	if (%lock_FHs) {
-		printf "Removing %i dead lockfile(s)...\n", scalar keys %lock_FHs;
-		rm_f keys %lock_FHs or $locks_left = 1;
-		%lock_FHs = ();
-	}
-
-	Fink::Package->control_buildlocks(0);
 
 	return $locks_left;
 }

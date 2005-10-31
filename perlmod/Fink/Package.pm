@@ -1240,38 +1240,6 @@ sub print_virtual_pkg {
 	}
 }
 
-=item control_buildlocks
-
-	Fink::Package->control_buildlocks(1);
-	# add or remove buildlocks
-	Fink::Package->control_buildlocks(0);
-
-When called with a boolean "true" value, get an exclusive lock on the
-buildlock system. When called with a boolean "false" value, release
-this exclusive lock. You must have this exclusive lock whenever you
-will be setting or clearing buildlocks (or if you want to prevent
-other fink processes from doing so for any reason).
-
-=cut
-
-sub control_buildlocks {
-	my $class = shift;
-	my $lock = shift || 0;
-
-	if ($lock) {
-		if (!defined $buildlock_master) {
-			# no use relocking if we already own the lock
-			my $lockdir = "$basepath/var/run/fink/buildlock";
-			mkdir_p $lockdir or
-				die "can't create $lockdir directory for master buildlock\n";
-			my $lockfile = "$lockdir/MASTER_LOCK";
-			$buildlock_master = lock_wait($lockfile, exclusive => 1);
-		}
-	} else {
-		undef $buildlock_master;
-	}
-}
-
 =back
 
 =cut

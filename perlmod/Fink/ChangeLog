@@ -1,3 +1,11 @@
+2005-10-31  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: overhaul buildlocks again. Now we set/unset lock
+	on a timestamped lockfile before installing/removing lockpkg;
+	lockpkg prerm fails if lockfile is locked.
+	* Engine.pm: Rewrite cleanup_buildlocks for new implementation.
+	* Package.pm: Remove no-longer-needed control_buildlocks.
+	
 2005-10-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: added proper URL for JavaAI and Java3D

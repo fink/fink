@@ -4116,29 +4116,36 @@ sub set_buildlock {
 		return $self->get_parent->set_buildlock();
 	}
 
+	# bootstrapping occurs before we have package-management tools
+	# needed for buildlocking. If you're bootstrapping into a location
+	# that already has a running fink, you already know you're gonne
+	# hose whatever may be running under that fink...
+	return if $self->{_bootstrap};
+
+	# The plan: get an exlusive lock for %n-%v-%r_$timestamp that
+	# automatically goes away when this fink process quit. Install a
+	# %n-%v-%r package that prohibits removal of itself if that lock
+	# is present.  It's always safe to attempt to remove all installed
+	# buildlock pkgs since they can each determine if these locks are
+	# dead.  Attempting to install a lockpkg for the same %n-%v-%r
+	# will cause existing one to attempt to be removed, which will
+	# fail iff its lock is still alive. Fallback to the newer pkg's
+	# prerm is okay because that will also be blocked by its own live
+	# lock.
+
 	print "Setting runtime build-lock...\n";
 
-	# get an exlusive lock for the the %n-%v-%r
-	Fink::Package->control_buildlocks(1);
 	my $lockdir = "$basepath/var/run/fink/buildlock";
 	mkdir_p $lockdir or
 		die "can't create $lockdir directory for buildlocks\n";
-	my $lockfile = $lockdir . '/' . $self->get_fullname() . '.lock';
+
+	my $timestamp = strftime "%Y.%m.%d-%H.%M.%S", localtime;
+	my $lockfile = $lockdir . '/' . $self->get_fullname() . "_$timestamp.lock";
 	my $lock_FH = lock_wait($lockfile, exclusive => 1);
-
-	$self->{_lockfile} = [ $lockfile, $lock_FH ];
-
-	# bootstrapping occurs before we have package-management tools
-	# needed for buildlock package so don't create one
-	if ($self->{_bootstrap}) {
-		Fink::Package->control_buildlocks(0);
-		return;
-	}
 
 	my $pkgname = $self->get_name();
 	my $pkgvers = $self->get_fullversion();
 	my $lockpkg = 'fink-buildlock-' . $self->get_fullname();
-	my $timestamp = strftime "%Y.%m.%d-%H.%M.%S", localtime;
 
 	my $destdir = $self->get_install_directory($lockpkg);
 
@@ -4167,7 +4174,6 @@ Description: Package compile-time lockfile
  Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
 Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
 Provides: fink-buildlock
-Essential: yes
 EOF
 
 	# buildtime (anti)dependencies of pkg are runtime (anti)dependencies of lockpkg
@@ -4182,9 +4188,40 @@ EOF
 	}
 
 	### write "control" file
-	open(CONTROL,">$destdir/DEBIAN/control") or die "can't write control file for $lockpkg: $!\n";
-	print CONTROL $control;
-	close(CONTROL) or die "can't write control file for $lockpkg: $!\n";
+	if (open my $controlfh, '>', "$destdir/DEBIAN/control") {
+		print $controlfh $control;
+		close $controlfh or die "can't write control file for $lockpkg: $!\n";
+	} else {
+		die "can't write control file for $lockpkg: $!\n";
+	}
+
+	### set up the lockfile interlocking
+
+	# this is implemented in perl but PreRm is in bash so we gonna in-line it
+	my $prerm = <<EOF;
+#!/bin/bash -e
+
+if perl -Mlib=$basepath/lib/perl5 -MFink::Services=lock_wait -e 'lock_wait("$lockfile", exclusive => 1, no_block => 1) ? exit 0 : exit 1' ; then
+  rm -f $lockfile
+  exit 0
+else
+  cat <<EOMSG
+There is currently an active buildlock for the package
+     $pkgname ($pkgvers)
+meaning some other fink process is currently building it.
+EOMSG
+  exit 1
+fi
+EOF
+
+	### write prerm file
+	if (open my $prermfh, '>', "$destdir/DEBIAN/prerm") {
+		print $prermfh $prerm;
+		close $prermfh or die "can't write PreRm file for $lockpkg: $!\n";
+		chmod 0755, "$destdir/DEBIAN/prerm";
+	} else {
+		die "can't write PreRm file for $lockpkg: $!\n";
+	}
 
 	### store our PID in a file in the buildlock package
 	my $deb_piddir = "$destdir$lockdir";
@@ -4210,7 +4247,7 @@ EOF
 						"the directory manually to save disk space. ".
 						"Continuing with normal procedure.");
 
-	# install lockpkg (== set lockfile for building ourself)
+	# install lockpkg (== set dpkg lock on our deps)
 	print "Installing build-lock package...\n";
 	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
 	my $lock_failed = &execute(dpkg_lockwait() . " -i $debfile", ignore_INT=>1);
@@ -4237,7 +4274,9 @@ EOMSG
 
 		# Failure due to depenendecy problems leaves lockpkg in an
 		# "unpacked" state, so try to remove it entirely.
-		&execute(dpkg_lockwait() . " --force-remove-essential -r $lockpkg 2>/dev/null", ignore_INT=>1);
+		unlink $lockfile;
+		close $lock_FH;
+		&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1);
 	}
 
 	# Even if installation fails, no reason to keep this around
@@ -4250,10 +4289,12 @@ EOMSG
 
 	die "buildlock failure\n" if $lock_failed;
 
-	Fink::Package->control_buildlocks(0);
-
 	# record buildlock package name so we can remove it during clear_buildkock
-	$self->{_lockpkg} = $lockpkg;
+	$self->{_buildlock} = {
+		lockfile => $lockfile,
+		lock_FH  => $lock_FH,
+		lockpkg  => $lockpkg
+	};
 }
 
 # remove the lock created by set_buildlock
@@ -4267,13 +4308,16 @@ sub clear_buildlock {
 		return $self->get_parent->clear_buildlock();
 	}
 
-	Fink::Package->control_buildlocks(0);
+	if (exists $self->{_buildlock}) {
+		# we were locked...
+		print "Removing runtime build-lock...\n";
+		close $self->{_buildlock}->{lock_FH};
 
-	if (exists $self->{_lockpkg}) {
 		print "Removing build-lock package...\n";
-		my $lockpkg = $self->{_lockpkg};
+		my $lockpkg = $self->{_buildlock}->{lockpkg};
 
-		if (&execute(dpkg_lockwait() . " --force-remove-essential -r $lockpkg 2>/dev/null", ignore_INT=>1)) {
+		# lockpkg's prerm deletes the lockfile
+		if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
 			&print_breaking("WARNING: Can't remove package ".
 							"$lockpkg. ".
 							"This is not fatal, but you may want to remove ".
@@ -4282,17 +4326,8 @@ sub clear_buildlock {
 							"Continuing with normal procedure.");
 		}
 		Fink::PkgVersion->dpkg_changed;
-		delete $self->{_lockpkg};
+		delete $self->{_buildlock};
 	}
-
-	if (exists $self->{_lockfile}) {
-		print "Removing runtime build-lock...\n";
-		close $self->{_lockfile}->[1];
-		unlink $self->{_lockfile}->[0];  # try to clean up
-		delete $self->{_lockfile};
-	}
-
-	Fink::Package->control_buildlocks(0);
 }
 
 =item ensure_gpp_prefix
