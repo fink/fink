@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # bootstrap.pl - perl script to install and bootstrap a Fink
 #								 installation from source
@@ -241,13 +242,12 @@ sub has_installed_software {
 	return (-d "$loc/bin" or -d "$loc/lib" or -d "$loc/include");
 }
 
-my ($installto, $forbidden);
 my $retrying = 0;
 my $nonstandard_warning = 0;
 
-$installto = shift || "";
+my $installto = shift || "";
 
-{ ### install path redo block
+OPT_BASEPATH: { ### install path redo block
 
 # ask if the path wasn't passed as a parameter
 if ($retrying || not $installto) {
@@ -277,29 +277,31 @@ print "\n";
 # catch formal errors
 if ($installto eq "") {
 	print "ERROR: Install path is empty.\n";
-	redo;
+	redo OPT_BASEPATH;
 }
 if (substr($installto,0,1) ne "/") {
 	print "ERROR: Install path '$installto' doesn't start with a slash.\n";
-	redo;
+	redo OPT_BASEPATH;
 }
 if ($installto =~ /\s/) {
 	print "ERROR: Install path '$installto' contains whitespace.\n";
-	redo;
+	redo OPT_BASEPATH;
 }
 
-# remove trailing slash
-if (length($installto) > 1 and substr($installto,-1) eq "/") {
-	$installto = substr($installto,0,-1);
-}
-# check well-known paths
-foreach $forbidden (qw(/ /etc /usr /var /bin /sbin /lib /tmp /dev
-					   /usr/lib /usr/include /usr/bin /usr/sbin /usr/share
-					   /usr/libexec /usr/X11R6
-					   /root /private /cores /boot)) {
-	if ($installto eq $forbidden) {
+# remove any trailing slash(es)
+$installto =~ s,^(/.*?)/*$,$1,;
+
+# check well-known path (NB: these are regexes!)
+foreach my $forbidden (
+	qw(/ /etc /usr /var /bin /sbin /lib /tmp /dev
+	   /usr/lib /usr/include /usr/bin /usr/sbin /usr/share
+	   /usr/libexec /usr/X11R6
+	   /root /private /cores /boot
+	   /debian /debian/.*)
+) {
+	if ($installto =~ /^$forbidden$/i) {
 		print "ERROR: Refusing to install into '$installto'.\n";
-		redo;
+		redo OPT_BASEPATH;
 	}
 }
 if ($installto eq "/usr/local") {
@@ -313,14 +315,14 @@ if ($installto eq "/usr/local") {
 		&print_breaking("You have been warned. Think twice before reporting ".
 						"problems as a bug.");
 	} else {
-		redo;
+		redo OPT_BASEPATH;
 	}
 } elsif (-d $installto) {
 	# check existing contents
 	if (has_installed_software $installto) {
 		&print_breaking("ERROR: '$installto' exists and contains installed ".
 						"software. Refusing to install there.");
-		redo;
+		redo OPT_BASEPATH;
 	} else {
 		&print_breaking("WARNING: '$installto' already exists. If bootstrapping ".
 						"fails, try removing the directory altogether and ".
