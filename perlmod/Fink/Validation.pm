@@ -1071,16 +1071,27 @@ sub _validate_dpkg {
 		map { /\s*([^ \(]*)/, undef } split /[|,]/, $deb_control->{depends}
 	};
 
-	# prepare to chek -pmXXX packages must install XXX-localized paths only
-	my $perlver_re;
-	if ($deb_control->{package} =~ /-pm(\d+)$/) {
-		$perlver_re = $1;
-		if ($perlver_re =~ /^(\d)(\d)(\d)$/) {
-			# -pmXYZ is perlX.Y.Z
-			$perlver_re = "(?:$perlver_re|$1.$2.$3)";
-		} elsif ($perlver_re =~ /^(\d)(\d)(\d)(\d)$/) {
-			# -pmWXYZ is perlW.X.YZ or perlW.XY.Z
-			$perlver_re = "(?:$perlver_re|$1.$2.$3$4|$1.$2$3.$4)";
+	# prepare to check that -pmXXX and -pyXX packages only contain
+	# file in language-versioned locations: define a regex for the
+	# language-versioned path component
+	my $langver_re;
+	if ($deb_control->{package} =~ /-(pm|py)(\d+)$/) {
+		$langver_re = $2;
+		if ($1 eq 'pm') {
+			# perl language is major.minor.teeny
+			if ($langver_re =~ /^(\d)(\d)(\d)$/) {
+				# -pmXYZ is perlX.Y.Z
+				$langver_re = "(?:$langver_re|$1.$2.$3)";
+			} elsif ($langver_re =~ /^(\d)(\d)(\d)(\d)$/) {
+				# -pmWXYZ is perlW.X.YZ or perlW.XY.Z
+				$langver_re = "(?:$langver_re|$1.$2.$3$4|$1.$2$3.$4)";
+			}
+		} else {
+			# python language is major.minor
+			# numbers are all "small" (one-digit)
+			$langver_re =~ /^(\d)(\d)$/;
+			# -pyXY is pythonX.Y
+			$langver_re = "(?:$langver_re|$1.$2)";
 		}
 	}
 
@@ -1239,9 +1250,11 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "Gettext file seems misplaced.", $filename);
 		}
 
-		# check for files in a -pmXXX package that would conflict among different XXX variants
-		if (defined $perlver_re and $filename !~ /$perlver_re/ and !-d $File::Find::name) {
-			&stack_msg($msgs, "File in a perl-versioned package is neither versioned nor in a versioned directory.", $filename);
+		# check for files in a language-versioned package whose path
+		# is not language-versioned (goal: language-versioned modules
+		# are orthogonal and do not conflict with each other)
+		if (defined $langver_re and $filename !~ /$langver_re/ and !-d $File::Find::name) {
+			&stack_msg($msgs, "File in a language-versioned package is neither versioned nor in a versioned directory.", $filename);
 		}
 
 		# Check for common programmer mistakes relating to passing -framework flags in pkg-config files

@@ -1,3 +1,8 @@
+2005-11-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Extend language-version orthogonality test to
+	-pyXX packages
+
 2005-11-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Status.pm: Don't read status file if "status" tree is exlcuded
