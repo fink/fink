@@ -304,7 +304,7 @@ foreach my $forbidden (
 		redo OPT_BASEPATH;
 	}
 }
-if ($installto eq "/usr/local") {
+if ($installto =~ /^\/usr\/local$/i) {
 	$answer =
 		&prompt_boolean("Installing Fink in /usr/local is not recommended. ".
 						"It may conflict with third party software also ".
