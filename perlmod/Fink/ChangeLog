@@ -1,3 +1,7 @@
+2005-11-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: backport du_sk blocksize fix.
+
 2005-10-31  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: During finish(), only update "important" (but not
