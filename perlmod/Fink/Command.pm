@@ -314,7 +314,8 @@ sub du_sk {
 	my @dirs = @_;
 	my $total_size = 0;
 	
-	# Depends on OS. Pretty much only HP-UX, SCO and (rarely) AIX are not 512 bytes.
+	# Depends on OS. Pretty much only HP-UX, SCO and (rarely) AIX are
+	# not 512 bytes.
 	my $blocksize = 512;
 	
 	require File::Find;
@@ -332,7 +333,8 @@ sub du_sk {
 		},
 		@dirs) if @dirs;
 	
-	return ( $err or int($total_size / 1024) );
+	# du is supposed to ROUND UP
+	return ( $err or ceil($total_size / 1024) );
 }
 
 =begin private
