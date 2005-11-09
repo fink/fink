@@ -1,5 +1,9 @@
 2005-11-09  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: backport fixed URLs for Apple's Java
+
+2005-11-09  Daniel Macks  <dmacks@netspace.org>
+
 	* Command.pm: backport du_sk blocksize fix.
 
 2005-10-31  Daniel Macks  <dmacks@netspace.org>
