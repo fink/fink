@@ -32,6 +32,7 @@ require Exporter;
 use strict;
 use warnings;
 use Carp;
+use POSIX qw(ceil);
 
 
 =head1 NAME
