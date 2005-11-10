@@ -1,5 +1,13 @@
 2005-11-09  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in, fink.conf.5.in: Backport lots of small fixes from HEAD.
+	* lockwait.h: Backport wording improvement from HEAD.
+	* pathsetup.sh.in: Backport fixes for the creation of a bash
+	startup script with wrong root ownership, and a wrong failure
+	message.
+
+2005-11-09  Daniel Macks  <dmacks@netspace.org>
+
 	* bootstrap.pl: Backport case-insensitivity and dpkg data-struct
 	tests for $basepath.
 

@@ -38,11 +38,13 @@ distribution, everything else is downloaded off the Internet.
 .It Cm -h, --help
 Display help text.
 .It Cm -q, --quiet
-Causes fink to be less verbose, opposite of --verbose
+Causes fink to be less verbose, opposite of
+.Cm --verbose
 .It Cm -V, --version
 Display fink version information.
 .It Cm -v, --verbose
-Causes fink to be more verbose, opposite of --quiet
+Causes fink to be more verbose, opposite of
+.Cm --quiet
 .It Cm -y, --yes
 Assume default answer for all interactive questions
 .It Cm -K, --keep-root-dir
@@ -61,8 +63,12 @@ Note that this mode instructs Fink to download the version it wants if
 that version is available for download; it does not cause Fink to
 choose a version based on its binary availability.
 .It Cm --no-use-binary-dist
-Don't use pre-compiled binary packages from the binary distribution
-(opposite of --use-binary-dist)
+Don't use pre-compiled binary packages from the binary distribution,
+opposite of the
+.Cm --use-binary-dist
+flag. This is the default unless overridden by a setting in
+.Pa fink.conf
+configuration file.
 .It Cm --build-as-nobody
 Drop to a non-root user when performing the unpack, patch, compile,
 and install phases. Note that packages built with this option may be
@@ -87,7 +93,7 @@ specified.
 .It Cm install Ar package...
 The install command is used to install packages. It downloads, configures,
 and builds, or downloads prebuilt (see the
-.Cm Ar --use-binary-dist
+.Cm --use-binary-dist
 flag) and installs the packages you name. It will also install required
 dependencies automatically, but will ask you for confirmation before it
 does so.
