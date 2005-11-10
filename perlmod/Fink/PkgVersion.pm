@@ -4452,6 +4452,16 @@ END
 	# create a dummy HOME directory
 	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
 	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', TMPDIR => 1, CLEANUP => 1 );
+	if ($< == 0) {
+		# we might be writing to ENV{HOME} during build, so fix ownership
+		if (Fink::Config::get_option("build_as_nobody")) {
+			chowname 'nobody:nobody', $script_env{HOME} or
+				die "can't chown 'nobody:nobody' $script_env{HOME}\n";
+		} else {
+			chowname ':admin', $script_env{HOME} or
+				die "can't grp 'admin' $script_env{HOME}\n";
+		}
+	}
 
 	# add system path
 	$script_env{"PATH"} = "/bin:/usr/bin:/sbin:/usr/sbin";

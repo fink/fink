@@ -1,3 +1,8 @@
+2005-11-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Set ownership of temp HOME dir to nobody when
+	--build-as-nobody
+
 2005-11-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Extend language-version orthogonality test to
