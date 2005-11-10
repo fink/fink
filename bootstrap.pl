@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # bootstrap.pl - perl script to install and bootstrap a Fink
 #								 installation from source
@@ -56,7 +57,7 @@ if (exists $ok_perl_versions{"$]"}) {
 
 if ("$]" == "5.006001") {
     if (not -x "/usr/bin/perl5.6.1") {
-die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
+	die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
     elsif (system "/usr/bin/perl5.6.1 -V") {
 	die "\nYour /usr/bin/perl5.6.1 is not functional; you must repair this problem\nbefore installing Fink.\n\n"}
 }
@@ -262,21 +263,23 @@ if ($installto =~ /\s/) {
 	exit 1;
 }
 
-# remove trailing slash
-if (length($installto) > 1 and substr($installto,-1) eq "/") {
-	$installto = substr($installto,0,-1);
-}
-# check well-known paths
-foreach $forbidden (qw(/ /etc /usr /var /bin /sbin /lib /tmp /dev
-					   /usr/lib /usr/include /usr/bin /usr/sbin /usr/share
-					   /usr/libexec /usr/X11R6
-					   /root /private /cores /boot)) {
-	if ($installto eq $forbidden) {
+# remove any trailing slash(es)
+$installto =~ s,^(/.*?)/*$,$1,;
+
+# check well-known path (NB: these are regexes!)
+foreach my $forbidden (
+	qw(/ /etc /usr /var /bin /sbin /lib /tmp /dev
+	   /usr/lib /usr/include /usr/bin /usr/sbin /usr/share
+	   /usr/libexec /usr/X11R6
+	   /root /private /cores /boot
+	   /debian /debian/.*)
+) {
+	if ($installto =~ /^$forbidden$/i) {
 		print "ERROR: Refusing to install into '$installto'.\n";
 		exit 1;
 	}
 }
-if ($installto eq "/usr/local") {
+if ($installto =~ /^\/usr\/local$/i) {
 	$answer =
 		&prompt_boolean("Installing Fink in /usr/local is not recommended. ".
 						"It may conflict with third party software also ".
