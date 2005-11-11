@@ -813,6 +813,8 @@ sub clear_self_from_list {
 sub prepare_percent_c {
 	my $self = shift;
 
+	$self->get_build_directory;  # make sure we have %b
+
 	my $pct_c;
 	if ($self->is_type('perl')) {
 		# grab perl version, if present

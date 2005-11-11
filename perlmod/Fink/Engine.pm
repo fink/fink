@@ -2091,7 +2091,6 @@ FORMAT
 
 	foreach my $pkg (@pkglist) {
 		$pkg->prepare_percent_c;
-		$pkg->get_build_directory;
 
 		# default to all fields if no fields or %expands specified
 		if ($wantall or not (@fields or @percents)) {

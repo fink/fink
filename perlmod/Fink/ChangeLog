@@ -1,3 +1,8 @@
+2005-11-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, PkgVersion.pm: perpare_percent_c calls
+	get_build_directory internally because %c might contain %b.
+
 2005-11-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Set ownership of temp HOME dir to nobody when
