@@ -1150,6 +1150,13 @@
 	AutoScanpackages, to automatically run scanpackages whenever a new .deb
 	is built.
 
+2005-04-25  Chris Zubrzycki  <beren12@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm, Services.pm
+	* VirtPackage.pm: get_sw_vers renamed to get_osx_vers_long and new
+	get_osx_vers returns only Maj.Min (10.x). Also added
+	get_darwin_equiv and get_kern_vers.
+
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: What the fark is ccc? oops!
@@ -6059,3 +6066,4 @@
 
 	* Released version 0.1.5. Started using CVS and ChangeLogs.
 
+# vim: ts=4 sw=4 noet

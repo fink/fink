@@ -37,3 +37,5 @@ require Fink::Engine;
 my $engine = Fink::Engine->new_with_config($Fink::Config::config);
 exit $engine->process(\@ARGV, @args_left);
 
+# vim: ts=4 sw=4 noet
+

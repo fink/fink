@@ -321,3 +321,4 @@ sub list_plugins {
 =back
 
 =cut
+# vim: ts=4 sw=4 noet

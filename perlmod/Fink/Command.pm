@@ -398,3 +398,4 @@ This module is inspired by L<ExtUtils::Command>
 =cut
 
 1;
+# vim: ts=4 sw=4 noet

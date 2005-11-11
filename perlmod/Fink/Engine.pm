@@ -107,7 +107,7 @@ our %commands =
 	  'scanpackages'      => [\&cmd_scanpackages,      1, 1, 1],
 	  'list'              => [\&cmd_list,              0, 0, 0],
 	  'listpackages'      => [\&cmd_listpackages,      1, 0, 0],
-     'plugins'           => [\&cmd_listplugins,       0, 0, 0],
+	  'plugins'           => [\&cmd_listplugins,       0, 0, 0],
 	  'selfupdate'        => [\&cmd_selfupdate,        0, 1, 1],
 	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1, 1],
 	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1, 1],
@@ -1551,6 +1551,7 @@ sub real_install {
 				and $package->is_installed()) {
 			next;
 		}
+
 		# for build, also skip if present, but not installed
 		if ($op == $OP_BUILD and $package->is_locally_present()) {
 			next;
@@ -2774,3 +2775,4 @@ sub prefetch {
 
 ### EOF
 1;
+# vim: ts=4 sw=4 noet

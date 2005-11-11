@@ -3485,15 +3485,7 @@ EOF
 	#   that a package will need to be revised if the kernel major version changes.
 
 	my $kernel = lc((uname())[0]);
-	my $kernel_version = lc((uname())[2]);
-	my $kernel_major_version;
-	if ($kernel_version =~ /(\d+)/) {
-		$kernel_major_version = $1;
-	} else {
-		my $error = "Couldn't determine major version number for $kernel kernel!";
-		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-		die $error . "\n";
-	}
+	my $kernel_major_version = Fink::Services::get_kernel_vers();
 
 	my $has_kernel_dep;
 	my $deps = &pkglist2lol($self->get_binary_depends()); 
@@ -4522,9 +4514,13 @@ END
 	}
 
 	# handle MACOSX_DEPLOYMENT_TARGET
-	my $sw_vers = Fink::Services::get_sw_vers();
+	#TODO: allow setting on darwin, and make generic short and long $sw_vers functions.
+	my $sw_vers = Fink::Services::get_osx_vers();
+	unless ($sw_vers)
+		{
+		$sw_vers = Fink::Services::get_darwin_equiv();
+		}
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET") and defined $sw_vers and $sw_vers ne "0") {
-		$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 		if ($sw_vers eq "10.2") {
 			$script_env{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
 		} else {
@@ -4917,3 +4913,4 @@ sub log_output {
 ### EOF
 
 1;
+# vim: ts=4 sw=4 noet

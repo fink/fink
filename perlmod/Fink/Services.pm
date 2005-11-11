@@ -1,4 +1,5 @@
 # -*- mode: Perl; tab-width: 4; -*-
+# vim: ts=4 sw=4 noet
 #
 # Fink::Services module
 #
@@ -56,9 +57,11 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &file_MD5_checksum &get_arch &get_sw_vers &enforce_gcc
+					  &file_MD5_checksum &get_arch &get_osx_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
+					  &get_osx_vers_long &get_kernel_vers
+					  &get_darwin_equiv
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
 					  &store_rename &fix_gcc_repairperms
@@ -1247,20 +1250,17 @@ sub enforce_gcc {
 # Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
 # specify default values for these.
 
-	my %osx_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0');
-	my %darwin_default = ('6' => '3.3', '7' => '3.3', '8' => '4.0');
+	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0');
 	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3');
 
-	my $sw_vers = get_sw_vers();
-	if ($sw_vers ne 0) {
+	if (my $sw_vers = get_osx_vers_long())
+	{
 		$current_system = "Mac OS X $sw_vers";
-		$sw_vers =~ s/^(\d*\.\d*).*/$1/;
-		$gcc = $osx_default{$sw_vers};
-	} else {
-		my $darwin_version = (uname())[2];
-		$current_system = "Darwin $darwin_version";
-		$darwin_version =~ s/^(\d*).*/$1/;
-		$gcc = $darwin_default{$darwin_version};
+		$gcc = $system_gcc_default{get_osx_vers()};
+	} else
+	{
+		$current_system = "Darwin " . get_kernel_vers_long();
+		$gcc = $system_gcc_default{get_kernel_vers()};
 	}
 
 	if (defined $gcc_abi) {
@@ -1286,31 +1286,88 @@ sub enforce_gcc {
 	return $gcc;
 }
 
-=item get_sw_vers
+=item get_osx_vers
 
-    my $os_x_version = get_sw_vers;
+    my $os_x_version = get_osx_vers();
 
-Returns OS X version (if that's what this platform appears to be, as
-indicated by being able to run /usr/bin/sw_vers). The output of that
+Returns OS X major and minor versions (if that's what this platform
+appears to be, as indicated by being able to run /usr/bin/sw_vers).
+The output of that command is parsed and cached in a global configuration
+option in the Fink::Config package so that multiple calls to this function
+do not result in repeated spawning of sw_vers processes.
+
+=cut
+
+sub get_osx_vers
+{
+	my $sw_vers = get_osx_vers_long();
+	my $darwin_osx = get_darwin_equiv();
+	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
+	($sw_vers == $darwin_osx) or exit "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+	return $sw_vers;
+}
+
+=item get_osx_vers_long
+
+    my $os_x_version = get_osx_vers_long();
+
+Returns full OS X version (if that's what this platform appears to be,
+as indicated by being able to run /usr/bin/sw_vers). The output of that
 command is parsed and cached in a global configuration option in the
 Fink::Config package so that multiple calls to this function do not
 result in repeated spawning of sw_vers processes.
 
 =cut
 
-sub get_sw_vers {
-	if (not defined Fink::Config::get_option('sw_vers') or Fink::Config::get_option('sw_vers') eq "0" and -x '/usr/bin/sw_vers') {
+sub get_osx_vers_long {
+	if (not defined Fink::Config::get_option('sw_vers_long') or Fink::Config::get_option('sw_vers_long') eq "0" and -x '/usr/bin/sw_vers') {
 		if (open(SWVERS, "sw_vers |")) {
 			while (<SWVERS>) {
 				if (/^ProductVersion:\s*([^\s]+)\s*$/) {
-					Fink::Config::set_options( { 'sw_vers' => $1 } );
+					(my $prodvers = $1) =~ s/^(\d+\.\d+)$/$1.0/;
+					Fink::Config::set_options( { 'sw_vers_long' => $prodvers } );
 					last;
 				}
 			}
 			close(SWVERS);
 		}
 	}
-	return Fink::Config::get_option('sw_vers');
+	return Fink::Config::get_option('sw_vers_long');
+}
+
+sub get_darwin_equiv
+{
+	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4');
+	return $darwin_osx{get_kernel_vers()};
+}
+
+sub get_kernel_vers
+{
+	my $darwin_version = get_kernel_vers_long();
+	if ($darwin_version =~ s/^(\d*).*/$1/)
+	{
+		return $darwin_version;
+	} else {
+		my $error = "Couldn't determine major version number for $darwin_version kernel!";
+		my $notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
+	}
+}
+
+sub get_kernel_vers_long
+{
+	(my $darwin_version = lc((uname())[2]));
+	return $darwin_version;
+}
+
+sub get_system_version
+{
+	if (get_osx_vers())
+	{
+		return get_osx_vers();
+	} else {
+		return get_darwin_equiv();
+	}
 }
 
 =item get_system_perl_version
