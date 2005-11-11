@@ -11,3 +11,5 @@ dpkg-lockwait
 apt-get-lockwait
 g++-wrapper-3.3
 g++-wrapper-4.0
+*.swp
+*~
