@@ -1,3 +1,596 @@
+2005-11-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Set ownership of temp HOME dir to nobody when
+	--build-as-nobody
+
+2005-11-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Extend language-version orthogonality test to
+	-pyXX packages
+
+2005-11-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Status.pm: Don't read status file if "status" tree is exlcuded
+
+2005-10-31  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Completely disallow use of new buildlock pkg's
+	PreRm if old one's fails when installing a concurrent one. Hide
+	fink's own unwinding msg too.
+	* Engine.pm: No buildlock dir is not fatal to cleanup_buildlocks
+
+2005-10-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Add die_breaking method to die with a nicely formatted message.
+	* Engine.pm: Treat empty death messages nicely, to enable die_breaking to
+	work.
+	* PkgVersion.pm: Only warn that a package may need manual installation when
+	we have a PkgVersion object to get the instructions from.
+
+2005-10-31  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: overhaul buildlocks again. Now we set/unset lock
+	on a timestamped lockfile before installing/removing lockpkg;
+	lockpkg prerm fails if lockfile is locked.
+	* Engine.pm: Rewrite cleanup_buildlocks for new implementation.
+	* Package.pm: Remove no-longer-needed control_buildlocks.
+	
+2005-10-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: added proper URL for JavaAI and Java3D
+
+2005-10-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* SelfUpdate.pm: Fix some scoping problems.
+
+2005-10-24  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Add new buildlocks wiki URL to buildlock msgs.
+
+2005-10-24  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use local() instead of temp var when we need to
+	swap %ENV temporarily to prevent runtime warning from certain
+	versions of perl.
+
+2005-10-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum.pm: get_all_checksums: don't crash if a back-end isn't
+	implemented.
+
+2005-10-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Remember Fink::PkgVersion->dpkg_changed when calling
+	dpkg directly.
+
+2005-10-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, PkgVersion.pm: Make buildlock lock-packages
+	Essential:yes to prevent accidental or apt-get removal; use
+	--force-remove-essential to remove them.
+
+2005-10-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Switch get_description API to use named options.
+
+2005-10-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum/SHA1.pm, Checksum/SHA256.pm: don't try to -x if there
+	is no command defined.
+
+2005-10-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum.pm: new class methods get_all_checksums and parse_checksum.
+	NetAccess.pm, PkgVersion.pm: use get_all_checksums to look up
+	actual checksum when it doesn't match expected.
+
+2005-10-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Bootstrap.pm, Checksum.pm, Engine.pm, NetAccess.pm, PkgVersion.pm,
+	Services.pm, Validation.pm, Checksum/*.pm: now handles MD5, SHA1,
+	and SHA256 as plugins; packages using Source*-Checksum: now work
+	properly; what's left to do is handle mirror URLs, and whether I
+	care to do dep-checking.
+
+2005-10-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm, Services.pm, Checksum.pm, Checksum/MD5.pm: refactored the
+	MD5sum stuff into a checksum module.  Still TODO: implement code to
+	have each @ISA(Fink::Checksum) know where it should be in the mirror
+	system (for when we have multiple checksum types for a package), also
+	change the checksum code around to actually use this in a
+	non-MD5-specific way (right now it's just a behind-the-scenes
+	drop-in replacement for the existing MD5 code) but hey, it's a start.
+	Now we just need to decide on a standard for the mirror servers
+	w/ the OD folks.  ;)
+
+2005-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: During finish(), only update "important" (but not
+	Essential) packages if they are already installed.
+
+2005-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, Package.pm, PkgVersion.pm: New Package::control_buildlocks
+	class method used to control access to whole buildlock system.
+	* Engine.pm: During buildlock cleanup, only remove lockpkgs that
+	are installed (indicated by presence of their .pid files).
+
+2005-10-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Add a flock-based outer layer around the
+	dpkg-based buildlocks. Now "the lock" automatically goes away when
+	fink process dies, so buildlock pkgs don't need to prevent
+	self-replacement.
+	* Engine.pm: Buildlock cleanup can now check for flockable
+	lockfiles instead of dealing with stored pids.
+
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Quote --logfile as shell arg.
+
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, PkgVersion.pm: Implement --logfile cmdline flag to
+	specify buildlog filename (with %-expansion)
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, PkgVersion.pm: Store copies of filehandles as
+	PkgVersion package-globals instead of in Config. When setting
+	STDERR tee filter, child process's STDERR is always fd 2 (don't
+	use fd of parent's stashed copy of STDERR).
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Never lower $^F.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Tie::OutputTee.pm: Removed.
+	* Config.pm: Store dup's of STDOUT and STDERR file descriptors
+	during initialization.
+	* PkgVersion.pm: Rewrite log_output to just reopen STDOUT and
+	STDERR as pipes to 'tee $logfile' (or reopen back to Config's
+	saved original file descriptors) instead of messing with tied
+	filehandles.
+
+2005-10-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Configure.pm, Engine.pm: Add --mirrors option to 'fink configure', to
+	allow configuring only the mirrors.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: OutputTee can't be chained, so current logging
+	status must be package-global not instance data.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use Fink::Tie::OutputTee for --log-output.
+	* Tie::OutputTee.pm: Import from exp/dmacks IOFilter.pm. This new
+	package enables one to "tee" a writable filehandle into a file.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Add --no-log-output (default).
+
+2005-10-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Refactor get_options so it doesn't use ugly arrays so much.
+	* Services.pm: Make get_options automagically deal with negative-options.
+	* Config.pm, Engine.pm: Use negative options.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: Add new "dev-tools" pkg representing presence of
+	/usr/bin/{gcc,make} executables.
+	* PkgVersion.pm: Make "dev-tools" an implicit BuildDepends of all
+	packages.
+	* Engine.pm: Make "dev-tools" not implicitly depend on
+	essentials (avoids circular dep).
+	* SelfUpdate.pm: Require "dev-tools" in order to to selfupdate via
+	rsync of cvs.
+
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, PkgVersion.pm: log_output always creates new
+	logfile (and crashes if it already exists).
+
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Patch checks for %b and %d (%D) in .deb to remove
+	%e from control Version field
+	
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Add check for .py[c] that hard-code %d.
+	Early-exit from line-by-line checks once we find one match.
+	
+2005-09-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Add new --log-output|-l top-level flag.
+	* Engine.pm: Allow logging of build process for each package.
+	* PkgVersion.pm: Add log_output stub method that will log output
+	iff --log-output.
+
+2005-09-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Sort before pre-fetching, for reproducibility.
+	* Engine.pm: Fixup get_pkglist, so it doesn't barf on packages available
+	only in the status db.
+
+2005-09-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Explain what goes into additional_packages
+
+2005-09-26  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make conditional_space_list remove
+	leading/trailing whitespace.
+
+2005-09-25  Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* PkgVersion.pm: Both of the axel versions that we have in Fink
+	don't take --verbose.  Change flag to -v (which works) instead.
+
+2005-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make sure DocFiles targets are not
+	group/world-writable but preserve execute bit.
+
+2005-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: DocFiles handles conditionals, recursive copying
+	of dirs, and implicit renaming dir1/dir2/file: to file.dir1.dir2
+
+2005-09-21  Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* NetAccess.pm:	wget versions >= 1.10 use -no-verbose instead of 
+	--non-verbose (arguably more GNU-standard).  In order that we may release
+	a 1.10.x package use the short flag (-nv) instead as that is usable by both 
+	wget < 1.10 and wget >= 1.10.
+
+2005-09-16  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Notify.pm, Services.pm: Use generic way to find "sub-packages".
+
+2005-09-14  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use chowname_hr when reverting %i to root:admin.
+
+2005-09-14  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* SysState.pm: Clean up documentation of private subs.
+	* SysState.pm: Don't try to correct pre-existing dependency problems.
+	* PkgVersion.pm: Just skip the dep-resolution if there's a fatal problem
+	(eg: bad '<' in version spec inside the dpkg status file).
+
+2005-09-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: Implemented chowname_hr.
+
+2005-09-11  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Allow spec2struct and spec2string to say where the error
+	occurred.
+	* SysState.pm: Take advantage of above feature. Also, if fatal error
+	occurs always print why.
+
+2005-09-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: Since gettext-tools is no longer a splitoff of an
+	essential package, we do not need it on the update list.
+
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* SysState.pm: Add Replaces support.
+
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* SysState.pm: New module for examining the state of the installed packages,
+	discovering and solving dependency problems.
+	* PkgVersion.pm: Tie into SysState to solve bug in dpkg, see bug #992093.
+
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm, Engine.pm: Allow get_options validate routine to request
+	either help or error message. Add new option to specify width of option
+	help.
+	* Config.pm: New parse_options sub to deal with global options (moved from
+	fink.in). Rewritten to use Services::get_options.
+
+2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm, Services.pm: Move get_options to Services.
+	* Services.pm: Add some more features to get_options.
+
+2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm, Validation.pm:
+	Get --trees working properly:
+		- Config.pm: Allow both inclusion and exclusion of trees at the command
+		line. Recognize 'magic trees': virtual, status.
+		- PkgVersion.pm: Allow callers to check is_type('dummy') on an unloaded
+		object. Only works for type 'dummy'! Also some minor refactoring.
+		- Package.pm: Give 'dummy' packages from magic trees a subtype of
+		'status' or 'virtual'. Also remove undocumented multiple
+		return values from is_virtual().
+		- Engine.pm: Make list and apropos respect whether or not user desires
+		each magic tree. Other commands do *not* yet respect this, nor is it
+		clear that there is any benefit to making them do so.
+		- Validation.pm: Disallow type 'dummy' in .info files.
+
+2005-09-07  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Remove stray references to Shlibs
+	* Engine.pm: Remove duplicate --buildlocks help item for cleanup. Don't
+	load package DB for cleanup unless needed.
+
+2005-09-07  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: get_description needs to make a copy of the whole
+	_expand struct
+
+2005-09-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Add a new parameter to get_description to force
+	parsing of DescDetail/DescUsage as if %p="/sw". Document the
+	description accessors and formatting functions.
+
+2005-09-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Valdiation.pm: use more descriptive tempdir names.
+
+2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Fix up spec2struct and spec2string to conform to tests.
+
+2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm, Engine.pm, PkgVersion.pm, Shlibs.pm: Podchecker fixes.
+	* Services.pm: spec2string and spec2struct: Parse package specifications,
+	eg: 'foo (>= 1.0-1)'.
+
+2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Abstract out word-wrapping part of print_breaking into its own
+	method.
+	* Engine.pm: New get_options wrapper for Getopt::Long:
+		- No more explicit @ARGV swapping.
+		- Option definition and help text right next to each other, so they
+		don't get out of sync.
+		- Word wrap help nicely for screen width.
+	
+2005-09-02  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Invalidate dpkg cache after installing buildlock pkg
+
+2005-09-02  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Implement cleanup_buildlocks
+
+2005-09-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation: dpkg validation now performed on an unpacked archive
+	with a wrapper to unpack a .deb (merge in val-unpack branch).
+	* PkgVersion.pm: -m mode validates %d *before* constructing .deb.
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Set invariant name *before* package name is expanded.
+	
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Don't error if .info file not in 'finkinfo'. For a
+	regular index, it's enforced by only looking there. For scripts, we don't
+	care anyhow.
+	
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Fix deb-building breakage.
+	
+	*** Rebuild your DB with 'fink index -f' if you used Fink from HEAD since
+	2005-08-30 ***
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Config.pm: Fixed bug causing 0 to be taken as array ref.
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Config.pm: Allow filtering of treelist via command line option.
+	* Package.pm: Don't use/store proxy db if using custom treelist.
+	* Package.pm: Don't include Status packages that aren't installed in Fink's
+	DB. It's confusing to do 'fink list blah' and find a package, and then
+	'fink install blah' makes the dep engine get confused and die.
+	* Engine.pm: Use *i* to indicate a package newer than the newest package
+	fink knows about (not including status, of course!). Option 'toonew'
+	needs decision on whether we keep it, and docs.
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Add convenience method to get just one PkgVersion from
+	a .info file.
+	* PkgVersion.pm, Validation.pm, FinkVersion.pm.in: Info3 enhancements
+	for pkglist fields:
+		- Normalize whitespace
+		- Allow comments (# to end of line)
+		- Remove trailing comma
+
+2005-08-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: allow overriding of bzip2 path in fink.conf
+
+2005-08-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Base.pm: Allow initializers and constructors to have arguments.
+	* PkgVersion.pm: Use initializer arguments to get metadata into PkgVersion
+	rather than adding to $properties. Metadata include .info filename, InfoN
+	and parent. This fixes the weirdness that we had with handle_infon_block.
+	* Package.pm, PkgVersion.pm: Move the methods package_from_properties,
+	package_from_info_file and handle_infon_block from Package to PkgVersion,
+	since they have nothing to do with Package. Also rename them.
+	* PkgVersion.pm: Move as much intialization code as possible into
+	initialize, so random bits aren't left in package_from_*.
+
+2005-08-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Services.pm: Force gcc_select in fix_gcc_repairperms to use a restricted
+	PATH.
+	* PkgVersion.pm: Improve handling of local apt repos:
+		- Don't --print-uris unless we know to expect a local location.
+		- Don't let apt print to stderr
+		- Don't ignore debs that are a downgrade
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Configure.pm: Mirror choosing improvements:
+		- Really default to the second option when the current one is obsolete
+		- Actually print all mirrors on the continent when the user asked for it
+		- Sort by country name rather than by country code (eg: de -> Germany)
+		- Don't show mirrors twice.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Don't just promise to remove on-disk cache in 'index --full',
+	actually do it.
+	* Package.pm, PkgVersion.pm: Don't allow user to interrupt when Storable
+	is loading part of the DB, to eliminate spurious warnings about corruption.
+	* Package.pm, PkgVersion.pm: Remove dead code related to merging PkgVersions
+	into the DB. Make new merge method to merge trees.
+	* PkgVersion.pm: Add new methods to examine trees, also store trees in
+	index.db.
+	* Engine.pm: Use new in_tree method in list. Add 'trees' item to dumpinfo.
+	
+	*** DB FORMAT CHANGE, YOU WILL NEED A FULL REINDEX ***
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm, Package.pm, SelfUpdate.pm: Remove unneeded
+	references to Shlibs.
+	* PkgVersion.pm: Remove unused method for getting Depends from deb, a more
+	general solution for all pkglists is needed, see bug #1249916.
+	* PkgVersion.pm: When dpkg status changes, invalidate Shlibs.
+	* PkgVersion.pm: Cleanup of Shlibs getting.
+	* Shlibs.pm: Don't use a DB, since it the shlibs list needs to be
+	regenerated so often (every time a package is installed or removed!).
+	Instead re-generate on demand, like Fink::Status.
+	* Shlibs.pm: Remove random autoflush until somebody tells me what it's for,
+	or it's documented.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Abstract out invalidating caches when dpkg state changes.
+	* Engine.pm: Remove redundant invalidate calls.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Document some methods, add is_locally_present.
+	* Engine.pm: Revamp prefetching. Also make 'fink build' always build
+	something unless there's a .deb presen that has been built by the local
+	Fink.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Attempt to make prefetching work the way it should, someone
+	who knows the dep engine should look at this.
+
+2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: Don't exit method with 'next'.
+	* Services.pm, FinkVersion.pm.in: Remove RFC-822 from Info3, yay!
+
+2005-08-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: check version-dep syntax in .info pkglist lines.
+
+2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	*  VirtPackage.pm: Add note about XCode Legacy Compilers to
+	description of gcc virtual packages
+
+2005-08-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: New method to resolve the best version to install.
+	* Engine.pm: Finish factoring out alternative-resolution code. Over 250
+	lines are gone from real_install!
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Move some more parts of alternative resolution into functions.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Use smaller scopes for variables, so code can be refactored
+	without inadvertantly stomping on other code.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm: New convenience method get_latest_version, document
+	is_virtual.
+	* Engine.pm: Move asking for an alternative into a function.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm, Engine.pm: Make fink do the right thing when multiple
+	version specs are encountered. Note that bad things can still happen if
+	Fink processes a package's dependencies before a new spec modifies the
+	version we should be looking at.
+	* Engine.pm: Fix call to get_matching_versions.
+	* Package.pm: Re-write get_matching_versions for brevity and correctness.
+	Fixes @choose_from parameter not working.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Sort initial queue of dependencies, so that bugs in dep
+	engine are reproducible!
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Revert part of a separate patch that for some reason I
+	let slip in.
+
+2005-08-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm, Package.pm: Make print_virtual_pkg a method of Package.
+	* Engine.pm: Use print_virtual_pkg for descriptions of virtuals.
+	* PkgVersion.pm: If a virtual package is found and virtuals are undesired,
+	print a nice warning. This lets 'fink install something-virtual' and such
+	behave more nicely.
+
+2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Refactor pretty-printing virtual packages into a function.
+
+2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Command.pm: du_sk rounds up, just as du does.
+
+2005-08-18  Matthew Sachs  <msachs@apple.com>
+
+	* Don't fall through to 10.2 for i386-apple-darwin8.FOO for
+	values of FOO which we don't know about.
+
+2005-08-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Catch misuse of -Wl,-framework in .pc files.
+
+2005-08-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Bootstrap.pm, Services.pm: fix some output redirect stuff on
+	external commands.
+
+2005-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make BDO violations fatal in maintainermode.
+
+2005-08-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Make handle_infon_block() return InfoN level
+	out-of-band if called in array context.
+	* Validation.pm: Don't allow literal "InfoN" field.
+
 2005-08-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: .info fieldnames are canonically lower-case

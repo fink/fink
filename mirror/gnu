@@ -1,12 +1,12 @@
-# Official mirror list: http://www.gnu.org/server/list-mirrors.html
-Timestamp: 2004-12-03
+# Official mirror list: http://www.gnu.org/order/ftp.html
+Timestamp: 2005-09-22
 
 Primary: ftp://ftp.gnu.org/gnu
 
 afr-ZA: ftp://ftp.sun.ac.za/mirrorsites/ftp.gnu.org/
 asi-CN: ftp://ftp.cs.cuhk.edu.hk/pub/gnu/gnu/
 asi-CN: ftp://sunsite.ust.hk/pub/gnu/
-asi-HK: ftp://ftp.gnupilgrims.org/pub/gnu
+asi-HK: ftp://ftp.gnupilgrims.org/pub/gnu/
 asi-ID: ftp://kambing.vlsm.org/gnu/
 asi-ID: http://kambing.vlsm.org/gnu/
 asi-IN: ftp://www.imtech.res.in/mirror/gnuftp/
@@ -17,8 +17,8 @@ asi-JP: ftp://mirrors.hbi.co.jp/gnu/
 asi-JP: ftp://tron.um.u-tokyo.ac.jp/pub/GNU/
 asi-KR: ftp://ftp.linux.sarang.net/mirror/gnu/gnu/
 asi-KR: ftp://ftp.xgate.co.kr/pub/mirror/gnu/
-asi-KR: ftp://ftp://gnu.xinicks.com/
 asi-KR: ftp://ftpmirror.hanyang.ac.kr/GNU/
+asi-KR: ftp://gnu.xinicks.com/
 asi-SA: ftp://ftp.isu.net.sa/pub/gnu/
 asi-TH: ftp://ftp.nectec.or.th/pub/mirrors/gnu/
 asi-TW: ftp://coda.nctu.edu.tw/UNIX/gnu/
@@ -64,14 +64,16 @@ eur-IE: ftp://ftp.esat.net/pub/gnu/
 eur-IE: ftp://ftp.heanet.ie/mirrors/ftp.gnu.org/
 eur-IE: http://ftp.heanet.ie/mirrors/ftp.gnu.org/
 eur-IL: ftp://ftp.cs.huji.ac.il/mirror/GNU/
+eur-IT: ftp://rm.mirror.garr.it/mirrors/gnuftp/
 eur-IT: ftp://ftp.digitaltrust.it/pub/gnu/
 eur-IT: ftp://ftp.gnu.inetcosmos.org/pub/gnu/
 eur-IT: ftp://ftp.lugroma2.org/pub/gnu/
+eur-IT: http://rm.mirror.garr.it/mirrors/gnuftp/
 eur-NL: ftp://ftp.easynet.nl/mirror/GNU/
 eur-NL: ftp://ftp.mirror.nl/pub/mirror/gnu/
 eur-NL: ftp://ftp.nl.uu.net/pub/gnu/
 eur-NL: ftp://ftp.nluug.nl/pub/gnu/
-eur-NL: ftp://ftp.win.tue.nl/pub/gnu
+eur-NL: ftp://ftp.win.tue.nl/pub/gnu/
 eur-NL: ftp://gnu.kookel.org/pub/ftp.gnu.org/
 eur-NL: ftp://gnu.mirror.vuurwerk.net/pub/GNU/
 eur-NL: ftp://mirror.widexs.nl/pub/gnu/
@@ -85,6 +87,7 @@ eur-PT: ftp://ftp.ist.utl.pt/pub/GNU/gnu/
 eur-PT: ftp://ftp.telepac.pt/pub/gnu/
 eur-RO: ftp://ftp.timisoara.roedu.net/mirrors/ftp.gnu.org/pub/gnu/
 eur-RU: ftp://ftp.chg.ru/pub/gnu/
+eur-RU: ftp://gnuftp.axitel.ru/
 eur-SE: ftp://ftp.chl.chalmers.se/pub/gnu/
 eur-SE: ftp://ftp.isy.liu.se/pub/gnu/
 eur-SE: ftp://ftp.luth.se/pub/unix/gnu/
@@ -131,17 +134,18 @@ nam-US: ftp://thales.memphis.edu/pub/gnu/
 nam-US: ftp://uiarchive.cso.uiuc.edu/pub/ftp/ftp.gnu.org/gnu/
 nam-US: ftp://wuarchive.wustl.edu/mirrors/gnu/
 nam-US: http://ftp.algx.net/pub/gnu/
+nam-US: http://ftp.club.cc.cmu.edu/pub/gnu/
 nam-US: http://ftp.egr.msu.edu/pub/gnu/
 nam-US: http://ftp.gnu.mirrors.hoobly.com/
 nam-US: http://ftp.wayne.edu/pub/gnu/
-nam-US: http://mirror.telentente.com/pub/gnu/
 nam-US: http://mirrors.kernel.org/gnu/
 nam-US: http://mirrors.usc.edu/pub/gnu/
 nam-US: http://wuarchive.wustl.edu/mirrors/gnu/
+nam-US: http://www.mirrormonster.com/gnuftp/
 sam-BR: ftp://ftp.matrix.com.br/pub/gnu/
 sam-BR: ftp://ftp.pucpr.br/gnu/
 sam-BR: ftp://ftp.unicamp.br/pub/gnu/
-sam-BR: ftp://ftp://ftp.linorg.usp.br/gnu
+sam-BR: ftp://ftp.linorg.usp.br/gnu
 sam-BR: ftp://master.softaplic.com.br/pub/gnu/
 sam-CL: ftp://ftp.inf.utfsm.cl/pub/gnu/
 sam-CR: ftp://sunsite.ulatina.ac.cr/Mirrors/GNU/

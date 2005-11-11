@@ -32,7 +32,6 @@ use Fink::Config qw($config $basepath $dbpath $debarch);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
-use Fink::Shlibs;
 use File::Find;
 use File::Basename;
 use Symbol qw();
@@ -44,14 +43,15 @@ use warnings;
 our $VERSION = 1.00;
 our @ISA = qw(Fink::Base);
 
-our $have_shlibs; # Have we loaded the shlibs?
-
 our $packages = undef;		# The loaded packages (undef if unloaded)
 our $valid_since = undef;	# The earliest time with the same DB as now
 
 # Cache of essential packages
 our @essential_packages = ();
 our $essential_valid = 0;
+
+# control of the buildlock system
+our $buildlock_master = undef;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -116,7 +116,17 @@ sub get_name {
 	return $self->{_name};
 }
 
-### get pure virtual package flag
+=item is_virtual
+
+  my $bool = $po->is_virtual;
+
+Return true if this package is "virtual", ie: it cannot be built or installed
+by Fink.
+
+Note that even virtual packages can have versions, if those versions are
+themselves virtual (from Status or VirtPackage).
+
+=cut
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
@@ -124,10 +134,6 @@ sub is_virtual {
 	use Fink::VirtPackage;
 	my $self = shift;
 
-	if (Fink::VirtPackage->query_package($self->{_name})) {
-		# Fix to set VirtPackage.pm pkgs as virtuals level 2
-		$self->{_virtual} = 2;
-	}
 	return $self->{_virtual};
 }
 
@@ -138,37 +144,43 @@ sub add_version {
 	my $version_object = shift;
 	
 	my $version = $version_object->get_fullversion();
-	if (exists $self->{_versions}->{$version} 
-		&& $self->{_versions}->{$version}->is_type('dummy') ) {
-		$self->{_versions}->{$version}->merge($version_object);
-	} else {
-		# $pv->fullname is currently treated as unique, even though it won't be
-		# if the version is the same but epoch isn't. So let's make sure.
-		delete $self->{_versions}->{$version};
-		my $fullname = $version_object->get_fullname();
-		
-		# noload
-		if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions(1)) {
-			# avoid overhead of allocating for and storing the grep
-			# results in if() since it's rare we'll need it
-			my $msg = "A package name is not allowed to have the same ".
-				"version-revision but different epochs: $fullname\n";
-			foreach (
-				grep { $_->get_fullname() eq $fullname } $self->get_all_versions(),
-				$version_object
-			) {
-				my $infofile = $_->get_info_filename();
-				$msg .= sprintf "  epoch %d\t%s\n", 
-					$_->get_epoch(),
-					length $infofile ? "fink virtual or dpkg status" : $infofile;
-			};
-			die $msg;
-		}
-		
-		$self->{_versions}->{$version} = $version_object;
-	}
 
-	$self->{_virtual} = 0;
+### FIXME: It doesn't look like this can occur, is it dead code?
+#	if (exists $self->{_versions}->{$version} 
+#		&& $self->{_versions}->{$version}->is_type('dummy') ) {
+#		$self->{_versions}->{$version}->merge($version_object);
+	
+	if (exists $self->{_versions}->{$version}) {
+		# Use the new version, but merge in the old one
+		my $old = $self->{_versions}->{$version};
+		delete $self->{_versions}->{$version};
+		$version_object->merge($old);
+	}
+	
+	# $pv->fullname is currently treated as unique, even though it won't be
+	# if the version is the same but epoch isn't. So let's make sure.
+	my $fullname = $version_object->get_fullname();
+	
+	# noload
+	if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions(1)) {
+		# avoid overhead of allocating for and storing the grep
+		# results in if() since it's rare we'll need it
+		my $msg = "A package name is not allowed to have the same ".
+			"version-revision but different epochs: $fullname\n";
+		foreach (
+			grep { $_->get_fullname() eq $fullname } $self->get_all_versions(),
+			$version_object
+		) {
+			my $infofile = $_->get_info_filename();
+			$msg .= sprintf "  epoch %d\t%s\n", 
+				$_->get_epoch(),
+				length $infofile ? "fink virtual or dpkg status" : $infofile;
+		};
+		die $msg;
+	}
+	
+	$self->{_versions}->{$version} = $version_object;
+	$self->{_virtual} = 0 unless $version_object->is_type('dummy');
 }
 
 ### add a providing version object of another package
@@ -201,39 +213,88 @@ sub get_all_versions {
 	return @vers;
 }
 
+=item get_latest_version
+
+  my $pv = $po->get_latest_version;
+
+Convenience method to get the highest version of this package. Returns undef
+if the package is has no versions.
+
+=cut
+
+sub get_latest_version {
+	my $self = shift;
+	my $noload = shift || 0;
+	my @vers = $self->list_versions;
+	return undef unless @vers;
+	return $self->get_version(latest_version(@vers), $noload);
+}
+
+=item get_matching_versions
+
+  my @pvs = $po->get_matching_versions($spec);
+  my @pvs = $po->get_matching_versions($spec, @choose_from);
+
+Find all versions of this package which satisfy the given Debian version
+specification. See Fink::Services::version_cmp for details on version
+specifications.
+
+If a list @choose_from of Fink::PkgVersions objects is given, return only
+items in the list which satisfy the given specification.
+
+=cut
+
 sub get_matching_versions {
 	my $self = shift;
 	my $spec = shift;
 	my @include_list = @_;
-	my (@list, $version, $vo, $relation, $reqversion);
-
+	
+	my ($relation, $reqversion);
 	if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
 		$relation = $1;
 		$reqversion = $2;
 	} else {
 		die "Illegal version specification '".$spec."' for package ".$self->get_name()."\n";
 	}
-
-	@list = ();
 	
-	while (($version, $vo) = each %{$self->{_versions}}) {
-		push @list, $vo if &version_cmp($version, $relation, $reqversion);
-	}
+	@include_list = values %{$self->{_versions}} unless @include_list;
+	return map { $_->load_fields }
+		grep { version_cmp($_->get_fullversion, $relation, $reqversion) }
+		@include_list;
+}
 
-	if (@include_list > 0) {
-		my @match_list;
-		# if we've been given a list to choose from, return the
-		# intersection of the two
-		for my $vo (@list) {
-			my $version = $vo->get_version();
-			if (grep(/^${version}$/, @include_list)) {
-				push(@match_list, $vo);
-			}
-		}
-		return map { $_->load_fields } @match_list;
-	} else {
-		return map { $_->load_fields } @list;
+=item resolve_version
+
+  my $pv = $po->resolve_version @candidates;
+
+Find the best acceptable version to install. The PkgVersion found must
+be a version of this package, must correspond to one of the given candidates,
+and must satisfy any existing version specifications.
+
+=cut
+
+sub resolve_version {
+	my ($self, @cands) = @_;
+	
+	# Restrict to this package
+	@cands = grep { $_->get_name eq $self->get_name } @cands;
+	
+	# Restrict according to version specs
+	my @specs = exists $self->{_versionspecs} ? @{$self->{_versionspecs}} : ();
+	while (@specs && @cands) {
+		@cands = $self->get_matching_versions(shift @specs, @cands);
 	}
+	
+	# Give up if nothing found
+	unless (@cands) {
+		print "unable to resolve version conflict on multiple dependencies\n";
+		printf "\t %s $_\n", $self->get_name for (@{$self->{_versionspecs}});
+		die "\n";
+	}
+	
+	my $vers = latest_version map { $_->get_fullversion } @cands;
+#	printf "*** Choosing version %s for package %s\n", $vers, $self->get_name;
+	return $self->get_version($vers);
 }
 
 sub get_all_providers {
@@ -383,13 +444,7 @@ Load the package database into memory
 
 sub require_packages {
 	my $class = shift;
-# 0 => both
-# 1 => shlibs
-# 2 => package
 	$class->load_packages unless defined $packages;
-#	if (!$have_shlibs && $oper != 2) {
-#		Fink::Shlibs->scan_all(@_);
-#	}
 }
 
 =item check_dbdirs
@@ -796,7 +851,7 @@ END
 		}
 		
 		# Load the file
-		my @pvs = $class->packages_from_info_file($info);
+		my @pvs = Fink::PkgVersion->pkgversions_from_info_file($info);
 		map { $_->_disconnect } @pvs;	# Don't keep obj references
 		
 		# Update the index
@@ -932,13 +987,18 @@ sub update_db {
 	my $proxy_ok = $idx_ok && $try_cache && -r $class->db_proxies;
 	# Proxy must be newer, otherwise it could be out of date from a load-only
 	$proxy_ok &&= (-M $class->db_proxies < (-M $class->db_index || 0));
+	# If we specify trees at command-line, bad idea to use proxy
+	$proxy_ok &&= !$config->custom_treelist;
 	$proxy_ok &&= !$class->search_comparedb
 		unless $config->param_boolean("NoAutoIndex");
 	
 	if ($proxy_ok) {
 		# Just use the proxies
 		$valid_since = (stat($class->db_proxies))[9];
-		eval { $packages = Storable::lock_retrieve($class->db_proxies); };
+		eval {
+			local $SIG{INT} = 'IGNORE'; # No user interrupts
+			$packages = Storable::lock_retrieve($class->db_proxies);
+		};
 		if ($@ || !defined $packages) {
 			die "It appears that part of Fink's package database is corrupted. "
 				. "Please run 'fink index' to correct the problem.\n";
@@ -951,7 +1011,10 @@ sub update_db {
 		$valid_since = time;
 		my $idx;
 		if ($idx_ok) {
-			eval { $idx = Storable::lock_retrieve($class->db_index); };
+			eval {
+				local $SIG{INT} = 'IGNORE'; # No user interrupts
+				$idx = Storable::lock_retrieve($class->db_index);
+			};
 			if ($@ || !defined $idx) {
 				close $lock if $lock;
 				# Try to force a re-gen next time
@@ -971,20 +1034,15 @@ sub update_db {
 		close $lock if $lock;
 		return unless $ops{load};
 		
-		# Pass 2: Scan for files to load: Last one reached for each fullname
-		my %name2latest;
-		for my $info (@infos) {
-			my @fullnames = keys %{ $idx->{infos}{$info}{inits} };
-			@name2latest{@fullnames} = ($info) x scalar(@fullnames);
-		}
-		my %loadinfos = map { $_ => 1} values %name2latest;	# uniqify
-		my @loadinfos = keys %loadinfos;
+		# Pass 2: This used to narrow down the list of files so only the
+		# 'current' .info files are loaded. We don't do this anymore, since
+		# we want to know every tree a .info file is in.
 		
 		# Pass 3: Load and insert the .info files
-		$class->pass3_insert($idx, @loadinfos);
+		$class->pass3_insert($idx, @infos);
 		
 		# Store the proxy db
-		if ($ops{write}) {
+		if ($ops{write} && !$config->custom_treelist) {
 			store_rename($packages, $class->db_proxies);
 		}
 	}		
@@ -1031,46 +1089,16 @@ sub tree_infos {
 	return @filelist;
 }		
 
+=item packages_from_properties
 
-=item packages_from_info_file
-
-  my @packages = Fink::Package->packages_from_info_file $filename;
-
-Create Fink::PkgVersion objects based on a .info file. Do not
-yet add these packages to the current package database.
-
-Returns all packages created, including split-offs.
+This function is now part of Fink::PkgVersion, but remains here for
+compatibility reasons. It will eventually be deprecated.
 
 =cut
 
 sub packages_from_info_file {
 	my $class = shift;
-	my $filename = shift;
-	
-	# read the file and get the package name
-	my $properties = &read_properties($filename);
-	$properties = $class->handle_infon_block($properties, $filename);
-	return () unless keys %$properties;
-	
-	my $pkgname = $properties->{package};
-	unless ($pkgname) {
-		print_breaking_stderr "No package name in $filename";
-		next;
-	}
-	unless ($properties->{version}) {
-		print_breaking_stderr "No version number for package $pkgname in $filename";
-		next;
-	}
-	# fields that should be converted from multiline to
-	# single-line
-	for my $field ('builddepends', 'depends', 'files') {
-		if (exists $properties->{$field}) {
-			$properties->{$field} =~ s/[\r\n]+/ /gs;
-			$properties->{$field} =~ s/\s+/ /gs;
-		}
-	}
-
-	return $class->packages_from_properties($properties, $filename);
+	return Fink::PkgVersion->pkgversions_from_info_file(@_);
 }
 
 
@@ -1088,16 +1116,16 @@ sub insert_runtime_packages {
 	
 	# Get data from dpkg's status file. Note that we do *not* store this 
 	# information into the package database.
-	$class->insert_runtime_packages_hash(Fink::Status->list());
+	$class->insert_runtime_packages_hash(Fink::Status->list(), 'status');
 
 	# Get data from VirtPackage.pm. Note that we do *not* store this 
 	# information into the package database.
-	$class->insert_runtime_packages_hash(Fink::VirtPackage->list());
+	$class->insert_runtime_packages_hash(Fink::VirtPackage->list(), 'virtual');
 }
 
 =item insert_runtime_package_hash
 
-  Fink::Package->insert_runtime_package_hash $hashref;
+  Fink::Package->insert_runtime_package_hash $hashref, $type;
 
 Given a hash of package-name => property-list, insert the packages into the
 in-memory database.
@@ -1108,9 +1136,15 @@ sub insert_runtime_packages_hash {
 	my $class = shift;
 	
 	my $dlist = shift;
+	my $type = shift;
 	foreach my $pkgname (keys %$dlist) {
-		my $po = $class->package_by_name_create($pkgname);
+		# Don't add uninstalled status packages to package DB
+		next if $type eq 'status' && !Fink::Status->query_package($pkgname);
+		
+		# Skip it if it's already there
+		my $po = $class->package_by_name_create($pkgname);		
 		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
+		
 		my $hash = $dlist->{$pkgname};
 
 		# create dummy object
@@ -1118,91 +1152,25 @@ sub insert_runtime_packages_hash {
 			$hash->{epoch} = $versions[0] if defined($versions[0]);
 			$hash->{version} = $versions[1] if defined($versions[1]);
 			$hash->{revision} = $versions[2] if defined($versions[2]);
-			$hash->{type} = "dummy";
+			$hash->{type} = "dummy ($type)";
 			$hash->{filename} = "";
 
-			$class->insert_pkgversions($class->packages_from_properties($hash));
+			$class->insert_pkgversions(
+				Fink::PkgVersion->pkgversions_from_properties($hash));
 		}
 	}
 }
 
 =item packages_from_properties
 
-  my $properties = { field => $val, ... };
-  my @packages = Fink::Package->packages_from_properties $properties, $filename;
-
-Create Fink::PkgVersion objects based on a hash-ref of properties. Do not
-yet add these packages to the current package database.
-
-Returns all packages created, including split-offs if this is a parent package.
+This function is now part of Fink::PkgVersion, but remains here for
+compatibility reasons. It will eventually be deprecated.
 
 =cut
 
 sub packages_from_properties {
 	my $class = shift;
-	my $properties = shift;
-	my $filename = shift || "";
-
-	my %pkg_expand;
-
-	if (exists $properties->{type}) {
-		if ($properties->{type} =~ /([a-z0-9+.\-]*)\s*\((.*?)\)/) {
-			# if we were fed a list of subtypes, remove the list and
-			# refeed ourselves with each one in turn
-			my $type = $1;
-			my @subtypes = split ' ', $2;
-			if ($subtypes[0] =~ /^boolean$/i) {
-				# a list of (boolean) has special meaning
-				@subtypes = ('','.');
-			}
-			my @pkgversions;
-			foreach (@subtypes) {
-				# need new copy, not copy of ref to original
-				my $this_properties = {%{$properties}};
-				$this_properties->{type} =~ s/($type\s*)\(.*?\)/$type $_/;
-				push @pkgversions,
-					$class->packages_from_properties($this_properties, $filename);
-			};
-			return @pkgversions;
-		}
-		# we have only single-value subtypes
-#		print "Type: ",$properties->{type},"\n";
-		my $type_hash = Fink::PkgVersion->type_hash_from_string($properties->{type},$filename);
-		foreach (keys %$type_hash) {
-			( $pkg_expand{"type_pkg[$_]"} = $pkg_expand{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-		}
-	}
-#	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
-
-
-	# store invariant portion of Package
-	( $properties->{package_invariant} = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
-	if (exists $properties->{parent_obj}) {
-		# get parent's Package for percent expansion
-		# (only splitoffs can use %N in Package)
-		$pkg_expand{'N'}  = $properties->{parent_obj}->{package};
-		$pkg_expand{'n'}  = $pkg_expand{'N'};  # allow for a typo
-	}
-	# must always call expand_percent even if no Type or parent in
-	# order to make sure Maintainer doesn't have bad % constructs
-	$properties->{package_invariant} = &expand_percent($properties->{package_invariant},\%pkg_expand, "$filename \"package\"");
-
-	# must always call expand_percent even if no Type in order to make
-	# sure Maintainer doesn't have %type_*[] or other bad % constructs
-	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
-
-	# create object for this particular version
-	$properties->{thefilename} = $filename if $filename;
-	
-	my $pkgversion = Fink::PkgVersion->new_from_properties($properties);
-	
-	# Only return splitoffs for the parent. Otherwise, PkgVersion::add_splitoff
-	# goes crazy.
-	if ($pkgversion->has_parent) { # It's a splitoff
-		return ($pkgversion);
-	} else {								# It's a parent
-		return $pkgversion->get_splitoffs(1, 1);
-	}
+	return Fink::PkgVersion->pkgversions_from_properties(@_);
 }
 
 =item insert_pkgversions
@@ -1236,58 +1204,40 @@ sub insert_pkgversions {
 
 =item handle_infon_block
 
-    my $properties = &read_properties($filename);
-    $properties = &handle_infon_block($properties, $filename);
-
-For the .info file lines processed into the hash ref $properties from
-file $filename, deal with the possibility that the whole thing is in a
-InfoN: block.
-
-If so, make sure this fink is new enough to understand this .info
-format (i.e., NE<lt>=max_info_level). If so, promote the fields of the
-block up to the top level of %$properties and return a ref to this new
-hash. Also set a _info_level key to N.
-
-If an error with InfoN occurs (N>max_info_level, more than one InfoN
-block, or part of $properties existing outside the InfoN block) print
-a warning message and return a ref to an empty hash (i.e., ignore the
-.info file).
+This function is now part of Fink::PkgVersion, but remains here for
+compatibility reasons. It will eventually be deprecated.
 
 =cut
 
 sub handle_infon_block {
-	shift;	# class method - ignore first parameter
-	my $properties = shift;
-	my $filename = shift;
+	my $class = shift;
+	return Fink::PkgVersion->handle_infon_block(@_);
+}
 
-	my($infon,@junk) = grep {/^info\d+$/i} keys %$properties;
-	if (not defined $infon) {
-		return $properties;
-	}
-	# file contains an InfoN block
-	if (@junk) {
-		print_breaking_stderr "Multiple InfoN blocks in $filename; skipping";
-		return {};
-	}
-	unless (keys %$properties == 1) {
-		# if InfoN, entire file must be within block (avoids
-		# having to merge InfoN block with top-level fields)
-		print_breaking_stderr "Field(s) outside $infon block! Skipping $filename";
-		return {};
-	}
-	my ($info_level) = ($infon =~ /(\d+)/);
-	my $max_info_level = &Fink::FinkVersion::max_info_level;
-	if ($info_level > $max_info_level) {
-		# make sure we can handle this InfoN
-		print_breaking_stderr "Package description too new to be handled by this fink ($info_level>$max_info_level)! Skipping $filename";
-		return {};
-	}
+=item print_virtual_pkg
+
+  $po->print_virtual_pkg;
+
+Pretty print a message indicating that a given package is virtual, and
+what packages provide it.
+
+=cut
+
+sub print_virtual_pkg {
+	my $self = shift;
 	
-	# okay, parse InfoN and promote it to the top level
-	my $new_properties = &read_properties_var("$infon of \"$filename\"",
-		$properties->{$infon}, { remove_space => ($info_level >= 3) });
-	$new_properties->{infon} = $info_level;
-	return $new_properties;
+	printf "The requested package '%s' is a virtual package, provided by:\n",
+		$self->get_name();
+	
+	# Find providers, but only one version per package
+	my %providers;
+	for my $pv ($self->get_all_providers) {
+		$providers{$pv->get_name}{$pv->get_fullversion} = $pv;
+	}
+	for my $pkg (sort keys %providers) {
+		my $vers = latest_version keys %{$providers{$pkg}};
+		printf "  %s\n", $providers{$pkg}{$vers}->get_fullname;
+	}
 }
 
 =back

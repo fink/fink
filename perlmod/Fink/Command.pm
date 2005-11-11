@@ -26,12 +26,13 @@ package Fink::Command;
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT    = ();
-@EXPORT_OK = qw(mv cp cat mkdir_p rm_rf rm_f touch chowname symlink_f du_sk);
+@EXPORT_OK = qw(mv cp cat mkdir_p rm_rf rm_f touch chowname chowname_hr symlink_f du_sk);
 %EXPORT_TAGS = ( ALL => [@EXPORT, @EXPORT_OK] );
 
 use strict;
 use warnings;
 use Carp;
+use POSIX qw(ceil);
 
 
 =head1 NAME
@@ -278,6 +279,40 @@ sub chowname {
 	return !$nok;
 }
 
+=item chowname_hr
+
+  chowname_hr $user, @files;
+  chowname_hr "$user:$group", @files;
+  chowname_hr ":$group", @files;
+
+Like chowname, but recurses down each item in @files. Symlinks are not
+followed.
+
+=cut
+
+sub chowname_hr {
+	my($owner, @files) = @_;
+	my($user, $group) = split /:/, $owner, 2;
+	
+	my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
+	my $gid = defined $group && length $group ? getgrnam($group) : -1;
+	
+	return if !defined $uid or !defined $gid;
+
+	require File::Find;
+	
+	# chown() won't return false as long as one operation succeeds, so we
+	# have to call it one at a time.
+	my $nok = 0;
+	File::Find::find(
+		sub {
+			$nok ||= !CORE::chown $uid, $gid, $_ unless -l $_;
+		},
+		@files) if @files;
+
+	return !$nok;
+}
+
 =item symlink_f
 
   symlink_f $src, $dest;
@@ -314,7 +349,8 @@ sub du_sk {
 	my @dirs = @_;
 	my $total_size = 0;
 	
-	# Depends on OS. Pretty much only HP-UX, SCO and (rarely) AIX are not 512 bytes.
+	# Depends on OS. Pretty much only HP-UX, SCO and (rarely) AIX are
+	# not 512 bytes.
 	my $blocksize = 512;
 	
 	require File::Find;
@@ -332,7 +368,8 @@ sub du_sk {
 		},
 		@dirs) if @dirs;
 	
-	return ( $err or int($total_size / 1024) );
+	# du is supposed to ROUND UP
+	return ( $err or ceil($total_size / 1024) );
 }
 
 =begin private

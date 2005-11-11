@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# -*- mode: Shell; tab-width: 4; -*-
 #
 # install.sh - install fink package
 #
@@ -37,16 +38,15 @@ echo "Creating directories..."
 mkdir -p "$basepath"
 chmod 755 "$basepath"
 
-for dir in bin lib lib/fink lib/perl5 lib/perl5/Fink \
-	   lib/perl5/Fink/Text \
-		lib/perl5/Fink/Notify \
-	   lib/fink/update etc etc/dpkg \
-	   share share/doc share/doc/fink share/man \
-	   share/man/man8 share/man/man5 \
-		share/fink share/fink/images \
-		var var/lib var/run var/lib/fink var/run/fink \
-		var/lib/fink/path-prefix-g++-3.3 \
-		var/lib/fink/path-prefix-g++-4.0; do
+for dir in bin \
+	lib lib/perl5 lib/perl5/Fink lib/perl5/Fink/{Text,Notify,Checksum} \
+	lib/fink lib/fink/update \
+	etc etc/dpkg \
+	share share/doc share/doc/fink \
+	share/man share/man/man{5,8} \
+	share/fink share/fink/images \
+	var var/run var/run/fink var/run/fink/buildlock \
+	var/lib var/lib/fink var/lib/fink/path-prefix-g++-{3.3,4.0}; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -66,10 +66,10 @@ install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 install -c -p -m 644 images/*.png "$basepath/share/fink/images/"
 
 # copy all perl modules
-for subdir in . Text Notify ; do
-  for file in perlmod/Fink/${subdir}/*.pm ; do
+for subdir in . Fink Fink/{Text,Notify,Checksum} ; do
+  for file in perlmod/${subdir}/*.pm ; do
     if [ -f $file ]; then
-      install -c -p -m 644 $file "$basepath/lib/perl5/Fink/$subdir"
+      install -c -p -m 644 $file "$basepath/lib/perl5/$subdir"
     fi
   done
 done
@@ -87,7 +87,8 @@ for file in COPYING README README.html INSTALL INSTALL.html \
 done
 
 install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog"
-install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
+install -c -p -m 644  perlmod/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
+install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod.Fink"
 install -c -p -m 644  update/ChangeLog "$basepath/share/doc/fink/ChangeLog.update"
 
 for gccvers in 3.3 4.0; do

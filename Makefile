@@ -41,7 +41,8 @@ clean:
 		( cd `dirname $$ignorefile` && rm -f `cat .cvsignore` ); \
 	done
 
-	find . -name "*~" -exec rm {} \;
+	@echo "cleaning tempfiles"; 
+	@find . -name "*~" -exec rm {} \;
 
 .PHONY: all test install
 # vim: ts=4 sw=4 noet

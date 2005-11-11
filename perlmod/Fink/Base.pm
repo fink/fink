@@ -55,8 +55,9 @@ Basic parameter handling for fink objects.
 =item new
 
   my $obj = Fink::Base->new;
+  my $obj = Fink::Base->new @args;
 
-Create a new, empty fink object.
+Create a new, empty fink object, and initialize it with the given arguments.
 
 =cut
 
@@ -67,7 +68,7 @@ sub new {
 	my $self = {};
 	bless($self, $class);
 
-	$self->initialize();
+	$self->initialize(@_);
 
 	return $self;
 }
@@ -76,8 +77,10 @@ sub new {
 =item new_from_properties
 
   my $obj = Fink::Base->new_from_properties({ key1 => val1, ...});
+  my $obj = Fink::Base->new_from_properties({ key1 => val1, ...}, @parameters);
 
-Create a new fink object setting its parameters to the given hash.
+Create a new fink object setting its parameters to the given hash, and
+initialize it with the given arguments.
 
 Any key with a leading _ is ignored.
 
@@ -93,7 +96,7 @@ sub new_from_properties {
 		$self->{$key} = $value unless $key =~ /^_/;
 	}
 
-	$self->initialize();
+	$self->initialize(@_);
 
 	return $self;
 }
@@ -101,6 +104,7 @@ sub new_from_properties {
 =item initialize
 
   $obj->initialize;
+  $obj->initialize(@parameters);
 
 I<Protected method, do not call directly>.
 

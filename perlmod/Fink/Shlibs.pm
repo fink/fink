@@ -21,22 +21,14 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA	 02111-1307, USA.
 #
 
-$|++;
-
 package Fink::Shlibs;
 
 use Fink::Base;
 use Fink::Services qw(&version_cmp);
-use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
-use Fink::Config qw($config $basepath $dbpath);
+use Fink::CLI qw(&print_breaking_stderr);
+use Fink::Config qw($basepath);
 use Fink::PkgVersion;
-use Fink::Command qw(mkdir_p);
-use Fink::Package;
-
 use File::Find;
-use Fcntl ':mode'; # for search_comparedb
-use Symbol qw();
-use Fcntl qw(:flock);
 
 use strict;
 use warnings;
@@ -48,52 +40,103 @@ BEGIN {
 	$VERSION	= 1.00;
 	@ISA		= qw(Exporter Fink::Base);
 	@EXPORT		= qw();
-	@EXPORT_OK	= qw(&get_shlibs);
+	@EXPORT_OK	= qw();
 	%EXPORT_TAGS	= ( );
 }
 our @EXPORT_OK;
 
-our $have_shlibs = 0;
-our $shlibs = {};
-our $shlib_db_outdated = 1;
-our $shlib_db_mtime = 0;
+# The cached shlibs information, set to undef if not valid
+our $shlibs = undef;
 
 END { }				# module clean-up code here (global destructor)
 
 
-### get shlibs depends line
+=head1 NAME
+
+Fink::Shlibs - Find dependencies based on shared libs.
+
+=head1 SYNOPSIS
+
+  # Get the dependencies for the files to be installed
+  my @deps = Fink::Shlibs->get_shlibs $pkgname, @files;
+
+  # Invalidate the current internal cache of shlibs when dpkg changes
+  Fink::Shlibs->invalidate;
+
+=head1 DESCRIPTION
+
+Most of the dependencies needed for a package to be installed are simply to
+supply the shared libraries which it links to. Because each package which
+supplies a shared library lists it in the 'Shlibs' field, these dependencies
+can be determined automatically.
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item get_shlibs
+
+  my @depspecs = Fink::Shlibs->get_shlibs $pv, @files;
+
+Get the dependency specifications needed to supply the shared libs linked to
+by the given files.
+
+Pass in the PkgVersion object for which we are getting the depends, and
+the list of files which should be checked.
+
+A dependency specification is a package name and a version specification,
+eg: 'foo (>= 1.0-1)'.
+
+=cut
+
 sub get_shlibs {
-	my $self = shift;
-	my $pkgname = shift;
-	my @filelist = @_;
-	my ($depend, @depends, %SHLIBS);
+	my ($class, $pv, @filelist) = @_;
 
-	@depends = $self->check_files($pkgname, @filelist);
-
-	foreach $depend (@depends) {
+	my @depends = $class->_check_files($pv, @filelist);
+	
+	my %found; # don't duplicate
+	foreach my $depend (@depends) {
 		if (length($depend) > 1) {
-			$SHLIBS{$depend} = 1;
+			$found{$depend} = 1;
 		}
 	}
 
-	return sort keys %SHLIBS;
+	return sort keys %found;
 }
 
-### check the files for depends
-sub check_files {
-	my $self = shift;
-	my $package = shift;
-	my @files = @_;
+=item invalidate
+
+  Fink::Shlibs->invalidate;
+
+When the state of dpkg changes (ie: when a package is installed or removed),
+the cache of installed shlibs needs to be regenerated. This function notifies
+Shlibs when this is the case.
+
+=back
+
+=cut
+
+sub invalidate {
+	$shlibs = undef;
+}
+
+=begin private
+
+  my @depspecs = Fink::Shlibs->_check_files $pv, @filelist;
+
+Similar to get_shlibs, but unchecked output, so depspecs may be empty or
+duplicate.
+
+=end private
+
+=cut
+
+sub _check_files {
+	my ($self, $pkg, @files) = @_;
+	
 	my ($file, @depends, $deb, $currentlib, $lib, $compat);
 	my (@splits, $split, $tmpdep, $dep, $vers, @dsplits, $dsplit);
-	my (@deplines, @builddeps, $depline, $builddep, $pkg);
-
-	# Get package object
-	$pkg = Fink::PkgVersion->match_package($package);
-	unless (defined $pkg) {
-		print STDERR "no package found for specification '$package'!\n";
-		return;
-	}
+	my (@deplines, @builddeps, $depline, $builddep);
 
 	# get parent and split names to envoke a = %v-%r override
 	@splits = $pkg->get_splitoffs(1, 1);
@@ -131,7 +174,7 @@ sub check_files {
 
 				### This should drop any depends on it's self
 				### Strictly on it's self not a child
-				$deb = $self->get_shlib($lib, $compat);
+				$deb = $self->_get_shlib($lib, $compat);
 				unless ($deb) {
 					# Add a big warning about /usr/local/lib being
 					# in the way if $basepath isn't /usr/local
@@ -148,7 +191,7 @@ sub check_files {
 				$tmpdep = $deb;
 				$tmpdep =~ s/^(\S*)\s*\(.*\)$/$1/g;
 
-				if ($tmpdep eq $package) {
+				if ($tmpdep eq $pkg->get_name) {
 					next OTOOLLOOP;
 				}
 
@@ -244,7 +287,7 @@ sub check_files {
 	# $depvers hash and @newdeps array.
 
 	for my $dep (@depends) {
-		my @depobj = get_depobj($dep);
+		my @depobj = _get_depobj($dep);
 		my $name;
 
 		# get_depobj() returns multiple entries when the source depend
@@ -265,11 +308,11 @@ sub check_files {
 			$name = join('|', @depnames);
 			undef @depnames;
 			for my $obj (@depobj) {
-				$depvers = update_version_hash($depvers, $obj);
+				$depvers = _update_version_hash($depvers, $obj);
 			}
 		} else {
 			$name = $depobj[0]->{tuplename};
-			$depvers = update_version_hash($depvers, $depobj[0]);
+			$depvers = _update_version_hash($depvers, $depobj[0]);
 		}
 
 		next if (not defined $name);
@@ -333,7 +376,7 @@ sub check_files {
 
 ### this is a scary subroutine to update the name,operator cache
 ### for handling duplicates -- it's just plain evil.  EVIL.  EEEEVIIIILLLL.
-sub update_version_hash {
+sub _update_version_hash {
 	my $hash   = shift;
 	my $depobj = shift;
 
@@ -392,7 +435,7 @@ sub update_version_hash {
 }
 
 # get a dependency "object" (just a data structure with dep info)
-sub get_depobj {
+sub _get_depobj {
 	my $depdef = shift;
 	my ($depobj, $name, $operator, $version);
 	my @return;
@@ -423,10 +466,13 @@ sub get_depobj {
 }
 
 ### get package name
-sub get_shlib {
+sub _get_shlib {
 	my $self = shift;
 	my $lib = shift;
 	my $compat = shift;
+	
+	$self->_validate; # Ensure the cache exists
+	
 	my ($dep, $shlib, $count, $pkgnum, $vernum, $total);
 
 	$dep = "";
@@ -448,225 +494,96 @@ sub get_shlib {
 	return $dep;
 }
 
+=begin private
 
-### forget about all shlibs
-sub forget_packages {
-	my $self = shift;
+  Fink::Shlibs->_validate;
 
-	$have_shlibs = 0;
-	$shlibs = {};
-	$shlib_db_outdated = 1;
-}
+Ensure that the current shlib cache is valid.
 
-### read list of shlibs, either from cache or files
-sub scan_all {
-	my $self= shift;
-	my %args = @_;
-	my ($time) = time;
-	my ($shlibname);
+=end private
 
-	my $dbfile = "$dbpath/shlibs.db";
-	my $conffile = "$basepath/etc/fink.conf";
+=cut
 
-	$self->forget_packages();
+sub _validate {
+	my $class = shift;
+	return if defined $shlibs; # Cache ok
 	
-	# If we have the Storable perl module, try to use the package index
-	if (-e $dbfile) {
-		eval {
-			require Storable; 
+	$class->_scan();
+}
 
-			# We assume the DB is up-to-date unless proven otherwise
-			$shlib_db_outdated = 0;
-		
-			# Unless the NoAutoIndex option is set, check whether
-			# we should regenerate the index based on its
-			# modification date.
-			if (not $config->param_boolean("NoAutoIndex")) {
-				$shlib_db_mtime = (stat($dbfile))[9];
-				if (((lstat($conffile))[9] > $shlib_db_mtime)
- 					or ((stat($conffile))[9] > $shlib_db_mtime)) {
-					$shlib_db_outdated = 1;
-				} else {
-					$shlib_db_outdated = &search_comparedb( "$basepath/var/lib/dpkg/info" );
-				}
-			}
-			
-			# If the index is not outdated, we can use it,
-			# and thus safe a lot of time
-			if (not $shlib_db_outdated) {
-				$shlibs = Storable::lock_retrieve($dbfile);
-			}
-		}
-	}
+=begin private
+
+  Fink::Shlibs->_scan;
+
+Scan the shlibs files and generate the shlibs cache
+
+=end private
+
+=cut
+
+sub _scan {
+	my $class = shift;
 	
-	# Regenerate the DB if it is outdated
-	if ($shlib_db_outdated) {
-		$self->update_shlib_db();
-	}
-
-	$have_shlibs = 1;
-
-	unless ($args{'quiet'}) {
-		if (&get_term_width) {
-			printf STDERR "Information about %d shared libraries read in %d seconds.\n",
-				scalar(values %$shlibs), (time - $time);
-		}
-	}
-}
-
-### scan for info files and compare to $db_shlibs_mtime
-
-# returns true if any are newer than $db_shlibs_mtime, false if not
-sub search_comparedb {
-	my $path = shift;
-	$path .= "/";  # forces find to follow the symlink
-	my $dbfile = "$dbpath/shlibs.db";
-
-	# Using find is much faster than doing it in Perl
-	open NEWER_FILES, "/usr/bin/find $path \\( -type f -or -type l \\) -and -name '*.shlibs' -newer $dbfile |"
-		or die "/usr/bin/find failed: $!\n";
-
-	# If there is anything on find's STDOUT, we know at least one
-	# .info is out-of-date. No reason to check them all.
-	my $file_found = defined <NEWER_FILES>;
-
-	close NEWER_FILES;
-
-	return $file_found;
-}
-
-### read shlibs and update the database, if needed and we are root
-
-sub update_shlib_db {
-	my $self = shift;
-	my ($dir);
-
-	my $dbfile = "$dbpath/shlibs.db";
-	my $lockfile = "$dbfile.lock";
-	my $lockfile_FH;
-	my $dbtemp = "$dbfile.tmp";
-
-	# check if we should update index cache
-	my $writable_cache = 0;
-	eval "require Storable";
-	if ($@) {
-		my $perlver = sprintf '%*vd', '', $^V;
-		&print_breaking_stderr( "Fink could not load the perl Storable module, which is required in order to keep a cache of the shlibs list. You should install the fink \"storable-pm$perlver\" package to enable this functionality.\n" );
-	} elsif ($> != 0) {
-		&print_breaking_stderr( "Fink has detected that your shlibs list cache is missing or out of date, but does not have privileges to modify it. Re-run fink as root, for example with a \"fink index\" command, to update the cache.\n" );
-	} else {
-		# we have Storable.pm and are root
-		$writable_cache = 1;
-	}
-
-	if ($writable_cache) {
-		$lockfile_FH = Symbol::gensym();
-		unless (open $lockfile_FH, "+>> $lockfile") {
-			&print_breaking_stderr("Warning: Package index cache disabled because cannot access indexer lock $lockfile: $!");
-			$writable_cache = 0;
-		}
-	}
-
-	if ($writable_cache) {
-		unless (flock $lockfile_FH, LOCK_EX | LOCK_NB) {
-			# couldn't get exclusive lock, meaning another fink process has it
-			print STDERR "\nWaiting for another reindex to finish...";
-			if (flock $lockfile_FH, LOCK_EX) {
-				print STDERR " done.\n";
-				# nearly-concurrent indexing run finished so just grab its results
-				$shlibs = Storable::lock_retrieve($dbfile);
-				close $lockfile_FH;
-				$shlib_db_outdated = 0;
-				return;
-			}
-			print STDERR "error: could not lock $lockfile: $!\n";
-		}
-		# getting here means we got the lock on the first try
-	}
-
-	# read data from descriptions
-	if (&get_term_width) {
-		print STDERR "Reading shared library info...\n";
-	}
-	$dir = "$basepath/var/lib/dpkg/info";
-	$self->scan($dir);
-
-	if ($writable_cache) {
-		if (&get_term_width) {
-			print STDERR "Updating shared library index... ";
-		}
-
-		if (Storable::lock_store($shlibs, $dbtemp)) {
-			if (rename $dbtemp, $dbfile) {
-				print STDERR "done.\n";
-			} else {
-				print STDERR "error: could not activate temporary file $dbtemp: $!\n";
-			}
-		} else {
-			print STDERR "error: could not write temporary file $dbtemp: $!\n";
-		}
-		close $lockfile_FH;
-	};
-
-	$shlib_db_outdated = 0;
-}
-
-### scan for shlibs
-sub scan {
-	my $self = shift;
-	my $directory = shift;
-	my (@filelist, $wanted);
-	my ($filename, $shlibname, $compat, $package, $line, @lines);
-
+	print_breaking_stderr "Scanning for shlibs...";
+	
+	# Where to look for .shlibs files?
+	my $directory = "$basepath/var/lib/dpkg/info";
 	return if not -d $directory;
+	
+	# Scan for .shlibs files
+	my @filelist;
+	find({
+		wanted => sub {
+			push @filelist, $_ if -f and not /^[\.\#]/ and /\.shlibs$/;
+		},
+		follow => 1, no_chdir => 1
+	}, $directory);
+	
+	my ($shlibname, $compat, $package);
 
-	# search for .shlibs files
-	@filelist = ();
-	$wanted =
-		sub {
-			if (-f and not /^[\.#]/ and /\.shlibs$/) {
-				push @filelist, $File::Find::fullname;
-			}
-		};
-	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $directory);
-
-	foreach $filename (@filelist) {
+	foreach my $filename (@filelist) {
 		open(SHLIB, $filename) or die "can't open $filename: $!\n";
-			while(<SHLIB>) {
-				@lines = split(/\n/, $_);
-				foreach $line (@lines) {
-					chomp($line);
-					$line =~ s/^\s*//;
-					$line =~ s/\s*$//;
-					if ($line =~ /^(.+)\s+([.0-9]+)\s+(.*)$/) {
-						$shlibname = $1;
-						$compat = $2;
-						$package = $3;
+			while(my $line = <SHLIB>) {
+				chomp($line);
+				$line =~ s/^\s*//;
+				$line =~ s/\s*$//;
+				if ($line =~ /^(.+)\s+([.0-9]+)\s+(.*)$/) {
+					my $shlibname = $1;
+					my $compat = $2;
+					my $package = $3;
 
-						unless ($shlibname) {
-							print STDERR "No lib name in $filename\n";
-							next;
-						}
-						unless ($compat) {
-							print STDERR "No lib compatability version for $shlibname\n";
-							next;
-						}
-						unless ($package) {
-							print STDERR "No owner package(s) for $shlibname\n";
-							next;
-						}
-
-						$self->inject_shlib($shlibname, $compat, $package);
+					unless ($shlibname) {
+						print_breaking_stderr "WARNING: No lib name in $filename";
+						next;
 					}
+					unless ($compat) {
+						print_breaking_stderr "WARNING: No lib compatability version for $shlibname";
+						next;
+					}
+					unless ($package) {
+						print_breaking_stderr "WARNING: No owner package(s) for $shlibname";
+						next;
+					}
+
+					$class->_inject_shlib($shlibname, $compat, $package);
 				}
 			}
 		close(SHLIB);
 	}
 }
 
-### create the hash
-sub inject_shlib {
-	my $self = shift;
+=begin private
+
+  Fink::Shlibs->_inject_shlib $lib, $compat, $supplied_by;
+
+Add a shared lib into the shlibs cache.
+
+=end private
+
+=cut
+
+sub _inject_shlib {
+	my $class = shift;
 	my $shlibname = shift;
 	my $compat = shift;
 	my $package = shift;

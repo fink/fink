@@ -76,6 +76,11 @@ sub read {
 	$file = $basepath."/var/lib/dpkg/status";
 	$hash = {};
 
+	if (not $config->want_magic_tree('status')) {
+		$self->{_invalid} = 0;
+		return;
+	}
+
 	if (! -f $file) {
 		print "WARNING: can't read dpkg status file \"$file\".\n";
 

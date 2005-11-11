@@ -30,7 +30,6 @@ use Fink::Config qw($config $basepath $dbpath $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Engine;
 use Fink::Package;
-use Fink::Shlibs;
 use Fink::FinkVersion qw(&pkginfo_version);
 use Fink::Mirror;
 use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
@@ -79,6 +78,7 @@ sub check {
 		else {
 			$answer = "point";
 		}
+		&need_devtools($answer);
 		&print_breaking("fink is setting your default update method to $answer \n");
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();
@@ -95,12 +95,14 @@ sub check {
 						  "cvs" => "cvs",
 						  "Stick to point releases" => "point"
 						] );
+		&need_devtools($answer);
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();	
 	}
 
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
+		&need_devtools('cvs');
 		if (-f "$finkdir/dists/stamp-rsync-live") {
 			unlink "$finkdir/dists/stamp-rsync-live";
 		}
@@ -118,6 +120,7 @@ sub check {
 		}
 	}
 	elsif (($config->param("SelfUpdateMethod") eq "rsync") and $useopt != 1){
+		&need_devtools('rsync');
 		&do_direct_rsync();
 		&do_finish();
 		return;
@@ -133,6 +136,7 @@ sub check {
 		if (! $answer) {
 			return;
 		}
+		&need_devtools('rsync');
 		$config->set_param("SelfUpdateMethod", "rsync");
 		$config->save();	
 		&do_direct_rsync();
@@ -147,6 +151,7 @@ sub check {
 		if (! $answer) {
 			return;
 		}
+		&need_devtools('cvs');
 		$config->set_param("SelfUpdateMethod", "cvs");
 		$config->save();	
 		&setup_direct_cvs();
@@ -186,6 +191,20 @@ sub check {
 			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 		&do_tarball($latest_fink);
+	}
+}
+
+### die if the passed selfupdate method requires dev-tools be
+### installed but dev-tools is not installed
+
+sub need_devtools {
+	my $method = shift;
+
+	if ($method eq 'cvs' || $method eq 'rsync') {
+		Fink::Package->require_packages();
+		my $po = Fink::PkgVersion->match_package('dev-tools');
+		defined $po && $po->is_installed()
+			or die "selfupdate method '$method' requires the package 'dev-tools'\n";
 	}
 }
 
@@ -517,14 +536,8 @@ sub do_finish {
 	# forget the package info
 	Fink::Package->forget_packages();
 
-	# delete the old shlibs DB
-	if (-e "$dbpath/shlibs.db") {
-		unlink "$dbpath/shlibs.db";
-	}
-
 	# ...and then read it back in
 	Fink::Package->require_packages();
-	Fink::Shlibs->scan_all();
 
 	# update the package manager itself first if necessary (that is, if a
 	# newer version is available).
@@ -556,7 +569,13 @@ sub finish {
 
 	print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  Updating anyway, but you may encounter problems.\n") unless $perl_is_supported;
 
-	push @elist, @{$package_list};
+	foreach my $important (@$package_list) {
+		my $po = Fink::Package->package_by_name($important);
+		if ($po && $po->is_any_installed()) {
+			# only worry about "important" ones that are already installed
+			push @elist, $important;
+		}
+	}
 
 	# update them, only fink if dist-upgrade must be done
 	if (Fink::Config::checkDistribution())		#returns true if incompat
@@ -586,7 +605,7 @@ sub rsync_check {
 }
 
 sub do_direct_rsync {
-	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
+	my ($descdir, @sb, $cmd, $rmcmd, $vercmd, $username, $msg);
 	my ($timecmd, $oldts, $newts);
 	my $origmirror;
 	my $dist = $distribution;
@@ -665,19 +684,20 @@ RSYNCAGAIN:
 	# we've tried to put something there.
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
 	
+	$rsynchost =~ s/\/*$//;
+	$dist      =~ s/\/*$//;
+	
 	my $rinclist = "";
-	foreach $tree ($config->get_treelist()) {
-		next unless ($tree =~ /stable/);
-
-		$rsynchost =~ s/\/*$//;
-		$dist      =~ s/\/*$//;
-		$tree      =~ s/\/*$//;
-
-		my $oldpart = "";
+	
+	my @trees = grep { m,^(un)?stable/, } $config->get_treelist();
+	die "Can't find any trees to update\n" unless @trees;
+	map { s/\/*$// } @trees;
+	
+	foreach my $tree (@trees) {
+		my $oldpart = $dist;
 		my @line = split /\//,$tree;
 
 		$rinclist .= " --include='$dist/'";
-		$oldpart = "$dist";
 		for(my $i = 0; defined $line[$i]; $i++) {
 			$oldpart = "$oldpart/$line[$i]";
 			$rinclist .= " --include='$oldpart/'";
@@ -699,15 +719,10 @@ RSYNCAGAIN:
 	&print_breaking($msg);
 
 	if (&execute($cmd)) {
-		print "Updating $tree using rsync failed. Check the error messages above.\n";
+		print "Updating using rsync failed. Check the error messages above.\n";
 		goto RSYNCAGAIN;
 	} else {
-		foreach $tree ($config->get_treelist()) {
-			next unless ($tree =~ /stable/);
-
-			$rsynchost =~ s/\/*$//;
-			$dist      =~ s/\/*$//;
-			$tree      =~ s/\/*$//;
+		foreach my $tree (@trees) {
 			&execute("/usr/bin/find '$basepath/fink/$dist/$tree' -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 	}

@@ -23,7 +23,7 @@
 
 package Fink::NetAccess;
 
-use Fink::Services qw(&execute &filename &file_MD5_checksum);
+use Fink::Services qw(&execute &filename);
 use Fink::CLI qw(&prompt_selection &print_breaking);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
@@ -59,7 +59,7 @@ sub fetch_url {
 	my ($file, $cmd);
 
 	$file = &filename($url);
-	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, undef);
+	return &fetch_url_to_file($url, $file, 0, 0, 0, 1, 0, $downloaddir, undef, undef);
 }
 
 ### download a file to the designated directory and save it under the
@@ -77,9 +77,9 @@ sub fetch_url_to_file {
 	my $dryrun = shift || 0;
 	my $downloaddir = shift || "$basepath/src";
 	my $checksum = shift;
+	my $checksum_type = shift;
 	my ($http_proxy, $ftp_proxy);
 	my ($url, $cmd, $cont_cmd, $result, $cmd_url);
-	my $found_archive_sum;
 
 	# create destination directory if necessary
 	if (not -d $downloaddir) {
@@ -190,16 +190,19 @@ sub fetch_url_to_file {
 	### if the file already exists, ask user what to do
 	if (-f $file && !$cont && !$dryrun) {
 		my $checksum_msg = ". ";
-		my $default_value = "retry"; # Play it save, assume redownload as default
-		$found_archive_sum = &file_MD5_checksum($file);
-		if (defined $checksum) {
+		my $default_value = "retry"; # Play it safe, assume redownload as default
+		if (defined $checksum and defined $checksum_type) {
+			my $checksum_obj = Fink::Checksum->new($checksum_type);
+			my $found_archive_sum = $checksum_obj->get_checksum($file);
 			if ($checksum eq $found_archive_sum) {
 				$checksum_msg = " and its checksum matches. ";
-				$default_value = "use_it"; # MD5 matches: assume okay to use it
+				$default_value = "use_it"; # checksum matches: assume okay to use it
 			} else {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
 				$checksum_msg = " but its checksum does not match. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
-								"Expected: $checksum \nActual: $found_archive_sum \n";
+								"Expected: $checksum\nActual: " .
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
 			}
 		}
 		$result = &prompt_selection("How do you want to proceed?",
@@ -264,12 +267,12 @@ sub fetch_url_to_file {
 		if ($dryrun or ($result or not -f $file)) {
 			# failure, continue loop
 		} else {
-			$found_archive_sum = &file_MD5_checksum($file);
-			if (defined $checksum and $checksum ne $found_archive_sum) {
-
+			if (defined $checksum and (not Fink::Checksum->validate($file, $checksum))) {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
 				&print_breaking("The checksum of the file is incorrect. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
-								"Expected: $checksum \nActual: $found_archive_sum \n");
+								"Expected: $checksum\nActual: " . 
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
 				# checksum failure, continue loop
 			} else {
 				# success, return to caller
@@ -352,7 +355,7 @@ sub download_cmd {
 		if ($config->verbosity_level() >= 1) {
 			$cmd .= " --verbose";
 		} else {
-			$cmd .= " --non-verbose";
+			$cmd .= " -nv";
 		}
 		if ($config->param_boolean("ProxyPassiveFTP")) {
 			$cmd .= " --passive-ftp";
@@ -374,7 +377,7 @@ sub download_cmd {
 			$cmd = "axel -S 1";
 		}
 		if ($config->verbosity_level() >= 1) {
-			$cmd .= " --verbose";
+			$cmd .= " -v";
 		}
 		if ($file ne &filename($url)) {
 			$cmd .= " -o $cmd_file";

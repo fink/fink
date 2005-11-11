@@ -38,11 +38,12 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr
+	@EXPORT_OK	 = qw(&print_breaking &print_breaking_stderr &die_breaking
 					  &rejoin_text
 					  &prompt &prompt_boolean &prompt_selection
 					  &print_optionlist
-					  &get_term_width &should_skip_prompt);
+					  &get_term_width &should_skip_prompt
+					  &word_wrap);
 }
 our @EXPORT_OK;
 
@@ -69,6 +70,54 @@ need with things like:
     use Fink::CLI qw(&print_breaking &prompt);
 
 =over 4
+
+=item word_wrap
+
+    my @lines = word_wrap $string, $length;
+    my @lines = word_wrap $string, $length, $prefix1;
+    my @lines = word_wrap $string, $length, $prefix1, $prefix2;
+
+Word wraps a single-line string $string to maximum length $length, and returns
+the resulting lines. Breaking is performed only at space characters.
+
+Optionally, prefixes can be defined to prepend to each line printed:
+$prefix1 is prepended to the first line, $prefix2 is prepended to all
+other lines. If only $prefix1 is defined, that will be prepended to
+all lines.
+
+=cut
+
+sub word_wrap {
+	my ($s, $length, $prefix1, $prefix2) = @_;
+	$prefix1 = "" unless defined $prefix1;
+	$prefix2 = "" unless defined $prefix2;
+	
+	my @lines;
+	
+	my $first = 1;
+	my $prefix = $prefix1;
+	my $reallength = $length - length($prefix);
+	while (length($s) > $reallength) {
+		my $t;
+		my $pos = rindex($s," ",$reallength);
+		if ($pos < 0) {
+			$t = substr($s,0,$reallength);
+			$s = substr($s,$reallength);
+		} else {
+			$t = substr($s,0,$pos);
+			$s = substr($s,$pos+1);
+		}
+		push @lines, "$prefix$t";
+		if ($first) {
+			$first = 0;
+			$prefix = $prefix2;
+			$reallength = $length - length($prefix);
+		}
+	}
+	push @lines, "$prefix$s";
+	
+	return @lines;
+}
 
 =item print_breaking
 
@@ -104,7 +153,6 @@ sub print_breaking {
 	$prefix1 = "" unless defined $prefix1;
 	my $prefix2 = shift;
 	$prefix2 = $prefix1 unless defined $prefix2;
-	my ($pos, $t, $reallength, $prefix, $first);
 
 	my $width = &get_term_width - 1;    # some termcaps need a char for \n
 	$width = $linelength if $width < 1;
@@ -123,27 +171,11 @@ sub print_breaking {
 
 	# at this point we have either a single line or only the last
 	# line of a multiline, so wrap and print
-
-	$first = 1;
-	$prefix = $prefix1;
-	$reallength = $width - length($prefix);
-	while (length($s) > $reallength) {
-		$pos = rindex($s," ",$reallength);
-		if ($pos < 0) {
-			$t = substr($s,0,$reallength);
-			$s = substr($s,$reallength);
-		} else {
-			$t = substr($s,0,$pos);
-			$s = substr($s,$pos+1);
-		}
-		print "$prefix$t\n";
-		if ($first) {
-			$first = 0;
-			$prefix = $prefix2;
-			$reallength = $width - length($prefix);
-		}
+	my @lines = word_wrap $s, $width, $prefix1, $prefix2;
+	for (my $i = 0; $i < $#lines; ++$i) {
+		print "$lines[$i]\n";
 	}
-	print "$prefix$s";
+	print $lines[$#lines];
 	print "\n" if $linebreak;
 }
 
@@ -159,6 +191,25 @@ sub print_breaking_stderr {
 	my $old_fh = select STDERR;
 	&print_breaking(@_);
 	select $old_fh;
+}
+
+=item die_breaking
+
+  die_breaking $message;
+
+Raises an exception like 'die', but formats the error message with
+print_breaking.
+
+Note that this does not have all the special features of 'die', such as adding
+the line number on which the error occurs or propagating previous errors if
+no argument is passed.
+
+=cut
+
+sub die_breaking {
+	my $msg = shift;
+	print_breaking_stderr $msg;
+	die "\n";
 }
 
 =item rejoin_text

@@ -1,3 +1,101 @@
+2005-11-09  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: case-insensitivity fix
+
+2005-11-08  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap.pl: overhaul validation of $basepath entry
+
+2005-10-19  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document the default action when we have both --foo
+	and --no-foo flags.
+
+2005-10-19  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document that 'fink plugins' lists of checksum algos.
+
+2005-10-16  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: add plugins/Fink/Checksum/*.pm to the install list
+
+2005-10-16  Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* install.sh: add plugins/Fink/Checksum/ to the install list
+
+2005-10-15  Martin Costabel <costabel@wanadoo.fr>
+
+	* pathsetup.sh.in: Fix two bugs that have been annoying users
+	running the Fink binary installer for the first time: 
+	The creation of a bash startup script with wrong root ownership, 
+	and a wrong failure message.
+ 
+2005-10-12  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: perlmod/Fink/Tie was backed out. Fix buildlock dir.
+
+2005-10-11  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: add buildlock dir to fink.deb
+
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: The flag is "--maintainer" not "--maintainermode".
+
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document --logfile. Also misc nroff cleanups.
+
+2005-10-07  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: Add new ChangeLog from perlmod/ as ChangeLog.perlmod
+	and move perlmod/Fink/ChangeLog from that install-name to to
+	ChangeLog.perlmod.Fink.
+
+2005-10-06  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document --log-output
+	* install.sh: Add Fink/Tie perlmod subdirectory.
+
+2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.in: Rewrite to 'use Fink'. Move options handling to Config.pm, most
+	other stuff to Fink.pm.in.
+	* install.sh: Install Fink.pm
+	* setup.sh: Dynamically create Fink.pm from Fink.pm.in.
+
+2005-09-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.in: Add --exclude-trees option, short form -T. Also put --trees
+	into include_trees.
+
+2005-09-02  Daniel Macks  <dmacks@netspace.org>
+
+	fink.8.in: Documente cleanup --buildlocks
+
+2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.in: Add new global --trees option. Still needs doc.
+
+2005-08-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink.conf.5.in: Document Bzip2path
+
+2005-08-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink.info.in:  Use Conflicts/Replaces against gcc3.1 so that the 
+	Fink gcc3.1 package is removed (in favor of an Apple-supplied 
+	gcc 3.1, represented by a virtual package).
+
+2005-08-18  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document new cleanup syntax.
+
+2005-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document --maintainermode; remove warning from
+	--build-as-nobody.
+
 2005-08-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: t/testmore.pl now returns true on success

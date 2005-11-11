@@ -1,3 +1,7 @@
+2005-08-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* base-files.info, fink-mirrors.info: new versions
+
 2005-07-21  Daniel Macks  <dmacks@netspace.org>
 
 	* cctools-extra.info: no gcc-3.3 so no BDep:gcc3.3

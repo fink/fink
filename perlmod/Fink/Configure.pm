@@ -30,7 +30,8 @@ package Fink::Configure;
 ###
 
 use Fink::Config qw($config $basepath $libpath);
-use Fink::Services qw(&read_properties &read_properties_multival &filename);
+use Fink::Services qw(&read_properties &read_properties_multival &filename
+				&get_options);
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
 use strict;
@@ -101,13 +102,39 @@ create/change configuration interactively
 =cut
 
 sub configure {
-	my ($otherdir, $builddir, $verbose);
-	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
-
+	my $just_mirrors = 0;
+	get_options('configure', [
+		[ 'mirrors|m' => \$just_mirrors, "Only configure the mirrors" ]
+	], \@_);
+		
+	
 	print "\n";
 	&print_breaking("OK, I'll ask you some questions and update the ".
 					"configuration file in '".$config->get_path()."'.");
 	print "\n";
+	
+	choose_misc() unless $just_mirrors;
+	choose_mirrors(0, quick => $just_mirrors);
+
+	# set the conf file compatibility version to the current value 
+	$config->set_param("ConfFileCompatVersion", $conf_file_compat_version);
+
+	# write configuration
+	print "\n";
+	&print_breaking("Writing updated configuration to '".$config->get_path().
+					"'...");
+	$config->save();
+}
+
+=item choose_misc
+
+Configure everything but the mirrors
+
+=cut
+
+sub choose_misc {
+	my ($otherdir, $builddir, $verbose);
+	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
 
 	# normal configuration
 	$otherdir =
@@ -214,18 +241,6 @@ sub configure {
 						"firewall)?", default => $passive_ftp);
 	$config->set_param("ProxyPassiveFTP", $passive_ftp ? "true" : "false");
 
-
-	# mirror selection
-	&choose_mirrors();
-
-	# set the conf file compatibility version to the current value 
-	$config->set_param("ConfFileCompatVersion", $conf_file_compat_version);
-
-	# write configuration
-	print "\n";
-	&print_breaking("Writing updated configuration to '".$config->get_path().
-					"'...");
-	$config->save();
 }
 
 =item spotlight_warning
@@ -296,8 +311,12 @@ sub default_location {
 
 =item choose_mirrors
 
+my $didnt_change = choose_mirrors $postinstall, %options;
+
 mirror selection (returns boolean indicating if mirror selections are
 unchanged: true means no changes, false means changed)
+
+Options include 'quick' to expedite choices.
 
 =cut
 
@@ -305,6 +324,8 @@ sub choose_mirrors {
 	my $mirrors_postinstall = shift; # boolean value, =1 if we've been
 					# called from the postinstall script
  					# of the fink-mirrors package
+ 	my %options = (quick => 0, @_);
+ 	
 	my ($answer, $missing, $default, $def_value);
 	my ($continent, $country);
 	my ($keyinfo, $listinfo);
@@ -352,7 +373,7 @@ sub choose_mirrors {
 	}
 	
 	
-	if (!$missing) {
+	if (!$missing && !$options{quick}) {
 		if ($mirrors_postinstall) {
 			# called from dpkg postinst script of fink-mirrors pkg
 			print "\n";
@@ -399,15 +420,16 @@ sub choose_mirrors {
 	}
 	
 	### step 1: choose a continent
+	my $choose_location = !$obsolete_only && !$options{quick};
 	my ($default_continent, $default_country) = default_location $keyinfo;
-	if ((!$obsolete_only) or (!$config->has_param("MirrorContinent"))) {	
+	if ($choose_location or (!$config->has_param("MirrorContinent"))) {	
 		$continent = &prompt_selection("Your continent?",
 			intro   => "Choose a continent:",
 			default => [ value => $config->param_default("MirrorContinent",
 				$default_continent) ],
 			choices => [
 				map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
-					sort keys %$keyinfo
+					sort { $keyinfo->{$a} cmp $keyinfo->{$b} } keys %$keyinfo
 			]
 		);
 		$config->set_param("MirrorContinent", $continent);
@@ -416,14 +438,15 @@ sub choose_mirrors {
 	}
 
 	### step 2: choose a country
-	if ((!$obsolete_only) or (!$config->has_param("MirrorCountry"))) {	
+	if ($choose_location or (!$config->has_param("MirrorCountry"))) {	
 		$country = &prompt_selection("Your country?",
 			intro   => "Choose a country:",
 			default => [ value => $config->param_default("MirrorCountry",
 				$default_country) ], # Fails gracefully if continent wrong for country
 			choices => [
 				"No selection - display all mirrors on the continent" => $continent,
-				map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo
+				map { /^$continent-/ ? ($keyinfo->{$_},$_) : () }
+					sort { $keyinfo->{$a} cmp $keyinfo->{$b} } keys %$keyinfo
 			]
 		);
 		$config->set_param("MirrorCountry", $country);
@@ -451,7 +474,9 @@ sub choose_mirrors {
 		$all_mirrors = &read_properties_multival($mirrorfile);
 
 		@mirrors = ();
-
+		my %seen;
+		
+		# Add current setting
 		if ($obsolete_mirrors{$mirrorname}) {
 			$current_prompt = "Current setting (not on current list of mirrors):\n\t\t ";
 			$default_response = 2;
@@ -462,22 +487,38 @@ sub choose_mirrors {
 		$def_value = $config->param_default("Mirror-$mirrorname", "");
 		if ($def_value) {
 			push @mirrors, ( "$current_prompt $def_value" => $def_value );
+			$seen{$def_value} = 1;
 		}
-
+		
+		# Add primary
 		if (exists $all_mirrors->{primary}) {
-			push @mirrors, map { ( "Primary: $_" => $_ ) } @{$all_mirrors->{primary}};
+			push @mirrors, map { ( "Primary: $_" => $_ ) }
+				grep { !$seen{$_}++ } @{$all_mirrors->{primary}};
 		}
-		if ($country ne $continent and exists $all_mirrors->{$country}) {
-			push @mirrors, map { ( $keyinfo->{$country}.": $_" => $_ ) } @{$all_mirrors->{$country}};
+		
+		# Add local mirrors
+		my @places;
+		if ($country ne $continent) {	# We chose a country
+			@places = ($country, $continent);
+		} else {						# We want everything on the continent
+			@places = ($continent, sort { $keyinfo->{$a} cmp $keyinfo->{$b} }
+				grep { /^$continent-/ } keys %$all_mirrors);
 		}
-		if (exists $all_mirrors->{$continent}) {
-			push @mirrors, map { ( $keyinfo->{$continent}.": $_" => $_ ) } @{$all_mirrors->{$continent}};
+		for my $place (@places) {
+			next unless exists $all_mirrors->{$place};
+			push @mirrors, map { $keyinfo->{$place} . ": $_" => $_ }
+				grep { !$seen{$_}++ } @{$all_mirrors->{$place}};
 		}
-
+		
+		# Should we limit the number of mirrors?
+		
+		# Can't pick second result if there isn't one! (2 cuz it's doubled)
+		$default_response = 1 unless scalar(@mirrors) > 2;
+		
 		my @timeout = $mirrors_postinstall ? (timeout => 60) : (); 
 		$answer = &prompt_selection("Mirror for $mirrortitle?",
 						intro   => "Choose a mirror for '$mirrortitle':",
-						default => [ number => 1 ],
+						default => [ number => $default_response ],
 						choices => \@mirrors,
 						@timeout,);
 		$config->set_param("Mirror-$mirrorname", $answer);

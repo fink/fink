@@ -34,7 +34,9 @@ my %tests = (
 
 Fink::Package->forget_packages();
 foreach (qw/ p1 p2 p3 / ) {
-	Fink::Package->insert_pkgversions(Fink::Package->packages_from_info_file("PkgVersion/get_splitoffs-tree/finkinfo/$_.info"));
+	Fink::Package->insert_pkgversions(
+		Fink::PkgVersion->pkgversions_from_info_file(
+			"PkgVersion/get_splitoffs-tree/finkinfo/$_.info"));
 }
 print "Loaded our .info files\n";
 

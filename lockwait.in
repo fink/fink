@@ -21,11 +21,19 @@ if ($> == 0) {
 	
 	print STDERR "Locking it\n" if $debug;
 	### Note this pack() is specific  to OS X and Darwin!!!
+	# fcntl.h declares:
+	#   struct flock {
+	#       off_t   l_start;    /* starting offset */
+	#       off_t   l_len;      /* len = 0 means until end of file */
+	#       pid_t   l_pid;      /* lock owner */
+	#       short   l_type;     /* lock type: read/write, etc. */
+	#       short   l_whence;   /* type of l_start */
+	#   };
 	my $struct_flock = pack("lllliss", (0, 0), (0, 0), 0, F_WRLCK, SEEK_SET);
 	unless (fcntl(LOCK, F_SETLK, $struct_flock)) {
 		die "lockwait: Can't get lock: $!" unless $! == EAGAIN || $! == EACCES;
 		
-		my $msg = $timeout ? "$timeout seconds " : "";
+		my $msg = $timeout ? "up to $timeout seconds " : "";
 		print STDERR "Waiting ${msg}for access to the dpkg database... ";
 		eval {
 			local $SIG{ALRM} = sub { die "alarm\n" };

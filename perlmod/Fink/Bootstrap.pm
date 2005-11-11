@@ -24,13 +24,13 @@
 package Fink::Bootstrap;
 
 use Fink::Config qw($config $basepath);
-use Fink::Services qw(&execute &file_MD5_checksum &enforce_gcc &eval_conditional);
+use Fink::Services qw(&execute &enforce_gcc &eval_conditional);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
-use Fink::Shlibs;
 use Fink::PkgVersion;
 use Fink::Engine;
 use Fink::Command qw(cat mkdir_p rm_rf touch);
+use Fink::Checksum;
 
 use strict;
 use warnings;
@@ -121,7 +121,7 @@ sub check_host {
 	#  had build 1493.)
 
 	if (-x '/usr/bin/gcc-3.3') {
-		foreach(`/usr/bin/gcc-3.3 --version`) {
+		foreach(`/usr/bin/gcc-3.3 --version 2>&1`) {
 			if (/build (\d+)\)/) {
 				$build = $1;
 				last;
@@ -188,12 +188,28 @@ GCC_MSG
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
-		$distribution = "10.4-transitional";
+		if($ENV{FINK_NOTRANS}) {
+			&print_breaking("Using the non-transitional tree...");
+			$distribution = "10.4";
+		} else {
+			$distribution = "10.4-transitional";
+		}
 	} elsif ($host =~ /^i386-apple-darwin8\.[0-2]\.[0-1]/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".
 			"and assume to run on a PowerPC based operating ".
 			"system. Use Fink on this system at your own risk!");
+		if($ENV{FINK_NOTRANS}) {
+			&print_breaking("Using the non-transitional tree...");
+			$distribution = "10.4";
+		} else {
+			$distribution = "10.4-transitional";
+		}
+	} elsif ($host =~ /^i386-apple-darwin[8-9]\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of Mac OS X might work with Fink, but there are no " .
+			"guarantees.  Also, x86 is not currently supported.");
 		if($ENV{FINK_NOTRANS}) {
 			&print_breaking("Using the non-transitional tree...");
 			$distribution = "10.4";
@@ -348,7 +364,13 @@ sub additional_packages {
 
 	my $perl_is_supported = 1;
 
-	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "gettext-tools", "libiconv-dev", "libncurses5");
+# note: we must install any package which is a splitoff of an essential
+# package here.  If we fail to do so, we could find ourselves in the
+# situation where foo-shlibs has been updated, but foo-dev was left at
+# the old version (and is installed as the old version).  This could lead
+# to problems the next time foo was used to compile something.
+
+	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560", "file-spec-pm560", "test-harness-pm560", "test-simple-pm560";
 	} elsif ("$]" == "5.006001") {
@@ -406,9 +428,8 @@ sub bootstrap {
 	# disable UseBinaryDist during bootstrap
 	Fink::Config::set_options( { 'use_binary' => -1 });
 
-	# make sure we have the package descriptions and shlibs
+	# make sure we have the package descriptions
 	Fink::Package->require_packages();
-	Fink::Shlibs->scan_all();
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
@@ -788,7 +809,8 @@ sub modify_description {
 
 	my ($version, $revision) = get_version_revision($package_source,$distribution);
 	print "Modifying package description...\n";
-	my $md5 = &file_MD5_checksum($tarball);
+	my $md5obj = Fink::Checksum->new('MD5');
+	my $md5 = $md5obj->get_checksum($tarball);
 
 	my $result = 0;
 

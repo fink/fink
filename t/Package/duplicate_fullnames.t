@@ -7,6 +7,7 @@ use Fink::Config qw($basepath);
 my $config = Fink::Config->new_with_path('basepath/etc/fink.conf');
 
 require_ok('Fink::Package');
+require_ok('Fink::PkgVersion');
 
 my @tests = (
 	{	trees => [ qw(epoch1) ],				works => 1,
@@ -26,7 +27,7 @@ for my $test (@tests) {
 		foreach ( @{$test->{trees}} ) {
 			my $file = "Package/duplicate_fullname_trees/$_/finkinfo/" .
 				"duplicate-fullname.info";
-			my @pv = Fink::Package->packages_from_info_file($file);
+			my @pv = Fink::PkgVersion->pkgversions_from_info_file($file);
 			Fink::Package->insert_pkgversions(@pv);
 		}
 	};

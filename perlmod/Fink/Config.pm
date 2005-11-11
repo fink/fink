@@ -23,8 +23,8 @@
 
 package Fink::Config;
 use Fink::Base;
-use Fink::Command qw(cp);
-use Fink::Services;
+use Fink::Command 	qw(cp);
+use Fink::Services	qw(&get_options $VALIDATE_HELP);
 
 
 use strict;
@@ -40,12 +40,14 @@ our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath $dbpath
 our $VERSION	 = 1.00;
 
 
-our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors);
-my $_arch = Fink::Services::get_arch();
-our $debarch = "darwin-$_arch";
+our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors, $debarch);
+
+{
+	my $_arch = Fink::Services::get_arch();
+	$debarch = "darwin-$_arch";
+}
 
 my %options = ();
-
 
 
 =head1 NAME
@@ -69,13 +71,17 @@ Fink::Config - Read/write the fink configuration
 
   # Specific configuration options
   my $path		= $config->get_path;
-  my @trees		= $config->get_treelist;
   my $verbosity	= $config->verbosity_level;
   my $use_apt	= $config->binary_requested;
 
+  # Tree management
+  my @trees		= $config->get_treelist();
+  my $bool      = $config->want_magic_tree($tree);
+
   # Command-line parameters
-  my $value = $config->get_option($key, $default);
-  $config->set_options({ $key => $value, $key2 => ... });
+  my @args_left = $config->parse_options(@args);
+  my $value = get_option($key, $default);
+  set_options({ $key => $value, $key2 => ... });
 
 =head1 DESCRIPTION
 
@@ -180,6 +186,106 @@ sub initialize {
 
 =back
 
+=head2 Fink initialization
+
+=over 4
+
+=item parse_options
+
+  my @args_left = $config->parse_options(@args);
+
+Parse the global command-line options for Fink.
+
+=cut
+
+sub parse_options {
+	my $class = shift;
+	my @args = @_;
+	
+	my %opts = (
+		map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
+			use_binary build_as_nobody maintainermode showversion) ),
+		map ( { $_ => [] } qw(include_trees exclude_trees) ),
+	);
+	
+	my $comlen =  14;
+	get_options('', [
+		[ 'yes|y'              => \$opts{dontask},
+			'assume default answer for all interactive questions'			],
+		[ 'quiet|q'            => sub { $opts{verbosity} = -1	},
+			'causes fink to be less verbose, opposite of --verbose'			],
+		[ 'verbose|v'          => sub { $opts{verbosity} = 3	},
+			'causes fink to be more verbose, opposite of --quiet'			],
+		[ 'keep-build-dir|k'   => \$opts{keep_build}, 		'see man page'	],
+		[ 'keep-root-dir|K'    => \$opts{keep_root}, 		'see man page'	],
+		[ 'use-binary-dist|b!' => \$opts{use_binary},
+			'download pre-compiled packages from the binary distribution '
+			. 'if available'	],
+		[ 'build-as-nobody'    => \$opts{build_as_nobody},	'see man page'	],
+		[ 'maintainer|m'       => \$opts{maintainermode},	'see man page'	],
+		[ 'log-output|l!'      => \$opts{log_output},		'see man page'	],
+		[ 'logfile=s'          => \$opts{logfile},			'see man page'	],
+		[ 'trees|t=s@'         => $opts{include_trees},		'see man page'	],
+		[ 'exclude-trees|T=s@' => $opts{exclude_trees},		'see man page'	],
+#		[ 'interactive|i'      => \$opts{interactive}, 'see man page'		],
+		[ 'version|V'          => \$opts{showversion},
+			'display version information'									],
+	], \@args, helpformat => <<FORMAT, optwidth => 23, # lines up better with 23
+%intro{[options] command [package...],install pkg1 [pkg2 ...]}
+Common commands:
+%align{install,install/update the named packages,$comlen}
+%align{remove,remove the named packages,$comlen}
+%align{purge,same as remove but also removes all configuration files,$comlen}
+%align{update,update the named packages,$comlen}
+%align{selfupdate,upgrade fink to the lastest release,$comlen}
+%align{update-all,update all installed packages,$comlen}
+%align{configure,rerun the configuration process,$comlen}
+%align{list,list available packages%, optionally filtering by name%, see 'fink list --help' for more options,$comlen}
+%align{apropos,list packages matching a search keyword,$comlen}
+%align{describe,display a detailed description of the named packages,$comlen}
+%align{index,force rebuild of package cache,$comlen}
+%align{validate,performs various checks on .info and .deb files,$comlen}
+%align{scanpackages,rescans the list of binary packages on the system,$comlen}
+%align{cleanup,reclaims disk space used by temporary or obsolete files,$comlen}
+%align{show-deps,list run-time and compile-time package dependencies,$comlen}
+
+Common options:
+%opts{help,quiet,version,verbose,yes,use-binary-dist}
+
+See the fink(8) manual page for a complete list of commands and options.
+Visit http://fink.sourceforge.net/ for further information.
+
+FORMAT
+		# Err if no command
+		validate => sub {
+			!scalar(@args) && !$opts{showversion} && $VALIDATE_HELP }
+	); 
+	
+	if ($opts{showversion}) {
+		require Fink::FinkVersion;
+		print "Package manager version: "
+			. Fink::FinkVersion::fink_version() . "\n";
+		print "Distribution version: "
+			. Fink::FinkVersion::distribution_version() . "\n";
+		print <<"EOF";
+
+Copyright (c) 2001 Christoph Pfisterer
+Copyright (c) 2001-2005 The Fink Package Manager Team
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+EOF
+		exit 0;
+	}
+	
+	set_options(\%opts);
+	
+	return @args;
+}
+
+=back
+
 =head2 Configuration queries
 
 =over 4
@@ -199,22 +305,142 @@ sub get_path {
 }
 
 
+# Get the list of all available trees from the conf file. 
+sub _standard_treelist {
+	my $self = shift;
+	return grep !m{^(/|.*\.\./)}, split /\s+/, $self->param_default(
+		"Trees", "local/main stable/main stable/bootstrap");
+}
+
+=begin comment
+
+Figure out what to do with the --trees and --exclude-trees command line
+arguments.
+
+Some tree names are 'magic', and cannot be completely excluded in a safe way.
+However, certain commands know to ignore them if they're 'excluded'.
+
+=end comment
+
+=cut
+
+{
+	# FIXME: What if there's a real tree with one of these names?
+	my %is_magic = map { $_ => 1 } qw(virtual status);
+	
+	# Get match CODE-ref for given spec
+	sub _match_trees {
+		my $spec = shift;
+		if ($spec =~ m,/, || $is_magic{$spec}) {	# If there's a / in it...
+			return sub { $_ eq $spec };				# ... must match exactly.
+		} else {
+			return sub { m,^\Q$spec\E/, };			# Otherwise, match front
+		}
+	}
+	
+	sub _process_trees_arg {
+		my $self = shift;
+		return if get_option('_magic_trees'); # Already done this
+		
+		# Get trees specified on command line, all trees available
+		my @include = split /,/, join ',', @{get_option('include_trees', [])};
+		my @exclude = split /,/, join ',', @{get_option('exclude_trees', [])};
+		my @avail = ($self->_standard_treelist(), keys %is_magic);
+		
+		# First include
+		my (@trees, %seen);
+		if (@include) {
+			foreach my $spec (@include) {
+				my @match = grep { &{_match_trees($spec)}() } @avail;
+				print "WARNING: No tree matching \"$spec\" found!\n"
+					unless @match;
+				push @trees, grep { !$seen{$_}++ } @match;
+			}
+		} else {
+			@trees = @avail; # By default, include all
+		}
+				
+		# Then exclude
+		foreach my $spec (@exclude) {
+			# Ignore failed excludes, suspect it's best this way
+			@trees = grep { !&{_match_trees($spec)} } @trees;
+		}
+		
+		# Store results
+		my @magic = grep { $is_magic{$_} } @trees;
+		@trees = grep { !$is_magic{$_} } @trees;
+		set_options({
+			_magic_trees	=> { map { $_ => 1 } @magic },
+			_trees			=> \@trees,
+		});
+	}
+}
+
+
 =item get_treelist
 
   my @trees = $config->get_treelist;
 
-Returns the Trees config value split into a handy list.
+Returns the trees which should be currently used. This depends on the
+value of Trees in fink.conf, as well as any trees specified at the command
+line.
 
 =cut
 
+
 sub get_treelist {
 	my $self = shift;
+	$self->_process_trees_arg();
+	return @{get_option('_trees')};
+}
 
-	return grep !m{^(/|.*\.\./)},
-	           split /\s+/, 
-	             $self->param_default("Trees", 
-	                     "local/main stable/main stable/bootstrap"
-	             );
+=item want_magic_tree
+
+  my $bool = $config->want_magic_tree($tree);
+
+Get whether or not the user desires the given magic tree to be used. Current 
+magic trees are:
+
+=over 4
+
+=item virtual
+
+The virtual packages created dynamically by Fink.
+
+=item status
+
+The packages discovered by their presence in the dpkg status file, including
+all currently installed packages.
+
+=back
+
+=cut
+
+sub want_magic_tree {
+	my ($self, $tree) = @_;
+	$self->_process_trees_arg();
+	return get_option('_magic_trees')->{$tree};
+}
+
+=item custom_treelist
+
+  my $bool = $config->custom_treelist;
+
+Returns whether or not we're using a custom list of trees specified at the
+command line.
+
+=cut
+
+sub custom_treelist {
+	my $self = shift;
+	my @avail = $self->_standard_treelist;
+	my @current = $self->get_treelist;
+	
+	# If lists are unequal (ordered!), return true
+	while (@avail && @current) {
+		return 1 unless (shift @avail) eq (shift @current);
+	}
+	return @avail || @current;
 }
 
 =item param

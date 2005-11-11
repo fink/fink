@@ -24,10 +24,16 @@
 
 package Fink::Services;
 
-use Fink::Command qw(&rm_f);
+#use Fink::Checksum;
+use Fink::Command	qw(&rm_f);
+use Fink::CLI		qw(&word_wrap &get_term_width);
 
 use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
+use Getopt::Long;
+use Data::Dumper;
+use File::Find;
+use File::Spec;
 
 use strict;
 use warnings;
@@ -58,7 +64,10 @@ BEGIN {
 					  &get_darwin_equiv
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
-					  &store_rename &fix_gcc_repairperms);
+					  &store_rename &fix_gcc_repairperms
+					  &spec2struct &spec2string &get_options
+					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
+					  &find_subpackages);
 }
 our @EXPORT_OK;
 
@@ -220,6 +229,8 @@ In this technique, the first line of a heredoc establishes the number of
 whitespace characters that are removed from subsequent lines. Defaults to
 false.
 
+This option also B<DOES NOT> allow RFC-822 multi-line syntax.
+
 =back
 
 =cut
@@ -254,12 +265,11 @@ sub read_properties_lines {
 	$lastkey = "";
 	$heredoc = 0;
 	$linenum = 0;
-	my ($spacecount, $hdoc_spacecount); # Both top-level and heredocs
+	my $hdoc_spacecount; # number of spaces to remove in heredoc
 	
 	foreach (@lines) {
 		$linenum++;
 		chomp;
-		_remove_space(\$spacecount) if ($opts{remove_space});
 			
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
@@ -290,6 +300,8 @@ sub read_properties_lines {
 				$heredoc++ if (/<<\s*$/ and not /^\s*#/);
 			}
 		} else {
+			s/^\s+// if $opts{remove_space};
+			
 			next if /^\s*\#/;		# skip comments
 			next if /^\s*$/;		# skip empty lines
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
@@ -1094,7 +1106,7 @@ sub cleanup_lol {
 	@$struct = @clusters;
 }
 
-=item file_MD5_checksum
+=item file_MD5_checksum (deprecated)
 
     my $md5 = file_MD5_checksum $filename;
 
@@ -1104,33 +1116,15 @@ the chosen command is read via an open() pipe and matched against the
 appropriate regexp. If the command returns failure or its output was
 not in the expected format, the program dies with an error message.
 
+Note: this method is deprecated; use Fink::Checksum->new('MD5') instead.
+
 =cut
 
 sub file_MD5_checksum {
 	my $filename = shift;
-	my ($pid, $checksum, $md5cmd, $match);
 
-	if(-e "/sbin/md5") {
-		$md5cmd = "/sbin/md5";
-		$match = '= ([^\s]+)$';
-	} else {
-		$md5cmd = "md5sum";
-		$match = '([^\s]*)\s*(:?[^\s]*)';
-	}
-	
-	$pid = open(MD5SUM, "$md5cmd $filename |") or die "Couldn't run $md5cmd: $!\n";
-	while (<MD5SUM>) {
-		if (/$match/) {
-			$checksum = $1;
-		}
-	}
-	close(MD5SUM) or die "Error on closing pipe  $md5cmd: $!\n";
-
-	if (not defined $checksum) {
-		die "Could not parse results of '$md5cmd $filename'\n";
-	}
-
-	return $checksum;
+	my $checksum = Fink::Checksum->new('MD5');
+	return $checksum->get_checksum($filename);
 }
 
 =item get_arch
@@ -1197,7 +1191,7 @@ selection cannot be determined.
 
 sub gcc_selected {
 	return 0 unless -x '/usr/sbin/gcc_select';
-	chomp(my $gcc_select = `/usr/sbin/gcc_select`);
+	chomp(my $gcc_select = `/usr/sbin/gcc_select 2>&1`);
 	return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
 	return 0;
 }
@@ -1213,7 +1207,8 @@ breakage. This function checks for such breakage and fixes it if necessary.
 
 sub fix_gcc_repairperms {
 	return unless gcc_select_arg(gcc_selected) eq '4.0';
-	system('gcc_select --force 4.0') == 0
+	system('/usr/bin/env PATH=/usr/sbin:/usr/bin:/sbin:/bin '
+		. 'gcc_select --force 4.0 >/dev/null 2>&1') == 0
 		or die "Can't fix GCC after Repair Permissions: $!\n";
 }
 
@@ -1684,7 +1679,7 @@ sub lock_wait {
 		return (wantarray ? (0, 0) : 0) if $no_block;
 		
 		# Couldn't get lock, meaning process has it
-		my $waittime = $really_timeout ? "$timeout seconds " : "";
+		my $waittime = $really_timeout ? "up to $timeout seconds " : "";
 		print STDERR "Waiting ${waittime}for $desc to finish..."
 			unless $quiet;
 		
@@ -1793,6 +1788,401 @@ sub store_rename {
 		print_breaking_stderr("Error: could not write temporary file $tmp: $!");
 		return 0;
 	}
+}
+
+=item spec2struct
+
+	my $spec_struct = spec2struct($spec_string);
+	my $spec_struct = spec2struct($spec_string, $where);
+
+Turn a package specification such as 'foo (>= 1.0)' into a structural form.
+
+The hash returned always contains the field 'package', and optionally contains
+the fields 'version' and 'relation' to indicate a version restriction.
+
+The $where field is used in case of error, to indicate to the user where the
+error occurred.
+
+On error, an exception is thrown.
+
+=cut
+
+sub spec2struct {
+	my $spec = shift;
+	my $where = shift || $spec;
+	$where = " at $where" if $where;
+	my %ret;
+	
+	if ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
+		$ret{package} = $1;
+		my $verspec = $2;
+		if ($verspec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
+			@ret{qw(relation version)} = ($1, $2);
+		} else {
+			die "Fink::Services: Illegal version specification: "
+				. "$verspec$where\n";
+		}
+	} elsif ($spec =~ /^\s*([0-9a-zA-Z][0-9a-zA-Z.\+-]+)\s*$/) {
+		$ret{package} = $1;
+	} else {
+		die "Fink::Services: Illegal specification format: $spec$where\n";
+	}
+	
+	return \%ret;
+}
+
+=item spec2string
+
+	my $spec_string = spec2string($spec_struct);
+	my $spec_string = spec2string($spec_struct, $where);
+
+Reverse spec2struct. On error, an exception is thrown.
+
+=cut
+
+sub spec2string {
+	my $spec = shift;
+	my $where = shift || Dumper($spec);
+	$where = " at $where" if $where;
+	
+	die "Fink::Services: Missing package name in spec struct$where\n"
+		unless defined $spec->{package};
+	if (defined $spec->{version} || defined $spec->{relation}) {
+		die "Fink::Services: Only one of version and relation present in "
+			. "spec struct$where\n"
+			unless defined $spec->{version} && defined $spec->{relation};
+		return sprintf "%s (%s %s)", @$spec{qw(package relation version)};
+	} else {
+		return $spec->{package};
+	}
+}
+
+=item get_options
+
+  get_options $command, $optiondesc, $args;
+  get_options $command, $optiondesc, $args, %optional;
+
+Convenience method to parse arguments for a Fink command.
+
+Standard errors such as invalid options and --help are handled automagically.
+
+
+The $command parameter should simply contain the name of the current Fink
+command, eg: 'index'.
+
+
+The $optiondesc array-ref should contain sub-arrays describing options. Each
+sub-array should contain, in order:
+
+* Two items which could be passed to Getopt::Long::GetOptions.
+
+* A third item with descriptive text appropriate for the --help option. If no
+help should be printed for this option, pass undef.
+
+* An optional fourth item, with a suitable name for the option's value if
+it takes a value.
+
+Eg:  [ 'option|o' => \$opt, 'Descriptive text', 'value' ]
+
+It is not necessary to include the --help item, it will be added automatically.
+
+
+The $args array-ref should contain the list of command-line arguments to be
+examined for options. The array will be modified to remove the arguments
+found, make a copy if you want to retain the original list.
+
+
+The following elements of %optional are available:
+
+=over 4
+
+=item helpformat
+
+If the standard help format is not good enough for your purposes, a custom
+format can be defined. This is simply a string, with a some special constructs:
+
+  %opts{opt1,opt2,...}	Prints the default usage and description for the
+						given options 'opt1', 'opt2', etc.
+
+  %all{}				Prints the default usage and description for all
+  						options.
+
+  %align{opt,desc}		Prints the option 'opt' and its description 'desc',
+						aligned with other options.
+
+  %align{opt,desc,optspace}
+  						Prints the option 'opt' and its description 'desc',
+						aligned such that the option part takes up a width
+						of optspace characters.
+
+  %intro{ex,...}		Print a help introduction, with 'ex' as a very short
+  						generic example of calling this command, such as:
+  						'[options] [packages]'. With multiple examples, will
+  						print one per line.
+
+  %%					Print a literal percent character.
+
+  Percent can also be used to escape comma and curly brackets inside an
+  expansion.
+
+=item validate
+
+If the options can be invalid under unusual circumstances, pass in a code-ref
+here which will validate the results of option-parsing. This code-ref should
+return one of the $VALIDATE_* constants.
+
+It is guaranteed that $VALIDATE_OK is a false value, and other $VALIDATE_* are
+true.
+
+=item optwidth
+
+The width of the screen given to showing the options (as opposed to their
+descriptions). The default should usually be fine.
+
+=back
+
+
+If an option has the form "foo!", then a --no-foo help string will also be
+created as part of %all{}. Other special features of Getopt may be adopted in
+the future
+
+=cut
+
+our ($VALIDATE_OK, $VALIDATE_HELP, $VALIDATE_ERROR) = 0..20;
+
+# my $str = _get_option_usage $optitem;
+#
+# Get usage and for an option item. Does not include the description.
+sub _get_option_usage {
+	my $opt = shift;
+	
+	# Try each way to specify option (eg: -f, --full)
+	my @alts = sort { length($a) <=> length($b) } @{$opt->{names}};
+	foreach my $alt (@alts) {
+		if (length($alt) == 1) {
+			$alt = "-$alt";
+			$alt .= " $opt->{value}" if defined $opt->{value};
+		} else {
+			$alt = "--$alt";
+			$alt .= "=$opt->{value}" if defined $opt->{value};
+		}
+	}
+	return join ', ', @alts;
+}
+
+# my $str = _align_option_text $usage, $desc, $optlen;
+#
+# Aligns the usage and desc with other options
+sub _align_option_text {
+	my ($opttxt, $desctxt, $optlen) = @_;
+	my $ret = "";
+	
+	# Word wrap things
+	my $desclen; # Ensure there's a reasonable size
+	for my $width (get_term_width(), 80) {
+		$desclen = $width - $optlen - 3;
+		last if $desclen > 5;
+	}
+	
+	my @optlines = word_wrap $opttxt, $optlen, '  ', '    ';
+	my @desclines = map { word_wrap $_, $desclen }
+		split /\n/, $desctxt; # Respect newlines
+	
+	# Add 'em to the message by pairs
+	my $first = 1;
+	while (1) {
+		my $optpart = shift @optlines;
+		my $descpart = shift @desclines;
+		last unless defined $optpart || defined $descpart;
+		$optpart = ' ' x $optlen unless defined $optpart;
+		$descpart = '' unless defined $descpart;
+		
+		my $midpart = $first ? ' - ' : '   ';
+		$first = 0 if $first;
+		
+		$ret .= sprintf "%-${optlen}s%s%s\n", $optpart, $midpart, $descpart;
+	}
+	
+	return $ret;
+}
+
+# my $str = _get_option_help $optitem, $optlen;
+#
+# Get the complete help for an option. May be multi-line!
+sub _get_option_help {
+	my ($opt, $optlen) = @_;
+	my @realopts;
+	$DB::single = 1 if grep { $_ eq 'use-binary-dist' } @{$opt->{names}};
+	if ($opt->{modifiers} =~ /!/) {
+		require Storable;
+		my $negopt = Storable::dclone($opt);
+		$negopt->{names} = [
+			map { length($_) > 1 ? "no-$_" : () } @{$opt->{names}}
+		];
+		$negopt->{help} = "Opposite of $opt->{names}->[0]";
+		@realopts = ($opt, $negopt);
+	} else {
+		@realopts = $opt;
+	}
+	
+	my $text = '';
+	for my $ropt (@realopts) {
+		my $usage = _get_option_usage($ropt);
+		$text .= _align_option_text($usage, $ropt->{help}, $optlen);
+	}
+	return $text;
+}	
+
+# my $str = _expand_help $command, $optionlist, $helpformat, $optlen;
+#
+# Expand the help format
+sub _expand_help {
+	my ($command, $options, $helpformat, $optlen) = @_;
+	
+	# Option table
+	my %opts;
+	foreach my $opt (@$options) {
+		my @names = @{$opt->{names}};
+		@opts{@names} = ($opt) x scalar(@names);
+	}
+	
+	# Expansion table
+	my %exp = (
+		all => sub {
+			"Options:\n" . join '', map { _get_option_help($_, $optlen) }
+				@$options;
+		},
+		opts => sub {
+			chomp (my $ret = join '', map { _get_option_help($_, $optlen) }
+				@opts{@_} );
+			$ret;
+		},
+		align	=> sub {
+			chomp (my $ret = _align_option_text(@_, $optlen));
+			$ret
+		},
+		intro	=> sub {
+			my $first = shift;
+			require Fink::FinkVersion;
+			"Fink " . Fink::FinkVersion::fink_version() . "\n\n" .
+				"Usage: fink$command $first\n" .
+				join '', map { "       fink$command $_\n" } @_;
+		},
+	);
+
+	# Do the format
+	$helpformat =~ s"(?<!\%)((?:\%\%)*)\%(\w+)\{(|.*?[^%])\}"
+		return $& unless exists $exp{$2};
+		my @args = map { s/(?<!\%)((?:\%\%)*)%([{},])/$1$2/g; $_ }
+			split /(?<!%),/, $3;
+		$1 . &{$exp{$2}}(@args);
+	"ge;
+	$helpformat =~ s/%%/%/g;
+	return $helpformat;
+}
+
+# my $opthash = _new_option(@optarray);
+#
+# Get an option-item as a hash, given an option-item as an array.
+sub _new_option {
+	my $opthash;
+	@$opthash{qw(spec dest help value)} = @_;
+	$opthash->{spec} =~ /^([\w-]+(\|[\w-]+)*)(.*)$/
+		or die "Bad option specification: $opthash->{spec}\n";
+	$opthash->{names} = [ split /\|/, $1 ];
+	$opthash->{modifiers} = $3;
+	return $opthash;
+}
+
+sub get_options {
+	my ($command, $options, $args, %optional) = @_;
+	%optional = (
+		helpformat	=> "%intro{[options]}\n%all{}\n",
+		validate	=> sub { $VALIDATE_OK },
+		optwidth	=> 22,
+		%optional,
+	);
+	
+	# Turn the options into hashes
+	my @optitems = map { _new_option(@$_) } @$options;
+	
+	# Insert help after last option, if it's not already in the list
+	my $wanthelp = 0;
+	
+	if (!grep { grep { $_ eq 'help' || $_ eq 'h' } @{$_->{names}} } @optitems) {
+		push @optitems, _new_option('h|help' => \$wanthelp,
+			'Display this help text.');
+	}
+	
+	# Allow blank $command for global options.
+	$command = " $command" if $command;
+	
+	# Call GetOptions. Switch args into @ARGV so GetOptions can work
+	my $die = <<DIE;
+fink$command: unknown option
+Type 'fink$command --help' for more information.
+DIE
+	{
+		local @ARGV = @$args;	
+		Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
+		GetOptions( map { @$_{qw(spec dest)} } @optitems )
+			or die $die;
+		@$args = @ARGV;
+	}
+	
+	my $val = &{$optional{validate}}();
+	unless ($wanthelp || $val == $VALIDATE_HELP) {
+		($val == $VALIDATE_OK) ? return : die $die;
+	}
+	
+	# Now we're doing the help
+	print _expand_help($command, \@optitems,
+		@optional{qw(helpformat optwidth)});
+	
+	exit 0;
+}
+
+=item find_subpackages
+
+  my @package_names = find_subpackages(__PACKAGE__);
+
+Find the sub-packages of a package. For example, the package -I<Foo::Bar> could
+have sub-packages -I<Foo::Bar::Baz>, -I<Foo::Bar::Two::Levels>, etc.
+
+A list of package-names will be returned, with each package having already been
+require'd. One can then call -I<new>, or some other class method, to create new
+objects of a sub-package.
+
+=cut
+
+sub find_subpackages {
+	my $pkg = shift;
+	(my $pkgdir = $pkg) =~ s,::,/,g;
+	
+	my %found;
+	my @found; # keep ordered
+	for my $dir (@INC) {
+		my $subdir = File::Spec->catdir($dir, $pkgdir);
+		next unless -d $subdir;
+		
+		find({
+			follow => 1,
+			wanted => sub {
+				return unless /\.pm$/;
+				
+				my $subpkg = File::Spec->abs2rel($File::Find::name, $dir);
+				$subpkg =~ s,/,::,g;
+				$subpkg =~ s,\.pm$,,;
+				return if exists $found{$subpkg};
+				
+				eval "require $subpkg";
+				$found{$subpkg} = 1;
+				push @found, $subpkg;
+			}
+		}, $subdir);
+	}
+	
+	return @found;
 }
 
 =back

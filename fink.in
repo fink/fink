@@ -21,171 +21,21 @@
 #
 
 $| = 1;
-require 5.006;  # perl 5.6.0 or newer required
 use strict;
 
-use lib "@BASEPATH@/lib/perl5";
-my $basepath = '@BASEPATH@';
+use lib "@BASEPATH@/lib/perl5";	# Be careful to use the right libs
 
-### parse options passed on the command line
+# Load Fink
+use Fink;
 
-use Getopt::Long;
-
-my %options =
-  (
-   "dontask"         => 0,
-   "interactive"     => 0,
-   "verbosity"       => 0,
-   "keep_build"      => 0,
-   "keep_root"       => 0,
-   "use_binary"      => 0,
-   "build_as_nobody" => 0,
-   "maintainermode"  => 0,
-  );
-my @orig_ARGV = @ARGV;
-
-Getopt::Long::Configure(qw(bundling ignore_case require_order));
-GetOptions(
-	'yes|y'              => sub { $options{dontask} = 1         },
-	'quiet|q'            => sub { $options{verbosity} = -1      },
-	'verbose|v'          => sub { $options{verbosity} = 3       },
-	'keep-build-dir|k'   => sub { $options{keep_build} = 1      },
-	'keep-root-dir|K'    => sub { $options{keep_root} = 1       },
-	'use-binary-dist|b'  => sub { $options{use_binary} = 1      },
-	'no-use-binary-dist' => sub { $options{use_binary} = -1     },
-	'build-as-nobody'    => sub { $options{build_as_nobody} = 1 },
-	'maintainer|m'       => sub { $options{maintainermode} = 1  },
-#	'interactive|i'      => sub { $options{interactive} = 1     },
-	'version|V'          => \&show_version,
-	'help|h'             => \&show_help
-)
-	or die <<UNKNOWN;
-fink: unknown option
-Type 'fink --help' for more information.
-UNKNOWN
-
-### display version numbers if requested
-
-sub show_version {
-  load_config();
-  require Fink::FinkVersion;
-  print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
-  print "Distribution version: ".Fink::FinkVersion::distribution_version()."\n";
-  print <<"EOF";
-
-Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2005 The Fink Package Manager Team
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-EOF
-  exit 0;
-}
-
-### display usage if requested
-
-sub show_help {
-  require Fink::FinkVersion;
-  my $version = Fink::FinkVersion::fink_version();
-
-  print <<"EOF";
-Fink $version
-
-Usage: fink [options] command [package...]
-       fink install pkg1 [pkg2 ...]
-
-Common commands:
-  install      - install/update the named packages
-  remove       - remove the named packages
-  purge        - same as remove but also removes all configuration files
-  update       - update the named packages
-  selfupdate   - upgrade fink to the lastest release
-  update-all   - update all installed packages
-  configure    - rerun the configuration process
-  list         - list available packages, optionally filtering by name,
-                 see 'fink list --help' for more options
-  apropos      - list packages matching a search keyword
-  describe     - display a detailed description of the named packages
-  index        - force rebuild of package cache
-  validate     - performs various checks on .info and .deb files
-  scanpackages - rescans the list of binary packages on the system
-  cleanup      - reclaims disk space used by temporary or obsolete files
-  show-deps    - list run-time and compile-time package dependencies
-
-Common options:
-  -h, --help            - display this help text
-  -q, --quiet           - causes fink to be less verbose, opposite of --verbose
-  -V, --version         - display version information
-  -v, --verbose         - causes fink to be more verbose, opposite of --quiet
-  -y, --yes             - assume default answer for all interactive questions
-  -b, --use-binary-dist - download pre-compiled packages from the binary 
-                          distribution if available
-  --no-use-binary-dist  - don't use pre-compiled packages from the binary 
-                          distribution (opposite of -b)
-
-See the fink(8) manual page for a complete list of commands and options.
-Visit http://fink.sourceforge.net/ for further information.
-EOF
-  exit 0;
-}
-
-### setup environment
-
-my $Config;
-my $Config_Loaded = 0;
-sub load_config {
-    return 1 if $Config_Loaded++;
-
-    require Fink::Config;
-
-    # read the configuration file
-    my $configpath;
-    $configpath = "$basepath/etc/fink.conf";
-    if (-f $configpath) {
-        $Config = &Fink::Services::read_config($configpath, 
-                                               { Basepath => "$basepath" }
-                                              );
-    } else {
-        print "ERROR: Configuration file \"$configpath\" not found.\n";
-        exit 1;
-    }
-}
-
-
-# set useful umask
-umask oct("022");
-
-# set PATH so we find dpkg and *-config scripts
-$ENV{PATH} = "$basepath/sbin:$basepath/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
-
-# get rid of CDPATH
-delete $ENV{CDPATH};
-
-### now load the actual engine
-
-# load the modules
-require Fink::Services;
-require Fink::Engine;
-
-load_config();
-
-# propagate command-line options
-Fink::Config::set_options(\%options);
+# read the options
+require Fink::Config;
+my @args_left = Fink::Config->parse_options(@ARGV);
 
 # create the command-processing engine
-my $engine = Fink::Engine->new_with_config($Config);
+require Fink::Engine;
+my $engine = Fink::Engine->new_with_config($Fink::Config::config);
+exit $engine->process(\@ARGV, @args_left);
 
-### process the command line (or enter interactive mode)
-
-if ($#ARGV >= 0) {
-  exit $engine->process(\@orig_ARGV,@ARGV);
-} else {
-  # TODO: enter interactive mode
-#  die "fink: no command given.\nType 'fink --help' for usage information.\n";
-    show_help
-}
-
-### eof -- shouldn't get here.
-exit 0;
 # vim: ts=4 sw=4 noet
+
