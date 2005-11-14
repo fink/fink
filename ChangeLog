@@ -1,3 +1,7 @@
+2005-11-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: t/testmore.pl now returns true on success
+
 2005-11-09  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in, fink.conf.5.in: Backport lots of small fixes from HEAD.
