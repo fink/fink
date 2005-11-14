@@ -21,7 +21,7 @@ bootstrap: test
 	@sh bootstrap.sh $(PREFIX)
 
 install:
-	./inject.pl
+	./inject.pl $(PREFIX)
 
 test_setup:
 	@./setup.sh $(TEST_BASEPATH)

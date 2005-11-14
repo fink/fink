@@ -1,3 +1,7 @@
+2005-11-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Allow PREFIX for 'make install'
+
 2005-11-10  Daniel Macks  <dmacks@netspace.org>
 
 	* .cvsignore, Makefile: fix vim backup-file removal.
