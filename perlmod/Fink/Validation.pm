@@ -992,11 +992,13 @@ sub validate_dpkg_unpacked {
 # - Check for symptoms of running update-scrollkeeper during package building
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
 # - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:scrollkeeper
-# - only gettext should should have charset.alias
+# - Only gettext should should have charset.alias
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
 # - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
 # - Catch common error relating to usage of -framework flag in .pc file
+# - Look for symptoms of missing InfoDocs field in .info
+#
 # - any other ideas?
 #
 sub _validate_dpkg {
@@ -1271,6 +1273,28 @@ sub _validate_dpkg {
 				&stack_msg($msgs, "Couldn't read pkg-config file \"$filename\": $!");
 			}
 		}
+
+		# Check that if we have texinfo files, InfoDocs was used, and
+		# that there is no table-of-contents file present (because it
+		# is created by InfoDocs in PostInst)
+		if ($filename =~ /^$basepath\/share\/info\/(.+)/) {
+			my $infofile = $1;
+			if ($infofile eq 'dir') {
+				&stack_msg($msgs, "The texinfo table of contents file \"$filename\" must not be installed directly as part of the .deb");
+			} else {
+				my $scripts_okay = 1;
+				foreach (qw/ postinst prerm /) {
+					$scripts_okay = 0 unless grep {
+						/^\# generated from InfoDocs directive/ ||
+						/sbin\/install-info.*--info-dir=$basepath\/share\/info /
+					} @{$dpkg_script->{$_}};
+				}
+				if (not $scripts_okay) {
+					&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
+				}
+			}
+		}
+
 	};  # end of CODE ref block
 
 	# check each file in the %d hierarchy according to the above-defined sub

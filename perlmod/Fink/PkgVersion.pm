@@ -3753,6 +3753,9 @@ EOF
 
 		# FIXME: debian install-info seems to always omit all path components when adding
 
+		# NOTE: Validation::_validate_dpkg must be kept in sync with
+		# this implementation!
+
 		$scriptbody{postinst} .= "\n";
 		$scriptbody{postinst} .= "# generated from InfoDocs directive\n";
 		$scriptbody{postinst} .= "if [ -f $infodir/dir ]; then\n";

@@ -1,3 +1,7 @@
+2005-11-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check if .deb mishandles texinfo InfoDocs field.
+
 2005-11-11  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm, PkgVersion.pm: perpare_percent_c calls
