@@ -1,3 +1,7 @@
+2005-11-16  Daniel Macks  <dmacks@netspace.org>
+
+	* SysState.pm: Fix wording of diagnostic messages.
+
 2005-11-15  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Check if .deb mishandles texinfo InfoDocs field.

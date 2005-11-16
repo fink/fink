@@ -692,7 +692,7 @@ sub _check_conflicts {
 		# Found some conflicts (one per conflictor!)
 		for my $sat (@sat) {
 			my $desc = "Conflict of $pkgname: " . spec2string($con)
-				. " is satisfied by $sat";
+				. " is not resolved due to $sat";
 			
 			push @probs, {
 				package	=> $pkgname,
@@ -961,7 +961,7 @@ sub resolve_install {
 	
 	if (@extras) {	# Found a solution!
 		if ($verbose) {
-			print_breaking_stderr("Solution resolved. Will install extra "
+			print_breaking_stderr("Solution found. Will install extra "
 				. "packages:");
 			print_breaking_stderr("  " . $_->get_fullname()) foreach @extras;
 		}
