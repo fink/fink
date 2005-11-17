@@ -2315,18 +2315,9 @@ sub resolve_depends {
 			}
 		}
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
-			my $package = Fink::Package->package_by_name($altspec[0]->{'depname'});
-			my $msg = "Can't resolve $oper \"$altspecs\" for package \""
+			die_breaking "Can't resolve $oper \"$altspecs\" for package \""
 				. $self->get_fullname()
 				. "\" (no matching packages/versions found)\n";
-			if (defined $package and (my $pv = $package->get_latest_version)) {
-				$msg .= "\nAt least one of the dependencies required ("
-					. $pv->get_name . ") is a virtual package, you might need "
-					. "to manually upgrade or install it.  The package details "
-					. "below should have more information on where to find an "
-					. "installer:\n\n" . $pv->get_description . "\n";
-			}
-			die_breaking $msg;
 		}
 		push @deplist, $altlist;
 		$idx++;
