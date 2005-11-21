@@ -1,3 +1,7 @@
+2005-11-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm, Validation.pm: fix typo
+
 2005-11-17  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Remove message for VirtPackages in resolve_depends.

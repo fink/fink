@@ -460,13 +460,13 @@ sub read_properties_multival_lines {
 
 Executes the (possibly multiline) script $script.
 
-If $script appears to specify an interpretter (i.e., the first line
+If $script appears to specify an interpreter (i.e., the first line
 begins with #!) the whole thing is stored in a temp file which is made
 chmod +x and executed. If the tempfile could not be created, the
 program dies with an error message. If executing the script fails, the
 tempfile is not deleted and the failure code is returned.
 
-If $script does not specify an interpretter, each line is executed
+If $script does not specify an interpreter, each line is executed
 individually. In this latter case, the first line that fails causes
 further lines to not be executed and the failure code is returned.
 Blank lines and lines beginning with # are ignored, and any line
@@ -647,7 +647,7 @@ sub prepare_script {
 		return 1;
 	}
 
-	### No interpretter is specified so process for line-by-line system()
+	### No interpreter is specified so process for line-by-line system()
 	$$script =~ s/^\s*//mg;          # Strip leading white space on each line
 	$$script =~ s/\s*\\\s*\n/ /g;    # Rejoin continuation/multiline commands
 	$$script =~ s/^\#.*?($)\n?//mg;  # remove comment lines
