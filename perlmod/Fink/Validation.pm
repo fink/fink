@@ -746,9 +746,9 @@ sub validate_info_component {
 		if ($value =~ /^\s*\#!\s*(.*)/) {
 			my $real_interp = '/bin/sh';
 			if ($1 eq $real_interp) {
-				print 'Warning: Useless use of explicit interpretter';
+				print 'Warning: Useless use of explicit interpreter';
 			} else {
-				print "Error: ignoring explicit interpretter (will use \"$real_interp\" instead)";
+				print "Error: ignoring explicit interpreter (will use \"$real_interp\" instead)";
 			}
 			print " in \"$field\"$splitoff_field. ($filename)\n";
 			$looks_good = 0;

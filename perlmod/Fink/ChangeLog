@@ -1,3 +1,7 @@
+2005-11-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm, Validation.pm: fix typo
+
 2005-11-16  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:  Support 10.4.3
