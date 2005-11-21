@@ -719,6 +719,47 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
+=item dev-tools
+
+This package represents a developer suite of command-line compilers
+and related programs, for example, Apple's DevTools (OS X <= 10.2) or
+XCode (OS X >= 10.3). This package is considered "installed" iff
+/usr/bin/gcc and /usr/bin/gcc exist and are executable.
+
+=cut
+
+	# create dummy object for devtools
+	$hash = {
+		package     => 'dev-tools',
+		version     => '0-1',
+		status      => STATUS_PRESENT,
+		description => '[virtual package representing developer commands]',
+		homepage    => 'http://fink.sourceforge.net/faq/usage-general.php#virtpackage',
+		descdetail  => <<END,
+This package represents the basic command-line compiler and
+related programs.  In order for this package to be "installed",
+you must have /usr/bin/gcc and /usr/bin/make available on your
+system.  You can obtain them by installing the Apple developer
+tools (also known as XCode on Mac OS X 10.3 and above).  The
+latest versions of the Apple developer tools are always
+available from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+	};
+
+	print STDERR "- checking for dev-tools commands:\n" if ($options{debug});
+	foreach my $file (qw| /usr/bin/gcc /usr/bin/make |) {
+		$options{debug} && printf STDERR " - %s... %s\n", $file, -x $file ? "found" : "missing!";
+		$hash->{status} = STATUS_ABSENT if not -x $file;
+	}
+
+	$hash->{compilescript} = &gen_compile_script($hash);
+
+	$self->{$hash->{package}} = $hash;
+
 =item gimp-print-shlibs
 
 This package represents the GIMP printing libraries

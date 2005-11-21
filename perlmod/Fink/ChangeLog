@@ -1,3 +1,10 @@
+2005-11-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm PkgVersion.pm, SelfUpdate.pm, VirtPackage.pm: Add new
+	"dev-tools" pkg representing presence of /usr/bin/{gcc,make},
+	which is an implicit BuildDepends of all packages and which is
+	required to be present in order to selfupdate via rsync or cvs.
+
 2005-11-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm, Validation.pm: fix typo

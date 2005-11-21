@@ -1316,8 +1316,10 @@ sub resolve_depends {
 	# now we continue to assemble the larger @speclist
 	if ($include_build) {
 		# Add build time dependencies to the spec list
-		push @speclist,
-			split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
+		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
+
+		# dev-tools is an implicit BuildDepends of all packages
+		push @speclist, 'dev-tools' if lc($field) eq 'depends' && $self->get_name() ne 'dev-tools';
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our splitoffs.

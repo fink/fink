@@ -77,6 +77,7 @@ sub check {
 		else {
 			$answer = "point";
 		}
+		&need_devtools($answer);
 		&print_breaking("fink is setting your default update method to $answer \n");
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();
@@ -93,12 +94,14 @@ sub check {
 						  "cvs" => "cvs",
 						  "Stick to point releases" => "point"
 						] );
+		&need_devtools($answer);
 		$config->set_param("SelfUpdateMethod", $answer);
 		$config->save();	
 	}
 
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
+		&need_devtools('cvs');
 		if (-f "$finkdir/dists/stamp-rsync-live") {
 			unlink "$finkdir/dists/stamp-rsync-live";
 		}
@@ -116,6 +119,7 @@ sub check {
 		}
 	}
 	elsif (($config->param("SelfUpdateMethod") eq "rsync") and $useopt != 1){
+		&need_devtools('rsync');
 		&do_direct_rsync();
 		&do_finish();
 		return;
@@ -131,6 +135,7 @@ sub check {
 		if (! $answer) {
 			return;
 		}
+		&need_devtools('rsync');
 		$config->set_param("SelfUpdateMethod", "rsync");
 		$config->save();	
 		&do_direct_rsync();
@@ -145,6 +150,7 @@ sub check {
 		if (! $answer) {
 			return;
 		}
+		&need_devtools('cvs');
 		$config->set_param("SelfUpdateMethod", "cvs");
 		$config->save();	
 		&setup_direct_cvs();
@@ -185,6 +191,20 @@ sub check {
 		}
 		&do_tarball($latest_fink);
 		&do_finish();
+	}
+}
+
+### die if the passed selfupdate method requires dev-tools be
+### installed but dev-tools is not installed
+
+sub need_devtools {
+	my $method = shift;
+
+	if ($method eq 'cvs' || $method eq 'rsync') {
+		Fink::Package->require_packages();
+		my $po = Fink::PkgVersion->match_package('dev-tools');
+		defined $po && $po->is_installed()
+			or die "selfupdate method '$method' requires the package 'dev-tools'\n";
 	}
 }
 

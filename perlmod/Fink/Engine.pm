@@ -1441,7 +1441,8 @@ sub real_install {
 #			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
-		if (not $item->[PKGVER]->built_with_essential) {
+		# dev-tools is not Essential but it must not depend on essentials because essentials must implicitly BDep:dev-tools
+		if (not $item->[PKGVER]->built_with_essential and $item->[PKGVER]->get_name() ne 'dev-tools') {
 			push @deplist, @elist;
 		}
 	DEPLOOP: foreach $dep (@deplist) {
