@@ -1,3 +1,8 @@
+2005-11-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Clean up *SetMACOSX_DEPLOYMENT_TARGET and *SetCXX
+	handlers.
+
 2005-11-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm, Validation.pm: fix typo
