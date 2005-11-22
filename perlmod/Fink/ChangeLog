@@ -1,5 +1,9 @@
 2005-11-22  Daniel Macks  <dmacks@netspace.org>
 
+	* Notify.pm, Notify/*.pm, SysState.pm: Return true to use and require
+
+2005-11-22  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: factor constant install-info stuff out of loop,
 	allow packages to call it manually instead of via InfoDocs field.
 

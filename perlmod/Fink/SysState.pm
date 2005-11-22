@@ -974,3 +974,5 @@ sub resolve_install {
 =back
 
 =cut
+
+1;
