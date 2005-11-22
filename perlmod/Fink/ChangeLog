@@ -23,6 +23,13 @@
 	* Engine.pm, PkgVersion.pm: perpare_percent_c calls
 	get_build_directory internally because %c might contain %b.
 
+2005-11-11  Chris Zubrzycki  <beren12@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm, Services.pm
+	* VirtPackage.pm: get_sw_vers renamed to get_osx_vers_long and new
+	get_osx_vers returns only Maj.Min (10.x). Also added
+	get_darwin_equiv and get_kern_vers.
+
 2005-11-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Set ownership of temp HOME dir to nobody when
@@ -1174,13 +1181,6 @@
 	is available, for greatly sped-up scanpackages. Enable the fink.conf option
 	AutoScanpackages, to automatically run scanpackages whenever a new .deb
 	is built.
-
-2005-04-25  Chris Zubrzycki  <beren12@users.sourceforge.net>
-
-	* Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm, Services.pm
-	* VirtPackage.pm: get_sw_vers renamed to get_osx_vers_long and new
-	get_osx_vers returns only Maj.Min (10.x). Also added
-	get_darwin_equiv and get_kern_vers.
 
 2005-04-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
