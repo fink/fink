@@ -1,5 +1,10 @@
 2005-11-22  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: factor constant install-info stuff out of loop,
+	allow packages to call it manually instead of via InfoDocs field.
+
+2005-11-22  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Clean up *SetMACOSX_DEPLOYMENT_TARGET and *SetCXX
 	handlers.
 

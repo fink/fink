@@ -1107,6 +1107,11 @@ sub _validate_dpkg {
 		$pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $vers;  # %d or %D
 	}
 
+
+	my $install_info_called =
+		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}} &&
+		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}};
+
 	# during File::Find loop, we stack all error msgs
 	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
 
@@ -1281,17 +1286,8 @@ sub _validate_dpkg {
 			my $infofile = $1;
 			if ($infofile eq 'dir') {
 				&stack_msg($msgs, "The texinfo table of contents file \"$filename\" must not be installed directly as part of the .deb");
-			} else {
-				my $scripts_okay = 1;
-				foreach (qw/ postinst prerm /) {
-					$scripts_okay = 0 unless grep {
-						/^\# generated from InfoDocs directive/ ||
-						/sbin\/install-info.*--info-dir=$basepath\/share\/info /
-					} @{$dpkg_script->{$_}};
-				}
-				if (not $scripts_okay) {
-					&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
-				}
+			} elsif (not $install_info_called) {
+				&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
 			}
 		}
 
