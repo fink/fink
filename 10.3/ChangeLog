@@ -1,6 +1,10 @@
 2005-11-28  Daniel Macks  <dmacks@netspace.org>
 
-	* Clean up inconsistent Depends:gettext mess vs stable.
+	* cctools-extra.info: Require that compiling succeeds.
+
+2005-11-28  Daniel Macks  <dmacks@netspace.org>
+
+	* tar.info: Clean up inconsistent Depends:gettext mess vs stable.
 
 2005-08-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
