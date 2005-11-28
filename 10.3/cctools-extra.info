@@ -11,7 +11,7 @@ Essential: yes
 Depends: base-files
 AddShlibDeps: true
 CompileScript: <<
-#!/bin/sh
+#!/bin/sh -ev
 
 pushd libstuff
 make
@@ -22,7 +22,7 @@ make
 popd
 <<
 InstallScript: <<
-#!/bin/sh
+#!/bin/sh -ev
  install -d -m 755 %i/sbin %i/share/man/man1 %i/share/man/man3 %i/share/man/man5
 
  install -c -m 755 misc/check_dylib.NEW     %i/sbin/check_dylib
