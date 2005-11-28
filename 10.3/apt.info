@@ -136,7 +136,12 @@ Ben Hines - added patch to make apt recognize macosx and darwin pkgs
 The sources.list file is now supplied by the fink program rather than
 by apt-get.
 
-socklen_t exists starting in OS X 10.3
+The type of the fifth parameter for getsocklen keeps changing. The
+original code uses unsigned int, which was never correct for darwin,
+so we patch several choices. Through OS X 10.3, it was int; starting
+in 10.4 it is socklen_t, a symbol that first appeared in 10.3 but was
+an int. So starting in 10.3 we can just use socklen_t.
+See: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=323716
 
 dmacks - Implemented "--ignore-breakage" cmdline flag to 'apt-get install'
 (first appears in: 10.2-gcc3.3/0.5.4-41, 10.3/0.5.4-51)
