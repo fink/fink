@@ -1,3 +1,7 @@
+2005-11-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Clean up inconsistent Depends:gettext mess vs stable.
+
 2005-08-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* base-files.info, fink-mirrors.info: new versions

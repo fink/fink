@@ -1,9 +1,8 @@
 Package: tar
 Version: 1.14
-Revision: 1
+Revision: 2
 Essential: yes
-GCC: 3.3
-Depends: gzip, bzip2, base-files
+Depends: gettext, gzip, bzip2, base-files
 BuildDepends: gettext-dev
 AddShlibDeps: true
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
