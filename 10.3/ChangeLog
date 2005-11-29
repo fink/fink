@@ -1,3 +1,8 @@
+2005-11-29  Daniel Macks  <dmacks@netspace.org>
+
+	* storable-pm.info: not needed for bootstrapping (in core of all
+	supported perl versions).
+
 2005-11-28  Daniel Macks  <dmacks@netspace.org>
 
 	* cctools-extra.info: Require that compiling succeeds.
