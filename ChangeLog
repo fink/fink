@@ -2,6 +2,7 @@
 
 	* bootstrap.pl: We require perl >= 5.8.1
 	* fink.info.in: We don't support 10.2-gcc3.3
+	* fink.conf.5.in: Sync Distribution field doc with reality
 
 2005-11-14  Daniel Macks  <dmacks@netspace.org>
 
