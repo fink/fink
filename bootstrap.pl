@@ -24,7 +24,7 @@
 #
 
 $| = 1;
-use 5.006;	 # perl 5.6.0 or newer required
+use 5.008_001;	 # perl 5.8.1 or newer required
 use strict;
 
 use FindBin;
@@ -36,9 +36,6 @@ my ($script, $cmd);
 
 # acceptable perl versions: "$] value" => "human-readable version string"
 my %ok_perl_versions = (
-    "5.006"    => "5.6.0",
-    "5.006001" => "5.6.1",
-    "5.008"    => "5.8.0",
     "5.008001" => "5.8.1",
     "5.008002" => "5.8.2",
     "5.008006" => "5.8.6"
@@ -53,13 +50,6 @@ if (exists $ok_perl_versions{"$]"}) {
 	    "$ok_perl_versions{$_} ($_)"
 	} sort keys %ok_perl_versions
     )."\n\n";
-}
-
-if ("$]" == "5.006001") {
-    if (not -x "/usr/bin/perl5.6.1") {
-	die "\nYou have an incomplete perl installation; you are missing /usr/bin/perl5.6.1.\n\nYou must repair this problem before installing Fink.\n\n"} 
-    elsif (system "/usr/bin/perl5.6.1 -V") {
-	die "\nYour /usr/bin/perl5.6.1 is not functional; you must repair this problem\nbefore installing Fink.\n\n"}
 }
 
 ### check if we are unharmed
@@ -111,13 +101,6 @@ print "Distribution $distribution\n";
 ### get version
 
 my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
-
-### check for a perl compatible with the Distribution:
-
-if (("$]" lt "5.008") and ($distribution gt "10.2-gcc3.3")) {
-    &print_breaking("\nSorry, you are using the 10.3 distribution or later along with perl 5.6.x.  Fink no longer supports bootstrapping with this combination; please upgrade your /usr/bin/perl.\n\n");
-    exit 1;
-}
 
 ### choose root method
 

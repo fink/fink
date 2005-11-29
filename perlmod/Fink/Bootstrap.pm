@@ -371,12 +371,7 @@ sub additional_packages {
 # to problems the next time foo was used to compile something.
 
 	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
-	if ("$]" == "5.006") {
-		push @addlist, "storable-pm560", "file-spec-pm560", "test-harness-pm560", "test-simple-pm560";
-	} elsif ("$]" == "5.006001") {
-		push @addlist, "storable-pm561", "file-spec-pm561", "test-harness-pm561", "test-simple-pm561";
-	} elsif ("$]" == "5.008") {
-	} elsif ("$]" == "5.008001") {
+	if ("$]" == "5.008001") {
 	} elsif ("$]" == "5.008002") {
 	} elsif ("$]" == "5.008006") {
 	} else {

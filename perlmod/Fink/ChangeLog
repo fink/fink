@@ -1,3 +1,7 @@
+2005-11-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: We require perl >= 5.8.1
+
 2005-11-22  Daniel Macks  <dmacks@netspace.org>
 
 	* Notify.pm, Notify/*.pm, SysState.pm: Return true to use and require

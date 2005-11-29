@@ -1,3 +1,7 @@
+2005-11-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Fink.pm.in: We require perl >= 5.8.1
+
 2005-09-09  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Fink.pm.in: New module, so scripts can 'use Fink'.
