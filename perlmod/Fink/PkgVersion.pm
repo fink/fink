@@ -4416,8 +4416,29 @@ sub get_env {
 #		$defaults{"CXXFLAGS"} = "-fabi-version=2";
 #	}
 
+	# force CXX to be g++-3.3 for the 10.3 and 10.4-transitional trees, unless
+	# the package has sepcified it with SetCXX
+	# Special feature: SetCXX does an implicit NoSet:true
+	if (not $self->has_param("SetCXX")) {
+		if ($config->param("Distribution") eq "10.3" or $config->param("Distribution") eq "10.4-transitional") {
+			$defaults{'CXX'} = 'g++-3.3';
+		}
+	}
+		
 	# uncomment this to be able to use distcc -- not officially supported!
 	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+
+	# Special feature: SetMACOSX_DEPLOYMENT_TARGET does an implicit NoSet:true
+	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET")) {
+		my $sw_vers = Fink::Services::get_osx_vers() || Fink::Services::get_darwin_equiv();
+		if (defined $sw_vers) {
+			if ($sw_vers eq "10.2") {
+				$defaults{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
+			} else {
+				$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
+			}
+		}
+	}
 
 	# lay the groundwork for prebinding
 	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
@@ -4509,27 +4530,6 @@ END
 		}
 	}
 
-	# handle MACOSX_DEPLOYMENT_TARGET
-	#TODO: make generic short and long $sw_vers functions.
-	unless ($self->has_param("SetMACOSX_DEPLOYMENT_TARGET") or $self->has_param("NoSetMACOSX_DEPLOYMENT_TARGET")) {
-		my $sw_vers = Fink::Services::get_osx_vers() || Fink::Services::get_darwin_equiv();
-		if (defined $sw_vers) {
-			if ($sw_vers eq "10.2") {
-				$script_env{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
-			} else {
-				$script_env{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
-			}
-		}
-	}
-
-	# force CXX to be g++-3.3 for the 10.3 and 10.4-transitional trees, unless
-	# the package has sepcified it with SetCXX
-	unless ($self->has_param("SetCXX") or $self->param_boolean("NoSetCXX")) {
-		if ($config->param("Distribution") eq "10.3" or $config->param("Distribution") eq "10.4-transitional") {
-			$script_env{'CXX'} = 'g++-3.3';
-		}
-	}
-		
 	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
 	# it the first g++ in the path
 	unless ($self->has_param('NoSetPATH')) {
