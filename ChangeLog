@@ -1,4 +1,9 @@
-2005-11-29  Daniel Macks  <dmacks@netspace.org>
+2005-12-02  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in, inject.pl, postinstall.pl.in: We require
+	perl >= 5.8.1
+
+2005-11-30  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap.pl: We no longer have any perlmod/ packages in bootstrap
 

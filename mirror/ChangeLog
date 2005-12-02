@@ -1,3 +1,8 @@
+2005-12-02  Daniel Macks  <dmacks@netspace.org>
+
+	* inject.pl, postinstall.pl.in: Fink core is coded assuming perl
+	>= 5.8.1 now.
+
 2005-10-15 Max Horn  <max@quendi.de>
 
 	* gnu: Updated mirror list.
