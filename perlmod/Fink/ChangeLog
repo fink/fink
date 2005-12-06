@@ -1,3 +1,8 @@
+2005-12-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Description beginning with [ are special, so
+	don't allow them in .info.
+
 2005-11-22  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Even cleaner *SetMACOSX_DEPLOYMENT_TARGET and *SetCXX

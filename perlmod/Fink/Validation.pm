@@ -278,7 +278,9 @@ END { }				# module clean-up code here (global destructor)
 #	+ warn if obsolete fields are encountered
 #	+ warn about missing Description/Maintainer/License fields
 #	+ warn about overlong Description fields
-#	+ warn about Description starting with "A" or "An" or containing the package name
+#	+ warn about Description starting with "A" or "An"
+#   + warn about Description containing the package name
+#   + warn if Description looks like a reserved/keyword form
 #	+ warn if boolean fields contain bogus values
 #	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
 #		(excluded from this are fields like Description, Homepage etc.)
@@ -636,6 +638,10 @@ sub validate_info_file {
 		}
 		if ($value =~ m/\.$/) {
 			print "Warning: Description ends with \".\". ($filename)\n";
+			$looks_good = 0;
+		}
+		if ($value =~ m/^\[/) {
+			print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
 			$looks_good = 0;
 		}
 	}
