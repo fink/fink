@@ -1,3 +1,8 @@
+2005-12-06  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in, fink.conf.5.in: Clarify --keep-*-dir modes and path
+	controls.
+
 2005-12-02  Daniel Macks  <dmacks@netspace.org>
 
 	* fink-virtual-pkgs.in, inject.pl, postinstall.pl.in: We require
