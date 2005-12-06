@@ -326,7 +326,7 @@ are only useful to developers. We do not recommend that conventional Fink users 
 fall into this category.
 .Bl -tag -width flag
 .It Cm KeepRootDir: Ar boolean
-Causes Fink not to delete the directory
+Causes Fink not to delete the temporary installation directory
 .Pa root-[name]-[version]-[revision]
 in the
 .Cm Buildpath 
@@ -340,7 +340,7 @@ flag has the same effect, but only operates on that single
 .Cm fink
 invocation.
 .It Cm KeepBuildDir: Ar boolean 
-Causes Fink not to delete the directory
+Causes Fink not to delete the package compile directory
 .Pa [name]-[version]-[revision]
 in the
 .Cm Buildpath 
