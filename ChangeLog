@@ -1,3 +1,8 @@
+2005-12-06  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in, fink.conf.5.in: Clarify --keep-*-dir modes and path
+	controls.
+
 2005-11-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.11, a release

@@ -48,13 +48,21 @@ Causes fink to be more verbose, opposite of
 .It Cm -y, --yes
 Assume default answer for all interactive questions
 .It Cm -K, --keep-root-dir
-Causes Fink not to delete the
-.Pa @PREFIX@/src/root-[name]-[version]-[revision]
-directory after building a package.
+Causes Fink not to delete the temporary installation directory
+.Pa root-[name]-[version]-[revision]
+in the
+.Cm Buildpath
+(see the
+.Cm fink.conf
+manpage) after building a package.
 .It Cm -k, --keep-build-dir
-Causes Fink not to delete the
-.Pa @PREFIX@/src/[name]-[version]-[revision]
-directory after building a package.
+Causes Fink not to delete the package compile directory
+.Pa [name]-[version]-[revision]
+in the
+.Cm Buildpath
+(see the
+.Cm fink.conf
+manpage) after building a package.
 .It Cm -b, --use-binary-dist
 Download pre-compiled binary packages from the binary distribution 
 if available and if deb is not already on the system
