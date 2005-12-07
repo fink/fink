@@ -911,7 +911,7 @@ sub cmd_remove {
 	}
 	else {
 		my @packages = get_pkglist("remove", @_);
-		Fink::PkgVersion::phase_deactivate(@packages);
+		Fink::PkgVersion::phase_deactivate([@packages]);
 	}
 }
 
@@ -1025,7 +1025,7 @@ sub cmd_purge {
 	}
 	else {
 		my @packages = get_pkglist("purge", @_);
-		Fink::PkgVersion::phase_purge(@packages);
+		Fink::PkgVersion::phase_purge([@packages]);
 	}
 }
 
@@ -1074,6 +1074,7 @@ sub cmd_cleanup {
 		[ 'debs'          => \$modes{debs},
 			"Delete .deb (compiled binary package) files." ],
 		[ 'buildlocks|bl' => \$modes{bl},	"Delete stale buildlock packages." ],
+		[ 'obsoletes'     => \$modes{obs},	"Delete obsolete packages." ],
 		[ 'keep-src|k'    => \$opts{keep_old},
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
 		[ 'dry-run|d'     => \$opts{dryrun},
@@ -1081,7 +1082,7 @@ sub cmd_cleanup {
 	], \@_, helpformat => <<FORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
-%opts{debs,sources,buildlocks}
+%opts{debs,sources,buildlocks,obsoletes}
 
 Options:
 %opts{keep-src,dry-run,help}
@@ -1095,6 +1096,7 @@ FORMAT
 	$modes{srcs} && &cleanup_sources(%opts);
 	$modes{debs} && &cleanup_debs(%opts);
 	$modes{bl}   && &cleanup_buildlocks(%opts);
+	$modes{obs}  && &cleanup_obsoletes(%opts);
 }
 
 =item cleanup_*
@@ -1340,10 +1342,9 @@ EOFUNC
 
 =item cleanup_buildlocks
 
-Search for all present lockfiles and all installed lockpkgs Optionally
-have lockpkgs remove themselves and nuke unlocked lockfiles. Returns a
-boolean indicating whether there any active buildlocks are still
-present after cleanup. The following option is known:
+Search for all installed lockpkgs. Optionally have lockpkgs remove
+themselves. Returns a boolean indicating whether there are any active
+buildlocks still present after cleanup. The following option is known:
 
 =over 4
 
@@ -1358,12 +1359,11 @@ If true, don't actually remove things.
 sub cleanup_buildlocks {
 	my %opts = (dryrun => 0, @_);
 
-	my $lockdir = "$basepath/var/run/fink/buildlock";
-	my @locks;
-	my $locks_left = 0;  # return value (set to 1 if an error occurs)
+	return 1 if Fink::Config::get_option("no_buildlock");
 
 	print "Reading buildlock packages...\n";
-	@locks = ();
+	my $lockdir = "$basepath/var/run/fink/buildlock";
+	my @locks = ();
 	if (opendir my $dirhandle, $lockdir) {
 		@locks = readdir $dirhandle;
 		close $dirhandle;
@@ -1375,56 +1375,49 @@ sub cleanup_buildlocks {
 
 	if ($opts{dryrun}) {
 		print map "\t$_\n", @locks;
-	} else {
-		print map "\t$_... will remove\n", @locks;
+	} elsif ($config->verbosity_level() > 1) {
+		print map "\tWill remove $_\n", @locks;
 	}
 
-	if (@locks) {
-		if ($opts{dryrun}) {
-			$locks_left = 1;
-		} else {
+	my $locks_left = @locks > 0;
+	if ($locks_left) {
+		if (not $opts{dryrun}) {
 			if (&execute(dpkg_lockwait() . " -r @locks", ignore_INT=>1)) {
 				print "Warning: could not remove all buildlock packages!\n";
+			} else {
+				$locks_left = 0;
 			}
 			Fink::PkgVersion->dpkg_changed;
 		}
-	}
-
-	print "Reading buildlock lockfiles...\n";
-	@locks = ();
-	if (opendir my $dirhandle, $lockdir) {
-		@locks = readdir $dirhandle;
-		close $dirhandle;
 	} else {
-		print "Warning: could not read buildlock directory $lockdir: $!\n";
-		$locks_left = 1;
-	}
-	# lock lockfiles are named %n-%v-%r_$timestamp.lock
-	@locks = grep { /\.lock$/ } @locks;
-
-	foreach my $lockfile (@locks) {
-		printf "\t$lockfile";
-		my $lock_FH = lock_wait("$lockdir/$lockfile", exclusive => 1, no_block => 1);
-		if ($lock_FH) {
-			# got flock so buildlock is not in use
-			print "... dead";
-			if (not $opts{dryrun}) {
-				print "... deleting";
-				if (not unlink "$lockdir/$lockfile") {
-					print "... failed";
-					$locks_left = 1;
-				}
-			} else {
-				$locks_left = 1;
-			}
-			print "\n";
-		} else {
-			print "... still in use\n";
-			$locks_left = 1;
-		}
+		print "None found.\n";
 	}
 
 	return $locks_left;
+}
+
+=item cleanup_obsoletes
+
+Search for all installed packages that are tagged "obsolete" and
+attempt to remove them. Returns a boolean indicating whether there any
+obsolete packages that were not removed. The following option is
+known:
+
+=over 4
+
+=item dryrun
+
+If true, don't actually remove them.
+
+=back
+
+=cut
+
+sub cleanup_obsoletes {
+	my %opts = (dryrun => 0, @_);
+
+	print "cleanup --obsoletes is not yet available.\n";
+	return 1;
 }
 
 =back
@@ -1824,7 +1817,7 @@ sub real_install {
 					### (it will quit with an error, and the user must then
 					### start over)
 					if ($dep->[PKGVER]->is_present()) {
-						Fink::PkgVersion::phase_activate($dep->[PKGVER]);
+						Fink::PkgVersion::phase_activate([$dep->[PKGVER]]);
 					}
 				}
 			}
@@ -1924,7 +1917,7 @@ sub real_install {
 			}
 
 			# Finally perform the actually installation
-			Fink::PkgVersion::phase_activate(@batch_install) unless (@batch_install == 0);
+			Fink::PkgVersion::phase_activate([@batch_install]) unless (@batch_install == 0);
 			# Reinstall buildconficts after the build
 			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
 

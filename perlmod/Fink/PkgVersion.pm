@@ -3950,10 +3950,36 @@ EOF
 	}
 }
 
-### activate
+=item phase_activate
+
+	phase_activate @packges;
+	phase_activate \@packages, \%opts;
+
+Use dpkg to install a list of packages. The packages are passed as
+PkgVersion objects. Stale buildlocks are automatically removed if
+@packages is passed by reference. The following option is known:
+
+=over 4
+
+=item no_clean_bl (optional)
+
+If present and true, do not check for stale buildlocks.
+
+=back
+
+=cut
 
 sub phase_activate {
-	my @packages = @_;
+	my (@packages, %opts);
+	if (ref $_[0]) {
+		my $packages = shift;
+		@packages = @$packages;
+		%opts = (no_clean_bl => 0, @_);
+	} else {
+		@packages = @_;
+		%opts = (no_clean_bl => 1);
+	}
+
 	my (@installable);
 
 	my $notifier = Fink::Notify->new();
@@ -3975,7 +4001,10 @@ sub phase_activate {
 		$notifier->notify(event => 'finkPackageInstallationFailed', description => $error);
 		die $error . "\n";
 	}
-	
+
+	# remove stale buildlocks (might interfere with pkg installations)
+	Fink::Engine::cleanup_buildlocks() unless $opts{no_cleanup_bl};
+
 	# Ensure consistency is maintained. May die!
 	eval {
 		require Fink::SysState;
@@ -4012,10 +4041,40 @@ sub phase_activate {
 	Fink::PkgVersion->dpkg_changed;
 }
 
-### deactivate
+=item phase_deactivate
+
+	phase_deactivate @packges;
+	phase_deactivate \@packages, \%opts;
+
+Use dpkg to remove a list of packages, but leave their ConfFiles in
+place. The packages are passed by name (no versioning requirements
+allowed). Only real packages can be removed, not "Provides" virtuals.
+Stale buildlocks are automatically removed if @packages is passed by
+reference. The following option is known:
+
+=over 4
+
+=item no_clean_bl (optional)
+
+If present and true, do not check for stale buildlocks.
+
+=back
+
+=cut
 
 sub phase_deactivate {
-	my @packages = @_;
+	my (@packages, %opts);
+	if (ref $_[0]) {
+		my $packages = shift;
+		@packages = @$packages;
+		%opts = (no_clean_bl => 0, @_);
+	} else {
+		@packages = @_;
+		%opts = (no_clean_bl => 1);
+	}
+
+	# remove stale buildlocks (might interfere with pkg removals)
+	Fink::Engine::cleanup_buildlocks() unless $opts{no_cleanup_bl};
 
 	my $notifier = Fink::Notify->new();
 
@@ -4045,7 +4104,19 @@ sub phase_deactivate {
 	Fink::PkgVersion->dpkg_changed;
 }
 
-### deactivate recursive
+=item phase_deactivate_recursive
+
+	phase_deactivate_recursive @packages;
+
+Use apt to remove a list of packages and all packages that depend on
+them, but leave their ConfFiles in place. The packages are passed by
+name (no versioning requirements allowed). Only real packages can be
+removed, not "Provides" virtuals. No explicit processing of buildlocks
+is done: stale ones that depend on packages to be deactivated will be
+removed and live buildlocks cannot be removed even via recursive
+removal.
+
+=cut
 
 sub phase_deactivate_recursive {
 	my @packages = @_;
@@ -4060,10 +4131,41 @@ sub phase_deactivate_recursive {
 	Fink::PkgVersion->dpkg_changed;
 }
 
-### purge
+=item phase_purge
+
+	phase_purge @packges;
+	phase_purge \@packages, \%opts;
+
+Use dpkg to remove a list of packages, including their ConfFiles. The
+packages are passed by name (no versioning requirements allowed). Only
+real packages can be removed, not "Provides" virtuals. Stale
+buildlocks are automatically removed if @packages is passed by
+reference. The following option is known:
+
+=over 4
+
+=item no_clean_bl (optional)
+
+If present and true, do not check for stale buildlocks.
+
+=back
+
+=cut
 
 sub phase_purge {
-	my @packages = @_;
+	my (@packages, %opts);
+	if (ref $_[0]) {
+		my $packages = shift;
+		@packages = @$packages;
+		%opts = (no_clean_bl => 0, @_);
+	} else {
+		@packages = @_;
+		%opts = (no_clean_bl => 1);
+	}
+
+	# remove stale buildlocks (might interfere with pkg purgess)
+	Fink::Engine::cleanup_buildlocks() unless $opts{no_cleanup_bl};
+
 
 	if (&execute(dpkg_lockwait() . " --purge @packages", ignore_INT=>1)) {
 		&print_breaking("ERROR: Can't purge package(s). Try 'fink purge --recursive " .
@@ -4078,7 +4180,18 @@ sub phase_purge {
 	Fink::PkgVersion->dpkg_changed;
 }
 
-### purge recursive
+=item phase_purge_recursive
+
+	phase_purge_recursive @packages;
+
+Use apt to remove a list of packages and all packages that depend on
+them, including their ConfFiles. The packages are passed by name (no
+versioning information). Only real packages can be removed, not
+"Provides" virtuals. No explicit processing of buildlocks is done:
+stale ones that depend on packages to be deactivated will be removed
+and live buildlocks cannot be removed even via recursive removal.
+
+=cut
 
 sub phase_purge_recursive {
 	my @packages = @_;

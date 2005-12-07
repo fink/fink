@@ -1,5 +1,14 @@
 2005-12-06  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Buildlocks remove their own lockfiles...no need to
+	try to remove them ourselves. Inhibit buildlock cleanup if global
+	no_buildlocks option used. Lay groundwork for Obsoletes removal.
+	* PkgVersion.pm: Implement alternate %options syntax for
+	phase_activate, phase_deactivate, phase_purge, and have them
+	automatically clear stale buildlocks if called this way. Add POD.
+
+2005-12-06  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Description beginning with [ are special, so
 	don't allow them in .info.
 
