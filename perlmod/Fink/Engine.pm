@@ -1373,15 +1373,12 @@ sub cleanup_buildlocks {
 	# lock packages are named fink-buildlock-%n-%v-%r and install %n-%v-%r.pid
 	@locks = grep { s/(.+)\.pid$/fink-buildlock-$1/ } @locks;
 
-	if ($opts{dryrun}) {
-		print map "\t$_\n", @locks;
-	} elsif ($config->verbosity_level() > 1) {
-		print map "\tWill remove $_\n", @locks;
-	}
-
 	my $locks_left = @locks > 0;
 	if ($locks_left) {
-		if (not $opts{dryrun}) {
+		if ($opts{dryrun}) {
+			print map "\t$_\n", @locks if $config->verbosity_level() > 1;
+		} else {
+			print map "\tWill remove $_\n", @locks if $config->verbosity_level() > 1;
 			if (&execute(dpkg_lockwait() . " -r @locks", ignore_INT=>1)) {
 				print "Warning: could not remove all buildlock packages!\n";
 			} else {
@@ -1390,7 +1387,7 @@ sub cleanup_buildlocks {
 			Fink::PkgVersion->dpkg_changed;
 		}
 	} else {
-		print "None found.\n";
+		print "\tNone found\n" if $opts{dryrun} || $config->verbosity_level() > 1;
 	}
 
 	return $locks_left;
