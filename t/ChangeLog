@@ -1,3 +1,8 @@
+2005-12-09  Daniel Macks  <dmacks@netspace.org>
+
+	* users_groups.t: Test that the users and groups we use by name
+	exist on the system.
+
 2005-11-14  Daniel Macks  <dmacks@netspace.org>
 
 	* testmore.pl: return true on success, false on failure
