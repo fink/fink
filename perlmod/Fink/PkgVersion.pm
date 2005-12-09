@@ -4003,7 +4003,7 @@ sub phase_activate {
 	}
 
 	# remove stale buildlocks (might interfere with pkg installations)
-	Fink::Engine::cleanup_buildlocks() unless $opts{no_cleanup_bl};
+	Fink::Engine::cleanup_buildlocks(internally=>1) unless $opts{no_cleanup_bl};
 
 	# Ensure consistency is maintained. May die!
 	eval {
@@ -4074,7 +4074,7 @@ sub phase_deactivate {
 	}
 
 	# remove stale buildlocks (might interfere with pkg removals)
-	Fink::Engine::cleanup_buildlocks() unless $opts{no_cleanup_bl};
+	Fink::Engine::cleanup_buildlocks(internally=>1) unless $opts{no_cleanup_bl};
 
 	my $notifier = Fink::Notify->new();
 
@@ -4164,7 +4164,7 @@ sub phase_purge {
 	}
 
 	# remove stale buildlocks (might interfere with pkg purgess)
-	Fink::Engine::cleanup_buildlocks() unless $opts{no_cleanup_bl};
+	Fink::Engine::cleanup_buildlocks(internally=>1) unless $opts{no_cleanup_bl};
 
 
 	if (&execute(dpkg_lockwait() . " --purge @packages", ignore_INT=>1)) {

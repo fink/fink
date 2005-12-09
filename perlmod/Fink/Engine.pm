@@ -1095,7 +1095,7 @@ FORMAT
 	
 	$modes{srcs} && &cleanup_sources(%opts);
 	$modes{debs} && &cleanup_debs(%opts);
-	$modes{bl}   && &cleanup_buildlocks(%opts);
+	$modes{bl}   && &cleanup_buildlocks(%opts, internally=>0);
 	$modes{obs}  && &cleanup_obsoletes(%opts);
 }
 
@@ -1344,7 +1344,7 @@ EOFUNC
 
 Search for all installed lockpkgs. Optionally have lockpkgs remove
 themselves. Returns a boolean indicating whether there are any active
-buildlocks still present after cleanup. The following option is known:
+buildlocks still present after cleanup. The following options are known:
 
 =over 4
 
@@ -1354,10 +1354,18 @@ If true, don't actually remove things.
 
 =back
 
+=item internally
+
+Set to true if being called implicitly or for automatic cleanup. Set
+to false (or omit) if being called explicitly by the user (for
+example, by 'fink cleanup').
+
+=back
+
 =cut
 
 sub cleanup_buildlocks {
-	my %opts = (dryrun => 0, @_);
+	my %opts = (dryrun => 0, internally => 0, @_);
 
 	return 1 if Fink::Config::get_option("no_buildlock");
 
@@ -1380,7 +1388,9 @@ sub cleanup_buildlocks {
 		} else {
 			print map "\tWill remove $_\n", @locks if $config->verbosity_level() > 1;
 			if (&execute(dpkg_lockwait() . " -r @locks", ignore_INT=>1)) {
-				print "Warning: could not remove all buildlock packages!\n";
+				print $opts{internally}
+					? "Some buildlocks could not be removed.\n"
+					: "Warning: could not remove all buildlock packages!\n";
 			} else {
 				$locks_left = 0;
 			}

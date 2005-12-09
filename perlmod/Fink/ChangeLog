@@ -1,5 +1,10 @@
 2005-12-09  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Milder warning when unable to remove buildlocks when
+	cleanup_buildlocks is used internally.
+
+2005-12-09  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Cleaner diagnostics during 'cleanup --bl'
 
 2005-12-06  Daniel Macks  <dmacks@netspace.org>
