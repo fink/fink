@@ -29,6 +29,7 @@ use Cwd qw(getcwd);
 use File::Find qw(find);
 use File::Path qw(rmtree);
 use File::Temp qw(tempdir);
+use File::Basename qw(basename);
 
 use strict;
 use warnings;
@@ -298,6 +299,7 @@ END { }				# module clean-up code here (global destructor)
 #   + Check syntax of dpkg Depends-style fields
 #	+ validate dependency syntax
 #	+ Type is not 'dummy'
+#   + Explicit interp in pkg-building *Script get -ev or -ex
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -918,6 +920,26 @@ sub validate_info_component {
 					print "Warning: Non-hardcoded version in dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 					next;
+				}
+			}
+		}
+	}
+
+	# Explicit interpretters in fink package building script should be
+	# called with -ev or -ex so that they abort if any command fails
+	foreach my $field (qw/patchscript compilescript installscript/) {
+		next unless defined ($value = $properties->{$field});
+		if ($value =~ /^\s*\#!\s*(\S+)\s*(.*)/) {
+			my ($shell, $args) = ($1, $2);
+			$shell = basename $shell;
+			if (grep {$shell eq $_} qw/bash csh ksh sh tcsh zsh/) {
+				unless ($args =~ /-\S*e/) {
+					print "Warning: -e flag not passed to explicit interpreter in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+				}
+				unless ($args =~ /-\S*[vx]/) {
+					print "Warning: -v or -x flag not passed to explicit interpreter in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
 				}
 			}
 		}
