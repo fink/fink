@@ -1026,6 +1026,7 @@ sub validate_dpkg_unpacked {
 # - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
 # - Catch common error relating to usage of -framework flag in .pc file
 # - Look for symptoms of missing InfoDocs field in .info
+# - Look for packages that contain no files
 #
 # - any other ideas?
 #
@@ -1142,6 +1143,8 @@ sub _validate_dpkg {
 
 	# during File::Find loop, we stack all error msgs
 	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
+
+	my $dpkg_file_count = 0;
 
 	# this sub gets called by File::Find::find for each file in the .deb
 	# expects cwd==%d and File::Find::find to be called with no_chdir=1
@@ -1319,6 +1322,10 @@ sub _validate_dpkg {
 			}
 		}
 
+		# count number of files and links ("real things, not dirs") in %i
+		lstat $File::Find::name;
+		$dpkg_file_count++ if -f _ || -l _;
+
 	};  # end of CODE ref block
 
 	# check each file in the %d hierarchy according to the above-defined sub
@@ -1329,6 +1336,9 @@ sub _validate_dpkg {
 		chdir $curdir;
 	}
 
+	# dpkg hates packages that contain no files
+	&stack_msg($msgs, "Package contains no files.") if not $dpkg_file_count;
+	
 	# handle messages generated during the File::Find loop
 	{
 		# when we switch to Tie::IxHash, we won't need to know the internal details of $msgs

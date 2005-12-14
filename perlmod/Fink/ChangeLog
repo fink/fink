@@ -1,5 +1,10 @@
 2005-12-13  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: .info validator warns if a .deb does not contain
+	any files in %p (this situation confuses dpkg)
+
+2005-12-13  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: .info validator warns if an explicit #!
 	interpretter is used but -e and -v flags are not passed to it.
 
