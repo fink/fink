@@ -1387,7 +1387,7 @@ sub cleanup_buildlocks {
 			print map "\t$_\n", @locks if $config->verbosity_level() > 1;
 		} else {
 			print map "\tWill remove $_\n", @locks if $config->verbosity_level() > 1;
-			if (&execute(dpkg_lockwait() . " -r @locks", ignore_INT=>1)) {
+			if (&execute(dpkg_lockwait() . " -r @locks 2>/dev/null", quiet=>1, ignore_INT=>1)) {
 				print $opts{internally}
 					? "Some buildlocks could not be removed.\n"
 					: "Warning: could not remove all buildlock packages!\n";
