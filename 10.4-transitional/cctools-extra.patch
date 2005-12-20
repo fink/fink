@@ -1,0 +1,38 @@
+diff -uNr cctools-590.18/libstuff/guess_short_name.c cctools-590.18-new/libstuff/guess_short_name.c
+--- cctools-590.18/libstuff/guess_short_name.c	2004-12-08 20:44:49.000000000 -0500
++++ cctools-590.18-new/libstuff/guess_short_name.c	2005-11-29 09:44:48.000000000 -0500
+@@ -206,6 +206,10 @@
+ 		*return_suffix = allocate(s + 1);
+ 		strncpy(*return_suffix, suffix, s);
+ 		(*return_suffix)[s] = '\0';
++		if (strcmp(*return_suffix, "_debug") != 0 && strcmp(*return_suffix, "_profile") != 0) {
++		    l = l + strlen(*return_suffix);
++		    *return_suffix = NULL;
++		}
+ 	    }
+ 	    else
+ 		l = a - (b+1);
+diff -uNr cctools-590.18/misc/seg_addr_table.c cctools-590.18-new/misc/seg_addr_table.c
+--- cctools-590.18/misc/seg_addr_table.c	2005-04-14 18:15:31.000000000 -0400
++++ cctools-590.18-new/misc/seg_addr_table.c	2005-11-29 09:44:48.000000000 -0500
+@@ -42,13 +42,13 @@
+  * These are the default addresses use when re-laying out the images.  These
+  * changed in Mac OS X in the 10.2 release.
+  */
+-#define DEFAULT_SEG1ADDR_X10_1		0x41300000 /* low to high allocation */
+-#define DEFAULT_READ_ONLY_ADDR_X10_1	0x70000000
+-#define DEFAULT_READ_WRITE_ADDR_X10_1	0x80000000
+-
+-#define DEFAULT_SEG1ADDR_X10_2		0x8fe00000 /* high to low allocation */
+-#define DEFAULT_READ_ONLY_ADDR_X10_2	0x90000000
+-#define DEFAULT_READ_WRITE_ADDR_X10_2	0xa0000000
++#define DEFAULT_SEG1ADDR_X10_1		0x00000000 /* low to high allocation */
++#define DEFAULT_READ_ONLY_ADDR_X10_1	0x50000000
++#define DEFAULT_READ_WRITE_ADDR_X10_1	0x60000000
++
++#define DEFAULT_SEG1ADDR_X10_2		0x3fe00000 /* high to low allocation */
++#define DEFAULT_READ_ONLY_ADDR_X10_2	0x50000000
++#define DEFAULT_READ_WRITE_ADDR_X10_2	0x60000000
+ 
+ /*
+  * Starting in 10.3, we will put all the debug and profile libraries together,

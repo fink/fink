@@ -1,3 +1,7 @@
+2005-12-20  Daniel Macks  <dmacks@netspace.org>
+
+	* cctools-extra.info,patch: Sync with stable.
+
 2005-11-28  Daniel Macks  <dmacks@netspace.org>
 
 	* cctools-extra.info: Require that compiling succeeds.
