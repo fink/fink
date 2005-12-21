@@ -34,7 +34,6 @@ use Getopt::Long;
 use Data::Dumper;
 use File::Find;
 use File::Spec;
-use Fink::Notify;
 
 use strict;
 use warnings;
@@ -1350,8 +1349,6 @@ sub get_kernel_vers
 		return $darwin_version;
 	} else {
 		my $error = "Couldn't determine major version number for $darwin_version kernel!";
-		my $notifier = Fink::Notify->new();
-		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die $error . "\n";
 	}
 }

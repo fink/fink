@@ -1,5 +1,9 @@
 2005-12-20  Chris Zubrzycki <beren12@users.sourceforge.net>
 
+	* Services.pm: remove $notifier, should never get to that error condition.
+
+2005-12-20  Chris Zubrzycki <beren12@users.sourceforge.net>
+
 	* Services.pm: Fix $notifier init and kernel version regex
 
 2005-12-15  Daniel Macks  <dmacks@netspace.org>
