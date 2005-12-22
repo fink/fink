@@ -1,3 +1,8 @@
+2005-12-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make sure %c accounts for packages
+	installed/removed by the current fink process.
+
 2005-12-20  Chris Zubrzycki <beren12@users.sourceforge.net>
 
 	* Services.pm: remove $notifier, should never get to that error condition.

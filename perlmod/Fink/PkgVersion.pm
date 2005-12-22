@@ -918,6 +918,8 @@ sub get_script {
 	my $default_script; # Type-based script (%{default_script})
 	my $field_value;    # .info field contents
 
+	$self->prepare_percent_c;  # make sure %c has the most up-to-date data
+
 	if ($field eq 'patchscript') {
 		return "" if $self->has_parent;  # shortcut: SplitOffs do not patch
 		return "" if $self->is_type('dummy');  # Type:dummy never patch
