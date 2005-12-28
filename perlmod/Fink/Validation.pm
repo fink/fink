@@ -605,7 +605,7 @@ sub validate_info_file {
 		}
 
 		# Check for any source-related field without associated Source(N) field
-		if ($field =~ /^source(\d*)-checksum|source(\d*-)md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
+		if ($field =~ /^source(\d*)-checksum|source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
 			my $sourcefield = defined $+  # corresponding Source(N) field
 				? "source$+"
 				: "source";  
