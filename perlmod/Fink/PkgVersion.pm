@@ -309,6 +309,15 @@ sub pkgversions_from_properties {
 	my %options = @_;
 	my $filename = $options{filename} || "";
 	
+	# If there is an Architecture field, skip the whole $properties
+	# hash if the current architecture string is not in the
+	# comma-separated value list
+	if (my $pkg_arch = $properties->{architecture}) {
+		$pkg_arch =~ s/\s+//g;
+		my $our_arch = &get_arch;
+		return () unless grep { $_ eq $our_arch } split /,/, $pkg_arch;
+	}
+
 	my %pkg_expand;
 	
 	# Handle variant types

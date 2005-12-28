@@ -1,3 +1,10 @@
+2005-12-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: pkgversions_from_properties: ignore a %properties
+	hash unless the current arch is listed in the Architecture or that
+	field is absent.
+	* Validation.pm: Check values of Architecture field.
+
 2005-12-22  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Make sure %c accounts for packages

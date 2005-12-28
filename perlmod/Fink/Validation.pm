@@ -113,6 +113,13 @@ our %allowed_license_values = map {$_, 1}
 	 "Restrictive", "Commercial", "DFSG-Approved"
 	);
 
+# Allowed values of the architecture field
+our %allowed_arch_values = map {lc $_, 1}
+	(
+	 'powerpc',
+	 'i386',
+	);
+
 # List of all valid fields, 
 # sorted in the same order as in the packaging manual.
 # (A few are handled elsewhere in this module, but are also included here,
@@ -130,6 +137,7 @@ our %valid_fields = map {$_, 1}
 		 'type',
 		 'license',
 		 'maintainer',
+		 'architecture',
 #  dependencies:
 		 'depends',
 		 'runtimedepends',
@@ -300,6 +308,7 @@ END { }				# module clean-up code here (global destructor)
 #	+ validate dependency syntax
 #	+ Type is not 'dummy'
 #   + Explicit interp in pkg-building *Script get -ev or -ex
+#   + Check syntax and values in Architecture field
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -425,18 +434,40 @@ sub validate_info_file {
 	# Now check for other mistakes
 	#
 
-	# variants with Package: foo-%type[bar] leave escess hyphens
-	my @ok_filenames = $pkgname;
-	$ok_filenames[0] =~ s/-+/-/g;
-	$ok_filenames[0] =~ s/-*$//g;
-	$ok_filenames[1] = "$ok_filenames[0]-$pkgversion-$pkgrevision";
+	# .info filename contains parent package-name (without variants)
+	# and may contain version-revision and/or arch components
+{
+	my $base_filename = $pkgname;
+
+	# variants with Package: foo-%type[bar] leave excess hyphens
+	$base_filename =~ s/-+/-/g;
+	$base_filename =~ s/-*$//g;
+
+	# build permutations
+	my (@ok_filenames) = (
+		"$base_filename",
+		"$base_filename-$pkgversion-$pkgrevision",
+	);	
+	if (my $arch = $properties->{architecture}) {
+		if ($arch !~ /,/) {
+			# single-arch package
+			$arch =~ s/\s+//g;
+			
+			push @ok_filenames, (
+				"$base_filename-$arch",
+				"$base_filename-$arch-$pkgversion-$pkgrevision",
+				"$base_filename-$pkgversion-$pkgrevision-$arch",
+			);
+		}
+	}
 	map $_ .= ".info", @ok_filenames;
 
-	unless (1 == grep $filename eq $_, @ok_filenames) {
-		print "Warning: File name should be ", join( " or ", @ok_filenames ),"\n";
+	unless (grep $filename eq $_, @ok_filenames) {
+		print "Warning: File name should be one of [", (join ' ', sort @ok_filenames), "]. ($filename)\n";
 		$looks_good = 0;
 	}
-	
+}
+
 	# Make sure Maintainer is in the correct format: Joe Bob <jbob@foo.com>
 	$value = $properties->{maintainer};
 	if (!defined $value or $value !~ /^[^<>@]+\s+<\S+\@\S+>$/) {
@@ -462,6 +493,18 @@ sub validate_info_file {
 	} elsif (not (defined($properties->{type}) and $properties->{type} =~ /\bbundle\b/i)) {
 		print "Warning: No license specified. ($filename)\n";
 		$looks_good = 0;
+	}
+
+	# Check syntax of Architecture field (if it exists)
+	$value = $properties->{architecture};
+	if (defined $value) {
+		$value =~ s/\s+//g;
+		foreach (split /,/, $value) {
+			if (!exists $allowed_arch_values{$_}) {
+				print "Warning: Unknown value \"$_\" in Architecture field. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
 	}
 
 	# check SourceN and corresponding fields
