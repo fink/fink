@@ -1,3 +1,11 @@
+2005-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: New PatchFile and PatchFile-MD5 fields. If
+	PatchFile field is present: check its checksum and readability,
+	store its full path in %{patchfile}, add 'patch' command to apply
+	it to the PatchScript %{default_script}, disable the Patch field.
+	* Validation.pm: Check a lot of things about PatchFile.
+
 2005-12-27  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: pkgversions_from_properties: ignore a %properties

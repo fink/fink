@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch &file_MD5_checksum &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
 use Cwd qw(getcwd);
 use File::Find qw(find);
@@ -176,6 +176,8 @@ our %valid_fields = map {$_, 1}
 		 'updatelibtoolindirs',
 		 'updatepomakefile',
 		 'patch',
+		 'patchfile',
+		 'patchfile-md5',
 		 'patchscript'
 #  compile phase:
 		),
@@ -283,6 +285,11 @@ END { }				# module clean-up code here (global destructor)
 # Should check/verifies the following in .info files:
 #	+ the filename matches %f.info
 #	+ patch file (from Patch and PatchScript) is present
+#	+ if PatchFile given, make sure file is present, validate its
+#		checksum (vs PatchFile-MD5), make sure Patch is not present,
+#		that %a is not used in PatchScript but that %{patchfile} or
+#		{%default_script} is, and that pkg declares BuildDepends on a
+#		version of fink that supports this field.
 #	+ all required fields are present
 #	+ warn if obsolete fields are encountered
 #	+ warn about missing Description/Maintainer/License fields
@@ -598,7 +605,7 @@ sub validate_info_file {
 		}
 
 		# Check for any source-related field without associated Source(N) field
-		if ($field =~ /^source(\d*)-checksum|source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
+		if ($field =~ /^source(\d*)-checksum|source(\d*-)md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
 			my $sourcefield = defined $+  # corresponding Source(N) field
 				? "source$+"
 				: "source";  
@@ -706,6 +713,10 @@ sub validate_info_file {
 				'Ni' => $pkginvarname
 	};
 
+	if (exists $properties->{patchfile}) {
+		$expand->{patchfile} = $pkgpatchpath . '/' . $properties->{patchfile};
+	}
+
 	# Verify the patch file(s) exist and check some things
 	@patchfiles = ();
 	# anything in PatchScript that looks like a patch file name
@@ -715,6 +726,10 @@ sub validate_info_file {
 		@patchfiles = ($value =~ /\%a\/.*?\.patch/g);
 		# strip directory if info is simple filename (in $PWD)
 		map {s/\%a\///} @patchfiles unless $pkgpatchpath;
+		if (@patchfiles and exists $properties->{patchfile}) {
+			print "Error: Cannot use %a if using PatchFile. ($filename)\n";
+			$looks_good = 0;
+		}			
 	}
 
 	# the contents if Patch (if any)
@@ -723,6 +738,11 @@ sub validate_info_file {
 		# add directory if info is not simple filename (not in $PWD)
 		$value = "\%a/" .$value if $pkgpatchpath;
 		unshift @patchfiles, $value;
+	}
+
+	# the contents if PatchFile (if any)
+	if (exists $properties->{expand}->{patchfile}) {
+		unshift @patchfiles, '%{patchfile}';
 	}
 
 	# now check each one in turn
@@ -764,6 +784,57 @@ sub validate_info_file {
 			}
 			close INPUT or die "Couldn't read $value: $!\n";
 		}
+	}
+
+	# if we are using new PatchFile field, check some things about it
+	if (exists $properties->{patchfile}) {
+
+		# must declare BuildDepends on a fink that supports it
+		my $has_fink_bdep = 0;
+		$value = &pkglist2lol($properties->{builddepends});
+		foreach (@$value) {
+			foreach my $atom (@$_) {
+				$atom =~ s/^\(.*?\)\s*//;
+				next unless $atom =~ /^fink\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
+				$has_fink_bdep = 1 if version_cmp($2, '>=', '0.24.99');
+			}
+		}
+		if (!$has_fink_bdep) {
+			print "Error: Use of PatchFile requires declaring a BuildDepends on \"fink (>= 0.24.99)\" or higher. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# can't mix old and new patching styles
+		if (exists $properties->{patch}) {
+			print "Error: Cannot use both Patch and PatchFile. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# must have PatchFile-MD5 field that matches file's checksum
+		if (defined ($value = $properties->{'patchfile-md5'})) {
+			my $file = &expand_percent('%{patchfile}', $expand, $filename.' PatchFile');
+			my $file_md5 = file_MD5_checksum($file);
+			if ($value ne $file_md5) {
+				print "Error: PatchFile-MD5 does not match PatchFile checksum. ($filename)\n\tActual: $file_md5\n\tExpected: $value\n";
+				$looks_good = 0;
+			}
+		} else {
+			print "Error: No PatchFile-MD5 given for PatchFile. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# must actually be used
+		if (defined ($value = $properties->{'patchscript'})) {
+			if ($value !~ /%{(patchfile|default_script)}/) {
+				print "Warning: PatchFile does not appear to be used in PatchScript. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+
+	} elsif (exists $properties->{'patchfile-md5'}) {
+		# sanity check
+		print "Warning: No PatchFile given for PatchFile-MD5. ($filename)\n";
+		$looks_good = 0;
 	}
 	
 	# Check for Type: dummy, only allowed for internal use
