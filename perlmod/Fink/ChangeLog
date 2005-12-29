@@ -1,5 +1,9 @@
 2005-12-28  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: Clarify diagnostics for broken-gcc
+
+2005-12-28  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: New PatchFile and PatchFile-MD5 fields. If
 	PatchFile field is present: check its checksum and readability,
 	store its full path in %{patchfile}, add 'patch' command to apply
