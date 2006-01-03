@@ -3,7 +3,7 @@
 # Fink::Checksum::MD5 module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2005 The Fink Package Manager Team
+# Copyright (c) 2005-2006 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
