@@ -1,8 +1,9 @@
 #!/usr/bin/perl -w
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2006 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,6 +25,7 @@ require 5.006;  # perl 5.6.0 or newer required
 use strict;
 
 use lib "@BASEPATH@/lib/perl5";
+my $basepath = '@BASEPATH@';
 
 ### parse options passed on the command line
 
@@ -31,35 +33,46 @@ use Getopt::Long;
 
 my %options =
   (
-   "dontask" => 0,
-   "interactive" => 0,
-   "verbosity" => 0,
-   "keep_build" => 0,
-   "keep_root" => 0,
+   "dontask"         => 0,
+   "interactive"     => 0,
+   "verbosity"       => 0,
+   "keep_build"      => 0,
+   "keep_root"       => 0,
+   "use_binary"      => 0,
+   "build_as_nobody" => 0,
   );
-my $optionsString = '';
+my @orig_ARGV = @ARGV;
 
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
-GetOptions('yes|y' => sub { $options{dontask} = 1 ;  $optionsString .= '--yes ' },
-	   'quiet|q' => sub { $options{verbosity} = -1 ;  $optionsString .= '--quiet ' },
-	   'verbose|v' => sub { $options{verbosity} = 3 ;  $optionsString .= '--verbose ' },
-	   'keep-build-dir|k' => sub { $options{keep_build} = 1 ;  $optionsString .= '--keep-build-dir ' },
-	   'keep-root-dir|K' => sub { $options{keep_root} = 1 ;  $optionsString .= '--keep-root-dir ' },
-#	   'interactive|i' => sub { $options{interactive} = 1 ;  $optionsString .= '--interactive ' },
-	   'version|V' => \&show_version,
-	   'help|h' => \&show_help)
- or die "fink: unknown option\nType 'fink --help' for more information.\n";
+GetOptions(
+	'yes|y'              => sub { $options{dontask} = 1         },
+	'quiet|q'            => sub { $options{verbosity} = -1      },
+	'verbose|v'          => sub { $options{verbosity} = 3       },
+	'keep-build-dir|k'   => sub { $options{keep_build} = 1      },
+	'keep-root-dir|K'    => sub { $options{keep_root} = 1       },
+	'use-binary-dist|b'  => sub { $options{use_binary} = 1      },
+	'no-use-binary-dist' => sub { $options{use_binary} = -1     },
+	'build-as-nobody'    => sub { $options{build_as_nobody} = 1 },
+#	'interactive|i'      => sub { $options{interactive} = 1     },
+	'version|V'          => \&show_version,
+	'help|h'             => \&show_help
+)
+	or die <<UNKNOWN;
+fink: unknown option
+Type 'fink --help' for more information.
+UNKNOWN
 
 ### display version numbers if requested
 
 sub show_version {
+  load_config();
   require Fink::FinkVersion;
   print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
   print "Distribution version: ".Fink::FinkVersion::distribution_version()."\n";
   print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2003 The Fink Package Manager Team
+Copyright (c) 2001-2006 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -80,28 +93,36 @@ Fink $version
 Usage: fink [options] command [package...]
        fink install pkg1 [pkg2 ...]
 
-Common commmands:
-  install    - install/update the named packages
-  remove     - remove the named packages
-  purge      - same as remove but also removes all configuration files
-  update     - update the named packages
-  selfupdate - upgrade fink to the lastest release
-  update-all - update all installed packages
-  configure  - rerun the configuration process
-  list       - list available packages, optionally filtering by name,
-               see 'fink list --help' for more options
-  apropos    - list packages matching a search keyword
-  describe   - display a detailed description of the named packages
-  index      - force rebuild of package cache
+Common commands:
+  install      - install/update the named packages
+  remove       - remove the named packages
+  purge        - same as remove but also removes all configuration files
+  update       - update the named packages
+  selfupdate   - upgrade fink to the lastest release
+  update-all   - update all installed packages
+  configure    - rerun the configuration process
+  list         - list available packages, optionally filtering by name,
+                 see 'fink list --help' for more options
+  apropos      - list packages matching a search keyword
+  describe     - display a detailed description of the named packages
+  index        - force rebuild of package cache
+  validate     - performs various checks on .info and .deb files
+  scanpackages - rescans the list of binary packages on the system
+  cleanup      - reclaims disk space used by temporary or obsolete files
+  show-deps    - list run-time and compile-time package dependencies
 
-Options:
-  -h, --help     - display this help text
-  -q, --quiet    - causes fink to be less verbose, opposite of --verbose
-  -V, --version  - display version information
-  -v, --verbose  - causes fink to be more verbose, opposite of --quiet
-  -y, --yes      - assume default answer for all interactive questions
+Common options:
+  -h, --help            - display this help text
+  -q, --quiet           - causes fink to be less verbose, opposite of --verbose
+  -V, --version         - display version information
+  -v, --verbose         - causes fink to be more verbose, opposite of --quiet
+  -y, --yes             - assume default answer for all interactive questions
+  -b, --use-binary-dist - download pre-compiled packages from the binary 
+                          distribution if available
+  --no-use-binary-dist  - don't use pre-compiled packages from the binary 
+                          distribution (opposite of -b)
 
-See the fink(8) manual page for more commands and options.
+See the fink(8) manual page for a complete list of commands and options.
 Visit http://fink.sourceforge.net/ for further information.
 EOF
   exit 0;
@@ -109,11 +130,32 @@ EOF
 
 ### setup environment
 
+my $Config;
+my $Config_Loaded = 0;
+sub load_config {
+    return 1 if $Config_Loaded++;
+
+    require Fink::Config;
+
+    # read the configuration file
+    my $configpath;
+    $configpath = "$basepath/etc/fink.conf";
+    if (-f $configpath) {
+        $Config = &Fink::Services::read_config($configpath, 
+                                               { Basepath => "$basepath" }
+                                              );
+    } else {
+        print "ERROR: Configuration file \"$configpath\" not found.\n";
+        exit 1;
+    }
+}
+
+
 # set useful umask
 umask oct("022");
 
 # set PATH so we find dpkg and *-config scripts
-$ENV{PATH} = "@BASEPATH@/sbin:@BASEPATH@/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
+$ENV{PATH} = "$basepath/sbin:$basepath/bin:/usr/sbin:/sbin:/usr/X11R6/bin:".$ENV{PATH};
 
 # get rid of CDPATH
 delete $ENV{CDPATH};
@@ -122,29 +164,20 @@ delete $ENV{CDPATH};
 
 # load the modules
 require Fink::Services;
-require Fink::Config;
 require Fink::Engine;
 
-# read the configuration file
-my ($config, $configpath);
-$configpath = "@BASEPATH@/etc/fink.conf";
-if (-f $configpath) {
-  $config = &Fink::Services::read_config($configpath);
-} else {
-  print "ERROR: Configuration file \"$configpath\" not found.\n";
-  exit 1;
-}
+load_config();
 
 # propagate command-line options
 Fink::Config::set_options(\%options);
 
 # create the command-processing engine
-my $engine = Fink::Engine->new_with_config($config);
+my $engine = Fink::Engine->new_with_config($Config);
 
 ### process the command line (or enter interactive mode)
 
 if ($#ARGV >= 0) {
-  exit $engine->process($optionsString,@ARGV);
+  exit $engine->process(\@orig_ARGV,@ARGV);
 } else {
   # TODO: enter interactive mode
 #  die "fink: no command given.\nType 'fink --help' for usage information.\n";

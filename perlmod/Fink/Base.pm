@@ -1,9 +1,10 @@
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::Base class
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2006 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,20 +26,39 @@ package Fink::Base;
 use strict;
 use warnings;
 
-BEGIN {
-	use Exporter ();
-	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION	 = 1.00;
-	@ISA		 = qw(Exporter);
-	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw();	# eg: qw($Var1 %Hashit &func3);
-	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
-}
-our @EXPORT_OK;
+require Exporter;
+our $VERSION	 = 1.00;
+our @ISA	 = qw(Exporter);
 
-END { }				# module clean-up code here (global destructor)
+=head1 NAME
 
-### empty constructor
+Fink::Base - basic parameter handling
+
+=head1 SYNOPSIS
+
+  package My::Fink;
+  require Fink::Base;
+  @ISA = qw(Fink::Base);
+
+  my $obj = My::Fink->new_from_properties({ key1 => val1, ...});
+  my $val = $obj->param($param);
+  $obj->set_param($param, $val);
+
+=head1 DESCRIPTION
+
+Basic parameter handling for fink objects.
+
+=head2 Constructors
+
+=over 4
+
+=item new
+
+  my $obj = Fink::Base->new;
+
+Create a new, empty fink object.
+
+=cut
 
 sub new {
 	my $proto = shift;
@@ -52,20 +72,25 @@ sub new {
 	return $self;
 }
 
-### contruct from hashref
+
+=item new_from_properties
+
+  my $obj = Fink::Base->new_from_properties({ key1 => val1, ...});
+
+Create a new fink object setting its parameters to the given hash.
+
+Any key with a leading _ is ignored.
+
+=cut
 
 sub new_from_properties {
-	my $proto = shift;
+	my($proto, $props) = @_;
 	my $class = ref($proto) || $proto;
-	my $properties = shift;
 
-	my $self = {};
-	bless($self, $class);
+	my $self = bless({}, $class);
 
-	my ($key, $value);
-	while (($key, $value) = each %$properties) {
-		$self->{$key} = $value
-			unless substr($key,0,1) eq "_";
+	while (my($key, $value) = each %$props) {
+		$self->{$key} = $value unless $key =~ /^_/;
 	}
 
 	$self->initialize();
@@ -73,12 +98,38 @@ sub new_from_properties {
 	return $self;
 }
 
-### self-initialization
+=item initialize
 
-sub initialize {
-}
+  $obj->initialize;
 
-### retrieve parameter, returns undef if not found
+I<Protected method, do not call directly>.
+
+All Fink::Base constructors will call initialize() just before returning
+the object.
+
+The default initialize() is empty.  You may override.
+
+=cut
+
+sub initialize { }
+
+
+=back
+
+
+=head2 Parameter queries
+
+All keys are used case insensitively.
+
+=over 4
+
+=item param
+
+  my $value = $obj->param($param);
+
+Returns the $value of the given $param.
+
+=cut
 
 sub param {
 	my $self = shift;
@@ -90,7 +141,33 @@ sub param {
 	return undef;
 }
 
-### retreive parameter, return default value if not found
+=item set_param
+
+  $obj->set_param($param, $value);
+
+Sets the $param to $value.  If $value is undef or '' the $param is deleted.
+
+=cut
+
+sub set_param {
+	my($self, $key, $value) = @_;
+
+	if (not defined($value) or $value eq "") {
+		delete $self->{lc $key};
+	} else {
+		$self->{lc $key} = $value;
+	}
+}
+
+
+=item param_default
+
+  my $value = $obj->param_default($param, $default_value);
+
+Like param() but if the $param does not exist as a parameter $default_value
+will be used.
+
+=cut
 
 sub param_default {
 	my $self = shift;
@@ -106,7 +183,16 @@ sub param_default {
 	return $default_value;
 }
 
-### retreive boolean parameter, false if not found
+
+=item param_boolean
+
+  my $value = $obj->param_boolean($param);
+
+Interprets the value of $param as a boolean.  "True", "Yes", "On" and "1" are
+all considered true while all other values are considered false. Returns 1 for
+true, 0 for false, and undef if the field is not present at all.
+
+=cut
 
 sub param_boolean {
 	my $self = shift;
@@ -118,11 +204,18 @@ sub param_boolean {
 		if ($param_value =~ /^\s*(true|yes|on|1)\s*$/) {
 			return 1;
 		}
+		return 0;
 	}
-	return 0;
+	return undef;
 }
 
-### check if parameter exists
+=item has_param
+
+  my $exists = $obj->has_param($param);
+
+Checks to see if the given $param has been set.
+
+=cut
 
 sub has_param {
 	my $self = shift;
@@ -134,7 +227,46 @@ sub has_param {
 	return 0;
 }
 
+=item params_matching
+
+  my @params = $obj->params_matching($regex);
+  my @params = $obj->params_matching($regex, $with_case);
+
+Returns a list of the parameters that exist for $obj that match the
+given pattern $regex. Each returned value is suitable for passing to
+the other param* methods. The string $regex is a treated as a perl
+regular expression (which will not be further interpolated), with the
+exception that it will not return parameters of which only a substring
+matches. In perl terms, a leading ^ and trailing $ are applied. In
+human terms, passing 'a.'  will not return parameters such as 'apple'
+or 'cat'. If the optional $with_case is given and is true, matching
+will be done with case-sensitivity. If $with_case is false or not
+given, the matching will be case-insensitive (i.e., a /i modifier is
+applied). In either case, the values returned are in their actual
+case. The values are not returned in any particular order.
+
+=cut
+
+sub params_matching {
+	my $self = shift;
+	my $regex = shift;
+	$regex = '' unless defined $regex;
+	my $with_case = shift;
+	$with_case = '' unless defined $with_case;
+
+	$regex = "^$regex\$";
+	if ($with_case) {
+		$regex = qr/$regex/;
+	} else {
+		$regex = qr/$regex/i;
+	}
+
+	return grep { $_ =~ $regex } keys %$self;
+}
+
+=back
+
+=cut
 
 
-### EOF
 1;

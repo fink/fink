@@ -1,6 +1,6 @@
 # -*- mode: Perl; tab-width: 4; -*-
 #
-# Fink::Notify::QuickSilver module
+# Fink::Notify::Say module
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -21,7 +21,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA      02111-1307, USA.
 #
 
-package Fink::Notify::QuickSilver;
+package Fink::Notify::Say;
 
 use Fink::Notify;
 use Fink::Config qw($basepath);
@@ -32,7 +32,7 @@ our $VERSION = (qw$Revision$)[-1];
 sub about {
 	my $self = shift;
 
-	my @about = ('QuickSilver', $VERSION);
+	my @about = ('Say', $VERSION);
 	return wantarray? @about : \@about;
 }
 
@@ -51,13 +51,10 @@ sub do_notify {
 	my $self  = shift;
 	my %args  = @_;
 
-	my $title = $args{'title'};
-	$title =~ s/\"/\\\"/gs;
-
 	my $text = $args{'description'};
 	$text =~ s/\"/\\\"/gs;
 
-	$text = sprintf('tell application "QuickSilver" to show notification "%s" text "%s" image "com.apple.Terminal"', $title, $text);
+	$text = sprintf('say "%s"', $text);
 
 	if (open(COMMAND, "| osascript")) {
 		print COMMAND $text;

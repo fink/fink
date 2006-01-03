@@ -1,9 +1,10 @@
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::Status class
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2006 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -149,20 +150,13 @@ sub query_package {
 
 	$self->validate();
 
-	if (not exists $self->{$pkgname}) {
-		return 0;
+	if (exists $self->{$pkgname} and $self->{$pkgname}->{status} =~ /\s+installed$/i) {
+		return $self->{$pkgname}->{version};
 	}
-	$hash = $self->{$pkgname};
-	if (not exists $hash->{status} or not exists $hash->{version}) {
-		return 0;
-	}
-	if ($hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
-		return $hash->{version};
-	}
-	return 0;
+	return undef;
 }
 
-### retreive whole list with versions
+### retrieve whole list with versions
 # doesn't care about installed status
 # returns a hash ref, key: package name, value: hash with core fields
 # in the hash, 'package' and 'version' are guaranteed to exist

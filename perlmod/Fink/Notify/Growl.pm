@@ -1,6 +1,6 @@
 # -*- mode: Perl; tab-width: 4; -*-
 #
-# Fink::Notify::QuickSilver module
+# Fink::Notify::Growl module
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -21,7 +21,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA      02111-1307, USA.
 #
 
-package Fink::Notify::QuickSilver;
+package Fink::Notify::Growl;
 
 use Fink::Notify;
 use Fink::Config qw($basepath);
@@ -32,7 +32,7 @@ our $VERSION = (qw$Revision$)[-1];
 sub about {
 	my $self = shift;
 
-	my @about = ('QuickSilver', $VERSION);
+	my @about = ('Growl', $VERSION);
 	return wantarray? @about : \@about;
 }
 
@@ -42,7 +42,11 @@ sub new {
 	my $self = bless({}, $class);
 	my @events = $self->events();
 
-	return undef unless (-x '/usr/bin/osascript');
+	eval {
+		require Mac::Growl;
+		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
+	};
+	return undef if ($@);
 
 	return $self;
 }
@@ -50,21 +54,23 @@ sub new {
 sub do_notify {
 	my $self  = shift;
 	my %args  = @_;
+	my $image = $basepath . '/share/fink/images/' . $args{'event'} . '.png';
+	my $sticky = 0;
 
-	my $title = $args{'title'};
-	$title =~ s/\"/\\\"/gs;
+	$image = undef unless (-r $basepath . '/share/fink/images/' . $args{'event'} . '.png');
+	$sticky = 1 if ($args{'event'} =~ /(Failed|Failure)/);
 
-	my $text = $args{'description'};
-	$text =~ s/\"/\\\"/gs;
+	eval {
+		if (defined $image) {
+			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0, $image);
+		} else {
+			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0);
+		}
+	};
 
-	$text = sprintf('tell application "QuickSilver" to show notification "%s" text "%s" image "com.apple.Terminal"', $title, $text);
-
-	if (open(COMMAND, "| osascript")) {
-		print COMMAND $text;
-		close(COMMAND);
-	} else {
+	if ($@) {
 		return undef;
+	} else {
+		return 1;
 	}
-
-	return 1;
 }

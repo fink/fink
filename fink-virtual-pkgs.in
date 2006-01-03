@@ -2,7 +2,7 @@
 #
 # fink-virtual-pkgs
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2003 The Fink Package Manager Team
+# Copyright (c) 2001-2006 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,32 +23,40 @@ require 5.006;
 use strict;
 use Getopt::Long;
 my $standalone = 0;
+my $basepath = '@BASEPATH@';
+
+our $VERSION = (qw$Revision$)[-1];
+
 UseFinkModules();
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
-my ($dlist, $hash, $pkgname, $epoch, @versions, $field, $provides);
+my ($dlist, $hash, $pkgname, @versions, $field, $provides);
 my %options = 
    (
-     "dpkg" => 0,
-     "apt" => 0,
+		"apt" => 0,
+		"debug" => 0,
+		"dpkg" => 0,
+		"version" => 0,
    );
 GetOptions(
+	'apt|a' => sub {  $options{apt} = 1},
+	'debug' => sub { $options{debug} = 1},
 	'dpkg|d' => sub { $options{dpkg} = 1},
-	'apt|a' => sub {  $options{apt} = 1}
-	) or die "Unknown option";
-if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt" }
+	'help|h' => \&usage,
+	'version|v' => \&version,
+	) or die "Unknown option\n";
+if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt\n" }
 if ($options{apt}) {
-	open(FH,">/tmp/finkaptstatus") || die "Can not open file /tmp/finkaptstatus for writing";
+	open(FH,">/tmp/finkaptstatus") || die "Can not open file /tmp/finkaptstatus for writing\n";
 	select FH;
-	}
+    }
 if ($standalone == 0)
 {
-	$dlist = Fink::VirtPackage->list();
-	foreach $pkgname (keys %$dlist) {
+	$dlist = Fink::VirtPackage->list(%options);
+	foreach $pkgname (sort keys %$dlist) {
 		$hash = $dlist->{$pkgname};
-		next if exists $hash->{builddependsonly}; # Do no pass builddependsonly packages to apt/dpkg
-		$epoch=0;
 		if ($options{dpkg}) {
-			if (@versions = parse_fullversion($hash->{version})) {
+			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
+				# columns: package, epoch, version, revision
 				printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];
 				# for provides we tell dpkg about them with the version as zero
 				if (exists $hash->{provides})
@@ -61,10 +69,10 @@ if ($standalone == 0)
 				}
 			}
 		} else {
-			printf "Package: %s\nStatus: install ok installed\nVersion: %s\n", $hash->{package},$hash->{version};
+			printf "Package: %s\nStatus: %s\nVersion: %s\n", $hash->{package},$hash->{status},$hash->{version};
 			foreach $field (keys %$hash)
 			{
-				next if (($field eq "package") or ($field eq "status") or ($field eq "version"));
+				next if ($field =~ /^(package|status|version|descdetail|compilescript)$/);
 				printf "%s: %s\n",$field,$hash->{$field};
 			}
 			print "\n";
@@ -73,16 +81,10 @@ if ($standalone == 0)
 }
 else
 {
-# We are running without fink modules
-	my ($dummy);
-	my ($darwin_version, $macosx_version);
-	# determine the kernel version
-	($dummy,$dummy,$darwin_version) = uname();
-
-	# Now the Mac OS X version
-	$macosx_version = 0;
+# We are running without fink modules, so just kernel and Mac OS X pkgs
+	my $macosx_version = 0;
 	if (-x "/usr/bin/sw_vers") {
-		$dummy = open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
+		open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
 		while (<SW_VERS>) {
 			chomp;
 			if (/(ProductVersion\:)\s*([^\s]*)/) {
@@ -93,14 +95,17 @@ else
 	}
 	if ($options{dpkg})
 	{
-		printf "darwin\t0\t%s\t1\n",$darwin_version;
+		# columns: package, epoch, version, revision
+		# for provides we tell dpkg about them with the version as zero
+		printf "%s\t0\t%s\t1\n", lc((uname())[0]), lc((uname())[2]);
+		print "kernel\t0\t0\t0\n";
 		if ($macosx_version ne 0) {
 			printf "macosx\t0\t%s\t1\n",$macosx_version;
 		}
 	}
 	else
 	{
-		printf "Package: darwin\nStatus: install ok installed\nVersion: %s-1\n\n",$darwin_version;
+		printf "Package: %s\nStatus: install ok installed\nVersion: %s-1\nProvides: kernel\n\n", lc((uname())[0]), lc((uname())[2]);
 		if ($macosx_version ne 0) {
 			printf "Package: macosx\nStatus: install ok installed\nVersion: %s-1\n\n",$macosx_version;
 		}
@@ -111,51 +116,65 @@ if ($options{apt}) {
 	close FH;
 }
 
+sub version {
+	print "$0 revision $VERSION\n";
+	if ($standalone) {
+		print "\t(running in standalone mode, no Fink/Fink::VirtPackage available)\n";
+	} else {
+		print "\tFink version ", Fink::FinkVersion->fink_version(), "\n";
+		print "\tFink::VirtPackage revision ", $Fink::VirtPackage::VERSION, "\n";
+	}
+
+	exit 0;
+}
+
+sub usage {
+	print <<END;
+usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-h|--help] [-v|--version]
+
+	--debug       Print debugging info to STDERR
+	-a/--apt      [called by apt, for internal use only]
+	-d/--dpkg     [called by dpkg, for internal use only]
+	-h/--help     This help
+	-v/--version  Print the version
+
+END
+	exit 0;
+}
 
 sub UseFinkModules {
-	my ($config, $configpath);
 	# Be careful about using fink modules
-	if (-d '@BASEPATH@/lib/perl5') {
-		use lib '@BASEPATH@/lib/perl5';
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::Status; 1; }) {
-		import Fink::Status;
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::VirtPackage; 1; }) {
-		import Fink::VirtPackage;
-	}
-	else
-	{
-		$standalone=1;
-	}
-	if (eval { require Fink::Services; 1; }) {
-		import Fink::Services qw(&parse_fullversion)
-	}
-	else
-	{
-		$standalone=1;
-	}
+	eval { 
+        die unless -d "$basepath/lib/perl5";
+        require lib;
+        import lib "$basepath/lib/perl5";
+
+		require Fink::FinkVersion;
+		require Fink::VirtPackage;
+		require Fink::Services;
+		import Fink::Services qw(parse_fullversion read_config)
+	};
+
+	$standalone = 1 if $@;
+
 	# read the configuration file
 	if ($standalone != 1)
 	{
-		$configpath = '@BASEPATH@/etc/fink.conf';
+		my $configpath = "$basepath/etc/fink.conf";
+                my $config;
 		if (-f $configpath) {
-		  $config = &Fink::Services::read_config($configpath);
+			$config = read_config($configpath,
+                                              { Basepath => "$basepath" }
+                                             );
 		} else {
 			$standalone=1;
 		}
 	}
+
 	if ($standalone == 1)
 	{
-		use POSIX qw(uname);
+		require POSIX;
+		import POSIX qw(uname);
 	}
 
 }
