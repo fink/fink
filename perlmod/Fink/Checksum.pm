@@ -1,6 +1,6 @@
 # -*- mode: Perl; tab-width: 4; -*-
 #
-# Fink::Chekcsum module
+# Fink::Checksum module
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2005 The Fink Package Manager Team
