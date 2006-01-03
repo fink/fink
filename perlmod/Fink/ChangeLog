@@ -1,5 +1,9 @@
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Downgrade .info *Script -v/-x check to "pedantic"
+
+2006-01-03  Daniel Macks  <dmacks@netspace.org>
+
 	* all: updated Copyright notice
 
 2005-12-28  Daniel Macks  <dmacks@netspace.org>

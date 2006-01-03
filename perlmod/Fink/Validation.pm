@@ -1051,7 +1051,7 @@ sub validate_info_component {
 					print "Warning: -e flag not passed to explicit interpreter in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
-				unless ($args =~ /-\S*[vx]/) {
+				if (Fink::Config::get_option("Pedantic") and $args !~ /-\S*[vx]/) {
 					print "Warning: -v or -x flag not passed to explicit interpreter in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
