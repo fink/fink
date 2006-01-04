@@ -1,5 +1,9 @@
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Allow NoSetPATH
+
+2006-01-03  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Downgrade .info *Script -v/-x check to "pedantic"
 
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
