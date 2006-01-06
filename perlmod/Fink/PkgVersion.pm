@@ -1418,12 +1418,9 @@ sub get_checksum_type {
 	my $suffix = shift || "";
 
 	my $checksum = $self->get_checksum($suffix);
-
-	if ($checksum =~ /^\s*(\w+)\((.*)\)\s*$/) {
-		return $1;
-	} else {
-		return 'MD5';
-	}
+	my $algorithm;
+	($algorithm,$checksum) = Fink::Checksum->parse_checksum($checksum);
+	return $algorithm;
 }
 
 sub get_custom_mirror {
@@ -2784,18 +2781,15 @@ sub fetch_source {
 	my $continue = shift || 0;
 	my $nomirror = shift || 0;
 	my $dryrun = shift || 0;
-	my ($url, $file, $checksum, $checksum_type);
 
 	chdir "$basepath/src";
 
-	$url = $self->get_source($suffix);
-	$file = $self->get_tarball($suffix);
+	my $url = $self->get_source($suffix);
+	my $file = $self->get_tarball($suffix);
 	$nomirror = 1 if $self->get_license() =~ /^Restrictive$/i;
 	
-	$checksum = $self->get_checksum($suffix);
-	$checksum =~ s/^\s*\w+\((.*)\)\s*$/$1/;
-	$checksum_type = $self->get_checksum_type($suffix);
-	
+	my($checksum_type, $checksum) = Fink::Checksum->parse_checksum($self->get_checksum($suffix));
+
 	if($dryrun) {
 		return if $url eq $file; # just a simple filename
 		print "$file ", (defined $checksum ? lc($self->get_checksum_type($suffix)) . '=' . $checksum : "-");
@@ -2857,7 +2851,7 @@ sub phase_unpack {
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
 	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
-	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $found_archive_sum);
+	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip);
 
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
@@ -2940,7 +2934,7 @@ GCC_MSG
 					$self->get_fullname()." is incorrect. The most likely ".
 					"cause for this is a corrupted or incomplete download\n".
 					"Expected: $checksum\nActual: " . 
-					join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
+					                  join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
 					"It is recommended that you download it ".
 					"again. How do you want to proceed?";
 				$answer = &prompt_selection("Make your choice: ",
@@ -2970,7 +2964,9 @@ GCC_MSG
 			}
 		} else {
 		# No checksum was specifed in the .info file, die die die
-			die "No checksum specifed for Source$suffix of ".$self->get_fullname()." I got a checksum of $found_archive_sum \n";
+			my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
+			die "No checksum specifed for Source$suffix of ".$self->get_fullname()."\nActual: " . 
+				join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
 		}
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
@@ -3131,7 +3127,7 @@ sub phase_patch {
 
 		# verify that MD5 matches
 		my $md5 = $self->param_default('PatchFile-MD5', '');
-		my $file_md5 = file_MD5_checksum($file);
+		my $file_md5 = file_MD5_checksum($file);  # old API so we are back-portable to branch_0-24
 		if ($md5 ne $file_md5) {
 			die "PatchFile \"$file\" checksum does not match!\nActual: $file_md5\nExpected: $md5\n";
 		}

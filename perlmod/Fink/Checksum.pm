@@ -203,17 +203,13 @@ is passed, "MD5" is returned as the algorithm.
 sub parse_checksum {
 	my $class = shift;
 	my $checksum = shift;
-	my $algorithm = shift || '';
+	my $algorithm = shift || 'MD5';
 
-	if ($checksum =~ /^\s*(\w+)\((\w+)\)\s*$/) {
+	if (!defined $checksum) {
+		$algorithm = $algorithm;
+	} elsif ($checksum =~ /^\s*(\w+)\((\w+)\)\s*$/) {
 		# first try to pull apart ALGORITHM(CHECKSUM)
 		($algorithm, $checksum) = ($1, $2);
-	} elsif (length $algorithm) {
-		# next try separate ALGORITHM parameter
-		$algorithm = $algorithm;
-	} else {
-		# nothing yet? default to MD5
-		$algorithm = 'MD5';
 	}
 
 	return ($algorithm=>$checksum);

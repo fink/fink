@@ -26,7 +26,7 @@ package Fink::Services;
 
 #use Fink::Checksum;
 use Fink::Command	qw(&rm_f);
-use Fink::CLI		qw(&word_wrap &get_term_width);
+use Fink::CLI		qw(&word_wrap &get_term_width &print_breaking_stderr);
 
 use POSIX qw(uname tmpnam);
 use Fcntl qw(:flock);
