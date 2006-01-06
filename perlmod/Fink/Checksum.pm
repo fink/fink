@@ -136,7 +136,7 @@ sub get_checksum {
 	die "no checksum module loaded\n";
 }
 
-=item get_all_checksums($filename) - get all possible checksums for a file
+=item $class->get_all_checksums($filename) - get all possible checksums for a file
 
 This class method returns a ref to a hash of algorithm=>checksum pairs
 for all available algorithms for the given $filename.
@@ -160,10 +160,10 @@ sub get_all_checksums {
 	return \%checksums;
 }
 
-=item validate($filename, $checksum, [$algorithm]) - validate a file
+=item $class->validate($filename, $checksum, [$algorithm]) - validate a file
 
 Returns a boolean indicating whether the $checksum for file $filename
-is correctw hen using $algorithm.0
+is correctw hen using $algorithm.
 
 If $checksum is specified in the format used in the Source-Checksum
 field (ie, the MD5(string) format), then $algorithm will be detected
@@ -189,7 +189,7 @@ sub validate {
 	return undef;
 }
 
-=item parse_checksum($checksum, [$algorithm]) - tease apart different syntaxes
+=item $class->parse_checksum($checksum, [$algorithm]) - tease apart different syntaxes
 
 This class method returns a (algorithm=>checksum) pair. If the passed
 $checksum has the form of ALGORITHM(CHECKSUM), the ALGORITHM and
