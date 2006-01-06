@@ -285,7 +285,7 @@ END { }				# module clean-up code here (global destructor)
 # Check a given .deb file for standard compliance
 # returns boolean of whether everything is okay
 # 
-# Should check/verifies the following in .info files:
+# Should check/verify the following in .info files:
 #	+ the filename matches %f.info
 #	+ patch file (from Patch and PatchScript) is present
 #	+ if PatchFile given, make sure file is present, validate its
@@ -298,11 +298,11 @@ END { }				# module clean-up code here (global destructor)
 #	+ warn about missing Description/Maintainer/License fields
 #	+ warn about overlong Description fields
 #	+ warn about Description starting with "A" or "An"
-#   + warn about Description containing the package name
-#   + warn if Description looks like a reserved/keyword form
+#	+ warn about Description containing the package name
+#	+ warn if Description looks like a reserved/keyword form
 #	+ warn if boolean fields contain bogus values
-#	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
-#		(excluded from this are fields like Description, Homepage etc.)
+#	+ warn if fields seem to contain the package name/version, suggest %n/%v
+#		 be used (excluded from this are fields like Description, Homepage etc.)
 #	+ warn if unknown fields are encountered
 #	+ warn if /sw is hardcoded in the script or set fields or patch file
 #		(from Patch and PatchScript)
@@ -311,14 +311,16 @@ END { }				# module clean-up code here (global destructor)
 #	+ if 'fink describe' output will display poorly on vt100
 #	+ Check Package/Version/Revision for disallowed characters
 #	+ Check if have sufficient InfoN if using their features
-#   + Warn if shbang in dpkg install-time scripts
-#   + Error if %i used in dpkg install-time scripts
-#   + Warn if non-ASCII chars in any field
-#   + Check syntax of dpkg Depends-style fields
+#	+ Warn if shbang in dpkg install-time scripts
+#	+ Error if %i used in dpkg install-time scripts
+#	+ Warn if non-ASCII chars in any field
+#	+ Check syntax of dpkg Depends-style fields
 #	+ validate dependency syntax
 #	+ Type is not 'dummy'
-#   + Explicit interp in pkg-building *Script get -ev or -ex
-#   + Check syntax and values in Architecture field
+#	+ Explicit interp in pkg-building *Script get -ev or -ex
+#	+ Check syntax and values in Architecture field
+#	+ Make sure PV objects can be created
+#	+ No duplicate %n in a variant set
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -344,6 +346,8 @@ sub validate_info_file {
 	my $looks_good = 1;
 	my $error_found = 0;
 	my $arch = get_arch();
+
+	my $full_filename = $filename;  # we munge $filename later
 
 	if ($config->verbosity_level() >= 3) {
 		print "Validating package file $filename...\n";
@@ -846,6 +850,19 @@ sub validate_info_file {
 		$looks_good = 0;
 	}
 	
+	# instantiate the PkgVersion objects
+	my @pv = Fink::PkgVersion->pkgversions_from_info_file($full_filename);
+
+	if (@pv > 1) {
+		my %names;
+		foreach (map {$_->get_name()} @pv) {
+			if ($names{$_}++) {
+				print "Error: Duplicate declaration of package \"$_\". ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+	}
+
 	if ($looks_good and $config->verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
