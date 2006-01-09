@@ -983,7 +983,7 @@ sub validate_info_component {
 				$atom =~ s/\A\s*//;
 				$atom =~ s/\s*\Z//;
 				# each atom must be  '(optional cond) pkg (optional vers)'
-				unless ($atom =~ /\A(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)/) {
+				unless ($atom =~ /\A(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)\Z/) {
 					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}

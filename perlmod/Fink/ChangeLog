@@ -1,3 +1,7 @@
+2006-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix weaked *Depends syntax check.
+
 2006-01-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Check for duplication of package name in a .info
