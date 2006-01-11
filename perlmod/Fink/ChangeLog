@@ -1,3 +1,7 @@
+2006-01-11 Alexander Hansen:  <alexkhansen@users.sourceforge.net>
+
+	* Add 10.4.4 to supported OSes.
+
 2006-01-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Fix weaked *Depends syntax check.
