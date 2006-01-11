@@ -1,6 +1,6 @@
 2006-01-11  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
-	* Bootstrap.pm	Backport 10.4.4 support.
+	* Bootstrap.pm:	Backport 10.4.4 support.
 
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
 
