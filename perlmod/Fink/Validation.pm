@@ -851,7 +851,7 @@ sub validate_info_file {
 	}
 	
 	# instantiate the PkgVersion objects
-	my @pv = Fink::PkgVersion->pkgversions_from_info_file($full_filename);
+	my @pv = Fink::PkgVersion->pkgversions_from_info_file($full_filename, no_exclusions => 1);
 
 	if (@pv > 1) {
 		my %names;

@@ -301,6 +301,10 @@ Returns all packages created, including split-offs if this is a parent package.
 
 Options are info_level and filename, and optionally parent.
 
+The option "no_exclusions", if true, will cause the packages to be
+created even if an Architcture field setting would normally disable
+them.
+
 =cut
 
 sub pkgversions_from_properties {
@@ -312,7 +316,7 @@ sub pkgversions_from_properties {
 	# If there is an Architecture field, skip the whole $properties
 	# hash if the current architecture string is not in the
 	# comma-separated value list
-	if (my $pkg_arch = $properties->{architecture}) {
+	if (my $pkg_arch = $properties->{architecture} and not $options{no_exclusions}) {
 		$pkg_arch =~ s/\s+//g;
 		my $our_arch = &get_arch;
 		return () unless grep { $_ eq $our_arch } split /,/, $pkg_arch;
@@ -362,17 +366,22 @@ sub pkgversions_from_properties {
 =item pkgversions_from_info_file
 
   my @packages = Fink::Package->pkgversions_from_info_file $filename;
+  my @packages = Fink::Package->pkgversions_from_info_file $filename, %options;
 
 Create Fink::PkgVersion objects based on a .info file. Do not
 yet add these packages to the current package database.
 
 Returns all packages created, including split-offs.
 
+Any given %options are passed to pkgversions_from_properties, except
+for "filename" and "info_level", which are over-written.
+
 =cut
 
 sub pkgversions_from_info_file {
 	my $class = shift;
 	my $filename = shift;
+	my %options = @_;
 	
 	# read the file and get the package name
 	my $properties = &read_properties($filename);
@@ -390,8 +399,12 @@ sub pkgversions_from_info_file {
 		return ();
 	}
 
-	return $class->pkgversions_from_properties($properties,
-		filename => $filename, info_level => $info_level);
+	%options = (%options,
+				filename => $filename,
+				info_level => $info_level
+			   );
+
+	return $class->pkgversions_from_properties($properties, %options);
 }
 
 =item one_pkgversion_from_info_file

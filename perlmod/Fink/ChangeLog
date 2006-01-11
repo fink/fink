@@ -1,3 +1,11 @@
+2006-01-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: pkgversions_from_info_file now takes %options,
+	which are passed to ..._from_properties, which now supports
+	"no_exlcusions" option.
+	* Validation.pm: Allow validation of .info even if not matching
+	local Architecture.
+
 2006-01-11 Alexander Hansen:  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:  Add 10.4.4 to supported OSes.
