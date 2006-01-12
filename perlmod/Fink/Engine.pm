@@ -54,6 +54,7 @@ BEGIN {
 	%EXPORT_TAGS = ( );		# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
+
 =head1 NAME
 
 Fink::Engine - high-level actions for fink to perform
@@ -791,6 +792,14 @@ sub do_fetch_all {
 	&call_queue_clear;
 }
 
+=item cmd_description
+
+  cmd_description @pkgspecs;
+
+Print the description of the given packages.
+
+=cut
+
 sub cmd_description {
 	my ($package, @plist);
 
@@ -1312,9 +1321,8 @@ sub real_install {
 				  : 'will be'
 				  );
 
-	if (Fink::Config::verbosity_level() > -1) {
-		$showlist = 1;
-	}
+	my $verbosity = Fink::Config::verbosity_level();
+	$showlist = 1 if $verbosity > -1;
 
 	%deps = ();		# hash by package name
 	%cons = ();		# hash by package name
@@ -1403,7 +1411,7 @@ sub real_install {
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
 			# -> only include pure build-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built without being installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
@@ -1413,7 +1421,7 @@ sub real_install {
 		  or $item->[OP] == $OP_REBUILD) {
 			# We want to install this package and have to build it for that
 			# -> include both life-time & build-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
@@ -1422,7 +1430,7 @@ sub real_install {
 		         and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
 			# We want to install this package and will download the .deb for it
 			# -> only include life-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be downloaded as a binary package and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
@@ -1432,7 +1440,7 @@ sub real_install {
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
-			if (Fink::Config::verbosity_level() > 2) {
+			if ($verbosity > 2) {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
@@ -1790,6 +1798,7 @@ sub real_install {
 	PACKAGELOOP: foreach $pkgname (sort keys %deps) {
 			$item = $deps{$pkgname};
 			next if (($item->[FLAG] & 2) == 2);	 # already installed
+
 			$all_installed = 0;
 
 			$package = $item->[PKGVER];
@@ -1963,6 +1972,14 @@ sub real_install {
 
 ### helper routines
 
+=item expand_packages
+
+  my @pkglist = expand_packages @pkgspecs;
+
+Expand a list of package specifications into objects.
+
+=cut
+
 sub expand_packages {
 	my ($pkgspec, $package, @package_list);
 
@@ -2102,6 +2119,7 @@ EOF
 	}
 
 	foreach my $pkg (@pkglist) {
+		$pkg->prepare_percent_c;
 
 		# default to all fields if no fields or %expands specified
 		if ($wantall or not (@fields or @percents)) {
@@ -2155,10 +2173,12 @@ EOF
 				printf "infofile: %s\n", $pkg->get_info_filename();
 			} elsif ($_ eq 'package') {
 				printf "%s: %s\n", $_, $pkg->get_name();
+			} elsif ($_ eq 'epoch') {
+				printf "%s: %s\n", $_, $pkg->param_default('epoch', '0');
 			} elsif ($_ eq 'version') {
 				printf "%s: %s\n", $_, $pkg->get_version(); 
 			} elsif ($_ eq 'revision') {
-				printf "%s: %s\n", $_, $pkg->param_default('revision', '1');
+				printf "%s: %s\n", $_, $pkg->param_default('revision', '0');
 			} elsif ($_ eq 'parent') {
 				printf "%s: %s\n", $_, $pkg->{parent}->get_name() if exists $pkg->{parent};
 			} elsif ($_ eq 'splitoffs') {
@@ -2246,7 +2266,7 @@ EOF
 			} elsif ($_ =~ /^source(\d*)$/) {
 				my $src = $pkg->get_source($1);
 				printf "%s: %s\n", $_, $src if defined $src && $src ne "none";
-			} elsif ($_ eq 'gcc' or $_ eq 'epoch' or $_ =~ /^source\d*-md5$/) {
+			} elsif ($_ eq 'gcc' or $_ =~ /^source\d*-md5$/) {
 				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
 			} elsif ($_ eq 'configureparams') {
 				my $cparams = &expand_percent(
@@ -2305,7 +2325,6 @@ EOF
 				die "Unknown field $_\n";
 			}
 		}
-		$pkg->prepare_percent_c;
 		foreach (@percents) {
 			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
 			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);

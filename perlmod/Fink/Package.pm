@@ -40,8 +40,11 @@ our @ISA = qw(Fink::Base);
 
 our $have_packages = 0;
 our $packages = {};
+
+# Cache of essential packages
 our @essential_packages = ();
 our $essential_valid = 0;
+
 our $db_outdated = 1;
 our $db_mtime = 0;
 
@@ -108,7 +111,17 @@ sub get_name {
 	return $self->{_name};
 }
 
-### get pure virtual package flag
+=item is_virtual
+
+  my $bool = $po->is_virtual;
+
+Return true if this package is "virtual", ie: it cannot be built or installed
+by Fink.
+
+Note that even virtual packages can have versions, if those versions are
+themselves virtual (from Status or VirtPackage).
+
+=cut
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
@@ -187,6 +200,20 @@ sub get_all_versions {
 
 	return values %{$self->{_versions}};
 }
+
+=item get_matching_versions
+
+  my @pvs = $po->get_matching_versions($spec);
+  my @pvs = $po->get_matching_versions($spec, @choose_from);
+
+Find all versions of this package which satisfy the given Debian version
+specification. See Fink::Services::version_cmp for details on version
+specifications.
+
+If a list @choose_from of Fink::PkgVersions objects is given, return only
+items in the list which satisfy the given specification.
+
+=cut
 
 sub get_matching_versions {
 	my $self = shift;
@@ -355,6 +382,14 @@ sub list_essential_packages {
 
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
+=item require_packages
+
+  Fink::Package->require_packages;
+
+Load the package database into memory
+
+=cut
+
 sub require_packages {
 	shift;	# class method - ignore first parameter
 
@@ -391,7 +426,14 @@ sub update_aptgetable {
 }
 
 
-### forget about all packages
+=item forget_packages
+
+  Fink::Package->forget_packages;
+
+Removes the package database from memory. The hash-ref $options can contain the
+following keys:
+
+=cut
 
 sub forget_packages {
 	shift;	# class method - ignore first parameter

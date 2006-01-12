@@ -207,6 +207,7 @@ sub read_properties_lines {
 	my ($notLC) = shift || 0;
 	my (@lines) = @_;
 	my ($hash, $lastkey, $heredoc, $linenum);
+	my $cvs_conflicts;
 
 	$hash = {};
 	$lastkey = "";
@@ -261,6 +262,8 @@ sub read_properties_lines {
 				print "WARNING: Deprecated multi-line format used for property \"$lastkey\" at line $linenum of $file.\n";
 			} elsif (/^([0-9A-Za-z_.\-]+)\:\s*$/) {
 				# For now tolerate empty fields.
+			} elsif (/^(<<<<<<< .+|=======\Z|>>>>>>> .+)/) {
+				$cvs_conflicts++ or	print "WARNING: Unresolved CVS conflicts in $file.\n";
 			} else {
 				print "WARNING: Unable to parse the line \"".$_."\" at line $linenum of $file.\n";
 			}
@@ -1133,7 +1136,7 @@ selection cannot be determined.
 
 sub gcc_selected {
 	return 0 unless -x '/usr/sbin/gcc_select';
-	chomp(my $gcc_select = `/usr/sbin/gcc_select`);
+	chomp(my $gcc_select = `/usr/sbin/gcc_select 2>&1`);
 	return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
 	return 0;
 }
@@ -1149,7 +1152,8 @@ breakage. This function checks for such breakage and fixes it if necessary.
 
 sub fix_gcc_repairperms {
 	return unless gcc_select_arg(gcc_selected) eq '4.0';
-	system('gcc_select --force 4.0') == 0
+	system('/usr/bin/env PATH=/usr/sbin:/usr/bin:/sbin:/bin '
+		. 'gcc_select --force 4.0 >/dev/null 2>&1') == 0
 		or die "Can't fix GCC after Repair Permissions: $!\n";
 }
 
@@ -1214,6 +1218,7 @@ sub enforce_gcc {
 	}
 
 	$gcc_select = gcc_selected() || '(unknown version)';
+
 	# We don't want to differentiate between 4.0.0 and 4.0.1 here
 	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
 

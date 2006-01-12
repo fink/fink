@@ -294,7 +294,6 @@ sub choose_mirrors {
 
 	### step 0: determine and ask if we need to change anything
 
-
 	$missing = 0;
 	foreach $mirrorname (split(/\s+/, $listinfo->{order})) {
 		next if $mirrorname =~ /^\s*$/;
@@ -348,65 +347,60 @@ sub choose_mirrors {
 			}
 		}
 	}
-
-if ((!$obsolete_only) or (!$config->has_param("MirrorOrder"))) {	
-
-	&print_breaking("\nThe Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
-    				  "the sources for all fink packages. You can choose to use these mirrors first, ".
-					  "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
 	
-	$mirror_order = &prompt_selection(
-		"What mirror order should fink use when downloading sources?",
-		default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
-		choices => [
-			"Search \"Master\" source mirrors first." => "MasterFirst",
-			"Search \"Master\" source mirrors last." => "MasterLast",
-			"Never use \"Master\" source mirrors." => "MasterNever",
-			"Search closest source mirrors first. (combine all mirrors into one set)"
-				=> "ClosestFirst"
-		]);
-	$config->set_param("MirrorOrder", $mirror_order);
-
-} else {
-	$mirror_order = $config->param("MirrorOrder");
-}
+	if ((!$obsolete_only) or (!$config->has_param("MirrorOrder"))) {	
+		&print_breaking("\nThe Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
+					   "the sources for all fink packages. You can choose to use these mirrors first, ".
+					   "last, never, or mixed in with regular mirrors. If you don't care, just select the default.\n");
+	
+		$mirror_order = &prompt_selection(
+			"What mirror order should fink use when downloading sources?",
+			default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
+			choices => [
+				"Search \"Master\" source mirrors first." => "MasterFirst",
+				"Search \"Master\" source mirrors last." => "MasterLast",
+				"Never use \"Master\" source mirrors." => "MasterNever",
+				"Search closest source mirrors first. (combine all mirrors into one set)"
+					=> "ClosestFirst"
+			]);
+		$config->set_param("MirrorOrder", $mirror_order);
+	} else {
+		$mirror_order = $config->param("MirrorOrder");
+	}
 	
 	### step 1: choose a continent
 
-if ((!$obsolete_only) or (!$config->has_param("MirrorContinent"))) {	
-
-	&print_breaking("Choose a continent:");
-	$continent = &prompt_selection("Your continent?",
-		default => [ value => $config->param_default("MirrorContinent", "-") ],
-		choices => [
-			map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
-				sort keys %$keyinfo
-		]
-	);
-	$config->set_param("MirrorContinent", $continent);
-
-} else {
-	$continent = $config->param("MirrorContinent");
-}
+	if ((!$obsolete_only) or (!$config->has_param("MirrorContinent"))) {	
+		&print_breaking("Choose a continent:");
+		$continent = &prompt_selection("Your continent?",
+			default => [ value => $config->param_default("MirrorContinent", "-") ],
+			choices => [
+				map { length($_)==3 ? ($keyinfo->{$_},$_) : () }
+					sort keys %$keyinfo
+			]
+		);
+		$config->set_param("MirrorContinent", $continent);
+	} else {
+		$continent = $config->param("MirrorContinent");
+	}
 
 	### step 2: choose a country
 
-if ((!$obsolete_only) or (!$config->has_param("MirrorCountry"))) {	
-
-	print "\n";
-	&print_breaking("Choose a country:");
-	$country = &prompt_selection("Your country?",
-		default => [ value => $config->param_default("MirrorCountry", $continent) ],
-		choices => [
-			"No selection - display all mirrors on the continent" => $continent,
-			map { /^$continent-/ ? ($keyinfo->{$_},$_) : () } sort keys %$keyinfo
-		]
-	);
-	$config->set_param("MirrorCountry", $country);
-
-} else {
-	$country = $config->param("MirrorCountry");
-}
+	if ((!$obsolete_only) or (!$config->has_param("MirrorCountry"))) {	
+		print "\n";
+		&print_breaking("Choose a country:");
+		$country = &prompt_selection("Your country?",
+			default => [ value => $config->param_default("MirrorCountry", $continent) ],
+			choices => [
+				"No selection - display all mirrors on the continent" => $continent,
+				map { /^$continent-/ ? ($keyinfo->{$_},$_) : () }
+					sort keys %$keyinfo
+			]
+		);
+		$config->set_param("MirrorCountry", $country);
+	} else {
+		$country = $config->param("MirrorCountry");
+	}
 
 	### step 3: mirrors
 

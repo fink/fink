@@ -47,7 +47,6 @@ our $debarch = "darwin-$_arch";
 my %options = ();
 
 
-
 =head1 NAME
 
 Fink::Config - Read/write the fink configuration

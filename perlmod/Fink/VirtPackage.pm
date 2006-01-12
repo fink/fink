@@ -694,18 +694,21 @@ END
 	
 	{
 		my $cc1plus = '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus';
-		if (-x $cc1plus) {
+		if (!-e $cc1plus) {
+			print STDERR "  - cc1plus not present\n" if ($options{debug});
+		} elsif (-x $cc1plus) {
 			if (open(GCC, "$cc1plus --version 2>&1 |")) {
 				while (my $line = <GCC>) {
 					if ($line =~ /build (\d+)/gsi) {
 						my $build = $1;
 						print STDERR "  - found build $build" if ($options{debug});
 						if (grep(/^${build}$/, @badbuilds)) {
-							print STDERR " (bad)" if ($options{debug});
+							print STDERR " (bad)\n" if ($options{debug});
 							$hash->{status}      = STATUS_PRESENT;
 							$hash->{version}     = '3.3-' . $build;
+						} else {
+							print STDERR " (not broken)\n" if ($options{debug});
 						}
-						print STDERR "\n" if ($options{debug});
 						last;
 					}
 				}

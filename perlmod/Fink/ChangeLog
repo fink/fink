@@ -1,3 +1,22 @@
+2006-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* CLI.pm, Config.pm, Configure.pm, Engine.pm, Notify.pm,
+	Package.pm, PkgVersion.pm, SelfUpdate.pm, Validation.pm: Backport
+	doc and whitespace fixes.
+	* Bootstrap.pm, Services.pm, VirtPackage.pm: Cleaner handling of
+	system(gcc) and related commands.
+	* Engine.pm, PkgVersion.pm: Don't keep re-determining verbosity
+	level.
+	* Engine.pm: In dumpinfo, have epoch and revision default to "0"
+	and fix %c handling order.
+	* PkgVersion.pm: fix %b and %c handling order. Fix whitespace
+	handling in conditionals.
+	* PkgVersion.pm: Use local() instead of my()/tempvar for %ENV.
+	* SelfUpdate.pm: Fix $tree and other tree handling scoping during
+	selfupdate (thanks vasi!).
+	* Services.pm: Add warning if .info contains CVS conflicts.
+	* Validation.pm: Allow SetPATH. Do not allow Type:dummy.
+
 2006-01-11  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:	Backport 10.4.4 support.

@@ -499,7 +499,7 @@ sub do_finish {
 		}
 		$aptcmd .= "update";
 		if (&execute($aptcmd)) {
-			&print_breaking("WARNING: Failure while downloading indexes.".
+			&print_breaking("WARNING: Failure while downloading indexes. ".
 			                "Running 'fink scanpackages' may fix this.");
 		}
 	}
@@ -571,7 +571,7 @@ sub rsync_check {
 }
 
 sub do_direct_rsync {
-	my ($descdir, @sb, $cmd, $tree, $rmcmd, $vercmd, $username, $msg);
+	my ($descdir, @sb, $cmd, $rmcmd, $vercmd, $username, $msg);
 	my ($timecmd, $oldts, $newts);
 	my $origmirror;
 	my $dist = $distribution;
@@ -650,19 +650,20 @@ RSYNCAGAIN:
 	# we've tried to put something there.
 	$msg = "I will now run the rsync command to retrieve the latest package descriptions. \n";
 	
+	$rsynchost =~ s/\/*$//;
+	$dist      =~ s/\/*$//;
+	
 	my $rinclist = "";
-	foreach $tree ($config->get_treelist()) {
-		next unless ($tree =~ /stable/);
-
-		$rsynchost =~ s/\/*$//;
-		$dist      =~ s/\/*$//;
-		$tree      =~ s/\/*$//;
-
-		my $oldpart = "";
+	
+	my @trees = grep { m,^(un)?stable/, } $config->get_treelist();
+	die "Can't find any trees to update\n" unless @trees;
+	map { s/\/*$// } @trees;
+	
+	foreach my $tree (@trees) {
+		my $oldpart = $dist;
 		my @line = split /\//,$tree;
 
 		$rinclist .= " --include='$dist/'";
-		$oldpart = "$dist";
 		for(my $i = 0; defined $line[$i]; $i++) {
 			$oldpart = "$oldpart/$line[$i]";
 			$rinclist .= " --include='$oldpart/'";
@@ -684,15 +685,10 @@ RSYNCAGAIN:
 	&print_breaking($msg);
 
 	if (&execute($cmd)) {
-		print "Updating $tree using rsync failed. Check the error messages above.\n";
+		print "Updating using rsync failed. Check the error messages above.\n";
 		goto RSYNCAGAIN;
 	} else {
-		foreach $tree ($config->get_treelist()) {
-			next unless ($tree =~ /stable/);
-
-			$rsynchost =~ s/\/*$//;
-			$dist      =~ s/\/*$//;
-			$tree      =~ s/\/*$//;
+		foreach my $tree (@trees) {
 			&execute("/usr/bin/find '$basepath/fink/$dist/$tree' -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 		}
 	}

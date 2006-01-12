@@ -312,6 +312,7 @@ word-wrapped) and a list of choices. The choices are numbered
 
 The %options are given as option => value pairs. The following
 options are known:
+
 =over 4
 
 =item choices (required)

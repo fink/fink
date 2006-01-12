@@ -46,7 +46,7 @@ our @set_vars =
 		cc cflags cpp cppflags cxx cxxflags dyld_library_path
 		ld_prebind ld_prebind_allow_overlap ld_force_no_prebind
 		ld_seg_addr_table ld ldflags library_path libs
-		macosx_deployment_target make mflags makeflags
+		macosx_deployment_target make mflags makeflags setpath
 	);
 
 # Required fields.
@@ -264,17 +264,18 @@ END { }				# module clean-up code here (global destructor)
 # Check a given .deb file for standard compliance
 # returns boolean of whether everything is okay
 # 
-# Should check/verifies the following in .info files:
+# Should check/verify the following in .info files:
 #	+ the filename matches %f.info
 #	+ patch file (from Patch and PatchScript) is present
 #	+ all required fields are present
 #	+ warn if obsolete fields are encountered
 #	+ warn about missing Description/Maintainer/License fields
 #	+ warn about overlong Description fields
-#	+ warn about Description starting with "A" or "An" or containing the package name
+#	+ warn about Description starting with "A" or "An"
+#	+ warn about Description containing the package name
 #	+ warn if boolean fields contain bogus values
-#	+ warn if fields seem to contain the package name/version, and suggest %n/%v should be used
-#		(excluded from this are fields like Description, Homepage etc.)
+#	+ warn if fields seem to contain the package name/version, suggest %n/%v
+#		 be used (excluded from this are fields like Description, Homepage etc.)
 #	+ warn if unknown fields are encountered
 #	+ warn if /sw is hardcoded in the script or set fields or patch file
 #		(from Patch and PatchScript)
@@ -283,10 +284,10 @@ END { }				# module clean-up code here (global destructor)
 #	+ if 'fink describe' output will display poorly on vt100
 #	+ Check Package/Version/Revision for disallowed characters
 #	+ Check if have sufficient InfoN if using their features
-#   + Warn if shbang in dpkg install-time scripts
-#   + Error if %i used in dpkg install-time scripts
-#   + Warn if non-ASCII chars in any field
-#   + Check syntax of dpkg Depends-style fields
+#	+ Warn if shbang in dpkg install-time scripts
+#	+ Error if %i used in dpkg install-time scripts
+#	+ Warn if non-ASCII chars in any field
+#	+ Check syntax of dpkg Depends-style fields
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -412,7 +413,7 @@ sub validate_info_file {
 	# Now check for other mistakes
 	#
 
-	# variants with Package: foo-%type[bar] leave escess hyphens
+	# variants with Package: foo-%type[bar] leave excess hyphens
 	my @ok_filenames = $pkgname;
 	$ok_filenames[0] =~ s/-+/-/g;
 	$ok_filenames[0] =~ s/-*$//g;
@@ -479,7 +480,7 @@ sub validate_info_file {
 			my $md5_field = $_ . "-md5";
 			if (!exists $properties->{$md5_field} and !defined $properties->{$md5_field}) {
 				print "Error: \"$_\" does not have a corresponding \"$md5_field\" field. ($filename)\n";
-				$ looks_good = 0;
+				$looks_good = 0;
 			}
 		}
 		
@@ -574,20 +575,20 @@ sub validate_info_file {
 			if (defined ($value = $splitoff_properties->{files})) {
 				if ($value =~ /\/[\s\r\n]/ or $value =~ /\/$/) {
 					print "Warning: Field \"files\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
-						$looks_good = 0;
-					}
+					$looks_good = 0;
 				}
-		} # end of SplitOff field validation
 			}
+		} # end of SplitOff field validation
+	}
 
 	# error for having %p/lib in RuntimeVars
 	if (exists $properties->{runtimevars} and defined $properties->{runtimevars}) {
 		for my $line (split(/\n/, $properties->{runtimevars})) {
 			if ($line =~ m,^\s*(DYLD_LIBRARY_PATH:\s+($basepath|\%p)/lib/?)\s*$,) {
 				print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
-					$looks_good = 0;
-				}
+				$looks_good = 0;
 			}
+		}
 	}
 
 	# Warn for missing / overlong package descriptions
@@ -696,6 +697,14 @@ sub validate_info_file {
 			close INPUT or die "Couldn't read $value: $!\n";
 		}
 	}
+
+	# Check for Type: dummy, only allowed for internal use
+	if (exists $type_hash->{dummy}) {
+		print "Error: Package has type \"dummy\". ($filename)\n";
+		$looks_good = 0;
+	}
+	
+
 	
 	if ($looks_good and Fink::Config::verbosity_level() >= 3) {
 		print "Package looks good!\n";
@@ -798,7 +807,7 @@ sub validate_info_component {
 
 		# check dpkg Depends-style field syntax
 		if ($pkglist_fields{$field}) {
-			(my $pkglist = $value) =~ tr/\n//d; # convert to sinle line
+			(my $pkglist = $value) =~ tr/\n//d; # convert to single line
 			foreach (split /[,|]/, $pkglist) {
 				# each atom must be  '(optional cond) pkg (optional vers)'
 				unless (/\A\s*(?:\(([^()]*)\)|)\s*([^()\s]+)\s*(?:\(([^()]+)\)|)\s*\Z/) {
@@ -814,14 +823,14 @@ sub validate_info_component {
 		}
 	}
 
-		# Provides is not versionable
+	# Provides is not versionable
 	$value = $properties->{provides};
 	if (defined $value) {
-			if ($value =~ /\)\s*(,|\Z)/) {
-				print "Warning: Not allowed to specify version information in \"Provides\"$splitoff_field. ($filename)\n";
-				$looks_good = 0;
-			}
+		if ($value =~ /\)\s*(,|\Z)/) {
+			print "Warning: Not allowed to specify version information in \"Provides\"$splitoff_field. ($filename)\n";
+			$looks_good = 0;
 		}
+	}
 
 	# check syntax of each line of Shlibs field
 	$value = $properties->{shlibs};
@@ -886,7 +895,7 @@ sub validate_info_component {
 # - Check for symptoms of running update-scrollkeeper during package building
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
 # - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:scrollkeeper
-# - only gettext should should have charset.alias
+# - Only gettext should should have charset.alias
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
 # - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
@@ -989,13 +998,13 @@ sub validate_dpkg_file {
 					}
 				}
 			} elsif ($filename ne "$basepath/src/" and @found_bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
-				# Directory from this list are not allowed to exist in the .deb.
+				# Directories from this list are not allowed to exist in the .deb.
 				# The only exception is $basepath/src which may exist but must be empty
 				print "Warning: File installed into deprecated directory $found_bad_dir[0]\n";
 				print "					Offender is $filename\n";
 				$looks_good = 0;
 			} elsif (not grep { $filename =~ /^$_/ } @good_dirs) {
-				# Directory from this list are the top-level dirs that may exist in the .deb.
+				# Directories from this list are the top-level dirs that may exist in the .deb.
 				print "Warning: File \"$filename\" installed outside of allowable subdirectories of $basepath\n";
 				$looks_good = 0;
 			} elsif ($filename =~/^($basepath\/lib\/perl5\/auto\/.*\.bundle)/ ) {
@@ -1036,19 +1045,19 @@ sub validate_dpkg_file {
 						if (defined $perms) {
 							if ($perms =~ /^-..([xs-])......$/) {
 								if ($1 eq '-') {
-									print "Error: daemonicfile executable \"$executable\" in this .deb does not have execute permissions. ($dpkg_filename)\n";
+									print "Error: DaemonicFile executable \"$executable\" in this .deb does not have execute permissions. ($dpkg_filename)\n";
 									$looks_good = 0;
 								}
 							} else {
-								print "Warning: got confused by permissions \"$perms\" for daemonicfile executable in .deb. ($dpkg_filename)\n";
+								print "Warning: got confused by permissions \"$perms\" for DaemonicFile executable in .deb. ($dpkg_filename)\n";
 								$looks_good = 0;
 							}
 						} else {
 							if (not -e $executable) {
-								print "Warning: daemonicfile executable \"$executable\" does not exist. ($dpkg_filename)\n";
+								print "Warning: DaemonicFile executable \"$executable\" does not exist. ($dpkg_filename)\n";
 								$looks_good = 0;
 							} elsif (not -x $executable) {
-								print "Warning: daemonicfile executable \"$executable\" does not have execute permissions. ($dpkg_filename)\n";
+								print "Warning: DaemonicFile executable \"$executable\" does not have execute permissions. ($dpkg_filename)\n";
 								$looks_good = 0;
 							}
 						}
@@ -1065,10 +1074,10 @@ sub validate_dpkg_file {
 				open(LA_FILE, "dpkg --fsys-tarfile $dpkg_filename | tar -xf - -O .$filename |") or die "Couldn't run dpkg: $!\n";
 				while (<LA_FILE>) {
 					if (/$pkgbuilddir/) {
-						print "Warning: libtool file $filename points to fink build dir. ($dpkg_filename)\n";
+						print "Warning: Libtool file $filename points to fink build dir. ($dpkg_filename)\n";
 						$looks_good = 0;
 					} elsif (/$pkginstdirs/) {
-						print "Warning: libtool file $filename points to fink install dir. ($dpkg_filename)\n";
+						print "Warning: Libtool file $filename points to fink install dir. ($dpkg_filename)\n";
 						$looks_good = 0;
 					}
 				}
