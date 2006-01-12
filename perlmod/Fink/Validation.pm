@@ -46,13 +46,12 @@ BEGIN {
 our @EXPORT_OK;
 
 # Currently, the Set* and NoSet* fields only support a limited list of variables.
-# There is NoSetPATH but no SetPATH, so not listed here
 our @set_vars =
 	qw(
 		cc cflags cpp cppflags cxx cxxflags dyld_library_path
 		ld_prebind ld_prebind_allow_overlap ld_force_no_prebind
 		ld_seg_addr_table ld ldflags library_path libs
-		macosx_deployment_target make mflags makeflags
+		macosx_deployment_target make mflags makeflags setpath
 	);
 
 # Required fields.
@@ -185,8 +184,6 @@ our %valid_fields = map {$_, 1}
 		(map {"set".$_} @set_vars),
 		(map {"noset".$_} @set_vars),
 		(
-		 # There is NoSetPATH but no SetPATH, so we special-case it here
-		 'nosetpath',
 		 'configureparams',
 		 'gcc',
 		 'compilescript',
