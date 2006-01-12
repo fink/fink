@@ -1,3 +1,8 @@
+2006-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Don't even give 'cleanup --obsoletes' as an
+	option. Add PatchFile and PatchFile-MD5 to dumpinfo fields.
+
 2006-01-09  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: pkgversions_from_info_file now takes %options,
