@@ -182,6 +182,7 @@ sub initialize {
 		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 	}
 
+	$expand->{PatchFile} = $self->{_patchpath} . '/' . $self->param('PatchFile') if $self->has_param("PatchFile");
 	$self->{_expand} = $expand;
 
 	$self->{_bootstrap} = 0;
@@ -512,7 +513,9 @@ sub get_script {
 
 		$field_value = $self->param_default($field, '%{default_script}');
 
-		$default_script = "";
+		$default_script = $self->has_param('PatchFile')
+			?  'patch -p1 < %{PatchFile}'
+			: '';
 
 	} elsif ($field eq 'compilescript') {
 		return "" if exists $self->{parent};  # shortcut: SplitOffs do not compile
@@ -1380,7 +1383,7 @@ sub resolve_depends {
 		$oper = "dependency";
 	}
 
-	my $verbosity = (Fink::Config::verbosity_level();
+	my $verbosity = Fink::Config::verbosity_level();
 
 	@deplist = ();
 
@@ -2228,6 +2231,31 @@ sub phase_patch {
 	### run what we have so far
 	$self->run_script($patch_script, "patching (Update* flags)", 0, 1);
 	$patch_script = "";
+
+	### new-style checksummed patchfile
+	if ($self->has_param('PatchFile')) {
+		if ($self->has_param('Patch')) {
+			die "Cannot specify both Patch and PatchFile!\n";
+		}
+
+		# field contains simple filename with %-exp
+		# figure out actual absolute filename
+		my $file = &expand_percent('%{PatchFile}', $self->{_expand}, $self->get_info_filename.' "PatchFile"');
+
+		# file exists
+		die "Cannot read PatchFile \"$file\"\n" unless -r $file;
+
+		# verify that MD5 matches
+		my $md5 = $self->param_default('PatchFile-MD5', '');
+		my $file_md5 = file_MD5_checksum($file);  # old API so we are back-portable to branch_0-24
+		if ($md5 ne $file_md5) {
+			die "PatchFile \"$file\" checksum does not match!\nActual: $file_md5\nExpected: $md5\n";
+		}
+
+		# make sure patchfile exists and can be read by the user (root
+		# or nobody) who is doing the build
+		$self->run_script("[ -r $file ]", "patching (PatchFile \"$file\" readability)", 1, 1);
+	}
 
 	### patches specified by filename
 	if ($self->has_param("Patch")) {

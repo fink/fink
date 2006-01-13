@@ -108,6 +108,13 @@ our %allowed_license_values = map {$_, 1}
 	 "Restrictive", "Commercial", "DFSG-Approved"
 	);
 
+# Allowed values of the architecture field
+our %allowed_arch_values = map {lc $_, 1}
+	(
+	 'powerpc',
+	 'i386',
+	);
+
 # List of all valid fields, 
 # sorted in the same order as in the packaging manual.
 # (A few are handled elsewhere in this module, but are also included here,
@@ -126,6 +133,7 @@ our %valid_fields = map {$_, 1}
 		 'license',
 		 'maintainer',
 		 'infon',  # set by handle_infon_block if InfoN: used
+		 'architecture',
 #  dependencies:
 		 'depends',
 		 'builddepends',
@@ -160,6 +168,8 @@ our %valid_fields = map {$_, 1}
 		 'updatelibtoolindirs',
 		 'updatepomakefile',
 		 'patch',
+		 'patchfile',
+		 'patchfile-md5',
 		 'patchscript'
 #  compile phase:
 		),
@@ -267,6 +277,11 @@ END { }				# module clean-up code here (global destructor)
 # Should check/verify the following in .info files:
 #	+ the filename matches %f.info
 #	+ patch file (from Patch and PatchScript) is present
+#	+ if PatchFile given, make sure file is present, validate its
+#		checksum (vs PatchFile-MD5), make sure Patch is not present,
+#		that %a is not used in PatchScript but that %{patchfile} or
+#		{%default_script} is, and that pkg declares BuildDepends on a
+#		version of fink that supports this field.
 #	+ all required fields are present
 #	+ warn if obsolete fields are encountered
 #	+ warn about missing Description/Maintainer/License fields
@@ -288,6 +303,8 @@ END { }				# module clean-up code here (global destructor)
 #	+ Error if %i used in dpkg install-time scripts
 #	+ Warn if non-ASCII chars in any field
 #	+ Check syntax of dpkg Depends-style fields
+#	+ Type is not 'dummy'
+#	+ Check syntax and values in Architecture field
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
@@ -413,21 +430,43 @@ sub validate_info_file {
 	# Now check for other mistakes
 	#
 
+	# .info filename contains parent package-name (without variants)
+	# and may contain version-revision and/or arch components
+{
+	my $base_filename = $pkgname;
+
 	# variants with Package: foo-%type[bar] leave excess hyphens
-	my @ok_filenames = $pkgname;
-	$ok_filenames[0] =~ s/-+/-/g;
-	$ok_filenames[0] =~ s/-*$//g;
-	$ok_filenames[1] = "$ok_filenames[0]-$pkgversion-$pkgrevision";
+	$base_filename =~ s/-+/-/g;
+	$base_filename =~ s/-*$//g;
+
+	# build permutations
+	my (@ok_filenames) = (
+		"$base_filename",
+		"$base_filename-$pkgversion-$pkgrevision",
+	);	
+	if (my $arch = $properties->{architecture}) {
+		if ($arch !~ /,/) {
+			# single-arch package
+			$arch =~ s/\s+//g;
+			
+			push @ok_filenames, (
+				"$base_filename-$arch",
+				"$base_filename-$arch-$pkgversion-$pkgrevision",
+				"$base_filename-$pkgversion-$pkgrevision-$arch",
+			);
+		}
+	}
 	map $_ .= ".info", @ok_filenames;
 
-	unless (1 == grep $filename eq $_, @ok_filenames) {
-		print "Warning: File name should be ", join( " or ", @ok_filenames ),"\n";
+	unless (grep $filename eq $_, @ok_filenames) {
+		print "Warning: File name should be one of [", (join ' ', sort @ok_filenames), "]. ($filename)\n";
 		$looks_good = 0;
 	}
-	
+}
+
 	# Make sure Maintainer is in the correct format: Joe Bob <jbob@foo.com>
 	$value = $properties->{maintainer};
-	if ($value !~ /^[^<>@]+\s+<\S+\@\S+>$/) {
+	if (!defined $value or $value !~ /^[^<>@]+\s+<\S+\@\S+>$/) {
 		print "Warning: Malformed value for \"maintainer\". ($filename)\n";
 		$looks_good = 0;
 	}
@@ -442,6 +481,18 @@ sub validate_info_file {
 	} elsif (not (defined($properties->{type}) and $properties->{type} =~ /\bbundle\b/i)) {
 		print "Warning: No license specified. ($filename)\n";
 		$looks_good = 0;
+	}
+
+	# Check syntax of Architecture field (if it exists)
+	$value = $properties->{architecture};
+	if (defined $value) {
+		$value =~ s/\s+//g;
+		foreach (split /,/, $value) {
+			if (!exists $allowed_arch_values{$_}) {
+				print "Warning: Unknown value \"$_\" in Architecture field. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
 	}
 
 	# check SourceN and corresponding fields
@@ -638,6 +689,10 @@ sub validate_info_file {
 				'Ni' => $pkginvarname
 	};
 
+	if (exists $properties->{patchfile}) {
+		$expand->{patchfile} = $pkgpatchpath . '/' . $properties->{patchfile};
+	}
+
 	# Verify the patch file(s) exist and check some things
 	@patchfiles = ();
 	# anything in PatchScript that looks like a patch file name
@@ -647,6 +702,10 @@ sub validate_info_file {
 		@patchfiles = ($value =~ /\%a\/.*?\.patch/g);
 		# strip directory if info is simple filename (in $PWD)
 		map {s/\%a\///} @patchfiles unless $pkgpatchpath;
+		if (@patchfiles and exists $properties->{patchfile}) {
+			print "Error: Cannot use %a if using PatchFile. ($filename)\n";
+			$looks_good = 0;
+		}			
 	}
 
 	# the contents if Patch (if any)
@@ -655,6 +714,11 @@ sub validate_info_file {
 		# add directory if info is not simple filename (not in $PWD)
 		$value = "\%a/" .$value if $pkgpatchpath;
 		unshift @patchfiles, $value;
+	}
+
+	# the contents if PatchFile (if any)
+	if (exists $properties->{expand}->{patchfile}) {
+		unshift @patchfiles, '%{patchfile}';
 	}
 
 	# now check each one in turn
@@ -698,6 +762,57 @@ sub validate_info_file {
 		}
 	}
 
+	# if we are using new PatchFile field, check some things about it
+	if (exists $properties->{patchfile}) {
+
+		# must declare BuildDepends on a fink that supports it
+		my $has_fink_bdep = 0;
+		$value = &pkglist2lol($properties->{builddepends});
+		foreach (@$value) {
+			foreach my $atom (@$_) {
+				$atom =~ s/^\(.*?\)\s*//;
+				next unless $atom =~ /^fink\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
+				$has_fink_bdep = 1 if version_cmp($2, '>=', '0.24.99');
+			}
+		}
+		if (!$has_fink_bdep) {
+			print "Error: Use of PatchFile requires declaring a BuildDepends on \"fink (>= 0.24.99)\" or higher. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# can't mix old and new patching styles
+		if (exists $properties->{patch}) {
+			print "Error: Cannot use both Patch and PatchFile. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# must have PatchFile-MD5 field that matches file's checksum
+		if (defined ($value = $properties->{'patchfile-md5'})) {
+			my $file = &expand_percent('%{patchfile}', $expand, $filename.' PatchFile');
+			my $file_md5 = file_MD5_checksum($file);
+			if ($value ne $file_md5) {
+				print "Error: PatchFile-MD5 does not match PatchFile checksum. ($filename)\n\tActual: $file_md5\n\tExpected: $value\n";
+				$looks_good = 0;
+			}
+		} else {
+			print "Error: No PatchFile-MD5 given for PatchFile. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# must actually be used
+		if (defined ($value = $properties->{'patchscript'})) {
+			if ($value !~ /%{(patchfile|default_script)}/) {
+				print "Warning: PatchFile does not appear to be used in PatchScript. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+
+	} elsif (exists $properties->{'patchfile-md5'}) {
+		# sanity check
+		print "Warning: No PatchFile given for PatchFile-MD5. ($filename)\n";
+		$looks_good = 0;
+	}
+	
 	# Check for Type: dummy, only allowed for internal use
 	if (exists $type_hash->{dummy}) {
 		print "Error: Package has type \"dummy\". ($filename)\n";

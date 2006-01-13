@@ -25,7 +25,7 @@ package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
-		      &expand_percent);
+		      &expand_percent &get_arch);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr);
 use Fink::Config qw($config $basepath $debarch binary_requested);
 use Fink::PkgVersion;
@@ -689,6 +689,15 @@ sub setup_package_object {
 	shift;	# class method - ignore first parameter
 	my $properties = shift;
 	my $filename = shift;
+	
+	# If there is an Architecture field, skip the whole $properties
+	# hash if the current architecture string is not in the
+	# comma-separated value list
+	if (my $pkg_arch = $properties->{architecture}) {
+		$pkg_arch =~ s/\s+//g;
+		my $our_arch = &get_arch;
+		return () unless grep { $_ eq $our_arch } split /,/, $pkg_arch;
+	}
 
 	my %pkg_expand;
 

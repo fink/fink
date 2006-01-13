@@ -1,5 +1,14 @@
 2006-01-12  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: teach dumpinfo about PatchFile and PatchFile-MD5.
+	* Package.pm: do not index packages whose Architecture field
+	doesn't list the local one (if such a field exists).
+	* PkgVersion.pm: Backport handling of PatchFile/PatchFile-MD5.
+	* Validation.pm: Backport checks for Architecture and
+	PatchFile/PatchFile-MD5.
+
+2006-01-12  Daniel Macks  <dmacks@netspace.org>
+
 	* CLI.pm, Config.pm, Configure.pm, Engine.pm, Notify.pm,
 	Package.pm, PkgVersion.pm, SelfUpdate.pm, Validation.pm: Backport
 	doc and whitespace fixes.

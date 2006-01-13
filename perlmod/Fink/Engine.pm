@@ -2123,6 +2123,7 @@ EOF
 
 		# default to all fields if no fields or %expands specified
 		if ($wantall or not (@fields or @percents)) {
+			# don't list fields that cause indexer exclusion
 			@fields = (qw/
 					   infofile package epoch version revision parent family
 					   status allversions
@@ -2152,7 +2153,9 @@ EOF
 						   updateconfigguess updateconfigguessindirs
 						   updatelibtool updatelibtoolindirs
 						   updatepomakefile
-						   patch patchscript /,
+						   patch patchscript
+						   patchfile patchfile-md5
+						   /,
 						   $pkg->params_matching("^set"),
 						   $pkg->params_matching("^noset"),
 						   qw/
@@ -2279,8 +2282,8 @@ EOF
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
 					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf)files$/ or
-					 $_ eq 'patch' or $_ eq 'infodocs' or
-					 $_ =~ /^daemonicname$/
+					 $_ =~ /^patch(|file|file-md5)$/ or
+ 					 $_ eq 'infodocs' or $_ =~ /^daemonicname$/
 					) {
 				# singleline fields start on the same line, have
 				# embedded newlines removed, and are not wrapped
