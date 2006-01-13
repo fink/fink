@@ -1,5 +1,10 @@
 2006-01-1  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Fields are officially PatchFile and
+	PatchFile-MD5, so the %-exp is %{PatchFile}.
+
+2006-01-1  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Allow SetPATH also, not just NoSetPATH
 
 2006-01-12  Daniel Macks  <dmacks@netspace.org>

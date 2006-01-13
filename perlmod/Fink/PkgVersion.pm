@@ -602,7 +602,7 @@ sub initialize {
 				'b' => '.'
 			};
 
-	$expand->{patchfile} = $self->{_patchpath} . '/' . $self->param('PatchFile') if $self->has_param("PatchFile");
+	$expand->{PatchFile} = $self->{_patchpath} . '/' . $self->param('PatchFile') if $self->has_param("PatchFile");
 
 	$self->{_expand} = $expand;
 	$self->_set_destdirs;
@@ -952,7 +952,7 @@ sub get_script {
 		$field_value = $self->param_default($field, '%{default_script}');
 
 		$default_script = $self->has_param('PatchFile')
-			?  'patch -p1 < %{patchfile}'
+			?  'patch -p1 < %{PatchFile}'
 			: '';
 
 	} elsif ($field eq 'compilescript') {
@@ -3133,7 +3133,7 @@ sub phase_patch {
 
 		# field contains simple filename with %-exp
 		# figure out actual absolute filename
-		my $file = &expand_percent('%{patchfile}', $self->{_expand}, $self->get_info_filename.' "PatchFile"');
+		my $file = &expand_percent('%{PatchFile}', $self->{_expand}, $self->get_info_filename.' "PatchFile"');
 
 		# file exists
 		die "Cannot read PatchFile \"$file\"\n" unless -r $file;
