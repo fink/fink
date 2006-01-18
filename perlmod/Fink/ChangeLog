@@ -1,5 +1,9 @@
 2006-01-18  Daniel Macks  <dmacks@netspace.org>
 
+	* Bootstrap.pm: clean up OS detection if/elsif/elsif a bit more.
+
+2006-01-18  Daniel Macks  <dmacks@netspace.org>
+
 	* Bootstrap.pm: clean up OS detection if/elsif/elsif a bit.
 
 2006-01-13  Daniel Macks  <dmacks@netspace.org>

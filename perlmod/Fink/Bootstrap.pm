@@ -162,7 +162,7 @@ GCC_MSG
 			"by this Fink release. Please update to Mac OS X ".
 			"10.0 or Darwin 1.3.");
 		$distribution = "unknown";
-	elsif ($host =~ /^powerpc-apple-darwin1\.[34]/) {
+	} elsif ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
@@ -235,7 +235,7 @@ GCC_MSG
 			$distribution = "10.4-transitional";
 		}
 	} else {
-		&print_breaking("This system is unrecognized and not ".
+		&print_breaking("This system \"$host\" is unrecognized and not ".
 			"supported by Fink.");
 		$distribution = "unknown";
 	}
