@@ -111,8 +111,8 @@ Called by bootstrap.pl and fink's postinstall.pl.
 =cut
 
 sub check_host {
-	my $host = shift @_;
-	my ($distribution, $gcc, $build);
+	my $host = shift;
+	my ($distribution, $gcc);
 
 	# We test for an obsolete version of gcc3.3, and refuse to proceed if
     # it is present.
@@ -121,6 +121,7 @@ sub check_host {
 	#  had build 1493.)
 
 	if (-x '/usr/bin/gcc-3.3') {
+		my $build = 0;
 		foreach(`/usr/bin/gcc-3.3 --version 2>&1`) {
 			if (/build (\d+)\)/) {
 				$build = $1;
@@ -156,7 +157,12 @@ GCC_MSG
 		$gcc = "-gcc3.3";
 	}
 
-	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
+	if ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
+		&print_breaking("This system is outdated and not supported ".
+			"by this Fink release. Please update to Mac OS X ".
+			"10.0 or Darwin 1.3.");
+		$distribution = "unknown";
+	elsif ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
@@ -194,6 +200,18 @@ GCC_MSG
 		} else {
 			$distribution = "10.4-transitional";
 		}
+	} elsif ($host =~ /^i386-apple-darwin6\.[0-9]\./) {
+		&print_breaking("Fink is currently not supported on x86 ".
+			"Darwin. Various parts of Fink hardcode 'powerpc' ".
+			"and assume to run on a PowerPC based operating ".
+			"system. Use Fink on this system at your own risk!");
+		$distribution = "10.2";
+	} elsif ($host =~ /^i386-apple-darwin7\.[0-2]\.[0-1]/) {
+		&print_breaking("Fink is currently not supported on x86 ".
+			"Darwin. Various parts of Fink hardcode 'powerpc' ".
+			"and assume to run on a PowerPC based operating ".
+			"system. Use Fink on this system at your own risk!");
+		$distribution = "10.3";
 	} elsif ($host =~ /^i386-apple-darwin8\.[0-3]\.[0-1]/) {
 		&print_breaking("Fink is currently not supported on x86 ".
 			"Darwin. Various parts of Fink hardcode 'powerpc' ".
@@ -216,23 +234,6 @@ GCC_MSG
 		} else {
 			$distribution = "10.4-transitional";
 		}
-	} elsif ($host =~ /^i386-apple-darwin7\.[0-2]\.[0-1]/) {
-		&print_breaking("Fink is currently not supported on x86 ".
-			"Darwin. Various parts of Fink hardcode 'powerpc' ".
-			"and assume to run on a PowerPC based operating ".
-			"system. Use Fink on this system at your own risk!");
-		$distribution = "10.3";
-	} elsif ($host =~ /^i386-apple-darwin(6\.[0-6]|[7-9]\.)/) {
-		&print_breaking("Fink is currently not supported on x86 ".
-			"Darwin. Various parts of Fink hardcode 'powerpc' ".
-			"and assume to run on a PowerPC based operating ".
-			"system. Use Fink on this system at your own risk!");
-		$distribution = "10.2";
-	} elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
-		&print_breaking("This system is outdated and not supported ".
-			"by this Fink release. Please update to Mac OS X ".
-			"10.0 or Darwin 1.3.");
-		$distribution = "unknown";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
 			"supported by Fink.");
