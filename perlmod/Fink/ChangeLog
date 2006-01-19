@@ -1,3 +1,7 @@
+2006-01-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: merge the powerpc and i386 decision trees, where possible
+
 2006-01-18  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: made and then reverted some changes to OS
