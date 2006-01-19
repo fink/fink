@@ -474,6 +474,7 @@ as part of the XCode tools.
 			if ($isuniversal) {
 				$hash->{package} = "system-sdk-${shortversion}-universal";
 				$versiontext = "$shortversion Universal";
+				$hash->{provides} = "system-sdk-${shortversion}";
 			} else {
 				$hash->{package} = "system-sdk-${shortversion}";
 			}
