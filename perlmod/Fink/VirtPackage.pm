@@ -453,6 +453,7 @@ as part of the XCode tools.
 		MacOSX10.3.0.sdk
 		MacOSX10.3.9.sdk
 		MacOSX10.4.0.sdk
+		MacOSX10.4u.sdk
 	);
 
 	if (opendir(DIR, '/Developer/SDKs')) {
@@ -460,20 +461,29 @@ as part of the XCode tools.
 		closedir DIR;
 	}
 	for my $dir (sort @SDKDIRS) {
-		if ($dir =~ /MacOSX([\d\.]+)\.sdk/) {
+		my $isuniversal = 0;
+		if ($dir =~ /MacOSX([\d\.]+)(u?)\.sdk/) {
 			my $version = $1;
+			$isuniversal = 1 if ($2 eq "u");
 			my ($shortversion) = $version =~ /^(\d+\.\d+)/;
+
+			my $versiontext = "$shortversion";
 
 			$hash = {};
 			$hash->{version} = $version . '-1';
-			$hash->{package} = "system-sdk-$shortversion";
+			if ($isuniversal) {
+				$hash->{package} = "system-sdk-${shortversion}-universal";
+				$versiontext = "$shortversion Universal";
+			} else {
+				$hash->{package} = "system-sdk-${shortversion}";
+			}
 			$hash->{status} = STATUS_ABSENT;
-			$hash->{description} = "[virtual package representing the Mac OS X SDKs]";
+			$hash->{description} = "[virtual package representing the Mac OS X $versiontext SDK]";
 			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
 			$hash->{builddependsonly} = "true";
 			$hash->{descdetail} = <<END;
-This package represents the Mac OS X $shortversion SDK provided
-by Apple, as part of XCode.  If it does not show as
+This package represents the Mac OS X $versiontext SDK
+provided by Apple, as part of XCode.  If it does not show as
 installed, you can download XCode from Apple at:
 
   http://connect.apple.com/
