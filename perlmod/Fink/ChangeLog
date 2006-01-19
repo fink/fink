@@ -1,6 +1,7 @@
 2006-01-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: backport i386 changes made by msachs on August 19
+	* Bootstrap.pm: merge the powerpc and i386 decision trees, where possible
 
 2006-01-12  Daniel Macks  <dmacks@netspace.org>
 

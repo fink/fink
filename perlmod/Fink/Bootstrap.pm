@@ -163,7 +163,7 @@ GCC_MSG
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
-	} elsif ($host =~ /^powerpc-apple-darwin6\..*/) {
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin6\..*/) {
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
 		$distribution = "10.2$gcc";
@@ -174,7 +174,13 @@ GCC_MSG
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made, but should work.");
 		$distribution = "10.3";
-	} elsif ($host =~ /^powerpc-apple-darwin8\.[0-4]\.0/) {
+	} elsif ($host =~ /^i386-apple-darwin7\..*/) {
+		&print_breaking("Fink is currently not supported on x86 ".
+			"Darwin. Various parts of Fink hardcode 'powerpc' ".
+			"and assume to run on a PowerPC based operating ".
+			"system. Use Fink on this system at your own risk!");
+		$distribution = "10.3";
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\.[0-4]\.0/) {
 		&print_breaking("This system is supported and tested.");
 		if($ENV{FINK_NOTRANS}) {
 			&print_breaking("Using the non-transitional tree...");
@@ -182,7 +188,7 @@ GCC_MSG
 		} else {
 			$distribution = "10.4-transitional";
 		}
-	} elsif ($host =~ /^powerpc-apple-darwin[8-9]\./) {
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin[8-9]\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
@@ -193,40 +199,6 @@ GCC_MSG
 		} else {
 			$distribution = "10.4-transitional";
 		}
-	} elsif ($host =~ /^i386-apple-darwin8\.[0-3]\.[0-1]/) {
-		&print_breaking("Fink is currently not supported on x86 ".
-			"Darwin. Various parts of Fink hardcode 'powerpc' ".
-			"and assume to run on a PowerPC based operating ".
-			"system. Use Fink on this system at your own risk!");
-		if($ENV{FINK_NOTRANS}) {
-			&print_breaking("Using the non-transitional tree...");
-			$distribution = "10.4";
-		} else {
-			$distribution = "10.4-transitional";
-		}
-	} elsif ($host =~ /^i386-apple-darwin[8-9]\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			"guarantees.  Also, x86 is not currently supported.");
-		if($ENV{FINK_NOTRANS}) {
-			&print_breaking("Using the non-transitional tree...");
-			$distribution = "10.4";
-		} else {
-			$distribution = "10.4-transitional";
-		}
-	} elsif ($host =~ /^i386-apple-darwin7\.[0-2]\.[0-1]/) {
-		&print_breaking("Fink is currently not supported on x86 ".
-			"Darwin. Various parts of Fink hardcode 'powerpc' ".
-			"and assume to run on a PowerPC based operating ".
-			"system. Use Fink on this system at your own risk!");
-		$distribution = "10.3";
-	} elsif ($host =~ /^i386-apple-darwin(6\.[0-6]|[7-9]\.)/) {
-		&print_breaking("Fink is currently not supported on x86 ".
-			"Darwin. Various parts of Fink hardcode 'powerpc' ".
-			"and assume to run on a PowerPC based operating ".
-			"system. Use Fink on this system at your own risk!");
-		$distribution = "10.2";
 	} elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
 		&print_breaking("This system is outdated and not supported ".
 			"by this Fink release. Please update to Mac OS X ".
