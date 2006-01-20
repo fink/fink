@@ -1,6 +1,9 @@
 Package: ncurses
 Version: 5.4-20041023
-Revision: 6
+Revision: 10
+# 10.3 next %r will be >10, so next %r here will have
+# to be >>10.3's (or else in-sync)
+
 GCC: 3.3
 Source: mirror:sourceforge:fink/ncurses-5.4.tar.gz
 Source-MD5: 069c8880072060373290a4fefff43520
@@ -46,6 +49,7 @@ InstallScript: <<
   ln -s ncurses/libncurses.5.dylib %i/lib/libncurses.dylib
   ln -s ncurses/libpanel.5.dylib %i/lib/libpanel.dylib
   ln -s ncurses/libncurses.5.dylib %i/lib/libcurses.dylib
+  ln -s ncurses/libncurses.5.dylib %i/lib/libtermcap.dylib
 <<
 SplitOff: <<
  Package: libncurses5-shlibs
@@ -72,7 +76,8 @@ SplitOff2: <<
  BuildDependsOnly: true
  Conflicts: ncurses-dev
  Replaces: ncurses-dev, ncurses (<= 5.3-20031018-2)
- Files: lib/ncurses include lib/libcurses.dylib lib/libform.dylib lib/libmenu.dylib lib/libncurses.dylib lib/libpanel.dylib
+ Provides: libncurses5-dev
+ Files: lib/ncurses include lib/libcurses.dylib lib/libform.dylib lib/libmenu.dylib lib/libncurses.dylib lib/libpanel.dylib lib/libtermcap.dylib
  DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
  Description: Full-screen ascii drawing library
 <<
