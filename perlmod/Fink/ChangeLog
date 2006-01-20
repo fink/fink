@@ -1,3 +1,7 @@
+2006-01-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: handle universal SDK(s)
+
 2006-01-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: backport i386 changes made by msachs on August 19
