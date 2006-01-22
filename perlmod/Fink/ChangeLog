@@ -5,6 +5,7 @@
 	the FINK_NOTRANS environment variable to override the default
 	distribution in 10.4; if not bootstrapping, we stick with the
 	existing disribution.
+	* Bootstrap.pm: recognize darwin 8.4.1 (which is current on i386)
 
 2006-01-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
