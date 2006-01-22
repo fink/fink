@@ -354,8 +354,6 @@ if ($result == 1 ) {
 
 $script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
 $script .= "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
-$script .= "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/libs/perlmods\n";
-$script .= "/bin/mv $installto/fink/dists/stable/main/finkinfo/base/*-pm*.* $installto/fink/dists/stable/main/finkinfo/libs/perlmods/\n";
 
 $result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base");
 if ($result == 1 ) {

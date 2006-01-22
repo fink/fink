@@ -2,7 +2,9 @@
 
 	* bootstrap.pl: add an optional argument to check_host telling us
 	whether we are bootstrapping or not
-
+	* bootstrap.pl: backport change noting that we don't need perlmod
+	packages in bootstrap (made by dmacks on 2005-11-30)
+	
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
 
 	* all: updated Copyright notice
