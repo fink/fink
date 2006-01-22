@@ -1,3 +1,8 @@
+2006-01-21  Dave Morrison
+
+	* bootstrap.pl: add an optional argument to check_host telling us
+	whether we are bootstrapping or not
+
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
 
 	* all: updated Copyright notice

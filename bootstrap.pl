@@ -91,7 +91,7 @@ if ($host =~ /^\s*$/) {
 }
 print " $host\n";
 
-$distribution = check_host($host);
+$distribution = check_host($host,1);
 if ($distribution eq "unknown") {
 	exit(1);
 }
