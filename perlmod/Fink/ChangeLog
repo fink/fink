@@ -1,3 +1,11 @@
+2006-01-21  Dave Morrison
+
+	* Bootstrap.pm: add an optional argument to check_host telling us
+	whether we are bootstrapping or not; if bootstrapping, we allow
+	the FINK_NOTRANS environment variable to override the default
+	distribution in 10.4; if not bootstrapping, we stick with the
+	existing disribution.
+
 2006-01-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: handle universal SDK(s)
