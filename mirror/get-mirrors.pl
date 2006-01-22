@@ -10,13 +10,12 @@ use Geo::IP;
 use HTML::TreeBuilder;
 use WWW::Mechanize;
 use URI;
-use vars qw($VERSION %keys %reverse_keys %files $debug);
+use vars qw($VERSION %keys %reverse_keys %files $debug $response);
 
 $debug = 0;
 $VERSION = ( qw$Revision$ )[-1];
 
 my $mech = WWW::Mechanize->new( agent => "Fink Mirror Query $VERSION" );
-my $tree = HTML::TreeBuilder->new();
 my $geo  = Geo::IP->new(GEOIP_STANDARD);
 
 $reverse_keys{'EU'} = 'eur';
@@ -34,19 +33,58 @@ while (<KEYS>) {
 }
 close (KEYS);
 
+### Apache
+
+$response = $mech->get( 'http://www.apache.org/mirrors' );
+if ($response->is_success) {
+	$files{'apache'}->{'url'} = 'http://www.apache.org/mirrors';
+	$files{'apache'}->{'primary'} = 'http://www.apache.org/dist';
+	my $mirrors;
+	my @links = ($files{'apache'}->{'primary'});
+
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->content);
+	my $table = $tree->look_down(
+		'_tag' => 'th',
+		sub {
+			$_[0]->as_text =~ /last stat/
+		},
+	)->look_up('_tag' => 'table');
+
+	for my $row ($table->look_down('_tag' => 'tr')) {
+		my @tds = $row->look_down('_tag' => 'td');
+		if (@tds and defined $tds[4]) {
+			my $link = $tds[0]->look_down('_tag' => 'a');
+			if ($link and $tds[4]->as_text eq "ok") {
+				push(@links, $link->attr('href'));
+			}
+		}
+	}
+
+	for my $link (@links) {
+		my ($code, $uri) = get_code($link);
+		push(@{$mirrors->{$code}}, $uri);
+	}
+
+	$files{'apache'}->{'mirrors'} = $mirrors;
+} else {
+	warn "unable to get apache ftp list\n";
+}
+
 ### GNU
 
-my $gnu = $mech->get( 'http://www.gnu.org/order/ftp.html' );
-if ($mech->success) {
+$response = $mech->get( 'http://www.gnu.org/order/ftp.html' );
+if ($response->is_success) {
 	$files{'gnu'}->{'url'} = 'http://www.gnu.org/order/ftp.html';
 	$files{'gnu'}->{'primary'} = 'ftp://ftp.gnu.org/gnu';
 	my $mirrors;
 	my @links = ($files{'gnu'}->{'primary'});
 
-	$tree->parse($mech->content);
-	my $ul = $tree->look_down('_tag', 'ul');
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->content);
+	my $ul = $tree->look_down('_tag' => 'ul');
 	if ($ul) {
-		for my $link ($ul->look_down('_tag', 'a')) {
+		for my $link ($ul->look_down('_tag' => 'a')) {
 			if ($link) {
 				push(@links, $link->attr('href'));
 			}
@@ -63,24 +101,26 @@ if ($mech->success) {
 	warn "unable to get GNU ftp list\n";
 }
 
-for my $key (sort keys %files) {
-	print "- writing $key... ";
-	if (open (FILEOUT, ">$key.tmp")) {
-		print FILEOUT "# Official mirror list: ", $files{$key}->{'url'}, "\n";
+print Dumper(\%files), "\n";
+
+for my $site (sort keys %files) {
+	print "- writing $site... ";
+	if (open (FILEOUT, ">$site.tmp")) {
+		print FILEOUT "# Official mirror list: ", $files{$site}->{'url'}, "\n";
 		print FILEOUT "Timestamp: ", timestamp(), "\n\n";
-		print FILEOUT "Primary: ", $files{$key}->{'primary'}, "\n\n";
-		for my $key (sort keys %{$files{'gnu'}->{'mirrors'}}) {
-			for my $link (@{$files{'gnu'}->{'mirrors'}->{$key}}) {
+		print FILEOUT "Primary: ", $files{$site}->{'primary'}, "\n\n";
+		for my $key (sort keys %{$files{$site}->{'mirrors'}}) {
+			for my $link (@{$files{$site}->{'mirrors'}->{$key}}) {
 				print FILEOUT $key, ": ", $link, "\n";
 			}
 		}
 		close (FILEOUT);
 		print "done\n";
-		unlink("${key}");
-		link("${key}.tmp", "${key}");
-		unlink("${key}.tmp");
+		unlink("${site}");
+		link("${site}.tmp", "${site}");
+		unlink("${site}.tmp");
 	} else {
-		warn "unable to write to $key.tmp: $!\n";
+		warn "unable to write to ${site}.tmp: $!\n";
 	}
 }
 
