@@ -58,6 +58,7 @@ Fink::Bootstrap - Bootstrap a fink installation
   use Fink::Bootstrap qw(:ALL);
 
 	my $distribution = check_host($host);
+	my $distribution = check_host($host, $bootstrap);
 	my $result = inject_package($package, $packagefiles, $info_script, $param);
     my ($package_list, $perl_is_supported) = additional_packages();
 	bootstrap();
@@ -100,6 +101,9 @@ These functions are exported on request.  You can export them all with
 Checks the current host OS version and returns which distribution to use,
 or "unknown."  $host should be as determined by config.guess.
 
+The optional argument $bootstrap is a boolean, designating whether we have
+been called by bootstrap.pl or not.  If absent, it defaults to false.
+
 This function also warns the user about certain bad configurations, or 
 incorrect versions of gcc.
 
@@ -112,7 +116,8 @@ Called by bootstrap.pl and fink's postinstall.pl.
 
 sub check_host {
 	my $host = shift @_;
-	my ($distribution, $gcc, $build);
+	my $bootstrap = shift @_ || 0;
+	my ($distribution, $gcc, $build, $transitional);
 
 	# We test for an obsolete version of gcc3.3, and refuse to proceed if
     # it is present.
@@ -156,6 +161,56 @@ GCC_MSG
 		$gcc = "-gcc3.3";
 	}
 
+## for 10.4 users, we need to decide about the transitional tree
+##  1) on i386 you don't get it
+##  2) on bootstrap, default is to not get it but FINK_NOTRANS overrides
+##  3) if not bootstrapping, leave it the way it was
+
+if ($host =~ /^i386/) {
+  $transitional = "";
+  } elsif ($bootstrap) {
+    if (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(1|true|yes)$/i) {
+    $transitional = "";
+    } elsif (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(0|false|no)$/i) {
+    $transitional = "-transitional";
+    } else {
+    $transitional = "";
+    }
+  } else {
+    my $old_distribution = $config->param("Distribution");
+    if ($old_distribution =~ /^10.4$/) {
+      $transitional = "";
+    } else {
+      $transitional = "-transitional";
+  }
+}
+
+my %transitional_message = (
+  "-transitional" => "Using the old 10.4-transitional tree...",
+  "" => "Using the new 10.4 tree..."
+);
+
+# if we are not using the transitional tree, and gcc-4.0 is present, it
+# must be build 5247 (from XCode 2.2.1)
+
+if ($transitional eq "") {
+	if (-x '/usr/bin/gcc-4.0') {
+		foreach(`/usr/bin/gcc-4.0 --version 2>&1`) {
+			if (/build (\d+)\)/) {
+				$build = $1;
+				last;
+			}
+		}
+		($build >= 5247) or die <<END;
+
+You are attempting to use the new 10.4 tree with an old version (build $build)
+of the gcc 4.0 compiler, which is not supported.  Please update your XCode to 
+XCode 2.2.1, and try again.
+
+END
+	}
+}
+
 	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 		&print_breaking("\nThis system is no longer supported " .
 "for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
@@ -183,23 +238,15 @@ GCC_MSG
 		$distribution = "10.3";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\.[0-4]\.0/) {
 		&print_breaking("This system is supported and tested.");
-		if($ENV{FINK_NOTRANS}) {
-			&print_breaking("Using the non-transitional tree...");
-			$distribution = "10.4";
-		} else {
-			$distribution = "10.4-transitional";
-		}
+		&print_breaking($transitional_message{$transitional});
+		$distribution = "10.4$transitional";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin[8-9]\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
-		if($ENV{FINK_NOTRANS}) {
-			&print_breaking("Using the non-transitional tree...");
-			$distribution = "10.4";
-		} else {
-			$distribution = "10.4-transitional";
-		}
+		&print_breaking($transitional_message{$transitional});
+		$distribution = "10.4$transitional";
 	} elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
 		&print_breaking("This system is outdated and not supported ".
 			"by this Fink release. Please update to Mac OS X ".
