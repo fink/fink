@@ -56,13 +56,11 @@ eur-BE: http://apache.belnet.be
 eur-BE: http://apache.scarlet.be
 eur-BE: ftp://ftp.scarlet.be/pub/apache
 eur-BE: http://apache.be.proserve.nl
-eur-BG: http://apache.online.bg
 eur-BG: ftp://ftp.uni-sofia.bg/apache
 eur-CH: ftp://mirror.switch.ch/mirror/apache/dist
 eur-CH: http://mirror.switch.ch/mirror/apache/dist
 eur-CH: http://mirror1.zic-network.ch/apache
 eur-CH: http://apache.mirror.testserver.li
-eur-CZ: http://ftp.sh.cvut.cz/MIRRORS/apache
 eur-CZ: ftp://ftp.gin.cz/pub/mirrors/www.apache.org/dist
 eur-CZ: http://mirror.styx.cz/apache
 eur-DE: http://apache.dns4.com
@@ -98,7 +96,6 @@ eur-ES: http://apache.rediris.es
 eur-FR: http://apache.fastorama.com/dist
 eur-FR: ftp://ftp.fastorama.com/mirrors/ftp.apache.org/dist
 eur-FR: http://apache.crihan.fr/dist
-eur-FR: ftp://ftp.inria.fr/pub/Apache
 eur-FR: ftp://mir1.ovh.net/ftp.apache.org/dist
 eur-FR: http://mir2.ovh.net/ftp.apache.org/dist
 eur-GR: ftp://ftp.physics.auth.gr/pub/mirrors/apache
@@ -152,8 +149,6 @@ eur-NL: ftp://ftp.cs.uu.nl/mirror/apache.org/dist
 eur-NL: ftp://gnu.kookel.org/pub/apache
 eur-NL: http://httpd.kookel.org
 eur-NO: http://www.powertech.no/apache/dist
-eur-PL: ftp://sunsite.icm.edu.pl/pub/www/apache/dist
-eur-PL: http://sunsite.icm.edu.pl/pub/www/apache/dist
 eur-PL: ftp://ftp.task.gda.pl/pub/www/apache/dist
 eur-PL: http://www.apache.net.pl
 eur-PL: ftp://ftp.tpnet.pl/d1/apache
@@ -170,12 +165,10 @@ eur-RO: http://mirrors.evolva.ro/apache.org/apache-dist
 eur-RO: http://apache.idilis.ro
 eur-RO: ftp://ftp.idilis.ro/linux/http/apache
 eur-RO: http://apache.zoel.ro
-eur-RU: http://apache.tsuren.net
 eur-RU: http://apache.rediska.ru
 eur-RU: ftp://apache.rinet.ru/pub/mirror/apache.org/dist
 eur-RU: http://apache.rinet.ru/dist
 eur-RU: http://www.sai.msu.su/apache/dist
-eur-SE: ftp://ftp.chl.chalmers.se/pub/apache
 eur-SE: http://apache.dataphone.se
 eur-SE: ftp://mirror2.dataphone.se/pub/apache
 eur-SE: ftp://ftp.solace.mh.se/pub/mirrors/www.apache.org
@@ -185,11 +178,9 @@ eur-SE: ftp://ftp.sunet.se/pub/www/servers/apache/dist
 eur-SI: http://mirrors.bevc.net/apache
 eur-SI: http://apache.siol.net/dist
 eur-SI: http://www.apache.si
-eur-SI: http://www.buy.si/apache
 eur-SK: http://apache.tuke.sk
 eur-SK: ftp://mirrors.tuke.sk/apache
 eur-TR: http://apache.progen.com.tr/dist
-eur-TR: ftp://godel.cs.bilgi.edu.tr/pub/mirror/apache
 eur-TR: http://godel.cs.bilgi.edu.tr/mirror/apache
 eur-TR: http://apache.bilkent.edu.tr/dist
 eur-UA: http://apache.alkar.net
@@ -214,8 +205,6 @@ nam-CA: ftp://apache.mirror.rafal.ca/pub/apache
 nam-CA: http://apache.mirror.rafal.ca
 nam-CA: ftp://apache.sunsite.ualberta.ca/pub/apache
 nam-CA: http://apache.sunsite.ualberta.ca
-nam-CA: ftp://apache.mirrors.northco.net
-nam-CA: http://apache.mirrors.northco.net
 nam-MX: http://www.sinacatri.gob.mx/apache
 nam-US: http://www.apache.org/dist
 nam-US: http://www.apache.org/dist
