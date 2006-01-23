@@ -71,6 +71,41 @@ if ($response->is_success) {
 	warn "unable to get apache ftp list\n";
 }
 
+### CPAN
+
+$response = $mech->get( 'http://www.cpan.org/SITES.html' );
+if ($response->is_success) {
+	$files{'cpan'}->{'url'} = 'http://www.cpan.org/SITES.html';
+	$files{'cpan'}->{'primary'} = 'ftp://ftp.cpan.org/pub/CPAN';
+	my $mirrors;
+	my @links = ($files{'cpan'}->{'primary'});
+
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->content);
+	my $hostlist = $tree->look_down(
+		'_tag' => 'a',
+		sub {
+			$_[0]->attr('name') =~ /^hostlist$/
+		},
+	);
+
+	for my $link ($tree->look_down('_tag' => 'a')) {
+		last if ($link->attr('name') =~ /^rsync$/i);
+		next if ($link->attr('href') =~ /^\#/);
+		next if ($link->attr('href') eq "");
+		push(@links, $link->attr('href'));
+	}
+
+	for my $link (@links) {
+		my ($code, $uri) = get_code($link);
+		push(@{$mirrors->{$code}}, $uri);
+	}
+
+	$files{'cpan'}->{'mirrors'} = $mirrors;
+} else {
+	warn "unable to get cpan ftp list\n";
+}
+
 ### GNU
 
 $response = $mech->get( 'http://www.gnu.org/order/ftp.html' );
@@ -100,8 +135,6 @@ if ($response->is_success) {
 } else {
 	warn "unable to get GNU ftp list\n";
 }
-
-print Dumper(\%files), "\n";
 
 for my $site (sort keys %files) {
 	print "- writing $site... ";
@@ -149,6 +182,7 @@ sub get_code {
 		$code = uc($1);
 	}
 	$code = 'UK' if ($code eq 'GB');
+	$code = 'RQ' if ($code eq 'PR');
 	$debug && warn "code = $code, url = ", $uri->canonical, ", mapping = ", $reverse_keys{"$code"}, "\n";
 	if (not exists $reverse_keys{"$code"}) {
 		warn "no such entry for $code!\n";

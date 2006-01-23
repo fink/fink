@@ -181,6 +181,7 @@ eur-SE: ftp://mirror2.dataphone.se/pub/apache
 eur-SE: ftp://ftp.solace.mh.se/pub/mirrors/www.apache.org
 eur-SE: http://ftp.solace.mh.se/pub/mirrors/www.apache.org
 eur-SE: http://apache.archive.sunet.se/dist
+eur-SE: ftp://ftp.sunet.se/pub/www/servers/apache/dist
 eur-SI: http://mirrors.bevc.net/apache
 eur-SI: http://apache.siol.net/dist
 eur-SI: http://www.apache.si
@@ -242,6 +243,7 @@ nam-US: http://apache.tradebit.com/pub
 nam-US: http://apache.mirrors.versehost.com
 nam-US: http://www.wmwweb.com/apache
 nam-US: ftp://mirror.sg.depaul.edu/pub/apache
+nam-US: http://linux.cs.lewisu.edu/apache
 nam-US: http://www.eng.lsu.edu/mirrors/apache
 nam-US: ftp://ftp.ccs.neu.edu/net/mirrors/Apache/dist
 nam-US: http://mirrors.ccs.neu.edu/Apache/dist
