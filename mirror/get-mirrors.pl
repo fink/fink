@@ -13,15 +13,16 @@ use WWW::Mechanize;
 use URI;
 use vars qw($VERSION %keys %reverse_keys %files $debug $response);
 
-use vars qw($APACHE $CPAN $CTAN $DEBIAN $GIMP $GNOME $GNU);
+use vars qw($APACHE $CPAN $CTAN $DEBIAN $GIMP $GNOME $GNU $KDE);
 
-$APACHE = 1;
-$CPAN   = 1;
-$CTAN   = 1;
-$DEBIAN = 1;
-$GIMP   = 1;
-$GNOME  = 1;
-$GNU    = 1;
+$APACHE = 0;
+$CPAN   = 0;
+$CTAN   = 0;
+$DEBIAN = 0;
+$GIMP   = 0;
+$GNOME  = 0;
+$GNU    = 0;
+$KDE    = 1;
 
 $debug = 0;
 $VERSION = ( qw$Revision$ )[-1];
@@ -72,8 +73,15 @@ if ($APACHE) {
 			if (@tds and defined $tds[4]) {
 				my $link = $tds[0]->look_down('_tag' => 'a');
 				if ($link and $tds[4]->as_text eq "ok") {
-					print "\t", $link->attr('href'), ": ok\n";
-					push(@links, $link->attr('href'));
+					my $url = $link->attr('href');
+					$url =~ s#/$##;
+					print "\t", $url, ": ";
+					if ($ua->get($url . '/DATE')->content =~ /^\d+$/gs) {
+						print "ok\n";
+						push(@links, $url);
+					} else {
+						print "failed\n";
+					}
 				}
 			}
 		}
@@ -332,6 +340,55 @@ if ($GNU) {
 	print "done\n";
 }
 
+### KDE
+
+if ($KDE) {
+	print "- getting kde mirror list:\n";
+	$response = $mech->get( 'http://download.kde.org/mirrorstatus.html' );
+	if ($response->is_success) {
+		$files{'kde'}->{'url'} = 'http://download.kde.org/mirrorstatus.html';
+		$files{'kde'}->{'primary'} = 'ftp://ftp.kde.org/pub/kde';
+		my $mirrors;
+		my @links = ($files{'kde'}->{'primary'});
+	
+		my $tree = HTML::TreeBuilder->new();
+		$tree->parse($response->content);
+		my $table = $tree->look_down(
+			'_tag' => 'th',
+			sub {
+				$_[0]->as_text =~ /last stat/
+			},
+		)->look_up('_tag' => 'table');
+	
+		for my $row ($table->look_down('_tag' => 'tr')) {
+			my @tds = $row->look_down('_tag' => 'td');
+			if (@tds and defined $tds[4]) {
+				my $link = $tds[0]->look_down('_tag' => 'a');
+				if ($link and $tds[4]->as_text eq "ok") {
+					my $url = $link->attr('href');
+					$url =~ s#/$##;
+					print "\t", $url, ": ";
+					if ($ua->get($url . '/README')->content =~ /This is the ftp distribution/gs) {
+						print "ok\n";
+						push(@links, $url);
+					} else {
+						print "failed\n";
+					}
+				}
+			}
+		}
+	
+		for my $link (@links) {
+			my ($code, $uri) = get_code($link);
+			push(@{$mirrors->{$code}}, $uri);
+		}
+	
+		$files{'kde'}->{'mirrors'} = $mirrors;
+	} else {
+		warn "unable to get kde ftp list\n";
+	}
+}
+
 for my $site (sort keys %files) {
 	print "- writing $site... ";
 	if (open (FILEOUT, ">$site.tmp")) {
@@ -368,7 +425,7 @@ sub get_code {
 		$debug && warn "unknown code for " . $uri->host . "\n";
 		if ($uri->host =~ /\.(\D\D)$/) {
 			$code = uc($1);
-			$debug && warn "found $code in hostname\n";
+			warn "found $code in hostname\n";
 		} else {
 			$code = 'US';
 			$debug && warn "still couldn't figure it out, setting to US\n";
