@@ -772,7 +772,7 @@ sub validate_info_file {
 			foreach my $atom (@$_) {
 				$atom =~ s/^\(.*?\)\s*//;
 				next unless $atom =~ /^fink\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
-				$has_fink_bdep = 1 if version_cmp($2, '>=', '0.24.99');
+				$has_fink_bdep = 1 if version_cmp($2, '>=', '0.24.12');
 			}
 		}
 		if (!$has_fink_bdep) {

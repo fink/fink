@@ -1,3 +1,7 @@
+2006-01-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: PatchFile and friends arrive in fink-0.24.12
+
 2006-01-21  Dave Morrison
 
 	* Bootstrap.pm: add an optional argument to check_host telling us
