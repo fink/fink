@@ -1,4 +1,8 @@
-2006-01-21  Dave Morrison
+2006-01-24  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: Document SelfUpdateCVSTrees
+
+2006-01-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: add an optional argument to check_host telling us
 	whether we are bootstrapping or not

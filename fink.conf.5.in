@@ -197,6 +197,16 @@ will download using anonymous or :ext:
 access from the fink repository. This has the disadvantage that cvs can not switch mirrors, if the server is unavailable you will not be able to update.
 .Nm point
 will download only the latest released version of the packages. It is not recommended as your packages may be quite out of date.
+.It Cm SelfUpdateCVSTrees: Ar list of trees
+By default, the CVS selfupdate method will update only the current
+distribution's tree.  This option overrides the list of distribution
+versions that will be updated during a selfupdate.
+.Pp
+Please note that you will need a recent "cvs" binary installed if you
+wish to include directories that do not have CVS/ directories in their
+entire path (e.g.,
+.Nm dists/local/main
+or similar).
 .It Cm UseBinaryDist: Ar boolean
 Causes fink to try to download pre-compiled binary packages from the binary 
 distribution if available and if deb is not already on the system.
