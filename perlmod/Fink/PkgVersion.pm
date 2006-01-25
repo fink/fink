@@ -73,6 +73,7 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+our %perl_archname_cache;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -4781,23 +4782,33 @@ sub get_perl_dir_arch {
 
 	# grab perl version, if present
 	my $perlversion   = "";
-#get_system_perl_version();
 	my $perldirectory = "";
 	my $perlarchdir;
 	if ($self->is_type('perl') and $self->get_subtype('perl') ne 'perl') {
 		$perlversion = $self->get_subtype('perl');
 		$perldirectory = "/" . $perlversion;
 	}
+
+	if (exists $perl_archname_cache{$perlversion}) {
+		return (@{$perl_archname_cache{$perlversion}});
+	}
+
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
 	my $perlcmd = get_path('perl'.$perlversion);
 
-	if ($perlversion ge "5.8.1") {
-		$perlarchdir = 'darwin-thread-multi-2level';
+	if (-x $perlcmd) {
+		($perlarchdir) = (`$perlcmd -MConfig -eprint+Config::config_vars+archname` =~ /archname='(.*)'/);
 	} else {
-		$perlarchdir = 'darwin';
+		# hardcode just in case  :P
+		if ($perlversion ge "5.8.1") {
+			$perlarchdir = 'darwin-thread-multi-2level';
+		} else {
+			$perlarchdir = 'darwin';
+		}
 	}
 
+	$perl_archname_cache{$perlversion} = [ $perldirectory, $perlarchdir, $perlcmd ];
 	return ($perldirectory, $perlarchdir,$perlcmd);
 }
 
