@@ -623,12 +623,11 @@ the successful execution of "gcc --version".
 	print STDERR "- checking for various GCC versions:\n" if ($options{debug});
 	if (opendir(DIR, "/usr/bin")) {
 		for my $gcc (grep(/^gcc/, readdir(DIR))) {
+			next if (-l "/usr/bin/$gcc");
 			if (open(GCC, $gcc . ' --version 2>&1 |')) {
 				my $version = <GCC>;
 				close(GCC);
-				if( ! defined $version ) {
-					next;
-				}
+				next unless (defined $version);
 				chomp($version);
 				if ($version =~ /^([\d\.]+)$/ or $version =~ /^.*? \(GCC\) ([\d\.\-]+)/) {
 					$version = $1;
@@ -636,13 +635,24 @@ the successful execution of "gcc --version".
 					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
 					my $pkgname = $version eq "2.95.2"
 						? 'gcc2' : "gcc$shortversion";
-					
+
 					# Don't interfere with real packages
 					if (Fink::Status->query_package($pkgname)) {
 						print STDERR "  - skipping $pkgname, there's a real package\n" if ($options{debug});
 						next;
 					}
-					
+
+					if (open(GCC, $gcc . ' -### -x c /dev/null 2>&1 |')) {
+						while (<GCC>) {
+							if (/^\s*\"([^\"]+\/cc1)\"/) {
+								if (not -x $1) {
+									print STDERR "  - $gcc is looking for $1 to build on this arch, but it's not there\n" if ($options{debug});
+								}
+								last;
+							}
+						}
+						close(GCC);
+					}
 					$hash = &gen_gcc_hash($pkgname, $version, 0,
 						STATUS_PRESENT);
 					$self->{$hash->{package}} = $hash;
@@ -664,6 +674,7 @@ the successful execution of "gcc --version".
 			'gcc2.95' => '2.95.2',
 			'gcc3.1'  => '3.1',
 			'gcc3.3'  => '3.3',
+			'gcc4.0'  => '4.0',
 		);
 		foreach (sort keys %expected_gcc) {
 			if (!exists $self->{$_} && !Fink::Status->query_package($_)) {
