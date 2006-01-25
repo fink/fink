@@ -4789,13 +4789,13 @@ sub get_perl_dir_arch {
 		$perldirectory = "/" . $perlversion;
 	}
 
-	if (exists $perl_archname_cache{$perlversion}) {
-		return (@{$perl_archname_cache{$perlversion}});
-	}
-
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
 	my $perlcmd = get_path('perl'.$perlversion);
+
+	if (exists $perl_archname_cache{$perlcmd}) {
+		return (@{$perl_archname_cache{$perlcmd}});
+	}
 
 	if (-x $perlcmd) {
 		($perlarchdir) = (`$perlcmd -MConfig -eprint+Config::config_vars+archname` =~ /archname='(.*)'/);
@@ -4808,8 +4808,8 @@ sub get_perl_dir_arch {
 		}
 	}
 
-	$perl_archname_cache{$perlversion} = [ $perldirectory, $perlarchdir, $perlcmd ];
-	return ($perldirectory, $perlarchdir,$perlcmd);
+	$perl_archname_cache{$perlcmd} = [ $perldirectory, $perlarchdir, $perlcmd ];
+	return ($perldirectory, $perlarchdir, $perlcmd);
 }
 
 ### get_ruby_dir_arch

@@ -1,3 +1,12 @@
+2006-01-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: updated perl checks to ask perl what it's arch
+	is, rather than assuming.  Because when you're assuming, you
+	make an ass out of you and ming.
+	* VirtPackage.pm: added a check to gcc to determine if the gcc
+	binary being interrogated is capable of targetting the host on
+	which it is being run.
+
 2006-01-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: PatchFile and friends arrive in fink-0.24.12
