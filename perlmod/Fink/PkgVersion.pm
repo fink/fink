@@ -4783,6 +4783,7 @@ sub get_perl_dir_arch {
 	my $perlversion   = "";
 #get_system_perl_version();
 	my $perldirectory = "";
+	my $perlarchdir;
 	if ($self->is_type('perl') and $self->get_subtype('perl') ne 'perl') {
 		$perlversion = $self->get_subtype('perl');
 		$perldirectory = "/" . $perlversion;
@@ -4790,8 +4791,12 @@ sub get_perl_dir_arch {
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
 	my $perlcmd = get_path('perl'.$perlversion);
-	my $perlarchdir = `$perlcmd -V:archname`;
-	$perlarchdir =~ s/archname='(.*)'.*$/$1/gs;
+
+	if ($perlversion ge "5.8.1") {
+		$perlarchdir = 'darwin-thread-multi-2level';
+	} else {
+		$perlarchdir = 'darwin';
+	}
 
 	return ($perldirectory, $perlarchdir,$perlcmd);
 }
