@@ -4798,7 +4798,7 @@ sub get_perl_dir_arch {
 	}
 
 	if (-x $perlcmd) {
-		($perlarchdir) = (`$perlcmd -MConfig -eprint+Config::config_vars+archname` =~ /archname='(.*)'/);
+		($perlarchdir) = (`/usr/bin/env -i $perlcmd -MConfig -eprint+Config::config_vars+archname` =~ /archname='(.*)'/);
 	} else {
 		# hardcode just in case  :P
 		if ($perlversion ge "5.8.1") {
