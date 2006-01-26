@@ -58,6 +58,7 @@ use File::Basename qw(&dirname &basename);
 use Carp qw(confess);
 use File::Temp qw(tempdir);
 use Fcntl;
+use Storable;
 
 use strict;
 use warnings;
@@ -141,6 +142,12 @@ sub _is_loaded {
 Load any unloaded fields into this PkgVersion object. Loads are shared among
 different PkgVersion objects. Returns this object.
 
+=for private
+
+load_fields must always be called, even for newly-created objects. We
+set some fields here that are runtime-dependent, which needs to happen
+even for packages that aren't cached.
+
 =cut
 
 our %shared_loads;
@@ -152,7 +159,7 @@ our %shared_loads;
 	
 	sub load_fields {
 		my $self = shift;
-		return $self if $self->_is_loaded || !eval { require Storable };
+		return $self if $self->_is_loaded;
 		
 		$self->set_param('_backed_loaded', 1);
 		my $file = $self->param('_backed_file');
@@ -605,8 +612,10 @@ sub initialize {
 
 	$expand->{PatchFile} = $self->{_patchpath} . '/' . $self->param('PatchFile') if $self->has_param("PatchFile");
 
+	# Percent-expansion fields that depend on a fink's runtime configs
+	# aren't assigned here. We push that into load_fields, which is
+	# always called before any fields are used.
 	$self->{_expand} = $expand;
-	$self->_set_destdirs;
 
 	$self->{_bootstrap} = 0;
 

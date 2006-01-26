@@ -1,3 +1,8 @@
+2006-01-25  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Don't call _set_destdirs during object
+	initialization (it's called during load_fields anyway).
+
 2006-01-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: updated perl checks to ask perl what it's arch

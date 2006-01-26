@@ -163,6 +163,7 @@ Like C<mkdir -p>.
 Due to an implementation quirk, $! is not set on failure.
 
 =for private
+
 If this becomes a problem, reimplement without File::Path
 
 =cut
