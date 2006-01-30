@@ -91,7 +91,7 @@ process. By default, the file is stored in
 but one can use the
 .Cm --logfile
 flag to specify an alternate filename.
-.It Cm --no-log-outut
+.It Cm --no-log-output
 Don't save a copy of the output during package-building, opposite of the
 .Cm --log-output
 flag. This is the default.
@@ -113,6 +113,82 @@ package name
 package version
 .It Cm %r
 package revision
+.El
+.It Cm -t, --trees=expr
+Consider only packages in trees matching
+.Pa expr .
+.Pp
+The format of
+.Pa expr
+is a comma-delimited list of tree specifications. Trees listed in
+.Pa fink.conf
+are compared against
+.Pa expr .
+Only those which match at
+least one tree specification are considered by fink, in the order of the first
+specifications which they match. If no
+.Cm --trees
+option is used, all trees listed in
+.Pa fink.conf
+are included in order.
+.Pp
+A tree specification
+may contain a slash
+.Pq /
+character, in which case it requires an exact match with a tree. Otherwise, it
+matches against the first path-element of a tree. For example,
+.Cm --trees=unstable/main
+would match only the
+.Cm unstable/main
+tree, while
+.Cm --trees=unstable
+would match both
+.Cm unstable/main
+and
+.Cm unstable/crypto .
+.Pp
+There exist magic tree specifications which can be included in
+.Pa expr :
+.Bl -tag -width flag -offset indent
+.It Cm status
+Includes packages in the dpkg status database.
+.It Cm virtual
+Includes virtual packages which reflect the capabilities of the system.
+.El
+.Pp
+Exclusion (or failure to include) these magic trees is currently only supported
+for operations which do not install or remove packages.
+.It Cm -T, --exclude-trees=expr
+Consider only packages in trees not matching
+.Pa expr .
+.Pp
+The syntax of
+.Pa expr
+is the same as for
+.Cm --trees ,
+including the magic tree specifications. However, matching trees are here
+excluded rather than included. Note that trees matching both
+.Cm --trees
+and
+.Cm --exclude-trees
+are excluded.
+.Pp
+Examples of
+.Cm --trees
+and
+.Cm --exclude-trees :
+.Bl -tag -width flag -offset indent
+.It Cm fink --trees=stable,virtual,status install foo
+Install
+.Cm foo
+as if fink was using the stable tree, even if unstable is enabled in
+.Pa fink.conf .
+.It Cm fink --exclude-trees=local install foo
+Install the version of
+.Cm foo
+in fink, not the locally modified version.
+.It Cm fink --trees=local/main list -i
+List the locally modified packages which are installed.
 .El
 .El
 .\"
@@ -234,8 +310,6 @@ Show packages which are not currently installed.
 Show only packages in the sections matching the regular expression expr.
 .It Cm -m expr,--maintainer=expr
 Show only packages with the maintainer  matching the regular expression expr.
-.It Cm -r expr,--tree=expr
-Show only packages in the trees matching the regular expression expr.
 .It Cm -w xyz,--width=xyz
 Sets the width of the display you would like the output
 formatted for. xyz is either a numeric value or auto.
@@ -255,7 +329,7 @@ just list the names of the out of date packages.
 list the packages in the kde section.
 .It Cm fink list --maintainer=fink-devel
 list the packages with no maintainer.
-.It Cm fink list --tree=unstable --maintainer=fink-devel
+.It Cm fink --trees=unstable list --maintainer=fink-devel
 list the packages with no maintainer, but only in the unstable tree.
 .It Cm fink list Qq "gnome*"
 list all packages that start with 'gnome'.

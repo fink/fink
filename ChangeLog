@@ -1,3 +1,7 @@
+2006-01-30	Dave Vasilevsky	<vasi@users.sourceforge.net>
+	* fink.8.in, fink.conf.5.in: Document the new --trees and --exclude-trees
+	options.
+
 2006-01-21  Dave Morrison
 
 	* bootstrap.pl: add an optional argument to check_host telling us
