@@ -1,3 +1,8 @@
+2006-01-31  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm, Validation.pm: Consider .info Architecture field
+	case-insensitively.
+
 2006-01-24  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Backport SelfUpdateCVSTrees (fink.conf)

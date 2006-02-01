@@ -696,7 +696,8 @@ sub setup_package_object {
 	if (my $pkg_arch = $properties->{architecture}) {
 		$pkg_arch =~ s/\s+//g;
 		my $our_arch = &get_arch;
-		return () unless grep { $_ eq $our_arch } split /,/, $pkg_arch;
+		# this assumes canonical arch strings are all-lowercase
+		return () unless grep { $_ eq $our_arch } split /,/, lc($pkg_arch);
 	}
 
 	my %pkg_expand;

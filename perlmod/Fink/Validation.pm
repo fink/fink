@@ -488,7 +488,7 @@ sub validate_info_file {
 	if (defined $value) {
 		$value =~ s/\s+//g;
 		foreach (split /,/, $value) {
-			if (!exists $allowed_arch_values{$_}) {
+			if (!exists $allowed_arch_values{lc $_}) {
 				print "Warning: Unknown value \"$_\" in Architecture field. ($filename)\n";
 				$looks_good = 0;
 			}
