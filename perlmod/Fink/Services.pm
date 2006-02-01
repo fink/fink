@@ -1134,6 +1134,14 @@ sub file_MD5_checksum {
 Returns the architecture string to be used on this platform. For
 example, "powerpc" for ppc.
 
+=for private
+
+Callers assume the value is all-lowercase, but some also assume it is
+the canonical form. So we can't use lc() here without breaking the
+latter if there are any cases of canonical forms that have upper-case
+chars. If we find any, have to check our callers for incorrect
+assumptions.
+
 =cut
 
 sub get_arch {

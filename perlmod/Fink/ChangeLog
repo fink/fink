@@ -1,3 +1,8 @@
+2006-01-31  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Validation.pm: Consider .info Architecture field
+	case-insensitively.
+
 2006-01-25  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Don't call _set_destdirs during object
