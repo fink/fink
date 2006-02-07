@@ -1,4 +1,9 @@
-2006-01-30	Dave Vasilevsky	<vasi@users.sourceforge.net>
+2006-02-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: display the test commands (help diagnose errors
+	involving bogus $PWD variable).
+
+2006-01-30  Dave Vasilevsky  <vasi@users.sourceforge.net>
 	* fink.8.in, fink.conf.5.in: Document the new --trees and --exclude-trees
 	options.
 
