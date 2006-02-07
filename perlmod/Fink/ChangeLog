@@ -1,3 +1,7 @@
+2006-02- 06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Implement standard variant syntax in Architecture.
+
 2006-01-31  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm, Validation.pm: Consider .info Architecture field

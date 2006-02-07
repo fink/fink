@@ -321,18 +321,6 @@ sub pkgversions_from_properties {
 	my %options = @_;
 	my $filename = $options{filename} || "";
 	
-	# If there is an Architecture field, skip the whole $properties
-	# hash if the current architecture string is not in the
-	# comma-separated value list
-	if (my $pkg_arch = $properties->{architecture} and not $options{no_exclusions}) {
-		$pkg_arch =~ s/\s+//g;
-		my $our_arch = &get_arch;
-		# this assumes canonical arch strings are all-lowercase
-		return () unless grep { $_ eq $our_arch } split /,/, lc($pkg_arch);
-	}
-
-	my %pkg_expand;
-	
 	# Handle variant types
 	if (exists $properties->{type}) {
 		if ($properties->{type} =~ /([a-z0-9+.\-]*)\s*\((.*?)\)/) {
@@ -358,11 +346,24 @@ sub pkgversions_from_properties {
 		# we have only single-value subtypes
 #		print "Type: ",$properties->{type},"\n";
 	}
-#	print map "\t$_=>$pkg_expand{$_}\n", sort keys %pkg_expand;
 
 	# create object for this particular version
 	my $pkgversion = $class->new_from_properties($properties, %options);
 	
+	# Handle Architecture field. We should do this before
+	# instantiating the PV objects, but that would mean having to
+	# parse the Type field another time in order to get %-exp map.
+	if ($pkgversion->has_param('architecture') and not $options{no_exclusions}) {
+		# Syntax is like a package-list, so piggy-back on those fields' parser
+		my $pkg_arch = $pkgversion->pkglist('architecture');
+
+		my $sys_arch = &get_arch;
+		if (defined $pkg_arch and $pkg_arch !~ /(\A|,)\s*$sys_arch\s*(,|\Z)/) {
+			# Discard the whole thing if local arch not listed
+			return ();
+		}
+	}
+
 	# Only return splitoffs for the parent. Otherwise, PkgVersion::add_splitoff
 	# goes crazy.
 	if ($pkgversion->has_parent) { # It's a splitoff
