@@ -1,18 +1,23 @@
+2006-02-07  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: clone the entire perlmod/ to an
+	accessible location.
+
 2005-09-05  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* spec2struct.t: New tests for spec2struct and spec2string functions.
 
-2005-4-25  Daniel Macks  <dmacks@netspace.org>
+2005-04-25  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: more platform-portable `mktemp`
 
-2005-1-11  Daniel Macks  <dmacks@netspace.org>
+2005-01-11  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: execute() may fork a process that needs
 	to find Services.pm, so make a copy of that file that is
 	guaranteed to be readable by "nobody".
 
-2005-1-5  Daniel Macks  <dmacks@netspace.org>
+2005-01-5  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: delete expected tempfile.
 
