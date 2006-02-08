@@ -3735,8 +3735,8 @@ EOF
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
-		$scriptbody{postinst} .= "\n\%p/bin/fink-instscripts postinst updatepod '$perldirectory' '$perlarchdir'\n";
-		$scriptbody{postrm} .= "\n\%p/bin/fink-instscripts postinst updatepod '$perldirectory' '$perlarchdir'\n";
+		$scriptbody{postinst} .= $self->_instscript("postinst", "updatepod", $perldirectory, $perlarchdir);
+		$scriptbody{postrm}   .= $self->_instscript("postrm",   "updatepod", $perldirectory, $perlarchdir);
 	}
 
 	# add JarFiles Code
@@ -5071,6 +5071,24 @@ sub log_output {
 =back
 
 =cut
+
+sub _instscript {
+	my $self = shift;
+	my @args;
+
+	for (@_) {
+		my $arg = $_;
+		$arg =~ s/\'/\\\'/gs;
+		push(@args, $arg);
+	}
+
+	my $return = "\n";
+	$return .= "[ -x \%p/bin/fink-instscripts ] && \%p/bin/fink-instscripts " . join(" ", map { "'" . $_ . "'" } @args) . "\n";
+	$return .= "[ ! -x \%p/bin/fink-instscripts ] && echo 'WARNING: this package was generated with fink 0.25 or higher, and will lose some functionality if' && \\\n";
+	$return .=                                      "echo '         installed using an older version of fink.'\n";
+
+	return $return;
+}
 
 ### EOF
 
