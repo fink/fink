@@ -1,3 +1,11 @@
+2006-02-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Allow inject_description to take a preformed
+	PkgVersion object, not just a hash of fields. Update all callers
+	for this new syntax.
+	* Package.pm, Validation.pm: Add support for conditionals in the
+	Architecture field.
+
 2006-01-31  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm, Validation.pm: Consider .info Architecture field

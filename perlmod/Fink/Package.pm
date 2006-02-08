@@ -505,7 +505,9 @@ sub scan_all {
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
-			Fink::Package->inject_description($po, $hash);
+			# create version object
+			my $pkgversion = Fink::PkgVersion->new_from_properties($hash);
+			Fink::Package->inject_description($po, $pkgversion);
 		}
 	}
 	# Get data from VirtPackage.pm. Note that we do *not* store this 
@@ -524,7 +526,9 @@ sub scan_all {
 			$hash->{type} = "dummy";
 			$hash->{filename} = "";
 
-			Fink::Package->inject_description($po, $hash);
+			# create version object
+			my $pkgversion = Fink::PkgVersion->new_from_properties($hash);
+			Fink::Package->inject_description($po, $pkgversion);
 		}
 	}
 	$have_packages = 1;
@@ -690,16 +694,6 @@ sub setup_package_object {
 	my $properties = shift;
 	my $filename = shift;
 	
-	# If there is an Architecture field, skip the whole $properties
-	# hash if the current architecture string is not in the
-	# comma-separated value list
-	if (my $pkg_arch = $properties->{architecture}) {
-		$pkg_arch =~ s/\s+//g;
-		my $our_arch = &get_arch;
-		# this assumes canonical arch strings are all-lowercase
-		return () unless grep { $_ eq $our_arch } split /,/, lc($pkg_arch);
-	}
-
 	my %pkg_expand;
 
 	if (exists $properties->{type}) {
@@ -747,27 +741,44 @@ sub setup_package_object {
 	# sure Maintainer doesn't have %type_*[] or other bad % constructs
 	$properties->{package} = &expand_percent($properties->{package},\%pkg_expand, "$filename \"package\"");
 
-	# get/create package object
-	my $package = Fink::Package->package_by_name_create($properties->{package});
-
 	# create object for this particular version
 	$properties->{thefilename} = $filename;
-	my $pkgversion = Fink::Package->inject_description($package, $properties);
-	return ($pkgversion);
+	my $pkgversion = Fink::PkgVersion->new_from_properties($properties);
+
+	# Handle Architecture field. We should do this before
+	# instantiating the PV objects, but that would mean having to
+	# parse the Type field another time in order to get %-exp map.
+	if ($pkgversion->has_param('architecture')) {
+		# Syntax is like a package-list, so piggy-back on those fields' parser
+		my $pkg_arch = $pkgversion->pkglist('architecture');
+
+		my $sys_arch = &get_arch;
+		if (defined $pkg_arch and $pkg_arch !~ /(\A|,)\s*$sys_arch\s*(,|\Z)/) {
+			# Discard the whole thing if local arch not listed
+			return ();
+		}
+	}
+
+	# get/create package object and set up this particular version
+	my $package = Fink::Package->package_by_name_create($properties->{package});
+	return Fink::Package->inject_description($package, $pkgversion);
 }
 
 ### create a version object from a properties hash and link it
 # first parameter: existing Package object
-# second parameter: ref to hash with fields
+# second parameter: ref to hash with fields, or a PkgVersion object
+#     (if ref to fields hash, PkgVersion object is created for it)
 
 sub inject_description {
 	shift;	# class method - ignore first parameter
 	my $po = shift;
-	my $properties = shift;
-	my ($version, $vp, $vpo);
+	my $version = shift;
+	my ($vp, $vpo);
 
-	# create version object
-	$version = Fink::PkgVersion->new_from_properties($properties);
+	# create version object if we were given the raw field data
+	if (not UNIVERSAL::isa $version, 'Fink::PkgVersion') {
+		$version = Fink::PkgVersion->new_from_properties($version);
+	}
 
 	# link them together
 	$po->add_version($version);
