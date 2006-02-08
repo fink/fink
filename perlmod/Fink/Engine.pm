@@ -2133,7 +2133,8 @@ FORMAT
 						   env
 						   configureparams gcc compilescript noperltests
 						   updatepod installscript
-						   jarfiles docfiles shlibs runtimevars splitoffs files
+						   jarfiles docfiles appbundles
+						   shlibs runtimevars splitoffs files
 						   preinstscript postinstscript
 						   prermscript postrmscript
 						   conffiles infodocs daemonicname daemonicfile
@@ -2255,7 +2256,7 @@ FORMAT
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
 					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf)files$/ or
-					 $_ =~ /^patch(|file|file-md5)$/ or
+					 $_ =~ /^patch(|file|file-md5)$/ or $_ eq 'appbundles' or
  					 $_ eq 'infodocs' or $_ =~ /^daemonicname$/
 					) {
 				# singleline fields start on the same line, have
