@@ -3722,6 +3722,7 @@ EOF
 	} # unless ($skip_prebinding)
 
 	### create scripts as neccessary
+	## TODO: refactor more of this stuff to fink-instscripts
 
 	foreach (qw(postinst postrm preinst prerm)) {
 		# get script piece from package description
@@ -3734,24 +3735,8 @@ EOF
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
-		$scriptbody{postinst} .=
-			"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
-			"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
-			"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
-		$scriptbody{postrm} .=
-			"\n\n# Updating \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n\n".
-			"###\n".
-			"### check to see if any .pod files exist in \%p/share/podfiles.\n".
-			"###\n\n".
-			"echo -n '' > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n".
-			"perl <<'END_PERL'\n\n".
-			"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
-			"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
-			"	 if (\$#files >= 0) {\n".
-			"		 exec \"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
-			"	 }\n".
-			"}\n\n".
-			"END_PERL\n";
+		$scriptbody{postinst} .= "\n\%p/bin/fink-instscripts postinst updatepod '$perldirectory' '$perlarchdir'\n";
+		$scriptbody{postrm} .= "\n\%p/bin/fink-instscripts postinst updatepod '$perldirectory' '$perlarchdir'\n";
 	}
 
 	# add JarFiles Code

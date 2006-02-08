@@ -1,0 +1,72 @@
+#!/usr/bin/perl
+
+use File::Path;
+
+my $PREFIX  = '@BASEPATH@';
+
+die "usage: $0 <command> <target> [command options]\n" unless (@ARGV >= 2);
+
+my $COMMAND = lc(shift);
+my $TARGET  = lc(shift);
+my $DEBUG   = 0;
+
+my $handled = 0;
+
+$DEBUG && debug("command = $COMMAND, target = $TARGET, arguments = '@ARGV'");
+
+if ($TARGET eq "updatepod") {
+	my $perlarchdir   = shift;
+	my $perldirectory = shift;
+
+	my $perllocaldir = $PREFIX . '/lib/perl5' . $perldirectory . '/' . $perlarchdir;
+	debug("making $perllocaldir directory");
+	mkpath($perllocaldir);
+
+	if ($COMMAND eq "postinst") {
+		my $podfiledir = $PREFIX . '/share/podfiles' . $perldirectory;
+
+		debug("opening $perllocaldir/perllocal.pod for writing");
+		if (open(FILEOUT, '>' . $perllocaldir . '/perllocal.pod')) {
+			for my $file (<$podfiledir/*.pod>) {
+				debug("writing $file to $perllocaldir/perllocal.pod");
+				if (open (FILEIN, $file)) {
+					local $/ = undef;
+					print FILEOUT <FILEIN>;
+					close(FILEIN);
+				} else {
+					warn "unable to add $file to perllocal.pod: $!\n";
+				}
+			}
+			close(FILEOUT);
+		} else {
+			warn "unable to write to $perllocaldir/perllocal.pod: $!\n";
+		}
+		$handled++;
+	} elsif ($COMMAND eq "postrm") {
+		if (-e $PREFIX . '/share/podfiles' . $perldirectory) {
+			debug("opening $perllocaldir/perllocal.pod for writing");
+			if (open(FILEOUT, '>' . $perllocaldir . '/perllocal.pod')) {
+				for my $file (<$PREFIX . '/share/podfiles' . $perldirectory . '/*.pod'>) {
+					debug("writing $file to $perllocaldir/perllocal.pod");
+					if (open (FILEIN, $file)) {
+						local $/ = undef;
+						print FILEOUT <FILEIN>;
+						close (FILEIN);
+					}
+				}
+				close (FILEOUT);
+			}
+		}
+		$handled++;
+	}
+}
+
+if (not $handled) {
+	die "ERROR: unhandled command: $COMMAND $TARGET @ARGV\n";
+}
+
+sub debug {
+	return unless ($DEBUG);
+
+	print STDERR @_, "\n";
+}

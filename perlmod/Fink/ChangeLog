@@ -1,3 +1,8 @@
+2006-02-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+    * Bootstrap.pm, PkgVersion.pm: start moving pre/post inst/rm automatic
+	logic to an external script, to avoid hardcoding bugs into .deb files
+
 2006-02-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Teach dumpinfo about AppBundles

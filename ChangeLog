@@ -1,3 +1,9 @@
+2006-02-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fink-instscripts.in, install.sh, setup.sh: start moving pre/post
+	inst/rm automatic logic to an external script, to avoid hardcoding
+	bugs into .deb files
+
 2006-02-07  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: display the test commands (help diagnose errors

@@ -524,6 +524,7 @@ sub check_files {
 	foreach $file (qw(fink.in install.sh COPYING VERSION
   		perlmod/Fink update fink.info.in postinstall.pl.in
   		update/config.guess perlmod/Fink/Config.pm fink-virtual-pkgs.in
+		fink-instscripts.in
  	)) {
 		if (not -e $file) {
 			print "ERROR: Package incomplete, '$file' is missing.\n";
@@ -547,7 +548,7 @@ sub fink_packagefiles {
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in images install.sh setup.sh ".
   "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in fink.shlibs lockwait.in g++-wrapper.in";
+  "fink-virtual-pkgs.in fink.shlibs lockwait.in g++-wrapper.in fink-instscripts.in";
 
 return $packagefiles;
 
