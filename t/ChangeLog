@@ -1,3 +1,7 @@
+2006-02-08  Daniel Macks  <dmacks@netspace.org>
+
+	* users_groups.t: moved into 10features/
+
 2005-11-29  Daniel Macks  <dmacks@netspace.org>
 
 	* users_groups.t: Test that the users and groups we use by name
