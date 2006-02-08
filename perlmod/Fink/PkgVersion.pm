@@ -3774,7 +3774,7 @@ EOF
 	# add Fink symlink Code for .app OS X applications
 	if ($self->has_param("AppBundles")) {
 		# shell-escape app names and parse down to just the .app dirname
-		my @apps = map { s/\'/\\\'/gsi; basename{$_} } split(/\s+/, $self->param("AppBundles"));
+		my @apps = map { s/\'/\\\'/gsi; basename($_) } split(/\s+/, $self->param("AppBundles"));
 
 		$scriptbody{postinst} .=
 			"\n".
