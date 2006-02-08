@@ -1,3 +1,9 @@
+2006-02-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Make target volume available to test scripts as
+	$PREFIX env var
+	* fink.info.in: Pass target prefix to 'make test'
+
 2006-02-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* fink-instscripts.in, install.sh, setup.sh: start moving pre/post

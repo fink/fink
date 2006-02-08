@@ -16,7 +16,7 @@ Source: @SOURCE@
 Source-MD5: @MD5@
 NoSetPATH: true
 CompileScript: <<
- make test
+ make test PREFIX=%p
  ./setup.sh %p
 <<
 InstallScript: <<

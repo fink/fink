@@ -1,3 +1,8 @@
 2006-02-08  Daniel Macks  <dmacks@netspace.org>
 
+	* volume.t: Check for whitespace in target volume name and Finder
+	ignore-permissions flag
+
+2006-02-08  Daniel Macks  <dmacks@netspace.org>
+
 	* users_groups.t: moved from one directory higher

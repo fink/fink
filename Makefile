@@ -29,7 +29,7 @@ test_setup:
 test: test_setup
 	@# must test with same perl binary as the one to be used to run fink
 	@# (which also must be coded into t/Services/execute_nonroot_okay.t)
-	cd t && ./testmore.pl && find ${TESTS} -name '*.t' | sort | xargs /usr/bin/perl -I${PWD}/perlmod -MTest::Harness -e 'runtests(@ARGV)'
+	cd t && ./testmore.pl && find ${TESTS} -name '*.t' | sort | PREFIX=$(PREFIX) xargs /usr/bin/perl -I${PWD}/perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
 # remove all files that are ignored by CVS
 clean:
