@@ -1,4 +1,8 @@
-2006-02- 06  Daniel Macks  <dmacks@netspace.org>
+2006-02-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Add support for conditionals in the Architecture field.
+
+2006-02-06  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Implement standard variant syntax in Architecture.
 

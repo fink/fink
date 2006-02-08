@@ -274,6 +274,7 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Suggests',
 	 'Recommends',
 	 'Enhances',
+	 'Architecture',
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -504,18 +505,6 @@ sub validate_info_file {
 	} elsif (not (defined($properties->{type}) and $properties->{type} =~ /\bbundle\b/i)) {
 		print "Warning: No license specified. ($filename)\n";
 		$looks_good = 0;
-	}
-
-	# Check syntax of Architecture field (if it exists)
-	$value = $properties->{architecture};
-	if (defined $value) {
-		$value =~ s/\s+//g;
-		foreach (split /,/, $value) {
-			if (!exists $allowed_arch_values{lc $_}) {
-				print "Warning: Unknown value \"$_\" in Architecture field. ($filename)\n";
-				$looks_good = 0;
-			}
-		}
 	}
 
 	# check SourceN and corresponding fields
@@ -961,6 +950,7 @@ sub validate_info_component {
 		}
 
 		# check dpkg Depends-style field syntax
+		# Architecture is a special case of this same syntax
 		if ($pkglist_fields{$field}) {
 			(my $pkglist = $value) =~ tr/\n//d; # convert to single line
 			if ($info_level >= 3) {
@@ -984,12 +974,18 @@ sub validate_info_component {
 					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
-				my $cond = $1;
+				my ($cond, $pkgname, $vers) = ($1, $2, $3);
 				# no logical AND (OR would be split() and give broken atoms)
 				if (defined $cond and $cond =~ /&/) {
 					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
 				}
-				if (my($verspec) = $atom =~ /.*\(\s*(.*?)\s*\)\Z/) {
+				if ($field eq 'architecture') {
+					$pkgname .= " ($vers)" if defined $vers;
+					if (!exists $allowed_arch_values{lc $pkgname}) {
+						print "Warning: Unknown value \"$pkgname\" in Architecture field. ($filename)\n";
+						$looks_good = 0;
+					}
+				} elsif (my($verspec) = $atom =~ /.*\(\s*(.*?)\s*\)\Z/) {
 					# yes, we *do* need the seemingly useless initial .* there
 					if (my($ver) = $verspec =~ /^(?:<<|<=|=|!=|>=|>>)\s*(.*)/) {
 						unless ($ver =~ /\A\S+\Z/) {
