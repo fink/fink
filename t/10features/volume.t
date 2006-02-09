@@ -34,6 +34,6 @@ SKIP: {
     } elsif ($cmd_out[0] =~ /enabled\.$/) {
 	pass "Permissions enabled on volume \"$volume\"";
     } else { 
-	fail "Could not parse permissions status from `$vsdbutil $volume";
+	fail "Could not parse permissions status from `$vsdbutil -c $volume`";
     }
 }
