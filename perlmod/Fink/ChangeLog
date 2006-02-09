@@ -1,6 +1,15 @@
+2006-02-08  Remi Mommsen <remigius.mommsen@cern.ch>
+
+	* PkgVersion.pm: get_debpath() returns path with distribution, not
+	using the symbolic link '%p/fink/dists'. The symbolic link from
+	'%p/fink/debs' changed to relative using the distribution.
+
+	* Engine.pm: Fix cleanup_debs to cope with new path format for
+	debs. Add debfile to dumpinfo.
+
 2006-02-08  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
-    * Bootstrap.pm, PkgVersion.pm: start moving pre/post inst/rm automatic
+	* Bootstrap.pm, PkgVersion.pm: start moving pre/post inst/rm automatic
 	logic to an external script, to avoid hardcoding bugs into .deb files
 
 2006-02-08  Daniel Macks  <dmacks@netspace.org>

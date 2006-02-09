@@ -1245,8 +1245,10 @@ sub cleanup_debs {
 				# $vo data is from dpkg status db (no .info file) so
 				# $vo has no directory for deb. Try to guess it.
 				my $debfile = "$basepath/fink/debs/" . $vo->get_debname();
-				if (-l $debfile and -e readlink $debfile) {
-					$deb_list{readlink $debfile} = 1;
+				if (-l $debfile) {
+					my $deblink = readlink $debfile;
+					$deblink =~ s/^..\//$basepath\/fink\//;
+					$deb_list{$deblink} = 1 if -e $deblink;
 				} elsif (-e $debfile) {
 					$deb_list{$debfile} = 1;
 				}
@@ -1261,9 +1263,9 @@ sub cleanup_debs {
 	my $kill_obsolete_debs = <<'EOFUNC';
 		sub {
 			if (/^.*\.deb\z/s ) {
-				if (not $deb_list{$File::Find::name}) {
-					print "REMOVE deb: $File::Find::name\n";  # PRINT_IT
-					unlink $File::Find::name and $file_count++;  # UNLINK_IT
+				if (not $deb_list{$File::Find::fullname}) {
+					print "REMOVE deb: $File::Find::fullname\n";  # PRINT_IT
+					unlink $File::Find::fullname and $file_count++;  # UNLINK_IT
 				}
 			}
 		}
@@ -2096,7 +2098,7 @@ FORMAT
 		if ($wantall or not (@fields or @percents)) {
 			# don't list fields that cause indexer exclusion
 			@fields = (qw/
-					   infofile package epoch version revision parent family
+					   infofile debfile package epoch version revision parent family
 					   status allversions trees
 					   description type license maintainer
 					   pre-depends depends builddepends
@@ -2146,6 +2148,8 @@ FORMAT
 		foreach (@fields) {
 			if ($_ eq 'infofile') {
 				printf "infofile: %s\n", $pkg->get_info_filename();
+			} elsif ($_ eq 'debfile') {
+				printf "%s: %s\n", $_, join(' ', $pkg->get_debfile());
 			} elsif ($_ eq 'package') {
 				printf "%s: %s\n", $_, $pkg->get_name();
 			} elsif ($_ eq 'epoch') {

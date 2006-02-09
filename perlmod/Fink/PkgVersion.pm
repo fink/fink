@@ -1275,7 +1275,11 @@ sub get_debname {
 
 sub get_debpath {
 	my $self = shift;
-	return $self->{_debpath};
+	
+	my $path = $self->{_debpath};
+	my $dist = $config->param("Distribution");
+	$path =~ s/\/dists\//\/$dist\//;
+	return $path;
 }
 
 sub get_debfile {
@@ -3970,7 +3974,10 @@ EOF
 		die $error . "\n";
 	}
 
-	unless (symlink_f $self->get_debpath()."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname()) {
+	my $debpath = $self->get_debpath();
+	my $distribution = $config->param("Distribution");
+	$debpath =~ s/$basepath\/fink\//..\//;
+	unless (symlink_f $debpath."/".$self->get_debname(), "$basepath/fink/debs/".$self->get_debname()) {
 		my $error = "can't symlink package ".$self->get_debname()." into pool directory";
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die $error . "\n";
