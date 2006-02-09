@@ -1,5 +1,9 @@
 2006-02-08  Daniel Macks  <dmacks@netspace.org>
 
+	* fink-instscripts.in: add stub to look up dpkg caller modes
+
+2006-02-08  Daniel Macks  <dmacks@netspace.org>
+
 	* Makefile: Make target volume available to test scripts as
 	$PREFIX env var
 	* fink.info.in: Pass target prefix to 'make test'

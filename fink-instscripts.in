@@ -4,6 +4,40 @@ use File::Path;
 
 my $PREFIX  = '@BASEPATH@';
 
+
+if (0) {
+
+my %ps = map { /^\s*(\d+)\s+(.*)/ } `ps -a -opid,ppid,command -ww`;
+my($ppid) = $ps{$$} =~ /^(\d+)/;
+my($pcmd) = $ps{$ppid} =~ /^\d+\s+(.*)/;
+my @dpkg_args = split /\s+/, $pcmd;
+
+print "$pcmd\n", map "\t'$_'\n", @dpkg_args;
+
+my($package, $dpkg_script, $dpkg_mode);
+while (defined ($package = shift @dpkg_args)) {
+    print "trying $package...\n";
+    if ($package =~ s,$PREFIX/var/lib/dpkg/info/(\S+)\.((?:pre|post)(?:inst|rm)),$1,) {
+	$dpkg_script = $2;
+	$dpkg_mode = shift @dpkg_args;
+	last;
+    }
+}
+if (not defined $dpkg_mode) {
+	die "Could not parse \"$pcmd\"\n";
+}
+
+my $fink_type = shift;
+
+print "dpkg script: $dpkg_script\n";
+print "dpkg mode  : $dpkg_mode\n";
+print "dpkg args  : @dpkg_args\n";
+
+print "fink script: $fink_type\n";
+print "fink args  : @ARGV\n";
+
+}
+
 die "usage: $0 <command> <target> [command options]\n" unless (@ARGV >= 2);
 
 my $COMMAND = lc(shift);
