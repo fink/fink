@@ -665,11 +665,11 @@ the successful execution of "gcc --version".
 			'gcc3.1'  => '3.1',
 			'gcc3.3'  => '3.3',
 		);
-		foreach (sort keys %expected_gcc) {
-			if (!exists $self->{$_} && !Fink::Status->query_package($_)) {
-				$hash = &gen_gcc_hash($_, $expected_gcc{$_}, 0, STATUS_ABSENT);
+		foreach my $key (sort keys %expected_gcc) {
+			if (not exists $self->{$key} && not Fink::Status->query_package($key)) {
+				$hash = &gen_gcc_hash($key, $expected_gcc{$key}, 0, STATUS_ABSENT);
 				$self->{$hash->{package}} = $hash;
-				print STDERR "  - missing $expected_gcc{$_}\n" if ($options{debug});
+				print STDERR "  - missing $expected_gcc{$key}\n" if ($options{debug});
 			}
 		}
 	}
