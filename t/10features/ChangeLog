@@ -1,3 +1,7 @@
+2006-02-10  Daniel Macks  <dmacks@netspace.org>
+
+	* volume.t: Use diskutil instead of df+vsdbutil
+
 2006-02-09  Daniel Macks  <dmacks@netspace.org>
 
 	* volume.t: Fix parsing of df output.

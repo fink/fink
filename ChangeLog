@@ -1,5 +1,9 @@
 2006-02-08  Daniel Macks  <dmacks@netspace.org>
 
+	* Makefile: Safer passing of PREFIX to tests
+
+2006-02-08  Daniel Macks  <dmacks@netspace.org>
+
 	* fink-instscripts.in: add stub to look up dpkg caller modes
 
 2006-02-08  Daniel Macks  <dmacks@netspace.org>
