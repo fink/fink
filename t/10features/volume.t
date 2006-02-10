@@ -15,11 +15,11 @@ SKIP: {
 
     my @cmd_out;
 
-    @cmd_out = `df "$ENV{PREFIX}" 2>&1`;
+    @cmd_out = `/bin/df "$ENV{PREFIX}" 2>&1`;
     my($volume);
-    ($volume) = $cmd_out[1] =~ /^[^%]+% (\/.*)/ if defined $cmd_out[1];
+    ($volume) = $cmd_out[1] =~ /^[^%]+%\s+(\/.*)/ if defined $cmd_out[1];
 
-    skip "Could not parse volume name from `df $ENV{PREFIX}`", $skips unless @cmd_out==2 && defined $volume;
+    skip "Could not parse volume name from `/bin/df $ENV{PREFIX}`", $skips unless @cmd_out==2 && defined $volume;
     skip "Could not find vsdbutil", $skips unless defined $vsdbutil;
     
     @cmd_out = `$vsdbutil -c "$volume" 2>&1`;
