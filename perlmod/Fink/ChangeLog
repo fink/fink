@@ -1,3 +1,9 @@
+2006-02-16  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Revert UpdatePOD to old dpkg scriptlets. Use new
+	multiline AutoDpkg field to control fink-instscript calls.
+	Implement AutoDpkg:UpdatePOD subfield.
+
 2006-02-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: recognize 10.4.5 (on both ppc and intel)

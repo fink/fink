@@ -3456,7 +3456,6 @@ sub phase_build {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($ddir, $destdir, $control);
-	my %scriptbody;
 	my ($conffiles, $listfile);
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
@@ -3478,9 +3477,8 @@ sub phase_build {
 	$ddir = basename $destdir;
 
 	if (not -d "$destdir/DEBIAN") {
-		my $error = "can't create directory for control files for package ".$self->get_fullname();
-
 		if (not mkdir_p "$destdir/DEBIAN") {
+			my $error = "can't create directory for control files for package ".$self->get_fullname();
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
 		}
@@ -3728,19 +3726,70 @@ EOF
 	### create scripts as neccessary
 	## TODO: refactor more of this stuff to fink-instscripts
 
+	my %scriptbody;
 	foreach (qw(postinst postrm preinst prerm)) {
 		# get script piece from package description
 		$scriptbody{$_} = $self->param_default($_.'Script','');
 	}
 	Hash::Util::lock_keys %scriptbody;  # safety: key typos become runtime errors
 
+	my $autodpkg = $self->param_default_expanded('AutoDpkg','');
+	$autodpkg =~ s/^\s+//gm if $self->info_level < 3;  # old-skool whitespace handler
+	$autodpkg = &read_properties_var(
+		$self->get_info_filename.' "AutoDpkg"',
+		$autodpkg,
+		{ remove_space => ($self->info_level >= 3) }
+	);
+	{
+		# do not allow a deficient package to be built!
+		my %allowed_autodpkg = map { lc($_)=>1 } (qw/ UpdatePOD /);
+		foreach (sort keys %$autodpkg) {
+			if (!exists $allowed_autodpkg{$_}) {
+				my $error = "AutoDpkg flag \"$_\" in package " . $self->get_fullname() . " cannot be handled by this version of fink";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
+		}
+	}
+	$autodpkg = Fink::Base->new_from_properties($autodpkg);
+
+	# let's not be crazy
+	if ($self->has_param("UpdatePOD") and $autodpkg->has_param("UpdatePOD")) {
+		my $error = "Cannot specify both UpdatePOD and AutoDpkg:UpdatePOD in package " . $self->get_fullname();
+		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+		die $error . "\n";
+	}
+
 	# add UpdatePOD Code
 	if ($self->param_boolean("UpdatePOD")) {
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
-		$scriptbody{postinst} .= $self->_instscript("postinst", "updatepod", $perldirectory, $perlarchdir);
-		$scriptbody{postrm}   .= $self->_instscript("postrm",   "updatepod", $perldirectory, $perlarchdir);
+		$scriptbody{postinst} .=
+			"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
+			"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
+			"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n";
+		$scriptbody{postrm} .=
+			"\n\n# Updating \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n\n".
+			"###\n".
+			"### check to see if any .pod files exist in \%p/share/podfiles.\n".
+			"###\n\n".
+			"echo -n '' > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n".
+			"perl <<'END_PERL'\n\n".
+			"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
+			"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
+			"	 if (\$#files >= 0) {\n".
+			"		 exec \"/bin/cat \%p/share/podfiles$perldirectory/*.pod > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\";\n".
+			"	 }\n".
+			"}\n\n".
+			"END_PERL\n";
+	} elsif ($autodpkg->param_boolean("UpdatePOD")) {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
+
+		foreach my $script (qw/ preinst postinst prerm postrm /) {
+			$scriptbody{$script} .= $self->_instscript($script, "updatepod", $perldirectory, $perlarchdir);
+		}
 	}
 
 	# add JarFiles Code
