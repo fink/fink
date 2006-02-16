@@ -5075,7 +5075,15 @@ sub log_output {
 	}
 }
 
-=back
+=item _instscript
+
+	print DPKG_SCRIPT $self->_instscript(@args);
+
+Returns a bash shell fragment that checks for the fink-instscripts
+helper program and calls it using the given @args list. $args[0] is
+the script name (preinst, postinst, prerm, postrm) and $args[1] is the
+script action type (for example, updatepod). The meaning of the
+remainder of @args depends on the specific script and action type.
 
 =cut
 
@@ -5096,6 +5104,9 @@ sub _instscript {
 
 	return $return;
 }
+=back
+
+=cut
 
 ### EOF
 
