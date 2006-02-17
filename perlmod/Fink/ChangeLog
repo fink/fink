@@ -1,3 +1,8 @@
+2006-02-17  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Always parse Architecture field even if it will
+	ultimately be ignored.
+
 2006-02-16  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Revert UpdatePOD to old dpkg scriptlets. Use new

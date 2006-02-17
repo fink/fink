@@ -353,14 +353,18 @@ sub pkgversions_from_properties {
 	# Handle Architecture field. We should do this before
 	# instantiating the PV objects, but that would mean having to
 	# parse the Type field another time in order to get %-exp map.
-	if ($pkgversion->has_param('architecture') and not $options{no_exclusions}) {
+	if ($pkgversion->has_param('architecture')) {
 		# Syntax is like a package-list, so piggy-back on those fields' parser
 		my $pkg_arch = $pkgversion->pkglist('architecture');
 
-		my $sys_arch = &get_arch;
-		if (defined $pkg_arch and $pkg_arch !~ /(\A|,)\s*$sys_arch\s*(,|\Z)/) {
-			# Discard the whole thing if local arch not listed
-			return ();
+		# always call pkglist(architecture) even if no_exclusions so
+		# that we get error-checking on the field
+		if (not $options{no_exclusions}) {
+			my $sys_arch = &get_arch;
+			if (defined $pkg_arch and $pkg_arch !~ /(\A|,)\s*$sys_arch\s*(,|\Z)/) {
+				# Discard the whole thing if local arch not listed
+				return ();
+			}
 		}
 	}
 
