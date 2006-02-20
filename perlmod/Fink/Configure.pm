@@ -29,7 +29,7 @@ package Fink::Configure;
 # a field to the $basepath/etc/fink.conf file.
 ###
 
-use Fink::Config qw($config $basepath $libpath);
+use Fink::Config qw($config $basepath $libpath $distribution);
 use Fink::Services qw(&read_properties &read_properties_multival &filename);
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
@@ -128,13 +128,23 @@ sub configure {
 	}
 	&spotlight_warning();
 
+# list of distributions for which a bindist exists
+	my @bindists = ("10.3", "10.4-transitional");
+
 	print "\n";
 	$binary_dist = $config->param_boolean("UseBinaryDist");
 	# if we are not installed in /sw, $binary_dist must be 0:
 	if (not $basepath eq '/sw') {
 		$binary_dist = 0;
 		&print_breaking('Setting UseBinaryDist to "false". This option can be used only when fink is installed in /sw.');
+
+		# If there is no binary distribution (yet) corresponding to the
+		# current $distrubtion, $binary_dist must be false
+	} elsif (!grep {$_ eq $distribution} @bindists) {
+		$binary_dist = 0;
+		&print_breaking("Setting UseBinaryDist to \"false\" because there is not yet a binary distribution for $distribution.");
 	} else {
+
 		# New users should use the binary dist, but an existing user who
 		# is running "fink configure" should see a default answer of "no"
 		# for this question... To tell these two classes of users apart,
@@ -154,6 +164,7 @@ sub configure {
 	}
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
+	print "\n";
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
 		&prompt_selection("How verbose should Fink be?",
