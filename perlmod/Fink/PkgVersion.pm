@@ -626,8 +626,15 @@ sub add_splitoff {
 	} elsif ($properties->{'type'} eq "none") {
 		delete $properties->{'type'};
 	}
-	
-	# instantiate the splitoff
+
+	# need to inherit Architecture, since parent package PV object
+	# gets created even if Architecture causes it to be discarded
+	# later (becore being added to database), so we need to make sure
+	# splitoffs aren't added to database.
+	if (exists $self->{'architecture'}) {
+		$properties->{'architecture'} = $self->{'architecture'};
+	}
+
 	@splitoffs = Fink::Package->setup_package_object($properties, $filename);
 	
 	# return the new object(s)
