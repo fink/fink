@@ -1,3 +1,9 @@
+2006-02-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Configure.pm:  Add a list of existing binary distributions to the
+	code.  If there is not (yet) a binary distribution corresponding to
+	the current $distribution, UseBinaryDist is set to false.
+
 2006-02-17  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Always parse Architecture field even if it will
