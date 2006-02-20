@@ -1,3 +1,10 @@
+2006-02-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.pl: temporary code giving users a chance to exit if 
+	they've got the wrong distribution, and giving them some instructions
+	if they exit (should be removed once we have a proper upgrade
+	strategy in place)
+
 2006-02-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Makefile: Safer passing of PREFIX to tests
