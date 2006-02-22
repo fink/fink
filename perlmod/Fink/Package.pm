@@ -652,7 +652,7 @@ sub search_comparedb {
 	# Using find is much faster than doing it in Perl
 	my $prune_bin = "\\( -name 'binary-$debarch' -prune \\)";
 	my $file_test = "\\( \\( -type f -o -type l \\) -name '*.info' \\)";
-	my $cmd = "/usr/bin/find $path \\! $prune_bin \\( $file_test -o -type d \\) "
+	my $cmd = "/usr/bin/find -L $path \\! $prune_bin \\( $file_test -o -type d \\) "
 		. " -newer $dbfile";
 	open NEWER_FILES, "$cmd |" or die "/usr/bin/find failed: $!\n";
 
