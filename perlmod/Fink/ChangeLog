@@ -1,3 +1,11 @@
+2006-02-23  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Use the gcc build number for the revision if
+	possible; also make sure tests are using /usr/bin/gcc rather than
+	some random gcc in the path (should speed things up a little if
+	ccache or distcc are hanging around)
+	(backport)
+
 2006-02-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Configure.pm:  Add a list of existing binary distributions to the
@@ -26,6 +34,13 @@
 
 	* Package.pm, Validation.pm: Consider .info Architecture field
 	case-insensitively.
+
+2006-01-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: added a check to gcc to determine if the gcc
+	binary being interrogated is capable of targetting the host on
+	which it is being run.
+	(backport)
 
 2006-01-24  Daniel Macks  <dmacks@netspace.org>
 

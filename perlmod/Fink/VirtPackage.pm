@@ -623,13 +623,15 @@ the successful execution of "gcc --version".
 	print STDERR "- checking for various GCC versions:\n" if ($options{debug});
 	if (opendir(DIR, "/usr/bin")) {
 		for my $gcc (grep(/^gcc/, readdir(DIR))) {
-			if (open(GCC, $gcc . ' --version 2>&1 |')) {
+			next if (-l "/usr/bin/$gcc");
+			if (open(GCC, '/usr/bin/' . $gcc . ' --version 2>/dev/null |')) {
 				my $version = <GCC>;
 				close(GCC);
 				if( ! defined $version ) {
 					next;
 				}
 				chomp($version);
+				my ($build) = $version =~ /build (\d+)/i;
 				if ($version =~ /^([\d\.]+)$/ or $version =~ /^.*? \(GCC\) ([\d\.\-]+)/) {
 					$version = $1;
 					$version =~ s/[\.\-]*$//;
@@ -642,9 +644,19 @@ the successful execution of "gcc --version".
 						print STDERR "  - skipping $pkgname, there's a real package\n" if ($options{debug});
 						next;
 					}
-					
-					$hash = &gen_gcc_hash($pkgname, $version, 0,
-						STATUS_PRESENT);
+
+					if (open(GCC, '/usr/bin/' . $gcc . ' -### -x c /dev/null 2>&1 |')) {
+						while (<GCC>) {
+							if (/^\s*\"([^\"]+\/cc1)\"/) {
+								if (not -x $1) {
+									print STDERR "  - $gcc is looking for $1 to build on this arch, but it's not there\n" if ($options{debug});
+								}
+								last;
+							}
+						}
+						close(GCC);
+					}
+					$hash = &gen_gcc_hash($pkgname, $version, $build, 0, STATUS_PRESENT);
 					$self->{$hash->{package}} = $hash;
 					print STDERR "  - found $version\n" if ($options{debug});
 				} else {
@@ -667,7 +679,7 @@ the successful execution of "gcc --version".
 		);
 		foreach my $key (sort keys %expected_gcc) {
 			if (not exists $self->{$key} && not Fink::Status->query_package($key)) {
-				$hash = &gen_gcc_hash($key, $expected_gcc{$key}, 0, STATUS_ABSENT);
+				$hash = &gen_gcc_hash($key, $expected_gcc{$key}, 0, 0, STATUS_ABSENT);
 				$self->{$hash->{package}} = $hash;
 				print STDERR "  - missing $expected_gcc{$key}\n" if ($options{debug});
 			}
@@ -1441,7 +1453,7 @@ sub check_x11_version {
 	}
 }
 
-=item &gen_gcc_hash(I<$package>, I<$version>, I<$is_64bit>, I<$dpkg_status>)
+=item &gen_gcc_hash(I<$package>, I<$version>, I<$build>, I<$is_64bit>, I<$dpkg_status>)
 
 Return a ref to a hash representing a gcc* package pdb structure. The
 passed values are will not be altered.
@@ -1451,17 +1463,20 @@ passed values are will not be altered.
 sub gen_gcc_hash {
 	my $package = shift;
 	my $version = shift;
+	my $build   = shift;
 	my $is_64bit = shift;
 	my $status = shift;
 	$is_64bit = $is_64bit ? ' 64-bit' : '';
 
+	my $revision = $build;
+	if (not defined $revision and $revision !~ /\d/) {
+		$revision = 0;
+		$revision = 1 if ($status eq STATUS_PRESENT);
+	}
+
 	my $return = {
 		package          => $package,
-		version          => $version
-                            . ($status eq STATUS_PRESENT
-                                ? '-1'
-                                : '-0'
-							  ),
+		version          => $version . '-' . $revision,
 		description      => "[virtual package representing the$is_64bit gcc $version compiler]",
 		homepage         => 'http://fink.sourceforge.net/faq/comp-general.php#gcc2',
 		builddependsonly => 'true',
