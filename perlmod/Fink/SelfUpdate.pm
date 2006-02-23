@@ -201,9 +201,7 @@ sub need_devtools {
 	my $method = shift;
 
 	if ($method eq 'cvs' || $method eq 'rsync') {
-		Fink::Package->require_packages();
-		my $po = Fink::PkgVersion->match_package('dev-tools');
-		defined $po && $po->is_installed()
+		Fink::VirtPackage->query_package("dev-tools")
 			or die "selfupdate method '$method' requires the package 'dev-tools'\n";
 	}
 }

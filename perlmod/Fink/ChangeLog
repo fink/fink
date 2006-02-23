@@ -1,3 +1,8 @@
+2006-02-23  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Check for dev-tools using VirtPackage directly
+	instead of using the full Package/PkgVersion database API.
+
 2006-02-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: 'find' should follow symlinks.
