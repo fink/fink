@@ -1,3 +1,10 @@
+2006-02-23  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Use the gcc build number for the revision if
+	possible; also make sure tests are using /usr/bin/gcc rather than
+	some random gcc in the path (should speed things up a little if
+	ccache or distcc are hanging around)
+
 2006-02-23  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Check for dev-tools using VirtPackage directly
