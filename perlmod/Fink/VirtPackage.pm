@@ -1468,7 +1468,7 @@ sub gen_gcc_hash {
 	$is_64bit = $is_64bit ? ' 64-bit' : '';
 
 	my $revision = $build;
-	if (not defined $revision and $revision !~ /\d/) {
+	if (not defined $revision or $revision !~ /\d/) {
 		$revision = 0;
 		$revision = 1 if ($status eq STATUS_PRESENT);
 	}
