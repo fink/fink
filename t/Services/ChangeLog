@@ -1,3 +1,8 @@
+2006-02-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* execute_nonroot_okay.t: Chown the subdir, not the parent, so 'make test'
+	actually works.
+
 2006-02-07  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: clone the entire perlmod/ to an

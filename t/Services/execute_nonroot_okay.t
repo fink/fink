@@ -49,8 +49,8 @@ chmod 0755, $tmpdir;  # must have only root be able to write to dir but all read
 # Need a world-readable set of Fink perl modules but don't want to go changing
 # perms on the whole hierarchy leading to whereever user is running test,
 # so make a copy in a known place with known perms.
-if (system qq{ cp -r ../perlmod "$tmpdir/Fink" && chmod -R ugo=r,a+X "$tmpdir" }) {
-    diag "Could not create temp Services.pm; using local copy instead.\nDepending on permissions and the presence of an existing Fink, this\nsituation may result in apparently-missing Services.pm or various exported functions.\n";
+if (system qq{ cp -r ../perlmod "$tmpdir/Fink" && chmod -R ugo=r,a+X "$tmpdir/Fink" }) {
+    diag "Could not create temp Fink directory; using local copy instead.\nDepending on permissions and the presence of an existing Fink, this\nsituation may result in apparently-missing Services.pm or various exported functions.\n";
 } else {
     $ENV{'PERL5LIB'} = defined $ENV{'PERL5LIB'}  # so subprocesses see it
 	? "$tmpdir:$ENV{'PERL5LIB'}"
@@ -134,4 +134,4 @@ cmp_ok( &execute("touch $tmpdir/f3", nonroot_okay=>0),
 # be implemented with forks: the END block runs when each child ends
 # not just at the end of the parent (== this test script). Damn it.
 use File::Path (qw/ rmtree /);
-rmtree($tmpdir, 0, 1);
+rmtree($tmpdir, 0, 0);
