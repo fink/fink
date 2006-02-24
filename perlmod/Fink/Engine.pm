@@ -251,13 +251,14 @@ sub process {
 			Fink::Config::set_options( { "maintainermode" => 0 } );
 		}
 	}
-
+	
+	# Run the command
 	{
 		local $SIG{'INT'} = sub { die "User interrupt.\n" };
 		eval { &$proc(@args); };
 	}
-
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
+	my $retval = 0;
 	
 	# Rebuild the command line, for user viewing
 	my $commandline = join ' ', 'fink', @$orig_ARGV;
@@ -273,23 +274,16 @@ sub process {
 			description => $notifydesc,
 		);
 
-		# remove ourselves from ARGV stack
-		{
-			my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
-			pop @argv_stack;
-			Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
-		}
-
-		return $proc_rc->{'$?'} || 1;
+		$retval = $proc_rc->{'$?'} || 1;
+	} else {	
+		# FIXME: min_notify_secs should be less arbitrary! Option?
+		my $min_notify_secs = 60;
+		$notifier->notify(
+			event => 'finkDonePassed',
+			description => $commandline
+		) if time() - $start > $min_notify_secs;
 	}
 	
-	# FIXME: min_notify_secs should be less arbitrary! Option?
-	my $min_notify_secs = 60;
-	$notifier->notify(
-		event => 'finkDonePassed',
-		description => $commandline
-	) if time() - $start > $min_notify_secs;
-
 	# remove ourselves from ARGV stack
 	{
 		my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
@@ -297,7 +291,7 @@ sub process {
 		Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
 	}
 
-	return 0;
+	return $retval;;
 }
 
 ### restart as root (and not return!) if we are not already root

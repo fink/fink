@@ -1,3 +1,7 @@
+2006-02-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: A bit of cleanup on the termination of process().
+
 2006-02-24  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: process() stashes its @ARGV in Config options.
