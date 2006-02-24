@@ -1,3 +1,9 @@
+2006-02-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: process() stashes its @ARGV in Config options.
+	restart_as_root() uses this instead of a passed @ARGV list, and
+	does its own check for whether it is already root.
+
 2006-02-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm, Engine.pm: Change buildlock removal process. Now we check

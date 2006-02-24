@@ -174,12 +174,20 @@ sub process {
 		die "fink: unknown command \"$cmd\".\nType 'fink --help' for more information.\n";
 	}
 
+	# Store original @ARGV in case we want to know how we were called.
+	# This is a stack (a ref to a list of refs to @ARGV) in case we
+	# sublaunch a &process)
+	# ATTN: Always work on copies of this struct, not the actual refs!!!
+	{
+		my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
+		push @argv_stack, [ @$orig_ARGV ];
+		Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
+	}
+
 	($proc, $pkgflag, $rootflag, $aptgetflag) = @{$commands{$cmd}};
 
 	# check if we need to be root
-	if ($rootflag and $> != 0) {
-		&restart_as_root(@$orig_ARGV);
-	}
+	&restart_as_root if $rootflag;  # if it returns, we are assured to be root
 
 	# check if we need apt-get
 	if ($aptgetflag > 0 and ($self->{config}->binary_requested())) {
@@ -264,6 +272,14 @@ sub process {
 			event => 'finkDoneFailed',
 			description => $notifydesc,
 		);
+
+		# remove ourselves from ARGV stack
+		{
+			my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
+			pop @argv_stack;
+			Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
+		}
+
 		return $proc_rc->{'$?'} || 1;
 	}
 	
@@ -273,28 +289,39 @@ sub process {
 		event => 'finkDonePassed',
 		description => $commandline
 	) if time() - $start > $min_notify_secs;
+
+	# remove ourselves from ARGV stack
+	{
+		my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
+		pop @argv_stack;
+		Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
+	}
+
 	return 0;
 }
 
-### restart as root with command
+### restart as root (and not return!) if we are not already root
 
 sub restart_as_root {
-	my ($method, $cmd, $arg);
+	return if $> == 0;
 
-	$method = $config->param_default("RootMethod", "sudo");
+	my $cmd = "$basepath/bin/fink";
 
-	$cmd = "$basepath/bin/fink";
-
-	foreach $arg (@_) {
-		if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
-			$cmd .= " $arg";
-		} else {
-			# safety first (protect shell metachars, quote whole string)
-			$arg =~ s/[\$\`\'\"|;]/_/g;
-			$cmd .= " \"$arg\"";
+	if (my @argv = @{Fink::Config::get_option('_ARGV_stack', [])}) {
+		# there is an ARGV in the stack
+		foreach my $arg (@{$argv[-1]}) {
+			# why aren't we just using String::ShellQuote?
+			if ($arg =~ /^[A-Za-z0-9_.+-]+$/) {
+				$cmd .= " $arg";
+			} else {
+				# safety first (protect shell metachars, quote whole string)
+				$arg =~ s/[\$\`\'\"|;]/_/g;
+				$cmd .= " \"$arg\"";
+			}
 		}
 	}
 
+	my $method = $config->param_default("RootMethod", "sudo");
 	if ($method eq "sudo") {
 		$cmd = "/usr/bin/sudo $cmd";
 	} elsif ($method eq "su") {
