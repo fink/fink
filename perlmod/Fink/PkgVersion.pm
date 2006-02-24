@@ -4413,7 +4413,7 @@ if [ failed-upgrade = "\$1" ]; then
   exit 1
 fi
 
-if perl -Mlib=$basepath/lib/perl5 -MFink::Services=lock_wait -e 'lock_wait("$lockfile", exclusive => 1, no_block => 1) ? exit 0 : exit 1' ; then
+if perl -MFink::PkgVersion -e 'exit !Fink::PkgVersion->can_remove_buildlock("$lockfile")'; then
   rm -f $lockfile
   exit 0
 else
@@ -4501,7 +4501,7 @@ EOMSG
 
 	die "buildlock failure\n" if $lock_failed;
 
-	# record buildlock package name so we can remove it during clear_buildkock
+	# record buildlock package name so we can remove it during clear_buildlock
 	$self->{_buildlock} = {
 		lockfile => $lockfile,
 		lock_FH  => $lock_FH,
@@ -5157,6 +5157,21 @@ sub _instscript {
 
 	return $return;
 }
+
+=item can_remove_buildlock
+
+  my $fh = Fink::PkgVersion->can_remove_buildlock($lockfile);
+
+Test if it is safe to remove a buildlock. After calling this, either the $fh
+should be closed, or the lockfile deleted.
+
+=cut
+
+sub can_remove_buildlock {
+	my ($class, $lockfile) = @_;
+	return lock_wait("$lockfile", exclusive => 1, no_block => 1);
+}
+
 =back
 
 =cut

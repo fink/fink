@@ -1373,33 +1373,62 @@ sub cleanup_buildlocks {
 
 	print "Reading buildlock packages...\n";
 	my $lockdir = "$basepath/var/run/fink/buildlock";
-	my @locks = ();
+	my @files;
 	if (opendir my $dirhandle, $lockdir) {
-		@locks = readdir $dirhandle;
+		@files = readdir $dirhandle;
 		close $dirhandle;
 	} else {
 		print "Warning: could not read buildlock directory $lockdir: $!\n";
 	}
-	# lock packages are named fink-buildlock-%n-%v-%r and install %n-%v-%r.pid
-	@locks = grep { s/(.+)\.pid$/fink-buildlock-$1/ } @locks;
+	
+	# Find the files that are really locks
+	my @bls;
+	my ($LOCKS_NONE, $LOCKS_PRESENT, $LOCKS_IN_USE) = 0..2; 
+	my $locks_left = $LOCKS_NONE;
+	for my $file (@files) {
+		# lock packages are named fink-buildlock-%n-%v-%r. They install
+		# %n-%v-%r.pid and have a lockfile %n-%v-%r_$timestamp.lock
+		my ($fullv) = ($file =~ /(.+)_.+\.lock$/) or next;
+		my $lockfile = "$lockdir/$file";
+		my $pidfile = "$lockdir/$fullv.pid";
+		my $lockpkg = "fink-buildlock-$fullv";
+		next unless -f $pidfile;
+		
+		# We have a lock, and the package seems to be installed
+		$locks_left = $LOCKS_PRESENT;
 
-	my $locks_left = @locks > 0;
-	if ($locks_left) {
-		if ($opts{dryrun}) {
-			print map "\t$_\n", @locks if $config->verbosity_level() > 1;
+		# Check that it's not currently building, hoepfully we won't have
+		# to invoke dpkg.
+		if (my $fh = Fink::PkgVersion->can_remove_buildlock($lockfile)) {
+			push @bls, $lockpkg;
+			close $fh;	# Another process could try to remove the BL between
+						# now and when we actually perform the removal. That's
+						# fine, dpkg-lockwait shall protect us.
 		} else {
-			print map "\tWill remove $_\n", @locks if $config->verbosity_level() > 1;
-			if (&execute(dpkg_lockwait() . " -r @locks 2>/dev/null", quiet=>1, ignore_INT=>1)) {
+			$locks_left = $LOCKS_IN_USE; # Something is building
+		}
+	}
+	
+	# Remove the locks
+	if (@bls) {
+		if ($opts{dryrun}) {
+			print map "\t$_\n", @bls if $config->verbosity_level() > 1;
+		} else {
+			print map "\tWill remove $_\n", @bls
+				if $config->verbosity_level() > 1;
+			if (&execute(dpkg_lockwait() . " -r @bls 2>/dev/null",
+												quiet => 1, ignore_INT => 1)) {
 				print $opts{internally}
 					? "Some buildlocks could not be removed.\n"
 					: "Warning: could not remove all buildlock packages!\n";
 			} else {
-				$locks_left = 0;
+				$locks_left = $LOCKS_NONE if $locks_left == $LOCKS_PRESENT;
 			}
 			Fink::PkgVersion->dpkg_changed;
 		}
 	} else {
-		print "\tNone found\n" if $opts{dryrun} || $config->verbosity_level() > 1;
+		print "\tAll buildlocks accounted for.\n"
+			if $opts{dryrun} || $config->verbosity_level() > 1;
 	}
 
 	return $locks_left;
