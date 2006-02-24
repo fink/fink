@@ -46,15 +46,21 @@ if (!defined $tmpdir or !length $tmpdir or !-d $tmpdir) {
 }
 chmod 0755, $tmpdir;  # must have only root be able to write to dir but all read
 
-# Need a world-readable set of Fink perl modules but don't want to go changing
-# perms on the whole hierarchy leading to whereever user is running test,
-# so make a copy in a known place with known perms.
-if (system qq{ cp -r ../perlmod "$tmpdir/Fink" && chmod -R ugo=r,a+X "$tmpdir/Fink" }) {
-    diag "Could not create temp Fink directory; using local copy instead.\nDepending on permissions and the presence of an existing Fink, this\nsituation may result in apparently-missing Services.pm or various exported functions.\n";
-} else {
-    $ENV{'PERL5LIB'} = defined $ENV{'PERL5LIB'}  # so subprocesses see it
-	? "$tmpdir:$ENV{'PERL5LIB'}"
-	: $tmpdir;
+# Need a world-readable set of Fink perl modules, but local perlmod/
+# set might not be accessible (permissions) and fink might not be
+# installed or in PERL5LIB.  Don't want to go changing perms on the
+# whole hierarchy leading to whereever user is running test, so make a
+# copy in a known place with good perms.
+{
+	my $libdir = "$tmpdir/perlmod";
+	if (system qq{ cp -r ../perlmod "$tmpdir" && chmod -R ugo=r,a+X "$libdir" }) {
+		diag "Could not create temp Fink directory; using local copy instead.\nDepending on permissions and the presence of an existing Fink, this\nsituation may result in apparently-missing Services.pm or various exported functions.\n";
+	} else {
+		# need subprocesses to see it, so can't just adjust our @INC
+		$ENV{'PERL5LIB'} = defined $ENV{'PERL5LIB'}
+			? "$libdir:$ENV{'PERL5LIB'}"
+			: $libdir;
+    }
 }
 
 chdir "/tmp";         # set local dir to where user="nobody" can start shells

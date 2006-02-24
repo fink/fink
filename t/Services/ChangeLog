@@ -1,3 +1,7 @@
+2006-02-24  Daniel Macks  <dmacks@netspace.org>
+
+	* execute_nonroot_okay.t: Fix pathnames so local copy is actually in @INC
+
 2006-02-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* execute_nonroot_okay.t: Chown the subdir, not the parent, so 'make test'
