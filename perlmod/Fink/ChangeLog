@@ -1,3 +1,8 @@
+2006-02-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: If buildlock is in an unfamiliar environment, allow
+	removal. This can occur when injecting a new fink.
+
 2006-02-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: A bit of cleanup on the termination of process().

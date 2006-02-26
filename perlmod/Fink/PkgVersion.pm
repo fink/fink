@@ -4413,7 +4413,9 @@ if [ failed-upgrade = "\$1" ]; then
   exit 1
 fi
 
-if perl -MFink::PkgVersion -e 'exit !Fink::PkgVersion->can_remove_buildlock("$lockfile")'; then
+if perl -e 'exit 0 unless eval { require Fink::PkgVersion }; \\
+	exit 0 unless defined &Fink::PkgVersion::can_remove_buildlock; \\
+	exit !Fink::PkgVersion->can_remove_buildlock("$lockfile")'; then
   rm -f $lockfile
   exit 0
 else
