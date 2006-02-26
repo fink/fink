@@ -2695,13 +2695,8 @@ sub phase_fetch_deb {
 	# check if $basepath is really '/sw' since the debs are built with 
 	# '/sw' hardcoded
 	#
-	# FIXME: Private repositories could easily have different basepaths. Can
-	# we keep UseBinaryDist enabled with $basepath ne '/sw' but just restrict
-	# use to non-official repos?
-	if (not $basepath eq '/sw') {
-		print "\n";
-		&print_breaking("ERROR: Downloading packages from the binary distribution ".
-		                "is currently only possible if Fink is installed at '/sw'!.");
+	if (my $err = $config->bindist_check_prefix) {
+		print "\n"; print_breaking("ERROR: $err");
 		die "Downloading the binary package '" . $self->get_debname() . "' failed.\n";
 	}
 	

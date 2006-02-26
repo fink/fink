@@ -627,9 +627,8 @@ if (-e "$basepath/fink/old/dists/unstable") {
 		$body .= "\n";
 	}
 
-# We only include the remote debs if the $basepath is set to /sw.
-
-	if ("$basepath" eq "/sw") {
+	# We only include the remote debs if the bindist looks like it's ok
+	if (!$self->bindist_check_prefix && !$self->bindist_check_distro) {
 
 		my $apt_mirror = "http://us.dl.sourceforge.net/fink/direct_download";
 
@@ -727,6 +726,50 @@ EOF
 	# put the temporary file in place
 	unlink $path;
 	rename "$path.tmp", $path;
+}
+
+=item bindist_check_prefix
+
+  my $err = $config->bindist_check_prefix;
+  
+Check whether the current prefix allows use of the bindist. Returns an error
+string if a problem exists, otherwise returns a false value.
+
+=cut
+
+# FIXME: Private repositories could easily have different basepaths. Can
+# we keep UseBinaryDist enabled with $basepath ne '/sw' but just restrict
+# use to non-official repos?
+
+sub bindist_check_prefix {
+	my ($self) = @_;
+	my $err = <<ERR;
+Downloading packages from the binary distribution is currently only possible
+if Fink is installed at '/sw'.
+ERR
+	return $self->param('Basepath') eq '/sw' ? 0 : $err;
+}
+
+=item bindist_check_distro
+
+  my $err = $config->bindist_check_distro;
+  
+Check whether the current distribution allows use of the bindist. Returns an 
+error string if a problem exists, otherwise returns a false value.
+
+=cut
+
+{
+	my %bindists = map { $_ => 1 } ("10.3", "10.4-transitional");
+
+	sub bindist_check_distro {
+		my ($self) = @_;
+		my $err = <<ERR;
+Fink does not yet support an official set of binary packages for your current
+distribution.
+ERR
+		return exists $bindists{$self->param('Distribution')} ? 0 : $err;
+	}
 }
 
 =back

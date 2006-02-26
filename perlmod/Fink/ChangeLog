@@ -1,5 +1,16 @@
 2006-02-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Config.pm: Add methods to check whether the bindist is available, based
+	on the current distribution and prefix.
+	* Engine.pm, PkgVersion.pm, Configure.pm: Replace existing checks for
+	bindist availability with calls to the new methods in Config. Now if we
+	want to allow UseBinaryDist for private dists, there's just one place to
+	change.
+	* Config.pm: Don't write the bindist entries to sources.list unless the
+	bindist is actually available.
+
+2006-02-25  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: If buildlock is in an unfamiliar environment, allow
 	removal. This can occur when injecting a new fink.
 

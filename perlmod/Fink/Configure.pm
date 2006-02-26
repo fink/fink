@@ -155,21 +155,14 @@ sub choose_misc {
 	}
 	&spotlight_warning();
 
-# list of distributions for which a bindist exists
-	my @bindists = ("10.3", "10.4-transitional");
-
 	print "\n";
 	$binary_dist = $config->param_boolean("UseBinaryDist");
-	# if we are not installed in /sw, $binary_dist must be 0:
-	if (not $basepath eq '/sw') {
+	
+	my $err;
+	if (($err = $config->bindist_check_prefix)
+									|| ($err = $config->bindist_check_distro)) {
+		print_breaking("$err\n=> Setting UseBinaryDist to 'false'");
 		$binary_dist = 0;
-		&print_breaking('Setting UseBinaryDist to "false". This option can be used only when fink is installed in /sw.');
-
-		# If there is no binary distribution (yet) corresponding to the
-		# current $distrubtion, $binary_dist must be false
-	} elsif (!grep {$_ eq $distribution} @bindists) {
-		$binary_dist = 0;
-		&print_breaking("Setting UseBinaryDist to \"false\" because there is not yet a binary distribution for $distribution.");
 	} else {
 
 		# New users should use the binary dist, but an existing user who

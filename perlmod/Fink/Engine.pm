@@ -192,11 +192,8 @@ sub process {
 	# check if we need apt-get
 	if ($aptgetflag > 0 and ($self->{config}->binary_requested())) {
 		my $apt_problem = 0;
-		# check if we are installed at '/sw'
-		if (not $basepath eq '/sw') {
-				print "\n";
-				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but Fink ".
-				    "is not installed under '/sw'. This is not currently allowed.");
+		if (my $err = $self->{config}->bindist_check_prefix) {
+				print "\n";	print_breaking("ERROR: $err");
 				$apt_problem = 1;
 		}
 		# check if apt-get is available
@@ -1560,13 +1557,10 @@ sub real_install {
 	# warn if UseBinaryDist is enabled and not installed in '/sw'
 	my $deb_from_binary_dist = 0;
 	if ($config->binary_requested()) {
-		if ($basepath eq '/sw') {
+		if (my $err = $config->bindist_check_prefix) {
+			print "\n";	print_breaking("WARNING: $err");
+		} else {
 			$deb_from_binary_dist = 1;
-		}
-		else {
-				print "\n";
-				&print_breaking("WARNING: Downloading packages from the binary distribution ".
-				                "is currently only possible if Fink is installed at '/sw'!.");
 		}
 	}
 		
