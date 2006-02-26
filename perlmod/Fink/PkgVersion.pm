@@ -1911,7 +1911,7 @@ sub get_aptdb {
 	open APTDUMP, "$basepath/bin/apt-cache dump |"
 		or die "Can't run apt-cache dump: $!";
 	my ($pkg, $vers);
-	while(<APTDUMP>) {
+	while(defined(local $_ = <APTDUMP>)) {
 		if (/^\s*Package:\s*(\S+)/) {
 			($pkg, $vers) = ($1, undef);
 		} elsif (/^\s*Version:\s*(\S+)/) {
