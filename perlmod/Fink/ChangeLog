@@ -1,5 +1,14 @@
 2006-02-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* SysState.pm:
+		- Nicer error messages when resolving deps.
+		- Don't accept "resolutions" that uninstall some of the packages that
+		we are trying to install.
+		- Recognize when buildlocks are in the way.
+	* PkgVersion.pm: Don't print the "propagated at" for propagated die's.
+
+2006-02-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Command.pm: When lchown is available, chowname_hr should affect links.
 	There's no lchown in perl, so we system() it.
 

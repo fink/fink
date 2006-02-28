@@ -4113,7 +4113,7 @@ sub phase_activate {
 		@installable = (@installable, $state->resolve_install(@installable));
 	};
 	if ($@) {
-		die if $@ =~ /Fink::SysState/;	# Die if resolution failed
+		die "$@" if $@ =~ /Fink::SysState/;	# Die if resolution failed
 		
 		# Some packages have serious  errors in them which can confuse dep
 		# resolution. It's not obvious what safe action we can take!

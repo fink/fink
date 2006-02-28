@@ -691,8 +691,8 @@ sub _check_conflicts {
 		
 		# Found some conflicts (one per conflictor!)
 		for my $sat (@sat) {
-			my $desc = "Conflict of $pkgname: " . spec2string($con)
-				. " is not resolved due to $sat";
+			my $desc = "$pkgname conflicts with " . spec2string($con)
+				. ", but $sat is installed";
 			
 			push @probs, {
 				package	=> $pkgname,
@@ -820,7 +820,8 @@ sub _satisfied_versions {
 	my @finalcands;
 	foreach my $cand (@cands) {
 		$self->add_pkgversion($cand);
-		my $nok = grep { $_ eq $pkgname } $self->_unsatisfied_ignoring($ignore);
+		my $nok = grep { $_->{package} eq $pkgname }
+			$self->_check_ignoring($ignore);
 		$self->undo();
 		push @finalcands, $cand unless $nok;
 	}
@@ -828,17 +829,24 @@ sub _satisfied_versions {
 	return @finalcands;
 }	
 
-# my @extras = $self->_satisfied_combo($altern_lol, $ignore)
+# my @extras = $self->_satisfied_combo($altern_lol, $install_pvs, $ignore)
 #
 # Find a combination of alternatives which satisfies everything, return the
 # list of alternatives on success or an empty list on failure.
 sub _satisfied_combo {
-	my ($self, $alterns, $ignore, $chosen) = @_;
+	my ($self, $alterns, $install_pvs, $ignore, $chosen) = @_;
 	$chosen = [] unless $chosen; # What's already been chosen?
 	
-	# We're at a final state, is it ok?
-	return $self->_unsatisfied_ignoring($ignore) ? () : @$chosen
-		unless @$alterns;
+	unless (@$alterns) { # We're at a final state, is it ok?
+		return () if $self->_check_ignoring($ignore);
+		
+		# Make sure all the packages are still here (unreplaced)
+		for my $pv (@$install_pvs) {
+			my $vers = $self->installed($pv->get_name);
+			return () unless defined($vers) && $vers eq $pv->get_fullversion;
+		}
+		return @$chosen;
+	}
 	
 	# Try all the candidates for one unsatisfied package
 	my $cands = pop @$alterns;
@@ -847,7 +855,8 @@ sub _satisfied_combo {
 		$self->add_pkgversion($cand);
 		
 		# Recurse through the next package
-		my @ok = $self->_satisfied_combo($alterns, $ignore, $chosen);
+		my @ok = $self->_satisfied_combo($alterns, $install_pvs,
+			$ignore, $chosen);
 		return @ok if @ok;
 		
 		pop @$chosen;			# Undo the attempt
@@ -876,40 +885,37 @@ sub _check_ignoring {
 	return grep { !$ignore->{$self->_problem_uid($_)} } $self->check();	
 }
 
-# my @unsat = $self->_unsatisfied_ignoring($ignore);
-#
-# Get the names of packages that have unsatisfied dependencies (or satisfied
-# conflicts). Only look at problems whose uids aren't in $ignore.
-sub _unsatisfied_ignoring {
-	my ($self, $ignore) = @_;
-	
-	my %seen;
-	return grep { !$seen{$_}++ } map { $_->{package} }
-		$self->_check_ignoring($ignore);
-}
-
-# $self->_resolve_install_failure($ignore, @install_pvs);
+# $self->_resolve_install_failure($probs, $install_pvs);
 #
 # Handle failure to resolve an inconsistent state on installation.
 sub _resolve_install_failure {
-	my ($self, $ignore, @install_pvs) = @_;
+	my ($self, $probs, $install_pvs) = @_;
 	
 	print_breaking_stderr("Could not resolve inconsistent dependencies!");
-	print_breaking_stderr("The following errors remain:");
-	print_breaking_stderr("  " . $_->{desc})
-		for $self->_check_ignoring($ignore);
+	my @bls = map { $_->{package} =~ /^fink-buildlock-(.*)/ ? $1 : () } @$probs;
+	if (@bls) {
+		print_breaking_stderr("It looks like some of the problems encountered"
+			. " involve buildlocks for the following packages:");
+		print_breaking_stderr("  $_") for sort @bls;
+		print STDERR "\n";
+		print_breaking_stderr("This probably means you should wait for those"
+			. " packages to finish building, and then try again");
+	} else {
+		print STDERR "\n";
+		print_breaking_stderr("Fink isn't sure how to install the above"
+			. " packages safely. You may be able to fix things by running:");
 	
-	my $aptpkgs = join ( ' ',
-		map { $_->get_name() . "=" . $_->get_fullversion() } @install_pvs );
-		
-	print_breaking_stderr(<<FAIL);
+		my $aptpkgs = join (' ', map {
+			$_->get_name() . "=" . $_->get_fullversion()
+		} @$install_pvs );
+		print_breaking_stderr(<<FAIL);
 
-To fix manually, run:
-fink scanpackages
-sudo apt-get update
-sudo apt-get install $aptpkgs
+  fink scanpackages
+  apt-get update
+  apt-get install $aptpkgs
 
 FAIL
+	}
 	
 	die "Fink::SysState: Could not resolve inconsistent dependencies\n";
 }
@@ -943,31 +949,44 @@ sub resolve_install {
 	
 	# Add the packages
 	$self->add_pkgversion(@install_pvs);
-	my @unsat = $self->_unsatisfied_ignoring($ignore);
-	return () unless @unsat; # We're ok!
+	my @probs = $self->_check_ignoring($ignore);
+	return () unless @probs; # We're ok!
 	
-	# We need to resolve some deps
-	print_breaking_stderr("Resolving inconsistent dependencies...")
-		if $verbose;
+	# We need to resolve some deps, let the user know
+	if ($verbose) {
+		print STDERR "\n";
+		print_breaking_stderr("While trying to install:");
+		print_breaking_stderr("  $_")
+			for sort map { $_->get_fullname } @install_pvs;
+		print STDERR "\n";
+		print_breaking_stderr("The following inconsistencies found:");
+		print_breaking_stderr('  ' . $_->{desc}) for @probs;
+		print STDERR "\n";
+		print_breaking_stderr("Trying to resolve dependencies...");
+	}	
 	
 	# For each unsatisfied package, find alternative versions
+	my %unsat = map { $_->{package} => 1 } @probs;
 	my %alterns = map {
 		$_ => [ $self->_satisfied_versions($_, $ignore) ]
-	} @unsat;
+	} keys %unsat;
 	
 	# If there's at least one alternative for each unsat, try to find a combo
 	# that will satisfy all.
-	my @extras = $self->_satisfied_combo([ values %alterns ], $ignore);
+	my @extras = $self->_satisfied_combo([ values %alterns ],
+		\@install_pvs, $ignore);
 	
 	if (@extras) {	# Found a solution!
 		if ($verbose) {
+			print STDERR "\n";
 			print_breaking_stderr("Solution found. Will install extra "
 				. "packages:");
-			print_breaking_stderr("  " . $_->get_fullname()) foreach @extras;
+			print_breaking_stderr("  $_")
+				for sort map { $_->get_fullname } @extras;
 		}
 		return @extras;
 	} else {		# Failure
-		$self->_resolve_install_failure($ignore, @install_pvs);
+		$self->_resolve_install_failure(\@probs, \@install_pvs);
 	}
 }
 
