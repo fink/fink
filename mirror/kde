@@ -1,5 +1,5 @@
 # Official mirror list: http://download.kde.org/mirrorstatus.html
-Timestamp: 2006-01-23
+Timestamp: 2006-02-28
 
 Primary: ftp://ftp.kde.org/pub/kde
 
@@ -11,6 +11,7 @@ asi-JP: ftp://ftp.kddlabs.co.jp/pub/X11/kde
 asi-JP: http://ftp.kddlabs.co.jp/pub/X11/kde
 asi-JP: ftp://ftp.ring.gr.jp/pub/X/kde
 asi-JP: http://ftp.ring.gr.jp/pub/X/kde
+asi-JP: ftp://ring.asahi-net.or.jp/pub/X/kde
 asi-JP: http://ring.asahi-net.or.jp/pub/X/kde
 asi-KR: ftp://ftp.sayclub.com/pub/X/KDE
 asi-KR: http://ftp.sayclub.com/pub/X/KDE
@@ -19,7 +20,6 @@ asi-TW: ftp://linux.cis.nctu.edu.tw/X/wm/kde
 asi-TW: ftp://linux3.cc.ntu.edu.tw/pub/kde
 asi-TW: http://linux3.cc.ntu.edu.tw/pub/kde
 aus-AU: ftp://ftp.planetmirror.com/pub/kde
-eur: ftp://ftp.iway.fr/pub/kde
 eur: ftp://ftp.eu.uu.net/pub/kde
 eur-AT: ftp://gd.tuwien.ac.at/kde
 eur-AT: http://gd.tuwien.ac.at/kde
@@ -29,7 +29,6 @@ eur-BE: ftp://ftp.scarlet.be/pub/kde
 eur-BE: http://ftp.scarlet.be/pub/kde
 eur-BG: ftp://kde.paralax.org/kde
 eur-CH: ftp://ftp.solnet.ch/mirror/KDE
-eur-CH: http://mirror.switch.ch/ftp/mirror/kde
 eur-CZ: ftp://ftp.fi.muni.cz/pub/kde
 eur-CZ: http://ftp.fi.muni.cz/pub/kde
 eur-DE: ftp://ftp.kde.org/pub/kde
@@ -74,7 +73,6 @@ eur-IT: http://ftp.unina.it/pub/Linux/kde
 eur-NL: ftp://ftp.tiscali.nl/pub/mirrors/kde
 eur-NL: http://ftp.tiscali.nl/kde
 eur-NO: ftp://ftp.no.kde.org/pub/kde
-eur-PL: ftp://ftp.pbone.net/mirror/ftp.kde.org/pub/kde
 eur-PL: ftp://sunsite.icm.edu.pl/pub/unix/kde
 eur-PL: http://sunsite.icm.edu.pl/pub/unix/kde
 eur-PL: ftp://ftp.man.szczecin.pl/pub/kde
@@ -92,9 +90,9 @@ eur-SE: http://ftp.sunet.se/pub/kde
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.kde.org/pub/kde
 eur-UK: http://www.mirrorservice.org/sites/ftp.kde.org/pub/kde
 eur-UK: ftp://ftp.mirror.ac.uk/sites/ftp.kde.org/pub/kde
-eur-UK: http://ftp.mirror.ac.uk/sites/ftp.kde.org/pub/kde
 eur-YU: ftp://ftp.kde.org.yu/kde
 eur-YU: http://ftp.kde.org.yu/kde
+nam-US: ftp://ftp.pbone.net/mirror/ftp.kde.org/pub/kde
 nam-US: http://kde.mirrors.hoobly.com
 nam-US: http://mirror.cc.columbia.edu/pub/software/kde
 nam-US: ftp://ftp.gtlib.cc.gatech.edu/pub/kde

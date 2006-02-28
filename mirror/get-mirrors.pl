@@ -15,13 +15,13 @@ use vars qw($VERSION %keys %reverse_keys %files $debug $response);
 
 use vars qw($APACHE $CPAN $CTAN $DEBIAN $GIMP $GNOME $GNU $KDE);
 
-$APACHE = 0;
-$CPAN   = 0;
-$CTAN   = 0;
-$DEBIAN = 0;
-$GIMP   = 0;
-$GNOME  = 0;
-$GNU    = 0;
+$APACHE = 1;
+$CPAN   = 1;
+$CTAN   = 1;
+$DEBIAN = 1;
+$GIMP   = 1;
+$GNOME  = 1;
+$GNU    = 1;
 $KDE    = 1;
 
 $debug = 0;
@@ -317,6 +317,7 @@ if ($GNU) {
 			for my $link ($ul->look_down('_tag' => 'a')) {
 				if ($link) {
 					my $url = $link->attr('href');
+					$url =~ s#(ftp://)+#ftp://#g;
 					print "\t", $url, ": ";
 					if ($ua->get($url . '/=README')->content =~ /This directory contains programs/gs) {
 						print "ok\n";

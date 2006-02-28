@@ -1,5 +1,5 @@
 # Official mirror list: http://www.apache.org/mirrors
-Timestamp: 2006-01-23
+Timestamp: 2006-02-28
 
 Primary: http://www.apache.org/dist
 
@@ -11,7 +11,6 @@ afr-ZA: http://apache.is.co.za/dist
 afr-ZA: ftp://ftp.is.co.za/Apache/dist
 asi-CN: http://mirror.vmmatrix.net/apache
 asi-CN: http://apache.justdn.org
-asi-GE: http://ox.mysoft.ge/apache
 asi-HK: http://www.zentek-international.com/mirrors/apache
 asi-HK: http://apache.netsolutions.com.hk
 asi-HK: http://mirror.simlink.com.hk/apache
@@ -56,11 +55,13 @@ eur-BE: http://apache.belnet.be
 eur-BE: http://apache.scarlet.be
 eur-BE: ftp://ftp.scarlet.be/pub/apache
 eur-BE: http://apache.be.proserve.nl
+eur-BG: http://apache.online.bg
 eur-BG: ftp://ftp.uni-sofia.bg/apache
 eur-CH: ftp://mirror.switch.ch/mirror/apache/dist
 eur-CH: http://mirror.switch.ch/mirror/apache/dist
 eur-CH: http://mirror1.zic-network.ch/apache
 eur-CH: http://apache.mirror.testserver.li
+eur-CZ: http://ftp.sh.cvut.cz/MIRRORS/apache
 eur-CZ: ftp://ftp.gin.cz/pub/mirrors/www.apache.org/dist
 eur-CZ: http://mirror.styx.cz/apache
 eur-DE: http://apache.dns4.com
@@ -83,19 +84,17 @@ eur-DE: http://apache.linux-mirror.org
 eur-DE: http://apache.mirrorplus.org
 eur-DE: http://mirrorspace.org/apache
 eur-DE: http://netmirror.org/mirror/apache.org
-eur-DE: http://apache.mirror.luxadmin.org
 eur-DK: http://tomcat.edu.brock.dk/apache
 eur-DK: ftp://apache-mirror.dkuug.dk/pub/apache
 eur-DK: http://apache-mirror.dkuug.dk
 eur-DK: http://mirrors.dotsrc.org/apache
 eur-EE: http://apache.datanet.ee
 eur-EE: http://apache.zone-h.org
-eur-ES: http://apache.gva.es
-eur-ES: ftp://ftp.gva.es/pub/mirror/apache
 eur-ES: http://apache.rediris.es
 eur-FR: http://apache.fastorama.com/dist
 eur-FR: ftp://ftp.fastorama.com/mirrors/ftp.apache.org/dist
 eur-FR: http://apache.crihan.fr/dist
+eur-FR: ftp://ftp.inria.fr/pub/Apache
 eur-FR: ftp://mir1.ovh.net/ftp.apache.org/dist
 eur-FR: http://mir2.ovh.net/ftp.apache.org/dist
 eur-GR: ftp://ftp.physics.auth.gr/pub/mirrors/apache
@@ -118,7 +117,8 @@ eur-IE: http://apache.oss-mirror.org
 eur-IL: http://apache.fresh.co.il
 eur-IL: http://off.co.il/apache
 eur-IL: http://apache.spd.co.il
-eur-IL: http://mirror.actserv.net
+eur-IL: ftp://mirror.inter.net.il/mirrors/apache
+eur-IL: http://mirror.inter.net.il/mirrors/apache
 eur-IL: http://mirror.mirimar.net/apache
 eur-IS: http://apache.rhnet.is/dist
 eur-IS: ftp://ftp.rhnet.is/pub/apache
@@ -135,7 +135,6 @@ eur-NL: http://www.eu.apache.org/dist
 eur-NL: ftp://apache.essentkabel.com/apache
 eur-NL: http://apache.essentkabel.com
 eur-NL: http://dist.apache.easynet.nl
-eur-NL: http://apache.mirror.intouch.nl
 eur-NL: ftp://apache.mirror.nedlinux.nl/pub/mirror/apache
 eur-NL: http://apache.mirror.nedlinux.nl/dist
 eur-NL: http://apache.nedmirror.nl
@@ -149,6 +148,8 @@ eur-NL: ftp://ftp.cs.uu.nl/mirror/apache.org/dist
 eur-NL: ftp://gnu.kookel.org/pub/apache
 eur-NL: http://httpd.kookel.org
 eur-NO: http://www.powertech.no/apache/dist
+eur-PL: ftp://sunsite.icm.edu.pl/pub/www/apache/dist
+eur-PL: http://sunsite.icm.edu.pl/pub/www/apache/dist
 eur-PL: ftp://ftp.task.gda.pl/pub/www/apache/dist
 eur-PL: http://www.apache.net.pl
 eur-PL: ftp://ftp.tpnet.pl/d1/apache
@@ -165,10 +166,12 @@ eur-RO: http://mirrors.evolva.ro/apache.org/apache-dist
 eur-RO: http://apache.idilis.ro
 eur-RO: ftp://ftp.idilis.ro/linux/http/apache
 eur-RO: http://apache.zoel.ro
+eur-RU: http://apache.tsuren.net
 eur-RU: http://apache.rediska.ru
 eur-RU: ftp://apache.rinet.ru/pub/mirror/apache.org/dist
 eur-RU: http://apache.rinet.ru/dist
 eur-RU: http://www.sai.msu.su/apache/dist
+eur-SE: ftp://ftp.chl.chalmers.se/pub/apache
 eur-SE: http://apache.dataphone.se
 eur-SE: ftp://mirror2.dataphone.se/pub/apache
 eur-SE: ftp://ftp.solace.mh.se/pub/mirrors/www.apache.org
@@ -205,6 +208,8 @@ nam-CA: ftp://apache.mirror.rafal.ca/pub/apache
 nam-CA: http://apache.mirror.rafal.ca
 nam-CA: ftp://apache.sunsite.ualberta.ca/pub/apache
 nam-CA: http://apache.sunsite.ualberta.ca
+nam-CA: ftp://apache.mirrors.northco.net
+nam-CA: http://apache.mirrors.northco.net
 nam-MX: http://www.sinacatri.gob.mx/apache
 nam-US: http://www.apache.org/dist
 nam-US: http://www.apache.org/dist
@@ -230,7 +235,6 @@ nam-US: http://apache.seekmeup.com
 nam-US: http://www.signal42.com/mirrors/apache
 nam-US: http://apache.tradebit.com/pub
 nam-US: http://apache.mirrors.versehost.com
-nam-US: http://www.wmwweb.com/apache
 nam-US: ftp://mirror.sg.depaul.edu/pub/apache
 nam-US: http://linux.cs.lewisu.edu/apache
 nam-US: http://www.eng.lsu.edu/mirrors/apache
@@ -272,6 +276,5 @@ sam-BR: http://mirrors.uol.com.br/pub/apache
 sam-BR: ftp://ftp.pucpr.br/apache
 sam-BR: http://ftp.pucpr.br/apache
 sam-BR: http://ftp.unicamp.br/pub/apache
-sam-CO: http://apache.comsat.com.co
 sam-CO: http://apache.uniandes.edu.co
 sam-CR: http://apache.ucr.ac.cr
