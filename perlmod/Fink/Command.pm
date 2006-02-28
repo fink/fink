@@ -31,6 +31,7 @@ require Exporter;
 
 use strict;
 use warnings;
+use Config;
 use Carp;
 use POSIX qw(ceil);
 
@@ -305,11 +306,22 @@ sub chowname_hr {
 	# chown() won't return false as long as one operation succeeds, so we
 	# have to call it one at a time.
 	my $nok = 0;
+	my @links; # no lchown for perl
 	File::Find::find(
 		sub {
-			$nok ||= !CORE::chown $uid, $gid, $_ unless -l $_;
+			if (-l $_) {
+				push @links, $File::Find::name;
+			} else {
+				$nok ||= !CORE::chown $uid, $gid, $_;
+			}
 		},
 		@files) if @files;
+	
+	# Some systems have no lchown
+	if ($Config{d_lchown} && @links) {
+		$nok ||= system('/usr/sbin/chown', '-h', "\Q$user\E:\Q$group\E",
+			@links);
+	}
 
 	return !$nok;
 }
