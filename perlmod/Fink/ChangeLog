@@ -1,3 +1,10 @@
+2006-03-01  Daniel Macks  <dmacks@netspace.org>
+
+	* Status.pm: Instead of manually toggling _invalid, store data
+	about dpkg status file when reading it, compare stored vs actual
+	to determine whether cache is stale.
+	* PkgVersion.pm, Status.pm: Abolish Status::invalidate
+
 2006-02-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* SysState.pm:

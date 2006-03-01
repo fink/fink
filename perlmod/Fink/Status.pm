@@ -77,23 +77,26 @@ sub read {
 	$hash = {};
 
 	if (not $config->want_magic_tree('status')) {
-		$self->{_invalid} = 0;
 		return;
 	}
 
 	if (! -f $file) {
 		print "WARNING: can't read dpkg status file \"$file\".\n";
-
-		$self->{_invalid} = 0;
 		return;
 	}
 
 	open(IN,$file) or die "can't open $file: $!";
+
+	# store info about the db file we're caching
+	# (dpkg writes to a tempfile, then renames it to replace old)
+	($self->{_db_ino}, $self->{_db_mtime}) = (stat IN)[1,9];
+
 	while (<IN>) {
 		chomp;
 		if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
 			$hash->{lc $1} = $2;
 		} elsif (/^\s*$/) {
+			# line of just whitespace separates packages entries in the file
 			if (exists $hash->{package}) {
 				$self->{$hash->{package}} = $hash;
 			}
@@ -103,37 +106,25 @@ sub read {
 	}
 	close(IN);
 
+	# handle last pkg entry in file (maybe no whitespace line after it)
 	if (exists $hash->{package}) {
 		$self->{$hash->{package}} = $hash;
 	}
-
-	$self->{_invalid} = 0;
 }
 
-### update cached data if necessary
+### update cached data if db file on disk has changed
 
 sub validate {
 	my $self = shift;
 
-	if ($self->{_invalid}) {
+	my(@db_stat) = stat $basepath.'/var/lib/dpkg/status';
+	unless (
+		@db_stat
+		and $self->{_db_ino} == $db_stat[1]
+		and $self->{_db_mtime} == $db_stat[9]
+	) {
 		$self->read();
 	}
-}
-
-### invalidate cached data
-
-sub invalidate {
-	my $self = shift;
-
-	if (not ref($self)) {
-		if (defined($the_instance)) {
-			$self = $the_instance;
-		} else {
-			$self = Fink::Status->new();
-		}
-	}
-
-	$self->{_invalid} = 1;
 }
 
 ### query by package name
