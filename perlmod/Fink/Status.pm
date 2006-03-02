@@ -120,8 +120,8 @@ sub validate {
 	my(@db_stat) = stat $basepath.'/var/lib/dpkg/status';
 	unless (
 		@db_stat
-		and ($self->{_db_ino}   || 0) == $db_stat[1])
-		and ($self->{_db_mtime} || 0) == $db_stat[9])
+		and (($self->{_db_ino}   || 0) == $db_stat[1])
+		and (($self->{_db_mtime} || 0) == $db_stat[9])
 	) {
 		$self->read();
 	}
