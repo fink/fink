@@ -1,5 +1,9 @@
 2006-03-01  Daniel Macks  <dmacks@netspace.org>
 
+	* Status.pm: Don't whine if status db not yet loaded.
+
+2006-03-01  Daniel Macks  <dmacks@netspace.org>
+
 	* Status.pm: Instead of manually toggling _invalid, store data
 	about dpkg status file when reading it, compare stored vs actual
 	to determine whether cache is stale.
