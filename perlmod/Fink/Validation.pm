@@ -46,7 +46,7 @@ our @set_vars =
 		cc cflags cpp cppflags cxx cxxflags dyld_library_path
 		ld_prebind ld_prebind_allow_overlap ld_force_no_prebind
 		ld_seg_addr_table ld ldflags library_path libs
-		macosx_deployment_target make mflags makeflags setpath
+		macosx_deployment_target make mflags makeflags path
 	);
 
 # Required fields.
