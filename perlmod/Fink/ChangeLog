@@ -1,3 +1,7 @@
+2006-03-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix *SetPATH handler
+
 2006-03-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Status.pm: Don't whine if status db not yet loaded.
