@@ -1,3 +1,8 @@
+2006-03-06  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Check for dev-tools using VirtPackage directly
+	instead of using the full Package/PkgVersion database API.
+
 2006-03-03  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Add missing function import
