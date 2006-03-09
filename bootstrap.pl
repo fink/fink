@@ -73,12 +73,14 @@ chdir $homebase;
 use lib "$FindBin::RealBin/perlmod";
 require Fink::Bootstrap;
 import Fink::Bootstrap qw(&check_host &check_files);
+require Fink::FinkVersion;
+import Fink::FinkVersion qw(&fink_version);
 
 my $res = check_files();
 if( $res == 1 ) {
 	exit 1;
 }
-print " looks good.\n";
+printf " looks good (fink-%s).\n", fink_version();
 
 ### load some modules
 
