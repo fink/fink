@@ -1,3 +1,8 @@
+2006-03-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.13, a bugfix release
+	on branch_0_24
+
 2006-03-08  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap.pl: Report fink version during initial checks.
