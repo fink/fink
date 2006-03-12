@@ -434,6 +434,16 @@ if ($packageversion !~ /cvs/) {
 my $endmsg = "Internal error.";
 
 chdir $homebase;
+my %bindists;
+if (-f "BINDISTS") {
+                open(IN,"BINDISTS") or die "Can't open BINDISTS: $!";
+                while(<IN>) {
+					chomp;
+					/(.*):\s*(.*)/;
+					$bindists{$1} = $2;
+                }
+                close(IN);
+			}
 if (-d "pkginfo") {
 	if (&execute("cd pkginfo && ./inject.pl $installto -quiet")) {
 		# inject failed
@@ -442,9 +452,13 @@ Copying the package description tree failed. This is no big harm;
 your Fink installation should work nonetheless.
 You can add the package descriptions at a later time if you want to
 compile packages yourself.
-You can get them from CVS or by installing the packages$showversion.tar.gz
-tarball.
+You can get them
 EOF
+if (defined($bindists{$distribution})) {
+$endmsg .= "by installing the dists-$distribution-$bindists{$distribution}.tar.gz
+tarball, or";
+}
+		$endmsg .= " by running the command 'fink selfupdate'.";
 	} else {
 		# inject worked
 		$endmsg = <<"EOF";
@@ -456,9 +470,13 @@ EOF
 	$endmsg = <<"EOF";
 You should now have a working Fink installation in '$installto'.
 You still need package descriptions if you want to compile packages yourself.
-You can get them from CVS or by installing the packages$showversion.tar.gz
-tarball.
+You can get them
 EOF
+if (defined($bindists{$distribution})) {
+$endmsg .= "by installing the dists-$distribution-$bindists{$distribution}.tar.gz
+tarball, or";
+}
+	$endmsg .= " by running the command 'fink selfupdate'.";
 }
 
 ### create Packages.gz files for apt

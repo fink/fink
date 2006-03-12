@@ -1,3 +1,9 @@
+2006-03-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* BINDISTS, bootstrap.pl: Message to users at end of bootstrap should
+	guide them to the actual "dists" tarball, whose name depends on
+	the identity of the current bindist.
+
 2006-03-08  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap.pl: Report fink version during initial checks.
