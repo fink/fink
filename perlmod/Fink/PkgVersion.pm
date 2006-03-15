@@ -2179,6 +2179,10 @@ sub find_debfile {
 #     In "conflicts" mode, must have none of any sublist installed
 #     (but makes no sense to have logical OR in a *Conflicts field)
 
+{
+	# track which BuildDependsOnly violation warnings we've issued
+	my $bdo_warning_cache = {};  # hash of "$pkg\0$dependency"=>1
+
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
@@ -2275,13 +2279,21 @@ sub resolve_depends {
 						# loop through all PkgVersion that supply $pkg
 
 						if ($dependent->param_boolean("BuildDependsOnly")) {
-							# whine if BDO violation
-							my $dep_providername = $dependent->get_name();
-							print "\nWARNING: The package " . $self->get_name() . " Depends on $depname";
-							if ($dep_providername ne $depname) {  # virtual pkg
-								print "\n\t (which is provided by $dep_providername)";
+							my $cache_key = $self->get_name() . "\0" . $depname;
+							if (!exists $bdo_warning_cache->{$cache_key}) {
+								$bdo_warning_cache->{$cache_key} = 1;
+
+								# whine if this BDO violation hasn't
+								# been whined-about before
+								my $dep_providername = $dependent->get_name();
+								print "\nWARNING: The package " . $self->get_name() . " Depends on $depname";
+								if ($dep_providername ne $depname) {
+									# virtual pkg
+									print "\n\t (which is provided by $dep_providername)";
+								}
+								print ",\n\t but $depname only allows things to BuildDepend on it.\n\n";
 							}
-							print ",\n\t but $depname only allows things to BuildDepend on it.\n\n";
+
 							if (Fink::Config::get_option("maintainermode")) {
 								die "Please correct the above problems and try again!\n";
 							}
@@ -2369,6 +2381,9 @@ sub resolve_depends {
 	}
 
 	return @deplist;
+}
+
+# resolve_depends has lexical private variables
 }
 
 sub get_altspec {
