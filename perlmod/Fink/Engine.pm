@@ -1517,6 +1517,9 @@ use constant PKGVER  => 2;
 use constant OP      => 3;
 use constant FLAG    => 4;
 
+use constant VERSIONS => 5; # what versions are still ok for this pkg?
+
+
 sub real_install {
 	my $op = shift;
 	my $showlist = shift;
@@ -2734,13 +2737,28 @@ sub choose_pkgversion_by_package {
 	
 	# Find the best package
 	my $po = choose_package(\@candidates, sub { exists $deps->{$_->get_name} });
+	my $pkgname = $po->get_name;
 	
-	# Find best version
-	my $pv = $po->resolve_version(@pvs);
+	# Restrict to PVs of the chosen pkg
+	@pvs = grep { $_->get_name eq $pkgname } @pvs;
+	
+	# If we previously looked at this package, restrict to the available vers
+	if (exists $deps->{$pkgname}) {
+		my $item = $deps->{$pkgname};
+		if (exists $item->[VERSIONS]) {
+			my %old = map { $_ => 1 } @{$item->[VERSIONS]};
+			@pvs = grep { $old{$_->get_fullversion} } @pvs;
+		}
+	}
+		
+	# Choose a version
+	my @vers = map { $_->get_fullversion } @pvs;
+	my $latest = latest_version(@vers);
+	my ($pv) = grep { $_->get_fullversion eq $latest } @pvs;
 	
 	# add node to graph
-	@{$deps->{$po->get_name}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
-	   $po->get_name, $po, $pv, $OP_INSTALL, 0
+	@{$deps->{$po->get_name}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG, VERSIONS ] = (
+	   $po->get_name, $po, $pv, $OP_INSTALL, 0, \@vers
 	);
 	# add a link
 	push @$item, $deps->{$po->get_name};

@@ -263,40 +263,6 @@ sub get_matching_versions {
 		@include_list;
 }
 
-=item resolve_version
-
-  my $pv = $po->resolve_version @candidates;
-
-Find the best acceptable version to install. The PkgVersion found must
-be a version of this package, must correspond to one of the given candidates,
-and must satisfy any existing version specifications.
-
-=cut
-
-sub resolve_version {
-	my ($self, @cands) = @_;
-	
-	# Restrict to this package
-	@cands = grep { $_->get_name eq $self->get_name } @cands;
-	
-	# Restrict according to version specs
-	my @specs = exists $self->{_versionspecs} ? @{$self->{_versionspecs}} : ();
-	while (@specs && @cands) {
-		@cands = $self->get_matching_versions(shift @specs, @cands);
-	}
-	
-	# Give up if nothing found
-	unless (@cands) {
-		print "unable to resolve version conflict on multiple dependencies\n";
-		printf "\t %s $_\n", $self->get_name for (@{$self->{_versionspecs}});
-		die "\n";
-	}
-	
-	my $vers = latest_version map { $_->get_fullversion } @cands;
-#	printf "*** Choosing version %s for package %s\n", $vers, $self->get_name;
-	return $self->get_version($vers);
-}
-
 sub get_all_providers {
 	my $self = shift;
 	my $noload = shift || 0;

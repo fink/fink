@@ -2368,7 +2368,6 @@ sub resolve_depends {
 				push @$altlist, $package->get_all_providers();
 			} else {
 				push @$altlist, $package->get_matching_versions($versionspec);
-				push(@{$package->{_versionspecs}}, $versionspec);
 			}
 		}
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
