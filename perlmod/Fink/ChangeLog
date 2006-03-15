@@ -1,5 +1,9 @@
 2006-03-15  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Ok, now let's try in a non-stupid way.
+
+2006-03-15  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm, Package.pm, Engine.pm: Attempt to fix some of dep engine
 	weirdness. Now no more storing versionspecs inside Package objects, instead
 	we store a list of ok versions in the deps table.

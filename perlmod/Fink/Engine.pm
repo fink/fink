@@ -1517,8 +1517,6 @@ use constant PKGVER  => 2;
 use constant OP      => 3;
 use constant FLAG    => 4;
 
-use constant VERSIONS => 5; # what versions are still ok for this pkg?
-
 
 sub real_install {
 	my $op = shift;
@@ -1636,6 +1634,7 @@ sub real_install {
 	}
 
 	# recursively expand dependencies
+	my %ok_versions; # versions of each pkg that are ok to use
 	while ($#queue >= 0) {
 		$pkgname = shift @queue;
 		$item = $deps{$pkgname};
@@ -1698,7 +1697,7 @@ sub real_install {
 		}
 		
 		foreach $dep (@deplist) {
-			choose_pkgversion(\%deps, \@queue, $item, @$dep);
+			choose_pkgversion(\%deps, \@queue, $item, \%ok_versions, @$dep);
 		}
 	}
 
@@ -2730,7 +2729,7 @@ dependency queue and the current dependency queue item.
 =cut
 
 sub choose_pkgversion_by_package {
-	my ($deps, $queue, $item, @pvs) = @_;
+	my ($deps, $queue, $item, $ok_versions, @pvs) = @_;
 	
 	# We turn our PkgVersions into a list of candidate package names,
 	my @candidates = pvs2pkgnames @pvs;
@@ -2743,23 +2742,29 @@ sub choose_pkgversion_by_package {
 	@pvs = grep { $_->get_name eq $pkgname } @pvs;
 	
 	# If we previously looked at this package, restrict to the available vers
-	if (exists $deps->{$pkgname}) {
-		my $item = $deps->{$pkgname};
-		if (exists $item->[VERSIONS]) {
-			my %old = map { $_ => 1 } @{$item->[VERSIONS]};
-			@pvs = grep { $old{$_->get_fullversion} } @pvs;
-		}
+	if (exists $ok_versions->{$pkgname}) {
+		my %old = map { $_ => 1 } @{$ok_versions->{$pkgname}};
+		@pvs = grep { $old{$_->get_fullversion} } @pvs;
 	}
 		
 	# Choose a version
 	my @vers = map { $_->get_fullversion } @pvs;
 	my $latest = latest_version(@vers);
 	my ($pv) = grep { $_->get_fullversion eq $latest } @pvs;
+	unless (defined $pv) {
+		print_breaking <<MSG;
+Unable to resolve version conflict on multiple dependencies, for package
+$pkgname.
+MSG
+		die "\n";
+	}
 	
 	# add node to graph
-	@{$deps->{$po->get_name}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG, VERSIONS ] = (
-	   $po->get_name, $po, $pv, $OP_INSTALL, 0, \@vers
+	@{$deps->{$po->get_name}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
+	   $pkgname, $po, $pv, $OP_INSTALL, 0
 	);
+	$ok_versions->{$pkgname} = \@vers;
+	
 	# add a link
 	push @$item, $deps->{$po->get_name};
 	# add to investigation queue
@@ -2768,7 +2773,8 @@ sub choose_pkgversion_by_package {
 
 =item choose_pkgversion
 
-  choose_pkgversion $dep_graph, $dep_queue, $queue_item, @pkgversions;
+  choose_pkgversion $dep_graph, $dep_queue, $queue_item, $ok_versions, 
+  	@pkgversions;
 
 Choose a PkgVersion to install, using all available methods. The parameter
 @pkgversions is a list of alternative PkgVersions to choose from.
@@ -2779,7 +2785,7 @@ dependency queue and the current dependency queue item.
 =cut
 
 sub choose_pkgversion {
-	my ($deps, $queue, $item, @pvs) = @_;	
+	my ($deps, $queue, $item, $ok_versions, @pvs) = @_;	
 	return unless @pvs;		# skip empty lists
 	
 	# Check if any of the PkgVersions is already in the dep graph.
@@ -2789,7 +2795,7 @@ sub choose_pkgversion {
 	return if choose_pkgversion_installed($deps, $queue, $item, @pvs);
 	
 	# Find the best PkgVersion by finding the best Package
-	choose_pkgversion_by_package($deps, $queue, $item, @pvs);	
+	choose_pkgversion_by_package($deps, $queue, $item, $ok_versions, @pvs);	
 }
 
 =item prefetch
