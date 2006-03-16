@@ -24,7 +24,7 @@
 package Fink::Config;
 use Fink::Base;
 use Fink::Command 	qw(cp);
-use Fink::Services	qw(&get_options $VALIDATE_HELP);
+use Fink::Services	qw(&get_arch &read_properties &get_options $VALIDATE_HELP);
 
 
 use strict;
@@ -42,8 +42,13 @@ our $VERSION	 = 1.00;
 
 our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors, $debarch);
 
+# determine the dpkg Architecture string
+#
+# We can't use `dpkg --print-installation-architecture` (although we
+# have to match it) because dpkg runs fink-virtual-pkgs, which loads
+# Config.pm.
 {
-	my $_arch = Fink::Services::get_arch();
+	my $_arch = &get_arch();
 	$debarch = "darwin-$_arch";
 }
 
@@ -124,7 +129,7 @@ sub new_with_path {
 	$defaults = {} unless ref $defaults eq 'HASH';
 	my $class = ref($proto) || $proto;
 
-	my $props = Fink::Services::read_properties($path);
+	my $props = &read_properties($path);
 
 	my $self = { _path => $path };
 	@{$self}{map lc, keys %$defaults} = values %$defaults;
@@ -992,7 +997,7 @@ The last Fink::Config object created.
 
 Debian-style name of the current architecture.  
 
-Typically C<darwin-powerpc>.
+Typically C<darwin-powerpc> or C<darwin-i386>.
 
 =item $distribution
 

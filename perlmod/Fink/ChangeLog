@@ -1,3 +1,7 @@
+2006-03-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm: Import some Services:: funtions that we use here
+
 2006-03-15  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Ok, now let's try in a non-stupid way.
