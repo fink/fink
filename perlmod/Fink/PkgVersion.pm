@@ -2179,10 +2179,6 @@ sub find_debfile {
 #     In "conflicts" mode, must have none of any sublist installed
 #     (but makes no sense to have logical OR in a *Conflicts field)
 
-{
-	# track which BuildDependsOnly violation warnings we've issued
-	my $bdo_warning_cache = {};  # hash of "$pkg\0$dependency"=>1
-
 sub resolve_depends {
 	my $self = shift;
 	my $include_build = shift || 0;
@@ -2206,6 +2202,17 @@ sub resolve_depends {
 		$oper = "conflict";
 	} elsif (lc($field) eq "depends") {
 		$oper = "dependency";
+	}
+
+	# check for BuildDependsOnly violations
+	if ($include_build) {
+		my $violated = 0;
+		foreach my $pkg ($self->get_splitoffs(1,1)) {
+			$violated = 1 if $pkg->check_bdo_violations();
+		}
+		if ($violated and Fink::Config::get_option("maintainermode")) {
+			die "Please correct the above problems and try again!\n";
+		}
 	}
 
 	my $verbosity = $config->verbosity_level();
@@ -2268,37 +2275,6 @@ sub resolve_depends {
 				}
 				if (not defined $package) {
 					next BUILDDEPENDSLOOP;
-				}
-
-				# Make sure no Depends on BuildDependsOnly:true pkgs
-				if (lc($field) eq "depends" && $verbosity > 1) {
-					# only bother to check for BuildDependsOnly
-					# violations if we are more verbose than default
-
-					foreach my $dependent ($package->get_all_providers()) {
-						# loop through all PkgVersion that supply $pkg
-
-						if ($dependent->param_boolean("BuildDependsOnly")) {
-							my $cache_key = $self->get_name() . "\0" . $depname;
-							if (!exists $bdo_warning_cache->{$cache_key}) {
-								$bdo_warning_cache->{$cache_key} = 1;
-
-								# whine if this BDO violation hasn't
-								# been whined-about before
-								my $dep_providername = $dependent->get_name();
-								print "\nWARNING: The package " . $self->get_name() . " Depends on $depname";
-								if ($dep_providername ne $depname) {
-									# virtual pkg
-									print "\n\t (which is provided by $dep_providername)";
-								}
-								print ",\n\t but $depname only allows things to BuildDepend on it.\n\n";
-							}
-
-							if (Fink::Config::get_option("maintainermode")) {
-								die "Please correct the above problems and try again!\n";
-							}
-						}
-					}
 				}
 			}
 		}
@@ -2380,9 +2356,6 @@ sub resolve_depends {
 	}
 
 	return @deplist;
-}
-
-# resolve_depends has lexical private variables
 }
 
 sub get_altspec {
@@ -2514,6 +2487,66 @@ sub get_depends {
 
 	# run-time dependencies
 	return &pkglist2lol($self->pkglist_default("Depends",""));
+}
+
+=item check_bdo_violations
+
+	my $bool = $self->check_bdo_violations;
+
+Check if any packages in the Depends of this package are
+BuildDependsOnly:true. If any violations found, warn about each such
+case and return true. If not, return false.
+
+All providers of each package name are checked and all alternatives
+are tested. Only one warning is issued for each %n:Depends:%n'
+combination over the lifetime of the fink process.
+
+=cut
+
+{
+	# track which BuildDependsOnly violation warnings we've issued
+	my %bdo_warning_cache = ();  # hash of "$pkg\0$dependency"=>1
+
+sub check_bdo_violations {
+	my $self = shift;
+
+	# have we been here? (even more efficient than bdo_warning_cache!)
+	return $self->{_BDO_violations} if exists $self->{_BDO_violations};
+
+	# test all alternatives
+	my @atoms = split /\s*[\,|]\s*/, $self->pkglist_default('Depends');
+
+	$self->{_BDO_violations} = 0;
+
+	foreach my $depname (@atoms) {
+		$depname =~ s/\s*\(.*\)//;
+		my $package = Fink::Package->package_by_name($depname);
+		next unless defined $package;  # skip if no satisfiers
+		foreach my $dependent ($package->get_all_providers()) {
+			if ($dependent->param_boolean("BuildDependsOnly")) {
+				$self->{_BDO_violations} = 1;
+
+				if ($config->verbosity_level() > 1) {
+					# whine iff this violation hasn't been whined-about before
+					my $cache_key = $self->get_name() . "\0" . $depname;
+					if (!$bdo_warning_cache{$cache_key}++) {
+						my $dep_providername = $dependent->get_name();
+						print "\nWARNING: The package " . $self->get_name() . " Depends on $depname";
+						if ($dep_providername ne $depname) {
+							# virtual pkg
+							print "\n\t (which is provided by $dep_providername)";
+						}
+						print ",\n\t but $depname only allows things to BuildDepend on it.\n\n";
+					}
+				}
+			}
+		}
+	}
+
+	return $self->{_BDO_violations};
+}
+
+# check_bdo_violations has lexical private variables
 }
 
 =item match_package
