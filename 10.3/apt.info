@@ -1,10 +1,9 @@
 Package: apt
 Version: 0.5.4
-Revision: 52
+Revision: 53
 GCC: 3.3
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink-prebinding
-AddShlibDeps: true
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
@@ -71,7 +70,6 @@ InstallScript: <<
 SplitOff: <<
   Package: %N-shlibs
   Depends: dpkg, fink (>> 0.20.6-1)
-  AddShlibDeps: true
   Replaces: %N (<= 0.5.4-1)
   Files: lib/libapt-inst.1.0.0.dylib lib/libapt-pkg.3.2.0.dylib lib/libapt-inst.1.0.dylib lib/libapt-pkg.3.2.dylib
   Shlibs: <<
@@ -83,7 +81,6 @@ SplitOff: <<
 SplitOff2: <<
   Package: %N-dev
   Depends: %N-shlibs (= %v-%r)
-  AddShlibDeps: true
   BuildDependsOnly: true
   Files: lib/libapt-inst.dylib lib/libapt-pkg.dylib include
   DocFiles: COPYING* AUTHORS
@@ -145,6 +142,8 @@ See: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=323716
 
 dmacks - Implemented "--ignore-breakage" cmdline flag to 'apt-get install'
 (first appears in: 10.2-gcc3.3/0.5.4-41, 10.3/0.5.4-51)
+
+Patch extracttar.cc so it understands negative UIDs, such as -2 for 'nobody'.
 <<
 DescPackaging: <<
 Previous versions by Christoph Pfisterer.
