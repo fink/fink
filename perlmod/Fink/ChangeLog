@@ -1,3 +1,7 @@
+2006-03-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* PkgVersion.pm: handle when there are extra ='s in the environment vars
+
 2006-03-17  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm, PkgVersion.pm, Config.pm, Engine.pm, Services.pm,

@@ -4763,7 +4763,7 @@ END
 		local %ENV = %script_env;
 		my @vars = `sh -c ". $basepath/bin/init.sh ; /usr/bin/env"`;
 		chomp @vars;
-		%script_env = map { split /=/,$_,2 } @vars;
+		%script_env = map { $_ =~ /^([^=]+)=(.*)$/ } @vars;
 		delete $script_env{_};  # artifact of how we fetch init.sh results
 	}
 
