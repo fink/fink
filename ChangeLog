@@ -1,3 +1,7 @@
+2006-03-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: podchecker: safer filename handling; omit backup files
+
 2006-03-17  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink-scanpackages.in: New program to substitute for apt-ftparchive and

@@ -42,8 +42,8 @@ clean:
 
 # maybe we should clean or ./setup.sh before this, to eliminate dups?
 podcheck:
-	@find . -name '.svn' -prune -o \! -name '.#*' -type f -print | \
-		xargs grep -l '[=]head' | xargs podchecker
+	@find . -name '.svn' -prune -o \! \( -name '.#*' -o -name '*~' \) -type f -print0 | \
+		xargs -0 grep -l '[=]head' | xargs podchecker
 
 .PHONY: all test install
 # vim: ts=4 sw=4 noet
