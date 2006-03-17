@@ -30,14 +30,10 @@ fi
 basepath=$1
 version=`cat VERSION`
 
-echo "Creating fink..."
-sed "s|@BASEPATH@|$basepath|g" <fink.in >fink
-
-echo "Creating fink-virtual-pkgs..."
-sed "s|@BASEPATH@|$basepath|g" <fink-virtual-pkgs.in >fink-virtual-pkgs
-
-echo "Creating fink-instscripts..."
-sed "s|@BASEPATH@|$basepath|g" <fink-instscripts.in >fink-instscripts
+for bin in fink fink-{virtual-pkgs,instscripts,scanpackages}; do
+	echo "Creating $bin..."
+	sed "s|@BASEPATH@|$basepath|g" < "$bin.in" > "$bin"
+done
 
 echo "Creating pathsetup.sh..."
 sed "s|@PREFIX@|$basepath|g" <pathsetup.sh.in >pathsetup.sh
@@ -48,7 +44,7 @@ sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink/Fink
 echo "Creating Fink.pm..."
 sed -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink.pm.in >perlmod/Fink.pm
 
-echo "Creating man page..."
+echo "Creating man pages..."
 sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in >fink.8
 sed "s|@PREFIX@|$basepath|g" <fink.conf.5.in >fink.conf.5
 

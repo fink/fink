@@ -736,7 +736,7 @@ EOF
 =item bindist_check_prefix
 
   my $err = $config->bindist_check_prefix;
-  
+
 Check whether the current prefix allows use of the bindist. Returns an error
 string if a problem exists, otherwise returns a false value.
 
@@ -758,7 +758,7 @@ ERR
 =item bindist_check_distro
 
   my $err = $config->bindist_check_distro;
-  
+
 Check whether the current distribution allows use of the bindist. Returns an 
 error string if a problem exists, otherwise returns a false value.
 

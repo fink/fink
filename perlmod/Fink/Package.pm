@@ -1055,7 +1055,7 @@ sub tree_infos {
 	return @filelist;
 }		
 
-=item packages_from_properties
+=item packages_from_info_file
 
 This function is now part of Fink::PkgVersion, but remains here for
 compatibility reasons. It will eventually be deprecated.

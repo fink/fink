@@ -2153,11 +2153,11 @@ DIE
 
   my @package_names = find_subpackages(__PACKAGE__);
 
-Find the sub-packages of a package. For example, the package -I<Foo::Bar> could
-have sub-packages -I<Foo::Bar::Baz>, -I<Foo::Bar::Two::Levels>, etc.
+Find the sub-packages of a package. For example, the package I<Foo::Bar> could
+have sub-packages I<Foo::Bar::Baz>, I<Foo::Bar::Two::Levels>, etc.
 
 A list of package-names will be returned, with each package having already been
-require'd. One can then call -I<new>, or some other class method, to create new
+require'd. One can then call I<new>, or some other class method, to create new
 objects of a sub-package.
 
 =cut

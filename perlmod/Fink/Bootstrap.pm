@@ -524,7 +524,7 @@ sub check_files {
 	foreach $file (qw(fink.in install.sh COPYING VERSION
   		perlmod/Fink update fink.info.in postinstall.pl.in
   		update/config.guess perlmod/Fink/Config.pm fink-virtual-pkgs.in
-		fink-instscripts.in
+		fink-instscripts.in fink-scanpackages.in
  	)) {
 		if (not -e $file) {
 			print "ERROR: Package incomplete, '$file' is missing.\n";
@@ -548,7 +548,7 @@ sub fink_packagefiles {
 my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
   "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in images install.sh setup.sh ".
   "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in fink.shlibs lockwait.in g++-wrapper.in fink-instscripts.in";
+  "fink-virtual-pkgs.in fink.shlibs lockwait.in g++-wrapper.in fink-instscripts.in fink-scanpackages.in";
 
 return $packagefiles;
 
@@ -694,7 +694,7 @@ sub create_tarball {
 	$ENV{COPY_EXTENDED_ATTRIBUTES_DISABLE} = 1;
 	
 	$script .=
-	  "tar -cf $bpath/src/$package-$packageversion.tar $packagefiles\n";
+	  "tar --exclude CVS --exclude .svn -cf $bpath/src/$package-$packageversion.tar $packagefiles\n";
 	
 	my $result = 0;
 	

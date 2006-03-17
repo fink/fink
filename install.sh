@@ -31,7 +31,7 @@ if [ $# -ne 1 ]; then
 fi
 
 basepath="$1"
-
+version=`cat VERSION`
 
 echo "Creating directories..."
 
@@ -43,7 +43,7 @@ for dir in bin \
 	lib/fink lib/fink/update \
 	etc etc/dpkg \
 	share share/doc share/doc/fink \
-	share/man share/man/man{5,8} \
+	share/man share/man/man{3,5,8} \
 	share/fink share/fink/images \
 	var var/run var/run/fink var/run/fink/buildlock \
 	var/lib var/lib/fink var/lib/fink/path-prefix-g++-{3.3,4.0}; do
@@ -56,15 +56,15 @@ echo "Copying files..."
 
 install -c -p -m 755 postinstall.pl "$basepath/lib/fink/"
 install -c -p -m 644 shlibs.default "$basepath/etc/dpkg/"
-install -c -p -m 755 fink "$basepath/bin/"
-install -c -p -m 755 fink-virtual-pkgs "$basepath/bin/"
-install -c -p -m 755 fink-instscripts "$basepath/bin/"
-install -c -p -m 755 pathsetup.sh "$basepath/bin/"
-install -c -p -m 755 dpkg-lockwait "$basepath/bin/"
-install -c -p -m 755 apt-get-lockwait "$basepath/bin/"
 install -c -p -m 644 fink.8 "$basepath/share/man/man8/"
 install -c -p -m 644 fink.conf.5 "$basepath/share/man/man5/"
 install -c -p -m 644 images/*.png "$basepath/share/fink/images/"
+
+# copy executables
+for bin in fink fink-{virtual-pkgs,instscripts,scanpackages} pathsetup.sh \
+		{dpkg,apt-get}-lockwait; do
+	install -c -p -m 755 $bin "$basepath/bin/"
+done
 
 # copy all perl modules
 for subdir in . Fink Fink/{Text,Notify,Checksum} ; do
@@ -96,6 +96,28 @@ for gccvers in 3.3 4.0; do
 	install -c -p -m 755 "g++-wrapper-$gccvers" \
 		"$basepath/var/lib/fink/path-prefix-g++-$gccvers/g++"
 	ln -s -n -f g++ "$basepath/var/lib/fink/path-prefix-g++-$gccvers/c++" 
+done
+
+
+# Gotta do this in install.sh, takes too long for setup.sh
+echo "Creating man pages from POD..."
+function manify_bin () {
+	echo "  $1.$2"
+	pod2man --center "Fink documentation" --release "Fink $version" \
+		--section $2 $1 "$basepath/share/man/man$2/$1.$2"
+}
+function manify_pm () {
+	echo "  $1"
+	pm=`echo $1 | perl -ne 'chomp; s,::,/,g; print "perlmod/$_.pm"'`
+	pod2man --center "Fink documentation" --release "Fink $version" \
+		--section 3 "$pm" "$basepath/share/man/man3/$1.3pm"
+}
+manify_bin fink-scanpackages 8
+for p in Fink Fink::{Base,Bootstrap,Checksum,CLI,Command,Config,Configure} \
+		Fink::{Engine,FinkVersion,Notify,Package,PkgVersion,Scanpackages} \
+		Fink::{Services,Shlibs,SysState,VirtPackage} \
+		Fink::Text::{DelimMatch,ParseWords}; do
+	manify_pm $p
 done
 
 echo "Done."

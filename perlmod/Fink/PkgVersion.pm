@@ -2759,7 +2759,7 @@ sub phase_fetch_deb {
 	$self->fetch_deb($dryrun, @packages);
 }
 
-=item phase_fetch_deb
+=item fetch_deb
 
   $self->fetch_deb($dryrun, @packages);
 

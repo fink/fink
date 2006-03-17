@@ -138,18 +138,6 @@ index needs to be updated unless this option is set to "True". It defaults to
 If you do, you may need to manually run the
 .Nm fink index 
 command to update the index. 
-.It Cm AutoScanpackages: Ar boolean 
-When fink builds new packages, apt-get does not yet know about them.
-Typically, the commands 
-.Nm fink scanpackages 
-and
-.Nm apt-get update 
-must be run for apt-get to notice the new packages. If this option is true,
-then these commands will be automatically run by fink whenever a new package
-is built. It is highly recommended to have the fink package 
-.Nm apt-ftparchive 
-installed if you are using this option, as otherwise the scanpackages step
-will take a very long time.
 .It Cm SelfUpdateNoCVS: Ar boolean 
 The command fink selfupdate upgrades Fink package manager to the latest release. 
 This option makes sure that the Concurrent Version System (CVS) is not used to 
@@ -397,6 +385,27 @@ Defaults to
 See the wiki at http://wiki.opendarwin.org/index.php/Fink:Notification_Plugins
 for more information.
 .fi
+.It Cm AutoScanpackages: Ar boolean 
+When Fink builds new packages,
+.Xr apt-get 8
+does not yet know about them.
+Historically, the command
+.Nm fink scanpackages 
+had to be run for apt-get to notice the new packages, but now this happens
+automatically. If this option is present and false, then
+.Nm fink scanpackages
+will no longer be run automatically after packages are built.
+.It Cm ScanRestrictivePackages: Ar boolean 
+When scanning the packages for
+.Xr apt-get 8 ,
+Fink normally scans all packages in the current trees. However, if the resuting
+apt repository will be made publically available, the administrator may be
+legally obligated not to include packages with
+.Nm Restrictive
+or
+.Nm Commercial
+licenses. If this option is present and false, then Fink will omit those
+packages when scanning.
 .El
 .\"
 .\"

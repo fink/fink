@@ -1,3 +1,13 @@
+2006-03-17  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink-scanpackages.in: New program to substitute for apt-ftparchive and
+	dpkg-scanpackages.
+	* .cvsignore, install.sh, setup.sh: Accommodate new program.
+	* install.sh, setup.sh: New section for pod2man manification.
+	* Makefile: New target 'podcheck' for checking pods.
+	* fink.conf.5.in: AutoScanpackages defaults to true, apt-ftparchive no
+	longer necessary. ScanRestrictivePackages flag now available.
+
 2006-03-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* BINDISTS, bootstrap.pl: Message to users at end of bootstrap should

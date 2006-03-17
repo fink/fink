@@ -1,0 +1,120 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+# Ensure that we use the Fink installation in %p, and not anywhere else
+my $PREFIX  = '@BASEPATH@';
+my $LIB = "$PREFIX/lib/perl5";
+require lib;
+import lib $LIB;
+require Fink::Scanpackages;
+die "ERROR: Can't find a Fink installation in '$PREFIX'!\n"
+	unless $INC{'Fink/Scanpackages.pm'} =~ m,^\Q$LIB,;
+
+=head1 NAME
+
+fink-scanpackages - Scan a directory of .debs.
+
+=head1 SYNOPSIS
+
+fink-scanpackages
+
+fink-scanpackages [OPTIONS] DIR
+
+fink-scanpackages --help
+
+fink-scanpackages --man
+
+=head1 DESCRIPTION
+
+B<fink-scanpackages> looks at all the .deb files in a directory, and creates a
+Packages index suitable for use by B<apt-get>.
+
+It is similar to B<apt-ftparchive> and B<dpkg-scanpackages>, but dispenses
+with the dependencies of the first and the slowness of the second.
+
+=head1 ARGUMENTS
+
+If called with a directory, it will be scanned and the resulting Packages
+will be send to standard output. Without a directory given, all the current
+Fink trees will be scanned, and the output placed in the proper locations.
+
+=head2 Options
+
+=over 4
+
+=item B<-d> I<DB>, B<--db>=I<DB>
+
+Use the path I<DB> for caching the contents of .deb files. Defaults to no cache.
+
+=item B<-p>, B<--no-pdb>
+
+Don't use the Fink package database for determining the Priority, Section
+and License fields. This may speed up the scan, but those fields may not
+be available.
+
+=item B<-r>, B<--no-restrictive>
+
+Don't index packages with a restrictive license.
+
+=item B<-q>, B<--quiet>
+
+Run silently.
+
+=item B<-v>, B<--verbose>
+
+Provide more verbose messages. This flag may be used multiple times.
+
+=item B<-h>, B<--help>
+
+Show basic help.
+
+=item B<-m>, B<--man>
+
+Display the man page.
+
+=back
+
+=head1 BUGS
+
+B<fink-scanpackages> is designed to work with .deb files produced by Fink.
+It may not deal well with extremely old .debs containing obsolete fields.
+
+=head1 SEE ALSO
+
+apt-ftparchive(1), dpkg-scanpackages(8), fink(8)
+
+=cut
+
+use Getopt::Long;
+use Pod::Usage;
+
+my %opts = (verbosity	=> 1);
+my ($help, $man, $bad) = (0, 0, 0);
+
+Getopt::Long::Configure('bundling');
+GetOptions(
+	'v|verbose'		=> sub { $opts{verbosity}++ },
+	'q|quiet'		=> sub { $opts{verbosity} = 0 },
+	'p|no-pdb'		=> sub { $opts{pdb} = 0 },
+	'r|no-restrictive'	=> sub { $opts{restrictive} = 0 },
+	'd|db=s'		=> sub { $opts{db} = $_[1] },
+	'h|help'		=> \$help,
+	'm|man'			=> \$man,
+) or $bad = "Can't parse options";
+$bad = "Too many arguments" if scalar(@ARGV) > 1; 
+
+if ($man || $help) {
+	pod2usage(-exitval => 0, -verbose => $man ? 2 : 1);
+} elsif ($bad) {
+	print "$bad!\n\n";
+	pod2usage(-exitval => 1, -verbose => 0);
+}
+
+my $sp = Fink::Scanpackages->new(%opts);
+if (@ARGV) {
+	$sp->scan($ARGV[0]);
+} else {
+	die "You must be root to scan the Fink trees!\n" unless $> == 0;
+	$sp->scan_fink;
+}

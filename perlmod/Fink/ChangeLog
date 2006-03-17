@@ -1,3 +1,15 @@
+2006-03-17  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Package.pm, PkgVersion.pm, Config.pm, Engine.pm, Services.pm,
+	SysState.pm: POD cleanup
+	* Scanpackages.pm: New module to do what apt-ftparchive does.
+	* Engine.pm: Use Scanpackages.pm instead of dpkg-scanpackages or
+	apt-ftparchive. AutoScanpackages now defaults to ON! Also, scanpackages
+	now automatically calls apt-get update.
+	* Bootstrap.pm: Accommodate fink-scanpackages script.
+	* Bootstrap.pm: Don't include 'CVS' or '.svn' directories in tarballs
+	when injecting.
+
 2006-03-17  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Move BDO violation checking into its own method,

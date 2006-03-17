@@ -737,7 +737,7 @@ The field which is unsatisfied, either 'depends' or 'conflicts'.
 
 The package specification which is unsatisfied. For a 'depends' field, this is
 an array-ref of alternative specifications. For a 'conflicts' field, this is
-a single specification. See -B<spec2struct> for the format of specification
+a single specification. See B<spec2struct> for the format of specification
 structures.
 
 =item desc

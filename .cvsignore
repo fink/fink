@@ -2,6 +2,7 @@ config*
 fink
 fink-virtual-pkgs
 fink-instscripts
+fink-scanpackages
 fink.8
 fink.conf.5
 pathsetup.command

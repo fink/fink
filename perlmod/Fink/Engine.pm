@@ -43,6 +43,7 @@ use Fink::Command qw(mkdir_p rm_f);
 use Fink::Notify;
 use Fink::Validation;
 use Fink::Checksum;
+use Fink::Scanpackages;
 
 use strict;
 use warnings;
@@ -104,7 +105,7 @@ our %commands =
 	  'description'       => [\&cmd_description,       1, 0, 0],
 	  'desc'              => [\&cmd_description,       1, 0, 0],
 	  'info'              => [\&cmd_description,       1, 0, 0],
-	  'scanpackages'      => [\&cmd_scanpackages,      1, 1, 1],
+	  'scanpackages'      => [\&cmd_scanpackages,      0, 1, 1],
 	  'list'              => [\&cmd_list,              0, 0, 0],
 	  'listpackages'      => [\&cmd_listpackages,      1, 0, 0],
 	  'plugins'           => [\&cmd_listplugins,       0, 0, 0],
@@ -696,71 +697,30 @@ sub create_override {
 sub cmd_scanpackages {
 	my $quiet = shift || 0;
 	my @treelist = @_;
-	my ($tree, $treedir, $cmd, $archive, $component);
 	
-	# two scanpackages at once sucks, so sync on a lockfile
-	my $lockfile = "$basepath/fink/override.lock";
-	my $fh = lock_wait($lockfile, exclusive => 1,
-		desc => "another Fink's scanpackages") or die "Can't get lock!\n";
+	# Use lowest verbosity
+	$quiet = $config->verbosity_level if $quiet > $config->verbosity_level;
+	print STDERR "Updating the list of locally available binary packages.\n"
+		unless $quiet > 1; # very quiet!
 	
-	# do all trees by default
-	if ($#treelist < 0) {
-		@treelist = $config->get_treelist();
+	# Run scanpackages
+	my $restrictive = !$config->has_param('ScanRestrictivePackages')
+		|| $config->param_boolean('ScanRestrictivePackages');
+	Fink::Scanpackages->scan_fink({
+		verbosity => !$quiet,
+		restrictive => $restrictive
+	}, @treelist);
+	
+	# Update apt-get
+	my $aptcmd = aptget_lockwait() . " ";
+	if ($quiet) {
+		$aptcmd .= "-qq ";
+	} elsif ($config->verbosity_level < 2) {
+		$aptcmd .= "-q ";
 	}
-
-	# create a global override file
-	create_override(@treelist);
-
-	# create the Packages.gz and Release files for each tree
-
-	chdir "$basepath/fink";
-	foreach $tree (@treelist) {
-		$treedir = "dists/$tree/binary-$debarch";
-		if ($tree =~ /^([^\/]+)\/(.+)$/) {
-			$archive = $1;
-			$component = $2;
-		} else {
-			$archive = $tree;
-			$component = "main";
-		}
-
-		if (! -d $treedir) {
-			mkdir_p $treedir or
-				die "can't create directory $treedir\n";
-		}
-		
-		# apt-ftparchive with caching is super fast
-		my $ftparchive = "$basepath/bin/apt-ftparchive";
-		if (-x $ftparchive) {
-			my $cachedir = "$basepath/var/db";
-			mkdir_p $cachedir unless -d $cachedir;
-			
-			my $cachedb = "$cachedir/apt-ftparchive.db";
-			$cmd = "$ftparchive -d $cachedb"
-				. " -o Dir::Bin::gzip=$basepath/bin/gzip packages $treedir"
-				. " override";
-		} else {
-			$cmd = "dpkg-scanpackages $treedir override";
-		}
-		$cmd .= " | gzip > $treedir/Packages.gz";
-		
-		if (&execute($cmd, quiet => $quiet)) {
-			unlink("$treedir/Packages.gz");
-			die "package scan failed in $treedir\n";
-		}
-
-		open(RELEASE,">$treedir/Release") or die "can't write Release file: $!\n";
-		print RELEASE <<EOF;
-Archive: $archive
-Component: $component
-Origin: Fink
-Label: Fink
-Architecture: $debarch
-EOF
-		close(RELEASE) or die "can't write Release file: $!\n";
+	if (&execute($aptcmd . "update", quiet => 1)) {
+		print("WARNING: Failure while updating indexes.\n");
 	}
-	
-	close $fh;
 }
 
 ### package-related commands
@@ -1119,8 +1079,6 @@ FORMAT
 
 =item cleanup_*
 
-    &cleanup_sources(%opts);
-
 These functions each remove some kind of obsolete files or data
 structures. Each function may take one or more options, typically
 due to various command-line flags.
@@ -1128,6 +1086,8 @@ due to various command-line flags.
 =over 4
 
 =item cleanup_sources
+
+    &cleanup_sources(%opts);
 
 Remove files from %p/src that are not listed as a Source or SourceN of
 any package in the active Trees of the active Distribution. The
@@ -1347,15 +1307,9 @@ EOFUNC
 		}
 
 		if ($opts{dryrun}) {
-			print "Skipping scanpackages and apt update in dryrun mode\n";
+			print "Skipping scanpackages and in dryrun mode\n";
 		} else {
-			# Running scanpackages and updating apt-get db
-			print "Updating the list of locally available binary packages.\n";
 			&cmd_scanpackages(1);
-			print "Updating the indexes of available binary packages.\n";
-			if (&execute($aptcmd . "update")) {
-				print("WARNING: Failure while updating indexes.\n");
-			}
 		}
 	}
 }
@@ -1371,8 +1325,6 @@ buildlocks still present after cleanup. The following options are known:
 =item dryrun
 
 If true, don't actually remove things.
-
-=back
 
 =item internally
 
@@ -1989,19 +1941,11 @@ sub real_install {
 		}
 	}
 	
-	if ($willbuild && $config->param_boolean("AutoScanpackages")) {
-		print "Updating the list of locally available binary packages.\n";
+	# Default to AutoScanpackages: True
+	my $autoscan = !$config->has_param("AutoScanpackages")
+		|| $config->param_boolean("AutoScanpackages");
+	if ($willbuild && $autoscan) {
 		&cmd_scanpackages(1);
-		print "Updating the indexes of available binary packages.\n";
-		my $aptcmd = aptget_lockwait() . " ";
-		if ($verbosity == 0) {
-			$aptcmd .= "-qq ";
-		} elsif ($verbosity < 2) {
-			$aptcmd .= "-q ";
-		}
-		if (&execute($aptcmd . "update")) {
-			print("WARNING: Failure while updating indexes.\n");
-		}
 	}
 }
 
