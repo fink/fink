@@ -44,20 +44,19 @@ sub new {
 
 	my $self = bless({}, $class);
 
-	$match = '([^\s]*)\s*(:?[^\s]*)';
+	$match = '(\S*)\s*(:?\S*)';
 
-	if (-e "$basepath/bin/sha1deep") {
-		$sha1cmd = "$basepath/bin/sha1deep";
-	} elsif (-e "$basepath/bin/sha1sum") {
-		$sha1cmd = "$basepath/bin/sha1sum";
-	}
-
-	if (!defined $sha1cmd or not -x $sha1cmd) {
-		eval "require Digest::SHA1";
-		if (defined $Digest::SHA1::VERSION) {
-			$sha1pm = 1;
-		} else {
-			die "unable to find sufficient sha1 implementation\n";
+	eval "require Digest::SHA1";
+	if (defined $Digest::SHA1::VERSION) {
+		$sha1pm = 1;
+	} else {
+		if (-x "$basepath/bin/sha1deep") {
+			$sha1cmd = "$basepath/bin/sha1deep";
+		} elsif (-x "/usr/bin/openssl") {
+			$sha1cmd = '/usr/bin/openssl sha1';
+			$match   = /SHA1\([^\)]+\)\s*=\s*(\S+)/
+		} elsif (-e "$basepath/bin/sha1sum") {
+			$sha1cmd = "$basepath/bin/sha1sum";
 		}
 	}
 

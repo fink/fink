@@ -29,6 +29,7 @@ our @ISA = qw(Fink::Checksum);
 our $VERSION = ( qw$Revision$ )[-1];
 
 our $md5cmd;
+our $md5pm;
 our $match;
 
 sub about {
@@ -43,15 +44,20 @@ sub new {
 
 	my $self = bless({}, $class);
 
-	if(-e "/sbin/md5") {
-		$md5cmd = "/sbin/md5";
-		$match = '= ([^\s]+)$';
-	} elsif (-e "$basepath/bin/md5deep") {
-		$md5cmd = "$basepath/bin/md5deep";
-		$match = '([^\s]*)\s*(:?[^\s]*)';
+	eval "require Digest::MD5";
+	if (defined $Digest::MD5::VERSION) {
+		$md5pm = 1;
 	} else {
-		$md5cmd = "md5sum";
-		$match = '([^\s]*)\s*(:?[^\s]*)';
+		if(-e "/sbin/md5") {
+			$md5cmd = "/sbin/md5";
+			$match = '= ([^\s]+)$';
+		} elsif (-e "$basepath/bin/md5deep") {
+			$md5cmd = "$basepath/bin/md5deep";
+			$match = '([^\s]*)\s*(:?[^\s]*)';
+		} else {
+			$md5cmd = "md5sum";
+			$match = '([^\s]*)\s*(:?[^\s]*)';
+		}
 	}
 
 	return $self;
@@ -69,13 +75,21 @@ sub get_checksum {
 
 	my ($pid, $checksum);
 
-	$pid = open(MD5SUM, "$md5cmd $filename |") or die "Couldn't run $md5cmd: $!\n";
-	while (<MD5SUM>) {
-		if (/$match/) {
-			$checksum = $1;
+	if ($md5pm) {
+		my $md5 = Digest::MD5->new();
+		open (FILEIN, $filename) or die "unable to read from $filename: $!\n";
+		$md5->addfile(*FILEIN);
+		$checksum = $md5->hexdigest;
+		close(FILEIN) or die "Error closing $filename: $!\n";
+	} else {
+		$pid = open(MD5SUM, "$md5cmd $filename |") or die "Couldn't run $md5cmd: $!\n";
+		while (<MD5SUM>) {
+			if (/$match/) {
+				$checksum = $1;
+			}
 		}
+		close(MD5SUM) or die "Error on closing pipe  $md5cmd: $!\n";
 	}
-	close(MD5SUM) or die "Error on closing pipe  $md5cmd: $!\n";
 
 	if (not defined $checksum) {
 		die "Could not parse results of '$md5cmd $filename'\n";

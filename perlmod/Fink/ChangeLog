@@ -1,3 +1,9 @@
+2006-03-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Checksum/MD5.pm, Checksum/SHA1.pm: use Digest::<foo> if available,
+	otherwise fall back to command-line stuff.  Also added support for
+	openssl sha1 in the SHA1.pm plugin.
+
 2006-03-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: handle when there are extra ='s in the environment vars
