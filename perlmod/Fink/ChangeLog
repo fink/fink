@@ -1,5 +1,9 @@
 2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Scanpackages.pm: Maybe I should brush up on my perl one of these days...
+
+2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Scanpackages.pm: Don't go nuts when there's an invalid scanpackages.db
 
 2006-03-18  Benjamin Reed  <rangerrick@users.sourceforge.net>

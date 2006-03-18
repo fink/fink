@@ -511,7 +511,7 @@ sub _db {
 				} else {
 					unless ($tried++) { # Mebbe corrupt?
 						unlink $self->{db};
-						next;
+						redo;
 					}
 					warn "WARNING: Can't open DB: $!\n";
 				}
