@@ -1,5 +1,9 @@
 2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Scanpackages.pm: Run the dpkg-deb in the current prefix.
+
+2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Scanpackages.pm: Maybe I should brush up on my perl one of these days...
 
 2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>

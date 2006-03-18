@@ -89,7 +89,7 @@ apt-ftparchive(1), dpkg-scanpackages(8), fink(8)
 use Getopt::Long;
 use Pod::Usage;
 
-my %opts = (verbosity	=> 1);
+my %opts = (verbosity => 1, prefix => $PREFIX);
 my ($help, $man, $bad) = (0, 0, 0);
 
 Getopt::Long::Configure('bundling');

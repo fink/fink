@@ -96,6 +96,12 @@ If true, do index License: Restrictive. Defaults to true.
 
 An integer. If non-zero, various messages will be printed. The default is 1.
 
+=item prefix
+
+The prefix where dpkg-deb can be found. This defaults to the Fink prefix, but
+supplying this option explicitly may allow scanpackages to run even without
+a properly configured Fink.
+
 =back
 
 =item scan
@@ -311,8 +317,9 @@ sub initialize {
 sub _control {
 	my ($self, $path) = @_;
 	
-	my (%control, $field);;
-	open CONTROL, '-|', 'dpkg-deb', '-f', $path
+	my (%control, $field);
+	my $dpkgdeb = $self->_prefix . "/bin/dpkg-deb";
+	open CONTROL, '-|', $dpkgdeb, '-f', $path
 		or die "SKIPPING: Can't read control for '$path': $!\n";
 	eval {
 		while (<CONTROL>) {
@@ -551,6 +558,18 @@ sub finish {
 sub DESTROY {
 	my ($self) = @_;
 	$self->finish;
+}
+
+# Get the prefix to find dpkg-deb
+#
+# my $prefix = $self->_prefix;
+sub _prefix {
+	my ($self) = @_;
+	unless (exists $self->{_prefix}) {
+		$self->_ensure_fink;
+		$self->{_prefix} = $Fink::Config::basepath;
+	}
+	return $self->{_prefix};
 }
 
 

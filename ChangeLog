@@ -1,3 +1,8 @@
+2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink-scanpackages.in: Indicate the prefix explicitly, so we don't have
+	to load Fink.
+
 2006-03-17  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink-scanpackages.in: New program to substitute for apt-ftparchive and
