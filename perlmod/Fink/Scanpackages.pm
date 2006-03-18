@@ -503,12 +503,18 @@ sub _db {
 	if (!$self->{_db_file} && defined $self->{db}) {
 		my $fh = &_lock($self->{db});
 		if ($fh) {
-			my %db;
-			if (tie %db, 'DB_File', $self->{db}) {
-				$self->{_db_file} = \%db;
-				$self->{_db_fh} = $fh;
-			} else {
-				warn "WARNING: Can't open DB: $!\n";
+			my $tried = 0;
+			{
+				if (tie my %db, 'DB_File', $self->{db}) {
+					$self->{_db_file} = \%db;
+					$self->{_db_fh} = $fh;
+				} else {
+					unless ($tried++) { # Mebbe corrupt?
+						unlink $self->{db};
+						next;
+					}
+					warn "WARNING: Can't open DB: $!\n";
+				}
 			}
 		} else {
 			warn "WARNING: Can't lock DB: $!\n";
