@@ -1803,6 +1803,7 @@ sub store_rename {
 	
 	return 0 unless eval { require Storable };
 	if (Storable::store($ref, $tmp)) {
+		chmod 0644, $tmp; # Should be world-readable
 		unless (rename $tmp, $file) {
 			print_breaking_stderr("Error: could not activate temporary file $tmp: $!");
 			return 0;

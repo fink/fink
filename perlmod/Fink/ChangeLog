@@ -1,5 +1,9 @@
 2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Services.pm: Make store_rename create world-readable files.
+
+2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm, Package.pm, PkgVersion.pm, Services.pm: Remove redundant
 	locking.
 
