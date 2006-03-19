@@ -1,5 +1,9 @@
 2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* fink.info.in: Actually need to complete successfully.
+
+2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* fink.info.in: Don't puke if there's no DB.
 
 2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
