@@ -32,6 +32,7 @@ use Fink::Services qw(latest_version);
 use Cwd;
 use DB_File;
 use File::Find;
+use File::Temp qw(tempfile);
 use Storable qw(nfreeze thaw);
 
 =head1 NAME
@@ -138,6 +139,7 @@ sub scan {
 	my $cwd = cwd;
 	chdir $opts{basedir} if defined $opts{basedir};
 	my $out = $opts{output};
+	my ($dummy, $tmpfile);
 	
 	eval {
 	
@@ -145,12 +147,15 @@ sub scan {
 		if (defined $out) {
 			if (ref($out) eq 'GLOB') { # a filehandle
 				$self->{outfh} = $out;
-			} elsif ($out =~ /\.gz$/) {
-				open $self->{outfh}, "| gzip -c > \Q$out"
-					or die "ERROR: Can't open output '$out'\n";
 			} else {
-				open $self->{outfh}, '>', $out
-					or die "ERROR: Can't open output '$out': $!\n";
+				($dummy, $tmpfile) = tempfile("$out.XXXXX");
+				if ($out =~ /\.gz$/) {
+					open $self->{outfh}, "| gzip -c > \Q$tmpfile"
+						or die "ERROR: Can't open output '$out'\n";
+				} else {
+					open $self->{outfh}, '>', $tmpfile
+						or die "ERROR: Can't open output '$out': $!\n";
+				}
 			}
 		} else {
 			$self->{outfh} = \*STDOUT;
@@ -175,8 +180,13 @@ sub scan {
 	}; my $err = $@;
 	
 	# Cleanup
-	if (defined $out && ref($out) eq 'GLOB') {
+	if (defined $out && ref($out) ne 'GLOB') {
 		close $self->{outfh} or die "ERROR: Can't close output: $!\n";
+		if ($err) {
+			unlink $tmpfile;
+		} else {
+			rename $tmpfile, $out;
+		}
 	}
 	delete $self->{outfh};
 	chdir $cwd;
