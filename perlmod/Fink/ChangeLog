@@ -1,5 +1,9 @@
 2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Scanpackages.pm: Better error handling.
+
+2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Scanpackages.pm: Write Packages.gz to a temp file and then move
 	atomically.
 

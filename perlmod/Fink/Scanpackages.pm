@@ -142,7 +142,6 @@ sub scan {
 	my ($dummy, $tmpfile);
 	
 	eval {
-	
 		# Open the output
 		if (defined $out) {
 			if (ref($out) eq 'GLOB') { # a filehandle
@@ -176,18 +175,15 @@ sub scan {
 				}
 			}
 		}}, $dir);
-	
-	}; my $err = $@;
-	
-	# Cleanup
-	if (defined $out && ref($out) ne 'GLOB') {
-		close $self->{outfh} or die "ERROR: Can't close output: $!\n";
-		if ($err) {
+		
+		if (defined $out && ref($out) ne 'GLOB') {
+			close $self->{outfh} or die "ERROR: Can't close output: $!\n";
 			unlink $tmpfile;
-		} else {
 			rename $tmpfile, $out;
 		}
-	}
+	}; my $err = $@;
+
+	# Cleanup
 	delete $self->{outfh};
 	chdir $cwd;
 	die $err if $err;
@@ -251,17 +247,14 @@ sub scan_dists {
 				}
 			}
 			
-			eval {
-				print STDERR "Scanning $dir\n" if $self->{verbosity};
-				$self->scan($dir, %opts, output => "$dir/Packages.gz");
-			};
-			if ($@) {
-				warn "WARNING: Can't scan '$dir':\n  $@";
-			}
-		
+			print STDERR "Scanning $dir\n" if $self->{verbosity};
+			$self->scan($dir, %opts, output => "$dir/Packages.gz");
 		};
-		warn $@ if $@;
-		$err = $@ unless defined $err;
+		if ($@) {
+			die $@ if $@ =~ /User interrupt/;
+			warn "WARNING: Error processing '$dir':\n  $@";
+			$err = $@ unless defined $err;
+		}
 	}
 	
 	chdir $cwd;
