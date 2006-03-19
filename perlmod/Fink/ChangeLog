@@ -1,5 +1,9 @@
 2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Scanpackages.pm: Let's NOT delete files for no good reason.
+
+2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Scanpackages.pm: Better error handling.
 
 2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>

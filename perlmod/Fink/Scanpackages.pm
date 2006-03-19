@@ -178,12 +178,13 @@ sub scan {
 		
 		if (defined $out && ref($out) ne 'GLOB') {
 			close $self->{outfh} or die "ERROR: Can't close output: $!\n";
-			unlink $tmpfile;
-			rename $tmpfile, $out;
+			chmod 0644, $tmpfile or die "ERROR: Can't chown tmp file: $!\n";
+			rename $tmpfile, $out or die "ERROR: Can't move tmp file: $!\n";
 		}
 	}; my $err = $@;
 
 	# Cleanup
+	unlink $tmpfile if $tmpfile;
 	delete $self->{outfh};
 	chdir $cwd;
 	die $err if $err;
