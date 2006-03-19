@@ -1,3 +1,7 @@
+2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* lockwait.in: Fail gracefully if locking is not supported.
+
 2006-03-18  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink-scanpackages.in: Indicate the prefix explicitly, so we don't have

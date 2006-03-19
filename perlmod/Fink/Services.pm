@@ -28,12 +28,13 @@ package Fink::Services;
 use Fink::Command	qw(&rm_f);
 use Fink::CLI		qw(&word_wrap &get_term_width &print_breaking_stderr);
 
-use POSIX qw(uname tmpnam);
+use POSIX qw(uname tmpnam :errno_h);
 use Fcntl qw(:flock);
 use Getopt::Long;
 use Data::Dumper;
 use File::Find;
 use File::Spec;
+use Storable; # safe in the modern world
 
 use strict;
 use warnings;
@@ -67,7 +68,7 @@ BEGIN {
 					  &store_rename &fix_gcc_repairperms
 					  &spec2struct &spec2string &get_options
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
-					  &find_subpackages);
+					  &find_subpackages &lock_store &lock_retrieve);
 }
 our @EXPORT_OK;
 
@@ -1683,6 +1684,21 @@ sub lock_wait {
 	if (flock $lockfile_FH, $mode | LOCK_NB) {
 		return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
 	} else {
+		# Maybe the system doesn't support locking?
+		if ($! == EOPNOTSUPP || $! == ENOLCK) {
+			require Fink::Config;
+			if (!defined $Fink::Config::config ||
+					!$Fink::Config::config->get_option("LockWarning", 0)) {
+				# Try to warn only once
+				print STDERR "WARNING: No locking is available on this " . 
+					"filesystem.\nTo ensure safety, do not run multiple " .
+					"instances simultaneously.\n";
+				$Fink::Config::config->set_options({ LockWarning => 1 })
+					if defined $Fink::Config::config;
+			}
+			return ($lockfile_FH, 0);
+		}
+		
 		return (wantarray ? (0, 0) : 0) if $no_block;
 		
 		# Couldn't get lock, meaning process has it
@@ -1785,7 +1801,7 @@ sub store_rename {
 	my $tmp = "${file}.tmp";
 	
 	return 0 unless eval { require Storable };
-	if (Storable::lock_store($ref, $tmp)) {
+	if (&lock_store($ref, $tmp)) {
 		unless (rename $tmp, $file) {
 			print_breaking_stderr("Error: could not activate temporary file $tmp: $!");
 			return 0;
@@ -2190,6 +2206,29 @@ sub find_subpackages {
 	}
 	
 	return @found;
+}
+
+=item lock_store, lock_retrieve
+
+Identical to Storable::lock_store and Storable::lock_retrieve, except that
+they fail gracefully when locking is unavailable.
+
+=cut
+
+sub lock_store {
+	my ($data, $file) = @_;
+	my $fh = lock_wait($file, exclusive => 1);
+	my $ret = Storable::store($data, $file);
+	close $fh;
+	return $ret;
+}
+
+sub lock_retrieve {
+	my ($file) = @_;
+	my $fh = lock_wait($file, shared => 1);
+	my $ret = Storable::retrieve($file);
+	close $fh;
+	return $ret;
 }
 
 =back

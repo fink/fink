@@ -30,7 +30,8 @@ if ($> == 0) {
 	#       short   l_whence;   /* type of l_start */
 	#   };
 	my $struct_flock = pack("lllliss", (0, 0), (0, 0), 0, F_WRLCK, SEEK_SET);
-	unless (fcntl(LOCK, F_SETLK, $struct_flock)) {
+	my $lock_ok = fcntl(LOCK, F_SETLK, $struct_flock);
+	unless ($lock_ok || $! == EOPNOTSUPP || $! == ENOLCK) {
 		die "lockwait: Can't get lock: $!" unless $! == EAGAIN || $! == EACCES;
 		
 		my $msg = $timeout ? "up to $timeout seconds " : "";
@@ -50,7 +51,10 @@ if ($> == 0) {
 		}
 		print STDERR "done.\n";
 	}
-	print STDERR "Got the lock\n" if $debug;
+	print STDERR "Got the lock\n" if $debug && $lock_ok;
+	print STDERR "WARNING: No locking is available on this filesystem.\n" .
+		"To ensure safety, do not run multiple instances simultaneously.\n"
+		if !$lock_ok;
 	
 	print STDERR "Clear close-on-exec, so exec'ed process gets the lock\n"
 		if $debug;

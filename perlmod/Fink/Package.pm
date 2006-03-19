@@ -25,7 +25,7 @@ package Fink::Package;
 use Fink::Base;
 use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
-		      &expand_percent &lock_wait &store_rename);
+		      &expand_percent &lock_wait &store_rename &lock_retrieve);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr
 				 &rejoin_text);
 use Fink::Config qw($config $basepath $dbpath $debarch);
@@ -963,7 +963,7 @@ sub update_db {
 		$valid_since = (stat($class->db_proxies))[9];
 		eval {
 			local $SIG{INT} = 'IGNORE'; # No user interrupts
-			$packages = Storable::lock_retrieve($class->db_proxies);
+			$packages = &lock_retrieve($class->db_proxies);
 		};
 		if ($@ || !defined $packages) {
 			die "It appears that part of Fink's package database is corrupted. "
@@ -979,7 +979,7 @@ sub update_db {
 		if ($idx_ok) {
 			eval {
 				local $SIG{INT} = 'IGNORE'; # No user interrupts
-				$idx = Storable::lock_retrieve($class->db_index);
+				$idx = &lock_retrieve($class->db_index);
 			};
 			if ($@ || !defined $idx) {
 				close $lock if $lock;
