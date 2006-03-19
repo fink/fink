@@ -31,7 +31,7 @@ use Fink::Services qw(&filename &execute
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
-					  &store_rename &lock_retrieve);
+					  &store_rename);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
 				 &should_skip_prompt &die_breaking);
@@ -171,7 +171,7 @@ our %shared_loads;
 #			print "Loading PkgVersion " . $self->get_fullname . " from: $file\n";
 			eval {
 				local $SIG{INT} = 'IGNORE'; # No user interrupts
-				$loaded = &lock_retrieve($file);
+				$loaded = Storable::retrieve($file);
 			};
 			if ($@ || !defined $loaded) {
 				die "It appears that part of Fink's package database is corrupted "

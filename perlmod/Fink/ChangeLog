@@ -1,5 +1,10 @@
 2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm, Package.pm, PkgVersion.pm, Services.pm: Remove redundant
+	locking.
+
+2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: We don't need the 'override' code anymore, yay!
 	* Package.pm, PkgVersion.pm, Services.pm: Fail gracefully if locking is
 	not supported.

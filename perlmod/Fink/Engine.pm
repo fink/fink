@@ -27,7 +27,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &pkglist2lol &cleanup_lol
 					  &execute &expand_percent
 					  &count_files &get_arch
-					  &call_queue_clear &call_queue_add &lock_wait
+					  &call_queue_clear &call_queue_add
 					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
 					  $VALIDATE_HELP);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
