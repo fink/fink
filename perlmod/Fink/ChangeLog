@@ -1,5 +1,9 @@
 2006-03-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Services.pm: Try to fix errno_h breakage on 10.3.
+
+2006-03-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* PkgVersion.pm: Remove stray 'use DB_File'.
 	* Scanpackages.pm: Ensure we load the correct DB_File.
 

@@ -28,7 +28,7 @@ package Fink::Services;
 use Fink::Command	qw(&rm_f);
 use Fink::CLI		qw(&word_wrap &get_term_width &print_breaking_stderr);
 
-use POSIX qw(uname tmpnam :errno_h);
+use POSIX qw(:errno_h uname tmpnam);
 use Fcntl qw(:flock);
 use Getopt::Long;
 use Data::Dumper;
