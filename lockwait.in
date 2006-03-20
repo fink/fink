@@ -40,7 +40,7 @@ if ($> == 0) {
 			local $SIG{ALRM} = sub { die "alarm\n" };
 			alarm $timeout if $timeout;
 			print STDERR "Waiting for lock, timeout = $timeout\n" if $debug;
-			fcntl(LOCK, F_SETLKW, $struct_flock) or
+			($lock_ok = fcntl(LOCK, F_SETLKW, $struct_flock)) or
 				die "lockwait: Can't get lock or wait: $!";
 			alarm 0;
 		};
