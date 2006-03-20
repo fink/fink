@@ -52,7 +52,6 @@ use Fink::Text::ParseWords qw(&parse_line);
 use Fink::Checksum;
 
 use POSIX qw(uname strftime);
-use DB_File;
 use Hash::Util;
 use File::Basename qw(&dirname &basename);
 use Carp qw(confess);

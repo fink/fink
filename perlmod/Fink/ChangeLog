@@ -1,3 +1,8 @@
+2006-03-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Remove stray 'use DB_File'.
+	* Scanpackages.pm: Ensure we load the correct DB_File.
+
 2006-03-19  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm: Make store_rename create world-readable files.

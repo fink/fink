@@ -29,11 +29,17 @@ use strict;
 use Fink::Command qw(mkdir_p);
 use Fink::Services qw(latest_version);
 
+use Config;
 use Cwd;
-use DB_File;
 use File::Find;
 use File::Temp qw(tempfile);
 use Storable qw(nfreeze thaw);
+
+# Ensure that we load a compatible DB_File
+{
+	local @INC = @Config{qw(privlib archlib)};
+	require DB_File;
+}
 
 =head1 NAME
 
