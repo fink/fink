@@ -154,7 +154,7 @@ our %shared_loads;
 {
 	# Some things we don't want to load, if we'd rather keep what's already in
 	# the database.
-	my %dont_load = map { $_ => 1 } qw(_trees);
+	my %dont_load = map { $_ => 1 } qw(_full_trees);
 	
 	sub load_fields {
 		my $self = shift;
@@ -224,7 +224,7 @@ Get the minimum fields necessary for inserting a PkgVersion.
 {
 	# Fields required to add a package to $packages
 	my @keepfields = qw(_name _epoch _version _revision _filename
-		_pkglist_provides essential _trees);
+		_pkglist_provides essential _full_trees);
 		
 	sub get_init_fields {
 		my $self = shift;
@@ -539,6 +539,7 @@ sub initialize {
 	# path handling
 	if ($filename) {
 		@parts = split(/\//, $filename);
+		shift @parts if $parts[0] eq ''; # scrap detritus from leading /
 		pop @parts;		# remove filename
 		$self->{_patchpath} = join("/", @parts);
 		for ($finkinfo_index = $#parts;
@@ -552,7 +553,7 @@ sub initialize {
 			$self->{_section}  = 'unknown';
 			$self->{_debpath}  = '/tmp';
 			$self->{_debpaths} = ['/tmp'];
-			$self->{_trees}    = [ 'unknown' ];
+			$self->{_full_trees}    = [ [ 'unknown' ] ];
 		} else {
 			# compute the "section" of this package, e.g. "net", "devel", "crypto"...
 			$section = $parts[$finkinfo_index-1]."/";
@@ -568,9 +569,8 @@ sub initialize {
 				push @{$self->{_debpaths}}, join("/", @parts[0..$i]);
 			}
 			
-			# determine the package tree ("stable", "unstable", etc.)
-			@parts = split(/\//, substr($filename,length("$basepath/fink/dists/")));
-			$self->{_trees}	= [ $parts[0] ];
+			# determine the full package tree, eg: [ qw(stable main) ]
+			$self->{_full_trees} = [ [ @parts[3..$finkinfo_index-1] ] ];
 		}
 	} else {
 		# for dummy descriptions generated from dpkg status data alone
@@ -580,7 +580,7 @@ sub initialize {
 		$self->{_debpaths}  = [];
 		
 		# assume "binary" tree
-		$self->{_trees} = [ "binary" ];
+		$self->{_full_trees} = [ [ "binary" ] ];
 	}
 
 	# some commonly used stuff
@@ -1103,12 +1103,12 @@ old one and take things from it.
 
 sub merge {
 	my ($self, $old) = @_;
-	
 	# Insert new trees
 	{
-		my %seen = map { $_ => 1 } $self->get_trees;
-		foreach my $tree ($old->get_trees) {
-			unshift @{$self->{_trees}}, $tree unless $seen{$tree}++;
+		my %seen = map { $_ => 1 } $self->get_full_trees;
+		foreach my $tree (@{$old->{_full_trees}}) {
+			my $txt = join('/', @$tree);
+			unshift @{$self->{_full_trees}}, $tree unless $seen{$txt}++;
 		}
 	}
 	
@@ -1316,6 +1316,7 @@ sub get_instsize {
   my $tree = $pv->get_tree;
 
 Get the last (highest priority) tree in which this package can be found.
+This refers to just the "archive" component of the tree, eg: 'main'.
 
 =cut
 
@@ -1323,7 +1324,7 @@ Get the last (highest priority) tree in which this package can be found.
 
 sub get_tree {
 	my $self = shift;
-	return( ($self->get_trees)[-1] );
+	return ( ($self->get_trees)[-1] );
 }
 
 =item get_trees
@@ -1336,7 +1337,7 @@ Get a list of every tree in which this package can be found.
 
 sub get_trees {
 	my $self = shift;
-	return @{$self->{_trees}};
+	return map { $_->[0] } @{$self->{_full_trees}};
 }
 
 =item in_tree
@@ -5212,6 +5213,29 @@ should be closed, or the lockfile deleted.
 sub can_remove_buildlock {
 	my ($class, $lockfile) = @_;
 	return lock_wait("$lockfile", exclusive => 1, no_block => 1);
+}
+
+=item get_full_trees
+
+  my @trees = $pv->get_full_trees;
+
+Get the fink.conf trees in which this package is located. This includes both
+the 'Archive' and 'Component', eg: 'stable/main'.
+
+=item get_full_tree
+
+  my $trees = $pv->get_full_tree;
+
+Get the highest priority tree in which this package is located.
+
+=cut
+
+sub get_full_trees {
+	my ($self) = @_;
+	return map { join('/', @$_) } @{$self->{_full_trees}};
+}
+sub get_full_tree {
+	return ($_[0]->get_full_trees)[-1];
 }
 
 =back

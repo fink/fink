@@ -1,5 +1,15 @@
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* PkgVersion.pm:
+		- Store the full tree ("stable/main") instead of just the first
+		component ("stable").
+		- Remove in_tree, it's unused.
+	* Engine.pm: Use the full tree in dumpinfo.
+	
+	*** THIS IS A DB FORMAT CHANGE, RUN index -f OR EXPECT BREAKAGE ***
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Scanpackages.pm: Use CLI::capture to shut up Fink::Package.
 
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>

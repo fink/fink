@@ -2214,7 +2214,7 @@ FORMAT
 				printf "%s:\n", $_;
 				print map { " $_=".$value->{$_}."\n" } sort keys %$value;
 			} elsif ($_ eq 'trees') {
-				printf "%s: %s\n", $_, join(' ', $pkg->get_trees);
+				printf "%s: %s\n", $_, join(' ', $pkg->get_full_trees);
 			} else {
 				die "Unknown field $_\n";
 			}
