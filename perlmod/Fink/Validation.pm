@@ -1427,7 +1427,7 @@ sub _validate_dpkg {
 			if (open my $pc_file, '<', $File::Find::name) {
 				while (<$pc_file>) {
 					chomp;
-					if (/(-W.,-framework)[^,]/) {
+					if (/\s((?:-W.,|)-framework)[^,]/) {
 						&stack_msg($msgs, "The $1 flag may get munged by pkg-config. See the gcc manpage for information about passing options to flags for specific compiler passes.", $filename, $_);
 					}
 				}

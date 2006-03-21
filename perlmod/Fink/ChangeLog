@@ -1,3 +1,7 @@
+2006-03-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Catch another .pc syntax that triggers a bug.
+
 2006-03-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm: Try to fix errno_h breakage on 10.3.
