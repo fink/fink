@@ -112,31 +112,23 @@ methods...
 
 sub pkginfo_version {
 	my $pv = "0";
-	my ($fn, $v);
-# first, look in the new location for stamp files
-	foreach $fn (glob("$basepath/fink/dists/stamp-*")) {
-		if ($fn =~ m{/stamp-rsync}) {
-			return "rsync";
-		} elsif ($fn =~ m{/stamp-cvs}) {
-			return "cvs";
-		} elsif ($fn =~ m{/stamp-rel-(.+)$}) {
-			$v = $1;
-			$pv = $v if ($v gt $pv);
+	
+	# first check the new place, then the old place
+	my @places = ("$basepath/fink/dists", "$basepath/fink");
+	for my $place (@places) {
+		for my $fn (glob("$place/stamp-*")) {
+			if ($fn =~ m{/stamp-rsync}) {
+				return "rsync";
+			} elsif ($fn =~ m{/stamp-cvs}) {
+				return "cvs";
+			} elsif ($fn =~ m{/stamp-rel-(.+)$}) {
+				my $v = $1;
+				$pv = $v if ($v gt $pv);
+			}
 		}
+		last if $pv ne '0'; # stop after the first useful place
 	}
-# if we haven't returned yet, and we didn't set the value of $v, look in the old location
-	if (not defined $v) {
-	foreach $fn (glob("$basepath/fink/stamp-*")) {
-		if ($fn =~ m{/stamp-rsync}) {
-			return "rsync";
-		} elsif ($fn =~ m{/stamp-cvs}) {
-			return "cvs";
-		} elsif ($fn =~ m{/stamp-rel-(.+)$}) {
-			$v = $1;
-			$pv = $v if ($v gt $pv);
-		}
-				}
-	}
+	
 	$pv = &distribution_version() if $pv eq "0";
 	return $pv;
 }

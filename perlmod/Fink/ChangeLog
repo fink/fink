@@ -1,5 +1,9 @@
 2006-03-21  Daniel Macks  <dmacks@netspace.org>
 
+	* FinkVersion.pm.in: Collapse copy/pasted code into a loop.
+
+2006-03-21  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Catch another .pc syntax that triggers a bug.
 
 2006-03-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
