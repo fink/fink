@@ -1,4 +1,8 @@
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* capture.t: Make 'too many args' test compile at runtime.
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* NEW DIRECTORY: Test Fink::CLI.
 	* capture.t: Test Fink::CLI::capture.

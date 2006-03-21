@@ -10,7 +10,7 @@ BEGIN { use_ok 'Fink::CLI', 'capture'; }
 # too many args
 {
 	my ($out, $err, $extra);
-	eval { capture { print "not ok\n" } \$out, \$err, \$extra };
+	eval 'capture { print "not ok\n" } \$out, \$err, \$extra';
 	ok($@, "too many args - is an error");
 	is($out, undef, "too many args - no output");
 	is($err, undef, "too many args - no err output");

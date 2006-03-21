@@ -1,4 +1,8 @@
-2006-03-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Adjust prototype for &capture.
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* CLI.pm: New function &capture, to hijack STDOUT and STDERR.
 

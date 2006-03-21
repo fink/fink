@@ -693,7 +693,7 @@ sub _fh_restore {
 	close $save or die "Can't close saved filehandle: $!";
 }	
 
-sub capture (&@) {
+sub capture (&$;$) {
 	my ($code, $out, $err, @toomany) = @_;
 	die "Too many arguments!" if @toomany;
 	my ($die, $ret, $setupok);
