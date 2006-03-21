@@ -1,5 +1,9 @@
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Scanpackages.pm: Use CLI::capture to shut up Fink::Package.
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* CLI.pm: Adjust prototype for &capture.
 
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>

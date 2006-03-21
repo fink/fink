@@ -26,6 +26,7 @@ use base 'Fink::Base';
 use warnings;
 use strict;
 
+use Fink::CLI qw(capture);
 use Fink::Command qw(mkdir_p);
 use Fink::Services qw(latest_version);
 
@@ -349,23 +350,6 @@ sub _control {
 	return \%control;
 }
 
-# Don't let an operation print to stdout or stderr
-#
-# _quietly($coderef);
-sub _quietly {
-	my ($coderef) = @_;
-	
-	open my $oldout, '>&', STDOUT;
-	open my $olderr, '>&', STDERR;
-	open STDOUT, '>', '/dev/null';
-	open STDERR, '>', '/dev/null';
-	&$coderef();
-	open STDOUT, '>&', $oldout;
-	open STDERR, '>&', $olderr;
-	close $oldout;
-	close $olderr;
-}
-
 # Make sure Fink is configured
 #
 # $sp->_ensure_fink;
@@ -392,9 +376,10 @@ sub _ensure_pdb {
 		require Fink::Package;
 		
 		print STDERR "Loading Fink package database\n" if $self->{verbosity};
-		_quietly(sub {
+		my $dummy;
+		capture {
 			Fink::Package->require_packages;
-		});
+		} \$dummy, \$dummy;
 		$self->{_pdb_loaded} = 1;
 	}
 }
