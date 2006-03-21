@@ -49,10 +49,12 @@ fi
 
 ### create FinkVersion.pm for bootstrap
 
-if [ ! -f perlmod/Fink/FinkVersion.pm ]; then
+if [ -f perlmod/Fink/FinkVersion.pm ]; then
+  rm -f perlmod/Fink/FinkVersion.pm
+fi
   version=`cat VERSION`
   sed -e "s|@VERSION@|$version|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
-fi
+
 
 ### start bootstrap.pl
 

@@ -74,7 +74,7 @@ use lib "$FindBin::RealBin/perlmod";
 require Fink::Bootstrap;
 import Fink::Bootstrap qw(&check_host &check_files);
 require Fink::FinkVersion;
-import Fink::FinkVersion qw(&fink_version);
+import Fink::FinkVersion qw(&fink_version &default_binary_version);
 
 my $res = check_files();
 if( $res == 1 ) {
@@ -425,16 +425,7 @@ if ($packageversion !~ /cvs/) {
 my $endmsg = "Internal error.";
 
 chdir $homebase;
-my %bindists;
-if (-f "BINDISTS") {
-                open(IN,"BINDISTS") or die "Can't open BINDISTS: $!";
-                while(<IN>) {
-					chomp;
-					/(.*):\s*(.*)/;
-					$bindists{$1} = $2;
-                }
-                close(IN);
-			}
+my $dbv = default_binary_version($distribution);
 if (-d "pkginfo") {
 	if (&execute("cd pkginfo && ./inject.pl $installto -quiet")) {
 		# inject failed
@@ -445,8 +436,8 @@ You can add the package descriptions at a later time if you want to
 compile packages yourself.
 You can get them
 EOF
-if (defined($bindists{$distribution})) {
-$endmsg .= "by installing the dists-$distribution-$bindists{$distribution}.tar.gz
+if (not $dbv eq "none") {
+$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 }
 		$endmsg .= " by running the command 'fink selfupdate'.";
@@ -463,8 +454,8 @@ You should now have a working Fink installation in '$installto'.
 You still need package descriptions if you want to compile packages yourself.
 You can get them
 EOF
-if (defined($bindists{$distribution})) {
-$endmsg .= "by installing the dists-$distribution-$bindists{$distribution}.tar.gz
+if (not $dbv eq "none") {
+$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 }
 	$endmsg .= " by running the command 'fink selfupdate'.";

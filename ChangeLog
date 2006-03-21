@@ -1,3 +1,10 @@
+2006-03-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap.sh: generate a new FinkVersion.pm on every bootstrap run
+	* bootstrap.pl: find the default name for the binary distribution
+	using the new default_binary_version function from FinkVersion.pm
+	* BINDISTS: obsolete
+
 2006-03-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* BINDISTS, bootstrap.pl: Message to users at end of bootstrap should
