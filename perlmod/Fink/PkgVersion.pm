@@ -539,7 +539,6 @@ sub initialize {
 	# path handling
 	if ($filename) {
 		@parts = split(/\//, $filename);
-		shift @parts if $parts[0] eq ''; # scrap detritus from leading /
 		pop @parts;		# remove filename
 		$self->{_patchpath} = join("/", @parts);
 		for ($finkinfo_index = $#parts;
@@ -570,7 +569,8 @@ sub initialize {
 			}
 			
 			# determine the full package tree, eg: [ qw(stable main) ]
-			$self->{_full_trees} = [ [ @parts[3..$finkinfo_index-1] ] ];
+			# front (removed): '', %p, 'fink', 'dists'
+			$self->{_full_trees} = [ [ @parts[4..$finkinfo_index-1] ] ];
 		}
 	} else {
 		# for dummy descriptions generated from dpkg status data alone
