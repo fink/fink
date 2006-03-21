@@ -1,0 +1,4 @@
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* NEW DIRECTORY: Test Fink::CLI.
+	* capture.t: Test Fink::CLI::capture.

@@ -1,4 +1,8 @@
-2006-03-21  Daniel Macks  <dmacks@netspace.org>
+2006-03-20  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: New function &capture, to hijack STDOUT and STDERR.
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* FinkVersion.pm.in: Collapse copy/pasted code into a loop.
 

@@ -24,6 +24,8 @@
 package Fink::CLI;
 
 use Carp;
+use Fcntl qw(:seek);
+use IO::Handle;
 
 use strict;
 use warnings;
@@ -43,7 +45,7 @@ BEGIN {
 					  &prompt &prompt_boolean &prompt_selection
 					  &print_optionlist
 					  &get_term_width &should_skip_prompt
-					  &word_wrap);
+					  &word_wrap &capture);
 }
 our @EXPORT_OK;
 
@@ -651,6 +653,83 @@ sub get_term_width {
 		$width = 80;
 	}
 	return $width;
+}
+
+=item capture
+
+  my $return = capture { BLOCK }, \$out, \$err;
+
+Executes BLOCK, but intercepts STDOUT and STDERR, putting them into the
+arguments $out and $err. The return value is simply the BLOCK's return value.
+
+If $out and $err point to the same scalar, STDOUT and STDERR will have their
+outputs merged.
+
+=cut
+
+# my $saved = _fh_save \*FH;
+sub _fh_save {
+	my ($fh, $scalar) = @_;
+	die "Argument must be a scalar ref"
+		unless ref($scalar) && ref($scalar) eq 'SCALAR';
+	open my $save, '>&', $fh or die "Can't save filehandle: $!";
+	close $fh or die "Can't temporarily close filehandle: $!";
+	return $save;
+}
+
+# _fh_restore \*FH, $save, \$read_into;  Last arg optional
+sub _fh_restore {
+	my ($fh, $save, $into) = @_;
+	if (defined $into) {
+		$fh->flush or die "Can't flush: $!";
+		seek $fh, 0, SEEK_SET or die "Can't seek: $!";
+		$$into = join('', <$fh>);
+		die "Can't read filehandle: $!" if $fh->error;
+	}
+	close $fh or die "Can't close filehandle: $!";
+	
+	# It appears perl ignores more permissive modes for STD*, so '+>&' is ok
+	open $fh, '+>&', $save or die "Can't reopen filehandle: $!";
+	close $save or die "Can't close saved filehandle: $!";
+}	
+
+sub capture (&@) {
+	my ($code, $out, $err, @toomany) = @_;
+	die "Too many arguments!" if @toomany;
+	my ($die, $ret, $setupok);
+	my $array = wantarray;
+	
+	# Setup the filehandles
+	my ($savout, $saverr);
+	if (defined $out) {
+		$savout = _fh_save(*STDOUT{IO}, $out); # ok to die
+		open STDOUT, '+>', undef or die "Can't reopen STDOUT: $!";
+	}
+	eval { # cleanup stdout if error within this block
+		if (defined $err) {
+			$saverr = _fh_save(*STDERR{IO}, $err);
+			if ($out eq $err) {
+				open STDERR, '>&', STDOUT or die "Can't merge STDERR: $!";
+			} else {
+				open STDERR, '+>', undef or die "Can't reopen STDERR: $!";
+			}
+		}
+		$setupok = 1; # Now ok to save output
+		
+		# Run!
+		eval { $ret = $array ? [ &$code() ] : scalar(&$code()) };
+		$die ||= $@;
+		
+		# Tear down
+		_fh_restore(*STDERR{IO}, $saverr, $setupok && $out eq $err ? () : $err)
+			if defined $saverr;
+	};
+	$die ||= $@;
+	_fh_restore(*STDOUT{IO}, $savout, $setupok ? $out : ()) if defined $savout;
+	
+	# Finish up
+	die $die if $die;
+	return $array ? @$ret : $ret;
 }
 
 =back
