@@ -28,7 +28,7 @@ use warnings;
 
 require Exporter;
 our @ISA	 = qw(Exporter);
-our @EXPORT_OK	 = qw(&fink_version &distribution_version &pkginfo_version &max_info_level);
+our @EXPORT_OK	 = qw(&fink_version &distribution_version &default_binary_version &pkginfo_version &max_info_level);
 our %EXPORT_TAGS = ('ALL' => \@EXPORT_OK);
 
 use Fink::Config qw($basepath);
@@ -45,6 +45,7 @@ Fink::FinkVersion - Fink version numbers
 
   my $fink_version    = fink_version;
   my $dist_version    = distribution_version;
+  my $default_version = default_binary_version($distribution);
   my $pkginfo_version = pkginfo_version;
   my $max_info_level  = max_info_level;
 
@@ -76,7 +77,7 @@ sub fink_version {
 
 =item distribution_version
 
-  my $dist_version = distribution_version
+   my $dist_version = distribution_version;
 
 Returns the fink distribution version you're currently using.
 
@@ -94,6 +95,26 @@ sub distribution_version {
 		$dv = "unknown";
 	}
 	return $dv;
+}
+
+=item default_binary_version
+
+   my $b_dist_version = default_binary_version($distribution);
+
+Returns the most recent (binary) fink distribution version corresponding to $distribution.
+
+=cut
+
+sub default_binary_version {
+	my $distribution = shift;
+	my %bindists = ("10.2-gcc3.3" => "0.6.4", "10.3" => "0.7.2", "10.4-transitional" => "0.8.0");
+	my $dbv;
+	if (defined($bindists{$distribution})) {
+		$dbv = "$bindists{$distribution}";
+	} else {
+		$dbv = "none";
+	}
+	return $dbv;
 }
 
 
