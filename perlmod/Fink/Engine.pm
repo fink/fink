@@ -32,7 +32,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  $VALIDATE_HELP &apt_available);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
-				 &get_term_width);
+				 &get_term_width &die_breaking);
 use Fink::Configure qw(&spotlight_warning);
 use Fink::Finally;
 use Fink::Package;
@@ -1457,8 +1457,8 @@ sub real_install {
 	my $forceoff = shift; # check if this is a secondary loop
 	my $dryrun = shift;
 		
-	my ($pkgspec, $package, $pkgname, $item, $dep, $con, $cn);
-	my ($all_installed, $any_installed, @conlist, @removals, %cons, $cname);
+	my ($pkgspec, $package, $pkgname, $item, $dep);
+	my ($all_installed, $any_installed);
 	my (%deps, @queue, @deplist, @requested, @additionals, @elist);
 	my ($ep);
 	my ($answer, $s);
@@ -1482,7 +1482,6 @@ sub real_install {
 	$showlist = 1 if $verbosity > -1;
 
 	%deps = ();		# hash by package name
-	%cons = ();		# hash by package name
 
 	%to_be_rebuilt = ();
 	%already_activated = ();
@@ -1567,7 +1566,8 @@ sub real_install {
 	}
 
 	# recursively expand dependencies
-	my %ok_versions; # versions of each pkg that are ok to use
+	my %ok_versions;	# versions of each pkg that are ok to use
+	my %conflicts;		# pkgname => list of conflicts
 	while ($#queue >= 0) {
 		$pkgname = shift @queue;
 		$item = $deps{$pkgname};
@@ -1582,6 +1582,7 @@ sub real_install {
 		}
 
 		# get list of dependencies
+		my @con_lol;
 		if ($item->[OP] == $OP_BUILD or
 				($item->[OP] == $OP_REBUILD and not $item->[PKGVER]->is_installed())) {
 			# We are building an item without going to install it
@@ -1590,7 +1591,7 @@ sub real_install {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built without being installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(2, "Depends", $forceoff);
-			@conlist = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
+			@con_lol = $item->[PKGVER]->resolve_depends(2, "Conflicts", $forceoff);
 		} elsif ((not $item->[PKGVER]->is_present() 
 		  and not ($deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()))
 		  or $item->[OP] == $OP_REBUILD) {
@@ -1600,7 +1601,7 @@ sub real_install {
 				print "The package '" . $item->[PKGVER]->get_name() . "' $to_be built and installed.\n";
 			}
 			@deplist = $item->[PKGVER]->resolve_depends(1, "Depends", $forceoff);
-			@conlist = $item->[PKGVER]->resolve_depends(1, "Conflicts", $forceoff);
+			@con_lol = $item->[PKGVER]->resolve_depends(1, "Conflicts", $forceoff);
 		} elsif (not $item->[PKGVER]->is_present() and $item->[OP] != $OP_REBUILD 
 		         and $deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()) {
 			# We want to install this package and will download the .deb for it
@@ -1629,34 +1630,13 @@ sub real_install {
 		
 		foreach $dep (@deplist) {
 			choose_pkgversion(\%deps, \@queue, $item, \%ok_versions, @$dep);
-		}
+		}	
+		$conflicts{$pkgname} = [ map { @$_ } @con_lol ];
 	}
-
-	CONLOOP: foreach $con (@conlist) {
-		next if $#$con < 0;			# skip empty lists
-
-		# check for installed pkgs (exact revision)
-		foreach $cn (@$con) {
-			if ($cn->is_installed()) {
-				$cname = $cn->get_name();
-				if (exists $cons{$cname}) {
-					die "Internal error: node for $cname already exists\n";
-				}
-				# add node to graph
-				@{$cons{$cname}}[ PKGNAME, PKGOBJ, PKGVER, OP, FLAG ] = (
-					$cname, Fink::Package->package_by_name($cname),
-					$cn, $OP_INSTALL, 2
-				);
-				next CONLOOP;
-			}
-		}
-	}
-
 
 	# generate summary
 	@requested = ();
 	@additionals = ();
-	@removals = ();
 	my $willbuild = 0;
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
@@ -1669,11 +1649,6 @@ sub real_install {
 			$willbuild = 1 unless ($item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed());
 		}
 	}
-
-	foreach $pkgname (sort keys %cons) {
-		push @removals, $pkgname;
-	}
-			
 
 	if ($willbuild) {
 		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) { 
@@ -1705,8 +1680,11 @@ sub real_install {
 		&print_breaking(join(" ",@requested), 1, " ");
 	}
 	unless ($forceoff) {
+		# find the packages we're likely to remove
+		my @removals = list_removals(\%deps, \%conflicts);
+		
 		# ask user when additional packages are to be installed
-		if ($#additionals >= 0 || $#removals >= 0) {
+		if ($#additionals >= 0 || @removals) {
 			if ($#additionals >= 0 and not $fetch_only) {
 				if ($#additionals > 0) {
 					&print_breaking("The following ".scalar(@additionals).
@@ -1717,14 +1695,11 @@ sub real_install {
 				}
 				&print_breaking(join(" ",@additionals), 1, " ");
 			}
-			if ($#removals >= 0 and not $fetch_only) {
-				if ($#removals > 0) {
-					&print_breaking("The following ".scalar(@removals).
-							" packages $to_be removed:");
-				} else {
-					&print_breaking("The following package ".
-							"$to_be removed:");
-				}
+			if (@removals and not $fetch_only) {
+				my $number = scalar(@removals) > 1
+					? (scalar(@removals) . " packages") : "package";
+				&print_breaking(
+					"The following $number might be temporarily removed:");
 				&print_breaking(join(" ",@removals), 1, " ");
 			}
 			if (not $dryrun) {
@@ -1742,9 +1717,6 @@ sub real_install {
 
 	# if we were really in fetch or dry-run modes, stop here
 	return if $fetch_only || $dryrun;
-
-	# remove buildconfilcts before new builds reinstall after build
-	Fink::Engine::cmd_remove("remove", @removals) if (scalar(@removals) > 0);
 
 	# install in correct order...
 	while (1) {
@@ -1852,6 +1824,9 @@ sub real_install {
 					### Double check it didn't already get
 					### installed in an other loop
 					if (!$package->is_installed() || $op == $OP_REBUILD) {
+						# Remove the BuildConflicts, and reinstall after
+						my $fin = remove_buildconflicts($conflicts{$pkgname});
+						
 						$package->log_output(1);
 						$package->set_buildlock();
 						$package->phase_unpack();
@@ -1861,6 +1836,8 @@ sub real_install {
 						$package->phase_build();
 						$package->clear_buildlock();
 						$package->log_output(0);
+						
+						$fin->run;
 					} else {
 						&real_install($OP_BUILD, 0, 1, $dryrun, $package->get_name());
 					}
@@ -1904,8 +1881,6 @@ sub real_install {
 
 			# Finally perform the actually installation
 			Fink::PkgVersion::phase_activate([@batch_install]) unless (@batch_install == 0);
-			# Reinstall buildconficts after the build
-			&real_install($OP_INSTALL, 1, 1, $dryrun, @removals) if (scalar(@removals) > 0);
 
 			# Mark all installed items as installed
 			foreach $pkg (@batch_install) {
@@ -2758,6 +2733,67 @@ sub prefetch {
 		if @aptget;
 	
 	&call_queue_clear;
+}
+
+=item list_removals
+
+  my @pkgnames = list_removals \%deps, \%conflicts;
+
+List the package names that we may remove at some point.
+
+=cut
+
+sub list_removals {
+	my ($deps, $conflicts) = @_;
+	
+	my %removals;
+	for my $rpv (map { @$_ } values %$conflicts) {
+		my $rname = $rpv->get_name;
+		next if $removals{$rname};
+		
+		my $item = $deps->{$rname};
+		my $will_inst = $item && ($item->[PKGVER] eq $rpv)
+			&& ($item->[OP] == $OP_INSTALL || $item->[OP] == $OP_REINSTALL);
+		$removals{$rname} = 1 if $will_inst || $rpv->is_installed;
+	}
+	return sort keys %removals;
+}
+
+=item remove_buildconflicts
+
+  my $finally = remove_buildconflicts @pvs;
+
+Remove the BuildConflicts of a package, and return a Fink::Finally cleanup
+task that can restore them.
+
+=cut
+
+sub remove_buildconflicts {
+	my ($pvs) = @_;
+	
+	my @must_remove = grep { $_->is_installed } @$pvs;
+	my @cant_restore = grep { !$_->is_present } @must_remove;
+	
+	if (!@must_remove) {
+		return Fink::Finally->new(sub { }); # Do nothing
+	} elsif (@cant_restore) {
+		die_breaking "The following packages must be temporarily removed, but "
+			. "there are no .debs to restore them from:\n  "
+			. join(' ', sort map { $_->get_name } @cant_restore);
+	} else {
+		my @names = sort map { $_->get_name } @must_remove;
+		my $names = join(' ', @names);
+		my $recover = sub {
+			print_breaking_stderr "Restoring removed BuildConflicts:\n "
+				. " $names";
+			Fink::PkgVersion::phase_activate(\@must_remove);
+		};
+		
+		print_breaking_stderr "Temporarily removing BuildConflicts:\n $names";
+		Fink::PkgVersion::phase_deactivate(\@names);
+		
+		return Fink::Finally->new($recover);
+	}
 }
 
 =back

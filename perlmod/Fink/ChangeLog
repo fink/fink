@@ -1,5 +1,9 @@
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: New BuildConflicts routine that should work.
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Engine.pm: De-blockify &finalize.
 	* Engine.pm, PkgVersion.pm: Add a finally to remove buildlocks on build
 	failure.
