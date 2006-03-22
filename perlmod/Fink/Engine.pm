@@ -642,25 +642,30 @@ sub finalize {
 
 =item aptget_update
 
-  aptget_update $quiet;
+  my $success = aptget_update $quiet;
 
-Update the apt-get package database.
+Update the apt-get package database. Returns boolean indicating
+whether the update worked within the limits of fink's configs.
 
 =cut
 
 sub aptget_update {
 	my $quiet = shift || 0;
 	
-	return unless apt_available;
+	return 1 unless $config->binary_requested();  # binary-mode disabled
+	return 0 unless apt_available;
+	print "Downloading the indexes of available packages in the binary distribution.\n";
 	my $aptcmd = aptget_lockwait();
-	if ($quiet) {
+	if ($config->verbosity_level == 0) {
 		$aptcmd .= " -qq";
 	} elsif ($config->verbosity_level < 2) {
 		$aptcmd .= " -q";
 	}
-	if (&execute($aptcmd . " update", quiet => 1)) {
+	if (&execute($aptcmd . " update", quiet => $quiet)) {
 		print("WARNING: Failure while updating indexes.\n");
+		return 0;
 	}
+	return 1;
 }
 
 =item cmd_scanpackages

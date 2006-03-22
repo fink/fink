@@ -1,3 +1,12 @@
+2006-03-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: aptget_update now returns boolean success value, is
+	inhibited if user has disabled binary mode, and has apt's own
+	"quiet" controlled by fink's "verbose" flag. $quiet parameter now
+	controls execute() verbosity.
+	* SelfUpdate.pm: Use Engine's aptget_update instead of rewriting
+	it.
+
 2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Config.pm: Don't whine if etc/apt doesn't exist.

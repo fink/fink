@@ -28,7 +28,7 @@ use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $dbpath $distribution);
 use Fink::NetAccess qw(&fetch_url);
-use Fink::Engine;
+use Fink::Engine qw(&aptget_update &cmd_install);
 use Fink::Package;
 use Fink::FinkVersion qw(&pkginfo_version);
 use Fink::Mirror;
@@ -513,22 +513,9 @@ sub do_tarball {
 sub do_finish {
 	my $package;
 
-	# update apt-get's database if using -b mode
-	if ($config->binary_requested()) {
-		print "Downloading the indexes of available packages in the binary distribution.\n";
-		my $aptcmd = aptget_lockwait() . " ";
-		if ($config->verbosity_level() == 0) {
-			$aptcmd .= "-qq ";
-		}
-		elsif ($config->verbosity_level() < 2) {
-			$aptcmd .= "-q ";
-		}
-		$aptcmd .= "update";
-		if (&execute($aptcmd)) {
-			&print_breaking("WARNING: Failure while downloading indexes. ".
-			                "Running 'fink scanpackages' may fix this.");
-		}
-	}
+	# update apt-get's database
+	Fink::Engine::aptget_update()
+		or &print_breaking("Running 'fink scanpackages' may fix indexing problems.");
 
 	# forget the package info
 	Fink::Package->forget_packages();
