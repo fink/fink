@@ -4871,7 +4871,7 @@ sub run_script {
 				"the maintainer directly:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
 			if ($arch eq "i386") {
-$error .= "Note that many fink package maintainers do not (yet) have access to OSX on\n" .
+$error .= "Note that many fink package maintainers do not (yet) have access to OS X on\n" .
 	"Intel hardware, so you may have better luck on the mailing lists.\n\n";
 }
 		}
