@@ -1,4 +1,8 @@
-2006-03-22  Daniel Macks  <dmacks@netspace.org>
+2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Config.pm: Don't whine if etc/apt doesn't exist.
+
+2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Finally.pm: Don't run in forks.
 
