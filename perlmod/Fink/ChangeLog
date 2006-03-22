@@ -1,3 +1,11 @@
+2006-03-22  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: fix cctools-single-module to use a check against the
+	cctools version, rather than the overhead of compiling a small dylib;
+	fix the broken-gcc check to iterate over the existing gcc packages,
+	rather than calling out to cc1plus directly; completely rewrite the gcc
+	check(s) to only call gcc once per executable
+
 2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Finally.pm: Don't change the exit status!

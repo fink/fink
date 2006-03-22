@@ -514,14 +514,10 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		foreach(`/usr/bin/what /usr/bin/ld; /usr/bin/ld -v 2>/dev/null`) {
-			if (/^.*PROJECT:\s*cctools-(\d+).*$/) {
-				$cctools_version = $1;
-				last;
-			} elsif (/^.*version cctools-(\d+).*$/) {
-				$cctools_version = $1;
-				last;
-			}
+		if (`/usr/bin/ld -v 2>/dev/null` =~ /^.*version cctools-(\d+).*?$/) {
+			$cctools_version = $1;
+		} elsif (`/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
+			$cctools_version = $1;
 		}
 	} else {
 		print STDERR "/usr/bin/ld or /usr/bin/what not executable... " if ($options{debug});
@@ -563,22 +559,13 @@ if a dummy file can be linked using the -single_module flag.
 =cut
 
 	# create dummy object for cctools-single-module, if supported
-	print STDERR "- checking for cctools -single_module support:\n" if ($options{debug});
+	print STDERR "- checking for cctools -single_module support... " if ($options{debug});
 
-	undef $cctools_single_module;
-	if (-x "/usr/bin/cc" and my $cctestfile = POSIX::tmpnam() and -x "/usr/bin/touch") {
-		system("/usr/bin/touch ${cctestfile}.c");
-		my $command = "/usr/bin/cc -o ${cctestfile}.dylib ${cctestfile}.c -dynamiclib -single_module >/dev/null 2>\&1";
-		print STDERR "- running $command... " if ($options{debug});
-		if (system($command) == 0) {
-			print STDERR "-single_module passed\n" if ($options{debug});
-			$cctools_single_module = '1.0';
-		} else {
-			print STDERR "failed\n" if ($options{debug});
-		}
-		unlink($cctestfile);
-		unlink("${cctestfile}.c");
-		unlink("${cctestfile}.dylib");
+	if ($cctools_version >= 446) {
+		$cctools_single_module = $cctools_version;
+		print STDERR "yes, $cctools_version has it\n" if ($options{debug});
+	} else {
+		print STDERR "nope.  oh well.\n" if ($options{debug});
 	}
 
 	$hash = {};
@@ -624,42 +611,45 @@ the successful execution of "gcc --version".
 	if (opendir(DIR, "/usr/bin")) {
 		for my $gcc (grep(/^gcc/, readdir(DIR))) {
 			next if (-l "/usr/bin/$gcc");
-			if (open(GCC, '/usr/bin/' . $gcc . ' --version 2>/dev/null |')) {
-				my $version = <GCC>;
+			if (open(GCC, '/usr/bin/' . $gcc . ' -### -v -x c /dev/null 2>&1 |')) {
+				my ($versionoutput, $version, $build);
+				{ local $/ = undef; $versionoutput = <GCC> }
 				close(GCC);
-				next unless (defined $version);
-				chomp($version);
-				my ($build) = $version =~ /build (\d+)/i;
-				if ($version =~ /^([\d\.]+)$/ or $version =~ /^.*? \(GCC\) ([\d\.\-]+)/) {
-					$version = $1;
-					$version =~ s/[\.\-]*$//;
-					my ($shortversion) = $version =~ /^(\d+\.\d+)/;
-					my $pkgname = $version eq "2.95.2"
-						? 'gcc2' : "gcc$shortversion";
-
-					# Don't interfere with real packages
-					if (Fink::Status->query_package($pkgname)) {
-						print STDERR "  - skipping $pkgname, there's a real package\n" if ($options{debug});
-						next;
-					}
-
-					if (open(GCC, '/usr/bin/' . $gcc . ' -### -x c /dev/null 2>&1 |')) {
-						while (<GCC>) {
-							if (/^\s*\"([^\"]+\/cc1)\"/) {
-								if (not -x $1) {
-									print STDERR "  - $gcc is looking for $1 to build on this arch, but it's not there\n" if ($options{debug});
-								}
-								last;
-							}
-						}
-						close(GCC);
-					}
-					$hash = &gen_gcc_hash($pkgname, $version, $build, 0, STATUS_PRESENT);
-					$self->{$hash->{package}} = $hash;
-					print STDERR "  - found $version\n" if ($options{debug});
+				next unless (defined $versionoutput);
+				if ($versionoutput =~ /version gcc-(\d+), based on gcc version ([\d\.\-]+)/s) {
+					($build, $version) = ($1, $2);
+				} elsif ($versionoutput =~ /version (\d+), based on gcc version ([\d\.\-]+)/s) {
+					($build, $version) = ($1, $2);
+				} elsif ($versionoutput =~ /version ([\d\.\-]+) .*? build (\d+)/s) {
+					($version, $build) = ($1, $2);
 				} else {
-					print STDERR "  - warning, couldn't match '$version'\n" if ($options{debug});
+					print STDERR "  - warning, unable to determine the version for $gcc\n" if ($options{debug});
+					next;
 				}
+
+				$version =~ s/[\.\-]*$//;
+				my ($shortversion) = $version =~ /^(\d+\.\d+)/;
+				$shortversion = 2 if ($version eq "2.95.2");
+				my $pkgname = "gcc$shortversion";
+
+				# Don't interfere with real packages
+				if (Fink::Status->query_package($pkgname)) {
+					print STDERR "  - skipping $pkgname, there's a real package\n" if ($options{debug});
+					next;
+				}
+
+				my $status = STATUS_PRESENT;
+
+				if (my ($match) = $versionoutput =~ /^\s*\"?(\S*cc1(obj)?)\"?\s/s) {
+					if (not -x $match or $match !~ m,^/,) {
+						$status = STATUS_ABSENT;
+						print STDERR "  - $gcc is looking for $1 to build on this arch, but it's not there\n" if ($options{debug});
+					}
+				}
+
+				$hash = &gen_gcc_hash($pkgname, $version, $build, 0, $status);
+				$self->{$hash->{package}} = $hash;
+				print STDERR "  - found $version\n" if ($options{debug});
 			}
 		}
 		closedir(DIR);
@@ -684,6 +674,7 @@ the successful execution of "gcc --version".
 			}
 		}
 	}
+
 =item broken-gcc
 
 This package represents broken versions of the GCC compiler
@@ -713,35 +704,21 @@ tools at:
 (free registration required)
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
-	
-	{
-		my $cc1plus = '/usr/libexec/gcc/darwin/ppc/3.3/cc1plus';
-		if (!-e $cc1plus) {
-			print STDERR "  - cc1plus not present\n" if ($options{debug});
-		} elsif (-x $cc1plus) {
-			if (open(GCC, "$cc1plus --version 2>&1 |")) {
-				while (my $line = <GCC>) {
-					if ($line =~ /build (\d+)/gsi) {
-						my $build = $1;
-						print STDERR "  - found build $build" if ($options{debug});
-						if (grep(/^${build}$/, @badbuilds)) {
-							print STDERR " (bad)\n" if ($options{debug});
-							$hash->{status}      = STATUS_PRESENT;
-							$hash->{version}     = '3.3-' . $build;
-						} else {
-							print STDERR " (not broken)\n" if ($options{debug});
-						}
-						last;
-					}
-				}
-				close(GCC);
+
+	for my $key (keys %$self) {
+		if ($key =~ /^gcc/) {
+			my ($buildnum) = $self->{$key}->{version} =~ /^.*\-(\d+)$/;
+			print STDERR "  - $key build number is $buildnum" if ($options{debug});
+			if (grep /^${buildnum}$/, @badbuilds) {
+				print STDERR " (bad)\n" if ($options{debug});
+				$hash->{status} = STATUS_PRESENT;
+				$hash->{version} = $self->{$key}->{version};
 			} else {
-				print STDERR "WARNING: couldn't run cc1plus: $!\n" if ($options{debug});
+				print STDERR " (not broken)\n" if ($options{debug});
 			}
-		} else {
-			print STDERR "WARNING: $cc1plus is not executable!\n" if ($options{debug});
 		}
 	}
+
 	$self->{$hash->{package}} = $hash;
 
 =item dev-tools
