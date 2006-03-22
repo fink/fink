@@ -1,5 +1,12 @@
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: De-blockify &finalize.
+	* Engine.pm, PkgVersion.pm: Add a finally to remove buildlocks on build
+	failure.
+	* Config.pm: Make --no-use-binary-dist actually work.
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Finally.pm: New way to create cleanup functions.
 	* Engine.pm: Adapt to new Finally, add 'finalizer' method to schedule a
 	function to run when process finishes.

@@ -209,8 +209,9 @@ sub parse_options {
 	
 	my %opts = (
 		map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
-			use_binary build_as_nobody maintainermode showversion) ),
+			build_as_nobody maintainermode showversion) ),
 		map ( { $_ => [] } qw(include_trees exclude_trees) ),
+		map( { $_ => -1 } qw(use_binary) ),
 	);
 	
 	my $comlen =  14;
@@ -908,7 +909,7 @@ sub binary_requested {
 	my $runtime_request = get_option("use_binary");
 	my $binary_request;
 
-	if ($runtime_request == -1) {
+	if ($runtime_request == 0) { # --no-use-binary-dist
 		$binary_request = 0;
 	} elsif ($runtime_request == 1) {
 		$binary_request = 1;

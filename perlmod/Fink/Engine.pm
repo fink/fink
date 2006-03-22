@@ -633,14 +633,12 @@ Supports re-entrancy.
 
 =cut
 
-{
-	sub finalize {
-		my ($name, $code) = @_;
-		my $group = $finalizers[-1];
-		return if exists $group->{$name};
-		$group->{$name} = Fink::Finally->new($code);
-	}
-}		
+sub finalize {
+	my ($name, $code) = @_;
+	my $group = $finalizers[-1];
+	return if exists $group->{$name};
+	$group->{$name} = Fink::Finally->new($code);
+}
 
 =item aptget_update
 
@@ -1613,7 +1611,6 @@ sub real_install {
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			
 			# Do not use BuildConflicts for packages which are not going to be built!
-#			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		} else {
 			# We want to install this package and already have a .deb for it
 			# -> only include life-time dependencies
@@ -1623,7 +1620,6 @@ sub real_install {
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			
 			# Do not use BuildConflicts for packages which are not going to be built!
-#			@conlist = $item->[PKGVER]->resolve_depends(0, "Conflicts", $forceoff);
 		}
 		# add essential packages (being careful about packages whose parent is essential)
 		# dev-tools is not Essential but it must not depend on essentials because essentials must implicitly BDep:dev-tools

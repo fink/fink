@@ -4549,41 +4549,22 @@ EOMSG
 	$self->{_buildlock} = {
 		lockfile => $lockfile,
 		lock_FH  => $lock_FH,
-		lockpkg  => $lockpkg
+		lockpkg  => $lockpkg,
+		finalizer => Fink::Finally->new(sub { $self->_real_clear_buildlock }),
 	};
 }
 
-# remove the lock created by set_buildlock
-# okay to call as a package method (will pull PkgVersion object from Config)
-# or as object method (will use its own PkgVersion object)
+# external wrapper for _real_clear_buildlock
 sub clear_buildlock {
-	my $self = shift;
-
+	my ($self) = @_;
+	
 	# lock on parent pkg
 	if ($self->has_parent) {
 		return $self->get_parent->clear_buildlock();
 	}
-
-	if (exists $self->{_buildlock}) {
-		# we were locked...
-		print "Removing runtime build-lock...\n";
-		close $self->{_buildlock}->{lock_FH};
-
-		print "Removing build-lock package...\n";
-		my $lockpkg = $self->{_buildlock}->{lockpkg};
-
-		# lockpkg's prerm deletes the lockfile
-		if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
-			&print_breaking("WARNING: Can't remove package ".
-							"$lockpkg. ".
-							"This is not fatal, but you may want to remove ".
-							"the package manually as it may interfere with ".
-							"further fink operations. ".
-							"Continuing with normal procedure.");
-		}
-		Fink::PkgVersion->dpkg_changed;
-		delete $self->{_buildlock};
-	}
+	return unless $self->{_buildlock};
+	
+	$self->{_buildlock}->{finalizer}->run;
 	
 	# This should be a good time to scan the packages
 	my $autoscan = !$config->has_param("AutoScanpackages")
@@ -4595,6 +4576,30 @@ sub clear_buildlock {
 			Fink::Engine::aptget_update();
 		});
 	}
+}
+
+# remove the lock created by set_buildlock
+sub _real_clear_buildlock {
+	my $self = shift;
+
+	# we were locked...
+	print "Removing runtime build-lock...\n";
+	close $self->{_buildlock}->{lock_FH};
+
+	print "Removing build-lock package...\n";
+	my $lockpkg = $self->{_buildlock}->{lockpkg};
+
+	# lockpkg's prerm deletes the lockfile
+	if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
+		&print_breaking("WARNING: Can't remove package ".
+						"$lockpkg. ".
+						"This is not fatal, but you may want to remove ".
+						"the package manually as it may interfere with ".
+						"further fink operations. ".
+						"Continuing with normal procedure.");
+	}
+	Fink::PkgVersion->dpkg_changed;
+	delete $self->{_buildlock};
 }
 
 =item ensure_gpp_prefix
