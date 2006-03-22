@@ -70,6 +70,7 @@ sub initialize {
 	die "A Finally needs some code to run!\n"
 		unless defined $code && ref($code) eq 'CODE';
 	$self->{_code} = $code;
+	$self->{_pid} = $$;
 	$self->{_primed} = 1; # ready to go
 }
 
@@ -85,6 +86,8 @@ If called multiple times, only the first will actually do anything.
 
 sub run {
 	my ($self) = @_;
+	delete $self->{_primed}
+		if $self->{_primed} && $$ != $self->{_pid}; # Don't run in forks
 	return unless $self->{_primed};
 	
 	&{$self->{_code}}();

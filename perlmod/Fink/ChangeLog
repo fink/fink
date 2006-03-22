@@ -1,3 +1,7 @@
+2006-03-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Finally.pm: Don't run in forks.
+
 2006-03-21  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: In -m mode, validate .info of deps also, not just

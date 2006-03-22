@@ -5,6 +5,9 @@ use strict;
 use Test::More 'no_plan';
 use File::Temp qw(tempfile);
 
+use Fink::Services	qw(lock_wait);
+use Fink::Command	qw(touch);
+
 BEGIN { use_ok 'Fink::Finally'; }
 
 # bad args
@@ -62,7 +65,7 @@ use Fink::Finally;
 my $finally = Fink::Finally->new(sub { print "cleanup\n" });
 exit 0;
 SCRIPT
-	my ($fh, $fname) = tempfile(".capture.XXXX");
+	my ($fh, $fname) = tempfile("capture.XXXX");
 	print $fh $script;
 	close $fh;
 	
@@ -85,3 +88,23 @@ SCRIPT
 	} # out of scope
 	is($x, 0, 'cancellation');
 }
+
+# fork doesn't run in subproc
+{
+	my $dummy;
+	($dummy, my $file) = tempfile("capture.fork.XXXX");
+	touch($file);
+	
+	{
+		my $fork; # did we fork or not?
+		my $fin = Fink::Finally->new(sub { unlink $file });
+		
+		$fork = fork;
+		if ($fork) {
+			wait;
+			ok(-f $file, "fork doesn't run in subproc");
+		}
+	}
+}
+
+	
