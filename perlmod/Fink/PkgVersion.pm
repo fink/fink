@@ -31,7 +31,7 @@ use Fink::Services qw(&filename &execute
 					  &get_arch &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
-					  &store_rename);
+					  &store_rename &apt_available);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
 				 &should_skip_prompt &die_breaking);
@@ -4583,6 +4583,17 @@ sub clear_buildlock {
 		}
 		Fink::PkgVersion->dpkg_changed;
 		delete $self->{_buildlock};
+	}
+	
+	# This should be a good time to scan the packages
+	my $autoscan = !$config->has_param("AutoScanpackages")
+		|| $config->param_boolean("AutoScanpackages");
+	if ($autoscan && apt_available) {
+		require Fink::Engine;
+		Fink::Engine::scanpackages(1, $self->get_full_tree);
+		Fink::Engine::finalize('apt-get update', sub {
+			Fink::Engine::aptget_update();
+		});
 	}
 }
 

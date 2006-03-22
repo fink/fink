@@ -1,0 +1,3 @@
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* NEW DIRECTORY, finally.t: Test Fink::Finally.

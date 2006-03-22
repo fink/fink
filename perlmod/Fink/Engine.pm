@@ -34,6 +34,7 @@ use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
 use Fink::Configure qw(&spotlight_warning);
+use Fink::Finally;
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch $dbpath);
@@ -123,6 +124,9 @@ our %commands =
 	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
 	);
 
+# Groups of finalizers for &process 
+our @finalizers = ({ });
+
 END { }				# module clean-up code here (global destructor)
 
 ### constructor using configuration
@@ -183,6 +187,8 @@ sub process {
 		my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
 		push @argv_stack, [ @$orig_ARGV ];
 		Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
+		
+		push @finalizers, { }; # new finalizer group
 	}
 
 	($proc, $pkgflag, $rootflag, $aptgetflag) = @{$commands{$cmd}};
@@ -287,6 +293,8 @@ sub process {
 		my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
 		pop @argv_stack;
 		Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
+		
+		pop @finalizers; # run current finalizer group
 	}
 
 	return $retval;;
@@ -613,6 +621,26 @@ sub cmd_listpackages {
 		}
 	}
 }
+
+=item finalize
+
+  finalize $name, $code;
+
+Add some code that should run when I<&process> finishes. Only the first I<$code>
+for a given I<$name> is run, all later calls are ignored.
+
+Supports re-entrancy.
+
+=cut
+
+{
+	sub finalize {
+		my ($name, $code) = @_;
+		my $group = $finalizers[-1];
+		return if exists $group->{$name};
+		$group->{$name} = Fink::Finally->new($code);
+	}
+}		
 
 =item aptget_update
 
@@ -1894,14 +1922,6 @@ sub real_install {
 		if (!$any_installed) {
 			die "Problem resolving dependencies. Check for circular dependencies.\n";
 		}
-	}
-	
-	# Default to true
-	my $autoscan = !$config->has_param("AutoScanpackages")
-		|| $config->param_boolean("AutoScanpackages");
-	if ($willbuild && $autoscan && apt_available) {
-		scanpackages(1);
-		aptget_update(1);
 	}
 }
 

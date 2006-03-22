@@ -1,5 +1,14 @@
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Finally.pm: New way to create cleanup functions.
+	* Engine.pm: Adapt to new Finally, add 'finalizer' method to schedule a
+	function to run when process finishes.
+	* Engine.pm, PkgVersion.pm: Move AutoScanpackages to happen just after
+	buildlock removal for each package. The apt-get update is only run at the
+	end of a build, using the new finalizer mechanism.
+
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Services.pm: New function apt_available, to check if apt is around.
 	* Engine.pm: Make things work with apt uninstalled.
 
