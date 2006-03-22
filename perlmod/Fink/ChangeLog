@@ -1,3 +1,9 @@
+2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Finally.pm: Don't change the exit status!
+	* Bootstrap.pm: Fix intermitting inability to inject. Remove obsolete
+	function get_packageversion.
+
 2006-03-22  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Engine doesn't export, so don't import its functions

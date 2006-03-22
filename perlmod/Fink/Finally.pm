@@ -90,8 +90,13 @@ sub run {
 		if $self->{_primed} && $$ != $self->{_pid}; # Don't run in forks
 	return unless $self->{_primed};
 	
+	# Preserve exit status
+	my $status = $?;
+	
 	&{$self->{_code}}();
 	delete $self->{_primed};
+	
+	$? = $status;
 }
 
 sub DESTROY {

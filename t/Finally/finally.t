@@ -5,10 +5,23 @@ use strict;
 use Test::More 'no_plan';
 use File::Temp qw(tempfile);
 
-use Fink::Services	qw(lock_wait);
+use Fink::CLI qw(capture);
+use Fink::Services	qw(lock_wait execute);
 use Fink::Command	qw(touch);
 
 BEGIN { use_ok 'Fink::Finally'; }
+
+sub run_script {
+	my $script = shift;
+	my ($out, $ret);
+	
+	$script = "#!/usr/bin/perl\nuse Fink::Finally;\n$script";
+	local $ENV{PERL5LIB} = join(':', @INC);
+	capture {
+		$ret = execute($script, quiet => 1, delete_tempfile => -1);
+	} \$out, \$out;
+	return wantarray ? ($out, $ret) : $out;
+}	
 
 # bad args
 {
@@ -18,35 +31,35 @@ BEGIN { use_ok 'Fink::Finally'; }
 	ok($@, 'bad args - not a code ref');
 }
 
-# explicit cleanup
+# explicit run
 {
 	my $x = 0;
 	my $finally = Fink::Finally->new(sub { $x++ });
 	$finally->run;
-	is($x, 1, 'explicit cleanup');
+	is($x, 1, 'explicit run');
 }
 
-# automatic cleanup
+# run when we fall out of scope
 {
 	my $x = 0;
 	{
 		my $finally = Fink::Finally->new(sub { $x++ });
 	}
-	is($x, 1, 'automatic cleanup');
+	is($x, 1, 'run when we fall out of scope');
 }
 
-# exceptional cleanup
+# run when an exception is thrown
 {
 	my $x = 0;
 	eval {
 		my $finally = Fink::Finally->new(sub { $x++ });
 		die "exception!";
 	};
-	ok($@, 'exceptional cleanup - exception thrown');
-	is($x, 1, 'exceptional cleanup - executed');
+	ok($@, 'run when an exception is thrown - exception thrown');
+	is($x, 1, 'run when an exception is thrown - executed');
 }
 
-# run once
+# only run once
 {
 	my $x = 0;
 	{
@@ -55,30 +68,19 @@ BEGIN { use_ok 'Fink::Finally'; }
 		$finally->run;
 		# out of scope => automatic run
 	}
-	is($x, 1, 'run once');
+	is($x, 1, 'only run once');
 }
 
-# cleanup on exit
+# run on exit()
 {
-	my $script = <<'SCRIPT';
-use Fink::Finally;
+	my $out = run_script <<'SCRIPT';
 my $finally = Fink::Finally->new(sub { print "cleanup\n" });
 exit 0;
 SCRIPT
-	my ($fh, $fname) = tempfile("capture.XXXX");
-	print $fh $script;
-	close $fh;
-	
-	local $ENV{PERL5LIB} = join(':', @INC);
-	open my $subproc, '-|', "perl $fname" or die "Can't open subproc: $!";
-	my $out = join('', <$subproc>);
-	close $subproc;
-	
-	is($out, "cleanup\n", "cleanup on exit");
-	unlink $fname;
+	is($out, "cleanup\n", "run on exit()");
 }
 
-# cancellation
+# cancelled finalizers don't run
 {
 	my $x = 0;
 	{
@@ -86,10 +88,11 @@ SCRIPT
 		$fin->cancel;
 		$fin->run;
 	} # out of scope
-	is($x, 0, 'cancellation');
+	is($x, 0, "cancelled finalizers don't run");
 }
 
-# fork doesn't run in subproc
+
+# fork doesn't run Finally objects in the subproc
 {
 	my $dummy;
 	($dummy, my $file) = tempfile("capture.fork.XXXX");
@@ -102,9 +105,21 @@ SCRIPT
 		$fork = fork;
 		if ($fork) {
 			wait;
-			ok(-f $file, "fork doesn't run in subproc");
+			ok(-f $file, "fork doesn't run Finally objects in the subproc");
+		} else {
+			exit 0;
 		}
 	}
+}
+
+# exit status unchanged
+{
+	my ($out, $status) = run_script <<'SCRIPT';
+my $finally = Fink::Finally->new(sub { system("echo finalizer") });
+exit 2;
+SCRIPT
+	is($out, "finalizer\n", 'exit status unchanged - finalizer ran');
+	is($status, 2, 'exit status unchanged - correct status');
 }
 
 	

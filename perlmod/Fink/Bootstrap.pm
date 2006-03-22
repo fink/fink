@@ -41,7 +41,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &get_packageversion &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -67,12 +67,11 @@ Fink::Bootstrap - Bootstrap a fink installation
 	my $packagefiles = fink_packagefiles();
 	my ($notlocated, $basepath) = locate_Fink();
 	my ($notlocated, $basepath) = locate_Fink($param);
-	my ($version, $revision) = get_packageversion();
 	find_rootmethod($bpath);
 	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination);
-	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda);
+	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda,$version,$revision);
 	my ($version, $revisions) = read_version_revision($package_source);
 	my ($version, $revision) = get_version_revision($package_source,$distribution);
 
@@ -302,7 +301,6 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 
 	### get version
 	
-#	my ($packageversion, $packagerevision) = &get_packageversion();
 	my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
 	
 	### load configuration
@@ -612,34 +610,6 @@ sub locate_Fink {
 	return (0,$bpath);
 }
 
-=item get_packageversion
-
-	my ($version, $revision) = get_packageversion();
-
-Finds the current version (by examining the VERSION file) and the current
-revision (which defaults to 1 or a cvs timestamp) of the package being 
-compiled.
-
-Formerly called by bootstrap.pl and inject_package(); now obsolete.
-
-=cut
-
-sub get_packageversion {
-
-	my ($packageversion, $packagerevision);
-	
-	chomp($packageversion = cat "VERSION");
-	if ($packageversion =~ /cvs/) {
-	my @now = gmtime(time);
-		$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
-		                           $now[5]+1900, $now[4]+1, $now[3],
-		                           $now[2], $now[1]);
-	} else {
-		$packagerevision = "1";
-	}
-	return ($packageversion, $packagerevision);
-}
-
 =item find_rootmethod
 
 	find_rootmethod($bpath);
@@ -784,7 +754,7 @@ sub copy_description {
 
 	my $coda = "NoSourceDirectory: true\n";
 
-	if (modify_description("$package.info.in","$bpath/fink/dists/$destination/$package.info","$bpath/src/$package-$packageversion.tar",".","%n-%v.tar",$distribution,$coda)) {
+	if (modify_description("$package.info.in","$bpath/fink/dists/$destination/$package.info","$bpath/src/$package-$packageversion.tar",".","%n-%v.tar",$distribution,$coda, $packageversion, $packagerevision)) {
 			print "ERROR: Can't copy package description(s).\n";
 			$result = 1;
 		} elsif (&execute("/bin/chmod 644 $bpath/fink/dists/$destination/*.*")) {
@@ -797,7 +767,7 @@ sub copy_description {
 
 =item modify_description
 
-	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda);
+	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda,$version,$revision);
 
 Copy the file $original to $target, supplying the correct version and
 revision (from get_version_revision($package_source,$distribution)) and 
@@ -821,8 +791,9 @@ sub modify_description {
 	my $source_location = shift;
 	my $distribution = shift;
 	my $coda = shift;
+	my $version = shift;
+	my $revision = shift;
 
-	my ($version, $revision) = get_version_revision($package_source,$distribution);
 	print "Modifying package description...\n";
 	my $md5obj = Fink::Checksum->new('MD5');
 	my $md5 = $md5obj->get_checksum($tarball);
