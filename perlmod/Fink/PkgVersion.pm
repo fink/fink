@@ -4848,6 +4848,8 @@ sub run_script {
 	my $no_expand = shift || 0;
 	my $nonroot_okay = shift || 0;
 
+	my $arch = get_arch();
+
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
 
@@ -4868,6 +4870,10 @@ sub run_script {
 				"or fink-beginners mailing lists.  As a last resort, you can try e-mailing\n".
 				"the maintainer directly:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
+			if ($arch eq "i386") {
+$error .= "Note that many fink package maintainers do not (yet) have access to OSX on\n" .
+	"Intel hardware, so you may have better luck on the mailing lists.\n\n";
+}
 		}
 		die $error . "\n";
 	}
