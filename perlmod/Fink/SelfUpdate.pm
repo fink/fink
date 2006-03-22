@@ -28,7 +28,7 @@ use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $dbpath $distribution);
 use Fink::NetAccess qw(&fetch_url);
-use Fink::Engine qw(&aptget_update &cmd_install);
+use Fink::Engine;  # &aptget_update &cmd_install, but they aren't EXPORT_OK
 use Fink::Package;
 use Fink::FinkVersion qw(&pkginfo_version);
 use Fink::Mirror;
