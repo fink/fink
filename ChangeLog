@@ -1,3 +1,7 @@
+2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* install.sh: Include Fink::Finally in manpages.
+
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* fink.8.in: Update ancient docs for 'fink scanpackages'.

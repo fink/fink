@@ -107,7 +107,7 @@ function manify_bin () {
 		--section $2 $1 "$basepath/share/man/man$2/$1.$2"
 }
 function manify_pm () {
-	echo "  $1"
+	echo "  $1.3pm"
 	pm=`echo $1 | perl -ne 'chomp; s,::,/,g; print "perlmod/$_.pm"'`
 	pod2man --center "Fink documentation" --release "Fink $version" \
 		--section 3 "$pm" "$basepath/share/man/man3/$1.3pm"
@@ -115,7 +115,7 @@ function manify_pm () {
 manify_bin fink-scanpackages 8
 for p in Fink Fink::{Base,Bootstrap,Checksum,CLI,Command,Config,Configure} \
 		Fink::{Engine,FinkVersion,Notify,Package,PkgVersion,Scanpackages} \
-		Fink::{Services,Shlibs,SysState,VirtPackage} \
+		Fink::{Services,Shlibs,SysState,VirtPackage,Finally} \
 		Fink::Text::{DelimMatch,ParseWords}; do
 	manify_pm $p
 done
