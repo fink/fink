@@ -29,7 +29,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &count_files &get_arch
 					  &call_queue_clear &call_queue_add
 					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
-					  $VALIDATE_HELP);
+					  $VALIDATE_HELP &apt_available);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width);
@@ -199,7 +199,7 @@ sub process {
 		}
 		# check if apt-get is available
 		if (not $apt_problem) {
-			if (&execute("$basepath/bin/apt-get 1>/dev/null 2>/dev/null", quiet=>1)) {
+			if (!apt_available) {
 				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled ".
 				    "but apt-get could not be run. Try to install the 'apt' Fink package ".
 				    "(with e.g. 'fink install apt').");
@@ -614,10 +614,52 @@ sub cmd_listpackages {
 	}
 }
 
+=item aptget_update
+
+  aptget_update $quiet;
+
+Update the apt-get package database.
+
+=cut
+
+sub aptget_update {
+	my $quiet = shift || 0;
+	
+	return unless apt_available;
+	my $aptcmd = aptget_lockwait();
+	if ($quiet) {
+		$aptcmd .= " -qq";
+	} elsif ($config->verbosity_level < 2) {
+		$aptcmd .= " -q";
+	}
+	if (&execute($aptcmd . " update", quiet => 1)) {
+		print("WARNING: Failure while updating indexes.\n");
+	}
+}
+
+=item cmd_scanpackages
+
+  $ fink scanpackages [ TREE1 ... ]
+
+Command to update the packages in the given trees.
+
+=cut
 
 sub cmd_scanpackages {
-	my $quiet = shift || 0;
-	my @treelist = @_;
+	scanpackages(0, @_);
+	aptget_update;
+}
+
+=item scanpackages
+
+  scanpackages $quiet, @trees;
+
+Update the apt-get package database in the given trees.
+
+=cut
+
+sub scanpackages {
+	my ($quiet, @treelist) = @_;
 	
 	# Use lowest verbosity
 	$quiet = $config->verbosity_level if $quiet > $config->verbosity_level;
@@ -631,17 +673,6 @@ sub cmd_scanpackages {
 		verbosity => !$quiet,
 		restrictive => $restrictive
 	}, @treelist);
-	
-	# Update apt-get
-	my $aptcmd = aptget_lockwait() . " ";
-	if ($quiet) {
-		$aptcmd .= "-qq ";
-	} elsif ($config->verbosity_level < 2) {
-		$aptcmd .= "-q ";
-	}
-	if (&execute($aptcmd . "update", quiet => 1)) {
-		print("WARNING: Failure while updating indexes.\n");
-	}
 }
 
 ### package-related commands
@@ -1230,7 +1261,10 @@ EOFUNC
 		if ($opts{dryrun}) {
 			print "Skipping scanpackages and in dryrun mode\n";
 		} else {
-			&cmd_scanpackages(1);
+			if (apt_available) {
+				scanpackages(1);
+				aptget_update(1);
+			}
 		}
 	}
 }
@@ -1862,11 +1896,12 @@ sub real_install {
 		}
 	}
 	
-	# Default to AutoScanpackages: True
+	# Default to true
 	my $autoscan = !$config->has_param("AutoScanpackages")
 		|| $config->param_boolean("AutoScanpackages");
-	if ($willbuild && $autoscan) {
-		&cmd_scanpackages(1);
+	if ($willbuild && $autoscan && apt_available) {
+		scanpackages(1);
+		aptget_update(1);
 	}
 }
 

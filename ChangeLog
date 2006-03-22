@@ -1,3 +1,7 @@
+2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* fink.8.in: Update ancient docs for 'fink scanpackages'.
+
 2006-03-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.sh: generate a new FinkVersion.pm on every bootstrap run

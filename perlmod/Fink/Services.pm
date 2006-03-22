@@ -69,7 +69,7 @@ BEGIN {
 					  &store_rename &fix_gcc_repairperms
 					  &spec2struct &spec2string &get_options
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
-					  &find_subpackages);
+					  &find_subpackages &apt_available);
 }
 our @EXPORT_OK;
 
@@ -2208,6 +2208,29 @@ sub find_subpackages {
 	}
 	
 	return @found;
+}
+
+=item apt_available
+
+  my $bool = apt_available;
+
+Check if apt-get seems usable on this system.
+
+=cut
+
+{
+	my $aptok;
+	
+	sub apt_available {
+		unless (defined $aptok) {
+			require Fink::Config;
+			$aptok = !execute(
+				"$Fink::Config::basepath/bin/apt-get 1>/dev/null 2>/dev/null",
+				quiet => 1
+			);
+		}
+		return $aptok;
+	}
 }
 
 =back

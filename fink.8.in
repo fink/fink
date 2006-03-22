@@ -488,9 +488,9 @@ Control the display of nitpicky formatting warnings.
 is the default.
 .El
 .It Cm scanpackages Op Ar tree...
-Calls
-.Xr dpkg-scanpackages 8
-with the specified trees.
+Updates the
+.Xr apt-get 8
+database of debs in the specified trees.
 .It Cm cleanup Ar [mode(s) and options]
 Removes obsolete and temporary files. This can reclaim large amounts of
 disk space. One or more modes must be specified:
