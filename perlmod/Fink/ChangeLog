@@ -1,3 +1,7 @@
+2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* CLI.pm: Add logging to &capture, fix open-modes problem. 
+
 2006-03-22  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: fix cctools-single-module to use a check against the

@@ -24,7 +24,8 @@
 package Fink::CLI;
 
 use Carp;
-use Fcntl qw(:seek);
+use File::Temp qw(tempfile);
+use Fcntl qw(:seek :DEFAULT);
 use IO::Handle;
 
 use strict;
@@ -667,35 +668,56 @@ outputs merged.
 
 =cut
 
+{ # Simple logging, for when normal out/err aren't available
+	my $capterr_dir = '/tmp'; # set to undef for production, path for debug
+	my $capterr;
+	if (defined $capterr_dir) {
+		($capterr) = tempfile("capture.XXXXX", DIR => $capterr_dir,
+			UNLINK => 0);
+		$capterr->autoflush(1);
+	}
+	sub _fh_log { print $capterr @_, "\n\n" if defined $capterr }
+}
+	
+# Die, printing to a log FH (in addition to stderr)
+sub _fh_die {
+	my $msg = shift;
+	_fh_log(Carp::longmess($msg));
+	die $msg;
+}
+
+# Save a filehandle
 # my $saved = _fh_save \*FH;
 sub _fh_save {
 	my ($fh, $scalar) = @_;
-	die "Argument must be a scalar ref"
+	_fh_die "Argument must be a scalar ref"
 		unless ref($scalar) && ref($scalar) eq 'SCALAR';
-	open my $save, '>&', $fh or die "Can't save filehandle: $!";
-	close $fh or die "Can't temporarily close filehandle: $!";
+	open my $save, '>&', $fh or _fh_die "Can't save filehandle: $!";
+	close $fh or _fh_die "Can't temporarily close filehandle: $!";
 	return $save;
 }
 
+# Reading a filehandle, then restore to the saved FH 
 # _fh_restore \*FH, $save, \$read_into;  Last arg optional
 sub _fh_restore {
 	my ($fh, $save, $into) = @_;
 	if (defined $into) {
-		$fh->flush or die "Can't flush: $!";
-		seek $fh, 0, SEEK_SET or die "Can't seek: $!";
+		$fh->flush or _fh_die "Can't flush: $!";
+		seek $fh, 0, SEEK_SET or _fh_die "Can't seek: $!";
 		$$into = join('', <$fh>);
-		die "Can't read filehandle: $!" if $fh->error;
+		_fh_die "Can't read filehandle: $!" if $fh->error;
 	}
-	close $fh or die "Can't close filehandle: $!";
+	close $fh or _fh_die "Can't close filehandle: $!";
 	
-	# It appears perl ignores more permissive modes for STD*, so '+>&' is ok
-	open $fh, '+>&', $save or die "Can't reopen filehandle: $!";
-	close $save or die "Can't close saved filehandle: $!";
+	# Try not to use an excessive open mode
+	my $mode = (fcntl($save, F_GETFL, 0) & O_RDWR) ? '+>&' : '>&';
+	open $fh, $mode, $save or _fh_die "Can't reopen filehandle: $!";
+	close $save or _fh_die "Can't close saved filehandle: $!";
 }	
 
 sub capture (&$;$) {
 	my ($code, $out, $err, @toomany) = @_;
-	die "Too many arguments!" if @toomany;
+	_fh_die "Too many arguments!" if @toomany;
 	my ($die, $ret, $setupok);
 	my $array = wantarray;
 	
@@ -703,15 +725,15 @@ sub capture (&$;$) {
 	my ($savout, $saverr);
 	if (defined $out) {
 		$savout = _fh_save(*STDOUT{IO}, $out); # ok to die
-		open STDOUT, '+>', undef or die "Can't reopen STDOUT: $!";
+		open STDOUT, '+>', undef or _fh_die "Can't reopen STDOUT: $!";
 	}
 	eval { # cleanup stdout if error within this block
 		if (defined $err) {
 			$saverr = _fh_save(*STDERR{IO}, $err);
 			if ($out eq $err) {
-				open STDERR, '>&', STDOUT or die "Can't merge STDERR: $!";
+				open STDERR, '>&', STDOUT or _fh_die "Can't merge STDERR: $!";
 			} else {
-				open STDERR, '+>', undef or die "Can't reopen STDERR: $!";
+				open STDERR, '+>', undef or _fh_die "Can't reopen STDERR: $!";
 			}
 		}
 		$setupok = 1; # Now ok to save output
@@ -728,7 +750,7 @@ sub capture (&$;$) {
 	_fh_restore(*STDOUT{IO}, $savout, $setupok ? $out : ()) if defined $savout;
 	
 	# Finish up
-	die $die if $die;
+	_fh_die $die if $die;
 	return $array ? @$ret : $ret;
 }
 
