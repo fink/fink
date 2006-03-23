@@ -669,7 +669,7 @@ outputs merged.
 =cut
 
 { # Simple logging, for when normal out/err aren't available
-	my $capterr_dir = '/tmp'; # set to undef for production, path for debug
+	my $capterr_dir = undef; # set to undef for production, path for debug
 	my $capterr;
 	if (defined $capterr_dir) {
 		($capterr) = tempfile("capture.XXXXX", DIR => $capterr_dir,
