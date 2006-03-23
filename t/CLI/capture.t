@@ -146,7 +146,7 @@ SCRIPT
 	close $fh;
 	
 	local $ENV{PERL5LIB} = join(':', @INC);
-	open my $subproc, '-|', "perl $fname" or die "Can't open subproc: $!";
+	open my $subproc, '-|', "/usr/bin/perl $fname" or die "Can't open subproc: $!";
 	my $out = join('', <$subproc>);
 	close $subproc;
 	

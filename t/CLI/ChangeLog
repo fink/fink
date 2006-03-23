@@ -1,3 +1,7 @@
+2006-03-23  Daniel Macks  <dmacks@netspace.org>
+
+	* capture.t: Work around a bug in Test::Harness
+
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* capture.t: Make 'too many args' test compile at runtime.
