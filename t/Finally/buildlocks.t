@@ -3,12 +3,12 @@
 use strict;
 use Test::More 'no_plan';
 
-require_ok('Fink::PkgVersion');
+require_ok('Fink::Finally::Buildlock');
 
 # API function check
 
-can_ok('Fink::PkgVersion','set_buildlock');
-can_ok('Fink::PkgVersion','clear_buildlock');
+can_ok('Fink::Finally::Buildlock','initialize');
+can_ok('Fink::Finally::Buildlock','finalize');
 
 # dpkg needs BDO pkgs
 {

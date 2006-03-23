@@ -75,7 +75,12 @@ our @EXPORT_OK;
 
 our %perl_archname_cache;
 
-END { }				# module clean-up code here (global destructor)
+# Hold the trees of packages that we've built, so we can scan them
+our %built_trees;
+
+END {
+	scanpackages();
+}
 
 =head1 NAME
 
@@ -1160,6 +1165,18 @@ sub disable_bootstrap {
 	foreach	 $splitoff ($self->parent_splitoffs) {
 		$splitoff->disable_bootstrap();
 	}
+}
+
+=item is_bootstrapping
+
+  my $bool = $pv->is_bootstrapping;
+
+Are we in bootstrap mode?
+
+=cut
+
+sub is_bootstrapping {
+	return $_[0]->{_bootstrap};
 }
 
 =item get_name
@@ -4096,6 +4113,8 @@ EOF
 							"the directory manually to save disk space. ".
 							"Continuing with normal procedure.");
 	}
+	
+	$built_trees{$self->get_full_tree} = 1;
 }
 
 =item phase_activate
@@ -4352,254 +4371,6 @@ sub phase_purge_recursive {
 		}
 	}
 	Fink::PkgVersion->dpkg_changed;
-}
-
-# create an exclusive lock for the %f of the parent using dpkg
-sub set_buildlock {
-	my $self = shift;
-
-	# allow over-ride
-	return if Fink::Config::get_option("no_buildlock");
-
-	# lock on parent pkg
-	if ($self->has_parent) {
-		return $self->get_parent->set_buildlock();
-	}
-
-	# bootstrapping occurs before we have package-management tools
-	# needed for buildlocking. If you're bootstrapping into a location
-	# that already has a running fink, you already know you're gonne
-	# hose whatever may be running under that fink...
-	return if $self->{_bootstrap};
-
-	# The plan: get an exlusive lock for %n-%v-%r_$timestamp that
-	# automatically goes away when this fink process quit. Install a
-	# %n-%v-%r package that prohibits removal of itself if that lock
-	# is present.  It's always safe to attempt to remove all installed
-	# buildlock pkgs since they can each determine if these locks are
-	# dead.  Attempting to install a lockpkg for the same %n-%v-%r
-	# will cause existing one to attempt to be removed, which will
-	# fail iff its lock is still alive. Fallback to the newer pkg's
-	# prerm is okay because that will also be blocked by its own live
-	# lock.
-
-	print "Setting runtime build-lock...\n";
-
-	my $lockdir = "$basepath/var/run/fink/buildlock";
-	mkdir_p $lockdir or
-		die "can't create $lockdir directory for buildlocks\n";
-
-	my $timestamp = strftime "%Y.%m.%d-%H.%M.%S", localtime;
-	my $lockfile = $lockdir . '/' . $self->get_fullname() . "_$timestamp.lock";
-	my $lock_FH = lock_wait($lockfile, exclusive => 1);
-
-	my $pkgname = $self->get_name();
-	my $pkgvers = $self->get_fullversion();
-	my $lockpkg = 'fink-buildlock-' . $self->get_fullname();
-
-	my $destdir = $self->get_install_directory($lockpkg);
-
-	if (not -d "$destdir/DEBIAN") {
-		mkdir_p "$destdir/DEBIAN" or
-			die "can't create directory for control files for package $lockpkg\n";
-	}
-
-	# generate dpkg "control" file
-
-	my $control = <<EOF;
-Package: $lockpkg
-Source: fink
-Version: $timestamp
-Section: unknown
-Installed-Size: 0
-Architecture: $debarch
-Description: Package compile-time lockfile
- This package represents the compile-time dependencies of a
- package being compiled by fink. The package being compiled is:
-   $pkgname ($pkgvers)
- and the build process begun at $timestamp
- .
- Web site: http://wiki.opendarwin.org/index.php/Fink:buildlocks
- .
- Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
-Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
-Provides: fink-buildlock
-EOF
-
-	# buildtime (anti)dependencies of pkg are runtime (anti)dependencies of lockpkg
-	my $depfield;
-	$depfield = &lol2pkglist($self->get_depends(1, 1));
-	if (length $depfield) {
-		$control .= "Conflicts: $depfield\n";
-	}
-	$depfield = &lol2pkglist($self->get_depends(1, 0));
-	if (length $depfield) {
-		$control .= "Depends: $depfield\n";
-	}
-
-	### write "control" file
-	if (open my $controlfh, '>', "$destdir/DEBIAN/control") {
-		print $controlfh $control;
-		close $controlfh or die "can't write control file for $lockpkg: $!\n";
-	} else {
-		die "can't write control file for $lockpkg: $!\n";
-	}
-
-	### set up the lockfile interlocking
-
-	# this is implemented in perl but PreRm is in bash so we gonna in-line it
-	my $prerm = <<EOF;
-#!/bin/bash -e
-
-if [ failed-upgrade = "\$1" ]; then
-  exit 1
-fi
-
-if perl -e 'exit 0 unless eval { require Fink::PkgVersion }; \\
-	exit 0 unless defined &Fink::PkgVersion::can_remove_buildlock; \\
-	exit !Fink::PkgVersion->can_remove_buildlock("$lockfile")'; then
-  rm -f $lockfile
-  exit 0
-else
-  cat <<EOMSG
-There is currently an active buildlock for the package
-     $pkgname ($pkgvers)
-meaning some other fink process is currently building it.
-EOMSG
-  exit 1
-fi
-EOF
-
-	### write prerm file
-	if (open my $prermfh, '>', "$destdir/DEBIAN/prerm") {
-		print $prermfh $prerm;
-		close $prermfh or die "can't write PreRm file for $lockpkg: $!\n";
-		chmod 0755, "$destdir/DEBIAN/prerm";
-	} else {
-		die "can't write PreRm file for $lockpkg: $!\n";
-	}
-
-	### store our PID in a file in the buildlock package
-	my $deb_piddir = "$destdir$lockdir";
-	if (not -d $deb_piddir) {
-		mkdir_p $deb_piddir or
-			die "can't create directory for lockfile for package $lockpkg\n";
-	}
-	if (open my $lockfh, ">$deb_piddir/" . $self->get_fullname() . ".pid") {
-		print $lockfh $$,"\n";
-		close $lockfh or die "can't create pid file for package $lockpkg: $!\n";
-	} else {
-		die "can't create pid file for package $lockpkg: $!\n";
-	}
-
-	### create .deb using dpkg-deb (in buildpath so apt doesn't see it)
-	if (&execute("dpkg-deb -b $destdir $buildpath")) {
-		die "can't create package $lockpkg\n";
-	}
-	rm_rf $destdir or
-		&print_breaking("WARNING: Can't remove package root directory ".
-						"$destdir. ".
-						"This is not fatal, but you may want to remove ".
-						"the directory manually to save disk space. ".
-						"Continuing with normal procedure.");
-
-	# install lockpkg (== set dpkg lock on our deps)
-	print "Installing build-lock package...\n";
-	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
-	my $lock_failed = &execute(dpkg_lockwait() . " -i $debfile", ignore_INT=>1);
-	Fink::PkgVersion->dpkg_changed;
-
-	if ($lock_failed) {
-		print_breaking rejoin_text <<EOMSG;
-Can't set build lock for $pkgname ($pkgvers)
-
-If any of the above dpkg error messages mention conflicting packages or
-missing dependencies -- for example, telling you that the package
-fink-buildlock-$pkgname-$pkgvers
-conflicts with something else -- fink has probably gotten confused by trying 
-to build many packages at once. Try building just this current package
-$pkgname (i.e, "fink build $pkgname"). When that has completed successfully, 
-you could retry whatever you did that led to the present error.
-
-Regardless of the cause of the lock failure, don't worry: you have not
-wasted compiling time! Packages that had been completely built before
-this error occurred will not have to be recompiled.
-
-See http://wiki.opendarwin.org/index.php/Fink:buildlocks for more information.
-EOMSG
-
-		# Failure due to dependency problems leaves lockpkg in an
-		# "unpacked" state, so try to remove it entirely.
-		unlink $lockfile;
-		close $lock_FH;
-		&execute(dpkg_lockwait() . " -r $lockpkg >/dev/null", ignore_INT=>1);
-	}
-
-	# Even if installation fails, no reason to keep this around
-	rm_f $debfile or
-		&print_breaking("WARNING: Can't remove binary package file ".
-						"$debfile. ".
-						"This is not fatal, but you may want to remove ".
-						"the file manually to save disk space. ".
-						"Continuing with normal procedure.");
-
-	die "buildlock failure\n" if $lock_failed;
-
-	# record buildlock package name so we can remove it during clear_buildlock
-	$self->{_buildlock} = {
-		lockfile => $lockfile,
-		lock_FH  => $lock_FH,
-		lockpkg  => $lockpkg,
-		finalizer => Fink::Finally->new(sub { $self->_real_clear_buildlock }),
-	};
-}
-
-# external wrapper for _real_clear_buildlock
-sub clear_buildlock {
-	my ($self) = @_;
-	
-	# lock on parent pkg
-	if ($self->has_parent) {
-		return $self->get_parent->clear_buildlock();
-	}
-	return unless $self->{_buildlock};
-	
-	$self->{_buildlock}->{finalizer}->run;
-	
-	# This should be a good time to scan the packages
-	my $autoscan = !$config->has_param("AutoScanpackages")
-		|| $config->param_boolean("AutoScanpackages");
-	if ($autoscan && apt_available) {
-		require Fink::Engine;
-		Fink::Engine::scanpackages(1, $self->get_full_tree);
-		Fink::Engine::finalize('apt-get update', sub {
-			Fink::Engine::aptget_update();
-		});
-	}
-}
-
-# remove the lock created by set_buildlock
-sub _real_clear_buildlock {
-	my $self = shift;
-
-	# we were locked...
-	print "Removing runtime build-lock...\n";
-	close $self->{_buildlock}->{lock_FH};
-
-	print "Removing build-lock package...\n";
-	my $lockpkg = $self->{_buildlock}->{lockpkg};
-
-	# lockpkg's prerm deletes the lockfile
-	if (&execute(dpkg_lockwait() . " -r $lockpkg", ignore_INT=>1)) {
-		&print_breaking("WARNING: Can't remove package ".
-						"$lockpkg. ".
-						"This is not fatal, but you may want to remove ".
-						"the package manually as it may interfere with ".
-						"further fink operations. ".
-						"Continuing with normal procedure.");
-	}
-	Fink::PkgVersion->dpkg_changed;
-	delete $self->{_buildlock};
 }
 
 =item ensure_gpp_prefix
@@ -5223,20 +4994,6 @@ sub _instscript {
 	return $return;
 }
 
-=item can_remove_buildlock
-
-  my $fh = Fink::PkgVersion->can_remove_buildlock($lockfile);
-
-Test if it is safe to remove a buildlock. After calling this, either the $fh
-should be closed, or the lockfile deleted.
-
-=cut
-
-sub can_remove_buildlock {
-	my ($class, $lockfile) = @_;
-	return lock_wait("$lockfile", exclusive => 1, no_block => 1);
-}
-
 =item get_full_trees
 
   my @trees = $pv->get_full_trees;
@@ -5258,6 +5015,29 @@ sub get_full_trees {
 }
 sub get_full_tree {
 	return ($_[0]->get_full_trees)[-1];
+}
+
+=item scanpackages
+
+  scanpackages;
+
+Scan the packages for the packages we built this run.
+
+=cut
+
+sub scanpackages {
+	# Scan packages in the built trees, if that's desired
+	if (%built_trees) {
+		my $autoscan = !$config->has_param("AutoScanpackages")
+			|| $config->param_boolean("AutoScanpackages");
+		
+		if ($autoscan && apt_available) {
+			require Fink::Engine; # yuck
+			Fink::Engine::scanpackages(0, keys %built_trees);
+			Fink::Engine::aptget_update();
+		}
+		%built_trees = ();
+	}
 }
 
 =back

@@ -1,3 +1,8 @@
+2006-03-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* buildlocks.t: Move to ../Finally/buildlocks.t, since buildlocks are now
+	handled by Fink::Finally::Buildlock.
+
 2005-08-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* get_perl.t, get_ruby.t, get_splitoffs.t, non_consecutive_source.t:

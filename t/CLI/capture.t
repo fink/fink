@@ -60,9 +60,10 @@ BEGIN { use_ok 'Fink::CLI', 'capture'; }
 	my ($out, $inner);
 	capture {
 		capture { print "inner" } \$inner;
+		print "outer";
 	} \$out;
 	is($inner, "inner", "nesting - stdout intercepted");
-	is($out, "", "nesting - stdout not propagated");
+	is($out, "outer", "nesting - stdout not propagated");
 }
 
 # stderr propagation. Wow, this is a hairy test!
@@ -70,9 +71,10 @@ BEGIN { use_ok 'Fink::CLI', 'capture'; }
 	my ($out, $err, $inner);
 	capture {
 		capture { print "inner"; print STDERR "err" } \$inner;
+		print "outer";
 	} \$out, \$err;
 	is($inner, "inner", "stderr propagation - stdout intercepted");
-	is($out, "", "stderr propagation - stdout not propagated");
+	is($out, "outer", "stderr propagation - stdout not propagated");
 	is($err, "err", "stderr propagation - stderr propagated");
 }		
 

@@ -39,7 +39,8 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin \
-	lib lib/perl5 lib/perl5/Fink lib/perl5/Fink/{Text,Notify,Checksum} \
+	lib lib/perl5 lib/perl5/Fink \
+	lib/perl5/Fink/{Text,Notify,Checksum,Finally} \
 	lib/fink lib/fink/update \
 	etc etc/dpkg \
 	share share/doc share/doc/fink \
@@ -67,7 +68,7 @@ for bin in fink fink-{virtual-pkgs,instscripts,scanpackages} pathsetup.sh \
 done
 
 # copy all perl modules
-for subdir in . Fink Fink/{Text,Notify,Checksum} ; do
+for subdir in . Fink Fink/{Text,Notify,Checksum,Finally} ; do
   for file in perlmod/${subdir}/*.pm ; do
     if [ -f $file ]; then
       install -c -p -m 644 $file "$basepath/lib/perl5/$subdir"
@@ -113,10 +114,31 @@ function manify_pm () {
 		--section 3 "$pm" "$basepath/share/man/man3/$1.3pm"
 }
 manify_bin fink-scanpackages 8
-for p in Fink Fink::{Base,Bootstrap,Checksum,CLI,Command,Config,Configure} \
-		Fink::{Engine,FinkVersion,Notify,Package,PkgVersion,Scanpackages} \
-		Fink::{Services,Shlibs,SysState,VirtPackage,Finally} \
-		Fink::Text::{DelimMatch,ParseWords}; do
+for p in \
+		Fink				\
+		Fink::Base			\
+		Fink::Bootstrap		\
+		Fink::Checksum		\
+		Fink::CLI			\
+		Fink::Command		\
+		Fink::Config		\
+		Fink::Configure		\
+		Fink::Engine		\
+		Fink::Finally		\
+		Fink::Finally::BuildConflicts	\
+		Fink::Finally::Buildlock		\
+		Fink::FinkVersion	\
+		Fink::Notify		\
+		Fink::Package		\
+		Fink::PkgVersion	\
+		Fink::Scanpackages	\
+		Fink::Services		\
+		Fink::Shlibs		\
+		Fink::SysState		\
+		Fink::Text::DelimMatch			\
+		Fink::Text::ParseWords			\
+		Fink::VirtPackage	\
+		; do
 	manify_pm $p
 done
 

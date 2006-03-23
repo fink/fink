@@ -1,3 +1,7 @@
+2006-03-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* install.sh: Include perlmod/Fink/Finally in installation dirs.
+
 2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* install.sh: Include Fink::Finally in manpages.

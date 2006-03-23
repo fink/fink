@@ -1,3 +1,14 @@
+2006-03-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Finally.pm: Use a pretty OO interface.
+	* Finally/BuildConflicts.pm: New module for BuildConflicts removal and
+	restoration.
+	* Finally/Buildlock.pm: New module for buildlock setting and clearing.
+	* Engine.pm: Remove add_finalizer interface, move BuildConflicts removal
+	to Finally/BuildConflicts.pm 
+	* PkgVersion.pm: Add method is_bootstrapping, move buildlock stuff to
+	Finally/Buildlock.pm. New scapackages stuff in END.
+
 2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* CLI.pm: Add logging to &capture, fix open-modes problem. 

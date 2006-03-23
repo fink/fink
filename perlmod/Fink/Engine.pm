@@ -35,6 +35,8 @@ use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &get_term_width &die_breaking);
 use Fink::Configure qw(&spotlight_warning);
 use Fink::Finally;
+use Fink::Finally::Buildlock;
+use Fink::Finally::BuildConflicts;
 use Fink::Package;
 use Fink::PkgVersion;
 use Fink::Config qw($config $basepath $debarch $dbpath);
@@ -124,13 +126,11 @@ our %commands =
 	  'show-deps'         => [\&cmd_show_deps,         1, 0, 0],
 	);
 
-# Groups of finalizers for &process 
-our @finalizers = ({ });
-
 END { }				# module clean-up code here (global destructor)
 
 ### constructor using configuration
 
+# Why is this here? Why not just inherit from Fink::Base?
 sub new_with_config {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
@@ -163,6 +163,7 @@ sub initialize {
 
 sub process {
 	my $self = shift;
+	
 	my $orig_ARGV = shift;
 	my $cmd = shift;
 	my @args = @_;
@@ -187,8 +188,6 @@ sub process {
 		my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
 		push @argv_stack, [ @$orig_ARGV ];
 		Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
-		
-		push @finalizers, { }; # new finalizer group
 	}
 
 	($proc, $pkgflag, $rootflag, $aptgetflag) = @{$commands{$cmd}};
@@ -264,6 +263,9 @@ sub process {
 	my $proc_rc = { '$@' => $@, '$?' => $? };  # save for later
 	my $retval = 0;
 	
+	# Scan packages before we print any error message
+	Fink::PkgVersion::scanpackages();
+	
 	# Rebuild the command line, for user viewing
 	my $commandline = join ' ', 'fink', @$orig_ARGV;
 	my $notifier = Fink::Notify->new();
@@ -293,8 +295,6 @@ sub process {
 		my @argv_stack = @{Fink::Config::get_option('_ARGV_stack', [])};
 		pop @argv_stack;
 		Fink::Config::set_options({ '_ARGV_stack' => \@argv_stack });
-		
-		pop @finalizers; # run current finalizer group
 	}
 
 	return $retval;;
@@ -620,24 +620,6 @@ sub cmd_listpackages {
 			print "NO\n";
 		}
 	}
-}
-
-=item finalize
-
-  finalize $name, $code;
-
-Add some code that should run when I<&process> finishes. Only the first I<$code>
-for a given I<$name> is run, all later calls are ignored.
-
-Supports re-entrancy.
-
-=cut
-
-sub finalize {
-	my ($name, $code) = @_;
-	my $group = $finalizers[-1];
-	return if exists $group->{$name};
-	$group->{$name} = Fink::Finally->new($code);
 }
 
 =item aptget_update
@@ -1837,21 +1819,22 @@ sub real_install {
 					### installed in an other loop
 					if (!$package->is_installed() || $op == $OP_REBUILD) {
 						# Remove the BuildConflicts, and reinstall after
-						my $fin = remove_buildconflicts($conflicts{$pkgname});
+						my $buildconfs = Fink::Finally::BuildConflicts->new(
+							$conflicts{$pkgname});
 						
 						$package->log_output(1);
-						$package->set_buildlock();
-						$package->phase_unpack();
-						$package->phase_patch();
-						$package->phase_compile();
-						$package->phase_install();
-						$package->phase_build();
-						$package->clear_buildlock();
+						{
+							my $bl = Fink::Finally::Buildlock->new($package);
+							$package->phase_unpack();
+							$package->phase_patch();
+							$package->phase_compile();
+							$package->phase_install();
+							$package->phase_build();
+						}
 						$package->log_output(0);
-						
-						$fin->run;
 					} else {
-						&real_install($OP_BUILD, 0, 1, $dryrun, $package->get_name());
+						&real_install($OP_BUILD, 0, 1, $dryrun,
+							$package->get_name());
 					}
 				}
 			}
@@ -2749,7 +2732,7 @@ sub prefetch {
 
 =item list_removals
 
-  my @pkgnames = list_removals \%deps, \%conflicts;
+  my @pkgnames = $engine->list_removals \%deps, \%conflicts;
 
 List the package names that we may remove at some point.
 
@@ -2769,43 +2752,6 @@ sub list_removals {
 		$removals{$rname} = 1 if $will_inst || $rpv->is_installed;
 	}
 	return sort keys %removals;
-}
-
-=item remove_buildconflicts
-
-  my $finally = remove_buildconflicts @pvs;
-
-Remove the BuildConflicts of a package, and return a Fink::Finally cleanup
-task that can restore them.
-
-=cut
-
-sub remove_buildconflicts {
-	my ($pvs) = @_;
-	
-	my @must_remove = grep { $_->is_installed } @$pvs;
-	my @cant_restore = grep { !$_->is_present } @must_remove;
-	
-	if (!@must_remove) {
-		return Fink::Finally->new(sub { }); # Do nothing
-	} elsif (@cant_restore) {
-		die_breaking "The following packages must be temporarily removed, but "
-			. "there are no .debs to restore them from:\n  "
-			. join(' ', sort map { $_->get_name } @cant_restore);
-	} else {
-		my @names = sort map { $_->get_name } @must_remove;
-		my $names = join(' ', @names);
-		my $recover = sub {
-			print_breaking_stderr "Restoring removed BuildConflicts:\n "
-				. " $names";
-			Fink::PkgVersion::phase_activate(\@must_remove);
-		};
-		
-		print_breaking_stderr "Temporarily removing BuildConflicts:\n $names";
-		Fink::PkgVersion::phase_deactivate(\@names);
-		
-		return Fink::Finally->new($recover);
-	}
 }
 
 =back
