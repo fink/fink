@@ -162,7 +162,7 @@ if [ failed-upgrade = "\$1" ]; then
   exit 1
 fi
 
-if perl -e 'exit 0 unless eval { require Fink::Finally::Buildlock }; \\
+if /usr/bin/perl -e 'exit 0 unless eval { require Fink::Finally::Buildlock }; \\
 	exit !Fink::Finally::Buildlock->can_remove("$lockfile")'; then
   rm -f $lockfile
   exit 0

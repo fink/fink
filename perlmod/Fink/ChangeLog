@@ -1,3 +1,8 @@
+2006-03-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Finally/Buildlock.pm: Hardcode lock-package PreRm scripts to use
+	the same perl interp as fink itself uses
+
 2006-03-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Remove implicit depends on essential, if there are any
