@@ -1,3 +1,7 @@
+2006-03-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* PkgVersion.pm: Hardcode path to unversioned perl.
+
 2006-03-24  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: tar doesn't need --exclude since fink_packages is

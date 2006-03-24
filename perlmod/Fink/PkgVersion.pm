@@ -4684,7 +4684,13 @@ sub get_perl_dir_arch {
 
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
-	my $perlcmd = get_path('perl'.$perlversion);
+	my $perlcmd;
+	if ($perlversion) {
+		$perlcmd = get_path('perl'.$perlversion);
+	} else {
+		# Hardcode so it doesn't change as packages are installed, removed
+		$perlcmd = "/usr/bin/perl";
+	}
 
 	if (exists $perl_archname_cache{$perlcmd}) {
 		return (@{$perl_archname_cache{$perlcmd}});
