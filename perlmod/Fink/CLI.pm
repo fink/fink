@@ -217,7 +217,7 @@ sub die_breaking {
 
 =item rejoin_text
 
-	print_reaking rejoin_text <<EOMSG
+	print_breaking rejoin_text <<EOMSG
     Here is paragraph
     one.
 
