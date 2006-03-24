@@ -1337,7 +1337,7 @@ sub cleanup_buildlocks {
 
 		# Check that it's not currently building, hoepfully we won't have
 		# to invoke dpkg.
-		if (my $fh = Fink::PkgVersion->can_remove_buildlock($lockfile)) {
+		if (my $fh = Fink::Finally::Buildlock->can_remove($lockfile)) {
 			push @bls, $lockpkg;
 			close $fh;	# Another process could try to remove the BL between
 						# now and when we actually perform the removal. That's
