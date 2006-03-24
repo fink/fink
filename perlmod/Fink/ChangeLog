@@ -1,5 +1,9 @@
 2006-03-24  Daniel Macks  <dmacks@netspace.org>
 
+	* Bootstrap.pm: Intel OS X now up to darwin8.5.3
+
+2006-03-24  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Use new Buildlock::can_remove method
 
 2006-03-23  Daniel Macks  <dmacks@netspace.org>
