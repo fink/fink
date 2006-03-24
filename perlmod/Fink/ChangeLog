@@ -1,3 +1,7 @@
+2006-03-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: Intel OS X now up to darwin8.5.3
+
 2006-03-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm: when an error is generated on Intel hardware, warn 
