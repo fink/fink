@@ -25,4 +25,3 @@ CVS/
 
 ^t/basepath/etc/apt/sources.list$
 ^t/basepath/etc/apt/sources.list.finkbak$
-^t/basepath/etc/fink.conf$
