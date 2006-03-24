@@ -33,8 +33,8 @@ test: test_setup
 
 # remove all files that are ignored by CVS
 clean:
-	# BUG: this for...`find` breaks if any dirname relative to the
-	# current one contains whitespace
+	@# BUG: this for...`find` breaks if any dirname relative to the
+	@# current one contains whitespace
 	@for ignorefile in `find . -name .cvsignore`; do \
 		echo "cleaning $$ignorefile"; \
 		( cd `dirname $$ignorefile` && rm -f `cat .cvsignore` ); \
