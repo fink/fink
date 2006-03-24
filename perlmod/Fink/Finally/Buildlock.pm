@@ -30,6 +30,7 @@ use POSIX	qw(strftime);
 
 use Fink::Command	qw(mkdir_p rm_rf rm_f);
 use Fink::Config	qw($basepath $debarch $config $buildpath);
+use Fink::CLI qw(&print_breaking &rejoin_text);
 use Fink::PkgVersion;
 
 use Fink::Services	qw(	lock_wait lol2pkglist execute dpkg_lockwait
