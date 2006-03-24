@@ -665,7 +665,7 @@ sub create_tarball {
 	$ENV{COPY_EXTENDED_ATTRIBUTES_DISABLE} = 1;
 	
 	$script .=
-	  "tar --exclude CVS --exclude .svn -cf $bpath/src/$package-$packageversion.tar $packagefiles\n";
+	  "tar -cf $bpath/src/$package-$packageversion.tar $packagefiles\n";
 	
 	my $result = 0;
 	

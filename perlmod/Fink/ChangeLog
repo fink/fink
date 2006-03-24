@@ -1,5 +1,10 @@
 2006-03-24  Daniel Macks  <dmacks@netspace.org>
 
+	* Bootstrap.pm: tar doesn't need --exclude since fink_packages is
+	now a complete explicit file list
+
+2006-03-24  Daniel Macks  <dmacks@netspace.org>
+
 	* Bootstrap.pm: switch fink_packagefiles to using
 	MakeMaker (MANIFEST* in fink source root)
 
