@@ -1446,8 +1446,7 @@ sub real_install {
 		
 	my ($pkgspec, $package, $pkgname, $item, $dep);
 	my ($all_installed, $any_installed);
-	my (%deps, @queue, @deplist, @requested, @additionals, @elist);
-	my ($ep);
+	my (%deps, @queue, @deplist, @requested, @additionals);
 	my ($answer, $s);
 	my (%to_be_rebuilt, %already_activated);
 
@@ -1534,13 +1533,6 @@ sub real_install {
 		return;
 	}
 
-	# resolve dependencies for essential packages
-	@elist = Fink::Package->list_essential_packages();
-	foreach $ep (@elist) {
-		# no virtual packages here
-		$ep = [ Fink::Package->package_by_name($ep)->get_all_versions() ];
-	}
-
 	# recursively expand dependencies
 	my %ok_versions;	# versions of each pkg that are ok to use
 	my %conflicts;		# pkgname => list of conflicts
@@ -1597,11 +1589,6 @@ sub real_install {
 			@deplist = $item->[PKGVER]->resolve_depends(0, "Depends", $forceoff);
 			
 			# Do not use BuildConflicts for packages which are not going to be built!
-		}
-		# add essential packages (being careful about packages whose parent is essential)
-		# dev-tools is not Essential but it must not depend on essentials because essentials must implicitly BDep:dev-tools
-		if (not $item->[PKGVER]->built_with_essential and $item->[PKGVER]->get_name() ne 'dev-tools') {
-			push @deplist, @elist;
 		}
 		
 		foreach $dep (@deplist) {

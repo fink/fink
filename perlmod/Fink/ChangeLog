@@ -1,5 +1,10 @@
 2006-03-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
+	* Engine.pm: Remove implicit depends on essential, if there are any
+	problems cirdan will fix them :-)
+
+2006-03-23  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
 	* Finally.pm: Use a pretty OO interface.
 	* Finally/BuildConflicts.pm: New module for BuildConflicts removal and
 	restoration.
