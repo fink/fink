@@ -23,6 +23,8 @@
 
 package Fink::Bootstrap;
 
+use ExtUtils::Manifest qw(&maniread);
+
 use Fink::Config qw($config $basepath);
 use Fink::Services qw(&execute &enforce_gcc &eval_conditional);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
@@ -536,20 +538,19 @@ sub check_files {
 
 	my $packagefiles = fink_packagefiles();
 
-Returns a list of all files which should be contained in the fink tarball.  
-Called by bootstrap.pl and fink's inject.pl.
+Returns a space-separated list of all files which should be contained
+in the fink tarball.  Called by bootstrap.pl and fink's inject.pl.
+This list is complete: you do not need to recurse through directories,
+and simple directories are not even included here.
 
 =cut
 
 sub fink_packagefiles {
-
-my $packagefiles = "COPYING INSTALL INSTALL.html README README.html USAGE USAGE.html Makefile ".
-  "ChangeLog VERSION REVISION fink.in fink.8.in fink.conf.5.in images install.sh setup.sh ".
-  "shlibs.default.in pathsetup.sh.in postinstall.pl.in perlmod update t ".
-  "fink-virtual-pkgs.in fink.shlibs lockwait.in g++-wrapper.in fink-instscripts.in fink-scanpackages.in";
-
-return $packagefiles;
-
+	-r 'MANIFEST' or die "Could not read MANIFEST: $!\n";
+	my $manifest = maniread;
+	my @files = sort keys %$manifest;
+	@files = grep { -f $_ } @files;  # catch mistakes in MANIFEST
+	return join ' ', @files;
 }
 
 =item locate_Fink

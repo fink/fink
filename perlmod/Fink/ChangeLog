@@ -1,5 +1,10 @@
 2006-03-24  Daniel Macks  <dmacks@netspace.org>
 
+	* Bootstrap.pm: switch fink_packagefiles to using
+	MakeMaker (MANIFEST* in fink source root)
+
+2006-03-24  Daniel Macks  <dmacks@netspace.org>
+
 	* Bootstrap.pm: Intel OS X now up to darwin8.5.3
 
 2006-03-24  Daniel Macks  <dmacks@netspace.org>

@@ -1,5 +1,9 @@
 2006-03-24  Daniel Macks  <dmacks@netspace.org>
 
+	* MANIFEST, MANIFEST.SKIP: Bootstrap.pm now uses MakeMaker
+
+2006-03-24  Daniel Macks  <dmacks@netspace.org>
+
 	* install.sh: Remember to install all the docfiles.
 	* update-fink.sh: remove this remnant of the 10.1->10.2
 	transition.
