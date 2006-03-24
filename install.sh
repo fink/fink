@@ -88,10 +88,12 @@ for file in COPYING README README.html INSTALL INSTALL.html \
   install -c -p -m 644  $file "$basepath/share/doc/fink/"
 done
 
-install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog"
-install -c -p -m 644  perlmod/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod"
-install -c -p -m 644  perlmod/Fink/ChangeLog "$basepath/share/doc/fink/ChangeLog.perlmod.Fink"
-install -c -p -m 644  update/ChangeLog "$basepath/share/doc/fink/ChangeLog.update"
+# some/place/ChangeLog goes as ChangeLoge.some.place
+for cl_src in . perlmod perlmod/Fink update; do
+  cl_dst=`echo $cl_src | tr '/' '.' | sed -e 's/^\.*//'`
+  [ -n "$cl_dst" ] && cl_dst=".$cl_dst"
+  install -c -p -m644 $cl_src/ChangeLog "$basepath/share/doc/fink/ChangeLog$cl_dst"
+done
 
 for gccvers in 3.3 4.0; do
 	install -c -p -m 755 "g++-wrapper-$gccvers" \
