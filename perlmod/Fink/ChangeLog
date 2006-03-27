@@ -1,3 +1,7 @@
+2006-03-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Configure.pm, FinkVersion.pm.in: 10.4 has a bindist now
+
 2006-03-24  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: Intel OS X now up to darwin8.5.3

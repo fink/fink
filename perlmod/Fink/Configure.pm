@@ -129,7 +129,7 @@ sub configure {
 	&spotlight_warning();
 
 # list of distributions for which a bindist exists
-	my @bindists = ("10.3", "10.4-transitional");
+	my @bindists = ("10.3", "10.4-transitional", "10.4");
 
 	print "\n";
 	$binary_dist = $config->param_boolean("UseBinaryDist");
