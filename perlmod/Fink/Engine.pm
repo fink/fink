@@ -1620,6 +1620,7 @@ sub real_install {
 		if ($item->[OP] == $OP_REBUILD || $item->[OP] == $OP_BUILD || not $item->[PKGVER]->is_present()) {
 			unless ($item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed()) {
 				$willbuild = 1;
+				$to_be_rebuilt{$pkgname} = 1;
 
 				# validate the .info if desired
 				if (Fink::Config::get_option("maintainermode")) {

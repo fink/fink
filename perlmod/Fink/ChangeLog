@@ -1,3 +1,9 @@
+2006-03-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Engine.pm: Pre-calculate some of %to_be_rebuilt, to fix the case where:
+		- a parent doesn't need a build, but a splitoff requires it, AND
+		- the splitoff is considered by PACKAGELOOP after the parent
+
 2006-03-24  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Hardcode path to unversioned perl.
