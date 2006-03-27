@@ -203,16 +203,18 @@ Parse the global command-line options for Fink.
 
 =cut
 
+my %option_defaults = (
+	map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
+		build_as_nobody maintainermode showversion use_binary) ),
+	map ( { $_ => [] } qw(include_trees exclude_trees) ),
+	map( { $_ => -1 } qw(use_binary) ),
+);
+
 sub parse_options {
 	my $class = shift;
 	my @args = @_;
 	
-	my %opts = (
-		map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
-			build_as_nobody maintainermode showversion) ),
-		map ( { $_ => [] } qw(include_trees exclude_trees) ),
-		map( { $_ => -1 } qw(use_binary) ),
-	);
+	my %opts = %option_defaults;
 	
 	my $comlen =  14;
 	get_options('', [
@@ -819,7 +821,9 @@ $default_value is returned.
 
 sub get_option {
 	my $option = shift;
-	my $default = shift || 0;
+	my $default = shift;
+	$default = $option_defaults{$option} unless defined $default;
+	$default = 0 unless defined $default;
 
 	if (exists $options{lc $option}) {
 		return $options{lc $option};

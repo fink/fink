@@ -1,3 +1,7 @@
+2006-03-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Config.pm: Use defaults for options.
+
 2006-03-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: Pre-calculate some of %to_be_rebuilt, to fix the case where:
