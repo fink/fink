@@ -108,7 +108,7 @@ Returns the most recent (binary) fink distribution version corresponding to $dis
 
 sub default_binary_version {
 	my $distribution = shift;
-	my %bindists = ("10.2-gcc3.3" => "0.6.4", "10.3" => "0.7.2", "10.4-transitional" => "0.8.0");
+	my %bindists = ("10.2-gcc3.3" => "0.6.4", "10.3" => "0.7.2", "10.4-transitional" => "0.8.0", "10.4" => "0.8.1");
 	my $dbv;
 	if (defined($bindists{$distribution})) {
 		$dbv = "$bindists{$distribution}";

@@ -1,3 +1,7 @@
+2006-03-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm, FinkVersion.pm.in: 10.4 has a bindist now
+
 2006-03-27  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Config.pm: Use defaults for options.

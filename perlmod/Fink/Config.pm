@@ -772,7 +772,7 @@ error string if a problem exists, otherwise returns a false value.
 =cut
 
 {
-	my %bindists = map { $_ => 1 } ("10.3", "10.4-transitional");
+	my %bindists = map { $_ => 1 } ("10.3", "10.4-transitional", "10.4");
 
 	sub bindist_check_distro {
 		my ($self) = @_;
