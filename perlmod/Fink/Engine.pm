@@ -1492,6 +1492,18 @@ sub real_install {
 			die "no package found for specification '$pkgspec'!\n";
 		}
 
+		# pedantically validate .info of explicitly requested packages
+		if (Fink::Config::get_option("maintainermode")) {
+			my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
+			Fink::Config::set_options( {
+				'verbosity' => 3,
+				'Pedantic'  => 1
+			} );
+			Fink::Validation::validate_info_file($package->get_info_filename())
+				or die "Please correct the above problems and try again!\n";
+			Fink::Config::set_options(\%saved_options);
+		}
+
 		# no duplicates here
 		#	 (dependencies is different, but those are checked later)
 		$pkgname = $package->get_name();
@@ -1603,13 +1615,6 @@ sub real_install {
 
 	my $willbuild = 0;  # at least one new package will be compiled probably
 	my $bad_infos = 0;  # at least one .info failed validation
-	my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
-	if (Fink::Config::get_option("maintainermode")) {
-		Fink::Config::set_options( {
-			'verbosity' => 3,
-			'Pedantic'  => 1
-			} );
-	}
 	foreach $pkgname (sort keys %deps) {
 		$item = $deps{$pkgname};
 		if ($item->[FLAG] == 0) {
@@ -1623,13 +1628,14 @@ sub real_install {
 				$to_be_rebuilt{$pkgname} = 1;
 
 				# validate the .info if desired
+				# only use default level for dependencies of explicit packages
+				# (explicitly requested pkgs were severely validated earlier)
 				if (Fink::Config::get_option("maintainermode")) {
 					$bad_infos = 1 unless Fink::Validation::validate_info_file($item->[PKGVER]->get_info_filename());
 				}
 			}
 		}
 	}
-	Fink::Config::set_options(\%saved_options);
 	$bad_infos && die "Please correct the above problems and try again!\n";
 
 	if ($willbuild) {
