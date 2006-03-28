@@ -25,6 +25,7 @@ package Fink::Config;
 use Fink::Base;
 use Fink::Command 	qw(cp);
 use Fink::Services	qw(&get_arch &read_properties &get_options $VALIDATE_HELP);
+use Fink::FinkVersion	qw(&default_binary_version);
 
 
 use strict;
@@ -772,15 +773,13 @@ error string if a problem exists, otherwise returns a false value.
 =cut
 
 {
-	my %bindists = map { $_ => 1 } ("10.3", "10.4-transitional", "10.4");
-
 	sub bindist_check_distro {
 		my ($self) = @_;
 		my $err = <<ERR;
 Fink does not yet support an official set of binary packages for your current
 distribution.
 ERR
-		return exists $bindists{$self->param('Distribution')} ? 0 : $err;
+		return exists default_binary_version{$self->param('Distribution')} ? 0 : $err;
 	}
 }
 
