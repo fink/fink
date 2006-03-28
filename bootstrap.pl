@@ -445,7 +445,7 @@ You can add the package descriptions at a later time if you want to
 compile packages yourself.
 You can get them
 EOF
-if (not $dbv eq "none") {
+if (defined $dbv) {
 $endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 }
@@ -463,7 +463,7 @@ You should now have a working Fink installation in '$installto'.
 You still need package descriptions if you want to compile packages yourself.
 You can get them
 EOF
-if (not $dbv eq "none") {
+if (defined $dbv) {
 $endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 }
