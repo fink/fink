@@ -779,7 +779,7 @@ error string if a problem exists, otherwise returns a false value.
 Fink does not yet support an official set of binary packages for your current
 distribution.
 ERR
-		return exists default_binary_version{$self->param('Distribution')} ? 0 : $err;
+		return exists default_binary_version($self->param('Distribution')) ? 0 : $err;
 	}
 }
 
