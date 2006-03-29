@@ -1,3 +1,7 @@
+2006-03-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm: Avoid circular dependency
+
 2006-03-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Config.pm: Use FinkVersion::default_binary_version to determine
