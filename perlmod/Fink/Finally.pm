@@ -37,7 +37,7 @@ Perl's DESTROY has some problems which make it inappropriate to be used
 directly.
 
 A Fink::Finally object will not run in a fork (causing two runs). It will also
-not run twice in normal circustances. Finally, it ensures that $@ and $? are
+not run twice in normal circumstances. Finally, it ensures that $@ and $? are
 not changed.
 
 Circular references should never include a Fink::Finally object. This will cause
