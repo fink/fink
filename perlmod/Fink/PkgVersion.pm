@@ -5039,7 +5039,7 @@ sub scanpackages {
 		
 		if ($autoscan && apt_available) {
 			require Fink::Engine; # yuck
-			Fink::Engine::scanpackages(0, keys %built_trees);
+			Fink::Engine::scanpackages({}, [ keys %built_trees ]);
 			Fink::Engine::aptget_update();
 		}
 		%built_trees = ();

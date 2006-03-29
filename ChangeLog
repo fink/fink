@@ -1,3 +1,9 @@
+2006-03-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* postinstall.pl.in: If AutoScanpackages is about to be turned on for the
+	first time, pre-scan the user's debs rather than surprising them at the
+	end of the next build.
+
 2006-03-28  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap.pl: FinkVersion.pm::default_binary_version now returns

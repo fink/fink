@@ -30,7 +30,7 @@ use strict;
 use lib "@PREFIX@/lib/perl5";
 
 use Fink::Bootstrap qw(&check_host);
-use Fink::Services qw(&read_config &execute);
+use Fink::Services qw(&read_config &execute &apt_available);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 
 use Fink::Config qw($config);
@@ -237,6 +237,26 @@ if (not $distribution =~ /10.1/) {
  
 }
 
+# If a user upgrades to a new fink with AutoScanpackages, we'd rather do the
+# first (uncached, long) scan in postinst than at the end of the user's next
+# build.
+sub pre_scanpackages {
+	my $autoscan = !$config->has_param("AutoScanpackages")
+		|| $config->param_boolean("AutoScanpackages");
+	return 0 unless $autoscan && apt_available;
+
+	require Fink::Scanpackages;
+	my $cache = Fink::Scanpackages->default_cache;
+	return 0 if -e $cache; # we already ran scanpackages at some point
+	
+	print STDERR "Caching your binary packages...this may take a while.\n";
+	
+	# Don't use the PDB, we don't want to trigger an index now
+	require Fink::Engine;
+	Fink::Engine::scanpackages({ pdb => 0 });
+	return 1;
+}
+pre_scanpackages();
 
 if ($configNeedsUpdate) {
   &print_breaking("\nThis fink version introduces new settings stored in the " .

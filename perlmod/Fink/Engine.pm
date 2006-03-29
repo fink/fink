@@ -659,33 +659,40 @@ Command to update the packages in the given trees.
 =cut
 
 sub cmd_scanpackages {
-	scanpackages(0, @_);
+	scanpackages({}, \@_);
 	aptget_update;
 }
 
 =item scanpackages
 
-  scanpackages $quiet, @trees;
+  scanpackages $opts, \@trees;
 
 Update the apt-get package database in the given trees.
 
 =cut
 
 sub scanpackages {
-	my ($quiet, @treelist) = @_;
+	my $opts = shift || { };
+	my $trees = shift || [ ];
 	
+	# Don't scan restrictive if it's unwanted
+	if (!exists $opts->{restrictive}
+			&& $config->has_param('ScanRestrictivePackages')
+			&& !$config->param_boolean('ScanRestrictivePackages')) {
+		$opts->{restrictive} = 0;
+	}
+
 	# Use lowest verbosity
-	$quiet = $config->verbosity_level if $quiet > $config->verbosity_level;
-	print STDERR "Updating the list of locally available binary packages.\n"
-		unless $quiet > 1; # very quiet!
+	if (!exists $opts->{verbosity}) {
+		my $v = $config->verbosity_level;
+		$v = 1 if $v > 1; # Only allow > 1 if given as an explicit option
+		$opts->{verbosity} = $v;
+	}
+	
+	print STDERR "Updating the list of locally available binary packages.\n";
 	
 	# Run scanpackages
-	my $restrictive = !$config->has_param('ScanRestrictivePackages')
-		|| $config->param_boolean('ScanRestrictivePackages');
-	Fink::Scanpackages->scan_fink({
-		verbosity => !$quiet,
-		restrictive => $restrictive
-	}, @treelist);
+	Fink::Scanpackages->scan_fink($opts, @$trees);
 }
 
 ### package-related commands
@@ -1275,7 +1282,7 @@ EOFUNC
 			print "Skipping scanpackages and in dryrun mode\n";
 		} else {
 			if (apt_available) {
-				scanpackages(1);
+				scanpackages({ verbosity => 0 });
 				aptget_update(1);
 			}
 		}

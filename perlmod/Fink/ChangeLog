@@ -1,3 +1,9 @@
+2006-03-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
+
+	* Scanpackages.pm: Provide a way to get the path to the default cache.
+	* Engine.pm: Make Engine::scanpackages more flexible.
+	* Engine.pm, PkgVersion.pm: Accommodate changes to Engine::scanpackages.
+
 2006-03-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Config.pm: Avoid circular dependency

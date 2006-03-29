@@ -73,6 +73,8 @@ apt-ftparchive are not implemented.
   Fink::Scanpackages->scan_dists($options, @dirs);
   Fink::Scanpackages->scan_fink(%options);
 
+  my $path = Fink::Scanpackages->default_cache;
+
 =head1 METHODS
 
 =over 4
@@ -312,6 +314,22 @@ sub scan_fink {
 		@dists);
 }
 
+=item default_cache
+
+  my $path = Fink::Scanpackages->default_cache;
+
+Get the path to the file that is used by default for caching result of
+scan_fink.
+
+=cut
+
+sub default_cache {
+	my ($self) = @_;
+	
+	$self->_ensure_fink;
+	return $Fink::Config::basepath . "/var/lib/fink/scanpackages.db";
+}
+
 # Initialize the object
 sub initialize {
 	my ($self, %opts) = @_;
@@ -353,15 +371,16 @@ sub _control {
 # Make sure Fink is configured
 #
 # $sp->_ensure_fink;
+# Fink::Scanpackages->_ensure_fink;
 sub _ensure_fink {
 	my ($self) = @_;
 	
-	unless ($self->{_fink_loaded}) {
+	unless (ref($self) && $self->{_fink_loaded}) {
 		require Fink::Config;
 		
 		# Make sure fink has a config
 		&_use_fink() unless defined $Fink::Config::config;
-		$self->{_fink_loaded} = 1;
+		$self->{_fink_loaded} = 1 if ref($self);
 	}
 }
 
