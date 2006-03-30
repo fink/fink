@@ -1,3 +1,8 @@
+2006-03-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Weaken .info validator settings for dependencies
+	and only check each .info file once in -m mode.
+
 2006-03-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Scanpackages.pm: Provide a way to get the path to the default cache.

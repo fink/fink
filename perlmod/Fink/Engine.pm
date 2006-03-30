@@ -1444,6 +1444,7 @@ use constant PKGVER  => 2;
 use constant OP      => 3;
 use constant FLAG    => 4;
 
+our %validated_info_files = ();  # keys are filenames that have been checked
 
 sub real_install {
 	my $op = shift;
@@ -1501,14 +1502,17 @@ sub real_install {
 
 		# pedantically validate .info of explicitly requested packages
 		if (Fink::Config::get_option("maintainermode")) {
-			my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
-			Fink::Config::set_options( {
-				'verbosity' => 3,
-				'Pedantic'  => 1
-			} );
-			Fink::Validation::validate_info_file($package->get_info_filename())
-				or die "Please correct the above problems and try again!\n";
-			Fink::Config::set_options(\%saved_options);
+			my $info_filename = $package->get_info_filename();
+			if (not $validated_info_files{$info_filename}++) {
+				my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
+				Fink::Config::set_options( {
+					'verbosity' => 3,
+					'Pedantic'  => 1
+										   } );
+				Fink::Validation::validate_info_file($info_filename)
+					or die "Please correct the above problems and try again!\n";
+				Fink::Config::set_options(\%saved_options);
+			}
 		}
 
 		# no duplicates here
@@ -1638,7 +1642,15 @@ sub real_install {
 				# only use default level for dependencies of explicit packages
 				# (explicitly requested pkgs were severely validated earlier)
 				if (Fink::Config::get_option("maintainermode")) {
-					$bad_infos = 1 unless Fink::Validation::validate_info_file($item->[PKGVER]->get_info_filename());
+					my $info_filename = $item->[PKGVER]->get_info_filename();
+					if (not $validated_info_files{$info_filename}++) {
+						my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ Pedantic /;
+						Fink::Config::set_options( {
+							'Pedantic'  => 0
+												   } );
+						$bad_infos = 1 unless Fink::Validation::validate_info_file($info_filename);
+						Fink::Config::set_options(\%saved_options);
+					}
 				}
 			}
 		}
