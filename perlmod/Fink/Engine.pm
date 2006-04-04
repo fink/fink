@@ -26,7 +26,7 @@ package Fink::Engine;
 use Fink::Services qw(&latest_version &sort_versions
 					  &pkglist2lol &cleanup_lol
 					  &execute &expand_percent
-					  &count_files &get_arch
+					  &count_files
 					  &call_queue_clear &call_queue_add
 					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
 					  $VALIDATE_HELP &apt_available);
@@ -39,7 +39,7 @@ use Fink::Finally::Buildlock;
 use Fink::Finally::BuildConflicts;
 use Fink::Package;
 use Fink::PkgVersion;
-use Fink::Config qw($config $basepath $debarch $dbpath);
+use Fink::Config qw($config $basepath $dbpath);
 use File::Find;
 use Fink::Status;
 use Fink::Command qw(mkdir_p rm_f);
@@ -237,8 +237,8 @@ sub process {
 
 	# Warn about Spotlight
 	if (&spotlight_warning()) {
-		$config->save;
-		$config->initialize;
+		$self->{config}->save;
+		$self->{config}->initialize;
 	}
 	
 	# read package descriptions if needed
@@ -1179,6 +1179,9 @@ obsolete downloaded .deb.
 
 sub cleanup_debs {
 	my %opts = (dryrun => 0, @_);
+
+	return if $config->mixed_arch(message=>'cleanup .deb archives');
+
 	Fink::Package->require_packages();
 
 	my $file_count;
@@ -1724,6 +1727,10 @@ sub real_install {
 
 	# if we were really in fetch or dry-run modes, stop here
 	return if $fetch_only || $dryrun;
+
+	# cross-building is not supported yet because we don't have a
+	# generic way to pass the arch info to the compiler
+	$config->mixed_arch(message=>'build or install/remove binary packages', fatal=>1);
 
 	# install in correct order...
 	while (1) {

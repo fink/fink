@@ -18,7 +18,7 @@ my $config_obj = Fink::Config->new_with_path('basepath/etc/fink.conf');
     package Check::ExportOK;
     our @optional_exports;
     BEGIN {
-        @optional_exports = qw($config $basepath $libpath $debarch	
+        @optional_exports = qw($config $basepath $libpath
                                $distribution $buildpath
                                get_option set_options
                               );
@@ -30,9 +30,6 @@ my $config_obj = Fink::Config->new_with_path('basepath/etc/fink.conf');
 
     # need a libpath() method
     ::is( $libpath,  $basepath."/lib/fink" );
-
-    # need a debarch() method
-    ::is( $debarch,   'darwin-'.Fink::Services::get_arch );
 
     # need a buildpath() method
     ::is( $buildpath, $config->param_default("Buildpath", "$basepath/src/fink.build") );

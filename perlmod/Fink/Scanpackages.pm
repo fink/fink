@@ -293,17 +293,20 @@ sub scan_fink {
 	$self = $self->new(%$options) unless ref $self;
 	
 	$self->_ensure_fink;
-	
+
+	my $config = $Fink::Config::config;  # stupid use() spaghetti!
+	return 0 if $config->mixed_arch(message=>'scan local binaries');
+
 	# Get the tree list
-	@trees = $Fink::Config::config->get_treelist unless @trees;
-	my @dists = map { "dists/$_/binary-$Fink::Config::debarch" } @trees;
+	@trees = $config->get_treelist unless @trees;
+	my @dists = map { "dists/$_/binary-".$config->param('Debarch') } @trees;
 	
 	# Get some more params
 	my $basedir = $Fink::Config::basepath . "/fink";
 	my %release = (
 		Origin	=> 'Fink',
 		Label	=> 'Fink',
-		Architecture => $Fink::Config::debarch,
+		Architecture => $config->param('Debarch'),
 	);
 	
 	# Always use a DB 

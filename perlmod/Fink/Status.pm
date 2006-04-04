@@ -76,7 +76,7 @@ sub read {
 	$file = $basepath."/var/lib/dpkg/status";
 	$hash = {};
 
-	if (not $config->want_magic_tree('status')) {
+	if ($config->mixed_arch() or not $config->want_magic_tree('status')) {
 		return;
 	}
 

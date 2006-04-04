@@ -1,5 +1,23 @@
 2006-03-28  Daniel Macks  <dmacks@netspace.org>
 
+	* Config.pm: Store architecture and debarch in $config object
+	("Architecture" and "Debarch", not written to fink.conf) and
+	remove exported $debarch. New method mixed_arch checks whether
+	local machine matches $config arch.
+
+	* Status.pm: Disable local dpkg when forging arch.
+
+	* Package.pm: Disable saved pdb when forging arch.
+
+	* VirtPackage.pm: Consider all virtuals "uninstalled" when forging
+	arch.
+	
+	* all: Use $config data instead of $Fink::Config::debarch. Call
+	mixed_arch to prevent compiling or doing any other local .deb
+	actions if arch is forged.
+
+2006-03-28  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Weaken .info validator settings for dependencies
 	and only check each .info file once in -m mode.
 

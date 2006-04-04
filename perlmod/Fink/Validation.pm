@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch &file_MD5_checksum &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &file_MD5_checksum &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
 use Cwd qw(getcwd);
 use File::Find qw(find);
@@ -343,7 +343,6 @@ sub validate_info_file {
 	my $expand = {};
 	my $looks_good = 1;
 	my $error_found = 0;
-	my $arch = get_arch();
 
 	my $full_filename = $filename;  # we munge $filename later
 
@@ -700,7 +699,7 @@ sub validate_info_file {
 				'i' => $pkgdestdir.$basepath,
 				'a' => $pkgpatchpath,
 				'b' => '.',
-				'm' => $arch,
+				'm' => $config->param('Architecture'),
 				%{$expand},
 				'ni' => $pkginvarname,
 				'Ni' => $pkginvarname

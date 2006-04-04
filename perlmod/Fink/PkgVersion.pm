@@ -35,7 +35,7 @@ use Fink::Services qw(&filename &execute
 use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
 				 &should_skip_prompt &die_breaking);
-use Fink::Config qw($config $basepath $libpath $debarch $buildpath
+use Fink::Config qw($config $basepath $libpath $buildpath
 					$dbpath $ignore_errors);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
@@ -364,7 +364,7 @@ sub pkgversions_from_properties {
 		# always call pkglist(architecture) even if no_exclusions so
 		# that we get error-checking on the field
 		if (not $options{no_exclusions}) {
-			my $sys_arch = &get_arch;
+			my $sys_arch = $config->param('Architecture');
 			if (defined $pkg_arch and $pkg_arch !~ /(\A|,)\s*$sys_arch\s*(,|\Z)/) {
 				# Discard the whole thing if local arch not listed
 				return ();
@@ -488,7 +488,6 @@ sub initialize {
 	my ($depspec, $deplist, $dep, $expand, $destdir);
 	my ($parentpkgname, $parentdestdir, $parentinvname);
 	my ($i, $path, @parts, $finkinfo_index, $section, @splitofffields);
-	my $arch = get_arch();
 
 	$self->SUPER::initialize();
 	
@@ -566,7 +565,7 @@ sub initialize {
 				$section .= join("/", @parts[$finkinfo_index+1..$#parts])."/";
 			}
 			$self->{_section} = substr($section,0,-1);	 # cut last /
-			$parts[$finkinfo_index] = "binary-$debarch";
+			$parts[$finkinfo_index] = 'binary-' . $config->param('Debarch');
 			$self->{_debpath} = join("/", @parts);
 			$self->{_debpaths} = [];
 			for ($i = $#parts; $i >= $finkinfo_index; $i--) {
@@ -610,7 +609,7 @@ sub initialize {
 				'r' => $revision,
 				'f' => $fullname,
 				'p' => $basepath,
-				'm' => $arch,
+				'm' => $config->param('Architecture'),
 
 				'N' => $parentpkgname,
 				'Ni'=> $parentinvname,
@@ -1289,7 +1288,7 @@ sub get_debname {
 		$self->get_name(),
 		$self->get_version(),
 		$self->get_revision(),
-		$debarch;
+		$config->param('Debarch');
 	return $self->{_debname};
 }
 
@@ -2164,7 +2163,7 @@ sub find_debfile {
 			$epoch ? $epoch.'%3a' : '',
 			$self->get_version(),
 			$self->get_revision(),
-			$debarch;
+			$config->param('Debarch');
 		if (-f $fn) {
 			return $fn;
 		}
@@ -2945,6 +2944,8 @@ sub phase_unpack {
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip);
 
+	$config->mixed_arch(msg=>'build a package', fatal=>1);
+
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
 	}
@@ -3145,6 +3146,8 @@ sub phase_patch {
 	my $self = shift;
 	my ($dir, $patch_script, $cmd, $patch, $subdir);
 
+	$config->mixed_arch(msg=>'build a package', fatal=>1);
+
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
 		return;
 	}
@@ -3247,6 +3250,8 @@ sub phase_compile {
 	my $self = shift;
 	my ($dir, $compile_script, $cmd);
 	
+	$config->mixed_arch(msg=>'build a package', fatal=>1);
+
 	# Fix repair permissions bug on Tiger
 	Fink::Services::fix_gcc_repairperms();
 	
@@ -3288,6 +3293,8 @@ sub phase_install {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($dir, $install_script, $cmd, $bdir);
+
+	$config->mixed_arch(msg=>'build a package', fatal=>1);
 
 	my $notifier = Fink::Notify->new();
 
@@ -3523,6 +3530,8 @@ sub phase_build {
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
 
+	$config->mixed_arch(msg=>'build a package', fatal=>1);
+
 	my $notifier = Fink::Notify->new();
 
 	if ($self->is_type('dummy')) {
@@ -3568,6 +3577,7 @@ sub phase_build {
 	$prio = $self->get_priority();
 	
 	$instsize = $self->get_instsize("$destdir$basepath");	# kilobytes!
+	my $debarch = $config->param('Debarch');
 	$control = <<EOF;
 Package: $pkgname
 Source: $parentpkgname
@@ -4147,6 +4157,8 @@ sub phase_activate {
 		%opts = (no_clean_bl => 1);
 	}
 
+	$config->mixed_arch(msg=>'install a package', fatal=>1);
+
 	my (@installable);
 
 	my $notifier = Fink::Notify->new();
@@ -4635,8 +4647,6 @@ sub run_script {
 	my $no_expand = shift || 0;
 	my $nonroot_okay = shift || 0;
 
-	my $arch = get_arch();
-
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
 
@@ -4657,7 +4667,7 @@ sub run_script {
 				"or fink-beginners mailing lists.  As a last resort, you can try e-mailing\n".
 				"the maintainer directly:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
-			if ($arch eq "i386") {
+			if (get_arch() eq 'i386' or $config->param('Architecture') eq 'i386') {
 $error .= "Note that many fink package maintainers do not (yet) have access to OS X on\n" .
 	"Intel hardware, so you may have better luck on the mailing lists.\n\n";
 }

@@ -28,7 +28,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &expand_percent &lock_wait &store_rename);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr
 				 &rejoin_text);
-use Fink::Config qw($config $basepath $dbpath $debarch);
+use Fink::Config qw($config $basepath $dbpath);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
 use Fink::FinkVersion;
@@ -616,7 +616,7 @@ sub search_comparedb {
 	return 1 if -M $dbfile > -M "$basepath/etc/fink.conf";
 
 	# Using find is much faster than doing it in Perl
-	my $prune_bin = "\\( -name 'binary-$debarch' -prune \\)";
+	my $prune_bin = "\\( -name 'binary-" . $config->param("Debarch") . "' -prune \\)";
 	my $file_test = "\\( \\( -type f -o -type l \\) -name '*.info' \\)";
 	my $cmd = "/usr/bin/find -L $path \\! $prune_bin \\( $file_test -o -type d \\) "
 		. " -newer $dbfile";
@@ -715,6 +715,11 @@ Determines whether Fink can read or write the package database cache.
 
 sub can_read_write_db {
 	my $class = shift;
+
+	# do not use disk cache if we are using a forged architecture
+	if ($config->mixed_arch()) {
+		return (0,0);
+	}
 	
 	my ($read, $write) = (1, 0);
 	

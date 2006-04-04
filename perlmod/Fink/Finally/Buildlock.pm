@@ -29,7 +29,7 @@ use strict;
 use POSIX	qw(strftime);
 
 use Fink::Command	qw(mkdir_p rm_rf rm_f);
-use Fink::Config	qw($basepath $debarch $config $buildpath);
+use Fink::Config	qw($basepath $config $buildpath);
 use Fink::CLI qw(&print_breaking &rejoin_text);
 use Fink::PkgVersion;
 
@@ -114,6 +114,7 @@ sub initialize {
 
 	# generate dpkg "control" file
 
+	my $debarch = $config->param('Debarch');
 	my $control = <<EOF;
 Package: $lockpkg
 Source: fink
@@ -212,7 +213,7 @@ EOF
 
 	# install lockpkg (== set dpkg lock on our deps)
 	print "Installing build-lock package...\n";
-	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$debarch.'.deb';
+	my $debfile = $buildpath.'/'.$lockpkg.'_'.$timestamp.'_'.$config->param('Debarch').'.deb';
 	my $lock_failed = &execute(dpkg_lockwait() . " -i $debfile", ignore_INT=>1);
 	Fink::PkgVersion->dpkg_changed;
 

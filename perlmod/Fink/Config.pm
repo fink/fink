@@ -33,23 +33,23 @@ use warnings;
 require Exporter;
 
 our @ISA	 = qw(Exporter Fink::Base);
-our @EXPORT_OK	 = qw($config $basepath $libpath $debarch $buildpath $dbpath
+our @EXPORT_OK	 = qw($config $basepath $libpath $buildpath $dbpath
                       $distribution $ignore_errors
                       get_option set_options
                      );
 our $VERSION	 = 1.00;
 
 
-our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors, $debarch);
+our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors, $native_debarch);
 
-# determine the dpkg Architecture string
+# determine the dpkg Architecture string for the local machine
 #
 # We can't use `dpkg --print-installation-architecture` (although we
 # have to match it) because dpkg runs fink-virtual-pkgs, which loads
 # Config.pm.
 {
 	my $_arch = &get_arch();
-	$debarch = "darwin-$_arch";
+	$native_debarch = "darwin-$_arch";
 }
 
 my %options = ();
@@ -185,6 +185,14 @@ sub initialize {
 	if (not defined $distribution or ($distribution =~ /^\s*$/)) {
 		die "Distribution not set in config file \"".$self->{_path}."\"!\n";
 	}
+
+	# The Architecture config field is used for .info Architecture
+	# control and %m expansion, and can be set to simulate the engine
+	# and indexer on non-local architectures.
+	if (not $self->has_param('Architecture')) {
+		$self->set_param('Architecture', get_arch());
+	}
+	$self->set_param('Debarch', 'darwin-' . $self->param('Architecture'));
 
 	$self->{_queue} = [];
 }
@@ -976,6 +984,50 @@ sub clear_flag {
 	$self->set_param('Flags', join(' ', keys %{$self->{_flags}}));
 }
 
+=item mixed_arch
+
+	my $not_mixed = $config->mixed_arch(%opts);
+
+Make sure that the local architecture matches the one for which fink
+is configured. If not a message can be printed on stderr, a fatal
+error can be generated, and/or a boolean value can be returned. The
+following %opts are known:
+
+=over 4
+
+=item message (optional)
+
+If a non-null string, a message including this string is printed on
+stderr.
+
+=item fatal (optional)
+
+If true, we die. If not, we just return a boolean indicating if there
+is a mismatch.
+
+=back
+
+=cut
+
+sub mixed_arch {
+	my $self = shift;
+	my %opts = @_;
+
+	if ($native_debarch ne $self->param("Debarch")) {
+		if (defined (my $msg = $opts{message})) {
+			if ($opts{fatal}) {
+				die $msg;
+			} else {
+				warn $msg;
+			}
+		} elsif ($opts{fatal}) {
+			die "\n";
+		}
+		return 1;
+	}
+	return 0;
+}
+
 =back
 
 =head2 Exported Variables
@@ -1000,12 +1052,6 @@ Typically F<$basepath/src>
 =item $config
 
 The last Fink::Config object created.
-
-=item $debarch
-
-Debian-style name of the current architecture.  
-
-Typically C<darwin-powerpc> or C<darwin-i386>.
 
 =item $distribution
 

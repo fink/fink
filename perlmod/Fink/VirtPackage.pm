@@ -1254,7 +1254,7 @@ sub query_package {
 		}
 	}
 
-	if (exists $self->{$pkgname} and exists $self->{$pkgname}->{status}) {
+	if (exists $self->{$pkgname} and exists $self->{$pkgname}->{status} and not $config->mixed_arch()) {
 		my ($purge, $ok, $installstat) = split(/\s+/, $self->{$pkgname}->{status});
 		return $self->{$pkgname}->{version} if ($installstat eq "installed" and exists $self->{$pkgname}->{version});
 	}
@@ -1302,6 +1302,7 @@ sub list {
 				$newhash->{$field} = $hash->{$field};
 			}
 		}
+		$newhash->{status} = STATUS_ABSENT if $config->mixed_arch();
 		$list->{$pkgname} = $newhash;
 	}
 
