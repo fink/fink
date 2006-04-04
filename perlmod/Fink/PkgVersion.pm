@@ -4119,7 +4119,7 @@ EOF
 
 =item phase_activate
 
-	phase_activate @packges;
+	phase_activate @packages;
 	phase_activate \@packages, %opts;
 
 Use dpkg to install a list of packages. The packages are passed as
@@ -4210,7 +4210,7 @@ sub phase_activate {
 
 =item phase_deactivate
 
-	phase_deactivate @packges;
+	phase_deactivate @packages;
 	phase_deactivate \@packages, %opts;
 
 Use dpkg to remove a list of packages, but leave their ConfFiles in
@@ -4300,7 +4300,7 @@ sub phase_deactivate_recursive {
 
 =item phase_purge
 
-	phase_purge @packges;
+	phase_purge @packages;
 	phase_purge \@packages, %opts;
 
 Use dpkg to remove a list of packages, including their ConfFiles. The
