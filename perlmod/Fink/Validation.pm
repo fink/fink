@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch &pkglist2lol);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &get_arch &pkglist2lol &version_cmp &file_MD5_checksum);
 use Fink::Config qw($config);
 
 use strict;
