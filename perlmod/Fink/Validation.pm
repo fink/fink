@@ -409,13 +409,12 @@ sub validate_info_file {
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
 	$pkgdestdir = "$buildpath/root-".$pkgfullname;
 	
-	{
-		if ($filename =~ /\//) {
-			my @parts = split(/\//, $filename);
-			$filename = pop @parts;		# remove filename
-			$pkgpatchpath = join("/", @parts);
-		} else {
-			$pkgpatchpath = "";
+	if ($filename =~ /\//) {
+		my @parts = split(/\//, $filename);
+		$filename = pop @parts;		# remove filename
+		$pkgpatchpath = join("/", @parts);
+	} else {
+		$pkgpatchpath = "";
 	}
 
 	#
