@@ -410,9 +410,12 @@ sub validate_info_file {
 	$pkgdestdir = "$buildpath/root-".$pkgfullname;
 	
 	{
-	my @parts = split(/\//, $filename);
-	$filename = pop @parts;		# remove filename
-	$pkgpatchpath = join("/", @parts);
+		if ($filename =~ /\//) {
+			my @parts = split(/\//, $filename);
+			$filename = pop @parts;		# remove filename
+			$pkgpatchpath = join("/", @parts);
+		} else {
+			$pkgpatchpath = "";
 	}
 
 	#
@@ -706,7 +709,11 @@ sub validate_info_file {
 	};
 
 	if (exists $properties->{patchfile}) {
-		$expand->{patchfile} = $pkgpatchpath . '/' . $properties->{patchfile};
+		if ($pkgpatchpath eq "") {
+			$expand->{patchfile} = $properties->{patchfile};
+		} else {
+			$expand->{patchfile} = $pkgpatchpath . '/' . $properties->{patchfile};
+		}
 	}
 
 	# Verify the patch file(s) exist and check some things
@@ -817,6 +824,7 @@ sub validate_info_file {
 
 		# must actually be used
 		if (defined ($value = $properties->{'patchscript'})) {
+			$value = lc($value);
 			if ($value !~ /%{(patchfile|default_script)}/) {
 				print "Warning: PatchFile does not appear to be used in PatchScript. ($filename)\n";
 				$looks_good = 0;
