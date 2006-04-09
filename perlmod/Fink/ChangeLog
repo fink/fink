@@ -1,3 +1,10 @@
+2006-04-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Validate PatchScript correctly even when file being
+	validated is in the same directory from which 'fink validate' is 
+	being run; also, recognize %{PatchScript} during validation no matter
+	what its case.
+
 2006-03-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Configure.pm, FinkVersion.pm.in: 10.4 has a bindist now
