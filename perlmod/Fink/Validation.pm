@@ -798,8 +798,7 @@ if ($filename =~ /\//) {
 
 		# must actually be used
 		if (defined ($value = $properties->{'patchscript'})) {
-			$value = lc($value);
-			if ($value !~ /%{(patchfile|default_script)}/) {
+			if ($value !~ /%{(PatchFile|default_script)}/) {
 				print "Warning: PatchFile does not appear to be used in PatchScript. ($filename)\n";
 				$looks_good = 0;
 			}
