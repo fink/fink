@@ -1,3 +1,7 @@
+2006-04-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Validation.pm: Check for %{PatchScript} using the correct case.
+
 2006-04-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Validate PatchScript correctly even when file being
