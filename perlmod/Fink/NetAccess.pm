@@ -267,7 +267,7 @@ sub fetch_url_to_file {
 		if ($dryrun or ($result or not -f $file)) {
 			# failure, continue loop
 		} else {
-			if (defined $checksum and (not Fink::Checksum->validate($file, $checksum))) {
+			if (defined $checksum and (not Fink::Checksum->validate($file, $checksum, $checksum_type))) {
 				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
 				&print_breaking("The checksum of the file is incorrect. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".

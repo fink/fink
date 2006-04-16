@@ -1,3 +1,7 @@
+2006-04-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* NetAccess.pm: pass the checksum type when validating.
+
 2006-04-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Check for %{PatchScript} using the correct case.
