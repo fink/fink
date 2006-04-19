@@ -1,3 +1,7 @@
+2006-04-19  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Don't crash if apt-cache is not present
+
 2006-04-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* NetAccess.pm: pass the checksum type when validating.

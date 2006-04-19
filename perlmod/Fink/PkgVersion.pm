@@ -1923,11 +1923,17 @@ our ($APT_REMOTE, $APT_LOCAL) = (1, 2);
 sub get_aptdb {
 	my %db;
 	
+	my $apt_cache = "$basepath/bin/apt-cache";
+	if (!-x $apt_cache) {
+		warn "No apt-cache present...skipping binary downloading for now\n";
+		return \%db;
+	}
+
 	my $statusfile = "$basepath/var/lib/dpkg/status";
-	open APTDUMP, "$basepath/bin/apt-cache dump |"
+	open my $aptdump_fh, "$apt_cache dump |"
 		or die "Can't run apt-cache dump: $!";
 	my ($pkg, $vers);
-	while(defined(local $_ = <APTDUMP>)) {
+	while(defined(local $_ = <$aptdump_fh>)) {
 		if (/^\s*Package:\s*(\S+)/) {
 			($pkg, $vers) = ($1, undef);
 		} elsif (/^\s*Version:\s*(\S+)/) {
@@ -1947,7 +1953,7 @@ sub get_aptdb {
 			}
 		}
 	}
-	close APTDUMP;
+	close $aptdump_fh;
 	
 	return \%db;
 }
