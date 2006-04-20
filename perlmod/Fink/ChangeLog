@@ -1,3 +1,7 @@
+2006-04-20	Alexander Hansen	<alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm:	Add 10.4.6 to supported OS flavors.
+
 2006-04-19  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Don't crash if apt-cache is not present

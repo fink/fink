@@ -237,7 +237,7 @@ END
 			"and assume to run on a PowerPC based operating ".
 			"system. Use Fink on this system at your own risk!");
 		$distribution = "10.3";
-	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\.[0-5]\.[0-3]/) {
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\.[0-6]\.[0-3]/) {
 		&print_breaking("This system is supported and tested.");
 		&print_breaking($transitional_message{$transitional});
 		$distribution = "10.4$transitional";
