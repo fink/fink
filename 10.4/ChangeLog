@@ -2,7 +2,7 @@
 
 	* gzip*: rename files from %f to %n
 
-2006-1-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2006-01-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* storable-pm.info: not needed for bootstrapping (in core of all
 	supported perl versions)

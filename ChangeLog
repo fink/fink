@@ -123,7 +123,7 @@
 	* fink.8.in, fink.conf.5.in: Document the new --trees and --exclude-trees
 	options.
 
-2006-01-21  Dave Morrison
+2006-01-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: add an optional argument to check_host telling us
 	whether we are bootstrapping or not
@@ -1144,7 +1144,7 @@
 
 	* VERSION: Bumped package manager version to 0.17.0
 
-2003-11-11  Michael G Schwern <schwern@pobox.com
+2003-11-11  Michael G Schwern <schwern@pobox.com>
 
 	* Makefile: tests were running against the installed version instead
 	of the new version in the perlmod directory

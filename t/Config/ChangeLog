@@ -15,7 +15,7 @@
 
 	* verbosity_level.t: always pick highest value
 
-2004-12-7  Daniel Macks  <dmacks@netspace.org>
+2004-12-07  Daniel Macks  <dmacks@netspace.org>
 
 	* verbosity_level.t: Correct for new highest level is 4.
 

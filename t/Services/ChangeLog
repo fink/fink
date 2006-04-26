@@ -26,7 +26,7 @@
 	to find Services.pm, so make a copy of that file that is
 	guaranteed to be readable by "nobody".
 
-2005-01-5  Daniel Macks  <dmacks@netspace.org>
+2005-01-05  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: delete expected tempfile.
 

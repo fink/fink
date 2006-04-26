@@ -489,7 +489,7 @@
 
 	* Validation.pm: PatchFile and friends arrive in fink-0.24.12
 
-2006-01-21  Dave Morrison
+2006-01-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: add an optional argument to check_host telling us
 	whether we are bootstrapping or not; if bootstrapping, we allow
@@ -4493,13 +4493,13 @@
 	* Services.pm: Factored definition of a constant string out of a
 	tight loop.
 
-2003-11-25  Michael G Schwern <schwern@pobox.com
+2003-11-25  Michael G Schwern <schwern@pobox.com>
 
 	* Config.pm: new_with_path() now takes default parameters.
 	* Services.pm: read_config() now takes default parameters to pass
 	through to Config->new_with_path().
 
-2003-11-25  Michael G Schwern <schwern@pobox.com
+2003-11-25  Michael G Schwern <schwern@pobox.com>
 
 	* Config.pm: Error message wrong when Basepath not in config file
 	or config file missing entirely.  Tested.
@@ -4665,7 +4665,7 @@
 	* Services.pm: Improve the caching of version_cmp in Fink::Services; 
 	some cleanup (Patch #841031).
 
-2003-11-13  Justin F. Hallett  <thesin@users.sourceforge.net
+2003-11-13  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* PkgVersion.pm: Fix UpdatePOD when using a Custom build/installscript
 	as it may not be installing into the normal $perlarch dir.
@@ -4844,7 +4844,7 @@
 
 	* Engine.pm: Patch 828653 fix fink cleanup and improve user feedback
     
-2003-10-25  Justin F. Hallett  <thesin@users.sourceforge.net
+2003-10-25  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Service.pm: Added an get_path function that is a perl version
 	of the command util which, you give it a file name and it returns
@@ -4852,7 +4852,7 @@
 	* PkgVersion.pm: Changed which call in for perl$version to use
 	new get_path function.
 
-2003-10-24  Benjamin Reed  <rangerrick@users.sourceforge.net
+2003-10-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* SelfUpdate.pm: Modify the rsync command to only remove
 	CVS directories in trees that are updated through rsync.
@@ -5316,15 +5316,15 @@
 	* PkgVersion.pm: Fix multi line Depends/BuildDepends fields, and slightly
 	  improve detection of malformed dependencies. 
 
-2003-04-15	Ben Hines <benh57@users.sourceforge.net>
+2003-04-15  Ben Hines  <benh57@users.sourceforge.net>
 
     * SelfUpdate.pm: Allow distribution upgrades to work (append fake revision)
     
-2003-04-08	Ben Hines <benh57@users.sourceforge.net>
+2003-04-08  Ben Hines  <benh57@users.sourceforge.net>
 
     * Services.pm: Allow comments (#) in fink Script fields
     
-2003-04-05	Ben Hines <benh57@users.sourceforge.net>
+2003-04-05  Ben Hines  <benh57@users.sourceforge.net>
 
 	* Many Files: Implement fink master mirroring (Patch #700260).
 	  
@@ -5343,12 +5343,12 @@
 	* PkgVersion.pm (run_script): Backup the environment before clearing it
 	  via set_env; then after running the script, restore it.
 
-2003-03-07	Ben Hines <benh57@users.sourceforge.net>
+2003-03-07  Ben Hines  <benh57@users.sourceforge.net>
 
 	* Engine.pm: Add 'ignore-restrictive' option to "fetch-missing", 
 	  to support creating fink mirrors.
 	
-2003-03-05	Ben Hines <benh57@users.sourceforge.net>
+2003-03-05  Ben Hines  <benh57@users.sourceforge.net>
 
 	* PkgVersion.pm: Add section to dpkg control file (should prevent "unknown
 	  section" for unstable locally built binaries in dselect) and correct root
