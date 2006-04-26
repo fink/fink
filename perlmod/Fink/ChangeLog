@@ -1,4 +1,8 @@
-2006-04-20	Alexander Hansen	<alexkhansen@users.sourceforge.net>
+2006-04-25  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Don't mkdir the Files target dir for every file copied
+
+2006-04-20  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:	Add 10.4.6 to supported OS flavors.
 

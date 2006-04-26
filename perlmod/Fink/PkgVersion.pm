@@ -3368,10 +3368,10 @@ sub phase_install {
 			"Files of ".$self->get_fullname()." in ".$self->get_info_filename
 		);
 
-		my (@files, $file, $source, $target, $target_dir);
+		my %target_dirs = ();  # keys are dirs that have already been created
 
-		@files = split(/\s+/, $files);
-		foreach $file (@files) {
+		foreach my $file (split /\s+/, $files) {
+			my ($source, $target);
 			$file =~ s/\%/\%\%/g;   # reprotect for later %-expansion
 			if ($file =~ /^(.+)\:(.+)$/) {
 				$source = $1;
@@ -3394,8 +3394,10 @@ sub phase_install {
 				$target = "%i/$target";
 			}
 
-			$target_dir = dirname($target);
-			$install_script .= "\n/usr/bin/install -d -m 755 $target_dir";
+			my $target_dir = dirname($target);
+			if (!$target_dirs{$target_dir}++) {
+				$install_script .= "\n/usr/bin/install -d -m 755 $target_dir";
+			}
 			$install_script .= "\n/bin/mv $source $target_dir/";
 		}
 	}
