@@ -3394,7 +3394,11 @@ sub phase_install {
 				$target = "%i/$target";
 			}
 
+			# FIXME: if Files entry has colon, we throw out the last
+			# component of $target. Should we allow the same type of
+			# target renaming we do in DocFiles?
 			my $target_dir = dirname($target);
+
 			if (!$target_dirs{$target_dir}++) {
 				$install_script .= "\n/usr/bin/install -d -m 755 $target_dir";
 			}
