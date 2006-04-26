@@ -191,7 +191,7 @@
 	running the Fink binary installer for the first time: 
 	The creation of a bash startup script with wrong root ownership, 
 	and a wrong failure message.
- 
+
 2005-10-12  Daniel Macks  <dmacks@netspace.org>
 
 	* install.sh: perlmod/Fink/Tie was backed out. Fix buildlock dir.
@@ -374,7 +374,7 @@
 
 2005-05-11  Dave Morrison  <dmrrsn@sourceforge.net> (thanks to msachs)
 
-        * postinstall.pl.in: create 10.4 tree as a symlink to 
+	* postinstall.pl.in: create 10.4 tree as a symlink to 
 	10.4-transitional (temporary, until we create a real 10.4 tree)
 
 2005-05-06  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -1015,10 +1015,10 @@
 	with releases.
 
 2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
- 
+
 	* VERSION: Bumped package manager version to 0.17.3, a bugfix
 	release on branch_0_17
- 
+
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.17.2, a release
@@ -1495,7 +1495,7 @@
 2002-09-18 Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: modified so that bootstrap can be run twice in the
-   	  same directory.
+	  same directory.
 
 2002-09-08 Dave Morrison <dmrrsn@users.sourceforge.net>
 
