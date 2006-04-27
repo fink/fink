@@ -1,3 +1,7 @@
+2006-04-27  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Fix renaming of target file in Files field
+
 2006-04-25  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Don't mkdir the Files target dir for every file copied
