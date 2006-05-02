@@ -1,3 +1,7 @@
+2006-05-02  Daniel Macks  <dmacks@netspace.org>
+
+	* all: update to HEAD (0.24.10.2.cvs)
+
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
 
 	* inject.pl, install.sh, postinstall.pl.in: updated Copyright notice
