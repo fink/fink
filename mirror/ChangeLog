@@ -1,3 +1,8 @@
+2006-05-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _urls, developer-cvs, inject.pl, install.sh: add developer-cvs to 
+	store URL for non-anonymous CVS access
+
 2006-05-02  Daniel Macks  <dmacks@netspace.org>
 
 	* all: update to HEAD (0.24.10.2.cvs)

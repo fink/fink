@@ -51,7 +51,7 @@ for file in ChangeLog _keys _list apache apt cpan ctan debian gimp gnome gnu kde
   fi
 done
 
-for file in _urls cvs-repository website; do
+for file in _urls cvs-repository developer-cvs website; do
   if [ -f $file ]; then
     install -c -p -m 644 $file "$basepath/lib/fink/URL/"
   fi
