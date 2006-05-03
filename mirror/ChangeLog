@@ -1,3 +1,8 @@
+2006-05-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _urls, developer-cvs, inject.pl, install.sh: add developer-cvs to 
+	store URL for non-anonymous CVS access
+
 2006-01-03  Daniel Macks  <dmacks@netspace.org>
 
 	* inject.pl, install.sh, postinstall.pl.in: updated Copyright notice
