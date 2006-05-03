@@ -4500,7 +4500,7 @@ sub get_env {
 	}
 		
 	# uncomment this to be able to use distcc -- not officially supported!
-	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 
 	# Special feature: SetMACOSX_DEPLOYMENT_TARGET does an implicit NoSet:true
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET")) {
