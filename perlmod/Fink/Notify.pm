@@ -259,3 +259,5 @@ sub do_notify {
 =back
 
 =cut
+
+1;

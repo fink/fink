@@ -1,4 +1,8 @@
-2006-04-20	Alexander Hansen	<alexkhansen@users.sourceforge.net>
+2006-05-03  Daniel Macks  <dmacks@netspace.org>
+
+	* Notify.pm, Notify/*.pm: Return true to use and require
+
+2006-04-20  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:	Add 10.4.6 to supported OS flavors.
 

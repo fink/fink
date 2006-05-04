@@ -65,3 +65,5 @@ sub do_notify {
 
 	return 1;
 }
+
+1;
