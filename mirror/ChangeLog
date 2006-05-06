@@ -2,6 +2,13 @@
 
 	* VERSION: releasing version 0.24.15.1 of fink-mirrors
 
+2006-05-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _urls, anonymous-cvs, developer-cvs, inject.pl, install.sh: add 
+	anonymous-cvs to store URL for anonymous CVS access; also, change
+	the format of anonymous-cvs and developer-cvs to include the CVS
+	Root path
+
 2006-05-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* _urls, developer-cvs, inject.pl, install.sh: add developer-cvs to 
