@@ -1,3 +1,10 @@
+2006-05-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* anonymous-cvs, developer-cvs, cvs-repository: change to
+	fink.cvs.sourceforge.net
+	* postinstall.pl.in: when the CVS repository in /sw/fink/dists/CVS/Root
+	is not correct, fix it in all CVS/Root files
+
 2006-05-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: releasing version 0.24.15.1 of fink-mirrors

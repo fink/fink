@@ -40,3 +40,90 @@ read_config("@PREFIX@/etc/fink.conf");
 #get mirror selections, write write new configuration file if changed
 choose_mirrors(1) || $config->save();
 
+# now we correct the CVS location... the code below should eventually be
+# moved to fink itself and called from here
+
+use File::Find ();
+
+# Set the variable $File::Find::dont_use_nlink if you're using AFS,
+# since AFS cheats.
+
+# for the convenience of &wanted calls, including -eval statements:
+use vars qw/*name *dir *prune/;
+*name   = *File::Find::name;
+*dir    = *File::Find::dir;
+*prune  = *File::Find::prune;
+
+sub wanted;
+sub doexec ($@);
+
+
+use Cwd ();
+my $cwd = Cwd::cwd();
+
+my ($method_user, $repo, $repo_file, $stored_repo);
+
+# parse CVS/Root
+if (-d "@PREFIX@/fink/dists/CVS") {
+    open(IN,"@PREFIX@/fink/dists/CVS/Root") or die "can't open @PREFIX@/fink/dists/CVS/Root: $!";
+    while (<IN>) {
+        chomp;
+        if (/^(:\w+:\w+@)(.+)$/) {
+            $method_user = $1;
+            $repo = $2;
+        }
+    }
+    close(IN);
+    die "couldn't parse @PREFIX@/fink/dists/CVS/Root" unless ((defined $method_user) and (defined $repo));
+    if ($method_user eq ":pserver:anonymous") {
+	$repo_file = "anonymous-cvs";
+    } else {
+	$repo_file = "developer-cvs";
+    }
+
+    open(IN,"@PREFIX@/lib/fink/URL/$repo_file") or die "can't open @PREFIX@/lib/fink/URL/$repo_file: $!";
+# we are assuming that this file only has one line
+    while (<IN>) {
+	chomp;
+	$stored_repo = $_;
+    }
+    close(IN);
+    if (!($stored_repo eq $repo)) {
+
+# Traverse desired filesystems
+File::Find::find({wanted => \&wanted}, '@PREFIX@/fink');
+exit;
+
+    }
+}
+
+sub wanted {
+    my ($dev,$ino,$mode,$nlink,$uid,$gid);
+
+    /^CVS\z/s &&
+    (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_)) &&
+    -d _ &&
+    doexec(0, 'perl','-pi','-e',"s|$repo|$stored_repo|",'{}/Root');
+}
+
+
+sub doexec ($@) {
+    my $ok = shift;
+    my @command = @_; # copy so we don't try to s/// aliases to constants
+    for my $word (@command)
+        { $word =~ s#{}#$name#g }
+    if ($ok) {
+        my $old = select(STDOUT);
+        $| = 1;
+        print "@command";
+        select($old);
+        return 0 unless <STDIN> =~ /^y/;
+    }
+    chdir $cwd; #sigh
+    system @command;
+    chdir $File::Find::dir;
+    return !$?;
+}
+
+
+
