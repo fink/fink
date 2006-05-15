@@ -43,29 +43,14 @@ choose_mirrors(1) || $config->save();
 # now we correct the CVS location... the code below should eventually be
 # moved to fink itself and called from here
 
-use File::Find ();
-
-# Set the variable $File::Find::dont_use_nlink if you're using AFS,
-# since AFS cheats.
-
-# for the convenience of &wanted calls, including -eval statements:
-use vars qw/*name *dir *prune/;
-*name   = *File::Find::name;
-*dir    = *File::Find::dir;
-*prune  = *File::Find::prune;
-
-sub wanted;
-sub doexec ($@);
-
-
-use Cwd ();
-my $cwd = Cwd::cwd();
+use File::Find;
 
 my ($method_user, $repo, $repo_file, $stored_repo);
 
-# parse CVS/Root
-if (-d "@PREFIX@/fink/dists/CVS") {
-    open(IN,"@PREFIX@/fink/dists/CVS/Root") or die "can't open @PREFIX@/fink/dists/CVS/Root: $!";
+# parse a typical CVS/Root
+my $sentinel_cvs = '@PREFIX@/fink/dists/CVS';
+if (-d $sentinel_cvs) {
+    open(IN,'<',"$sentinel_cvs/Root") or die "can't open $sentinel_cvs/Root: $!";
     while (<IN>) {
         chomp;
         if (/^(:\w+:\w+@)(.+)$/) {
@@ -74,56 +59,32 @@ if (-d "@PREFIX@/fink/dists/CVS") {
         }
     }
     close(IN);
-    die "couldn't parse @PREFIX@/fink/dists/CVS/Root" unless ((defined $method_user) and (defined $repo));
+    die "couldn't parse $sentinel_cvs/Root\n" unless ((defined $method_user) and (defined $repo));
     if ($method_user eq ":pserver:anonymous") {
-	$repo_file = "anonymous-cvs";
+	$repo_file = "@PREFIX@/lib/fink/URL/anonymous-cvs";
     } else {
-	$repo_file = "developer-cvs";
+	$repo_file = "@PREFIX@/lib/fink/URL/developer-cvs";
     }
 
-    open(IN,"@PREFIX@/lib/fink/URL/$repo_file") or die "can't open @PREFIX@/lib/fink/URL/$repo_file: $!";
-# we are assuming that this file only has one line
-    while (<IN>) {
-	chomp;
-	$stored_repo = $_;
-    }
+    # read "correct" Root path from fink-mirrors pkg
+    open(IN,'<',$repo_file) or die "can't open $repo_file: $!\n";
+    chomp($stored_repo = $_);  # we are assuming that this file only has one line
     close(IN);
+
     if (!($stored_repo eq $repo)) {
+	# active CVS/Root doesn't match current path; fix so it does
+	warn "Updating CVS/Root data...\n";
 
-# Traverse desired filesystems
-File::Find::find({wanted => \&wanted}, '@PREFIX@/fink');
+	my $replace_cvs_root = sub {
+	    if ($File::Find::name =~ /\/CVS\/Root$/ && -e $File::Find::name) {
+		# we should *really* do this ourselves instead of spawning processes
+		system ('/usr/bin/perl','-pi','-e',"s|$repo|$stored_repo|",$File::Find::name);
+	    }
+	};
+
+	File::Find::find({wanted => $replace_cvs_root}, '@PREFIX@/fink');
+    }
+}
+
 exit;
-
-    }
-}
-
-sub wanted {
-    my ($dev,$ino,$mode,$nlink,$uid,$gid);
-
-    /^CVS\z/s &&
-    (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_)) &&
-    -d _ &&
-    doexec(0, 'perl','-pi','-e',"s|$repo|$stored_repo|",'{}/Root');
-}
-
-
-sub doexec ($@) {
-    my $ok = shift;
-    my @command = @_; # copy so we don't try to s/// aliases to constants
-    for my $word (@command)
-        { $word =~ s#{}#$name#g }
-    if ($ok) {
-        my $old = select(STDOUT);
-        $| = 1;
-        print "@command";
-        select($old);
-        return 0 unless <STDIN> =~ /^y/;
-    }
-    chdir $cwd; #sigh
-    system @command;
-    chdir $File::Find::dir;
-    return !$?;
-}
-
-
 

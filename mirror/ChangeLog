@@ -1,3 +1,8 @@
+2006-05-15  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Don't create CVS metadata file if it doesn't
+	exist. Add diagnostic. Major code cleanup of find2perl residue.
+
 2006-05-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* anonymous-cvs, developer-cvs, cvs-repository: change to
