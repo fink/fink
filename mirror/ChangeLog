@@ -1,5 +1,10 @@
 2006-05-15  Daniel Macks  <dmacks@netspace.org>
 
+	* postinstall.pl.in: Fix my bad chomp, add lots of other tests for
+	definedness before doing string ops.
+
+2006-05-15  Daniel Macks  <dmacks@netspace.org>
+
 	* postinstall.pl.in: Don't create CVS metadata file if it doesn't
 	exist. Add diagnostic. Major code cleanup of find2perl residue.
 

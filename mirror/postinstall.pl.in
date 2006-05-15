@@ -45,13 +45,13 @@ choose_mirrors(1) || $config->save();
 
 use File::Find;
 
-my ($method_user, $repo, $repo_file, $stored_repo);
-
 # parse a typical CVS/Root
 my $sentinel_cvs = '@PREFIX@/fink/dists/CVS';
 if (-d $sentinel_cvs) {
+    my ($method_user, $repo, $repo_file, $stored_repo);
+
     open(IN,'<',"$sentinel_cvs/Root") or die "can't open $sentinel_cvs/Root: $!";
-    while (<IN>) {
+    while (defined($_=<IN>)) {
         chomp;
         if (/^(:\w+:\w+@)(.+)$/) {
             $method_user = $1;
@@ -60,7 +60,7 @@ if (-d $sentinel_cvs) {
     }
     close(IN);
     die "couldn't parse $sentinel_cvs/Root\n" unless ((defined $method_user) and (defined $repo));
-    if ($method_user eq ":pserver:anonymous") {
+    if (defined $method_user and $method_user eq ":pserver:anonymous") {
 	$repo_file = "@PREFIX@/lib/fink/URL/anonymous-cvs";
     } else {
 	$repo_file = "@PREFIX@/lib/fink/URL/developer-cvs";
@@ -68,10 +68,13 @@ if (-d $sentinel_cvs) {
 
     # read "correct" Root path from fink-mirrors pkg
     open(IN,'<',$repo_file) or die "can't open $repo_file: $!\n";
-    chomp($stored_repo = $_);  # we are assuming that this file only has one line
+    while (defined($_=<IN>)) {
+	chomp;
+	$stored_repo = $_;  # we are assuming that this file only has one line
+    }
     close(IN);
 
-    if (!($stored_repo eq $repo)) {
+    if (defined $stored_repo and $stored_repo ne $repo) {
 	# active CVS/Root doesn't match current path; fix so it does
 	warn "Updating CVS/Root data...\n";
 
