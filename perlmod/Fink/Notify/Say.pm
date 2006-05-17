@@ -56,9 +56,7 @@ sub do_notify {
 
 	$text = sprintf('say "%s"', $text);
 
-	open(COMMAND, "| $command") or return undef;
-	print COMMAND $text;
-	close(COMMAND) or return undef;
+	system($command, "-e", $text) == 0 or return undef;
 
 	return 1;
 }

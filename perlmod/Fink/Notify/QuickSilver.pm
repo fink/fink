@@ -57,11 +57,9 @@ sub do_notify {
 	my $text = $args{'description'};
 	$text =~ s/\"/\\\"/gs;
 
-	$text = sprintf('tell application "QuickSilver" to show notification "%s" text "%s" image "com.apple.Terminal"', $title, $text);
+	$text = sprintf('tell application "QuickSilver" to show notification "%s" image name "com.apple.Terminal" text "%s"', $title, $text);
 
-	open(COMMAND, "| $command") or return undef;
-	print COMMAND $text;
-	close(COMMAND) or return undef;
+	system($command, "-e", $text) == 0 or return undef;
 
 	return 1;
 }

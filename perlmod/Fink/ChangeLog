@@ -1,3 +1,9 @@
+2006-05-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Notify/QuickSilver.pm, Notify/Say.pm: use different osascript syntax
+	that's a bit cleaner; also fix QuickSilver to use the new dictionary
+	signature
+
 2006-04-27  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Revert Files fix (breaks "Files: foo/a foo")
