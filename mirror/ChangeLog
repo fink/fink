@@ -1,5 +1,9 @@
 2006-05-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
+	* VERSION: releasing version 0.24.15.2 of fink-mirrors
+
+2006-05-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
 	* postinstall.pl.in: Repair CVS/Root parsing, and sharpen the
 	search/replace.
 
