@@ -1,3 +1,8 @@
+2006-05-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: Repair CVS/Root parsing, and sharpen the
+	search/replace.
+
 2006-05-15  Daniel Macks  <dmacks@netspace.org>
 
 	* postinstall.pl.in: Fix my bad chomp, add lots of other tests for

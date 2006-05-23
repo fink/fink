@@ -53,7 +53,7 @@ if (-d $sentinel_cvs) {
     open(IN,'<',"$sentinel_cvs/Root") or die "can't open $sentinel_cvs/Root: $!";
     while (defined($_=<IN>)) {
         chomp;
-        if (/^(:\w+:\w+@)(.+)$/) {
+        if (/^(:\w+:\w+)@(.+)$/) {
             $method_user = $1;
             $repo = $2;
         }
@@ -81,7 +81,7 @@ if (-d $sentinel_cvs) {
 	my $replace_cvs_root = sub {
 	    if ($File::Find::name =~ /\/CVS\/Root$/ && -e $File::Find::name) {
 		# we should *really* do this ourselves instead of spawning processes
-		system ('/usr/bin/perl','-pi','-e',"s|$repo|$stored_repo|",$File::Find::name);
+		system ('/usr/bin/perl','-pi','-e',"s|\\\@$repo|\\\@$stored_repo|",$File::Find::name);
 	    }
 	};
 
