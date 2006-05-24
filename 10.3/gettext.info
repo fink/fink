@@ -19,6 +19,8 @@ DescPackaging: <<
  so modifications of .info files will be made to accomodate this change.
 <<
 Patch: %n.patch
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
 SetCPPFLAGS: -no-cpp-precomp
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
 SetLDFLAGS: -L%b/intl/.libs

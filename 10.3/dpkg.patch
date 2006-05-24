@@ -1,3 +1,24 @@
+diff -ruN dpkg-1.10.21/include/parsedump.h dpkg-1.10.21-patched/include/parsedump.h
+--- dpkg-1.10.21/include/parsedump.h	2002-05-06 12:18:16.000000000 -0400
++++ dpkg-1.10.21-patched/include/parsedump.h	2005-06-09 20:47:46.000000000 -0400
+@@ -30,7 +30,6 @@
+   const char *canon;
+ };
+ 
+-extern const struct fieldinfo fieldinfos[];
+ extern const struct nickname nicknames[];
+ extern const int nfields; /* = elements in fieldinfos, including the sentinels */
+ 
+@@ -68,6 +67,8 @@
+   unsigned int integer;
+ };
+ 
++extern const struct fieldinfo fieldinfos[];
++
+ void parseerr(FILE *file, const char *filename, int lno, FILE *warnto, int *warncount,
+               const struct pkginfo *pigp, int warnonly,
+               const char *fmt, ...) PRINTFFORMAT(8,9);
+
 diff -urN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
 --- dpkg-1.10.21.orig/Makefile.conf.in	2003-09-14 08:43:49.000000000 +0900
 +++ dpkg-1.10.21/Makefile.conf.in	2005-03-18 22:13:37.000000000 +0900
@@ -2437,3 +2458,69 @@ diff -urN dpkg-1.10.21.orig/utils/Makefile.in dpkg-1.10.21/utils/Makefile.in
  md5sum md5sum-static: $(MD5_OBJECTS) ../lib/libdpkg.a
 -	$(CC) $(LDFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
 +	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
+diff -Nurd dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
+--- dpkg-1.10.21.orig/main/help.c	Sat Oct 25 16:03:21 2003
++++ dpkg-1.10.21/main/help.c	Thu Mar 10 03:56:22 2005
+@@ -417,6 +417,26 @@
+     
+   debug(dbg_veryverbose, "isdirectoryinuse `%s' (except %s)", file->name,
+         pkg ? pkg->name : "<none>");
++
++  /* FINK LOCAL begin */
++
++  /*
++   * Darwin has symlinks /etc -> /private/etc and /var -> /private/var
++   * instead of actual /etc and /var dirs. If dpkg removes the last
++   * pkg that it has record of having installed a file in one of those
++   * top-level dirs, it will try to remove the dir (since it thinks
++   * it's an empty dir) and it will succeed (since it's just unlinking
++   * a symlink, not trying to remove a dir that is not actually
++   * empty). That's Bad. Here we make sure these top-level dirs are
++   * never thought to be empty.
++   */
++  if( !strcmp(file->name,"/etc") || !strcmp(file->name,"/tmp") || !strcmp(file->name,"/var") ) {
++    debug(dbg_veryverbose, "isdirectoryinuse precious!");
++    return 1;
++  }
++
++  /* FINK LOCAL end */
++
+   for (packageslump= file->packages; packageslump; packageslump= packageslump->more) {
+     debug(dbg_veryverbose, "isdirectoryinuse packageslump %s ...",
+           packageslump->pkgs[0] ? packageslump->pkgs[0]->name : "<none>");
+diff -ur dpkg-1.10.21.orig/include/dpkg.h.in dpkg-1.10.21/include/dpkg.h.in
+--- dpkg-1.10.21.orig/include/dpkg.h.in	2004-04-24 17:14:21.000000000 -0400
++++ dpkg-1.10.21/include/dpkg.h.in	2005-03-18 01:59:16.000000000 -0500
+@@ -118,13 +118,13 @@
+ 
+ #define ARCHIVE_FILENAME_PATTERN "*.deb"
+ 
+-#define BACKEND		"dpkg-deb"
+-#define DPKGQUERY	"dpkg-query"
+-#define SPLITTER	"dpkg-split"
+-#define MD5SUM		"md5sum"
+-#define DSELECT		"dselect"
+-#define DPKG		"dpkg"
+-#define DEBSIGVERIFY	"/usr/bin/debsig-verify"
++#define BACKEND		"@PREFIX@/bin/dpkg-deb"
++#define DPKGQUERY	"@PREFIX@/bin/dpkg-query"
++#define SPLITTER	"@PREFIX@/bin/dpkg-split"
++#define MD5SUM		"@PREFIX@/bin/md5sum"
++#define DSELECT		"@PREFIX@/bin/dselect"
++#define DPKG		"@PREFIX@/bin/dpkg"
++#define DEBSIGVERIFY	"@PREFIX@/bin/debsig-verify"
+ 
+ #define TAR		"tar"
+ #define GZIP		"gzip"
+diff -ruN dpkg-1.10.21/lib/mlib.c dpkg-1.10.21-patched/lib/mlib.c
+--- dpkg-1.10.21/lib/mlib.c	2004-03-08 12:13:09.000000000 -0500
++++ dpkg-1.10.21-patched/lib/mlib.c	2005-06-20 04:10:00.000000000 -0400
+@@ -189,7 +189,7 @@
+   switch(data->type) {
+     case BUFFER_WRITE_BUF:
+       memcpy(data->data.ptr, buf, length);
+-      (char*)data->data.ptr += length;
++      data->data.ptr = (char*)data->data.ptr + length;
+       break;
+     case BUFFER_WRITE_VBUF:
+       varbufaddbuf((struct varbuf *)data->data.ptr, buf, length);

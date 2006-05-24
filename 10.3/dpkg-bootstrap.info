@@ -1,9 +1,8 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
-Revision: 201
+Revision: 217
 Depends: gzip, tar
 BuildDepends: gettext-dev
-AddShlibDeps: true
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
@@ -12,11 +11,11 @@ PatchScript: sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
-ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 CompileScript: <<
  PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
  make EXEFLAGS=-force_flat_namespace
 <<
+ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<
  mkdir -p %i/share/doc/dpkg
  make install DESTDIR=%d
@@ -29,12 +28,29 @@ package does not build dselect and thus doesn't require ncurses. It is
 intended to be used during bootstrap.
 <<
 DescPort: <<
-Uses autoconf.
+1.10.9 
+- Removed --without-zlib flag
+- Gets confused about top_srcdir without the --srcdir arg.
+- Fixed bug with BR manpage
+- Patched update-rc.d out of the app check code, not needed on OS X.
 
-Needs fixes to use the right architecture, disable code that uses
+Pre-Jaguar: Needed fixes to use the right architecture, disable code that uses
 unimplemented functions on Darwin and other stuff.
 
+Added code to support the pseudo package 'macosx' and 'darwin'.
+
+Fix to install-info script to prevent a certain problem with section titles.
+
+Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $prefix.
+
+Patched to suppress warning about BuildDependsOnly control field.
+
 Previous versions by Christoph Pfisterer.
+
+Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
+
+Patched to hardcode complete paths to our component executables
+instead of relying on PATH
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html

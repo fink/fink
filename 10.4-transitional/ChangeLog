@@ -1,3 +1,7 @@
+2006-05-23  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg*, fink-mirrors.info: sync w/stable
+
 2006-01-23  Daniel Macks  <dmacks@netspace.org>
 
 	* gzip*: rename files from %f to %n
