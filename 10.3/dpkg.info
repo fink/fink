@@ -1,9 +1,8 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 202
+Revision: 217
 GCC: 3.3
-Depends: gzip, tar, ncurses (>= 5.4-20041023-4)
-BuildDepends:  fink (>= 0.23.4-1), gettext-dev, libiconv-dev, libncurses5
+Depends: gettext, libiconv, gzip, tar, libncurses5-shlibs
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
@@ -14,7 +13,7 @@ SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
- %p/bin/fink -y --no-use-binary-dist install gettext-bin gettext-dev libiconv-dev libncurses5
+ %p/bin/fink -y install gettext-bin gettext-dev gettext-tools libiconv-dev libncurses5
  PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
  make EXEFLAGS=-force_flat_namespace
 <<
@@ -50,6 +49,11 @@ Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $pref
 Patched to suppress warning about BuildDependsOnly control field.
 
 Previous versions by Christoph Pfisterer.
+
+Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
+
+Patched to hardcode complete paths to our component executables
+instead of relying on PATH
 <<
 #
 PostInstScript: <<
