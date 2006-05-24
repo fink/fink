@@ -1,3 +1,7 @@
+2006-05-24  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Use current hostname for cvs fallback
+
 2006-05-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Notify/QuickSilver.pm, Notify/Say.pm: use different osascript syntax

@@ -280,7 +280,7 @@ sub setup_direct_cvs {
 	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
-	my $cvsrepository = "cvs.sourceforge.net";
+	my $cvsrepository = "fink.cvs.sourceforge.net";
 	if (-f "$basepath/lib/fink/URL/cvs-repository") {
 		$cvsrepository = cat "$basepath/lib/fink/URL/cvs-repository";
 		chomp($cvsrepository);
