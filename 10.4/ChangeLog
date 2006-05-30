@@ -1,6 +1,7 @@
 2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink-mirrors: sync w/stable
+	* dpkg-bootstrap: need %P in --admindir or it doesn't work
 
 2006-05-23  Daniel Macks  <dmacks@netspace.org>
 
