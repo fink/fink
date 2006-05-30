@@ -52,5 +52,10 @@ Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
 Patched to hardcode complete paths to our component executables
 instead of relying on PATH
 <<
+DescPackaging: <<
+  admindir goes in %P (eventual live basedir) not %p (bootstrap
+  basedir): dpkg-bootstrap needs to set up the initial live dpkg
+  status database.
+<<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
