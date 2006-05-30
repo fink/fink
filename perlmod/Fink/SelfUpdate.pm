@@ -286,6 +286,10 @@ sub setup_direct_cvs {
 		chomp($cvsrepository);
 	}
 	if ($cvsuser eq "anonymous") {
+		if (-f "$basepath/lib/fink/URL/anonymous-cvs") {
+			$cvsrepository = cat "$basepath/lib/fink/URL/anonymous-cvs";
+			chomp($cvsrepository);
+		}
 		&print_breaking("Now logging into the CVS server. When CVS asks you ".
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
@@ -299,6 +303,10 @@ sub setup_direct_cvs {
 
 		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository:/cvsroot/fink";
 	} else {
+		if (-f "$basepath/lib/fink/URL/developer-cvs") {
+			$cvsrepository = cat "$basepath/lib/fink/URL/developer-cvs";
+			chomp($cvsrepository);
+		}
 		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository:/cvsroot/fink";
 		$ENV{CVS_RSH} = "ssh";
 	}
