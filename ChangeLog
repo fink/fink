@@ -1,3 +1,9 @@
+2006-05-30  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.16, a release
+	on branch_0_24 which is aware of 10.4.6, has updated CVS configuration,
+	and fixes bugs in Notify.pm and Validation.pm
+
 2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: Don't query the user about 10.4 vs. 10.4-transitional;
