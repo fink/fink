@@ -110,14 +110,11 @@ if ($distribution eq "unknown") {
 
 print "Distribution $distribution\n";
 
-# temporary code to help users until we have a good upgrade path
-if (($> == 0) and ($distribution ne "10.3")) {
-	$answer = &prompt_boolean("Is this the distribution you wish to use?", default => 1);
-
-	if (!$answer) {
-		&print_breaking("There is currently no good upgrade path from the 10.4-transitional distribution to the 10.4 distribution, but if you wish to use 10.4-transitional, set the environment variable FINK_NOTRANS to \"false\" while bootstrapping.  To use 10.4, set it to \"true\" (or don't set it at all).");
-		exit 1;
-	}
+# temporary code to instruct users until we retire the 10.4-transitional tree
+if (($> == 0) and ($distribution ne "10.3") and ($host =~ /^powerpc/)) {
+	&print_breaking("\nOn powerpc hardware, you can bootstrap into the 10.4-transitional tree rather than the 10.4 tree by setting the environment variable FINK_NOTRANS to \"false\" while bootstrapping.  To use 10.4, set it to \"true\" (or don't set it at all).");
+	print("\n");
+	sleep(10);
 }
 # end of temporary code
 
