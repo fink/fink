@@ -1,3 +1,7 @@
+2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	*: sync with HEAD
+
 2006-05-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* _urls, anonymous-cvs, developer-cvs, inject.pl, install.sh: add 

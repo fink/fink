@@ -40,3 +40,54 @@ read_config("@PREFIX@/etc/fink.conf");
 #get mirror selections, write write new configuration file if changed
 choose_mirrors(1) || $config->save();
 
+# now we correct the CVS location... the code below should eventually be
+# moved to fink itself and called from here
+
+use File::Find;
+
+# parse a typical CVS/Root
+my $sentinel_cvs = '@PREFIX@/fink/dists/CVS';
+if (-d $sentinel_cvs) {
+    my ($method_user, $repo, $repo_file, $stored_repo);
+
+    open(IN,'<',"$sentinel_cvs/Root") or die "can't open $sentinel_cvs/Root: $!";
+    while (defined($_=<IN>)) {
+        chomp;
+        if (/^(:\w+:\w+)@(.+)$/) {
+            $method_user = $1;
+            $repo = $2;
+        }
+    }
+    close(IN);
+    die "couldn't parse $sentinel_cvs/Root\n" unless ((defined $method_user) and (defined $repo));
+    if (defined $method_user and $method_user eq ":pserver:anonymous") {
+	$repo_file = "@PREFIX@/lib/fink/URL/anonymous-cvs";
+    } else {
+	$repo_file = "@PREFIX@/lib/fink/URL/developer-cvs";
+    }
+
+    # read "correct" Root path from fink-mirrors pkg
+    open(IN,'<',$repo_file) or die "can't open $repo_file: $!\n";
+    while (defined($_=<IN>)) {
+	chomp;
+	$stored_repo = $_;  # we are assuming that this file only has one line
+    }
+    close(IN);
+
+    if (defined $stored_repo and $stored_repo ne $repo) {
+	# active CVS/Root doesn't match current path; fix so it does
+	warn "Updating CVS/Root data...\n";
+
+	my $replace_cvs_root = sub {
+	    if ($File::Find::name =~ /\/CVS\/Root$/ && -e $File::Find::name) {
+		# we should *really* do this ourselves instead of spawning processes
+		system ('/usr/bin/perl','-pi','-e',"s|\\\@$repo|\\\@$stored_repo|",$File::Find::name);
+	    }
+	};
+
+	File::Find::find({wanted => $replace_cvs_root}, '@PREFIX@/fink');
+    }
+}
+
+exit;
+
