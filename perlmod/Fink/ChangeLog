@@ -1,5 +1,9 @@
 2006-05-31  Daniel Macks  <dmacks@netspace.org>
 
+	* Services.pm: Don't say "darwin" when we mean "the local kernel"
+
+2006-05-31  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate.pm: Don't append /cvsroot/fink to mirror types that
 	now already have them
 

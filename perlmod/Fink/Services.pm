@@ -1345,28 +1345,45 @@ sub get_osx_vers_long {
 	return Fink::Config::get_option('sw_vers_long');
 }
 
+=item get_darwin_equiv
+
+	my $os_x_version = get_darwin_equiv($kernel_major_version);
+
+For a given kernel major version (i.e., the "8" of "8.6.1"), return
+the OS X version expected to be used on it. Returns undef if it
+couldn't be determined.
+
+=cut
+
 sub get_darwin_equiv
 {
 	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4');
 	return $darwin_osx{get_kernel_vers()};
 }
 
+=item get_kernel_vers
+
+	my $kernel_version = get_kernel_vers();
+
+Returns the major version of the local kernel.
+
+=cut
+
 sub get_kernel_vers
 {
-	my $darwin_version = get_kernel_vers_long();
-	if ($darwin_version =~ s/^(\d+)\.\d+(\.\d+)*/$1/)
+	my $kernel_version = get_kernel_vers_long();
+	if ($kernel_version =~ s/^(\d+)\.\d+(\.\d+)*/$1/)
 	{
-		return $darwin_version;
+		return $kernel_version;
 	} else {
-		my $error = "Couldn't determine major version number for $darwin_version kernel!";
+		my $error = "Couldn't determine major version number for $kernel_version kernel!";
 		die $error . "\n";
 	}
 }
 
 sub get_kernel_vers_long
 {
-	(my $darwin_version = lc((uname())[2]));
-	return $darwin_version;
+	return lc((uname())[2]);
 }
 
 sub get_system_version
