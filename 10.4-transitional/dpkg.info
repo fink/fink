@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 217
+Revision: 218
 GCC: 3.3
 Depends: gettext, libiconv, gzip, tar, libncurses5-shlibs
 Essential: yes
@@ -15,7 +15,7 @@ SetMAKEFLAGS: -j1
 CompileScript: <<
  %p/bin/fink -y install gettext-bin gettext-dev gettext-tools libiconv-dev libncurses5
  PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
- make EXEFLAGS=-force_flat_namespace
+ make
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<
