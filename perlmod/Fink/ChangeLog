@@ -1,3 +1,8 @@
+2006-05-31  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Don't append /cvsroot/fink to mirror types that
+	now already have them
+
 2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* SelfUpdate.pm: Use hostnames specified in anonymous-cvs or

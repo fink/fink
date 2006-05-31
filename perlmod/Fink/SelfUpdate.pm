@@ -280,10 +280,11 @@ sub setup_direct_cvs {
 	if (Fink::Config::verbosity_level() > 1) {
 		$verbosity = "";
 	}
-	my $cvsrepository = "fink.cvs.sourceforge.net";
+	my $cvsrepository = "fink.cvs.sourceforge.net:/cvsroot/fink";
 	if (-f "$basepath/lib/fink/URL/cvs-repository") {
 		$cvsrepository = cat "$basepath/lib/fink/URL/cvs-repository";
 		chomp($cvsrepository);
+		$cvsrepository .= ':/cvsroot/fink';
 	}
 	if ($cvsuser eq "anonymous") {
 		if (-f "$basepath/lib/fink/URL/anonymous-cvs") {
@@ -293,7 +294,7 @@ sub setup_direct_cvs {
 		&print_breaking("Now logging into the CVS server. When CVS asks you ".
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
-		$cmd = "cvs -d:pserver:anonymous\@$cvsrepository:/cvsroot/fink login";
+		$cmd = "cvs -d:pserver:anonymous\@$cvsrepository login";
 		if ($username ne "root") {
 			$cmd = "/usr/bin/su $username -c '$cmd'";
 		}
@@ -301,13 +302,13 @@ sub setup_direct_cvs {
 			die "Logging into the CVS server for anonymous read-only access failed.\n";
 		}
 
-		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository";
 	} else {
 		if (-f "$basepath/lib/fink/URL/developer-cvs") {
 			$cvsrepository = cat "$basepath/lib/fink/URL/developer-cvs";
 			chomp($cvsrepository);
 		}
-		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository:/cvsroot/fink";
+		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository;
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -l -d fink dists";
