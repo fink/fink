@@ -308,7 +308,7 @@ sub setup_direct_cvs {
 			$cvsrepository = cat "$basepath/lib/fink/URL/developer-cvs";
 			chomp($cvsrepository);
 		}
-		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository;
+		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository";
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -l -d fink dists";
