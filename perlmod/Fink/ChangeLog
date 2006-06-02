@@ -1,5 +1,9 @@
 2006-06-02  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Percent-expand before comparing strings.
+
+2006-06-02  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: In Files field, skip if source and target dirs
 	are identical.
 

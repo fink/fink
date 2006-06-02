@@ -3400,7 +3400,15 @@ sub phase_install {
 
 			my $source_dir = dirname($source);
 			my $target_dir = dirname($target);
-			next if $source_dir eq $target_dir;  # Skip iff "mv /foo/bar /foo"
+
+			# Skip iff "mv /foo/bar /foo"
+			# (should we just skip Files altogether iff %d==%D?
+			next if &expand_percent($source_dir,
+									$self->{_expand},
+									$self->get_info_filename.' "Files"')
+				 eq &expand_percent($target_dir,
+									$self->{_expand},
+									$self->get_info_filename.' "Files"');
 
 			if (!$target_dirs{$target_dir}++) {
 				$install_script .= "\n/usr/bin/install -d -m 755 $target_dir";
