@@ -3397,7 +3397,10 @@ sub phase_install {
 			# FIXME: if Files entry has colon, we throw out the last
 			# component of $target. Should we allow the same type of
 			# target renaming we do in DocFiles?
+
+			my $source_dir = dirname($source);
 			my $target_dir = dirname($target);
+			next if $source_dir eq $target_dir;  # Skip iff "mv /foo/bar /foo"
 
 			if (!$target_dirs{$target_dir}++) {
 				$install_script .= "\n/usr/bin/install -d -m 755 $target_dir";

@@ -1,3 +1,8 @@
+2006-06-02  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: In Files field, skip if source and target dirs
+	are identical.
+
 2006-05-31  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Don't say "darwin" when we mean "the local kernel"
