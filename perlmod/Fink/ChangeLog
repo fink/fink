@@ -1,3 +1,7 @@
+2006-06-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: allow %p/X11 as a valid path
+
 2006-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* SelfUpdate.pm: use the $distribution when comparing versions for a 
