@@ -1,3 +1,8 @@
+2006-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.18, a bugfix release
+	on branch_0_24
+
 2006-05-31  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.17, a bugfix release
