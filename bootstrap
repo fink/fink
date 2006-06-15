@@ -28,6 +28,7 @@ use 5.008_001;	 # perl 5.8.1 or newer required
 use strict;
 
 use FindBin;
+use lib "$FindBin::RealBin/perlmod";
 
 my ($answer);
 my ($script, $cmd);
@@ -79,7 +80,6 @@ close $outputhandle;
 ### check if we are unharmed ###
 
 print "Checking package...";
-use lib "$FindBin::RealBin/perlmod";
 require Fink::Bootstrap;
 import Fink::Bootstrap qw(&check_host &check_files);
 require Fink::FinkVersion;

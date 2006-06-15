@@ -1,6 +1,11 @@
+2006-06-15  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap: clarify order of function calls.
+
 2006-06-15  Chris Zubrzycki  <beren12@users.sourceforge.net>
 
-	* bootstrap.pl, bootstrap.sh: Merged both into bootstrap, Updated references.
+	* bootstrap, bootstrap.pl, bootstrap.sh: Merged .pl and .sh into
+	new bootstrap, Updated references.
 
 2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
