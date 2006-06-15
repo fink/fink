@@ -1,6 +1,7 @@
 2006-06-15  Daniel Macks  <dmacks@netspace.org>
 
-	* bootstrap: clarify order of function calls.
+	* bootstrap: Clarify order of function calls. Cleaner quoting,
+	improved diagnostics during FinkVersion.pm.in->FinkVersion.pm
 
 2006-06-15  Chris Zubrzycki  <beren12@users.sourceforge.net>
 

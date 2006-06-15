@@ -33,26 +33,6 @@ use lib "$FindBin::RealBin/perlmod";
 my ($answer);
 my ($script, $cmd);
 
-### check the perl version
-
-# acceptable perl versions: "$] value" => "human-readable version string"
-my %ok_perl_versions = (
-    "5.008001" => "5.8.1",
-    "5.008002" => "5.8.2",
-    "5.008006" => "5.8.6"
-);
-
-if (exists $ok_perl_versions{"$]"}) {
-    print "Found perl version $].\n";
-} else {
-    die "\nSorry, your /usr/bin/perl is version $], but Fink can only use" . (
-	join "", map {
-	    ( $ok_perl_versions{$_} =~ /0$/ ? "\n  " : ", " ) .
-	    "$ok_perl_versions{$_} ($_)"
-	} sort keys %ok_perl_versions
-    )."\n\n";
-}
-
 ### patch FinkVersion.pm.in ###
 
 my ($homebase, $file);
@@ -61,17 +41,16 @@ chdir $homebase;
 
 my $output = "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 my $outputhandle = IO::Handle->new();
-my $input = "$output" . ".in";
+my $input = $output . '.in';
 my $inputhandle = IO::Handle->new();
 chomp(my $version = `cat VERSION`);
 
-open($inputhandle, "<$input") or die ("cannot open $input for reading");
-open($outputhandle, ">$output") or die ("cannot open $output for writing");
+open($inputhandle,  '<', $input ) or die "ERROR: Cannot open $input for reading: $!\n";
+open($outputhandle, '>', $output) or die "ERROR: Cannot open $output for writing: $!\n";
 
-while (defined ($_=<$inputhandle>))
-{
+while (defined ($_=<$inputhandle>)) {
 	s/\@VERSION\@/$version/g;
-	print $outputhandle "$_";
+	print $outputhandle $_;
 }
 
 close $inputhandle;
