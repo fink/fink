@@ -52,14 +52,33 @@ if (exists $ok_perl_versions{"$]"}) {
     )."\n\n";
 }
 
-### check if we are unharmed
+### patch FinkVersion.pm.in ###
 
-print "Checking package...";
 my ($homebase, $file);
-
 $homebase = $FindBin::RealBin;
 chdir $homebase;
 
+my $output = "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
+my $outputhandle = IO::Handle->new();
+my $input = "$output" . ".in";
+my $inputhandle = IO::Handle->new();
+chomp(my $version = `cat VERSION`);
+
+open($inputhandle, "<$input") or die ("cannot open $input for reading");
+open($outputhandle, ">$output") or die ("cannot open $output for writing");
+
+while (defined ($_=<$inputhandle>))
+{
+	s/\@VERSION\@/$version/g;
+	print $outputhandle "$_";
+}
+
+close $inputhandle;
+close $outputhandle;
+
+### check if we are unharmed ###
+
+print "Checking package...";
 use lib "$FindBin::RealBin/perlmod";
 require Fink::Bootstrap;
 import Fink::Bootstrap qw(&check_host &check_files);
