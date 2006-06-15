@@ -40,14 +40,14 @@ chunks of the output have been omitted ( "..." ).
 
    [frodo:~] testuser% tar_xzf_fink-0.8.1-full.tar.gz
    [frodo:~] testuser% cd_fink-0.8.1-full
-   [frodo:~/fink-0.8.1-full] testuser% ./bootstrap.sh_/sw
+   [frodo:~/fink-0.8.1-full] testuser% ./bootstrap /sw
    
    Welcome to Fink.
    
    ...
    Choose a method: [1] 1
    
-   sudo /Users/testuser/fink-0.8.1-full/bootstrap.pl .sudo '/sw'
+   sudo /Users/testuser/fink-0.8.1-full/bootstrap .sudo '/sw'
    Password:(your_normal_password_here)
    ...
    OK, I'll ask you some questions and update the configuration file in
@@ -218,10 +218,9 @@ where you put the tarball, and run this command:
 You now have a directory named fink-0.8.1-full. Change to it with "cd
 fink-0.8.1-full" .
 
-The actual installation is performed by the perl script bootstrap.pl. It is
-accompanied by a small shell script, bootstrap.sh, which checks some basic
-requirements and then hands over control to the perl script. So, to start
-installation, go to the fink-0.8.1-full directory and run this command:
+The actual installation is performed by the perl script bootstrap. So, to
+start the installation, go to the fink-0.8.1-full directory and run this
+command:
 
    ./bootstrap.sh
 

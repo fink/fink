@@ -18,7 +18,7 @@ commit: test
 	@cvs commit
 
 bootstrap: test
-	@sh bootstrap.sh $(PREFIX)
+	@sh bootstrap $(PREFIX)
 
 install:
 	./inject.pl $(PREFIX)

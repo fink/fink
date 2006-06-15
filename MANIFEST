@@ -16,8 +16,7 @@ REVISION
 STYLE
 TODO
 TODO.shlibs
-bootstrap.pl
-bootstrap.sh
+bootstrap
 dpkg-checkall.sh
 fink.in
 fink.8.in

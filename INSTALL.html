@@ -52,14 +52,14 @@ the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
 <pre>[frodo:~] testuser% <b>tar xzf fink-0.8.1-full.tar.gz</b>
 [frodo:~] testuser% <b>cd fink-0.8.1-full</b>
-[frodo:~/fink-0.8.1-full] testuser% <b>./bootstrap.sh /sw</b>
+[frodo:~/fink-0.8.1-full] testuser% <b>./bootstrap /sw</b>
 
 Welcome to Fink.
 
 ...
 Choose a method: [1] <b>1</b>
 
-sudo /Users/testuser/fink-0.8.1-full/bootstrap.pl .sudo '/sw'
+sudo /Users/testuser/fink-0.8.1-full/bootstrap .sudo '/sw'
 Password:<b>(your normal password here)</b>
 ...
 OK, I'll ask you some questions and update the configuration file in
@@ -264,14 +264,11 @@ Change to it with <tt style="white-space: nowrap;">cd fink-0.8.1-full</tt>.
 </p>
 <p>
 The actual installation is performed by the perl script
-bootstrap.pl.
-It is accompanied by a small shell script, bootstrap.sh, which checks
-some basic requirements and then hands over control to the perl
-script.
+bootstrap.
 So, to start installation, go to the fink-0.8.1-full directory and run
 this command:
 </p>
-<pre>./bootstrap.sh</pre>
+<pre>./bootstrap</pre>
 <p>
 After running some tests, the script will ask you what method should
 be used to gain root privileges.

@@ -1,3 +1,7 @@
+2006-06-15  Chris Zubrzycki  <beren12@users.sourceforge.net>
+
+	* bootstrap.pl, bootstrap.sh: Merged both into bootstrap, Updated references.
+
 2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap.pl: Don't query the user about 10.4 vs. 10.4-transitional;

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # -*- mode: Perl; tab-width: 4; -*-
 #
-# bootstrap.pl - perl script to install and bootstrap a Fink
+# bootstrap - perl script to install and bootstrap a Fink
 #								 installation from source
 #
 # Fink - a package manager that downloads source and installs it
@@ -151,7 +151,7 @@ if ($> != 0) {
 					  "Use sudo" => "sudo",
 					  "Use su" => "su",
 					  "None, fink must be run as root" => "none" ] );
-	$cmd = "'$homebase/bootstrap.pl' .$answer";
+	$cmd = "'$homebase/bootstrap' .$answer";
 	if ($#ARGV >= 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
 	}
@@ -341,7 +341,7 @@ if ($installto =~ /^\/usr\/local$/i) {
 	} else {
 		&print_breaking("WARNING: '$installto' already exists. If bootstrapping ".
 						"fails, try removing the directory altogether and ".
-						"re-run bootstrap.sh.");
+						"re-run bootstrap.");
 	}
 } else {
 	&print_breaking("OK, installing into '$installto'.");
@@ -416,7 +416,7 @@ my ($configpath, $config, $engine);
 $configpath = "$installto/etc/fink.conf";
 open(CONFIG, ">$configpath") or die "can't create configuration: $!";
 print CONFIG <<"EOF";
-# Fink configuration, initially created by bootstrap.pl
+# Fink configuration, initially created by bootstrap
 Basepath: $installto
 RootMethod: $rootmethod
 Trees: local/main stable/main stable/crypto
