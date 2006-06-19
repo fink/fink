@@ -1,3 +1,4 @@
+==========
 <http://thread.gmane.org/gmane.os.apple.fink.devel/6012>
 
 From: Max Horn <max <at> quendi.de>
@@ -20,4 +21,15 @@ cause extremely unnatural code formatting
    	...
    }
 * use a whitespace after keywords:  "if (foo)" and not "if(foo)"
+==========
 
+Also, all perl code should be clean under "-w" and "strict"
+standards. A typical perl script would thus begin:
+
+  #!/usr/bin/perl -w
+  # -*- mode: Perl; tab-width: 4; -*-
+  use strict;
+
+and end:
+
+  # vim: ts=4 sw=4 noet
