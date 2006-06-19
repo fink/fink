@@ -28,8 +28,5 @@ standards. A typical perl script would thus begin:
 
   #!/usr/bin/perl -w
   # -*- mode: Perl; tab-width: 4; -*-
-  use strict;
-
-and end:
-
   # vim: ts=4 sw=4 noet
+  use strict;

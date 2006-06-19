@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: Perl; tab-width: 4; -*-
+# vim: ts=4 sw=4 noet
 #
 # bootstrap - perl script to install and bootstrap a Fink
 #								 installation from source
@@ -495,6 +496,3 @@ print "\n";
 
 ### eof
 exit 0;
-
-
-# vim: ts=4 sw=4 noet
