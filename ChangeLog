@@ -1,3 +1,7 @@
+2006-06-19  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap: Gotta import a module before using its methods.
+
 2006-06-15  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap: Clarify order of function calls. Cleaner quoting,

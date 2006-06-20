@@ -30,6 +30,7 @@ use strict;
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
+use IO::Handle;
 
 my ($answer);
 my ($script, $cmd);
