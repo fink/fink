@@ -1,3 +1,7 @@
+2006-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: don't internationalize dpkg-bootstrap
+
 2006-06-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Validation.pm: allow %p/X11 as a valid path
