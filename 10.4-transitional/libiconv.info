@@ -1,27 +1,53 @@
 Package: libiconv
-Version: 1.9.1
-Revision: 11
+Version: 1.10
+Revision: 6
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
-Source-MD5: 0c99a05e0c3c153bac1c960f78711155
+#Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
+Source-MD5: 0d621d541e28ff053d8bbcf7215de3a4
+Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
+#Source2: mirror:gnu:gettext/gettext-0.14.5.tar.gz
+Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
+PatchScript: <<
+ cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+<<
+Patch: %n.patch
 Essential: yes
 Depends: base-files
 BuildDepends: fink (>= 0.13.0), fink-prebinding
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
- %p/lib/libiconv.2.dylib 5.0.0 %n (>= 1.9.1-1)
+ %p/lib/libiconv.2.dylib 6.0.0 %n (>= 1.10-5)
 <<
 DescPackaging: <<
  Shared libraries are in libiconv for backward compatibility, to avoid
  breaking dpkg during an update.
 
+ In order to guarantee that the gettext header files are present when 
+ libiconv is built, we now compile gettext during the building of this
+ package.  (Previously, the complicated interaction between gettext and
+ libiconv was handled during fink's bootstrap process, but not afterwards.)
+
  Previous versions by Christoph Pfisterer.
 <<
 NoSetLDFLAGS: true
-SetLIBS: -L%p/lib
-ConfigureParams: --mandir=%p/share/man
+NoSetCPPFLAGS: true
+CompileScript: <<
+#! /bin/sh -ex
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export PATH
+cd %b/../gettext-0.14.5/gettext-runtime
+EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" ./configure --prefix=%p --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath
+make
+rm -rf %b/../_inst
+make install DESTDIR=%b/../_inst
+cd %b/../libiconv-%v
+gt_cv_func_gnugettext1_libintl="no" CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" ./configure --prefix=%p --mandir='${prefix}/share/man' --enable-extra-encodings
+make
+<<
 InstallScript: <<
 mkdir -p %i/share/man %i/share/doc/%n
-make install prefix=%i mandir=%i/share/man docdir=%i/share/doc/%n
+make install prefix=%i docdir=%i/share/doc/%n
+perl -pi -e "s,^dependency_libs=.*,dependency_libs=' -L%p/lib'," %i/lib/libcharset.la %i/lib/libiconv.la
 rm -rf %i/doc
 rm -f %i/lib/charset.alias
 <<
@@ -59,6 +85,9 @@ it, or whose implementation cannot convert from/to Unicode.
 DescPort: <<
 charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
+
+We patch around a recent change in the upstream Makefile which defeats
+our build system.
 <<
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
