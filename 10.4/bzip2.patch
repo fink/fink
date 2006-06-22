@@ -1,7 +1,7 @@
-diff -ru bzip2-1.0.2/Makefile bzip2-1.0.2-patched/Makefile
---- bzip2-1.0.2/Makefile	Sat Jan 26 00:34:53 2002
-+++ bzip2-1.0.2-patched/Makefile	Sun Mar 31 00:15:27 2002
-@@ -1,15 +1,18 @@
+diff -Nurd -x'*~' bzip2-1.0.3.orig/Makefile bzip2-1.0.3/Makefile
+--- bzip2-1.0.3.orig/Makefile	2005-02-17 06:28:24.000000000 -0500
++++ bzip2-1.0.3/Makefile	2005-11-14 16:16:10.000000000 -0500
+@@ -1,14 +1,17 @@
 +# This Makefile builds a shared version of the library,
 +# libbz2.1.0.2.dylib, with install_name .../libbz2.1.dylib,
 +# on Darwin and Mac OS X.
@@ -15,14 +15,13 @@ diff -ru bzip2-1.0.2/Makefile bzip2-1.0.2-patched/Makefile
  RANLIB=ranlib
  LDFLAGS=
  
- # Suitably paranoid flags to avoid bugs in gcc-2.7
  BIGFILES=-D_FILE_OFFSET_BITS=64
--CFLAGS=-Wall -Winline -O2 -fomit-frame-pointer -fno-strength-reduce $(BIGFILES)
-+CFLAGS=-fno-common -Wall -Winline -O2 -fomit-frame-pointer -fno-strength-reduce $(BIGFILES)
+-CFLAGS=-Wall -Winline -O -g $(BIGFILES)
++CFLAGS=-fno-common -Wall -Winline -O -g $(BIGFILES)
  
  # Where you want it installed when you do 'make install'
  PREFIX=/usr
-@@ -23,32 +26,29 @@
+@@ -22,9 +25,9 @@
        decompress.o \
        bzlib.o
  
@@ -34,22 +33,16 @@ diff -ru bzip2-1.0.2/Makefile bzip2-1.0.2-patched/Makefile
  	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2 bzip2.o -L. -lbz2
  
  bzip2recover: bzip2recover.o
- 	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2recover bzip2recover.o
+@@ -39,15 +42,21 @@
+ 		$(RANLIB) libbz2.a ; \
+ 	fi
  
--libbz2.a: $(OBJS)
--	rm -f libbz2.a
--	$(AR) cq libbz2.a $(OBJS)
--	@if ( test -f $(RANLIB) -o -f /usr/bin/ranlib -o \
--		-f /bin/ranlib -o -f /usr/ccs/bin/ranlib ) ; then \
--		echo $(RANLIB) libbz2.a ; \
--		$(RANLIB) libbz2.a ; \
--	fi
 +libbz2.dylib: $(OBJS)
 +	rm -f libbz2.dylib libbz2.*.dylib
-+	$(CC) -dynamiclib -o libbz2.1.0.2.dylib $(OBJS) -install_name $(PREFIX)/lib/libbz2.1.dylib -compatibility_version 1.0.1 -current_version 1.0.2
-+	ln -s libbz2.1.0.2.dylib libbz2.1.dylib
-+	ln -s libbz2.1.0.2.dylib libbz2.dylib
- 
++	$(CC) -dynamiclib -o libbz2.1.0.3.dylib $(OBJS) -install_name $(PREFIX)/lib/libbz2.1.dylib -compatibility_version 1.0.1 -current_version 1.0.3
++	ln -s libbz2.1.0.3.dylib libbz2.1.dylib
++	ln -s libbz2.1.0.3.dylib libbz2.dylib
++
  check: test
  test: bzip2
  	@cat words1
@@ -68,7 +61,7 @@ diff -ru bzip2-1.0.2/Makefile bzip2-1.0.2-patched/Makefile
  	cmp sample1.bz2 sample1.rb2 
  	cmp sample2.bz2 sample2.rb2
  	cmp sample3.bz2 sample3.rb2
-@@ -60,8 +60,9 @@
+@@ -59,8 +68,9 @@
  install: bzip2 bzip2recover
  	if ( test ! -d $(PREFIX)/bin ) ; then mkdir -p $(PREFIX)/bin ; fi
  	if ( test ! -d $(PREFIX)/lib ) ; then mkdir -p $(PREFIX)/lib ; fi
@@ -80,7 +73,7 @@ diff -ru bzip2-1.0.2/Makefile bzip2-1.0.2-patched/Makefile
  	if ( test ! -d $(PREFIX)/include ) ; then mkdir -p $(PREFIX)/include ; fi
  	cp -f bzip2 $(PREFIX)/bin/bzip2
  	cp -f bzip2 $(PREFIX)/bin/bunzip2
-@@ -71,12 +72,14 @@
+@@ -70,12 +80,14 @@
  	chmod a+x $(PREFIX)/bin/bunzip2
  	chmod a+x $(PREFIX)/bin/bzcat
  	chmod a+x $(PREFIX)/bin/bzip2recover
@@ -92,14 +85,14 @@ diff -ru bzip2-1.0.2/Makefile bzip2-1.0.2-patched/Makefile
  	chmod a+r $(PREFIX)/include/bzlib.h
 -	cp -f libbz2.a $(PREFIX)/lib
 -	chmod a+r $(PREFIX)/lib/libbz2.a
-+	cp -f libbz2.1.0.2.dylib $(PREFIX)/lib
-+	chmod a+rx $(PREFIX)/lib/libbz2.1.0.2.dylib
-+	(cd $(PREFIX)/lib && rm -f libbz2.1.dylib && ln -s libbz2.1.0.2.dylib libbz2.1.dylib)
-+	(cd $(PREFIX)/lib && rm -f libbz2.dylib && ln -s libbz2.1.0.2.dylib libbz2.dylib)
++	cp -f libbz2.1.0.3.dylib $(PREFIX)/lib
++	chmod a+r $(PREFIX)/lib/libbz2.1.0.3.dylib
++	(cd $(PREFIX)/lib && rm -f libbz2.1.dylib && ln -s libbz2.1.0.3.dylib libbz2.1.dylib)
++	(cd $(PREFIX)/lib && rm -f libbz2.dylib && ln -s libbz2.1.0.3.dylib libbz2.dylib)
  	cp -f bzgrep $(PREFIX)/bin/bzgrep
  	ln $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzegrep
  	ln $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzfgrep
-@@ -87,18 +90,18 @@
+@@ -86,17 +98,17 @@
  	cp -f bzdiff $(PREFIX)/bin/bzdiff
  	ln $(PREFIX)/bin/bzdiff $(PREFIX)/bin/bzcmp
  	chmod a+x $(PREFIX)/bin/bzdiff
@@ -120,10 +113,9 @@ diff -ru bzip2-1.0.2/Makefile bzip2-1.0.2-patched/Makefile
 +	echo ".so man1/bzmore.1" > $(PREFIX)/share/man/man1/bzless.1
 +	echo ".so man1/bzdiff.1" > $(PREFIX)/share/man/man1/bzcmp.1
  
- distclean: clean
  clean: 
 -	rm -f *.o libbz2.a bzip2 bzip2recover \
-+	rm -f *.o libbz2.dylib bzip2 bzip2recover \
++	rm -f *.o libbz2.a libbz2*.dylib bzip2 bzip2recover \
  	sample1.rb2 sample2.rb2 sample3.rb2 \
  	sample1.tst sample2.tst sample3.tst
  

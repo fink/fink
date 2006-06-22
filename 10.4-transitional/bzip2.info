@@ -1,12 +1,13 @@
 Package: bzip2
-Version: 1.0.2
-Revision: 12
+Version: 1.0.3
+Revision: 1
 Essential: yes
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink (>= 0.13.0), fink-prebinding
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+#Source: http://www.bzip.org/%v/%n-%v.tar.gz
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
-Source-MD5: ee76864958d568677f03db8afad92beb
+Source-MD5: 8a716bebecb6e647d2e8a29ea5d8447f
 Patch: %n.patch
 CompileScript: make PREFIX=%p
 InstallScript: make install PREFIX=%i
