@@ -1,6 +1,6 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
-Revision: 217
+Revision: 218
 Depends: gzip, tar
 BuildDepends: gettext-dev
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
@@ -15,7 +15,7 @@ CompileScript: <<
  PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
  make EXEFLAGS=-force_flat_namespace
 <<
-ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
+ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix
 InstallScript: <<
  mkdir -p %i/share/doc/dpkg
  make install DESTDIR=%d

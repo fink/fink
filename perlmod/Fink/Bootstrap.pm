@@ -418,7 +418,7 @@ The primary bootstrap routine, called by bootstrap.pl.
 sub bootstrap {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
-	my @plist = ("gettext", "dpkg-bootstrap");
+	my @plist = ("dpkg-bootstrap");
 	my ($package_list, $perl_is_supported) = additional_packages();
 	my @addlist = @{$package_list};
 	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless $perl_is_supported;
