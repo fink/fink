@@ -246,7 +246,7 @@ sub parse_options {
 #		[ 'interactive|i'      => \$opts{interactive}, 'see man page'		],
 		[ 'version|V'          => \$opts{showversion},
 			'display version information'									],
-	], \@args, helpformat => <<FORMAT, optwidth => 23, # lines up better with 23
+	], \@args, helpformat => <<HELPFORMAT, optwidth => 23, # lines up better with 23
 %intro{[options] command [package...],install pkg1 [pkg2 ...]}
 Common commands:
 %align{install,install/update the named packages,$comlen}
@@ -271,7 +271,7 @@ Common options:
 See the fink(8) manual page for a complete list of commands and options.
 Visit http://fink.sourceforge.net/ for further information.
 
-FORMAT
+HELPFORMAT
 		# Err if no command
 		validate => sub {
 			!scalar(@args) && !$opts{showversion} && $VALIDATE_HELP }
@@ -282,7 +282,10 @@ FORMAT
 		print "Package manager version: "
 			. Fink::FinkVersion::fink_version() . "\n";
 		print "Distribution version: "
-			. Fink::FinkVersion::distribution_version() . "\n";
+			. Fink::FinkVersion::distribution_version()
+			. ' ' . $config->param('Architecture')
+			. ($config->mixed_arch() ? ' (forged)' : '')
+			. "\n";
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer

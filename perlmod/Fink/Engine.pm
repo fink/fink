@@ -1032,7 +1032,7 @@ sub cmd_cleanup {
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
 		[ 'dry-run|d'     => \$opts{dryrun},
 			"Print the items that would be removed, but do not actually remove them." ],
-	], \@_, helpformat => <<FORMAT,
+	], \@_, helpformat => <<HELPFORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
 %opts{sources,debs,buildlocks}
@@ -1040,7 +1040,7 @@ One or more of the following modes must be specified:
 Options:
 %opts{keep-src,dry-run,help}
 
-FORMAT
+HELPFORMAT
 		validate => sub {
 			!scalar(grep { $_ } values %modes) && $VALIDATE_HELP
 		},
@@ -2036,7 +2036,7 @@ sub cmd_dumpinfo {
 		[ 'all|a'		=> \$wantall,	"All package info fields (default behavior)."		],
 		[ 'field|f=s'	=> \@fields,	"Just the specific field(s) specified."				],
 		[ 'percent|p=s'	=> \@percents,	"Just the percent expansion for specific key(s)."	],
-	], \@_, helpformat => <<FORMAT);
+	], \@_, helpformat => <<HELPFORMAT);
 %intro{[options] [package(s)]}
 %all{}
 
@@ -2060,7 +2060,7 @@ described in the Fink Packaging Manual:
   env          - Shell environment in effect during pkg construction.
   trees        - Trees in which this package (same version) exists.
 
-FORMAT
+HELPFORMAT
 	
 	Fink::Package->require_packages();
 

@@ -1,5 +1,11 @@
 2006-06-23  Daniel Macks  <dmacks@netspace.org>
 
+	* Config.pm, Engine.pm: Don't use FORMAT for heredoc
+	terminator (confuses perl-mode).
+	* Config.pm: --version includes arch in Distribution
+
+2006-06-23  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Lay groundwork for cleanup --dpkg-status
 	* Services.pm: _expand_help: sanity-check the %opts{} passed to
 	get_options.
