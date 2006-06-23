@@ -1,8 +1,6 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
 Revision: 218
-Depends: gzip, tar
-BuildDepends: gettext-dev
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
@@ -51,6 +49,14 @@ Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
 
 Patched to hardcode complete paths to our component executables
 instead of relying on PATH
+<<
+DescPackaging: <<
+  admindir goes in %P (eventual live basedir) not %p (bootstrap
+  basedir): dpkg-bootstrap needs to set up the initial live dpkg
+  status database.
+
+  removed Depends and BuildDepends since this is built during phase two
+  of bootstrap and those fields are not relevant there
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
