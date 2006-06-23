@@ -1,3 +1,8 @@
+2006-06-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: modify &additional_packages to match the changes in
+	the set of essential packages
+
 2006-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: don't internationalize dpkg-bootstrap

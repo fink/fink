@@ -389,7 +389,7 @@ sub additional_packages {
 # the old version (and is installed as the old version).  This could lead
 # to problems the next time foo was used to compile something.
 
-	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "gettext-dev", "gettext-bin", "libiconv-dev", "libncurses5");
+	my @addlist = ("apt", "apt-shlibs", "bzip2-dev", "libgettext3-dev", "gettext-bin", "libiconv-dev", "libncurses5");
 	if ("$]" == "5.006") {
 		push @addlist, "storable-pm560", "file-spec-pm560", "test-harness-pm560", "test-simple-pm560";
 	} elsif ("$]" == "5.006001") {
