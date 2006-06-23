@@ -1,3 +1,10 @@
+2006-06-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* dpkg.info gettext.info libgettext3-shlibs.info 
+	libgettext3-shlibs.patch ncurses-shlibs.info tar.info: modify the 
+	set of essential packages, and adjust the compilation of packages
+	which depend on them
+
 2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink-mirrors: sync w/stable
