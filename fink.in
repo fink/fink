@@ -68,9 +68,15 @@ UNKNOWN
 sub show_version {
   load_config();
   require Fink::FinkVersion;
+
+  my $actual_arch = &Fink::Services::get_arch();
+  my $active_arch = ($Config->has_param('Architecture') ? $Config->param('Architecture') : $actual_arch);
+
   print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
   print "Distribution version: ".Fink::FinkVersion::distribution_version()
-	  . ' ' $Config->param('Architecture') . "\n";
+	  . " $active_arch"
+	  . (lc($active_arch) ne lc($actual_arch) ? ' (forged)' : '')
+	  . "\n";
   print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer

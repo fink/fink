@@ -1,5 +1,9 @@
 2006-06-23  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.in: bugfix for --version.
+
+2006-06-23  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.in: --version includes arch in Distribution. Simplify
 	Config object loading.
 
