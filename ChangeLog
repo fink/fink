@@ -1,3 +1,8 @@
+2006-06-23  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.in: --version includes arch in Distribution. Simplify
+	Config object loading.
+
 2006-06-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.20, a bugfix release

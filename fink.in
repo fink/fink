@@ -26,6 +26,7 @@ use strict;
 
 use lib "@BASEPATH@/lib/perl5";
 my $basepath = '@BASEPATH@';
+my $Config;  # the Fink::Config object (only avail after &load_config)
 
 ### parse options passed on the command line
 
@@ -68,7 +69,8 @@ sub show_version {
   load_config();
   require Fink::FinkVersion;
   print "Package manager version: ".Fink::FinkVersion::fink_version()."\n";
-  print "Distribution version: ".Fink::FinkVersion::distribution_version()."\n";
+  print "Distribution version: ".Fink::FinkVersion::distribution_version()
+	  . ' ' $Config->param('Architecture') . "\n";
   print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
@@ -130,10 +132,8 @@ EOF
 
 ### setup environment
 
-my $Config;
-my $Config_Loaded = 0;
 sub load_config {
-    return 1 if $Config_Loaded++;
+    return 1 if defined $Config;
 
     require Fink::Config;
 
