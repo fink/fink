@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1219
+Revision: 219
 GCC: 4.0
 Depends: libgettext3-shlibs, libiconv, gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
 Essential: yes
