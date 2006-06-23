@@ -1,8 +1,8 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 219
+Revision: 220
 GCC: 4.0
-Depends: libgettext3-shlibs, libiconv, gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
+Depends: libgettext3-shlibs, libiconv, gzip, tar, libncurses5-shlibs (>= 5.4-20041023-6)
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
