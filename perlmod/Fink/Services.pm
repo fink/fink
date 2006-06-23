@@ -2095,6 +2095,10 @@ sub _expand_help {
 				@$options;
 		},
 		opts => sub {
+			if (my @missing_opts = grep {!exists $opts{$_}} @_) {
+				die "Options (@missing_opts) from \%opts{@_} not defined in option list ("
+					. (join ' ', keys %opts) . ")\n";
+			}
 			chomp (my $ret = join '', map { _get_option_help($_, $optlen) }
 				@opts{@_} );
 			$ret;

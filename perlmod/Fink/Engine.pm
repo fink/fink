@@ -1011,11 +1011,12 @@ sub cmd_validate {
 }
 
 sub cmd_cleanup {
-	# TODO - option that steers which file to keep/delete: keep all files that
-	#				 are refered by any .info file; keep only those refered to by the
-	#				 current version of any package; etc.
-	#				 Delete all .deb and delete all src? Not really needed, this can be
-	#				 achieved each with single line CLI commands.
+	# TODO - option that steers which file to keep/delete: keep all
+	#        files that are refered by any .info file vs keep only
+	#        those refered to by the current version of any package,
+	#        etc. Delete all .deb and delete all src? Not really
+	#        needed, this can be achieved each with single line CLI
+	#        commands.
 
 	my(%opts, %modes);
 	
@@ -1024,15 +1025,17 @@ sub cmd_cleanup {
 		[ 'debs'          => \$modes{debs},
 			"Delete .deb (compiled binary package) files." ],
 		[ 'buildlocks|bl' => \$modes{bl},	"Delete stale buildlock packages." ],
-#		[ 'obsoletes'     => \$modes{obs},	"Delete obsolete packages." ],
+#		[ 'obsoletes'     => \$modes{obs},	"Uninstall obsolete packages." ],
+#		[ 'dpkg-status'   => \$modes{dpkg_status},
+#			"Remove uninstalled packages from dpkg status database." ],
 		[ 'keep-src|k'    => \$opts{keep_old},
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
 		[ 'dry-run|d'     => \$opts{dryrun},
-			"Print the files that would be removed, but do not actually remove them." ],
+			"Print the items that would be removed, but do not actually remove them." ],
 	], \@_, helpformat => <<FORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
-%opts{debs,sources,buildlocks}
+%opts{sources,debs,buildlocks}
 
 Options:
 %opts{keep-src,dry-run,help}
@@ -1047,6 +1050,7 @@ FORMAT
 	$modes{debs} && &cleanup_debs(%opts);
 	$modes{bl}   && &cleanup_buildlocks(%opts, internally=>0);
 	$modes{obs}  && &cleanup_obsoletes(%opts);
+	$modes{dpkg} && &cleanup_dpkg_status(%opts);
 }
 
 =item cleanup_*
@@ -1403,6 +1407,32 @@ sub cleanup_obsoletes {
 	my %opts = (dryrun => 0, @_);
 
 	print "cleanup --obsoletes is not yet available.\n";
+	return 1;
+}
+
+=item cleanup_dpkg_status
+
+Remove entries for purged packages from the dpkg "status" database. A
+backup of the original file is kept in the same location with a
+timestamp in its filename. Standard dpkg-compatible locking of the
+database file is used to prevent race conditions or other concurrency
+problems that could result in file corruption. The following option is
+known:
+
+=over 4
+
+=item dryrun
+
+If true, don't actually remove them.
+
+=back
+
+=cut
+
+sub cleanup_dpkg_status {
+	my %opts = (dryrun => 0, @_);
+
+	print "cleanup --dpkg is not yet available.\n";
 	return 1;
 }
 

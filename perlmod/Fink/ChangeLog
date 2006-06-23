@@ -1,3 +1,9 @@
+2006-06-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Lay groundwork for cleanup --dpkg-status
+	* Services.pm: _expand_help: sanity-check the %opts{} passed to
+	get_options.
+
 2006-06-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: don't internationalize dpkg-bootstrap
