@@ -1,3 +1,8 @@
+2006-06-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.21, a release
+	on branch_0_24 which includes architecture in --version
+
 2006-06-23  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.in: bugfix for --version.
