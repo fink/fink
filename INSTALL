@@ -1,4 +1,4 @@
-Generated from $Fink: install.xml,v 1.23 2006/06/09 15:08:55 dmrrsn Exp $
+Generated from $Fink: install.xml,v 1.24 2006/06/26 05:05:41 beren12 Exp $
 
  Fink 0.8.1 Installation
 =========================
@@ -40,7 +40,7 @@ chunks of the output have been omitted ( "..." ).
 
    [frodo:~] testuser% tar_xzf_fink-0.8.1-full.tar.gz
    [frodo:~] testuser% cd_fink-0.8.1-full
-   [frodo:~/fink-0.8.1-full] testuser% ./bootstrap /sw
+   [frodo:~/fink-0.8.1-full] testuser% ./bootstrap_/sw
    
    Welcome to Fink.
    
@@ -219,10 +219,10 @@ You now have a directory named fink-0.8.1-full. Change to it with "cd
 fink-0.8.1-full" .
 
 The actual installation is performed by the perl script bootstrap. So, to
-start the installation, go to the fink-0.8.1-full directory and run this
+start installation, go to the fink-0.8.1-full directory and run this
 command:
 
-   ./bootstrap.sh
+   ./bootstrap
 
 After running some tests, the script will ask you what method should be used
 to gain root privileges. The most useful choice is 'sudo'. On a default
