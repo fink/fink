@@ -1,3 +1,7 @@
+2006-06-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Bootstrap.pm: recognize 10.4.7
+
 2006-06-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: modify &additional_packages to match the changes in
