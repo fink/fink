@@ -1,3 +1,12 @@
+2006-06-27  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-dpkg-status-cleanup.in: Template for new utility script to
+	remove purged packages from dpkg status file.
+	* setup.sh: create fink-dpkg-status-cleanup script from template
+	and also a fink-dpkg-status-cleanup-lockwait wrapper for it.
+	* install.sh: -cleanup and -cleanup-lockwait go in %p/sbin
+	* .cvsignore, MANIFEST*: Adjust for new files.
+	
 2006-06-19  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap: Gotta import a module before using its methods.

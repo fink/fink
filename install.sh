@@ -38,7 +38,7 @@ echo "Creating directories..."
 mkdir -p "$basepath"
 chmod 755 "$basepath"
 
-for dir in bin \
+for dir in bin sbin \
 	lib lib/perl5 lib/perl5/Fink \
 	lib/perl5/Fink/{Text,Notify,Checksum,Finally} \
 	lib/fink lib/fink/update \
@@ -66,6 +66,7 @@ for bin in fink fink-{virtual-pkgs,instscripts,scanpackages} pathsetup.sh \
 		{dpkg,apt-get}-lockwait; do
 	install -c -p -m 755 $bin "$basepath/bin/"
 done
+install -c -m 755 fink-dpkg-status-cleanup fink-dpkg-status-cleanup-lockwait "$basepath/sbin/"
 
 # copy all perl modules
 for subdir in . Fink Fink/{Text,Notify,Checksum,Finally} ; do

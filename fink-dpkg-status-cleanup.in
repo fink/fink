@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+# -*- mode: Perl; tab-width: 4; -*-
+# vim: ts=4 sw=4 noet
+
+use warnings;
+use strict;
+
+my $basepath = "@PREFIX@";		# Path prefix for dpkg
+my $debug = 0;
+
+my $status_file = $basepath . '/var/lib/dpkg/status';
+my $status_back = $status_file . '.' . time . '.' . $$;
+my $status_temp = $status_file . '.new';
+
+umask 0022;
+
+open my $status_old, '<', $status_file or die "Couldn't read $status_file: $!\n";
+open my $status_new, '>', $status_temp or die "Couldn't write $status_temp: $!\n";
+
+$debug && print "processing $status_file -> $status_temp\n";
+
+my $para = '';
+my $omit = 0;
+my ($cnt_omit, $cnt_keep) = (0,0);
+while (defined(my $line = <$status_old>)) {
+    $para .= $line;
+    if ($line =~ /\As*\Z/ or eof($status_old)) {
+		# end of paragraph...store if not flagged to omit
+		if ($omit) {
+			$cnt_omit++;
+			$debug && print "=====\nomit:\n-----\n$para";
+		} else {
+			$cnt_keep++;
+			$debug && print "=====\nkeep:\n-----\n$para";
+			print $status_new $para;  # write to new database
+		}
+		$omit = 0;
+		$para = '';
+    } else {
+		# some random paragraph line...
+		if ($line eq "Status: purge ok not-installed\n") {
+			$omit = 1;  # package is purged...flag to omit it
+		}
+    }
+}
+
+close $status_old;
+close $status_new;
+
+$debug && print "=====\nrename $status_file -> $status_back\n";
+rename $status_file, $status_back or die "Couldn't rename $status_file to $status_back\n";
+
+$debug && print "rename $status_temp -> $status_file\n";
+rename $status_temp, $status_file or die "Couldn't install $status_temp as $status_file\n";
+
+print "$status_file cleaned:\n\tkeep $cnt_keep\n\tomit $cnt_omit\nold version saved as $status_back\n";
+exit 0;

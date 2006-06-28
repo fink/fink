@@ -1,5 +1,7 @@
 config*
 fink
+fink-dpkg-status-cleanup
+fink-dpkg-status-cleanup-lockwait
 fink-virtual-pkgs
 fink-instscripts
 fink-scanpackages

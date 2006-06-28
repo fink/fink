@@ -54,9 +54,13 @@ sed "s|@PREFIX@|$basepath|g" <shlibs.default.in >shlibs.default
 echo "Creating postinstall script..."
 sed "s|@PREFIX@|$basepath|g" <postinstall.pl.in >postinstall.pl
 
+echo "Creating dpkg helper script..."
+sed "s|@PREFIX@|$basepath|g" <fink-dpkg-status-cleanup.in >fink-dpkg-status-cleanup
+
 echo "Creating lockwait wrappers..."
-sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|dpkg|g" <lockwait.in >dpkg-lockwait
-sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|apt-get|g" <lockwait.in >apt-get-lockwait
+for prog in dpkg apt-get fink-dpkg-status-cleanup; do
+	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$prog|g" <lockwait.in >$prog-lockwait
+done
 
 echo "Creating g++ wrappers..."
 for gccvers in 3.3 4.0; do
