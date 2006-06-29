@@ -1,9 +1,6 @@
 Package: libgettext3-shlibs
-
 Version: 0.14.5
 Revision: 2
-# if you release a new revision or version, please add the InfoDocs field
-
 #Source: mirror:gnu:gettext/gettext-%v.tar.gz
 Source: mirror:sourceforge:fink/gettext-%v.tar.gz
 Source-MD5: e2f6581626a22a0de66dce1d81d00de3
