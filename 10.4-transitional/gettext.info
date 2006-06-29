@@ -1,9 +1,10 @@
 Package: gettext
 Version: 0.10.40
-Revision: 19
-Source: mirror:gnu:gettext/gettext-%v.tar.gz
+Revision: 25
+#Source: mirror:gnu:gettext/gettext-%v.tar.gz
+Source: mirror:sourceforge:fink/gettext-%v.tar.gz
 Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
-Essential: yes
+Essential: no
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.13.6), fink-prebinding
 Shlibs: %p/lib/libintl.1.dylib 2.0.0 %n (>= 0.10.40-5)
@@ -13,10 +14,10 @@ DescPackaging: <<
 
  Previous versions by Christoph Pfisterer.
 
- This version of gettext has a new splitoff, gettext-tools, in preparation
- for the forthcoming update of gettext.  In this version *only*, gettext-bin 
- depends on gettext-tools.  In future versions, this will not be true,
- so modifications of .info files will be made to accomodate this change.
+ This version of gettext contains the old gettext shared libraries, and
+ has a corresponding gettext-dev splitoff.  The gettext-bin and gettext-tools
+ splitoffs have been moved to the libgettext3-shlibs package.  (Note that
+ gettext-bin no longer depends on gettext-tools.)
 <<
 Patch: %n.patch
 NoSetMAKEFLAGS: true
@@ -24,39 +25,33 @@ SetMAKEFLAGS: -j1
 SetCPPFLAGS: -no-cpp-precomp
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --with-included-gettext
 SetLDFLAGS: -L%b/intl/.libs
-CompileScript: <<
- ./configure %c
- make lispdir=%p/share/emacs/site-lisp
-<<
+CompileScript: env ac_cv_path_EMACS=no ./configure %c ; make
 InstallScript: <<
  make install DESTDIR=%d docdir=%p/share/doc/%n
  sed 's;-L%b/intl/.libs;;' <%i/lib/libintl.la >%i/lib/libintl.la.tmp
  mv -f %i/lib/libintl.la.tmp %i/lib/libintl.la
  rm -f %i/lib/charset.alias
  rm -f %i/share/emacs/site-lisp/po-mode.elc
+
+ rm %i/bin/gettext 
+ rm %i/bin/ngettext 
+ rm -R %i/share/aclocal 
+ rm %i/share/doc/gettext/*.html 
+ rm -Rf %i/share/emacs 
+ rm -R %i/share/gettext 
+ rm -R %i/share/info 
+ rm -R %i/share/locale 
+ rm -R %i/share/man
+ rm %i/bin/gettextize
+ rm %i/bin/m*
+ rm %i/bin/xgettext
 <<
 DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
-SplitOff: <<
- Package: gettext-bin
- Depends: %N (= %v-%r), gettext-tools
- Replaces: %N (<= 0.10.40-4)
- Files: bin/gettext bin/ngettext share/aclocal share/doc/gettext/*.html share/emacs share/gettext share/info share/locale share/man
- Description: Executables for gettext package
- InfoDocs: gettext.info
- DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
-<<
-SplitOff3: <<
- Package: gettext-tools
- Depends: %N (= %v-%r)
- Replaces: %N (<= 0.10.40-4), %N-bin (<= 0.10.40-18)
- Files: bin/gettextize bin/m* bin/xgettext
- Description: Developer executables for gettext package
- DocFiles: README* AUTHORS BUGS COPYING* NEWS THANKS TODO
-<<
 SplitOff2: <<
  Package: gettext-dev
  Depends: gettext (= %v-%r)
- Replaces: gettext (<= 0.10.40-4)
+ Replaces: gettext (<= 0.10.40-4), libgettext3-dev
+ Conflicts: libgettext3-dev
  BuildDependsOnly: true
  Files: include lib/libintl.dylib lib/*.a lib/*.la
  Description: Developer files for gettext package
@@ -83,11 +78,6 @@ temporary build directory.
 
 charset.alias is deleted because it is empty on Darwin anyway and
 causes unnecessary conflicts between packages.
-
-po-mode.elc is deleted to comply with fink's emacs policy.  Better
-compliance must wait for a further revision.
-
-Force the correct lispdir even if user's system is misconfigured.
 <<
 License: GPL/LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>

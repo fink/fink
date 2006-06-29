@@ -1,20 +1,26 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 218
-GCC: 3.3
-Depends: gettext, libiconv, gzip, tar, libncurses5-shlibs
+Revision: 220
+GCC: 4.0
+Depends: libgettext3-shlibs, libiconv, gzip, tar, libncurses5-shlibs (>= 5.4-20041023-6)
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchScript: sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
+Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
+Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
+PatchScript: <<
+ sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
+ cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+<<
 SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
- %p/bin/fink -y install gettext-bin gettext-dev gettext-tools libiconv-dev libncurses5
- PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
+ %p/bin/fink -y install gettext-bin libgettext3-dev libiconv-dev libncurses5
+ cd %b/../gettext-0.14.5/gettext-tools; env EMACS=no ./configure --prefix="%b/../_inst%p" --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath; make; rm -rf %b/../_inst; make install
+ PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
  make
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
@@ -29,6 +35,21 @@ DescDetail: <<
 dpkg installs and removes binary packages; it is the base of the
 distribution. This package also contains some helper programs and
 dselect, a full-screen console frontend to dpkg.
+<<
+DescPackaging: <<
+ With the current fink dependency engine, essential packages may neither
+ depend nor builddepend on non-essential packages.  Thus, to make sure
+ that non-essential splitoffs of essential packages (like gettext-bin
+ and *-dev) are present at build time, we call 'fink install' during
+ the compile script.  Note that since the corresponding essential packages
+ are dependencies of this one, they should already have been built, so
+ 'fink install' should merely make sure they are in place.
+
+ We now build gettext-tools during the build of dpkg, but don't install it;
+ it is built only so that msgfmt and xgettext are available during the
+ dpkg build.  The only alternative would be to make gettext-tools an essential
+ pakcages, since essential packages cannot depend or builddepend on
+ non-essential packages.
 <<
 DescPort: <<
 1.10.9 
