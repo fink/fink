@@ -1,3 +1,7 @@
+2006-07-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Config.pm: backport vasi's etc/apt fix from 2006-03-22
+
 2006-06-27  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: recognize 10.4.7

@@ -325,6 +325,10 @@ configuration information.  Called automatically by $config->save.
 
 sub write_sources_list {
 	my $self = shift;
+	
+	# Bail out if no etc/apt exists
+	return unless -d "$basepath/etc/apt";
+	
 	my $basepath = $self->param("Basepath");
 	my $path = "$basepath/etc/apt/sources.list";
 
