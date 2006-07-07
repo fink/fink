@@ -8,7 +8,6 @@ CVS/
 ^apt-get-lockwait$
 ^dpkg-lockwait$
 ^fink-dpkg-status-cleanup$
-^fink-dpkg-status-cleanup-lockwait$
 ^fink-instscripts$
 ^fink-virtual-pkgs$
 ^fink.conf.5$

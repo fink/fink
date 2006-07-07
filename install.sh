@@ -66,7 +66,7 @@ for bin in fink fink-{virtual-pkgs,instscripts,scanpackages} pathsetup.sh \
 		{dpkg,apt-get}-lockwait; do
 	install -c -p -m 755 $bin "$basepath/bin/"
 done
-install -c -m 755 fink-dpkg-status-cleanup fink-dpkg-status-cleanup-lockwait "$basepath/sbin/"
+install -c -m 755 fink-dpkg-status-cleanup "$basepath/sbin/"
 
 # copy all perl modules
 for subdir in . Fink Fink/{Text,Notify,Checksum,Finally} ; do

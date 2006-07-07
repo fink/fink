@@ -1,3 +1,9 @@
+2006-07-07  Daniel Macks  <dmacks@netspace.org>
+
+	* MANIFEST.SKIP, fink-dpkg-status-cleanup.in, install.sh, setup.sh:
+	Pull locking code into fink-dpkg-cleanup instead of external
+	-lockwait wrapper script.
+
 2006-06-27  Daniel Macks  <dmacks@netspace.org>
 
 	* fink-dpkg-status-cleanup.in: Template for new utility script to
