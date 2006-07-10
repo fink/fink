@@ -1,3 +1,7 @@
+2006-07-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Enable 'cleanup --dpkg-status'
+
 2006-06-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: modify &additional_packages to match the changes in

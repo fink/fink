@@ -1,3 +1,8 @@
+2006-07-10  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-dpkg-status-cleanup.in: Implement --dry-run flag.
+	* fink.8.in: Document 'cleanup --dpkg-status' mode.
+
 2006-07-07  Daniel Macks  <dmacks@netspace.org>
 
 	* .cvsignore, MANIFEST.SKIP, fink-dpkg-status-cleanup.in,

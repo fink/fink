@@ -1021,13 +1021,13 @@ sub cmd_cleanup {
 	my(%opts, %modes);
 	
 	get_options('cleanup', [
-		[ 'sources|srcs'  => \$modes{srcs},	"Delete source files." ],
 		[ 'debs'          => \$modes{debs},
 			"Delete .deb (compiled binary package) files." ],
+		[ 'sources|srcs'  => \$modes{srcs},	"Delete source files." ],
 		[ 'buildlocks|bl' => \$modes{bl},	"Delete stale buildlock packages." ],
+		[ 'dpkg-status'   => \$modes{dpkg},
+			"Remove uninstalled packages from dpkg status database." ],
 #		[ 'obsoletes'     => \$modes{obs},	"Uninstall obsolete packages." ],
-#		[ 'dpkg-status'   => \$modes{dpkg_status},
-#			"Remove uninstalled packages from dpkg status database." ],
 		[ 'keep-src|k'    => \$opts{keep_old},
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
 		[ 'dry-run|d'     => \$opts{dryrun},
@@ -1035,7 +1035,7 @@ sub cmd_cleanup {
 	], \@_, helpformat => <<HELPFORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
-%opts{sources,debs,buildlocks}
+%opts{sources,debs,buildlocks,dpkg-status}
 
 Options:
 %opts{keep-src,dry-run,help}
@@ -1432,8 +1432,10 @@ If true, don't actually remove them.
 sub cleanup_dpkg_status {
 	my %opts = (dryrun => 0, @_);
 
-	print "cleanup --dpkg is not yet available.\n";
-	return 1;
+	my $cmd = $basepath . '/sbin/fink-dpkg-status-cleanup';
+	$cmd .= ' --dry-run' if $opts{dryrun};
+
+	return &execute($cmd, ignore_INT=>1);
 }
 
 =back
