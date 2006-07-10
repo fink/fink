@@ -1,3 +1,8 @@
+2006-07-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VirtPackage.pm: test for the existence of $cctools_version before
+	applying a comparison operator to it
+
 2006-07-10  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Enable 'cleanup --dpkg-status'

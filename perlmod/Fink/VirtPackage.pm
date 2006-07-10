@@ -561,12 +561,16 @@ if a dummy file can be linked using the -single_module flag.
 	# create dummy object for cctools-single-module, if supported
 	print STDERR "- checking for cctools -single_module support... " if ($options{debug});
 
+if ($cctools_version) {
 	if ($cctools_version >= 446) {
 		$cctools_single_module = $cctools_version;
 		print STDERR "yes, $cctools_version has it\n" if ($options{debug});
 	} else {
 		print STDERR "nope.  oh well.\n" if ($options{debug});
 	}
+} else {
+	print STDERR "nope. oh well.\n" if ($options{debug});
+}
 
 	$hash = {};
 	$hash->{package} = "cctools-single-module";
