@@ -303,9 +303,9 @@ sub list_plugins {
 	for my $key (sort keys %plugins) {
 		my ($shortname) = $key =~ /^.*\:\:([^\:]*)$/;
 
-		my $installed = "";
-		$installed = "(i)" if ($plugins{$key}->{'enabled'});
-		$installed = " i " if ($shortname eq $active_plugin->about()->[0]);
+		my $installed = "   ";
+		$installed = " ! " if ($plugins{$key}->{'enabled'});
+		$installed = " * " if ($shortname eq $active_plugin->about()->[0]);
 
 		my @about = @{$plugins{$key}->{'about'}};
 		for (0..3) {

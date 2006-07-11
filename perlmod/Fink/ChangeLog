@@ -1,3 +1,8 @@
+2006-07-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Notify.pm: make it so people won't confuse the plugin list
+	with installed/uninstalled packages
+
 2006-07-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VirtPackage.pm: test for the existence of $cctools_version before
