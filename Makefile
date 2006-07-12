@@ -18,7 +18,7 @@ commit: test
 	@cvs commit
 
 bootstrap: test
-	@sh bootstrap $(PREFIX)
+	./bootstrap $(PREFIX)
 
 install:
 	./inject.pl $(PREFIX)
@@ -46,4 +46,7 @@ podcheck:
 		xargs grep -l '[=]head' | xargs podchecker
 
 .PHONY: all test install
+
+.SUFFIXES:
+
 # vim: ts=4 sw=4 noet

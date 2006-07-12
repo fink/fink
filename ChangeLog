@@ -1,3 +1,8 @@
+2006-07-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Makefile: Run "bootstrap" itself, don't falsely assume script
+	language. Disable implicit foo.sh->foo rules.
+
 2006-07-10  Daniel Macks  <dmacks@netspace.org>
 
 	* fink-dpkg-status-cleanup.in: Implement --dry-run flag.
