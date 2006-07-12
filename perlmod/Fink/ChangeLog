@@ -1,5 +1,10 @@
 2006-07-12  Daniel Macks  <dmacks@netspace.org>
 
+	* Package.pm: Make cache staleness check independent of whether
+	STDOUT is a terminal.
+
+2006-07-12  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: Remove unused variable. Check a variable directly
 	instead of using a secondary variable for metadata. Factor a
 	&get_term_width call out of a loop.

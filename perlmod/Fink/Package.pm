@@ -808,15 +808,17 @@ sub pass1_update {
 #		print "Reading: $info\n";
 		
 		# Print a nice message
-		if ($uncached == 0 && $have_terminal) {
-			if ($> != 0) {
-				print_breaking_stderr rejoin_text <<END;
+		if ($uncached == 0) {
+			if ($have_terminal) {
+				if ($> != 0) {
+					print_breaking_stderr rejoin_text <<END;
 Fink has detected that your package index cache is missing or out of date, but
 does not have privileges to modify it. Re-run fink as root, for example with a
 \"fink index\" command, to update the cache.\n
 END
-			}				
-			print STDERR "Reading package info...";
+				}
+				print STDERR "Reading package info...";
+			}
 			$uncached = 1;
 		}
 		
