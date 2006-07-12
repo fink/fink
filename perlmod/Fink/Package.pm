@@ -47,11 +47,7 @@ our $packages = undef;		# The loaded packages (undef if unloaded)
 our $valid_since = undef;	# The earliest time with the same DB as now
 
 # Cache of essential packages
-our @essential_packages = ();
-our $essential_valid = 0;
-
-# control of the buildlock system
-our $buildlock_master = undef;
+our $essential_packages = undef;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -380,10 +376,10 @@ sub list_packages {
 
 sub list_essential_packages {
 	shift;	# class method - ignore first parameter
-	my ($package, $version, $vnode);
 
-	if (not $essential_valid) {
-		@essential_packages = ();
+	if (not defined $essential_packages) {
+		my ($package, $version, $vnode);
+		my @essential_packages = ();
 		foreach $package (values %$packages) {
 			$version = &latest_version($package->list_versions());
 			$vnode = $package->get_version($version, 1); # noload
@@ -391,9 +387,9 @@ sub list_essential_packages {
 				push @essential_packages, $package->get_name();
 			}
 		}
-		$essential_valid = 1;
+		$essential_packages = \@essential_packages;
 	}
-	return @essential_packages;
+	return @$essential_packages;
 }
 
 ### make sure package descriptions are available
@@ -663,8 +659,7 @@ sub forget_packages {
 	my %opts = (disk => 0, %$optarg);
 	
 	$packages = undef;
-	@essential_packages = ();
-	$essential_valid = 0;
+	$essential_packages = undef;
 	%Fink::PkgVersion::shared_loads = ();
 	$valid_since = undef;
 	
