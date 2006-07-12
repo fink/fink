@@ -783,8 +783,19 @@ sub pass1_update {
 	my $have_terminal = 0;
 	$have_terminal = 1 if &get_term_width;
 
+	my @progress_steps = map { ($_/10) * @infos } (1 .. 10);  # 10% increments of @infos
+	my $progress_bar = 'Scanning package description files';  # cache the bar itself
+	my $progress = 0;			# current position in @infos
 	
+	print STDERR $progress_bar if $have_terminal;
 	for my $info (@infos) {
+		if (++$progress >= $progress_steps[0]) {
+			# advance the print progress bar iff at the next step of it
+			print STDERR '.' if $have_terminal;
+			$progress_bar .= '.';
+			shift @progress_steps;
+		}
+
 		my $load = 0;
 		my $fidx = $idx->{infos}{$info};
 		
@@ -810,6 +821,7 @@ sub pass1_update {
 		# Print a nice message
 		if ($uncached == 0) {
 			if ($have_terminal) {
+				print STDERR "\n";  # get off the progress bar
 				if ($> != 0) {
 					print_breaking_stderr rejoin_text <<END;
 Fink has detected that your package index cache is missing or out of date, but
@@ -817,7 +829,8 @@ does not have privileges to modify it. Re-run fink as root, for example with a
 \"fink index\" command, to update the cache.\n
 END
 				}
-				print STDERR "Reading package info...";
+				print STDERR "Reading new package info...\n";
+				print STDERR $progress_bar;  # recreate bar (interrupted by other msgs)
 			}
 			$uncached = 1;
 		}
@@ -844,13 +857,13 @@ END
 			}
 		}
 	}
+	print STDERR "\n" if $have_terminal;  # finish progress bar
 	
 	# Finish up;
 	if ($uncached) {		
 		if ($ops->{write}) {
 			store_rename($idx, $class->db_index);
 		}
-		print_breaking_stderr("done.") if $have_terminal;
 	}
 }
 
