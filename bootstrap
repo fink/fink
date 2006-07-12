@@ -235,7 +235,7 @@ if (-x "/usr/bin/head") {
 # Check if a location has installed software
 sub has_installed_software {
 	my $loc = shift;
-	return (-d "$loc/bin" or -d "$loc/lib" or -d "$loc/include");
+	return (0 != grep {-d "$loc/$_"} (qw/ bin lib include etc /));
 }
 
 my $retrying = 0;

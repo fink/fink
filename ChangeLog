@@ -1,5 +1,9 @@
 2006-07-12  Daniel Macks  <dmacks@netspace.org>
 
+	* bootstrap: Also look for etc/ to indicate fink already installed.
+
+2006-07-12  Daniel Macks  <dmacks@netspace.org>
+
 	* Makefile: Run "bootstrap" itself, don't falsely assume script
 	language. Disable implicit foo.sh->foo rules.
 
