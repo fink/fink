@@ -779,6 +779,10 @@ sub pass1_update {
 		
 	my $uncached = 0;
 	my $noauto = $config->param_boolean("NoAutoIndex");
+
+	my $have_terminal = 0;
+	$have_terminal = 1 if &get_term_width;
+
 	
 	for my $info (@infos) {
 		my $load = 0;
@@ -804,7 +808,7 @@ sub pass1_update {
 #		print "Reading: $info\n";
 		
 		# Print a nice message
-		if ($uncached == 0 && &get_term_width) {
+		if ($uncached == 0 && $have_terminal) {
 			if ($> != 0) {
 				print_breaking_stderr rejoin_text <<END;
 Fink has detected that your package index cache is missing or out of date, but
@@ -844,7 +848,7 @@ END
 		if ($ops->{write}) {
 			store_rename($idx, $class->db_index);
 		}
-		print_breaking_stderr("done.") if &get_term_width;
+		print_breaking_stderr("done.") if $have_terminal;
 	}
 }
 
