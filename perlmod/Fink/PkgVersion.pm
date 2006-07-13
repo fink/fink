@@ -4968,7 +4968,7 @@ sub log_output {
 		if ($output_logfile) {
 			$output_logfile = &expand_percent(
 				$output_logfile,
-				$self->{_expand},
+				$self->get_family_parent()->{_expand},
 				'build log filename'
 			);
 
@@ -4976,9 +4976,10 @@ sub log_output {
 			# knows what he's doing.
 		} else {
 			# no user-specified, so we'll use default
-			$output_logfile = '/tmp/fink-build-log_' . $self->get_name() . '_' .
-				$self->get_fullversion() . '_' .
-				strftime('%Y.%m.%d-%H.%M.%S', localtime);
+			$output_logfile = '/tmp/fink-build-log'
+				. '_' . $self->get_family_parent()->get_name()
+				. '_' . $self->get_family_parent()->get_fullversion()
+				. '_' . strftime('%Y.%m.%d-%H.%M.%S', localtime);
 
 			# make sure logfile does not already exist (blindly writing to
 			# a file with a predictable filename in a world-writable
