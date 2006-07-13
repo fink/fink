@@ -1,5 +1,9 @@
 2006-07-12  Daniel Macks  <dmacks@netspace.org>
 
+	* Package.pm: Clean up diagnostics while caching .info files
+
+2006-07-12  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: Add progress bar for indexer .info processing loop.
 
 2006-07-12  Daniel Macks  <dmacks@netspace.org>

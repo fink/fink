@@ -776,8 +776,8 @@ If $ops{write} is true, update the cache as well.
 
 sub pass1_update {
 	my ($class, $ops, $idx, @infos) = @_;
-		
-	my $uncached = 0;
+
+	my $have_new_infos = 0;  # do we have at least one uncached .info file?
 	my $noauto = $config->param_boolean("NoAutoIndex");
 
 	my $have_terminal = 0;
@@ -818,23 +818,8 @@ sub pass1_update {
 		}
 #		print "Reading: $info\n";
 		
-		# Print a nice message
-		if ($uncached == 0) {
-			if ($have_terminal) {
-				print STDERR "\n";  # get off the progress bar
-				if ($> != 0) {
-					print_breaking_stderr rejoin_text <<END;
-Fink has detected that your package index cache is missing or out of date, but
-does not have privileges to modify it. Re-run fink as root, for example with a
-\"fink index\" command, to update the cache.\n
-END
-				}
-				print STDERR "Reading new package info...\n";
-				print STDERR $progress_bar;  # recreate bar (interrupted by other msgs)
-			}
-			$uncached = 1;
-		}
-		
+		$have_new_infos = 1;
+
 		# Load the file
 		my @pvs = Fink::PkgVersion->pkgversions_from_info_file($info);
 		map { $_->_disconnect } @pvs;	# Don't keep obj references
@@ -857,10 +842,17 @@ END
 			}
 		}
 	}
-	print STDERR "\n" if $have_terminal;  # finish progress bar
-	
-	# Finish up;
-	if ($uncached) {		
+	print STDERR "\n";  # finish progress bar
+
+	if ($have_new_infos) {
+		if ($> != 0 && $have_terminal) {
+			print_breaking_stderr rejoin_text <<END;
+Fink has detected that your package index cache is missing or out of date, but
+does not have privileges to modify it. Re-run fink as root, for example with a
+\"fink index\" command, to update the cache.\n
+END
+		}
+
 		if ($ops->{write}) {
 			store_rename($idx, $class->db_index);
 		}
