@@ -1,5 +1,9 @@
 2006-07-12  Daniel Macks  <dmacks@netspace.org>
 
+	* Package.pm: No progress bar interruptions, so no need to cache it
+
+2006-07-12  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Have logfile filename always use parent %n
 
 2006-07-12  Daniel Macks  <dmacks@netspace.org>

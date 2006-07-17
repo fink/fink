@@ -784,15 +784,13 @@ sub pass1_update {
 	$have_terminal = 1 if &get_term_width;
 
 	my @progress_steps = map { ($_/10) * @infos } (1 .. 10);  # 10% increments of @infos
-	my $progress_bar = 'Scanning package description files';  # cache the bar itself
 	my $progress = 0;			# current position in @infos
 	
-	print STDERR $progress_bar if $have_terminal;
+	print STDERR 'Scanning package description files' if $have_terminal;
 	for my $info (@infos) {
 		if (++$progress >= $progress_steps[0]) {
 			# advance the print progress bar iff at the next step of it
 			print STDERR '.' if $have_terminal;
-			$progress_bar .= '.';
 			shift @progress_steps;
 		}
 
@@ -842,7 +840,7 @@ sub pass1_update {
 			}
 		}
 	}
-	print STDERR "\n";  # finish progress bar
+	print STDERR "\n" if $have_terminal;  # finish progress bar
 
 	if ($have_new_infos) {
 		if ($> != 0 && $have_terminal) {
