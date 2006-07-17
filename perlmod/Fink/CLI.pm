@@ -618,7 +618,8 @@ sub get_input {
 This function returns the width of the terminal window, or zero if STDOUT 
 is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
 env var if ReadKey is not installed, tries tput if neither are available,
-and if nothing works just returns 80.
+and if nothing works just returns 80. This function always returns a
+number, not undef.
 
 =cut
 
