@@ -159,6 +159,41 @@ END
 	$hash->{compilescript} = &gen_compile_script($hash);
 	$self->{$hash->{package}} = $hash;
 
+=item 64bit-cpu
+
+The package is present when the CPU is 64bit-capable.
+
+=cut
+
+print STDERR "- checking for 64bit-cpu... cpu type is " if ($options{debug});
+	my $cpu = `/usr/bin/machine`;
+	chomp $cpu;
+	print STDERR "$cpu..." if ($options{debug});
+# possible values seem to be:
+#   ppc750 (G3, not 64bit capable)
+#   ppc7450 (G4, not 64bit capable)
+#   ppc970 (G5, 64bit capable)
+#   i486 (early intel macs, not 64bit capable)
+
+	$hash = {};
+	$hash->{package} = "64bit-cpu";
+	if ($cpu eq "ppc970") {
+		print STDERR "64 bit capable\n" if ($options{debug});
+		$hash->{status} = STATUS_PRESENT;
+	} else {
+		print STDERR "not 64 bit capable\n" if ($options{debug});
+		$hash->{status} = STATUS_ABSENT;
+	}
+	$hash->{description} = "[virtual package representing the 64bit capability of the CPU]";
+	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{descdetail} = <<END;
+The presence of the 64bit-cpu package indicates that the CPU on which we 
+are running is 64bit capable.
+END
+	$hash->{compilescript} = &gen_compile_script($hash);
+	$hash->{version} = '0-1';
+	$self->{$hash->{package}} = $hash;
+
 =item cups-dev
 
 This package represents and existing installation of the CUPS

@@ -1,3 +1,7 @@
+2006-07-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VirtPackage.pm: new virtual package "64bit-cpu"
+
 2006-07-12  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: No progress bar interruptions, so no need to cache it
