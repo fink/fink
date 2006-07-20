@@ -1,3 +1,7 @@
+2006-07-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Don't be fooled by weird commands in line after #!
+
 2006-07-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VirtPackage.pm: make sure /usr/bin/machine is an executable before 

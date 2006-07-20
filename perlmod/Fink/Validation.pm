@@ -1061,7 +1061,7 @@ sub validate_info_component {
 	# called with -ev or -ex so that they abort if any command fails
 	foreach my $field (qw/patchscript compilescript installscript/) {
 		next unless defined ($value = $properties->{$field});
-		if ($value =~ /^\s*\#!\s*(\S+)\s*(.*)/) {
+		if ($value =~ /^\s*\#!\s*(\S+)([^\n]*)/) {
 			my ($shell, $args) = ($1, $2);
 			$shell = basename $shell;
 			if (grep {$shell eq $_} qw/bash csh ksh sh tcsh zsh/) {
