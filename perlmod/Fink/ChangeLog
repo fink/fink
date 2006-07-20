@@ -1,3 +1,7 @@
+2006-07-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VirtPackage.pm: new virtual package "64bit-cpu"
+
 2006-07-03  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Config.pm: backport vasi's etc/apt fix from 2006-03-22
