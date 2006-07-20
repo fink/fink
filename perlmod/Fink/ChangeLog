@@ -1,3 +1,8 @@
+2006-07-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VirtPackage.pm: make sure /usr/bin/machine is an executable before 
+	we call it
+
 2006-07-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VirtPackage.pm: new virtual package "64bit-cpu"

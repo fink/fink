@@ -165,9 +165,14 @@ The package is present when the CPU is 64bit-capable.
 
 =cut
 
+my $cpu;
 print STDERR "- checking for 64bit-cpu... cpu type is " if ($options{debug});
-	my $cpu = `/usr/bin/machine`;
+if (-x "/usr/bin/machine") {
+	$cpu = `/usr/bin/machine`;
 	chomp $cpu;
+} else {
+	$cpu = "unknown";
+}
 	print STDERR "$cpu..." if ($options{debug});
 # possible values seem to be:
 #   ppc750 (G3, not 64bit capable)
