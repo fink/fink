@@ -1285,16 +1285,6 @@ END
 	$self->{$hash->{package}} = $hash;
 }
 
-=item 64bit-cpu
-
-The package is present when the CPU is 64bit-capable.
-
-=cut
-
-	print STDERR "- checking for 64bit-cpu... " if ($options{debug});
-my $cpu = chomp(`/usr/bin/machine`);
-print STDERR "$cpu\n";
-
 =back
 
 =head1 INTERNAL APIs
