@@ -1112,6 +1112,8 @@ sub insert_runtime_packages_hash {
 	
 	my $dlist = shift;
 	my $type = shift;
+	my $reload_disable_save = Fink::Status->is_reload_disabled();  # save previous setting
+	Fink::Status->disable_reload(1);  # don't keep stat()ing status db
 	foreach my $pkgname (keys %$dlist) {
 		# Don't add uninstalled status packages to package DB
 		next if $type eq 'status' && !Fink::Status->query_package($pkgname);
@@ -1134,6 +1136,7 @@ sub insert_runtime_packages_hash {
 				Fink::PkgVersion->pkgversions_from_properties($hash));
 		}
 	}
+	Fink::Status->disable_reload($reload_disable_save);  # restore previous setting
 }
 
 =item packages_from_properties

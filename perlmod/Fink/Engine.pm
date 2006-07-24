@@ -537,6 +537,8 @@ sub do_real_list {
 		}
 	}
 	
+	my $reload_disable_save = Fink::Status->is_reload_disabled();  # save previous setting
+	Fink::Status->disable_reload(1);  # don't keep stat()ing status db
 	foreach my $pname (sort @selected) {
 		my $package = Fink::Package->package_by_name($pname);
 		
@@ -606,6 +608,7 @@ sub do_real_list {
 		printf $formatstr,
 				$iflag, $pname, $lversion, $description;
 	}
+	Fink::Status->disable_reload($reload_disable_save);  # restore previous setting
 }
 
 sub cmd_listpackages {

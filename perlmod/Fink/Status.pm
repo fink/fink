@@ -117,6 +117,8 @@ sub read {
 sub validate {
 	my $self = shift;
 
+	return if $self->is_reload_disabled();
+
 	my(@db_stat) = stat $basepath.'/var/lib/dpkg/status';
 	unless (
 		@db_stat
@@ -188,6 +190,31 @@ sub list {
 	}
 
 	return $list;
+}
+
+{
+	my $reload_disabled = 0;
+
+# The logical value of the argument of this class method controls
+# whether we should bother checking whether the dpkg status file has
+# changed on disk. If false (default), we check every time we use our
+# local copy of the data read from it. If true, we always use the data
+# we previously read, even if it is stale. This mode should not be
+# left in a set state...only set it temporarily in loops and unset as
+# soon as done.
+	sub disable_reload {
+		my $class = shift;
+		my $action = shift;
+
+		$reload_disabled = ( $action ? 1 : 0 );
+	}
+
+# query the reload_disabled setting
+	sub is_reload_disabled {
+		my $class = shift;
+
+		return $reload_disabled;
+	}
 }
 
 
