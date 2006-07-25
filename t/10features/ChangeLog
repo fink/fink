@@ -1,3 +1,7 @@
+2006-07-25  Daniel Macks  <dmacks@netspace.org>
+
+	* sudo.t: Make sure PERL5LIB propagates through sudo calls
+
 2006-02-10  Daniel Macks  <dmacks@netspace.org>
 
 	* volume.t: Use diskutil instead of df+vsdbutil
