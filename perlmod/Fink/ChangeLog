@@ -1,9 +1,12 @@
+2006-07-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Finally/Buildlock.pm: new location for wiki
+
 2006-07-24  Daniel Macks  <dmacks@netspace.org>
 
 	* Status.pm: New disable_reload and is_reload_disabled class
 	methods allow temporarily inhibiting check for changes to on-disk
 	dpkg status db vs already-loaded copy.
-
 	* Engine.pm, Package.pm: disable dpkg status reloading during
 	tight listing loops.
 

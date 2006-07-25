@@ -382,7 +382,7 @@ Defaults to
 (requires Mac::Growl to operate).  The available plugins are listed in the output of
 "fink plugins".
 .nf
-See the wiki at http://wiki.opendarwin.org/index.php/Fink:Notification_Plugins
+See the wiki at http://wiki.finkproject.org/index.php/Fink:Notification_Plugins
 for more information.
 .fi
 .It Cm AutoScanpackages: Ar boolean 
