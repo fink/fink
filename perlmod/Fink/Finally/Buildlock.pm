@@ -46,7 +46,7 @@ Buildlocks are designed to prevent concurrent fink processes from interfering wi
 
 For example, if one fink process is compiling a package "foo" that has a build-time dependency on the package "bar-dev", that fink process will set a build-lock that prevents another fink (or dpkg or apt or...) from removing the bar-dev package until the first fink process finishes building the package foo. In addition, buildlocks prevent concurrent builds of any given package (name-version-revision) to prevent the build processes from over-writing each other's files.
 
-See L<http://wiki.opendarwin.org/index.php/Fink:buildlocks> for more
+See L<http://wiki.finkproject.org/index.php/Fink:buildlocks> for more
 information.
 
 =head1 CLASS METHODS
