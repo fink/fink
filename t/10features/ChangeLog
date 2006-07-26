@@ -1,5 +1,9 @@
 2006-07-25  Daniel Macks  <dmacks@netspace.org>
 
+	* sudo.t: Removed. Core now works around sudo not passing PERL5LIB
+
+2006-07-25  Daniel Macks  <dmacks@netspace.org>
+
 	* sudo.t: Make sure PERL5LIB propagates through sudo calls
 
 2006-02-10  Daniel Macks  <dmacks@netspace.org>
