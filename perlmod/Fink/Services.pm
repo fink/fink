@@ -568,15 +568,13 @@ EOSCRIPT
 	local $SIG{INT} = 'IGNORE' if $options{ignore_INT};
 
 	# Execute each line as a separate command.
+	my @wrap = ($drop_root
+				? (qw/ sudo -u nobody env /, "PERL5LIB=\"$ENV{PERL5LIB}\"", qw/ sh -c /)
+				: ()
+		);
 	foreach my $cmd (split(/\n/,$script)) {
-		if (not $options{'quiet'}) {
-			$drop_root
-				? print "sudo -u nobody sh -c $cmd\n"
-				: print "$cmd\n";
-		}
-		$drop_root
-			? system(qw/ sudo -u nobody sh -c /, $cmd)
-			: system($cmd);
+		print "@wrap$cmd\n" unless $options{'quiet'};
+		system(@wrap, $cmd);
 		$? >>= 8 if defined $? and $? >= 256;
 		if ($?) {
 			my $rc = $?;
