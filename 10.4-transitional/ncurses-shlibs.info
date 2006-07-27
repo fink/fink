@@ -1,7 +1,7 @@
 Package: ncurses-shlibs
 Version: 5.3-20031018
 Revision: 502
-GCC: 4.0
+GCC: 3.3
 Source: mirror:sourceforge:fink/ncurses-5.3.tar.gz
 Source-MD5: 5dcc9faa93157eafa572494bffed131a
 Source2: mirror:sourceforge:fink/ncurses-5.3-20031004-patch.sh.bz2
