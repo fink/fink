@@ -1,0 +1,8 @@
+Package: p4
+Version: 1
+Revision: 1
+Source: http://foo.bar/%n-%v.tar.gz
+Source-MD5: wickawockaE
+Description: Test package
+Maintainer: fink-core <fink-core@lists.sourceforge.net>
+License: Restrictive

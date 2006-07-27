@@ -1,0 +1,12 @@
+Package: p3
+Version: 1
+Revision: 1
+Source: mirror:custom:%n-%v.tar.gz
+CustomMirror: <<
+  Primary: http://here/this
+  Secondary: ftp://there/that
+<<
+Source-MD5: wickawockaD
+Description: Test package
+Maintainer: fink-core <fink-core@lists.sourceforge.net>
+License: Public Domain

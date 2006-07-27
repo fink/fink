@@ -1,0 +1,7 @@
+Package: p0
+Version: 1
+Revision: 1
+Source: none
+Description: Test package
+Maintainer: fink-core <fink-core@lists.sourceforge.net>
+License: Public Domain
