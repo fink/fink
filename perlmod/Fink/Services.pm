@@ -569,7 +569,7 @@ EOSCRIPT
 
 	# Execute each line as a separate command.
 	my @wrap = ($drop_root
-				? (qw/ sudo -u nobody env /, "PERL5LIB=\"$ENV{PERL5LIB}\"", qw/ sh -c /)
+				? (qw/ sudo -u nobody env /, "PERL5LIB=$ENV{PERL5LIB}", qw/ sh -c /)
 				: ()
 		);
 	foreach my $cmd (split(/\n/,$script)) {
