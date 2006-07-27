@@ -1,5 +1,10 @@
 2006-07-26  Daniel Macks  <dmacks@netspace.org>
 
+	* Services.pm: Fix execute() to resurrect the whole env even if
+	sudo alters it.
+
+2006-07-26  Daniel Macks  <dmacks@netspace.org>
+
 	* Services.pm: Fix execute() to pass PERL5LIB even when sudo
 	blanks that variable.
 

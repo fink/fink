@@ -567,13 +567,20 @@ EOSCRIPT
 	# ignore SIGINT if requested
 	local $SIG{INT} = 'IGNORE' if $options{ignore_INT};
 
+	my @wrap = ();
+	my $wrap_token = '';
+	if ($drop_root) {
+		# sudo can clear or change the env, so we need to re-establish
+		# the env that existed outside the sudo
+		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
+		unshift @wrap, 'env' if @wrap;
+		@wrap = (qw/ sudo -u nobody /, @wrap, qw/ sh -c /);
+		$wrap_token = 'sudo -u nobody [ENV] sh -c';
+	}
+
 	# Execute each line as a separate command.
-	my @wrap = ($drop_root
-				? (qw/ sudo -u nobody env /, "PERL5LIB=$ENV{PERL5LIB}", qw/ sh -c /)
-				: ()
-		);
 	foreach my $cmd (split(/\n/,$script)) {
-		print "@wrap$cmd\n" unless $options{'quiet'};
+		print "$wrap_token$cmd\n" unless $options{'quiet'};
 		system(@wrap, $cmd);
 		$? >>= 8 if defined $? and $? >= 256;
 		if ($?) {
