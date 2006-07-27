@@ -1,3 +1,9 @@
+2006-07-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.24.25, a release
+	on branch_0_24 with a revised location for the wiki, and a fix
+	for --build-as-nobody when sudo nukes PERL5LIB
+
 2006-07-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VERSION: Bumped package manager version to 0.24.24, a release
