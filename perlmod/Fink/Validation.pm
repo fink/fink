@@ -1352,7 +1352,7 @@ sub _validate_dpkg {
 			if (not exists $control_processed->{depends_pkgs}->{daemonic}) {
 				&stack_msg($msgs, "Package contains a DaemonicFile but does not depend on the package \"daemonic\"", $filename);
 			}
-			if (open my $daemonicfile, '<', $File::Find::name) {
+			if (!-l $File::Find::name and open my $daemonicfile, '<', $File::Find::name) {
 				while (<$daemonicfile>) {
 					if (/^\s*<executable.*?>(\S+)<\/executable>\s*$/) {
 						my $executable = $1;
@@ -1371,14 +1371,14 @@ sub _validate_dpkg {
 					}
 				}
 				close $daemonicfile;
-			} else {
+			} elsif (!-l _) {
 				&stack_msg($msgs, "Couldn't read DaemonicFile $File::Find::name: $!");
 			}
 		}
 
 		# check that libtool files don't link to temp locations
 		if ($filename =~/\.la$/) {
-			if (open my $la_file, '<', $File::Find::name) {
+			if (!-l $File::Find::name and open my $la_file, '<', $File::Find::name) {
 				while (<$la_file>) {
 					if (/$pkgbuilddir/) {
 						&stack_msg($msgs, "Libtool file points to fink build dir.", $filename);
@@ -1389,14 +1389,14 @@ sub _validate_dpkg {
 					}
 				}
 				close $la_file;
-			} else {
+			} elsif (!-l _) {
 				&stack_msg($msgs, "Couldn't read libtool file \"$filename\": $!");
 			}
 		}
 
 		# check that compiled python modules files don't self-identify using temp locations
 		if ($filename =~/\.py[co]$/) {
-			if (open my $py_file, "strings $File::Find::name |") {
+			if (!-l $File::Find::name and open my $py_file, "strings $File::Find::name |") {
 				while (<$py_file>) {
 					if (/$pkgbuilddir/) {
 						&stack_msg($msgs, "Compiled python module points to fink build dir.", $filename);
@@ -1407,7 +1407,7 @@ sub _validate_dpkg {
 					}
 				}
 				close $py_file;
-			} else {
+			} elsif (!-l _) {
 				&stack_msg($msgs, "Couldn't read compiled python module file \"$filename\": $!");
 			}
 		}
@@ -1429,7 +1429,7 @@ sub _validate_dpkg {
 
 		# Check for common programmer mistakes relating to passing -framework flags in pkg-config files
 		if ($filename =~ /\.pc$/) {
-			if (open my $pc_file, '<', $File::Find::name) {
+			if (!-l $File::Find::name and open my $pc_file, '<', $File::Find::name) {
 				while (<$pc_file>) {
 					chomp;
 					if (/\s((?:-W.,|)-framework)[^,]/) {
@@ -1437,7 +1437,7 @@ sub _validate_dpkg {
 					}
 				}
 				close $pc_file;
-			} else {
+			} elsif (!-l _) {
 				&stack_msg($msgs, "Couldn't read pkg-config file \"$filename\": $!");
 			}
 		}
