@@ -459,6 +459,7 @@ sub validate_info_file {
 	# build permutations
 	my (@ok_filenames) = (
 		"$base_filename",
+		"$base_filename-$pkgversion",
 		"$base_filename-$pkgversion-$pkgrevision",
 	);	
 	if (my $arch = $properties->{architecture}) {
@@ -468,6 +469,8 @@ sub validate_info_file {
 			
 			push @ok_filenames, (
 				"$base_filename-$arch",
+				"$base_filename-$arch-$pkgversion",
+				"$base_filename-$pkgversion-$arch",
 				"$base_filename-$arch-$pkgversion-$pkgrevision",
 				"$base_filename-$pkgversion-$pkgrevision-$arch",
 			);
@@ -476,7 +479,7 @@ sub validate_info_file {
 	map $_ .= ".info", @ok_filenames;
 
 	unless (grep $filename eq $_, @ok_filenames) {
-		print "Warning: File name should be one of [", (join ' ', sort @ok_filenames), "]. ($filename)\n";
+		print "Warning: Incorrect filename '$filename'. Should be one of:\n", map "\t$_\n", @ok_filenames;
 		$looks_good = 0;
 	}
 }
