@@ -1,3 +1,9 @@
+2206-08-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm: allow more complex version strings for darwin, and
+	prepare for the future.
+	* Bootstrap.pm: allow perl 5.8.8
+
 2006-08-07  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Also allow %n-%v.info as .info filename.
