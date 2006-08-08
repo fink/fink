@@ -1362,7 +1362,7 @@ couldn't be determined.
 
 sub get_darwin_equiv
 {
-	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4');
+	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4', '9' => '10.5');
 	return $darwin_osx{get_kernel_vers()};
 }
 
@@ -1377,7 +1377,7 @@ Returns the major version of the local kernel.
 sub get_kernel_vers
 {
 	my $kernel_version = get_kernel_vers_long();
-	if ($kernel_version =~ s/^(\d+)\.\d+(\.\d+)*/$1/)
+	if ($kernel_version =~ s/^(\d+)\.\d+.*/$1/)
 	{
 		return $kernel_version;
 	} else {
