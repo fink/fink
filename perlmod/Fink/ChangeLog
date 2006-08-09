@@ -1,3 +1,7 @@
+2006-08-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm: prepare for the future
+
 2006-08-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: allow perl 5.8.8
