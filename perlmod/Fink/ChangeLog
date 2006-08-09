@@ -1,3 +1,7 @@
+2006-08-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* Services.pm: prepare for the future
+
 2006-08-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Scanpackages.pm: Safer assurance of getting perl's core DB_File
