@@ -38,7 +38,10 @@ use Storable qw(nfreeze thaw);
 
 # Ensure that we load a compatible DB_File
 {
-	local @INC = @Config{qw(privlib archlib)};
+	my @system_INC = @Config{qw(privlib archlib)};  # perl's own hard-
+													# coded defaults
+	local @INC = (@system_INC, @INC);  # place ahead of any PERL5LIB
+									   # or 'use lib' additions
 	require DB_File;
 }
 
