@@ -166,23 +166,13 @@ The package is present when the CPU is 64bit-capable.
 =cut
 
 my $cpu;
-print STDERR "- checking for 64bit-cpu... cpu type is " if ($options{debug});
-if (-x "/usr/bin/machine") {
-	$cpu = `/usr/bin/machine`;
-	chomp $cpu;
-} else {
-	$cpu = "unknown";
-}
-	print STDERR "$cpu..." if ($options{debug});
-# possible values seem to be:
-#   ppc750 (G3, not 64bit capable)
-#   ppc7450 (G4, not 64bit capable)
-#   ppc970 (G5, 64bit capable)
-#   i486 (early intel macs, not 64bit capable)
+print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 
 	$hash = {};
 	$hash->{package} = "64bit-cpu";
-	if ($cpu eq "ppc970") {
+
+# different sysctl variables for intel and ppc
+	if ((`sysctl hw.optional.x86_64 2>/dev/null`) or (`sysctl hw.optional.64bitops 2>/dev/null`)) {
 		print STDERR "64 bit capable\n" if ($options{debug});
 		$hash->{status} = STATUS_PRESENT;
 	} else {
