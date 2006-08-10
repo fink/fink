@@ -1,3 +1,7 @@
+2006-08-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VirtPackage.pm: rewrite 64bit-cpu to work with both ppc and intel
+
 2006-08-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm: prepare for the future
