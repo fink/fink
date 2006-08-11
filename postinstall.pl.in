@@ -90,6 +90,26 @@ if ($distribution eq "unknown") {
 	exit(1);
 }
 
+if ($distribution eq "10.4-transitional") {
+    print << "EOF";
+
+########################################################
+#                                                      #
+#                       WARNING!                       #
+#                                                      #
+########################################################
+
+You have installed fink-0.24.26, the final fink version 
+for the 10.4-transitional distribution, and you are still 
+using that obsolete distribution.
+
+For information about upgrading, see 
+     http://www.finkproject.org/news/
+
+
+EOF
+}
+
 ### save $distribution in the config file
 
 $config->set_param("Distribution", $distribution);

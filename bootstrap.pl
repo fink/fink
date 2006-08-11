@@ -111,17 +111,6 @@ if ($distribution eq "unknown") {
 
 print "Distribution $distribution\n";
 
-# temporary code to instruct users until we retire the 10.4-transitional tree
-if (($> == 0) and ($distribution ne "10.3") and ($host =~ /^powerpc/)) {
-	print("\n");
-	&print_breaking("On powerpc hardware, you can bootstrap into the 10.4-transitional tree rather than the 10.4 tree by setting the environment variable FINK_NOTRANS to \"false\" while bootstrapping.  To use 10.4, set it to \"true\" or don't set it at all.");
-	print("\n");
-	&print_breaking("If you wish to interrupt the current bootstrap in order to change an environment variable, use control-C.");
-	print("\n");
-	sleep(10);
-}
-# end of temporary code
-
 ### get version
 
 my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
