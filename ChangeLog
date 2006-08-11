@@ -4,6 +4,9 @@
 	in bootstrapping to 10.4-transitional if they wished
 	* postinstall.pl.in: warn users of 10.4-transitional that this
 	is the final version of fink they will see
+	* VERSION: Bumped package manager version to 0.24.26, a release
+	on branch_0_24 with an improved virtual package for 64bit-cpu,
+	and which warns users about obselesence of 10.4-transitional
 
 2006-07-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
