@@ -26,7 +26,7 @@ package Fink::Bootstrap;
 use ExtUtils::Manifest qw(&maniread);
 
 use Fink::Config qw($config $basepath);
-use Fink::Services qw(&execute &enforce_gcc &eval_conditional);
+use Fink::Services qw(&execute &enforce_gcc &eval_conditional &get_platform);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
 use Fink::PkgVersion;
@@ -127,11 +127,15 @@ sub check_host {
 	#  had build 1493.)
 
 	if (-x '/usr/bin/gcc-3.3') {
-		foreach(`/usr/bin/gcc-3.3 --version 2>&1`) {
-			if (/build (\d+)\)/) {
-				$build = $1;
-				last;
+		if (&get_platform() eq "darwin") {
+			foreach(`/usr/bin/gcc-3.3 --version 2>&1`) {
+				if (/build (\d+)\)/) {
+					$build = $1;
+					last;
+				}
 			}
+		} else {
+			$build = '1819';
 		}
 		($build >= 1493) or die <<END;
 
@@ -253,6 +257,10 @@ END
 			"by this Fink release. Please update to Mac OS X ".
 			"10.0 or Darwin 1.3.");
 		$distribution = "unknown";
+	} elsif ($host =~ /^(powerpc|i386|i486|i586|i686)-pc-linux/) {
+		&print_breaking("You are running Fink on Linux, which is not ".
+			"officially supported.  Good luck!");
+		$distribution = 'linux';
 	} else {
 		&print_breaking("This system is unrecognized and not ".
 			"supported by Fink.");

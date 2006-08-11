@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &file_MD5_checksum &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &file_MD5_checksum &get_arch &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
 use Cwd qw(getcwd);
 use File::Find qw(find);
@@ -1315,7 +1315,8 @@ sub _validate_dpkg {
 		}
 
 		# check for compiled-perl modules in unversioned place
-		if ($filename =~ /^$basepath\/lib\/perl5\/(auto|darwin)\/.*\.bundle/) {
+		my $arch = get_arch();
+		if ($filename =~ /^$basepath\/lib\/perl5\/(auto|${arch})\/.*\.bundle/) {
 			&stack_msg($msgs, "Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.", $filename);
 		}
 

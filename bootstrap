@@ -473,7 +473,7 @@ tarball, or";
 ### create Packages.gz files for apt
 
 # set PATH so we find dpkg-scanpackages
-$ENV{PATH} = "$installto/sbin:$installto/bin:".$ENV{PATH};
+$ENV{PATH} = "$installto/sbin:$installto/bin:$installto/bootstrap/sbin:$installto/bootstrap/bin:".$ENV{PATH};
 
 Fink::Engine::cmd_scanpackages();
 

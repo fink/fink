@@ -24,7 +24,7 @@
 package Fink::Config;
 use Fink::Base;
 use Fink::Command 	qw(cp);
-use Fink::Services	qw(&get_arch &read_properties &get_options $VALIDATE_HELP);
+use Fink::Services	qw(&get_arch &get_platform &read_properties &get_options $VALIDATE_HELP);
 
 
 use strict;
@@ -48,8 +48,9 @@ our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_e
 # have to match it) because dpkg runs fink-virtual-pkgs, which loads
 # Config.pm.
 {
+	my $_platform = &get_platform();
 	my $_arch = &get_arch();
-	$native_debarch = "darwin-$_arch";
+	$native_debarch = "$_platform-$_arch";
 }
 
 my %options = ();
@@ -192,7 +193,7 @@ sub initialize {
 	if (not $self->has_param('Architecture')) {
 		$self->set_param('Architecture', get_arch());
 	}
-	$self->set_param('Debarch', 'darwin-' . $self->param('Architecture'));
+	$self->set_param('Debarch', &get_platform() . '-' . $self->param('Architecture'));
 
 	$self->{_queue} = [];
 }

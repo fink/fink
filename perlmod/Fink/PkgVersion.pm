@@ -28,7 +28,7 @@ use Fink::Services qw(&filename &execute
 					  &collapse_space &read_properties &read_properties_var
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &version_cmp
-					  &get_arch &get_system_perl_version
+					  &get_arch &get_platform &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
 					  &store_rename &apt_available);
@@ -2997,8 +2997,14 @@ GCC_MSG
 			chowname 'nobody:nobody', $destdir or
 				die "can't chown 'nobody:nobody' $destdir\n";
 		} else {
-			chowname ':admin', $destdir or
-				die "can't grp 'admin' $destdir\n";
+			if (&get_platform() eq "darwin") {
+				print "platform = " . &get_platform() . "\n";
+				chowname ':admin', $destdir or
+					die "can't grp 'admin' $destdir\n";
+			} else {
+				chowname ':sys', $destdir or
+					die "can't grp 'sys' $destdir\n";
+			}
 		}
 		return;
 	}
@@ -3096,6 +3102,8 @@ GCC_MSG
 			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
 		} elsif ( -e "$basepath/bin/tar" ) {
 			$tarcommand = "$basepath/bin/tar $tarflags $permissionflags"; # Use Fink's GNU Tar if available
+		} else {
+			$tarcommand = "tar $tarflags $permissionflags";
 		}
 		$bzip2 = $config->param_default("Bzip2path", "bzip2");
 		$unzip = "unzip";
@@ -3131,8 +3139,13 @@ GCC_MSG
 				chowname 'nobody:nobody', $destdir or
 					die "can't chown 'nobody:nobody' $destdir\n";
 			} else {
-				chowname ':admin', $destdir or
-					die "can't chgrp 'admin' $destdir\n";
+				if (&get_platform() eq "darwin") {
+					chowname ':admin', $destdir or
+						die "can't chgrp 'admin' $destdir\n";
+				} else {
+					chowname ':sys', $destdir or
+						die "can't chgrp 'sys' $destdir\n";
+				}
 			}
 		}
 
@@ -3337,10 +3350,16 @@ sub phase_install {
 	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
+		my $chown = "/usr/sbin/chown";
+		my $group = "admin";
+		if (get_platform() eq "linux") {
+			$chown = "/bin/chown";
+			$group = "sys";
+		}
 		if (Fink::Config::get_option("build_as_nobody")) {
-			$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
+			$install_script .= "$chown -R nobody:nobody \%d\n";
 		} else {
-			$install_script .= "/usr/sbin/chown -R root:admin \%d\n";
+			$install_script .= "$chown -R root:$group \%d\n";
 		}
 	}
 	# Run the script part we have so far
@@ -4552,8 +4571,13 @@ END
 			chowname 'nobody:nobody', $script_env{HOME} or
 				die "can't chown 'nobody:nobody' $script_env{HOME}\n";
 		} else {
-			chowname ':admin', $script_env{HOME} or
-				die "can't grp 'admin' $script_env{HOME}\n";
+			if (get_platform() eq "darwin") {
+				chowname ':admin', $script_env{HOME} or
+					die "can't grp 'admin' $script_env{HOME}\n";
+			} else {
+				chowname ':sys', $script_env{HOME} or
+					die "can't grp 'sys' $script_env{HOME}\n";
+			}
 		}
 	}
 
@@ -4690,7 +4714,7 @@ sub run_script {
 				"or fink-beginners mailing lists.  As a last resort, you can try e-mailing\n".
 				"the maintainer directly:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
-			if (get_arch() eq 'i386' or $config->param('Architecture') eq 'i386') {
+			if (get_platform() eq 'darwin' and (get_arch() eq 'i386' or $config->param('Architecture') eq 'i386')) {
 $error .= "Note that many fink package maintainers do not (yet) have access to OS X on\n" .
 	"Intel hardware, so you may have better luck on the mailing lists.\n\n";
 }
@@ -4733,10 +4757,12 @@ sub get_perl_dir_arch {
 		($perlarchdir) = (`/usr/bin/env -i $perlcmd -MConfig -eprint+Config::config_vars+archname` =~ /archname='(.*)'/);
 	} else {
 		# hardcode just in case  :P
-		if ($perlversion ge "5.8.1") {
-			$perlarchdir = 'darwin-thread-multi-2level';
-		} else {
-			$perlarchdir = 'darwin';
+		if (&get_platform() eq 'darwin') {
+			if ($perlversion ge "5.8.1") {
+				$perlarchdir = 'darwin-thread-multi-2level';
+			} else {
+				$perlarchdir = 'darwin';
+			}
 		}
 	}
 
@@ -4752,7 +4778,7 @@ sub get_ruby_dir_arch {
 	# grab ruby version, if present
 	my $rubyversion   = "";
 	my $rubydirectory = "";
-	my $rubyarchdir   = "powerpc-darwin";
+	my $rubyarchdir   = &get_arch() . '-' . &get_platform;
 	if ($self->is_type('ruby') and $self->get_subtype('ruby') ne 'ruby') {
 		$rubyversion = $self->get_subtype('ruby');
 		$rubydirectory = "/" . $rubyversion;

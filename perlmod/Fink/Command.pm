@@ -319,8 +319,11 @@ sub chowname_hr {
 	
 	# Some systems have no lchown
 	if ($Config{d_lchown} && @links) {
-		$nok ||= system('/usr/sbin/chown', '-h', "\Q$user\E:\Q$group\E",
-			@links);
+		if (&get_platform() eq "darwin") {
+			$nok ||= system('/usr/sbin/chown', '-h', "\Q$user\E:\Q$group\E", @links);
+		} else {
+			$nok ||= system('/bin/chown', '-h', "\Q$user\E:\Q$group\E", @links);
+		}
 	}
 
 	return !$nok;

@@ -59,7 +59,7 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &file_MD5_checksum &get_arch &get_osx_vers &enforce_gcc
+					  &file_MD5_checksum &get_platform &get_arch &get_osx_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
 					  &get_osx_vers_long &get_kernel_vers
@@ -75,6 +75,7 @@ our @EXPORT_OK;
 
 # non-exported package globals go here
 our $arch;
+our $platform;
 our $system_perl_version;
 
 END { }				# module clean-up code here (global destructor)
@@ -1134,6 +1135,31 @@ sub file_MD5_checksum {
 	return $checksum->get_checksum($filename);
 }
 
+=item get_platform
+
+    my $platform = get_platform;
+
+Returns the platform string to be used on this system.  For
+example, "darwin" for Darwin or Mac OS X.
+
+=cut
+
+sub get_platform {
+	if(not defined $platform) {
+		foreach ('/usr/bin/uname', '/bin/uname') {
+			# check some common places (why aren't we using $ENV{PATH}?)
+			if (-x $_) {
+				chomp($platform = lc(`$_ -s 2>/dev/null`));
+				last;
+			}
+		}
+		if (not defined $platform) {
+			die "Could not find a 'uname' executable\n";
+		}
+	}
+	return $platform;
+}
+
 =item get_arch
 
     my $arch = get_arch;
@@ -1165,6 +1191,9 @@ sub get_arch {
 			die "Could not find an 'arch' executable\n";
 		}
 	}
+	if (&get_platform() eq "linux") {
+		$arch =~ s/(i386|i486|i586|i686|pentium)/i386/;
+	}
 	return $arch;
 }
 
@@ -1183,6 +1212,7 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 		'2.95' => '2',
 		'3.1' => '3',
 		'3.3' => '3.3',
+		'3.3.5' => '3.3',
 		'4.0.0' => '4.0',
 		'4.0.1' => '4.0',
 	);
@@ -1205,9 +1235,15 @@ selection cannot be determined.
 =cut
 
 sub gcc_selected {
-	return 0 unless -x '/usr/sbin/gcc_select';
-	chomp(my $gcc_select = `/usr/sbin/gcc_select 2>&1`);
-	return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
+	if ( -x '/usr/sbin/gcc_select') {
+		chomp(my $gcc_select = `/usr/sbin/gcc_select 2>&1`);
+		return $gcc_select if ($gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs);
+	} else {
+		chomp(my $gcc = `gcc --version 2>&1`);
+		if ($gcc =~ /gcc \(GCC\) (\d+\.\d+)/s) {
+			return $1;
+		}
+	}
 	return 0;
 }
 
@@ -1262,40 +1298,44 @@ sub enforce_gcc {
 	my $gcc_abi = shift;
 	my ($gcc, $gcc_select, $current_system);
 
+	if (&get_platform() eq "darwin") {
 # Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
 # specify default values for these.
 
-	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0', '10.5' => '4.0');
-	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3');
+		my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0', '10.5' => '4.0');
+		my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3');
 
-	if (my $sw_vers = get_osx_vers_long())
-	{
-		$current_system = "Mac OS X $sw_vers";
-		$gcc = $system_gcc_default{get_osx_vers()};
-	} else
-	{
-		$current_system = "Darwin " . get_kernel_vers_long();
-		$gcc = $system_gcc_default{get_kernel_vers()};
-	}
-
-	if (defined $gcc_abi) {
-		if ($gcc_abi_default{$gcc} !~ /^$gcc_abi/) {
-			return $gcc_abi_default{$gcc};
+		if (my $sw_vers = get_osx_vers_long())
+		{
+			$current_system = "Mac OS X $sw_vers";
+			$gcc = $system_gcc_default{get_osx_vers()};
+		} else
+		{
+			$current_system = "Darwin " . get_kernel_vers_long();
+			$gcc = $system_gcc_default{get_kernel_vers()};
 		}
-	}
 
-	$gcc_select = gcc_selected() || '(unknown version)';
+		if (defined $gcc_abi) {
+			if ($gcc_abi_default{$gcc} !~ /^$gcc_abi/) {
+				return $gcc_abi_default{$gcc};
+			}
+		}
 
-	# We don't want to differentiate between 4.0.0 and 4.0.1 here
-	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
+		$gcc_select = gcc_selected() || '(unknown version)';
 
-	if ($gcc_select !~ /^$gcc/) {
-		my $gcc_name = gcc_select_arg($gcc);
-		$message =~ s/CURRENT_SYSTEM/$current_system/g;
-		$message =~ s/INSTALLED_GCC/$gcc_select/g;
-		$message =~ s/EXPECTED_GCC/$gcc/g;
-		$message =~ s/GCC_SELECT_COMMAND/$gcc_name/g;
-		die $message;
+		# We don't want to differentiate between 4.0.0 and 4.0.1 here
+		$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
+
+		if ($gcc_select !~ /^$gcc/) {
+			my $gcc_name = gcc_select_arg($gcc);
+			$message =~ s/CURRENT_SYSTEM/$current_system/g;
+			$message =~ s/INSTALLED_GCC/$gcc_select/g;
+			$message =~ s/EXPECTED_GCC/$gcc/g;
+			$message =~ s/GCC_SELECT_COMMAND/$gcc_name/g;
+			die $message;
+		}
+	} else {
+		$gcc = gcc_selected() || 0;
 	}
 
 	return $gcc;
@@ -1335,16 +1375,20 @@ result in repeated spawning of sw_vers processes.
 =cut
 
 sub get_osx_vers_long {
-	if (not defined Fink::Config::get_option('sw_vers_long') or Fink::Config::get_option('sw_vers_long') eq "0" and -x '/usr/bin/sw_vers') {
-		if (open(SWVERS, "sw_vers |")) {
-			while (<SWVERS>) {
-				if (/^ProductVersion:\s*([^\s]+)\s*$/) {
-					(my $prodvers = $1) =~ s/^(\d+\.\d+)$/$1.0/;
-					Fink::Config::set_options( { 'sw_vers_long' => $prodvers } );
-					last;
+	if (not defined Fink::Config::get_option('sw_vers_long') or Fink::Config::get_option('sw_vers_long') eq "0") {
+		if (-x '/usr/bin/sw_vers') {
+			if (open(SWVERS, "sw_vers |")) {
+				while (<SWVERS>) {
+					if (/^ProductVersion:\s*([^\s]+)\s*$/) {
+						(my $prodvers = $1) =~ s/^(\d+\.\d+)$/$1.0/;
+						Fink::Config::set_options( { 'sw_vers_long' => $prodvers } );
+						last;
+					}
 				}
+				close(SWVERS);
 			}
-			close(SWVERS);
+		} else {
+			Fink::Config::set_options( { 'sw_vers_long' => get_kernel_vers_long() } );
 		}
 	}
 	return Fink::Config::get_option('sw_vers_long');
@@ -1362,8 +1406,14 @@ couldn't be determined.
 
 sub get_darwin_equiv
 {
-	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4', '9' => '10.5');
-	return $darwin_osx{get_kernel_vers()};
+	if (&get_platform() eq "darwin") {
+		my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4', '9' => '10.5');
+		return $darwin_osx{get_kernel_vers()};
+	} else {
+		my $kernel_vers = get_kernel_vers_long();
+		$kernel_vers =~ s/^(\d+\.\d+).*$/$1/;
+		return $kernel_vers;
+	}
 }
 
 =item get_kernel_vers
