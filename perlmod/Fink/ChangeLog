@@ -1,3 +1,7 @@
+2006-08-13  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: handle cctools more gracefully
+
 2006-08-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* VirtPackage.pm: rewrite 64bit-cpu to work with both ppc and intel

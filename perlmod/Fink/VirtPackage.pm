@@ -544,8 +544,11 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		if (`/usr/bin/ld -v 2>/dev/null` =~ /^.*version cctools-(\d+).*?$/) {
+		my $LD_OUTPUT = `/usr/bin/ld -v 2>/dev/null`;
+		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
 			$cctools_version = $1;
+		} elsif ($LD_OUTPUT =~ /^.*PROJECT\:ld64\-([\d\.]+).*?$/) {
+			$cctools_version = '1000'; # FIXME: how do we find out what cctools we're using?
 		} elsif (`/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
 			$cctools_version = $1;
 		}
