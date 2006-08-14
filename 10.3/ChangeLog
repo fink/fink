@@ -1,3 +1,7 @@
+2006-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* apt.info: POSIX /bin/sh does not support "echo -n"
+
 2006-05-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* fink-mirrors: sync w/stable

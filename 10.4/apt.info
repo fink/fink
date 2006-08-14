@@ -92,9 +92,9 @@ if [ ! -f %p/var/lib/dpkg/cmethopt ]; then
 else
   read a b <%p/var/lib/dpkg/cmethopt
   if [ "$a" != "apt" -o "$b" != "apt" ]; then
-    echo
-    echo "dselect is not set up to use apt as its access method. Downloading binary"
-    echo -n "package will likely not work. Do you want to use apt instead?"
+    /bin/echo ""
+    /bin/echo "dselect is not set up to use apt as its access method. Downloading binary"
+    /bin/echo -n "package will likely not work. Do you want to use apt instead?"
     read answer
     answer=`echo $answer | sed 's/^[yY].*$/y/'`
     if [ -z "$answer" -o "x$answer" = "xy" ]; then

@@ -1,3 +1,7 @@
+2006-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* ltconfig: POSIX /bin/sh does not support "echo -n"
+
 2003-11-05  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* ltconfig: Updated the -undefined flag to use dynamic_lookup when

@@ -103,7 +103,7 @@ msg_choose (){
     ;;
     esac
     echo
-    echo -n Continue\?
+    /bin/echo -n Continue\?
 }
 
 display_choose () {
@@ -123,7 +123,7 @@ EOF
     msg_title; echo "Your login shell: $LOGINSHELL"; echo ""
     $MSG; echo ""
     msg_choose
-    echo -n " [Y/n] "
+    /bin/echo -n " [Y/n] "
     read -t 20 answer
     answer=`echo $answer | sed 's/^[yY].*$/y/'`
     if [ ! -z "$answer" -a "x$answer" != "xy" ]; then

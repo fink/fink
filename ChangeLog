@@ -1,3 +1,7 @@
+2006-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* pathsetup.sh.in: POSIX /bin/sh does not support "echo -n"
+
 2006-08-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* bootstrap: remove temporary code which formerly aided users

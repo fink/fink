@@ -3870,7 +3870,7 @@ EOF
 			"###\n".
 			"### check to see if any .pod files exist in \%p/share/podfiles.\n".
 			"###\n\n".
-			"echo -n '' > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n".
+			"/bin/echo -n '' > \%p/lib/perl5$perldirectory/$perlarchdir/perllocal.pod\n".
 			"perl <<'END_PERL'\n\n".
 			"if (-e \"\%p/share/podfiles$perldirectory\") {\n".
 			"	 \@files = <\%p/share/podfiles$perldirectory/*.pod>;\n".
@@ -3896,7 +3896,7 @@ EOF
 			"jars=`/usr/bin/find %p/share/java -name '*.jar'`\n".
 			'if (test -n "$jars")'."\n".
 			"then\n".
-			'(for jar in $jars ; do echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'."\n".
+			'(for jar in $jars ; do /bin/echo -n "$jar:" ; done) | sed "s/:$//" > %p/share/java/classpath'."\n".
 			"else\n".
 			"/bin/rm -f %p/share/java/classpath\n".
 			"fi\n".
@@ -4511,7 +4511,7 @@ sub get_env {
 	}
 		
 	# uncomment this to be able to use distcc -- not officially supported!
-	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
+	$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 
 	# Special feature: SetMACOSX_DEPLOYMENT_TARGET does an implicit NoSet:true
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET")) {
