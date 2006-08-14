@@ -258,9 +258,83 @@ END
 		my $perlver = my $shortver = Fink::Services::get_system_perl_version();
 		$shortver =~ s/\.//g;
 		my $perlprovides = 'perl' . $shortver . '-core, system-perl' . $shortver;
-		if ($perlver ge '5.8.0') {
-			$perlprovides .= ', attribute-handlers-pm' . $shortver . ', cgi-pm' . $shortver . ', digest-pm' . $shortver . ', digest-md5-pm' . $shortver . ', file-spec-pm' . $shortver . ', file-temp-pm' . $shortver . ', filter-simple-pm' . $shortver . ', filter-util-pm' . $shortver . ', getopt-long-pm' . $shortver . ', i18n-langtags-pm' . $shortver . ', libnet-pm' . $shortver . ', locale-maketext-pm' . $shortver . ', memoize-pm' . $shortver . ', mime-base64-pm' . $shortver . ', scalar-list-utils-pm' . $shortver .', test-harness-pm' . $shortver . ', test-simple-pm' . $shortver . ', time-hires-pm' . $shortver;
+		my @modules;
+		if ($perlver ge '5.8.1') {
+			push(@modules,
+				'attribute-handlers',
+				'cgi',
+				'data-dumper',
+				'db',
+				'devel-dprof',
+				'devel-peek',
+				'digest',
+				'digest-md5',
+				'extutils-makemaker',
+				'file-find',
+				'file-path',
+				'file-spec',
+				'file-temp',
+				'filter-simple',
+				'getopt-long',
+				'i18n-langtags',
+				'libnet',
+				'list-util',
+				'locale-maketext',
+				'math-bigint',
+				'memoize',
+				'mime-base64',
+				'pod-parser',
+				'switch',
+				'sys-syslog',
+				'term-readline',
+				'test-harness',
+				'test-simple',
+				'text-tabs',
+				'text-wrap',
+				'time-hires',
+				'unicode-normalize',
+			);
 		}
+		if ($perlver ge '5.8.6') {
+			push(@modules,
+				'apache',
+				'compress-zlib',
+				'convert-tnef',
+				'html-parser',
+				'perlobjcbridge',
+				'scalar-list-utils',
+				'uri',
+			);
+		}
+		if ($perlver ge '5.8.8') {
+			push(@modules,
+				'algorithm-diff',
+				'carp',
+				'class-autouse',
+				'class-isa',
+				'clone',
+				'corefoundation',
+				'data-hierarchy',
+				'data-uuid',
+				'date-parse',
+				'file-type',
+				'freezethaw',
+				'html-tree',
+				'io-pager',
+				'ipc-run3',
+				'locale-maketext-lexicon',
+				'perlio-eol',
+				'pod-simple',
+				'regexp-shellish',
+				'svn',
+				'svk',
+				'timedate',
+				'vcp',
+				'xml-autowriter',
+				'yaml',
+			);
+		}
+		$perlprovides .= ', ' . join(', ', map { $_ . '-pm' . $shortver } sort @modules);
 		$hash->{provides} = $perlprovides;
 
 	} else {
@@ -544,7 +618,7 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
 	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		my $LD_OUTPUT = `/usr/bin/ld -v 2>/dev/null`;
+		my $LD_OUTPUT = `/usr/bin/ld -v 2>&1`;
 		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
 			$cctools_version = $1;
 		} elsif ($LD_OUTPUT =~ /^.*PROJECT\:ld64\-([\d\.]+).*?$/) {

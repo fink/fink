@@ -1,6 +1,7 @@
 2006-08-13  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
-	* VirtPackage.pm: handle cctools more gracefully
+	* VirtPackage.pm: handle cctools more gracefully, plus more
+	specific virtual perl module provides
 
 2006-08-10  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
