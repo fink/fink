@@ -1,3 +1,8 @@
+2006-08-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* bootstrap: remove temporary code which formerly aided users
+	in bootstrapping to 10.4-transitional if they wished
+
 2006-07-12  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap: Also look for etc/ to indicate fink already installed.
