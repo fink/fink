@@ -1,3 +1,10 @@
+2006-08-13  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink-prebinding.*, cctools-extra.*, gettext.*, ncurses-shlibs.*: no
+	longer essential, so remove them
+	* all: remove builddeps on fink-prebinding
+	* dpkg-bootstrap: don't force-flat-namespace
+
 2006-05-31  Daniel Macks  <dmacks@netspace.org>
 
 	* dpkg.info: -force_flat_namespace broken in g++ in xcode2.3
