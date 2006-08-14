@@ -283,6 +283,7 @@ END
 				'math-bigint',
 				'memoize',
 				'mime-base64',
+				'podparser',
 				'pod-parser',
 				'switch',
 				'sys-syslog',
