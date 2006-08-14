@@ -23,7 +23,7 @@ PatchScript: <<
   perl -p -i -e 's|tic\$suffix|tic\$suffix -x|;' misc/run_tic*
   echo "***********************************************************************"
 <<
-BuildDepends: fink (>= 0.13.0), fink-prebinding
+BuildDepends: fink (>= 0.13.0)
 Depends: libncurses5-shlibs (>= %v-%r)
 Replaces: libncurses5 (<< 5.4-20041023-4)
 Essential: true

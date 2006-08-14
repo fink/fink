@@ -4,7 +4,6 @@ Revision: 11
 Essential: true
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
-BuildDepends: fink-prebinding
 Conflicts: mktemp
 Replaces: mktemp, tetex
 Provides: mktemp

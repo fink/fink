@@ -13,7 +13,7 @@ PatchScript: <<
 Patch: %n.patch
 Essential: yes
 Depends: base-files
-BuildDepends: fink (>= 0.13.0), fink-prebinding
+BuildDepends: fink (>= 0.13.0)
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
  %p/lib/libiconv.2.dylib 6.0.0 %n (>= 1.10-5)

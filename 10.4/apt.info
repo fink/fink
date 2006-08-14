@@ -3,7 +3,6 @@ Version: 0.5.4
 Revision: 1053
 GCC: 4.0
 Depends: %N-shlibs (= %v-%r)
-BuildDepends: fink-prebinding
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
