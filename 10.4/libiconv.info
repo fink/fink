@@ -7,13 +7,15 @@ Source-MD5: 0d621d541e28ff053d8bbcf7215de3a4
 Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.14.5.tar.gz
 Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
+PatchFile: %n.patch
+PatchFile-MD5: 13a6fb7d37e6ad1cc6fffd54b1c4b52a
 PatchScript: <<
+ cd %b/..; patch -p0 < %{PatchFile}
  cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
 <<
-Patch: %n.patch
 Essential: yes
 Depends: base-files
-BuildDepends: fink (>= 0.13.0)
+BuildDepends: fink (>= 0.24.12)
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
  %p/lib/libiconv.2.dylib 6.0.0 %n (>= 1.10-5)

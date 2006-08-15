@@ -2,6 +2,7 @@ Package: dpkg
 Version: 1.10.21
 Revision: 1219
 GCC: 4.0
+BuildDepends: fink (>= 0.24.12)
 Depends: libgettext3-shlibs, libiconv, gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
@@ -10,8 +11,10 @@ SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
 Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
+PatchFile: %n.patch
+PatchFile-MD5: 037adbd66b3723518532371840dc76e7
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
+ cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
 <<
 SetCFLAGS: -no-cpp-precomp -I%p/include
