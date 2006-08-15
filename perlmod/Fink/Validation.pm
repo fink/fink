@@ -773,7 +773,7 @@ if ($filename =~ /\//) {
 			}
 		}
 		if (!$has_fink_bdep) {
-			print "Error: Use of PatchFile requires declaring a BuildDepends on \"fink (>= 0.24.99)\" or higher. ($filename)\n";
+			print "Error: Use of PatchFile requires declaring a BuildDepends on \"fink (>= 0.24.12)\" or higher. ($filename)\n";
 			$looks_good = 0;
 		}
 
