@@ -1,3 +1,14 @@
+diff -ruN apt-0.5.4/apt-inst/deb/dpkgdb.cc apt-0.5.4-patched/apt-inst/deb/dpkgdb.cc
+--- apt-0.5.4/apt-inst/deb/dpkgdb.cc	2001-05-27 19:50:42.000000000 -0400
++++ apt-0.5.4-patched/apt-inst/deb/dpkgdb.cc	2006-08-14 23:01:18.000000000 -0400
+@@ -28,6 +28,7 @@
+ #include <errno.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#include <sys/types.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <ctype.h>
 diff -urN apt-0.5.4.orig/apt-inst/makefile apt-0.5.4/apt-inst/makefile
 --- apt-0.5.4.orig/apt-inst/makefile	2001-02-27 13:16:05.000000000 +0900
 +++ apt-0.5.4/apt-inst/makefile	2005-03-08 13:00:37.000000000 +0900
