@@ -1,11 +1,13 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
-Revision: 218
+Revision: 1218
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchScript: sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
+PatchFile: %n.patch
+PatchFile-MD5: 83170a41fd6b458f7f99d01b5f01e8e8
+PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 SetCFLAGS: -no-cpp-precomp -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
