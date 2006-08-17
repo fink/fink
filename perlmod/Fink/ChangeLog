@@ -1,3 +1,7 @@
+2006-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: No MAKEFLAGS leakage
+
 2006-08-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: correction of error message if PatchFile is present
