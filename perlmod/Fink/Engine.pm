@@ -1244,7 +1244,7 @@ EOFUNC
 	if (!$opts{dryrun}) {
 		print "Obsolete deb packages ",
 			  ($opts{dryrun} ? "found in" : "deleted from"),
-			  "fink trees: $file_count\n\n";
+			  " fink trees: $file_count\n\n";
 	}
 	
 	if ($opts{dryrun}) {
