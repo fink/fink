@@ -1,10 +1,8 @@
 # Official mirror list: http://download.kde.org/mirrorstatus.html
-Timestamp: 2006-02-28
+Timestamp: 2006-08-26
 
 Primary: ftp://ftp.kde.org/pub/kde
 
-asi-JP: ftp://sunsite.sut.ac.jp/pub/archives/linux/kde
-asi-JP: http://sunsite.sut.ac.jp/pub/archives/linux/X/kde
 asi-JP: ftp://ftp.yz.yamagata-u.ac.jp/pub/X11/wm/kde
 asi-JP: http://ftp.yz.yamagata-u.ac.jp/pub/X11/wm/kde
 asi-JP: ftp://ftp.kddlabs.co.jp/pub/X11/kde
@@ -17,8 +15,6 @@ asi-KR: ftp://ftp.sayclub.com/pub/X/KDE
 asi-KR: http://ftp.sayclub.com/pub/X/KDE
 asi-TH: ftp://ftp.nectec.or.th/pub/linux-softwares/KDE
 asi-TW: ftp://linux.cis.nctu.edu.tw/X/wm/kde
-asi-TW: ftp://linux3.cc.ntu.edu.tw/pub/kde
-asi-TW: http://linux3.cc.ntu.edu.tw/pub/kde
 aus-AU: ftp://ftp.planetmirror.com/pub/kde
 eur: ftp://ftp.eu.uu.net/pub/kde
 eur-AT: ftp://gd.tuwien.ac.at/kde
@@ -32,7 +28,6 @@ eur-CH: ftp://ftp.solnet.ch/mirror/KDE
 eur-CZ: ftp://ftp.fi.muni.cz/pub/kde
 eur-CZ: http://ftp.fi.muni.cz/pub/kde
 eur-DE: ftp://ftp.kde.org/pub/kde
-eur-DE: ftp://ftp.fh-heilbronn.de/pub/mirrors/kde
 eur-DE: ftp://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.kde.org/pub/kde
 eur-DE: http://ftp-stud.fht-esslingen.de/Mirrors/ftp.kde.org/pub/kde
 eur-DE: ftp://ftp.fu-berlin.de/pub/unix/X11/gui/kde
@@ -44,18 +39,16 @@ eur-DE: ftp://ftp.tu-chemnitz.de/pub/X11/kde
 eur-DE: ftp://ftp.informatik.uni-hamburg.de/pub/soft/X/contrib/kde
 eur-DE: ftp://ftp.rz.uni-wuerzburg.de/pub/unix/kde
 eur-DE: ftp://ftp.kde.org/pub/kde
-eur-DK: ftp://mirrors.dotsrc.org/kde
 eur-DK: http://mirrors.dotsrc.org/kde
 eur-EE: ftp://ftp.estpak.ee/pub/kde
-eur-ES: ftp://ftp.caliu.info/pub/mirrors/kde
-eur-ES: http://ftp.caliu.info/pub/mirrors/kde
+eur-ES: ftp://ftp.rediris.es/mirror/kde/ftp.kde.org/pub/kde
 eur-FI: ftp://ftp.funet.fi/pub/mirrors/ftp.kde.org/pub/kde
 eur-FI: http://ftp.funet.fi/pub/mirrors/ftp.kde.org/pub/kde
-eur-FR: ftp://ftp.lip6.fr/pub/X11/kde
-eur-FR: http://www-ftp.lip6.fr/pub/X11/kde
 eur-FR: ftp://ftp.uvsq.fr/pub/X11/kde
 eur-FR: ftp://fr2.rpmfind.net/linux/KDE
 eur-FR: http://fr2.rpmfind.net/linux/KDE
+eur-GR: ftp://ftp.duth.gr/pub/kde
+eur-GR: http://ftp.duth.gr/pub/kde
 eur-GR: ftp://ftp.hol.gr/pub/mirror/kde
 eur-GR: http://ftp.hol.gr/mirror/kde
 eur-GR: ftp://ftp.ntua.gr/pub/X11/kde
@@ -75,10 +68,10 @@ eur-NL: http://ftp.tiscali.nl/kde
 eur-NO: ftp://ftp.no.kde.org/pub/kde
 eur-PL: ftp://sunsite.icm.edu.pl/pub/unix/kde
 eur-PL: http://sunsite.icm.edu.pl/pub/unix/kde
-eur-PL: ftp://ftp.man.szczecin.pl/pub/kde
 eur-PL: ftp://ftp.tuniv.szczecin.pl/pub/kde
 eur-PL: http://ftp.tuniv.szczecin.pl/pub/kde
 eur-RO: ftp://ftp.iasi.roedu.net/pub/mirrors/ftp.kde.org
+eur-RO: http://mirrors.evolva.ro/kdeftp
 eur-RU: ftp://ftp.chg.ru/pub/kde
 eur-RU: http://ftp.chg.ru/pub/kde
 eur-RU: ftp://ftp.cronyx.ru/pub/mirror/kde
@@ -87,6 +80,7 @@ eur-SE: ftp://ftp.du.se/pub/mirrors/kde
 eur-SE: http://ftp.du.se/pub/mirrors/kde
 eur-SE: ftp://ftp.sunet.se/pub/kde
 eur-SE: http://ftp.sunet.se/pub/kde
+eur-UA: ftp://ftp.xcp.kiev.ua/ftp.kde.org
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.kde.org/pub/kde
 eur-UK: http://www.mirrorservice.org/sites/ftp.kde.org/pub/kde
 eur-UK: ftp://ftp.mirror.ac.uk/sites/ftp.kde.org/pub/kde
@@ -94,14 +88,12 @@ eur-YU: ftp://ftp.kde.org.yu/kde
 eur-YU: http://ftp.kde.org.yu/kde
 nam-US: ftp://ftp.pbone.net/mirror/ftp.kde.org/pub/kde
 nam-US: http://kde.mirrors.hoobly.com
-nam-US: http://mirror.cc.columbia.edu/pub/software/kde
 nam-US: ftp://ftp.gtlib.cc.gatech.edu/pub/kde
 nam-US: http://ftp.gtlib.cc.gatech.edu/pub/kde
 nam-US: ftp://ftp.ussg.iu.edu/pub/kde
 nam-US: http://ftp.ussg.iu.edu/kde
 nam-US: ftp://ftp.oregonstate.edu/pub/kde
 nam-US: ftp://carroll.aset.psu.edu/pub/kde
-nam-US: ftp://chernabog.cc.vt.edu/pub/projects/kde
 nam-US: http://chernabog.cc.vt.edu/pub/projects/kde
 nam-US: ftp://kde.mirrors.tds.net/pub/kde
 nam-US: http://kde.mirrors.tds.net/pub/kde

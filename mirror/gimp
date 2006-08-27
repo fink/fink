@@ -1,10 +1,9 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2006-02-28
+Timestamp: 2006-08-26
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
 afr-ZA: ftp://ftp.is.co.za/applications/gimp/gimp
-asi-JP: ftp://sunsite.sut.ac.jp/pub/archives/packages/gimp/gimp
 asi-JP: ftp://ftp.u-aizu.ac.jp/pub/graphics/tools/gimp/gimp
 asi-JP: ftp://ftp.ring.gr.jp/pub/graphics/gimp
 asi-JP: http://www.ring.gr.jp/pub/graphics/gimp
@@ -20,15 +19,13 @@ eur-FI: ftp://ftp.funet.fi/pub/sci/graphics/packages/gimp/gimp
 eur-FR: http://ftp.iut-bm.univ-fcomte.fr/gimp/gimp
 eur-IE: ftp://ftp.esat.net/mirrors/ftp.gimp.org/pub/gimp
 eur-IE: http://ftp.esat.net/mirrors/ftp.gimp.org/pub/gimp
-eur-NL: ftp://gnu.kookel.org/pub/gimp
-eur-NL: http://gnu.kookel.org/ftp/gimp
 eur-NO: ftp://sunsite.uio.no/pub/gimp
 eur-PL: ftp://ftp.tuniv.szczecin.pl/pub/Linux/gimp
 eur-PL: ftp://sunsite.icm.edu.pl/pub/graphics/gimp
+eur-RO: ftp://ftp.kappa.ro/pub/mirrors/ftp.gimp.org/gimp
 eur-RO: ftp://ftp.iasi.roedu.net/pub/mirrors/ftp.gimp.org/gimp
 eur-RO: http://ftp.iasi.roedu.net/mirrors/ftp.gimp.org/gimp
 eur-RU: ftp://ftp.sai.msu.su/pub/unix/graphics/gimp/mirror/gimp
-eur-RU: http://gimp.tsuren.net/mirror/gimp
 eur-SE: ftp://ftp.acc.umu.se/pub/gimp/gimp
 eur-SE: ftp://ftp.sunet.se/pub/gnu/gimp
 eur-SE: http://ftp.sunet.se/pub/gnu/gimp
@@ -36,5 +33,4 @@ eur-UK: ftp://ftp.flirble.org/pub/X/gimp/gimp
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
 eur-UK: http://www.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
 nam-US: ftp://ftp.gimp.org/pub/gimp
-nam-US: ftp://ftp.cs.umn.edu/pub/gimp
 nam-US: http://gimp.mirrors.hoobly.com/gimp

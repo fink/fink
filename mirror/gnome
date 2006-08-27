@@ -1,5 +1,5 @@
 # Official mirror list: http://ftp.gnome.org/pub/GNOME/MIRRORS.html
-Timestamp: 2006-02-28
+Timestamp: 2006-08-26
 
 Primary: ftp://ftp.gnome.org/pub/GNOME
 
@@ -18,4 +18,3 @@ eur-SE: ftp://ftp.dataplus.se/pub/GNOME
 eur-UK: http://ftp.linux.org.uk/mirrors/ftp.gnome.org
 nam-US: ftp://ftp.cse.buffalo.edu/pub/Gnome
 nam-US: http://archive.progeny.com/GNOME
-nam-US: http://mirror.clarkson.edu/pub/gnome
