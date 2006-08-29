@@ -205,7 +205,7 @@ if ($transitional eq "") {
 
 You are attempting to use the new 10.4 tree with an old version (build $build)
 of the gcc 4.0 compiler, which is not supported.  Please update your XCode to 
-XCode 2.2.1, and try again.
+XCode 2.2.1 or later, and try again.
 
 END
 	}
