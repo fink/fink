@@ -256,10 +256,11 @@ END
 		$hash->{status} = STATUS_PRESENT;
 		print STDERR Fink::Services::get_system_perl_version(), "\n" if ($options{debug});
 		my $perlver = my $shortver = Fink::Services::get_system_perl_version();
+		$perlver = sprintf "%d.%03d%03d", split( /\./, $perlver );
 		$shortver =~ s/\.//g;
 		my $perlprovides = 'perl' . $shortver . '-core, system-perl' . $shortver;
 		my @modules;
-		if (eval { require 5.008_001 }) {
+		if ($perlver >= 5.008001) {
 			push(@modules,
 				'attribute-handlers',
 				'cgi',
@@ -296,7 +297,7 @@ END
 				'unicode-normalize',
 			);
 		}
-		if (eval { require 5.008_006 }) {
+		if ($perlver >= 5.008006) {
 			push(@modules,
 				'apache',
 				'compress-zlib',
@@ -307,7 +308,7 @@ END
 				'uri',
 			);
 		}
-		if (eval { require 5.008_008 }) {
+		if ($perlver >= 5.008008) {
 			push(@modules,
 				'algorithm-diff',
 				'carp',
