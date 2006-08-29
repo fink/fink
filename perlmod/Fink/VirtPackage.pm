@@ -259,7 +259,7 @@ END
 		$shortver =~ s/\.//g;
 		my $perlprovides = 'perl' . $shortver . '-core, system-perl' . $shortver;
 		my @modules;
-		if ($perlver ge '5.8.1') {
+		if (eval { require 5.008_001 }) {
 			push(@modules,
 				'attribute-handlers',
 				'cgi',
@@ -296,7 +296,7 @@ END
 				'unicode-normalize',
 			);
 		}
-		if ($perlver ge '5.8.6') {
+		if (eval { require 5.008_006 }) {
 			push(@modules,
 				'apache',
 				'compress-zlib',
@@ -307,7 +307,7 @@ END
 				'uri',
 			);
 		}
-		if ($perlver ge '5.8.8') {
+		if (eval { require 5.008_008 }) {
 			push(@modules,
 				'algorithm-diff',
 				'carp',

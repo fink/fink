@@ -1,5 +1,10 @@
 2006-08-17  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: Use perl's own version check feature to check
+	perl versions.
+
+2006-08-17  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: No MAKEFLAGS leakage
 
 2006-08-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
