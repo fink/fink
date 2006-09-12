@@ -194,7 +194,11 @@ our %shared_loads;
 		
 		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
 		$self->_set_destdirs;
-		
+
+		if(Fink::Config::get_option("maintainermode")) {
+			$self->activate_infotest;
+		}
+
 		return $self;
 	}
 }
@@ -1028,7 +1032,9 @@ sub get_script {
 		} else {
 			$default_script = "make install prefix=\%i\n";
 		} 
-
+	} elsif($field eq 'testscript') {
+		$field_value = $self->param_default($field, '%{default_script}');
+		$default_script = "";
 	} else {
 		# should never get here
 		die "Invalid script field for get_script: $field\n";
@@ -1046,6 +1052,43 @@ sub get_script {
 	delete $self->{_expand}->{default_script};  # this key must stay local
 
 	return $script;
+}
+
+# Activate InfoTest fields.
+# This parses the InfoTest block and promotes the fields defined within.
+# So, it makes values defined in InfoTest override or alter the main
+# values as necessary.
+sub activate_infotest {
+	my $self = shift;
+	return if $self->{_test_activated};
+	$self->{_test_activated} = 1;
+
+	my $infotest = $self->param_default("InfoTest", "");
+	my $max_source = ($self->get_source_suffices)[-1] or 0;
+	my $test_properties = &read_properties_var(
+		"InfoTest of ".$self->get_fullname,
+		$self->param_default('InfoTest', ''), {remove_space => 1});
+	while(my($key, $val) = each(%$test_properties)) {
+		if($key =~ /^Test(Depends|Conflicts)$/i) {
+			my $orig_field = "Build$1";
+			my $orig_val = $self->param_default($orig_field, "");
+			$orig_val .= ", " if $orig_val;
+			$self->set_param($orig_field, "$orig_val$val");
+		} elsif($key =~ /^TestConfigureParams$/i) {
+			$self->set_param('ConfigureParams',
+				$self->param_default('ConfigureParams', "") .
+				" $val");
+			$self->prepare_percent_c;
+		} elsif($key =~ /^TestSource\d*$/i) {
+			$max_source++;
+			$self->set_param("Source$max_source", $val);
+		} else {
+			$self->set_param($key, $val);
+		}
+	}
+
+	delete $self->{_source_suffices};
+	
 }
 
 ### add a splitoff package
@@ -3292,6 +3335,21 @@ sub phase_compile {
 
 	### construct CompileScript and execute it
 	$self->run_script($self->get_script("CompileScript"), "compiling", 1, 1);
+
+	if(Fink::Config::get_option("maintainermode")) {
+		my $result = $self->run_script($self->get_script("TestScript"), "testing", 0, 1, 1);
+
+		if($result == 1) { 
+			warn "phase test: warning\n";
+		} elsif($result) {
+			my $error = "phase test: " . $self->get_fullname()." failed";
+			my $notifier = Fink::Notify->new();
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die "phase test: error ($result)\n";
+		} else {
+			warn "phase test: passed\n";
+		}
+	}
 }
 
 ### install
@@ -4670,6 +4728,7 @@ sub run_script {
 	my $phase = shift;
 	my $no_expand = shift || 0;
 	my $nonroot_okay = shift || 0;
+	my $ignore_result = shift || 0;
 
 	# Expand percent shortcuts
 	$script = &expand_percent($script, $self->{_expand}, $self->get_info_filename." $phase script") unless $no_expand;
@@ -4680,7 +4739,7 @@ sub run_script {
 		local %ENV = %{$self->get_env()};
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
 	}
-	if ($result) {
+	if ($result and !$ignore_result) {
 		my $notifier = Fink::Notify->new();
 		my $error = "phase " . $phase . ": " . $self->get_fullname()." failed";
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
@@ -4698,6 +4757,7 @@ $error .= "Note that many fink package maintainers do not (yet) have access to O
 		}
 		die $error . "\n";
 	}
+	return $result;
 }
 
 

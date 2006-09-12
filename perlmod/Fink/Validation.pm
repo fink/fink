@@ -213,7 +213,8 @@ our %valid_fields = map {$_, 1}
 		 'descdetail',
 		 'descusage',
 		 'descpackaging',
-		 'descport'
+		 'descport',
+		 'infotest',
 		)
 	);
 
@@ -260,6 +261,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'descusage',
 		 'descpackaging',
 		 'descport',
+		 'infotest',
 		)
 	);
 
@@ -270,11 +272,32 @@ our %pkglist_fields = map {lc $_, 1}
 	 'BuildDepends',
 	 'Conflicts',
 	 'BuildConflicts',
+	 'TestDepends',
+	 'TestConflicts',
 	 'Provides',
 	 'Suggests',
 	 'Recommends',
 	 'Enhances',
 	 'Architecture',
+	);
+
+# Extra fields valid inside InfoTest
+our %infotest_fields = map {lc $_, 1}
+	(
+	 'TestDepends',
+	 'TestConflicts',
+	 'TestConfigureParams',
+	 'TestScript',
+	 'TestSource',
+	 'TestSuiteSize',
+	);
+
+# Allowed values of the TestSuiteSize field
+our %allowed_testsuitesize_values = map {lc $_, 1}
+	(
+	 'small',
+	 'medium',
+	 'large',
 	);
 
 END { }				# module clean-up code here (global destructor)

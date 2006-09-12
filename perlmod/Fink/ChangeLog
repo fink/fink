@@ -1,3 +1,9 @@
+2006-09-12  Matthew Sachs  <msachs@apple.com>
+
+	* Engine.pm: Allow maintainer mode with dumpinfo.
+	* PkgVersion.pm: Implement InfoTest.
+	* Validation.pm: Preliminary support for InfoTest.
+
 2006-08-17  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: Check the perl version of the perl package, not
