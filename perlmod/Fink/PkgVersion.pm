@@ -1081,7 +1081,7 @@ sub activate_infotest {
 				$self->param_default('ConfigureParams', "") .
 				" $val");
 			$self->prepare_percent_c;
-		} elsif($key =~ /^Test(Source|Tar)(\d*)(ExtractDir|FilesRename|Rename|-MD5)?$/i) {
+		} elsif($key =~ /^Test(Source|Tar)(\d*)(ExtractDir|FilesRename|Rename|-MD5|-Checksum)?$/i) {
 			my $source_num = $max_source + ($2 || 1);
 			$source_num = "" if $source_num == 1;
 			my $src_param = "$1$source_num$3";

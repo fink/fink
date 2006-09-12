@@ -295,6 +295,7 @@ our %infotest_valid_fields = map {lc $_, 1}
 	 'testsourceextractdir',
 	 'testsourcerename',
 	 'testsource-md5',
+	 'testsource-checksum',
 	 'testtarfilesrename',
 	);
 
