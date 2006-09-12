@@ -261,7 +261,6 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'descusage',
 		 'descpackaging',
 		 'descport',
-		 'infotest',
 		)
 	);
 
@@ -281,15 +280,22 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Architecture',
 	);
 
+our @infotest_required_fields = map {lc $_}
+	qw(TestScript);
+
 # Extra fields valid inside InfoTest
-our %infotest_fields = map {lc $_, 1}
+our %infotest_valid_fields = map {lc $_, 1}
 	(
-	 'TestDepends',
-	 'TestConflicts',
-	 'TestConfigureParams',
-	 'TestScript',
-	 'TestSource',
-	 'TestSuiteSize',
+	 'testdepends',
+	 'testconflicts',
+	 'testconfigureparams',
+	 'testscript',
+	 'testsuitesize',
+	 'testsource',
+	 'testsourceextractdir',
+	 'testsourcerename',
+	 'testsource-md5',
+	 'testtarfilesrename',
 	);
 
 # Allowed values of the TestSuiteSize field
@@ -358,7 +364,7 @@ END { }				# module clean-up code here (global destructor)
 sub validate_info_file {
 	my $filename = shift;
 	my $val_prefix = shift;
-	my ($properties, $info_level);
+	my ($properties, $info_level, $test_properties);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
 	my $value;
 	my ($basepath, $buildpath);
@@ -392,6 +398,9 @@ sub validate_info_file {
 	$properties = &read_properties($filename);
 	($properties, $info_level) = Fink::PkgVersion->handle_infon_block($properties, $filename);
 	return 0 unless keys %$properties;
+	$test_properties = &read_properties_var(
+		"InfoTest of $filename",
+		$properties->{infotest}, {remove_space => 1});
 	
 	# determine the base path
 	if (defined $val_prefix) {
@@ -538,6 +547,7 @@ sub validate_info_file {
 
 	# find them all
 	my %source_fields = map { lc $_, 1 } grep { /^source(|[2-9]|[1-9]\d+)$/ } keys %$properties;
+	my %test_source_fields = map { lc $_, 1 } grep { /^testsource(|[2-9]|[1-9]\d+)$/ } keys %$test_properties;
 
 	# have Source or SourceN when we shouldn't
 	if (exists $properties->{type} and $properties->{type} =~ /\b(nosource|bundle)\b/i) {
@@ -559,8 +569,9 @@ sub validate_info_file {
 
 	# check for bogus "none" sources and sources without MD5
 	# remove "none" from %source_fields (will use in main field loop)
-	foreach (keys %source_fields) {
-		if (exists $properties->{$_} and $properties->{$_} =~ /^none$/i) {
+	foreach (keys(%source_fields), keys(%test_source_fields)) {
+		my $source_props = /^test/i ? $test_properties : $properties;
+		if (exists $source_props->{$_} and $source_props->{$_} =~ /^none$/i) {
 			delete $source_fields{$_};  # keep just real ones
 			if (/\d+/) {
 				print "Warning: \"$_: none\" is a no-op. ($filename)\n";
@@ -569,7 +580,7 @@ sub validate_info_file {
 		} else {
 			my $md5_field      = $_ . "-md5";
 			my $checksum_field = $_ . "-checksum";
-			if (!exists $properties->{$md5_field} and !defined $properties->{$md5_field} and !exists $properties->{$checksum_field} and !defined $properties->{$checksum_field}) {
+			if (!exists $source_props->{$md5_field} and !defined $source_props->{$md5_field} and !exists $source_props->{$checksum_field} and !defined $source_props->{$checksum_field}) {
 				print "Error: \"$_\" does not have a corresponding \"$md5_field\" or \"$checksum_field\" field. ($filename)\n";
 				$looks_good = 0;
 			}
@@ -579,11 +590,12 @@ sub validate_info_file {
 
 	if (&validate_info_component($properties, "", $filename, $info_level) == 0) {
 		$looks_good = 0;
+	} elsif (&validate_info_component($test_properties, "", $filename, $info_level, 1) == 0) {
+		$looks_good = 0;
 	}
 
-	# Loop over all fields and verify them
-	foreach my $field (keys %$properties) {
-		$value = $properties->{$field};
+	my $field_check = sub {
+		my($field, $value, $in_infotest) = @_;
 
 		# Warn if field is obsolete
 		if ($obsolete_fields{$field}) {
@@ -625,18 +637,19 @@ sub validate_info_file {
 		}
 
 		# Check for any source-related field without associated Source(N) field
-		if ($field =~ /^source(\d*)-checksum|source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir$/) {
+		if ($field =~ /^(test)?(?:source(\d*)-checksum|source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir)$/) {
+			my $testfield = $1 || "";
 			my $sourcefield = defined $+  # corresponding Source(N) field
-				? "source$+"
-				: "source";  
-			if (!exists $source_fields{$sourcefield}) {
+				? "${testfield}source$+"
+				: "${testfield}source";  
+			if ($testfield ? (!exists $test_source_fields{$sourcefield}) : (!exists $source_fields{$sourcefield})) {
 				my $msg = $field =~ /-(checksum|md5)$/
 					? "Warning" # no big deal
 					: "Error";  # probably means typo, giving broken behavior
 					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
 					$looks_good = 0;
 				}
-			next;
+			return;
 		}
 
 		# Validate splitoffs
@@ -670,6 +683,14 @@ sub validate_info_file {
 				}
 			}
 		} # end of SplitOff field validation
+	};
+
+	# Loop over all fields and verify them
+	while(my($field, $value) = each(%$properties)) {
+		$field_check->($field, $value, 0);
+	}
+	while(my($field, $value) = each(%$test_properties)) {
+		$field_check->($field, $value, 1);
 	}
 
 	# error for having %p/lib in RuntimeVars
@@ -745,7 +766,7 @@ sub validate_info_file {
 	@patchfiles = ();
 	# anything in PatchScript that looks like a patch file name
 	# (i.e., strings matching the glob %a/*.patch)
-	$value = $properties->{patchscript};
+	$value = $properties->{patchscript} || $test_properties->{patchscript};
 	if ($value) {
 		@patchfiles = ($value =~ /\%a\/.*?\.patch/g);
 		# strip directory if info is simple filename (in $PWD)
@@ -757,7 +778,7 @@ sub validate_info_file {
 	}
 
 	# the contents if Patch (if any)
-	$value = $properties->{patch};
+	$value = $properties->{patch} || $test_properties->{patch};
 	if ($value) {
 		# add directory if info is not simple filename (not in $PWD)
 		$value = "\%a/" .$value if $pkgpatchpath;
@@ -894,6 +915,7 @@ sub validate_info_component {
 	my $splitoff_field = shift;  # "splitoffN", or null or undef in parent
 	my $filename = shift;
 	my $info_level = shift;
+	my $is_infotest = shift || 0;
 
 	my (@pkg_required_fields, %pkg_valid_fields);
 
@@ -904,6 +926,9 @@ sub validate_info_component {
 		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
 		@pkg_required_fields = @splitoff_required_fields;
 		%pkg_valid_fields = %splitoff_valid_fields;
+	} elsif($is_infotest) {
+		@pkg_required_fields = @infotest_required_fields;
+		%pkg_valid_fields = (%infotest_valid_fields, %valid_fields);
 	} else {
 		@pkg_required_fields = @required_fields;
 		%pkg_valid_fields = %valid_fields;
@@ -917,7 +942,9 @@ sub validate_info_component {
 	# Verify that all required fields are present
 	foreach my $field (@pkg_required_fields) {
 		unless (exists $properties->{$field}) {
-			print "Error: Required field \"$field\"$splitoff_field missing. ($filename)\n";
+			my $test = "";
+			$test = " from InfoTest" if $is_infotest;
+			print "Error: Required field \"$field\"$splitoff_field missing${test}. ($filename)\n";
 			$looks_good = 0;
 		}
 	}
@@ -972,10 +999,12 @@ sub validate_info_component {
 		# Warn if field is unknown
 		unless ($pkg_valid_fields{$field}) {
 			unless (!$is_splitoff and
-					( $field =~ m/^source([2-9]|[1-9]\d+)(|extractdir|rename|-md5|-checksum)$/
-					  or $field =~ m/^tar([2-9]|[1-9]\d+)filesrename$/
+					( $field =~ m/^(test)?source([2-9]|[1-9]\d+)(|extractdir|rename|-md5|-checksum)$/
+					  or $field =~ m/^(test)?tar([2-9]|[1-9]\d+)filesrename$/
 					  ) ) {
-				print "Warning: Field \"$field\"$splitoff_field is unknown. ($filename)\n";
+				my $test = "";
+				$test = " inside InfoTest" if $is_infotest;
+				print "Warning: Field \"$field\"$splitoff_field is unknown${test}. ($filename)\n";
 				$looks_good = 0;
 			}
 		}
@@ -1085,7 +1114,7 @@ sub validate_info_component {
 
 	# Explicit interpretters in fink package building script should be
 	# called with -ev or -ex so that they abort if any command fails
-	foreach my $field (qw/patchscript compilescript installscript/) {
+	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});
 		if ($value =~ /^\s*\#!\s*(\S+)([^\n]*)/) {
 			my ($shell, $args) = ($1, $2);

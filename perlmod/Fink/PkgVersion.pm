@@ -1064,7 +1064,9 @@ sub activate_infotest {
 	$self->{_test_activated} = 1;
 
 	my $infotest = $self->param_default("InfoTest", "");
-	my $max_source = ($self->get_source_suffices)[-1] or 0;
+	my $max_source = ($self->get_source_suffices)[-1];
+	$max_source ||= ($self->param("Source") and
+		lc($self->param("Source")) ne "none") ? 1 : 0;
 	my $test_properties = &read_properties_var(
 		"InfoTest of ".$self->get_fullname,
 		$self->param_default('InfoTest', ''), {remove_space => 1});
@@ -1079,9 +1081,11 @@ sub activate_infotest {
 				$self->param_default('ConfigureParams', "") .
 				" $val");
 			$self->prepare_percent_c;
-		} elsif($key =~ /^TestSource\d*$/i) {
-			$max_source++;
-			$self->set_param("Source$max_source", $val);
+		} elsif($key =~ /^Test(Source|Tar)(\d*)(ExtractDir|FilesRename|Rename|-MD5)?$/i) {
+			my $source_num = $max_source + ($2 || 1);
+			$source_num = "" if $source_num == 1;
+			my $src_param = "$1$source_num$3";
+			$self->set_param($src_param, $val);
 		} else {
 			$self->set_param($key, $val);
 		}

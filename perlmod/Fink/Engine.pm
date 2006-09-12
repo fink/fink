@@ -2129,6 +2129,7 @@ HELPFORMAT
 						   conffiles infodocs daemonicname daemonicfile
 						   homepage descdetail descusage
 						   descpackaging descport
+						   testscript
 						   /);
 		};
 
@@ -2277,7 +2278,7 @@ HELPFORMAT
 					$value =~ s/^/ /gm;
 					printf "%s:\n%s\n", $_, $value;
 				}
-			} elsif ($_ =~ /^(patch|compile|install)script$/) {
+			} elsif ($_ =~ /^(patch|compile|install|test)script$/) {
 				# multiline field with specific accessor
 				my $value = $pkg->get_script($_);
 				if (length $value) {

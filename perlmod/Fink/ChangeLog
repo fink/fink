@@ -1,5 +1,11 @@
 2006-09-12  Matthew Sachs  <msachs@apple.com>
 
+	* Engine.pm: Show TestScript in dumpinfo.
+	* PkgVersion.pm: Fix for sources inside InfoTest.
+	* Validation.pm: Look inside InfoTest.
+
+2006-09-12  Matthew Sachs  <msachs@apple.com>
+
 	* Engine.pm: Allow maintainer mode with dumpinfo.
 	* PkgVersion.pm: Implement InfoTest.
 	* Validation.pm: Preliminary support for InfoTest.
