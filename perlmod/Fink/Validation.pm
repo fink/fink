@@ -401,7 +401,7 @@ sub validate_info_file {
 	return 0 unless keys %$properties;
 	$test_properties = &read_properties_var(
 		"InfoTest of $filename",
-		$properties->{infotest}, {remove_space => 1});
+		$properties->{infotest}, {remove_space => 1}) if $properties->{infotest};
 	
 	# determine the base path
 	if (defined $val_prefix) {
@@ -591,7 +591,7 @@ sub validate_info_file {
 
 	if (&validate_info_component($properties, "", $filename, $info_level) == 0) {
 		$looks_good = 0;
-	} elsif (&validate_info_component($test_properties, "", $filename, $info_level, 1) == 0) {
+	} elsif ($properties->{infotest} and &validate_info_component($test_properties, "", $filename, $info_level, 1) == 0) {
 		$looks_good = 0;
 	}
 

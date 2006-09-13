@@ -1,3 +1,7 @@
+2006-09-13  Matthew Sachs  <msachs@apple.com>
+
+	* Validation.pm: Fix validation for InfoTest-less packages.
+
 2006-09-12  Matthew Sachs  <msachs@apple.com>
 
 	* PkgVersion.pm: Support TestSource(N)-Checksum.
