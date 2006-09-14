@@ -49,8 +49,8 @@ my $handled = 0;
 $DEBUG && debug("command = $COMMAND, target = $TARGET, arguments = '@ARGV'");
 
 if ($TARGET eq "updatepod") {
-	my $perlarchdir   = shift;
 	my $perldirectory = shift;
+	my $perlarchdir   = shift;
 
 	my $perllocaldir = $PREFIX . '/lib/perl5' . $perldirectory . '/' . $perlarchdir;
 	debug("making $perllocaldir directory");

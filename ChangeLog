@@ -1,3 +1,9 @@
+2006-09-14  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* fink-instscripts.in: Fix order of arguments for the updatepod 
+	command. This is only used for the AutoDpkg field, which is not being
+	used right now. Fixes Bug #1433065
+
 2006-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* pathsetup.sh.in: POSIX /bin/sh does not support "echo -n"
