@@ -1671,8 +1671,9 @@ sub real_install {
 		} elsif ($item->[FLAG] == 1) {
 			push @requested, $pkgname;
 		}
-		if ($item->[OP] == $OP_REBUILD || $item->[OP] == $OP_BUILD || not $item->[PKGVER]->is_present()) {
-			unless ($item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed()) {
+		if ($item->[OP] == $OP_REBUILD || $item->[OP] == $OP_BUILD || 
+		    (not $item->[PKGVER]->is_present() and not($deb_from_binary_dist and $item->[PKGVER]->is_aptgetable()))) {
+			unless (($item->[OP] == $OP_INSTALL and $item->[PKGVER]->is_installed())) {
 				$willbuild = 1;
 				$to_be_rebuilt{$pkgname} = 1;
 
