@@ -2,6 +2,7 @@
 
 	* VERSION: Make fink HEAD always >> 0.25.x, since that has now
 	branched.
+	* REVISION: remove 10.4-transitional
 
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
