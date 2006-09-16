@@ -1,4 +1,4 @@
-Generated from $Fink: readme.en.xml,v 1.3 2004/03/12 09:25:16 michga Exp $
+Generated from $Fink: readme.en.xml,v 1.4 2006/09/16 23:17:53 dmrrsn Exp $
 
  Fink ReadMe
 =============
@@ -59,8 +59,8 @@ packages. It also has a complete list of available commands.
  Further Questions?
 --------------------
 If the documentation included here doesn't answer your question, stroll over
-to the Fink website at <http://fink.sourceforge.net/> and check out the Help
-page there: <http://fink.sourceforge.net/help/>. It will point you at the
+to the Fink website at <http://www.finkproject.org/> and check out the Help
+page there: <http://www.finkproject.org/help/>. It will point you at the
 other documentation that is available and sources for support if you need
 it.
 
@@ -70,10 +70,11 @@ a list of things you can do, like testing or creating packages.
 
  Staying Informed
 ------------------
-The project's website is at <http://fink.sourceforge.net/>.
+The project's website is at <http://www.finkproject.org/>.
 
 To be informed of new releases, go to
-<http://fink.sourceforge.net/lists/fink-announce.php> and subscribe to the
+http://www.finkproject.orgt/lists/fink-announce.php
+[http://www.finkproject.org/lists/fink-announce.php] and subscribe to the
 fink-announce mailing list. The list is moderated and low-traffic.
 
 
