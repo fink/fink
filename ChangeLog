@@ -1,6 +1,7 @@
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* fink.8.in, fink.conf.5.in, fink.info.in: fink.sourceforge.net -> www.finkproject.org
+	* fink.8.in: mention test suites and InfoTest in --maintainer
 
 2006-09-14  Christian Schaffner  <chris01@users.sourceforge.net>
 

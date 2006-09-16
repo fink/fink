@@ -83,7 +83,8 @@ and install phases.
 .It Cm -m, --maintainer
 Perform actions useful to package maintainers: run validation on
 the .info file before building and on the .deb after building a
-package; turn certain build-time warnings into fatal errors.
+package; turn certain build-time warnings into fatal errors; run the
+test suites as specified in the InfoTest field.
 .It Cm -l, --log-output
 Save a copy of the terminal output during each package building
 process. By default, the file is stored in
