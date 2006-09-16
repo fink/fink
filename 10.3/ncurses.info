@@ -23,7 +23,6 @@ PatchScript: <<
 BuildDepends: fink (>= 0.13.0), fink-prebinding
 Depends: libncurses5-shlibs (>= %v-%r)
 Replaces: libncurses5 (<< 5.4-20041023-4)
-AddShlibDeps: true
 Essential: true
 ConfigureParams: --without-ada --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs --enable-overwrite
 NoSetCFLAGS: true
@@ -51,7 +50,6 @@ InstallScript: <<
 SplitOff: <<
  Package: libncurses5-shlibs
  Depends: base-files
- AddShlibDeps: true
  Essential: true
  Files: <<
   lib/ncurses/libform.*.dylib
@@ -74,7 +72,6 @@ SplitOff2: <<
  BuildDependsOnly: true
  Conflicts: ncurses-dev
  Replaces: ncurses-dev, ncurses (<= 5.3-20031018-2)
- AddShlibDeps: true
  Files: lib/ncurses include lib/libcurses.dylib lib/libform.dylib lib/libmenu.dylib lib/libncurses.dylib lib/libpanel.dylib
  DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
  Description: Full-screen ascii drawing library

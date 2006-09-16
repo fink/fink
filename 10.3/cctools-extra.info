@@ -9,7 +9,6 @@ SourceDirectory: cctools-%v
 Patch: %n.patch
 Essential: yes
 Depends: base-files
-AddShlibDeps: true
 CompileScript: <<
 #!/bin/sh -ev
 
