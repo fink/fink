@@ -1,3 +1,8 @@
+2006-09-16  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: remove "Using the new 10.4 tree" message (not so new 
+	  any more!)
+
 2006-09-15  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* PkgVersion.pm: Don't rebuild .deb that just were downloaded if

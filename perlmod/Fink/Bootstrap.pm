@@ -188,7 +188,7 @@ if ($host =~ /^i386/) {
 
 my %transitional_message = (
   "-transitional" => "Using the old 10.4-transitional tree...",
-  "" => "Using the new 10.4 tree..."
+  "" => ""            # no need to mention the new one anymore
 );
 
 # if we are not using the transitional tree, and gcc-4.0 is present, it
