@@ -1,3 +1,7 @@
+2006-09-16  Dave Morrison  <drm@finkproject.org>
+
+	* apt.info, cctools-extra.info, debianutils.info, dpkg.info, fink-prebinding.info, gzip.info, ncurses.info, unzip.info: sync with stable
+
 2006-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* apt.info: POSIX /bin/sh does not support "echo -n"
