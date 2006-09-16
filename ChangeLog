@@ -1,4 +1,9 @@
-2006-09-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2006-09-16  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Make fink HEAD always >> 0.25.x, since that has now
+	branched.
+
+2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.25.0, a new release
 
