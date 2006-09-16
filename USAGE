@@ -1,4 +1,4 @@
-Generated from $Fink: usage.xml,v 1.14 2004/03/05 15:40:26 fingolfin Exp $
+Generated from $Fink: usage.xml,v 1.15 2006/09/16 23:30:44 dmrrsn Exp $
 
  Fink Usage
 ============
@@ -178,9 +178,9 @@ directly from CVS.
  Further Questions
 -------------------
 If your questions are not answered by this document, read the FAQ at the
-Fink website: <http://fink.sourceforge.net/faq/>. If that still doesn't
+Fink website: <http://www.finkproject.org/faq/>. If that still doesn't
 answer your questions, subscribe to the fink-users mailing list via
-<http://fink.sourceforge.net/lists/fink-users.php> and ask there.
+<http://www.finkproject.org/lists/fink-users.php> and ask there.
 
 
 EOF.
