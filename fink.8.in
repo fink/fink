@@ -567,7 +567,7 @@ for more information.
 .\"
 .\"
 .Sh HOMEPAGE
-http://fink.sourceforge.net/
+http://www.finkproject.org/
 .\"
 .\"
 .\" BUGS
@@ -595,7 +595,7 @@ The original author of
 is Christoph Pfisterer <cp@chrisp.de>.
 .br
 .Nm
-is developed and maintained by The Fink Project (http://fink.source-forge.net).
+is developed and maintained by The Fink Project (http://www.finkproject.org).
 .\"
 .\"
 .\" SEE ALSO

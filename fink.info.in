@@ -63,4 +63,4 @@ it. Binary package handling is then delegated to dpkg.
 <<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Homepage: http://fink.sourceforge.net/
+Homepage: http://www.finkproject.org/
