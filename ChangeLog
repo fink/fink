@@ -1,8 +1,8 @@
-2006-09-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* REVISION: remove 10.4-transitional
 
-2006-09-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.25.0, a new release
 
