@@ -28,6 +28,8 @@ use Fink::CLI qw(&prompt_selection &print_breaking);
 use Fink::Config qw($config $basepath $libpath);
 use Fink::Mirror;
 use Fink::Command qw(mkdir_p rm_f);
+use Fink::FinkVersion qw(&fink_version);
+
 
 use strict;
 use warnings;
@@ -331,7 +333,7 @@ sub download_cmd {
 
 	# check if we have curl
 	if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
-		$cmd = "curl -f -L";
+		$cmd = "curl -f -L -A 'fink/". Fink::FinkVersion::fink_version() ."'";
 		if ($config->verbosity_level() == 0) {
 			$cmd .= " -s -S";
 		}
@@ -351,7 +353,7 @@ sub download_cmd {
 	# if we would prefer wget (or didn't have curl available), check for wget
 	if ((!$cmd or $config->param_default("DownloadMethod") eq "wget") and
 			(-x "$basepath/bin/wget" or -x "/usr/bin/wget")) {
-		$cmd = "wget";
+		$cmd = "wget -U 'fink/". Fink::FinkVersion::fink_version() ."'";
 		if ($config->verbosity_level() >= 1) {
 			$cmd .= " --verbose";
 		} else {
