@@ -1,3 +1,8 @@
+2006-09-17  David Höhn <dmalloc@finkproject.org>
+
+	* NetAccess.pm: add User Agent that transfers fink/$version 
+	  when a curl or wget is in progress
+
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: remove "Using the new 10.4 tree" message (not so new 
