@@ -1,3 +1,10 @@
+2006-09-18  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Checksum/SHA1.pm: Fix bug in matching of SHA1 line if Digest::<foo> 
+	  isn't available (e.g. on 10.3). Fix proposed by AIDA Shinra on 
+	  the fink-devel mailing list on 2006-06-24.
+
+
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: remove "Using the new 10.4 tree" message (not so new 
