@@ -1044,10 +1044,11 @@ Options:
 %opts{keep-src,dry-run,help}
 
 HELPFORMAT
-		validate => sub {
-			!scalar(grep { $_ } values %modes) && $VALIDATE_HELP
-		},
 	);
+
+	# use legacy action if no explicit modes given
+	# (must not fail...this is how FinkCommander calls it)
+	$modes{srcs} = $modes{debs} = 1 if !scalar(grep { $_ } values %modes);
 	
 	$modes{srcs} && &cleanup_sources(%opts);
 	$modes{debs} && &cleanup_debs(%opts);
