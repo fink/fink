@@ -1,3 +1,8 @@
+2006-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document recent changes to 'fink cleanup'. Fix
+	formatting of pathnames. Update FILES for new indexer.
+
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Make fink HEAD always >> 0.25.x, since that has now
