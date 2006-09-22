@@ -1,3 +1,7 @@
+2006-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Add --all mode to 'fink cleanup'
+
 2006-09-20  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: cmd_cleanup with no flags acts as --debs --srcs

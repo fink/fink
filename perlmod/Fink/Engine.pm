@@ -1031,6 +1031,7 @@ sub cmd_cleanup {
 		[ 'dpkg-status'   => \$modes{dpkg},
 			"Remove uninstalled packages from dpkg status database." ],
 #		[ 'obsoletes'     => \$modes{obs},	"Uninstall obsolete packages." ],
+		[ 'all|a'         => \$modes{all},	"All of the above actions." ],
 		[ 'keep-src|k'    => \$opts{keep_old},
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
 		[ 'dry-run|d'     => \$opts{dryrun},
@@ -1038,7 +1039,7 @@ sub cmd_cleanup {
 	], \@_, helpformat => <<HELPFORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
-%opts{sources,debs,buildlocks,dpkg-status}
+%opts{sources,debs,buildlocks,dpkg-status,all}
 
 Options:
 %opts{keep-src,dry-run,help}
@@ -1050,11 +1051,11 @@ HELPFORMAT
 	# (must not fail...this is how FinkCommander calls it)
 	$modes{srcs} = $modes{debs} = 1 if !scalar(grep { $_ } values %modes);
 	
-	$modes{srcs} && &cleanup_sources(%opts);
-	$modes{debs} && &cleanup_debs(%opts);
-	$modes{bl}   && &cleanup_buildlocks(%opts, internally=>0);
-	$modes{obs}  && &cleanup_obsoletes(%opts);
-	$modes{dpkg} && &cleanup_dpkg_status(%opts);
+	($modes{srcs} || $modes{all}) && &cleanup_sources(%opts);
+	($modes{debs} || $modes{all}) && &cleanup_debs(%opts);
+	($modes{bl}   || $modes{all}) && &cleanup_buildlocks(%opts, internally=>0);
+	($modes{obs}  || $modes{all}) && &cleanup_obsoletes(%opts);
+	($modes{dpkg} || $modes{all}) && &cleanup_dpkg_status(%opts);
 }
 
 =item cleanup_*
