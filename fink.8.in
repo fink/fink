@@ -280,6 +280,8 @@ not installed
 latest version is installed
 .It (i)
 some version is installed, but a newer version is available
+.It *i*
+the version which is installed is more recent than the newest version currently available
 .It \ p
 a virtual package provided by a package that is installed
 .El
