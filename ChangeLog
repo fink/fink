@@ -1,3 +1,13 @@
+2006-09-24  Dave Morrison  <drm@finkproject.org>
+
+	* fink.8.in: Document *i* in 'fink list' output (as suggested by
+	Martin C)
+
+2006-09-21  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document recent changes to 'fink cleanup'. Fix
+	formatting of pathnames. Update FILES for new indexer.
+
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* REVISION: remove 10.4-transitional

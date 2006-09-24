@@ -280,6 +280,8 @@ not installed
 latest version is installed
 .It (i)
 some version is installed, but a newer version is available
+.It *i*
+the version which is installed is more recent than the newest version currently available
 .It \ p
 a virtual package provided by a package that is installed
 .El
@@ -454,7 +456,9 @@ website to see if a new version is available. It then downloads the package
 descriptions and updates the core packages, including
 .Nm
 itself. This command can upgrade to regular releases, but it can also
-setup your @PREFIX@/fink/dists directory tree for
+setup your
+.Pa @PREFIX@/fink/dists
+directory tree for
 .Xr cvs 1
 or
 .Xr rsync 1
@@ -494,7 +498,7 @@ Updates the
 database of debs in the specified trees.
 .It Cm cleanup Ar [mode(s) and options]
 Removes obsolete and temporary files. This can reclaim large amounts of
-disk space. One or more modes must be specified:
+disk space. One or more modes may be specified:
 .Bl -tag -width flag -offset indent -compact
 .It Cm --debs
 Delete .deb files (compiled binary package archives) corresponding to
@@ -509,11 +513,17 @@ Delete stale buildlock packages.
 .It Cm --dpkg-status
 Remove entries for packages that are not installed from the dpkg
 "status" database.
+.It Cm --all
+All of the above modes.
 .El
-In addition, the following options may be used:
+If no mode is specified,
+.Ar --debs --sources
+is the default action. In addition, the following options may be used:
 .Bl -tag -width flag -offset indent -compact
 .It Cm -k,--keep-src
-Move old source files to @PREFIX@/src/old/ instead of deleting them.
+Move old source files to
+.Pa @PREFIX@/src/old/
+instead of deleting them.
 .It Cm -d,--dry-run
 Print the names of the files that would be deleted, but do not
 actually delete them.
@@ -550,9 +560,9 @@ run-time (installation) dependencies of the listed package(s).
 .\"
 .\"
 .Sh FILES
-.Pa @PREFIX@/var/lib/fink/fink.db
+.Pa @PREFIX@/var/lib/fink
 .Bd -filled -offset indent -compact
-Package cache database. Don't try to edit this manually, instead update it using
+Package cache databases. Don't try to edit them manually--instead update using
 .Cm fink index.
 .Ed
 .Pp
