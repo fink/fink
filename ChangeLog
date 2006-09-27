@@ -1,3 +1,7 @@
+2006-09-26  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document -N flag for 'fink list'.
+
 2006-09-24  Dave Morrison  <drm@finkproject.org>
 
 	* fink.8.in: Document *i* in 'fink list' output (as suggested by
