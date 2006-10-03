@@ -709,6 +709,8 @@ sub validate_info_file {
 	if (not (defined $value and length $value)) {
 		print "Error: No package description supplied. ($filename)\n";
 		$looks_good = 0;
+	} elsif ($value =~ /^\s*\[obsolete(?![a-z])/i) {
+		# "obsolete" packages can have long names
 	} elsif (length($value) > 60) {
 		print "Error: Length of package description exceeds 60 characters. ($filename)\n";
 		$looks_good = 0;

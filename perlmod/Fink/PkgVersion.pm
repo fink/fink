@@ -4967,6 +4967,26 @@ sub built_with_essential {
 	return scalar(grep { $_->is_essential } $self->get_splitoffs(1, 1));
 }
 
+=item is_obsolete
+
+  my $bool = $pv->is_obsolete;
+
+Returns true if the package is marked as obsolete. That status is
+indicated by a Description that begins with the word "[OBSOLETE" (any
+case)
+
+=cut
+
+sub is_obsolete {
+	my $self = shift;
+
+	return 0 unless $self->has_param('Description');  # assume not obsolete
+
+	my $desc  = $self->param('Description');
+	return $desc =~ /^\s*\[obsolete(?![a-z])/i;
+}
+
+
 =item info_level
 
   my $info_level = $pv->info_level;

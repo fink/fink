@@ -1,5 +1,14 @@
 2006-10-03  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: implement is_obsolete method based on Description
+	field matching /^[obsolete/i
+	* Validation.pm: Allow Description to begin with /^[obsolete/i and
+	disable other Description tests if so
+	* Engine.pm: Enable --obsoletes --dry-run mode to 'fink cleanup',
+	which lists installed is_obsolete packages
+
+2006-10-03  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: TestScript only exists for parent and only in -m
 	mode; move Type:perl 'make test' from CompileScript to TestScript
 

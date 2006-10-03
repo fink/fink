@@ -1030,7 +1030,7 @@ sub cmd_cleanup {
 		[ 'buildlocks|bl' => \$modes{bl},	"Delete stale buildlock packages." ],
 		[ 'dpkg-status'   => \$modes{dpkg},
 			"Remove uninstalled packages from dpkg status database." ],
-#		[ 'obsoletes'     => \$modes{obs},	"Uninstall obsolete packages." ],
+		[ 'obsoletes'     => \$modes{obs},	"Uninstall obsolete packages." ],
 		[ 'all|a'         => \$modes{all},	"All of the above actions." ],
 		[ 'keep-src|k'    => \$opts{keep_old},
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
@@ -1411,7 +1411,44 @@ If true, don't actually remove them.
 sub cleanup_obsoletes {
 	my %opts = (dryrun => 0, @_);
 
-	print "cleanup --obsoletes is not yet available.\n";
+	my %obsolete_pkgs = ();  # NAME=>PkgVersion-object
+	my ($maxlen_name, $maxlen_vers) = (0, 0);
+
+	# start with all packages in dpkg status db (likely to be
+	# installed, so more efficient than starting with package
+	# database) as ref to hash of NAME=>{fields hash}
+	my $status_pkgs = Fink::Status->list();
+ 
+	# get installed version of each as hash of NAME=>VERSION
+	my %installed = map { $_ => Fink::Status->query_package($_) } keys %$status_pkgs;
+
+	# find the obsolete ones
+	Fink::Package->require_packages();
+	foreach my $name (sort keys %installed) {
+		my $vers = $installed{$name};  # actually %v-%r
+		next unless defined $vers && length $vers;
+
+		# find PkgVersion for this version of the package
+		my $po = Fink::Package->package_by_name($name);
+		my $vo = $po->get_version($vers);
+
+		next unless $vo->is_obsolete();
+
+		# track longest package name and version string
+		$maxlen_name = length $name if length $name > $maxlen_name;
+		$maxlen_vers = length $vers if length $vers > $maxlen_vers;
+
+		$obsolete_pkgs{$name} = $vo;
+	}
+
+	foreach my $name (sort keys %obsolete_pkgs) {
+		my $vo = $obsolete_pkgs{$name};
+		printf "   %${maxlen_name}s  %${maxlen_vers}s  %s\n", $name, $vo->get_fullversion(), $vo->get_shortdescription(100000);
+	}
+
+	return 0 if $opts{dryrun};
+
+	print "cleanup --obsoletes only available in --dry-run mode so far.\n";
 	return 1;
 }
 
