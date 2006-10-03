@@ -4131,7 +4131,7 @@ EOF
 	### daemonic service file
 
 	if ($self->has_param("DaemonicFile")) {
-		$daemonicname = $self->param_default("DaemonicName", $self->get_name());
+		$daemonicname = $self->param_default_expanded("DaemonicName", $self->get_name());
 		$daemonicname .= ".xml";
 		$daemonicfile = "$destdir$basepath/etc/daemons/".$daemonicname;
 

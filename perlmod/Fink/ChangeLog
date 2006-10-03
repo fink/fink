@@ -1,3 +1,7 @@
+2006-10-03  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Remember to percent-expand DaemonicName
+
 2006-09-30  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.4.8
