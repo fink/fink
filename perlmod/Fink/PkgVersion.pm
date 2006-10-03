@@ -989,9 +989,6 @@ sub get_script {
 			$default_script =
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
-			unless ($self->param_boolean("NoPerlTests")) {
-				$default_script .= "make test\n";
-			}
 		} elsif ($self->is_type('ruby')) {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$default_script =
@@ -1032,9 +1029,18 @@ sub get_script {
 		} else {
 			$default_script = "make install prefix=\%i\n";
 		} 
+
 	} elsif($field eq 'testscript') {
+		return "" unless Fink::Config::get_option("maintainermode");  # only test in -m mode
+		return "" if $self->has_parent;  # shortcut: SplitOffs do not test
+		return "" if $self->is_type('dummy');  # Type:dummy never test
+
 		$field_value = $self->param_default($field, '%{default_script}');
 		$default_script = "";
+		if ($self->is_type('perl') && ! $self->param_boolean("NoPerlTests")) {
+			$default_script = "make test || exit 2\n";
+		}
+
 	} else {
 		# should never get here
 		die "Invalid script field for get_script: $field\n";
