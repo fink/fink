@@ -2588,10 +2588,13 @@ sub check_bdo_violations {
 	# have we been here? (even more efficient than bdo_warning_cache!)
 	return $self->{_BDO_violations} if exists $self->{_BDO_violations};
 
+	$self->{_BDO_violations} = 0;
+
+	# upgrade-compatibility packages should allow renaming of BDO packages
+	return $self->{_BDO_violations} if $self->is_obsolete();
+
 	# test all alternatives
 	my @atoms = split /\s*[\,|]\s*/, $self->pkglist_default('Depends');
-
-	$self->{_BDO_violations} = 0;
 
 	foreach my $depname (@atoms) {
 		$depname =~ s/\s*\(.*\)//;
