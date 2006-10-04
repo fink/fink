@@ -1039,7 +1039,7 @@ sub cmd_cleanup {
 	], \@_, helpformat => <<HELPFORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
-%opts{sources,debs,buildlocks,dpkg-status,all}
+%opts{debs,sources,buildlocks,dpkg-status,obsoletes,all}
 
 Options:
 %opts{keep-src,dry-run,help}
