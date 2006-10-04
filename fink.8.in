@@ -515,6 +515,8 @@ Delete stale buildlock packages.
 .It Cm --dpkg-status
 Remove entries for packages that are not installed from the dpkg
 "status" database.
+.It Cm --obsoletes
+Attempt to uninstall all packges that are obsolete.
 .It Cm --all
 All of the above modes.
 .El
