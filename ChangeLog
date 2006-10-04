@@ -1,5 +1,9 @@
 2006-10-04  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in: Rename the flag to "--obsolete-packages"
+
+2006-10-04  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.8.in: Document --obsoletes mode for 'fink cleanup'.
 
 2006-09-26  Daniel Macks  <dmacks@netspace.org>

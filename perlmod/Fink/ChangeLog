@@ -1,4 +1,8 @@
-2006-10-03  Daniel Macks  <dmacks@netspace.org>
+2006-10-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Rename the flag to "--obsolete-packages"
+
+2006-10-04  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Finish implementing 'fink cleanup --obsoletes'
 

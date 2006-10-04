@@ -1024,22 +1024,22 @@ sub cmd_cleanup {
 	my(%opts, %modes);
 	
 	get_options('cleanup', [
-		[ 'debs'          => \$modes{debs},
+		[ 'debs'              => \$modes{debs},
 			"Delete .deb (compiled binary package) files." ],
-		[ 'sources|srcs'  => \$modes{srcs},	"Delete source files." ],
-		[ 'buildlocks|bl' => \$modes{bl},	"Delete stale buildlock packages." ],
-		[ 'dpkg-status'   => \$modes{dpkg},
+		[ 'sources|srcs'      => \$modes{srcs},	"Delete source files." ],
+		[ 'buildlocks|bl'     => \$modes{bl},	"Delete stale buildlock packages." ],
+		[ 'dpkg-status'       => \$modes{dpkg},
 			"Remove uninstalled packages from dpkg status database." ],
-		[ 'obsoletes'     => \$modes{obs},	"Uninstall obsolete packages." ],
-		[ 'all|a'         => \$modes{all},	"All of the above actions." ],
-		[ 'keep-src|k'    => \$opts{keep_old},
+		[ 'obsolete-packages' => \$modes{obs},	"Uninstall obsolete packages." ],
+		[ 'all|a'             => \$modes{all},	"All of the above actions." ],
+		[ 'keep-src|k'        => \$opts{keep_old},
 			"Move old source files to $basepath/src/old/ instead of deleting them." ],
-		[ 'dry-run|d'     => \$opts{dryrun},
+		[ 'dry-run|d'         => \$opts{dryrun},
 			"Print the items that would be removed, but do not actually remove them." ],
 	], \@_, helpformat => <<HELPFORMAT,
 %intro{[mode(s) and options]}
 One or more of the following modes must be specified:
-%opts{debs,sources,buildlocks,dpkg-status,obsoletes,all}
+%opts{debs,sources,buildlocks,dpkg-status,obsolete-packages,all}
 
 Options:
 %opts{keep-src,dry-run,help}
