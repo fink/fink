@@ -1441,15 +1441,28 @@ sub cleanup_obsoletes {
 		$obsolete_pkgs{$name} = $vo;
 	}
 
+	my $cmd = dpkg_lockwait() . ' --purge ';
+	$cmd .= '--dry-run ' if $opts{dryrun};
+
+	my @in_use = ();  # package names that still have installed dependants
+
 	foreach my $name (sort keys %obsolete_pkgs) {
 		my $vo = $obsolete_pkgs{$name};
 		printf "   %${maxlen_name}s  %${maxlen_vers}s  %s\n", $name, $vo->get_fullversion(), $vo->get_shortdescription(100000);
+		
+		push @in_use, $name if &execute($cmd . $name, ignore_INT => 1);
 	}
 
-	return 0 if $opts{dryrun};
+	if (@in_use) {
+		my $err = 'The following ' . scalar(@in_use) . ' obsolete package(s) ';
+		$err .= ($opts{dryrun} ? 'would not be able to' : 'could not');
+		$err .= ' be removed because they are still dependencies of installed packages:';
+			
+		&print_breaking("\nWARNING: $err");
+		&print_breaking(join(" ",@in_use), 1, " ");
+	}
 
-	print "cleanup --obsoletes only available in --dry-run mode so far.\n";
-	return 1;
+	return (@in_use > 0);
 }
 
 =item cleanup_dpkg_status
