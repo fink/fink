@@ -1448,7 +1448,7 @@ sub cleanup_obsoletes {
 
 	foreach my $name (sort keys %obsolete_pkgs) {
 		my $vo = $obsolete_pkgs{$name};
-		printf "   %${maxlen_name}s  %${maxlen_vers}s  %s\n", $name, $vo->get_fullversion(), $vo->get_shortdescription(100000);
+		printf "   %${maxlen_name}s  %${maxlen_vers}s  %s\n", $name, $vo->get_fullversion(), $vo->get_shortdescription(-1);
 		
 		push @in_use, $name if &execute($cmd . $name, ignore_INT => 1);
 	}

@@ -1,5 +1,12 @@
 2006-10-04  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Make format_oneline and get_shortdescription not
+	truncate if passed a negative length.
+	* Engine.pm: Use negative-length instead of "large" value for
+	get_shortdescription.
+
+2006-10-04  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Issue a warning if a package has a dependency on
 	an obsolete package
 

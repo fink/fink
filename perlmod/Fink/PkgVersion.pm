@@ -1824,7 +1824,7 @@ sub format_oneline {
 	$s =~ s/^\s+//g;
 	$s =~ s/\s+$//g;
 
-	if ($maxlen && length($s) > $maxlen) {
+	if ($maxlen > 0 && length($s) > $maxlen) {
 		$s = substr($s, 0, $maxlen-3)."...";
 	}
 
@@ -1837,9 +1837,9 @@ sub format_oneline {
 	my $desc = $self->get_shortdescription $limit;
 
 Returns the Description field for the PkgVersion object or a standard
-dummy string if that field does not exist. The value is truncated to
-$limit chars if $limit is passed, otherwise it it truncated to 75
-chars.
+dummy string if that field does not exist. The value is not truncated
+if $limit is negative. It is truncated to $limit chars if $limit is
+passed, otherwise it it truncated to 75 chars.
 
 =cut
 
