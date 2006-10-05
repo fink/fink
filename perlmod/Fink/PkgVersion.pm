@@ -2279,11 +2279,13 @@ sub resolve_depends {
 		$oper = "dependency";
 	}
 
-	# check for BuildDependsOnly violations
+	# check for BuildDependsOnly and obsolete-dependency violations
+	# if we will be building the package from source
 	if ($include_build) {
 		my $violated = 0;
 		foreach my $pkg ($self->get_splitoffs(1,1)) {
 			$violated = 1 if $pkg->check_bdo_violations();
+			$violated = 1 if $pkg->check_obsolete_violations();
 		}
 		if ($violated and Fink::Config::get_option("maintainermode")) {
 			die "Please correct the above problems and try again!\n";
@@ -2625,6 +2627,71 @@ sub check_bdo_violations {
 }
 
 # check_bdo_violations has lexical private variables
+}
+
+=item check_obsolete_violations
+
+	my $bool = $self->check_obsolete_violations;
+
+Check if any packages in the dependencies of this package are
+"obsolete". If any violations found, warn about each such
+case and return true. If not, return false.
+
+All providers of each package name are checked and all alternatives
+are tested. Only one warning is issued for each %n:DEP_FIELD:%n'
+combination over the lifetime of the fink process.
+
+=cut
+
+{
+	# track which BuildDependsOnly violation warnings we've issued
+	my %obs_warning_cache = ();  # hash of "$pkg\0$deptype\0$dependency"=>1
+
+sub check_obsolete_violations {
+	my $self = shift;
+
+	# have we been here? (even more efficient than obs_warning_cache!)
+	return $self->{_obsolete_violations} if exists $self->{_obsolete_violations};
+
+	$self->{_obsolete_violations} = 0;
+
+	foreach my $field (qw/ BuildDepends Depends Suggests Recommends /) {
+
+		# test all alternatives
+		my @atoms = split /\s*[\,|]\s*/, $self->pkglist_default($field);
+
+		foreach my $depname (@atoms) {
+			$depname =~ s/\s*\(.*\)//;
+			my $package = Fink::Package->package_by_name($depname);
+			next unless defined $package;  # skip if no satisfiers
+			foreach my $dependent ($package->get_all_providers()) {
+				if ($dependent->is_obsolete()) {
+					$self->{_obsolete_violations} = 1;
+
+					if ($config->verbosity_level() > 1) {
+						# whine iff this violation hasn't been whined-about before
+						my $cache_key = $self->get_name() . "\0" . $field . "\0" . $depname;
+						if (!$obs_warning_cache{$cache_key}++) {
+							my $dep_providername = $dependent->get_name();
+							print "\nWARNING: The package " . $self->get_name() . " $field";
+							print " on" if $field =~ /Depends/;
+							print " $depname";
+							if ($dep_providername ne $depname) {
+								# virtual pkg
+								print "\n\t (which is provided by $dep_providername)";
+							}
+							print ",\n\t but $depname is an obsolete package.\n\n";
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return $self->{_obsolete_violations};
+}
+
+# check_obsolete_violations has lexical private variables
 }
 
 =item match_package

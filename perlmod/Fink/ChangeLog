@@ -1,5 +1,10 @@
 2006-10-04  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Issue a warning if a package has a dependency on
+	an obsolete package
+
+2006-10-04  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: Rename the flag to "--obsolete-packages"
 
 2006-10-04  Daniel Macks  <dmacks@netspace.org>
