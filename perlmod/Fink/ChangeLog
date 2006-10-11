@@ -1,3 +1,7 @@
+2006-10-11  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Add POD for lots of functions.
+
 2006-10-04  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Make format_oneline and get_shortdescription not

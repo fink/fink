@@ -53,7 +53,67 @@ our @EXPORT_OK;
 END { }				# module clean-up code here (global destructor)
 
 
-### check for new Fink release
+=head1 NAME
+
+Fink::SelfUpdate - download package descriptions from server
+
+=head1 DESCRIPTION
+
+=head2 Methods
+
+=over 4
+
+=item check
+
+  Fink::SelfUpdate::check($method);
+
+
+This is the main entry point for the 'fink selfupdate*' commands. The
+local collection of package descriptions is updated according to one
+of the following methods:
+
+=over 4
+
+=item "point"
+
+A tarball of the latest Fink binary installer package collection is
+downloaded from the fink website.
+
+=item "cvs"
+
+=item "rsync"
+
+"cvs" or "rsync" protocols are used to syncronize with a remote
+server.
+
+=back
+
+The optional $method parameter specifies a number indicating the
+selfupdate method to use:
+
+=over 4
+
+=item 0 (or undefined or omitted)
+
+Use the current method
+
+=item 1
+
+Use the cvs method
+
+=item 2
+
+Use the rsync method
+
+=back
+
+The current method is specified by name in the SelfUpdateMethod field
+in the F<fink.conf> preference file. If there is no current method
+preference and a specific $method is not given, the user is prompted
+to select a method. If a $method is given that is not the same as the
+current method preference, fink.conf is updated according to $method.
+
+=cut
 
 sub check {
 	my $useopt = shift || 0;
@@ -194,8 +254,16 @@ sub check {
 	}
 }
 
-### die if the passed selfupdate method requires dev-tools be
-### installed but dev-tools is not installed
+=item need_devtools
+
+  Fink::SelfUpdate::need_devtools($method);
+
+If selfupdating using the given $method (passed by name) requires
+components of Apple dev-tools (xcode) instead of just standard
+components of OS X, check that the "dev-tools" virtual package is
+installed. If it is required for the $method but is not present, die.
+
+=cut
 
 sub need_devtools {
 	my $method = shift;
@@ -517,12 +585,40 @@ sub do_tarball {
 	}
 }
 
-### last steps: update apt indices, reread descriptions, update fink, re-exec
+=item do_finish
+
+  Fink::SelfUpdate::do_finish;
+
+Perform some final actions after updating the package descriptions collection:
+
+=over 4
+
+=item 1.
+
+Update apt indices
+
+=item 2.
+
+Reread package descriptions (update local package database)
+
+=item 3.
+
+If a new version of the "fink" package itself is available, install
+that new version.
+
+=item 4.
+
+If a new fink was installed, relaunch this fink session using it.
+Otherwise, do some more end-of-selfupdate tasks (see L<finish>).
+
+=back
+
+=cut
 
 sub do_finish {
 	my $package;
 
-	# update apt-get's database
+	# update the apt-get database
 	Fink::Engine::aptget_update()
 		or &print_breaking("Running 'fink scanpackages' may fix indexing problems.");
 
@@ -550,7 +646,14 @@ sub do_finish {
 	}
 }
 
-### finish self-update (after upgrading fink itself and re-exec)
+=item finish
+
+  Fink::SelfUpdate::finish;
+
+Update all the packages that are part of fink itself or that have an
+Essential or other high importance.
+
+=cut
 
 sub finish {
 	my (@elist);
@@ -581,6 +684,8 @@ sub finish {
 					"using commands like 'fink update-all'.");
 	print "\n";
 }
+
+# apparently-unused function
 
 sub rsync_check {
 	&do_direct_rsync();
@@ -733,6 +838,9 @@ if (-f "$basepath/fink/$dist/VERSION") {
 	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
 }
 
+=back
+
+=cut
 
 ### EOF
 1;
