@@ -1,10 +1,11 @@
-Timestamp: 2005-10-15
+Timestamp: 2005-10-16
 Primary: rsync://master.us.finkmirrors.net/finkinfo/
 nam-US: rsync://sfo.ca.us.finkmirrors.net/finkinfo/
 nam-US: rsync://bdl.ct.us.finkmirrors.net/finkinfo/
 nam-US: rsync://msn.wi.us.finkmirrors.net/finkinfo/
 nam-US:	rsync://dkx.tn.us.finkmirrors.net/finkinfo/
 nam-US: rsync://sbn.in.us.finkmirrors.net/finkinfo/
+eur: rsync://bru.be.eu.finkmirrors.net/finkinfo/
 eur-IE: rsync://dub.ie.eu.finkmirrors.net/finkinfo/
 eur-BE: rsync://bru.be.eu.finkmirrors.net/finkinfo/
 eur-PT: rsync://lis.pt.eu.finkmirrors.net/finkinfo/
