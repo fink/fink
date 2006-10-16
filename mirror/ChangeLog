@@ -1,3 +1,8 @@
+2006-10-16  Dave Morrison  <drm@finkproject.org>
+
+	* master, rsync: restored bru.be.eu at request of european users
+	* VERSION: releasing version 0.25.1.2 of fink-mirrors
+
 2006-10-15  Dave Morrison  <drm@finkproject.org>
 
 	* master, rsync: removed uox.ms.us and bru.be.eu because they do not 
