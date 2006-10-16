@@ -2,6 +2,7 @@
 
 	* master, rsync: removed uox.ms.us and bru.be.eu because they do not 
 	work and we can no longer contact their maintainers
+	* VERSION: releasing version 0.25.1.1 of fink-mirrors
 
 2006-09-23  Dave Morrison  <drm@finkproject.org>
 
