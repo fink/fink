@@ -1,3 +1,7 @@
+2006-10-16  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Document -N flag for 'fink list'.
+
 2006-10-14  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.25.1, a bug-fix 

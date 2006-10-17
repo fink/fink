@@ -309,6 +309,8 @@ Show only those packages which are out of date.
 Show only packages which are up to date.
 .It Cm -n,--notinstalled
 Show packages which are not currently installed.
+.It Cm -N,--newer
+Show packages whose installed version is newer than anything fink knows about.
 .It Cm -s expr,--section=expr
 Show only packages in the sections matching the regular expression expr.
 .It Cm -m expr,--maintainer=expr
