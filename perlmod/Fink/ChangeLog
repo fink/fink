@@ -1,3 +1,8 @@
+2006-10-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Remove all obsolete pkgs at once to avoid blockage by
+	inter-obsolete dependencies
+
 2006-10-11  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Add POD for lots of functions.
