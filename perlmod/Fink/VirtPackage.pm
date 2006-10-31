@@ -106,7 +106,7 @@ sub initialize {
 	my ($hash);
 	my ($cctools_version, $cctools_single_module, $growl_version);
 
-=item kernel
+=item "kernel"
 
 This test checks for the kernel name and version by running the system
 uname(1) call.  This should *always* exist.
@@ -128,7 +128,7 @@ END
 	$hash->{compilescript} = &gen_compile_script($hash);
 	$self->{$hash->{package}} = $hash;
 	
-=item macosx
+=item "macosx"
 
 This test checks for the Mac OS X version by running the sw_vers(1)
 command and parsing the output.  It should exist on all Mac OS X
@@ -159,7 +159,7 @@ END
 	$hash->{compilescript} = &gen_compile_script($hash);
 	$self->{$hash->{package}} = $hash;
 
-=item 64bit-cpu
+=item "64bit-cpu"
 
 The package is present when the CPU is 64bit-capable.
 
@@ -189,7 +189,7 @@ END
 	$hash->{version} = '0-1';
 	$self->{$hash->{package}} = $hash;
 
-=item cups-dev
+=item "cups-dev"
 
 This package represents and existing installation of the CUPS
 headers in /usr/include/cups.
@@ -229,7 +229,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item system-perl
+=item "system-perl"
 
 This package represents the version of the perl in /usr/bin.  It
 is determined by parsing the $^V variable in a perl script.  It
@@ -346,7 +346,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item system-javaI<XX>
+=item "system-javaI<XX>"
 
 This package represents an installed version of Apple's Java.
 It is considered present if the
@@ -390,7 +390,7 @@ END
 				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 				$latest_java = $dir unless (defined $latest_java);
 
-=item system-javaI<XX>-dev
+=item "system-javaI<XX>-dev"
 
 This package represents an installed version of Apple's Java SDK.
 It is considered present if the
@@ -433,7 +433,7 @@ END
 		closedir(DIR);
 	}
 
-=item system-java
+=item "system-java"
 
 This is a convenience package that represents the latest Java version
 that is considered installed, based on the previous tests.
@@ -449,7 +449,7 @@ that is considered installed, based on the previous tests.
 		$self->{$hash->{package}} = $hash;
 	}
 
-=item system-java-dev
+=item "system-java-dev"
 
 This is a convenience package that represents the latest Java SDK
 version that is considered installed, based on the previous tests.
@@ -465,7 +465,7 @@ version that is considered installed, based on the previous tests.
 		$self->{$hash->{package}} = $hash;
 	}
 
-=item system-java3d
+=item "system-java3d"
 
 This package represents the Java3D APIs available as a separate download
 from Apple.  It is considered present if the j3dcore.jar file exists in
@@ -505,7 +505,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item system-javaai
+=item "system-javaai"
 
 This package represents the JavaAdvancedImaging APIs available as a
 separate download from Apple.  It is considered present if the jai_core.jar
@@ -545,7 +545,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item system-sdk-*
+=item "system-sdk-*"
 
 These packages represent the SDKs available in /Developer/SDKs, available
 as part of the XCode tools.
@@ -608,7 +608,7 @@ END
 		}
 	}
 
-=item cctools-I<XXX>
+=item "cctools-I<XXX>"
 
 This package represents the compiler tools provided by Apple.  It is
 considered present if either I</usr/bin/what /usr/bin/ld> or
@@ -659,7 +659,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item cctools-single-module
+=item "cctools-single-module"
 
 This package represents whether the cctools linker is capable
 of using the -single_module flag.  It is considered present
@@ -712,7 +712,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item gcc-*
+=item "gcc-*"
 
 The GCC virtual packages exist based on gcc* commands
 in /usr/bin.  They are considered present based on
@@ -788,7 +788,7 @@ the successful execution of "gcc --version".
 		}
 	}
 
-=item broken-gcc
+=item "broken-gcc"
 
 This package represents broken versions of the GCC compiler
 as shipped by Apple.  Currently it checks for the XCode 1.5
@@ -834,7 +834,7 @@ END
 
 	$self->{$hash->{package}} = $hash;
 
-=item dev-tools
+=item "dev-tools"
 
 This package represents a developer suite of command-line compilers
 and related programs, for example, Apple's DevTools (OS X <= 10.2) or
@@ -875,7 +875,7 @@ END
 
 	$self->{$hash->{package}} = $hash;
 
-=item gimp-print-shlibs
+=item "gimp-print-shlibs"
 
 This package represents the GIMP printing libraries
 provided by Apple on Mac OS X 10.3 and higher.  They
@@ -905,7 +905,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item gimp-print7-shlibs
+=item "gimp-print7-shlibs"
 
 This package represents the GIMP printing libraries
 provided by Apple on Mac OS X 10.4 and higher.  They
@@ -1048,7 +1048,7 @@ END
 				}
 				print STDERR "missing\n" if ($options{debug} and $found_xserver == 0);
 
-=item system-xfree86-shlibs
+=item "system-xfree86-shlibs"
 
 This package represents the shared libraries from an
 X11 installation (be it XFree86, X.org, Apple's X11,
@@ -1061,7 +1061,7 @@ libX11.*.dylib exists.
 				print STDERR "  - system-xfree86-shlibs provides x11-shlibs\n" if ($options{debug});
 				push(@{$provides->{'system-xfree86-shlibs'}}, 'x11-shlibs');
 
-=item system-xfree86
+=item "system-xfree86"
 
 This package represents an X11 implementation up to
 and including the X server.  It is considered present
@@ -1074,7 +1074,7 @@ if an X server is found.
 					push(@{$provides->{'system-xfree86'}}, 'xserver', 'x11');
 				}
 
-=item system-xfree86-dev
+=item "system-xfree86-dev"
 
 This package represents the development headers and
 libraries for X11.  It is considered present if the
@@ -1096,7 +1096,7 @@ of extra virtual packages.
 
 =over
 
-=item libgl and libgl-shlibs
+=item "libgl" and "libgl-shlibs"
 
 These packages represent the existence of the OpenGL
 libraries.  They are considered present if libGL.1.dylib
@@ -1112,7 +1112,7 @@ is found.
 					push(@{$provides->{'system-xfree86'}}, 'libgl');
 				}
 
-=item libgl-dev
+=item "libgl-dev"
 
 This package represents the existence of the OpenGL
 development headers and libraries.  It is considered
@@ -1125,7 +1125,7 @@ present if GL/gl.h and libGL.dylib are found.
 					push(@{$provides->{'system-xfree86-dev'}}, 'libgl-dev');
 				}
 
-=item xftI<X>-shlibs
+=item "xftI<X>-shlibs"
 
 This package represents the shared libraries for
 the modern font API for X.  It currently creates
@@ -1141,7 +1141,7 @@ libXft.[version].dylib library if it is found.
 					}
 				}
 
-=item xftI<X> and xftI<X>-dev
+=item "xftI<X>" and "xftI<X>-dev"
 
 These packages represent the development headers and
 library for the Xft font API.  It is considered present
@@ -1164,7 +1164,7 @@ on the version the symlink points to.
 					}
 				}
 
-=item fontconfigI<X>-shlibs
+=item "fontconfigI<X>-shlibs"
 
 This package reprents the font configuration API for
 X11.  It is considered present if libfontconfig.*.dylib
@@ -1177,7 +1177,7 @@ is found.
 					push(@{$provides->{'system-xfree86-shlibs'}}, 'fontconfig1-shlibs');
 				}
 
-=item fontconfigI<X> and fontconfigI<X>-dev
+=item "fontconfigI<X>" and "fontconfigI<X>-dev"
 
 These packages represent the development headers and
 library for the X11 font configuration API.  It is
@@ -1196,7 +1196,7 @@ considered present if libXft.dylib exists.
 					push(@{$provides->{'system-xfree86'}}, 'fontconfig1');
 				}
 
-=item rman
+=item "rman"
 
 This package represents the X11-based man-page reader.
 It is considered present if /usr/X11R6/bin/rman exists.
@@ -1211,7 +1211,7 @@ It is considered present if /usr/X11R6/bin/rman exists.
 					print STDERR "missing\n" if ($options{debug});
 				}
 
-=item xfree86-base-threaded and xfree86-base-threaded-shlibs
+=item "xfree86-base-threaded" and "xfree86-base-threaded-shlibs"
 
 These packages represent whether libXt has support for threading.
 It is considered present if the pthread_mutex_lock symbol exists
@@ -1264,7 +1264,7 @@ in the library.
 		}
 	}
 
-=item Growl
+=item "growl"
 
 This package represents the Growl notification system.
 For more info on this package see http://growl.info/.
