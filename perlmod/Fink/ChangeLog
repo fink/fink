@@ -1,5 +1,9 @@
 2006-11-14  Matthew Sachs  <msachs@apple.com>
 
+	* Config.pm: Fix for --tests with no value.
+
+2006-11-14  Matthew Sachs  <msachs@apple.com>
+
 	* Config.pm: Add --tests, --validate options.
 	* Engine.pm: Ditto.
 	* PkgVersion.pm: Ditto, plus fix for uninitialized value warning in

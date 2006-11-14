@@ -214,9 +214,36 @@ Parse the global command-line options for Fink.
 my %option_defaults = (
 	map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
 		build_as_nobody maintainermode showversion use_binary) ),
+	map( { $_ => "" } qw(tests validate) ),
 	map ( { $_ => [] } qw(include_trees exclude_trees) ),
 	map( { $_ => -1 } qw(use_binary) ),
 );
+
+sub set_checking_opts {
+	my($opts, $arg, $val) = @_;
+	if($arg eq "maintainer") {
+		$opts->{maintainermode} = 1;
+		$opts->{tests} = "on";
+		$opts->{validate} = "on";
+	} else {
+		$val = lc($val) || "";
+		if($val ne "on" and $val ne "warn" and $val ne "off") {
+			# We didn't really get an argument.
+			# Because our argument is optional, if we are
+			# the last option specified, the fink subcommand
+			# is misinterpreted as our argument.  So, if you do:
+			#	fink --tests dumpinfo foo.info
+			# it will think that dumpinfo is the argument to
+			# tests.  So, if we get an argument that isn't one
+			# of our valid argument values, punt it back to @ARGV.
+			unshift @ARGV, $val if $val;
+			$opts->{$arg} = "on";
+		} else {
+			$val = "" if $val eq "off";
+			$opts->{$arg} = $val;
+		}
+	}
+}
 
 sub parse_options {
 	my $class = shift;
@@ -238,7 +265,9 @@ sub parse_options {
 			'download pre-compiled packages from the binary distribution '
 			. 'if available'	],
 		[ 'build-as-nobody'    => \$opts{build_as_nobody},	'see man page'	],
-		[ 'maintainer|m'       => \$opts{maintainermode},	'see man page'	],
+		[ 'maintainer|m'       => sub {set_checking_opts(\%opts, @_);}, 'see man page'	],
+		[ 'tests:s'            => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],
+		[ 'validate:s'         => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],
 		[ 'log-output|l!'      => \$opts{log_output},		'see man page'	],
 		[ 'logfile=s'          => \$opts{logfile},			'see man page'	],
 		[ 'trees|t=s@'         => $opts{include_trees},		'see man page'	],
@@ -297,7 +326,7 @@ GNU General Public License for more details.
 EOF
 		exit 0;
 	}
-	
+
 	set_options(\%opts);
 	
 	return @args;
