@@ -84,7 +84,29 @@ and install phases.
 Perform actions useful to package maintainers: run validation on
 the .info file before building and on the .deb after building a
 package; turn certain build-time warnings into fatal errors; run the
-test suites as specified in the InfoTest field.
+test suites as specified in the InfoTest field.  This sets
+.Pa --tests
+and
+.Pa --validate
+to 
+.Pa on .
+.It Cm --tests[=on|off|warn]
+Causes InfoTest fields to be activated and test suites specified via
+TestScript to be executed.  If no argument is given to this option or if the
+argument is
+.Pa on
+then failures in test suites will be considered fatal errors during builds.
+If the argument is
+.Pa warn
+then failures will be treated as warnings.
+.It Cm --validate[=on|off|warn]
+Causes packages to be validated during a build.
+If no argument is given to this option or if the argument is
+.Pa on
+then validation failures will be considered fatal errors during builds.
+If the argument is
+.Pa warn
+then failures will be treated as warnings.
 .It Cm -l, --log-output
 Save a copy of the terminal output during each package building
 process. By default, the file is stored in

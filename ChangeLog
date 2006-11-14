@@ -1,3 +1,7 @@
+2006-11-14  Matthew Sachs  <msachs@apple.com>
+
+	* fink.8.in: Document --tests, --validate options.
+
 2006-10-04  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Rename the flag to "--obsolete-packages"

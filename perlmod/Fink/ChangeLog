@@ -1,5 +1,12 @@
 2006-11-14  Matthew Sachs  <msachs@apple.com>
 
+	* Config.pm: Add --tests, --validate options.
+	* Engine.pm: Ditto.
+	* PkgVersion.pm: Ditto, plus fix for uninitialized value warning in
+	InfoTest processing.
+
+2006-11-14  Matthew Sachs  <msachs@apple.com>
+
 	* Validation.pm: Don't require TestScript.
 
 2006-11-07  Daniel Macks  <dmacks@netspace.org>

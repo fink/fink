@@ -195,7 +195,7 @@ our %shared_loads;
 		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
 		$self->_set_destdirs;
 
-		if(Fink::Config::get_option("maintainermode")) {
+		if(Fink::Config::get_option("tests")) {
 			$self->activate_infotest;
 		}
 
@@ -1031,7 +1031,7 @@ sub get_script {
 		} 
 
 	} elsif($field eq 'testscript') {
-		return "" unless Fink::Config::get_option("maintainermode");  # only test in -m mode
+		return "" unless Fink::Config::get_option("tests");
 		return "" if $self->has_parent;  # shortcut: SplitOffs do not test
 		return "" if $self->is_type('dummy');  # Type:dummy never test
 
@@ -1088,9 +1088,11 @@ sub activate_infotest {
 				" $val");
 			$self->prepare_percent_c;
 		} elsif($key =~ /^Test(Source|Tar)(\d*)(ExtractDir|FilesRename|Rename|-MD5|-Checksum)?$/i) {
-			my $source_num = $max_source + ($2 || 1);
+			my($test_field_type, $test_no, $test_field) = ($1, $2, $3);
+			$test_field ||= "";
+			my $source_num = $max_source + ($test_no || 1);
 			$source_num = "" if $source_num == 1;
-			my $src_param = "$1$source_num$3";
+			my $src_param = "$test_field_type$source_num$test_field";
 			$self->set_param($src_param, $val);
 		} else {
 			$self->set_param($key, $val);
@@ -2287,8 +2289,12 @@ sub resolve_depends {
 			$violated = 1 if $pkg->check_bdo_violations();
 			$violated = 1 if $pkg->check_obsolete_violations();
 		}
-		if ($violated and Fink::Config::get_option("maintainermode")) {
-			die "Please correct the above problems and try again!\n";
+		if ($violated) {
+			if(Fink::Config::get_option("validate") eq "on") {
+				die "Please correct the above problems and try again!\n";
+			} else {
+				warn "Validation of splitoffs failed.\n";
+			}
 		}
 	}
 
@@ -3416,7 +3422,7 @@ sub phase_compile {
 	### construct CompileScript and execute it
 	$self->run_script($self->get_script("CompileScript"), "compiling", 1, 1);
 
-	if(Fink::Config::get_option("maintainermode")) {
+	if(Fink::Config::get_option("tests")) {
 		my $result = $self->run_script($self->get_script("TestScript"), "testing", 0, 1, 1);
 
 		if($result == 1) { 
@@ -3425,7 +3431,13 @@ sub phase_compile {
 			my $error = "phase test: " . $self->get_fullname()." failed";
 			my $notifier = Fink::Notify->new();
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-			die "phase test: error ($result)\n";
+
+			my $errstr = "phase test: error ($result)\n";
+			if(Fink::Config::get_option("tests") eq "on") {
+				die $errstr;
+			} else {
+				warn $errstr;
+			}
 		} else {
 			warn "phase test: passed\n";
 		}
@@ -4240,14 +4252,19 @@ EOF
 		}
 	}
 
-	if (Fink::Config::get_option("maintainermode")) {
+	if (Fink::Config::get_option("validate")) {
 		my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
 		Fink::Config::set_options( {
 			'verbosity' => 3,
 			'Pedantic'  => 1
 			} );
-		Fink::Validation::validate_dpkg_unpacked($ddir)
-			or die "Please correct the above problems and try again!\n";
+		if(!Fink::Validation::validate_dpkg_unpacked($ddir)) {
+			if(Fink::Config::get_option("validate") eq "on") {
+				die "Please correct the above problems and try again!\n";
+			} else {
+				warn "Validation of .deb failed.\n";
+			}
+		}
 		Fink::Config::set_options(\%saved_options);
 	}
 

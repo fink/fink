@@ -1590,7 +1590,7 @@ sub real_install {
 		}
 
 		# pedantically validate .info of explicitly requested packages
-		if (Fink::Config::get_option("maintainermode")) {
+		if (Fink::Config::get_option("validate")) {
 			my $info_filename = $package->get_info_filename();
 			if (not $validated_info_files{$info_filename}++) {
 				my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
@@ -1598,8 +1598,13 @@ sub real_install {
 					'verbosity' => 3,
 					'Pedantic'  => 1
 										   } );
-				Fink::Validation::validate_info_file($info_filename)
-					or die "Please correct the above problems and try again!\n";
+				if(!Fink::Validation::validate_info_file($info_filename)) {
+					if(Fink::Config::get_option("validate") eq "on") {
+						die "Please correct the above problems and try again!\n";
+					} else {
+						warn "Validation of .info failed.\n";
+					}
+				}
 				Fink::Config::set_options(\%saved_options);
 			}
 		}
@@ -1731,7 +1736,7 @@ sub real_install {
 				# validate the .info if desired
 				# only use default level for dependencies of explicit packages
 				# (explicitly requested pkgs were severely validated earlier)
-				if (Fink::Config::get_option("maintainermode")) {
+				if (Fink::Config::get_option("validate")) {
 					my $info_filename = $item->[PKGVER]->get_info_filename();
 					if (not $validated_info_files{$info_filename}++) {
 						my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ Pedantic /;
@@ -1745,7 +1750,13 @@ sub real_install {
 			}
 		}
 	}
-	$bad_infos && die "Please correct the above problems and try again!\n";
+	if($bad_infos) {
+		if(Fink::Config::get_option("validate") eq "on") {
+			die "Please correct the above problems and try again!\n";
+		} else {
+			warn "Validation of .info failed.\n";
+		}
+	}
 
 	if ($willbuild) {
 		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) { 
