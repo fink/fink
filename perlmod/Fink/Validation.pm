@@ -280,8 +280,8 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Architecture',
 	);
 
-our @infotest_required_fields = map {lc $_}
-	qw(TestScript);
+# Some Types may have implicit TestScript, otherwise that would be required.
+our @infotest_required_fields = map {lc $_} ();
 
 # Extra fields valid inside InfoTest
 our %infotest_valid_fields = map {lc $_, 1}
