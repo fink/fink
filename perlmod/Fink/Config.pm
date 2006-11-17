@@ -226,7 +226,8 @@ sub set_checking_opts {
 		$opts->{tests} = "on";
 		$opts->{validate} = "on";
 	} else {
-		$val = lc($val) || "";
+		$val = defined($val) ? lc($val) : "";
+		$val = "on" if $val eq "";
 		if($val ne "on" and $val ne "warn" and $val ne "off") {
 			# We didn't really get an argument.
 			# Because our argument is optional, if we are
@@ -236,7 +237,7 @@ sub set_checking_opts {
 			# it will think that dumpinfo is the argument to
 			# tests.  So, if we get an argument that isn't one
 			# of our valid argument values, punt it back to @ARGV.
-			unshift @ARGV, $val if $val;
+			unshift @ARGV, $val;
 			$opts->{$arg} = "on";
 		} else {
 			$val = "" if $val eq "off";

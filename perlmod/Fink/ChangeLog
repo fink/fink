@@ -1,3 +1,7 @@
+2006-11-16  Matthew Sachs  <msachs@apple.com>
+
+	* Config.pm: Be a bit stricter about --tests argument checking.
+
 2006-11-14  Matthew Sachs  <msachs@apple.com>
 
 	* Config.pm: Fix for --tests with no value.
