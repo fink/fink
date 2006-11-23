@@ -225,6 +225,7 @@ sub set_checking_opts {
 		$opts->{maintainermode} = 1;
 		$opts->{tests} = "on";
 		$opts->{validate} = "on";
+		$opts->{verbosity} = 3;
 	} else {
 		$val = defined($val) ? lc($val) : "";
 		$val = "on" if $val eq "";
