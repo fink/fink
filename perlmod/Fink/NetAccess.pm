@@ -116,6 +116,11 @@ sub fetch_url_to_file {
 		$path = $2;
 		$basename = $3;
 		$path =~ s/^\/*//;    # Mirror::get_site always returns a / at the end
+		if ($mirrorname eq "master") {
+			# if the original Source spec is mirror:master, don't also consider
+			# the master-mirror pool
+			$nomirror = 1;
+		}
 		if ($mirrorname eq "custom") {
 			if (not $custom_mirror) {
 				die "Source file \"$file\" uses mirror:custom, but the ".
