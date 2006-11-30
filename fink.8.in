@@ -575,6 +575,9 @@ flags are given.
 Display the given fieldname(s), in the order listed.
 .It Cm -p key, --percent=key
 Display the given percent expansion key(s), in the order listed.
+.It Cm -e env_var, --env=env_var
+Display the given variable(s) from the environment in effect when the
+package is compiled. Output is in a form suitable to be fed to 'eval'.
 .El
 .It Cm show-deps Ar package...
 Displays a human-readable list of the compile-time (build) and

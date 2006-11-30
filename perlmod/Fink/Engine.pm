@@ -2098,12 +2098,13 @@ sub cmd_showparent {
 ### display a pkg's package description (parsed .info file)
 sub cmd_dumpinfo {
 
-	my (@fields, @percents, $wantall);
+	my (@fields, @percents, @env_vars, $wantall);
 	
 	get_options('dumpinfo', [
 		[ 'all|a'		=> \$wantall,	"All package info fields (default behavior)."		],
 		[ 'field|f=s'	=> \@fields,	"Just the specific field(s) specified."				],
 		[ 'percent|p=s'	=> \@percents,	"Just the percent expansion for specific key(s)."	],
+		[ 'env|e=s'		=> \@env_vars,	"Just the specific environment variable(s), in a format that can be 'eval'ed."	],
 	], \@_, helpformat => <<HELPFORMAT);
 %intro{[options] [package(s)]}
 %all{}
@@ -2128,6 +2129,9 @@ described in the Fink Packaging Manual:
   env          - Shell environment in effect during pkg construction.
   trees        - Trees in which this package (same version) exists.
 
+The "_" environment variable is interpretted to mean "the whole
+environment" for the --env mode.
+
 HELPFORMAT
 	
 	Fink::Package->require_packages();
@@ -2135,6 +2139,7 @@ HELPFORMAT
 	# handle clustered param values
 	@fields   = split /,/, lc ( join ',', @fields   ) if @fields;
 	@percents = split /,/,    ( join ',', @percents ) if @percents;
+	# Need this line to unconfuse emacs perl-mode /,
 
 	my @pkglist = &expand_packages(@_);
 	if (! @pkglist) {
@@ -2145,7 +2150,7 @@ HELPFORMAT
 		$pkg->prepare_percent_c;
 
 		# default to all fields if no fields or %expands specified
-		if ($wantall or not (@fields or @percents)) {
+		if ($wantall or (!@fields and !@percents and !@env_vars)) {
 			# don't list fields that cause indexer exclusion
 			@fields = (qw/
 					   infofile debfile package epoch version revision parent family
@@ -2369,6 +2374,32 @@ HELPFORMAT
 		foreach (@percents) {
 			s/^%(.+)/$1/;  # remove optional leading % (but allow '%')
 			printf "%%%s: %s\n", $_, &expand_percent("\%{$_}", $pkg->{_expand}, "fink dumpinfo " . $pkg->get_name . '-' . $pkg->get_fullversion);
+		}
+
+
+		if (@env_vars) {
+			my %pkg_env = %{$pkg->get_env};
+
+			# replace each given "_" sentinel with full variable list
+			# go backwards to avoid looping over a just-replaced _
+			for (my $i = $#env_vars; $i >= 0; $i--) {
+				splice( @env_vars, $i, 1, sort keys %pkg_env) if $env_vars[$i] eq '_';
+			}
+
+			foreach my $env_var (@env_vars) {
+				if ($_ eq '_') {
+					# sentinel for "all env vars"
+					foreach (sort keys %pkg_env) {
+						printf "%s=%s\n", $_, $pkg_env{$_};
+					}
+				} elsif (defined $pkg_env{$env_var}) {
+					# only print a requested var if it is defined
+					printf "%s=%s\n", $env_var, $pkg_env{$env_var};
+				} else {
+					# requested var not defined...don't print it
+					# FIXME: should we print it as blank instead?
+				}
+			}
 		}
 	}
 }
