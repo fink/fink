@@ -1,3 +1,9 @@
+2006-11-31  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: utf8 should be allowed, but not sure how to
+	check on it; changing the warning to say "non-ASCII" instead of
+	"non-standard" for now  :(
+
 2006-11-29  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Implement --env for dumpinfo to display specific env

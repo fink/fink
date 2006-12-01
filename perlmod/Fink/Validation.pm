@@ -994,8 +994,9 @@ sub validate_info_component {
 		}
 
 		# warn for non-plain-text chars
+		# this doesn't work for unicode; is there a good way to accept unicode without just ignoring validation?
 		if ($value =~ /[^[:ascii:]]/) {
-			print "Warning: \"$field\"$splitoff_field contains non-standard characters. ($filename)\n";
+			print "Warning: \"$field\"$splitoff_field contains non-ASCII characters. ($filename)\n";
 			$looks_good = 0;
 		}
 
