@@ -352,7 +352,9 @@ END { }				# module clean-up code here (global destructor)
 #
 # TODO: Optionally, should sort the fields to the recommended field order
 #	- better validation of splitoffs
-#	- correct format of Shlibs: (including misuse of %v-%r)
+#	- correct format of Shlibs: (including misuse of %v-%r, and including
+#     the optional new "library architecture" entry which may be 32, 64, or
+#     32-64)
 #	- use of %n in SplitOff:Package: (should be %N)
 #	- use of SplitOff:Depends: %n (should be %N (tracker Bugs #622810)
 #	- actually instantiate the Package or PkgVersion object
@@ -1100,6 +1102,19 @@ sub validate_info_component {
 				$looks_good = 0;
 			}
 			my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
+		# default value of $libarch, if absent, is "32"
+			my $libarch = "32";
+		# strip off the end of the last @shlib_deps entry (the stuff
+		# beyond the final close-paren), which should consist of digits
+		# and "-" only, and use as $libarch
+			if ($shlib_deps[$#shlib_deps] =~ /^(.*\))\s*([-\d]*)$/ ) {
+				$shlib_deps[$#shlib_deps] = $1;
+				$libarch = $2;
+			}
+			if (not ($libarch eq "32" or $libarch eq "64" or $libarch eq "32-64")) {
+				print "Warning: Library architecture for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field is not one of the allowed types (32, 64, or 32-64). ($filename)\n";
+				$looks_good = 0;
+			}
 			foreach (@shlib_deps) {
 				if (not /^[a-z%]\S*\s+\(>=\s*(\S+-\S+)\)$/) {
 					print "Warning: Malformed dependency \"$_\" for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field. ($filename)\n";
@@ -1113,6 +1128,7 @@ sub validate_info_component {
 					next;
 				}
 			}
+			print "Warning: Library architecture is not one of the allowed types (32, 64, or 32-64)\n" unless ($libarch eq "32" or $libarch eq "64" or $libarch eq "32-64");
 		}
 	}
 

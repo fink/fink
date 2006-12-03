@@ -1,3 +1,9 @@
+2006-12-03  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: Check for correct library architecture at the end
+	of each Shlibs entry.  (If present, it should have value 32, 64, or
+	32-64.)
+
 2006-11-31  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Validation.pm: utf8 should be allowed, but not sure how to
