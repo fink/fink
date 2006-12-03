@@ -1107,7 +1107,7 @@ sub validate_info_component {
 		# strip off the end of the last @shlib_deps entry (the stuff
 		# beyond the final close-paren), which should consist of digits
 		# and "-" only, and use as $libarch
-			if ($shlib_deps[$#shlib_deps] =~ /^(.*\))\s*([-\d]*)$/ ) {
+			if ($shlib_deps[$#shlib_deps] =~ /^(.*\))\s*([-\d]+)$/ ) {
 				$shlib_deps[$#shlib_deps] = $1;
 				$libarch = $2;
 			}
