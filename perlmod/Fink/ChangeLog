@@ -4,7 +4,8 @@
 	expansions.
 	* Validation.pm: Implement the new %type_num[] and %lib percent
         expansions.  Correct the regex for detecting library architecture.
-
+	* PkgVersion.pm: New default for LDFLAGS when building 64bit libs.
+	
 2006-12-03  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Check for correct library architecture at the end

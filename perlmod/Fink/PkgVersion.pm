@@ -4656,6 +4656,14 @@ sub get_env {
 #		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
 
+# for building 64bit libraries, we change LDFLAGS:
+
+    if (exists $self->{_type_hash}->{"-64bit"}) {
+        if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
+            $defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
+        }
+    }
+
 # default value of LD_PREBIND depends on the distribution
 	if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
 		$defaults{"LD_PREBIND"} = "1";
