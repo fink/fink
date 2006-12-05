@@ -184,6 +184,54 @@ sub choose_misc {
 	}
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
+
+	print "\n";
+
+	{
+		print_breaking(
+			"The \"unstable\" tree contains many packages not present in the \"stable\" ".
+			"tree and often has newer versions of those that are present. All package ".
+			"updates are tested in \"unstable\" before being approved for \"stable\", ".
+			"so \"unstable\" gets new versions and bug-fixes sooner. However, that ".
+			"means packages in \"unstable\" can change rapidly and are occasionally ".
+			"broken temporarily. In addition, packages from the \"unstable\" tree are ".
+			"less likely to be available from bindist servers immediately (if at all)."
+			);
+
+		my $trees = $config->param('Trees');
+		if (!defined $trees or !length $trees) {
+			print_breaking("Could not determine current Trees setting, so cannot alter \"unstable\" setting at this time.");
+		} else {
+			my @trees = split /\s+/ ,$trees;  # list of the Trees settings
+			my $use_unstable = grep { /^unstable(\/|\Z)/ } @trees;  # do we now have unstable?
+			if ($use_unstable) {
+				$use_unstable = &prompt_boolean(
+					"At least some of the \"unstable\" tree appears to ".
+					"be activated in your fink now. Do you want to ".
+					"keep it activated?",
+					default => 1
+					);
+				if (!$use_unstable) {
+					@trees = grep { ! /^unstable(\/|\Z)/ } @trees;  # remove "unstable" ones
+					$config->set_param('Trees', join(' ', @trees) );
+				}
+			} else {
+				$use_unstable = &prompt_boolean(
+					"The \"unstable\" tree does not appear to be ".
+					"activated in your fink now. Do you want to ".
+					"activate it?",
+					default => 0
+					);
+				if ($use_unstable) {
+					my @trees_add = grep { /^stable(\/|\Z)/ } @trees;  # existing "stable" ones
+					map { s/^stable/unstable/ } @trees_add;  # find "unstable" equivs
+					push @trees, @trees_add;  # add them
+					$config->set_param('Trees', join(' ', @trees) );
+				}
+			}
+		}
+	}
+
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
 		&prompt_selection("How verbose should Fink be?",
@@ -243,7 +291,6 @@ sub choose_misc {
 		&prompt_boolean("Use passive mode FTP transfers (to get through a ".
 						"firewall)?", default => $passive_ftp);
 	$config->set_param("ProxyPassiveFTP", $passive_ftp ? "true" : "false");
-
 }
 
 =item spotlight_warning
