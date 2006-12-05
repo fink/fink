@@ -433,6 +433,17 @@ sub validate_info_file {
 		$type_hash = Fink::PkgVersion->type_hash_from_string($type,$filename);
 		foreach (keys %$type_hash) {
 			( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
+			( $expand->{"type_num[$_]"} = $type_hash->{$_} ) =~ s/[^\d]//g;
+		}
+		$expand->{"lib"} = "lib";
+		if ($type_hash->{"-64bit"} eq "-64bit") {
+			if ($config->param('Architecture') eq "powerpc" ) {
+				$expand->{"lib"} = "lib/ppc64";
+			} elsif ($config->param('Architecture') eq "i386" ) {
+				$expand->{"lib"} = "lib/x86_64";
+			} else {
+				die "Your Architecture is not suitable for 64bit libraries.\n";
+			}
 		}
 		$pkgname = &expand_percent($pkgname, $expand, $filename.' Package');
 	}
@@ -1107,12 +1118,17 @@ sub validate_info_component {
 		# strip off the end of the last @shlib_deps entry (the stuff
 		# beyond the final close-paren), which should consist of digits
 		# and "-" only, and use as $libarch
-			if ($shlib_deps[$#shlib_deps] =~ /^(.*\))\s*([-\d]+)$/ ) {
+			if ($shlib_deps[$#shlib_deps] =~ /^(.*\))\s*([^\s^\)]+)$/ ) {
 				$shlib_deps[$#shlib_deps] = $1;
 				$libarch = $2;
 			}
+		# This hack only allows one particular percent expansion in the
+		# $libarch field, because this subroutine doesn't do percent 
+		# expansions.  OK for now, but should be fixed eventually.
+			my $num_expand = {"type_num[-64bit]" => "64"};
+			$libarch = &expand_percent($libarch, $num_expand, $filename.' Package');
 			if (not ($libarch eq "32" or $libarch eq "64" or $libarch eq "32-64")) {
-				print "Warning: Library architecture for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field is not one of the allowed types (32, 64, or 32-64). ($filename)\n";
+				print "Warning: Library architecture \"$libarch\" for \"$shlibs_parts[0]\" in field \"shlibs\"$splitoff_field is not one of the allowed types (32, 64, or 32-64). ($filename)\n";
 				$looks_good = 0;
 			}
 			foreach (@shlib_deps) {

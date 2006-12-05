@@ -1,3 +1,10 @@
+2006-12-04  Dave Morrison  <drm@finkproject.org>
+
+	* PkgVersion.pm: Implement the new %type_num[] and %lib percent
+	expansions.
+	* Validation.pm: Implement the new %type_num[] and %lib percent
+        expansions.  Correct the regex for detecting library architecture.
+
 2006-12-03  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Check for correct library architecture at the end
