@@ -497,7 +497,7 @@ sub validate_info_file {
 
 	# .info filename contains parent package-name (without variants)
 	# and may contain version-revision and/or arch components
-{
+	{
 	my $base_filename = $pkgname;
 
 	# variants with Package: foo-%type[bar] leave excess hyphens
@@ -530,7 +530,7 @@ sub validate_info_file {
 		print "Warning: Incorrect filename '$filename'. Should be one of:\n", map "\t$_\n", @ok_filenames;
 		$looks_good = 0;
 	}
-}
+	}
 
 	# Make sure Maintainer is in the correct format: Joe Bob <jbob@foo.com>
 	$value = $properties->{maintainer};
@@ -724,14 +724,12 @@ sub validate_info_file {
 	if (not (defined $value and length $value)) {
 		print "Error: No package description supplied. ($filename)\n";
 		$looks_good = 0;
-	} elsif ($value =~ /^\s*\[obsolete(?![a-z])/i) {
-		# "obsolete" packages can have long names
-	} elsif (length($value) > 60) {
+	} elsif (length($value) > 60 and !&obsolete_via_depends($properties->{depends}) ) {
 		print "Error: Length of package description exceeds 60 characters. ($filename)\n";
 		$looks_good = 0;
 	} elsif (Fink::Config::get_option("Pedantic")) {
 		# Some pedantic checks
-		if (length($value) > 45) {
+		if (length($value) > 45 and !&obsolete_via_depends($properties->{depends}) ) {
 			print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
 			$looks_good = 0;
 		}
@@ -1171,6 +1169,14 @@ sub validate_info_component {
 	}
 
 	return $looks_good;
+}
+
+# given a (possibly undefined) Depends field, determine if it contains
+# the sentinel indicating the package with this Depends is "obsolete"
+sub obsolete_via_depends {
+	my $depends_field = shift;
+	return 0 unless defined $depends_field;
+	return $depends_field =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
 }
 
 #

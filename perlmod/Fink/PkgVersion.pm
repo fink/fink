@@ -5080,18 +5080,15 @@ sub built_with_essential {
   my $bool = $pv->is_obsolete;
 
 Returns true if the package is marked as obsolete. That status is
-indicated by a Description that begins with the word "[OBSOLETE" (any
-case)
+indicated by listing a Depends:fink-obsolete-packages.
 
 =cut
 
 sub is_obsolete {
 	my $self = shift;
 
-	return 0 unless $self->has_param('Description');  # assume not obsolete
-
-	my $desc  = $self->param('Description');
-	return $desc =~ /^\s*\[obsolete(?![a-z])/i;
+	my $depends_field = $self->pkglist_default('Depends','');
+	return $depends_field =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
 }
 
 
