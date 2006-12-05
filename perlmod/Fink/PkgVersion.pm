@@ -516,13 +516,15 @@ sub initialize {
 		( $expand->{"type_num[$_]"} = $type_hash->{$_} ) =~ s/[^\d]//g;
 	}
 	$expand->{"lib"} = "lib";
-	if ($type_hash->{"-64bit"} eq "-64bit") {
-		if ($config->param('Architecture') eq "powerpc" ) {
-			$expand->{"lib"} = "lib/ppc64";
-		} elsif ($config->param('Architecture') eq "i386" ) {
-			$expand->{"lib"} = "lib/x86_64";
-		} else {
-			die "Your Architecture is not suitable for 64bit libraries.\n";
+	if (exists $type_hash->{"-64bit"}) {
+		if ($type_hash->{"-64bit"} eq "-64bit") {
+			if ($config->param('Architecture') eq "powerpc" ) {
+				$expand->{"lib"} = "lib/ppc64";
+			} elsif ($config->param('Architecture') eq "i386" ) {
+				$expand->{"lib"} = "lib/x86_64";
+			} else {
+				die "Your Architecture is not suitable for 64bit libraries.\n";
+			}
 		}
 	}
 	if ($self->has_parent()) {
