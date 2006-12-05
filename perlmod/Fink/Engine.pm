@@ -2489,18 +2489,27 @@ sub choose_package_ask {
 	
 	# Get the choices
 	my @pos = map { Fink::Package->package_by_name($_) } @$candidates;
-	my @choices = map {
-		my $name = $_->get_name;
-		my $desc = $_->get_latest_version->get_shortdescription(60);
-		"$name: $desc" => $name
-	} @pos;
+
+	# shuffle all "obsolete" pkgs to bottom of list
+	my(@choices_cur, @choices_obs);
+	foreach my $po (@pos) {
+		my $pv = $po->get_latest_version;
+		my $name = $po->get_name;
+		my $desc = $pv->get_shortdescription(60);
+		if ($pv->is_obsolete) {
+			push @choices_obs, ("$name: (obsolete) $desc" => $name);
+		} else {
+			push @choices_cur, ("$name: $desc" => $name);
+		}
+	}
+	my @choices = (@choices_cur, @choices_obs);
 	
 	# If just one package has a deb available, make it the default
 	my @have_deb = grep { $_->is_any_present } @pos;
 	my $default = scalar(@have_deb == 1)
 		? [ "value" => $have_deb[0]->get_name ]
 		: [];
-	
+
 	return prompt_selection("Pick one:",
 		intro	=> "fink needs help picking an alternative to satisfy a "
 			. "virtual dependency. The candidates:",

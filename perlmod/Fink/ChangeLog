@@ -1,5 +1,10 @@
 2006-12-05  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Put obsolete packages last when prompting for
+	alternative dependencies.
+
+2006-12-05  Daniel Macks  <dmacks@netspace.org>
+
 	* Configure.pm: Add interactive control for enabling "unstable"
 
 2006-12-05  Daniel Macks  <dmacks@netspace.org>
