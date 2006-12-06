@@ -1,3 +1,7 @@
+2006-12-06  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: Prepare for the future.
+
 2006-12-05  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Correct the regex (again) for detecting library 
