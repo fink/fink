@@ -138,6 +138,7 @@ our %valid_fields = map {$_, 1}
 		 'license',
 		 'maintainer',
 		 'architecture',
+		 'distribution',
 #  dependencies:
 		 'depends',
 		 'runtimedepends',
