@@ -159,6 +159,13 @@ sub check {
 		$config->save();	
 	}
 
+	# We temporarily disable rsync updating for 10.5, until we've decided
+	# how to handle it
+
+	if (($config->param("SelfUpdateMethod") eq "rsync") and ($distribution eq "10.5")) {
+		die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n\n";
+	}
+
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
 		&need_devtools('cvs');
@@ -188,6 +195,14 @@ sub check {
 	$installed_version = &pkginfo_version();
 	my $selfupdatemethod = $config->param("SelfUpdateMethod");
 	if (($selfupdatemethod ne "rsync") and $useopt == 2) {
+
+	# We temporarily disable rsync updating for 10.5, until we've decided
+	# how to handle it
+
+		if ($distribution eq "10.5") {
+			die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n\n";
+		}
+
 		$answer =
 			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
 					. "Do you wish to change the default selfupdate method ".
