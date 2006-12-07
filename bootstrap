@@ -333,11 +333,17 @@ if (not -d $installto) {
 
 my $arch = get_arch();
 
+my %distribution_infodir = (
+	"10.3" => "10.3",
+	"10.4" => "10.4",
+	"10.5" => "10.4"
+	);
+
 @dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs var var/lib var/lib/fink);
-push @dirlist, "fink/$distribution", "fink/$distribution/stable", "fink/$distribution/local";
+push @dirlist, "fink/$distribution_infodir{$distribution}", "fink/$distribution_infodir{$distribution}/stable", "fink/$distribution_infodir{$distribution}/local";
 foreach $dir (qw(stable/main stable/crypto local/main)) {
-	push @dirlist, "fink/$distribution/$dir", "fink/$distribution/$dir/finkinfo",
-		"fink/$distribution/$dir/binary-darwin-$arch";
+	push @dirlist, "fink/$distribution_infodir{$distribution}/$dir", "fink/$distribution_infodir{$distribution}/$dir/finkinfo",
+		"fink/$distribution_infodir{$distribution}/$dir/binary-darwin-$arch";
 }
 foreach $dir (@dirlist) {
 	if (not -d "$installto/$dir") {
@@ -352,6 +358,12 @@ unlink "$installto/fink/dists";
 
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
 
+### for now, we simply symlink $distribution to $distribution_infodir{$distribution}, but eventually we may need to do something more complicated
+
+if (not $distribution_infodir{$distribution} eq $distribution) {
+	symlink "$distribution_infodir{$distribution}", "$installto/fink/$distribution" or die "ERROR: Can't create symlink $installto/fink/$distribution";
+}
+
 ### create fink tarball for bootstrap
 
 my $packagefiles = &fink_packagefiles();
@@ -364,7 +376,7 @@ if ($result == 1 ) {
 ### copy package info needed for bootstrap
 
 $script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
-$script .= "/bin/cp $distribution/*.info $distribution/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
+$script .= "/bin/cp $distribution_infodir{$distribution}/*.info $distribution_infodir{$distribution}/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
 
 $result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base");
 if ($result == 1 ) {
@@ -391,7 +403,15 @@ Basepath: $installto
 RootMethod: $rootmethod
 Trees: local/main stable/main stable/crypto
 Distribution: $distribution
+SelfUpdateCVSTrees: $distribution_infodir{$distribution}
 EOF
+	# We temporarily force cvs updating for 10.5, until we've decided
+	# how to handle rsync updating
+
+	if ($distribution eq "10.5") {
+		print CONFIG "SelfUpdateMethod: cvs\n";
+}
+
 close(CONFIG) or die "can't write configuration: $!";
 
 $config = &read_config($configpath);

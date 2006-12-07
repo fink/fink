@@ -1,3 +1,12 @@
+2006-12-07  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap: Set up properly for distributions which use .info files
+	from other distributions.  Also, give an initial default value to
+	SelfUpdateCVSTrees.
+	* bootstrap: Temporarily set "SelfUpdateMethod: cvs" for a
+	not-yet-released distribution, to help force cvs rather than rsync
+	updates.
+
 2006-11-29  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Document the --env mode of dumpinfo
