@@ -1,3 +1,8 @@
+2006-12-07  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Only check first alternative in each OR set for
+	being obsolete.
+
 2006-12-07  Dave Morrison  <drm@finkproject.org>
 
 	* SelfUpdate.pm: (Temporarily) disable rsync updating in 
