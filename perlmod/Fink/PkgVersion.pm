@@ -385,7 +385,7 @@ sub pkgversions_from_properties {
 		if (not $options{no_exclusions}) {
 			my $sys_dist = $config->param('Distribution');
 			if (defined $pkg_dist and $pkg_dist !~ /(\A|,)\s*$sys_dist\s*(,|\Z)/) {
-				# Discard the whole thing if local arch not listed
+				# Discard the whole thing if local dist not listed
 				return ();
 			}
 		}
