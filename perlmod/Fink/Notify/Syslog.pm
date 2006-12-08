@@ -22,6 +22,8 @@
 #
 
 package Fink::Notify::Syslog;
+use warnings;
+use strict;
 
 use Fink::Notify;
 use Fink::Config qw($basepath);
@@ -58,7 +60,7 @@ sub do_notify {
 	my $errors = 0;
 
 	for my $line (split(/\s*\n+/, $args{'description'})) {
-		my $return = system($command, '-t', 'Fink', $args{'description'});
+		my $return = system($command, '-t', 'Fink', $line);
 		if ($return >> 8) {
 			$errors++;
 		}

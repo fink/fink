@@ -1,3 +1,12 @@
+2006-12-08	Dave Vasilevsky	<vasi@users.sourceforge.net>
+
+	* Notify.pm: Allow multiple notifiers (or none). Also allow
+	case-insensitive NotifyPlugin spec.
+	* Notify/Growl.pm, Notify/Quicksilver.pm, Notify/Say.pm, Notify/Syslog.pm:
+	Make strict. Miscellaneous fixes.
+	* Notify/Growl.pm: Fix strictness problems. How did this ever work
+	before!?
+	
 2006-12-07  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Only check first alternative in each OR set for

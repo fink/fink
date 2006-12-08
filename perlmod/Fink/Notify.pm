@@ -22,10 +22,11 @@
 #
 
 package Fink::Notify;
+use warnings;
+use strict;
 
 use Fink::Config	qw($config);
 use Fink::Services	qw(&find_subpackages);
-use UNIVERSAL qw(isa);
 
 BEGIN {
         use Exporter ();
@@ -96,6 +97,18 @@ happen during package installation/removal.
 
 =over 4
 
+=cut
+
+# Find the list of Notify plugins, as package names
+{
+	my $plugins;
+	
+	sub _plugins {
+		$plugins = [ find_subpackages(__PACKAGE__) ] unless defined $plugins;
+		return @$plugins;
+	}
+}
+
 =item new([PluginType]) - get a new notifier object
 
 Get a new notifier object, optionally specifying the notification
@@ -110,18 +123,30 @@ ref for their object.
 
 sub new {
 	my $class = shift;
+	my $self = bless [], $class;
 
-	my $plugin = shift || $config->param_default('NotifyPlugin', 'Growl');
+	my $plugins = shift || $config->param_default('NotifyPlugin', 'Growl');
+	my @plugins = split / /, $plugins;
+	
+	# Deal gracefully with case problems in plugin specification
+	my %fixedcase = map { lc $_ => $_ } _plugins;
 
-	my $self;
-
-	eval "require Fink::Notify::$plugin";
-	eval "\$self = Fink::Notify::$plugin->new()";
-
-	unless (isa $self, "Fink::Notify") {
-		$self = bless({}, $class);
+	for my $plugin (@plugins) {
+		my $package = $fixedcase{lc "Fink::Notify::$plugin"};
+		unless ($package) {
+			print STDERR "Could not find notifier '$plugin'! Please fix your "
+				. "fink.conf.\n";
+			next;
+		}
+		
+		my $instance;
+		eval "require $package";
+		eval { $instance = $package->new };
+		# UNIVERSAL::isa considered harmful: http://search.cpan.org/~chromatic/UNIVERSAL-can-1.12/lib/UNIVERSAL/can.pm
+		next unless eval { $instance->isa("Fink::Notify") };
+		
+		push @$self, $instance;
 	}
-
 	return $self;
 }
 
@@ -258,12 +283,7 @@ their module.
 
 =cut
 
-sub about {
-	my $self = shift;
-
-	my @about = ('Null', $VERSION, 'Empty notification plugin (do nothing)');
-	return wantarray? @about : \@about;
-}
+sub about { }
 
 =item do_notify(%args) - perform a notification (notifier-specific)
 
@@ -274,7 +294,19 @@ notify().
 =cut
 
 sub do_notify {
-	return 1;
+	my $self = shift;
+	my $ok = 1;
+	
+	for my $plugin (@$self) {
+		# Don't want to fail while notifying about failure, so be extra
+		# careful.
+		eval {
+			$ok &&= $plugin->do_notify(@_);
+		};
+		$ok &&= !$@;
+	}
+	
+	return $ok;
 }
 
 =item list_plugins() - list the available notification plugins
@@ -288,24 +320,20 @@ sub list_plugins {
 	my $self = shift;
 	
 	my %plugins;
-	foreach my $plugname ( find_subpackages(__PACKAGE__) ) {
+	foreach my $plugname ( _plugins ) {
 		$plugins{$plugname}{about} = $plugname->about();
 		$plugins{$plugname}{enabled} = 1 if defined $plugname->new();
 	}
 
-	$plugins{'Fink::Notify::Null'} = {
-		about   => scalar $self->about(),
-		enabled => 1,
-	};
-	
-	my $active_plugin = Fink::Notify->new();
+	my $active_plugin = Fink::Notify->new;
+	my %in_use = map { $_->about->[0] => 1 } @$active_plugin;
 
 	for my $key (sort keys %plugins) {
-		my ($shortname) = $key =~ /^.*\:\:([^\:]*)$/;
+		my ($shortname) = $plugins{$key}{about}[0];
 
 		my $installed = "   ";
 		$installed = " ! " if ($plugins{$key}->{'enabled'});
-		$installed = " * " if ($shortname eq $active_plugin->about()->[0]);
+		$installed = " * " if $in_use{$shortname};
 
 		my @about = @{$plugins{$key}->{'about'}};
 		for (0..3) {
@@ -313,7 +341,8 @@ sub list_plugins {
 		}
 
 		$about[2] = substr($about[2], 0, 44);
-		printf("%3s %-15.15s %-11.11s %s\n", $installed, $shortname, $about[1], $about[2]);
+		printf("%3s %-15.15s %-11.11s %s\n", $installed, $shortname, $about[1],
+			$about[2]);
 		print(" " x 32, $about[3], "\n") if ($about[3] ne "");
 	}
 }

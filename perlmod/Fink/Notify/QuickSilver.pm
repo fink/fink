@@ -22,6 +22,8 @@
 #
 
 package Fink::Notify::QuickSilver;
+use warnings;
+use strict;
 
 use Fink::Notify;
 use Fink::Config qw($basepath);

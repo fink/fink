@@ -22,6 +22,8 @@
 #
 
 package Fink::Notify::Growl;
+use warnings;
+use strict;
 
 use Fink::Notify;
 use Fink::Config qw($basepath);
@@ -52,6 +54,7 @@ sub new {
 }
 
 sub initialized {
+	my $self = shift;
 	if (@_) {
 		$self->{_initialized} = shift;
 	}
@@ -62,6 +65,7 @@ sub do_notify {
 	my $self  = shift;
 	my %args  = @_;
 
+	my @events = $self->events;
 	if (not $self->initialized()) {
 		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
 		$self->initialized(1);

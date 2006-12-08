@@ -376,7 +376,7 @@ environment variable and ccache will use
 .Pa $HOME/.ccache, 
 potentially putting root-owned files into your home directory.
 .It Cm NotifyPlugin: Ar plugin
-Specify a notification plugin to tell you when packages have been installed/uninstalled.
+Specify a space-separated list of notification plugins, to tell you when packages have been installed/uninstalled.
 Defaults to
 .Pa Growl
 (requires Mac::Growl to operate).  The available plugins are listed in the output of
