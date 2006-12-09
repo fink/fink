@@ -1,3 +1,10 @@
+2006-12-08  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: Change allowed filenames for .info file, to: 
+	invariant packagename, optionally followed by archname, optionally 
+	follwed by distribution, and finally optionally followed by either 
+	version or version-revision, each delimited by hyphens.
+
 2006-12-08	Dave Vasilevsky	<vasi@users.sourceforge.net>
 
 	* Notify.pm: Allow multiple notifiers (or none). Also allow

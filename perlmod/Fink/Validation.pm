@@ -506,25 +506,34 @@ sub validate_info_file {
 	$base_filename =~ s/-*$//g;
 
 	# build permutations
-	my (@ok_filenames) = (
-		"$base_filename",
-		"$base_filename-$pkgversion",
-		"$base_filename-$pkgversion-$pkgrevision",
-	);	
+	my @filearch = ("");
+	my @filedist = ("");
+	my @filesuffix = ("", "-$pkgversion", "-$pkgversion-$pkgrevision");
+	my @ok_filenames;
 	if (my $arch = $properties->{architecture}) {
 		if ($arch !~ /,/) {
 			# single-arch package
 			$arch =~ s/\s+//g;
 			
-			push @ok_filenames, (
-				"$base_filename-$arch",
-				"$base_filename-$arch-$pkgversion",
-				"$base_filename-$pkgversion-$arch",
-				"$base_filename-$arch-$pkgversion-$pkgrevision",
-				"$base_filename-$pkgversion-$pkgrevision-$arch",
-			);
+			push @filearch, ("-$arch");
 		}
 	}
+	if (my $dist = $properties->{distribution}) {
+		if ($dist !~ /,/) {
+			# single-dist package
+			$dist =~ s/\s+//g;
+			
+			push @filedist, ("-$dist");
+		}
+	}
+	foreach my $rch (@filearch) {
+		foreach my $dst (@filedist) {
+			foreach my $sfx (@filesuffix) {
+				push @ok_filenames, "$base_filename$rch$dst$sfx";
+			}
+		}
+	}
+
 	map $_ .= ".info", @ok_filenames;
 
 	unless (grep $filename eq $_, @ok_filenames) {
