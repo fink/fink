@@ -1,5 +1,9 @@
 2006-12-09  Dave Morrison  <drm@finkproject.org>
 
+	* REVISION: add a line for 10.5 to allow bootstrapping
+
+2006-12-09  Dave Morrison  <drm@finkproject.org>
+
 	* VERSION: Make fink HEAD always >> 0.26.x, since that has now
 	branched.
 
