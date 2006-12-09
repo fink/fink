@@ -3141,6 +3141,7 @@ sub phase_unpack {
 	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip);
+	my $build_as_user_group = Fink::Config::build_as_user_group();
 
 	$config->mixed_arch(msg=>'build a package', fatal=>1);
 
@@ -3185,13 +3186,8 @@ GCC_MSG
 		$destdir = "$buildpath/$bdir";
 		mkdir_p $destdir or
 			die "can't create directory $destdir\n";
-		if (Fink::Config::get_option("build_as_nobody")) {
-			chowname 'nobody:nobody', $destdir or
-				die "can't chown 'nobody:nobody' $destdir\n";
-		} else {
-			chowname ':admin', $destdir or
-				die "can't grp 'admin' $destdir\n";
-		}
+		chowname $build_as_user_group->{'user:group'}, $destdir or
+			die "can't chown '" . $build_as_user_group->{'user:group'} . "' $destdir\n";
 		return;
 	}
 
@@ -3320,13 +3316,8 @@ GCC_MSG
 		if (! -d $destdir) {
 			mkdir_p $destdir or
 				die "can't create directory $destdir\n";
-			if (Fink::Config::get_option("build_as_nobody")) {
-				chowname 'nobody:nobody', $destdir or
-					die "can't chown 'nobody:nobody' $destdir\n";
-			} else {
-				chowname ':admin', $destdir or
-					die "can't chgrp 'admin' $destdir\n";
-			}
+			chowname $build_as_user_group->{'user:group'}, $destdir or
+				die "can't chown '" . $build_as_user_group->{'user:group'} . "' $destdir\n";
 		}
 
 		# unpack it
@@ -3551,11 +3542,7 @@ sub phase_install {
 	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
-		if (Fink::Config::get_option("build_as_nobody")) {
-			$install_script .= "/usr/sbin/chown -R nobody:nobody \%d\n";
-		} else {
-			$install_script .= "/usr/sbin/chown -R root:admin \%d\n";
-		}
+		$install_script .= "/usr/sbin/chown -R " . Fink::Config::build_as_user_group()->{'user:group'} . " \%d\n";
 	}
 	# Run the script part we have so far
 	$self->run_script($install_script, "installing", 0, 0);
@@ -4775,13 +4762,9 @@ END
 	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', TMPDIR => 1, CLEANUP => 1 );
 	if ($< == 0) {
 		# we might be writing to ENV{HOME} during build, so fix ownership
-		if (Fink::Config::get_option("build_as_nobody")) {
-			chowname 'nobody:nobody', $script_env{HOME} or
-				die "can't chown 'nobody:nobody' $script_env{HOME}\n";
-		} else {
-			chowname ':admin', $script_env{HOME} or
-				die "can't grp 'admin' $script_env{HOME}\n";
-		}
+		my $build_as_user_group = Fink::Config::build_as_user_group();
+		chowname $build_as_user_group->{'user:group'}, $script_env{HOME} or
+			die "can't chown '" . $build_as_user_group->{'user:group'} . "' $script_env{HOME}\n";
 	}
 
 	# add system path

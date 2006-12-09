@@ -970,6 +970,34 @@ sub binary_requested {
 	return $binary_request;
 }
 
+=item build_as_user_group
+
+	my $result = Fink::Config::build_as_user_group;
+
+Returns a ref to a hash with keys 'user', 'group', and 'user:group' and values 
+depending on whether the option build_as_nobody is set or not. Also checks for 
+the existence of the user and group 'fink-bld' if build_as_nobody is set. If 
+either the user or the group 'fink-bld' can't be found the method falls back
+to 'nobody'.
+
+=cut
+
+sub build_as_user_group {
+	my $result;
+	if (get_option("build_as_nobody")) {
+		if (!getpwnam('fink-bld') or !getgrnam('fink-bld')) {
+			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please install package 'passwd' (>= 20061017) to build as user 'fink-bld'.\n";
+			$result = {qw/ user nobody group nobody user:group nobody:nobody /};
+		} else {
+			$result = {qw/ user fink-bld group fink-bld user:group fink-bld:fink-bld /};
+		}
+	} else {
+			$result = {qw/ user root group admin user:group root:admin /};
+	}
+
+	return $result;
+}
+
 =item has_flag
 
   my $bool = $config->has_flag($flag);

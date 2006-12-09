@@ -574,8 +574,9 @@ EOSCRIPT
 		# the env that existed outside the sudo
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
 		unshift @wrap, 'env' if @wrap;
-		@wrap = (qw/ sudo -u nobody /, @wrap, qw/ sh -c /);
-		$wrap_token = 'sudo -u nobody [ENV] sh -c';
+		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
+		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
+		$wrap_token = "$sudo_cmd [ENV] sh -c";
 	}
 
 	# Execute each line as a separate command.
