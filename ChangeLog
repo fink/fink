@@ -4,11 +4,6 @@
 
 2006-12-09  Dave Morrison  <drm@finkproject.org>
 
-	* VERSION: Make fink HEAD always >> 0.26.x, since that has now
-	branched.
-
-2006-12-09  Dave Morrison  <drm@finkproject.org>
-
 	* VERSION: Bumped package manager version to 0.26.0, a new release
 
 2006-12-08	Dave Vasilevsky	<vasi@users.sourceforge.net>
