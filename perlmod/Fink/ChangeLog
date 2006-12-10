@@ -1,3 +1,7 @@
+2006-12-10  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Engine.pm: Don't try to validate virtual packages.
+	
 2006-12-09  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* Config.pm: Add a new function that returns a ref to a hash with keys 

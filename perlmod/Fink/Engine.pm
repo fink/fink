@@ -1593,21 +1593,26 @@ sub real_install {
 
 		# pedantically validate .info of explicitly requested packages
 		if (Fink::Config::get_option("validate")) {
-			my $info_filename = $package->get_info_filename();
-			if (not $validated_info_files{$info_filename}++) {
-				my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
-				Fink::Config::set_options( {
-					'verbosity' => 3,
-					'Pedantic'  => 1
-										   } );
-				if(!Fink::Validation::validate_info_file($info_filename)) {
-					if(Fink::Config::get_option("validate") eq "on") {
-						die "Please correct the above problems and try again!\n";
-					} else {
-						warn "Validation of .info failed.\n";
+			# Can't validate virtuals
+			if ($package->is_type('dummy') && $package->get_subtype('dummy') eq 'virtual') {
+				print "Package '" . $package->get_name() . "' is a virtual package, skipping validation.\n";
+			} else {
+				my $info_filename = $package->get_info_filename();
+				if (not $validated_info_files{$info_filename}++) {
+					my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
+					Fink::Config::set_options( {
+						'verbosity' => 3,
+						'Pedantic'  => 1
+											   } );
+					if(!Fink::Validation::validate_info_file($info_filename)) {
+						if(Fink::Config::get_option("validate") eq "on") {
+							die "Please correct the above problems and try again!\n";
+						} else {
+							warn "Validation of .info failed.\n";
+						}
 					}
+					Fink::Config::set_options(\%saved_options);
 				}
-				Fink::Config::set_options(\%saved_options);
 			}
 		}
 
