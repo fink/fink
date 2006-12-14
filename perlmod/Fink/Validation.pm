@@ -427,15 +427,48 @@ sub validate_info_file {
 		}
 	}
 
-	( $pkginvarname = $pkgname = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
+	# figure out %-exp map for canonical Type representation
+	if (defined ($type = $properties->{type})) {
+		foreach my $type_atom (split(/,/, $type)) {
+			my($type, $subtype);
+
+			if ($type_atom =~ /^\s*(\S+)\s*\(.*\)\s*$/) {
+				# have paren subtype, so use blank
+				($type, $subtype) = ($1, '');
+			} elsif ($type_atom =~ /^\s*(\S+)\s+(\S+)\s*$/) {
+				# have single subtype, so use it
+				($type, $subtype) = ($1, $2);
+			} elsif ($type_atom =~ /^\s*(\S+)\s*$/) {
+				# no subtype, so use type
+				($type, $subtype) = ($1, $1);
+			} else {
+				# something else...give up on this atom
+				print "Error interpretting Type entry \"$type_atom\". ($filename)\n";
+				$looks_good = 0;
+				next;
+			}
+
+			# getting here means we have a valid atom; build %-exp map
+			( $expand->{"type_raw[$type]"} = $subtype );
+			( $expand->{"type_pkg[$type]"} = $subtype ) =~ s/\.//g;
+			( $expand->{"type_num[$type]"} = $subtype ) =~ s/[^\d]//g;
+		}
+	}
+
+	$pkgname = &expand_percent($properties->{package}, $expand, $filename.' Package');
+
+	$pkgname =~ s/-+/-/g;  # variants with Package: foo-%type_*[bar]
+	$pkgname =~ s/-*$//g;  # leave extraneous hyphens
+
+	( $pkginvarname = $properties->{package} ) =~ s/\%type_(raw|pkg|num)\[.*?\]//g;
+
 	# right now we don't know how to deal with variants too well
+	# FIXME: this is a bit suspect:
+	#   Does %lib only exist for Type:lib?
+	#   Why does validation depend on the machine on which it's running?
 	if (defined ($type = $properties->{type}) ) {
 		$type =~ s/(\S+?)\s*\(:?.*?\)/$1 ./g;  # use . for all subtype lists
 		$type_hash = Fink::PkgVersion->type_hash_from_string($type,$filename);
-		foreach (keys %$type_hash) {
-			( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
-			( $expand->{"type_num[$_]"} = $type_hash->{$_} ) =~ s/[^\d]//g;
-		}
 		$expand->{"lib"} = "lib";
 		if (exists $type_hash->{"-64bit"}) {
 			if ($type_hash->{"-64bit"} eq "-64bit") {
@@ -448,7 +481,6 @@ sub validate_info_file {
 				}
 			}
 		}
-		$pkgname = &expand_percent($pkgname, $expand, $filename.' Package');
 	}
 
 	$pkgversion = $properties->{version};
@@ -499,51 +531,7 @@ sub validate_info_file {
 	# .info filename contains parent package-name (without variants)
 	# and may contain arch and/or distro and/or version-revision components
 
-	# FIXME: this doesn't do the right thing if the package name contains
-	# %type_raw[]
-
-	{
-	my $base_filename = $pkgname;
-	# variants with Package: foo-%type[bar] leave excess hyphens
-	$base_filename =~ s/-+/-/g;
-	$base_filename =~ s/-*$//g;
-
-	# build permutations
-	my @filearch = ("");
-	my @filedist = ("");
-	my @filesuffix = ("", "-$pkgversion", "-$pkgversion-$pkgrevision");
-	my @ok_filenames;
-	if (my $arch = $properties->{architecture}) {
-		if ($arch !~ /,/) {
-			# single-arch package
-			$arch =~ s/\s+//g;
-			
-			push @filearch, ("-$arch");
-		}
-	}
-	if (my $dist = $properties->{distribution}) {
-		if ($dist !~ /,/) {
-			# single-dist package
-			$dist =~ s/\s+//g;
-			
-			push @filedist, ("-$dist");
-		}
-	}
-	foreach my $rch (@filearch) {
-		foreach my $dst (@filedist) {
-			foreach my $sfx (@filesuffix) {
-				push @ok_filenames, "$base_filename$rch$dst$sfx";
-			}
-		}
-	}
-
-	map $_ .= ".info", @ok_filenames;
-
-	unless (grep $filename eq $_, @ok_filenames) {
-		print "Warning: Incorrect filename '$filename'. Should be one of:\n", map "\t$_\n", @ok_filenames;
-		$looks_good = 0;
-	}
-	}
+	$looks_good = 0 unless &_validate_info_filename($properties, $filename, $pkgname);
 
 	# Make sure Maintainer is in the correct format: Joe Bob <jbob@foo.com>
 	$value = $properties->{maintainer};
@@ -935,6 +923,53 @@ sub validate_info_file {
 	}
 
 	return $looks_good;
+}
+
+# Return a boolean indicating whether the given $filename (no dir
+# hierarchy) is appropriate for the given .info $properties hash when
+# used with the $canonical_pkg packagename. If not, a warning is
+# issued.
+sub _validate_info_filename {
+	my $properties = shift;     # hashref (will not be altered)
+	my $filename = shift;       # filename of .info file
+	my $canonical_pkg = shift;  # already %-expanded
+
+	my $looks_good = 1;
+
+	# build permutations
+	my @filearch = ("");
+	my @filedist = ("");
+	my @filesuffix = ("", "-".$properties->{version}, "-".$properties->{version}."-".$properties->{revision});
+	my @ok_filenames;
+	if (my $arch = $properties->{architecture}) {
+		if ($arch !~ /,/) {
+			# single-arch package
+			$arch =~ s/\s+//g;
+			
+			push @filearch, ("-$arch");
+		}
+	}
+	if (my $dist = $properties->{distribution}) {
+		if ($dist !~ /,/) {
+			# single-dist package
+			$dist =~ s/\s+//g;
+			
+			push @filedist, ("-$dist");
+		}
+	}
+	foreach my $rch (@filearch) {
+		foreach my $dst (@filedist) {
+			foreach my $sfx (@filesuffix) {
+				push @ok_filenames, "$canonical_pkg$rch$dst$sfx.info";
+			}
+		}
+	}
+	
+	unless (grep $filename eq $_, @ok_filenames) {
+		print "Warning: Incorrect filename '$filename'. Should be one of:\n", map "\t$_\n", @ok_filenames;
+		return 0;
+	}
+	return 1;
 }
 
 # checks that are common to a parent and a splitoff package of a .info file
