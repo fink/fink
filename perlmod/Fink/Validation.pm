@@ -497,10 +497,13 @@ sub validate_info_file {
 	#
 
 	# .info filename contains parent package-name (without variants)
-	# and may contain version-revision and/or arch components
+	# and may contain arch and/or distro and/or version-revision components
+
+	# FIXME: this doesn't do the right thing if the package name contains
+	# %type_raw[]
+
 	{
 	my $base_filename = $pkgname;
-
 	# variants with Package: foo-%type[bar] leave excess hyphens
 	$base_filename =~ s/-+/-/g;
 	$base_filename =~ s/-*$//g;
