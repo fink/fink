@@ -1,13 +1,8 @@
-2006-12-09  Christian Schaffner  <chris01@users.sourceforge.net>
+2006-12-13  Dave Morrison  <drm@finkproject.org>
 
-	* Config.pm: Add a new function that returns a ref to a hash with keys 
-	'user', 'group', and 'user:group' and values depending on whether the 
-	option build_as_nobody is set or not. Also checks for the existence of the 
-	user and group 'fink-bld' if build_as_nobody is set. If either the user or 
-	the group 'fink-bld' can't be found the method falls back to 'nobody'.
-	* PkgVersion.pm: Use build_as_user_group to chown and chgrp
-	* Services.pm: Use build_as_user_group to run build script
-	
+	* Validation.pm: Document the problem with %type_raw[] in package
+	name.
+
 2006-12-08  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Change allowed filenames for .info file, to: 
