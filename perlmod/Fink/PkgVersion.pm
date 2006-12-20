@@ -2765,7 +2765,7 @@ sub atom_is_obsolete {
 
 =item match_package
 
-  my $result = Fink::PkgVersion::match_package($pkgspec, %opts);
+  my $result = Fink::PkgVersion->match_package($pkgspec, %opts);
 
 Find a PkgVersion by matching a specification. Return undef
 on failure.
