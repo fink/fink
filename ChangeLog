@@ -1,3 +1,8 @@
+2006-12-28  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-virtual-pkgs.in: Do not overwrite apt's data transfer
+	file. Use more canonical Getopt syntax.
+
 2006-12-09  Dave Morrison  <drm@finkproject.org>
 
 	* REVISION: add a line for 10.5 to allow bootstrapping

@@ -22,6 +22,8 @@
 require 5.008_001;  # perl 5.8.1 or newer required
 use strict;
 use Getopt::Long;
+use Fcntl;
+
 my $standalone = 0;
 my $basepath = '@BASEPATH@';
 
@@ -35,18 +37,17 @@ my %options =
 		"apt" => 0,
 		"debug" => 0,
 		"dpkg" => 0,
-		"version" => 0,
    );
 GetOptions(
-	'apt|a' => sub {  $options{apt} = 1},
-	'debug' => sub { $options{debug} = 1},
-	'dpkg|d' => sub { $options{dpkg} = 1},
+	'apt|a' => \$options{apt},
+	'debug' => \$options{debug},
+	'dpkg|d' => \$options{dpkg},
 	'help|h' => \&usage,
 	'version|v' => \&version,
 	) or die "Unknown option\n";
 if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt\n" }
 if ($options{apt}) {
-	open(FH,">/tmp/finkaptstatus") || die "Can not open file /tmp/finkaptstatus for writing\n";
+	sysopen(FH,'/tmp/finkaptstatus', O_WRONLY | O_EXCL | O_CREAT) || die "Can not open file /tmp/finkaptstatus for writing: $!\n";
 	select FH;
     }
 if ($standalone == 0)
