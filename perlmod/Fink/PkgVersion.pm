@@ -24,7 +24,7 @@
 package Fink::PkgVersion;
 use Fink::Base;
 use Fink::Services qw(&filename &execute
-					  &expand_percent &latest_version
+					  &expand_percent &expand_percent2 &latest_version
 					  &collapse_space &read_properties &read_properties_var
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &version_cmp
@@ -357,6 +357,7 @@ sub pkgversions_from_properties {
 
 	# create object for this particular version
 	my $pkgversion = $class->new_from_properties($properties, %options);
+	return () unless exists $pkgversion->{package};  # trap instantiation failures
 	
 	# Handle Architecture and Distribution fields. We should do this before
 	# instantiating the PV objects, but that would mean having to
@@ -538,7 +539,9 @@ sub initialize {
 			} elsif ($config->param('Architecture') eq "i386" ) {
 				$expand->{"lib"} = "lib/x86_64";
 			} else {
-				die "Your Architecture is not suitable for 64bit libraries.\n";
+				print_breaking_stderr "Skipping $self->{_filename}\n";
+				delete $self->{package};
+				return;
 			}
 		}
 	}
@@ -549,18 +552,26 @@ sub initialize {
 		$expand->{'n'}  = $expand->{'N'};  # allow for a typo
 	}
 	
-	# Setup invariant name
 	$self->{_package_invariant} = $self->{package};
-	$self->{_package_invariant} =~ s/\%type_(raw|pkg)\[.*?\]//g;
-	# must always call expand_percent even if no Type or parent in
-	# order to make sure Maintainer doesn't have bad % constructs
-	$self->{_package_invariant} = &expand_percent($self->{_package_invariant},
-		$expand, "$self->{_filename} \"package\"");
-	
+
 	# Setup basic package name
 	# must always call expand_percent even if no Type in order to make
-	# sure we don't have %type_*[] or other bad % constructs
-	$self->{package} = &expand_percent($self->{package},
+	# sure we don't have bogus %type_*[] or other bad % constructs
+	# (do %-exp on complete Package first in order to catch any %-exp problems)
+	unless (defined($self->{package} = &expand_percent2(
+						$self->{package}, $expand,
+						'err_action' => 'undef',
+						'err_info'   => "$self->{_filename} \"package\""
+					))) {
+		print_breaking_stderr "Skipping $self->{_filename}\n";
+		delete $self->{package};
+		return;
+	};
+
+	# Setup invariant name
+	$self->{_package_invariant} =~ s/\%type_(raw|pkg)\[.*?\]//g;
+	# %-exp of Package already caught any %-exp problems
+	$self->{_package_invariant} = &expand_percent($self->{_package_invariant},
 		$expand, "$self->{_filename} \"package\"");
 	
 	### END handle types

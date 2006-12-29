@@ -1,3 +1,11 @@
+2006-12-29  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Warn and ignore .info instead of dieing when
+	instantiating with a Package field containing unknown %-exps
+	* Services.pm: New expand_percent2 with more flexible API than the
+	old expand_percent (which has been rewritten as a wrapper around
+	the new one)
+
 2006-12-14  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Factor .info filename checks out of .info

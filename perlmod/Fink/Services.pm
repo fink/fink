@@ -36,6 +36,7 @@ use File::Find;
 use File::Spec;
 use File::Temp qw(tempfile);
 use Storable; # safe in the modern world
+use Carp;
 
 use strict;
 use warnings;
@@ -53,7 +54,7 @@ BEGIN {
 	@EXPORT_OK	 = qw(&read_config &read_properties &read_properties_var
 					  &read_properties_multival &read_properties_multival_var
 					  &execute
-					  &expand_percent
+					  &expand_percent &expand_percent2
 					  &filename
 					  &version_cmp &latest_version &sort_versions
 					  &parse_fullversion
@@ -679,19 +680,13 @@ sub prepare_script {
     my $string = expand_percent $template, \%map, $err_info, $err_action;
 
 Performs percent-expansion on the given multiline $template according
-to %map (if one is defined). If a line in $template begins with #
-(possibly preceeded with whitespace) it is treated as a comment and no
-expansion is performed on that line.
+to %map (if one is defined). This is a wrapper around percent_expand2;
+see the documentation for that function for more information about
+percent-expansion.
 
-The %map is a hash where the keys are the strings to be replaced (not
-including the percent char). The mapping can be recursive (i.e., a
-value that itself has a percent char), and multiple substitution
-passes are made to deal with this situation. Recursing is currently
-limitted to a single additional level (only (up to) two passes are
-made). If there are still % chars left after the recursion, that means
-$template needs more passes (beyond the recursion limit) or there are
-% patterns in $template that are not in %map. The value of $err_action
-determins what happens if either of these two cases occurs:
+The value of $err_action determines what happens if the string cannot
+be successfully and fully percent-expanded. The following values are
+known:
 
   0 (or undef or not specified)
          die with error message
@@ -700,6 +695,40 @@ determins what happens if either of these two cases occurs:
 
 If given, $err_info will be appended to the error message. "Ignore" in
 this context means the unknown % is left intact in the string.
+
+=cut
+
+sub expand_percent {
+	my $s = shift;
+	my $map = shift || {};
+	my $err_info = shift;
+	my $err_action = shift || 0;
+
+	return &expand_percent2(
+		$s, $map,
+		'err_action' => (qw/ die warn ignore /)[$err_action],
+		'err_info' => $err_info,
+		);
+}
+
+=item expand_percent2
+
+    my $string = expand_percent2 $template, \%map;
+    my $string = expand_percent2 $template, \%map, %options;
+
+Performs percent-expansion on the given multiline $template according
+to %map. If a line in $template begins with # (possibly preceeded with
+whitespace) it is treated as a comment and no expansion is performed
+on that line.
+
+The %map is a hash where the keys are the strings to be replaced (not
+including the percent char). The mapping can be recursive (i.e., a
+value that itself has a percent char), and multiple substitution
+passes are made to deal with this situation. Recursing is currently
+limitted to a single additional level (only (up to) two passes are
+made). If there are still % chars left after the recursion, that means
+$template needs more passes (beyond the recursion limit) or there are
+% patterns in $template that are not in %map.
 
 To get an actual percent char in the string, protect it as %% in
 $template (similar to printf()). This occurs whether or not there is a
@@ -715,13 +744,48 @@ cause unpredictable results (i.e., "a" and "arch" is bad but "c" and
 Curly-braces can be used to explicitly delimit a key. If both %f and
 %foo exist, one should use %{foo} and %{f} to avoid ambiguity.
 
+The following %options are known:
+
+=over 4
+
+=item err_action=>$s (optional)
+
+The value of the err_action option determines what happens if the
+string cannot be successfully and fully percent-expanded. The
+following err_action string values are known:
+
+=over 4
+
+=item "die" (or no err_action option given)
+
+Die with error message
+
+=item "warn"
+
+Print error message but continue, returning a partially-processed string
+
+=item "ignore"
+
+Silently ignore, returning a partially-processed string
+
+=item "undef"
+
+Print error message and return undef
+
+=back
+
+=item err_info=>$s (optional)
+
+The string $s will be appended to the error message.
+
+=back
+
 =cut
 
-sub expand_percent {
+sub expand_percent2 {
 	my $s = shift;
-	my $map = shift || {};
-	my $err_info = shift;
-	my $err_action = shift || 0;
+	my $map = shift;
+	my %options = @_;
 	my ($key, $value, $i, @lines, @newlines, %map, $percent_keys);
 
 	return $s if (not defined $s);
@@ -767,13 +831,21 @@ sub expand_percent {
 			# The presence of a sequence of an odd number
 			# of percent chars means we have unexpanded
 			# percents besides (%% => %) left. Error out.
-			if ($s =~ /(?<!\%)(\%\%)*\%(?!\%)/ and $err_action != 2) {
+			if ($s =~ /(?<!\%)(\%\%)*\%(?!\%)/) {
 				my $errmsg = "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"";
-				$errmsg .= " ($err_info)" if defined $err_info;
+				$errmsg .= " ($options{err_info})" if defined $options{err_info};
 				$errmsg .= "\n";
-				$err_action
-					? print $errmsg
-					: die $errmsg;
+				if ($options{err_action} eq 'die' || !defined $options{err_action}) {
+					die $errmsg;
+				} elsif ($options{err_action} eq 'warn') {
+					print $errmsg;
+				} elsif ($options{err_action} eq 'ignore') { 
+				} elsif ($options{err_action} eq 'undef') {
+					print $errmsg;
+					return undef;
+				} else {
+					croak "Unknown err_action \"$options{error_action}\"";
+				}
 			}
 			# Now handle %% => %
 			$s =~ s/\%\%/\%/g;
