@@ -1,5 +1,9 @@
 2006-12-29  Daniel Macks  <dmacks@netspace.org>
 
+	* Services.pm: execute(): quick-exit if passed null script
+
+2006-12-29  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Warn and ignore .info instead of dieing when
 	instantiating with a Package field containing unknown %-exps
 	* Services.pm: New expand_percent2 with more flexible API than the

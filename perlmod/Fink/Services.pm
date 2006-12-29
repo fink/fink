@@ -531,6 +531,8 @@ sub execute {
 	my %options = ( defined $_[0] ? @_ : () );
 	my ($retval, $cmd);
 
+	return 0 unless defined $script && length $script;
+
 	# drop root if requested
 	my $drop_root = $options{'nonroot_okay'} && Fink::Config::get_option("build_as_nobody") == 1;
 	if ($drop_root && $< != 0) {
