@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2006 The Fink Package Manager Team
+# Copyright (c) 2001-2007 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -574,9 +574,8 @@ EOSCRIPT
 		# the env that existed outside the sudo
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
 		unshift @wrap, 'env' if @wrap;
-		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
-		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
-		$wrap_token = "$sudo_cmd [ENV] sh -c";
+		@wrap = (qw/ sudo -u nobody /, @wrap, qw/ sh -c /);
+		$wrap_token = 'sudo -u nobody [ENV] sh -c';
 	}
 
 	# Execute each line as a separate command.

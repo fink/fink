@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2006 The Fink Package Manager Team
+# Copyright (c) 2001-2007 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -320,7 +320,7 @@ HELPFORMAT
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2006 The Fink Package Manager Team
+Copyright (c) 2001-2007 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -968,34 +968,6 @@ sub binary_requested {
 		$binary_request = 0;
 	}
 	return $binary_request;
-}
-
-=item build_as_user_group
-
-	my $result = Fink::Config::build_as_user_group;
-
-Returns a ref to a hash with keys 'user', 'group', and 'user:group' and values 
-depending on whether the option build_as_nobody is set or not. Also checks for 
-the existence of the user and group 'fink-bld' if build_as_nobody is set. If 
-either the user or the group 'fink-bld' can't be found the method falls back
-to 'nobody'.
-
-=cut
-
-sub build_as_user_group {
-	my $result;
-	if (get_option("build_as_nobody")) {
-		if (!getpwnam('fink-bld') or !getgrnam('fink-bld')) {
-			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please install package 'passwd' (>= 20061017) to build as user 'fink-bld'.\n";
-			$result = {qw/ user nobody group nobody user:group nobody:nobody /};
-		} else {
-			$result = {qw/ user fink-bld group fink-bld user:group fink-bld:fink-bld /};
-		}
-	} else {
-			$result = {qw/ user root group admin user:group root:admin /};
-	}
-
-	return $result;
 }
 
 =item has_flag
