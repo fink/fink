@@ -12,7 +12,7 @@ CompileScript: <<
  make all G= ZCAT=zcat
 <<
 InstallScript: <<
- make install G= ZCAT=zcat prefix=%i
+ make -j1 install G= ZCAT=zcat prefix=%i
  mkdir -p %i/share
  mv %i/man %i/share/
  mv %i/info %i/share/
