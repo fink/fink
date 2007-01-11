@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2006 The Fink Package Manager Team
+# Copyright (c) 2001-2007 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -320,7 +320,7 @@ HELPFORMAT
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2006 The Fink Package Manager Team
+Copyright (c) 2001-2007 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
