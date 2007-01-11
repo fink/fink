@@ -1,3 +1,8 @@
+2007-01-10  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Don't summarize BDO/obsolete violations if the
+	warnings themselves aren't displayed.
+
 2006-12-29  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: execute(): quick-exit if passed null script

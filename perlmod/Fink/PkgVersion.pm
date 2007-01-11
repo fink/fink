@@ -2331,7 +2331,7 @@ sub resolve_depends {
 		if ($violated) {
 			if(Fink::Config::get_option("validate") eq "on") {
 				die "Please correct the above problems and try again!\n";
-			} else {
+			} elsif ($config->verbosity_level() > 1) {
 				warn "Validation of splitoffs failed.\n";
 			}
 		}
