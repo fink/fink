@@ -1,3 +1,8 @@
+2007-01-11  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-mirrors.info.in, website: update website URL
+
+
 2006-10-16  Dave Morrison  <drm@finkproject.org>
 
 	* master, rsync: restored bru.be.eu at request of european users
