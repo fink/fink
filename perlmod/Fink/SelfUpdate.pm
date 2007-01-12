@@ -240,7 +240,7 @@ sub check {
 		if ($distribution eq "10.1") {
 				$currentfink = "LATEST-FINK";
 		}
-		my $website = "http://fink.sourceforge.net";
+		my $website = "http://www.finkproject.org";
 		if (-f "$basepath/lib/fink/URL/website") {
 			$website = cat "$basepath/lib/fink/URL/website";
 			chomp($website);

@@ -124,7 +124,7 @@ uname(1) call.  This should *always* exist.
 This package represents the kernel (XNU (Darwin) on Mac OS X),
 which is a core part of the operating system.
 END
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{compilescript} = &gen_compile_script($hash);
 	$self->{$hash->{package}} = $hash;
 	
@@ -142,7 +142,7 @@ installations (but not pure Darwin systems).
 	$hash = {};
 	$hash->{package} = "macosx";
 	$hash->{description} = "[virtual package representing the system]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	if (Fink::Services::get_osx_vers_long() ne 0) {
 		$hash->{status} = STATUS_PRESENT;
 		$hash->{version} = Fink::Services::get_osx_vers_long()."-1";
@@ -180,7 +180,7 @@ print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 		$hash->{status} = STATUS_ABSENT;
 	}
 	$hash->{description} = "[virtual package representing the 64bit capability of the CPU]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 The presence of the 64bit-cpu package indicates that the CPU on which we 
 are running is 64bit capable.
@@ -207,7 +207,7 @@ purposes of versioned cups-dev dependencies.
 	$hash->{status} = STATUS_ABSENT;
 	$hash->{description} = "[virtual package representing CUPS headers]";
 	$hash->{provides} = "system-cups-dev";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 This package represents the version of CUPS headers installed
 in /usr/include/cups.
@@ -244,7 +244,7 @@ version.
 	$hash = {};
 	$hash->{package} = "system-perl";
 	$hash->{description} = "[virtual package representing perl]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 This package represents the version of perl installed on the
 system in /usr/bin/perl.
@@ -373,7 +373,7 @@ directory exists.
 			$hash->{package}     = "system-java${ver}";
 			$hash->{version}     = $dir . "-1";
 			$hash->{description} = "[virtual package representing Java $dir]";
-			$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{provides}    = 'system-java';
 			if ($ver >= 14) {
 				$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
@@ -404,7 +404,7 @@ directory exists.
 				$hash->{status}      = STATUS_PRESENT;
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir development headers]";
-				$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+				$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 				$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
@@ -479,7 +479,7 @@ the system Java extensions directory.
 	$hash->{status}      = STATUS_PRESENT;
 	$hash->{version}     = "0-1";
 	$hash->{description} = "[virtual package representing Java3D]";
-	$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail}  = <<END;
 This package represents the Java3D API.  If it does not show
 as installed, you can download it from Apple at:
@@ -519,7 +519,7 @@ file exists in the system Java extensions directory.
 	$hash->{status}      = STATUS_PRESENT;
 	$hash->{version}     = "0-1";
 	$hash->{description} = "[virtual package representing Java Advanced Imaging]";
-	$hash->{homepage}    = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail}  = <<END;
 This package represents the Java Advanced Imaging API.  If it
 does not show as installed, you can download it from Apple at:
@@ -586,7 +586,7 @@ as part of the XCode tools.
 			}
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "[virtual package representing the Mac OS X $versiontext SDK]";
-			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{builddependsonly} = "true";
 			$hash->{descdetail} = <<END;
 This package represents the Mac OS X $versiontext SDK
@@ -636,7 +636,7 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	$hash->{package} = "cctools";
 	$hash->{status} = STATUS_PRESENT;
 	$hash->{description} = "[virtual package representing the developer tools]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{builddependsonly} = "true";
 	$hash->{descdetail} = <<END;
 This package represents the C/C++/ObjC developer tools
@@ -684,7 +684,7 @@ if ($cctools_version) {
 	$hash = {};
 	$hash->{package} = "cctools-single-module";
 	$hash->{description} = "[virtual package, your dev tools support -single_module]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{builddependsonly} = "true";
 	$hash->{descdetail} = <<END;
 This package represents support for the -single_module
@@ -804,7 +804,7 @@ cc1plus.
 	$hash->{status} = STATUS_ABSENT;
 	$hash->{version} = "3.3-1";
 	$hash->{description} = "[virtual package representing a broken gcc compiler]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{builddependsonly} = "true";
 	$hash->{descdetail} = <<END;
 This package represents broken versions of the GCC compiler
@@ -849,7 +849,7 @@ XCode (OS X >= 10.3). This package is considered "installed" iff
 		version     => '0-1',
 		status      => STATUS_PRESENT,
 		description => '[virtual package representing developer commands]',
-		homepage    => 'http://fink.sourceforge.net/faq/usage-general.php#virtpackage',
+		homepage    => 'http://www.finkproject.org/faq/usage-general.php#virtpackage',
 		descdetail  => <<END,
 This package represents the basic command-line compiler and
 related programs.  In order for this package to be "installed",
@@ -888,7 +888,7 @@ in /usr/lib.
 	$hash->{package} = "gimp-print-shlibs";
 	$hash->{version} = "4.2.5-1";
 	$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 This package represents the version of Gimp-Print that
 comes with Mac OS X 10.3 and above.  If it shows as not
@@ -918,7 +918,7 @@ in /usr/lib.
 	$hash->{package} = "gimp-print7-shlibs";
 	$hash->{version} = "5.0.0-beta2-1";
 	$hash->{description} = "[virtual package representing Apple's install of Gimp Print]";
-	$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
 This package represents the version of Gimp-Print that
 comes with Mac OS X 10.4 and above.  If it shows as not
@@ -966,7 +966,7 @@ Apple, or a similarly-compatible version.  For more
 information, please see the FAQ entry on X11
 installation at:
 
-  http://fink.sourceforge.net/faq/usage-packages.php#apple-x11-wants-xfree86
+  http://www.finkproject.org/faq/usage-packages.php#apple-x11-wants-xfree86
 
 END
 
@@ -975,7 +975,7 @@ END
 			$hash->{version} = "0-0";
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "[virtual package representing Apple's install of X11]";
-			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
 			$hash->{provides} = 'x11-shlibs, libgl-shlibs, xft1-shlibs, xft2-shlibs, fontconfig1-shlibs, xfree86-base-threaded-shlibs';
@@ -986,7 +986,7 @@ END
 			$hash->{version} = "0-0";
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "[virtual package representing Apple's install of X11]";
-			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
 			$hash->{provides} = 'x11, xserver, libgl, xft1, xft2, fontconfig1, xfree86-base-threaded';
@@ -997,7 +997,7 @@ END
 			$hash->{version} = "0-0";
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "[virtual package representing Apple's install of X11]";
-			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
 			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, xft2-dev, fontconfig1-dev, xfree86-base-threaded-dev';
@@ -1008,7 +1008,7 @@ END
 			$hash->{version} = "0-0";
 			$hash->{status} = STATUS_ABSENT;
 			$hash->{description} = "Manually installed X11 components";
-			$hash->{homepage} = "http://fink.sourceforge.net/faq/usage-general.php#virtpackage";
+			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = <<END;
 This package represents the various components of an
 X11 on your system that is not installed through Fink.
@@ -1024,7 +1024,7 @@ installed all components of it.
 For more information, please see the FAQ entry on X11
 installation at:
 
-  http://fink.sourceforge.net/faq/usage-packages.php#apple-x11-wants-xfree86
+  http://www.finkproject.org/faq/usage-packages.php#apple-x11-wants-xfree86
 
 END
 			$hash->{compilescript} = &gen_compile_script($hash);
@@ -1246,7 +1246,7 @@ in the library.
 							'version'     => "2:${xver}-2",
 							'description' => "[placeholder for user installed x11]",
 							'descdetail'  => $descdetail,
-							'homepage'    => "http://fink.sourceforge.net/faq/usage-general.php#virtpackage",
+							'homepage'    => "http://www.finkproject.org/faq/usage-general.php#virtpackage",
 							'provides'    => join(', ', @{$provides->{$pkg}}),
 						};
 						$self->{$pkg}->{compilescript} = &gen_compile_script($self->{$pkg});
@@ -1568,7 +1568,7 @@ sub gen_gcc_hash {
 		package          => $package,
 		version          => $version . '-' . $revision,
 		description      => "[virtual package representing the$is_64bit gcc $version compiler]",
-		homepage         => 'http://fink.sourceforge.net/faq/comp-general.php#gcc2',
+		homepage         => 'http://www.finkproject.org/faq/comp-general.php#gcc2',
 		builddependsonly => 'true',
 		descdetail       => <<END,
 This package represents the$is_64bit gcc $version compiler,

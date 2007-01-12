@@ -300,7 +300,7 @@ Common options:
 %opts{help,quiet,version,verbose,yes,use-binary-dist}
 
 See the fink(8) manual page for a complete list of commands and options.
-Visit http://fink.sourceforge.net/ for further information.
+Visit http://www.finkproject.org for further information.
 
 HELPFORMAT
 		# Err if no command

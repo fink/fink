@@ -1,3 +1,7 @@
+2007-01-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, SelfUpdate.pm, VirtPackage.pm: update website URL
+
 2007-01-10  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Don't summarize BDO/obsolete violations if the
