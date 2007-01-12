@@ -32,7 +32,6 @@ NoSetCFLAGS: true
 NoSetLDFLAGS: true
 SetLDFLAGS: -Wl,-search_paths_first
 #NoSetCPPFLAGS: true
-#SetCPPFLAGS: -no-cpp-precomp
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<

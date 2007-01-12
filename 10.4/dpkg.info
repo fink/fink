@@ -17,7 +17,7 @@ PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
 <<
-SetCFLAGS: -no-cpp-precomp -I%p/include
+SetCFLAGS: -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
