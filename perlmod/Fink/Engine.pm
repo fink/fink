@@ -1581,7 +1581,32 @@ sub real_install {
 			$deb_from_binary_dist = 1;
 		}
 	}
-		
+
+	my $cache_file = Fink::Scanpackages->default_cache;
+	if (not -f $cache_file or (-M $cache_file > 14)) {
+		my $oldindexes = lc(Fink::Config::get_option("OldIndexes", "warn"));
+		if ($oldindexes !~ /^(ignore|update|warn)$/) {
+			$oldindexes = 'warn';
+			print_breaking_stderr "WARNING: unknown value for 'OldIndexes' in fink.conf: $oldindexes";
+		}
+
+		my $up_to_date;
+		if (-f $cache_file)
+		{
+			$up_to_date = "WARNING: your info file cache has not been updated for " . int(-M $cache_file) . " days.";
+		} else {
+			$up_to_date = "WARNING: your info file cache does not exist.";
+		}
+
+		if ($oldindexes eq "warn") {
+			print_breaking_stderr $up_to_date . "  You should run 'fink selfupdate' to get the latest package descriptions.\n";
+		} elsif ($oldindexes eq "update") {
+			print_breaking_stderr $up_to_date . "  Fink will now update it automatically.";
+			require Fink::SelfUpdate;
+			Fink::SelfUpdate::check();
+		}
+	}
+
 	# add requested packages
 	foreach $pkgspec (@_) {
 		# resolve package name
