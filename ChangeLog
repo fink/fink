@@ -1,3 +1,8 @@
+2007-01-22  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.25.3, a bug-fix 
+	release on branch_0_25
+
 2007-01-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* bootstrap: use env to set PERL5LIB since sudo strips it
