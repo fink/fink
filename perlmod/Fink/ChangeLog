@@ -1,3 +1,8 @@
+2007-01-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Bootstrap.pm, Engine.pm: use env to set PERL5LIB since 10.4.9
+	sudo strips it
+
 2006-12-13  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Document the problem with %type_raw[] in package
