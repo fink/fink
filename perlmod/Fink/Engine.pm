@@ -323,7 +323,9 @@ sub restart_as_root {
 
 	my $method = $config->param_default("RootMethod", "sudo");
 	if ($method eq "sudo") {
-		$cmd = "/usr/bin/sudo $cmd";
+		my $env = '';
+		$env = "/usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}'" if (exists $ENV{'PERL5LIB'} and defined $ENV{'PERL5LIB'});
+		$cmd = "/usr/bin/sudo $env $cmd";
 	} elsif ($method eq "su") {
 		$cmd = "/usr/bin/su root -c '$cmd'";
 	} else {
