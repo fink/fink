@@ -1,3 +1,7 @@
+2007-01-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* bootstrap: use env to set PERL5LIB since sudo strips it
+
 2006-11-28  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.25.2, a bug-fix 

@@ -628,7 +628,9 @@ sub find_rootmethod {
 my $bpath = shift;
 	
 	if ($> != 0) {
-		exit &execute("sudo ./inject.pl $bpath");
+		my $env = '';
+		$env = "/usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}'" if (exists $ENV{'PERL5LIB'} and defined $ENV{'PERL5LIB'});
+		exit &execute("/usr/bin/sudo $env ./inject.pl $bpath");
 	}
 	umask oct("022");
 }
