@@ -126,7 +126,9 @@ if ($> != 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
 	}
 	if ($answer eq "sudo") {
-		$cmd = "/usr/bin/sudo /usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}' $cmd";
+		$env = '';
+		$env = "/usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}'" if (exists $ENV{'PERL5LIB'} and defined $ENV{'PERL5LIB'});
+		$cmd = "/usr/bin/sudo $env $cmd";
 	} elsif ($answer eq "su") {
 		$cmd = "$cmd | /usr/bin/su";
 	} else {
