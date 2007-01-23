@@ -1,3 +1,7 @@
+2007-01-22  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Make sure explicit --logfile can be written.
+
 2007-01-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Bootstrap.pm, Engine.pm: use env to set PERL5LIB since 10.4.9

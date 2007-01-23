@@ -5212,8 +5212,13 @@ sub log_output {
 				'build log filename'
 			);
 
+			# make sure logfile can be written
+			sysopen my $log_fh, $output_logfile, O_WRONLY | O_CREAT
+				or die "Can't write logfile $output_logfile: $!\n";
+			close $log_fh;
 			# No tests of explicitly given filename...trust that user
 			# knows what he's doing.
+
 		} else {
 			# no user-specified, so we'll use default
 			$output_logfile = '/tmp/fink-build-log'
