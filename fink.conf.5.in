@@ -130,6 +130,11 @@ Currently, the following categories of prompts exist:
 .It virtualdep - Choosing between alternative packages
 .El
 By default, no prompts are skipped.
+.It Cm OldIndexes: Ar ignore, update or warn
+When installing packages, fink will check if your package index is over 2 weeks
+old.  If it is, you can have fink automatically warn you, or even download
+updates for you.
+The default value is "warn".
 .It Cm NoAutoIndex: Ar boolean 
 Fink caches its package descripition files to save it having to read 
 and parse them all every time it runs. Fink checks whether or not the package 
