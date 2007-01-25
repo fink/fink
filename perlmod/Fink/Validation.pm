@@ -1196,11 +1196,15 @@ sub validate_info_component {
 		}
 	}
 
-	# Explicit interpretters in fink package building script should be
-	# called with -ev or -ex so that they abort if any command fails
+
+	# Special checks when package building script uses an explicit interp
+
+
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});
 		if ($value =~ /^\s*\#!\s*(\S+)([^\n]*)/) {
+
+			# Call with -ev or -ex so they abort if any command fails
 			my ($shell, $args) = ($1, $2);
 			$shell = basename $shell;
 			if (grep {$shell eq $_} qw/bash csh ksh sh tcsh zsh/) {
@@ -1212,6 +1216,12 @@ sub validate_info_component {
 					print "Warning: -v or -x flag not passed to explicit interpreter in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
+			}
+
+			# Try to make sure subshell failure is not ignored
+			if ($value =~ /^\s*\(.*\)\s*$/m) {
+					print "Warning: Parenthesized subshell return code not checked in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
 			}
 		}
 	}
