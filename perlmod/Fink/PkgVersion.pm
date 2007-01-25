@@ -2320,7 +2320,7 @@ sub resolve_depends {
 		if ($violated) {
 			if(Fink::Config::get_option("validate") eq "on") {
 				die "Please correct the above problems and try again!\n";
-			} else {
+			} elsif ($config->verbosity_level() > 1) {
 				warn "Validation of splitoffs failed.\n";
 			}
 		}
@@ -2765,7 +2765,7 @@ sub atom_is_obsolete {
 
 =item match_package
 
-  my $result = Fink::PkgVersion::match_package($pkgspec, %opts);
+  my $result = Fink::PkgVersion->match_package($pkgspec, %opts);
 
 Find a PkgVersion by matching a specification. Return undef
 on failure.
@@ -5218,8 +5218,13 @@ sub log_output {
 				'build log filename'
 			);
 
+			# make sure logfile can be written
+			sysopen my $log_fh, $output_logfile, O_WRONLY | O_CREAT
+				or die "Can't write logfile $output_logfile: $!\n";
+			close $log_fh;
 			# No tests of explicitly given filename...trust that user
 			# knows what he's doing.
+
 		} else {
 			# no user-specified, so we'll use default
 			$output_logfile = '/tmp/fink-build-log'
