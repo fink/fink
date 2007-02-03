@@ -1,3 +1,9 @@
+2007-02-03  Remi Mommsen <remigius.mommsen@cern.ch>
+
+	* Package.pm, PkgVersion.pm: Let the user choose which provider
+	to install in order to satisfy a virtual (provided) package.
+	(feature request 1635337)
+	
 2007-01-25  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: If explicit interp in *Script, don't ignore

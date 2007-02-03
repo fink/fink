@@ -2856,14 +2856,8 @@ sub match_package {
 			if ($opts{provides} eq 'return') {
 				return $package;
 			}
-			
-			# there's nothing we can do here...
-			unless ($opts{quiet}) {
-				print "\n";
-				$package->print_virtual_pkg;
-				print "\n";
-			}
-			return undef;
+			# choose provider for virtual package
+			return $package->choose_virtual_pkg_provider;
 		}
 	} elsif (not defined $package->get_version($version)) {
 		# try to match the version

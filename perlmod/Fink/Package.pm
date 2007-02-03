@@ -27,7 +27,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent &lock_wait &store_rename);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr
-				 &rejoin_text);
+				 &rejoin_text &prompt);
 use Fink::Config qw($config $basepath $dbpath);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
@@ -1206,16 +1206,83 @@ sub print_virtual_pkg {
 	
 	printf "The requested package '%s' is a virtual package, provided by:\n",
 		$self->get_name();
-	
+
+	my @providers = $self->get_latest_providers();
+	for my $pkg (@providers) {
+		printf "  %s\n", $pkg->get_fullname;
+	}
+}
+
+=item get_latest_providers
+
+  $package->get_latest_providers;
+
+Returns a list of providers for a virtual package. Only the latest version
+of each provider is returned.
+
+=cut
+
+sub get_latest_providers {
+	my $self = shift;
+
 	# Find providers, but only one version per package
 	my %providers;
 	for my $pv ($self->get_all_providers) {
 		$providers{$pv->get_name}{$pv->get_fullversion} = $pv;
 	}
+	my @latest_providers;
 	for my $pkg (sort keys %providers) {
 		my $vers = latest_version keys %{$providers{$pkg}};
-		printf "  %s\n", $providers{$pkg}{$vers}->get_fullname;
+		push(@latest_providers, $providers{$pkg}{$vers});
 	}
+	
+	return @latest_providers;
+}
+
+=item choose_virtual_pkg_provider
+
+  $package->choose_virtual_pkg_provider
+
+Returns the package which provides a virtual package. It allows the user
+to choose which package to install if there are multiple packages providing
+the requested virtual package.
+
+=cut
+
+sub choose_virtual_pkg_provider {
+	my $self = shift;
+
+	my @providers = $self->get_latest_providers();
+
+	if (@providers == 0) {
+		# no package provides it
+		return undef;
+	}
+	elsif (@providers == 1) {
+		# only one package provides it
+		return pop(@providers);
+	} 
+	else {
+		# check if any providers are already installed
+		foreach my $pvo (@providers) {
+			return $pvo if $pvo->is_installed();
+		}
+		# otherwise, let the user choose what to install
+		my $count = 0;
+		printf "\nThe requested package '%s' is a virtual package, provided by:\n",
+		$self->get_name();
+
+		for my $pkg (@providers) {
+			$count++;
+			printf "  [%d]  %s\n", $count, $pkg->get_fullname;
+		}
+		print "\n";
+		my $answer = prompt "Please select which package to install:", 
+		(default => $count, timeout => 20);
+
+		return $providers[$answer-1];
+	}
+	return undef;
 }
 
 =back
