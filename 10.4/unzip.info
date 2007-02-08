@@ -32,3 +32,5 @@ CompileScript: make -f unix/Makefile macosx
 InstallScript: make -f unix/Makefile install BINDIR=%i/bin MANDIR=%i/share/man/man1
 Suggests: zip
 
+# Fix for 10.5 (stop 'struct direntry' name conflict)
+Patch: %n.patch
