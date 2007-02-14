@@ -37,7 +37,7 @@ use warnings;
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION	 = 1.00;
+	$VERSION	 = 1.10;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
@@ -70,16 +70,32 @@ sub fetch_url {
 # returns 0 on success, 1 on error
 
 sub fetch_url_to_file {
-	my $origurl = shift;
-	my $file = shift;
-	my $custom_mirror = shift || 0;
-	my $tries = shift || 0;
-	my $cont = shift || 0;	
-	my $nomirror = shift || 0;
-	my $dryrun = shift || 0;
-	my $downloaddir = shift || "$basepath/src";
-	my $checksum = shift;
-	my $checksum_type = shift;
+	my ($origurl, $file, $custom_mirror, $tries, $cont, $nomirror, $dryrun, $downloaddir, $checksum, $checksum_type) = @_;
+	my $options = {};
+
+	if (ref $origurl eq 'HASH')
+	{
+		  $options = $origurl;
+
+		  $origurl       = $options->{'url'};
+		  $file          = $options->{'filename'};
+		  $custom_mirror = $options->{'custom_mirror'};
+		  $tries         = $options->{'tries'};
+		  $cont          = $options->{'continue'};
+		  $nomirror      = $options->{'skip_master_mirror'};
+		  $dryrun        = $options->{'dry_run'};
+		  $downloaddir   = $options->{'download_directory'};
+		  $checksum      = $options->{'checksum'};
+		  $checksum_type = $options->{'checksum_type'};
+	}
+
+	$custom_mirror = $custom_mirror || 0;
+	$tries         = $tries         || 0;
+	$cont          = $cont          || 0;
+	$nomirror      = $nomirror      || 0;
+	$dryrun        = $dryrun        || 0;
+	$downloaddir   = $downloaddir   || "$basepath/src";
+
 	my ($http_proxy, $ftp_proxy);
 	my ($url, $cmd, $cont_cmd, $result, $cmd_url);
 
@@ -297,7 +313,9 @@ sub fetch_url_to_file {
 		RETRY: {
 			if(defined $mirror_list[$mirrorindex])
 			{
-				$url = $mirror_list[$mirrorindex]->get_site_retry($nextmirror, $dryrun);
+				my $non_interactive = $dryrun;
+				$non_interactive = $options->{'try_all_mirrors'} if (exists $options->{'try_all_mirrors'} and $options->{'try_all_mirrors'});
+				$url = $mirror_list[$mirrorindex]->get_site_retry($nextmirror, $non_interactive);
 			} else {
 				return 1;	
 			}
