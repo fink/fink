@@ -534,6 +534,8 @@ sub do_direct_cvs {
 		}
 	}
 
+	touch "$dist/stamp-cvs-live";
+	rm_f "stamp-rsync-live", "$dist/stamp-rsync-live";
 	die "Updating using CVS failed. Check the error messages above.\n" if ($errors);
 
 }

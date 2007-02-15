@@ -47,6 +47,7 @@ use Fink::Notify;
 use Fink::Validation;
 use Fink::Checksum;
 use Fink::Scanpackages;
+use IO::Handle;
 
 use strict;
 use warnings;
@@ -1587,7 +1588,27 @@ sub real_install {
 	# don't bother doing this on point release, of course it's out-of-date  ;)
 	if ($config->param("SelfUpdateMethod") ne "point")
 	{
-		my $cache_file = Fink::Scanpackages->default_cache;
+		my $cache_file = Fink::Package->db_index;
+
+		my $dir = IO::Handle->new();
+		if (opendir($dir, "$basepath/fink/dists"))
+		{
+			for my $entry (readdir($dir))
+			{
+				if ($entry =~ /^stamp-/)
+				{
+					$cache_file = $basepath . '/fink/dists/' . $entry;
+					last;
+				}
+			}
+			closedir($dir);
+		}
+		else
+		{
+			warn "unable to open $basepath/fink/dists: $!";
+		}
+
+
 		if (not -f $cache_file or (-M $cache_file > 14)) {
 			my $oldindexes = lc(Fink::Config::get_option("OldIndexes", "warn"));
 			if ($oldindexes !~ /^(ignore|update|warn)$/) {
