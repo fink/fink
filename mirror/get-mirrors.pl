@@ -11,6 +11,8 @@ use HTML::TreeBuilder;
 use LWP::UserAgent;
 use WWW::Mechanize;
 use URI;
+use URI::Find;
+
 use vars qw($VERSION %keys %reverse_keys %files $debug $response);
 
 use vars qw($APACHE $CPAN $CTAN $DEBIAN $GIMP $GNOME $GNU $KDE);
@@ -268,26 +270,31 @@ if ($GIMP) {
 
 if ($GNOME) {
 	print "- getting gnome mirror list:\n";
-	$response = $mech->get( 'http://ftp.gnome.org/pub/GNOME/MIRRORS.html' );
+	$response = $mech->get( 'http://ftp.gnome.org/pub/GNOME/MIRRORS' );
 	if ($response->is_success) {
-		$files{'gnome'}->{'url'} = 'http://ftp.gnome.org/pub/GNOME/MIRRORS.html';
+		$files{'gnome'}->{'url'} = 'http://ftp.gnome.org/pub/GNOME/MIRRORS';
 		$files{'gnome'}->{'primary'} = 'ftp://ftp.gnome.org/pub/GNOME';
 		my $mirrors;
 		my @links = ($files{'gnome'}->{'primary'});
-	
-		for my $link ($mech->links) {
-			my $url = $link->url;
-			next if ($url =~ /^mailto/);
-			$url =~ s#/$##;
-			print "\t", $url, ": ";
-			if ($ua->get($url . '/MIRRORS')->content =~ /GNOME FTP Sites/gs) {
-				print "ok\n";
-				push(@links, $url);
-			} else {
-				print "failed\n";
-			}
-		}
-	
+
+		my $finder = URI::Find->new(
+			sub {
+				my ( $url, $orig_uri ) = @_;
+				return if ($url =~ /^mailto/);
+				$url =~ s#/$##;
+				print "\t", $url, ": ";
+				if ($ua->get($url . '/LATEST')->content =~ /download.gnome.org/gs) {
+					print "ok\n";
+					push(@links, $url);
+				} else {
+					print "failed\n";
+				}
+			},
+		);
+
+		my $content = $mech->content;
+		$finder->find( \$content );
+
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
 			push(@{$mirrors->{$code}}, $uri);
