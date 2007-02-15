@@ -205,9 +205,7 @@ sub parse_checksum {
 	my $checksum = shift;
 	my $algorithm = shift || 'MD5';
 
-	if (!defined $checksum) {
-		$algorithm = $algorithm;
-	} elsif ($checksum =~ /^\s*(\w+)\((\w+)\)\s*$/) {
+	if (defined $checksum and $checksum =~ /^\s*(\w+)\((\w+)\)\s*$/) {
 		# first try to pull apart ALGORITHM(CHECKSUM)
 		($algorithm, $checksum) = ($1, $2);
 	}
