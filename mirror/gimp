@@ -1,5 +1,5 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2006-08-26
+Timestamp: 2007-02-14
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
@@ -9,7 +9,6 @@ asi-JP: ftp://ftp.ring.gr.jp/pub/graphics/gimp
 asi-JP: http://www.ring.gr.jp/pub/graphics/gimp
 aus-AU: ftp://ftp.planetmirror.com/pub/gimp/gimp
 eur-AT: ftp://gd.tuwien.ac.at/graphics/gimp/gimp
-eur-DE: ftp://ftp.fh-heilbronn.de/pub/mirrors/ftp.gimp.org/gimp
 eur-DE: ftp://ftp.gwdg.de/pub/misc/grafik/gimp/gimp
 eur-DE: http://ftp.gwdg.de/pub/misc/grafik/gimp/gimp
 eur-DK: ftp://ftp.jaquet.dk/pub/gimp/gimp
@@ -32,5 +31,5 @@ eur-SE: http://ftp.sunet.se/pub/gnu/gimp
 eur-UK: ftp://ftp.flirble.org/pub/X/gimp/gimp
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
 eur-UK: http://www.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
+nam-CA: http://gimp.mirrors.hoobly.com/gimp
 nam-US: ftp://ftp.gimp.org/pub/gimp
-nam-US: http://gimp.mirrors.hoobly.com/gimp
