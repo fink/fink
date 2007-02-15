@@ -1,3 +1,8 @@
+2007-02-15  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* NetAccess.pm: set a timeout on curl, since it can block
+	indefinitely while connecting, in some cases
+
 2007-02-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* NetAccess.pm: allow a hash-ref as argument to

@@ -356,7 +356,7 @@ sub download_cmd {
 
 	# check if we have curl
 	if (-x "$basepath/bin/curl" or -x "/usr/bin/curl") {
-		$cmd = "curl -f -L -A 'fink/". Fink::FinkVersion::fink_version() ."'";
+		$cmd = "curl --connect-timeout 30 -f -L -A 'fink/". Fink::FinkVersion::fink_version() ."'";
 		if ($config->verbosity_level() == 0) {
 			$cmd .= " -s -S";
 		}
