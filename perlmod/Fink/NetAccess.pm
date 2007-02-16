@@ -228,16 +228,23 @@ sub fetch_url_to_file {
 								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
 			}
 		}
-		$result = &prompt_selection("How do you want to proceed?",
-			intro   => "The file \"$file\" already exists".$checksum_msg,
-			default => [ value => $default_value ],
-			choices => [
-				"Delete it and download again" => "retry",
-				"Assume it is a partial download and try to continue" => "continue",
-				"Don't download, use existing file" => "use_it"
-			],
-			category => 'fetch',
-		);
+		if (exists $options->{'try_all_mirrors'} and $options->{'try_all_mirrors'})
+		{
+			$result = $default_value;
+		}
+		else
+		{
+			$result = &prompt_selection("How do you want to proceed?",
+				intro   => "The file \"$file\" already exists".$checksum_msg,
+				default => [ value => $default_value ],
+				choices => [
+					"Delete it and download again" => "retry",
+					"Assume it is a partial download and try to continue" => "continue",
+					"Don't download, use existing file" => "use_it"
+				],
+				category => 'fetch',
+			);
+		}
 		if ($result eq "retry") {
 			rm_f $file;
 		} elsif ($result eq "continue") {
