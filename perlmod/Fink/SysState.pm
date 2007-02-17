@@ -911,8 +911,8 @@ sub _resolve_install_failure {
 		print_breaking_stderr(<<FAIL);
 
   fink scanpackages
-  apt-get update
-  apt-get install $aptpkgs
+  sudo apt-get update
+  sudo apt-get install $aptpkgs
 
 FAIL
 	}
