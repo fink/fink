@@ -1039,11 +1039,13 @@ END
 
 				my $found_xserver = 0;
 				print STDERR "- checking for X servers... " if ($options{debug});
-				for my $xserver (@xservers) {
-					if (-x '/usr/X11R6/bin/' . $xserver) {
-						print STDERR "$xserver\n" if ($options{debug});
-						$found_xserver++;
-						last;
+				for my $xdir ('/usr/X11R6', '/usr/X11') {
+					for my $xserver (@xservers) {
+						if (-x $xdir . '/bin/' . $xserver) {
+							print STDERR "$xdir/bin/$xserver\n" if ($options{debug});
+							$found_xserver++;
+							last;
+						}
 					}
 				}
 				print STDERR "missing\n" if ($options{debug} and $found_xserver == 0);
@@ -1204,11 +1206,14 @@ It is considered present if /usr/X11R6/bin/rman exists.
 =cut
 
 				print STDERR "- checking for rman... " if ($options{debug});
-				if (-x '/usr/X11R6/bin/rman') {
-					print STDERR "found, system-xfree86 provides rman\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86'}}, 'rman');
-				} else {
-					print STDERR "missing\n" if ($options{debug});
+				for my $xdir ('/usr/X11R6', '/usr/X11') {
+					print STDERR "$xdir... " if ($options{debug});
+					if (-x $xdir . '/bin/rman') {
+						print STDERR "found, system-xfree86 provides rman\n" if ($options{debug});
+						push(@{$provides->{'system-xfree86'}}, 'rman');
+					} else {
+						print STDERR "missing\n" if ($options{debug});
+					}
 				}
 
 =item "xfree86-base-threaded" and "xfree86-base-threaded-shlibs"
@@ -1492,40 +1497,44 @@ Returns the X11 version if found.
 sub check_x11_version {
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
 	for my $checkfile ('xterm.1', 'bdftruncate.1', 'gccmakedep.1') {
-		if (-f "/usr/X11R6/man/man1/$checkfile") {
-			if (open(CHECKFILE, "/usr/X11R6/man/man1/$checkfile")) {
-				while (<CHECKFILE>) {
-					if (/^.*Version\S* ([^\s]+) .*$/) {
-						$XF_VERSION = $1;
-						@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
-						last;
-					}
-				}
-				close(CHECKFILE);
-			} else {
-				print STDERR "WARNING: could not read $checkfile: $!\n"
-					if ($options{debug});
-				return;
-			}
-		}
-		last if (defined $XF_VERSION);
-	}
-	if (not defined $XF_VERSION) {
-		for my $binary (@xservers, 'X') {
-			if (-x '/usr/X11R6/bin/' . $binary) {
-				if (open (XBIN, "/usr/X11R6/bin/$binary -version -iokit 2>\&1 |")) {
-					while (my $line = <XBIN>) {
-						if ($line =~ /XFree86 Version ([\d\.]+)/) {
+		for my $xdir ('/usr/X11R6', '/usr/X11') {
+			if (-f "$xdir/man/man1/$checkfile") {
+				if (open(CHECKFILE, "$xdir/man/man1/$checkfile")) {
+					while (<CHECKFILE>) {
+						if (/^.*Version\S* ([^\s]+) .*$/) {
 							$XF_VERSION = $1;
 							@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
 							last;
 						}
 					}
-					close(XBIN);
+					close(CHECKFILE);
 				} else {
-					print STDERR "couldn't run $binary: $!\n";
+					print STDERR "WARNING: could not read $checkfile: $!\n"
+						if ($options{debug});
+					return;
 				}
-				last;
+			}
+			last if (defined $XF_VERSION);
+		}
+	}
+	if (not defined $XF_VERSION) {
+		for my $binary (@xservers, 'X') {
+			for my $xdir ('/usr/X11R6', '/usr/X11') {
+				if (-x $xdir . '/bin/' . $binary) {
+					if (open (XBIN, "$xdir/bin/$binary -version -iokit 2>\&1 |")) {
+						while (my $line = <XBIN>) {
+							if ($line =~ /(XFree86 Version|X Protocol.* Release) ([\d\.]+)/) {
+								$XF_VERSION = $1;
+								@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
+								last;
+							}
+						}
+						close(XBIN);
+					} else {
+						print STDERR "couldn't run $binary: $!\n";
+					}
+					last;
+				}
 			}
 		}
 	}
