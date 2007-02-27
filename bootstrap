@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 # -*- mode: Perl; tab-width: 4; -*-
 # vim: ts=4 sw=4 noet
 #
@@ -24,23 +24,22 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA	 02111-1307, USA.
 #
 
-$| = 1;
 use 5.008_001;	 # perl 5.8.1 or newer required
 use strict;
+use warnings;
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use IO::Handle;
 
-my ($answer);
-my ($script, $cmd);
+$| = 1;
+
+my $homebase = $FindBin::RealBin;
+chdir $homebase;
 
 ### patch FinkVersion.pm.in ###
 
-my ($homebase, $file);
-$homebase = $FindBin::RealBin;
-chdir $homebase;
-
+{
 my $output = "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 my $outputhandle = IO::Handle->new();
 my $input = $output . '.in';
@@ -57,6 +56,7 @@ while (defined ($_=<$inputhandle>)) {
 
 close $inputhandle;
 close $outputhandle;
+}
 
 ### check if we are unharmed ###
 
@@ -66,8 +66,7 @@ import Fink::Bootstrap qw(&check_host &check_files);
 require Fink::FinkVersion;
 import Fink::FinkVersion qw(&fink_version &default_binary_version);
 
-my $res = check_files();
-if( $res == 1 ) {
+if( check_files() == 1 ) {
 	exit 1;
 }
 printf " looks good (fink-%s).\n", fink_version();
@@ -106,22 +105,22 @@ my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution
 
 ### choose root method
 
-my ($rootmethod);
 if ($> != 0) {
+	# not root now...prompt to determine how to relaunch self
 	my $sel_intro = "Fink must be installed and run with superuser (root) ".
 	    "privileges. Fink can automatically try to become ".
 	    "root when it's run from a user account. Since you're ".
 	    "currently running this script as a normal user, the ".
 	    "method you choose will also be used immediately for ".
 	    "this script. Avaliable methods:";
-	$answer = &prompt_selection("Choose a method:",
+	my $answer = &prompt_selection("Choose a method:",
 					intro   => $sel_intro,
 					default => [ value => "sudo" ],
 					choices => [
 					  "Use sudo" => "sudo",
 					  "Use su" => "su",
 					  "None, fink must be run as root" => "none" ] );
-	$cmd = "'$homebase/bootstrap' .$answer";
+	my $cmd = "'$homebase/bootstrap' .$answer";
 	if ($#ARGV >= 0) {
 		$cmd .= " '".join("' '", @ARGV)."'";
 	}
@@ -137,7 +136,12 @@ if ($> != 0) {
 	}
 	print "\n";
 	exit &execute($cmd, quiet=>1);
-} else {
+}
+
+# we know we're root now
+
+my ($rootmethod);
+
 	if (defined $ARGV[0] and substr($ARGV[0],0,1) eq ".") {
 		$rootmethod = shift;
 		$rootmethod = substr($rootmethod,1);
@@ -147,20 +151,17 @@ if ($> != 0) {
 						"privileges. Fink can automatically try to become ".
 						"root when it's run from a user account. ".
 						"Avaliable methods:");
-		$answer = &prompt_selection("Choose a method:",
+		$rootmethod = &prompt_selection("Choose a method:",
 						default => [ value => "sudo" ],
 						choices => [
 						  "Use sudo" => "sudo",
 						  "Use su" => "su",
 						  "None, fink must be run as root" => "none" ] );
-		$rootmethod = $answer;
 	}
-}
+
 umask oct("022");
 
 ### run some more system tests
-
-my ($response);
 
 print "Checking cc...";
 if (-x "/usr/bin/cc") {
@@ -174,7 +175,7 @@ if (-x "/usr/bin/cc") {
 
 print "Checking make...";
 if (-x "/usr/bin/make") {
-	$response = `/usr/bin/make --version 2>&1`;
+	my $response = `/usr/bin/make --version 2>&1`;
 	if ($response =~ /GNU Make/si) {
 		print " looks good.\n";
 	} else {
@@ -194,7 +195,7 @@ if (-x "/usr/bin/make") {
 
 print "Checking head...";
 if (-x "/usr/bin/head") {
-	$response = `/usr/bin/head -1 /dev/null 2>&1`;
+	my $response = `/usr/bin/head -1 /dev/null 2>&1`;
 	if ($response =~ /Unknown option/si) {
 		print " is broken.\n";
 		&print_breaking("ERROR: /usr/bin/head seems to be corrupted. ".
@@ -292,7 +293,7 @@ foreach my $forbidden (
 	}
 }
 if ($installto =~ /^\/usr\/local$/i) {
-	$answer =
+	my $answer =
 		&prompt_boolean("Installing Fink in /usr/local is not recommended. ".
 						"It may conflict with third party software also ".
 						"installed there. It will be more difficult to get ".
@@ -324,7 +325,6 @@ print "\n";
 ### create directories
 
 print "Creating directories...\n";
-my ($dir, @dirlist);
 
 if (not -d $installto) {
 	if (&execute("/bin/mkdir -p -m755 $installto")) {
@@ -341,13 +341,13 @@ my %distribution_infodir = (
 	"10.5" => "10.4"
 	);
 
-@dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs var var/lib var/lib/fink);
+my @dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs var var/lib var/lib/fink);
 push @dirlist, "fink/$distribution_infodir{$distribution}", "fink/$distribution_infodir{$distribution}/stable", "fink/$distribution_infodir{$distribution}/local";
-foreach $dir (qw(stable/main stable/crypto local/main)) {
+foreach my $dir (qw(stable/main stable/crypto local/main)) {
 	push @dirlist, "fink/$distribution_infodir{$distribution}/$dir", "fink/$distribution_infodir{$distribution}/$dir/finkinfo",
 		"fink/$distribution_infodir{$distribution}/$dir/binary-darwin-$arch";
 }
-foreach $dir (@dirlist) {
+foreach my $dir (@dirlist) {
 	if (not -d "$installto/$dir") {
 		if (&execute("/bin/mkdir -m755 $installto/$dir")) {
 			print "ERROR: Can't create directory '$installto/$dir'.\n";
@@ -358,31 +358,31 @@ foreach $dir (@dirlist) {
 
 unlink "$installto/fink/dists";
 
-symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists";
+symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists\n";
 
 ### for now, we simply symlink $distribution to $distribution_infodir{$distribution}, but eventually we may need to do something more complicated
 
 if (not $distribution_infodir{$distribution} eq $distribution) {
-	symlink "$distribution_infodir{$distribution}", "$installto/fink/$distribution" or die "ERROR: Can't create symlink $installto/fink/$distribution";
+	symlink "$distribution_infodir{$distribution}", "$installto/fink/$distribution" or die "ERROR: Can't create symlink $installto/fink/$distribution\n";
 }
 
 ### create fink tarball for bootstrap
 
 my $packagefiles = &fink_packagefiles();
 
-my $result = &create_tarball($installto, "fink", $packageversion, $packagefiles);
-if ($result == 1 ) {
+if ( &create_tarball($installto, "fink", $packageversion, $packagefiles) == 1 ) {
 	exit 1;
 }
 
 ### copy package info needed for bootstrap
 
-$script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
+{
+my $script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
 $script .= "/bin/cp $distribution_infodir{$distribution}/*.info $distribution_infodir{$distribution}/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
 
-$result = &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base");
-if ($result == 1 ) {
+if ( &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base") == 1 ) {
 	exit 1;
+}
 }
 
 ### load the Fink modules
@@ -395,10 +395,10 @@ require Fink::Bootstrap;
 ### setup initial configuration
 
 print "Creating initial configuration...\n";
-my ($configpath, $config, $engine);
+my ($configpath, $config);
 
 $configpath = "$installto/etc/fink.conf";
-open(CONFIG, ">$configpath") or die "can't create configuration: $!";
+open(CONFIG, '>', $configpath) or die "can't create configuration $configpath: $!\n";
 print CONFIG <<"EOF";
 # Fink configuration, initially created by bootstrap
 Basepath: $installto
@@ -414,14 +414,14 @@ EOF
 		print CONFIG "SelfUpdateMethod: cvs\n";
 }
 
-close(CONFIG) or die "can't write configuration: $!";
+close(CONFIG) or die "can't write configuration $configpath: $!\n";
 
 $config = &read_config($configpath);
 # override path to data files (update, mirror)
 no warnings 'once';
 $Fink::Config::libpath = $homebase;
 use warnings 'once';
-$engine = Fink::Engine->new_with_config($config);
+Fink::Engine->new_with_config($config);
 
 ### interactive configuration
 
@@ -444,7 +444,6 @@ if ($packageversion !~ /cvs/) {
 
 my $endmsg = "Internal error.";
 
-chdir $homebase;
 my $dbv = default_binary_version($distribution);
 if (-d "pkginfo") {
 	if (&execute("cd pkginfo && ./inject.pl $installto -quiet")) {
