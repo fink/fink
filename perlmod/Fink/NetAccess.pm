@@ -367,6 +367,10 @@ sub download_cmd {
 		if ($config->verbosity_level() == 0) {
 			$cmd .= " -s -S";
 		}
+		if ($config->param("DownloadTimeout"))
+		{
+			$cmd .= " --max-time " . int($config->param("DownloadTimeout"));
+		}
 		if (not $config->param_boolean("ProxyPassiveFTP")) {
 			$cmd .= " -P -";
 		}
