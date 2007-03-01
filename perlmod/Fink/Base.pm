@@ -93,7 +93,7 @@ sub new_from_properties {
 	my $self = bless({}, $class);
 
 	while (my($key, $value) = each %$props) {
-		$self->{$key} = $value unless $key =~ /^_/;
+		$self->{lc($key)} = $value unless $key =~ /^_/;
 	}
 
 	$self->initialize(@_);

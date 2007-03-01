@@ -3,6 +3,8 @@
 	* NetAccess.pm: Added a "DownloadTimeout" option for curl
 	so that the mirror doesn't wait indefinitely on bad
 	downloads.
+	* Base.pm: Updated to lower-case keys in new_from_properties
+	like new_from_file does.
 
 2007-02-26  Daniel Macks  <dmacks@netspace.org>
 
