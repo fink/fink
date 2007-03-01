@@ -367,7 +367,7 @@ sub download_cmd {
 		if ($config->verbosity_level() == 0) {
 			$cmd .= " -s -S";
 		}
-		if ($config->param("DownloadTimeout"))
+		if ($config->has_param("DownloadTimeout"))
 		{
 			$cmd .= " --max-time " . int($config->param("DownloadTimeout"));
 		}
