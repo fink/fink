@@ -169,7 +169,8 @@ sub max_info_level {
 	# 2 gives percent-expansion in Package: and multiple Type: syntax.
 	# 3 gives leading-whitespace removal, removes RFC-822, adds comment support
 	# in pkglist fields.
-	return 3;
+	# 4 allows %lib in ConfigureParams field, and adds %V
+	return 4;
 }
 
 =back

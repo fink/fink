@@ -649,6 +649,7 @@ sub initialize {
 				'ni'=> $self->param_default("_package_invariant", $pkgname),
 				'e' => $epoch,
 				'v' => $version,
+				'V' => $self->get_fullversion,
 				'r' => $revision,
 				'f' => $fullname,
 				'p' => $basepath,
