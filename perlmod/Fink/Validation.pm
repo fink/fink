@@ -427,6 +427,17 @@ sub validate_info_file {
 		}
 	}
 
+        # make sure have InfoN (N>=4) if use Info4 features
+if ($info_level < 4) {
+                # fink-0.26.1 can't even index if unknown %-exp in ConfigureParams field!
+                if (exists $properties->{configureparams}) {
+                        if ($properties->{configureparams} =~ /\%lib/) {
+                                print "Error: Use of %lib expansion in ConfigureParams field requires InfoN level 4 or higher. ($filename)\n";
+                                return 0;
+							}
+					}
+}
+
 	( $pkginvarname = $pkgname = $properties->{package} ) =~ s/\%type_(raw|pkg)\[.*?\]//g;
 	# right now we don't know how to deal with variants too well
 	if (defined ($type = $properties->{type}) ) {
@@ -1049,11 +1060,15 @@ sub validate_info_component {
 				$pkglist =~ s/,\s*$//;
 			} else {
 				if ($pkglist =~ /#/) {
-					print "Warning: bad character \"#\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Error: Info3 or later is required for \"#\" comments in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
 				if ($pkglist =~ /,\s*$/) {
-					print "Warning: trailing \",\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Error: Info3 or later is required for trailing \",\" in \"$field\"$splitoff_field. ($filename)\n";
+					$looks_good = 0;
+				}
+				if (($pkglist =~ /%V/) and ($info_level <= 3)) {
+					print "Error: Info4 or later is required for percent expansion %V in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
 			}

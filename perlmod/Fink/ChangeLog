@@ -1,3 +1,7 @@
+2007-03-04  Dave Morrison  <drm@finkproject.org>
+
+	* FinkVersion.pm.in, PkgVersion.pm, Validation.pm: implement Info4
+
 2007-02-26  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Scrap the high-level warning for splitoff
