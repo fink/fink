@@ -88,7 +88,7 @@ server.
 
 =back
 
-The optional $method parameter specifies a number indicating the
+The optional $method parameter specifies the
 selfupdate method to use:
 
 =over 4
@@ -97,11 +97,11 @@ selfupdate method to use:
 
 Use the current method
 
-=item 1
+=item 1 or "cvs"
 
 Use the cvs method
 
-=item 2
+=item 2 or "rsync"
 
 Use the rsync method
 
@@ -116,22 +116,38 @@ current method preference, fink.conf is updated according to $method.
 =cut
 
 sub check {
-	my $useopt = shift || 0;
+	my $method = shift;
+
+	{
+		my %methods = (
+			0       => undef,
+			1       => 'cvs',
+			2       => 'rsync',
+			'cvs'   => 'cvs',
+			'rsync' => 'rsync',
+		);
+		$method = 0 if ! defined $method;
+		if (! exists $methods{lc $method}) {
+			die "Invalid method '$method' passed to Selfupdate::check\n";
+		}
+		$method = $methods{lc $method};
+	}
+
 	my ($srcdir, $finkdir, $latest_fink, $installed_version, $answer);
 
 	$srcdir = "$basepath/src";
 	$finkdir = "$basepath/fink";
-	if ($useopt != 0) {
+	if (defined $method) {
 		&print_breaking("\n Please note: the command 'fink selfupdate' "
 				. "should be used for routine updating; you only need to use " 
 				. "'fink selfupdate-cvs' or 'fink selfupdate-rsync' if you are "
 				. "changing your update method. \n\n");
 	}
-	if ((! defined($config->param("SelfUpdateMethod") )) and ! $useopt == 0){
-		if ($useopt == 1) {
+	if (! defined $config->param("SelfUpdateMethod") and defined $method) {
+		if ($method eq 'cvs') {
 			$answer = "cvs";	
 		}
-		elsif ($useopt == 2) {
+		elsif ($method eq 'rsync') {
 			$answer = "rsync";
 		}
 		else {
@@ -145,7 +161,7 @@ sub check {
 
 	# The user has not chosen a selfupdatemethod yet, always ask
 	# if the fink.conf setting is not there.
-	if ((! defined($config->param("SelfUpdateMethod") )) and $useopt == 0){
+	if (! defined $config->param("SelfUpdateMethod") and ! defined $method) {
 		$answer = &prompt_selection("Choose an update method",
 						intro   => "fink needs you to choose a SelfUpdateMethod.",
 						default => [ value => "rsync" ],
@@ -167,7 +183,7 @@ sub check {
 	}
 
 	# By now the config param SelfUpdateMethod should be set.
-	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
+	if ($config->param("SelfUpdateMethod") eq 'cvs' and $method ne 'rsync') {
 		&need_devtools('cvs');
 		Fink::SelfUpdate::rsync->stamp_clear();
 		if (-d "$finkdir/dists/CVS") {
@@ -180,7 +196,7 @@ sub check {
 			return;
 		}
 	}
-	elsif (($config->param("SelfUpdateMethod") eq "rsync") and $useopt != 1){
+	elsif ($config->param("SelfUpdateMethod") eq 'rsync' and $method ne 'cvs'){
 		&need_devtools('rsync');
 		&do_direct_rsync();
 		&do_finish();
@@ -189,7 +205,7 @@ sub check {
 	# Hm, we were called with a different option than the default :(
 	$installed_version = &pkginfo_version();
 	my $selfupdatemethod = $config->param("SelfUpdateMethod");
-	if (($selfupdatemethod ne "rsync") and $useopt == 2) {
+	if ($selfupdatemethod ne 'rsync' and $method eq 'rsync') {
 
 	# We temporarily disable rsync updating for 10.5, until we've decided
 	# how to handle it
@@ -212,7 +228,7 @@ sub check {
 		&do_finish();
 		return;		
 	}
-	if (($selfupdatemethod ne "cvs") and $useopt == 1) {
+	if ($selfupdatemethod ne 'cvs' and $method eq 'cvs') {
 		$answer =
 			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
 					. "Do you wish to change the default selfupdate method ".
