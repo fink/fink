@@ -27,7 +27,7 @@ package Fink::SelfUpdate::rsync;
 use base qw(Fink::SelfUpdate::Base);
 
 use Fink::Config qw($basepath);
-use Fink::Command qw(rm_f);
+use Fink::Command qw(rm_f touch);
 
 use strict;
 use warnings;

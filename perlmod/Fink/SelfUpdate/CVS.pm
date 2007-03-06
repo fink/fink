@@ -28,7 +28,7 @@ use base qw(Fink::SelfUpdate::Base);
 
 use Fink::Services qw(&execute);
 use Fink::Config qw($basepath);
-use Fink::Command qw(rm_f);
+use Fink::Command qw(rm_f touch);
 
 use strict;
 use warnings;

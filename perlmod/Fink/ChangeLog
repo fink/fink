@@ -1,5 +1,9 @@
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate/CVS.pm, SelfUpdate/rsync.pm: missing inclusion
+
+2007-03-06  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate.pm, SelfUpdate/*.pm: Use SU::Base instead of SU as
 	base class for SU::$method classes
 
