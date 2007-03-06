@@ -24,7 +24,7 @@
 
 package Fink::SelfUpdate::CVS;
 
-use base qw(Fink::SelfUpdate);
+use base qw(Fink::SelfUpdate::Base);
 
 use Fink::Services qw(&execute);
 use Fink::Config qw($basepath);

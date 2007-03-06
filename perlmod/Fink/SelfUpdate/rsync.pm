@@ -24,7 +24,7 @@
 
 package Fink::SelfUpdate::rsync;
 
-use base qw(Fink::SelfUpdate);
+use base qw(Fink::SelfUpdate::Base);
 
 use Fink::Config qw($basepath);
 use Fink::Command qw(rm_f);

@@ -1,4 +1,9 @@
-2007-02-26  Daniel Macks  <dmacks@netspace.org>
+2007-03-06  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm, SelfUpdate/*.pm: Use SU::Base instead of SU as
+	base class for SU::$method classes
+
+2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Use text-string params for check().
 	* SelfUpdate.pm, SelfUpdate/*.pm: Offload handling of stamp files

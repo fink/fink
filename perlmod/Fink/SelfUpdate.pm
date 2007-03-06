@@ -867,43 +867,6 @@ if (-f "$basepath/fink/$dist/VERSION") {
 
 =back
 
-=head2 Subclass implementation
-
-Each way of selfupdating will soon be encapsulated in a subclass of
-Fink::SelfUpdate using the following public interface.  All methods
-are class methods at this time, and each subclass inherits them as
-dummy methods.
-
-=over 4
-
-=item clear_metadata
-
-Remove all metadata files and other structures related to this
-selfupdate class (example: CVS/ directories).
-
-=cut
-
-sub clear_metadata {}
-
-=item stamp_set
-
-=item stamp_clear
-
-=item stamp_check
-
-Create, remove, or check presence of stamp file for this selfupdate
-class. I don't know what these are for.
-
-=cut
-
-sub stamp_set {}
-
-sub stamp_clear {}
-
-sub stamp_check { return 1; }
-
-=back
-
 =cut
 
 ### EOF

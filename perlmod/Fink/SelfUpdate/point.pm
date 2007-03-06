@@ -24,7 +24,7 @@
 
 package Fink::SelfUpdate::point;
 
-use base qw(Fink::SelfUpdate);
+use base qw(Fink::SelfUpdate::Base);
 
 use strict;
 use warnings;
