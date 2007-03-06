@@ -169,12 +169,7 @@ sub check {
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
 		&need_devtools('cvs');
-		if (-f "$finkdir/dists/stamp-rsync-live") {
-			unlink "$finkdir/dists/stamp-rsync-live";
-		}
-		if (-f "$finkdir/stamp-rsync-live") {
-			unlink "$finkdir/stamp-rsync-live";
-		}
+		Fink::SelfUpdate::rsync->stamp_clear();
 		if (-d "$finkdir/dists/CVS") {
 			&do_direct_cvs();
 			&do_finish();
@@ -250,8 +245,7 @@ sub check {
 		}
 		$latest_fink = cat "$srcdir/$currentfink";
 		chomp($latest_fink);
-		if ( ! -f "$finkdir/stamp-cvs-live" and ! -f "$finkdir/stamp-rsync-live" and ! -f "$finkdir/dists/stamp-cvs-live" and ! -f "$finkdir/dists/stamp-rsync-live")
-		{
+		if ( ! Fink::SelfUpdate::CVS->stamp_check() and ! Fink::SelfUpdate::rsync->stamp_check() ) {
 			# check if we need to upgrade
 			if (&version_cmp($latest_fink . '-1', '<=', $distribution . '-' . $installed_version . '-1')) {
 				print "\n";
@@ -261,8 +255,9 @@ sub check {
 				return;
 			}
 		} else {
-			rm_f "$finkdir/stamp-rsync-live", "$finkdir/stamp-cvs-live", "$finkdir/dists/stamp-rsync-live", "$finkdir/dists/stamp-cvs-live";
-			&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
+			Fink::SelfUpdate::CVS->stamp_clear();
+			Fink::SelfUpdate::rsync->stamp_clear();
+			Fink::SelfUpdate::CVS->clear_metadata();
 		}
 		&do_tarball($latest_fink);
 		&do_finish();
@@ -534,8 +529,8 @@ sub do_direct_cvs {
 		}
 	}
 
-	touch "$basepath/fink/dists/stamp-cvs-live";
-	rm_f "$basepath/fink/dists/stamp-rsync-live";
+	Fink::SelfUpdate::CVS->stamp_set();
+	Fink::SelfUpdate::rsync->stamp_clear();
 	die "Updating using CVS failed. Check the error messages above.\n" if ($errors);
 
 }
@@ -832,10 +827,9 @@ RSYNCAGAIN:
 		}
 	}
 
-	rm_rf "$basepath/fink/$dist/CVS";
-	rm_rf "$basepath/fink/CVS";
-	touch "$dist/stamp-rsync-live";
-	rm_f "stamp-cvs-live", "$dist/stamp-cvs-live";
+	Fink::SelfUpdate::CVS->clear_metadata();
+	Fink::SelfUpdate::rsync->stamp_set();
+	Fink::SelfUpdate::CVS->stamp_clear();
 # change the VERSION to reflect rsync
 if (-f "$basepath/fink/$dist/VERSION") {
 	open(IN,"$basepath/fink/$dist/VERSION") or die "can't open VERSION: $!";
@@ -854,6 +848,43 @@ if (-f "$basepath/fink/$dist/VERSION") {
 	unlink("$descdir/TIMESTAMP");
 	rename("$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP");
 }
+
+=back
+
+=head2 Subclass implementation
+
+Each way of selfupdating will soon be encapsulated in a subclass of
+Fink::SelfUpdate using the following public interface.  All methods
+are class methods at this time, and each subclass inherits them as
+dummy methods.
+
+=over 4
+
+=item clear_metadata
+
+Remove all metadata files and other structures related to this
+selfupdate class (example: CVS/ directories).
+
+=cut
+
+sub clear_metadata {}
+
+=item stamp_set
+
+=item stamp_clear
+
+=item stamp_check
+
+Create, remove, or check presence of stamp file for this selfupdate
+class. I don't know what these are for.
+
+=cut
+
+sub stamp_set {}
+
+sub stamp_clear {}
+
+sub stamp_check { return 1; }
 
 =back
 
