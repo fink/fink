@@ -1,0 +1,4 @@
+2007-03-06  Daniel Macks  <dmacks@netspace.org>
+
+	* subclasses.t: Make sure all SU::* are proper subclasses with
+	full public interface
