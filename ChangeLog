@@ -1,5 +1,9 @@
 2007-02-27  Daniel Macks  <dmacks@netspace.org>
 
+	* install.sh: manify Fink::SelfUpdate.pm
+
+2007-02-27  Daniel Macks  <dmacks@netspace.org>
+
 	* bootstrap: code cleanup: eliminate or localize scoping of temp
 	vars, add \n to die(), add pathnames to open() failure msgs,
 	modernize/organize things to appear in order of execution

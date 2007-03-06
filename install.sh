@@ -135,6 +135,7 @@ for p in \
 		Fink::Package		\
 		Fink::PkgVersion	\
 		Fink::Scanpackages	\
+		Fink::SelfUpdate	\
 		Fink::Services		\
 		Fink::Shlibs		\
 		Fink::SysState		\
