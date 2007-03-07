@@ -1,5 +1,15 @@
 2007-03-07  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate/Base.pm: add do_direct to public API
+	* SelfUpdate.pm, SelfUpdate/rsync.pm: migrate &SU::do_direct_rsync
+	to SU::rsync->do_direct
+	* Selfupdate.pm, SelfUpdate/point.pm: Consolidate all
+	tarball/point stuff related to &SU::do_tarball, migrate it to
+	SU::tarball->do_direct
+	* SelfUpdate.pm: Misc cleanups
+
+2007-03-07  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate/tarball.pm: delete (redundant vs "point" method)
 
 2007-03-06  Daniel Macks  <dmacks@netspace.org>

@@ -73,6 +73,16 @@ sub stamp_clear {}
 
 sub stamp_check { return 0; }
 
+=item do_direct
+
+	Fink::SelfUpdate::$method->do_direct();
+
+This implements the actual selfupdate sync process.
+
+=cut
+
+sub do_direct { die "Not implemented\n" };
+
 =back
 
 =cut

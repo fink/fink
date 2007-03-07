@@ -1,5 +1,9 @@
 2007-03-07  Daniel Macks  <dmacks@netspace.org>
 
+	* subclasses.t: ; add check for do_direct public API
+
+2007-03-07  Daniel Macks  <dmacks@netspace.org>
+
 	* subclasses.t: Nuke redundant SU::tarball class
 
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
