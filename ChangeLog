@@ -1,3 +1,7 @@
+2007-03-06  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: fix valid values for Distribution field
+
 2007-01-22  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.26.1, a bug-fix
