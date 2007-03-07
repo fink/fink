@@ -1,5 +1,10 @@
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in, fink.conf.5.in, setup.sh: set document-date according
+	to CVS timestamp token
+
+2007-03-06  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.conf.5.in: fix valid values for Distribution field
 
 2007-02-27  Daniel Macks  <dmacks@netspace.org>
