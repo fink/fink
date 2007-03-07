@@ -1,3 +1,7 @@
+2007-03-07  Daniel Macks  <dmacks@netspace.org>
+
+	* subclasses.t: Nuke redundant SU::tarball class
+
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
 	* subclasses.t: Make sure all SU::* are proper subclasses with

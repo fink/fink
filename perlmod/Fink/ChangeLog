@@ -1,3 +1,7 @@
+2007-03-07  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate/tarball.pm: delete (redundant vs "point" method)
+
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate/CVS.pm, SelfUpdate/rsync.pm: missing inclusion
