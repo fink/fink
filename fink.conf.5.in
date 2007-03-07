@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd March 6, 2007
+.Dd $Date$
 .Dt FINK.CONF 5
 .Sh NAME
 .Nm fink.conf
