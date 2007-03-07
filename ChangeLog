@@ -1,5 +1,9 @@
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
+	* setup.sh: Avoid premature CVS keyword expansion
+
+2007-03-06  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.8.in, fink.conf.5.in, setup.sh: set document-date according
 	to CVS timestamp token
 

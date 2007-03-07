@@ -46,10 +46,10 @@ sed -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink.pm.in >perlmod/Fink.pm
 
 echo "Creating man pages..."
 sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in \
-  | perl -MTime::Local -MPOSIX=strftime -p -e 'if (s/(\.Dd \$Date$/\1/) {$epochtime = timegm($7,$6,$5,$4,$3-1,$2-1900);$datestr = strftime "%B %e, %Y", localtime($epochtime); s/(\.Dd )\$Date$1$datestr/;}' \
+  | perl -MTime::Local -MPOSIX=strftime -p -e '$d="Date:";if (s/(\.Dd \$$d) (\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) \$/\1/) {$epochtime = timegm($7,$6,$5,$4,$3-1,$2-1900);$datestr = strftime "%B %e, %Y", localtime($epochtime); s/(\.Dd )\$$d/$1$datestr/;}' \
   >fink.8
 sed "s|@PREFIX@|$basepath|g" <fink.conf.5.in \
-  | perl -MTime::Local -MPOSIX=strftime -p -e 'if (s/(\.Dd \$Date$/\1/) {$epochtime = timegm($7,$6,$5,$4,$3-1,$2-1900);$datestr = strftime "%B %e, %Y", localtime($epochtime); s/(\.Dd )\$Date$1$datestr/;}' \
+  | perl -MTime::Local -MPOSIX=strftime -p -e '$d="Date:";if (s/(\.Dd \$$d) (\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) \$/\1/) {$epochtime = timegm($7,$6,$5,$4,$3-1,$2-1900);$datestr = strftime "%B %e, %Y", localtime($epochtime); s/(\.Dd )\$$d/$1$datestr/;}' \
   >fink.conf.5
 
 echo "Creating shlibs default file..."
