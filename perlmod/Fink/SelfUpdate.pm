@@ -23,15 +23,12 @@
 
 package Fink::SelfUpdate;
 
-use Fink::Services qw(&execute &version_cmp &aptget_lockwait);
+use Fink::Services qw(&execute);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
-use Fink::Config qw($config $basepath $dbpath $distribution);
-use Fink::NetAccess qw(&fetch_url);
+use Fink::Config qw($config $basepath $distribution);
 use Fink::Engine;  # &aptget_update &cmd_install, but they aren't EXPORT_OK
 use Fink::Package;
-use Fink::FinkVersion qw(&pkginfo_version);
-use Fink::Mirror;
 use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
 
 use File::Find;
@@ -177,13 +174,11 @@ sub check {
 		Fink::SelfUpdate::rsync->stamp_clear();
 		if (-d "$basepath/fink/dists/CVS") {
 			&do_direct_cvs();
-			&do_finish();
-			return;
 		} else {
 			&setup_direct_cvs();
-			&do_finish();
-			return;
 		}
+		&do_finish();
+		return;
 	}
 	elsif ($config->param("SelfUpdateMethod") eq 'rsync' and $method ne 'cvs'){
 		&need_devtools('rsync');

@@ -1,5 +1,9 @@
 2007-03-07  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm, SelfUpdate/*: clean up imports from other pkgs
+
+2007-03-07  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate/Base.pm: add do_direct to public API
 	* SelfUpdate.pm, SelfUpdate/rsync.pm: migrate &SU::do_direct_rsync
 	to SU::rsync->do_direct
