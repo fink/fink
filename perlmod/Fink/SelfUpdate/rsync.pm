@@ -29,6 +29,7 @@ use base qw(Fink::SelfUpdate::Base);
 use Fink::CLI qw(&print_breaking);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::Mirror;
+use Fink::Package;
 use Fink::Command qw(chowname rm_f mkdir_p touch);
 
 use strict;
