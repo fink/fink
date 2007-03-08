@@ -45,6 +45,17 @@ See documentation for the Fink::SelfUpdate base class.
 
 =cut
 
+sub system_check {
+	my $class = shift;  # class method for now
+
+	if (not Fink::VirtPackage->query_package("dev-tools")) {
+		warn "Selfupdate method 'cvs' requires the package 'dev-tools'\n";
+		return 0;
+	}
+
+	return 1;
+}
+
 sub clear_metadata {
 	my $class = shift;  # class method for now
 

@@ -46,6 +46,23 @@ See documentation for the Fink::SelfUpdate base class.
 
 =cut
 
+sub system_check {
+	my $class = shift;  # class method for now
+
+	# We temporarily disable rsync updating for 10.5, until we've decided how to handle it
+	if ($distribution eq '10.5') {
+		warn "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n";
+		return 0;
+	}
+
+	if (not Fink::VirtPackage->query_package("dev-tools")) {
+		warn "Selfupdate method 'rsync' requires the package 'dev-tools'\n";
+		return 0;
+	}
+
+	return 1;
+}
+
 sub stamp_set {
 	my $class = shift;  # class method for now
 

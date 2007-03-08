@@ -48,6 +48,12 @@ See documentation for the Fink::SelfUpdate base class.
 
 =cut
 
+sub system_check {
+	my $class = shift;  # class method for now
+
+	return 1;
+}
+
 sub do_direct {
 	my $class = shift;  # class method for now
 

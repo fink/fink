@@ -1,5 +1,9 @@
 2007-03-07  Daniel Macks  <dmacks@netspace.org>
 
+	* subclasses.t: ; add check for system_check public API
+
+2007-03-07  Daniel Macks  <dmacks@netspace.org>
+
 	* subclasses.t: ; add check for do_direct public API
 
 2007-03-07  Daniel Macks  <dmacks@netspace.org>

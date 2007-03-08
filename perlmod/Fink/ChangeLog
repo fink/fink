@@ -1,5 +1,11 @@
 2007-03-08  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate/Base.pm: add system_check to public API
+	* SelfUpdate.pm, SelfUpdate/*: let each method handle its own
+	system sanity-checking; nuke &SU::need_devtools
+
+2007-03-08  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate.pm: completely redo check(), removing most
 	special-case method tests
 	* SelfUpdate.pm, SelfUpdate/*: remove all cross-method interactions

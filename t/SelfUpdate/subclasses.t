@@ -17,5 +17,5 @@ foreach my $subclass (qw/ CVS point rsync /) {
 
 	isa_ok( bless({}, $class), $baseclass );
 
-	can_ok($class, qw/ clear_metadata stamp_set stamp_clear stamp_check do_direct /);
+	can_ok($class, qw/ system_check clear_metadata stamp_set stamp_clear stamp_check do_direct /);
 }

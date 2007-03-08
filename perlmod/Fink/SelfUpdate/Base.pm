@@ -39,6 +39,17 @@ All calls are class methods at this time.
 
 =over 4
 
+=item system_check
+
+	my $boolean = Fink::SelfUpdate::$method->system_check();
+
+Determine whether this method can be used on this machine. Make sure
+needed external executables are present, etc. Must be over-ridden.
+
+=cut
+
+sub system_check { warn "Not implemented\n"; return 0; }
+
 =item clear_metadata
 
   Fink::SelfUpdate::$method->clear_metadata();
@@ -77,11 +88,12 @@ sub stamp_check { return 0; }
 
 	Fink::SelfUpdate::$method->do_direct();
 
-This implements the actual selfupdate sync process.
+This implements the actual selfupdate sync process. Must be
+over-ridden (obviously).
 
 =cut
 
-sub do_direct { die "Not implemented\n" };
+sub do_direct { die "Not implemented\n" }
 
 =back
 

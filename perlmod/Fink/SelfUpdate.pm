@@ -178,27 +178,16 @@ sub check {
 		}
 	}
 
-	# We temporarily disable rsync updating for 10.5, until we've decided how to handle it
-	if ($method eq 'rsync' and $distribution eq '10.5') {
-		die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n";
-	}
-
 	my ($subclass_use)  = grep { $method eq lc($_) } @known_method_classes;
-	die "SelfUpdateMethod '$method' is not implemented\n" unless( defined $subclass_use && length $subclass_use );
+	die "Selfupdate method '$method' is not implemented\n" unless( defined $subclass_use && length $subclass_use );
 
 	$subclass_use = "Fink::SelfUpdate::$subclass_use";
-	eval { require $subclass_use };
-	die "SelfUpdateMethod '$method' could not be loaded: $@\n" if $@;
 
-	&need_devtools($method);	# TODO: query the subclass to have it
-								# determine if its needed support
-								# programs (including devtools for
-								# build-from-source methods) are
-								# available
+	$subclass_use->system_check() or die "Selfupdate mthod '$method' cannot be used\n";
 
 	if ($method ne $prev_method) {
 		# save new selection (explicit change or being set for first time)
-		&print_breaking("fink is setting your default update method to $method \n");
+		&print_breaking("fink is setting your default update method to $method\n");
 		$config->set_param("SelfUpdateMethod", $method);
 		$config->save();
 	}
@@ -226,26 +215,6 @@ sub check {
 	&do_finish();
 }
 
-=item need_devtools
-
-  Fink::SelfUpdate::need_devtools($method);
-
-If selfupdating using the given $method (passed by name) requires
-components of Apple dev-tools (xcode) instead of just standard
-components of OS X, check that the "dev-tools" virtual package is
-installed. If it is required for the $method but is not present, die.
-
-=cut
-
-sub need_devtools {
-	my $method = shift;
-
-	if ($method eq 'cvs' || $method eq 'rsync') {
-		Fink::VirtPackage->query_package("dev-tools")
-			or die "selfupdate method '$method' requires the package 'dev-tools'\n";
-	}
-}
-
 ### set up direct cvs
 
 sub setup_direct_cvs {
@@ -254,6 +223,7 @@ sub setup_direct_cvs {
 	my ($use_hardlinks, $cutoff, $cmd);
 	my ($cmdd);
 
+	Fink::SelfUpdate::CVS->system_check() || die;
 
 	$username = "root";
 	if (exists $ENV{SUDO_USER}) {
@@ -439,6 +409,8 @@ sub setup_direct_cvs {
 
 sub do_direct_cvs {
 	my ($descdir, @sb, $cmd, $cmd_recursive, $username, $msg);
+
+	Fink::SelfUpdate::CVS->system_check() || die;
 
 	# add cvs quiet flag if verbosity level permits
 	my $verbosity = "-q";
