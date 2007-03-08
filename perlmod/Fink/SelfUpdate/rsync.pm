@@ -193,8 +193,6 @@ RSYNCAGAIN:
 		}
 	}
 
-	Fink::SelfUpdate::CVS->clear_metadata();
-	Fink::SelfUpdate::CVS->stamp_clear();
 	$class->stamp_set();
 	$class->setup_version_file("$basepath/fink/$dist/VERSION");
 

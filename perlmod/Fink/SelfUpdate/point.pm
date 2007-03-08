@@ -69,11 +69,10 @@ sub do_direct {
 	}
 	my $latest_fink = cat "$srcdir/$currentfink";
 	chomp($latest_fink);
-	if ( ! Fink::SelfUpdate::CVS->stamp_check() and ! Fink::SelfUpdate::rsync->stamp_check() ) {
-		# no evidence of cvs or rsync selfupdates, so assume on-disk
-		# package descriptions are a point/tarball release, therefore
-		# can skip doing another point/tarball release if we already
-		# have the latest release version
+	if ($class->stamp_check()) {
+		# on-disk package descriptions are a point/tarball release,
+		# therefore can skip doing another point/tarball release if we
+		# already have the latest release version
 		my $installed_version = &pkginfo_version();
 		if (&version_cmp($latest_fink . '-1', '<=', $distribution . '-' . $installed_version . '-1')) {
 			print "\n";
@@ -83,9 +82,6 @@ sub do_direct {
 			return;
 		}
 	}
-	Fink::SelfUpdate::CVS->stamp_clear();
-	Fink::SelfUpdate::rsync->stamp_clear();
-	Fink::SelfUpdate::CVS->clear_metadata();
 	
 	my $newversion = $latest_fink;
 	my ($downloaddir, $dir);
@@ -144,6 +140,8 @@ sub do_direct {
 		rm_rf $dir;
 	}
 }
+
+### TODO: implement stampfile handling somehow
 
 =head2 Private Methods
 

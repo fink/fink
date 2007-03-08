@@ -1,3 +1,9 @@
+2007-03-08  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: completely redo check(), removing most
+	special-case method tests
+	* SelfUpdate.pm, SelfUpdate/*: remove all cross-method interactions
+
 2007-03-07  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm, SelfUpdate/*: clean up imports from other pkgs

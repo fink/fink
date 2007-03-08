@@ -112,124 +112,118 @@ current method preference, fink.conf is updated according to $method.
 
 =cut
 
+# TODO: auto-detect all available classes and their descs
+our @known_method_classes = qw( rsync CVS point );
+our %known_method_descs = (
+	'rsync' => 'rsync',
+	'CVS'   => 'cvs',
+	'point' => 'Stick to point releases',
+);
+
 sub check {
-	my $method = shift;
+	my $method = shift;  # requested selfupdate method to use
+
+	$method = '' if ! defined $method;
 
 	{
+		# compatibility for old calling parameters
 		my %methods = (
-			0       => undef,
-			1       => 'cvs',
-			2       => 'rsync',
-			'cvs'   => 'cvs',
-			'rsync' => 'rsync',
+			0 => '',
+			1 => 'cvs',
+			2 => 'rsync',
 		);
-		$method = 0 if ! defined $method;
-		if (! exists $methods{lc $method}) {
-			die "Invalid method '$method' passed to Selfupdate::check\n";
+		if (length $method and exists $methods{$method}) {
+			$method = $methods{$method};
 		}
-		$method = $methods{lc $method};
 	}
 
-	if (defined $method) {
+	# canonical form is all-lower-case
+	$method = lc($method);
+	my $prev_method = lc($config->param_default("SelfUpdateMethod", ''));
+
+	if ($method eq '') {
+		# no explicit method requested
+
+		if ($prev_method ne '') {
+			# use existing default
+			$method = $prev_method;
+		} else {
+			# no existing default so ask user
+
+			$method = &prompt_selection(
+				'Choose an update method',
+				intro   => 'fink needs you to choose a SelfUpdateMethod.',
+				default => [ 'value' => 'rsync' ],  # TODO: make sure this exists
+				choices => [ map { $known_method_descs{$_} => lc($_) } @known_method_classes ]
+			);
+		}
+	} else {
+		# explicit method requested
 		&print_breaking("\n Please note: the command 'fink selfupdate' "
-				. "should be used for routine updating; you only need to use " 
-				. "'fink selfupdate-cvs' or 'fink selfupdate-rsync' if you are "
-				. "changing your update method. \n\n");
+						. "should be used for routine updating; you only "
+						. "need to use a command like 'fink selfupdate-cvs' "
+						. "or 'fink selfupdate-rsync' if you are changing "
+						. "your update method. \n\n");
+
+		if ($method ne $prev_method) {
+			# requested a method different from previously-saved default
+			# better double-check that user really wants to do this
+			my $answer =
+				&prompt_boolean("The current selfupdate method is $prev_method. "
+								. "Do you wish to change this default method "
+								. "to $method?",
+								default => 1
+				);
+			return if !$answer;
+		}
 	}
-	if (! defined $config->param("SelfUpdateMethod") and defined $method) {
-		my $answer = $method;
-		$answer = 'point' if !defined $answer;
-		&need_devtools($answer);
-		&print_breaking("fink is setting your default update method to $answer \n");
-		$config->set_param("SelfUpdateMethod", $answer);
+
+	# We temporarily disable rsync updating for 10.5, until we've decided how to handle it
+	if ($method eq 'rsync' and $distribution eq '10.5') {
+		die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n";
+	}
+
+	my ($subclass_use)  = grep { $method eq lc($_) } @known_method_classes;
+	die "SelfUpdateMethod '$method' is not implemented\n" unless( defined $subclass_use && length $subclass_use );
+
+	$subclass_use = "Fink::SelfUpdate::$subclass_use";
+	eval { require $subclass_use };
+	die "SelfUpdateMethod '$method' could not be loaded: $@\n" if $@;
+
+	&need_devtools($method);	# TODO: query the subclass to have it
+								# determine if its needed support
+								# programs (including devtools for
+								# build-from-source methods) are
+								# available
+
+	if ($method ne $prev_method) {
+		# save new selection (explicit change or being set for first time)
+		&print_breaking("fink is setting your default update method to $method \n");
+		$config->set_param("SelfUpdateMethod", $method);
 		$config->save();
 	}
 
-	# The user has not chosen a selfupdatemethod yet, always ask
-	# if the fink.conf setting is not there.
-	if (! defined $config->param("SelfUpdateMethod") and ! defined $method) {
-		my $answer = &prompt_selection("Choose an update method",
-						intro   => "fink needs you to choose a SelfUpdateMethod.",
-						default => [ value => "rsync" ],
-						choices => [
-						  "rsync" => "rsync",
-						  "cvs" => "cvs",
-						  "Stick to point releases" => "point"
-						] );
-		&need_devtools($answer);
-		$config->set_param("SelfUpdateMethod", $answer);
-		$config->save();	
+	# clear remnants of any methods other than one to be used
+	foreach my $subclass (map { "Fink::SelfUpdate::$_" } @known_method_classes) {
+		next if $subclass eq $subclass_use;
+		$subclass->stamp_clear();
+		$subclass->clear_metadata();
 	}
 
-	# We temporarily disable rsync updating for 10.5, until we've decided
-	# how to handle it
-
-	if (($config->param("SelfUpdateMethod") eq "rsync") and ($distribution eq "10.5")) {
-		die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n\n";
-	}
-
-	# By now the config param SelfUpdateMethod should be set.
-	if ($config->param("SelfUpdateMethod") eq 'cvs' and $method ne 'rsync') {
-		&need_devtools('cvs');
-		Fink::SelfUpdate::rsync->stamp_clear();
+	if ($subclass_use eq 'Fink::SelfUpdate::CVS') {
+		# TODO: make a single CVS method that is self-deterministic
+		# and migrate into the subclass
 		if (-d "$basepath/fink/dists/CVS") {
+			# already have a cvs checkout
 			&do_direct_cvs();
 		} else {
 			&setup_direct_cvs();
 		}
-		&do_finish();
-		return;
+	} else {
+		$subclass_use->do_direct();
 	}
-	elsif ($config->param("SelfUpdateMethod") eq 'rsync' and $method ne 'cvs'){
-		&need_devtools('rsync');
-		Fink::SelfUpdate::rsync->do_direct();
-		&do_finish();
-		return;
-	}
-	# Hm, we were called with a different option than the default :(
-	my $selfupdatemethod = $config->param("SelfUpdateMethod");
-	if ($selfupdatemethod ne 'rsync' and $method eq 'rsync') {
-
-	# We temporarily disable rsync updating for 10.5, until we've decided
-	# how to handle it
-
-		if ($distribution eq "10.5") {
-			die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n\n";
-		}
-
-		my $answer =
-			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
-					. "Do you wish to change the default selfupdate method ".
-				"to rsync?", default => 1);
-		if (! $answer) {
-			return;
-		}
-		&need_devtools('rsync');
-		$config->set_param("SelfUpdateMethod", "rsync");
-		$config->save();	
-		Fink::SelfUpdate::rsync->do_direct();
-		&do_finish();
-		return;		
-	}
-	if ($selfupdatemethod ne 'cvs' and $method eq 'cvs') {
-		my $answer =
-			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
-					. "Do you wish to change the default selfupdate method ".
-				"to cvs?", default => 1);
-		if (! $answer) {
-			return;
-		}
-		&need_devtools('cvs');
-		$config->set_param("SelfUpdateMethod", "cvs");
-		$config->save();	
-		&setup_direct_cvs();
-		&do_finish();
-		return;
-	}
-	if (($config->param("SelfUpdateMethod") eq "point")) {
-		Fink::SelfUpdate::point->do_direct();
-		&do_finish();
-	}
+	$subclass_use->stamp_set();
+	&do_finish();
 }
 
 =item need_devtools
