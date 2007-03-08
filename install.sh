@@ -140,7 +140,6 @@ for p in \
 		Fink::SelfUpdate::CVS	\
 		Fink::SelfUpdate::rsync	\
 		Fink::SelfUpdate::point	\
-		Fink::SelfUpdate::tarball	\
 		Fink::Services		\
 		Fink::Shlibs		\
 		Fink::SysState		\
