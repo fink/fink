@@ -105,6 +105,8 @@ sub do_direct {
 ### set up direct cvs
 
 sub setup_direct_cvs {
+	my $class = shift;  # class method for now
+
 	my ($finkdir, $tempdir, $tempfinkdir);
 	my ($username, $cvsuser, @testlist);
 	my ($use_hardlinks, $cutoff, $cmd);
@@ -293,6 +295,8 @@ sub setup_direct_cvs {
 ### call cvs update
 
 sub do_direct_cvs {
+	my $class = shift;  # class method for now
+
 	my ($descdir, @sb, $cmd, $cmd_recursive, $username, $msg);
 
 	# add cvs quiet flag if verbosity level permits
