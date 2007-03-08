@@ -1,3 +1,9 @@
+2007-03-08  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: killed off Fink::SelfUpdate::tarball
+	* MANIFEST: sync with reality
+	* Makefile: add test for MANIFEST file list
+
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
 	* install.sh: Install Fink::SelfUpdate::* modules
