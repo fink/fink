@@ -1,10 +1,15 @@
+2007-03-08  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.26.3, a bug-fix
+	release on branch 0.26
+
 2007-03-08  Daniel Macks  <dmacks@netspace.org>
 
 	* MANIFEST: sync with reality
 	* Makefile: add test for MANIFEST file list
 	* install.sh: manify Fink::SelfUpdate.pm
 
-2007-01-22  Dave Morrison  <drm@finkproject.org>
+2007-03-07  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.26.2, a bug-fix
 	release on branch 0.26
