@@ -48,6 +48,12 @@ See documentation for the Fink::SelfUpdate base class.
 
 =cut
 
+sub desc_short {
+	my $class = shift;  # class method for now
+
+	return 'Stick to point releases';
+}
+
 sub system_check {
 	my $class = shift;  # class method for now
 

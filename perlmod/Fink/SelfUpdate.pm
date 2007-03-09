@@ -23,7 +23,7 @@
 
 package Fink::SelfUpdate;
 
-use Fink::Services qw(&execute);
+use Fink::Services qw(&execute &find_subpackages);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath);
@@ -108,14 +108,6 @@ current method preference, fink.conf is updated according to $method.
 
 =cut
 
-# TODO: auto-detect all available classes and their descs
-our @known_method_classes = qw( rsync CVS point );
-our %known_method_descs = (
-	'rsync' => 'rsync',
-	'CVS'   => 'cvs',
-	'point' => 'Stick to point releases',
-);
-
 sub check {
 	my $method = shift;  # requested selfupdate method to use
 
@@ -137,6 +129,10 @@ sub check {
 	$method = lc($method);
 	my $prev_method = lc($config->param_default("SelfUpdateMethod", ''));
 
+	# find all Fink::SelfUpdate:: subclasses, skipping the base class
+	my @avail_subclasses = &find_subpackages(__PACKAGE__);
+	@avail_subclasses = grep { $_ ne __PACKAGE__.'::Base' } @avail_subclasses;
+
 	if ($method eq '') {
 		# no explicit method requested
 
@@ -146,12 +142,20 @@ sub check {
 		} else {
 			# no existing default so ask user
 
-			$method = &prompt_selection(
+			my @choices = ();  # menu entries as ordered label=>class pairs
+			my @default = ();  # default menu choice (rsync if it's avail)
+			foreach my $subclass (sort @avail_subclasses) {
+				push @choices, ( $subclass->desc_short() => $subclass );
+				@default = ( 'value' => $subclass ) if $subclass->method_name() eq 'rsync';
+			}
+
+			my $subclass_choice = &prompt_selection(
 				'Choose an update method',
 				intro   => 'fink needs you to choose a SelfUpdateMethod.',
-				default => [ 'value' => 'rsync' ],  # TODO: make sure this exists
-				choices => [ map { $known_method_descs{$_} => lc($_) } @known_method_classes ]
+				choices => \@choices,
+				default => \@default,
 			);
+			$method = lc($subclass_choice->method_name());
 		}
 	} else {
 		# explicit method requested
@@ -161,7 +165,7 @@ sub check {
 						. "or 'fink selfupdate-rsync' if you are changing "
 						. "your update method. \n\n");
 
-		if ($method ne $prev_method) {
+		if (length $prev_method and $method ne $prev_method) {
 			# requested a method different from previously-saved default
 			# better double-check that user really wants to do this
 			my $answer =
@@ -174,11 +178,11 @@ sub check {
 		}
 	}
 
-	my ($subclass_use)  = grep { $method eq lc($_) } @known_method_classes;
+	# find the class that implements the method
+	my ($subclass_use) = grep { $_->method_name() eq $method } @avail_subclasses;
+
+	# sanity checks
 	die "Selfupdate method '$method' is not implemented\n" unless( defined $subclass_use && length $subclass_use );
-
-	$subclass_use = "Fink::SelfUpdate::$subclass_use";
-
 	$subclass_use->system_check() or die "Selfupdate mthod '$method' cannot be used\n";
 
 	if ($method ne $prev_method) {
@@ -189,7 +193,7 @@ sub check {
 	}
 
 	# clear remnants of any methods other than one to be used
-	foreach my $subclass (map { "Fink::SelfUpdate::$_" } @known_method_classes) {
+	foreach my $subclass (@avail_subclasses) {
 		next if $subclass eq $subclass_use;
 		$subclass->stamp_clear();
 		$subclass->clear_metadata();

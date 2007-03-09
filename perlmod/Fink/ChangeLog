@@ -1,3 +1,9 @@
+2007-03-09  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: Auto-detect all available subclasses
+	* SelfUpdate/Base.pm: Add method_name and desc_short to public API
+	* SelfUpdate.pm, SelfUpdate/*: Use each method's own descriptions
+
 2007-03-08  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm, SelfUpdate/CVS.pm: Offload cvs stuff into its own

@@ -39,6 +39,38 @@ All calls are class methods at this time.
 
 =over 4
 
+=item method_name
+
+	my $method = Fink::SelfUpdate::$method->method_name();
+	$config->set_param("SelfUpdateMethod", $method);
+
+Returns a string for the name of this selfupdate method, suitable for
+use in F<fink.conf>. This value will be handled case-insensitively
+within fink (converted to all lower-case). Defaults to the subclass
+name, converted to lower-case.
+
+=cut
+
+sub method_name {
+	my $class = shift;
+
+	$class = ref($class) if ref($class);  # find class if called as object
+	$class =~ s/.*:://;  # just the subclass
+
+	return lc($class);
+}
+
+=item desc_short
+
+	my $label = Fink::SelfUpdate::$method->desc_short();
+
+Returns a brief label for this method, something shorter than a
+package Description field. Defaults to the method_name.
+
+=cut
+
+sub desc_short { $_[0]->method_name() }
+
 =item system_check
 
 	my $boolean = Fink::SelfUpdate::$method->system_check();
