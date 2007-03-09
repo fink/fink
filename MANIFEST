@@ -111,6 +111,13 @@ t/Config/load_save.t
 t/Config/options.t
 t/Config/param.t
 t/Config/verbosity_level.t
+t/Engine/ChangeLog
+t/Engine/fetch.t
+t/Engine/p0.info
+t/Engine/p1.info
+t/Engine/p2.info
+t/Engine/p3.info
+t/Engine/p4.info
 t/Finally/buildlocks.t
 t/Finally/ChangeLog
 t/Finally/finally.t

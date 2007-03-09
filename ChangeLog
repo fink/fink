@@ -1,3 +1,8 @@
+2007-03-08  Daniel Macks  <dmacks@netspace.org>
+
+	* MANIFEST: sync with reality
+	* Makefile: add test for MANIFEST file list
+
 2007-03-06  Daniel Macks  <dmacks@netspace.org>
 
 	* setup.sh: Avoid premature CVS keyword expansion
