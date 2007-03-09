@@ -26,7 +26,10 @@ install:
 test_setup:
 	./setup.sh $(TEST_BASEPATH)
 
-test: test_setup
+manifest_check:
+	perl -MExtUtils::Manifest=fullcheck -e 'my($$missing, $$extra) = fullcheck;exit (@$$missing || @$$extra)'
+
+test: manifest_check test_setup
 	@# must test with same perl binary as the one to be used to run fink
 	@# (which also must be coded into t/Services/execute_nonroot_okay.t)
 	cd t && ./testmore.pl && find ${TESTS} -name '*.t' | sort | PREFIX="$(PREFIX)" xargs /usr/bin/perl -I${PWD}/perlmod -MTest::Harness -e 'runtests(@ARGV)'
