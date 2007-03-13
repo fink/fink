@@ -1,3 +1,7 @@
+2007-03-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Remind user to selfupdate after enabling unstable
+
 2007-03-04  Dave Morrison  <drm@finkproject.org>
 
 	* FinkVersion.pm.in, PkgVersion.pm, Validation.pm: implement Info4

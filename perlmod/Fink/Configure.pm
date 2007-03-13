@@ -227,6 +227,11 @@ sub choose_misc {
 					map { s/^stable/unstable/ } @trees_add;  # find "unstable" equivs
 					push @trees, @trees_add;  # add them
 					$config->set_param('Trees', join(' ', @trees) );
+					print_breaking("New trees have been added. You ".
+								   "should run \"fink selfupdate-rsync\" ".
+								   "or a related command in order to ".
+								   "download the latest list of packages ".
+								   "in the trees.");
 				}
 			}
 		}
