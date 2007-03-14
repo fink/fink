@@ -1,3 +1,7 @@
+2007-03-14  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: recognize 10.4.9
+
 2007-03-04  Dave Morrison  <drm@finkproject.org>
 
 	* FinkVersion.pm.in, PkgVersion.pm, Validation.pm: implement Info4
