@@ -1,5 +1,10 @@
 2007-03-17  Dave Morrison  <drm@finkproject.org>
 
+	* VERSION: Make fink HEAD always >> 0.27.x, since that has now
+	branched.
+
+2007-03-17  Dave Morrison  <drm@finkproject.org>
+
 	* VERSION: Bumped package manager version to 0.27.0, a new release
 
 2007-03-08  Daniel Macks  <dmacks@netspace.org>
