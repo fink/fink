@@ -1,3 +1,7 @@
+2997093017  Dave Morrison  <drm@finkproject.org>
+
+	* PkgVersion.pm: modify an error message
+
 2007-03-14  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.4.9

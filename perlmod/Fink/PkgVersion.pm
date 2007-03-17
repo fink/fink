@@ -4905,10 +4905,8 @@ sub run_script {
 				"or fink-beginners mailing lists.  As a last resort, you can try e-mailing\n".
 				"the maintainer directly:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
-			if (get_arch() eq 'i386' or $config->param('Architecture') eq 'i386') {
-$error .= "Note that many fink package maintainers do not (yet) have access to OS X on\n" .
-	"Intel hardware, so you may have better luck on the mailing lists.\n\n";
-}
+$error .= "Note that many fink package maintainers do not have access to all possible\n" .
+	"hardware configurations, so you may have better luck on the mailing lists.\n\n";
 		}
 		die $error . "\n";
 	}
