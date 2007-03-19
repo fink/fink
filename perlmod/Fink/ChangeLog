@@ -1,3 +1,8 @@
+2007-03-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm: revert the OldIndexes behavior, this is something
+	better worked on with dmacks' SelfUpdate refactor
+
 2007-03-17  Dave Morrison  <drm@finkproject.org>
 
 	* PkgVersion.pm: modify an error message

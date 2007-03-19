@@ -1,7 +1,7 @@
-2007-03-17  Dave Morrison  <drm@finkproject.org>
+2007-03-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
-	* VERSION: Make fink HEAD always >> 0.27.x, since that has now
-	branched.
+	* fink.conf.5.in: revert the OldIndexes behavior, this is something
+	better worked on with dmacks' SelfUpdate refactor
 
 2007-03-17  Dave Morrison  <drm@finkproject.org>
 
