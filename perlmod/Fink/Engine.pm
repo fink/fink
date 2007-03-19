@@ -1609,6 +1609,8 @@ sub real_install {
 		}
 
 
+		# FIXME: this needs to be reworked with the new Selfupdate code
+		# when it hits head
 		if (not -f $cache_file or (-M $cache_file > 14)) {
 			my $oldindexes = lc(Fink::Config::get_option("OldIndexes", "warn"));
 			if ($oldindexes !~ /^(ignore|update|warn)$/) {
