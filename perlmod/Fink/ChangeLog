@@ -2,9 +2,10 @@
 
 	* Engine.pm: Use SelfUpdate's API to get VERSION timestamp when
 	determining if selfupdate is "old".
-
 	* FinkVersion.pm.in: Revert use of SU's interface to avoid
 	needing require() on SelfUpdate (circular mess)
+	* Config.pm: Check SU directly before calling FV distribution
+	version-check function
 
 2007-03-19  Daniel Macks  <dmacks@netspace.org>
 
