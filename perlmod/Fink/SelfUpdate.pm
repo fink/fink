@@ -197,15 +197,15 @@ sub check {
 	# clear remnants of any methods other than one to be used
 	foreach my $subclass (@avail_subclasses) {
 		next if $subclass eq $subclass_use;
-		$subclass->stamp_clear();
 		$subclass->clear_metadata();
 	}
 
 	# Let's do this thang!
-	$subclass_use->do_direct();
-	$subclass_use->stamp_set();
-	&update_version_file($method);
-	&do_finish();
+	my $update_data = $subclass_use->do_direct();
+	if (defined $update_data) {
+		&update_version_file($method, $update_data);
+		&do_finish();
+	}
 }
 
 =item do_finish
@@ -310,15 +310,17 @@ sub finish {
 
 =item update_version_file
 
-	&update_version_file($method);
+	&update_version_file($method, $data);
 
 Marks the %p/fink/$distribution/VERSION file with information about
-the just-done selfupdate using method $method. Returns nothing useful.
+the just-done selfupdate using method $method. The $data is also
+stored in the VERSION file. Returns nothing useful.
 
 =cut
 
 sub update_version_file {
 	my $method = shift;
+	my $data = shift;
 
 	my $filename = "$basepath/fink/$distribution/VERSION";
 	my @lines = ();
@@ -336,7 +338,9 @@ sub update_version_file {
 	@lines = grep { $_ !~ /^\s*SelfUpdate\s*:/i } @lines;
 
 	# add new selfupdate info
-	push @lines, "SelfUpdate: $method\@".time()."\n";
+	my $line = "SelfUpdate: $method\@" . time();
+	$line .= " $data" if defined $data && length $data;
+	push @lines, $line;
 
 	# save new file contents atomically
 	if (open my $FH, '>', "$filename.tmp") {
@@ -349,16 +353,16 @@ sub update_version_file {
 
 =item last_done
 
-	my ($last_method,$last_time) = Fink::SelfUpdate::last_done();
-	if (defined $last_method) {
-		$last_time = time() - $last_time;
-		print "Last selfupdate was by $last_method, $age seconds ago\n";
-	} else {
-		print "Could not determine last selfupdate information\n";
+	my ($last_method,$last_time, $last_data) = Fink::SelfUpdate::last_done();
+	print "Last selfupdate was by $last_method";
+
+	print ", , $age seconds ago\n";
+	if ($last_time) {
+		print " ", time() - $last_time, " seconds ago";
 	}
 
-Returns the method and time of the last selfupdate, or undefs if the
-info could not be determined.
+Returns the method, time, and any method-specific data for the last
+selfupdate that was performed.
 
 =cut
 
@@ -366,15 +370,38 @@ sub last_done {
 	my $filename = "$basepath/fink/$distribution/VERSION";
 
 	if (open my $FH, '<', $filename) {
-		while (<$FH>) {
-			if (/^\s*SelfUpdate\s*:\s*(.+?)\@(\d+)/i) {
-				return ($1, $2);
+		my @lines = <$FH>;
+		close $FH;
+
+		# first look for the new-style token
+		foreach my $line (@lines) {
+			if ($line =~ /^\s*SelfUpdate\s*:\s*(.*)\s*$/i) {
+				my $value = $1;
+				if ($value =~ /^(.+?)\@(\d+)\s*(.*)/) {
+					return ($1, $2, $3);
+				} elsif ($line =~ /^(\S+)\s*(.*)/) {
+					return ($1, 0, $2);
+				} else {
+					print_breaking_stderr "WARNING: Skipping malformed line \"$line\" in $filename.";
+				}
 			}
 		}
-		close $FH;
+
+		# next see if it's new multiline format, picking matching Dist/Arch
+		# er, what *is* this format? Good thing we aren't using it yet:)
+
+		# maybe original one-line format?
+		my $line = $lines[0];
+		chomp $line;
+		if ($line =~ /^(.*)\.(cvs|rsync)$/) {
+			return ($2, 0, $1);
+		}
+		return ('point', 0, $line);
 	}
 
-	return (undef, undef);
+	# give up
+	print_breaking_stderr "WARNING: could not read $filename: $!\n";
+	return (undef, undef, undef);
 }
 
 =back

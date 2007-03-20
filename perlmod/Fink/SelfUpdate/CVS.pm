@@ -46,6 +46,13 @@ Fink::SelfUpdate::CVS - download package descriptions from a CVS server
 
 See documentation for the Fink::SelfUpdate base class.
 
+=over 4
+
+=item system_check
+
+This method builds packages from source, so it requires the
+"dev-tools" virtual package.
+
 =cut
 
 sub system_check {
@@ -66,26 +73,11 @@ sub clear_metadata {
 	&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 }
 
-sub stamp_set {
-	my $class = shift;  # class method for now
+=item do_direct
 
-	my $finkdir = "$basepath/fink";
-	touch "$finkdir/dists/stamp-cvs-live";
-}
+Returns a null string.
 
-sub stamp_clear {
-	my $class = shift;  # class method for now
-
-	my $finkdir = "$basepath/fink";
-	rm_f "$finkdir/stamp-cvs-live", "$finkdir/dists/stamp-cvs-live";
-}
-
-sub stamp_check {
-	my $class = shift;  # class method for now
-
-	my $finkdir = "$basepath/fink";
-	return (-f "$finkdir/stamp-cvs-live" || -f "$finkdir/dists/stamp-cvs-live");
-}
+=cut
 
 sub do_direct {
 	my $class = shift;  # class method for now
@@ -97,6 +89,8 @@ sub do_direct {
 		$class->setup_direct_cvs();
 	}
 }
+
+=back
 
 =head2 Private Methods
 

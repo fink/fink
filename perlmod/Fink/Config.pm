@@ -320,13 +320,9 @@ HELPFORMAT
 		require Fink::FinkVersion;
 		require Fink::SelfUpdate;
 
-		my ($method, $timestamp) = &Fink::SelfUpdate::last_done;
-		my $dv;
-		if (defined $method) {
-			$dv = "selfupdate-$method at " . localtime($timestamp);
-		} else {
-			$dv = Fink::FinkVersion::distribution_version();
-		}
+		my ($method, $timestamp, $misc) = &Fink::SelfUpdate::last_done;
+		my $dv = "selfupdate-$method ($misc)";
+		$dv .= ' '.localtime($timestamp) if $timestamp;
 
 		print "Package manager version: "
 			. Fink::FinkVersion::fink_version() . "\n";

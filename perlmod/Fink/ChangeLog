@@ -1,3 +1,11 @@
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, FinkVersion.pm.in, SelfUpdate.pm, SelfUpdate/*:
+	Abolish FV's pkginfo_version and distribution_version and stop
+	using the stamp-* files altogether (only ever had dup data from
+	VERSION and won't work in multidist world), merge functionality
+	into functions in the main SU VERSION file handlers.
+
 2007-03-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: recognize 10.4.9

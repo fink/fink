@@ -1,5 +1,11 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
+	* subclasses.t: Remove stamp-handlers from API
+	* last_done.t: Update to new 3-value return and return for old
+	formats
+
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
 	* last_done.t: add checks for return values
 
 2007-03-09  Daniel Macks  <dmacks@netspace.org>

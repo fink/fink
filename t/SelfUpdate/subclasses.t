@@ -21,7 +21,6 @@ foreach my $subclass (qw/ CVS point rsync /) {
 		method_name desc_short
 		system_check
 		clear_metadata
-		stamp_set stamp_clear stamp_check
 		do_direct
 	)));
 }

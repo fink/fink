@@ -28,7 +28,7 @@ use warnings;
 
 require Exporter;
 our @ISA	 = qw(Exporter);
-our @EXPORT_OK	 = qw(&fink_version &distribution_version &default_binary_version &pkginfo_version &max_info_level);
+our @EXPORT_OK	 = qw(&fink_version &default_binary_version &max_info_level);
 our %EXPORT_TAGS = ('ALL' => \@EXPORT_OK);
 
 use Fink::Config qw($basepath);
@@ -44,9 +44,7 @@ Fink::FinkVersion - Fink version numbers
   use Fink::FinkVersion qw(:ALL);
 
   my $fink_version    = fink_version;
-  my $dist_version    = distribution_version;
   my $default_version = default_binary_version($distribution);
-  my $pkginfo_version = pkginfo_version;
   my $max_info_level  = max_info_level;
 
 =head1 DESCRIPTION
@@ -75,30 +73,6 @@ sub fink_version {
 }
 
 
-=item distribution_version
-
-  my $dist_version = distribution_version
-
-Returns the fink distribution version you're currently using.
-Deprecated...only use this if Fink::SelfUpdate::last_done fails.
-
-=cut
-
-sub distribution_version {
-	my $dv;
-	if (-f "$basepath/fink/dists/VERSION") {
-		chomp($dv = cat "$basepath/fink/dists/VERSION");
-	} elsif (-f "$basepath/fink/VERSION") {
-		chomp($dv = cat "$basepath/fink/VERSION");
-	} elsif (-f "$basepath/etc/fink-release") {
-		chomp($dv = cat "$basepath/etc/fink-release");
-	} else {
-		$dv = "unknown";
-	}
-	return $dv;
-}
-
-
 =item default_binary_version
 
    my $b_dist_version = default_binary_version($distribution);
@@ -115,44 +89,6 @@ sub default_binary_version {
 	my %bindists = ("10.2-gcc3.3" => "0.6.4", "10.3" => "0.7.2", "10.4-transitional" => "0.8.0", "10.4" => "0.8.1");
 	return $bindists{$distribution};
 }
-
-
-=item pkginfo_version
-
-  my $pkginfo_version = pkginfo_version;
-
-Returns from whence you updated your packages.  If you're using a point
-release it will return that.  Otherwise if you're using one of the dynamic
-methods...
-
-    rsync       packages updated via rsync
-    cvs         packages updated via cvs
-
-=cut
-
-sub pkginfo_version {
-	my $pv = "0";
-	
-	# first check the new place, then the old place
-	my @places = ("$basepath/fink/dists", "$basepath/fink");
-	for my $place (@places) {
-		for my $fn (glob("$place/stamp-*")) {
-			if ($fn =~ m{/stamp-rsync}) {
-				return "rsync";
-			} elsif ($fn =~ m{/stamp-cvs}) {
-				return "cvs";
-			} elsif ($fn =~ m{/stamp-rel-(.+)$}) {
-				my $v = $1;
-				$pv = $v if ($v gt $pv);
-			}
-		}
-		last if $pv ne '0'; # stop after the first useful place
-	}
-	
-	$pv = &distribution_version() if $pv eq "0";
-	return $pv;
-}
-
 
 =item max_info_level
 

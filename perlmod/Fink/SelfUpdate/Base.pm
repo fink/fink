@@ -93,35 +93,15 @@ selfupdate class (example: CVS/ directories).
 
 sub clear_metadata {}
 
-=item stamp_set
-
-  Fink::SelfUpdate::$method->stamp_set();
-
-=item stamp_clear
-
-  Fink::SelfUpdate::$method->stamp_clear();
-
-=item stamp_check
-
-  my $boolean = Fink::SelfUpdate::$method->stamp_check();
-
-Create, remove, or check presence of stamp file for this selfupdate
-class. I don't know what these are for.
-
-=cut
-
-sub stamp_set {}
-
-sub stamp_clear {}
-
-sub stamp_check { return 0; }
-
 =item do_direct
 
-	Fink::SelfUpdate::$method->do_direct();
+	my $data = Fink::SelfUpdate::$method->do_direct();
 
 This implements the actual selfupdate sync process. Must be
-over-ridden (obviously).
+over-ridden (obviously). If successful, returns a defined (but
+possibly null) string that contains method-specific information about
+the selfupdate...a point-update version number, a remote server name,
+etc.
 
 =cut
 

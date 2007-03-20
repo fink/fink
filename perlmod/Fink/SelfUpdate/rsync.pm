@@ -45,6 +45,13 @@ Fink::SelfUpdate::rsync - download package descriptions from an rsync server
 
 See documentation for the Fink::SelfUpdate base class.
 
+=over 4
+
+=item system_check
+
+This method builds packages from source, so it requires the
+"dev-tools" virtual package.
+
 =cut
 
 sub system_check {
@@ -64,26 +71,11 @@ sub system_check {
 	return 1;
 }
 
-sub stamp_set {
-	my $class = shift;  # class method for now
+=item do_direct
 
-	my $finkdir = "$basepath/fink";
-	touch "$finkdir/dists/stamp-rsync-live";
-}
+Returns a null string.
 
-sub stamp_clear {
-	my $class = shift;  # class method for now
-
-	my $finkdir = "$basepath/fink";
-	rm_f "$finkdir/stamp-rsync-live", "$finkdir/dists/stamp-rsync-live";
-}
-
-sub stamp_check {
-	my $class = shift;  # class method for now
-
-	my $finkdir = "$basepath/fink";
-	return (-f "$finkdir/stamp-rsync-live" || -f "$finkdir/dists/stamp-rsync-live");
-}
+=cut
 
 sub do_direct {
 	my $class = shift;  # class method for now
@@ -211,12 +203,14 @@ RSYNCAGAIN:
 		}
 	}
 
-	$class->stamp_set();
-
 	# cleanup after ourselves
 	unlink "$descdir/TIMESTAMP";
 	rename "$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP";
+
+	return '';
 }
+
+=back
 
 =head2 Private Methods
 

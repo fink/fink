@@ -30,7 +30,6 @@ use Fink::Services qw(&version_cmp);
 use Fink::CLI qw(&print_breaking);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::NetAccess qw(&fetch_url);
-use Fink::FinkVersion qw(&pkginfo_version);
 use Fink::Command qw(cat);
 
 use strict;
@@ -46,6 +45,8 @@ Fink::SelfUpdate::CVS - download package descriptions for a point release
 
 See documentation for the Fink::SelfUpdate base class.
 
+=over 4
+
 =cut
 
 sub desc_short {
@@ -54,11 +55,23 @@ sub desc_short {
 	return 'Stick to point releases';
 }
 
+=item system_check
+
+No requirements checked.
+
+=cut
+
 sub system_check {
 	my $class = shift;  # class method for now
 
 	return 1;
 }
+
+=item do_direct
+
+Returns point version string.
+
+=cut
 
 sub do_direct {
 	my $class = shift;  # class method for now
@@ -81,18 +94,21 @@ sub do_direct {
 	}
 	my $latest_fink = cat "$srcdir/$currentfink";
 	chomp($latest_fink);
-	if ($class->stamp_check()) {
-		# on-disk package descriptions are a point/tarball release,
-		# therefore can skip doing another point/tarball release if we
-		# already have the latest release version
-		my $installed_version = &pkginfo_version();
-		if (&version_cmp($latest_fink . '-1', '<=', $distribution . '-' . $installed_version . '-1')) {
+
+	require Fink::SelfUpdate;
+	my @last_selfupdate = &Fink::SelfUpdate::last_done;
+	if ($last_selfupdate[0] ne 'point') {
 			print "\n";
-			&print_breaking("You already have the package descriptions from ".
-							"the latest Fink point release. ".
-							"(installed:$installed_version available:$latest_fink)");
+			&print_breaking('Fink does not presently support switching to selfupdate-point from any other selfupdate method');
 			return;
-		}
+	}
+	
+	if (&version_cmp($latest_fink . '-1', '<=', $distribution . '-' . $last_selfupdate[2] . '-1')) {
+		print "\n";
+		&print_breaking("You already have the package descriptions from ".
+						"the latest Fink point release. ".
+						"(installed:$last_selfupdate[2] available:$latest_fink)");
+		return;
 	}
 	
 	my $newversion = $latest_fink;
@@ -151,9 +167,11 @@ sub do_direct {
 	if (-e $dir) {
 		rm_rf $dir;
 	}
+
+	return $newversion;
 }
 
-### TODO: implement stampfile handling somehow
+=back
 
 =head2 Private Methods
 
