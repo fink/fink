@@ -183,7 +183,15 @@ sub initialize {
 	$dbpath = "$basepath/var/lib/fink";  # must sync with fink.info.in!
 	$distribution = $self->param("Distribution");
 	if (not defined $distribution or ($distribution =~ /^\s*$/)) {
-		die "Distribution not set in config file \"".$self->{_path}."\"!\n";
+		my $error = 'Distribution not set';
+		if( $self->{_path} ) {
+			$error .= qq{ in config file "$self->{_path}"};
+		}
+		else {
+			$error .= qq{, no config file};
+		}
+		$error .= "!\n";
+		die $error;
 	}
 
 	# The Architecture config field is used for .info Architecture
