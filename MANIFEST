@@ -151,6 +151,7 @@ t/PkgVersion/sed-4.0.5-1.info
 t/PkgVersion/xml-parser-pm560-2.31-5.info
 t/SelfUpdate/ChangeLog
 t/SelfUpdate/subclasses.t
+t/SelfUpdate/last_done.t
 t/Services/ChangeLog
 t/Services/eval_conditional.t
 t/Services/execute_nonroot_okay.t

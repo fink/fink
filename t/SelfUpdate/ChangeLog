@@ -1,3 +1,7 @@
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
+	* last_done.t: add checks for return values
+
 2007-03-09  Daniel Macks  <dmacks@netspace.org>
 
 	* subclasses.t: add checks for method_name and desc_short public APIs
