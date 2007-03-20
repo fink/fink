@@ -314,7 +314,8 @@ HELPFORMAT
 			. Fink::FinkVersion::fink_version() . "\n";
 		print "Distribution version: "
 			. Fink::FinkVersion::distribution_version()
-			. ' ' . $config->param('Architecture')
+			. ', ' . $config->param('Distribution')
+			. ', ' . $config->param('Architecture')
 			. ($config->mixed_arch() ? ' (forged)' : '')
 			. "\n";
 		print <<"EOF";

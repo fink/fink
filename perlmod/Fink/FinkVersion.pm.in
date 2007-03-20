@@ -33,6 +33,7 @@ our %EXPORT_TAGS = ('ALL' => \@EXPORT_OK);
 
 use Fink::Config qw($basepath);
 use Fink::Command qw(cat);
+require Fink::SelfUpdate;
 
 
 =head1 NAME
@@ -85,7 +86,10 @@ Returns the fink distribution version you're currently using.
 
 sub distribution_version {
 	my $dv;
-	if (-f "$basepath/fink/dists/VERSION") {
+	my ($method, $timestamp) = &Fink::SelfUpdate::last_done;
+	if (defined $method) {
+		$dv = "selfupdate-$method at " . localtime($timestamp);
+	} elsif (-f "$basepath/fink/dists/VERSION") {
 		chomp($dv = cat "$basepath/fink/dists/VERSION");
 	} elsif (-f "$basepath/fink/VERSION") {
 		chomp($dv = cat "$basepath/fink/VERSION");

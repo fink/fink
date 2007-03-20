@@ -25,10 +25,12 @@ package Fink::SelfUpdate;
 
 use Fink::Services qw(&execute &find_subpackages);
 use Fink::Bootstrap qw(&additional_packages);
-use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection);
-use Fink::Config qw($config $basepath);
+use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection print_breaking_stderr);
+use Fink::Config qw($basepath $config $distribution);
 use Fink::Engine;  # &aptget_update &cmd_install, but they aren't EXPORT_OK
 use Fink::Package;
+
+use POSIX qw(strftime);
 
 use strict;
 use warnings;
@@ -202,6 +204,7 @@ sub check {
 	# Let's do this thang!
 	$subclass_use->do_direct();
 	$subclass_use->stamp_set();
+	&update_version_file($method);
 	&do_finish();
 }
 
@@ -303,6 +306,75 @@ sub finish {
 					"You should now update the other packages ".
 					"using commands like 'fink update-all'.");
 	print "\n";
+}
+
+=item update_version_file
+
+	&update_version_file($method);
+
+Marks the %p/fink/$distribution/VERSION file with information about
+the just-done selfupdate using method $method. Returns nothing useful.
+
+=cut
+
+sub update_version_file {
+	my $method = shift;
+
+	my $filename = "$basepath/fink/$distribution/VERSION";
+	my @lines = ();
+
+	# read old file
+	if (open my $FH, '<', $filename) {
+		@lines = <$FH>;
+		close $FH;
+	}
+
+	# remove ".cvs" from server file
+	map s/^(\d|\.)+\.cvs$/$1/, @lines;
+
+	# remove old selfupdate info
+	@lines = grep { $_ !~ /^\s*SelfUpdate\s*:/i } @lines;
+
+	# add new selfupdate info
+	push @lines, "SelfUpdate: $method\@".time()."\n";
+
+	# save new file contents atomically
+	if (open my $FH, '>', "$filename.tmp") {
+		print $FH @lines;
+		close $FH;
+	} else {
+		print_breaking_stderr "WARNING: Not saving timestamp of selfupdate because could not write $filename.tmp: $!\n";
+	}
+}
+
+=item last_done
+
+	my ($last_method,$last_time) = Fink::SelfUpdate::last_done();
+	if (defined $last_method) {
+		$last_time = time() - $last_time;
+		print "Last selfupdate was by $last_method, $age seconds ago\n";
+	} else {
+		print "Could not determine last selfupdate information\n";
+	}
+
+Returns the method and time of the last selfupdate, or undefs if the
+info could not be determined.
+
+=cut
+
+sub last_done {
+	my $filename = "$basepath/fink/$distribution/VERSION";
+
+	if (open my $FH, '<', $filename) {
+		while (<$FH>) {
+			if (/^\s*SelfUpdate\s*:\s*(\.+?)\@(\d+)/i) {
+				return ($1, $2);
+			}
+		}
+		close $FH;
+	}
+
+	return (undef, undef);
 }
 
 =back

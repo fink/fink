@@ -212,44 +212,10 @@ RSYNCAGAIN:
 	}
 
 	$class->stamp_set();
-	$class->setup_version_file("$basepath/fink/$dist/VERSION");
 
 	# cleanup after ourselves
 	unlink "$descdir/TIMESTAMP";
 	rename "$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP";
-}
-
-=item setup_version_file
-
-	Fink::SelfUpdate::rsync->setup_version_file($filename);
-
-Marks the VERSION file specified by $filename to indicate use of the
-rsync method instead of the cvs method. The VERSION file itself seems
-to be in CVS, with the cvs indicator. Not sure what happens if the
-file comes from somewhere else originally...need a more canonical way
-to format/locate/process this file.
-
-=cut
-
-sub setup_version_file {
-	my $class = shift;
-	my $filename = shift;
-
-	my $filetemp = "$filename.tmp";
-
-	if (-f $filename) {
-		open my $orig_FH,  '<', $filename or die "can't read $filename: $!\n";
-		open my $temp_FH,  '>', $filetemp or die "can't write $filetemp: $!\n";
-		while (<$orig_FH>) {
-			chomp;
-			$_ =~ s/cvs/rsync/;
-			print $temp_FH "$_\n";
-		}
-		close $temp_FH;
-		close $orig_FH;
-		unlink $filename;
-		rename $filetemp, $filename;
-	}
 }
 
 =head2 Private Methods
