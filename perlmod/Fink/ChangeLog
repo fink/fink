@@ -1,5 +1,9 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm, SelfUpdate.pm: Migrate to new API for SU::check
+
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
 	* FinkVersion.pm.in, SelfUpdate.pm: Remove un-needed use/require
 
 2007-03-20  Daniel Macks  <dmacks@netspace.org>

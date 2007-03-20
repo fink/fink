@@ -63,42 +63,27 @@ Fink::SelfUpdate - download package descriptions from server
 
   Fink::SelfUpdate::check($method);
 
-This is the main entry point for the 'fink selfupdate*' commands. The
-local collection of package descriptions is updated according to one
-of the following methods:
+This is the main entry point for the 'fink selfupdate*' commands to
+update the local collection of package descriptions.
+
+The optional $method parameter specifies the selfupdate method to
+use. If no $method is specified (0 or undef), the default method is
+used. It can be a text string naming the method, or a legacy API of
+numerical values for some specific methods:
 
 =over 4
 
-=item "point"
+=item 0
 
-A tarball of the latest Fink binary installer package collection is
-downloaded from the fink website.
+Use the current default method
 
-=item "cvs"
+=item 1
 
-=item "rsync"
+Use the "cvs" method
 
-"cvs" or "rsync" protocols are used to syncronize with a remote
-server.
+=item 2
 
-=back
-
-The optional $method parameter specifies the
-selfupdate method to use:
-
-=over 4
-
-=item 0 (or undefined or omitted)
-
-Use the current method
-
-=item 1 or "cvs"
-
-Use the cvs method
-
-=item 2 or "rsync"
-
-Use the rsync method
+Use the "rsync" method
 
 =back
 

@@ -374,12 +374,12 @@ sub cmd_selfupdate {
 
 sub cmd_selfupdate_cvs {
 	require Fink::SelfUpdate;
-	Fink::SelfUpdate::check(1);
+	Fink::SelfUpdate::check('cvs');
 }
 
 sub cmd_selfupdate_rsync {
 	require Fink::SelfUpdate;
-	Fink::SelfUpdate::check(2);
+	Fink::SelfUpdate::check('rsync');
 }
 
 sub cmd_selfupdate_finish {
