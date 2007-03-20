@@ -1,5 +1,9 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm: Disallow changing to method=point from any other
+
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm, SelfUpdate.pm: Migrate to new API for SU::check
 
 2007-03-20  Daniel Macks  <dmacks@netspace.org>

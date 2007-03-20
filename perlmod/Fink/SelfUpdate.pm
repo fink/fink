@@ -155,6 +155,16 @@ sub check {
 		if (length $prev_method and $method ne $prev_method) {
 			# requested a method different from previously-saved default
 			# better double-check that user really wants to do this
+
+			if ($prev_method eq 'point') {
+				# "point" updater (inject.pl) doesn't appear to remove
+				# .info that are not in the tarball, so files added by
+				# other selfupdate methods that supply different
+				# packages or newer versions would remain and
+				# contaminate the point dist.
+				&print_breaking("\nWARNING: Fink does not presently support changing to SelfUpdateMethod \"point\" from any other method\n;");
+				return;
+			}
 			my $answer =
 				&prompt_boolean("The current selfupdate method is $prev_method. "
 								. "Do you wish to change this default method "
