@@ -310,10 +310,20 @@ HELPFORMAT
 	
 	if ($opts{showversion}) {
 		require Fink::FinkVersion;
+		require Fink::SelfUpdate;
+
+		my ($method, $timestamp) = &Fink::SelfUpdate::last_done;
+		my $dv;
+		if (defined $method) {
+			$dv = "selfupdate-$method at " . localtime($timestamp);
+		} else {
+			$dv = Fink::FinkVersion::distribution_version();
+		}
+
 		print "Package manager version: "
 			. Fink::FinkVersion::fink_version() . "\n";
 		print "Distribution version: "
-			. Fink::FinkVersion::distribution_version()
+			. $dv
 			. ', ' . $config->param('Distribution')
 			. ', ' . $config->param('Architecture')
 			. ($config->mixed_arch() ? ' (forged)' : '')

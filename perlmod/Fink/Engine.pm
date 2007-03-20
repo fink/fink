@@ -1586,48 +1586,30 @@ sub real_install {
 	}
 
 	# don't bother doing this on point release, of course it's out-of-date  ;)
-	if ($config->param("SelfUpdateMethod") ne "point")
-	{
-		my $cache_file = Fink::Package->db_index;
+	if ($config->param("SelfUpdateMethod") ne "point") {
+		my $up_to_date_text;
 
-		my $dir = IO::Handle->new();
-		if (opendir($dir, "$basepath/fink/dists"))
-		{
-			for my $entry (readdir($dir))
-			{
-				if ($entry =~ /^stamp-/)
-				{
-					$cache_file = $basepath . '/fink/dists/' . $entry;
-					last;
-				}
+		my ($method, $timestamp) = &Fink::SelfUpdate::last_done;
+		if (defined $method) {
+			my $age = (time-$timestamp) / (60*60*24);  # days since last selfupdate
+			if ($age > 14) {
+				$up_to_date_text = "your info file index has not been updated for " . int($age) . " days.";
 			}
-			closedir($dir);
-		}
-		else
-		{
-			warn "unable to open $basepath/fink/dists: $!";
+		} else {
+			$up_to_date_text = "unable to determine last selfupdate time.\n";
 		}
 
-
-		if (not -f $cache_file or (-M $cache_file > 14)) {
+		if (defined $up_to_date_text) {
 			my $oldindexes = lc(Fink::Config::get_option("OldIndexes", "warn"));
 			if ($oldindexes !~ /^(ignore|update|warn)$/) {
 				$oldindexes = 'warn';
 				print_breaking_stderr "WARNING: unknown value for 'OldIndexes' in fink.conf: $oldindexes";
 			}
-	
-			my $up_to_date_text;
-			if (-f $cache_file)
-			{
-				$up_to_date_text = "WARNING: your info file index has not been updated for " . int(-M $cache_file) . " days.";
-			} else {
-				$up_to_date_text = "WARNING: your info file index does not exist.";
-			}
-	
+			
 			if ($oldindexes eq "warn") {
-				print_breaking_stderr $up_to_date_text . "  You should run 'fink selfupdate' to get the latest package descriptions.\n";
+				print_breaking_stderr "WARNING: $up_to_date_text You should run 'fink selfupdate' to get the latest package descriptions.\n";
 			} elsif ($oldindexes eq "update") {
-				print_breaking_stderr $up_to_date_text . "  Fink will now update it automatically.";
+				print_breaking_stderr "WARNING: $up_to_date_text Fink will now update it automatically.";
 				require Fink::SelfUpdate;
 				Fink::SelfUpdate::check();
 			}

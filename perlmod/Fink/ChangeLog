@@ -1,11 +1,19 @@
 2007-03-19  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Use SelfUpdate's API to get VERSION timestamp when
+	determining if selfupdate is "old".
+
+	* FinkVersion.pm.in: Revert use of SU's interface to avoid
+	needing require() on SelfUpdate (circular mess)
+
+2007-03-19  Daniel Macks  <dmacks@netspace.org>
+
 	* Config.pm: Add fink.conf:Distribution to 'fink -V' output.
 	* FinkVersion.pm.in: Try asking SelfUpdate about package-distro
 	versioning, which would add selfupdate method and timestamp data
 	to 'fink -V' output.
 	* SelfUpdate.pm, SelfUpdate/rsync.pm: Unified and overhauled
-	handling of %p/fink/$dist/VERSION file.
+	handling of %p/fink/$dist/VERSION file (now includes timestamp).
 
 2007-03-09  Daniel Macks  <dmacks@netspace.org>
 
