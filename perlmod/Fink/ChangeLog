@@ -1,10 +1,11 @@
 2007-03-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: recognize 10.4.9
+	* Config.pm: Fix error msg if using new_with_properties
+	* Engine.pm: Remind user to selfupdate after enabling unstable
 
 2007-03-19  Daniel Macks  <dmacks@netspace.org>
 
-	* Config.pm: Fix error msg if using new_with_properties
 	* SelfUpdate.pm: Fix parsing of VERSION SelfUpdate token
 
 2007-03-19  Daniel Macks  <dmacks@netspace.org>
