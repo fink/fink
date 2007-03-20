@@ -367,7 +367,7 @@ sub last_done {
 
 	if (open my $FH, '<', $filename) {
 		while (<$FH>) {
-			if (/^\s*SelfUpdate\s*:\s*(\.+?)\@(\d+)/i) {
+			if (/^\s*SelfUpdate\s*:\s*(.+?)\@(\d+)/i) {
 				return ($1, $2);
 			}
 		}
