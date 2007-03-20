@@ -1,5 +1,9 @@
 2007-03-19  Daniel Macks  <dmacks@netspace.org>
 
+	* Config.pm: Display actual Distribution string in 'fink -V'
+
+2007-03-19  Daniel Macks  <dmacks@netspace.org>
+
 	* Config.pm: Fix error msg if using new_with_properties
 
 2007-03-17  Dave Morrison  <drm@finkproject.org>

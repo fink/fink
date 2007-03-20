@@ -318,11 +318,15 @@ HELPFORMAT
 	
 	if ($opts{showversion}) {
 		require Fink::FinkVersion;
+
+		my $dv = Fink::FinkVersion::distribution_version();
+
 		print "Package manager version: "
 			. Fink::FinkVersion::fink_version() . "\n";
 		print "Distribution version: "
-			. Fink::FinkVersion::distribution_version()
-			. ' ' . $config->param('Architecture')
+			. $dv
+			. ', ' . $config->param('Distribution')
+			. ', ' . $config->param('Architecture')
 			. ($config->mixed_arch() ? ' (forged)' : '')
 			. "\n";
 		print <<"EOF";
