@@ -1,5 +1,9 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
+	* FinkVersion.pm.in, SelfUpdate.pm: Remove un-needed use/require
+
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
 	* Config.pm, FinkVersion.pm.in, SelfUpdate.pm, SelfUpdate/*:
 	Abolish FV's pkginfo_version and distribution_version and stop
 	using the stamp-* files altogether (only ever had dup data from

@@ -127,7 +127,7 @@ themselves virtual (from Status or VirtPackage).
 ### Do not change API! This is used by FinkCommander (fpkg_list.pl)
 
 sub is_virtual {
-	use Fink::VirtPackage;
+	use Fink::VirtPackage;  # why is this here?
 	my $self = shift;
 
 	return $self->{_virtual};

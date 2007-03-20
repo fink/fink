@@ -23,7 +23,7 @@
 
 package Fink::SelfUpdate;
 
-use Fink::Services qw(&execute &find_subpackages);
+use Fink::Services qw(&find_subpackages);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection print_breaking_stderr);
 use Fink::Config qw($basepath $config $distribution);

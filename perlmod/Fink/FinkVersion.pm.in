@@ -31,9 +31,6 @@ our @ISA	 = qw(Exporter);
 our @EXPORT_OK	 = qw(&fink_version &default_binary_version &max_info_level);
 our %EXPORT_TAGS = ('ALL' => \@EXPORT_OK);
 
-use Fink::Config qw($basepath);
-use Fink::Command qw(cat);
-
 
 =head1 NAME
 
