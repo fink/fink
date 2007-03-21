@@ -18,7 +18,7 @@ foreach my $subclass (qw/ CVS point rsync /) {
 	isa_ok( bless({}, $class), $baseclass );
 
 	can_ok($class, (qw(
-		method_name desc_short
+		description
 		system_check
 		clear_metadata
 		do_direct

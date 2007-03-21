@@ -133,7 +133,7 @@ sub check {
 			my @default = ();  # default menu choice (rsync if it's avail)
 			foreach my $subclass (sort @avail_subclasses) {
 				push @choices, ( $subclass->description() => $subclass );
-				@default = ( 'value' => $subclass ) if $subclass->method_name() eq 'rsync';
+				@default = ( 'value' => $subclass ) if &class2methodname($subclass) eq 'rsync';
 			}
 
 			my $subclass_choice = &prompt_selection(
@@ -142,7 +142,7 @@ sub check {
 				choices => \@choices,
 				default => \@default,
 			);
-			$method = lc($subclass_choice->method_name());
+			$method = &class2methodname($subclass_choice);
 		}
 	} else {
 		# explicit method requested
@@ -397,6 +397,26 @@ sub last_done {
 	# give up
 	print_breaking_stderr "WARNING: could not read $filename: $!\n";
 	return (undef, undef, undef);
+}
+
+=item class2methodname
+
+	my $name = Fink::SelfUpdate::class2methodname('Fink::SelfUpdate::CVS');
+	# gives 'cvs'
+
+Given a class, strips all leading namespaces and converts to
+lower-case. This is considered as the SelfUpdateMethod implemented by
+the class.
+
+=cut
+
+sub class2methodname {
+	my $class = shift;
+
+	$class = ref($class) if ref($class);  # find class if called as object
+	$class =~ s/.*:://;  # just the subclass
+
+	return lc($class);
 }
 
 =back

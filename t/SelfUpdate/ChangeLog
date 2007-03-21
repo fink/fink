@@ -1,6 +1,7 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
-	* subclasses.t: Rename desc_short() to description()
+	* subclasses.t: Rename desc_short() to description(); nuke
+	method_name()...use lc of last component of package-name
 
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 

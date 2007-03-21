@@ -1,7 +1,7 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
-	* SelfUpdate.pm, SelfUpdate/*: Rename desc_short() to description()
-
+	* SelfUpdate.pm, SelfUpdate/*: Rename desc_short() to description();
+	scrap the method_name() class method (always use lc(package-name))
 
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
