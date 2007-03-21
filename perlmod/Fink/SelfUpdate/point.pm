@@ -26,12 +26,11 @@ package Fink::SelfUpdate::point;
 
 use base qw(Fink::SelfUpdate::Base);
 
-use Fink::Services qw(&version_cmp);
+use Fink::Services qw(&version_cmp &execute);
 use Fink::CLI qw(&print_breaking);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::NetAccess qw(&fetch_url);
 use Fink::Command qw(cat);
-use Fink::Services qw(&execute);
 
 use strict;
 use warnings;
