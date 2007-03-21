@@ -344,6 +344,8 @@ sub update_version_file {
 	if (open my $FH, '>', "$filename.tmp") {
 		print $FH @lines;
 		close $FH;
+		unlink $filename;
+		rename "$filename.tmp", $filename;
 	} else {
 		print_breaking_stderr "WARNING: Not saving timestamp of selfupdate because could not write $filename.tmp: $!\n";
 	}

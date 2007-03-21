@@ -31,6 +31,7 @@ use Fink::Config qw($basepath $config $distribution);
 use Fink::Mirror;
 use Fink::Package;
 use Fink::Command qw(chowname rm_f mkdir_p touch);
+use Fink::Services qw(&execute);
 
 use strict;
 use warnings;
