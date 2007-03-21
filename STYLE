@@ -79,8 +79,8 @@ These have not yet been checked for cycles:
   Fink::Bootstrap uses Fink::Config Fink::Services Fink::CLI Fink::Package Fink::PkgVersion Fink::Engine Fink::Command Fink::Checksum
   Fink::Engine Fink::Services Fink::CLI Fink::Configure Fink::Finally Fink::Finally::Buildlock Fink::Finally::BuildConflicts Fink::Package Fink::PkgVersion Fink::Config Fink::Status Fink::Command Fink::Notify Fink::Validation Fink::Checksum Fink::Scanpackages
   Fink::SelfUpdate uses Fink::Services Fink::Bootstrap Fink::CLI Fink::Config Fink::Engine Fink::Package
-  Fink::SelfUpdate::CVS uses Fink::SelfUpdate::Base Fink::CLI Fink::Config Fink::Package Fink::Command
+  Fink::SelfUpdate::CVS uses Fink::SelfUpdate::Base Fink::CLI Fink::Config Fink::Package Fink::Command Fink::Services
   Fink::SelfUpdate::point uses Fink::SelfUpdate::Base Fink::CLI Fink::Config Fink::NetAccess Fink::Command Fink::Services
-  Fink::SelfUpdate::rsync uses Fink::SelfUpdate::Base Fink::CLI Fink::Config Fink::Mirror Fink::Package Fink::Command
+  Fink::SelfUpdate::rsync uses Fink::SelfUpdate::Base Fink::CLI Fink::Config Fink::Mirror Fink::Package Fink::Command Fink::Services
   Fink::Shlibs uses Fink::Base Fink::Services Fink::CLI Fink::Config Fink::PkgVersion 
 

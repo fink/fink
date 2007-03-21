@@ -368,16 +368,21 @@ sub cmd_bootstrap {
 }
 
 sub cmd_selfupdate {
+	# TODO: Getoptify:
+	#  Add --mode=$method that passes $method to check()
+	#  Add --list-modes that lists all SU:: methods
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check();
 }
 
 sub cmd_selfupdate_cvs {
+	# TODO: rewrite as wrapper around cmd_selfupdate (forge cmdline)
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check('cvs');
 }
 
 sub cmd_selfupdate_rsync {
+	# TODO: rewrite as wrapper around cmd_selfupdate (forge cmdline)
 	require Fink::SelfUpdate;
 	Fink::SelfUpdate::check('rsync');
 }
@@ -398,6 +403,7 @@ sub cmd_listplugins {
 	print "Checksum Plugins:\n\n";
 	Fink::Checksum->list_plugins();
 	print "\n";
+	# TODO: add SU plugins (need to implement back-end too)
 }
 
 sub cmd_apropos {
