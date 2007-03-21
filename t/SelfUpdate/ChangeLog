@@ -1,5 +1,9 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
+	* subclasses.t: Rename desc_short() to description()
+
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
 	* subclasses.t: Remove stamp-handlers from API
 	* last_done.t: Update to new 3-value return and return for old
 	formats

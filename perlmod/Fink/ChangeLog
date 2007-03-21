@@ -1,5 +1,10 @@
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm, SelfUpdate/*: Rename desc_short() to description()
+
+
+2007-03-20  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate.pm: Disallow changing to method=point from any other
 
 2007-03-20  Daniel Macks  <dmacks@netspace.org>

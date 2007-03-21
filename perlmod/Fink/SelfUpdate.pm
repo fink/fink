@@ -132,7 +132,7 @@ sub check {
 			my @choices = ();  # menu entries as ordered label=>class pairs
 			my @default = ();  # default menu choice (rsync if it's avail)
 			foreach my $subclass (sort @avail_subclasses) {
-				push @choices, ( $subclass->desc_short() => $subclass );
+				push @choices, ( $subclass->description() => $subclass );
 				@default = ( 'value' => $subclass ) if $subclass->method_name() eq 'rsync';
 			}
 

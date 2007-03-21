@@ -60,16 +60,16 @@ sub method_name {
 	return lc($class);
 }
 
-=item desc_short
+=item description
 
-	my $label = Fink::SelfUpdate::$method->desc_short();
+	my $label = Fink::SelfUpdate::$method->description();
 
-Returns a brief label for this method, something shorter than a
-package Description field. Defaults to the method_name.
+Returns a short description of this method, similar to the Description
+field of a package. Defaults to the method_name.
 
 =cut
 
-sub desc_short { $_[0]->method_name() }
+sub description { $_[0]->method_name() }
 
 =item system_check
 
