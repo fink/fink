@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd $Date $
+.Dd $Date$
 .Dt FINK.CONF 5
 .Sh NAME
 .Nm fink.conf
