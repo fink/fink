@@ -328,6 +328,7 @@ sub update_version_file {
 		@lines = <$FH>;
 		close $FH;
 	}
+	chomp @lines;
 
 	# remove ".cvs" from server file
 	map s/^(\d|\.)+\.cvs$/$1/, @lines;
@@ -342,7 +343,7 @@ sub update_version_file {
 
 	# save new file contents atomically
 	if (open my $FH, '>', "$filename.tmp") {
-		print $FH @lines;
+		print $FH map "$_\n", @lines;
 		close $FH;
 		unlink $filename;
 		rename "$filename.tmp", $filename;

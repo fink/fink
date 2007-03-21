@@ -89,6 +89,7 @@ sub do_direct {
 	} else {
 		$class->setup_direct_cvs();
 	}
+	return '';
 }
 
 =back

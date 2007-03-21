@@ -321,7 +321,8 @@ HELPFORMAT
 		require Fink::SelfUpdate;
 
 		my ($method, $timestamp, $misc) = &Fink::SelfUpdate::last_done;
-		my $dv = "selfupdate-$method ($misc)";
+		my $dv = "selfupdate-$method";
+		$dv .= " ($misc)" if length $misc;
 		$dv .= ' '.localtime($timestamp) if $timestamp;
 
 		print "Package manager version: "

@@ -1,5 +1,10 @@
 2007-03-21  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate/CVS.pm: Fix do_direct return if successful
+	* Config.pm, SelfUpdate.pm: Improve handling of method-specific data
+
+2007-03-21  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate/*.pm: Add missing use()
 	* SelfUpdate.pm: Actually install updated VERSION file
 
