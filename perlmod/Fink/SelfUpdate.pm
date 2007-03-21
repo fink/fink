@@ -116,9 +116,7 @@ sub check {
 	$method = lc($method);
 	my $prev_method = lc($config->param_default("SelfUpdateMethod", ''));
 
-	# find all Fink::SelfUpdate:: subclasses, skipping the base class
-	my @avail_subclasses = &find_subpackages(__PACKAGE__);
-	@avail_subclasses = grep { $_ ne __PACKAGE__.'::Base' } @avail_subclasses;
+	my @avail_subclasses = &Fink::SelfUpdate::_plugins;
 
 	if ($method eq '') {
 		# no explicit method requested
@@ -129,9 +127,14 @@ sub check {
 		} else {
 			# no existing default so ask user
 
+			if (!@avail_subclasses) {
+				print_breaking_stderr("ERROR: No selfupdate methods implemented. Giving up.\n");
+				return;
+			}
+
 			my @choices = ();  # menu entries as ordered label=>class pairs
 			my @default = ();  # default menu choice (rsync if it's avail)
-			foreach my $subclass (sort @avail_subclasses) {
+			foreach my $subclass (@avail_subclasses) {
 				push @choices, ( $subclass->description() => $subclass );
 				@default = ( 'value' => $subclass ) if &class2methodname($subclass) eq 'rsync';
 			}
@@ -176,7 +179,7 @@ sub check {
 	}
 
 	# find the class that implements the method
-	my ($subclass_use) = grep { $_->method_name() eq $method } @avail_subclasses;
+	my ($subclass_use) = grep { &class2methodname($_) eq $method } @avail_subclasses;
 
 	# sanity checks
 	die "Selfupdate method '$method' is not implemented\n" unless( defined $subclass_use && length $subclass_use );
@@ -419,6 +422,47 @@ sub class2methodname {
 	return lc($class);
 }
 
+=item _plugins
+
+	my $plugin_classes = Fink::SelfUpdate::_plugins;
+
+Returns a ref to a list of subclasses (by namespace) of the present
+class that are subclasses (by inheritance) of the Base subclass.
+Guaranteed that there is only one class with a given lowest-level name
+(case-insentively). The returned list is sorted by that lowest-level
+name.
+
+=cut
+
+{
+	my $plugins;  # cache the results
+
+	sub _plugins {
+		if (!defined $plugins) {
+			my $base_class = __PACKAGE__ . '::Base';
+			my %plugins = ();
+			foreach my $class (sort(find_subpackages(__PACKAGE__))) {
+				next if $class eq $base_class;  # skip base class (dummy method)
+
+				# lazy solution: require ISA relationship on base, so can
+				# know that all standard API are available
+				eval "require $class";
+				next unless $class->isa($base_class);
+
+				# name is the unique token, so eliminate dups
+				my $name = &class2methodname($class);
+				if (exists $plugins{$name}) {
+					# skip dups
+					print_breaking_stderr("WARNING: $name already supplied by $plugins{$name}; skipping $class\n");
+					next;
+				}
+				$plugins{$name} = $class;
+			}
+			$plugins = [ map $plugins{$_}, sort keys %plugins ];
+		}
+		return @$plugins;
+	}
+}
 =back
 
 =cut
