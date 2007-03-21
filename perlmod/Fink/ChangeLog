@@ -1,3 +1,7 @@
+2007-03-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Fix use of SU::last_done
+
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Offload plugin-detection into _plugins function

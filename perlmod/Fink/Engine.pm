@@ -1589,14 +1589,15 @@ sub real_install {
 	if ($config->param("SelfUpdateMethod") ne "point") {
 		my $up_to_date_text;
 
-		my ($method, $timestamp) = &Fink::SelfUpdate::last_done;
-		if (defined $method) {
+		require Fink::SelfUpdate;
+		my ($method, $timestamp, $data) = &Fink::SelfUpdate::last_done;
+		if ($timestamp) {
 			my $age = (time-$timestamp) / (60*60*24);  # days since last selfupdate
 			if ($age > 14) {
 				$up_to_date_text = "your info file index has not been updated for " . int($age) . " days.";
 			}
 		} else {
-			$up_to_date_text = "unable to determine last selfupdate time.\n";
+			$up_to_date_text = "unable to determine last selfupdate time.";
 		}
 
 		if (defined $up_to_date_text) {
