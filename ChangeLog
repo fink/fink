@@ -1,3 +1,7 @@
+2007-03-21  Daniel Macks  <dmacks@netspace.org>
+
+	* VERSION: Update to new HEAD now that 0.27 has branched
+
 2007-03-08  Daniel Macks  <dmacks@netspace.org>
 
 	* install.sh: killed off Fink::SelfUpdate::tarball
