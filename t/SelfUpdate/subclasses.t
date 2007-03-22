@@ -4,13 +4,13 @@
 
 use strict;
 use warnings;
-use Test::More tests => 10;
+use Test::More tests => 13;
 
 my $baseclass = 'Fink::SelfUpdate::Base';
 require_ok($baseclass);  # test #1
 
-# check that each can be loaded and has all expected methods (3x3 tests)
-foreach my $subclass (qw/ CVS point rsync /) {
+# check that each loads and has all expected methods (4 classes x 3 tests)
+foreach my $subclass (qw/ Base CVS point rsync /) {
 	my $class = "Fink::SelfUpdate::$subclass";
 
 	require_ok($class);
@@ -22,5 +22,6 @@ foreach my $subclass (qw/ CVS point rsync /) {
 		system_check
 		clear_metadata
 		do_direct
+		update_version_file
 	)));
 }

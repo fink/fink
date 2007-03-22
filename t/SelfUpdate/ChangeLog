@@ -1,3 +1,9 @@
+2007-03-22  Daniel Macks  <dmacks@netspace.org>
+
+	* last_done.t: Overhaul for new VERSION.selfupdate file
+	* subclasses.t: Also test Base class (has dummy and common
+	methods); add check for update_version_file class method.
+
 2007-03-20  Daniel Macks  <dmacks@netspace.org>
 
 	* subclasses.t: Rename desc_short() to description(); nuke
