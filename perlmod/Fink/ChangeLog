@@ -1,5 +1,14 @@
 2007-03-22  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm, SelfUpdate/*.pm: update_version_file is now class
+	method (in SU::Base) called by do_direct
+	* SelfUpdate/CVS.pm: Update selfupdate timestamp in all trees that
+	were synced
+	* SelfUpdate.pm, SelfUpdate/Base.pm: Use VERSION.selfupdate for
+	selfupdate data, leaving VERSION untouched
+
+2007-03-22  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: Use prompt_selection for menu of choices
 
 2007-03-21  Daniel Macks  <dmacks@netspace.org>

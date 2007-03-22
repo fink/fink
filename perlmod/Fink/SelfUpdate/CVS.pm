@@ -89,7 +89,7 @@ sub do_direct {
 	} else {
 		$class->setup_direct_cvs();
 	}
-	return '';
+	return 1;
 }
 
 =back
@@ -278,6 +278,13 @@ sub setup_direct_cvs {
 			"Warning: Your Fink installation is in an inconsistent state now.\n";
 	rm_rf $tempdir;
 
+	# need to do this after the actual download since the download
+	# goes to a temp area before being activated, and activation
+	# happens all at once for the whole @trees set
+	for my $tree (@trees) {
+		$class->update_version_file(distribution => $tree);
+	}
+
 	print "\n";
 	&print_breaking("Your Fink installation was successfully set up for ".
 					"direct CVS updating. The directory \"$finkdir.old\" ".
@@ -343,6 +350,8 @@ sub do_direct_cvs {
 		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 		if (&execute($cmd)) {
 			$errors++;
+		} else {
+			$class->update_version_file(distribution => $tree);
 		}
 	}
 

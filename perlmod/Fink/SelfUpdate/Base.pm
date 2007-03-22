@@ -22,6 +22,9 @@
 
 package Fink::SelfUpdate::Base;
 
+use Fink::CLI qw(&print_breaking_stderr);
+use Fink::Config qw($basepath $distribution);
+
 use strict;
 use warnings;
 
@@ -81,14 +84,70 @@ sub clear_metadata {}
 	my $data = Fink::SelfUpdate::$method->do_direct();
 
 This implements the actual selfupdate sync process. Must be
-over-ridden (obviously). If successful, returns a defined (but
-possibly null) string that contains method-specific information about
-the selfupdate...a point-update version number, a remote server name,
-etc.
+over-ridden (obviously). Returns boolean indicating success. Must call
+Fink::SelfUpdate::$method->do_direct before returning.
 
 =cut
 
 sub do_direct { die "Not implemented\n" }
+
+=item update_version_file
+
+	Fink::SelfUpdate::$method->update_version_file(%options);
+
+Records information in %p/fink/$distribution/VERSION.selfupdate about
+the just-done selfupdate. Returns nothing useful. Probably safest to
+avoid overriding this class method. The following %options are known:
+
+=over 4
+
+=item distribution (optional)
+
+Updates the VERSION file for the given value. Defaults to the
+currently active distribution.
+
+=item data (optional)
+
+A single line of text containing method-specific information
+(point-update version number, remote server info, etc).
+
+=back
+
+=cut
+
+sub update_version_file {
+	my $class = shift;
+	my %options = ('distribution' => $distribution, 'data' => '', @_);
+
+	my $filename = "$basepath/fink/$options{distribution}/VERSION.selfupdate";
+	my @lines = ();
+
+	# read old file
+	if (open my $FH, '<', $filename) {
+		@lines = <$FH>;
+		close $FH;
+	}
+	chomp @lines;
+
+	# remove old selfupdate info
+	@lines = grep { $_ !~ /^\s*SelfUpdate\s*:/i } @lines;
+
+	# add new selfupdate info
+	require Fink::SelfUpdate;
+	my $line = sprintf 'SelfUpdate: %s@%s', Fink::SelfUpdate::class2methodname($class), time();
+	$line .= " $options{data}" if length $options{data};
+	push @lines, $line;
+
+	# save new file contents atomically
+	if (open my $FH, '>', "$filename.tmp") {
+		print $FH map "$_\n", @lines;
+		close $FH;
+		unlink $filename;
+		rename "$filename.tmp", $filename;
+	} else {
+		print_breaking_stderr "WARNING: Not saving timestamp of selfupdate because could not write $filename.tmp: $!\n";
+	}
+}
 
 =back
 

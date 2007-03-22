@@ -208,7 +208,8 @@ RSYNCAGAIN:
 	unlink "$descdir/TIMESTAMP";
 	rename "$descdir/TIMESTAMP.tmp", "$descdir/TIMESTAMP";
 
-	return '';
+	$class->update_version_file();
+	return 1;
 }
 
 =back

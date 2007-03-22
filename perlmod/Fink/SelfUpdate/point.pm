@@ -168,7 +168,8 @@ sub do_direct {
 		rm_rf $dir;
 	}
 
-	return $newversion;
+	$class->update_version_file(data => $newversion);
+	return 1;
 }
 
 =back

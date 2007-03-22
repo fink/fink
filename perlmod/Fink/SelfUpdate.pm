@@ -199,11 +199,7 @@ sub check {
 	}
 
 	# Let's do this thang!
-	my $update_data = $subclass_use->do_direct();
-	if (defined $update_data) {
-		&update_version_file($method, $update_data);
-		&do_finish();
-	}
+	$subclass_use->do_direct();# && &do_finish;
 }
 
 =item do_finish
@@ -306,52 +302,6 @@ sub finish {
 	print "\n";
 }
 
-=item update_version_file
-
-	&update_version_file($method, $data);
-
-Marks the %p/fink/$distribution/VERSION file with information about
-the just-done selfupdate using method $method. The $data is also
-stored in the VERSION file. Returns nothing useful.
-
-=cut
-
-sub update_version_file {
-	my $method = shift;
-	my $data = shift;
-
-	my $filename = "$basepath/fink/$distribution/VERSION";
-	my @lines = ();
-
-	# read old file
-	if (open my $FH, '<', $filename) {
-		@lines = <$FH>;
-		close $FH;
-	}
-	chomp @lines;
-
-	# remove ".cvs" from server file
-	map s/^(\d|\.)+\.cvs$/$1/, @lines;
-
-	# remove old selfupdate info
-	@lines = grep { $_ !~ /^\s*SelfUpdate\s*:/i } @lines;
-
-	# add new selfupdate info
-	my $line = "SelfUpdate: $method\@" . time();
-	$line .= " $data" if defined $data && length $data;
-	push @lines, $line;
-
-	# save new file contents atomically
-	if (open my $FH, '>', "$filename.tmp") {
-		print $FH map "$_\n", @lines;
-		close $FH;
-		unlink $filename;
-		rename "$filename.tmp", $filename;
-	} else {
-		print_breaking_stderr "WARNING: Not saving timestamp of selfupdate because could not write $filename.tmp: $!\n";
-	}
-}
-
 =item last_done
 
 	my ($last_method,$last_time, $last_data) = Fink::SelfUpdate::last_done();
@@ -363,18 +313,19 @@ sub update_version_file {
 	}
 
 Returns the method, time, and any method-specific data for the last
-selfupdate that was performed.
+selfupdate that was performed for the active distribution.
 
 =cut
 
 sub last_done {
-	my $filename = "$basepath/fink/$distribution/VERSION";
+	my $file_old = "$basepath/fink/$distribution/VERSION";
+	my $filename = "$file_old.selfupdate";
 
 	if (open my $FH, '<', $filename) {
 		my @lines = <$FH>;
 		close $FH;
 
-		# first look for the new-style token
+		# new-style tokenized file
 		foreach my $line (@lines) {
 			if ($line =~ /^\s*SelfUpdate\s*:\s*(.*)\s*$/i) {
 				my $value = $1;
@@ -387,8 +338,14 @@ sub last_done {
 				}
 			}
 		}
+		print_breaking_stderr "WARNING: No valid data found in $filename, falling back to old-style $file_old file.";
+	}
 
-		# next see if it's new multiline format, picking matching Dist/Arch
+	if (open my $FH, '<', $file_old) {
+		my @lines = <$FH>;
+		close $FH;
+
+		# see if it's new multiline format, picking matching Dist/Arch
 		# er, what *is* this format? Good thing we aren't using it yet:)
 
 		# maybe original one-line format?
@@ -401,7 +358,7 @@ sub last_done {
 	}
 
 	# give up
-	print_breaking_stderr "WARNING: could not read $filename: $!\n";
+	print_breaking_stderr "WARNING: could not read $file_old: $!\n";
 	return (undef, undef, undef);
 }
 
