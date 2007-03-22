@@ -1,3 +1,7 @@
+2007-03-22  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Use prompt_selection for menu of choices
+
 2007-03-21  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate/CVS.pm: Fix do_direct return if successful
