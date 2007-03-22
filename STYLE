@@ -58,7 +58,7 @@ especially during their startup (BEGIN blocks, etc).
   Fink::Notify::Say uses Fink::Notify Fink::Config
   Fink::Notify::Syslog uses Fink::Notify Fink::Config
   Fink::ScanPackages uses Fink::Base Fink::CLI Fink::Command Fink::Services
-  Fink::SelfUpdate::Base uses nothing
+  Fink::SelfUpdate::Base uses Fink::CLI Fink::Config
   Fink::Services uses Fink::Command Fink::CLI
   Fink::Status uses Fink::Config
   Fink::SysState uses Fink::CLI Fink::Config Fink::Services Fink::Status Fink::VirtPackage
