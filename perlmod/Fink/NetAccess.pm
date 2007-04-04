@@ -420,9 +420,21 @@ sub download_cmd {
 		}
 		# Axel always continues downloads, by default
 	}
-	
+
+	# lftpget doesn't let us rename a file as we download, so we skip unless $file eq &filename($url)
+	if ((!$cmd or $config->param_default("DownloadMethod") eq "lftpget") and
+			(-x "$basepath/bin/lftpget" or -x "/usr/bin/lftpget") and ($file eq &filename($url))) {
+		$cmd = "lftpget";
+		if ($config->verbosity_level() >= 1) {
+			$cmd .= " -v";
+		}
+		if ($cont) {
+			$cmd .= " -c";
+		}
+	}
+
 	if (!$cmd) {
-		die "Can't locate a download program. Install either curl, wget, or axel.\n";
+		die "Can't locate a download program. Install either curl, wget, axel, or lftpget.\n";
 	}
 
 	return $cmd;
