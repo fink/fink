@@ -199,7 +199,7 @@ sub check {
 	}
 
 	# Let's do this thang!
-	$subclass_use->do_direct();# && &do_finish;
+	$subclass_use->do_direct() && &do_finish;
 }
 
 =item do_finish
