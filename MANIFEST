@@ -64,6 +64,10 @@ perlmod/Fink/Package.pm
 perlmod/Fink/PkgVersion.pm
 perlmod/Fink/Scanpackages.pm
 perlmod/Fink/SelfUpdate.pm
+perlmod/Fink/SelfUpdate/Base.pm
+perlmod/Fink/SelfUpdate/CVS.pm
+perlmod/Fink/SelfUpdate/point.pm
+perlmod/Fink/SelfUpdate/rsync.pm
 perlmod/Fink/Services.pm
 perlmod/Fink/Shlibs.pm
 perlmod/Fink/Status.pm
@@ -145,6 +149,9 @@ t/PkgVersion/non_consecutive_source.t
 t/PkgVersion/opengl-rb18.info
 t/PkgVersion/sed-4.0.5-1.info
 t/PkgVersion/xml-parser-pm560-2.31-5.info
+t/SelfUpdate/ChangeLog
+t/SelfUpdate/subclasses.t
+t/SelfUpdate/last_done.t
 t/Services/ChangeLog
 t/Services/eval_conditional.t
 t/Services/execute_nonroot_okay.t

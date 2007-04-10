@@ -14,7 +14,6 @@ require_ok('Fink::FinkVersion');
 {
     package Bar;
     Fink::FinkVersion->import(':ALL');
-    ::can_ok( __PACKAGE__, qw(fink_version distribution_version 
-                              pkginfo_version) );
+    ::can_ok( __PACKAGE__, qw(fink_version) );
 }
 

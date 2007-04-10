@@ -1,3 +1,7 @@
+2007-04-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Config.pm, Engine.pm, FinkVersion.pm.in, SelfUpdate.pm, SelfUpdate/*: merge from selfupdate_classes branch
+
 2007-04-04  Benjamin Reed  <rangerrick@users.sourceforge.net.
 
 	* NetAccess.pm: Use lftpget if available and appropriate

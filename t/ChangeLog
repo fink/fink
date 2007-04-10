@@ -1,3 +1,7 @@
+2007-04-10  Daniel Macks  <dmacks@netspace.org>
+
+	* t/FinkVersion/*: merge from selfupdate_classes branch
+
 2006-02-08  Daniel Macks  <dmacks@netspace.org>
 
 	* users_groups.t: moved into 10features/
