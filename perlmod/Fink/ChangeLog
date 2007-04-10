@@ -1,5 +1,9 @@
 2007-04-10  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate/*: merge from selfupdate_classes branch
+
+2007-04-10  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm, SelfUpdate.pm: Engine::cmd_selfupdate now passes off
 	to new SelfUpdate::cmd_selfupdate, which implements getopt
 	interface for 'fink selfupdate' to control all selfupdate actions.
@@ -8,7 +12,8 @@
 
 2007-04-10  Daniel Macks  <dmacks@netspace.org>
 
-	* Config.pm, Engine.pm, FinkVersion.pm.in, SelfUpdate.pm, SelfUpdate/*: merge from selfupdate_classes branch
+	* Config.pm, Engine.pm, FinkVersion.pm.in, SelfUpdate.pm: merge
+	from selfupdate_classes branch
 
 2007-04-04  Benjamin Reed  <rangerrick@users.sourceforge.net.
 
