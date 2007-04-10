@@ -368,30 +368,20 @@ sub cmd_bootstrap {
 }
 
 sub cmd_selfupdate {
-	# TODO: Getoptify:
-	#  Add --mode=$method that passes $method to check()
-	#  Add --finish that does after-stuff
-	#  Add --list-modes that lists all SU:: methods?
 	require Fink::SelfUpdate;
-	Fink::SelfUpdate::check();
+	Fink::SelfUpdate::cmd_selfupdate(@_);
 }
 
 sub cmd_selfupdate_cvs {
-	# TODO: rewrite as wrapper around cmd_selfupdate (forge cmdline)
-	require Fink::SelfUpdate;
-	Fink::SelfUpdate::check('cvs');
+	&cmd_selfupdate('--mode=cvs', @_);
 }
 
 sub cmd_selfupdate_rsync {
-	# TODO: rewrite as wrapper around cmd_selfupdate (forge cmdline)
-	require Fink::SelfUpdate;
-	Fink::SelfUpdate::check('rsync');
+	&cmd_selfupdate('--mode=rsync', @_);
 }
 
 sub cmd_selfupdate_finish {
-	# TODO: rewrite as wrapper around cmd_selfupdate (forge cmdline)
-	require Fink::SelfUpdate;
-	Fink::SelfUpdate::finish();
+	&cmd_selfupdate('--finish', @_);
 }
 
 sub cmd_list {

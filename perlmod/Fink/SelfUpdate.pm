@@ -23,7 +23,7 @@
 
 package Fink::SelfUpdate;
 
-use Fink::Services qw(&find_subpackages);
+use Fink::Services qw(&find_subpackages &get_options);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection print_breaking_stderr);
 use Fink::Config qw($basepath $config $distribution);
@@ -59,12 +59,49 @@ Fink::SelfUpdate - download package descriptions from server
 
 =over 4
 
+=item cmd_selfupdate
+
+	cmd_selfupdate(@ARGV);
+
+Main entry point for command-line interface to selfupdate. Pass the
+command-line parameter list after removing "fink selfupdate" or
+whatever moral equivalent.
+
+=cut
+
+sub cmd_selfupdate {
+	my @cmdline = @_;
+
+	my( $su_mode, $do_finish );
+
+	get_options('selfupdate', [
+					[ 'mode|m=s' => \$su_mode,   "Method to use."            ],
+					[ 'finish|f' => \$do_finish, "Do the post-update tasks." ],
+				], \@cmdline, helpformat => <<HELPFORMAT);
+%intro{[options]}
+%all{}
+If no options are given, selfupdate is performed according to the
+current default mode.
+
+HELPFORMAT
+
+	if ($su_mode and $do_finish) {
+	}
+
+	if ($do_finish) {
+		print "--mode specifier ignored for --finish\n" if defined $su_mode;
+		&do_finish;
+	} else {
+		&check($su_mode);
+	}
+}
+
 =item check
 
   Fink::SelfUpdate::check($method);
 
-This is the main entry point for the 'fink selfupdate*' commands to
-update the local collection of package descriptions.
+This is the main entry point for the actual updating of the local
+collection of package descriptions.
 
 The optional $method parameter specifies the selfupdate method to
 use. If no $method is specified (0 or undef), the default method is

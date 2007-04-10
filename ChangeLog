@@ -1,5 +1,9 @@
 2007-04-10  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in: Document new getopt interface for 'fink selfupdate'
+
+2007-04-10  Daniel Macks  <dmacks@netspace.org>
+
 	* MANIFEST, install.sh: merge from selfupdate_classes branch
 
 2007-03-17  Dave Morrison  <drm@finkproject.org>

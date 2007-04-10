@@ -471,7 +471,7 @@ Reruns the
 .Nm
 configuration process. This will let you change your mirror sites and
 proxy settings, among others.
-.It Cm selfupdate
+.It Cm selfupdate Ar [options]
 This command automates the process of upgrading to a new
 .Nm
 release. It checks the
@@ -479,8 +479,8 @@ release. It checks the
 website to see if a new version is available. It then downloads the package
 descriptions and updates the core packages, including
 .Nm
-itself. This command can upgrade to regular releases, but it can also
-setup your
+itself. This command can upgrade to major point releases, but it can also
+set up your
 .Pa @PREFIX@/fink/dists
 directory tree for
 .Xr cvs 1
@@ -488,9 +488,26 @@ or
 .Xr rsync 1
 updates.
 This means that you then will be able to access the very latest
-revisions of all packages. See
+revisions of all packages. If no
+.Ar options
+are given, the existing default update method is used as given in the
 .Xr fink.conf 5
-for more details.
+file. Several
+.Ar options
+can be used to control the update process:
+.Bl -tag -width flag -offset indent -compact
+.It Cm -h,--help
+Show the options which are available.
+.It Cm -m MODE,--mode=MODE
+Establish the given MODE as the default selfupdate method and update
+using it.
+.It Cm -f, --finish
+Do some standard actions after the actual MODE-specific updating of
+the package descriptions (update the binary-repository data, refresh
+some internal indices, make sure
+.Ar fink
+itself and some other critical packages are up-to-date).
+.El
 .It Cm index
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm
