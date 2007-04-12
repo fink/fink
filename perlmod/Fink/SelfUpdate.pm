@@ -460,6 +460,44 @@ name.
 		return @$plugins;
 	}
 }
+
+=item list_plugins
+
+	Fink::SelfUpdate::list_plugins;
+
+Prints a list of the available plugins for selfupdate-methods and their status:
+
+=over 4
+
+=item +  Method is usable
+
+=item -  Method is not usable
+
+=item i  Method is current default
+
+=back
+
+=cut
+
+sub list_plugins {
+	my $class = shift;  # class method because the other pluggable things are
+
+	my $default_method = lc($config->param_default("SelfUpdateMethod", ''));
+
+	foreach my $plugclass ( &_plugins ) {
+		my ($shortname) = $plugclass =~ /^.*\:\:([^\:]*)$/;
+
+		my $flags = 
+			( $plugclass->system_check() ? '+' : '-' ) .
+			( lc($shortname) eq $default_method ? 'i' : ' ' );
+
+		my $plugversion = $plugclass->VERSION;
+		$plugversion = '?' unless defined $plugversion;
+
+		printf " %2s %-15.15s %-11.11s %s\n", $flags, $shortname, $plugversion, $plugclass->description();
+	}
+}
+
 =back
 
 =cut

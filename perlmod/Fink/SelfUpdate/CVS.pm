@@ -37,6 +37,8 @@ use File::Find;
 use strict;
 use warnings;
 
+our $VERSION = sprintf "%d.%d", q$Revision$ =~ /(\d+)/g;
+
 =head1 NAME
 
 Fink::SelfUpdate::CVS - download package descriptions from a CVS server

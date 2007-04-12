@@ -35,6 +35,8 @@ use Fink::Command qw(cat);
 use strict;
 use warnings;
 
+our $VERSION = sprintf "%d.%d", q$Revision$ =~ /(\d+)/g;
+
 =head1 NAME
 
 Fink::SelfUpdate::CVS - download package descriptions for a point release
@@ -57,12 +59,18 @@ sub description {
 
 =item system_check
 
-No requirements checked.
+point method cannot remove .info files, so we don't support using
+point if some other method has already been used.
 
 =cut
 
 sub system_check {
 	my $class = shift;  # class method for now
+
+	my $default_method = lc($config->param_default( 'SelfUpdateMethod', '' ));
+	if (length $default_method and $default_method ne 'point') {
+		return 0;
+	}
 
 	return 1;
 }

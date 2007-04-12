@@ -395,7 +395,11 @@ sub cmd_listplugins {
 	print "Checksum Plugins:\n\n";
 	Fink::Checksum->list_plugins();
 	print "\n";
-	# TODO: add SU plugins? (need to implement back-end too)
+
+	require Fink::SelfUpdate;
+	print "Selfupdate-Method Plugins:\n\n";
+	Fink::SelfUpdate->list_plugins();
+	print "\n";
 }
 
 sub cmd_apropos {

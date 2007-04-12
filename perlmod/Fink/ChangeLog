@@ -1,3 +1,10 @@
+2007-04-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm, SelfUpdate.pm: 'fink plugins' does SU->list_plugins,
+	which lists the status of all SU::* method classes.
+	* SelfUpdate/*: add $VERSION package variable.
+	* SelfUpdate/point.pm: check_system fails if different method is active
+
 2007-04-10  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate/*: merge from selfupdate_classes branch
