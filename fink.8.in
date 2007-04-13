@@ -498,8 +498,8 @@ can be used to control the update process:
 .Bl -tag -width flag -offset indent -compact
 .It Cm -h,--help
 Show the options which are available.
-.It Cm -m MODE,--mode=MODE
-Establish the given MODE as the default selfupdate method and update
+.It Cm -m MODE,--method=METHOD
+Establish the given METHOD as the default selfupdate method and update
 using it.
 .It Cm -f, --finish
 Do some standard actions after the actual MODE-specific updating of

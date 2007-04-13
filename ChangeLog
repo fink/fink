@@ -1,3 +1,7 @@
+2007-04-13  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Standardize terminology as selfupdate "method"
+
 2007-04-10  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Document new getopt interface for 'fink selfupdate'

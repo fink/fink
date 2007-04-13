@@ -72,27 +72,27 @@ whatever moral equivalent.
 sub cmd_selfupdate {
 	my @cmdline = @_;
 
-	my( $su_mode, $do_finish );
+	my( $su_method, $do_finish, $do_list );
 
 	get_options('selfupdate', [
-					[ 'mode|m=s' => \$su_mode,   "Method to use."            ],
-					[ 'finish|f' => \$do_finish, "Do the post-update tasks." ],
+					[ 'method|m=s'     => \$su_method,   "Method to use."              ],
+					[ 'list-methods|l' => \$do_list,     "List all available methods." ],
+					[ 'finish|f'       => \$do_finish,   "Do the post-update tasks."   ],
 				], \@cmdline, helpformat => <<HELPFORMAT);
 %intro{[options]}
 %all{}
 If no options are given, selfupdate is performed according to the
-current default mode.
+current default update method.
 
 HELPFORMAT
 
-	if ($su_mode and $do_finish) {
-	}
-
-	if ($do_finish) {
-		print "--mode specifier ignored for --finish\n" if defined $su_mode;
+	if ($do_list ) {
+		Fink::SelfUpdate->list_plugins();
+	} elsif ($do_finish) {
+		print "--method specifier ignored for --finish\n" if defined $su_method;
 		&do_finish;
 	} else {
-		&check($su_mode);
+		&check($su_method);
 	}
 }
 
