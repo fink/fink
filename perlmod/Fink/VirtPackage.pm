@@ -1547,8 +1547,14 @@ sub check_x11_version {
 		# it's a snapshot (ie, 4.3.99.15)
 		# give back 3 parts of the component
 		return (join('.', @XF_VERSION_COMPONENTS[0..2]));
-	} else {
+	} elsif (@XF_VERSION_COMPONENTS >= 2) {
 		return (join('.', @XF_VERSION_COMPONENTS[0..1]));
+	} else {
+		if ($XF_VERSION_COMPONENTS[0] =~ /X Protocol Version (.*), Revision (.*),/ {
+			return ("$1.$2");
+			} else {
+				print "Could not parse: @XF_VERSION_COMPONENTS\n";
+			}
 	}
 }
 
