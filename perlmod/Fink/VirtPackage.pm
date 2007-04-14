@@ -1550,7 +1550,7 @@ sub check_x11_version {
 	} elsif (@XF_VERSION_COMPONENTS >= 2) {
 		return (join('.', @XF_VERSION_COMPONENTS[0..1]));
 	} else {
-		if ($XF_VERSION_COMPONENTS[0] =~ /X Protocol Version (.*), Revision (.*),/ {
+		if ($XF_VERSION_COMPONENTS[0] =~ /X Protocol Version (.*), Revision (.*),/) {
 			return ("$1.$2");
 			} else {
 				print "Could not parse: @XF_VERSION_COMPONENTS\n";
