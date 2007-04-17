@@ -1,3 +1,7 @@
+2007-04-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Standardize terminology as selfupdate "method".
+
 2007-04-13  Dave Morrison  <drm@finkproject.org>
 
 	* VirtPackage.pm: Parse a greater variety of Version strings from the 

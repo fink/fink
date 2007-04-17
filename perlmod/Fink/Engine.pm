@@ -373,11 +373,11 @@ sub cmd_selfupdate {
 }
 
 sub cmd_selfupdate_cvs {
-	&cmd_selfupdate('--mode=cvs', @_);
+	&cmd_selfupdate('--method=cvs', @_);
 }
 
 sub cmd_selfupdate_rsync {
-	&cmd_selfupdate('--mode=rsync', @_);
+	&cmd_selfupdate('--method=rsync', @_);
 }
 
 sub cmd_selfupdate_finish {
