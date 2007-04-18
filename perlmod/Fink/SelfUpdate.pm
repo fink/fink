@@ -186,10 +186,10 @@ sub check {
 		}
 	} else {
 		# explicit method requested
-		&print_breaking("\nPlease note: the command 'fink selfupdate' "
+		&print_breaking("\nPlease note: the simple command 'fink selfupdate' "
 						. "should be used for routine updating; you only "
 						. "need to use a command like 'fink selfupdate-cvs' "
-						. "or 'fink selfupdate-rsync' if you are changing "
+						. "or 'fink selfupdate --method=rsync' if you are changing "
 						. "your update method. \n\n");
 
 		if (length $prev_method and $method ne $prev_method) {
