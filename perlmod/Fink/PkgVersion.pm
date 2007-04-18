@@ -43,7 +43,7 @@ use Fink::Package;
 use Fink::Status;
 use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
-use Fink::Command qw(mkdir_p rm_f rm_rf symlink_f du_sk chowname chowname_hr touch);
+use Fink::Command qw(cp mkdir_p rm_f rm_rf symlink_f du_sk chowname chowname_hr touch);
 use Fink::Notify;
 use Fink::Shlibs;
 use Fink::Validation qw(validate_dpkg_unpacked);
@@ -3791,6 +3791,14 @@ sub phase_build {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
+		}
+	}
+
+	# put the info file into the debian directory
+	if (-d "$destdir/DEBIAN") {
+		my $infofile = $self->get_filename();
+		if (defined $infofile) {
+			cp($infofile, "$destdir/DEBIAN/package.info");
 		}
 	}
 
