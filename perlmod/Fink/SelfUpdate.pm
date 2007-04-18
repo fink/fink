@@ -186,7 +186,7 @@ sub check {
 		}
 	} else {
 		# explicit method requested
-		&print_breaking("\n Please note: the command 'fink selfupdate' "
+		&print_breaking("\nPlease note: the command 'fink selfupdate' "
 						. "should be used for routine updating; you only "
 						. "need to use a command like 'fink selfupdate-cvs' "
 						. "or 'fink selfupdate-rsync' if you are changing "
@@ -220,7 +220,7 @@ sub check {
 
 	# sanity checks
 	die "Selfupdate method '$method' is not implemented\n" unless( defined $subclass_use && length $subclass_use );
-	$subclass_use->system_check() or die "Selfupdate mthod '$method' cannot be used\n";
+	$subclass_use->system_check() or die "Selfupdate method '$method' cannot be used\n";
 
 	if ($method ne $prev_method) {
 		# save new selection (explicit change or being set for first time)
