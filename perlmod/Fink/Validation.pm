@@ -1504,7 +1504,7 @@ sub _validate_dpkg {
 
 		if (-x $otool) {
 			if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
-				my $file = $filename;
+				my $file = $destdir . $filename;
 				$file =~ s/\'/\\\'/gs;
 				if (open(OTOOL, "$otool -hv '$file' |"))
 				{
