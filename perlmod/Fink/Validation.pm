@@ -29,7 +29,7 @@ use Cwd qw(getcwd);
 use File::Find qw(find);
 use File::Path qw(rmtree);
 use File::Temp qw(tempdir);
-use File::Basename qw(basename);
+use File::Basename qw(basename dirname);
 
 use strict;
 use warnings;
@@ -1176,18 +1176,18 @@ sub validate_info_component {
 				$looks_good = 0;
 			}
 			my @shlib_deps = split /\s*\|\s*/, $shlibs_parts[2], -1;
-		# default value of $libarch, if absent, is "32"
+			# default value of $libarch, if absent, is "32"
 			my $libarch = "32";
-		# strip off the end of the last @shlib_deps entry (the stuff
-		# beyond the final close-paren), which should consist of digits
-		# and "-" only, and use as $libarch
+			# strip off the end of the last @shlib_deps entry (the stuff
+			# beyond the final close-paren), which should consist of digits
+			# and "-" only, and use as $libarch
 			if ($shlib_deps[$#shlib_deps] =~ /^(.*\))\s*([^\s\)]+)$/ ) {
 				$shlib_deps[$#shlib_deps] = $1;
 				$libarch = $2;
 			}
-		# This hack only allows one particular percent expansion in the
-		# $libarch field, because this subroutine doesn't do percent 
-		# expansions.  OK for now, but should be fixed eventually.
+			# This hack only allows one particular percent expansion in the
+			# $libarch field, because this subroutine doesn't do percent 
+			# expansions.  OK for now, but should be fixed eventually.
 			my $num_expand = {"type_num[-64bit]" => "64"};
 			$libarch = &expand_percent($libarch, $num_expand, $filename.' Package');
 			if (not ($libarch eq "32" or $libarch eq "64" or $libarch eq "32-64")) {
@@ -1699,6 +1699,46 @@ sub _validate_dpkg {
 		}
 	}
 
+	# check shlibs field
+	if (-f "$destdir/DEBIAN/shlibs") {
+		chomp(my $otool = `which otool 2>/dev/null`);
+		if (not -x $otool) {
+			print "Warning: Package has shlibs data but otool is not in the path; skipping shlibs validation.\n";
+		}
+		if (open (SHLIBS, "$destdir/DEBIAN/shlibs")) {
+			while (my $entry = <SHLIBS>) {
+				chomp($entry);
+				$entry =~ s/^\s*(.*?)\s*$/$1/gs;
+				my @fields = split(/\s+/, $entry);
+				my $file = resolve_rooted_symlink($destdir, $fields[0]);
+				if (not defined $file) {
+					print "Error: Shlibs field specifies $fields[0], but it does not exist!\n";
+				} else {
+					$file =~ s/\'/\\\'/gs;
+					if (open (OTOOL, "otool -L '$file' |")) {
+						<OTOOL>; # skip the first line
+						my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+						close (OTOOL);
+	
+						if ($fields[0] ne $libname) {
+							print "Error: File name '$fields[0]' specified in Shlibs does not match install_name '$libname\n";
+							$looks_good = 0;
+						}
+						if ($fields[1] ne $compat_version) {
+							print "Error: Shlibs field says compatibility version for $fields[0] should be $fields[1], but it is actually $compat_version.\n";
+							$looks_good = 0;
+						}
+					} else {
+						print "Warning: otool -L failed on $file.\n";
+					}
+				}
+			}
+			close (SHLIBS);
+		} else {
+			print "Warning: unable to open the shlibs file for validation.\n";
+		}
+	}
+
 	if ($looks_good and $config->verbosity_level() >= 3) {
 		print "Package looks good!\n";
 	}
@@ -1706,6 +1746,22 @@ sub _validate_dpkg {
 	return $looks_good;
 }
 
+sub resolve_rooted_symlink {
+	my $destdir = shift;
+	my $file    = shift;
+
+	return unless (defined $destdir and defined $file);
+	if (-l $destdir . $file) {
+		my $link = readlink($destdir . $file);
+		if ($link =~ m#^/#) {
+			return resolve_rooted_symlink($destdir, $link);
+		} else {
+			return resolve_rooted_symlink($destdir, dirname($file) . '/' . $link);
+		}
+	}
+
+	return $destdir . $file;
+}
 
 # implements somehting like Tie::IxHash STORE, but each value-set is
 # pushed onto list instead of replacing the existing value for the key

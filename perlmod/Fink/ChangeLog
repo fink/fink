@@ -1,7 +1,10 @@
+2007-04-20  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: validate the Shlibs field for consistency
+
 2007-04-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: add the info file to the debian control.
-	Next step: validate the Shlibs field in a .deb.  :)
 
 2007-04-17  Daniel Macks  <dmacks@netspace.org>
 
