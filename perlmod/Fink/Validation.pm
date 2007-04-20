@@ -1505,22 +1505,24 @@ sub _validate_dpkg {
 		if (-x $otool) {
 			if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
 				my $file = $destdir . $filename;
-				$file =~ s/\'/\\\'/gs;
-				if (open(OTOOL, "$otool -hv '$file' |"))
-				{
-					while (my $line = <OTOOL>) {
-						if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB\s+/) {
-							if ($filename !~ /\.(dylib|jnilib)$/) {
-								print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
-							}
-							push(@installed_dylibs, $filename);
-						} elsif ($line =~ /MH_MAGIC/) {
-							if ($filename =~ /\.dylib$/) {
-								print "Warning: $filename ends in .dylib but is not of filetype DYLIB according to otool.\n";
+				if (not -l $file) {
+					$file =~ s/\'/\\\'/gs;
+					if (open(OTOOL, "$otool -hv '$file' |"))
+					{
+						while (my $line = <OTOOL>) {
+							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB\s+/) {
+								if ($filename !~ /\.(dylib|jnilib)$/) {
+									print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
+								}
+								push(@installed_dylibs, $filename);
+							} elsif ($line =~ /MH_MAGIC/) {
+								if ($filename =~ /\.dylib$/) {
+									print "Warning: $filename ends in .dylib but is not of filetype DYLIB according to otool.\n";
+								}
 							}
 						}
+						close (OTOOL);
 					}
-					close (OTOOL);
 				}
 			}
 		} else {
