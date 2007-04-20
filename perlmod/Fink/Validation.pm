@@ -1339,6 +1339,7 @@ sub _validate_dpkg {
 	my $val_prefix = shift;
 
 	chomp(my $otool = `which otool 2>/dev/null`);
+	undef $otool unless -x $otool;
 	my $basepath;   # %p
 	my $buildpath;  # BuildPath from fink.conf
 	# determine the base path
@@ -1502,7 +1503,7 @@ sub _validate_dpkg {
 			$installed_headers = 1;
 		}
 
-		if (-x $otool) {
+		if (defined $otool) {
 			if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
@@ -1730,7 +1731,7 @@ sub _validate_dpkg {
 	my %shlibs_entries;
 	# check shlibs field
 	if (-f "$destdir/DEBIAN/shlibs") {
-		if (not -x $otool) {
+		if (not defined $otool) {
 			print "Warning: Package has shlibs data but otool is not in the path; skipping shlibs validation.\n";
 		}
 		if (open (SHLIBS, "$destdir/DEBIAN/shlibs")) {
@@ -1776,7 +1777,7 @@ sub _validate_dpkg {
 
 	for my $dylib (@installed_dylibs) {
 		next if (-l $destdir . $dylib);
-		if (-x $otool) {
+		if (defined $otool) {
 			my $dylib_temp = resolve_rooted_symlink($destdir, $dylib);
 			if (not defined $dylib_temp) {
 				print "Warning: unable to resolve symlink for $dylib.\n";
