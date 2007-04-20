@@ -1712,7 +1712,13 @@ sub _validate_dpkg {
 				my @fields = split(/\s+/, $entry);
 				my $file = resolve_rooted_symlink($destdir, $fields[0]);
 				if (not defined $file) {
-					print "Error: Shlibs field specifies $fields[0], but it does not exist!\n";
+					# fink is a special case, it has an shlibs field that provides system-shlibs
+					if ($deb_control->{package} ne 'fink') {
+						print "Error: Shlibs field specifies $fields[0], but it does not exist!\n";
+						$looks_good = 0;
+					}
+				} elsif (not -f $file) {
+					
 				} else {
 					$file =~ s/\'/\\\'/gs;
 					if (open (OTOOL, "otool -L '$file' |")) {
@@ -1758,9 +1764,11 @@ sub resolve_rooted_symlink {
 		} else {
 			return resolve_rooted_symlink($destdir, dirname($file) . '/' . $link);
 		}
+	} elsif (-e $destdir . $file) {
+		return $destdir . $file;
 	}
 
-	return $destdir . $file;
+	return undef;
 }
 
 # implements somehting like Tie::IxHash STORE, but each value-set is
