@@ -1786,7 +1786,7 @@ sub _validate_dpkg {
 					close (OTOOL);
 	
 					if (not exists $shlibs_entries{$libname}) {
-						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname)\n";
+						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname $compat_version)\n";
 						$looks_good = 0;
 					}
 				}
