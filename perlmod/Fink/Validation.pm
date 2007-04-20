@@ -1338,6 +1338,7 @@ sub _validate_dpkg {
 	my $destdir = shift;  # %d, or its moral equivalent
 	my $val_prefix = shift;
 
+	chomp(my $otool = `which otool 2>/dev/null`);
 	my $basepath;   # %p
 	my $buildpath;  # BuildPath from fink.conf
 	# determine the base path
@@ -1356,7 +1357,7 @@ sub _validate_dpkg {
 
 	my @found_bad_dir;
 	my $installed_headers = 0;
-	my $installed_dylibs = 0;
+	my @installed_dylibs;
 
 	# the whole control module is loaded and pre-precessed before any actual validation
 	my $deb_control;        # key:value of all %d/DEBIAN/control fields
@@ -1500,8 +1501,33 @@ sub _validate_dpkg {
 		if ($filename =~/^$basepath\/include\// && !-d $File::Find::name) {
 			$installed_headers = 1;
 		}
-		if ($filename =~/\.dylib$/) {
-			$installed_dylibs = 1;
+
+		if (-x $otool) {
+			if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
+				my $file = $filename;
+				$file =~ s/\'/\\\'/gs;
+				if (open(OTOOL, "$otool -hv '$file' |"))
+				{
+					while (my $line = <OTOOL>) {
+						if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB\s+/) {
+							if ($filename !~ /\.(dylib|jnilib)$/) {
+								print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
+							}
+							push(@installed_dylibs, $filename);
+						} elsif ($line =~ /MH_MAGIC/) {
+							if ($filename =~ /\.dylib$/) {
+								print "Warning: $filename ends in .dylib but is not of filetype DYLIB according to otool.\n";
+							}
+						}
+					}
+					close (OTOOL);
+				}
+			}
+		} else {
+			print "Warning: unable to locate otool, assuming any .dylib or .jnilib file is a DYLIB binary\n";
+			if ($filename =~/\.(dylib|jnilib)$/) {
+				push(@installed_dylibs, $filename);
+			}
 		}
 
 		# make sure scrollkeeper is being used according to its documentation
@@ -1665,7 +1691,7 @@ sub _validate_dpkg {
 	# does not record the BuildDependsOnly field, or with an old version
 	# which did not use the "Undefined" value for the BuildDependsOnly field,
 	# the warning is not issued
-	if ($installed_headers and $installed_dylibs) {
+	if ($installed_headers and @installed_dylibs) {
 		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
 			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
@@ -1699,9 +1725,9 @@ sub _validate_dpkg {
 		}
 	}
 
+	my %shlibs_entries;
 	# check shlibs field
 	if (-f "$destdir/DEBIAN/shlibs") {
-		chomp(my $otool = `which otool 2>/dev/null`);
 		if (not -x $otool) {
 			print "Warning: Package has shlibs data but otool is not in the path; skipping shlibs validation.\n";
 		}
@@ -1710,6 +1736,7 @@ sub _validate_dpkg {
 				chomp($entry);
 				$entry =~ s/^\s*(.*?)\s*$/$1/gs;
 				my @fields = split(/\s+/, $entry);
+				$shlibs_entries{$fields[0]} = \@fields;
 				my $file = resolve_rooted_symlink($destdir, $fields[0]);
 				if (not defined $file) {
 					# fink is a special case, it has an shlibs field that provides system-shlibs
@@ -1721,7 +1748,7 @@ sub _validate_dpkg {
 					
 				} else {
 					$file =~ s/\'/\\\'/gs;
-					if (open (OTOOL, "otool -L '$file' |")) {
+					if (open (OTOOL, "$otool -L '$file' |")) {
 						<OTOOL>; # skip the first line
 						my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
 						close (OTOOL);
@@ -1742,6 +1769,28 @@ sub _validate_dpkg {
 			close (SHLIBS);
 		} else {
 			print "Warning: unable to open the shlibs file for validation.\n";
+		}
+	}
+
+	for my $dylib (@installed_dylibs) {
+		next if (-l $destdir . $dylib);
+		if (-x $otool) {
+			my $dylib_temp = resolve_rooted_symlink($destdir, $dylib);
+			if (not defined $dylib_temp) {
+				print "Warning: unable to resolve symlink for $dylib.\n";
+			} else {
+				$dylib_temp =~ s/\'/\\\'/gs;
+				if (open (OTOOL, "$otool -L '$dylib_temp' |")) {
+					<OTOOL>; # skip first line
+					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+					close (OTOOL);
+	
+					if (not exists $shlibs_entries{$libname}) {
+						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname)\n";
+						$looks_good = 0;
+					}
+				}
+			}
 		}
 	}
 
