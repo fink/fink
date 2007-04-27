@@ -1,3 +1,8 @@
+2007-04-27  Dave Morrison  <drm@finkproject.org>
+
+	* VirtPackage.pm: (backport from HEAD) Parse a greater variety of 
+	Version strings from the X server.
+
 2007-03-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Engine.pm: revert the OldIndexes behavior, this is something
