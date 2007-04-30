@@ -4320,7 +4320,7 @@ EOF
 			'verbosity' => 3,
 			'Pedantic'  => 1
 			} );
-		if(!Fink::Validation::validate_dpkg_unpacked($ddir)) {
+		if(!Fink::Validation::validate_dpkg_unpacked($destdir)) {
 			if(Fink::Config::get_option("validate") eq "on") {
 				die "Please correct the above problems and try again!\n";
 			} else {
