@@ -1,3 +1,7 @@
+2006-04-30  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* Engine.pm: Don't try to validate dummy packages without info file.
+	
 2007-04-20  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: pull stat($otool) out of a loop
