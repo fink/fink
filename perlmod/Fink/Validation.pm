@@ -1382,7 +1382,7 @@ sub _validate_dpkg {
 		}
 		close $control;
 	} else {
-		print "Error: could not read control file!\n";
+		print "Error: could not read control file: $!\n";
 		$looks_good = 0;
 	}
 
@@ -1402,6 +1402,23 @@ sub _validate_dpkg {
 			}
 		}
 	}
+
+	# read the shlibs database file
+	my @deb_shlibs_raw;
+	{
+		my $filename = "$destdir/DEBIAN/shlibs";
+		if (-f $filename) {
+			if (open my $script, '<', $filename) {
+				chomp( @deb_shlibs_raw = <$script> );
+				close $script;
+			} else {
+				print "Error: could not read dpkg shlibs database file: $!\n";
+				$looks_good = 0;
+			}
+		}
+	}
+	my @deb_shlibs_regex = @deb_shlibs_raw;
+	map { s/\.dylib$//; quotemeta } @deb_shlibs_regex;  # for finding misplaced linker libs
 
 	# create hash where keys are names of packages listed in Depends
 	$control_processed->{depends_pkgs} = {
@@ -1730,48 +1747,43 @@ sub _validate_dpkg {
 
 	my %shlibs_entries;
 	# check shlibs field
-	if (-f "$destdir/DEBIAN/shlibs") {
-		if (not defined $otool) {
-			print "Warning: Package has shlibs data but otool is not in the path; skipping shlibs validation.\n";
-		}
-		if (open (SHLIBS, "$destdir/DEBIAN/shlibs")) {
-			while (my $entry = <SHLIBS>) {
-				chomp($entry);
-				$entry =~ s/^\s*(.*?)\s*$/$1/gs;
-				my @fields = split(/\s+/, $entry);
-				$shlibs_entries{$fields[0]} = \@fields;
-				my $file = resolve_rooted_symlink($destdir, $fields[0]);
-				if (not defined $file) {
-					# fink is a special case, it has an shlibs field that provides system-shlibs
-					if ($deb_control->{package} ne 'fink') {
-						print "Error: Shlibs field specifies $fields[0], but it does not exist!\n";
+	if (@deb_shlibs_raw and not defined $otool) {
+		print "Warning: Package has shlibs data but otool is not in the path; skipping parts of shlibs validation.\n";
+	}
+	foreach my $shlibs_raw (@deb_shlibs_raw) {
+		my $entry = $shlibs_raw;
+		$entry =~ s/^\s*(.*?)\s*$/$1/gs;
+		my @fields = split(/\s+/, $entry);
+		$shlibs_entries{$fields[0]} = \@fields;
+		my $file = resolve_rooted_symlink($destdir, $fields[0]);
+		if (not defined $file) {
+			# fink is a special case, it has an shlibs field that provides system-shlibs
+			if ($deb_control->{package} ne 'fink') {
+				print "Error: Shlibs field specifies $fields[0], but it does not exist!\n";
+				$looks_good = 0;
+			}
+		} elsif (not -f $file) {
+					
+		} else {
+			$file =~ s/\'/\\\'/gs;
+			if (defined $otool) {
+				if (open (OTOOL, "$otool -L '$file' |")) {
+					<OTOOL>; # skip the first line
+					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+					close (OTOOL);
+	
+					if ($fields[0] ne $libname) {
+						print "Error: File name '$fields[0]' specified in Shlibs does not match install_name '$libname\n";
 						$looks_good = 0;
 					}
-				} elsif (not -f $file) {
-					
-				} else {
-					$file =~ s/\'/\\\'/gs;
-					if (open (OTOOL, "$otool -L '$file' |")) {
-						<OTOOL>; # skip the first line
-						my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
-						close (OTOOL);
-	
-						if ($fields[0] ne $libname) {
-							print "Error: File name '$fields[0]' specified in Shlibs does not match install_name '$libname\n";
-							$looks_good = 0;
-						}
-						if ($fields[1] ne $compat_version) {
-							print "Error: Shlibs field says compatibility version for $fields[0] should be $fields[1], but it is actually $compat_version.\n";
-							$looks_good = 0;
-						}
-					} else {
-						print "Warning: otool -L failed on $file.\n";
+					if ($fields[1] ne $compat_version) {
+						print "Error: Shlibs field says compatibility version for $fields[0] should be $fields[1], but it is actually $compat_version.\n";
+						$looks_good = 0;
 					}
+				} else {
+					print "Warning: otool -L failed on $file.\n";
 				}
 			}
-			close (SHLIBS);
-		} else {
-			print "Warning: unable to open the shlibs file for validation.\n";
 		}
 	}
 

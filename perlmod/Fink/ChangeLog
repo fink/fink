@@ -1,3 +1,8 @@
+2007-05-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Cache DEBIAN/shlibs contents, don't use otool if
+	it doesn't exist
+
 2006-04-30  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* Engine.pm: Don't try to validate dummy packages without info file.
