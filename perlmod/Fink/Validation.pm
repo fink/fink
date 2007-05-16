@@ -1404,21 +1404,25 @@ sub _validate_dpkg {
 	}
 
 	# read the shlibs database file
-	my @deb_shlibs_raw;
+	my $deb_shlibs;
 	{
 		my $filename = "$destdir/DEBIAN/shlibs";
 		if (-f $filename) {
 			if (open my $script, '<', $filename) {
-				chomp( @deb_shlibs_raw = <$script> );
+				chomp( my @deb_shlibs_raw = <$script> );  # slurp the data file
 				close $script;
+				foreach my $entry (@deb_shlibs_raw) {
+					if ($entry =~ /^\s*(.+?)\s+(.+?)\s+(.*?)\s*$/) {
+						# $filename $compat $deps
+						$deb_shlibs->{$1} = [ $2, $3 ];
+					}
+				}
 			} else {
 				print "Error: could not read dpkg shlibs database file: $!\n";
 				$looks_good = 0;
 			}
 		}
 	}
-	my @deb_shlibs_regex = @deb_shlibs_raw;
-	map { s/\.dylib$//; quotemeta } @deb_shlibs_regex;  # for finding misplaced linker libs
 
 	# create hash where keys are names of packages listed in Depends
 	$control_processed->{depends_pkgs} = {
@@ -1520,8 +1524,8 @@ sub _validate_dpkg {
 			$installed_headers = 1;
 		}
 
-		if (defined $otool) {
-			if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
+		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
+			if (defined $otool) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
 					$file =~ s/\'/\\\'/gs;
@@ -1542,11 +1546,13 @@ sub _validate_dpkg {
 						close (OTOOL);
 					}
 				}
-			}
-		} else {
-			print "Warning: unable to locate otool, assuming any .dylib or .jnilib file is a DYLIB binary\n";
-			if ($filename =~/\.(dylib|jnilib)$/) {
+			} elsif ($filename =~/\.(dylib|jnilib)$/) {
+				print "Warning: unable to locate otool, assuming $filename is a DYLIB binary\n";
 				push(@installed_dylibs, $filename);
+			}
+			my( $fn_name, $fn_ext ) = $filename =~ /^(.*)(\..*)/g;  # parse apart at extension
+			if ( grep /^\Q$fn_name\E.+\Q$fn_ext\E$/, sort keys %$deb_shlibs) {
+				&stack_msg($msgs, "Files less specifically versioned than a Shlibs entry do not belong in this package", $filename);
 			}
 		}
 
@@ -1745,21 +1751,16 @@ sub _validate_dpkg {
 		}
 	}
 
-	my %shlibs_entries;
 	# check shlibs field
-	if (@deb_shlibs_raw and not defined $otool) {
+	if (%$deb_shlibs and not defined $otool) {
 		print "Warning: Package has shlibs data but otool is not in the path; skipping parts of shlibs validation.\n";
 	}
-	foreach my $shlibs_raw (@deb_shlibs_raw) {
-		my $entry = $shlibs_raw;
-		$entry =~ s/^\s*(.*?)\s*$/$1/gs;
-		my @fields = split(/\s+/, $entry);
-		$shlibs_entries{$fields[0]} = \@fields;
-		my $file = resolve_rooted_symlink($destdir, $fields[0]);
+	foreach my $shlibs_file (sort keys %$deb_shlibs) {
+		my $file = resolve_rooted_symlink($destdir, $shlibs_file);
 		if (not defined $file) {
 			# fink is a special case, it has an shlibs field that provides system-shlibs
 			if ($deb_control->{package} ne 'fink') {
-				print "Error: Shlibs field specifies $fields[0], but it does not exist!\n";
+				print "Error: Shlibs field specifies $shlibs_file, but it does not exist!\n";
 				$looks_good = 0;
 			}
 		} elsif (not -f $file) {
@@ -1771,14 +1772,18 @@ sub _validate_dpkg {
 					<OTOOL>; # skip the first line
 					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
-	
-					if ($fields[0] ne $libname) {
-						print "Error: File name '$fields[0]' specified in Shlibs does not match install_name '$libname\n";
+
+					if (!defined $libname or !defined $compat_version) {
+						print "Error: File name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
 						$looks_good = 0;
-					}
-					if ($fields[1] ne $compat_version) {
-						print "Error: Shlibs field says compatibility version for $fields[0] should be $fields[1], but it is actually $compat_version.\n";
-						$looks_good = 0;
+					} else {
+						if ($shlibs_file ne $libname) {
+							print "Error: File name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
+						}
+						if ($deb_shlibs->{$shlibs_file}->[0] ne $compat_version) {
+							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->[0].", but it is actually $compat_version.\n";
+							$looks_good = 0;
+						}
 					}
 				} else {
 					print "Warning: otool -L failed on $file.\n";
@@ -1800,7 +1805,7 @@ sub _validate_dpkg {
 					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
 	
-					if (not exists $shlibs_entries{$libname}) {
+					if (not exists $deb_shlibs->{$libname}) {
 						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname $compat_version)\n";
 						$looks_good = 0;
 					}

@@ -1,3 +1,9 @@
+2007-05-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Catch non-binaries listed in Shlibs; refactor
+	nested if() so most-likely-to-fail is outer; streamline handling
+	of Shlibs; flag libfoo.dylib in package with Shlibs:libfoo.1.dylib
+
 2007-05-15  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Cache DEBIAN/shlibs contents, don't use otool if
