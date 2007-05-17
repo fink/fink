@@ -5318,12 +5318,13 @@ sub get_shlibs_field {
 	my @shlibs_raw = split /\n/, $self->param_default_expanded('Shlibs', '');  # lines from .info
 	my $shlibs_cooked = '';  # processed results
 	foreach my $info_line (@shlibs_raw) {
+		next if $info_line =~ /^#/;  # skip comments
 		if ($info_line =~ s/^\s*\((.*?)\)//) {
 			# have a conditional
 			next if not &eval_conditional($1, "Shlibs of ".$self->get_info_filename);
 		}
-		$info_line =~ s/^\s*(.*?)\s*$/$1/;  # strip off leading/trailing whitespace
-		$shlibs_cooked .= "$info_line\n";
+		$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
+		$shlibs_cooked .= "$1\n" if length $1;
 	}
 	$shlibs_cooked;
 }

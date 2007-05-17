@@ -2389,7 +2389,7 @@ HELPFORMAT
 				my $value = $pkg->get_shlibs_field();
 				if (length $value) {
 					$value =~ s/^/ /gm;
-					printf "%s:\n%s\n", $_, $value;
+					printf "%s:\n%s", $_, $value;
 				}
 			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(runtimevars|custommirror)|daemonicfile$/) {
 				# multiline fields start on a new line and are

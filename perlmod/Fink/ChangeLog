@@ -1,5 +1,9 @@
 2007-05-17  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Handle whitespace and comments in Shlibs field
+
+2007-05-17  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Support conditionals for Shlibs lines via new
 	get_shlibs_field accessor
 	* Engine.pm: Use new Shlibs accessor for dumpinfo
