@@ -2384,7 +2384,14 @@ HELPFORMAT
 					);
 					printf "%s: %s\n", $_, $value if length $value;
 				}
-			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
+			} elsif ($_ eq 'shlibs') {
+				# multiline field with specific accessor
+				my $value = $pkg->get_shlibs_field();
+				if (length $value) {
+					$value =~ s/^/ /gm;
+					printf "%s:\n%s\n", $_, $value;
+				}
+			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(runtimevars|custommirror)|daemonicfile$/) {
 				# multiline fields start on a new line and are
 				# indented one extra space
 				if ($pkg->has_param($_)) {

@@ -4230,8 +4230,7 @@ EOF
 
 	### shlibs file
 
-	if ($self->has_param("Shlibs")) {
-		my $shlibsbody = $self->param_expanded("Shlibs");
+	if (length(my $shlibsbody = $self->get_shlibs_field)) {
 		chomp $shlibsbody;
 		my $shlibsfile = "$destdir/DEBIAN/shlibs";
 
@@ -5299,6 +5298,34 @@ sub get_full_trees {
 }
 sub get_full_tree {
 	return ($_[0]->get_full_trees)[-1];
+}
+
+=item get_shlibs_field
+
+	my $shlibs_field = $pv->get_shlibs_field;
+
+Returns a multiline string of the Shlibs entries. Conditionals are
+supported as prefix to a whole entry (not to specific dependencies
+like a pkglist field). The string will always be defined, but will be
+null if no entries, and every entry (even last) will have trailing
+newline.
+
+=cut
+
+sub get_shlibs_field {
+	my $self = shift;
+
+	my @shlibs_raw = split /\n/, $self->param_default_expanded('Shlibs', '');  # lines from .info
+	my $shlibs_cooked = '';  # processed results
+	foreach my $info_line (@shlibs_raw) {
+		if ($info_line =~ s/^\s*\((.*?)\)//) {
+			# have a conditional
+			next if not &eval_conditional($1, "Shlibs of ".$self->get_info_filename);
+		}
+		$info_line =~ s/^\s*(.*?)\s*$/$1/;  # strip off leading/trailing whitespace
+		$shlibs_cooked .= "$info_line\n";
+	}
+	$shlibs_cooked;
 }
 
 =item scanpackages
