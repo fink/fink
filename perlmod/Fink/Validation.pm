@@ -1404,7 +1404,7 @@ sub _validate_dpkg {
 	}
 
 	# read the shlibs database file
-	my $deb_shlibs;
+	my $deb_shlibs = {};
 	{
 		my $filename = "$destdir/DEBIAN/shlibs";
 		if (-f $filename) {
