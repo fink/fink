@@ -1,5 +1,10 @@
 2007-05-17  Daniel Macks  <dmacks@netspace.org>
 
+	* SelfUpdate.pm, SelfUpdate/rsync.pm: only clear old metadata when
+	changing update methods
+
+2007-05-17  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Handle whitespace and comments in Shlibs field
 
 2007-05-17  Daniel Macks  <dmacks@netspace.org>

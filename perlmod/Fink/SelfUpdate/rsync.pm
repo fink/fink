@@ -200,10 +200,6 @@ RSYNCAGAIN:
 	if (&execute($cmd)) {
 		print "Updating using rsync failed. Check the error messages above.\n";
 		goto RSYNCAGAIN;
-	} else {
-		foreach my $tree (@trees) {
-			&execute("/usr/bin/find '$basepath/fink/$dist/$tree' -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
-		}
 	}
 
 	# cleanup after ourselves
