@@ -3168,7 +3168,7 @@ this problem, run the command:
     sudo gcc_select GCC_SELECT_COMMAND
 
 You may need to install a more recent version of the Developer Tools
-(Apple's XCode) to be able to do so.
+(the Apple XCode suite) to be able to do so.
 GCC_MSG
 	}
 
