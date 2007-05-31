@@ -3754,7 +3754,6 @@ sub phase_build {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($ddir, $destdir, $control);
-	my ($conffiles, $listfile);
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
 
@@ -4259,21 +4258,27 @@ EOF
 
 	### config file list
 
-	if ($self->has_param("conffiles")) {
-		$listfile = "$destdir/DEBIAN/conffiles";
-		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")));
-		$conffiles = &expand_percent($conffiles, $self->{_expand}, $self->get_info_filename." \"conffiles\"")."\n";
+	if ($self->has_param('ConfFiles')) {
+		my $files = $self->param_expanded('ConfFiles');
+		$files =~ s/\s+/ /g; # Make it one line
+		$files = $self->conditional_space_list($files,
+			"ConfFiles of ".$self->get_fullname()." in ".$self->get_info_filename
+		);
 
-		print "Writing conffiles list...\n";
+		if ($files =~ /\S/) {
+			# we actually have something
+			print "Writing conffiles list...\n";
 
-		if ( open(SCRIPT,">$listfile") ) {
-			print SCRIPT $conffiles;
-			close(SCRIPT) or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
-			chmod 0644, $listfile;
-		} else {
-			my $error = "can't write conffiles list file for ".$self->get_fullname().": $!";
-			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-			die $error . "\n";
+			my $listfile = "$destdir/DEBIAN/conffiles";
+			if ( open my $scriptFH, '>', $listfile ) {
+				print $scriptFH map "$_\n", split /\s+/, $files;
+				close $scriptFH or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
+				chmod 0644, $listfile;
+			} else {
+				my $error = "can't write conffiles list file for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
 		}
 	}
 
