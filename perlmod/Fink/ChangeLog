@@ -1,5 +1,10 @@
 2007-05-31  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Backport conditional ConfFiles and Shlibs to
+	branch_0.27 (target release 0.27.2)
+
+2007-05-31  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Check minimum BDep:fink if conditional ConfFiles
 	or Shlibs. Add named-parameters API to validate_info_component
 

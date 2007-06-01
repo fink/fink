@@ -626,7 +626,7 @@ if ($info_level < 4) {
 				 properties => $test_properties,
 				 filename => $filename,
 				 info_level => $info_level,
-				 is_infotest => 1
+				 is_infotest => 1,
 			 ) == 0) {
 		$looks_good = 0;
 	}
@@ -1211,7 +1211,7 @@ sub validate_info_component {
 			next unless /\S/;
 
 			if (s/^\s*\(.*?\)\s*//) {
-				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.28', 'use of conditionals in Shlibs', $filename);
+				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in Shlibs', $filename);
 			}
 
 			my @shlibs_parts;
@@ -1270,7 +1270,7 @@ sub validate_info_component {
 
 	$value = $properties->{conffiles};
 	if (defined $value and $value =~ /\(.*?\)/) {
-		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.28', 'use of conditionals in ConfFiles', $filename);
+		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in ConfFiles', $filename);
 	}
 
 	# Special checks when package building script uses an explicit interp
