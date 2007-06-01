@@ -2349,7 +2349,7 @@ HELPFORMAT
 			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
-					 $_ =~ /^set/ or $_ =~ /^(jar|doc|conf)files$/ or
+					 $_ =~ /^set/ or $_ =~ /^(jar|doc)files$/ or
 					 $_ =~ /^patch(|file|file-md5)$/ or $_ eq 'appbundles' or
  					 $_ eq 'infodocs' or $_ =~ /^daemonicname$/
 					) {
@@ -2372,7 +2372,25 @@ HELPFORMAT
 					);
 					printf "%s: %s\n", $_, $value if length $value;
 				}
-			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(shlibs|runtimevars|custommirror)|daemonicfile$/) {
+			} elsif ($_ eq 'conffiles') {
+				# singleline fields start on the same line, have
+				# embedded newlines removed, and are not wrapped
+				# need conditionals processing
+				if ($pkg->has_param($_)) {
+					my $value = $pkg->conditional_space_list(
+						$pkg->param_expanded("ConfFiles"),
+						"ConfFiles of ".$pkg->get_fullname()." in ".$pkg->get_info_filename
+					);
+					printf "%s: %s\n", $_, $value if length $value;
+				}
+			} elsif ($_ eq 'shlibs') {
+				# multiline field with specific accessor
+				my $value = $pkg->get_shlibs_field();
+				if (length $value) {
+					$value =~ s/^/ /gm;
+					printf "%s:\n%s", $_, $value;
+				}
+			} elsif ($_ =~ /^(((pre|post)(inst|rm))script)|(runtimevars|custommirror)|daemonicfile$/) {
 				# multiline fields start on a new line and are
 				# indented one extra space
 				if ($pkg->has_param($_)) {

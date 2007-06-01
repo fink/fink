@@ -3168,7 +3168,7 @@ this problem, run the command:
     sudo gcc_select GCC_SELECT_COMMAND
 
 You may need to install a more recent version of the Developer Tools
-(Apple's XCode) to be able to do so.
+(the Apple XCode suite) to be able to do so.
 GCC_MSG
 	}
 
@@ -3754,7 +3754,6 @@ sub phase_build {
 	my $self = shift;
 	my $do_splitoff = shift || 0;
 	my ($ddir, $destdir, $control);
-	my ($conffiles, $listfile);
 	my ($daemonicname, $daemonicfile);
 	my ($cmd);
 
@@ -3791,6 +3790,14 @@ sub phase_build {
 			my $error = "Could not revert ownership of install directory to root.";
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
+		}
+	}
+
+	# put the info file into the debian directory
+	if (-d "$destdir/DEBIAN") {
+		my $infofile = $self->get_filename();
+		if (defined $infofile) {
+			cp($infofile, "$destdir/DEBIAN/package.info");
 		}
 	}
 
@@ -4222,8 +4229,7 @@ EOF
 
 	### shlibs file
 
-	if ($self->has_param("Shlibs")) {
-		my $shlibsbody = $self->param_expanded("Shlibs");
+	if (length(my $shlibsbody = $self->get_shlibs_field)) {
 		chomp $shlibsbody;
 		my $shlibsfile = "$destdir/DEBIAN/shlibs";
 
@@ -4252,21 +4258,27 @@ EOF
 
 	### config file list
 
-	if ($self->has_param("conffiles")) {
-		$listfile = "$destdir/DEBIAN/conffiles";
-		$conffiles = join("\n", grep {$_} split(/\s+/, $self->param("conffiles")));
-		$conffiles = &expand_percent($conffiles, $self->{_expand}, $self->get_info_filename." \"conffiles\"")."\n";
+	if ($self->has_param('ConfFiles')) {
+		my $files = $self->param_expanded('ConfFiles');
+		$files =~ s/\s+/ /g; # Make it one line
+		$files = $self->conditional_space_list($files,
+			"ConfFiles of ".$self->get_fullname()." in ".$self->get_info_filename
+		);
 
-		print "Writing conffiles list...\n";
+		if ($files =~ /\S/) {
+			# we actually have something
+			print "Writing conffiles list...\n";
 
-		if ( open(SCRIPT,">$listfile") ) {
-			print SCRIPT $conffiles;
-			close(SCRIPT) or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
-			chmod 0644, $listfile;
-		} else {
-			my $error = "can't write conffiles list file for ".$self->get_fullname().": $!";
-			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-			die $error . "\n";
+			my $listfile = "$destdir/DEBIAN/conffiles";
+			if ( open my $scriptFH, '>', $listfile ) {
+				print $scriptFH map "$_\n", split /\s+/, $files;
+				close $scriptFH or die "can't write conffiles list file for ".$self->get_fullname().": $!\n";
+				chmod 0644, $listfile;
+			} else {
+				my $error = "can't write conffiles list file for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
 		}
 	}
 
@@ -5291,6 +5303,35 @@ sub get_full_trees {
 }
 sub get_full_tree {
 	return ($_[0]->get_full_trees)[-1];
+}
+
+=item get_shlibs_field
+
+	my $shlibs_field = $pv->get_shlibs_field;
+
+Returns a multiline string of the Shlibs entries. Conditionals are
+supported as prefix to a whole entry (not to specific dependencies
+like a pkglist field). The string will always be defined, but will be
+null if no entries, and every entry (even last) will have trailing
+newline.
+
+=cut
+
+sub get_shlibs_field {
+	my $self = shift;
+
+	my @shlibs_raw = split /\n/, $self->param_default_expanded('Shlibs', '');  # lines from .info
+	my $shlibs_cooked = '';  # processed results
+	foreach my $info_line (@shlibs_raw) {
+		next if $info_line =~ /^#/;  # skip comments
+		if ($info_line =~ s/^\s*\((.*?)\)//) {
+			# have a conditional
+			next if not &eval_conditional($1, "Shlibs of ".$self->get_info_filename);
+		}
+		$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
+		$shlibs_cooked .= "$1\n" if length $1;
+	}
+	$shlibs_cooked;
 }
 
 =item scanpackages
