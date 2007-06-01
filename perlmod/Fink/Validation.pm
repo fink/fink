@@ -616,9 +616,18 @@ if ($info_level < 4) {
 		
 	}
 
-	if (&validate_info_component($properties, "", $filename, $info_level) == 0) {
+	if (&validate_info_component(
+			 properties => $properties,
+			 filename => $filename,
+			 info_level => $info_level,
+		) == 0) {
 		$looks_good = 0;
-	} elsif ($properties->{infotest} and &validate_info_component($test_properties, "", $filename, $info_level, 1) == 0) {
+	} elsif ($properties->{infotest} and &validate_info_component(
+				 properties => $test_properties,
+				 filename => $filename,
+				 info_level => $info_level,
+				 is_infotest => 1
+			 ) == 0) {
 		$looks_good = 0;
 	}
 
@@ -700,7 +709,13 @@ if ($info_level < 4) {
 				}
 			}
 
-			if (&validate_info_component($splitoff_properties, $splitoff_field, $filename, $info_level) == 0) {
+			if (&validate_info_component(
+					 properties => $splitoff_properties,
+					 splitoff_field => $splitoff_field,
+					 filename => $filename,
+					 info_level => $info_level,
+					 builddepends => $properties->{builddepends},
+				) == 0) {
 				$looks_good = 0;
 			}
 
@@ -863,19 +878,7 @@ if ($info_level < 4) {
 	if (exists $properties->{patchfile}) {
 
 		# must declare BuildDepends on a fink that supports it
-		my $has_fink_bdep = 0;
-		$value = &pkglist2lol($properties->{builddepends});
-		foreach (@$value) {
-			foreach my $atom (@$_) {
-				$atom =~ s/^\(.*?\)\s*//;
-				next unless $atom =~ /^fink\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
-				$has_fink_bdep = 1 if version_cmp($2, '>=', '0.24.12');
-			}
-		}
-		if (!$has_fink_bdep) {
-			print "Error: Use of PatchFile requires declaring a BuildDepends on \"fink (>= 0.24.12)\" or higher. ($filename)\n";
-			$looks_good = 0;
-		}
+		$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.24.12', 'use of PatchFile', $filename);
 
 		# can't mix old and new patching styles
 		if (exists $properties->{patch}) {
@@ -983,14 +986,63 @@ sub _validate_info_filename {
 	return 1;
 }
 
+# Given a $builddepends from the $filename .info field, check whether
+# any "fink" less than the given $required_version will suffice. If so
+# (i.e., insufficient dependency for something that requires at least
+# the given version-string), print warning indicating the minimum
+# requirement for $feature
+
+sub _min_fink_version {
+	my $builddepends = shift;
+	my $required_version = shift;
+	my $feature = shift;
+	my $filename = shift;
+
+	$builddepends = &pkglist2lol($builddepends);
+
+	my $has_fink_bdep = 0;
+	foreach (@$builddepends) {
+		foreach my $atom (@$_) {
+			$atom =~ s/^\(.*?\)\s*//;
+			next unless $atom =~ /^fink\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
+			$has_fink_bdep = 1 if version_cmp($2, '>=', $required_version);
+		}
+	}
+
+	if (!$has_fink_bdep) {
+		print "Error: $feature requires declaring a BuildDepends on fink (>= $required_version) or higher. ($filename)\n";
+		return 0;
+	}
+	return 1;
+}
+
 # checks that are common to a parent and a splitoff package of a .info file
 # returns boolean of whether everything is okay
+# The following parameters are known:
+#   properties        hashref (will not be altered)
+#   splitoff_field    "splitoffN", or null or undef in parent
+#   filename          filename of .info file being validated
+#   info_level        InfoN level
+#   is_infotest       boolean indicating if this is an InfoTest field
+#   builddepends      BuildDepends of parent if this is not a parent field
+
 sub validate_info_component {
-	my $properties = shift;      # hashref (will not be altered)
-	my $splitoff_field = shift;  # "splitoffN", or null or undef in parent
-	my $filename = shift;
-	my $info_level = shift;
-	my $is_infotest = shift || 0;
+	my %options;
+	if (ref $_[0]) {
+		# old-style positional-parameters
+		@options{qw/ properties splitoff_field filename info_level is_infotest /} = @_;
+	} else {
+		# new-style named parameters
+		%options = @_;
+	}
+	my $properties = $options{properties};
+	my $splitoff_field = $options{splitoff_field};
+	my $filename = $options{filename};
+	my $info_level = $options{info_level};
+	my $is_infotest = $options{is_infotest};
+
+	# make sure this $option is available even in parent
+	$options{builddepends} = $properties->{builddepends} unless $splitoff_field;
 
 	my (@pkg_required_fields, %pkg_valid_fields);
 
@@ -1157,6 +1209,11 @@ sub validate_info_component {
 		my %shlibs;
 		foreach (@shlibs) {
 			next unless /\S/;
+
+			if (s/^\s*\(.*?\)\s*//) {
+				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.28', 'use of conditionals in Shlibs', $filename);
+			}
+
 			my @shlibs_parts;
 			if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
 				print "Warning: Malformed line in field \"shlibs\"$splitoff_field. ($filename)\n  $_\n";
@@ -1211,6 +1268,10 @@ sub validate_info_component {
 		}
 	}
 
+	$value = $properties->{conffiles};
+	if (defined $value and $value =~ /\(.*?\)/) {
+		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.28', 'use of conditionals in ConfFiles', $filename);
+	}
 
 	# Special checks when package building script uses an explicit interp
 
