@@ -690,7 +690,10 @@ if ($info_level < 4) {
 		}
 
 		# Validate splitoffs
-		if ($field =~ m/^splitoff([2-9]|[1-9]\d+)?$/) {
+		if ($field eq 'splitoff1') {
+			print "Warning: Field \"splitoff1\" is unknown (use \"splitoff\" for first SplitOff package). ($filename)\n";
+			$looks_good = 0;
+		} elsif ($field =~ m/^splitoff([2-9]|[1-9]\d+)?$/) {
 			# Parse the splitoff properties
 			my $splitoff_properties = $properties->{$field};
 			my $splitoff_field = $field;
