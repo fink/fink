@@ -1866,7 +1866,7 @@ sub _validate_dpkg {
 				$dylib_temp =~ s/\'/\\\'/gs;
 				if (open (OTOOL, "$otool -L '$dylib_temp' |")) {
 					<OTOOL>; # skip first line
-					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
 	
 					if (not exists $deb_shlibs->{$libname}) {

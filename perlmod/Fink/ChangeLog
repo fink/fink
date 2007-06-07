@@ -1,5 +1,9 @@
 2007-06-06  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: Accept .dylib whose install_name isn't absolute
+
+2007-06-06  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: Warn if .info has "SplitOff1" instead of "SplitOff"
 
 2007-05-31  Daniel Macks  <dmacks@netspace.org>
