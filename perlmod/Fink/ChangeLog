@@ -2,6 +2,7 @@
 
 	* Validation.pm: Warn if .info has "SplitOff1" instead of "SplitOff" 
 	(backport from HEAD, change made by dmacks on 2007-06-06)
+	* PkgVersion.pm: use Fink::Command::cp
 
 2007-05-31  Daniel Macks  <dmacks@netspace.org>
 
