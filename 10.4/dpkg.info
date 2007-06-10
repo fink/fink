@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1219
+Revision: 1221
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: libgettext3-shlibs, libiconv, gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
@@ -12,7 +12,7 @@ Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
 Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
 PatchFile: %n.patch
-PatchFile-MD5: 037adbd66b3723518532371840dc76e7
+PatchFile-MD5: 49fc7cb90bb3ae0aa64c359044461699
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
@@ -21,8 +21,10 @@ SetCFLAGS: -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
+ if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
+
  %p/bin/fink -y install gettext-bin libgettext3-dev libiconv-dev libncurses5
- cd %b/../gettext-0.14.5/gettext-tools; env EMACS=no ./configure --prefix="%b/../_inst%p" --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath; make; rm -rf %b/../_inst; make install
+ cd %b/../gettext-0.14.5/gettext-tools; env EMACS=no ./configure --prefix="%b/../_inst%p" --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-shared; make; rm -rf %b/../_inst; make install
  PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
  make
 <<
@@ -52,7 +54,8 @@ DescPackaging: <<
  it is built only so that msgfmt and xgettext are available during the
  dpkg build.  The only alternative would be to make gettext-tools an essential
  pakcages, since essential packages cannot depend or builddepend on
- non-essential packages.
+ non-essential packages. Only build this gettext static, since don't need the
+ actual libs themselves.
 <<
 DescPort: <<
 1.10.9 
@@ -78,6 +81,12 @@ Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
 
 Patched to hardcode complete paths to our component executables
 instead of relying on PATH
+
+Patch 'dpkg -b' tar invocation to avoid warning under tar>=1.16
+See: http://permalink.gmane.org/gmane.os.apple.fink.core/1281
+
+Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.  
+(Exit 1 is a non-fatal error for tar; exit 2 is fatal.)  patch written by vasi
 <<
 #
 PostInstScript: <<

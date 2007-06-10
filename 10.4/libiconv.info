@@ -1,6 +1,6 @@
 Package: libiconv
 Version: 1.11
-Revision: 1
+Revision: 11
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: b77a17e4a5a817100ad4b2613935055e

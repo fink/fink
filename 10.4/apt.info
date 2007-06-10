@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 1053
+Revision: 1054
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: %N-shlibs (= %v-%r)
@@ -97,7 +97,7 @@ else
   if [ "$a" != "apt" -o "$b" != "apt" ]; then
     /bin/echo ""
     /bin/echo "dselect is not set up to use apt as its access method. Downloading binary"
-    /bin/echo -n "package will likely not work. Do you want to use apt instead?"
+    /bin/echo "package will likely not work. Do you want to use apt instead?\c"
     read answer
     answer=`echo $answer | sed 's/^[yY].*$/y/'`
     if [ -z "$answer" -o "x$answer" = "xy" ]; then

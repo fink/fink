@@ -1,3 +1,7 @@
+2007-06-09  Dave Morrison  <drm@finkproject.org>
+
+	* apt.info dpkg.info dpkg.patch libiconv.info libiconv.patch ncurses.info tar.info: sync with stable
+
 2006-08-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* apt.info: POSIX /bin/sh does not support "echo -n"
