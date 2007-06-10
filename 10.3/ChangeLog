@@ -1,3 +1,7 @@
+2007-06-09  Dave Morrison  <drm@finkproject.org>
+
+	* apt.info dpkg.info dpkg.patch libiconv.info libiconv.patch ncurses.info tar.info unzip.info unzip.patch: sync with stable
+
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* apt.info, cctools-extra.info, debianutils.info, dpkg.info, fink-prebinding.info, gzip.info, ncurses.info, unzip.info: sync with stable

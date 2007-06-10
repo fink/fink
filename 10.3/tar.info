@@ -1,11 +1,11 @@
 Package: tar
-Version: 1.15.1
-Revision: 14
+Version: 1.16.1
+Revision: 1
 Essential: yes
 Depends: libgettext3-shlibs, libiconv, gzip, bzip2, base-files
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
-Source-MD5: d87021366fe6488e9dc398fcdcb6ed7d 
-UpdateConfigGuess: true
+#Source: gnu
+Source-MD5: 8ecfdd38740aadb8e17129e70803589a
 ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib
 CompileScript: <<
  %p/bin/fink -y install libgettext3-dev libiconv-dev

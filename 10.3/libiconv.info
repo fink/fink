@@ -1,6 +1,6 @@
 Package: libiconv
 Version: 1.11
-Revision: 1
+Revision: 2
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: b77a17e4a5a817100ad4b2613935055e
@@ -17,7 +17,7 @@ PatchScript: <<
 <<
 Essential: yes
 Depends: base-files
-BuildDepends: fink (>= 0.24.12)
+BuildDepends: fink (>= 0.24.12), fink-prebinding
 Shlibs: <<
  %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
  %p/lib/libiconv.2.dylib 7.0.0 %n (>= 1.11-1)
