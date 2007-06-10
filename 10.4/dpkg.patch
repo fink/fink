@@ -2558,3 +2558,29 @@ diff -ruN dpkg-1.10.21/lib/mlib.c dpkg-1.10.21-patched/lib/mlib.c
        break;
      case BUFFER_WRITE_VBUF:
        varbufaddbuf((struct varbuf *)data->data.ptr, buf, length);
+diff -Nurd -x'*~' dpkg-1.10.21.orig/dpkg-deb/build.c dpkg-1.10.21/dpkg-deb/build.c
+--- dpkg-1.10.21.orig/dpkg-deb/build.c	2003-10-25 16:03:21.000000000 -0400
++++ dpkg-1.10.21/dpkg-deb/build.c	2006-12-18 04:52:19.000000000 -0500
+@@ -445,7 +445,7 @@
+     m_dup2(p1[0],0); close(p1[0]); close(p1[1]);
+     m_dup2(p2[1],1); close(p2[0]); close(p2[1]);
+     if (chdir(directory)) ohshite(_("failed to chdir to `%.255s'"),directory);
+-    execlp(TAR,"tar","-cf", "-", "-T", "-", "--null", "--no-recursion", (char*)0);
++    execlp(TAR,"tar","-cf", "-", "--null", "-T", "-", "--no-recursion", (char*)0);
+     ohshite(_("failed to exec tar -cf"));
+   }
+   close(p1[0]);
+diff -Naur dpkg-1.10.21/lib/mlib.c dpkg-new/lib/mlib.c
+--- dpkg-1.10.21/lib/mlib.c	2007-03-10 12:20:35.000000000 -0500
++++ dpkg-new/lib/mlib.c	2007-03-10 15:13:48.000000000 -0500
+@@ -110,7 +110,9 @@
+   if (WIFEXITED(status)) {
+     n= WEXITSTATUS(status); if (!n) return n;
+     if(!(flags & PROCNOERR)) {
+-      if(flags & PROCWARN)
++      /* FINK LOCAL: Tar status 1 is a warning. */
++      if((flags & PROCWARN) || (n == 1 && strncmp(description, "tar", 3) == 0))
++      /* FINK LOCAL */
+         fprintf(stderr, _("dpkg: warning - %s returned error exit status %d\n"),description,n);
+       else
+         ohshit(_("subprocess %s returned error exit status %d"),description,n);

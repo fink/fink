@@ -14,7 +14,7 @@ Source3: mirror:sourceforge:fink/ncurses-5.4-20041023.patch.bz2
 Source3-MD5: 2cacb921a11287fedda5db7de4d331a6
 Source3ExtractDir: ncurses-5.4
 PatchScript: <<
-  #!/bin/sh -e
+  #!/bin/sh -ev
   bunzip2 ncurses-5.4-20040711-patch.sh.bz2
   chmod +x ncurses-5.4-20040711-patch.sh
   ./ncurses-5.4-20040711-patch.sh
@@ -35,12 +35,12 @@ SetLDFLAGS: -Wl,-search_paths_first
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
-  #!/bin/sh -e
+  #!/bin/sh -ev
   ./configure %c --libdir=%p/lib/ncurses
   make
 <<
 InstallScript: <<
-#!/bin/sh -e
+#!/bin/sh -ev
   make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib:`pwd`/lib/ncurses
 # add extra symlinks in the main lib directory
   ln -s ncurses/libform.5.dylib %i/lib/libform.dylib
