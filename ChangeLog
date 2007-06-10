@@ -1,3 +1,9 @@
+2007-06-09  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.27.2, a release
+	on branch_0_27 which implements conditional syntax in the ConfFiles 
+	and Shlibs fields, and fixes a few bugs.
+
 2007-03-19  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.27.1, a bugfix 
