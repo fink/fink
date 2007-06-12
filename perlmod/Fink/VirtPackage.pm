@@ -1533,7 +1533,7 @@ sub check_x11_version {
 				if (-x $xdir . '/bin/' . $binary) {
 					if (open (XBIN, "$xdir/bin/$binary -version -iokit 2>\&1 |")) {
 						while (my $line = <XBIN>) {
-							if ($line =~ /(XFree86 Version|X Protocol.* Release|X.org Release) ([\d\.]+)/) {
+							if ($line =~ /(?:XFree86 Version|X Protocol.* Release|X.org Release) ([\d\.]+)/) {
 								$XF_VERSION = $1;
 								@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
 								last;
