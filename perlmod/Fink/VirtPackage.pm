@@ -1243,6 +1243,10 @@ in the library.
 					print STDERR "missing libXt or grep\n" if ($options{debug});
 				}
 
+				if (exists $provides->{'system-xfree86-dev'} and defined $provides->{'system-xfree86-dev'} and not grep(/^x11-dev$/, @{$provides->{'system-xfree86-dev'}})) {
+					print STDERR "WARNING: you have an incomplete X11 installation.\n  See http://finkproject.org/faq/usage-packages.php#special-x11-debug for details on repairing it.\n";
+				}
+
 				for my $pkg ('system-xfree86', 'system-xfree86-shlibs', 'system-xfree86-dev') {
 					if (exists $provides->{$pkg}) {
 						$self->{$pkg} = {
