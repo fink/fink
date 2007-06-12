@@ -1039,12 +1039,12 @@ END
 
 				my $found_xserver = 0;
 				print STDERR "- checking for X servers... " if ($options{debug});
-				for my $xdir ('/usr/X11R6', '/usr/X11') {
+				XSERVERLOOP: for my $xdir ('/usr/X11R6', '/usr/X11') {
 					for my $xserver (@xservers) {
 						if (-x $xdir . '/bin/' . $xserver) {
 							print STDERR "$xdir/bin/$xserver\n" if ($options{debug});
 							$found_xserver++;
-							last;
+							last XSERVERLOOP;
 						}
 					}
 				}
@@ -1263,6 +1263,14 @@ in the library.
 						}
 					}
 				}
+			}
+			if (exists $self->{'system-xfree86-dev'}
+					and exists $self->{'system-xfree86-shlibs'}
+					and exists $self->{'system-xfree86-manual-install'}
+					and $self->{'system-xfree86-dev'}->{'status'} == STATUS_PRESENT
+					and $self->{'system-xfree86-shlibs'}->{'status'} == STATUS_PRESENT) {
+				$self->{'system-xfree86-manual-install'}->{'status'} = STATUS_PRESENT;
+			 	$self->{'system-xfree86-manual-install'}->{'version'} = $self->{'system-xfree86-dev'}->{'version'};
 			}
 		} else {
 			print STDERR "- skipping X11 virtuals, existing X11 packages installed\n" if ($options{debug});
@@ -1523,7 +1531,7 @@ sub check_x11_version {
 				if (-x $xdir . '/bin/' . $binary) {
 					if (open (XBIN, "$xdir/bin/$binary -version -iokit 2>\&1 |")) {
 						while (my $line = <XBIN>) {
-							if ($line =~ /(XFree86 Version|X Protocol.* Release) ([\d\.]+)/) {
+							if ($line =~ /(XFree86 Version|X Protocol.* Release|X.org Release) ([\d\.]+)/) {
 								$XF_VERSION = $1;
 								@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
 								last;

@@ -1,3 +1,7 @@
+2007-06-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: fix detection of modular X.org
+
 2007-06-12  Dave Morrison  <drm@finkproject.org>
 
 	* Services.pm: test for existence of gcc_select before calling it
