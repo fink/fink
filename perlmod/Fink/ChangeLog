@@ -1,6 +1,6 @@
 2007-06-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
-	* VirtPackage.pm: fix detection of modular X.org
+	* VirtPackage.pm: fix detection of modular X.org and cctools
 
 2007-06-12  Dave Morrison  <drm@finkproject.org>
 

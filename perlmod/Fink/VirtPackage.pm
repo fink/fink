@@ -619,12 +619,10 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	# create dummy object for cctools version, if version was found in Config.pm
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
-	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		my $LD_OUTPUT = `/usr/bin/ld -v 2>&1`;
+	if (-x "/usr/bin/as" and -x "/usr/bin/what") {
+		my $LD_OUTPUT = `/usr/bin/as -v 2>&1 </dev/null`;
 		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
 			$cctools_version = $1;
-		} elsif ($LD_OUTPUT =~ /^.*PROJECT\:ld64\-([\d\.]+).*?$/) {
-			$cctools_version = '1000'; # FIXME: how do we find out what cctools we're using?
 		} elsif (`/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
 			$cctools_version = $1;
 		}
