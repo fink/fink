@@ -1267,8 +1267,8 @@ in the library.
 			if (exists $self->{'system-xfree86-dev'}
 					and exists $self->{'system-xfree86-shlibs'}
 					and exists $self->{'system-xfree86-manual-install'}
-					and $self->{'system-xfree86-dev'}->{'status'} == STATUS_PRESENT
-					and $self->{'system-xfree86-shlibs'}->{'status'} == STATUS_PRESENT) {
+					and $self->{'system-xfree86-dev'}->{'status'} eq STATUS_PRESENT
+					and $self->{'system-xfree86-shlibs'}->{'status'} eq STATUS_PRESENT) {
 				$self->{'system-xfree86-manual-install'}->{'status'} = STATUS_PRESENT;
 			 	$self->{'system-xfree86-manual-install'}->{'version'} = $self->{'system-xfree86-dev'}->{'version'};
 			}
