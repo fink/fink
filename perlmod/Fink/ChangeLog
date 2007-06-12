@@ -1,3 +1,9 @@
+2007-06-12  Dave Morrison  <drm@finkproject.org>
+
+	* Services.pm: fall back to checking the gcc symlink if
+	gcc_select is not there (backport from HEAD, change made by 
+	rangerrick on 2007-06-11)
+
 2007-06-09  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Warn if .info has "SplitOff1" instead of "SplitOff" 

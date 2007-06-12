@@ -1280,9 +1280,16 @@ selection cannot be determined.
 =cut
 
 sub gcc_selected {
-	return 0 unless -x '/usr/sbin/gcc_select';
-	chomp(my $gcc_select = `/usr/sbin/gcc_select 2>&1`);
-	return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
+	if (-x '/usr/sbin/gcc_select') {
+		chomp(my $gcc_select = `/usr/sbin/gcc_select 2>&1`);
+		return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
+	}
+	if (-l '/usr/bin/gcc') {
+		my $link = readlink('/usr/bin/gcc');
+		if ($link =~ /gcc-(\d+\.\d+)/) {
+			return $1;
+		}
+	}
 	return 0;
 }
 
