@@ -1,5 +1,9 @@
 2007-06-12  Dave Morrison  <drm@finkproject.org>
 
+	* Services.pm: test for existence of gcc_select before calling it
+
+2007-06-12  Dave Morrison  <drm@finkproject.org>
+
 	* Services.pm: fall back to checking the gcc symlink if
 	gcc_select is not there (backport from HEAD, change made by 
 	rangerrick on 2007-06-11)
