@@ -1,5 +1,9 @@
 2007-06-13  Daniel Macks  <dmacks@netspace.org>
 
+	* VirtPackage.pm: as out to tempfile instead of a.out pollution
+
+2007-06-13  Daniel Macks  <dmacks@netspace.org>
+
 	* version.pm, version/vpp.pm: Import from version-0.7203
 	(license=same-as-perl), convert to a Fink:: subnamespace.
 

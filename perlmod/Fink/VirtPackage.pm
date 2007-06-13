@@ -47,7 +47,7 @@ our $VERSION = ( qw$Revision$ )[-1];
 # you must not print to STDOUT.
 
 use Fink::Config qw($config $basepath);
-use POSIX qw(uname);
+use POSIX qw(uname tmpnam);
 use Fink::Status;
 
 use constant STATUS_PRESENT => "install ok installed";
@@ -631,7 +631,13 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
 	if (-x "/usr/bin/as" and -x "/usr/bin/what") {
-		my $LD_OUTPUT = `/usr/bin/as -v 2>&1 </dev/null`;
+		my $LD_OUTPUT = '';
+		if (my $tempfile = tmpnam()) {
+			$LD_OUTPUT = `/usr/bin/as -v 2>&1 </dev/null -o $tempfile`;
+			unlink $tempfile;
+		} else {
+			print STDERR "unable to get temporary file: $!" if ($options{debug});
+		};
 		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
 			$cctools_version = $1;
 		} elsif (`/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
