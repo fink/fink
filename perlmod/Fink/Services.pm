@@ -1264,7 +1264,8 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 	
 	sub gcc_select_arg {
 		my $vers = shift;
-		return $gcc_select_table{$vers};
+		return $gcc_select_table{$vers} if (exists $gcc_select_table{$vers} and defined $gcc_select_table{$vers});
+		return undef;
 	}
 }
 	
