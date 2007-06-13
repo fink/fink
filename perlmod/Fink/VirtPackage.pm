@@ -181,6 +181,7 @@ print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 				$is64bit = 1;
 			}
 		}
+		close(SYSCTL);
 	}
 	if ($is64bit) {
 		print STDERR "64 bit capable\n" if ($options{debug});
