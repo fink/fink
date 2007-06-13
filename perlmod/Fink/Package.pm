@@ -27,7 +27,7 @@ use Fink::Services qw(&read_properties &read_properties_var
 		      &latest_version &version_cmp &parse_fullversion
 		      &expand_percent &lock_wait &store_rename);
 use Fink::CLI qw(&get_term_width &print_breaking &print_breaking_stderr
-				 &rejoin_text &prompt);
+				 &rejoin_text &prompt_selection);
 use Fink::Config qw($config $basepath $dbpath);
 use Fink::Command qw(&touch &mkdir_p &rm_rf &rm_f);
 use Fink::PkgVersion;
@@ -1268,19 +1268,12 @@ sub choose_virtual_pkg_provider {
 			return $pvo if $pvo->is_installed();
 		}
 		# otherwise, let the user choose what to install
-		my $count = 0;
-		printf "\nThe requested package '%s' is a virtual package, provided by:\n",
-		$self->get_name();
-
-		for my $pkg (@providers) {
-			$count++;
-			printf "  [%d]  %s\n", $count, $pkg->get_fullname;
-		}
-		print "\n";
-		my $answer = prompt "Please select which package to install:", 
-		(default => $count, timeout => 20);
-
-		return $providers[$answer-1];
+		my $answer = prompt_selection('Please select which package to install:',
+									  intro   => 'The requested package "'.$self->get_name.'" is a virtual package, provided by several packages',
+									  choices => [ map { $_->get_fullname => $_ } @providers ],
+									  default => [ number => scalar(@providers) ],
+									  timeout => 20);
+		return $answer;
 	}
 	return undef;
 }

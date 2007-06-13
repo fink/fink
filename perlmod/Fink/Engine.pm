@@ -1623,6 +1623,8 @@ sub real_install {
 			# Can't validate virtuals
 			if ($package->is_type('dummy') && $package->get_subtype('dummy') eq 'virtual') {
 				print "Package '" . $package->get_name() . "' is a virtual package, skipping validation.\n";
+			} elsif ($package->is_type('dummy') && $package->get_info_filename() eq '') {
+				print "Package '" . $package->get_name() . "' is a dummy package without info file, skipping validation.\n";
 			} else {
 				my $info_filename = $package->get_info_filename();
 				if (not $validated_info_files{$info_filename}++) {
