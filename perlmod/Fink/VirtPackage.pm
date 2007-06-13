@@ -631,7 +631,7 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
 	if (-x "/usr/bin/as" and -x "/usr/bin/what") {
-		my $LD_OUTPUT = `/usr/bin/as -v 2>&1 </dev/null -o /dev/null`;
+		my $LD_OUTPUT = `/usr/bin/as -v 2>&1 </dev/null`;
 		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
 			$cctools_version = $1;
 		} elsif (`/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
