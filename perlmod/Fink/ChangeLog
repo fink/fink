@@ -1,6 +1,8 @@
 2007-06-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
-	* VirtPackage.pm: fix detection of modular X.org and cctools
+	* VirtPackage.pm: fix detection of modular X.org and cctools,
+	fix 64-bit detection to not assume sysctl return-code means
+	success
 
 2007-06-12  Dave Morrison  <drm@finkproject.org>
 

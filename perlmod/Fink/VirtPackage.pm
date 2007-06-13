@@ -172,7 +172,17 @@ print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 	$hash->{package} = "64bit-cpu";
 
 # different sysctl variables for intel and ppc
-	if ((`sysctl hw.optional.x86_64 2>/dev/null`) or (`sysctl hw.optional.64bitops 2>/dev/null`)) {
+	my $is64bit = 0;
+	if (open(SYSCTL, 'sysctl -a')) {
+		my ($key, $value);
+		while (<SYSCTL>) {
+			($key, $value) = $_ =~ /^(\S+)\s*\:\s*(.*?)\s*$/;
+			if ($key =~ /^(hw.optional.x86_64|hw.optional.64bitops|hw.cpu64bit_capable)$/ and $value eq "1") {
+				$is64bit = 1;
+			}
+		}
+	}
+	if ($is64bit) {
 		print STDERR "64 bit capable\n" if ($options{debug});
 		$hash->{status} = STATUS_PRESENT;
 	} else {
