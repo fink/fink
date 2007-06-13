@@ -640,7 +640,7 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 		};
 		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
 			$cctools_version = $1;
-		} elsif (`/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
+		} elsif (-x "/usr/bin/ld" and `/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
 			$cctools_version = $1;
 		}
 	} else {
