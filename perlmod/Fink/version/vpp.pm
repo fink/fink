@@ -1,7 +1,14 @@
+# This file is based on vpp.pm from version-0.7203 from CPAN, which
+# declares:
+#
 # This module can be distributed under the same terms as Perl.
 # Copyright (C) 2004,2005,2006,2007 John Peacock
+# 
+# It was converted to Fink::version::vpp and further modified for use by
+# Fink. You can read about these changes in the accompanying ChangeLog
+# files and by browsing the CVS repository.
 
-package version::vpp;
+package Fink::version::vpp;
 use strict;
 
 use locale;
@@ -29,7 +36,7 @@ sub new
 	my ($class, $value) = @_;
 	my $self = bless ({}, ref ($class) || $class);
 	
-	if ( ref($value) && eval("$value->isa('version')") ) {
+	if ( ref($value) && eval("$value->isa('Fink::version')") ) {
 	    # Can copy the elements directly
 	    $self->{version} = [ @{$value->{version} } ];
 	    $self->{qv} = 1 if $value->{qv};
@@ -417,7 +424,7 @@ sub qv {
 
     $value = _un_vstring($value);
     $value = 'v'.$value unless $value =~ /(^v|\d+\.\d+\.\d)/;
-    my $version = version->new($value); # always use base class
+    my $version = Fink::version->new($value); # always use base class
     return $version;
 }
 
@@ -473,7 +480,7 @@ sub _un_vstring {
 	my $version = eval "\$$class\::VERSION";
 	if ( defined $version ) {
 	    local $^W if $] <= 5.008;
-	    $version = version::vpp->new($version);
+	    $version = Fink::version::vpp->new($version);
 	}
 
 	if ( defined $req ) {
@@ -492,7 +499,7 @@ sub _un_vstring {
 		}
 	    }
 
-	    $req = version::vpp->new($req);
+	    $req = Fink::version::vpp->new($req);
 
 	    if ( $req > $version ) {
 		require Carp;
