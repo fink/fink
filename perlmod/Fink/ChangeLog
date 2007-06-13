@@ -1,3 +1,8 @@
+2007-06-13  Daniel Macks  <dmacks@netspace.org>
+
+	* version.pm, version/vpp.pm: Import from version-0.7203
+	(license=same-as-perl), convert to a Fink:: subnamespace.
+
 2007-06-12  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: fix detection of modular X.org and cctools,
