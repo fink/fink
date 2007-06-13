@@ -1,4 +1,8 @@
 #!perl -w
+
+# This module can be distributed under the same terms as Perl.
+# Copyright (C) 2004,2005,2006,2007 John Peacock
+
 package version;
 
 use 5.005_04;
