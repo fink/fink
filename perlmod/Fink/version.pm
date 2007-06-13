@@ -3,6 +3,17 @@
 # This module can be distributed under the same terms as Perl.
 # Copyright (C) 2004,2005,2006,2007 John Peacock
 
+=head1 NAME
+
+version - Perl extension for Version Objects
+
+=head1 SYNOPSIS
+
+This module is a clone of the L<version> module and its perl-only
+back-end implementation. See documentation for those modules.
+
+=cut
+
 package version;
 
 use 5.005_04;
