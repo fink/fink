@@ -1,11 +1,16 @@
-#!perl -w
-
+# This file is based on version from version-0.7203 from CPAN, which
+# declares:
+#
 # This module can be distributed under the same terms as Perl.
 # Copyright (C) 2004,2005,2006,2007 John Peacock
+# 
+# It was converted to Fink::version and further modified for use by
+# Fink. You can read about these changes in the accompanying ChangeLog
+# files and by browsing the CVS repository.
 
 =head1 NAME
 
-version - Perl extension for Version Objects
+Fink::version - Perl extension for Version Objects
 
 =head1 SYNOPSIS
 
@@ -14,7 +19,7 @@ back-end implementation. See documentation for those modules.
 
 =cut
 
-package version;
+package Fink::version;
 
 use 5.005_04;
 use strict;
@@ -23,18 +28,18 @@ use vars qw(@ISA $VERSION $CLASS *qv);
 
 $VERSION = 0.7203;
 
-$CLASS = 'version';
+$CLASS = 'Fink::version';
 
-eval "use version::vxs $VERSION";
+eval "use Fink::version::vxs $VERSION";
 if ( $@ ) { # don't have the XS version installed
-    eval "use version::vpp $VERSION"; # don't tempt fate
+    eval "use Fink::version::vpp $VERSION"; # don't tempt fate
     die "$@" if ( $@ );
-    push @ISA, "version::vpp";
-    *version::qv = \&version::vpp::qv;
+    push @ISA, "Fink::version::vpp";
+    *Fink::version::qv = \&Fink::version::vpp::qv;
 }
 else { # use XS module
-    push @ISA, "version::vxs";
-    *version::qv = \&version::vxs::qv;
+    push @ISA, "Fink::version::vxs";
+    *Fink::version::qv = \&Fink::version::vxs::qv;
 }
 
 # Preloaded methods go here.
@@ -44,15 +49,15 @@ sub import {
     no strict 'refs';
     
     *{$callpkg."::qv"} = 
-	    sub {return bless version::qv(shift), $class }
+	    sub {return bless Fink::version::qv(shift), $class }
 	unless defined(&{"$callpkg\::qv"});
 
 #    if (@_) { # must have initialization on the use line
 #	if ( defined $_[2] ) { # CVS style
-#	    $_[0] = version::qv($_[2]);
+#	    $_[0] = Fink::version::qv($_[2]);
 #	}
 #	else {
-#	    $_[0] = version->new($_[1]);
+#	    $_[0] = Fink::version->new($_[1]);
 #	}
 #    }
 }
