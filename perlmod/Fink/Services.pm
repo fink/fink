@@ -1257,14 +1257,13 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 		'2.95.2' => '2',
 		'2.95' => '2',
 		'3.1' => '3',
-		'3.3' => '3.3',
-		'4.0.0' => '4.0',
-		'4.0.1' => '4.0',
 	);
 	
 	sub gcc_select_arg {
 		my $vers = shift;
-		return $gcc_select_table{$vers};
+		return $gcc_select_table{$vers} if (defined $gcc_select_table{$vers});
+		$vers =~ s/^(\d+\.\d+).*$/$1/;
+		return $vers;
 	}
 }
 	
