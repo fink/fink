@@ -2,6 +2,11 @@
 
 	* Services.pm: fix possible undefined hash key; be more forgiving (and 
 	smarter) about the version-string we return (backport from HEAD)
+	* VirtPackage.pm: fix detection of modular X.org and cctools,
+	fix 64-bit detection to not assume sysctl return-code means
+	success (backport from HEAD)
+	* VirtPackage.pm: as out to tempfile instead of a.out pollution
+	(backport from HEAD)
 
 2007-06-12  Daniel Macks  <dmacks@netspace.org>
 

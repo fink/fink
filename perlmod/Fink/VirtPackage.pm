@@ -47,7 +47,7 @@ our $VERSION = ( qw$Revision$ )[-1];
 # you must not print to STDOUT.
 
 use Fink::Config qw($config $basepath);
-use POSIX qw(uname);
+use POSIX qw(uname tmpnam);
 use Fink::Status;
 
 use constant STATUS_PRESENT => "install ok installed";
@@ -172,7 +172,18 @@ print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 	$hash->{package} = "64bit-cpu";
 
 # different sysctl variables for intel and ppc
-	if ((`sysctl hw.optional.x86_64 2>/dev/null`) or (`sysctl hw.optional.64bitops 2>/dev/null`)) {
+	my $is64bit = 0;
+	if (open(SYSCTL, 'sysctl -a')) {
+		my ($key, $value);
+		while (<SYSCTL>) {
+			($key, $value) = $_ =~ /^(\S+)\s*\:\s*(.*?)\s*$/;
+			if ($key =~ /^(hw.optional.x86_64|hw.optional.64bitops|hw.cpu64bit_capable)$/ and $value eq "1") {
+				$is64bit = 1;
+			}
+		}
+		close(SYSCTL);
+	}
+	if ($is64bit) {
 		print STDERR "64 bit capable\n" if ($options{debug});
 		$hash->{status} = STATUS_PRESENT;
 	} else {
@@ -619,13 +630,17 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	# create dummy object for cctools version, if version was found in Config.pm
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
-	if (-x "/usr/bin/ld" and -x "/usr/bin/what") {
-		my $LD_OUTPUT = `/usr/bin/ld -v 2>&1`;
+	if (-x "/usr/bin/as" and -x "/usr/bin/what") {
+		my $LD_OUTPUT = '';
+		if (my $tempfile = tmpnam()) {
+			$LD_OUTPUT = `/usr/bin/as -v 2>&1 </dev/null -o $tempfile`;
+			unlink $tempfile;
+		} else {
+			print STDERR "unable to get temporary file: $!" if ($options{debug});
+		};
 		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
 			$cctools_version = $1;
-		} elsif ($LD_OUTPUT =~ /^.*PROJECT\:ld64\-([\d\.]+).*?$/) {
-			$cctools_version = '1000'; # FIXME: how do we find out what cctools we're using?
-		} elsif (`/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
+		} elsif (-x "/usr/bin/ld" and `/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
 			$cctools_version = $1;
 		}
 	} else {
@@ -1531,7 +1546,7 @@ sub check_x11_version {
 				if (-x $xdir . '/bin/' . $binary) {
 					if (open (XBIN, "$xdir/bin/$binary -version -iokit 2>\&1 |")) {
 						while (my $line = <XBIN>) {
-							if ($line =~ /(XFree86 Version|X Protocol.* Release|X.org Release) ([\d\.]+)/) {
+							if ($line =~ /(?:XFree86 Version|X Protocol.* Release|X.org Release) ([\d\.]+)/) {
 								$XF_VERSION = $1;
 								@XF_VERSION_COMPONENTS = split(/\.+/, $XF_VERSION, 4);
 								last;
