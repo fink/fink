@@ -1,3 +1,8 @@
+2007-06-14  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.27.3, a bugfix 
+	release on branch_0_27
+
 2007-06-09  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.27.2, a release
