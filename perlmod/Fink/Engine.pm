@@ -1588,7 +1588,7 @@ sub real_install {
 	}
 
 	# don't bother doing this on point release, of course it's out-of-date  ;)
-	if ($config->param("SelfUpdateMethod") ne "point") {
+	if ($config->param_default("SelfUpdateMethod", "point") ne "point") {
 		my $up_to_date_text;
 
 		require Fink::SelfUpdate;
