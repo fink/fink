@@ -2176,7 +2176,9 @@ described in the Fink Packaging Manual:
   trees        - Trees in which this package (same version) exists.
 
 The "_" environment variable is interpretted to mean "the whole
-environment" for the --env mode.
+environment" for the --env mode and the "all" percent-expansion key
+is interpretted to mean "all known percent-expansion keys" for the
+--percent mode.
 
 HELPFORMAT
 	
