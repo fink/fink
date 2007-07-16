@@ -1359,8 +1359,8 @@ sub validate_dpkg_file {
 # returns boolean of whether everything is okay
 #
 sub validate_dpkg_unpacked {
-	my $destdir = shift;
-	my $val_prefix = shift;
+	my $destdir = shift;     # absolute path to %d
+	my $val_prefix = shift;  # %p
 
 	print "Validating .deb dir $destdir...\n";
 	
