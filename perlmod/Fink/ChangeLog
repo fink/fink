@@ -1,3 +1,8 @@
+2007-07-15  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Don't complain if a valid .dylib filename is also
+	a substring of another one.
+
 2007-07-09  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.4.10

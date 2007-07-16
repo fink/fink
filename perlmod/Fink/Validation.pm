@@ -1615,7 +1615,7 @@ sub _validate_dpkg {
 				push(@installed_dylibs, $filename);
 			}
 			my( $fn_name, $fn_ext ) = $filename =~ /^(.*)(\..*)/g;  # parse apart at extension
-			if ( grep /^\Q$fn_name\E.+\Q$fn_ext\E$/, sort keys %$deb_shlibs) {
+			if ( grep /^\Q$fn_name\E.+\Q$fn_ext\E$/, sort keys %$deb_shlibs && !exists $deb_shlibs->{$filename}) {
 				&stack_msg($msgs, "Files less specifically versioned than a Shlibs entry do not belong in this package", $filename);
 			}
 		}
