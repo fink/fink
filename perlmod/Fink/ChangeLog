@@ -1,3 +1,7 @@
+2007-07-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: fix sysctl call to actually be used  ;)
+
 2007-07-15  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Don't complain if a valid .dylib filename is also
