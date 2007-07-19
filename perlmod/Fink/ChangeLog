@@ -1,3 +1,7 @@
+2007-07-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: fix sysctl call to actually be used  ;)
+
 2007-07-09  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.4.10
