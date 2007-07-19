@@ -180,6 +180,7 @@ print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 			next unless (defined $key and defined $value);
 			if ($key =~ /^(hw.optional.x86_64|hw.optional.64bitops|hw.cpu64bit_capable)$/ and $value eq "1") {
 				$is64bit = 1;
+				last;
 			}
 		}
 		close(SYSCTL);
