@@ -173,10 +173,11 @@ print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 
 # different sysctl variables for intel and ppc
 	my $is64bit = 0;
-	if (open(SYSCTL, 'sysctl -a |')) {
+	if (open(SYSCTL, 'sysctl -a 2>/dev/null |')) {
 		my ($key, $value);
 		while (<SYSCTL>) {
 			($key, $value) = $_ =~ /^(\S+)\s*\:\s*(.*?)\s*$/;
+			next unless (defined $key and defined $value);
 			if ($key =~ /^(hw.optional.x86_64|hw.optional.64bitops|hw.cpu64bit_capable)$/ and $value eq "1") {
 				$is64bit = 1;
 			}
