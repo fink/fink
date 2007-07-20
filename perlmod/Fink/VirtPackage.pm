@@ -631,7 +631,8 @@ This package represents your XCode version.
 
 	$hash = {};
 	$hash->{package} = "xcode";
-	$hash->{status} = STATUS_PRESENT;
+	$hash->{version} = '0-0';
+	$hash->{status} = STATUS_ABSENT;
 	$hash->{description} = "[virtual package representing the developer tools]";
 	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{builddependsonly} = "true";
@@ -645,40 +646,24 @@ you can download it from Apple at:
 (free registration required)
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
-	my $xcode_version = 0;
 
-	if (-f "/Developer/Applications/Xcode.app/Contents/version.plist" and -x "/usr/bin/plutil") {
-		if (my $tempfile = tmpnam()) {
-			if (system("/usr/bin/plutil -convert xml1 -o '$tempfile' -s /Developer/Applications/Xcode.app/Contents/version.plist") == 0) {
-				my $last_was_version = 0;
-				if (open(PLUTIL, $tempfile)) {
-					while (<PLUTIL>) {
-						if (/CFBundleShortVersionString/) {
-							$last_was_version++;
-						} elsif ($last_was_version) {
-							($xcode_version) = $_ =~ /<string>(.*?)<\/string>/;
-							last;
-						}
-					}
-					close(PLUTIL);
-					unlink($tempfile);
-				} else {
-					print STDERR "unable to open the property list temp file: $!" if ($options{debug});
-				}
-			} else {
-				print STDERR "unable to run plutil: $!" if ($options{debug});
-			}
+	my $result = `defaults read /Dxeveloper/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
+	if (not $?) {
+		# didn't fail
+		chomp $result;
+		$hash->{version} = $result . '-1';
+		print STDERR $hash->{version}, "\n" if $options{debug};
+		$hash->{status} = STATUS_PRESENT;
+	} elsif ($options{debug} || 1) {
+		# failed, so display whatever error message or diagnostics we can find
+		if ($!) {
+			
+			print STDERR "unknown ($!)\n";      # have ERRNO string, so use that
+		} else {
+			print STDERR "unknown:\n$result\n";	# dump command's own diagnostics
 		}
 	}
 
-	if ($xcode_version) {
-		$hash->{version} = $xcode_version . '-1';
-		print STDERR $hash->{version}, "\n" if ($options{debug});
-	} else {
-		$hash->{version} = '0-0';
-		print STDERR "unknown\n" if ($options{debug});
-		$hash->{status} = STATUS_ABSENT;
-	}
 	$self->{$hash->{package}} = $hash;
 
 =item "cctools-I<XXX>"

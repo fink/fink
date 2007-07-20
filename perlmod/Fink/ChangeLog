@@ -1,3 +1,7 @@
+2007-07-15  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: use apple's own plist parser
+
 2007-07-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: add an "xcode" virtual package
