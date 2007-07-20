@@ -1,3 +1,7 @@
+2007-07-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add an "xcode" virtual package
+
 2007-07-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: fix sysctl call to actually be used  ;)
