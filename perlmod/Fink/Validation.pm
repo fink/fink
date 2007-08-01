@@ -1418,7 +1418,8 @@ sub _validate_dpkg {
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/", '.*/\.svn/');
-	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications X11 / );
+	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications / );
+	push(@good_dirs, '/usr/X11');
 
 	my @found_bad_dir;
 	my $installed_headers = 0;
@@ -1553,12 +1554,12 @@ sub _validate_dpkg {
 				&stack_msg($msgs, "Overwriting essential system symlink pointing to /private$filename", $filename);
 			} elsif ($filename =~ /^\/mach/) {
 				&stack_msg($msgs, "Overwriting essential system symlink pointing to /mach.sym", $filename);
-			} elsif ($deb_control->{package} !~ /^(xfree86|xorg)/) {
+			} elsif ($deb_control->{package} !~ /^(xfree86|xorg|mesa)/ and $deb_control->{section} !~ /x11-modular/) {
 				&stack_msg($msgs, "File installed outside of $basepath", $filename);
 			} else {
-				if (not (($filename =~ /^\/Applications\/XDarwin.app/) || ($filename =~ /^\/usr\/X11R6/) || ($filename =~ /^\/private\/etc\/fonts/) )) {
+				if (not (($filename =~ /^\/Applications\/XDarwin.app/) || ($filename =~ /^\/usr\/X11/) || ($filename =~ /^\/private\/etc\/fonts/) )) {
 					return if (($filename eq "/Applications/") || ($filename eq "/private/") || ($filename eq "/private/etc/") || ($filename eq "/usr/"));
-					&stack_msg($msgs, "File installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, and /usr/X11R6", $filename);
+					&stack_msg($msgs, "File installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, /usr/X11, and /usr/X11R6", $filename);
 				}
 			}
 		} elsif ($filename ne "$basepath/src/" and @found_bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {

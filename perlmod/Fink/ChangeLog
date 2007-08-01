@@ -1,3 +1,7 @@
+2007-08-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: Handle /usr/X11 packages properly.
+
 2007-07-15  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: use apple's own plist parser
