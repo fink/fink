@@ -1983,6 +1983,99 @@ sub get_description {
 	return $desc;
 }
 
+=item get_desc_detail
+
+  my $desc = $self->get_desc_detail;
+  my $desc = $self->get_desc_detail %options;
+
+Returns the description of the package with percent fields expanded but 
+otherwise unformatted.
+
+=over 4
+
+=item canonical_prefix (optional)
+
+If the value is true, use "/sw" for %p when parsing the DescDetail field instead 
+of the local fink's normal installation path.
+
+=back
+
+=cut
+
+# Used by the pdb in the 'dump' script
+sub get_desc_detail {
+	my $self = shift;
+	my %options = ( defined $_[0] ? @_ : () );
+	
+	return $self->_get_text_field('DescDetail', %options);
+}
+
+
+=item get_desc_usage
+
+  my $desc = $self->get_desc_usage;
+  my $desc = $self->get_desc_usage %options;
+
+Returns the usage description of the package with percent fields expanded but 
+otherwise unformatted.
+
+=over 4
+
+=item canonical_prefix (optional)
+
+If the value is true, use "/sw" for %p when parsing the DescUsage field instead 
+of the local fink's normal installation path.
+
+=back
+
+=cut
+
+# Used by the pdb in the 'dump' script
+sub get_desc_usage {
+	my $self = shift;
+	my %options = ( defined $_[0] ? @_ : () );
+	
+	return $self->_get_text_field('DescUsage', %options);
+}
+
+
+# PRIVATE: _get_text_field
+#
+#  my $content = $self->_get_text_field $field;
+#  my $content = $self->_get_text_field $field, %options;
+#
+# Returns the the contents of a text field of the package, unformatted.
+#
+# field:
+#  The name of the text field.
+#
+# canonical_prefix (optional):
+#  If the value is true, use "/sw" for %p when parsing the fields content instead
+#  of the local fink's normal installation path.
+#
+sub _get_text_field {
+	my $self = shift;
+	my $field = shift || '';
+	my %options = ( defined $_[0] ? @_ : () );
+	
+	my $text = '';
+
+	# need local copy of the %-exp map so we can change it
+	my %expand = %{$self->{_expand}};
+	if ($options{'canonical_prefix'}) {
+		$expand{p} = '/sw';
+	}
+
+	if ($field && $self->has_param($field)) {
+		$text .= &expand_percent($self->param($field), \%expand,
+							$self->get_info_filename.' "$field"', 2);
+	}
+
+	return $text;
+}
+
+
+
 ### get installation state
 
 sub is_fetched {
