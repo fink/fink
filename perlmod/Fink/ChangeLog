@@ -1,3 +1,7 @@
+2007-08-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm: Implement fink list --format=dotty.
+
 2007-08-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Validation.pm: Handle /usr/X11 packages properly.

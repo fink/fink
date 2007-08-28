@@ -425,7 +425,7 @@ sub _user_visible_versions {
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
 	my ($formatstr, $desclen, $name, $section, $maintainer);
-	my ($buildonly);
+	my ($buildonly, $format);
 	my %options =
 	(
 	 "installedstate" => 0
@@ -440,7 +440,7 @@ sub do_real_list {
 	use Getopt::Long;
 	$formatstr = "%s	%-15.15s	%-11.11s	%s\n";
 	$desclen = 43;
-	
+	$format = 'table';
 	
 	my @options = (
 		[ 'width|w=s'	=> \$width,
@@ -449,6 +449,8 @@ sub do_real_list {
 			'set the width based on the terminal width.', 'NUM' ],
 		[ 'tab|t'		=> \$dotab,
 			'Outputs the list with tabs as field delimiter.' ],
+		[ 'format|f=s'	=> \$format,
+			'The output format.  (default: table)' ],
 	);
 
 	if ($cmd eq "list") {
@@ -542,6 +544,12 @@ sub do_real_list {
 		}
 	}
 	
+	if ($format eq 'dotty') {
+		print "digraph packages {\n";
+		print "concentrate=true;\n";
+		print "size=\"30,40\";\n";
+	}
+
 	my $reload_disable_save = Fink::Status->is_reload_disabled();  # save previous setting
 	Fink::Status->disable_reload(1);  # don't keep stat()ing status db
 	foreach my $pname (sort @selected) {
@@ -605,14 +613,32 @@ sub do_real_list {
 			next unless $ok;
 		}			
 
+		my $dispname = $pname;
 		if ($namelen && length($pname) > $namelen) {
 			# truncate pkg name if wider than its field
-			$pname = substr($pname, 0, $namelen - 3)."...";
+			$dispname = substr($pname, 0, $namelen - 3)."...";
 		}
 
-		printf $formatstr,
-				$iflag, $pname, $lversion, $description;
+		if ($format eq 'dotty') {
+			print "\"$pname\" [shape=box];\n";
+			if (ref $vo) {
+				for my $dep (@{$vo->get_depends()}) {
+					for my $subdep (@$dep) {
+						$subdep =~ s/^(\S+).*?$/$1/;
+						print "\"$pname\" -> \"$subdep\";\n";
+					}
+				}
+			}
+		} else {
+			printf $formatstr,
+					$iflag, $pname, $lversion, $description;
+		}
 	}
+
+	if ($format eq 'dotty') {
+		print "}\n";
+	}
+
 	Fink::Status->disable_reload($reload_disable_save);  # restore previous setting
 }
 
