@@ -1989,23 +1989,15 @@ sub get_description {
   my $desc = $self->get_desc_detail %options;
 
 Returns the description of the package with percent fields expanded but 
-otherwise unformatted.
-
-=over 4
-
-=item canonical_prefix (optional)
-
-If the value is true, use "/sw" for %p when parsing the DescDetail field instead 
-of the local fink's normal installation path.
-
-=back
+otherwise unformatted. See the _get_text_field method for descriptions
+the %options that are supported.
 
 =cut
 
 # Used by the pdb in the 'dump' script
 sub get_desc_detail {
 	my $self = shift;
-	my %options = ( defined $_[0] ? @_ : () );
+	my %options = @_;
 	
 	return $self->_get_text_field('DescDetail', %options);
 }
@@ -2017,48 +2009,47 @@ sub get_desc_detail {
   my $desc = $self->get_desc_usage %options;
 
 Returns the usage description of the package with percent fields expanded but 
-otherwise unformatted.
-
-=over 4
-
-=item canonical_prefix (optional)
-
-If the value is true, use "/sw" for %p when parsing the DescUsage field instead 
-of the local fink's normal installation path.
-
-=back
+otherwise unformatted. See the _get_text_field method for descriptions
+the %options that are supported.
 
 =cut
 
 # Used by the pdb in the 'dump' script
 sub get_desc_usage {
 	my $self = shift;
-	my %options = ( defined $_[0] ? @_ : () );
+	my %options = @_;
 	
 	return $self->_get_text_field('DescUsage', %options);
 }
 
+=item _get_text_field
 
-# PRIVATE: _get_text_field
-#
-#  my $content = $self->_get_text_field $field;
-#  my $content = $self->_get_text_field $field, %options;
-#
-# Returns the the contents of a text field of the package, unformatted.
-#
-# field:
-#  The name of the text field.
-#
-# canonical_prefix (optional):
-#  If the value is true, use "/sw" for %p when parsing the fields content instead
-#  of the local fink's normal installation path.
-#
+	my $value = $self->_get_text_field $field;
+	my $value = $self->_get_text_field $field, %options;
+
+A private method to retrieve the value of a plain-text $field, with
+percent-expansion performed but no other formatting. The following
+%options are known:
+
+=over 4
+
+=item canonical_prefix (optional)
+
+If the value is true, use "/sw" for %p when parsing the fields content
+instead of the local fink's normal installation path.
+
+=back
+
+=cut
+
 sub _get_text_field {
 	my $self = shift;
-	my $field = shift || '';
-	my %options = ( defined $_[0] ? @_ : () );
-	
-	my $text = '';
+	my $field = shift;
+	my %options = @_;
+
+	unless (defined $field && $self->has_param($field)) {
+		return '';
+	}
 
 	# need local copy of the %-exp map so we can change it
 	my %expand = %{$self->{_expand}};
@@ -2066,15 +2057,9 @@ sub _get_text_field {
 		$expand{p} = '/sw';
 	}
 
-	if ($field && $self->has_param($field)) {
-		$text .= &expand_percent($self->param($field), \%expand,
+	return &expand_percent($self->param($field), \%expand,
 							$self->get_info_filename.' "$field"', 2);
-	}
-
-	return $text;
 }
-
-
 
 ### get installation state
 
