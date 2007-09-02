@@ -1,5 +1,10 @@
 2007-08-29  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: param_default_expanded can override default %-exp
+	map and more flexibly handle %-exp errors.
+
+2007-08-29  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Simplify parameter passing; document wrappers in
 	terms of their back-end.
 

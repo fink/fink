@@ -812,15 +812,48 @@ sub param_expanded {
 		$self->get_info_filename." \"$field\"", $err_action);
 }
 
-# param_default_expanded FIELD, DEFAULT
-#
-# Expand percent chars in the given field, if that field exists.
-# Return the expanded form but do not store it back into the field data.
-# If the field doesn't exist, return the default.
+=item param_default_expanded
+
+	my $value = $pv->param_default_expanded $field, $default;
+	my $value = $pv->param_default_expanded $field, $default, %options;
+
+Expand percent chars in the given $field, if that field exists.
+Return the expanded form but do not store it back into the field data.
+If the field doesn't exist, return the $default. The following
+%options may be used:
+
+=over 4
+
+=item expand_override (optional)
+
+A hashref containing a percent-expansion map to be used in addition to
+(and overriding) that in the _expand pv package data.
+
+=item err_action (optional)
+
+Specify the behavior when an unknown percent-expansion token is
+encountered. See Fink::Services::expand_percent2 for details.
+
+=back
+
+=cut
+
 sub param_default_expanded {
 	my $self = shift;
-	return &expand_percent($self->param_default(@_), $self->{_expand},
-		$self->get_info_filename." \"$_[0]\"");
+	my $field = shift;
+	my $default = shift;
+	my %options = (@_);
+
+	my $expand = $self->{_expand};
+	if ($options{expand_override}) {
+		$expand = { %{$self->{_expand}}, %{$options{expand_override}} };
+	}
+
+	return &expand_percent2(
+		$self->param_default($field, $default), $expand,
+		err_info => $self->get_info_filename." \"$field\"",
+		err_action => $options{err_action}
+	);
 }
 
 ### Process a Depends (or other field that is a list of packages,
