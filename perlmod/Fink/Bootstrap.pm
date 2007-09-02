@@ -672,6 +672,7 @@ sub create_tarball {
 	# Don't allow Apple's tar to use copyfile
 	my %env_bak = %ENV;
 	$ENV{COPY_EXTENDED_ATTRIBUTES_DISABLE} = 1;
+	$ENV{COPYFILE_DISABLE} = 1;
 	
 	$script .=
 	  "tar -cf $bpath/src/$package-$packageversion.tar $packagefiles\n";

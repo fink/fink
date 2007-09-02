@@ -1060,6 +1060,7 @@ sub get_script {
 		if ($self->is_type('perl')) {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$default_script =
+				"ARCHFLAGS=\"\" ". # prevent Apple's perl from building fat
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
 		} elsif ($self->is_type('ruby')) {
