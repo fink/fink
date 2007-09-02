@@ -1,3 +1,9 @@
+2007-09-02  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: *really* disable extended attribute copying when 
+	calling tar
+	* PkgVersion.pm: prevent Apple's perl from building perlmods fat
+
 2007-07-18  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: fix sysctl call to actually be used  ;)
