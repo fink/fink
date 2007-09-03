@@ -2023,47 +2023,7 @@ sub get_description {
   my $desc = $self->get_desc_detail %options;
 
 Returns the description of the package with percent fields expanded but 
-otherwise unformatted. See the _get_text_field method for descriptions
-the %options that are supported.
-
-=cut
-
-# Used by the pdb in the 'dump' script
-sub get_desc_detail {
-	my $self = shift;
-	my %options = @_;
-	
-	return $self->_get_text_field('DescDetail', %options);
-}
-
-
-=item get_desc_usage
-
-  my $desc = $self->get_desc_usage;
-  my $desc = $self->get_desc_usage %options;
-
-Returns the usage description of the package with percent fields expanded but 
-otherwise unformatted. See the _get_text_field method for descriptions
-the %options that are supported.
-
-=cut
-
-# Used by the pdb in the 'dump' script
-sub get_desc_usage {
-	my $self = shift;
-	my %options = @_;
-	
-	return $self->_get_text_field('DescUsage', %options);
-}
-
-=item _get_text_field
-
-	my $value = $self->_get_text_field $field;
-	my $value = $self->_get_text_field $field, %options;
-
-A private method to retrieve the value of a plain-text $field, with
-percent-expansion performed but no other formatting. The following
-%options are known:
+otherwise unformatted. The following %options are known:
 
 =over 4
 
@@ -2076,24 +2036,60 @@ instead of the local fink's normal installation path.
 
 =cut
 
-sub _get_text_field {
+### Do not change API! This is used by the pdb (dump)
+
+sub get_desc_detail {
 	my $self = shift;
-	my $field = shift;
 	my %options = @_;
 
-	unless (defined $field && $self->has_param($field)) {
-		return '';
-	}
-
-	# need local copy of the %-exp map so we can change it
-	my %expand = %{$self->{_expand}};
+	my $expand_override;
 	if ($options{'canonical_prefix'}) {
-		$expand{p} = '/sw';
+		$expand_override->{'p'} = '/sw';
 	}
 
-	return &expand_percent($self->param($field), \%expand,
-							$self->get_info_filename.' "$field"', 2);
+	return $self->param_default_expanded('DescDetail', '',
+			expand_override => $expand_override,
+			err_action => 'ignore'
+		);
 }
+
+
+=item get_desc_usage
+
+  my $desc = $self->get_desc_usage;
+  my $desc = $self->get_desc_usage %options;
+
+Returns the usage description of the package with percent fields expanded but 
+otherwise unformatted. The following %options are known:
+
+=over 4
+
+=item canonical_prefix (optional)
+x
+If the value is true, use "/sw" for %p when parsing the fields content
+instead of the local fink's normal installation path.
+
+=back
+
+=cut
+
+### Do not change API! This is used by the pdb (dump)
+
+sub get_desc_usage {
+	my $self = shift;
+	my %options = @_;
+
+	my $expand_override;
+	if ($options{'canonical_prefix'}) {
+		$expand_override->{'p'} = '/sw';
+	}
+
+	return $self->param_default_expanded('DescUsage', '',
+			expand_override => $expand_override,
+			err_action => 'ignore'
+		);
+}
+
 
 ### get installation state
 

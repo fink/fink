@@ -1,10 +1,15 @@
+2007-09-03  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Consolidate special-purpose private function into
+	more generic one.
+
 2007-09-02  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: *really* disable extended attribute copying when 
 	calling tar
 	* PkgVersion.pm: prevent Apple's perl from building perlmods fat
 
-2007-08-29  Daniel Macks  <dmacks@netspace.org>
+2007-09-02  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: param_default_expanded can override default %-exp
 	map and more flexibly handle %-exp errors.
