@@ -1,5 +1,9 @@
 2007-09-03  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Consistent naming of accessors for their field-names
+
+2007-09-03  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Consolidate special-purpose private function into
 	more generic one.
 

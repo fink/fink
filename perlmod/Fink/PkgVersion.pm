@@ -2017,10 +2017,10 @@ sub get_description {
 	return $desc;
 }
 
-=item get_desc_detail
+=item get_descdetail
 
-  my $desc = $self->get_desc_detail;
-  my $desc = $self->get_desc_detail %options;
+  my $desc = $self->get_descdetail;
+  my $desc = $self->get_descdetail %options;
 
 Returns the description of the package with percent fields expanded but 
 otherwise unformatted. The following %options are known:
@@ -2038,7 +2038,7 @@ instead of the local fink's normal installation path.
 
 ### Do not change API! This is used by the pdb (dump)
 
-sub get_desc_detail {
+sub get_descdetail {
 	my $self = shift;
 	my %options = @_;
 
@@ -2054,10 +2054,10 @@ sub get_desc_detail {
 }
 
 
-=item get_desc_usage
+=item get_descusage
 
-  my $desc = $self->get_desc_usage;
-  my $desc = $self->get_desc_usage %options;
+  my $desc = $self->get_descusage;
+  my $desc = $self->get_descusage %options;
 
 Returns the usage description of the package with percent fields expanded but 
 otherwise unformatted. The following %options are known:
@@ -2065,7 +2065,7 @@ otherwise unformatted. The following %options are known:
 =over 4
 
 =item canonical_prefix (optional)
-x
+
 If the value is true, use "/sw" for %p when parsing the fields content
 instead of the local fink's normal installation path.
 
@@ -2075,7 +2075,7 @@ instead of the local fink's normal installation path.
 
 ### Do not change API! This is used by the pdb (dump)
 
-sub get_desc_usage {
+sub get_descusage {
 	my $self = shift;
 	my %options = @_;
 
