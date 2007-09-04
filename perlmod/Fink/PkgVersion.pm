@@ -838,6 +838,8 @@ encountered. See Fink::Services::expand_percent2 for details.
 
 =cut
 
+### Do not change API! param_default_expanded is used by the pdb scripts (dump)
+
 sub param_default_expanded {
 	my $self = shift;
 	my $field = shift;
@@ -2016,80 +2018,6 @@ sub get_description {
 
 	return $desc;
 }
-
-=item get_descdetail
-
-  my $desc = $self->get_descdetail;
-  my $desc = $self->get_descdetail %options;
-
-Returns the description of the package with percent fields expanded but 
-otherwise unformatted. The following %options are known:
-
-=over 4
-
-=item canonical_prefix (optional)
-
-If the value is true, use "/sw" for %p when parsing the fields content
-instead of the local fink's normal installation path.
-
-=back
-
-=cut
-
-### Do not change API! This is used by the pdb (dump)
-
-sub get_descdetail {
-	my $self = shift;
-	my %options = @_;
-
-	my $expand_override;
-	if ($options{'canonical_prefix'}) {
-		$expand_override->{'p'} = '/sw';
-	}
-
-	return $self->param_default_expanded('DescDetail', '',
-			expand_override => $expand_override,
-			err_action => 'ignore'
-		);
-}
-
-
-=item get_descusage
-
-  my $desc = $self->get_descusage;
-  my $desc = $self->get_descusage %options;
-
-Returns the usage description of the package with percent fields expanded but 
-otherwise unformatted. The following %options are known:
-
-=over 4
-
-=item canonical_prefix (optional)
-
-If the value is true, use "/sw" for %p when parsing the fields content
-instead of the local fink's normal installation path.
-
-=back
-
-=cut
-
-### Do not change API! This is used by the pdb (dump)
-
-sub get_descusage {
-	my $self = shift;
-	my %options = @_;
-
-	my $expand_override;
-	if ($options{'canonical_prefix'}) {
-		$expand_override->{'p'} = '/sw';
-	}
-
-	return $self->param_default_expanded('DescUsage', '',
-			expand_override => $expand_override,
-			err_action => 'ignore'
-		);
-}
-
 
 ### get installation state
 
