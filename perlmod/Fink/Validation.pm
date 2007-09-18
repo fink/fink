@@ -1743,6 +1743,14 @@ sub _validate_dpkg {
 			}
 		}
 
+		# Check for "live" perllocal.pod file. Normal perl-module
+		# installation creates/updates this global file, so for a
+		# package-manager environment this mechanism needs to be
+		# overridden and occur at package installation-time instead.
+		if ($filename =~ /^$basepath\/lib\/perl.*\/perllocal.pod$/) {
+			&stack_msg($msgs, "A global perllocal.pod must not be installed directly as part of the .deb (use UpdatePOD or related mechanism)", $filename);
+		}
+
 		# count number of files and links ("real things, not dirs") in %i
 		lstat $File::Find::name;
 		$dpkg_file_count++ if -f _ || -l _;
