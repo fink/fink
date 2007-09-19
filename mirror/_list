@@ -4,13 +4,14 @@
 # during mirror selection. The individual keys list titles
 # displayed in mirror selection.
 
-Order: master rsync apt gnu gnome gimp ctan cpan debian kde sourceforge apache
+Order: master rsync apt gnu gnome gimp ctan cpan debian freebsd kde sourceforge apache
 
 master: Master Fink mirrors
 apt: Apt-Get Repository
 cpan: Comprehensive Perl Archive Network
 ctan: Comprehensive TeX Archive Network
 debian: Debian
+freebsd: FreeBSD
 gimp: The GIMP
 gnome: GNOME
 gnu: GNU software

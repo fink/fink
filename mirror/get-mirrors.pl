@@ -6,25 +6,29 @@ use strict;
 use Data::Dumper;
 
 use Cwd;
+use File::Slurp;
+use File::Temp qw(mktemp);
 use Geo::IP;
 use HTML::TreeBuilder;
 use LWP::UserAgent;
+use Net::FTP;
 use WWW::Mechanize;
 use URI;
 use URI::Find;
 
 use vars qw($VERSION %keys %reverse_keys %files $debug $response);
 
-use vars qw($APACHE $CPAN $CTAN $DEBIAN $GIMP $GNOME $GNU $KDE);
+use vars qw($APACHE $CPAN $CTAN $DEBIAN $FREEBSD $GIMP $GNOME $GNU $KDE);
 
-$APACHE = 1;
-$CPAN   = 1;
-$CTAN   = 1;
-$DEBIAN = 1;
-$GIMP   = 1;
-$GNOME  = 1;
-$GNU    = 1;
-$KDE    = 1;
+$APACHE  = 1;
+$CPAN    = 1;
+$CTAN    = 1;
+$DEBIAN  = 1;
+$FREEBSD = 1;
+$GIMP    = 1;
+$GNOME   = 1;
+$GNU     = 1;
+$KDE     = 1;
 
 $debug = 0;
 $VERSION = ( qw$Revision$ )[-1];
@@ -214,6 +218,58 @@ if ($DEBIAN) {
 		warn "unable to get debian ftp list\n";
 	}
 	print "done\n";
+}
+
+### FREEBSD
+
+if ($FREEBSD) {
+	print "- getting FreeBSD mirror list:\n";
+
+	$response = $mech->get( 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html' );
+	if ($response->is_success) {
+		$files{'freebsd'}->{'url'} = 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html';
+		$files{'freebsd'}->{'primary'} = 'ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles';
+		my $mirrors;
+		my @links = ($files{'freebsd'}->{'primary'});
+	
+		my $tree = HTML::TreeBuilder->new();
+		$tree->parse($response->content);
+		my $tag = $tree->look_down(
+			'_tag' => 'div',
+			sub { $_[0]->attr('class') eq "VARIABLELIST" },
+		);
+		if ($tag) {
+			FREEBSDLINKS: for my $link ($tag->look_down('_tag' => 'a')) {
+				if ($link) {
+					my $url = $link->attr('href');
+					next if ($url =~ m#^rsync://#);
+					$url =~ s,/$,,;
+					$url = $url . '/ports/distfiles/';
+					for my $num (0..2) {
+						my $tempurl = $url . 'exifautotran.txt';
+						print "\t", $tempurl, ": ";
+						my $content = get_content($tempurl);
+						if ($content =~ /Transforms Exif files/gs) {
+							print "ok\n";
+							push(@links, $url);
+							next FREEBSDLINKS;
+						} else {
+							print "failed\n";
+						}
+					}
+				}
+			}
+		}
+	
+		for my $link (@links) {
+			my ($code, $uri) = get_code($link);
+			push(@{$mirrors->{$code}}, $uri);
+		}
+	
+		$files{'freebsd'}->{'mirrors'} = $mirrors;
+	} else {
+		warn "unable to get freebsd ftp list\n";
+	}
 }
 
 ### GIMP
@@ -452,3 +508,23 @@ sub get_code {
 	$canonical =~ s,/$,,;
 	return ($reverse_keys{"$code"}, $canonical);
 }
+sub get_content {
+	my $url = shift;
+	my $return = undef;
+
+	if ($url =~ m#^ftp\://#) {
+		my $temp_file = mktemp('mirrorXXXXXX');
+		if (system('curl', '-s', '-L', '-o', $temp_file, $url) == 0) {
+			$return = read_file($temp_file);
+		}
+		unlink($temp_file);
+	} else {
+		my $response = $ua->get($url);
+		if ($response->is_success) {
+			$return = $response->content;
+		}
+	}
+
+	return $return;
+}
+
