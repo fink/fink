@@ -1,3 +1,9 @@
+2007-09-26  Dave Morrison  <drm@finkproject.org>
+
+	Recent changes include:
+	* keys, list, get-mirrors.pl, inject.pl, install.sh: add freebsd to the mirror list
+	* apache, cpan, ctan, debian, freebsd, gimp, gnome, gnu, kde: lots of new mirrors
+
 2007-01-11  Daniel Macks  <dmacks@netspace.org>
 
 	* fink-mirrors.info.in, website: update website URL
