@@ -82,7 +82,7 @@ if ($APACHE) {
 					my $url = $link->attr('href');
 					$url =~ s#/$##;
 					print "\t", $url, ": ";
-					if ($ua->get($url . '/DATE')->content =~ /^\d+$/gs) {
+					if (get_content($url . '/DATE') =~ /^\d+$/gs) {
 						print "ok\n";
 						push(@links, $url);
 					} else {
@@ -94,7 +94,7 @@ if ($APACHE) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'apache'}->{'mirrors'} = $mirrors;
@@ -133,7 +133,7 @@ if ($CPAN) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'cpan'}->{'mirrors'} = $mirrors;
@@ -161,7 +161,7 @@ if ($CTAN) {
 				for my $protocol ('ftp', 'http') {
 					my $url = $protocol . '://' . $url;
 					print "\t", $url, ": ";
-					if ($ua->get($url . '/CTAN.sites')->is_success) {
+					if (get_content($url . '/CTAN.sites')) {
 						print "ok\n";
 						push(@links, $url);
 					} else {
@@ -173,7 +173,7 @@ if ($CTAN) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'ctan'}->{'mirrors'} = $mirrors;
@@ -210,7 +210,7 @@ if ($DEBIAN) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'debian'}->{'mirrors'} = $mirrors;
@@ -263,7 +263,7 @@ if ($FREEBSD) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'freebsd'}->{'mirrors'} = $mirrors;
@@ -299,7 +299,7 @@ if ($GIMP) {
 					for my $num (0..2) {
 						my $tempurl = $url . 'gimp/' x $num;
 						print "\t", $tempurl, ": ";
-						if ($ua->get($tempurl . 'README')->content =~ /This is the root directory of the official GIMP/) {
+						if (get_content($tempurl . 'README') =~ /This is the root directory of the official GIMP/) {
 							print "ok\n";
 							push(@links, $tempurl);
 							next GIMPLINKS;
@@ -313,7 +313,7 @@ if ($GIMP) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'gimp'}->{'mirrors'} = $mirrors;
@@ -339,7 +339,7 @@ if ($GNOME) {
 				return if ($url =~ /^mailto/);
 				$url =~ s#/$##;
 				print "\t", $url, ": ";
-				if ($ua->get($url . '/LATEST')->content =~ /download.gnome.org/gs) {
+				if (get_content($url . '/LATEST') =~ /download.gnome.org/gs) {
 					print "ok\n";
 					push(@links, $url);
 				} else {
@@ -353,7 +353,7 @@ if ($GNOME) {
 
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'gnome'}->{'mirrors'} = $mirrors;
@@ -375,14 +375,18 @@ if ($GNU) {
 	
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->content);
-		my $ul = $tree->look_down('_tag' => 'ul');
-		if ($ul) {
-			for my $link ($ul->look_down('_tag' => 'a')) {
+		my $content = $tree->look_down(
+			'_tag' => 'div',
+			sub { $_[0]->attr('id') eq "content" },
+		);
+		if ($content) {
+			for my $link ($content->look_down('_tag' => 'a')) {
 				if ($link) {
 					my $url = $link->attr('href');
 					$url =~ s#(ftp://)+#ftp://#g;
+					$url =~ s#/+$##gs;
 					print "\t", $url, ": ";
-					if ($ua->get($url . '/=README')->content =~ /This directory contains programs/gs) {
+					if (get_content($url . '/=README') =~ /This directory contains programs/gs) {
 						print "ok\n";
 						push(@links, $url);
 					} else {
@@ -394,7 +398,7 @@ if ($GNU) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'gnu'}->{'mirrors'} = $mirrors;
@@ -432,7 +436,7 @@ if ($KDE) {
 					my $url = $link->attr('href');
 					$url =~ s#/$##;
 					print "\t", $url, ": ";
-					if ($ua->get($url . '/README')->content =~ /This is the ftp distribution/gs) {
+					if (get_content($url . '/README') =~ /This is the ftp distribution/gs) {
 						print "ok\n";
 						push(@links, $url);
 					} else {
@@ -444,7 +448,7 @@ if ($KDE) {
 	
 		for my $link (@links) {
 			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
 		}
 	
 		$files{'kde'}->{'mirrors'} = $mirrors;
@@ -460,7 +464,7 @@ for my $site (sort keys %files) {
 		print FILEOUT "Timestamp: ", timestamp(), "\n\n";
 		print FILEOUT "Primary: ", $files{$site}->{'primary'}, "\n\n";
 		for my $key (sort keys %{$files{$site}->{'mirrors'}}) {
-			for my $link (@{$files{$site}->{'mirrors'}->{$key}}) {
+			for my $link (sort @{$files{$site}->{'mirrors'}->{$key}}) {
 				print FILEOUT $key, ": ", $link, "\n";
 			}
 		}
@@ -484,10 +488,22 @@ sub get_code {
 	$link =~ s,ftp://ftp://,ftp://,;
 
 	my $uri = URI->new($link);
-	my $code = $geo->country_code_by_name($uri->host);
+	my $host;
+	eval {
+		$host = $uri->host;
+	};
+
+	if (not defined $host) {
+		warn "unable to determine host for link '$link'";
+		return;
+	}
+
+	my $code = undef;
+
+	$code = $geo->country_code_by_name($host);
 	if (not defined $code or $code =~ /^\s*$/) {
-		$debug && warn "unknown code for " . $uri->host . "\n";
-		if ($uri->host =~ /\.(\D\D)$/) {
+		$debug && warn "unknown code for " . $host . "\n";
+		if ($host =~ /\.(\D\D)$/) {
 			$code = uc($1);
 			warn "found $code in hostname\n";
 		} else {
@@ -495,7 +511,7 @@ sub get_code {
 			$debug && warn "still couldn't figure it out, setting to US\n";
 		}
 	}
-	if ($uri->host =~ /ftp\.(\D\D)\.(uu\.net|debian\.org)/) {
+	if ($host =~ /ftp\.(\D\D)\.(uu\.net|debian\.org)/) {
 		$code = uc($1);
 	}
 	$code = 'UK' if ($code eq 'GB');
@@ -511,6 +527,8 @@ sub get_code {
 sub get_content {
 	my $url = shift;
 	my $return = undef;
+
+	return if ($url =~ /^(\/|mailto\:)/);
 
 	if ($url =~ m#^ftp\://#) {
 		my $temp_file = mktemp('mirrorXXXXXX');
