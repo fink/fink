@@ -1,3 +1,8 @@
+2007-09-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm, Mirror.pm: Implement *cough* "feature requests" from
+	http://tdk.hates-software.com/2007/09/28/a3fbc1b7.html    ;)
+
 2007-09-18  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Detect .deb containing global file updated at

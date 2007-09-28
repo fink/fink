@@ -1,3 +1,8 @@
+2007-09-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* fetch.t: reset $Fink::Mirror::failed_mirrors on each go since
+	it's caching multiply-failed mirrors.
+
 2006-07-27  Daniel Macks  <dmacks@netspace.org>
 
 	* fetch.t: Test the output of the functions that implement the

@@ -114,6 +114,7 @@ our %commands =
 	  'listpackages'      => [\&cmd_listpackages,      1, 0, 0],
 	  'plugins'           => [\&cmd_listplugins,       0, 0, 0],
 	  'selfupdate'        => [\&cmd_selfupdate,        0, 1, 1],
+	  'self-update'       => [\&cmd_selfupdate,        0, 1, 1],
 	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1, 1],
 	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1, 1],
 	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1, 1],

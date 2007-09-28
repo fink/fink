@@ -62,14 +62,14 @@ my(@cmd, @expect, $output, $out_save);
 
 foreach (sort keys %tests) {
 	@cmd = ('--dry-run', $_);
-	capture sub { Fink::Engine::cmd_fetch(@cmd) }, \$output, \$output;
+	capture sub { $Fink::Mirror::failed_mirrors = {}; Fink::Engine::cmd_fetch(@cmd) }, \$output, \$output;
 	@expect = @{$tests{$_}->{sources}};
 	ok(
 		1 == (grep { $output eq $_ } @expect),
 		"fetch @cmd\n\tgave:\n--\n${output}--\n\texpected one of:\n--\n".(join "--\n", @expect)."--\n"
 		);
 	@cmd = ('--dry-run', '-i', $_);
-	capture sub { Fink::Engine::cmd_fetch(@cmd) }, \$output, \$output;
+	capture sub { $Fink::Mirror::failed_mirrors = {}; Fink::Engine::cmd_fetch(@cmd) }, \$output, \$output;
 	@expect = ("Ignoring $_ due to License: Restrictive\n") if $tests{$_}->{restrictive};
 	ok(
 		1 == (grep { $output eq $_ } @expect),
@@ -78,7 +78,7 @@ foreach (sort keys %tests) {
 }
 
 @cmd = ('--dry-run');
-capture sub { Fink::Engine::cmd_fetch_all(@cmd) }, \$output, \$output;
+capture sub { $Fink::Mirror::failed_mirrors = {}; Fink::Engine::cmd_fetch_all(@cmd) }, \$output, \$output;
 $out_save = $output;
 foreach (sort keys %tests) {
 	@expect = @{$tests{$_}->{sources}};
@@ -93,7 +93,7 @@ ok(
 	);
 
 @cmd = ('--dry-run', '-i');
-capture sub { Fink::Engine::cmd_fetch_all(@cmd) }, \$output, \$output;
+capture sub { $Fink::Mirror::failed_mirrors = {}; Fink::Engine::cmd_fetch_all(@cmd) }, \$output, \$output;
 $out_save = $output;
 foreach (sort keys %tests) {
 	@expect = @{$tests{$_}->{sources}};

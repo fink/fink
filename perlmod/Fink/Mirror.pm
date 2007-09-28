@@ -44,6 +44,8 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+our $MAX_MIRROR_FAILURE = 2;
+our $failed_mirrors = {};
 my %named_mirrors = ();
 
 END { }				# module clean-up code here (global destructor)
@@ -261,13 +263,13 @@ sub get_site_retry {
 	$self->{tries}++;
 	$self->{failed}->{$self->{lastused}} = 1;
 
+	# if this hits $MAX_MIRROR_FAILURE, that mirror will be skipped in subsequent downloads
+	$failed_mirrors->{$self->{lastused}}++;
+
 	# get lists of remaining mirrors
-	@list_country = grep { not exists $self->{failed}->{$_} }
-		$self->list_by_level(1);
-	@list_continent = grep { not exists $self->{failed}->{$_} }
-		$self->list_by_level(2);
-	@list_world = grep { not exists $self->{failed}->{$_} }
-		$self->list_by_level(3);
+	@list_country   = $self->list_not_failed_by_level(1);
+	@list_continent = $self->list_not_failed_by_level(2);
+	@list_world     = $self->list_not_failed_by_level(3);
 
 	# assemble choices
 	@choice_list = ( "error", "retry" );
@@ -319,18 +321,23 @@ sub get_site_retry {
 		} else {
 			$nexttext = "Retry using next mirror set \"$next_set\"";
 		}
-		my %choices = ( "error" => "Give up",
-				"retry" => "Retry the same mirror",
-				"retry-country" => "Retry another mirror from your country",
-				"retry-continent" => "Retry another mirror from your continent",
-				"retry-world" => "Retry another mirror",
-				"retry-next" => $nexttext );
+		my %choices = (
+			"error" => "Give up",
+			"retry" => "Retry the same mirror",
+			"retry-country" => "Retry another mirror from your country",
+			"retry-continent" => "Retry another mirror from your continent",
+			"retry-world" => "Retry another mirror",
+			"retry-next" => $nexttext,
+		);
 		my @choices = map { ( $choices{$_} => $_ ) } @choice_list;
 		$result =
-		&prompt_selection("How do you want to proceed?",
-				      default => [ number => $default ],
-				      choices => \@choices,
-				      category => 'fetch',);
+		&prompt_selection(
+			"How do you want to proceed?",
+			default  => [ number => $default ],
+			choices  => \@choices,
+			category => 'fetch',
+			timeout  => 120,
+		);
 	}
 	$url = $self->{lastused};
 	if ($result eq "error") {
@@ -376,6 +383,23 @@ sub list_primary {
 #				 1 - country
 #				 2 - continent
 #				 3 - world (includes primaries)
+
+### list mirrors by level which have not
+# a) failed for this particular download and
+# b) failed at least $MAX_MIRROR_FAILURE times on any download
+
+sub list_not_failed_by_level {
+	my $self  = shift;
+	my $level = shift;
+
+	return grep {
+		not exists $self->{failed}->{$_} and
+		(
+			not exists $failed_mirrors->{$_} or
+			$failed_mirrors->{$_} < $MAX_MIRROR_FAILURE
+		)
+	} $self->list_by_level($level);
+}
 
 sub list_by_level {
 	my $self = shift;
