@@ -654,7 +654,7 @@ END
 		$hash->{version} = $result . '-1';
 		print STDERR $hash->{version}, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
-	} elsif ($options{debug} || 1) {
+	} elsif ($options{debug}) {
 		# failed, so display whatever error message or diagnostics we can find
 		if ($!) {
 			

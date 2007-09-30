@@ -1,3 +1,7 @@
+2006-09-30  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* VirtPackage.pm: Remove debugging output
+	
 2007-09-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Engine.pm, Mirror.pm: Implement *cough* "feature requests" from
