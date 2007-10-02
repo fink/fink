@@ -1,6 +1,11 @@
-2007-09-16 Martin Costabel <costabel@wanadoo.fr>
+2007-10-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
-    * pathsetup.sh.in: Minor stabilization fixes
+	* bootstrap, fink.conf.5.in: use SelfUpdateTrees instead of
+	SelfUpdateCVSTrees, also remove the 10.5 workaround
+
+2007-09-16  Martin Costabel  <costabel@wanadoo.fr>
+
+	* pathsetup.sh.in: Minor stabilization fixes
 
 2007-04-13  Daniel Macks  <dmacks@netspace.org>
 

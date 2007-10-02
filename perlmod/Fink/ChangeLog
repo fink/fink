@@ -1,4 +1,10 @@
-2006-09-30  Christian Schaffner  <chris01@users.sourceforge.net>
+2007-10-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* SelfUpdate/CVS.pm, SelfUpdate/rsync.pm: update to use
+	SelfUpdateTrees for determining which trees get pulled out.
+	Also, fix 10.5 support for rsync.
+
+2007-09-30  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* VirtPackage.pm: Remove debugging output
 	
@@ -12,7 +18,7 @@
 	* Validation.pm: Detect .deb containing global file updated at
 	installation-time by perl modules
 
-2006-09-04  Christian Schaffner  <chris01@users.sourceforge.net>
+2007-09-04  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* PkgVersion.pm: Remove get_desc* methods again, since the pdb dump script
 	now directly calls param_default_expanded

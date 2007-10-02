@@ -405,14 +405,8 @@ Basepath: $installto
 RootMethod: $rootmethod
 Trees: local/main stable/main stable/crypto
 Distribution: $distribution
-SelfUpdateCVSTrees: $distribution_infodir{$distribution}
+SelfUpdateTrees: $distribution_infodir{$distribution}
 EOF
-	# We temporarily force cvs updating for 10.5, until we've decided
-	# how to handle rsync updating
-
-	if ($distribution eq "10.5") {
-		print CONFIG "SelfUpdateMethod: cvs\n";
-}
 
 close(CONFIG) or die "can't write configuration $configpath: $!\n";
 

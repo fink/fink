@@ -215,7 +215,7 @@ sub setup_direct_cvs {
 		die "Downloading package descriptions from CVS failed.\n";
 	}
 
-	my @trees = split(/\s+/, $config->param_default("SelfUpdateCVSTrees", $distribution));
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	chdir "fink" or die "Can't cd to fink\n";
 
 	for my $tree (@trees) {
@@ -346,7 +346,7 @@ sub do_direct_cvs {
 
 	# then, update the trees
 
-	my @trees = split(/\s+/, $config->param_default("SelfUpdateCVSTrees", $distribution));
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	for my $tree (@trees) {
 		$cmd = "cvs ${verbosity} -z3 update -d -P ${tree}";
 		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);

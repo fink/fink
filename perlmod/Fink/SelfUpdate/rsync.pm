@@ -60,12 +60,6 @@ This method builds packages from source, so it requires the
 sub system_check {
 	my $class = shift;  # class method for now
 
-	# We temporarily disable rsync updating for 10.5, until we've decided how to handle it
-	if ($distribution eq '10.5') {
-		warn "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n";
-		return 0;
-	}
-
 	if (not Fink::VirtPackage->query_package("dev-tools")) {
 		warn "Selfupdate method 'rsync' requires the package 'dev-tools'\n";
 		return 0;
@@ -83,7 +77,18 @@ Returns a null string.
 sub do_direct {
 	my $class = shift;  # class method for now
 
-	my $dist = $distribution;
+	my @dists = ($distribution);
+
+	{
+		my $temp_dist = $distribution;
+
+		# workaround for people who upgraded to 10.5 without a fresh bootstrap
+		if (not $config->has_param("SelfUpdateTrees")) {
+			$temp_dist = "10.4" if ($temp_dist ge "10.4");
+		}
+		$temp_dist = $config->param_default("SelfUpdateTrees", $temp_dist);
+		@dists = split(/\s+/, $temp_dist);
+	}
 
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
@@ -150,56 +155,59 @@ RSYNCAGAIN:
 
 	} 
 
-	# If the Distributions line has been updated...
-	if (! -d "$descdir/$dist") {
-		mkdir_p "$descdir/$dist";
-	}
-	my @sb = stat("$descdir/$dist");
+	for my $dist (@dists) {
 
-	# We need to remove the CVS directories, since what we're
-	# going to put there isn't from cvs.  Leaving those directories
-	# there will thoroughly confuse things if someone later does 
-	# selfupdate-cvs.  However, don't actually do the removal until
-	# we've tried to put something there.
-	
-	$rsynchost =~ s/\/*$//;
-	$dist      =~ s/\/*$//;
-	
-	my $rinclist = "";
-	
-	my @trees = grep { m,^(un)?stable/, } $config->get_treelist();
-	die "Can't find any trees to update\n" unless @trees;
-	map { s/\/*$// } @trees;
-	
-	foreach my $tree (@trees) {
-		my $oldpart = $dist;
-		my @line = split /\//,$tree;
-
-		$rinclist .= " --include='$dist/'";
-		for(my $i = 0; defined $line[$i]; $i++) {
-			$oldpart = "$oldpart/$line[$i]";
-			$rinclist .= " --include='$oldpart/'";
+		# If the Distributions line has been updated...
+		if (! -d "$descdir/$dist") {
+			mkdir_p "$descdir/$dist";
 		}
-		$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/*' --include='$oldpart/finkinfo/**/*'";
-
-		if (! -d "$basepath/fink/$dist/$tree" ) {
-			mkdir_p "$basepath/fink/$dist/$tree";
+		my @sb = stat("$descdir/$dist");
+	
+		# We need to remove the CVS directories, since what we're
+		# going to put there isn't from cvs.  Leaving those directories
+		# there will thoroughly confuse things if someone later does 
+		# selfupdate-cvs.  However, don't actually do the removal until
+		# we've tried to put something there.
+		
+		$rsynchost =~ s/\/*$//;
+		$dist      =~ s/\/*$//;
+		
+		my $rinclist = "";
+		
+		my @trees = grep { m,^(un)?stable/, } $config->get_treelist();
+		die "Can't find any trees to update\n" unless @trees;
+		map { s/\/*$// } @trees;
+		
+		foreach my $tree (@trees) {
+			my $oldpart = $dist;
+			my @line = split /\//,$tree;
+	
+			$rinclist .= " --include='$dist/'";
+			for(my $i = 0; defined $line[$i]; $i++) {
+				$oldpart = "$oldpart/$line[$i]";
+				$rinclist .= " --include='$oldpart/'";
+			}
+			$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/*' --include='$oldpart/finkinfo/**/*'";
+	
+			if (! -d "$basepath/fink/$dist/$tree" ) {
+				mkdir_p "$basepath/fink/$dist/$tree";
+			}
 		}
-	}
-	my $cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
-	if ($sb[4] != 0 and $> != $sb[4]) {
-		my $username;
-		($username) = getpwuid($sb[4]);
-		if ($username) {
-			$cmd = "/usr/bin/su $username -c \"$cmd\"";
-			chowname $username, "$basepath/fink/$dist";
+		my $cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
+		if ($sb[4] != 0 and $> != $sb[4]) {
+			my $username;
+			($username) = getpwuid($sb[4]);
+			if ($username) {
+				$cmd = "/usr/bin/su $username -c \"$cmd\"";
+				chowname $username, "$basepath/fink/$dist";
+			}
 		}
-	}
-	&print_breaking("I will now run the rsync command to retrieve the latest package descriptions. \n");
-
-	if (&execute($cmd)) {
-		print "Updating using rsync failed. Check the error messages above.\n";
-		goto RSYNCAGAIN;
+		&print_breaking("I will now run the rsync command to retrieve the latest package descriptions. \n");
+	
+		if (&execute($cmd)) {
+			print "Updating using rsync failed. Check the error messages above.\n";
+			goto RSYNCAGAIN;
+		}
 	}
 
 	# cleanup after ourselves
