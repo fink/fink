@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use Test::More tests => 15;
 use File::Temp (qw/ tempdir /);
+use Fink::CLI (qw/ capture /);
 use Fink::Command (qw/ mkdir_p /);
 use Fink::Config;
 
@@ -42,7 +43,10 @@ require_ok('Fink::SelfUpdate');  # test #1
 
 	# test #8-9
 	_write_vfiles(['0.8.1'], ['hi mom']);
-	@last = &Fink::SelfUpdate::last_done;
+	{
+		my $output;
+		capture sub { @last = &Fink::SelfUpdate::last_done; }, \$output, \$output;
+	}
 	is($last[0], 'point', 'gives correct method for VERSION if VERSION.selfupdate is useless');
 	is($last[2], '0.8.1', 'gives correct version for VERSION if VERSION.selfupdate is useless');
 
