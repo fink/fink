@@ -58,6 +58,7 @@ use Carp qw(confess);
 use File::Temp qw(tempdir);
 use Fcntl;
 use Storable;
+use IO::Handle;
 
 use strict;
 use warnings;
@@ -4267,9 +4268,23 @@ EOF
 
 	if (length(my $shlibsbody = $self->get_shlibs_field)) {
 		chomp $shlibsbody;
-		my $shlibsfile = "$destdir/DEBIAN/shlibs";
 
-		print "Writing shlibs file...\n";
+		my $shlibs_error = sub {
+			my $self = shift;
+			my $type = shift;
+			my $error = "can't write to $type file for " . $self->get_fullname() . ": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		};
+
+		my ($shlibsfile, $privateshlibsfile);
+		$shlibsfile = IO::Handle->new();
+		$privateshlibsfile = IO::Handle->new();
+
+		open ($shlibsfile, ">$destdir/DEBIAN/shlibs") or &{$shlibs_error}($self, 'shlibs');
+		open ($privateshlibsfile, ">$destdir/DEBIAN/private-shlibs") or &{$shlibs_error}($self, 'private shlibs');
+
+		print "Writing shlibs files...\n";
 
 # FIXME-dmacks:
 #    * Make sure each file is actually present in $destdir
@@ -4279,17 +4294,19 @@ EOF
 #    * Rejoin wrap continuation lines
 #      (use \ not heredoc multiline-field)
 
-		my $write_okay;
-		if ( $write_okay = open(SHLIBS,">$shlibsfile") ) {
-			print SHLIBS $shlibsbody;
-			close(SHLIBS) or $write_okay = 0;
-			chmod 0644, $shlibsfile;
+		for my $line (split(/\n/, $shlibsbody)) {
+			if ($line =~ /^\s*\!/) {
+				print $privateshlibsfile $line, "\n";
+			} else {
+				print $shlibsfile $line, "\n";
+			}
 		}
-		if (not $write_okay) {
-			my $error = "can't write shlibs file for ".$self->get_fullname().": $!";
-			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-			die $error . "\n";
-		}
+
+		close($shlibsfile) or &{$shlibs_error}($self, 'shlibs');
+		close($privateshlibsfile) or &{$shlibs_error}($self, 'private shlibs');
+
+		chmod 0644, "$destdir/DEBIAN/shlibs";
+		chmod 0644, "$destdir/DEBIAN/private-shlibs";
 	}
 
 	### config file list

@@ -1217,6 +1217,13 @@ sub validate_info_component {
 				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in Shlibs', $filename);
 			}
 
+			if (/^\!\s*(.*?)\s*$/) {
+				if ($1 =~ /\s/) {
+					print "Warning: Malformed line in field \"shlibs\"$splitoff_field.\n  $_\n";
+				}
+				next;
+			}
+
 			my @shlibs_parts;
 			if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
 				print "Warning: Malformed line in field \"shlibs\"$splitoff_field. ($filename)\n  $_\n";
@@ -1471,20 +1478,29 @@ sub _validate_dpkg {
 	# read the shlibs database file
 	my $deb_shlibs = {};
 	{
-		my $filename = "$destdir/DEBIAN/shlibs";
-		if (-f $filename) {
-			if (open my $script, '<', $filename) {
-				chomp( my @deb_shlibs_raw = <$script> );  # slurp the data file
-				close $script;
-				foreach my $entry (@deb_shlibs_raw) {
-					if ($entry =~ /^\s*(.+?)\s+(.+?)\s+(.*?)\s*$/) {
-						# $filename $compat $deps
-						$deb_shlibs->{$1} = [ $2, $3 ];
+		foreach my $filename ("$destdir/DEBIAN/shlibs", "$destdir/DEBIAN/private-shlibs") {
+			if (-f $filename) {
+				if (open my $script, '<', $filename) {
+					chomp( my @deb_shlibs_raw = <$script> );  # slurp the data file
+					close $script;
+					my ($entry_filename, $entry_compat, $entry_deps);
+					foreach my $entry (@deb_shlibs_raw) {
+						if (($entry_filename) = $entry =~ /^\s*\!\s*(\S+)\s*$/) {
+							$deb_shlibs->{$entry_filename} = {
+								is_private => 1,
+							};
+						} elsif (($entry_filename, $entry_compat, $entry_deps) = $entry =~ /^\s*(.+?)\s+(.+?)\s+(.*?)\s*$/) {
+							$deb_shlibs->{$entry_filename} = {
+								compatibility_version => $entry_compat,
+								dependencies          => $entry_deps,
+								is_private            => 0,
+							};
+						}
 					}
+				} else {
+					print "Error: could not read dpkg shlibs database file: $!\n";
+					$looks_good = 0;
 				}
-			} else {
-				print "Error: could not read dpkg shlibs database file: $!\n";
-				$looks_good = 0;
 			}
 		}
 	}
@@ -1831,13 +1847,18 @@ sub _validate_dpkg {
 	foreach my $shlibs_file (sort keys %$deb_shlibs) {
 		my $file = resolve_rooted_symlink($destdir, $shlibs_file);
 		if (not defined $file) {
-			# fink is a special case, it has an shlibs field that provides system-shlibs
-			if ($deb_control->{package} ne 'fink') {
-				print "Error: Shlibs field specifies $shlibs_file, but it does not exist!\n";
+			if ($deb_control->{'package'} eq 'fink') {
+				# fink is a special case, it has an shlibs field that provides system-shlibs
+			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
+				print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+			} else {
+				print "Error: Shlibs field specifies file '$shlibs_file', but it does not exist!\n";
 				$looks_good = 0;
 			}
 		} elsif (not -f $file) {
-					
+			# shouldn't happen, resolve_rooted_symlink returns a file, or undef
+		} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
+			# don't validate private shlibs entries
 		} else {
 			$file =~ s/\'/\\\'/gs;
 			if (defined $otool) {
@@ -1853,8 +1874,8 @@ sub _validate_dpkg {
 						if ($shlibs_file ne $libname) {
 							print "Error: File name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
 						}
-						if ($deb_shlibs->{$shlibs_file}->[0] ne $compat_version) {
-							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->[0].", but it is actually $compat_version.\n";
+						if ($deb_shlibs->{$shlibs_file}->{'compatibility_version'} ne $compat_version) {
+							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->{'compatibility_version'}.", but it is actually $compat_version.\n";
 							$looks_good = 0;
 						}
 					}
@@ -1880,6 +1901,7 @@ sub _validate_dpkg {
 	
 					if (not exists $deb_shlibs->{$libname}) {
 						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname $compat_version)\n";
+						print "       If this is a private library, prefix it with '!' in the Shlibs entry, and add a BuildDepends: entry on fink >= 0.27.99.\n";
 						$looks_good = 0;
 					}
 				}
