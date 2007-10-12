@@ -1901,7 +1901,7 @@ sub _validate_dpkg {
 	
 					if (not exists $deb_shlibs->{$libname}) {
 						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname $compat_version)\n";
-						print "       If this is a private library, prefix it with '!' in the Shlibs entry, and add a BuildDepends: entry on fink >= 0.27.99.\n";
+						print "       If this is a private library, add '!$dylib' to the Shlibs field, and add a BuildDepends: entry on fink >= 0.27.99.\n";
 						$looks_good = 0;
 					}
 				}
