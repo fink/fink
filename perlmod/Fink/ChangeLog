@@ -1,6 +1,8 @@
 2007-10-11  Daniel Macks  <dmacks@netspace.org>
 
-	* Validator.pm: More explicit error message.
+	* Validator.pm: More explicit error message when .deb shlibs can't
+	be read. Set failure if bad private Shlibs syntax. Require
+	BD:fink>=0.27.99 if using private Shlibs syntax.
 
 2007-10-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
 

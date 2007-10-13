@@ -1213,13 +1213,15 @@ sub validate_info_component {
 		foreach (@shlibs) {
 			next unless /\S/;
 
-			if (s/^\s*\(.*?\)\s*//) {
+			if (s/^\s*\(.*?\)\s*//) {	
 				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in Shlibs', $filename);
-			}
+		}
 
 			if (/^\!\s*(.*?)\s*$/) {
+				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.99', 'private-library entry in Shlibs', $filename);
 				if ($1 =~ /\s/) {
 					print "Warning: Malformed line in field \"shlibs\"$splitoff_field.\n  $_\n";
+					$looks_good = 0;
 				}
 				next;
 			}
@@ -1902,7 +1904,7 @@ sub _validate_dpkg {
 	
 					if (not exists $deb_shlibs->{$libname}) {
 						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname $compat_version)\n";
-						print "       If this is a private library, add '!$dylib' to the Shlibs field, and add a BuildDepends: entry on fink >= 0.27.99.\n";
+						print "       If this is a private library, add '!$dylib' to the Shlibs field.\n";
 						$looks_good = 0;
 					}
 				}
