@@ -1478,7 +1478,8 @@ sub _validate_dpkg {
 	# read the shlibs database file
 	my $deb_shlibs = {};
 	{
-		foreach my $filename ("$destdir/DEBIAN/shlibs", "$destdir/DEBIAN/private-shlibs") {
+		foreach my $debfile ('shlibs', 'private-shlibs') {
+			my $filename = "$destdir/DEBIAN/$debfile";
 			if (-f $filename) {
 				if (open my $script, '<', $filename) {
 					chomp( my @deb_shlibs_raw = <$script> );  # slurp the data file
@@ -1498,7 +1499,7 @@ sub _validate_dpkg {
 						}
 					}
 				} else {
-					print "Error: could not read dpkg shlibs database file: $!\n";
+					print "Error: could not read dpkg shlibs database file ($debfile): $!\n";
 					$looks_good = 0;
 				}
 			}

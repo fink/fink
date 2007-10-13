@@ -1,3 +1,7 @@
+2007-10-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Validator.pm: More explicit error message.
+
 2007-10-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm, Validator.pm: Added "private" Shlibs support; if a
