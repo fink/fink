@@ -1227,37 +1227,24 @@ sub cleanup_debs {
 
 	my $file_count;
 
-	# Iterate over all packages and collect the deb files
-	if ($config->verbosity_level() > 0) {
-		print "Collecting active deb names...\n";
-	}
-	my %deb_list;
-	foreach my $pname (Fink::Package->list_packages()) {
-		my $package = Fink::Package->package_by_name($pname);
-		foreach my $vo ($package->get_all_versions()) {
-			if ($vo->is_type('dummy')) {
-				# $vo data is from dpkg status db (no .info file) so
-				# $vo has no directory for deb. Try to guess it.
-				my $debfile = "$basepath/fink/debs/" . $vo->get_debname();
-				if (-l $debfile) {
-					my $deblink = readlink $debfile;
-					$deblink =~ s/^..\//$basepath\/fink\//;
-					$deb_list{$deblink} = 1 if -e $deblink;
-				} elsif (-e $debfile) {
-					$deb_list{$debfile} = 1;
-				}
-			} else {
-				$deb_list{$vo->get_debfile()} = 1;
-			}
-		}
-	}
-	
 	# Handle obsolete debs (files matching the glob *.deb that are not
 	# associated with an active package description)
+	# .deb filename format is "%n_%v-%r_$platform-$arch.deb"
 	my $kill_obsolete_debs = <<'EOFUNC';
 		sub {
-			if (/^.*\.deb\z/s ) {
-				if (not $deb_list{$File::Find::fullname}) {
+			# parse apart filename according to .deb spec
+			my @atoms = split /_/, $_;
+			if (@atoms == 3 and $atoms[-1] =~ /\.deb\z/) {
+
+				# check if that %n at that %v-%r exists
+				my $deb_in_database = 0;
+				my $package = Fink::Package->package_by_name($atoms[0]);
+				if (defined $package) {
+					$deb_in_database = 1 if $package->get_version($atoms[1]);
+				}
+
+				# no pdb entry for the .deb file
+				if (not $deb_in_database) {
 					print "REMOVE deb: $File::Find::fullname\n";  # PRINT_IT
 					unlink $File::Find::fullname and $file_count++;  # UNLINK_IT
 				}
@@ -1273,6 +1260,9 @@ EOFUNC
 #	use B::Deparse;
 #	my $deparser = new B::Deparse;
 #	print "sub ", $deparser->coderef2text($kill_obsolete_debs), "\n";
+	if ($config->verbosity_level() > 0) {
+		print "Scanning deb collection...\n";
+	}
 	$file_count = 0;
 	find ({'wanted' => $kill_obsolete_debs, 'follow' => 1}, "$basepath/fink/dists");
 	if (!$opts{dryrun}) {

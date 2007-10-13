@@ -1,5 +1,12 @@
 2007-10-13  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: For cleanup_deb, only look at filename, not
+	path (dist in path might not be "correct" in merged-dist package
+	collection). Parse .deb filenames to look up %f instead of reading
+	whole PDB first.
+
+2007-10-13  Daniel Macks  <dmacks@netspace.org>
+
 	* SelfUpdate/CVS.pm: Use link() instead of system(ln) to avoid
 	shell metachar problems.
 
