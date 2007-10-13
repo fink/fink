@@ -1,9 +1,9 @@
-2007-10-11  Daniel Macks  <dmacks@netspace.org>
+2007-10-13  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate/CVS.pm: Use link() instead of system(ln) to avoid
 	shell metachar problems.
 
-2007-10-11  Daniel Macks  <dmacks@netspace.org>
+2007-10-13  Daniel Macks  <dmacks@netspace.org>
 
 	* Validator.pm: More explicit error message when .deb shlibs can't
 	be read. Set failure if bad private Shlibs syntax. Require
