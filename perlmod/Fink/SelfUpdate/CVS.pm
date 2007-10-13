@@ -258,15 +258,14 @@ sub setup_direct_cvs {
 					 mkdir_p "$tempfinkdir/$rel" or
 						 die "Can't create directory \"$tempfinkdir/$rel\"\n";
 				 } elsif (-f and not -f "$tempfinkdir/$rel") {
-					 my $cmd;
 					 if ($use_hardlinks) {
-						 $cmd = "ln";
+						 if (link $_, "$tempfinkdir/$rel") {
+							 die "Can't link file \"$tempfinkdir/$rel\"\n";
+						 }
 					 } else {
-						 $cmd = "cp -p"
-					 }
-					 $cmd .= " '$_' '$tempfinkdir/$rel'";
-					 if (&execute($cmd)) {
-						 die "Can't copy file \"$tempfinkdir/$rel\"\n";
+						 if (&execute("cp -p '$_' '$tempfinkdir/$rel'")) {
+							 die "Can't copy file \"$tempfinkdir/$rel\"\n";
+						 }
 					 }
 				 }
 			 }, $finkdir);
