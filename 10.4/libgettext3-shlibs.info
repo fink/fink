@@ -14,6 +14,7 @@ Essential: yes
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.24.12)
 Conflicts: libgettext3
+BuildConflicts: ccache-default, distcc-default
 Replaces: gettext-bin (<< 0.14-1), libgettext3
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1

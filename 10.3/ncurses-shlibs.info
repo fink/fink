@@ -8,7 +8,7 @@ Source2: mirror:sourceforge:fink/ncurses-5.3-20031004-patch.sh.bz2
 Source2-MD5: 3c1d1c4c78a4e2b9d99924ba8aa2a608
 Source2ExtractDir: ncurses-5.3
 PatchScript: <<
-  #!/bin/sh -e
+  #!/bin/sh -ev
   bunzip2 ncurses-5.3-20031004-patch.sh.bz2
   chmod +x ncurses-5.3-20031004-patch.sh
   ./ncurses-5.3-20031004-patch.sh
@@ -28,12 +28,12 @@ SetLDFLAGS: -Wl,-search_paths_first
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
-  #!/bin/sh -e
+  #!/bin/sh -ev
   ./configure %c
   make -j1
 <<
 InstallScript: <<
-  #!/bin/sh -e
+  #!/bin/sh -ev
   make install.libs DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib
 ln -s %p/lib/libform.5.dylib %i/lib/libform.dylib.5
 ln -s %p/lib/libmenu.5.dylib %i/lib/libmenu.dylib.5

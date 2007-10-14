@@ -7,6 +7,7 @@ Source-MD5: 6a17767b47ffb45b4866cec9fb0a39b0
 Essential: no
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.13.6), fink-prebinding
+BuildConflicts: ccache-default, distcc-default
 Shlibs: %p/lib/libintl.1.dylib 2.0.0 %n (>= 0.10.40-5)
 DescPackaging: <<
  Shared libraries are in gettext for backward compatibility, to avoid

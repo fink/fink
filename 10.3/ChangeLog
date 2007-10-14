@@ -1,6 +1,10 @@
+2007-10-14  Daniel Macks  <dmacks@netspace.org>
+
+	* debianutils.info, gettetxt.info, libgettext3-shlibs.info, ncurses-shlibs.info: sync with stable
+
 2007-06-09  Dave Morrison  <drm@finkproject.org>
 
-	* apt.info dpkg.info dpkg.patch libiconv.info libiconv.patch ncurses.info tar.info unzip.info unzip.patch: sync with stable
+	* apt.info, dpkg.info, dpkg.patch, libiconv.info, libiconv.patch, ncurses.info, tar.info, unzip.info, unzip.patch: sync with stable
 
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
