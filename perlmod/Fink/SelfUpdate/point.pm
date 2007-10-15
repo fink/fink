@@ -39,7 +39,7 @@ our $VERSION = sprintf "%d.%d", q$Revision$ =~ /(\d+)/g;
 
 =head1 NAME
 
-Fink::SelfUpdate::CVS - download package descriptions for a point release
+Fink::SelfUpdate::point - download package descriptions for a point release
 
 =head1 DESCRIPTION
 
@@ -69,6 +69,7 @@ sub system_check {
 
 	my $default_method = lc($config->param_default( 'SelfUpdateMethod', '' ));
 	if (length $default_method and $default_method ne 'point') {
+		warn "Fink does not presently support switching to selfupdate-point from any other selfupdate method\n";
 		return 0;
 	}
 

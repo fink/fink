@@ -1,3 +1,8 @@
+2007-10-15  Christian Schaffner  <chris01@users.sourceforge.net>
+
+	* SelfUpdate/Point.pm: Fix typo, and show warning message if 
+	trying to change to point from any other method.
+
 2007-10-13  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: For cleanup_deb, only look at filename, not
