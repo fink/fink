@@ -1,5 +1,16 @@
 2007-10-15  Christian Schaffner  <chris01@users.sourceforge.net>
 
+	* SelfUpdate.pm: Try to remove old metadata first before switching
+	to new update method, since the first step might fail, if there 
+	is a left over fink.old directory.
+	* SelfUpdate/CVS.pm: Check for remaining fink.old directory first
+	before removing metadata. Allow for :local: cvs access. Add more
+	details about merging old trees. 
+	And fix hardlinking: the perl 'link' function returns true on
+	success.
+
+2007-10-15  Christian Schaffner  <chris01@users.sourceforge.net>
+
 	* SelfUpdate/Point.pm: Fix typo, and show warning message if 
 	trying to change to point from any other method.
 

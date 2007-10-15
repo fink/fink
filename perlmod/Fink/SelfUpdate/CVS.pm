@@ -73,6 +73,10 @@ sub clear_metadata {
 	my $class = shift;  # class method for now
 
 	my $finkdir = "$basepath/fink";
+	if (-d "$finkdir.old") {
+		die "There is a left-over \"$finkdir.old\" directory. You have to ".
+			"move it out of the way before proceeding.\n";
+	}
 	&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
 }
 
@@ -145,6 +149,11 @@ sub setup_direct_cvs {
 	$tempdir = "$finkdir.tmp";
 	$tempfinkdir = "$tempdir/fink";
 
+	if (-d "$finkdir.old") {
+		die "There is a left-over \"$finkdir.old\" directory. You have to ".
+			"move it out of the way before proceeding.\n";
+	}
+
 	if (-d $tempdir) {
 		rm_rf $tempdir or
 			die "Can't remove left-over temporary directory '$tempdir'\n";
@@ -189,15 +198,21 @@ sub setup_direct_cvs {
 		&print_breaking("Now logging into the CVS server. When CVS asks you ".
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
-		$cmd = "cvs -d:pserver:anonymous\@$cvsrepository login";
-		if ($username ne "root") {
-			$cmd = "/usr/bin/su $username -c '$cmd'";
-		}
-		if (&execute($cmd)) {
-			die "Logging into the CVS server for anonymous read-only access failed.\n";
-		}
-
-		$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository";
+		if ($cvsrepository =~ s/^:local://)  {
+			$cmd = "cvs ${verbosity} -z3 -d$cvsrepository";
+ 		}
+ 		else {
+			$cmd = "cvs -d:pserver:anonymous\@$cvsrepository login";
+			if ($username ne "root") {
+				$cmd = "/usr/bin/su $username -c '$cmd'";
+			}
+			if (&execute($cmd)) {
+				die "Logging into the CVS server for anonymous read-only access failed.\n";
+			}
+			else {
+				$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository";
+			}
+ 		}
 	} else {
 		if (-f "$basepath/lib/fink/URL/developer-cvs") {
 			$cvsrepository = cat "$basepath/lib/fink/URL/developer-cvs";
@@ -239,6 +254,7 @@ sub setup_direct_cvs {
 			"doesn't exist as expected. Strange.\n";
 	}
 
+	&print_breaking("Merging old data to new tree...");
 	# merge the old tree
 	$cutoff = length($finkdir)+1;
 	find(sub {
@@ -251,20 +267,22 @@ sub setup_direct_cvs {
 				 if (-l and not -e "$tempfinkdir/$rel") {
 					 my $linkto;
 					 $linkto = readlink($_)
-						 or die "Can't read target of symlink $File::Find::name: $!\n";
+						 or die "Can't read target of symlink \"$File::Find::name\": $!\n";
 					 symlink $linkto, "$tempfinkdir/$rel" or
-						 die "Can't create symlink \"$tempfinkdir/$rel\"\n";
+						 die "Can't create symlink \"$tempfinkdir/$rel\": $!\n";
 				 } elsif (-d and not -d "$tempfinkdir/$rel") {
+					 &print_breaking("Merging $basepath/$rel...\n") 
+					 	if ($config->verbosity_level() > 1);
 					 mkdir_p "$tempfinkdir/$rel" or
-						 die "Can't create directory \"$tempfinkdir/$rel\"\n";
+						 die "Can't create directory \"$tempfinkdir/$rel\": $!\n";
 				 } elsif (-f and not -f "$tempfinkdir/$rel") {
 					 if ($use_hardlinks) {
-						 if (link $_, "$tempfinkdir/$rel") {
-							 die "Can't link file \"$tempfinkdir/$rel\"\n";
+						 if (not link "$_",  "$tempfinkdir/$rel") {
+						 	die "Can't link file \"$_\" to \"$tempfinkdir/$rel\": $!\n";
 						 }
 					 } else {
 						 if (&execute("cp -p '$_' '$tempfinkdir/$rel'")) {
-							 die "Can't copy file \"$tempfinkdir/$rel\"\n";
+							 die "Can't copy file \"$tempfinkdir/$rel\": $!\n";
 						 }
 					 }
 				 }

@@ -223,16 +223,16 @@ sub check {
 	$subclass_use->system_check() or die "Selfupdate method '$method' cannot be used\n";
 
 	if ($method ne $prev_method) {
-		# save new selection (explicit change or being set for first time)
-		&print_breaking("fink is setting your default update method to $method\n");
-		$config->set_param("SelfUpdateMethod", $method);
-		$config->save();
-
 		# clear remnants of any methods other than one to be used
 		foreach my $subclass (@avail_subclasses) {
 			next if $subclass eq $subclass_use;
 			$subclass->clear_metadata();
 		}
+
+		# save new selection (explicit change or being set for first time)
+		&print_breaking("fink is setting your default update method to $method\n");
+		$config->set_param("SelfUpdateMethod", $method);
+		$config->save();
 	}
 
 	# Let's do this thang!
