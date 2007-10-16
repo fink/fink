@@ -1,3 +1,7 @@
+2007-10-16  Daniel Macks  <dmacks@netspace.org>
+
+	* COPYING, bootstrap, dpkg-checkall.sh, fink-virtual-pkgs.in, fink.in, inject.pl, install.sh, pathsetup.sh.in, postinstall.pl.in, setup.sh: Update FSF street address.
+
 2007-10-02  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* bootstrap, fink.conf.5.in: use SelfUpdateTrees instead of
