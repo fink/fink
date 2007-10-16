@@ -1,3 +1,7 @@
+2007-10-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Fink.pm.in:  Update FSF street address.
+
 2007-02-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Fink.pm.in: add /usr/X11/bin to the path
