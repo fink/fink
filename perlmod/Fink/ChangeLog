@@ -1,3 +1,7 @@
+2007-10-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum/*.pm, Finally/*.pm, Notify/*.pm, SelfUpdate/*.pm, *.pm, finkVersion.pm.in:  Update FSF street address.
+
 2007-10-15  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* SelfUpdate.pm: Try to remove old metadata first before switching
