@@ -243,6 +243,7 @@ sub fetch_url_to_file {
 					"Don't download, use existing file" => "use_it"
 				],
 				category => 'fetch',
+				timeout  => 120,
 			);
 		}
 		if ($result eq "retry") {

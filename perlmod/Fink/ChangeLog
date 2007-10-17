@@ -1,3 +1,8 @@
+2007-10-17  Daniel Macks  <dmacks@netspace.org>
+
+	* NetAccess.pm: timeout/selection for "already have the source"
+	same as Mirror.pm's "try next site"
+
 2007-10-16  Daniel Macks  <dmacks@netspace.org>
 
 	* Checksum/*.pm, Finally/*.pm, Notify/*.pm, SelfUpdate/*.pm, *.pm, finkVersion.pm.in:  Update FSF street address.
