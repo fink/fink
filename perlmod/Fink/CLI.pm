@@ -514,7 +514,7 @@ A false $category represents an uncategorized prompt.
 				'SkipPrompts', '');
 			$skip_cats = {
 				map { s/^\s+(.*?)\s+$/$1/; lc $_ => 1 } # Trim
-				split /,/, $str
+				split /,/, $str    # stupid perl.el needs this slash: /
 			};
 		}
 		return exists $skip_cats->{$cat};
