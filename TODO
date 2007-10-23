@@ -8,6 +8,9 @@ Minor
 
 * long validator wishlist in Validation.pm
 
+* Validator should complain if %p/share/gtk-doc is not in a package which
+  is BuildDependsOnly: true
+
 Medium
 ======
 
