@@ -43,7 +43,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages &add_injected_to_trees);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -322,19 +322,8 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	
 	### check that local/injected is in the Trees list
 	
-	my $trees = $config->param("Trees");
-	if ($trees =~ /^\s*$/) {
-		print "Adding a Trees line to fink.conf...\n";
-		$config->set_param("Trees", "local/main stable/main stable/crypto local/injected");
-		$config->save();
-	} else {
-		if (grep({$_ eq "local/injected"} split(/\s+/, $trees)) < 1) {
-			print "Adding local/injected to the Trees line in fink.conf...\n";
-			$config->set_param("Trees", "$trees local/injected");
-			$config->save();
-		}
-	}
-	
+	&add_injected_to_trees();
+
 	### create tarball for the package
 	
 	my $result = &create_tarball($bpath, $package, $packageversion, $packagefiles);
@@ -368,6 +357,35 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	print "\n";
 	
 	return 0;
+}
+
+=item add_injected_to_trees
+
+	my ($exit_value) = add_injected_to_trees();
+
+Adds local/injected to the Trees list, if not already present.  Returns
+1 on failure, 0 on success.
+
+Called by inject_packages() and fink's postinstall.pl.
+
+=cut
+
+sub add_injected_to_trees {
+
+	my $trees = $config->param("Trees");
+	if ($trees =~ /^\s*$/) {
+		print "Adding a Trees line to fink.conf...\n";
+		$config->set_param("Trees", "local/main stable/main stable/crypto local/injected");
+		$config->save();
+	} else {
+		if (grep({$_ eq "local/injected"} split(/\s+/, $trees)) < 1) {
+			print "Adding local/injected to the Trees line in fink.conf...\n";
+			$config->set_param("Trees", "$trees local/injected");
+			$config->save();
+		}
+	}
+
+	0;
 }
 
 =item additional_packages

@@ -1,3 +1,8 @@
+2007-10-23  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: Split out add_injected_to_trees as a separate function,
+	so that it can be used in fink's postinstall.pl.
+
 2007-09-02  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: *really* disable extended attribute copying when 
