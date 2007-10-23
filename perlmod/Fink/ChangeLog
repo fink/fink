@@ -1,3 +1,8 @@
+2007-10-23  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: Split out add_injected_to_trees as a separate function,
+	so that it can be used in fink's postinstall.pl.
+
 2007-10-17  Daniel Macks  <dmacks@netspace.org>
 
 	* NetAccess.pm: timeout/selection for "already have the source"
