@@ -5,8 +5,10 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchScript: sed 's|@PREFIX@|%p|g' <%a/dpkg.patch | patch -p1
-SetCFLAGS: -no-cpp-precomp -I%p/include
+PatchFile: %n.patch
+PatchFile-MD5: 78b236715ad6391f708a5776f43a65bf
+PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+SetCFLAGS: -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<

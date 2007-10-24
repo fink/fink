@@ -1,3 +1,8 @@
+2007-10-24  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg-bootstrap.info, dpkg-bootstrap.patch: Remove
+	non-bootstrappy stuff from bootstrap's patch.
+
 2007-10-14  Daniel Macks  <dmacks@netspace.org>
 
 	* debianutils.info, gettetxt.info, libgettext3-shlibs.info, ncurses-shlibs.info: sync with stable
