@@ -328,8 +328,24 @@ sub finish {
 		}
 	}
 
+	my $updatepackages = 0;
+
+	# add UpdatePackages, if any
+	if (defined($config->param("UpdatePackages"))) {
+		$updatepackages = 1;
+		my @ulist = split(/\s*,\s*/, $config->param("UpdatePackages"));
+		push (@elist, @ulist);
+	}
+
 	# update them
 	Fink::Engine::cmd_install(@elist);	
+
+	# remove the list of UpdatePackages
+	if ($updatepackages) {
+		$config->set_param("UpdatePackages", "");
+		$config->save();
+	}
+
 
 	# tell the user what has happened
 	print "\n";

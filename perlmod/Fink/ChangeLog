@@ -2,6 +2,7 @@
 
 	* Bootstrap.pm: Split out add_injected_to_trees as a separate function,
 	so that it can be used in fink's postinstall.pl.
+	* SelfUpdate.pm: Update the UpdatePackages listed in fink.conf.
 
 2007-10-17  Daniel Macks  <dmacks@netspace.org>
 
