@@ -248,6 +248,13 @@ END
 			"guarantees.");
 		&print_breaking($transitional_message{$transitional});
 		$distribution = "10.4$transitional";
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\.0/) {
+		&print_breaking("This is the first fink release which can be " .
+            "used with Mac OS X 10.5.  We support bootstrapping with this " .
+            "version, and we expect that upgrading from 10.4 will go " .
+            "smoothly with this version.  However, DIRECT UPGRADING FROM " .
+			"10.4-transitional, 10.3 OR EARLIER IS NOT SUPPORTED.");
+		$distribution = "10.5";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
