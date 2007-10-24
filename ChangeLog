@@ -2,6 +2,7 @@
 
 	* postinstall.pl.in: better documentation, and cp -> cp -f; only try
 	to create the 10.5 symlink once
+	* fink.info.in: include Distribution
 
 2007-10-23  Dave Morrison  <drm@finkproject.org>
 
