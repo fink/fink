@@ -2,6 +2,9 @@
 
 	* Bootstrap.pm: Split out add_injected_to_trees as a separate function,
 	so that it can be used in fink's postinstall.pl.
+	* SelfUpdate.pm: Update the UpdatePackages listed in fink.conf; also,
+	switch from SelfUpdateCVSTrees to SelfUpdateTrees, and enable rsync
+	updating on 10.5.
 
 2007-09-02  Dave Morrison  <drm@finkproject.org>
 

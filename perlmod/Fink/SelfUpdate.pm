@@ -159,13 +159,6 @@ sub check {
 		$config->save();	
 	}
 
-	# We temporarily disable rsync updating for 10.5, until we've decided
-	# how to handle it
-
-	if (($config->param("SelfUpdateMethod") eq "rsync") and ($distribution eq "10.5")) {
-		die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n\n";
-	}
-
 	# By now the config param SelfUpdateMethod should be set.
 	if (($config->param("SelfUpdateMethod") eq "cvs") and $useopt != 2){
 		&need_devtools('cvs');
@@ -403,7 +396,7 @@ sub setup_direct_cvs {
 		die "Downloading package descriptions from CVS failed.\n";
 	}
 
-	my @trees = split(/\s+/, $config->param_default("SelfUpdateCVSTrees", $distribution));
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $distribution));
 	chdir "fink" or die "Can't cd to fink\n";
 
 	for my $tree (@trees) {
@@ -525,7 +518,7 @@ sub do_direct_cvs {
 
 	# then, update the trees
 
-	my @trees = split(/\s+/, $config->param_default("SelfUpdateCVSTrees", $distribution));
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $distribution));
 	for my $tree (@trees) {
 		$cmd = "cvs ${verbosity} -z3 update -d -P ${tree}";
 		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
@@ -691,8 +684,24 @@ sub finish {
 		}
 	}
 
+	my $updatepackages = 0;
+
+	# add UpdatePackages, if any
+	if (defined($config->param("UpdatePackages"))) {
+		$updatepackages = 1;
+		my @ulist = split(/\s*,\s*/, $config->param("UpdatePackages"));
+		push (@elist, @ulist);
+	}
+
 	# update them
 	Fink::Engine::cmd_install(@elist);	
+
+	# remove the list of UpdatePackages
+	if ($updatepackages) {
+		$config->set_param("UpdatePackages", "");
+		$config->save();
+	}
+
 
 	# tell the user what has happened
 	print "\n";
@@ -714,6 +723,10 @@ sub do_direct_rsync {
 	my ($timecmd, $oldts, $newts);
 	my $origmirror;
 	my $dist = $distribution;
+# temporary workaround for 10.5 issue
+	if ($dist eq "10.5") {
+		$dist = "10.4";
+	}
 	my $rsynchost = $config->param_default("Mirror-rsync", "rsync://master.us.finkmirrors.net/finkinfo/");
 	# add rsync quiet flag if verbosity level permits
 	my $verbosity = "-q";
