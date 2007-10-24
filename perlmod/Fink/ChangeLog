@@ -2,7 +2,8 @@
 
 	* Bootstrap.pm: recognize 10.5.0, but with a warning about upgrades
 	* Bootstrap.pm: in modify_description, make a substitution on
-	@DISTRIBUTION@
+	@DISTRIBUTION@; use readlink() to determine the distribution when
+	running scripts
 
 2007-10-23  Dave Morrison  <drm@finkproject.org>
 
