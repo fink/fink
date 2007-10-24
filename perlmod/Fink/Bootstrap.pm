@@ -309,9 +309,7 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	}
 	
     ### determine $distribution
-	my $distribution = `ls -ld $bpath/fink/dists`;
-	chomp($distribution);
-	$distribution =~ s/^.*->\s+//;
+	my $distribution = readlink("$bpath/fink/dists");
 #	print "DISTRIBUTION $distribution\n";
 
 	### get version
@@ -783,9 +781,7 @@ sub copy_description {
 	}
 
 # determine $distribution
-	my $distribution = `ls -ld $bpath/fink/dists`;
-	chomp($distribution);
-	$distribution =~ s/^.*->\s+//;
+	my $distribution = readlink("$bpath/fink/dists");
 #	print "DISTRIBUTION $distribution\n";
 
 	my $coda = "NoSourceDirectory: true\n";
