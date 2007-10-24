@@ -808,6 +808,8 @@ Pre-evaluate any conditionals containing %{Distribution}, using
 $distribution as the value of %{Distribution}.  Append $coda to the end 
 of the file.
 
+Wrap the file in Info4, unless $distribution = 10.3 or 10.4.
+
 Returns 0 on success, 1 on failure.
 
 Called by copy_description() and scripts/srcdist/dist-module.pl .
@@ -834,6 +836,7 @@ sub modify_description {
 
 	open(IN,$original) or die "can't open $original: $!";
 	open(OUT,">$target") or die "can't write $target: $!";
+	print OUT "Info4: <<\n" unless (($distribution eq "10.3") or ($distribution eq "10.4"));
 	while (<IN>) {
 		chomp;
 		$_ =~ s/\@VERSION\@/$version/;
@@ -856,6 +859,7 @@ sub modify_description {
 	}
 	close(IN);
 	print OUT "$coda\n";
+	print OUT "<<\n" unless (($distribution eq "10.3") or ($distribution eq "10.4"));
 	close(OUT);
 
 	return $result;

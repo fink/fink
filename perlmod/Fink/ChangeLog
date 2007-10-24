@@ -2,7 +2,8 @@
 
 	* Bootstrap.pm: recognize 10.5.0, but with a warning about upgrades
 	* Bootstrap.pm: in modify_description, make a substitution on
-	@DISTRIBUTION@; use readlink() to determine the distribution when
+	@DISTRIBUTION@, and wrap the file in Info4, unless $distribution = 
+	10.3 or 10.4.  Also, use readlink() to determine the distribution when
 	running scripts
 
 2007-10-23  Dave Morrison  <drm@finkproject.org>
