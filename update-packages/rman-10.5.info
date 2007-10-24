@@ -1,0 +1,33 @@
+Package: rman
+Version: 3.1  
+Revision: 1
+Distribution: 10.5
+Description: Generalized filter for UNIX manual pages
+DescDetail: <<
+Takes as input man pages for a variety of UNIX flavors and produces as
+output a variety of file formats.
+PolyglotMan improves upon other man page filters in several ways: (1) its
+analysis recognizes the structural pieces of man pages, enabling high 
+quality output, (2) its modular structure permits easy augmentation of
+output formats, (3) it accepts man pages formatted with the variant
+macros of many different flavors of UNIX, and (4) it doesn't require
+modification of or cooperation with any other program.
+<<
+License: Artistic
+Source: mirror:sourceforge:polyglotman/%n-%v.tar.gz
+Source-MD5:62924b8f9773999b91450cc317f5ddb9
+PatchScript: <<
+ sed 's|@PREFIX@|%i|g' <%a/%n-10.5.patch >rman-10.5.patch
+ patch -p1 -l <rman-10.5.patch
+<<
+CompileScript: make
+InstallScript: <<
+ mkdir -p %i/share/man/man1
+ mkdir -p %i/bin
+ make install
+<<
+DocFiles:README-rman
+DescPort: rman is part of the xfree package but not tenon's Xtools
+Maintainer: Andrew Rohl <andrewrohl@mac.com>
+Homepage: http://polyglotman.sourceforge.net
+
