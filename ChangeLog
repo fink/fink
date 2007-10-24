@@ -1,6 +1,7 @@
 2007-10-24  Dave Morrison  <drm@finkproject.org>
 
-	* postinstall.pl.in: better documentation, and cp -> cp -f
+	* postinstall.pl.in: better documentation, and cp -> cp -f; only try
+	to create the 10.5 symlink once
 	* bootstrap: backports: FSF address, don't disable rsync, use
 	SelfUpdateTrees not SelfUpdateCVSTrees
 

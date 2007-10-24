@@ -261,9 +261,11 @@ if (-l "$basepath/fink/10.4") {
 if ($distribution eq "10.5") {
     $distroot = "10.4";
     $selfupdatetree = "10.4";
-    if (&execute("ln -s 10.4 $basepath/fink/10.5")) {
-	print "ERROR: Can't create link from 10.4 to $basepath/fink/10.5\n";
-	exit 1;
+    if (not (-l "$basepath/fink/10.5")) {
+	if (&execute("ln -s 10.4 $basepath/fink/10.5")) {
+	    print "ERROR: Can't create link from 10.4 to $basepath/fink/10.5\n";
+	    exit 1;
+	}
     }
 }
 
