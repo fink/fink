@@ -1,6 +1,8 @@
 2007-10-24  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.5.0, but with a warning about upgrades
+	* Bootstrap.pm: in modify_description, make a substitution on
+	@DISTRIBUTION@
 
 2007-10-23  Dave Morrison  <drm@finkproject.org>
 
