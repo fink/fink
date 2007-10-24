@@ -12,7 +12,7 @@ Source-MD5: 232b5bc916a1e2af43fde890f840a304
 SourceDirectory: %n-%v
 Patch: %n.patch
 InstallScript: <<
-  #!/bin/sh
+  #!/bin/sh -ev
   INSTALL=install
   INSTALL_FILE="$INSTALL -p -o root -g admin -m 644"
   INSTALL_PROGRAM="$INSTALL -p -o root -g admin -m 755"
