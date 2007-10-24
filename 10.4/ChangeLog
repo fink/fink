@@ -1,3 +1,7 @@
+2007-10-24  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg-bootstrap.info: more assertively disable gettext 
+
 2007-06-09  Dave Morrison  <drm@finkproject.org>
 
 	* apt.info dpkg.info dpkg.patch libiconv.info libiconv.patch ncurses.info tar.info: sync with stable
