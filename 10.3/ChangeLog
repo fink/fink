@@ -1,3 +1,8 @@
+2007-10-24  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg-bootstrap.info, dpkg-bootstrap.patch: Remove
+	non-bootstrappy stuff from bootstrap's patch.
+
 2007-06-09  Dave Morrison  <drm@finkproject.org>
 
 	* apt.info dpkg.info dpkg.patch libiconv.info libiconv.patch ncurses.info tar.info unzip.info unzip.patch: sync with stable
