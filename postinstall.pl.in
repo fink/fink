@@ -106,8 +106,11 @@ my $updating = 0;
 if ( not ($distold eq $distribution)) {
     add_injected_to_trees();
     $updating = 1;
+### FIXME: this variable is a hook to action in Fink::SelfUpdate::finish,
+### but that action has not yet been implemented.  (The variable should
+### be zeroed out in SelfUpdate.pm after the action has been taken.)
     $config->set_param("UpdateFrom", $distold);
-   ### add packages depending on which Update
+### add packages depending on which Update
     if (($distold eq "10.4") and ($distribution eq "10.5")) {
 	$config->set_param("UpdatePackages", "perl586-core, rman");
     }
@@ -313,14 +316,15 @@ $config->set_param("SelfUpdateCVSTrees", "");
 $config->save();
 
 # Now that we've symlinked to the new directory, we can copy over the
-# upgrade packages if they exist.
+# update packages if we are updating.
 
 if ($updating) {
     if(&execute("/bin/mkdir -p $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
 	print "ERROR: couldn't create directory $basepath/fink/dists/local/injected/finkinfo/update-packages\n";
 	exit 1;
     }
-    if (&execute("cp $basepath/lib/fink/update-packages/* $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
+# just in case we need to overwrite something, use cp -f
+    if (&execute("cp -f $basepath/lib/fink/update-packages/* $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
 	print "ERROR: couldn't copy package desriptions to $basepath/fink/dists/local/injected/finkinfo/update-packages\n";
 	exit 1;
     }
