@@ -1,3 +1,7 @@
+2007-10-24  Dave Morrison  <drm@finkproject.org>
+
+	* unzip.patch: add missing file
+
 2007-10-24  Daniel Macks  <dmacks@netspace.org>
 
 	* dpkg-bootstrap.info: more assertively disable gettext 
