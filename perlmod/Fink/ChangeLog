@@ -1,3 +1,7 @@
+2007-10-24  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: recognize 10.5.0, but with a warning about upgrades
+
 2007-10-23  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: Split out add_injected_to_trees as a separate function,
