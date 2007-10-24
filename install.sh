@@ -41,7 +41,7 @@ chmod 755 "$basepath"
 for dir in bin sbin \
 	lib lib/perl5 lib/perl5/Fink \
 	lib/perl5/Fink/{Text,Notify,Checksum,Finally,SelfUpdate} \
-	lib/fink lib/fink/update \
+	lib/fink lib/fink/update lib/fink/update-packages \
 	etc etc/dpkg \
 	share share/doc share/doc/fink \
 	share/man share/man/man{3,5,8} \
@@ -75,6 +75,10 @@ for subdir in . Fink Fink/{Text,Notify,Checksum,Finally,SelfUpdate} ; do
       install -c -p -m 644 $file "$basepath/lib/perl5/$subdir"
     fi
   done
+done
+
+for file in update-packages/* ; do
+  install -c -p -m 644 $file "$basepath/lib/fink/update-packages/"
 done
 
 for file in update/config.guess update/config.sub update/ltconfig ; do
