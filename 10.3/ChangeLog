@@ -1,5 +1,9 @@
 2007-10-24  Daniel Macks  <dmacks@netspace.org>
 
+	* dpkg-bootstrap.info: more assertively disable gettext 
+
+2007-10-24  Daniel Macks  <dmacks@netspace.org>
+
 	* dpkg-bootstrap.info, dpkg-bootstrap.patch: Remove
 	non-bootstrappy stuff from bootstrap's patch.
 

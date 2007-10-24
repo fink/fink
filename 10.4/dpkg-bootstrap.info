@@ -15,7 +15,7 @@ CompileScript: <<
  PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
  make
 <<
-ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix
+ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix --disable-nls
 InstallScript: <<
  mkdir -p %i/share/doc/dpkg
  make install DESTDIR=%d

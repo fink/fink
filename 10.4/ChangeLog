@@ -1,3 +1,7 @@
+2007-10-24  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg-bootstrap.info: more assertively disable gettext 
+
 2007-10-14  Daniel Macks  <dmacks@netspace.org>
 
 	* debianutils.info, libgettext3-shlibs: sync with stable
