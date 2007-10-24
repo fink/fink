@@ -4,6 +4,7 @@
 	to create the 10.5 symlink once
 	* bootstrap: backports: FSF address, don't disable rsync, use
 	SelfUpdateTrees not SelfUpdateCVSTrees
+	* fink.info.in: include Distribution
 
 2007-10-23  Dave Morrison  <drm@finkproject.org>
 

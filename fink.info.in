@@ -1,6 +1,7 @@
 Package: fink
 Version: @VERSION@
 Revision: @REVISION@
+Distribution: @DISTRIBUTION@
 Depends: base-files
 Suggests: <<
  (%{Distribution} = 10.3) term-readkey-pm581 
