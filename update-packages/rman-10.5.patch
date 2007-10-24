@@ -1,0 +1,21 @@
+diff -ru rman-3.0.9/Makefile rman-3.0.9-patched/Makefile
+--- rman-3.0.9/Makefile Thu Jun 22 09:05:56 2000
++++ rman-3.0.9-patched/Makefile Sat May 19 14:46:45 2001
+@@ -15,14 +15,14 @@
+ #    this must be a directory that's in your bin PATH.
+ # MANDIR holds the man page.
+ 
+-BINDIR = /usr/local/bin
++BINDIR = @PREFIX@/bin
+ #BINDIR = //C/bin
+-MANDIR = /usr/local/man/man1
++MANDIR = @PREFIX@/share/man/man1
+ 
+ 
+ ### if you have GNU gcc v2.x, use these definitions
+ 
+-CC = gcc
++CC = cc
+ # if you don't have gcc v2.x, try -O for CFLAGS
+ CFLAGS = -O2 -finline-functions
+ 
