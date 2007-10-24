@@ -805,10 +805,10 @@ sub copy_description {
 
 	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda,$version,$revision);
 
-Copy the file $original to $target, supplying the correct version and
-revision (from get_version_revision($package_source,$distribution)) and 
-$source_location as well as an MD5 sum calculated from 
-$tarball.  Pre-evaluate any conditionals containing %{Distribution}, using
+Copy the file $original to $target, supplying the correct version, revision,
+and distribution (from get_version_revision($package_source,$distribution)) 
+as well as $source_location and an MD5 sum calculated from $tarball.
+Pre-evaluate any conditionals containing %{Distribution}, using
 $distribution as the value of %{Distribution}.  Append $coda to the end 
 of the file.
 
@@ -844,6 +844,7 @@ sub modify_description {
 		$_ =~ s/\@REVISION\@/$revision/;
 		$_ =~ s/\@SOURCE\@/$source_location/;
 		$_ =~ s/\@MD5\@/$md5/;
+		$_ =~ s/\@DISTRIBUTION\@/$distribution/;
 # only remove conditionals which match "%{Distribution}" (and we will
 # remove the entire line if the condition fails)
 		if ($_ =~ s/%\{Distribution\}/$distribution/) {
