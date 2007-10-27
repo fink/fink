@@ -1,3 +1,8 @@
+2007-10-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Services.pm: some leopard/xcode upgrades end up leaving
+	gcc_select around; make sure it's ignored on 10.5 and higher.
+
 2007-10-24  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.5.0, but with a warning about upgrades
