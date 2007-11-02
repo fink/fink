@@ -4967,11 +4967,11 @@ sub run_script {
 			$error .= "\n\nBefore reporting any errors, please run \"fink selfupdate\" and\n" .
 				"try again.  If you continue to have issues, please check to see if the\n" .
 				"FAQ on fink's website solves the problem.  If not, ask on the fink-users\n" .
-				"or fink-beginners mailing lists.  As a last resort, you can try e-mailing\n".
-				"the maintainer directly:\n\n".
+				"or fink-beginners mailing lists, with a carbon copy to the maintainer:\n\n".
 				"\t" . $self->param('maintainer') . "\n\n";
-$error .= "Note that many fink package maintainers do not have access to all possible\n" .
-	"hardware configurations, so you may have better luck on the mailing lists.\n\n";
+$error .= "Note that this is preferable to emailing the maintainer directly, since\n" .
+	"most fink package maintainers do not have access to all possible\n" .
+	"hardware and software configurations.\n\n";
 		}
 		die $error . "\n";
 	}
