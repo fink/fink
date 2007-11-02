@@ -3,6 +3,8 @@
 	* fink.conf.5.in: backport SelfUpdateCVSTrees -> SelfUpdateTrees change
 	* postinstall.pl.in: if /sw/fink/10.5 exists but isn't a symlink, 
 	remove it
+	* VERSION: Bumped package manager version to 0.27.8, a bugfix release
+	on branch_0_27
 
 2007-10-24  Dave Morrison  <drm@finkproject.org>
 
