@@ -258,10 +258,43 @@ if (-l "$basepath/fink/10.4") {
 
 # At present, 10.5 is a special case.
 
+my $notlink;
+
 if ($distribution eq "10.5") {
     $distroot = "10.4";
     $selfupdatetree = "10.4";
-    if (not (-l "$basepath/fink/10.5")) {
+    $notlink = "1";
+### we want $basepath/fink/10.5 to be a symlink, but if it already exists
+### and is *not* a symlink (or not the correct symlink), we move it out of
+### the way first
+    if (-l "$basepath/fink/10.5") {
+	if (readlink("$basepath/fink/10.5") eq "10.4") {
+	    $notlink = "0";
+	}
+    }
+    if (-e "$basepath/fink/10.5") {
+	if (-e "$basepath/fink/10.5.old") {
+	   my $aanswer = &prompt_boolean("\nWARNING: you have an obsolete file or directory $basepath/fink/10.5.old which must be removed before the installation can continue; do you want to remove it now?\n", default => 1, timeout => 60);
+	   if ($aanswer) {
+	    if (&execute("/bin/rm -rf $basepath/fink/10.5.old")) {
+		print "ERROR: Cannot remove $basepath/fink/10.5.old\n";
+		exit 1;
+	    }
+	   } else {
+	       print "\nOK: please run 'fink reinstall fink' when you are ready to have this file or directory deleted.\n\n";
+	       exit 1;
+	   }
+	   
+	}
+	if ($notlink) {
+	    if (&execute("/bin/mv $basepath/fink/10.5 $basepath/fink/10.5.old")) {
+		print "ERROR: Can't move $basepath/fink/10.5 to $basepath/fink/10.5.old\n";
+		exit 1;
+	    }
+	    print "\nWARNING: An unexpected file or directory $basepath/fink/10.5 was found,\nand was moved to $basepath/fink/10.5.old .  It will be deleted the next time\nfink is updated, unless you have deleted it yourself before then.\n\n";
+	}
+    }
+    if ($notlink) {
 	if (&execute("ln -s 10.4 $basepath/fink/10.5")) {
 	    print "ERROR: Can't create link from 10.4 to $basepath/fink/10.5\n";
 	    exit 1;

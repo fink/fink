@@ -1,3 +1,9 @@
+2007-11-01  Dave Morrison  <drm@finkproject.org>
+
+	* fink.conf.5.in: backport SelfUpdateCVSTrees -> SelfUpdateTrees change
+	* postinstall.pl.in: if /sw/fink/10.5 exists but isn't a symlink, 
+	remove it
+
 2007-10-24  Dave Morrison  <drm@finkproject.org>
 
 	* postinstall.pl.in: better documentation, and cp -> cp -f; only try

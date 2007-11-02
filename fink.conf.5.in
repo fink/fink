@@ -215,8 +215,8 @@ will download using anonymous or :ext:
 access from the fink repository. This has the disadvantage that cvs can not switch mirrors, if the server is unavailable you will not be able to update.
 .Nm point
 will download only the latest released version of the packages. It is not recommended as your packages may be quite out of date.
-.It Cm SelfUpdateCVSTrees: Ar list of trees
-By default, the CVS selfupdate method will update only the current
+.It Cm SelfUpdateTrees: Ar list of trees
+By default, the selfupdate methods will update only the current
 distribution's tree.  This option overrides the list of distribution
 versions that will be updated during a selfupdate.
 .Pp
