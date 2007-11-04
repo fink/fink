@@ -409,8 +409,8 @@ However, certain commands know to ignore them if they're 'excluded'.
 		return if get_option('_magic_trees'); # Already done this
 		
 		# Get trees specified on command line, all trees available
-		my @include = split /,/, join ',', @{get_option('include_trees', [])};
-		my @exclude = split /,/, join ',', @{get_option('exclude_trees', [])};
+		my @include = split /,/, join ',', @{get_option('include_trees', [])}; #/
+		my @exclude = split /,/, join ',', @{get_option('exclude_trees', [])}; #/
 		my @avail = ($self->_standard_treelist(), keys %is_magic);
 		
 		# First include
