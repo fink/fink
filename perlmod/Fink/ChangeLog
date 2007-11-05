@@ -1,3 +1,8 @@
+2007-11-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Services.pm: skip the gcc_select check since
+	  readlink("/usr/bin/gcc") should be just as correct, and faster
+
 2007-11-01  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: improved message about the state of fink on leopard
