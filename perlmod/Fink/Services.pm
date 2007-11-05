@@ -1279,16 +1279,13 @@ selection cannot be determined.
 =cut
 
 sub gcc_selected {
-	if (not get_osx_vers() ge "10.5") {
-		if (-x '/usr/sbin/gcc_select') {
-			chomp(my $gcc_select = `/usr/sbin/gcc_select 2>&1`);
-			return $gcc_select if $gcc_select =~ s/^.*gcc version (\S+)\s+.*$/$1/gs;
-		}
-	}
+	# this should work anywhere we support, really
 	if (-l '/usr/bin/gcc') {
 		my $link = readlink('/usr/bin/gcc');
 		if ($link =~ /gcc-(\d+\.\d+)/) {
 			return $1;
+		} else {
+			print STDERR "WARNING: /usr/bin/gcc is not a symlink!";
 		}
 	}
 	return 0;
@@ -1304,7 +1301,7 @@ breakage. This function checks for such breakage and fixes it if necessary.
 =cut
 
 sub fix_gcc_repairperms {
-	return if (get_osx_vers() ge "10.5");
+	return if (get_osx_vers() >= 10.5);
 	return unless gcc_select_arg(gcc_selected) eq '4.0';
 	if (-x '/usr/sbin/gcc_select') {
 		system('/usr/bin/env PATH=/usr/sbin:/usr/bin:/sbin:/bin '
