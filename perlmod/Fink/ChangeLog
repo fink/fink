@@ -1,3 +1,7 @@
+2007-11-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Add note to "fink info" for BDO packages.
+
 2007-11-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Services.pm: skip the gcc_select check since

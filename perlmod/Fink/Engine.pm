@@ -871,6 +871,9 @@ sub cmd_description {
 		} else {
 			print $package->get_fullname().": ";
 			print $package->get_description();
+			if ($package->param_boolean("BuildDependsOnly")) {
+				print " .\n Note: This package contains compile-time files only.\n";
+			}
 		}
 		print "\n";
 	}
