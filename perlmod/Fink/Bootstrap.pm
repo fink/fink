@@ -237,7 +237,7 @@ END
 			"and assume to run on a PowerPC based operating ".
 			"system. Use Fink on this system at your own risk!");
 		$distribution = "10.3";
-	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\.([0-9]|10)\.[0-3]/) {
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\.([0-9]|1[0-1])\.[0-3]/) {
 		&print_breaking("This system is supported and tested.");
 		&print_breaking($transitional_message{$transitional});
 		$distribution = "10.4$transitional";
@@ -248,7 +248,7 @@ END
 			"guarantees.");
 		&print_breaking($transitional_message{$transitional});
 		$distribution = "10.4$transitional";
-	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\.0/) {
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\.[0-1]\.[0-3]/) {
 		&print_breaking("\nThis is one of the first fink releases which can be " .
             "used with Mac OS X 10.5.  We support bootstrapping with this " .
             "version, and we expect that upgrading from 10.4 will go " .
