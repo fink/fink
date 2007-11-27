@@ -1,3 +1,7 @@
+2007-11-27  Alexander Hansen <akh@finkproject.org>
+
+	* Bootstrap.pm: recognize 10.5.1 and 10.4.11 .
+
 2007-11-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Services.pm: skip the gcc_select check since
