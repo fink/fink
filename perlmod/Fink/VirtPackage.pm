@@ -49,6 +49,7 @@ our $VERSION = ( qw$Revision$ )[-1];
 use Fink::Config qw($config $basepath);
 use POSIX qw(uname tmpnam);
 use Fink::Status;
+use File::Basename;
 
 use constant STATUS_PRESENT => "install ok installed";
 use constant STATUS_ABSENT  => "purge ok not-installed";
@@ -997,6 +998,26 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
+=item [pkgconfig packages]
+
+Fink will scan for .pc files in common places, and create
+virtual packages. (See &package_from_pkgconfig).
+
+=cut
+
+	for my $dir ('/usr/X11/lib/pkgconfig', '/usr/X11R6/lib/pkgconfig', '/usr/lib/pkgconfig') {
+		next unless (-d $dir);
+		if (opendir(PKGCONFIG_DIR, $dir)) {
+			while (my $file = readdir(PKGCONFIG_DIR)) {
+				next unless ($file =~ /\.pc$/);
+				my $hash = package_from_pkgconfig($dir . '/' . $file);
+				$self->{$hash->{package}} = $hash;
+			}
+		} else {
+			print STDERR "WARNING: unable to read from $dir: $!\n";
+		}
+	}
+
 	if ( has_lib('libX11.6.dylib') )
 	{
 		# check the status of xfree86 packages
@@ -1094,7 +1115,20 @@ END
 			$hash->{provides} = join ',', map $self->{$_}->{provides}, qw/ system-xfree86 system-xfree86-shlibs system-xfree86-dev /;
 			$self->{$hash->{package}} = $hash;
 
-			my ($xver) = check_x11_version();
+			my $found_pc_x11 = 1;
+			for my $pkgname ('applewm', 'fontconfig', 'freetype2', 'x11', 'xcb') {
+				if (not exists $self->{'pkgconfig-pkg-' . $pkgname} or $self->{'pkgconfig-pkg-' . $pkgname}->{status} ne STATUS_PRESENT) {
+					$found_pc_x11 = 0;
+					last;
+				}
+			}
+			my $xver = 0;
+			if ($found_pc_x11) {
+				$xver = '7';
+			} else {
+				($xver) = check_x11_version();
+			}
+
 			if (defined $xver) {
 				$hash = {};
 				my $provides;
@@ -1555,6 +1589,89 @@ sub has_lib {
 	}
 	print STDERR "missing\n" if ($options{debug});
 	return;
+}
+
+=item &package_from_pkgconfig($name)
+
+Creates a virtual package from a pkgconfig file.
+
+If $name is a relative path, searches /usr, /usr/X11,
+and /usr/X11R6 pkgconfig directories and takes the
+first match.
+
+The package name will be the in the form
+"pkgconfig-pkg-name".
+
+Returns a package object hash.
+
+=cut
+
+sub package_from_pkgconfig {
+	my $filename = shift;
+	my @search_files;
+
+	print STDERR "- scanning pkgconfig file $filename... " if ($options{debug});
+	if ($filename =~ /^\//) {
+		push(@search_files, $filename);
+	} else {
+		for my $dir ('/usr', '/usr/X11', '/usr/X11R6') {
+			push(@search_files, $dir . '/lib/pkgconfig/' . $filename);
+		}
+	}
+
+	for my $file (@search_files) {
+		if (-e $file) {
+			my $hash = {};
+			my $name = basename($file);
+			$name =~ s/\.pc$//;
+
+			my $pkgconfig_hash = {};
+			$hash->{package} = 'pkgconfig-pkg-' . $name;
+
+			if (open(PKGCONFIG, $file)) {
+				while (my $line = <PKGCONFIG>) {
+					chomp($line);
+					if ($line =~ /^\s*([^\:]+)\s*\:\s*(.*?)\s*$/) {
+						$pkgconfig_hash->{lc($1)} = $2;
+					}
+				}
+				close(PKGCONFIG);
+			} else {
+				print STDERR "WARNING: could not read $file: $!\n" if ($options{debug});
+			}
+
+			$hash->{description} = "[virtual pkgconfig package representing $name]";
+			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{status} = STATUS_PRESENT;
+			if ($pkgconfig_hash->{'version'}) {
+				$hash->{version} = $pkgconfig_hash->{'version'} . '-1';
+				print STDERR $hash->{version}, "\n" if ($options{debug});
+			} else {
+				$hash->{version} = '0-0';
+				print STDERR "unknown\n" if ($options{debug});
+			}
+			$hash->{descdetail} = <<END;
+$pkgconfig_hash->{'description'}
+
+This package represents the pkgconfig file found at:
+	$file
+END
+			my $requires = "";
+			for ('requires', 'requires.private') {
+				if (exists $pkgconfig_hash->{$_}) {
+					$requires .= " " . $pkgconfig_hash->{$_};
+				}
+			}
+			$requires =~ s/^ *//;
+			if ($requires ne "") {
+				$hash->{descdetail} .= "\nIt expects the following pkgconfig packages to exist:\n\t" . $requires . "\n";
+			}
+			$hash->{compilescript} = &gen_compile_script($hash);
+			return $hash;
+
+			last;
+		}
+	}
 }
 
 =item &check_x11_version()
