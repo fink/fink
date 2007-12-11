@@ -1,4 +1,4 @@
-# -*- mode: Perl; tab-width: 4; -*-
+# -*- mode: Perl; tab-width: 4; -*-'
 #
 # Fink::VirtPackage class
 #
@@ -72,8 +72,9 @@ BEGIN {
 }
 our @EXPORT_OK;
 
-my @xservers     = ('XDarwin', 'Xquartz', 'XDarwinQuartz');
-my $the_instance = undef;
+my $pkgconfig_virtual_prefix = 'virtual-pkgconfig-';
+my @xservers                 = ('XDarwin', 'Xquartz', 'XDarwinQuartz');
+my $the_instance             = undef;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -1116,15 +1117,15 @@ END
 			$self->{$hash->{package}} = $hash;
 
 			my $found_pc_x11 = 1;
-			for my $pkgname ('applewm', 'fontconfig', 'freetype2', 'x11', 'xcb') {
-				if (not exists $self->{'pkgconfig-pkg-' . $pkgname} or $self->{'pkgconfig-pkg-' . $pkgname}->{status} ne STATUS_PRESENT) {
+			for my $pkgname ('applewm', 'fontconfig', 'freetype2', 'x11', 'xcb', 'xorg-server') {
+				if (not exists $self->{$pkgconfig_virtual_prefix . $pkgname} or $self->{$pkgconfig_virtual_prefix . $pkgname}->{status} ne STATUS_PRESENT) {
 					$found_pc_x11 = 0;
 					last;
 				}
 			}
 			my $xver = 0;
 			if ($found_pc_x11) {
-				$xver = '7';
+				$xver = '7.2';
 			} else {
 				($xver) = check_x11_version();
 			}
@@ -1600,7 +1601,7 @@ and /usr/X11R6 pkgconfig directories and takes the
 first match.
 
 The package name will be the in the form
-"pkgconfig-pkg-name".
+"virtual-pkgconfig-name".
 
 Returns a package object hash.
 
@@ -1626,7 +1627,7 @@ sub package_from_pkgconfig {
 			$name =~ s/\.pc$//;
 
 			my $pkgconfig_hash = {};
-			$hash->{package} = 'pkgconfig-pkg-' . $name;
+			$hash->{package} = $pkgconfig_virtual_prefix . $name;
 
 			if (open(PKGCONFIG, $file)) {
 				while (my $line = <PKGCONFIG>) {

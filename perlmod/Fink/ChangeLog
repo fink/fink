@@ -1,3 +1,8 @@
+2007-12-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: add support for .pc file virtuals, force x11
+	release version based on existence of certain .pc virtuals
+
 2007-11-27  Alexander Hansen <akh@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.5.1 and 10.4.11 .
