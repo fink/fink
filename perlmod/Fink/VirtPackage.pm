@@ -72,7 +72,7 @@ BEGIN {
 }
 our @EXPORT_OK;
 
-my $pkgconfig_virtual_prefix = 'virtual-pkgconfig-';
+my $pkgconfig_virtual_prefix = 'system-pkgconfig-';
 my @xservers                 = ('XDarwin', 'Xquartz', 'XDarwinQuartz');
 my $the_instance             = undef;
 
@@ -1601,7 +1601,7 @@ and /usr/X11R6 pkgconfig directories and takes the
 first match.
 
 The package name will be the in the form
-"virtual-pkgconfig-name".
+"system-pkgconfig-I<name>".
 
 Returns a package object hash.
 
