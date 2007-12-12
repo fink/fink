@@ -4677,7 +4677,7 @@ sub get_env {
 	my $self = shift;
 
 	# just return cached copy if there is one
-	if (exists $self->{_script_env} and not $self->{_bootstrap}) {
+	if (not $self->{_bootstrap} and exists $self->{_script_env} and defined $self->{_script_env} and ref $self->{_script_env} eq "HASH") {
 		# return ref to a copy, so caller changes do not modify cached value
 		return \%{$self->{_script_env}};
 	}
