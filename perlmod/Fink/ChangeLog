@@ -1,3 +1,8 @@
+2007-11-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: If cleanup-obsoletes removes all obsolete packages,
+	also remove the fink-obsolete-packages package
+
 2007-12-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: add support for .pc file virtuals, force x11

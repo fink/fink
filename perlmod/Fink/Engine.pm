@@ -1486,6 +1486,9 @@ sub cleanup_obsoletes {
 
 	if ($problems) {
 		&print_breaking("\nWARNING: not all obsolete packages could be removed.");
+	} elsif (!$opts{dryrun}) {
+		# all obsoletes removed, so remove the fink-obsolete-packages sentinel itself
+		&execute(dpkg_lockwait() . ' --purge fink-obsolete-packages', ignore_INT => 1);
 	}
 
 	return $problems;
