@@ -1,3 +1,8 @@
+2007-12-14  Daniel Macks  <dmacks@netspace.org>
+
+	* failure.t: Supress a failure that seems to be triggered if users
+	manually install some unknown set of CPAN modules
+
 2005-08-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* du_sk.t: Allow for a certain amount of error in list test, to account
