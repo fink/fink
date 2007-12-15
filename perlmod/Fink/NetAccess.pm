@@ -386,51 +386,64 @@ sub download_cmd {
 	}
 
 	# if we would prefer wget (or didn't have curl available), check for wget
-	if ((!$cmd or $config->param_default("DownloadMethod") eq "wget") and
-			(-x "$basepath/bin/wget" or -x "/usr/bin/wget")) {
-		$cmd = "wget -U 'fink/". Fink::FinkVersion::fink_version() ."'";
-		if ($config->verbosity_level() >= 1) {
-			$cmd .= " --verbose";
-		} else {
-			$cmd .= " -nv";
-		}
-		if ($config->param_boolean("ProxyPassiveFTP")) {
-			$cmd .= " --passive-ftp";
-		}
-		if ($file ne &filename($url)) {
-			$cmd .= " -O $cmd_file";
-		}
-		if ($cont) {
-			$cmd .= " -c"
+	if (!$cmd or $config->param_default("DownloadMethod") eq "wget") {
+		if (-x "$basepath/bin/wget" or -x "/usr/bin/wget") {
+			$cmd = "wget -U 'fink/". Fink::FinkVersion::fink_version() ."'";
+			if ($config->verbosity_level() >= 1) {
+				$cmd .= " --verbose";
+			} else {
+				$cmd .= " -nv";
+			}
+			if ($config->param_boolean("ProxyPassiveFTP")) {
+				$cmd .= " --passive-ftp";
+			}
+			if ($file ne &filename($url)) {
+				$cmd .= " -O $cmd_file";
+			}
+			if ($cont) {
+				$cmd .= " -c"
+			}
+		} elsif ($config->param_default("DownloadMethod") eq "wget") {
+			&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (program not found)");
 		}
 	}
 
 	# if we would prefer axel (or didn't have curl or wget available), check for axel
-	if ((!$cmd or $config->param_default("DownloadMethod") eq "axel"
-						 or $config->param_default("DownloadMethod") eq "axelautomirror") and
-			(-x "$basepath/bin/axel" or -x "/usr/bin/axel")) {
-		$cmd = "axel";
-		if ($config->param_default("DownloadMethod") eq "axelautomirror") {
-			$cmd = "axel -S 1";
+	if (!$cmd or $config->param_default("DownloadMethod") eq "axel"
+						 or $config->param_default("DownloadMethod") eq "axelautomirror") {
+		if (-x "$basepath/bin/axel" or -x "/usr/bin/axel") {
+			$cmd = "axel";
+			if ($config->param_default("DownloadMethod") eq "axelautomirror") {
+				$cmd = "axel -S 1";
+			}
+			if ($config->verbosity_level() >= 1) {
+				$cmd .= " -v";
+			}
+			if ($file ne &filename($url)) {
+				$cmd .= " -o $cmd_file";
+			}
+			# Axel always continues downloads, by default
+		} elsif ($config->param_default("DownloadMethod") eq "axel" or $config->param_default("DownloadMethod") eq "axelautomirror") {
+			&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (program not found)");
 		}
-		if ($config->verbosity_level() >= 1) {
-			$cmd .= " -v";
-		}
-		if ($file ne &filename($url)) {
-			$cmd .= " -o $cmd_file";
-		}
-		# Axel always continues downloads, by default
 	}
 
 	# lftpget doesn't let us rename a file as we download, so we skip unless $file eq &filename($url)
-	if ((!$cmd or $config->param_default("DownloadMethod") eq "lftpget") and
-			(-x "$basepath/bin/lftpget" or -x "/usr/bin/lftpget") and ($file eq &filename($url))) {
-		$cmd = "lftpget";
-		if ($config->verbosity_level() >= 1) {
-			$cmd .= " -v";
-		}
-		if ($cont) {
-			$cmd .= " -c";
+	if (!$cmd or $config->param_default("DownloadMethod") eq "lftpget") {
+		if (-x "$basepath/bin/lftpget" or -x "/usr/bin/lftpget") {
+			if ($file eq &filename($url)) {
+				$cmd = "lftpget";
+				if ($config->verbosity_level() >= 1) {
+					$cmd .= " -v";
+				}
+				if ($cont) {
+					$cmd .= " -c";
+				}
+			} else {
+				&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (no support for renaming the downloaded file)");
+			}
+		} elsif ($config->param_default("DownloadMethod") eq "lftpget") {
+			&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (program not found)");
 		}
 	}
 

@@ -1,5 +1,9 @@
 2007-11-24  Daniel Macks  <dmacks@netspace.org>
 
+	* NetAccess.pm: Tell user if overriding the DownloadMethod pref.
+
+2007-11-24  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: If cleanup-obsoletes removes all obsolete packages,
 	also remove the fink-obsolete-packages package
 
