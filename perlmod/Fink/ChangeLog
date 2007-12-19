@@ -1,3 +1,7 @@
+2007-12-18  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Complain if a .la contains -framework not in -Wl,
+
 2007-11-24  Daniel Macks  <dmacks@netspace.org>
 
 	* NetAccess.pm: Tell user if overriding the DownloadMethod pref.

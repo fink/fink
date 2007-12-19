@@ -1401,7 +1401,7 @@ sub validate_dpkg_unpacked {
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
 # - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
-# - Catch common error relating to usage of -framework flag in .pc file
+# - Catch common error relating to usage of -framework flag in .pc and .la files
 # - Look for symptoms of missing InfoDocs field in .info
 # - Look for packages that contain no files
 #
@@ -1736,15 +1736,16 @@ sub _validate_dpkg {
 		}
 
 		# Check for common programmer mistakes relating to passing -framework flags in pkg-config files
-		if ($filename =~ /\.pc$/) {
-			if (!-l $File::Find::name and open my $pc_file, '<', $File::Find::name) {
-				while (<$pc_file>) {
+		if ($filename =~ /\.(pc|la)$/) {
+			my $filetype = ($1 eq 'pc' ? 'pkg-config' : 'libtool');
+			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
+				while (<$datafile>) {
 					chomp;
 					if (/\s((?:-W.,|)-framework)[^,]/) {
-						&stack_msg($msgs, "The $1 flag may get munged by pkg-config. See the gcc manpage for information about passing options to flags for specific compiler passes.", $filename, $_);
+						&stack_msg($msgs, "The $1 flag may get munged by $filetype. See the gcc manpage for information about passing multi-word options to flags for specific compiler passes.", $filename, $_);
 					}
 				}
-				close $pc_file;
+				close $datafile;
 			} elsif (!-l _) {
 				&stack_msg($msgs, "Couldn't read pkg-config file \"$filename\": $!");
 			}
