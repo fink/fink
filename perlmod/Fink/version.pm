@@ -3,7 +3,14 @@
 #
 # This module can be distributed under the same terms as Perl.
 # Copyright (C) 2004,2005,2006,2007 John Peacock
-# 
+#
+# For the changes by Fink:
+# Copyright (C) 2007-2008 The Fink Package Manager Team.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
 # It was converted to Fink::version and further modified for use by
 # Fink. You can read about these changes in the accompanying ChangeLog
 # files and by browsing the CVS repository.
