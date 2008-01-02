@@ -1,3 +1,7 @@
+2008-01-01  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap, dpkg-checkall.sh, fink-virtual-pkgs.in, fink.in, inject.pl, install.sh, pathsetup.sh.in, postinstall.pl.in, setup.sh: Update copyright.
+
 2007-11-01  Dave Morrison  <drm@finkproject.org>
 
 	* postinstall.pl.in: if /sw/fink/10.5 exists but isn't a symlink, 
