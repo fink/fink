@@ -1,4 +1,4 @@
-2008-01-01  Dave Morrison  <drm@finkproject.org>
+2008-01-01  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap, dpkg-checkall.sh, fink-virtual-pkgs.in, fink.in, inject.pl, install.sh, pathsetup.sh.in, postinstall.pl.in, setup.sh: Update copyright.
 
