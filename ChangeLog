@@ -1,3 +1,7 @@
+2008-01-01  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap, dpkg-checkall.sh, fink-virtual-pkgs.in, fink.in, inject.pl, install.sh, pathsetup.sh.in, postinstall.pl.in, setup.sh: Update copyright.
+
 2007-11-06  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.27.9, a bugfix release
