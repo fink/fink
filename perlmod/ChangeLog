@@ -1,3 +1,7 @@
+2008-01-02  Daniel Macks  <dmacks@netspace.org>
+
+	* Fink.pm.in: updated Copyright notice
+
 2007-02-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Fink.pm.in: add /usr/X11/bin to the path
