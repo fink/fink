@@ -1,3 +1,8 @@
+2008-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* rsync: remove some dead ones (confirm martinm on fink-core 09Oct07
+
+
 2007-10-16  Daniel Macks  <dmacks@netspace.org>
 
 	* COPYING, inject.pl, install.sh, postinstall.pl.in: Update FSF street address.
