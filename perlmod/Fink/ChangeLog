@@ -1,3 +1,7 @@
+2008-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: rarian-compat is new version of scrollkeeper in pangocairo
+
 2008-01-02  Daniel Macks  <dmacks@netspace.org>
 
 	* CheckSum/*.pm, Finally/*.pm, Notify/*.pm, SelfUpdate/*.pm, Text/*.pm, version/*.pm, *.pm, FinkVersion.pm.in: updated Copyright notice
