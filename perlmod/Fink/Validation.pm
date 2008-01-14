@@ -1211,13 +1211,14 @@ sub validate_info_component {
 		my @shlibs = split /\n/, $value;
 		my %shlibs;
 		foreach (@shlibs) {
+			s/^\s*(.*?)\s*$/$1/;  # strip off leading/trailing whitespace
 			next unless /\S/;
 
-			if (s/^\s*\(.*?\)\s*//) {	
+			if (s/^\(.*?\)\s*//) {	
 				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in Shlibs', $filename);
 		}
 
-			if (/^\!\s*(.*?)\s*$/) {
+			if (/^\!\s*(.*)/) {
 				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.99', 'private-library entry in Shlibs', $filename);
 				if ($1 =~ /\s/) {
 					print "Warning: Malformed line in field \"shlibs\"$splitoff_field.\n  $_\n";

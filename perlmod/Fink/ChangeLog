@@ -1,3 +1,7 @@
+2008-01-14  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Better toleration of whitespace in .info Shlibs field
+
 2008-01-12  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: rarian-compat is new version of scrollkeeper in pangocairo
