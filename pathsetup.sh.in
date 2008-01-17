@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
 #
 
 
@@ -29,6 +29,7 @@ do_isconsole() {
 # Test whether we can use Finder popup windows
     ONCONSOLE=NO
     /bin/ps x -U $USER | grep Finder | grep -v grep >/dev/null && ONCONSOLE=YES
+    [ "x`/usr/bin/printenv SSH_TTY`" = "x`/usr/bin/tty`" ] && ONCONSOLE=NO
     [ "x$SCRIPT_NAME" = "xpostflight" ] && ONCONSOLE=YES 
 }
 
@@ -38,10 +39,10 @@ do_login_test () {
 # We have to use basic shell speak here, because we don't know
 # which shell will come up.
     /usr/bin/login -f $USER >$TMPFILE <<"EOF"
-    /bin/echo -n LOGINSHELL= 
+    /usr/bin/printf "LOGINSHELL=" 
     /usr/bin/printenv SHELL
     /usr/bin/printenv PATH
-    /bin/bash --norc --noprofile <<EOF2
+    /bin/bash --norc --noprofile <<"EOF2"
 #   For bash, we need a second opinion. 
 #   We do the test for bash inside bash.
     if test $(/bin/echo $SHELL | /usr/bin/grep bash); then
@@ -103,7 +104,7 @@ msg_choose (){
     ;;
     esac
     echo
-    /bin/echo -n Continue\?
+    /usr/bin/printf "Continue?"
 }
 
 display_choose () {
@@ -123,7 +124,7 @@ EOF
     msg_title; echo "Your login shell: $LOGINSHELL"; echo ""
     $MSG; echo ""
     msg_choose
-    /bin/echo -n " [Y/n] "
+    /usr/bin/printf " [Y/n] "
     read -t 20 answer
     answer=`echo $answer | sed 's/^[yY].*$/y/'`
     if [ ! -z "$answer" -a "x$answer" != "xy" ]; then
@@ -146,7 +147,7 @@ display_result (){
 EOF
    ;;
 	NO)
-   printf "$Result" 
+   /usr/bin/printf "$Result" 
    ;;
     esac
 }
@@ -299,3 +300,4 @@ fi
 rm -f $TMPFILE
 
 # End of program.
+
