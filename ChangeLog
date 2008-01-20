@@ -1,7 +1,7 @@
 2008-01-20  Dave Morrison  <drm@finkproject.org>
 
-	* VERSION: Make fink HEAD always >> 0.28.x, since that has now
-	branched.
+	* VERSION: Bumped package manager version to 0.28.0, a new release (on
+	branch_0_28)
 
 2008-01-01  Daniel Macks  <dmacks@netspace.org>
 
