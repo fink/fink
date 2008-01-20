@@ -1,3 +1,7 @@
+2008-01-20  Dave Morrison  <drm@finkproject.org>
+
+	* fink-mirrors.info: sync with stable
+
 2007-10-24  Dave Morrison  <drm@finkproject.org>
 
 	* unzip.patch: add missing file
