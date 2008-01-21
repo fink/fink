@@ -1,3 +1,7 @@
+2008-01-21  Daniel Macks  <dmacks@netspace.org>
+
+	* version/vpp.pm, version.pm: remove (not used)
+
 2008-01-14  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Better toleration of whitespace in .info Shlibs field
