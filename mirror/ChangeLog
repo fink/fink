@@ -1,3 +1,12 @@
+2008-01-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* apt, master, rsync: added sjc.ca.us mirror (macosforge), also set it
+	as master.  ;)
+
+2008-01-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* apt, master, rsync: added proper msn.wi.us mirror, marked it as master
+
 2008-01-12  Daniel Macks  <dmacks@netspace.org>
 
 	* rsync: remove some dead ones (confirm martinm on fink-core 09Oct07

@@ -1,6 +1,7 @@
-Timestamp: 2008-01-11
-Primary: http://distfiles.msn.wi.us.finkmirrors.net/mirrors/fink/distfiles/
+Timestamp: 2008-01-25
+Primary: http://distfiles.master.finkmirrors.net/
 nam-US: http://distfiles.msn.wi.us.finkmirrors.net/mirrors/fink/distfiles/
+nam-US: http://distfiles.sjc.ca.us.finkmirrors.net/
 eur: http://distfiles.bru.be.eu.finkmirrors.net/
 eur-IE: http://distfiles.dub.ie.eu.finkmirrors.net/
 eur-BE: http://distfiles.bru.be.eu.finkmirrors.net/

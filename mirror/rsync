@@ -1,6 +1,7 @@
-Timestamp: 2008-01-17
-Primary: rsync://msn.wi.us.finkmirrors.net/finkinfo/
+Timestamp: 2008-01-25
+Primary: rsync://distfiles.master.finkmirrors.net/finkinfo/
 
+nam-US: rsync://sjc.ca.us.finkmirrors.net/finkinfo/
 nam-US: rsync://msn.wi.us.finkmirrors.net/finkinfo/
 eur: rsync://bru.be.eu.finkmirrors.net/finkinfo/
 eur-IE: rsync://dub.ie.eu.finkmirrors.net/finkinfo/
@@ -9,15 +10,3 @@ eur-NL: rsync://ams.nl.eu.finkmirrors.net/finkinfo/
 eur-PT: rsync://lis.pt.eu.finkmirrors.net/finkinfo/
 
 asi-JP: rsync://hnd.jp.asi.finkmirrors.net/finkinfo/
-
-### disabled/broken/unpingable mirrors ###
-
-#nam-US: rsync://bdl.ct.us.finkmirrors.net/finkinfo/
-
-#eur-HR: rsync://rjk.hr.eu.finkmirrors.net/finkinfo/
-
-#aus-AU: rsync://bne.qld.au.finkmirrors.net/finkinfo/
-#no longer in sync; 10.4/unstable/fink.info is from 2006/03/27
-
-#aus: rsync://master.au.finkmirrors.net/finkinfo/
-#CNAME points to bne.qld.au.finkmirrors.net
