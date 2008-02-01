@@ -1,3 +1,7 @@
+2008-02-01  Darian Lanx <dmalloc@users.sourceforge.net>
+
+	* Removed the mirror in Portugal as it is dead. No maintainer could be reachd
+
 2008-01-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* apt, master, rsync: added sjc.ca.us mirror (macosforge), also set it
