@@ -1,3 +1,7 @@
+2008-02-06  Daniel Macks  <dmacks@netspace.org>
+
+	* VirtPackage.pm: undef is possible return from package_from_pkgconfig
+
 2008-01-14  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Better toleration of whitespace in .info Shlibs field
