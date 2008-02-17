@@ -1,3 +1,8 @@
+2008-02-17  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.27.11, a release
+	on branch_0_27 which recognizes OS X 10.5.2
+
 2008-01-02  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.27.10, a bugfix release
