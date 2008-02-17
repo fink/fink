@@ -1,3 +1,7 @@
+2008-02-17  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: recognize 10.5.2
+
 2008-02-06  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: undef is possible return from package_from_pkgconfig
