@@ -1,3 +1,7 @@
+2008-02-17  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: recognize 10.5.2
+
 2008-01-02  Daniel Macks  <dmacks@netspace.org>
 
 	* CheckSum/*.pm, Finally/*.pm, Notify/*.pm, Text/*.pm, *.pm, FinkVersion.pm.in: updated Copyright notice
