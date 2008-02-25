@@ -818,7 +818,7 @@ if ($info_level < 4) {
 		# strip directory if info is simple filename (in $PWD)
 		map {s/\%a\///} @patchfiles unless $pkgpatchpath;
 		if (@patchfiles and exists $properties->{patchfile}) {
-			print "Error: Cannot use %a if using PatchFile. ($filename)\n";
+			print "Error: Cannot use %a if using PatchFile, use \%\{PatchFile\} to reference the patch. ($filename)\n";
 			$looks_good = 0;
 		}			
 	}
