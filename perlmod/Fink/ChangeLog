@@ -1,3 +1,8 @@
+2008-02-29  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Wildcard in directory-components in Files breaks
+	system(install)
+
 2008-02-17  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.5.2

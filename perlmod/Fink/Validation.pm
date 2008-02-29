@@ -727,6 +727,10 @@ if ($info_level < 4) {
 					print "Warning: Field \"files\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
 					$looks_good = 0;
 				}
+				if ($value =~ /[?*]\W*\//) {
+					print "Error: Field \"files\" of \"$splitoff_field\" contains wildcard directories ($filename)\n";
+					$looks_good = 0;
+				}
 			}
 		} # end of SplitOff field validation
 	};
