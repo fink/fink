@@ -4277,14 +4277,7 @@ EOF
 			die $error . "\n";
 		};
 
-		my ($shlibsfile, $privateshlibsfile);
-		$shlibsfile = IO::Handle->new();
-		$privateshlibsfile = IO::Handle->new();
-
-		open ($shlibsfile, ">$destdir/DEBIAN/shlibs") or &{$shlibs_error}($self, 'shlibs');
-		open ($privateshlibsfile, ">$destdir/DEBIAN/private-shlibs") or &{$shlibs_error}($self, 'private shlibs');
-
-		print "Writing shlibs files...\n";
+		print "Creating shlibs files...\n";
 
 # FIXME-dmacks:
 #    * Make sure each file is actually present in $destdir
@@ -4294,19 +4287,30 @@ EOF
 #    * Rejoin wrap continuation lines
 #      (use \ not heredoc multiline-field)
 
+		my (@shlibslines, @privateshlibslines);
 		for my $line (split(/\n/, $shlibsbody)) {
 			if ($line =~ /^\s*\!/) {
-				print $privateshlibsfile $line, "\n";
+				push @privateshlibslines, $line."\n";
 			} else {
-				print $shlibsfile $line, "\n";
+				push @shlibslines, $line."\n";
 			}
 		}
 
-		close($shlibsfile) or &{$shlibs_error}($self, 'shlibs');
-		close($privateshlibsfile) or &{$shlibs_error}($self, 'private shlibs');
+		if (@shlibslines) {
+			my $shlibsfile = IO::Handle->new();
+			open $shlibsfile, ">$destdir/DEBIAN/shlibs" or &{$shlibs_error}($self, 'shlibs');
+			print $shlibsfile @shlibslines;
+			close $shlibsfile or &{$shlibs_error}($self, 'shlibs');
+			chmod 0644, "$destdir/DEBIAN/shlibs";
+		}
+		if (@privateshlibslines) {
+			my $shlibsfile = IO::Handle->new();
+			open $shlibsfile, ">$destdir/DEBIAN/private-shlibs" or &{$shlibs_error}($self, 'private shlibs');
+			print $shlibsfile @shlibslines;
+			close $shlibsfile  or &{$shlibs_error}($self, 'private shlibs');
+			chmod 0644, "$destdir/DEBIAN/private-shlibs";
+		}
 
-		chmod 0644, "$destdir/DEBIAN/shlibs";
-		chmod 0644, "$destdir/DEBIAN/private-shlibs";
 	}
 
 	### config file list
