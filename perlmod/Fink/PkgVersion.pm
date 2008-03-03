@@ -4306,7 +4306,7 @@ EOF
 		if (@privateshlibslines) {
 			my $shlibsfile = IO::Handle->new();
 			open $shlibsfile, ">$destdir/DEBIAN/private-shlibs" or &{$shlibs_error}($self, 'private shlibs');
-			print $shlibsfile @shlibslines;
+			print $shlibsfile @privateshlibslines;
 			close $shlibsfile  or &{$shlibs_error}($self, 'private shlibs');
 			chmod 0644, "$destdir/DEBIAN/private-shlibs";
 		}
