@@ -1826,8 +1826,11 @@ sub _validate_dpkg {
 	foreach (qw/ preinst postinst prerm postrm /) {
 		next if $deb_control->{package} eq "scrollkeeper"; # circular dep
 		next if $deb_control->{package} eq "rarian-compat"; # circular dep (new-world scrollkeeper)
-		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}} and not exists $control_processed->{depends_pkgs}->{scrollkeeper}) {
-			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:scrollkeeper\"\n";
+		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}} and not (
+				exists $control_processed->{depends_pkgs}->{'rarian-compat'} or
+				exists $control_processed->{depends_pkgs}->{'scrollkeeper'}
+			)) {
+			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:rarian-compat\" or \"Depends:scrollkeeper\" \n";
 			$looks_good = 0;
 		}
 	}
