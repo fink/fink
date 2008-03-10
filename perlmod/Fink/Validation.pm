@@ -1223,7 +1223,7 @@ sub validate_info_component {
 		}
 
 			if (/^\!\s*(.*)/) {
-				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.99', 'private-library entry in Shlibs', $filename);
+				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.28', 'private-library entry in Shlibs', $filename);
 				if ($1 =~ /\s/) {
 					print "Warning: Malformed line in field \"shlibs\"$splitoff_field.\n  $_\n";
 					$looks_good = 0;

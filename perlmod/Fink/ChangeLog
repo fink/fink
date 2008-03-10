@@ -1,3 +1,7 @@
+2008-03-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Don't rely on beta versions of fink itself
+
 2008-03-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: rarian-compat is replacing scrollkeeper
