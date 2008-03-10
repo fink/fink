@@ -1,3 +1,8 @@
+2008-03-10  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Validation.pm, VirtPackage.pm: backport some
+	bugfixes and pangocairo groundwork from HEAD
+
 2008-02-17  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.5.2

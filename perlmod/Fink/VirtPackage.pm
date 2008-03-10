@@ -1011,7 +1011,7 @@ virtual packages. (See &package_from_pkgconfig).
 		if (opendir(PKGCONFIG_DIR, $dir)) {
 			while (my $file = readdir(PKGCONFIG_DIR)) {
 				next unless ($file =~ /\.pc$/);
-				my $hash = package_from_pkgconfig($dir . '/' . $file);
+				next unless my $hash = package_from_pkgconfig($dir . '/' . $file);
 				$self->{$hash->{package}} = $hash;
 			}
 		} else {

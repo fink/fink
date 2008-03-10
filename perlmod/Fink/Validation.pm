@@ -727,6 +727,10 @@ if ($info_level < 4) {
 					print "Warning: Field \"files\" of \"$splitoff_field\" contains entries that end in \"/\" ($filename)\n";
 					$looks_good = 0;
 				}
+				if ($value =~ /[?*]\W*\//) {
+					print "Error: Field \"files\" of \"$splitoff_field\" contains wildcard directories ($filename)\n";
+					$looks_good = 0;
+				}
 			}
 		} # end of SplitOff field validation
 	};
@@ -818,7 +822,7 @@ if ($info_level < 4) {
 		# strip directory if info is simple filename (in $PWD)
 		map {s/\%a\///} @patchfiles unless $pkgpatchpath;
 		if (@patchfiles and exists $properties->{patchfile}) {
-			print "Error: Cannot use %a if using PatchFile. ($filename)\n";
+			print "Error: Cannot use %a if using PatchFile, use \%\{PatchFile\} to reference the patch. ($filename)\n";
 			$looks_good = 0;
 		}			
 	}
@@ -1219,7 +1223,7 @@ sub validate_info_component {
 		}
 
 			if (/^\!\s*(.*)/) {
-				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.99', 'private-library entry in Shlibs', $filename);
+				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.28', 'private-library entry in Shlibs', $filename);
 				if ($1 =~ /\s/) {
 					print "Warning: Malformed line in field \"shlibs\"$splitoff_field.\n  $_\n";
 					$looks_good = 0;
@@ -1822,8 +1826,11 @@ sub _validate_dpkg {
 	foreach (qw/ preinst postinst prerm postrm /) {
 		next if $deb_control->{package} eq "scrollkeeper"; # circular dep
 		next if $deb_control->{package} eq "rarian-compat"; # circular dep (new-world scrollkeeper)
-		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}} and not exists $control_processed->{depends_pkgs}->{scrollkeeper}) {
-			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:scrollkeeper\"\n";
+		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}} and not (
+				exists $control_processed->{depends_pkgs}->{'rarian-compat'} or
+				exists $control_processed->{depends_pkgs}->{'scrollkeeper'}
+			)) {
+			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:rarian-compat\" or \"Depends:scrollkeeper\" \n";
 			$looks_good = 0;
 		}
 	}
