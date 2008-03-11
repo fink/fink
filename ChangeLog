@@ -1,5 +1,10 @@
 2008-01-20  Dave Morrison  <drm@finkproject.org>
 
+	* VERSION: Bumped package manager version to 0.28.1, a release on
+	branch_0_28
+
+2008-01-20  Dave Morrison  <drm@finkproject.org>
+
 	* MANIFEST: Remove version/vpp.pm, version.pm
 
 2008-01-20  Dave Morrison  <drm@finkproject.org>
