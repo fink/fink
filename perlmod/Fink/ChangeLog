@@ -1,3 +1,7 @@
+2008-03-21  Alexander Hansen <akh@finkproject.org>
+
+	* Bootstrap.pm:  recognize 9.2.2 Darwin kernel--noted by gecko2 on IRC for a late 2007 Macbook.
+
 2008-03-10  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Don't rely on beta versions of fink itself
