@@ -1,3 +1,7 @@
+2008-03-23  Darian Lanx <dmalloc@users.sourceforge.net>
+
+	* Added Nantes Frech distfiles and rsync mirror. Owner is Cédric QUILLEVERE <origin@killy.net>
+
 2008-02-01  Darian Lanx <dmalloc@users.sourceforge.net>
 
 	* Removed the mirror in Portugal as it is dead. No maintainer could be reachd
