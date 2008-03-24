@@ -59,7 +59,7 @@ done
 
 install -c -p -m 755 postinstall.pl "$basepath/lib/fink/mirror/"
 
-for file in COPYING README ; do
+for file in COPYING README README.contacts; do
   install -c -p -m 644  $file "$basepath/share/doc/fink-mirrors/"
 done
 

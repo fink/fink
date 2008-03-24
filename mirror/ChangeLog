@@ -1,3 +1,7 @@
+2008-03-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Added german finkinfo mirror.  Owner is fink-mirror@ig42.org (gecko2)
+
 2008-03-23  Darian Lanx <dmalloc@users.sourceforge.net>
 
 	* Added Nantes Frech distfiles and rsync mirror. Owner is Cédric QUILLEVERE <origin@killy.net>
