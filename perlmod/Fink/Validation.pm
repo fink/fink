@@ -1913,8 +1913,8 @@ sub _validate_dpkg {
 					close (OTOOL);
 	
 					if (not exists $deb_shlibs->{$libname}) {
-						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname $compat_version)\n";
-						print "       If this is a private library, add '!$dylib' to the Shlibs field.\n";
+						print "Error: package contains a shared library $dylib ($libname $compat_version)\n";
+						print "       but $libname is not listed in the Shlibs field.\n";
 						$looks_good = 0;
 					}
 				}
