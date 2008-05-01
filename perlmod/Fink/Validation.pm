@@ -1432,7 +1432,7 @@ sub _validate_dpkg {
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/", '.*/\.svn/');
-	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications / );
+	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications Library\/Frameworks / );
 	push(@good_dirs, '/usr/X11');
 
 	my @found_bad_dir;
