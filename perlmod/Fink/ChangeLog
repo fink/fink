@@ -1,3 +1,8 @@
+2008-05-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Allow %p/Library/Frameworks; fix filename
+	reported in Shlibs errors
+
 2008-03-21  Alexander Hansen <akh@finkproject.org>
 
 	* Bootstrap.pm:  recognize 9.2.2 Darwin kernel--noted by gecko2 on IRC for a late 2007 Macbook.

@@ -1432,7 +1432,7 @@ sub _validate_dpkg {
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/", '.*/\.svn/');
-	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications / );
+	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications Library\/Frameworks / );
 	push(@good_dirs, '/usr/X11');
 
 	my @found_bad_dir;
@@ -1913,8 +1913,8 @@ sub _validate_dpkg {
 					close (OTOOL);
 	
 					if (not exists $deb_shlibs->{$libname}) {
-						print "Error: package contains a dylib with no corresponding Shlibs entry ($dylib -> $libname $compat_version)\n";
-						print "       If this is a private library, add '!$dylib' to the Shlibs field.\n";
+						print "Error: package contains a shared library $dylib ($libname $compat_version)\n";
+						print "       but $libname is not listed in the Shlibs field.\n";
 						$looks_good = 0;
 					}
 				}
