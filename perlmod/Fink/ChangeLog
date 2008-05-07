@@ -1,4 +1,8 @@
-2008-03-06  Daniel Macks  <dmacks@netspace.org>
+2008-05-06  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: Try again with an error message when Shlibs is missing an entry, explaining what to do for both public and private shlibs.
+
+2008-05-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Allow %p/Library/Frameworks
 

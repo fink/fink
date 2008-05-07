@@ -1913,9 +1913,26 @@ sub _validate_dpkg {
 					close (OTOOL);
 	
 					if (not exists $deb_shlibs->{$libname}) {
-						print "Error: package contains a shared library $dylib ($libname $compat_version)\n";
-						print "       but $libname is not listed in the Shlibs field.\n";
-						$looks_good = 0;
+						if ($libname =~ s/$basepath/%p/) {
+							print "Error: package contains a shared library\n";
+							print "          $dylib\n";
+							print "       but the install_name and compatibility_version\n";
+							print "          ($libname $compat_version)\n";
+							print "       are not listed in the Shlibs field.  If this library is public, in the\n";
+							print "       sense that it may be linked to by other packages, then these must be\n";
+							print "       listed in the Shlibs field, along with versioning information about the\n";
+							print "       package providing the library.  However, if this is a private library\n";
+							print "       which will be used only by this package, add\n";
+							print "          '!$libname'\n";
+							print "       to the Shlibs field.\n";
+							$looks_good = 0;
+						} else {
+							print "Error: package contains a shared library\n";
+							print "          $dylib\n";
+							print "       with a malformed install_name:\n";
+							print "          $libname\n";
+							$looks_good = 0;
+						}
 					}
 				}
 			}
