@@ -1913,26 +1913,20 @@ sub _validate_dpkg {
 					close (OTOOL);
 	
 					if (not exists $deb_shlibs->{$libname}) {
-						if ($libname =~ s/$basepath/%p/) {
-							print "Error: package contains a shared library\n";
-							print "          $dylib\n";
-							print "       but the install_name and compatibility_version\n";
-							print "          ($libname $compat_version)\n";
-							print "       are not listed in the Shlibs field.  If this library is public, in the\n";
-							print "       sense that it may be linked to by other packages, then these must be\n";
-							print "       listed in the Shlibs field, along with versioning information about the\n";
-							print "       package providing the library.  However, if this is a private library\n";
-							print "       which will be used only by this package, add\n";
-							print "          '!$libname'\n";
-							print "       to the Shlibs field.\n";
-							$looks_good = 0;
-						} else {
-							print "Error: package contains a shared library\n";
-							print "          $dylib\n";
-							print "       with a malformed install_name:\n";
-							print "          $libname\n";
-							$looks_good = 0;
-						}
+						$libname =~ s/^$basepath/%p/;
+						print "Error: package contains the shared library\n";
+						print "          $dylib\n";
+						print "       but the corresponding install_name and compatibility_version\n";
+						print "          $libname $compat_version\n";
+						print "       are not listed in the Shlibs field.  If this library is public (in the\n";
+						print "       sense that it may be linked to by other packages), then the install_name\n";
+						print "       and compatibility_version must be listed on a line of the Shlibs field,\n";
+						print "       along with versioning information about the package providing the\n";
+						print "       library.  However, if this is a private library which will be used only\n";
+						print "       by this package, then a line containing exactly\n";
+						print "          !$libname\n";
+						print "       should be added to the Shlibs field.\n";
+						$looks_good = 0;
 					}
 				}
 			}
