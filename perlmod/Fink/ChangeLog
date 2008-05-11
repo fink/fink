@@ -1,3 +1,7 @@
+2008-05-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix precedence error in check for wrong Files vs Shlibs
+
 2008-05-07  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Improve the Shlibs error message
