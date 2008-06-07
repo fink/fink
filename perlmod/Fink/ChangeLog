@@ -1,3 +1,7 @@
+2008-06-07  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: Refer Shlibs violators to the packaging manual.
+
 2008-05-29  Alexander Hansen <akh@finkproject.org>
 
 	* Bootstrap.pm:  recognize 9.2.2 Darwin kernel--noted by gecko2 on IRC for a late 2007 Macbook.
