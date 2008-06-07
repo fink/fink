@@ -1,3 +1,7 @@
+2008-06-07  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: Backport from HEAD
+
 2008-05-04  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Allow %p/Library/Frameworks; fix filename

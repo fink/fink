@@ -1640,8 +1640,8 @@ sub _validate_dpkg {
 				push(@installed_dylibs, $filename);
 			}
 			my( $fn_name, $fn_ext ) = $filename =~ /^(.*)(\..*)/g;  # parse apart at extension
-			if ( grep /^\Q$fn_name\E.+\Q$fn_ext\E$/, sort keys %$deb_shlibs && !exists $deb_shlibs->{$filename}) {
-				&stack_msg($msgs, "Files less specifically versioned than a Shlibs entry do not belong in this package", $filename);
+			if ( (grep { /^\Q$fn_name\E.+\Q$fn_ext\E$/ && !$deb_shlibs->{$_}->{is_private} } sort keys %$deb_shlibs) && !(exists $deb_shlibs->{$filename})) {
+				&stack_msg($msgs, "Files with names less specifically versioned than ones in public Shlibs entries do not belong in this package", $filename);
 			}
 		}
 
@@ -1913,8 +1913,12 @@ sub _validate_dpkg {
 					close (OTOOL);
 	
 					if (not exists $deb_shlibs->{$libname}) {
-						print "Error: package contains a shared library $dylib ($libname $compat_version)\n";
-						print "       but $libname is not listed in the Shlibs field.\n";
+						$libname =~ s/^$basepath/%p/;
+						print "Error: package contains the shared library\n";
+						print "          $dylib\n";
+						print "       but the corresponding install_name and compatibility_version\n";
+						print "          $libname $compat_version\n";
+						print "       are not listed in the Shlibs field.  See the packaging manual.\n";
 						$looks_good = 0;
 					}
 				}
