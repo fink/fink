@@ -1918,14 +1918,7 @@ sub _validate_dpkg {
 						print "          $dylib\n";
 						print "       but the corresponding install_name and compatibility_version\n";
 						print "          $libname $compat_version\n";
-						print "       are not listed in the Shlibs field.  If this library is public (in the\n";
-						print "       sense that it may be linked to by other packages), then the install_name\n";
-						print "       and compatibility_version must be listed on a line of the Shlibs field,\n";
-						print "       along with versioning information about the package providing the\n";
-						print "       library.  However, if this is a private library which will be used only\n";
-						print "       by this package, then a line containing exactly\n";
-						print "          !$libname\n";
-						print "       should be added to the Shlibs field.\n";
+						print "       are not listed in the Shlibs field.  See the packaging manual.\n";
 						$looks_good = 0;
 					}
 				}
