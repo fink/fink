@@ -1,3 +1,7 @@
+2008-06-10  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: Backport changes to copy_description
+
 2008-06-07  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Backport from HEAD

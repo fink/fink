@@ -338,7 +338,7 @@ my ($notlocated, $bpath) = &locate_Fink($param);
 	
 	### create and copy description file
 	
-	$result = &copy_description($info_script, $bpath, $package, $packageversion, $packagerevision);
+	$result = &copy_description($info_script, $bpath, $package, $packageversion, $packagerevision, undef, "$package.info", "$package.info.in");
 	if ($result == 1 ) {
 		return $result;
 	}
@@ -719,19 +719,24 @@ sub create_tarball {
 
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision);
 	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination);
+	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination, $target_file);
+	my $result = copy_description($script, $bpath, $package, $packageversion, $packagerevision, $destination, $target_file, $template_file);
 
 Execute the given $script, create the directories $bpath/fink/debs and
 $bpath/fink/dists/$destination if necessary, and backup the file
-$bpath/fink/dists/$destination/$package.info if it already exists.  
+$bpath/fink/dists/$destination/$target_file if it already exists.  
 
-Next, copy $package.info.in (from the current directory) to 
-$bpath/fink/dists/$destination/$package.info, supplying the correct
+Next, copy $template_file (from the current directory) to 
+$bpath/fink/dists/$destination/$target_file, supplying the correct
 $packageversion and $packagerevision as well as an MD5 sum calculated from
 $bpath/src/$package-$packageversion.tar.  Ensure that the created file
 has mode 644.
 
-Returns 0 on success, 1 on failure.  The default $destination, if not 
-supplied, is "local/injected/finkinfo".
+The default $destination, if not supplied, is "local/injected/finkinfo".
+The default $target_file, if not supplied, is "$package.info".
+The default $template_file, if not supplied, is "$target_file.in".
+
+Returns 0 on success, 1 on failure.
 
 Called by bootstrap.pl and inject_package().
 
@@ -746,6 +751,8 @@ sub copy_description {
 	my $packagerevision = shift;
 
 	my $destination = shift || "local/injected/finkinfo";
+	my $target_file = shift || "$package.info";
+	my $template_file = shift || "$target_file.in";
 	
 	my ($cmd);
 	
@@ -757,16 +764,16 @@ sub copy_description {
 	if (not -d "$bpath/fink/dists/$destination") {
 		$script .= "/bin/mkdir -p -m755 $bpath/fink/dists/$destination\n";
 	}
-	if (-e "$bpath/fink/dists/$destination/$package.info") {
-#		if (-e "$bpath/fink/dists/$destination/$package.info.bak") {
-#			my $answer = &prompt_boolean("\nWARNING: The file $bpath/fink/dists/$destination/$package.info.bak exists and will be overwritten.  Do you wish to continue?", default => 1);
+	if (-e "$bpath/fink/dists/$destination/$target_file") {
+#		if (-e "$bpath/fink/dists/$destination/$target_file.bak") {
+#			my $answer = &prompt_boolean("\nWARNING: The file $bpath/fink/dists/$destination/$target_file.bak exists and will be overwritten.  Do you wish to continue?", default => 1);
 #			if (not $answer) {
 #				die "\nOK, you can re-run ./inject.pl after moving the file.\n\n";
 #			}
-			unlink "$bpath/fink/dists/$destination/$package.info.bak";
+			unlink "$bpath/fink/dists/$destination/$target_file.bak";
 #		}
-#		&print_breaking("\nNOTICE: the previously existing file $bpath/fink/dists/$destination/$package.info has been moved to $bpath/fink/dists/$destination/$package.info.bak .\n\n");
-		&execute("/bin/mv $bpath/fink/dists/$destination/$package.info $bpath/fink/dists/$destination/$package.info.bak");
+#		&print_breaking("\nNOTICE: the previously existing file $bpath/fink/dists/$destination/$target_file has been moved to $bpath/fink/dists/$destination/$target_file.bak .\n\n");
+		&execute("/bin/mv $bpath/fink/dists/$destination/$target_file $bpath/fink/dists/$destination/$target_file.bak");
 		}
 	
 	my $result = 0;
@@ -786,7 +793,7 @@ sub copy_description {
 
 	my $coda = "NoSourceDirectory: true\n";
 
-	if (modify_description("$package.info.in","$bpath/fink/dists/$destination/$package.info","$bpath/src/$package-$packageversion.tar",".","%n-%v.tar",$distribution,$coda, $packageversion, $packagerevision)) {
+	if (modify_description($template_file, "$bpath/fink/dists/$destination/$target_file","$bpath/src/$package-$packageversion.tar",".","%n-%v.tar",$distribution,$coda, $packageversion, $packagerevision)) {
 			print "ERROR: Can't copy package description(s).\n";
 			$result = 1;
 		} elsif (&execute("/bin/chmod 644 $bpath/fink/dists/$destination/*.*")) {
