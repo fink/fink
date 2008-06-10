@@ -1,3 +1,7 @@
+2008-06-10  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap: pass explicit filenames to Bootstrap::opy_description()
+
 2008-01-20  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Make fink HEAD always >> 0.28.x, since that has now

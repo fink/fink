@@ -1,3 +1,8 @@
+2008-07-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm: Allow callers of copy_description() to specify
+	filenames instead of forcing $package.info.in -> $package.info
+
 2008-06-07  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Refer Shlibs violators to the packaging manual.
