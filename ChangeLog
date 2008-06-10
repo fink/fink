@@ -1,6 +1,11 @@
+2008-06-10  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap: use fink-$distribution.info as the filename for the
+	fink package (so that bootstrap agrees with ordinary practice)
+
 2008-06-10  Daniel Macks  <dmacks@netspace.org>
 
-	* bootstrap: pass explicit filenames to Bootstrap::opy_description()
+	* bootstrap: pass explicit filenames to Bootstrap::copy_description()
 
 2008-01-20  Dave Morrison  <drm@finkproject.org>
 

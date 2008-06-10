@@ -380,7 +380,7 @@ if ( &create_tarball($installto, "fink", $packageversion, $packagefiles) == 1 ) 
 my $script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
 $script .= "/bin/cp $distribution_infodir{$distribution}/*.info $distribution_infodir{$distribution}/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
 
-if ( &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base", "fink.info", "fink.info.in" ) == 1 ) {
+if ( &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base", "fink-$distribution.info", "fink.info.in" ) == 1 ) {
 	exit 1;
 }
 }
