@@ -1,3 +1,9 @@
+2008-06-19  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: Allow $basepath/Library/ to be installed (but with 
+	nothing below it other than what is already allowed, i.e., 
+	$basepath/Library/Frameworks)
+
 2008-06-10  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: Backport changes to copy_description

@@ -1433,6 +1433,9 @@ sub _validate_dpkg {
 	# make sure to protect regex metachars!
 	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/", '.*/\.svn/');
 	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib share var etc src Applications Library\/Frameworks / );
+	# allow $basepath/Library/ by itself
+	# (needed since we allow $basepath/Library/Frameworks)
+	push(@good_dirs, "$basepath/Library/\$");
 	push(@good_dirs, '/usr/X11');
 
 	my @found_bad_dir;
