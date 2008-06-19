@@ -1,3 +1,8 @@
+2008-06-19  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: recognize 10.5.3
+	* Bootstrap.pm: revise the installation message on 10.5
+
 2008-02-17  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: recognize 10.5.2
