@@ -3,6 +3,7 @@
 	* Validation.pm: Allow $basepath/Library/ to be installed (but with 
 	nothing below it other than what is already allowed, i.e., 
 	$basepath/Library/Frameworks)
+	* Bootstrap.pm: revise the installation message on 10.5
 
 2008-06-10  Dave Morrison  <drm@finkproject.org>
 
