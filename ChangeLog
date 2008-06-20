@@ -1,4 +1,4 @@
-2008-02-17  Dave Morrison  <drm@finkproject.org>
+2008-06-20  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.27.12, a release
 	on branch_0_27 which recognizes OS X 10.5.3 and bindist 0.9.0
