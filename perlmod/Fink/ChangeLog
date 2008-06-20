@@ -1,3 +1,7 @@
+2008-06-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: Break up long filename list passed to system(chown)
+
 2008-06-20  Dave Morrison  <drm@finkproject.org>
 
 	* FinkVersion.pm.in: bindist 0.9.0
