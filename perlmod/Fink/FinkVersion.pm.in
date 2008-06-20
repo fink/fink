@@ -83,7 +83,7 @@ distro for the given $distribution.
 
 sub default_binary_version {
 	my $distribution = shift;
-	my %bindists = ("10.2-gcc3.3" => "0.6.4", "10.3" => "0.7.2", "10.4-transitional" => "0.8.0", "10.4" => "0.8.1");
+	my %bindists = ("10.2-gcc3.3" => "0.6.4", "10.3" => "0.7.2", "10.4-transitional" => "0.8.0", "10.4" => "0.8.1", "10.5" => "0.9.0");
 	return $bindists{$distribution};
 }
 
