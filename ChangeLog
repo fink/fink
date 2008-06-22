@@ -1,3 +1,7 @@
+2008-06-22  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap: fix problem with bootstrapping when pkginfo is present
+
 2008-06-10  Dave Morrison  <drm@finkproject.org>
 
 	* bootstrap: use fink-$distribution.info as the filename for the
