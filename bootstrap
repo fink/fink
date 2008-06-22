@@ -439,8 +439,8 @@ if ($packageversion !~ /cvs/) {
 my $endmsg = "Internal error.";
 
 my $dbv = default_binary_version($distribution);
-if (-d "pkginfo") {
-	if (&execute("cd pkginfo && ./inject.pl $installto -quiet")) {
+if (-d "$homebase/pkginfo") {
+	if (&execute("cd $homebase/pkginfo && ./inject.pl $installto -quiet")) {
 		# inject failed
 		$endmsg = <<"EOF";
 Copying the package description tree failed. This is no big harm;

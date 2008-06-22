@@ -1,3 +1,7 @@
+2008-06-22  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap: fix problem with bootstrapping when pkginfo is present
+
 2008-06-20  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.28.3, a release on
