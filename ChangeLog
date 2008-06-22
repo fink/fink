@@ -2,6 +2,8 @@
 
 	* bootstrap: fix problem with bootstrapping when pkginfo is present;
 	also, rename fink.info file after bootstrap
+	* VERSION: Bumped package manager version to 0.27.13, a bugfix
+	release on branch_0_27
 
 2008-06-20  Dave Morrison  <drm@finkproject.org>
 
