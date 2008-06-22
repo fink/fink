@@ -1,6 +1,8 @@
 2008-06-22  Dave Morrison  <drm@finkproject.org>
 
 	* bootstrap: fix problem with bootstrapping when pkginfo is present
+	* bootstrap: more thorough cleanup by also removing 
+	dpkg-bootstrap.patch after bootstrap
 
 2008-06-10  Dave Morrison  <drm@finkproject.org>
 

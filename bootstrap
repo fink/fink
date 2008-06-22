@@ -425,9 +425,9 @@ Fink::Configure::configure();
 
 Fink::Bootstrap::bootstrap();
 
-### remove dpkg-bootstrap.info, to avoid later confusion
+### remove dpkg-bootstrap.info and dpkg-bootstrap.patch, to avoid later confusion
 
-&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info");
+&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.patch");
 
 ### copy included package info tree if present
 
