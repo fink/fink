@@ -1,3 +1,7 @@
+2008-06-23  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.28.3.1 of fink-mirrors
+
 2008-03-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Added german finkinfo mirror.  Owner is fink-mirror@ig42.org (gecko2)
