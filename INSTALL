@@ -1,14 +1,16 @@
-Generated from $Fink: install.xml,v 1.25 2006/09/16 23:25:29 dmrrsn Exp $
+Generated from $Fink: install.xml,v 1.26 2008/02/10 23:41:08 alexkhansen Exp
+$
 
- Fink 0.8.1 Installation
+ Fink 0.9.0 Installation
 =========================
 
 These are the installation instructions for the "source" distribution of
-Fink 0.8.1, intended for use with OS X v.10.4 and later. The instructions
-can also be used for installation on OS X v.10.3 (replacing 0.8.1 by 0.7.2
-throughout the document), for installation on OS X v.10.2 (replacing 0.8.1
+Fink 0.9.0, intended for use with OS X v.10.5 . The instructions can also be
+used for installation on OS X v.10.4 (replacing 0.9.0 by 0.8.1 throughout
+the document), for installation on OS X v.10.3 (replacing 0.9.0 by 0.7.2
+throughout the document), for installation on OS X v.10.2 (replacing 0.9.0
 by 0.6.4 throughout the document), and for installation on OS X v.10.1
-(replacing 0.8.1 by 0.4.1a).
+(replacing 0.9.0 by 0.4.1a).
 
 This document does not apply to the "binary
 [http://www.finkproject.org/download/index.php]" distribution.
@@ -30,7 +32,7 @@ can still use this section as an example.)
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.8.1-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder.
 (Note: If you have OS X 10.4 and XCode 2.1, you should use
 "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes
 below.) Then, open Terminal.app and follow the session below. Computer
@@ -38,16 +40,16 @@ output is in "normal face" , your input is in "bold_face" (or otherwise
 highlighted). The actual input prompts from the shell may vary, and some
 chunks of the output have been omitted ( "..." ).
 
-   [frodo:~] testuser% tar_xzf_fink-0.8.1-full.tar.gz
-   [frodo:~] testuser% cd_fink-0.8.1-full
-   [frodo:~/fink-0.8.1-full] testuser% ./bootstrap_/sw
+   [frodo:~] testuser% tar_xzf_fink-0.9.0-full.tar.gz
+   [frodo:~] testuser% cd_fink-0.9.0-full
+   [frodo:~/fink-0.9.0-full] testuser% ./bootstrap_/sw
    
    Welcome to Fink.
    
    ...
    Choose a method: [1] 1
    
-   sudo /Users/testuser/fink-0.8.1-full/bootstrap .sudo '/sw'
+   sudo /Users/testuser/fink-0.9.0-full/bootstrap .sudo '/sw'
    Password:(your_normal_password_here)
    ...
    OK, I'll ask you some questions and update the configuration file in
@@ -78,8 +80,8 @@ chunks of the output have been omitted ( "..." ).
    
    You should now have a working Fink installation in '/sw'.
    
-   [frodo:~/fink-0.8.1-full] testuser% cd
-   [frodo:~] testuser% rm_-r_fink-0.8.1-full
+   [frodo:~/fink-0.9.0-full] testuser% cd
+   [frodo:~] testuser% rm_-r_fink-0.9.0-full
    [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and
@@ -120,7 +122,7 @@ well-documented.
 
  Update Fast Track
 -------------------
-Start out by copying the "fink-0.8.1-full.tar.gz" file to your home folder.
+Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder.
 (Note: If you have OS X 10.4 and XCode 2.1, you should use
 "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes
 below.) Then, open Terminal.app and follow the session below. Computer
@@ -128,9 +130,9 @@ output is in "normal face" , your input is in "bold_face" (or otherwise
 highlighted). The actual input prompts from the shell may vary, and some
 chunks of the output have been omitted ( "..." ).
 
-   [frodo:~] testuser% tar_xzf_fink-0.8.1-full.tar.gz
-   [frodo:~] testuser% cd_fink-0.8.1-full
-   [frodo:~/fink-0.8.1-full] testuser% ./inject.pl_/sw
+   [frodo:~] testuser% tar_xzf_fink-0.9.0-full.tar.gz
+   [frodo:~] testuser% cd_fink-0.9.0-full
+   [frodo:~/fink-0.9.0-full] testuser% ./inject.pl_/sw
    sudo ./inject.pl /sw
    Password:(your_normal_password_here)
    Copying package descriptions
@@ -139,8 +141,8 @@ chunks of the output have been omitted ( "..." ).
    
    Your Fink installation in '/sw' was updated with new fink packages.
    
-   [frodo:~/fink-0.8.1-full] testuser% cd_pkginfo
-   [frodo:~/fink-0.8.1-full/pkginfo] testuser% ./inject.pl_/sw
+   [frodo:~/fink-0.9.0-full] testuser% cd_pkginfo
+   [frodo:~/fink-0.9.0-full/pkginfo] testuser% ./inject.pl_/sw
    sudo ./inject.pl /sw
    Copying...
    ...
@@ -149,8 +151,8 @@ chunks of the output have been omitted ( "..." ).
    files. Use appropriate fink commands to update the packages, e.g. 'fink
    update-all'.
    
-   [frodo:~/fink-0.8.1-full/pkginfo] testuser% cd
-   [frodo:~] testuser% rm_-r_fink-0.8.1-full
+   [frodo:~/fink-0.9.0-full/pkginfo] testuser% cd
+   [frodo:~] testuser% rm_-r_fink-0.9.0-full
    [frodo:~] testuser% fink_update-all
    ...
 
@@ -206,20 +208,20 @@ back to a working system when things break. You have been warned.
 
  Installation
 --------------
-First, you need to unpack the fink-0.8.1-full.tar.gz tarball. (Note: If you
+First, you need to unpack the fink-0.9.0-full.tar.gz tarball. (Note: If you
 have OS X 10.4 and XCode 2.1, you should use
 "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes
 below.) It is recommended that you do this from the command line - StuffIt
 Expander has a tendency to screw up text files. So, go to the directory
 where you put the tarball, and run this command:
 
-   tar xzf fink-0.8.1-full.tar.gz
+   tar xzf fink-0.9.0-full.tar.gz
 
-You now have a directory named fink-0.8.1-full. Change to it with "cd
-fink-0.8.1-full" .
+You now have a directory named fink-0.9.0-full. Change to it with "cd
+fink-0.9.0-full" .
 
 The actual installation is performed by the perl script bootstrap. So, to
-start installation, go to the fink-0.8.1-full directory and run this
+start installation, go to the fink-0.9.0-full directory and run this
 command:
 
    ./bootstrap
@@ -281,7 +283,7 @@ on Darwin and Mac OS X document [http://www.finkproject.org/doc/x11/].
 ===========================
 
 If you already have Fink 0.3.x installed, you can update your installation
-to 0.8.1 with the built-in 'selfupdate' command.
+to 0.9.0 with the built-in 'selfupdate' command.
 
 
  Updating The Package Manager
@@ -321,7 +323,7 @@ with the 'update' command.
 ===========================
 
 If you already have Fink 0.2.x installed, you can update your installation
-to 0.8.1 with this package.
+to 0.9.0 with this package.
 
 Actually, there are two pieces that are updated independently: the package
 manager and the package descriptions. It is recommended to update the
@@ -331,7 +333,7 @@ package manager first.
  Updating The Package Manager
 ------------------------------
 To update the package manager, run the inject.pl script in the
-fink-0.8.1-full directory, like this:
+fink-0.9.0-full directory, like this:
 
    ./inject.pl
 
@@ -348,7 +350,7 @@ itself. ":-)" )
 
  Updating The Package Descriptions
 -----------------------------------
-If you downloaded the fink-0.8.1-full tarball, the package descriptions are
+If you downloaded the fink-0.9.0-full tarball, the package descriptions are
 in the subdirectory pkginfo. To install them, run the inject.pl script in
 that directory:
 
@@ -358,7 +360,7 @@ that directory:
 This inject.pl script works just like the one for the package manager.
 
 You can also grab the package descriptions as a separate tarball,
-packages-0.8.1. If you did that, just unpack it and run the inject.pl script
+packages-0.9.0. If you did that, just unpack it and run the inject.pl script
 inside.
 
 As a third alternative, you can have Fink automatically update itself to the
