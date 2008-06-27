@@ -189,13 +189,6 @@ sub check {
 	my $selfupdatemethod = $config->param("SelfUpdateMethod");
 	if (($selfupdatemethod ne "rsync") and $useopt == 2) {
 
-	# We temporarily disable rsync updating for 10.5, until we've decided
-	# how to handle it
-
-		if ($distribution eq "10.5") {
-			die "Sorry, fink doesn't support rsync updating in the 10.5 distribution at present.\n\n";
-		}
-
 		$answer =
 			&prompt_boolean("The current selfupdate method is $selfupdatemethod. " 
 					. "Do you wish to change the default selfupdate method ".
