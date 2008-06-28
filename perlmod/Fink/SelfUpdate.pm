@@ -271,7 +271,7 @@ sub need_devtools {
 
 	if ($method eq 'cvs' || $method eq 'rsync') {
 		Fink::VirtPackage->query_package("dev-tools")
-			or die "selfupdate method '$method' requires the package 'dev-tools'\n";
+			or die "Before changing your selfupdate method to '$method', you must install XCode, available on your original OS X install disk, or from http://connect.apple.com (after free registration).\n";
 	}
 }
 
