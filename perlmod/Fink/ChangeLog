@@ -1,3 +1,9 @@
+2008-06-28  Dave Morrison  <drm@finkproject.org>
+
+	* SelfUpdate/CVS.pm, SelfUpdate/rsync.pm:  More descriptive warning
+	message for users who need to install XCode prior to choosing the 
+	cvs or rsync selfupdate method.
+
 2008-06-20  Daniel Macks  <dmacks@netspace.org>
 
 	* Command.pm: Break up long filename list passed to system(chown)
