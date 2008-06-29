@@ -196,7 +196,7 @@ sub check {
 			# requested a method different from previously-saved default
 			# better double-check that user really wants to do this
 
-			if ($prev_method eq 'point') {
+			if ($method eq 'point') {
 				# "point" updater (inject.pl) doesn't appear to remove
 				# .info that are not in the tarball, so files added by
 				# other selfupdate methods that supply different
