@@ -229,7 +229,7 @@ sub choose_misc {
 					$config->set_param('Trees', join(' ', @trees) );
 					print_breaking("New trees have been added. You ".
 								   "should run \"fink selfupdate-rsync\" ".
-								   "or a related command in order to ".
+								   "or \"fink selfupdate-cvs\" in order to ".
 								   "download the latest list of packages ".
 								   "in the trees.");
 				}
