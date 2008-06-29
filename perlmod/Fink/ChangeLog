@@ -3,6 +3,8 @@
 	* SelfUpdate/CVS.pm, SelfUpdate/rsync.pm:  More descriptive warning
 	message for users who need to install XCode prior to choosing the 
 	cvs or rsync selfupdate method.
+	* SelfUpdate.pm: prevent changing update method *to* point, rather
+	than *from* point.
 
 2008-06-20  Dave Morrison  <drm@finkproject.org>
 
