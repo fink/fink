@@ -1,4 +1,4 @@
-2008-06-20  Dave Morrison  <drm@finkproject.org>
+2008-06-30  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.28.4, a bugfix release 
 	on branch_0_28
