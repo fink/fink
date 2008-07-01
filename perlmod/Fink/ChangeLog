@@ -1,3 +1,6 @@
+2008-07-01  Alexander Hansen <akh@finkproject.org>
+	* Bootstrap.pm: Support 10.5.4
+
 2008-06-29  Dave Morrison  <drm@finkproject.org>
 
 	* Configure.pm: clarify message issued after enabling unstable
