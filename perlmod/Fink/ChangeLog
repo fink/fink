@@ -1,3 +1,6 @@
+2008-07-01  Alexander Hansen
+	* Bootstrap.pm: recognize 10.5.4
+
 2008-06-28  Dave Morrison  <drm@finkproject.org>
 
 	* SelfUpdate.pm:  More descriptive warning message for users who need 
