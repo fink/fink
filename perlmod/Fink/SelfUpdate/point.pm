@@ -26,10 +26,10 @@ package Fink::SelfUpdate::point;
 
 use base qw(Fink::SelfUpdate::Base);
 
-use Fink::Services qw(&version_cmp &execute);
+use Fink::Services qw(&version_cmp &execute &filename);
 use Fink::CLI qw(&print_breaking);
 use Fink::Config qw($basepath $config $distribution);
-use Fink::NetAccess qw(&fetch_url);
+use Fink::NetAccess qw(&fetch_url &fetch_url_to_file);
 use Fink::Command qw(cat);
 
 use strict;
@@ -98,7 +98,16 @@ sub do_direct {
 		chomp($website);
 	}
 	my $srcdir = "$basepath/src";
-	if (&fetch_url("$website/$currentfink", $srcdir)) {
+# we now use &fetch_url_to_file so that we can pass the option
+# 'try_all_mirrors' which forces re-download of the file even if it already
+# exists
+	my $urlhash;
+	$urlhash->{'url'} = "$website/$currentfink";
+	$urlhash->{'filename'} = &filename("$website/$currentfink");
+	$urlhash->{'skip_master_mirror'} = 1;
+	$urlhash->{'download_directory'} = $srcdir;
+	$urlhash->{'try_all_mirrors'} = 1;
+	if (&fetch_url_to_file($urlhash)) {
 		die "Can't get latest version info\n";
 	}
 	my $latest_fink = cat "$srcdir/$currentfink";
@@ -114,9 +123,13 @@ sub do_direct {
 	
 	if (&version_cmp($latest_fink . '-1', '<=', $distribution . '-' . $last_selfupdate[2] . '-1')) {
 		print "\n";
-		&print_breaking("You already have the package descriptions from ".
-						"the latest Fink point release. ".
-						"(installed:$last_selfupdate[2] available:$latest_fink)");
+		&print_breaking("You already have the package descriptions ".
+						"from the latest Fink point release. ".
+						"(installed:$distribution-$last_selfupdate[2] ".
+						"available:$latest_fink)\n\n" .
+						"If you wish to change your update method to ".
+						"one which updates more frequently, run ".
+						"the command 'fink selfupdate-rsync'.");
 		return;
 	}
 	

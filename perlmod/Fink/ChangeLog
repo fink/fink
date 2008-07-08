@@ -1,4 +1,12 @@
-2008-07-01  Alexander Hansen
+2008-07-08  Dave Morrison  <drm@finkproject.org>
+
+	* Selfupdate/point.pm: switch URL retrieval to &fetch_url_to_file so 
+	that we can pass the option 'try_all_mirrors' which forces re-download
+	of the file even if it already exists; also, exit with a more
+	informative message
+
+2008-07-01  Alexander Hansen  <akh@finkproject.org>
+	
 	* Bootstrap.pm: recognize 10.5.4
 
 2008-06-29  Dave Morrison  <drm@finkproject.org>
