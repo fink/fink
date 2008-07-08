@@ -23,11 +23,11 @@
 
 package Fink::SelfUpdate;
 
-use Fink::Services qw(&execute &version_cmp &aptget_lockwait);
+use Fink::Services qw(&execute &version_cmp &aptget_lockwait &filename);
 use Fink::Bootstrap qw(&additional_packages);
 use Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 use Fink::Config qw($config $basepath $dbpath $distribution);
-use Fink::NetAccess qw(&fetch_url);
+use Fink::NetAccess qw(&fetch_url &fetch_url_to_file);
 use Fink::Engine;  # &aptget_update &cmd_install, but they aren't EXPORT_OK
 use Fink::Package;
 use Fink::FinkVersion qw(&pkginfo_version);
@@ -231,7 +231,16 @@ sub check {
 			$website = cat "$basepath/lib/fink/URL/website";
 			chomp($website);
 		}
-		if (&fetch_url("$website/$currentfink", $srcdir)) {
+# we now use &fetch_url_to_file so that we can pass the option 
+# 'try_all_mirrors' which forces re-download of the file even if it already
+# exists
+        my $urlhash;
+		$urlhash->{'url'} = "$website/$currentfink";
+		$urlhash->{'filename'} = &filename("$website/$currentfink");
+		$urlhash->{'skip_master_mirror'} = 1;
+		$urlhash->{'download_directory'} = $srcdir;
+		$urlhash->{'try_all_mirrors'} = 1;
+		if (&fetch_url_to_file($urlhash)) {
 			die "Can't get latest version info\n";
 		}
 		$latest_fink = cat "$srcdir/$currentfink";
@@ -241,9 +250,13 @@ sub check {
 			# check if we need to upgrade
 			if (&version_cmp($latest_fink . '-1', '<=', $distribution . '-' . $installed_version . '-1')) {
 				print "\n";
-				&print_breaking("You already have the package descriptions from ".
-								"the latest Fink point release. ".
-								"(installed:$installed_version available:$latest_fink)");
+				&print_breaking("You already have the package descriptions ".
+								"from the latest Fink point release. ".
+								"(installed:$distribution-$installed_version ".
+								"available:$latest_fink)\n\n" .
+								"If you wish to change your update method to ".
+								"one which updates more frequently, run ".
+								"the command 'fink selfupdate-rsync'.");
 				return;
 			}
 		} else {
