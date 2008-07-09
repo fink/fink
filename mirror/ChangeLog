@@ -1,6 +1,7 @@
 2008-07-09  Dave Morrison  <drm@finkproject.org>
 
 	* Removed broken Belgian mirrors (master and rsync)
+	* VERSION: releasing version 0.28.5.1 of fink-mirrors
 
 2008-06-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
