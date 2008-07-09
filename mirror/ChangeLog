@@ -1,3 +1,7 @@
+2008-07-09  Dave Morrison  <drm@finkproject.org>
+
+	* Removed broken Belgian mirrors (master and rsync)
+
 2008-06-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Added german distfiles mirror.
