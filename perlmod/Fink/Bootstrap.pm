@@ -225,11 +225,12 @@ END
 "for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
 		$distribution = "10.2$gcc";
 	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-9]\.0/) {
-		&print_breaking("This system is supported and tested.");
+		&print_breaking("This system no longer supported " .
+"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
 		$distribution = "10.3";
 	} elsif ($host =~ /^powerpc-apple-darwin7\..*/) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made, but should work.");
+		&print_breaking("This system no longer supported " .
+"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
 		$distribution = "10.3";
 	} elsif ($host =~ /^i386-apple-darwin7\..*/) {
 		&print_breaking("Fink is currently not supported on x86 ".
