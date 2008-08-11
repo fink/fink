@@ -118,7 +118,7 @@ flag to specify an alternate filename.
 Don't save a copy of the output during package-building, opposite of the
 .Cm --log-output
 flag. This is the default.
-.It Cm -l, --logfile=filename
+.It Cm --logfile=filename
 Save package build logs to the file
 .Pa filename
 instead of the default file (see the

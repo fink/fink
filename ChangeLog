@@ -1,3 +1,7 @@
+2008-06-22  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: -l is --log-output only, not --logfile
+
 2008-07-08  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.28.5, a release 
