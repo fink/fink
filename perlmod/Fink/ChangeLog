@@ -1,3 +1,7 @@
+2008-07-17  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Don't exit a sub with a next
+
 2008-08-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Validation.pm: Allow 'AppBundles' in splitoffs.

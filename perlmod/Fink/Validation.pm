@@ -639,14 +639,12 @@ if ($info_level < 4) {
 		if ($obsolete_fields{$field}) {
 			print "Warning: Field \"$field\" is obsolete. ($filename)\n";
 			$looks_good = 0;
-			next;
 		}
 
 		# Boolean field?
 		if ($boolean_fields{$field} and not ((lc $value) =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/)) {
 			print "Warning: Boolean field \"$field\" contains suspicious value \"$value\". ($filename)\n";
 			$looks_good = 0;
-			next;
 		}
 
 		# If this field permits percent expansion, check if %f/%n/%v should be used
