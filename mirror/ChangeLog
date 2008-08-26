@@ -1,3 +1,7 @@
+2008-08-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* master, rsync: added new .no mirror
+
 2008-07-09  Dave Morrison  <drm@finkproject.org>
 
 	* Removed broken Belgian mirrors (master and rsync)

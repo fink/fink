@@ -1,4 +1,4 @@
-Timestamp: 2008-07-09
+Timestamp: 2008-08-26
 Primary: http://distfiles.master.finkmirrors.net/
 nam-US: http://distfiles.msn.wi.us.finkmirrors.net/mirrors/fink/distfiles/
 nam-US: http://distfiles.sjc.ca.us.finkmirrors.net/
@@ -6,6 +6,7 @@ eur-DE: http://distfiles.ber.de.eu.finkmirrors.net/
 eur-IE: http://distfiles.dub.ie.eu.finkmirrors.net/
 eur-FR: http://distfiles.nte.fr.eu.finkmirrors.net/
 eur-NL: http://distfiles.ams.nl.eu.finkmirrors.net/
+eur-NO: http://distfiles.trd.no.eu.finkmirrors.net/
 eur-HR: http://distfiles.rjk.hr.eu.finkmirrors.net/
 aus: http://distfiles.bne.qld.au.finkmirrors.net/
 aus-AU: http://distfiles.bne.qld.au.finkmirrors.net/
