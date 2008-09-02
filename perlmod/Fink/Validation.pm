@@ -1438,7 +1438,7 @@ sub _validate_dpkg {
 	push(@good_dirs, '/usr/X11');
 
 	my @found_bad_dir;
-	my $installed_headers = 0;
+	my ($installed_headers, $installed_ld_libs) = (0, 0);
 	my @installed_dylibs;
 
 	# the whole control module is loaded and pre-precessed before any actual validation
@@ -1616,6 +1616,9 @@ sub _validate_dpkg {
 		}
 
 		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
+			if ($filename =~ /\.dylib$/) {
+				$installed_ld_libs = 1;
+			}
 			if (defined $otool) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
@@ -1817,7 +1820,7 @@ sub _validate_dpkg {
 	# does not record the BuildDependsOnly field, or with an old version
 	# which did not use the "Undefined" value for the BuildDependsOnly field,
 	# the warning is not issued
-	if ($installed_headers and @installed_dylibs) {
+	if ($installed_headers and $installed_ld_libs) {
 		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
 			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
