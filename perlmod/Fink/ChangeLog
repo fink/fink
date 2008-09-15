@@ -1,3 +1,7 @@
+2008-09-15  Alexander Hansen <akh@finkproject.org>
+
+	* Bootstrap.pm: Support 10.5.5
+
 2008-09-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Any .dylib filename (not just actual files) can
