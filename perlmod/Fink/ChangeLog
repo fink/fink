@@ -1,3 +1,8 @@
+2008-09-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: "scrollkeeper" is dead...only "rarian-compat"
+	supplies scrollkeeper-update
+
 2008-09-15  Alexander Hansen <akh@finkproject.org>
 
 	* Bootstrap.pm: Support 10.5.5

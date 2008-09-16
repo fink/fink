@@ -1400,7 +1400,7 @@ sub validate_dpkg_unpacked {
 # - If a package contains a daemonicfile, it should Depends:daemonic
 # - Check for symptoms of running update-scrollkeeper during package building
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
-# - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:scrollkeeper
+# - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:rarian-compat
 # - Only gettext should should have charset.alias
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
@@ -1832,10 +1832,9 @@ sub _validate_dpkg {
 		next if $deb_control->{package} eq "scrollkeeper"; # circular dep
 		next if $deb_control->{package} eq "rarian-compat"; # circular dep (new-world scrollkeeper)
 		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}} and not (
-				exists $control_processed->{depends_pkgs}->{'rarian-compat'} or
-				exists $control_processed->{depends_pkgs}->{'scrollkeeper'}
+				exists $control_processed->{depends_pkgs}->{'rarian-compat'}
 			)) {
-			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:rarian-compat\" or \"Depends:scrollkeeper\" \n";
+			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:rarian-compat\"\n";
 			$looks_good = 0;
 		}
 	}
