@@ -1243,7 +1243,7 @@ sub cleanup_debs {
 				my $deb_in_database = 0;
 				my $package = Fink::Package->package_by_name($atoms[0]);
 				if (defined $package) {
-					$deb_in_database = 1 if $package->get_version($atoms[1]);
+					$deb_in_database = 1 if grep /^(\d+:|)$atoms[1]$/, $package->list_versions();
 				}
 
 				# no pdb entry for the .deb file

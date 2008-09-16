@@ -1,5 +1,9 @@
 2008-09-16  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: Ignore epoch in cleanup --debs (%e not in .deb filename)
+
+2008-09-16  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: "scrollkeeper" is dead...only "rarian-compat"
 	supplies scrollkeeper-update
 
