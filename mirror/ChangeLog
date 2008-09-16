@@ -1,3 +1,8 @@
+2008-09-16  Dave Morrison  <drm@finkproject.org>
+
+	* master, rsync: disable nonfunctioning mirrors
+	* VERSION: releasing version 0.28.5.3 of fink-mirrors
+
 2008-08-29  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: releasing version 0.28.5.2 of fink-mirrors
