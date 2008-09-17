@@ -479,7 +479,9 @@ release. It checks the
 website to see if a new version is available. It then downloads the package
 descriptions and updates the core packages, including
 .Nm
-itself. This command can upgrade to major point releases, but it can also
+
+itself. This command can upgrade to major point releases (for example,
+the set of packages that comes with a Fink binary installer), but it can also
 set up your
 .Pa @PREFIX@/fink/dists
 directory tree for
@@ -488,7 +490,7 @@ or
 .Xr rsync 1
 updates.
 This means that you then will be able to access the very latest
-revisions of all packages. If no
+revisions of all packages instead of only the point-release snapshot. If no
 .Ar options
 are given, the existing default update method is used as given in the
 .Xr fink.conf 5
@@ -508,6 +510,12 @@ some internal indices, make sure
 .Ar fink
 itself and some other critical packages are up-to-date).
 .El
+.It Cm selfupdate-rsync
+Synonym for
+.Cm selfupdate --method=rsync
+.It Cm selfupdate-cvs
+Synonym for
+.Cm selfupdate --method=cvs
 .It Cm index
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm
