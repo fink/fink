@@ -1,5 +1,10 @@
 2008-06-22  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.8.in: Finally document "selfupdate-rsync" and
+	"selfupdate-cvs"; more detail about point releases.
+
+2008-06-22  Daniel Macks  <dmacks@netspace.org>
+
 	* fink.8.in: -l is --log-output only, not --logfile
 
 2008-06-22  Dave Morrison  <drm@finkproject.org>
