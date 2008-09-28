@@ -639,14 +639,12 @@ if ($info_level < 4) {
 		if ($obsolete_fields{$field}) {
 			print "Warning: Field \"$field\" is obsolete. ($filename)\n";
 			$looks_good = 0;
-			next;
 		}
 
 		# Boolean field?
 		if ($boolean_fields{$field} and not ((lc $value) =~ /^\s*(true|yes|on|1|false|no|off|0)\s*$/)) {
 			print "Warning: Boolean field \"$field\" contains suspicious value \"$value\". ($filename)\n";
 			$looks_good = 0;
-			next;
 		}
 
 		# If this field permits percent expansion, check if %f/%n/%v should be used
@@ -1402,7 +1400,7 @@ sub validate_dpkg_unpacked {
 # - If a package contains a daemonicfile, it should Depends:daemonic
 # - Check for symptoms of running update-scrollkeeper during package building
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
-# - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:scrollkeeper
+# - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:rarian-compat
 # - Only gettext should should have charset.alias
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
@@ -1440,7 +1438,7 @@ sub _validate_dpkg {
 	push(@good_dirs, '/usr/X11');
 
 	my @found_bad_dir;
-	my $installed_headers = 0;
+	my ($installed_headers, $installed_ld_libs) = (0, 0);
 	my @installed_dylibs;
 
 	# the whole control module is loaded and pre-precessed before any actual validation
@@ -1618,6 +1616,9 @@ sub _validate_dpkg {
 		}
 
 		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
+			if ($filename =~ /\.dylib$/) {
+				$installed_ld_libs = 1;
+			}
 			if (defined $otool) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
@@ -1819,7 +1820,7 @@ sub _validate_dpkg {
 	# does not record the BuildDependsOnly field, or with an old version
 	# which did not use the "Undefined" value for the BuildDependsOnly field,
 	# the warning is not issued
-	if ($installed_headers and @installed_dylibs) {
+	if ($installed_headers and $installed_ld_libs) {
 		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
 			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
@@ -1831,10 +1832,9 @@ sub _validate_dpkg {
 		next if $deb_control->{package} eq "scrollkeeper"; # circular dep
 		next if $deb_control->{package} eq "rarian-compat"; # circular dep (new-world scrollkeeper)
 		if (grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}} and not (
-				exists $control_processed->{depends_pkgs}->{'rarian-compat'} or
-				exists $control_processed->{depends_pkgs}->{'scrollkeeper'}
+				exists $control_processed->{depends_pkgs}->{'rarian-compat'}
 			)) {
-			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:rarian-compat\" or \"Depends:scrollkeeper\" \n";
+			print "Error: Calling scrollkeeper-update in $_ requires \"Depends:rarian-compat\"\n";
 			$looks_good = 0;
 		}
 	}

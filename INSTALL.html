@@ -1,20 +1,22 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!--
-Generated from $Fink: install.xml,v 1.25 2006/09/16 23:25:29 dmrrsn Exp $
+Generated from $Fink: install.xml,v 1.27 2008/06/27 00:55:33 dmrrsn Exp $
 -->
-<title>Fink Documentation - Fink 0.8.1 Installation</title></head><body><h1 style="text-align: center;">Fink 0.8.1 Installation</h1>
+<title>Fink Documentation - Fink 0.9.0 Installation</title></head><body><h1 style="text-align: center;">Fink 0.9.0 Installation</h1>
 <p>
 These are the installation instructions for the "source" distribution
-of Fink 0.8.1, intended for use with OS X v.10.4 and later.  
+of Fink 0.9.0, intended for use with OS X v.10.5 .  
 The instructions
 can also be used 
+for installation on OS X v.10.4 (replacing
+0.9.0 by 0.8.1 throughout the document),
 for installation on OS X v.10.3 (replacing
-0.8.1 by 0.7.2 throughout the document),
+0.9.0 by 0.7.2 throughout the document),
 for installation on OS X v.10.2 (replacing
-0.8.1 by 0.6.4 throughout the document),
+0.9.0 by 0.6.4 throughout the document),
 and for installation on OS X v.10.1
-(replacing 0.8.1 by 0.4.1a).
+(replacing 0.9.0 by 0.4.1a).
 </p><p>
 This document does not apply to the "<a href="http://www.finkproject.org/download/index.php">binary</a>" distribution.
 </p><p>
@@ -43,7 +45,7 @@ If you're looking for the real instructions, skip to the <a href="#install-first
 <h3><a name="install-fast.install">1.1 First Time Installation Fast
 Track</a></h3>
 <p>
-Start out by copying the <tt style="white-space: nowrap;">fink-0.8.1-full.tar.gz</tt>
+Start out by copying the <tt style="white-space: nowrap;">fink-0.9.0-full.tar.gz</tt>
 file to your home folder.
 (Note: If you have OS X 10.4 and XCode 2.1, you should use
 <tt style="white-space: nowrap;">fink-0.8.0-full-XCode-2.1.tar.gz</tt> instead, and make
@@ -54,16 +56,16 @@ Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your in
 The actual input prompts from the shell may vary, and some chunks of
 the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
-<pre>[frodo:~] testuser% <b>tar xzf fink-0.8.1-full.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.8.1-full</b>
-[frodo:~/fink-0.8.1-full] testuser% <b>./bootstrap /sw</b>
+<pre>[frodo:~] testuser% <b>tar xzf fink-0.9.0-full.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.9.0-full</b>
+[frodo:~/fink-0.9.0-full] testuser% <b>./bootstrap /sw</b>
 
 Welcome to Fink.
 
 ...
 Choose a method: [1] <b>1</b>
 
-sudo /Users/testuser/fink-0.8.1-full/bootstrap .sudo '/sw'
+sudo /Users/testuser/fink-0.9.0-full/bootstrap .sudo '/sw'
 Password:<b>(your normal password here)</b>
 ...
 OK, I'll ask you some questions and update the configuration file in
@@ -94,8 +96,8 @@ Bootstrapping a base system via /sw/bootstrap.
 
 You should now have a working Fink installation in '/sw'.
 
-[frodo:~/fink-0.8.1-full] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.8.1-full</b>
+[frodo:~/fink-0.9.0-full] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.9.0-full</b>
 [frodo:~] testuser% <b>/sw/bin/pathsetup.sh</b></pre>
 <p>
 The last command runs a little script to help set up your Unix paths
@@ -142,7 +144,7 @@ documentation when your problem actually is well-documented.
 
 <h3><a name="install-fast.update">1.2 Update Fast Track</a></h3>
 <p>
-Start out by copying the <tt style="white-space: nowrap;">fink-0.8.1-full.tar.gz</tt>
+Start out by copying the <tt style="white-space: nowrap;">fink-0.9.0-full.tar.gz</tt>
 file to your home folder.
 (Note: If you have OS X 10.4 and XCode 2.1, you should use
 <tt style="white-space: nowrap;">fink-0.8.0-full-XCode-2.1.tar.gz</tt> instead, and make
@@ -153,9 +155,9 @@ Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your in
 The actual input prompts from the shell may vary, and some chunks of
 the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
-<pre>[frodo:~] testuser% <b>tar xzf fink-0.8.1-full.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.8.1-full</b>
-[frodo:~/fink-0.8.1-full] testuser% <b>./inject.pl /sw</b>
+<pre>[frodo:~] testuser% <b>tar xzf fink-0.9.0-full.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.9.0-full</b>
+[frodo:~/fink-0.9.0-full] testuser% <b>./inject.pl /sw</b>
 sudo ./inject.pl /sw
 Password:<b>(your normal password here)</b>
 Copying package descriptions
@@ -164,8 +166,8 @@ Done.
 
 Your Fink installation in '/sw' was updated with new fink packages.
 
-[frodo:~/fink-0.8.1-full] testuser% <b>cd pkginfo</b>
-[frodo:~/fink-0.8.1-full/pkginfo] testuser% <b>./inject.pl /sw</b>
+[frodo:~/fink-0.9.0-full] testuser% <b>cd pkginfo</b>
+[frodo:~/fink-0.9.0-full/pkginfo] testuser% <b>./inject.pl /sw</b>
 sudo ./inject.pl /sw
 Copying...
 ...
@@ -174,8 +176,8 @@ Your Fink installation in '/sw' was updated with new package description
 files. Use appropriate fink commands to update the packages, e.g. 'fink
 update-all'.
 
-[frodo:~/fink-0.8.1-full/pkginfo] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.8.1-full</b>
+[frodo:~/fink-0.9.0-full/pkginfo] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.9.0-full</b>
 [frodo:~] testuser% <b>fink update-all</b>
 ...</pre>
 
@@ -252,7 +254,7 @@ have been warned.
 
 <h3><a name="install-first.install">2.3 Installation</a></h3>
 <p>
-First, you need to unpack the fink-0.8.1-full.tar.gz tarball.
+First, you need to unpack the fink-0.9.0-full.tar.gz tarball.
 (Note: If you have OS X 10.4 and XCode 2.1, you should use
 <tt style="white-space: nowrap;">fink-0.8.0-full-XCode-2.1.tar.gz</tt> instead, and make
 the appropriate changes below.)
@@ -261,15 +263,15 @@ StuffIt Expander has a tendency to screw up text files.
 So, go to the directory where you put the tarball, and run this
 command:
 </p>
-<pre>tar xzf fink-0.8.1-full.tar.gz</pre>
+<pre>tar xzf fink-0.9.0-full.tar.gz</pre>
 <p>
-You now have a directory named fink-0.8.1-full.
-Change to it with <tt style="white-space: nowrap;">cd fink-0.8.1-full</tt>.
+You now have a directory named fink-0.9.0-full.
+Change to it with <tt style="white-space: nowrap;">cd fink-0.9.0-full</tt>.
 </p>
 <p>
 The actual installation is performed by the perl script
 bootstrap.
-So, to start installation, go to the fink-0.8.1-full directory and run
+So, to start installation, go to the fink-0.9.0-full directory and run
 this command:
 </p>
 <pre>./bootstrap</pre>
@@ -363,7 +365,7 @@ and Mac OS X document</a>.
 
 <p>
 If you already have Fink 0.3.x installed, you can update your
-installation to 0.8.1 with the built-in 'selfupdate' command.
+installation to 0.9.0 with the built-in 'selfupdate' command.
 </p>
 
 
@@ -410,7 +412,7 @@ individual packages with the 'update' command.
 
 <p>
 If you already have Fink 0.2.x installed, you can update your
-installation to 0.8.1 with this package.
+installation to 0.9.0 with this package.
 </p>
 <p>
 Actually, there are two pieces that are updated independently: the
@@ -422,7 +424,7 @@ update the package manager first.
 <h3><a name="install-up02.packman">4.1 Updating The Package Manager</a></h3>
 <p>
 To update the package manager, run the inject.pl script in the
-fink-0.8.1-full directory, like this:
+fink-0.9.0-full directory, like this:
 </p>
 <pre>./inject.pl</pre>
 <p>
@@ -440,7 +442,7 @@ the new versions of the fink and base-files packages.
 
 <h3><a name="install-up02.descriptions">4.2 Updating The Package Descriptions</a></h3>
 <p>
-If you downloaded the fink-0.8.1-full tarball, the package
+If you downloaded the fink-0.9.0-full tarball, the package
 descriptions are in the subdirectory pkginfo. To install them, run the
 inject.pl script in that directory:
 </p>
@@ -452,7 +454,7 @@ manager.
 </p>
 <p>
 You can also grab the package descriptions as a separate tarball,
-packages-0.8.1. If you did that, just unpack it and run the inject.pl
+packages-0.9.0. If you did that, just unpack it and run the inject.pl
 script inside.
 </p>
 <p>
@@ -547,4 +549,4 @@ You may distribute this document in print for private purposes,
 provided the document and this copyright notice remain complete and
 unmodified. Any commercial reproduction and any online publication
 requires the explicit consent of the author.</p><hr>
-<p>Generated from <i>$Fink: install.xml,v 1.25 2006/09/16 23:25:29 dmrrsn Exp $</i></p></body></html>
+<p>Generated from <i>$Fink: install.xml,v 1.27 2008/06/27 00:55:33 dmrrsn Exp $</i></p></body></html>

@@ -264,7 +264,7 @@ parameter is not changed. Dot is not supported as a separator.
 
 sub chowname {
 	my($owner, @files) = @_;
-	my($user, $group) = split /:/, $owner, 2;
+	my($user, $group) = split( /:/, $owner, 2 );
 	
 	my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
 	my $gid = defined $group && length $group ? getgrnam($group) : -1;
@@ -294,7 +294,7 @@ followed.
 
 sub chowname_hr {
 	my($owner, @files) = @_;
-	my($user, $group) = split /:/, $owner, 2;
+	my($user, $group) = split( /:/, $owner, 2 );
 	
 	my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
 	my $gid = defined $group && length $group ? getgrnam($group) : -1;
@@ -318,9 +318,12 @@ sub chowname_hr {
 		@files) if @files;
 	
 	# Some systems have no lchown
-	if ($Config{d_lchown} && @links) {
-		$nok ||= system('/usr/sbin/chown', '-h', "\Q$user\E:\Q$group\E",
-			@links);
+	if ($Config{d_lchown}) {
+		while (my @xargs = splice @links, 0, 128) {
+			# do 128 filenames at a time to avoid exceeding ARG_MAX
+			$nok ||= system('/usr/sbin/chown', '-h', "\Q$user\E:\Q$group\E",
+							@xargs);
+		}
 	}
 
 	return !$nok;

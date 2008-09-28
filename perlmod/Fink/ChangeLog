@@ -1,3 +1,11 @@
+2008-09-28  Daniel Macks  <dmacks@netspace.org>
+
+	* Command.pm: Backport fix to system(chown) filename lists
+	* Engine.pm: Backport fix cleanup --deb with epochs
+	* Validation.pm: Backports... fix of sub{} exit; deprecation of
+	scrollkeeper for rarian-compat; BDO flag-test and .dylib test
+	improvements
+
 2008-09-15  Alexander Hansen <akh@finkproject.org>
 
 	* Bootstrap.pm: Support 10.5.5
