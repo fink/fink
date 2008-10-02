@@ -1,3 +1,7 @@
+2008-10-02  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: dumpinfo: remember that DocFiles has conditionals
+
 2008-09-21  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Treat "." and "+" as literals in cleanup --debs
