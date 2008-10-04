@@ -1,6 +1,10 @@
+2008-10-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Services.pm: Check for definedness before doing string-compare
+
 2008-10-02  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVersion.pm: Prehibit relative paths for --logfile
+	* PkgVersion.pm: Prohibit relative paths for --logfile
 
 2008-10-02  Daniel Macks  <dmacks@netspace.org>
 
