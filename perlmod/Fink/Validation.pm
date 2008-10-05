@@ -1973,13 +1973,13 @@ sub stack_msg {
 # specifically versioned form of the other. That is, "libfoo.1.dylib"
 # is more versioned than "libfoo.dylib" but less versioned than
 # "libfoo.1.2.dylib". The return is a normal tristate comparison value
-# (-1 if $file1 less specific than $file2, 0 if same, +1 if $file1
-# more specific than $file2). Filenames are stripped of their
-# extension ".$ext" if $ext is given. If the two filenames are not
-# related in this fashion at all or if they both do not have the
-# specific $ext, undef is returned.  Filenames can be absolute paths,
-# relative paths, or simple filenames, but they must be the same in
-# this regard.
+# (-1 if $file1 less specific than $file2, "0 but true" (numerically
+# zero, boolean true) if same, +1 if $file1 more specific than
+# $file2). Filenames are stripped of their extension ".$ext" if $ext
+# is given. If the two filenames are not related in this fashion at
+# all or if they both do not have the specific $ext, 0 (boolean false)
+# is returned.  Filenames can be absolute paths, relative paths, or
+# simple filenames, but they must be the same in this regard.
 #
 # Implementation: substring test rooted at beginning of the strings.
 sub _filename_versioning_cmp {
@@ -1988,8 +1988,8 @@ sub _filename_versioning_cmp {
 	my $ext = shift;
 
 	if (defined $ext) {
-		$file1 =~ s/\Q.$ext\E$// || return undef;
-		$file2 =~ s/\Q.$ext\E$// || return undef;
+		$file1 =~ s/\Q.$ext\E$// || return 0;
+		$file2 =~ s/\Q.$ext\E$// || return 0;
 	}
 
 	if ($file1 =~ /^\Q$file2.\E.*$/) {
@@ -2000,10 +2000,10 @@ sub _filename_versioning_cmp {
 		return -1;
 	} elsif ($file1 eq $file2) {
 		# s1 and s2 are the same
-		return 0;
+		return "0 but true";
 	}
 	# s1 and s2 are unrelated
-	return undef;
+	return 0;
 }
 
 

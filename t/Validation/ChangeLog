@@ -1,5 +1,10 @@
 2008-09-05  Daniel Macks  <dmacks@netspace.org>
 
+	* _filename_versioning_cmp.t: API change: always returns a defined
+	number
+
+2008-09-05  Daniel Macks  <dmacks@netspace.org>
+
 	* _filename_versioning_cmp.t: Test this new thing
 
 2008-09-05  Daniel Macks  <dmacks@netspace.org>

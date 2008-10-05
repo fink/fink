@@ -1,5 +1,10 @@
 2008-10-05  Daniel Macks  <dmacks@netspace.org>
 
+	* Validation.pm: _filename_versioning_cmp() API change: always
+	returns a defined number
+
+2008-10-05  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: factor out _filename_versioning_cmp() function
 
 2008-10-04  Daniel Macks  <dmacks@netspace.org>
