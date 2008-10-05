@@ -2,6 +2,8 @@
 
 	* bootstrap: more thorough cleanup by also removing 
 	dpkg-bootstrap.patch after bootstrap (backport from HEAD)
+	* VERSION: Bumped package manager version to 0.28.6, a bugfix
+	release on branch_0_28
 
 2008-09-28  Daniel Macks  <dmacks@netspace.org>
 
