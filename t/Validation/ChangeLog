@@ -1,0 +1,4 @@
+2008-09-05  Daniel Macks  <dmacks@netspace.org>
+
+	* exports.t: Make sure we can export the expected functions
+

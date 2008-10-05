@@ -166,6 +166,8 @@ t/Services/spec2struct.t
 t/basepath/etc/fink.conf
 t/testmore.pl
 t/Text/DelimMatch.t
+t/Validation/ChangeLog
+t/Validation/exports.t
 fink-virtual-pkgs.in
 fink.shlibs
 lockwait.in
