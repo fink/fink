@@ -1,5 +1,9 @@
 2008-09-05  Daniel Macks  <dmacks@netspace.org>
 
+	* _filename_versioning_cmp.t: Test this new thing
+
+2008-09-05  Daniel Macks  <dmacks@netspace.org>
+
 	* exports.t: Make sure can export the expected functions if
 	requested but not export anything by default
 

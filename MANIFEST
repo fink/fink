@@ -168,6 +168,7 @@ t/testmore.pl
 t/Text/DelimMatch.t
 t/Validation/ChangeLog
 t/Validation/exports.t
+t/Validation/_filename_versioning_cmp.t
 fink-virtual-pkgs.in
 fink.shlibs
 lockwait.in
