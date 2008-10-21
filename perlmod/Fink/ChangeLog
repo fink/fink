@@ -1,3 +1,7 @@
+2008-10-21  Dave Morrison  <drm@finkproject.org>
+
+	* VirtPackage.pm: correct an error in what system perl 5.8.8 "provides"
+
 2008-10-05  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: _filename_versioning_cmp() API change: always
