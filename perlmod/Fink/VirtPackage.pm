@@ -336,7 +336,6 @@ END
 				'date-parse',
 				'file-type',
 				'freezethaw',
-				'html-tree',
 				'io-pager',
 				'ipc-run3',
 				'locale-maketext-lexicon',
