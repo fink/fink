@@ -1,3 +1,7 @@
+2008-10-28  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: disable 10.3 support (backport)
+
 2008-10-27  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm, Services.pm: modernize bootstrap
