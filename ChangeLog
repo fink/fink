@@ -1,3 +1,7 @@
+2008-10-27  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap: modernize
+
 2008-10-05  Dave Morrison  <drm@finkproject.org>
 
 	* bootstrap: more thorough cleanup by also removing 
