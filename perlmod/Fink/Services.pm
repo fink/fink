@@ -1348,8 +1348,8 @@ sub enforce_gcc {
 # Note: we no longer support 10.1 or 10.2-gcc3.1 in fink, we don't
 # specify default values for these.
 
-	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0', '10.5' => '4.0');
-	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3');
+	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0', '10.5' => '4.0', '10.6' => '4.2');
+	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3', '4.2' => '3.3');
 
 	if (my $sw_vers = get_osx_vers_long())
 	{
@@ -1445,7 +1445,7 @@ couldn't be determined.
 
 sub get_darwin_equiv
 {
-	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4', '9' => '10.5');
+	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4', '9' => '10.5', '10' => '10.6');
 	return $darwin_osx{get_kernel_vers()};
 }
 

@@ -338,7 +338,8 @@ my $arch = get_arch();
 my %distribution_infodir = (
 	"10.3" => "10.3",
 	"10.4" => "10.4",
-	"10.5" => "10.4"
+	"10.5" => "10.4",
+	"10.6" => "10.4"
 	);
 
 my @dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs var var/lib var/lib/fink);
