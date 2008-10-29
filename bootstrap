@@ -77,7 +77,7 @@ require Fink::Services;
 import Fink::Services qw(&read_config &execute &get_arch);
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
-import Fink::Bootstrap qw(&create_tarball &fink_packagefiles &copy_description &get_version_revision);
+import Fink::Bootstrap qw(&create_tarball &fink_packagefiles &copy_description &get_version_revision &get_selfupdatetrees);
 
 ### check if we like this system
 
@@ -335,18 +335,13 @@ if (not -d $installto) {
 
 my $arch = get_arch();
 
-my %distribution_infodir = (
-	"10.3" => "10.3",
-	"10.4" => "10.4",
-	"10.5" => "10.4",
-	"10.6" => "10.4"
-	);
+my $selfupdatetrees = get_selfupdatetrees($distribution);
 
 my @dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs var var/lib var/lib/fink);
-push @dirlist, "fink/$distribution_infodir{$distribution}", "fink/$distribution_infodir{$distribution}/stable", "fink/$distribution_infodir{$distribution}/local";
+push @dirlist, "fink/$selfupdatetrees", "fink/$selfupdatetrees/stable", "fink/$selfupdatetrees/local";
 foreach my $dir (qw(stable/main stable/crypto local/main)) {
-	push @dirlist, "fink/$distribution_infodir{$distribution}/$dir", "fink/$distribution_infodir{$distribution}/$dir/finkinfo",
-		"fink/$distribution_infodir{$distribution}/$dir/binary-darwin-$arch";
+	push @dirlist, "fink/$selfupdatetrees/$dir", "fink/$selfupdatetrees/$dir/finkinfo",
+		"fink/$selfupdatetrees/$dir/binary-darwin-$arch";
 }
 foreach my $dir (@dirlist) {
 	if (not -d "$installto/$dir") {
@@ -361,10 +356,10 @@ unlink "$installto/fink/dists";
 
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists\n";
 
-### for now, we simply symlink $distribution to $distribution_infodir{$distribution}, but eventually we may need to do something more complicated
+### for now, we simply symlink $distribution to $selfupdatetrees, but eventually we may need to do something more complicated
 
-if (not $distribution_infodir{$distribution} eq $distribution) {
-	symlink "$distribution_infodir{$distribution}", "$installto/fink/$distribution" or die "ERROR: Can't create symlink $installto/fink/$distribution\n";
+if (not $selfupdatetrees eq $distribution) {
+	symlink "$selfupdatetrees", "$installto/fink/$distribution" or die "ERROR: Can't create symlink $installto/fink/$distribution\n";
 }
 
 ### create fink tarball for bootstrap
@@ -379,7 +374,7 @@ if ( &create_tarball($installto, "fink", $packageversion, $packagefiles) == 1 ) 
 
 {
 my $script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
-$script .= "/bin/cp $distribution_infodir{$distribution}/*.info $distribution_infodir{$distribution}/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
+$script .= "/bin/cp $selfupdatetrees/*.info $selfupdatetrees/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
 
 if ( &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base", "fink-$distribution.info", "fink.info.in" ) == 1 ) {
 	exit 1;
@@ -406,7 +401,7 @@ Basepath: $installto
 RootMethod: $rootmethod
 Trees: local/main stable/main stable/crypto
 Distribution: $distribution
-SelfUpdateTrees: $distribution_infodir{$distribution}
+SelfUpdateTrees: $selfupdatetrees
 EOF
 
 close(CONFIG) or die "can't write configuration $configpath: $!\n";
