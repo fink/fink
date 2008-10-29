@@ -1,6 +1,11 @@
 2008-10-28  Dave Morrison  <drm@finkproject.org>
 
 	* REVISION: modernize
+	* bootstrap: replace %distribution_infodir with 
+	Bootstrap::get_selfupdatetrees
+	* postinstall.pl.in: use Bootstrap::get_selfupdatetrees; regularize 
+	the creation of symlinks for distributions 10.5 and later; and
+	disable distribution 10.3
 
 2008-10-27  Dave Morrison  <drm@finkproject.org>
 
