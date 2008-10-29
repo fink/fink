@@ -43,7 +43,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages &add_injected_to_trees);
+	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages &add_injected_to_trees &get_selfupdatetrees);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -76,6 +76,7 @@ Fink::Bootstrap - Bootstrap a fink installation
 	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda,$version,$revision);
 	my ($version, $revisions) = read_version_revision($package_source);
 	my ($version, $revision) = get_version_revision($package_source,$distribution);
+	my $selfupdatetrees = get_selfupdatetrees($distribution);
 
 
 =head1 DESCRIPTION
@@ -958,6 +959,31 @@ sub get_version_revision {
 	return ($version, ${$revisions}{'all'});
 }
 }
+
+=item get_selfupdatetrees
+
+	my $selfupdatetrees = get_selfupdatetrees($distribution);
+
+Find the correct value for $selfupdatetrees for the given $distribution.
+
+Called by bootstrap.pl and postinstall.pl.
+
+=cut
+
+sub get_selfupdatetrees {
+
+	my $distribution = shift;
+
+my %selfupdatetrees = (
+	"10.3" => "10.3",
+	"10.4" => "10.4",
+	"10.5" => "10.4",
+	"10.6" => "10.4"
+	);
+
+	return $selfupdatetrees{$distribution};
+}
+
 
 =back
 
