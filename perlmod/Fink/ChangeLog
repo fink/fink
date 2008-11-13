@@ -1,3 +1,8 @@
+2008-11-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Include list of modern dependencies in 'fink info'
+	for obsolete packages
+
 2008-10-28  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: add function get_selfupdatetrees()

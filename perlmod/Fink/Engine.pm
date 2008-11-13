@@ -874,6 +874,15 @@ sub cmd_description {
 			if ($package->param_boolean("BuildDependsOnly")) {
 				print " .\n Note: This package contains compile-time files only.\n";
 			}
+			if ($package->is_obsolete("BuildDependsOnly")) {
+				my $depends_field = $package->pkglist_default('Depends','');
+				$depends_field =~ s/(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)//;
+
+				print " .\n";
+				print " Note: This package is obsolete. Maintainers should upgrade their\n";
+				print " package dependencies to use its replacement, which is probably:\n";
+				print " $depends_field\n";
+			}
 		}
 		print "\n";
 	}
