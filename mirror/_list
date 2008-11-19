@@ -19,3 +19,4 @@ kde: KDE
 rsync: RSync SelfUpdate
 sourceforge: SourceForge
 apache: The Apache Project
+postgresql: The PostgreSQL Database

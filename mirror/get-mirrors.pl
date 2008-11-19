@@ -14,13 +14,14 @@ use LWP::UserAgent;
 use Net::FTP;
 use WWW::Mechanize;
 use URI;
+use URI::Escape;
 use URI::Find;
 
 use vars qw($VERSION %keys %reverse_keys %files $debug $response);
 
-use vars qw($APACHE $CPAN $CTAN $DEBIAN $FREEBSD $GIMP $GNOME $GNU $KDE);
+use vars qw($APACHE $CPAN $CTAN $DEBIAN $FREEBSD $GIMP $GNOME $GNU $KDE $PGSQL);
 
-$APACHE  = 1;
+$APACHE  = 0;
 $CPAN    = 1;
 $CTAN    = 1;
 $DEBIAN  = 1;
@@ -29,6 +30,7 @@ $GIMP    = 1;
 $GNOME   = 1;
 $GNU     = 1;
 $KDE     = 1;
+$PGSQL   = 1;
 
 $debug = 0;
 $VERSION = ( qw$Revision$ )[-1];
@@ -58,9 +60,9 @@ close (KEYS);
 
 if ($APACHE) {
 	print "- getting apache mirror list:\n";
-	$response = $mech->get( 'http://www.apache.org/mirrors' );
+	$response = $mech->get( 'http://www.apache.org/mirrors/' );
 	if ($response->is_success) {
-		$files{'apache'}->{'url'} = 'http://www.apache.org/mirrors';
+		$files{'apache'}->{'url'} = 'http://www.apache.org/mirrors/';
 		$files{'apache'}->{'primary'} = 'http://www.apache.org/dist';
 		my $mirrors;
 		my @links = ($files{'apache'}->{'primary'});
@@ -454,6 +456,42 @@ if ($KDE) {
 		$files{'kde'}->{'mirrors'} = $mirrors;
 	} else {
 		warn "unable to get kde ftp list\n";
+	}
+}
+
+## PostgreSQL
+if ($PGSQL) {
+	print "- getting PostgreSQL mirror list:\n";
+	$response = $mech->get( 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F' );
+	if ($response->is_success) {
+		$files{'postgresql'}->{'url'} = 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F';
+		$files{'postgresql'}->{'primary'} = 'ftp://ftp.postgresql.org/pub';
+		my $mirrors;
+		my @links = ($files{'postgresql'}->{'primary'});
+
+		my $tree = HTML::TreeBuilder->new();
+		$tree->parse($response->content);
+		for my $link ($tree->look_down('_tag' => 'a')) {
+			my $url = $link->attr('href');
+			if ($url =~ s/^.*?\&url=//) {
+				$url = uri_unescape($url);
+				print "\t", $url, ": ";
+				if (get_content($url . 'README') =~ /This directory contains the current and past releases of PostgreSQL/gs) {
+					print "ok\n";
+					push(@links, $url);
+				} else {
+					print "failed\n";
+				}
+			}
+		}
+		for my $link (@links) {
+			my ($code, $uri) = get_code($link);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
+		}
+	
+		$files{'postgresql'}->{'mirrors'} = $mirrors;
+	} else {
+		warn "unable to get postgresql ftp list\n";
 	}
 }
 

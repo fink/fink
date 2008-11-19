@@ -17,6 +17,7 @@ sam-CL: Chile
 sam-CO: Colombia
 sam-CR: Costa Rica
 sam-RQ: Puerto Rico
+sam-VE: Venezuela
 
 eur: Europe
 eur-AT: Austria
@@ -79,4 +80,4 @@ asi-SA: Saudi Arabia
 asi-SG: Singapore
 asi-TH: Thailand
 asi-TW: Taiwan
-
+asi-VN: Vietnam
