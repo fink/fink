@@ -1,3 +1,11 @@
+2008-11-29  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.28.6.1 of fink-mirrors
+
+2008-11-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* sourceforge: fix the sf mirrors
+
 2008-09-16  Dave Morrison  <drm@finkproject.org>
 
 	* master, rsync: disable nonfunctioning mirrors
