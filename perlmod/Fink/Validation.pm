@@ -835,7 +835,7 @@ if ($info_level < 4) {
 	}
 
 	# the contents if PatchFile (if any)
-	if (exists $properties->{expand}->{patchfile}) {
+	if (exists $expand->{patchfile}) {
 		unshift @patchfiles, '%{patchfile}';
 	}
 

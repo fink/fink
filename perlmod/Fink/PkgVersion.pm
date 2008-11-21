@@ -5272,6 +5272,13 @@ sub log_output {
 				'build log filename'
 			);
 
+			# so many layers of sublaunching, changing uid, and $HOME,
+			# and cwd fiddling, too confusing to know what the base is
+			# for relative paths
+			unless ($output_logfile =~ /^\//) {
+				die "--logfile must be an absolute path\n";
+			}
+
 			# make sure logfile can be written
 			sysopen my $log_fh, $output_logfile, O_WRONLY | O_CREAT
 				or die "Can't write logfile $output_logfile: $!\n";

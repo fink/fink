@@ -837,7 +837,7 @@ sub expand_percent2 {
 				my $errmsg = "Error performing percent expansion: unknown % expansion or nesting too deep: \"$s\"";
 				$errmsg .= " ($options{err_info})" if defined $options{err_info};
 				$errmsg .= "\n";
-				if ($options{err_action} eq 'die' || !defined $options{err_action}) {
+				if (!defined $options{err_action} or $options{err_action} eq 'die') {
 					die $errmsg;
 				} elsif ($options{err_action} eq 'warn') {
 					print $errmsg;

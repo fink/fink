@@ -874,6 +874,15 @@ sub cmd_description {
 			if ($package->param_boolean("BuildDependsOnly")) {
 				print " .\n Note: This package contains compile-time files only.\n";
 			}
+			if ($package->is_obsolete("BuildDependsOnly")) {
+				my $depends_field = $package->pkglist_default('Depends','');
+				$depends_field =~ s/(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)//;
+
+				print " .\n";
+				print " Note: This package is obsolete. Maintainers should upgrade their\n";
+				print " package dependencies to use its replacement, which is probably:\n";
+				print " $depends_field\n";
+			}
 		}
 		print "\n";
 	}
@@ -2386,7 +2395,7 @@ HELPFORMAT
 			} elsif ($_ =~ /^source(\d*rename|directory|\d+extractdir)$/ or
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
-					 $_ =~ /^set/ or $_ =~ /^(jar|doc)files$/ or
+					 $_ =~ /^set/ or $_ =~ /^jarfiles$/ or
 					 $_ =~ /^patch(|file|file-md5)$/ or $_ eq 'appbundles' or
  					 $_ eq 'infodocs' or $_ =~ /^daemonicname$/
 					) {
@@ -2398,25 +2407,14 @@ HELPFORMAT
 					$value =~ s/\n/ /g; # merge into single line
 					printf "%s: %s\n", $_, $value;
 				}
-			} elsif ($_ eq 'files') {
+			} elsif ($_ =~ /^(|conf|doc)files$/) {
 				# singleline fields start on the same line, have
 				# embedded newlines removed, and are not wrapped
 				# need conditionals processing
 				if ($pkg->has_param($_)) {
 					my $value = $pkg->conditional_space_list(
-						$pkg->param_expanded("Files"),
-						"Files of ".$pkg->get_fullname()." in ".$pkg->get_info_filename
-					);
-					printf "%s: %s\n", $_, $value if length $value;
-				}
-			} elsif ($_ eq 'conffiles') {
-				# singleline fields start on the same line, have
-				# embedded newlines removed, and are not wrapped
-				# need conditionals processing
-				if ($pkg->has_param($_)) {
-					my $value = $pkg->conditional_space_list(
-						$pkg->param_expanded("ConfFiles"),
-						"ConfFiles of ".$pkg->get_fullname()." in ".$pkg->get_info_filename
+						$pkg->param_expanded($_),
+						"$_ of ".$pkg->get_fullname()." in ".$pkg->get_info_filename
 					);
 					printf "%s: %s\n", $_, $value if length $value;
 				}

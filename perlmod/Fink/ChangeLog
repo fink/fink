@@ -1,3 +1,13 @@
+2008-11-20  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Include list of modern dependencies in 'fink info'
+	for obsolete packages
+	* Engine.pm: dumpinfo: remember that DocFiles has conditionals
+	* PkgVersion.pm: Prohibit relative paths for --logfile
+	* Services.pm: Check for definedness before doing string-compare
+	* Validation.pm: Fix "hardcoded /sw in .patch" check: %exp map
+	isn't a .info field
+
 2008-10-28  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: disable 10.3 support (backport)
