@@ -2492,7 +2492,9 @@ sub resolve_depends {
 
 			$found = 1 if defined $package;
 			if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-				print "WARNING: While resolving $oper \"" . $depspec->{'depname'} . " " . $depspec->{'versionspec'} . "\" for package \"".$self->get_fullname()."\", package \"" . $depspec->{'depname'} . "\" was not found.\n";
+				print "WARNING: While resolving $oper \"" . $depspec->{'depname'} . 
+					(defined $depspec->{'versionspec'} && length $depspec->{'versionspec'} ? " " . $depspec->{'versionspec'} : '')
+					 . "\" for package \"".$self->get_fullname()."\", package \"" . $depspec->{'depname'} . "\" was not found.\n";
 			}
 			if (not defined $package) {
 				next;

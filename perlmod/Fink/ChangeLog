@@ -1,3 +1,7 @@
+2008-11-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Remove weird whitespace in diagnostic msg.
+
 2008-11-17  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Fix "hardcoded /sw in .patch" check: %exp map
