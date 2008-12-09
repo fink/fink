@@ -48,7 +48,7 @@ for dir in bin sbin \
 	share/fink share/fink/images \
 	var var/run var/run/fink var/run/fink/buildlock \
 	var/lib var/lib/fink var/lib/fink/path-prefix-g++-{3.3,4.0} \
-	/var/lib/fink/path-prefix-10.6 ; do
+	var/lib/fink/path-prefix-10.6 ; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
