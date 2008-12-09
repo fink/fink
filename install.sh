@@ -47,7 +47,8 @@ for dir in bin sbin \
 	share/man share/man/man{3,5,8} \
 	share/fink share/fink/images \
 	var var/run var/run/fink var/run/fink/buildlock \
-	var/lib var/lib/fink var/lib/fink/path-prefix-g++-{3.3,4.0}; do
+	var/lib var/lib/fink var/lib/fink/path-prefix-g++-{3.3,4.0} \
+	/var/lib/fink/path-prefix-10.6 ; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -106,6 +107,11 @@ for gccvers in 3.3 4.0; do
 	ln -s -n -f g++ "$basepath/var/lib/fink/path-prefix-g++-$gccvers/c++" 
 done
 
+for file in c++ c++-4.2 c++-4.0 cc gcc gcc-4.0 gcc-4.2 g++ g++-4.0 g++-4.2; do
+    ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-10.6/$file"
+done
+install -c -p -m 755 "compiler_wrapper" \
+	    "$basepath/var/lib/fink/path-prefix-10.6/compiler_wrapper"
 
 # Gotta do this in install.sh, takes too long for setup.sh
 echo "Creating man pages from POD..."

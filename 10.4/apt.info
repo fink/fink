@@ -8,7 +8,7 @@ Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: 8b8703dd6ebf6202470e86055cf6f305
+PatchFile-MD5: ff2ae523d9b3ef497cdf7595b6b1dd11
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' < %{PatchFile} | patch -p1
  sh patch_flush

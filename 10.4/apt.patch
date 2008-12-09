@@ -1199,3 +1199,18 @@ diff -urN apt-0.5.4/apt-inst/contrib/extracttar.cc apt-new/apt-inst/contrib/extr
  	  StrToNum(Tar->Size,Itm.Size,sizeof(Tar->Size),8) == false ||
  	  StrToNum(Tar->MTime,Itm.MTime,sizeof(Tar->MTime),8) == false ||
  	  StrToNum(Tar->Major,Itm.Major,sizeof(Tar->Major),8) == false ||
+--- apt-0.5.4/apt-pkg/contrib/system.h~	1999-12-10 17:40:29.000000000 -0600
++++ apt-0.5.4/apt-pkg/contrib/system.h	2008-12-08 00:45:25.000000000 -0600
+@@ -25,12 +25,6 @@
+ #define MAX(x,y) _max(x,y)
+ #endif
+ 
+-// GNU C++ has a min/max operator <coolio>
+-#if defined(__GNUG__)
+-#define MIN(A,B) ((A) <? (B))
+-#define MAX(A,B) ((A) >? (B))
+-#endif
+-
+ /* Templates tend to mess up existing code that uses min/max because of the
+    strict matching requirements */
+ #if !defined(MIN)

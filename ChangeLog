@@ -1,3 +1,9 @@
+2008-12-08  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* compiler_wrapper: New file.
+	* install.sh: installer compiler_wrapper and symlinks.
+	* MANIFEST: Add compiler_wrapper to tarball.
+
 2008-10-28  Dave Morrison  <drm@finkproject.org>
 
 	* REVISION: modernize

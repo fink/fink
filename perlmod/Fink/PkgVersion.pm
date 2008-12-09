@@ -4689,6 +4689,44 @@ sub phase_purge_recursive {
 	Fink::PkgVersion->dpkg_changed;
 }
 
+=item ensure_gpp106_prefix
+
+  my $prefix_path = ensure_gpp106_prefix;
+
+Ensures that a path-prefix directory exists for mac osx 10.6 
+Returns the path to the resulting directory.
+
+=cut
+
+sub ensure_gpp106_prefix {
+	my $vers = shift;
+	
+	my $dir = "$basepath/var/lib/fink/path-prefix-10.6";
+	unless (-d $dir) {
+		mkdir_p $dir or	die "Path-prefix dir $dir cannot be created!\n";
+	}
+	
+	my $gpp = "$dir/compiler_wrapper";
+	unless (-x $gpp) {
+		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
+		print GPP <<EOF;
+#!/bin/sh
+exec /usr/bin/\${0##*/}  "-arch" "i386" "\$@"
+EOF
+		close GPP;
+		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
+	}
+	
+	foreach my $cpp ("$dir/cc", "$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2", "$dir/gcc", "$dir/gcc=4.0", "$dir/gcc-4.2", "$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2") {
+		unless (-l $cpp) {
+			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
+		}
+	}
+	
+	return $dir;
+}
+
+
 =item ensure_gpp_prefix
 
   my $prefix_path = ensure_gpp_prefix $gpp_version;
@@ -4911,6 +4949,10 @@ END
 		}
 		my $pathprefix = ensure_gpp_prefix($vers);
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
+		if (($config->param("Distribution") gt "10.5")) {
+			my $pathprefix = ensure_gpp106_prefix($vers);
+			$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
+		}
 	}
 	
 	# special things for Type:java

@@ -1,3 +1,8 @@
+2008-12-08  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* apt.info, apt.patch: g++-4.2 does not have <? and >? operators.
+	* libiconv.info: Use the path-prefix compilers if available.
+
 2008-01-20  Dave Morrison  <drm@finkproject.org>
 
 	* fink-mirrors.info: sync with stable
