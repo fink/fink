@@ -1,3 +1,7 @@
+2008-12-12  Alexander Hansen  <akh@finkproject.org>
+
+	* Bootstrap.pm:  Recognize 10.5.6
+
 2008-11-20  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Include list of modern dependencies in 'fink info'
