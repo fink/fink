@@ -1,3 +1,7 @@
+2008-12-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Also store patchfile in .deb
+
 2008-12-12  Alexander Hansen  <akh@finkproject.org>
 
 	* Bootstrap.pm:  Recognize 10.5.6

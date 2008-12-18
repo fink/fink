@@ -3838,6 +3838,12 @@ sub phase_build {
 		if (defined $infofile) {
 			cp($infofile, "$destdir/DEBIAN/package.info");
 		}
+		if ($self->has_param('PatchFile')) {
+			my $patchfile = &expand_percent('%{PatchFile}', $self->{_expand}, $self->get_info_filename.' "PatchFile"');
+			# only get here after successful build, so we know
+			# patchfile was present, readable, and matched MD5
+			cp($patchfile, "$destdir/DEBIAN/package.patch");
+		}
 	}
 
 	# generate dpkg "control" file
