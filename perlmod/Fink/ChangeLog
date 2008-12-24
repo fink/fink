@@ -1,3 +1,8 @@
+2008-12-24  Sebastien Maret  <bmaret@users.sourceforge.net>
+
+	* Engine.pm, PkgVersion.pm: Set proxy env vars before calling
+	apt-get. Fixes bug #2040507
+
 2008-12-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Warn for older (not MD5-protected) patch syntaxes

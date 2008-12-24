@@ -678,6 +678,17 @@ sub aptget_update {
 	} elsif ($config->verbosity_level < 2) {
 		$aptcmd .= " -q";
 	}
+	# set proxy env vars
+	my $http_proxy = $config->param_default("ProxyHTTP", "");
+	if ($http_proxy) {
+		$ENV{http_proxy} = $http_proxy;
+		$ENV{HTTP_PROXY} = $http_proxy;
+	}
+	my $ftp_proxy = $config->param_default("ProxyFTP", "");
+	if ($ftp_proxy) {
+		$ENV{ftp_proxy} = $ftp_proxy;
+		$ENV{FTP_PROXY} = $ftp_proxy;
+	}
 	if (&execute($aptcmd . " update", quiet => $quiet)) {
 		print("WARNING: Failure while updating indexes.\n");
 		return 0;
