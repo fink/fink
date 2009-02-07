@@ -1,8 +1,6 @@
 Package: ncurses
 Version: 5.4-20041023
 Revision: 1010
-# 10.3 next %r will be >10, so next %r here will have
-# to be >>10.3's (or else in-sync)
 
 GCC: 4.0
 Source: mirror:sourceforge:fink/ncurses-5.4.tar.gz
@@ -81,7 +79,7 @@ SplitOff2: <<
  Description: Full-screen ascii drawing library
 <<
 DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST tack/README:README.tack tack/COPYING:COPYING.tack
-Description: Executable files for ncurses
+Description: Executable files for libncurses5
 DescPort: <<
 More changes by Chris Zubrzycki to be more compatable with apple's lib
 -udates to the (sometimes) monthly releases of ncurses (in patch form)
