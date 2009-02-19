@@ -1,3 +1,18 @@
+2009-02-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Fix some bogus perl provides, also change xcode
+	to not be BuildDependsOnly, since some packages legitimately depend
+	upon it at runtime.
+
+2008-12-24  Sebastien Maret  <bmaret@users.sourceforge.net>
+
+	* Engine.pm, PkgVersion.pm: Set proxy env vars before calling
+	apt-get. Fixes bug #2040507
+
+2008-12-18  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Also store patchfile in .deb
+
 2008-12-12  Alexander Hansen  <akh@finkproject.org>
 
 	* Bootstrap.pm:  Recognize 10.5.6

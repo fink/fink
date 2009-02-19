@@ -329,24 +329,19 @@ END
 				'carp',
 				'class-autouse',
 				'class-isa',
-				'clone',
 				'corefoundation',
 				'data-hierarchy',
-				'data-uuid',
 				'date-parse',
-				'file-type',
 				'freezethaw',
 				'io-pager',
 				'ipc-run3',
 				'locale-maketext-lexicon',
 				'perlio-eol',
 				'pod-simple',
-				'regexp-shellish',
 				'svn',
 				'svk',
 				'timedate',
 				'vcp',
-				'xml-autowriter',
 				'yaml',
 			);
 		}
@@ -636,7 +631,6 @@ This package represents your XCode version.
 	$hash->{status} = STATUS_ABSENT;
 	$hash->{description} = "[virtual package representing the developer tools]";
 	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-	$hash->{builddependsonly} = "true";
 	$hash->{descdetail} = <<END;
 This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,

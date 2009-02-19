@@ -3046,6 +3046,17 @@ sub fetch_deb {
 		join(' ', map {
 			sprintf "%s=%s", $_->get_name(), $_->get_fullversion
 		} @packages);
+	# set proxy env vars
+	my $http_proxy = $config->param_default("ProxyHTTP", "");
+	if ($http_proxy) {
+		$ENV{http_proxy} = $http_proxy;
+		$ENV{HTTP_PROXY} = $http_proxy;
+	}
+	my $ftp_proxy = $config->param_default("ProxyFTP", "");
+	if ($ftp_proxy) {
+		$ENV{ftp_proxy} = $ftp_proxy;
+		$ENV{FTP_PROXY} = $ftp_proxy;
+	}
 	if (&execute($aptcmd)) {
 #		print "\n";
 #		&print_breaking("Downloading '".$self->get_debname()."' failed. ".
@@ -3835,6 +3846,12 @@ sub phase_build {
 		my $infofile = $self->get_filename();
 		if (defined $infofile) {
 			cp($infofile, "$destdir/DEBIAN/package.info");
+		}
+		if ($self->has_param('PatchFile')) {
+			my $patchfile = &expand_percent('%{PatchFile}', $self->{_expand}, $self->get_info_filename.' "PatchFile"');
+			# only get here after successful build, so we know
+			# patchfile was present, readable, and matched MD5
+			cp($patchfile, "$destdir/DEBIAN/package.patch");
 		}
 	}
 
