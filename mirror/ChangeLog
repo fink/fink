@@ -1,3 +1,7 @@
+2009-02-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* apt: add gecko's bindist mirror
+
 2008-11-29  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: releasing version 0.28.6.1 of fink-mirrors
