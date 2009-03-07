@@ -429,6 +429,7 @@ sub additional_packages {
 	} elsif ("$]" == "5.008002") {
 	} elsif ("$]" == "5.008006") {
 	} elsif ("$]" == "5.008008") {
+	} elsif ("$]" == "5.010000") {
 	} else {
 # unsupported version of perl
 		$perl_is_supported = 0;
