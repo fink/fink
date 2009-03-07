@@ -1,3 +1,7 @@
+2009-03-07  Dave Morrison  <drm@finkproject.org>
+
+	* all: updated Copyright notice
+
 2008-12-08  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* compiler_wrapper: New file.

@@ -1,3 +1,7 @@
+2009-03-07  Dave Morrison  <drm@finkproject.org>
+
+	* all: updated Copyright notice
+
 2009-03-06  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: Allow another version of perl.
