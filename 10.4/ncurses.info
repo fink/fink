@@ -1,6 +1,6 @@
 Package: ncurses
 Version: 5.4-20041023
-Revision: 1010
+Revision: 1011
 
 GCC: 4.0
 Source: mirror:sourceforge:fink/ncurses-5.4.tar.gz
@@ -71,8 +71,8 @@ SplitOff2: <<
  Package: libncurses5
  Depends: libncurses5-shlibs (= %v-%r)
  BuildDependsOnly: true
- Conflicts: ncurses-dev
- Replaces: ncurses-dev, ncurses (<= 5.3-20031018-2)
+ Conflicts: ncurses-dev, libncurses5-64bit
+ Replaces: ncurses-dev, ncurses (<= 5.3-20031018-2), libncurses5-64bit
  Provides: libncurses5-dev
  Files: lib/ncurses include lib/libcurses.dylib lib/libform.dylib lib/libmenu.dylib lib/libncurses.dylib lib/libpanel.dylib lib/libtermcap.dylib
  DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST

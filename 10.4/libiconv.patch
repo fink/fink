@@ -32,9 +32,9 @@ diff -ruN gettext-0.14.5/gettext-tools/lib/pipe.c gettext-0.14.5-patched/gettext
  #endif
  
  #ifndef STDIN_FILENO
-diff -uNr libiconv-1.11/lib/aliases.gperf libiconv-1.11-new/lib/aliases.gperf
---- libiconv-1.11/lib/aliases.gperf	2006-05-18 08:45:17.000000000 -0400
-+++ libiconv-1.11-new/lib/aliases.gperf	2007-02-01 15:34:02.000000000 -0500
+diff -Nurd libiconv-1.12/lib/aliases.gperf libiconv-1.12/lib/aliases.gperf
+--- libiconv-1.12/lib/aliases.gperf	2007-11-11 11:47:01.000000000 -0500
++++ libiconv-1.12/lib/aliases.gperf	2008-01-24 10:49:22.000000000 -0500
 @@ -21,6 +21,9 @@
  US, ei_ascii
  CSASCII, ei_ascii
@@ -45,9 +45,9 @@ diff -uNr libiconv-1.11/lib/aliases.gperf libiconv-1.11-new/lib/aliases.gperf
  UCS-2, ei_ucs2
  ISO-10646-UCS-2, ei_ucs2
  CSUNICODE, ei_ucs2
-diff -uNr libiconv-1.11/lib/converters.h libiconv-1.11-new/lib/converters.h
---- libiconv-1.11/lib/converters.h	2006-05-18 08:43:55.000000000 -0400
-+++ libiconv-1.11-new/lib/converters.h	2007-02-01 15:34:02.000000000 -0500
+diff -Nurd libiconv-1.12/lib/converters.h libiconv-1.12/lib/converters.h
+--- libiconv-1.12/lib/converters.h	2007-05-25 19:18:25.000000000 -0400
++++ libiconv-1.12/lib/converters.h	2008-01-24 10:49:22.000000000 -0500
 @@ -113,6 +113,7 @@
  /* General multi-byte encodings */
  #include "utf8.h"
@@ -56,9 +56,9 @@ diff -uNr libiconv-1.11/lib/converters.h libiconv-1.11-new/lib/converters.h
  #include "ucs2be.h"
  #include "ucs2le.h"
  #include "ucs4.h"
-diff -uNr libiconv-1.11/lib/encodings.def libiconv-1.11-new/lib/encodings.def
---- libiconv-1.11/lib/encodings.def	2006-05-18 08:43:55.000000000 -0400
-+++ libiconv-1.11-new/lib/encodings.def	2007-02-01 15:34:02.000000000 -0500
+diff -Nurd libiconv-1.12/lib/encodings.def libiconv-1.12/lib/encodings.def
+--- libiconv-1.12/lib/encodings.def	2007-05-25 19:17:48.000000000 -0400
++++ libiconv-1.12/lib/encodings.def	2008-01-24 10:49:22.000000000 -0500
 @@ -55,12 +55,18 @@
  /* General multi-byte encodings */
  
@@ -79,9 +79,9 @@ diff -uNr libiconv-1.11/lib/encodings.def libiconv-1.11-new/lib/encodings.def
  DEFENCODING(( "UCS-2",                  /* glibc */
                "ISO-10646-UCS-2",        /* IANA */
                "csUnicode",              /* IANA */
-diff -uNr libiconv-1.11/lib/flags.h libiconv-1.11-new/lib/flags.h
---- libiconv-1.11/lib/flags.h	2006-05-18 08:45:30.000000000 -0400
-+++ libiconv-1.11-new/lib/flags.h	2007-02-01 15:34:02.000000000 -0500
+diff -Nurd libiconv-1.12/lib/flags.h libiconv-1.12/lib/flags.h
+--- libiconv-1.12/lib/flags.h	2007-11-11 11:47:36.000000000 -0500
++++ libiconv-1.12/lib/flags.h	2008-01-24 10:49:22.000000000 -0500
 @@ -14,6 +14,7 @@
  
  #define ei_ascii_oflags (0)
@@ -90,10 +90,10 @@ diff -uNr libiconv-1.11/lib/flags.h libiconv-1.11-new/lib/flags.h
  #define ei_ucs2_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2be_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2le_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
-diff -uNr libiconv-1.11/lib/iconv.c libiconv-1.11-new/lib/iconv.c
---- libiconv-1.11/lib/iconv.c	2006-01-23 08:16:12.000000000 -0500
-+++ libiconv-1.11-new/lib/iconv.c	2007-02-01 15:34:02.000000000 -0500
-@@ -720,6 +720,29 @@
+diff -Nurd libiconv-1.12/lib/iconv.c libiconv-1.12/lib/iconv.c
+--- libiconv-1.12/lib/iconv.c	2007-04-23 17:24:57.000000000 -0400
++++ libiconv-1.12/lib/iconv.c	2008-01-24 10:49:22.000000000 -0500
+@@ -726,6 +726,29 @@
  strong_alias (libiconv_open, iconv_open)
  strong_alias (libiconv, iconv)
  strong_alias (libiconv_close, iconv_close)
@@ -123,9 +123,9 @@ diff -uNr libiconv-1.11/lib/iconv.c libiconv-1.11-new/lib/iconv.c
  #endif
  
  #endif
-diff -uNr libiconv-1.11/lib/utf8mac.h libiconv-1.11-new/lib/utf8mac.h
---- libiconv-1.11/lib/utf8mac.h	1969-12-31 19:00:00.000000000 -0500
-+++ libiconv-1.11-new/lib/utf8mac.h	2007-02-01 17:05:04.000000000 -0500
+diff -Nurd libiconv-1.12/lib/utf8mac.h libiconv-1.12/lib/utf8mac.h
+--- libiconv-1.12/lib/utf8mac.h	1969-12-31 19:00:00.000000000 -0500
++++ libiconv-1.12/lib/utf8mac.h	2008-01-24 10:49:22.000000000 -0500
 @@ -0,0 +1,1608 @@
 +/*
 + * Copyright (C) 2003 Apple Computer, Inc. All rights reserved.
@@ -1735,31 +1735,32 @@ diff -uNr libiconv-1.11/lib/utf8mac.h libiconv-1.11-new/lib/utf8mac.h
 +
 +    return len;
 +}
-diff -uNr libiconv-1.11/man/iconv.1 libiconv-1.11-new/man/iconv.1
---- libiconv-1.11/man/iconv.1	2006-01-23 08:16:12.000000000 -0500
-+++ libiconv-1.11-new/man/iconv.1	2007-02-01 15:34:02.000000000 -0500
-@@ -102,4 +102,4 @@
- \fBiconv --list\fP
- lists the supported encodings.
+diff -Nurd libiconv-1.12/man/iconv.1 libiconv-1.12/man/iconv.1
+--- libiconv-1.12/man/iconv.1	2007-10-07 14:23:11.000000000 -0400
++++ libiconv-1.12/man/iconv.1	2008-01-24 10:50:02.000000000 -0500
+@@ -104,5 +104,4 @@
+ .SH "CONFORMING TO"
+ POSIX:2001
  .SH "SEE ALSO"
--.BR iconv_open "(3), " locale (7)
+-.BR iconv_open (3),
+-.BR locale (7)
 +.BR iconv_open (3)
-diff -uNr libiconv-1.11/src/Makefile.in libiconv-1.11-new/src/Makefile.in
---- libiconv-1.11/src/Makefile.in	2006-07-14 09:19:07.000000000 -0400
-+++ libiconv-1.11-new/src/Makefile.in	2007-02-01 15:37:10.000000000 -0500
-@@ -96,7 +96,7 @@
+diff -Nurd libiconv-1.12/src/Makefile.in libiconv-1.12/src/Makefile.in
+--- libiconv-1.12/src/Makefile.in	2007-05-27 18:15:52.000000000 -0400
++++ libiconv-1.12/src/Makefile.in	2008-01-24 10:51:45.000000000 -0500
+@@ -104,7 +104,7 @@
  	if [ ! -d $(DESTDIR)$(bindir) ] ; then $(mkinstalldirs) $(DESTDIR)$(bindir) ; fi
  	case "@host_os@" in \
- 	  hpux*) $(CC) $(LDFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a -L$(DESTDIR)$(libdir) -liconv @LIBINTL@ `if test -n '$(DESTDIR)'; then echo " -Wl,+b -Wl,$(libdir)"; fi` -o iconv;; \
--	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a $(DESTDIR)$(libdir)/libiconv.la @LTLIBINTL@ -o iconv;; \
-+	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a ../lib/libiconv.la @LTLIBINTL@ -o iconv;; \
+ 	  hpux*) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a -L$(DESTDIR)$(libdir) -liconv @LIBINTL@ $(OBJECTS_RES_@WOE32@) `if test -n '$(DESTDIR)'; then echo " -Wl,+b -Wl,$(libdir)"; fi` -o iconv;; \
+-	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a $(DESTDIR)$(libdir)/libiconv.la @LTLIBINTL@ $(OBJECTS_RES_@WOE32@) -o iconv;; \
++     *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a ../lib/libiconv.la @LIBINTL_STATIC@ $(OBJECTS_RES_@WOE32@) -o iconv;; \
  	esac
  	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv $(DESTDIR)$(bindir)/iconv
  
-diff -uNr libiconv-1.11/src/iconv.c libiconv-1.11-new/src/iconv.c
---- libiconv-1.11/src/iconv.c	2006-07-04 09:30:23.000000000 -0400
-+++ libiconv-1.11-new/src/iconv.c	2007-02-01 15:34:02.000000000 -0500
-@@ -896,6 +896,10 @@
+diff -Nurd libiconv-1.12/src/iconv.c libiconv-1.12/src/iconv.c
+--- libiconv-1.12/src/iconv.c	2007-07-07 13:07:36.000000000 -0400
++++ libiconv-1.12/src/iconv.c	2008-01-24 10:49:22.000000000 -0500
+@@ -976,6 +976,10 @@
        const char *option = argv[i] + 1;
        if (*option == '\0')
          usage(1);

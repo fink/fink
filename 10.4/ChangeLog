@@ -1,3 +1,9 @@
+2009-03-07  Dave Morrison  <drm@finkproject.org>
+
+	* bzip2.info, bzip2.patch, debianutils.info, dpkg.info, dpkg.patch, 
+	* fink-mirrors.info, gzip.info, libiconv.info, libiconv.patch, 
+	* ncurses.info, tar.info: sync with stable
+
 2008-12-08  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
 	* apt.info, apt.patch: g++-4.2 does not have <? and >? operators.

@@ -27,7 +27,7 @@ fi
 <<
 InfoDocs: tar.info
 #
-Description: GNU tar - tape archiver
+Description: Archiving program for files and tape
 DescPackaging: <<
  With the current fink dependency engine, essential packages may neither
  depend nor builddepend on non-essential packages.  Thus, to make sure

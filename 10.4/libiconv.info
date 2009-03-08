@@ -1,16 +1,16 @@
 Package: libiconv
-Version: 1.11
-Revision: 11
+Version: 1.12
+Revision: 3
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
-Source-MD5: b77a17e4a5a817100ad4b2613935055e
+Source-MD5: c2be282595751535a618ae0edeb8f648
 Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.14.5.tar.gz
 Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
-Source3: mirror:gnu:gperf/gperf-3.0.2.tar.gz
-Source3-MD5: 5359fae9929f9f7235c6601f4b6e8c89
+Source3: mirror:gnu:gperf/gperf-3.0.3.tar.gz
+Source3-MD5: cc20e58975a38075440423c8fb85fd00
 PatchFile: %n.patch
-PatchFile-MD5: 451b2fc713d99c877923c308812e40dd
+PatchFile-MD5: 26a2985e0f58100fd74756547394883d
 PatchScript: <<
  cd %b/..; patch -p0 < %{PatchFile}
  cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
@@ -35,6 +35,8 @@ DescPackaging: <<
 <<
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
 CompileScript: <<
 #! /bin/sh -ex
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
@@ -45,7 +47,7 @@ case `uname -r` in
 10.*) PATH=%p/var/lib/fink/path-prefix-10.6:$PATH ;;
 esac
 
-cd %b/../gperf-3.0.2
+cd %b/../gperf-3.0.3
 ./configure --prefix=%p
 make
 cd %b/../gettext-0.14.5/gettext-runtime
@@ -54,8 +56,12 @@ make
 rm -rf %b/../_inst
 make install DESTDIR=%b/../_inst
 cd %b/../libiconv-%v
-make -f Makefile.devel GPERF=%b/../gperf-3.0.2/src/gperf
-gt_cv_func_gnugettext1_libintl="no" CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" ./configure --prefix=%p --mandir='${prefix}/share/man' --enable-extra-encodings
+make -f Makefile.devel GPERF=%b/../gperf-3.0.3/src/gperf
+am_cv_func_iconv="yes"
+am_cv_proto_iconv=""
+export am_cv_func_iconv am_cv_proto_iconv
+CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" ./configure --prefix=%p --mandir='${prefix}/share/man' --enable-extra-encodings
+find . -name Makefile | xargs perl -pi -e 's|\@LIBINTL_STATIC\@|%b/../_inst%p/lib/libintl.a -Wl,-framework,CoreFoundation|g'
 make
 <<
 InstallScript: <<

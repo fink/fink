@@ -3,6 +3,7 @@ Version: 1.23
 Revision: 11
 Essential: true
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+BuildDepends: fink (>= 0.24.12-1)
 Depends: base-files
 Conflicts: mktemp
 Replaces: mktemp, tetex
@@ -10,7 +11,8 @@ Provides: mktemp
 Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 232b5bc916a1e2af43fde890f840a304
 SourceDirectory: %n-%v
-Patch: %n.patch
+PatchFile: %n.patch
+PatchFile-MD5: b08afef2d893e68a12fe2b3823c2a502
 InstallScript: <<
   #!/bin/sh -ev
   INSTALL=install

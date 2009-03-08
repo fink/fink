@@ -659,6 +659,27 @@ diff -urN dpkg-1.10.21.orig/main/dpkg.8 dpkg-1.10.21/main/dpkg.8
 +See \fB@PREFIX@/share/doc/dpkg/THANKS.gz\fP for the list of people who have
  contributed to \fBdpkg\fP .
  .fi
+diff -urN dpkg-1.10.21.orig/main/enquiry.c dpkg-1.10.21/main/enquiry.c
+--- dpkg-1.10.21.orig/main/enquiry.c	2003-10-25 16:03:21.000000000 -0400
++++ dpkg-1.10.21/main/enquiry.c	2008-08-21 11:38:24.000000000 -0400
+@@ -402,7 +402,7 @@
+   FILE *ccpipe;
+   struct varbuf vb;
+   ptrdiff_t ll;
+-  char *p, *q;
++  char *p;
+ 
+   if (*argv) badusage(_("--print-architecture does not take any argument"));
+ 
+@@ -445,7 +445,7 @@
+   default: internerr("unknown action in printarch");
+   }
+   if (!arch) {
+-    *q= 0; arch= p;
++    arch= p;
+     fprintf(stderr, _("dpkg: warning, architecture `%s' not in remapping table\n"),arch);
+   }
+   if (printf("%s\n",arch) == EOF) werr("stdout");
 diff -urN dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
 --- dpkg-1.10.21.orig/main/help.c	2003-10-26 05:03:21.000000000 +0900
 +++ dpkg-1.10.21/main/help.c	2005-03-18 22:13:37.000000000 +0900

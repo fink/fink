@@ -4,9 +4,14 @@ Revision: 6
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source-MD5: 39053e044b18ecd0627f80fbe7cfeaad
 Essential: yes
+BuildDepends: fink (>= 0.24.12-1)
 Depends: base-files
-Patch: %n.patch
-PatchScript: mv -f INSTALL INSTALL.txt
+PatchFile: %n.patch
+PatchFile-MD5: 74b81d7ec67a369e4e782a16d6f65afc
+PatchScript: <<
+ %{default_script}
+ mv -f INSTALL INSTALL.txt
+<<
 CompileScript: <<
  ./configure %c
  make all G= ZCAT=zcat
@@ -23,7 +28,7 @@ InstallScript: <<
 <<
 InfoDocs: gzip.info
 DocFiles: README COPYING THANKS
-Description: The gzip file compressor
+Description: File-compression program
 DescPort: <<
 The file INSTALL clashes with the Makefile target install on
 file-insensitive file systems. Fixed by renaming INSTALL to
