@@ -345,6 +345,27 @@ END
 				'yaml',
 			);
 		}
+		if ($perlver >= 5.010000) {
+			push(@modules,
+				 'archive-tar',
+				 'cpanplus',
+				 'cpanplus-dist-build',
+				 'compress-raw-zlib',
+				 'digest-sha',
+				 'extutils-cbuilder',
+				 'extutils-parsexs',
+				 'io-zlib',
+				 'locale-maketext-simple',
+				 'module-build',
+				 'module-corelist',
+				 'module-load',
+				 'module-load-conditional',
+				 'module-pluggable',
+				 'package-constants',
+				 'params-check',
+				 'pod-escapes',
+				);
+		}
 		$perlprovides .= ', ' . join(', ', map { $_ . '-pm' . $shortver } sort @modules);
 		$hash->{provides} = $perlprovides;
 
