@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 1054
+Revision: 1055
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: %N-shlibs (= %v-%r)
