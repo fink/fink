@@ -2021,6 +2021,13 @@ sub real_install {
 				### set forceoff to count depth of depends
 				### and to silence the dep engine so it
 				### only asks once at the begining
+
+				my $to_be_rebuilt = 0;
+				for my $key (keys %to_be_rebuilt) {
+					$to_be_rebuilt += $to_be_rebuilt{$key};
+				}
+				print "\033]2;building " . $package->get_fullname . " (" . ($to_be_rebuilt - 1) . " remaining)\007";
+
 				unless ($forceoff) {
 					### Double check it didn't already get
 					### installed in an other loop
@@ -2028,7 +2035,7 @@ sub real_install {
 						# Remove the BuildConflicts, and reinstall after
 						my $buildconfs = Fink::Finally::BuildConflicts->new(
 							$conflicts{$pkgname});
-						
+
 						$package->log_output(1);
 						{
 							my $bl = Fink::Finally::Buildlock->new($package);
