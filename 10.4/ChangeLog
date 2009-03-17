@@ -1,3 +1,7 @@
+2009-03-16  Dave Morrison  <drm@finkproject.org>
+
+	* base-files.info: new version
+
 2009-03-07  Dave Morrison  <drm@finkproject.org>
 
 	* bzip2.info, bzip2.patch, debianutils.info, dpkg.info, dpkg.patch, 

@@ -1,9 +1,9 @@
 Package: base-files
-Version: 1.9.8
+Version: 1.9.9
 Revision: 1
 Source: mirror:custom:fink/%n-%v.tar.gz
 Essential: yes
-Source-MD5: d906950f8cbfe9a8c49abe1f698f6c0c
+Source-MD5: be753fbb7b3b6e074c30bba29ebe939e
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 #
@@ -24,8 +24,9 @@ and have the right permissions.
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 CustomMirror: <<
- Primary: http://west.dl.sourceforge.net/sourceforge/
- nam-US: http://us.dl.sourceforge.net/sourceforge/
+ Primary: http://superb-west.dl.sourceforge.net/sourceforge/
+ Secondary: http://easynews.dl.sourceforge.net/sourceforge/
+ nam-US: http://superb-west.dl.sourceforge.net/sourceforge/
  eur: http://eu.dl.sourceforge.net/sourceforge/
 <<
 
