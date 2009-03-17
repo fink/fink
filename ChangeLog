@@ -1,3 +1,7 @@
+2009-03-16  Dave Morrison  <drm@finkproject.org>
+
+	* fink.conf.5.in: mention 10.5 among Distributions
+
 2009-03-07  Dave Morrison  <drm@finkproject.org>
 
 	* all: updated Copyright notice
