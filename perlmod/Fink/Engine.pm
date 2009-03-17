@@ -2963,9 +2963,12 @@ sub prefetch {
 	&call_queue_clear;
 	
 	my @aptget; # Batch 'em
+	my $count = 0;
 	foreach my $dep (sort { $a->[PKGNAME] cmp $b->[PKGNAME] } @dep_items) {
 		my $func;
-		
+
+		print "\033]2;pre-fetching " . $dep->[PKGVER]->get_fullname . " (" . (int(@dep_items) - ++$count) . " remaining)\007";
+
 		# What action do we take?
 		if (grep { $dep->[OP] == $_ } ($OP_REINSTALL, $OP_INSTALL)) {
 			if ($dep->[PKGVER]->is_installed || $dep->[PKGVER]->is_present) {
