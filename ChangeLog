@@ -1,3 +1,8 @@
+2009-03-17  Dave Morrison  <drm@finkproject.org>
+
+	* fink.info.in, fink.csh, fink.sh, install.sh, MANIFEST: On Darwin 10
+	when the architecture is i386, set VERSIONER_PERL_PREFER_32_BIT.
+
 2009-03-16  Dave Morrison  <drm@finkproject.org>
 
 	* fink.conf.5.in: mention 10.5 among Distributions

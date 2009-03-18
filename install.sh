@@ -22,15 +22,16 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
 #
 
-if [ $# -ne 1 ]; then
-  echo "Usage: ./install.sh <prefix>"
-  echo "  Example: ./install.sh /tmp/builddirectory/sw"
+if [ $# -ne 2 ]; then
+  echo "Usage: ./install.sh <prefix> <architecture>"
+  echo "  Example: ./install.sh /tmp/builddirectory/sw i386"
   echo "WARNING: Don't call install.sh directly, use inject.pl instead."
   echo "         You have been warned."
   exit 1
 fi
 
 basepath="$1"
+architecture="$2"
 version=`cat VERSION`
 
 echo "Creating directories..."
@@ -53,8 +54,17 @@ for dir in bin sbin \
   chmod 755 "$basepath/$dir"
 done
 
+if [ "$architecture" = "i386" ]; then
+  mkdir "$basepath/etc/profile.d"
+  chmod 755 "$basepath/etc/profile.d"
+fi
 
 echo "Copying files..."
+
+if [ "$architecture" = "i386" ]; then
+  install -c -p -m 755 fink.csh "$basepath/etc/profile.d"
+  install -c -p -m 755 fink.sh "$basepath/etc/profile.d"
+fi
 
 install -c -p -m 755 postinstall.pl "$basepath/lib/fink/"
 install -c -p -m 644 shlibs.default "$basepath/etc/dpkg/"

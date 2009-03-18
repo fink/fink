@@ -21,7 +21,7 @@ CompileScript: <<
  ./setup.sh %p
 <<
 InstallScript: <<
- ./install.sh %i
+ ./install.sh %i %m
  install -c -p -m 644 fink.shlibs "%d/DEBIAN/shlibs"
 <<
 PostInstScript: <<
