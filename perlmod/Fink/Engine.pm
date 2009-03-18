@@ -2991,9 +2991,14 @@ sub prefetch {
 			die "Don't know about operation number $dep->[OP]!\n";
 		}
 	}
-	&call_queue_add([ $aptget[0], 'phase_fetch_deb', 1, $dryrun, @aptget ])
-		if @aptget;
+
+	if (@aptget) {
+		print "\033]2;pre-fetching binaries with apt-get\007";
+		&call_queue_add([ $aptget[0], 'phase_fetch_deb', 1, $dryrun, @aptget ]);
+	}
 	
+	print "\033]2;\007";
+
 	&call_queue_clear;
 }
 
