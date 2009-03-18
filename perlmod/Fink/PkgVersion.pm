@@ -4824,7 +4824,7 @@ sub get_env {
 #		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
 
-	if (($config->param("Architecture") eq "i386" ) and ($config->param("Distribution") gt "10.5") {
+	if (($config->param("Architecture") eq "i386" ) and ($config->param("Distribution") gt "10.5")) {
 		$defaults{"VERSIONER_PERL_PREFER_32_BIT"} = "yes";
 		}
 
