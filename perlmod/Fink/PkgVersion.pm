@@ -4811,6 +4811,7 @@ sub get_env {
 		"LIBRARY_PATH", "LIBS",
 		"MACOSX_DEPLOYMENT_TARGET",
 		"MAKE", "MFLAGS", "MAKEFLAGS",
+		"VERSIONER_PERL_PREFER_32_BIT",
 	);
 
 	# default environment variable values
@@ -4822,6 +4823,10 @@ sub get_env {
 #		"LD_PREBIND_ALLOW_OVERLAP" => 1,
 #		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
+
+	if (($config->param("Architecture") eq "i386" ) and ($config->param("Distribution") gt "10.5") {
+		$defaults{"VERSIONER_PERL_PREFER_32_BIT"} = "yes";
+		}
 
 # for building 64bit libraries, we change LDFLAGS:
 
@@ -4966,7 +4971,7 @@ END
 		}
 		my $pathprefix = ensure_gpp_prefix($vers);
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
-		if (($config->param("Distribution") gt "10.5")) {
+		if (($config->param("Architecture") eq "i386" ) and ($config->param("Distribution") gt "10.5")) {
 			my $pathprefix = ensure_gpp106_prefix($vers);
 			$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 		}
