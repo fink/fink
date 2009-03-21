@@ -7,7 +7,10 @@ SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: %n.patch
 PatchFile-MD5: 83170a41fd6b458f7f99d01b5f01e8e8
-PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+PatchScript: <<
+ sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+ echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+<<
 SetCFLAGS: -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1

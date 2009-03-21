@@ -1,3 +1,7 @@
+2009-03-21  Dave Morrison  <drm@finkproject.org>
+
+	* dpkg-bootstrap.info, dpkg.info: prepare for future needs
+
 2009-03-20  Dave Morrison  <drm@finkproject.org>
 
 	* base-files.info: new version
