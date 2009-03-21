@@ -5,6 +5,7 @@
 	running under the correct version of perl (because when 
 	Storable::store creates a file under one version of perl, 
 	Storable::retrieve cannot always read it under another version)
+	* fink.in, setup.sh: more robust substition
 
 2009-03-17  Dave Morrison  <drm@finkproject.org>
 

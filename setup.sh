@@ -40,7 +40,7 @@ if [ $osMajorVer -gt 9 ]; then
 fi
 
 echo "Creating $fink..." 
-sed -e "s|@BASEPATH@|$basepath|g" -e "s|/usr/bin/perl|$perlexe|g" < fink.in > fink
+sed -e "s|@BASEPATH@|$basepath|g" -e "s|@PERLEXE@|$perlexe|g" < fink.in > fink
 
 for bin in fink-{virtual-pkgs,instscripts,scanpackages}; do
 	echo "Creating $bin..."
