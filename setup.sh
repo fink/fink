@@ -21,16 +21,28 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
 #
 
-if [ $# -ne 1 ]; then
-  echo "Usage: ./setup.sh <prefix>"
-  echo "  Example: ./setup.sh /sw"
+if [ $# -ne 2 ]; then
+  echo "Usage: ./setup.sh <prefix> <architecture>"
+  echo "  Example: ./setup.sh /sw i386"
   exit 1
 fi
 
 basepath=$1
+architecture=$2
 version=`cat VERSION`
 
-for bin in fink fink-{virtual-pkgs,instscripts,scanpackages}; do
+perlexe="/usr/bin/perl"
+
+osMajorVer=`uname -r | cut -d. -f1`
+
+if [ $osMajorVer -gt 9 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.10.0"
+fi
+
+echo "Creating $fink..." 
+sed -e "s|@BASEPATH@|$basepath|g" -e "s|/usr/bin/perl|$perlexe|g" < fink.in > fink
+
+for bin in fink-{virtual-pkgs,instscripts,scanpackages}; do
 	echo "Creating $bin..."
 	sed "s|@BASEPATH@|$basepath|g" < "$bin.in" > "$bin"
 done

@@ -1,4 +1,5 @@
 PREFIX=/sw
+ARCHITECTURE=i386
 VERSION=`cat VERSION`
 TEST_BASEPATH=$(PWD)/t/basepath
 TESTS=.
@@ -9,6 +10,7 @@ all:
 	@echo -e "\tcommit      commit your changes"
 	@echo -e "\tbootstrap   install a fresh fink installation"
 	@echo -e "\t            PREFIX can be set, defaults to /sw"   
+	@echo -e "              ARCHITECTURE can also be set, defaults to i386"   
 	@echo -e "\tinstall     install to an existing fink installation"
 	@echo -e "\ttest        perform tests on the fink code"
 	@echo -e "\tclean       remove all extraneous files"
@@ -24,7 +26,7 @@ install:
 	./inject.pl $(PREFIX)
 
 test_setup:
-	./setup.sh $(TEST_BASEPATH)
+	./setup.sh $(TEST_BASEPATH) $(ARCHITECTURE)
 
 manifest_check:
 	perl -MExtUtils::Manifest=fullcheck -e 'my($$missing, $$extra) = fullcheck;exit (@$$missing || @$$extra)'

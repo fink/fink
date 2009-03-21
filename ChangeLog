@@ -1,6 +1,10 @@
 2009-03-21  Dave Morrison  <drm@finkproject.org>
 
 	* fink.csh, fink.sh: make sure $osMajorVer(sion) has been defined
+	* Makefile, fink.info.in, setup.sh: guarantee that fink itself is 
+	running under the correct version of perl (because when 
+	Storable::store creates a file under one version of perl, 
+	Storable::retrieve cannot always read it under another version)
 
 2009-03-17  Dave Morrison  <drm@finkproject.org>
 
