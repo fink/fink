@@ -2025,7 +2025,7 @@ sub real_install {
 				my $to_be_rebuilt = 0;
 				for my $pkgname (keys %to_be_rebuilt) {
 					my $p = $deps{$pkgname}->[PKGVER];
-					if (not $p->has_parent) {
+					if (not defined $p or not $p->has_parent) {
 						$to_be_rebuilt += $to_be_rebuilt{$pkgname};
 					}
 				}
