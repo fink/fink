@@ -3,10 +3,6 @@
 	* PkgVersion.pm: default value for VERSIONER_PERL_PREFER_32_BIT 
 	under Darwin10 and i386; and only use the gpp 10.6 prefix under i386
 
-2009-03-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
-
-	* Engine.pm: Post current package and # remaining in xterm escapes
-
 2009-03-07  Dave Morrison  <drm@finkproject.org>
 
 	* all: updated Copyright notice
