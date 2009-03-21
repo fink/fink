@@ -1,3 +1,7 @@
+2009-03-21  Dave Morrison  <drm@finkproject.org>
+
+	* fink.csh, fink.sh: make sure $osMajorVer(sion) has been defined
+
 2009-03-17  Dave Morrison  <drm@finkproject.org>
 
 	* fink.info.in, fink.csh, fink.sh, install.sh, MANIFEST: On Darwin 10
