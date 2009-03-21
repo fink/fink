@@ -1925,7 +1925,7 @@ sub real_install {
 		$any_installed = 0;
 	PACKAGELOOP: foreach $pkgname (sort keys %deps) {
 			$item = $deps{$pkgname};
-			next if (($item->[FLAG] & 2) == 2);	 # already installed
+			next if (not defined $item or ($item->[FLAG] & 2) == 2);	 # already installed
 
 			$all_installed = 0;
 
@@ -2022,14 +2022,16 @@ sub real_install {
 				### and to silence the dep engine so it
 				### only asks once at the begining
 
-				my $to_be_rebuilt = 0;
-				for my $pkgname (keys %to_be_rebuilt) {
-					my $p = $deps{$pkgname}->[PKGVER];
-					if (not defined $p or not $p->has_parent) {
-						$to_be_rebuilt += $to_be_rebuilt{$pkgname};
+				{
+					my $rebuild_count = 0;
+					for my $pkgname (keys %to_be_rebuilt) {
+						my $p = $deps{$pkgname}->[PKGVER];
+						if (not defined $p or not $p->has_parent) {
+							$rebuild_count += $to_be_rebuilt{$pkgname};
+						}
 					}
+					print "\033]2;building " . $package->get_fullname . " (" . ($rebuild_count - 1) . " remaining)\007";
 				}
-				print "\033]2;building " . $package->get_fullname . " (" . ($to_be_rebuilt - 1) . " remaining)\007";
 
 				unless ($forceoff) {
 					### Double check it didn't already get
