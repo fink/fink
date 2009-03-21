@@ -1,3 +1,9 @@
+2009-03-21  Dave Morrison  <drm@finkproject.org>
+
+	* Config.pm, FinkVersion.pm.in, PkgVersion.pm, Services.pm: refactor 
+	get_arch().  The fink architecture is now fixed once and for all (at 
+	bootstrap, for new installations), with value stored in FinkVersion.pm
+
 2009-03-17  Dave Morrison  <drm@finkproject.org>
 
 	* PkgVersion.pm: default value for VERSIONER_PERL_PREFER_32_BIT 

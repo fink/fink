@@ -24,7 +24,8 @@
 package Fink::Config;
 use Fink::Base;
 use Fink::Command 	qw(cp);
-use Fink::Services	qw(&get_arch &read_properties &get_options $VALIDATE_HELP);
+use Fink::FinkVersion qw(&get_arch);
+use Fink::Services	qw(&read_properties &get_options $VALIDATE_HELP);
 
 
 use strict;

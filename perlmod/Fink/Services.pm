@@ -60,7 +60,7 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &file_MD5_checksum &get_arch &get_osx_vers &enforce_gcc
+					  &file_MD5_checksum &get_osx_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
 					  &get_osx_vers_long &get_kernel_vers
@@ -1207,40 +1207,6 @@ sub file_MD5_checksum {
 
 	my $checksum = Fink::Checksum->new('MD5');
 	return $checksum->get_checksum($filename);
-}
-
-=item get_arch
-
-    my $arch = get_arch;
-
-Returns the architecture string to be used on this platform. For
-example, "powerpc" for ppc.
-
-=for private
-
-Callers assume the value is all-lowercase, but some also assume it is
-the canonical form. So we can't use lc() here without breaking the
-latter if there are any cases of canonical forms that have upper-case
-chars. If we find any, have to check our callers for incorrect
-assumptions.
-
-=cut
-
-sub get_arch {
-	if(not defined $arch) {
-		foreach ('/usr/bin/uname', '/bin/uname') {
-			# check some common places (why aren't we using $ENV{PATH}?)
-			if (-x $_) {
-				chomp($arch = `$_ -p 2>/dev/null`);
-				chomp($arch = `$_ -m 2>/dev/null`) if ($arch eq "");
-				last;
-			}
-		}
-		if (not defined $arch) {
-			die "Could not find an 'arch' executable\n";
-		}
-	}
-	return $arch;
 }
 
 =item gcc_select_arg

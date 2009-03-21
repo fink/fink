@@ -28,7 +28,7 @@ use Fink::Services qw(&filename &execute
 					  &collapse_space &read_properties &read_properties_var
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &version_cmp
-					  &get_arch &get_system_perl_version
+					  &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
 					  &store_rename &apt_available);
@@ -37,6 +37,7 @@ use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &should_skip_prompt &die_breaking);
 use Fink::Config qw($config $basepath $libpath $buildpath
 					$dbpath $ignore_errors);
+use Fink::FinkVersion qw(&get_arch);
 use Fink::NetAccess qw(&fetch_url_to_file);
 use Fink::Mirror;
 use Fink::Package;

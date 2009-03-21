@@ -28,7 +28,7 @@ use warnings;
 
 require Exporter;
 our @ISA	 = qw(Exporter);
-our @EXPORT_OK	 = qw(&fink_version &default_binary_version &max_info_level);
+our @EXPORT_OK	 = qw(&fink_version &default_binary_version &max_info_level &get_arch);
 our %EXPORT_TAGS = ('ALL' => \@EXPORT_OK);
 
 
@@ -41,6 +41,7 @@ Fink::FinkVersion - Fink version numbers
   use Fink::FinkVersion qw(:ALL);
 
   my $fink_version    = fink_version;
+  my $arch            = get_arch;
   my $default_version = default_binary_version($distribution);
   my $max_info_level  = max_info_level;
 
@@ -69,6 +70,27 @@ sub fink_version {
 	return "@VERSION@";
 }
 
+
+=item get_arch
+
+    my $arch = get_arch;
+
+Returns the architecture string to be used on this platform. For
+example, "powerpc" for ppc.
+
+=for private
+
+Callers assume the value is all-lowercase, but some also assume it is
+the canonical form. So we can't use lc() here without breaking the
+latter if there are any cases of canonical forms that have upper-case
+chars. If we find any, have to check our callers for incorrect
+assumptions.
+
+=cut
+
+sub get_arch {
+	return "@ARCHITECTURE@";
+}
 
 =item default_binary_version
 

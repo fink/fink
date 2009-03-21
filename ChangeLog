@@ -6,6 +6,9 @@
 	Storable::store creates a file under one version of perl, 
 	Storable::retrieve cannot always read it under another version)
 	* fink.in, setup.sh: more robust substition
+	* bootstrap, setup.sh: refactor get_arch().  The fink architecture is 
+	now fixed once and for all (at bootstrap, for new installations), with
+	value stored in FinkVersion.pm
 
 2009-03-17  Dave Morrison  <drm@finkproject.org>
 

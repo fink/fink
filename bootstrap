@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 # -*- mode: Perl; tab-width: 4; -*-
 # vim: ts=4 sw=4 noet
 #
@@ -37,6 +37,24 @@ $| = 1;
 my $homebase = $FindBin::RealBin;
 chdir $homebase;
 
+### get the architecture... this is where we might in the future offer
+### users a choice between 32bit and 64bit
+
+my $arch;
+
+foreach ('/usr/bin/uname', '/bin/uname') {
+# check some common places (why aren't we using $ENV{PATH}?)
+	if (-x $_) {
+		chomp($arch = `$_ -p 2>/dev/null`);
+		chomp($arch = `$_ -m 2>/dev/null`) if ($arch eq "");
+		last;
+	}
+}
+if (not defined $arch) {
+	die "Could not find an 'arch' executable\n";
+}
+
+
 ### patch FinkVersion.pm.in ###
 
 {
@@ -51,6 +69,7 @@ open($outputhandle, '>', $output) or die "ERROR: Cannot open $output for writing
 
 while (defined ($_=<$inputhandle>)) {
 	s/\@VERSION\@/$version/g;
+	s/\@ARCHITECTURE\@/$arch/g;
 	print $outputhandle $_;
 }
 
@@ -74,7 +93,7 @@ printf " looks good (fink-%s).\n", fink_version();
 ### load some modules
 
 require Fink::Services;
-import Fink::Services qw(&read_config &execute &get_arch);
+import Fink::Services qw(&read_config &execute);
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 import Fink::Bootstrap qw(&create_tarball &fink_packagefiles &copy_description &get_version_revision &get_selfupdatetrees);
@@ -333,7 +352,7 @@ if (not -d $installto) {
 	}
 }
 
-my $arch = get_arch();
+#my $arch = get_arch();
 
 my $selfupdatetrees = get_selfupdatetrees($distribution);
 

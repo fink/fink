@@ -51,7 +51,7 @@ echo "Creating pathsetup.sh..."
 sed "s|@PREFIX@|$basepath|g" <pathsetup.sh.in >pathsetup.sh
 
 echo "Creating FinkVersion.pm..."
-sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
+sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" -e "s|@ARCHITECTURE@|$architecture|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
 
 echo "Creating Fink.pm..."
 sed -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink.pm.in >perlmod/Fink.pm
