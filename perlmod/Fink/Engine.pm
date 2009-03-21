@@ -2021,6 +2021,16 @@ sub real_install {
 				### set forceoff to count depth of depends
 				### and to silence the dep engine so it
 				### only asks once at the begining
+
+				my $to_be_rebuilt = 0;
+				for my $pkgname (keys %to_be_rebuilt) {
+					my $p = $deps{$pkgname}->[PKGVER];
+					if (not $p->has_parent) {
+						$to_be_rebuilt += $to_be_rebuilt{$pkgname};
+					}
+				}
+				print "\033]2;building " . $package->get_fullname . " (" . ($to_be_rebuilt - 1) . " remaining)\007";
+
 				unless ($forceoff) {
 					### Double check it didn't already get
 					### installed in an other loop
@@ -2028,7 +2038,7 @@ sub real_install {
 						# Remove the BuildConflicts, and reinstall after
 						my $buildconfs = Fink::Finally::BuildConflicts->new(
 							$conflicts{$pkgname});
-						
+
 						$package->log_output(1);
 						{
 							my $bl = Fink::Finally::Buildlock->new($package);
@@ -2956,9 +2966,12 @@ sub prefetch {
 	&call_queue_clear;
 	
 	my @aptget; # Batch 'em
+	my $count = 0;
 	foreach my $dep (sort { $a->[PKGNAME] cmp $b->[PKGNAME] } @dep_items) {
 		my $func;
-		
+
+		print "\033]2;pre-fetching " . $dep->[PKGVER]->get_fullname . " (" . (int(@dep_items) - ++$count) . " remaining)\007";
+
 		# What action do we take?
 		if (grep { $dep->[OP] == $_ } ($OP_REINSTALL, $OP_INSTALL)) {
 			if ($dep->[PKGVER]->is_installed || $dep->[PKGVER]->is_present) {
@@ -2981,9 +2994,14 @@ sub prefetch {
 			die "Don't know about operation number $dep->[OP]!\n";
 		}
 	}
-	&call_queue_add([ $aptget[0], 'phase_fetch_deb', 1, $dryrun, @aptget ])
-		if @aptget;
+
+	if (@aptget) {
+		print "\033]2;pre-fetching binaries with apt-get\007";
+		&call_queue_add([ $aptget[0], 'phase_fetch_deb', 1, $dryrun, @aptget ]);
+	}
 	
+	print "\033]2;\007";
+
 	&call_queue_clear;
 }
 
