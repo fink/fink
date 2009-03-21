@@ -1,7 +1,3 @@
-2009-03-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
-
-	* Engine.pm: Post current package and # remaining in xterm escapes
-
 2009-03-06  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: Allow another version of perl.
