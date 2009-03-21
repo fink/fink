@@ -2023,8 +2023,11 @@ sub real_install {
 				### only asks once at the begining
 
 				my $to_be_rebuilt = 0;
-				for my $key (keys %to_be_rebuilt) {
-					$to_be_rebuilt += $to_be_rebuilt{$key};
+				for my $pkgname (keys %to_be_rebuilt) {
+					my $p = $deps{$pkgname}->[PKGVER];
+					if (not $p->has_parent) {
+						$to_be_rebuilt += $to_be_rebuilt{$pkgname};
+					}
 				}
 				print "\033]2;building " . $package->get_fullname . " (" . ($to_be_rebuilt - 1) . " remaining)\007";
 
