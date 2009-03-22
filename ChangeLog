@@ -9,6 +9,9 @@
 	* bootstrap, setup.sh: refactor get_arch().  The fink architecture is 
 	now fixed once and for all (at bootstrap, for new installations), with
 	value stored in FinkVersion.pm
+	* bootstrap, bootstrap-phase2.pl: refactor bootstrap.  We need to
+	call a specific version of perl to execute the main script, which 
+	varies depending on the OS version and the architecture.
 
 2009-03-17  Dave Morrison  <drm@finkproject.org>
 
