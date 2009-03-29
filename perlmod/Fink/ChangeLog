@@ -1,3 +1,9 @@
+2009-03-29  Dave Morrison  <drm@finkproject.org>
+
+	* PkgVersion.pm: for perl 5.10.0 (and later?), change the $perlcmd
+	to "/usr/bin/arch -%m perl5.10.0".  (This implies that we cannot
+	have perl 5.10.0 on 10.4.)
+
 2009-03-21  Dave Morrison  <drm@finkproject.org>
 
 	* Config.pm, FinkVersion.pm.in, PkgVersion.pm, Services.pm: refactor 

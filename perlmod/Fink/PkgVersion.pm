@@ -944,7 +944,7 @@ sub prepare_percent_c {
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 
-		$pct_c = "PERL=$perlcmd PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
+		$pct_c = "PERL=\"$perlcmd\" PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
 	} else {
 		$pct_c = "--prefix=\%p ";
 	}
@@ -5067,9 +5067,17 @@ sub get_perl_dir_arch {
 
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
+    ### 
+    ### But when $perlversion is (at least?) 5.10.0, we call it
+    ### with /usr/bin/arch instead
+    ###
 	my $perlcmd;
 	if ($perlversion) {
-		$perlcmd = get_path('perl'.$perlversion);
+		if ($perlversion eq "5.10.0") {
+			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
+		} else {
+			$perlcmd = get_path('perl'.$perlversion);
+		}
 	} else {
 		# Hardcode so it doesn't change as packages are installed, removed
 		$perlcmd = "/usr/bin/perl";
