@@ -1,3 +1,7 @@
+2009-03-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm: re-enable the xterm escapes, should be fixed now.
+
 2009-03-30  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: .info Patch and %a/*.patch are now fully deprecated

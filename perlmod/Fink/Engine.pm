@@ -2022,16 +2022,20 @@ sub real_install {
 				### and to silence the dep engine so it
 				### only asks once at the begining
 
-#				{
-#					my $rebuild_count = 0;
-#					for my $pkgname (keys %to_be_rebuilt) {
-#						my $p = $deps{$pkgname}->[PKGVER];
-#						if (not defined $p or not $p->has_parent) {
-#							$rebuild_count += $to_be_rebuilt{$pkgname};
-#						}
-#					}
-#					print "\033]2;building " . $package->get_fullname . " (" . ($rebuild_count - 1) . " remaining)\007";
-#				}
+				{
+					my $rebuild_count = 0;
+					for my $pkgname (keys %to_be_rebuilt) {
+						if (not exists $deps{$pkgname}) {
+							$rebuild_count++;
+						} else {
+							my $p = $deps{$pkgname}->[PKGVER];
+							if (not defined $p or not $p->has_parent) {
+								$rebuild_count += $to_be_rebuilt{$pkgname};
+							}
+						}
+					}
+					print "\033]2;building " . $package->get_fullname . " (" . ($rebuild_count - 1) . " remaining)\007";
+				}
 
 				unless ($forceoff) {
 					### Double check it didn't already get
@@ -2972,7 +2976,7 @@ sub prefetch {
 	foreach my $dep (sort { $a->[PKGNAME] cmp $b->[PKGNAME] } @dep_items) {
 		my $func;
 
-#		print "\033]2;pre-fetching " . $dep->[PKGVER]->get_fullname . " (" . (int(@dep_items) - ++$count) . " remaining)\007";
+		print "\033]2;pre-fetching " . $dep->[PKGVER]->get_fullname . " (" . (int(@dep_items) - ++$count) . " remaining)\007";
 
 		# What action do we take?
 		if (grep { $dep->[OP] == $_ } ($OP_REINSTALL, $OP_INSTALL)) {
