@@ -1,3 +1,7 @@
+2009-03-30  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: .info Patch and %a/*.patch are now fully deprecated
+
 2009-03-29  Dave Morrison  <drm@finkproject.org>
 
 	* PkgVersion.pm: for perl 5.10.0 (and later?), change the $perlcmd

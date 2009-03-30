@@ -824,7 +824,7 @@ if ($info_level < 4) {
 			if (exists $properties->{patchfile}) {
 				print "Error: Cannot use %a if using PatchFile, use \%\{PatchFile\} to reference the patch. ($filename)\n";
 				$looks_good = 0;
-			} elsif (Fink::Config::get_option("Pedantic")) {
+			} else {
 				print "Warning: %a patchfile pathnames are deprecated. Use PatchFile, and \%\{PatchFile\} to reference the patch. ($filename)\n";
 				$looks_good = 0;
 			}
@@ -837,14 +837,12 @@ if ($info_level < 4) {
 		# add directory if info is not simple filename (not in $PWD)
 		$value = "\%a/" .$value if $pkgpatchpath;
 		unshift @patchfiles, $value;
-		if (Fink::Config::get_option("Pedantic")) {
-			if (exists $properties->{patchfile}) {
-				print "Warning: The Patch field is deprecated. Use PatchFile, and \%\{PatchFile\} to apply the patch explicitly in PatchScript. ($filename)\n";
-			} else {
-				print "Warning: The Patch field is deprecated. Use PatchFile instead. ($filename)\n";
-			}
-			$looks_good = 0;
+		if (exists $properties->{patchscript}) {
+			print "Warning: The Patch field is deprecated. Use PatchFile, and \%\{PatchFile\} to apply the patch explicitly in PatchScript. ($filename)\n";
+		} else {
+			print "Warning: The Patch field is deprecated. Use PatchFile instead. ($filename)\n";
 		}
+		$looks_good = 0;
 	}
 
 	# the contents if PatchFile (if any)
