@@ -1,3 +1,7 @@
+2009-03-30  Daniel Macks  <dmacks@netspace.org>
+
+	* MANIFEST: sync with refactored [boostrap bootstrap-phase2.pl]
+
 2009-03-21  Dave Morrison  <drm@finkproject.org>
 
 	* fink.csh, fink.sh: make sure $osMajorVer(sion) has been defined

@@ -17,6 +17,7 @@ STYLE
 TODO
 TODO.shlibs
 bootstrap
+bootstrap-phase2.pl
 dpkg-checkall.sh
 fink-dpkg-status-cleanup.in
 fink.in
