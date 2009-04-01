@@ -51,13 +51,13 @@ echo "Creating pathsetup.sh..."
 sed "s|@PREFIX@|$basepath|g" <pathsetup.sh.in >pathsetup.sh
 
 echo "Creating FinkVersion.pm..."
-sed -e "s|@VERSION@|$version|g" -e "s|@BASEPATH@|$basepath|g" -e "s|@ARCHITECTURE@|$architecture|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
+sed -e "s|@VERSION@|$version|g" -e "s|@ARCHITECTURE@|$architecture|g" <perlmod/Fink/FinkVersion.pm.in >perlmod/Fink/FinkVersion.pm
 
 echo "Creating Fink.pm..."
 sed -e "s|@BASEPATH@|$basepath|g" <perlmod/Fink.pm.in >perlmod/Fink.pm
 
 echo "Creating man pages..."
-sed "s|@VERSION@|$version|g ; s|@PREFIX@|$basepath|g" <fink.8.in \
+sed "s|@PREFIX@|$basepath|g" <fink.8.in \
   | perl -MTime::Local -MPOSIX=strftime -p -e '$d="Date:";if (s/(\.Dd \$$d) (\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) \$/\1/) {$epochtime = timegm($7,$6,$5,$4,$3-1,$2-1900);$datestr = strftime "%B %e, %Y", localtime($epochtime); s/(\.Dd )\$$d/$1$datestr/;}' \
   >fink.8
 sed "s|@PREFIX@|$basepath|g" <fink.conf.5.in \

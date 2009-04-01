@@ -1,3 +1,8 @@
+2009-03-31  Dave Morrison  <drm@finkproject.org>
+
+	* setup.sh: FinkVersion.pm.in no longer needs @BASEPATH@ substitution,
+	and fink.8.in no longer needs @VERSION@ substitution.
+
 2009-03-30  Daniel Macks  <dmacks@netspace.org>
 
 	* MANIFEST: sync with refactored [boostrap bootstrap-phase2.pl]
