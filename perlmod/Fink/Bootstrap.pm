@@ -300,7 +300,7 @@ sub inject_package {
 	import Fink::Services qw(&read_config);
 	require Fink::Config;
 
-### Note to developers: Fink::Config loades Fink::FinkVersion, but it is
+### Note to developers: Fink::Config loads Fink::FinkVersion, but it is
 ### important not to call Fink::FinkVersion::fink_version or 
 ### Fink::FinkVersion::get_arch during inject_package, because inject.pl
 ### may be running a version of fink in which those values are incorrect.
