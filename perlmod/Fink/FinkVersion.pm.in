@@ -67,7 +67,7 @@ Returns the version of the fink source code.
 =cut
 
 sub fink_version {
-	return "@VERSION@";
+	return '@VERSION@';
 }
 
 
@@ -89,7 +89,7 @@ assumptions.
 =cut
 
 sub get_arch {
-	return "@ARCHITECTURE@";
+	return '@ARCHITECTURE@';
 }
 
 =item default_binary_version
