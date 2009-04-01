@@ -1,3 +1,7 @@
+2009-04-01  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: add a warning to developers as a code comment
+
 2009-03-31  Dave Morrison  <drm@finkproject.org>
 
 	* FinkVersion.pm.in: don't evaluate the substitution strings
