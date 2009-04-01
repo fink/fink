@@ -28,6 +28,18 @@ use strict;
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
+use File::Copy;
+
+### create FinkVersion.pm from FinkVersion.pm.in (we don't care about the
+### @ARCHITECTURE@ and @VERSION@ strings, because this copy of Fink is just
+### here for the purpose of running the inject_packages() script, which
+### doesn't need that information)
+
+my $output = "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
+my $input = $output . '.in';
+
+copy("$input", "$output") or die "Copy failed: $!";
+
 require Fink::Bootstrap;
 
 ### which package are we injecting?

@@ -2,6 +2,11 @@
 
 	* setup.sh: FinkVersion.pm.in no longer needs @BASEPATH@ substitution,
 	and fink.8.in no longer needs @VERSION@ substitution.
+	* inject.pl: create FinkVersion.pm out of FinkVersion.pm.in before
+	loading Fink::Bootstrap.  Because this copy of fink is only present
+	in order to run Fink::Bootstrap::inject_packages(), we don't care
+	about the values of @VERSION@ or @ARCHITECTURE@ -- the actual values
+	are not needed -- so we leave those strings as is.
 
 2009-03-30  Daniel Macks  <dmacks@netspace.org>
 
