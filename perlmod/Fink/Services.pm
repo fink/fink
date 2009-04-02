@@ -1097,7 +1097,7 @@ sub collapse_space {
 Takes a string representing a pkglist field and returns a ref to a
 list of lists of strings representing each pkg. The elements of the
 list referenced by $struct are joined by logical AND (commas in
-$pkglist). The pkgs in each list referenced by an element of @$srtuct
+$pkglist). The pkgs in each list referenced by an element of @$struct
 are joined by logical OR (delimited by vertical-bar within a comma-
 delimited cluster). Leading and trailing whitespace are removed from
 each pkg, and null pkgs are removed. A ref to an array is always
@@ -1106,6 +1106,17 @@ is always an array ref, even if that list only has one element; none
 of these will have no elements. A new $struct is returned on each
 call, so changing one returned value does not afect the data returned
 by another call or the underlying data.
+
+For example,
+
+  pkglist2lol( 'foo | quux (>= 1.0-1), bar' )
+
+returns
+
+  [
+    [ "foo", "quux (>= 1.0-1)" ],
+	[ "bar" ]
+  ]
 
 =cut
 
