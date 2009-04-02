@@ -1,3 +1,8 @@
+2009-04-02  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Check if .deb has pathnames that would collide on
+	case-insensitive FS
+
 2009-04-01  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: add a warning to developers as a code comment

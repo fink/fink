@@ -1574,6 +1574,7 @@ sub _validate_dpkg {
 	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
 
 	my $dpkg_file_count = 0;
+	my %case_insensitive_filename = (); # keys are lc($fullpathname) for all items in .deb
 
 	# this sub gets called by File::Find::find for each file in the .deb
 	# expects cwd==%d and File::Find::find to be called with no_chdir=1
@@ -1795,6 +1796,16 @@ sub _validate_dpkg {
 		# count number of files and links ("real things, not dirs") in %i
 		lstat $File::Find::name;
 		$dpkg_file_count++ if -f _ || -l _;
+
+
+		# check that there won't be collisions on case-insensitive
+		# filesystems. Will only be triggered on pkgs built in
+		# case-sensitive filesystems (if case-insensitive, the files
+		# or dirs would have already over-written or coalesced during
+		# InstallScript)
+		if ($case_insensitive_filename{lc $filename}++) {
+			&stack_msg($msgs, "Pathname collision on case-insensitive filesystems", $filename);
+		}
 
 	};  # end of CODE ref block
 
