@@ -1,3 +1,8 @@
+2009-04-02  Dave Morrison  <drm@finkproject.org>
+
+	* PkgVersion.pm: use Services::version_cmp when comparing two
+	perl versions.
+
 2009-04-02  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Check if .deb has pathnames that would collide on

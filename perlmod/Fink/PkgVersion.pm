@@ -5068,12 +5068,12 @@ sub get_perl_dir_arch {
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
     ### 
-    ### But when $perlversion is (at least?) 5.10.0, we call it
+    ### But when $perlversion is at least 5.10.0, we call it
     ### with /usr/bin/arch instead
     ###
 	my $perlcmd;
 	if ($perlversion) {
-		if ($perlversion eq "5.10.0") {
+		if (&version_cmp($perlversion, '>=',  "5.10.0")) {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);
@@ -5091,7 +5091,7 @@ sub get_perl_dir_arch {
 		($perlarchdir) = (`/usr/bin/env -i $perlcmd -MConfig -eprint+Config::config_vars+archname` =~ /archname='(.*)'/);
 	} else {
 		# hardcode just in case  :P
-		if ($perlversion ge "5.8.1") {
+		if (&version_cmp($perlversion, '>=' ,  "5.8.1")) {
 			$perlarchdir = 'darwin-thread-multi-2level';
 		} else {
 			$perlarchdir = 'darwin';
