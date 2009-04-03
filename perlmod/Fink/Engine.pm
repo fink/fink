@@ -2034,7 +2034,8 @@ sub real_install {
 							}
 						}
 					}
-					print "\033]2;building " . $package->get_fullname . " (" . ($rebuild_count - 1) . " remaining)\007";
+					my $use_xttitle = grep { /^xterm$/i } split / /, $config->param_default('NotifyPlugin', 'Growl');
+					print "\033]2;building " . $package->get_fullname . " (" . ($rebuild_count - 1) . " remaining)\007" if $use_xttitle;
 				}
 
 				unless ($forceoff) {
@@ -2968,6 +2969,8 @@ download the .deb via apt-get, and then do all the fetching.
 
 sub prefetch {
 	my ($use_bindist, $dryrun, @dep_items) = @_;
+
+	my $use_xttitle = grep { /^xterm$/i } split / /, $config->param_default('NotifyPlugin', 'Growl');
 	
 	&call_queue_clear;
 	
@@ -2976,7 +2979,7 @@ sub prefetch {
 	foreach my $dep (sort { $a->[PKGNAME] cmp $b->[PKGNAME] } @dep_items) {
 		my $func;
 
-		print "\033]2;pre-fetching " . $dep->[PKGVER]->get_fullname . " (" . (int(@dep_items) - ++$count) . " remaining)\007";
+		print "\033]2;pre-fetching " . $dep->[PKGVER]->get_fullname . " (" . (int(@dep_items) - ++$count) . " remaining)\007" if $use_xttitle;
 
 		# What action do we take?
 		if (grep { $dep->[OP] == $_ } ($OP_REINSTALL, $OP_INSTALL)) {
@@ -3002,11 +3005,11 @@ sub prefetch {
 	}
 
 	if (@aptget) {
-		print "\033]2;pre-fetching binaries with apt-get\007";
+		print "\033]2;pre-fetching binaries with apt-get\007" if $use_xttitle;
 		&call_queue_add([ $aptget[0], 'phase_fetch_deb', 1, $dryrun, @aptget ]);
 	}
 	
-	print "\033]2;\007";
+	print "\033]2;\007" if $use_xttitle;
 
 	&call_queue_clear;
 }

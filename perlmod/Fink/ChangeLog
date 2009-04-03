@@ -1,3 +1,8 @@
+2009-04-03  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: fink.conf NotifyPlugin "xterm" token controls xterm
+	title-bar notifications
+
 2009-04-02  Dave Morrison  <drm@finkproject.org>
 
 	* PkgVersion.pm: use Services::version_cmp when comparing two
