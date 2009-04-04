@@ -89,7 +89,7 @@ my $osMajorVer = `uname -r | cut -d. -f1`;
 
 my $perlexe  = "/usr/bin/perl";
 
-	print "$osMajorVer\n";
+#	print "$osMajorVer\n";
 
 if ($osMajorVer > 9) { 
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.10.0";
