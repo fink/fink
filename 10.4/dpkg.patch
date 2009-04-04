@@ -680,6 +680,35 @@ diff -urN dpkg-1.10.21.orig/main/enquiry.c dpkg-1.10.21/main/enquiry.c
      fprintf(stderr, _("dpkg: warning, architecture `%s' not in remapping table\n"),arch);
    }
    if (printf("%s\n",arch) == EOF) werr("stdout");
+diff -Nurd -x'*~' dpkg-1.10.21.orig/main/filesdb.c dpkg-1.10.21/main/filesdb.c
+--- dpkg-1.10.21.orig/main/filesdb.c	2003-10-25 16:03:21.000000000 -0400
++++ dpkg-1.10.21/main/filesdb.c	2009-04-01 00:57:26.000000000 -0400
+@@ -25,6 +25,7 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <string.h>
++#include <ctype.h>
+ #include <errno.h>
+ #include <sys/stat.h>
+ 
+@@ -566,7 +567,7 @@
+ 
+ static int hash(const char *name) {
+   int v= 0;
+-  while (*name) { v *= 1787; v += *name; name++; }
++  while (*name) { v *= 1787; v += tolower(*name); name++; }
+   return v;
+ }
+ 
+@@ -581,7 +582,7 @@
+   while (*pointerp) {
+ /* Why is this assert nescessary?  It is checking already added entries. */
+     assert((*pointerp)->name[0] == '/');
+-    if (!strcmp((*pointerp)->name+1,name)) break;
++    if (!strcasecmp((*pointerp)->name+1,name)) break;
+     pointerp= &(*pointerp)->next;
+   }
+   if (*pointerp) return *pointerp;
 diff -urN dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
 --- dpkg-1.10.21.orig/main/help.c	2003-10-26 05:03:21.000000000 +0900
 +++ dpkg-1.10.21/main/help.c	2005-03-18 22:13:37.000000000 +0900

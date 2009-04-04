@@ -1,6 +1,6 @@
 2009-04-04  Dave Morrison  <drm@finkproject.org>
 
-	* dpkg.info, dpkg.patch: sync with unstable
+	* dpkg.info, dpkg.patch, fink-mirrors.info: sync with unstable
 
 2009-03-21  Dave Morrison  <drm@finkproject.org>
 
