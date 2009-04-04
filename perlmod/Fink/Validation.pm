@@ -569,7 +569,7 @@ if ($info_level < 4) {
 				# this is an "old-style" GPL license field
 				# (at some future time we will deprecate these)
 			}
-			$_ =~ s/GPL(2|3|23)\+?/GPL/g; #remove the "decorations" from
+			$_ =~ s/GPL(23|2|3)\+?/GPL/g; #remove the "decorations" from
 			                              #new-style GPL license fields
 			if (not $allowed_license_values{$_}) {
 				print "Warning: Unknown license \"$_\". ($filename)\n";
