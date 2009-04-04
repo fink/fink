@@ -104,7 +104,10 @@ our %text_describe_fields = map {$_, 1}
 		 descdetail descusage
 		);
 
-# Allowed values for the license field
+# Allowed values for the license field: note that there are now "new-style"
+# GPL license fields which follow the string "GPL" with either "2", "3", or 
+# "23", optionally followed by "+".  Rather than list all the possibilities
+# here, we use some regexp magic later on.
 our %allowed_license_values = map {$_, 1}
 	(
 	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL", 
@@ -562,6 +565,12 @@ if ($info_level < 4) {
 		$value =~ s/\(.*?\)//g;  # remove all conditionals
 		$value =~ s/^\s*//;      # ...which sometimes leaves leading whitespace
 		foreach (split /\s*,\s*/, $value) {
+			if ($_ =~ /GPL(\/|$)/) {
+				# this is an "old-style" GPL license field
+				# (at some future time we will deprecate these)
+			}
+			$_ =~ s/GPL(2|3|23)\+?/GPL/g; #remove the "decorations" from
+			                              #new-style GPL license fields
 			if (not $allowed_license_values{$_}) {
 				print "Warning: Unknown license \"$_\". ($filename)\n";
 				$looks_good = 0;
