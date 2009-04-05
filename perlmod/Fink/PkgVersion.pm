@@ -540,6 +540,9 @@ sub initialize {
 				$expand->{"lib"} = "lib/ppc64";
 			} elsif ($config->param('Architecture') eq "i386" ) {
 				$expand->{"lib"} = "lib/x86_64";
+			} elsif ($config->param('Architecture') eq "x86_64" ) {
+				# paradoxically, no special library is required for -64bit 
+                # variants under x86_64 architecture
 			} else {
 				print_breaking_stderr "Skipping $self->{_filename}\n";
 				delete $self->{package};

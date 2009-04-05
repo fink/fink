@@ -3,6 +3,8 @@
 	* PkgVersion.pm: use architecture-dependent path-prefix on <redacted>
 	* Validation.pm: warn if any item in a License field other than
 	the last one is not conditionalized
+	* PkgVersion.pm: paradoxically, no special library is required for 
+	-64bit variants under x86_64 architecture
 
 2009-04-04  Dave Morrison  <drm@finkproject.org>
 
