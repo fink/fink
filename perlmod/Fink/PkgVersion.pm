@@ -4717,7 +4717,7 @@ Returns the path to the resulting directory.
 =cut
 
 sub ensure_gpp106_prefix {
-	my $vers = shift;
+	my $arch = shift;
 	
 	my $dir = "$basepath/var/lib/fink/path-prefix-10.6";
 	unless (-d $dir) {
@@ -4729,7 +4729,7 @@ sub ensure_gpp106_prefix {
 		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
 		print GPP <<EOF;
 #!/bin/sh
-exec /usr/bin/\${0##*/}  "-arch" "i386" "\$@"
+exec /usr/bin/\${0##*/}  "-arch" "$arch" "\$@"
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
@@ -4964,18 +4964,19 @@ END
 	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
 	# it the first g++ in the path
 	unless ($self->has_param('NoSetPATH')) {
-		my $vers;
-		if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
-			$vers = '3.3';
+		my $pathprefix;
+		if  ($config->param("Distribution") lt "10.6") {
+			my $vers;
+			if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
+				$vers = '3.3';
+			} else {
+				$vers = '4.0';
+			}
+			$pathprefix = ensure_gpp_prefix($vers);
 		} else {
-			$vers = '4.0';
+			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
-		my $pathprefix = ensure_gpp_prefix($vers);
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
-		if (($config->param("Architecture") eq "i386" ) and ($config->param("Distribution") gt "10.5")) {
-			my $pathprefix = ensure_gpp106_prefix($vers);
-			$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
-		}
 	}
 	
 	# special things for Type:java

@@ -84,4 +84,8 @@ for gccvers in 3.3 4.0; do
 		>"g++-wrapper-$gccvers"
 done
 
+echo "Creating compiler_wrapper"
+  sed -e "s|@ARCHITECTURE@|$architecture|g" < compiler_wrapper.in \
+    >"compiler_wrapper"
+
 exit 0

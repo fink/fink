@@ -1,3 +1,7 @@
+2009-04-05  Dave Morrison  <drm@finkproject.org>
+
+	* PkgVersion.pm: use architecture-dependent path-prefix on <redacted>
+
 2009-04-04  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Allow "new-style" GPL license fields which follow 

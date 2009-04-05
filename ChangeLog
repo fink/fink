@@ -1,3 +1,8 @@
+2009-04-05  Dave Morrison  <drm@finkproject.org>
+
+	* compiler_wrapper, compiler_wrapper.in, setup.sh, MANIFEST: use 
+	architecture-dependent path-prefix on <redacted>
+
 2009-03-31  Dave Morrison  <drm@finkproject.org>
 
 	* setup.sh: FinkVersion.pm.in no longer needs @BASEPATH@ substitution,
