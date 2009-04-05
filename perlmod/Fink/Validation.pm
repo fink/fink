@@ -562,6 +562,10 @@ if ($info_level < 4) {
 			print "Warning: Last license in list must not be conditional. ($filename)\n";
 			$looks_good = 0;
 		}
+		if ($value =~ /($|,)[^,()]*,/) {
+			print "Warning: Malformed license field.  All but the final item should be conditional.  ($filename)\n";
+			$looks_good = 0;
+		}
 		$value =~ s/\(.*?\)//g;  # remove all conditionals
 		$value =~ s/^\s*//;      # ...which sometimes leaves leading whitespace
 		foreach (split /\s*,\s*/, $value) {
