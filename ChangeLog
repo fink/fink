@@ -1,3 +1,7 @@
+2009-04-05  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.29.0, a new release
+
 2009-04-05  Daniel Macks  <dmacks@netspace.org>
 
 	* .cvsignore: compiler_wrapper is now a generated file
