@@ -6,6 +6,7 @@
 
 	* compiler_wrapper, compiler_wrapper.in, setup.sh, MANIFEST: use 
 	architecture-dependent path-prefix on <redacted>
+	* bootstrap: provide a new option for adventurous developers
 
 2009-03-31  Dave Morrison  <drm@finkproject.org>
 
