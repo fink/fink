@@ -829,19 +829,9 @@ if ($info_level < 4) {
 	# anything in PatchScript that looks like a patch file name
 	# (i.e., strings matching the glob %a/*.patch)
 	$value = $properties->{patchscript} || $test_properties->{patchscript};
-	if ($value) {
-		@patchfiles = ($value =~ /\%a\/.*?\.patch/g);
-		# strip directory if info is simple filename (in $PWD)
-		map {s/\%a\///} @patchfiles unless $pkgpatchpath;
-		if (@patchfiles) {
-			if (exists $properties->{patchfile}) {
-				print "Error: Cannot use %a if using PatchFile, use \%\{PatchFile\} to reference the patch. ($filename)\n";
-				$looks_good = 0;
-			} else {
-				print "Warning: %a patchfile pathnames are deprecated. Use PatchFile, and \%\{PatchFile\} to reference the patch. ($filename)\n";
-				$looks_good = 0;
-			}
-		}			
+	if ($value and $value =~ /\%a\/.*?\.patch/) {
+		print "Error: %a is no longer supported. Use PatchFile, and \%\{PatchFile\} to reference the patch. ($filename)\n";
+		$looks_good = 0;
 	}
 
 	# the contents if Patch (if any)
