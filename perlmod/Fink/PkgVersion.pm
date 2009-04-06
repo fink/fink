@@ -664,7 +664,7 @@ sub initialize {
 				'Ni'=> $parentinvname,
 				'P' => $basepath,
 
-				'a' => $self->{_patchpath},
+#				'a' => $self->{_patchpath},
 				'b' => '.'
 			};
 
