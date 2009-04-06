@@ -1,3 +1,7 @@
+2009-04-06  Daniel Macks  <dmacks@netspace.org>
+
+	* MANIFEST: add new XTerm notifier
+
 2009-04-05  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Make fink HEAD always >> 0.29.x, since that has now
