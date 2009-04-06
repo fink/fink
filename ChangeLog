@@ -1,5 +1,10 @@
 2009-04-06  Daniel Macks  <dmacks@netspace.org>
 
+	* MANIFEST: add .pt README
+	* readme.*.html: regenerate
+
+2009-04-06  Daniel Macks  <dmacks@netspace.org>
+
 	* MANIFEST: add new XTerm notifier
 
 2009-04-05  Dave Morrison  <drm@finkproject.org>
