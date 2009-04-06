@@ -1,6 +1,6 @@
 # -*- mode: Perl; tab-width: 4; -*-
 #
-# Fink::Notify::Xterm module
+# Fink::Notify::XTerm module
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2009 The Fink Package Manager Team
