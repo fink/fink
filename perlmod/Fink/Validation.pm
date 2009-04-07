@@ -121,6 +121,7 @@ our %allowed_arch_values = map {lc $_, 1}
 	(
 	 'powerpc',
 	 'i386',
+	 'x86_64',
 	);
 
 # List of all valid fields, 

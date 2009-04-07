@@ -1,3 +1,7 @@
+2009-04-07  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: allow x86_64 as an Architecture value
+
 2009-04-05  Dave Morrison  <drm@finkproject.org>
 
 	* PkgVersion.pm: use architecture-dependent path-prefix on <redacted>
