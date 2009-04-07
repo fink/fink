@@ -1800,7 +1800,6 @@ sub _validate_dpkg {
 		lstat $File::Find::name;
 		$dpkg_file_count++ if -f _ || -l _;
 
-
 		# check that there won't be collisions on case-insensitive
 		# filesystems. Will only be triggered on pkgs built in
 		# case-sensitive filesystems (if case-insensitive, the files
@@ -1808,6 +1807,22 @@ sub _validate_dpkg {
 		# InstallScript)
 		if ($case_insensitive_filename{lc $filename}++) {
 			&stack_msg($msgs, "Pathname collision on case-insensitive filesystems", $filename);
+		}
+
+		# check that gtk-doc (devhelp) documenation cross-links aren't
+		# obviously incorrect local URLs
+		if ($filename =~/$basepath\/share\/gtk-doc\/.+\.html$/) {
+			if (!-l $File::Find::name and open my $gtkdocfile, '<', $File::Find::name) {
+				while (<$gtkdocfile>) {
+					chomp;
+					if (/href\s*=\s*[\"\']?(\/[^\/]+)/) {
+						&stack_msg($msgs, "Bad local URL (\"$1\" does not look like a fink location).", $filename, $_);
+					}
+				}
+				close $gtkdocfile;
+			} elsif (!-l _) {
+				&stack_msg($msgs, "Couldn't read gtk-doc file \"$filename\": $!");
+			}
 		}
 
 	};  # end of CODE ref block

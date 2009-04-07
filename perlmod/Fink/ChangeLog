@@ -1,3 +1,7 @@
+2009-04-07  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Catch gtk-doc HREF to non-fink locations
+
 2009-04-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Notify/XTerm.pm: non-standard implemenation, but need stub here
