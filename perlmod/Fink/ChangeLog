@@ -1,3 +1,8 @@
+2009-04-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Only print first occurrence of each bad gtk-doc
+	line
+
 2009-04-07  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: allow x86_64 as an Architecture value

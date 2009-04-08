@@ -1814,10 +1814,11 @@ sub _validate_dpkg {
 		# obviously incorrect local URLs
 		if ($filename =~/$basepath\/share\/gtk-doc\/.+\.html$/) {
 			if (!-l $File::Find::name and open my $gtkdocfile, '<', $File::Find::name) {
+				my %seen_lines = (); # only print one example of each bad line
 				while (<$gtkdocfile>) {
 					chomp;
 					if (/href\s*=\s*[\"\']?(\/[^\/]+)/) {
-						&stack_msg($msgs, "Bad local URL (\"$1\" does not look like a fink location).", $filename, $_);
+						&stack_msg($msgs, "Bad local URL (\"$1\" does not look like a fink location).", $filename, $_) unless $seen_lines{$_}++;
 					}
 				}
 				close $gtkdocfile;
