@@ -62,6 +62,7 @@ perlmod/Fink/Notify/Growl.pm
 perlmod/Fink/Notify/QuickSilver.pm
 perlmod/Fink/Notify/Say.pm
 perlmod/Fink/Notify/Syslog.pm
+perlmod/Fink/Notify/XTerm.pm
 perlmod/Fink/Notify.pm
 perlmod/Fink/Package.pm
 perlmod/Fink/PkgVersion.pm
@@ -86,6 +87,7 @@ readme.en.html
 readme.es.html
 readme.fr.html
 readme.ja.html
+readme.pt.html
 readme.ru.html
 readme.zh.html
 update/ChangeLog

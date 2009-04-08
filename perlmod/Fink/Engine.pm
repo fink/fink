@@ -2034,6 +2034,8 @@ sub real_install {
 							}
 						}
 					}
+					# FIXME: factor out a standard Xterm notifier with
+					# new event types
 					my $use_xttitle = grep { /^xterm$/i } split / /, $config->param_default('NotifyPlugin', 'Growl');
 					print "\033]2;building " . $package->get_fullname . " (" . ($rebuild_count - 1) . " remaining)\007" if $use_xttitle;
 				}
@@ -2970,6 +2972,7 @@ download the .deb via apt-get, and then do all the fetching.
 sub prefetch {
 	my ($use_bindist, $dryrun, @dep_items) = @_;
 
+	# FIXME: factor out a standard Xterm notifier with new event types
 	my $use_xttitle = grep { /^xterm$/i } split / /, $config->param_default('NotifyPlugin', 'Growl');
 	
 	&call_queue_clear;

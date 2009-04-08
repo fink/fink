@@ -1,3 +1,8 @@
+2009-04-08  Daniel Macks  <dmacks@netspace.org>
+
+	* Notify/XTerm.pm: non-standard implemenation, but need stub here
+	so that fink.conf:NotifyPlugin token can be resolved
+
 2009-04-07  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: allow x86_64 as an Architecture value
