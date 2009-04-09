@@ -1,3 +1,9 @@
+2009-04-08  Dave Morrison  <drm@finkproject.org>
+
+	* Validation.pm: allow -64bit type under x86_64
+	* Validation.pm: make the default value for the Shlibs architecture
+	field depend on the fink Architecture
+
 2009-04-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Notify/XTerm.pm: non-standard implemenation, but need stub here
