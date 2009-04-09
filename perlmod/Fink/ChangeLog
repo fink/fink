@@ -1,5 +1,9 @@
 2009-04-09  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm, Validation.pm: .info "Patch" field is gone
+
+2009-04-09  Daniel Macks  <dmacks@netspace.org>
+
 	* Validation.pm: kill %a harder
 
 2009-04-08  Dave Morrison  <drm@finkproject.org>

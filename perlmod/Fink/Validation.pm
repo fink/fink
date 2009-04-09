@@ -374,7 +374,7 @@ sub validate_info_file {
 	my $filename = shift;
 	my $val_prefix = shift;
 	my ($properties, $info_level, $test_properties);
-	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath, @patchfiles);
+	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
 	my $value;
 	my ($basepath, $buildpath);
 	my ($type, $type_hash);
@@ -829,7 +829,6 @@ if ($info_level < 4) {
 	}
 
 	# Verify the patch file(s) exist and check some things
-	@patchfiles = ();
 	# anything in PatchScript that looks like a patch file name
 	# (i.e., strings matching the glob %a/*.patch)
 	$value = $properties->{patchscript} || $test_properties->{patchscript};
@@ -839,26 +838,18 @@ if ($info_level < 4) {
 	}
 
 	# the contents if Patch (if any)
-	$value = $properties->{patch} || $test_properties->{patch};
-	if ($value) {
-		# add directory if info is not simple filename (not in $PWD)
-		$value = "\%a/" .$value if $pkgpatchpath;
-		unshift @patchfiles, $value;
+	if ($properties->{patch} || $test_properties->{patch}) {
 		if (exists $properties->{patchscript}) {
-			print "Warning: The Patch field is deprecated. Use PatchFile, and \%\{PatchFile\} to apply the patch explicitly in PatchScript. ($filename)\n";
+			print "Error: The Patch field is no longer supported. Use PatchFile, and \%\{PatchFile\} to apply the patch explicitly in PatchScript. ($filename)\n";
 		} else {
-			print "Warning: The Patch field is deprecated. Use PatchFile instead. ($filename)\n";
+			print "Error: The Patch field is no longer supported. Use PatchFile instead. ($filename)\n";
 		}
 		$looks_good = 0;
 	}
 
-	# the contents if PatchFile (if any)
+	# check the contents of PatchFile (if any)
 	if (exists $expand->{patchfile}) {
-		unshift @patchfiles, '%{patchfile}';
-	}
-
-	# now check each one in turn
-	foreach $value (@patchfiles) {
+		$value = '%{patchfile}';
 		$value = &expand_percent($value, $expand, $filename.' Patch');
 		unless (-f $value) {
 			print "Error: can't find patchfile \"$value\"\n";

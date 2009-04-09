@@ -3482,11 +3482,8 @@ sub phase_patch {
 
 	### patches specified by filename
 	if ($self->has_param("Patch")) {
-		foreach $patch (split(/\s+/,$self->param("Patch"))) {
-			$patch_script .= "patch -p1 <\%a/$patch\n";
-		}
+		die "\"Patch\" is no longer supported\n";
 	}
-	$self->run_script($patch_script, "patching (patchfiles)", 0, 1);
 
 	### Deal with PatchScript field
 	$self->run_script($self->get_script("PatchScript"), "patching", 1, 1);
