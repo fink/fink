@@ -1816,7 +1816,9 @@ sub _validate_dpkg {
 				while (<$gtkdocfile>) {
 					chomp;
 					if (/href\s*=\s*[\"\']?(\/[^\/]+)/) {
-						&stack_msg($msgs, "Bad local URL (\"$1\" does not look like a fink location).", $filename, $_) unless $seen_lines{$_}++;
+						if ($1 ne $basepath and !$seen_lines{$_}++) {
+							&stack_msg($msgs, "Bad local URL (\"$1\" does not look like a fink location).", $filename, $_);
+						}
 					}
 				}
 				close $gtkdocfile;
