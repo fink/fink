@@ -812,7 +812,7 @@ if ($info_level < 4) {
 				'p' => $basepath, 'P' => $basepath,
 				'd' => $pkgdestdir,
 				'i' => $pkgdestdir.$basepath,
-				'a' => $pkgpatchpath,
+#				'a' => $pkgpatchpath,
 				'b' => '.',
 				'm' => $config->param('Architecture'),
 				%{$expand},
