@@ -1,3 +1,7 @@
+2009-04-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* install.sh: it wasn't actually *installing* the postgresql mirror :(
+
 2009-04-04  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: releasing version 0.28.7.1 of fink-mirrors
