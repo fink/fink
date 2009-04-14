@@ -188,7 +188,7 @@ diff -urN dpkg-1.10.21.orig/dselect/main.cc dpkg-1.10.21/dselect/main.cc
 +	char name[256];
 +	char version[256];
 +	char revision[256];
-+	unsigned long  epoch;
++	unsigned int  epoch;
 +    Boolean status;
 +    SInt32 errorCode;
 +    CFURLRef fileURL = NULL;
@@ -769,7 +769,7 @@ diff -urN dpkg-1.10.21.orig/main/main.c dpkg-1.10.21/main/main.c
 +	char name[256];
 +	char version[256];
 +	char revision[256];
-+	unsigned long  epoch;
++	unsigned int  epoch;
 +    Boolean status;
 +    SInt32 errorCode;
 +    CFURLRef fileURL = NULL;
