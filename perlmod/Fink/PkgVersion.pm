@@ -5073,11 +5073,11 @@ sub get_perl_dir_arch {
 	### perlmods trying to run ../perl$perlversion
     ### 
     ### But when $perlversion is at least 5.10.0, we call it
-    ### with /usr/bin/arch instead
+    ### with /usr/bin/arch instead, unless the architecture is powerpc
     ###
 	my $perlcmd;
 	if ($perlversion) {
-		if (&version_cmp($perlversion, '>=',  "5.10.0")) {
+		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);

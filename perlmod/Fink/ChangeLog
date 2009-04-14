@@ -1,3 +1,8 @@
+2009-04-13  Dave Morrison  <drm@finkproject.org>
+
+	* PkgVersion.pm: don't use new style perl compiling for 5.10.0 under
+	powerpc architecture
+
 2009-04-08  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: allow -64bit type under x86_64
