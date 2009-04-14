@@ -1925,7 +1925,7 @@ sub real_install {
 		$any_installed = 0;
 	PACKAGELOOP: foreach $pkgname (sort keys %deps) {
 			$item = $deps{$pkgname};
-			next if (not defined $item or ($item->[FLAG] & 2) == 2);	 # already installed
+			next if (($item->[FLAG] & 2) == 2);	 # already installed
 
 			$all_installed = 0;
 
