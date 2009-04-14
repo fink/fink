@@ -1,3 +1,8 @@
+2009-04-13  Dave Morrison  <drm@finkproject.org>
+
+	* PkgVersion.pm: don't use new style perl compiling for 5.10.0 under
+	powerpc architecture
+
 2009-04-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Fix bug in gtk-doc "non-fink" URL detection
