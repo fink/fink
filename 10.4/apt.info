@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 1055
+Revision: 1056
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: %N-shlibs (= %v-%r)
@@ -13,10 +13,12 @@ PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' < %{PatchFile} | patch -p1
  sh patch_flush
  for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi.bak -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
+ echo "x86_64\tx86_64" >> %b/buildlib/archtable
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
 SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC -fconstant-cfstrings -DHAVE_SOCKLEN_T=1
+ConfigureParams: --host=%m-apple-darwin`uname -r|cut -f1 -d.`
 CompileScript: <<
  ./configure %c
  make -f makefile.wrap NOISY=1
