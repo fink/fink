@@ -54,8 +54,8 @@ if (not defined $arch) {
 	die "Could not find an 'arch' executable\n";
 }
 
-### uncomment the next line at your own risk
-#$arch = "x86_64";
+### uncomment the next line at your own risk -- not for 10.4 or below
+$arch = "x86_64";
 
 ### patch FinkVersion.pm.in ###
 

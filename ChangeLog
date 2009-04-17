@@ -1,3 +1,7 @@
+2009-04-17  Dave Morrison  <drm@finkproject.org>
+
+	* boostrap: add comment
+
 2009-04-06  Daniel Macks  <dmacks@netspace.org>
 
 	* MANIFEST: add .pt README
