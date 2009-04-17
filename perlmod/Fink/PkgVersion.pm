@@ -1089,6 +1089,12 @@ sub get_script {
 		if ($self->has_parent) {
 			# SplitOffs default to blank script
 			$field_value = $self->param_default($field, '');
+			if ($self->is_type('bundle')) {
+				# Type:bundle always uses predefined script
+				$field_value = 
+					"/bin/mkdir -p \%i/share/doc/\%n\n".
+					"echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
+			}
 		} elsif ($self->is_type('bundle')) {
 			# Type:bundle always uses predefined script
 			$field_value = 
