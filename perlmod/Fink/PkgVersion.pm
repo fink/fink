@@ -4979,7 +4979,12 @@ END
 				$vers = '4.0';
 			}
 			$pathprefix = ensure_gpp_prefix($vers);
+	 # and for modern distributions, use architecture-based compiler-wrapper
 		} else {
+			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
+		}
+     # also use the architecture-based compiler-wrapper on x86_64 architecture
+		if ($config->param("Architecture") eq "x86_64") {
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
