@@ -2288,11 +2288,7 @@ HELPFORMAT
 				}
 			}
 			foreach ($pkg->get_patchfile_suffixes) {
-				if ($_ eq "") {
-					push @fields, ( qw/ patchfile patchfile-md5 / );
-				} else {
-					push @fields, ( "patchfile${_}", "patchfile${_}-md5" );
-				}
+				push @fields, ( "patchfile${_}", "patchfile${_}-md5" );
 			}
 			push @fields, (qw/
 						   updateconfigguess updateconfigguessindirs

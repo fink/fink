@@ -668,8 +668,6 @@ sub initialize {
 				'b' => '.'
 			};
 
-	$expand->{PatchFile} = $self->{_patchpath} . '/' . $self->param('PatchFile') if $self->has_param("PatchFile");
-
 	# Percent-expansion fields that depend on a fink's runtime configs
 	# aren't assigned here. We push that into load_fields, which is
 	# always called before any fields are used.
@@ -1577,22 +1575,13 @@ sub get_patchfile_suffixes {
 		@params = sort { $a <=> $b } @params;
 		@params = grep { defined $self->param("PatchFile$_") } @params;
 		unshift @params, "";
+		for my $param (@params) {
+			$self->{'_expand'}->{'PatchFile' . $param} = $self->{_patchpath} . '/' . $self->param('PatchFile' . $param);
+		}
 		$self->{_patchfile_suffixes} = \@params;
 	}
 	
 	return @{$self->{_patchfile_suffixes}};
-}
-
-# get_patchfile [ SUFFIX ]
-#
-# Returns the patchfile for a given PatchFileN suffix. If no suffix is given,
-# returns the primary patchfile.
-# On error (eg: nonexistent suffix) returns "none".
-sub get_patchfile {
-	my $self = shift;
-	my $suffix = shift || "";
-	
-	return $self->param_default_expanded("PatchFile".$suffix, "none");
 }
 
 # get_tarball [ SUFFIX ]
