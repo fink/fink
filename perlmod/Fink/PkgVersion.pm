@@ -1054,10 +1054,8 @@ sub get_script {
 
 		$field_value = $self->param_default($field, '%{default_script}');
 
-		if ($self->has_param('PatchFile')) {
-			for my $suffix ($self->get_patchfile_suffixes()) {
-				$default_script .= "patch -p1 < \%{PatchFile$suffix}\n";
-			}
+		for my $suffix ($self->get_patchfile_suffixes()) {
+			$default_script .= "patch -p1 < \%{PatchFile$suffix}\n";
 		}
 
 	} elsif ($field eq 'compilescript') {
@@ -3496,7 +3494,7 @@ sub phase_patch {
 	$patch_script = "";
 
 	### new-style checksummed patchfile
-	if ($self->has_param('PatchFile')) {
+	if ($self->get_patchfile_suffixes()) {
 		if ($self->has_param('Patch')) {
 			die "Cannot specify both Patch and PatchFile!\n";
 		}
