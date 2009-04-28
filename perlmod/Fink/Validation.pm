@@ -820,11 +820,16 @@ if ($info_level < 4) {
 				'Ni' => $pkginvarname
 	};
 
-	if (exists $properties->{patchfile}) {
-		if ($pkgpatchpath eq "") {
-			$expand->{patchfile} = $properties->{patchfile};
-		} else {
-			$expand->{patchfile} = $pkgpatchpath . '/' . $properties->{patchfile};
+	my %patchfile_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)$/ } keys %$properties;
+	my %patchfile_md5_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-md5$/ } keys %$properties;
+
+	for my $field (keys %patchfile_fields) {
+		if (exists $properties->{$field}) {
+			if ($pkgpatchpath eq "") {
+				$expand->{$field} = $properties->{$field};
+			} else {
+				$expand->{$field} = $pkgpatchpath . '/' . $properties->{$field};
+			}
 		}
 	}
 
@@ -849,85 +854,102 @@ if ($info_level < 4) {
 
 	# check the contents of PatchFile (if any)
 	if (exists $expand->{patchfile}) {
-		$value = '%{patchfile}';
-		$value = &expand_percent($value, $expand, $filename.' Patch');
-		unless (-f $value) {
-			print "Error: can't find patchfile \"$value\"\n";
-			$looks_good = 0;
-		}
-		else {
-			# Check patch file
-			open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
-			my $patch_file_content = <INPUT>;
-			close INPUT or die "Couldn't read $value: $!\n";
-			# Check for empty patch file
-			if (!$patch_file_content) {
-				print "Warning: Patch file is empty. ($value)\n";
+		for my $field (keys %patchfile_fields) {
+			$value = "\%{$field}";
+			$value = &expand_percent($value, $expand, $filename.' Patch');
+			unless (-f $value) {
+				print "Error: can't find patchfile \"$value\"\n";
 				$looks_good = 0;
 			}
-			# Check for line endings of patch file
-			elsif ($patch_file_content =~ m/\r\n/s) {
-				print "Error: Patch file has DOS line endings. ($value)\n";
-				$looks_good = 0;
-			}
-			elsif ($patch_file_content =~ m/\r/s) {
-				print "Error: Patch file has Mac line endings. ($value)\n";
-				$looks_good = 0;
-			}
-			# Check for hardcoded /sw.
-			open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
-			while (defined($patch_file_content=<INPUT>)) {
-				# only check lines being added (and skip diff header line)
-				next unless $patch_file_content =~ /^\+(?!\+\+ )/;
-				if ($patch_file_content =~ /\/sw([\s\/]|\Z)/) {
-					print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
+			else {
+				# Check patch file
+				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				my $patch_file_content = <INPUT>;
+				close INPUT or die "Couldn't read $value: $!\n";
+				# Check for empty patch file
+				if (!$patch_file_content) {
+					print "Warning: Patch file is empty. ($value)\n";
 					$looks_good = 0;
-					last;
 				}
+				# Check for line endings of patch file
+				elsif ($patch_file_content =~ m/\r\n/s) {
+					print "Error: Patch file has DOS line endings. ($value)\n";
+					$looks_good = 0;
+				}
+				elsif ($patch_file_content =~ m/\r/s) {
+					print "Error: Patch file has Mac line endings. ($value)\n";
+					$looks_good = 0;
+				}
+				# Check for hardcoded /sw.
+				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				while (defined($patch_file_content=<INPUT>)) {
+					# only check lines being added (and skip diff header line)
+					next unless $patch_file_content =~ /^\+(?!\+\+ )/;
+					if ($patch_file_content =~ /\/sw([\s\/]|\Z)/) {
+						print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
+						$looks_good = 0;
+						last;
+					}
+				}
+				close INPUT or die "Couldn't read $value: $!\n";
 			}
-			close INPUT or die "Couldn't read $value: $!\n";
 		}
 	}
 
 	# if we are using new PatchFile field, check some things about it
-	if (exists $properties->{patchfile}) {
+	for my $field (keys %patchfile_fields) {
+		my $pretty_field = $field; $pretty_field =~ s/patchfile/PatchFile/i;
 
-		# must declare BuildDepends on a fink that supports it
-		$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.24.12', 'use of PatchFile', $filename);
-
-		# can't mix old and new patching styles
-		if (exists $properties->{patch}) {
-			print "Error: Cannot use both Patch and PatchFile. ($filename)\n";
+		if (not exists $patchfile_md5_fields{$field.'-md5'}) {
+			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
 			$looks_good = 0;
 		}
 
-		# must have PatchFile-MD5 field that matches file's checksum
-		if (defined ($value = $properties->{'patchfile-md5'})) {
-			my $file = &expand_percent('%{patchfile}', $expand, $filename.' PatchFile');
+		# must declare BuildDepends on a fink that supports it
+		if ($field eq "patchfile") {
+			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.24.12', 'use of PatchFile', $filename);
+		} else {
+			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.29.99', 'use of PatchFileN', $filename);
+		}
+
+		# can't mix old and new patching styles
+		if (exists $properties->{patch}) {
+			print "Error: Cannot use both Patch and $pretty_field. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# must have PatchFileN-MD5 field that matches file's checksum
+		if (defined ($value = $properties->{"$field-md5"})) {
+			my $file = &expand_percent("\%{$field}", $expand, $filename.' '.$pretty_field);
 			my $file_md5 = file_MD5_checksum($file);
 			if ($value ne $file_md5) {
-				print "Error: PatchFile-MD5 does not match PatchFile checksum. ($filename)\n\tActual: $file_md5\n\tExpected: $value\n";
+				print "Error: $pretty_field-MD5 does not match $pretty_field checksum. ($filename)\n\tActual: $file_md5\n\tExpected: $value\n";
 				$looks_good = 0;
 			}
 		} else {
-			print "Error: No PatchFile-MD5 given for PatchFile. ($filename)\n";
+			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
 			$looks_good = 0;
 		}
 
 		# must actually be used
 		if (defined ($value = $properties->{'patchscript'})) {
-			if ($value !~ /%{(PatchFile|default_script)}/) {
-				print "Warning: PatchFile does not appear to be used in PatchScript. ($filename)\n";
+			if ($value !~ /%{($pretty_field|default_script)}/) {
+				print "Warning: $pretty_field does not appear to be used in PatchScript. ($filename)\n";
 				$looks_good = 0;
 			}
 		}
-
-	} elsif (exists $properties->{'patchfile-md5'}) {
-		# sanity check
-		print "Warning: No PatchFile given for PatchFile-MD5. ($filename)\n";
-		$looks_good = 0;
 	}
-	
+
+	for my $field (keys %patchfile_md5_fields) {
+		$field =~ s/-md5$//;
+		my $pretty_field = $field; $pretty_field =~ s/patchfile/PatchFile/;
+
+		if (not exists $patchfile_fields{$field}) {
+			print "Warning: No $pretty_field given for $pretty_field-MD5. ($filename)\n";
+			$looks_good = 0;
+		}
+	}
+
 	# Check for Type: dummy, only allowed for internal use
 	if (exists $type_hash->{dummy}) {
 		print "Error: Package has type \"dummy\". ($filename)\n";
@@ -1143,6 +1165,7 @@ sub validate_info_component {
 		unless ($pkg_valid_fields{$field}) {
 			unless (!$is_splitoff and
 					( $field =~ m/^(test)?source([2-9]|[1-9]\d+)(|extractdir|rename|-md5|-checksum)$/
+					  or $field =~ m/^patchfile([2-9]|[1-9]\d+)(|-md5)$/
 					  or $field =~ m/^(test)?tar([2-9]|[1-9]\d+)filesrename$/
 					  ) ) {
 				my $test = "";

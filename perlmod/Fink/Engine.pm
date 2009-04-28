@@ -1163,7 +1163,7 @@ sub cleanup_sources {
 		my $package = Fink::Package->package_by_name($pname);
 		foreach my $vo ($package->get_all_versions()) {
 			next if $vo->is_type('dummy');  # Skip dummy packages
-			foreach my $suffix ($vo->get_source_suffices()) {
+			foreach my $suffix ($vo->get_source_suffixes()) {
 				$src_list{$vo->get_tarball($suffix)} = 1;
 			}
 		}
@@ -2272,7 +2272,7 @@ HELPFORMAT
 					   essential builddependsonly
 					   custommirror
 					   /);
-			foreach ($pkg->get_source_suffices) {
+			foreach ($pkg->get_source_suffixes) {
 				if ($_ eq "") {
 					push @fields, (qw/
 								   source sourcerename source-md5
@@ -2287,12 +2287,18 @@ HELPFORMAT
 								  );
 				}
 			}
+			foreach ($pkg->get_patchfile_suffixes) {
+				if ($_ eq "") {
+					push @fields, ( qw/ patchfile patchfile-md5 / );
+				} else {
+					push @fields, ( "patchfile${_}", "patchfile${_}-md5" );
+				}
+			}
 			push @fields, (qw/
 						   updateconfigguess updateconfigguessindirs
 						   updatelibtool updatelibtoolindirs
 						   updatepomakefile
 						   patch patchscript
-						   patchfile patchfile-md5
 						   /,
 						   $pkg->params_matching("^set"),
 						   $pkg->params_matching("^noset"),
@@ -2405,7 +2411,7 @@ HELPFORMAT
 				printf "%s: %s\n", $_, $bool unless $pkg->has_parent;
 			} elsif ($_ eq 'sources') {
 				# multiline field, so indent 1 space always
-				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffices;
+				my @suffixes = map { $pkg->get_source($_) } $pkg->get_source_suffixes;
 				if (@suffixes) {
 					print "$_:\n";
 					print map { " $_\n" } @suffixes;
@@ -2426,7 +2432,7 @@ HELPFORMAT
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
 					 $_ =~ /^set/ or $_ =~ /^jarfiles$/ or
-					 $_ =~ /^patch(|file|file-md5)$/ or $_ eq 'appbundles' or
+					 $_ =~ /^patch(|\d*file|\d*file-md5)$/ or $_ eq 'appbundles' or
  					 $_ eq 'infodocs' or $_ =~ /^daemonicname$/
 					) {
 				# singleline fields start on the same line, have

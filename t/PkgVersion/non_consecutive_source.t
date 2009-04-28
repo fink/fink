@@ -17,7 +17,7 @@ my $pv = (Fink::PkgVersion->pkgversions_from_info_file(
 
 isa_ok( $pv, "Fink::PkgVersion", "non-consecutive-test.info" );	# 2
 
-my @sufs = $pv->get_source_suffices;
+my @sufs = $pv->get_source_suffixes;
 is(scalar(@sufs), 2, "count doesn't depend on consec, 014 not found");			# 3
 is($pv->get_source(), "non-consecutive-test-1.0.tar.gz",
 	"implicit source is there");								# 4

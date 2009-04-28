@@ -1,3 +1,7 @@
+2009-04-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Engine.pm, PkgVersion.pm, Validation.pm: allow PatchFileN(-MD5)?
+
 2009-04-17  Dave Morrison  <drm@finkproject.org>
 
 	* PkgVersion.pm: use architecture-based compiler wrapper when

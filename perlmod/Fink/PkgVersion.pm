@@ -1042,8 +1042,8 @@ sub get_script {
 	my $field = shift;
 	$field = lc $field;
 
-	my $default_script; # Type-based script (%{default_script})
-	my $field_value;    # .info field contents
+	my $default_script = ""; # Type-based script (%{default_script})
+	my $field_value;         # .info field contents
 
 	$self->prepare_percent_c;  # make sure %c has the most up-to-date data
 
@@ -1054,9 +1054,11 @@ sub get_script {
 
 		$field_value = $self->param_default($field, '%{default_script}');
 
-		$default_script = $self->has_param('PatchFile')
-			?  'patch -p1 < %{PatchFile}'
-			: '';
+		if ($self->has_param('PatchFile')) {
+			for my $suffix ($self->get_patchfile_suffixes()) {
+				$default_script .= "patch -p1 < \%{PatchFile$suffix}\n";
+			}
+		}
 
 	} elsif ($field eq 'compilescript') {
 		return "" if $self->has_parent;  # shortcut: SplitOffs do not compile
@@ -1157,7 +1159,7 @@ sub activate_infotest {
 	$self->{_test_activated} = 1;
 
 	my $infotest = $self->param_default("InfoTest", "");
-	my $max_source = ($self->get_source_suffices)[-1];
+	my $max_source = ($self->get_source_suffixes)[-1];
 	$max_source ||= ($self->param("Source") and
 		lc($self->param("Source")) ne "none") ? 1 : 0;
 	my $test_properties = &read_properties_var(
@@ -1186,7 +1188,7 @@ sub activate_infotest {
 		}
 	}
 
-	delete $self->{_source_suffices};
+	delete $self->{_source_suffixes};
 	
 }
 
@@ -1514,28 +1516,28 @@ sub in_tree {
 
 ### other accessors
 
-# get_source_suffices
+# get_source_suffixes
 #
 # Returns an ordered list of all "N"s for which there are non-"none" SourceN
 # Note that the primary source will always be at the front.
-sub get_source_suffices {
+sub get_source_suffixes {
 	my $self = shift;
 
 	# Cache it
-	if (!exists $self->{_source_suffices}) {
+	if (!exists $self->{_source_suffixes}) {
 		if ( $self->is_type('bundle') || $self->is_type('nosource') || $self->is_type('dummy') || $self->has_parent || ( defined $self->param("Source") && lc $self->param("Source") eq 'none' ) ) {
-			$self->{_source_suffices} = [];
+			$self->{_source_suffixes} = [];
 		} else {
 			my @params = $self->params_matching('source([2-9]|[1-9]\d+)');
 			map { s/^source//i } @params;
 			@params = sort { $a <=> $b } @params;
 			@params = grep { defined $self->param("Source$_") && lc $self->param("Source$_") ne 'none' } @params;
 			unshift @params, "";
-			$self->{_source_suffices} = \@params;
+			$self->{_source_suffixes} = \@params;
 		}
 	}
 	
-	return @{$self->{_source_suffices}};
+	return @{$self->{_source_suffixes}};
 }
 
 # get_source [ SUFFIX ]
@@ -1561,6 +1563,38 @@ sub get_source {
 	}
 	
 	return $self->param_default_expanded("Source".$suffix, "none");
+}
+
+# get_patchfile_suffixes
+#
+# Returns an ordered list of all "N"s for PatchFileN
+# Note that the primary patch will always be at the front.
+sub get_patchfile_suffixes {
+	my $self = shift;
+
+	# Cache it
+	if (!exists $self->{_patchfile_suffixes}) {
+		my @params = $self->params_matching('patchfile([2-9]|[1-9]\d+)');
+		map { s/^patchfile//i } @params;
+		@params = sort { $a <=> $b } @params;
+		@params = grep { defined $self->param("PatchFile$_") } @params;
+		unshift @params, "";
+		$self->{_patchfile_suffixes} = \@params;
+	}
+	
+	return @{$self->{_patchfile_suffixes}};
+}
+
+# get_patchfile [ SUFFIX ]
+#
+# Returns the patchfile for a given PatchFileN suffix. If no suffix is given,
+# returns the primary patchfile.
+# On error (eg: nonexistent suffix) returns "none".
+sub get_patchfile {
+	my $self = shift;
+	my $suffix = shift || "";
+	
+	return $self->param_default_expanded("PatchFile".$suffix, "none");
 }
 
 # get_tarball [ SUFFIX ]
@@ -2042,7 +2076,7 @@ sub is_fetched {
 		return 1;
 	}
 
-	foreach $suffix ($self->get_source_suffices) {
+	foreach $suffix ($self->get_source_suffixes) {
 		if (not defined $self->find_tarball($suffix)) {
 			return 0;
 		}
@@ -3116,7 +3150,7 @@ sub phase_fetch {
 		return;
 	}
 
-	foreach $suffix ($self->get_source_suffices) {
+	foreach $suffix ($self->get_source_suffixes) {
 		if (not $conditional or not defined $self->find_tarball($suffix)) {
 			$self->fetch_source($suffix,0,0,0,$dryrun);
 		}
@@ -3257,7 +3291,7 @@ GCC_MSG
 
 	$tries = 0;
 	my $maxtries = should_skip_prompt('fetch') ? 2 : 3;
-	foreach $suffix ($self->get_source_suffices) {
+	foreach $suffix ($self->get_source_suffixes) {
 		$archive = $self->get_tarball($suffix);
 
 		# search for archive, try fetching if not found
@@ -3467,23 +3501,25 @@ sub phase_patch {
 			die "Cannot specify both Patch and PatchFile!\n";
 		}
 
-		# field contains simple filename with %-exp
-		# figure out actual absolute filename
-		my $file = &expand_percent('%{PatchFile}', $self->{_expand}, $self->get_info_filename.' "PatchFile"');
-
-		# file exists
-		die "Cannot read PatchFile \"$file\"\n" unless -r $file;
-
-		# verify that MD5 matches
-		my $md5 = $self->param_default('PatchFile-MD5', '');
-		my $file_md5 = file_MD5_checksum($file);  # old API so we are back-portable to branch_0-24
-		if ($md5 ne $file_md5) {
-			die "PatchFile \"$file\" checksum does not match!\nActual: $file_md5\nExpected: $md5\n";
+		for my $suffix ($self->get_patchfile_suffixes()) {
+			# field contains simple filename with %-exp
+			# figure out actual absolute filename
+			my $file = &expand_percent("\%{PatchFile$suffix}", $self->{_expand}, $self->get_info_filename." \"PatchFile$suffix\"");
+	
+			# file exists
+			die "Cannot read PatchFile$suffix \"$file\"\n" unless -r $file;
+	
+			# verify that MD5 matches
+			my $md5 = $self->param_default("PatchFile$suffix-MD5", '');
+			my $file_md5 = file_MD5_checksum($file);  # old API so we are back-portable to branch_0-24
+			if ($md5 ne $file_md5) {
+				die "PatchFile$suffix \"$file\" checksum does not match!\nActual: $file_md5\nExpected: $md5\n";
+			}
+	
+			# make sure patchfile exists and can be read by the user (root
+			# or nobody) who is doing the build
+			$self->run_script("[ -r $file ]", "patching (PatchFile \"$file\" readability)", 1, 1);
 		}
-
-		# make sure patchfile exists and can be read by the user (root
-		# or nobody) who is doing the build
-		$self->run_script("[ -r $file ]", "patching (PatchFile \"$file\" readability)", 1, 1);
 	}
 
 	### patches specified by filename
@@ -3857,10 +3893,12 @@ sub phase_build {
 			cp($infofile, "$destdir/DEBIAN/package.info");
 		}
 		if ($self->has_param('PatchFile')) {
-			my $patchfile = &expand_percent('%{PatchFile}', $self->{_expand}, $self->get_info_filename.' "PatchFile"');
-			# only get here after successful build, so we know
-			# patchfile was present, readable, and matched MD5
-			cp($patchfile, "$destdir/DEBIAN/package.patch");
+			for my $suffix ($self->get_patchfile_suffixes()) {
+				my $patchfile = &expand_percent("\%{PatchFile$suffix}", $self->{_expand}, $self->get_info_filename." \"PatchFile$suffix\"");
+				# only get here after successful build, so we know
+				# patchfile was present, readable, and matched MD5
+				cp($patchfile, "$destdir/DEBIAN/package.patch$suffix");
+			}
 		}
 	}
 
