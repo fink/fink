@@ -3879,9 +3879,10 @@ sub phase_build {
 		if (defined $infofile) {
 			cp($infofile, "$destdir/DEBIAN/package.info");
 		}
-		if ($self->has_param('PatchFile')) {
-			for my $suffix ($self->get_patchfile_suffixes()) {
-				my $patchfile = &expand_percent("\%{PatchFile$suffix}", $self->{_expand}, $self->get_info_filename." \"PatchFile$suffix\"");
+		my $build_pkg = $self->has_parent ? $self->get_parent : $self;
+		if ($build_pkg->has_param('PatchFile')) {
+			for my $suffix ($build_pkg->get_patchfile_suffixes()) {
+				my $patchfile = &expand_percent("\%{PatchFile$suffix}", $build_pkg->{_expand}, $self->get_info_filename." \"PatchFile$suffix\"");
 				# only get here after successful build, so we know
 				# patchfile was present, readable, and matched MD5
 				cp($patchfile, "$destdir/DEBIAN/package.patch$suffix");

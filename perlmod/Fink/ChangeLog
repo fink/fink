@@ -1,3 +1,7 @@
+2009-04-28  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Put .patch in .deb of splitoffs as well as parent
+
 2009-04-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Engine.pm, PkgVersion.pm, Validation.pm: allow PatchFileN(-MD5)?
