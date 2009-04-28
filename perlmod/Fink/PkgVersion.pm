@@ -1574,7 +1574,7 @@ sub get_patchfile_suffixes {
 		map { s/^patchfile//i } @params;
 		@params = sort { $a <=> $b } @params;
 		@params = grep { defined $self->param("PatchFile$_") } @params;
-		unshift @params, "";
+		unshift @params, "" if ($self->has_param('PatchFile'));
 		for my $param (@params) {
 			$self->{'_expand'}->{'PatchFile' . $param} = $self->{_patchpath} . '/' . $self->param('PatchFile' . $param);
 		}
