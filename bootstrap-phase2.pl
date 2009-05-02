@@ -70,53 +70,22 @@ if ($host =~ /^\s*$/) {
 }
 print " $host\n";
 
-$distribution = check_host($host,1);
+my $arch = get_arch();
+
+$distribution = check_host($host,1,$arch);
 if ($distribution eq "unknown") {
 	exit(1);
 }
 
-print "Distribution $distribution\n";
+print "Distribution: $distribution\n";
+print "Architecture: $arch\n";
 
 ### get version
 
 my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
 
-### choose root method
-
-if ($> != 0) {
-	# not root now...prompt to determine how to relaunch self
-	my $sel_intro = "Fink must be installed and run with superuser (root) ".
-	    "privileges. Fink can automatically try to become ".
-	    "root when it's run from a user account. Since you're ".
-	    "currently running this script as a normal user, the ".
-	    "method you choose will also be used immediately for ".
-	    "this script. Avaliable methods:";
-	my $answer = &prompt_selection("Choose a method:",
-					intro   => $sel_intro,
-					default => [ value => "sudo" ],
-					choices => [
-					  "Use sudo" => "sudo",
-					  "Use su" => "su",
-					  "None, fink must be run as root" => "none" ] );
-	my $cmd = "'$homebase/bootstrap' .$answer";
-	if ($#ARGV >= 0) {
-		$cmd .= " '".join("' '", @ARGV)."'";
-	}
-	if ($answer eq "sudo") {
-		my $env = '';
-		$env = "/usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}'" if (exists $ENV{'PERL5LIB'} and defined $ENV{'PERL5LIB'});
-		$cmd = "/usr/bin/sudo $env $cmd";
-	} elsif ($answer eq "su") {
-		$cmd = "$cmd | /usr/bin/su";
-	} else {
-		print "ERROR: Can't continue as non-root.\n";
-		exit 1;
-	}
-	print "\n";
-	exit &execute($cmd, quiet=>1);
-}
-
-# we know we're root now
+# root method has already been chosen 
+# (so I'm not sure why this code is still here...)
 
 my ($rootmethod);
 
@@ -310,8 +279,6 @@ if (not -d $installto) {
 		exit 1;
 	}
 }
-
-my $arch = get_arch();
 
 my $selfupdatetrees = get_selfupdatetrees($distribution);
 

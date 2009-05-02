@@ -25,7 +25,7 @@ InstallScript: <<
  install -c -p -m 644 fink.shlibs "%d/DEBIAN/shlibs"
 <<
 PostInstScript: <<
- %p/lib/fink/postinstall.pl
+ %p/lib/fink/postinstall.pl %m
  %p/bin/fink --no-use-binary-dist index
 
  # try to clean up left-overs from previous versions (old location)

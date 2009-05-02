@@ -39,6 +39,8 @@ use Fink::Configure qw($conf_file_compat_version &spotlight_warning);
 use File::Find;
 use File::Basename;
 
+my $arch = shift;
+
 my ($basepath);
 $basepath = "@PREFIX@";
 
@@ -87,7 +89,7 @@ if ($host =~ /^\s*$/) {
 }
 print " $host\n";
 
-$distribution = check_host($host);
+$distribution = check_host($host,0,$arch);
 if ($distribution eq "unknown") {
 	exit(1);
 }
