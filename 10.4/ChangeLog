@@ -1,3 +1,8 @@
+2009-05-02  Dave Morrison <drm@finkproject.org>
+
+	* perl588-core-x86_64.info, perl5100-core-x86_64.info: Whoops, wrong 
+	perl
+
 2009-05-01  Dave Morrison <drm@finkproject.org>
 
 	* perl5100-core-x86_64.info: New essential package on 10.5/x86_64
