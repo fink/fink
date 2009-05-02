@@ -31,11 +31,52 @@ use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use IO::Handle;
+#load some Fink modules
+require Fink::CLI;
+import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
+require Fink::Services;
+import Fink::Services qw(&execute);
+
 
 $| = 1;
 
 my $homebase = $FindBin::RealBin;
 chdir $homebase;
+
+### choose root method
+
+if ($> != 0) {
+	# not root now...prompt to determine how to relaunch self
+	my $sel_intro = "Fink must be installed and run with superuser (root) ".
+	    "privileges. Fink can automatically try to become ".
+	    "root when it's run from a user account. Since you're ".
+	    "currently running this script as a normal user, the ".
+	    "method you choose will also be used immediately for ".
+	    "this script. Avaliable methods:";
+	my $answer = &prompt_selection("Choose a method:",
+					intro   => $sel_intro,
+					default => [ value => "sudo" ],
+					choices => [
+					  "Use sudo" => "sudo",
+					  "Use su" => "su",
+					  "None, fink must be run as root" => "none" ] );
+	my $cmd = "'$homebase/bootstrap' .$answer";
+	if ($#ARGV >= 0) {
+		$cmd .= " '".join("' '", @ARGV)."'";
+	}
+	if ($answer eq "sudo") {
+		my $env = '';
+		$env = "/usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}'" if (exists $ENV{'PERL5LIB'} and defined $ENV{'PERL5LIB'});
+		$cmd = "/usr/bin/sudo $env $cmd";
+	} elsif ($answer eq "su") {
+		$cmd = "$cmd | /usr/bin/su";
+	} else {
+		print "ERROR: Can't continue as non-root.\n";
+		exit 1;
+	}
+	print "\n";
+	exit &execute($cmd, quiet=>1);
+}
 
 ### get the architecture... (and offer a choice to users where appropriate)
 
@@ -52,10 +93,6 @@ foreach ('/usr/bin/uname', '/bin/uname') {
 if (not defined $arch) {
 	die "Could not find an 'arch' executable\n";
 }
-
-#load a Fink module
-require Fink::CLI;
-import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 
 ### if architecture is i386, and darwin is at least 9, then test for
 ### 64bit capability
@@ -95,12 +132,12 @@ if ($arch eq "i386") {
 				"users, since many more packages are available for the ".
 				"default mode (which is mostly 32bit but includes some ".
 				"64bit packages).  Which mode would you like to use?";
-			$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ] );
-			if (($vers = 9) and ($arch = "x86_64")) {
+			$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "Default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ] );
+			if (($vers == 9) and ($arch eq "x86_64")) {
 				my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
 											 "selecting 64bit-only mode will ".
 											 "not allow you to build perl ".
-											 "modules which work with the ".
+											 "modules that work with the ".
 											 "built-in /usr/bin/perl.  (They ".
 											 "will work with fink's perl ".
 											 "however.)  Are you sure you ".
