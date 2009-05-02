@@ -61,6 +61,7 @@ Fink::Bootstrap - Bootstrap a fink installation
 
 	my $distribution = check_host($host);
 	my $distribution = check_host($host, $bootstrap);
+	my $distribution = check_host($host, $bootstrap, $arch);
 	my $result = inject_package($package, $packagefiles, $info_script, $param);
     my ($package_list, $perl_is_supported) = additional_packages();
 	bootstrap();
@@ -99,12 +100,19 @@ These functions are exported on request.  You can export them all with
 =item check_host
 
 	my $distribution = check_host($host);
+	my $distribution = check_host($host, $bootstrap);
+	my $distribution = check_host($host, $bootstrap, $arch);
 
 Checks the current host OS version and returns which distribution to use,
 or "unknown."  $host should be as determined by config.guess.
 
 The optional argument $bootstrap is a boolean, designating whether we have
 been called by bootstrap.pl or not.  If absent, it defaults to false.
+
+The second optional argument $arch specifies the architecture for Fink
+which was chosen during bootstrap (from the bootstrap script), or the 
+architecture under which Fink is currently being installed (when called
+from postinstall.pl).  It defaults to the empty string.
 
 This function also warns the user about certain bad configurations, or 
 incorrect versions of gcc.
@@ -119,6 +127,7 @@ Called by bootstrap.pl and fink's postinstall.pl.
 sub check_host {
 	my $host = shift @_;
 	my $bootstrap = shift @_ || 0;
+	my $arch = shift @_ || "";
 	my ($distribution, $gcc, $build, $transitional);
 
 	# We test for an obsolete version of gcc3.3, and refuse to proceed if
@@ -253,7 +262,7 @@ END
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\.[0-6]\.[0-2]/) {
 		&print_breaking("\nThis version of fink supports bootstrapping under Mac OS X 10.5, " .
             "as well as upgrading from 10.4. However, DIRECT UPGRADING FROM " .
-			"10.4-transitional, 10.3 OR EARLIER IS NOT SUPPORTED.\n\n");
+			"10.4-transitional, 10.3 OR EARLIER IS NOT SUPPORTED.\n\n") unless ($arch eq "x86_64");
 		$distribution = "10.5";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\./) {
 		&print_breaking("This system was not released at the time " .
