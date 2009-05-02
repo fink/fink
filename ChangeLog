@@ -1,3 +1,9 @@
+2009-05-01  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap: give users a choice of architecture, if they are on
+	64bit-capable intel hardware with distribution >= 10.5
+	* bootstrap-phase2.pl: print Architecture as well as Distribution
+
 2009-04-14  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.29.2, a bug-fix
