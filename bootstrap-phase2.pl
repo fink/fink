@@ -75,7 +75,9 @@ if ($distribution eq "unknown") {
 	exit(1);
 }
 
-print "Distribution $distribution\n";
+my $arch = get_arch();
+print "Distribution: $distribution\n";
+print "Architecture: $arch\n";
 
 ### get version
 
@@ -310,8 +312,6 @@ if (not -d $installto) {
 		exit 1;
 	}
 }
-
-my $arch = get_arch();
 
 my $selfupdatetrees = get_selfupdatetrees($distribution);
 

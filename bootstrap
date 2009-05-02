@@ -37,8 +37,7 @@ $| = 1;
 my $homebase = $FindBin::RealBin;
 chdir $homebase;
 
-### get the architecture... this is where we might in the future offer
-### users a choice between 32bit and 64bit
+### get the architecture... (and offer a choice to users where appropriate)
 
 my $arch;
 
@@ -54,8 +53,54 @@ if (not defined $arch) {
 	die "Could not find an 'arch' executable\n";
 }
 
-### uncomment the next line at your own risk -- not for 10.4 or below
-# $arch = "x86_64";
+#load a Fink module
+require Fink::CLI;
+import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
+
+### if architecture is i386, and darwin is at least 9, then test for
+### 64bit capability
+
+my ($version, $vers);
+# are we on intel?
+if ($arch eq "i386") {
+	foreach ('/usr/bin/uname', '/bin/uname') {
+    # check some common places (why aren't we using $ENV{PATH}?)
+		if (-x $_) {
+			chomp($version = `$_ -r 2>/dev/null`);
+			last;
+		}
+	}
+	($vers) = split( /\./, $version );
+# is Darwin at least 9?
+	if ((defined $vers) and ($vers >= 9)) {
+# check for 64bit capability
+        my $is64bit = 0;
+        if (open(SYSCTL, 'sysctl -a 2>/dev/null |')) {
+			my ($key, $value);
+			while (<SYSCTL>) {
+                        ($key, $value) = $_ =~ /^(\S+)\s*\:\s*(.*?)\s*$/;
+                        next unless (defined $key and defined $value);
+                        if ($key =~ /^(hw.optional.x86_64|hw.optional.64bitops|hw.cpu64bit_capable)$/ and $value eq "1") {
+                                $is64bit = 1;
+                                last;
+                        }
+			}
+			close(SYSCTL);
+        }
+		if ($is64bit) {
+# ask the user
+			my $arch_intro= "Your hardware is a 64bit-compatible intel " .
+				"processor, so you have the option of running Fink in ".
+				"64bit-only mode.  This is not recommended for most ".
+				"users, since many more packages are available for the ".
+				"default mode (which is mostly 32bit but includes some ".
+				"64bit packages).  Which mode would you like to use?";
+			$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ] );
+		}
+	}
+}
+
+
 
 ### patch FinkVersion.pm.in ###
 
