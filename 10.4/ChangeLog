@@ -1,3 +1,11 @@
+2009-05-01  Dave Morrison <drm@finkproject.org>
+
+	* perl5100-core-x86_64.info: New essential package on 10.5/x86_64
+
+2009-04-17  Dave Morrison <drm@finkproject.org>
+
+	* libiconv.info: Use the path-prefix compiler on x86_64 architecture
+
 2009-04-16  Dave Morrison  <drm@finkproject.org>
 
 	* apt.info: sync with unstable

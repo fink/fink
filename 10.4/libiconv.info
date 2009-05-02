@@ -46,6 +46,10 @@ export PATH
 case `uname -r` in
 10.*) PATH=%p/var/lib/fink/path-prefix-10.6:$PATH ;;
 esac
+# and also on x86_64
+case "%m" in
+x86_64) PATH=%p/var/lib/fink/path-prefix-10.6:$PATH ;;
+esac
 
 cd %b/../gperf-3.0.3
 ./configure --prefix=%p
