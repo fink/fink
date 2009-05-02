@@ -96,6 +96,18 @@ if ($arch eq "i386") {
 				"default mode (which is mostly 32bit but includes some ".
 				"64bit packages).  Which mode would you like to use?";
 			$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ] );
+			if (($vers = 9) and ($arch = "x86_64")) {
+				my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
+											 "selecting 64bit-only mode will ".
+											 "not allow you to build perl ".
+											 "modules which work with the ".
+											 "built-in /usr/bin/perl.  (They ".
+											 "will work with fink's perl ".
+											 "however.)  Are you sure you ".
+											 "want to do this?", default => 0);
+				&print_breaking("\n");
+				$arch = "i386" unless ($answer);
+			}
 		}
 	}
 }
