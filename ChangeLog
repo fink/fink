@@ -1,3 +1,12 @@
+2009-05-02  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap: seek confirmation from user about the choice of
+	10.5/x86_64
+	* bootstrap, bootstrap-phase2.pl: move root method selection to
+	bootstrap
+	* bootstrap-phase2.pl, fink.info.in, postinstall.pl.in: pass $arch to 
+	Fink::Bootstrap::check_host
+
 2009-05-01  Dave Morrison  <drm@finkproject.org>
 
 	* bootstrap: give users a choice of architecture, if they are on
