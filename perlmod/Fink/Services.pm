@@ -1829,7 +1829,11 @@ for more information).
 =cut
 
 sub dpkg_lockwait {
-	&lockwait_executable('dpkg');
+	if (-f "Fink::Config::basepath/bin/dpkg-lockwait") {
+		"Fink::Config::basepath/bin/dpkg-lockwait";
+	} else {
+		&get_path('dpkg');
+	}
 }
 
 =item aptget_lockwait
