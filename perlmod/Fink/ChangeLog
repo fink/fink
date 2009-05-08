@@ -1,3 +1,9 @@
+2009-05-08  Dave Morrison  <drm@finkproject.org>
+
+	* Services.pm: dpkg_lockwait now specifies the full path to the
+	dpkg_lockwait executable, but if that is unavailable, defaults to
+	the first available dpkg executable in the PATH
+
 2009-05-01  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: check_host now gets a third optional argument $arch,
