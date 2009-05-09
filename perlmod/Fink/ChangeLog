@@ -1,3 +1,8 @@
+2009-05-09  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: -m mode has some effect in other actions and also has
+	lots of effects beyond one options token.
+
 2009-05-08  Dave Morrison  <drm@finkproject.org>
 
 	* Services.pm: dpkg_lockwait now specifies the full path to the

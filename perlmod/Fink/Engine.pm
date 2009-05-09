@@ -249,12 +249,7 @@ sub process {
 	}
 
 	if (Fink::Config::get_option("maintainermode")) {
-		if (grep { $commands{$_}->[0] eq $proc } qw/ build rebuild install reinstall update dumpinfo /) {
-			print STDERR "Running in Maintainer Mode\n";
-		} else {
-			&print_breaking("Maintainer mode is only available for (re)build, (re)install, update, and dumpinfo. Continuing $cmd without maintainer mode...");
-			Fink::Config::set_options( { "maintainermode" => 0 } );
-		}
+		print STDERR "Running in Maintainer Mode\n";
 	}
 	
 	# Run the command
