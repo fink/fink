@@ -5119,6 +5119,10 @@ sub get_perl_dir_arch {
 	} else {
 		# Hardcode so it doesn't change as packages are installed, removed
 		$perlcmd = "/usr/bin/perl";
+		# 10.5/x86_64 is a special case
+		if (($config->param("Distribution") eq "10.5") and (get_arch() eq "x86_64")) {
+			$perlcmd = "$basepath/bin/perl5.8.8";
+		}
 	}
 
 	if (exists $perl_archname_cache{$perlcmd}) {
