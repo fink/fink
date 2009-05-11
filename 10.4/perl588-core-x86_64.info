@@ -48,8 +48,6 @@ CompileScript: <<
 <<
 DocFiles: README Copying
 
-# mkdir -p %i/share
-# mv %i/man %i/share
 InstallScript: <<
  make install DESTDIR=%d
 
