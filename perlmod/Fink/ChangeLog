@@ -1,3 +1,7 @@
+2009-05-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Don't store undef env var.
+
 2009-05-08  Dave Morrison  <drm@finkproject.org>
 
 	* Services.pm: dpkg_lockwait now specifies the full path to the

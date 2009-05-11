@@ -4945,7 +4945,7 @@ END
 	}
 
 	# preserve TERM
-	$script_env{"TERM"} = $ENV{"TERM"};
+	$script_env{"TERM"} = $ENV{"TERM"} if exists $ENV{"TERM"};
 
 	# set variables according to the info file
 	my $expand = $self->{_expand};
