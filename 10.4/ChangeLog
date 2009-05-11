@@ -1,3 +1,7 @@
+2009-05-11  Dave Morrison  <drm@finkproject.org>
+
+	* perl588-core-x86_64.info: minor change in build flags
+
 2009-05-02  Dave Morrison <drm@finkproject.org>
 
 	* perl588-core-x86_64.info, perl5100-core-x86_64.info: Whoops, wrong 
