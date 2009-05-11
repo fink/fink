@@ -1,5 +1,9 @@
 2009-05-11  Daniel Macks  <dmacks@netspace.org>
 
+	* Config.pm: Defer loading of FinkVersion until actually used
+
+2009-05-11  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: Don't store undef env var.
 
 2009-05-09  Daniel Macks  <dmacks@netspace.org>

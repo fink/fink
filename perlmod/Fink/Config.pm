@@ -24,7 +24,6 @@
 package Fink::Config;
 use Fink::Base;
 use Fink::Command 	qw(cp);
-use Fink::FinkVersion qw(&get_arch);
 use Fink::Services	qw(&read_properties &get_options $VALIDATE_HELP);
 
 
@@ -41,17 +40,7 @@ our @EXPORT_OK	 = qw($config $basepath $libpath $buildpath $dbpath
 our $VERSION	 = 1.00;
 
 
-our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors, $native_debarch);
-
-# determine the dpkg Architecture string for the local machine
-#
-# We can't use `dpkg --print-installation-architecture` (although we
-# have to match it) because dpkg runs fink-virtual-pkgs, which loads
-# Config.pm.
-{
-	my $_arch = &get_arch();
-	$native_debarch = "darwin-$_arch";
-}
+our ($config, $basepath, $libpath, $dbpath, $distribution, $buildpath, $ignore_errors);
 
 my %options = ();
 
@@ -199,7 +188,8 @@ sub initialize {
 	# control and %m expansion, and can be set to simulate the engine
 	# and indexer on non-local architectures.
 	if (not $self->has_param('Architecture')) {
-		$self->set_param('Architecture', get_arch());
+		require Fink::FinkVersion;
+		$self->set_param('Architecture', &Fink::FinkVersion::get_arch());
 	}
 	$self->set_param('Debarch', 'darwin-' . $self->param('Architecture'));
 
@@ -1092,7 +1082,7 @@ sub mixed_arch {
 	my $self = shift;
 	my %opts = @_;
 
-	if ($native_debarch ne $self->param("Debarch")) {
+	if (&_get_native_debarch() ne $self->param("Debarch")) {
 		if (defined (my $msg = $opts{message})) {
 			if ($opts{fatal}) {
 				die $msg;
@@ -1106,6 +1096,25 @@ sub mixed_arch {
 	}
 	return 0;
 }
+
+# determine the dpkg Architecture string for the local machine
+#
+# We can't use `dpkg --print-installation-architecture` (although we
+# have to match it) because dpkg runs fink-virtual-pkgs, which loads
+# Config.pm.
+{
+	my $_native_debarch;		# cache to avoid repeated FV::get_arch
+
+	sub _get_native_debarch {
+		if (!defined $_native_debarch) {
+			require Fink::FinkVersion;
+			my $_arch = &Fink::FinkVersion::get_arch();
+			$_native_debarch = "darwin-$_arch";
+		}
+		return $_native_debarch;
+	}
+}
+
 
 =back
 
