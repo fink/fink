@@ -46,10 +46,11 @@ our $VERSION = ( qw$Revision$ )[-1];
 # It is used by dpkg via popen(), so (among other things) that means
 # you must not print to STDOUT.
 
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath $distribution);
 use POSIX qw(uname tmpnam);
 use Fink::Status;
 use File::Basename;
+use Fink::FinkVersion;
 
 use constant STATUS_PRESENT => "install ok installed";
 use constant STATUS_ABSENT  => "purge ok not-installed";
@@ -266,7 +267,7 @@ system in /usr/bin/perl.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-	if (defined Fink::Services::get_system_perl_version()) {
+	if ((defined Fink::Services::get_system_perl_version()) and (!(Fink::FinkVersion::get_arch() eq "x86_64") or !($distribution eq "10.5"))) {
 		$hash->{version} = Fink::Services::get_system_perl_version()."-1";
 		$hash->{status} = STATUS_PRESENT;
 		print STDERR Fink::Services::get_system_perl_version(), "\n" if ($options{debug});
@@ -368,7 +369,6 @@ END
 		}
 		$perlprovides .= ', ' . join(', ', map { $_ . '-pm' . $shortver } sort @modules);
 		$hash->{provides} = $perlprovides;
-
 	} else {
 		$hash->{version} = '0-0';
 		$hash->{status} = STATUS_ABSENT;
