@@ -1,6 +1,8 @@
 2009-05-11  Dave Morrison  <drm@finkproject.org>
 
 	* VirtPackage.pm: we don't use system perl on 10.5/x86_64
+	* PkgVersion.pm: use the correct perl for Type: perl on 10.5/x86_64;
+	also, use architecture-based compiler wrapper when appropriate
 
 2009-05-11  Daniel Macks  <dmacks@netspace.org>
 
