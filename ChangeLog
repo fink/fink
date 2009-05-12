@@ -1,3 +1,9 @@
+2009-05-12  Dave Morrison  <drm@finkproject.org>
+
+	* bootstrap, bootstrap-phase2.pl: refactor bootstrap
+	* setup.sh: use the correct perl executable under 10.5/x86_64
+	* fink-x86_64.info.in: make fink depend on perl588 under 10.5/x86_64
+
 2009-05-02  Dave Morrison  <drm@finkproject.org>
 
 	* bootstrap: seek confirmation from user about the choice of
