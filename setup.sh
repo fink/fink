@@ -35,6 +35,12 @@ perlexe="/usr/bin/perl"
 
 osMajorVer=`uname -r | cut -d. -f1`
 
+if [ $osMajorVer -eq 9 ]; then
+  if [ "$architecture" = "x86_64" ]; then
+    perlexe="$basepath/bin/perl5.8.8"
+  fi
+fi
+
 if [ $osMajorVer -gt 9 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.10.0"
 fi

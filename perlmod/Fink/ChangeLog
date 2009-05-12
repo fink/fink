@@ -1,3 +1,10 @@
+2009-05-12  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: refactor bootstrap
+	* Package.pm: don't use the disk cache during the first part of
+	bootstrap (because we may be running under a different perl than fink 
+	will eventually use, and Storable.pm may be incompatible)
+
 2009-05-11  Dave Morrison  <drm@finkproject.org>
 
 	* VirtPackage.pm: we don't use system perl on 10.5/x86_64

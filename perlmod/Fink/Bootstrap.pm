@@ -43,7 +43,7 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages &add_injected_to_trees &get_selfupdatetrees);
+	@EXPORT_OK	 = qw(&bootstrap1 &bootstrap2 &bootstrap3 &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages &add_injected_to_trees &get_selfupdatetrees);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -453,18 +453,24 @@ sub additional_packages {
 
 }
 
-=item bootstrap 
+=item bootstrap1 
 
-	bootstrap();
+	bootstrap1();
+    bootstrap1($item1,$item2,...);
 
-The primary bootstrap routine, called by bootstrap.pl.
+The first part of the primary bootstrap routine, called by bootstrap.pl.
+The optional arguments specify packages in addition to dpkg-bootstrap
+which should be built before package management starts.
 
 =cut
 
-sub bootstrap {
+sub bootstrap1 {
+	$config->set_flag("bootstrap1");
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
 	my @plist = ("dpkg-bootstrap");
+	push(@plist, @_);
+	print "plist is @plist\n";
 	my ($package_list, $perl_is_supported) = additional_packages();
 	my @addlist = @{$package_list};
 	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless $perl_is_supported;
@@ -529,6 +535,42 @@ sub bootstrap {
 	}
 
 
+	$ENV{PATH} = $save_path;
+	$config->clear_flag("bootstrap1");
+}
+
+=item bootstrap2 
+
+	bootstrap2();
+
+The second part of the primary bootstrap routine, called by bootstrap.pl.
+This part must be run under a perl binary which is identical to the one
+which will be used to run fink itself, post-bootstrap.
+
+=cut
+
+
+sub bootstrap2 {
+	my ($bsbase, $save_path);
+	my ($pkgname, $package, @elist);
+	my ($package_list, $perl_is_supported) = additional_packages();
+	my @addlist = @{$package_list};
+	$bsbase = &get_bsbase();
+	# set paths so that everything is found
+	$save_path = $ENV{PATH};
+	$ENV{PATH} = "$basepath/sbin:$basepath/bin:".
+				 "$bsbase/sbin:$bsbase/bin:".
+				 $save_path;
+
+	# disable UseBinaryDist during bootstrap
+	Fink::Config::set_options( { 'use_binary' => -1 });
+
+	# make sure we have the package descriptions
+	Fink::Package->require_packages();
+
+	# determine essential packages
+	@elist = Fink::Package->list_essential_packages();
+
 	print "\n";
 	&print_breaking("BOOTSTRAP PHASE THREE: installing essential packages to ".
 					"$basepath with package management.");
@@ -539,19 +581,34 @@ sub bootstrap {
 	Fink::Engine::cmd_install(@elist, @addlist);
 	Fink::Config::set_options( { 'no_buildlock' => 0 } );
 
+	$ENV{PATH} = $save_path;
+}
+
+
+=item bootstrap3
+
+	bootstrap3();
+
+The final part of the primary bootstrap routine, called by bootstrap.pl.
+
+=cut
+
+
+sub bootstrap3 {
+	my $bsbase = &get_bsbase();
 	print "\n";
 	&print_breaking("BOOTSTRAP DONE. Cleaning up.");
 	print "\n";
 	rm_rf $bsbase;
-
-	$ENV{PATH} = $save_path;
 }
+
 
 =item get_bsbase
 
 	my $bsbase = get_bsbase();
 
-Returns the base path for bootstrapping.  Called by bootstrap().
+Returns the base path for bootstrapping.  Called by bootstrap() and by
+bootstrap.pl.
 
 =cut
 

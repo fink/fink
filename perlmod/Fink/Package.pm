@@ -716,6 +716,13 @@ sub can_read_write_db {
 		return (0,0);
 	}
 	
+    # do not use disk cache if we are in the first bootstrap phase
+    # (because we may be running under a different perl than fink will
+    #  eventually use, and Storable.pm may be incompatible)
+	if ($config->has_flag("bootstrap1")) {
+		return (0,0);
+		}
+
 	my ($read, $write) = (1, 0);
 	
 	eval "require Storable";
