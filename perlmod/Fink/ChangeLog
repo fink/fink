@@ -1,5 +1,9 @@
 2009-05-12  Dave Morrison  <drm@finkproject.org>
 
+	* Bootstrap.pm: recognize 10.5.7
+
+2009-05-12  Dave Morrison  <drm@finkproject.org>
+
 	* Bootstrap.pm: refactor bootstrap
 	* Package.pm: don't use the disk cache during the first part of
 	bootstrap (because we may be running under a different perl than fink 
