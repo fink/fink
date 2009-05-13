@@ -1829,8 +1829,8 @@ for more information).
 =cut
 
 sub dpkg_lockwait {
-	if (-f "Fink::Config::basepath/bin/dpkg-lockwait") {
-		"Fink::Config::basepath/bin/dpkg-lockwait";
+	if (-f "$Fink::Config::basepath/bin/dpkg-lockwait") {
+		"$Fink::Config::basepath/bin/dpkg-lockwait";
 	} else {
 		&get_path('dpkg');
 	}
