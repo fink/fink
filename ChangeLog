@@ -2,6 +2,8 @@
 
 	* MANIFEST.SKIP: skip fink-x86_64.info.in and fink-x86_64.info
 	* bootstrap: provide VERSION file for a bootstrapped fink installation
+	* bootstrap: actually, when bootstrapping, the VERSION file should
+	say "bootstrap"
 
 2009-05-12  Dave Morrison  <drm@finkproject.org>
 
