@@ -1,6 +1,8 @@
 2009-05-12  Dave Morrison  <drm@finkproject.org>
 
 	* bootstrap: provide VERSION file for a bootstrapped fink installation
+	* bootstrap: actually, when bootstrapping, the VERSION file should
+	say "bootstrap"
 	* VERSION: Bumped package manager version to 0.29.4, a release on
 	branch_0_29
 
