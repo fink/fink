@@ -1,3 +1,8 @@
+2009-05-13  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.29.5, a bug-fix
+	release on branch_0_29
+
 2009-05-12  Dave Morrison  <drm@finkproject.org>
 
 	* bootstrap: provide VERSION file for a bootstrapped fink installation
