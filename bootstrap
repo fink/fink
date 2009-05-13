@@ -180,9 +180,6 @@ close $inputhandle;
 close $outputhandle;
 }
 
-use Fink::Services;
-import Fink::Services qw(&execute);
-
 ### check if we are unharmed ###
 
 print "Checking package...";
@@ -216,8 +213,6 @@ if ($host =~ /^\s*$/) {
 	exit 1;
 }
 print " $host\n";
-
-#my $arch = get_arch();
 
 $distribution = check_host($host,1,$arch);
 if ($distribution eq "unknown") {
@@ -597,10 +592,9 @@ tarball, or";
 
 ### create Packages.gz files for apt
 
-## set PATH so we find dpkg-scanpackages
-#$ENV{PATH} = "$installto/sbin:$installto/bin:".$ENV{PATH};
-#
-#Fink::Engine::cmd_scanpackages();
+### we use the just-installed fink rather than directly calling
+### Fink::Engine::cmd_scanpackages() because we might be running
+### under the wrong perl
 
 &execute("$installto/bin/fink scanpackages");
 
@@ -622,7 +616,5 @@ print "\n";
 );
 print "\n";
 
-
 ### eof
 exit 0;
-
