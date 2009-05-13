@@ -14,6 +14,8 @@ CVS/
 ^fink.info$
 ^fink.info.in$
 ^fink-scanpackages$
+^fink-x86_64.info$
+^fink-x86_64.info.in$
 ^fink$
 ^fink.8$
 ^g\+\+-wrapper-\d.*$
