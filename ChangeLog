@@ -1,6 +1,7 @@
 2009-05-12  Dave Morrison  <drm@finkproject.org>
 
 	* MANIFEST.SKIP: skip fink-x86_64.info.in and fink-x86_64.info
+	* bootstrap: provide VERSION file for a bootstrapped fink installation
 
 2009-05-12  Dave Morrison  <drm@finkproject.org>
 

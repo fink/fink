@@ -467,6 +467,8 @@ if ( &create_tarball($installto, "fink", $packageversion, $packagefiles) == 1 ) 
 {
 my $script = "/bin/mkdir -p $installto/fink/dists/stable/main/finkinfo/base\n";
 $script .= "/bin/cp $selfupdatetrees/*.info $selfupdatetrees/*.patch $installto/fink/dists/stable/main/finkinfo/base/\n";
+$script .= "/bin/cp VERSION $installto/fink/dists/\n";
+$script .= "/bin/chmod 644 $installto/fink/dists/VERSION\n";
 
 if (($arch eq "x86_64") and ($distribution eq "10.5")) {
 	if ( &copy_description($script,$installto, "fink", $packageversion, $packagerevision, "stable/main/finkinfo/base", "fink-x86_64.info", "fink-x86_64.info.in" ) == 1 ) {
