@@ -439,6 +439,13 @@ foreach my $dir (@dirlist) {
 	}
 }
 
+# install the initial Release and Packages.gz files
+my ($dr,$arv,$comp);
+foreach $dr (qw(stable/main stable/crypto local/main)) {
+($arv,$comp) = split(/\//, $dr);
+&execute("/usr/bin/sed -e \"s,\@ARV\@,$arv,\" -e \"s,\@COMP\@,$comp,\" -e \"s,\@ARCH\@,$arch,\" < Release > $installto/fink/$selfupdatetrees/$dr/binary-darwin-$arch/Release; /usr/bin/touch $installto/fink/$selfupdatetrees/$dr/binary-darwin-$arch/Packages; /usr/bin/gzip $installto/fink/$selfupdatetrees/$dr/binary-darwin-$arch/Packages");
+}
+
 unlink "$installto/fink/dists";
 
 symlink "$distribution", "$installto/fink/dists" or die "ERROR: Can't create symlink $installto/fink/dists\n";
