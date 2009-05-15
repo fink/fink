@@ -79,9 +79,17 @@ sed "s|@PREFIX@|$basepath|g" <postinstall.pl.in >postinstall.pl
 echo "Creating dpkg helper script..."
 sed "s|@PREFIX@|$basepath|g" <fink-dpkg-status-cleanup.in >fink-dpkg-status-cleanup
 
+# note: because they are used at different times during bootstrapping,
+# it is important to NOT use the full path to the dpkg executable in
+# dpkg-lockwait, but to GIVE the full path to the apt-get executable in
+# apt-get-lockwait
+
 echo "Creating lockwait wrappers..."
-for prog in dpkg apt-get; do
+for prog in dpkg; do
 	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$prog|g" <lockwait.in >$prog-lockwait
+done
+for prog in apt-get; do
+	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$basepath/bin/$prog|g" <lockwait.in >$prog-lockwait
 done
 
 echo "Creating g++ wrappers..."
