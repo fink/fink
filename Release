@@ -1,0 +1,5 @@
+Archive: @ARV@
+Origin: Fink
+Component: @COMP@
+Architecture: darwin-@ARCH@
+Label: Fink
