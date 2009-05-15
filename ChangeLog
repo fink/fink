@@ -1,3 +1,9 @@
+2009-05-15  Dave Morrison  <drm@finkproject.org>
+
+	* setup.sh: apt-get-lockwait now specifies the full path to the
+	apt-get executable (but, as before, dpkg-lockwait does NOT... this
+	is important for bootstrapping)
+
 2009-05-13  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.29.5, a bug-fix
