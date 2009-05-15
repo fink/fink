@@ -1846,7 +1846,11 @@ for more information).
 =cut
 
 sub aptget_lockwait {
-	&lockwait_executable('apt-get');
+	if (-f "$Fink::Config::basepath/bin/apt-get-lockwait") {
+		"$Fink::Config::basepath/bin/apt-get-lockwait";
+	} else {
+		&get_path('apt-get');
+	}
 }
 
 =item lockwait_executable
