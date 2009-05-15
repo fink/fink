@@ -3,6 +3,8 @@
 	* Services.pm: aptget_lockwait now specifies the full path to the
 	apt-get-lockwait executable, or, if that is unavailable, the full
 	path to the apt-get executable
+	* FinkVersion.pm.in: take the current architecture into account when 
+	reporting the default binary distribution
 
 2009-05-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
