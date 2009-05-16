@@ -5,6 +5,8 @@
 	path to the apt-get executable
 	* FinkVersion.pm.in: take the current architecture into account when 
 	reporting the default binary distribution
+	* Configure.pm: don't ask about the unstable tree if a SelfUpdateMethod
+	has not been chosen yet (necessary change for successful bootstrapping)
 
 2009-05-13  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
