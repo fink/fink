@@ -572,10 +572,10 @@ You can add the package descriptions at a later time if you want to
 compile packages yourself.
 You can get them
 EOF
-if (defined $dbv) {
-$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
+		if (defined $dbv) {
+			$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
-}
+		}
 		$endmsg .= " by running the command 'fink selfupdate'.";
 	} else {
 		# inject worked
@@ -590,10 +590,10 @@ You should now have a working Fink installation in '$installto'.
 You still need package descriptions if you want to compile packages yourself.
 You can get them
 EOF
-if (defined $dbv) {
-$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
+	if (defined $dbv) {
+		$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
-}
+	}
 	$endmsg .= " by running the command 'fink selfupdate'.";
 }
 
