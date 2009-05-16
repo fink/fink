@@ -187,7 +187,7 @@ sub choose_misc {
 
 	print "\n";
 
-	{
+if ($config->has_param("SelfUpdateMethod"))	{
 		print_breaking(
 			"The \"unstable\" tree contains many packages not present in the \"stable\" ".
 			"tree and often has newer versions of those that are present. All package ".
@@ -235,6 +235,11 @@ sub choose_misc {
 				}
 			}
 		}
+	} else {
+print_breaking("The selfupdate method has not been set yet, so you ".
+"are not yet being asked whether to include the \"unstable\" fink tree. ".
+"If you are interested in the \"unstable\" tree, first run \"fink ".
+			   "selfupdate\" and then run \"fink configure\" again.");
 	}
 
 	$verbose = $config->param_default("Verbose", 1);
