@@ -38,6 +38,9 @@ import Fink::Services qw(&execute);
 if ($> != 0) {
     print "This script must be run under sudo, which requires your password.\n";
     my $cmd = "/usr/bin/sudo $FindBin::RealBin/$0";
+    if ($#ARGV >= 0) {
+	$cmd .= " '".join("' '", @ARGV)."'";
+    }
     exit &execute($cmd,quiet=>1);
 }
 
