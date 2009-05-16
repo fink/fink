@@ -30,6 +30,17 @@ use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use File::Copy;
 
+require Fink::Services;
+import Fink::Services qw(&execute);
+
+### use sudo
+
+if ($> != 0) {
+    print "This script must be run under sudo, which requires your password.\n";
+    my $cmd = "/usr/bin/sudo $FindBin::RealBin/inject.pl";
+    exit &execute($cmd,quiet=>1);
+}
+
 ### create FinkVersion.pm from FinkVersion.pm.in (we don't care about the
 ### @ARCHITECTURE@ and @VERSION@ strings, because this copy of Fink is just
 ### here for the purpose of running the inject_packages() script, which

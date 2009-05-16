@@ -5,6 +5,7 @@
 	is important for bootstrapping)
 	* bootstrap, Release, MANIFEST: install the initial Release and 
 	Packages.gz files during bootstrapping
+	* inject.pl: run under sudo
 
 2009-05-13  Dave Morrison  <drm@finkproject.org>
 
