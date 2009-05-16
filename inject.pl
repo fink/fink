@@ -37,7 +37,7 @@ import Fink::Services qw(&execute);
 
 if ($> != 0) {
     print "This script must be run under sudo, which requires your password.\n";
-    my $cmd = "/usr/bin/sudo $FindBin::RealBin/inject.pl";
+    my $cmd = "/usr/bin/sudo $FindBin::RealBin/$0";
     exit &execute($cmd,quiet=>1);
 }
 
