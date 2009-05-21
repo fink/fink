@@ -1,3 +1,8 @@
+2009-05-20  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.29.6, a bug-fix
+	release on branch_0_29
+
 2009-05-16  Dave Morrison  <drm@finkproject.org>
 
 	* inject.pl: must pass arguments when reexecuting under sudo
