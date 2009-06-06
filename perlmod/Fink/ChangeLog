@@ -1,3 +1,7 @@
+2009-06-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: Allow %p/opt and %p/local
+
 2009-05-18  Daniel Macks  <dmacks@netspace.org>
 
 	* Bootstrap.pm: Auto-update apt-dev if new version available
