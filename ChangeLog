@@ -1,3 +1,8 @@
+2009-06-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.29.7, a bug-fix
+	release on branch_0_29
+
 2009-05-20  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.29.6, a bug-fix
