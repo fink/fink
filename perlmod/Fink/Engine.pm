@@ -618,10 +618,13 @@ sub do_real_list {
 		if ($format eq 'dotty') {
 			print "\"$pname\" [shape=box];\n";
 			if (ref $vo) {
+				# grab the Depends of pkg (not BDep, not others in family)
 				for my $dep (@{$vo->get_depends()}) {
+					# for each ANDed (comma-sep) chunk...
 					for my $subdep (@$dep) {
-						$subdep =~ s/^(\S+).*?$/$1/;
-						print "\"$pname\" -> \"$subdep\";\n";
+						# include all ORed items in it
+						$subdep =~ /^([+\-.a-z0-9]+)/; # only %n, not versioning
+						print "\"$pname\" -> \"$1\";\n";
 					}
 				}
 			}
