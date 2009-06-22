@@ -1,3 +1,7 @@
+2009-06-22  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Validation.pm: Allow @executable_path and friends to be private libs
+
 2009-06-17  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Try harder to omit versioning in dotty dependency output

@@ -1932,7 +1932,9 @@ sub _validate_dpkg {
 			if ($deb_control->{'package'} eq 'fink') {
 				# fink is a special case, it has an shlibs field that provides system-shlibs
 			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
-				print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+				if ($shlibs_file !~ /^\@/) {
+					print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+				}
 			} else {
 				print "Error: Shlibs field specifies file '$shlibs_file', but it does not exist!\n";
 				$looks_good = 0;
