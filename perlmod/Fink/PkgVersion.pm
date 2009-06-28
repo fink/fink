@@ -622,7 +622,8 @@ sub initialize {
 			
 			# determine the full package tree, eg: [ qw(stable main) ]
 			# front (removed): '', %p, 'fink', 'dists'
-			$self->{_full_trees} = [ [ @parts[4..$finkinfo_index-1] ] ];
+			my $skip = () = ($basepath =~ m,[^/]+,g); # count components of prefix
+			$self->{_full_trees} = [ [ @parts[(3+$skip)..$finkinfo_index-1] ] ];
 		}
 	} else {
 		# for dummy descriptions generated from dpkg status data alone
