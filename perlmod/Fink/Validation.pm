@@ -1697,6 +1697,11 @@ sub _validate_dpkg {
 			}
 		}
 
+		# make sure site-wide gtk icon caches are not overwritten by pkg's own
+		if ( $filename =~/^$basepath\/share\/icons\/.*\/icon-theme.cache$/ ) {
+			&stack_msg($msgs, "Package overwrites a sitewide icon index. Packagers must disable gtk-update-icon-cache in InstallScript and instead do it in PostInstScript and PostRmScript.", $filename);
+		}
+
 		# check for presence of compiled scrollkeeper
 		if ($filename =~ /^$basepath\/var\/scrollkeeper\/.+/) {
 			&stack_msg($msgs, "Runtime scrollkeeper file installed, which usually results from calling scrollkeeper-update during CompileScript or InstallScript. See the\nscrollkeeper package docs, starting with 'fink info scrollkeeper', for information on the correct use of that utility.", $filename);
