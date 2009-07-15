@@ -1692,7 +1692,7 @@ sub _validate_dpkg {
 			foreach (qw/ postinst postrm /) {
 				next if $_ eq "postrm" && $deb_control->{package} eq "scrollkeeper"; # circular dep
 				if (not grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}}) {
-					&stack_msg($msgs, "Scrollkeeper source file found, but scrollkeeper-update not called in $_. See scrollkeeper package docs, starting with 'fink info scrollkeeper', for information.", $filename);
+					&stack_msg($msgs, "Scrollkeeper source file found, but scrollkeeper-update not called in $_. See rarian-compat package docs, starting with 'fink info rarian-compat', for information.", $filename);
 				}
 			}
 		}
