@@ -1,4 +1,5 @@
 2009-08-10	Alexander Hansen	<akh@finkproject.org>
+
 	* Bootstrap.pm:	Support OS 10.5.8
 
 2009-06-28  Dave Vasilevsky  <vasi@users.sourceforge.net>
