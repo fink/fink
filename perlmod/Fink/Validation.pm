@@ -1688,9 +1688,14 @@ sub _validate_dpkg {
 			foreach (qw/ postinst postrm /) {
 				next if $_ eq "postrm" && $deb_control->{package} eq "scrollkeeper"; # circular dep
 				if (not grep { /^\s*scrollkeeper-update/ } @{$dpkg_script->{$_}}) {
-					&stack_msg($msgs, "Scrollkeeper source file found, but scrollkeeper-update not called in $_. See scrollkeeper package docs, starting with 'fink info scrollkeeper', for information.", $filename);
+					&stack_msg($msgs, "Scrollkeeper source file found, but scrollkeeper-update not called in $_. See rarian-compat package docs, starting with 'fink info rarian-compat', for information.", $filename);
 				}
 			}
+		}
+
+		# make sure site-wide gtk icon caches are not overwritten by pkg's own
+		if ( $filename =~/^$basepath\/share\/icons\/.*\/icon-theme.cache$/ ) {
+			&stack_msg($msgs, "Package overwrites a sitewide icon index. Packagers must disable gtk-update-icon-cache in InstallScript and instead do it in PostInstScript and PostRmScript.", $filename);
 		}
 
 		# check for presence of compiled scrollkeeper
@@ -1928,7 +1933,9 @@ sub _validate_dpkg {
 			if ($deb_control->{'package'} eq 'fink') {
 				# fink is a special case, it has an shlibs field that provides system-shlibs
 			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
-				print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+				if ($shlibs_file !~ /^\@/) {
+					print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+				}
 			} else {
 				print "Error: Shlibs field specifies file '$shlibs_file', but it does not exist!\n";
 				$looks_good = 0;

@@ -1,3 +1,9 @@
+2009-08-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: Try harder to omit versioning in dotty dependency output
+	* Validation.pm: Don't let packages overwrite global icon index
+	with their own; 'scrollkeeper' pkg got replaced by 'rarian-compat'
+
 2009-08-10  Alexander Hansen  <akh@finkproject.org>
 
 	* Bootstrap.pm:	Support OS 10.5.8
@@ -10,6 +16,10 @@
 2009-06-05  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Validation.pm: Allow %p/opt and %p/local
+
+2009-05-21  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: Auto-update apt-dev if new version available
 
 2009-05-18  Daniel Macks  <dmacks@netspace.org>
 
