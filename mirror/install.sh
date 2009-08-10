@@ -45,7 +45,7 @@ done
 
 echo "Copying files..."
 
-for file in ChangeLog _keys _list apache apt cpan ctan debian freebsd gimp gnome gnu kde master rsync sourceforge; do
+for file in ChangeLog _keys _list apache apt cpan ctan debian freebsd gimp gnome gnu kde master postgresql rsync sourceforge; do
   if [ -f $file ]; then
     install -c -p -m 644 $file "$basepath/lib/fink/mirror/"
   fi

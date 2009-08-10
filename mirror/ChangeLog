@@ -1,3 +1,8 @@
+2009-08-10  Daniel Macks  <dmacks@netspace.org>
+
+	* install.sh: it wasn't actually *installing* the postgresql
+	mirror :( (backport from HEAD)
+
 2009-04-04  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: releasing version 0.28.7.1 of fink-mirrors
