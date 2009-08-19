@@ -1,3 +1,7 @@
+2009-08-19  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* SelfUpdate/rsync.pm: Fix rsync server TIMESTAMP validation
+
 2009-08-10  Alexander Hansen  <akh@finkproject.org>
 
 	* Bootstrap.pm:	Support OS 10.5.8
