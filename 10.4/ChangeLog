@@ -1,3 +1,7 @@
+2009-08-23  Dave Morrison  <drm@finkproject.org>
+
+	* perl588-core-x86_64.info: sync with stable
+
 2009-05-12  Dave Morrison  <drm@finkproject.org>
 
 	* perl588-bootstrap.info: new file for bootstrap on 10.5/x86_64
