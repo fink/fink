@@ -571,7 +571,7 @@ diff -urN apt-0.5.4.orig/buildlib/ostable apt-0.5.4/buildlib/ostable
  .*	unknown
 diff -urN apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
 --- apt-0.5.4.orig/cmdline/apt-cache.cc	2001-07-02 09:10:32.000000000 +0900
-+++ apt-0.5.4/cmdline/apt-cache.cc	2005-03-08 13:00:38.000000000 +0900
++++ apt-0.5.4/cmdline/apt-cache.cc	2009-05-16 03:26:33.000000000 -0400
 @@ -374,8 +374,10 @@
     if (ReadPinFile(Plcy) == false)
        return false;
@@ -594,6 +594,15 @@ diff -urN apt-0.5.4.orig/cmdline/apt-cache.cc apt-0.5.4/cmdline/apt-cache.cc
  
     // Iterate over all the package files and write them out.
     char *Buffer = new char[Cache.HeaderP->MaxVerFileSize+10];
+@@ -1361,7 +1363,7 @@
+ 
+    if (CmdL.DispatchArg(CmdsA,false) == false && _error->PendingError() == false)
+    { 
+-      MMap *Map;
++      MMap *Map = 0;
+       if (_config->FindB("APT::Cache::Generate",true) == false)
+       {
+ 	 Map = new MMap(*new FileFd(_config->FindFile("Dir::Cache::pkgcache"),
 diff -urN apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
 --- apt-0.5.4.orig/cmdline/apt-get.cc	2001-07-02 07:59:04.000000000 +0900
 +++ apt-0.5.4/cmdline/apt-get.cc	2005-03-08 13:00:38.000000000 +0900

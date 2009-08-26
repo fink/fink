@@ -1,13 +1,13 @@
 Package: fink-mirrors
 Version: 0.28.7.1
-Revision: 1
+Revision: 2
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
 Source-MD5: d552d43ab6df48c08d553bb5fcf7b5f0
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
-InstallScript: ./install.sh %i
+InstallScript: ./install.sh %i; install -c -p -m 644 postgresql %i/lib/fink/mirror/
 PostInstScript: %p/lib/fink/mirror/postinstall.pl
 #
 Description: Mirror infrastructure
