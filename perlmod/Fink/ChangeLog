@@ -1,3 +1,7 @@
+2009-08-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Warn user if NoAutoIndex is enabled
+
 2009-08-19  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* SelfUpdate/rsync.pm: Fix rsync server TIMESTAMP validation

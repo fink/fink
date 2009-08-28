@@ -790,6 +790,15 @@ sub pass1_update {
 	my $have_terminal = 0;
 	$have_terminal = 1 if &get_term_width;
 
+	if ($noauto && $have_terminal) {
+		my $conf_file = $config->param('_path');
+		print_breaking_stderr rejoin_text <<END;
+The NoAutoIndex feature should only be used in special situations. You
+can can disable it by editing your fink configuration file
+($conf_file).\n
+END
+	}
+
 	my @progress_steps = map { ($_/10) * @infos } (1 .. 10);  # 10% increments of @infos
 	my $progress = 0;			# current position in @infos
 	
