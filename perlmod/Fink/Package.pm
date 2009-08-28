@@ -791,11 +791,9 @@ sub pass1_update {
 	$have_terminal = 1 if &get_term_width;
 
 	if ($noauto && $have_terminal) {
-		my $conf_file = $config->param('_path');
 		print_breaking_stderr rejoin_text <<END;
 The NoAutoIndex feature should only be used in special situations. You
-can can disable it by editing your fink configuration file
-($conf_file).\n
+can can disable it by running 'fink configure'\n
 END
 	}
 

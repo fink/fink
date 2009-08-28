@@ -301,6 +301,22 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 		&prompt_boolean("Use passive mode FTP transfers (to get through a ".
 						"firewall)?", default => $passive_ftp);
 	$config->set_param("ProxyPassiveFTP", $passive_ftp ? "true" : "false");
+
+	# clear a non-standard setting
+	if ($config->has_param("NoAutoIndex")) {
+		if (my $n_a_i = $config->param_boolean("NoAutoIndex")) {
+			print "\n";
+			chomp($proxy_prompt = <<EOMSG);
+The NoAutoIndex feature is currently activated. This feature should
+only be used in special circumstances because it can interfere with
+updating the lists of available packages. It is recommended that this
+feature be deactivated for normal fink use. Do you want to leave it
+active?
+EOMSG
+			$n_a_i = &prompt_boolean($proxy_prompt, default => 0);
+			$config->set_param("NoAutoIndex", $n_a_i ? "true" : "false");
+		}
+	}
 }
 
 =item spotlight_warning
