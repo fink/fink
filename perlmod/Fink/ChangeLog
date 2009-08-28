@@ -4,6 +4,11 @@
 
 2009-08-27  Daniel Macks  <dmacks@netspace.org>
 
+	* Configure.pm, Package.pm: Add 'fink configure' option to disable
+	NoAutoIndex if it's set
+
+2009-08-27  Daniel Macks  <dmacks@netspace.org>
+
 	* Package.pm: Warn user if NoAutoIndex is enabled
 
 2009-08-10  Daniel Macks  <dmacks@netspace.org>
