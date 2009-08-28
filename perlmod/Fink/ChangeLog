@@ -1,3 +1,7 @@
+2009-08-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Warn user if NoAutoIndex is enabled
+
 2009-08-10  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Try harder to omit versioning in dotty dependency output

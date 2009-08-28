@@ -1,3 +1,7 @@
+2009-08-27  Daniel Macks  <dmacks@netspace.org>
+
+	* failure.t: A test fails in a certain situation.
+
 2007-12-14  Daniel Macks  <dmacks@netspace.org>
 
 	* failure.t: Supress a failure that seems to be triggered if users
