@@ -270,7 +270,12 @@ END
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.5";
-	} elsif ($host =~ /^(powerpc|i386)-apple-darwin10\./) {
+	} elsif ($host =~ /^i386-apple-darwin10\.[0]\./) {
+		&print_breaking("\nThis version of fink supports bootstrapping under Mac OS X 10.6, " .
+			"as well as upgrading from 10.5. However, DIRECT UPGRADING FROM " .
+			"10.4 OR EARLIER IS NOT SUPPORTED.\n\n") unless ($arch eq "x86_64");
+		$distribution = "10.6";
+	} elsif ($host =~ /^i386-apple-darwin10\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
