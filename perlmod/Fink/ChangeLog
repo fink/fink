@@ -1,3 +1,7 @@
+2009-08-30  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* VirtPackage.pm: Support Growl beta versions
+
 2009-08-27  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: Support OS X 10.6.0

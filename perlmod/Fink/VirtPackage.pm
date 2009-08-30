@@ -1406,7 +1406,8 @@ For more info on this package see http://growl.info/.
 		if (-f "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist") {
 			if (open(FILEIN, '/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist')) {
 				local $/ = undef;
-				if (<FILEIN> =~ /<key>CFBundleVersion<\/key>[\r\n\s]*<string>([\d\.]+)<\/string>/) {
+				# Growl beta versions contain the letter b
+				if (<FILEIN> =~ /<key>CFBundleVersion<\/key>[\r\n\s]*<string>([b\d\.]+)<\/string>/) {
 					$growl_version = $1;
 				}
 				close(FILEIN);
