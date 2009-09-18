@@ -1,3 +1,7 @@
+2009-09-18  Augusto Devegili <monipol@users.sourceforge.net>
+
+	* fink.8.in: fink list -m,-s do not accept regular expressions
+
 2009-05-16  Dave Morrison  <drm@finkproject.org>
 
 	* inject.pl: must pass arguments when reexecuting under sudo
