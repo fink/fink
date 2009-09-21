@@ -1,3 +1,8 @@
+2009-09-21  Max Horn  <max@quendi.de>
+
+	* eval_conditional.t: Fix typo.
+	* version_cmp.t: Add test cases for version_cmp.
+
 2006-02-24  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: Fix pathnames so local copy is actually in @INC
