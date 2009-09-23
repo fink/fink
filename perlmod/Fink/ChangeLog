@@ -1,3 +1,9 @@
+2009-09-23  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: Use DESTDIR for type:perl default InstallScript
+	instead of overriding PREFIX.
+	http://rt.cpan.org/Public/Bug/Display.html?id=47396
+
 2009-08-30  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* VirtPackage.pm: Support Growl beta versions
