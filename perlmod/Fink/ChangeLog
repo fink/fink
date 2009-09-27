@@ -1,3 +1,7 @@
+2009-09-27  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: Support OS X 10.6.1
+
 2009-09-23  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Use DESTDIR for type:perl default InstallScript
