@@ -334,9 +334,9 @@ Show packages which are not currently installed.
 .It Cm -N,--newer
 Show packages whose installed version is newer than anything fink knows about.
 .It Cm -s expr,--section=expr
-Show only packages in the sections matching the regular expression expr.
+Show only packages in the sections matching expr.
 .It Cm -m expr,--maintainer=expr
-Show only packages with the maintainer  matching the regular expression expr.
+Show only packages with the maintainer matching expr.
 .It Cm -w xyz,--width=xyz
 Sets the width of the display you would like the output
 formatted for. xyz is either a numeric value or auto.
