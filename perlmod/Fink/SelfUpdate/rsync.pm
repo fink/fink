@@ -140,7 +140,7 @@ RSYNCAGAIN:
 		close $ts_FH;
 		chomp $newts;
 		# Make sure the timestamp only contains digits
-		if ($oldts =~ /\D/) {
+		if ($newts =~ /\D/) {
 			unlink("$descdir/TIMESTAMP.tmp");
 			die "The timestamp file fetched from $rsynchost contains non-numeric characters.  This is illegal.  Refusing to continue.\n";
 		}
@@ -163,12 +163,6 @@ RSYNCAGAIN:
 		}
 		my @sb = stat("$descdir/$dist");
 	
-		# We need to remove the CVS directories, since what we're
-		# going to put there isn't from cvs.  Leaving those directories
-		# there will thoroughly confuse things if someone later does 
-		# selfupdate-cvs.  However, don't actually do the removal until
-		# we've tried to put something there.
-		
 		$rsynchost =~ s/\/*$//;
 		$dist      =~ s/\/*$//;
 		
