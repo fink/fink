@@ -1,3 +1,7 @@
+2009-09-27  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: Support OS X 10.6.1
+
 2009-09-26  Augusto Devegili <monipol@users.sourceforge.net>
 
 	* SelfUpdate/rsync.pm: Fix rsync server TIMESTAMP validation
