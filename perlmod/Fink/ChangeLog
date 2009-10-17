@@ -1,3 +1,8 @@
+2009-10-17  Dave Morrison  <drm@finkproject.org>
+
+	* VirtPackage.pm: don't test ALL executables of the form /usr/bin/gcc*,
+	only the ones we need
+
 2009-09-27  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: Support OS X 10.6.1
