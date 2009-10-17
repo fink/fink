@@ -800,7 +800,7 @@ the successful execution of "gcc --version".
 
 	print STDERR "- checking for various GCC versions:\n" if ($options{debug});
 	if (opendir(DIR, "/usr/bin")) {
-		for my $gcc (grep(/^gcc/, readdir(DIR))) {
+		for my $gcc (grep(/^gcc(-[\d\.]+)?$/, readdir(DIR))) {
 			next if (-l "/usr/bin/$gcc");
 			if (open(GCC, '/usr/bin/' . $gcc . ' -### -v -x c /dev/null 2>&1 |')) {
 				my ($versionoutput, $version, $build);
