@@ -168,20 +168,21 @@ The package is present when the CPU is 64bit-capable.
 
 =cut
 
-my $cpu;
 print STDERR "- checking for 64bit-cpu... " if ($options{debug});
+
+# different sysctl variables for intel and ppc
+	my @keys64 = ('hw.optional.x86_64', 'hw.optional.64bitops', 'hw.cpu64bit_capable');
 
 	$hash = {};
 	$hash->{package} = "64bit-cpu";
 
-# different sysctl variables for intel and ppc
 	my $is64bit = 0;
-	if (open(SYSCTL, 'sysctl -a 2>/dev/null |')) {
+	if (open(SYSCTL, "sysctl " . join(' ', @keys64) . " 2>/dev/null |")) {
 		my ($key, $value);
 		while (<SYSCTL>) {
 			($key, $value) = $_ =~ /^(\S+)\s*\:\s*(.*?)\s*$/;
 			next unless (defined $key and defined $value);
-			if ($key =~ /^(hw.optional.x86_64|hw.optional.64bitops|hw.cpu64bit_capable)$/ and $value eq "1") {
+			if (grep(/^$key$/, @keys64) and $value eq "1") {
 				$is64bit = 1;
 				last;
 			}
