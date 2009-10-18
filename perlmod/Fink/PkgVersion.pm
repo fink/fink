@@ -3746,7 +3746,7 @@ sub phase_install {
 		$vars = $self->param("RuntimeVars");
 		# get rid of any indention first
 		$vars =~ s/^\s+//gm;
-		# Read the set if variavkes (but don't change the keys to lowercase)
+		# Read the set of variables (but don't change the keys to lowercase)
 		$properties = &read_properties_var(
 			'runtimevars of "'.$self->{_filename}.'"', $vars,
 			{ case_sensitive => 1});

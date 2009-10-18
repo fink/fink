@@ -1,3 +1,7 @@
+2009-10-18  Augusto Devegili <monipol@users.sourceforge.net>
+
+	* PkgVersion.pm: Fix comment typos
+
 2009-10-17  Augusto Devegili <monipol@users.sourceforge.net>
 
 	* VirtPackage.pm: Slightly faster 64-bit CPU detection
