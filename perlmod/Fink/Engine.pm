@@ -1248,6 +1248,7 @@ sub cleanup_debs {
 	my %opts = (dryrun => 0, @_);
 
 	return if $config->mixed_arch(message=>'cleanup .deb archives');
+	my $debarch = $config->param('Debarch');
 
 	Fink::Package->require_packages();
 
@@ -1259,8 +1260,8 @@ sub cleanup_debs {
 	my $kill_obsolete_debs = <<'EOFUNC';
 		sub {
 			# parse apart filename according to .deb spec
-			my @atoms = split /_/, $_;
-			if (@atoms == 3 and $atoms[-1] =~ /\.deb\z/) {
+			my @atoms = /^(.*)_(.*)_$debarch\.deb$/;
+			if (@atoms == 2) {
 
 				# check if that %n at that %v-%r exists
 				my $deb_in_database = 0;
