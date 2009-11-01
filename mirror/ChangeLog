@@ -1,3 +1,10 @@
+2009-11-01  Augusto Devegili <monipol@users.sourceforge.net>
+
+	* master, rsync: Remove nte.fr.eu.finkmirrors.net (rsync and distfiles).
+	  Cedric's reply to my e-mail: 'Sorry for shutting down the service, but I
+	  had to stop the dedicated server that was involved in the fink mirror.
+	  I'll contact you again if I have the oportunity to server Fink again.'
+
 2009-04-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* install.sh: it wasn't actually *installing* the postgresql mirror :(
