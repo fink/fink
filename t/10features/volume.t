@@ -3,11 +3,6 @@
 use strict;
 use Test::More tests => 2;
 
-my $vsdbutil;
-foreach (qw{ /usr/sbin/vsdbutil }) {
-    $vsdbutil = $_ if -x $_;
-}
-
 unlike( $ENV{PREFIX}, qr/\s/, "Whitespace prohibited in fink prefix ($ENV{PREFIX})" );  # 1
 
 SKIP: {
