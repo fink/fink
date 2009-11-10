@@ -1,3 +1,7 @@
+2009-11-10  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* volume.t: Remove vsdbutil remnant code.
+
 2006-07-25  Daniel Macks  <dmacks@netspace.org>
 
 	* sudo.t: Removed. Core now works around sudo not passing PERL5LIB
