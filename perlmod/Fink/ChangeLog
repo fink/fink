@@ -1,3 +1,7 @@
+2009-11-09  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm: Support OS X 10.6.2
+
 2009-10-31  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Fix cleanup_debs to use "current arch" in .deb
