@@ -1,3 +1,9 @@
+2009-11-11  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* Configure.pm, PkgVersion.pm, Validation.pm: New MaxBuildJobs fink.conf
+	entry and UseMaxBuildJobs package description field as an opt-in for
+	MAKEFLAGS += -j
+
 2009-11-09  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm: Support OS X 10.6.2

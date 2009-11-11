@@ -317,6 +317,28 @@ EOMSG
 			$config->set_param("NoAutoIndex", $n_a_i ? "true" : "false");
 		}
 	}
+
+	my $sysctl_output = `sysctl hw.activecpu 2> /dev/null`;
+	if (defined $sysctl_output) {
+		chomp $sysctl_output;
+		my ($key, $activecpus) =
+			$sysctl_output =~  /^(\S+)\s*\:\s*(.*?)\s*$/;
+		if (defined $activecpus) {
+			my $maxbuildjobs = $config->param_default("MaxBuildJobs",
+				$activecpus);
+			my $maxbuildjobs_prompt = "Enter the maximum number of " .
+				"simultaneous build jobs. In general, Fink will build " .
+				"packages faster on systems with multiple CPUs/cores " .
+				"if you allow it to spawn jobs in parallel. You have " .
+				"$activecpus active CPUs/cores on your system.\n" .
+				"Maximum number of simultaneous build jobs:";
+			$maxbuildjobs = &prompt($maxbuildjobs_prompt,
+				default => $maxbuildjobs);
+			if ($maxbuildjobs =~ /^\d+$/) {
+				$config->set_param("MaxBuildJobs", $maxbuildjobs);
+			}
+		}
+	}
 }
 
 =item spotlight_warning
