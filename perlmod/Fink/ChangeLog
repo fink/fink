@@ -1,5 +1,11 @@
 2009-11-11  Augusto Devegili  <monipol@users.sourceforge.net>
 
+	* Configure.pm: Accept only positive integers for MaxBuildJobs, and loop
+	while input is not valid
+	* PkgVersion.pm: Set -j only if MaxBuildJobs > 1
+
+2009-11-11  Augusto Devegili  <monipol@users.sourceforge.net>
+
 	* Configure.pm, PkgVersion.pm, Validation.pm: New MaxBuildJobs fink.conf
 	entry and UseMaxBuildJobs package description field as an opt-in for
 	MAKEFLAGS += -j

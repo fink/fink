@@ -4997,7 +4997,8 @@ END
 	# UseMaxBuildJobs: true overrides SetNoMAKEFLAGS
 	if ($self->param_boolean('UseMaxBuildJobs')
 		&& $config->has_param('MaxBuildJobs')
-		&& $config->param('MaxBuildJobs') =~ /^\d+$/) {
+		&& $config->param('MaxBuildJobs') =~ /^\d+$/
+		&& $config->param('MaxBuildJobs') > 1) {
 		if (defined $script_env{'MAKEFLAGS'}) {
 			$script_env{'MAKEFLAGS'} .= ' -j' . $config->param('MaxBuildJobs');
 		} else {

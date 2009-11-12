@@ -318,27 +318,29 @@ EOMSG
 		}
 	}
 
-	my $sysctl_output = `sysctl hw.activecpu 2> /dev/null`;
-	if (defined $sysctl_output) {
-		chomp $sysctl_output;
-		my ($key, $activecpus) =
-			$sysctl_output =~  /^(\S+)\s*\:\s*(.*?)\s*$/;
-		if (defined $activecpus) {
-			my $maxbuildjobs = $config->param_default("MaxBuildJobs",
-				$activecpus);
-			my $maxbuildjobs_prompt = "Enter the maximum number of " .
-				"simultaneous build jobs. In general, Fink will build " .
-				"packages faster on systems with multiple CPUs/cores " .
-				"if you allow it to spawn jobs in parallel. You have " .
-				"$activecpus active CPUs/cores on your system.\n" .
-				"Maximum number of simultaneous build jobs:";
-			$maxbuildjobs = &prompt($maxbuildjobs_prompt,
-				default => $maxbuildjobs);
-			if ($maxbuildjobs =~ /^\d+$/) {
-				$config->set_param("MaxBuildJobs", $maxbuildjobs);
-			}
+	my $maxbuildjobs_prompt = "Enter the maximum number of simultaneous " .
+		"build jobs. In general, Fink will build packages faster on systems " .
+		"with multiple CPUs/cores if you allow it to spawn jobs in parallel.";
+
+	my $activecpus = `sysctl -n hw.activecpu 2> /dev/null`;
+	if (defined $activecpus) {
+		chomp $activecpus;
+		if ($activecpus =~ /^\d+$/) {
+			$maxbuildjobs_prompt .= " You have $activecpus active CPUs/cores " .
+			"on your system.";
 		}
 	}
+	$maxbuildjobs_prompt .= "\nMaximum number of simultaneous build jobs:";
+	my $maxbuildjobs = $config->param_default("MaxBuildJobs", $activecpus);
+	my $choice_prompt = $maxbuildjobs;
+	$maxbuildjobs = &prompt($maxbuildjobs_prompt, default => $choice_prompt);
+
+	while (!($maxbuildjobs =~ /^\d+$/ && $maxbuildjobs > 0)) {
+		$maxbuildjobs = &prompt("Invalid choice. Please try again",
+			default => $choice_prompt);
+	}
+
+	$config->set_param("MaxBuildJobs", $maxbuildjobs);
 }
 
 =item spotlight_warning
