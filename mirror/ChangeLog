@@ -1,5 +1,9 @@
 2009-11-15  Augusto Devegili <monipol@users.sourceforge.net>
 
+	* VERSION: releasing version 0.29.10.1 of fink-mirrors
+
+2009-11-15  Augusto Devegili <monipol@users.sourceforge.net>
+
 	* master, rsync: Remove trd.no.eu.finkmirrors.net (rsync and distfiles).
 	Reply from Hauglann Maria Wulff: 'We are planning to phase out this server:
 	pasta.cs.uit.no, so we are not interested in resuming the Fink rsync mirror
