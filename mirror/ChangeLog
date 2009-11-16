@@ -1,3 +1,14 @@
+2009-11-15  Augusto Devegili <monipol@users.sourceforge.net>
+
+	* master, rsync: Remove trd.no.eu.finkmirrors.net (rsync and distfiles).
+	Reply from Hauglann Maria Wulff: 'We are planning to phase out this server:
+	pasta.cs.uit.no, so we are not interested in resuming the Fink rsync mirror
+	service on this machine.'
+	Bring back dub.ie.eu.finkmirrors.net after having contacted them about
+	following our rsync update policy.
+	Comment out msn.wi.us.finkmirrors.net as they are still not offering Fink.
+	According to a reply received by Alex Hansen, they intend to.
+
 2009-11-01  Augusto Devegili <monipol@users.sourceforge.net>
 
 	* master, rsync: Remove nte.fr.eu.finkmirrors.net (rsync and distfiles).
