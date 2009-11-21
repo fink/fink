@@ -3161,7 +3161,7 @@ sub fetch_source {
 
 	my $url = $self->get_source($suffix);
 	my $file = $self->get_tarball($suffix);
-	$nomirror = 1 if $self->get_license() =~ /^Restrictive$/i;
+	$nomirror = 1 if $self->get_license() =~ /^(Commercial|Restrictive)$/i;
 	
 	my($checksum_type, $checksum) = Fink::Checksum->parse_checksum($self->get_checksum($suffix));
 
