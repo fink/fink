@@ -1,3 +1,7 @@
+2009-11-21  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* PkgVersion.pm: Handle the Commercial licence
+
 2009-11-11  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* Configure.pm: Accept only positive integers for MaxBuildJobs, and loop
