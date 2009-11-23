@@ -318,6 +318,7 @@ EOMSG
 		}
 	}
 
+	print "\n";
 	my $maxbuildjobs_prompt = "Enter the maximum number of simultaneous " .
 		"build jobs. In general, Fink will build packages faster on systems " .
 		"with multiple CPUs/cores if you allow it to spawn jobs in parallel.";
@@ -332,12 +333,13 @@ EOMSG
 	}
 	$maxbuildjobs_prompt .= "\nMaximum number of simultaneous build jobs:";
 	my $maxbuildjobs = $config->param_default("MaxBuildJobs", $activecpus);
-	my $choice_prompt = $maxbuildjobs;
-	$maxbuildjobs = &prompt($maxbuildjobs_prompt, default => $choice_prompt);
+	my $maxbuildjobs_default = $maxbuildjobs;
+	$maxbuildjobs = &prompt($maxbuildjobs_prompt,
+		default => $maxbuildjobs_default);
 
 	while (!($maxbuildjobs =~ /^\d+$/ && $maxbuildjobs > 0)) {
 		$maxbuildjobs = &prompt("Invalid choice. Please try again",
-			default => $choice_prompt);
+			default => $maxbuildjobs_default);
 	}
 
 	$config->set_param("MaxBuildJobs", $maxbuildjobs);
