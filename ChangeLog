@@ -1,4 +1,8 @@
-2009-09-18  Augusto Devegili <monipol@users.sourceforge.net>
+2009-09-24  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* fink.conf.5.in: New MaxBuildJobs option and minor cleanup
+
+2009-09-18  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* fink.8.in: fink list -m,-s do not accept regular expressions
 
