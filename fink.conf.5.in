@@ -47,7 +47,7 @@ For example:
 .\"
 .\"
 .Sh REQUIRED SETTINGS
-Some of the settings in fink.conf are mandatory. Without them Fink cannot to 
+Some of the settings in fink.conf are mandatory. Without them Fink cannot 
 function properly. The following settings belong to this category. 
 .Bl -tag -width flag
 .It Cm Basepath: Ar path 
