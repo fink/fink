@@ -169,10 +169,9 @@ tool.  This allows you to specify an alternate location to your bzip2 executable
 pass optional command-line options, or use a drop-in replacement like pbzip2 for
 decompressing .bz2 archives.
 .It Cm MaxBuildJobs: Ar positive integer
-For packages with parallel build jobs enabled, the MaxBuildJobs option
-specifies how many concurrent build jobs should be spawned by Fink, which
-should render builds faster on multi-CPU, multi-core systems (technically
-speaking, Fink uses the value of this option in MAKEFLAGS=-j). Running
+This option specifies how many concurrent build jobs should be spawned when     building a package that has parallel build jobs enabled. Building in parallel   
+speeds up the build process on multi-CPU or multi-core systems. Technically
+speaking, Fink uses the value of this option in MAKEFLAGS=-j.  Running
 .Cm fink configure
 will tell you how many active CPUs/cores are available on your system.
 .El
