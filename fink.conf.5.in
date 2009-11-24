@@ -47,7 +47,7 @@ For example:
 .\"
 .\"
 .Sh REQUIRED SETTINGS
-Some of the settings in the fink.conf are mandatory. Without them Fink cannot to 
+Some of the settings in fink.conf are mandatory. Without them Fink cannot to 
 function properly. The following settings belong to this category. 
 .Bl -tag -width flag
 .It Cm Basepath: Ar path 
@@ -97,8 +97,8 @@ but this is not necessary in most circumstances. The default trees are
 .Pp
 The order of trees is meaningful, as packages from later trees may override
 packages from earlier ones.
-.It Cm Distribution: Ar 10.3, 10.4 or 10.5
-Fink needs to know which version of Mac OS X you are running. Mac OS X 10.0 and earlier are not supported, and 10.1 and 10.2 are no longer supported by this version of fink. This field is set by running the
+.It Cm Distribution: Ar 10.4, 10.5 or 10.6
+Fink needs to know which version of Mac OS X you are running. Mac OS X 10.0 and earlier are not supported, and versions from 10.1 to 10.3 are no longer supported by this version of fink. This field is set by running the
 .Cm @PREFIX@/lib/fink/postinstall.pl
 script. You should not need to alter this value manually. 
 .It Cm FetchAltDir: Ar path 
@@ -114,8 +114,8 @@ values are:
 .Bl -tag -width flag -offset indent -compact
 .It 0 - Quiet (don't show download stats)
 .It 1 - Low (don't show tarballs being expanded) 
-.It 2 - Medium (shows almost everything)
-.It 3 - High (shows everything) 
+.It 2 - Medium (show almost everything)
+.It 3 - High (show everything) 
 .El
 The default value is 1. 
 .It Cm SkipPrompts: Ar a comma-delimited list 
@@ -153,21 +153,28 @@ Fink needs to create several temporary directories for each package it compiles 
 .Pa @PREFIX@/src
 on Panther and earlier, and
 .Pa @PREFIX@/src/fink.build
-on Tiger. If you want them to be somewhere else, specify the path here.
-See the descriptions of the
+on OS 10.4 and later versions. If you want them to be somewhere else, specify
+the path here.  See the descriptions of the
 .Cm KeepRootDir
 and
 .Cm KeepBuildDir
 fields later in this document for more information about these temporary directories.
 .Pp
-On Tiger, it is recommended that the Buildpath end with .noindex or .build.
-Otherwise, Spotlight will attempt to index the temporary files in the
-Buildpath, slowing down builds.
+On Tiger and later versions, it is recommended that the Buildpath end with
+.noindex or .build.  Otherwise, Spotlight will attempt to index the temporary
+files in the Buildpath, slowing down builds.
 .It Cm Bzip2Path: Ar the path to your bzip2 (or compatible) binary
 The Bzip2Path option lets you override the default path for the bzip2 command-line
 tool.  This allows you to specify an alternate location to your bzip2 executable,
 pass optional command-line options, or use a drop-in replacement like pbzip2 for
 decompressing .bz2 archives.
+.It Cm MaxBuildJobs: Ar positive integer
+For packages with parallel build jobs enabled, the MaxBuildJobs option
+specifies how many concurrent build jobs should be spawned by Fink, which
+should render builds faster on multi-CPU, multi-core systems (technically
+speaking, Fink uses the value of this option in MAKEFLAGS=-j). Running
+.Cm fink configure
+will tell you how many active CPUs/cores are available on your system.
 .El
 .\"
 .\"

@@ -317,9 +317,35 @@ EOMSG
 			$config->set_param("NoAutoIndex", $n_a_i ? "true" : "false");
 		}
 	}
+
+    print "\n";
+    my $maxbuildjobs_prompt = "Enter the maximum number of simultaneous " .
+        "build jobs. In general, Fink will build packages faster on systems " .
+        "with multiple CPUs/cores if you allow it to spawn jobs in parallel.";
+
+    my $activecpus = `sysctl -n hw.activecpu 2> /dev/null`;
+    if (defined $activecpus) {
+        chomp $activecpus;
+        if ($activecpus =~ /^\d+$/) {
+            $maxbuildjobs_prompt .= " You have $activecpus active CPUs/cores " .
+            "on your system.";
+        }
+    }
+    $maxbuildjobs_prompt .= "\nMaximum number of simultaneous build jobs:";
+    my $maxbuildjobs = $config->param_default("MaxBuildJobs", $activecpus);
+    my $maxbuildjobs_default = $maxbuildjobs;
+    $maxbuildjobs = &prompt($maxbuildjobs_prompt,
+        default => $maxbuildjobs_default);
+
+    while (!($maxbuildjobs =~ /^\d+$/ && $maxbuildjobs > 0)) {
+        $maxbuildjobs = &prompt("Invalid choice. Please try again",
+            default => $maxbuildjobs_default);
+    }
+
+    $config->set_param("MaxBuildJobs", $maxbuildjobs);
 }
 
-=item spotlight_warning
+=iitem spotlight_warning
 
 Warn the user if they are choosing a build path which will be indexed by
 Spotlight. Returns true if changes have been made to the Fink configuration,

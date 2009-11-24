@@ -1,3 +1,7 @@
+2009-11-24  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* fink.conf.5.in: New MaxBuildJobs option and minor cleanup
+
 2009-09-27  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.29.10, a bug-fix
