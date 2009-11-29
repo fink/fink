@@ -1,3 +1,7 @@
+2009-11-29  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* Validation.pm: New UseMaxBuildJobs field
+
 2009-11-24  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* Configure.pm, PkgVersion.pm: New MaxBuildJobs fink.conf entry and
