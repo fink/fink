@@ -1,6 +1,6 @@
 2009-11-10  Augusto Devegili  <monipol@users.sourceforge.net>
 
-	* volume.t: Remove vsdbutil remnant code.
+	* volume.t: Remove vsdbutil remnant code
 
 2006-07-25  Daniel Macks  <dmacks@netspace.org>
 

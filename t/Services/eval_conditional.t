@@ -26,7 +26,7 @@ foreach my $optest (
 ) {
     for( my $setnum=0; $setnum<@stringsets; $setnum++ ) {
 	my $test = $stringsets[$setnum]->[0] . " " . $optest->[0] . " " .  $stringsets[$setnum]->[1];
-	cmp_ok( &eval_conditional( $test, "eval_consitional.t" ),
+	cmp_ok( &eval_conditional( $test, "eval_conditional.t" ),
 	    '==', $optest->[1]->[$setnum],
 	    $test
 	  );

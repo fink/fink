@@ -1,3 +1,8 @@
+2009-12-11  Daniel Macks  <dmacks@netspace.org>
+
+	* eval_conditional.t: Fix typo. (backpoprt from HEAD)
+	* version_cmp.t: Add test cases for version_cmp. (backpoprt from HEAD)
+
 2006-02-24  Daniel Macks  <dmacks@netspace.org>
 
 	* execute_nonroot_okay.t: Fix pathnames so local copy is actually in @INC

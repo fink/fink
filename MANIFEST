@@ -168,6 +168,7 @@ t/Services/execute_nonroot_okay.t
 t/Services/expand_percent.t
 t/Services/prepare_script.t
 t/Services/spec2struct.t
+t/Services/version_cmp.t
 t/basepath/etc/fink.conf
 t/testmore.pl
 t/Text/DelimMatch.t
