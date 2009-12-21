@@ -1,12 +1,20 @@
-2009-11-21  Augusto Devegili <monipol@users.sourceforge.net>
+2009-12-21  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* VERSION: releasing version 0.29.10.2 of fink-mirrors
+	* get-mirror.pl: use decoded_content instead of content, new URL for GNU
+	  mirrors
+	* cpan, freebsd, gimp, gnome, gnu, kde: mirror updates. CPAN mirrors marked
+	  as stale and bad in http://mirrors.cpan.org/status.cgi were removed
+
+2009-11-21  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* README.contacts: Fix Todai's e-mail address
 
-2009-11-15  Augusto Devegili <monipol@users.sourceforge.net>
+2009-11-15  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* VERSION: releasing version 0.29.10.1 of fink-mirrors
 
-2009-11-15  Augusto Devegili <monipol@users.sourceforge.net>
+2009-11-15  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* master, rsync: Remove trd.no.eu.finkmirrors.net (rsync and distfiles).
 	Reply from Hauglann Maria Wulff: 'We are planning to phase out this server:
@@ -17,7 +25,7 @@
 	Comment out msn.wi.us.finkmirrors.net as they are still not offering Fink.
 	According to a reply received by Alex Hansen, they intend to.
 
-2009-11-01  Augusto Devegili <monipol@users.sourceforge.net>
+2009-11-01  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* master, rsync: Remove nte.fr.eu.finkmirrors.net (rsync and distfiles).
 	  Cedric's reply to my e-mail: 'Sorry for shutting down the service, but I

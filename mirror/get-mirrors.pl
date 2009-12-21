@@ -68,7 +68,7 @@ if ($APACHE) {
 		my @links = ($files{'apache'}->{'primary'});
 	
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		my $table = $tree->look_down(
 			'_tag' => 'th',
 			sub {
@@ -117,7 +117,7 @@ if ($CPAN) {
 		my @links = ($files{'cpan'}->{'primary'});
 	
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		my $hostlist = $tree->look_down(
 			'_tag' => 'a',
 			sub {
@@ -156,7 +156,7 @@ if ($CTAN) {
 		my $mirrors;
 		my @links = ($files{'ctan'}->{'primary'});
 	
-		for my $line (split(/\r?\n/, $response->content)) {
+		for my $line (split(/\r?\n/, $response->decoded_content)) {
 			if ($line =~ /^\s+(\S+)\s+\(.*?\)\s+(\S+)\s*$/) {
 				my $url = $1 . $2;
 				# the mirror list doesn't specify whether they work with FTP or HTTP
@@ -196,7 +196,7 @@ if ($DEBIAN) {
 		my @links = ($files{'debian'}->{'primary'});
 	
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		my $table = $tree->look_down(
 			'_tag' => 'th',
 			sub { $_[0]->as_text eq "Country" },
@@ -235,7 +235,7 @@ if ($FREEBSD) {
 		my @links = ($files{'freebsd'}->{'primary'});
 	
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		my $tag = $tree->look_down(
 			'_tag' => 'div',
 			sub { $_[0]->attr('class') eq "VARIABLELIST" },
@@ -286,7 +286,7 @@ if ($GIMP) {
 		my @links = ($files{'gimp'}->{'primary'});
 	
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		my $dl = $tree->look_down(
 			'_tag' => 'dl',
 			sub { $_[0]->attr('class') eq "download-mirror" },
@@ -368,15 +368,15 @@ if ($GNOME) {
 
 if ($GNU) {
 	print "- getting GNU mirror list:\n";
-	$response = $mech->get( 'http://www.gnu.org/order/ftp.html' );
+	$response = $mech->get( 'http://www.gnu.org/prep/ftp.html' );
 	if ($response->is_success) {
-		$files{'gnu'}->{'url'} = 'http://www.gnu.org/order/ftp.html';
+		$files{'gnu'}->{'url'} = 'http://www.gnu.org/prep/ftp.html';
 		$files{'gnu'}->{'primary'} = 'ftp://ftp.gnu.org/gnu';
 		my $mirrors;
 		my @links = ($files{'gnu'}->{'primary'});
 	
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		my $content = $tree->look_down(
 			'_tag' => 'div',
 			sub { $_[0]->attr('id') eq "content" },
@@ -385,6 +385,7 @@ if ($GNU) {
 			for my $link ($content->look_down('_tag' => 'a')) {
 				if ($link) {
 					my $url = $link->attr('href');
+					next if ($url =~ /^rsync:\/\//);
 					$url =~ s#(ftp://)+#ftp://#g;
 					$url =~ s#/+$##gs;
 					print "\t", $url, ": ";
@@ -422,7 +423,7 @@ if ($KDE) {
 		my @links = ($files{'kde'}->{'primary'});
 	
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		my $table = $tree->look_down(
 			'_tag' => 'th',
 			sub {
@@ -470,7 +471,7 @@ if ($PGSQL) {
 		my @links = ($files{'postgresql'}->{'primary'});
 
 		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->content);
+		$tree->parse($response->decoded_content);
 		for my $link ($tree->look_down('_tag' => 'a')) {
 			my $url = $link->attr('href');
 			if ($url =~ s/^.*?\&url=//) {
@@ -577,7 +578,7 @@ sub get_content {
 	} else {
 		my $response = $ua->get($url);
 		if ($response->is_success) {
-			$return = $response->content;
+			$return = $response->decoded_content;
 		}
 	}
 
