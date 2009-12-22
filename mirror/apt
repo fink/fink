@@ -3,4 +3,4 @@ asi-JP: http://fink.sodan.ecc.u-tokyo.ac.jp/bindist/bindist
 eur-DE: http://bindist.ber.de.eu.finkmirrors.net
 eur-NL: http://ams.nl.eu.finkmirrors.net/bindist
 nam-US: http://sjc.ca.us.finkmirrors.net/bindist
-nam-US: http://msn.wi.us.finkmirrors.net/mirrors/fink/finkbindist/bindist
+#nam-US: http://msn.wi.us.finkmirrors.net/mirrors/fink/finkbindist/bindist

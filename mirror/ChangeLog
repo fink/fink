@@ -1,3 +1,8 @@
+2009-12-22  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* VERSION: releasing version 0.29.10.3 of fink-mirrors
+	* apt: comment out the Wisconsin bindist
+
 2009-12-21  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* VERSION: releasing version 0.29.10.2 of fink-mirrors
