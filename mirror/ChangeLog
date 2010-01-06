@@ -1,3 +1,7 @@
+2010-01-06  Daniel Macks  <dmacks@netspace.org>
+
+	* inject.pl, install.sh, postinstall.pl.in: update copyright
+
 2009-12-22  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* VERSION: releasing version 0.29.10.3 of fink-mirrors
