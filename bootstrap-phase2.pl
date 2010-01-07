@@ -2,7 +2,7 @@
 # vim: ts=4 sw=4 noet
 #
 # bootstrap-phase2.pl - perl script to install and bootstrap a Fink
-#								 installation from source
+#                       installation from source
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
