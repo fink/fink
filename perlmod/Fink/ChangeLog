@@ -1,5 +1,10 @@
 2010-01-06  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm: easier/clearer control of env vars propagated over
+	sudo
+
+2010-01-06  Daniel Macks  <dmacks@netspace.org>
+
 	* all: update copyright
 
 2009-11-23  Augusto Devegili  <monipol@users.sourceforge.net>

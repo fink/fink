@@ -321,7 +321,11 @@ sub restart_as_root {
 	my $method = $config->param_default("RootMethod", "sudo");
 	if ($method eq "sudo") {
 		my $env = '';
-		$env = "/usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}'" if (exists $ENV{'PERL5LIB'} and defined $ENV{'PERL5LIB'});
+		foreach (qw/ PERL5LIB /) {
+			# explicitly propagate env vars that sudo wipes
+			$env .= "$_='".$ENV{"$_"}."'" if defined $ENV{"$_"};
+		}
+		$env = "/usr/bin/env $env" if length $env;
 		$cmd = "/usr/bin/sudo $env $cmd";
 	} elsif ($method eq "su") {
 		$cmd = "/usr/bin/su root -c '$cmd'";
