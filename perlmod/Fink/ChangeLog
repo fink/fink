@@ -120,7 +120,7 @@
 	* Services.pm: aptget_lockwait now specifies the full path to the
 	apt-get-lockwait executable, or, if that is unavailable, the full
 	path to the apt-get executable
-	* FinkVersion.pm.in: take the current architecture into account when 
+	* FinkVersion.pm.in: take the current architecture into account when
 	reporting the default binary distribution
 	* Configure.pm: don't ask about the unstable tree if a SelfUpdateMethod
 	has not been chosen yet (necessary change for successful bootstrapping)
@@ -137,7 +137,7 @@
 
 	* Bootstrap.pm: refactor bootstrap
 	* Package.pm: don't use the disk cache during the first part of
-	bootstrap (because we may be running under a different perl than fink 
+	bootstrap (because we may be running under a different perl than fink
 	will eventually use, and Storable.pm may be incompatible)
 
 2009-05-11  Dave Morrison  <drm@finkproject.org>
@@ -240,13 +240,13 @@
 	* PkgVersion.pm: use architecture-dependent path-prefix on <redacted>
 	* Validation.pm: warn if any item in a License field other than
 	the last one is not conditionalized
-	* PkgVersion.pm: paradoxically, no special library location is 
+	* PkgVersion.pm: paradoxically, no special library location is
 	required for -64bit variants under x86_64 architecture
 
 2009-04-04  Dave Morrison  <drm@finkproject.org>
 
-	* Validation.pm: Allow "new-style" GPL license fields which follow 
-	the string "GPL" with either "2", "3", or "23", optionally followed 
+	* Validation.pm: Allow "new-style" GPL license fields which follow
+	the string "GPL" with either "2", "3", or "23", optionally followed
 	by "+".
 
 2009-04-03  Daniel Macks  <dmacks@netspace.org>
@@ -288,13 +288,13 @@
 
 2009-03-21  Dave Morrison  <drm@finkproject.org>
 
-	* Config.pm, FinkVersion.pm.in, PkgVersion.pm, Services.pm: refactor 
-	get_arch().  The fink architecture is now fixed once and for all (at 
+	* Config.pm, FinkVersion.pm.in, PkgVersion.pm, Services.pm: refactor
+	get_arch().  The fink architecture is now fixed once and for all (at
 	bootstrap, for new installations), with value stored in FinkVersion.pm
 
 2009-03-17  Dave Morrison  <drm@finkproject.org>
 
-	* PkgVersion.pm: default value for VERSIONER_PERL_PREFER_32_BIT 
+	* PkgVersion.pm: default value for VERSIONER_PERL_PREFER_32_BIT
 	under Darwin10 and i386; and only use the gpp 10.6 prefix under i386
 
 2009-03-07  Dave Morrison  <drm@finkproject.org>
@@ -411,7 +411,7 @@
 
 2008-07-08  Dave Morrison  <drm@finkproject.org>
 
-	* Selfupdate/point.pm: switch URL retrieval to &fetch_url_to_file so 
+	* Selfupdate/point.pm: switch URL retrieval to &fetch_url_to_file so
 	that we can pass the option 'try_all_mirrors' which forces re-download
 	of the file even if it already exists; also, exit with a more
 	informative message
@@ -427,7 +427,7 @@
 2008-06-28  Dave Morrison  <drm@finkproject.org>
 
 	* SelfUpdate/CVS.pm, SelfUpdate/rsync.pm:  More descriptive warning
-	message for users who need to install XCode prior to choosing the 
+	message for users who need to install XCode prior to choosing the
 	cvs or rsync selfupdate method.
 	* SelfUpdate.pm: prevent changing update method *to* point, rather
 	than *from* point.
@@ -442,8 +442,8 @@
 
 2008-06-19  Dave Morrison  <drm@finkproject.org>
 
-	* Validation.pm: Allow $basepath/Library/ to be installed (but with 
-	nothing below it other than what is already allowed, i.e., 
+	* Validation.pm: Allow $basepath/Library/ to be installed (but with
+	nothing below it other than what is already allowed, i.e.,
 	$basepath/Library/Frameworks)
 	* Bootstrap.pm: revise the installation message on 10.5
 
@@ -571,7 +571,7 @@
 
 	* Bootstrap.pm: recognize 10.5.0, but with a warning about upgrades
 	* Bootstrap.pm: in modify_description, make a substitution on
-	@DISTRIBUTION@, and wrap the file in Info4, unless $distribution = 
+	@DISTRIBUTION@, and wrap the file in Info4, unless $distribution =
 	10.3 or 10.4.  Also, use readlink() to determine the distribution when
 	running scripts
 
@@ -593,17 +593,17 @@
 2007-10-15  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* SelfUpdate.pm: Try to remove old metadata first before switching
-	to new update method, since the first step might fail, if there 
+	to new update method, since the first step might fail, if there
 	is a left over fink.old directory.
 	* SelfUpdate/CVS.pm: Check for remaining fink.old directory first
 	before removing metadata. Allow for :local: cvs access. Add more
-	details about merging old trees. 
+	details about merging old trees.
 	And fix hardlinking: the perl 'link' function returns true on
 	success.
 
 2007-10-15  Christian Schaffner  <chris01@users.sourceforge.net>
 
-	* SelfUpdate/Point.pm: Fix typo, and show warning message if 
+	* SelfUpdate/Point.pm: Fix typo, and show warning message if
 	trying to change to point from any other method.
 
 2007-10-13  Daniel Macks  <dmacks@netspace.org>
@@ -638,7 +638,7 @@
 2007-09-30  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* VirtPackage.pm: Remove debugging output
-	
+
 2007-09-28  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Engine.pm, Mirror.pm: Implement *cough* "feature requests" from
@@ -653,7 +653,7 @@
 
 	* PkgVersion.pm: Remove get_desc* methods again, since the pdb dump script
 	now directly calls param_default_expanded
-	
+
 2007-09-03  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Consistent naming of accessors for their field-names
@@ -665,7 +665,7 @@
 
 2007-09-02  Dave Morrison  <drm@finkproject.org>
 
-	* Bootstrap.pm: *really* disable extended attribute copying when 
+	* Bootstrap.pm: *really* disable extended attribute copying when
 	calling tar
 	* PkgVersion.pm: prevent Apple's perl from building perlmods fat
 
@@ -794,7 +794,7 @@
 2006-04-30  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* Engine.pm: Don't try to validate dummy packages without info file.
-	
+
 2007-04-20  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: pull stat($otool) out of a loop
@@ -813,7 +813,7 @@
 
 2007-04-13  Dave Morrison  <drm@finkproject.org>
 
-	* VirtPackage.pm: Parse a greater variety of Version strings from the 
+	* VirtPackage.pm: Parse a greater variety of Version strings from the
 	X server.
 
 2007-04-13  Daniel Macks  <dmacks@netspace.org>
@@ -920,7 +920,7 @@
 	* Package.pm, PkgVersion.pm: Let the user choose which provider
 	to install in order to satisfy a virtual (provided) package.
 	(feature request 1635337)
-	
+
 2007-01-25  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: If explicit interp in *Script, don't ignore
@@ -978,22 +978,22 @@
 2006-12-10  Christian Schaffner  <chris01@users.sourceforge.net>
 
 	* Engine.pm: Don't try to validate virtual packages.
-	
+
 2006-12-09  Christian Schaffner  <chris01@users.sourceforge.net>
 
-	* Config.pm: Add a new function that returns a ref to a hash with keys 
-	'user', 'group', and 'user:group' and values depending on whether the 
-	option build_as_nobody is set or not. Also checks for the existence of the 
-	user and group 'fink-bld' if build_as_nobody is set. If either the user or 
+	* Config.pm: Add a new function that returns a ref to a hash with keys
+	'user', 'group', and 'user:group' and values depending on whether the
+	option build_as_nobody is set or not. Also checks for the existence of the
+	user and group 'fink-bld' if build_as_nobody is set. If either the user or
 	the group 'fink-bld' can't be found the method falls back to 'nobody'.
 	* PkgVersion.pm: Use build_as_user_group to chown and chgrp
 	* Services.pm: Use build_as_user_group to run build script
-	
+
 2006-12-08  Dave Morrison  <drm@finkproject.org>
 
-	* Validation.pm: Change allowed filenames for .info file, to: 
-	invariant packagename, optionally followed by archname, optionally 
-	follwed by distribution, and finally optionally followed by either 
+	* Validation.pm: Change allowed filenames for .info file, to:
+	invariant packagename, optionally followed by archname, optionally
+	follwed by distribution, and finally optionally followed by either
 	version or version-revision, each delimited by hyphens.
 
 2006-12-08  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -1012,7 +1012,7 @@
 
 2006-12-07  Dave Morrison  <drm@finkproject.org>
 
-	* SelfUpdate.pm: (Temporarily) disable rsync updating in 
+	* SelfUpdate.pm: (Temporarily) disable rsync updating in
 	not-yet-released distribution.
 	* PkgVersion.pm, Validation.pm: Implement "Distribution" field.
 
@@ -1022,7 +1022,7 @@
 
 2006-12-05  Dave Morrison  <drm@finkproject.org>
 
-	* Validation.pm: Correct the regex (again) for detecting library 
+	* Validation.pm: Correct the regex (again) for detecting library
 	architecture.
 
 2006-12-05  Daniel Macks  <dmacks@netspace.org>
@@ -1046,7 +1046,7 @@
 	* Validation.pm: Implement the new %type_num[] and %lib percent
         expansions.  Correct the regex for detecting library architecture.
 	* PkgVersion.pm: New default for LDFLAGS when building 64bit libs.
-	
+
 2006-12-03  Dave Morrison  <drm@finkproject.org>
 
 	* Validation.pm: Check for correct library architecture at the end
@@ -1167,19 +1167,19 @@
 
 2006-09-18  Christian Schaffner  <chris01@users.sourceforge.net>
 
-	* Checksum/SHA1.pm: Fix bug in matching of SHA1 line if Digest::<foo> 
-	  isn't available (e.g. on 10.3). Fix proposed by AIDA Shinra on 
+	* Checksum/SHA1.pm: Fix bug in matching of SHA1 line if Digest::<foo>
+	  isn't available (e.g. on 10.3). Fix proposed by AIDA Shinra on
 	  the fink-devel mailing list on 2006-06-24.
 
 
 2006-09-17  David Höhn <dmalloc@finkproject.org>
 
-	* NetAccess.pm: add User Agent that transfers fink/$version 
+	* NetAccess.pm: add User Agent that transfers fink/$version
 	  when a curl or wget is in progress
 
 2006-09-16  Dave Morrison  <drm@finkproject.org>
 
-	* Bootstrap.pm: remove "Using the new 10.4 tree" message (not so new 
+	* Bootstrap.pm: remove "Using the new 10.4 tree" message (not so new
 	  any more!)
 
 2006-09-15  Christian Schaffner  <chris01@users.sourceforge.net>
@@ -1297,7 +1297,7 @@
 
 2006-07-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* VirtPackage.pm: make sure /usr/bin/machine is an executable before 
+	* VirtPackage.pm: make sure /usr/bin/machine is an executable before
 	we call it
 
 2006-07-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
@@ -1380,7 +1380,7 @@
 
 2006-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* SelfUpdate.pm: use the $distribution when comparing versions for a 
+	* SelfUpdate.pm: use the $distribution when comparing versions for a
 	'point release'
 
 2006-06-02  Daniel Macks  <dmacks@netspace.org>
@@ -1447,7 +1447,7 @@
 2006-04-08  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Validate PatchScript correctly even when file being
-	validated is in the same directory from which 'fink validate' is 
+	validated is in the same directory from which 'fink validate' is
 	being run; also, recognize %{PatchScript} during validation no matter
 	what its case.
 
@@ -1464,7 +1464,7 @@
 
 	* VirtPackage.pm: Consider all virtuals "uninstalled" when forging
 	arch.
-	
+
 	* all: Use $config data instead of $Fink::Config::debarch. Call
 	mixed_arch to prevent compiling or doing any other local .deb
 	actions if arch is forged.
@@ -1552,13 +1552,13 @@
 	restoration.
 	* Finally/Buildlock.pm: New module for buildlock setting and clearing.
 	* Engine.pm: Remove add_finalizer interface, move BuildConflicts removal
-	to Finally/BuildConflicts.pm 
+	to Finally/BuildConflicts.pm
 	* PkgVersion.pm: Add method is_bootstrapping, move buildlock stuff to
 	Finally/Buildlock.pm. New scapackages stuff in END.
 
 2006-03-22  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
-	* CLI.pm: Add logging to &capture, fix open-modes problem. 
+	* CLI.pm: Add logging to &capture, fix open-modes problem.
 
 2006-03-22  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
@@ -1627,7 +1627,7 @@
 
 2006-03-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* PkgVersion.pm: when an error is generated on Intel hardware, warn 
+	* PkgVersion.pm: when an error is generated on Intel hardware, warn
 	users that many maintainers don't have Intel hardware.
 
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -1645,7 +1645,7 @@
 		component ("stable").
 		- Remove in_tree, it's unused.
 	* Engine.pm: Use the full tree in dumpinfo.
-	
+
 	*** THIS IS A DB FORMAT CHANGE, RUN index -f OR EXPECT BREAKAGE ***
 
 2006-03-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -2150,7 +2150,7 @@
 	lockpkg prerm fails if lockfile is locked.
 	* Engine.pm: Rewrite cleanup_buildlocks for new implementation.
 	* Package.pm: Remove no-longer-needed control_buildlocks.
-	
+
 2005-10-27  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: added proper URL for JavaAI and Java3D
@@ -2317,12 +2317,12 @@
 
 	* Validation.pm: Patch checks for %b and %d (%D) in .deb to remove
 	%e from control Version field
-	
+
 2005-09-30  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Add check for .py[c] that hard-code %d.
 	Early-exit from line-by-line checks once we find one match.
-	
+
 2005-09-30  Daniel Macks  <dmacks@netspace.org>
 
 	* Config.pm: Add new --log-output|-l top-level flag.
@@ -2362,9 +2362,9 @@
 
 2005-09-21  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
-	* NetAccess.pm:	wget versions >= 1.10 use -no-verbose instead of 
+	* NetAccess.pm:	wget versions >= 1.10 use -no-verbose instead of
 	--non-verbose (arguably more GNU-standard).  In order that we may release
-	a 1.10.x package use the short flag (-nv) instead as that is usable by both 
+	a 1.10.x package use the short flag (-nv) instead as that is usable by both
 	wget < 1.10 and wget >= 1.10.
 
 2005-09-16  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -2477,7 +2477,7 @@
 		- Option definition and help text right next to each other, so they
 		don't get out of sync.
 		- Word wrap help nicely for screen width.
-	
+
 2005-09-02  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Invalidate dpkg cache after installing buildlock pkg
@@ -2495,17 +2495,17 @@
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Set invariant name *before* package name is expanded.
-	
+
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Don't error if .info file not in 'finkinfo'. For a
 	regular index, it's enforced by only looking there. For scripts, we don't
 	care anyhow.
-	
+
 2005-08-31  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Fix deb-building breakage.
-	
+
 	*** Rebuild your DB with 'fink index -f' if you used Fink from HEAD since
 	2005-08-30 ***
 
@@ -2578,7 +2578,7 @@
 	* PkgVersion.pm: Add new methods to examine trees, also store trees in
 	index.db.
 	* Engine.pm: Use new in_tree method in list. Add 'trees' item to dumpinfo.
-	
+
 	*** DB FORMAT CHANGE, YOU WILL NEED A FULL REINDEX ***
 
 2005-08-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -2750,27 +2750,27 @@
 	* Package.pm, PkgVersion.pm: Use new option for Info3+
 	* PkgVersion.pm: Don't strip whitespace from SplitOffs if Info3+, let
 	read_properties* do that.
-	
+
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Package.pm: Only use Info3 feature with Info3 or higher.
-	
+
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* FinkVersion.pm.in: Say hello to Info3.
-	
+
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Print a nicer message if someone calls match_package
 	and gets a virtual package (but doesn't want virtuals).
-	
+
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* PkgVersion.pm: Add 'provides' option to match_package, to find packages
 	that are only virtual.
 	* Engine.pm: Enable 'fink desc foo' finding provided packages, fixing bug
 	#755128 .
-	
+
 2005-07-29  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Engine.pm: is_present() doesn't exactly check for any dependencies that
@@ -2802,11 +2802,11 @@
 
 2005-07-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Engine.pm: revised "switch debs during long builds" code: if a 
-	needed .deb exists but is not installed, we install it without 
+	* Engine.pm: revised "switch debs during long builds" code: if a
+	needed .deb exists but is not installed, we install it without
 	asking.  (If it doesn't exist, we allow the process to continue --
 	it will quit with an error, and the user must then start over.)
-	
+
 2005-07-28  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: cleanup_debs: don't delete .deb of pkgs that are
@@ -2838,8 +2838,8 @@
 
 2005-07-21  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* PkgVersion.pm: make the default value of LD_PREBIND depend on the 
-	distribution (1 for 10.4-transitional and earlier; 0 for 10.4 and 
+	* PkgVersion.pm: make the default value of LD_PREBIND depend on the
+	distribution (1 for 10.4-transitional and earlier; 0 for 10.4 and
 	later)
 
 2005-07-21  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -2910,7 +2910,7 @@
 
 2005-07-05  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
-	* Bootstrap.pm (bootstrap): Remove tar from phase 1 of bootstrap. 
+	* Bootstrap.pm (bootstrap): Remove tar from phase 1 of bootstrap.
 
 2005-07-04  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
@@ -3119,7 +3119,7 @@
 	* PkgVersion.pm: better checking for SetCXX
 	* Bootstrap.pm: use 10.4 distro instead of 10.4-transitional if
 	the environment variable FINK_NOTRANS is set
-	
+
 2005-05-10  Daniel Macks  <dmacks@netspace.org>
 
 	* Text/ParseWords.pm: import Text::ParseWords-3.23 from perl5.8.6
@@ -3221,7 +3221,7 @@
 2005-04-26  Ben Hines <benh57@users.sourceforge.net>
 
 	* Config.pm: Properly handle Verbose set >= 3.
-	
+
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
 
 	* Services.pm, Package.pm: Fix up lock_wait a bit.
@@ -3252,7 +3252,7 @@
 
 2005-04-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* PkgVersion.pm: reverting vasi's path-prefix change of 4/25: we 
+	* PkgVersion.pm: reverting vasi's path-prefix change of 4/25: we
 	don't want to force a default gcc after all
 
 2005-04-26  Dave Vasilevsky  <vasi@users.sourceforge.net>
@@ -3487,7 +3487,7 @@
 	* CLI.pm: Better sanity-check of user input to prompt_selection
 	and prompt_boolean
 	* Package.pm: Improved diagnostics when dup %f with different %e.
-	
+
 2005-03-14  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Fix prompt for CVS username.
@@ -3570,7 +3570,7 @@
 
 2005-02-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Services.pm: Repair dumpinfo under perl 5.6 (thanks to Martin 
+	* Services.pm: Repair dumpinfo under perl 5.6 (thanks to Martin
 	Costabel for the fix)
 	* PkgVersion.pm: Improved error message for buildlock failure.
 
@@ -3582,7 +3582,7 @@
 
 	* Engine.pm: Enable BuildConflicts when running "fink install" (not
 	just when running "fink build")
-	
+
 2005-02-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm, PkgVersion.pm: Better scoping and more flexible
@@ -3644,7 +3644,7 @@
 2005-02-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	*VirtPackage.pm: perl packages now Provide digest-pm (when >= 5.8.0)
-	
+
 2005-02-23  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Engine.pm, Package.pm, SelfUpdate.pm, Shlibs.pm: refactored some
@@ -3669,7 +3669,7 @@
 2005-02-23  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* all files: Merged in Shlibs branch.
-	
+
 2005-02-22  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: protect pkgnames when used as regex patterns.
@@ -3726,7 +3726,7 @@
 
 	* Bootstrap.pm: be sure that the pre-expansion of conditionals
 	is only applied to ones containing "%{Distribution}"
-	* Bootstrap.pm, SelfUpdate.pm: move the list of additional packages 
+	* Bootstrap.pm, SelfUpdate.pm: move the list of additional packages
 	to be installed to a new function in Bootstrap.pm, which can be
 	shared by both modules.  Add a warning when "fink selfupdate" is
 	run with an unsupported version of perl.
@@ -3888,7 +3888,7 @@
 2005-01-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Add documentation
-	
+
 2005-01-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Warn if %p/lib/charset.alias in .deb other than libgettextN.
@@ -4029,10 +4029,10 @@
 
 	* Services.pm: rewrite execute() build_as_nobody to use recursive
 	wrapper (cuts down on system.log polution and fixes pipelines).
-	
+
 2005-01-06  Christian Schaffner  <chris01@users.sourceforge.net>
 
-	* Configure.pm: Add conf_file_compat_version constant to indicate the 
+	* Configure.pm: Add conf_file_compat_version constant to indicate the
 	  current compatibility version of the fink.conf file.
 	  Set the ConfFileCompatVersion to that value during configure.
 
@@ -4141,15 +4141,15 @@
 	* Config.pm, Configure.pm: New Verbose=4 setting.
 	* Configure.pm: Default to Verbose=3 (sync with fink.conf manpage).
 	* Validation.pm: Require Verbose>3 to do pedantic Description checks.
-	
+
 2004-12-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Config.pm, Engine.pm, Package.pm PkgVersion.pm, SelfUpdate.pm: 
+	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm, SelfUpdate.pm:
 	Refactor 'UseBinaryDist' to use a new binary_requested function
 	which takes into account the per-package -b and -c flags as well
 	as the global UseBinaryDist option.
 	* Bootstrap.pm: Disable 'UseBinaryDist' during bootstrap
-	* Configure.pm: Set 'UseBinaryDist' to be false if we are not 
+	* Configure.pm: Set 'UseBinaryDist' to be false if we are not
 	installed in /sw
 
 2004-12-06  Daniel Macks  <dmacks@netspace.org>
@@ -4263,7 +4263,7 @@
 2004-11-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: disable UseBinaryDist during bootstrap
-	
+
 2004-11-16  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* Config.pm, PkgVersion.pm, Services.pm: Added some hooks to
@@ -4306,7 +4306,7 @@
 2004-11-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* SelfUpdate.pm: Don't automatically update gettext-bin
-	
+
 2004-11-09  Daniel Macks  <dmacks@netspace.org>
 
 	* Mirror.pm: Re-reworded menu b/c must match /^Custom/
@@ -4385,7 +4385,7 @@
 
 	* Engine.pm: Fix bug in code for broken gcc warning; also, add pause
 	after warning.
-	
+
 2004-10-16  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Implemented pkglist2lol and lol2pkglist, to convert
@@ -4403,7 +4403,7 @@
 
 	* Engine.pm: Warn users with the broken gcc, whenever they compile
 	something.
-	
+
 2004-10-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* VirtPackage.pm: Add the broken-gcc package, currently detects
@@ -4413,11 +4413,11 @@
 
 	* Engine.pm: Introduce new column in the commands matrix indicating if
 	  a command needs apt-get or apt-get with the --ignore-breakage option
-	  if the UseBinaryDist option is enabled. This requirement is then 
-	  checked before the command is executed. 
+	  if the UseBinaryDist option is enabled. This requirement is then
+	  checked before the command is executed.
 	  Also use full path to call apt-get and apt-cache.
 	* Package.pm: Use full path to call apt-get.
-	* PkgVersion.pm, SelfUpdate.pm: Remove obsolete tests for apt-get. 
+	* PkgVersion.pm, SelfUpdate.pm: Remove obsolete tests for apt-get.
 	  Use the full path to apt-get.
 
 2004-10-12  David Höhn <dmalloc@users.sourceforge.net>
@@ -4433,21 +4433,21 @@
 
 2004-10-12  Christian Schaffner  <chris01@users.sourceforge.net>
 
-	* Engine.pm: Implement 'UseBinaryDist' option that causes fink 
+	* Engine.pm: Implement 'UseBinaryDist' option that causes fink
 	to download pre-compiled binary packages from the binary distro if
 	available and the deb is not yet on the system. The cleanup cmd will
 	also call 'apt-get autoclean' if the 'UseBinaryDist' option is enabled.
 	* Package.pm: add is_in_apt sub to find a specific package in aptdb.
-	Add update_aptdb sub to update the apt-get db file which is called 
+	Add update_aptdb sub to update the apt-get db file which is called
 	from	update_db
 	* PkgVersion.pm: Add is_aptgetable sub that checks if a package is
-	available via apt-get. find_debfile now also finds debs in 
+	available via apt-get. find_debfile now also finds debs in
 	'$basepath/var/cache/apt/archives/' if the 'UseBinaryDist' option
-	is enabled. Add subs 'phase_fetch_deb' and 'fetch_deb' to fetch the 
+	is enabled. Add subs 'phase_fetch_deb' and 'fetch_deb' to fetch the
 	debs from the binary distro. This uses the '--ignore-breakage' option
 	of apt-get added in apt >= 0.5.4-51 (or >= 0.5.4-41 for 10.2-gcc3.3)
-	* SelfUpdate.pm: Call 'apt-get update' during finish if the 
-	'UseBinaryDist' option is enabled. 
+	* SelfUpdate.pm: Call 'apt-get update' during finish if the
+	'UseBinaryDist' option is enabled.
 	* Configure.pm: Add configuration for 'UseBinaryDist'.
 	* Services.pm: Add new sub 'count_files' to count files in a directory.
 	Used in Engine.pm to count how many files were deleted during cleanup.
@@ -4469,7 +4469,7 @@
 	* Engine.pm: Implemented 'fink show-deps' (cmd_show_deps() and
 	show_deps_print_pkglist()).
 
-2004-09-27 Chris Zubrzycki <beren12@users.sourceforge.net> 
+2004-09-27 Chris Zubrzycki <beren12@users.sourceforge.net>
 
 	* Engine.pm: Implemented --keep-src for fink cleanup.
 
@@ -4606,23 +4606,23 @@
 
 2004-07-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Bootstrap.pm: more modularization, to allow inject.pl in 10.3 
-	directory to call some modules; eliminate local/bootstrap; injected 
+	* Bootstrap.pm: more modularization, to allow inject.pl in 10.3
+	directory to call some modules; eliminate local/bootstrap; injected
 	packages now go into local/injected
-	* Config.pm: new function write_sources_list which writes an 
-	appropriate file $basepath/etc/apt/sources.list .  (Called 
-	automatically by $config->save().); move the hook to old pre-10.2 
-	debs from postinstall script to Config.pm; allow local modifications 
-	at both the top and bottom of the sources.list file, and preserve 
+	* Config.pm: new function write_sources_list which writes an
+	appropriate file $basepath/etc/apt/sources.list .  (Called
+	automatically by $config->save().); move the hook to old pre-10.2
+	debs from postinstall script to Config.pm; allow local modifications
+	at both the top and bottom of the sources.list file, and preserve
 	them when the file is re-generated
-	* FinkVersion.pm.in: the VERSION file and the stamp-* files will 
+	* FinkVersion.pm.in: the VERSION file and the stamp-* files will
 	now live in /sw/fink/dists, not /sw/fink
-	* SelfUpdate.pm: manipulate stamp-* files in new location; rsync must 
+	* SelfUpdate.pm: manipulate stamp-* files in new location; rsync must
 	include DISTRIBUTION and README files; change the VERSION when
-	rsyncing to reflect rsync; store the website and cvs-repository 
+	rsyncing to reflect rsync; store the website and cvs-repository
 	addresses in /sw/lib/fink/URL via the fink-mirrors package, and use
 	the addresses stored there rather than hard-wired ones
-	
+
 2004-07-29  Daniel Macks  <dmacks@netspace.org>
 
 	* VirtPackage.pm: switch to perl5.6.x-safe use of constants.
@@ -4688,7 +4688,7 @@
 	* PkgVersion.pm: Change get_tarball to return undef (instead of
 	"none") if no such suffix. Fix get_checksum to really return undef
 	if field not in .info.
-	
+
 2004-07-18  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Restrict use of %a to PatchScript.
@@ -4757,7 +4757,7 @@
 2004-07-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Allow bootstrapping with perl 5.8.2 and perl 5.8.4.
-	
+
 2004-07-02  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: Remove redundant variable usage. Replace regex-
@@ -4777,13 +4777,13 @@
 	doesn't match, consider download a failure and continue through
 	mirror list.
 	* PkgVersion.pm: Pass $checksum to fetch_url_to_file in phase_fetch.
-	
+
 2004-06-27  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Move PatchScript processing into new get_patchscript
 	method and enable %default_script (which is blank) in that field.
 	* Engine.pm: Use new get_patchscript accessor for dumpinfo.
-	
+
 2004-06-26  Daniel Macks  <dmacks@netspace.org>
 
 	* Base.pm: param_boolean now returns undef if field is not present.
@@ -4838,7 +4838,7 @@
 	* PkgVersion.pm: When writing the contents of the BuildDependsOnly
 	field into the .deb file, only write the contents if the field
 	exists.
-	* Validation.pm: Warn if headers are present (as well as a dylib) 
+	* Validation.pm: Warn if headers are present (as well as a dylib)
 	but BuildDependsOnly is not set to any value.
 
 2004-06-20  Daniel Macks  <dmacks@netspace.org>
@@ -4852,7 +4852,7 @@
 	* Validation.pm: Warn if have pkg-config files but not depend on
 	pkgconfig package. In .info SplitOff sections, note all problems,
 	not just first. Check formatting of Shlibs field.
-	
+
 2004-06-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Modify regex so that xemacs-base, xemacs-efs
@@ -4887,13 +4887,13 @@
 
 	* PkgVersion.pm: When extracting tarballs, the optional flags
 	which cause permissions and ownership not to be preserved
-	should not be invoked during bootstrap (because the Apple-supplied 
+	should not be invoked during bootstrap (because the Apple-supplied
 	gnutar is too old to know about these flags, in 10.2 and earlier).
 
 2004-06-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* PkgVersion.pm, Validation,pm: Write the contents of the
-	BuildDependsOnly field into the .deb file, and when validating a 
+	BuildDependsOnly field into the .deb file, and when validating a
 	.deb, verify that BuildDependsOnly is true whenever things are
 	installed into /sw/include.
 
@@ -4921,7 +4921,7 @@
 
 	* Command.pm: Fix Failed: can't symlink package due to perl's -e
 	returning false if a file is a dangling symlink. Thanks to Ben Hines.
-	
+
 2004-05-11  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Fixed problem where any commented-out line ending
@@ -4967,7 +4967,7 @@
 	* Engine.pm: dumpinfo: corrected printing of Desc* fields and
 	of splitoffs for SplitOff packages, improved handling of -p keys,
 	better error message for %-expansion.
-	
+
 2004-04-26  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Grr...committed wrong file. Fixing...
@@ -5016,7 +5016,7 @@
 	conditional syntax (same as Depends, etc.). Moved definition of %c
 	in _expand later b/c need _expand (at least %type_*[]) for
 	get_configureparams() conditionals.
-	
+
 2004-04-19  Daniel Macks  <dmacks@netspace.org>
 
 	* CLI.pm: Use actual screen width in print_breaking(), not
@@ -5160,7 +5160,7 @@
 	Source* vs. Source*-MD5 correspondence checks (all Validation.pm
 	and PkgVersion.pm from or based on Comments in Patches #913842)
 	* Services.pm: check for `uname` in /bin if not in /usr/bin
-	
+
 2004-03-16  Ben Hines <benh57@users.sourceforge.net>
 
 	* PkgVersion.pm: Add get_filename to get the info file name (used by FinkCommander)
@@ -5239,14 +5239,14 @@
 	* Package.pm, PkgVersion.pm: %n is now non-variant portion of
 	Package (i.e., %type_*[] blanked out). %Vn is full (with %type_*[]
 	already expanded) Package. %N is %Vn of parent.
-	
+
 2004-03-02  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: fix error message for missing Package: in
 	SplitOffN:. Caching by object ref is not safe so revert to
 	_sourcecount internally in get_source_count() (but must not be
 	used in other places b/c may not be saved to package db).
-	
+
 2004-03-02  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Implement get_source_count() accessor. Remove
@@ -5360,7 +5360,7 @@
 	construction (dependency engine may need Conflicts info).
 	* PkgVersion.pm: Remove more remnants of my _source_item stuff.
 	* Services.pm: Revert accidental commit of debugging code.
-	
+
 2004-02-18  Rob Braun  <bbraun@opendarwin.org>
 
 	* Bootstrap.pm: Update the i386 distribution detection code to
@@ -5392,7 +5392,7 @@
 	where op is one of (<< >> <= >= == !=) for string comparison or:
 	  Depends: (string) foo
 	where string must be non-null.
-	
+
 2004-02-11  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Wrote conditional_pkg_list which processes
@@ -5417,7 +5417,7 @@
 	N larger than max_info_level, warn and scrap the file.
 	* Package.pm, Validation.pm: Call handle_infon_block after reading
 	.info.
-	
+
 2004-02-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm:  Stop supporting bootstrap/upgrade on 10.1, and
@@ -5435,7 +5435,7 @@
 	* Package.pm: For all diagnostic/status messages from 'fink list',
 	send to STDERR. For all that are not critical, don't output unless
 	output is a  terminal (i.e., hide if a Unix pipeline).
-	
+
 2004-02-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: Resuscitated RangerRick's idea from CVS r1.95 of
@@ -5462,7 +5462,7 @@
 
 	* Selfupdate.pm: rsync with the -r flag instead of the -a flag.
 	the difference is that -r will not preserve ownership/groups,
-	permissions, links, times, and device files.  None of this 
+	permissions, links, times, and device files.  None of this
 	matters for .info and .patch files, since there are no links
 	or device files, and the ownership, permissions, and times
 	on the server don't matter to the client.  However, we will
@@ -5483,7 +5483,7 @@
 	* PkgVersion.pm: Implemented new get_param_with_expansion and
 	get_info_filename methods.
 	* Package.pm, PkgVersion.pm: added $err_info to expand_percent calls.
-	
+
 2004-01-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: Treat typo of %n in SplitOff:Package: as %N. Remove
@@ -5595,7 +5595,7 @@
 
 2004-01-04  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Services.pm:  Use eval{} instead of a subroutine to implement the 
+	* Services.pm:  Use eval{} instead of a subroutine to implement the
 	timeout  (and remove superfluous function stdin_timeout.)
 
 2004-01-04  David Höhn <dmalloc@users.sourceforge.net>
@@ -5624,7 +5624,7 @@
 
 2004-01-01  Remi Mommsen  <remigius.mommsen@cern.ch>
 
-	* PkgVersion.pm: Added two methods to access lists of sources and 
+	* PkgVersion.pm: Added two methods to access lists of sources and
 	tarballs used by given package
 
 2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
@@ -5637,14 +5637,14 @@
 	Completed prompt_selection -> prompt_selection_new migration.
 	* Services.pm: prompt_selection deprecated in favor of ..._new so
 	don't export.
-	
+
 2003-12-29  Daniel Macks  <dmacks@netspace.org>
 
 	* Services.pm: prompt_selection_new(): forgot to deal with
 	unspecified or invalid default choice.
 	* Configure.pm: Switch from using prompt_selection to
 	prompt_selection_new.
-	
+
 2003-12-28  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Type:splitoff is redundant: switch to checking
@@ -5652,31 +5652,31 @@
 	(else inherits from parent). Added Type:none to clear.
 	* Validation.pm: Allow Type:none. Allow Type and UpdatePOD in
 	splitoffs.
-	
+
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm: *don't* export "read_properties_lines".
 	Instead, introduce new subroutines "read_properties_multival_var"
 	and "read_properties_multival_lines", the first of which is exported.
-	* Mirror.pm: use "read_properties_multival_var" when setting 
+	* Mirror.pm: use "read_properties_multival_var" when setting
 	default values for mirrors.
 
 2003-12-26  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Mirror.pm: setting default values for rsync and sourceforge 
+	* Mirror.pm: setting default values for rsync and sourceforge
 	mirror sets, as well as master mirror set, in case the mirror
 	directory is absent or damaged.
 
 2003-12-24  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Services.pm: export "read_properties_lines"
-	* Mirror.pm: set a default value for Master mirror, if config file 
+	* Mirror.pm: set a default value for Master mirror, if config file
 	not present
 
 2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Configure.pm: export "choose_mirrors", and enlarge the dialogue
-	with users at the beginning of choosing the mirrors.  (This will 
+	with users at the beginning of choosing the mirrors.  (This will
 	be used in the 	postinstall script of the fink-mirrors package.)
 	Also check for the existence of mirror/_keys and mirror/_list,
 	and bail with a warning to install fink-mirrors if these are not
@@ -5698,7 +5698,7 @@
 	values of Type version string (if provided).
 	* Package.pm: Support %lv in Package.
 	* Validation.pm: Allow %lv in Package (for info filename check).
-	
+
 2003-12-23  Daniel Macks <dmacks@netspace.org>
 
 	* Validation.pm: Added support for Type java (version mandatory).
@@ -5738,7 +5738,7 @@
 
 	* Engine.pm: Extended MatchPackageRegEx which resorts the
 	candidate list so that packages matching the regex are at the top
-	in case that multiple packages match the regex. 
+	in case that multiple packages match the regex.
 
 2003-12-19  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
@@ -5763,13 +5763,13 @@
 	* Validation.pm: Added errors if there is an MD5 without a
 	corresponding source, if no MD5 and using the implicit/default
 	source, or if there is a source or MD5 for type NoSource.
-	
+
 2003-12-17  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Added prompt_selection_new (like prompt_selection
 	except parameters are less redundant and more logical). Rewrote
 	prompt_selection to be just a wrapper around prompt_selection_new.
-	
+
 2003-12-16  Daniel Macks <dmacks@netspace.org>
 
 	* Validation.pm: Remembered that Type doesn't always exist
@@ -5812,7 +5812,7 @@
 	print an ellipses ("...") so that the user knows about it.
 
 	* Selfupdate.pm: Don't try to su or chown to an undefined $username.
-	
+
 2003-12-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Rearranged the list of allowed fields and added
@@ -5909,7 +5909,7 @@
 	* PkgVersion.pm: test to see if the package being currently built
 	violates any "BuildDependsOnly: true" directives, and if so,
 	issue a warning.
-	
+
 2003-11-26  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm, PkgVersion.pm: expand_percent handles %% using a
@@ -5929,7 +5929,7 @@
 
 	* Config.pm: Error message wrong when Basepath not in config file
 	or config file missing entirely.  Tested.
-	
+
 2003-11-21  Daniel Macks <dmacks@netspace.org>
 
 	* Services.pm: Re-improved early-escape from recursive percent
@@ -5942,7 +5942,7 @@
 
 2003-11-21  Michael G Schwern <schwern@pobox.com>
 
-	* Command.pm: rm_rf() not returning false when it deletes some 
+	* Command.pm: rm_rf() not returning false when it deletes some
 	directories but fails to delete another.  Tests were incorrect.
 
 2003-11-21  Michael G Schwern <schwern@pobox.com>
@@ -6050,7 +6050,7 @@
 
 2003-11-16  Rob Braun <bbraun@users.sourceforge.net>
 
-	* SelfUpdate.pm: Add --delete since it is not implied by 
+	* SelfUpdate.pm: Add --delete since it is not implied by
 	  --delete-after on older versions of rsync (10.2).
 
 2003-11-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
@@ -6088,7 +6088,7 @@
 
 2003-11-13  Max Horn  <max@quendi.de>
 
-	* Services.pm: Improve the caching of version_cmp in Fink::Services; 
+	* Services.pm: Improve the caching of version_cmp in Fink::Services;
 	some cleanup (Patch #841031).
 
 2003-11-13  Justin F. Hallett  <thesin@users.sourceforge.net>
@@ -6138,12 +6138,12 @@
 
 2003-11-11  Rob Braun <bbraun@users.sourceforge.net>
 
-	* SelfUpdate.pm: Recurse down multiple directories, to get 
+	* SelfUpdate.pm: Recurse down multiple directories, to get
 	  libs/perlmods
 
 2003-11-11  Max Horn  <max@quendi.de>
 
-	* PkgVersion.pm, Validation.pm: Allow 'Homepage' field in splitoffs. 
+	* PkgVersion.pm, Validation.pm: Allow 'Homepage' field in splitoffs.
 	  This actually matches what our packaging docs say.
 
 2003-11-11  Peter O'Gorman  <ogorman@users.sourceforge.net>
@@ -6151,7 +6151,7 @@
 	* Selfupdate.pm: Minor bugfix. Now properly does su to the user.
 	* PkgVersion.pm: Fix "uninitialized value in chomp" Seems to be popular
 	  these days.
-	
+
 2003-11-10  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Add a TIMESTAMP check when using rsync.
@@ -6305,18 +6305,18 @@
 2003-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm, Engine.pm, PkgVersion.pm, SelfUpdate.pm, Shlibs.pm:
-	The shlibs code is giving trouble, so we move it to its own branch 
+	The shlibs code is giving trouble, so we move it to its own branch
 	again.  New branch is called "shlibs-20031018".
 
 2003-10-18  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* PkgVersion.pm: Add an automatic dependency on the current version 
+	* PkgVersion.pm: Add an automatic dependency on the current version
 	of darwin, whenever building a package.  (This is so that packages
 	which have MACSOX_DEPLOYMENT_TARGET set by default in 10.3, don't
 	get built in 10.3 but then installed in 10.2 by accident.)
 
 2003-10-18  Peter O'Gorman <ogorman@users.sourceforge.net>
-	
+
 	* VirtPackage.pm: New virtual package for gcc2 (needed for 10.3)
 
 2003-10-17  Michael G Schwern <schwern@users.sourceforge.net>
@@ -6326,7 +6326,7 @@
 
 2003-10-17  <dmalloc@users.sourceforge.net>
 
-	* SelfUpdate.pm: Change default rsync host from 
+	* SelfUpdate.pm: Change default rsync host from
 	rsync://fink.opendarwin.org/finkinfo/ to
 	rsync://master.us.finkmirrors.net/finkinfo/
 
@@ -6334,7 +6334,7 @@
 
 	* Config.pm, Configure.pm: Change the default verbosity level from
 	"3" (high) to "1" (low)
-	* Shlibs.pm: change the DEBUG output from the Shlibs package, to 
+	* Shlibs.pm: change the DEBUG output from the Shlibs package, to
 	output which is only shown at verbosity level 3
 
 2003-10-11  Benjamin Reed  <rangerrick@users.sourceforge.net>
@@ -6344,9 +6344,9 @@
 
 2003-10-11  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* ChangeLog, Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm, 
+	* ChangeLog, Bootstrap.pm, Engine.pm, Package.pm, PkgVersion.pm,
 	SelfUpdate.pm, Shlibs.pm: merge in the "shlibs" branch from July
-	
+
 2003-10-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: make the gcc_select error a bit more user
@@ -6397,16 +6397,16 @@
 
 2003-10-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Engine.pm, SelfUpdate.pm: Further tweaks to the user interface 
-	for selfupdate commands.  Also, ensure that the SelfUpdateMethod 
+	* Engine.pm, SelfUpdate.pm: Further tweaks to the user interface
+	for selfupdate commands.  Also, ensure that the SelfUpdateMethod
 	conf option is properly reset when selfupdate-rsync is invoked.
 
 2003-10-04  Peter O'Gorman  <ogorman@users.sourceforge.net>
 
-	* FinkVersion.pm.in, Selfupdate.pm: Give the user some choice of 
-	update method; use a stamp-rsync-live file when using the rsync 
+	* FinkVersion.pm.in, Selfupdate.pm: Give the user some choice of
+	update method; use a stamp-rsync-live file when using the rsync
 	method.
-	
+
 2003-10-02  Rob Braun <bbraun@users.sourceforge.net>
 
 	* SelfUpdate.pm: Add updating of the VERSION file when using
@@ -6414,7 +6414,7 @@
 
 2003-10-01  Rob Braun <bbraun@users.sourceforge.net>
 
-	* SelfUpdate.pm, Engine.pm:  Add selfupdate-rsync option for 
+	* SelfUpdate.pm, Engine.pm:  Add selfupdate-rsync option for
 	updating via rsync instead of cvs.
 
 2003-09-30  Benjamin Reed  <rangerrick@users.sourceforge.net>
@@ -6521,7 +6521,7 @@
 	update lists (in preparation for making it non-essential)
 	* Bootstrap.pm: Move the code which enables the 10.3 distribution to
 	a new branch, "test_10_3"
-	
+
 2003-07-29  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Engine.pm: added second option to resolve_depends call to specify
@@ -6552,7 +6552,7 @@
 
 2003-07-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Bootstrap.pm, SelfUpdate.pm: Add bzip2-dev, gettext-dev, 
+	* Bootstrap.pm, SelfUpdate.pm: Add bzip2-dev, gettext-dev,
 	libiconv-dev, ncurses-dev to the bootstrap and update lists
 
 2003-07-14  Benjamin Reed  <rangerrick@users.sourceforge.net>
@@ -6590,7 +6590,7 @@
 
 2003-07-06  Peter O'Gorman <ogorman@users.sourceforge.net>
 
-	* VirtPackage.pm, Config.pm, Engine.pm, Package.pm, PkgVersion.pm, 
+	* VirtPackage.pm, Config.pm, Engine.pm, Package.pm, PkgVersion.pm,
 	Bootstrap.pm, Status.pm:
 	Move all virtual package stuff to one file, add fink-virtual-pkgs file.
 
@@ -6620,7 +6620,7 @@
 
 2003-06-19  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Bootstrap.pm:  Bootstrapping with perl 5.6.1 also requires 
+	* Bootstrap.pm:  Bootstrapping with perl 5.6.1 also requires
 	storable-pm561.
 
 2003-06-14  Max Horn  <max@quendi.de>
@@ -6631,7 +6631,7 @@
 2003-06-13  Ben Hines <benh57@users.sourceforge.net>
 
 	* NetAccess.pm: Support file:// and bare tarball names without choking
-	
+
 2003-06-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Bootstrap.pm: allow bootstrapping with perl 5.8.1 too
@@ -6647,14 +6647,14 @@
 
 2003-06-09  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Bootstrap.pm: allow bootstrapping with either perl 5.6.0 or 
+	* Bootstrap.pm: allow bootstrapping with either perl 5.6.0 or
 	perl 5.8.0
 
 2003-06-07  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
-	* Engine.pm, PkgVersion.pm:  Allow an essential package to have a 
-	splitoff which is not essential.  (However, the parent of an 
-	essential package must be essential.)  Uses a new virtual field 
+	* Engine.pm, PkgVersion.pm:  Allow an essential package to have a
+	splitoff which is not essential.  (However, the parent of an
+	essential package must be essential.)  Uses a new virtual field
 	_ParentEssential.
 
 2003-06-04  Chris Zubrzycki <beren12@users.sourceforge.net>
@@ -6668,7 +6668,7 @@
 2003-05-23  Ben Hines <benh57@users.sourceforge.net>
 
 	* Services.pm: Use full path to uname to prevent build problems.
-	
+
 2003-05-23  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* Bootstrap.pm: Handle (Open)Darwin 6.6.
@@ -6680,7 +6680,7 @@
 2003-05-16  Ben Hines <benh57@users.sourceforge.net>
 
 	* Engine.pm: Cache arch to minimize uname calls.
-	
+
 2003-05-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
 
 	* Validation.pm: Check the .deb file for the presence of a .bundle
@@ -6694,7 +6694,7 @@
 
 2003-05-10  Max Horn  <max@quendi.de>
 
-	* NetAccess.pm: Don't default to MasterFirst, but rather to MasterLast 
+	* NetAccess.pm: Don't default to MasterFirst, but rather to MasterLast
 	  (using MasterFirst as long as the master mirror has not all files is
 	  causing more pain than it helps).
 
@@ -6706,7 +6706,7 @@
 2003-05-07  Ben Hines <benh57@users.sourceforge.net>
 
 	* Bootstrap.pm: support 10.2.6
-	
+
 2003-05-07  Rob Braun <bbraun@users.sourceforge.net>
 
 	* Config.pm, Engine.pm, Package.pm, PkgVersion.pm,
@@ -6732,7 +6732,7 @@
 2003-05-02  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Do not allow arbitrary license combinations, rather only a
-	  fixed set (which we can extend as needed). See bug #670788. 
+	  fixed set (which we can extend as needed). See bug #670788.
 
 	* Services.pm: Warn if an .info file uses a field more than once (will soon
 	  be turned into an error).
@@ -6740,7 +6740,7 @@
 2003-04-26  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm: Fix multi line Depends/BuildDepends fields, and slightly
-	  improve detection of malformed dependencies. 
+	  improve detection of malformed dependencies.
 
 2003-04-15  Ben Hines  <benh57@users.sourceforge.net>
 
@@ -6753,7 +6753,7 @@
 2003-04-05  Ben Hines  <benh57@users.sourceforge.net>
 
 	* Many Files: Implement fink master mirroring (Patch #700260).
-	  
+
 2003-04-04  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm (set_env): Fix for environment variables that contain a '='
@@ -6771,15 +6771,15 @@
 
 2003-03-07  Ben Hines  <benh57@users.sourceforge.net>
 
-	* Engine.pm: Add 'ignore-restrictive' option to "fetch-missing", 
+	* Engine.pm: Add 'ignore-restrictive' option to "fetch-missing",
 	  to support creating fink mirrors.
-	
+
 2003-03-05  Ben Hines  <benh57@users.sourceforge.net>
 
 	* PkgVersion.pm: Add section to dpkg control file (should prevent "unknown
 	  section" for unstable locally built binaries in dselect) and correct root
 	  dir error typo.
-	
+
 2003-02-28  Max Horn  <max@quendi.de>
 
 	* Package.pm: Reverting a "fix" from 2003-01-27 (no ChangeLog entry was
@@ -6805,18 +6805,18 @@
 2003-02-16  Ben Hines <benh57@users.sourceforge.net>
 
 	* Services.pm: Use /sbin/md5 for md5sums if present (Patch #675893).
-	  
+
 2003-02-16  Max Horn  <max@quendi.de>
 
 	* Package.pm, PkgVersion.pm, SelfUpdate.pm, Services.pm: Added Ben Hines
 	  patch for epoch support (Patch #607742).
-	  
+
 	* Validation.pm: Make package validator recognize the new Epoch field.
 
 2003-01-29 Ben Hines <benh57@users.sourceforge.net>
 
 	* Package.pm: Do not require storable to create index (Bug #676512).
-	  
+
 2003-01-28  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* Engine.pm: Adjust dependencies when working with multiple
@@ -6826,21 +6826,21 @@
 
 	* Package.pm: Carsten Klapp's patch to speed up search_comparedb and
 	  update_db, which speeds up many fink commands a bit (Patch #674313).
-	
+
 	* Services.pm: Tiny optimization in expand_percent.
-	
+
 	* Validation.pm: Fix validation if not BuildPath is specified in fink.conf.
 
 2003-01-23  Max Horn  <max@quendi.de>
 
-	* Services.pm: Added Paul Gaborit's patch to speed up expand_percent and 
+	* Services.pm: Added Paul Gaborit's patch to speed up expand_percent and
 	  hence index building.
 
 2003-01-22  Ben Hines <benh57@users.sourceforge.net>
 
 	* Engine.pm, Package.pm: Match "fink list" & "install/remove/etc"
 	  items case-insensitively (Patch #622663).
-	  
+
 2003-01-22  Max Horn  <max@quendi.de>
 
 	* Various files: Applied Chris Zubrzycki's build directory patch which
@@ -6851,7 +6851,7 @@
 	* Validation.pm:  Allow a new license "Restrictive/Distributable"
 	  to indicate that distribution of binaries is allowed even though
 	  the license is restrictive.
-	
+
 2003-01-15  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Putting stuff inside /sw/src is illegal for a .deb,
@@ -6868,9 +6868,9 @@
 
 2003-01-13  Finlay Dobbie <finlay@users.sourceforge.net>
 
-	* PkgVersion.pm (merge): Added warning to if we try to merge a 
+	* PkgVersion.pm (merge): Added warning to if we try to merge a
 	non-dummy package.
-	
+
 2003-01-12  Dave Morrison <dmrrsn@users.sourceforge.net>
 
 	* all files: updated copyright notice to include 2003
@@ -6879,10 +6879,10 @@
 
 	* PkgVersion.pm: Fix splitoff dependency problem (Bug #641466).
 	Also removed the really old "pkg <blah> version ###" text, finally.
-	
+
 	* Package.pm: Moved to custom find code for scan_packages. Hopefully
 	safer, possibly slightly faster, but I doubt it.
-	
+
 2003-01-07  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Warn if MD5 field(s) is/are missing.
@@ -6922,12 +6922,12 @@
 2002-12-19  Ben Hines <benh57@users.sourceforge.net>
 
 	* Services.pm: Allow whitespace after here-document separators.
-	
+
 2002-12-11  Ben Hines <benh57@users.sourceforge.net>
 
-	* Services.pm, PkgVersion.pm: Pass filename to read_properties_var to 
+	* Services.pm, PkgVersion.pm: Pass filename to read_properties_var to
 	  clarify here-document error.
-	
+
 2002-12-11  Benjamin Reed <rangerrick@users.sourceforge.net>
 
 	* PkgVersion.pm: Added a key to the package object to track the
@@ -6942,9 +6942,9 @@
 
 2002-12-04  Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* SelfUpdate.pm: Modify the test used during the non-CVS version of 
-	fink selfupdate to check CURRENT_VERSION and download the file named 
-	dists-###.tar.gz (rather than LATEST_VERSION and 
+	* SelfUpdate.pm: Modify the test used during the non-CVS version of
+	fink selfupdate to check CURRENT_VERSION and download the file named
+	dists-###.tar.gz (rather than LATEST_VERSION and
 	packages-###.tar.gz)
 
 2002-11-18  Max Horn  <max@quendi.de>
@@ -6971,7 +6971,7 @@
 
 2002-11-11  Max Horn  <max@quendi.de>
 
-	* PkgVersion.pm: Use "--info-dir" instead of "--infodir" as argument to 
+	* PkgVersion.pm: Use "--info-dir" instead of "--infodir" as argument to
 	  the install-info command (this should prevent problems with texinfo
 	  version of install-info).
 
@@ -6983,7 +6983,7 @@
 	  which depends on a sibling).
 
 	* PkgVersion.pm: Build deps of a splitoff are equivalent to the parent's.
-	
+
 	* PkgVersion.pm: Fixed typos, clarified/extended some comments.
 
 	* PkgVersion.pm: Set DYLD_LIBRARY_PATH, too. This  allows libtool to find
@@ -6991,9 +6991,9 @@
 
 2002-10-27  Max Horn  <max@quendi.de>
 
-	* Mirror.pm: Never use "retry same mirror" as initial default choice if 
+	* Mirror.pm: Never use "retry same mirror" as initial default choice if
 	  there are other mirrors.
-	
+
 	* PkgVersion.pm: CPPFLAGS=-no-cpp-precomp + CPATH doesn't work correctly
 	  with tar and probably many other packages. With -isystem, everything seems
 	  fine now.
@@ -7006,7 +7006,7 @@
 	  we now set CPATH and LIBRARY_PATH to point to the Fink include/lib dirs.
 	  This should avoid many problem encountered in the past. However, it may
 	  also break a few existing packages.
-	  Since the Apple C preprocessor seems to ignore CPATH, we also set 
+	  Since the Apple C preprocessor seems to ignore CPATH, we also set
 	  by default -no-cpp-precomp (many packages need this anyway).
 
 	* Validation.pm: recognize (No)SetCPATH and (No)SetLIBRARY_PATH fields.
@@ -7014,10 +7014,10 @@
 2002-10-21  Ben Hines <benh57@users.sourceforge.net>
 
 	* Services.pm: Fix typo in nesting too deep error.
-	
+
 2002-10-15  Max Horn  <max@quendi.de>
 
-	* Engine.pm: Fixed a wrong 'circular dependencies' error caused by my 
+	* Engine.pm: Fixed a wrong 'circular dependencies' error caused by my
 	  recent changes.
 
 2002-10-14  Max Horn  <max@quendi.de>
@@ -7035,11 +7035,11 @@
 
 2002-10-12 Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* PkgVersion.pm: When a Shlibs field is present, write its contents 
+	* PkgVersion.pm: When a Shlibs field is present, write its contents
 	into DEBIAN/shlibs when building the deb
 
 	* Validation.pm: Added Shlibs field
-	
+
 2002-10-10  Max Horn  <max@quendi.de>
 
 	* Validation.pm: Added RunTimeVars field; warn if description ends with "."
@@ -7054,7 +7054,7 @@
 
 2002-09-28  Ben Hines <benh57@users.sourceforge.net>
 
-	* PkgVersion.pm, NetAccess.pm: Patch 612681: Allow "continue" 
+	* PkgVersion.pm, NetAccess.pm: Patch 612681: Allow "continue"
 	  for bad MD5 during "fink install... "
 
 	* PkgVersion.pm: Fix Axel problem with partial downloads
@@ -7087,7 +7087,7 @@
 
 2002-09-19  Max Horn  <max@quendi.de>
 
-	* Engine.pm, Package.pm, PkgVersion.pm: Patch #610249: fix for the 'node 
+	* Engine.pm, Package.pm, PkgVersion.pm: Patch #610249: fix for the 'node
 	  exists' bug (bug #60016)
 
 2002-09-08  Dave Morrison <dmrrsn@users.sourceforge.net>
@@ -7096,13 +7096,13 @@
 	  an exported item
 
 	* SelfUpdate.pm: now checks out the "dists" CVS module rather
-	  than the "packages" one (still as the "fink" directory).  
-	  This contains a "10.2" subdirectory.  Users using 10.1 also 
-	  get a second checkout: "packages/dists" is checked out as 
+	  than the "packages" one (still as the "fink" directory).
+	  This contains a "10.2" subdirectory.  Users using 10.1 also
+	  get a second checkout: "packages/dists" is checked out as
 	  "fink/10.1".
 
 	* Validation.pm: added the new "gcc" field
-	
+
 2002-08-21  Max Horn  <max@quendi.de>
 
 	* Engine.pm: Fixed "fink remove" command
@@ -7121,19 +7121,19 @@
 	* PkgVersion.pm: Enhanced how the Files field (in splitoffs) is handled:
 	  if the given path starts with a slash, we treat it as relative to %d/%D
 	  otherwise as relative to %i/%I (as we do currently anyway).
-	
+
 	* Services.pm: Fix for bug #545155 (it was possible to cause infinite
 	  recursion during percent expansion).
 
 2002-08-10  Max Horn  <max@quendi.de>
 
-	* SelfUpdate.pm: Only force a second rebuild of the package database, and 
+	* SelfUpdate.pm: Only force a second rebuild of the package database, and
 	  also only restart Fink if the package manager is being updated.
 
 2002-08-05  Max Horn  <max@quendi.de>
 
 	* Engine.pm (cmd_cleanup): Improved the "fink cleanup" command to also clean
-	  files in /sw/src (only files not directories - removing directories in 
+	  files in /sw/src (only files not directories - removing directories in
 	  /sw/src is dangerous as it can interupt running builds etc.)
 
 	* Mirror.pm: Don't use mirror timestamp as a mirror (Bug #563182).
@@ -7187,17 +7187,17 @@
 	  line 2. Bug.  Need better fix in future, maybe read $ENV{COLUMNS}
 
 2002-07-25  Max Horn  <max@quendi.de>
-	
+
 	* PkgVersion.pm: Fixed Bootstrap (use /usr/bin/gnutar if %p/bin/tar is missing)
 
 	* Engine.pm: Little fix that ensures Fink runs even if not on a terminal.
-	
+
 2002-07-24  Max Horn  <max@quendi.de>
 
 	* Incorporated patch #504498 by Justin F. Hallett which adds the
 	  TarFilesRename and TarNFilesRename field.
 
-	* Incorporated patch #577882 by Sylvain Cuaz which cleans the environment 
+	* Incorporated patch #577882 by Sylvain Cuaz which cleans the environment
 	before building packages.
 
 2002-07-22  Max Horn  <max@quendi.de>
@@ -7217,12 +7217,12 @@
 
 	* Bootstrap.pm (bootstrap): Added apt-shlibs to the list of packages that are
 	automatically installed during bootstrap.
-	
+
 	* Engine.pm (cmd_scanpackages): Made apt-shlibs an "important" package.
 
 	* Package.pm: Implemented use_cache flag - can later be used to add an
 	option to turn off the package cacher temporarily.
-	
+
 	* SelfUpdate.pm (finish): Include apt-shlibs in the list of packags that are
 	updated upon a selfupdate.
 
@@ -7265,7 +7265,7 @@
 
 2002-05-23  Max Horn  <max@quendi.de>
 
-	* Engine.pm (real_install): Under certain condition, splitoffs could have 
+	* Engine.pm (real_install): Under certain condition, splitoffs could have
 	been activated more than once. This problem fixes this.
 
 2002-05-16  Max Horn  <max@quendi.de>
@@ -7294,7 +7294,7 @@
 
 2002-05-02  Max Horn  <max@quendi.de>
 
-	* PkgVersion.pm (resolve_depends): Fixed bug that made building splitoffs that 
+	* PkgVersion.pm (resolve_depends): Fixed bug that made building splitoffs that
 	depend on their master impossible (affects kdebase package).
 
 2002-05-01  Max Horn  <max@quendi.de>
@@ -7324,11 +7324,11 @@
 2002-03-31  Finlay Dobbie <finlayd@users.sourceforge.net>
 
 	* Package.pm: Added support for caching of info files.
-	
+
 	* Engine.pm: Added an index command to update the cache.
-	
+
 	* SelfUpdate.pm (do_finish): added hook to update package cache.
-	
+
 2002-03-26  Justin F. Hallett <thesin@southofheaven.net>
 
 	* PkgVersion.pm: Fixed Type: perl to install the execs into
@@ -7337,7 +7337,7 @@
 2002-03-21  Max Horn  <max@quendi.de>
 
 	* PkgVersion.pm: added get_tree function
-	
+
 	* NetAccess.pm (download_cmd): Added another download method, "axel"
 	(thanks to Alexander Strange)
 
@@ -7350,13 +7350,13 @@
 	(obviously there is no Mac OS X version on a pure Darwin system)
 
 2002-03-16  Max Horn  <max@quendi.de>
-	
+
 	* PkgVersion.pm (resolve_depends): Yet another attempt to fix splitoff
 	build dependencies, hopefully more succesful this time.
 
 2002-03-16 Dave Morrison <dmrrsn@users.sourceforge.net>
 
-	* Validation.pm: Added "SplitOff" to the list of known fields, and 
+	* Validation.pm: Added "SplitOff" to the list of known fields, and
 	parsing for SplitOff2-SplitOff9
 
 	* Engine.pm: When fink prompts users for a decision about a
@@ -7364,12 +7364,12 @@
 	in the decision.
 
 2002-03-16  Max Horn  <max@quendi.de>
-	
+
 	* Validation.pm: Added "BuildDependsOnly" to the list of known fields
-	
+
 	* PkgVersion.pm (resolve_depends): Fixed this so that splitoffs and
 	splitoff masters always return the same (correct) build dependencies.
-	
+
 	* PkgVersion.pm (add_splitoff): Removed annoying debug output ("Found a
 	splitoff")
 
@@ -7410,7 +7410,7 @@
 
 2002-03-06  Max Horn  <max@quendi.de>
 
-	* PkgVersion.pm: Multitude of changes, implementing initial splitoff 
+	* PkgVersion.pm: Multitude of changes, implementing initial splitoff
 	support. Percent expansion is now done in all dependency related fields.
 
 	* Package.pm (inject_description): Return the created PkgVersion object
@@ -7424,16 +7424,16 @@
 
 	* NetAccess.pm (fetch_url_to_file, download_cmd): Allow the user to
 	resume partial downloads.
-	
+
 	* NetAccess.pm (download_cmd): Added 'DownloadMethod' field to fink.conf
 	(thanks to Christian Swinehart).
 
-	* NetAccess.pm (download_cmd): If we use curl, make sure it treats 
+	* NetAccess.pm (download_cmd): If we use curl, make sure it treats
 	error 404 properly, i.e. fail instead of downloading the error page
 	(thanks to Joseph Bauer).
 
 	* Engine.pm (, cmd_fetch_allcmd_fetch_all_missing): keep going even if a
-	single file could not be downloaded. (thanks to Randal L. Schwartz). 
+	single file could not be downloaded. (thanks to Randal L. Schwartz).
 
 2002-02-01  Max Horn  <max@quendi.de>
 
@@ -7451,7 +7451,7 @@
 	* Engine.pm (restart_as_root): Pass on more options to new instance
 
 	* *.pm: Changed to use new is_verbose() function to determine verbosity
-	
+
 	* Config.pm (is_verbose): New function, returns true if verbose mode is on
 
 	* Validation.pm: Only be verbose in verbose mode
