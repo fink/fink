@@ -1,3 +1,7 @@
+2010-01-06  Daniel Macks  <dmacks@netspace.org>
+
+	* all: update copyright
+
 2009-11-24  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* fink.conf.5.in: New MaxBuildJobs option and minor cleanup
@@ -15,7 +19,7 @@
 	* setup.sh: apt-get-lockwait now specifies the full path to the
 	apt-get executable (but, as before, dpkg-lockwait does NOT... this
 	is important for bootstrapping)
-	* bootstrap, Release, MANIFEST: install the initial Release and 
+	* bootstrap, Release, MANIFEST: install the initial Release and
 	Packages.gz files during bootstrapping
 	* inject.pl: run under sudo
 	* inject.pl: use $0
@@ -172,7 +176,7 @@
 
 2007-11-01  Dave Morrison  <drm@finkproject.org>
 
-	* postinstall.pl.in: if /sw/fink/10.5 exists but isn't a symlink, 
+	* postinstall.pl.in: if /sw/fink/10.5 exists but isn't a symlink,
 	remove it
 
 2007-10-24  Dave Morrison  <drm@finkproject.org>
