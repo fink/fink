@@ -1,3 +1,7 @@
+2010-01-06  Daniel Macks  <dmacks@netspace.org>
+
+	* all: update copyright
+
 2009-11-29  Augusto Devegili  <monipol@users.sourceforge.net>
 
 	* Validation.pm: New UseMaxBuildJobs field
