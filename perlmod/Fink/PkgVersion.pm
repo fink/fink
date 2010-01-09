@@ -4762,7 +4762,19 @@ sub ensure_gpp106_prefix {
 		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
 		print GPP <<EOF;
 #!/bin/sh
-exec /usr/bin/\${0##*/}  "-arch" "$arch" "\$@"
+compiler=\${0##*/}
+save_IFS="\$IFS"
+IFS=:
+newpath=
+for dir in \$PATH ; do
+  case \$dir in
+    *var/lib/fink/path-prefix*) ;;
+    *) newpath="\${newpath:+\${newpath}:}\$dir" ;;
+  esac
+done
+IFS="\$save_IFS"
+export PATH="\$newpath"
+exec \$compiler "-arch" "$arch" "\$@"
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
