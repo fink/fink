@@ -1,2 +1,16 @@
 #!/bin/sh
-exec /usr/bin/${0##*/} -arch @ARCHITECTURE@ "$@"
+compiler=${0##*/}
+save_IFS="$IFS"
+IFS=:
+newpath=
+for dir in $PATH ; do
+  case $dir in
+    *var/lib/fink/path-prefix*) ;;
+    *) newpath="${newpath:+${newpath}:}$dir" ;;
+  esac
+done
+IFS="$save_IFS"
+export PATH="$newpath"
+exec $compiler -arch @ARCHITECTURE@ "$@"
+# strip path-prefix to avoid finding this wrapper again
+# @PREFIX@/bin is needed to pick up ccache-default
