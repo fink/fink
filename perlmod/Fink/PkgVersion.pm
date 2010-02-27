@@ -431,11 +431,11 @@ sub pkgversions_from_info_file {
 	
 	my $pkgname = $properties->{package};
 	unless ($pkgname) {
-		print_breaking_stderr "No package name in $filename";
+		print_breaking_stderr "\nNo package name in $filename";
 		return ();
 	}
 	unless ($properties->{version}) {
-		print_breaking_stderr "No version number for package $pkgname in $filename";
+		print_breaking_stderr "\nNo version number for package $pkgname in $filename";
 		return ();
 	}
 

@@ -690,6 +690,14 @@ if ($info_level < 4) {
 			}
 		}
 
+		# BDep:*-shlibs is likely mistake (should be Dep:*-shlibs
+		# BDep: the BDO pkg)
+		if ($field eq 'builddepends') {
+			if ($properties->{$field} =~ /-shlibs/) {
+				printf "Warning: BuildDepends on -shlibs package, which is probably runtime files. ($filename)\n";
+			}
+		}
+
 		# Check for any source-related field without associated Source(N) field
 		if ($field =~ /^(test)?(?:source(\d*)-checksum|source(\d*)-md5|source(\d*)rename|tar(\d*)filesrename|source(\d+)extractdir)$/) {
 			my $testfield = $1 || "";
