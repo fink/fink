@@ -1,3 +1,7 @@
+2010-03-16  Max Horn <max@quendi.de>
+
+	* Fix up indention in several *.pm files
+
 2010-02-27  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Newline before msg that may be emitted during

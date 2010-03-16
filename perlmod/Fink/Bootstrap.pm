@@ -63,7 +63,7 @@ Fink::Bootstrap - Bootstrap a fink installation
 	my $distribution = check_host($host, $bootstrap);
 	my $distribution = check_host($host, $bootstrap, $arch);
 	my $result = inject_package($package, $packagefiles, $info_script, $param);
-    my ($package_list, $perl_is_supported) = additional_packages();
+	my ($package_list, $perl_is_supported) = additional_packages();
 	bootstrap();
 	my $bsbase = get_bsbase();
 	my $result = check_files();
@@ -131,8 +131,8 @@ sub check_host {
 	my ($distribution, $gcc, $build, $transitional);
 
 	# We test for an obsolete version of gcc3.3, and refuse to proceed if
-    # it is present.
-    #
+	# it is present.
+	#
 	# (Note: the June 2003 Developer Tools had build 1435, the August 2003 ones
 	#  had build 1493.)
 
@@ -167,80 +167,80 @@ You may need to install a more recent version of the Developer Tools
 GCC_MSG
 		$gcc = "-gcc" . $gcc;
 	} else {
-## 10.2 users who do not have gcc at all are installing binary only, so they get
-## to move to 10.2-gcc3.3 also
+		## 10.2 users who do not have gcc at all are installing binary only, so they get
+		## to move to 10.2-gcc3.3 also
 		$gcc = "-gcc3.3";
 	}
 
-## for 10.4 users, we need to decide about the transitional tree
-##  1) on i386 you don't get it
-##  2) on bootstrap, default is to not get it but FINK_NOTRANS overrides
-##  3) if not bootstrapping, leave it the way it was
+	## for 10.4 users, we need to decide about the transitional tree
+	##  1) on i386 you don't get it
+	##  2) on bootstrap, default is to not get it but FINK_NOTRANS overrides
+	##  3) if not bootstrapping, leave it the way it was
 
-if ($host =~ /^i386/) {
-  $transitional = "";
-  } elsif ($bootstrap) {
-    if (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(1|true|yes)$/i) {
-    $transitional = "";
-    } elsif (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(0|false|no)$/i) {
-    $transitional = "-transitional";
-    } else {
-    $transitional = "";
-    }
-  } else {
-    my $old_distribution = $config->param("Distribution");
-    if ($old_distribution =~ /^10.4$/) {
-      $transitional = "";
-    } else {
-      $transitional = "-transitional";
-  }
-}
-
-my %transitional_message = (
-  "-transitional" => "Using the old 10.4-transitional tree...",
-  "" => ""            # no need to mention the new one anymore
-);
-
-# if we are not using the transitional tree, and gcc-4.0 is present, it
-# must be build 5247 (from XCode 2.2.1)
-
-if ($transitional eq "") {
-	if (-x '/usr/bin/gcc-4.0') {
-		foreach(`/usr/bin/gcc-4.0 --version 2>&1`) {
-			if (/build (\d+)\)/) {
-				$build = $1;
-				last;
-			}
+	if ($host =~ /^i386/) {
+		$transitional = "";
+	} elsif ($bootstrap) {
+		if (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(1|true|yes)$/i) {
+			$transitional = "";
+		} elsif (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(0|false|no)$/i) {
+			$transitional = "-transitional";
+		} else {
+			$transitional = "";
 		}
-		($build >= 5247) or die <<END;
+	} else {
+		my $old_distribution = $config->param("Distribution");
+		if ($old_distribution =~ /^10.4$/) {
+			$transitional = "";
+		} else {
+			$transitional = "-transitional";
+		}
+	}
+
+	my %transitional_message = (
+	  "-transitional" => "Using the old 10.4-transitional tree...",
+	  "" => ""            # no need to mention the new one anymore
+	);
+
+	# if we are not using the transitional tree, and gcc-4.0 is present, it
+	# must be build 5247 (from XCode 2.2.1)
+	
+	if ($transitional eq "") {
+		if (-x '/usr/bin/gcc-4.0') {
+			foreach(`/usr/bin/gcc-4.0 --version 2>&1`) {
+				if (/build (\d+)\)/) {
+					$build = $1;
+					last;
+				}
+			}
+			($build >= 5247) or die <<END;
 
 You are attempting to use the new 10.4 tree with an old version (build $build)
 of the gcc 4.0 compiler, which is not supported.  Please update your XCode to 
 XCode 2.2.1 or later, and try again.
 
 END
+		}
 	}
-}
 
 	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
 		&print_breaking("\nThis system is no longer supported " .
-"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
+			"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
 	} elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
 		&print_breaking("\nThis system is no longer supported " .
-"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
+			"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin6\..*/) {
 		&print_breaking("\nThis system is no longer supported " .
-"for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
+			"for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
 		$distribution = "10.2$gcc";
 	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-9]\.0/) {
 		&print_breaking("This system no longer supported " .
-"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
+			"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
 		$distribution = "10.3";
 	} elsif ($host =~ /^powerpc-apple-darwin7\..*/) {
 		&print_breaking("This system no longer supported " .
-"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
+			"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
 		$distribution = "10.3";
 	} elsif ($host =~ /^i386-apple-darwin7\..*/) {
 		&print_breaking("Fink is currently not supported on x86 ".
@@ -261,7 +261,7 @@ END
 		$distribution = "10.4$transitional";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\.[0-8]\.[0-2]/) {
 		&print_breaking("\nThis version of fink supports bootstrapping under Mac OS X 10.5, " .
-            "as well as upgrading from 10.4. However, DIRECT UPGRADING FROM " .
+			"as well as upgrading from 10.4. However, DIRECT UPGRADING FROM " .
 			"10.4-transitional, 10.3 OR EARLIER IS NOT SUPPORTED.\n\n") unless ($arch eq "x86_64");
 		$distribution = "10.5";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\./) {
@@ -314,10 +314,10 @@ sub inject_package {
 	import Fink::Services qw(&read_config);
 	require Fink::Config;
 
-### Note to developers: Fink::Config loads Fink::FinkVersion, but it is
-### important not to call Fink::FinkVersion::fink_version or 
-### Fink::FinkVersion::get_arch during inject_package, because inject.pl
-### may be running a version of fink in which those values are incorrect.
+	### Note to developers: Fink::Config loads Fink::FinkVersion, but it is
+	### important not to call Fink::FinkVersion::fink_version or 
+	### Fink::FinkVersion::get_arch during inject_package, because inject.pl
+	### may be running a version of fink in which those values are incorrect.
 	
 	my $package = shift;
 	my $packagefiles = shift;
@@ -327,13 +327,13 @@ sub inject_package {
 	
 	my $param = shift;
 
-my ($notlocated, $bpath) = &locate_Fink($param); 	
+	my ($notlocated, $bpath) = &locate_Fink($param); 	
 
 	if ($notlocated) {
 		return 1;
 	}
 	
-    ### determine $distribution
+	### determine $distribution
 	my $distribution = readlink("$bpath/fink/dists");
 #	print "DISTRIBUTION $distribution\n";
 
@@ -938,10 +938,10 @@ sub modify_description {
 # remove the entire line if the condition fails)
 		if ($_ =~ s/%\{Distribution\}/$distribution/) {
 			if (s/^(\s*)\((.*?)\)\s*(.*)/$1$3/) {
-            # we have a conditional; remove the cond expression,
+				# we have a conditional; remove the cond expression,
 				my $cond = $2;
 #               print "\tfound conditional '$cond'\n";
-            # if cond is false, clear entire line
+				# if cond is false, clear entire line
 				undef $_ unless &eval_conditional($cond, "modify_description");
 			}
 		}
@@ -1004,7 +1004,7 @@ sub read_version_revision {
 		$revisions = \%revision_data;
 	} else {
 		$packagerevision = "1";
-        $revisions = {"all" => $packagerevision};
+		$revisions = {"all" => $packagerevision};
 	}
 	return ($packageversion, $revisions);
 }
@@ -1051,12 +1051,12 @@ sub get_selfupdatetrees {
 
 	my $distribution = shift;
 
-my %selfupdatetrees = (
-	"10.3" => "10.3",
-	"10.4" => "10.4",
-	"10.5" => "10.4",
-	"10.6" => "10.4"
-	);
+	my %selfupdatetrees = (
+		"10.3" => "10.3",
+		"10.4" => "10.4",
+		"10.5" => "10.4",
+		"10.6" => "10.4"
+		);
 
 	return $selfupdatetrees{$distribution};
 }

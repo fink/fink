@@ -433,16 +433,16 @@ sub validate_info_file {
 		}
 	}
 
-        # make sure have InfoN (N>=4) if use Info4 features
-if ($info_level < 4) {
-                # fink-0.26.1 can't even index if unknown %-exp in ConfigureParams field!
-                if (exists $properties->{configureparams}) {
-                        if ($properties->{configureparams} =~ /\%lib/) {
-                                print "Error: Use of %lib expansion in ConfigureParams field requires InfoN level 4 or higher. ($filename)\n";
-                                return 0;
-							}
-					}
-}
+	# make sure have InfoN (N>=4) if using Info4 features
+	if ($info_level < 4) {
+		# fink-0.26.1 can't even index if unknown %-exp in ConfigureParams field!
+		if (exists $properties->{configureparams}) {
+			if ($properties->{configureparams} =~ /\%lib/) {
+				print "Error: Use of %lib expansion in ConfigureParams field requires InfoN level 4 or higher. ($filename)\n";
+				return 0;
+			}
+		}
+	}
 
 	# figure out %-exp map for canonical Type representation
 	if (defined ($type = $properties->{type})) {

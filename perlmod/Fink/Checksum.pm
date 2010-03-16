@@ -27,16 +27,16 @@ use Fink::Services qw(&find_subpackages);
 use UNIVERSAL qw(isa);
 
 BEGIN {
-        use Exporter ();
-        our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-        $VERSION         = ( qw$Revision$ )[-1];
-        @ISA             = qw(Exporter);
-        @EXPORT          = qw();
-        %EXPORT_TAGS = ( );                     # eg: TAG => [ qw!name1 name2! ],
+	use Exporter ();
+	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
+	$VERSION         = ( qw$Revision$ )[-1];
+	@ISA             = qw(Exporter);
+	@EXPORT          = qw();
+	%EXPORT_TAGS = ( );                     # eg: TAG => [ qw!name1 name2! ],
 
-        # your exported package globals go here,
-        # as well as any optionally exported functions
-        @EXPORT_OK       = qw();
+	# your exported package globals go here,
+	# as well as any optionally exported functions
+	@EXPORT_OK       = qw();
 }
 
 END { }                         # module clean-up code here (global destructor)
