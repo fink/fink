@@ -1,5 +1,10 @@
 2010-03-16  Max Horn <max@quendi.de>
 
+	* Checksum.pm: Fix example to talk about "checksum" types/modules,
+	instead of "notifier" types/modules
+
+2010-03-16  Max Horn <max@quendi.de>
+
 	* Fix up indention in several *.pm files
 
 2010-02-27  Daniel Macks  <dmacks@netspace.org>
