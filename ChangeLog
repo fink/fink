@@ -1,3 +1,7 @@
+2010-04-17  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: fix nroff warning (remove blank line)
+
 2010-01-09  David Fang  <fangism@users.sourceforge.net>
 
 	* compiler_wrapper.in: finds %p/bin for ccache-default
