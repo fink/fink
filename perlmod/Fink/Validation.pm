@@ -1664,7 +1664,7 @@ sub _validate_dpkg {
 					if (open(OTOOL, "$otool -hv '$file' |"))
 					{
 						while (my $line = <OTOOL>) {
-							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB\s+/) {
+							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB(\s+|_STUB\s+)/) {
 								if ($filename !~ /\.(dylib|jnilib)$/) {
 									print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
 								}
