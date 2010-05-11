@@ -1,4 +1,8 @@
-2010-05-06	Alexander Hansen <alexkhansen@users.sourceforge.net>
+2010-05-10  Daniel Macks <dmacks@netspace.org>
+
+	* Validation.pm: Fallback try otool64 -L if otool -L fails
+
+2010-05-06  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* Validation.pm:  Accept DYLIB_STUB as also being a dylib.
 
