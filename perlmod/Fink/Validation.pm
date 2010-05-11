@@ -1455,7 +1455,7 @@ sub _validate_dpkg {
 	chomp(my $otool = `which otool 2>/dev/null`);
 	undef $otool unless -x $otool;
 	chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
-	undef $otool64 unless -x $otool;				  # binaries (otool itself cannot handle them)
+	undef $otool64 unless -x $otool64;				  # binaries (otool itself cannot handle them)
 	my $basepath;   # %p
 	my $buildpath;  # BuildPath from fink.conf
 	# determine the base path
