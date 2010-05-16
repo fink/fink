@@ -433,16 +433,16 @@ sub validate_info_file {
 		}
 	}
 
-        # make sure have InfoN (N>=4) if use Info4 features
-if ($info_level < 4) {
-                # fink-0.26.1 can't even index if unknown %-exp in ConfigureParams field!
-                if (exists $properties->{configureparams}) {
-                        if ($properties->{configureparams} =~ /\%lib/) {
-                                print "Error: Use of %lib expansion in ConfigureParams field requires InfoN level 4 or higher. ($filename)\n";
-                                return 0;
-							}
-					}
-}
+	# make sure have InfoN (N>=4) if using Info4 features
+	if ($info_level < 4) {
+		# fink-0.26.1 can't even index if unknown %-exp in ConfigureParams field!
+		if (exists $properties->{configureparams}) {
+			if ($properties->{configureparams} =~ /\%lib/) {
+				print "Error: Use of %lib expansion in ConfigureParams field requires InfoN level 4 or higher. ($filename)\n";
+				return 0;
+			}
+		}
+	}
 
 	# figure out %-exp map for canonical Type representation
 	if (defined ($type = $properties->{type})) {
@@ -1450,6 +1450,8 @@ sub _validate_dpkg {
 
 	chomp(my $otool = `which otool 2>/dev/null`);
 	undef $otool unless -x $otool;
+	chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
+	undef $otool64 unless -x $otool64;				  # binaries (otool itself cannot handle them)
 	my $basepath;   # %p
 	my $buildpath;  # BuildPath from fink.conf
 	# determine the base path
@@ -1660,7 +1662,7 @@ sub _validate_dpkg {
 					if (open(OTOOL, "$otool -hv '$file' |"))
 					{
 						while (my $line = <OTOOL>) {
-							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB\s+/) {
+							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB(\s+|_STUB\s+)/) {
 								if ($filename !~ /\.(dylib|jnilib)$/) {
 									print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
 								}
@@ -1953,6 +1955,15 @@ sub _validate_dpkg {
 					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
 
+					if (!defined $libname or !defined $compat_version) {
+						if (defined $otool64) {
+							if (open (OTOOL, "$otool64 -L '$file' |")) {
+								<OTOOL>; # skip the first line
+								($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+								close (OTOOL);
+							}
+						}
+					}
 					if (!defined $libname or !defined $compat_version) {
 						print "Error: File name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
 						$looks_good = 0;
