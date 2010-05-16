@@ -479,7 +479,6 @@ release. It checks the
 website to see if a new version is available. It then downloads the package
 descriptions and updates the core packages, including
 .Nm
-
 itself. This command can upgrade to major point releases (for example,
 the set of packages that comes with a Fink binary installer), but it can also
 set up your

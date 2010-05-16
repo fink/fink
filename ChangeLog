@@ -1,3 +1,8 @@
+2010-05-16  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in, fink.conf.5.in: sync spacing and nroff syntax
+	adjustments from unstable
+
 2010-01-15  David Fang  <fangism@users.sourceforge.net>
 
 	* compiler_wrapper.in: finds %p/bin for ccache-default

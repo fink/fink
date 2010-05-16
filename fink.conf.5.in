@@ -47,7 +47,7 @@ For example:
 .\"
 .\"
 .Sh REQUIRED SETTINGS
-Some of the settings in fink.conf are mandatory. Without them Fink cannot 
+Some of the settings in fink.conf are mandatory. Without them Fink cannot
 function properly. The following settings belong to this category. 
 .Bl -tag -width flag
 .It Cm Basepath: Ar path 
@@ -153,25 +153,26 @@ Fink needs to create several temporary directories for each package it compiles 
 .Pa @PREFIX@/src
 on Panther and earlier, and
 .Pa @PREFIX@/src/fink.build
-on OS 10.4 and later versions. If you want them to be somewhere else, specify
-the path here.  See the descriptions of the
+on OS 10.4 and later versions. If you want them to be somewhere else, specify the path here.
+See the descriptions of the
 .Cm KeepRootDir
 and
 .Cm KeepBuildDir
 fields later in this document for more information about these temporary directories.
 .Pp
-On Tiger and later versions, it is recommended that the Buildpath end with
-.noindex or .build.  Otherwise, Spotlight will attempt to index the temporary
-files in the Buildpath, slowing down builds.
+On Tiger and later versions, it is recommended that the Buildpath end with .noindex or .build.
+Otherwise, Spotlight will attempt to index the temporary files in the
+Buildpath, slowing down builds.
 .It Cm Bzip2Path: Ar the path to your bzip2 (or compatible) binary
 The Bzip2Path option lets you override the default path for the bzip2 command-line
 tool.  This allows you to specify an alternate location to your bzip2 executable,
 pass optional command-line options, or use a drop-in replacement like pbzip2 for
 decompressing .bz2 archives.
 .It Cm MaxBuildJobs: Ar positive integer
-This option specifies how many concurrent build jobs should be spawned when     building a package that has parallel build jobs enabled. Building in parallel   
+This option specifies how many concurrent build jobs should be spawned when
+building a package that has parallel build jobs enabled. Building in parallel
 speeds up the build process on multi-CPU or multi-core systems. Technically
-speaking, Fink uses the value of this option in MAKEFLAGS=-j.  Running
+speaking, Fink uses the value of this option in MAKEFLAGS=-j. Running
 .Cm fink configure
 will tell you how many active CPUs/cores are available on your system.
 .El
