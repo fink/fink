@@ -29,16 +29,16 @@ use Fink::Config	qw($config);
 use Fink::Services	qw(&find_subpackages);
 
 BEGIN {
-        use Exporter ();
-        our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-        $VERSION         = ( qw$Revision$ )[-1];
-        @ISA             = qw(Exporter);
-        @EXPORT          = qw();
-        %EXPORT_TAGS = ( );                     # eg: TAG => [ qw!name1 name2! ],
+	use Exporter ();
+	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
+	$VERSION         = ( qw$Revision$ )[-1];
+	@ISA             = qw(Exporter);
+	@EXPORT          = qw();
+	%EXPORT_TAGS = ( );                     # eg: TAG => [ qw!name1 name2! ],
 
-        # your exported package globals go here,
-        # as well as any optionally exported functions
-        @EXPORT_OK       = qw();
+	# your exported package globals go here,
+	# as well as any optionally exported functions
+	@EXPORT_OK       = qw();
 }
 
 END { }                         # module clean-up code here (global destructor)
@@ -210,7 +210,7 @@ our @events = qw(
 );
 
 sub events {
-    my @eventlist = @events;  # return a copy so caller can't modify original
+	my @eventlist = @events;  # return a copy so caller can't modify original
 	return wantarray? @eventlist : \@eventlist;
 }
 
