@@ -544,7 +544,7 @@ sub do_real_list {
 		}
 	}
 	
-	if ($format eq 'dotty') {
+	if ($format eq 'dotty' or $format eq 'dotty-build') {
 		print "digraph packages {\n";
 		print "concentrate=true;\n";
 		print "size=\"30,40\";\n";
@@ -619,11 +619,11 @@ sub do_real_list {
 			$dispname = substr($pname, 0, $namelen - 3)."...";
 		}
 
-		if ($format eq 'dotty') {
+		if ($format eq 'dotty' or $format eq 'dotty-build') {
 			print "\"$pname\" [shape=box];\n";
 			if (ref $vo) {
 				# grab the Depends of pkg (not BDep, not others in family)
-				for my $dep (@{$vo->get_depends()}) {
+				for my $dep (@{$vo->get_depends(($format eq 'dotty-build'),0)}) {
 					# for each ANDed (comma-sep) chunk...
 					for my $subdep (@$dep) {
 						# include all ORed items in it
@@ -638,7 +638,7 @@ sub do_real_list {
 		}
 	}
 
-	if ($format eq 'dotty') {
+	if ($format eq 'dotty' or $format eq 'dotty-build') {
 		print "}\n";
 	}
 
