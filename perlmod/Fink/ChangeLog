@@ -1,3 +1,7 @@
+2010-06-03  Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm:  Ldd OS 10.6.3 as a supported version.
+
 2010-06-03  Daniel Macks <dmacks@netspace.org>
 
 	* Engine.pm: Add 'list --dotty-build', gives Depends+BuildDepends
