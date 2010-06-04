@@ -4,8 +4,9 @@
 
 2010-06-03  Daniel Macks <dmacks@netspace.org>
 
-	* Engine.pm: Add 'list --dotty-build', gives Depends+BuildDepends
-	of family (cf. --dotty that does Depends of specific package)
+	* Engine.pm: Add 'fink list --format=dotty-build', gives
+	Depends+BuildDepends of family (cf. --format=dotty that does
+	Depends of specific package)
 
 2010-05-10  Daniel Macks <dmacks@netspace.org>
 
