@@ -450,7 +450,7 @@ sub do_real_list {
 		[ 'tab|t'		=> \$dotab,
 			'Outputs the list with tabs as field delimiter.' ],
 		[ 'format|f=s'	=> \$format,
-			'The output format.  (default: table)' ],
+			"The output format. FMT is 'table' (default), 'dotty', or 'dotty-build'", 'FMT' ],
 	);
 
 	if ($cmd eq "list") {
