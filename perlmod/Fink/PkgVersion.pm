@@ -1513,6 +1513,13 @@ sub in_tree {
 
 ### other accessors
 
+# get_source_suffices
+#
+# retained as long-standing public interface, now deprecated
+sub get_source_suffices {
+	$_[0]->get_source_suffixes();
+}
+
 # get_source_suffixes
 #
 # Returns an ordered list of all "N"s for which there are non-"none" SourceN

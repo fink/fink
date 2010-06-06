@@ -1,5 +1,10 @@
 2010-06-03  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: get_source_suffices renamed get_source_suffixes,
+	but keep older as wrapper to avoid breaking public interface
+
+2010-06-03  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm: List known --format values in 'fink list --help'
 
 2010-06-03  Alexander Hansen <alexkhansen@users.sourceforge.net>
