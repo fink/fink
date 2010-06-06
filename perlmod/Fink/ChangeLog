@@ -1,31 +1,31 @@
-2010-06-03  Daniel Macks <dmacks@netspace.org>
+2010-06-03  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: List known --format values in 'fink list --help'
 
 2010-06-03  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
-	* Bootstrap.pm:  Ldd OS 10.6.3 as a supported version.
+	* Bootstrap.pm:  Add OS 10.6.3 as a supported version.
 
-2010-06-03  Daniel Macks <dmacks@netspace.org>
+2010-06-03  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm: Add 'fink list --format=dotty-build', gives
 	Depends+BuildDepends of family (cf. --format=dotty that does
 	Depends of specific package)
 
-2010-05-10  Daniel Macks <dmacks@netspace.org>
+2010-05-10  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Fallback try otool64 -L if otool -L fails
 
-2010-05-06  Alexander Hansen <alexkhansen@users.sourceforge.net>
+2010-05-06  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Validation.pm:  Accept DYLIB_STUB as also being a dylib.
 
-2010-03-16  Max Horn <max@quendi.de>
+2010-03-16  Max Horn  <max@quendi.de>
 
 	* Checksum.pm: Fix example to talk about "checksum" types/modules,
 	instead of "notifier" types/modules
 
-2010-03-16  Max Horn <max@quendi.de>
+2010-03-16  Max Horn  <max@quendi.de>
 
 	* Fix up indention in several *.pm files
 
