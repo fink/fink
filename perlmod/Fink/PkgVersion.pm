@@ -2628,7 +2628,7 @@ sub get_binary_depends {
 
 Get the dependency (or conflicts) package list. If $want_build is
 true, return the compile-time package list; if it is false, return
-only the runtime package list. If $dep_or_confl is true, return the
+only the runtime package list. If $want_conflicts is true, return the
 antidependencies (conflicts) list; if it is false, return the
 dependencies.
 
