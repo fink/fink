@@ -2540,7 +2540,28 @@ sub resolve_depends {
 			}
 
 			if ($versionspec =~ /^\s*$/) {
-				push @$altlist, $package->get_all_providers();
+				# If duplicate %f of a real package, only highest-
+				# priority one (based on Trees order) is included in
+				# Package's PkgVersion object list returned by
+				# get_all_providers(). But for Provides:, *all*
+				# (including dups across multiple Trees) are returned.
+				# Need to have only one (the highest-prio Tree) of
+				# each, else runtime Engine crashes with
+				# node-already-exists error.
+				#
+				# Trees are processed in prio order, so just want last
+				# of each %f if there are dups. But replace at its
+				# first position in list, assuming the order of the
+				# first-seen matters(?). Would be more optimal to do
+				# within get_all_providers (only deal with Provides
+				# not bother with real pkgs).
+				my @providers = $package->get_all_providers();
+				my %seen=();	# keys: %f
+				# run backwards over @providers due to Trees priority
+				@providers = reverse grep {
+					not $seen{$_->get_fullname()}++
+				} reverse @providers;
+				push @$altlist, @providers;
 			} else {
 				push @$altlist, $package->get_matching_versions($versionspec);
 			}

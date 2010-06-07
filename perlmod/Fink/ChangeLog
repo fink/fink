@@ -1,3 +1,8 @@
+2010-06-07  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: dependency resolver should only consider
+	highest-priority Tree for each %f that Provides a package
+
 2010-06-03  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: get_source_suffices renamed get_source_suffixes,
