@@ -1,3 +1,13 @@
+2010-06-08  Daniel Macks  <dmacks@netspace.org>
+
+
+	* Package.pm (get_all_providers): convert to named-parameters API,
+	add option to give only highest-priority Tree for each %f that
+	Provides a package.
+	* PkgVersion.pm: resolver use get_all_providers option for
+	single-Tree Provides instead of local implementation
+	* Engine.pm: update to use new Package::get_all_providers syntax
+
 2010-06-07  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: dependency resolver should only consider

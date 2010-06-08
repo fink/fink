@@ -259,14 +259,59 @@ sub get_matching_versions {
 		@include_list;
 }
 
+=item get_all_providers
+
+  my @pvs = $po->get_all_providers;
+  my @pvs = $po->get_all_providers $noload;
+  my @pvs = $po->get_all_providers %options;
+
+Returns a list all PkgVersion objects for the Package name. This list
+includes all actual packages with this Name and also others that list
+this one in the Provides field. The following options are known:
+
+=over 4
+
+=item no_load (optional)
+
+If present and true (or alternately specified as $noload direct
+parameter), the current package database will not be read in to
+memory.
+
+=item unique_provides (optional)
+
+If is present and true, only a single PkgVersion object (probably the
+one with highest priority according to Trees) of any specific %f will
+be returned for packages that Provides the current Name. Otherwise,
+separate PkgVersion objects for the same %f in different Trees may be
+included.
+
+=back
+
+=cut
+
 sub get_all_providers {
 	my $self = shift;
-	my $noload = shift || 0;
-	my @versions;
+	@_ = ('no_load' => $_[0]) if @_ == 1; # upgrade to new API
+	my %options = @_;
 
-	@versions = values %{$self->{_versions}};
-	push @versions, @{$self->{_providers}};
-	map { $_->load_fields } @versions unless $noload;
+	my @versions = values %{$self->{_versions}};
+
+	my @providers = @{$self->{_providers}};
+	if (@providers && $options{'unique_provides'}) {
+			# Trees are processed in prio order, so just want last of
+			# each %f if there are dups. But replace at its first
+			# position in list, assuming the order of the first-seen
+			# matters(?).
+		my %seen=();	# keys: %f
+		# run backwards over @providers due to Trees priority
+		@providers = reverse grep {
+			not $seen{$_->get_fullname()}++
+		} reverse @providers;
+
+	}
+	push @versions, @providers;
+
+	map { $_->load_fields } @versions unless $options{'no_load'};
 	return @versions;
 }
 
