@@ -200,12 +200,13 @@ If you use a HTTP proxy then you should enter its address here, for example:
 .It ProxyHTTP: http://yourhost.com:3128/ 
 .El
 Leave if blank if you do not use a HTTP proxy. 
-.It Cm DownloadMethod: Ar wget or curl or axel or axelautomirror 
-Fink can use three different applications to download files from the Internet - 
+.It Cm DownloadMethod: Ar wget or curl or axel or axelautomirror or aria2 
+Fink can use four different applications to download files from the Internet - 
 .Nm wget,
 .Nm curl,
+.Nm axel,
 or 
-.Nm axel.
+.Nm aria2.
 The value 
 .Nm axelautomirror
 uses an experimental mode of the 

@@ -1,3 +1,7 @@
+2010-06-09  Daniel Johnson  <daniel@daniel-johnson.org>
+
+	* fink.conf.5.in: Document new DownloadMethod:aria2
+
 2010-04-17  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: fix nroff warning (remove blank line)

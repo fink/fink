@@ -1,5 +1,8 @@
-2010-06-08  Daniel Macks  <dmacks@netspace.org>
+2010-06-09  Daniel Johnson  <daniel@daniel-johnson.org>
 
+	* NetAccess.pm: Add "aria2" as download method
+
+2010-06-08  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm (get_all_providers): convert to named-parameters API,
 	add option to give only highest-priority Tree for each %f that
