@@ -3574,16 +3574,7 @@ sub phase_compile {
 		if($result == 1) { 
 			warn "phase test: warning\n";
 		} elsif($result) {
-			my $error = "phase test: " . $self->get_fullname()." failed";
-			my $notifier = Fink::Notify->new();
-			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-
-			my $errstr = "phase test: error ($result)\n";
-			if(Fink::Config::get_option("tests") eq "on") {
-				die $errstr;
-			} else {
-				warn $errstr;
-			}
+			$self->script_error( phase => 'testing', nonfatal => (Fink::Config::get_option("tests") ne "on") );
 		} else {
 			warn "phase test: passed\n";
 		}
@@ -5104,25 +5095,59 @@ sub run_script {
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
 	}
 	if ($result and !$ignore_result) {
-		my $notifier = Fink::Notify->new();
-		my $error = "phase " . $phase . ": " . $self->get_fullname()." failed";
-		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-		if ($self->has_param('maintainer')) {
-			$error .= "\n\nBefore reporting any errors, please run \"fink selfupdate\" and\n" .
-				"try again.  If you continue to have issues, please check to see if the\n" .
-				"FAQ on fink's website solves the problem.  If not, ask on the fink-users\n" .
-				"or fink-beginners mailing lists, with a carbon copy to the maintainer:\n\n".
-				"\t" . $self->param('maintainer') . "\n\n";
-$error .= "Note that this is preferable to emailing the maintainer directly, since\n" .
-	"most fink package maintainers do not have access to all possible\n" .
-	"hardware and software configurations.\n\n";
-		}
-		die $error . "\n";
+		$self->script_error( phase => $phase );
 	}
 	return $result;
 }
 
+=item script_error
 
+	$self->script_error %opts;
+
+Issue an error message, for when part of the build process fails. The
+following %opts are known:
+
+=over 4
+
+=item phase (required)
+
+The phase of the build process ("patching", "compiling", "installing",
+etc.)
+
+=item nonfatal (optional)
+
+If defined and true, the message is issued as a warning and program
+control returns rather than aborting the script.
+
+=back
+
+=cut
+
+sub script_error {
+	my $self = shift;
+	my %opts = @_;
+
+	my $notifier = Fink::Notify->new();
+	my $error = "phase " . $opts{'phase'} . ": " . $self->get_fullname()." failed";
+	$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+	if ($self->has_param('maintainer')) {
+		$error .= "\n\n" .
+			"Before reporting any errors, please run \"fink selfupdate\" and\n" .
+			"try again.  If you continue to have issues, please check to see if the\n" .
+			"FAQ on fink's website solves the problem.  If not, ask on the fink-users\n" .
+			"or fink-beginners mailing lists, with a carbon copy to the maintainer:\n" .
+			"\n".
+			"\t" . $self->param('maintainer') . "\n" .
+			"\n" .
+			"Note that this is preferable to emailing the maintainer directly, since\n" .
+			"most fink package maintainers do not have access to all possible\n" .
+			"hardware and software configurations.\n";
+	}
+
+	# need trailing newline in the actual die/warn to prevent
+	# extraneous perl diagnostic msgs?
+	$opts{'nonfatal'} ? warn "$error\n"	: die "$error\n";
+}
 
 ### get_perl_dir_arch
 

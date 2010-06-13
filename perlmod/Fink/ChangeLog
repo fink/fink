@@ -1,3 +1,8 @@
+2010-06-13  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: factor out new script_error() method from
+	run_script(), make sure it runs after phase:test also.
+
 2010-06-09  Daniel Johnson  <daniel@daniel-johnson.org>
 
 	* NetAccess.pm: Add "aria2" as download method
