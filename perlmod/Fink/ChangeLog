@@ -1,3 +1,7 @@
+2010-06-15  Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm:  Add OS 10.6.4 as a supported version.
+
 2010-06-13  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: factor out new script_error() method from

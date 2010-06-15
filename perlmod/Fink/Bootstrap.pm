@@ -270,7 +270,7 @@ END
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.5";
-	} elsif ($host =~ /^i386-apple-darwin10\.[0-3]\./) {
+	} elsif ($host =~ /^i386-apple-darwin10\.[0-4]\./) {
 		&print_breaking("\nThis version of fink supports bootstrapping under Mac OS X 10.6, " .
 			"as well as upgrading from 10.5. However, DIRECT UPGRADING FROM " .
 			"10.4 OR EARLIER IS NOT SUPPORTED.\n\n") unless ($arch eq "x86_64");
