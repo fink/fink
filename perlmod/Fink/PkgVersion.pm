@@ -3574,7 +3574,8 @@ sub phase_compile {
 		if($result == 1) { 
 			warn "phase test: warning\n";
 		} elsif($result) {
-			$self->script_error( phase => 'testing', nonfatal => (Fink::Config::get_option("tests") ne "on") );
+			$self->package_error( phase => 'testing', nonfatal => (Fink::Config::get_option("tests") ne "on") );
+			print "Continuing anyway as requested.\n";
 		} else {
 			warn "phase test: passed\n";
 		}
@@ -4434,7 +4435,7 @@ EOF
 			} );
 		if(!Fink::Validation::validate_dpkg_unpacked($destdir)) {
 			if(Fink::Config::get_option("validate") eq "on") {
-				die "Please correct the above problems and try again!\n";
+				$self->package_error( phase => '.deb validation', preamble => "If you are the maintainer, please correct the above problems and try\nagain! Otherwise, consider this a bug that should be reported." );
 			} else {
 				warn "Validation of .deb failed.\n";
 			}
@@ -5095,14 +5096,14 @@ sub run_script {
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
 	}
 	if ($result and !$ignore_result) {
-		$self->script_error( phase => $phase );
+		$self->package_error( phase => $phase );
 	}
 	return $result;
 }
 
-=item script_error
+=item package_error
 
-	$self->script_error %opts;
+	$self->package_error %opts;
 
 Issue an error message, for when part of the build process fails. The
 following %opts are known:
@@ -5119,30 +5120,39 @@ etc.)
 If defined and true, the message is issued as a warning and program
 control returns rather than aborting the script.
 
+=item preamble (optional)
+
+Text displayed prior to the standard error-message block.
+
 =back
 
 =cut
 
-sub script_error {
+sub package_error {
 	my $self = shift;
 	my %opts = @_;
 
 	my $notifier = Fink::Notify->new();
 	my $error = "phase " . $opts{'phase'} . ": " . $self->get_fullname()." failed";
 	$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-	if ($self->has_param('maintainer')) {
+	if (defined $opts{'preamble'}) {
+		$error .= "\n\n" . $opts{'preamble'};
+	}
 		$error .= "\n\n" .
 			"Before reporting any errors, please run \"fink selfupdate\" and\n" .
 			"try again.  If you continue to have issues, please check to see if the\n" .
 			"FAQ on fink's website solves the problem.  If not, ask on the fink-users\n" .
-			"or fink-beginners mailing lists, with a carbon copy to the maintainer:\n" .
+			"or fink-beginners mailing lists";
+	if ($self->has_param('maintainer')) {
+		$error .= ", with a carbon copy to the maintainer:\n" .
 			"\n".
 			"\t" . $self->param('maintainer') . "\n" .
 			"\n" .
 			"Note that this is preferable to emailing the maintainer directly, since\n" .
 			"most fink package maintainers do not have access to all possible\n" .
-			"hardware and software configurations.\n";
+			"hardware and software configurations";
 	}
+	$error .= ".\n";
 
 	# need trailing newline in the actual die/warn to prevent
 	# extraneous perl diagnostic msgs?
