@@ -1036,6 +1036,9 @@ sub conditional_space_list {
 
 # returns the requested *Script field (or default value, etc.)
 # percent expansion is performed
+#
+# implementation note: Type:bundle takes precedence over other "magic"
+# types like Type:perl
 sub get_script {
 	my $self = shift;
 	my $field = shift;
