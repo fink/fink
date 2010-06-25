@@ -8,6 +8,7 @@
 .Nm
 .Op Ar options
 .Ar command
+.Op Ar command-options
 .Op Ar package
 .\"
 .\"
@@ -285,15 +286,18 @@ Also purge packages that depend on the package(s) to be purged.
 This command updates all installed packages to the latest version. It does
 not need a package list, so you just type:
 .Dl Cm fink update-all
-.It Cm list Op Ar package...
-This command produces a list of available packages, listing installation
-status, the latest version and a short description. If you call it without
-parameters, it will list all available packages. If you pass one
-or more package names, fink will list only those packages that match
-the given names. You can use shell globs (? and * wildcards); if you
-do not, then the pattern is searched as a substring.
+.It Cm list Oo Ar list-options Oc Op Ar package...
+This command produces a list of available packages. If no packages are
+specified, it will list all available packages. If one or more package
+names are given, fink will list only those packages that match the
+given names. If the passed package named contain shell globs (?  and *
+wildcards), only those packages matching the glob are returned. If
+simple text strings (not globs) are passed, packages containing them
+as substrings of the name are returned.
 .Pp
-The first column displays the installation state with the following meanings:
+The default output is a table, listing installation state, the latest
+version and a short package description. The first column displays the
+installation state with the following meanings:
 .Pp
 .Bl -tag -width flag -offset indent -compact
 .It \ 
@@ -314,15 +318,75 @@ installed. To see all versions of a package available on your system
 along with more detailed status information about each, use
 .Cm fink dumpinfo -fallversions
 .Pp
-There are also some flags for the 
-.Cm fink list
-command
+The following
+.Cm list-options
+affect the output format:
 .Bl -tag -width flag -offset indent -compact
 .It Cm -h,--help
 Show the options which are available.
 .It Cm -t,--tab
-Output the list in a tab delimited format, useful for running the output
-through a script.
+The default table format has fixed-width columns that are adjusted to
+fill the available screen size, with package names and descriptions
+truncated as necessary to fit. In
+.Cm -t
+mode, the output is tab delimited and fields are not truncated
+regardles of screen size. The tabbed mode is useful for running the
+output through additional scripts or parsers, and is the default
+format when
+.Cm fink list
+is used as part of a pipeline rather than as a simple command.
+.It Cm --format=table
+Output results in the standard fixed-width or tab-delimited table
+style. See the
+.Cm -t
+flag for a way to affect the format, and the intro to this command for
+general information about the layout.
+.It Cm --format=dotty
+Output package dependency data in .dot format, suitable for processing
+by
+.Cm dotty
+and other
+.Cm graphviz
+tools (compare to the human-readable list format of the
+.Cm fink show-deps
+command). This output mode just gives runtime dependencies of each
+package You can parse the output to get reverse-depends
+information, for example:
+.Dl fink list --format=dotty | grep ' \*[q]libgettext8-shlibs\*[q]'
+will list all packages that have a runtime dependency on the
+libgettext8-shlibs package. Technically, this example lists all
+packages' runtime dependency data, and then selects the lines that
+have libgettext8-shlibs in the dependency-target field. Note, there is
+a single space between the two different quotes before the
+package-name but not after.
+.It Cm --format=dotty-build
+Output package dependency data in .dot format, suitable for processing
+by
+.Cm dotty
+and other
+.Cm graphviz
+tools (compare to the human-readable list format of the
+.Cm fink show-deps
+command). This output mode gives compiletime dependencies of each
+package, which includes runtime and build dependencies of every
+package in a family (packages built together). Using the
+.Cm -m
+flag will also include dependencies for the package-family's
+self-testing. You can parse the output to get reverse-builddepends
+information, for example:
+.Dl fink -m list --format=dotty-build | grep ' \*[q]libgettext8-dev\*[q]'
+will list all packages that have a compiletime dependency on the
+libgettext8-dev package. Technically, this example lists all
+packages' compiletime dependency data, and then selects the lines that
+have libgettext8-dev in the dependency-target field. Note, there is
+a single space between the two different quotes before the
+package-name but not after.
+.El
+.Pp
+The following
+.Cm list-options
+control which packages are listed:
+.Bl -tag -width flag -offset indent -compact
 .It Cm -i,--installed
 Show only those packages which are currently installed.
 .It Cm -o,--outdated
@@ -605,7 +669,12 @@ package is compiled. Output is in a form suitable to be fed to 'eval'.
 .El
 .It Cm show-deps Ar package...
 Displays a human-readable list of the compile-time (build) and
-run-time (installation) dependencies of the listed package(s).
+run-time (installation) dependencies of the listed package(s). See the
+.Cm fink list --format=dotty
+and
+.Cm fink list --format=dotty-build
+commands for other ways of obtaining dependency (and
+reverse-dependency) information.
 .El
 .\"
 .\"
