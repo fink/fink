@@ -1,3 +1,8 @@
+2010-06-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: pkgconfig misparses "-Xlinker" in .pc
+	files (multiword flag, should use -Wl, instead)
+
 2010-06-14  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: rename script_error() to package_error().

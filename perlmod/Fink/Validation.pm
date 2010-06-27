@@ -1796,7 +1796,7 @@ sub _validate_dpkg {
 			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
 				while (<$datafile>) {
 					chomp;
-					if (/\s((?:-W.,|)-framework)[^,]/) {
+					if (/\s((?:-W.,|)-framework)[^,]/ || /\s(-Xlinker)\s/) {
 						&stack_msg($msgs, "The $1 flag may get munged by $filetype. See the gcc manpage for information about passing multi-word options to flags for specific compiler passes.", $filename, $_);
 					}
 				}
