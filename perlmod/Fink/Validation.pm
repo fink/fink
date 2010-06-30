@@ -1480,6 +1480,8 @@ sub _validate_dpkg {
 	my ($installed_headers, $installed_ld_libs) = (0, 0);
 	my @installed_dylibs;
 
+	my %podfiles_dirs;
+
 	# the whole control module is loaded and pre-precessed before any actual validation
 	my $deb_control;        # key:value of all %d/DEBIAN/control fields
 	my $control_processed;  # parsed data from $deb_control
@@ -1826,6 +1828,12 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "A global perllocal.pod must not be installed directly as part of the .deb (use UpdatePOD or related mechanism)", $filename);
 		}
 
+		# Track number of times each */poddirs/ is listed
+		# (dir itself and as basename of other stuff)
+		if ($filename =~ /^(.*\/podfiles\/)/) {
+			$podfiles_dirs{$1}++;
+		}
+
 		# count number of files and links ("real things, not dirs") in %i
 		lstat $File::Find::name;
 		$dpkg_file_count++ if -f _ || -l _;
@@ -1899,6 +1907,17 @@ sub _validate_dpkg {
 			$looks_good = 0;
 		}
 	}
+
+	# An empty podfiles/ dir triggers a bug in PostInst when this
+	# package is the first one of its type (perl-unversioned, or a
+	# specific perlversion) that gets installed.
+	foreach my $poddir (sort keys %podfiles_dirs) {
+		if ($podfiles_dirs{$poddir}==1) {
+			# exactly one: dir itself but never as basedir of anything
+			print "Error: $poddir is empty. If a perl package does not install any podfiles, set UpdatePOD:false (or do not define it) in the .info file.\n";
+			$looks_good = 0;
+		}
+	}			
 
 	# make sure we have Depends:scrollkeeper if scrollkeeper is called in dpkg scripts
 	foreach (qw/ preinst postinst prerm postrm /) {

@@ -1,3 +1,9 @@
+2010-06-30  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: note about an UpdatePOD problem
+	* Validation.pm: Type:perl PostInst for UpdatePOD can break if no
+	podfiles/ files in .deb
+
 2010-06-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: pkgconfig misparses "-Xlinker" in .pc

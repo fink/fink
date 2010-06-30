@@ -4165,6 +4165,9 @@ EOF
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
+		# bug in postinst: cat .../*.pod fails (leading to dpkg -i
+		# abort) if no files (i.e., first pkg of this Type:perl
+		# subtype) being installed
 		$scriptbody{postinst} .=
 			"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
 			"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
