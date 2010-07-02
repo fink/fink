@@ -1,6 +1,7 @@
 2010-07-02  Dave Morrison  <drm@finkproject.org>
 
 	* fink.info.in, Makefile, setup.sh: feed $Distribution to setup.sh
+	* fink.conf.5.in: clarify description of Trees
 
 2010-06-25  Daniel Macks  <dmacks@netspace.org>
 
