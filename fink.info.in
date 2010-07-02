@@ -17,8 +17,8 @@ Source: @SOURCE@
 Source-MD5: @MD5@
 NoSetPATH: true
 CompileScript: <<
- make test PREFIX=%p ARCHITECTURE=%m
- ./setup.sh %p %m
+ make test PREFIX=%p ARCHITECTURE=%m DISTRIBUTION=@DISTRIBUTION@
+ ./setup.sh %p %m @DISTRIBUTION@
 <<
 InstallScript: <<
  ./install.sh %i %m
