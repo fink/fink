@@ -83,10 +83,10 @@ Available trees are:
 .Bl -tag -width flag -offset indent -compact
 .It local/main      - any local packages you want to install
 .It local/bootstrap - packages used in the installation of fink
-.It stable/crypto   - stable cryptographic packages
-.It stable/main     - other stable packages
-.It unstable/crypto - unstable cryptographic packages
-.It unstable/main   - other unstable packages 
+.It stable/crypto   - stable cryptographic packages from fink
+.It stable/main     - other stable packages from fink
+.It unstable/crypto - unstable cryptographic packages from fink
+.It unstable/main   - other unstable packages from fink
 .El
 You may also add your own trees in the 
 .Pa @PREFIX@/fink/dists

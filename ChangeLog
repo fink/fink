@@ -1,3 +1,10 @@
+2010-07-02  Dave Morrison  <drm@finkproject.org>
+
+	* fink.info.in, Makefile, setup.sh: feed $Distribution to setup.sh
+	* fink.conf.5.in: clarify description of Trees
+	* setup.sh: don't mention crypto trees in fink.conf.5 for 10.6 or
+	later
+
 2010-07-01  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.29.13, a release
