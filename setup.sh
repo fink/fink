@@ -68,6 +68,15 @@ sed "s|@PREFIX@|$basepath|g" <fink.8.in \
   | perl -MTime::Local -MPOSIX=strftime -p -e '$d="Date:";if (s/(\.Dd \$$d) (\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) \$/\1/) {$epochtime = timegm($7,$6,$5,$4,$3-1,$2-1900);$datestr = strftime "%B %e, %Y", localtime($epochtime); s/(\.Dd )\$$d/$1$datestr/;}' \
   >fink.8
 echo "Distribution $distribution..."
+# Note: we edit out obsolete information from fink.conf.5 regarding the
+# crypto trees, for distributions earlier than 10.6.  In the future, when
+# those distributions are no longer supported, we can just edit fink.conf.5
+# to reflect these changes, and dispense with the lines below.
+if [ $distribution != "10.4" ] && [ $distribution != "10.5" ]; then
+  echo "Editing fink.conf.5..."
+  mv fink.conf.5.in fink.conf.5.in.orig
+  sed -e "/crypto/d" -e "s/other stable/stable/" -e "s/other unstable/unstable/" < fink.conf.5.in.orig > fink.conf.5.in
+fi
 sed "s|@PREFIX@|$basepath|g" <fink.conf.5.in \
   | perl -MTime::Local -MPOSIX=strftime -p -e '$d="Date:";if (s/(\.Dd \$$d) (\d+)\/(\d+)\/(\d+) (\d+):(\d+):(\d+) \$/\1/) {$epochtime = timegm($7,$6,$5,$4,$3-1,$2-1900);$datestr = strftime "%B %e, %Y", localtime($epochtime); s/(\.Dd )\$$d/$1$datestr/;}' \
   >fink.conf.5

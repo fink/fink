@@ -2,6 +2,8 @@
 
 	* fink.info.in, Makefile, setup.sh: feed $Distribution to setup.sh
 	* fink.conf.5.in: clarify description of Trees
+	* setup.sh: don't mention crypto trees in fink.conf.5 for 10.6 or
+	later
 
 2010-06-25  Daniel Macks  <dmacks@netspace.org>
 
