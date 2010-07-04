@@ -4,6 +4,8 @@
 	* Config.pm: &write_sources_list now calls &apt_tree_default
 	* Bootstrap.pm: &add_injected_to_trees now takes $distribution
 	as an argument, and calls Fink::Config::fink_tree_default
+	* Bootstrap.pm: exit with message if new argument of 
+	&add_injected_to_trees is absent
 
 2010-06-30  Daniel Macks  <dmacks@netspace.org>
 
