@@ -35,7 +35,7 @@ require Exporter;
 our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $buildpath $dbpath
                       $distribution $ignore_errors
-                      get_option set_options
+                      get_option set_options fink_tree_default
                      );
 our $VERSION	 = 1.00;
 
@@ -68,6 +68,10 @@ Fink::Config - Read/write the fink configuration
   my $path		= $config->get_path;
   my $verbosity	= $config->verbosity_level;
   my $use_apt	= $config->binary_requested;
+
+  # Tree initialization
+  my $apt_trees = apt_tree_default($distribution);
+  my $fink_trees= fink_tree_default($distribution);
 
   # Tree management
   my @trees		= $config->get_treelist();
@@ -339,6 +343,57 @@ EOF
 	set_options(\%opts);
 	
 	return @args;
+}
+
+=back
+
+=head2 Tree initialization
+
+=over 4
+
+=item apt_tree_default
+
+  my $apt_trees = apt_tree_default($distribution);
+
+Returns a space-delimited list of the trees used by apt when accessing a
+binary distribution supplied by fink.  Prior to 10.6, the list was
+"main crypto"; in 10.6 and later, it is "main".
+
+=cut
+
+
+sub apt_tree_default {
+	my $distribution = shift;
+
+	if ($distribution gt "10.5") {
+		return "main";
+	} else {
+		return "main crypto";
+	}
+}
+
+=item fink_tree_default
+
+  my $fink_trees = fink_tree_default($distribution);
+
+Returns a space-delimited list of the trees used by default when configuring
+fink.  This list is derived from apt_tree_default($distribution), so only
+the latter needs to be changed if things change in the future.  Prior to 10.6,
+the list was "local/main stable/main stable/crypto"; 
+in 10.6 and later, it is "local/main stable/main".
+
+=cut
+
+
+sub fink_tree_default {
+	my $distribution = shift;
+
+	my @list = split(/ /,&apt_tree_default($distribution));
+	my $output = "local/main";
+	foreach my $item (@list) {
+		$output = $output . " stable/" . $item;
+	}
+	return $output;
 }
 
 =back
@@ -698,19 +753,20 @@ if (-e "$basepath/fink/old/dists/unstable") {
 		}
 
 		my $distribution = $self->param("Distribution");
+		my $apt_trees = &apt_tree_default($distribution);
 
 		$body .= <<EOF;
 # Official binary distribution: download location for packages
 # from the latest release
 EOF
 
-	$body .= "deb $apt_mirror $distribution/release main crypto\n\n";
+	$body .= "deb $apt_mirror $distribution/release $apt_trees\n\n";
 		$body .= <<EOF;
 # Official binary distribution: download location for updated
 # packages built between releases
 EOF
 
-	$body .= "deb $apt_mirror $distribution/current main crypto\n\n";
+	$body .= "deb $apt_mirror $distribution/current $apt_trees\n\n";
 
 	}
 

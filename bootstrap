@@ -423,10 +423,11 @@ if (not -d $installto) {
 }
 
 my $selfupdatetrees = get_selfupdatetrees($distribution);
+my $fink_trees = &Fink::Config::fink_tree_default($distribution);
 
 my @dirlist = qw(etc etc/alternatives etc/apt src fink fink/debs var var/lib var/lib/fink);
 push @dirlist, "fink/$selfupdatetrees", "fink/$selfupdatetrees/stable", "fink/$selfupdatetrees/local";
-foreach my $dir (qw(stable/main stable/crypto local/main)) {
+foreach my $dir (split(/ /,$fink_trees)) {
 	push @dirlist, "fink/$selfupdatetrees/$dir", "fink/$selfupdatetrees/$dir/finkinfo",
 		"fink/$selfupdatetrees/$dir/binary-darwin-$arch";
 }
@@ -441,7 +442,7 @@ foreach my $dir (@dirlist) {
 
 # install the initial Release and Packages.gz files
 my ($dr,$arv,$comp);
-foreach $dr (qw(stable/main stable/crypto local/main)) {
+foreach $dr (split(/ /,$fink_trees)) {
 ($arv,$comp) = split(/\//, $dr);
 &execute("/usr/bin/sed -e \"s,\@ARV\@,$arv,\" -e \"s,\@COMP\@,$comp,\" -e \"s,\@ARCH\@,$arch,\" < Release > $installto/fink/$selfupdatetrees/$dr/binary-darwin-$arch/Release; /usr/bin/touch $installto/fink/$selfupdatetrees/$dr/binary-darwin-$arch/Packages; /usr/bin/gzip $installto/fink/$selfupdatetrees/$dr/binary-darwin-$arch/Packages");
 }
@@ -501,7 +502,7 @@ print CONFIG <<"EOF";
 # Fink configuration, initially created by bootstrap
 Basepath: $installto
 RootMethod: $rootmethod
-Trees: local/main stable/main stable/crypto
+Trees: $fink_trees
 Distribution: $distribution
 SelfUpdateTrees: $selfupdatetrees
 EOF

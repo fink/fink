@@ -106,7 +106,7 @@ $config->save();
 my $updating = 0;
 
 if ( not ($distold eq $distribution)) {
-    add_injected_to_trees();
+    add_injected_to_trees($distribution);
     $updating = 1;
 ### FIXME: this variable is a hook to action in Fink::SelfUpdate::finish,
 ### but that action has not yet been implemented.  (The variable should

@@ -25,7 +25,7 @@ package Fink::Bootstrap;
 
 use ExtUtils::Manifest qw(&maniread);
 
-use Fink::Config qw($config $basepath);
+use Fink::Config qw($config $basepath &fink_tree_default);
 use Fink::Services qw(&execute &enforce_gcc &eval_conditional);
 use Fink::CLI qw(&print_breaking &prompt_boolean);
 use Fink::Package;
@@ -352,7 +352,7 @@ sub inject_package {
 	
 	### check that local/injected is in the Trees list
 	
-	&add_injected_to_trees();
+	&add_injected_to_trees($distribution);
 
 	### create tarball for the package
 	
@@ -391,9 +391,10 @@ sub inject_package {
 
 =item add_injected_to_trees
 
-	my ($exit_value) = add_injected_to_trees();
+	my ($exit_value) = add_injected_to_trees($distribution);
 
-Adds local/injected to the Trees list, if not already present.  Returns
+Adds local/injected to the Trees list, if not already present.  Now
+depends on $distribution because the default Trees list does.  Returns
 1 on failure, 0 on success.
 
 Called by inject_package() and fink's postinstall.pl.
@@ -402,10 +403,13 @@ Called by inject_package() and fink's postinstall.pl.
 
 sub add_injected_to_trees {
 
+	my $distribution = shift;
+
 	my $trees = $config->param("Trees");
 	if ($trees =~ /^\s*$/) {
 		print "Adding a Trees line to fink.conf...\n";
-		$config->set_param("Trees", "local/main stable/main stable/crypto local/injected");
+		my $fink_trees = Fink::Config::fink_tree_default($distribution);
+		$config->set_param("Trees", "$fink_trees local/injected");
 		$config->save();
 	} else {
 		if (grep({$_ eq "local/injected"} split(/\s+/, $trees)) < 1) {

@@ -1,3 +1,9 @@
+2010-07-04  Dave Morrison  <drm@finkproject.org>
+
+	* postinstall.pl.in: Fink::Bootstrap::add_injected_to_trees now 
+	takes $distribution as an argument
+	* bootstrap: now calls Fink::Config::fink_tree_default
+
 2010-07-02  Dave Morrison  <drm@finkproject.org>
 
 	* fink.info.in, Makefile, setup.sh: feed $Distribution to setup.sh

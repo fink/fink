@@ -1,3 +1,10 @@
+2010-07-04  Dave Morrison  <drm@finkproject.org>
+
+	* Config.pm: new functions &apt_tree_default and &fink_tree_default
+	* Config.pm: &write_sources_list now calls &apt_tree_default
+	* Bootstrap.pm: &add_injected_to_trees now takes $distribution
+	as an argument, and calls Fink::Config::fink_tree_default
+
 2010-06-30  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: note about an UpdatePOD problem
