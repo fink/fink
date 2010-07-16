@@ -1828,10 +1828,14 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "A global perllocal.pod must not be installed directly as part of the .deb (use UpdatePOD or related mechanism)", $filename);
 		}
 
-		# Track number of times each */poddirs/ is listed
-		# (dir itself and as basename of other stuff)
-		if ($filename =~ /^(.*\/podfiles\/)/) {
-			$podfiles_dirs{$1}++;
+		# Track podfiles dirs and contents
+		if ($filename =~ /^$basepath\/share\/podfiles\//) {
+			if (-d $filename) {
+				$podfiles_dirs{$filename}+=0; # makes exist, not change bool value
+			} else {
+				my $poddir=dirname($filename);
+				$podfiles_dirs{"$poddir/"}++; # makes bool true
+			}
 		}
 
 		# count number of files and links ("real things, not dirs") in %i
@@ -1912,12 +1916,15 @@ sub _validate_dpkg {
 	# package is the first one of its type (perl-unversioned, or a
 	# specific perlversion) that gets installed.
 	foreach my $poddir (sort keys %podfiles_dirs) {
-		if ($podfiles_dirs{$poddir}==1) {
-			# exactly one: dir itself but never as basedir of anything
-			print "Error: $poddir is empty. If a perl package does not install any podfiles, set UpdatePOD:false (or do not define it) in the .info file.\n";
-			$looks_good = 0;
+		if (my @lines = grep {/\Qcat $poddir*.pod\E/} @{$dpkg_script->{"postinst"}}) {
+			# hallmark of UpdatePOD:true
+			if (!$podfiles_dirs{$poddir}) {
+				# but no podfile!
+				print "Error: $poddir is empty. If a perl package does not install any podfiles, set UpdatePOD:false (or do not define it) in the .info file.\n";
+				$looks_good = 0;
+			}
 		}
-	}			
+	}
 
 	# make sure we have Depends:scrollkeeper if scrollkeeper is called in dpkg scripts
 	foreach (qw/ preinst postinst prerm postrm /) {
