@@ -133,7 +133,7 @@ Configure everything but the mirrors
 =cut
 
 sub choose_misc {
-	my ($otherdir, $builddir, $verbose);
+	my ($otherdir, $verbose);
 	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
 
 	# normal configuration
@@ -146,12 +146,19 @@ sub choose_misc {
 	}
 
 	print "\n";
-	$builddir =
-		&prompt("Which directory should Fink use to build packages? \(If you don't ".
-				"know what this means, it is safe to leave it at its default.\)",
-				default => $config->param_default("Buildpath", ""));
-	if ($builddir =~ /\S/) {
-		$config->set_param("Buildpath", $builddir);
+	{
+		my $builddir_default=$config->param_default("Buildpath", "");
+		my $builddir =
+			&prompt("Which directory should Fink use to build packages? \(If you don't ".
+					"know what this means, it is safe to leave it at its default.\)",
+					default => $builddir_default);
+		while ($builddir =~ /^[^\/]/) {
+			$builddir = &prompt("That does not look like a complete (absolute) pathname. Please try again",
+								default => $builddir_default);
+		}
+		if ($builddir =~ /\S/) {
+			$config->set_param("Buildpath", $builddir);
+		}
 	}
 	&spotlight_warning();
 
