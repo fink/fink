@@ -1,6 +1,10 @@
+2010-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.info.in: Make "Description" pass validator
+
 2010-07-04  Dave Morrison  <drm@finkproject.org>
 
-	* postinstall.pl.in: Fink::Bootstrap::add_injected_to_trees now 
+	* postinstall.pl.in: Fink::Bootstrap::add_injected_to_trees now
 	takes $distribution as an argument
 	* bootstrap: now calls Fink::Config::fink_tree_default
 
