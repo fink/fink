@@ -1,3 +1,7 @@
+2010-08-09  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.info.in: Make "Description" pass validator
+
 2010-07-02  Dave Morrison  <drm@finkproject.org>
 
 	* fink.info.in, Makefile, setup.sh: feed $Distribution to setup.sh
