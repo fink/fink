@@ -1,3 +1,9 @@
+2010-08-14  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm (get_script): New .info DefaultScript: field
+	overrides automatic %{default_script} and implicit %c settings
+	* Validation.pm: Require new enough fink if using DefaultScript:
+
 2010-07-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Configure.pm: Make sure Buildpath is absolute

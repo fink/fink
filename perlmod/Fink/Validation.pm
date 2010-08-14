@@ -143,6 +143,7 @@ our %valid_fields = map {$_, 1}
 		 'maintainer',
 		 'architecture',
 		 'distribution',
+		 'defaultscript',
 #  dependencies:
 		 'depends',
 		 'runtimedepends',
@@ -1353,6 +1354,11 @@ sub validate_info_component {
 					$looks_good = 0;
 			}
 		}
+	}
+
+	# support for new script templates
+	if (exists $properties->{defaultscript}) {
+		$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.29.99', 'use of the DefaultScript field', $filename);
 	}
 
 	return $looks_good;

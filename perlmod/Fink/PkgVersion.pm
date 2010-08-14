@@ -942,11 +942,26 @@ sub prepare_percent_c {
 	$self->get_build_directory;  # make sure we have %b
 
 	my $pct_c;
-	if ($self->is_type('perl')) {
+
+	my $type = $self->get_defaultscript_type();
+	if ($type eq 'makemaker') {
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 
-		$pct_c = "PERL=\"$perlcmd\" PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin ";
+		$pct_c = 
+			"PERL=\"$perlcmd\" " .
+			"PREFIX=\%p " .
+			"INSTALLPRIVLIB=\%p/lib/perl5$perldirectory " .
+			"INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir " .
+			"INSTALLSITELIB=\%p/lib/perl5$perldirectory " .
+			"INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir " .
+			"INSTALLMAN1DIR=\%p/share/man/man1 " .
+			"INSTALLMAN3DIR=\%p/share/man/man3 " .
+			"INSTALLSITEMAN1DIR=\%p/share/man/man1 " .
+			"INSTALLSITEMAN3DIR=\%p/share/man/man3 " .
+			"INSTALLBIN=\%p/bin " .
+			"INSTALLSITEBIN=\%p/bin " .
+			"INSTALLSCRIPT=\%p/bin ";
 	} else {
 		$pct_c = "--prefix=\%p ";
 	}
@@ -1033,6 +1048,66 @@ sub conditional_space_list {
 	$result;
 }
 
+=item get_defaultscript_type
+
+	my $defaultscript_type = $pv->get_defaultscript_type;
+
+Returns a string indicating the type of build system to assume for
+%{default_script} and related processing. The value is an enum of:
+
+=over 4
+
+=item autotools
+
+=item makemaker
+
+=item ruby
+
+=back
+
+The value is controlled explicitly by the DefaultScript: field, or
+else implicitly by certain Type: field tokens.
+
+=cut
+
+sub get_defaultscript_type {
+	my $self = shift;
+	
+	if (!exists $self->{_defaultscript_type}) {
+		# Cached because if we did it once, we are probably going to
+		# do it again for for each phase of the build process.
+		my $type;
+		if ($self->has_param('DefaultScript')) {
+			# first try explicit DefaultScript: control
+			$type = $self->param('DefaultScript');
+
+			unless ($type =~ /^(autotools|makemaker|ruby)$/i) {
+				# don't fall through to unintended if typo, etc.
+				die "this version of fink does not know how to handle DefaultScript:$type to build package ".$self->get_fullname()."\n";
+			}
+			if ($self->is_type('bundle')) {
+				die "Type:bundle cannot be overridden by DefaultScript to build package ".$self->get_fullname()."\n";
+			}
+			# Overriding Type:dummy isn't a possible state for fink
+			# because dummy means there's no .info and DefaultScript
+			# is data present only in the .info
+
+			$type = lc $type;	# canonical lowercase
+		} else {
+			# otherwise fall back to legacy Type: control
+			if ($self->is_type('perl')) {
+				$type = 'makemaker';
+			} elsif ($self->is_type('ruby')) {
+				$type = 'ruby';
+			} else {
+				$type = 'autotools';
+			}
+		}
+		$self->{_defaultscript_type} = $type;	
+	}
+
+	return $self->{_defaultscript_type};
+}
 
 # returns the requested *Script field (or default value, etc.)
 # percent expansion is performed
@@ -1066,13 +1141,14 @@ sub get_script {
 
 		$field_value = $self->param_default($field, '%{default_script}');
 
-		if ($self->is_type('perl')) {
+		my $type = $self->get_defaultscript_type();
+		if ($type eq 'makemaker') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			$perlcmd = "ARCHFLAGS=\"\" $perlcmd"; # prevent Apple's perl from building fat
 			$default_script =
-				"ARCHFLAGS=\"\" ". # prevent Apple's perl from building fat
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
-		} elsif ($self->is_type('ruby')) {
+		} elsif ($type eq 'ruby') {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$default_script =
 				"$rubycmd extconf.rb\n".
@@ -1106,7 +1182,8 @@ sub get_script {
 			$field_value = $self->param_default($field, '%{default_script}');
 		}
 
-		if ($self->is_type('perl')) {
+		my $type = $self->get_defaultscript_type();
+		if ($type eq 'makemaker') {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 			$default_script = 
@@ -1125,9 +1202,12 @@ sub get_script {
 		return "" if $self->is_type('dummy');  # Type:dummy never test
 
 		$field_value = $self->param_default($field, '%{default_script}');
-		$default_script = "";
-		if ($self->is_type('perl') && ! $self->param_boolean("NoPerlTests")) {
-			$default_script = "make test || exit 2\n";
+
+		$default_script = "make test || exit 2\n";
+		if ($self->is_type('perl') && !$self->has_param('DefaultScript') && $self->param_boolean('NoPerlTests')) {
+			# Type:perl has a NoPerlTests:true to omit this command
+			# Unsupported with DefaultScript override
+			$default_script = "";
 		}
 
 	} else {
