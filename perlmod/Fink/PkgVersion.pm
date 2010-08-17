@@ -1203,11 +1203,9 @@ sub get_script {
 
 		$field_value = $self->param_default($field, '%{default_script}');
 
-		$default_script = "make test || exit 2\n";
-		if ($self->is_type('perl') && !$self->has_param('DefaultScript') && $self->param_boolean('NoPerlTests')) {
-			# Type:perl has a NoPerlTests:true to omit this command
-			# Unsupported with DefaultScript override
-			$default_script = "";
+		my $type = $self->get_defaultscript_type();
+		if ($type eq 'makemaker' && !$self->param_boolean('NoPerlTests')) {
+			$default_script = "make test || exit 2\n";
 		}
 
 	} else {

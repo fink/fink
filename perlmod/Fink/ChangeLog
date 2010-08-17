@@ -1,3 +1,8 @@
+2010-08-17  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm (get_script): Revert default TestScript to
+	previous behavior (not "make test" for anything other than perl).
+
 2010-08-14  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm (get_script): New .info DefaultScript: field
