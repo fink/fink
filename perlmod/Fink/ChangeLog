@@ -1,3 +1,8 @@
+2010-08-27  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Roll back empty-podfiles-dir check (base-files
+	now guarantees there is a file in it)
+
 2010-08-17  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm (get_script): Revert default TestScript to

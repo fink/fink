@@ -1486,8 +1486,6 @@ sub _validate_dpkg {
 	my ($installed_headers, $installed_ld_libs) = (0, 0);
 	my @installed_dylibs;
 
-	my %podfiles_dirs;
-
 	# the whole control module is loaded and pre-precessed before any actual validation
 	my $deb_control;        # key:value of all %d/DEBIAN/control fields
 	my $control_processed;  # parsed data from $deb_control
@@ -1834,16 +1832,6 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "A global perllocal.pod must not be installed directly as part of the .deb (use UpdatePOD or related mechanism)", $filename);
 		}
 
-		# Track podfiles dirs and contents
-		if ($filename =~ /^$basepath\/share\/podfiles\//) {
-			if (-d $filename) {
-				$podfiles_dirs{$filename}+=0; # makes exist, not change bool value
-			} else {
-				my $poddir=dirname($filename);
-				$podfiles_dirs{"$poddir/"}++; # makes bool true
-			}
-		}
-
 		# count number of files and links ("real things, not dirs") in %i
 		lstat $File::Find::name;
 		$dpkg_file_count++ if -f _ || -l _;
@@ -1915,20 +1903,6 @@ sub _validate_dpkg {
 		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
 			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
-		}
-	}
-
-	# An empty podfiles/ dir triggers a bug in PostInst when this
-	# package is the first one of its type (perl-unversioned, or a
-	# specific perlversion) that gets installed.
-	foreach my $poddir (sort keys %podfiles_dirs) {
-		if (my @lines = grep {/\Qcat $poddir*.pod\E/} @{$dpkg_script->{"postinst"}}) {
-			# hallmark of UpdatePOD:true
-			if (!$podfiles_dirs{$poddir}) {
-				# but no podfile!
-				print "Error: $poddir is empty. If a perl package does not install any podfiles, set UpdatePOD:false (or do not define it) in the .info file.\n";
-				$looks_good = 0;
-			}
 		}
 	}
 
