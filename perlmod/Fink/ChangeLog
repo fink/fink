@@ -1,3 +1,8 @@
+2010-09-05  Daniel Macks  <dmacks@netspace.org>
+
+	* Text/ParseWords.pm: Sync local clone with upstream (CPAN
+	Text::ParseWords) 3.27
+
 2010-08-27  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Roll back empty-podfiles-dir check (base-files

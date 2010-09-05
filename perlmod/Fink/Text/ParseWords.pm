@@ -1,25 +1,34 @@
-# This file is based on Text::ParseWords v3.23 from perl5.8.6 from CPAN.
+# This file is based on Text::ParseWords v3.27 from CPAN.
 # It was converted to Fink::Text::ParseWords and further modified 
 # for use by Fink. You can read about these changes in the accompanying
 # ChangeLog files and by browsing the CVS repository.
 
 package Fink::Text::ParseWords;
 
-use vars qw($VERSION @ISA @EXPORT $PERL_SINGLE_QUOTE);
-$VERSION = "3.23";
+use strict;
+require 5.006;
+our $VERSION = "3.27";
 
-require 5.000;
 
 use Exporter;
-@ISA = qw(Exporter);
-@EXPORT = qw(shellwords quotewords nested_quotewords parse_line);
-@EXPORT_OK = qw(old_shellwords);
+our @ISA = qw(Exporter);
+our @EXPORT = qw(shellwords quotewords nested_quotewords parse_line);
+our @EXPORT_OK = qw(old_shellwords);
+our $PERL_SINGLE_QUOTE;
 
 
 sub shellwords {
-    local(@lines) = @_;
-    $lines[$#lines] =~ s/\s+$//;
-    return(quotewords('\s+', 0, @lines));
+    my (@lines) = @_;
+    my @allwords;
+
+    foreach my $line (@lines) {
+	$line =~ s/^\s+//;
+	my @words = parse_line('\s+', 0, $line);
+	pop @words if (@words and !defined $words[-1]);
+	return() unless (@words || !length($line));
+	push(@allwords, @words);
+    }
+    return(@allwords);
 }
 
 
@@ -27,7 +36,6 @@ sub shellwords {
 sub quotewords {
     my($delim, $keep, @lines) = @_;
     my($line, @words, @allwords);
-    
 
     foreach $line (@lines) {
 	@words = parse_line($delim, $keep, $line);
@@ -42,7 +50,7 @@ sub quotewords {
 sub nested_quotewords {
     my($delim, $keep, @lines) = @_;
     my($i, @allwords);
-    
+
     for ($i = 0; $i < @lines; $i++) {
 	@{$allwords[$i]} = parse_line($delim, $keep, $lines[$i]);
 	return() unless (@{$allwords[$i]} || !length($lines[$i]));
@@ -53,23 +61,41 @@ sub nested_quotewords {
 
 
 sub parse_line {
-	# We will be testing undef strings
-	no warnings;
-	use re 'taint'; # if it's tainted, leave it as such
-
     my($delimiter, $keep, $line) = @_;
     my($word, @pieces);
 
+    no warnings 'uninitialized';	# we will be testing undef strings
+
     while (length($line)) {
-	$line =~ s/^(["'])			# a $quote
-        	    ((?:\\.|(?!\1)[^\\])*)	# and $quoted text
-		    \1				# followed by the same quote
-		   |				# --OR--
-		   ^((?:\\.|[^\\"'])*?)		# an $unquoted text
-		    (\Z(?!\n)|(?-x:$delimiter)|(?!^)(?=["']))  
-		    				# plus EOL, delimiter, or quote
-		  //xs or return;		# extended layout
-	my($quote, $quoted, $unquoted, $delim) = ($1, $2, $3, $4);
+        # This pattern is optimised to be stack conservative on older perls.
+        # Do not refactor without being careful and testing it on very long strings.
+        # See Perl bug #42980 for an example of a stack busting input.
+        $line =~ s/^
+                    (?: 
+                        # double quoted string
+                        (")                             # $quote
+                        ((?>[^\\"]*(?:\\.[^\\"]*)*))"   # $quoted 
+		    |	# --OR--
+                        # singe quoted string
+                        (')                             # $quote
+                        ((?>[^\\']*(?:\\.[^\\']*)*))'   # $quoted
+                    |   # --OR--
+                        # unquoted string
+		        (                               # $unquoted 
+                            (?:\\.|[^\\"'])*?           
+                        )		
+                        # followed by
+		        (                               # $delim
+                            \Z(?!\n)                    # EOL
+                        |   # --OR--
+                            (?-x:$delimiter)            # delimiter
+                        |   # --OR--                    
+                            (?!^)(?=["'])               # a quote
+                        )  
+		    )//xs or return;		# extended layout                  
+        my ($quote, $quoted, $unquoted, $delim) = (($1 ? ($1,$2) : ($3,$4)), $5, $6);
+
+
 	return() unless( defined($quote) || length($unquoted) || length($delim));
 
         if ($keep) {
@@ -82,6 +108,7 @@ sub parse_line {
 		$quoted =~ s/\\([\\'])/$1/g if ( $PERL_SINGLE_QUOTE && $quote eq "'");
             }
 	}
+        $word .= substr($line, 0, 0);	# leave results tainted
         $word .= defined $quote ? $quoted : $unquoted;
  
         if (length($delim)) {
@@ -105,41 +132,48 @@ sub old_shellwords {
     #	@words = old_shellwords($line);
     #	or
     #	@words = old_shellwords(@lines);
+    #	or
+    #	@words = old_shellwords();	# defaults to $_ (and clobbers it)
 
-    local($_) = join('', @_);
-    my(@words,$snippet,$field);
+    no warnings 'uninitialized';	# we will be testing undef strings
+    local *_ = \join('', @_) if @_;
+    my (@words, $snippet);
 
-    s/^\s+//;
+    s/\A\s+//;
     while ($_ ne '') {
-	$field = '';
+	my $field = substr($_, 0, 0);	# leave results tainted
 	for (;;) {
-	    if (s/^"(([^"\\]|\\.)*)"//) {
-		($snippet = $1) =~ s#\\(.)#$1#g;
+	    if (s/\A"(([^"\\]|\\.)*)"//s) {
+		($snippet = $1) =~ s#\\(.)#$1#sg;
 	    }
-	    elsif (/^"/) {
+	    elsif (/\A"/) {
+		require Carp;
+		Carp::carp("Unmatched double quote: $_");
 		return();
 	    }
-	    elsif (s/^'(([^'\\]|\\.)*)'//) {
-		($snippet = $1) =~ s#\\(.)#$1#g;
+	    elsif (s/\A'(([^'\\]|\\.)*)'//s) {
+		($snippet = $1) =~ s#\\(.)#$1#sg;
 	    }
-	    elsif (/^'/) {
+	    elsif (/\A'/) {
+		require Carp;
+		Carp::carp("Unmatched single quote: $_");
 		return();
 	    }
-	    elsif (s/^\\(.)//) {
+	    elsif (s/\A\\(.?)//s) {
 		$snippet = $1;
 	    }
-	    elsif (s/^([^\s\\'"]+)//) {
+	    elsif (s/\A([^\s\\'"]+)//) {
 		$snippet = $1;
 	    }
 	    else {
-		s/^\s+//;
+		s/\A\s+//;
 		last;
 	    }
 	    $field .= $snippet;
 	}
 	push(@words, $field);
     }
-    @words;
+    return @words;
 }
 
 1;
@@ -153,11 +187,11 @@ Fink::Text::ParseWords - parse text into an array of tokens or array of arrays
 =head1 SYNOPSIS
 
   use Fink::Text::ParseWords;
-  @lists = &nested_quotewords($delim, $keep, @lines);
-  @words = &quotewords($delim, $keep, @lines);
-  @words = &shellwords(@lines);
-  @words = &parse_line($delim, $keep, $line);
-  @words = &old_shellwords(@lines); # DEPRECATED!
+  @lists = nested_quotewords($delim, $keep, @lines);
+  @words = quotewords($delim, $keep, @lines);
+  @words = shellwords(@lines);
+  @words = parse_line($delim, $keep, $line);
+  @words = old_shellwords(@lines); # DEPRECATED!
 
 =head1 DESCRIPTION
 
@@ -194,7 +228,7 @@ Unix shells.
 The sample program:
 
   use Fink::Text::ParseWords;
-  @words = &quotewords('\s+', 0, q{this   is "a test" of\ quotewords \"for you});
+  @words = quotewords('\s+', 0, q{this   is "a test" of\ quotewords \"for you});
   $i = 0;
   foreach (@words) {
       print "$i: <$_>\n";
@@ -241,13 +275,15 @@ backslashed double-quote)
 
 =back
 
-Replacing C<&quotewords('\s+', 0, q{this   is...})>
-with C<&shellwords(q{this   is...})>
+Replacing C<quotewords('\s+', 0, q{this   is...})>
+with C<shellwords(q{this   is...})>
 is a simpler way to accomplish the same thing.
 
 =head1 AUTHORS
 
-Maintainer is Hal Pomeranz <pomeranz@netcom.com>, 1994-1997 (Original
+Maintainer: Alexandr Ciornii <alexchornyATgmail.com>.
+
+Previous maintainer: Hal Pomeranz <pomeranz@netcom.com>, 1994-1997 (Original
 author unknown).  Much of the code for &parse_line() (including the
 primary regexp) from Joerk Behrends <jbehrends@multimediaproduzenten.de>.
 
