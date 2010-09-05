@@ -1,5 +1,10 @@
 2010-09-05  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgConfig.pm: Remove trailing newline ConfigureParams before
+	appending TestConfigureParams to it (avoid embedded newline)
+
+2010-09-05  Daniel Macks  <dmacks@netspace.org>
+
 	* Text/ParseWords.pm: Sync local clone with upstream (CPAN
 	Text::ParseWords) 3.27
 
