@@ -1026,6 +1026,10 @@ sub conditional_space_list {
 				} else {
 					# grab first word
 					# should canibalize parse_line, optimize this specific use
+					# BUG: trailing backslash (last line of a
+					# multiline field being fed to a shell command,
+					# e.g., ConfigureParams) breaks parse_line. See:
+					# https://rt.cpan.org/Ticket/Display.html?id=61103
 					$chunk = (&parse_line('\s+', 1, $string))[0];
 					$string =~ s/^\Q$chunk//;  # already dealt with this now
 				}
