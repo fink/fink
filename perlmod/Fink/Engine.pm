@@ -558,7 +558,7 @@ sub do_real_list {
 		
 		# Look only in versions the user should see. noload
 		my @pvs = _user_visible_versions($package->get_all_versions(1));
-		my @provs = _user_visible_versions($package->get_all_providers(1));
+		my @provs = _user_visible_versions($package->get_all_providers( no_load => 1 ));
 		next unless @provs; # if no providers, it doesn't really exist!
 		
 		my @vers = map { $_->get_fullversion() } @pvs;

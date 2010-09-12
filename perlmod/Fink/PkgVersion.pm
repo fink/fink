@@ -2512,7 +2512,7 @@ sub resolve_depends {
 			}
 
 			if ($versionspec =~ /^\s*$/) {
-				push @$altlist, $package->get_all_providers();
+				push @$altlist, $package->get_all_providers( unique_provides => 1 );
 			} else {
 				push @$altlist, $package->get_matching_versions($versionspec);
 			}
@@ -2607,7 +2607,7 @@ sub get_binary_depends {
 
 Get the dependency (or conflicts) package list. If $want_build is
 true, return the compile-time package list; if it is false, return
-only the runtime package list. If $dep_or_confl is true, return the
+only the runtime package list. If $want_conflicts is true, return the
 antidependencies (conflicts) list; if it is false, return the
 dependencies.
 

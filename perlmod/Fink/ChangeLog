@@ -1,10 +1,15 @@
+2010-09-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm,Package.pm,PkgVersion.pm: backport get_all_providers
+	changes from HEAD (fix for many "node exists" engine crashes)
+
 2010-06-15  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
-    * Bootstrap.pm:  Add OS 10.6.4 as a supported version.
+	* Bootstrap.pm:  Add OS 10.6.4 as a supported version.
 
 2010-06-03  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
-    * Bootstrap.pm:  Add OS 10.6.3 as a supported version.
+	* Bootstrap.pm:  Add OS 10.6.3 as a supported version.
 
 2010-05-16  Daniel Macks  <dmacks@netspace.org>
 
