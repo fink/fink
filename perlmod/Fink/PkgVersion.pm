@@ -1013,6 +1013,10 @@ sub conditional_space_list {
 				} else {
 					# grab first word
 					# should canibalize parse_line, optimize this specific use
+					# BUG: trailing backslash (last line of a
+					# multiline field being fed to a shell command,
+					# e.g., ConfigureParams) breaks parse_line. See:
+					# https://rt.cpan.org/Ticket/Display.html?id=61103
 					$chunk = (&parse_line('\s+', 1, $string))[0];
 					$string =~ s/^\Q$chunk//;  # already dealt with this now
 				}
@@ -1171,9 +1175,9 @@ sub activate_infotest {
 			$orig_val .= ", " if $orig_val;
 			$self->set_param($orig_field, "$orig_val$val");
 		} elsif($key =~ /^TestConfigureParams$/i) {
-			$self->set_param('ConfigureParams',
-				$self->param_default('ConfigureParams', "") .
-				" $val");
+			my $main_cp = $self->param_default('ConfigureParams', "");
+			chomp $main_cp;
+			$self->set_param('ConfigureParams', "$main_cp $val");
 			$self->prepare_percent_c;
 		} elsif($key =~ /^Test(Source|Tar)(\d*)(ExtractDir|FilesRename|Rename|-MD5|-Checksum)?$/i) {
 			my($test_field_type, $test_no, $test_field) = ($1, $2, $3);

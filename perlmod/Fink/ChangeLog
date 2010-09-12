@@ -1,5 +1,11 @@
 2010-09-12  Daniel Macks  <dmacks@netspace.org>
 
+	* Configure.pm: Make sure Buildpath is absolute
+	* PkgConfig.pm: Remove trailing newline ConfigureParams before
+	appending TestConfigureParams to it (avoid embedded newline)
+
+2010-09-12  Daniel Macks  <dmacks@netspace.org>
+
 	* Engine.pm,Package.pm,PkgVersion.pm: backport get_all_providers
 	changes from HEAD (fix for many "node exists" engine crashes)
 
