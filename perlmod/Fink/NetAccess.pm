@@ -397,9 +397,9 @@ sub download_cmd {
 			if ($config->param_boolean("ProxyPassiveFTP")) {
 				$cmd .= " --passive-ftp";
 			}
-			if ($file ne &filename($url)) {
+			#if ($file ne &filename($url)) {
 				$cmd .= " -O $cmd_file";
-			}
+			#}
 			if ($cont) {
 				$cmd .= " -c"
 			}
