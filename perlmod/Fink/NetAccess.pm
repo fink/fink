@@ -398,6 +398,7 @@ sub download_cmd {
 				$cmd .= " --passive-ftp";
 			}
 			#if ($file ne &filename($url)) {
+			# always use -O to handle complex URLs
 				$cmd .= " -O $cmd_file";
 			#}
 			if ($cont) {
