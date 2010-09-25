@@ -1792,7 +1792,7 @@ sub _validate_dpkg {
 			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
 				while (<$datafile>) {
 					chomp;
-					if (/\s((?:-W.,|)-framework)[^,]/) {
+					if (/\s((?:-W.,|)-framework)[^,]/ || /\s(-Xlinker)\s/) {
 						&stack_msg($msgs, "The $1 flag may get munged by $filetype. See the gcc manpage for information about passing multi-word options to flags for specific compiler passes.", $filename, $_);
 					}
 				}
@@ -1995,8 +1995,14 @@ sub _validate_dpkg {
 					<OTOOL>; # skip first line
 					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
-	
-					if (not exists $deb_shlibs->{$libname}) {
+					if ($libname !~ /^\//) {
+						print "Error: package contains the shared library\n";
+						print "          $dylib\n";
+						print "       but the corresponding install_name\n";
+						print "          $libname\n";
+						print "       is not an absolute pathname.\n";
+						$looks_good = 0;
+					} elsif (not exists $deb_shlibs->{$libname}) {
 						$libname =~ s/^$basepath/%p/;
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";

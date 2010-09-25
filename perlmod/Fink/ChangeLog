@@ -1,3 +1,8 @@
+2010-09-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: backports: -m mode widely usable now, --format=dotty-build
+	* Validation.pm: backport some new tests
+
 2010-09-21  Andreas Gockel  <fink@unixforge.de>
 
 	* NetAccess.pm: always use -O with wget so we always get the
