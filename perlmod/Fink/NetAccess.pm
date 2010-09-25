@@ -448,6 +448,25 @@ sub download_cmd {
 		}
 	}
 
+	# if we would prefer aria2 (or didn't have anything else available), check for aria2
+	if (!$cmd or $config->param_default("DownloadMethod") eq "aria2") {
+		if (-x "$basepath/bin/aria2c" or -x "/usr/bin/aria2c") {
+			$cmd = "aria2c --connect-timeout 30 --allow-overwrite=true --auto-file-renaming=false -U 'fink/". Fink::FinkVersion::fink_version() ."'";
+			if ($config->verbosity_level() == 0) {
+				$cmd .= " -q";
+			}
+			if (not $config->param_boolean("ProxyPassiveFTP")) {
+				$cmd .= " --ftp-pasv=false";
+			}
+			if ($file ne &filename($url)) {
+				$cmd .= " -o $cmd_file";
+			}
+			if ($cont) {
+				$cmd .= " -c"
+			}
+		}
+	}
+
 	if (!$cmd) {
 		die "Can't locate a download program. Install either curl, wget, axel, or lftpget.\n";
 	}
