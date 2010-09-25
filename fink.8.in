@@ -324,6 +324,11 @@ affect the output format:
 .Bl -tag -width flag -offset indent -compact
 .It Cm -h,--help
 Show the options which are available.
+.It Cm -w xyz,--width=xyz
+Sets the width of the display you would like the output
+formatted for. xyz is either a numeric value or auto.
+auto will set the width based on the terminal width.
+The default is auto.
 .It Cm -t,--tab
 The default table format has fixed-width columns that are adjusted to
 fill the available screen size, with package names and descriptions
@@ -372,8 +377,8 @@ package, which includes runtime and build dependencies of every
 package in a family (packages built together). Using the
 .Cm -m
 flag will also include dependencies for the package-family's
-self-testing. You can parse the output to get reverse-builddepends
-information, for example:
+self-testing (i.e., including TestDepends data). You can parse the
+output to get reverse-builddepends information, for example:
 .Dl fink -m list --format=dotty-build | grep ' \*[q]libgettext8-dev\*[q]'
 will list all packages that have a compiletime dependency on the
 libgettext8-dev package. Technically, this example lists all
@@ -401,11 +406,6 @@ Show packages whose installed version is newer than anything fink knows about.
 Show only packages in the sections matching expr.
 .It Cm -m expr,--maintainer=expr
 Show only packages with the maintainer matching expr.
-.It Cm -w xyz,--width=xyz
-Sets the width of the display you would like the output
-formatted for. xyz is either a numeric value or auto.
-auto will set the width based on the terminal width.
-The default is auto.
 .El
 .Pp
 Some usage examples:

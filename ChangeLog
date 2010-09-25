@@ -1,3 +1,8 @@
+2010-09-25  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Move "-w" to output-format section; clarify that -m
+	invokes TestDepends
+
 2010-08-09  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.info.in: Make "Description" pass validator
