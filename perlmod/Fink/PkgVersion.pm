@@ -4987,20 +4987,20 @@ END
 		}
 	}
 
-    # UseMaxBuildJobs: true overrides SetNoMAKEFLAGS
-    if ($self->param_boolean('UseMaxBuildJobs') && $config->has_param('MaxBuildJobs')) {
-        my $mbj = $config->param('MaxBuildJobs');
-        if ($mbj =~ /^\d+$/  && $mbj > 0) {
-            if (defined $script_env{'MAKEFLAGS'}) {
-                $script_env{'MAKEFLAGS'} .= " -j$mbj";
-            } else {
-                $script_env{'MAKEFLAGS'} = "-j$mbj";
-            }
-        } else {
-            warn "Ignoring invalid MaxBuildJobs value in fink.conf: " .
-                "$mbj is not a positive integer\n";
-        }
-    }
+	# UseMaxBuildJobs: true overrides SetNoMAKEFLAGS
+	if ($self->param_boolean('UseMaxBuildJobs') && $config->has_param('MaxBuildJobs')) {
+		my $mbj = $config->param('MaxBuildJobs');
+		if ($mbj =~ /^\d+$/  && $mbj > 0) {
+			if (defined $script_env{'MAKEFLAGS'}) {
+				$script_env{'MAKEFLAGS'} .= " -j$mbj";
+			} else {
+				$script_env{'MAKEFLAGS'} = "-j$mbj";
+			}
+		} else {
+			warn "Ignoring invalid MaxBuildJobs value in fink.conf: " .
+				"$mbj is not a positive integer\n";
+		}
+	}
 
 	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
 	# it the first g++ in the path
