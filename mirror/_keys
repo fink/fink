@@ -24,6 +24,7 @@ eur-AT: Austria
 eur-BA: Bosnia & Herzegovina
 eur-BE: Belgium
 eur-BG: Bulgaria
+eur-BY: Belarus
 eur-CH: Switzerland
 eur-CZ: Czech Republic
 eur-DE: Germany
@@ -62,6 +63,7 @@ eur-YU: Yugoslavia
 
 aus: Australia
 aus-AU: Australia
+aus-NC: New Caledonia
 aus-NZ: New Zealand
 
 asi: Asia
@@ -76,6 +78,7 @@ asi-JP: Japan
 asi-KR: South Korea
 asi-MY: Malaysia
 asi-PH: Philippines
+asi-PK: Pakistan
 asi-SA: Saudi Arabia
 asi-SG: Singapore
 asi-TH: Thailand
