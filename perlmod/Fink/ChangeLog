@@ -1,3 +1,8 @@
+2010-10-01  Remi Mommsen <remigius.mommsen@cern.ch>
+
+	* Validation.pm: Fix validation of gtk-doc URLs in case that
+	$basepath has multiple directory levels, e.g. /opt/fink vs /sw
+
 2010-09-22  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Make sure .dylib have absolute install_name
