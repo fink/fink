@@ -1,4 +1,26 @@
 #!/usr/bin/perl
+# This program updates the various mirror lists by scraping various online
+# mirror lists for data, then checking each mirror found this way for availability,
+# as well as for its geographical location.
+#
+# To use this tool, you need to install the following Fink packages:
+#  * uri-find-pm5100 
+#  * www-mechanize-pm5100
+#  * html-tree-pm5100
+#  * geo-ip-pm5100
+#
+# TODO: Right now we test all mirrors sequentially, which can take a looong
+#       time. We should try to parallelize this. An easy way for that would
+#       be to run over two (or more) mirror lists in parallel.
+#
+# TODO: Apache has switched to using mirmon, which breaks the old parsing code.
+#       On the plus side, there are mirmon sites available for many of the other
+#       mirror lists we maintain. A mirmon instance lists the status of every mirror.
+#       We could just rely on that status instead of doing slow checks ourselves.
+#       And independently of this, we could unify several of the parsers by
+#       a single mirmon parser.
+#
+# TODO: PostgreSQL analysis is broken; the website we used to use only lists redirect URLs now.
 
 $|++;
 
@@ -21,7 +43,7 @@ use vars qw($VERSION %keys %reverse_keys %files $debug $response);
 
 use vars qw($APACHE $CPAN $CTAN $DEBIAN $FREEBSD $GIMP $GNOME $GNU $KDE $PGSQL);
 
-$APACHE  = 0;
+$APACHE  = 0;	# FIXME: Why off? Is it buggy?
 $CPAN    = 1;
 $CTAN    = 1;
 $DEBIAN  = 1;
@@ -30,7 +52,7 @@ $GIMP    = 1;
 $GNOME   = 1;
 $GNU     = 1;
 $KDE     = 1;
-$PGSQL   = 1;
+$PGSQL   = 0;	# FIXME: Format changed, they now only list redirect URls
 
 $debug = 0;
 $VERSION = ( qw$Revision$ )[-1];
@@ -142,7 +164,6 @@ if ($CPAN) {
 	} else {
 		warn "unable to get cpan ftp list\n";
 	}
-	print "done\n";
 }
 
 ### CTAN
@@ -157,18 +178,16 @@ if ($CTAN) {
 		my @links = ($files{'ctan'}->{'primary'});
 	
 		for my $line (split(/\r?\n/, $response->decoded_content)) {
-			if ($line =~ /^\s+(\S+)\s+\(.*?\)\s+(\S+)\s*$/) {
-				my $url = $1 . $2;
-				# the mirror list doesn't specify whether they work with FTP or HTTP
-				for my $protocol ('ftp', 'http') {
-					my $url = $protocol . '://' . $url;
-					print "\t", $url, ": ";
-					if (get_content($url . '/CTAN.sites')) {
-						print "ok\n";
-						push(@links, $url);
-					} else {
-						print "failed\n";
-					}
+			# Typical line:
+			#    URL: ftp://carroll.aset.psu.edu/pub/CTAN
+			if ($line =~ /^\s+URL: (\S+)$/) {
+				my $url = $1;
+				print "\t", $url, ": ";
+				if (get_content($url . '/CTAN.sites')) {
+					print "ok\n";
+					push(@links, $url);
+				} else {
+					print "failed\n";
 				}
 			}
 		}
@@ -219,14 +238,12 @@ if ($DEBIAN) {
 	} else {
 		warn "unable to get debian ftp list\n";
 	}
-	print "done\n";
 }
 
 ### FREEBSD
 
 if ($FREEBSD) {
 	print "- getting FreeBSD mirror list:\n";
-
 	$response = $mech->get( 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html' );
 	if ($response->is_success) {
 		$files{'freebsd'}->{'url'} = 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html';
@@ -408,7 +425,6 @@ if ($GNU) {
 	} else {
 		warn "unable to get GNU ftp list\n";
 	}
-	print "done\n";
 }
 
 ### KDE

@@ -1,3 +1,10 @@
+2010-10-01  Max Horn  <max@quendi.de>
+
+	* get-mirror.pl:
+	  Fix CTAN mirror parser, disable broken PostgreSQL parser,
+	  add various comments
+	* cpan, ctan, debian, freebsd, gimp, gnome, gnu, kde: mirror updates
+
 2010-08-23  Andreas Gockel  <fink@unixforge.de>
 
 	* README.contacts, master, rsync:
