@@ -1,6 +1,23 @@
 2010-10-01  Max Horn  <max@quendi.de>
 
 	* get-mirror.pl:
+	  - Re-enable apache parser (seems to work fine)
+	  - refactor code to reduce code duplication
+	  - when one mirror list has completed parsing, write the result
+	     immediately (instead of writing all result files at the end).
+	     This way, if you interrupt the script, you at least get to keep
+	     any mirror lists it already completed at that point.
+	* _keys: Added Serbia
+	* apache: mirror updates
+
+2010-10-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* _keys: Added Belarus, New Caledonia, and Pakistan
+	* kde: eur-PT mirror added
+
+2010-10-01  Max Horn  <max@quendi.de>
+
+	* get-mirror.pl:
 	  Fix CTAN mirror parser, disable broken PostgreSQL parser,
 	  add various comments
 	* cpan, ctan, debian, freebsd, gimp, gnome, gnu, kde: mirror updates

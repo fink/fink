@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+#
 # This program updates the various mirror lists by scraping various online
 # mirror lists for data, then checking each mirror found this way for availability,
 # as well as for its geographical location.
@@ -13,9 +14,9 @@
 #       time. We should try to parallelize this. An easy way for that would
 #       be to run over two (or more) mirror lists in parallel.
 #
-# TODO: Apache has switched to using mirmon, which breaks the old parsing code.
-#       On the plus side, there are mirmon sites available for many of the other
-#       mirror lists we maintain. A mirmon instance lists the status of every mirror.
+# TODO: Apache has switched to using mirmon. There are mirmon sites available
+#       for many of the other mirror lists we maintain. And a mirmon instance
+#       lists the status of every mirror it knows about...
 #       We could just rely on that status instead of doing slow checks ourselves.
 #       And independently of this, we could unify several of the parsers by
 #       a single mirmon parser.
@@ -39,20 +40,23 @@ use URI;
 use URI::Escape;
 use URI::Find;
 
-use vars qw($VERSION %keys %reverse_keys %files $debug $response);
+use vars qw($VERSION %keys %reverse_keys $debug $response);
 
-use vars qw($APACHE $CPAN $CTAN $DEBIAN $FREEBSD $GIMP $GNOME $GNU $KDE $PGSQL);
-
-$APACHE  = 0;	# FIXME: Why off? Is it buggy?
-$CPAN    = 1;
-$CTAN    = 1;
-$DEBIAN  = 1;
-$FREEBSD = 1;
-$GIMP    = 1;
-$GNOME   = 1;
-$GNU     = 1;
-$KDE     = 1;
-$PGSQL   = 0;	# FIXME: Format changed, they now only list redirect URls
+# map 'site name' to [ proc, URL of mirror list, primary mirror ]
+my %mirror_sites = (
+	'Apache'  => [ \&parse_apache, 'http://www.apache.org/mirrors/', 'http://www.apache.org/dist' ],
+	'CPAN'    => [ \&parse_cpan, 'http://www.cpan.org/SITES.html', 'ftp://ftp.cpan.org/pub/CPAN' ],
+	'CTAN'    => [ \&parse_ctan, 'ftp://tug.ctan.org/tex-archive/README.mirrors', 'ftp://tug.ctan.org/tex-archive' ],
+	'Debian' => [ \&parse_debian, 'http://www.debian.org/mirror/list', 'ftp://ftp.debian.org/debian' ],
+	'FreeBSD' => [ \&parse_freebsd, 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html', 'ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles' ],
+	'Gimp' => [ \&parse_gimp, 'http://www.gimp.org/downloads', 'ftp://ftp.gimp.org/pub/gimp' ],
+	'GNOME' => [ \&parse_gnome, 'http://ftp.gnome.org/pub/GNOME/MIRRORS', 'ftp://ftp.gnome.org/pub/GNOME' ],
+	'GNU' => [ \&parse_gnu, 'http://www.gnu.org/prep/ftp.html', 'ftp://ftp.gnu.org/gnu' ],
+	'KDE' => [ \&parse_kde, 'http://download.kde.org/mirrorstatus.html', 'ftp://ftp.kde.org/pub/kde' ],
+	
+	# FIXME: Format changed, they now only list redirect URls
+#	'PostgreSQL' => [ \&parse_postgresql, 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F', 'ftp://ftp.postgresql.org/pub' ],
+	);
 
 $debug = 0;
 $VERSION = ( qw$Revision$ )[-1];
@@ -78,17 +82,60 @@ while (<KEYS>) {
 }
 close (KEYS);
 
-### Apache
+### Iterate over all sites
 
-if ($APACHE) {
-	print "- getting apache mirror list:\n";
-	$response = $mech->get( 'http://www.apache.org/mirrors/' );
+foreach my $mirror_name (sort keys %mirror_sites) {
+	my $site = lc $mirror_name;
+	my ($parse_sub, $mirror_list_url, $primary) = @{$mirror_sites{$mirror_name}};
+
+	print "- getting $mirror_name mirror list:\n";
+	# Try to load the mirror list
+	$response = $mech->get( $mirror_list_url );
 	if ($response->is_success) {
-		$files{'apache'}->{'url'} = 'http://www.apache.org/mirrors/';
-		$files{'apache'}->{'primary'} = 'http://www.apache.org/dist';
+		my @links = ($primary);
+
+		# Invoke the actual parsing subroutine.
+		&$parse_sub($response, \@links);
+
+		# Transform the output, filling the mirrors hash
 		my $mirrors;
-		my @links = ($files{'apache'}->{'primary'});
-	
+		for my $link (@links) {
+			my ($code, $uri) = get_code($link);
+			push(@{$mirrors->{$code}}, $uri) if (defined $code);
+		}
+
+		# Write everything to a file.
+		print "- writing $site... ";
+		if (open (FILEOUT, ">$site.tmp")) {
+			print FILEOUT "# Official mirror list: ", $mirror_list_url, "\n";
+			print FILEOUT "Timestamp: ", timestamp(), "\n\n";
+			print FILEOUT "Primary: ", $primary, "\n\n";
+			for my $key (sort keys %{$mirrors}) {
+				for my $link (sort @{$mirrors->{$key}}) {
+					print FILEOUT $key, ": ", $link, "\n";
+				}
+			}
+			close (FILEOUT);
+			print "done\n";
+			unlink("${site}");
+			link("${site}.tmp", "${site}");
+			unlink("${site}.tmp");
+		} else {
+			warn "unable to write to ${site}.tmp: $!\n";
+		}
+
+	} else {
+		warn "unable to get $mirror_name mirror list\n";
+	}
+
+}
+
+
+### Apache
+sub parse_apache {
+	my $response = shift;
+	my $links = shift;
+
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
 		my $table = $tree->look_down(
@@ -108,35 +155,19 @@ if ($APACHE) {
 					print "\t", $url, ": ";
 					if (get_content($url . '/DATE') =~ /^\d+$/gs) {
 						print "ok\n";
-						push(@links, $url);
+						push(@$links, $url);
 					} else {
 						print "failed\n";
 					}
 				}
 			}
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'apache'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get apache ftp list\n";
-	}
 }
 
 ### CPAN
-
-if ($CPAN) {
-	print "- getting CPAN mirror list:\n";
-	$response = $mech->get( 'http://www.cpan.org/SITES.html' );
-	if ($response->is_success) {
-		$files{'cpan'}->{'url'} = 'http://www.cpan.org/SITES.html';
-		$files{'cpan'}->{'primary'} = 'ftp://ftp.cpan.org/pub/CPAN';
-		my $mirrors;
-		my @links = ($files{'cpan'}->{'primary'});
+sub parse_cpan {
+	my $response = shift;
+	my $links = shift;
 	
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
@@ -152,31 +183,15 @@ if ($CPAN) {
 			next if ($link->attr('href') =~ /^\#/);
 			next if ($link->attr('href') eq "");
 			print "\t", $link->attr('href'), ": ok\n";
-			push(@links, $link->attr('href'));
+			push(@$links, $link->attr('href'));
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'cpan'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get cpan ftp list\n";
-	}
 }
 
 ### CTAN
+sub parse_ctan {
+	my $response = shift;
+	my $links = shift;
 
-if ($CTAN) {
-	print "- getting CTAN mirror list:\n";
-	$response = $mech->get( 'ftp://tug.ctan.org/tex-archive/README.mirrors' );
-	if ($response->is_success) {
-		$files{'ctan'}->{'url'} = 'ftp://tug.ctan.org/tex-archive/README.mirrors';
-		$files{'ctan'}->{'primary'} = 'ftp://tug.ctan.org/tex-archive';
-		my $mirrors;
-		my @links = ($files{'ctan'}->{'primary'});
-	
 		for my $line (split(/\r?\n/, $response->decoded_content)) {
 			# Typical line:
 			#    URL: ftp://carroll.aset.psu.edu/pub/CTAN
@@ -185,35 +200,19 @@ if ($CTAN) {
 				print "\t", $url, ": ";
 				if (get_content($url . '/CTAN.sites')) {
 					print "ok\n";
-					push(@links, $url);
+					push(@$links, $url);
 				} else {
 					print "failed\n";
 				}
 			}
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'ctan'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get ctan ftp list\n";
-	}
 }
 
 ### Debian
+sub parse_debian {
+	my $response = shift;
+	my $links = shift;
 
-if ($DEBIAN) {
-	print "- getting debian mirror list:\n";
-	$response = $mech->get( 'http://www.debian.org/mirror/list' );
-	if ($response->is_success) {
-		$files{'debian'}->{'url'} = 'http://www.debian.org/mirror/list';
-		$files{'debian'}->{'primary'} = 'ftp://ftp.debian.org/debian';
-		my $mirrors;
-		my @links = ($files{'debian'}->{'primary'});
-	
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
 		my $table = $tree->look_down(
@@ -224,33 +223,17 @@ if ($DEBIAN) {
 			for my $link ($table->look_down('_tag' => 'a')) {
 				if ($link) {
 					print "\t", $link->attr('href'), ": ok\n";
-					push(@links, $link->attr('href'));
+					push(@$links, $link->attr('href'));
 				}
 			}
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'debian'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get debian ftp list\n";
-	}
 }
 
-### FREEBSD
+### FreeBSD
+sub parse_freebsd {
+	my $response = shift;
+	my $links = shift;
 
-if ($FREEBSD) {
-	print "- getting FreeBSD mirror list:\n";
-	$response = $mech->get( 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html' );
-	if ($response->is_success) {
-		$files{'freebsd'}->{'url'} = 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html';
-		$files{'freebsd'}->{'primary'} = 'ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles';
-		my $mirrors;
-		my @links = ($files{'freebsd'}->{'primary'});
-	
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
 		my $tag = $tree->look_down(
@@ -270,7 +253,7 @@ if ($FREEBSD) {
 						my $content = get_content($tempurl);
 						if ($content =~ /Transforms Exif files/gs) {
 							print "ok\n";
-							push(@links, $url);
+							push(@$links, $url);
 							next FREEBSDLINKS;
 						} else {
 							print "failed\n";
@@ -279,29 +262,13 @@ if ($FREEBSD) {
 				}
 			}
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'freebsd'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get freebsd ftp list\n";
-	}
 }
 
 ### GIMP
+sub parse_gimp {
+	my $response = shift;
+	my $links = shift;
 
-if ($GIMP) {
-	print "- getting gimp mirror list:\n";
-	$response = $mech->get( 'http://www.gimp.org/downloads' );
-	if ($response->is_success) {
-		$files{'gimp'}->{'url'} = 'http://www.gimp.org/downloads';
-		$files{'gimp'}->{'primary'} = 'ftp://ftp.gimp.org/pub/gimp';
-		my $mirrors;
-		my @links = ($files{'gimp'}->{'primary'});
-	
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
 		my $dl = $tree->look_down(
@@ -320,7 +287,7 @@ if ($GIMP) {
 						print "\t", $tempurl, ": ";
 						if (get_content($tempurl . 'README') =~ /This is the root directory of the official GIMP/) {
 							print "ok\n";
-							push(@links, $tempurl);
+							push(@$links, $tempurl);
 							next GIMPLINKS;
 						} else {
 							print "failed\n";
@@ -329,28 +296,12 @@ if ($GIMP) {
 				}
 			}
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'gimp'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get gimp ftp list\n";
-	}
 }
 
 ### Gnome
-
-if ($GNOME) {
-	print "- getting gnome mirror list:\n";
-	$response = $mech->get( 'http://ftp.gnome.org/pub/GNOME/MIRRORS' );
-	if ($response->is_success) {
-		$files{'gnome'}->{'url'} = 'http://ftp.gnome.org/pub/GNOME/MIRRORS';
-		$files{'gnome'}->{'primary'} = 'ftp://ftp.gnome.org/pub/GNOME';
-		my $mirrors;
-		my @links = ($files{'gnome'}->{'primary'});
+sub parse_gnome {
+	my $response = shift;
+	my $links = shift;
 
 		my $finder = URI::Find->new(
 			sub {
@@ -360,7 +311,7 @@ if ($GNOME) {
 				print "\t", $url, ": ";
 				if (get_content($url . '/LATEST') =~ /download.gnome.org/gs) {
 					print "ok\n";
-					push(@links, $url);
+					push(@$links, $url);
 				} else {
 					print "failed\n";
 				}
@@ -369,29 +320,13 @@ if ($GNOME) {
 
 		my $content = $mech->content;
 		$finder->find( \$content );
-
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'gnome'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get gnome ftp list\n";
-	}
 }
 
 ### GNU
+sub parse_gnu {
+	my $response = shift;
+	my $links = shift;
 
-if ($GNU) {
-	print "- getting GNU mirror list:\n";
-	$response = $mech->get( 'http://www.gnu.org/prep/ftp.html' );
-	if ($response->is_success) {
-		$files{'gnu'}->{'url'} = 'http://www.gnu.org/prep/ftp.html';
-		$files{'gnu'}->{'primary'} = 'ftp://ftp.gnu.org/gnu';
-		my $mirrors;
-		my @links = ($files{'gnu'}->{'primary'});
-	
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
 		my $content = $tree->look_down(
@@ -408,36 +343,20 @@ if ($GNU) {
 					print "\t", $url, ": ";
 					if (get_content($url . '/=README') =~ /This directory contains programs/gs) {
 						print "ok\n";
-						push(@links, $url);
+						push(@$links, $url);
 					} else {
 						print "failed\n";
 					}
 				}
 			}
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'gnu'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get GNU ftp list\n";
-	}
 }
 
 ### KDE
+sub parse_kde {
+	my $response = shift;
+	my $links = shift;
 
-if ($KDE) {
-	print "- getting kde mirror list:\n";
-	$response = $mech->get( 'http://download.kde.org/mirrorstatus.html' );
-	if ($response->is_success) {
-		$files{'kde'}->{'url'} = 'http://download.kde.org/mirrorstatus.html';
-		$files{'kde'}->{'primary'} = 'ftp://ftp.kde.org/pub/kde';
-		my $mirrors;
-		my @links = ($files{'kde'}->{'primary'});
-	
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
 		my $table = $tree->look_down(
@@ -457,34 +376,19 @@ if ($KDE) {
 					print "\t", $url, ": ";
 					if (get_content($url . '/README') =~ /This is the ftp distribution/gs) {
 						print "ok\n";
-						push(@links, $url);
+						push(@$links, $url);
 					} else {
 						print "failed\n";
 					}
 				}
 			}
 		}
-	
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'kde'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get kde ftp list\n";
-	}
 }
 
 ## PostgreSQL
-if ($PGSQL) {
-	print "- getting PostgreSQL mirror list:\n";
-	$response = $mech->get( 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F' );
-	if ($response->is_success) {
-		$files{'postgresql'}->{'url'} = 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F';
-		$files{'postgresql'}->{'primary'} = 'ftp://ftp.postgresql.org/pub';
-		my $mirrors;
-		my @links = ($files{'postgresql'}->{'primary'});
+sub parse_postgresql {
+	my $response = shift;
+	my $links = shift;
 
 		my $tree = HTML::TreeBuilder->new();
 		$tree->parse($response->decoded_content);
@@ -495,42 +399,12 @@ if ($PGSQL) {
 				print "\t", $url, ": ";
 				if (get_content($url . 'README') =~ /This directory contains the current and past releases of PostgreSQL/gs) {
 					print "ok\n";
-					push(@links, $url);
+					push(@$links, $url);
 				} else {
 					print "failed\n";
 				}
 			}
 		}
-		for my $link (@links) {
-			my ($code, $uri) = get_code($link);
-			push(@{$mirrors->{$code}}, $uri) if (defined $code);
-		}
-	
-		$files{'postgresql'}->{'mirrors'} = $mirrors;
-	} else {
-		warn "unable to get postgresql ftp list\n";
-	}
-}
-
-for my $site (sort keys %files) {
-	print "- writing $site... ";
-	if (open (FILEOUT, ">$site.tmp")) {
-		print FILEOUT "# Official mirror list: ", $files{$site}->{'url'}, "\n";
-		print FILEOUT "Timestamp: ", timestamp(), "\n\n";
-		print FILEOUT "Primary: ", $files{$site}->{'primary'}, "\n\n";
-		for my $key (sort keys %{$files{$site}->{'mirrors'}}) {
-			for my $link (sort @{$files{$site}->{'mirrors'}->{$key}}) {
-				print FILEOUT $key, ": ", $link, "\n";
-			}
-		}
-		close (FILEOUT);
-		print "done\n";
-		unlink("${site}");
-		link("${site}.tmp", "${site}");
-		unlink("${site}.tmp");
-	} else {
-		warn "unable to write to ${site}.tmp: $!\n";
-	}
 }
 
 sub timestamp {
@@ -579,6 +453,7 @@ sub get_code {
 	$canonical =~ s,/$,,;
 	return ($reverse_keys{"$code"}, $canonical);
 }
+
 sub get_content {
 	my $url = shift;
 	my $return = undef;
