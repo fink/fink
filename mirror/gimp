@@ -1,5 +1,5 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
@@ -8,6 +8,7 @@ asi-CN: http://mirror.bjtu.edu.cn/gimp/gimp
 asi-JP: ftp://ftp.ring.gr.jp/pub/graphics/gimp
 asi-JP: ftp://ftp.u-aizu.ac.jp/pub/graphics/tools/gimp/gimp
 asi-JP: http://www.ring.gr.jp/pub/graphics/gimp
+asi-PK: http://gimp.skazkaforyou.com/gimp
 eur-AT: ftp://gd.tuwien.ac.at/graphics/gimp/gimp
 eur-DE: ftp://artfiles.org/gimp.org/gimp
 eur-DE: ftp://ftp.fernuni-hagen.de/pub/mirrors/www.gimp.org/gimp
@@ -16,7 +17,6 @@ eur-DE: http://artfiles.org/gimp.org/gimp
 eur-DE: http://ftp.fernuni-hagen.de/ftp-dir/pub/mirrors/www.gimp.org/gimp
 eur-DE: http://ftp.gwdg.de/pub/misc/grafik/gimp/gimp
 eur-DE: http://gimp.cybermirror.org
-eur-DE: http://gimp.trafictransfer.com
 eur-DE: http://www.online-laptop.com/gimp
 eur-ES: ftp://ftp.rediris.es/mirror/gimp
 eur-ES: http://sunsite.rediris.es/mirror/gimp

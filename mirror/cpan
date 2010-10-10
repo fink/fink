@@ -1,5 +1,5 @@
 # Official mirror list: http://www.cpan.org/SITES.html
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: ftp://ftp.cpan.org/pub/CPAN
 
@@ -124,7 +124,6 @@ eur-DE: http://mirror.informatik.uni-mannheim.de/pub/mirrors/CPAN
 eur-DE: http://mirror.netcologne.de/cpan
 eur-DE: http://mirrors.softliste.de/cpan
 eur-DE: http://www.chemmedia.de/mirrors/CPAN
-eur-DE: http://www.mirrorspace.org/cpan
 eur-DE: http://www.planet-elektronik.de/CPAN
 eur-DK: ftp://mirrors.dotsrc.org/cpan
 eur-DK: http://mirror.uni-c.dk/pub/CPAN
@@ -217,7 +216,9 @@ eur-RU: http://cpan.tomsk.ru
 eur-RU: http://ftp.silvernet.ru/CPAN
 eur-RU: http://ftp.spbu.ru/CPAN
 eur-RU: http://mirror.rol.ru/CPAN
+eur-SE: ftp://mirrors.kernel.org/pub/CPAN
 eur-SE: ftp://mirrors4.kernel.org/pub/CPAN
+eur-SE: http://mirrors.kernel.org/cpan
 eur-SE: http://mirrors4.kernel.org/cpan
 eur-SE: http://www.cpan.dk
 eur-SI: http://www.klevze.si/cpan
@@ -294,7 +295,6 @@ nam-US: ftp://mirror.rit.edu/CPAN
 nam-US: ftp://mirror.sit.wisc.edu/pub/CPAN
 nam-US: ftp://mirror.xmission.com/CPAN
 nam-US: ftp://mirrors.24-7-solutions.net/pub/CPAN
-nam-US: ftp://mirrors.kernel.org/pub/CPAN
 nam-US: ftp://mirrors1.kernel.org/pub/CPAN
 nam-US: ftp://mirrors2.kernel.org/pub/CPAN
 nam-US: ftp://mirrors3.kernel.org/pub/CPAN
@@ -334,7 +334,6 @@ nam-US: http://mirror.sit.wisc.edu/pub/CPAN
 nam-US: http://mirror.uta.edu/CPAN
 nam-US: http://mirrors.24-7-solutions.net/pub/CPAN
 nam-US: http://mirrors.ccs.neu.edu/CPAN
-nam-US: http://mirrors.kernel.org/cpan
 nam-US: http://mirrors.servercentral.net/CPAN
 nam-US: http://mirrors.zerg.biz/cpan
 nam-US: http://mirrors1.kernel.org/cpan
@@ -342,6 +341,7 @@ nam-US: http://mirrors2.kernel.org/cpan
 nam-US: http://mirrors3.kernel.org/cpan
 nam-US: http://perl.secsup.org
 nam-US: http://www.ibiblio.org/pub/mirrors/CPAN
+nam-US: http://www.mirrorspace.org/cpan
 nam-US: http://www.perl.com/CPAN
 nam-US: http://www.perl.com/CPAN
 nam-US: http://www.perl.com/CPAN

@@ -1,5 +1,5 @@
 # Official mirror list: http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles
 
@@ -33,6 +33,7 @@ asi-TW: ftp://ftp15.tw.freebsd.org/pub/FreeBSD/ports/distfiles
 asi-TW: ftp://ftp3.tw.freebsd.org/pub/FreeBSD/ports/distfiles
 asi-TW: ftp://ftp4.tw.freebsd.org/pub/FreeBSD/ports/distfiles
 asi-TW: ftp://ftp5.tw.freebsd.org/pub/FreeBSD/ports/distfiles
+asi-TW: ftp://ftp6.tw.freebsd.org/pub/FreeBSD/ports/distfiles
 asi-TW: ftp://ftp7.tw.freebsd.org/pub/FreeBSD/ports/distfiles
 asi-TW: ftp://ftp8.tw.freebsd.org/pub/FreeBSD/ports/distfiles
 asi-TW: http://ftp11.tw.freebsd.org/FreeBSD/ports/distfiles
@@ -104,21 +105,19 @@ eur-NL: ftp://ftp2.nl.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-NL: http://ftp.nl.freebsd.org/os/FreeBSD/ports/distfiles
 eur-NO: ftp://ftp.no.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-PL: ftp://ftp.pl.freebsd.org/pub/FreeBSD/ports/distfiles
+eur-RO: ftp://ftp1.ro.freebsd.org/pub/FreeBSD/ports/distfiles
+eur-RO: http://ftp1.ro.freebsd.org/pub/FreeBSD/ports/distfiles
+eur-RO: http://ftp1.ro.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-RU: ftp://ftp2.ru.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-RU: ftp://ftp3.ru.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-RU: ftp://ftp4.ru.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-RU: ftp://ftp5.ru.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-RU: ftp://ftp6.ru.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-RU: http://ftp.ru.freebsd.org/FreeBSD/ports/distfiles
 eur-RU: http://ftp2.ru.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-RU: http://ftp5.ru.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-SE: ftp://ftp.se.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-SE: ftp://ftp3.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-SE: ftp://ftp3.se.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-SE: ftp://ftp4.se.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-SE: ftp://ftp4.se.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-SE: ftp://ftp5.se.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-SE: http://ftp5.se.freebsd.org/ports/distfiles
 eur-SI: ftp://ftp.si.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-SI: ftp://ftp2.si.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-SK: ftp://ftp2.sk.freebsd.org/pub/FreeBSD/ports/distfiles
@@ -128,8 +127,10 @@ eur-SK: http://ftp2.sk.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-TR: ftp://ftp2.tr.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-UA: ftp://ftp.ua.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-UA: ftp://ftp11.ua.freebsd.org/pub/FreeBSD/ports/distfiles
+eur-UA: ftp://ftp2.ua.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-UA: ftp://ftp7.ua.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-UA: ftp://ftp8.ua.freebsd.org/pub/FreeBSD/ports/distfiles
+eur-UA: http://ftp2.ua.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-UA: http://ftp8.ua.freebsd.org/FreeBSD/ports/distfiles
 eur-UK: ftp://ftp.uk.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-UK: ftp://ftp2.uk.freebsd.org/pub/FreeBSD/ports/distfiles
@@ -158,7 +159,6 @@ nam-US: ftp://ftp5.us.freebsd.org/pub/FreeBSD/ports/distfiles
 nam-US: ftp://ftp6.freebsd.org/pub/FreeBSD/ports/distfiles
 nam-US: ftp://ftp6.us.freebsd.org/pub/FreeBSD/ports/distfiles
 nam-US: ftp://ftp7.us.freebsd.org/pub/FreeBSD/ports/distfiles
-nam-US: ftp://ftp8.freebsd.org/pub/FreeBSD/ports/distfiles
 nam-US: ftp://ftp8.us.freebsd.org/pub/FreeBSD/ports/distfiles
 nam-US: ftp://ftp9.freebsd.org/pub/FreeBSD/ports/distfiles
 nam-US: ftp://ftp9.us.freebsd.org/pub/FreeBSD/ports/distfiles

@@ -1,5 +1,5 @@
 # Official mirror list: http://www.apache.org/mirrors/
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: http://www.apache.org/dist
 
@@ -9,6 +9,7 @@ asi-AM: http://apache.mirrors.adc.am
 asi-CN: http://apache.etoak.com
 asi-CN: http://apache.freelamp.com
 asi-CN: http://labs.renren.com/apache-mirror
+asi-CN: http://mirror.bjtu.edu.cn/apache
 asi-GE: http://ox.mysoft.ge/apache
 asi-HK: http://apache.01link.hk
 asi-HK: http://apache.communilink.net
@@ -28,23 +29,25 @@ asi-KR: http://apache.naggo.co.kr
 asi-KR: http://apache.tt.co.kr
 asi-KR: http://mirror.apache-kr.org
 asi-KR: http://mirror.khlug.org/apache
+asi-PK: http://apache.skazkaforyou.com
 asi-SG: http://apache.oss.eznetsols.org
-asi-SG: http://mirror.nus.edu.sg/apache
 asi-TH: http://apache.thaiweb.net
 asi-TH: http://mirror.kapook.com/apache
 asi-TH: http://mirror.tourismthai.org/apache
 asi-TH: http://mirrors.issp.co.th/apache
 asi-TW: ftp://apache.cdpa.nsysu.edu.tw/Unix/Web/apache
 asi-TW: ftp://ftp.stu.edu.tw/Unix/Web/apache
-asi-TW: ftp://ftp.stut.edu.tw/pub/OpenSource/apache
 asi-TW: ftp://ftp.twaren.net/Unix/Web/apache
 asi-TW: http://apache.cdpa.nsysu.edu.tw
 asi-TW: http://apache.ntu.edu.tw
 asi-TW: http://apache.stu.edu.tw
+asi-TW: http://ftp.asia.edu.tw/ftp/Apache
 asi-TW: http://ftp.mirror.tw/pub/apache
 asi-TW: http://ftp.nsysu.edu.tw/Apache
+asi-TW: http://ftp.stut.edu.tw/var/ftp/pub/OpenSource/apache
 asi-TW: http://ftp.tcc.edu.tw/pub/Apache
 asi-TW: http://ftp.twaren.net/Unix/Web/apache
+asi-VN: http://mirror-fpt-telecom.fpt.net/apache
 aus-AU: http://apache.mirror.aussiehq.net.au
 eur-AT: ftp://gd.tuwien.ac.at/pub/infosys/servers/http/apache/dist
 eur-BA: http://apache.blic.net
@@ -63,7 +66,6 @@ eur-CZ: http://apache.miloslavbrada.cz
 eur-CZ: http://ftp.sh.cvut.cz/MIRRORS/apache
 eur-CZ: http://trixes.net/pub
 eur-CZ: http://websiterra.com/friends/apache
-eur-CZ: http://www.picvi.com/external/apache
 eur-DE: ftp://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist
 eur-DE: ftp://ftp.fu-berlin.de/unix/www/apache
 eur-DE: ftp://ftp.halifax.rwth-aachen.de/apache
@@ -92,7 +94,6 @@ eur-DE: http://mirror.netcologne.de/apache.org
 eur-DE: http://mirror.serversupportforum.de/apache
 eur-DE: http://mirror.synyx.de/apache
 eur-DE: http://www.online-laptop.com/apache
-eur-DE: http://www.osnt.org/apache
 eur-DK: ftp://apache-mirror.dkuug.dk/pub/apache
 eur-DK: http://apache-mirror.dkuug.dk
 eur-DK: http://apache.idnr.ws
@@ -135,10 +136,8 @@ eur-IL: http://apache.mivzakim.net
 eur-IL: http://apache.spd.co.il
 eur-IL: http://off.co.il/apache
 eur-IS: ftp://ftp.rhnet.is/pub/apache
-eur-IT: ftp://cis.uniroma2.it/unix/packages/APACHE
 eur-IT: ftp://mirror.nohup.it/apache
 eur-IT: http://apache.fastbull.org
-eur-IT: http://apache.fis.uniroma2.it
 eur-IT: http://apache.panu.it
 eur-IT: http://it.apache.contactlab.it
 eur-IT: http://mirror.nohup.it/apache
@@ -188,6 +187,7 @@ eur-RU: http://www.sai.msu.su/apache
 eur-SE: ftp://ftp.sunet.se/pub/www/servers/apache/dist
 eur-SE: ftp://mirror2.dataphone.se/pub/apache
 eur-SE: http://apache.dataphone.se
+eur-SI: http://mirror.osi.si/Apache
 eur-SI: http://www.apache.si
 eur-SK: http://apache.phphosts.org
 eur-SK: http://sk.freebsd.org/pub/apache/dist
@@ -198,7 +198,8 @@ eur-TR: http://godel.cs.bilgi.edu.tr/apache
 eur-TR: http://mirror.veriportal.com/apache
 eur-UA: http://apache.cp.if.ua
 eur-UA: http://apache.infocom.ua
-eur-UA: http://apache.parentinginformed.com
+eur-UA: http://apache.parentingamerica.com
+eur-UA: http://apache.strygunov.com
 eur-UA: http://apache.vc.ukrtel.net
 eur-UK: ftp://ftp.gbnet.net/pub/apache/dist
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.apache.org

@@ -1,5 +1,5 @@
 # Official mirror list: http://download.kde.org/mirrorstatus.html
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: ftp://ftp.kde.org/pub/kde
 
@@ -76,9 +76,7 @@ eur-PT: ftp://mirrors.fe.up.pt/pub/kde
 eur-PT: http://mirrors.fe.up.pt/pub/kde
 eur-RO: ftp://ftp.iasi.roedu.net/pub/mirrors/ftp.kde.org
 eur-RO: http://mirrors.evolva.ro/kdeftp
-eur-RU: ftp://ftp.chg.ru/pub/kde
 eur-RU: ftp://ftp.cronyx.ru/pub/mirror/kde
-eur-RU: http://ftp.chg.ru/pub/kde
 eur-SE: ftp://ftp.df.lth.se/pub/kde
 eur-SE: http://ftp.df.lth.se/pub/kde
 eur-TR: ftp://mirror.comu.edu.tr/kde

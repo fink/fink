@@ -1,5 +1,5 @@
 # Official mirror list: ftp://tug.ctan.org/tex-archive/README.mirrors
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: ftp://tug.ctan.org/tex-archive
 
@@ -14,7 +14,6 @@ asi-CN: http://mirrors.xmu.edu.cn/CTAN
 asi-HK: ftp://ftp.comp.hkbu.edu.hk/pub/TeX/CTAN
 asi-ID: ftp://cermin.lipi.go.id/pub/tex-archive
 asi-ID: ftp://ftp.itb.ac.id/pub/CTAN
-asi-ID: ftp://kebo.vlsm.org/CTAN
 asi-ID: http://ctan.cermin.lipi.go.id
 asi-ID: http://ftp.itb.ac.id/pub/CTAN
 asi-ID: http://kambing.ui.ac.id/ctan
@@ -29,6 +28,9 @@ asi-JP: http://ftp.jaist.ac.jp/pub/CTAN
 asi-JP: http://ftp.yz.yamagata-u.ac.jp/pub/CTAN
 asi-KR: ftp://ftp.kaist.ac.kr/tex-archive
 asi-KR: http://ftp.kaist.ac.kr/pub/tex-archive
+asi-MY: ftp://mirror.upm.edu.my/ctan
+asi-PK: ftp://mirror.lums.edu.pk/pub/ctan
+asi-PK: http://mirror.lums.edu.pk/pub/ctan
 asi-TW: ftp://ctan.cdpa.nsysu.edu.tw/Unix/TeX/CTAN
 asi-TW: ftp://ftp.ccu.edu.tw/pub/tex
 asi-TW: http://ctan.cdpa.nsysu.edu.tw
@@ -70,7 +72,6 @@ eur-FR: ftp://ftp.inria.fr/pub/TeX/CTAN
 eur-FR: ftp://ftp.oleane.net/pub/CTAN
 eur-FR: ftp://mirrors.ircam.fr/pub/CTAN
 eur-FR: http://ctan.mines-albi.fr
-eur-FR: http://distrib-coffee.ipsl.jussieu.fr/pub/mirrors/ctan
 eur-FR: http://ftp.oleane.net/pub/CTAN
 eur-FR: http://mirror.ibcp.fr/pub/CTAN
 eur-FR: http://mirrors.ircam.fr/pub/CTAN
@@ -80,8 +81,6 @@ eur-GR: ftp://ftp.uoi.gr/pub/tex
 eur-GR: http://ftp.cc.uoc.gr/mirrors/CTAN
 eur-GR: http://ftp.uoi.gr/pub/tex
 eur-IE: http://ftp.heanet.ie/mirrors/ctan.org/tex
-eur-IT: ftp://ftp.uniroma2.it/TeX
-eur-IT: http://ftp.uniroma2.it/TeX
 eur-NL: ftp://ftp.snt.utwente.nl/pub/software/tex
 eur-NL: http://ctan.sqsol.co.uk
 eur-NL: http://ftp.snt.utwente.nl/pub/software/tex
@@ -100,7 +99,7 @@ eur-PT: http://ftp.eq.uc.pt/software/TeX
 eur-PT: http://mirrors.fe.up.pt/pub/CTAN
 eur-RO: ftp://ftp.roedu.net/mirrors/ctan.org
 eur-RO: http://ftp.roedu.net/mirrors/ctan.org
-eur-RU: ftp://ftp.chg.ru/pub/TeX/CTAN
+eur-RS: http://rpm.scl.rs/CTAN
 eur-RU: ftp://ftp.vsu.ru/pub/CTAN
 eur-RU: ftp://mirror.macomnet.net/pub/CTAN
 eur-RU: http://ctan.uni-altai.ru
@@ -115,8 +114,6 @@ nam-CA: ftp://mirror.its.dal.ca/ctan
 nam-CA: http://ctan.mirror.rafal.ca
 nam-CA: http://mirror.csclub.uwaterloo.ca/CTAN
 nam-CA: http://mirror.its.dal.ca/ctan
-nam-MX: ftp://tezcatl.fciencias.unam.mx/tex-archive
-nam-MX: http://tezcatl.fciencias.unam.mx/tex-archive
 nam-US: ftp://carroll.aset.psu.edu/pub/CTAN
 nam-US: ftp://ctan.math.utah.edu/tex-archive
 nam-US: ftp://ibiblio.org/pub/packages/TeX

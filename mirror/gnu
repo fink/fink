@@ -1,12 +1,15 @@
 # Official mirror list: http://www.gnu.org/prep/ftp.html
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: ftp://ftp.gnu.org/gnu
 
 afr-NA: ftp://download.polytechnic.edu.na/pub/ftp.gnu.org/gnu
 afr-NA: http://download.polytechnic.edu.na/pub/ftp.gnu.org/gnu
 afr-ZA: ftp://ftp.is.co.za/mirror/ftp.gnu.org/gnu
+asi-BD: ftp://mirrors.ispros.com.bd/gnu
+asi-BD: http://mirrors.ispros.com.bd/gnu
 asi-CN: http://mirror.bjtu.edu.cn/gnu
+asi-JP: ftp://ftp.ring.gr.jp/pub/GNU
 asi-JP: http://core.ring.gr.jp/pub/GNU
 asi-TW: ftp://ftp.ntu.edu.tw/pub/gnu/gnu
 asi-TW: ftp://ftp.twaren.net/Unix/GNU/gnu
@@ -58,7 +61,6 @@ eur-PT: ftp://mirrors.fe.up.pt/pub/gnu
 eur-PT: ftp://mirrors.nfsi.pt/pub/gnu
 eur-PT: http://mirrors.fe.up.pt/pub/gnu
 eur-PT: http://mirrors.nfsi.pt/gnu
-eur-RU: ftp://ftp.chg.ru/pub/gnu
 eur-SE: ftp://ftp.df.lth.se/pub/ftp.gnu.org/pub/gnu
 eur-SE: ftp://ftp.isy.liu.se/pub/gnu
 eur-SE: ftp://ftp.sunet.se/pub/gnu
@@ -72,10 +74,11 @@ eur-UK: ftp://www.mirrorservice.org/sites/ftp.gnu.org/gnu
 eur-UK: http://gnu.xl-mirror.nl
 eur-UK: http://www.mirrorservice.org/sites/ftp.gnu.org/gnu
 nam-CA: ftp://gnu.mirror.iweb.com/gnu
+nam-CA: ftp://mirror.csclub.uwaterloo.ca/gnu
 nam-CA: http://ftpmirror.gnu.org
 nam-CA: http://gnu.mirror.iweb.com/gnu
+nam-CA: http://mirror.csclub.uwaterloo.ca/gnu
 nam-US: ftp://aeneas.mit.edu/pub/gnu
-nam-US: ftp://ftp.club.cc.cmu.edu/gnu
 nam-US: ftp://ftp.gnu.org/gnu
 nam-US: ftp://gcondra.cs.washington.edu/gnu
 nam-US: ftp://mirror.anl.gov/pub/gnu

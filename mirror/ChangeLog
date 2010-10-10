@@ -1,3 +1,8 @@
+2010-10-10  Max Horn  <max@quendi.de>
+
+	* _keys: Added Bangladesh
+	* apache, cpan, ctan, debian, freebsd, gimp, gnome, gnu, kde: mirror updates
+
 2010-10-01  Max Horn  <max@quendi.de>
 
 	* get-mirror.pl:

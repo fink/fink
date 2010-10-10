@@ -1,5 +1,5 @@
 # Official mirror list: http://www.debian.org/mirror/list
-Timestamp: 2010-10-01
+Timestamp: 2010-10-10
 
 Primary: ftp://ftp.debian.org/debian
 
@@ -10,11 +10,13 @@ asi-KR: http://ftp.kr.debian.org/debian
 asi-TH: http://ftp.th.debian.org/debian
 asi-TW: http://ftp.tw.debian.org/debian
 aus-AU: http://ftp.au.debian.org/debian
+aus-NC: http://ftp.nc.debian.org/debian
 aus-NZ: http://ftp.nz.debian.org/debian
 eur-AT: http://ftp.at.debian.org/debian
 eur-BA: http://ftp.ba.debian.org/debian
 eur-BE: http://ftp.be.debian.org/debian
 eur-BG: http://ftp.bg.debian.org/debian
+eur-BY: http://ftp.by.debian.org/debian
 eur-CH: http://ftp.ch.debian.org/debian
 eur-CZ: http://ftp.cz.debian.org/debian
 eur-DE: http://ftp.de.debian.org/debian
@@ -31,6 +33,7 @@ eur-HU: http://ftp.hu.debian.org/debian
 eur-IE: http://ftp.ie.debian.org/debian
 eur-IS: http://ftp.is.debian.org/debian
 eur-IT: http://ftp.it.debian.org/debian
+eur-LT: http://ftp.lt.debian.org/debian
 eur-NL: ftp://ftp.debian.org/debian
 eur-NL: http://ftp.nl.debian.org/debian
 eur-NO: http://ftp.no.debian.org/debian
