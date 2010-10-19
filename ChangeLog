@@ -1,3 +1,7 @@
+2010-10-19  Daniel Macks  <dmacks@netspace.org>
+
+	* fink.8.in: Sync with unstable
+
 2010-06-25  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.conf.5.in: backport document new DownloadMethod:aria2
