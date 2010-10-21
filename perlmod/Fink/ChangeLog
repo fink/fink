@@ -1,3 +1,8 @@
+2010-10-20  Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* VirtPackage.pm: Enable system-java-dev if on 10.6 and
+	JDK headers exist.
+
 2010-10-01  Remi Mommsen <remigius.mommsen@cern.ch>
 
 	* Validation.pm: Fix validation of gtk-doc URLs in case that
