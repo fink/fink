@@ -450,7 +450,7 @@ END
 				if (-r $javadir . '/' . $dir . '/Headers/jni.h') {
 					print STDERR "$dir/Headers/jni.h " if ($options{debug});
 					$latest_javadev = $dir unless (defined $latest_javadev);
-				} elsif ($distribution ge "10.6" && $ver >= 14 && -r $javadir . '/Current/Headers/jni.h') {
+				} elsif ($distribution ge "10.5" && $ver >= 14 && -r $javadir . '/Current/Headers/jni.h') {
 					print STDERR "Current/Headers/jni.h " if ($options{debug});
 					$latest_javadev = $dir unless (defined $latest_javadev);
 				} else {
