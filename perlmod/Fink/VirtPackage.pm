@@ -454,7 +454,7 @@ END
 					print STDERR "Current/Headers/jni.h " if ($options{debug});
 					$latest_javadev = $dir unless (defined $latest_javadev);
 				} else {
-					print STDERR "$javadir/$dir/Headers/jni.h missing ";
+					print STDERR "$javadir/$dir/Headers/jni.h missing " if ($options{debug});
 					$hash->{status} = STATUS_ABSENT;
 				}
 				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
