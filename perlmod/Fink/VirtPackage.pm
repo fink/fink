@@ -447,10 +447,14 @@ you must download the Java SDK from Apple at:
 END
 				$hash->{compilescript} = &gen_compile_script($hash);
 
-				if (-d $javadir . '/' . $dir . '/Headers') {
-					print STDERR "$dir/Headers " if ($options{debug});
+				if (-r $javadir . '/' . $dir . '/Headers/jni.h') {
+					print STDERR "$dir/Headers/jni.h " if ($options{debug});
+					$latest_javadev = $dir unless (defined $latest_javadev);
+				} elsif ($distribution ge "10.5" && $ver >= 14 && -r $javadir . '/Current/Headers/jni.h') {
+					print STDERR "Current/Headers/jni.h " if ($options{debug});
 					$latest_javadev = $dir unless (defined $latest_javadev);
 				} else {
+					print STDERR "$javadir/$dir/Headers/jni.h missing " if ($options{debug});
 					$hash->{status} = STATUS_ABSENT;
 				}
 				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});

@@ -1,3 +1,10 @@
+2010-10-23  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Fix validation of gtk-doc URLs in case that
+	$basepath has multiple directory levels, e.g. /opt/fink vs /sw
+	* VirtPackage.pm: Enable system-java-dev if on 10.6 and
+	JDK headers exist.
+
 2010-09-25  Daniel Macks  <dmacks@netspace.org>
 
 	* NetAccess.pm: backport aria2 downloadmethod
