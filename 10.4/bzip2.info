@@ -1,13 +1,13 @@
 Package: bzip2
-Version: 1.0.5
-Revision: 2
+Version: 1.0.6
+Revision: 1
 Essential: yes
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: fink (>= 0.24.12-1)
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: http://www.bzip.org/%v/%n-%v.tar.gz
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
-Source-MD5: 3c15a0c8d1d3ee1c46a1634d00617b1a
+Source-MD5: 00b516f4704d4a7cb50a1d97e6e8e15b
 PatchFile: %n.patch
 PatchFile-MD5: 6fe75509c38cc356dd7ddfea0cdcd413
 PatchScript: sed 's|@VERSION@|%v|g' < %{PatchFile} | patch -p1

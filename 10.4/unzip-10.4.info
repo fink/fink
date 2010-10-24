@@ -1,17 +1,23 @@
 Package: unzip
-Version: 6.0
-Revision: 1
-Distribution: 10.5, 10.6
+Version: 5.52
+Revision: 12
+Distribution: 10.4
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 License: BSD
 Essential: yes
 #CustomMirror: <<
+#nam-US: http://uiarchive.uiuc.edu/mirrors/ftp/ftp.info-zip.org/pub/infozip/src/
+#nam-US: ftp://uiarchive.cso.uiuc.edu/pub/ftp/ftp.info-zip.org/pub/infozip/src/
+#eur-UK: http://www.mirror.ac.uk/sites/ftp.info-zip.org/pub/infozip/src/
+#eur-PL: ftp://sunsite.icm.edu.pl/pub/unix/archiving/info-zip/src/
+#eur-CH: http://sunsite.cnlab-switch.ch/ftp/mirror/infozip/src/
+#eur-CH: ftp://sunsite.cnlab-switch.ch/mirror/infozip/src/
 #Primary: ftp://ftp.info-zip.org/pub/infozip/src/
 #<<
-#Source: mirror:custom:%n60.tgz
-Source: mirror:sourceforge:fink/%n60.tgz
-Source-MD5: 62b490407489521db863b523a7f86375
-SourceDirectory: %n60
+#Source: mirror:custom:%n552.tar.gz
+Source: mirror:sourceforge:fink/%n552.tar.gz
+Source-MD5: 9d23919999d6eac9217d1f41472034a9
+SourceDirectory: %n-%v
 BuildDepends: fink (>= 0.24.12)
 DocFiles: BUGS INSTALL LICENSE README ToDo WHERE
 Homepage: http://www.info-zip.org/pub/infozip/UnZip.html
@@ -24,7 +30,7 @@ pkunzip, and other Windows zip utilities.
 This utility is necessary to install several packages in a pure Darwin
 installation, as Darwin does not come with zip/unzip.
 <<
-CompileScript: make -f unix/Makefile macosx D_USE_BZ2=-DUSE_BZIP2 L_BZ2=-lbz2
+CompileScript: make -f unix/Makefile macosx
 InstallScript: make -f unix/Makefile install BINDIR=%i/bin MANDIR=%i/share/man/man1
 Suggests: zip
 

@@ -16,10 +16,10 @@ PatchFile-MD5: b08afef2d893e68a12fe2b3823c2a502
 InstallScript: <<
   #!/bin/sh -ev
   INSTALL=install
-  INSTALL_FILE="$INSTALL -p -o root -g admin -m 644"
-  INSTALL_PROGRAM="$INSTALL -p -o root -g admin -m 755"
-  INSTALL_SCRIPT="$INSTALL -p -o root -g admin -m 755"
-  INSTALL_DIR="$INSTALL -p -d -o root -g admin -m 755"
+  INSTALL_FILE="$INSTALL -p -m 644"
+  INSTALL_PROGRAM="$INSTALL -p -m 755"
+  INSTALL_SCRIPT="$INSTALL -p -m 755"
+  INSTALL_DIR="$INSTALL -p -d -m 755"
   $INSTALL_DIR %i/bin \
                %i/sbin \
                %i/share/man/man1 \

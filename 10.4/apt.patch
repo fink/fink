@@ -407,6 +407,18 @@ diff -urN apt-0.5.4.orig/apt-pkg/init.cc apt-0.5.4/apt-pkg/init.cc
     Sys = 0;
     string Label = Cnf.Find("Apt::System","");
     if (Label.empty() == false)
+diff -Nurd -x'*~' apt-0.5.4.orig/apt-pkg/pkgcachegen.cc apt-0.5.4/apt-pkg/pkgcachegen.cc
+--- apt-0.5.4.orig/apt-pkg/pkgcachegen.cc	2001-07-01 18:28:24.000000000 -0400
++++ apt-0.5.4/apt-pkg/pkgcachegen.cc	2009-12-06 13:58:16.000000000 -0500
+@@ -597,7 +597,7 @@
+ bool pkgMakeStatusCache(pkgSourceList &List,OpProgress &Progress,
+ 			MMap **OutMap,bool AllowMem)
+ {
+-   unsigned long MapSize = _config->FindI("APT::Cache-Limit",6*1024*1024);
++   unsigned long MapSize = _config->FindI("APT::Cache-Limit",60*1024*1024);
+    
+    vector<pkgIndexFile *> Files(List.begin(),List.end());
+    unsigned long EndOfSource = Files.size();
 diff -urN apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
 --- apt-0.5.4.orig/apt-pkg/policy.cc	2001-05-28 08:40:56.000000000 +0900
 +++ apt-0.5.4/apt-pkg/policy.cc	2005-03-08 13:00:38.000000000 +0900

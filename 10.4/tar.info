@@ -1,16 +1,24 @@
 Package: tar
-Version: 1.16.1
+Version: 1.23
 Revision: 1
 Essential: yes
+# libgettext8-shlibs isn't Essential yet so we have to stick with 3.
 Depends: libgettext3-shlibs, libiconv, gzip, bzip2, base-files
-Source: mirror:sourceforge:fink/%n-%v.tar.gz
-#Source: gnu
-Source-MD5: 8ecfdd38740aadb8e17129e70803589a
-ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib
+Source: mirror:sourceforge:fink/%n-%v.tar.bz2
+#Source: mirror:gnu:%n/%n-%v.tar.bz2
+Source-MD5: 41e2ca4b924ec7860e51b43ad06cdb7e
+ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib --disable-dependency-tracking
 CompileScript: <<
  %p/bin/fink -y install libgettext3-dev libiconv-dev
  ./configure %c
  make
+<<
+InfoTest: <<
+ TestScript: <<
+  # Fix bug in test 91 (fails when built as root).
+  perl -pi -e 's/(^AT_CHECK.*$)/$&\nAT_UNPRIVILEGED_PREREQ/' tests/remfiles01.at
+  make check || exit 2
+ <<
 <<
 InstallScript: <<
  make install DESTDIR=%d
@@ -36,6 +44,9 @@ DescPackaging: <<
  the compile script.  Note that since the corresponding essential packages
  are dependencies of this one, they should already have been built, so
  'fink install' should merely make sure they are in place.
+ 
+ Due to the need to run 'fink install' within CompileScript, tar can't
+ be built with --build-as-nobody.
 
  Previous versions by Christoph Pfisterer.
 <<

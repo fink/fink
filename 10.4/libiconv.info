@@ -1,6 +1,6 @@
 Package: libiconv
 Version: 1.12
-Revision: 3
+Revision: 4
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: c2be282595751535a618ae0edeb8f648
@@ -44,7 +44,7 @@ export PATH
 
 # Make sure that we get the compiler wrapper on [redacted]
 case `uname -r` in
-10.*) PATH=%p/var/lib/fink/path-prefix-10.6:$PATH ;;
+1?.*) PATH=%p/var/lib/fink/path-prefix-10.6:$PATH ;;
 esac
 # and also on x86_64
 case "%m" in
@@ -55,7 +55,7 @@ cd %b/../gperf-3.0.3
 ./configure --prefix=%p
 make
 cd %b/../gettext-0.14.5/gettext-runtime
-EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" ./configure --prefix=%p --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath  --disable-shared
+EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_func_iconv=no ./configure --prefix=%p --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-shared
 make
 rm -rf %b/../_inst
 make install DESTDIR=%b/../_inst
@@ -116,6 +116,13 @@ our build system.
 2007-02-01 Benjamin Reed <rangerrick@fink.sourceforge.net>
 * updated to 1.11
 * included apple's patches to add UTF-8-MAC charset support
+
+2010-06-10 Daniel Macks <dmacks@netspace.org>
+
+* Make sure build doesn't see already-installed libiconv-dev. But
+  apple's isn't always compatible. Just omit iconv when building
+  gettext commands (only used locally while building libiconv) that
+  would link aginst libiconv.
 <<
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
