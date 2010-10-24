@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 1057
+Revision: 1058
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: %N-shlibs (= %v-%r)
@@ -8,7 +8,7 @@ Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: 918f4b0a4170277ea8f095eebc631ced
+PatchFile-MD5: df6c8dfea788fb82752784b30ee70150
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' < %{PatchFile} | patch -p1
  sh patch_flush
@@ -154,6 +154,9 @@ Previous versions by Christoph Pfisterer.
 
 	Don't seg-fault if *Packages file isn't readable (or other
 	malformed data). Upstream patch to fix upstream Bug #120311
+
+	Raise cachesize limit. See:
+	http://permalink.gmane.org/gmane.os.apple.fink.core/2025
 <<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
