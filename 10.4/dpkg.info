@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1228
+Revision: 1229
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: libgettext3-shlibs, libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
@@ -12,7 +12,7 @@ Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
 Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
 PatchFile: %n.patch
-PatchFile-MD5: d6d9c1fa417f4a8b4e6d749ff3cdde78
+PatchFile-MD5: d5979f532b44157110630fea3bf7e2f1
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
@@ -36,6 +36,7 @@ InstallScript: <<
  /usr/bin/make install DESTDIR=%d
  install -c -p -m 644 origin.fink %i/etc/dpkg/origins/fink
  rm -rf %i/lib/dpkg/methods/*
+ mkdir -p -m0755 %i/lib/fink/dpkg-base-files
 <<
 Description: The Debian package manager
 DescDetail: <<
@@ -99,6 +100,13 @@ Remove un/misused variable in dpkg enquiry.c (solve bus error in --architecture)
 
 Filesystem may be case-insensitive, so do case-insensitive check for
 "dpkg -i" replacing files in an already-installed other package
+
+Patched off-by-one bug in main/help.c:preexecscript argv processing
+(backported from upstream dpkg-1.13.16)
+
+Patched to use %p/lib/fink/dpkg-base-files/ wrappers for .deb scripts
+(for use with the dpkg-base-files module)
+NB: wrapper runs even if no .deb script.
 <<
 #
 PostInstScript: <<

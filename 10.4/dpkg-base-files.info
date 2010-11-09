@@ -1,0 +1,47 @@
+Package: dpkg-base-files
+Version: 0.3
+Revision: 1
+Depends: dpkg (>= 1.10.21-1229)
+Source: mirror:custom:fink/%n-%v.tar.gz
+Essential: yes
+Source-MD5: b2cbd67423d5dde4de56fb8a23ef8dfa
+CompileScript: ./setup.sh %p
+InstallScript: ./install.sh %i
+#
+PostInstScript: <<
+	if [ "$1" = "configure" ]; then
+		echo "Cleaning up all installed .la files (this may take a moment)"
+		for libdir in "%p/lib" "%p/opt" "%p/Applications" "%p/Library"; do
+			if [ -d "$libdir" ]; then
+				echo '  find "'$libdir'" -name '"'"'*.la'"'"' -and -type f -print0 | xargs -0 perl -pi -e "s/^(dependency_libs)=.*/\1='"''"'/" || true'
+				find "$libdir" -name '*.la' -and -type f -print0 | xargs -0 perl -pi -e "s/^(dependency_libs)=.*/\1=''/" || true
+			else
+				echo '  skipping "'$libdir'" (nothing installed there)'
+			fi
+		done
+	fi
+<<
+#
+Description: Support scripts for dpkg
+DescDetail: <<
+The dpkg-base-files package contains files that dpkg uses:
+
+ * global-deb-scripts
+
+   * During package installation, clear the dependency_libs entry in
+     all .la files being installed
+<<
+DescPackaging: <<
+	Dependency on "dpkg that runs these scripts" needed so that
+	other packages can Depends on %N and know that the scripts
+	will be run.
+<<
+License: GPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+CustomMirror: <<
+ Primary: http://superb-west.dl.sourceforge.net/sourceforge/
+ Secondary: http://easynews.dl.sourceforge.net/sourceforge/
+ nam-US: http://superb-west.dl.sourceforge.net/sourceforge/
+ eur: http://eu.dl.sourceforge.net/sourceforge/
+<<
+
