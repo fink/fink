@@ -2634,3 +2634,159 @@ diff -Naur dpkg-1.10.21/lib/mlib.c dpkg-new/lib/mlib.c
          fprintf(stderr, _("dpkg: warning - %s returned error exit status %d\n"),description,n);
        else
          ohshit(_("subprocess %s returned error exit status %d"),description,n);
+diff -Nurd dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
+--- dpkg-1.10.21.orig/main/help.c	2003-10-25 16:03:21.000000000 +0400
++++ dpkg-1.10.21/main/help.c	2009-12-20 02:37:43.000000000 -0400
+@@ -180,7 +187,7 @@
+   }
+   if (f_debug & dbg_scripts) {
+     fprintf(stderr,"D0%05o: fork/exec %s (",dbg_scripts,path);
+-    while (*argv) fprintf(stderr," %s",*argv++);
++    while (*++argv) fprintf(stderr," %s",*argv);
+     fputs(" )\n",stderr);
+   }
+   instdirl= strlen(instdir);
+@@ -256,17 +263,75 @@
+ static int do_script(const char *pkg, const char *scriptname, const char *scriptpath, struct stat *stab, char *const arglist[], const char *desc, const char *name, int warn) {
+   const char *scriptexec;
+   int c1, r;
++  if (scriptpath) // if NULL, just want wrapper side-effect, no actual .deb script present
+   setexecute(scriptpath,stab);
+ 
+   c1= m_fork();
+   if (!c1) {
+     const char **narglist;
++    /* FINK LOCAL begin */
++    const char **full_narglist;
++    char *path_wrapper;
++    struct stat stab_wrapper;
++    const char *null_script_path = "";  // must be blank string (NULL is end-of-array sentinel)
++    /* FINK LOCAL end */
+     for (r=0; arglist[r]; r++) ;
+-    narglist=nfmalloc((r+1)*sizeof(char*));
++    // narglist=nfmalloc((r+1)*sizeof(char*));
++    /* FINK LOCAL begin */
++    full_narglist=nfmalloc((r+2)*sizeof(char*));  // leave space for wrapper-script-name, add NULL terminator
++    narglist=full_narglist+1;  // orig pointer points to orig array
++    /* FINK LOCAL end */
+     for (r=1; arglist[r-1]; r++)
+       narglist[r]= arglist[r];
++    if (scriptpath) { // FINK LOCAL
+     scriptexec= preexecscript(scriptpath,narglist);
++    } else { scriptexec = null_script_path; }; // FINK LOCAL was called with no actual script path to run
+     narglist[0]= scriptexec;
++    /* FINK LOCAL begin */
++    // try to set up with wrapper
++#define FINK_DPKG_SCRIPT_DIR "@PREFIX@/lib/fink/dpkg-base-files"
++    // determine wrapper-script pathname
++    asprintf(&path_wrapper, "%s/%s", FINK_DPKG_SCRIPT_DIR, scriptname);
++    if (path_wrapper == NULL) {
++      ohshite(_("dpkg - error: could not allocate for fink script wrapper for %s.\n"), scriptpath);
++    } else {
++      if (!stat(path_wrapper, &stab_wrapper)) {
++	if ((stab_wrapper.st_mode & 0555) == 0555) {
++	  // only use it if it exists and is chmod a+rx
++	  debug(dbg_scripts,"Wrapper script '%s' will be used around '%s'", path_wrapper, scriptpath);
++	  // it's good! set wrapper as actual runnable thing in narglist array
++	  narglist=full_narglist;
++	  scriptexec= preexecscript(path_wrapper,narglist);
++	  narglist[0]= scriptexec;
++
++	  /*
++	    Global wrapper needs way to introspect name of package
++	    being manipulated. Normal .deb scripts could have this
++	    hard-coded in their script because this info is known at
++	    the time the .deb is constructed. Pass the name as an
++	    env var to the wrapper.
++	  */
++	  setenv("FINK_PACKAGE_NAME", pkg, 1);
++	} else {
++	  debug(dbg_scripts,"Wrapper script '%s' wrong perms", path_wrapper);
++	  if (scriptpath) {
++	    debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
++	  } else {
++	    debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
++	    exit(0);
++	  }
++	}
++      } else {
++	debug(dbg_scripts,"Wrapper script '%s' does not exist", path_wrapper);
++	if (scriptpath) {
++	  debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
++	} else {
++	  debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
++	  exit(0);
++	}
++      }
++    }
++    /* FINK LOCAL end */
+     execv(scriptexec,narglist);
+     ohshite(desc,name);
+   }
+@@ -294,8 +359,13 @@
+   if (stat(scriptpath,&stab)) {
+     if (errno == ENOENT) {
+       debug(dbg_scripts,"maintainer_script_installed nonexistent %s",scriptname);
+-      return 0;
+-    }
++//    return 0;
++      /* FINK LOCAL begin */
++      // always call do_script (fink adds side-effects), but pass NULL if no actual script
++      scriptpath = NULL;
++//  }
++    } else
++      /* FINK LOCAL end */
+     ohshite(_("unable to stat installed %s script `%.250s'"),description,scriptpath);
+   }
+   do_script(pkg->name, scriptname, scriptpath, &stab, arglist, _("unable to execute %s"), buf, 0);
+@@ -320,8 +390,14 @@
+   if (stat(cidir,&stab)) {
+     if (errno == ENOENT) {
+       debug(dbg_scripts,"maintainer_script_new nonexistent %s `%s'",scriptname,cidir);
+-      return 0;
+-    }
++//    return 0;
++      //    }
++      /* FINK LOCAL begin */
++      // always call do_script (fink adds side-effects), but pass NULL if no actual script
++      cidir = NULL;
++//  }
++    } else
++      /* FINK LOCAL end */
+     ohshite(_("unable to stat new %s script `%.250s'"),description,cidir);
+   }
+   do_script(pkgname, scriptname, cidir, &stab, arglist, _("unable to execute new %s"), buf, 0);
+@@ -348,16 +424,19 @@
+     if (errno == ENOENT) {
+       debug(dbg_scripts,"maintainer_script_alternative nonexistent %s `%s'",
+             scriptname,oldscriptpath);
+-      return 0;
+-    }
++      /* FINK LOCAL begin */
++      // always call do_script (fink adds side-effects), but pass NULL if no actual script
++      oldscriptpath = NULL;
++    } else {
++      /* FINK LOCAL end */
+     fprintf(stderr,
+             _("dpkg: warning - unable to stat %s `%.250s': %s\n"),
+             buf,oldscriptpath,strerror(errno));
+-  } else {
++    }
++  }
+     if (!do_script(pkg->name, scriptname, oldscriptpath, &stab, arglist, _("unable to execute %s"), buf, PROCWARN))
+       return 1;
+     ensure_diversions();
+-  }
+   fprintf(stderr, _("dpkg - trying script from the new package instead ...\n"));
+ 
+   arglist= buildarglist(scriptname,
+@@ -367,6 +446,9 @@
+   strcpy(cidirrest,scriptname);
+   sprintf(buf,_("new %s script"),description);
+ 
++  // FINK if old-pkg fails, don't want to allow "success" of new
++  // solely because wrapper worked in new-pkg: loses important
++  // error-state that *should* fail loudly
+   if (stat(cidir,&stab)) {
+     if (errno == ENOENT)
+       ohshit(_("there is no script in the new version of the package - giving up"));
