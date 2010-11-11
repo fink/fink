@@ -1,3 +1,7 @@
+2010-11-11  Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm: Support 10.6.5
+
 2010-10-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Fix validation of gtk-doc URLs in case that
