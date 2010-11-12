@@ -18,8 +18,8 @@ Source: @SOURCE@
 Source-MD5: @MD5@
 NoSetPATH: true
 CompileScript: <<
- make test PREFIX=%p ARCHITECTURE=%m
- ./setup.sh %p %m
+ make test PREFIX=%p ARCHITECTURE=%m DISTRIBUTION=@DISTRIBUTION@
+ ./setup.sh %p %m @DISTRIBUTION@
 <<
 InstallScript: <<
  ./install.sh %i %m
@@ -44,7 +44,7 @@ PreRmScript: <<
  rm -f %p/var/lib/fink/shlibs.db.lock
 <<
 #
-Description: The Fink package manager
+Description: Open-source software package manager
 DescPackaging: <<
  Don't use mirror:sourceforge so that older package manager versions
  which do not know that mirror can still selfupdate.
