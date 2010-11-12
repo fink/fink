@@ -1,3 +1,7 @@
+2010-11-11  Dave Morrison  <drm@finkproject.org>
+
+	* fink-x86_64.info.in: sync with recent changes to fink.info.in
+
 2010-09-25  Daniel Macks  <dmacks@netspace.org>
 
 	* fink.8.in: Move "-w" to output-format section; clarify that -m
