@@ -1,3 +1,7 @@
+2010-11-11  Dave Morrison  <drm@pfinkproject.org>
+
+	* Bootstrap.pm: Recognize new hardware too (11" MB Air)
+
 2010-11-11  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm: Support 10.6.5
