@@ -1,3 +1,8 @@
+2010-11-11  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: Also re-cache .info whose timestamp has gone
+	backwards (e.g., overwriting local mod with older/archived copy)
+
 2010-11-11  Dave Morrison  <drm@pfinkproject.org>
 
 	* Bootstrap.pm: Recognize new hardware too (11" MB Air)
