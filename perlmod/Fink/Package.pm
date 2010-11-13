@@ -865,7 +865,7 @@ END
 				$load = 1;
 			} elsif (!$noauto) {
 				$load = 1 if !-f $fidx->{cache}
-					|| $fidx->{info_mtime} < (stat($info))[9];
+					|| $fidx->{info_mtime} != (stat($info))[9];
 			}
 		}
 		
