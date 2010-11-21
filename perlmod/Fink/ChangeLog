@@ -1,3 +1,9 @@
+2010-11-21  Daniel Macks  <dmacks@netspace.org>
+
+	* SelfUpdate.pm: 10.4 folks auto-switched to "10.4"
+	selfupdatemethod that will contain snapshot/branch of finkinfo/ at
+	the point we stop supporting it
+
 2010-11-11  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: Also re-cache .info whose timestamp has gone

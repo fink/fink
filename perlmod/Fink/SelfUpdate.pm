@@ -312,6 +312,29 @@ Essential or other high importance.
 sub finish {
 	my (@elist);
 
+	# Make sure using the special tree for 10.4 systems need to do
+	# this now (and re-selfupdate using it) because other Essential
+	# packages may have been updated beyond that tree and don't want
+	# "newer" packages to leak back into it. We are currently running
+	# the "new" fink, but hopefully it will remain compatible with
+	# 10.4's dpkg and other core things and won't matter if user has
+	# the new one even if it's not in 10.4's distro.
+	if ($config->param('distribution') eq '10.4'
+		&& $config->has_param('SelfUpdateMethod') ne '10.4'
+		&& $config->has_param('SelfUpdateMethod') ne 'point'
+		&& 0					# XXX REMOVE THIS TO ACTIVATE
+	) {
+		print_breaking <<EOMSG;
+You appear to be on OS X 10.4. This version of the operating system is
+no longer supported by the fink project. To maintain usability, you
+must use a special selfupdate method that contains the last collection
+of packges expected to work well on 10.4. Now running 'fink selfupdate
+--method=10.4' to try to do that for you...
+EOMSG
+		exec "$basepath/bin/fink selfupdate --method=10.4";
+		die "re-executing fink failed, run 'fink selfupdate --method=10.4' manually\n";
+	}
+
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
 
