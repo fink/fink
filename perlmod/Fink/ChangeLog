@@ -1,3 +1,8 @@
+2010-01-06  Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm: Support 10.6.6
+	* Config.pm: Print out enabled Trees in "fink --version"
+
 2010-11-21  Daniel Macks  <dmacks@netspace.org>
 
 	* SelfUpdate.pm: 10.4 folks auto-switched to "10.4"
