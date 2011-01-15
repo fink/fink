@@ -324,6 +324,10 @@ HELPFORMAT
 			. ', ' . $config->param('Architecture')
 			. ($config->mixed_arch() ? ' (forged)' : '')
 			. "\n";
+		{
+			my @trees=$config->get_treelist();
+			print "Trees: @trees\n";
+		}
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
