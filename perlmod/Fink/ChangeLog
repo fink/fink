@@ -1,4 +1,4 @@
-2010-01-15  Alexander Hansen <alexkhansen@users.sourceforge.net>
+2011-01-15  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* Config.pm: Backport from HEAD:
 	Print out enabled Trees in "fink --version"
