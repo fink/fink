@@ -1,3 +1,11 @@
+2011-02-10  Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* VirtPackage.pm: Get rid of -iokit flag in check_x11_version, as
+	it is a no-op on 10.4, and hangs on 10.5 and 10.6.  Fixes 
+	detection of X11 version on 10.5 with XQuartz-2.6.0 .  Thanks to
+	ilgaz for reporting the bug in X11 detection, and Martin Costabel
+	for tracking it down.
+	
 2011-01-15  Dave Morrison  <drm@finkproject.org>
 
 	* all: update copyright
