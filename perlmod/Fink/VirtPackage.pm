@@ -1733,7 +1733,7 @@ sub check_x11_version {
 		for my $binary (@xservers, 'X') {
 			for my $xdir ('/usr/X11R6', '/usr/X11') {
 				if (-x $xdir . '/bin/' . $binary) {
-					if (open (XBIN, "$xdir/bin/$binary -version -iokit 2>\&1 |")) {
+					if (open (XBIN, "$xdir/bin/$binary -version 2>\&1 |")) {
 						while (my $line = <XBIN>) {
 							if ($line =~ /(?:XFree86 Version|X Protocol.* Release|X.org Release) ([\d\.]+)/) {
 								$XF_VERSION = $1;
