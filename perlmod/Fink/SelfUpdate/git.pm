@@ -189,7 +189,7 @@ sub setup_direct_git {
 	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
-	my $gitrepository = "http://github.com/danielj7/fink-dists.git"
+	my $gitrepository = 'http://github.com/danielj7/fink-dists.git';
 	if (-f "$basepath/lib/fink/URL/git-repository") {
 		$gitrepository = cat "$basepath/lib/fink/URL/git-repository";
 		chomp($gitrepository);
@@ -201,13 +201,13 @@ sub setup_direct_git {
 			chomp($gitrepository);
 		}
 	} else {
-		$gitrepository = "git@github.com:danielj7/fink-dists.git"
+		$gitrepository = 'git@github.com:danielj7/fink-dists.git';
 		if (-f "$basepath/lib/fink/URL/developer-git") {
 			$gitrepository = cat "$basepath/lib/fink/URL/developer-git";
 			chomp($gitrepository);
 		}
 	}
-	$cmd ="$basepath/bin/git ${verbosity}"
+	$cmd ="$basepath/bin/git ${verbosity}";
 	$cmdd = "$cmd clone $gitrepository fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
