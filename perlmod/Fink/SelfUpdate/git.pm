@@ -221,6 +221,11 @@ sub setup_direct_git {
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	chdir "fink" or die "Can't cd to fink\n";
 
+	# Add $distribution to files that git will ignore.
+	open EXCLUDE ">>.git/info/exclude" or die "Unable to edit exclude file: $!";
+	print EXCLUDE "/$distribution";
+	close EXCLUDE;
+
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
