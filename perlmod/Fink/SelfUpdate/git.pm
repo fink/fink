@@ -193,7 +193,6 @@ sub setup_direct_git {
 	if (-f "$basepath/lib/fink/URL/git-repository") {
 		$gitrepository = cat "$basepath/lib/fink/URL/git-repository";
 		chomp($gitrepository);
-		$gitrepository .= ':/gitroot/fink';
 	}
 	if ($gituser eq "anonymous") {
 		if (-f "$basepath/lib/fink/URL/anonymous-git") {
