@@ -113,7 +113,29 @@ sub setup_direct_cvs {
 	my ($username, $cvsuser, @testlist);
 	my ($use_hardlinks, $cutoff, $cmd);
 	my ($cmdd);
-
+	# Thanks to Tanaka Atushi for information about the quoting syntax which
+	# allows CVS proxies to function.
+	my ($proxy_url, $proxy_port);
+	my $proxcmd=''; # default to null
+	
+	my $http_proxy=$config->param_default("ProxyHTTP", ""); # get HTTP proxy information from fink.conf
+	if ($http_proxy) { # HTTP proxy has been set            
+            if ($http_proxy =~ m|http://|) { # strip leading 'http://', if present.
+                (undef, $proxy_url)=split m|//|, $http_proxy ;
+            } else {
+                $proxy_url=$http_proxy;
+            }
+            if  ($proxy_url =~ /:\d+/) { # extract TCP port number if present
+                my @tokens=split /:/,$proxy_url; 
+                $proxy_port=pop @tokens ; # port is the last item following a colon
+                $proxy_url=join ':',@tokens ; # since we may have a username:password combo 
+            } 
+	}
+ #   my $cvsrepository="fink.cvs.sourceforge.net/cvsroot/fink";
+    $proxcmd=";proxy=$proxy_url" if $http_proxy;
+    $proxcmd="$proxcmd;proxyport=$proxy_port" if $proxy_port;
+    #;proxy=$proxy_url;proxyport=$proxy_port:
+ 
 	$username = "root";
 	if (exists $ENV{SUDO_USER}) {
 		$username = $ENV{SUDO_USER};
@@ -202,7 +224,7 @@ sub setup_direct_cvs {
 			$cmd = "cvs ${verbosity} -z3 -d$cvsrepository";
  		}
  		else {
-			$cmd = "cvs -d:pserver:anonymous\@$cvsrepository login";
+			$cmd = qq(cvs -d":pserver${proxcmd}:anonymous\@$cvsrepository" login);
 			if ($username ne "root") {
 				$cmd = "/usr/bin/su $username -c '$cmd'";
 			}
@@ -210,7 +232,7 @@ sub setup_direct_cvs {
 				die "Logging into the CVS server for anonymous read-only access failed.\n";
 			}
 			else {
-				$cmd = "cvs ${verbosity} -z3 -d:pserver:anonymous\@$cvsrepository";
+				$cmd = qq(cvs ${verbosity} -z3 -d":pserver${proxcmd}:anonymous\@$cvsrepository");
 			}
  		}
 	} else {
@@ -218,7 +240,7 @@ sub setup_direct_cvs {
 			$cvsrepository = cat "$basepath/lib/fink/URL/developer-cvs";
 			chomp($cvsrepository);
 		}
-		$cmd = "cvs ${verbosity} -z3 -d:ext:$cvsuser\@$cvsrepository";
+		$cmd = qq(cvs ${verbosity} -z3 "-d:ext${proxcmd}:$cvsuser\@$cvsrepository");
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -l -d fink dists";

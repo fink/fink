@@ -22,6 +22,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
 #
 
+# Thanks to Tanaka Atushi for the changes which allow this to work with cvs proxies
+
 $| = 1;
 use 5.008_001;  # perl 5.8.1 or newer required
 use strict;
@@ -53,14 +55,14 @@ if (-d $sentinel_cvs) {
     open(IN,'<',"$sentinel_cvs/Root") or die "can't open $sentinel_cvs/Root: $!";
     while (defined($_=<IN>)) {
         chomp;
-        if (/^(:\w+:\w+)@(.+)$/) {
+        if (/^(:\S+:\S+)@(.+)$/) { # allow for proxy
             $method_user = $1;
             $repo = $2;
         }
     }
     close(IN);
     die "couldn't parse $sentinel_cvs/Root\n" unless ((defined $method_user) and (defined $repo));
-    if (defined $method_user and $method_user eq ":pserver:anonymous") {
+    if (defined $method_user and $method_user =~ /^:pserver(.*):anonymous$/) { #allow for proxy
 	$repo_file = "@PREFIX@/lib/fink/URL/anonymous-cvs";
     } else {
 	$repo_file = "@PREFIX@/lib/fink/URL/developer-cvs";
