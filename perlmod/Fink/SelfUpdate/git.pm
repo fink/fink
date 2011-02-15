@@ -68,7 +68,7 @@ sub system_check {
 	}
 
 	my $gitpath;
-	if (!(-x "$basepath/bin/git") {
+	if (-x "$basepath/bin/git") {
 		$gitpath = $config->param_default("GitPath", "$basepath/bin/git");
 	} else {
 		$gitpath = $config->param_default("GitPath", "/usr/bin/git");
