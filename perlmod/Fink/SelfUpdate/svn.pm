@@ -26,7 +26,7 @@ package Fink::SelfUpdate::svn;
 
 use base qw(Fink::SelfUpdate::Base);
 
-use Fink::CLI qw(&print_breaking &prompt);
+use Fink::CLI qw(&print_breaking &prompt &prompt_selection);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::Package;
 use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
@@ -37,7 +37,7 @@ use File::Find;
 use strict;
 use warnings;
 
-our $VERSION = sprintf "%d.%d", q$Revision: 1.12 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%d", q$Revision: 1.1 $ =~ /(\d+)/g;
 
 =head1 NAME
 
@@ -59,17 +59,28 @@ This method builds packages from source, so it requires the
 =cut
 
 sub system_check {
+	require Fink::Config;
 	my $class = shift;  # class method for now
 
 	if (not Fink::VirtPackage->query_package("dev-tools")) {
 		warn "Before changing your selfupdate method to 'svn', you must install XCode, available on your original OS X install disk, or from http://connect.apple.com (after free registration).\n";
 		return 0;
 	}
-	
-	if (!(-x "$basepath/bin/svn" or -x "/usr/bin/svn")) {
+
+	my $svnpath;
+	if (-x "$basepath/bin/svn") {
+		$svnpath = $config->param_default("SvnPath", "$basepath/bin/svn");
+	} else {
+		$svnpath = $config->param_default("SvnPath", "/usr/bin/svn");
+	}
+
+	if (!(-x "$svnpath")) {
 		warn "Before changing your selfupdate method to 'svn', you must install the svn package with 'fink install svn'.\n";
 		return 0;
 	}
+
+	$config->set_param("SvnPath", $svnpath);
+	$config->save;
 
 	return 1;
 }
@@ -115,7 +126,7 @@ sub setup_direct_svn {
 	my $class = shift;  # class method for now
 
 	my ($finkdir, $tempdir, $tempfinkdir);
-	my ($username, @testlist);
+	my ($username, $svnuser, @testlist);
 	my ($use_hardlinks, $cutoff, $cmd);
 	my ($cmdd);
 
@@ -140,6 +151,15 @@ sub setup_direct_svn {
 		die "The user \"$username\" does not exist on the system.\n";
 	}
 
+	print "\n";
+	$svnuser =
+		&prompt_selection("For Fink developers only: ".
+				"Do you wish to use full read/write svn access ".
+				"(requires GitHub SSH keys to be set up on your system) ".
+				"or anonymous read-only access? Just press return ".
+				"if you're not sure.",
+				choices => [ "anonymous read-only" => "anonymous",
+							 "read/write" => "developer" ]);
 	print "\n";
 
 	# start by creating a temporary directory with the right permissions
@@ -182,15 +202,26 @@ sub setup_direct_svn {
 	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
-#	my $svnrepository = "https://fink.svn.sourceforge.net/svnroot/trunk";
-	my $svnrepository = "file:///Users/daniel/src/fink-svn/trunk";
+	my $svnpath = $config->param("SvnPath");
+	my $svnrepository = "http://svn.github.com/danielj7/fink-dists.git";
 	if (-f "$basepath/lib/fink/URL/svn-repository") {
 		$svnrepository = cat "$basepath/lib/fink/URL/svn-repository";
 		chomp($svnrepository);
-		$svnrepository .= '/svnroot/trunk';
 	}
-	$cmd = "svn ${verbosity}";
-	$cmdd = "$cmd checkout --non-recursive ${svnrepository}/dists fink";
+	if ($svnuser eq "anonymous") {
+		if (-f "$basepath/lib/fink/URL/anonymous-svn") {
+			$svnrepository = cat "$basepath/lib/fink/URL/anonymous-svn";
+			chomp($svnrepository);
+		}
+	} else {
+		$svnrepository = "https://svn.github.com/danielj7/fink-dists.git";
+		if (-f "$basepath/lib/fink/URL/developer-svn") {
+			$svnrepository = cat "$basepath/lib/fink/URL/developer-svn";
+			chomp($svnrepository);
+		}
+	}
+	$cmd = "$svnpath ${verbosity}";
+	$cmdd = "$cmd checkout ${svnrepository} fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -202,20 +233,6 @@ sub setup_direct_svn {
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	chdir "fink" or die "Can't cd to fink\n";
 
-	for my $tree (@trees) {
-		&print_breaking("Checking out $tree tree...");
-
-		my $svndir = "dists/$tree";
-		$svndir = "packages/dists" if ($tree eq "10.1");
-		$cmdd = "$cmd checkout ${svnrepository}/${svndir} $tree";
-
-		if ($username ne "root") {
-			$cmdd = "/usr/bin/su $username -c '$cmdd'";
-		}
-		if (&execute($cmdd)) {
-			die "Downloading package descriptions from svn failed.\n";
-		}
-	}
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
@@ -296,12 +313,14 @@ sub do_direct_svn {
 		$verbosity = "";
 	}
 
+	my $svnpath = $config->param("SvnPath");
+
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
 	@sb = stat("$descdir/.svn");
 
-	$cmd = "svn ${verbosity} update --non-recursive";
+	$cmd = "$svnpath ${verbosity} update";
 
 	$msg = "I will now run the svn command to retrieve the latest package descriptions. ";
 
@@ -332,13 +351,7 @@ sub do_direct_svn {
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	for my $tree (@trees) {
-		$cmd = "svn ${verbosity} update ${tree}";
-		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
-		if (&execute($cmd)) {
-			$errors++;
-		} else {
-			$class->update_version_file(distribution => $tree);
-		}
+		$class->update_version_file(distribution => $tree);
 	}
 
 	die "Updating using svn failed. Check the error messages above.\n" if ($errors);

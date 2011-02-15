@@ -616,6 +616,9 @@ Synonym for
 .It Cm selfupdate-git
 Synonym for
 .Cm selfupdate --method=git
+.It Cm selfupdate-svn
+Synonym for
+.Cm selfupdate --method=svn
 .It Cm index
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm
