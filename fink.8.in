@@ -613,6 +613,9 @@ Synonym for
 .It Cm selfupdate-cvs
 Synonym for
 .Cm selfupdate --method=cvs
+.It Cm selfupdate-git
+Synonym for
+.Cm selfupdate --method=git
 .It Cm index
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm
