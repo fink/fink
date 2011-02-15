@@ -222,7 +222,7 @@ sub setup_direct_git {
 	chdir "fink" or die "Can't cd to fink\n";
 
 	# Add $distribution to files that git will ignore.
-	open EXCLUDE ">>.git/info/exclude" or die "Unable to edit exclude file: $!";
+	open EXCLUDE, ">>.git/info/exclude" or die "Unable to edit exclude file: $!";
 	print EXCLUDE "/$distribution";
 	close EXCLUDE;
 
