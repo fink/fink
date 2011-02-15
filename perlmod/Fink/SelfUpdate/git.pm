@@ -26,7 +26,7 @@ package Fink::SelfUpdate::git;
 
 use base qw(Fink::SelfUpdate::Base);
 
-use Fink::CLI qw(&print_breaking &prompt);
+use Fink::CLI qw(&print_breaking &prompt &prompt_selection);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::Package;
 use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
@@ -142,11 +142,13 @@ sub setup_direct_git {
 
 	print "\n";
 	$gituser =
-		&prompt("For Fink developers only: ".
-				"Enter your GitHub login name to set up full git access. ".
-				"Other users, just press return to set up anonymous ".
-				"read-only access.",
-				default => "anonymous");
+		&prompt_selection("For Fink developers only: ".
+				"Do you wish to use full read/write git access ".
+				"(requires GitHub SSH keys to be set up on your system) ".
+				"or anonymous read-only access? Just press return ".
+				"if you're not sure.",
+				choices => [ "anonymous read-only" => "anonymous",
+							 "read/write" => "developer" ]);
 	print "\n";
 
 	# start by creating a temporary directory with the right permissions
