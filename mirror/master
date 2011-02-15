@@ -1,4 +1,4 @@
-Timestamp: 2010-02-13
+Timestamp: 2010-08-23
 Primary: http://distfiles.master.finkmirrors.net/
 
 asi-JP: http://distfiles.hnd.jp.asi.finkmirrors.net/
@@ -9,4 +9,3 @@ eur-IE: http://distfiles.dub.ie.eu.finkmirrors.net/
 eur-NL: http://distfiles.ams.nl.eu.finkmirrors.net/
 #nam-US: http://distfiles.msn.wi.us.finkmirrors.net/mirrors/fink/distfiles/
 nam-US: http://distfiles.sjc.ca.us.finkmirrors.net/
-nam-US: ftp://192.168.1.109/
