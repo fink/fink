@@ -305,7 +305,7 @@ sub do_direct_git {
 
 	@sb = stat("$descdir/.git");
 
-	$cmd = "$basepath/bin/git pull origin";
+	$cmd = "$basepath/bin/git ${verbosity} pull origin";
 
 	$msg = "I will now run the git command to retrieve the latest package descriptions. ";
 
