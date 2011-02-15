@@ -67,7 +67,12 @@ sub system_check {
 		return 0;
 	}
 
-	my $gitpath = $config->param_default("GitPath", "$basepath/bin/git");
+	my $gitpath;
+	if (!(-x "$basepath/bin/git") {
+		$gitpath = $config->param_default("GitPath", "$basepath/bin/git");
+	} else {
+		$gitpath = $config->param_default("GitPath", "/usr/bin/git");
+	}
 
 	if (!(-x "$gitpath")) {
 		warn "Before changing your selfupdate method to 'git', you must install the git package with 'fink install git'.\n";
