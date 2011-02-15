@@ -37,7 +37,7 @@ use File::Find;
 use strict;
 use warnings;
 
-our $VERSION = sprintf "%d.%d", q$Revision: 1.11 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%d", q$Revision: 1.1 $ =~ /(\d+)/g;
 
 =head1 NAME
 
@@ -59,6 +59,7 @@ This method builds packages from source, so it requires the
 =cut
 
 sub system_check {
+	require Fink::Config;
 	my $class = shift;  # class method for now
 
 	if (not Fink::VirtPackage->query_package("dev-tools")) {
@@ -66,10 +67,15 @@ sub system_check {
 		return 0;
 	}
 
-		if (!(-x "$basepath/bin/git")) {
+	my $gitpath = $config->param_default("GitPath", "$basepath/bin/git");
+
+	if (!(-x "$gitpath")) {
 		warn "Before changing your selfupdate method to 'git', you must install the git package with 'fink install git'.\n";
 		return 0;
 	}
+
+	$config->set_param("GitPath", $gitpath);
+	$config->save;
 
 return 1;
 }
@@ -191,6 +197,7 @@ sub setup_direct_git {
 	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
+	my $gitpath = $config->param("GitPath");
 	my $gitrepository = 'http://github.com/danielj7/fink-dists.git';
 	if (-f "$basepath/lib/fink/URL/git-repository") {
 		$gitrepository = cat "$basepath/lib/fink/URL/git-repository";
@@ -208,7 +215,7 @@ sub setup_direct_git {
 			chomp($gitrepository);
 		}
 	}
-	$cmd ="$basepath/bin/git ${verbosity}";
+	$cmd ="$gitpath ${verbosity}";
 	$cmdd = "$cmd clone $gitrepository fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
@@ -306,12 +313,14 @@ sub do_direct_git {
 		$verbosity = "";
 	}
 
+	my $gitpath = $config->param("GitPath");
+
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
 	@sb = stat("$descdir/.git");
 
-	$cmd = "$basepath/bin/git ${verbosity} pull origin";
+	$cmd = "$gitpath ${verbosity} pull origin";
 
 	$msg = "I will now run the git command to retrieve the latest package descriptions. ";
 
