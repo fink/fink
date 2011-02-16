@@ -220,8 +220,8 @@ sub setup_direct_git {
 			chomp($gitrepository);
 		}
 	}
-	$cmd ="$gitpath ${verbosity}";
-	$cmdd = "$cmd clone $gitrepository fink";
+	$cmd ="$gitpath";
+	$cmdd = "$cmd clone $verbosity $gitrepository fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -325,7 +325,7 @@ sub do_direct_git {
 
 	@sb = stat("$descdir/.git");
 
-	$cmd = "$gitpath ${verbosity} pull origin";
+	$cmd = "$gitpath pull $verbosity origin";
 
 	$msg = "I will now run the git command to retrieve the latest package descriptions. ";
 
