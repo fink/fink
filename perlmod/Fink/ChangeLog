@@ -1,4 +1,8 @@
-2011-02-15	Alexander Hansen	<alexkhansen@users.sourceforge.net>
+2011-02-16  Daniel Macks  <dmacks@netspace.org>
+
+	* Selfupdate/CVS.pm:  Syntax cleanup
+
+2011-02-15  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Selfupdate/CVS.pm:  Implement HTP proxy support.
 

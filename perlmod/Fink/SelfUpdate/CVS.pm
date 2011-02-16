@@ -115,26 +115,20 @@ sub setup_direct_cvs {
 	my ($cmdd);
 	# Thanks to Tanaka Atushi for information about the quoting syntax which
 	# allows CVS proxies to function.
-	my ($proxy_url, $proxy_port);
 	my $proxcmd=''; # default to null
 	
 	my $http_proxy=$config->param_default("ProxyHTTP", ""); # get HTTP proxy information from fink.conf
 	if ($http_proxy) { # HTTP proxy has been set            
-            if ($http_proxy =~ m|http://|) { # strip leading 'http://', if present.
-                (undef, $proxy_url)=split m|//|, $http_proxy ;
-            } else {
-                $proxy_url=$http_proxy;
-            }
-            if  ($proxy_url =~ /:\d+/) { # extract TCP port number if present
-                my @tokens=split /:/,$proxy_url; 
-                $proxy_port=pop @tokens ; # port is the last item following a colon
-                $proxy_url=join ':',@tokens ; # since we may have a username:password combo 
-            } 
+		my $proxy_port;
+		$http_proxy =~ s|http://||; # strip leading 'http://', if present.
+		if  ($http_proxy =~ /:\d+/) { # extract TCP port number if present
+			my @tokens=split /:/,$http_proxy;
+			$proxy_port=pop @tokens ; # port is the last item following a colon
+			$http_proxy=join ':',@tokens ; # since we may have a username:password combo 
+		}
+		$proxcmd=";proxy=$http_proxy";
+		$proxcmd="$proxcmd;proxyport=$proxy_port" if $proxy_port;
 	}
- #   my $cvsrepository="fink.cvs.sourceforge.net/cvsroot/fink";
-    $proxcmd=";proxy=$proxy_url" if $http_proxy;
-    $proxcmd="$proxcmd;proxyport=$proxy_port" if $proxy_port;
-    #;proxy=$proxy_url;proxyport=$proxy_port:
  
 	$username = "root";
 	if (exists $ENV{SUDO_USER}) {
