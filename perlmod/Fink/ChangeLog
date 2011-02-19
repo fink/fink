@@ -1,3 +1,8 @@
+2011-02-19  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Allow "-" in %p when scanning for bad gtk-doc
+	links: sync regex with what gtkdoc-fixxref appears to use
+
 2011-02-16  Daniel Macks  <dmacks@netspace.org>
 
 	* Selfupdate/CVS.pm:  Syntax cleanup

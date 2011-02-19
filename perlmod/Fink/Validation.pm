@@ -1852,8 +1852,8 @@ sub _validate_dpkg {
 				my %seen_lines = (); # only print one example of each bad line
 				while (<$gtkdocfile>) {
 					chomp;
-					if (/href\s*=\s*[\"\']?(\/[\w\/_\.]+)/) {
-						if ($1 !~ /^$basepath\/.*/ and !$seen_lines{$_}++) {
+					if (/href\s*=\s*"(\/[^"]+)"/) { # extract target of HREF attribute
+						if ($1 !~ /^$basepath\/.*/ and !$seen_lines{$_}++) { # see if it begins with fink prefix
 							&stack_msg($msgs, "Bad local URL (\"$1\" does not look like a fink location).", $filename, $_);
 						}
 					}
