@@ -1,7 +1,8 @@
-2011-02-15	Alexander Hansen	<alexkhansen@users.sourceforge.net>
+2011-02-15  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
-	* postinstall.pl.in:	Modify regex pattern in CVS/Root detection to allow for
-							quotes, which is needed for proxy support.
+	* postinstall.pl.in: Modify regex pattern in CVS/Root detection to
+	allow for quotes, which is needed for proxy support (by Tanaka
+	Atushi)
 
 2011-01-15  Dave Morrison  <drm@finkproject.org>
 

@@ -22,8 +22,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
 #
 
-# Thanks to Tanaka Atushi for the changes which allow this to work with cvs proxies
-
 $| = 1;
 use 5.008_001;  # perl 5.8.1 or newer required
 use strict;
