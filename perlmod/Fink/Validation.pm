@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2010 The Fink Package Manager Team
+# Copyright (c) 2001-2011 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1465,7 +1465,7 @@ sub _validate_dpkg {
 
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
-	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/", '.*/\.svn/');
+	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/", '.*/\.svn/', "$basepath/bin/.*/", "$basepath/sbin/.*/");
 	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib opt share var etc src Applications Library\/Frameworks / );
 	# allow $basepath/Library/ by itself
 	# (needed since we allow $basepath/Library/Frameworks)
@@ -1842,8 +1842,8 @@ sub _validate_dpkg {
 				my %seen_lines = (); # only print one example of each bad line
 				while (<$gtkdocfile>) {
 					chomp;
-					if (/href\s*=\s*[\"\']?(\/[\w\/_\.]+)/) {
-						if ($1 !~ /^$basepath\/.*/ and !$seen_lines{$_}++) {
+					if (/href\s*=\s*"(\/[^"]+)"/) { # extract target of HREF attribute
+						if ($1 !~ /^$basepath\/.*/ and !$seen_lines{$_}++) { # see if it begins with fink prefix
 							&stack_msg($msgs, "Bad local URL (\"$1\" does not look like a fink location).", $filename, $_);
 						}
 					}
