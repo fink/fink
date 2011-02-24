@@ -1,3 +1,9 @@
+2011-02-24  Daniel Macks  <dmacks@netspace.org>
+
+	* Package.pm: "10.4-EOL" subdir for 10.4 .info files vs for !10.4
+	still in parent and sibling dirs (for all 10.x if no such subdir
+	present).  Left deactivated for now.
+
 2011-02-19  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Allow "-" in %p when scanning for bad gtk-doc

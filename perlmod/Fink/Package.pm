@@ -1118,6 +1118,27 @@ sub tree_infos {
 			push @filelist, $File::Find::fullname;
 		}
 	};
+
+	if(0) {						# XXX FEATURE DEACTIVATED FOR NOW
+	# 10.4 support is being dropped from main .info collection:
+	# migrated into 10.4-EOL subdir for legacy semi-support
+	if (-d "$treedir/10.4-EOL") {
+		if ($config->param('Distribution') eq '10.4') {
+			# legacy system: only look in legacy-support subdir
+			$treedir = "$treedir/10.4-EOL";
+		} else {
+			# current system: don't look in legacy-support subdir
+			$wanted = sub {
+				if (-f _ and not /^[\.\#]/ and /\.info$/) {
+					push @filelist, $File::Find::fullname;
+				} elsif (-d _ and /10\.4-EOL$/) {
+					$File::Find::prune = 1;
+				}
+			};
+		}
+	}
+	}
+
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $treedir);
 	
 	return @filelist;
