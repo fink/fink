@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2010 The Fink Package Manager Team
+# Copyright (c) 2001-2011 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -4144,6 +4144,9 @@ EOF
 		# grab perl version, if present
 		my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 
+		# bug in postinst: cat .../*.pod fails (leading to dpkg -i
+		# abort) if no files (i.e., first pkg of this Type:perl
+		# subtype) being installed
 		$scriptbody{postinst} .=
 			"\n\n# Updating \%p/lib/perl5/$perlarchdir$perldirectory/perllocal.pod\n".
 			"/bin/mkdir -p \%p/lib/perl5$perldirectory/$perlarchdir\n".
