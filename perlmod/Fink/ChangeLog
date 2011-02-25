@@ -1,3 +1,9 @@
+2011-02-25	Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* Notify/Growl.pm:  Courtesy of Daniel Johnson.  Add support for 
+	Cocoa::Growl as well as Mac::Growl to allow Growl notifications
+	to work on 10.6.
+
 2011-02-24  Daniel Macks  <dmacks@netspace.org>
 
 	* Package.pm: "10.4-EOL" subdir for 10.4 .info files vs for !10.4
