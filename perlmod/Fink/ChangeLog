@@ -1,3 +1,7 @@
+2011-03-02  Dave Morrison  <drm@finkproject.org>
+
+	* all: update copyright
+
 2011-02-23  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Backport from HEAD: prohibit subdirs of %p/bin

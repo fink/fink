@@ -1,3 +1,7 @@
+2011-03-02  Dave Morrison  <drm@finkproject.org>
+
+	* inject.pl, install.sh, postinstall.pl.in: update copyright
+
 2010-01-06  Daniel Macks  <dmacks@netspace.org>
 
 	* inject.pl, install.sh, postinstall.pl.in: update copyright
