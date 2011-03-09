@@ -1,3 +1,8 @@
+2011-03-09  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.29.20, a bug-fix
+	release on branch_0_29
+
 2011-03-02  Dave Morrison  <drm@finkproject.org>
 
 	* all: update copyright
