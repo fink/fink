@@ -3500,9 +3500,7 @@ GCC_MSG
 
 		# unpack it
 		chdir $destdir;
-		if (&execute($unpack_cmd, nonroot_okay=>1)) {
-			die "unpacking file $archive of package ".$self->get_fullname()." failed\n";
-		}
+		$self->run_script($unpack_cmd, "unpacking '$archive'", 1, 1);
 
 		$tries = 0;
 	}
