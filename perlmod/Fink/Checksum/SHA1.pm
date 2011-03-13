@@ -47,7 +47,7 @@ sub new {
 	$match = '(\S*)\s*(:?\S*)';
 
 	eval "require Digest::SHA1";
-	if (defined $Digest::SHA1::VERSION) {
+	if (not defined $@) {
 		$sha1pm = 1;
 	} else {
 		if (-x "$basepath/bin/sha1deep") {
@@ -60,7 +60,7 @@ sub new {
 		}
 	}
 
-	return $self;
+	return ($sha1pm || $sha1cmd) ? $self : undef;
 }
 
 # Returns the SHA1 checksum of the given $filename. Uses $basepath/bin/sha1deep

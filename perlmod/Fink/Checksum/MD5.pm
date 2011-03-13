@@ -45,7 +45,7 @@ sub new {
 	my $self = bless({}, $class);
 
 	eval "require Digest::MD5";
-	if (defined $Digest::MD5::VERSION) {
+	if (not defined $@) {
 		$md5pm = 1;
 	} else {
 		if(-e "/sbin/md5") {
@@ -60,7 +60,7 @@ sub new {
 		}
 	}
 
-	return $self;
+	return ($md5pm || $md5cmd) ? $self : undef;
 }
 
 # Returns the MD5 checksum of the given $filename. Uses /sbin/md5 if it

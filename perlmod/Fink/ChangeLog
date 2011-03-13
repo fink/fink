@@ -1,3 +1,9 @@
+2011-03-13  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum/MD5.pm, Checksum/SHA1.pm: check for failure of
+	require() rather than package-variable (may be defined prior to
+	load failure)
+
 2011-03-11  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: phase_unpack needs get_env because might
