@@ -1,3 +1,7 @@
+2011-03-14  Dave Morrison  <drm@finkproject.org>
+
+	* Package.pm: fangism's hack: check $File::Find::fullname for undef
+
 2011-03-02  Dave Morrison  <drm@finkproject.org>
 
 	* all: update copyright
