@@ -1,3 +1,7 @@
+2011-03-14  Dave Morrison  <drm@finkproject.org>
+
+	* Package.pm: fangism's hack: check $File::Find::fullname for undef
+
 2011-03-13  Daniel Macks  <dmacks@netspace.org>
 
 	* Checksum/MD5.pm, Checksum/SHA1.pm: check for failure of

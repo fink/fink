@@ -1115,7 +1115,7 @@ sub tree_infos {
 	my @filelist = ();
 	my $wanted = sub {
 		if (-f _ and not /^[\.\#]/ and /\.info$/) {
-			push @filelist, $File::Find::fullname;
+			push @filelist, $File::Find::fullname if defined ($File::Find::fullname);
 		}
 	};
 
