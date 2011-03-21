@@ -1,3 +1,7 @@
+2011-03-21	Alexander Hansen <alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm: Support 10.6.7
+
 2011-03-14  Dave Morrison  <drm@finkproject.org>
 
 	* Package.pm: fangism's hack: check $File::Find::fullname for undef

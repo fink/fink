@@ -577,7 +577,10 @@ EOF
 			$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 		}
-		$endmsg .= " by running the command 'fink selfupdate'.";
+		$endmsg .= " by running either of the commands:  
+'fink selfupdate-rsync', to update via rsync (generally preferred); 
+or  
+'fink selfupdate-cvs', to update via CVS (more likely to work through a firewall)."	;
 	} else {
 		# inject worked
 		$endmsg = <<"EOF";
@@ -595,7 +598,10 @@ EOF
 		$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 	}
-	$endmsg .= " by running the command 'fink selfupdate'.";
+	$endmsg .= " by running either of the commands:  
+'fink selfupdate-rsync', to update via rsync (generally preferred); 
+or  
+'fink selfupdate-cvs', to update via CVS (more likely to work through a firewall).";
 }
 
 ### create Packages.gz files for apt
