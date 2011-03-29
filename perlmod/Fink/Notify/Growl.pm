@@ -45,10 +45,18 @@ sub new {
 	my @events = $self->events();
 
 	$self->initialized(0);
+	$self->use_mac_growl(0);
 
 	eval {
-			require Mac::Growl;
+			require Cocoa::Growl;
 	};
+
+	if ($@) {
+		$self->use_mac_growl(1);
+		eval {
+			require Mac::Growl;
+		}
+	}
 
 	return $@? undef : $self;
 }
@@ -61,13 +69,24 @@ sub initialized {
 	return $self->{_initialized};
 }
 
+sub use_mac_growl {
+	my $self = shift;
+	if (@_) {
+		$self->{_use_mac_growl} = shift;
+	}
+	return $self->{_use_mac_growl};
+}
 sub do_notify {
 	my $self  = shift;
 	my %args  = @_;
 
 	my @events = $self->events;
 	if (not $self->initialized()) {
-		Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
+		if ($self->use_mac_growl()) {
+			Mac::Growl::RegisterNotifications("Fink", \@events, \@events);
+		} else {
+			Cocoa::Growl::growl_register(app => "Fink", notifications => \@events);
+		}
 		$self->initialized(1);
 	}
 
@@ -77,7 +96,11 @@ sub do_notify {
 	my $sticky = ($args{'event'} =~ /Failed$/);
 
 	eval {
-		Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0, $image);
+		if ($self->use_mac_growl()) {
+			Mac::Growl::PostNotification("Fink", $args{'event'}, $args{'title'}, $args{'description'}, $sticky, 0, $image);
+		} else {
+			Cocoa::Growl::growl_notify(name => $args{'event'}, title => $args{'title'}, description => $args{'description'}, sticky => $sticky, icon => $image);
+		}
 	};
 	return $@ ? undef : 1;
 }

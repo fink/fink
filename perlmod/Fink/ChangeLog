@@ -1,3 +1,10 @@
+2011-03-29  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* Notify/Growl.pm:  Backport from HEAD: 
+	Courtesy of Daniel Johnson.  Add support for
+	Cocoa::Growl as well as Mac::Growl to allow Growl notifications
+	to work on 10.6.
+
 2011-03-21	Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm: Support 10.6.7
