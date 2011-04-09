@@ -1,5 +1,9 @@
 2011-04-09  Daniel Macks  <dmacks@netspace.org>
 
+	* fink.conf.in: No longer use /crypto subtrees.
+
+2011-04-09  Daniel Macks  <dmacks@netspace.org>
+
 	* Makefile: Need to use perlmod/ relative to Makefile not relative
 	to original shell from which recipe was eventually invoked
 
