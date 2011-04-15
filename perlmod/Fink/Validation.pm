@@ -793,7 +793,7 @@ sub validate_info_file {
 			print "Warning: Description starts with lower case. ($filename)\n";
 			$looks_good = 0;
 		}
-		if ($value =~ /(\b\Q$pkgname\E\b|%\{?n)/i) {
+		if ($value =~ /(\b\Q$pkgname\E\b|%\{?n)/i and !&obsolete_via_depends($properties->{depends}) ) {
 			print "Warning: Description contains package name. ($filename)\n";
 			$looks_good = 0;
 		}
