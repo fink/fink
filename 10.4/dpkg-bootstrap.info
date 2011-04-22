@@ -9,6 +9,7 @@ PatchFile: %n.patch
 PatchFile-MD5: 83170a41fd6b458f7f99d01b5f01e8e8
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+ cd %b/../gettext-0.14.5; perl -pi -e 's/extern char \*stpncpy \(char \*dest, const char \*src, size_t n\)\;//g' gettext-tools/configure
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
 <<
 SetCFLAGS: -I%p/include
@@ -54,6 +55,9 @@ Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
 
 Patched to hardcode complete paths to our component executables
 instead of relying on PATH
+
+stpncpy test may fail due to wrong prototype even if we have the
+function, so remove AIX-bug-specific hack
 <<
 DescPackaging: <<
   admindir goes in %P (eventual live basedir) not %p (bootstrap

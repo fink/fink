@@ -1,3 +1,7 @@
+2011-04-22  Daniel Macks  <dmacks@netspace.org>
+
+	* dpkg.info, dpkg-bootstrap.info: avoid non-darwin "portability" fix
+
 2010-11-09  Dave Morrison  <drm@finkproject.org>
 
 	* dpkg.info, dpkg.patch, dpkg-base-files.info: sync with stable

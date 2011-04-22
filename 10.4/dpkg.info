@@ -16,6 +16,7 @@ PatchFile-MD5: d5979f532b44157110630fea3bf7e2f1
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+ cd %b/../gettext-0.14.5; perl -pi -e 's/extern char \*stpncpy \(char \*dest, const char \*src, size_t n\)\;//g' gettext-tools/configure
  cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
 <<
@@ -107,6 +108,9 @@ Patched off-by-one bug in main/help.c:preexecscript argv processing
 Patched to use %p/lib/fink/dpkg-base-files/ wrappers for .deb scripts
 (for use with the dpkg-base-files module)
 NB: wrapper runs even if no .deb script.
+
+stpncpy test may fail due to wrong prototype even if we have the
+function, so remove AIX-bug-specific hack
 <<
 #
 PostInstScript: <<
