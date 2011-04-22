@@ -1,5 +1,9 @@
 2011-04-22  Daniel Macks  <dmacks@netspace.org>
 
+	* dpkg-bootstrap.info: er right, no gettext in this stub
+
+2011-04-22  Daniel Macks  <dmacks@netspace.org>
+
 	* dpkg.info, dpkg-bootstrap.info: avoid non-darwin "portability" fix
 
 2010-11-09  Dave Morrison  <drm@finkproject.org>
