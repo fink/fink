@@ -1,3 +1,7 @@
+2011-04-25  Daniel Macks  <dmacks@netspace.org>
+
+	* Bootstrap.pm, Services.pm: Guesses at kernel info for 10.7
+
 2011-04-15  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Allow Description of OBSOLETE packages to contain

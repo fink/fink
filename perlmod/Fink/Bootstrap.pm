@@ -281,6 +281,12 @@ END
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.6";
+	} elsif ($host =~ /^i386-apple-darwin11\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of Mac OS X might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "10.7";
 	} elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
 		&print_breaking("This system is outdated and not supported ".
 			"by this Fink release. Please update to Mac OS X ".
@@ -1061,7 +1067,8 @@ sub get_selfupdatetrees {
 		"10.3" => "10.3",
 		"10.4" => "10.4",
 		"10.5" => "10.4",
-		"10.6" => "10.4"
+		"10.6" => "10.4",
+		"10.7" => "10.4"
 		);
 
 	return $selfupdatetrees{$distribution};
