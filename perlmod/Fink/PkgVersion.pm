@@ -5269,6 +5269,9 @@ sub get_perl_dir_arch {
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
+			if (($perlversion eq  "5.12.3")) {
+				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
+			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);
 		}

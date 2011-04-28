@@ -1,6 +1,7 @@
 2011-04-28  Daniel Macks  <dmacks@netspace.org>
 
-	* Bootstrap.pm: Guess at system perl version for 10.7
+	* Bootstrap.pm, PkgVersion.pm: Guess at system perl version for
+	10.7 (which doesn't have full-versioned name?)
 
 2011-04-25  Daniel Macks  <dmacks@netspace.org>
 
