@@ -532,8 +532,12 @@ my $cmd = "'$homebase/bootstrap-phase2.pl'";
 
 my $perlexe  = "/usr/bin/perl";
 
-if ($distribution gt "10.5") { 
+if ($distribution eq "10.5") { 
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.10.0";
+}
+
+if ($distribution gt "10.6") { 
+	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.12";
 }
 
 if (($arch eq "x86_64") and ($distribution eq "10.5")) {
