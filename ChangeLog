@@ -1,3 +1,7 @@
+2011-04-30  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.30.0, a new release
+
 2011-04-28  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap, setup: Assuming next version will have next version
