@@ -1,6 +1,7 @@
 2011-04-30  Daniel Macks  <dmacks@netspace.org>
 
-	* VERSION: 0.30.0 released
+	* VERSION: Make fink HEAD always >> 0.30.x, since that has now
+        branched.	
 
 2011-04-28  Daniel Macks  <dmacks@netspace.org>
 
