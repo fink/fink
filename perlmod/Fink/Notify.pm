@@ -142,7 +142,6 @@ sub new {
 		my $instance;
 		eval "require $package";
 		eval { $instance = $package->new };
-		# UNIVERSAL::isa considered harmful: http://search.cpan.org/~chromatic/UNIVERSAL-can-1.12/lib/UNIVERSAL/can.pm
 		next unless eval { $instance->isa("Fink::Notify") };
 		
 		push @$self, $instance;

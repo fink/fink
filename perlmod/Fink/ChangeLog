@@ -1,5 +1,10 @@
 2011-04-28  Daniel Macks  <dmacks@netspace.org>
 
+	* Engine.pm, Checksum.pm, Services.pm: function invocation of
+	UNIVERSAL::isa is deprecated and may not exist in new perl-core
+
+2011-04-28  Daniel Macks  <dmacks@netspace.org>
+
 	* Bootstrap.pm, PkgVersion.pm: Guess at system perl version for
 	10.7 (which doesn't have full-versioned name?)
 

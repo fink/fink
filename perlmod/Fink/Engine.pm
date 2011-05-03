@@ -2134,7 +2134,7 @@ as for Fink::PkgVersion::match_package.
 
 sub expand_packages {
 	my ($pkgspec, $package, @package_list);
-	my $opts = UNIVERSAL::isa($_[0], 'HASH') ? shift : {};
+	my $opts = ref($_[0]) ? shift : {};
 	
 	@package_list = ();
 	foreach $pkgspec (@_) {

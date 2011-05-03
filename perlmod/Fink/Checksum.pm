@@ -24,7 +24,6 @@ package Fink::Checksum;
 
 use Fink::Config qw($config);
 use Fink::Services qw(&find_subpackages);
-use UNIVERSAL qw(isa);
 
 BEGIN {
 	use Exporter ();
@@ -115,7 +114,7 @@ sub new {
 
 	if ($@) {
 		die "unable to load checksum plugin ($plugin): $@\n";
-	} elsif (not isa($self, "Fink::Checksum")) {
+	} elsif (! eval { $self->isa("Fink::Checksum") }) {
 		die "unknown checksum plugin: $plugin\n";
 	}
 

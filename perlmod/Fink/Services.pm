@@ -256,7 +256,7 @@ sub read_properties_lines {
 	my %opts = (
 		case_sensitive	=> 0,
 		remove_space	=> 0,
-		UNIVERSAL::isa($_[0], 'HASH') ? %{shift @_} : (),
+		ref($_[0]) ? %{shift @_} : (),
 	);
 	# do we make the keys all lowercase
 	my ($notLC) = $opts{case_sensitive};
@@ -426,7 +426,7 @@ sub read_properties_multival_lines {
 	my ($file) = shift;
 	my %opts = (
 		case_sensitive	=> 0,
-		UNIVERSAL::isa($_[0], 'HASH') ? %{shift @_} : (),
+		ref($_[0]) ? %{shift @_} : (),
 	);
 	my $notLC = $opts{case_sensitive};
 	my (@lines) = @_;
