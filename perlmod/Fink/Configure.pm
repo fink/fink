@@ -70,8 +70,9 @@ These functions handle managing changes in the fink.conf file.
 # History:
 #  0: Default value, fink < 0.24.0
 #  1: Added ConfFileCompatVersion, UseBinaryDist, fink 0.24.0
+#  2: Added MaxBuildJobs, fink 0.30.1 (belated bump)
 #
-our $conf_file_compat_version  = 1;
+our $conf_file_compat_version  = 2;
 
 =head2 Exported Variables
 
