@@ -1,3 +1,7 @@
+2011-05-09  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: bug in single-arch wrapper for gcc-4.0
+
 2011-05-04  Daniel Macks  <dmacks@netspace.org>
 
 	* Configure.pm: bump conf_file_compat_version so users can select
