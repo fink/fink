@@ -1,3 +1,8 @@
+2011-05-11  Daniel Macks  <dmacks@netspace.org>
+
+	* ncurses.info: new version from unstable that has upstream fix
+	for some new c++ strictness check
+
 2011-04-22  Daniel Macks  <dmacks@netspace.org>
 
 	* dpkg-bootstrap.info: er right, no gettext in this stub

@@ -1,17 +1,26 @@
 Package: ncurses
-Version: 5.7-20100227
-Revision: 2
+Version: 5.9-20110507
+Revision: 1
 
 GCC: 4.0
 #Source: ftp://invisible-island.net/ncurses/current/ncurses-%v.tgz
 Source: mirror:sourceforge:fink/ncurses-%v.tgz
-Source-MD5: 6e4a321d5b55e75644b7389ac1e214dc
+Source-MD5: 49dc7136424f2bdd653439eda63a2375
+SourceDirectory: ncurses-5.9
 BuildDepends: fink (>= 0.13.0)
 Depends: libncurses5-shlibs (>= %v-%r)
 Replaces: libncurses5 (<< 5.4-20041023-4)
 Essential: true
-#Need to remove these entries to avoid failure on case sensitive file systems
-PatchScript: perl -pi -e "s/hp70092a\|//; s/hp2621a\|//; s/2621a\|//" misc/terminfo.src
+PatchScript: <<
+#!/bin/sh -ex
+	# apply upstream patchsets
+	for p in patches/*.patch.gz; do
+		gzip -cd $p | patch -p1
+	done
+
+	#Need to remove these entries to avoid failure on case sensitive file systems
+	perl -pi -e "s/hp70092a\|//; s/hp2621a\|//; s/2621a\|//" misc/terminfo.src
+<<
 ConfigureParams: --without-ada --without-pkg-config --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs --enable-overwrite --disable-mixed-case
 NoSetCFLAGS: true
 NoSetLDFLAGS: true
@@ -83,6 +92,13 @@ First revision by David Ross.
 Previous versions by Christoph Pfisterer.
 All the hard work in this version done by Chris Zubrzycki.
 Updated to 5.7 by Daniel Johnson.
+
+	Reroll tarball with upstream patches (in patches/ subdir).
+	Fink needs to mirror Essential packages on its own server).
+
+	Disable pkg-config so we don't need to make it Essential:true
+	(as dependency of Essential:true ncurses). gen-pkgconfig says
+	the *-config scripts are the recommended way anyway.
 <<
 License: OSI-Approved
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
