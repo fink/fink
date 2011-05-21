@@ -1,6 +1,6 @@
 Package: perl588-core
 Version: 5.8.8
-Revision: 7
+Revision: 8
 Distribution: 10.5
 Architecture: x86_64
 Essential: true
@@ -28,6 +28,7 @@ version of perl in scripts, the script should begin with #!/sw/bin/perl5.8.8
 instead of #!/usr/bin/perl .
 
 Disabled 'make test' on intel, since it doesn't work.
+
 Because the perl build system is designed to download source files for
 "extra" perlmodules directly from CPAN, we do not include those "extra" 
 perlmodules in this package.  For that reason, the following packages
@@ -50,7 +51,7 @@ Source: mirror:cpan:src/5.0/perl-%v.tar.gz
 Source-MD5: b8c118d4360846829beb30b02a6b91a7
 CompileScript: <<
 #! /bin/sh -ev
- sh Configure -des -Dcc="gcc-4.0 -arch x86_64" -Dcpp="gcc-4.0 -E" -Dprefix=%p -Dccflags=-I%p/include -Dldflags=-L%p/lib -Dperladmin=none -Uinstallusrbinperl -Dprivlib="%p/lib/perl5-core/5.8.8" -Darchlib="%p/lib/perl5-core/5.8.8/darwin-thread-multi-2level" -Dman1dir="%p/share/man/man1" -Dman3dir="%p/lib/perl5-core/5.8.8/man/man3" -Dman3ext=3pm -Duseithreads -Dinc_version_list="5.8.8/darwin-thread-multi-2level 5.8.6/darwin-thread-multi-2level 5.8.1 5.8.0 5.6.0" -Adefine:startperl="#!%p/bin/perl5.8.8"
+ sh Configure -des -Dcc="gcc-4.0 -arch x86_64" -Dcpp="gcc-4.0 -E" -Dprefix=%p -Dccflags=-I%p/include -Dldflags=-L%p/lib -Dperladmin=none -Uinstallusrbinperl -Dprivlib="%p/lib/perl5-core/5.8.8" -Darchlib="%p/lib/perl5-core/5.8.8/darwin-thread-multi-2level" -Dman1dir="%p/share/man/man1" -Dman3dir="%p/lib/perl5-core/5.8.8/man/man3" -Dman3ext=3pm -Duseithreads -Dinc_version_list="5.8.8/darwin-thread-multi-2level 5.8.6/darwin-thread-multi-2level 5.8.1 5.8.0 5.6.0" -Adefine:startperl="#!%p/bin/perl5.8.8" -Adefine:perlpath="%p/bin/perl5.8.8"
  make
  if [ "%m" == "powerpc" ]; then make test ; fi
 <<

@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 1058
+Revision: 1060
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: %N-shlibs (= %v-%r)
@@ -8,7 +8,7 @@ Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: df6c8dfea788fb82752784b30ee70150
+PatchFile-MD5: 6b83d9ba0b19aa525de8f39603938c97
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' < %{PatchFile} | patch -p1
  sh patch_flush
@@ -148,6 +148,8 @@ dmacks - Implemented "--ignore-breakage" cmdline flag to 'apt-get install'
 (first appears in: 10.2-gcc3.3/0.5.4-41, 10.3/0.5.4-51)
 
 Patch extracttar.cc so it understands negative UIDs, such as -2 for 'nobody'.
+
+	Fix some variable type collisions (jhowarth and upstream).
 <<
 DescPackaging: <<
 Previous versions by Christoph Pfisterer.

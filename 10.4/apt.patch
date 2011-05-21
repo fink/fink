@@ -141,9 +141,36 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debindexfile.cc apt-0.5.4/apt-pkg/deb/debin
 +  (void)_apt_Pkg;
 +  (void)_apt_Status;
 +}
+diff -urN apt-0.5.4.orig/apt-pkg/deb/deblistparser.cc apt-0.5.4/apt-pkg/deb/deblistparser.cc
+--- apt-0.5.4.orig/apt-pkg/deb/deblistparser.cc	2001-07-26 02:15:59.000000000 -0400
++++ apt-0.5.4/apt-pkg/deb/deblistparser.cc	2011-05-13 03:50:31.000000000 -0400
+@@ -163,18 +163,18 @@
+       /* Strip out any spaces from the text, this undoes dpkgs reformatting
+          of certain fields. dpkg also has the rather interesting notion of
+          reformatting depends operators < -> <= */
+-      char *I = S;
++      char *J = S;
+       for (; Start != End; Start++)
+       {
+ 	 if (isspace(*Start) == 0)
+-	    *I++ = tolower(*Start);
++	    *J++ = tolower(*Start);
+ 	 if (*Start == '<' && Start[1] != '<' && Start[1] != '=')
+-	    *I++ = '=';
++	    *J++ = '=';
+ 	 if (*Start == '>' && Start[1] != '>' && Start[1] != '=')
+-	    *I++ = '=';
++	    *J++ = '=';
+       }
+ 
+-      Result = AddCRC16(Result,S,I - S);
++      Result = AddCRC16(Result,S,J - S);
+    }
+    
+    return Result;
 diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsystem.cc
 --- apt-0.5.4.orig/apt-pkg/deb/debsystem.cc	2001-04-29 14:13:51.000000000 +0900
-+++ apt-0.5.4/apt-pkg/deb/debsystem.cc	2005-03-08 13:50:12.000000000 +0900
++++ apt-0.5.4/apt-pkg/deb/debsystem.cc	2011-04-29 14:25:17.000000000 -0400
 @@ -27,6 +27,109 @@
  #include <dirent.h>
  #include <errno.h>
@@ -286,7 +313,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
        Score += 10;
     if (FileExists("/etc/debian_version") == true)
        Score += 10;
-@@ -202,6 +307,44 @@
+@@ -202,6 +307,54 @@
     if (StatusFile == 0)
        StatusFile = new debStatusIndex(_config->FindFile("Dir::State::status"));
     List.push_back(StatusFile);
@@ -294,13 +321,23 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
 +
 +   if (FinkStatusFile == 0) {
 +      struct stat unused_sbuf;
-+      int sys_ok=0;
 +      unlink(FINKSTATUSFILE);
 +      if ( 0 == stat("@PREFIX@/bin/fink-virtual-pkgs",&unused_sbuf)) {
-+          if ( 0 == system("@PREFIX@/bin/fink-virtual-pkgs --apt")) sys_ok=1;
-+      }    
-+      if (stat(FINKSTATUSFILE, &unused_sbuf) || !sys_ok) {
-+	  std::ofstream finkstatus(FINKSTATUSFILE);
++	// will be trying to use fink's own virtpkg data
++        int have_fvp_data=0;
++        if ( 0 == system("@PREFIX@/bin/fink-virtual-pkgs --apt")) {
++          if (0 == stat(FINKSTATUSFILE, &unused_sbuf)) {
++	    // f-v-p did not fail and we have its data-file available
++	    have_fvp_data=1;
++	  }
++	}
++	if ( !have_fvp_data ) {
++	  // f-v-p failed somehow? ABORT!
++          return _error->Error("Error while setting up data-piping from fink-virtual-pkgs");
++	}
++      } else {
++        // no f-v-p...use dummy data
++	std::ofstream finkstatus(FINKSTATUSFILE);
 +      if(macosx_version.version != 0)
 +      {
 +        finkstatus << "Package: macosx" << endl;
@@ -323,7 +360,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
 +      finkstatus << "Description: Pseudo package representing Darwin" << endl;
 +      finkstatus << " Pseudo package representing Darwin" << endl << endl;
 +      finkstatus.close();
-+      }		
++      }
 +      FinkStatusFile = new debStatusIndex(FINKSTATUSFILE);
 +   }
 +   List.push_back(FinkStatusFile);
@@ -331,7 +368,7 @@ diff -urN apt-0.5.4.orig/apt-pkg/deb/debsystem.cc apt-0.5.4/apt-pkg/deb/debsyste
     return true;
  }
  									/*}}}*/
-@@ -217,6 +360,10 @@
+@@ -217,6 +370,10 @@
     {
        Found = StatusFile;
        return true;
@@ -419,6 +456,18 @@ diff -Nurd -x'*~' apt-0.5.4.orig/apt-pkg/pkgcachegen.cc apt-0.5.4/apt-pkg/pkgcac
     
     vector<pkgIndexFile *> Files(List.begin(),List.end());
     unsigned long EndOfSource = Files.size();
+diff -urN apt-0.5.4.orig/apt-pkg/pkgcachegen.h apt-0.5.4/apt-pkg/pkgcachegen.h
+--- apt-0.5.4.orig/apt-pkg/pkgcachegen.h	2001-02-20 02:03:17.000000000 -0500
++++ apt-0.5.4/apt-pkg/pkgcachegen.h	2011-05-21 00:01:31.000000000 -0400
+@@ -50,7 +50,7 @@
+    string PkgFileName;
+    pkgCache::PackageFile *CurrentFile;
+    
+-   bool NewPackage(pkgCache::PkgIterator &Pkg,string Pkg);
++   bool NewPackage(pkgCache::PkgIterator &Pkg,string Name);
+    bool NewFileVer(pkgCache::VerIterator &Ver,ListParser &List);
+    unsigned long NewVersion(pkgCache::VerIterator &Ver,string VerStr,unsigned long Next);
+ 
 diff -urN apt-0.5.4.orig/apt-pkg/policy.cc apt-0.5.4/apt-pkg/policy.cc
 --- apt-0.5.4.orig/apt-pkg/policy.cc	2001-05-28 08:40:56.000000000 +0900
 +++ apt-0.5.4/apt-pkg/policy.cc	2005-03-08 13:00:38.000000000 +0900
@@ -703,6 +752,23 @@ diff -urN apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
     {
        c1out << 
         _("Some packages could not be installed. This may mean that you have\n" 
+@@ -1413,12 +1432,12 @@
+ 	 if ((*Cache)[I].Install() == false)
+ 	    continue;
+ 
+-	 const char **J;
+-	 for (J = CmdL.FileList + 1; *J != 0; J++)
+-	    if (strcmp(*J,I.Name()) == 0)
++	 const char **K;
++	 for (K = CmdL.FileList + 1; *K != 0; K++)
++	    if (strcmp(*K,I.Name()) == 0)
+ 		break;
+ 	 
+-	 if (*J == 0)
++	 if (*K == 0)
+ 	    List += string(I.Name()) + " ";
+       }
+       
 @@ -2057,6 +2076,8 @@
     _config->Set("APT::Get::Simulate",false);
     _config->Set("APT::Get::Assume-Yes",false);
@@ -744,6 +810,18 @@ diff -urN apt-0.5.4.orig/cmdline/apt-get.cc apt-0.5.4/cmdline/apt-get.cc
     
     // Deal with stdout not being a tty
     if (ttyname(STDOUT_FILENO) == 0 && _config->FindI("quiet",0) < 1)
+diff -urN apt-0.5.4.orig/cmdline/apt-sortpkgs.cc apt-0.5.4/cmdline/apt-sortpkgs.cc
+--- apt-0.5.4.orig/cmdline/apt-sortpkgs.cc	2001-02-20 02:03:17.000000000 -0500
++++ apt-0.5.4/cmdline/apt-sortpkgs.cc	2011-05-13 03:38:54.000000000 -0400
+@@ -159,7 +159,7 @@
+ }
+ 									/*}}}*/
+ 
+-int main(unsigned int argc,const char *argv[])
++int main(int argc,const char *argv[])
+ {
+    CommandLine::Args Args[] = {
+       {'h',"help","help",0},
 diff -urN apt-0.5.4.orig/configure apt-0.5.4/configure
 --- apt-0.5.4.orig/configure	2001-08-19 09:46:43.000000000 +0900
 +++ apt-0.5.4/configure	2005-03-08 13:00:38.000000000 +0900
