@@ -5224,22 +5224,56 @@ sub package_error {
 	if (defined $opts{'preamble'}) {
 		$error .= "\n\n" . $opts{'preamble'};
 	}
-		$error .= "\n\n" .
-			"Before reporting any errors, please run \"fink selfupdate\" and\n" .
-			"try again.  If you continue to have issues, please check to see if the\n" .
-			"FAQ on fink's website solves the problem.  If not, ask on the fink-users\n" .
-			"or fink-beginners mailing lists";
+	$error .= "\n\n" .
+		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" .
+		"If you continue to have issues, please check to see if th FAQ on Fink's \n".
+		"website solves the problem.  If not, ask on one of these mailing lists:\n\n" .
+		"\tThe Fink Users List <fink-users\@lists.sourceforge.net>\n".
+		"\tThe Fink Beginners List <fink-beginners\@lists.sourceforge.net>";
 	if ($self->has_param('maintainer')) {
-		$error .= ", with a carbon copy to the maintainer:\n" .
-			"\n".
-			"\t" . $self->param('maintainer') . "\n" .
-			"\n" .
-			"Note that this is preferable to emailing the maintainer directly, since\n" .
-			"most fink package maintainers do not have access to all possible\n" .
-			"hardware and software configurations";
-	}
-	$error .= ".\n";
+		if ($self->param('maintainer') !~ /fink(.*-core|-devel)/) {
+			$error .= ",\n\nwith a carbon copy to the maintainer:\n" .
+				"\n".
+				"\t" . $self->param('maintainer') . "\n" .
+				"\n" .
+				"Note that this is preferable to emailing just the maintainer directly,\n".
+				"since most fink package maintainers do not have access to all possible\n" .
+				"hardware and software configurations"
+		}
+	} 
+	
+	$error .= ".\n\nPlease try to include the complete error message in your report.  This\n" .
+        	"generally consists of a compiler line starting with e.g. \"gcc\" or \"g++\"\n" .
+			"followed by the actual error output from the compiler.\n\n".
+			"Also include the following system information:\n";
+			
+	{       # pulled from Config.pm  Maybe we ought to have a separate module
+		# for this
+		require Fink::FinkVersion;
+		require Fink::SelfUpdate;
 
+		my ($method, $timestamp, $misc) = &Fink::SelfUpdate::last_done;
+		my $dv = "selfupdate-$method";
+		$dv .= " ($misc)" if length $misc;
+		$dv .= ' '.localtime($timestamp) if $timestamp;	
+
+		$error .= "Package manager version: "
+			. Fink::FinkVersion::fink_version() . "\n";
+		$error .= "Distribution version: "
+			. $dv
+			. ', ' . $config->param('Distribution')
+			. ', ' . $config->param('Architecture')
+			. ($config->mixed_arch() ? ' (forged)' : '')
+			. "\n";
+	
+		my @trees=$config->get_treelist();
+		$error .= "Trees: @trees\n";
+		
+		# change if fink-virtual-pkgs ever changes.
+		chomp(my @lines = `fink-virtual-pkgs | grep -A 2 xcode`);
+		$error .= "Xcode $lines[2]\n";
+	}			
+        
 	# need trailing newline in the actual die/warn to prevent
 	# extraneous perl diagnostic msgs?
 	$opts{'nonfatal'} ? warn "$error\n"	: die "$error\n";
