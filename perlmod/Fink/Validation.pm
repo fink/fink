@@ -1437,7 +1437,7 @@ sub validate_dpkg_unpacked {
 #     - installation of .elc files
 #     - (it's now OK to install files directly into
 #        /sw/share/emacs/site-lisp, so we no longer check for this)
-# - BuildDependsOnly: if package stores files in /sw/include, it should
+# - BuildDependsOnly: if package stores files an include/ dir, it should
 #     declare BuildDependsOnly true
 # - Check presence and execute-flag on executable specified in daemonicfile
 # - If a package contains a daemonicfile, it should Depends:daemonic
@@ -1657,7 +1657,7 @@ sub _validate_dpkg {
 		}
 
 		# track whether BuildDependsOnly will be needed
-		if ($filename =~/^$basepath\/include\// && !-d $File::Find::name) {
+		if ($filename =~/\/include\// && !-d $File::Find::name) {
 			$installed_headers = 1;
 		}
 
@@ -1901,7 +1901,7 @@ sub _validate_dpkg {
 	# the warning is not issued
 	if ($installed_headers and $installed_ld_libs) {
 		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
-			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
+			print "Error: Headers installed (files in an include/ directory), as well as a .dylib file, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
 		}
 	}

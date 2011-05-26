@@ -1,8 +1,12 @@
-2011-05-24	Alexander Hansen	<alexkhansen@users.sourceforge.net>
+2011-05-26  Daniel Macks  <dmacks@netspace.org>
 
-	* PkgVersion.pm: add Fink distribution and Xcode version to 
+	* Validation.pm: packages may have buried include/ headers dir
+
+2011-05-24  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* PkgVersion.pm: add Fink distribution and Xcode version to
 	error output.  Don't suggest emailing maintainer for packages
-	which are maintained by the project.  Print out suggestions 
+	which are maintained by the project.  Print out suggestions
 	for what to post in a bug report, from Hanspeter Niederstrasser.
 
 2011-05-17  Daniel Macks  <dmacks@netspace.org>
