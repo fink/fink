@@ -57,7 +57,7 @@ if ($> != 0) {
 	    "root when it's run from a user account. Since you're ".
 	    "currently running this script as a normal user, the ".
 	    "method you choose will also be used immediately for ".
-	    "this script. Avaliable methods:";
+	    "this script. Available methods:";
 	my $answer = &prompt_selection("Choose a method:",
 					intro   => $sel_intro,
 					default => [ value => "sudo" ],
