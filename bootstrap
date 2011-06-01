@@ -239,7 +239,7 @@ my ($rootmethod);
 		&print_breaking("Fink must be installed and run with superuser (root) ".
 						"privileges. Fink can automatically try to become ".
 						"root when it's run from a user account. ".
-						"Avaliable methods:");
+						"Available methods:");
 		$rootmethod = &prompt_selection("Choose a method:",
 						default => [ value => "sudo" ],
 						choices => [
