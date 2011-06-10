@@ -1,7 +1,11 @@
+2011-06-11  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap: 10.7 only supports x86_64
+
 2011-04-30  Daniel Macks  <dmacks@netspace.org>
 
 	* VERSION: Make fink HEAD always >> 0.30.x, since that has now
-        branched.	
+        branched.
 
 2011-04-28  Daniel Macks  <dmacks@netspace.org>
 

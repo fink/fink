@@ -1,3 +1,9 @@
+2011-06-11  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: import jhowarth's ensure_clang_prefix: create
+	path-prefix-clang/gcc and friends as wrapper around clang etc.
+	Use it on dist:10.7.
+
 2011-05-26  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: packages may have buried include/ headers dir

@@ -4825,11 +4825,65 @@ sub phase_purge_recursive {
 	Fink::PkgVersion->dpkg_changed;
 }
 
+
+=item ensure_clang_prefix
+
+	my $prefix_path = ensure_clang_prefix;
+
+Ensures that a path-prefix directory exists to use clang compilers
+Returns the path to the resulting directory.
+
+=cut
+
+sub ensure_clang_prefix {
+	my $dir = "$basepath/var/lib/fink/path-prefix-clang";
+	unless (-d $dir) {
+		mkdir_p $dir or die "Path-prefix dir $dir cannot be created!\n";
+	}
+
+	my $gpp = "$dir/compiler_wrapper";
+	unless (-x $gpp) {
+		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
+		print GPP <<EOF;
+#!/bin/sh
+compiler=\${0##*/}
+save_IFS="\$IFS"
+IFS=:
+newpath=
+for dir in \$PATH ; do
+  case \$dir in
+    *var/lib/fink/path-prefix*) ;;
+    *) newpath="\${newpath:+\${newpath}:}\$dir" ;;
+  esac
+done
+IFS="\$save_IFS"
+export PATH="\$newpath"
+if [ "\$compiler" = "cc" -o "\$compiler" = "gcc" ]; then
+   compiler="clang"
+fi
+if [ "\$compiler" = "c++" -o "\$compiler" = "g++" ]; then
+  compiler="clang++"
+fi
+exec \$compiler "\$@"
+EOF
+		close GPP;
+		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
+	}
+
+	foreach my $cpp ("$dir/cc", "$dir/c++", "$dir/gcc", "$dir/g++") {
+		unless (-l $cpp) {
+			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
+		}
+	}
+
+	return $dir;
+}
+
 =item ensure_gpp106_prefix
 
-  my $prefix_path = ensure_gpp106_prefix;
+  my $prefix_path = ensure_gpp106_prefix $arch;
 
-Ensures that a path-prefix directory exists for mac osx 10.6 
+Ensures that a path-prefix directory exists to make compilers single-arch
 Returns the path to the resulting directory.
 
 =cut
@@ -5106,11 +5160,13 @@ END
 		}
 	}
 
-	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
-	# it the first g++ in the path
 	unless ($self->has_param('NoSetPATH')) {
+		# use path-prefix-* to give magic to 'gcc' and related commands
 		my $pathprefix;
 		if  ($config->param("Distribution") lt "10.6") {
+			# Enforce g++-3.3 or g++-4.0 even for uncooperative
+			# packages, by making it the first 'g++' in the path
+			# (symbol-munging binary compatibility)
 			my $vers;
 			if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
 				$vers = '3.3';
@@ -5118,13 +5174,16 @@ END
 				$vers = '4.0';
 			}
 			$pathprefix = ensure_gpp_prefix($vers);
-	 # and for modern distributions, use architecture-based compiler-wrapper
-		} else {
+		}
+		if ($config->param("Distribution") eq "10.6" || $config->param("Architecture") eq "x86_64") {
+			# Use single-architecture compiler-wrapper on 10.6. Also
+			# override on older 10.x (gcc3.3 & 10.4T not supported)
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
-     # also use the architecture-based compiler-wrapper on x86_64 architecture
-		if ($config->param("Architecture") eq "x86_64") {
-			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
+		if  ($config->param("Distribution") gt "10.6") {
+			# Use clang for gcc/g++ on darwin11 and later. Only
+			# x86_64 supported so can override single-arch wrappers.
+ 			$pathprefix = ensure_clang_prefix();
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}

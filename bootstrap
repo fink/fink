@@ -131,8 +131,15 @@ if ($arch eq "i386") {
 			}
 			close(SYSCTL);
         }
-		if ($is64bit) {
-# ask the user
+		if (!$is64bit && $vers >= 10) {
+			# 10.7+ 32bit: non-supported configuration!
+			print "ERROR: fink requires a 64-bit-capable CPU for your version of OS X\n";
+			exit 1;
+		} elsif ($vers >= 10) {
+			# 10.7 we support only 64-bit
+			$arch = "x86_64";
+		} else {
+			# 10.[56] can do either 32- or 64-bit: user choice
 			my $arch_intro= "Your hardware is a 64bit-compatible intel " .
 				"processor, so you have the option of running Fink in ".
 				"64bit-only mode.  This is not recommended for most ".
