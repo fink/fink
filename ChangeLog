@@ -1,5 +1,9 @@
 2011-06-11  Daniel Macks  <dmacks@netspace.org>
 
+	* bootstrap: wrong kernel version in previous commit
+
+2011-06-11  Daniel Macks  <dmacks@netspace.org>
+
 	* bootstrap: 10.7 only supports x86_64
 
 2011-04-30  Daniel Macks  <dmacks@netspace.org>

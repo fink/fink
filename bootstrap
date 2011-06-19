@@ -135,7 +135,7 @@ if ($arch eq "i386") {
 			# 10.7+ 32bit: non-supported configuration!
 			print "ERROR: fink requires a 64-bit-capable CPU for your version of OS X\n";
 			exit 1;
-		} elsif ($vers >= 10) {
+		} elsif ($vers >= 11) {
 			# 10.7 we support only 64-bit
 			$arch = "x86_64";
 		} else {
