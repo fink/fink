@@ -1,3 +1,6 @@
+2011-06-23	Alexander Hansen  <alexkhansen@users.sourceforge.net>
+	* Bootstrap.pm:  support 10.6.8.
+
 2011-06-11  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: import jhowarth's ensure_clang_prefix: create
