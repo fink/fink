@@ -1,3 +1,8 @@
+2011-06-27  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.30.1, a release
+	on branch_0_30 which recognizes OS X v.10.6.8
+
 2011-04-30  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.30.0, a new release
