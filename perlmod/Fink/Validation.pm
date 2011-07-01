@@ -911,7 +911,7 @@ sub validate_info_file {
 		if ($field eq "patchfile") {
 			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.24.12', 'use of PatchFile', $filename);
 		} else {
-			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.29.99', 'use of PatchFileN', $filename);
+			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.30.0', 'use of PatchFileN', $filename);
 		}
 
 		# can't mix old and new patching styles
@@ -1358,7 +1358,7 @@ sub validate_info_component {
 
 	# support for new script templates
 	if (exists $properties->{defaultscript}) {
-		$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.29.99', 'use of the DefaultScript field', $filename);
+		$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.30.0', 'use of the DefaultScript field', $filename);
 	}
 
 	return $looks_good;
