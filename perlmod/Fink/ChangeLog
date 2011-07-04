@@ -1,3 +1,7 @@
+2011-07-04  Daniel Macks  <dmacks@netspace.org>
+
+	* Validation.pm: Validate DefaultScript values
+
 2011-07-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: PatchFileN and DefaultScript got into 0.30.0 release
