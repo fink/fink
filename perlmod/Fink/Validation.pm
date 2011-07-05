@@ -1358,10 +1358,17 @@ sub validate_info_component {
 
 	# support for new script templates
 	if (exists $properties->{defaultscript}) {
-		$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.30.0', 'use of the DefaultScript field', $filename);
 		$value = lc $properties->{defaultscript};
-		if (!exists {map {$_, 1} (qw/ autotools makemaker ruby /)}->{$value}) {
-			print "Warning: unknown DefaultScript type ($value). ($filename)\n";
+		my $ds_min = {
+			'autotools'   => '0.30.0',
+			'makemaker'   => '0.30.0',
+			'ruby'        => '0.30.0',
+			'modulebuild' => '0.30.2',
+		}->{$value};
+		if (defined $ds_min) {
+			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, $ds_min, "use of DefaultScript:$value", $filename);
+		} else {
+			print "Warning: unknown DefaultScript type \"$value\". ($filename)\n";
 			$looks_good = 0;
 		}
 	}

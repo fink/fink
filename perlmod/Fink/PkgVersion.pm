@@ -962,8 +962,24 @@ sub prepare_percent_c {
 			"INSTALLBIN=\%p/bin " .
 			"INSTALLSITEBIN=\%p/bin " .
 			"INSTALLSCRIPT=\%p/bin ";
+
+	} elsif ($type eq 'modulebuild') {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+
+		$pct_c =
+			"--install_base \%p " .
+			"--install_path bin=\%p/bin " .
+			"--install_path lib=\%p/lib/perl5$perldirectory " .
+			"--install_path arch=\%p/lib/perl5$perldirectory/$perlarchdir " .
+			"--install_path bindoc=\%p/share/man/man1 " .
+			"--install_path libdoc=\%p/share/man/man3 " .
+			"--install_path script=\%p/bin " .
+			"--destdir \%d ";
+
 	} else {
-		$pct_c = "--prefix=\%p ";
+		$pct_c =
+			"--prefix=\%p ";
 	}
 	$pct_c .= $self->param_default("ConfigureParams", "");
 
@@ -1067,6 +1083,8 @@ Returns a string indicating the type of build system to assume for
 
 =item ruby
 
+=item modulebuild
+
 =back
 
 The value is controlled explicitly by the DefaultScript: field, or
@@ -1085,7 +1103,7 @@ sub get_defaultscript_type {
 			# first try explicit DefaultScript: control
 			$type = $self->param('DefaultScript');
 
-			unless ($type =~ /^(autotools|makemaker|ruby)$/i) {
+			unless ($type =~ /^(autotools|makemaker|ruby|modulebuild)$/i) {
 				# don't fall through to unintended if typo, etc.
 				die "this version of fink does not know how to handle DefaultScript:$type to build package ".$self->get_fullname()."\n";
 			}
@@ -1152,6 +1170,11 @@ sub get_script {
 			$default_script =
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
+		} elsif ($type eq 'modulebuild') {
+			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			$default_script =
+				"$perlcmd Build.PL \%c\n".
+				"./Build\n";
 		} elsif ($type eq 'ruby') {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$default_script =
@@ -1192,6 +1215,9 @@ sub get_script {
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 			$default_script = 
 				"make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin DESTDIR=\%d\n";
+		} elsif ($type eq 'modulebuild') {
+			$default_script =
+				"./Build install\n";
 		} elsif ($self->is_type('bundle')) {
 			$default_script = 
 				"/bin/mkdir -p \%i/share/doc/\%n\n".
@@ -1209,7 +1235,11 @@ sub get_script {
 
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'makemaker' && !$self->param_boolean('NoPerlTests')) {
-			$default_script = "make test || exit 2\n";
+			$default_script =
+				"make test || exit 2\n";
+		} elsif ($type eq 'modulebuild' && !$self->param_boolean('NoPerlTests')) {
+			$default_script =
+				"./Build test || exit 2\n";
 		}
 
 	} else {

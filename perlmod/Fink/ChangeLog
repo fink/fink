@@ -1,3 +1,9 @@
+2011-07-05  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm, Validation.pm: Implement
+	DefaultScript:modulebuild for perl Build.PL using same paths as
+	makemaker default
+
 2011-07-04  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: Validate DefaultScript values
