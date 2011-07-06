@@ -31,7 +31,7 @@ use Fink::Services qw(&filename &execute
 					  &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
-					  &store_rename &apt_available);
+					  &store_rename &apt_available &get_kernel_vers);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
 				 &should_skip_prompt &die_breaking);
@@ -1167,9 +1167,15 @@ sub get_script {
 		if ($type eq 'makemaker') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$perlcmd = "ARCHFLAGS=\"\" $perlcmd"; # prevent Apple's perl from building fat
+			my $makeflags = '';
+			if ($self->get_subtype('perl') eq '5.12.3' and get_kernel_vers() eq '11') {
+				# path-prefix-clang wraps gcc and g++ but system-perl
+				# configure hardcodes gcc-4.x, which is not wrapped
+				$makeflags = ' CC=gcc CXX=g++';
+			}
 			$default_script =
 				"$perlcmd Makefile.PL \%c\n".
-				"make\n";
+				"make$makeflags\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$default_script =
@@ -5392,7 +5398,9 @@ sub get_perl_dir_arch {
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
-			if (($perlversion eq  "5.12.3")) {
+			if ($perlversion eq  "5.12.3" and  get_kern_vers() eq '11') {
+				# 10.7 system-perl is 5.12.3, but the only supplied
+				# interp is /usr/bin/perl5.12 (not perl5.12.3)
 				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
 			}
 		} else {

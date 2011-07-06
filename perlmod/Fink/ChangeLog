@@ -1,5 +1,10 @@
 2011-07-05  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: Limit work-around for "perl5.12 but no perl5.12.3"
+	interp to 10.7 and override CC and CXX in its MakeMaker
+
+2011-07-05  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm, Validation.pm: Implement
 	DefaultScript:modulebuild for perl Build.PL using same paths as
 	makemaker default
