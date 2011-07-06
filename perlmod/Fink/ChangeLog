@@ -1,3 +1,7 @@
+2011-07-06  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: More obvious (and correctly named) call
+
 2011-07-05  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Limit work-around for "perl5.12 but no perl5.12.3"
