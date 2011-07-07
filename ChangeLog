@@ -1,3 +1,7 @@
+2011-07-11  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap: require pre-installation of java on 10.7
+
 2011-06-11  Daniel Macks  <dmacks@netspace.org>
 
 	* bootstrap: wrong kernel version in previous commit

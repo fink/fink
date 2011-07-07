@@ -138,6 +138,13 @@ if ($arch eq "i386") {
 		} elsif ($vers >= 11) {
 			# 10.7 we support only 64-bit
 			$arch = "x86_64";
+			# check that Java SDK is installed (otherwise Lion autoinstalls it on-demand)
+			if (-x '/usr/bin/javac') {
+				my $need_java_sdk = `/usr/bin/javac -version 2>&1>/dev/null`;
+				if ($need_java_sdk =~ m/No Java runtime present\, requesting install\./) {
+					die "Please install Java SDK before re-attempting fink bootstrap\n";
+				}
+			}
 		} else {
 			# 10.[56] can do either 32- or 64-bit: user choice
 			my $arch_intro= "Your hardware is a 64bit-compatible intel " .
