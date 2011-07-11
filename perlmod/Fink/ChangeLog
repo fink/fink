@@ -1,3 +1,13 @@
+2011-07-10  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm: backport fix of fink-obsolete-packages parser
+	* PkgVersion.pm: backport bugfig in single-arch wrapper for gcc-4.0
+	* PkgVersion.pm: backport improved diagnostics when package-build fails
+	* PkgVersion.pm: backport restriction of 10.7-specific perl5.12 interp
+	pathname workaround to 10.7
+	* PkgVersion.pm, Validation.pm: backport DefaultScript:modulebuild
+
+
 2011-07-01  Daniel Macks  <dmacks@netspace.org>
 
 	* Validation.pm: PatchFileN and DefaultScript got into 0.30.0 release

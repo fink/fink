@@ -1358,7 +1358,19 @@ sub validate_info_component {
 
 	# support for new script templates
 	if (exists $properties->{defaultscript}) {
-		$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.30.0', 'use of the DefaultScript field', $filename);
+		$value = lc $properties->{defaultscript};
+		my $ds_min = {
+			'autotools'   => '0.30.0',
+			'makemaker'   => '0.30.0',
+			'ruby'        => '0.30.0',
+			'modulebuild' => '0.30.2',
+		}->{$value};
+		if (defined $ds_min) {
+			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, $ds_min, "use of DefaultScript:$value", $filename);
+		} else {
+			print "Warning: unknown DefaultScript type \"$value\". ($filename)\n";
+			$looks_good = 0;
+		}
 	}
 
 	return $looks_good;
@@ -1901,7 +1913,7 @@ sub _validate_dpkg {
 	# the warning is not issued
 	if ($installed_headers and $installed_ld_libs) {
 		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
-			print "Error: Headers installed in $basepath/include, as well as a dylib, but package does not declare BuildDependsOnly to be true (or false)\n";
+			print "Error: Headers installed in $basepath/include, as well as a .dylib file, but package does not declare BuildDependsOnly to be true (or false)\n";
 			$looks_good = 0;
 		}
 	}

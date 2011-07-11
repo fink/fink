@@ -962,8 +962,24 @@ sub prepare_percent_c {
 			"INSTALLBIN=\%p/bin " .
 			"INSTALLSITEBIN=\%p/bin " .
 			"INSTALLSCRIPT=\%p/bin ";
+
+	} elsif ($type eq 'modulebuild') {
+		# grab perl version, if present
+		my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+
+		$pct_c =
+			"--install_base \%p " .
+			"--install_path bin=\%p/bin " .
+			"--install_path lib=\%p/lib/perl5$perldirectory " .
+			"--install_path arch=\%p/lib/perl5$perldirectory/$perlarchdir " .
+			"--install_path bindoc=\%p/share/man/man1 " .
+			"--install_path libdoc=\%p/share/man/man3 " .
+			"--install_path script=\%p/bin " .
+			"--destdir \%d ";
+
 	} else {
-		$pct_c = "--prefix=\%p ";
+		$pct_c =
+			"--prefix=\%p ";
 	}
 	$pct_c .= $self->param_default("ConfigureParams", "");
 
@@ -1067,6 +1083,8 @@ Returns a string indicating the type of build system to assume for
 
 =item ruby
 
+=item modulebuild
+
 =back
 
 The value is controlled explicitly by the DefaultScript: field, or
@@ -1085,7 +1103,7 @@ sub get_defaultscript_type {
 			# first try explicit DefaultScript: control
 			$type = $self->param('DefaultScript');
 
-			unless ($type =~ /^(autotools|makemaker|ruby)$/i) {
+			unless ($type =~ /^(autotools|makemaker|ruby|modulebuild)$/i) {
 				# don't fall through to unintended if typo, etc.
 				die "this version of fink does not know how to handle DefaultScript:$type to build package ".$self->get_fullname()."\n";
 			}
@@ -1152,6 +1170,12 @@ sub get_script {
 			$default_script =
 				"$perlcmd Makefile.PL \%c\n".
 				"make\n";
+		} elsif ($type eq 'modulebuild') {
+			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
+			$default_script =
+				"$archflags $perlcmd Build.PL \%c\n".
+				"$archflags ./Build\n";
 		} elsif ($type eq 'ruby') {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$default_script =
@@ -1192,6 +1216,9 @@ sub get_script {
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 			$default_script = 
 				"make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin DESTDIR=\%d\n";
+		} elsif ($type eq 'modulebuild') {
+			$default_script =
+				"./Build install\n";
 		} elsif ($self->is_type('bundle')) {
 			$default_script = 
 				"/bin/mkdir -p \%i/share/doc/\%n\n".
@@ -1209,7 +1236,11 @@ sub get_script {
 
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'makemaker' && !$self->param_boolean('NoPerlTests')) {
-			$default_script = "make test || exit 2\n";
+			$default_script =
+				"make test || exit 2\n";
+		} elsif ($type eq 'modulebuild' && !$self->param_boolean('NoPerlTests')) {
+			$default_script =
+				"./Build test || exit 2\n";
 		}
 
 	} else {
@@ -4827,9 +4858,9 @@ sub phase_purge_recursive {
 
 =item ensure_gpp106_prefix
 
-  my $prefix_path = ensure_gpp106_prefix;
+  my $prefix_path = ensure_gpp106_prefix $arch;
 
-Ensures that a path-prefix directory exists for mac osx 10.6 
+Ensures that a path-prefix directory exists to make compilers single-arch
 Returns the path to the resulting directory.
 
 =cut
@@ -4865,7 +4896,7 @@ EOF
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
 	}
 	
-	foreach my $cpp ("$dir/cc", "$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2", "$dir/gcc", "$dir/gcc=4.0", "$dir/gcc-4.2", "$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2") {
+	foreach my $cpp ("$dir/cc", "$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2", "$dir/gcc", "$dir/gcc-4.0", "$dir/gcc-4.2", "$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2") {
 		unless (-l $cpp) {
 			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
 		}
@@ -5106,11 +5137,13 @@ END
 		}
 	}
 
-	# Enforce g++-3.3 or g++-4.0 even for uncooperative packages, by making 
-	# it the first g++ in the path
 	unless ($self->has_param('NoSetPATH')) {
+		# use path-prefix-* to give magic to 'gcc' and related commands
 		my $pathprefix;
 		if  ($config->param("Distribution") lt "10.6") {
+			# Enforce g++-3.3 or g++-4.0 even for uncooperative
+			# packages, by making it the first 'g++' in the path
+			# (symbol-munging binary compatibility)
 			my $vers;
 			if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
 				$vers = '3.3';
@@ -5118,11 +5151,11 @@ END
 				$vers = '4.0';
 			}
 			$pathprefix = ensure_gpp_prefix($vers);
-	 # and for modern distributions, use architecture-based compiler-wrapper
 		} else {
+			# and for modern distributions, use architecture-based compiler-wrapper
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
-     # also use the architecture-based compiler-wrapper on x86_64 architecture
+		# also use the architecture-based compiler-wrapper on x86_64 architecture
 		if ($config->param("Architecture") eq "x86_64") {
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
@@ -5224,22 +5257,56 @@ sub package_error {
 	if (defined $opts{'preamble'}) {
 		$error .= "\n\n" . $opts{'preamble'};
 	}
-		$error .= "\n\n" .
-			"Before reporting any errors, please run \"fink selfupdate\" and\n" .
-			"try again.  If you continue to have issues, please check to see if the\n" .
-			"FAQ on fink's website solves the problem.  If not, ask on the fink-users\n" .
-			"or fink-beginners mailing lists";
+	$error .= "\n\n" .
+		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" .
+		"If you continue to have issues, please check to see if th FAQ on Fink's \n".
+		"website solves the problem.  If not, ask on one of these mailing lists:\n\n" .
+		"\tThe Fink Users List <fink-users\@lists.sourceforge.net>\n".
+		"\tThe Fink Beginners List <fink-beginners\@lists.sourceforge.net>";
 	if ($self->has_param('maintainer')) {
-		$error .= ", with a carbon copy to the maintainer:\n" .
-			"\n".
-			"\t" . $self->param('maintainer') . "\n" .
-			"\n" .
-			"Note that this is preferable to emailing the maintainer directly, since\n" .
-			"most fink package maintainers do not have access to all possible\n" .
-			"hardware and software configurations";
-	}
-	$error .= ".\n";
+		if ($self->param('maintainer') !~ /fink(.*-core|-devel)/) {
+			$error .= ",\n\nwith a carbon copy to the maintainer:\n" .
+				"\n".
+				"\t" . $self->param('maintainer') . "\n" .
+				"\n" .
+				"Note that this is preferable to emailing just the maintainer directly,\n".
+				"since most fink package maintainers do not have access to all possible\n" .
+				"hardware and software configurations"
+		}
+	} 
+	
+	$error .= ".\n\nPlease try to include the complete error message in your report.  This\n" .
+        	"generally consists of a compiler line starting with e.g. \"gcc\" or \"g++\"\n" .
+			"followed by the actual error output from the compiler.\n\n".
+			"Also include the following system information:\n";
+			
+	{       # pulled from Config.pm  Maybe we ought to have a separate module
+		# for this
+		require Fink::FinkVersion;
+		require Fink::SelfUpdate;
 
+		my ($method, $timestamp, $misc) = &Fink::SelfUpdate::last_done;
+		my $dv = "selfupdate-$method";
+		$dv .= " ($misc)" if length $misc;
+		$dv .= ' '.localtime($timestamp) if $timestamp;	
+
+		$error .= "Package manager version: "
+			. Fink::FinkVersion::fink_version() . "\n";
+		$error .= "Distribution version: "
+			. $dv
+			. ', ' . $config->param('Distribution')
+			. ', ' . $config->param('Architecture')
+			. ($config->mixed_arch() ? ' (forged)' : '')
+			. "\n";
+	
+		my @trees=$config->get_treelist();
+		$error .= "Trees: @trees\n";
+		
+		# change if fink-virtual-pkgs ever changes.
+		chomp(my @lines = `fink-virtual-pkgs | grep -A 2 xcode`);
+		$error .= "Xcode $lines[2]\n";
+	}			
+        
 	# need trailing newline in the actual die/warn to prevent
 	# extraneous perl diagnostic msgs?
 	$opts{'nonfatal'} ? warn "$error\n"	: die "$error\n";
@@ -5269,7 +5336,9 @@ sub get_perl_dir_arch {
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
-			if (($perlversion eq  "5.12.3")) {
+			if ($perlversion eq  "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
+				# 10.7 system-perl is 5.12.3, but the only supplied
+				# interp is /usr/bin/perl5.12 (not perl5.12.3)
 				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
 			}
 		} else {
