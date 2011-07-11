@@ -1,3 +1,7 @@
+2011-07-11  Dave Morrison  <drm@finkproject.org>
+
+	* Package.pm: activate the 10.4-EOL subdirectory
+
 2011-07-10  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: Pass single-arch flags for DefaultScript:modulebuild
