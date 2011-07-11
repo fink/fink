@@ -1178,9 +1178,10 @@ sub get_script {
 				"make$makeflags\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
 			$default_script =
-				"$perlcmd Build.PL \%c\n".
-				"./Build\n";
+				"$archflags $perlcmd Build.PL \%c\n".
+				"$archflags ./Build\n";
 		} elsif ($type eq 'ruby') {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$default_script =
