@@ -1119,7 +1119,7 @@ sub tree_infos {
 		}
 	};
 
-	if(0) {						# XXX FEATURE DEACTIVATED FOR NOW
+	if(1) {						# ACTIVATE THIS FEATURE
 	# 10.4 support is being dropped from main .info collection:
 	# migrated into 10.4-EOL subdir for legacy semi-support
 	if (-d "$treedir/10.4-EOL") {
