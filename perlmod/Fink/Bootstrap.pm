@@ -1,7 +1,7 @@
 # -*- mode: Perl; tab-width: 4; -*-
 #
 # Fink::Bootstrap module
-# 
+#
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
 # Copyright (c) 2001-2011 The Fink Package Manager Team
