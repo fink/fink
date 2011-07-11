@@ -1,3 +1,8 @@
+2011-07-11  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: Bumped package manager version to 0.30.2, a release
+	on branch_0_30 which activates 10.4-EOL and fixes a few bugs
+
 2011-06-27  Dave Morrison  <drm@finkproject.org>
 
 	* VERSION: Bumped package manager version to 0.30.1, a release
