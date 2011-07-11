@@ -5322,7 +5322,7 @@ sub package_error {
 	}
 	$error .= "\n\n" .
 		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" .
-		"If you continue to have issues, please check to see if th FAQ on Fink's \n".
+		"If you continue to have issues, please check to see if the FAQ on Fink's \n".
 		"website solves the problem.  If not, ask on one of these mailing lists:\n\n" .
 		"\tThe Fink Users List <fink-users\@lists.sourceforge.net>\n".
 		"\tThe Fink Beginners List <fink-beginners\@lists.sourceforge.net>";
