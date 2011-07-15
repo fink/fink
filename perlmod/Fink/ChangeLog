@@ -1,6 +1,7 @@
 2011-07-14  Dave Morrison  <drm@finkproject.org>
 
 	* Bootstrap.pm: build libgettext8 during bootstrap
+	* Bootstrap.pm: recognize darwin 11.0.0
 
 2011-07-11  Dave Morrison  <drm@finkproject.org>
 
