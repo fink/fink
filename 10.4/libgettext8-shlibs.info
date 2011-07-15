@@ -1,0 +1,96 @@
+Package: libgettext8-shlibs
+Version: 0.17
+Revision: 19
+Source: mirror:gnu:gettext/gettext-%v.tar.gz
+#Source: mirror:sourceforge:fink/gettext-%v.tar.gz
+#Source: http://ftp.gnu.org/pub/gnu/gettext/gettext-%v.tar.gz
+Source-MD5: 58a2bc6d39c0ba57823034d55d65d606
+PatchFile: %n.patch
+PatchFile-MD5: 9db9231d64d3580f367190aeee292ee6
+PatchScript: <<
+ patch -p1 < %{PatchFile}
+ cd build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+<<
+# not yet used by fink core or bootstrap packages
+#Essential: yes
+Depends: libiconv, libiconv-bin, base-files
+BuildDepends: libiconv-dev, fink (>= 0.24.12)
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
+SetCFLAGS: -Os
+ConfigureParams: --mandir='%p/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-libasprintf --disable-static
+CompileScript: cd gettext-runtime; env EMACS=no CCACHE_DISABLE=1 ./configure %c ; make
+InstallScript: <<
+ cd gettext-runtime; make install DESTDIR=%d
+ rm %i/lib/charset.alias
+ #No need for dependency_libs in .la files if not building static libs
+ perl -pi -e "s/dependency_libs=.*$/dependency_libs=''/" %i/lib/libintl.la
+<<
+DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog* 
+Description: GNU Internationalization utils (shared libs)
+
+Splitoff: <<
+  Package: libgettext8-dev
+  Conflicts: gettext-dev, libgettext3-dev
+  Replaces: gettext-dev, libgettext3-dev
+  Suggests: gettext-doc
+  Depends: %N (= %v-%r), gettext-bin (>= %v-%r)
+  BuildDependsOnly: true
+  DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog*
+  Description: GNU Internationalization utils (Development Files)
+  Files: include lib/libintl.la lib/libintl.dylib 
+<<
+
+Splitoff2: <<
+  Package: gettext-bin
+  Depends: %N (>= %v-%r)
+  Replaces: gettext-tools (<< 0.14.5-1), libgettext3-shlibs (<< 0.14.5-1)
+  DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog*
+  Description: GNU Internationalization utils
+  Files: bin share/gettext share/locale share/man
+<<
+
+Splitoff3: <<
+  Package: gettext-doc
+  DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog*
+  Description: GNU Internationalization utils (Documentation)
+  Files: share/doc/gettext
+<<
+
+DescDetail: <<
+  The gettext packages provides some of the i18n and l10n support used by
+  many GNU programs but missing from the Darwin C library.
+<<
+
+DescPort: <<
+  charset.alias is deleted because it is empty on Darwin anyway and
+  causes unnecessary conflicts between packages.
+
+  The emacs files have been moved to a separate gettext-emacs package
+  (EMACS=no prevents them from being compiled here).
+<<
+
+DescPackaging: <<
+  We now follow the packaging advice from the upstream authors, and have
+  separated gettext-tools into its own package (a separate build from
+  the same source).  The libraries from that portion have gone into
+  libgettextpo2-*.
+
+  However, we have retained the idea of a gettext-doc splitoff from
+  the previous version of libgettext3-shlibs, which was prepared by
+  Chris Zubrzycki.
+
+	Don't bother checking for AIX-specific bug (test is bugged on
+	clang). See:
+	http://lists.gnu.org/archive/html/bug-autoconf/2010-08/msg00116.html
+<<
+
+Shlibs: <<
+  %p/lib/libintl.8.dylib 9.0.0 %n (>= 0.17-1)
+<<
+InfoTest: <<
+	TestScript: cd gettext-runtime; make check || exit 2
+<<
+License: GPL/LGPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://www.gnu.org/software/gettext/

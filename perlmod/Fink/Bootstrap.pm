@@ -455,7 +455,7 @@ sub additional_packages {
 # the old version (and is installed as the old version).  This could lead
 # to problems the next time foo was used to compile something.
 
-	my @addlist = ("apt", "apt-shlibs", "apt-dev", "bzip2-dev", "libgettext3-dev", "gettext-bin", "libiconv-dev", "libncurses5");
+	my @addlist = ("apt", "apt-shlibs", "apt-dev", "bzip2-dev", "libgettext3-dev", "gettext-bin", "libiconv-dev", "libncurses5", "libgettext8-shlibs");
 	if ("$]" == "5.008001") {
 	} elsif ("$]" == "5.008002") {
 	} elsif ("$]" == "5.008006") {

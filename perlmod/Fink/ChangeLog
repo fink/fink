@@ -1,3 +1,7 @@
+2011-07-14  Dave Morrison  <drm@finkproject.org>
+
+	* Bootstrap.pm: build libgettext8 during bootstrap
+
 2011-07-11  Dave Morrison  <drm@finkproject.org>
 
 	* Package.pm: activate the 10.4-EOL subdirectory
