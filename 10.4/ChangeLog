@@ -1,3 +1,7 @@
+2011-07-16  Dave Morrison  <drm@finkproject.org>
+
+	* base-files.info: sync with unstable
+
 2011-05-21  Daniel Macks  <dmacks@netspace.org>
 
 	* apt.info, apt.patch, perl588-core-x86_64.info: sync with unstable

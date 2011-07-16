@@ -1,9 +1,9 @@
 Package: base-files
-Version: 1.9.11
+Version: 1.9.12
 Revision: 1
 Source: mirror:custom:fink/%n-%v.tar.gz
 Essential: yes
-Source-MD5: d26b188be1c67a6b2683fb1543b2ccd5
+Source-MD5: 7055c588b97d1870d11541bac120e6eb
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 #
