@@ -1072,7 +1072,7 @@ sub get_selfupdatetrees {
 		"10.4" => "10.4",
 		"10.5" => "10.4",
 		"10.6" => "10.4",
-		"10.7" => "10.4"
+		"10.7" => "10.7"
 		);
 
 	return $selfupdatetrees{$distribution};
