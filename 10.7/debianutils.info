@@ -1,0 +1,45 @@
+Package: debianutils
+Version: 1.23
+Revision: 11
+Essential: true
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+BuildDepends: fink (>= 0.24.12-1)
+Depends: base-files
+Conflicts: mktemp
+Replaces: mktemp, tetex
+Provides: mktemp
+Source: mirror:sourceforge:fink/%n_%v.tar.gz
+Source-MD5: 232b5bc916a1e2af43fde890f840a304
+SourceDirectory: %n-%v
+PatchFile: %n.patch
+PatchFile-MD5: b08afef2d893e68a12fe2b3823c2a502
+InstallScript: <<
+  #!/bin/sh -ev
+  INSTALL=install
+  INSTALL_FILE="$INSTALL -p -m 644"
+  INSTALL_PROGRAM="$INSTALL -p -m 755"
+  INSTALL_SCRIPT="$INSTALL -p -m 755"
+  INSTALL_DIR="$INSTALL -p -d -m 755"
+  $INSTALL_DIR %i/bin \
+               %i/sbin \
+               %i/share/man/man1 \
+               %i/share/man/man8 \
+               %i/share/man/fr/man8
+  $INSTALL_PROGRAM readlink run-parts tempfile mktemp %i/sbin
+  $INSTALL_SCRIPT which savelog sensible-editor sensible-pager %i/bin
+  $INSTALL_FILE run-parts.8 savelog.8 %i/share/man/man8
+  $INSTALL_FILE which.1 tempfile.1 sensible-editor.1 mktemp.1 readlink.1 \
+                %i/share/man/man1
+  $INSTALL_FILE savelog.fr.8 %i/share/man/fr/man8/savelog.8
+  ln -s sensible-editor.1 %i/share/man/man1/sensible-pager.1
+<<
+DocFiles: debian/copyright debian/changelog
+Description: Misc. utilities specific to Debian (and Fink)
+DescDetail: Includes the commands: mktemp, readlink, tempfile, and run-parts
+DescPort: <<
+ Both run-parts and tempfile require the getopt() routines from glibc.
+ The versions included here come from glibc-2.2.4
+ Thanks to Justin Hallett for the 1.22.5 port.
+<<
+Homepage: http://packages.debian.org/unstable/base/debianutils.html
+License: GPL

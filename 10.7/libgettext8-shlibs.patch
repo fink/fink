@@ -1,0 +1,170 @@
+diff -uNr gettext-0.17/gettext-runtime/configure gettext-0.17-new/gettext-runtime/configure
+--- gettext-0.17/gettext-runtime/configure	2007-11-06 18:33:39.000000000 -0500
++++ gettext-0.17-new/gettext-runtime/configure	2011-07-01 15:03:36.000000000 -0400
+@@ -31673,7 +31673,7 @@
+ 	  _Bool n[m];
+ 	  char o[sizeof n == m * sizeof n[0] ? 1 : -1];
+ 	  char p[-1 - (_Bool) 0 < 0 && -1 - (bool) 0 < 0 ? 1 : -1];
+-	  #if defined __xlc__ || defined __GNUC__
++	  #if defined __xlc__
+ 	   /* Catch a bug in IBM AIX xlc compiler version 6.0.0.0
+ 	      reported by James Lemley on 2005-10-05; see
+ 	      http://lists.gnu.org/archive/html/bug-coreutils/2005-10/msg00086.html
+diff -uNr gettext-0.17/gettext-runtime/gnulib-lib/setenv.c gettext-0.17-new/gettext-runtime/gnulib-lib/setenv.c
+--- gettext-0.17/gettext-runtime/gnulib-lib/setenv.c	2007-10-07 16:28:16.000000000 -0400
++++ gettext-0.17-new/gettext-runtime/gnulib-lib/setenv.c	2007-12-06 16:31:05.000000000 -0500
+@@ -37,9 +37,14 @@
+ #endif
+ 
+ #if !_LIBC
+-# define __environ	environ
+-# ifndef HAVE_ENVIRON_DECL
+-extern char **environ;
++# define __environ   environ
++# if ! HAVE_ENVIRON_DECL
++#  ifdef __APPLE__
++#   include <crt_externs.h>
++#   define environ (*_NSGetEnviron())
++#  else
++    extern char **environ;
++#  endif
+ # endif
+ #endif
+ 
+diff -uNr gettext-0.17/gettext-runtime/libasprintf/Makefile.in gettext-0.17-new/gettext-runtime/libasprintf/Makefile.in
+--- gettext-0.17/gettext-runtime/libasprintf/Makefile.in	2007-11-06 18:35:22.000000000 -0500
++++ gettext-0.17-new/gettext-runtime/libasprintf/Makefile.in	2007-12-06 16:31:05.000000000 -0500
+@@ -290,7 +290,7 @@
+ # How to build libasprintf.
+ # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
+ # to create a shared library, however "libtool --tag=CC" succeeds.
+-libasprintf_la_LDFLAGS = @LTNOUNDEF@
++libasprintf_la_LDFLAGS = @LTNOUNDEF@ -static
+ MAKEINFOFLAGS = --no-split
+ info_TEXINFOS = autosprintf.texi
+ CLEANFILES = autosprintf.pdf
+diff -uNr gettext-0.17/gettext-tools/configure gettext-0.17-new/gettext-tools/configure
+--- gettext-0.17/gettext-tools/configure	2007-11-06 18:37:40.000000000 -0500
++++ gettext-0.17-new/gettext-tools/configure	2011-07-01 15:03:32.000000000 -0400
+@@ -35335,7 +35335,7 @@
+ 	  _Bool n[m];
+ 	  char o[sizeof n == m * sizeof n[0] ? 1 : -1];
+ 	  char p[-1 - (_Bool) 0 < 0 && -1 - (bool) 0 < 0 ? 1 : -1];
+-	  #if defined __xlc__ || defined __GNUC__
++	  #if defined __xlc__
+ 	   /* Catch a bug in IBM AIX xlc compiler version 6.0.0.0
+ 	      reported by James Lemley on 2005-10-05; see
+ 	      http://lists.gnu.org/archive/html/bug-coreutils/2005-10/msg00086.html
+diff -uNr gettext-0.17/gettext-tools/doc/gettext.info gettext-0.17-new/gettext-tools/doc/gettext.info
+--- gettext-0.17/gettext-tools/doc/gettext.info	2007-11-01 22:23:13.000000000 -0400
++++ gettext-0.17-new/gettext-tools/doc/gettext.info	2007-12-06 16:30:28.000000000 -0500
+@@ -1,7 +1,7 @@
+-INFO-DIR-SECTION GNU Gettext Utilities
+-START-INFO-DIR-ENTRY
+ This is gettext.info, produced by makeinfo version 4.11 from gettext.texi.
+ 
++INFO-DIR-SECTION GNU Gettext Utilities
++START-INFO-DIR-ENTRY
+ * gettext: (gettext).                          GNU gettext utilities.
+ * autopoint: (gettext)autopoint Invocation.    Copy gettext infrastructure.
+ * envsubst: (gettext)envsubst Invocation.      Expand environment variables.
+diff -uNr gettext-0.17/gettext-tools/gnulib-lib/execute.c gettext-0.17-new/gettext-tools/gnulib-lib/execute.c
+--- gettext-0.17/gettext-tools/gnulib-lib/execute.c	2007-10-07 16:29:19.000000000 -0400
++++ gettext-0.17-new/gettext-tools/gnulib-lib/execute.c	2007-12-06 16:31:05.000000000 -0500
+@@ -55,7 +55,12 @@
+ #endif
+ 
+ #if ! HAVE_ENVIRON_DECL
+-extern char **environ;
++# ifdef __APPLE__
++#  include <crt_externs.h>
++#  define environ (*_NSGetEnviron())
++# else
++   extern char **environ;
++# endif
+ #endif
+ 
+ #ifndef STDIN_FILENO
+diff -uNr gettext-0.17/gettext-tools/gnulib-lib/pipe.c gettext-0.17-new/gettext-tools/gnulib-lib/pipe.c
+--- gettext-0.17/gettext-tools/gnulib-lib/pipe.c	2007-10-07 16:29:34.000000000 -0400
++++ gettext-0.17-new/gettext-tools/gnulib-lib/pipe.c	2007-12-06 16:31:05.000000000 -0500
+@@ -54,7 +54,12 @@
+ #endif
+ 
+ #if ! HAVE_ENVIRON_DECL
+-extern char **environ;
++# ifdef __APPLE__
++#  include <crt_externs.h>
++#  define environ (*_NSGetEnviron())
++# else
++   extern char **environ;
++# endif
+ #endif
+ 
+ #ifndef STDIN_FILENO
+diff -uNr gettext-0.17/gettext-tools/gnulib-lib/setenv.c gettext-0.17-new/gettext-tools/gnulib-lib/setenv.c
+--- gettext-0.17/gettext-tools/gnulib-lib/setenv.c	2007-10-07 16:29:34.000000000 -0400
++++ gettext-0.17-new/gettext-tools/gnulib-lib/setenv.c	2007-12-06 16:31:05.000000000 -0500
+@@ -38,8 +38,13 @@
+ 
+ #if !_LIBC
+ # define __environ	environ
+-# ifndef HAVE_ENVIRON_DECL
+-extern char **environ;
++# if ! HAVE_ENVIRON_DECL
++#  ifdef __APPLE__
++#   include <crt_externs.h>
++#   define environ (*_NSGetEnviron())
++#  else
++    extern char **environ;
++#  endif
+ # endif
+ #endif
+ 
+diff -uNr gettext-0.17/gettext-tools/gnulib-lib/unsetenv.c gettext-0.17-new/gettext-tools/gnulib-lib/unsetenv.c
+--- gettext-0.17/gettext-tools/gnulib-lib/unsetenv.c	2007-10-07 16:29:39.000000000 -0400
++++ gettext-0.17-new/gettext-tools/gnulib-lib/unsetenv.c	2007-12-06 16:31:05.000000000 -0500
+@@ -27,8 +27,13 @@
+ 
+ #if !_LIBC
+ # define __environ	environ
+-# ifndef HAVE_ENVIRON_DECL
+-extern char **environ;
++# if ! HAVE_ENVIRON_DECL
++#  ifdef __APPLE__
++#   include <crt_externs.h>
++#   define environ (*_NSGetEnviron())
++#  else
++    extern char **environ;
++#  endif
+ # endif
+ #endif
+ 
+diff -uNr gettext-0.17/gettext-tools/gnulib-tests/test-stdbool.c gettext-0.17-new/gettext-tools/gnulib-tests/test-stdbool.c
+--- gettext-0.17/gettext-tools/gnulib-tests/test-stdbool.c	2007-10-07 16:29:47.000000000 -0400
++++ gettext-0.17-new/gettext-tools/gnulib-tests/test-stdbool.c	2011-07-01 15:03:25.000000000 -0400
+@@ -61,7 +61,7 @@
+ char o[sizeof n == m * sizeof n[0] ? 1 : -1];
+ char p[-1 - (_Bool) 0 < 0 && -1 - (bool) 0 < 0 ? 1 : -1];
+ #if 0 /* Cannot be guaranteed with gnulib's <stdbool.h>.  */
+-#if defined __xlc__ || defined __GNUC__
++#if defined __xlc__
+  /* Catch a bug in IBM AIX xlc compiler version 6.0.0.0
+     reported by James Lemley on 2005-10-05; see
+     http://lists.gnu.org/archive/html/bug-coreutils/2005-10/msg00086.html
+diff -uNr gettext-0.17/gettext-tools/src/Makefile.in gettext-0.17-new/gettext-tools/src/Makefile.in
+--- gettext-0.17/gettext-tools/src/Makefile.in	2007-11-06 18:40:15.000000000 -0500
++++ gettext-0.17-new/gettext-tools/src/Makefile.in	2011-07-01 12:26:14.000000000 -0400
+@@ -1706,10 +1706,10 @@
+ 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
+ 
+ xgettext-xgettext.o: xgettext.c
+-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-xgettext.o `test -f 'xgettext.c' || echo '$(srcdir)/'`xgettext.c
++	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -O4 -c -o xgettext-xgettext.o `test -f 'xgettext.c' || echo '$(srcdir)/'`xgettext.c
+ 
+ xgettext-xgettext.obj: xgettext.c
+-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-xgettext.obj `if test -f 'xgettext.c'; then $(CYGPATH_W) 'xgettext.c'; else $(CYGPATH_W) '$(srcdir)/xgettext.c'; fi`
++	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -O4 -c -o xgettext-xgettext.obj `if test -f 'xgettext.c'; then $(CYGPATH_W) 'xgettext.c'; else $(CYGPATH_W) '$(srcdir)/xgettext.c'; fi`
+ 
+ xgettext-x-c.o: x-c.c
+ 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-x-c.o `test -f 'x-c.c' || echo '$(srcdir)/'`x-c.c

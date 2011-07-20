@@ -1,0 +1,127 @@
+diff -ru bzip2-1.0.5/Makefile bzip2-1.0.5-patched/Makefile
+--- bzip2-1.0.5/Makefile	2008-02-14 07:39:18.000000000 -0500
++++ bzip2-1.0.5-patched/Makefile	2008-06-11 19:28:40.000000000 -0400
+@@ -11,6 +11,9 @@
+ # This program is released under the terms of the license contained
+ # in the file LICENSE.
+ # ------------------------------------------------------------------
++# This Makefile builds a shared version of the library,
++# libbz2.1.0.2.dylib, with install_name .../libbz2.1.dylib,
++# on Darwin and Mac OS X.
+ 
+ SHELL=/bin/sh
+ 
+@@ -21,7 +24,7 @@
+ LDFLAGS=
+ 
+ BIGFILES=-D_FILE_OFFSET_BITS=64
+-CFLAGS=-Wall -Winline -O2 -g $(BIGFILES)
++CFLAGS=-fno-common -Wall -Winline -O2 -g $(BIGFILES)
+ 
+ # Where you want it installed when you do 'make install'
+ PREFIX=/usr/local
+@@ -35,9 +38,9 @@
+       decompress.o \
+       bzlib.o
+ 
+-all: libbz2.a bzip2 bzip2recover test
++all: libbz2.dylib bzip2 bzip2recover test
+ 
+-bzip2: libbz2.a bzip2.o
++bzip2: libbz2.dylib bzip2.o
+ 	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2 bzip2.o -L. -lbz2
+ 
+ bzip2recover: bzip2recover.o
+@@ -52,15 +55,21 @@
+ 		$(RANLIB) libbz2.a ; \
+ 	fi
+ 
++libbz2.dylib: $(OBJS)
++	rm -f libbz2.dylib libbz2.*.dylib
++	$(CC) -dynamiclib -o libbz2.@VERSION@.dylib $(OBJS) -install_name $(PREFIX)/lib/libbz2.1.dylib -compatibility_version 1.0.1 -current_version @VERSION@
++	ln -s libbz2.@VERSION@.dylib libbz2.1.dylib
++	ln -s libbz2.@VERSION@.dylib libbz2.dylib
++
+ check: test
+ test: bzip2
+ 	@cat words1
+-	./bzip2 -1  < sample1.ref > sample1.rb2
+-	./bzip2 -2  < sample2.ref > sample2.rb2
+-	./bzip2 -3  < sample3.ref > sample3.rb2
+-	./bzip2 -d  < sample1.bz2 > sample1.tst
+-	./bzip2 -d  < sample2.bz2 > sample2.tst
+-	./bzip2 -ds < sample3.bz2 > sample3.tst
++	DYLD_LIBRARY_PATH=. ./bzip2 -1  < sample1.ref > sample1.rb2
++	DYLD_LIBRARY_PATH=. ./bzip2 -2  < sample2.ref > sample2.rb2
++	DYLD_LIBRARY_PATH=. ./bzip2 -3  < sample3.ref > sample3.rb2
++	DYLD_LIBRARY_PATH=. ./bzip2 -d  < sample1.bz2 > sample1.tst
++	DYLD_LIBRARY_PATH=. ./bzip2 -d  < sample2.bz2 > sample2.tst
++	DYLD_LIBRARY_PATH=. ./bzip2 -ds < sample3.bz2 > sample3.tst
+ 	cmp sample1.bz2 sample1.rb2 
+ 	cmp sample2.bz2 sample2.rb2
+ 	cmp sample3.bz2 sample3.rb2
+@@ -72,8 +81,9 @@
+ install: bzip2 bzip2recover
+ 	if ( test ! -d $(PREFIX)/bin ) ; then mkdir -p $(PREFIX)/bin ; fi
+ 	if ( test ! -d $(PREFIX)/lib ) ; then mkdir -p $(PREFIX)/lib ; fi
+-	if ( test ! -d $(PREFIX)/man ) ; then mkdir -p $(PREFIX)/man ; fi
+-	if ( test ! -d $(PREFIX)/man/man1 ) ; then mkdir -p $(PREFIX)/man/man1 ; fi
++	if ( test ! -d $(PREFIX)/share ) ; then mkdir -p $(PREFIX)/share ; fi
++	if ( test ! -d $(PREFIX)/share/man ) ; then mkdir -p $(PREFIX)/share/man ; fi
++	if ( test ! -d $(PREFIX)/share/man/man1 ) ; then mkdir -p $(PREFIX)/share/man/man1 ; fi
+ 	if ( test ! -d $(PREFIX)/include ) ; then mkdir -p $(PREFIX)/include ; fi
+ 	cp -f bzip2 $(PREFIX)/bin/bzip2
+ 	cp -f bzip2 $(PREFIX)/bin/bunzip2
+@@ -83,33 +93,35 @@
+ 	chmod a+x $(PREFIX)/bin/bunzip2
+ 	chmod a+x $(PREFIX)/bin/bzcat
+ 	chmod a+x $(PREFIX)/bin/bzip2recover
+-	cp -f bzip2.1 $(PREFIX)/man/man1
+-	chmod a+r $(PREFIX)/man/man1/bzip2.1
++	cp -f bzip2.1 $(PREFIX)/share/man/man1
++	chmod a+r $(PREFIX)/share/man/man1/bzip2.1
+ 	cp -f bzlib.h $(PREFIX)/include
+ 	chmod a+r $(PREFIX)/include/bzlib.h
+-	cp -f libbz2.a $(PREFIX)/lib
+-	chmod a+r $(PREFIX)/lib/libbz2.a
++	cp -f libbz2.@VERSION@.dylib $(PREFIX)/lib
++	chmod a+r $(PREFIX)/lib/libbz2.@VERSION@.dylib
++	ln -s libbz2.@VERSION@.dylib $(PREFIX)/lib/libbz2.1.dylib
++	ln -s libbz2.@VERSION@.dylib $(PREFIX)/lib/libbz2.dylib
+ 	cp -f bzgrep $(PREFIX)/bin/bzgrep
+-	ln -s -f $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzegrep
+-	ln -s -f $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzfgrep
++	ln -s -f bzgrep $(PREFIX)/bin/bzegrep
++	ln -s -f bzgrep $(PREFIX)/bin/bzfgrep
+ 	chmod a+x $(PREFIX)/bin/bzgrep
+ 	cp -f bzmore $(PREFIX)/bin/bzmore
+-	ln -s -f $(PREFIX)/bin/bzmore $(PREFIX)/bin/bzless
++	ln -s -f bzmore $(PREFIX)/bin/bzless
+ 	chmod a+x $(PREFIX)/bin/bzmore
+ 	cp -f bzdiff $(PREFIX)/bin/bzdiff
+-	ln -s -f $(PREFIX)/bin/bzdiff $(PREFIX)/bin/bzcmp
++	ln -s -f bzdiff $(PREFIX)/bin/bzcmp
+ 	chmod a+x $(PREFIX)/bin/bzdiff
+-	cp -f bzgrep.1 bzmore.1 bzdiff.1 $(PREFIX)/man/man1
+-	chmod a+r $(PREFIX)/man/man1/bzgrep.1
+-	chmod a+r $(PREFIX)/man/man1/bzmore.1
+-	chmod a+r $(PREFIX)/man/man1/bzdiff.1
+-	echo ".so man1/bzgrep.1" > $(PREFIX)/man/man1/bzegrep.1
+-	echo ".so man1/bzgrep.1" > $(PREFIX)/man/man1/bzfgrep.1
+-	echo ".so man1/bzmore.1" > $(PREFIX)/man/man1/bzless.1
+-	echo ".so man1/bzdiff.1" > $(PREFIX)/man/man1/bzcmp.1
++	cp -f bzgrep.1 bzmore.1 bzdiff.1 $(PREFIX)/share/man/man1
++	chmod a+r $(PREFIX)/share/man/man1/bzgrep.1
++	chmod a+r $(PREFIX)/share/man/man1/bzmore.1
++	chmod a+r $(PREFIX)/share/man/man1/bzdiff.1
++	echo ".so man1/bzgrep.1" > $(PREFIX)/share/man/man1/bzegrep.1
++	echo ".so man1/bzgrep.1" > $(PREFIX)/share/man/man1/bzfgrep.1
++	echo ".so man1/bzmore.1" > $(PREFIX)/share/man/man1/bzless.1
++	echo ".so man1/bzdiff.1" > $(PREFIX)/share/man/man1/bzcmp.1
+ 
+ clean: 
+-	rm -f *.o libbz2.a bzip2 bzip2recover \
++	rm -f *.o libbz2.a libbz2*.dylib bzip2 bzip2recover \
+ 	sample1.rb2 sample2.rb2 sample3.rb2 \
+ 	sample1.tst sample2.tst sample3.tst
+ 

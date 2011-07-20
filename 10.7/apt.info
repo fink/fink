@@ -1,0 +1,165 @@
+Package: apt
+Version: 0.5.4
+Revision: 1060
+GCC: 4.0
+BuildDepends: fink (>= 0.24.12)
+Depends: %N-shlibs (= %v-%r)
+Source: mirror:sourceforge:fink/%n_%v.tar.gz
+Source-MD5: 274fb64e2e67318b4c9c94599785c37d
+SourceDirectory: %n-%v
+PatchFile: %n.patch
+PatchFile-MD5: 6b83d9ba0b19aa525de8f39603938c97
+PatchScript: <<
+ sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' < %{PatchFile} | patch -p1
+ sh patch_flush
+ for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
+ echo "x86_64\tx86_64" >> %b/buildlib/archtable
+<<
+NoSetCPPFLAGS: true
+NoSetLDFLAGS: true
+SetCXXFLAGS: -O2 -DEMULATE_MMAP -D__USE_MISC -fconstant-cfstrings -DHAVE_SOCKLEN_T=1
+ConfigureParams: --host=%m-apple-darwin`uname -r|cut -f1 -d.`
+CompileScript: <<
+ ./configure %c
+ make -f makefile.wrap NOISY=1
+<<
+InstallScript: <<
+ mkdir -p %i/bin
+ install -m 755 bin/apt-cache %i/bin/
+ install -m 755 bin/apt-cdrom %i/bin/
+ install -m 755 bin/apt-config %i/bin/
+ install -m 755 bin/apt-extracttemplates %i/bin/
+ install -m 755 bin/apt-get %i/bin/
+ install -m 755 bin/apt-sortpkgs %i/bin/
+ mkdir -p %i/lib
+ install -m 644 bin/libapt-pkg.3.2.0.dylib %i/lib/
+ cd %i/lib/ && ln -s libapt-pkg.3.2.0.dylib libapt-pkg.3.2.dylib && ln -s libapt-pkg.3.2.0.dylib libapt-pkg.dylib
+ install -m 644 bin/libapt-inst.1.0.0.dylib %i/lib/
+ cd %i/lib/ && ln -s libapt-inst.1.0.0.dylib libapt-inst.1.0.dylib && ln -s libapt-inst.1.0.0.dylib libapt-inst.dylib
+ mkdir -p %i/lib/apt/methods
+ install -m 755 bin/methods/cdrom %i/lib/apt/methods/
+ install -m 755 bin/methods/copy %i/lib/apt/methods/
+ install -m 755 bin/methods/file %i/lib/apt/methods/
+ install -m 755 bin/methods/ftp %i/lib/apt/methods/
+ install -m 755 bin/methods/gzip %i/lib/apt/methods/
+ install -m 755 bin/methods/http %i/lib/apt/methods/
+ install -m 755 bin/methods/rsh %i/lib/apt/methods/
+ cd %i/lib/apt/methods && ln -s rsh ssh
+ mkdir -p %i/lib/dpkg/methods/apt
+ install -m 644 scripts/dselect/desc.apt %i/lib/dpkg/methods/apt/
+ install -m 755 scripts/dselect/install %i/lib/dpkg/methods/apt/
+ install -m 644 scripts/dselect/names %i/lib/dpkg/methods/apt/
+ install -m 755 scripts/dselect/setup %i/lib/dpkg/methods/apt/
+ install -m 755 scripts/dselect/update %i/lib/dpkg/methods/apt/
+ mkdir -p %i/include/apt-pkg
+ cp include/apt-pkg/*.h %i/include/apt-pkg/
+ mkdir -p %i/share/man
+ mkdir -p %i/share/man/man1
+ mkdir -p %i/share/man/man5
+ mkdir -p %i/share/man/man8
+ install -m 644 doc/apt.8 %i/share/man/man8/
+ install -m 644 docs/apt-cache.8 %i/share/man/man8/
+ install -m 644 docs/apt-cdrom.8 %i/share/man/man8/
+ install -m 644 docs/apt-config.8 %i/share/man/man8/
+ install -m 644 docs/apt-extracttemplates.1 %i/share/man/man1/
+ install -m 644 docs/apt-get.8 %i/share/man/man8/
+ install -m 644 docs/apt-sortpkgs.1 %i/share/man/man1/
+ install -m 644 docs/apt.conf.5 %i/share/man/man5/
+ install -m 644 docs/apt_preferences.5 %i/share/man/man5/
+ install -m 644 docs/sources.list.5 %i/share/man/man5/
+ mkdir -p %i/etc/apt/apt.conf.d
+ mkdir -p %i/var/cache/apt/archives/partial
+ mkdir -p %i/var/lib/apt/lists/partial
+<<
+SplitOff: <<
+  Package: %N-shlibs
+  Depends: dpkg (>= 1.10.21-1217), fink (>= 0.24.12)
+  Replaces: %N (<= 0.5.4-1)
+  Files: lib/libapt-inst.1.0.0.dylib lib/libapt-pkg.3.2.0.dylib lib/libapt-inst.1.0.dylib lib/libapt-pkg.3.2.dylib
+  Shlibs: <<
+    %p/lib/libapt-inst.1.0.dylib 1.0.0 %n (>= 0.5.4-24)
+    %p/lib/libapt-pkg.3.2.dylib 3.2.0 %n (>= 0.5.4-24)
+  <<
+  DocFiles: COPYING* AUTHORS
+<<
+SplitOff2: <<
+  Package: %N-dev
+  Depends: %N-shlibs (= %v-%r)
+  BuildDependsOnly: true
+  Files: lib/libapt-inst.dylib lib/libapt-pkg.dylib include
+  DocFiles: COPYING* AUTHORS
+<<
+DocFiles: COPYING* AUTHORS
+PostInstScript: <<
+if [ ! -f %p/var/lib/dpkg/cmethopt ]; then
+  echo "apt apt" >%p/var/lib/dpkg/cmethopt
+  chmod 644 %p/var/lib/dpkg/cmethopt
+else
+  read a b <%p/var/lib/dpkg/cmethopt
+  if [ "$a" != "apt" -o "$b" != "apt" ]; then
+    /bin/echo ""
+    /bin/echo "dselect is not set up to use apt as its access method. Downloading binary"
+    /bin/echo "package will likely not work. Do you want to use apt instead?\c"
+    read answer
+    answer=`echo $answer | sed 's/^[yY].*$/y/'`
+    if [ -z "$answer" -o "x$answer" = "xy" ]; then
+      echo "apt apt" >%p/var/lib/dpkg/cmethopt
+      chmod 644 %p/var/lib/dpkg/cmethopt
+    fi
+  fi
+fi
+
+rm -f %p/var/cache/apt/pkgcache.bin %p/var/cache/apt/srcpkgcache.bin
+<<
+#
+Description: Advanced front-end for dpkg
+DescPort: <<
+There are three troublemakers when porting apt:
+- It was written for Linux/ELF/glibc.
+- It was written to maintain a distribution that is in charge of the
+  system and hardcodes paths like /usr/bin, /usr/lib and /var/lib.
+- There is no install target in the Makefiles because the Debian
+  packaging files take care of what goes where.
+There's also the usual trouble like not recognizing Darwin and
+depending on a case-sensitive file system. All of this amounts to a
+big, bad patch.
+
+The patch also fixes some potential and some real crashing bugs.
+
+Oh, one more thing: mmap() is broken for non-trivial uses in OS X
+10.1. Luckily apt uses a wrapper class that can be equipped with a
+workaround (malloc() + read() + write()...).
+
+The -fno-rtti works around a bug in GCC 3.1 on Jaguar.
+
+Ben Hines - added patch to make apt recognize macosx and darwin pkgs
+
+The sources.list file is now supplied by the fink program rather than
+by apt-get.
+
+The type of the fifth parameter for getsocklen keeps changing. The
+original code uses unsigned int, which was never correct for darwin,
+so we patch several choices. Through OS X 10.3, it was int; starting
+in 10.4 it is socklen_t, a symbol that first appeared in 10.3 but was
+an int. So starting in 10.3 we can just use socklen_t.
+See: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=323716
+
+dmacks - Implemented "--ignore-breakage" cmdline flag to 'apt-get install'
+(first appears in: 10.2-gcc3.3/0.5.4-41, 10.3/0.5.4-51)
+
+Patch extracttar.cc so it understands negative UIDs, such as -2 for 'nobody'.
+
+	Fix some variable type collisions (jhowarth and upstream).
+<<
+DescPackaging: <<
+Previous versions by Christoph Pfisterer.
+
+	Don't seg-fault if *Packages file isn't readable (or other
+	malformed data). Upstream patch to fix upstream Bug #120311
+
+	Raise cachesize limit. See:
+	http://permalink.gmane.org/gmane.os.apple.fink.core/2025
+<<
+License: GPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://packages.qa.debian.org/a/apt.html

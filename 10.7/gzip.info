@@ -1,0 +1,34 @@
+Package: gzip
+Version: 1.4
+Revision: 2
+Source: mirror:sourceforge:fink/%n-%v.tar.gz
+#Source: mirror:gnu:%n/%n-%v.tar.gz
+Source-MD5: e381b8506210c794278f5527cba0e765
+Essential: yes
+BuildDepends: fink (>= 0.24.12-1)
+Depends: base-files
+ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man
+CompileScript: <<
+ gzip_cv_assembler=no ./configure %c
+ make all
+<<
+InstallScript: <<
+ make -j1 install DESTDIR=%d
+ ln -s zcat %i/bin/gzcat
+ ln -s zcat.1 %i/share/man/man1/gzcat.1
+<<
+InfoDocs: gzip.info
+DocFiles: AUTHORS COPYING ChangeLog NEWS README THANKS TODO
+Description: File-compression program
+DescPort: <<
+<<
+DescPackaging: <<
+We also add some alternate names for the commands.
+
+Previous versions by Christoph Pfisterer.
+<<
+License: GPL
+#Homepage: http://www.gzip.org/
+#Homepage: http://savannah.gnu.org/projects/gzip/
+Homepage: http://www.gnu.org/software/gzip/
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>

@@ -1,0 +1,55 @@
+Package: tar
+Version: 1.23
+Revision: 1
+Essential: yes
+# libgettext8-shlibs isn't Essential yet so we have to stick with 3.
+Depends: libgettext3-shlibs, libiconv, gzip, bzip2, base-files
+Source: mirror:sourceforge:fink/%n-%v.tar.bz2
+#Source: mirror:gnu:%n/%n-%v.tar.bz2
+Source-MD5: 41e2ca4b924ec7860e51b43ad06cdb7e
+ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib --disable-dependency-tracking
+CompileScript: <<
+ %p/bin/fink -y install libgettext3-dev libiconv-dev
+ ./configure %c
+ make
+<<
+InfoTest: <<
+ TestScript: <<
+  # Fix bug in test 91 (fails when built as root).
+  perl -pi -e 's/(^AT_CHECK.*$)/$&\nAT_UNPRIVILEGED_PREREQ/' tests/remfiles01.at
+  make check || exit 2
+ <<
+<<
+InstallScript: <<
+ make install DESTDIR=%d
+cd %i/lib ; rm -rf charset.alias; cd ..;
+cd %i/bin ; ln -s gtar tar ; ln -s gtar gnutar
+<<
+DocFiles: README* COPYING AUTHORS NEWS THANKS
+#
+PreInstScript: <<
+if [ -L %p/etc/alternatives/rmt ]; then
+  update-alternatives --remove rmt %p/lib/rmt-tar
+  rm -f %p/lib/rmt
+fi
+<<
+InfoDocs: tar.info
+#
+Description: Archiving program for files and tape
+DescPackaging: <<
+ With the current fink dependency engine, essential packages may neither
+ depend nor builddepend on non-essential packages.  Thus, to make sure
+ that non-essential splitoffs of essential packages (like gettext-bin
+ and *-dev) are present at build time, we call 'fink install' during
+ the compile script.  Note that since the corresponding essential packages
+ are dependencies of this one, they should already have been built, so
+ 'fink install' should merely make sure they are in place.
+ 
+ Due to the need to run 'fink install' within CompileScript, tar can't
+ be built with --build-as-nobody.
+
+ Previous versions by Christoph Pfisterer.
+<<
+License: GPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://www.gnu.org/software/tar/

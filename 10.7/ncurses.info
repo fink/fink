@@ -1,0 +1,105 @@
+Package: ncurses
+Version: 5.9-20110507
+Revision: 1
+
+GCC: 4.0
+#Source: ftp://invisible-island.net/ncurses/current/ncurses-%v.tgz
+Source: mirror:sourceforge:fink/ncurses-%v.tgz
+Source-MD5: 49dc7136424f2bdd653439eda63a2375
+SourceDirectory: ncurses-5.9
+BuildDepends: fink (>= 0.13.0)
+Depends: libncurses5-shlibs (>= %v-%r)
+Replaces: libncurses5 (<< 5.4-20041023-4)
+Essential: true
+PatchScript: <<
+#!/bin/sh -ex
+	# apply upstream patchsets
+	for p in patches/*.patch.gz; do
+		gzip -cd $p | patch -p1
+	done
+
+	#Need to remove these entries to avoid failure on case sensitive file systems
+	perl -pi -e "s/hp70092a\|//; s/hp2621a\|//; s/2621a\|//" misc/terminfo.src
+<<
+ConfigureParams: --without-ada --without-pkg-config --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs --enable-overwrite --disable-mixed-case
+NoSetCFLAGS: true
+NoSetLDFLAGS: true
+NoSetCPPFLAGS: true
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
+CompileScript: <<
+  #!/bin/sh -ev
+  ./configure %c --libdir=%p/lib/ncurses cf_cv_typeof_chtype=long
+  make
+<<
+InstallScript: <<
+#!/bin/sh -ev
+  make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib:`pwd`/lib/ncurses
+# add extra symlinks in the main lib directory
+  ln -s ncurses/libform.5.dylib %i/lib/libform.dylib
+  ln -s ncurses/libmenu.5.dylib %i/lib/libmenu.dylib
+  ln -s ncurses/libncurses.5.dylib %i/lib/libncurses.dylib
+  ln -s ncurses/libpanel.5.dylib %i/lib/libpanel.dylib
+  ln -s ncurses/libncurses.5.dylib %i/lib/libcurses.dylib
+  ln -s ncurses/libncurses.5.dylib %i/lib/libtermcap.dylib
+<<
+SplitOff: <<
+ Package: libncurses5-shlibs
+ Depends: base-files
+ Essential: true
+ Files: <<
+  lib/ncurses/libform.*.dylib
+  lib/ncurses/libmenu.*.dylib
+  lib/ncurses/libncurses.*.dylib
+  lib/ncurses/libpanel.*.dylib
+ <<
+ DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+ Shlibs: <<
+  %p/lib/ncurses/libform.5.dylib 5.0.0 %n (>= 5.4-20041023-1)
+  %p/lib/ncurses/libmenu.5.dylib 5.0.0 %n (>= 5.4-20041023-1)
+  %p/lib/ncurses/libncurses.5.dylib 5.0.0 %n (>= 5.4-20041023-1)
+  %p/lib/ncurses/libpanel.5.dylib 5.0.0 %n (>= 5.4-20041023-1)
+ <<
+ Description: Shared libraries for libncurses5 package
+<<
+SplitOff2: <<
+ Package: libncurses5
+ Depends: libncurses5-shlibs (= %v-%r)
+ BuildDependsOnly: true
+ Conflicts: ncurses-dev, libncurses5-64bit
+ Replaces: ncurses-dev, ncurses (<= 5.3-20031018-2), libncurses5-64bit, ncurses (<= 5.7-20100227-1)
+ Provides: libncurses5-dev
+ Files: bin/ncurses5-config lib/ncurses include lib/libcurses.dylib lib/libform.dylib lib/libmenu.dylib lib/libncurses.dylib lib/libpanel.dylib lib/libtermcap.dylib
+ DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+ Description: Full-screen ascii drawing library
+<<
+DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+Description: Executable files for libncurses5
+DescPort: <<
+More changes by Chris Zubrzycki to be more compatable with apple's lib
+-udates to the (sometimes) monthly releases of ncurses (in patch form)
+
+The --enable-overwrite flag creates the libcurses.dylib symlink.
+
+Must pass cf_cv_typeof_chtype=long to configure to maintain ABI
+compatability for 64-bit library. Otherwise chtype is unsigned long
+in 5.4 but unsigned int in 5.7.
+
+Added patchscript to avoid failure on case sensitive file systems.
+<<
+DescPackaging: <<
+First revision by David Ross.
+Previous versions by Christoph Pfisterer.
+All the hard work in this version done by Chris Zubrzycki.
+Updated to 5.7 by Daniel Johnson.
+
+	Reroll tarball with upstream patches (in patches/ subdir).
+	Fink needs to mirror Essential packages on its own server).
+
+	Disable pkg-config so we don't need to make it Essential:true
+	(as dependency of Essential:true ncurses). gen-pkgconfig says
+	the *-config scripts are the recommended way anyway.
+<<
+License: OSI-Approved
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://www.gnu.org/software/ncurses/ncurses.html

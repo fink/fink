@@ -1,0 +1,129 @@
+Package: libiconv
+Version: 1.12
+Revision: 4
+#Source: mirror:sourceforge:fink/%n-%v.tar.gz
+Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
+Source-MD5: c2be282595751535a618ae0edeb8f648
+Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
+#Source2: mirror:gnu:gettext/gettext-0.14.5.tar.gz
+Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
+Source3: mirror:gnu:gperf/gperf-3.0.3.tar.gz
+Source3-MD5: cc20e58975a38075440423c8fb85fd00
+PatchFile: %n.patch
+PatchFile-MD5: 26a2985e0f58100fd74756547394883d
+PatchScript: <<
+ cd %b/..; patch -p0 < %{PatchFile}
+ cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+<<
+Essential: yes
+Depends: base-files
+BuildDepends: fink (>= 0.24.12)
+Shlibs: <<
+ %p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
+ %p/lib/libiconv.2.dylib 7.0.0 %n (>= 1.11-1)
+<<
+DescPackaging: <<
+ Shared libraries are in libiconv for backward compatibility, to avoid
+ breaking dpkg during an update.
+
+ In order to guarantee that the gettext header files are present when 
+ libiconv is built, we now compile gettext during the building of this
+ package.  (Previously, the complicated interaction between gettext and
+ libiconv was handled during fink's bootstrap process, but not afterwards.)
+
+ Previous versions by Christoph Pfisterer.
+<<
+NoSetLDFLAGS: true
+NoSetCPPFLAGS: true
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
+CompileScript: <<
+#! /bin/sh -ex
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export PATH
+
+# Make sure that we get the compiler wrapper on [redacted]
+case `uname -r` in
+1?.*) PATH=%p/var/lib/fink/path-prefix-10.6:$PATH ;;
+esac
+# and also on x86_64
+case "%m" in
+x86_64) PATH=%p/var/lib/fink/path-prefix-10.6:$PATH ;;
+esac
+
+cd %b/../gperf-3.0.3
+./configure --prefix=%p
+make
+cd %b/../gettext-0.14.5/gettext-runtime
+EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_func_iconv=no ./configure --prefix=%p --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-shared
+make
+rm -rf %b/../_inst
+make install DESTDIR=%b/../_inst
+cd %b/../libiconv-%v
+make -f Makefile.devel GPERF=%b/../gperf-3.0.3/src/gperf
+am_cv_func_iconv="yes"
+am_cv_proto_iconv=""
+export am_cv_func_iconv am_cv_proto_iconv
+CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" ./configure --prefix=%p --mandir='${prefix}/share/man' --enable-extra-encodings
+find . -name Makefile | xargs perl -pi -e 's|\@LIBINTL_STATIC\@|%b/../_inst%p/lib/libintl.a -Wl,-framework,CoreFoundation|g'
+make
+<<
+InstallScript: <<
+mkdir -p %i/share/man %i/share/doc/%n
+make install prefix=%i docdir=%i/share/doc/%n
+perl -pi -e "s,^dependency_libs=.*,dependency_libs=' -L%p/lib'," %i/lib/libcharset.la %i/lib/libiconv.la
+rm -rf %i/doc
+rm -f %i/lib/charset.alias
+<<
+DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
+#
+PostInstScript: <<
+if [ -L %p/etc/alternatives/charset.alias ]; then
+  update-alternatives --remove charset.alias %p/lib/charset.alias.libiconv
+fi
+<<
+#
+SplitOff: <<
+ Package: libiconv-bin
+ Essential: true
+ Depends: libiconv (= %v-%r)
+ Replaces: libiconv (<= 1.7-6)
+ Files: bin share/doc/libiconv/*.html share/man
+ Description: Executables for libiconv package
+ DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
+<<
+SplitOff2: <<
+ Package: libiconv-dev
+ Depends: libiconv (= %v-%r)
+ Replaces: libiconv (<= 1.7-6)
+ BuildDependsOnly: true
+ Files: include lib/libcharset.dylib lib/libiconv.dylib lib/*.a lib/*.la
+ Description: Developer files for libiconv package
+ DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
+<<
+Description: Character set conversion library
+DescDetail: <<
+GNU libiconv provides an iconv() implemententation for systems that lack
+it, or whose implementation cannot convert from/to Unicode.
+<<
+DescPort: <<
+charset.alias is deleted because it is empty on Darwin anyway and
+causes unnecessary conflicts between packages.
+
+We patch around a recent change in the upstream Makefile which defeats
+our build system.
+
+2007-02-01 Benjamin Reed <rangerrick@fink.sourceforge.net>
+* updated to 1.11
+* included apple's patches to add UTF-8-MAC charset support
+
+2010-06-10 Daniel Macks <dmacks@netspace.org>
+
+* Make sure build doesn't see already-installed libiconv-dev. But
+  apple's isn't always compatible. Just omit iconv when building
+  gettext commands (only used locally while building libiconv) that
+  would link aginst libiconv.
+<<
+License: LGPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://www.gnu.org/software/libiconv/

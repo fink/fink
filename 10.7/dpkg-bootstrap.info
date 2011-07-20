@@ -1,0 +1,70 @@
+Package: dpkg-bootstrap
+Version: 1.10.21
+Revision: 1218
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
+SourceDirectory: dpkg-%v
+Source-MD5: a9f6c43891db74d727beab7dfc0ee663
+PatchFile: %n.patch
+PatchFile-MD5: 83170a41fd6b458f7f99d01b5f01e8e8
+PatchScript: <<
+ sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+ echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+<<
+SetCFLAGS: -I%p/include
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
+CompileScript: <<
+ PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
+ make
+<<
+ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix --disable-nls
+InstallScript: <<
+ mkdir -p %i/share/doc/dpkg
+ make install DESTDIR=%d
+<<
+Description: The Debian package manager (bootstrap package)
+DescDetail: <<
+dpkg installs and removes binary packages; it is the base of the
+distribution. This package also contains some helper programs. This
+package does not build dselect and thus doesn't require ncurses. It is
+intended to be used during bootstrap.
+<<
+DescPort: <<
+1.10.9 
+- Removed --without-zlib flag
+- Gets confused about top_srcdir without the --srcdir arg.
+- Fixed bug with BR manpage
+- Patched update-rc.d out of the app check code, not needed on OS X.
+
+Pre-Jaguar: Needed fixes to use the right architecture, disable code that uses
+unimplemented functions on Darwin and other stuff.
+
+Added code to support the pseudo package 'macosx' and 'darwin'.
+
+Fix to install-info script to prevent a certain problem with section titles.
+
+Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $prefix.
+
+Patched to suppress warning about BuildDependsOnly control field.
+
+Previous versions by Christoph Pfisterer.
+
+Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
+
+Patched to hardcode complete paths to our component executables
+instead of relying on PATH
+
+stpncpy test may fail due to wrong prototype even if we have the
+function, so remove AIX-bug-specific hack
+<<
+DescPackaging: <<
+  admindir goes in %P (eventual live basedir) not %p (bootstrap
+  basedir): dpkg-bootstrap needs to set up the initial live dpkg
+  status database.
+
+  removed Depends and BuildDepends since this is built during phase two
+  of bootstrap and those fields are not relevant there
+<<
+License: GPL
+Homepage: http://packages.qa.debian.org/d/dpkg.html

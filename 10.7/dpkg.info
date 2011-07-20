@@ -1,0 +1,123 @@
+Package: dpkg
+Version: 1.10.21
+Revision: 1229
+GCC: 4.0
+BuildDepends: fink (>= 0.24.12)
+Depends: libgettext3-shlibs, libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
+Essential: yes
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
+SourceDirectory: dpkg-%v
+Source-MD5: a9f6c43891db74d727beab7dfc0ee663
+Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
+Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
+PatchFile: %n.patch
+PatchFile-MD5: d5979f532b44157110630fea3bf7e2f1
+PatchScript: <<
+ cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
+ cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+ cd %b/../gettext-0.14.5; perl -pi -e 's/extern char \*stpncpy \(char \*dest, const char \*src, size_t n\)\;//g' gettext-tools/configure
+ cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
+ echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+<<
+SetCFLAGS: -I%p/include
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
+CompileScript: <<
+ if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
+
+ %p/bin/fink -y install gettext-bin libgettext3-dev libiconv-dev libncurses5
+ cd %b/../gettext-0.14.5/gettext-tools; env EMACS=no ./configure --prefix="%b/../_inst%p" --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-shared; make; rm -rf %b/../_inst; make install
+ PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
+ /usr/bin/make
+<<
+ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
+InstallScript: <<
+ mkdir -p %i/share/doc/dpkg
+ /usr/bin/make install DESTDIR=%d
+ install -c -p -m 644 origin.fink %i/etc/dpkg/origins/fink
+ rm -rf %i/lib/dpkg/methods/*
+ mkdir -p -m0755 %i/lib/fink/dpkg-base-files
+<<
+Description: The Debian package manager
+DescDetail: <<
+dpkg installs and removes binary packages; it is the base of the
+distribution. This package also contains some helper programs and
+dselect, a full-screen console frontend to dpkg.
+<<
+DescPackaging: <<
+ With the current fink dependency engine, essential packages may neither
+ depend nor builddepend on non-essential packages.  Thus, to make sure
+ that non-essential splitoffs of essential packages (like gettext-bin
+ and *-dev) are present at build time, we call 'fink install' during
+ the compile script.  Note that since the corresponding essential packages
+ are dependencies of this one, they should already have been built, so
+ 'fink install' should merely make sure they are in place.
+
+ We now build gettext-tools during the build of dpkg, but don't install it;
+ it is built only so that msgfmt and xgettext are available during the
+ dpkg build.  The only alternative would be to make gettext-tools an essential
+ pakcages, since essential packages cannot depend or builddepend on
+ non-essential packages. Only build this gettext static, since don't need the
+ actual libs themselves.
+<<
+DescPort: <<
+1.10.9 
+- Removed --without-zlib flag
+- Gets confused about top_srcdir without the --srcdir arg.
+- Fixed bug with BR manpage
+- Patched update-rc.d out of the app check code, not needed on OS X.
+
+Pre-Jaguar: Needed fixes to use the right architecture, disable code that uses
+unimplemented functions on Darwin and other stuff.
+
+Added code to support the pseudo package 'macosx' and 'darwin'.
+
+Fix to install-info script to prevent a certain problem with section titles.
+
+Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $prefix.
+
+Patched to suppress warning about BuildDependsOnly control field.
+
+Previous versions by Christoph Pfisterer.
+
+Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
+
+Patched to hardcode complete paths to our component executables
+instead of relying on PATH
+
+Patch 'dpkg -b' tar invocation to avoid warning under tar>=1.16
+See: http://permalink.gmane.org/gmane.os.apple.fink.core/1281
+
+Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.  
+(Exit 1 is a non-fatal error for tar; exit 2 is fatal.)  patch written by vasi
+
+Fink's make-3.81-1 breaks compiling so use Apple's to be safe.
+
+The on-board getopt needs tweaking for darwin, but isn't needed at all
+because libSystem has what dpkg needs, so just scrap it.
+
+Remove un/misused variable in dpkg enquiry.c (solve bus error in --architecture)
+
+Filesystem may be case-insensitive, so do case-insensitive check for
+"dpkg -i" replacing files in an already-installed other package
+
+Patched off-by-one bug in main/help.c:preexecscript argv processing
+(backported from upstream dpkg-1.13.16)
+
+Patched to use %p/lib/fink/dpkg-base-files/ wrappers for .deb scripts
+(for use with the dpkg-base-files module)
+NB: wrapper runs even if no .deb script.
+
+stpncpy test may fail due to wrong prototype even if we have the
+function, so remove AIX-bug-specific hack
+<<
+#
+PostInstScript: <<
+if [ ! -f %p/var/lib/dpkg/diversions ]; then
+  touch %p/var/lib/dpkg/diversions
+  chmod 644 %p/var/lib/dpkg/diversions
+fi
+<<
+License: GPL
+Homepage: http://packages.qa.debian.org/d/dpkg.html
