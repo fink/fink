@@ -95,8 +95,8 @@ but this is not necessary in most circumstances. The default trees are
 .Pp
 The order of trees is meaningful, as packages from later trees may override
 packages from earlier ones.
-.It Cm Distribution: Ar 10.4, 10.5 or 10.6
-Fink needs to know which version of Mac OS X you are running. Mac OS X 10.0 and earlier are not supported, and versions from 10.1 to 10.3 are no longer supported by this version of fink. This field is set by running the
+.It Cm Distribution: Ar 10.5, 10.6, or 10.7
+Fink needs to know which version of Mac OS X you are running. Mac OS X versions up to 10.4 are no longer supported by this version of fink. This field is set by running the
 .Cm @PREFIX@/lib/fink/postinstall.pl
 script. You should not need to alter this value manually. 
 .It Cm FetchAltDir: Ar path 
@@ -226,7 +226,7 @@ will download using anonymous or :ext:
 access from the fink repository. This has the disadvantage that cvs can not switch mirrors, if the server is unavailable you will not be able to update.
 .Nm point
 will download only the latest released version of the packages. It is not recommended as your packages may be quite out of date.
-.It Cm SelfUpdateTrees: Ar list of trees
+.It Cm SelfUpdateTrees: Ar space separated list of trees
 By default, the selfupdate methods will update only the current
 distribution's tree.  This option overrides the list of distribution
 versions that will be updated during a selfupdate.

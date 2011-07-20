@@ -1,5 +1,10 @@
 2011-07-20  Dave Morrison  <drm@finkproject.org>
 
+	* fink.conf.5.in:  include 10.7, exclude 10.4 in the Distribution.
+					   Specify that SelfUpdateTrees is space-separated.
+
+2011-07-20  Dave Morrison  <drm@finkproject.org>
+
 	* REVISION: include 10.7, exclude 10.4
 
 2011-07-11  Daniel Macks  <dmacks@netspace.org>
