@@ -2,6 +2,11 @@
 
 	* base-files.info: sync with unstable
 
+2011-07-15  Dave Morrison  <drm@finkproject.org>
+
+	* libgettext8-shlibs.info, libgettext8-shlibs.patch: build
+	libgettext8 during bootstrap
+
 2011-05-21  Daniel Macks  <dmacks@netspace.org>
 
 	* apt.info, apt.patch, perl588-core-x86_64.info: sync with unstable
