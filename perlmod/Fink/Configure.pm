@@ -195,7 +195,14 @@ sub choose_misc {
 
 	print "\n";
 
-if ($config->has_param("SelfUpdateMethod"))	{
+	if ($config->param("Distribution") ge "10.7") {
+		print_breaking(
+			"Note: As of the OS X 10.7 distribution, fink no longer ".
+			"has a separate \"unstable\" tree. All development and ".
+			"releases happen in the \"stable\" tree, the only public ".
+			"tree that exists."
+			);
+	} elsif ($config->has_param("SelfUpdateMethod")) {
 		print_breaking(
 			"The \"unstable\" tree contains many packages not present in the \"stable\" ".
 			"tree and often has newer versions of those that are present. All package ".
