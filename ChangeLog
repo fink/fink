@@ -1,7 +1,6 @@
 2011-07-20  Dave Morrison  <drm@finkproject.org>
 
-	* fink.conf.5.in:  include 10.7, exclude 10.4 in the Distribution.
-					   Specify that SelfUpdateTrees is space-separated.
+	* VERSION: Bumped package manager version to 0.31.0, a new release
 
 2011-07-20  Dave Morrison  <drm@finkproject.org>
 
