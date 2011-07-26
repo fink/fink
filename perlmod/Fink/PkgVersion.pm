@@ -5183,7 +5183,8 @@ END
 	}
 
 	# UseMaxBuildJobs: true overrides SetNoMAKEFLAGS
-	if ($self->param_boolean('UseMaxBuildJobs') && $config->has_param('MaxBuildJobs')) {
+	# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
+	if ((!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs')) && $config->has_param('MaxBuildJobs')) {
 		my $mbj = $config->param('MaxBuildJobs');
 		if ($mbj =~ /^\d+$/  && $mbj > 0) {
 			if (defined $script_env{'MAKEFLAGS'}) {
