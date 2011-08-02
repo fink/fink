@@ -5284,7 +5284,6 @@ sub run_script {
 			# little is gained by trying (already likely I/O-bound)
 			$ENV{'MAKEFLAGS'} .= ' -j1';
 		}
-		print "MAKEFLAGS: $ENV{MAKEFLAGS}\n";
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
 	}
 	if ($result and !$ignore_result) {
