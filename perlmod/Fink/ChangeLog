@@ -1,4 +1,9 @@
-2011-07-26	Hanspeter Niederstrasser  <nieder@users.sourceforge.net>
+2011-07-20  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: MAKEFLAGS:-j1 during InstallScript even if
+	MaxBuildJobs
+
+2011-07-26  Hanspeter Niederstrasser  <nieder@users.sourceforge.net>
 
 	* PkgVersion.pm:  Turn MaxBuildJobs on by default.
 

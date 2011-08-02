@@ -3748,10 +3748,12 @@ sub phase_install {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 		$install_script .= "/usr/sbin/chown -R " . Fink::Config::build_as_user_group()->{'user:group'} . " \%d\n";
 	}
-	# Run the script part we have so far
+	# Run the script part we have so far (NB: parameter-value
+	# "installing" is specially recognized by run_script!)
 	$self->run_script($install_script, "installing", 0, 0);
 	$install_script = ""; # reset it
-	# Now run the actual InstallScript
+	# Now run the actual InstallScript (NB: parameter-value
+	# "installing" is specially recognized by run_script!)
 	$self->run_script($self->get_script("InstallScript"), "installing", 1, 1);
 	if (!$self->is_type('bundle')) {
 		# Handle remaining fields that affect installation
@@ -3923,6 +3925,7 @@ sub phase_install {
 
 	### install
 
+	# NB: parameter-value "installing" is specially recognized by run_script!
 	$self->run_script($install_script, "installing", 0, 1);
 
 	### splitoffs
@@ -5276,6 +5279,12 @@ sub run_script {
 	my $result;
 	{
 		local %ENV = %{$self->get_env()};
+		if ($phase eq 'installing' and defined $ENV{'MAKEFLAGS'}) {
+			# zillions of install targets aren't parallel-safe and
+			# little is gained by trying (already likely I/O-bound)
+			$ENV{'MAKEFLAGS'} .= ' -j1';
+		}
+		print "MAKEFLAGS: $ENV{MAKEFLAGS}\n";
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
 	}
 	if ($result and !$ignore_result) {
