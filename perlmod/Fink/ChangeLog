@@ -1,4 +1,8 @@
-2011-08-04	Alexander Hansen <alexkhansen@users.sourceforge.net>
+2011-08-05	Alexander Hansen <alexkhansen@users.sourceforge.net>
+	* PkgVersion.pm: Use VirtPackage.pm instead, and check whether
+	Xcode is actually installed (by VirtPackage.pm's definition).
+
+2011-08-05	Alexander Hansen <alexkhansen@users.sourceforge.net>
 	* PkgVersion.pm: Now that 10.4 is unsupported, can use 
 	the output of "xcodebuild -version" output to get the
 	Xcode version for bug reports--in case of failures before
