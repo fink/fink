@@ -5011,14 +5011,33 @@ EOF
 # returns hashref for the ENV to be used while running package scripts
 # does not alter global ENV
 
+# get_env caches (unless in bootstrap mode) the results of _prepare_env
+# _prepare_env is an expensive call that regenerates the actual data
+
 sub get_env {
 	my $self = shift;
+	my $phase = shift;			# string (selects cache item, also
+								# passed to _prepare_env)
 
-	# just return cached copy if there is one
-	if (not $self->{_bootstrap} and exists $self->{_script_env} and defined $self->{_script_env} and ref $self->{_script_env} eq "HASH") {
-		# return ref to a copy, so caller changes do not modify cached value
-		return \%{$self->{_script_env}};
+	if ($self->{_bootstrap}) {
+		# don't pollute cache with bootstrap-specific tricks
+		return $self->_prepare_env($phase);
 	}
+
+	my $cache = defined $phase ? "_script_env_$phase" : '_script_env';
+	unless (exists $self->{$cache} and defined $self->{$cache} and ref $self->{$cache} eq "HASH") {
+		# no cache available, regenerate from scratch and cache
+		$self->{$cache} = $self->_prepare_env($phase);
+	}
+
+	# return ref to a copy, so caller changes do not modify cached value
+	return \%{$self->{$cache}};
+}
+
+sub _prepare_env {
+	my $self = shift;
+	my $phase = shift || '';	# if 'installing', don't add MaxBuildJobs
+								# flags NB: not public or stable feature!
 
 	# bits of ENV that can be altered by SetENVVAR and NoSetENVVAR in a .info
 	# Remember to update Packaging Manual if you change this var list!
@@ -5186,9 +5205,10 @@ END
 	}
 
 	# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
+	# (unless phase is 'installing')
 	# UseMaxBuildJobs:true (explicit or absent) overrides SetNoMAKEFLAGS
 	# but SetMAKEFLAGS values override MaxBuildJobs
-	if ((!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs')) && $config->has_param('MaxBuildJobs')) {
+	if ((!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs')) && !($phase eq 'installing') && $config->has_param('MaxBuildJobs')) {
 		my $mbj = $config->param('MaxBuildJobs');
 		if ($mbj =~ /^\d+$/  && $mbj > 0) {
 			if (defined $script_env{'MAKEFLAGS'}) {
@@ -5257,11 +5277,6 @@ END
 		}
 	}
 
-	# cache a copy so caller's changes to returned val don't touch cached val
-	if (not $self->{_bootstrap}) {
-		$self->{_script_env} = { %script_env };
-	}
-
 	return \%script_env;
 }
 
@@ -5281,12 +5296,7 @@ sub run_script {
 	# Run the script under the modified environment
 	my $result;
 	{
-		local %ENV = %{$self->get_env()};
-		if ($phase eq 'installing' and defined $ENV{'MAKEFLAGS'}) {
-			# zillions of install targets aren't parallel-safe and
-			# little is gained by trying (already likely I/O-bound)
-			$ENV{'MAKEFLAGS'} .= ' -j1';
-		}
+		local %ENV = %{$self->get_env($phase)};
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
 	}
 	if ($result and !$ignore_result) {
