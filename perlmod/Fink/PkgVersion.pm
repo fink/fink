@@ -5377,9 +5377,8 @@ sub package_error {
 		my @trees=$config->get_treelist();
 		$error .= "Trees: @trees\n";
 		
-		# change if fink-virtual-pkgs ever changes.
-		chomp(my @lines = `fink-virtual-pkgs | grep -A 2 xcode`);
-		$error .= "Xcode $lines[2]\n";
+		chomp(my @lines = `xcodebuild -version`);
+		$error .= "$lines[0]\n";
 	}			
         
 	# need trailing newline in the actual die/warn to prevent

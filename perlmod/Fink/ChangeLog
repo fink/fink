@@ -1,3 +1,9 @@
+2011-08-04	Alexander Hansen <alexkhansen@users.sourceforge.net>
+	* PkgVersion.pm: Now that 10.4 is unsupported, can use 
+	the output of "xcodebuild -version" output to get the
+	Xcode version for bug reports--in case of failures before
+	fink-virtual-pkgs is present and in the PATH. 
+
 2011-08-04  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: MaxBuildJobs flag _pre_pends to
