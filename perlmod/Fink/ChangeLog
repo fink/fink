@@ -1,3 +1,8 @@
+2011-08-04  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: MaxBuildJobs flag _pre_pends to
+	SetMAKEFLAGS (give priority to local .info flag)
+
 2011-07-20  Daniel Macks  <dmacks@netspace.org>
 
 	* PkgVersion.pm: MAKEFLAGS:-j1 during InstallScript even if
