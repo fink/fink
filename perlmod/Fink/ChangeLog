@@ -1,5 +1,10 @@
 2011-08-05  Daniel Macks  <dmacks@netspace.org>
 
+	* PkgVersion.pm: get_env shares cache for all $phase that don't
+	have have $phase-specific effects on ENV
+
+2011-08-05  Daniel Macks  <dmacks@netspace.org>
+
 	* PkgVersion.pm: InstallScript disables UseMaxBuildJobs (separate
 	get_env result) rather than appending -j1 to MAKEFLAGS
 

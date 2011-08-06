@@ -5011,33 +5011,21 @@ EOF
 # returns hashref for the ENV to be used while running package scripts
 # does not alter global ENV
 
-# get_env caches (unless in bootstrap mode) the results of _prepare_env
-# _prepare_env is an expensive call that regenerates the actual data
-
 sub get_env {
 	my $self = shift;
-	my $phase = shift;			# string (selects cache item, also
-								# passed to _prepare_env)
+	my $phase = shift;		# string (selects cache item special-case)
 
-	if ($self->{_bootstrap}) {
-		# don't pollute cache with bootstrap-specific tricks
-		return $self->_prepare_env($phase);
+	my $cache = '_script_env';	# standard cache token
+	if (defined $phase && $phase eq 'installing') {
+		# special-case cache token
+		$cache .= "_$phase";
 	}
 
-	my $cache = defined $phase ? "_script_env_$phase" : '_script_env';
-	unless (exists $self->{$cache} and defined $self->{$cache} and ref $self->{$cache} eq "HASH") {
-		# no cache available, regenerate from scratch and cache
-		$self->{$cache} = $self->_prepare_env($phase);
+	# just return cached copy if there is one
+	if (not $self->{_bootstrap} and exists $self->{$cache} and defined $self->{$cache} and ref $self->{$cache} eq "HASH") {
+		# return ref to a copy, so caller changes do not modify cached value
+		return \%{$self->{$cache}};
 	}
-
-	# return ref to a copy, so caller changes do not modify cached value
-	return \%{$self->{$cache}};
-}
-
-sub _prepare_env {
-	my $self = shift;
-	my $phase = shift || '';	# if 'installing', don't add MaxBuildJobs
-								# flags NB: not public or stable feature!
 
 	# bits of ENV that can be altered by SetENVVAR and NoSetENVVAR in a .info
 	# Remember to update Packaging Manual if you change this var list!
@@ -5275,6 +5263,11 @@ END
 			$script_env{'JAVA_HOME'} = $JAVA_HOME unless $self->has_param('SetJAVA_HOME');
 			$script_env{'PATH'}      = $JAVA_HOME . '/bin:' . $script_env{'PATH'} unless $self->has_param('SetPATH');
 		}
+	}
+
+	# cache a copy so caller's changes to returned val don't touch cached val
+	if (not $self->{_bootstrap}) {
+		$self->{$cache} = { %script_env };
 	}
 
 	return \%script_env;
