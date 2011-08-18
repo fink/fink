@@ -1,5 +1,11 @@
 2011-08-18  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
+	* PkgVersion.pm: Use VirtPackage.pm to determine the Xcode
+	version for the bug report output text, and check whether
+	Xcode is actually installed (by VirtPackage.pm's definition).
+
+2011-08-18  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
 	* Bootstrap.pm:  support 10.7.1.
 
 2011-07-20  Dave Morrison  <drm@finkproject.org>

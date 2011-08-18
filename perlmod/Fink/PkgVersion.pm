@@ -5364,10 +5364,13 @@ sub package_error {
 	
 		my @trees=$config->get_treelist();
 		$error .= "Trees: @trees\n";
-		
-		# change if fink-virtual-pkgs ever changes.
-		chomp(my @lines = `fink-virtual-pkgs | grep -A 2 xcode`);
-		$error .= "Xcode $lines[2]\n";
+		my $hash = Fink::VirtPackage->list()->{'xcode'};
+		my $version = $hash->{version};
+		if ($hash->{status} !~ "not-installed") {
+			$error .= "Xcode: ".(split /-/,$version)[0]."\n"; # Revision not needed
+		} else {
+			$error .= "No recognized Xcode installed\n";
+		}
 	}			
         
 	# need trailing newline in the actual die/warn to prevent
