@@ -1,3 +1,8 @@
+2011-08-21  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum/MD5.pm: @! might be defined-but-blank if require()
+	succeeds
+
 2011-08-16  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:  support 10.7.1.
