@@ -45,11 +45,9 @@ sub new {
 	my $self = bless({}, $class);
 
 	eval "require Digest::MD5";
-	if (!defined $@ or !length $@) {
+	if (!$@) {
 		$md5pm = 1;
-		print "## found Digest::MD5\n";
 	} else {
-		print "## require Digest::MD5: $@\n";
 		if(-e "/sbin/md5") {
 			$md5cmd = "/sbin/md5";
 			$match = '= ([^\s]+)$';
@@ -60,7 +58,6 @@ sub new {
 			$md5cmd = "md5sum";
 			$match = '([^\s]*)\s*(:?[^\s]*)';
 		}
-		print "## no Digest::MD5; falling back to '$md5cmd'\n";
 	}
 
 	return ($md5pm || $md5cmd) ? $self : undef;
