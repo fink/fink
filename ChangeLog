@@ -1,3 +1,7 @@
+2011-08-27  Peter O'Gorman  <peter@pogma.com>
+
+	* bootstrap: Allow 32 bit systems to bootstrap on 10.6.
+
 2011-07-20  Daniel Macks  <dmacks@netspace.org>
 
 	* VERSION: Make fink HEAD always >> 0.31.x, since that has now
