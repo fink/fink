@@ -131,7 +131,7 @@ if ($arch eq "i386") {
 			}
 			close(SYSCTL);
         }
-		if (!$is64bit && $vers >= 10) {
+		if (!$is64bit && $vers > 10) {
 			# 10.7+ 32bit: non-supported configuration!
 			print "ERROR: fink requires a 64-bit-capable CPU for your version of OS X\n";
 			exit 1;
