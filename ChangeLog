@@ -1,3 +1,9 @@
+2011-09-12	Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: include 10.7 in the Distribution.
+	Specify that SelfUpdateTrees is space-separated.
+
+
 2011-09-11	Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 * VERSION: Bumped package manager version to 0.31.1, a new release

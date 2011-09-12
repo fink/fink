@@ -3748,10 +3748,12 @@ sub phase_install {
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
 		$install_script .= "/usr/sbin/chown -R " . Fink::Config::build_as_user_group()->{'user:group'} . " \%d\n";
 	}
-	# Run the script part we have so far
+	# Run the script part we have so far (NB: parameter-value
+	# "installing" is specially recognized by run_script!)
 	$self->run_script($install_script, "installing", 0, 0);
 	$install_script = ""; # reset it
-	# Now run the actual InstallScript
+	# Now run the actual InstallScript (NB: parameter-value
+	# "installing" is specially recognized by run_script!)
 	$self->run_script($self->get_script("InstallScript"), "installing", 1, 1);
 	if (!$self->is_type('bundle')) {
 		# Handle remaining fields that affect installation
@@ -3923,6 +3925,7 @@ sub phase_install {
 
 	### install
 
+	# NB: parameter-value "installing" is specially recognized by run_script!
 	$self->run_script($install_script, "installing", 0, 1);
 
 	### splitoffs
@@ -5010,11 +5013,18 @@ EOF
 
 sub get_env {
 	my $self = shift;
+	my $phase = shift;		# string (selects cache item special-case)
+
+	my $cache = '_script_env';	# standard cache token
+	if (defined $phase && $phase eq 'installing') {
+		# special-case cache token
+		$cache .= "_$phase";
+	}
 
 	# just return cached copy if there is one
-	if (not $self->{_bootstrap} and exists $self->{_script_env} and defined $self->{_script_env} and ref $self->{_script_env} eq "HASH") {
+	if (not $self->{_bootstrap} and exists $self->{$cache} and defined $self->{$cache} and ref $self->{$cache} eq "HASH") {
 		# return ref to a copy, so caller changes do not modify cached value
-		return \%{$self->{_script_env}};
+		return \%{$self->{$cache}};
 	}
 
 	# bits of ENV that can be altered by SetENVVAR and NoSetENVVAR in a .info
@@ -5182,12 +5192,17 @@ END
 		}
 	}
 
-	# UseMaxBuildJobs: true overrides SetNoMAKEFLAGS
-	if ($self->param_boolean('UseMaxBuildJobs') && $config->has_param('MaxBuildJobs')) {
+	# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
+	# (unless phase is 'installing')
+	# UseMaxBuildJobs:true (explicit or absent) overrides SetNoMAKEFLAGS
+	# but SetMAKEFLAGS values override MaxBuildJobs
+	if ((!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs')) && !($phase eq 'installing') && $config->has_param('MaxBuildJobs')) {
 		my $mbj = $config->param('MaxBuildJobs');
 		if ($mbj =~ /^\d+$/  && $mbj > 0) {
 			if (defined $script_env{'MAKEFLAGS'}) {
-				$script_env{'MAKEFLAGS'} .= " -j$mbj";
+				# append (MAKEFLAGS has right-to-left precedence,
+				# unlike compiler *FLAGS variables)
+				$script_env{'MAKEFLAGS'} = "-j$mbj " . $script_env{'MAKEFLAGS'};
 			} else {
 				$script_env{'MAKEFLAGS'} = "-j$mbj";
 			}
@@ -5252,7 +5267,7 @@ END
 
 	# cache a copy so caller's changes to returned val don't touch cached val
 	if (not $self->{_bootstrap}) {
-		$self->{_script_env} = { %script_env };
+		$self->{$cache} = { %script_env };
 	}
 
 	return \%script_env;
@@ -5274,7 +5289,7 @@ sub run_script {
 	# Run the script under the modified environment
 	my $result;
 	{
-		local %ENV = %{$self->get_env()};
+		local %ENV = %{$self->get_env($phase)};
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
 	}
 	if ($result and !$ignore_result) {

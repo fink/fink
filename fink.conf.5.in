@@ -95,8 +95,8 @@ but this is not necessary in most circumstances. The default trees are
 .Pp
 The order of trees is meaningful, as packages from later trees may override
 packages from earlier ones.
-.It Cm Distribution: Ar 10.5, 10.6, or 10.7
-Fink needs to know which version of Mac OS X you are running. Mac OS X versions up to 10.4 are no longer supported by this version of fink. This field is set by running the
+.It Cm Distribution: Ar 10.4, 10.5, 10.6, or 10.7
+Fink needs to know which version of Mac OS X you are running. Mac OS X 10.0 and earlier are not supported, and versions from 10.1 to 10.3 are no longer supported by this version of fink. This field is set by running the
 .Cm @PREFIX@/lib/fink/postinstall.pl
 script. You should not need to alter this value manually. 
 .It Cm FetchAltDir: Ar path 

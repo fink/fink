@@ -1,3 +1,8 @@
+2011-09-12  Daniel Macks  <dmacks@netspace.org>
+
+	* Checksum/MD5.pm: sync @! defined-but-blank fix
+	* PkgVersion.pm: sync making UseMaxBuildJobs default true
+
 2011-08-18  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* PkgVersion.pm: Use VirtPackage.pm to determine the Xcode

@@ -45,7 +45,7 @@ sub new {
 	my $self = bless({}, $class);
 
 	eval "require Digest::MD5";
-	if (not defined $@) {
+	if (!$@) {
 		$md5pm = 1;
 	} else {
 		if(-e "/sbin/md5") {
