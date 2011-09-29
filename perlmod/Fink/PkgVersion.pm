@@ -197,7 +197,7 @@ our %shared_loads;
 		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
 		$self->_set_destdirs;
 
-		if(Fink::Config::get_option("tests")) {
+		if (Fink::Config::get_option("tests")) {
 			$self->activate_infotest;
 		}
 
@@ -1233,7 +1233,7 @@ sub get_script {
 			$default_script = "make -j1 install prefix=\%i\n";
 		} 
 
-	} elsif($field eq 'testscript') {
+	} elsif ($field eq 'testscript') {
 		return "" unless Fink::Config::get_option("tests");
 		return "" if $self->has_parent;  # shortcut: SplitOffs do not test
 		return "" if $self->is_type('dummy');  # Type:dummy never test
@@ -1904,9 +1904,9 @@ sub get_splitoffs {
 
   my @relatives = $pv->get_relatives;
 
-Get the other packages that are splitoffs of this one (of of its parent, if
+Get the other packages that are splitoffs of this one (or of its parent, if
 this package is a splitoff). Does not include this package, but does include
-the parent.
+the parent (in case this package is a splitoff).
 
 =cut
 
@@ -2487,6 +2487,7 @@ sub find_debfile {
 #     2 - return build dependencies only
 #   $field is either "depends" or "conflicts" (case-insensitive)
 #   $forceoff is a boolean (default is false) that indicates...something
+#
 #   @deplist is list of refs to lists of PkgVersion objects
 #     @deplist joins the referenced lists as logical AND
 #     each referenced list is joined as logical OR
@@ -2704,9 +2705,10 @@ sub get_altspec {
 	return @specs;
 }
 
-# resolve_conflicts cannot handle verisoned conflicts, and crashes if
+# resolve_conflicts cannot handle versioned conflicts, and crashes if
 # there are any present in the field. OTOH, this method does not
 # appear to be used anywhere at this time.
+# TODO: Remove this unused method?
 sub resolve_conflicts {
 	my $self = shift;
 	my ($confname, $package, @conflist);
@@ -2730,7 +2732,7 @@ sub resolve_conflicts {
 # TODO: this method is superfluous and incomplete. Should inline it
 # into callers, and (eventually) implement minor-libversion handling
 # in pkglist()
-
+# (Note: Only caller is phase_build)
 sub get_binary_depends {
 	my $self = shift;
 	my ($depspec1, $depspec2, $depspec);
@@ -2767,7 +2769,7 @@ package family. Compile-time conflicts (1,1) is the BuildConflicts of
 the parent of the package family. This method is not recursive in any
 other sense.
 
-This method return pkgnames and other Depends-style string data in a
+This method returns pkgnames and other Depends-style string data in a
 list-of-lists structure, unlike resolve_depends, which gives a flat
 list of PkgVersion objects.
 
@@ -3688,7 +3690,7 @@ sub phase_compile {
 	### construct CompileScript and execute it
 	$self->run_script($self->get_script("CompileScript"), "compiling", 1, 1);
 
-	if(Fink::Config::get_option("tests")) {
+	if (Fink::Config::get_option("tests")) {
 		my $result = $self->run_script($self->get_script("TestScript"), "testing", 0, 1, 1);
 
 		if($result == 1) { 

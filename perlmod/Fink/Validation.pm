@@ -1359,6 +1359,7 @@ sub validate_info_component {
 	}
 
 	# support for new script templates
+	# TODO: This field is not documented.
 	if (exists $properties->{defaultscript}) {
 		$value = lc $properties->{defaultscript};
 		my $ds_min = {
