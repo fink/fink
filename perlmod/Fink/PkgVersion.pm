@@ -2719,30 +2719,6 @@ sub get_altspec {
 	return @specs;
 }
 
-# resolve_conflicts cannot handle versioned conflicts, and crashes if
-# there are any present in the field. OTOH, this method does not
-# appear to be used anywhere at this time.
-# TODO: Remove this unused method?
-sub resolve_conflicts {
-	my $self = shift;
-	my ($confname, $package, @conflist);
-
-	# conflict with other versions of the same package
-	# this here includes ourselves, it is treated The Right Way
-	# by other routines
-	@conflist = Fink::Package->package_by_name($self->get_name())->get_all_versions();
-
-	foreach $confname (split(/\s*\,\s*/,$self->pkglist_default("Conflicts", ""))) {
-		$package = Fink::Package->package_by_name($confname);
-		if (not defined $package) {
-			die "Can't resolve anti-dependency \"$confname\" for package \"".$self->get_fullname()."\"\n";
-		}
-		push @conflist, [ $package->get_all_providers() ];
-	}
-
-	return @conflist;
-}
-
 =item get_depends
 
 	my $lol_struct = $self->get_depends($want_build, $want_conflicts)
