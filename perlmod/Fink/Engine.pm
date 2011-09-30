@@ -2269,7 +2269,7 @@ HELPFORMAT
 					   infofile debfile package epoch version revision parent family
 					   status allversions trees
 					   description type license maintainer
-					   pre-depends depends builddepends
+					   pre-depends depends builddepends runtimedepends
 					   provides replaces conflicts buildconflicts
 					   recommends suggests enhances
 					   essential builddependsonly
@@ -2378,7 +2378,8 @@ HELPFORMAT
 					 $_ eq 'builddepends'   or $_ eq 'provides'       or
 					 $_ eq 'replaces'       or $_ eq 'conflicts'      or
 					 $_ eq 'buildconflicts' or $_ eq 'recommends'     or
-					 $_ eq 'suggests'       or $_ eq 'enhances'		
+					 $_ eq 'suggests'       or $_ eq 'enhances'       or
+					 $_ eq 'runtimedepends'
 					) {
 				my $deplist = $pkg->pkglist($_);
 				printf "%s: %s\n", $_, $deplist if defined $deplist;
