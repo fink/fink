@@ -1395,7 +1395,6 @@ sub obsolete_via_depends {
 	if (defined $properties->{depends}) {
 		return 1 if $properties->{depends} =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
 	}
-	# TODO: Allow RuntimeDepends on fink-obsolete-packages for "obsolete" splitoffs ?
 	if (defined $properties->{runtimedepends}) {
 		return 1 if $properties->{runtimedepends} =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
 	}

@@ -5603,9 +5603,11 @@ indicated by listing a Depends:fink-obsolete-packages.
 sub is_obsolete {
 	my $self = shift;
 
-	# TODO: Allow RuntimeDepends on fink-obsolete-packages for "obsolete" splitoffs ?
-	my $depends_field = $self->pkglist_default('Depends','');
-	return $depends_field =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
+	my $deps = $self->pkglist_default('Depends','');
+	my $rdeps = $self->pkglist_default('RuntimeDepends','');
+	$deps = $deps.", ".$rdeps;
+
+	return $deps =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
 }
 
 
