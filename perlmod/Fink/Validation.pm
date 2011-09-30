@@ -235,6 +235,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'license',
 #  dependencies:
 		 'depends',
+		 'runtimedepends',
 		 'provides',
 		 'conflicts',
 		 'replaces',
@@ -277,6 +278,7 @@ our %pkglist_fields = map {lc $_, 1}
 	(
 	 'Depends',
 	 'BuildDepends',
+	 'RuntimeDepends',
 	 'Conflicts',
 	 'BuildConflicts',
 	 'TestDepends',
@@ -776,12 +778,12 @@ sub validate_info_file {
 	if (not (defined $value and length $value)) {
 		print "Error: No package description supplied. ($filename)\n";
 		$looks_good = 0;
-	} elsif (length($value) > 60 and !&obsolete_via_depends($properties->{depends}) ) {
+	} elsif (length($value) > 60 and !&obsolete_via_depends($properties) ) {
 		print "Error: Length of package description exceeds 60 characters. ($filename)\n";
 		$looks_good = 0;
 	} elsif (Fink::Config::get_option("Pedantic")) {
 		# Some pedantic checks
-		if (length($value) > 45 and !&obsolete_via_depends($properties->{depends}) ) {
+		if (length($value) > 45 and !&obsolete_via_depends($properties) ) {
 			print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
 			$looks_good = 0;
 		}
@@ -793,7 +795,7 @@ sub validate_info_file {
 			print "Warning: Description starts with lower case. ($filename)\n";
 			$looks_good = 0;
 		}
-		if ($value =~ /(\b\Q$pkgname\E\b|%\{?n)/i and !&obsolete_via_depends($properties->{depends}) ) {
+		if ($value =~ /(\b\Q$pkgname\E\b|%\{?n)/i and !&obsolete_via_depends($properties) ) {
 			print "Warning: Description contains package name. ($filename)\n";
 			$looks_good = 0;
 		}
@@ -1244,6 +1246,13 @@ sub validate_info_component {
 		}
 	}
 
+	# Packages using RuntimeDepends must BuildDepends on a fink that supports it
+	# TODO: Insert appropriate fink version
+	$value = $properties->{runtimedepends};
+	if (defined $value) {
+		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.31.99.cvs', 'use of RuntimeDepends', $filename);
+	}
+
 	# check syntax of each line of Shlibs field
 	$value = $properties->{shlibs};
 	if (defined $value) {
@@ -1382,9 +1391,15 @@ sub validate_info_component {
 # given a (possibly undefined) Depends field, determine if it contains
 # the sentinel indicating the package with this Depends is "obsolete"
 sub obsolete_via_depends {
-	my $depends_field = shift;
-	return 0 unless defined $depends_field;
-	return $depends_field =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
+	my $properties = shift;
+	if (defined $properties->{depends}) {
+		return 1 if $properties->{depends} =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
+	}
+	# TODO: Allow RuntimeDepends on fink-obsolete-packages for "obsolete" splitoffs ?
+	if (defined $properties->{runtimedepends}) {
+		return 1 if $properties->{runtimedepends} =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
+	}
+	return 0;
 }
 
 #
