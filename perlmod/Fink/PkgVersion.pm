@@ -2576,42 +2576,6 @@ sub resolve_depends {
 			}
 			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("RuntimeDepends", ""));
 		}
-
-		# With this primitive form of @speclist, we verify that the "BuildDependsOnly"
-		# declarations have not been violated (of course we only do that when generating
-		# a 'depends' list, not for 'conflicts').
-		foreach $altspecs (@speclist){
-			## Determine if it has a multi type depends line thus
-			## multi pkgs can satisfy the depend and it shouldn't
-			## warn if certain ones aren't found, as long as any one of them is
-			@altspec = split(/\s*\|\s*/, $altspecs);
-			$loopcount = 0;
-			$found = 0;
-			BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
-				$loopcount++;
-				if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-					$depname = $1;
-					$versionspec = $2;
-				} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-					$depname = $1;
-					$versionspec = "";
-				} else {
-					die "Illegal spec format: $depspec\n";
-				}
-				$package = Fink::Package->package_by_name($depname);
-				$found = 1 if defined $package;
-				if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-					print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-				}
-				if (not defined $package) {
-# FIXME: This looks weird: we continue the loop if $package is not
-# defined... and otherwise... we *also* continue the loop. Huh? Also,
-# supposedly BuildDependsOnly decls are to be checked here, but we don't
-# really do that, do we? Maybe this code is simply obsolete?
-					next BUILDDEPENDSLOOP;
-				}
-			}
-		}
 	}
 
 	# now we continue to assemble the larger @speclist
