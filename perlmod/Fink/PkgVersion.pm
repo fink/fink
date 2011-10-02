@@ -2658,6 +2658,14 @@ sub resolve_depends {
 	return @deplist;
 }
 
+# Take a dependency specification string from a dependency field like
+# "foo | quux (>= 1.0.0-1)", and turn it into a list of pairs of the form
+#    { depname => $depname, versionspec => $versionspec }
+#
+# So if the input string is "foo | quux (>= 1.0.0-1)",
+# we output a list with content
+#  ( { depname => "foo", versionspec => "" },
+#    { depname => "quux", versionspec => ">= 1.0.0-1" } )
 sub get_altspec {
 	my $self     = shift;
 	my $altspecs = shift;
@@ -2667,16 +2675,10 @@ sub get_altspec {
 
 	my @altspec = split(/\s*\|\s*/, $altspecs);
 	foreach $depspec (@altspec) {
-		$depname = $versionspec = undef;
 		if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-			$depname = $1;
-			$versionspec = $2;
+			push(@specs, { depname => $1, versionspec => $2 });
 		} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-			$depname = $1;
-			$versionspec = "";
-		}
-		if (defined $depname) {
-			push(@specs, { depname => $depname, versionspec => $versionspec });
+			push(@specs, { depname => $1, versionspec => "" });
 		}
 	}
 
