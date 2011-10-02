@@ -2512,7 +2512,6 @@ sub resolve_depends {
 	my @deplist;    # list of lists of PkgVersion objects to be returned
 
 	my ($splitoff, $idx, $split_idx); # used for merging in splitoff-pkg data
-	my ($found, $loopcount); # status while looping through an OR cluster
 	my $oper;       # used in error and warning messages
 
 	if (lc($field) eq "conflicts") {
@@ -2611,12 +2610,9 @@ sub resolve_depends {
 		# and then try to satisfy at least one of them.
 		$altlist = [];
 		@altspec = $self->get_altspec($altspecs);
-		$found = 0; # Were we able to satisfy at least one of the alternatives?
-		$loopcount = 0;
 		foreach $depspec (@altspec) {
 			$depname = $depspec->{'depname'};
 			$versionspec = $depspec->{'versionspec'};
-			$loopcount++;
 
 			if ($include_build and $self->parent_splitoffs and
 				 ($idx >= $split_idx or not $include_runtime)) {
@@ -2635,7 +2631,6 @@ sub resolve_depends {
 			$package = Fink::Package->package_by_name($depname);
 
 			if (defined $package) {
-				$found = 1;
 				if ($versionspec =~ /^\s*$/) {
 					# versionspec empty / consists of only whitespace
 					push @$altlist, $package->get_all_providers( unique_provides => 1 );
