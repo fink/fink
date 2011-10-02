@@ -2604,10 +2604,14 @@ sub resolve_depends {
 		}
 	}
 
+	# Loop over all specifiers and try to resolve each.
 	SPECLOOP: foreach $altspecs (@speclist) {
+		# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
+		# So we need to break this down into pieces (this is done by get_altspec),
+		# and then try to satisfy at least one of them.
 		$altlist = [];
 		@altspec = $self->get_altspec($altspecs);
-		$found = 0;
+		$found = 0; # Were we able to satisfy at least one of the alternatives?
 		$loopcount = 0;
 		foreach $depspec (@altspec) {
 			$depname = $depspec->{'depname'};
@@ -2641,6 +2645,7 @@ sub resolve_depends {
 			}
 
 			if ($versionspec =~ /^\s*$/) {
+				# versionspec empty / consists of only whitespace
 				push @$altlist, $package->get_all_providers( unique_provides => 1 );
 			} else {
 				push @$altlist, $package->get_matching_versions($versionspec);
