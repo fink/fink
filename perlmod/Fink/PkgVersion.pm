@@ -2651,16 +2651,18 @@ sub resolve_depends {
 			}
 		}
 
-		if ($forceoff && $found == 0) {
-			print "WARNING: While resolving $oper \"$depname" .
-				(defined $versionspec && length $versionspec ? " " . $versionspec : '')
-				 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-		}
-
-		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
-			die_breaking "Can't resolve $oper \"$altspecs\" for package \""
-				. $self->get_fullname()
-				. "\" (no matching packages/versions found)\n";
+		if (scalar(@$altlist) <= 0) {
+			if (lc($field) eq "depends") {
+				die_breaking "Can't resolve $oper \"$altspecs\" for package \""
+					. $self->get_fullname()
+					. "\" (no matching packages/versions found)\n";
+			} else {
+				if ($forceoff) { # FIXME: Why $forceoff ??
+					print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
+						. $self->get_fullname()
+						. "\" (no matching packages/versions found)\n";
+				}
+			}
 		}
 		push @deplist, $altlist;
 		$idx++;
