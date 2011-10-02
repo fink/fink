@@ -2626,19 +2626,19 @@ sub resolve_depends {
 				# exception: if we were called by a splitoff to determine the "meta
 				# dependencies" of it, then we again filter out all splitoffs.
 				# If you've read till here without mental injuries, congrats :-)
-				next SPECLOOP if ($depspec->{'depname'} eq $self->{_name});
+				next SPECLOOP if ($depname eq $self->{_name});
 				foreach	 $splitoff ($self->parent_splitoffs) {
-					next SPECLOOP if ($depspec->{'depname'} eq $splitoff->get_name());
+					next SPECLOOP if ($depname eq $splitoff->get_name());
 				}
 			}
 
-			$package = Fink::Package->package_by_name($depspec->{'depname'});
+			$package = Fink::Package->package_by_name($depname);
 
 			$found = 1 if defined $package;
 			if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-				print "WARNING: While resolving $oper \"" . $depspec->{'depname'} . 
-					(defined $depspec->{'versionspec'} && length $depspec->{'versionspec'} ? " " . $depspec->{'versionspec'} : '')
-					 . "\" for package \"".$self->get_fullname()."\", package \"" . $depspec->{'depname'} . "\" was not found.\n";
+				print "WARNING: While resolving $oper \"$depname" .
+					(defined $versionspec && length $versionspec ? " " . $versionspec : '')
+					 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 			}
 			if (not defined $package) {
 				next;
