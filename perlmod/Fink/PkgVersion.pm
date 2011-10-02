@@ -2634,23 +2634,29 @@ sub resolve_depends {
 
 			$package = Fink::Package->package_by_name($depname);
 
-			$found = 1 if defined $package;
-			if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-				print "WARNING: While resolving $oper \"$depname" .
-					(defined $versionspec && length $versionspec ? " " . $versionspec : '')
-					 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-			}
-			if (not defined $package) {
-				next;
-			}
-
-			if ($versionspec =~ /^\s*$/) {
-				# versionspec empty / consists of only whitespace
-				push @$altlist, $package->get_all_providers( unique_provides => 1 );
+			if (defined $package) {
+				$found = 1;
+				if ($versionspec =~ /^\s*$/) {
+					# versionspec empty / consists of only whitespace
+					push @$altlist, $package->get_all_providers( unique_provides => 1 );
+				} else {
+					push @$altlist, $package->get_matching_versions($versionspec);
+				}
 			} else {
-				push @$altlist, $package->get_matching_versions($versionspec);
+				if ($verbosity > 2) {
+					print "WARNING: While resolving $oper \"$depname" .
+						(defined $versionspec && length $versionspec ? " " . $versionspec : '')
+						 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				}
 			}
 		}
+
+		if ($forceoff && $found == 0) {
+			print "WARNING: While resolving $oper \"$depname" .
+				(defined $versionspec && length $versionspec ? " " . $versionspec : '')
+				 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+		}
+
 		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
 			die_breaking "Can't resolve $oper \"$altspecs\" for package \""
 				. $self->get_fullname()
