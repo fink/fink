@@ -1489,9 +1489,11 @@ sub _validate_dpkg {
 
 	# these are used in a regex and are automatically prepended with ^
 	# make sure to protect regex metachars!
-	my @bad_dirs = ("$basepath/src/", "$basepath/man/", "$basepath/info/", "$basepath/doc/", "$basepath/libexec/", "$basepath/lib/locale/", ".*/CVS/", ".*/RCS/", '.*/\.svn/', "$basepath/bin/.*/", "$basepath/sbin/.*/");
-	my @good_dirs = ( map "$basepath/$_", qw/ bin sbin include lib opt share var etc src Applications Library\/Frameworks / );
-	# allow $basepath/Library/ by itself
+	my @bad_dirs = ( map "$basepath/$_/", qw( src man info doc libexec lib/locale bin/.* sbin/.* ) );
+	push(@bad_dirs, ( map ".*/$_/", qw( CVS RCS \.svn \.git \.hg ) ) ); # forbid version control residues
+
+	my @good_dirs = ( map "$basepath/$_/", qw( bin sbin include lib opt share var etc Applications Library/Frameworks ) );
+	# allow $basepath/Library/ by itself, but with nothing below it other than what we explicitly allowed already
 	# (needed since we allow $basepath/Library/Frameworks)
 	push(@good_dirs, "$basepath/Library/\$");
 	push(@good_dirs, '/usr/X11');
@@ -1648,9 +1650,12 @@ sub _validate_dpkg {
 					&stack_msg($msgs, "File installed outside of $basepath, /Applications/XDarwin.app, /private/etc/fonts, /usr/X11, and /usr/X11R6", $filename);
 				}
 			}
-		} elsif ($filename ne "$basepath/src/" and @found_bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
+		} elsif ($filename eq "$basepath/src/") {
+			# FIXME: For some reason, we allow the inclusion of $basepath/src,
+			# which may exist but must be empty. The reason for this should either
+			# be documented, or this hack be removed.
+		} elsif (@found_bad_dir = grep { $filename =~ /^$_/ } @bad_dirs) {
 			# Directories from this list are not allowed to exist in the .deb.
-			# The only exception is $basepath/src which may exist but must be empty
 			&stack_msg($msgs, "File installed into deprecated directory $found_bad_dir[0]", $filename);
 		} elsif (not grep { $filename =~ /^$_/ } @good_dirs) {
 			# Directories from this list are the top-level dirs that may exist in the .deb.
