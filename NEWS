@@ -8,6 +8,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 0.32.0 ??? (20??-??-??)
 	* Added new "RuntimeDepends" field, any .info file that wants to use this
 	  feature must BuildDepend on fink (>= 0.32.0-1)
+	* Improved package validator to reject .deb files including .hg / .git
+	  directories.
 
 /-------------
 | fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
