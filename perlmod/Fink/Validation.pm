@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &file_MD5_checksum &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
 use Cwd qw(getcwd);
 use File::Find qw(find);
@@ -285,6 +285,8 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Suggests',
 	 'Recommends',
 	 'Enhances',
+	 # 'Architecture' is not a "Depends"-style list, but its syntax is
+	 # like a package-list, so piggy-back on those fields' parser
 	 'Architecture',
 	);
 
@@ -376,7 +378,7 @@ sub validate_info_file {
 	my $filename = shift;
 	my $val_prefix = shift;
 	my ($properties, $info_level, $test_properties);
-	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgfullname, $pkgdestdir, $pkgpatchpath);
+	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgepoch, $pkgfullname, $pkgdestdir, $pkgpatchpath);
 	my $value;
 	my ($basepath, $buildpath);
 	my ($type, $type_hash);
@@ -508,6 +510,9 @@ sub validate_info_file {
 	$pkgversion = '' unless defined $pkgversion;
 	$pkgrevision = $properties->{revision};
 	$pkgrevision = '' unless defined $pkgrevision;
+	$pkgepoch = $properties->{epoch};
+	$pkgepoch = '' unless defined $pkgepoch;
+	# TODO: If epoch has been specified, the pkgfullname should make use of it, too
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
 	$pkgdestdir = "$buildpath/root-".$pkgfullname;
 	
@@ -538,7 +543,11 @@ sub validate_info_file {
 		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
 	}
-	
+	if ($pkgepoch =~ /[^0-9]/) {
+		print "Error: Package epoch must be a non-negative integer ($filename)\n";
+		$looks_good = 0;
+	}
+
 	# TODO: figure out how to validate multivariant Type:
 	#  - make sure syntax is okay
 	#  - make sure each type appears as a type_*[] in Package
@@ -636,16 +645,36 @@ sub validate_info_file {
 		
 	}
 
+	$expand = { 'n' => $pkgname,
+				'N' => $pkgname,
+				'v' => $pkgversion,
+				'V' => $pkgversion,
+				'r' => $pkgrevision,
+				'e' => $pkgepoch,
+				'f' => $pkgfullname,
+				'p' => $basepath, 'P' => $basepath,
+				'd' => $pkgdestdir,
+				'i' => $pkgdestdir.$basepath,
+#				'a' => $pkgpatchpath,
+				'b' => '.',
+				'm' => $config->param('Architecture'),
+				%{$expand},
+				'ni' => $pkginvarname,
+				'Ni' => $pkginvarname
+	};
+
 	if (&validate_info_component(
 			 properties => $properties,
 			 filename => $filename,
 			 info_level => $info_level,
+			 expand => $expand,
 		) == 0) {
 		$looks_good = 0;
 	} elsif ($properties->{infotest} and &validate_info_component(
 				 properties => $test_properties,
 				 filename => $filename,
 				 info_level => $info_level,
+				 expand => $expand,
 				 is_infotest => 1,
 			 ) == 0) {
 		$looks_good = 0;
@@ -735,6 +764,7 @@ sub validate_info_file {
 					 splitoff_field => $splitoff_field,
 					 filename => $filename,
 					 info_level => $info_level,
+					 expand => { 'N' => $pkgname, %{$expand} },
 					 builddepends => $properties->{builddepends},
 				) == 0) {
 				$looks_good = 0;
@@ -807,21 +837,6 @@ sub validate_info_file {
 		}
 	}
 	
-	$expand = { 'n' => $pkgname,
-				'v' => $pkgversion,
-				'r' => $pkgrevision,
-				'f' => $pkgfullname,
-				'p' => $basepath, 'P' => $basepath,
-				'd' => $pkgdestdir,
-				'i' => $pkgdestdir.$basepath,
-#				'a' => $pkgpatchpath,
-				'b' => '.',
-				'm' => $config->param('Architecture'),
-				%{$expand},
-				'ni' => $pkginvarname,
-				'Ni' => $pkginvarname
-	};
-
 	my %patchfile_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)$/ } keys %$properties;
 	my %patchfile_md5_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-md5$/ } keys %$properties;
 
@@ -1080,6 +1095,7 @@ sub validate_info_component {
 	my $splitoff_field = $options{splitoff_field};
 	my $filename = $options{filename};
 	my $info_level = $options{info_level};
+	my $expand = $options{expand};
 	my $is_infotest = $options{is_infotest};
 
 	# make sure this $option is available even in parent
@@ -1200,6 +1216,12 @@ sub validate_info_component {
 					$looks_good = 0;
 				}
 			}
+
+			# verify only well-defined percent expansions are used.
+			&expand_percent2($value, $expand,
+			                  'err_action' => 'undef',
+			                  'err_info'   => $filename.' '.$field );
+
 			foreach my $atom (split /[,|]/, $pkglist) {
 				$atom =~ s/\A\s*//;
 				$atom =~ s/\s*\Z//;
