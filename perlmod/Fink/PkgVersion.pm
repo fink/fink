@@ -46,7 +46,6 @@ use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(cp mkdir_p rm_f rm_rf symlink_f du_sk chowname chowname_hr touch);
 use Fink::Notify;
-use Fink::Shlibs;
 use Fink::Validation qw(validate_dpkg_unpacked);
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
@@ -4018,30 +4017,6 @@ EOF
 	}
 	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
 
-	### Automatically add dependencies based on shlibs, if requested
-	if ($self->param_boolean("AddShlibDeps")) {
-		print_breaking "Writing shared library dependencies...";
-
-		# Get all the files to be installed
-		my @filelist;
-		my $wanted = sub {
-			if (-f) {
-				# print "DEBUG: file: $File::Find::fullname\n";
-				push @filelist, $File::Find::fullname;
-			}
-		};
-		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 },
-			"$destdir$basepath"); # Do we want to use follow_skip instead?
-
-		# Add the deps based on the files
-		foreach my $shlib_dep (Fink::Shlibs->get_shlibs($self, @filelist)) {
-			push @$deps, [ $shlib_dep ];
-			if ($config->verbosity_level() > 2) {
-				print "- Adding $shlib_dep to 'Depends' line\n";
-			}
-		}
-	}
-	
 	$control .= "Depends: " . &lol2pkglist($deps) . "\n";
 	if (Fink::Config::get_option("maintainermode")) {
 		print "- Depends line is: " . &lol2pkglist($deps) . "\n";
@@ -5614,7 +5589,7 @@ of dpkg information are regenerated.
 =cut
 
 sub dpkg_changed {
-	Fink::Shlibs->invalidate();
+	# Do nothing for now.
 }
 
 =item log_output
