@@ -1,3 +1,7 @@
+2011-10-11	Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* sourceforge: 	New primary mirror
+
 2011-02-15  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* postinstall.pl.in: Modify regex pattern in CVS/Root detection to
