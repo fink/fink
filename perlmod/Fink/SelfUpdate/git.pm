@@ -325,8 +325,6 @@ sub do_direct_git {
 
 	@sb = stat("$descdir/.git");
 
-	$cmd = "$gitpath pull $verbosity origin";
-
 	$msg = "I will now run the git command to retrieve the latest package descriptions. ";
 
 	if ($sb[4] != 0 and $> != $sb[4]) {
@@ -343,16 +341,33 @@ sub do_direct_git {
 	&print_breaking($msg);
 	print "\n";
 
-	# first, update the top-level stuff
+	# first, fetch changes from remote repository
 
 	my $errors = 0;
 
+	$cmd = "$gitpath fetch $verbosity origin";
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		$errors++;
 	}
 
-	# then, update the trees
+	# next make sure we're in the master branch
+
+	$cmd = "$gitpath checkout $verbosity master";
+	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
+	if (&execute($cmd)) {
+		$errors++;
+	}
+
+	# then attempt to merge remote changes
+
+	$cmd = "$gitpath merge $verbosity origin/master";
+	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
+	if (&execute($cmd)) {
+		$errors++;
+	}
+
+	# finally, update the trees
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	for my $tree (@trees) {
