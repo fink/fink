@@ -1,8 +1,8 @@
-2011-08-16  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+2011-10-12  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:  support 10.7.2.
 
-2011-08-16  Daniel Johnson  <daniel@daniel-johnson.org>
+2011-10-12  Daniel Johnson  <daniel@daniel-johnson.org>
 
 	* VirtPackage.pm:  support App Store Growl.app as well as 
 	legacy prefpane.
