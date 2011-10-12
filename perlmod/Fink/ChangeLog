@@ -1,3 +1,12 @@
+2011-10-12  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* Bootstrap.pm:  support 10.7.2.
+
+2011-10-12  Daniel Johnson  <daniel@daniel-johnson.org>
+
+	* VirtPackage.pm:  support App Store Growl.app as well as 
+	legacy prefpane.
+
 2001-09-26  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Validation.pm: sync decommissioning of "BDep:fink>=0.24.12" 

@@ -1405,7 +1405,7 @@ For more info on this package see http://growl.info/.
 =cut
 
 	print STDERR "- checking for Growl... " if ($options{debug});
-	if (-x '/Library/PreferencePanes/Growl.prefPane/Contents/Resources/GrowlHelperApp.app/Contents/MacOS/GrowlHelperApp') {
+	if (-x '/Library/PreferencePanes/Growl.prefPane/Contents/Resources/GrowlHelperApp.app/Contents/MacOS/GrowlHelperApp' || -x '/Applications/Growl.app/Contents/MacOS/Growl') {
 		print STDERR "found, Growl\n" if ($options{debug});
 		print STDERR "- checking for Growl version... " if ($options{debug});
 		if (-f "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist") {
@@ -1417,8 +1417,17 @@ For more info on this package see http://growl.info/.
 				}
 				close(FILEIN);
 			}
+		} elsif (-f "/Applications/Growl.app/Contents/Info.plist") {
+			if (open(FILEIN, '/Applications/Growl.app/Contents/Info.plist')) {
+				local $/ = undef;
+				# Growl beta versions contain the letter b
+				if (<FILEIN> =~ /<key>CFBundleVersion<\/key>[\r\n\s]*<string>([b\d\.]+)<\/string>/) {
+					$growl_version = $1;
+				}
+				close(FILEIN);
+			}
 		} else {
-			print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist not found... " if ($options{debug});
+			print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist or\n/Applications/Growl.app/Contents/Info.plist not found... " if ($options{debug});
  			$growl_version = "0";
 		}
 
