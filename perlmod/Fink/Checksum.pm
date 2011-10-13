@@ -28,7 +28,7 @@ use Fink::Services qw(&find_subpackages);
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION         = ( qw$Revision$ )[-1];
+	$VERSION         = 1.00;
 	@ISA             = qw(Exporter);
 	@EXPORT          = qw();
 	%EXPORT_TAGS = ( );                     # eg: TAG => [ qw!name1 name2! ],

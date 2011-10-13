@@ -27,7 +27,7 @@ use strict;
 use Fink::Notify;
 
 our @ISA = qw(Fink::Notify);
-our $VERSION = ( qw$Revision$ )[-1];
+our $VERSION = 1.00;
 
 sub about {
 	my $self = shift;

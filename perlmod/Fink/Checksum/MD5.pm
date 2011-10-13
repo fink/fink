@@ -26,7 +26,7 @@ use Fink::Checksum;
 use Fink::Config qw($basepath);
 
 our @ISA = qw(Fink::Checksum);
-our $VERSION = ( qw$Revision$ )[-1];
+our $VERSION = 1.00;
 
 our $md5cmd;
 our $md5pm;
