@@ -36,7 +36,7 @@ use Fink::Services qw(&execute);
 use strict;
 use warnings;
 
-our $VERSION = sprintf "%d.%d", q$Revision$ =~ /(\d+)/g;
+our $VERSION = 1.00;
 
 =head1 NAME
 
