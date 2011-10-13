@@ -27,7 +27,7 @@ use Fcntl;
 my $standalone = 0;
 my $basepath = '@BASEPATH@';
 
-our $VERSION = ( qw$Revision$ )[-1];
+our $VERSION = 1.28;
 
 UseFinkModules();
 Getopt::Long::Configure(qw(bundling ignore_case require_order));
