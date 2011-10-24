@@ -37,7 +37,7 @@ use File::Find;
 use strict;
 use warnings;
 
-our $VERSION = sprintf "%d.%d", q$Revision: 1.1 $ =~ /(\d+)/g;
+our $VERSION = 1.00;
 
 =head1 NAME
 
