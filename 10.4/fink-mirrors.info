@@ -1,9 +1,9 @@
 Package: fink-mirrors
-Version: 0.29.14.1
+Version: 0.31.2.1
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: 3088840ef7723db1b6acb5066b5dd531
+Source-MD5: da725417757174c063337de1c53b374d
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
@@ -20,9 +20,24 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://www.finkproject.org
 
 CustomMirror: <<
- Primary: http://superb-west.dl.sourceforge.net/sourceforge/
- Secondary: http://easynews.dl.sourceforge.net/sourceforge/
- nam-US: http://superb-west.dl.sourceforge.net/sourceforge/
- eur: http://eu.dl.sourceforge.net/sourceforge/
+Primary: http://downloads.sourceforge.net/
+nam-US: http://easynews.dl.sourceforge.net/sourceforge/
+nam-US: http://superb-west.dl.sourceforge.net/sourceforge/
+nam-US: http://superb-east.dl.sourceforge.net/sourceforge/
+nam-US: http://voxel.dl.sourceforge.net/sourceforge/
+asi-JP: http://jaist.dl.sourceforge.net/sourceforge/
+asi-TW: http://nchc.dl.sourceforge.net/sourceforge/
+aus-AU: http://internode.dl.sourceforge.net/sourceforge/
+aus-AU: http://transact.dl.sourceforge.net/sourceforge/
+aus-AU: http://waix.dl.sourceforge.net/sourceforge/
+eur-CH: http://puzzle.dl.sourceforge.net/sourceforge/
+eur-CH: http://switch.dl.sourceforge.net/sourceforge/
+eur-DE: http://dfn.dl.sourceforge.net/sourceforge/
+eur-DE: http://mesh.dl.sourceforge.net/sourceforge/
+eur-FR: http://ovh.dl.sourceforge.net/sourceforge/
+eur-IE: http://heanet.dl.sourceforge.net/sourceforge/
+eur-IT: http://garr.dl.sourceforge.net/sourceforge/
+eur-NL: http://surfnet.dl.sourceforge.net/sourceforge/
+eur-UK: http://kent.dl.sourceforge.net/sourceforge/
+sam-BR: http://ufpr.dl.sourceforge.net/sourceforge/
 <<
-

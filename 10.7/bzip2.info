@@ -13,6 +13,7 @@ PatchFile-MD5: 6fe75509c38cc356dd7ddfea0cdcd413
 PatchScript: sed 's|@VERSION@|%v|g' < %{PatchFile} | patch -p1
 #Patch: %n.patch
 CompileScript: make PREFIX=%p
+InfoTest: TestScript: make -k check || exit 2
 InstallScript: make install PREFIX=%i
 DocFiles: LICENSE README CHANGES manual*.html
 SplitOff: <<
