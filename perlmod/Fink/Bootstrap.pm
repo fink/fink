@@ -1003,7 +1003,7 @@ sub read_version_revision {
 	my ($packageversion,$packagerevision,$revisions);
 	
 	chomp($packageversion = cat "$package_source/VERSION");
-	if ($packageversion =~ /cvs/) {
+	if ($packageversion =~ /(cvs|svn|git)/) {
 		my @now = gmtime(time);
 		$packagerevision = sprintf("%04d%02d%02d.%02d%02d",
 		                           $now[5]+1900, $now[4]+1, $now[3],

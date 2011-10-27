@@ -13,6 +13,7 @@ Source: mirror:sourceforge:fink/%n60.tgz
 Source-MD5: 62b490407489521db863b523a7f86375
 SourceDirectory: %n60
 BuildDepends: fink (>= 0.24.12)
+InfoTest: TestScript: make -k check || exit 2
 DocFiles: BUGS INSTALL LICENSE README ToDo WHERE
 Homepage: http://www.info-zip.org/pub/infozip/UnZip.html
 Description: Decompression compatible with pkunzip

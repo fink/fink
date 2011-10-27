@@ -29,7 +29,7 @@ use Fink::Notify;
 use Fink::Config qw($basepath);
 
 our @ISA = qw(Fink::Notify);
-our $VERSION = ( qw$Revision$ )[-1];
+our $VERSION = 1.00;
 
 our $command = '/usr/bin/osascript';
 

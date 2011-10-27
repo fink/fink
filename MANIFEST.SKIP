@@ -6,6 +6,7 @@ CVS/
 ^mirror/
 
 ^apt-get-lockwait$
+^compiler_wrapper$
 ^dpkg-lockwait$
 ^fink-dpkg-status-cleanup$
 ^fink-instscripts$

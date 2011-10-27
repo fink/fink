@@ -40,7 +40,7 @@ packages to satisfy dependencies outside of Fink.
 
 package Fink::VirtPackage;
 
-our $VERSION = ( qw$Revision$ )[-1];
+our $VERSION = 1.00;
 
 # Programmers' note: Please be *very* careful if you alter this file.
 # It is used by dpkg via popen(), so (among other things) that means

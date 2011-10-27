@@ -28,7 +28,7 @@ install:
 	./inject.pl $(PREFIX)
 
 test_setup:
-	./setup.sh $(TEST_BASEPATH) $(ARCHITECTURE) $(DISTRIBUTION)
+	./setup.sh $(TEST_BASEPATH) $(ARCHITECTURE)
 
 manifest_check:
 	perl -MExtUtils::Manifest=fullcheck -e 'my($$missing, $$extra) = fullcheck;exit (@$$missing || @$$extra)'
