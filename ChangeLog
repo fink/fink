@@ -1,20 +1,27 @@
-2011-09-12  Alexander Hansen <alexkhansen@users.sourceforge.net>
+2011-09-26	Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
-	* fink.in:  Revert accidental change to shebang line.
+	* VERSION: Bumped package manager version to 0.31.3, a new release
+
+2011-09-26	Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.31.2, a new release
+
+2011-09-12	Daniel Macks  <dmacks@netspace.org>
+
+	* fink.conf.5.in: include 10.7 in the Distribution.
+	Specify that SelfUpdateTrees is space-separated.
+
+2011-09-11	Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* VERSION: Bumped package manager version to 0.31.1, a new release
 
 2011-08-27  Peter O'Gorman  <peter@pogma.com>
 
 	* bootstrap: Allow 32 bit systems to bootstrap on 10.6.
 
-2011-07-20  Daniel Macks  <dmacks@netspace.org>
-
-	* VERSION: Make fink HEAD always >> 0.31.x, since that has now
-        branched.
-
 2011-07-20  Dave Morrison  <drm@finkproject.org>
 
-	* fink.conf.5.in: include 10.7, exclude 10.4 in the Distribution.
-	Specify that SelfUpdateTrees is space-separated.
+	* VERSION: Bumped package manager version to 0.31.0, a new release
 
 2011-07-20  Dave Morrison  <drm@finkproject.org>
 
