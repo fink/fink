@@ -28,7 +28,7 @@ package Fink::Services;
 use Fink::Command	qw(&rm_f);
 use Fink::CLI		qw(&word_wrap &get_term_width &print_breaking_stderr);
 
-use POSIX qw(:errno_h uname tmpnam);
+use POSIX qw(:errno_h uname);
 use Fcntl qw(:flock);
 use Getopt::Long;
 use Data::Dumper;
@@ -647,10 +647,9 @@ sub prepare_script {
 		$$script .= "\n" if $$script !~ /\n$/;  # require have trailing newline
 
 		# Put the script into a temporary file
-		my $tempfile = tmpnam() or die "unable to get temporary file: $!";
-		open (OUT, ">$tempfile") or die "unable to write to $tempfile: $!";
-		print OUT $$script;
-		close (OUT) or die "an unexpected error occurred closing $tempfile: $!";
+		my ($fh, $tempfile) = tempfile("fink.XXXXX") or die "unable to get temporary file: $!";
+		print $fh $$script;
+		close ($fh) or die "an unexpected error occurred closing $tempfile: $!";
 		chmod(0755, $tempfile);
 
 		# tempfile filename is handle to whole script
