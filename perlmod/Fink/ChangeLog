@@ -7,25 +7,55 @@
 	* VirtPackage.pm:  support App Store Growl.app as well as 
 	legacy prefpane.
 
-2001-09-26  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+2011-09-23  Daniel Macks  <dmacks@netspace.org>
 
-	* Validation.pm: sync decommissioning of "BDep:fink>=0.24.12" 
-	for use of PatchFile.
+	* Validation.pm: no longer enforce "BDep:fink>=0.24.12" for use of
+	PatchFile (nothing older than that would be usable now anyway)
 
-2011-09-12  Daniel Macks  <dmacks@netspace.org>
+2011-08-21  Daniel Macks  <dmacks@netspace.org>
 
-	* Checksum/MD5.pm: sync @! defined-but-blank fix
-	* PkgVersion.pm: sync making UseMaxBuildJobs default true
+	* Checksum/MD5.pm: @! might be defined-but-blank if require()
+	succeeds
 
-2011-08-18  Alexander Hansen  <alexkhansen@users.sourceforge.net>
-
-	* PkgVersion.pm: Use VirtPackage.pm to determine the Xcode
-	version for the bug report output text, and check whether
-	Xcode is actually installed (by VirtPackage.pm's definition).
-
-2011-08-18  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+2011-08-16  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:  support 10.7.1.
+
+2011-08-05  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: get_env shares cache for all $phase that don't
+	have have $phase-specific effects on ENV
+
+2011-08-05  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: InstallScript disables UseMaxBuildJobs (separate
+	get_env result) rather than appending -j1 to MAKEFLAGS
+
+2011-08-05  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* PkgVersion.pm: Use VirtPackage.pm instead, and check whether
+	Xcode is actually installed (by VirtPackage.pm's definition).
+
+2011-08-05  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* PkgVersion.pm: Now that 10.4 is unsupported, can use
+	the output of "xcodebuild -version" output to get the
+	Xcode version for bug reports--in case of failures before
+	fink-virtual-pkgs is present and in the PATH.
+
+2011-08-04  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: MaxBuildJobs flag _pre_pends to
+	SetMAKEFLAGS (give priority to local .info flag)
+
+2011-07-20  Daniel Macks  <dmacks@netspace.org>
+
+	* PkgVersion.pm: MAKEFLAGS:-j1 during InstallScript even if
+	MaxBuildJobs
+
+2011-07-26  Hanspeter Niederstrasser  <nieder@users.sourceforge.net>
+
+	* PkgVersion.pm:  Turn MaxBuildJobs on by default.
 
 2011-07-20  Dave Morrison  <drm@finkproject.org>
 

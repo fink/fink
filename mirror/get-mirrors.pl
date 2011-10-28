@@ -59,7 +59,7 @@ my %mirror_sites = (
 	);
 
 $debug = 0;
-$VERSION = ( qw$Revision$ )[-1];
+$VERSION = 1.00;
 
 my $mech = WWW::Mechanize->new( agent => "Fink Mirror Query $VERSION" );
 my $geo  = Geo::IP->new(GEOIP_STANDARD);

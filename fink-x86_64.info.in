@@ -19,7 +19,7 @@ Source-MD5: @MD5@
 NoSetPATH: true
 CompileScript: <<
  make test PREFIX=%p ARCHITECTURE=%m DISTRIBUTION=@DISTRIBUTION@
- ./setup.sh %p %m @DISTRIBUTION@
+ ./setup.sh %p %m
 <<
 InstallScript: <<
  ./install.sh %i %m
@@ -49,7 +49,7 @@ DescPackaging: <<
  Don't use mirror:sourceforge so that older package manager versions
  which do not know that mirror can still selfupdate.
 
- Must put "make test" before "./setup.sh %p", because make test runs
+ Must put "make test" before "./setup.sh %p %m", because make test runs
  the setup script itself, but pointed at the testing directory.
  The second run of setup.sh properly points fink at the installed
  configuration file.

@@ -12,6 +12,7 @@ CompileScript: <<
  gzip_cv_assembler=no ./configure %c
  make all
 <<
+InfoTest: TestScript: make -k check || exit 2
 InstallScript: <<
  make -j1 install DESTDIR=%d
  ln -s zcat %i/bin/gzcat

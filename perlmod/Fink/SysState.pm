@@ -29,7 +29,7 @@ use warnings;
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION		= ( qw$Revision$ )[-1];
+	$VERSION		= 1.00;
 	@ISA			= qw(Exporter);
 	@EXPORT			= qw($DETAIL_FIRST $DETAIL_PACKAGE $DETAIL_ALL);
 	%EXPORT_TAGS	= ( );	# eg: TAG => [ qw!name1 name2! ],
