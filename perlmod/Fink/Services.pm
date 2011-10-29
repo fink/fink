@@ -647,7 +647,7 @@ sub prepare_script {
 		$$script .= "\n" if $$script !~ /\n$/;  # require have trailing newline
 
 		# Put the script into a temporary file
-		my ($fh, $tempfile) = tempfile("fink.XXXXX") or die "unable to get temporary file: $!";
+		my ($fh, $tempfile) = tempfile("fink.XXXXX", TMPDIR => 1) or die "unable to get temporary file: $!";
 		print $fh $$script;
 		close ($fh) or die "an unexpected error occurred closing $tempfile: $!";
 		chmod(0755, $tempfile);
