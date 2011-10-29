@@ -5399,6 +5399,7 @@ sub package_error {
 		} else {
 			$error .= "No recognized Xcode installed\n";
 		}
+		$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
 	}			
         
 	# need trailing newline in the actual die/warn to prevent
