@@ -3373,13 +3373,11 @@ sub phase_unpack {
 		my $name = $self->get_fullname();
 		Fink::Services::enforce_gcc(<<GCC_MSG, $gcc_abi);
 The package $name must be compiled with gcc EXPECTED_GCC,
-however, you currently have gcc INSTALLED_GCC selected. To correct
-this problem, run the command:
-
-    sudo gcc_select GCC_SELECT_COMMAND
-
-You may need to install a more recent version of the Developer Tools
-(the Apple XCode suite) to be able to do so.
+however, you currently have gcc INSTALLED_GCC selected. 
+This typically is due to alteration of symlinks which were
+installed by Xcode. To correct this problem, you will need
+to restore the compiler symlinks to the configuration that
+Apple provides.
 GCC_MSG
 	}
 
