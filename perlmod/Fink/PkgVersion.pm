@@ -5328,6 +5328,7 @@ Text displayed prior to the standard error-message block.
 sub package_error {
 	my $self = shift;
 	my %opts = @_;
+	my $mbj=$config->param('MaxBuildJobs');
 
 	my $notifier = Fink::Notify->new();
 	my $error = "phase " . $opts{'phase'} . ": " . $self->get_fullname()." failed";
@@ -5336,8 +5337,12 @@ sub package_error {
 		$error .= "\n\n" . $opts{'preamble'};
 	}
 	$error .= "\n\n" .
-		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" .
-		"If you continue to have issues, please check to see if the FAQ on Fink's \n".
+		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" ;
+	if ($mbj > 1) {
+		$error .= 	"Also try using \"fink configure\" to set your maximum build jobs to 1 and\n" .
+					"attempt to build the package again." ;
+		}
+	$error .= "\nIf you continue to have issues, please check to see if the FAQ on Fink's \n".
 		"website solves the problem.  If not, ask on one of these mailing lists:\n\n" .
 		"\tThe Fink Users List <fink-users\@lists.sourceforge.net>\n".
 		"\tThe Fink Beginners List <fink-beginners\@lists.sourceforge.net>";
@@ -5386,6 +5391,7 @@ sub package_error {
 		} else {
 			$error .= "No recognized Xcode installed\n";
 		}
+		$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
 	}			
         
 	# need trailing newline in the actual die/warn to prevent
