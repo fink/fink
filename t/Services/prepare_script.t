@@ -34,7 +34,6 @@ cmp_ok($scriptref, 'eq', \$script, 'chomps; changes original scalar');
 $script = "#!/bin/sh\ntest1";
 $result = &Fink::Services::prepare_script($scriptref);
 cmp_ok($result, '==', 1, 'magic-char script returns 1');
-like($script, '/\/tmp/', 'magic-char script returns scriptname');
 like($script, '/^\//', 'scriptname is absolute path');
 ok(-f $script, 'scriptname file exists');
 open SCRIPT, "<$script";

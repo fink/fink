@@ -1,0 +1,370 @@
+For a more comprehensive changelog of the latest experimental code, see:
+        https://github.com/fink/fink/commits/
+
+/-------------
+| fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
+\-------------
+
+0.31.4 "perfidy" (2011-10-28)
+
+0.31.3 "mendacity" (2011-10-12)
+
+0.31.2 "perjury" (2011-09-26)
+
+0.31.1 ""little white"" (2011-09-11)
+
+0.31.0 "fib" (2011-07-20)
+	First release fink version for 10.7.
+
+/-------------
+| fink 0.30.x (see https://github.com/fink/fink/tree/branch_0_30)
+\-------------
+
+0.30.2 "Palin" (2011-07-11)
+	Last fink version for 10.4, and end of support for the OS.
+
+0.30.1 "Hannity" (2011-06-28)
+
+0.30.0 "Beck" (2011-04-30)
+
+/-------------
+| fink 0.29.x (see https://github.com/fink/fink/tree/branch_0_29)
+\-------------
+
+0.29.21 "Charter Oak" (2011-03-24)
+
+0.29.20 "FirsTier" (2011-03-09)
+
+0.29.19 "EarthStar" (2011-01-15)
+
+0.29.18 "Darby" (2010-11-12)
+	10.5/x86_64 only
+
+0.29.17 "Tifton" (2010-11-11)
+
+0.29.16 "K" (2010-11-09)
+
+0.29.15 "Hillcrest" (2010-10-24)
+
+0.29.14 "Bramble" (2010-10-19)
+
+0.29.13 "Peninsula" (2010-07-01)
+
+0.29.12 "TierOne" (2010-06-09)
+
+0.29.11 "Greece and Portugal" (2010-06-02)
+
+0.29.10 "Vantus" (2009-09-27)
+
+0.29.9 "Dwelling House" (2009-08-28)
+
+0.29.8 "Integrity" (2009-08-13)
+
+0.29.7 "HBOS" (2009-06-10)
+
+0.29.6 "New Frontier" (2009-05-20)
+
+0.29.5 "Silverton" (2009-05-13)
+
+0.29.4 (2009-05-12)
+	again quickly replaced
+
+0.29.3 (2009-05-12)
+	quickly replaced
+
+0.29.2 "IKB" (2009-04-14)
+
+0.29.1 "Kaupthing" (2009-04-09)
+
+0.29.0 "IndyMac" (2009-04-05)
+
+/-------------
+| fink 0.28.x (see https://github.com/fink/fink/tree/branch_0_28)
+\-------------
+
+New features:
+	* Validate the shlibs field for consistency
+	* Inclusion of .info file as a control file in the .deb
+	* New selfupdate code to make future addition of methods easier
+	* Automatic suggestion to run fink selfupdate if it hasn't been done in a while.
+	* Remind user to selfupdate after enabling unstable
+	* Display actual Distribution string in 'fink -V'
+	* Use lftpget if available and appropriate
+	* Private shared-library syntax in Shlibs
+
+0.28.7 "Piltdown Man" (2009-02-19)
+
+0.28.6 "The Philosopher's Stone" (2008-10-05)
+
+0.28.5 "Spontaneous Generation" (2008-07-08)
+
+0.28.4 "The Humors" (2008-06-29)
+
+0.28.3 "Cold Fusion" (2008-06-20)
+
+0.28.2 "N-ray" (2008-05-05)
+
+0.28.1 "Phlogiston" (2008-03-11)
+
+0.28.0 "Aether" (2008-01-20)
+
+/-------------
+| fink 0.27.x (see https://github.com/fink/fink/tree/branch_0_27)
+\-------------
+
+New features
+	* fink --build-as-nobody tries to build as user fink-bld instead of nobody, which is reserved by the OS.
+	* Timeouts for sluggish/stalled downloads.
+	* Validator detects deficient checking of some script return codes in .info files.
+	* New in 0.27.2, add conditionals support to Shlibs and ConfFiles field (requires using BuildDepends: fink (>= 0.27.2) or higher).
+
+Bug fixes
+	* Saner handling of virtual (Provides) packages directly from the fink command-line.
+	* Better recovery when encountering an unprocessable .info file.
+	* More reliable building perl-module packages (Type: perl passed -j1 in default InstallScript).
+	* Improved detection of non-fink X11.
+	* Safer management of communication between fink and apt-get.
+
+0.27.16 "Defecaloesiophobia" (2008-07-08)
+
+0.27.15 "Zemmiphobia" (2008-06-29)
+
+0.27.14 "Liticaphobia" (2008-06-27)
+
+0.27.13 "Triskaidekaphobia" (2008-06-22)
+
+0.27.12 "Batrachophobia" (2008-06-20)
+
+0.27.11 "Athazagoraphobia" (2008-02-17)
+
+0.27.10 "Rhabdophobia" (2008-01-02)
+
+0.27.9 "Paralipophobia" (2007-11-06)
+
+0.27.8 "Ailurophobia" (2007-11-02)
+
+0.27.7 "Potophobia" (2007-10-24)
+
+0.27.6 "Hippopotomonstrosesquippedaliophobia" (2007-07-18)
+
+0.27.5
+	Never released to the public
+
+0.27.4 "Kakorrhaphiophobia" (2007-07-10)
+
+0.27.3 "Didaskaleinophobia" (2007-06-15)
+
+0.27.2 "Blennophobia" (2007-06-10)
+
+0.27.1 "Arachibutyrophobia" (2007-03-19)
+
+0.27.0 "Gynophobia" (2007-03-17)
+
+/-------------
+| fink 0.26.x (see https://github.com/fink/fink/tree/branch_0_26)
+\-------------
+
+New features
+	* Obsoletes support
+	* Enable more than one Notify plugin at once
+	* Type: -64bit, %lib, and %type_num[] (for building 64bit libs in parallel with 32bit libs)
+	* new Distribution: field, which behaves like the Architecture: field
+	* Change allowed filenames for .info file, to: invariant
+	  packagename, optionally followed by archname, optionally follwed by
+	  distribution, and finally optionally followed by either version or
+	  version-revision, each delimited by hyphens.
+	* "fink configure" now allows to enable/disable the unstable tree
+	* --dpkg-status and --all modes for fink cleanup
+	* --tests mode to utilize InfoTest blocks
+		* on Errors are fatal
+		* warn Errors turn to warnings
+	* --validate mode that causes packages to be validated
+		* on Errors are fatal
+		* warn Errors turn to warning
+	* Info4 (added in 0.26.2)
+
+0.26.4 "The Joy Luck Club" (2007-03-14)
+
+0.26.3 "Divine Secrets of the Ya-Ya Sisterhood" (2007-03-08)
+
+0.26.2 "Beaches" (2007-03-07)
+
+0.26.1 "Thelma and Louise" (2007-01-22)
+
+0.26.0 "Steel Magnolias" (2006-12-09)
+
+/-------------
+| fink 0.25.x (see https://github.com/fink/fink/tree/branch_0_25)
+\-------------
+
+New features
+	* Incremental Indexing
+	* SkipPrompts
+		* Any more categories users would like?
+	* Info3
+		* Can indent nicely in .info files
+		* No more support for RFC-822 multi-lines
+		* Can put comments in pkglist fields
+	* fast scanpackages with apt-ftparchive
+	* auto-detection of country
+	* Validator fixes:
+		* detect InfoN property (should be wrapper)
+	* New --trees option restricts fink to using .info files in the chosen tree(s).
+	* new fink cleanup syntax
+	* New --maintainer mode
+	* New --log-output and --logfile flags to save transcripts of package building process
+	* Integrated scanpackages, including ability to not index restrictive packages.
+	* Support for running package test suites
+	* reevaluate fink --tree=stable list
+	* Validator:
+		* Complain about > and < in dependency versioning (in .info).
+		* dmacks: complete overhaul of .deb (val-unpack branch)
+		* InfoN validator patch vasi fixed it the way he likes it
+	* RangerRick: 'fink build foo-1.0-1' where a .deb exists in the bindist for foo-1.0-1 and UseBinaryDist is true should build locally, not fetch from the bindist.
+	* Info3: allow comment lines in pkglist fields
+	* "chown -h" functionality during --build-as-nobody (use Command:chowname_hr?)
+	* dmacks: overhaul buildlocks to go away more automatically and have a cleaner cleanup
+		* Automatically do cleanup when embarking on a package installation or removal
+	* dmacks: buildlock destruction
+		* Checking via lock_wait and PreRm
+		* Removal on build failure via Fink::Finally
+	* remove line-number in SysState error
+	* BuildConflicts breakage
+	* chown_hR is still leaving nobody-owned links.
+	* progress bar during indexing ("." every 100 .info processed or
+	  every 10% of set of .info processed?) -- newbies to HEAD have
+	  complained index -f "has hung"...can take up to 5 minutes
+	* alternate checksum algorithms
+
+Bug fixes
+	* Fink no longer gets confused by debs in a local apt repository
+	* When asking to choose mirrors, fink orders choices alphabetically
+	  properly, and presents a reasonable set of mirrors when the user
+	  asks for all those on a continent.
+	* BuildConflicts should actually work
+	* many more we've forgotten all about...
+
+0.25.3 "Reservoir Dogs" (2007-01-22)
+
+0.25.2 "Things to Do in Denver When You're Dead" (2006-11-28)
+
+0.25.1 "Road to Perdition" (2006-10-15)
+
+0.25.0 "The Usual Suspects" (2006-09-17)
+
+/-------------
+| fink 0.24.x (see https://github.com/fink/fink/tree/branch_0_24)
+\-------------
+
+0.24.26 "Telescopium" (2006-08-12)
+
+0.24.25 "Triangulum Australe" (2006-07-27)
+
+0.24.24 "Norma [The Carpenter's Square]" (2006-07-20)
+
+0.24.23 "Apus" (2006-07-03)
+
+0.24.22 "Lupus" (2006-06-27)
+
+0.24.21 "Boötes" (2006-06-23)
+
+0.24.20 (2006-06-23)
+	again quickly replaced
+
+0.24.19 (2006-06-23)
+	quickly replaced
+
+0.24.18 "Circinus" (2006-06-12)
+
+0.24.17 "Musca" (2006-05-31)
+
+0.24.16 "Antlia" (2006-05-30)
+
+0.24.15 "Hydra" (2006-03-27)
+
+0.24.14 "Pyxis" (2006-03-21)
+
+0.24.13
+	Never released to the public
+
+0.24.12 "Vulpecula" (2006-02-21)
+
+0.24.11 "Lacerta" (2005-11-17)
+
+0.24.10 "Cameloparadalis" (2005-08-25)
+
+0.24.9 "Pavo" (2005-08-15)
+
+0.24.8 "Coma Berenices" (2005-07-28)
+
+0.24.7 "Carina" (2005-06-04)
+	This release was made specifically for EOL'ing 10.2 support.
+
+0.24.6 "Canes Venatici" (2005-05-11)
+
+0.24.5 "Crux Austrialis" (2005-04-29)
+
+0.24.4 "Ophiuchus" (2005-04-20)
+
+0.24.3 "Cassiopeia" (2005-04-12)
+
+0.24.2 "Draco" (2005-03-25)
+
+0.24.1 "Ursa Major" (2005-02-28)
+
+0.24.0 "Boilermaker" (2005-02-24)
+
+/-------------
+| fink 0.23.x (see https://github.com/fink/fink/tree/branch_0_23)
+\-------------
+
+/-------------
+| fink 0.22.x (see https://github.com/fink/fink/tree/branch_0_22)
+\-------------
+
+/-------------
+| fink 0.21.x (see https://github.com/fink/fink/tree/branch_0_21)
+\-------------
+
+/-------------
+| fink 0.20.x (see https://github.com/fink/fink/tree/branch_0_20)
+\-------------
+
+/-------------
+| fink 0.19.x (see https://github.com/fink/fink/tree/branch_0_19)
+\-------------
+
+/-------------
+| fink 0.18.x (see https://github.com/fink/fink/tree/branch_0_18)
+\-------------
+
+/-------------
+| fink 0.17.x (see https://github.com/fink/fink/tree/branch_0_17)
+\-------------
+
+/-------------
+| fink 0.16.x (see https://github.com/fink/fink/tree/branch_0_16)
+\-------------
+
+/-------------
+| fink 0.15.x (see https://github.com/fink/fink/tree/branch_0_15)
+\-------------
+
+
+
+Before this, a lot of historical data is currently missing.
+Contributions to complete this are welcome.
+
+0.2.6 (2001-09-04)
+
+0.2.5 (2001-08-25)
+
+0.2.4 (2001-08-01)
+
+0.2.3 (2001-07-09)
+
+0.2.2 (2001-06-23)
+
+0.2.1 (2001-05-09)
+
+0.1.5 (2001-02-18)
