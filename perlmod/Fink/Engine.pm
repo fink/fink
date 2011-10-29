@@ -1937,7 +1937,7 @@ sub real_install {
 
 			# concatenate dependencies of package and its relatives
 			my ($dpp, $pkgg, $isgood);
-			my ($dppname,$pkggname,$tmpname);
+			my ($dppname,$pkggname);
 			my @extendeddeps = ();
 			foreach $dpp (@{$item}[5..$#{$item}]) {
 				$isgood = 1;
