@@ -5348,12 +5348,11 @@ sub package_error {
 		$error .= "\n\n" . $opts{'preamble'};
 	}
 	$error .= "\n\n" .
-		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" ;
+		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" 
 	if ($mbj > 1) {
-		$error .= 	"Also try using \"fink configure\" to set your maximum build jobs to 1 and\n" .
-					"attempt to build the package again." ;
-		}
-	$error .= "\nIf you continue to have issues, please check to see if the FAQ on Fink's \n".
+		$error .= "Also try using 'fink configure' to set your maximum build jobs to 1 and" .
+		$error .= "attempt to build the package again." .
+	$error .= "If you continue to have issues, please check to see if the FAQ on Fink's \n".
 		"website solves the problem.  If not, ask on one of these mailing lists:\n\n" .
 		"\tThe Fink Users List <fink-users\@lists.sourceforge.net>\n".
 		"\tThe Fink Beginners List <fink-beginners\@lists.sourceforge.net>";
