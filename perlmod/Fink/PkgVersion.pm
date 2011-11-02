@@ -3373,13 +3373,11 @@ sub phase_unpack {
 		my $name = $self->get_fullname();
 		Fink::Services::enforce_gcc(<<GCC_MSG, $gcc_abi);
 The package $name must be compiled with gcc EXPECTED_GCC,
-however, you currently have gcc INSTALLED_GCC selected. To correct
-this problem, run the command:
-
-    sudo gcc_select GCC_SELECT_COMMAND
-
-You may need to install a more recent version of the Developer Tools
-(the Apple XCode suite) to be able to do so.
+however, you currently have gcc INSTALLED_GCC selected. 
+This typically is due to alteration of symlinks which were
+installed by Xcode. To correct this problem, you will need
+to restore the compiler symlinks to the configuration that
+Apple provides.
 GCC_MSG
 	}
 
@@ -5341,6 +5339,7 @@ Text displayed prior to the standard error-message block.
 sub package_error {
 	my $self = shift;
 	my %opts = @_;
+	my $mbj=$config->param('MaxBuildJobs');
 
 	my $notifier = Fink::Notify->new();
 	my $error = "phase " . $opts{'phase'} . ": " . $self->get_fullname()." failed";
@@ -5349,8 +5348,12 @@ sub package_error {
 		$error .= "\n\n" . $opts{'preamble'};
 	}
 	$error .= "\n\n" .
-		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" .
-		"If you continue to have issues, please check to see if the FAQ on Fink's \n".
+		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" ;
+	if ($mbj > 1) {
+		$error .= 	"Also try using \"fink configure\" to set your maximum build jobs to 1 and\n" .
+					"attempt to build the package again." ;
+		}
+	$error .= "\nIf you continue to have issues, please check to see if the FAQ on Fink's \n".
 		"website solves the problem.  If not, ask on one of these mailing lists:\n\n" .
 		"\tThe Fink Users List <fink-users\@lists.sourceforge.net>\n".
 		"\tThe Fink Beginners List <fink-beginners\@lists.sourceforge.net>";
@@ -5399,6 +5402,7 @@ sub package_error {
 		} else {
 			$error .= "No recognized Xcode installed\n";
 		}
+		$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
 	}			
         
 	# need trailing newline in the actual die/warn to prevent
