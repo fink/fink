@@ -197,7 +197,7 @@ our %shared_loads;
 		# We need to update %d, %D, %i and %I to adapt to changes in buildpath
 		$self->_set_destdirs;
 
-		if(Fink::Config::get_option("tests")) {
+		if (Fink::Config::get_option("tests")) {
 			$self->activate_infotest;
 		}
 
@@ -1233,7 +1233,7 @@ sub get_script {
 			$default_script = "make -j1 install prefix=\%i\n";
 		} 
 
-	} elsif($field eq 'testscript') {
+	} elsif ($field eq 'testscript') {
 		return "" unless Fink::Config::get_option("tests");
 		return "" if $self->has_parent;  # shortcut: SplitOffs do not test
 		return "" if $self->is_type('dummy');  # Type:dummy never test
@@ -1904,9 +1904,9 @@ sub get_splitoffs {
 
   my @relatives = $pv->get_relatives;
 
-Get the other packages that are splitoffs of this one (of of its parent, if
+Get the other packages that are splitoffs of this one (or of its parent, if
 this package is a splitoff). Does not include this package, but does include
-the parent.
+the parent (in case this package is a splitoff).
 
 =cut
 
@@ -2487,6 +2487,7 @@ sub find_debfile {
 #     2 - return build dependencies only
 #   $field is either "depends" or "conflicts" (case-insensitive)
 #   $forceoff is a boolean (default is false) that indicates...something
+#
 #   @deplist is list of refs to lists of PkgVersion objects
 #     @deplist joins the referenced lists as logical AND
 #     each referenced list is joined as logical OR
@@ -2496,7 +2497,8 @@ sub find_debfile {
 
 sub resolve_depends {
 	my $self = shift;
-	my $include_build = shift || 0;
+	my $include_build = shift || 0;	# FIXME: Kind of badly named... maybe also add an $include_runtime var?
+	my $include_runtime = ($include_build < 2) ? 1 : 0;
 	my $field = shift;
 	my $forceoff = shift || 0;
 
@@ -2517,6 +2519,8 @@ sub resolve_depends {
 		$oper = "conflict";
 	} elsif (lc($field) eq "depends") {
 		$oper = "dependency";
+	} else {
+		die "resolve_depends: invalid param field=$field, must equal 'Depends' or 'Conflicts'!\n";
 	}
 
 	# check for BuildDependsOnly and obsolete-dependency violations
@@ -2545,14 +2549,14 @@ sub resolve_depends {
 	# of the master package to the list.
 	if ($include_build and $self->has_parent) {
 		push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
-		if ($include_build == 2) {
+		if (not $include_runtime) {
 			# The pure build deps of a splitoff are equivalent to those of the parent.
 			return @deplist;
 		}
 	}
 	
 	# First, add all regular dependencies to the list.
-	if (lc($field) ne "conflicts") {
+	if (lc($field) eq "depends") {
 		# FIXME: Right now we completely ignore 'Conflicts' in the dep engine.
 		# We leave handling them to dpkg. That is somewhat ugly, though, because it
 		# means that 'Conflicts' are not automatically 'BuildConflicts' (i.e. the
@@ -2562,10 +2566,17 @@ sub resolve_depends {
 		if ($verbosity > 2) {
 			print "Reading $oper for ".$self->get_fullname()."...\n";
 		}
-		@speclist = split(/\s*\,\s*/, $self->pkglist_default($field, ""));
-	}
+		@speclist = split(/\s*\,\s*/, $self->pkglist_default("Depends", ""));
 
-	if (lc($field) ne "conflicts") {
+		# Add RuntimeDepends to @speclist if requested
+		if ($include_runtime) {
+			# Add build time dependencies to the spec list
+			if ($verbosity > 2) {
+				print "Reading runtime $oper for ".$self->get_fullname()."...\n";
+			}
+			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("RuntimeDepends", ""));
+		}
+
 		# With this primitive form of @speclist, we verify that the "BuildDependsOnly"
 		# declarations have not been violated (of course we only do that when generating
 		# a 'depends' list, not for 'conflicts').
@@ -2593,6 +2604,10 @@ sub resolve_depends {
 					print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
 				}
 				if (not defined $package) {
+# FIXME: This looks weird: we continue the loop if $package is not
+# defined... and otherwise... we *also* continue the loop. Huh? Also,
+# supposedly BuildDependsOnly decls are to be checked here, but we don't
+# really do that, do we? Maybe this code is simply obsolete?
 					next BUILDDEPENDSLOOP;
 				}
 			}
@@ -2615,7 +2630,7 @@ sub resolve_depends {
 		# We remember the offset at which we added these in $split_idx, so that we
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
-		unless (lc($field) eq "conflicts") {
+		if (lc($field) eq "depends") {
 			foreach	 $splitoff ($self->parent_splitoffs) {
 				if ($verbosity > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
@@ -2636,7 +2651,7 @@ sub resolve_depends {
 			$loopcount++;
 
 			if ($include_build and $self->parent_splitoffs and
-				 ($idx >= $split_idx or $include_build == 2)) {
+				 ($idx >= $split_idx or not $include_runtime)) {
 				# To prevent circular refs in the build dependency graph, we have to
 				# remove all our splitoffs from the graph. Exception: any splitoffs
 				# this master depends on directly are not filtered. Exception from the
@@ -2704,53 +2719,6 @@ sub get_altspec {
 	return @specs;
 }
 
-# resolve_conflicts cannot handle verisoned conflicts, and crashes if
-# there are any present in the field. OTOH, this method does not
-# appear to be used anywhere at this time.
-sub resolve_conflicts {
-	my $self = shift;
-	my ($confname, $package, @conflist);
-
-	# conflict with other versions of the same package
-	# this here includes ourselves, it is treated The Right Way
-	# by other routines
-	@conflist = Fink::Package->package_by_name($self->get_name())->get_all_versions();
-
-	foreach $confname (split(/\s*\,\s*/,$self->pkglist_default("Conflicts", ""))) {
-		$package = Fink::Package->package_by_name($confname);
-		if (not defined $package) {
-			die "Can't resolve anti-dependency \"$confname\" for package \"".$self->get_fullname()."\"\n";
-		}
-		push @conflist, [ $package->get_all_providers() ];
-	}
-
-	return @conflist;
-}
-
-# TODO: this method is superfluous and incomplete. Should inline it
-# into callers, and (eventually) implement minor-libversion handling
-# in pkglist()
-
-sub get_binary_depends {
-	my $self = shift;
-	my ($depspec1, $depspec2, $depspec);
-
-	# TODO: modify dependency list on the fly to account for minor
-	#	 library versions
-
-	### This is an ugly way to accomplish this, FIXME
-	$depspec1 = $self->pkglist_default("RunTimeDepends", "");
-	$depspec2 = $self->pkglist_default("Depends", "");
-
-	if (length $depspec1 && length $depspec2) {
-		$depspec = $depspec1.", ".$depspec2;
-	} else {
-		$depspec = $depspec1.$depspec2
-	}
-
-	return &collapse_space($depspec);
-}
-
 =item get_depends
 
 	my $lol_struct = $self->get_depends($want_build, $want_conflicts)
@@ -2767,7 +2735,7 @@ package family. Compile-time conflicts (1,1) is the BuildConflicts of
 the parent of the package family. This method is not recursive in any
 other sense.
 
-This method return pkgnames and other Depends-style string data in a
+This method returns pkgnames and other Depends-style string data in a
 list-of-lists structure, unlike resolve_depends, which gives a flat
 list of PkgVersion objects.
 
@@ -2789,25 +2757,29 @@ sub get_depends {
 		}
 	}
 
+	my @lol;
+
 	if ($want_build) {
 		# build-time dependencies need to include whole family and
 		# to remove whole family from also-runtime deplist
 
 		my @family_pkgs = $self->get_splitoffs(1,1);
 
-		my @lol = map @{ &pkglist2lol($_->pkglist_default("Depends","")) }, @family_pkgs;
+		@lol = map @{ &pkglist2lol($_->pkglist_default("Depends","")) }, @family_pkgs;
 		&cleanup_lol(\@lol);  # remove duplicates (for efficiency)
 		map $_->lol_remove_self(\@lol), @family_pkgs;
 
 		# (not a runtime dependency so it gets added after remove-self games)
 		push @lol, @{ &pkglist2lol($self->get_family_parent->pkglist_default("BuildDepends","")) };
 
-		&cleanup_lol(\@lol);  # remove duplicates
-		return \@lol;
+	} else {
+		# run-time dependencies
+		@lol = @{ &pkglist2lol($self->pkglist_default("Depends","")) };
+		push @lol, @{ &pkglist2lol($self->pkglist_default("RuntimeDepends","")) };
 	}
 
-	# run-time dependencies
-	return &pkglist2lol($self->pkglist_default("Depends",""));
+	&cleanup_lol(\@lol);  # remove duplicates
+	return \@lol;
 }
 
 =item check_bdo_violations
@@ -2841,6 +2813,7 @@ sub check_bdo_violations {
 
 	# test all alternatives
 	my @atoms = split /\s*[\,|]\s*/, $self->pkglist_default('Depends');
+	push @atoms, split /\s*[\,|]\s*/, $self->pkglist_default('RuntimeDepends');
 
 	foreach my $depname (@atoms) {
 		$depname =~ s/\s*\(.*\)//;
@@ -2890,7 +2863,7 @@ sub check_obsolete_violations {
 
 	$self->{_obsolete_violations} = 0;
 
-	foreach my $field (qw/ BuildDepends Depends Suggests Recommends /) {
+	foreach my $field (qw/ BuildDepends Depends RuntimeDepends Suggests Recommends /) {
 		my @alt_sets = split /\s*,\s*/, $self->pkglist_default($field);
 
 		# test each set of alternatives
@@ -3686,7 +3659,7 @@ sub phase_compile {
 	### construct CompileScript and execute it
 	$self->run_script($self->get_script("CompileScript"), "compiling", 1, 1);
 
-	if(Fink::Config::get_option("tests")) {
+	if (Fink::Config::get_option("tests")) {
 		my $result = $self->run_script($self->get_script("TestScript"), "testing", 0, 1, 1);
 
 		if($result == 1) { 
@@ -4062,7 +4035,7 @@ EOF
 	my $kernel_major_version = Fink::Services::get_kernel_vers();
 
 	my $has_kernel_dep;
-	my $deps = &pkglist2lol($self->get_binary_depends()); 
+	my $deps = $self->get_depends(0, 0); # get runtime dependencies
 
 	foreach (@$deps) {
 		foreach (@$_) {
@@ -5634,8 +5607,11 @@ indicated by listing a Depends:fink-obsolete-packages.
 sub is_obsolete {
 	my $self = shift;
 
-	my $depends_field = $self->pkglist_default('Depends','');
-	return $depends_field =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
+	my $deps = $self->pkglist_default('Depends','');
+	my $rdeps = $self->pkglist_default('RuntimeDepends','');
+	$deps = $deps.", ".$rdeps;
+
+	return $deps =~ /(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/;
 }
 
 

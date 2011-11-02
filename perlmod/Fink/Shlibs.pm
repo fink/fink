@@ -143,8 +143,14 @@ sub _check_files {
 
 	# Get runtimedepends and depends line and builddepends line for compares
 	@deplines = split(/\s*\,\s*/, $pkg->pkglist_default("Depends", ""));
-	push @deplines, split(/\s*\,\s*/, $pkg->pkglist_default("RunTimeDepends", ""));
+	push @deplines, split(/\s*\,\s*/, $pkg->pkglist_default("RuntimeDepends", ""));
 	@builddeps = split(/\s*\,\s*/, $pkg->pkglist_default("BuildDepends", ""));
+	# FIXME: Shouldn't the "Depends" field be appended to @builddeps, too?
+	# IMO "Depends: foo" should be treated equivalently to specifying
+	# "RunTimeDepends: foo" *and* "BuildDepends: foo"...
+	# Anyway, the whole code in Shlibs.pm is *never* called unless "AddShlibDeps"
+	# is specified, which it currently never is.
+	# Read: This code is incomplete!
 
 	# get a list of linked files to the pkg files
 	FILELOOP: foreach $file (@files) {
