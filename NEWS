@@ -6,7 +6,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 \-------------
 
 0.32.0 ??? (20??-??-??)
-	* Add new "RuntimeDepends" field, any .info file that wants to use this
+	* Added new "RuntimeDepends" field, any .info file that wants to use this
 	  feature must BuildDepend on fink (>= 0.32.0-1)
 
 /-------------
@@ -14,31 +14,35 @@ For a more comprehensive changelog of the latest experimental code, see:
 \-------------
 
 0.31.4 "perfidy" (2011-10-28)
+	* Synced base .info files against latest versions from dists.
+	* Added support for XCode 4.2 on Mac OS X 10.6.
+	* Fixed bootstrap issue when GNU sed is in the PATH.
+	* Updated mirror list.
 
 0.31.3 "mendacity" (2011-10-12)
-	* Add support for Mac OS X 10.7.2.
-	* Add support for App Store version of Growl.app as well as legacy prefpane.
+	* Added support for Mac OS X 10.7.2.
+	* Added support for App Store version of Growl.app as well as legacy prefpane.
 
 0.31.2 "perjury" (2011-09-26)
 	* No longer enforce "BDep:fink>=0.24.12" for use of PatchFile (nothing older
 	  than that would be usable now anyway)
 
 0.31.1 ""little white"" (2011-09-11)
-	* Add support for Mac OS X 10.7.1.
+	* Added support for Mac OS X 10.7.1.
 	* Allow 32 bit systems to bootstrap on 10.6.
-	* Simplify some code by taking advantage of the fact that the minimal
+	* Simplified some code by taking advantage of the fact that the minimal
 	  supported OS version now is 10.5.
-	* InstallScript now disables UseMaxBuildJobs rather than appending -j1 to
+	* Changed InstallScript to disable UseMaxBuildJobs rather than appending -j1 to
 	  MAKEFLAGS.
 	* Bug fixes
 
 0.31.0 "fib" (2011-07-20)
-	* Add support for Mac OS X 10.7.
-	* Drop support for any Mac OS X version before 10.5. So 10.5, 10.6 and 10.7
-	  are the only supported OS X versions now.
+	* Added support for Mac OS X 10.7.
+	* Dropped support for any Mac OS X version before 10.5. So 10.5, 10.6 and
+	  10.7 are the only supported OS X versions now.
 	* Append "-j" to MAKEFLAGS in the InstallScript regardless of the setting of
 	  UseMaxBuildJobs (.info field) and MaxBuildJobs (fink.conf)
-	* Turn MaxBuildJobs on by default.
+	* Turned MaxBuildJobs on by default.
 
 /-------------
 | fink 0.30.x (see https://github.com/fink/fink/tree/branch_0_30)
