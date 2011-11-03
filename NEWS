@@ -29,23 +29,23 @@ For a more comprehensive changelog of the latest experimental code, see:
 0.31.2 "perjury" (2011-09-26)
 	* No longer enforce "BDep:fink>=0.24.12" for use of PatchFile (nothing older
 	  than that would be usable now anyway)
+	* Building with the number of threads specified by MaxBuildJobs is now
+	  default (i.e. UseMaxBuildJobs: true is the default) unless 
+	  MaxBuildJobs: false is set.
+	* InstallScript always disables UseMaxBuildJobs.
 
 0.31.1 ""little white"" (2011-09-11)
 	* Added support for Mac OS X 10.7.1.
 	* Allow 32 bit systems to bootstrap on 10.6.
 	* Simplified some code by taking advantage of the fact that the minimal
 	  supported OS version now is 10.5.
-	* Changed InstallScript to disable UseMaxBuildJobs rather than appending -j1 to
-	  MAKEFLAGS.
 	* Bug fixes
 
 0.31.0 "fib" (2011-07-20)
 	* Added support for Mac OS X 10.7.
 	* Dropped support for any Mac OS X version before 10.5. So 10.5, 10.6 and
 	  10.7 are the only supported OS X versions now.
-	* Append "-j" to MAKEFLAGS in the InstallScript regardless of the setting of
-	  UseMaxBuildJobs (.info field) and MaxBuildJobs (fink.conf)
-	* Turned MaxBuildJobs on by default.
+	* Bug fixes
 
 /-------------
 | fink 0.30.x (see https://github.com/fink/fink/tree/branch_0_30)
