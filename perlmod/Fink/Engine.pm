@@ -1095,8 +1095,10 @@ sub cmd_cleanup {
 			"Print the items that would be removed, but do not actually remove them." ],
 	], \@_, helpformat => <<HELPFORMAT,
 %intro{[mode(s) and options]}
-One or more of the following modes must be specified:
+The following modes can be specified:
 %opts{debs,sources,buildlocks,dpkg-status,obsolete-packages,all}
+
+If no mode is specified, the default is --debs --sources.
 
 Options:
 %opts{keep-src,dry-run,help}
