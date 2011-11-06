@@ -74,7 +74,6 @@ perlmod/Fink/SelfUpdate/CVS.pm
 perlmod/Fink/SelfUpdate/point.pm
 perlmod/Fink/SelfUpdate/rsync.pm
 perlmod/Fink/Services.pm
-perlmod/Fink/Shlibs.pm
 perlmod/Fink/Status.pm
 perlmod/Fink/SysState.pm
 perlmod/Fink/Text/DelimMatch.pm

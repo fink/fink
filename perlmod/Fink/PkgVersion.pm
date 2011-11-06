@@ -46,7 +46,6 @@ use Fink::VirtPackage;
 use Fink::Bootstrap qw(&get_bsbase);
 use Fink::Command qw(cp mkdir_p rm_f rm_rf symlink_f du_sk chowname chowname_hr touch);
 use Fink::Notify;
-use Fink::Shlibs;
 use Fink::Validation qw(validate_dpkg_unpacked);
 use Fink::Text::DelimMatch;
 use Fink::Text::ParseWords qw(&parse_line);
@@ -2512,7 +2511,6 @@ sub resolve_depends {
 	my @deplist;    # list of lists of PkgVersion objects to be returned
 
 	my ($splitoff, $idx, $split_idx); # used for merging in splitoff-pkg data
-	my ($found, $loopcount); # status while looping through an OR cluster
 	my $oper;       # used in error and warning messages
 
 	if (lc($field) eq "conflicts") {
@@ -2576,42 +2574,6 @@ sub resolve_depends {
 			}
 			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("RuntimeDepends", ""));
 		}
-
-		# With this primitive form of @speclist, we verify that the "BuildDependsOnly"
-		# declarations have not been violated (of course we only do that when generating
-		# a 'depends' list, not for 'conflicts').
-		foreach $altspecs (@speclist){
-			## Determine if it has a multi type depends line thus
-			## multi pkgs can satisfy the depend and it shouldn't
-			## warn if certain ones aren't found, as long as any one of them is
-			@altspec = split(/\s*\|\s*/, $altspecs);
-			$loopcount = 0;
-			$found = 0;
-			BUILDDEPENDSLOOP: foreach $depspec (@altspec) {
-				$loopcount++;
-				if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-					$depname = $1;
-					$versionspec = $2;
-				} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-					$depname = $1;
-					$versionspec = "";
-				} else {
-					die "Illegal spec format: $depspec\n";
-				}
-				$package = Fink::Package->package_by_name($depname);
-				$found = 1 if defined $package;
-				if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-					print "WARNING: While resolving $oper \"$depspec\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-				}
-				if (not defined $package) {
-# FIXME: This looks weird: we continue the loop if $package is not
-# defined... and otherwise... we *also* continue the loop. Huh? Also,
-# supposedly BuildDependsOnly decls are to be checked here, but we don't
-# really do that, do we? Maybe this code is simply obsolete?
-					next BUILDDEPENDSLOOP;
-				}
-			}
-		}
 	}
 
 	# now we continue to assemble the larger @speclist
@@ -2640,15 +2602,16 @@ sub resolve_depends {
 		}
 	}
 
+	# Loop over all specifiers and try to resolve each.
 	SPECLOOP: foreach $altspecs (@speclist) {
+		# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
+		# So we need to break this down into pieces (this is done by get_altspec),
+		# and then try to satisfy at least one of them.
 		$altlist = [];
 		@altspec = $self->get_altspec($altspecs);
-		$found = 0;
-		$loopcount = 0;
 		foreach $depspec (@altspec) {
 			$depname = $depspec->{'depname'};
 			$versionspec = $depspec->{'versionspec'};
-			$loopcount++;
 
 			if ($include_build and $self->parent_splitoffs and
 				 ($idx >= $split_idx or not $include_runtime)) {
@@ -2658,34 +2621,42 @@ sub resolve_depends {
 				# exception: if we were called by a splitoff to determine the "meta
 				# dependencies" of it, then we again filter out all splitoffs.
 				# If you've read till here without mental injuries, congrats :-)
-				next SPECLOOP if ($depspec->{'depname'} eq $self->{_name});
+				next SPECLOOP if ($depname eq $self->{_name});
 				foreach	 $splitoff ($self->parent_splitoffs) {
-					next SPECLOOP if ($depspec->{'depname'} eq $splitoff->get_name());
+					next SPECLOOP if ($depname eq $splitoff->get_name());
 				}
 			}
 
-			$package = Fink::Package->package_by_name($depspec->{'depname'});
+			$package = Fink::Package->package_by_name($depname);
 
-			$found = 1 if defined $package;
-			if (($verbosity > 2 && not defined $package) || ($forceoff && ($loopcount >= scalar(@altspec) && $found == 0))) {
-				print "WARNING: While resolving $oper \"" . $depspec->{'depname'} . 
-					(defined $depspec->{'versionspec'} && length $depspec->{'versionspec'} ? " " . $depspec->{'versionspec'} : '')
-					 . "\" for package \"".$self->get_fullname()."\", package \"" . $depspec->{'depname'} . "\" was not found.\n";
-			}
-			if (not defined $package) {
-				next;
-			}
-
-			if ($versionspec =~ /^\s*$/) {
-				push @$altlist, $package->get_all_providers( unique_provides => 1 );
+			if (defined $package) {
+				if ($versionspec =~ /^\s*$/) {
+					# versionspec empty / consists of only whitespace
+					push @$altlist, $package->get_all_providers( unique_provides => 1 );
+				} else {
+					push @$altlist, $package->get_matching_versions($versionspec);
+				}
 			} else {
-				push @$altlist, $package->get_matching_versions($versionspec);
+				if ($verbosity > 2) {
+					print "WARNING: While resolving $oper \"$depname" .
+						(defined $versionspec && length $versionspec ? " " . $versionspec : '')
+						 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+				}
 			}
 		}
-		if (scalar(@$altlist) <= 0 && lc($field) ne "conflicts") {
-			die_breaking "Can't resolve $oper \"$altspecs\" for package \""
-				. $self->get_fullname()
-				. "\" (no matching packages/versions found)\n";
+
+		if (scalar(@$altlist) <= 0) {
+			if (lc($field) eq "depends") {
+				die_breaking "Can't resolve $oper \"$altspecs\" for package \""
+					. $self->get_fullname()
+					. "\" (no matching packages/versions found)\n";
+			} else {
+				if ($forceoff) { # FIXME: Why $forceoff ??
+					print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
+						. $self->get_fullname()
+						. "\" (no matching packages/versions found)\n";
+				}
+			}
 		}
 		push @deplist, $altlist;
 		$idx++;
@@ -2694,6 +2665,14 @@ sub resolve_depends {
 	return @deplist;
 }
 
+# Take a dependency specification string from a dependency field like
+# "foo | quux (>= 1.0.0-1)", and turn it into a list of pairs of the form
+#    { depname => $depname, versionspec => $versionspec }
+#
+# So if the input string is "foo | quux (>= 1.0.0-1)",
+# we output a list with content
+#  ( { depname => "foo", versionspec => "" },
+#    { depname => "quux", versionspec => ">= 1.0.0-1" } )
 sub get_altspec {
 	my $self     = shift;
 	my $altspecs = shift;
@@ -2703,16 +2682,10 @@ sub get_altspec {
 
 	my @altspec = split(/\s*\|\s*/, $altspecs);
 	foreach $depspec (@altspec) {
-		$depname = $versionspec = undef;
 		if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-			$depname = $1;
-			$versionspec = $2;
+			push(@specs, { depname => $1, versionspec => $2 });
 		} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-			$depname = $1;
-			$versionspec = "";
-		}
-		if (defined $depname) {
-			push(@specs, { depname => $depname, versionspec => $versionspec });
+			push(@specs, { depname => $1, versionspec => "" });
 		}
 	}
 
@@ -4044,30 +4017,6 @@ EOF
 	}
 	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
 
-	### Automatically add dependencies based on shlibs, if requested
-	if ($self->param_boolean("AddShlibDeps")) {
-		print_breaking "Writing shared library dependencies...";
-
-		# Get all the files to be installed
-		my @filelist;
-		my $wanted = sub {
-			if (-f) {
-				# print "DEBUG: file: $File::Find::fullname\n";
-				push @filelist, $File::Find::fullname;
-			}
-		};
-		find({ wanted => $wanted, follow_fast => 1, no_chdir => 1 },
-			"$destdir$basepath"); # Do we want to use follow_skip instead?
-
-		# Add the deps based on the files
-		foreach my $shlib_dep (Fink::Shlibs->get_shlibs($self, @filelist)) {
-			push @$deps, [ $shlib_dep ];
-			if ($config->verbosity_level() > 2) {
-				print "- Adding $shlib_dep to 'Depends' line\n";
-			}
-		}
-	}
-	
 	$control .= "Depends: " . &lol2pkglist($deps) . "\n";
 	if (Fink::Config::get_option("maintainermode")) {
 		print "- Depends line is: " . &lol2pkglist($deps) . "\n";
@@ -5640,7 +5589,7 @@ of dpkg information are regenerated.
 =cut
 
 sub dpkg_changed {
-	Fink::Shlibs->invalidate();
+	# Do nothing for now.
 }
 
 =item log_output

@@ -161,7 +161,6 @@ for p in \
 		Fink::SelfUpdate::rsync	\
 		Fink::SelfUpdate::point	\
 		Fink::Services		\
-		Fink::Shlibs		\
 		Fink::SysState		\
 		Fink::Text::DelimMatch			\
 		Fink::Text::ParseWords			\
