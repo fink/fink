@@ -11,6 +11,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Improved package validator to reject .deb files including .hg / .git
 	  directories.
 	* Improved package validator to detect some issues with percent expansions.
+	* Cleaned up the code base, including removal of some dead code for old OS X
+	  version, or anything related to incomplete AddShlibDeps .info field.
 
 /-------------
 | fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
