@@ -5343,7 +5343,8 @@ sub package_error {
 					"attempt to build the package again." ;
 		}
 	$error .= "\nIf you continue to have issues, please check to see if the FAQ on Fink's \n".
-		"website solves the problem.  If not, ask on one of these mailing lists:\n\n" .
+		"website solves the problem.  If not, ask on one (not both, please) of\n".
+		"these mailing lists:\n\n" .
 		"\tThe Fink Users List <fink-users\@lists.sourceforge.net>\n".
 		"\tThe Fink Beginners List <fink-beginners\@lists.sourceforge.net>";
 	if ($self->has_param('maintainer')) {
