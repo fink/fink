@@ -2478,7 +2478,7 @@ HELPFORMAT
 				}
 			} elsif ($_ eq 'env') {
 				# multiline field, but has special format and own accessor
-				my $value = $pkg->get_env;
+				my $value = $pkg->get_env('dumpinfo');
 				printf "%s:\n", $_;
 				print map { " $_=".$value->{$_}."\n" } sort keys %$value;
 			} elsif ($_ eq 'trees') {
@@ -2501,7 +2501,7 @@ HELPFORMAT
 
 
 		if (@env_vars) {
-			my %pkg_env = %{$pkg->get_env};
+			my %pkg_env = %{$pkg->get_env('dumpinfo')};
 
 			# replace each given "_" sentinel with full variable list
 			# go backwards to avoid looping over a just-replaced _

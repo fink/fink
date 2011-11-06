@@ -1,10 +1,15 @@
+2011-11-06  Daniel Macks  <dmacks@netspace.org>
+
+	* Engine.pm (cmd_dumpinfo): add missing parameter (recently added
+	to prototype) to PkgVersion::get_env calls
+
 2011-10-12  Alexander Hansen  <alexkhansen@users.sourceforge.net>
 
 	* Bootstrap.pm:  support 10.7.2.
 
 2011-10-12  Daniel Johnson  <daniel@daniel-johnson.org>
 
-	* VirtPackage.pm:  support App Store Growl.app as well as 
+	* VirtPackage.pm:  support App Store Growl.app as well as
 	legacy prefpane.
 
 2011-09-23  Daniel Macks  <dmacks@netspace.org>
