@@ -16,7 +16,6 @@ VERSION
 REVISION
 STYLE
 TODO
-TODO.shlibs
 bootstrap
 bootstrap-phase2.pl
 dpkg-checkall.sh
