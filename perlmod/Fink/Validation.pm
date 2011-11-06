@@ -63,7 +63,7 @@ our @splitoff_required_fields = map {lc $_}
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
 	(
-		qw(builddependsonly addshlibdeps essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests usemaxbuildjobs),
+		qw(builddependsonly essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests usemaxbuildjobs),
 		map {"noset".$_} @set_vars
 	);
 
@@ -159,7 +159,6 @@ our %valid_fields = map {$_, 1}
 		 'pre-depends',
 		 'essential',
 		 'builddependsonly',
-		 'addshlibdeps',
 #  unpack phase:
 		 'custommirror',
 		 'source',
