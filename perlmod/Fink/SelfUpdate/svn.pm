@@ -241,7 +241,7 @@ sub setup_direct_svn {
 			$cmdd = "/usr/bin/su $username -c '$cmdd'";
 		}
 		if (&execute($cmdd)) {
-			die "Downloading package descriptions from CVS failed.\n";
+			die "Downloading package descriptions from svn failed.\n";
 		}
 	}
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
