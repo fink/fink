@@ -153,13 +153,11 @@ sub setup_direct_svn {
 
 	print "\n";
 	$svnuser =
-		&prompt_selection("For Fink developers only: ".
-				"Do you wish to use full read/write svn access ".
-				"(requires GitHub SSH keys to be set up on your system) ".
-				"or anonymous read-only access? Just press return ".
-				"if you're not sure.",
-				choices => [ "anonymous read-only" => "anonymous",
-							 "read/write" => "developer" ]);
+		&prompt("For Fink developers only: ".
+				"Enter your GitHub login name to set up full svn access. ".
+				"Other users, just press return to set up anonymous ".
+				"read-only access.",
+				default => "anonymous");
 	print "\n";
 
 	# start by creating a temporary directory with the right permissions
@@ -203,7 +201,7 @@ sub setup_direct_svn {
 		$verbosity = "";
 	}
 	my $svnpath = $config->param("SvnPath");
-	my $svnrepository = "http://svn.github.com/danielj7/fink-dists.git";
+	my $svnrepository = "https://github.com/danielj7/fink-dists.git/trunk";
 	if (-f "$basepath/lib/fink/URL/svn-repository") {
 		$svnrepository = cat "$basepath/lib/fink/URL/svn-repository";
 		chomp($svnrepository);
@@ -214,14 +212,15 @@ sub setup_direct_svn {
 			chomp($svnrepository);
 		}
 	} else {
-		$svnrepository = "https://svn.github.com/danielj7/fink-dists.git";
+		$svnrepository = 'https://USERNAME@github.com/danielj7/fink-dists.git/trunk';
 		if (-f "$basepath/lib/fink/URL/developer-svn") {
 			$svnrepository = cat "$basepath/lib/fink/URL/developer-svn";
 			chomp($svnrepository);
 		}
+		$svnrepository =~ s/USERNAME/$svnuser/;
 	}
 	$cmd = "$svnpath ${verbosity}";
-	$cmdd = "$cmd checkout ${svnrepository} fink";
+	$cmdd = "$cmd checkout --depth=files ${svnrepository} fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -233,6 +232,18 @@ sub setup_direct_svn {
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	chdir "fink" or die "Can't cd to fink\n";
 
+	for my $tree (@trees) {
+		&print_breaking("Checking out $tree tree...");
+
+		$cmdd = "$cmd update $tree";
+
+		if ($username ne "root") {
+			$cmdd = "/usr/bin/su $username -c '$cmdd'";
+		}
+		if (&execute($cmdd)) {
+			die "Downloading package descriptions from CVS failed.\n";
+		}
+	}
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
@@ -342,6 +353,7 @@ sub do_direct_svn {
 
 	my $errors = 0;
 
+	$cmd = "$cmd --depth=files";
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		$errors++;
@@ -351,7 +363,13 @@ sub do_direct_svn {
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	for my $tree (@trees) {
-		$class->update_version_file(distribution => $tree);
+		$cmd = "$svnpath ${verbosity} update ${tree}";
+		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
+		if (&execute($cmd)) {
+			$errors++;
+		} else {
+			$class->update_version_file(distribution => $tree);
+		}
 	}
 
 	die "Updating using svn failed. Check the error messages above.\n" if ($errors);
