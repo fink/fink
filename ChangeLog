@@ -1,3 +1,8 @@
+2011-11-10  Daniel Macks  <dmacks@netspace.org>
+
+	* bootstrap: Prohibit (not just warn-then-permit) bootstrapping
+	into /usr/local, and also for any subdir of it
+
 2011-09-12  Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 	* fink.in:  Revert accidental change to shebang line.

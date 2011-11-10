@@ -388,27 +388,19 @@ foreach my $forbidden (
 	   /usr/lib /usr/include /usr/bin /usr/sbin /usr/share
 	   /usr/libexec /usr/X11R6 /usr/X11
 	   /root /private /cores /boot
-	   /debian /debian/.*)
+	   /debian /debian/.*
+	   /usr/local /usr/local/.*)
 ) {
 	if ($installto =~ /^$forbidden$/i) {
 		print "ERROR: Refusing to install into '$installto'.\n";
+		if ($installto =~ /^\/usr\/local/) {
+			&print_breaking(
+				 "/usr/local is a common place that other third-party software uses, so installing in that area often leads to conflicts between them and breakage of fink and/or other things there. In addition, this hierarchy is automatically used by XCode and other compilers, which often leads to unexpected and sometimes unpredictable results for when fink-supplied files are installed there and for fink itself.");
+		}
 		redo OPT_BASEPATH;
 	}
 }
-if ($installto =~ /^\/usr\/local$/i) {
-	my $answer =
-		&prompt_boolean("Installing Fink in /usr/local is not recommended. ".
-						"It may conflict with third party software also ".
-						"installed there. It will be more difficult to get ".
-						"rid of Fink when something breaks. Are you sure ".
-						"you want to install to /usr/local?", default => 0);
-	if ($answer) {
-		&print_breaking("You have been warned. Think twice before reporting ".
-						"problems as a bug.");
-	} else {
-		redo OPT_BASEPATH;
-	}
-} elsif (-d $installto) {
+if (-d $installto) {
 	# check existing contents
 	if (has_installed_software $installto) {
 		&print_breaking("ERROR: '$installto' exists and contains installed ".
