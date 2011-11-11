@@ -73,8 +73,7 @@ sub fetch_url_to_file {
 	my ($origurl, $file, $custom_mirror, $tries, $cont, $nomirror, $dryrun, $downloaddir, $checksum, $checksum_type) = @_;
 	my $options = {};
 
-	if (ref $origurl eq 'HASH')
-	{
+	if (ref $origurl eq 'HASH') {
 		  $options = $origurl;
 
 		  $origurl       = $options->{'url'};
@@ -121,7 +120,7 @@ sub fetch_url_to_file {
 		$ENV{ftp_proxy} = $ftp_proxy;
 		$ENV{FTP_PROXY} = $ftp_proxy;
 	}
-	
+
 	my ($mirrorname, $origmirror, $nextmirror);
 	my ($mirrorindex, $mirrororder, @mirror_list);
 	my ($path, $basename);
@@ -158,8 +157,7 @@ sub fetch_url_to_file {
 		$basename = $2;
 		$nomirror = 1;
 		#wget does not support file::. Use curl for this fetch. All 10.2+ & 6+ have it.
-		if($config->param_default("DownloadMethod") eq "wget")
-		{	
+		if ($config->param_default("DownloadMethod", "") eq "wget") {
 			&print_breaking("Notice: wget does not support file://. Using curl for this fetch.");
 			$config->set_param("DownloadMethod", "curl");
 			$cmd = &download_cmd($origurl, $file);
@@ -228,12 +226,10 @@ sub fetch_url_to_file {
 								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
 			}
 		}
-		if (exists $options->{'try_all_mirrors'} and $options->{'try_all_mirrors'})
-		{
+		if (exists $options->{'try_all_mirrors'} and $options->{'try_all_mirrors'}) {
 			$result = $default_value;
 		}
-		else
-		{
+		else {
 			$result = &prompt_selection("How do you want to proceed?",
 				intro   => "The file \"$file\" already exists".$checksum_msg,
 				default => [ value => $default_value ],
@@ -368,8 +364,7 @@ sub download_cmd {
 		if ($config->verbosity_level() == 0) {
 			$cmd .= " -s -S";
 		}
-		if ($config->has_param("DownloadTimeout"))
-		{
+		if ($config->has_param("DownloadTimeout")) {
 			$cmd .= " --max-time " . int($config->param("DownloadTimeout"));
 		}
 		if (not $config->param_boolean("ProxyPassiveFTP")) {
@@ -385,8 +380,11 @@ sub download_cmd {
 		}
 	}
 
+	# Download method
+	my $download_method = $config->param_default("DownloadMethod", "");
+
 	# if we would prefer wget (or didn't have curl available), check for wget
-	if (!$cmd or $config->param_default("DownloadMethod") eq "wget") {
+	if (!$cmd or $download_method eq "wget") {
 		if (-x "$basepath/bin/wget" or -x "/usr/bin/wget") {
 			$cmd = "wget -U 'fink/". Fink::FinkVersion::fink_version() ."'";
 			if ($config->verbosity_level() >= 1) {
@@ -404,17 +402,16 @@ sub download_cmd {
 			if ($cont) {
 				$cmd .= " -c"
 			}
-		} elsif ($config->param_default("DownloadMethod") eq "wget") {
-			&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (program not found)");
+		} elsif ($download_method eq "wget") {
+			&print_breaking("Cannot use DownloadMethod:".$download_method." (program not found)");
 		}
 	}
 
 	# if we would prefer axel (or didn't have curl or wget available), check for axel
-	if (!$cmd or $config->param_default("DownloadMethod") eq "axel"
-						 or $config->param_default("DownloadMethod") eq "axelautomirror") {
+	if (!$cmd or $download_method eq "axel" or $download_method eq "axelautomirror") {
 		if (-x "$basepath/bin/axel" or -x "/usr/bin/axel") {
 			$cmd = "axel";
-			if ($config->param_default("DownloadMethod") eq "axelautomirror") {
+			if ($download_method eq "axelautomirror") {
 				$cmd = "axel -S 1";
 			}
 			if ($config->verbosity_level() >= 1) {
@@ -424,13 +421,13 @@ sub download_cmd {
 				$cmd .= " -o $cmd_file";
 			}
 			# Axel always continues downloads, by default
-		} elsif ($config->param_default("DownloadMethod") eq "axel" or $config->param_default("DownloadMethod") eq "axelautomirror") {
-			&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (program not found)");
+		} elsif ($download_method eq "axel" or $download_method eq "axelautomirror") {
+			&print_breaking("Cannot use DownloadMethod:".$download_method." (program not found)");
 		}
 	}
 
 	# lftpget doesn't let us rename a file as we download, so we skip unless $file eq &filename($url)
-	if (!$cmd or $config->param_default("DownloadMethod") eq "lftpget") {
+	if (!$cmd or $download_method eq "lftpget") {
 		if (-x "$basepath/bin/lftpget" or -x "/usr/bin/lftpget") {
 			if ($file eq &filename($url)) {
 				$cmd = "lftpget";
@@ -441,15 +438,15 @@ sub download_cmd {
 					$cmd .= " -c";
 				}
 			} else {
-				&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (no support for renaming the downloaded file)");
+				&print_breaking("Cannot use DownloadMethod:".$download_method." (no support for renaming the downloaded file)");
 			}
-		} elsif ($config->param_default("DownloadMethod") eq "lftpget") {
-			&print_breaking("Cannot use DownloadMethod:".$config->param_default("DownloadMethod")." (program not found)");
+		} elsif ($download_method eq "lftpget") {
+			&print_breaking("Cannot use DownloadMethod:".$download_method." (program not found)");
 		}
 	}
 
 	# if we would prefer aria2 (or didn't have anything else available), check for aria2
-	if (!$cmd or $config->param_default("DownloadMethod") eq "aria2") {
+	if (!$cmd or $download_method eq "aria2") {
 		if (-x "$basepath/bin/aria2c" or -x "/usr/bin/aria2c") {
 			$cmd = "aria2c --connect-timeout 30 --allow-overwrite=true --auto-file-renaming=false -U 'fink/". Fink::FinkVersion::fink_version() ."'";
 			if ($config->verbosity_level() == 0) {
