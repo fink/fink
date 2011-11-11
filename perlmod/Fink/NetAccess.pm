@@ -144,14 +144,14 @@ sub fetch_url_to_file {
 			$origmirror = $custom_mirror;
 		} else {
 			$origmirror = Fink::Mirror->get_by_name($mirrorname);
-		}		
-		if($dryrun) {
+		}
+		if ($dryrun) {
 		  $origmirror->initialize(); # We want every mirror when printing
 		}
-	} elsif ($origurl =~  m|^file://   			
+	} elsif ($origurl =~  m|^file://
 							(.*?)						# (optional) Path into $1
 							([^/]+\Z)  					# Tarball into $2
-					 	 |x  ) { 
+					 	 |x  ) {
 		# file:// URLs
 		$path = "file://$1";
 		$basename = $2;
@@ -167,44 +167,43 @@ sub fetch_url_to_file {
 	} elsif ($origurl =~  m|^([^:]+://[^/]+/)			# Match http://domain/ into $1
 							(.*?)						# (optional) Path into $2
 							([^/]+\Z)  					# Tarball into $3
-					 	 |x  ) { 
+					 	 |x  ) {
 		# Not a custom mirror, parse a full URL
 		$path = $2;
 		$basename = $3;
 		$origmirror = Fink::Mirror->new_from_url($1);
 	} else {
 		# $origurl did not match. Probably a bare tarball name. Check for it
-		# If its not there, fail. No need to ask, since 
+		# If its not there, fail. No need to ask, since
 		# We don't complain if they already exists, because the bootstrap does this.
-		if (-f $file)
-		{
+		if (-f $file) {
 			return 0;
 		} else {
-			return 1;			
+			return 1;
 		}
 	}
 
 	# set up the mirror ordering
 	$mirrororder = $config->param_default("MirrorOrder", "MasterLast");
-	if($mirrororder eq "MasterNever" || $dryrun) {
+	if ($mirrororder eq "MasterNever" || $dryrun) {
 	  $nomirror = 1;
 	}
-	if($nomirror == 0) {
+	if ($nomirror == 0) {
 		push(@mirror_list, Fink::Mirror->get_by_name("master"));
-		if($mirrororder eq "MasterFirst") {
+		if ($mirrororder eq "MasterFirst") {
 			push(@mirror_list, $origmirror);
-		} elsif($mirrororder eq "MasterLast") {
+		} elsif ($mirrororder eq "MasterLast") {
 			unshift(@mirror_list, $origmirror);
-		} elsif($mirrororder eq "ClosestFirst") {
+		} elsif ($mirrororder eq "ClosestFirst") {
 			$origmirror->merge_master_mirror($mirror_list[0]);
 			$mirror_list[0] = $origmirror;
 		}
 	} else {
-	  if(defined $origmirror) {
+	  if (defined $origmirror) {
 		  push(@mirror_list, $origmirror);
 		}
 	}
-	if(defined $mirror_list[0]) {
+	if (defined $mirror_list[0]) {
 	  $url = $mirror_list[0]->get_site();
 	}
 
@@ -253,14 +252,14 @@ sub fetch_url_to_file {
 	}
 
 	while (1) {	 # retry loop, left with return in case of success
-		
-		if($mirrorindex < $#mirror_list) { 
+
+		if ($mirrorindex < $#mirror_list) {
 		 	$nextmirror = $mirror_list[$mirrorindex + 1]->{name};
 		} else {
 			$nextmirror = "";
 		}
-		
-		if(defined $url && 
+
+		if (defined $url &&
 		   (($url =~ /^master:/) || ($mirror_list[$mirrorindex]->{name} eq "master"))) {
 			$url =~ s/^master://;
 			$url .= $file;    # SourceRenamed tarball name
@@ -281,7 +280,7 @@ sub fetch_url_to_file {
 		} else {
 			$cont = 0;
 		}
-		
+
 		if ($dryrun) {
 			print " $url";
 		} elsif ($cont) {
@@ -290,7 +289,7 @@ sub fetch_url_to_file {
 		} else {
 			$result = &execute("$cmd $cmd_url");
 		}
-		
+
 		if ($dryrun or ($result or not -f $file)) {
 			# failure, continue loop
 		} else {
@@ -298,7 +297,7 @@ sub fetch_url_to_file {
 				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
 				&print_breaking("The checksum of the file is incorrect. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
-								"Expected: $checksum\nActual: " . 
+								"Expected: $checksum\nActual: " .
 								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
 				# checksum failure, continue loop
 			} else {
@@ -308,27 +307,26 @@ sub fetch_url_to_file {
 		}
 
 		### failure handling
-		if(not $dryrun) {
+		if (not $dryrun) {
 			&print_breaking("Downloading the file \"$file\" failed.");
 			$tries++;
 		}
 
 		# let the Mirror object handle this mess...
 		RETRY: {
-			if(defined $mirror_list[$mirrorindex])
-			{
+			if (defined $mirror_list[$mirrorindex]) {
 				my $non_interactive = $dryrun;
 				$non_interactive = $options->{'try_all_mirrors'} if (exists $options->{'try_all_mirrors'} and $options->{'try_all_mirrors'});
 				$url = $mirror_list[$mirrorindex]->get_site_retry($nextmirror, $non_interactive);
 			} else {
-				return 1;	
+				return 1;
 			}
 		}
 		if ($url eq "retry-next") {
 			# Start new mirror with the last used site, or first site
 			$url = $mirror_list[$mirrorindex + 1]->get_site();
 			$mirrorindex++;
-			if($mirrorindex < $#mirror_list) { 
+			if ($mirrorindex < $#mirror_list) {
 				$nextmirror = $mirror_list[$mirrorindex + 1]->{name};
 			} else {
 				$nextmirror = "";

@@ -287,11 +287,11 @@ sub do_finish {
 	$package = Fink::PkgVersion->match_package("fink");
 	if (not $package->is_installed()) {
 		Fink::Engine::cmd_install("fink");
-	
+
 		# re-execute ourselves before we update the rest
 		print "Re-executing fink to use the new version...\n";
 		exec "$basepath/bin/fink selfupdate-finish";
-	
+
 		# the exec doesn't return, but just in case...
 		die "re-executing fink failed, run 'fink selfupdate-finish' manually\n";
 	} else {
@@ -361,7 +361,7 @@ EOMSG
 	}
 
 	# update them
-	Fink::Engine::cmd_install(@elist);	
+	Fink::Engine::cmd_install(@elist);
 
 	# remove the list of UpdatePackages
 	if ($updatepackages) {
@@ -526,7 +526,7 @@ sub list_plugins {
 	foreach my $plugclass ( &_plugins ) {
 		my ($shortname) = $plugclass =~ /^.*\:\:([^\:]*)$/;
 
-		my $flags = 
+		my $flags =
 			( $plugclass->system_check() ? '+' : '-' ) .
 			( lc($shortname) eq $default_method ? 'i' : ' ' );
 

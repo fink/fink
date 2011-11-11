@@ -137,7 +137,7 @@ The file or filehandle to output to. Defaults to stdout.
 
 =item basedir
 
-The directory relative to which all paths should be considered. This includes 
+The directory relative to which all paths should be considered. This includes
 the $dir passed directly to I<scan>.
 
 =back
@@ -147,12 +147,12 @@ the $dir passed directly to I<scan>.
 sub scan {
 	my ($self, $dir, %opts) = @_;
 	$self = $self->new(%opts) unless ref $self;
-	
+
 	my $cwd = cwd;
 	chdir $opts{basedir} if defined $opts{basedir};
 	my $out = $opts{output};
 	my ($dummy, $tmpfile);
-	
+
 	eval {
 		# Open the output
 		if (defined $out) {
@@ -171,11 +171,11 @@ sub scan {
 		} else {
 			$self->{outfh} = \*STDOUT;
 		}
-		
+
 		# Find all the debs
 		find({ no_chdir => 1, wanted => sub {
 			return unless /\.deb$/ && -f;
-			
+
 			eval {
 				$self->_process_deb($_);
 			};
@@ -187,7 +187,7 @@ sub scan {
 				}
 			}
 		}}, $dir);
-		
+
 		if (defined $out && ref($out) ne 'GLOB') {
 			close $self->{outfh} or die "ERROR: Can't close output: $!\n";
 			chmod 0644, $tmpfile or die "ERROR: Can't chown tmp file: $!\n";
@@ -231,12 +231,12 @@ sub scan_dists {
 
 	my $cwd = cwd;
 	chdir $opts{basedir} if defined $opts{basedir};
-	
+
 	my $err;
 	for my $dir (@dirs) {
 		eval {
 			mkdir_p($dir) unless -d $dir;
-			
+
 			# Write out the release
 			if (defined(my $release = $opts{release})) {
 				if ($dir =~ m,^(?:.*/)?dists/(.*)/binary-[^/]+$,) {
@@ -259,7 +259,7 @@ sub scan_dists {
 					close RELEASE;
 				}
 			}
-			
+
 			print STDERR "Scanning $dir\n" if $self->{verbosity};
 			$self->scan($dir, %opts, output => "$dir/Packages.gz");
 		};
@@ -269,7 +269,7 @@ sub scan_dists {
 			$err = $@ unless defined $err;
 		}
 	}
-	
+
 	chdir $cwd;
 	die $err if $err;
 }
@@ -294,7 +294,7 @@ sub scan_fink {
 	my ($self, $options, @trees) = @_;
 	$options = {} unless defined $options;
 	$self = $self->new(%$options) unless ref $self;
-	
+
 	$self->_ensure_fink;
 
 	my $config = $Fink::Config::config;  # stupid use() spaghetti!
@@ -303,7 +303,7 @@ sub scan_fink {
 	# Get the tree list
 	@trees = $config->get_treelist unless @trees;
 	my @dists = map { "dists/$_/binary-".$config->param('Debarch') } @trees;
-	
+
 	# Get some more params
 	my $basedir = $Fink::Config::basepath . "/fink";
 	my %release = (
@@ -311,11 +311,11 @@ sub scan_fink {
 		Label	=> 'Fink',
 		Architecture => $config->param('Debarch'),
 	);
-	
-	# Always use a DB 
+
+	# Always use a DB
 	$self->{db} = $Fink::Config::basepath . "/var/lib/fink/scanpackages.db"
 		unless defined $self->{db};
-	
+
 	$self->scan_dists({%$options, basedir => $basedir, release => \%release},
 		@dists);
 }
@@ -331,7 +331,7 @@ scan_fink.
 
 sub default_cache {
 	my ($self) = @_;
-	
+
 	$self->_ensure_fink;
 	return $Fink::Config::basepath . "/var/lib/fink/scanpackages.db";
 }
@@ -340,7 +340,7 @@ sub default_cache {
 sub initialize {
 	my ($self, %opts) = @_;
 	$self->SUPER::initialize();
-	
+
 	# Setup options
 	@$self{qw(pdb restrictive verbosity)} = (1, 1, 1); # defaults
 	@$self{keys %opts} = values %opts;
@@ -351,7 +351,7 @@ sub initialize {
 # my $hashref = $sp->_control($debpath);
 sub _control {
 	my ($self, $path) = @_;
-	
+
 	my (%control, $field);
 	my $dpkgdeb = $self->_prefix . "/bin/dpkg-deb";
 	open CONTROL, '-|', $dpkgdeb, '-f', $path
@@ -370,7 +370,7 @@ sub _control {
 	};
 	close CONTROL;
 	die $@ if $@;
-	
+
 	return \%control;
 }
 
@@ -380,10 +380,10 @@ sub _control {
 # Fink::Scanpackages->_ensure_fink;
 sub _ensure_fink {
 	my ($self) = @_;
-	
+
 	unless (ref($self) && $self->{_fink_loaded}) {
 		require Fink::Config;
-		
+
 		# Make sure fink has a config
 		&_use_fink() unless defined $Fink::Config::config;
 		$self->{_fink_loaded} = 1 if ref($self);
@@ -395,11 +395,11 @@ sub _ensure_fink {
 # $sp->_ensure_pdb;
 sub _ensure_pdb {
 	my ($self) = @_;
-	
+
 	unless ($self->{_pdb_loaded}) {
 		$self->_ensure_fink;
 		require Fink::Package;
-		
+
 		print STDERR "Loading Fink package database\n" if $self->{verbosity};
 		my $dummy;
 		capture {
@@ -415,23 +415,23 @@ sub _ensure_pdb {
 sub _merge_fink_fields {
 	my ($self, $control) = @_;
 	return unless $self->{pdb};
-	
+
 	# Don't bother getting license unless we care about restrictive
 	if (!exists $control->{Section} || !exists $control->{Priority}
 			|| (!$self->{restrictive} && !exists $control->{'Fink-License'})) {
 		$self->_ensure_pdb;
-		
+
 		my $po = Fink::Package->package_by_name($control->{Package});
 		if (defined $po) {
 			my $pv = $po->get_version($control->{Version});
 			if (!defined $pv) { # heuristic if no exact vers
 				my @vers = $po->list_versions;
-				$pv = $po->get_version(latest_version(@vers)) if @vers; 
+				$pv = $po->get_version(latest_version(@vers)) if @vers;
 			}
-			
+
 			if (defined $pv) {
 				my ($prio, $section) = &_fink_fields($pv);
-				
+
 				$control->{Priority} = $prio
 					unless exists $control->{Priority};
 				$control->{Section} = $section
@@ -449,9 +449,9 @@ sub _merge_fink_fields {
 # my $control = $sp->_process_deb($debpath);
 sub _process_deb {
 	my ($self, $debpath) = @_;
-	
+
 	my $control;
-	
+
 	# Try to use the DB first
 	my $debtime = (stat($debpath))[9];
 	my $db = $self->_db;
@@ -468,26 +468,26 @@ sub _process_deb {
 	} else {
 		print STDERR "New package: $debpath\n" if $self->{verbosity};
 	}
-	
+
 	# Can't use it unless there's a license
 	undef $control if !$self->{restrictive}
 		&& !exists $control->{'Fink-License'};
-	
+
 	unless (defined $control) {
 		# Get data from the .deb
 		my $md5 = &_md5($debpath);
 		$control = $self->_control($debpath);
-		
+
 		# Add some fields
 		$control->{Filename} = $debpath;
 		$control->{MD5sum} = $md5;
 		$control->{Size} = -s $debpath;
 		$self->_merge_fink_fields($control);
-		
+
 		$db->{$kmtime} = $debtime;
 		$db->{$kcont} = nfreeze($control);
 	}
-	
+
 	$self->_output($control);
 }
 
@@ -496,19 +496,19 @@ sub _process_deb {
 # $sp->_output($control);
 sub _output {
 	my ($self, $control) = @_;
-	
+
 	# Can't use if no license or restrictive license
 	return if !$self->{restrictive} && (
 		!exists $control->{'Fink-License'}
 		|| lc $control->{'Fink-License'} eq 'restrictive'
 		|| lc $control->{'Fink-License'} eq 'commercial');
-	
+
 	# Order to output fields, from apt-pkg/tagfile.cc
 	my @fieldorder = qw(Package Essential Status Priority Section
 		Installed-Size Maintainer Architecture Source Version Replaces Provides
 		Depends Pre-Depends Recommends Suggests Conflicts Conffiles Filename
 		Size MD5sum SHA1sum Description);
-	
+
 	# Output the fields
 	my $out = '';
 	for my $field (@fieldorder, keys %$control) {
@@ -518,7 +518,7 @@ sub _output {
 		}
 	}
 	$out .= "\n";
-	
+
 	print { $self->{outfh} } $out;
 }
 
@@ -546,7 +546,7 @@ sub _db {
 		} else {
 			warn "WARNING: Can't lock DB: $!\n";
 		}
-		
+
 		# Handle errors
 		if (!$self->{_db_file}) {
 			close $fh if $fh;
@@ -649,12 +649,12 @@ if (exists &Fink::PkgVersion::get_priority) {
 	*_fink_fields = sub {
 		my $section = $_[0]->get_section();
 		$section = 'base' if $section eq 'bootstrap';
-		
+
 		my $prio = 'optional';
 		$prio = 'important'
 			if $_[0]->get_name eq 'apt' || $_[0]->get_name eq 'apt-shlibs';
 		$prio = 'required' if $_[0]->param_boolean("Essential");
-		
+
 		return ($prio, $section);
 	};
 }

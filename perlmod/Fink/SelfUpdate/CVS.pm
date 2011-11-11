@@ -116,20 +116,20 @@ sub setup_direct_cvs {
 	# Thanks to Tanaka Atushi for information about the quoting syntax which
 	# allows CVS proxies to function.
 	my $proxcmd=''; # default to null
-	
+
 	my $http_proxy=$config->param_default("ProxyHTTP", ""); # get HTTP proxy information from fink.conf
-	if ($http_proxy) { # HTTP proxy has been set            
+	if ($http_proxy) { # HTTP proxy has been set
 		my $proxy_port;
 		$http_proxy =~ s|http://||; # strip leading 'http://', if present.
 		if  ($http_proxy =~ /:\d+/) { # extract TCP port number if present
 			my @tokens=split /:/,$http_proxy;
 			$proxy_port=pop @tokens ; # port is the last item following a colon
-			$http_proxy=join ':',@tokens ; # since we may have a username:password combo 
+			$http_proxy=join ':',@tokens ; # since we may have a username:password combo
 		}
 		$proxcmd=";proxy=$http_proxy";
 		$proxcmd="$proxcmd;proxyport=$proxy_port" if $proxy_port;
 	}
- 
+
 	$username = "root";
 	if (exists $ENV{SUDO_USER}) {
 		$username = $ENV{SUDO_USER};
@@ -287,7 +287,7 @@ sub setup_direct_cvs {
 					 symlink $linkto, "$tempfinkdir/$rel" or
 						 die "Can't create symlink \"$tempfinkdir/$rel\": $!\n";
 				 } elsif (-d and not -d "$tempfinkdir/$rel") {
-					 &print_breaking("Merging $basepath/$rel...\n") 
+					 &print_breaking("Merging $basepath/$rel...\n")
 					 	if ($config->verbosity_level() > 1);
 					 mkdir_p "$tempfinkdir/$rel" or
 						 die "Can't create directory \"$tempfinkdir/$rel\": $!\n";

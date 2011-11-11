@@ -94,9 +94,9 @@ sub word_wrap {
 	my ($s, $length, $prefix1, $prefix2) = @_;
 	$prefix1 = "" unless defined $prefix1;
 	$prefix2 = "" unless defined $prefix2;
-	
+
 	my @lines;
-	
+
 	my $first = 1;
 	my $prefix = $prefix1;
 	my $reallength = $length - length($prefix);
@@ -118,7 +118,7 @@ sub word_wrap {
 		}
 	}
 	push @lines, "$prefix$s";
-	
+
 	return @lines;
 }
 
@@ -504,11 +504,11 @@ A false $category represents an uncategorized prompt.
 
 {
 	my $skip_cats = undef;
-	
+
 	sub should_skip_prompt {
 		my $cat = lc shift;
 		return 0 unless $cat;
-		
+
 		if (!defined $skip_cats) {
 			my $str = $Fink::Config::config->param_default(
 				'SkipPrompts', '');
@@ -569,20 +569,20 @@ sub get_input {
 			&& ($opts{timeout} == 0 || $opts{timeout} > $skip_timeout) ) {
 		$opts{timeout} = $skip_timeout;
 	}
-	
+
 	# handle suppressed prompts
 	my $dontask = 0;
 	require Fink::Config;
 	if (Fink::Config::get_option("dontask")) {
 		$dontask = 1;
 	}
-	
+
 	# print the prompt string (leaving cursor on the same line)
 	&print_breaking("Default answer will be chosen in $opts{timeout} "
 		. "seconds...\n") if $opts{timeout} && !$dontask;
 	$prompt = "" if !defined $prompt;
 	&print_breaking("$prompt ", 0);
-	
+
 	if ($dontask) {
 		print "(assuming default)\n";
 		return "";
@@ -615,7 +615,7 @@ sub get_input {
 
   my $width = get_term_width;
 
-This function returns the width of the terminal window, or zero if STDOUT 
+This function returns the width of the terminal window, or zero if STDOUT
 is not a terminal. Uses Term::ReadKey if it is available, greps the TERMCAP
 env var if ReadKey is not installed, tries tput if neither are available,
 and if nothing works just returns 80. This function always returns a
@@ -626,13 +626,11 @@ number, not undef.
 sub get_term_width {
 	my ($width, $dummy);
 	use POSIX qw(isatty);
-	if (isatty(fileno STDOUT))
-	{
+	if (isatty(fileno STDOUT)) {
 		if (eval { require Term::ReadKey; 1; }) {
 			import Term::ReadKey qw(&GetTerminalSize);
-			($width, $dummy, $dummy, $dummy) = &GetTerminalSize();						 
-		}
-		else {
+			($width, $dummy, $dummy, $dummy) = &GetTerminalSize();
+		} else {
 			$width =~ s/.*co#([0-9]+).*/$1/ if defined ($width = $ENV{TERMCAP});
 			unless (defined $width and $width =~ /^\d+$/) {
 				chomp($width = `tput cols`)		 # Only use tput if it won't spout an error.
@@ -645,8 +643,7 @@ sub get_term_width {
 				}
 			}
 		}
-	}
-	else {
+	} else {
 		# Not a TTY
 		$width = 0;
 	}
@@ -679,7 +676,7 @@ outputs merged.
 	}
 	sub _fh_log { print $capterr @_, "\n\n" if defined $capterr }
 }
-	
+
 # Die, printing to a log FH (in addition to stderr)
 sub _fh_die {
 	my $msg = shift;
@@ -698,7 +695,7 @@ sub _fh_save {
 	return $save;
 }
 
-# Reading a filehandle, then restore to the saved FH 
+# Reading a filehandle, then restore to the saved FH
 # _fh_restore \*FH, $save, \$read_into;  Last arg optional
 sub _fh_restore {
 	my ($fh, $save, $into) = @_;
@@ -709,19 +706,19 @@ sub _fh_restore {
 		_fh_die "Can't read filehandle: $!" if $fh->error;
 	}
 	close $fh or _fh_die "Can't close filehandle: $!";
-	
+
 	# Try not to use an excessive open mode
 	my $mode = (fcntl($save, F_GETFL, 0) & O_RDWR) ? '+>&' : '>&';
 	open $fh, $mode, $save or _fh_die "Can't reopen filehandle: $!";
 	close $save or _fh_die "Can't close saved filehandle: $!";
-}	
+}
 
 sub capture (&$;$) {
 	my ($code, $out, $err, @toomany) = @_;
 	_fh_die "Too many arguments!" if @toomany;
 	my ($die, $ret, $setupok);
 	my $array = wantarray;
-	
+
 	# Setup the filehandles
 	my ($savout, $saverr);
 	if (defined $out) {
@@ -738,18 +735,18 @@ sub capture (&$;$) {
 			}
 		}
 		$setupok = 1; # Now ok to save output
-		
+
 		# Run!
 		eval { $ret = $array ? [ &$code() ] : scalar(&$code()) };
 		$die ||= $@;
-		
+
 		# Tear down
 		_fh_restore(*STDERR{IO}, $saverr, $setupok && $out eq $err ? () : $err)
 			if defined $saverr;
 	};
 	$die ||= $@;
 	_fh_restore(*STDOUT{IO}, $savout, $setupok ? $out : ()) if defined $savout;
-	
+
 	# Finish up
 	_fh_die $die if $die;
 	return $array ? @$ret : $ret;

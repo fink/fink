@@ -82,10 +82,10 @@ Fink::Bootstrap - Bootstrap a fink installation
 
 =head1 DESCRIPTION
 
-This module defines functions that are used to bootstrap a fink installation 
+This module defines functions that are used to bootstrap a fink installation
 or update to a new version.  The functions are intended to be called from
-scripts that are not part of fink itself.  In particular, the scripts 
-bootstrap.pl, inject.pl, scripts/srcdist/dist-module.pl, and fink's 
+scripts that are not part of fink itself.  In particular, the scripts
+bootstrap.pl, inject.pl, scripts/srcdist/dist-module.pl, and fink's
 postinstall.pl all depend on functions from this module.
 
 =head2 Functions
@@ -110,11 +110,11 @@ The optional argument $bootstrap is a boolean, designating whether we have
 been called by bootstrap.pl or not.  If absent, it defaults to false.
 
 The second optional argument $arch specifies the architecture for Fink
-which was chosen during bootstrap (from the bootstrap script), or the 
+which was chosen during bootstrap (from the bootstrap script), or the
 architecture under which Fink is currently being installed (when called
 from postinstall.pl).  It defaults to the empty string.
 
-This function also warns the user about certain bad configurations, or 
+This function also warns the user about certain bad configurations, or
 incorrect versions of gcc.
 
 After every release of Mac OS X, fink should be tested against the new
@@ -137,7 +137,7 @@ sub check_host {
 	#  had build 1493.)
 
 	if (-x '/usr/bin/gcc-3.3') {
-		foreach(`/usr/bin/gcc-3.3 --version 2>&1`) {
+		foreach (`/usr/bin/gcc-3.3 --version 2>&1`) {
 			if (/build (\d+)\)/) {
 				$build = $1;
 				last;
@@ -145,7 +145,7 @@ sub check_host {
 		}
 		($build >= 1493) or die <<END;
 
-Your version of the gcc 3.3 compiler is out of date.  Please update to the 
+Your version of the gcc 3.3 compiler is out of date.  Please update to the
 August 2003 Developer Tools update, or to Xcode, and try again.
 
 END
@@ -203,10 +203,10 @@ GCC_MSG
 
 	# if we are not using the transitional tree, and gcc-4.0 is present, it
 	# must be build 5247 (from XCode 2.2.1)
-	
+
 	if ($transitional eq "") {
 		if (-x '/usr/bin/gcc-4.0') {
-			foreach(`/usr/bin/gcc-4.0 --version 2>&1`) {
+			foreach (`/usr/bin/gcc-4.0 --version 2>&1`) {
 				if (/build (\d+)\)/) {
 					$build = $1;
 					last;
@@ -215,7 +215,7 @@ GCC_MSG
 			($build >= 5247) or die <<END;
 
 You are attempting to use the new 10.4 tree with an old version (build $build)
-of the gcc 4.0 compiler, which is not supported.  Please update your XCode to 
+of the gcc 4.0 compiler, which is not supported.  Please update your XCode to
 XCode 2.2.1 or later, and try again.
 
 END
@@ -319,69 +319,69 @@ Returns 0 on success, 1 on failure.
 =cut
 
 sub inject_package {
-	
+
 	import Fink::Services qw(&read_config);
 	require Fink::Config;
 
 	### Note to developers: Fink::Config loads Fink::FinkVersion, but it is
-	### important not to call Fink::FinkVersion::fink_version or 
+	### important not to call Fink::FinkVersion::fink_version or
 	### Fink::FinkVersion::get_arch during inject_package, because inject.pl
 	### may be running a version of fink in which those values are incorrect.
-	
+
 	my $package = shift;
 	my $packagefiles = shift;
 	my $info_script = shift;
-	
+
 	### locate Fink installation
-	
+
 	my $param = shift;
 
-	my ($notlocated, $bpath) = &locate_Fink($param); 	
+	my ($notlocated, $bpath) = &locate_Fink($param);
 
 	if ($notlocated) {
 		return 1;
 	}
-	
+
 	### determine $distribution
 	my $distribution = readlink("$bpath/fink/dists");
 #	print "DISTRIBUTION $distribution\n";
 
 	### get version
-	
+
 	my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
-	
+
 	### load configuration
-	
+
 	my $config = &read_config("$bpath/etc/fink.conf",
 							  { Basepath => $bpath });
-	
+
 	### parse config file for root method
 
 	&find_rootmethod($bpath);
-	
+
 	### check that local/injected is in the Trees list
-	
+
 	&add_injected_to_trees($distribution);
 
 	### create tarball for the package
-	
+
 	my $result = &create_tarball($bpath, $package, $packageversion, $packagefiles);
 	if ($result == 1 ) {
 		return $result;
 	}
-	
+
 	### create and copy description file
-	
+
 	$result = &copy_description($info_script, $bpath, $package, $packageversion, $packagerevision, undef, "$package.info", "$package.info.in");
 	if ($result == 1 ) {
 		return $result;
 	}
-	
+
 	### install the package
-	
+
 	print "Installing package...\n";
 	print "\n";
-	
+
 	if (&execute("$bpath/bin/fink install $package-$packageversion-$packagerevision")) {
 		print "\n";
 		&print_breaking("Installing the new $package package failed. ".
@@ -394,7 +394,7 @@ sub inject_package {
 		  "a new $package package.");
 	}
 	print "\n";
-	
+
 	return 0;
 }
 
@@ -437,7 +437,7 @@ sub add_injected_to_trees {
 
 	my ($package_list, $perl_is_supported) = additional_packages();
 
-Returns (1) a reference to the list of non-essential packages which must be 
+Returns (1) a reference to the list of non-essential packages which must be
 installed during bootstrap or selfupdate (this answer is affected by the
 currently-running version of perl), and (2) a boolean value which is
 "True" if the currently-running version of perl is on the list of those
@@ -474,7 +474,7 @@ sub additional_packages {
 
 }
 
-=item bootstrap1 
+=item bootstrap1
 
 	bootstrap1();
     bootstrap1($item1,$item2,...);
@@ -560,7 +560,7 @@ sub bootstrap1 {
 	$config->clear_flag("bootstrap1");
 }
 
-=item bootstrap2 
+=item bootstrap2
 
 	bootstrap2();
 
@@ -641,7 +641,7 @@ sub get_bsbase {
 
 	my $result = check_files();
 
-Tests whether the current directory contains all of the files needed to 
+Tests whether the current directory contains all of the files needed to
 compile fink.  Returns 0 on success, 1 on failure.
 
 Called by bootstrap.pl and fink's inject.pl.
@@ -704,9 +704,9 @@ sub locate_Fink {
 	my $param = shift;
 
 	my ($guessed, $path, $bpath);
-	
+
 	$guessed = "";
-	
+
 	if (defined $param) {
 		$bpath = $param;
 	} else {
@@ -744,7 +744,7 @@ sub locate_Fink {
 
 	find_rootmethod($bpath);
 
-Reexecute "./inject.pl $bpath" as sudo, if appropriate.  Called by 
+Reexecute "./inject.pl $bpath" as sudo, if appropriate.  Called by
 inject_package().
 
 =cut
@@ -754,7 +754,7 @@ sub find_rootmethod {
 	# for now, we just use sudo...
 
 my $bpath = shift;
-	
+
 	if ($> != 0) {
 		my $env = '';
 		$env = "/usr/bin/env PERL5LIB='$ENV{'PERL5LIB'}'" if (exists $ENV{'PERL5LIB'} and defined $ENV{'PERL5LIB'});
@@ -767,49 +767,49 @@ my $bpath = shift;
 
 	my $result = create_tarball($bpath, $package, $packageversion, $packagefiles);
 
-Create the directory $bpath/src if necessary, then create the tarball 
+Create the directory $bpath/src if necessary, then create the tarball
 $bpath/src/$package-$packageversion.tar containing the files $packagefiles.
 Returns 0 on success, 1 on failure.
 
 Called by bootstrap.pl and inject_package().
 
-=cut 
+=cut
 
 sub create_tarball {
-	
+
 	my $bpath = shift;
 	my $package = shift;
 	my $packageversion = shift;
 	my $packagefiles = shift;
-	
+
 	my ($cmd, $script);
-	
+
 	print "Creating $package tarball...\n";
-	
+
 	$script = "";
 	if (not -d "$bpath/src") {
 		$script .= "mkdir -p $bpath/src\n";
 	}
-	
+
 	# Don't allow Apple's tar to use copyfile
 	my %env_bak = %ENV;
 	$ENV{COPY_EXTENDED_ATTRIBUTES_DISABLE} = 1;
 	$ENV{COPYFILE_DISABLE} = 1;
-	
+
 	$script .=
 	  "tar -cf $bpath/src/$package-$packageversion.tar $packagefiles\n";
-	
+
 	my $result = 0;
-	
+
 	foreach $cmd (split(/\n/,$script)) {
 		next unless $cmd;   # skip empty lines
-		
+
 		if (&execute($cmd)) {
 			print "ERROR: Can't create tarball.\n";
 			$result = 1;
 		}
 	}
-	
+
 	%ENV = %env_bak;
 	return $result;
 }
@@ -823,9 +823,9 @@ sub create_tarball {
 
 Execute the given $script, create the directories $bpath/fink/debs and
 $bpath/fink/dists/$destination if necessary, and backup the file
-$bpath/fink/dists/$destination/$target_file if it already exists.  
+$bpath/fink/dists/$destination/$target_file if it already exists.
 
-Next, copy $template_file (from the current directory) to 
+Next, copy $template_file (from the current directory) to
 $bpath/fink/dists/$destination/$target_file, supplying the correct
 $packageversion and $packagerevision as well as an MD5 sum calculated from
 $bpath/src/$package-$packageversion.tar.  Ensure that the created file
@@ -842,7 +842,7 @@ Called by bootstrap.pl and inject_package().
 =cut
 
 sub copy_description {
-	
+
 	my $script = shift;
 	my $bpath = shift;
 	my $package = shift;
@@ -852,11 +852,11 @@ sub copy_description {
 	my $destination = shift || "local/injected/finkinfo";
 	my $target_file = shift || "$package.info";
 	my $template_file = shift || "$target_file.in";
-	
+
 	my ($cmd);
-	
+
 	print "Copying package description(s)...\n";
-	
+
 	if (not -d "$bpath/fink/debs") {
 		$script .= "/bin/mkdir -p -m755 $bpath/fink/debs\n";
 	}
@@ -874,12 +874,12 @@ sub copy_description {
 #		&print_breaking("\nNOTICE: the previously existing file $bpath/fink/dists/$destination/$target_file has been moved to $bpath/fink/dists/$destination/$target_file.bak .\n\n");
 		&execute("/bin/mv $bpath/fink/dists/$destination/$target_file $bpath/fink/dists/$destination/$target_file.bak");
 		}
-	
+
 	my $result = 0;
 
 	foreach $cmd (split(/\n/,$script)) {
 		next unless $cmd;   # skip empty lines
-		
+
 		if (&execute($cmd)) {
 			print "ERROR: Can't copy package description(s).\n";
 			$result = 1;
@@ -899,19 +899,19 @@ sub copy_description {
 			print "ERROR: Can't copy package description(s).\n";
 			$result = 1;
 		}
-	
+
 	return $result;
-}			 
+}
 
 =item modify_description
 
 	my $result = modify_description($original,$target,$tarball,$package_source,$source_location,$distribution,$coda,$version,$revision);
 
 Copy the file $original to $target, supplying the correct version, revision,
-and distribution (from get_version_revision($package_source,$distribution)) 
+and distribution (from get_version_revision($package_source,$distribution))
 as well as $source_location and an MD5 sum calculated from $tarball.
 Pre-evaluate any conditionals containing %{Distribution}, using
-$distribution as the value of %{Distribution}.  Append $coda to the end 
+$distribution as the value of %{Distribution}.  Append $coda to the end
 of the file.
 
 Wrap the file in Info4, unless $distribution = 10.3 or 10.4.
@@ -975,9 +975,9 @@ sub modify_description {
 
 	my ($version, $revisions) = read_version_revision($package_source);
 
-Finds the current version and possible revisions by examining the files 
+Finds the current version and possible revisions by examining the files
 $package_source/VERSION and $package_source/REVISION.  $revisions is
-a reference to a hash which either specifies a revision for each 
+a reference to a hash which either specifies a revision for each
 distribution, or else specifies a single revision with the key "all".
 
 Called by get_version_revision() and scripts/srcdist/dist-module.pl.
@@ -992,7 +992,7 @@ sub read_version_revision {
 
 	if (-f "$package_source/REVISION") {
 		open(IN,"$package_source/REVISION") or die "Can't open $package_source/REVISION: $!";
-		while(<IN>) {
+		while (<IN>) {
 			chomp;
 			/(.*):\s*(.*)/;
 			$revision_data{$1} = $2;
@@ -1001,7 +1001,7 @@ sub read_version_revision {
 	}
 
 	my ($packageversion,$packagerevision,$revisions);
-	
+
 	chomp($packageversion = cat "$package_source/VERSION");
 	if ($packageversion =~ /(cvs|svn|git)/) {
 		my @now = gmtime(time);
@@ -1011,7 +1011,7 @@ sub read_version_revision {
 		$revisions = {"all" => $packagerevision};
 	} elsif (-f "$package_source/REVISION") {
 		open(IN,"$package_source/REVISION") or die "Can't open $package_source/REVISION: $!";
-		while(<IN>) {
+		while (<IN>) {
 			chomp;
 			/(.*):\s*(.*)/;
 			$revision_data{$1} = $2;
@@ -1029,7 +1029,7 @@ sub read_version_revision {
 
 	my ($version, $revision) = get_version_revision($package_source,$distribution);
 
-Calculate the version and revision numbers for the .info file, based on the 
+Calculate the version and revision numbers for the .info file, based on the
 current $distribution, and the data given in $package_source/VERSION and
 $package_source/REVISION.
 

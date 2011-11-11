@@ -221,7 +221,7 @@ Fink::Checksum to use.
 
 sub list_plugins {
 	my $self = shift;
-	
+
 	my %plugins;
 	foreach my $plugname ( find_subpackages(__PACKAGE__) ) {
 		$plugins{$plugname}{about} = $plugname->about();

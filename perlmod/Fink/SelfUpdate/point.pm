@@ -120,7 +120,7 @@ sub do_direct {
 			&print_breaking('Fink does not presently support switching to selfupdate-point from any other selfupdate method');
 			return;
 	}
-	
+
 	if (&version_cmp($latest_fink . '-1', '<=', $distribution . '-' . $last_selfupdate[2] . '-1')) {
 		print "\n";
 		&print_breaking("You already have the package descriptions ".
@@ -132,7 +132,7 @@ sub do_direct {
 						"the command 'fink selfupdate-rsync'.");
 		return;
 	}
-	
+
 	my $newversion = $latest_fink;
 	my ($downloaddir, $dir);
 	my ($pkgtarball, $url, $verbosity, $unpack_cmd);
@@ -155,7 +155,7 @@ sub do_direct {
 	if ($distribution eq "10.1") {
 			$dir = "packages-$newversion";
 	}
-	
+
 	$pkgtarball = "$dir.tar.gz";
 	$url = "mirror:sourceforge:fink/$pkgtarball";
 

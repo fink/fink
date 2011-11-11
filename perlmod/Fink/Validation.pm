@@ -73,7 +73,7 @@ our %obsolete_fields = map {$_, 1}
 
 # Fields to check for hardcoded /sw
 our %check_hardcode_fields = map {$_, 1}
-	( 
+	(
 		qw(
 		 patchscript
 		 configureparams
@@ -105,14 +105,14 @@ our %text_describe_fields = map {$_, 1}
 		);
 
 # Allowed values for the license field: note that there are now "new-style"
-# GPL license fields which follow the string "GPL" with either "2", "3", or 
+# GPL license fields which follow the string "GPL" with either "2", "3", or
 # "23", optionally followed by "+".  Rather than list all the possibilities
 # here, we use some regexp magic later on.
 our %allowed_license_values = map {$_, 1}
 	(
-	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL", 
-	 "GPL/GFDL", "LGPL/GFDL", "GPL/LGPL/GFDL", "LDP", "GPL/LGPL/LDP", 
-	 "OSI-Approved", "Public Domain", "Restrictive/Distributable", 
+	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL",
+	 "GPL/GFDL", "LGPL/GFDL", "GPL/LGPL/GFDL", "LDP", "GPL/LGPL/LDP",
+	 "OSI-Approved", "Public Domain", "Restrictive/Distributable",
 	 "Restrictive", "Commercial", "DFSG-Approved"
 	);
 
@@ -124,7 +124,7 @@ our %allowed_arch_values = map {lc $_, 1}
 	 'x86_64',
 	);
 
-# List of all valid fields, 
+# List of all valid fields,
 # sorted in the same order as in the packaging manual.
 # (A few are handled elsewhere in this module, but are also included here,
 #  commented out, for easier reference when comparing with the manual.)
@@ -323,7 +323,7 @@ END { }				# module clean-up code here (global destructor)
 #
 # Check a given .deb file for standard compliance
 # returns boolean of whether everything is okay
-# 
+#
 # Should check/verify the following in .info files:
 #	+ the filename matches %f.info
 #	+ patch file (from Patch and PatchScript) is present
@@ -392,7 +392,7 @@ sub validate_info_file {
 	if ($config->verbosity_level() >= 3) {
 		print "Validating package file $filename...\n";
 	}
-	
+
 	#
 	# Check for line endings before reading properties
 	#
@@ -415,7 +415,7 @@ sub validate_info_file {
 	$test_properties = &read_properties_var(
 		"InfoTest of $filename",
 		$properties->{infotest}, {remove_space => 1}) if $properties->{infotest};
-	
+
 	# determine the base path
 	if (defined $val_prefix) {
 		$basepath = $val_prefix;
@@ -516,7 +516,7 @@ sub validate_info_file {
 	# TODO: If epoch has been specified, the pkgfullname should make use of it, too
 	$pkgfullname = "$pkgname-$pkgversion-$pkgrevision";
 	$pkgdestdir = "$buildpath/root-".$pkgfullname;
-	
+
 	if ($filename =~ /\//) {
 		my @parts = split(/\//, $filename);
 		$filename = pop @parts;		# remove filename
@@ -646,7 +646,7 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 		}
-		
+
 	}
 
 	$expand = { 'n' => $pkgname,
@@ -729,7 +729,7 @@ sub validate_info_file {
 			my $testfield = $1 || "";
 			my $sourcefield = defined $+  # corresponding Source(N) field
 				? "${testfield}source$+"
-				: "${testfield}source";  
+				: "${testfield}source";
 			if ($testfield ? (!exists $test_source_fields{$sourcefield}) : (!exists $source_fields{$sourcefield})) {
 				my $msg = $field =~ /-(checksum|md5)$/
 					? "Warning" # no big deal
@@ -788,10 +788,10 @@ sub validate_info_file {
 	};
 
 	# Loop over all fields and verify them
-	while(my($field, $value) = each(%$properties)) {
+	while (my($field, $value) = each(%$properties)) {
 		$field_check->($field, $value, 0);
 	}
-	while(my($field, $value) = each(%$test_properties)) {
+	while (my($field, $value) = each(%$test_properties)) {
 		$field_check->($field, $value, 1);
 	}
 
@@ -840,7 +840,7 @@ sub validate_info_file {
 			$looks_good = 0;
 		}
 	}
-	
+
 	my %patchfile_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)$/ } keys %$properties;
 	my %patchfile_md5_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-md5$/ } keys %$properties;
 
@@ -978,7 +978,7 @@ sub validate_info_file {
 		print "Error: Package has type \"dummy\". ($filename)\n";
 		$looks_good = 0;
 	}
-	
+
 	# instantiate the PkgVersion objects
 	my @pv = Fink::PkgVersion->pkgversions_from_info_file($full_filename, no_exclusions => 1);
 
@@ -1019,7 +1019,7 @@ sub _validate_info_filename {
 		if ($arch !~ /,/) {
 			# single-arch package
 			$arch =~ s/\s+//g;
-			
+
 			push @filearch, ("-$arch");
 		}
 	}
@@ -1027,7 +1027,7 @@ sub _validate_info_filename {
 		if ($dist !~ /,/) {
 			# single-dist package
 			$dist =~ s/\s+//g;
-			
+
 			push @filedist, ("-$dist");
 		}
 	}
@@ -1038,7 +1038,7 @@ sub _validate_info_filename {
 			}
 		}
 	}
-	
+
 	unless (grep $filename eq $_, @ok_filenames) {
 		print "Warning: Incorrect filename '$filename'. Should be one of:\n", map "\t$_\n", @ok_filenames;
 		return 0;
@@ -1114,7 +1114,7 @@ sub validate_info_component {
 		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
 		@pkg_required_fields = @splitoff_required_fields;
 		%pkg_valid_fields = %splitoff_valid_fields;
-	} elsif($is_infotest) {
+	} elsif ($is_infotest) {
 		@pkg_required_fields = @infotest_required_fields;
 		%pkg_valid_fields = (%infotest_valid_fields, %valid_fields);
 	} else {
@@ -1286,7 +1286,7 @@ sub validate_info_component {
 			s/^\s*(.*?)\s*$/$1/;  # strip off leading/trailing whitespace
 			next unless /\S/;
 
-			if (s/^\(.*?\)\s*//) {	
+			if (s/^\(.*?\)\s*//) {
 				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in Shlibs', $filename);
 		}
 
@@ -1332,7 +1332,7 @@ sub validate_info_component {
 				$libarch = $2;
 			}
 			# This hack only allows one particular percent expansion in the
-			# $libarch field, because this subroutine doesn't do percent 
+			# $libarch field, because this subroutine doesn't do percent
 			# expansions.  OK for now, but should be fixed eventually.
 			my $num_expand = {"type_num[-64bit]" => "64"};
 			$libarch = &expand_percent($libarch, $num_expand, $filename.' Package');
@@ -1438,7 +1438,7 @@ sub validate_dpkg_file {
 	my $destdir = tempdir('fink-validate-deb-unpack.XXXXXXXXXX', DIR => File::Spec->tmpdir );
 
 	print "Validating .deb file $dpkg_filename...\n";
-	
+
 	# unpack the actual filesystem
 	if (system('dpkg', '-x', $dpkg_filename, $destdir)) {
 		print "Error: couldn't unpack .deb\n";
@@ -1472,7 +1472,7 @@ sub validate_dpkg_unpacked {
 	my $val_prefix = shift;  # %p
 
 	print "Validating .deb dir $destdir...\n";
-	
+
 	my $looks_good = &_validate_dpkg($destdir, $val_prefix);
 
 	return $looks_good;
@@ -1484,7 +1484,7 @@ sub validate_dpkg_unpacked {
 # returns boolean of whether everything is okay
 #
 # - usage of non-recommended directories (/sw/src, /sw/man, /sw/info, /sw/doc, /sw/libexec, /sw/lib/locale)
-# - usage of other non-standard subdirs 
+# - usage of other non-standard subdirs
 # - storage of a .bundle inside /sw/lib/perl5/darwin or /sw/lib/perl5/auto
 # - Emacs packages
 #     - installation of .elc files
@@ -1649,7 +1649,7 @@ sub _validate_dpkg {
 	{
 		my $vers = $deb_control->{version};
 		$vers = $1 if $vers =~ /:(.*)/;  # epoch not used in %b or %d
-		
+
 		$pkgbuilddir = sprintf '%s/%s-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $vers;  # %b
 		$pkginstdirs = sprintf '%s/root-(?:%s|%s)-%s/', map { qr{\Q$_\E} } $buildpath, $deb_control->{source}, $deb_control->{package}, $vers;  # %d or %D
 	}
@@ -1727,8 +1727,7 @@ sub _validate_dpkg {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
 					$file =~ s/\'/\\\'/gs;
-					if (open(OTOOL, "$otool -hv '$file' |"))
-					{
+					if (open(OTOOL, "$otool -hv '$file' |")) {
 						while (my $line = <OTOOL>) {
 							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB(\s+|_STUB\s+)/) {
 								if ($filename !~ /\.(dylib|jnilib)$/) {
@@ -1934,7 +1933,7 @@ sub _validate_dpkg {
 
 	# dpkg hates packages that contain no files
 	&stack_msg($msgs, "Package contains no files.") if not $dpkg_file_count;
-	
+
 	# handle messages generated during the File::Find loop
 	{
 		# when we switch to Tie::IxHash, we won't need to know the internal details of $msgs

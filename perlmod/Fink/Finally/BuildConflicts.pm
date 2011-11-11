@@ -56,23 +56,23 @@ when I<$bc> goes out of scope.
 
 sub initialize {
 	my ($self, $pvs) = @_;
-	
+
 	$self->{remove} = [ grep { $_->is_installed } @$pvs ];
 	return unless @{$self->{remove}};
-	
+
 	my @cant_restore = grep { !$_->is_present } @{$self->{remove}};
 	if (@cant_restore) {
 		die_breaking "The following packages must be temporarily removed, but "
 			. "there are no .debs to restore them from:\n  "
 			. join(' ', sort map { $_->get_name } @cant_restore);
 	}
-	
+
 	my @names = sort map { $_->get_name } @{$self->{remove}};
 	my $names = join(' ', @names);
-	
+
 	print_breaking_stderr "Temporarily removing BuildConflicts:\n $names";
 	Fink::PkgVersion::phase_deactivate(\@names);
-	
+
 	$self->SUPER::initialize();
 }
 

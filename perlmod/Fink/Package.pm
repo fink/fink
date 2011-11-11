@@ -138,29 +138,29 @@ sub is_virtual {
 sub add_version {
 	my $self = shift;
 	my $version_object = shift;
-	
+
 	my $version = $version_object->get_fullversion();
 
 ### FIXME: It doesn't look like this can occur, is it dead code?
-#	if (exists $self->{_versions}->{$version} 
+#	if (exists $self->{_versions}->{$version}
 #		&& $self->{_versions}->{$version}->is_type('dummy') ) {
 #		$self->{_versions}->{$version}->merge($version_object);
-	
+
 	if (exists $self->{_versions}->{$version}) {
 		# Use the new version, but merge in the old one
 		my $old = $self->{_versions}->{$version};
 		delete $self->{_versions}->{$version};
 		$version_object->merge($old);
 	}
-	
+
 	# $pv->fullname is currently treated as unique, even though it won't be
 	# if the version is the same but epoch isn't. So let's make sure.
 	my $fullname = $version_object->get_fullname();
-	
+
 	# noload
 	if (grep { $_->get_fullname() eq $fullname } $self->get_all_versions(1)) {
 		# avoid overhead of allocating for and storing the grep
-		# results in if() since it's rare we'll need it
+		# results in if () since it's rare we'll need it
 		my $msg = "A package name is not allowed to have the same ".
 			"version-revision but different epochs: $fullname\n";
 		foreach (
@@ -168,13 +168,13 @@ sub add_version {
 			$version_object
 		) {
 			my $infofile = $_->get_info_filename();
-			$msg .= sprintf "  epoch %d\t%s\n", 
+			$msg .= sprintf "  epoch %d\t%s\n",
 				$_->get_epoch(),
 				length $infofile ? "fink virtual or dpkg status" : $infofile;
 		};
 		die $msg;
 	}
-	
+
 	$self->{_versions}->{$version} = $version_object;
 	$self->{_virtual} = 0 unless $version_object->is_type('dummy');
 }
@@ -203,7 +203,7 @@ sub list_versions {
 sub get_all_versions {
 	my $self = shift;
 	my $noload = shift || 0;
-	
+
 	my @vers = values %{$self->{_versions}};
 	map { $_->load_fields } @vers unless $noload;
 	return @vers;
@@ -244,7 +244,7 @@ sub get_matching_versions {
 	my $self = shift;
 	my $spec = shift;
 	my @include_list = @_;
-	
+
 	my ($relation, $reqversion);
 	if ($spec =~ /^\s*(<<|<=|=|>=|>>)\s*([0-9a-zA-Z.\+-:]+)\s*$/) {
 		$relation = $1;
@@ -252,7 +252,7 @@ sub get_matching_versions {
 	} else {
 		die "Illegal version specification '".$spec."' for package ".$self->get_name()."\n";
 	}
-	
+
 	@include_list = values %{$self->{_versions}} unless @include_list;
 	return map { $_->load_fields }
 		grep { version_cmp($_->get_fullversion, $relation, $reqversion) }
@@ -487,10 +487,10 @@ and can be deleted.
 
 sub check_dbdirs {
 	my ($class, $write, $force_create) = @_;
-	
+
 	# This directory holds multiple 'db.#' dirs
 	my $multidir = "$dbpath/finkinfodb";
-	
+
 	# Special case: If the file "$multidir/invalidate" exists, it means
 	# a shell script wants us to invalidate the DB
 	my $inval = "$multidir/invalidate";
@@ -498,7 +498,7 @@ sub check_dbdirs {
 		$force_create = 1;
 		rm_f($inval) if $write;
 	}
-	
+
 	# Get the db.# numbers in high-to-low order.
 	my @nums;
 	if (opendir MULTI, $multidir) {
@@ -507,19 +507,19 @@ sub check_dbdirs {
 	# Find a number higher than all existing, for new dir
 	my $higher = @nums ? $nums[0] + 1 : 1;
 	my $newdir = "$multidir/db.$higher";
-	
+
 	# Get the current dir
 	my @dirs = grep { -d $_ } map { "$multidir/db.$_" } @nums;
 	my $use_existing = !$force_create && @dirs;
 	my ($current, $fh);
-	
+
 	# Try to lock on an existing dir, if applicable
 	if ($use_existing) {
 		$current = $dirs[0];
 		$fh = lock_wait("$current.lock", exclusive => 0, no_block => 1);
 		# Failure ok, will try a new dir
 	}
-	
+
 	# Use and lock a new dir, if needed
 	if (!$fh) {
 		$current = $newdir;
@@ -530,7 +530,7 @@ sub check_dbdirs {
 			mkdir_p($current);
 		}
 	}
-		
+
 	# Try to delete old dirs
 	my @old = grep { $_ ne $current } @dirs;
 	if ($write) {
@@ -543,9 +543,9 @@ sub check_dbdirs {
 			}
 		}
 	}
-	
+
 	return ($current, $fh);
-}		
+}
 
 =item db_dir
 
@@ -576,19 +576,19 @@ and containing a DB).
 	sub db_dir {
 		my $class = shift;
 		my $write = shift || 0;
-		
+
 		unless (defined $cache_db_dir) {
 			($cache_db_dir, $cache_db_dir_fh) =
 				$class->check_dbdirs($write, 0);
 		}
 		return $cache_db_dir;
 	}
-	
+
 	sub forget_db_dir {
 		close $cache_db_dir_fh if $cache_db_dir_fh;
 		($cache_db_dir, $cache_db_dir_fh) = (undef) x 2;
 	}
-	
+
 	sub is_new_db_dir {
 		my $class = shift;
 		return !-f ($class->db_dir . "/used");
@@ -652,7 +652,7 @@ older than the PDB cache that is moved into the dists will not be found.
 sub search_comparedb {
 	my $class = shift;
 	my $path = "$basepath/fink/dists/";  # extra '/' forces find to follow the symlink
-	
+
 	my $dbfile = $class->db_proxies;
 	return 1 if -M $dbfile > -M "$basepath/etc/fink.conf";
 
@@ -702,20 +702,20 @@ sub forget_packages {
 			. "change it again.\n";
 	}
 	my %opts = (disk => 0, %$optarg);
-	
+
 	$packages = undef;
 	$essential_packages = undef;
 	%Fink::PkgVersion::shared_loads = ();
 	$valid_since = undef;
-	
+
 	if ($opts{disk} && $> == 0) {	# Only if we're root
 		my $lock = lock_wait($class->db_lockfile, exclusive => 1,
 			desc => "another Fink's indexing");
-		
+
 		# Create a new DB dir (possibly deleting the old one)
 		$class->forget_db_dir();
 		$class->check_dbdirs(1, 1);
-		
+
 		rm_f($class->db_index);
 		rm_f($class->db_proxies);
 		close $lock if $lock;
@@ -726,7 +726,7 @@ sub forget_packages {
 
   Fink::Package->load_packages;
 
-Load the package database, updating any on-disk cache if necessary and 
+Load the package database, updating any on-disk cache if necessary and
 possible.
 
 =cut
@@ -739,7 +739,7 @@ sub load_packages {
 	$class->insert_runtime_packages;
 
 	if (&get_term_width) {
-		printf STDERR "Information about %d packages read in %d seconds.\n", 
+		printf STDERR "Information about %d packages read in %d seconds.\n",
 			scalar(values %$packages), (time - $time);
 	}
 }
@@ -760,7 +760,7 @@ sub can_read_write_db {
 	if ($config->mixed_arch()) {
 		return (0,0);
 	}
-	
+
     # do not use disk cache if we are in the first bootstrap phase
     # (because we may be running under a different perl than fink will
     #  eventually use, and Storable.pm may be incompatible)
@@ -769,7 +769,7 @@ sub can_read_write_db {
 		}
 
 	my ($read, $write) = (1, 0);
-	
+
 	eval "require Storable";
 	if ($@) {
 		my $perlver = sprintf '%*vd', '', $^V;
@@ -779,7 +779,7 @@ sub can_read_write_db {
 	} else {
 		$write = 1;
 	}
-	
+
 	return ($read, $write);
 }
 
@@ -796,16 +796,16 @@ Returns the new index item for the .info file.
 
 sub update_index {
 	my ($class, $idx, $info, @pvs) = @_;
-	
+
 	# Always use a new file, so an old fink doesn't accidentally read a newer
 	# file in the same place.
-	
+
 	# TODO: This leaves old cache files sitting around, perhaps if the atime
 	# gets old enough we should delete them?
 	my $cidx = $idx->{next_idx}++;
 
 	# Split things into dirs
-	my $dir = sprintf "%03d00", $cidx / 100;		
+	my $dir = sprintf "%03d00", $cidx / 100;
 	my $cache = $class->db_dir . "/$dir/$cidx";
 
 	my %new_idx = (
@@ -813,9 +813,9 @@ sub update_index {
 		cache => $cache,
 		info_mtime => (stat($info))[9] || 0,
 	);
-	
+
 	return ($idx->{infos}{$info} = \%new_idx);
-}	
+}
 
 =item pass1_update
 
@@ -844,7 +844,7 @@ END
 
 	my @progress_steps = map { ($_/10) * @infos } (1 .. 10);  # 10% increments of @infos
 	my $progress = 0;			# current position in @infos
-	
+
 	print STDERR 'Scanning package description files' if $have_terminal;
 	for my $info (@infos) {
 		if (++$progress >= $progress_steps[0]) {
@@ -855,10 +855,10 @@ END
 
 		my $load = 0;
 		my $fidx = $idx->{infos}{$info};
-		
+
 		# Do we need to load?
 		$load = 1 if $ops->{load} && !$ops->{read}; # Can't read it, must load
-		
+
 		# Check if it's cached
 		if (!$load) {
 			unless (defined $fidx) {
@@ -868,31 +868,31 @@ END
 					|| $fidx->{info_mtime} != (stat($info))[9];
 			}
 		}
-		
+
 		unless ($load) {
 #			print "Not reading: $info\n";
 			next;
 		}
 #		print "Reading: $info\n";
-		
+
 		$have_new_infos = 1;
 
 		# Load the file
 		my @pvs = Fink::PkgVersion->pkgversions_from_info_file($info);
 		map { $_->_disconnect } @pvs;	# Don't keep obj references
-		
+
 		# Update the index
 		$fidx = $class->update_index($idx, $info, @pvs);
-		
+
 		# Turn it into a storable format, and cache it
 		my %store = map { $_->get_fullname => $_ } @pvs;
 		$Fink::PkgVersion::shared_loads{$fidx->{cache}} = \%store;
-		
+
 		# Update the cache
 		if ($ops->{write}) {
 			my $dir = dirname $fidx->{cache};
 			mkdir_p($dir) unless -d $dir;
-			
+
 			touch($class->db_dir . "/used"); # No longer clean
 			unless (store_rename(\%store, $fidx->{cache})) {
 				delete $idx->{infos}{$info};
@@ -927,19 +927,19 @@ Information about the .info files is to be found in the index $idx..
 
 sub pass3_insert {
 	my ($class, $idx, @infos) = @_;
-		
+
 	for my $info (@infos) {
 		my @pvs;
-					
+
 		my $fidx = $idx->{infos}{$info};
 		my $cache = $fidx->{cache};
-			
+
 		@pvs = map { Fink::PkgVersion->new_backed($cache, $_) }
 			values %{ $fidx->{inits} };
-		
+
 		$class->insert_pkgversions(@pvs);
 	}
-	
+
 	return 1;
 }
 
@@ -954,7 +954,7 @@ files.
 
 sub get_all_infos {
 	my $class = shift;
-	
+
 	return map { $class->tree_infos($_) } $config->get_treelist();
 }
 
@@ -987,12 +987,12 @@ sub update_db {
 	my %options = @_;
 	my $load = !$options{no_load};
 	my $try_cache = !$options{no_fastload};
-	
+
 	my %ops = ( load => $load );
 	@ops{'read', 'write'} = $class->can_read_write_db;
 	# If we can't write and don't want to load, what's the point?
-	return if !$ops{load} && !$ops{write}; 
-	
+	return if !$ops{load} && !$ops{write};
+
 	# Get the lock
 	my $lock = 0;
 	if ($ops{write} || $ops{read}) {
@@ -1010,13 +1010,13 @@ sub update_db {
 		close $lock if $lock;	# need to keep the lock.
 		$lock = 0;
 	}
-	
+
 	# Get the cache dir; also notifies fink that the PDB is in use
 	my $dbdir = $class->db_dir($ops{write});
-	
+
 	# Can we use the index? Definitely not if we have a whole new db_dir.
 	my $idx_ok = ($ops{read} || $ops{write}) && !$class->is_new_db_dir();
-	
+
 	# Can we use the proxy DB?
 	my $proxy_ok = $idx_ok && $try_cache && -r $class->db_proxies;
 	# Proxy must be newer, otherwise it could be out of date from a load-only
@@ -1025,7 +1025,7 @@ sub update_db {
 	$proxy_ok &&= !$config->custom_treelist;
 	$proxy_ok &&= !$class->search_comparedb
 		unless $config->param_boolean("NoAutoIndex");
-	
+
 	if ($proxy_ok) {
 		# Just use the proxies
 		$valid_since = (stat($class->db_proxies))[9];
@@ -1040,7 +1040,7 @@ sub update_db {
 		close $lock if $lock;
 	} else {
 		rm_f($class->db_proxies); # Probably not valid anymore
-		
+
 		# Load the index
 		$valid_since = time;
 		my $idx;
@@ -1059,28 +1059,28 @@ sub update_db {
 		} else {
 			$idx = { infos => { }, 'next' => 1, };
 		}
-		
+
 		# Get the .info files
 		my @infos = $class->get_all_infos;
-		
+
 		# Pass 1: Load outdated infos
 		$class->pass1_update(\%ops, $idx, @infos);
 		close $lock if $lock;
 		return unless $ops{load};
-		
+
 		# Pass 2: This used to narrow down the list of files so only the
 		# 'current' .info files are loaded. We don't do this anymore, since
 		# we want to know every tree a .info file is in.
-		
+
 		# Pass 3: Load and insert the .info files
 		$class->pass3_insert($idx, @infos);
-		
+
 		# Store the proxy db
 		if ($ops{write} && !$config->custom_treelist) {
 			store_rename($packages, $class->db_proxies);
 		}
-	}		
-} 
+	}
+}
 
 =item db_valid_since
 
@@ -1108,7 +1108,7 @@ Get the full pathnames to all the .info files in a Fink tree.
 sub tree_infos {
 	my $class = shift;
 	my $treename = shift;
-	
+
 	my $treedir = "$basepath/fink/dists/$treename/finkinfo";
 	return () unless -d $treedir;
 
@@ -1119,7 +1119,7 @@ sub tree_infos {
 		}
 	};
 
-	if(1) {						# ACTIVATE THIS FEATURE
+	if (1) {						# ACTIVATE THIS FEATURE
 	# 10.4 support is being dropped from main .info collection:
 	# migrated into 10.4-EOL subdir for legacy semi-support
 	if (-d "$treedir/10.4-EOL") {
@@ -1140,9 +1140,9 @@ sub tree_infos {
 	}
 
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $treedir);
-	
+
 	return @filelist;
-}		
+}
 
 =item packages_from_info_file
 
@@ -1168,12 +1168,12 @@ created from .info files.
 
 sub insert_runtime_packages {
 	my $class = shift;
-	
-	# Get data from dpkg's status file. Note that we do *not* store this 
+
+	# Get data from dpkg's status file. Note that we do *not* store this
 	# information into the package database.
 	$class->insert_runtime_packages_hash(Fink::Status->list(), 'status');
 
-	# Get data from VirtPackage.pm. Note that we do *not* store this 
+	# Get data from VirtPackage.pm. Note that we do *not* store this
 	# information into the package database.
 	$class->insert_runtime_packages_hash(Fink::VirtPackage->list(), 'virtual');
 }
@@ -1189,7 +1189,7 @@ in-memory database.
 
 sub insert_runtime_packages_hash {
 	my $class = shift;
-	
+
 	my $dlist = shift;
 	my $type = shift;
 	my $reload_disable_save = Fink::Status->is_reload_disabled();  # save previous setting
@@ -1197,11 +1197,11 @@ sub insert_runtime_packages_hash {
 	foreach my $pkgname (keys %$dlist) {
 		# Don't add uninstalled status packages to package DB
 		next if $type eq 'status' && !Fink::Status->query_package($pkgname);
-		
+
 		# Skip it if it's already there
-		my $po = $class->package_by_name_create($pkgname);		
+		my $po = $class->package_by_name_create($pkgname);
 		next if exists $po->{_versions}->{$dlist->{$pkgname}->{version}};
-		
+
 		my $hash = $dlist->{$pkgname};
 
 		# create dummy object
@@ -1242,11 +1242,11 @@ Insert a list of Fink::PkgVersion into the current in-memory package database.
 sub insert_pkgversions {
 	my $class = shift;
 	my @pvs = @_;
-	
+
 	for my $pv (@pvs) {
 		# get/create package object
 		my $po = $class->package_by_name_create($pv->get_name);
-	
+
 		# link them together
 		$po->add_version($pv);
 
@@ -1283,7 +1283,7 @@ what packages provide it.
 
 sub print_virtual_pkg {
 	my $self = shift;
-	
+
 	printf "The requested package '%s' is a virtual package, provided by:\n",
 		$self->get_name();
 
@@ -1315,7 +1315,7 @@ sub get_latest_providers {
 		my $vers = latest_version keys %{$providers{$pkg}};
 		push(@latest_providers, $providers{$pkg}{$vers});
 	}
-	
+
 	return @latest_providers;
 }
 
@@ -1341,7 +1341,7 @@ sub choose_virtual_pkg_provider {
 	elsif (@providers == 1) {
 		# only one package provides it
 		return pop(@providers);
-	} 
+	}
 	else {
 		# check if any providers are already installed
 		foreach my $pvo (@providers) {

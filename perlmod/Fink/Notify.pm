@@ -102,7 +102,7 @@ happen during package installation/removal.
 # Find the list of Notify plugins, as package names
 {
 	my $plugins;
-	
+
 	sub _plugins {
 		$plugins = [ find_subpackages(__PACKAGE__) ] unless defined $plugins;
 		return @$plugins;
@@ -127,7 +127,7 @@ sub new {
 
 	my $plugins = shift || $config->param_default('NotifyPlugin', 'Growl');
 	my @plugins = split / /, $plugins;
-	
+
 	# Deal gracefully with case problems in plugin specification
 	my %fixedcase = map { lc $_ => $_ } _plugins;
 
@@ -138,12 +138,12 @@ sub new {
 				. "fink.conf.\n";
 			next;
 		}
-		
+
 		my $instance;
 		eval "require $package";
 		eval { $instance = $package->new };
 		next unless eval { $instance->isa("Fink::Notify") };
-		
+
 		push @$self, $instance;
 	}
 	return $self;
@@ -295,7 +295,7 @@ notify().
 sub do_notify {
 	my $self = shift;
 	my $ok = 1;
-	
+
 	for my $plugin (@$self) {
 		# Don't want to fail while notifying about failure, so be extra
 		# careful.
@@ -304,7 +304,7 @@ sub do_notify {
 		};
 		$ok &&= !$@;
 	}
-	
+
 	return $ok;
 }
 
@@ -317,7 +317,7 @@ Fink::Notify to use.
 
 sub list_plugins {
 	my $self = shift;
-	
+
 	my %plugins;
 	foreach my $plugname ( _plugins ) {
 		$plugins{$plugname}{about} = $plugname->about();

@@ -111,7 +111,7 @@ sub do_direct {
 
 RSYNCAGAIN:
 	$rsynchost = $origmirror->get_site_retry("", 0);
-	if( !grep(/^rsync:/,$rsynchost) ) {
+	if ( !grep(/^rsync:/,$rsynchost) ) {
 		print "No mirror worked. This seems unusual, please submit a short summary of this event to mirrors\@finkmirrors.net\n Thank you\n";
 		exit 1;
 	}
@@ -144,7 +144,7 @@ RSYNCAGAIN:
 			unlink("$descdir/TIMESTAMP.tmp");
 			die "The timestamp file fetched from $rsynchost contains non-numeric characters.  This is illegal.  Refusing to continue.\n";
 		}
-		
+
 		if ( $oldts > $newts ) {
 			# error out complaining that we're trying to update
 			# from something older than what we already have.
@@ -153,7 +153,7 @@ RSYNCAGAIN:
 			exit 1;
 		}
 
-	} 
+	}
 
 	for my $dist (@dists) {
 
@@ -162,27 +162,27 @@ RSYNCAGAIN:
 			mkdir_p "$descdir/$dist";
 		}
 		my @sb = stat("$descdir/$dist");
-	
+
 		$rsynchost =~ s/\/*$//;
 		$dist      =~ s/\/*$//;
-		
+
 		my $rinclist = "";
-		
+
 		my @trees = grep { m,^(un)?stable/, } $config->get_treelist();
 		die "Can't find any trees to update\n" unless @trees;
 		map { s/\/*$// } @trees;
-		
+
 		foreach my $tree (@trees) {
 			my $oldpart = $dist;
 			my @line = split /\//,$tree;
-	
+
 			$rinclist .= " --include='$dist/'";
-			for(my $i = 0; defined $line[$i]; $i++) {
+			for (my $i = 0; defined $line[$i]; $i++) {
 				$oldpart = "$oldpart/$line[$i]";
 				$rinclist .= " --include='$oldpart/'";
 			}
 			$rinclist .= " --include='$oldpart/finkinfo/' --include='$oldpart/finkinfo/*/' --include='$oldpart/finkinfo/*' --include='$oldpart/finkinfo/**/*'";
-	
+
 			if (! -d "$basepath/fink/$dist/$tree" ) {
 				mkdir_p "$basepath/fink/$dist/$tree";
 			}
@@ -197,7 +197,7 @@ RSYNCAGAIN:
 			}
 		}
 		&print_breaking("I will now run the rsync command to retrieve the latest package descriptions. \n");
-	
+
 		if (&execute($cmd)) {
 			print "Updating using rsync failed. Check the error messages above.\n";
 			goto RSYNCAGAIN;

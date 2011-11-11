@@ -102,7 +102,7 @@ sub cleanup {
 	return 0 unless $self->{$PRIV}->{primed};		# Don't run twice
 	return 0 if $self->{$PRIV}->{cancelled};		# Don't run if cancelled
 	return 0 unless $self->{$PRIV}->{pid} == $$;	# Don't run in a fork
-	
+
 	local ($@, $?); # Preserve variables
 	$self->{$PRIV}->{primed} = 0; # Don't run again
 	$self->finalize();
@@ -156,7 +156,7 @@ that cleanup only occurs after setup.
 sub initialize {
 	my ($self) = @_;
 	$self->SUPER::initialize();
-	
+
 	$self->{$PRIV}->{primed} = 1;
 	$self->{$PRIV}->{pid} = $$;
 }
@@ -209,7 +209,7 @@ sub initialize {
 	my ($self, $code) = @_;
 	die "Fink::Finally::Simple initializer requires a code-ref\n"
 		unless ref($code) && ref($code) eq 'CODE';
-	
+
 	$self->{_code} = $code;
 	$self->SUPER::initialize();
 }

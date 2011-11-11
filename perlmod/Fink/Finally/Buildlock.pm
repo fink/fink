@@ -65,14 +65,14 @@ removed when I<$bl> goes out of scope.
 # create an exclusive lock for the %f of the parent using dpkg
 sub initialize {
 	my ($self, $pv) = @_;
-	
+
 	# allow over-ride
 	return if Fink::Config::get_option("no_buildlock");
 
 	# lock on parent pkg
 	$pv = $pv->get_parent if $pv->has_parent;
 	$self->{_pv} = $pv;
-	
+
 	# bootstrapping occurs before we have package-management tools
 	# needed for buildlocking. If you're bootstrapping into a location
 	# that already has a running fink, you already know you're gonne
@@ -224,9 +224,9 @@ Can't set build lock for $pkgname ($pkgvers)
 If any of the above dpkg error messages mention conflicting packages or
 missing dependencies -- for example, telling you that the package
 fink-buildlock-$pkgname-$pkgvers
-conflicts with something else -- fink has probably gotten confused by trying 
+conflicts with something else -- fink has probably gotten confused by trying
 to build many packages at once. Try building just this current package
-$pkgname (i.e, "fink build $pkgname"). When that has completed successfully, 
+$pkgname (i.e, "fink build $pkgname"). When that has completed successfully,
 you could retry whatever you did that led to the present error.
 
 Regardless of the cause of the lock failure, don't worry: you have not
@@ -260,7 +260,7 @@ EOMSG
 sub finalize {
 	my ($self) = @_;
 	$self->SUPER::finalize();
-	
+
 	# we were locked...
 	print "Removing runtime build-lock...\n";
 	close $self->{_lock_fh};
@@ -277,7 +277,7 @@ sub finalize {
 						"further fink operations. ".
 						"Continuing with normal procedure.");
 	}
-	Fink::PkgVersion->dpkg_changed;	
+	Fink::PkgVersion->dpkg_changed;
 }
 
 =item can_remove

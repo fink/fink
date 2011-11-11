@@ -109,7 +109,7 @@ Inherited from Fink::Base.
   my $config = Fink::Config->new_with_path($config_file, \%defaults);
 
 Reads a fink.conf file into a new Fink::Config object and initializes
-Fink::Config globals from it.  
+Fink::Config globals from it.
 
 If %defaults is given they will be used as defaults for any keys not in the
 config file.  For example...
@@ -161,7 +161,7 @@ sub initialize {
 	$basepath = $self->param("Basepath");
 	unless (defined $basepath and $basepath) {
 		my $error = 'Basepath not set';
-		if( $self->{_path} ) {
+		if ( $self->{_path} ) {
 			$error .= qq{ in config file "$self->{_path}"};
 		}
 		else {
@@ -178,7 +178,7 @@ sub initialize {
 	$distribution = $self->param("Distribution");
 	if (not defined $distribution or ($distribution =~ /^\s*$/)) {
 		my $error = 'Distribution not set';
-		if( $self->{_path} ) {
+		if ( $self->{_path} ) {
 			$error .= qq{ in config file "$self->{_path}"};
 		}
 		else {
@@ -224,7 +224,7 @@ my %option_defaults = (
 
 sub set_checking_opts {
 	my($opts, $arg, $val) = @_;
-	if($arg eq "maintainer") {
+	if ($arg eq "maintainer") {
 		$opts->{maintainermode} = 1;
 		$opts->{tests} = "on";
 		$opts->{validate} = "on";
@@ -232,7 +232,7 @@ sub set_checking_opts {
 	} else {
 		$val = defined($val) ? lc($val) : "";
 		$val = "on" if $val eq "";
-		if($val ne "on" and $val ne "warn" and $val ne "off") {
+		if ($val ne "on" and $val ne "warn" and $val ne "off") {
 			# We didn't really get an argument.
 			# Because our argument is optional, if we are
 			# the last option specified, the fink subcommand
@@ -253,9 +253,9 @@ sub set_checking_opts {
 sub parse_options {
 	my $class = shift;
 	my @args = @_;
-	
+
 	my %opts = %option_defaults;
-	
+
 	my $comlen =  14;
 	get_options('', [
 		[ 'yes|y'              => \$opts{dontask},
@@ -309,8 +309,8 @@ HELPFORMAT
 		# Err if no command
 		validate => sub {
 			!scalar(@args) && !$opts{showversion} && $VALIDATE_HELP }
-	); 
-	
+	);
+
 	if ($opts{showversion}) {
 		require Fink::FinkVersion;
 		require Fink::SelfUpdate;
@@ -345,7 +345,7 @@ EOF
 	}
 
 	set_options(\%opts);
-	
+
 	return @args;
 }
 
@@ -383,7 +383,7 @@ sub apt_tree_default {
 Returns a space-delimited list of the trees used by default when configuring
 fink.  This list is derived from apt_tree_default($distribution), so only
 the latter needs to be changed if things change in the future.  Prior to 10.6,
-the list was "local/main stable/main stable/crypto"; 
+the list was "local/main stable/main stable/crypto";
 in 10.6 and later, it is "local/main stable/main".
 
 =cut
@@ -421,7 +421,7 @@ sub get_path {
 }
 
 
-# Get the list of all available trees from the conf file. 
+# Get the list of all available trees from the conf file.
 sub _standard_treelist {
 	my $self = shift;
 	return grep !m{^(/|.*\.\./)}, split /\s+/, $self->param_default(
@@ -443,7 +443,7 @@ However, certain commands know to ignore them if they're 'excluded'.
 {
 	# FIXME: What if there's a real tree with one of these names?
 	my %is_magic = map { $_ => 1 } qw(virtual status);
-	
+
 	# Get match CODE-ref for given spec
 	sub _match_trees {
 		my $spec = shift;
@@ -453,16 +453,16 @@ However, certain commands know to ignore them if they're 'excluded'.
 			return sub { m,^\Q$spec\E/, };			# Otherwise, match front
 		}
 	}
-	
+
 	sub _process_trees_arg {
 		my $self = shift;
 		return if get_option('_magic_trees'); # Already done this
-		
+
 		# Get trees specified on command line, all trees available
 		my @include = split /,/, join ',', @{get_option('include_trees', [])}; #/
 		my @exclude = split /,/, join ',', @{get_option('exclude_trees', [])}; #/
 		my @avail = ($self->_standard_treelist(), keys %is_magic);
-		
+
 		# First include
 		my (@trees, %seen);
 		if (@include) {
@@ -475,13 +475,13 @@ However, certain commands know to ignore them if they're 'excluded'.
 		} else {
 			@trees = @avail; # By default, include all
 		}
-				
+
 		# Then exclude
 		foreach my $spec (@exclude) {
 			# Ignore failed excludes, suspect it's best this way
 			@trees = grep { !&{_match_trees($spec)} } @trees;
 		}
-		
+
 		# Store results
 		my @magic = grep { $is_magic{$_} } @trees;
 		@trees = grep { !$is_magic{$_} } @trees;
@@ -514,7 +514,7 @@ sub get_treelist {
 
   my $bool = $config->want_magic_tree($tree);
 
-Get whether or not the user desires the given magic tree to be used. Current 
+Get whether or not the user desires the given magic tree to be used. Current
 magic trees are:
 
 =over 4
@@ -551,7 +551,7 @@ sub custom_treelist {
 	my $self = shift;
 	my @avail = $self->_standard_treelist;
 	my @current = $self->get_treelist;
-	
+
 	# If lists are unequal (ordered!), return true
 	while (@avail && @current) {
 		return 1 unless (shift @avail) eq (shift @current);
@@ -669,10 +669,10 @@ configuration information.  Called automatically by $config->save.
 
 sub write_sources_list {
 	my $self = shift;
-	
+
 	# Bail out if no etc/apt exists
 	return unless -d "$basepath/etc/apt";
-	
+
 	my $basepath = $self->param("Basepath");
 	my $path = "$basepath/etc/apt/sources.list";
 
@@ -699,7 +699,7 @@ sub write_sources_list {
 # Default APT sources configuration for Fink, written by the fink program
 
 # Local package trees - packages built from source locally
-# NOTE: this is automatically kept in sync with the Trees: line in 
+# NOTE: this is automatically kept in sync with the Trees: line in
 # $basepath/etc/fink.conf
 # NOTE: run 'fink scanpackages' to update the corresponding Packages.gz files
 EOF
@@ -781,7 +781,7 @@ EOF
 	my $bodywritten = 0;
 
 # If there is an existing source.list file, we copy the top lines to the
-# new file, until we hit the expected demarcation line. 
+# new file, until we hit the expected demarcation line.
 
 	my $topmodification = 1;
 	my $bottommodification = 0;
@@ -797,7 +797,7 @@ EOF
 
 # We need to watch for the closing demarcation line: if we hit that before the
 # opening demarcation line, then we shouldn't have copied the lines to the
-# output file.  To fix this, we close the output file, discard it, and reopen 
+# output file.  To fix this, we close the output file, discard it, and reopen
 # the file.
 
 				} elsif ($_ eq $bottomline) {
@@ -821,7 +821,7 @@ EOF
 				}
 			}
 		}
-	
+
 		close(IN);
 	}
 
@@ -875,7 +875,7 @@ ERR
 
   my $err = $config->bindist_check_distro;
 
-Check whether the current distribution allows use of the bindist. Returns an 
+Check whether the current distribution allows use of the bindist. Returns an
 error string if a problem exists, otherwise returns a false value.
 
 =cut
@@ -1041,9 +1041,9 @@ sub binary_requested {
 
 	my $result = Fink::Config::build_as_user_group;
 
-Returns a ref to a hash with keys 'user', 'group', and 'user:group' and values 
-depending on whether the option build_as_nobody is set or not. Also checks for 
-the existence of the user and group 'fink-bld' if build_as_nobody is set. If 
+Returns a ref to a hash with keys 'user', 'group', and 'user:group' and values
+depending on whether the option build_as_nobody is set or not. Also checks for
+the existence of the user and group 'fink-bld' if build_as_nobody is set. If
 either the user or the group 'fink-bld' can't be found the method falls back
 to 'nobody'.
 
@@ -1091,7 +1091,7 @@ sub read_flags {
 		my @flags = split(' ', $self->param_default('Flags', ''));
 		$self->{_flags} = { map { $_ => 1 } @flags };
 	}
-}	
+}
 
 sub has_flag {
 	my ($self, $flag) = @_;
@@ -1193,7 +1193,7 @@ Typically F</sw>.
 
 =item $buildpath
 
-Directory where fink packages will be built.  
+Directory where fink packages will be built.
 
 Typically F<$basepath/src>
 

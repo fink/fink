@@ -63,7 +63,7 @@ These functions handle managing changes in the fink.conf file.
 
 # Compatibility version of the $basepath/etc/fink.conf file.
 # Needs to be updated whenever a new field is added to the
-# configuration file by code here. This will tell users to 
+# configuration file by code here. This will tell users to
 # rerun fink configure after installing the new fink version.
 # (during postinstall.pl)
 #
@@ -85,7 +85,7 @@ a Fink::Configure object.
 
 Compatibility version of the F<$basepath/etc/fink.conf> file.
 Needs to be updated whenever a new field is added to the
-configuration file by code here. This will tell users to 
+configuration file by code here. This will tell users to
 rerun fink configure after installing the new fink version.
 
 For example, C<1>.
@@ -107,17 +107,17 @@ sub configure {
 	get_options('configure', [
 		[ 'mirrors|m' => \$just_mirrors, "Only configure the mirrors" ]
 	], \@_);
-		
-	
+
+
 	print "\n";
 	&print_breaking("OK, I'll ask you some questions and update the ".
 					"configuration file in '".$config->get_path()."'.");
 	print "\n";
-	
+
 	choose_misc() unless $just_mirrors;
 	choose_mirrors(0, quick => $just_mirrors);
 
-	# set the conf file compatibility version to the current value 
+	# set the conf file compatibility version to the current value
 	$config->set_param("ConfFileCompatVersion", $conf_file_compat_version);
 
 	# write configuration
@@ -165,7 +165,7 @@ sub choose_misc {
 
 	print "\n";
 	$binary_dist = $config->param_boolean("UseBinaryDist");
-	
+
 	my $err;
 	if (($err = $config->bindist_check_prefix)
 									|| ($err = $config->bindist_check_distro)) {
@@ -370,14 +370,14 @@ which will need to be saved.
 
 sub spotlight_warning {
 	my $builddir = $config->param_default("Buildpath",
-										  "$basepath/src/fink.build");	
+										  "$basepath/src/fink.build");
 	if ( $> == 0
 			&& !$config->has_flag('SpotlightWarning')
 			&& $builddir !~ /\.build$/
 			&& $config->param("distribution") ge "10.4") {
-		
+
 		$config->set_flag('SpotlightWarning');
-		
+
 		print "\n";
 		my $response =
 			prompt_boolean("Your current build directory '$builddir' will be ".
@@ -386,14 +386,14 @@ sub spotlight_warning {
 				"Would you like to use '$builddir.build' as your new build ".
 				"directory, so that Spotlight will not index it?",
 				default => 1);
-		print "\n";	
-		
+		print "\n";
+
 		$config->set_param("Buildpath", $builddir . ".build") if $response;
 		return 1;
 	}
-	
+
 	return 0;
-}	
+}
 
 =item default_location
 
@@ -405,23 +405,23 @@ hash-ref of the available country and continent codes.
 =cut
 
 # If we can't find a real location (eg: if the user is using pure Darwin?)
-# use the US since that's where most users are. 
+# use the US since that's where most users are.
 our @fallback_location = ('nam', 'nam-us');
 
 sub default_location {
 	my ($keyinfo) = @_;
-	
+
 	# Find what the system thinks the country is
 	my $syscountry =
 		`defaults read /Library/Preferences/.GlobalPreferences Country`;
 	chomp $syscountry;
 	return @fallback_location if $? != 0 || !defined $syscountry
 		|| $syscountry !~ /^[A-Z]{2}$/;
-	
+
 	$syscountry = lc $syscountry;
 	my @loc = grep { /^[a-z]{3}-$syscountry$/ } keys %$keyinfo;
 	return @fallback_location unless scalar(@loc);
-	
+
 	$loc[0] =~ /^(\w{3})/;
 	return ($1, "$1-$syscountry");
 }
@@ -442,7 +442,7 @@ sub choose_mirrors {
 					# called from the postinstall script
  					# of the fink-mirrors package
  	my %options = (quick => 0, @_);
- 	
+
 	my ($answer, $missing, $default, $def_value);
 	my ($continent, $country);
 	my ($keyinfo, $listinfo);
@@ -488,8 +488,8 @@ sub choose_mirrors {
 			}
 		}
 	}
-	
-	
+
+
 	if (!$missing && !$options{quick}) {
 		if ($mirrors_postinstall) {
 			# called from dpkg postinst script of fink-mirrors pkg
@@ -516,14 +516,14 @@ sub choose_mirrors {
 			}
 		}
 	}
-	
-	if ((!$obsolete_only) or (!$config->has_param("MirrorOrder"))) {	
+
+	if ((!$obsolete_only) or (!$config->has_param("MirrorOrder"))) {
 		$mirror_order = &prompt_selection(
 			"What mirror order should fink use when downloading sources?",
 			intro   => "The Fink team maintains mirrors known as \"Master\" mirrors, which contain ".
 					   "the sources for all fink packages. You can choose to use these mirrors first, ".
 					   "last, never, or mixed in with regular mirrors. If you don't care, just select the default.",
-			default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ], 
+			default => [ value => $config->param_default("MirrorOrder", "MasterFirst") ],
 			choices => [
 				"Search \"Master\" source mirrors first." => "MasterFirst",
 				"Search \"Master\" source mirrors last." => "MasterLast",
@@ -535,11 +535,11 @@ sub choose_mirrors {
 	} else {
 		$mirror_order = $config->param("MirrorOrder");
 	}
-	
+
 	### step 1: choose a continent
 	my $choose_location = !$obsolete_only && !$options{quick};
 	my ($default_continent, $default_country) = default_location $keyinfo;
-	if ($choose_location or (!$config->has_param("MirrorContinent"))) {	
+	if ($choose_location or (!$config->has_param("MirrorContinent"))) {
 		$continent = &prompt_selection("Your continent?",
 			intro   => "Choose a continent:",
 			default => [ value => $config->param_default("MirrorContinent",
@@ -555,7 +555,7 @@ sub choose_mirrors {
 	}
 
 	### step 2: choose a country
-	if ($choose_location or (!$config->has_param("MirrorCountry"))) {	
+	if ($choose_location or (!$config->has_param("MirrorCountry"))) {
 		$country = &prompt_selection("Your country?",
 			intro   => "Choose a country:",
 			default => [ value => $config->param_default("MirrorCountry",
@@ -592,7 +592,7 @@ sub choose_mirrors {
 
 		@mirrors = ();
 		my %seen;
-		
+
 		# Add current setting
 		if ($obsolete_mirrors{$mirrorname}) {
 			$current_prompt = "Current setting (not on current list of mirrors):\n\t\t ";
@@ -606,13 +606,13 @@ sub choose_mirrors {
 			push @mirrors, ( "$current_prompt $def_value" => $def_value );
 			$seen{$def_value} = 1;
 		}
-		
+
 		# Add primary
 		if (exists $all_mirrors->{primary}) {
 			push @mirrors, map { ( "Primary: $_" => $_ ) }
 				grep { !$seen{$_}++ } @{$all_mirrors->{primary}};
 		}
-		
+
 		# Add local mirrors
 		my @places;
 		if ($country ne $continent) {	# We chose a country
@@ -626,13 +626,13 @@ sub choose_mirrors {
 			push @mirrors, map { $keyinfo->{$place} . ": $_" => $_ }
 				grep { !$seen{$_}++ } @{$all_mirrors->{$place}};
 		}
-		
+
 		# Should we limit the number of mirrors?
-		
+
 		# Can't pick second result if there isn't one! (2 cuz it's doubled)
 		$default_response = 1 unless scalar(@mirrors) > 2;
-		
-		my @timeout = $mirrors_postinstall ? (timeout => 60) : (); 
+
+		my @timeout = $mirrors_postinstall ? (timeout => 60) : ();
 		$answer = &prompt_selection("Mirror for $mirrortitle?",
 						intro   => "Choose a mirror for '$mirrortitle':",
 						default => [ number => $default_response ],

@@ -45,7 +45,7 @@ use Fink::Services	qw(&pkglist2lol &version_cmp &spec2struct &spec2string
 use Fink::Status;
 use Fink::VirtPackage;
 
-use Carp;	
+use Carp;
 use Storable qw(&freeze);
 
 ### GLOBALS
@@ -78,7 +78,7 @@ packages are really added or removed by this package.
 
 	# Examine the state
 	my $version = $state->installed($pkgname);
-	my @providers = $state->providers($pkgname); 
+	my @providers = $state->providers($pkgname);
 
 	my @pkgnames = $state->list_packages();
 	my @pkgnames = $state->provided();
@@ -88,7 +88,7 @@ packages are really added or removed by this package.
 	my @problems = $state->check();
 
 
-	# Add and remove items. 
+	# Add and remove items.
 	my $new_item = {
 		package => foo,
 		version => 1.0-1,
@@ -140,10 +140,10 @@ Make a new state object, reflecting the current state of the system.
 sub new {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
-	
+
 	my $self = { };
 	bless $self, $class;
-	
+
 	$self->_initialize;
 	return $self;
 }
@@ -153,7 +153,7 @@ sub new {
 # Initialize this state to the current state of the system.
 sub _initialize {
 	my $self = shift;
-	
+
 	for my $module (qw(Fink::Status Fink::VirtPackage)) {
 		my $list = $module->list();
 		for my $pkgname (keys %$list) {
@@ -177,7 +177,7 @@ sub _initialize {
 # If the package does not exist, throws an exception.
 sub _package {
 	my ($self, $pkgname) = @_;
-	
+
 	confess "Fink::SysState: No such package: $pkgname"
 		unless defined $self->{packages}{$pkgname};
 	return $self->{packages}{$pkgname};
@@ -189,15 +189,15 @@ sub _package {
 # structural format.
 #
 # Requires a transformation code-ref that operates on $_, and turns each item of
-# the package list from an array of alternative specification strings into the 
+# the package list from an array of alternative specification strings into the
 # desired format.
 #
-# Returns an empty list if the field does not exist. Throws an exception on 
+# Returns an empty list if the field does not exist. Throws an exception on
 # other errors.
 sub _pkglist {
 	my ($self, $pkgname, $field, $transform) = @_;
 	my $pkg = $self->_package($pkgname);
-	
+
 	unless (ref $pkg->{$field}) {
 		if (defined $pkg->{$field}) {
 			$pkg->{$field} = pkglist2lol($pkg->{$field});
@@ -208,7 +208,7 @@ sub _pkglist {
 			$pkg->{$field} = [ ];
 		}
 	}
-	
+
 	return $pkg->{$field};
 }
 
@@ -279,7 +279,7 @@ sub _replaces {
 sub _satisfiers {
 	my ($self, $spec) = @_;
 	my @sat;
-	
+
 	my $name = $spec->{package};
 	my $vers = $self->installed($name);
 	if (exists $spec->{version}) {
@@ -305,7 +305,7 @@ If a package is not installed, returns undef.
 
 sub installed {
 	my ($self, $pkgname) = @_;
-	
+
 	return undef unless defined $self->{packages}{$pkgname};
 	return $self->{packages}{$pkgname}{version};
 }
@@ -341,7 +341,7 @@ sub list_packages {
 
 	my @pkgnames = $state->provided();
 
-Get a list of every package that has been explicitly provided by another 
+Get a list of every package that has been explicitly provided by another
 package. Each such package may or may not be itself installed.
 
 =cut
@@ -380,7 +380,7 @@ sub _start_changing {
 # called, that's an indirect change.
 sub _made_change {
 	my ($self, $action, $item) = @_;
-	
+
 	if ($action eq 'added') {
 		unshift @{$self->{current_change}}, { remove => [ $item ] };
 		#print "Adding $item\n";
@@ -407,19 +407,19 @@ sub _stop_changing {
 	my @fields_required = qw(package version);
 	my @fields_pkglist = qw(depends conflicts provides replaces);
 	my %fields_allowed = map { $_ => 1 } @fields_required, @fields_pkglist;
-	
+
 	# $self->_remove_replaced_conflicts($pkgname);
 	#
 	# Remove packages that are replaced and conflicted by the given package.
 	sub _remove_replaced_conflicts {
 		my ($self, $pkgname) = @_;
-		
+
 		my %repl = map { $_ => 1 } map { $self->_satisfiers($_) }
 			@{ $self->_replaces($pkgname) };
 		my %con = map { $_ => 1 } map { $self->_satisfiers($_) }
 			@{ $self->_conflicts($pkgname) };
 		delete $repl{$pkgname}; # Don't remove what we just added!
-		
+
 		my @repcon = grep { $con{$_} } keys %repl;
 		$self->remove(@repcon);
 	};
@@ -452,7 +452,7 @@ other errors.
 	sub add {
 		my $self = shift;
 		$self->_start_changing();
-		
+
 		for my $pkgitem (@_) {
 			# Validate fields
 			for my $field (@fields_required) {
@@ -461,22 +461,22 @@ other errors.
 			}
 			my @badfields = grep { !$fields_allowed{$_} } keys %$pkgitem;
 			delete $pkgitem->{$_} for (@badfields);
-			
+
 			# Remove if already installed
 			my $pkgname = $pkgitem->{package};
 			$self->remove($pkgname) if $self->installed($pkgname);
-			
+
 			# Add it, and deal with the providers
 			$self->{packages}{$pkgname} = $pkgitem;
 			for my $provided (@{ $self->_provides($pkgname) }) {
 				$self->{provides}{$provided}{$pkgname} = 1;
 			}
 			$self->_made_change(added => $pkgname);
-			
+
 			# Remove anything that's replaced/conflicted
 			$self->_remove_replaced_conflicts($pkgname);
 		}
-		
+
 		$self->_stop_changing;
 	}
 
@@ -496,7 +496,7 @@ other errors.
 	sub add_pkgversion {
 		my $self = shift;
 		$self->_start_changing();
-		
+
 		require Fink::PkgVersion;
 		for my $pv (@_) {
 			my $hash = {
@@ -509,7 +509,7 @@ other errors.
 			}
 			$self->add($hash);
 		}
-		
+
 		$self->_stop_changing();
 	}
 
@@ -529,7 +529,7 @@ warning will be emitted. An exception will be thrown on other errors.
 sub remove {
 	my $self = shift;
 	$self->_start_changing();
-	
+
 	for my $pkgname (@_) {
 		# Remove any provides
 		for my $provided (@{ $self->_provides($pkgname) }) {
@@ -537,7 +537,7 @@ sub remove {
 			delete $self->{provides}{$provided}
 				unless %{ $self->{provides}{$provided} };
 		}
-		
+
 		if (defined $self->installed($pkgname)) {
 			$self->_made_change(removed => $self->_package($pkgname));
 			delete $self->{packages}{$pkgname};
@@ -545,7 +545,7 @@ sub remove {
 			carp "Fink::SysState: No such package: $pkgname";
 		}
 	}
-	
+
 	$self->_stop_changing();
 }
 
@@ -570,7 +570,7 @@ of packages to remove.
 sub change {
 	my $self = shift;
 	$self->_start_changing();
-	
+
 	for my $changes (@_) { # Remove FIRST
 		$self->remove(			@{ $changes->{remove}			});
 		$self->add(				@{ $changes->{add}				});
@@ -609,29 +609,29 @@ checkpoints that are reverted past are lost.
 sub undo {
 	my ($self, $name) = @_;
 	$self->_start_changing();
-	
+
 	while (1) {
 		# Stop if we're there
 		last if defined $name
 			&& defined $self->{history}[-1]{checkpoints}{$name};
-		
+
 		# Check if we can continue
 		unless (scalar(@{$self->{history}}) > 1) {
 			carp "Fink::SysState: Nothing to undo";
 			last;
 		}
-		
+
 		# Do the changes
 		for my $change (@{$self->{history}[-1]{changes}}) {
 			$self->change($change);
 		}
-		
+
 		# Move back
 		pop @{$self->{history}};
-		
+
 		last unless defined $name; # We're just going once
 	}
-	
+
 	$self->_stop_changing();
 	my $changes_made = pop @{$self->{history}};
 	return $changes_made->{changes};
@@ -651,28 +651,28 @@ sub undo {
 sub _check_depends {
 	my ($self, $opts, $pkgname) = @_;
 	my @probs;
-	
-	REQ: for my $req (@{ $self->_depends($pkgname) }) { # next if match 
+
+	REQ: for my $req (@{ $self->_depends($pkgname) }) { # next if match
 		for my $alt (@$req) {
 			my @sat = $self->_satisfiers($alt);
 			next REQ if @sat;
 		}
-		
+
 		# Nothing found to satisfy us.
 		my $desc = "Unsatisfied dependency in $pkgname: "
 			. join(' | ', map { spec2string($_) } @$req);
-		
+
 		push @probs, {
 			package	=> $pkgname,
 			field	=> 'depends',
 			spec	=> $req,
 			desc	=> $desc,
 		};
-		
+
 		print_breaking_stderr("Fink::SysState: $desc") if $opts->{verbose};
 		return @probs if $opts->{detail} <= $DETAIL_PACKAGE;
 	}
-	
+
 	return @probs;
 }
 
@@ -682,18 +682,18 @@ sub _check_depends {
 sub _check_conflicts {
 	my ($self, $opts, $pkgname) = @_;
 	my @probs;
-	
+
 	for my $con (@{ $self->_conflicts($pkgname) }) { # next if no match
 		my @sat = $self->_satisfiers($con);
-		
+
 		# It's ok for something to conflict on what it provides
 		@sat = grep { $_ ne $pkgname } @sat;
-		
+
 		# Found some conflicts (one per conflictor!)
 		for my $sat (@sat) {
 			my $desc = "$pkgname conflicts with " . spec2string($con)
 				. ", but $sat is installed";
-			
+
 			push @probs, {
 				package	=> $pkgname,
 				field	=> 'conflicts',
@@ -701,12 +701,12 @@ sub _check_conflicts {
 				desc	=> $desc,
 				conflictor => $sat,
 			};
-			
+
 			print_breaking_stderr("Fink::SysState: $desc") if $opts->{verbose};
 			return @probs if $opts->{detail} <= $DETAIL_PACKAGE;
 		}
 	}
-	
+
 	return @probs;
 }
 
@@ -765,7 +765,7 @@ Defaults to false.
 
 The level of detail desired, one of $DETAIL_FIRST, $DETAIL_PACKAGE or
 $DETAIL_ALL. With $DETAIL_ALL, every problem will be returned. To speed up the
-check, use $DETAIL_PACKAGE to find just one problem per package with unsatisfied 
+check, use $DETAIL_PACKAGE to find just one problem per package with unsatisfied
 dependencies or conflicts. For the fastest check, use $DETAIL_FIRST to return
 only the first problem found.
 
@@ -784,15 +784,15 @@ sub check {
 		detail => wantarray ? $DETAIL_ALL : $DETAIL_FIRST,
 		%$optref
 	);
-	
+
 	my @probs;
 	PKG: for my $pkgname (@_ ? @_ : $self->list_packages()) {
 		my @pkgprobs = $self->_check_depends(\%opts, $pkgname);
 		push @pkgprobs, $self->_check_conflicts(\%opts, $pkgname)
 			unless @pkgprobs && $opts{detail} <= $DETAIL_PACKAGE;
-		
+
 		push @probs, @pkgprobs;
-		return @probs if @probs && $opts{detail} <= $DETAIL_FIRST;		
+		return @probs if @probs && $opts{detail} <= $DETAIL_FIRST;
 	}
 
 	return @probs;
@@ -804,18 +804,18 @@ sub check {
 # satisfied.
 sub _satisfied_versions {
 	my ($self, $pkgname, $ignore) = @_;
-	
+
 	require Fink::Package;
 	my $po = Fink::Package->package_by_name($pkgname);
 	return () unless $po;
-	
+
 	# Higher version candidates are preferred, so they go first
 	my @cands = map { $po->get_version($_) }
 		reverse sort_versions $po->list_versions();
-	
+
 	# Don't want to build, so alternatives must already have deb
 	@cands = grep { $_->is_present() } @cands;
-	
+
 	# Narrow down to ones that would be satisfied, individually
 	my @finalcands;
 	foreach my $cand (@cands) {
@@ -825,9 +825,9 @@ sub _satisfied_versions {
 		$self->undo();
 		push @finalcands, $cand unless $nok;
 	}
-	
+
 	return @finalcands;
-}	
+}
 
 # my @extras = $self->_satisfied_combo($altern_lol, $install_pvs, $ignore)
 #
@@ -836,10 +836,10 @@ sub _satisfied_versions {
 sub _satisfied_combo {
 	my ($self, $alterns, $install_pvs, $ignore, $chosen) = @_;
 	$chosen = [] unless $chosen; # What's already been chosen?
-	
+
 	unless (@$alterns) { # We're at a final state, is it ok?
 		return () if $self->_check_ignoring($ignore);
-		
+
 		# Make sure all the packages are still here (unreplaced)
 		for my $pv (@$install_pvs) {
 			my $vers = $self->installed($pv->get_name);
@@ -847,22 +847,22 @@ sub _satisfied_combo {
 		}
 		return @$chosen;
 	}
-	
+
 	# Try all the candidates for one unsatisfied package
 	my $cands = pop @$alterns;
 	foreach my $cand (@$cands) {
 		push @$chosen, $cand;	# Try it
 		$self->add_pkgversion($cand);
-		
+
 		# Recurse through the next package
 		my @ok = $self->_satisfied_combo($alterns, $install_pvs,
 			$ignore, $chosen);
 		return @ok if @ok;
-		
+
 		pop @$chosen;			# Undo the attempt
 		$self->undo();
 	}
-	
+
 	return ();	# Options exhausted
 }
 
@@ -871,7 +871,7 @@ sub _satisfied_combo {
 # Get a unique identifier for the given problem.
 sub _problem_uid {
 	my ($self, $problem) = @_;
-	
+
 	local $Storable::canonical = 1; # temporary
 	return freeze($problem);
 }
@@ -881,8 +881,8 @@ sub _problem_uid {
 # Get all problems whose uids aren't in $ignore.
 sub _check_ignoring {
 	my ($self, $ignore) = @_;
-	
-	return grep { !$ignore->{$self->_problem_uid($_)} } $self->check();	
+
+	return grep { !$ignore->{$self->_problem_uid($_)} } $self->check();
 }
 
 # $self->_resolve_install_failure($probs, $install_pvs);
@@ -890,7 +890,7 @@ sub _check_ignoring {
 # Handle failure to resolve an inconsistent state on installation.
 sub _resolve_install_failure {
 	my ($self, $probs, $install_pvs) = @_;
-	
+
 	print_breaking_stderr("Could not resolve inconsistent dependencies!");
 	my @bls = map { $_->{package} =~ /^fink-buildlock-(.*)/ ? $1 : () } @$probs;
 	if (@bls) {
@@ -904,7 +904,7 @@ sub _resolve_install_failure {
 		print STDERR "\n";
 		print_breaking_stderr("Fink isn't sure how to install the above"
 			. " packages safely. You may be able to fix things by running:");
-	
+
 		my $aptpkgs = join (' ', map {
 			$_->get_name() . "=" . $_->get_fullversion()
 		} @$install_pvs );
@@ -916,7 +916,7 @@ sub _resolve_install_failure {
 
 FAIL
 	}
-	
+
 	die "Fink::SysState: Could not resolve inconsistent dependencies\n";
 }
 
@@ -930,10 +930,10 @@ dependency.
 
 This method attempts to resolve this situation. Pass in a list of PkgVersion
 objects which should be installed to the given state, and the return value will
-be a list of additional PkgVersion objects which must be installed at the same 
+be a list of additional PkgVersion objects which must be installed at the same
 time to preserve consistency.
 
-On return, the state object will reflect the installation of all the necessary 
+On return, the state object will reflect the installation of all the necessary
 packages.
 
 If no acceptable resolution can be found, an exception will be thrown.
@@ -943,15 +943,15 @@ If no acceptable resolution can be found, an exception will be thrown.
 sub resolve_install {
 	my ($self, @install_pvs) = @_;
 	my $verbose = ($config->verbosity_level() > 1);
-	
+
 	# Ignore pre-existing problems
 	my $ignore = { map { $self->_problem_uid($_) => 1 } $self->check() };
-	
+
 	# Add the packages
 	$self->add_pkgversion(@install_pvs);
 	my @probs = $self->_check_ignoring($ignore);
 	return () unless @probs; # We're ok!
-	
+
 	# We need to resolve some deps, let the user know
 	if ($verbose) {
 		print STDERR "\n";
@@ -963,19 +963,19 @@ sub resolve_install {
 		print_breaking_stderr('  ' . $_->{desc}) for @probs;
 		print STDERR "\n";
 		print_breaking_stderr("Trying to resolve dependencies...");
-	}	
-	
+	}
+
 	# For each unsatisfied package, find alternative versions
 	my %unsat = map { $_->{package} => 1 } @probs;
 	my %alterns = map {
 		$_ => [ $self->_satisfied_versions($_, $ignore) ]
 	} keys %unsat;
-	
+
 	# If there's at least one alternative for each unsat, try to find a combo
 	# that will satisfy all.
 	my @extras = $self->_satisfied_combo([ values %alterns ],
 		\@install_pvs, $ignore);
-	
+
 	if (@extras) {	# Found a solution!
 		if ($verbose) {
 			print STDERR "\n";

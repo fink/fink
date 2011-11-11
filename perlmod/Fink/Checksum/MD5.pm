@@ -48,7 +48,7 @@ sub new {
 	if (!$@) {
 		$md5pm = 1;
 	} else {
-		if(-e "/sbin/md5") {
+		if (-e "/sbin/md5") {
 			$md5cmd = "/sbin/md5";
 			$match = '= ([^\s]+)$';
 		} elsif (-e "$basepath/bin/md5deep") {

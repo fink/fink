@@ -93,12 +93,12 @@ Like C<mv>.
 sub mv {
 	my @src = _expand(@_);
 	my $dst = pop @src;
-	
+
 	require File::Copy;
-	
+
 	croak("Too many arguments") if @src > 1 && ! -d $dst;
 	croak("Insufficient arguments") unless @src;
-	
+
 	my $nok = 0;
 	foreach my $src (@src) {
 		$nok ||= !File::Copy::move($src,$dst);
@@ -118,12 +118,12 @@ Like C<cp>.
 sub cp {
 	my @src = _expand(@_);
 	my $dst = pop @src;
-	
+
 	require File::Copy;
-	
+
 	croak("Too many arguments") if (@src > 1 && ! -d $dst);
 	croak("Insufficient arguments") unless @src;
-	
+
 	my $nok = 0;
 	foreach my $src (@src) {
 		$nok ||= !File::Copy::copy($src,$dst);
@@ -149,7 +149,7 @@ sub cat {
 	unless( open $fh, "<$file" ) {
 		return undef;
 	}
-	
+
 	local $/ = $/;
 	$/ = undef unless wantarray;
 	return <$fh>;
@@ -172,7 +172,7 @@ If this becomes a problem, reimplement without File::Path
 sub mkdir_p {
 	my @dirs = _expand(@_);
 	require File::Path;
-	
+
 	# mkpath() has one condition where it will die. :(  The eval
 	# loses the value of $!.
 	my $nok = 0;
@@ -211,17 +211,17 @@ Like C<rm -f>
 
 sub rm_f {
 	my @files = _expand(@_);
-	
+
 	my $nok = 0;
 	foreach my $file (@files) {
 		next unless lstat $file;
 		next if unlink($file);
 		chmod(0777,$file);     # Why? A file's perm's don't affect unlink
 		next if unlink($file);
-	
+
 		$nok = 1;
 	}
-	
+
 	return !$nok;
 }
 
@@ -237,14 +237,14 @@ Like C<touch>.
 sub touch {
 	my $t = time;
 	my @files = _expand(@_);
-	
+
 	my $nok = 0;
 	foreach my $file (@files) {
 		open(FILE,">>$file") or $nok = 1;
 		close(FILE)          or $nok = 1;
 		utime($t,$t,$file)   or $nok = 1;
 	}
-	
+
 	return !$nok;
 }
 
@@ -265,19 +265,19 @@ parameter is not changed. Dot is not supported as a separator.
 sub chowname {
 	my($owner, @files) = @_;
 	my($user, $group) = split( /:/, $owner, 2 );
-	
+
 	my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
 	my $gid = defined $group && length $group ? getgrnam($group) : -1;
-	
+
 	return if !defined $uid or !defined $gid;
-	
+
 	# chown() won't return false as long as one operation succeeds, so we
 	# have to call it one at a time.
 	my $nok = 0;
 	foreach my $file (@files) {
 		$nok ||= !CORE::chown $uid, $gid, $file;
 	}
-	
+
 	return !$nok;
 }
 
@@ -295,14 +295,14 @@ followed.
 sub chowname_hr {
 	my($owner, @files) = @_;
 	my($user, $group) = split( /:/, $owner, 2 );
-	
+
 	my $uid = defined $user  && length $user  ? getpwnam($user)  : -1;
 	my $gid = defined $group && length $group ? getgrnam($group) : -1;
-	
+
 	return if !defined $uid or !defined $gid;
 
 	require File::Find;
-	
+
 	# chown() won't return false as long as one operation succeeds, so we
 	# have to call it one at a time.
 	my $nok = 0;
@@ -316,7 +316,7 @@ sub chowname_hr {
 			}
 		},
 		@files) if @files;
-	
+
 	# Some systems have no lchown
 	if ($Config{d_lchown}) {
 		while (my @xargs = splice @links, 0, 128) {
@@ -340,7 +340,7 @@ just target directory.
 
 sub symlink_f {
 	my($src, $dest) = @_;
-	
+
 	rm_f $dest or return;
 	return symlink($src, $dest);
 }
@@ -364,18 +364,18 @@ On failure returns "Error: <description>".
 sub du_sk {
 	my @dirs = @_;
 	my $total_size = 0;
-	
+
 	# Depends on OS. Pretty much only HP-UX, SCO and (rarely) AIX are
 	# not 512 bytes.
 	my $blocksize = 512;
-	
+
 	require File::Find;
-	
+
 	# Must catch warnings for this block
 	my $err = "";
 	use warnings;
 	local $SIG{__WARN__} = sub { $err = "Error: $_[0]" if not $err };
-	
+
 	File::Find::finddepth(
 		sub {
 			# Use lstat first, so the -f refers to the link and not the target.
@@ -383,7 +383,7 @@ sub du_sk {
 			$total_size += ($blocksize * $file_blocks) if -f _ or -d _;
 		},
 		@dirs) if @dirs;
-	
+
 	# du is supposed to ROUND UP
 	return ( $err or ceil($total_size / 1024) );
 }

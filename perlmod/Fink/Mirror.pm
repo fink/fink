@@ -176,9 +176,9 @@ sub merge_master_mirror {
 	my $self = shift;
 	my $mirror = shift;
 	my ($key, $list, $url);
-	$DB::single = 1;	
+	$DB::single = 1;
 
-	foreach $key (keys %{$mirror->{data}}){	
+	foreach $key (keys %{$mirror->{data}}){
 		if (exists $self->{data}->{$key}) {
 			for $url (@{ $mirror->{data}->{$key} }) {
 				(my $masterurl = $url) =~ s/^/master:/;
@@ -189,7 +189,7 @@ sub merge_master_mirror {
 			s/^/master:/ for (@{ $self->{data}->{$key} });
 		}
 	}
- 	
+
   	delete $self->{data}->{timestamp};
 }
 
@@ -294,29 +294,29 @@ sub get_site_retry {
 	}
 	if ($next_set ne "") {
 		push @choice_list, "retry-next";
-		
+
 		# If two masters fail, and the masters come first, assume it's a new
 		# file that hasn't yet reached the masters rather than going through
 		# every single master.
 		my $finish_master = $self->{name} eq 'master'
 			&& $config->param_default('MirrorOrder', '') eq 'MasterFirst'
 			&& $self->{tries} >= 2;
-		
+
 		# No more mirrors in this set or finished master, default to next
-		if($#choice_list == 2 || $finish_master) {
+		if ($#choice_list == 2 || $finish_master) {
 			$default = $#choice_list + 1;
 		}
 	}
 	# ask the user
-	if($printmode) {
+	if ($printmode) {
 		# just printing URLs, never ask, never retry same mirror
-		if($default == 2) {
+		if ($default == 2) {
 			$default = 1;
 		}
 		$result = $choice_list[$default - 1];
 	} else {
 		my $nexttext;
-		if($next_set eq "Original URL") {
+		if ($next_set eq "Original URL") {
 			$nexttext = "Retry using original source URL";
 		} else {
 			$nexttext = "Retry using next mirror set \"$next_set\"";

@@ -141,7 +141,7 @@ sub read_properties {
 	 # do we make the keys all lowercase
 	 my ($opts) = shift || {};
 	 my (@lines);
-	 
+
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
@@ -269,11 +269,11 @@ sub read_properties_lines {
 	$heredoc = 0;
 	$linenum = 0;
 	my $hdoc_spacecount; # number of spaces to remove in heredoc
-	
+
 	foreach (@lines) {
 		$linenum++;
 		chomp;
-			
+
 		if ($heredoc > 0) {
 			# We are inside a HereDoc
 			_remove_space(\$hdoc_spacecount) if ($opts{remove_space});
@@ -304,7 +304,7 @@ sub read_properties_lines {
 			}
 		} else {
 			s/^\s+// if $opts{remove_space};
-			
+
 			next if /^\s*\#/;		# skip comments
 			next if /^\s*$/;		# skip empty lines
 			if (/^([0-9A-Za-z_.\-]+)\:\s*(\S.*?)\s*$/) {
@@ -358,7 +358,7 @@ sub read_properties_multival {
 	 # do we make the keys all lowercase
 	 my ($opts) = shift || {};
 	 my (@lines);
-	 
+
 	 open(IN,$file) or die "can't open $file: $!";
 	 @lines = <IN>;
 	 close(IN);
@@ -397,7 +397,7 @@ sub read_properties_multival_var {
     my $property_hash = read_properties_multival_lines $filename, $opts, @lines;
 
 This is function is not exported. You should use read_properties_var,
-read_properties, read_properties_multival, or read_properties_multival_var 
+read_properties, read_properties_multival, or read_properties_multival_var
 instead.
 
 Parses the list of text strings @lines and returns a ref to a hash of
@@ -405,7 +405,7 @@ its fields, with each value being a ref to a list of values for that
 field. The string $filename is used in parsing-error messages but the
 file is not accessed.
 
-The function is similar to read_properties_lines, with the following 
+The function is similar to read_properties_lines, with the following
 differences:
 
   Multiline values are can only be given in RFC-822 style notation,
@@ -592,7 +592,7 @@ EOSCRIPT
 			if (not $options{'quiet'}) {
 				my ($commandname) = split(/\s+/, $cmd);
 				print "### execution of $commandname failed, exit code $rc\n";
-			}	
+			}
 			if (defined $options{'delete_tempfile'} and $options{'delete_tempfile'} == 1) {
 				# probably keep tempfile around (to aide debugging)
 				unlink($script) if $is_tempfile;
@@ -662,7 +662,7 @@ sub prepare_script {
 	$$script =~ s/\s*\\\s*\n/ /g;    # Rejoin continuation/multiline commands
 	$$script =~ s/^\#.*?($)\n?//mg;  # remove comment lines
 	$$script =~ s/^\s*($)\n?//mg;    # remove blank lines
-	chomp $$script;                  # always remove trailing newline 
+	chomp $$script;                  # always remove trailing newline
 
 	# sanity check
 	if ($$script =~ /\\$/s) {
@@ -840,7 +840,7 @@ sub expand_percent2 {
 					die $errmsg;
 				} elsif ($options{err_action} eq 'warn') {
 					print $errmsg;
-				} elsif ($options{err_action} eq 'ignore') { 
+				} elsif ($options{err_action} eq 'ignore') {
 				} elsif ($options{err_action} eq 'undef') {
 					print $errmsg;
 					return undef;
@@ -930,9 +930,9 @@ sub version_cmp {
 		$Version_Cmp_Cache{$a}{$b} = $res;
 		$Version_Cmp_Cache{$b}{$a} = - $res;
 	}
-	
+
 	if ($op eq "<<") {
-		$res = $res < 0 ? 1 : 0;	
+		$res = $res < 0 ? 1 : 0;
 	} elsif ($op eq "<=") {
 		$res = $res <= 0 ? 1 : 0;
 	} elsif ($op eq "=") {
@@ -1234,7 +1234,7 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 		'2.95' => '2',
 		'3.1' => '3',
 	);
-	
+
 	sub gcc_select_arg {
 		my $vers = shift;
 		return $gcc_select_table{$vers} if (defined $gcc_select_table{$vers});
@@ -1242,7 +1242,7 @@ IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
 		return $vers;
 	}
 }
-	
+
 
 =item gcc_selected
 
@@ -1296,12 +1296,12 @@ same as the default GCC ABI for the installed version of Mac OS X or Darwin.
 If it is not, we return the value for the default GCC ABI.
 
 If it is, or if $gcc_abi is not supplied, then we check to see if the
-gcc version obtained from /usr/sbin/gcc_select agrees with the expected 
+gcc version obtained from /usr/sbin/gcc_select agrees with the expected
 (default) gcc version corresponding to the installed version of
 Mac OS X or Darwin.  If the versions agree, the common value is returned.
 If they do not agree, we print $message and exit fink.
 
-The strings CURRENT_SYSTEM, INSTALLED_GCC, EXPECTED_GCC, and 
+The strings CURRENT_SYSTEM, INSTALLED_GCC, EXPECTED_GCC, and
 GCC_SELECT_COMMAND within $message are converted to appropriate values.
 
 Sample message:
@@ -1327,12 +1327,10 @@ sub enforce_gcc {
 	my %system_gcc_default = ('10.2' => '3.3', '10.3' => '3.3', '10.4' => '4.0', '10.5' => '4.0', '10.6' => '4.2', '10.7' => '4.2');
 	my %gcc_abi_default = ('2.95' => '2.95', '3.1' => '3.1', '3.3' => '3.3', '4.0' => '3.3', '4.2' => '3.3');
 
-	if (my $sw_vers = get_osx_vers_long())
-	{
+	if (my $sw_vers = get_osx_vers_long()) {
 		$current_system = "Mac OS X $sw_vers";
 		$gcc = $system_gcc_default{get_osx_vers()};
-	} else
-	{
+	} else {
 		$current_system = "Darwin " . get_kernel_vers_long();
 		$gcc = $system_gcc_default{get_kernel_vers()};
 	}
@@ -1372,8 +1370,7 @@ do not result in repeated spawning of sw_vers processes.
 
 =cut
 
-sub get_osx_vers
-{
+sub get_osx_vers {
 	my $sw_vers = get_osx_vers_long();
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
@@ -1419,8 +1416,7 @@ couldn't be determined.
 
 =cut
 
-sub get_darwin_equiv
-{
+sub get_darwin_equiv {
 	my %darwin_osx = ('1' => '10.0', '5' => '10.1', '6' => '10.2', '7' => '10.3', '8' => '10.4', '9' => '10.5', '10' => '10.6', '11' => '10.7');
 	return $darwin_osx{get_kernel_vers()};
 }
@@ -1433,11 +1429,9 @@ Returns the major version of the local kernel.
 
 =cut
 
-sub get_kernel_vers
-{
+sub get_kernel_vers {
 	my $kernel_version = get_kernel_vers_long();
-	if ($kernel_version =~ s/^(\d+)\.\d+.*/$1/)
-	{
+	if ($kernel_version =~ s/^(\d+)\.\d+.*/$1/) {
 		return $kernel_version;
 	} else {
 		my $error = "Couldn't determine major version number for $kernel_version kernel!";
@@ -1445,15 +1439,12 @@ sub get_kernel_vers
 	}
 }
 
-sub get_kernel_vers_long
-{
+sub get_kernel_vers_long {
 	return lc((uname())[2]);
 }
 
-sub get_system_version
-{
-	if (get_osx_vers())
-	{
+sub get_system_version {
+	if (get_osx_vers()) {
 		return get_osx_vers();
 	} else {
 		return get_darwin_equiv();
@@ -1517,7 +1508,7 @@ sub get_path {
 
     my $number_of_files = &count_files($path, $regexp);
 
-Returns the number of files in $path. If $regexp is set only 
+Returns the number of files in $path. If $regexp is set only
 files matching the regexp are returned.
 
 =cut
@@ -1526,7 +1517,7 @@ sub count_files {
 	my $path = shift;
 	my $regexp = shift || undef;
 	my $numoffiles;
-	
+
 	opendir(DH, $path) or die "Couldn't open directory '$path'";
 	if ($regexp) {
 		$numoffiles = grep(/$regexp/, readdir(DH));
@@ -1707,9 +1698,9 @@ shared, and it is required for writing.
 
 =item timeout => $timeout
 
-If running as B<non-root> user, the locking operation will time-out 
-if the lock cannot be obtained for $timeout seconds. An open filehandle (which 
-must be closed) will still be returned. 
+If running as B<non-root> user, the locking operation will time-out
+if the lock cannot be obtained for $timeout seconds. An open filehandle (which
+must be closed) will still be returned.
 
 This option has no effect on the root user.
 
@@ -1718,7 +1709,7 @@ refuses to relinquish the lock. To disable timeouts, pass zero for $timeout.
 
 =item root_timeout => $timeout
 
-Just like 'timeout', but the timeout applies to the root user as well. 
+Just like 'timeout', but the timeout applies to the root user as well.
 This option overrides 'timeout'.
 
 =item quiet => $quiet
@@ -1741,7 +1732,7 @@ lock cannot be acquired immediately, failure will be returned.
 
 sub lock_wait {
 	my $lockfile = shift;
-	
+
 	my %options = @_;
 	my $exclusive = $options{exclusive} || 0;
 	my $timeout = exists $options{timeout} ? $options{timeout} : 300;
@@ -1750,7 +1741,7 @@ sub lock_wait {
 	my $quiet = $options{quiet} || 0;
 	my $desc = $options{desc} || "another process";
 	my $no_block = $options{no_block} || 0;
-	
+
 	my $really_timeout = $> != 0 || $root_timeout;
 
 	# Make sure we can access the lock
@@ -1761,7 +1752,7 @@ sub lock_wait {
 			return wantarray ? (0, 0) : 0;
 		}
 	}
-	
+
 	my $mode = $exclusive ? LOCK_EX : LOCK_SH;
 	if (flock $lockfile_FH, $mode | LOCK_NB) {
 		return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
@@ -1772,7 +1763,7 @@ sub lock_wait {
 			if (!defined $Fink::Config::config ||
 					!$Fink::Config::config->get_option("LockWarning", 0)) {
 				# Try to warn only once
-				print STDERR "WARNING: No locking is available on this " . 
+				print STDERR "WARNING: No locking is available on this " .
 					"filesystem.\nTo ensure safety, do not run multiple " .
 					"instances simultaneously.\n";
 				$Fink::Config::config->set_options({ LockWarning => 1 })
@@ -1780,19 +1771,19 @@ sub lock_wait {
 			}
 			return ($lockfile_FH, 0);
 		}
-		
+
 		return (wantarray ? (0, 0) : 0) if $no_block;
-		
+
 		# Couldn't get lock, meaning process has it
 		my $waittime = $really_timeout ? "up to $timeout seconds " : "";
 		print STDERR "Waiting ${waittime}for $desc to finish..."
 			unless $quiet;
-		
+
 		my $success = 0;
 		my $alarm = 0;
-		
+
 		eval {
-			# If non-root, we could be stuck here forever with no way to 
+			# If non-root, we could be stuck here forever with no way to
 			# stop a broken root process. Need a timeout!
 			local $SIG{ALRM} = sub { die "alarm\n" };
 			$success = flock $lockfile_FH, $mode;
@@ -1802,7 +1793,7 @@ sub lock_wait {
 			die unless $@ eq "alarm\n";
 			$alarm = 1;
 		}
-		
+
 		if ($success) {
 			print STDERR " done.\n" unless $quiet;
 			return wantarray ? ($lockfile_FH, 0) : $lockfile_FH;
@@ -1889,7 +1880,7 @@ rename strategy, to prevent corruption. Return true on success.
 sub store_rename {
 	my ($ref, $file) = @_;
 	my ($dummy, $tmp) = tempfile("$file.XXXXX");
-	
+
 	return 0 unless eval { require Storable };
 	if (Storable::store($ref, $tmp)) {
 		chmod 0644, $tmp; # Should be world-readable
@@ -1926,7 +1917,7 @@ sub spec2struct {
 	my $where = shift || $spec;
 	$where = " at $where" if $where;
 	my %ret;
-	
+
 	if ($spec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
 		$ret{package} = $1;
 		my $verspec = $2;
@@ -1941,7 +1932,7 @@ sub spec2struct {
 	} else {
 		die "Fink::Services: Illegal specification format: $spec$where\n";
 	}
-	
+
 	return \%ret;
 }
 
@@ -1958,7 +1949,7 @@ sub spec2string {
 	my $spec = shift;
 	my $where = shift || Dumper($spec);
 	$where = " at $where" if $where;
-	
+
 	die "Fink::Services: Missing package name in spec struct$where\n"
 		unless defined $spec->{package};
 	if (defined $spec->{version} || defined $spec->{relation}) {
@@ -2069,7 +2060,7 @@ our ($VALIDATE_OK, $VALIDATE_HELP, $VALIDATE_ERROR) = 0..20;
 # Get usage and for an option item. Does not include the description.
 sub _get_option_usage {
 	my $opt = shift;
-	
+
 	# Try each way to specify option (eg: -f, --full)
 	my @alts = sort { length($a) <=> length($b) } @{$opt->{names}};
 	foreach my $alt (@alts) {
@@ -2090,18 +2081,18 @@ sub _get_option_usage {
 sub _align_option_text {
 	my ($opttxt, $desctxt, $optlen) = @_;
 	my $ret = "";
-	
+
 	# Word wrap things
 	my $desclen; # Ensure there's a reasonable size
 	for my $width (get_term_width(), 80) {
 		$desclen = $width - $optlen - 3;
 		last if $desclen > 5;
 	}
-	
+
 	my @optlines = word_wrap $opttxt, $optlen, '  ', '    ';
 	my @desclines = map { word_wrap $_, $desclen }
 		split /\n/, $desctxt; # Respect newlines
-	
+
 	# Add 'em to the message by pairs
 	my $first = 1;
 	while (1) {
@@ -2110,13 +2101,13 @@ sub _align_option_text {
 		last unless defined $optpart || defined $descpart;
 		$optpart = ' ' x $optlen unless defined $optpart;
 		$descpart = '' unless defined $descpart;
-		
+
 		my $midpart = $first ? ' - ' : '   ';
 		$first = 0 if $first;
-		
+
 		$ret .= sprintf "%-${optlen}s%s%s\n", $optpart, $midpart, $descpart;
 	}
-	
+
 	return $ret;
 }
 
@@ -2138,28 +2129,28 @@ sub _get_option_help {
 	} else {
 		@realopts = $opt;
 	}
-	
+
 	my $text = '';
 	for my $ropt (@realopts) {
 		my $usage = _get_option_usage($ropt);
 		$text .= _align_option_text($usage, $ropt->{help}, $optlen);
 	}
 	return $text;
-}	
+}
 
 # my $str = _expand_help $command, $optionlist, $helpformat, $optlen;
 #
 # Expand the help format
 sub _expand_help {
 	my ($command, $options, $helpformat, $optlen) = @_;
-	
+
 	# Option table
 	my %opts;
 	foreach my $opt (@$options) {
 		my @names = @{$opt->{names}};
 		@opts{@names} = ($opt) x scalar(@names);
 	}
-	
+
 	# Expansion table
 	my %exp = (
 		all => sub {
@@ -2220,43 +2211,43 @@ sub get_options {
 		optwidth	=> 22,
 		%optional,
 	);
-	
+
 	# Turn the options into hashes
 	my @optitems = map { _new_option(@$_) } @$options;
-	
+
 	# Insert help after last option, if it's not already in the list
 	my $wanthelp = 0;
-	
+
 	if (!grep { grep { $_ eq 'help' || $_ eq 'h' } @{$_->{names}} } @optitems) {
 		push @optitems, _new_option('h|help' => \$wanthelp,
 			'Display this help text.');
 	}
-	
+
 	# Allow blank $command for global options.
 	$command = " $command" if $command;
-	
+
 	# Call GetOptions. Switch args into @ARGV so GetOptions can work
 	my $die = <<DIE;
 fink$command: unknown option
 Type 'fink$command --help' for more information.
 DIE
 	{
-		local @ARGV = @$args;	
+		local @ARGV = @$args;
 		Getopt::Long::Configure(qw(bundling ignore_case require_order no_getopt_compat prefix_pattern=(--|-)));
 		GetOptions( map { @$_{qw(spec dest)} } @optitems )
 			or die $die;
 		@$args = @ARGV;
 	}
-	
+
 	my $val = &{$optional{validate}}();
 	unless ($wanthelp || $val == $VALIDATE_HELP) {
 		($val == $VALIDATE_OK) ? return : die $die;
 	}
-	
+
 	# Now we're doing the help
 	print _expand_help($command, \@optitems,
 		@optional{qw(helpformat optwidth)});
-	
+
 	exit 0;
 }
 
@@ -2276,30 +2267,30 @@ objects of a sub-package.
 sub find_subpackages {
 	my $pkg = shift;
 	(my $pkgdir = $pkg) =~ s,::,/,g;
-	
+
 	my %found;
 	my @found; # keep ordered
 	for my $dir (@INC) {
 		my $subdir = File::Spec->catdir($dir, $pkgdir);
 		next unless -d $subdir;
-		
+
 		find({
 			follow => 1,
 			wanted => sub {
 				return unless /\.pm$/;
-				
+
 				my $subpkg = File::Spec->abs2rel($File::Find::name, $dir);
 				$subpkg =~ s,/,::,g;
 				$subpkg =~ s,\.pm$,,;
 				return if exists $found{$subpkg};
-				
+
 				eval "require $subpkg";
 				$found{$subpkg} = 1;
 				push @found, $subpkg;
 			}
 		}, $subdir);
 	}
-	
+
 	return @found;
 }
 
@@ -2313,7 +2304,7 @@ Check if apt-get seems usable on this system.
 
 {
 	my $aptok;
-	
+
 	sub apt_available {
 		unless (defined $aptok) {
 			require Fink::Config;
