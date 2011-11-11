@@ -79,8 +79,6 @@ perlmod/Fink/Text/DelimMatch.pm
 perlmod/Fink/Text/ParseWords.pm
 perlmod/Fink/Validation.pm
 perlmod/Fink/VirtPackage.pm
-perlmod/Fink/version.pm
-perlmod/Fink/version/vpp.pm
 perlmod/Fink.pm.in
 readme.en.html
 readme.es.html
