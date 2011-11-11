@@ -137,12 +137,13 @@ Returns the $value of the given $param.
 
 sub param {
 	my $self = shift;
-	my $param_name = lc shift || "";
+	my $param = lc shift;
+	my $default_value = shift;
 
-	if (exists $self->{$param_name}) {
-		return $self->{$param_name};
+	if (exists $self->{$param}) {
+		return $self->{$param};
 	}
-	return undef;
+	return $default_value;
 }
 
 =item set_param
@@ -154,12 +155,14 @@ Sets the $param to $value.  If $value is undef or '' the $param is deleted.
 =cut
 
 sub set_param {
-	my($self, $key, $value) = @_;
+	my $self = shift;
+	my $param = lc shift;
+	my $value = shift;
 
 	if (not defined($value) or $value eq "") {
-		delete $self->{lc $key};
+		delete $self->{$param};
 	} else {
-		$self->{lc $key} = $value;
+		$self->{$param} = $value;
 	}
 }
 
@@ -175,11 +178,11 @@ will be used.
 
 sub param_default {
 	my $self = shift;
-	my $param_name = lc shift || "";
+	my $param = lc shift || "";
 	my $default_value = shift;
 
-	if (exists $self->{$param_name}) {
-		return $self->{$param_name};
+	if (exists $self->{$param}) {
+		return $self->{$param};
 	}
 
 	if (not defined $default_value) {
@@ -201,17 +204,18 @@ true, 0 for false, and undef if the field is not present at all.
 
 sub param_boolean {
 	my $self = shift;
-	my $param_name = lc shift || "";
+	my $param = lc shift;
+	my $default_value = shift;
 	my $param_value;
 
-	if (exists $self->{$param_name}) {
-		$param_value = lc $self->{$param_name};
+	if (exists $self->{$param}) {
+		$param_value = lc $self->{$param};
 		if ($param_value =~ /^\s*(true|yes|on|1)\s*$/) {
 			return 1;
 		}
 		return 0;
 	}
-	return undef;
+	return $default_value;
 }
 
 =item has_param
@@ -224,9 +228,9 @@ Checks to see if the given $param has been set.
 
 sub has_param {
 	my $self = shift;
-	my $param_name = lc shift || "";
+	my $param = lc shift;
 
-	if (exists $self->{$param_name}) {
+	if (exists $self->{$param}) {
 		return 1;
 	}
 	return 0;
