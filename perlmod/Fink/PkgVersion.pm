@@ -5059,7 +5059,7 @@ END
 
 	# create a dummy HOME directory
 	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
-	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', TMPDIR => 1, CLEANUP => 1 );
+	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', DIR => File::Spec->tmpdir, CLEANUP => 1 );
 	if ($< == 0) {
 		# we might be writing to ENV{HOME} during build, so fix ownership
 		my $build_as_user_group = Fink::Config::build_as_user_group();

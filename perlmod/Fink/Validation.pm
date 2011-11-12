@@ -1435,7 +1435,7 @@ sub validate_dpkg_file {
 
 	# create a dummy packaging directory (%d)
 	# NB: File::Temp::tempdir CLEANUP breaks if we fork!
-	my $destdir = tempdir('fink-validate-deb-unpack.XXXXXXXXXX', TMPDIR => 1 );
+	my $destdir = tempdir('fink-validate-deb-unpack.XXXXXXXXXX', DIR => File::Spec->tmpdir );
 
 	print "Validating .deb file $dpkg_filename...\n";
 	
