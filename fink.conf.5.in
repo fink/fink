@@ -15,12 +15,12 @@
 .Sh DESCRIPTION
 When
 .Xr fink 8
-is initially installed it prompts you for the answers to some questions to set 
-up your configuration file, such as which mirrors you want to use for 
-downloading files and how to acquire super-user rights. You can re-run this 
+is initially installed it prompts you for the answers to some questions to set
+up your configuration file, such as which mirrors you want to use for
+downloading files and how to acquire super-user rights. You can re-run this
 process by calling the
 .Cm fink configure
-command. In order to set some options, you may need to edit your 
+command. In order to set some options, you may need to edit your
 .Nm
 by hand. In general, these options are meant for advanced users only.
 .Pp
@@ -28,14 +28,14 @@ Your
 .Nm
 consists of multiple lines, in the format
 .Bl -tag -width flag -offset indent -compact
-.It OptionName: Value 
+.It OptionName: Value
 .El
 .Pp
-Options are one per line, and the option name is separated from its value by a : 
-and a single space. The contents of value depends on the option, but it is 
-normally either a boolean ("True" or "False"), a string, or a list of strings 
-delimited by a space.  
-For example: 
+Options are one per line, and the option name is separated from its value by a :
+and a single space. The contents of value depends on the option, but it is
+normally either a boolean ("True" or "False"), a string, or a list of strings
+delimited by a space.
+For example:
 .Bl -tag -width flag -offset indent -compact
 .It BooleanOption: True
 .It StringOption: Something
@@ -47,13 +47,17 @@ For example:
 .\"
 .\"
 .Sh REQUIRED SETTINGS
-Some of the settings in fink.conf are mandatory. Without them Fink cannot
-function properly. The following settings belong to this category. 
+Some of the settings in
+.Nm
+are mandatory. Without them
+.Nm fink
+cannot
+function properly. The following settings belong to this category.
 .Bl -tag -width flag
-.It Cm Basepath: Ar path 
+.It Cm Basepath: Ar path
 Tells
 .Nm fink
-where it was installed. You should not change this value after installation, 
+where it was installed. You should not change this value after installation,
 it will confuse
 .Nm fink.
 .El
@@ -63,8 +67,9 @@ it will confuse
 .\"
 .\"
 .Sh OPTIONAL USER SETTINGS
-There are various optional settings which users can customize to change the 
-behaviour of Fink. 
+There are various optional settings which users can customize to change the
+behaviour of
+.Nm fink.
 .Bl -tag -width flag
 .It Cm RootMethod: Ar su or sudo or none
 For some operations,
@@ -72,13 +77,15 @@ For some operations,
 needs super user rights. Recognized values are
 .Nm sudo
 or
-.Nm su. 
+.Nm su.
 You can also set this to
 .Nm none,
-in which case you must run Fink as root yourself. The default value is
+in which case you must run
+.Nm fink
+as root yourself. The default value is
 .Nm sudo
-and in most cases it should not be changed. 
-.It Cm Trees: Ar list of trees 
+and in most cases it should not be changed.
+.It Cm Trees: Ar list of trees
 Available trees are:
 .Bl -tag -width flag -offset indent -compact
 .It local/main      - any local packages you want to install
@@ -86,40 +93,51 @@ Available trees are:
 .It stable/main     - stable packages from fink
 .It unstable/main   - unstable packages from fink
 .El
-You may also add your own trees in the 
+You may also add your own trees in the
 .Pa @PREFIX@/fink/dists
-directory for your own purposes, 
-but this is not necessary in most circumstances. The default trees are 
-"local/main local/bootstrap stable/main". This list should be kept in sync with 
+directory for your own purposes,
+but this is not necessary in most circumstances. The default trees are
+"local/main local/bootstrap stable/main". This list should be kept in sync with
 .Pa @PREFIX@/etc/apt/sources.list.
 .Pp
 The order of trees is meaningful, as packages from later trees may override
 packages from earlier ones.
 .It Cm Distribution: Ar 10.5, 10.6, or 10.7
-Fink needs to know which version of Mac OS X you are running. Mac OS X versions up to 10.4 are no longer supported by this version of fink. This field is set by running the
+.Nm fink
+needs to know which version of Mac OS X you are running. Mac OS X versions up to 10.4 are no longer supported by this version of
+.Nm fink.
+This field is set by running the
 .Cm @PREFIX@/lib/fink/postinstall.pl
-script. You should not need to alter this value manually. 
-.It Cm FetchAltDir: Ar path 
-Usually fink will store the sources it fetches in 
+script. You should not need to alter this value manually.
+.It Cm FetchAltDir: Ar path
+Usually
+.Nm fink
+will store the sources it fetches in
 .Pa @PREFIX@/src.
-Using this option, you can specify an alternate directory in which fink should look for downloaded source code. For example:
+Using this option, you can specify an alternate directory in which
+.Nm fink
+should look for downloaded source code. For example:
 .Bl -tag -width flag -offset indent -compact
 .It FetchAltDir: /usr/src
 .El
-.It Cm Verbose: Ar a number from 0 to 3 
-This option sets how much information Fink tells you about what it is doing. The 
-values are: 
+.It Cm Verbose: Ar a number from 0 to 3
+This option sets how much information
+.Nm fink
+tells you about what it is doing. The
+values are:
 .Bl -tag -width flag -offset indent -compact
 .It 0 - Quiet (don't show download stats)
-.It 1 - Low (don't show tarballs being expanded) 
+.It 1 - Low (don't show tarballs being expanded)
 .It 2 - Medium (show almost everything)
-.It 3 - High (show everything) 
+.It 3 - High (show everything)
 .El
-The default value is 1. 
-.It Cm SkipPrompts: Ar a comma-delimited list 
-This option instructs Fink to refrain from asking for input when the user does
-not want to be prompted. Each prompt belongs to a category. If a prompt's 
-category is in the SkipPrompts list then the default option will be chosen 
+The default value is 1.
+.It Cm SkipPrompts: Ar a comma-delimited list
+This option instructs
+.Nm fink
+to refrain from asking for input when the user does
+not want to be prompted. Each prompt belongs to a category. If a prompt's
+category is in the SkipPrompts list then the default option will be chosen
 within a very short period of time.
 .Pp
 Currently, the following categories of prompts exist:
@@ -129,25 +147,38 @@ Currently, the following categories of prompts exist:
 .El
 By default, no prompts are skipped.
 .It Cm OldIndexes: Ar ignore, update or warn
-When installing packages, fink will check if your package index is over 2 weeks
-old.  If it is, you can have fink automatically warn you, or even download
+When installing packages,
+.Nm fink
+will check if your package index is over 2 weeks
+old.  If it is, you can have
+.Nm fink
+automatically warn you, or even download
 updates for you.
 The default value is "warn".
-.It Cm NoAutoIndex: Ar boolean 
-Fink caches its package descripition files to save it having to read 
-and parse them all every time it runs. Fink checks whether or not the package 
-index needs to be updated unless this option is set to "True". It defaults to 
-"False" and it is not recommended that you change it. 
+.It Cm NoAutoIndex: Ar boolean
+.Nm fink
+caches its package descripition files to save it having to read
+and parse them all every time it runs.
+.Nm fink
+checks whether or not the package
+index needs to be updated unless this option is set to "True". It defaults to
+"False" and it is not recommended that you change it.
 If you do, you may need to manually run the
-.Nm fink index 
-command to update the index. 
-.It Cm SelfUpdateNoCVS: Ar boolean 
-The command fink selfupdate upgrades Fink package manager to the latest release. 
-This option makes sure that the Concurrent Version System (CVS) is not used to 
-achieve this when set to True. It is set automatically by the fink 
-selfupdate-cvs command, so you should not need to change it manually. 
+.Nm fink index
+command to update the index.
+.It Cm SelfUpdateNoCVS: Ar boolean
+The command
+.Cm fink selfupdate
+upgrades the
+.Nm fink
+package manager to the latest release.
+This option makes sure that the Concurrent Version System (CVS) is not used to
+achieve this when set to True. It is set automatically by the
+.Cm fink selfupdate-cvs
+command, so you should not need to change it manually.
 .It Cm Buildpath: Ar path
-Fink needs to create several temporary directories for each package it compiles from source. By default, they are placed in
+.Nm fink
+needs to create several temporary directories for each package it compiles from source. By default, they are placed in
 .Pa @PREFIX@/src
 on Panther and earlier, and
 .Pa @PREFIX@/src/fink.build
@@ -170,7 +201,9 @@ decompressing .bz2 archives.
 This option specifies how many concurrent build jobs should be spawned when
 building a package that has parallel build jobs enabled. Building in parallel
 speeds up the build process on multi-CPU or multi-core systems. Technically
-speaking, Fink uses the value of this option in MAKEFLAGS=-j. Running
+speaking,
+.Nm fink
+uses the value of this option in MAKEFLAGS=-j. Running
 .Cm fink configure
 will tell you how many active CPUs/cores are available on your system.
 .El
@@ -180,36 +213,41 @@ will tell you how many active CPUs/cores are available on your system.
 .\"
 .\"
 .Sh DOWNLOAD SETTINGS
-There are various settings which influence the way Fink downloads package data. 
+There are various settings which influence the way
+.Nm fink
+downloads package data.
 .Bl -tag -width flag
-.It Cm ProxyPassiveFTP: Ar boolean 
-This option makes Fink use "passive" mode for FTP downloads. Some FTP server or 
-network configurations require this option to be set to True. It is recommended 
-that you leave this option on at all times since active FTP is deprecated. 
-.It Cm ProxyFTP: Ar url 
+.It Cm ProxyPassiveFTP: Ar boolean
+This option makes
+.Nm fink
+use "passive" mode for FTP downloads. Some FTP server or
+network configurations require this option to be set to True. It is recommended
+that you leave this option on at all times since active FTP is deprecated.
+.It Cm ProxyFTP: Ar url
 If you use a FTP proxy then you should enter its address here, for example:
 .Bl -tag -width flag -offset indent -compact
-.It ProxyFTP: ftp://yourhost.com:2121/ 
+.It ProxyFTP: ftp://yourhost.com:2121/
 .El
-Leave if blank if you do not use a FTP proxy. 
-.It Cm ProxyHTTP: Ar url 
-If you use a HTTP proxy then you should enter its address here, for example: 
+Leave if blank if you do not use a FTP proxy.
+.It Cm ProxyHTTP: Ar url
+If you use a HTTP proxy then you should enter its address here, for example:
 .Bl -tag -width flag -offset indent -compact
-.It ProxyHTTP: http://yourhost.com:3128/ 
+.It ProxyHTTP: http://yourhost.com:3128/
 .El
-Leave if blank if you do not use a HTTP proxy. 
-.It Cm DownloadMethod: Ar wget or curl or axel or axelautomirror or aria2 
-Fink can use four different applications to download files from the Internet - 
+Leave if blank if you do not use a HTTP proxy.
+.It Cm DownloadMethod: Ar wget or curl or axel or axelautomirror or aria2
+.Nm fink
+can use four different applications to download files from the Internet -
 .Nm wget,
 .Nm curl,
 .Nm axel,
-or 
+or
 .Nm aria2.
-The value 
+The value
 .Nm axelautomirror
-uses an experimental mode of the 
+uses an experimental mode of the
 .Xr axel 1
-application which tries to determine the closest server that has a certain file. 
+application which tries to determine the closest server that has a certain file.
 The use of axelautomirror is not recommended at this time. The default value is
 .Nm curl.
 The application you chose as DownloadMethod MUST be installed!
@@ -223,7 +261,7 @@ to download only modified files in the trees that you have enabled. Note that if
 .Nm cvs
 will download using anonymous or :ext:
 .Xr cvs 1
-access from the fink repository. This has the disadvantage that cvs can not switch mirrors, if the server is unavailable you will not be able to update.
+access from the Fink repository. This has the disadvantage that cvs can not switch mirrors, if the server is unavailable you will not be able to update.
 .Nm point
 will download only the latest released version of the packages. It is not recommended as your packages may be quite out of date.
 .It Cm SelfUpdateTrees: Ar space separated list of trees
@@ -237,24 +275,30 @@ entire path (e.g.,
 .Nm dists/local/main
 or similar).
 .It Cm UseBinaryDist: Ar boolean
-Causes fink to try to download pre-compiled binary packages from the binary 
+Causes
+.Nm fink
+to try to download pre-compiled binary packages from the binary
 distribution if available and if deb is not already on the system.
 Passing
-.Cm fink
+.Nm fink
 the
 .Cm -b
 flag has the same effect, but only operates on that single
-.Cm fink
+.Nm fink
 invocation.  Passing
-.Cm fink
+.Nm fink
 the
 .Cm --no-use-binary-dist
 flag overrides this, and compiles from source for that single
-.Cm fink
+.Nm fink
 invocation.
 .Pp
-Note that this mode instructs Fink to download the version it wants if
-that version is available for download; it does not cause Fink to
+Note that this mode instructs
+.Nm fink
+to download the version it wants if
+that version is available for download; it does not cause
+.Nm fink
+to
 choose a version based on its binary availability.
 .El
 .\"
@@ -263,58 +307,62 @@ choose a version based on its binary availability.
 .\"
 .\"
 .Sh MIRROR SETTINGS
-Getting software from the Internet can be a tedious thing and often 
-downloads are 
-not as fast as we would like them to be. Mirror servers host copies of files 
-available on other servers, but may have a faster connection to the Internet or 
-be geographically closer to you, thus enabling you to download files faster. 
-They also help reduce load on busy primary servers, for example ftp.gnu.org, and 
+Getting software from the Internet can be a tedious thing and often
+downloads are
+not as fast as we would like them to be. Mirror servers host copies of files
+available on other servers, but may have a faster connection to the Internet or
+be geographically closer to you, thus enabling you to download files faster.
+They also help reduce load on busy primary servers, for example ftp.gnu.org, and
 they provide an alternative should one
 server not be reachable.
 .Pp
-In order for Fink to pick the best mirror for you, you must tell it which 
-continent and which country you reside in. If downloads from one server fail, it 
-will prompt you if you want to retry from the same mirror, a different mirror in 
-the same country or continent, or a different mirror anywhere in the world. 
+In order for
+.Nm fink
+to pick the best mirror for you, you must tell it which
+continent and which country you reside in. If downloads from one server fail, it
+will prompt you if you want to retry from the same mirror, a different mirror in
+the same country or continent, or a different mirror anywhere in the world.
 .Pp
 .Nm
-holds settings about which mirrors you would like to use. 
+holds settings about which mirrors you would like to use.
 .Bl -tag -width flag
-.It Cm MirrorContinent: Ar three letter code 
+.It Cm MirrorContinent: Ar three letter code
 You should change this value using the
-.Nm fink configure
-command. The three letter code is one found in 
+.Cm fink configure
+command. The three letter code is one found in
 .Pa @PREFIX@/lib/fink/mirror/_keys.
-For example, if you live in europe: 
+For example, if you live in europe:
 .Bl -tag -width flag -offset indent -compact
 .It MirrorContinent: eur
 .El
-.It Cm MirrorCountry: Ar six letter code 
+.It Cm MirrorCountry: Ar six letter code
 You should change this value using the
-.Nm fink configure
-command. The three letter code is one found in 
+.Cm fink configure
+command. The three letter code is one found in
 .Pa @PREFIX@/lib/fink/mirror/_keys.
-For example, if you live in Austria: 
+For example, if you live in Austria:
 .Bl -tag -width flag -offset indent -compact
-.It MirrorCountry: eur-AT 
+.It MirrorCountry: eur-AT
 .El
 .It Cm MirrorOrder: Ar MasterFirst or MasterLast or MasterNever or ClosestFirst
-Fink supports 'Master' mirrors, which are mirrored repositories of the source
-tarballs for all Fink packages. The advantage of using the Master mirror set is that 
-the source download URLs will never break. Users can choose to use 
-these mirrors which are maintained by the Fink team, or to use only the original 
+.Nm fink
+supports 'Master' mirrors, which are mirrored repositories of the source
+tarballs for all Fink packages. The advantage of using the Master mirror set is that
+the source download URLs will never break. Users can choose to use
+these mirrors which are maintained by the Fink team, or to use only the original
 source URLs and external mirror sites such as the gnome, KDE, and debian mirror sites.
-Additionally users can choose to combine the two sets, which are then searched in proximity order, as 
-documented above. When using the MasterFirst or MasterLast options, the user can 'skip ahead' 
+Additionally users can choose to combine the two sets, which are then searched in proximity order, as
+documented above. When using the MasterFirst or MasterLast options, the user can 'skip ahead'
 to the Master (or non Master) set if a download fails. The options are:
 .Bl -tag -width flag -offset indent -compact
 .It MasterFirst - Search "Master" source mirrors first.
 .It MasterLast - Search "Master" source mirrors last.
 .It MasterNever - Never use "Master" source mirrors.
 .It ClosestFirst - Search closest source mirrors first (combine all mirrors into one set).
-.El	
+.El
 .It Cm Mirror-rsync:
-When doing 'selfupdate' with the SelfupdateMethod set to rsync, this is the rsync url to sync from.  This should be an anonymous rsync url, pointing to a directory which contains all the fink Distrubutions and Trees.  
+When doing 'selfupdate' with the SelfupdateMethod set to rsync, this is the rsync url to sync from.
+This should be an anonymous rsync url, pointing to a directory which contains all the Fink distributions and trees.
 .El
 .\"
 .\"
@@ -328,32 +376,36 @@ are only useful to developers. We do not recommend that conventional Fink users 
 fall into this category.
 .Bl -tag -width flag
 .It Cm KeepRootDir: Ar boolean
-Causes Fink not to delete the temporary installation directory
+Causes
+.Nm fink
+not to delete the temporary installation directory
 .Pa root-[name]-[version]-[revision]
 in the
-.Cm Buildpath 
-after building a package. Defaults to false. 
-Be careful, this option can fill your hard-disk quickly! 
+.Cm Buildpath
+after building a package. Defaults to false.
+Be careful, this option can fill your hard-disk quickly!
 Passing
-.Cm fink
+.Nm fink
 the
 .Cm -K
 flag has the same effect, but only operates on that single
-.Cm fink
+.Nm fink
 invocation.
-.It Cm KeepBuildDir: Ar boolean 
-Causes Fink not to delete the package compile directory
+.It Cm KeepBuildDir: Ar boolean
+Causes
+.Nm fink
+not to delete the package compile directory
 .Pa [name]-[version]-[revision]
 in the
-.Cm Buildpath 
-after building a package. Defaults to false. 
-Be careful, this option can fill your hard-disk quickly! 
+.Cm Buildpath
+after building a package. Defaults to false.
+Be careful, this option can fill your hard-disk quickly!
 Passing
-.Cm fink
+.Nm fink
 the
 .Cm -k
 flag has the same effect, but only operates on that single
-.Cm fink
+.Nm fink
 invocation.
 .El
 .\"
@@ -376,15 +428,15 @@ Example:
 will match packages ending in '-ssl', and will match 'xfree86' and 'xfree86-shlibs' exactly.
 .It Cm CCacheDir: Ar path
 If the Fink package ccache-default is installed, the cache files it makes
-while building Fink packages will be placed here. Defaults to 
+while building Fink packages will be placed here. Defaults to
 .Pa @PREFIX@/var/ccache.
 If set to
-.Nm none, 
+.Nm none,
 .Nm fink
 will not set the
 .Ev CCACHE_DIR
-environment variable and ccache will use 
-.Pa $HOME/.ccache, 
+environment variable and ccache will use
+.Pa $HOME/.ccache,
 potentially putting root-owned files into your home directory.
 .It Cm NotifyPlugin: Ar plugin
 Specify a space-separated list of notification plugins, to tell you when packages have been installed/uninstalled.
@@ -396,26 +448,31 @@ Defaults to
 See the wiki at http://wiki.finkproject.org/index.php/Fink:Notification_Plugins
 for more information.
 .fi
-.It Cm AutoScanpackages: Ar boolean 
-When Fink builds new packages,
+.It Cm AutoScanpackages: Ar boolean
+When
+.Nm fink
+builds new packages,
 .Xr apt-get 8
 does not yet know about them.
 Historically, the command
-.Nm fink scanpackages 
+.Cm fink scanpackages
 had to be run for apt-get to notice the new packages, but now this happens
 automatically. If this option is present and false, then
-.Nm fink scanpackages
+.Cm fink scanpackages
 will no longer be run automatically after packages are built.
-.It Cm ScanRestrictivePackages: Ar boolean 
+.It Cm ScanRestrictivePackages: Ar boolean
 When scanning the packages for
 .Xr apt-get 8 ,
-Fink normally scans all packages in the current trees. However, if the resuting
+.Nm fink
+normally scans all packages in the current trees. However, if the resuting
 apt repository will be made publically available, the administrator may be
 legally obligated not to include packages with
 .Nm Restrictive
 or
 .Nm Commercial
-licenses. If this option is present and false, then Fink will omit those
+licenses. If this option is present and false, then
+.Nm fink
+will omit those
 packages when scanning.
 .El
 .\"

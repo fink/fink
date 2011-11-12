@@ -39,17 +39,25 @@ distribution, everything else is downloaded off the Internet.
 .It Cm -h, --help
 Display help text.
 .It Cm -q, --quiet
-Causes fink to be less verbose, opposite of
+Causes
+.Nm
+to be less verbose, opposite of
 .Cm --verbose
 .It Cm -V, --version
-Display fink version information.
+Display
+.Nm
+version information.
 .It Cm -v, --verbose
-Causes fink to be more verbose, opposite of
+Causes
+.Nm
+to be more verbose, opposite of
 .Cm --quiet
 .It Cm -y, --yes
 Assume default answer for all interactive questions
 .It Cm -K, --keep-root-dir
-Causes Fink not to delete the temporary installation directory
+Causes
+.Nm
+not to delete the temporary installation directory
 .Pa root-[name]-[version]-[revision]
 in the
 .Cm Buildpath
@@ -57,7 +65,9 @@ in the
 .Cm fink.conf
 manpage) after building a package.
 .It Cm -k, --keep-build-dir
-Causes Fink not to delete the package compile directory
+Causes
+.Nm
+not to delete the package compile directory
 .Pa [name]-[version]-[revision]
 in the
 .Cm Buildpath
@@ -65,11 +75,15 @@ in the
 .Cm fink.conf
 manpage) after building a package.
 .It Cm -b, --use-binary-dist
-Download pre-compiled binary packages from the binary distribution 
+Download pre-compiled binary packages from the binary distribution
 if available and if deb is not already on the system
 .Pp
-Note that this mode instructs Fink to download the version it wants if
-that version is available for download; it does not cause Fink to
+Note that this mode instructs
+.Nm
+to download the version it wants if
+that version is available for download; it does not cause
+.Nm
+to
 choose a version based on its binary availability.
 .It Cm --no-use-binary-dist
 Don't use pre-compiled binary packages from the binary distribution,
@@ -89,7 +103,7 @@ test suites as specified in the InfoTest field.  This sets
 .Pa --tests
 and
 .Pa --validate
-to 
+to
 .Pa on .
 .It Cm --tests[=on|off|warn]
 Causes InfoTest fields to be activated and test suites specified via
@@ -148,9 +162,9 @@ is a comma-delimited list of tree specifications. Trees listed in
 .Pa fink.conf
 are compared against
 .Pa expr .
-Only those which match at
-least one tree specification are considered by fink, in the order of the first
-specifications which they match. If no
+Only those which match at least one tree specification are considered by
+.Nm fink,
+in the order of the first specifications which they match. If no
 .Cm --trees
 option is used, all trees listed in
 .Pa fink.conf
@@ -205,12 +219,16 @@ and
 .It Cm fink --trees=stable,virtual,status install foo
 Install
 .Cm foo
-as if fink was using the stable tree, even if unstable is enabled in
+as if
+.Nm
+was using the stable tree, even if unstable is enabled in
 .Pa fink.conf .
 .It Cm fink --exclude-trees=local install foo
 Install the version of
 .Cm foo
-in fink, not the locally modified version.
+in
+.Nm
+, not the locally modified version.
 .It Cm fink --trees=local/main list -i
 List the locally modified packages which are installed.
 .El
@@ -225,7 +243,9 @@ List the locally modified packages which are installed.
 has several commands that work on packages. All of them need at least
 one package name, and all can handle several package names at once. You can
 specify just the package name (e.g. gimp), or a fully qualified name with a
-version number (e.g. gimp-1.2.1 or gimp-1.2.1-3). Fink will automatically
+version number (e.g. gimp-1.2.1 or gimp-1.2.1-3).
+.Nm
+will automatically
 choose the latest available version and revision when they are not
 specified.
 .\" List of commands
@@ -247,13 +267,13 @@ doesn't check dependencies itself but rather completly leaves that to the
 dpkg or apt-get tool (usually this poses no problem, though).
 .Pp
 The remove command removes the actual package files (excluding configuration
-files), but leaves the .deb compressed package file intact. This means that you 
-can re-install the package later without going through the compile process again. 
-If you need the disk space, you can remove the .deb from the 
+files), but leaves the .deb compressed package file intact. This means that you
+can re-install the package later without going through the compile process again.
+If you need the disk space, you can remove the .deb from the
 .Pa @PREFIX@/fink/dists
 tree.
 .Pp
-These flags can be used with the 
+These flags can be used with the
 .Cm fink remove
 command
 .Bl -tag -width flag -offset indent -compact
@@ -272,7 +292,7 @@ This is the same as
 .Cm fink remove
 except that it removes configuration files as well.
 .Pp
-These flags can be used with the 
+These flags can be used with the
 .Cm fink purge
 command
 .Bl -tag -width flag -offset indent -compact
@@ -289,7 +309,9 @@ not need a package list, so you just type:
 .It Cm list Oo Ar list-options Oc Op Ar package...
 This command produces a list of available packages. If no packages are
 specified, it will list all available packages. If one or more package
-names are given, fink will list only those packages that match the
+names are given,
+.Nm
+will list only those packages that match the
 given names. If the passed package named contain shell globs (?  and *
 wildcards), only those packages matching the glob are returned. If
 simple text strings (not globs) are passed, packages containing them
@@ -300,7 +322,7 @@ version and a short package description. The first column displays the
 installation state with the following meanings:
 .Pp
 .Bl -tag -width flag -offset indent -compact
-.It \ 
+.It \
 not installed
 .It \ i
 latest version is installed
@@ -401,7 +423,9 @@ Show only packages which are up to date.
 .It Cm -n,--notinstalled
 Show packages which are not currently installed.
 .It Cm -N,--newer
-Show packages whose installed version is newer than anything fink knows about.
+Show packages whose installed version is newer than anything
+.Nm
+knows about.
 .It Cm -s expr,--section=expr
 Show only packages in the sections matching expr.
 .It Cm -m expr,--maintainer=expr
@@ -445,14 +469,16 @@ Aliases:
 .Cm desc, description, info
 .Pp
 .It Cm plugins
-List the (optional) plugins available to the fink program.  Currently lists
+List the (optional) plugins available to the
+.Nm
+package manager.  Currently lists
 the notification mechanisms and the source-tarball checksum algorithms.
 .Pp
 .It Cm fetch Ar package...
 Downloads the named packages, but does not install them. This command will
 download the tarballs even if they were downloaded before.
 .Pp
-These flags can be used with the 
+These flags can be used with the
 .Cm fink fetch
 command
 .Bl -tag -width flag -offset indent -compact
@@ -474,7 +500,7 @@ Downloads
 package source files. Like fetch, this downloads the
 tarballs even when they were downloaded before.
 .Pp
-These flags can be used with the 
+These flags can be used with the
 .Cm fink fetch-all
 command
 .Bl -tag -width flag -offset indent -compact
@@ -494,7 +520,7 @@ Downloads
 package source files. This command will only download files
 that are not present on the system.
 .Pp
-These flags can be used with the 
+These flags can be used with the
 .Cm fink fetch-missing
 command
 .Bl -tag -width flag -offset indent -compact
@@ -513,7 +539,7 @@ Builds a package, but does not install it. As usual, the source tarballs are
 downloaded if they can not be found. The result of this command is an
 installable .deb package file, which you can quickly install later with the
 install command. This command will do nothing if the .deb already exists.
-Note that dependencies are still 
+Note that dependencies are still
 .Em installed,
 not just built.
 .It Cm rebuild Ar package...
@@ -584,7 +610,7 @@ Rebuilds the package cache. You should not normally need to execute this manuall
 .Nm
 should auto-detect when it needs to be updated.
 .It Cm validate Ar [options] file...
-This command performs various checks on .info and .deb files. Package maintainers 
+This command performs various checks on .info and .deb files. Package maintainers
 should run this on their package descriptions and corresponding built
 packages before submitting them.
 .Pp
@@ -645,7 +671,9 @@ actually delete them.
 Show the modes and options which are available.
 .El
 .It Cm dumpinfo Ar [options] package...
-Shows how Fink parses parts of a package's .info file. Various fields and
+Shows how
+.Nm
+parses parts of a package's .info file. Various fields and
 percent expansions will be displayed according to
 .Ar options
 as follows:
