@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd $Date$
+.Dd November 2011
 .Dt FINK 8
 .Sh NAME
 .Nm fink
