@@ -178,11 +178,9 @@ achieve this when set to True. It is set automatically by the
 command, so you should not need to change it manually.
 .It Cm Buildpath: Ar path
 .Nm fink
-needs to create several temporary directories for each package it compiles from source. By default, they are placed in
-.Pa @PREFIX@/src
-on Panther and earlier, and
+needs to create several temporary directories for each package it compiles from source. They are placed in
 .Pa @PREFIX@/src/fink.build
-on OS 10.4 and later versions. If you want them to be somewhere else, specify the path here.
+by default. If you want them to be somewhere else, specify the path here.
 See the descriptions of the
 .Cm KeepRootDir
 and
