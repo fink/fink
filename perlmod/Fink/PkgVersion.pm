@@ -2785,8 +2785,8 @@ sub check_bdo_violations {
 	return $self->{_BDO_violations} if $self->is_obsolete();
 
 	# test all alternatives
-	my @atoms = split /\s*[\,|]\s*/, $self->pkglist_default('Depends');
-	push @atoms, split /\s*[\,|]\s*/, $self->pkglist_default('RuntimeDepends');
+	my @atoms = split /\s*[\,|]\s*/, $self->pkglist_default('Depends', '');
+	push @atoms, split /\s*[\,|]\s*/, $self->pkglist_default('RuntimeDepends', '');
 
 	foreach my $depname (@atoms) {
 		$depname =~ s/\s*\(.*\)//;
@@ -2837,7 +2837,7 @@ sub check_obsolete_violations {
 	$self->{_obsolete_violations} = 0;
 
 	foreach my $field (qw/ BuildDepends Depends RuntimeDepends Suggests Recommends /) {
-		my @alt_sets = split /\s*,\s*/, $self->pkglist_default($field);
+		my @alt_sets = split /\s*,\s*/, $self->pkglist_default($field, "");
 
 		# test each set of alternatives
 		foreach my $alt_set (@alt_sets) {
