@@ -61,7 +61,9 @@ sub system_check {
 	my $class = shift;  # class method for now
 
 	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'rsync', you must install XCode, available on your original OS X install disk, or from http://connect.apple.com (after free registration).\n";
+		warn "Before changing your selfupdate method to 'rsync', you must install ".
+		     "Xcode, available on your original OS X install disk, or from ".
+		     "http://connect.apple.com (after free registration).\n";
 		return 0;
 	}
 

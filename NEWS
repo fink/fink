@@ -24,7 +24,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 0.31.4 "perfidy" (2011-10-28)
 	* Synced base .info files against latest versions from dists.
-	* Added support for XCode 4.2 on Mac OS X 10.6.
+	* Added support for Xcode 4.2 on Mac OS X 10.6.
 	* Fixed bootstrap issue when GNU sed is in the PATH.
 	* Updated mirror list.
 

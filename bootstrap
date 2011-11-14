@@ -395,7 +395,13 @@ foreach my $forbidden (
 		print "ERROR: Refusing to install into '$installto'.\n";
 		if ($installto =~ /^\/usr\/local/) {
 			&print_breaking(
-				 "/usr/local is a common place that other third-party software uses, so installing in that area often leads to conflicts between them and breakage of fink and/or other things there. In addition, this hierarchy is automatically used by XCode and other compilers, which often leads to unexpected and sometimes unpredictable results for when fink-supplied files are installed there and for fink itself.");
+				 "/usr/local is a common place that other third-party software ".
+				 "uses, so installing in that area often leads to conflicts ".
+				 "between them and breakage of fink and/or other things there. ".
+				 "In addition, this hierarchy is automatically used by Xcode and ".
+				 "other compilers, which often leads to unexpected and sometimes ".
+				 "unpredictable results for when fink-supplied files are installed ".
+				 "there and for fink itself.");
 		}
 		redo OPT_BASEPATH;
 	}

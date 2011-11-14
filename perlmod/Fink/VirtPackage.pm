@@ -583,7 +583,7 @@ END
 =item "system-sdk-*"
 
 These packages represent the SDKs available in /Developer/SDKs, available
-as part of the XCode tools.
+as part of the Xcode tools.
 
 =cut
 
@@ -625,8 +625,8 @@ as part of the XCode tools.
 			$hash->{builddependsonly} = "true";
 			$hash->{descdetail} = <<END;
 This package represents the Mac OS X $versiontext SDK
-provided by Apple, as part of XCode.  If it does not show as
-installed, you can download XCode from Apple at:
+provided by Apple, as part of Xcode.  If it does not show as
+installed, you can download Xcode from Apple at:
 
   http://connect.apple.com/
 
@@ -645,7 +645,7 @@ END
 
 =item "xcode"
 
-This package represents your XCode version.
+This package represents your Xcode version.
 
 =cut
 
@@ -773,8 +773,7 @@ if ($cctools_version) {
 This package represents support for the -single_module
 flag in the development tools provided by Apple.  If it
 does not show as installed, you can download the latest
-developer tools (called XCode for Mac OS X 10.3 and
-above) from Apple at:
+developer tools (called Xcode) from Apple at:
 
   http://connect.apple.com/
 
@@ -874,7 +873,7 @@ the successful execution of "gcc --version".
 =item "broken-gcc"
 
 This package represents broken versions of the GCC compiler
-as shipped by Apple.  Currently it checks for the XCode 1.5
+as shipped by Apple.  Currently it checks for the Xcode 1.5
 cc1plus.
 
 =cut
@@ -921,7 +920,7 @@ END
 
 This package represents a developer suite of command-line compilers
 and related programs, for example, Apple's DevTools (OS X <= 10.2) or
-XCode (OS X >= 10.3). This package is considered "installed" iff
+Xcode (OS X >= 10.3). This package is considered "installed" iff
 /usr/bin/gcc and /usr/bin/gcc exist and are executable.
 
 =cut
@@ -938,9 +937,8 @@ This package represents the basic command-line compiler and
 related programs.  In order for this package to be "installed",
 you must have /usr/bin/gcc and /usr/bin/make available on your
 system.  You can obtain them by installing the Apple developer
-tools (also known as XCode on Mac OS X 10.3 and above).  The
-latest versions of the Apple developer tools are always
-available from Apple at:
+tools (also known as Xcode).  The latest versions of the Apple
+developer tools are always available from Apple at:
 
   http://connect.apple.com/
 
@@ -1808,20 +1806,17 @@ sub gen_gcc_hash {
 		descdetail       => <<END,
 This package represents the$is_64bit gcc $version compiler,
 which is part of the Apple developer tools (also known as
-XCode on Mac OS X 10.3 and above).  The latest versions of
-the Apple developer tools are always available from Apple at:
+Xcode). The latest versions of the Apple developer tools are
+always available from Apple at:
 
   http://connect.apple.com/
 
 (free registration required)
 
 Note that some versions of GCC are *not* installed by default
-when installing XCode.  Make sure you customize your install
+when installing Xcode.  Make sure you customize your install
 and check all GCC versions to ensure proper compatibility
 with Fink.
-
-Note also that older compilers for 10.4 can be obtained by installing
-the "XCode Legacy Compilers" package available at the same address.
 END
 		status           => $status
 	};

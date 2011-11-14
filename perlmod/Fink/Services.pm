@@ -1265,7 +1265,7 @@ Sample message:
 
 This package must be compiled with GCC EXPECTED_GCC, but you currently have
 GCC INSTALLED_GCC selected.  To correct this problem, you may need to install
-a more recent version of the Developer Tools (Apple's XCode).
+a more recent version of the Developer Tools (Apple's Xcode).
 
 =cut
 
