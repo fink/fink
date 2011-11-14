@@ -178,15 +178,11 @@ will be used.
 
 sub param_default {
 	my $self = shift;
-	my $param = lc shift || "";
-	my $default_value = shift;
+	my $param = lc shift;
+	my $default_value = shift || "";
 
 	if (exists $self->{$param}) {
 		return $self->{$param};
-	}
-
-	if (not defined $default_value) {
-		$default_value = "";
 	}
 	return $default_value;
 }
