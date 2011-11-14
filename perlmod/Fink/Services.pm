@@ -67,7 +67,7 @@ BEGIN {
 					  &get_darwin_equiv
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
-					  &store_rename &fix_gcc_repairperms
+					  &store_rename
 					  &spec2struct &spec2string &get_options
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
 					  &find_subpackages &apt_available);
@@ -1265,25 +1265,6 @@ sub gcc_selected {
 		}
 	}
 	return 0;
-}
-
-=item fix_gcc_repairperms
-
-  fix_gcc_repairperms;
-
-In Tiger, the 'repair permissions' feature of Disk Utility can cause GCC
-breakage. This function checks for such breakage and fixes it if necessary.
-
-=cut
-
-sub fix_gcc_repairperms {
-	return if (get_osx_vers() >= 10.5);
-	return unless gcc_select_arg(gcc_selected) eq '4.0';
-	if (-x '/usr/sbin/gcc_select') {
-		system('/usr/bin/env PATH=/usr/sbin:/usr/bin:/sbin:/bin '
-		. 'gcc_select --force 4.0 >/dev/null 2>&1') == 0
-		or die "Can't fix GCC after Repair Permissions: $!\n";
-	}
 }
 
 =item enforce_gcc

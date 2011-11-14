@@ -3597,9 +3597,6 @@ sub phase_compile {
 
 	$config->mixed_arch(msg=>'build a package', fatal=>1);
 
-	# Fix repair permissions bug on Tiger
-	Fink::Services::fix_gcc_repairperms();
-
 	my $notifier = Fink::Notify->new();
 
 	if ($self->is_type('bundle')) {
