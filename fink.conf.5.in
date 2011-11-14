@@ -187,7 +187,7 @@ and
 .Cm KeepBuildDir
 fields later in this document for more information about these temporary directories.
 .Pp
-On Tiger and later versions, it is recommended that the Buildpath end with .noindex or .build.
+It is recommended that the Buildpath end with .noindex or .build.
 Otherwise, Spotlight will attempt to index the temporary files in the
 Buildpath, slowing down builds.
 .It Cm Bzip2Path: Ar the path to your bzip2 (or compatible) binary
