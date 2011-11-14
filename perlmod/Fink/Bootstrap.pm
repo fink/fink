@@ -128,28 +128,7 @@ sub check_host {
 	my $host = shift @_;
 	my $bootstrap = shift @_ || 0;
 	my $arch = shift @_ || "";
-	my ($distribution, $gcc, $build, $transitional);
-
-	# We test for an obsolete version of gcc3.3, and refuse to proceed if
-	# it is present.
-	#
-	# (Note: the June 2003 Developer Tools had build 1435, the August 2003 ones
-	#  had build 1493.)
-
-	if (-x '/usr/bin/gcc-3.3') {
-		foreach (`/usr/bin/gcc-3.3 --version 2>&1`) {
-			if (/build (\d+)\)/) {
-				$build = $1;
-				last;
-			}
-		}
-		($build >= 1493) or die <<END;
-
-Your version of the gcc 3.3 compiler is out of date.  Please update to the
-August 2003 Developer Tools update, or to Xcode, and try again.
-
-END
-	}
+	my ($distribution, $gcc);
 
 	# We check to see if gcc is installed, and if it is the correct version.
 	# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
@@ -166,99 +145,28 @@ You may need to install a more recent version of the Developer Tools
 (Apple's XCode) to be able to do so.
 GCC_MSG
 		$gcc = "-gcc" . $gcc;
-	} else {
-		## 10.2 users who do not have gcc at all are installing binary only, so they get
-		## to move to 10.2-gcc3.3 also
-		$gcc = "-gcc3.3";
 	}
 
-	## for 10.4 users, we need to decide about the transitional tree
-	##  1) on i386 you don't get it
-	##  2) on bootstrap, default is to not get it but FINK_NOTRANS overrides
-	##  3) if not bootstrapping, leave it the way it was
-
-	if ($host =~ /^i386/) {
-		$transitional = "";
-	} elsif ($bootstrap) {
-		if (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(1|true|yes)$/i) {
-			$transitional = "";
-		} elsif (exists $ENV{'FINK_NOTRANS'} and $ENV{'FINK_NOTRANS'} =~ +/^(0|false|no)$/i) {
-			$transitional = "-transitional";
-		} else {
-			$transitional = "";
-		}
-	} else {
-		my $old_distribution = $config->param("Distribution");
-		if ($old_distribution =~ /^10.4$/) {
-			$transitional = "";
-		} else {
-			$transitional = "-transitional";
-		}
-	}
-
-	my %transitional_message = (
-	  "-transitional" => "Using the old 10.4-transitional tree...",
-	  "" => ""            # no need to mention the new one anymore
-	);
-
-	# if we are not using the transitional tree, and gcc-4.0 is present, it
-	# must be build 5247 (from XCode 2.2.1)
-
-	if ($transitional eq "") {
-		if (-x '/usr/bin/gcc-4.0') {
-			foreach (`/usr/bin/gcc-4.0 --version 2>&1`) {
-				if (/build (\d+)\)/) {
-					$build = $1;
-					last;
-				}
-			}
-			($build >= 5247) or die <<END;
-
-You are attempting to use the new 10.4 tree with an old version (build $build)
-of the gcc 4.0 compiler, which is not supported.  Please update your XCode to
-XCode 2.2.1 or later, and try again.
-
-END
-		}
-	}
-
-	if ($host =~ /^powerpc-apple-darwin1\.[34]/) {
+	if ($host =~ /^powerpc-apple-darwin1\./) {
 		&print_breaking("\nThis system is no longer supported " .
 			"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
-	} elsif ($host =~ /^powerpc-apple-darwin5\.[0-5]/) {
+	} elsif ($host =~ /^powerpc-apple-darwin5\./) {
 		&print_breaking("\nThis system is no longer supported " .
 			"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
 		$distribution = "10.1";
-	} elsif ($host =~ /^(powerpc|i386)-apple-darwin6\..*/) {
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin6\./) {
 		&print_breaking("\nThis system is no longer supported " .
 			"for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
-		$distribution = "10.2$gcc";
-	} elsif ($host =~ /^powerpc-apple-darwin7\.[0-9]\.0/) {
+		$distribution = "10.2"; # or 10.2-gcc3.3, but it doesn't matter as we refuse running anyway
+	} elsif ($host =~ /^(powerpc|i386)-apple-darwin7\./) {
 		&print_breaking("This system no longer supported " .
 			"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
 		$distribution = "10.3";
-	} elsif ($host =~ /^powerpc-apple-darwin7\..*/) {
-		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
-		$distribution = "10.3";
-	} elsif ($host =~ /^i386-apple-darwin7\..*/) {
-		&print_breaking("Fink is currently not supported on x86 ".
-			"Darwin. Various parts of Fink hardcode 'powerpc' ".
-			"and assume to run on a PowerPC based operating ".
-			"system. Use Fink on this system at your own risk!");
-		$distribution = "10.3";
-	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\.([0-9]|1[0-1])\.[0-3]/) {
-		&print_breaking("This system is supported and tested.");
-		&print_breaking($transitional_message{$transitional});
-		$distribution = "10.4$transitional";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			"guarantees.");
-		&print_breaking($transitional_message{$transitional});
-		$distribution = "10.4$transitional";
+		&print_breaking("This system no longer supported " .
+			"for current versions of fink.  Please use fink 0.30.2 or earlier.\n");
+		$distribution = "10.4";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\.[0-8]\.[0-2]/) {
 		&print_breaking("\nThis version of fink supports bootstrapping under Mac OS X 10.5, " .
 			"as well as upgrading from 10.4. However, DIRECT UPGRADING FROM " .
@@ -290,11 +198,6 @@ END
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.7";
-	} elsif ($host =~ /^powerpc-apple-darwin1\.[0-2]/) {
-		&print_breaking("This system is outdated and not supported ".
-			"by this Fink release. Please update to Mac OS X ".
-			"10.0 or Darwin 1.3.");
-		$distribution = "unknown";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
 			"supported by Fink.");

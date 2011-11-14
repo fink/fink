@@ -13,8 +13,9 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Improved package validator to detect some issues with percent expansions.
 	* Cleaned up the code base, including removal of some dead code for old OS X
 	  version, and anything related to the AddShlibDeps .info field.
-	* Prohibit bootstrapping into /usr/local and any subdir of it.
 	* Updated fink and fink.conf man pages.
+	* Disallow bootstrapping into /usr/local and any subdir of it.
+	* Disallow bootstrapping on OS X 10.4 and older.
 	* Removed the obsolete prebinding code (it was for OS X 10.4 and older).
 
 /-------------
