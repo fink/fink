@@ -1219,30 +1219,6 @@ sub file_MD5_checksum {
 	return $checksum->get_checksum($filename);
 }
 
-=item gcc_select_arg
-
-  my $arg = gcc_select_arg $gccvers;
-
-Finds the argument to gcc_select which corresponds to a given version of GCC.
-IE: If 'gcc_select X' selects GCC Y, then gcc_select_arg(Y) == X.
-
-=cut
-
-{
-	my %gcc_select_table = (
-		'2.95.2' => '2',
-		'2.95' => '2',
-		'3.1' => '3',
-	);
-
-	sub gcc_select_arg {
-		my $vers = shift;
-		return $gcc_select_table{$vers} if (defined $gcc_select_table{$vers});
-		$vers =~ s/^(\d+\.\d+).*$/$1/;
-		return $vers;
-	}
-}
-
 
 =item gcc_selected
 
@@ -1282,18 +1258,14 @@ gcc version obtained from /usr/sbin/gcc_select agrees with the expected
 Mac OS X or Darwin.  If the versions agree, the common value is returned.
 If they do not agree, we print $message and exit fink.
 
-The strings CURRENT_SYSTEM, INSTALLED_GCC, EXPECTED_GCC, and
-GCC_SELECT_COMMAND within $message are converted to appropriate values.
+The strings CURRENT_SYSTEM, INSTALLED_GCC, and EXPECTED_GCC,
+within $message are converted to appropriate values.
 
 Sample message:
 
 This package must be compiled with GCC EXPECTED_GCC, but you currently have
-GCC INSTALLED_GCC selected.  To correct this problem, run the command:
-
-    sudo gcc_select GCC_SELECT_COMMAND
-
-You may need to install a more recent version of the Developer Tools
-(Apple's XCode) to be able to do so.
+GCC INSTALLED_GCC selected.  To correct this problem, you may need to install
+a more recent version of the Developer Tools (Apple's XCode).
 
 =cut
 
@@ -1328,11 +1300,9 @@ sub enforce_gcc {
 	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
 
 	if ($gcc_select !~ /^$gcc/) {
-		my $gcc_name = gcc_select_arg($gcc);
 		$message =~ s/CURRENT_SYSTEM/$current_system/g;
 		$message =~ s/INSTALLED_GCC/$gcc_select/g;
 		$message =~ s/EXPECTED_GCC/$gcc/g;
-		$message =~ s/GCC_SELECT_COMMAND/$gcc_name/g;
 		die $message;
 	}
 

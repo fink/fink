@@ -135,14 +135,12 @@ sub check_host {
 
 	if (-x '/usr/bin/gcc') {
 		$gcc = Fink::Services::enforce_gcc(<<GCC_MSG);
-Under CURRENT_SYSTEM, Fink must be bootstrapped or updated with gcc EXPECTED_GCC,
-however, you currently have gcc INSTALLED_GCC selected. To correct
-this problem, run the command:
-
-    sudo gcc_select GCC_SELECT_COMMAND
-
-You may need to install a more recent version of the Developer Tools
-(Apple's XCode) to be able to do so.
+Under CURRENT_SYSTEM, Fink must be bootstrapped or updated with gcc
+EXPECTED_GCC, however, you currently have gcc INSTALLED_GCC selected.
+This typically is due to alteration of symlinks which were
+installed by Xcode. To correct this problem, you will need
+to restore the compiler symlinks to the configuration that
+Apple provides.
 GCC_MSG
 		$gcc = "-gcc" . $gcc;
 	}
