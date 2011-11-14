@@ -4048,120 +4048,6 @@ EOF
 		die $error . "\n";
 	}
 
-	### update Mach-O Object List
-	###
-	### (but not for distributions prior to 10.2-gcc3.3)
-
-	my $skip_prebinding = 0;
-	my $pkgref = ($self);
-	$skip_prebinding++ unless ($config->param("Distribution") ge "10.2-gcc3.3");
-	$skip_prebinding++ if ($config->param("Distribution") ge "10.4");
-
-	# Why do this?  On the off-chance the parent relationship is recursive (ie, a splitoff
-	# depends on a splitoff, instead of the top-level package in the splitoff)
-	# we work our way back to the top level, and skip prebinding if things are set
-	# anywhere along the way (since the LD_* variables are normally set in the top-level
-	# but need to take effect in, say, -shlibs)
-
-	while ($pkgref->has_parent) {
-		$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
-		$pkgref = $pkgref->get_parent;
-	}
-	$skip_prebinding++ if ($pkgref->param_boolean("NoSetLD_PREBIND"));
-
-	# "our" instead of "my", so that it can be referenced later in the post-install script
-	our %prebound_files = ();
-	unless ($skip_prebinding) {
-
-		print "Finding prebound objects...\n";
-		my ($is_prebound, $is_exe, $name);
-		find({ wanted => sub {
-			# common things that shouldn't be objects
-			return if (/\.(bz2|c|cfg|conf|class|cpp|csh|db|dll|gif|gz|h|html|info|ini|jpg|m4|mng|pdf|pl|png|po|py|sh|tar|tcl|txt|wav|xml)$/i);
-			return unless (defined $_ and $_ ne "" and -f $_ and not -l $_);
-			return if (readlink $_ =~ /\/usr\/lib/); # don't re-prebind stuff in /usr/lib
-			#print "\$_ = $_\n";
-			$is_prebound = 0;
-			$is_exe      = 0;
-			$name        = undef;
-			my @dep_list;
-			if (open(OTOOL, "otool -hLv '$_' |")) {
-				while (<OTOOL>) {
-					if (/^\s*MH_MAGIC.*EXECUTE.*PREBOUND.*$/) {
-						# executable has no install_name, add to the list
-						$name = $File::Find::name;
-						my $destmeta = quotemeta($destdir);
-						$name =~ s/^$destmeta//;
-						$is_exe = 1;
-						$is_prebound = 1;
-					} elsif (/^\s*MH_MAGIC.*EXECUTE.*$/) {
-						# if the last didn't match, but this did, it's a
-						# non-prebound executable, so skip it
-						last;
-					} elsif (/^\s*MH_MAGIC.*PREBOUND.*$/) {
-						# otherwise it's a dylib of some form, mark it
-						# so we can pull the install_name in a few lines
-						$is_prebound = 1;
-					} elsif (/^\s*MH_MAGIC.*$/) {
-						# if it wasn't an executable, and the last didn't
-						# match, then it's not a prebound lib
-						last;
-					} elsif (my ($lib) = $_ =~ /^\s*(.+?) \(compatibility.*$/ and $is_prebound) {
-						# we hit the install_name, add it to the list
-						unless ($lib =~ /\/libSystem/ or $lib =~ /^\/+[Ss]ystem/ or $lib =~ /^\/usr\/lib/) {
-							push(@dep_list, $lib);
-						}
-					}
-				}
-				close(OTOOL);
-				if ($is_exe) {
-					$prebound_files{$name} = \@dep_list;
-				} else {
-					$name = shift(@dep_list);
-					return if (not defined $name);
-					$prebound_files{$name} = \@dep_list;
-				}
-			}
-		} }, $destdir);
-
-		if (keys %prebound_files) {
-			if (not mkdir_p "$destdir$basepath/var/lib/fink/prebound/files") {
-				my $error = "can't make $destdir$basepath/var/lib/fink/prebound/files for ".$self->get_name().": $!";
-				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-				die $error . "\n";
-			}
-			if ( open(PREBOUND, '>' . $destdir . $basepath . '/var/lib/fink/prebound/files/' . $self->get_name() . '.pblist') ) {
-				print PREBOUND join("\n", sort keys %prebound_files), "\n";
-				close(PREBOUND);
-			} else {
-				my $error = "can't write " . $self->get_name() . '.pblist';
-				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-				die $error . "\n";
-			}
-		}
-
-		print "Writing dependencies...\n";
-		for my $key (sort keys %prebound_files) {
-			for my $file (@{$prebound_files{$key}}) {
-				$file =~ s/\//-/g;
-				$file =~ s/^-+//;
-				if (not mkdir_p "$destdir$basepath/var/lib/fink/prebound/deps/$file") {
-					my $error = "can't make $destdir$basepath/var/lib/fink/prebound/deps/$file for ".$self->get_name().": $!";
-					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-					die $error . "\n";
-				}
-				if ( open(DEPS, '>>' . $destdir . $basepath . '/var/lib/fink/prebound/deps/' . $file . '/' . $self->get_name() . '.deplist') ) {
-					print DEPS $key, "\n";
-					close(DEPS);
-				} else {
-					my $error = "can't write " . $self->get_name() . '.deplist';
-					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-					die $error . "\n";
-				}
-			}
-		}
-	} # unless ($skip_prebinding)
-
 	### create scripts as neccessary
 	## TODO: refactor more of this stuff to fink-instscripts
 
@@ -4316,18 +4202,6 @@ EOF
 			$scriptbody{prerm} .= "\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
 		}
 		$scriptbody{prerm} .= "fi\n";
-	}
-
-	# add the call to redo prebinding on any packages with prebound files
-	if (keys %prebound_files) {
-		my $name = $self->get_name();
-		$scriptbody{postinst} .= <<EOF;
-
-if test -x "$basepath/var/lib/fink/prebound/queue-prebinding.pl"; then
-	$basepath/var/lib/fink/prebound/queue-prebinding.pl $name
-fi
-
-EOF
 	}
 
 	# write out each non-empty script
@@ -5000,29 +4874,6 @@ sub get_env {
         }
     }
 
-# default value of LD_PREBIND depends on the distribution
-	if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
-		$defaults{"LD_PREBIND"} = "1";
-		$defaults{"LD_PREBIND_ALLOW_OVERLAP"} = "1";
-		$defaults{"LD_SEG_ADDR_TABLE"} = "$basepath/var/lib/fink/prebound/seg_addr_table";
-	}
-
-#	# add a default for CXXFLAGS for recent distributions
-#	if (($config->param("Distribution") eq "10.3") or ($config->param("Distribution") eq "10.4-transitional")) {
-#		$defaults{"CXXFLAGS"} = "-fabi-version=1";
-#	} elsif ($config->param("Distribution") ge "10.4") {
-#		$defaults{"CXXFLAGS"} = "-fabi-version=2";
-#	}
-
-	# force CXX to be g++-3.3 for the 10.3 and 10.4-transitional trees, unless
-	# the package has sepcified it with SetCXX
-	# Special feature: SetCXX does an implicit NoSet:true
-	if (not $self->has_param("SetCXX")) {
-		if ($config->param("Distribution") eq "10.3" or $config->param("Distribution") eq "10.4-transitional") {
-			$defaults{'CXX'} = 'g++-3.3';
-		}
-	}
-
 	# uncomment this to be able to use distcc -- not officially supported!
 	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 
@@ -5035,21 +4886,6 @@ sub get_env {
 			} else {
 				$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 			}
-		}
-	}
-
-	# lay the groundwork for prebinding
-	if (! -f "$basepath/var/lib/fink/prebound/seg_addr_table") {
-		mkdir_p "$basepath/var/lib/fink/prebound" or
-			warn "couldn't create seg_addr_table directory, this may cause compilation to fail!\n";
-		if (open(FILEOUT, ">$basepath/var/lib/fink/prebound/seg_addr_table")) {
-			print FILEOUT <<END;
-0x90000000  0xa0000000  <<< Next split address to assign >>>
-0x20000000  <<< Next flat address to assign >>>
-END
-			close(FILEOUT);
-		} else {
-			warn "couldn't create seg_addr_table, this may cause compilation to fail!\n";
 		}
 	}
 
@@ -5148,16 +4984,9 @@ END
 		# use path-prefix-* to give magic to 'gcc' and related commands
 		my $pathprefix;
 		if  ($config->param("Distribution") lt "10.6") {
-			# Enforce g++-3.3 or g++-4.0 even for uncooperative
-			# packages, by making it the first 'g++' in the path
-			# (symbol-munging binary compatibility)
-			my $vers;
-			if (($config->param("Distribution") lt "10.4") or ($config->param("Distribution") eq "10.4-transitional")) {
-				$vers = '3.3';
-			} else {
-				$vers = '4.0';
-			}
-			$pathprefix = ensure_gpp_prefix($vers);
+			# Enforce g++-4.0 even for uncooperative packages, by making it the
+			# first 'g++' in the path (symbol-munging binary compatibility)
+			$pathprefix = ensure_gpp_prefix('4.0');
 		}
 		if ($config->param("Distribution") eq "10.6" || $config->param("Architecture") eq "x86_64") {
 			# Use single-architecture compiler-wrapper on 10.6. Also

@@ -15,6 +15,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 	  version, and anything related to the AddShlibDeps .info field.
 	* Prohibit bootstrapping into /usr/local and any subdir of it.
 	* Updated fink and fink.conf man pages.
+	* Removed the obsolete prebinding code (it was for OS X 10.4 and older).
 
 /-------------
 | fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
