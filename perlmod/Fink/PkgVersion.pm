@@ -4743,19 +4743,6 @@ for dir in \$PATH ; do
 done
 IFS="\$save_IFS"
 export PATH="\$newpath"
-# use Apple gcc-4.2 compilers on SL
-case `uname -r` in
-10.*)
-        case \$compiler in
-        cc|gcc)
-                compiler="gcc-4.2"
-                ;;
-        c++|g++)
-                compiler="g++-4.2"
-                ;;
-        esac
-        ;;
-esac
 exec \$compiler "-arch" "$arch" "\$@"
 EOF
 		close GPP;
