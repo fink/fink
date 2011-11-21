@@ -3301,7 +3301,8 @@ sub phase_unpack {
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
 	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
-	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip);
+	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $xz);
+	my ($tar_is_pax,$alt_bzip2)=(0,0);
 	my $build_as_user_group = Fink::Config::build_as_user_group();
 
 	$config->mixed_arch(msg=>'build a package', fatal=>1);
@@ -3420,7 +3421,6 @@ GCC_MSG
 		$renamelist = "";
 
 		# Determine the rename list (if any)
-		$tarflags = "-x${verbosity}f -";
 
 		# Note: the Apple-supplied /usr/bin/gnutar in versions 10.2 and
 		# earlier does not know about the flags --no-same-owner and
@@ -3428,7 +3428,7 @@ GCC_MSG
 		# the "default" situation (which should only occur during bootstrap).
 
 		my $permissionflags = " --no-same-owner --no-same-permissions";
-		$tarcommand = "/usr/bin/gnutar $tarflags"; # Default to Apple's GNU Tar
+		$tarcommand = "/usr/bin/gnutar $tarflags $permissionflags"; # Default to Apple's GNU Tar
 		if ($self->has_param($renamefield)) {
 			@renamefiles = split(/\s+/, $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
@@ -3440,24 +3440,41 @@ GCC_MSG
 				}
 			}
 			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
+			$tar_is_pax=1; # Flag denoting that we're using pax
 		} elsif ( -e "$basepath/bin/tar" ) {
 			$tarcommand = "$basepath/bin/tar $tarflags $permissionflags"; # Use Fink's GNU Tar if available
 		}
 		$bzip2 = $config->param_default("Bzip2path", 'bzip2');
 		$bzip2 = 'bzip2' unless (-x $bzip2);
+		$alt_bzip2=1 if ($bzip2 ne 'bzip2')
 		$unzip = "unzip";
 		$gzip = "gzip";
 		$cat = "/bin/cat";
+		$xz= "xz";
 
 		# Determine unpack command
-		$unpack_cmd = "cp $found_archive .";
-		if ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
-			$unpack_cmd = "$gzip -dc $found_archive | $tarcommand $renamelist";
-		} elsif ($archive =~ /[\.\-]tar\.bz2$/) {
-			$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand $renamelist";
-		} elsif ($archive =~ /[\.\-]tar$/) {
-			$unpack_cmd = "$cat $found_archive | $tarcommand $renamelist";
-		} elsif ($archive =~ /\.zip$/) {
+		$unpack_cmd = "cp $found_archive ."; # non-archive file
+		# check for a tarball
+		if ($archive =~ /[\.\-]tar$/ or $archive =~ /[\.\-]t.*(z|Z).*/) {
+			if !($tar_is_pax) {  # No SourceFileNRename
+				# Using "bzip2" for "bzip2" or if we're not on a bzipped tarball
+				if !($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/) { 
+					$unpack_cmd = "$tarcommand $found_archive"; #let tar figure it out 
+				} else { # we're on a bzipped tar archive with an alternative bzip2
+					$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand -";
+				}
+			# Otherwise we're using pax and need to iterate through the uncompress options:
+			} elsif ($archive =~ /[\.\-]tar\.(gz|z|Z)$/ or $archive =~ /\.tgz$/) {
+				$unpack_cmd = "$gzip -dc $found_archive | $tarcommand $renamelist -";
+			} elsif ($archive =~ /[\.\-]t(ar\.)?bz2?$/) {
+				$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand $renamelist -";
+			} elsif ($archive =~ /[\.\-]tar\.xz$/) {
+				$unpack_cmd = "$xz -dc $found_archive | $tarcommand $renamelist -";
+			} elsif ($archive =~ /[\.\-]tar$/) {
+				$unpack_cmd = "$cat $found_archive | $tarcommand $renamelist -";
+			}
+		# Zip file
+		} elsif ($archive =~ /\.[zZ][iI][pP]$/) {
 			$unpack_cmd = "$unzip -o $found_archive";
 		}
 
