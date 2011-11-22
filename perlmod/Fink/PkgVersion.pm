@@ -4952,6 +4952,7 @@ sub get_env {
 		}
 	}
 
+# FIXME: (No)SetPATH is undocumented
 	unless ($self->has_param('NoSetPATH')) {
 		# use path-prefix-* to give magic to 'gcc' and related commands
 		my $pathprefix;
@@ -4973,6 +4974,8 @@ sub get_env {
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 
+# FIXME: (No)SetPATH is undocumented
+# FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
 		if ($self->is_type('java')) {

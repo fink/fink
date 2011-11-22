@@ -52,6 +52,8 @@ our @set_vars =
 		ld ldflags library_path libs
 		macosx_deployment_target make mflags makeflags path
 	);
+# FIXME: (No)SetPATH is undocumented
+# FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
 
 # Required fields.
 our @required_fields = map {lc $_}

@@ -356,6 +356,10 @@ EOMSG
 
 	my $updatepackages = 0;
 
+# FIXME: What is UpdatePackages ? yet another undefined fink.conf entry?
+# apparently meant to list packages that selfupdate should update, too.
+# Only thing using it seems to be postinstall.pl(.in) uses it for upgrades from 10.4 to 10.5 and 10.6.
+
 	# add UpdatePackages, if any
 	if (defined($config->param("UpdatePackages"))) {
 		$updatepackages = 1;
