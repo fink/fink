@@ -43,7 +43,27 @@ BEGIN {
 	$VERSION	 = 1.00;
 	@ISA		 = qw(Exporter);
 	@EXPORT		 = qw();
-	@EXPORT_OK	 = qw(&bootstrap1 &bootstrap2 &bootstrap3 &get_bsbase &check_host &check_files &fink_packagefiles &locate_Fink &find_rootmethod &create_tarball &copy_description &inject_package &modify_description &get_version_revision &read_version_revision &additional_packages &add_injected_to_trees &get_selfupdatetrees);
+	@EXPORT_OK	 = qw(
+		&bootstrap1
+		&bootstrap2
+		&bootstrap3
+		&get_bsbase
+		&check_host
+		&check_files
+		&fink_packagefiles
+		&locate_Fink
+		&find_rootmethod
+		&create_tarball
+		&copy_description
+		&inject_package
+		&modify_description
+		&get_version_revision
+		&read_version_revision
+		&additional_packages
+		&is_perl_supported
+		&add_injected_to_trees
+		&get_selfupdatetrees
+		);
 	%EXPORT_TAGS = ( );			# eg: TAG => [ qw!name1 name2! ],
 }
 our @EXPORT_OK;
@@ -63,7 +83,8 @@ Fink::Bootstrap - Bootstrap a fink installation
 	my $distribution = check_host($host, $bootstrap);
 	my $distribution = check_host($host, $bootstrap, $arch);
 	my $result = inject_package($package, $packagefiles, $info_script, $param);
-	my ($package_list, $perl_is_supported) = additional_packages();
+	my $package_list = additional_packages();
+	my $perl_is_supported = is_perl_supported();
 	bootstrap();
 	my $bsbase = get_bsbase();
 	my $result = check_files();
@@ -336,13 +357,11 @@ sub add_injected_to_trees {
 
 =item additional_packages
 
-	my ($package_list, $perl_is_supported) = additional_packages();
+	my $package_list = additional_packages();
 
-Returns (1) a reference to the list of non-essential packages which must be
+Returns a reference to the list of non-essential packages which must be
 installed during bootstrap or selfupdate (this answer is affected by the
-currently-running version of perl), and (2) a boolean value which is
-"True" if the currently-running version of perl is on the list of those
-versions supported during bootstrapping, and "False" otherwise.
+currently-running version of perl)
 
 
 Called by bootstrap() and by Fink::SelfUpdate::finish().
@@ -351,8 +370,6 @@ Called by bootstrap() and by Fink::SelfUpdate::finish().
 
 sub additional_packages {
 
-	my $perl_is_supported = 1;
-
 # note: we must install any package which is a splitoff of an essential
 # package here.  If we fail to do so, we could find ourselves in the
 # situation where foo-shlibs has been updated, but foo-dev was left at
@@ -360,6 +377,26 @@ sub additional_packages {
 # to problems the next time foo was used to compile something.
 
 	my @addlist = ("apt", "apt-shlibs", "apt-dev", "bzip2-dev", "libgettext3-dev", "gettext-bin", "libiconv-dev", "libncurses5", "libgettext8-shlibs");
+
+	return \@addlist;
+
+}
+
+
+=item is_perl_supported
+
+	my $perl_is_supported = is_perl_supported();
+
+Returns a boolean value which is "True" if the currently-running version of perl
+is on the list of those versions supported during bootstrapping, and "False"
+otherwise.
+
+Called by bootstrap() and by Fink::SelfUpdate::finish().
+
+=cut
+
+sub is_perl_supported {
+
 	if ("$]" == "5.008001") {
 	} elsif ("$]" == "5.008002") {
 	} elsif ("$]" == "5.008006") {
@@ -367,13 +404,14 @@ sub additional_packages {
 	} elsif ("$]" == "5.010000") {
 	} elsif ("$]" == "5.012003") {
 	} else {
-# unsupported version of perl
-		$perl_is_supported = 0;
+		# unsupported version of perl
+		return 0;
 	}
 
-	return (\@addlist, $perl_is_supported);
+	return 1;
 
 }
+
 
 =item bootstrap1
 
@@ -393,9 +431,9 @@ sub bootstrap1 {
 	my @plist = ("dpkg-bootstrap");
 	push(@plist, @_);
 	print "plist is @plist\n";
-	my ($package_list, $perl_is_supported) = additional_packages();
+	my $package_list = additional_packages();
 	my @addlist = @{$package_list};
-	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless $perl_is_supported;
+	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless is_perl_supported();
 
 	$bsbase = &get_bsbase();
 	&print_breaking("Bootstrapping a base system via $bsbase.");
@@ -475,7 +513,7 @@ which will be used to run fink itself, post-bootstrap.
 sub bootstrap2 {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
-	my ($package_list, $perl_is_supported) = additional_packages();
+	my $package_list = additional_packages();
 	my @addlist = @{$package_list};
 	$bsbase = &get_bsbase();
 	# set paths so that everything is found

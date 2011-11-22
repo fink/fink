@@ -24,7 +24,7 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&find_subpackages &get_options);
-use Fink::Bootstrap qw(&additional_packages);
+use Fink::Bootstrap qw(&additional_packages &is_perl_supported);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection print_breaking_stderr);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::Engine;  # &aptget_update &cmd_install, but they aren't EXPORT_OK
@@ -339,9 +339,12 @@ EOMSG
 	@elist = Fink::Package->list_essential_packages();
 
 	# add some non-essential but important ones
-    my ($package_list, $perl_is_supported) = additional_packages();
+    my $package_list = additional_packages();
 
-	print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  Updating anyway, but you may encounter problems.\n") unless $perl_is_supported;
+	unless (is_perl_supported()) {
+		print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  ".
+		               "Updating anyway, but you may encounter problems.\n");
+	}
 
 	foreach my $important (@$package_list) {
 		my $po = Fink::Package->package_by_name($important);

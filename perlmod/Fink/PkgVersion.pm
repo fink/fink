@@ -5226,6 +5226,7 @@ sub get_ruby_dir_arch {
 	# grab ruby version, if present
 	my $rubyversion   = "";
 	my $rubydirectory = "";
+# FIXME: Hardcoded arch :/
 	my $rubyarchdir   = "powerpc-darwin";
 	if ($self->is_type('ruby') and $self->get_subtype('ruby') ne 'ruby') {
 		$rubyversion = $self->get_subtype('ruby');
