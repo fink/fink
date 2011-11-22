@@ -22,6 +22,11 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
 \-------------
 
+0.31.5 "deceit" (2011-11-21)
+	* BugFix: gcc-4.2 isn't available after clean installs of Xcode 4.2, so
+	  users weren't able to bootstrap on 10.6/Xcode 4.2.  Revert the compiler
+	  wrappers to point to gcc|g++ rather than (gcc|g++)-4.2.
+
 0.31.4 "perfidy" (2011-10-28)
 	* Synced base .info files against latest versions from dists.
 	* Added support for Xcode 4.2 on Mac OS X 10.6.
