@@ -431,8 +431,6 @@ sub bootstrap1 {
 	my @plist = ("dpkg-bootstrap");
 	push(@plist, @_);
 	print "plist is @plist\n";
-	my $package_list = additional_packages();
-	my @addlist = @{$package_list};
 	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless is_perl_supported();
 
 	$bsbase = &get_bsbase();
@@ -464,7 +462,8 @@ sub bootstrap1 {
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
-
+	my $package_list = additional_packages();
+	my @addlist = @{$package_list};
 
 	print "\n";
 	&print_breaking("BOOTSTRAP PHASE ONE: download tarballs.");
@@ -513,8 +512,6 @@ which will be used to run fink itself, post-bootstrap.
 sub bootstrap2 {
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
-	my $package_list = additional_packages();
-	my @addlist = @{$package_list};
 	$bsbase = &get_bsbase();
 	# set paths so that everything is found
 	$save_path = $ENV{PATH};
@@ -530,6 +527,8 @@ sub bootstrap2 {
 
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
+	my $package_list = additional_packages();
+	my @addlist = @{$package_list};
 
 	print "\n";
 	&print_breaking("BOOTSTRAP PHASE THREE: installing essential packages to ".

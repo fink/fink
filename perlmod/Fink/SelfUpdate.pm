@@ -335,16 +335,16 @@ EOMSG
 		die "re-executing fink failed, run 'fink selfupdate --method=10.4' manually\n";
 	}
 
-	# determine essential packages
-	@elist = Fink::Package->list_essential_packages();
-
-	# add some non-essential but important ones
-    my $package_list = additional_packages();
-
 	unless (is_perl_supported()) {
 		print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  ".
 		               "Updating anyway, but you may encounter problems.\n");
 	}
+
+	# determine essential packages
+	@elist = Fink::Package->list_essential_packages();
+
+	# add some non-essential but important ones
+	my $package_list = additional_packages();
 
 	foreach my $important (@$package_list) {
 		my $po = Fink::Package->package_by_name($important);
