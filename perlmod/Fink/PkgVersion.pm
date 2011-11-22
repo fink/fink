@@ -4825,10 +4825,6 @@ sub get_env {
 		"CXX", "CXXFLAGS",
 		"DYLD_LIBRARY_PATH",
 		"JAVA_HOME",
-		"LD_PREBIND",
-		"LD_PREBIND_ALLOW_OVERLAP",
-		"LD_FORCE_NO_PREBIND",
-		"LD_SEG_ADDR_TABLE",
 		"LD", "LDFLAGS",
 		"LIBRARY_PATH", "LIBS",
 		"MACOSX_DEPLOYMENT_TARGET",
@@ -4840,9 +4836,6 @@ sub get_env {
 	my %defaults = (
 		"CPPFLAGS"                 => "-I\%p/include",
 		"LDFLAGS"                  => "-L\%p/lib",
-#		"LD_PREBIND"               => 1,
-#		"LD_PREBIND_ALLOW_OVERLAP" => 1,
-#		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
 
 # for building 64bit libraries, we change LDFLAGS:
