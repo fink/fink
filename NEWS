@@ -7,7 +7,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 0.32.0 ??? (20??-??-??)
 	* Added new "RuntimeDepends" field, any .info file that wants to use this
-	  feature must BuildDepend on fink (>= 0.32.0-1)
+	  feature must BuildDepend on fink (>= 0.32.0-1).
+	* Added support for source files in .tar.xz format.
 	* Improved package validator to reject .deb files including .hg / .git
 	  directories.
 	* Improved package validator to detect some issues with percent expansions.
