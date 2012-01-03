@@ -120,11 +120,16 @@ sub setup_direct_cvs {
 	my $http_proxy=$config->param_default("ProxyHTTP", ""); # get HTTP proxy information from fink.conf
 	if ($http_proxy) { # HTTP proxy has been set            
 		my $proxy_port;
-		$http_proxy =~ s|http://||; # strip leading 'http://', if present.
-		if  ($http_proxy =~ /:\d+/) { # extract TCP port number if present
-			my @tokens=split /:/,$http_proxy;
+		my @tokens;
+		$http_proxy =~ s|http://||; # strip leading 'http://', normally present.
+	    if ($http_proxy =~ /\@/ ) { # 'proxy' doesn't understand user:password@, so strip that off
+			@tokens = split /\@/, $http_proxy; 
+			$http_proxy=pop @tokens ; # keep host:port part
+		}
+		if  ($http_proxy =~ /:\d+$/) { # extract TCP port number if present
+			@tokens=split /:/,$http_proxy;
 			$proxy_port=pop @tokens ; # port is the last item following a colon
-			$http_proxy=join ':',@tokens ; # since we may have a username:password combo 
+			$http_proxy=pop @tokens ; # whatever is left
 		}
 		$proxcmd=";proxy=$http_proxy";
 		$proxcmd="$proxcmd;proxyport=$proxy_port" if $proxy_port;
