@@ -2,23 +2,6 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
-| fink 0.32.x
-\-------------
-
-0.32.0 ??? (20??-??-??)
-	* Added new "RuntimeDepends" field, any .info file that wants to use this
-	  feature must BuildDepend on fink (>= 0.32.0-1)
-	* Improved package validator to reject .deb files including .hg / .git
-	  directories.
-	* Improved package validator to detect some issues with percent expansions.
-	* Cleaned up the code base, including removal of some dead code for old OS X
-	  version, and anything related to the AddShlibDeps .info field.
-	* Updated fink and fink.conf man pages.
-	* Disallow bootstrapping into /usr/local and any subdir of it.
-	* Disallow bootstrapping on OS X 10.4 and older.
-	* Removed the obsolete prebinding code (it was for OS X 10.4 and older).
-	
-/-------------
 | fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
 \-------------
 
