@@ -1053,7 +1053,7 @@ sub build_as_user_group {
 	my $result;
 	if (get_option("build_as_nobody")) {
 		if (!getpwnam('fink-bld') or !getgrnam('fink-bld')) {
-			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please install package 'passwd' (>= 20061017) to build as user 'fink-bld'.\n";
+			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please install package 'passwd-fink-bld' to build as user 'fink-bld'.\n";
 			$result = {qw/ user nobody group nobody user:group nobody:nobody /};
 		} else {
 			$result = {qw/ user fink-bld group fink-bld user:group fink-bld:fink-bld /};
