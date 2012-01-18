@@ -316,29 +316,6 @@ if (-x "/usr/bin/head") {
 	exit 1;
 }
 
-
-print "Verifying that installed Xcode version is supported...";
-{
-	use Fink::version; # replace with 'use version' once 10.5 is no longer supported  
-	# minimum Xcode versions:
-	my ($min_xcode, $xc_version);
-
-	if ($vers == 9) {
-		$min_xcode = '3.0';
-	} elsif ($vers == 10) {
-		$min_xcode = '3.2'; 
-	} else { 
-		$min_xcode = '4.1';
-	}
-	die "ERROR:\n\tCan't determine Xcode version.\n" unless (-x "/usr/bin/xcodebuild");
-	$xc_version = qv((split /\s/, (split /\n/,`xcodebuild -version`)[0] )[1]);
-	if (qv($xc_version) gt qv($min_xcode)) {
-		print "$xc_version is OK.\n";
-	} else {
-		die "ERROR.\nXcode $xc_version is unsupported on this OS X version..\nYou need at least Xcode $min_xcode.\n";
-	}
-}
-
 ### setup the correct packages directory
 # (no longer needed: we just use $distribution directly...)
 #
