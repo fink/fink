@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2011 The Fink Package Manager Team
+# Copyright (c) 2001-2012 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,7 +24,7 @@
 package Fink::SelfUpdate;
 
 use Fink::Services qw(&find_subpackages &get_options);
-use Fink::Bootstrap qw(&additional_packages);
+use Fink::Bootstrap qw(&additional_packages &is_perl_supported);
 use Fink::CLI qw(&print_breaking &prompt_boolean &prompt_selection print_breaking_stderr);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::Engine;  # &aptget_update &cmd_install, but they aren't EXPORT_OK
@@ -335,13 +335,16 @@ EOMSG
 		die "re-executing fink failed, run 'fink selfupdate --method=10.4' manually\n";
 	}
 
+	unless (is_perl_supported()) {
+		print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  ".
+		               "Updating anyway, but you may encounter problems.\n");
+	}
+
 	# determine essential packages
 	@elist = Fink::Package->list_essential_packages();
 
 	# add some non-essential but important ones
-    my ($package_list, $perl_is_supported) = additional_packages();
-
-	print_breaking("WARNING! This version of Perl ($]) is not currently supported by Fink.  Updating anyway, but you may encounter problems.\n") unless $perl_is_supported;
+	my $package_list = additional_packages();
 
 	foreach my $important (@$package_list) {
 		my $po = Fink::Package->package_by_name($important);
@@ -352,6 +355,10 @@ EOMSG
 	}
 
 	my $updatepackages = 0;
+
+# FIXME: What is UpdatePackages ? yet another undefined fink.conf entry?
+# apparently meant to list packages that selfupdate should update, too.
+# Only thing using it seems to be postinstall.pl(.in) uses it for upgrades from 10.4 to 10.5 and 10.6.
 
 	# add UpdatePackages, if any
 	if (defined($config->param("UpdatePackages"))) {

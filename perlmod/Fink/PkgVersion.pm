@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2011 The Fink Package Manager Team
+# Copyright (c) 2001-2012 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -4759,19 +4759,6 @@ for dir in \$PATH ; do
 done
 IFS="\$save_IFS"
 export PATH="\$newpath"
-# use Apple gcc-4.2 compilers on SL
-case `uname -r` in
-10.*)
-        case \$compiler in
-        cc|gcc)
-                compiler="gcc-4.2"
-                ;;
-        c++|g++)
-                compiler="g++-4.2"
-                ;;
-        esac
-        ;;
-esac
 exec \$compiler "-arch" "$arch" "\$@"
 EOF
 		close GPP;
@@ -4854,15 +4841,10 @@ sub get_env {
 		"CXX", "CXXFLAGS",
 		"DYLD_LIBRARY_PATH",
 		"JAVA_HOME",
-		"LD_PREBIND",
-		"LD_PREBIND_ALLOW_OVERLAP",
-		"LD_FORCE_NO_PREBIND",
-		"LD_SEG_ADDR_TABLE",
 		"LD", "LDFLAGS",
 		"LIBRARY_PATH", "LIBS",
 		"MACOSX_DEPLOYMENT_TARGET",
 		"MAKE", "MFLAGS", "MAKEFLAGS",
-		"VERSIONER_PERL_PREFER_32_BIT",
 	);
 
 	# default environment variable values
@@ -4870,14 +4852,7 @@ sub get_env {
 	my %defaults = (
 		"CPPFLAGS"                 => "-I\%p/include",
 		"LDFLAGS"                  => "-L\%p/lib",
-#		"LD_PREBIND"               => 1,
-#		"LD_PREBIND_ALLOW_OVERLAP" => 1,
-#		"LD_SEG_ADDR_TABLE"        => "$basepath/var/lib/fink/prebound/seg_addr_table",
 	);
-
-	if (($config->param("Architecture") eq "i386" ) and ($config->param("Distribution") gt "10.5")) {
-		$defaults{"VERSIONER_PERL_PREFER_32_BIT"} = "yes";
-		}
 
 # for building 64bit libraries, we change LDFLAGS:
 
@@ -4993,6 +4968,7 @@ sub get_env {
 		}
 	}
 
+# FIXME: (No)SetPATH is undocumented
 	unless ($self->has_param('NoSetPATH')) {
 		# use path-prefix-* to give magic to 'gcc' and related commands
 		my $pathprefix;
@@ -5014,6 +4990,8 @@ sub get_env {
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 
+# FIXME: (No)SetPATH is undocumented
+# FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
 		if ($self->is_type('java')) {
@@ -5242,6 +5220,7 @@ sub get_ruby_dir_arch {
 	# grab ruby version, if present
 	my $rubyversion   = "";
 	my $rubydirectory = "";
+# FIXME: Hardcoded arch :/
 	my $rubyarchdir   = "powerpc-darwin";
 	if ($self->is_type('ruby') and $self->get_subtype('ruby') ne 'ruby') {
 		$rubyversion = $self->get_subtype('ruby');

@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2011 The Fink Package Manager Team
+# Copyright (c) 2001-2012 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -49,10 +49,11 @@ our @EXPORT_OK;
 our @set_vars =
 	qw(
 		cc cflags cpp cppflags cxx cxxflags dyld_library_path
-		ld_prebind ld_prebind_allow_overlap ld_force_no_prebind
-		ld_seg_addr_table ld ldflags library_path libs
+		ld ldflags library_path libs
 		macosx_deployment_target make mflags makeflags path
 	);
+# FIXME: (No)SetPATH is undocumented
+# FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
 
 # Required fields.
 our @required_fields = map {lc $_}

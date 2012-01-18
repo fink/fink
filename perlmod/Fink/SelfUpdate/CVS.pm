@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2011 The Fink Package Manager Team
+# Copyright (c) 2001-2012 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -122,11 +122,16 @@ sub setup_direct_cvs {
 	my $http_proxy=$config->param_default("ProxyHTTP", ""); # get HTTP proxy information from fink.conf
 	if ($http_proxy) { # HTTP proxy has been set
 		my $proxy_port;
-		$http_proxy =~ s|http://||; # strip leading 'http://', if present.
-		if  ($http_proxy =~ /:\d+/) { # extract TCP port number if present
-			my @tokens=split /:/,$http_proxy;
+		my @tokens;
+		$http_proxy =~ s|http://||; # strip leading 'http://', normally present.
+	    if ($http_proxy =~ /\@/ ) { # 'proxy' doesn't understand user:password@, so strip that off
+			@tokens = split /\@/, $http_proxy; 
+			$http_proxy=pop @tokens ; # keep host:port part
+		}
+		if  ($http_proxy =~ /:\d+$/) { # extract TCP port number if present
+			@tokens=split /:/,$http_proxy;
 			$proxy_port=pop @tokens ; # port is the last item following a colon
-			$http_proxy=join ':',@tokens ; # since we may have a username:password combo
+			$http_proxy=pop @tokens ; # whatever is left
 		}
 		$proxcmd=";proxy=$http_proxy";
 		$proxcmd="$proxcmd;proxyport=$proxy_port" if $proxy_port;
@@ -236,7 +241,7 @@ sub setup_direct_cvs {
 			$cvsrepository = cat "$basepath/lib/fink/URL/developer-cvs";
 			chomp($cvsrepository);
 		}
-		$cmd = qq(cvs ${verbosity} -z3 "-d:ext${proxcmd}:$cvsuser\@$cvsrepository");
+		$cmd = qq(cvs ${verbosity} -z3 "-d:ext:$cvsuser\@$cvsrepository");
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -l -d fink dists";

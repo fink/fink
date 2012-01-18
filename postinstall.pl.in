@@ -6,7 +6,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2011 The Fink Package Manager Team
+# Copyright (c) 2001-2012 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -106,17 +106,17 @@ $config->save();
 my $updating = 0;
 
 if ( not ($distold eq $distribution)) {
-    add_injected_to_trees($distribution);
-    $updating = 1;
+	add_injected_to_trees($distribution);
+	$updating = 1;
 ### FIXME: this variable is a hook to action in Fink::SelfUpdate::finish,
 ### but that action has not yet been implemented.  (The variable should
 ### be zeroed out in SelfUpdate.pm after the action has been taken.)
-    $config->set_param("UpdateFrom", $distold);
+	$config->set_param("UpdateFrom", $distold);
 ### add packages depending on which Update
-    if (($distold eq "10.4") and (($distribution eq "10.5") or ($distribution eq "10.6"))) {
-	$config->set_param("UpdatePackages", "perl586-core, rman");
-    }
-    $config->save();
+	if (($distold eq "10.4") and (($distribution eq "10.5") or ($distribution eq "10.6"))) {
+		$config->set_param("UpdatePackages", "perl586-core, rman");
+	}
+	$config->save();
 }
 
 ### Find the user who owns dists
@@ -127,10 +127,10 @@ $distdir = "$basepath/fink/dists" ;
 $username = "root" ;
 
 if (-d "$distdir/CVS") {
-  @sb = stat("$distdir/CVS");
-  if ($sb[4] != 0 and $> != $sb[4]) {
-    ($username) = getpwuid($sb[4]);
-  }
+	@sb = stat("$distdir/CVS");
+	if ($sb[4] != 0 and $> != $sb[4]) {
+		($username) = getpwuid($sb[4]);
+	}
 }
 
 
@@ -138,8 +138,8 @@ if (-d "$distdir/CVS") {
 ### if still needed, and then make a symlink
 
 if (($distribution eq "10.1") or ($distribution eq "10.2") or ($distribution eq "10.3") or ($distribution eq "10.4-transitional")) {
-    print "ERROR: The current version of fink cannot be used with the $distribution distribution.\nPlease use an appropriate earlier version of fink.\n";
-    exit 1;
+	print "ERROR: The current version of fink cannot be used with the $distribution distribution.\nPlease use an appropriate earlier version of fink.\n";
+	exit 1;
 }
 
 my $distroot = get_selfupdatetrees($distribution);
@@ -152,72 +152,71 @@ my $selfupdatetree = $distroot;
 ### exist if this symlink is still pointing to 10.4-transitional
 
 if (-l "$basepath/fink/10.4") {
-    unlink "$basepath/fink/10.4";
+	unlink "$basepath/fink/10.4";
 }
 
 # If $distroot is different from $distribution, we need a symlink between them.
 
 my $notlink;
 
-if ( not ($distribution eq $distroot)) {
-    $notlink = "1";
+if (not ($distribution eq $distroot)) {
+	$notlink = "1";
 ### we want $basepath/fink/$distribution to be a symlink, but if it already exists
 ### and is *not* a symlink (or not the correct symlink), we move it out of
 ### the way first
-    if (-l "$basepath/fink/$distribution") {
-	if (readlink("$basepath/fink/$distribution") eq "$distroot") {
-	    $notlink = "0";
+	if (-l "$basepath/fink/$distribution") {
+		if (readlink("$basepath/fink/$distribution") eq "$distroot") {
+			$notlink = "0";
+		}
 	}
-    }
-    if (-e "$basepath/fink/$distribution") {
-	if (-e "$basepath/fink/$distribution.old") {
-	   my $aanswer = &prompt_boolean("\nWARNING: you have an obsolete file or directory $basepath/fink/$distribution.old which must be removed before the installation can continue; do you want to remove it now?\n", default => 1, timeout => 60);
-	   if ($aanswer) {
-	    if (&execute("/bin/rm -rf $basepath/fink/$distribution.old")) {
-		print "ERROR: Cannot remove $basepath/fink/$distribution.old\n";
-		exit 1;
-	    }
-	   } else {
-	       print "\nOK: please run 'fink reinstall fink' when you are ready to have this file or directory deleted.\n\n";
-	       exit 1;
-	   }
-	   
+	if (-e "$basepath/fink/$distribution") {
+		if (-e "$basepath/fink/$distribution.old") {
+			my $aanswer = &prompt_boolean("\nWARNING: you have an obsolete file or directory $basepath/fink/$distribution.old which must be removed before the installation can continue; do you want to remove it now?\n", default => 1, timeout => 60);
+			if ($aanswer) {
+				if (&execute("/bin/rm -rf $basepath/fink/$distribution.old")) {
+					print "ERROR: Cannot remove $basepath/fink/$distribution.old\n";
+					exit 1;
+				}
+			} else {
+				print "\nOK: please run 'fink reinstall fink' when you are ready to have this file or directory deleted.\n\n";
+				exit 1;
+			}
+		}
+		if ($notlink) {
+			if (&execute("/bin/mv $basepath/fink/$distribution $basepath/fink/$distribution.old")) {
+				print "ERROR: Can't move $basepath/fink/$distribution to $basepath/fink/$distribution.old\n";
+				exit 1;
+			}
+			print "\nWARNING: An unexpected file or directory $basepath/fink/$distribution was found,\nand was moved to $basepath/fink/$distribution.old .	It will be deleted the next time\nfink is updated, unless you have deleted it yourself before then.\n\n";
+		}
 	}
 	if ($notlink) {
-	    if (&execute("/bin/mv $basepath/fink/$distribution $basepath/fink/$distribution.old")) {
-		print "ERROR: Can't move $basepath/fink/$distribution to $basepath/fink/$distribution.old\n";
-		exit 1;
-	    }
-	    print "\nWARNING: An unexpected file or directory $basepath/fink/$distribution was found,\nand was moved to $basepath/fink/$distribution.old .  It will be deleted the next time\nfink is updated, unless you have deleted it yourself before then.\n\n";
+		if (&execute("ln -s $distroot $basepath/fink/$distribution")) {
+			print "ERROR: Can't create link from $distroot to $basepath/fink/$distribution\n";
+			exit 1;
+		}
 	}
-    }
-    if ($notlink) {
-	if (&execute("ln -s $distroot $basepath/fink/$distribution")) {
-	    print "ERROR: Can't create link from $distroot to $basepath/fink/$distribution\n";
-	    exit 1;
-	}
-    }
 }
 
 if (not -d $basepath."/fink/".$distroot) {
-    if(&execute("/bin/mkdir -p $basepath/fink/$distroot/local/main/finkinfo")) {
-	print "ERROR: couldn't create directory $basepath/fink/$distroot/local/main/finkinfo\n";
-	exit 1;
-    }
-    if (&execute("/usr/sbin/chown -R $username $basepath/fink/$distroot")) {
-	print "ERROR: couldn't change ownership of $basepath/fink/$distroot to $username\n";
-	exit 1;
-    }
+	if(&execute("/bin/mkdir -p $basepath/fink/$distroot/local/main/finkinfo")) {
+		print "ERROR: couldn't create directory $basepath/fink/$distroot/local/main/finkinfo\n";
+		exit 1;
+	}
+	if (&execute("/usr/sbin/chown -R $username $basepath/fink/$distroot")) {
+		print "ERROR: couldn't change ownership of $basepath/fink/$distroot to $username\n";
+		exit 1;
+	}
 }
 unlink $distdir;
 
 if (&execute("ln -s $distribution $distdir")) {
-    print "ERROR: Can't create link from $distribution to $distdir\n";
-    exit 1;
+	print "ERROR: Can't create link from $distribution to $distdir\n";
+	exit 1;
 }
 
 # If SelfUpdateTrees is not defined, or just has a single entry, we update
-# the entry to $selfupdatetree.  Otherwise, we append $selfupdatetree
+# the entry to $selfupdatetree.	 Otherwise, we append $selfupdatetree
 # to the entry (unless it is already present).
 # 
 # Note that SelfUpdateCVSTrees was used for a while before SelfUpdateTrees,
@@ -226,20 +225,20 @@ if (&execute("ln -s $distribution $distdir")) {
 my @alltrees = ();
 my $SUTrees = "";
 if (defined $config->param("SelfUpdateTrees")) {
-    $SUTrees = $config->param("SelfUpdateTrees") ;
-    @alltrees = split(/\s+/, $SUTrees);
-} else {
-    if (defined $config->param("SelfUpdateCVSTrees")) {
-	$SUTrees = $config->param("SelfUpdateCVSTrees");
+	$SUTrees = $config->param("SelfUpdateTrees") ;
 	@alltrees = split(/\s+/, $SUTrees);
-    }
+} else {
+	if (defined $config->param("SelfUpdateCVSTrees")) {
+		$SUTrees = $config->param("SelfUpdateCVSTrees");
+		@alltrees = split(/\s+/, $SUTrees);
+	}
 }
 if (scalar @alltrees eq "1") {
-    $SUTrees = "";
-    @alltrees=();
+	$SUTrees = "";
+	@alltrees=();
 }
 for my $tree (@alltrees) {
-    $selfupdatetree = "" if ($tree eq $selfupdatetree);
+	$selfupdatetree = "" if ($tree eq $selfupdatetree);
 }
 my $SUTreesEntry = $SUTrees . " " . $selfupdatetree;
 $SUTreesEntry =~ s/(^\s+|\s+$)//g;
@@ -251,15 +250,15 @@ $config->save();
 # update packages if we are updating.
 
 if ($updating) {
-    if(&execute("/bin/mkdir -p $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
-	print "ERROR: couldn't create directory $basepath/fink/dists/local/injected/finkinfo/update-packages\n";
-	exit 1;
-    }
+	if(&execute("/bin/mkdir -p $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
+		print "ERROR: couldn't create directory $basepath/fink/dists/local/injected/finkinfo/update-packages\n";
+		exit 1;
+	}
 # just in case we need to overwrite something, use cp -f
-    if (&execute("cp -f $basepath/lib/fink/update-packages/* $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
-	print "ERROR: couldn't copy package desriptions to $basepath/fink/dists/local/injected/finkinfo/update-packages\n";
-	exit 1;
-    }
+	if (&execute("cp -f $basepath/lib/fink/update-packages/* $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
+		print "ERROR: couldn't copy package desriptions to $basepath/fink/dists/local/injected/finkinfo/update-packages\n";
+		exit 1;
+	}
 }
 
 # If a user upgrades to a new fink with AutoScanpackages, we'd rather do the
@@ -284,18 +283,16 @@ sub pre_scanpackages {
 pre_scanpackages();
 
 if ($configNeedsUpdate) {
-  &print_breaking("\nThis fink version introduces new settings stored in the " .
+	&print_breaking("\nThis fink version introduces new settings stored in the " .
         "fink configuration file \"$configpath\". You should rerun the " .
         "configuration process.\n");
-  my $answer = &prompt_boolean("Do you want to configure now?", default => 0,
-  	timeout => 60);
-  if ($answer) {
-    require Fink::Configure;
-    Fink::Configure::configure();
-  }
-  else {
-    print "Please remember to call 'fink configure' later!\n\n";
-  }
+	my $answer = &prompt_boolean("Do you want to configure now?", default => 0, timeout => 60);
+	if ($answer) {
+		require Fink::Configure;
+		Fink::Configure::configure();
+	} else {
+		print "Please remember to call 'fink configure' later!\n\n";
+	}
 } else {
 	# Only ask if not configuring, configure will ask later
 	if (&spotlight_warning()) {

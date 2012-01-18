@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2011 The Fink Package Manager Team
+# Copyright (c) 2001-2012 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -335,7 +335,7 @@ HELPFORMAT
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2011 The Fink Package Manager Team
+Copyright (c) 2001-2012 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -1053,7 +1053,7 @@ sub build_as_user_group {
 	my $result;
 	if (get_option("build_as_nobody")) {
 		if (!getpwnam('fink-bld') or !getgrnam('fink-bld')) {
-			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please install package 'passwd' (>= 20061017) to build as user 'fink-bld'.\n";
+			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please install package 'passwd-fink-bld' to build as user 'fink-bld'.\n";
 			$result = {qw/ user nobody group nobody user:group nobody:nobody /};
 		} else {
 			$result = {qw/ user fink-bld group fink-bld user:group fink-bld:fink-bld /};

@@ -7,7 +7,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 0.32.0 ??? (20??-??-??)
 	* Added new "RuntimeDepends" field, any .info file that wants to use this
-	  feature must BuildDepend on fink (>= 0.32.0-1)
+	  feature must BuildDepend on fink (>= 0.32.0-1).
+	* Added support for source files in .tar.xz format.
 	* Improved package validator to reject .deb files including .hg / .git
 	  directories.
 	* Improved package validator to detect some issues with percent expansions.
@@ -21,6 +22,16 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
 \-------------
+
+0.31.6 "supine" (2012-01-03)
+	* BugFixes: cvs proxy tunnel doesn't support 'user:password', so strip that
+				that from information passed via ProxyHTTP.
+				ext method doesn't support proxy tunneling.
+
+0.31.5 "deceit" (2011-11-21)
+	* BugFix: gcc-4.2 isn't available after clean installs of Xcode 4.2, so
+	  users weren't able to bootstrap on 10.6/Xcode 4.2.  Revert the compiler
+	  wrappers to point to gcc|g++ rather than (gcc|g++)-4.2.
 
 0.31.4 "perfidy" (2011-10-28)
 	* Synced base .info files against latest versions from dists.
