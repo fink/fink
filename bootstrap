@@ -316,45 +316,6 @@ if (-x "/usr/bin/head") {
 	exit 1;
 }
 
-### Check for allowable Xcode for OS
-{
-	# Convert Xcode version to an integer and use numeric comparisons (for now).
-	# Possibly replace with 'use version' once 10.5 is no longer supported  
-	# to be robust against two-digit minor or subminor versions.
-	
-	# minimum Xcode versions:
-	my ($min_xcode, $min_xcode_readable, $max_xcode, $max_xcode_readable, $xc_version);
-
-	if ($vers == 9) {
-		$min_xcode = 30;
-		$min_xcode_readable="3.0";
-		$max_xcode = 31;
-		$max_xcode_readable="3.1";
-	} elsif ($vers == 10) {
-		$min_xcode = 32;
-		$min_xcode_readable="3.2";
-		$max_xcode = 49;
-		$max_xcode_readable="4.9";
-	} elsif ($vers == 11) { 
-		$min_xcode = 41;
-		$min_xcode_readable="4.1";
-		$max_xcode = 49;
-		$max_xcode_readable="4.9";
-	} else {
-		die "ERROR:\n\tUnsupported OS X version.\n";
-	}
-	die "ERROR:\n\tCan't determine Xcode version.\n" unless (-x "/usr/bin/xcodebuild");
-	{
-		my ($xc_raw1,$xc_raw2,$xc_raw3) = (`xcodebuild -version` =~ /(\d+)\.(\d+)\.?(\d+)?/) ;
-		print "Xcode version: $xc_raw1.$xc_raw2.$xc_raw3\n";
-		$xc_version=10*$xc_raw1+$xc_raw2; # make sure we're a 3-digit number
-	}
-	
-	die "ERROR:  You need at least Xcode $min_xcode_readable on this OS X version.\n" if $xc_version < $min_xcode ;
-	die "ERROR:  You need at most Xcode $max_xcode_readable on this OS X version.\n" if $xc_version > $max_xcode ;
-	print "OK.\n";
-}
-
 ### setup the correct packages directory
 # (no longer needed: we just use $distribution directly...)
 #
