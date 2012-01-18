@@ -41,7 +41,7 @@ unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 require Fink::Services;
-import Fink::Services qw(&execute);
+import Fink::Services qw(&execute &version_cmp);
 
 $| = 1;
 
@@ -315,6 +315,46 @@ if (-x "/usr/bin/head") {
 					"Make sure that the Developer Tools are installed.");
 	exit 1;
 }
+
+### Check for allowable Xcode
+print "Verifying that installed Xcode version is supported...\n";
+{
+	# Compare Xcode version to allowed range via Fink::Services::version_cmp().
+	# Possibly replace with 'use version', qv() , and the standard comparison
+	# operators once 10.5 is no longer supported.  
+	
+	# minimum Xcode versions:
+	my ($min_xcode, $max_xcode, $xcode_version);
+
+	if ($vers == 9) {
+		$min_xcode="3.0";
+		$max_xcode="3.1.4";
+	} elsif ($vers == 10) {
+		$min_xcode="3.2";
+		$max_xcode="4.9";
+	} elsif ($vers == 11) { 
+		$min_xcode="4.1";
+		$max_xcode="4.9";
+	} else {
+		die "ERROR:\n\tUnsupported OS X version.\n";
+	}
+	die "ERROR:\n\tCan't determine Xcode version.\n" unless (-x "/usr/bin/xcodebuild");
+	($xcode_version) = (`xcodebuild -version` =~ /(\d+\.\d+\.?(\d+)?)/) ;
+		print "Xcode version: $xcode_version";
+	
+	if (&version_cmp ("$xcode_version", "<<", "$min_xcode")) {
+		& print_breaking (   "\nERROR:  This version of fink needs at least ".
+							"Xcode ".$min_xcode." on this OS X version.\n");
+		exit 1;
+	} elsif (&version_cmp ("$xcode_version", ">>", "$max_xcode")) {
+		& print_breaking (	"\nERROR:  This version of fink needs at most ".
+							"Xcode ".$max_xcode." on this OS X version.\n");
+		exit 1;
+	} else {
+		print " is OK.\n";
+	}
+}
+
 
 ### setup the correct packages directory
 # (no longer needed: we just use $distribution directly...)
