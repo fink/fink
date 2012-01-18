@@ -203,7 +203,7 @@ sub setup_direct_git {
 		$verbosity = "";
 	}
 	my $gitpath = $config->param("GitPath");
-	my $gitrepository = 'http://github.com/danielj7/fink-dists.git';
+	my $gitrepository = 'https://github.com/danielj7/fink-dists.git';
 	if (-f "$basepath/lib/fink/URL/git-repository") {
 		$gitrepository = cat "$basepath/lib/fink/URL/git-repository";
 		chomp($gitrepository);
