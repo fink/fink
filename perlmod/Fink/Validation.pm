@@ -1803,21 +1803,23 @@ sub _validate_dpkg {
 			}
 		}
 
-		# check that libtool files don't link to temp locations
-		if ($filename =~/\.la$/) {
-			if (!-l $File::Find::name and open my $la_file, '<', $File::Find::name) {
-				while (<$la_file>) {
+		# libtool and pkg-config files don't link to temp locations
+		if ($filename =~ /\.(pc|la)$/) {
+			my $filetype = ($1 eq 'pc' ? 'pkg-config' : 'libtool');
+			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
+				while (<$datafile>) {
+					chomp;
 					if (/$pkgbuilddir/) {
-						&stack_msg($msgs, "Libtool file points to fink build dir.", $filename);
+						&stack_msg($msgs, "Published compiler flag points to fink build dir.", $filename);
 						last;
 					} elsif (/$pkginstdirs/) {
-						&stack_msg($msgs, "Libtool file points to fink install dir.", $filename);
+						&stack_msg($msgs, "Published compiler flag points to fink install dir.", $filename);
 						last;
 					}
 				}
-				close $la_file;
+				close $datafile;
 			} elsif (!-l _) {
-				&stack_msg($msgs, "Couldn't read libtool file \"$filename\": $!");
+				&stack_msg($msgs, "Couldn't read $filetype file \"$filename\": $!");
 			}
 		}
 
@@ -1854,7 +1856,7 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "File in a language-versioned package is neither versioned nor in a versioned directory.", $filename);
 		}
 
-		# Check for common programmer mistakes relating to passing -framework flags in pkg-config files
+		# passing -framework flag and its argument as separate words
 		if ($filename =~ /\.(pc|la)$/) {
 			my $filetype = ($1 eq 'pc' ? 'pkg-config' : 'libtool');
 			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
@@ -1866,7 +1868,7 @@ sub _validate_dpkg {
 				}
 				close $datafile;
 			} elsif (!-l _) {
-				&stack_msg($msgs, "Couldn't read pkg-config file \"$filename\": $!");
+				&stack_msg($msgs, "Couldn't read $filetype file \"$filename\": $!");
 			}
 		}
 
