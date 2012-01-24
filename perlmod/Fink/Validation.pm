@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp &filename);
 use Fink::Config qw($config);
 use Cwd qw(getcwd);
 use File::Find qw(find);
@@ -646,10 +646,21 @@ sub validate_info_file {
 				print "Error: \"$_\" does not have a corresponding \"$md5_field\" or \"$checksum_field\" field. ($filename)\n";
 				$looks_good = 0;
 			}
+			# check for allowed compression types while we're looping over sources
+			# xz
+			if (exists $source_props->{$_} and $properties->{$_} =~ /\.xz$/ ) {
+				unless ($properties->{builddepends} =~ /\bxz[,\b]/) {
+					print "Error: use of an xz-formatted archive in \"$_\" requires declaring a BuildDepends: xz. ($filename)\n";
+					$looks_good=0;
+				}
+				# tar.xz 
+				if ($properties->{$_} =~ /\.tar\.xz$/ ) {
+					$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.31.7', 'use of a .tar.xz archive', $filename); 
+				}
+			}
 		}
-
 	}
-
+	
 	$expand = { 'n' => $pkgname,
 				'N' => $pkgname,
 				'v' => $pkgversion,
