@@ -9,12 +9,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Let 'tar' handle compressed tar files directly.  Includes validation checks
 	  with minimum Fink version for .tar.xz format.
 	* Check Xcode version in bootstrap phase before actually creating a Fink tree.
+	* Check for -I or -L pointing to the builddir or install dir in .pc files.
 	* Diagnostic message improvements
 		* Mention "passwd-fink-bld" instead of "passwd" when the fink-bld user
 		  is absent, since there's no "passwd" on 10.7.
 		* In error messages, suggest that users try rebuilds with MaxBuildJobs: 1
 		  if that's set higher, and print MBJ in the system info.
 		* Stress emailing _only one_ Fink mailing list for bug reports.
+		
 
 0.31.6 "supine" (2012-01-03)
 	* BugFixes: cvs proxy tunnel doesn't support 'user:password', so strip that
