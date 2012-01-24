@@ -7,7 +7,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 0.31.7 "recumbent" (????-??-??)
 	* Let 'tar' handle compressed tar files directly.  Includes validation checks
-	  with minimum Fink version for .tar.xz format.
+	  with 0.31.7 as minimum fink version for .tar.xz format.
 	* Check Xcode version in bootstrap phase before actually creating a Fink tree.
 	* Check for -I or -L pointing to the builddir or install dir in .pc files.
 	* Diagnostic message improvements
