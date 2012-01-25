@@ -19,8 +19,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Disallow bootstrapping on OS X 10.4 and older.
 	* Removed the obsolete prebinding code (it was for OS X 10.4 and older).
 	* Let 'tar' handle compressed tar files directly.  
-		* Includes validation check with 0.32.0 as minimum fink version for 
-		.tar.xz formatted archives.
+		* Includes validation check with 0.32 as minimum fink
+		  version for .xz formatted archives.
 	* Check Xcode version in bootstrap phase before actually creating a Fink tree.
 	* Check for -I or -L pointing to the builddir or install dir in .pc files.
 	* Diagnostic message improvements
