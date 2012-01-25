@@ -646,17 +646,10 @@ sub validate_info_file {
 				print "Error: \"$_\" does not have a corresponding \"$md5_field\" or \"$checksum_field\" field. ($filename)\n";
 				$looks_good = 0;
 			}
-			# check for allowed compression types while we're looping over sources
-			# xz
-			if (exists $source_props->{$_} and $properties->{$_} =~ /\.xz\b/ ) {
-				unless ($properties->{builddepends} =~ /\bxz\b/) {
-					print "Error: use of an xz-formatted archive in \"$_\" requires declaring a BuildDepends: xz. ($filename)\n";
-					$looks_good=0;
-				}
-				# tar.xz 
-				if ($properties->{$_} =~ /\.tar\.xz\b/ ) {
-					$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.32.0', 'use of a .tar.xz archive', $filename); 
-				}
+			# fink recently changed .tar.xz source handling (now
+			# auto-extracts) and maybe other .xz effects as well
+			if (exists $source_props->{$_} and $source_props->{$_} =~ /\.xz$/ ) {
+				$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.32', 'use of a .xz source archive', $filename); 
 			}
 		}
 
