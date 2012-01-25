@@ -1551,7 +1551,6 @@ sub _validate_dpkg {
 	push(@good_dirs, '/usr/X11');
 
 	my @found_bad_dir;
-	my ($installed_headers, $installed_ld_libs) = (0, 0);
 	my @installed_dylibs;
 
 	# the whole control module is loaded and pre-precessed before any actual validation
@@ -1727,15 +1726,27 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "Compiled .elc file installed. Package should install .el files, and provide a /sw/lib/emacsen-common/packages/install/<package> script that byte compiles them for each installed Emacs flavour.", $filename);
 		}
 
-		# track whether BuildDependsOnly will be needed
-		if ($filename =~/\/include\// && !-d $File::Find::name) {
-			$installed_headers = 1;
+		# check if package contains files used as library input to a
+		# compiler, and should therefore declare BuildDependsOnly
+		# (must be swappable so packages can get specific libversion
+		# package; Depends on them would prevent swapping out)
+		#
+		# NB: Modern fink records value of "Undefined" in the .deb,
+		# older did not record the field at all.
+		if ($filename =~/\/include\//) {
+			# heuristic for C/C++/etc header files
+			if (-d $File::Find::name && !-l $File::Find::name) {
+				# allow real directory (only care about real file or
+				# symlink to dir ("real file" on disk) that would
+				# collide among .deb)
+			} else {
+				if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
+					&stack_msg($msgs, "Headers installed (files in an include/ directory), but package does not declare BuildDependsOnly to be true (or false)", $filename);
+				}
+			}
 		}
 
 		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
-			if ($filename =~ /\.dylib$/) {
-				$installed_ld_libs = 1;
-			}
 			if (defined $otool) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
@@ -1963,18 +1974,6 @@ sub _validate_dpkg {
 					print "\tOffending line: ", $_->[1], "\n" if defined $_->[1];
 				}
 			}
-		}
-	}
-
-	# handle BuildDependsOnly flags set during file-by-file checks
-	# Note that if the .deb was compiled with an old version of fink which
-	# does not record the BuildDependsOnly field, or with an old version
-	# which did not use the "Undefined" value for the BuildDependsOnly field,
-	# the warning is not issued
-	if ($installed_headers and $installed_ld_libs) {
-		if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
-			print "Error: Headers installed (files in an include/ directory), as well as a .dylib file, but package does not declare BuildDependsOnly to be true (or false)\n";
-			$looks_good = 0;
 		}
 	}
 
