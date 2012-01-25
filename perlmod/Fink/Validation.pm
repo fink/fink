@@ -659,9 +659,8 @@ sub validate_info_file {
 				}
 			}
 		}
-
 	}
-
+	
 	$expand = { 'n' => $pkgname,
 				'N' => $pkgname,
 				'v' => $pkgversion,
