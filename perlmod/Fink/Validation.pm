@@ -1745,6 +1745,22 @@ sub _validate_dpkg {
 				}
 			}
 		}
+		if ($filename =~/\.framework\/(.+)/) {
+			# heuristic for Framework library suites
+			if (-d $File::Find::name && !-l $File::Find::name) {
+				# allow real directory (only care about real file or
+				# symlink to dir ("real file" on disk) that would
+				# collide among .deb)
+			} else {
+				my $component = $1;
+				if ($component eq 'Versions/Current/' or $component !~ /^Versions\//) {
+					# non-libversioned Framework files
+					if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
+						&stack_msg($msgs, "Framework files not part of a specific library-version, but package does not declare BuildDependsOnly to be true (or false)", $filename);
+					}
+				}
+			}
+		}
 
 		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
 			if (defined $otool) {
