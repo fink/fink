@@ -655,7 +655,7 @@ sub validate_info_file {
 				}
 				# tar.xz 
 				if ($properties->{$_} =~ /\.tar\.xz\b/ ) {
-					$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.31.7', 'use of a .tar.xz archive', $filename); 
+					$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.32.0', 'use of a .tar.xz archive', $filename); 
 				}
 			}
 		}
