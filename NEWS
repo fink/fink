@@ -5,10 +5,9 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.32.x
 \-------------
 
-0.32.0 ??? (20??-??-??)
+0.32.0 "recumbent" (2012-01-25)
 	* Added new "RuntimeDepends" field, any .info file that wants to use this
 	  feature must BuildDepend on fink (>= 0.32.0-1).
-	* Added support for source files in .tar.xz format.
 	* Improved package validator to reject .deb files including .hg / .git
 	  directories.
 	* Improved package validator to detect some issues with percent expansions.
@@ -18,14 +17,13 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Disallow bootstrapping into /usr/local and any subdir of it.
 	* Disallow bootstrapping on OS X 10.4 and older.
 	* Removed the obsolete prebinding code (it was for OS X 10.4 and older).
-
-/-------------
-| fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
-\-------------
-
-0.31.7 "recumbent" (????-??-??)
-	* Let 'tar' handle compressed tar files directly.  Includes validation checks
-	  with 0.31.7 as minimum fink version for .tar.xz format.
+	* Let 'tar' handle compressed tar files directly.  
+	* xz archive support.
+		* Includes validation check with 0.32 as minimum fink
+		  version for .xz formatted archives.
+		* Automatic unpacking source files in .tar.xz format.
+		* Automatically install the xz package with no need to declare a 
+		  BuildDepend when a SourceN is a .xz file.
 	* Check Xcode version in bootstrap phase before actually creating a Fink tree.
 	* Check for -I or -L pointing to the builddir or install dir in .pc files.
 	* Diagnostic message improvements
@@ -34,6 +32,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 		* In error messages, suggest that users try rebuilds with MaxBuildJobs: 1
 		  if that's set higher, and print MBJ in the system info.
 		* Stress emailing _only one_ Fink mailing list for bug reports.
+
+/-------------
+| fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)
+\-------------
 
 0.31.6 "supine" (2012-01-03)
 	* BugFixes: cvs proxy tunnel doesn't support 'user:password', so strip that

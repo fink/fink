@@ -2584,8 +2584,16 @@ sub resolve_depends {
 		}
 		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
-		# dev-tools is an implicit BuildDepends of all packages
+		# dev-tools (a virtual package) is an implicit BuildDepends of all packages
 		push @speclist, 'dev-tools' if lc($field) eq 'depends' && $self->get_name() ne 'dev-tools';
+
+		# automatic BuildDepends:xz if any of the source fields are a .xz archive
+		if (lc($field) eq 'depends') {
+			foreach my $suffix ($self->get_source_suffixes) {
+				my $archive = $self->get_tarball($suffix);
+				push @speclist, 'xz' if $archive =~ /\.xz$/;
+			}
+		}
 
 		# If this is a master package with splitoffs, and build deps are requested,
 		# then add to the list the deps of all our splitoffs.
@@ -2744,6 +2752,12 @@ sub get_depends {
 
 		# (not a runtime dependency so it gets added after remove-self games)
 		push @lol, @{ &pkglist2lol($self->get_family_parent->pkglist_default("BuildDepends","")) };
+
+		# automatic BuildDepends:xz if any of the source fields are a .xz archive
+		foreach my $suffix ($self->get_source_suffixes) {
+			my $archive = $self->get_tarball($suffix);
+			push @lol, ['xz'] if $archive =~ /\.xz$/;
+		}
 
 	} else {
 		# run-time dependencies
@@ -3454,7 +3468,7 @@ GCC_MSG
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive ."; # non-archive file
 		# check for a tarball
-		if ($archive =~ /[\.\-]tar$/ or $archive =~ /[\.\-]t.*(z|Z).*/) {
+		if ($archive =~ /[\.\-]tar$/ or $archive =~ /[\.\-]t(ar\.)?[gbx]?[zZ]2?/) {
 			if (!$tar_is_pax) {  # No TarFilesRename
 				# Using "bzip2" for "bzip2" or if we're not on a bzipped tarball
 				if (!($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/)) { 
