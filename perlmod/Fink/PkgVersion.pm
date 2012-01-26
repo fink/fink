@@ -3468,7 +3468,7 @@ GCC_MSG
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive ."; # non-archive file
 		# check for a tarball
-		if ($archive =~ /[\.\-]tar$/ or $archive =~ /[\.\-]t.*(z|Z).*/) {
+		if ($archive =~ /[\.\-]tar$/ or $archive =~ /[\.\-]t(ar\.)?[gbx]?[zZ]2?/) {
 			if (!$tar_is_pax) {  # No TarFilesRename
 				# Using "bzip2" for "bzip2" or if we're not on a bzipped tarball
 				if (!($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/)) { 
