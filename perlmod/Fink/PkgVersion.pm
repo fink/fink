@@ -1800,10 +1800,10 @@ sub get_build_directory {
 	}
 	else {
 		$dir = $self->get_tarball(); # never undef b/c never get here if no source
-		if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
+		if ($dir =~ /^(.*)[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/) {
 			$dir = $1;
 		}
-		if ($dir =~ /^(.*)\.(tgz|zip)$/) {
+		if ($dir =~ /^(.*)[\.\-](t[gbx]z|zip|ZIP)$/) {
 			$dir = $1;
 		}
 
@@ -3468,7 +3468,7 @@ GCC_MSG
 		# Determine unpack command
 		$unpack_cmd = "cp $found_archive ."; # non-archive file
 		# check for a tarball
-		if ($archive =~ /[\.\-]tar$/ or $archive =~ /[\.\-]t(ar\.)?[gbx]?[zZ]2?/) {
+		if ($archive =~ /[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/ or $archive =~ /[\.\-]t[gbx]z$/) {
 			if (!$tar_is_pax) {  # No TarFilesRename
 				# Using "bzip2" for "bzip2" or if we're not on a bzipped tarball
 				if (!($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/)) { 
@@ -3487,7 +3487,7 @@ GCC_MSG
 				$unpack_cmd = "$cat $found_archive | $tarcommand $renamelist";
 			}
 		# Zip file
-		} elsif ($archive =~ /\.[zZ][iI][pP]$/) {
+		} elsif ($archive =~ /\.(zip|ZIP)$/) {
 			$unpack_cmd = "$unzip -o $found_archive";
 		}
 
