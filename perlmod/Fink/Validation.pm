@@ -1537,7 +1537,7 @@ sub _validate_dpkg {
 	my @bad_dirs = ( map "$basepath/$_/", qw( src man info doc libexec lib/locale bin/.* sbin/.* ) );
 	push(@bad_dirs, ( map ".*/$_/", qw( CVS RCS \.svn \.git \.hg ) ) ); # forbid version control residues
 
-	my @good_dirs = ( map "$basepath/$_/", qw( bin sbin include lib opt share var etc Applications Library/Frameworks ) );
+	my @good_dirs = ( map "$basepath/$_/", qw( bin sbin include lib opt share var etc Applications Library/Frameworks Library/Python) );
 	# allow $basepath/Library/ by itself, but with nothing below it other than what we explicitly allowed already
 	# (needed since we allow $basepath/Library/Frameworks)
 	push(@good_dirs, "$basepath/Library/\$");
