@@ -2610,6 +2610,8 @@ sub resolve_depends {
 		}
 	}
 
+	# Inner subroutine; attention, we exploit closure effects heavily!!
+	my $resolve_altspec = sub {
 		# Loop over all specifiers and try to resolve each.
 		SPECLOOP: foreach $altspecs (@speclist) {
 			# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
@@ -2669,6 +2671,9 @@ sub resolve_depends {
 			push @deplist, $altlist;
 			$idx++;
 		}
+	};
+
+	$resolve_altspec->();
 
 	return @deplist;
 }
