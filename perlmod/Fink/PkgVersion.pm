@@ -2543,6 +2543,69 @@ sub resolve_depends {
 	$idx = 0;
 	$split_idx = 0;
 
+	# Inner subroutine; attention, we exploit closure effects heavily!!
+	my $resolve_altspec = sub {
+		# Loop over all specifiers and try to resolve each.
+		SPECLOOP: foreach $altspecs (@speclist) {
+			# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
+			# So we need to break this down into pieces (this is done by get_altspec),
+			# and then try to satisfy at least one of them.
+			$altlist = [];
+			@altspec = $self->get_altspec($altspecs);
+			foreach $depspec (@altspec) {
+				$depname = $depspec->{'depname'};
+				$versionspec = $depspec->{'versionspec'};
+
+				if ($include_build and $self->parent_splitoffs and
+					 ($idx >= $split_idx or not $include_runtime)) {
+					# To prevent circular refs in the build dependency graph, we have to
+					# remove all our splitoffs from the graph. Exception: any splitoffs
+					# this master depends on directly are not filtered. Exception from the
+					# exception: if we were called by a splitoff to determine the "meta
+					# dependencies" of it, then we again filter out all splitoffs.
+					# If you've read till here without mental injuries, congrats :-)
+					next SPECLOOP if ($depname eq $self->{_name});
+					foreach	 $splitoff ($self->parent_splitoffs) {
+						next SPECLOOP if ($depname eq $splitoff->get_name());
+					}
+				}
+
+				$package = Fink::Package->package_by_name($depname);
+
+				if (defined $package) {
+					if ($versionspec =~ /^\s*$/) {
+						# versionspec empty / consists of only whitespace
+						push @$altlist, $package->get_all_providers( unique_provides => 1 );
+					} else {
+						push @$altlist, $package->get_matching_versions($versionspec);
+					}
+				} else {
+					if ($verbosity > 2) {
+						print "WARNING: While resolving $oper \"$depname" .
+							(defined $versionspec && length $versionspec ? " " . $versionspec : '')
+							 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+					}
+				}
+			}
+
+			if (scalar(@$altlist) <= 0) {
+				if (lc($field) eq "depends") {
+					die_breaking "Can't resolve $oper \"$altspecs\" for package \""
+						. $self->get_fullname()
+						. "\" (no matching packages/versions found)\n";
+				} else {
+					if ($forceoff) { # FIXME: Why $forceoff ??
+						print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
+							. $self->get_fullname()
+							. "\" (no matching packages/versions found)\n";
+					}
+				}
+			}
+			push @deplist, $altlist;
+			$idx++;
+		}
+	};
+
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list.
 	if ($include_build and $self->has_parent) {
@@ -2609,69 +2672,6 @@ sub resolve_depends {
 			}
 		}
 	}
-
-	# Inner subroutine; attention, we exploit closure effects heavily!!
-	my $resolve_altspec = sub {
-		# Loop over all specifiers and try to resolve each.
-		SPECLOOP: foreach $altspecs (@speclist) {
-			# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
-			# So we need to break this down into pieces (this is done by get_altspec),
-			# and then try to satisfy at least one of them.
-			$altlist = [];
-			@altspec = $self->get_altspec($altspecs);
-			foreach $depspec (@altspec) {
-				$depname = $depspec->{'depname'};
-				$versionspec = $depspec->{'versionspec'};
-
-				if ($include_build and $self->parent_splitoffs and
-					 ($idx >= $split_idx or not $include_runtime)) {
-					# To prevent circular refs in the build dependency graph, we have to
-					# remove all our splitoffs from the graph. Exception: any splitoffs
-					# this master depends on directly are not filtered. Exception from the
-					# exception: if we were called by a splitoff to determine the "meta
-					# dependencies" of it, then we again filter out all splitoffs.
-					# If you've read till here without mental injuries, congrats :-)
-					next SPECLOOP if ($depname eq $self->{_name});
-					foreach	 $splitoff ($self->parent_splitoffs) {
-						next SPECLOOP if ($depname eq $splitoff->get_name());
-					}
-				}
-
-				$package = Fink::Package->package_by_name($depname);
-
-				if (defined $package) {
-					if ($versionspec =~ /^\s*$/) {
-						# versionspec empty / consists of only whitespace
-						push @$altlist, $package->get_all_providers( unique_provides => 1 );
-					} else {
-						push @$altlist, $package->get_matching_versions($versionspec);
-					}
-				} else {
-					if ($verbosity > 2) {
-						print "WARNING: While resolving $oper \"$depname" .
-							(defined $versionspec && length $versionspec ? " " . $versionspec : '')
-							 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-					}
-				}
-			}
-
-			if (scalar(@$altlist) <= 0) {
-				if (lc($field) eq "depends") {
-					die_breaking "Can't resolve $oper \"$altspecs\" for package \""
-						. $self->get_fullname()
-						. "\" (no matching packages/versions found)\n";
-				} else {
-					if ($forceoff) { # FIXME: Why $forceoff ??
-						print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
-							. $self->get_fullname()
-							. "\" (no matching packages/versions found)\n";
-					}
-				}
-			}
-			push @deplist, $altlist;
-			$idx++;
-		}
-	};
 
 	$resolve_altspec->();
 
