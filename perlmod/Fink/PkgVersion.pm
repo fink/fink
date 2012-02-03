@@ -2501,10 +2501,9 @@ sub resolve_depends {
 	my $field = shift;
 	my $forceoff = shift || 0;
 
-	my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
 	my @deplist;    # list of lists of PkgVersion objects to be returned
 
-	my ($splitoff, $idx, $split_idx); # used for merging in splitoff-pkg data
+	my $splitoff;   # used for merging in splitoff-pkg data
 	my $oper;       # used in error and warning messages
 
 	if (lc($field) eq "conflicts") {
@@ -2534,16 +2533,20 @@ sub resolve_depends {
 
 	@deplist = ();
 
-	$idx = 0;
-	$split_idx = 0;
-
 	# Inner subroutine; attention, we exploit closure effects heavily!!
 	my $resolve_altspec = sub {
+		my $pkglist = shift;
+		my $filter_splitoffs = shift || 0;
+
+		my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
 		my $altspecs;   # iterator for looping through @speclist
 
 		my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
 		my $depspec;    # iterator for looping through @altspec
 		my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
+		my $splitoff;
+
+		@speclist = split(/\s*\,\s*/, $pkglist);
 
 		# Loop over all specifiers and try to resolve each.
 		SPECLOOP: foreach $altspecs (@speclist) {
@@ -2556,14 +2559,17 @@ sub resolve_depends {
 				my $depname = $depspec->{'depname'};
 				my $versionspec = $depspec->{'versionspec'};
 
-				if ($include_build and $self->parent_splitoffs and
-					 ($idx >= $split_idx or not $include_runtime)) {
+				if ($include_build and defined $self->parent_splitoffs and
+					 ($filter_splitoffs or not $include_runtime)) {
 					# To prevent circular refs in the build dependency graph, we have to
-					# remove all our splitoffs from the graph. Exception: any splitoffs
-					# this master depends on directly are not filtered. Exception from the
-					# exception: if we were called by a splitoff to determine the "meta
-					# dependencies" of it, then we again filter out all splitoffs.
-					# If you've read till here without mental injuries, congrats :-)
+					# remove all our splitoffs from the graph. We do this by pretending
+					# that they are always present and thus any dependency involving them
+					# is automatically satisfied.
+					# Exception: any splitoffs this master depends on directly are not
+					# filtered. Exception from the exception: if we were called by a
+					# splitoff to determine the "meta dependencies" of it, then we again
+					# filter out all splitoffs. If you've read till here without mental
+					# injuries, congrats :-)
 					next SPECLOOP if ($depname eq $self->{_name});
 					foreach $splitoff ($self->parent_splitoffs) {
 						next SPECLOOP if ($depname eq $splitoff->get_name());
@@ -2603,9 +2609,8 @@ sub resolve_depends {
 			}
 
 			push @deplist, $altlist;
-			$idx++;
 		}
-	};
+	}; # end of sub resolve_altspec
 
 	# If this is a splitoff, and we are asked for build depends, add the build deps
 	# of the master package to the list.
@@ -2628,7 +2633,7 @@ sub resolve_depends {
 		if ($verbosity > 2) {
 			print "Reading $oper for ".$self->get_fullname()."...\n";
 		}
-		@speclist = split(/\s*\,\s*/, $self->pkglist_default("Depends", ""));
+		$resolve_altspec->($self->pkglist_default("Depends", ""));
 
 		# Add RuntimeDepends if requested
 		if ($include_runtime) {
@@ -2636,7 +2641,7 @@ sub resolve_depends {
 			if ($verbosity > 2) {
 				print "Reading runtime $oper for ".$self->get_fullname()."...\n";
 			}
-			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("RuntimeDepends", ""));
+			$resolve_altspec->($self->pkglist_default("RuntimeDepends", ""));
 		}
 	}
 
@@ -2646,40 +2651,36 @@ sub resolve_depends {
 		if ($verbosity > 2) {
 			print "Reading build $oper for ".$self->get_fullname()."...\n";
 		}
-		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
+		$resolve_altspec->($self->pkglist_default("Build".$field, ""));
 
-		if (lc($field) eq 'depends') {
+		if (lc($field) eq "depends") {
 			# dev-tools (a virtual package) is an implicit BuildDepends of all packages
 			if ($self->get_name() ne 'dev-tools') {
-				push @speclist, 'dev-tools';
+				$resolve_altspec->('dev-tools');
 			}
 
 			# automatic BuildDepends:xz if any of the source fields are a .xz archive
 			foreach my $suffix ($self->get_source_suffixes) {
 				my $archive = $self->get_tarball($suffix);
 				if ($archive =~ /\.xz$/) {
-					push @speclist, 'xz';
+					$resolve_altspec->('xz');
 					last;
 				}
 			}
-		}
 
-		# If this is a master package with splitoffs, and build deps are requested,
-		# then add to the list the deps of all our splitoffs.
-		# We remember the offset at which we added these in $split_idx, so that we
-		# can remove any inter-splitoff deps that would otherwise be introduced by this.
-		$split_idx = @speclist;
-		if (lc($field) eq "depends") {
+
+			# If this is a master package with splitoffs, and build deps are requested,
+			# then add to the list the deps of all our splitoffs.
+			# We tell resolve_altspec (via its second parameters) to remove any
+			# inter-splitoff deps that would otherwise be introduced by this.
 			foreach $splitoff ($self->parent_splitoffs) {
 				if ($verbosity > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
-				push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
+				$resolve_altspec->($splitoff->pkglist_default($field, ""), 1);
 			}
 		}
 	}
-
-	$resolve_altspec->();
 
 	return @deplist;
 }
