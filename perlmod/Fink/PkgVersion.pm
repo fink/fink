@@ -2502,12 +2502,6 @@ sub resolve_depends {
 	my $forceoff = shift || 0;
 
 	my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
-	my $altspecs;   # iterator for looping through @speclist
-	my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
-	my $depspec;    # iterator for looping through @altspec
-	my ($depname, $versionspec); # components of a single pkg specifier
-	my $package;    # Package object for a $depname
-	my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
 	my @deplist;    # list of lists of PkgVersion objects to be returned
 
 	my ($splitoff, $idx, $split_idx); # used for merging in splitoff-pkg data
@@ -2545,6 +2539,12 @@ sub resolve_depends {
 
 	# Inner subroutine; attention, we exploit closure effects heavily!!
 	my $resolve_altspec = sub {
+		my $altspecs;   # iterator for looping through @speclist
+
+		my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
+		my $depspec;    # iterator for looping through @altspec
+		my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
+
 		# Loop over all specifiers and try to resolve each.
 		SPECLOOP: foreach $altspecs (@speclist) {
 			# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
@@ -2553,8 +2553,8 @@ sub resolve_depends {
 			$altlist = [];
 			@altspec = $self->get_altspec($altspecs);
 			foreach $depspec (@altspec) {
-				$depname = $depspec->{'depname'};
-				$versionspec = $depspec->{'versionspec'};
+				my $depname = $depspec->{'depname'};
+				my $versionspec = $depspec->{'versionspec'};
 
 				if ($include_build and $self->parent_splitoffs and
 					 ($idx >= $split_idx or not $include_runtime)) {
@@ -2565,12 +2565,12 @@ sub resolve_depends {
 					# dependencies" of it, then we again filter out all splitoffs.
 					# If you've read till here without mental injuries, congrats :-)
 					next SPECLOOP if ($depname eq $self->{_name});
-					foreach	 $splitoff ($self->parent_splitoffs) {
+					foreach $splitoff ($self->parent_splitoffs) {
 						next SPECLOOP if ($depname eq $splitoff->get_name());
 					}
 				}
 
-				$package = Fink::Package->package_by_name($depname);
+				my $package = Fink::Package->package_by_name($depname);
 
 				if (defined $package) {
 					if ($versionspec =~ /^\s*$/) {
@@ -2601,6 +2601,7 @@ sub resolve_depends {
 					}
 				}
 			}
+
 			push @deplist, $altlist;
 			$idx++;
 		}
@@ -2629,7 +2630,7 @@ sub resolve_depends {
 		}
 		@speclist = split(/\s*\,\s*/, $self->pkglist_default("Depends", ""));
 
-		# Add RuntimeDepends to @speclist if requested
+		# Add RuntimeDepends if requested
 		if ($include_runtime) {
 			# Add build time dependencies to the spec list
 			if ($verbosity > 2) {
@@ -2639,7 +2640,7 @@ sub resolve_depends {
 		}
 	}
 
-	# now we continue to assemble the larger @speclist
+	# now we continue to assemble the build dependencies / conflicts
 	if ($include_build) {
 		# Add build time dependencies to the spec list
 		if ($verbosity > 2) {
@@ -2647,14 +2648,19 @@ sub resolve_depends {
 		}
 		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
 
-		# dev-tools (a virtual package) is an implicit BuildDepends of all packages
-		push @speclist, 'dev-tools' if lc($field) eq 'depends' && $self->get_name() ne 'dev-tools';
-
-		# automatic BuildDepends:xz if any of the source fields are a .xz archive
 		if (lc($field) eq 'depends') {
+			# dev-tools (a virtual package) is an implicit BuildDepends of all packages
+			if ($self->get_name() ne 'dev-tools') {
+				push @speclist, 'dev-tools';
+			}
+
+			# automatic BuildDepends:xz if any of the source fields are a .xz archive
 			foreach my $suffix ($self->get_source_suffixes) {
 				my $archive = $self->get_tarball($suffix);
-				push @speclist, 'xz' if $archive =~ /\.xz$/;
+				if ($archive =~ /\.xz$/) {
+					push @speclist, 'xz';
+					last;
+				}
 			}
 		}
 
@@ -2664,7 +2670,7 @@ sub resolve_depends {
 		# can remove any inter-splitoff deps that would otherwise be introduced by this.
 		$split_idx = @speclist;
 		if (lc($field) eq "depends") {
-			foreach	 $splitoff ($self->parent_splitoffs) {
+			foreach $splitoff ($self->parent_splitoffs) {
 				if ($verbosity > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
