@@ -2612,17 +2612,26 @@ sub resolve_depends {
 		}
 	}; # end of sub resolve_altspec
 
-	# If this is a splitoff, and we are asked for build depends, add the build deps
-	# of the master package to the list.
-	if ($include_build and $self->has_parent) {
-		push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
-		if (not $include_runtime) {
-			# The pure build deps of a splitoff are equivalent to those of the parent.
-			return @deplist;
+	# Add build time dependencies / conflicts
+	if ($include_build) {
+		# If this is a splitoff, and we are asked for build depends, add the build deps
+		# of the master package to the list.
+		if ($self->has_parent) {
+			push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
+			if (not $include_runtime) {
+				# The pure build deps of a splitoff are equivalent to those of the parent.
+				return @deplist;
+			}
 		}
+
+		# Add build time dependencies to the spec list
+		if ($verbosity > 2) {
+			print "Reading build $oper for ".$self->get_fullname()."...\n";
+		}
+		$resolve_altspec->($self->pkglist_default("Build".$field, ""));
 	}
 
-	# First, add all regular dependencies to the list.
+	# Add all regular dependencies to the list.
 	if (lc($field) eq "depends") {
 		# FIXME: Right now we completely ignore 'Conflicts' in the dep engine.
 		# We leave handling them to dpkg. That is somewhat ugly, though, because it
@@ -2643,17 +2652,9 @@ sub resolve_depends {
 			}
 			$resolve_altspec->($self->pkglist_default("RuntimeDepends", ""));
 		}
-	}
 
-	# now we continue to assemble the build dependencies / conflicts
-	if ($include_build) {
-		# Add build time dependencies to the spec list
-		if ($verbosity > 2) {
-			print "Reading build $oper for ".$self->get_fullname()."...\n";
-		}
-		$resolve_altspec->($self->pkglist_default("Build".$field, ""));
-
-		if (lc($field) eq "depends") {
+		# Add further build dependencies
+		if ($include_build) {
 			# dev-tools (a virtual package) is an implicit BuildDepends of all packages
 			if ($self->get_name() ne 'dev-tools') {
 				$resolve_altspec->('dev-tools');
@@ -2667,7 +2668,6 @@ sub resolve_depends {
 					last;
 				}
 			}
-
 
 			# If this is a master package with splitoffs, and build deps are requested,
 			# then add to the list the deps of all our splitoffs.
