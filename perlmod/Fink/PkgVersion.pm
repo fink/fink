@@ -2501,16 +2501,9 @@ sub resolve_depends {
 	my $field = shift;
 	my $forceoff = shift || 0;
 
-	my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
-	my $altspecs;   # iterator for looping through @speclist
-	my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
-	my $depspec;    # iterator for looping through @altspec
-	my ($depname, $versionspec); # components of a single pkg specifier
-	my $package;    # Package object for a $depname
-	my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
 	my @deplist;    # list of lists of PkgVersion objects to be returned
 
-	my ($splitoff, $idx, $split_idx); # used for merging in splitoff-pkg data
+	my $splitoff;   # used for merging in splitoff-pkg data
 	my $oper;       # used in error and warning messages
 
 	if (lc($field) eq "conflicts") {
@@ -2540,20 +2533,105 @@ sub resolve_depends {
 
 	@deplist = ();
 
-	$idx = 0;
-	$split_idx = 0;
+	# Inner subroutine; attention, we exploit closure effects heavily!!
+	my $resolve_altspec = sub {
+		my $pkglist = shift;
+		my $filter_splitoffs = shift || 0;
 
-	# If this is a splitoff, and we are asked for build depends, add the build deps
-	# of the master package to the list.
-	if ($include_build and $self->has_parent) {
-		push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
-		if (not $include_runtime) {
-			# The pure build deps of a splitoff are equivalent to those of the parent.
-			return @deplist;
+		my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
+		my $altspecs;   # iterator for looping through @speclist
+
+		my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
+		my $depspec;    # iterator for looping through @altspec
+		my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
+		my $splitoff;
+
+		@speclist = split(/\s*\,\s*/, $pkglist);
+
+		# Loop over all specifiers and try to resolve each.
+		SPECLOOP: foreach $altspecs (@speclist) {
+			# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
+			# So we need to break this down into pieces (this is done by get_altspec),
+			# and then try to satisfy at least one of them.
+			$altlist = [];
+			@altspec = $self->get_altspec($altspecs);
+			foreach $depspec (@altspec) {
+				my $depname = $depspec->{'depname'};
+				my $versionspec = $depspec->{'versionspec'};
+
+				if ($include_build and defined $self->parent_splitoffs and
+					 ($filter_splitoffs or not $include_runtime)) {
+					# To prevent circular refs in the build dependency graph, we have to
+					# remove all our splitoffs from the graph. We do this by pretending
+					# that they are always present and thus any dependency involving them
+					# is automatically satisfied.
+					# Exception: any splitoffs this master depends on directly are not
+					# filtered. Exception from the exception: if we were called by a
+					# splitoff to determine the "meta dependencies" of it, then we again
+					# filter out all splitoffs. If you've read till here without mental
+					# injuries, congrats :-)
+					next SPECLOOP if ($depname eq $self->{_name});
+					foreach $splitoff ($self->parent_splitoffs) {
+						next SPECLOOP if ($depname eq $splitoff->get_name());
+					}
+				}
+
+				my $package = Fink::Package->package_by_name($depname);
+
+				if (defined $package) {
+					if ($versionspec =~ /^\s*$/) {
+						# versionspec empty / consists of only whitespace
+						push @$altlist, $package->get_all_providers( unique_provides => 1 );
+					} else {
+						push @$altlist, $package->get_matching_versions($versionspec);
+					}
+				} else {
+					if ($verbosity > 2) {
+						print "WARNING: While resolving $oper \"$depname" .
+							(defined $versionspec && length $versionspec ? " " . $versionspec : '')
+							 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+					}
+				}
+			}
+
+			if (scalar(@$altlist) <= 0) {
+				if (lc($field) eq "depends") {
+					die_breaking "Can't resolve $oper \"$altspecs\" for package \""
+						. $self->get_fullname()
+						. "\" (no matching packages/versions found)\n";
+				} else {
+					if ($forceoff) { # FIXME: Why $forceoff ??
+						print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
+							. $self->get_fullname()
+							. "\" (no matching packages/versions found)\n";
+					}
+				}
+			}
+
+			push @deplist, $altlist;
 		}
+	}; # end of sub resolve_altspec
+
+	# Add build time dependencies / conflicts
+	if ($include_build) {
+		# If this is a splitoff, and we are asked for build depends, add the build deps
+		# of the master package to the list.
+		if ($self->has_parent) {
+			push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
+			if (not $include_runtime) {
+				# The pure build deps of a splitoff are equivalent to those of the parent.
+				return @deplist;
+			}
+		}
+
+		# Add build time dependencies to the spec list
+		if ($verbosity > 2) {
+			print "Reading build $oper for ".$self->get_fullname()."...\n";
+		}
+		$resolve_altspec->($self->pkglist_default("Build".$field, ""));
 	}
 
-	# First, add all regular dependencies to the list.
+	# Add all regular dependencies to the list.
 	if (lc($field) eq "depends") {
 		# FIXME: Right now we completely ignore 'Conflicts' in the dep engine.
 		# We leave handling them to dpkg. That is somewhat ugly, though, because it
@@ -2564,110 +2642,44 @@ sub resolve_depends {
 		if ($verbosity > 2) {
 			print "Reading $oper for ".$self->get_fullname()."...\n";
 		}
-		@speclist = split(/\s*\,\s*/, $self->pkglist_default("Depends", ""));
+		$resolve_altspec->($self->pkglist_default("Depends", ""));
 
-		# Add RuntimeDepends to @speclist if requested
+		# Add RuntimeDepends if requested
 		if ($include_runtime) {
 			# Add build time dependencies to the spec list
 			if ($verbosity > 2) {
 				print "Reading runtime $oper for ".$self->get_fullname()."...\n";
 			}
-			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("RuntimeDepends", ""));
+			$resolve_altspec->($self->pkglist_default("RuntimeDepends", ""));
 		}
-	}
 
-	# now we continue to assemble the larger @speclist
-	if ($include_build) {
-		# Add build time dependencies to the spec list
-		if ($verbosity > 2) {
-			print "Reading build $oper for ".$self->get_fullname()."...\n";
-		}
-		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
+		# Add further build dependencies
+		if ($include_build) {
+			# dev-tools (a virtual package) is an implicit BuildDepends of all packages
+			if ($self->get_name() ne 'dev-tools') {
+				$resolve_altspec->('dev-tools');
+			}
 
-		# dev-tools (a virtual package) is an implicit BuildDepends of all packages
-		push @speclist, 'dev-tools' if lc($field) eq 'depends' && $self->get_name() ne 'dev-tools';
-
-		# automatic BuildDepends:xz if any of the source fields are a .xz archive
-		if (lc($field) eq 'depends') {
+			# automatic BuildDepends:xz if any of the source fields are a .xz archive
 			foreach my $suffix ($self->get_source_suffixes) {
 				my $archive = $self->get_tarball($suffix);
-				push @speclist, 'xz' if $archive =~ /\.xz$/;
+				if ($archive =~ /\.xz$/) {
+					$resolve_altspec->('xz');
+					last;
+				}
 			}
-		}
 
-		# If this is a master package with splitoffs, and build deps are requested,
-		# then add to the list the deps of all our splitoffs.
-		# We remember the offset at which we added these in $split_idx, so that we
-		# can remove any inter-splitoff deps that would otherwise be introduced by this.
-		$split_idx = @speclist;
-		if (lc($field) eq "depends") {
-			foreach	 $splitoff ($self->parent_splitoffs) {
+			# If this is a master package with splitoffs, and build deps are requested,
+			# then add to the list the deps of all our splitoffs.
+			# We tell resolve_altspec (via its second parameters) to remove any
+			# inter-splitoff deps that would otherwise be introduced by this.
+			foreach $splitoff ($self->parent_splitoffs) {
 				if ($verbosity > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
-				push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
+				$resolve_altspec->($splitoff->pkglist_default($field, ""), 1);
 			}
 		}
-	}
-
-	# Loop over all specifiers and try to resolve each.
-	SPECLOOP: foreach $altspecs (@speclist) {
-		# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
-		# So we need to break this down into pieces (this is done by get_altspec),
-		# and then try to satisfy at least one of them.
-		$altlist = [];
-		@altspec = $self->get_altspec($altspecs);
-		foreach $depspec (@altspec) {
-			$depname = $depspec->{'depname'};
-			$versionspec = $depspec->{'versionspec'};
-
-			if ($include_build and $self->parent_splitoffs and
-				 ($idx >= $split_idx or not $include_runtime)) {
-				# To prevent circular refs in the build dependency graph, we have to
-				# remove all our splitoffs from the graph. Exception: any splitoffs
-				# this master depends on directly are not filtered. Exception from the
-				# exception: if we were called by a splitoff to determine the "meta
-				# dependencies" of it, then we again filter out all splitoffs.
-				# If you've read till here without mental injuries, congrats :-)
-				next SPECLOOP if ($depname eq $self->{_name});
-				foreach	 $splitoff ($self->parent_splitoffs) {
-					next SPECLOOP if ($depname eq $splitoff->get_name());
-				}
-			}
-
-			$package = Fink::Package->package_by_name($depname);
-
-			if (defined $package) {
-				if ($versionspec =~ /^\s*$/) {
-					# versionspec empty / consists of only whitespace
-					push @$altlist, $package->get_all_providers( unique_provides => 1 );
-				} else {
-					push @$altlist, $package->get_matching_versions($versionspec);
-				}
-			} else {
-				if ($verbosity > 2) {
-					print "WARNING: While resolving $oper \"$depname" .
-						(defined $versionspec && length $versionspec ? " " . $versionspec : '')
-						 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-				}
-			}
-		}
-
-		if (scalar(@$altlist) <= 0) {
-			if (lc($field) eq "depends") {
-				die_breaking "Can't resolve $oper \"$altspecs\" for package \""
-					. $self->get_fullname()
-					. "\" (no matching packages/versions found)\n";
-			} else {
-				if ($forceoff) { # FIXME: Why $forceoff ??
-					print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
-						. $self->get_fullname()
-						. "\" (no matching packages/versions found)\n";
-				}
-			}
-		}
-		push @deplist, $altlist;
-		$idx++;
 	}
 
 	return @deplist;
@@ -3472,8 +3484,8 @@ GCC_MSG
 		if ($archive =~ /[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/ or $archive =~ /[\.\-]t[gbx]z$/) {
 			if (!$tar_is_pax) {  # No TarFilesRename
 				# Using "bzip2" for "bzip2" or if we're not on a bzipped tarball
-				if (!($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/)) { 
-					$unpack_cmd = "$tarcommand $found_archive"; #let tar figure it out 
+				if (!($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/)) {
+					$unpack_cmd = "$tarcommand $found_archive"; #let tar figure it out
 				} else { # we're on a bzipped tar archive with an alternative bzip2
 					$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand -";
 				}
