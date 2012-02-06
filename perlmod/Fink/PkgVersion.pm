@@ -3266,7 +3266,7 @@ sub fetch_source_if_needed {
 	my $found_archive = $self->find_tarball($suffix);
 	if (not defined $found_archive) {
 		$self->fetch_source($suffix);
-		$found_archive = $self->find_tarball($suffix);
+		return $self->find_tarball($suffix);
 	}
 	if (not defined $found_archive) {
 		die "can't find source file $archive for package ".$self->get_fullname()."\n";
