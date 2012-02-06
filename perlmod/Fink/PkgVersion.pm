@@ -3246,6 +3246,83 @@ sub phase_fetch {
 	}
 }
 
+=item fetch_source_if_needed
+
+	my $archive = $pv->fetch_source_if_needed($suffix);
+
+Makes sure that the sourcefile indicated by $suffix is downloaded and has the
+correct checksums. If the file can't be found, it is downloaded. If it exists,
+but has the wrong checksums, we ask the user what to do.
+
+=cut
+
+sub fetch_source_if_needed {
+	my $self = shift;
+	my $suffix = shift;
+
+	my $archive = $self->get_tarball($suffix);
+
+	# search for archive, try fetching if not found
+	my $found_archive = $self->find_tarball($suffix);
+	if (not defined $found_archive) {
+		$self->fetch_source($suffix);
+		$found_archive = $self->find_tarball($suffix);
+	}
+	if (not defined $found_archive) {
+		die "can't find source file $archive for package ".$self->get_fullname()."\n";
+	}
+
+	# verify the MD5 checksum, if specified
+	my $checksum = $self->get_checksum($suffix);
+
+	if (defined $checksum) { # Checksum was specified
+		# compare to the MD5 checksum of the tarball
+		if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
+			# mismatch, ask user what to do
+			my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
+			my $sel_intro = "The checksum of the file $archive of package ".
+				$self->get_fullname()." is incorrect. The most likely ".
+				"cause for this is a corrupted or incomplete download\n".
+				"Expected: $checksum\nActual: " .
+								  join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
+				"It is recommended that you download it ".
+				"again. How do you want to proceed?";
+			my $answer = &prompt_selection("Make your choice: ",
+							intro   => $sel_intro,
+							default => [ value => "redownload" ],
+							choices => [
+							  "Give up" => "error",
+							  "Delete it and download again" => "redownload",
+							  "Assume it is a partial download and try to continue" => "continuedownload",
+							  "Don't download, use existing file" => "continue"
+							],
+							category => 'fetch',);
+			if ($answer eq "redownload") {
+				rm_f $found_archive;
+				# Axel leaves .st files around for partial files, need to remove
+				if($config->param_default("DownloadMethod") =~ /^axel/)
+				{
+					rm_f "$found_archive.st";
+				}
+				$self->fetch_source($suffix, 1);
+				$found_archive = $self->find_tarball($suffix);
+			} elsif($answer eq "error") {
+				die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
+			} elsif($answer eq "continuedownload") {
+				$self->fetch_source($suffix, 1, 1);
+				$found_archive = $self->find_tarball($suffix);
+			}
+		}
+	} else {
+	# No checksum was specifed in the .info file, die die die
+		my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
+		die "No checksum specifed for Source$suffix of ".$self->get_fullname()."\nActual: " .
+			join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
+	}
+
+	return $found_archive;
+}
+
 # fetch_source SUFFIX, [ TRIES ], [ CONTINUE ], [ NOMIRROR ], [ DRYRUN ]
 #
 # Unconditionally download the source for a given SourceN suffix, dying on
@@ -3325,7 +3402,7 @@ sub fetch_source {
 sub phase_unpack {
 	my $self = shift;
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
+	my ($suffix, $verbosity);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $xz);
 	my ($tar_is_pax,$alt_bzip2)=(0,0);
@@ -3377,69 +3454,9 @@ GCC_MSG
 		return;
 	}
 
-	$tries = 0;
-	my $maxtries = should_skip_prompt('fetch') ? 2 : 3;
 	foreach $suffix ($self->get_source_suffixes) {
 		$archive = $self->get_tarball($suffix);
-
-		# search for archive, try fetching if not found
-		$found_archive = $self->find_tarball($suffix);
-		if (not defined $found_archive or $tries > 0) {
-			$self->fetch_source($suffix, $tries, $continue);
-			$continue = 0;
-			$found_archive = $self->find_tarball($suffix);
-		}
-		if (not defined $found_archive) {
-			die "can't find source file $archive for package ".$self->get_fullname()."\n";
-		}
-
-		# verify the MD5 checksum, if specified
-		$checksum = $self->get_checksum($suffix);
-
-		if (defined $checksum) { # Checksum was specified
-			# compare to the MD5 checksum of the tarball
-			if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
-				# mismatch, ask user what to do
-				$tries++;
-
-				my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
-				my $sel_intro = "The checksum of the file $archive of package ".
-					$self->get_fullname()." is incorrect. The most likely ".
-					"cause for this is a corrupted or incomplete download\n".
-					"Expected: $checksum\nActual: " .
-					                  join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
-					"It is recommended that you download it ".
-					"again. How do you want to proceed?";
-				$answer = &prompt_selection("Make your choice: ",
-								intro   => $sel_intro,
-								default => [ value => ($tries >= $maxtries) ? "error" : "redownload" ],
-								choices => [
-								  "Give up" => "error",
-								  "Delete it and download again" => "redownload",
-								  "Assume it is a partial download and try to continue" => "continuedownload",
-								  "Don't download, use existing file" => "continue"
-								],
-								category => 'fetch',);
-				if ($answer eq "redownload") {
-					rm_f $found_archive;
-					# Axel leaves .st files around for partial files, need to remove
-					if ($config->param_default("DownloadMethod") =~ /^axel/) {
-						rm_f "$found_archive.st";
-					}
-					redo;		# restart loop with same tarball
-				} elsif ($answer eq "error") {
-					die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
-				} elsif ($answer eq "continuedownload") {
-					$continue = 1;
-					redo;		# restart loop with same tarball
-				}
-			}
-		} else {
-		# No checksum was specifed in the .info file, die die die
-			my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
-			die "No checksum specifed for Source$suffix of ".$self->get_fullname()."\nActual: " .
-				join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
-		}
+		$found_archive = $self->fetch_source_if_needed($suffix);
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
 		$renamefield = "Tar".$suffix."FilesRename";
@@ -3525,7 +3542,6 @@ GCC_MSG
 		chdir $destdir;
 		$self->run_script($unpack_cmd, "unpacking '$archive'", 1, 1);
 
-		$tries = 0;
 		$tar_is_pax=0;
 	}
 }
