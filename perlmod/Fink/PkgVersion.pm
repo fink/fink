@@ -3270,11 +3270,7 @@ sub fetch_source_if_needed {
 	# search for archive, try fetching if not found
 	my $found_archive = $self->find_tarball($suffix);
 	if (not defined $found_archive) {
-		$self->fetch_source($suffix);
-		return $self->find_tarball($suffix);
-	}
-	if (not defined $found_archive) {
-		die "can't find source file $archive for package ".$self->get_fullname()."\n";
+		return $self->fetch_source($suffix);
 	}
 
 	# verify the MD5 checksum, if specified
@@ -3315,13 +3311,11 @@ sub fetch_source_if_needed {
 			{
 				rm_f "$found_archive.st";
 			}
-			$self->fetch_source($suffix, 1);
-			$found_archive = $self->find_tarball($suffix);
+			$found_archive = $self->fetch_source($suffix, 1);
 		} elsif($answer eq "error") {
 			die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
 		} elsif($answer eq "continuedownload") {
-			$self->fetch_source($suffix, 1, 1);
-			$found_archive = $self->find_tarball($suffix);
+			$found_archive = $self->fetch_source($suffix, 1, 1);
 		}
 	}
 
@@ -3331,7 +3325,8 @@ sub fetch_source_if_needed {
 # fetch_source SUFFIX, [ TRIES ], [ CONTINUE ], [ NOMIRROR ], [ DRYRUN ]
 #
 # Unconditionally download the source for a given SourceN suffix, dying on
-# failure.
+# failure. Returns the path to the downloaded source archive if dryrun is not
+# specified.
 sub fetch_source {
 	my $self = shift;
 	my $suffix = shift;
@@ -3399,6 +3394,13 @@ sub fetch_source {
 		} else {
 			die "file download failed for $file of package ".$self->get_fullname()."\n";
 		}
+	} else {
+		my $found_archive = $self->find_tarball($suffix);
+		if (not defined $found_archive) {
+			my $archive = $self->get_tarball($suffix);
+			die "can't find source file $archive for package ".$self->get_fullname()."\n";
+		}
+		return $found_archive;
 	}
 }
 
