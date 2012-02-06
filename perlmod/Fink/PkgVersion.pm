@@ -3280,49 +3280,49 @@ sub fetch_source_if_needed {
 	# verify the MD5 checksum, if specified
 	my $checksum = $self->get_checksum($suffix);
 
-	if (defined $checksum) { # Checksum was specified
-		# compare to the MD5 checksum of the tarball
-		if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
-			# mismatch, ask user what to do
-			my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
-			my $sel_intro = "The checksum of the file $archive of package ".
-				$self->get_fullname()." is incorrect. The most likely ".
-				"cause for this is a corrupted or incomplete download\n".
-				"Expected: $checksum\nActual: " .
-								  join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
-				"It is recommended that you download it ".
-				"again. How do you want to proceed?";
-			my $answer = &prompt_selection("Make your choice: ",
-							intro   => $sel_intro,
-							default => [ value => "redownload" ],
-							choices => [
-							  "Give up" => "error",
-							  "Delete it and download again" => "redownload",
-							  "Assume it is a partial download and try to continue" => "continuedownload",
-							  "Don't download, use existing file" => "continue"
-							],
-							category => 'fetch',);
-			if ($answer eq "redownload") {
-				rm_f $found_archive;
-				# Axel leaves .st files around for partial files, need to remove
-				if($config->param_default("DownloadMethod") =~ /^axel/)
-				{
-					rm_f "$found_archive.st";
-				}
-				$self->fetch_source($suffix, 1);
-				$found_archive = $self->find_tarball($suffix);
-			} elsif($answer eq "error") {
-				die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
-			} elsif($answer eq "continuedownload") {
-				$self->fetch_source($suffix, 1, 1);
-				$found_archive = $self->find_tarball($suffix);
-			}
-		}
-	} else {
-	# No checksum was specifed in the .info file, die die die
+	if (not defined $checksum) {
+		# No checksum was specifed in the .info file, die die die
 		my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
 		die "No checksum specifed for Source$suffix of ".$self->get_fullname()."\nActual: " .
 			join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
+	}
+
+	# compare to the MD5 checksum of the tarball
+	if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
+		# mismatch, ask user what to do
+		my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
+		my $sel_intro = "The checksum of the file $archive of package ".
+			$self->get_fullname()." is incorrect. The most likely ".
+			"cause for this is a corrupted or incomplete download\n".
+			"Expected: $checksum\nActual: " .
+							  join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
+			"It is recommended that you download it ".
+			"again. How do you want to proceed?";
+		my $answer = &prompt_selection("Make your choice: ",
+						intro   => $sel_intro,
+						default => [ value => "redownload" ],
+						choices => [
+						  "Give up" => "error",
+						  "Delete it and download again" => "redownload",
+						  "Assume it is a partial download and try to continue" => "continuedownload",
+						  "Don't download, use existing file" => "continue"
+						],
+						category => 'fetch',);
+		if ($answer eq "redownload") {
+			rm_f $found_archive;
+			# Axel leaves .st files around for partial files, need to remove
+			if($config->param_default("DownloadMethod") =~ /^axel/)
+			{
+				rm_f "$found_archive.st";
+			}
+			$self->fetch_source($suffix, 1);
+			$found_archive = $self->find_tarball($suffix);
+		} elsif($answer eq "error") {
+			die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
+		} elsif($answer eq "continuedownload") {
+			$self->fetch_source($suffix, 1, 1);
+			$found_archive = $self->find_tarball($suffix);
+		}
 	}
 
 	return $found_archive;
