@@ -3240,8 +3240,13 @@ sub phase_fetch {
 	}
 
 	foreach $suffix ($self->get_source_suffixes) {
-		if (not $conditional or not defined $self->find_tarball($suffix)) {
-			$self->fetch_source($suffix,0,0,0,$dryrun);
+		if (not $conditional) {
+			$self->fetch_source($suffix, 0, 0, 0, $dryrun);
+		} elsif (not $dryrun) {
+			$self->fetch_source_if_needed($suffix);
+			# fetch_source_if_needed doesn't work with dryrun
+		} elsif (not defined $self->find_tarball($suffix)) {
+			$self->fetch_source($suffix, 0, 0, 0, $dryrun);
 		}
 	}
 }
@@ -3456,6 +3461,8 @@ GCC_MSG
 
 	foreach $suffix ($self->get_source_suffixes) {
 		$archive = $self->get_tarball($suffix);
+		# We verified that the tar file exists with the right checksum during
+		# the fetch phase. This second check is redundant, but just in case...
 		$found_archive = $self->fetch_source_if_needed($suffix);
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
