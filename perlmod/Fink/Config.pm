@@ -216,7 +216,8 @@ Parse the global command-line options for Fink.
 
 my %option_defaults = (
 	map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
-		build_as_nobody maintainermode showversion use_binary) ),
+		maintainermode showversion use_binary) ),
+	map( { $_ => 1 } qw(build_as_nobody) ),
 	map( { $_ => "" } qw(tests validate) ),
 	map ( { $_ => [] } qw(include_trees exclude_trees) ),
 	map( { $_ => -1 } qw(use_binary) ),
@@ -269,7 +270,7 @@ sub parse_options {
 		[ 'use-binary-dist|b!' => \$opts{use_binary},
 			'download pre-compiled packages from the binary distribution '
 			. 'if available'	],
-		[ 'build-as-nobody'    => \$opts{build_as_nobody},	'see man page'	],
+		[ 'build-as-nobody|!'  => \$opts{build_as_nobody},	'see man page'	],
 		[ 'maintainer|m'       => sub {set_checking_opts(\%opts, @_);}, 'see man page'	],
 		[ 'tests:s'            => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],
 		[ 'validate:s'         => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],

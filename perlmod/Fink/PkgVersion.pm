@@ -5068,6 +5068,12 @@ sub run_script {
 
 	# Run the script under the modified environment
 	my $result;
+	# Don't build as nobody if BuildAsNobody: false
+	my $build_as_nobody = $self->param_boolean("BuildAsNobody");
+	if (not defined $build_as_nobody) {
+		$build_as_nobody = 1;
+	}
+	$nonroot_okay = $nonroot_okay && $build_as_nobody;
 	{
 		local %ENV = %{$self->get_env($phase)};
 		$result = &execute($script, nonroot_okay=>$nonroot_okay);
