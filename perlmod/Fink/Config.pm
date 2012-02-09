@@ -270,7 +270,7 @@ sub parse_options {
 		[ 'use-binary-dist|b!' => \$opts{use_binary},
 			'download pre-compiled packages from the binary distribution '
 			. 'if available'	],
-		[ 'build-as-nobody|!'  => \$opts{build_as_nobody},	'see man page'	],
+		[ 'build-as-nobody!'   => \$opts{build_as_nobody},	'see man page'	],
 		[ 'maintainer|m'       => sub {set_checking_opts(\%opts, @_);}, 'see man page'	],
 		[ 'tests:s'            => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],
 		[ 'validate:s'         => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],
