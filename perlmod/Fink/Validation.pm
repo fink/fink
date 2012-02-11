@@ -1829,7 +1829,7 @@ sub _validate_dpkg {
 
 		# check that compiled python modules files don't self-identify using temp locations
 		if ($filename =~/\.py[co]$/) {
-			if (!-l $File::Find::name and open my $py_file, "strings $File::Find::name |") {
+			if (!-l $File::Find::name and open my $py_file, '|-', 'strings', $File::Find::name) {
 				while (<$py_file>) {
 					if (/$pkgbuilddir/) {
 						&stack_msg($msgs, "Compiled python module points to fink build dir.", $filename);
