@@ -130,8 +130,10 @@ All keys are used case insensitively.
 =item param
 
   my $value = $obj->param($param);
+  my $value = $obj->param($param, $default);
 
-Returns the $value of the given $param.
+Returns the $value of the given $param. If $param is not set, $default
+is returned (including 'undef' if no $default is given).
 
 =cut
 
@@ -176,6 +178,8 @@ will be used.
 
 =cut
 
+### FIXME: doesn't param() already cover this feature?
+
 sub param_default {
 	my $self = shift;
 	my $param = lc shift;
@@ -191,10 +195,14 @@ sub param_default {
 =item param_boolean
 
   my $value = $obj->param_boolean($param);
+  my $value = $obj->param_boolean($param, $default);
 
-Interprets the value of $param as a boolean.  "True", "Yes", "On" and "1" are
-all considered true while all other values are considered false. Returns 1 for
-true, 0 for false, and undef if the field is not present at all.
+Interprets the value of $param as a boolean.  "True", "Yes", "On" and
+"1" are all considered true while all other values are considered
+false. Returns 1 for true, 0 for false. If $param is not set, $default
+is returned (including 'undef' if no $default is given). The $default
+is returned exactly as passed, not converted to 1/0 boolean value, so
+the return is tri-state true/false/not-set.
 
 =cut
 
@@ -218,7 +226,7 @@ sub param_boolean {
 
   my $exists = $obj->has_param($param);
 
-Checks to see if the given $param has been set.
+Returns a boolean indicating if the given $param is set.
 
 =cut
 
