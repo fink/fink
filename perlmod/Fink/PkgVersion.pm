@@ -3466,7 +3466,7 @@ GCC_MSG
 		$xz= "xz";
 
 		# Determine unpack command
-		print "\n$tar_is_pax\n";
+		# print "\n$tar_is_pax\n";
 		$unpack_cmd = "cp $found_archive ."; # non-archive file
 		# check for a tarball
 		if ($archive =~ /[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/ or $archive =~ /[\.\-]t[gbx]z$/) {
