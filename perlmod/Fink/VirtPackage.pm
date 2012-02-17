@@ -668,7 +668,10 @@ you can download it from Apple at:
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-	my $result = `defaults read /Developer/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
+	my $result = `defaults read /Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
+	if ($?) {
+		$result = `defaults read /Developer/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
+	}
 	if (not $?) {
 		# didn't fail
 		chomp $result;
