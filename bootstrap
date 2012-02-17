@@ -331,7 +331,7 @@ print "Verifying that installed Xcode version is supported...\n";
 		$max_xcode="3.1.4";
 	} elsif ($vers == 10) {
 		$min_xcode="3.2";
-		$max_xcode="4.9";
+		$max_xcode="4.2";
 	} elsif ($vers == 11) { 
 		$min_xcode="4.1";
 		$max_xcode="4.9";
