@@ -5,6 +5,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.32.x
 \-------------
 
+0.32.3 "velocipede" (2012-02-16)
+	* Support Xcode 4.3
+
+0.32.2 "ordinary" (2012-02-03)
+	* Bugfix: flag to use pax as the unarchiver was not getting unset for
+	  the next SourceN.
+	* Support OS 10.7.3.
+
 0.32.1 "penny-farthing" (2012-01-26)
 	* Bugfix: get_build_directory() needed to include tar.xz as an option or 
 	  packages with a simple Source: foo.tar.xz would fail.
