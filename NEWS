@@ -5,6 +5,9 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.32.x
 \-------------
 
+0.32.3 "velocipede" (2012-02-16)
+	* Support Xcode 4.3
+
 0.32.2 "ordinary" (2012-02-03)
 	* Bugfix: flag to use pax as the unarchiver was not getting unset for
 	  the next SourceN.
