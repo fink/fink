@@ -340,8 +340,12 @@ print "Verifying that installed Xcode version is supported...\n";
 	}
 	die "ERROR:\n\tCan't determine Xcode version.\n" unless (-x "/usr/bin/xcodebuild");
 	($xcode_version) = (`xcodebuild -version` =~ /(\d+\.\d+\.?(\d+)?)/) ;
-		print "Xcode version: $xcode_version";
-	
+	if (!defined $xcode_version) {
+		die "ERROR:\n\tXcode is not set up properly.  There may be information\n".
+			"\timmediately above this message about how to fix this.\n";
+	} else {
+		print "Found Xcode version: $xcode_version";
+	}
 	if (&version_cmp ("$xcode_version", "<<", "$min_xcode")) {
 		& print_breaking (   "\nERROR:  This version of fink needs at least ".
 							"Xcode ".$min_xcode." on this OS X version.\n");
