@@ -638,7 +638,6 @@ as part of the Xcode tools.
 
 	my @SDKDIRS;
 	my $osxversion=Fink::Services::get_kernel_vers();
-	print "$osxversion\n";
 	if ($osxversion == 9) {
 		@SDKDIRS= qw(
 			MacOSX10.3.9.sdk
