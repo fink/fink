@@ -580,26 +580,91 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
+=item "xcode"
+
+This package represents your Xcode version.
+
+=cut
+
+	print STDERR "- checking for xcode version... " if ($options{debug});
+
+	$hash = {};
+	$hash->{package} = "xcode";
+	$hash->{version} = '0-0';
+	$hash->{status} = STATUS_ABSENT;
+	$hash->{description} = "[virtual package representing the developer tools]";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+	$hash->{descdetail} = <<END;
+This package represents the C/C++/ObjC developer tools
+provided by Apple.  If it does not show as installed,
+you can download it from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required)
+END
+	$hash->{compilescript} = &gen_compile_script($hash);
+
+    chomp(my $xcodepath=`xcode-select -print-path`);
+    # Xcode 4.3+ is relocatable
+    my $result=`defaults read $xcodepath/../version CFBundleShortVersionString 2>&1`;
+	if ($?) {
+		$result = `defaults read $xcodepath/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
+	}
+	if (not $?) {
+		# didn't fail
+		chomp $result;
+		$hash->{version} = $result . '-1';
+		print STDERR $hash->{version}, "\n" if $options{debug};
+		$hash->{status} = STATUS_PRESENT;
+	} elsif ($options{debug}) {
+		# failed, so display whatever error message or diagnostics we can find
+		if ($!) {
+
+			print STDERR "unknown ($!)\n";      # have ERRNO string, so use that
+		} else {
+			print STDERR "unknown:\n$result\n";	# dump command's own diagnostics
+		}
+	}
+
+	$self->{$hash->{package}} = $hash;
+
 =item "system-sdk-*"
 
-These packages represent the SDKs available in /Developer/SDKs, available
+These packages represent the SDKs available
 as part of the Xcode tools.
 
 =cut
 
-	my @SDKDIRS = qw(
-		MacOSX10.0.0.sdk
-		MacOSX10.1.0.sdk
-		MacOSX10.2.0.sdk
-		MacOSX10.3.0.sdk
-		MacOSX10.3.9.sdk
-		MacOSX10.4.0.sdk
-		MacOSX10.4u.sdk
-	);
-
-	if (opendir(DIR, '/Developer/SDKs')) {
-		push(@SDKDIRS, grep(/MacOSX.*.sdk/, readdir(DIR)));
-		closedir DIR;
+	my @SDKDIRS;
+	my $osxversion=Fink::Services::get_kernel_vers();
+	if ($osxversion == 9) {
+		@SDKDIRS= qw(
+			MacOSX10.3.9.sdk
+			MacOSX10.4u.sdk
+			MacOSX10.5.sdk
+		);
+	} elsif ($osxversion == 10) {
+		@SDKDIRS= qw(
+			MacOSX10.4u.sdk
+			MacOSX10.5.sdk
+			MacOSX10.6.sdk
+		);
+	} elsif ($osxversion == 11) {
+		@SDKDIRS=qw(
+			MacOSX10.6.sdk
+			MacOSX10.7.sdk
+		);
+	}
+#   Portable SDK path finder which works on 10.5 and later
+	my $sdkpath;
+	{
+		my @sdkread=`xcodebuild -version -sdk 2>&1`;
+		foreach (@sdkread) {
+			chomp;
+			$sdkpath=$1 if /Path:\s(.*)MacOSX.*\.sdk/;
+			last if $sdkpath;
+		}
 	}
 	for my $dir (sort @SDKDIRS) {
 		my $isuniversal = 0;
@@ -633,62 +698,15 @@ installed, you can download Xcode from Apple at:
 (free registration required)
 END
 			$hash->{compilescript} = &gen_compile_script($hash);
-			if (-d '/Developer/SDKs/' . $dir) {
+			if (-d "$sdkpath$dir" ) {
 				$hash->{status} = STATUS_PRESENT;
-				$self->{$hash->{package}} = $hash;
+				$self->{$hash->{package}} = $hash;			
 			} else {
 				$self->{$hash->{package}} = $hash
 					unless (exists $self->{$hash->{package}}->{status} and $self->{$hash->{package}}->{status} eq STATUS_PRESENT);
 			}
 		}
 	}
-
-=item "xcode"
-
-This package represents your Xcode version.
-
-=cut
-
-	print STDERR "- checking for xcode version... " if ($options{debug});
-
-	$hash = {};
-	$hash->{package} = "xcode";
-	$hash->{version} = '0-0';
-	$hash->{status} = STATUS_ABSENT;
-	$hash->{description} = "[virtual package representing the developer tools]";
-	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-	$hash->{descdetail} = <<END;
-This package represents the C/C++/ObjC developer tools
-provided by Apple.  If it does not show as installed,
-you can download it from Apple at:
-
-  http://connect.apple.com/
-
-(free registration required)
-END
-	$hash->{compilescript} = &gen_compile_script($hash);
-
-	my $result = `defaults read /Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
-	if ($?) {
-		$result = `defaults read /Developer/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
-	}
-	if (not $?) {
-		# didn't fail
-		chomp $result;
-		$hash->{version} = $result . '-1';
-		print STDERR $hash->{version}, "\n" if $options{debug};
-		$hash->{status} = STATUS_PRESENT;
-	} elsif ($options{debug}) {
-		# failed, so display whatever error message or diagnostics we can find
-		if ($!) {
-
-			print STDERR "unknown ($!)\n";      # have ERRNO string, so use that
-		} else {
-			print STDERR "unknown:\n$result\n";	# dump command's own diagnostics
-		}
-	}
-
-	$self->{$hash->{package}} = $hash;
 
 =item "cctools-I<XXX>"
 
