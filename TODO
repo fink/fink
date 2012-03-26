@@ -17,12 +17,6 @@ Medium
 * replace "fink list --help" by a general "fink --help [command]" similiar to 
   how CVS does it (e.g. try "cvs -H update")
 
-* checksums should always be checked whenever we know we are going to use a given
-  source file later. E.g. if you run "fink rebuild foo", then Fink does check 
-  if the source files for package foo are present, and if not, downloads them.
-  If present, fink should verify the checksum *immediatly*, in addition to the
-  current check (just prior to decompressing the archive).
-
 * add a mirror check utillity that given some testcases will verify that all mirrors
   do still work
   
