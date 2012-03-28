@@ -5,6 +5,19 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.32.x
 \-------------
 
+0.32.4 "pedicab" (2012-03-27)
+	* Improved checksum validation.
+	* Enhance Xcode 4.3 support via the use of syscalls rather than
+	  hardcoded paths.
+		* Other locations for Xcode.app than just /Applications.
+		* System SDK's now show up again.
+	* Make list of potential system SDKs OS-version dependent rather than
+	  one list for everybody, to avoid user confusion if a package Bdeps
+	  on an SDK which is *nonexistent* for a given Xcode (immediate failure
+	  mention package unavailaibility versus more verbose message telling
+	  user to install that SDK from Xcode).  SDKs which _can_ be installed
+	  will still give a message telling the user to install them from Xcode.
+
 0.32.3 "velocipede" (2012-02-16)
 	* Support Xcode 4.3
 
