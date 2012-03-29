@@ -1276,10 +1276,9 @@ sub validate_info_component {
 	}
 
 	# Packages using RuntimeDepends must BuildDepends on a fink that supports it
-	# TODO: Insert appropriate fink version
 	$value = $properties->{runtimedepends};
 	if (defined $value) {
-		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.31.99.git', 'use of RuntimeDepends', $filename);
+		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.32', 'use of RuntimeDepends', $filename);
 	}
 
 	# check syntax of each line of Shlibs field
