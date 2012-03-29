@@ -659,7 +659,10 @@ as part of the Xcode tools.
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;
 	{
-		my @sdkread=`xcodebuild -version -sdk 2>&1`;
+		my $testpath=`xcode-select -print-path`;
+		chomp $testpath;
+		# avoid pathological xcodebuild path case
+		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/'; 
 		foreach (@sdkread) {
 			chomp;
 			$sdkpath=$1 if /Path:\s(.*)MacOSX.*\.sdk/;
