@@ -666,6 +666,7 @@ as part of the Xcode tools.
 			last if $sdkpath;
 		}
 	}
+	$sdkpath="/not/a/real/path" if !$sdkpath;
 	for my $dir (sort @SDKDIRS) {
 		my $isuniversal = 0;
 		if ($dir =~ /MacOSX([\d\.]+)(u?)\.sdk/) {
