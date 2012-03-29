@@ -340,7 +340,7 @@ print "Verifying that installed Xcode version is supported...\n";
 	}
 	# Die if there are no Xcode CLI tools, at minimum.
     die "ERROR:\n\tNo Xcode command-line tools installed.  Install them (or all of Xcode).\n" unless (-x "/usr/bin/xcodebuild");
-	($xcode_version) = (`xcodebuild -version` =~ /(\d+\.\d+\.?(\d+)?)/) ;
+	($xcode_version) = (`xcodebuild -version` =~ /Xcode\s(\d+\.\d+\.?(\d+)?)\n/) ;
 	if (!defined $xcode_version) {
 		# OS version specific messages
 		if ($vers < 11) {
