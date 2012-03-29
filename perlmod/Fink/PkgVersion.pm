@@ -1800,10 +1800,10 @@ sub get_build_directory {
 	}
 	else {
 		$dir = $self->get_tarball(); # never undef b/c never get here if no source
-		if ($dir =~ /^(.*)\.tar(\.(gz|z|Z|bz2))?$/) {
+		if ($dir =~ /^(.*)[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/) {
 			$dir = $1;
 		}
-		if ($dir =~ /^(.*)\.(tgz|zip)$/) {
+		if ($dir =~ /^(.*)[\.\-](t[gbx]z|zip|ZIP)$/) {
 			$dir = $1;
 		}
 
@@ -2501,16 +2501,9 @@ sub resolve_depends {
 	my $field = shift;
 	my $forceoff = shift || 0;
 
-	my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
-	my $altspecs;   # iterator for looping through @speclist
-	my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
-	my $depspec;    # iterator for looping through @altspec
-	my ($depname, $versionspec); # components of a single pkg specifier
-	my $package;    # Package object for a $depname
-	my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
 	my @deplist;    # list of lists of PkgVersion objects to be returned
 
-	my ($splitoff, $idx, $split_idx); # used for merging in splitoff-pkg data
+	my $splitoff;   # used for merging in splitoff-pkg data
 	my $oper;       # used in error and warning messages
 
 	if (lc($field) eq "conflicts") {
@@ -2540,20 +2533,105 @@ sub resolve_depends {
 
 	@deplist = ();
 
-	$idx = 0;
-	$split_idx = 0;
+	# Inner subroutine; attention, we exploit closure effects heavily!!
+	my $resolve_altspec = sub {
+		my $pkglist = shift;
+		my $filter_splitoffs = shift || 0;
 
-	# If this is a splitoff, and we are asked for build depends, add the build deps
-	# of the master package to the list.
-	if ($include_build and $self->has_parent) {
-		push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
-		if (not $include_runtime) {
-			# The pure build deps of a splitoff are equivalent to those of the parent.
-			return @deplist;
+		my @speclist;   # list of logical OR clusters (strings) of pkg specifiers
+		my $altspecs;   # iterator for looping through @speclist
+
+		my @altspec;    # list of pkg specifiers (strings) in a logical OR cluster
+		my $depspec;    # iterator for looping through @altspec
+		my $altlist;    # ref to list of PkgVersion objects meeting an OR cluster
+		my $splitoff;
+
+		@speclist = split(/\s*\,\s*/, $pkglist);
+
+		# Loop over all specifiers and try to resolve each.
+		SPECLOOP: foreach $altspecs (@speclist) {
+			# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
+			# So we need to break this down into pieces (this is done by get_altspec),
+			# and then try to satisfy at least one of them.
+			$altlist = [];
+			@altspec = $self->get_altspec($altspecs);
+			foreach $depspec (@altspec) {
+				my $depname = $depspec->{'depname'};
+				my $versionspec = $depspec->{'versionspec'};
+
+				if ($include_build and defined $self->parent_splitoffs and
+					 ($filter_splitoffs or not $include_runtime)) {
+					# To prevent circular refs in the build dependency graph, we have to
+					# remove all our splitoffs from the graph. We do this by pretending
+					# that they are always present and thus any dependency involving them
+					# is automatically satisfied.
+					# Exception: any splitoffs this master depends on directly are not
+					# filtered. Exception from the exception: if we were called by a
+					# splitoff to determine the "meta dependencies" of it, then we again
+					# filter out all splitoffs. If you've read till here without mental
+					# injuries, congrats :-)
+					next SPECLOOP if ($depname eq $self->{_name});
+					foreach $splitoff ($self->parent_splitoffs) {
+						next SPECLOOP if ($depname eq $splitoff->get_name());
+					}
+				}
+
+				my $package = Fink::Package->package_by_name($depname);
+
+				if (defined $package) {
+					if ($versionspec =~ /^\s*$/) {
+						# versionspec empty / consists of only whitespace
+						push @$altlist, $package->get_all_providers( unique_provides => 1 );
+					} else {
+						push @$altlist, $package->get_matching_versions($versionspec);
+					}
+				} else {
+					if ($verbosity > 2) {
+						print "WARNING: While resolving $oper \"$depname" .
+							(defined $versionspec && length $versionspec ? " " . $versionspec : '')
+							 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
+					}
+				}
+			}
+
+			if (scalar(@$altlist) <= 0) {
+				if (lc($field) eq "depends") {
+					die_breaking "Can't resolve $oper \"$altspecs\" for package \""
+						. $self->get_fullname()
+						. "\" (no matching packages/versions found)\n";
+				} else {
+					if ($forceoff) { # FIXME: Why $forceoff ??
+						print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
+							. $self->get_fullname()
+							. "\" (no matching packages/versions found)\n";
+					}
+				}
+			}
+
+			push @deplist, $altlist;
 		}
+	}; # end of sub resolve_altspec
+
+	# Add build time dependencies / conflicts
+	if ($include_build) {
+		# If this is a splitoff, and we are asked for build depends, add the build deps
+		# of the master package to the list.
+		if ($self->has_parent) {
+			push @deplist, $self->get_parent->resolve_depends(2, $field, $forceoff);
+			if (not $include_runtime) {
+				# The pure build deps of a splitoff are equivalent to those of the parent.
+				return @deplist;
+			}
+		}
+
+		# Add build time dependencies to the spec list
+		if ($verbosity > 2) {
+			print "Reading build $oper for ".$self->get_fullname()."...\n";
+		}
+		$resolve_altspec->($self->pkglist_default("Build".$field, ""));
 	}
 
-	# First, add all regular dependencies to the list.
+	# Add all regular dependencies to the list.
 	if (lc($field) eq "depends") {
 		# FIXME: Right now we completely ignore 'Conflicts' in the dep engine.
 		# We leave handling them to dpkg. That is somewhat ugly, though, because it
@@ -2564,102 +2642,44 @@ sub resolve_depends {
 		if ($verbosity > 2) {
 			print "Reading $oper for ".$self->get_fullname()."...\n";
 		}
-		@speclist = split(/\s*\,\s*/, $self->pkglist_default("Depends", ""));
+		$resolve_altspec->($self->pkglist_default("Depends", ""));
 
-		# Add RuntimeDepends to @speclist if requested
+		# Add RuntimeDepends if requested
 		if ($include_runtime) {
 			# Add build time dependencies to the spec list
 			if ($verbosity > 2) {
 				print "Reading runtime $oper for ".$self->get_fullname()."...\n";
 			}
-			push @speclist, split(/\s*\,\s*/, $self->pkglist_default("RuntimeDepends", ""));
+			$resolve_altspec->($self->pkglist_default("RuntimeDepends", ""));
 		}
-	}
 
-	# now we continue to assemble the larger @speclist
-	if ($include_build) {
-		# Add build time dependencies to the spec list
-		if ($verbosity > 2) {
-			print "Reading build $oper for ".$self->get_fullname()."...\n";
-		}
-		push @speclist, split(/\s*\,\s*/, $self->pkglist_default("Build".$field, ""));
+		# Add further build dependencies
+		if ($include_build) {
+			# dev-tools (a virtual package) is an implicit BuildDepends of all packages
+			if ($self->get_name() ne 'dev-tools') {
+				$resolve_altspec->('dev-tools');
+			}
 
-		# dev-tools is an implicit BuildDepends of all packages
-		push @speclist, 'dev-tools' if lc($field) eq 'depends' && $self->get_name() ne 'dev-tools';
+			# automatic BuildDepends:xz if any of the source fields are a .xz archive
+			foreach my $suffix ($self->get_source_suffixes) {
+				my $archive = $self->get_tarball($suffix);
+				if ($archive =~ /\.xz$/) {
+					$resolve_altspec->('xz');
+					last;
+				}
+			}
 
-		# If this is a master package with splitoffs, and build deps are requested,
-		# then add to the list the deps of all our splitoffs.
-		# We remember the offset at which we added these in $split_idx, so that we
-		# can remove any inter-splitoff deps that would otherwise be introduced by this.
-		$split_idx = @speclist;
-		if (lc($field) eq "depends") {
-			foreach	 $splitoff ($self->parent_splitoffs) {
+			# If this is a master package with splitoffs, and build deps are requested,
+			# then add to the list the deps of all our splitoffs.
+			# We tell resolve_altspec (via its second parameters) to remove any
+			# inter-splitoff deps that would otherwise be introduced by this.
+			foreach $splitoff ($self->parent_splitoffs) {
 				if ($verbosity > 2) {
 					print "Reading $oper for ".$splitoff->get_fullname()."...\n";
 				}
-				push @speclist, split(/\s*\,\s*/, $splitoff->pkglist_default($field, ""));
+				$resolve_altspec->($splitoff->pkglist_default($field, ""), 1);
 			}
 		}
-	}
-
-	# Loop over all specifiers and try to resolve each.
-	SPECLOOP: foreach $altspecs (@speclist) {
-		# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
-		# So we need to break this down into pieces (this is done by get_altspec),
-		# and then try to satisfy at least one of them.
-		$altlist = [];
-		@altspec = $self->get_altspec($altspecs);
-		foreach $depspec (@altspec) {
-			$depname = $depspec->{'depname'};
-			$versionspec = $depspec->{'versionspec'};
-
-			if ($include_build and $self->parent_splitoffs and
-				 ($idx >= $split_idx or not $include_runtime)) {
-				# To prevent circular refs in the build dependency graph, we have to
-				# remove all our splitoffs from the graph. Exception: any splitoffs
-				# this master depends on directly are not filtered. Exception from the
-				# exception: if we were called by a splitoff to determine the "meta
-				# dependencies" of it, then we again filter out all splitoffs.
-				# If you've read till here without mental injuries, congrats :-)
-				next SPECLOOP if ($depname eq $self->{_name});
-				foreach	 $splitoff ($self->parent_splitoffs) {
-					next SPECLOOP if ($depname eq $splitoff->get_name());
-				}
-			}
-
-			$package = Fink::Package->package_by_name($depname);
-
-			if (defined $package) {
-				if ($versionspec =~ /^\s*$/) {
-					# versionspec empty / consists of only whitespace
-					push @$altlist, $package->get_all_providers( unique_provides => 1 );
-				} else {
-					push @$altlist, $package->get_matching_versions($versionspec);
-				}
-			} else {
-				if ($verbosity > 2) {
-					print "WARNING: While resolving $oper \"$depname" .
-						(defined $versionspec && length $versionspec ? " " . $versionspec : '')
-						 . "\" for package \"".$self->get_fullname()."\", package \"$depname\" was not found.\n";
-				}
-			}
-		}
-
-		if (scalar(@$altlist) <= 0) {
-			if (lc($field) eq "depends") {
-				die_breaking "Can't resolve $oper \"$altspecs\" for package \""
-					. $self->get_fullname()
-					. "\" (no matching packages/versions found)\n";
-			} else {
-				if ($forceoff) { # FIXME: Why $forceoff ??
-					print "WARNING: Can't resolve $oper \"$altspecs\" for package \""
-						. $self->get_fullname()
-						. "\" (no matching packages/versions found)\n";
-				}
-			}
-		}
-		push @deplist, $altlist;
-		$idx++;
 	}
 
 	return @deplist;
@@ -2744,6 +2764,12 @@ sub get_depends {
 
 		# (not a runtime dependency so it gets added after remove-self games)
 		push @lol, @{ &pkglist2lol($self->get_family_parent->pkglist_default("BuildDepends","")) };
+
+		# automatic BuildDepends:xz if any of the source fields are a .xz archive
+		foreach my $suffix ($self->get_source_suffixes) {
+			my $archive = $self->get_tarball($suffix);
+			push @lol, ['xz'] if $archive =~ /\.xz$/;
+		}
 
 	} else {
 		# run-time dependencies
@@ -3214,16 +3240,93 @@ sub phase_fetch {
 	}
 
 	foreach $suffix ($self->get_source_suffixes) {
-		if (not $conditional or not defined $self->find_tarball($suffix)) {
-			$self->fetch_source($suffix,0,0,0,$dryrun);
+		if (not $conditional) {
+			$self->fetch_source($suffix, 0, 0, 0, $dryrun);
+		} elsif (not $dryrun) {
+			$self->fetch_source_if_needed($suffix);
+			# fetch_source_if_needed doesn't work with dryrun
+		} elsif (not defined $self->find_tarball($suffix)) {
+			$self->fetch_source($suffix, 0, 0, 0, $dryrun);
 		}
 	}
+}
+
+=item fetch_source_if_needed
+
+	my $archive = $pv->fetch_source_if_needed($suffix);
+
+Makes sure that the sourcefile indicated by $suffix is downloaded and has the
+correct checksums. If the file can't be found, it is downloaded. If it exists,
+but has the wrong checksums, we ask the user what to do.
+
+=cut
+
+sub fetch_source_if_needed {
+	my $self = shift;
+	my $suffix = shift;
+
+	my $archive = $self->get_tarball($suffix);
+
+	# search for archive, try fetching if not found
+	my $found_archive = $self->find_tarball($suffix);
+	if (not defined $found_archive) {
+		return $self->fetch_source($suffix);
+	}
+
+	# verify the MD5 checksum, if specified
+	my $checksum = $self->get_checksum($suffix);
+
+	if (not defined $checksum) {
+		# No checksum was specifed in the .info file, die die die
+		my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
+		die "No checksum specifed for Source$suffix of ".$self->get_fullname()."\nActual: " .
+			join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
+	}
+
+	# compare to the MD5 checksum of the tarball
+	if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
+		# mismatch, ask user what to do
+		my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
+		my $sel_intro = "The checksum of the file $archive of package ".
+			$self->get_fullname()." is incorrect. The most likely ".
+			"cause for this is a corrupted or incomplete download\n".
+			"Expected: $checksum\nActual: " .
+							  join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
+			"It is recommended that you download it ".
+			"again. How do you want to proceed?";
+		my $answer = &prompt_selection("Make your choice: ",
+						intro   => $sel_intro,
+						default => [ value => "redownload" ],
+						choices => [
+						  "Give up" => "error",
+						  "Delete it and download again" => "redownload",
+						  "Assume it is a partial download and try to continue" => "continuedownload",
+						  "Don't download, use existing file" => "continue"
+						],
+						category => 'fetch',);
+		if ($answer eq "redownload") {
+			rm_f $found_archive;
+			# Axel leaves .st files around for partial files, need to remove
+			if($config->param_default("DownloadMethod") =~ /^axel/)
+			{
+				rm_f "$found_archive.st";
+			}
+			$found_archive = $self->fetch_source($suffix, 1);
+		} elsif($answer eq "error") {
+			die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
+		} elsif($answer eq "continuedownload") {
+			$found_archive = $self->fetch_source($suffix, 1, 1);
+		}
+	}
+
+	return $found_archive;
 }
 
 # fetch_source SUFFIX, [ TRIES ], [ CONTINUE ], [ NOMIRROR ], [ DRYRUN ]
 #
 # Unconditionally download the source for a given SourceN suffix, dying on
-# failure.
+# failure. Returns the path to the downloaded source archive if dryrun is not
+# specified.
 sub fetch_source {
 	my $self = shift;
 	my $suffix = shift;
@@ -3291,6 +3394,13 @@ sub fetch_source {
 		} else {
 			die "file download failed for $file of package ".$self->get_fullname()."\n";
 		}
+	} else {
+		my $found_archive = $self->find_tarball($suffix);
+		if (not defined $found_archive) {
+			my $archive = $self->get_tarball($suffix);
+			die "can't find source file $archive for package ".$self->get_fullname()."\n";
+		}
+		return $found_archive;
 	}
 }
 
@@ -3299,7 +3409,7 @@ sub fetch_source {
 sub phase_unpack {
 	my $self = shift;
 	my ($archive, $found_archive, $bdir, $destdir, $unpack_cmd);
-	my ($suffix, $verbosity, $answer, $tries, $checksum, $continue);
+	my ($suffix, $verbosity);
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $xz);
 	my ($tar_is_pax,$alt_bzip2)=(0,0);
@@ -3351,69 +3461,11 @@ GCC_MSG
 		return;
 	}
 
-	$tries = 0;
-	my $maxtries = should_skip_prompt('fetch') ? 2 : 3;
 	foreach $suffix ($self->get_source_suffixes) {
 		$archive = $self->get_tarball($suffix);
-
-		# search for archive, try fetching if not found
-		$found_archive = $self->find_tarball($suffix);
-		if (not defined $found_archive or $tries > 0) {
-			$self->fetch_source($suffix, $tries, $continue);
-			$continue = 0;
-			$found_archive = $self->find_tarball($suffix);
-		}
-		if (not defined $found_archive) {
-			die "can't find source file $archive for package ".$self->get_fullname()."\n";
-		}
-
-		# verify the MD5 checksum, if specified
-		$checksum = $self->get_checksum($suffix);
-
-		if (defined $checksum) { # Checksum was specified
-			# compare to the MD5 checksum of the tarball
-			if (not Fink::Checksum->validate($found_archive, $self->get_checksum($suffix))) {
-				# mismatch, ask user what to do
-				$tries++;
-
-				my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
-				my $sel_intro = "The checksum of the file $archive of package ".
-					$self->get_fullname()." is incorrect. The most likely ".
-					"cause for this is a corrupted or incomplete download\n".
-					"Expected: $checksum\nActual: " .
-					                  join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums) .
-					"It is recommended that you download it ".
-					"again. How do you want to proceed?";
-				$answer = &prompt_selection("Make your choice: ",
-								intro   => $sel_intro,
-								default => [ value => ($tries >= $maxtries) ? "error" : "redownload" ],
-								choices => [
-								  "Give up" => "error",
-								  "Delete it and download again" => "redownload",
-								  "Assume it is a partial download and try to continue" => "continuedownload",
-								  "Don't download, use existing file" => "continue"
-								],
-								category => 'fetch',);
-				if ($answer eq "redownload") {
-					rm_f $found_archive;
-					# Axel leaves .st files around for partial files, need to remove
-					if ($config->param_default("DownloadMethod") =~ /^axel/) {
-						rm_f "$found_archive.st";
-					}
-					redo;		# restart loop with same tarball
-				} elsif ($answer eq "error") {
-					die "checksum of file $archive of package ".$self->get_fullname()." incorrect\n";
-				} elsif ($answer eq "continuedownload") {
-					$continue = 1;
-					redo;		# restart loop with same tarball
-				}
-			}
-		} else {
-		# No checksum was specifed in the .info file, die die die
-			my %archive_sums = %{Fink::Checksum->get_all_checksums($found_archive)};
-			die "No checksum specifed for Source$suffix of ".$self->get_fullname()."\nActual: " .
-				join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
-		}
+		# We verified that the tar file exists with the right checksum during
+		# the fetch phase. This second check is redundant, but just in case...
+		$found_archive = $self->fetch_source_if_needed($suffix);
 
 		# Determine the name of the TarFilesRename in the case of multi tarball packages
 		$renamefield = "Tar".$suffix."FilesRename";
@@ -3452,13 +3504,14 @@ GCC_MSG
 		$xz= "xz";
 
 		# Determine unpack command
+		# print "\n$tar_is_pax\n";
 		$unpack_cmd = "cp $found_archive ."; # non-archive file
 		# check for a tarball
-		if ($archive =~ /[\.\-]tar$/ or $archive =~ /[\.\-]t.*(z|Z).*/) {
-			if (!$tar_is_pax) {  # No SourceFileNRename
+		if ($archive =~ /[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/ or $archive =~ /[\.\-]t[gbx]z$/) {
+			if (!$tar_is_pax) {  # No TarFilesRename
 				# Using "bzip2" for "bzip2" or if we're not on a bzipped tarball
-				if (!($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/)) { 
-					$unpack_cmd = "$tarcommand $found_archive"; #let tar figure it out 
+				if (!($alt_bzip2 and $archive =~ /[\.\-]t(ar\.)?bz2?$/)) {
+					$unpack_cmd = "$tarcommand $found_archive"; #let tar figure it out
 				} else { # we're on a bzipped tar archive with an alternative bzip2
 					$unpack_cmd = "$bzip2 -dc $found_archive | $tarcommand -";
 				}
@@ -3473,7 +3526,7 @@ GCC_MSG
 				$unpack_cmd = "$cat $found_archive | $tarcommand $renamelist";
 			}
 		# Zip file
-		} elsif ($archive =~ /\.[zZ][iI][pP]$/) {
+		} elsif ($archive =~ /\.(zip|ZIP)$/) {
 			$unpack_cmd = "$unzip -o $found_archive";
 		}
 
@@ -3498,7 +3551,7 @@ GCC_MSG
 		chdir $destdir;
 		$self->run_script($unpack_cmd, "unpacking '$archive'", 1, 1);
 
-		$tries = 0;
+		$tar_is_pax=0;
 	}
 }
 

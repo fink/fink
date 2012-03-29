@@ -5,10 +5,21 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.32.x
 \-------------
 
-0.32.0 ??? (20??-??-??)
+0.32.3 "velocipede" (2012-02-16)
+	* Support Xcode 4.3
+
+0.32.2 "ordinary" (2012-02-03)
+	* Bugfix: flag to use pax as the unarchiver was not getting unset for
+	  the next SourceN.
+	* Support OS 10.7.3.
+
+0.32.1 "penny-farthing" (2012-01-26)
+	* Bugfix: get_build_directory() needed to include tar.xz as an option or 
+	  packages with a simple Source: foo.tar.xz would fail.
+
+0.32.0 "recumbent" (2012-01-25)
 	* Added new "RuntimeDepends" field, any .info file that wants to use this
 	  feature must BuildDepend on fink (>= 0.32.0-1).
-	* Added support for source files in .tar.xz format.
 	* Improved package validator to reject .deb files including .hg / .git
 	  directories.
 	* Improved package validator to detect some issues with percent expansions.
@@ -18,6 +29,21 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Disallow bootstrapping into /usr/local and any subdir of it.
 	* Disallow bootstrapping on OS X 10.4 and older.
 	* Removed the obsolete prebinding code (it was for OS X 10.4 and older).
+	* Let 'tar' handle compressed tar files directly.  
+	* xz archive support.
+		* Includes validation check with 0.32 as minimum fink
+		  version for .xz formatted archives.
+		* Automatic unpacking source files in .tar.xz format.
+		* Automatically install the xz package with no need to declare a 
+		  BuildDepend when a SourceN is a .xz file.
+	* Check Xcode version in bootstrap phase before actually creating a Fink tree.
+	* Check for -I or -L pointing to the builddir or install dir in .pc files.
+	* Diagnostic message improvements
+		* Mention "passwd-fink-bld" instead of "passwd" when the fink-bld user
+		  is absent, since there's no "passwd" on 10.7.
+		* In error messages, suggest that users try rebuilds with MaxBuildJobs: 1
+		  if that's set higher, and print MBJ in the system info.
+		* Stress emailing _only one_ Fink mailing list for bug reports.
 
 /-------------
 | fink 0.31.x (see https://github.com/fink/fink/tree/branch_0_31)

@@ -646,10 +646,14 @@ sub validate_info_file {
 				print "Error: \"$_\" does not have a corresponding \"$md5_field\" or \"$checksum_field\" field. ($filename)\n";
 				$looks_good = 0;
 			}
+			# fink recently changed .tar.xz source handling (now
+			# auto-extracts) and maybe other .xz effects as well
+			if (exists $source_props->{$_} and $source_props->{$_} =~ /\.xz$/ ) {
+				$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.32', 'use of a .xz source archive', $filename); 
+			}
 		}
-
 	}
-
+	
 	$expand = { 'n' => $pkgname,
 				'N' => $pkgname,
 				'v' => $pkgversion,
@@ -1803,27 +1807,29 @@ sub _validate_dpkg {
 			}
 		}
 
-		# check that libtool files don't link to temp locations
-		if ($filename =~/\.la$/) {
-			if (!-l $File::Find::name and open my $la_file, '<', $File::Find::name) {
-				while (<$la_file>) {
+		# libtool and pkg-config files don't link to temp locations
+		if ($filename =~ /\.(pc|la)$/) {
+			my $filetype = ($1 eq 'pc' ? 'pkg-config' : 'libtool');
+			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
+				while (<$datafile>) {
+					chomp;
 					if (/$pkgbuilddir/) {
-						&stack_msg($msgs, "Libtool file points to fink build dir.", $filename);
+						&stack_msg($msgs, "Published compiler flag points to fink build dir.", $filename);
 						last;
 					} elsif (/$pkginstdirs/) {
-						&stack_msg($msgs, "Libtool file points to fink install dir.", $filename);
+						&stack_msg($msgs, "Published compiler flag points to fink install dir.", $filename);
 						last;
 					}
 				}
-				close $la_file;
+				close $datafile;
 			} elsif (!-l _) {
-				&stack_msg($msgs, "Couldn't read libtool file \"$filename\": $!");
+				&stack_msg($msgs, "Couldn't read $filetype file \"$filename\": $!");
 			}
 		}
 
 		# check that compiled python modules files don't self-identify using temp locations
 		if ($filename =~/\.py[co]$/) {
-			if (!-l $File::Find::name and open my $py_file, "strings $File::Find::name |") {
+			if (!-l $File::Find::name and open my $py_file, '-|', 'strings', $File::Find::name) {
 				while (<$py_file>) {
 					if (/$pkgbuilddir/) {
 						&stack_msg($msgs, "Compiled python module points to fink build dir.", $filename);
@@ -1854,7 +1860,7 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "File in a language-versioned package is neither versioned nor in a versioned directory.", $filename);
 		}
 
-		# Check for common programmer mistakes relating to passing -framework flags in pkg-config files
+		# passing -framework flag and its argument as separate words
 		if ($filename =~ /\.(pc|la)$/) {
 			my $filetype = ($1 eq 'pc' ? 'pkg-config' : 'libtool');
 			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
@@ -1866,7 +1872,7 @@ sub _validate_dpkg {
 				}
 				close $datafile;
 			} elsif (!-l _) {
-				&stack_msg($msgs, "Couldn't read pkg-config file \"$filename\": $!");
+				&stack_msg($msgs, "Couldn't read $filetype file \"$filename\": $!");
 			}
 		}
 
