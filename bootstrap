@@ -338,24 +338,34 @@ print "Verifying that installed Xcode version is supported...\n";
 	} else {
 		die "ERROR:\n\tUnsupported OS X version.\n";
 	}
-	die "ERROR:\n\tCan't determine Xcode version.\n" unless (-x "/usr/bin/xcodebuild");
+	# Die if there are no Xcode CLI tools, at minimum.
+    die "ERROR:\n\tNo Xcode command-line tools installed.  Install them (or all of Xcode).\n" unless (-x "/usr/bin/xcodebuild");
 	($xcode_version) = (`xcodebuild -version` =~ /(\d+\.\d+\.?(\d+)?)/) ;
 	if (!defined $xcode_version) {
-		die "ERROR:\n\tXcode is not set up properly.  There may be information\n".
-			"\timmediately above this message about how to fix this.\n";
+		# OS version specific messages
+		if ($vers < 11) {
+			die "ERROR:\n\tXcode is not set up properly.\n";
+		} else {
+			warn "WARNING:\n\tXcode may not be set up properly.\n".
+				"\tThere may be information immediately above this message". 
+				"\tabout how to fix\n".
+				"\tthis issue.\n".
+				"\tIf you are using only the Xcode command-line tools for Xcode 4.3+,\n".
+				"\tplease ignore this warning.\n";
+		}
 	} else {
 		print "Found Xcode version: $xcode_version";
-	}
-	if (&version_cmp ("$xcode_version", "<<", "$min_xcode")) {
-		& print_breaking (   "\nERROR:  This version of fink needs at least ".
-							"Xcode ".$min_xcode." on this OS X version.\n");
-		exit 1;
-	} elsif (&version_cmp ("$xcode_version", ">>", "$max_xcode")) {
-		& print_breaking (	"\nERROR:  This version of fink needs at most ".
-							"Xcode ".$max_xcode." on this OS X version.\n");
-		exit 1;
-	} else {
-		print " is OK.\n";
+		if (&version_cmp ("$xcode_version", "<<", "$min_xcode")) {
+			& print_breaking (  "\nERROR:  This version of fink needs at least ".
+								"Xcode ".$min_xcode." on this OS X version.\n");
+			exit 1;
+		} elsif (&version_cmp ("$xcode_version", ">>", "$max_xcode")) {
+			& print_breaking (	"\nERROR:  This version of fink needs at most ".
+								"Xcode ".$max_xcode." on this OS X version.\n");
+			exit 1;
+		} else {
+			print " is OK.\n";
+		}
 	}
 }
 
