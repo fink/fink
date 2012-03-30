@@ -638,6 +638,7 @@ as part of the Xcode tools.
 
 	my @SDKDIRS;
 	my $osxversion=Fink::Services::get_kernel_vers();
+	# possible SDKs for known OS X versions and supported Xcodes.
 	if ($osxversion == 9) {
 		@SDKDIRS= qw(
 			MacOSX10.3.9.sdk
@@ -873,15 +874,23 @@ the successful execution of "gcc --version".
 		print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
 	}
 	{
-		# force presence of structs for some expected compilers
+		# force presence of structs for some possible compilers
 		# list each as %n=>%v
-		my %expected_gcc = (
-			'gcc2'    => '2.95.2',
-			'gcc2.95' => '2.95.2',
-			'gcc3.1'  => '3.1',
+		my %expected_gcc; 
+		
+		%expected_gcc = (
 			'gcc3.3'  => '3.3',
 			'gcc4.0'  => '4.0',
-		);
+			'gcc4.2'  => '4.2',
+		) if $osxversion == 9;
+		%expected_gcc = (
+			'gcc4.0'  => '4.0',
+			'gcc4.2'  => '4.2',
+		) if $osxversion == 10;
+		%expected_gcc = (
+			'gcc4.0'  => '4.0',
+		) if $osxversion == 11;
+		
 		foreach my $key (sort keys %expected_gcc) {
 			if (not exists $self->{$key} && not Fink::Status->query_package($key)) {
 				$hash = &gen_gcc_hash($key, $expected_gcc{$key}, 0, 0, STATUS_ABSENT);
