@@ -61,10 +61,24 @@ This method builds packages from source, so it requires the
 sub system_check {
 	my $class = shift;  # class method for now
 
+	my ($line2,$line4)=("","");
+	{
+		my $osxversion=Fink::VirtPackage->query_package("macosx");
+		if (&version_cmp ("$osxversion", "<<", "10.5")) {
+			$line2="Xcode, available on your original OS X install disk, or from "; 
+		} elsif (&version_cmp ("$osxversion", "<<", "10.6")) {
+			$line2="Xcode, available on your original OS X install disk, from the App Store, or from ";
+		} else {
+			$line2="Xcode, or at least the Command Line Tools for Xcode, available from the App Store, or from ";
+			$line4=". The Command Line Tools package is also available via the Downloads tab of the Xcode 4.3.x Preferences";
+		}
+	}
+
 	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'cvs', you must install ".
-		     "Xcode, available on your original OS X install disk, or from ".
-		     "http://connect.apple.com (after free registration).\n";
+		warn "Before changing your selfupdate method to 'rsync', you must install ".
+		     $line2.
+		     "http://connect.apple.com (after free registration)".
+		     $line4.".\n";
 		return 0;
 	}
 
