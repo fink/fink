@@ -955,7 +955,7 @@ END
 This package represents a developer suite of command-line compilers
 and related programs, for example, Apple's DevTools (OS X <= 10.2) or
 Xcode (OS X >= 10.3). This package is considered "installed" iff
-/usr/bin/gcc and /usr/bin/gcc exist and are executable.
+/usr/bin/gcc and /usr/bin/make exist and are executable.
 
 =cut
 
