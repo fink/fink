@@ -5,6 +5,22 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.32.x
 \-------------
 
+0.32.5 "spinning" (2012-04-??)
+	* Supports bootstrap with only the Xcode Command Line Tools.
+	* clang virtual package
+	* llvm-gcc virtual package
+	* Clean up gcc* virtual packages:
+		* Get rid of compilers in the defaults list that aren't available
+		  for any modern Xcode.
+		* Use an OS version dependent list so that users can tell whether
+		  they need to install a different Xcode or if the package is just
+		  wrong. :-)
+	* Bugfixes:
+	  	* Message concerning RuntimeDepends now mentions fink (>=0.32.0) 
+	  	  rather than the less user-friendly (>=0.31.99.git).
+	  	* Have a default value if no system SDKs are found to avoid 
+	  	  "unitialized value" errors.
+
 0.32.4 "pedicab" (2012-03-27)
 	* Improved checksum validation.
 	* Enhance Xcode 4.3 support via the use of syscalls rather than
