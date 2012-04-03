@@ -931,6 +931,7 @@ the successful execution of "gcc --version".
 
 The clang virtual package is considered present based on
 the successful execution of "/usr/bin/clang --version".
+the successful execution of "/usr/bin/clang -v".
 
 =cut
     
@@ -944,6 +945,8 @@ the successful execution of "/usr/bin/clang --version".
 				close(CLANG);
 				if ($versionoutput =~ m|Apple\sclang\sversion\s(\d+.\d+)\s\(tags/Apple/clang\-(\d+\.\d+\.\d+)|) {
 					($version, $build) = ($1, $2);
+				if ($versionoutput =~ m|Apple\sclang\sversion\s(\d+.\d+(\.\d+)?)\s\(tags/Apple/clang\-(\d+.\d+(\.\d+)?)|) {
+					($version, $build)= ($1, $3);
 				} else {
 					print STDERR "  - warning, unable to determine the version for clang\n" if ($options{debug});
 				}
