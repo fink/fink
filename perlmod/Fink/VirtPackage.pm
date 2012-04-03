@@ -586,7 +586,7 @@ This package represents your Xcode version.
 
 =cut
 
-	print STDERR "- checking for xcode version... " if ($options{debug});
+	print STDERR "- checking for Xcode version... " if ($options{debug});
 
 	$hash = {};
 	$hash->{package} = "xcode";
@@ -601,7 +601,14 @@ you can download it from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).  
+If you are on OS X 10.7 or later and have in fact installed 
+Xcode 4.3 or later, then you may need to run
+
+  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+
+(changing /path/to to the actual path to Xcode on your system)
+to make it visible to its own CLI tools and to Fink.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -615,7 +622,7 @@ END
 		# didn't fail
 		chomp $result;
 		$hash->{version} = $result . '-1';
-		print STDERR $hash->{version}, "\n" if $options{debug};
+		print STDERR $result, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
 	} elsif ($options{debug}) {
 		# failed, so display whatever error message or diagnostics we can find
@@ -638,6 +645,7 @@ as part of the Xcode tools.
 
 	my @SDKDIRS;
 	my $osxversion=Fink::Services::get_kernel_vers();
+	# possible SDKs for known OS X versions and supported Xcodes.
 	if ($osxversion == 9) {
 		@SDKDIRS= qw(
 			MacOSX10.3.9.sdk
@@ -659,13 +667,17 @@ as part of the Xcode tools.
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;
 	{
-		my @sdkread=`xcodebuild -version -sdk 2>&1`;
+		my $testpath=`xcode-select -print-path`;
+		chomp $testpath;
+		# avoid pathological xcodebuild path case
+		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/'; 
 		foreach (@sdkread) {
 			chomp;
 			$sdkpath=$1 if /Path:\s(.*)MacOSX.*\.sdk/;
 			last if $sdkpath;
 		}
 	}
+	$sdkpath="/not/a/real/path" if !$sdkpath;
 	for my $dir (sort @SDKDIRS) {
 		my $isuniversal = 0;
 		if ($dir =~ /MacOSX([\d\.]+)(u?)\.sdk/) {
@@ -690,12 +702,19 @@ as part of the Xcode tools.
 			$hash->{builddependsonly} = "true";
 			$hash->{descdetail} = <<END;
 This package represents the Mac OS X $versiontext SDK
-provided by Apple, as part of Xcode.  If it does not show as
+provided by Apple as part of Xcode.  If it does not show as
 installed, you can download Xcode from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).  
+If you are on OS X 10.7 or  later and have in fact installed 
+Xcode 4.3 or later, then you may need to run
+
+  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+
+(changing /path/to to the actual path to Xcode on your system)
+to make it visible to its own CLI tools and to Fink.
 END
 			$hash->{compilescript} = &gen_compile_script($hash);
 			if (-d "$sdkpath$dir" ) {
@@ -749,7 +768,12 @@ you can download it from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -798,7 +822,12 @@ developer tools (called Xcode) from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -845,7 +874,6 @@ the successful execution of "gcc --version".
 
 				$version =~ s/[\.\-]*$//;
 				my ($shortversion) = $version =~ /^(\d+\.\d+)/;
-				$shortversion = 2 if ($version eq "2.95.2");
 				my $pkgname = "gcc$shortversion";
 
 				# Don't interfere with real packages
@@ -873,15 +901,23 @@ the successful execution of "gcc --version".
 		print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
 	}
 	{
-		# force presence of structs for some expected compilers
+		# force presence of structs for some possible compilers
 		# list each as %n=>%v
-		my %expected_gcc = (
-			'gcc2'    => '2.95.2',
-			'gcc2.95' => '2.95.2',
-			'gcc3.1'  => '3.1',
+		my %expected_gcc; 
+		
+		%expected_gcc = (
 			'gcc3.3'  => '3.3',
 			'gcc4.0'  => '4.0',
-		);
+			'gcc4.2'  => '4.2',
+		) if $osxversion == 9;
+		%expected_gcc = (
+			'gcc4.0'  => '4.0',
+			'gcc4.2'  => '4.2',
+		) if $osxversion == 10;
+		%expected_gcc = (
+			'gcc4.0'  => '4.0',
+		) if $osxversion == 11;
+		
 		foreach my $key (sort keys %expected_gcc) {
 			if (not exists $self->{$key} && not Fink::Status->query_package($key)) {
 				$hash = &gen_gcc_hash($key, $expected_gcc{$key}, 0, 0, STATUS_ABSENT);
@@ -890,6 +926,127 @@ the successful execution of "gcc --version".
 			}
 		}
 	}
+
+=item "clang"
+
+The clang virtual package is considered present based on
+the successful execution of "/usr/bin/clang -v".
+
+=cut
+    
+    # possible for 10.6 and later
+    if ($osxversion >= 10) {
+		print STDERR "- checking for /usr/bin/clang:\n" if ($options{debug});
+		if (opendir(DIR, "/usr/bin")) {
+			if (open(CLANG, '/usr/bin/clang -### -v -x c /dev/null 2>&1 |')) {
+				my ($versionoutput, $version, $build);
+				{ local $/ = undef; $versionoutput = <CLANG> }
+				close(CLANG);
+				if ($versionoutput =~ m|Apple\sclang\sversion\s(\d(?:\.\d+(?:\.\d+)?)?)\s\(tags/Apple/clang\-(\d+(?:\.\d+(?:\.\d+)?)?)|) {
+					($version, $build)= ($1, $2);
+				} else {
+					print STDERR "  - warning, unable to determine the version for clang\n" if ($options{debug});
+				}
+
+				$hash = {};
+				$hash->{package} = "clang";
+				$hash->{description} = "[virtual package representing Apple's clang compiler]";
+				$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+				$hash->{builddependsonly} = "true";
+				$hash->{descdetail} = <<END;
+This package represents the presence of the clang compiler 
+in the development tools provided by Apple.  If it does 
+not show as installed, you can download the latest
+Xcode for your OS X version from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required).
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
+END
+				$hash->{compilescript} = &gen_compile_script($hash);
+				if ($version) {
+					$hash->{status} = STATUS_PRESENT;
+					$hash->{version} = "$version-$build";
+	 			} else {
+					$hash->{status} = STATUS_ABSENT;
+					$hash->{version} = '0-0';
+				}
+				$self->{$hash->{package}} = $hash;
+			
+				print STDERR "  - found $version\n" if ($options{debug});
+
+			}
+			closedir(DIR);
+		} else {
+			print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
+		}
+	}
+
+=item "llvm-gcc"
+
+The llvm-gcc virtual package is considered present based on
+the successful execution of "/usr/bin/llvm-gcc -v".
+
+=cut
+    
+    # possible for 10.6 and later
+    if ($osxversion >= 10) {
+		print STDERR "- checking for /usr/bin/llvm-gcc:\n" if ($options{debug});
+		if (opendir(DIR, "/usr/bin")) {
+			if (open(LLVM, '/usr/bin/llvm-gcc -### -v -x c /dev/null 2>&1 |')) {
+				my ($versionoutput, $version, $build);
+				{ local $/ = undef; $versionoutput = <LLVM> }
+				close(LLVM);
+				if ($versionoutput =~ /gcc\sversion\s(\d+(?:\.\d+(?:\.\d+)?)?).*Apple\sInc.*LLVM\ build\ (\d+(\.\d+(\.\d+)?)?)/) {
+					($version, $build) = ($1, $2);
+				} else {
+					print STDERR "  - warning, unable to determine the version for llvm-gcc\n" if ($options{debug});
+				}
+
+				$hash = {};
+				$hash->{package} = "llvm-gcc";
+				$hash->{description} = "[virtual package representing Apple's LLVM compiler]";
+				$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+				$hash->{builddependsonly} = "true";
+				$hash->{descdetail} = <<END;
+This package represents the presence of the LLVM compiler 
+in the development tools provided by Apple.  If it does 
+not show as installed, you can download the latest
+Xcode for your OS X version from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required).
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
+END
+				$hash->{compilescript} = &gen_compile_script($hash);
+				if ($version) {
+					$hash->{status} = STATUS_PRESENT;
+					$hash->{version} = "$version-$build";
+	 			} else {
+					$hash->{status} = STATUS_ABSENT;
+					$hash->{version} = '0-0';
+				}
+				$self->{$hash->{package}} = $hash;
+			
+				print STDERR "  - found $version\n" if ($options{debug});
+
+			}
+			closedir(DIR);
+		} else {
+			print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
+		}
+	}
+
 
 =item "broken-gcc"
 
@@ -942,7 +1099,7 @@ END
 This package represents a developer suite of command-line compilers
 and related programs, for example, Apple's DevTools (OS X <= 10.2) or
 Xcode (OS X >= 10.3). This package is considered "installed" iff
-/usr/bin/gcc and /usr/bin/gcc exist and are executable.
+/usr/bin/gcc and /usr/bin/make exist and are executable.
 
 =cut
 
@@ -963,7 +1120,12 @@ developer tools are always available from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).  
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	};
 
@@ -1826,18 +1988,23 @@ sub gen_gcc_hash {
 		builddependsonly => 'true',
 		descdetail       => <<END,
 This package represents the$is_64bit gcc $version compiler,
-which is part of the Apple developer tools (also known as
-Xcode). The latest versions of the Apple developer tools are
-always available from Apple at:
+which is part of the Apple developer tools (Xcode). The latest 
+versions of the Apple developer tools are always available 
+from Apple at:
 
   http://connect.apple.com/
 
 (free registration required)
 
 Note that some versions of GCC are *not* installed by default
-when installing Xcode.  Make sure you customize your install
-and check all GCC versions to ensure proper compatibility
-with Fink.
+when installing some versions of Xcode.  Make sure you customize
+your install and check all GCC versions to ensure proper 
+compatibility with Fink.
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 		status           => $status
 	};
