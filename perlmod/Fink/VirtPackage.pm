@@ -942,8 +942,8 @@ the successful execution of "/usr/bin/clang -v".
 				my ($versionoutput, $version, $build);
 				{ local $/ = undef; $versionoutput = <CLANG> }
 				close(CLANG);
-				if ($versionoutput =~ m|Apple\sclang\sversion\s(\d+.\d+(\.\d+)?)\s\(tags/Apple/clang\-(\d+.\d+(\.\d+)?)|) {
-					($version, $build)= ($1, $3);
+				if ($versionoutput =~ m|Apple\sclang\sversion\s(\d(?:\.\d+(?:\.\d+)?)?)\s\(tags/Apple/clang\-(\d+(?:\.\d+(?:\.\d+)?)?)|) {
+					($version, $build)= ($1, $2);
 				} else {
 					print STDERR "  - warning, unable to determine the version for clang\n" if ($options{debug});
 				}
@@ -1002,8 +1002,8 @@ the successful execution of "/usr/bin/llvm-gcc -v".
 				my ($versionoutput, $version, $build);
 				{ local $/ = undef; $versionoutput = <LLVM> }
 				close(LLVM);
-				if ($versionoutput =~ /gcc\sversion\s(\d+.\d+(\.\d+)?).*Apple\sInc.*LLVM\ build\ (\d+\.\d+(\.\d+)?)/) {
-					($version, $build) = ($1, $3);
+				if ($versionoutput =~ /gcc\sversion\s(\d+(?:\.\d+(?:\.\d+)?)?).*Apple\sInc.*LLVM\ build\ (\d+(\.\d+(\.\d+)?)?)/) {
+					($version, $build) = ($1, $2);
 				} else {
 					print STDERR "  - warning, unable to determine the version for llvm-gcc\n" if ($options{debug});
 				}
