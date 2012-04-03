@@ -601,9 +601,9 @@ you can download it from Apple at:
 
   http://connect.apple.com/
 
-(free registration required).  If you are on Lion and
-have in fact installed Xcode 4.3.x, then you may need
-to run
+(free registration required).  
+If you are on OS X 10.7 or later and have in fact installed 
+Xcode 4.3 or later, then you may need to run
 
   sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
 
@@ -698,12 +698,19 @@ as part of the Xcode tools.
 			$hash->{builddependsonly} = "true";
 			$hash->{descdetail} = <<END;
 This package represents the Mac OS X $versiontext SDK
-provided by Apple, as part of Xcode.  If it does not show as
+provided by Apple as part of Xcode.  If it does not show as
 installed, you can download Xcode from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).  
+If you are on OS X 10.7 or  later and have in fact installed 
+Xcode 4.3 or later, then you may need to run
+
+  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+
+(changing /path/to to the actual path to Xcode on your system)
+to make it visible to its own CLI tools and to Fink.
 END
 			$hash->{compilescript} = &gen_compile_script($hash);
 			if (-d "$sdkpath$dir" ) {
@@ -757,7 +764,12 @@ you can download it from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -806,7 +818,12 @@ developer tools (called Xcode) from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -940,9 +957,12 @@ Xcode for your OS X version from Apple at:
 
   http://connect.apple.com/
 
-(free registration required), or install the Xcode
-Command Line Tools package if you have Xcode 4.3 or
-later, or if you just want the command-line tools.
+(free registration required).
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 				$hash->{compilescript} = &gen_compile_script($hash);
 				if ($version) {
@@ -1035,7 +1055,12 @@ developer tools are always available from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
+(free registration required).  
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	};
 
