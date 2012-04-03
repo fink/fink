@@ -30,7 +30,7 @@ use Fink::CLI qw(&print_breaking &prompt);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::Package;
 use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
-use Fink::Services qw(&execute);
+use Fink::Services qw(&execute &version_cmp);
 
 use File::Find;
 
