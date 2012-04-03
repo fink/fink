@@ -1988,18 +1988,23 @@ sub gen_gcc_hash {
 		builddependsonly => 'true',
 		descdetail       => <<END,
 This package represents the$is_64bit gcc $version compiler,
-which is part of the Apple developer tools (also known as
-Xcode). The latest versions of the Apple developer tools are
-always available from Apple at:
+which is part of the Apple developer tools (Xcode). The latest 
+versions of the Apple developer tools are always available 
+from Apple at:
 
   http://connect.apple.com/
 
 (free registration required)
 
 Note that some versions of GCC are *not* installed by default
-when installing Xcode.  Make sure you customize your install
-and check all GCC versions to ensure proper compatibility
-with Fink.
+when installing some versions of Xcode.  Make sure you customize
+your install and check all GCC versions to ensure proper 
+compatibility with Fink.
+If you are on OS X 10.7 or later, you should install the
+Xcode Command Line Tools package if you have Xcode 4.3 or later
+or if you just want the command-line tools. This can be 
+installed either as a separate download from the above site, or
+from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 		status           => $status
 	};
