@@ -587,6 +587,7 @@ This package represents your Xcode version.
 =cut
 
 	print STDERR "- checking for xcode version... " if ($options{debug});
+	print STDERR "- checking for Xcode version... " if ($options{debug});
 
 	$hash = {};
 	$hash->{package} = "xcode";
@@ -602,6 +603,14 @@ you can download it from Apple at:
   http://connect.apple.com/
 
 (free registration required)
+(free registration required).  If you are on Lion and
+have in fact installed Xcode 4.3.x, then you may need
+to run
+
+  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+
+(changing /path/to to the actual path to Xcode on your system)
+to make it visible to its own CLI tools and to Fink.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -616,6 +625,7 @@ END
 		chomp $result;
 		$hash->{version} = $result . '-1';
 		print STDERR $hash->{version}, "\n" if $options{debug};
+		print STDERR $result, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
 	} elsif ($options{debug}) {
 		# failed, so display whatever error message or diagnostics we can find
