@@ -586,7 +586,6 @@ This package represents your Xcode version.
 
 =cut
 
-	print STDERR "- checking for xcode version... " if ($options{debug});
 	print STDERR "- checking for Xcode version... " if ($options{debug});
 
 	$hash = {};
@@ -602,7 +601,6 @@ you can download it from Apple at:
 
   http://connect.apple.com/
 
-(free registration required)
 (free registration required).  If you are on Lion and
 have in fact installed Xcode 4.3.x, then you may need
 to run
@@ -624,7 +622,6 @@ END
 		# didn't fail
 		chomp $result;
 		$hash->{version} = $result . '-1';
-		print STDERR $hash->{version}, "\n" if $options{debug};
 		print STDERR $result, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
 	} elsif ($options{debug}) {
@@ -860,7 +857,6 @@ the successful execution of "gcc --version".
 
 				$version =~ s/[\.\-]*$//;
 				my ($shortversion) = $version =~ /^(\d+\.\d+)/;
-				$shortversion = 2 if ($version eq "2.95.2");
 				my $pkgname = "gcc$shortversion";
 
 				# Don't interfere with real packages
@@ -911,6 +907,63 @@ the successful execution of "gcc --version".
 				$self->{$hash->{package}} = $hash;
 				print STDERR "  - missing $expected_gcc{$key}\n" if ($options{debug});
 			}
+		}
+	}
+
+=item "clang"
+
+The clang virtual package is considered present based on
+the successful execution of "/usr/bin/clang --version".
+
+=cut
+    
+    # possible for 10.6 and later
+    if ($osxversion >= 10) {
+		print STDERR "- checking for /usr/bin/clang:\n" if ($options{debug});
+		if (opendir(DIR, "/usr/bin")) {
+			if (open(CLANG, '/usr/bin/clang -### -v -x c /dev/null 2>&1 |')) {
+				my ($versionoutput, $version, $build);
+				{ local $/ = undef; $versionoutput = <CLANG> }
+				close(CLANG);
+				if ($versionoutput =~ m|Apple\sclang\sversion\s(\d+.\d+)\s\(tags/Apple/clang\-(\d+\.\d+\.\d+)|) {
+					($version, $build) = ($1, $2);
+				} else {
+					print STDERR "  - warning, unable to determine the version for clang\n" if ($options{debug});
+				}
+
+				$hash = {};
+				$hash->{package} = "clang";
+				$hash->{description} = "[virtual package representing Apple's clang compiler]";
+				$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+				$hash->{builddependsonly} = "true";
+				$hash->{descdetail} = <<END;
+This package represents the presence of the clang compiler 
+in the development tools provided by Apple.  If it does 
+not show as installed, you can download the latest
+Xcode for your OS X version from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required), or install the Xcode
+Command Line Tools package if you have Xcode 4.3 or
+later, or if you just want the command-line tools.
+END
+				$hash->{compilescript} = &gen_compile_script($hash);
+				if ($version) {
+					$hash->{status} = STATUS_PRESENT;
+					$hash->{version} = "$version-$build";
+	 			} else {
+					$hash->{status} = STATUS_ABSENT;
+					$hash->{version} = '0-0';
+				}
+				$self->{$hash->{package}} = $hash;
+			
+				print STDERR "  - found $version\n" if ($options{debug});
+
+			}
+			closedir(DIR);
+		} else {
+			print STDERR "  - couldn't get the contents of /usr/bin: $!\n" if ($options{debug});
 		}
 	}
 
