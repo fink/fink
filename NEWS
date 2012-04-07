@@ -5,7 +5,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.32.x
 \-------------
 
-0.32.5 "spinning" (2012-04-??)
+0.32.5 "spinning" (2012-04-07)
 	* Supports bootstrap with only the Xcode Command Line Tools.
 	* clang virtual package
 	* llvm-gcc virtual package
