@@ -911,7 +911,7 @@ the successful execution of "gcc --version".
 			'gcc4.2'  => '4.2',
 		) if $osxversion == 10;
 		%expected_gcc = (
-			'gcc4.0'  => '4.0',
+			'gcc4.2'  => '4.2',
 		) if $osxversion == 11;
 		
 		foreach my $key (sort keys %expected_gcc) {
