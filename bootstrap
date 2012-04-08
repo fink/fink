@@ -367,17 +367,6 @@ print "Verifying that installed Xcode version is supported...\n";
 			print " is OK.\n";
 		}
 	}
-	if (&version_cmp ("$xcode_version", "<<", "$min_xcode")) {
-		& print_breaking (   "\nERROR:  This version of fink needs at least ".
-							"Xcode ".$min_xcode." on this OS X version.\n");
-		exit 1;
-	} elsif (&version_cmp ("$xcode_version", ">>", "$max_xcode")) {
-		& print_breaking (	"\nERROR:  This version of fink needs at most ".
-							"Xcode ".$max_xcode." on this OS X version.\n");
-		exit 1;
-	} else {
-		print " is OK.\n";
-	}
 }
 
 
