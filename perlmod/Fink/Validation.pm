@@ -652,9 +652,8 @@ sub validate_info_file {
 				$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.32', 'use of a .xz source archive', $filename); 
 			}
 		}
-
 	}
-
+	
 	$expand = { 'n' => $pkgname,
 				'N' => $pkgname,
 				'v' => $pkgversion,
