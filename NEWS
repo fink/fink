@@ -20,6 +20,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 	  	  rather than the less user-friendly (>=0.31.99.git).
 	  	* Have a default value if no system SDKs are found to avoid 
 	  	  "unitialized value" errors.
+	  	* 0.32.5 -> 0.32.5.2: these updates didn't get applied.
+	  	* 0.32.5.2 -> 0.32.5.3:  10.7 needs gcc4.2, not gcc4.0.
 
 0.32.4 "pedicab" (2012-03-27)
 	* Improved checksum validation.
