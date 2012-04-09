@@ -105,16 +105,17 @@ if (not defined $arch) {
 ### 64bit capability
 
 my ($version, $vers);
+foreach (split /:/, $ENV{PATH}) {
+# check some common places (why aren't we using $ENV{PATH}?)
+if (-x $_) {
+		chomp($version = `$_/uname -r 2>/dev/null`);
+		last;
+	}
+}
+($vers) = split( /\./, $version );
+
 # are we on intel?
 if ($arch eq "i386") {
-	foreach ('/usr/bin/uname', '/bin/uname') {
-    # check some common places (why aren't we using $ENV{PATH}?)
-		if (-x $_) {
-			chomp($version = `$_ -r 2>/dev/null`);
-			last;
-		}
-	}
-	($vers) = split( /\./, $version );
 # is Darwin at least 9?
 	if ((defined $vers) and ($vers >= 9)) {
 # check for 64bit capability
@@ -169,7 +170,6 @@ if ($arch eq "i386") {
 		}
 	}
 }
-
 
 
 ### patch FinkVersion.pm.in ###
