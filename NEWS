@@ -2,6 +2,17 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.33.x
+\-------------
+
+0.33.0 TBD (2012-??-??)
+	* Make fink use --build-as-nobody by default
+	* BuildAsNobody: false field for .info files where the package can't be 
+	  built as nobody.
+	* --no-build-as-nobody option for fink to override this default option 
+	  and build as root.
+
+/-------------
 | fink 0.32.x
 \-------------
 
