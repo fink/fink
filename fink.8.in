@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd November 2011
+.Dd April 2012
 .Dt FINK 8
 .Sh NAME
 .Nm fink
@@ -94,7 +94,15 @@ flag. This is the default unless overridden by a setting in
 configuration file.
 .It Cm --build-as-nobody
 Drop to a non-root user when performing the unpack, patch, compile,
-and install phases.
+and install phases.  This is the default behavior unless overridden
+by a
+.Pa BuildAsNobody: false
+directive in a .info file, or if the
+.Cm --no-build-as-nobody
+flag is used.
+.It Cm --no-build-as-nobody
+Force the the unpack, patch, compile, and install phases to be 
+performed as root.
 .It Cm -m, --maintainer
 Perform actions useful to package maintainers: run validation on
 the .info file before building and on the .deb after building a
