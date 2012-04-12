@@ -16,6 +16,7 @@ Essential: yes
 Source: @SOURCE@
 Source-MD5: @MD5@
 NoSetPATH: true
+BuildAsNobody: false
 CompileScript: <<
  make test PREFIX=%p ARCHITECTURE=%m DISTRIBUTION=@DISTRIBUTION@
  ./setup.sh %p %m
