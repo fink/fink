@@ -106,7 +106,7 @@ Fink::Bootstrap - Bootstrap a fink installation
 This module defines functions that are used to bootstrap a fink installation
 or update to a new version.  The functions are intended to be called from
 scripts that are not part of fink itself.  In particular, the scripts
-bootstrap.pl, inject.pl, scripts/srcdist/dist-module.pl, and fink's
+bootstrap, inject.pl, scripts/srcdist/dist-module.pl, and fink's
 postinstall.pl all depend on functions from this module.
 
 =head2 Functions
@@ -128,7 +128,7 @@ Checks the current host OS version and returns which distribution to use,
 or "unknown."  $host should be as determined by config.guess.
 
 The optional argument $bootstrap is a boolean, designating whether we have
-been called by bootstrap.pl or not.  If absent, it defaults to false.
+been called by bootstrap or not.  If absent, it defaults to false.
 
 The second optional argument $arch specifies the architecture for Fink
 which was chosen during bootstrap (from the bootstrap script), or the
@@ -141,7 +141,7 @@ incorrect versions of gcc.
 After every release of Mac OS X, fink should be tested against the new
 release and then this function should be updated.
 
-Called by bootstrap.pl and fink's postinstall.pl.
+Called by bootstrap and fink's postinstall.pl.
 
 =cut
 
@@ -423,7 +423,7 @@ sub is_perl_supported {
 	bootstrap1();
     bootstrap1($item1,$item2,...);
 
-The first part of the primary bootstrap routine, called by bootstrap.pl.
+The first part of the primary bootstrap routine, called by bootstrap.
 The optional arguments specify packages in addition to dpkg-bootstrap
 which should be built before package management starts.
 
@@ -507,7 +507,7 @@ sub bootstrap1 {
 
 	bootstrap2();
 
-The second part of the primary bootstrap routine, called by bootstrap.pl.
+The second part of the primary bootstrap routine, called by bootstrap.
 This part must be run under a perl binary which is identical to the one
 which will be used to run fink itself, post-bootstrap.
 
@@ -553,7 +553,7 @@ sub bootstrap2 {
 
 	bootstrap3();
 
-The final part of the primary bootstrap routine, called by bootstrap.pl.
+The final part of the primary bootstrap routine, called by bootstrap.
 
 =cut
 
@@ -572,7 +572,7 @@ sub bootstrap3 {
 	my $bsbase = get_bsbase();
 
 Returns the base path for bootstrapping.  Called by bootstrap() and by
-bootstrap.pl.
+bootstrap.
 
 =cut
 
@@ -587,7 +587,7 @@ sub get_bsbase {
 Tests whether the current directory contains all of the files needed to
 compile fink.  Returns 0 on success, 1 on failure.
 
-Called by bootstrap.pl and fink's inject.pl.
+Called by bootstrap and fink's inject.pl.
 
 =cut
 
@@ -611,7 +611,7 @@ sub check_files {
 	my $packagefiles = fink_packagefiles();
 
 Returns a space-separated list of all files which should be contained
-in the fink tarball.  Called by bootstrap.pl and fink's inject.pl.
+in the fink tarball.  Called by bootstrap and fink's inject.pl.
 This list is complete: you do not need to recurse through directories,
 and simple directories are not even included here.
 
@@ -714,7 +714,7 @@ Create the directory $bpath/src if necessary, then create the tarball
 $bpath/src/$package-$packageversion.tar containing the files $packagefiles.
 Returns 0 on success, 1 on failure.
 
-Called by bootstrap.pl and inject_package().
+Called by bootstrap and inject_package().
 
 =cut
 
@@ -780,7 +780,7 @@ The default $template_file, if not supplied, is "$target_file.in".
 
 Returns 0 on success, 1 on failure.
 
-Called by bootstrap.pl and inject_package().
+Called by bootstrap and inject_package().
 
 =cut
 
@@ -976,7 +976,7 @@ Calculate the version and revision numbers for the .info file, based on the
 current $distribution, and the data given in $package_source/VERSION and
 $package_source/REVISION.
 
-Called by bootstrap.pl, inject_package(), and modify_description().
+Called by bootstrap, inject_package(), and modify_description().
 
 =cut
 
@@ -1002,7 +1002,7 @@ sub get_version_revision {
 
 Find the correct value for $selfupdatetrees for the given $distribution.
 
-Called by bootstrap.pl and postinstall.pl.
+Called by bootstrap and postinstall.pl.
 
 =cut
 
