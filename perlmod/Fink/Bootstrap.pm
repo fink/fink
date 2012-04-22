@@ -461,6 +461,8 @@ sub bootstrap1 {
 
 	# disable UseBinaryDist during bootstrap
 	Fink::Config::set_options( { 'use_binary' => -1 });
+	# bootstrap as root
+	Fink::Config::set_options( { 'build_as_nobody' => 0 });
 
 	# make sure we have the package descriptions
 	Fink::Package->require_packages();
@@ -540,6 +542,8 @@ sub bootstrap2 {
 					"$basepath with package management.");
 	print "\n";
 
+	# bootstrap as root
+	Fink::Config::set_options( { 'build_as_nobody' => 0 });
 	# use normal install routines, but do not use buildlocks
 	Fink::Config::set_options( { 'no_buildlock' => 1 } );
 	Fink::Engine::cmd_install(@elist, @addlist);
