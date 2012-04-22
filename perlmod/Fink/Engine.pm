@@ -889,6 +889,14 @@ sub cmd_description {
 			}
 			if ($package->is_obsolete()) {
 				my $depends_field = $package->pkglist_default('Depends','');
+				my $runtimedepends_field = $package->pkglist_default('RuntimeDepends','');
+				if (length $depends_field and length $runtimedepends_field) {
+					# both have values, so join the lists together
+					$depends_field .= ', ' . $runtimedepends_field;
+				} else {
+					# either neither or only one has value, so avoid null-element when joining
+					$depends_field .= $runtimedepends_field;
+				}
 				$depends_field =~ s/(\A|,)\s*fink-obsolete-packages(\(|\s|,|\Z)/"$1$2" eq ",," && ","/e;
 
 				print " .\n";
