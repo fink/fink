@@ -11,6 +11,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 	  built as nobody.
 	* --no-build-as-nobody option for fink to override this default option 
 	  and build as root.
+	* %p/Library/Python is now a legal directory.
 
 /-------------
 | fink 0.32.x
