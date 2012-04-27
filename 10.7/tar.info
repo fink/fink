@@ -4,6 +4,7 @@ Revision: 1
 Essential: yes
 # libgettext8-shlibs isn't Essential yet so we have to stick with 3.
 Depends: libgettext3-shlibs, libiconv, gzip, bzip2, base-files
+BuildAsNobody: false
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
 #Source: mirror:gnu:%n/%n-%v.tar.bz2
 Source-MD5: 2cee42a2ff4f1cd4f9298eeeb2264519
