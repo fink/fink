@@ -4,8 +4,6 @@ Done:
 
 marked %p/Library/Python as a legal directory in the validator.
 
-Yet to do:
-
 Validator check for objectionable items in RuntimeVars.  In this case, that'd be 
 PYTHONPATH, but there are probably other things we don't want to set globally,
 e.g. DYLD_LIBRARY_PATH.
