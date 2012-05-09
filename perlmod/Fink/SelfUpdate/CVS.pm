@@ -75,7 +75,7 @@ sub system_check {
 	}
 
 	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'rsync', you must install ".
+		warn "Before changing your selfupdate method to 'cvs', you must install ".
 		     $line2.
 		     "http://connect.apple.com (after free registration)".
 		     $line4.".\n";
