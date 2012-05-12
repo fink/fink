@@ -808,7 +808,7 @@ sub validate_info_file {
 				print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
 				$looks_good = 0;
 			# error for PYTHONPATH pointing to global install location in RuntimeVars
-			} elsif ($line =~ m,^\s*(PYTHONPATH:\s+($basepath|\%p)/lib/(Python|python\d\.\d/)\s*$,) {
+			} elsif ($line =~ m,^\s*(PYTHONPATH:\s+($basepath|\%p)/lib/(Python|python\d\.\d/))\s*$,) {
 				print "Error: '$1' in RuntimeVars can break other Python scripts. ($filename)\n";
 			}
 		}
