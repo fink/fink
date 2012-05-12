@@ -801,12 +801,15 @@ sub validate_info_file {
 		$field_check->($field, $value, 1);
 	}
 
-	# error for having %p/lib in RuntimeVars
 	if (exists $properties->{runtimevars} and defined $properties->{runtimevars}) {
 		for my $line (split(/\n/, $properties->{runtimevars})) {
+			# error for having %p/lib in RuntimeVars
 			if ($line =~ m,^\s*(DYLD_LIBRARY_PATH:\s+($basepath|\%p)/lib/?)\s*$,) {
 				print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
 				$looks_good = 0;
+			# error for PYTHONPATH pointing to global install location in RuntimeVars
+			} elsif ($line =~ m,^\s*(PYTHONPATH:\s+($basepath|\%p)/lib/(Python|python\d\.\d/))\s*$,) {
+				print "Error: '$1' in RuntimeVars can break other Python scripts. ($filename)\n";
 			}
 		}
 	}
@@ -1536,7 +1539,7 @@ sub _validate_dpkg {
 	my @bad_dirs = ( map "$basepath/$_/", qw( src man info doc libexec lib/locale bin/.* sbin/.* ) );
 	push(@bad_dirs, ( map ".*/$_/", qw( CVS RCS \.svn \.git \.hg ) ) ); # forbid version control residues
 
-	my @good_dirs = ( map "$basepath/$_/", qw( bin sbin include lib opt share var etc Applications Library/Frameworks ) );
+	my @good_dirs = ( map "$basepath/$_/", qw( bin sbin include lib opt share var etc Applications Library/Frameworks Library/Python ) );
 	# allow $basepath/Library/ by itself, but with nothing below it other than what we explicitly allowed already
 	# (needed since we allow $basepath/Library/Frameworks)
 	push(@good_dirs, "$basepath/Library/\$");
