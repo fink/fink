@@ -41,6 +41,7 @@ PostInstScript: <<
 	dscl . create /Users/fink-bld home "/var/empty"
 	dscl . create /Users/fink-bld shell "/usr/bin/false"
 	dscl . create /Users/fink-bld realname "Fink Build System"
+	dscl . delete /Users/fink-bld AuthenticationAuthority
 	dscl . create /Groups/fink-bld
 	dscl . create /Groups/fink-bld name fink-bld
 	dscl . create /Groups/fink-bld passwd '*'
