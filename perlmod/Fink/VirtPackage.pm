@@ -580,22 +580,22 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item "xcode"
+=item "xcode-app"
 
-This package represents your Xcode version.
+This package represents your Xcode.app version.
 
 =cut
 
 	print STDERR "- checking for Xcode version... " if ($options{debug});
 
 	$hash = {};
-	$hash->{package} = "xcode";
+	$hash->{package} = "xcode.app";
 	$hash->{version} = '0-0';
 	$hash->{status} = STATUS_ABSENT;
-	$hash->{description} = "[virtual package representing the developer tools]";
+	$hash->{description} = "[virtual package representing Xcode]";
 	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
-This package represents the C/C++/ObjC developer tools
+This package represents Xcode.app and 'xcodebuild', 
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
@@ -615,6 +615,7 @@ END
     chomp(my $xcodepath=`xcode-select -print-path`);
     # Xcode 4.3+ is relocatable
     my $result=`defaults read $xcodepath/../version CFBundleShortVersionString 2>&1`;
+    my $xcode_app_version; # to use in the next entry
 	if ($?) {
 		$result = `defaults read $xcodepath/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
 	}
@@ -624,6 +625,7 @@ END
 		$hash->{version} = $result . '-1';
 		print STDERR $result, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
+		$xcode_app_version=$result;
 	} elsif ($options{debug}) {
 		# failed, so display whatever error message or diagnostics we can find
 		if ($!) {
@@ -634,6 +636,74 @@ END
 		}
 	}
 
+	$self->{$hash->{package}} = $hash;
+
+=item "xcode"
+
+This package represents your Xcode CLI tools version.
+
+=cut
+
+	print STDERR "- checking for Xcode CLI tools version... " if ($options{debug});
+
+	$hash = {};
+	$hash->{package} = "xcode";
+	$hash->{version} = '0-0';
+	$hash->{status} = STATUS_ABSENT;
+	$hash->{description} = "[virtual package representing the developer tools]";
+	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+	$hash->{descdetail} = <<END;
+This package represents the C/C++/ObjC developer tools
+provided by Apple.  If it does not show as installed,
+you can download Xcode (for OS 10.5, 10.6, and 10.7)
+or the Command Line Tools For Xcode (OS 10.7 or later)
+from Apple at:
+
+  http://connect.apple.com/
+
+(free registration required).  
+END
+	$hash->{compilescript} = &gen_compile_script($hash);
+    # for Xcode 4.2.1 and earlier, this will be the same as 
+    # the version of xcode.app
+    if ( defined ($xcode_app_version) && Fink::Services::version_cmp ("$xcode_app_version",'<<','4.3') ) {
+		$hash->{version} = $xcode_app_version . '-1';
+		print STDERR $xcode_app_version, "\n" if $options{debug};
+		$hash->{status} = STATUS_PRESENT;
+    } else {
+    # For Xcode 4.3.0 and later (as far as we know) get the CLI tools version
+    # via pkgutil.  The version string currently looks like:
+    #	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
+    # e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
+    # We'll take the first 5 places as the version, and the build date
+    # as the revision.
+	    chomp(my $result=`pkgutil --pkg-info com.apple.pkg.DeveloperToolsCLI 2>&1`);
+		if (not $?) {
+			# didn't fail
+			# iterate over output lines and grab version
+			foreach (split /\n/, $result) {
+				($result) = /version:\s(.*)$/;
+				last if $result;
+			}
+			# split it up
+			my ($version,$revision);
+			{
+				my @result = split /\./, $result;
+				$revision = pop @result;
+				$version = join '.', @result;
+			}
+			$hash->{version} = "$version-$revision";
+			print STDERR $result, "\n" if $options{debug};
+			$hash->{status} = STATUS_PRESENT;
+		} elsif ($options{debug}) {
+			# failed, so display whatever error message or diagnostics we can find
+			if ($!) {
+				print STDERR "unknown ($!)\n";      # have ERRNO string, so use that
+			} else {
+				print STDERR "unknown:\n$result\n";	# dump command's own diagnostics
+			}
+		}
+    }
 	$self->{$hash->{package}} = $hash;
 
 =item "system-sdk-*"
