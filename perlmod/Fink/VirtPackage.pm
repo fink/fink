@@ -666,9 +666,9 @@ as part of the Xcode tools.
 	}
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;
+	print STDERR "- determining path to system SDKs... " if ($options{debug});
 	{
-		my $testpath=`xcode-select -print-path`;
-		chomp $testpath;
+		chomp (my $testpath=`xcode-select -print-path`);
 		# avoid pathological xcodebuild path case
 		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/'; 
 		foreach (@sdkread) {
@@ -677,8 +677,14 @@ as part of the Xcode tools.
 			last if $sdkpath;
 		}
 	}
-	$sdkpath="/not/a/real/path" if !$sdkpath;
+	if ($sdkpath) {
+		print STDERR "$sdkpath\n" if ($options{debug});
+	} else {
+		$sdkpath="/not/a/real/path";
+		print STDERR "not found.\n"
+	}
 	for my $dir (sort @SDKDIRS) {
+		print STDERR "  - checking for $dir... " if ($options{debug});
 		my $isuniversal = 0;
 		if ($dir =~ /MacOSX([\d\.]+)(u?)\.sdk/) {
 			my $version = $1;
@@ -720,9 +726,15 @@ END
 			if (-d "$sdkpath$dir" ) {
 				$hash->{status} = STATUS_PRESENT;
 				$self->{$hash->{package}} = $hash;			
+				$self->{$hash->{package}} = $hash;
+				print STDERR "found\n" if $options{debug};			
 			} else {
 				$self->{$hash->{package}} = $hash
 					unless (exists $self->{$hash->{package}}->{status} and $self->{$hash->{package}}->{status} eq STATUS_PRESENT);
+				unless (exists $self->{$hash->{package}}->{status} and $self->{$hash->{package}}->{status} eq STATUS_PRESENT) {
+					$self->{$hash->{package}} = $hash;
+					print STDERR "not found\n" if $options{debug};
+				}
 			}
 		}
 	}
