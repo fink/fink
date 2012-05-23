@@ -70,7 +70,8 @@ BEGIN {
 					  &store_rename
 					  &spec2struct &spec2string &get_options
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
-					  &find_subpackages &apt_available);
+					  &find_subpackages &apt_available
+					  &ensure_fink_bld);
 }
 our @EXPORT_OK;
 
@@ -2266,6 +2267,159 @@ Check if apt-get seems usable on this system.
 		}
 		return $aptok;
 	}
+}
+
+=item ensure_fink_bld
+
+  ensure_fink_bld;
+
+If the current user database does not contain the fink-bld user, add one.
+
+=cut
+
+sub ensure_fink_bld {
+	require Fink::Config;
+	my $fink_conf_uid = $Fink::Config::config->param('FinkBldUid');
+	chomp ($_ = `id -P fink-bld 2>&1`);
+    my ($real_uid, $real_gid) = /.*:.*:(\d+):(\d+):.*:.*:.*:.*:.*/ ;
+    if ($fink_conf_uid)	{
+    	# do nothing if fink.conf UID and real UID are the same.
+		if ($real_uid) {
+			return 1 if $fink_conf_uid == $real_uid; 
+    	}
+    	# Otherwise we must have $fink_conf_uid != $real_uid (possibly with $real_uid not defined);
+		if (!$real_uid) {
+			print "Adding user and group fink-bld for building packages unprivileged.\n";
+			if (!add_user('fink-bld', 'fink-bld', 'Fink Build System', '/var/empty', $fink_conf_uid)) {
+				print "WARNING: Could not add fink-bld user.  Try running 'fink configure'.\n";
+				return -1;		
+			}
+			return 1; # success
+		} else {
+			print "Modifying fink-bld user and group.\n";
+			if (!edit_ds_entry('/Users/fink-bld', ["UniqueID", $real_uid, $fink_conf_uid],  
+												["PrimaryGroupID", $real_gid, $fink_conf_uid])) {
+				print "Error changing entries in /Users/fink-bld.\n";
+				return -1;
+			}
+			if (!edit_ds_entry('/Groups/fink-bld', ["PrimaryGroupID", $real_gid, $fink_conf_uid])) {
+				print "Error changing entries in /Groups/fink-bld.\n";
+				return -1;
+			}
+		}
+    } else {
+    	# OK if we've got fink-bld but not a fink.conf UID setting yet.
+    	if ($real_uid) {
+    		return 1;
+    	} else {
+    	# Bail out if we have neither.
+    		return 0;   
+    	}
+    }
+}
+
+=item add_user
+
+  add_user($user, $group, $name, $home);
+
+Creates a new user group in the DirectoryServices database. If a group with name
+$group doesn't exist, then the group is created as well. In this case, for
+convenience, the group will be given the same id as the user. Returns true on
+success.
+
+=cut
+
+sub add_user {
+	my ($user, $group, $name, $home, $uid) = @_;
+
+	$home = $home || '/var/empty';
+	$uid = check_id_unused($uid) or return 0;
+	my $gid = getgrnam($group);
+	my $ret;
+
+	create_ds_entry("/Users/$user", ['UniqueID', $uid],
+	                                ['Password', '*'],
+	                                ['AuthenticationHint', ''],
+	                                ['PrimaryGroupID', (defined($gid) ? $gid : $uid)],
+	                                ['NFSHomeDirectory', $home],
+	                                ['UserShell', '/usr/bin/false'],
+	                                ['RealName', $name]) or return 0;
+	if (defined $gid) {
+		$ret = !system("dscl . -append /Groups/$group GroupMembership $user");
+	} else {
+		$ret = create_ds_entry("/Groups/$group", ['PrimaryGroupID', $uid],
+		                                         ['RecordName', $group],
+		                                         ['Password', '*'],
+		                                         ['GroupMembership', "$user"]);
+	}
+	system ("dscl . -delete /Users/$user AuthenticationAuthority");
+	return $ret;
+}
+
+=item create_ds_entry
+
+  create_ds_entry($path, $key => $value,...);
+
+Create an entry in the DirectoryServices database. Returns whether or not it
+succeeded.
+
+=cut
+
+sub create_ds_entry {
+	my $path = shift;
+	my @values = @_;
+
+	foreach my $setting (@values) {
+		my $key = $setting->[0];
+		my $value = $setting->[1];
+		if (system("dscl . -create '$path' '$key' '$value'")) {
+			print "Couldn't add key $key to DirectoryServices entry $path.\n";
+			system("dscl . -delete '$path'");
+			return 0;
+		}
+	}
+	return 1;
+}
+
+=item edit_ds_entry
+
+  edit_ds_entry($path, $key => $value,...);
+
+Edit an entry in the DirectoryServices database. Returns whether or not it
+succeeded.
+
+=cut
+
+sub edit_ds_entry {
+	my $path = shift;
+	my @values = @_;
+
+	foreach my $setting (@values) {
+		my $key = $setting->[0];
+		my $oldvalue = $setting->[1];
+		my $newvalue = $setting->[2];
+		if (system("dscl . -change '$path' '$key' '$oldvalue' '$newvalue'")) {
+			print "Couldn't change value of $key in DirectoryServices entry $path.\n";
+			return 0;
+		}
+	}
+	return 1;
+}
+
+
+=item check_id_unused
+
+  check_id_unused;
+
+Tests whether an input is used either as a user id or as a group id.
+
+=cut
+
+sub check_id_unused {
+	my $id=shift;
+	return $id unless (getpwuid $id or getgrgid $id);
+	print "WARNING: ID $id is in use.\n";
+	return 0;
 }
 
 =back
