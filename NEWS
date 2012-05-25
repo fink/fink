@@ -6,7 +6,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 \-------------
 
 0.33.0 TBD (2012-??-??)
-	* Make fink use --build-as-nobody by default
+	* Make fink use --build-as-nobody by default.
+		* move creation of fink-bld user into fink rather than passwd.
 	* BuildAsNobody: false field for .info files where the package can't be 
 	  built as nobody.
 	* --no-build-as-nobody option for fink to override this default option 

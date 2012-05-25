@@ -28,6 +28,28 @@ InstallScript: <<
 PostInstScript: <<
  %p/lib/fink/postinstall.pl %m
  %p/bin/fink --no-use-binary-dist index
+ 
+ # set up fink-bld if that user is absent
+ if [ -z "`id fink-bld`" ] ; then
+ 	printf "Creating fink-bld user and group information.\n"
+	dscl . create /Users/fink-bld
+	dscl . create /Users/fink-bld name fink-bld
+	dscl . create /Users/fink-bld passwd '*'
+	dscl . create /Users/fink-bld hint ""
+	dscl . create /Users/fink-bld uid 266
+	dscl . create /Users/fink-bld gid 266
+	dscl . create /Users/fink-bld home "/var/empty"
+	dscl . create /Users/fink-bld shell "/usr/bin/false"
+	dscl . create /Users/fink-bld realname "Fink Build System"
+	dscl . delete /Users/fink-bld AuthenticationAuthority
+	dscl . create /Groups/fink-bld
+	dscl . create /Groups/fink-bld name fink-bld
+	dscl . create /Groups/fink-bld passwd '*'
+	dscl . create /Groups/fink-bld gid 266
+	dscl . create /Groups/fink-bld GroupMembership fink-bld
+  else
+    printf "fink-bld is already present.  Moving on.\n"
+  fi
 
  # try to clean up left-overs from previous versions (old location)
  rm -f %p/var/db/fink.db
