@@ -29,7 +29,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &count_files
 					  &call_queue_clear &call_queue_add
 					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
-					  $VALIDATE_HELP &apt_available);
+					  $VALIDATE_HELP &apt_available &ensure_fink_bld);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width &die_breaking);
@@ -237,6 +237,10 @@ sub process {
 		}
 	}
 
+	# update fink-bld if required
+	{
+		my $status=&ensure_fink_bld() if ($cmd =~ /build|update|install|update|activate|use/) ;
+	}	
 	# Warn about Spotlight
 	if (&spotlight_warning()) {
 		$self->{config}->save;
