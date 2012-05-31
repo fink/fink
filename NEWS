@@ -6,12 +6,22 @@ For a more comprehensive changelog of the latest experimental code, see:
 \-------------
 
 0.33.0 TBD (2012-??-??)
-	* Make fink use --build-as-nobody by default
-	* BuildAsNobody: false field for .info files where the package can't be 
-	  built as nobody.
-	* --no-build-as-nobody option for fink to override this default option 
-	  and build as root.
+	* Make fink use --build-as-nobody by default.
+		* move creation of fink-bld user, if not already present, into fink
+		  rather than passwd(-fink-bld).
+		* If not present, use 'fink configure' to set up the fink-bld user's
+		  parameters, and it will be created on the next operation where a 
+		  build could occur.
+		* BuildAsNobody: false field for .info files where the package can't be 
+	  	  built as nobody.
+		* --no-build-as-nobody option for fink to override this default option 
+	  	  and build as root.
 	* %p/Library/Python is now a legal directory.
+	* Modify the versioning of the "xcode" virtual package.
+	    * Version of the CLI Tools, if those are installed, for OS 10.7+.
+	    * Still the version of Xcode.app for Xcode 4.2.1-.
+	* "xcode.app" virtual package indicates the presence of Xcode.app, and its 
+	   version is the version of the app for all Xcode versions.   
 
 /-------------
 | fink 0.32.x
