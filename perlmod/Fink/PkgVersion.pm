@@ -5194,12 +5194,19 @@ sub package_error {
 
 		my @trees=$config->get_treelist();
 		$error .= "Trees: @trees\n";
-		my $hash = Fink::VirtPackage->list()->{'xcode'};
+		my $hash = Fink::VirtPackage->list()->{'xcode.app'};
 		my $version = $hash->{version};
 		if ($hash->{status} !~ "not-installed") {
-			$error .= "Xcode: ".(split /-/,$version)[0]."\n"; # Revision not needed
+			$error .= "Xcode.app: ".(split /-/,$version)[0]."\n"; # Revision not needed
 		} else {
-			$error .= "No recognized Xcode installed\n";
+			$error .= "No recognized Xcode.app installed\n";
+		}
+		$hash = Fink::VirtPackage->list()->{'xcode'};
+		$version = $hash->{version};
+		if ($hash->{status} !~ "not-installed") {
+			$error .= "Xcode command-line tools: ".(split /-/,$version)[0]."\n"; # Revision not needed
+		} else {
+			$error .= "No recognized Xcode CLI installed\n";
 		}
 		$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
 	}
