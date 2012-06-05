@@ -5138,6 +5138,7 @@ sub package_error {
 	my $self = shift;
 	my %opts = @_;
 	my $mbj=$config->param('MaxBuildJobs');
+	my $umbj=(!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs'));
 
 	my $notifier = Fink::Notify->new();
 	my $error = "phase " . $opts{'phase'} . ": " . $self->get_fullname()." failed";
@@ -5147,7 +5148,7 @@ sub package_error {
 	}
 	$error .= "\n\n" .
 		"Before reporting any errors, please run \"fink selfupdate\" and try again.\n" ;
-	if ($mbj > 1) {
+	if ( $umbj && ($mbj > 1)) {
 		$error .= 	"Also try using \"fink configure\" to set your maximum build jobs to 1 and\n" .
 					"attempt to build the package again." ;
 		}
@@ -5208,7 +5209,11 @@ sub package_error {
 		} else {
 			$error .= "No recognized Xcode CLI installed\n";
 		}
-		$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
+		if ($umbj) {
+			$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
+		} else {			
+			$error .= $self->get_fullname() ." is set to build with only one job.\n"; 
+		}
 	}
 
 	# need trailing newline in the actual die/warn to prevent
