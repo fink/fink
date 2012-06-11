@@ -5,7 +5,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.33.x
 \-------------
 
-0.33.0 TBD (2012-06-11)
+0.33.0 "selectron" (2012-06-11)
     * Recognize OS 10.7.4.
 	* Make fink use --build-as-nobody by default.
 		* move creation of fink-bld user, if not already present, into fink
