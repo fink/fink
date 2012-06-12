@@ -751,7 +751,7 @@ as part of the Xcode tools.
 		print STDERR "$sdkpath\n" if ($options{debug});
 	} else {
 		$sdkpath="/not/a/real/path";
-		print STDERR "not found.\n"
+		print STDERR "not found.\n" if ($options{debug});
 	}
 	for my $dir (sort @SDKDIRS) {
 		print STDERR "  - checking for $dir... " if ($options{debug});
