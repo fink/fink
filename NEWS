@@ -5,6 +5,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.33.x
 \-------------
 
+0.33.0 "Wino" (2012-06-12)
+	* Bug fixes:
+		* Justin Hallett discovered that 'id' from coreutils-default and 
+		  /usr/bin/id behave differently, which causes the fink-bld user
+		  not to get set up properly.  Hardcoding /usr/bin/id solves this.
+		* Fixed stray diagnostic message from system SDK detection (Thanks 
+		  to Remko Scharoo for the report).
+	
 0.33.0 "selectron" (2012-06-11)
     * Recognize OS 10.7.4.
 	* Make fink use --build-as-nobody by default.
