@@ -262,7 +262,7 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 	# build user settings
 	print "\n";
 	&print_breaking("Fink build user settings");
-    chomp ($_ = `id -P fink-bld 2>&1`);
+    chomp ($_ = `/usr/bin/id -P fink-bld 2>&1`);
     ($real_uid,$real_gid) = /.*:.*:(\d+):(\d+):.*:.*:.*:.*:.*/ ;
 	$auto_uid = $config->param_boolean("AutoUid","true");
 	$uid_min = $config->param("AutoUidMin",600);

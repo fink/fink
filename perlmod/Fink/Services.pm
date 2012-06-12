@@ -2280,7 +2280,7 @@ If the current user database does not contain the fink-bld user, add one.
 sub ensure_fink_bld {
 	require Fink::Config;
 	my $fink_conf_uid = $Fink::Config::config->param('FinkBldUid');
-	chomp ($_ = `id -P fink-bld 2>&1`);
+	chomp ($_ = `/usr/bin/id -P fink-bld 2>&1`);
     my ($real_uid, $real_gid) = /.*:.*:(\d+):(\d+):.*:.*:.*:.*:.*/ ;
     if ($fink_conf_uid)	{
     	# do nothing if fink.conf UID and real UID are the same.
