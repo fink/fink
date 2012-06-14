@@ -1171,6 +1171,10 @@ sub get_script {
 				# path-prefix-clang wraps gcc and g++ but system-perl
 				# configure hardcodes gcc-4.x, which is not wrapped
 				$makeflags = ' CC=gcc CXX=g++';
+			} elsif ($self->get_subtype('perl') eq '5.12.4' and Fink::Services::get_kernel_vers() eq '12') {
+				# path-prefix-clang wraps gcc and g++ but system-perl
+				# configure hardcodes gcc-4.x, which is not wrapped
+				$makeflags = ' CC=gcc CXX=g++';
 			}
 			$default_script =
 				"$perlcmd Makefile.PL \%c\n".
@@ -5248,6 +5252,10 @@ sub get_perl_dir_arch {
 			if ($perlversion eq  "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
 				# 10.7 system-perl is 5.12.3, but the only supplied
 				# interp is /usr/bin/perl5.12 (not perl5.12.3)
+				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
+			} elsif ($perlversion eq  "5.12.4" and Fink::Services::get_kernel_vers() eq '12') {
+				# 10.8 system-perl is 5.12.4, but the only supplied
+				# interp is /usr/bin/perl5.12 (not perl5.12.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
 			}
 		} else {

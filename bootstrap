@@ -335,6 +335,9 @@ print "Verifying that installed Xcode version is supported...\n";
 	} elsif ($vers == 11) { 
 		$min_xcode="4.1";
 		$max_xcode="4.9";
+	} elsif ($vers == 12) {
+		$min_xcode="4.4";
+		$max_xcode="4.9";
 	} else {
 		die "ERROR:\n\tUnsupported OS X version.\n";
 	}
