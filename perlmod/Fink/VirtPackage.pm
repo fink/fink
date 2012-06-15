@@ -987,18 +987,22 @@ the successful execution of "gcc --version".
 		# list each as %n=>%v
 		my %expected_gcc; 
 		
-		%expected_gcc = (
-			'gcc3.3'  => '3.3',
-			'gcc4.0'  => '4.0',
-			'gcc4.2'  => '4.2',
-		) if $osxversion == 9;
-		%expected_gcc = (
-			'gcc4.0'  => '4.0',
-			'gcc4.2'  => '4.2',
-		) if $osxversion == 10;
-		%expected_gcc = (
-			'gcc4.2'  => '4.2',
-		) if $osxversion == 11;
+		if ($osxversion == 9) {
+			%expected_gcc = (
+				'gcc3.3'  => '3.3',
+				'gcc4.0'  => '4.0',
+				'gcc4.2'  => '4.2',
+			)
+		} elsif ($osxversion == 10) {
+			%expected_gcc = (
+				'gcc4.0'  => '4.0',
+				'gcc4.2'  => '4.2',
+			)
+		} elsif ($osxversion == 11) {
+			%expected_gcc = (
+				'gcc4.2'  => '4.2',
+			)
+		}
 		
 		foreach my $key (sort keys %expected_gcc) {
 			if (not exists $self->{$key} && not Fink::Status->query_package($key)) {
