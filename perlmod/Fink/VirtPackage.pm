@@ -734,6 +734,12 @@ as part of the Xcode tools.
 			MacOSX10.7.sdk
 		);
 	}
+	} elsif ($osxversion == 12) {
+		@SDKDIRS=qw(
+			MacOSX10.7.sdk
+			MacOSX10.8.sdk
+		);
+	}
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;
 	print STDERR "- determining path to system SDKs... " if ($options{debug});
@@ -998,7 +1004,7 @@ the successful execution of "gcc --version".
 				'gcc4.0'  => '4.0',
 				'gcc4.2'  => '4.2',
 			)
-		} elsif ($osxversion == 11) {
+		} elsif ($osxversion >= 11) {
 			%expected_gcc = (
 				'gcc4.2'  => '4.2',
 			)
