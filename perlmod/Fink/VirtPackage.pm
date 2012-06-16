@@ -733,7 +733,6 @@ as part of the Xcode tools.
 			MacOSX10.6.sdk
 			MacOSX10.7.sdk
 		);
-	}
 	} elsif ($osxversion == 12) {
 		@SDKDIRS=qw(
 			MacOSX10.7.sdk
