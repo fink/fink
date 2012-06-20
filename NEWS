@@ -2,8 +2,26 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.34.x
+\-------------
+
+0.34.0 "TBD" (2012-??-??)
+	* Initial Mountain Lion support
+
+/-------------
 | fink 0.33.x
 \-------------
+
+0.33.? "some sfermion or sboson TBD" (2012-??-??)
+	* EOL for Leopard
+ 
+0.33.2 "sup squark" (2012-06-20)
+	* Bugfix:
+		* Use output from '/usr/libexec/java_home' to generate default 
+		  JAVA_HOME for builds.
+		  This works on 10.5-10.7, so it's probably going to change at some
+		  point without warning. :-)
+	* Better logic in checking for the expected gcc compilers.
 
 0.33.1 "Wino" (2012-06-12)
 	* Bug fixes:
@@ -30,7 +48,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 	    * Version of the CLI Tools, if those are installed, for OS 10.7+.
 	    * Still the version of Xcode.app for Xcode 4.2.1-.
 	* "xcode.app" virtual package indicates the presence of Xcode.app, and its 
-	  version is the version of the app for all Xcode versions.  
+	   version is the version of the app for all Xcode versions.   
 	* Diagnostic output modifications for packages that have UseMaxBuildJobs:
 	  false.
 
