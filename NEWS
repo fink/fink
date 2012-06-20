@@ -2,9 +2,19 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.34.x
+\-------------
+
+0.34.0 "TBD" (2012-??-??)
+	* Initial Mountain Lion support
+
+/-------------
 | fink 0.33.x
 \-------------
 
+0.33.? "some sfermion or sboson TBD" (2012-??-??)
+	* EOL for Leopard
+ 
 0.33.2 "sup squark" (2012-06-20)
 	* Bugfix:
 		* Use output from '/usr/libexec/java_home' to generate default 
