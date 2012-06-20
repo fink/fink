@@ -5,6 +5,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.33.x
 \-------------
 
+0.33.2 "sup squark" (2012-06-20)
+	* Bugfix:
+		* Use output from '/usr/libexec/java_home' to generate default 
+		  JAVA_HOME for builds.
+		  This works on 10.5-10.7, so it's probably going to change at some
+		  point without warning. :-)
+	* Better logic in checking for the expected gcc compilers.
+
 0.33.1 "Wino" (2012-06-12)
 	* Bug fixes:
 		* Justin Hallett discovered that 'id' from coreutils-default and 
