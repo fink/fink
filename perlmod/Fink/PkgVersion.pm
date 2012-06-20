@@ -5051,19 +5051,7 @@ sub get_env {
 			my ($JAVA_HOME, $subtype, $dir, $versions_dir, @dirs);
 			if ($subtype = $self->get_subtype('java')) {
 				$subtype = '' if ($subtype eq 'java');
-				$versions_dir = '/System/Library/Frameworks/JavaVM.framework/Versions';
-				if (opendir(DIR, $versions_dir)) {
-					@dirs = sort(grep(/^${subtype}/, readdir(DIR)));
-					@dirs = reverse(@dirs) if ($subtype eq "");
-					for $dir (@dirs) {
-
-						if ($dir =~ /^${subtype}/ and -f "$versions_dir/$dir/Headers/jni.h") {
-							symlink("../Headers", "$versions_dir/$dir/include") unless (-l "$versions_dir/$dir/include");
-							$JAVA_HOME = "$versions_dir/$dir/Home";
-						}
-					}
-					closedir(DIR);
-				}
+				chomp ($JAVA_HOME=`/usr/libexec/java_home`);
 			}
 			$script_env{'JAVA_HOME'} = $JAVA_HOME unless $self->has_param('SetJAVA_HOME');
 			$script_env{'PATH'}      = $JAVA_HOME . '/bin:' . $script_env{'PATH'} unless $self->has_param('SetPATH');
