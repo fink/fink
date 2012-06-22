@@ -675,23 +675,19 @@ END
     # via pkgutil.  The version string currently looks like:
     #	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
     # e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
-    # We'll take the first 5 places as the version, and the build date
-    # as the revision.
+    # We'll take the whole thing as the version.
 	    chomp(my $result=`pkgutil --pkg-info com.apple.pkg.DeveloperToolsCLI 2>&1`);
 		if (not $?) {
 			# didn't fail
 			# iterate over output lines and grab version
+			my $version;
 			foreach (split /\n/, $result) {
-				($result) = /version:\s(.*)$/;
-				last if $result;
+				($version) = /version:\s(.*)$/;
+				last if $version;
 			}
-			# split it up
-			my ($version,$revision);
-			{
-				my @result = split /\./, $result;
-				$revision = pop @result;
-				$version = join '.', @result;
-			}
+			my $revision=1; # it seems like Apple isn't providing a way to distinguish
+							# between CLI tools versions.  If we find something
+							# then we can update the revision based on that.
 			$hash->{version} = "$version-$revision";
 			print STDERR $result, "\n" if $options{debug};
 			$hash->{status} = STATUS_PRESENT;
