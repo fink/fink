@@ -580,7 +580,7 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
-=item "xcode-app"
+=item "xcode.app"
 
 This package represents your Xcode.app version.
 
