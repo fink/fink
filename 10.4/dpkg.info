@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1229
+Revision: 1231
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: libgettext3-shlibs, libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
@@ -115,10 +115,12 @@ function, so remove AIX-bug-specific hack
 <<
 #
 PostInstScript: <<
-if [ ! -f %p/var/lib/dpkg/diversions ]; then
-  touch %p/var/lib/dpkg/diversions
-  chmod 644 %p/var/lib/dpkg/diversions
-fi
+for file in diversions statoverride; do
+	if [ ! -f %p/var/lib/dpkg/$file ]; then
+  		touch %p/var/lib/dpkg/$file
+  		chmod 644 %p/var/lib/dpkg/$file
+	fi
+done
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
