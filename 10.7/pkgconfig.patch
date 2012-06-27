@@ -1,0 +1,73 @@
+diff -Nurd -x'*~' pkg-config-0.25.orig/glib-1.2.10/glib.h pkg-config-0.25/glib-1.2.10/glib.h
+--- pkg-config-0.25.orig/glib-1.2.10/glib.h	2001-02-26 22:44:38.000000000 -0500
++++ pkg-config-0.25/glib-1.2.10/glib.h	2011-05-12 22:40:21.000000000 -0400
+@@ -182,10 +182,14 @@
+ #  define G_CAN_INLINE 1
+ #endif
+ #ifdef G_HAVE_INLINE
++#if defined(__APPLE_CC__) && (__APPLE_CC__ >= 5400)
++#  define G_INLINE_FUNC static inline
++#else
+ #  if defined (__GNUC__) && defined (__STRICT_ANSI__)
+ #    undef inline
+ #    define inline __inline__
+ #  endif
++#endif
+ #else /* !G_HAVE_INLINE */
+ #  undef inline
+ #  if defined (G_HAVE___INLINE__)
+diff -Nurd -x'*~' pkg-config-0.25.orig/pc-resort pkg-config-0.25/pc-resort
+--- pkg-config-0.25.orig/pc-resort	1969-12-31 19:00:00.000000000 -0500
++++ pkg-config-0.25/pc-resort	2010-11-18 01:22:59.000000000 -0500
+@@ -0,0 +1,51 @@
++#!/usr/bin/perl
++
++use warnings;
++use strict;
++
++use constant FINK_PREFIX => '@PREFIX@';
++use constant PKG_CONFIG => '@PREFIX@/bin/pkg-config.real';
++
++open my $pc_program, '-|', PKG_CONFIG, @ARGV
++    or die "$0: failed to open actual pkg-config process (".PKG_CONFIG."): $!\n";
++while (defined ($_=<$pc_program>) ) {
++    print &resort($_);
++}
++close $pc_program;
++my $rc = $? >> 8;
++exit $rc;
++
++sub resort {
++    my $line = shift;
++
++    # skip obvious pkg-config diagnostics (iff --errors-to-stdout)
++    return $line if /^\s/;
++
++    # if no flags, then nothing to resort
++    return $line unless /(\a|\s)-/;
++
++    chomp $line;
++
++    # for teasing apart the -I nd -L flag lists
++    my @flags_special;		# unusual places that mask fink
++    my @flags_fink;		# %p (masks apple and x11)
++    my @flags_system;		# apple and x11
++    my @flags_other;		# flags other than -I or -L
++
++    #for now, don't try to handle quotes/embedded-whitespace paths
++    foreach (split /\s+/, $line) {
++	# figure out the priority of each -I or -L flag
++	if (/^-[IL]FINK_PREFIX/) {
++	    push @flags_fink, $_;
++	} elsif (/^-[IL](\/usr\/lib|\/usr\/include|\/usr\/X11)/) {
++	    push @flags_system, $_;
++	} elsif (/^-[IL]/) {
++	    push @flags_special, $_;
++	} else {
++	    push @flags_other, $_;
++	}
++    }
++ 
++    my $sane_line = join ' ', @flags_special, @flags_fink, @flags_system, @flags_other;
++    return $sane_line . "\n";
++}
