@@ -1,7 +1,7 @@
 2012-06-27  Justin F. Hallett  <thesin@users.sourceforge.net>
 
 	* Mark libgettext8 as essential and remove libgettext3
-	* Add new dpkg and new dpkg depends to 10.7 bootstrap info file dir
+	* New Depends: gettext-tools, expat1
 
 2011-11-10  Daniel Macks  <dmacks@netspace.org>
 

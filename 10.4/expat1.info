@@ -1,0 +1,46 @@
+Package: expat1
+Version: 2.0.1
+Revision: 1
+BuildDepends: fink (>= 0.24.12-1)
+Depends: %N-shlibs (= %v-%r)
+Replaces: expat
+Conflicts: expat
+BuildDependsOnly: true
+Source: mirror:sourceforge:expat/expat-%v.tar.gz
+Source-MD5: ee8b492592568805593f81f8cdf2a04c
+PatchScript: <<
+ perl -pi -e 's/^LTFLAGS/#LTFLAGS/' Makefile.in
+<<
+SetCFLAGS: -g -O2 -fshort-wchar
+ConfigureParams: --mandir=%p/share/man 
+CompileScript:<<
+ ./configure %c
+ make all
+<<
+InfoTest: TestScript: make check || exit 2
+InstallScript: make install DESTDIR=%d
+DocFiles: <<
+ COPYING MANIFEST README doc/reference.html doc/style.css
+ examples/elements.c examples/outline.c
+<<
+SplitOff:<<
+ Package: %N-shlibs
+ Files: lib/libexpat.*.dylib
+ Shlibs: <<
+  %p/lib/libexpat.1.dylib 7.0.0 %n (>= 2.0.0-1)
+  <<
+  DocFiles: COPYING MANIFEST README
+<<
+
+Description: C library for parsing XML
+DescDetail: <<
+ This is expat, a C library for parsing XML, written by James Clark.
+ Expat is a stream-oriented XML parser. This means that you register
+ handlers with the parser before starting the parse. These handlers
+ are called when the parser discovers the associated structures in the
+ document being parsed. A start tag is an example of the kind of
+ structures for which you may register handlers.
+<<
+License: BSD
+Homepage: http://expat.sourceforge.net
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
