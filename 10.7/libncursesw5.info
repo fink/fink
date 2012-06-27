@@ -1,0 +1,92 @@
+Package: libncursesw5
+Version: 5.9-20110507
+Revision: 1
+
+GCC: 4.0
+#Source: ftp://invisible-island.net/ncurses/current/ncurses-%v.tgz
+Source: mirror:sourceforge:fink/ncurses-%v.tgz
+Source-MD5: 49dc7136424f2bdd653439eda63a2375
+SourceDirectory: ncurses-5.9
+BuildDepends: fink (>= 0.13.0)
+Depends: %N-shlibs (= %v-%r)
+Essential: false
+BuildDependsOnly: true
+PatchScript: <<
+#!/bin/sh -ex
+	# apply upstream patchsets
+	for p in patches/*.patch.gz; do
+		gzip -cd $p | patch -p1
+	done
+
+	#Need to remove these entries to avoid failure on case sensitive file systems
+	perl -pi -e "s/hp70092a\|//; s/hp2621a\|//; s/2621a\|//" misc/terminfo.src
+<<
+ConfigureParams: --without-ada --without-pkg-config --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs --enable-widec --disable-mixed-case
+NoSetCFLAGS: true
+NoSetLDFLAGS: true
+NoSetCPPFLAGS: true
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
+CompileScript: <<
+  #!/bin/sh -ev
+  ./configure %c cf_cv_typeof_chtype=long
+  make
+<<
+InstallScript: <<
+#!/bin/sh -ev
+  make install.libs DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib:`pwd`/lib/ncurses
+<<
+SplitOff: <<
+ Package: %N-shlibs
+ Depends: base-files
+ Essential: false
+ Files: <<
+  lib/libformw.*.dylib
+  lib/libmenuw.*.dylib
+  lib/libncursesw.*.dylib
+  lib/libpanelw.*.dylib
+ <<
+ DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+ Shlibs: <<
+  %p/lib/libformw.5.dylib 5.0.0 %n (>= 5.4-1)
+  %p/lib/libmenuw.5.dylib 5.0.0 %n (>= 5.4-1)
+  %p/lib/libncursesw.5.dylib 5.0.0 %n (>= 5.4-1)
+  %p/lib/libpanelw.5.dylib 5.0.0 %n (>= 5.4-1)
+ <<
+ Description: Shared libraries for libncursesw5 package
+<<
+DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+Description: Full-screen ascii drawing (wchar version)
+DescPort: <<
+More changes by Chris Zubrzycki to be more compatable with apple's lib
+-udates to the (sometimes) monthly releases of ncurses (in patch form)
+
+The --enable-overwrite flag creates the libcurses.dylib symlink.
+
+Must pass cf_cv_typeof_chtype=long to configure to maintain ABI
+compatability for 64-bit library. Otherwise chtype is unsigned long
+in 5.4 but unsigned int in 5.7.
+
+Added patchscript to avoid failure on case sensitive file systems.
+<<
+DescPackaging: <<
+First revision by David Ross.
+Previous versions by Christoph Pfisterer.
+Updated to 5.7 by Daniel Johnson.
+
+	Reroll tarball with upstream patches (in patches/ subdir).
+	Fink needs to mirror Essential packages on its own server).
+
+	Disable pkg-config so we don't need to make it Essential:true
+	(as dependency of Essential:true ncurses). gen-pkgconfig says
+	the *-config scripts are the recommended way anyway.
+<<
+DescUsage: <<
+NOTE: Headers are installed into %p/include/ncursesw instead of
+%p/include as with libncurses5. Packages depending on this might
+need to add %p/include/ncursesw to CPPFLAGS or otherwise make
+adjustments to build properly. All library names end in 'w'.
+<<
+License: OSI-Approved
+Maintainer: Chris Zubrzycki <beren12@users.sourceforge.net>
+Homepage: http://www.gnu.org/software/ncurses/ncurses.html
