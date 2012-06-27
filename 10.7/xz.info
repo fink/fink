@@ -1,0 +1,124 @@
+Package: xz
+Version: 5.0.4
+Revision: 1
+Description: LZMA file compressor
+DescDetail: <<
+    LZMA is a general purporse compression algorithm designed by
+    Igor Pavlov as part of 7-Zip. It provides high compression ratio
+    while keeping the decompression speed fast.
+
+    XZ Utils are an attempt to make LZMA compression easy to use
+    on free (as in freedom) operating systems. This is achieved by
+    providing tools and libraries which are similar to use than the
+    equivalents of the most popular existing compression algorithms.
+
+    XZ Utils consist of a few relatively separate parts:
+      * liblzma is an encoder/decoder library with support for several
+        filters (algorithm implementations). The primary filter is LZMA.
+      * libzfile (or whatever the name will be) enables reading from and
+        writing to gzip, bzip2 and LZMA compressed and uncompressed files
+        with an API similar to the standard ANSI-C file I/O.
+        [ NOTE: libzfile is not implemented yet. ]
+      * xz command line tool has almost identical syntax than gzip
+        and bzip2. It makes LZMA easy for average users, but also
+        provides advanced options to finetune the compression settings.
+      * A few shell scripts make diffing and grepping LZMA compressed
+        files easy. The scripts were adapted from gzip and bzip2.
+<<
+DescUsage: <<
+	Use the xz, xzdec and unxz commands to process .xz files.
+	Use the lzma, lzmadec and unlzma commands to process .lzma files.
+	The .xz format is newer and is meant to replace .lzma.
+	Additional scripts: lzdiff, lzcmp, lzgrep, lzegrep, lzfgrep,
+	lzmore, lzless, lzcat, xzcat
+<<
+# The zx and xzdec commands are Public Domain, but the scripts are GPL2+.
+License: GPL2+
+Homepage: http://tukaani.org/xz/
+Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
+
+Source: http://tukaani.org/%n/%n-%v.tar.bz2
+Source-MD5: 741cd3a5f64b23b7bac56ec5b2258715
+
+BuildDepends: libiconv-dev, libgettext8-dev, gettext-tools, fink (>= 0.24.12)
+Depends: liblzma5-shlibs (= %v-%r)
+Conflicts: lzip (<< 1.3-2), lzma (<< 4.999.8-1)
+Replaces: lzip (<< 1.6-1), lzma (<< 4.999.8-1)
+
+NoSetCPPFLAGS: true
+NoSetLDFLAGS: true
+SetCFLAGS: -O3
+SetCXXFLAGS: -O3
+UseMaxBuildJobs: true
+
+ConfigureParams: <<
+	(%m = i386) --enable-assembler=x86 \
+	(%m = x86_64) --enable-assembler=x86_64 \
+	--with-libiconv-prefix=%p \
+	--with-libintl-prefix=%p \
+	--disable-static \
+	--disable-dependency-tracking
+<<
+
+InfoTest: TestScript: make check || exit 2
+
+InstallScript: <<
+	#!/bin/bash -ev
+	make install DESTDIR=%d
+	
+	binfiles="lzdiff lzgrep"
+	for binfile in $binfiles ; do
+		mv %i/bin/$binfile %i/bin/$binfile.%N
+		mv %i/share/man/man1/$binfile.1 %i/share/man/man1/$binfile.1.%N
+	done
+<<
+
+PostInstScript: <<
+	binfiles="lzdiff lzgrep"
+	for binfile in $binfiles ; do
+		update-alternatives --install %p/bin/$binfile $binfile %p/bin/$binfile.%N 30 --slave %p/share/man/man1/$binfile.1 $binfile.1 %p/share/man/man1/$binfile.1.%N
+	done
+<<
+
+PreRmScript: <<
+	binfiles="lzdiff lzgrep"
+	for binfile in $binfiles ; do
+		update-alternatives --remove $binfile %p/bin/$binfile.%N
+	done
+<<
+
+DocFiles: ChangeLog extra/*
+
+SplitOff: <<
+	Package: liblzma5-shlibs
+	License: Public Domain
+	Depends: libiconv, libgettext8-shlibs
+	Files: <<
+		lib/liblzma.5.dylib
+	<<
+	Shlibs: %p/lib/liblzma.5.dylib 6.0.0 %n (>= 5.0.0-1)
+	DocFiles: AUTHORS ChangeLog COPYING* NEWS README THANKS
+<<
+
+SplitOff2: <<
+	Package: liblzma5
+	License: Public Domain
+	Depends: liblzma5-shlibs (= %v-%r), pkgconfig (>= 0.20-1)
+	Conflicts: liblzmadec, liblzma
+	Replaces: liblzmadec, liblzma
+	BuildDependsOnly: true
+	Files: <<
+		lib/liblzma.dylib
+		lib/liblzma.la
+		lib/pkgconfig
+		include
+	<<
+	DocFiles: AUTHORS ChangeLog COPYING* NEWS README THANKS
+<<
+
+SplitOff3: <<
+	Package: lzma
+	Description: OBSOLETE use package 'xz' instead
+	Depends: xz (>= %v-%r)
+	DocFiles: COPYING*
+<<
