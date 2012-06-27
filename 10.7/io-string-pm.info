@@ -1,0 +1,18 @@
+Package: io-string-pm
+Version: 1.08
+Revision: 1
+Maintainer: Jeremy Erwin <jerwin@ponymail.com>
+Source: mirror:cpan:authors/id/GAAS/IO-String-%v.tar.gz
+Source-MD5: 250e5424f290299fc3d6b5d1e9da3835
+UpdatePOD: true
+Type: perl
+DocFiles: README MANIFEST Changes
+Description: Emulate IO::File for in-core strings
+DescDetail: <<
+IO::String is an IO::File (and IO::Handle) compatible class that reads
+or writes data from in-core strings.  It is really just a
+simplification of what the author needed from Eryq's IO-stringy modules.  As
+such IO::String is a replacement for IO::Scalar.
+<<
+License: Artistic
+Homepage: http://search.cpan.org/dist/IO-String
