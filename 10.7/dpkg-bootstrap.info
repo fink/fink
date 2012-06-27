@@ -41,7 +41,7 @@ perl -pi -e 's,--warning=no-timestamp,--quoting-style=escape,g' dpkg-deb/extract
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-incompatible-pointer-types -Wno-format-security
 SetLDFLAGS: -framework CoreFoundation
 
-ConfigureParams: --without-sgml-doc --without-bz2 --without-zlib --disable-install-info --disable-update-alternatives --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --srcdir=%b
+ConfigureParams: --without-sgml-doc --without-bz2 --without-zlib --disable-install-info --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --srcdir=%b
 
 CompileScript: <<
 PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
