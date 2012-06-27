@@ -6,6 +6,7 @@
 	* time-date-pm
 	* Update dpkg to 1.16.3 -> 10.7
 	* Update dpkg-bootstrap to 1.16.3
+	* Remove debianutils from bootstrap since nothing uses or depends on it
 
 2011-11-10  Daniel Macks  <dmacks@netspace.org>
 
