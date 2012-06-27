@@ -1,0 +1,114 @@
+Package: binutils
+Version: 2.20.1
+Revision: 6
+Source: mirror:gnu:%n/%n-%v.tar.bz2
+Source-MD5: 9cdfb9d6ec0578c166d3beae5e15c4e5
+ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --program-prefix=g --disable-werror
+BuildDepends: libgettext8-dev, fink (>= 0.24.12-1)
+Depends: libgettext8-shlibs
+PatchScript: sed -i.bak -e 's,^skipdirs=$,skipdirs="gas ld gdb gprof",' configure
+
+CompileScript: <<
+  #!/bin/sh -ev
+  dver=`uname -r|cut -f1 -d.`
+  mkdir ../darwin_objdir
+  cd ../darwin_objdir
+  export CC="cc -no-cpp-precomp"
+  %b/configure %c --build=%m-apple-darwin$dver --host=%m-apple-darwin$dver --target=%m-apple-darwin$dver
+  make
+<<
+InfoTest: <<
+   TestDepends: dejagnu
+   TestScript: cd ../darwin_objdir; make -k check || :
+<<
+InstallScript: <<
+  #!/bin/sh -ev
+  dver=`uname -r|cut -f1 -d.`
+  cd ../darwin_objdir
+  make install DESTDIR=%d
+  rm %i/share/info/standards.info
+  mv %i/%m-apple-darwin$dver %i/lib
+## make sure libiberty.a is found at the same place on 32bit and 64bit :
+  L=`ls -1 %i/lib/%m 2>/dev/null|sed -e 's,^,%m/,'|xargs`
+  if [ -n "$L" ] ; then ln -fs $L %i/lib ; fi
+## stripping "g" prefixes from executables not provided by Apple
+  filenames="addr2line objcopy objdump readelf"
+  for f in filenames; do rm -f %i/lib/%f; done
+  # Fix executables
+  cd %i/bin
+  for filename in $filenames
+  do
+    mv g$filename $filename
+  done
+  # Fix Man files
+  cd %i/share/man/man1
+  for filename in $filenames
+  do
+    mv g$filename.1 $filename.1
+  done
+  # Replace duplicates by symlinks
+  for f in ar nm strip; do ln -fs ../lib/%m-apple-darwin${dver}/bin/$f %i/bin/g$f; done
+  for f in objcopy objdump; do ln -fs ../lib/%m-apple-darwin${dver}/bin/$f %i/bin/$f; done
+  # prepare for update-alternatives (binutils vs gdb); avoid hardcoding: long list, likely to change at every %v
+  cd %i/share/locale
+  for f in `find . -name bfd.mo -o -name opcodes.mo`; do mv $f "`dirname $f`/%N-`basename $f`"; done
+<<
+PostInstScript: <<
+## we start by putting a fixed item (not likely to disappear) at the top of the list,
+## to make sure we always have the same master, in both pkgs
+  cmd=$(l=`find %p/share/locale -name %N-bfd.mo -o -name %N-opcodes.mo`
+	{ fgrep "/fr/LC_MESSAGES/%N-bfd.mo" <<<"$l"
+	fgrep -v "/fr/LC_MESSAGES/%N-bfd.mo" <<<"$l"
+	} | while read file ; do \
+		f=`sed -e 's,/%N-,/,' <<<"$file"`
+		n=`sed -e 's,/LC_MESSAGES/,_,' -e 's,.*/,,' <<<"$f"`
+		echo "--slave $f $n $file \\"
+	done | \
+	sed -e '1s,--slave,update-alternatives --install,' -e '1s,[\],60 \\,' -e '$s,[\]$,,' )
+  ## for documentation
+  echo "$cmd"
+  eval "$cmd"
+<<
+## No test for upgrade in PreRmScript, since list is likely to change with %v
+PreRmScript: <<
+	update-alternatives --remove fr_bfd.mo %p/share/locale/fr/LC_MESSAGES/%N-bfd.mo
+<<
+InfoDocs: bfd.info binutils.info configure.info
+DocFiles: COPYING README
+
+SplitOff: <<
+  Package: %N-dev
+  InstallScript: mkdir -p %i/lib; if [ -d %I/lib/%m ] ; then mv %I/lib/%m %i/lib; fi
+  Files: lib/*.{l,}a include
+  DocFiles: COPYING
+<<
+
+Description: Collection of binary tools
+DescDetail: <<
+  The GNU Binutils are a collection of binary tools. The main ones are:
+  ld - the GNU linker.
+  as - the GNU assembler.
+
+  But they also include:
+  addr2line - Converts addresses into filenames and line numbers.
+  ar - A utility for creating, modifying and extracting from archives.
+  c++filt - Filter to demangle encoded C++ symbols.
+  gprof - Displays profiling information.
+  nlmconv - Converts object code into an NLM.
+  nm - Lists symbols from object files.
+  objcopy - Copys and translates object files.
+  objdump - Displays information from object files.
+  ranlib - Generates an index to the contents of an archive.
+  readelf - Displays information from any ELF format object file.
+  size - Lists the section sizes of an object or archive file.
+  strings - Lists printable strings from files.
+  strip - Discards symbols.
+  windres - A compiler for Windows resource files.
+<<
+DescPackaging: <<
+  Based on the installation procedure used in Darwinports:
+  http://binutils.darwinports.com/dports/devel/binutils/Portfile
+<<
+License: GPL
+Maintainer: Jack Howarth <howarth@bromo.med.uc.edu>
+Homepage: http://www.gnu.org/software/binutils/
