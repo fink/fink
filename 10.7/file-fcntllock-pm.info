@@ -1,13 +1,10 @@
 Package: file-fcntllock-pm
 Version: 0.14
-Revision: 1
+Revision: 2
 Description: File locking with fcntl(2)
 Type: perl
 License: Artistic
 Maintainer: Justin F. Hallett <thesin@users.sourceforge.net>
-
-Depends: system-perl
-BuildDepends: system-perl
 
 Source: mirror:cpan:modules/by-module/File/File-FcntlLock-%v.tar.gz
 Source-MD5: 261aa44a9806181ae8fdf49bead7f828
