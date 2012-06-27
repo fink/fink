@@ -2,7 +2,7 @@
 
 	* Mark libgettext8 as essential and remove libgettext3
 	* New Depends in 10.7 and 10.4: gettext-tools, expat1, xz, pkgconfig
-	* New Depends in 10.7 Only: objtool, io-string-pm, fil-fcntllock-pm,
+	* New Depends in 10.7 Only: objtool, io-string-pm, file-fcntllock-pm,
 	* time-date-pm
 	* Update dpkg to 1.16.3 -> 10.7
 	* Update dpkg-bootstrap to 1.16.3
