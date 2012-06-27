@@ -32,6 +32,9 @@ cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/o
 
 # Fink uses "x86_64" instead of "amd64"
 perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+
+### BOOTSTRAP ONLY FIXES
+perl -pi -e 's,--format=gnu,--format=cpio,g' dpkg-deb/build.c
 <<
 
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-incompatible-pointer-types -Wno-format-security
