@@ -11,8 +11,7 @@ PatchScript: <<
  patch -p1 < %{PatchFile}
  cd build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
 <<
-# not yet used by fink core or bootstrap packages
-#Essential: yes
+Essential: yes
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.24.12)
 NoSetMAKEFLAGS: true
