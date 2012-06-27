@@ -4,7 +4,7 @@ Revision: 1
 GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
-Source: mirror:debian:/pool/main/d/%n/%n_%v.tar.bz2
+Source: mirror:debian:/pool/main/d/dpkg/dpkg_%v.tar.bz2
 SourceDirectory: dpkg-%v
 Source-MD5: 20189e2926ada3dda4f77ef2e36999af
 
@@ -45,7 +45,7 @@ PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin 
 <<
 
 InstallScript: <<
-install -d -m 0755 %i/share/doc/%n
+install -d -m 0755 %i/share/doc/dpkg
 
 /usr/bin/make install DESTDIR=%d
 <<
