@@ -4412,6 +4412,34 @@ EOF
 		}
 	}
 
+	### Create md5sum for deb, this is done as part of the debian package
+	### policy and so that tools like debsums can check the consistancy
+	### of installed file, this will also help for trouble shooting, since
+	### we will know if a packages file has be changed
+	
+	my ($md5sum, $md5s);
+	foreach my $f (`cd $destdir; find . -type f`) {
+		# can not start with ./
+		$f =~ s/^\.\///;
+		next if ($f =~ /^DEBIAN/);
+		$md5sum = `cd $destdir; md5sum $f`;
+		chomp $md5sum;
+		$md5s .= $md5sum."\n";
+	}
+
+	# Only write if there are files that need md5sums
+	if ( $md5s ne "") {
+		print "Writing md5sums file...\n";
+		if ( open(MD5SUMS,">$destdir/DEBIAN/md5sums") ) {
+			print MD5SUMS $md5s;
+			close(MD5SUMS) or die "can't write control file for ".$self->get_fullname().": $!\n";
+		} else {
+			my $error = "can't write md5sums file for ".$self->get_fullname().": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
+	}
+
 	if (Fink::Config::get_option("validate")) {
 		my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
 		Fink::Config::set_options( {
