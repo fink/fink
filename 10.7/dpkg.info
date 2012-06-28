@@ -43,7 +43,7 @@ cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/o
 perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
 
 # Fix for gnutar
-perl -pi -e 's,\"tar\",\"gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
+perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
 <<
 
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-incompatible-pointer-types -Wno-format-security
@@ -693,7 +693,7 @@ for example, most packages need make and the C compiler gcc.
 
 SplitOff3: <<
   Package: lib%N-pm
-  Depends: %N (>= 1.15.8), objtools, time-date-pm
+  Depends: %N (>= 1.15.8), binutils, time-date-pm
   Recommends: bzip2, xz
   Suggests: gnupg2
   Replaces: dpkg (<< 1.15.8), dpkg-dev (<< 1.15.6)
