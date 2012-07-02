@@ -612,7 +612,7 @@ to make it visible to its own CLI tools and to Fink.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-    chomp(my $xcodepath=`xcode-select -print-path`);
+    chomp(my $xcodepath=`xcode-select -print-path 2>/dev/null`);
     # Xcode 4.3+ is relocatable
     my $result=`defaults read $xcodepath/../version CFBundleShortVersionString 2>&1`;
     my $xcode_app_version; # to use in the next entry
@@ -734,7 +734,7 @@ as part of the Xcode tools.
 	my $sdkpath;
 	print STDERR "- determining path to system SDKs... " if ($options{debug});
 	{
-		chomp (my $testpath=`xcode-select -print-path`);
+		chomp (my $testpath=`xcode-select -print-path 2>/dev/null`);
 		# avoid pathological xcodebuild path case
 		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/'; 
 		foreach (@sdkread) {
