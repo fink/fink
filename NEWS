@@ -5,21 +5,23 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
-0.34.0 "TBD" (2012-??-??)
+
+0.34.? "Also TBD" (2012-??-??)
+	* EOL for Leopard
+
+
+0.34.0 "TBD" (2012-07-??)
 	* Initial Mountain Lion support
 
 /-------------
 | fink 0.33.x
 \-------------
-
-0.33.? "some sfermion or sboson TBD" (2012-??-??)
-	* EOL for Leopard
  
 0.33.2 "sup squark" (2012-06-20)
 	* Bugfix:
 		* Use output from '/usr/libexec/java_home' to generate default 
 		  JAVA_HOME for builds.
-		  This works on 10.5-10.7, so it's probably going to change at some
+		* This works on 10.5-10.7, so it's probably going to change at some
 		  point without warning. :-)
 	* Better logic in checking for the expected gcc compilers.
 
