@@ -25,6 +25,7 @@ DocFiles: <<
 <<
 SplitOff:<<
  Package: %N-shlibs
+ Essential: true
  Files: lib/libexpat.*.dylib
  Shlibs: <<
   %p/lib/libexpat.1.dylib 7.0.0 %n (>= 2.0.0-1)

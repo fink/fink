@@ -1,18 +1,23 @@
 Package: dpkg-bootstrap
-Version: 1.16.3
+Version: 1.16.4.3
 Revision: 1
 GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
 Source: mirror:debian:/pool/main/d/dpkg/dpkg_%v.tar.bz2
 SourceDirectory: dpkg-%v
-Source-MD5: 20189e2926ada3dda4f77ef2e36999af
+Source-MD5: 39c74a948c6fe4c02ed9f15556fe179d
 
 PatchFile: dpkg.patch
-PatchFile-MD5: e0909efaff7e0faf7f337c5128e8b565
+PatchFile-MD5: 553eeb0d27ea28b9bbd5b29e75d86d7b
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+
+# Remove po4a and make sure it can't be found if it's installed
+# this is to keep fink policy happy since it has to build the same
+# everytime on all systems
+perl -pi -e 's,po4a,notpo4a,g' configure
 
 # Fix for msgmerge 0.17, this won't be required with 0.18+
 perl -pi -e 's,--previous,--backup=off --previous,g' dselect/po/Makevars man/Makefile.am man/Makefile.in po/Makevars scripts/po/Makevars
@@ -41,7 +46,7 @@ perl -pi -e 's,--warning=no-timestamp,--quoting-style=escape,g' dpkg-deb/extract
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-incompatible-pointer-types -Wno-format-security
 SetLDFLAGS: -framework CoreFoundation
 
-ConfigureParams: --without-sgml-doc --without-bz2 --without-zlib --disable-install-info --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --with-logdir=%P/var/log --srcdir=%b
+ConfigureParams: --without-sgml-doc --without-liblzma --without-bz2 --without-zlib --disable-install-info --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --with-logdir=%P/var/log --srcdir=%b
 
 CompileScript: <<
 PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
