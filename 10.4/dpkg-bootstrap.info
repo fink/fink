@@ -1,70 +1,76 @@
 Package: dpkg-bootstrap
-Version: 1.10.21
-Revision: 1218
+Version: 1.16.4.3
+Revision: 1
+GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
+
+Source: mirror:debian:/pool/main/d/dpkg/dpkg_%v.tar.bz2
 SourceDirectory: dpkg-%v
-Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchFile: %n.patch
-PatchFile-MD5: 83170a41fd6b458f7f99d01b5f01e8e8
+Source-MD5: 39c74a948c6fe4c02ed9f15556fe179d
+
+PatchFile: dpkg.patch
+PatchFile-MD5: 553eeb0d27ea28b9bbd5b29e75d86d7b
+
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
- echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+
+# Remove po4a and make sure it can't be found if it's installed
+# this is to keep fink policy happy since it has to build the same
+# everytime on all systems
+perl -pi -e 's,po4a,notpo4a,g' configure
+
+# Fix for msgmerge 0.17, this won't be required with 0.18+
+perl -pi -e 's,--previous,--backup=off --previous,g' dselect/po/Makevars man/Makefile.am man/Makefile.in po/Makevars scripts/po/Makevars
+
+# Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
+perl -pi -e 's,^(\#\!/usr/bin/perl.*)$,$1\nuse lib "%p/lib/perl5";,' %b/scripts/*.pl
+
+# fix paths
+for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
+  perl -pi -e 's,/usr,%p,g' $i; \
+  perl -pi -e 's,/var,%p/var,g' $i; \
+  perl -pi -e 's,/etc,%p/etc,g' $i; \
+  perl -pi -e 's,amd64,x86_64,g' $i; \
+done 
+
+cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
+
+# Fink uses "x86_64" instead of "amd64"
+perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+
+# Fix for gnutar (Slightly modified for bootstrap version)
+perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
+perl -pi -e 's,--warning=no-timestamp,--quoting-style=escape,g' dpkg-deb/extract.c
 <<
-SetCFLAGS: -I%p/include
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
+
+SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-incompatible-pointer-types -Wno-format-security
+SetLDFLAGS: -framework CoreFoundation
+
+ConfigureParams: --without-sgml-doc --without-liblzma --without-bz2 --without-zlib --disable-install-info --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --with-logdir=%P/var/log --srcdir=%b
+
 CompileScript: <<
- PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
- make
+PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
+/usr/bin/make
 <<
-ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix --disable-nls
+
 InstallScript: <<
- mkdir -p %i/share/doc/dpkg
- make install DESTDIR=%d
+install -d -m 0755 %i/share/doc/dpkg
+
+/usr/bin/make install DESTDIR=%d
+
+### Just a precaution
+mkdir -p %i/var/log
+touch %i/var/log/alternatives.log
 <<
 Description: The Debian package manager (bootstrap package)
 DescDetail: <<
-dpkg installs and removes binary packages; it is the base of the
-distribution. This package also contains some helper programs. This
-package does not build dselect and thus doesn't require ncurses. It is
-intended to be used during bootstrap.
+This package provides the low-level infrastructure for handling the
+installation and removal of Debian software packages.
+.
+For Debian package development tools, install dpkg-dev.
 <<
 DescPort: <<
-1.10.9 
-- Removed --without-zlib flag
-- Gets confused about top_srcdir without the --srcdir arg.
-- Fixed bug with BR manpage
-- Patched update-rc.d out of the app check code, not needed on OS X.
-
-Pre-Jaguar: Needed fixes to use the right architecture, disable code that uses
-unimplemented functions on Darwin and other stuff.
-
-Added code to support the pseudo package 'macosx' and 'darwin'.
-
-Fix to install-info script to prevent a certain problem with section titles.
-
-Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $prefix.
-
-Patched to suppress warning about BuildDependsOnly control field.
-
-Previous versions by Christoph Pfisterer.
-
-Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
-
-Patched to hardcode complete paths to our component executables
-instead of relying on PATH
-
-stpncpy test may fail due to wrong prototype even if we have the
-function, so remove AIX-bug-specific hack
-<<
-DescPackaging: <<
-  admindir goes in %P (eventual live basedir) not %p (bootstrap
-  basedir): dpkg-bootstrap needs to set up the initial live dpkg
-  status database.
-
-  removed Depends and BuildDepends since this is built during phase two
-  of bootstrap and those fields are not relevant there
+See dpkg DescPort
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html

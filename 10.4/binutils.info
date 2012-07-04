@@ -6,6 +6,7 @@ Source-MD5: 9cdfb9d6ec0578c166d3beae5e15c4e5
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man --program-prefix=g --disable-werror
 BuildDepends: libgettext8-dev, fink (>= 0.24.12-1)
 Depends: libgettext8-shlibs
+Essential: true
 PatchScript: sed -i.bak -e 's,^skipdirs=$,skipdirs="gas ld gdb gprof",' configure
 
 CompileScript: <<
