@@ -4426,10 +4426,12 @@ EOF
 
 			if (-f $_) {
 				my $md5file = $File::Find::name;
+				# We're already requiring Fink::Checksum so use that to get
+				# the MD5.
+				my $md5sum = Fink::Checksum->get_checksum($md5file);
 				# md5sums wants filename relative to
 				# installed-location FS root
-				my $md5file =~ s/^$destdir\///;
-				my $md5sum = file_MD5_checksum($File::Find::name);
+				$md5file =~ s/^$destdir\///;
 				$md5s .= "$md5file  $md5sum\n";
 			}
 		}, $destdir
