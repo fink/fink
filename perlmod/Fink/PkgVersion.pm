@@ -4422,7 +4422,7 @@ EOF
 	### we will know if a packages file has be changed
 	
 	require File::Find;
-	my ($md5sum, $md5s);
+	my $md5s;
 	
 	File::Find::find(sub {
 			# Don't descend into DEBIAN directories
@@ -4430,11 +4430,11 @@ EOF
 
 			if (-f $_) {
 				my $md5file = $File::Find::name;
-				# lets remove $destdir, we add 2 spaces so
-				# output matches that of md5sums
-				$md5file =~ s/^$destdir\//  /;
-				$md5file = Fink::Services::file_MD5_checksum($File::Find::name).$md5file;
-				$md5s .= $md5file."\n";
+				# md5sums wants filename relative to
+				# installed-location FS root
+				my $md5file =~ s/^$destdir\///;
+				my $md5sum = file_MD5_checksum($File::Find::name);
+				$md5s .= "$md5file  $md5sum\n";
 			}
 		}, $destdir
 	);
