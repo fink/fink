@@ -374,9 +374,6 @@ END
 				);
 		}
 		$perlprovides .= ', ' . join(', ', map { $_ . '-pm' . $shortver } sort @modules);
-		if ($perlver >= 5.012000) {
-			$perlprovides .= ', parse-cpan-meta-pm';
-		}
 		$hash->{provides} = $perlprovides;
 	} else {
 		$hash->{version} = '0-0';
