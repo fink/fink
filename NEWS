@@ -5,11 +5,21 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.33.x
 \-------------
 
+0.33.3 "Higgsino" (2012-07-05)
+	* Bugfix: force fink to put temporary scripts in /tmp when building as
+	  fink-bld to avoid failures under "sudo -E -s" and "su -m". 
+	* Generate the MD5sums of all of the files for a package and store them in
+	  the .deb.
+	* Suppress STDERR messages from xcodebuild for folks who insist on _not_
+	  having Xcode.app.
+	* Have the Version for xcode (>=4.3.0) correspond to the entire version string
+	  from "pkgutil --pkg-info com.apple.pkg.DeveloperToolsCLI".
+
 0.33.2 "sup squark" (2012-06-20)
 	* Bugfix:
 		* Use output from '/usr/libexec/java_home' to generate default 
 		  JAVA_HOME for builds.
-		  This works on 10.5-10.7, so it's probably going to change at some
+		* This works on 10.5-10.7, so it's probably going to change at some
 		  point without warning. :-)
 	* Better logic in checking for the expected gcc compilers.
 
