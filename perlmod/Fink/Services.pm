@@ -652,7 +652,8 @@ sub prepare_script {
 
 		# Put the script into a temporary file
 		my $tempdir = File::Spec->tmpdir;
-		$tempdir = "/tmp" if $drop_root and exists $ENV{"TMPDIR"};
+		my $mode = (stat($tempdir))[2] & 07777;
+		$tempdir = "/tmp" if $drop_root and $mode != 1023;
 		my ($fh, $tempfile) = tempfile("fink.XXXXX", DIR => $tempdir) or die "unable to get temporary file: $!";
 		print $fh $$script;
 		close ($fh) or die "an unexpected error occurred closing $tempfile: $!";
