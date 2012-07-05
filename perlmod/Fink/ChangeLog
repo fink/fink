@@ -1,3 +1,9 @@
+2012-06-28  Justin F. Hallett  <thesin@users.sourceforge.net>
+
+	* PkgVersion.pm: add auto DEBIAN/md5sums file generation, this is the
+	  first rough draft, 'find' call should be File::Find, and maybe
+	  'md5sum' call might need to be a pure perl function at somepoint.
+
 2011-11-06  Daniel Macks  <dmacks@netspace.org>
 
 	* Engine.pm (cmd_dumpinfo): add missing parameter (recently added
