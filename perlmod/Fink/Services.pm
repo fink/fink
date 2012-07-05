@@ -565,7 +565,7 @@ EOSCRIPT
 	}
 
 	# preprocess the script, making executable tempfile if necessary
-	my $is_tempfile = &prepare_script(\$script);
+	my $is_tempfile = &prepare_script(\$script,$drop_root);
 	return 0 if not defined $script;
 
 	# ignore SIGINT if requested
@@ -580,7 +580,7 @@ EOSCRIPT
 		unshift @wrap, 'env' if @wrap;
 		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
 		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
-		$wrap_token = "$sudo_cmd [ENV] sh -c";
+		$wrap_token = "$sudo_cmd [ENV] sh -c ";
 	}
 
 	# Execute each line as a separate command.
@@ -611,7 +611,7 @@ EOSCRIPT
 
 =item prepare_script
 
-	my $is_tempfile = prepare_script \$script;
+	my $is_tempfile = prepare_script \$script $drop_root;
 
 Given a ref to a scalar containing a (possibly multiline) script,
 parse it according to the *Script field rules and leave it in
@@ -631,13 +631,16 @@ and lines beginning with #. Return false and leave $script set to the
 parsed script. If there was nothing left after parsing, $script is set
 to undef.
 
+$drop_root is a boolean (e.g. from execute()) to indicate whether we're building
+as root or not.
 =cut
 
-# keep this function is separate (not pulled into execute*()) so we
+# keep this function as separate (not pulled into execute*()) so we
 # can write tests for it
 
 sub prepare_script {
 	my $script = shift;
+	my $drop_root = shift;
 
 	die "prepare_script was not passed a ref!\n" if not ref $script;
 	return 0 if not defined $$script;
@@ -648,7 +651,9 @@ sub prepare_script {
 		$$script .= "\n" if $$script !~ /\n$/;  # require have trailing newline
 
 		# Put the script into a temporary file
-		my ($fh, $tempfile) = tempfile("fink.XXXXX", DIR => File::Spec->tmpdir) or die "unable to get temporary file: $!";
+		my $tempdir = File::Spec->tmpdir;
+		$tempdir = "/tmp" if $drop_root and exists $ENV{"TMPDIR"};
+		my ($fh, $tempfile) = tempfile("fink.XXXXX", DIR => $tempdir) or die "unable to get temporary file: $!";
 		print $fh $$script;
 		close ($fh) or die "an unexpected error occurred closing $tempfile: $!";
 		chmod(0755, $tempfile);
