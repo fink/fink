@@ -4430,7 +4430,7 @@ EOF
 				# output matches that of md5sums
 				$md5file =~ s/^$destdir\//  /;
 				$md5file = Fink::Services::file_MD5_checksum($File::Find::name).$md5file;
-				print $md5file."\n";
+				$md5s .= $md5file."\n";
 			}
 		}, $destdir
 	);
