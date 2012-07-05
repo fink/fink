@@ -4417,15 +4417,23 @@ EOF
 	### of installed file, this will also help for trouble shooting, since
 	### we will know if a packages file has be changed
 	
+	require File::Find;
 	my ($md5sum, $md5s);
-	foreach my $f (`cd $destdir; find . -type f`) {
-		# can not start with ./
-		$f =~ s/^\.\///;
-		next if ($f =~ /^DEBIAN/);
-		$md5sum = `cd $destdir; md5sum $f`;
-		chomp $md5sum;
-		$md5s .= $md5sum."\n";
-	}
+	
+	File::Find::find(sub {
+			# Don't descend into DEBIAN directories
+			/DEBIAN/ and $File::Find::prune = 1;
+
+			if (-f $_) {
+				my $md5file = $File::Find::name;
+				# lets remove $destdir, we add 2 spaces so
+				# output matches that of md5sums
+				$md5file =~ s/^$destdir\//  /;
+				$md5file = Fink::Services::file_MD5_checksum($File::Find::name).$md5file;
+				$md5s .= $md5file."\n";
+			}
+		}, $destdir
+	);
 
 	# Only write if there are files that need md5sums
 	if ( $md5s ne "") {
