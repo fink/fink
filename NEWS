@@ -26,7 +26,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 	  having Xcode.app.
 	* Have the Version for xcode (>=4.3.0) correspond to the entire version string
 	  from "pkgutil --pkg-info com.apple.pkg.DeveloperToolsCLI".
-	* Bugfix: 0.33.3.1; fixes and performance improvements in the md5sum routine.
+	* Bugfix: 0.33.3.1: fixes and performance improvements in the md5sum routine.
+	* Bugfix: 0.33.3.2: more fixes for the md5sum generator
 
 0.33.2 "sup squark" (2012-06-20)
 	* Bugfix:
