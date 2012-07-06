@@ -4429,7 +4429,7 @@ EOF
 			# Don't descend into DEBIAN directories
 			/DEBIAN/ and $File::Find::prune = 1;
 
-			if (-f $_) {
+			if (-f $_ && ! -l $_) {
 				my $md5file = $File::Find::name;
 				# We're already requiring Fink::Checksum so use that to get
 				# the MD5.
