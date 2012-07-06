@@ -4425,10 +4425,13 @@ EOF
 	my $md5s;
 	my $md5check=Fink::Checksum->new('MD5');
 	
-	File::Find::find(sub {
-			# Don't descend into DEBIAN directories
-			/DEBIAN/ and $File::Find::prune = 1;
-
+	File::Find::find({
+		preprocess => sub {
+			# Don't descend into the .deb control directory
+			return () if $File::Find::dir eq "$destdir/DEBIAN";
+			return @_;
+		},
+		wanted => sub {
 			if (-f $_ && ! -l $_) {
 				my $md5file = $File::Find::name;
 				# We're already requiring Fink::Checksum so use that to get
@@ -4436,10 +4439,11 @@ EOF
 				my $md5sum = $md5check->get_checksum($md5file);
 				# md5sums wants filename relative to
 				# installed-location FS root
-				$md5file =~ s/^$destdir\///;
+				$md5file =~ s/^\Q$destdir\E\///;
 				$md5s .= "$md5file  $md5sum\n";
 			}
-		}, $destdir
+		},
+	}, $destdir
 	);
 
 	# Only write if there are files that need md5sums
