@@ -4423,6 +4423,7 @@ EOF
 	
 	require File::Find;
 	my $md5s;
+	my $md5check=Fink::Checksum->new('MD5');
 	
 	File::Find::find(sub {
 			# Don't descend into DEBIAN directories
@@ -4432,7 +4433,7 @@ EOF
 				my $md5file = $File::Find::name;
 				# We're already requiring Fink::Checksum so use that to get
 				# the MD5.
-				my $md5sum = Fink::Checksum->get_checksum($md5file);
+				my $md5sum = $md5check->($md5file);
 				# md5sums wants filename relative to
 				# installed-location FS root
 				$md5file =~ s/^$destdir\///;
