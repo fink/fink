@@ -4421,15 +4421,30 @@ EOF
 	### of installed file, this will also help for trouble shooting, since
 	### we will know if a packages file has be changed
 	
-	my ($md5sum, $md5s);
-	foreach my $f (`cd $destdir; find . -type f`) {
-		# can not start with ./
-		$f =~ s/^\.\///;
-		next if ($f =~ /^DEBIAN/);
-		$md5sum = `cd $destdir; md5sum $f`;
-		chomp $md5sum;
-		$md5s .= $md5sum."\n";
-	}
+	require File::Find;
+	my $md5s;
+	my $md5check=Fink::Checksum->new('MD5');
+	
+	File::Find::find({
+		preprocess => sub {
+			# Don't descend into the .deb control directory
+			return () if $File::Find::dir eq "$destdir/DEBIAN";
+			return @_;
+		},
+		wanted => sub {
+			if (-f $_ && ! -l $_) {
+				my $md5file = $File::Find::name;
+				# We're already requiring Fink::Checksum so use that to get
+				# the MD5.
+				my $md5sum = $md5check->get_checksum($md5file);
+				# md5sums wants filename relative to
+				# installed-location FS root
+				$md5file =~ s/^\Q$destdir\E\///;
+				$md5s .= "$md5file  $md5sum\n";
+			}
+		},
+	}, $destdir
+	);
 
 	# Only write if there are files that need md5sums
 	if ( $md5s ne "") {

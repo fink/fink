@@ -4,7 +4,7 @@ Revision: 1
 GCC: 4.0
 ## Remove po4a
 BuildDepends: fink (>= 0.24.12), libgettext8-dev, gettext-tools, liblzma5, pkgconfig, bzip2-dev, libncursesw5
-Depends: bzip2-shlibs, libgettext8-shlibs, liblzma5-shlibs, tar
+Depends: bzip2-shlibs, libgettext8-shlibs, liblzma5-shlibs, tar, install-info
 Conflicts: dpkg-bootstrap
 Replaces: dpkg-bootstrap
 Suggests: apt
@@ -16,10 +16,25 @@ SourceDirectory: dpkg-%v
 Source-MD5: 39c74a948c6fe4c02ed9f15556fe179d
 
 PatchFile: %n.patch
-PatchFile-MD5: 553eeb0d27ea28b9bbd5b29e75d86d7b
+PatchFile-MD5: 094798cce15951b08e7a8625a2dc40e1
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+
+patch -p1 < fink/patches/add-BOD.patch
+patch -p1 < fink/patches/build-fix.patch
+patch -p1 < fink/patches/c++filt-defaults.patch
+patch -p1 < fink/patches/dselect-methods.patch
+### Adding trigger to fink.info, this isn't required
+#patch -p1 < fink/patches/fink-triggers.patch
+patch -p1 < fink/patches/fink-virtuals.patch
+patch -p1 < fink/patches/full-path-calls.patch
+patch -p1 < fink/patches/gzip-rsyncable-fix.patch
+patch -p1 < fink/patches/location-fixes.patch
+patch -p1 < fink/patches/protect-system-dirs.patch
+patch -p1 < fink/patches/so-to-dylib.patch
+patch -p1 < fink/patches/test-fix.patch
+patch -p1 < fink/patches/update-alternative.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
