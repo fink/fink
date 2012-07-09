@@ -1,0 +1,897 @@
+diff -ruN texinfo-4.13.orig/fink/conf/50cyrtexinfo.cnf texinfo-4.13/fink/conf/50cyrtexinfo.cnf
+--- texinfo-4.13.orig/fink/conf/50cyrtexinfo.cnf	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/conf/50cyrtexinfo.cnf	2012-07-09 13:20:38.000000000 -0600
+@@ -0,0 +1,18 @@
++# 
++# 50cyrtexinfo.cnf
++#
++# Please leave this comment!
++# -_- DebPkgProvidedMaps -_-
++#
++# Texinfo formats for cyrillic language
++#
++# If you want to build cyrtexinfo, the cyrillic texinfo format, you have
++# to do the following steps (all as root)
++# . install either tetex-base and tetex-extra, or texlive-langcyrillic
++# . comment out the format line in this file
++# . create a link
++#	/usr/local/bin/cyrtexinfo -> ../../bin/pdfetex
++# . call update-fmtutil
++# . call fmtutil-sys --missing (or --all)
++#
++#cyrtexinfo pdfetex language.dat -translate-file=cp227.tcx *cyrtxinf.ini
+diff -ruN texinfo-4.13.orig/fink/info.menu texinfo-4.13/fink/info.menu
+--- texinfo-4.13.orig/fink/info.menu	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/info.menu	2012-07-09 13:31:11.000000000 -0600
+@@ -0,0 +1,2 @@
++?package(info): needs="text" title="Info" section="Help" \
++  longtitle="GNU Info browser" command="info"
+diff -ruN texinfo-4.13.orig/fink/install-info.1 texinfo-4.13/fink/install-info.1
+--- texinfo-4.13.orig/fink/install-info.1	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/install-info.1	2012-07-09 13:17:17.000000000 -0600
+@@ -0,0 +1,29 @@
++.TH INSTALL-INFO 1
++.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
++.\" other parms are allowed: see man(7), man(1)
++.SH NAME
++install-info \- wrapper around GNU install-info
++.SH SYNOPSIS
++.B install-info
++.I "[options]"
++.br
++.SH DESCRIPTION
++This manual page documents briefly the
++.BR install-info
++command.
++This manual page was written for the Debian GNU/Linux distribution
++because the original script was designed for Debian packaging system.
++.PP
++.B install-info
++is a wrapper around GNU install-info. If it is called from a normal
++shell or script it acts like GNU install-info by forwarding all options
++to ginstall-info.
++.PP
++If it is called from a maintainer script it gives a warning to rebuild
++packages and does nothing, since info file installation is now done
++via triggers.
++.SH OPTIONS
++Same as with GNU install-info, see ginstall-info(1).
++.SH AUTHOR
++This manual page was written by Norbert Preining <preining@logic.at>,
++for the Debian GNU/Linux system (but may be used by others).
+diff -ruN texinfo-4.13.orig/fink/install-info.sh texinfo-4.13/fink/install-info.sh
+--- texinfo-4.13.orig/fink/install-info.sh	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/install-info.sh	2012-07-09 13:16:47.000000000 -0600
+@@ -0,0 +1,36 @@
++#!/bin/sh
++#
++# Wrapper to the GNU's install-info, to be compatible with the one that used to
++# be packaged by dpkg on Debian.
++#
++# written by Norbert Preining, this is not copyrightable ;-)
++#
++set -e
++
++if [ -z "$DPKG_RUNNING_VERSION" ] ; then
++  # it seems we are running from outside a maintainer script, so give a
++  # warning and call ginstall-info without anything else
++  echo "This is not dpkg install-info anymore, but GNU install-info" >&2
++  echo "See the man page for ginstall-info for command line arguments" >&2
++  @FINKPREFIX@/bin/ginstall-info "$@"
++else 
++  # we are running from a maintainer script, simply ignore the call
++  # since we have trigger support and people should rebuild their
++  # package with new debhelper which does not add calls to install-info
++  # Do not complain if called with "--remove" or "--remove-exactly",
++  # as these are used in old packages' prerm scripts (see #546165)
++  while [ -n "$1" ]; do
++    case "$1" in
++      --remove|--remove-exactly)
++        exit 0
++        ;;
++      *)
++        shift
++        ;;
++    esac
++  done
++  echo "Ignoring install-info called from maintainer script" >&2
++  echo "The package $DPKG_MAINTSCRIPT_PACKAGE should be rebuilt with new debhelper to get trigger support" >&2
++fi
++
++
+diff -ruN texinfo-4.13.orig/fink/install-info.triggers texinfo-4.13/fink/install-info.triggers
+--- texinfo-4.13.orig/fink/install-info.triggers	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/install-info.triggers	2012-07-09 13:30:53.000000000 -0600
+@@ -0,0 +1,2 @@
++interest @FINKPREFIX@/share/info
++interest @FINKPREFIX@/info
+diff -ruN texinfo-4.13.orig/fink/patches/check-nodes-boundaries texinfo-4.13/fink/patches/check-nodes-boundaries
+--- texinfo-4.13.orig/fink/patches/check-nodes-boundaries	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/check-nodes-boundaries	2012-07-09 13:22:37.000000000 -0600
+@@ -0,0 +1,22 @@
++patch for fixing #598932, a segfault under certain circumstances due to
++wrong node computation if the .info file is malformed.
++The patch is based on the one checked in to texinfo cvs by 
++Sergey Poznyakoff
++---
++ info/nodes.c |   13 +++++++++++--
++ 1 file changed, 11 insertions(+), 2 deletions(-)
++
++Index: texinfo-4.13a.dfsg.1/info/nodes.c
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/info/nodes.c	2010-10-08 10:00:22.000000000 +0900
+++++ texinfo-4.13a.dfsg.1/info/nodes.c	2010-10-08 10:13:25.000000000 +0900
++@@ -960,6 +960,9 @@
++         /* If we were able to find this file and load it, then return
++            the node within it. */
++         {
+++          if (!(tag->nodestart >= 0 && tag->nodestart < subfile->filesize))
+++            return NULL;
+++
++           NODE *node = xmalloc (sizeof (NODE));
++           node->filename    = subfile->fullpath;
++           node->parent      = NULL;
+diff -ruN texinfo-4.13.orig/fink/patches/dont_build_info texinfo-4.13/fink/patches/dont_build_info
+--- texinfo-4.13.orig/fink/patches/dont_build_info	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/dont_build_info	2012-07-09 13:22:09.000000000 -0600
+@@ -0,0 +1,44 @@
++70_dont_build_info.dpatch by Norbert Preining
++
++dont build the info documentation, it has been removed
++
++---
++ doc/Makefile.in |   12 ++++++++----
++ 1 file changed, 8 insertions(+), 4 deletions(-)
++
++Index: texinfo-4.13a.dfsg.1/doc/Makefile.in
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/doc/Makefile.in	2008-09-18 20:46:24.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/doc/Makefile.in	2009-03-09 15:17:15.000000000 +0100
++@@ -121,14 +121,16 @@
++ CONFIG_CLEAN_FILES =
++ SOURCES =
++ DIST_SOURCES =
++-INFO_DEPS = texinfo info-stnd.info info.info
+++#INFO_DEPS = texinfo info-stnd.info info.info
+++INFO_DEPS = 
++ TEXINFO_TEX = $(top_srcdir)/build-aux/texinfo.tex
++ am__TEXINFO_TEX_DIR = $(top_srcdir)/build-aux
++ DVIS = texinfo.dvi info-stnd.dvi info.dvi
++ PDFS = texinfo.pdf info-stnd.pdf info.pdf
++ PSS = texinfo.ps info-stnd.ps info.ps
++ HTMLS = texinfo.html info-stnd.html info.html
++-TEXINFOS = texinfo.txi info-stnd.texi info.texi
+++#TEXINFOS = texinfo.txi info-stnd.texi info.texi
+++TEXINFOS =
++ TEXI2DVI = texi2dvi
++ TEXI2PDF = $(TEXI2DVI) --pdf --batch
++ MAKEINFOHTML = $(MAKEINFO) --html
++@@ -435,8 +437,10 @@
++ top_srcdir = @top_srcdir@
++ 
++ # Put texinfo.txi first because that's the most important.
++-info_TEXINFOS = texinfo.txi info-stnd.texi info.texi
++-DISTCLEANFILES = texinfo texinfo-* info*.info*
+++#info_TEXINFOS = texinfo.txi info-stnd.texi info.texi
+++#DISTCLEANFILES = texinfo texinfo-* info*.info*
+++info_TEXINFOS = 
+++DISTCLEANFILES = 
++ man_MANS = info.1 infokey.1 install-info.1 makeinfo.1 texindex.1 \
++ 	info.5 texinfo.5 texi2dvi.1 texi2pdf.1 pdftexi2dvi.1
++ 
+diff -ruN texinfo-4.13.orig/fink/patches/fix-texi2dvi-bashism texinfo-4.13/fink/patches/fix-texi2dvi-bashism
+--- texinfo-4.13.orig/fink/patches/fix-texi2dvi-bashism	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/fix-texi2dvi-bashism	2012-07-09 13:22:56.000000000 -0600
+@@ -0,0 +1,17 @@
++---
++ util/texi2dvi |    2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
++
++Index: texinfo-4.12.dfsg.1/util/texi2dvi
++===================================================================
++--- texinfo-4.12.dfsg.1.orig/util/texi2dvi	2008-06-13 09:28:00.000000000 +0200
+++++ texinfo-4.12.dfsg.1/util/texi2dvi	2008-06-13 09:36:34.000000000 +0200
++@@ -1105,7 +1105,7 @@
++ # main info output, the user asked to run TeX, not makeinfo.
++ run_makeinfo ()
++ {
++-  test $in_lang == texinfo ||
+++  test $in_lang = texinfo ||
++     return 0
++ 
++   # Unless required by the user, makeinfo expansion is wanted only
+diff -ruN texinfo-4.13.orig/fink/patches/info_core_dump_small_window texinfo-4.13/fink/patches/info_core_dump_small_window
+--- texinfo-4.13.orig/fink/patches/info_core_dump_small_window	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/info_core_dump_small_window	2012-07-09 13:23:15.000000000 -0600
+@@ -0,0 +1,17 @@
++--- texinfo-4.13a.dfsg.1.orig/info/window.c	2008-09-18 20:31:59.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/info/window.c	2011-02-09 15:51:46.000000000 +0100
++@@ -923,7 +923,13 @@
++         break;
++     }
++ 
++-  return i - 1;
+++  /* Something is wrong with the above logic as it allows a negative
+++     index to be returned for small windows.  Until someone figures it
+++     out, at least don't core dump. */
+++  if (i>0)
+++    return i - 1;
+++  else
+++    return 0;
++ }
++ 
++ /* Get and return the goal column for this window. */
+diff -ruN texinfo-4.13.orig/fink/patches/info_universal_argument texinfo-4.13/fink/patches/info_universal_argument
+--- texinfo-4.13.orig/fink/patches/info_universal_argument	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/info_universal_argument	2012-07-09 14:00:25.000000000 -0600
+@@ -0,0 +1,35 @@
++50_info_universal_argument.dpatch by Peter De Wachter <pdewacht@vub.ac.be>
++
++fix crash in info under nl locale
++
++---
++ po/ro.po |    2 +-
++ po/tr.po |    2 +-
++ 2 files changed, 2 insertions(+), 2 deletions(-)
++
++Index: texinfo-4.13a.dfsg.1/po/ro.po
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/po/ro.po	2008-09-18 20:38:32.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/po/ro.po	2009-03-09 15:17:06.000000000 +0100
++@@ -1681,7 +1681,7 @@
++ 
++ #: info/session.c:5149
++ msgid "Internally used by \\[universal-argument]"
++-msgstr "Folosit intern de \\[argument-universal]"
+++msgstr "Folosit intern de \\[universal-argument]"
++ 
++ #: info/tilde.c:336
++ #, c-format
++Index: texinfo-4.13a.dfsg.1/po/tr.po
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/po/tr.po	2008-09-18 20:38:33.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/po/tr.po	2009-03-09 15:17:06.000000000 +0100
++@@ -1683,7 +1683,7 @@
++ 
++ #: info/session.c:5149
++ msgid "Internally used by \\[universal-argument]"
++-msgstr "Dahili olarak \\[universal argument] taraf?ndan kullan?l?yor"
+++msgstr "Dahili olarak \\[universal-argument] taraf?ndan kullan?l?yor"
++ 
++ #: info/tilde.c:336
++ #, c-format
+diff -ruN texinfo-4.13.orig/fink/patches/minor-buffer-size-fix texinfo-4.13/fink/patches/minor-buffer-size-fix
+--- texinfo-4.13.orig/fink/patches/minor-buffer-size-fix	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/minor-buffer-size-fix	2012-07-09 13:24:04.000000000 -0600
+@@ -0,0 +1,26 @@
++Author: Kees Cook <kees@ubuntu.com>
++Description: extend stack buffers to be large enough for the type values
++ they are expected to hold.
++Bug: https://savannah.gnu.org/bugs/?32122
++Bug-Ubuntu: https://launchpad.net/bugs/569802
++
++Index: texinfo-4.13a.dfsg.1/makeinfo/sectioning.c
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/makeinfo/sectioning.c	2011-01-13 14:12:35.382016526 -0800
+++++ texinfo-4.13a.dfsg.1/makeinfo/sectioning.c	2011-01-13 14:14:41.285127427 -0800
++@@ -256,13 +256,13 @@
++     return xstrdup ("");
++   else if (enum_marker == APPENDIX_MAGIC)
++     {
++-      char s[1];
+++      char s[2];
++       sprintf (s, "%c", numbers[0] + 64);
++       return xstrdup (s);
++     }
++   else
++     {
++-      char s[5];
+++      char s[32];
++       sprintf (s, "%d", numbers[0]);
++       return xstrdup (s);
++     }
+diff -ruN texinfo-4.13.orig/fink/patches/replace_egrep_fgrep_sigs texinfo-4.13/fink/patches/replace_egrep_fgrep_sigs
+--- texinfo-4.13.orig/fink/patches/replace_egrep_fgrep_sigs	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/replace_egrep_fgrep_sigs	2012-07-09 13:25:36.000000000 -0600
+@@ -0,0 +1,103 @@
++40_replace_egrep_fgrep_sigs.dpatch by David Weinehall <tao@debian.org>
++
++Replace egrep by grep -E, fgrep by grep -F, and numerical signals
++by signal names
++
++---
++ makeinfo/tests/cond |   16 ++++++++--------
++ util/fixfonts       |    2 +-
++ util/gen-dir-node   |    6 +++---
++ util/texi2dvi       |    2 +-
++ 4 files changed, 13 insertions(+), 13 deletions(-)
++
++Index: texinfo-4.13a.dfsg.1/makeinfo/tests/cond
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/makeinfo/tests/cond	2005-04-05 23:04:16.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/makeinfo/tests/cond	2009-03-09 15:16:58.000000000 +0100
++@@ -6,28 +6,28 @@
++ 
++ # Default Info output.
++ ../makeinfo -o cond.out $srcdir/cond.txi || exit 1
++-egrep 'This is (ifnothtml|ifinfo|ifnottex) text' cond.out >/dev/null \
+++grep -E 'This is (ifnothtml|ifinfo|ifnottex) text' cond.out >/dev/null \
++   || exit 2
++-test `fgrep -c ' text.' cond.out` -eq 3 || exit 3
+++test `grep -F -c ' text.' cond.out` -eq 3 || exit 3
++ 
++ # Default HTML output.
++ ../makeinfo --no-split --html -o cond.out $srcdir/cond.txi || exit 1
++-egrep 'This is (html|ifhtml|ifnotinfo|ifnottex) text' cond.out >/dev/null \
+++grep -E 'This is (html|ifhtml|ifnotinfo|ifnottex) text' cond.out >/dev/null \
++  || exit 2
++-test `fgrep -c ' text.' cond.out` -eq 4 || exit 3
+++test `grep -F -c ' text.' cond.out` -eq 4 || exit 3
++ 
++ # --ifhtml off, --ifinfo off, --iftex off.
++ ../makeinfo --no-ifhtml --no-ifinfo --no-iftex -o cond.out $srcdir/cond.txi || exit 1
++-egrep 'This is ifnot(html|info|tex) text' cond.out >/dev/null \
+++grep -E 'This is ifnot(html|info|tex) text' cond.out >/dev/null \
++  || exit 2
++-test `fgrep -c ' text.' cond.out` -eq 3 || exit 3
+++test `grep -F -c ' text.' cond.out` -eq 3 || exit 3
++ 
++ # Do we really need to test all the other permutations?
++ 
++ # --ifhtml on, --ifinfo on, --iftex on.
++ ../makeinfo --ifhtml --ifinfo --iftex -o cond.out $srcdir/cond.txi || exit 1
++-egrep 'This is (html|ifhtml|ifinfo|tex|iftex) text' cond.out >/dev/null \
+++grep -E 'This is (html|ifhtml|ifinfo|tex|iftex) text' cond.out >/dev/null \
++  || exit 2
++-test `fgrep -c ' text.' cond.out` -eq 5 || exit 3
+++test `grep -F -c ' text.' cond.out` -eq 5 || exit 3
++ 
++ rm -f cond.out cond.info
++Index: texinfo-4.13a.dfsg.1/util/fixfonts
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/util/fixfonts	2002-08-26 01:38:39.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/util/fixfonts	2009-03-09 15:16:58.000000000 +0100
++@@ -33,7 +33,7 @@
++ tempfile2="${TMPDIR}/circ2$$"
++ 
++ # EXIT SIGHUP SIGINT SIGQUIT SIGTERM
++-#trap 'rm -f "${tempfile}" "${tempfile2}"' 0 1 2 3 15
+++#trap 'rm -f "${tempfile}" "${tempfile2}"' 0 HUP INT QUIT TERM
++ 
++ # Find all the fonts with names that include `circle'.
++ (cd "${texfontdir}"; find . -name '*circle*' -print > "${tempfile}")
++Index: texinfo-4.13a.dfsg.1/util/gen-dir-node
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/util/gen-dir-node	2004-04-11 19:56:47.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/util/gen-dir-node	2009-03-09 15:16:58.000000000 +0100
++@@ -79,7 +79,7 @@
++ ### then generate entries for those in the same way, putting the info for 
++ ### those at the end....
++ 
++-infofiles=`(cd ${INFODIR}; /bin/ls | grep -v '\-[0-9]*$' | egrep -v '^dir$|^dir\.info$|^dir\.orig$')`
+++infofiles=`(cd ${INFODIR}; /bin/ls | grep -v '\-[0-9]*$' | grep -E -v '^dir$|^dir\.info$|^dir\.orig$')`
++ 
++ # echoing gets clobbered by backquotes; we do it the hard way...
++ lines=`wc $SKELETON | awk '{print $1}'`
++@@ -166,8 +166,8 @@
++ 
++ # Sort remaining files by INFO-DIR-SECTION.
++ prevsect=
++-filesectdata=`(cd ${INFODIR}; fgrep INFO-DIR-SECTION /dev/null ${infofiles} | \
++-	      fgrep -v 'INFO-DIR-SECTION Miscellaneous' | \
+++filesectdata=`(cd ${INFODIR}; grep -F INFO-DIR-SECTION /dev/null ${infofiles} | \
+++	      grep -F -v 'INFO-DIR-SECTION Miscellaneous' | \
++ 	      sort -t: -k2 -k1 | tr ' ' '_')`
++ for sectdata in ${filesectdata}; do
++   file=`echo ${sectdata} | cut -d: -f1`
++Index: texinfo-4.13a.dfsg.1/util/texi2dvi
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/util/texi2dvi	2009-03-09 15:16:49.000000000 +0100
+++++ texinfo-4.13a.dfsg.1/util/texi2dvi	2009-03-09 15:16:58.000000000 +0100
++@@ -1760,7 +1760,7 @@
++ 	     sed 's,/,!,g'`
++   esac
++   # Remove it at exit if clean mode.
++-  trap "cleanup" 0 1 2 15
+++  trap "cleanup" 0 HUP INT TERM
++ 
++   ensure_dir "$build_dir" "$t2ddir"
++ 
+diff -ruN texinfo-4.13.orig/fink/patches/texi-allow-shell-escape.diff texinfo-4.13/fink/patches/texi-allow-shell-escape.diff
+--- texinfo-4.13.orig/fink/patches/texi-allow-shell-escape.diff	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/texi-allow-shell-escape.diff	2012-07-09 13:27:02.000000000 -0600
+@@ -0,0 +1,37 @@
++diff -urN texinfo-4.13a.dfsg.1_svn/util/texi2dvi texinfo-4.13a.dfsg.1/util/texi2dvi
++--- texinfo-4.13a.dfsg.1_svn/util/texi2dvi	2012-02-07 13:45:49.000000000 +0100
+++++ texinfo-4.13a.dfsg.1/util/texi2dvi	2012-02-07 13:47:53.000000000 +0100
++@@ -69,6 +69,7 @@
++ recode=false
++ set_language=
++ src_specials=
+++shell_escape=
++ textra=         # Extra TeX commands to insert in the input file.
++ txiprereq=19990129 # minimum texinfo.tex version with macro expansion
++ verb=false      # true for verbose mode
++@@ -331,6 +332,7 @@
++   -p, --pdf                  use pdftex or pdflatex for processing
++   -r, --recode               call recode before TeX to translate input
++       --recode-from=ENC      recode from ENC to the @documentencoding
+++      --shell-escape         pass --shell-escape to TeX
++       --src-specials         pass --src-specials to TeX
++   -t, --command=CMD          insert CMD in copy of input file
++    or --texinfo=CMD          multiple values accumulate
++@@ -936,6 +938,9 @@
++   # source, given a sufficiently smart editor), if specifed.
++   test -n "$src_specials" && cmd="$cmd $src_specials"
++ 
+++  # Tell TeX to allow running external executables
+++  test -n "$shell_escape" && cmd="$cmd $shell_escape"
+++
++   # Tell TeX to be batch if requested.
++   if $batch; then
++     # \batchmode does not show terminal output at all, so we don't
++@@ -1563,6 +1568,7 @@
++     -r | --recode) recode=true;;
++     --recode-from) shift; recode=true; recode_from="$1";;
++     --src-specials) src_specials=--src-specials;;
+++    --shell-escape) shell_escape=--shell-escape;;
++     -t | --texinfo | --command ) shift; textra="$textra\\
++ "`echo "$1" | sed 's/\\\\/\\\\\\\\/g'`;;
++     --text) out_lang=text;;
+diff -ruN texinfo-4.13.orig/fink/patches/texi-allow-tilde texinfo-4.13/fink/patches/texi-allow-tilde
+--- texinfo-4.13.orig/fink/patches/texi-allow-tilde	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/texi-allow-tilde	2012-07-09 13:27:40.000000000 -0600
+@@ -0,0 +1,74 @@
++texi-allow-tilde patch by Karl Berry
++included upstream
++
++    calling texi2dvi /path/with~tilde/in/the/path.texi breaks 
++
++I installed the patch below (modulo documentation, etc.) to support tildes.  
++There's an undocumented -~ option to avoid all this madness in case it's
++totally broken.  Hope none of these literal tildes mess anything up.
++
++More special characters could be supported, but then we'd have to assume
++a matching texinfo.tex (then -~ could come in useful).  Plus, I've
++already spent too long on this for today.
++
++In any case, I advise using texi2dvi's tidy mode when special characters
++are a concern.  It will work with a wider range of characters in the
++directory portion, at least.  Besides being cleaner in general.
++
++---
++ util/texi2dvi |   26 +++++++++++++++++++++-----
++ 1 file changed, 21 insertions(+), 5 deletions(-)
++
++Index: texinfo-4.13a.dfsg.1/util/texi2dvi
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/util/texi2dvi	2009-03-18 14:40:08.000000000 +0100
+++++ texinfo-4.13a.dfsg.1/util/texi2dvi	2009-03-18 14:40:18.000000000 +0100
++@@ -56,6 +56,7 @@
++ # Instead, assign them an empty value.
++ action=compile
++ batch=false     # true for batch mode
+++catcode_special=true
++ debug=false
++ escape="\\"
++ expand=         # t for expansion via makeinfo
++@@ -938,12 +939,27 @@
++     # \batchmode does not show terminal output at all, so we don't
++     # want that.  And even in batch mode, TeX insists on having input
++     # from the user.  Close its stdin to make it impossible.
++-    cmd="$cmd </dev/null '${escape}nonstopmode' '${escape}input'"
+++    cmd="$cmd </dev/null '${escape}nonstopmode'"
++   fi
++ 
++-  # we'd like to handle arbitrary input file names, such as a~b.tex.
++-  # This isn't a general way to do it :), though it does work, kind of.
++-  # cmd="$cmd '${escape}catcode126=12 \input '"
+++  # we'd like to handle arbitrary input file names, especially
+++  # foo~bar/a~b.tex, since Debian likes ~ characters.
+++  if $catcode_special; then
+++    # $normaltilde is just to reduce line length in this source file.
+++    # The idea is to define \normaltilde as a catcode other ~ character,
+++    # then make the active ~ be equivalent to that, instead of the plain
+++    # TeX tie.  Then when the active ~ appears in the filename, it will
+++    # be expanded to itself, as far as \input will see.  (This is the
+++    # same thing that texinfo.tex does in general, BTW.)
+++    normaltilde="${escape}catcode126=12 ${escape}def${escape}normaltilde{~}"
+++    cmd="$cmd '$normaltilde${escape}catcode126=13 ${escape}let~\normaltilde '"
+++  fi
+++  # Other special (non-active) characters could be supported by
+++  # resetting their catcodes to other on the command line and changing
+++  # texinfo.tex to initialize everything to plain catcodes.  Maybe someday.
+++  
+++  # append the \input command.
+++  cmd="$cmd '${escape}input'"
++ 
++   # TeX's \input does not (easily or reliably) support whitespace
++   # characters or other special characters in file names.  Our intensive
++@@ -958,7 +974,7 @@
++   # harm in making the link.
++   #
++   case $tidy:`func_dirname "$in_input"` in
++-    true:*["$space$tab$newline\"#\$%\\^_{}"]*)
+++    true:*["$space$tab$newline\"#\$%\\^_{}~"]*)
++       _run_tex_file_name=`basename "$in_input"`
++       if test ! -f "$_run_tex_file_name"; then
++ 	# It might not be a file, clear it.
+diff -ruN texinfo-4.13.orig/fink/patches/texi2dvi-local-fallback-syntax.diff texinfo-4.13/fink/patches/texi2dvi-local-fallback-syntax.diff
+--- texinfo-4.13.orig/fink/patches/texi2dvi-local-fallback-syntax.diff	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/texi2dvi-local-fallback-syntax.diff	2012-07-09 13:26:08.000000000 -0600
+@@ -0,0 +1,21 @@
++ ChangeLog     |    7 +++++++
++ util/texi2dvi |    4 +++-
++ 2 files changed, 10 insertions(+), 1 deletions(-)
++
++--- texinfo-4.12.dfsg.1.orig/util/texi2dvi
+++++ texinfo-4.12.dfsg.1/util/texi2dvi
++@@ -141,11 +141,13 @@ test -n "$TEX" && test -d "$TEX" && unset TEX
++   }
++   test_local >/dev/null 2>&1
++   test $foo = bar
++-) || local () {
+++) || eval '
+++local () {
++   case $1 in
++     *=*) eval "$1";;
++   esac
++ }
+++'
++ 
++ 
++ # cd_orig
+diff -ruN texinfo-4.13.orig/fink/patches/texi2dvi_non-C_locale texinfo-4.13/fink/patches/texi2dvi_non-C_locale
+--- texinfo-4.13.orig/fink/patches/texi2dvi_non-C_locale	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/texi2dvi_non-C_locale	2012-07-09 13:26:38.000000000 -0600
+@@ -0,0 +1,18 @@
++"grep [A-z]" is not allowed in non-C locale.
++---
++ util/texi2dvi |    2 +-
++  1 file changed, 1 insertion(+), 1 deletion(-)
++  
++Index: texinfo-4.12.dfsg.1/util/texi2dvi
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/util/texi2dvi.orig	2010-11-04 15:28:50.000000000 +0100
+++++ texinfo-4.13a.dfsg.1/util/texi2dvi	2010-11-04 15:35:14.000000000 +0100
++@@ -1710,7 +1710,7 @@
++ 
++   # If the COMMAND_LINE_FILENAME is not absolute (e.g., --debug.tex),
++   # prepend `./' in order to avoid that the tools take it as an option.
++-  echo "$command_line_filename" | $EGREP '^(/|[A-z]:/)' >&6 \
+++  echo "$command_line_filename" | $EGREP '^(/|[A-Za-z]:/)' >&6 \
++   || command_line_filename="./$command_line_filename"
++ 
++   # See if the file exists.  If it doesn't we're in trouble since, even
+diff -ruN texinfo-4.13.orig/fink/patches/warn_missing_tex texinfo-4.13/fink/patches/warn_missing_tex
+--- texinfo-4.13.orig/fink/patches/warn_missing_tex	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/patches/warn_missing_tex	2012-07-09 13:29:16.000000000 -0600
+@@ -0,0 +1,28 @@
++20_warn_missing_tex.dpatch by  <preining@logic.at>
++
++---
++ util/texi2dvi |   11 +++++++++++
++ 1 file changed, 11 insertions(+)
++
++Index: texinfo-4.13a.dfsg.1/util/texi2dvi
++===================================================================
++--- texinfo-4.13a.dfsg.1.orig/util/texi2dvi	2008-09-18 20:46:01.000000000 +0200
+++++ texinfo-4.13a.dfsg.1/util/texi2dvi	2009-03-09 15:16:49.000000000 +0100
++@@ -32,6 +32,17 @@
++ # No failure shall remain unpunished.
++ set -e
++ 
+++if ! command -v tex >/dev/null 2>&1; then
+++ cat <<%EOM%
+++You don't have a working TeX binary installed, but the texi2dvi script
+++can't proceed without it. If you want to use this script, you have to
+++install some kind of TeX, for example TeX Live Debian packages. You can do
+++that with this command:
+++       fink install texlive
+++%EOM%
+++ exit 1
+++fi
+++
++ # This string is expanded by rcs automatically when this file is checked out.
++ rcs_revision='$Revision: 1.135 $'
++ rcs_version=`set - $rcs_revision; echo $2`
+diff -ruN texinfo-4.13.orig/fink/texi2pdf.man texinfo-4.13/fink/texi2pdf.man
+--- texinfo-4.13.orig/fink/texi2pdf.man	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/texi2pdf.man	2012-07-09 13:15:44.000000000 -0600
+@@ -0,0 +1,49 @@
++.TH "texi2pdf" "1" "September 2000" "teTeX" "teTeX" 
++.PP 
++.SH "NAME" 
++texi2pdf \- create a PDF file from a Texinfo file
++.PP 
++.SH "SYNOPSIS" 
++.PP 
++\fBtexi2pdf\fP [ \fIOPTION\fP\&.\&.\&. ]  \fIFILE\fP\&.\&.\&.
++.PP 
++.SH "DESCRIPTION" 
++.PP 
++\fBtexi2pdf\fP sets the \fBTEX\fP environment variable to
++\fBpdftex\fP(1) and runs \fBtexi2dvi\fP(1), passing all options to
++\fBtexi2dvi\fP(1)\&.
++.PP 
++.SH "OPTIONS" 
++.PP 
++See \fBtexi2dvi\fP(1) for relevant options\&.
++.PP 
++.SH "ENVIRONMENT" 
++.PP 
++.IP 
++.IP "\fBTEX\fP" 
++set to \fBpdftex\fP(1) by the script
++.IP 
++.PP 
++.SH "SEE ALSO" 
++.PP 
++\fBpdftex\fP(1), \fBtexi2dvi\fP(1), \fBtexinfo\fP(5)\&.
++.PP 
++.SH "BUGS" 
++.PP 
++Problems with this script should be reported to the author or to the
++teTeX list, <tetex@dbs\&.uni-hannover\&.de> (mailing list)\&. 
++.PP 
++Problems with \fBtexi2dvi\fP(1) should be reported to Karl Berry,
++the texinfo maintainer, at <bug-texinfo@gnu\&.org> (mailing list)
++.PP 
++.SH "AUTHOR" 
++.PP 
++Written by Thomas Esser 
++<te@dbs\&.uni-hannover\&.de>\&.
++.PP 
++This manual page was written by C\&.M\&. Connelly
++<c@eskimo\&.com>, for
++the Debian GNU/Linux system\&.  It may be used by other distributions
++without contacting the author\&.  Any mistakes or omissions in the
++manual page are my fault; inquiries about or corrections to this
++manual page should be directed to me (and not to the primary author)\&.
+diff -ruN texinfo-4.13.orig/fink/transition-plan.txt texinfo-4.13/fink/transition-plan.txt
+--- texinfo-4.13.orig/fink/transition-plan.txt	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/transition-plan.txt	2012-07-09 13:32:54.000000000 -0600
+@@ -0,0 +1,120 @@
++Proposal to replace Debian's install-info with GNU's install-info
++=================================================================
++Nicolas Fran?ois <nicolas.francois@centraliens.net>
++Norbert Preining <preining@debian.org>
++Nathanael Nerode <neroden@fastmail.fm>
++debian-dpkg@lists.debian.org
++texinfo@packages.debian.org
++
++Goals
++=====
++ * Replace dpkg's install-info by the GNU's install-info
++ * Ease the recovery of a corrupted info dir file by allowing a generation
++   from scratch
++
++Rational
++========
++ * info files are mostly used by GNU packages. The format of these files
++   is described by the GNU texinfo package, and the support for new
++   features is added to the GNU's install-info (ginstall-info on Debian),
++   and not in dpkg's install-info (e.g. support for documents with more
++   than one section: #139569).
++ * /usr/share/info/dir integrates information from different packages. A
++   package can break what has been registered by another one, without any
++   possibility to fix it (itself). Thus it would be better to be prepared
++   for regenerating a dir file from scratch at any time.
++
++Transition proposal
++===================
++ + Changes in dpkg
++   - replace dpkg's install-info by a script which just issues a warning,
++     or exit silently.
++     This script could be removed for Lenny+1 or 2.
++     install-info should no more be essential, it is only needed when the
++     info viewer is installed to search the info pages.
++
++ + Changes in texinfo
++   - a new install-info package replaces dpkg's install-info
++   - This install-info should support the current dpkg's install-info
++     options (i.e. no failures, but not necessarily registering the info
++     file)
++     IMO, this install-info should be compatible with the GNU's install
++     info, and when it detects that it is used by a old Debian package, it
++     should do nothing (or just warn and recommend using update-info-dir,
++     see below).
++      * this should provide a compatibility with packages not installed
++        from a Debian package (make && make install)
++      * and should not block the installation of old packages
++      * full compatibility with current dpkg's install-info would be nice,
++        but is not required
++   - Add an update-info-dir script. This script should just delete the dir
++     file and then call the GNU's install-info with all the info files.
++     (see also the previous mails from Ian Zimmerman, and his patch for
++     --generate in install-info)
++
++   - When installed for the first time (or first time >= version xxx),
++     it should call update-info-dir.
++     * There may be an issue with local softwares (not Debian packages)
++       => maybe add a debconf question / NEWS entry?
++     * What options should be used when installing the old info files?
++   - Add support for multiple dir files in the info viewer.
++     This would permit update-info-dir to use the
++     --dir-file /usr/share/info/debian-dir option.
++     /usr/share/info/dir (and /usr/local/share/info/dir) could be used for
++     non Debian's info files.
++   - Fix some regressions from dpkg's install-info.
++     (IIRC an alignment regression was mentioned with GNU's texinfo)
++
++ + Changes in packages installing info files
++   - Note: According to an i386 Contents file, there are 2220 info
++     files, in 403 packages
++   - These packages should just drop their info files in /usr/share/info,
++     and call the update-info-dir script if present (postinst and prerm).
++     They could suggest/recommend the info package.
++   - Packages using dh_installinfo should just depends on a new debhelper
++     version.
++   - The info files must be self sufficient (e.g. the section must be
++     specified in the info file), so that they do not require any special
++     install-info options when they are registered.
++   - A review of all these packages (maintainer scripts & info files) will
++     be needed.
++
++ + Changes in dh_installinfo
++   - Instead of calling install-info, test if update-info-dir is present,
++     then call it. Same on postinst and prerm.
++
++   dh_installinfo is very simple, so I don't think more changes are
++   needed.
++
++ + manuals
++   - policy
++     * the policy mentions install-info, and has a section about Info
++       documents. Some changes may be required (e.g. require that the
++       info files are self sufficient, and mention update-info-dir)
++   - Other documents?
++
++Note: In this proposal, I did not consider an issue that some info files of
++old packages are not installed with the new install-info.
++
++Timeline
++========
++These steps do not need synchronization, and could start right now.
++ * better analysis for the requirements of the install-info script in texinfo
++ * packages could also fix their info file, in order to avoid using
++   install-info options (e.g. many do not specify the section)
++   - patches could be sent to all packages with info file which use
++     install-info options
++ * prepare a proposal for the policy
++
++The following steps probably need to happen in that order:
++ * upload texinfo with install-info and update-info-dir
++ * upload debhelper.
++ * new policy (I don't think there is a strong need for synchronization of
++   this step)
++ * file bugs with blockers to keep track of the transition
++ * fix all packages (for most of them, it will be just increasing the
++   debhelper version in the build dependencies)
++ * upload empty install-info in dpkg (no need to wait for the end of the
++   previous step).
++
++
+diff -ruN texinfo-4.13.orig/fink/update-info-dir texinfo-4.13/fink/update-info-dir
+--- texinfo-4.13.orig/fink/update-info-dir	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/update-info-dir	2012-07-09 13:19:32.000000000 -0600
+@@ -0,0 +1,81 @@
++#!/bin/bash
++# update-info-dir
++# create a dir file from all installed info files
++# Copyright 2009 Norbert Preining
++# GPLv2
++
++INFODIR=@FINKPREFIX@/share/info
++
++set -e
++
++#
++# since user's environment is taken over into root account when sudo-ing
++# we don't want that one's user LANGUAGE setting changes the messages in
++# the dir file. Unset LANGUAGE and reload /etc/environment to get
++# the system wide settings. See bug #536476
++unset LANGUAGE
++if [ -r @FINKPREFIX@/etc/environment ] ; then
++  . @FINKPREFIX@/etc/environment
++fi
++if [ -r @FINKPREFIX@/etc/default/locale ] ; then
++  . @FINKPREFIX@/etc/default/locale
++fi
++
++Help ()
++{
++    echo "\
++SYNOPSIS: update-info-dir [-h,--help] [info-directory]
++
++(re-)creates the index of available documentation in info format
++(the file @FINKPREFIX@/share/info/dir) which is usually presented by info browsers
++on startup."
++
++    exit 0
++}
++
++
++if [ "$1" = "-h" ] || [ "$1" == "--help" ]; then
++    Help
++fi
++
++if [ -n "$1" ] ; then
++  INFODIR="$1"
++fi
++
++if [ ! -d "$INFODIR" ] ; then
++  echo "Not a directory: $INFODIR." >&2
++  exit 1
++fi
++
++if [ -r "$INFODIR/dir" ] ; then
++  rm -f "$INFODIR/dir.old"
++  cp $INFODIR/dir $INFODIR/dir.old
++fi
++
++# we have to remove the dir file not make ginstall-info being surprised
++rm -f "$INFODIR/dir"
++
++errors=0
++find "$INFODIR" -type f | while read file ; do
++  case $file in
++    */dir|*/dir.gz|*/dir.old|*/dir.old.gz|*-[0-9]|*-[0-9].gz|*-[1-9][0-9]|*-[1-9][0-9].gz|*.png)
++      # these files are ignored
++      continue
++      ;;
++    *)
++      ginstall-info "$file" "$INFODIR/dir" || {
++        errors=$[errors+1]
++      }
++      ;;
++  esac
++done
++
++if [ $errors -gt 0 ] ; then
++  exec >&2
++  echo
++  echo "Updating the index of info documentation produced $errors errors."
++fi
++
++exit 0
++
++# vim:set expandtab tabstop=2: #
+diff -ruN texinfo-4.13.orig/fink/update-info-dir.8 texinfo-4.13/fink/update-info-dir.8
+--- texinfo-4.13.orig/fink/update-info-dir.8	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-4.13/fink/update-info-dir.8	2012-07-09 13:20:07.000000000 -0600
+@@ -0,0 +1,34 @@
++.TH UPDATE-INFO-DIR 8
++.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
++.\" other parms are allowed: see man(7), man(1)
++.SH NAME
++update-info-dir \- update or create index file
++from all installed info files in directory
++.SH SYNOPSIS
++.B update-info-dir
++.I "[options]"
++.B [directory]
++.br
++.SH DESCRIPTION
++Update, or create, the index file
++.I dir
++of available documentation in
++@FINKPREFIX@/share/info/ (the default) or in given DIRECTORY. The
++index file
++.I info
++is the directory is usually presented by info browsers on startup.
++.SH OPTIONS
++.TP
++.B \-h,--help
++Display help and exit.
++.PP
++.SH SEE ALSO
++emacs(1)
++info(1)
++install-info(1)
++.SH AUTHOR
++This manual page was written by Norbert Preining <preining@logic.at>,
++for the Debian GNU/Linux system (but may be used by others).
++
++This manual page was written for the Debian GNU/Linux distribution
++because the original script was designed for Debian packaging system.
