@@ -336,7 +336,6 @@ END
 				'date-parse',
 				'freezethaw',
 				'io-pager',
-				'ipc-run3',
 				'locale-maketext-lexicon',
 				'perlio-eol',
 				'pod-simple',
