@@ -4416,6 +4416,25 @@ EOF
 		}
 	}
 
+	### Check and modify .la files, must happen before md5sums file
+	### creation
+	File::Find::find({
+		preprocess => sub {
+			# Don't descend into the .deb control directory
+			return () if $File::Find::dir eq "$destdir/DEBIAN";
+			# only return .la files
+			return () if ( $_ ~= /\.la$/);
+			return @_;
+
+		},
+		wanted => sub {
+			if (-f $_ && ! -l $_) {
+				#perl -pi -e "s/^(dependency_libs)=.*/\1=''/" "$_" || true
+			}
+		},
+	}, $destdir
+	);
+
 	### Create md5sum for deb, this is done as part of the debian package
 	### policy and so that tools like debsums can check the consistancy
 	### of installed file, this will also help for trouble shooting, since
