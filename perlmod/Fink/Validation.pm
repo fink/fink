@@ -1374,6 +1374,7 @@ sub validate_info_component {
 	}
 
 	# Triggers only allow 2 forms interest or activate followed by the dir
+	# see %p/share/doc/dpkg-dev/triggers.txt
 	if (defined $properties->{triggers}) {
 		# There can be more then one so split them and check them
 		foreach $value (split(/\n/, $properties->{triggers})) {
