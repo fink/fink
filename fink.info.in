@@ -2,7 +2,7 @@ Package: fink
 Version: @VERSION@
 Revision: @REVISION@
 Distribution: @DISTRIBUTION@
-Depends: base-files
+Depends: base-files, dpkg-dev
 Suggests: <<
  (%{Distribution} = 10.3) term-readkey-pm581 
  (%{Distribution} = 10.4) term-readkey-pm586
