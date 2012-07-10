@@ -65,7 +65,7 @@ install -d -m 0755 %i/var/lib/tex-common/fmtutil-cnf
 echo "50cyrtexinfo" > %i/var/lib/tex-common/fmtutil-cnf/texinfo.list
 <<
 DocFiles: README COPYING AUTHORS INTRODUCTION NEWS TODO doc/*.texi fink/transition-plan.txt
-InfoDocs: texinfo info-stnd.info info.info
+#InfoDocs: texinfo info-stnd.info info.info
 #
 Description: GNU documentation system
 DescDetail: <<
