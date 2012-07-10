@@ -37,6 +37,7 @@ use File::Find;
 use strict;
 use warnings;
 
+my $cvs="/usr/bin/cvs"; # Only one provider as of 10.5.
 our $VERSION = 1.00;
 
 =head1 NAME
@@ -77,8 +78,8 @@ sub system_check {
 		}
 	}
 
-	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'cvs', you must install ".
+	unless ((-x $cvs) and Fink::VirtPackage->query_package("dev-tools")) {
+		warn "Before changing your selfupdate method to 'cvs', you must install".
 		     $line2.
 		     "http://connect.apple.com (after free registration)".
 		     $line4.".\n";
@@ -239,7 +240,7 @@ sub setup_direct_cvs {
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
 		if ($cvsrepository =~ s/^:local://)  {
-			$cmd = "cvs ${verbosity} -z3 -d$cvsrepository";
+			$cmd = "$cvs ${verbosity} -z3 -d$cvsrepository";
  		}
  		else {
 			$cmd = qq(cvs -d":pserver${proxcmd}:anonymous\@$cvsrepository" login);
@@ -372,7 +373,7 @@ sub do_direct_cvs {
 
 	@sb = stat("$descdir/CVS");
 
-	$cmd = "cvs ${verbosity} -z3 update -d -P -l";
+	$cmd = "$cvs ${verbosity} -z3 update -d -P -l";
 
 	$msg = "I will now run the cvs command to retrieve the latest package descriptions. ";
 
@@ -405,7 +406,7 @@ sub do_direct_cvs {
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	for my $tree (@trees) {
-		$cmd = "cvs ${verbosity} -z3 update -d -P ${tree}";
+		$cmd = "$cvs ${verbosity} -z3 update -d -P ${tree}";
 		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 		if (&execute($cmd)) {
 			$errors++;
