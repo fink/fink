@@ -463,7 +463,7 @@ sub download_cmd {
 	}
 
 	if (!$cmd) {
-		die "Can't locate a download program. Install either curl, wget, axel, or lftpget.\n";
+		die "Can't locate a download program--you seem to be missing /usr/bin/curl.\nInstall either curl, wget*, axel, lftp, or aria2.\n";
 	}
 
 	return $cmd;
