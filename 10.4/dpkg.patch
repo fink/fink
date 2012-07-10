@@ -1756,20 +1756,47 @@ diff -ruN dpkg-1.16.4.3.orig/fink/patches/protect-system-dirs.patch dpkg-1.16.4.
 +     debug(dbg_veryverbose, "dir_is_used_by_others considering %s ...",
 diff -ruN dpkg-1.16.4.3.orig/fink/patches/so-to-dylib.patch dpkg-1.16.4.3/fink/patches/so-to-dylib.patch
 --- dpkg-1.16.4.3.orig/fink/patches/so-to-dylib.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.4.3/fink/patches/so-to-dylib.patch	2012-07-09 16:11:21.000000000 -0600
-@@ -0,0 +1,12 @@
++++ dpkg-1.16.4.3/fink/patches/so-to-dylib.patch	2012-07-10 12:01:11.000000000 -0600
+@@ -0,0 +1,39 @@
 +diff -ruN dpkg-1.16.4.3.orig/scripts/dpkg-gensymbols.pl dpkg-1.16.4.3/scripts/dpkg-gensymbols.pl
 +--- dpkg-1.16.4.3.orig/scripts/dpkg-gensymbols.pl	2012-06-13 23:12:34.000000000 -0600
 ++++ dpkg-1.16.4.3/scripts/dpkg-gensymbols.pl	2012-07-02 16:14:45.000000000 -0600
-+@@ -196,7 +196,7 @@
++@@ -196,8 +209,9 @@
 + 	opendir(DIR, "$libdir") ||
 + 	    syserr(_g("Can't read directory %s: %s"), $libdir, $!);
 + 	push @files, grep {
 +-	    /(\.so\.|\.so$)/ && -f $_ &&
++-	    Dpkg::Shlibs::Objdump::is_elf($_);
 ++	    /(\.so\.|\.so|\.dylib$)/ && -f $_ &&
-+ 	    Dpkg::Shlibs::Objdump::is_elf($_);
+++	    (Dpkg::Shlibs::Objdump::is_elf($_) ||
+++	    Dpkg::Shlibs::Objdump::is_mach_o($_));
 + 	} map { "$libdir/$_" } readdir(DIR);
 + 	close(DIR);
++     }
++diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Objdump.pm dpkg-1.16.4.3/scripts/Dpkg/Shlibs/Objdump.pm
++--- dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Objdump.pm	2012-06-09 08:32:08.000000000 -0600
+++++ dpkg-1.16.4.3/scripts/Dpkg/Shlibs/Objdump.pm	2012-07-10 10:44:10.000000000 -0600
++@@ -128,6 +128,20 @@
++     return $result;
++ }
++ 
+++sub is_mach_o {
+++    my ($file) = @_;
+++    open(FILE, "<", $file) || syserr(_g("cannot read %s"), $file);
+++    my ($header, $result) = ("", 0);
+++    if (read(FILE, $header, 4) == 4) {
+++        # 32 bit Mach-O
+++        $result = 1 if ($header =~ /^\xce\xfa\xed\xfe$/);
+++        # 64 bit Mach-O
+++        $result = 1 if ($header =~ /^\xcf\xfa\xed\xfe$/);
+++    }
+++    close(FILE);
+++    return $result;
+++}
+++
++ package Dpkg::Shlibs::Objdump::Object;
++ 
++ use Dpkg::Gettext;
 diff -ruN dpkg-1.16.4.3.orig/fink/patches/test-fix.patch dpkg-1.16.4.3/fink/patches/test-fix.patch
 --- dpkg-1.16.4.3.orig/fink/patches/test-fix.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.16.4.3/fink/patches/test-fix.patch	2012-07-09 16:01:04.000000000 -0600
