@@ -37,6 +37,7 @@ use File::Find;
 use strict;
 use warnings;
 
+my $cvs="/usr/bin/cvs"; # Only one provider as of 10.5.
 our $VERSION = 1.00;
 
 =head1 NAME
@@ -64,18 +65,21 @@ sub system_check {
 	my ($line2,$line4)=("","");
 	{
 		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.5")) {
-			$line2="Xcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="Xcode, available on your original OS X install disk, from the App Store, or from ";
+		if (&version_cmp ("$osxversion", "<<", "10.6")) {
+			$line2="\nXcode, available on your original OS X install disk, or from "; 
+		} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
+			$line2="\nXcode, available on your original OS X install disk, from the App Store, or from\n" ;
+		} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
+			$line2 = ":\n* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
+			$line4 = "\n* or the Xcode Command Line Tools package,\nwhich is available from connect.apple.com\nor via the Downloads tab of the Preferences in Xcode 4.3.x";
 		} else {
-			$line2="Xcode, or at least the Command Line Tools for Xcode, available from the App Store, or from ";
-			$line4=". The Command Line Tools package is also available via the Downloads tab of the Xcode 4.3.x Preferences";
+			$line2 = "\nthe Xcode Command Line Tools package from\n"; 
+			$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
 		}
 	}
 
-	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'cvs', you must install ".
+	unless ((-x $cvs) and Fink::VirtPackage->query_package("dev-tools")) {
+		warn "Before changing your selfupdate method to 'cvs', you must install".
 		     $line2.
 		     "http://connect.apple.com (after free registration)".
 		     $line4.".\n";
@@ -236,7 +240,7 @@ sub setup_direct_cvs {
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
 		if ($cvsrepository =~ s/^:local://)  {
-			$cmd = "cvs ${verbosity} -z3 -d$cvsrepository";
+			$cmd = "$cvs ${verbosity} -z3 -d$cvsrepository";
  		}
  		else {
 			$cmd = qq(cvs -d":pserver${proxcmd}:anonymous\@$cvsrepository" login);
@@ -369,7 +373,7 @@ sub do_direct_cvs {
 
 	@sb = stat("$descdir/CVS");
 
-	$cmd = "cvs ${verbosity} -z3 update -d -P -l";
+	$cmd = "$cvs ${verbosity} -z3 update -d -P -l";
 
 	$msg = "I will now run the cvs command to retrieve the latest package descriptions. ";
 
@@ -402,7 +406,7 @@ sub do_direct_cvs {
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	for my $tree (@trees) {
-		$cmd = "cvs ${verbosity} -z3 update -d -P ${tree}";
+		$cmd = "$cvs ${verbosity} -z3 update -d -P ${tree}";
 		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 		if (&execute($cmd)) {
 			$errors++;
