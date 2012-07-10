@@ -5,7 +5,6 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
-
 0.34.? "Also TBD" (2012-??-??)
 	* EOL for Leopard
 
@@ -62,7 +61,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 	    * Version of the CLI Tools, if those are installed, for OS 10.7+.
 	    * Still the version of Xcode.app for Xcode 4.2.1-.
 	* "xcode.app" virtual package indicates the presence of Xcode.app, and its 
-	  version is the version of the app for all Xcode versions.  
+	  version is the version of the app for all Xcode versions.   
 	* Diagnostic output modifications for packages that have UseMaxBuildJobs:
 	  false.
 
