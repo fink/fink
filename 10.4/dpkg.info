@@ -25,8 +25,7 @@ patch -p1 < fink/patches/add-BOD.patch
 patch -p1 < fink/patches/build-fix.patch
 patch -p1 < fink/patches/c++filt-defaults.patch
 patch -p1 < fink/patches/dselect-methods.patch
-### Adding trigger to fink.info, this isn't required
-#patch -p1 < fink/patches/fink-triggers.patch
+patch -p1 < fink/patches/fink-triggers.patch
 patch -p1 < fink/patches/fink-virtuals.patch
 patch -p1 < fink/patches/full-path-calls.patch
 patch -p1 < fink/patches/gzip-rsyncable-fix.patch
