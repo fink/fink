@@ -383,7 +383,7 @@ sub download_cmd {
 
 	# if we would prefer wget (or didn't have curl available), check for wget
 	if (!$cmd or $download_method eq "wget") {
-		if (-x "$basepath/bin/wget" or -x "/usr/bin/wget") {
+		if (-x "$basepath/bin/wget") { # no /usr/bin/wget on any supported OS X
 			$cmd = "wget -U 'fink/". Fink::FinkVersion::fink_version() ."'";
 			if ($config->verbosity_level() >= 1) {
 				$cmd .= " --verbose";
@@ -407,7 +407,7 @@ sub download_cmd {
 
 	# if we would prefer axel (or didn't have curl or wget available), check for axel
 	if (!$cmd or $download_method eq "axel" or $download_method eq "axelautomirror") {
-		if (-x "$basepath/bin/axel" or -x "/usr/bin/axel") {
+		if (-x "$basepath/bin/axel") {
 			$cmd = "axel";
 			if ($download_method eq "axelautomirror") {
 				$cmd = "axel -S 1";
@@ -426,7 +426,7 @@ sub download_cmd {
 
 	# lftpget doesn't let us rename a file as we download, so we skip unless $file eq &filename($url)
 	if (!$cmd or $download_method eq "lftpget") {
-		if (-x "$basepath/bin/lftpget" or -x "/usr/bin/lftpget") {
+		if (-x "$basepath/bin/lftpget") {
 			if ($file eq &filename($url)) {
 				$cmd = "lftpget";
 				if ($config->verbosity_level() >= 1) {
@@ -445,7 +445,7 @@ sub download_cmd {
 
 	# if we would prefer aria2 (or didn't have anything else available), check for aria2
 	if (!$cmd or $download_method eq "aria2") {
-		if (-x "$basepath/bin/aria2c" or -x "/usr/bin/aria2c") {
+		if (-x "$basepath/bin/aria2c") {
 			$cmd = "aria2c --connect-timeout 30 --allow-overwrite=true --auto-file-renaming=false -U 'fink/". Fink::FinkVersion::fink_version() ."'";
 			if ($config->verbosity_level() == 0) {
 				$cmd .= " -q";
