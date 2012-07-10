@@ -1,0 +1,17 @@
+Package: time-date-pm
+Version: 1.16
+Revision: 1
+Source: mirror:cpan:authors/id/G/GB/GBARR/TimeDate-%v.tar.gz
+Source-MD5: b3cc35a7cabd106ac8829d2f2ff4bd9d
+Type: perl
+UpdatePOD: true
+DocFiles: ChangeLog MANIFEST README
+Description: Perl5 TimeDate distribution
+DescDetail: <<
+The parser contained here will only parse absolute dates, if you want a
+date parser that can parse relative dates then take a look at the Time
+modules by David Muir on CPAN.
+<<
+License: Artistic
+Maintainer: Patrick Naef <herzbube@users.sourceforge.net>
+Homepage: http://search.cpan.org/dist/TimeDate
