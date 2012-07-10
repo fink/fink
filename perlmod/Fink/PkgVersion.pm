@@ -4512,7 +4512,7 @@ EOF
 				# md5sums wants filename relative to
 				# installed-location FS root
 				$md5file =~ s/^\Q$destdir\E\///;
-				$md5s .= "$md5file  $md5sum\n";
+				$md5s .= "$md5sum  $md5file\n";
 			}
 		},
 	}, $destdir
