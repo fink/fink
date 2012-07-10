@@ -36,6 +36,7 @@ use Fink::Services qw(&execute &version_cmp);
 use strict;
 use warnings;
 
+my $rsyncpath;
 our $VERSION = 1.00;
 
 =head1 NAME
@@ -84,6 +85,20 @@ sub system_check {
 		return 0;
 	}
 
+    # We trust that _our_ rsync will work, so default to that if present
+	# Otherwise choose system-rsync, which hopefully hasn't been broken by
+   	# an Apple update.  If known broken, add a version check here.
+   	if (-x "$basepath/bin/rsync") {
+       $rsyncpath = "$basepath/bin/rsync";
+   	} else {
+       $rsyncpath= "/usr/bin/rsync";
+   	}
+
+   	unless (-x "$rsyncpath") {
+        warn "You appear to be missing /usr/bin/rsync, which is part of the BSD subsystem.\nBefore changing your selfupdate method to 'rsync', you must either:\n* replace that\n* or install the rsync package with 'fink install rsync'.\n";
+    	return 0;
+	}
+
 	return 1;
 }
 
@@ -117,7 +132,7 @@ sub do_direct {
 
 	# get a needed filesystem-specific flag for the rsync command
 	my $nohfs ="";
-	if (system("rsync -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {
+	if (system("$rsyncpath -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {
 		$nohfs = "--nohfs";
 	}
 
@@ -136,7 +151,7 @@ RSYNCAGAIN:
 	}
 
 	# Fetch the timestamp for comparison
-	if (&execute("rsync -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp")) {
+	if (&execute("$rsyncpath -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp")) {
 		print "Failed to fetch the timestamp file from the rsync server: $rsynchost.  Check the error messages above.\n";
 		goto RSYNCAGAIN;
 	}
@@ -206,7 +221,7 @@ RSYNCAGAIN:
 				mkdir_p "$basepath/fink/$dist/$tree";
 			}
 		}
-		my $cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
+		my $cmd = "$rsyncpath -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
 		if ($sb[4] != 0 and $> != $sb[4]) {
 			my $username;
 			($username) = getpwuid($sb[4]);
