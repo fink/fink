@@ -518,7 +518,7 @@ diff -ruN texinfo-4.13.orig/fink/patches/texi-allow-tilde texinfo-4.13/fink/patc
 + 	# It might not be a file, clear it.
 diff -ruN texinfo-4.13.orig/fink/patches/texi2dvi-local-fallback-syntax.diff texinfo-4.13/fink/patches/texi2dvi-local-fallback-syntax.diff
 --- texinfo-4.13.orig/fink/patches/texi2dvi-local-fallback-syntax.diff	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-4.13/fink/patches/texi2dvi-local-fallback-syntax.diff	2012-07-09 13:26:08.000000000 -0600
++++ texinfo-4.13/fink/patches/texi2dvi-local-fallback-syntax.diff	2012-07-10 14:36:45.000000000 -0600
 @@ -0,0 +1,21 @@
 + ChangeLog     |    7 +++++++
 + util/texi2dvi |    4 +++-
@@ -528,7 +528,7 @@ diff -ruN texinfo-4.13.orig/fink/patches/texi2dvi-local-fallback-syntax.diff tex
 ++++ texinfo-4.12.dfsg.1/util/texi2dvi
 +@@ -141,11 +141,13 @@ test -n "$TEX" && test -d "$TEX" && unset TEX
 +   }
-+   test_local >/dev/null 2>&1
++   test_local
 +   test $foo = bar
 +-) || local () {
 ++) || eval '
@@ -543,7 +543,7 @@ diff -ruN texinfo-4.13.orig/fink/patches/texi2dvi-local-fallback-syntax.diff tex
 + # cd_orig
 diff -ruN texinfo-4.13.orig/fink/patches/texi2dvi_non-C_locale texinfo-4.13/fink/patches/texi2dvi_non-C_locale
 --- texinfo-4.13.orig/fink/patches/texi2dvi_non-C_locale	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-4.13/fink/patches/texi2dvi_non-C_locale	2012-07-09 13:26:38.000000000 -0600
++++ texinfo-4.13/fink/patches/texi2dvi_non-C_locale	2012-07-10 14:34:39.000000000 -0600
 @@ -0,0 +1,18 @@
 +"grep [A-z]" is not allowed in non-C locale.
 +---
@@ -554,7 +554,7 @@ diff -ruN texinfo-4.13.orig/fink/patches/texi2dvi_non-C_locale texinfo-4.13/fink
 +===================================================================
 +--- texinfo-4.13a.dfsg.1.orig/util/texi2dvi.orig	2010-11-04 15:28:50.000000000 +0100
 ++++ texinfo-4.13a.dfsg.1/util/texi2dvi	2010-11-04 15:35:14.000000000 +0100
-+@@ -1710,7 +1710,7 @@
++@@ -1712,7 +1712,7 @@
 + 
 +   # If the COMMAND_LINE_FILENAME is not absolute (e.g., --debug.tex),
 +   # prepend `./' in order to avoid that the tools take it as an option.

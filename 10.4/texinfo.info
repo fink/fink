@@ -8,7 +8,7 @@ BuildDepends: libiconv-dev, libncurses5 (>= 5.4-20041023-1006), libgettext8-dev,
 Depends: ncurses (>= 5.4-20041023-1006), libncurses5-shlibs (>= 5.4-20041023-1006), libgettext8-shlibs, libiconv
 Replaces: tetex-base (<< 3.0-1)
 PatchFile: %n.patch
-PatchFile-MD5: 625cae56f7e6929146fb87bc9d88f626
+PatchFile-MD5: 27c113940707c9d4f99d7ffffc6ceb67
 PatchScript: <<
 chmod a+x build-aux/install-sh
 
@@ -26,6 +26,9 @@ patch -p1 < fink/patches/minor-buffer-size-fix
 patch -p1 < fink/patches/texi2dvi-local-fallback-syntax.diff
 patch -p1 < fink/patches/texi2dvi_non-C_locale
 patch -p1 < fink/patches/texi-allow-shell-escape.diff
+
+# help2man isn't present in bootstrap so patch it out
+perl -pi -e 's,help2man,true,g' configure
 <<
 ConfigureParams: --mandir=%p/share/man --infodir=%p/share/info
 CompileScript: <<
@@ -41,6 +44,9 @@ find %i -type f -name dir | xargs rm -f
 rm -rf %i/share/texmf/tex/plain
 rm -rf %i/share/texmf/tex/generic
 rm -rf %i/share/texmf/pdftex/plain/misc/pdfcolor.tex
+
+# charset.alias supplied from gettext
+rm -rf %i/lib
 
 install -d -m 0755 %i/share/man/man1
 install -m 0644 fink/texi2pdf.man %i/share/man/man1/texi2pdf.1
@@ -288,7 +294,7 @@ SplitOff2: <<
   Files: <<
     bin/ginstall-info
     bin/install-info
-    sbin/update-info-dir
+    sbin
     share/man/man1/ginstall-info.1
     share/man/man1/install-info.1
     share/man/man8/update-info-dir.8
