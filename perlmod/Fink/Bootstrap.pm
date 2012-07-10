@@ -387,7 +387,7 @@ sub additional_packages {
 # handling any splitoffs of (essential or other) packages automatically. This
 # way, we don't risk running out of sync.
 
-	my @addlist = ("apt", "apt-shlibs", "apt-dev", "bzip2-dev", "gettext-tools", "gettext-bin", "libiconv-dev", "libncurses5", "expat1", "libgettext8-dev", "pkgconfig", "liblzma5");
+	my @addlist = ("apt", "apt-shlibs", "apt-dev", "bzip2-dev", "gettext-tools", "gettext-bin", "libiconv-dev", "libncurses5", "expat1", "libgettext8-dev", "pkgconfig", "liblzma5", "time-date-pm");
 
 	return \@addlist;
 
