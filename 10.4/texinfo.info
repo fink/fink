@@ -115,7 +115,7 @@ build_format_if_format_exists ()
 build_format ()
 {
     tempfile=`mktemp -t fmtutil.XXXXXXXX`
-    echo -n "Building format(s) $1 `basename "$2"`. This may take some time. ..."
+    /bin/echo -n "Building format(s) $1 `basename "$2"`. This may take some time. ..."
     if fmtutil-sys $1 $2 > $tempfile 2>&1 ; then
         rm -f $tempfile
 	echo " done."
@@ -132,7 +132,7 @@ build_format ()
 update_lsr_files ()
 {
     tempfile=`mktemp -t mktexlsr.XXXXXXXX`
-    echo -n "Running mktexlsr. This may take some time. ..."
+    /bin/echo -n "Running mktexlsr. This may take some time. ..."
     if mktexlsr %p/share/texmf %p/var/lib/texmf > $tempfile 2>&1 ; then
          rm -f $tempfile
 	 echo " done."
@@ -169,7 +169,7 @@ case "$1" in
 	fi
 	;;
     *)
-    	echo "postinst called with unknown argument \`$1'" >&2
+    	/bin/echo "postinst called with unknown argument \`$1'" >&2
 	exit 1
     ;;
 esac
@@ -181,7 +181,7 @@ check_run_without_errors ()
 {
     tempfile=`mktemp -t checkrun.XXXXXXXX`
     if which $1  >/dev/null; then
-        echo -n "Running $*. This may take some time. ..."
+        /bin/echo -n "Running $*. This may take some time. ..."
 	set +e
         $* > $tempfile 2>&1
 	if [ $? = 0 ] ; then
@@ -205,7 +205,7 @@ check_run_without_errors ()
 update_lsr_files ()
 {
     tempfile=`mktemp -t mktexlsr.XXXXXXXX`
-    echo -n "Running mktexlsr. This may take some time. ..."
+    /bin/echo -n "Running mktexlsr. This may take some time. ..."
     if mktexlsr %p/share/texmf %p/var/lib/texmf > $tempfile 2>&1 ; then
          rm -f $tempfile
 	 echo " done."
