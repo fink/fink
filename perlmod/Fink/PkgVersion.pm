@@ -4531,6 +4531,11 @@ EOF
 		}
 	}
 
+	# Create symbol file
+	# dpkg-gensymbols isn't working yet as the mach-o output is much
+	# different then teh elf output, but this is how it would be called
+	# dpkg-gensymbols -p$self->get_fullname() -v$self->get_fullversion -P$destdir -O$destdir/DEBIAN/symbols
+
 	if (Fink::Config::get_option("validate")) {
 		my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
 		Fink::Config::set_options( {
