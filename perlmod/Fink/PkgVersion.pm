@@ -4118,6 +4118,31 @@ EOF
 		die $error . "\n";
 	}
 
+	# Add triggers if there are any
+	if ($self->has_param("Triggers")) {
+		my $triggerfield = $self->param_expanded('Triggers');
+		my @triggers = split(/\n/, $triggerfield);
+		my $triggers_str;
+		foreach my $trigger (@triggers) {
+			$trigger =~ s/^\s+//g; # Remove leading space
+			$triggers_str .= $trigger."\n";
+		}
+
+		### write triggers file...
+
+		print "Writing triggers file...\n";
+
+		if ( open(TRIGGERS,">$destdir/DEBIAN/triggers") ) {
+			print TRIGGERS $triggers_str;
+			close(TRIGGERS) or die "can't write triggers file for ".$self->get_fullname().": $!\n";
+			chmod 0644, "$destdir/DEBIAN/triggers";
+		} else {
+			my $error = "can't write triggers file for ".$self->get_fullname().": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
+	}
+
 	### create scripts as neccessary
 	## TODO: refactor more of this stuff to fink-instscripts
 
