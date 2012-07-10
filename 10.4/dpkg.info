@@ -87,14 +87,13 @@ install -d -m 0755 %i/share/doc/%n
 /usr/bin/make install DESTDIR=%d
 
 install -d -m 0755 %i/etc/dpkg/origins
-install -c -p -m 644 origin.fink %i/etc/dpkg/origins/fink
+install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
 install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
 ## currently in fink
 # install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
 install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
 rm -rf %i/lib/dpkg/methods/*
 
-install -m 0755 fink/install-info.sh %i/bin/install-info
 install -m 0755 fink/md5sum %i/bin
 
 # some files that were previously installed in sbin are now in bin
