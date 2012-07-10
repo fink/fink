@@ -63,13 +63,16 @@ sub system_check {
 	my ($line2,$line4)=("","");
 	{
 		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.5")) {
-			$line2="Xcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="Xcode, available on your original OS X install disk, from the App Store, or from ";
+		if (&version_cmp ("$osxversion", "<<", "10.6")) {
+			$line2="\nXcode, available on your original OS X install disk, or from "; 
+		} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
+			$line2="\nXcode, available on your original OS X install disk, from the App Store, or from\n" ;
+		} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
+			$line2 = ":\n* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
+			$line4 = "\n* or the Xcode Command Line Tools package,\nwhich is available from connect.apple.com\nor via the Downloads tab of the Preferences in Xcode 4.3.x";
 		} else {
-			$line2="Xcode, or at least the Command Line Tools for Xcode, available from the App Store, or from ";
-			$line4=". The Command Line Tools package is also available via the Downloads tab of the Xcode 4.3.x Preferences";
+			$line2 = "\nthe Xcode Command Line Tools package from\n"; 
+			$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
 		}
 	}
 
