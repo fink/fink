@@ -63,10 +63,6 @@ install -d -m 0755 %i/etc/texmf/fmt.d
 install -m 0644 fink/conf/50cyrtexinfo.cnf %i/etc/texmf/fmt.d
 install -d -m 0755 %i/var/lib/tex-common/fmtutil-cnf
 echo "50cyrtexinfo" > %i/var/lib/tex-common/fmtutil-cnf/texinfo.list
-
-### ugly fix to not being able to access %b from a child
-### Don't call it triggers incase something fails here, just a safe guard
-install -m 0644 fink/install-info.triggers %d/DEBIAN
 <<
 DocFiles: README COPYING AUTHORS INTRODUCTION NEWS TODO doc/*.texi fink/transition-plan.txt
 InfoDocs: texinfo info-stnd.info info.info
@@ -298,10 +294,9 @@ SplitOff2: <<
     share/man/man8/update-info-dir.8
   <<
   DocFiles: README COPYING AUTHORS INTRODUCTION NEWS TODO doc/*.texi fink/transition-plan.txt
-  InstallScript: <<
-    ### %b expands as if the child is the parent, aka dir doesn't exist
-    ### here is a sad work around for what I assume is a fink bug
-    mv %D/DEBIAN/%n.triggers %d/DEBIAN/triggers
+  Triggers: <<
+    interest %p/share/info
+    interest %p/info
   <<
   Description: Manage installed documentation in info format
   DescDetail: <<
