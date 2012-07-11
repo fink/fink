@@ -710,7 +710,7 @@ SplitOff3: <<
   Package: lib%N-pm
   Depends: %N (>= 1.15.8), time-date-pm
   Recommends: bzip2, xz, file-fcntllock-pm
-  Suggests: gnupg2, binutils, patch
+  Suggests: gnupg2, objtools, patch
   Replaces: dpkg (<< 1.15.8), dpkg-dev (<< 1.15.6)
   Essential: yes
   Files: <<
