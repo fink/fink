@@ -85,19 +85,18 @@ sub system_check {
 		return 0;
 	}
 
-    # We trust that _our_ rsync will work, so default to that if present
-	# Otherwise choose system-rsync, which hopefully hasn't been broken by
-   	# an Apple update.  If known broken, add a version check here.
-   	if (-x "$basepath/bin/rsync") {
-       $rsyncpath = "$basepath/bin/rsync";
-   	} else {
-       $rsyncpath= "/usr/bin/rsync";
-   	}
-
-   	unless (-x "$rsyncpath") {
-        warn "You appear to be missing /usr/bin/rsync, which is part of the BSD subsystem.\nBefore changing your selfupdate method to 'rsync', you must either:\n* replace that\n* or install the rsync package with 'fink install rsync'.\n";
-    	return 0;
-	}
+    # We trust that our rsync will work, so default to that if present
+    # Otherwise choose system-rsync, which hopefully hasn't been broken by
+    # an Apple update. If system-rsync is known broken, add a version check
+    # for that here.
+    if (-x "$basepath/bin/rsync") {
+        $rsyncpath = "$basepath/bin/rsync";
+    } elsif (-x "/usr/bin/rsync") {
+        $rsyncpath= "/usr/bin/rsync";
+    } else {
+        warn "You appear to be missing /usr/bin/rsync, which is part of the BSD subsystem.\nBefore changing your selfupdate method to 'rsync', you must either:\n* reinstall that\n* or install the rsync package with 'fink install rsync'.\n";
+        return 0;
+    }
 
 	return 1;
 }
