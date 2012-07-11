@@ -94,7 +94,7 @@ sub system_check {
     } elsif (-x "/usr/bin/rsync") {
         $rsyncpath= "/usr/bin/rsync";
     } else {
-        warn "You appear to be missing /usr/bin/rsync, which is part of the BSD subsystem.\nBefore changing your selfupdate method to 'rsync', you must either:\n* reinstall that\n* or install the rsync package with 'fink install rsync'.\n";
+        warn "You appear to be missing /usr/bin/rsync, which is part of the BSD subsystem.\nBefore changing your selfupdate method to 'rsync', you must either:\n* reinstall your system (or just BSD.pkg)\n* or install the rsync package with 'fink install rsync'.\n";
         return 0;
     }
 

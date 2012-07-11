@@ -463,7 +463,7 @@ sub download_cmd {
 	}
 
 	if (!$cmd) {
-		die "Can't locate a download program--you seem to be missing /usr/bin/curl.\nInstall either curl, wget*, axel, lftp, or aria2.\n";
+		die "Can't locate a download program.  You seem to be missing /usr/bin/curl,\nwhich is part of the BSD subsystem.  You should:\n* Reinstall your system (or just BSD.pkg)\n* or install curl, wget, axel, lftp, or aria2 via Fink\n(this will require you to download the source manually).\n";
 	}
 
 	return $cmd;
