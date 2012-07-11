@@ -632,7 +632,7 @@ at any time, use at your own risk.
 
 SplitOff2: <<
   Package: %N-dev
-  Depends: lib%N-pm (= %v-%r), binutils, bzip2, xz, base-files (>= 1.9.12-1)
+  Depends: lib%N-pm (= %v-%r), objtools, bzip2, xz, base-files (>= 1.9.12-1)
   Recommends: patch, make, gnupg2, algorithm-merge-pm
   Replaces: dpkg (<< 1.15.8)
   Essential: yes
