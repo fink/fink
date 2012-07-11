@@ -40,7 +40,9 @@ import Fink::Services qw(&execute);
 {
 	my $death_script = "\n/usr/bin/pod2man is either not executable (the most common case)\n"
 					.  "or not present.\n"
-					.  "If it is present but not executable, then you'll need to run\n\n"
+					.  "If it is present but not executable, then open Disk Utility and run\n"
+					.  "'Repair Disk Permissions' on your system hard drive.\n"
+					.  "If that doesn't work, then run\n\n"
 					.  "\tsudo chmod a+x /usr/bin/pod2man\n\n"
 					.  "to make it executable.\n"
 					.  "If it is absent, then you'll need to get a new copy, e.g. by\n"
