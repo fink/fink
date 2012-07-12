@@ -54,7 +54,10 @@ perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scrip
 
 # Fix for gnutar (Slightly modified for bootstrap version)
 perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
-perl -pi -e 's,--warning=no-timestamp,--quoting-style=escape,g' dpkg-deb/extract.c
+perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c
+
+# Fix for older gcc ie: 10.5
+perl -pi -e 's,-Wvla ,,g' configure
 <<
 
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
