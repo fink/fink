@@ -57,7 +57,7 @@ perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.
 perl -pi -e 's,--warning=no-timestamp,--quoting-style=escape,g' dpkg-deb/extract.c
 <<
 
-SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-incompatible-pointer-types -Wno-format-security
+SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetLDFLAGS: -framework CoreFoundation
 
 ConfigureParams: --without-sgml-doc --without-liblzma --without-bz2 --without-zlib --disable-install-info --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --with-logdir=%P/var/log --srcdir=%b

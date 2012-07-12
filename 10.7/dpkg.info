@@ -63,7 +63,7 @@ perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scrip
 perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
 <<
 
-SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-incompatible-pointer-types -Wno-format-security
+SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetLDFLAGS: -framework CoreFoundation
 
 ### Uncomment for bootstrap version, don't make dselect less depends
