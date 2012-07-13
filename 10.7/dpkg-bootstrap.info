@@ -6,7 +6,7 @@ Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: dpkg.patch
-PatchFile-MD5: e077a1a2bf9245f66471ce639d9c9b83
+PatchFile-MD5: 5fd92a9487b09079b70ceb0fca3b463e
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
