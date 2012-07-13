@@ -2756,3 +2756,21 @@ diff -Nurd dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
    if (stat(cidir,&stab)) {
      if (errno == ENOENT)
        ohshit(_("there is no script in the new version of the package - giving up"));
+diff -urN dpkg-1.10.21.orig/scripts/install-info.pl dpkg-1.10.21/scripts/install-info.pl
+--- dpkg-1.10.21.orig/scripts/install-info.pl	2004-04-25 19:31:35.000000000 +0200
++++ dpkg-1.10.21/scripts/install-info.pl	2012-07-09 19:25:49.000000000 +0200
+@@ -29,11 +29,11 @@
+ END
+ }
+ 
+-$infodir='/usr/share/info';
++$infodir='@PREFIX@/share/info';
+ $maxwidth=79;
+ $Text::Wrap::columns=$maxwidth;
+-$backup='/var/backups/infodir.bak';
+-$default='/usr/share/base-files/info.dir';
++$backup='@PREFIX@/var/backups/infodir.bak';
++$default='@PREFIX@/share/base-files/dir-base';
+ 
+ $menuentry="";
+ $description="";
