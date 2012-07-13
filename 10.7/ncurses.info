@@ -18,20 +18,37 @@ PatchScript: <<
 		gzip -cd $p | patch -p1
 	done
 
+	# Fix warnings in clang by removing some useless compiler
+	# switches (they are not useful for gcc either).
+	perl -pi -e "s/-no-cpp-precomp//" configure
+
 	#Need to remove these entries to avoid failure on case sensitive file systems
 	perl -pi -e "s/hp70092a\|//; s/hp2621a\|//; s/2621a\|//" misc/terminfo.src
 <<
-ConfigureParams: --without-ada --without-pkg-config --with-shared --with-debug --enable-termcap --mandir=%p/share/man --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" --with-default-terminfo-dir="%p/share/terminfo" --enable-no-padding --enable-sigwinch --enable-tcap-names --enable-hard-tabs --enable-overwrite --disable-mixed-case
+ConfigureParams: <<
+  --without-ada \
+  --without-pkg-config \
+  --with-shared \
+  --with-debug \
+  --enable-termcap \
+  --mandir=%p/share/man \
+  --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" \
+  --with-default-terminfo-dir="%p/share/terminfo" \
+  --enable-no-padding \
+  --enable-sigwinch \
+  --enable-tcap-names \
+  --enable-hard-tabs \
+  --enable-overwrite \
+  --disable-mixed-case \
+  --libdir=%p/lib/ncurses \
+  cf_cv_typeof_chtype=long \
+  cf_cv_gcc_inline=no
+<<
 NoSetCFLAGS: true
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
-CompileScript: <<
-  #!/bin/sh -ev
-  ./configure %c --libdir=%p/lib/ncurses cf_cv_typeof_chtype=long
-  make
-<<
 InstallScript: <<
 #!/bin/sh -ev
   make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib:`pwd`/lib/ncurses
