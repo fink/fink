@@ -180,3 +180,4 @@ compiler_wrapper.in
 fink-instscripts.in
 fink-scanpackages.in
 Release
+pre-build-test.sh

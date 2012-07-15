@@ -18,6 +18,7 @@ Source-MD5: @MD5@
 NoSetPATH: true
 BuildAsNobody: false
 CompileScript: <<
+ ./pre-build-test.sh
  make test PREFIX=%p ARCHITECTURE=%m DISTRIBUTION=@DISTRIBUTION@
  ./setup.sh %p %m
 <<
