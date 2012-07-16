@@ -10,8 +10,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* EOL for Leopard
 
 
-0.34.0 "TBD" (2012-07-14)
-	* Initial Mountain Lion support
+0.34.0 "TBD" (2012-07-16)
+	* Initial Mountain Lion support.
+	* Refuse to bootstrap when /usr/bin/pod2man isn't executable.
+	* Fix order of entries in %p/var/lib/dpkg/info/<package>.md5sums .
+	* Use only Apple- or Fink-provided helper applications, e.g. rsync
+	  rather than arbitrary, possibly broken, third-party ones.
+	* The only downloader which is now provided by Apple is curl, so stop
+	  checking in /usr/bin for wget, aria2, ....
 
 /-------------
 | fink 0.33.x
