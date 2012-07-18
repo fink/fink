@@ -85,6 +85,7 @@ our %check_hardcode_fields = map {$_, 1}
 		 postinstscript
 		 prermscript
 		 postrmscript
+		 triggers
 		 conffiles
 		 daemonicfile
 		),
@@ -212,6 +213,7 @@ our %valid_fields = map {$_, 1}
 		 'postinstscript',
 		 'prermscript',
 		 'postrmscript',
+		 'triggers',
 		 'conffiles',
 		 'infodocs',
 		 'daemonicfile',
@@ -260,6 +262,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'postinstscript',
 		 'prermscript',
 		 'postrmscript',
+		 'triggers',
 		 'conffiles',
 		 'infodocs',
 		 'daemonicfile',
@@ -1368,6 +1371,20 @@ sub validate_info_component {
 	$value = $properties->{conffiles};
 	if (defined $value and $value =~ /\(.*?\)/) {
 		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in ConfFiles', $filename);
+	}
+
+	# Triggers only allow 2 forms interest or activate followed by the dir
+	# see %p/share/doc/dpkg-dev/triggers.txt
+	if (defined $properties->{triggers}) {
+		# There can be more then one so split them and check them
+		foreach $value (split(/\n/, $properties->{triggers})) {
+			# Remove leading space if any
+			$value =~ s/^\s+//;
+			unless ($value =~ m/^(interest|activate)\s+.*$/) {
+				print "Warning: \"$value\" does not start with 'interest' or 'activate', \"Triggers\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
 	}
 
 	# Special checks when package building script uses an explicit interp

@@ -1,0 +1,91 @@
+Package: pkgconfig
+Version: 0.25
+Revision: 2
+#Source: mirror:gnome:sources/%n/0.18/%n-%v.tar.bz2
+Source: http://pkgconfig.freedesktop.org/releases/pkg-config-%v.tar.gz
+Source-MD5: a3270bab3f4b69b7dc6dbdacbcae9745
+SourceDirectory: pkg-config-%v
+BuildDepends: fink (>= 0.24.12-1)
+PatchFile: %n.patch
+PatchFile-MD5: 4c7e05de2183a55ce7306bda425ffe7f
+PatchScript: <<
+	sed 's,@PREFIX@,%p,' < %{PatchFile} | patch -p1
+<<
+SetCFLAGS: -Os
+ConfigureParams: --mandir=%p/share/man --with-pc-path=%p/lib/pkgconfig:%p/share/pkgconfig:/usr/X11/lib/pkgconfig:/usr/X11/share/pkgconfig:/usr/X11R6/lib/pkgconfig:/usr/X11R6/share/pkgconfig:/usr/lib/pkgconfig --enable-dependency-tracking --disable-shared
+# --enable-indirect-deps
+CompileScript: <<
+  ./configure %c
+  make
+<<
+InfoTest: TestScript: make check || exit 2
+InstallScript: <<
+	make install DESTDIR=%d
+	mv %i/bin/pkg-config %i/bin/pkg-config.real
+	install -m 755 pc-resort %i/bin/pkg-config
+<<
+DocFiles: AUTHORS COPYING ChangeLog NEWS README
+Description: Manager for library compile/link flags
+DescDetail: <<
+pkg-config is a script to make putting together all the build
+flags when compiling/linking a lot easier.
+<<
+DescUsage: <<
+Version 0.20 adds support for *.private fields in .pc files. Older
+versions ignore them and most fink packages that use pkg-config do not
+need them. However, packages supplying .pc that have them should take
+steps to ensure users who might need them don't accidentally use a
+lower version of pkgconfig and thus get deficient flags.
+
+Fink only adds support for the %p/share/pkgconfig directory in 0.20.
+Packages supplying .pc there should take steps to ensure users don't
+accidentally use a lower version of pkgconfig.
+
+Current (as of 0.22-4) precedence of .pc searching is:
+  1. fink arch-dependent
+  2. fink arch-independent
+  3. system X11 (recent-version location) arch-dependent
+  4. system X11 (recent-version location) arch-independent
+  5. system X11 (older-version location) arch-dependent
+  6. system X11 (older-version location) arch-independent
+  7. system itself
+pkg-config uses a strict "first match" search scheme.
+
+As of 0.22-4, lists of -I and -L flags are re-sorted to place all
+fink paths before any system (/usr or X11) paths; other paths come
+first, so PKG_CONFIG_PATH should allow users to over-ride fink, but fink
+always over-rides system-supplied paths).
+<<
+DescPort: <<
+# Starting with 0.17.2, Link to Fink's glib pkg instead of static-link
+# to included glib-1.2.8 since we have newer and better-OSX-tweaked
+# glib than that now.
+^-As of 0.23-2, go back to included static glib1, since glib1 is no
+  longer being developed and not many other pkgs share the dep.
+
+  Omitting --enable-indirect-deps gives a binary that gives identical
+  results for --libs and --cflags for the fink-supplied pkgconfig/*.pc
+  collection as 0.17.2-2 (with --enable-indirect-deps), including ones
+  that have Requires and ones that have .private fields. The binary
+  still fails some tests (appears to do depth-first recursing through
+  Requires but expects breadth-first), so we disable those.
+
+  Not bothering to fix autodetection of indirect-deps (failure to
+  generate ./libool) because we get the same results even if file
+  existed, so why bother regenerating the autotools? See:
+  https://bugs.freedesktop.org/show_bug.cgi?id=31699
+
+  Using onboard popt because that's the default mode and may as well
+  use the one presumably matched to the same source tarball. Using
+  fink's supplied libpopt has prototype mismatch warnings. See:
+  https://bugs.freedesktop.org/show_bug.cgi?id=31700
+
+	Make sure we get correct inline function semantics (glib1
+	doesn't know about modern compiler toolchains)
+<<
+License: GPL
+Maintainer: Daniel Macks <dmacks@netspace.org>
+DescPackaging: <<
+  Originally packaged by Masanori Sekino (until 0.15.0).
+<<
+Homepage: http://pkgconfig.freedesktop.org

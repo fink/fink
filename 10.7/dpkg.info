@@ -1,66 +1,148 @@
 Package: dpkg
-Version: 1.10.21
-Revision: 1231
+Version: 1.16.4.3
+Revision: 1
 GCC: 4.0
-BuildDepends: fink (>= 0.24.12)
-Depends: libgettext3-shlibs, libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
+## Remove libncursesw5, no need ofr dselect in bootstrap
+BuildDepends: fink (>= 0.24.12), libgettext8-dev, gettext-tools, liblzma5, pkgconfig, bzip2-dev
+Depends: bzip2-shlibs, libgettext8-shlibs, liblzma5-shlibs, tar, install-info
+Conflicts: dpkg-bootstrap
+Replaces: dpkg-bootstrap
+Suggests: apt
 Essential: yes
-BuildAsNobody: false
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
-SourceDirectory: dpkg-%v
-Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
-Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
-PatchFile: %n.patch
-PatchFile-MD5: d5979f532b44157110630fea3bf7e2f1
-PatchScript: <<
- cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
- cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
- cd %b/../gettext-0.14.5; perl -pi -e 's/extern char \*stpncpy \(char \*dest, const char \*src, size_t n\)\;//g' gettext-tools/configure
- cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
- echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
-<<
-SetCFLAGS: -I%p/include
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
-CompileScript: <<
- if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
 
- %p/bin/fink -y install gettext-bin libgettext3-dev libiconv-dev libncurses5
- cd %b/../gettext-0.14.5/gettext-tools; env EMACS=no ./configure --prefix="%b/../_inst%p" --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-shared; make; rm -rf %b/../_inst; make install
- PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
- /usr/bin/make
+Source: mirror:debian:/pool/main/d/%n/%n_%v.tar.bz2
+SourceDirectory: dpkg-%v
+Source-MD5: 39c74a948c6fe4c02ed9f15556fe179d
+
+PatchFile: %n.patch
+PatchFile-MD5: 6d2a11a75ab987816752946ee05f992e
+
+PatchScript: <<
+sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+
+patch -p1 < fink/patches/add-BOD.patch
+patch -p1 < fink/patches/build-fix.patch
+patch -p1 < fink/patches/c++filt-defaults.patch
+patch -p1 < fink/patches/dselect-methods.patch
+patch -p1 < fink/patches/fink-triggers.patch
+patch -p1 < fink/patches/fink-virtuals.patch
+patch -p1 < fink/patches/full-path-calls.patch
+patch -p1 < fink/patches/gzip-rsyncable-fix.patch
+patch -p1 < fink/patches/location-fixes.patch
+patch -p1 < fink/patches/protect-system-dirs.patch
+patch -p1 < fink/patches/so-to-dylib.patch
+patch -p1 < fink/patches/test-fix.patch
+patch -p1 < fink/patches/update-alternative.patch
+
+# Remove po4a and make sure it can't be found if it's installed
+# this is to keep fink policy happy since it has to build the same
+# everytime on all systems
+perl -pi -e 's,po4a,notpo4a,g' configure
+
+# Fix for msgmerge 0.17, this won't be required with 0.18+
+perl -pi -e 's,--previous,--backup=off --previous,g' dselect/po/Makevars man/Makefile.am man/Makefile.in po/Makevars scripts/po/Makevars
+
+# Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
+perl -pi -e 's,^(\#\!/usr/bin/perl.*)$,$1\nuse lib "%p/lib/perl5";,' %b/scripts/*.pl
+
+# fix paths
+for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
+  perl -pi -e 's,/usr,%p,g' $i; \
+  perl -pi -e 's,/var,%p/var,g' $i; \
+  perl -pi -e 's,/etc,%p/etc,g' $i; \
+  perl -pi -e 's,amd64,x86_64,g' $i; \
+done 
+
+cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
+
+# Fink uses "x86_64" instead of "amd64"
+perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+
+# Fix for gnutar
+perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
+
+# Fix for older gcc ie: 10.5
+perl -pi -e 's,-Wvla ,,g' configure
 <<
-ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
+
+SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
+SetLDFLAGS: -framework CoreFoundation
+
+### Uncomment for bootstrap version, don't make dselect less depends
+ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b
+#ConfigureParams: --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b
+
+CompileScript: <<
+PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
+/usr/bin/make
+<<
+
+InfoTest: <<
+  TestConfigureParams: --disable-silent-rules
+  TestDepends: io-string-pm, time-date-pm
+  TestScript: make check || exit 2
+<<
+
 InstallScript: <<
- mkdir -p %i/share/doc/dpkg
- /usr/bin/make install DESTDIR=%d
- install -c -p -m 644 origin.fink %i/etc/dpkg/origins/fink
- rm -rf %i/lib/dpkg/methods/*
- mkdir -p -m0755 %i/lib/fink/dpkg-base-files
+install -d -m 0755 %i/share/doc/%n
+
+/usr/bin/make install DESTDIR=%d
+
+install -d -m 0755 %i/etc/dpkg/origins
+install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
+install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
+## currently in fink
+# install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
+install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
+rm -rf %i/lib/dpkg/methods/*
+
+install -m 0755 fink/md5sum %i/bin
+
+# some files that were previously installed in sbin are now in bin
+# but some stuff still expects it in sbin
+ln -s %p/bin/dpkg-divert %i/sbin/dpkg-divert
+ln -s %p/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
+ln -s %p/bin/update-alternatives %i/sbin/update-alternatives
+<<
+DocFiles: <<
+  ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
+  README README.translators THANKS TODO
 <<
 Description: The Debian package manager
 DescDetail: <<
-dpkg installs and removes binary packages; it is the base of the
-distribution. This package also contains some helper programs and
-dselect, a full-screen console frontend to dpkg.
+This package provides the low-level infrastructure for handling the
+installation and removal of Debian software packages.
+.
+For Debian package development tools, install dpkg-dev.
 <<
 DescPackaging: <<
- With the current fink dependency engine, essential packages may neither
- depend nor builddepend on non-essential packages.  Thus, to make sure
- that non-essential splitoffs of essential packages (like gettext-bin
- and *-dev) are present at build time, we call 'fink install' during
- the compile script.  Note that since the corresponding essential packages
- are dependencies of this one, they should already have been built, so
- 'fink install' should merely make sure they are in place.
+ In may of 2010, version 1.10.21 which had been used by Fink since 2002, was
+ bumped to 1.15.5.6. Between those versions, some files were removed and some
+ were added. For example, 822-date, md5sum and cleanup-info were removed from
+ the package, and dpkg-trigger, dpkg-vendor and dpkg-gensymbols were removed.
 
- We now build gettext-tools during the build of dpkg, but don't install it;
- it is built only so that msgfmt and xgettext are available during the
- dpkg build.  The only alternative would be to make gettext-tools an essential
- pakcages, since essential packages cannot depend or builddepend on
- non-essential packages. Only build this gettext static, since don't need the
- actual libs themselves.
+ Because 'md5sum' is often used and no longer available, this package adds
+ an md5sum tool in the patch. This tool, written in Perl and using the standard
+ Perl on OSX, does not have any dependencies apart from the 'md5' executable
+ installed on every OS X system.
+
+ Current dpkg also ships with some Perl libraries. These are by default
+ installed in lib/$PERL_VERSION, i.e. lib/5.8.8 or lib/5.10.0 depending on
+ OSX dist, Leopard and Snow Leopard respectively. This infofile installs
+ these files in lib/, so people updating from Leopard to Snow Leopard will
+ not get any dpkg Perl file errors.
+
+ The current Debian plans are to remove install-info from dpkg in favor of
+ TeXinfo's install-info (which the current Fink package removes). However,
+ as long as dpkg still ships an install-info, we use that one in our
+ SplitOff because it's easier, considering the newer dpkg also needs to handle
+ install-info differently (with triggers).
+
+ As dpkg is mainly developed for Debian, I (Sjors) expect install-info to be
+ removed from dpkg sometime soon, leaving only TeXinfo install-info. Therefore,
+ it might be required to move the install-info SplitOff to the texinfo package
+ later.
 <<
 DescPort: <<
 1.10.9 
@@ -103,24 +185,624 @@ Remove un/misused variable in dpkg enquiry.c (solve bus error in --architecture)
 Filesystem may be case-insensitive, so do case-insensitive check for
 "dpkg -i" replacing files in an already-installed other package
 
-Patched off-by-one bug in main/help.c:preexecscript argv processing
-(backported from upstream dpkg-1.13.16)
+1.15.5.6 adds a new 'md5sum' tool, see DescPackaging for more information.
+Also the COPYING filename was updated to point to a Fink path, so
+'dpkg --license' works correctly.
 
-Patched to use %p/lib/fink/dpkg-base-files/ wrappers for .deb scripts
-(for use with the dpkg-base-files module)
-NB: wrapper runs even if no .deb script.
+PERL5LIB is now set correctly in finkinit, because scripts may need to find
+%p/lib/perl5 for Dpkg.pm.
 
-stpncpy test may fail due to wrong prototype even if we have the
-function, so remove AIX-bug-specific hack
+A wrapper for setenv was added to src/help.c because of a crash I saw earlier.
+Some investigation turned out that setenv(x, 0, y) crashes on my Snow Leopard
+system, while on Linux it doesn't. The wrapper checks if 'name' or 'value'
+are zero, and return 0 if they are, preventing the crash.
 <<
 #
-PostInstScript: <<
-for file in diversions statoverride; do
-	if [ ! -f %p/var/lib/dpkg/$file ]; then
-  		touch %p/var/lib/dpkg/$file
-  		chmod 644 %p/var/lib/dpkg/$file
+PreInstScript: <<
+# This script can be called in the following ways:
+#
+# Before the package is installed:
+#	<new-preinst> install
+#
+# Before removed package is upgraded:
+#	<new-preinst> install <old-version>
+#
+# Before the package is upgraded:
+#	<new-preinst> upgrade <old-version>
+#
+#
+# If postrm fails during upgrade or fails on failed upgrade:
+#	<old-preinst> abort-upgrade <new-version>
+
+# Handle upgrades from pre-conffile dpkg.cfg
+upgrade_dpkg_non_conffile()
+{
+    if [ -r /etc/dpkg/dpkg.cfg ]; then
+	dpkg_cfg_md5="535552ad5ee9145dbc7a34c264df4e59  %p/etc/dpkg/dpkg.cfg"
+	if echo "$dpkg_cfg_md5" | md5sum -c >/dev/null 2>&1; then
+	    echo "Removing non-modified dpkg.cfg to be replaced by a conffile ..."
+	    rm -f %p/etc/dpkg/dpkg.cfg
 	fi
-done
+    fi
+}
+
+kill_bad_alternatives () {
+    local IFS=""
+    admindir=${DPKG_ADMINDIR:-%p/var/lib/dpkg}
+    ALTDIR="$admindir/alternatives"
+    for alt in $ALTDIR/*; do
+        if [ ! -f $alt ]; then
+            # In case it's been removed by the code below, or in case
+            # it's not a real file
+            continue
+        fi
+        {
+            read mode || continue
+            read mainlink || continue
+            while true; do
+                read slave || break
+                if [ "$slave" = "" ]; then
+                    break
+                fi
+                if [ -e "$ALTDIR/$slave" ]; then
+                    echo "Removing conflicting master alternative $slave (it is slave of $(basename $alt))..."
+                    rm -f "$ALTDIR/$slave"
+                fi
+                read slavelink || break
+            done
+        } <$alt
+    done
+}
+
+case "$1" in
+    install)
+	;;
+
+    upgrade)
+        # Cleanup bad alternatives that would choke with new
+        # update-alternatives (see #530633, #531611, #532739, #521760)
+        if dpkg --compare-versions "$2" lt 1.15.3; then
+            kill_bad_alternatives
+        fi
+
+	case "$2" in
+	    # Upgrade from pre-conffile dpkg.cfg
+	    1.9.21 | 1.10.* )
+		upgrade_dpkg_non_conffile
+		;;
+	esac
+	;;
+
+    abort-upgrade)
+	;;
+
+
+    *)
+	echo "$0 called with unknown argument \`$1'" 1>&2
+	exit 1
+	;;
+esac
+
+exit 0
+<<
+PostInstScript: <<
+# This script can be called in the following ways:
+#
+# After the package was installed:
+#	<postinst> configure <old-version>
+#
+#
+# If prerm fails during upgrade or fails on failed upgrade:
+#	<old-postinst> abort-upgrade <new-version>
+#
+# If prerm fails during removal:
+#	<old-postinst> abort-remove
+#
+# If prerm fails during deconfiguration of a package:
+#	<postinst> abort-deconfigure in-favour <new-package> <version>
+#		   removing <old-package> <version>
+#
+# If prerm fails during replacement due to conflict:
+#	<postinst> abort-remove in-favour <new-package> <version>
+
+
+# Create the database files if they don't already exist
+create_database() {
+    admindir=${DPKG_ADMINDIR:-%p/var/lib/dpkg}
+
+    for file in diversions statoverride status; do
+	if [ ! -f "$admindir/$file" ]; then
+	    touch "$admindir/$file"
+	fi
+    done
+}
+
+
+# Move the info directory from %p/info to %p/share/info
+move_info_directory() {
+    if [ -d %p/info ] && [ ! -L %p/info ] \
+	&& [ -f %p/info/dir ] && [ ! -L %p/info/dir ]
+    then
+	echo "Moving %p/info/dir to %p/share/info/dir ..."
+	mv %p/info/dir %p/share/info/dir
+	if [ -f %p/info/dir.old ]; then
+	    mv %p/info/dir.old %p/share/info/dir.old
+	fi
+    fi
+}
+
+
+# Remove the /usr/info symlinks we used to generate
+remove_info_symlink() {
+    if [ -L %p/info ]; then
+	echo "Removing %p/info symlink ..."
+	rm %p/info
+    elif [ -L %p/info/dir ]; then
+	echo "Removing %p/info/dir symlink ..."
+	rm %p/info/dir
+    fi
+}
+
+# Create log file and set default permissions if possible
+create_logfile() {
+    logfile=%p/var/log/dpkg.log
+    touch $logfile
+    chmod 644 $logfile
+    chown root:root $logfile 2>/dev/null || chown 0:0 $logfile
+}
+
+
+case "$1" in
+    configure)
+	create_database
+	create_logfile
+
+	move_info_directory
+	remove_info_symlink
+	;;
+
+    abort-upgrade|abort-deconfigure|abort-remove)
+	;;
+
+    *)
+	echo "$0 called with unknown argument \`$1'" 1>&2
+	exit 1
+	;;
+esac
+
+exit 0
+<<
+PreRmScript: <<
+# This script can be called in the following ways:
+#
+# Before the package is removed:
+#      <prerm> remove
+#
+# Before an upgrade:
+#      <old-prerm> upgrade <new-version>
+# if that fails:
+#      <new-prerm> failed-upgrade <old-version>
+#
+#
+# Before package is deconfigured while dependency is replaced due to conflict:
+#      <prerm> deconfigure in-favour <new-package> <version>
+#              removing <old-package> <version>
+#
+# Before the package is replaced due to conflict:
+#      <prerm> remove in-favour <new-package> <version>
+
+ensure_no_triggers_noawait()
+{
+    admindir=${DPKG_ADMINDIR:-%p/var/lib/dpkg}
+    pkgadmindir=$admindir/info
+
+    trig_noawait=$(find "$pkgadmindir" -name "*.triggers" -type f | \
+                   xargs -r grep -El "^(interest|activate)-(no)?await" | \
+		   sed -e 's,^.*/\([^/.:]\+\)[^/]\+$,\1,')
+
+    # Abort if we cannot possibly downgrade
+    if [ -n "$trig_noawait" ]; then
+        cat <<- MSG
+	dpkg: error: You have packages using the "interest-noawait" and/or
+	"activate-noawait" trigger directives but the dpkg version that
+	you're trying to downgrade to doesn't support them. Aborting
+	downgrade.
+
+	List of affected packages:
+
+	$trig_noawait
+	MSG
+        exit 1
+    fi
+
+    bad_triggers_files=$(find "$admindir/triggers" -type f | \
+                         xargs -r grep -l "/noawait$" || true)
+    if [ -n "$bad_triggers_files" ]; then
+        cat <<- MSG
+	dpkg: error: Some internal trigger files unexpectedly reference
+	packages tagged with "/noawait" while their corresponding
+	infodb files doesn't seem to contain any "interest-noawait"
+	directive. Aborting the downgrade as those tags are not supported
+	by the version you're trying to downgrade to.
+
+	List of internal trigger files that are affected:
+
+	$bad_triggers_files
+	MSG
+	exit 1
+    fi
+}
+
+downgrade_multiarch_infodb()
+{
+    admindir=${DPKG_ADMINDIR:-%p/var/lib/dpkg}
+    pkgadmindir=$admindir/info
+    triggersdir=$admindir/triggers
+
+    coinst_pkgs="`ls "$pkgadmindir" | \
+        sed -n -e 's/^\([^:]\+:[^.]\+\)\..*$/\1/p' | sort -u | \
+        cut -d: -f1 | uniq -d`"
+
+    # Abort if we cannot possibly downgrade
+    if [ -n "$coinst_pkgs" ]; then
+        cat <<- MSG
+	dpkg: error: You have more than one architecture instance for some
+	installed 'Multi-Arch: same' packages, to be able to downgrade dpkg
+	you will need to have only one instance installed per package.
+
+	List of co-installed packages:
+
+	$coinst_pkgs
+	MSG
+        exit 1
+    fi
+
+    bad_dep_pkgs=$(dpkg-query -f '${Package}\t${Depends} ${Recommends} ${Suggests} ${Enhances} ${Conflicts} ${Replaces} ${Breaks}\n' -W | \
+        grep ":any" | cut -f1 | sort -u)
+    if [ -n "$bad_dep_pkgs" ]; then
+        cat <<- MSG
+	dpkg: error: Some installed packages have multiarch dependencies that
+	the old dpkg won't parse. You should get rid of them (or downgrade
+	them to versions without those dependencies) before proceeding with
+	dpkg's downgrade.
+
+	List of affected packages:
+
+	$bad_dep_pkgs
+	MSG
+        exit 1
+    fi
+
+    dep_fields='Depends|Recommends|Suggests|Enhances|Conflicts|Replaces|Breaks'
+    if grep -qE "^($dep_fields):.*:any" $admindir/available; then
+	cat <<- MSG
+	dpkg: error: Some available packages have multiarch dependencies that
+	the old dpkg won't parse. You should clear this file before proceeding
+	with dpkg's downgrade, with:
+
+	  # dpkg --clear-avail
+	MSG
+	exit 1
+    fi
+
+    file_triggers_pkgs="`sed -n -e 's/^[^ ]\+ \([^:]\+\):[^.]\+$/\1/p' \
+        $triggersdir/File| sort -u`"
+
+    if [ -n "$file_triggers_pkgs" ]; then
+	cat <<-MSG
+	dpkg: error: The triggers database contains arch-qualified package
+	names that the old dpkg won't parse. You should get rid of them (or
+	downgrade them to a non Multi-Arch: same version) before proceeding
+	with dpkg's downgrade.
+
+	List of affected packages:
+
+	$file_triggers_pkgs
+	MSG
+	exit 1
+    fi
+
+    echo "Downgrading the multiarch dpkg control files database ..."
+    ls $pkgadmindir | grep : | while read oldfile; do
+        # We first do a round of hardlinks to the new names, so that the db
+        # will never be unusable for either of the dpkg versions.
+        newfile=$(echo $oldfile | sed -e 's/:[^.]\+//')
+        ln -f "$pkgadmindir/$oldfile" "$pkgadmindir/$newfile"
+    done
+}
+
+case "$1" in
+    upgrade)
+        # Allow the downgrade only if no package is using the
+	# (interest|activate)-noawait trigger directives
+        if dpkg --compare-versions "$2" lt 1.16.1; then
+            ensure_no_triggers_noawait
+        fi
+        # Downgrade the multiarch db to a "monoarch" db layout
+        if dpkg --compare-versions "$2" lt 1.16.2; then
+            downgrade_multiarch_infodb
+        fi
+        ;;
+
+    remove|failed-upgrade|deconfigure)
+        ;;
+
+    *)
+        echo "$0 called with unknown argument \`$1'" 1>&2
+        exit 1
+        ;;
+esac
+
+exit 0
+<<
+PostRmScript: <<
+# This script can be called in the following ways:
+#
+# After the package was removed:
+#	<postrm> remove
+#
+# After the package was purged:
+#	<postrm> purge
+#
+# After the package was upgraded:
+#	<old-postrm> upgrade <new-version>
+# if that fails:
+#	<new-postrm> failed-upgrade <old-version>
+#
+#
+# After all of the packages files have been replaced:
+#	<postrm> disappear <overwriting-package> <version>
+#
+#
+# If preinst fails during install:
+#	<new-postrm> abort-install
+#
+# If preinst fails during upgrade of removed package:
+#	<new-postrm> abort-install <old-version>
+#
+# If preinst fails during upgrade:
+#	<new-postrm> abort-upgrade <old-version>
+
+
+# Remove log file when dpkg is purged
+remove_logfile() {
+    rm -f %p/var/log/dpkg.log %p/var/log/dpkg.log.* 2>/dev/null
+}
+
+# Cleanup multiarch infodb leftovers
+cleanup_multiarch_infodb()
+{
+    admindir=${DPKG_ADMINDIR:-%p/var/lib/dpkg}
+    pkgadmindir=$admindir/info
+
+    echo "Cleaning up the multiarch dpkg control files database ..."
+    ls $pkgadmindir | grep : | while read oldfile; do
+        rm "$pkgadmindir/$oldfile"
+    done
+    rm -f $pkgadmindir/format
+}
+
+case "$1" in
+    remove)
+	;;
+
+    purge)
+	remove_logfile
+	;;
+
+    upgrade)
+	# Downgrade the multiarch db to a "monoarch" db layout
+	if dpkg --compare-versions "$2" lt 1.16.2; then
+	    cleanup_multiarch_infodb
+	fi
+	;;
+
+    failed-upgrade|disappear|abort-install|abort-upgrade)
+	;;
+
+
+    *)
+	echo "$0 called with unknown argument \`$1'" 1>&2
+	exit 1
+	;;
+esac
+
+exit 0
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
+
+SplitOff: <<
+  Package: lib%N-dev
+  Replaces: dpkg (<< 1.15.8)
+  Suggests: apt
+  BuildDependsOnly: True
+  Files: <<
+    include
+    lib/pkgconfig
+    lib/libdpkg.a
+  <<
+  DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
+  Description: Debian package management static library
+  DescDetail: <<
+This package provides the header files and static library necessary to
+develop software using libdpkg, the same library used internally by dpkg.
+.
+Note though, that the API is to be considered volatile, and might change
+at any time, use at your own risk.
+  <<
+<<
+
+SplitOff2: <<
+  Package: %N-dev
+  Depends: lib%N-pm (= %v-%r), objtools, bzip2, xz, base-files (>= 1.9.12-1)
+  Recommends: patch, make, gnupg2, algorithm-merge-pm
+  Replaces: dpkg (<< 1.15.8)
+  Essential: yes
+  ### Currently in fink
+  # ConfFiles: %p/etc/dpkg/shlibs.default %p/etc/dpkg/shlibs.override
+  ConfFiles: %p/etc/dpkg/shlibs.override
+  Files: <<
+    etc/dpkg/shlibs.override
+    bin/dpkg-architecture
+    bin/dpkg-buildflags
+    bin/dpkg-buildpackage
+    bin/dpkg-checkbuilddeps
+    bin/dpkg-distaddfile
+    bin/dpkg-genchanges
+    bin/dpkg-gencontrol
+    bin/dpkg-gensymbols
+    bin/dpkg-mergechangelogs
+    bin/dpkg-name
+    bin/dpkg-parsechangelog
+    bin/dpkg-scanpackages
+    bin/dpkg-scansources
+    bin/dpkg-shlibdeps
+    bin/dpkg-source
+    bin/dpkg-vendor
+    share/dpkg/*.mk
+    share/locale/ca/LC_MESSAGES/dpkg-dev.mo
+    share/locale/de/LC_MESSAGES/dpkg-dev.mo
+    share/locale/es/LC_MESSAGES/dpkg-dev.mo
+    share/locale/fr/LC_MESSAGES/dpkg-dev.mo
+    share/locale/pl/LC_MESSAGES/dpkg-dev.mo
+    share/locale/ru/LC_MESSAGES/dpkg-dev.mo
+    share/locale/sv/LC_MESSAGES/dpkg-dev.mo
+    share/man/man1/dpkg-architecture.1
+    share/man/man1/dpkg-buildflags.1
+    share/man/man1/dpkg-buildpackage.1
+    share/man/man1/dpkg-checkbuilddeps.1
+    share/man/man1/dpkg-distaddfile.1
+    share/man/man1/dpkg-genchanges.1
+    share/man/man1/dpkg-gencontrol.1
+    share/man/man1/dpkg-gensymbols.1
+    share/man/man1/dpkg-mergechangelogs.1
+    share/man/man1/dpkg-name.1
+    share/man/man1/dpkg-parsechangelog.1
+    share/man/man1/dpkg-scanpackages.1
+    share/man/man1/dpkg-scansources.1
+    share/man/man1/dpkg-shlibdeps.1
+    share/man/man1/dpkg-source.1
+    share/man/man1/dpkg-vendor.1
+    share/man/man5/deb-control.5
+    share/man/man5/deb-extra-override.5
+    share/man/man5/deb-old.5
+    share/man/man5/deb-origin.5
+    share/man/man5/deb-override.5
+    share/man/man5/deb-shlibs.5
+    share/man/man5/deb-split.5
+    share/man/man5/deb-src-control.5
+    share/man/man5/deb-substvars.5
+    share/man/man5/deb-symbols.5
+    share/man/man5/deb-triggers.5
+    share/man/man5/deb-version.5
+    share/man/man5/deb.5
+  <<
+  DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule doc/triggers.txt
+  Description: Debian package development tools
+  DescDetail: <<
+This package provides the development tools (including dpkg-source)
+required to unpack, build and upload Debian source packages.
+.
+Most Debian source packages will require additional tools to build;
+for example, most packages need make and the C compiler gcc.
+  <<
+<<
+
+SplitOff3: <<
+  Package: lib%N-pm
+  Depends: %N (>= 1.15.8), time-date-pm
+  Recommends: bzip2, xz, file-fcntllock-pm
+  Suggests: gnupg2, objtools, patch
+  Replaces: dpkg (<< 1.15.8), dpkg-dev (<< 1.15.6)
+  Essential: yes
+  Files: <<
+    lib/dpkg/parsechangelog
+    share/man/man3
+    lib/perl5/Dpkg
+    lib/perl5/Dpkg.pm
+  <<
+  DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
+  Description: Dpkg perl modules
+  DescDetail: <<
+This package provides the perl modules used by the scripts
+in dpkg-dev. They cover a wide range of functionalities. Among them
+there are the following modules:
+.
+ - Dpkg::Arch: manipulate Debian architecture information
+ - Dpkg::BuildOptions: parse and manipulate DEB_BUILD_OPTIONS
+ - Dpkg::Changelog: parse Debian changelogs
+ - Dpkg::Checksums: generate and parse checksums
+ - Dpkg::Compression::Process: wrapper around compression tools
+ - Dpkg::Compression::FileHandle: transparently (de)compress files
+ - Dpkg::Control: parse and manipulate Debian control information
+   (.dsc, .changes, Packages/Sources entries, etc.)
+ - Dpkg::Deps: parse and manipulate dependencies
+ - Dpkg::ErrorHandling: common error functions
+ - Dpkg::Index: collections of Dpkg::Control (Packages/Sources files for
+   example)
+ - Dpkg::IPC: spawn sub-processes and feed/retrieve data
+ - Dpkg::Substvars: substitute variables in strings
+ - Dpkg::Vendor: identify current distribution vendor
+ - Dpkg::Version: parse and manipulate Debian package versions
+.
+All the packages listed in Suggests or Recommends are used by some of the
+modules.
+  <<
+<<
+#
+#SplitOff4: <<
+#  Package: dselect
+#  Depends: dpkg (>= 1.13.1), libgettext8-shlibs, libncursesw5-shlibs (>= 5.6+20070908)
+#  Conflicts: dpkg-ftp, dpkg-multicd
+#  Replaces: dpkg-ftp, dpkg-multicd, dpkg (<< 1.15.8), dpkg-dev (<< 1.15.6)
+#  ConfFiles: %p/etc/dpkg/dselect.cfg
+#  Files: <<
+#    etc/dpkg/dselect.cfg
+#    etc/dpkg/dselect.cfg.d
+#    bin/dselect
+#    lib
+#    share/locale/bs/LC_MESSAGES/dselect.mo
+#    share/locale/ca/LC_MESSAGES/dselect.mo
+#    share/locale/cs/LC_MESSAGES/dselect.mo
+#    share/locale/da/LC_MESSAGES/dselect.mo
+#    share/locale/de/LC_MESSAGES/dselect.mo
+#    share/locale/el/LC_MESSAGES/dselect.mo
+#    share/locale/es/LC_MESSAGES/dselect.mo
+#    share/locale/et/LC_MESSAGES/dselect.mo
+#    share/locale/eu/LC_MESSAGES/dselect.mo
+#    share/locale/fr/LC_MESSAGES/dselect.mo
+#    share/locale/gl/LC_MESSAGES/dselect.mo
+#    share/locale/hu/LC_MESSAGES/dselect.mo
+#    share/locale/id/LC_MESSAGES/dselect.mo
+#    share/locale/it/LC_MESSAGES/dselect.mo
+#    share/locale/ja/LC_MESSAGES/dselect.mo
+#    share/locale/ko/LC_MESSAGES/dselect.mo
+#    share/locale/nb/LC_MESSAGES/dselect.mo
+#    share/locale/nl/LC_MESSAGES/dselect.mo
+#    share/locale/nn/LC_MESSAGES/dselect.mo
+#    share/locale/pl/LC_MESSAGES/dselect.mo
+#    share/locale/pt/LC_MESSAGES/dselect.mo
+#    share/locale/pt_BR/LC_MESSAGES/dselect.mo
+#    share/locale/ro/LC_MESSAGES/dselect.mo
+#    share/locale/ru/LC_MESSAGES/dselect.mo
+#    share/locale/sk/LC_MESSAGES/dselect.mo
+#    share/locale/sv/LC_MESSAGES/dselect.mo
+#    share/locale/tl/LC_MESSAGES/dselect.mo
+#    share/locale/vi/LC_MESSAGES/dselect.mo
+#    share/locale/zh_CN/LC_MESSAGES/dselect.mo
+#    share/locale/zh_TW/LC_MESSAGES/dselect.mo
+#    share/man/man1/dselect.1
+#    var/lib/dpkg/methods
+#    share/man/man5/dselect.cfg.5
+#<<
+#  DocFiles: AUTHORS THANKS doc/README.feature-removal-schedule
+#  Description: Debian package management front-end
+#  DescDetail: <<
+#dselect is a high-level interface for managing the installation and
+#removal of Debian software packages.
+#.
+#Many users find dselect intimidating and new users may prefer to use
+#apt-based user interfaces.
+#  <<
+#<<
