@@ -1385,11 +1385,13 @@ sub validate_info_component {
 				$looks_good = 0;
 			}
 		}
+
+		# Packages using Triggers must BuildDepends on a fink that
+		# supports it
+		$looks_good = 0 unless _min_fink_version($options{builddepends}, 'tba', 'use of Triggers', $filename);
 	}
 
 	# Special checks when package building script uses an explicit interp
-
-
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});
 		if ($value =~ /^\s*\#!\s*(\S+)([^\n]*)/) {
