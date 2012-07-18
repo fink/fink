@@ -6,8 +6,11 @@ Source: mirror:gnu:gettext/gettext-%v.tar.gz
 Source-MD5: 3dd55b952826d2b32f51308f2f91aa89
 PatchFile: libgettext8-shlibs.patch
 PatchFile-MD5: 3338cd2dad8937707d0341504cd57402
+PatchFile2: gettext-tools-tests.patch
+PatchFile2-MD5: 964de69b23cdfedc1691cf7825886af9
 PatchScript: <<
  patch -p1 < %{PatchFile}
+ patch -p1 < %{PatchFile2}
  perl -pi -e 's/.*chmod.*777.*$//g' build-aux/ltmain.sh
 <<
 Depends: <<
@@ -19,7 +22,7 @@ Depends: <<
 Suggests: gettext-doc
 BuildDepends: <<
 	expat1 (>= 2.0.1-1),
-	fink (>= 0.28.0),
+	fink (>= 0.30.0),
 	libgettext8-dev (>= %v-1),
 	libiconv-dev (>= 1.12-3),
 	libncurses5 (>= 5.4-20041023-1011)
@@ -33,6 +36,7 @@ ConfigureParams: <<
 	--with-included-gettext \
 	--disable-csharp \
 	--disable-rpath \
+	--disable-libasprintf \
 	--disable-java \
 	--disable-native-java \
 	--with-included-glib \
@@ -50,6 +54,11 @@ ConfigureParams: <<
 # Dep on Xcode 4.3+ ?
 SetCFLAGS: -O0
 CompileScript: cd gettext-tools; env EMACS=no ./configure %c ; make
+InfoTest: <<
+	TestScript: <<
+		cd gettext-tools; LC_ALL=C make -k check || exit 2
+	<<
+<<
 InstallScript: <<
  cd gettext-tools; make install prefix=%i
  rm %i/lib/libgettextlib.*
@@ -113,6 +122,10 @@ DescDetail: <<
 DescPort: <<
   The emacs files have been moved to a separate gettext-emacs package
   (EMACS=no prevents them from being compiled here).
+  
+  xgettext.c finds a bug in clang from Xcode < 4.2 at anything above -O0
+  So, set CFLAGS to -O0 (or have a BDep Xcode >= 4.3).
+  http://llvm.org/bugs/show_bug.cgi?id=9892
 <<
 
 DescPackaging: <<
@@ -138,6 +151,18 @@ DescPackaging: <<
   not part of public API). Maybe could force use of installed libintl
   and overlay it with shims or a few local sources, but safer to use
   consistent set and follow upstream recommendations.
+
+	Tests that would fail otherwise:
+
+	lang-c++ complains about "autosprintf.h" not being found, so we
+	disable 'libasprintf' at ./configure to match libgettext8-shlibs.
+
+	lang-bash test fails because system-bash does not have iconv support.
+  	So we make it exit out immediately rather than failing.
+
+	Don't bother checking for AIX-specific bug (test is bugged on
+	clang). See:
+	http://lists.gnu.org/archive/html/bug-autoconf/2010-08/msg00116.html
 <<
 
 
