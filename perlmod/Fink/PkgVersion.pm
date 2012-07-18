@@ -4118,29 +4118,42 @@ EOF
 		die $error . "\n";
 	}
 
-	# Add triggers if there are any
-	if ($self->has_param("Triggers")) {
-		my $triggerfield = $self->param_expanded('Triggers');
-		my @triggers = split(/\n/, $triggerfield);
-		my $triggers_str;
-		foreach my $trigger (@triggers) {
-			$trigger =~ s/^\s+//g; # Remove leading space
-			$triggers_str .= $trigger."\n";
-		}
+	### triggers file
 
-		### write triggers file...
+	if (length(my $triggersbody = $self->get_triggers_field)) {
+		chomp $triggersbody;
+
+# Since this is also used in shlibs, maybe this should be moved to a common
+# sub function or instead of shlibs_error or triggers_error, just fpb_error
+# and reuse it
+		my $triggers_error = sub {
+			my $self = shift;
+			my $type = shift;
+			my $error = "can't write to $type file for " . $self->get_fullname() . ": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		};
 
 		print "Writing triggers file...\n";
 
-		if ( open(TRIGGERS,">$destdir/DEBIAN/triggers") ) {
-			print TRIGGERS $triggers_str;
-			close(TRIGGERS) or die "can't write triggers file for ".$self->get_fullname().": $!\n";
-			chmod 0644, "$destdir/DEBIAN/triggers";
-		} else {
-			my $error = "can't write triggers file for ".$self->get_fullname().": $!";
-			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-			die $error . "\n";
+# FIXME:
+#    * Make sure each interest/activate is actutally in fink base
+#    * Rejoin wrap continuation lines
+#      (use \ not heredoc multiline-field)
+
+		my @triggerlines;
+		for my $line (split(/\n/, $triggersbody)) {
+			push @triggerlines, $line."\n";
 		}
+
+		if (@triggerlines) {
+			my $triggersfile = IO::Handle->new();
+			open $triggersfile, ">$destdir/DEBIAN/triggers" or &{$triggers_error}($self, 'triggers');
+			print $triggersfile @triggerlines;
+			close $triggersfile or &{$triggers_error}($self, 'triggers');
+			chmod 0644, "$destdir/DEBIAN/triggers";
+		}
+
 	}
 
 	### create scripts as neccessary
@@ -5770,6 +5783,29 @@ sub get_shlibs_field {
 		$shlibs_cooked .= "$1\n" if length $1;
 	}
 	$shlibs_cooked;
+}
+
+=item get_triggers_field
+
+	my $triggers_field = $pv->get_triggers_field;
+
+Returns a multiline string of the Triggers entries. The string will
+always be defined, but will be null if no entries, and every entry
+(even last) will have trailing newline.
+
+=cut
+
+sub get_triggers_field {
+	my $self = shift;
+
+	my @triggers_raw = split /\n/, $self->param_default_expanded('Triggers', '');  # lines from .info
+	my $triggers_cooked = '';  # processed results
+	foreach my $info_line (@triggers_raw) {
+		next if $info_line =~ /^#/;  # skip comments
+		$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
+		$triggers_cooked .= "$1\n" if length $1;
+	}
+	$triggers_cooked;
 }
 
 =item scanpackages

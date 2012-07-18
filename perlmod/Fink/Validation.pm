@@ -1374,12 +1374,12 @@ sub validate_info_component {
 	}
 
 	# Triggers only allow 2 forms interest or activate followed by the dir
-	# see %p/share/doc/dpkg-dev/triggers.txt
+	# see %p/share/doc/dpkg-dev/triggers.txt or man deb-triggers
 	if (defined $properties->{triggers}) {
 		# There can be more then one so split them and check them
 		foreach $value (split(/\n/, $properties->{triggers})) {
-			# Remove leading space if any
-			$value =~ s/^\s+//;
+			# Strip off leading/trailing whitespace
+			$value =~ s/^\s*(.*?)\s*$/$1/;
 			unless ($value =~ m/^(interest|activate)\s+.*$/) {
 				print "Warning: \"$value\" does not start with 'interest' or 'activate', \"Triggers\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
