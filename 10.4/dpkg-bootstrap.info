@@ -33,9 +33,6 @@ patch -p1 < fink/patches/update-alternative.patch
 # everytime on all systems
 perl -pi -e 's,po4a,notpo4a,g' configure
 
-# Fix for msgmerge 0.17, this won't be required with 0.18+
-perl -pi -e 's,--previous,--backup=off --previous,g' dselect/po/Makevars man/Makefile.am man/Makefile.in po/Makevars scripts/po/Makevars
-
 # Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
 perl -pi -e 's,^(\#\!/usr/bin/perl.*)$,$1\nuse lib "%p/lib/perl5";,' %b/scripts/*.pl
 
