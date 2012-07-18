@@ -1,6 +1,6 @@
 Package: xz
 Version: 5.0.4
-Revision: 1
+Revision: 2
 Description: LZMA file compressor
 DescDetail: <<
     LZMA is a general purporse compression algorithm designed by

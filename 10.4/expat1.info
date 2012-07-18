@@ -1,6 +1,6 @@
 Package: expat1
 Version: 2.0.1
-Revision: 1
+Revision: 2
 BuildDepends: fink (>= 0.24.12-1)
 Depends: %N-shlibs (= %v-%r)
 Replaces: expat
