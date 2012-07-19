@@ -105,7 +105,7 @@ SplitOff: <<
 SplitOff2: <<
 	Package: liblzma5
 	License: Public Domain
-	Depends: liblzma5-shlibs (= %v-%r), pkgconfig (>= 0.20-1)
+	Depends: liblzma5-shlibs (= %v-%r)
 	Conflicts: liblzmadec, liblzma
 	Replaces: liblzmadec, liblzma
 	BuildDependsOnly: true
