@@ -94,8 +94,6 @@ As of dpkg 1.15.x dpkg no longer has install-info, Justin Hallett added splits
 to make an install-info file with triggers to solve this issue.
 <<
 PostInstScript: <<
-set -e
-
 build_format_if_format_exists ()
 {
     v=`kpsewhich -var-value TEXMFSYSVAR` || return 0
@@ -181,8 +179,6 @@ case "$1" in
 esac
 <<
 PostRmScript: <<
-set -e
-
 check_run_without_errors ()
 {
     tempfile=`mktemp -t checkrun.XXXXXXXX`
@@ -239,8 +235,6 @@ case "$1" in
 	exit 1
     ;;
 esac
-
-exit 0
 <<
 License: GPL/GFDL
 Maintainer:  Dave Morrison <drm@finkproject.org>
@@ -270,8 +264,6 @@ Much of the software in Debian comes with its online documentation in
 the form of Info files, so it is most likely you will want to install it.
   <<
   PostInstScript: <<
-set -e
-
 if [ "$1" = "configure" ] || [ "$1" = "upgrade" ]; then
   update-alternatives --install %p/bin/infobrowser infobrowser \
                                 %p/bin/info 60 \
@@ -280,8 +272,6 @@ if [ "$1" = "configure" ] || [ "$1" = "upgrade" ]; then
 fi
   <<
   PreRmScript: <<
-set -e
-
 if [ "$1" != "upgrade" ]; then
   update-alternatives --remove infobrowser %p/bin/info
 fi
@@ -310,7 +300,6 @@ The install-info utility creates the index of all installed documentation
 in info format and makes it available to info readers.
   <<
   PostInstScript: <<
-set -e
 # 
 # postinst maintainer script for the Debian install-info package
 #
