@@ -3949,6 +3949,88 @@ sub phase_install {
 		$splitoff->phase_install(1);
 	}
 
+	chdir "$buildpath";
+	my $destdir = $self->get_install_directory();
+	my $ddir = basename $destdir;
+
+	if (not -d "$destdir/DEBIAN") {
+		if (not mkdir_p "$destdir/DEBIAN") {
+			my $error = "can't create directory for control files for package ".$self->get_fullname();
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
+	}
+
+	### create debconf script and templates (needs to happen before %b rm)
+	if ($self->has_param("Debconf")) {
+		my $sub_properties = &read_properties_var(
+			"Debconf of ".$self->get_fullname,
+			$self->param_default('Debconf', ''),
+			{remove_space => 1}
+		);
+
+		# write out config script
+		if (exists $sub_properties->{configscript}) {
+			my $scriptbody = &expand_percent($sub_properties->{configscript}, $self->{_expand}, $self->get_info_filename." \"ConfigScript\"");
+			my $scriptfile = "$destdir/DEBIAN/config";
+
+			print "Writing debconf config script...\n";
+
+			my $write_okay;
+			# NB: if change the automatic #! line here, must adjust
+			#     validator
+			if ( $write_okay = open(SCRIPT,">$scriptfile") ) {
+				my $pkgname = $self->get_name();
+				print SCRIPT <<EOF;
+#!/bin/sh
+# debconf config script for package $pkgname, auto-created by fink
+
+set -e
+
+. $basepath/share/debconf/confmodule
+
+$scriptbody
+
+exit 0
+EOF
+				close(SCRIPT) or $write_okay = 0;
+				chmod 0755, $scriptfile;
+			}
+			if (not $write_okay) {
+				my $error = "can't write debconf config script for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
+		}
+
+		if (exists $sub_properties->{templatesfile}) {
+			# if PO then translate with po-debconf before adding
+			# templates
+			my $templatesfile = "$destdir/DEBIAN/templates";
+			my $templatesfileexpanded = &expand_percent($sub_properties->{templatesfile}, $self->{_expand}, $self->get_info_filename." \"TemplatesFile\"");
+			if (exists $sub_properties->{podirectory}) {
+				my $podirectoryexpanded = &expand_percent($sub_properties->{podirectory}, $self->{_expand}, $self->get_info_filename." \"PODirectory\"");
+				print "Translating debconf templates...\n";
+				$cmd = "po2debconf --podir=$podirectoryexpanded --output $templatesfile $templatesfileexpanded";
+				if (&execute($cmd)) {
+					my $error = "can't translate templates file for ".$self->get_fullname().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			} else {
+				$cmd = "cp $templatesfileexpanded $templatesfile";
+				if (&execute($cmd)) {
+					my $error = "can't create templates file for ".$self->get_fullname().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			}
+
+			print "Writing debconf templates...\n";
+			chmod 0644, $templatesfile;
+		}
+	}
+
 	### remove build dir
 
 	if (not $do_splitoff) {
@@ -3997,6 +4079,9 @@ sub phase_build {
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
 		}
+	} else {
+		### check perms as debconf could have created this during
+		### the install phase and could have been "nobody"
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
