@@ -100,7 +100,7 @@ for file in update/ltmain.sh update/Makefile.in.in ; do
 done
 
 for file in AUTHORS COPYING README README.html readme.*.html \
-            INSTALL INSTALL.html STYLE TODO* USAGE USAGE.html ; do
+            INSTALL INSTALL.html NEWS STYLE TODO* USAGE USAGE.html ; do
   install -c -p -m 644  $file "$basepath/share/doc/fink/"
 done
 
