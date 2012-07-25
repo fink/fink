@@ -3485,7 +3485,7 @@ GCC_MSG
 		$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Default to Apple's GNU Tar
 		# Determine the rename list (if any)
 		if ($self->has_param($renamefield)) {
-			@renamefiles = split(/\s+/, $self->param($renamefield));
+			@renamefiles = split(' ', $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
 				$renamefile = &expand_percent($renamefile, $expand, $self->get_info_filename." \"$renamefield\"");
 				if ($renamefile =~ /^(.+)\:(.+)$/) {
