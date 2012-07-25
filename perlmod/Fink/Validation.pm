@@ -1413,11 +1413,14 @@ sub validate_info_component {
 		my $ckdepends = &pkglist2lol($properties->{depends});
 
 		my $has_debconf_dep = 0;
+		$has_debconf_dep = 1 if ($properties->{package} eq "debconf");
 		foreach (@$ckdepends) {
 			foreach my $atom (@$_) {
 				$atom =~ s/^\(.*?\)\s*//;
 				$has_debconf_dep = 1 if $atom =~ /^debconf\s*\(?\s*(>>|>=)?\s*(.*?)\)?\s*$/;
+				last if ($has_debconf_dep == 1);
 			}
+			last if ($has_debconf_dep == 1);
 		}
 		if (not $has_debconf_dep) {
 			print "Warning: Package contains a Debconf field but does not depend on the package \"debconf\"$splitoff_field. ($filename)\n";
