@@ -144,7 +144,7 @@ if ($arch eq "i386") {
 					die "Please install Java SDK before re-attempting fink bootstrap\n";
 				}
 			}
-		} else {
+		} elsif ($is64bit) {
 			# 10.[56] can do either 32- or 64-bit: user choice
 			my $arch_intro= "Your hardware is a 64bit-compatible intel " .
 				"processor, so you have the option of running Fink in ".
@@ -165,7 +165,7 @@ if ($arch eq "i386") {
 				&print_breaking("\n");
 				$arch = "i386" unless ($answer);
 			}
-		}
+		} # 32-bit-only machines get no choice, and $arch is already set to 'i386', so do nothing else.
 	}
 }
 
