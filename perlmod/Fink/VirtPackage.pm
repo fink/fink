@@ -610,7 +610,7 @@ you can download it from Apple at:
 If you are on OS X 10.7 or later and have in fact installed 
 Xcode 4.3 or later, then you may need to run
 
-  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+  sudo xcode-select -switch /path/to/Xcode.app
 
 (changing /path/to to the actual path to Xcode on your system)
 to make it visible to its own CLI tools and to Fink.
@@ -793,7 +793,7 @@ installed, you can download Xcode from Apple at:
 If you are on OS X 10.7 or  later and have in fact installed 
 Xcode 4.3 or later, then you may need to run
 
-  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+  sudo xcode-select -switch /path/to/Xcode.app
 
 (changing /path/to to the actual path to Xcode on your system)
 to make it visible to its own CLI tools and to Fink.
