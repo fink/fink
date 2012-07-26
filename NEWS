@@ -5,15 +5,28 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
+0.34.1 "hanger" (2012-07-26)
+	* Add a "pre-build-test.sh" script to check for system executables that fink
+	  needs.
+	  * Currently we test for presence and executability of /usr/bin/pod2man.
+	  * Modified the following to run pre-build-test.sh:
+	  	* fink.info.in -> fink-*.info
+	  	* inject.pl (replaces check from 0.34.0)
+	  	* bootstrap (replaces check from 0.34.0)
+	* Bugfixes
+		* Use the results of the 64-bit Intel check in bootstrap to determine
+		  whether users are offered the option of a 64-bit install.
+		* Remove virtual package for IPC::Run3 since no system Perl actually
+		  provides it.
+		* Restore ability to run SplitForks on app bundles when using Xcode 4.3 and later
+		  by switching from hardcoded /Developer to a portable construct.
+		* Fix parsing of indented TarFilesRename fields.
+		* Fix order of entries in %p/var/lib/dpkg/info/<package>.md5sums .
+	* Add this file to the files installed by fink.
 
-0.34.? "Also TBD" (2012-??-??)
-	* EOL for Leopard
-
-
-0.34.0 "TBD" (2012-07-16)
+0.34.0 "bracket" (2012-07-16)
 	* Initial Mountain Lion support.
 	* Refuse to bootstrap when /usr/bin/pod2man isn't executable.
-	* Fix order of entries in %p/var/lib/dpkg/info/<package>.md5sums .
 	* Use only Apple- or Fink-provided helper applications, e.g. rsync
 	  rather than arbitrary, possibly broken, third-party ones.
 	* The only downloader which is now provided by Apple is curl, so stop
