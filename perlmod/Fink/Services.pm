@@ -2362,7 +2362,7 @@ sub add_user {
 	my ($user, $group, $name, $home, $uid) = @_;
 
 	$home = $home || '/var/empty';
-	$uid = check_id_unused($uid) or return 0;
+	$uid = check_id_unused($uid, "uid") or return 0;
 	my $gid = getgrnam($group);
 	my $ret;
 
@@ -2438,15 +2438,28 @@ sub edit_ds_entry {
 
 =item check_id_unused
 
-  check_id_unused;
+  check_id_unused($id,$mode);
 
-Tests whether an input is used either as a user id or as a group id.
+Tests whether an input is used either as a user id or as a group id. 
+$mode should be one of "uid", "gid" or "both"
 
 =cut
 
 sub check_id_unused {
 	my $id=shift;
-	return $id unless (getpwuid $id or getgrgid $id);
+	my $mode=shift;
+	$mode="both" if !defined($mode);
+	if ($mode eq "both") {
+		return $id unless (getpwuid $id or getgrgid $id);
+	} elsif ($mode eq "uid") {
+		return $id unless getpwuid $id;
+	} elsif ($mode eq "gid") {
+		return $id unless getgrgid $id;
+	} else {
+	#invalid mode
+		print "Invalid mode: $mode\n";
+		return 0
+	}
 	print "WARNING: ID $id is in use.\n";
 	return 0;
 }
