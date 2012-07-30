@@ -1051,19 +1051,23 @@ to 'nobody'.
 =cut
 
 sub build_as_user_group {
-	my $result;
+	my( $user, $group );
 	if (get_option("build_as_nobody")) {
 		if (!getpwnam('fink-bld') or !getgrnam('fink-bld')) {
 			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please run 'fink configure' to set up user 'fink-bld'.\n";
-			$result = {qw/ user nobody group nobody user:group nobody:nobody /};
+			($user, $group) = qw/ nobody nobody /;
 		} else {
-			$result = {qw/ user fink-bld group fink-bld user:group fink-bld:fink-bld /};
+			($user, $group) = qw/ fink-bld fink-bld /;
 		}
 	} else {
-			$result = {qw/ user root group admin user:group root:admin /};
+			# NB: keep this in sync with PkgVersion::pkg_build_as_user_group!
+			($user, $group) = qw/ root admin /;
 	}
-
-	return $result;
+	return {
+		'user'       => $user,
+		'group'      => $group,
+		'user:group' => "$user:$group"
+	};
 }
 
 =item has_flag
