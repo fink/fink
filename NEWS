@@ -8,6 +8,15 @@ For a more comprehensive changelog of the latest experimental code, see:
 0.34.? "TBD" (2012-??-??)
 	* EOL for Leopard
 
+0.34.2 "magnetic" (2012-??-??)
+	* Bugfixes
+		* Fix test for unused UIDs/GIDs in Services.pm to allow checking
+		  them separately.  This permits fink to restore the fink-bld user when
+		  the Mountain Lion installer clobbers the user but not the group.
+		* BuildAsNobody: false issues:
+		  * Don't have fink-bld own directories in such cases.
+		  * SplitOffs should inherit the same behavior as their parent.
+
 0.34.1 "hanger" (2012-07-26)
 	* Add a "pre-build-test.sh" script to check for system executables that fink
 	  needs.
