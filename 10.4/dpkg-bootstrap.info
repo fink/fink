@@ -23,7 +23,7 @@ InstallScript: <<
  mkdir -p %i/share/doc/dpkg
  make install DESTDIR=%d
 <<
-Description: The Debian package manager (bootstrap package)
+Description: The Debian package manager (bootstrap only)
 DescDetail: <<
 dpkg installs and removes binary packages; it is the base of the
 distribution. This package also contains some helper programs. This

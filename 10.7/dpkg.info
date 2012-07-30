@@ -2,7 +2,7 @@ Package: dpkg
 Version: 1.10.21
 Revision: 1232
 GCC: 4.0
-BuildDepends: fink (>= 0.24.12)
+BuildDepends: fink (>= 0.30.0)
 Depends: libgettext3-shlibs, libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
 Essential: yes
 BuildAsNobody: false
