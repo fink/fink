@@ -5131,8 +5131,12 @@ sub run_script {
 	# Run the script under the modified environment
 	my $result;
 	# Don't build as nobody if BuildAsNobody: false
-	my $build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
-
+	my $build_as_nobody;
+	if ($self->has_parent()) {
+	 	$build_as_nobody = $self->get_parent()->param_boolean("BuildAsNobody", 1);
+	} else {
+	 	$build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
+	}
 	$nonroot_okay = $nonroot_okay && $build_as_nobody;
 	{
 		local %ENV = %{$self->get_env($phase)};
@@ -5736,7 +5740,15 @@ Otherwise, return the results from Fink::Config::build_as_user_group()
 sub pkg_build_as_user_group {
 	my $self = shift;
 	my $result;
-	if ($self->param_boolean("BuildAsNobody", 1)) {
+	my $build_as_nobody;
+	if ($self->has_parent()) {
+		#splitoff
+		$build_as_nobody = $self->get_parent()->param_boolean("BuildAsNobody", 1);
+	} else {
+		#parent
+		$build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
+	}
+	if ($build_as_nobody) {
 		$result = Fink::Config::build_as_user_group();
 	} else {
 		#package specifies 'BuildAsNobody: false'
