@@ -1,7 +1,6 @@
 Package: unzip
 Version: 6.0
 Revision: 1
-Distribution: 10.5, 10.6
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 License: BSD
 Essential: yes
