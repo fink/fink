@@ -3417,8 +3417,8 @@ sub phase_unpack {
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $xz);
 	my ($tar_is_pax,$alt_bzip2)=(0,0);
-	my $build_as_user_group = Fink::Config::build_as_user_group();
-
+	my $build_as_user_group = $self->pkg_build_as_user_group();
+	
 	$config->mixed_arch(msg=>'build a package', fatal=>1);
 
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
@@ -3758,8 +3758,9 @@ sub phase_install {
 	}
 	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
+		my $build_as_user_group = $self->pkg_build_as_user_group();
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
-		$install_script .= "/usr/sbin/chown -R " . Fink::Config::build_as_user_group()->{'user:group'} . " \%d\n";
+		$install_script .= "/usr/sbin/chown -R " . $build_as_user_group->{'user:group'} . " \%d\n";
 	}
 	# Run the script part we have so far (NB: parameter-value
 	# "installing" is specially recognized by run_script!)
@@ -4001,7 +4002,7 @@ sub phase_build {
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
-	if (Fink::Config::get_option("build_as_nobody")) {
+	if (Fink::Config::get_option("build_as_nobody") && $self->param_boolean("BuildAsNobody", 1)) {
 		print "Reverting ownership of install dir to root\n";
 		unless (chowname_hr 'root:admin', $destdir) {
 			my $error = "Could not revert ownership of install directory to root.";
@@ -4986,7 +4987,7 @@ sub get_env {
 	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', DIR => File::Spec->tmpdir, CLEANUP => 1 );
 	if ($< == 0) {
 		# we might be writing to ENV{HOME} during build, so fix ownership
-		my $build_as_user_group = Fink::Config::build_as_user_group();
+		my $build_as_user_group = $self->pkg_build_as_user_group(); 
 		chowname $build_as_user_group->{'user:group'}, $script_env{HOME} or
 			die "can't chown '" . $build_as_user_group->{'user:group'} . "' $script_env{HOME}\n";
 	}
@@ -5716,6 +5717,30 @@ sub scanpackages {
 			Fink::Engine::aptget_update();
 		}
 		%built_trees = ();
+	}
+}
+
+=back
+
+=item pkg_build_as_user_group
+
+  $self->pkg_build_as_user_group();
+
+If BuildAsNobody: false is set, return 
+{qw/ user root group admin user:group root:admin /}
+
+Otherwise, return the results from Fink::Config::build_as_user_group()
+
+=cut
+
+sub pkg_build_as_user_group {
+	my $self = shift;
+	my $result;
+	if ($self->param_boolean("BuildAsNobody", 1)) {
+		$result = Fink::Config::build_as_user_group();
+	} else {
+		#package specifies 'BuildAsNobody: false'
+		$result = {qw/ user root group admin user:group root:admin /}
 	}
 }
 
