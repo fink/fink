@@ -4002,7 +4002,13 @@ sub phase_build {
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
-	if (Fink::Config::get_option("build_as_nobody") && $self->param_boolean("BuildAsNobody", 1)) {
+	my $build_as_nobody;
+	if ($self->has_parent()) {
+		$build_as_nobody = $self->get_parent()->param_boolean("BuildAsNobody", 1);
+	} else {
+		$build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
+	}
+	if (Fink::Config::get_option("build_as_nobody") && $build_as_nobody) {
 		print "Reverting ownership of install dir to root\n";
 		unless (chowname_hr 'root:admin', $destdir) {
 			my $error = "Could not revert ownership of install directory to root.";
