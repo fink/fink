@@ -1,0 +1,46 @@
+Package: objtools
+Version: 2.22
+Revision: 2
+Essential: true
+Replace: binutils (<< 2.22)
+
+Maintainer: Sjors Gielen <fink-objtools@sjorsgielen.nl>
+License: GPL
+DocFiles: COPYING README
+Description: . objcopy, objdump and readelf from binutils
+
+Source: mirror:gnu:binutils/binutils-%v.tar.bz2
+Source-MD5: ee0f10756c84979622b992a4a61ea3f5
+PatchFile: objtools.patch
+PatchFile-MD5: 46c7844a1fe9dfc5148615d5db251140
+
+CompileScript: <<
+#!/bin/sh -ev
+  cd bfd
+  ./configure %c
+  make bfdver.h
+  make targmatch.h
+  make libbfd.la
+  cd ../libiberty
+  ./configure %c
+  make libiberty.a
+  cd ../opcodes
+  ./configure %c
+  make libopcodes.la
+  cd ../binutils
+  ./configure %c
+  make objcopy
+  make objdump
+  make readelf
+<<
+InstallScript: <<
+  install -d -m 0755 %i/bin
+  install -m 0755 binutils/objcopy %i/bin
+  install -m 0755 binutils/objdump %i/bin
+  install -m 0755 binutils/readelf %i/bin
+
+  install -d -m 0755 %i/share/man/man1
+  install -m 0644 binutils/doc/objcopy.1 %i/share/man/man1
+  install -m 0644 binutils/doc/objdump.1 %i/share/man/man1
+  install -m 0644 binutils/doc/readelf.1 %i/share/man/man1
+<<

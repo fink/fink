@@ -3951,6 +3951,88 @@ sub phase_install {
 		$splitoff->phase_install(1);
 	}
 
+	chdir "$buildpath";
+	my $destdir = $self->get_install_directory();
+	my $ddir = basename $destdir;
+
+	if (not -d "$destdir/DEBIAN") {
+		if (not mkdir_p "$destdir/DEBIAN") {
+			my $error = "can't create directory for control files for package ".$self->get_fullname();
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
+	}
+
+	### create debconf script and templates (needs to happen before %b rm)
+	if ($self->has_param("Debconf")) {
+		my $sub_properties = &read_properties_var(
+			"Debconf of ".$self->get_fullname,
+			$self->param_default('Debconf', ''),
+			{remove_space => 1}
+		);
+
+		# write out config script
+		if (exists $sub_properties->{configscript}) {
+			my $scriptbody = &expand_percent($sub_properties->{configscript}, $self->{_expand}, $self->get_info_filename." \"ConfigScript\"");
+			my $scriptfile = "$destdir/DEBIAN/config";
+
+			print "Writing debconf config script...\n";
+
+			my $write_okay;
+			# NB: if change the automatic #! line here, must adjust
+			#     validator
+			if ( $write_okay = open(SCRIPT,">$scriptfile") ) {
+				my $pkgname = $self->get_name();
+				print SCRIPT <<EOF;
+#!/bin/sh
+# debconf config script for package $pkgname, auto-created by fink
+
+set -e
+
+. $basepath/share/debconf/confmodule
+
+$scriptbody
+
+exit 0
+EOF
+				close(SCRIPT) or $write_okay = 0;
+				chmod 0755, $scriptfile;
+			}
+			if (not $write_okay) {
+				my $error = "can't write debconf config script for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
+		}
+
+		if (exists $sub_properties->{templatesfile}) {
+			# if PO then translate with po-debconf before adding
+			# templates
+			my $templatesfile = "$destdir/DEBIAN/templates";
+			my $templatesfileexpanded = &expand_percent($sub_properties->{templatesfile}, $self->{_expand}, $self->get_info_filename." \"TemplatesFile\"");
+			if (exists $sub_properties->{podirectory}) {
+				my $podirectoryexpanded = &expand_percent($sub_properties->{podirectory}, $self->{_expand}, $self->get_info_filename." \"PODirectory\"");
+				print "Translating debconf templates...\n";
+				$cmd = "po2debconf --podir=$podirectoryexpanded --output $templatesfile $templatesfileexpanded";
+				if (&execute($cmd)) {
+					my $error = "can't translate templates file for ".$self->get_fullname().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			} else {
+				$cmd = "cp $templatesfileexpanded $templatesfile";
+				if (&execute($cmd)) {
+					my $error = "can't create templates file for ".$self->get_fullname().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			}
+
+			print "Writing debconf templates...\n";
+			chmod 0644, $templatesfile;
+		}
+	}
+
 	### remove build dir
 
 	if (not $do_splitoff) {
@@ -3999,6 +4081,9 @@ sub phase_build {
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
 		}
+	} else {
+		### check perms as debconf could have created this during
+		### the install phase and could have been "nobody"
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
@@ -4119,6 +4204,44 @@ EOF
 		my $error = "can't write control file for ".$self->get_fullname().": $!";
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 		die $error . "\n";
+	}
+
+	### triggers file
+
+	if (length(my $triggersbody = $self->get_triggers_field)) {
+		chomp $triggersbody;
+
+# Since this is also used in shlibs, maybe this should be moved to a common
+# sub function or instead of shlibs_error or triggers_error, just fpb_error
+# and reuse it
+		my $triggers_error = sub {
+			my $self = shift;
+			my $type = shift;
+			my $error = "can't write to $type file for " . $self->get_fullname() . ": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		};
+
+		print "Writing triggers file...\n";
+
+# FIXME:
+#    * Make sure each interest/activate is actutally in fink base
+#    * Rejoin wrap continuation lines
+#      (use \ not heredoc multiline-field)
+
+		my @triggerlines;
+		for my $line (split(/\n/, $triggersbody)) {
+			push @triggerlines, $line."\n";
+		}
+
+		if (@triggerlines) {
+			my $triggersfile = IO::Handle->new();
+			open $triggersfile, ">$destdir/DEBIAN/triggers" or &{$triggers_error}($self, 'triggers');
+			print $triggersfile @triggerlines;
+			close $triggersfile or &{$triggers_error}($self, 'triggers');
+			chmod 0644, "$destdir/DEBIAN/triggers";
+		}
+
 	}
 
 	### create scripts as neccessary
@@ -4419,6 +4542,53 @@ EOF
 		}
 	}
 
+	### Check and modify .la files, must happen before md5sums file
+	### creation
+	File::Find::find({
+		preprocess => sub {
+			# Don't descend into the .deb control directory
+			return () if $File::Find::dir eq "$destdir/DEBIAN";
+			return @_;
+
+		},
+		wanted => sub {
+			if (-f $_ && ! -l $_ && $_ =~ m/\.la$/) {
+				print "Reading ".$_.".\n";
+				my $filechanged = 0;
+				if ( open(LA,"<$File::Find::name") ) {
+					my @lalines;
+					while (my $laline = <LA>) {
+						if ($laline =~ m/^dependency_libs=/) {
+							print "Clearing dependency_lib from ".$_.".\n";
+							$laline =~ s/^(dependency_libs)=.*/$1=''/;
+							$filechanged = 1;
+						}
+						push(@lalines, $laline);
+					}
+					close(LA) or die "can't clear dependency_libs of ".$_.": $!\n";
+					if ($filechanged) {
+						print "Writing new ".$_.".\n";
+						if ( open(NEWLA,">$File::Find::name") ) {
+							foreach my $newlaline (@lalines) {
+								print NEWLA $newlaline;
+							}
+							close(NEWLA) or die "can't clear dependency_libs of ".$_.": $!\n";
+						} else {
+							my $error = "can't clear dependency_libs of ".$_.": $!";
+							$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+							die $error . "\n";
+						}
+					}
+				} else {
+					my $error = "can't clear dependency_libs of ".$_.": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			}
+		},
+	}, $destdir
+	);
+
 	### Create md5sum for deb, this is done as part of the debian package
 	### policy and so that tools like debsums can check the consistancy
 	### of installed file, this will also help for trouble shooting, since
@@ -4461,6 +4631,11 @@ EOF
 			die $error . "\n";
 		}
 	}
+
+	# Create symbol file
+	# dpkg-gensymbols isn't working yet as the mach-o output is much
+	# different then teh elf output, but this is how it would be called
+	# dpkg-gensymbols -p$self->get_fullname() -v$self->get_fullversion -P$destdir -O$destdir/DEBIAN/symbols
 
 	if (Fink::Config::get_option("validate")) {
 		my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
@@ -5695,6 +5870,29 @@ sub get_shlibs_field {
 		$shlibs_cooked .= "$1\n" if length $1;
 	}
 	$shlibs_cooked;
+}
+
+=item get_triggers_field
+
+	my $triggers_field = $pv->get_triggers_field;
+
+Returns a multiline string of the Triggers entries. The string will
+always be defined, but will be null if no entries, and every entry
+(even last) will have trailing newline.
+
+=cut
+
+sub get_triggers_field {
+	my $self = shift;
+
+	my @triggers_raw = split /\n/, $self->param_default_expanded('Triggers', '');  # lines from .info
+	my $triggers_cooked = '';  # processed results
+	foreach my $info_line (@triggers_raw) {
+		next if $info_line =~ /^#/;  # skip comments
+		$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
+		$triggers_cooked .= "$1\n" if length $1;
+	}
+	$triggers_cooked;
 }
 
 =item scanpackages
