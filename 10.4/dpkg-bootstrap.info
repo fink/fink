@@ -1,12 +1,12 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
-Revision: 1218
+Revision: 1219
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchFile: %n.patch
-PatchFile-MD5: 83170a41fd6b458f7f99d01b5f01e8e8
+PatchFile: dpkg.patch
+PatchFile-MD5: 5fd92a9487b09079b70ceb0fca3b463e
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable

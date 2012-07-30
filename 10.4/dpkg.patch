@@ -1,61 +1,6 @@
-diff -ruN gettext-0.14.5/gettext-tools/lib/execute.c gettext-0.14.5-patched/gettext-tools/lib/execute.c
---- gettext-0.14.5/gettext-tools/lib/execute.c	2005-05-20 13:19:48.000000000 -0700
-+++ gettext-0.14.5-patched/gettext-tools/lib/execute.c	2006-08-14 05:21:26.000000000 -0700
-@@ -62,7 +62,12 @@
- #endif
- 
- #ifndef HAVE_ENVIRON_DECL
--extern char **environ;
-+# ifdef __APPLE__
-+#  include <crt_externs.h>
-+#  define environ (*_NSGetEnviron())
-+# else
-+   extern char **environ;
-+# endif
- #endif
- 
- #ifndef STDIN_FILENO
-diff -ruN gettext-0.14.5/gettext-tools/lib/pipe.c gettext-0.14.5-patched/gettext-tools/lib/pipe.c
---- gettext-0.14.5/gettext-tools/lib/pipe.c	2005-05-20 13:25:23.000000000 -0700
-+++ gettext-0.14.5-patched/gettext-tools/lib/pipe.c	2006-08-14 05:22:02.000000000 -0700
-@@ -61,7 +61,12 @@
- #endif
- 
- #ifndef HAVE_ENVIRON_DECL
--extern char **environ;
-+# ifdef __APPLE__
-+#  include <crt_externs.h>
-+#  define environ (*_NSGetEnviron())
-+# else
-+   extern char **environ;
-+# endif
- #endif
- 
- #ifndef STDIN_FILENO
-diff -ruN dpkg-1.10.21/include/parsedump.h dpkg-1.10.21-patched/include/parsedump.h
---- dpkg-1.10.21/include/parsedump.h	2002-05-06 12:18:16.000000000 -0400
-+++ dpkg-1.10.21-patched/include/parsedump.h	2005-06-09 20:47:46.000000000 -0400
-@@ -30,7 +30,6 @@
-   const char *canon;
- };
- 
--extern const struct fieldinfo fieldinfos[];
- extern const struct nickname nicknames[];
- extern const int nfields; /* = elements in fieldinfos, including the sentinels */
- 
-@@ -68,6 +67,8 @@
-   unsigned int integer;
- };
- 
-+extern const struct fieldinfo fieldinfos[];
-+
- void parseerr(FILE *file, const char *filename, int lno, FILE *warnto, int *warncount,
-               const struct pkginfo *pigp, int warnonly,
-               const char *fmt, ...) PRINTFFORMAT(8,9);
-
 diff -urN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
---- dpkg-1.10.21.orig/Makefile.conf.in	2003-09-14 08:43:49.000000000 +0900
-+++ dpkg-1.10.21/Makefile.conf.in	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/Makefile.conf.in	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/Makefile.conf.in	2012-07-13 02:13:27.000000000 +0200
 @@ -60,13 +60,13 @@
  
  CPPFLAGS		= @CPPFLAGS@
@@ -73,8 +18,8 @@ diff -urN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
  NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir)/intl -I../intl
  NLS_LIBS		= @INTLLIBS@ 
 diff -urN dpkg-1.10.21.orig/dpkg-deb/Makefile.in dpkg-1.10.21/dpkg-deb/Makefile.in
---- dpkg-1.10.21.orig/dpkg-deb/Makefile.in	2002-05-20 13:40:29.000000000 +0900
-+++ dpkg-1.10.21/dpkg-deb/Makefile.in	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/dpkg-deb/Makefile.in	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/dpkg-deb/Makefile.in	2012-07-13 02:13:27.000000000 +0200
 @@ -51,5 +51,5 @@
  dpkg-deb-static: LDFLAGS += -static
  dpkg-deb-static: ZLIB_LIBS = $(ZLIB_LIBS_ALSO_STATIC)
@@ -83,8 +28,8 @@ diff -urN dpkg-1.10.21.orig/dpkg-deb/Makefile.in dpkg-1.10.21/dpkg-deb/Makefile.
 +	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
  
 diff -urN dpkg-1.10.21.orig/dpkg-deb/build.c dpkg-1.10.21/dpkg-deb/build.c
---- dpkg-1.10.21.orig/dpkg-deb/build.c	2003-10-26 05:03:21.000000000 +0900
-+++ dpkg-1.10.21/dpkg-deb/build.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/dpkg-deb/build.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/dpkg-deb/build.c	2012-07-13 02:13:27.000000000 +0200
 @@ -275,9 +275,11 @@
        warns++;
      }
@@ -97,9 +42,540 @@ diff -urN dpkg-1.10.21.orig/dpkg-deb/build.c dpkg-1.10.21/dpkg-deb/build.c
      }
      checkversion(checkedinfo->available.version.version,"(upstream) version",&errs);
      checkversion(checkedinfo->available.version.revision,"Debian revision",&errs);
+@@ -445,7 +447,7 @@
+     m_dup2(p1[0],0); close(p1[0]); close(p1[1]);
+     m_dup2(p2[1],1); close(p2[0]); close(p2[1]);
+     if (chdir(directory)) ohshite(_("failed to chdir to `%.255s'"),directory);
+-    execlp(TAR,"tar","-cf", "-", "-T", "-", "--null", "--no-recursion", (char*)0);
++    execlp(TAR,"tar","-cf", "-", "--null", "-T", "-", "--no-recursion", (char*)0);
+     ohshite(_("failed to exec tar -cf"));
+   }
+   close(p1[0]);
+diff -urN dpkg-1.10.21.orig/dpkg-deb/build.c.orig dpkg-1.10.21/dpkg-deb/build.c.orig
+--- dpkg-1.10.21.orig/dpkg-deb/build.c.orig	1970-01-01 01:00:00.000000000 +0100
++++ dpkg-1.10.21/dpkg-deb/build.c.orig	2012-07-13 02:13:27.000000000 +0200
+@@ -0,0 +1,518 @@
++/*
++ * dpkg-deb - construction and deconstruction of *.deb archives
++ * build.c - building archives
++ *
++ * Copyright (C) 1994,1995 Ian Jackson <ian@chiark.greenend.org.uk>
++ * Copyright (C) 2000,2001 Wichert Akkerman <wakkerma@debian.org>
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public
++ * License along with dpkg; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <config.h>
++
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <signal.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <time.h>
++#include <errno.h>
++#include <unistd.h>
++#include <dirent.h>
++#include <limits.h>
++#include <ctype.h>
++#include <assert.h>
++#ifdef USE_ZLIB
++#include <zlib.h>
++#endif
++
++#include <dpkg.h>
++#include <dpkg-db.h>
++#include "dpkg-deb.h"
++
++#ifndef S_ISLNK
++# define S_ISLNK(mode) ((mode&0xF000) == S_IFLNK)
++#endif
++
++/* Simple structure to store information about a file.
++ */
++struct _finfo {
++  struct stat	st;
++  char*	fn;
++  struct _finfo* next;
++};
++
++/* Do a quick check if vstring is a valid versionnumber. Valid in this case
++ * means it contains at least one digit. If an error is found increment
++ * *errs.
++ */
++static void checkversion(const char *vstring, const char *valuename, int *errs) {
++  const char *p;
++  if (!vstring || !*vstring) return;
++  for (p=vstring; *p; p++) if (cisdigit(*p)) return;
++  fprintf(stderr, _("dpkg-deb - error: %s (`%s') doesn't contain any digits\n"),
++          valuename, vstring);
++  (*errs)++;
++}
++
++/* Read the next filename from a filedescriptor and create a _info struct
++ * for it. If there is nothing to read return NULL.
++ */
++static struct _finfo* getfi(const char* root, int fd) {
++  static char* fn = NULL;
++  static size_t fnlen = 0;
++  size_t i= 0;
++  struct _finfo *fi;
++  size_t rl = strlen(root);
++
++  if (fn == NULL) {
++    fnlen=rl+2048;
++    fn=(char*)malloc(fnlen);
++  } else if (fnlen < (rl+2048)) {
++    fnlen=rl+2048;
++    fn=(char*)realloc(fn,fnlen);
++  }
++  i=sprintf(fn,"%s/",root);
++  
++  while (1) {
++    int	res;
++    if (i>=fnlen) {
++      fnlen+=2048;
++      fn=(char*)realloc(fn,fnlen);
++    }
++    if ((res=read(fd, (fn+i), sizeof(*fn)))<0) {
++      if ((errno==EINTR) || (errno==EAGAIN))
++	continue;
++      else
++	return NULL;
++    }
++    if (res==0)	// EOF -> parent died
++      return NULL;
++    if (fn[i]==0)
++      break;
++
++    i++;
++    assert(i<2048);
++  }
++
++  fi=(struct _finfo*)malloc(sizeof(struct _finfo));
++  lstat(fn, &(fi->st));
++  fi->fn=strdup(fn+rl+1);
++  fi->next=NULL;
++  return fi;
++}
++
++/* Add a new _finfo struct to a single linked list of _finfo structs.
++ * We perform a slight optimization to work around a `feature' in tar: tar
++ * always recurses into subdirectories if you list a subdirectory. So if an
++ * entry is added and the previous entry in the list is its subdirectory we
++ * remove the subdirectory. 
++ *
++ * After a _finfo struct is added to a list it may no longer be freed, we
++ * assume full responsibility for its memory.
++ */
++static void add_to_filist(struct _finfo* fi, struct _finfo** start, struct _finfo **end) {
++  if (*start==NULL)
++    *start=*end=fi;
++  else 
++    *end=(*end)->next=fi;
++}
++
++/* Free the memory for all entries in a list of _finfo structs
++ */
++static void free_filist(struct _finfo* fi) {
++  while (fi) {
++    struct _finfo* fl;
++    free(fi->fn);
++    fl=fi; fi=fi->next;
++    free(fl);
++  }
++}
++
++int internalGzip(int fd1, int fd2, const char *compression, char *desc, ...) NONRETURNING;
++int internalGzip(int fd1, int fd2, const char *compression, char *desc, ...) {
++  va_list al;
++  struct varbuf v;
++#ifdef USE_ZLIB
++  gzFile gzfile;
++  char gzbuffer[4096];
++  int gzactualwrite, actualread;
++#endif
++  char combuf[6];
++
++  varbufinit(&v);
++
++  va_start(al,desc);
++  varbufvprintf(&v, desc, al);
++  va_end(al);
++
++  
++  if(compression == NULL) compression= "9";
++  if(*compression == '0') {
++    fd_fd_copy(0, 1, -1, _("%s: no compression copy loop"), v.buf);
++    exit(0);
++  }
++#ifdef USE_ZLIB
++  strncpy(combuf, "w9", sizeof(combuf));
++  combuf[1]= *compression;
++  gzfile = gzdopen(1, combuf);
++  while((actualread = read(0,gzbuffer,sizeof(gzbuffer))) > 0) {
++    if (actualread < 0 ) {
++      if (errno == EINTR) continue;
++      ohshite(_("%s: internal gzip error: read: `%s'"), v.buf, strerror(errno));
++    }
++    gzactualwrite= gzwrite(gzfile,gzbuffer,actualread);
++    if (gzactualwrite < 0 ) {
++      int gzerr = 0;
++      const char *errmsg = gzerror(gzfile, &gzerr);
++      if (gzerr == Z_ERRNO) {
++        if (errno == EINTR) continue;
++        errmsg= strerror(errno);
++      }
++      ohshite(_("%s: internal gzip error: write: `%s'"), v.buf, errmsg);
++    }
++    if (gzactualwrite != actualread)
++      ohshite(_("%s: internal gzip error: read(%i) != write(%i)"), v.buf, actualread, gzactualwrite);
++  }
++  gzclose(gzfile);
++  exit(0);
++#else
++  strncpy(combuf, "-9c", sizeof(combuf));
++  combuf[1]= *compression;
++  execlp(GZIP,"gzip",combuf,(char*)0); ohshit(_("%s: failed to exec gzip %s"), v.buf, combuf);
++#endif
++}
++
++/* Overly complex function that builds a .deb file
++ */
++void do_build(const char *const *argv) {
++  static const char *const maintainerscripts[]= {
++    PREINSTFILE, POSTINSTFILE, PRERMFILE, POSTRMFILE, 0
++  };
++  
++  char *m;
++  const char *debar, *directory, *const *mscriptp, *versionstring, *arch;
++  char *controlfile, *tfbuf;
++  const char *envbuf;
++  struct pkginfo *checkedinfo;
++  struct arbitraryfield *field;
++  FILE *ar, *gz, *cf;
++  int p1[2],p2[2],p3[2], warns, errs, n, c, subdir, gzfd;
++  pid_t c1,c2,c3;
++  struct stat controlstab, datastab, mscriptstab, debarstab;
++  char conffilename[MAXCONFFILENAME+1];
++  time_t thetime= 0;
++  struct _finfo *fi;
++  struct _finfo *symlist = NULL;
++  struct _finfo *symlist_end = NULL;
++  
++/* Decode our arguments */
++  directory= *argv++; if (!directory) badusage(_("--build needs a directory argument"));
++  /* template for our tempfiles */
++  if ((envbuf= getenv("TMPDIR")) == NULL)
++    envbuf= P_tmpdir;
++  tfbuf = (char *)malloc(strlen(envbuf)+13);
++  strcpy(tfbuf,envbuf);
++  strcat(tfbuf,"/dpkg.XXXXXX");
++  subdir= 0;
++  if ((debar= *argv++) !=0) {
++    if (*argv) badusage(_("--build takes at most two arguments"));
++    if (debar) {
++      if (stat(debar,&debarstab)) {
++        if (errno != ENOENT)
++          ohshite(_("unable to check for existence of archive `%.250s'"),debar);
++      } else if (S_ISDIR(debarstab.st_mode)) {
++        subdir= 1;
++      }
++    }
++  } else {
++    m= m_malloc(strlen(directory) + sizeof(DEBEXT));
++    strcpy(m,directory); strcat(m,DEBEXT);
++    debar= m;
++  }
++    
++  /* Perform some sanity checks on the to-be-build package.
++   */
++  if (nocheckflag) {
++    if (subdir)
++      ohshit(_("target is directory - cannot skip control file check"));
++    printf(_("dpkg-deb: warning, not checking contents of control area.\n"
++           "dpkg-deb: building an unknown package in `%s'.\n"), debar);
++  } else {
++    controlfile= m_malloc(strlen(directory) + sizeof(BUILDCONTROLDIR) +
++                          sizeof(CONTROLFILE) + sizeof(CONFFILESFILE) +
++                          sizeof(POSTINSTFILE) + sizeof(PREINSTFILE) +
++                          sizeof(POSTRMFILE) + sizeof(PRERMFILE) +
++                          MAXCONFFILENAME + 5);
++    /* Lets start by reading in the control-file so we can check its contents */
++    strcpy(controlfile, directory);
++    strcat(controlfile, "/" BUILDCONTROLDIR "/" CONTROLFILE);
++    warns= 0; errs= 0;
++    parsedb(controlfile, pdb_recordavailable|pdb_rejectstatus,
++            &checkedinfo, stderr, &warns);
++    assert(checkedinfo->available.valid);
++    if (strspn(checkedinfo->name,
++               "abcdefghijklmnopqrstuvwxyz0123456789+-.")
++        != strlen(checkedinfo->name))
++      ohshit(_("package name has characters that aren't lowercase alphanums or `-+.'"));
++    if (checkedinfo->priority == pri_other) {
++      fprintf(stderr, _("warning, `%s' contains user-defined Priority value `%s'\n"),
++              controlfile, checkedinfo->otherpriority);
++      warns++;
++    }
++    for (field= checkedinfo->available.arbs; field; field= field->next) {
++	  if (strncmp("BuildDependsOnly",field->name,16)) {
++      fprintf(stderr, _("warning, `%s' contains user-defined field `%s'\n"),
++              controlfile, field->name);
++      warns++;
++	  }
++    }
++    checkversion(checkedinfo->available.version.version,"(upstream) version",&errs);
++    checkversion(checkedinfo->available.version.revision,"Debian revision",&errs);
++    if (errs) ohshit(_("%d errors in control file"),errs);
++
++    if (subdir) {
++      versionstring= versiondescribe(&checkedinfo->available.version,vdew_never);
++      arch= checkedinfo->available.architecture; if (!arch) arch= "";
++      m= m_malloc(sizeof(DEBEXT)+1+strlen(debar)+1+strlen(checkedinfo->name)+
++                  strlen(versionstring)+1+strlen(arch));
++      sprintf(m,"%s/%s_%s%s%s" DEBEXT,debar,checkedinfo->name,versionstring,
++              arch[0] ? "_" : "", arch);
++      debar= m;
++    }
++    printf(_("dpkg-deb: building package `%s' in `%s'.\n"), checkedinfo->name, debar);
++
++    /* Check file permissions */
++    strcpy(controlfile, directory);
++    strcat(controlfile, "/" BUILDCONTROLDIR "/");
++    if (lstat(controlfile,&mscriptstab)) ohshite("unable to stat control directory");
++    if (!S_ISDIR(mscriptstab.st_mode)) ohshit("control directory is not a directory");
++    if ((mscriptstab.st_mode & 07757) != 0755)
++      ohshit(_("control directory has bad permissions %03lo (must be >=0755 "
++             "and <=0775)"), (unsigned long)(mscriptstab.st_mode & 07777));
++
++    for (mscriptp= maintainerscripts; *mscriptp; mscriptp++) {
++      strcpy(controlfile, directory);
++      strcat(controlfile, "/" BUILDCONTROLDIR "/");
++      strcat(controlfile, *mscriptp);
++
++      if (!lstat(controlfile,&mscriptstab)) {
++        if (S_ISLNK(mscriptstab.st_mode)) continue;
++        if (!S_ISREG(mscriptstab.st_mode))
++          ohshit(_("maintainer script `%.50s' is not a plain file or symlink"),*mscriptp);
++        if ((mscriptstab.st_mode & 07557) != 0555)
++          ohshit(_("maintainer script `%.50s' has bad permissions %03lo "
++                 "(must be >=0555 and <=0775)"),
++                 *mscriptp, (unsigned long)(mscriptstab.st_mode & 07777));
++      } else if (errno != ENOENT) {
++        ohshite(_("maintainer script `%.50s' is not stattable"),*mscriptp);
++      }
++    }
++
++    /* Check if conffiles contains sane information */
++    strcpy(controlfile, directory);
++    strcat(controlfile, "/" BUILDCONTROLDIR "/" CONFFILESFILE);
++    if ((cf= fopen(controlfile,"r"))) {
++      while (fgets(conffilename,MAXCONFFILENAME+1,cf)) {
++        n= strlen(conffilename);
++        if (!n) ohshite(_("empty string from fgets reading conffiles"));
++        if (conffilename[n-1] != '\n') {
++          fprintf(stderr, _("warning, conffile name `%.50s...' is too long, or missing final newline\n"), 
++		  conffilename);
++          warns++;
++          while ((c= getc(cf)) != EOF && c != '\n');
++          continue;
++        }
++        conffilename[n-1]= 0;
++        strcpy(controlfile, directory);
++        strcat(controlfile, "/");
++        strcat(controlfile, conffilename);
++        if (lstat(controlfile,&controlstab)) {
++          if (errno == ENOENT)
++            ohshit(_("conffile `%.250s' does not appear in package"),conffilename);
++          else
++            ohshite(_("conffile `%.250s' is not stattable"),conffilename);
++        } else if (!S_ISREG(controlstab.st_mode)) {
++          fprintf(stderr, _("warning, conffile `%s'"
++                  " is not a plain file\n"), conffilename);
++          warns++;
++        }
++      }
++      if (ferror(cf)) ohshite(_("error reading conffiles file"));
++      fclose(cf);
++    } else if (errno != ENOENT) {
++      ohshite(_("error opening conffiles file"));
++    }
++    if (warns) {
++      if (fprintf(stderr, _("dpkg-deb: ignoring %d warnings about the control"
++                  " file(s)\n"), warns) == EOF) werr("stderr");
++    }
++  }
++  if (ferror(stdout)) werr("stdout");
++  
++  /* Now that we have verified everything its time to actually
++   * build something. Lets start by making the ar-wrapper.
++   */
++  if (!(ar=fopen(debar,"wb"))) ohshite(_("unable to create `%.255s'"),debar);
++  if (setvbuf(ar, 0, _IONBF, 0)) ohshite(_("unable to unbuffer `%.255s'"),debar);
++  /* Fork a tar to package the control-section of the package */
++  m_pipe(p1);
++  if (!(c1= m_fork())) {
++    m_dup2(p1[1],1); close(p1[0]); close(p1[1]);
++    if (chdir(directory)) ohshite(_("failed to chdir to `%.255s'"),directory);
++    if (chdir(BUILDCONTROLDIR)) ohshite(_("failed to chdir to .../DEBIAN"));
++    execlp(TAR,"tar","-cf","-",".",(char*)0); ohshite(_("failed to exec tar -cf"));
++  }
++  close(p1[1]);
++  /* Create a temporary file to store the control data in. Immediately unlink
++   * our temporary file so others can't mess with it.
++   */
++  if ((gzfd= mkstemp(tfbuf)) == -1) ohshite(_("failed to make tmpfile (control)"));
++  if ((gz= fdopen(gzfd,"a")) == NULL) ohshite(_("failed to open tmpfile "
++      "(control), %s"), tfbuf);
++  /* make sure it's gone, the fd will remain until we close it */
++  if (unlink(tfbuf)) ohshit(_("failed to unlink tmpfile (control), %s"),
++      tfbuf);
++  /* reset this, so we can use it elsewhere */
++  strcpy(tfbuf,envbuf);
++  strcat(tfbuf,"/dpkg.XXXXXX");
++  /* And run gzip to compress our control archive */
++  if (!(c2= m_fork())) {
++    m_dup2(p1[0],0); m_dup2(gzfd,1); close(p1[0]); close(gzfd);
++    internalGzip(0, 1, "9", _("control"));
++  }
++  close(p1[0]);
++  waitsubproc(c2,"gzip -9c",0);
++  waitsubproc(c1,"tar -cf",0);
++  if (fstat(gzfd,&controlstab)) ohshite(_("failed to fstat tmpfile (control)"));
++  /* We have our first file for the ar-archive. Write a header for it to the
++   * package and insert it.
++   */
++  if (oldformatflag) {
++    if (fprintf(ar, "%-8s\n%ld\n", OLDARCHIVEVERSION, (long)controlstab.st_size) == EOF)
++      werr(debar);
++  } else {
++    thetime= time(0);
++    if (fprintf(ar,
++                "!<arch>\n"
++                "debian-binary   %-12lu0     0     100644  %-10ld`\n"
++                ARCHIVEVERSION "\n"
++                "%s"
++                ADMINMEMBER "%-12lu0     0     100644  %-10ld`\n",
++                thetime,
++                (long)sizeof(ARCHIVEVERSION),
++                (sizeof(ARCHIVEVERSION)&1) ? "\n" : "",
++                (unsigned long)thetime,
++                (long)controlstab.st_size) == EOF)
++      werr(debar);
++  }                
++                
++  if (lseek(gzfd,0,SEEK_SET)) ohshite(_("failed to rewind tmpfile (control)"));
++  fd_fd_copy(gzfd, fileno(ar), -1, _("control"));
++
++  /* Control is done, now we need to archive the data. Start by creating
++   * a new temporary file. Immediately unlink the temporary file so others
++   * can't mess with it. */
++  if (!oldformatflag) {
++    fclose(gz);
++    if ((gzfd= mkstemp(tfbuf)) == -1) ohshite(_("failed to make tmpfile (data)"));
++    if ((gz= fdopen(gzfd,"a")) == NULL) ohshite(_("failed to open tmpfile "
++        "(data), %s"), tfbuf);
++    /* make sure it's gone, the fd will remain until we close it */
++    if (unlink(tfbuf)) ohshit(_("failed to unlink tmpfile (data), %s"),
++        tfbuf);
++    /* reset these, in case we want to use the later */
++    strcpy(tfbuf,envbuf);
++    strcat(tfbuf,"/dpkg.XXXXXX");
++  }
++  /* Fork off a tar. We will feed it a list of filenames on stdin later.
++   */
++  m_pipe(p1);
++  m_pipe(p2);
++  if (!(c1= m_fork())) {
++    m_dup2(p1[0],0); close(p1[0]); close(p1[1]);
++    m_dup2(p2[1],1); close(p2[0]); close(p2[1]);
++    if (chdir(directory)) ohshite(_("failed to chdir to `%.255s'"),directory);
++    execlp(TAR,"tar","-cf", "-", "-T", "-", "--null", "--no-recursion", (char*)0);
++    ohshite(_("failed to exec tar -cf"));
++  }
++  close(p1[0]);
++  close(p2[1]);
++  /* Of course we should not forget to compress the archive as well.. */
++  if (!(c2= m_fork())) {
++    close(p1[1]);
++    m_dup2(p2[0],0); close(p2[0]);
++    m_dup2(oldformatflag ? fileno(ar) : gzfd,1);
++    internalGzip(0, 1, compression, _("control"));
++  }
++  close(p2[0]);
++  /* All the pipes are set, now lets run find, and start feeding
++   * filenames to tar.
++   */
++
++  m_pipe(p3);
++  if (!(c3= m_fork())) {
++    m_dup2(p3[1],1); close(p3[0]); close(p3[1]);
++    if (chdir(directory)) ohshite(_("failed to chdir to `%.255s'"),directory);
++    execlp(FIND,"find",".","-path","./" BUILDCONTROLDIR,"-prune","-o","-print0",(char*)0);
++    ohshite(_("failed to exec find"));
++  }
++  close(p3[1]);
++  /* We need to reorder the files so we can make sure that symlinks
++   * will not appear before their target.
++   */
++  while ((fi=getfi(directory, p3[0]))!=NULL)
++    if (S_ISLNK(fi->st.st_mode))
++      add_to_filist(fi,&symlist,&symlist_end);
++    else {
++      if (write(p1[1], fi->fn, strlen(fi->fn)+1) ==- 1)
++	ohshite(_("failed to write filename to tar pipe (data)"));
++    }
++  close(p3[0]);
++  waitsubproc(c3,"find",0);
++
++  for (fi= symlist;fi;fi= fi->next)
++    if (write(p1[1], fi->fn, strlen(fi->fn)+1) == -1)
++      ohshite(_("failed to write filename to tar pipe (data)"));
++  /* All done, clean up wait for tar and gzip to finish their job */
++  close(p1[1]);
++  free_filist(symlist);
++  waitsubproc(c2,"gzip -9c from tar -cf",0);
++  waitsubproc(c1,"tar -cf",0);
++  /* Okay, we have data.tar.gz as well now, add it to the ar wrapper */
++  if (!oldformatflag) {
++    if (fstat(gzfd,&datastab)) ohshite("_(failed to fstat tmpfile (data))");
++    if (fprintf(ar,
++                "%s"
++                DATAMEMBER "%-12lu0     0     100644  %-10ld`\n",
++                (controlstab.st_size & 1) ? "\n" : "",
++                (unsigned long)thetime,
++                (long)datastab.st_size) == EOF)
++      werr(debar);
++
++    if (lseek(gzfd,0,SEEK_SET)) ohshite(_("failed to rewind tmpfile (data)"));
++    fd_fd_copy(gzfd, fileno(ar), -1, _("cat (data)"));
++
++    if (datastab.st_size & 1)
++      if (putc('\n',ar) == EOF)
++        werr(debar);
++  }
++  if (fclose(ar)) werr(debar);
++                             
++  exit(0);
++}
++
 diff -urN dpkg-1.10.21.orig/dpkg-deb/dpkg-deb.1 dpkg-1.10.21/dpkg-deb/dpkg-deb.1
---- dpkg-1.10.21.orig/dpkg-deb/dpkg-deb.1	2001-08-02 09:59:31.000000000 +0900
-+++ dpkg-1.10.21/dpkg-deb/dpkg-deb.1	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/dpkg-deb/dpkg-deb.1	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/dpkg-deb/dpkg-deb.1	2012-07-13 02:13:27.000000000 +0200
 @@ -244,7 +244,8 @@
  Copyright (C)1995-1996
  by him and released under the GNU General Public Licence; there is NO
@@ -112,8 +588,8 @@ diff -urN dpkg-1.10.21.orig/dpkg-deb/dpkg-deb.1 dpkg-1.10.21/dpkg-deb/dpkg-deb.1
  for details.
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/dselect/Makefile.in dpkg-1.10.21/dselect/Makefile.in
---- dpkg-1.10.21.orig/dselect/Makefile.in	2003-09-15 07:28:18.000000000 +0900
-+++ dpkg-1.10.21/dselect/Makefile.in	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/dselect/Makefile.in	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/dselect/Makefile.in	2012-07-13 02:13:27.000000000 +0200
 @@ -47,7 +47,7 @@
  	done
  
@@ -124,8 +600,8 @@ diff -urN dpkg-1.10.21.orig/dselect/Makefile.in dpkg-1.10.21/dselect/Makefile.in
  basecmds.o: helpmsgs.h
  curkeys.o: curkeys.h
 diff -urN dpkg-1.10.21.orig/dselect/dselect.8 dpkg-1.10.21/dselect/dselect.8
---- dpkg-1.10.21.orig/dselect/dselect.8	2003-09-14 10:49:08.000000000 +0900
-+++ dpkg-1.10.21/dselect/dselect.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/dselect/dselect.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/dselect/dselect.8	2012-07-13 02:13:27.000000000 +0200
 @@ -34,7 +34,7 @@
  of \fBdselect\fP or show additional information about the program.
  .SH OPTIONS 
@@ -152,8 +628,8 @@ diff -urN dpkg-1.10.21.orig/dselect/dselect.8 dpkg-1.10.21/dselect/dselect.8
 +.br
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/dselect/main.cc dpkg-1.10.21/dselect/main.cc
---- dpkg-1.10.21.orig/dselect/main.cc	2003-10-26 05:03:21.000000000 +0900
-+++ dpkg-1.10.21/dselect/main.cc	2005-03-18 22:17:07.000000000 +0900
+--- dpkg-1.10.21.orig/dselect/main.cc	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/dselect/main.cc	2012-07-13 02:13:27.000000000 +0200
 @@ -43,6 +43,11 @@
  #include <dpkg-db.h>
  #include <version.h>
@@ -334,8 +810,8 @@ diff -urN dpkg-1.10.21.orig/dselect/main.cc dpkg-1.10.21/dselect/main.cc
      cursesoff();
      error_unwind(ehflag_bombout); exit(2);
 diff -urN dpkg-1.10.21.orig/dselect/pkgdepcon.cc dpkg-1.10.21/dselect/pkgdepcon.cc
---- dpkg-1.10.21.orig/dselect/pkgdepcon.cc	2003-10-26 23:02:05.000000000 +0900
-+++ dpkg-1.10.21/dselect/pkgdepcon.cc	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/dselect/pkgdepcon.cc	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/dselect/pkgdepcon.cc	2012-07-13 02:13:27.000000000 +0200
 @@ -198,12 +198,20 @@
  
    return 2;
@@ -406,8 +882,8 @@ diff -urN dpkg-1.10.21.orig/dselect/pkgdepcon.cc dpkg-1.10.21/dselect/pkgdepcon.
    return 0;
  }
 diff -urN dpkg-1.10.21.orig/include/dpkg.h.in dpkg-1.10.21/include/dpkg.h.in
---- dpkg-1.10.21.orig/include/dpkg.h.in	2004-04-25 06:14:21.000000000 +0900
-+++ dpkg-1.10.21/include/dpkg.h.in	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/include/dpkg.h.in	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/include/dpkg.h.in	2012-07-13 02:13:27.000000000 +0200
 @@ -96,7 +96,7 @@
  #define SHELLENV            "SHELL"
  #define DEFAULTSHELL        "sh"
@@ -417,9 +893,73 @@ diff -urN dpkg-1.10.21.orig/include/dpkg.h.in dpkg-1.10.21/include/dpkg.h.in
  
  #define IMETHODMAXLEN        50
  #define IOPTIONMAXLEN        IMETHODMAXLEN
+@@ -118,13 +118,13 @@
+ 
+ #define ARCHIVE_FILENAME_PATTERN "*.deb"
+ 
+-#define BACKEND		"dpkg-deb"
+-#define DPKGQUERY	"dpkg-query"
+-#define SPLITTER	"dpkg-split"
+-#define MD5SUM		"md5sum"
+-#define DSELECT		"dselect"
+-#define DPKG		"dpkg"
+-#define DEBSIGVERIFY	"/usr/bin/debsig-verify"
++#define BACKEND		"@PREFIX@/bin/dpkg-deb"
++#define DPKGQUERY	"@PREFIX@/bin/dpkg-query"
++#define SPLITTER	"@PREFIX@/bin/dpkg-split"
++#define MD5SUM		"@PREFIX@/bin/md5sum"
++#define DSELECT		"@PREFIX@/bin/dselect"
++#define DPKG		"@PREFIX@/bin/dpkg"
++#define DEBSIGVERIFY	"@PREFIX@/bin/debsig-verify"
+ 
+ #define TAR		"tar"
+ #define GZIP		"gzip"
+diff -urN dpkg-1.10.21.orig/include/parsedump.h dpkg-1.10.21/include/parsedump.h
+--- dpkg-1.10.21.orig/include/parsedump.h	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/include/parsedump.h	2012-07-13 02:13:27.000000000 +0200
+@@ -30,7 +30,6 @@
+   const char *canon;
+ };
+ 
+-extern const struct fieldinfo fieldinfos[];
+ extern const struct nickname nicknames[];
+ extern const int nfields; /* = elements in fieldinfos, including the sentinels */
+ 
+@@ -68,6 +67,8 @@
+   unsigned int integer;
+ };
+ 
++extern const struct fieldinfo fieldinfos[];
++
+ void parseerr(FILE *file, const char *filename, int lno, FILE *warnto, int *warncount,
+               const struct pkginfo *pigp, int warnonly,
+               const char *fmt, ...) PRINTFFORMAT(8,9);
+diff -urN dpkg-1.10.21.orig/lib/mlib.c dpkg-1.10.21/lib/mlib.c
+--- dpkg-1.10.21.orig/lib/mlib.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/lib/mlib.c	2012-07-13 02:13:27.000000000 +0200
+@@ -110,7 +110,9 @@
+   if (WIFEXITED(status)) {
+     n= WEXITSTATUS(status); if (!n) return n;
+     if(!(flags & PROCNOERR)) {
+-      if(flags & PROCWARN)
++      /* FINK LOCAL: Tar status 1 is a warning. */
++      if((flags & PROCWARN) || (n == 1 && strncmp(description, "tar", 3) == 0))
++      /* FINK LOCAL */
+         fprintf(stderr, _("dpkg: warning - %s returned error exit status %d\n"),description,n);
+       else
+         ohshit(_("subprocess %s returned error exit status %d"),description,n);
+@@ -189,7 +191,7 @@
+   switch(data->type) {
+     case BUFFER_WRITE_BUF:
+       memcpy(data->data.ptr, buf, length);
+-      (char*)data->data.ptr += length;
++      data->data.ptr = (char*)data->data.ptr + length;
+       break;
+     case BUFFER_WRITE_VBUF:
+       varbufaddbuf((struct varbuf *)data->data.ptr, buf, length);
 diff -urN dpkg-1.10.21.orig/lib/nfmalloc.c dpkg-1.10.21/lib/nfmalloc.c
---- dpkg-1.10.21.orig/lib/nfmalloc.c	2003-10-26 05:03:21.000000000 +0900
-+++ dpkg-1.10.21/lib/nfmalloc.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/lib/nfmalloc.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/lib/nfmalloc.c	2012-07-13 02:13:27.000000000 +0200
 @@ -26,7 +26,7 @@
  #include <dpkg.h>
  #include <dpkg-db.h>
@@ -430,8 +970,8 @@ diff -urN dpkg-1.10.21.orig/lib/nfmalloc.c dpkg-1.10.21/lib/nfmalloc.c
  #define obstack_chunk_alloc m_malloc
  #define obstack_chunk_free free
 diff -urN dpkg-1.10.21.orig/lib/tarfn.c dpkg-1.10.21/lib/tarfn.c
---- dpkg-1.10.21.orig/lib/tarfn.c	2004-03-09 02:31:16.000000000 +0900
-+++ dpkg-1.10.21/lib/tarfn.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/lib/tarfn.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/lib/tarfn.c	2012-07-13 02:13:27.000000000 +0200
 @@ -57,8 +57,12 @@
  {
  	int	len;
@@ -448,8 +988,8 @@ diff -urN dpkg-1.10.21.orig/lib/tarfn.c dpkg-1.10.21/lib/tarfn.c
  	memcpy(str, s, len);
  	str[len] = 0;
 diff -urN dpkg-1.10.21.orig/main/Makefile.in dpkg-1.10.21/main/Makefile.in
---- dpkg-1.10.21.orig/main/Makefile.in	2002-08-25 04:54:19.000000000 +0900
-+++ dpkg-1.10.21/main/Makefile.in	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/Makefile.in	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/Makefile.in	2012-07-13 02:13:27.000000000 +0200
 @@ -63,10 +63,10 @@
  dpkg-static: LDFLAGS += -static
  dpkg-static: ZLIB_LIBS = $(ZLIBS_LIBS_ALSO_STATIC)
@@ -464,8 +1004,8 @@ diff -urN dpkg-1.10.21.orig/main/Makefile.in dpkg-1.10.21/main/Makefile.in
  enquiry.o: archtable.h
  
 diff -urN dpkg-1.10.21.orig/main/archives.c dpkg-1.10.21/main/archives.c
---- dpkg-1.10.21.orig/main/archives.c	2004-04-25 19:41:54.000000000 +0900
-+++ dpkg-1.10.21/main/archives.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/archives.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/archives.c	2012-07-13 02:13:27.000000000 +0200
 @@ -553,12 +553,10 @@
      debug(dbg_eachfiledetail,"tarobject SymbolicLink creating");
  #ifdef HAVE_LCHOWN
@@ -493,8 +1033,8 @@ diff -urN dpkg-1.10.21.orig/main/archives.c dpkg-1.10.21/main/archives.c
        debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
        if (link(fnamevb.buf,fnametmpvb.buf))
 diff -urN dpkg-1.10.21.orig/main/configure.c dpkg-1.10.21/main/configure.c
---- dpkg-1.10.21.orig/main/configure.c	2003-10-26 05:03:21.000000000 +0900
-+++ dpkg-1.10.21/main/configure.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/configure.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/configure.c	2012-07-13 02:13:27.000000000 +0200
 @@ -476,9 +476,10 @@
  static void suspend(void) {
  	const char*	s;
@@ -522,8 +1062,8 @@ diff -urN dpkg-1.10.21.orig/main/configure.c dpkg-1.10.21/main/configure.c
  
  
 diff -urN dpkg-1.10.21.orig/main/dpkg-query.8 dpkg-1.10.21/main/dpkg-query.8
---- dpkg-1.10.21.orig/main/dpkg-query.8	2003-09-14 10:49:08.000000000 +0900
-+++ dpkg-1.10.21/main/dpkg-query.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/dpkg-query.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/dpkg-query.8	2012-07-13 02:13:27.000000000 +0200
 @@ -14,7 +14,7 @@
  .TP
  \fB-l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
@@ -560,8 +1100,8 @@ diff -urN dpkg-1.10.21.orig/main/dpkg-query.8 dpkg-1.10.21/main/dpkg-query.8
  This is free software; see the GNU General Public Licence version 2 or
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.21.orig/main/dpkg.8 dpkg-1.10.21/main/dpkg.8
---- dpkg-1.10.21.orig/main/dpkg.8	2003-09-21 10:43:40.000000000 +0900
-+++ dpkg-1.10.21/main/dpkg.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/dpkg.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/dpkg.8	2012-07-13 02:13:27.000000000 +0200
 @@ -154,7 +154,7 @@
  file).  \fB-P\fP or \fB--purge\fP removes everything, including configuration
  files.  If \fB-a\fP or \fB--pending\fP is given instead of a package
@@ -660,8 +1200,8 @@ diff -urN dpkg-1.10.21.orig/main/dpkg.8 dpkg-1.10.21/main/dpkg.8
  contributed to \fBdpkg\fP .
  .fi
 diff -urN dpkg-1.10.21.orig/main/enquiry.c dpkg-1.10.21/main/enquiry.c
---- dpkg-1.10.21.orig/main/enquiry.c	2003-10-25 16:03:21.000000000 -0400
-+++ dpkg-1.10.21/main/enquiry.c	2008-08-21 11:38:24.000000000 -0400
+--- dpkg-1.10.21.orig/main/enquiry.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/enquiry.c	2012-07-13 02:13:27.000000000 +0200
 @@ -402,7 +402,7 @@
    FILE *ccpipe;
    struct varbuf vb;
@@ -680,9 +1220,9 @@ diff -urN dpkg-1.10.21.orig/main/enquiry.c dpkg-1.10.21/main/enquiry.c
      fprintf(stderr, _("dpkg: warning, architecture `%s' not in remapping table\n"),arch);
    }
    if (printf("%s\n",arch) == EOF) werr("stdout");
-diff -Nurd -x'*~' dpkg-1.10.21.orig/main/filesdb.c dpkg-1.10.21/main/filesdb.c
---- dpkg-1.10.21.orig/main/filesdb.c	2003-10-25 16:03:21.000000000 -0400
-+++ dpkg-1.10.21/main/filesdb.c	2009-04-01 00:57:26.000000000 -0400
+diff -urN dpkg-1.10.21.orig/main/filesdb.c dpkg-1.10.21/main/filesdb.c
+--- dpkg-1.10.21.orig/main/filesdb.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/filesdb.c	2012-07-13 02:13:27.000000000 +0200
 @@ -25,6 +25,7 @@
  #include <unistd.h>
  #include <fcntl.h>
@@ -710,8 +1250,8 @@ diff -Nurd -x'*~' dpkg-1.10.21.orig/main/filesdb.c dpkg-1.10.21/main/filesdb.c
    }
    if (*pointerp) return *pointerp;
 diff -urN dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
---- dpkg-1.10.21.orig/main/help.c	2003-10-26 05:03:21.000000000 +0900
-+++ dpkg-1.10.21/main/help.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/help.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/help.c	2012-07-13 02:13:27.000000000 +0200
 @@ -69,11 +69,18 @@
  
  void checkpath(void) {
@@ -733,9 +1273,701 @@ diff -urN dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
    };
  
    struct stat stab;
+@@ -180,7 +187,7 @@
+   }
+   if (f_debug & dbg_scripts) {
+     fprintf(stderr,"D0%05o: fork/exec %s (",dbg_scripts,path);
+-    while (*argv) fprintf(stderr," %s",*argv++);
++    while (*++argv) fprintf(stderr," %s",*argv);
+     fputs(" )\n",stderr);
+   }
+   instdirl= strlen(instdir);
+@@ -256,17 +263,75 @@
+ static int do_script(const char *pkg, const char *scriptname, const char *scriptpath, struct stat *stab, char *const arglist[], const char *desc, const char *name, int warn) {
+   const char *scriptexec;
+   int c1, r;
++  if (scriptpath) // if NULL, just want wrapper side-effect, no actual .deb script present
+   setexecute(scriptpath,stab);
+ 
+   c1= m_fork();
+   if (!c1) {
+     const char **narglist;
++    /* FINK LOCAL begin */
++    const char **full_narglist;
++    char *path_wrapper;
++    struct stat stab_wrapper;
++    const char *null_script_path = "";  // must be blank string (NULL is end-of-array sentinel)
++    /* FINK LOCAL end */
+     for (r=0; arglist[r]; r++) ;
+-    narglist=nfmalloc((r+1)*sizeof(char*));
++    // narglist=nfmalloc((r+1)*sizeof(char*));
++    /* FINK LOCAL begin */
++    full_narglist=nfmalloc((r+2)*sizeof(char*));  // leave space for wrapper-script-name, add NULL terminator
++    narglist=full_narglist+1;  // orig pointer points to orig array
++    /* FINK LOCAL end */
+     for (r=1; arglist[r-1]; r++)
+       narglist[r]= arglist[r];
++    if (scriptpath) { // FINK LOCAL
+     scriptexec= preexecscript(scriptpath,narglist);
++    } else { scriptexec = null_script_path; }; // FINK LOCAL was called with no actual script path to run
+     narglist[0]= scriptexec;
++    /* FINK LOCAL begin */
++    // try to set up with wrapper
++#define FINK_DPKG_SCRIPT_DIR "@PREFIX@/lib/fink/dpkg-base-files"
++    // determine wrapper-script pathname
++    asprintf(&path_wrapper, "%s/%s", FINK_DPKG_SCRIPT_DIR, scriptname);
++    if (path_wrapper == NULL) {
++      ohshite(_("dpkg - error: could not allocate for fink script wrapper for %s.\n"), scriptpath);
++    } else {
++      if (!stat(path_wrapper, &stab_wrapper)) {
++	if ((stab_wrapper.st_mode & 0555) == 0555) {
++	  // only use it if it exists and is chmod a+rx
++	  debug(dbg_scripts,"Wrapper script '%s' will be used around '%s'", path_wrapper, scriptpath);
++	  // it's good! set wrapper as actual runnable thing in narglist array
++	  narglist=full_narglist;
++	  scriptexec= preexecscript(path_wrapper,narglist);
++	  narglist[0]= scriptexec;
++
++	  /*
++	    Global wrapper needs way to introspect name of package
++	    being manipulated. Normal .deb scripts could have this
++	    hard-coded in their script because this info is known at
++	    the time the .deb is constructed. Pass the name as an
++	    env var to the wrapper.
++	  */
++	  setenv("FINK_PACKAGE_NAME", pkg, 1);
++	} else {
++	  debug(dbg_scripts,"Wrapper script '%s' wrong perms", path_wrapper);
++	  if (scriptpath) {
++	    debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
++	  } else {
++	    debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
++	    exit(0);
++	  }
++	}
++      } else {
++	debug(dbg_scripts,"Wrapper script '%s' does not exist", path_wrapper);
++	if (scriptpath) {
++	  debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
++	} else {
++	  debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
++	  exit(0);
++	}
++      }
++    }
++    /* FINK LOCAL end */
+     execv(scriptexec,narglist);
+     ohshite(desc,name);
+   }
+@@ -294,8 +359,13 @@
+   if (stat(scriptpath,&stab)) {
+     if (errno == ENOENT) {
+       debug(dbg_scripts,"maintainer_script_installed nonexistent %s",scriptname);
+-      return 0;
+-    }
++//    return 0;
++      /* FINK LOCAL begin */
++      // always call do_script (fink adds side-effects), but pass NULL if no actual script
++      scriptpath = NULL;
++//  }
++    } else
++      /* FINK LOCAL end */
+     ohshite(_("unable to stat installed %s script `%.250s'"),description,scriptpath);
+   }
+   do_script(pkg->name, scriptname, scriptpath, &stab, arglist, _("unable to execute %s"), buf, 0);
+@@ -320,8 +390,14 @@
+   if (stat(cidir,&stab)) {
+     if (errno == ENOENT) {
+       debug(dbg_scripts,"maintainer_script_new nonexistent %s `%s'",scriptname,cidir);
+-      return 0;
+-    }
++//    return 0;
++      //    }
++      /* FINK LOCAL begin */
++      // always call do_script (fink adds side-effects), but pass NULL if no actual script
++      cidir = NULL;
++//  }
++    } else
++      /* FINK LOCAL end */
+     ohshite(_("unable to stat new %s script `%.250s'"),description,cidir);
+   }
+   do_script(pkgname, scriptname, cidir, &stab, arglist, _("unable to execute new %s"), buf, 0);
+@@ -348,16 +424,19 @@
+     if (errno == ENOENT) {
+       debug(dbg_scripts,"maintainer_script_alternative nonexistent %s `%s'",
+             scriptname,oldscriptpath);
+-      return 0;
+-    }
++      /* FINK LOCAL begin */
++      // always call do_script (fink adds side-effects), but pass NULL if no actual script
++      oldscriptpath = NULL;
++    } else {
++      /* FINK LOCAL end */
+     fprintf(stderr,
+             _("dpkg: warning - unable to stat %s `%.250s': %s\n"),
+             buf,oldscriptpath,strerror(errno));
+-  } else {
++    }
++  }
+     if (!do_script(pkg->name, scriptname, oldscriptpath, &stab, arglist, _("unable to execute %s"), buf, PROCWARN))
+       return 1;
+     ensure_diversions();
+-  }
+   fprintf(stderr, _("dpkg - trying script from the new package instead ...\n"));
+ 
+   arglist= buildarglist(scriptname,
+@@ -367,6 +446,9 @@
+   strcpy(cidirrest,scriptname);
+   sprintf(buf,_("new %s script"),description);
+ 
++  // FINK if old-pkg fails, don't want to allow "success" of new
++  // solely because wrapper worked in new-pkg: loses important
++  // error-state that *should* fail loudly
+   if (stat(cidir,&stab)) {
+     if (errno == ENOENT)
+       ohshit(_("there is no script in the new version of the package - giving up"));
+@@ -410,6 +492,26 @@
+     
+   debug(dbg_veryverbose, "isdirectoryinuse `%s' (except %s)", file->name,
+         pkg ? pkg->name : "<none>");
++
++  /* FINK LOCAL begin */
++
++  /*
++   * Darwin has symlinks /etc -> /private/etc and /var -> /private/var
++   * instead of actual /etc and /var dirs. If dpkg removes the last
++   * pkg that it has record of having installed a file in one of those
++   * top-level dirs, it will try to remove the dir (since it thinks
++   * it's an empty dir) and it will succeed (since it's just unlinking
++   * a symlink, not trying to remove a dir that is not actually
++   * empty). That's Bad. Here we make sure these top-level dirs are
++   * never thought to be empty.
++   */
++  if( !strcmp(file->name,"/etc") || !strcmp(file->name,"/tmp") || !strcmp(file->name,"/var") ) {
++    debug(dbg_veryverbose, "isdirectoryinuse precious!");
++    return 1;
++  }
++
++  /* FINK LOCAL end */
++
+   for (packageslump= file->packages; packageslump; packageslump= packageslump->more) {
+     debug(dbg_veryverbose, "isdirectoryinuse packageslump %s ...",
+           packageslump->pkgs[0] ? packageslump->pkgs[0]->name : "<none>");
+diff -urN dpkg-1.10.21.orig/main/help.c.orig dpkg-1.10.21/main/help.c.orig
+--- dpkg-1.10.21.orig/main/help.c.orig	1970-01-01 01:00:00.000000000 +0100
++++ dpkg-1.10.21/main/help.c.orig	2012-07-13 02:13:27.000000000 +0200
+@@ -0,0 +1,508 @@
++/*
++ * dpkg - main program for package management
++ * help.c - various helper routines
++ *
++ * Copyright (C) 1995 Ian Jackson <ian@chiark.greenend.org.uk>
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public
++ * License along with dpkg; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++#include <config.h>
++
++#include <errno.h>
++#include <unistd.h>
++#include <dirent.h>
++#include <assert.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <signal.h>
++
++#include <dpkg.h>
++#include <version.h>
++#include <dpkg-db.h>
++
++#include "filesdb.h"
++#include "main.h"
++
++const char *const statusstrings[]= {
++  N_("not installed"),
++  N_("unpacked but not configured"),
++  N_("broken due to postinst failure"),
++  N_("installed"),
++  N_("broken due to failed removal"),
++  N_("not installed but configs remain")
++};
++
++struct filenamenode *namenodetouse(struct filenamenode *namenode, struct pkginfo *pkg) {
++  struct filenamenode *r;
++  
++  if (!namenode->divert) return namenode;
++  
++  debug(dbg_eachfile,"namenodetouse namenode=`%s' pkg=%s",
++        namenode->name,pkg->name);
++  
++  r=
++    (namenode->divert->useinstead && namenode->divert->pkg != pkg)
++      ? namenode->divert->useinstead : namenode;
++  
++  debug(dbg_eachfile,
++        "namenodetouse ... useinstead=%s camefrom=%s pkg=%s return %s",
++        namenode->divert->useinstead ? namenode->divert->useinstead->name : "<none>",
++        namenode->divert->camefrom ? namenode->divert->camefrom->name : "<none>",
++        namenode->divert->pkg ? namenode->divert->pkg->name : "<none>",
++        r->name);
++  return r;
++}
++
++void checkpath(void) {
++/* Verify that some programs can be found in the PATH. */
++  static const char *const checklist[]= { 
++#ifndef __APPLE__
++    "ldconfig", 
++#endif
++#ifdef USE_START_STOP_DAEMON
++    "start-stop-daemon",
++#endif    
++    "install-info",
++#ifndef __APPLE__
++   "update-rc.d",
++#endif
++    0
++  };
++
++  struct stat stab;
++  const char *const *clp;
++  const char *path, *s, *p;
++  char* buf;
++  int warned= 0;
++  long l;
++
++  path= getenv("PATH");
++  if (!path) ohshit(_("dpkg - error: PATH is not set.\n"));
++  buf=(char*)m_malloc(strlen(path)+2+strlen("start-stop-daemon"));
++  
++  for (clp=checklist; *clp; clp++) {
++    s= path;
++    while (s) {
++      p= strchr(s,':');
++      l= p ? p-s : (long)strlen(s);
++      memcpy(buf,s,l);
++      if (l) buf[l++]= '/';
++      strcpy(buf+l,*clp);
++      if (stat(buf,&stab) == 0 && (stab.st_mode & 0111)) break;
++      s= p; if (s) s++;
++    }
++    if (!s) {
++      fprintf(stderr,_("dpkg: `%s' not found on PATH.\n"),*clp);
++      warned++;
++    }
++  }
++
++  free(buf);
++  if (warned)
++    forcibleerr(fc_badpath,_("%d expected program(s) not found on PATH.\nNB: root's "
++                "PATH should usually contain /usr/local/sbin, /usr/sbin and /sbin."),
++                warned);
++}
++
++void ensure_package_clientdata(struct pkginfo *pkg) {
++  if (pkg->clientdata) return;
++  pkg->clientdata= nfmalloc(sizeof(struct perpackagestate));
++  pkg->clientdata->istobe= itb_normal;
++  pkg->clientdata->fileslistvalid= 0;
++  pkg->clientdata->files= 0;
++}
++
++void cu_closepipe(int argc, void **argv) {
++  int *p1= (int*)argv[0];
++  close(p1[0]); close(p1[1]);
++}
++
++void cu_closefile(int argc, void **argv) {
++  FILE *f= (FILE*)(argv[0]);
++  fclose(f);
++}
++
++void cu_closedir(int argc, void **argv) {
++  DIR *d= (DIR*)(argv[0]);
++  closedir(d);
++}
++
++void cu_closefd(int argc, void **argv) {
++  int ip= *(int*)argv[0];
++  close(ip);
++}
++
++int ignore_depends(struct pkginfo *pkg) {
++  struct packageinlist *id;
++  for (id= ignoredependss; id; id= id->next)
++    if (id->pkg == pkg) return 1;
++  return 0;
++}
++
++int force_depends(struct deppossi *possi) {
++  return fc_depends ||
++         ignore_depends(possi->ed) ||
++         ignore_depends(possi->up->up);
++}
++
++int force_conflicts(struct deppossi *possi) {
++  return fc_conflicts;
++}
++
++const char *pkgadminfile(struct pkginfo *pkg, const char *whichfile) {
++  static struct varbuf vb;
++  varbufreset(&vb);
++  varbufaddstr(&vb,admindir);
++  varbufaddstr(&vb,"/" INFODIR);
++  varbufaddstr(&vb,pkg->name);
++  varbufaddc(&vb,'.');
++  varbufaddstr(&vb,whichfile);
++  varbufaddc(&vb,0);
++  return vb.buf;
++}
++
++static const char* preexecscript(const char *path, char *const *argv) {
++  /* returns the path to the script inside the chroot
++   * none of the stuff here will work if admindir isn't inside instdir
++   * as expected. - fixme
++   */
++  size_t instdirl;
++
++  if (*instdir) {
++    if (chroot(instdir)) ohshite(_("failed to chroot to `%.250s'"),instdir);
++  }
++  if (f_debug & dbg_scripts) {
++    fprintf(stderr,"D0%05o: fork/exec %s (",dbg_scripts,path);
++    while (*argv) fprintf(stderr," %s",*argv++);
++    fputs(" )\n",stderr);
++  }
++  instdirl= strlen(instdir);
++  if (!instdirl) return path;
++  assert (strlen(path)>=instdirl);
++  return path+instdirl;
++}  
++
++static char *const *vbuildarglist(const char *scriptname, va_list ap) {
++  static char *bufs[PKGSCRIPTMAXARGS+1];
++  char *nextarg;
++  int i;
++
++  i=0;
++  if(bufs[0]) free(bufs[0]);
++  bufs[i++]= strdup(scriptname); /* yes, cast away const because exec wants it that way */
++  for (;;) {
++    assert(i < PKGSCRIPTMAXARGS);
++    nextarg= va_arg(ap,char*);
++    if (!nextarg) break;
++    bufs[i++]= nextarg;
++  }
++  bufs[i]= 0;
++  return bufs;
++}    
++
++static char *const *buildarglist(const char *scriptname, ...) {
++  char *const *arglist;
++  va_list ap;
++  va_start(ap,scriptname);
++  arglist= vbuildarglist(scriptname,ap);
++  va_end(ap);
++  return arglist;
++}
++
++#define NSCRIPTCATCHSIGNALS (int)(sizeof(script_catchsignallist)/sizeof(int)-1)
++static int script_catchsignallist[]= { SIGQUIT, SIGINT, 0 };
++static struct sigaction script_uncatchsignal[NSCRIPTCATCHSIGNALS];
++
++static void cu_restorescriptsignals(int argc, void **argv) {
++  int i;
++  for (i=0; i<NSCRIPTCATCHSIGNALS; i++) {
++    if (sigaction(script_catchsignallist[i],&script_uncatchsignal[i],0)) {
++      fprintf(stderr,_("error un-catching signal %s: %s\n"),
++              strsignal(script_catchsignallist[i]),strerror(errno));
++      onerr_abort++;
++    }
++  }
++}
++
++static void script_catchsignals(void) {
++  int i;
++  struct sigaction catchsig;
++  
++  onerr_abort++;
++  memset(&catchsig,0,sizeof(catchsig));
++  catchsig.sa_handler= SIG_IGN;
++  sigemptyset(&catchsig.sa_mask);
++  catchsig.sa_flags= 0;
++  for (i=0; i<NSCRIPTCATCHSIGNALS; i++)
++    if (sigaction(script_catchsignallist[i],&catchsig,&script_uncatchsignal[i]))
++      ohshite(_("unable to ignore signal %s before running script"),
++              strsignal(script_catchsignallist[i]));
++  push_cleanup(cu_restorescriptsignals,~0, 0,0, 0);
++  onerr_abort--;
++}
++
++static void setexecute(const char *path, struct stat *stab) {
++  if ((stab->st_mode & 0555) == 0555) return;
++  if (!chmod(path,0755)) return;
++  ohshite(_("unable to set execute permissions on `%.250s'"),path);
++}
++static int do_script(const char *pkg, const char *scriptname, const char *scriptpath, struct stat *stab, char *const arglist[], const char *desc, const char *name, int warn) {
++  const char *scriptexec;
++  int c1, r;
++  setexecute(scriptpath,stab);
++
++  c1= m_fork();
++  if (!c1) {
++    const char **narglist;
++    for (r=0; arglist[r]; r++) ;
++    narglist=nfmalloc((r+1)*sizeof(char*));
++    for (r=1; arglist[r-1]; r++)
++      narglist[r]= arglist[r];
++    scriptexec= preexecscript(scriptpath,narglist);
++    narglist[0]= scriptexec;
++    execv(scriptexec,narglist);
++    ohshite(desc,name);
++  }
++  script_catchsignals(); /* This does a push_cleanup() */
++  r= waitsubproc(c1,name,warn);
++  pop_cleanup(ehflag_normaltidy);
++  return r;
++}
++
++int maintainer_script_installed(struct pkginfo *pkg, const char *scriptname,
++                                const char *description, ...) {
++  /* all ...'s are const char*'s */
++  const char *scriptpath;
++  char *const *arglist;
++  struct stat stab;
++  va_list ap;
++  char buf[100];
++
++  scriptpath= pkgadminfile(pkg,scriptname);
++  va_start(ap,description);
++  arglist= vbuildarglist(scriptname,ap);
++  va_end(ap);
++  sprintf(buf,"%s script",description);
++
++  if (stat(scriptpath,&stab)) {
++    if (errno == ENOENT) {
++      debug(dbg_scripts,"maintainer_script_installed nonexistent %s",scriptname);
++      return 0;
++    }
++    ohshite(_("unable to stat installed %s script `%.250s'"),description,scriptpath);
++  }
++  do_script(pkg->name, scriptname, scriptpath, &stab, arglist, _("unable to execute %s"), buf, 0);
++  ensure_diversions();
++  return 1;
++}
++  
++int maintainer_script_new(const char *pkgname,
++			  const char *scriptname, const char *description,
++                          const char *cidir, char *cidirrest, ...) {
++  char *const *arglist;
++  struct stat stab;
++  va_list ap;
++  char buf[100];
++  
++  va_start(ap,cidirrest);
++  arglist= vbuildarglist(scriptname,ap);
++  va_end(ap);
++  sprintf(buf,"%s script",description);
++
++  strcpy(cidirrest,scriptname);
++  if (stat(cidir,&stab)) {
++    if (errno == ENOENT) {
++      debug(dbg_scripts,"maintainer_script_new nonexistent %s `%s'",scriptname,cidir);
++      return 0;
++    }
++    ohshite(_("unable to stat new %s script `%.250s'"),description,cidir);
++  }
++  do_script(pkgname, scriptname, cidir, &stab, arglist, _("unable to execute new %s"), buf, 0);
++  ensure_diversions();
++  return 1;
++}
++
++int maintainer_script_alternative(struct pkginfo *pkg,
++                                  const char *scriptname, const char *description,
++                                  const char *cidir, char *cidirrest,
++                                  const char *ifok, const char *iffallback) {
++  const char *oldscriptpath;
++  char *const *arglist;
++  struct stat stab;
++  char buf[100];
++
++  oldscriptpath= pkgadminfile(pkg,scriptname);
++  arglist= buildarglist(scriptname,
++                        ifok,versiondescribe(&pkg->available.version,
++                                             vdew_nonambig),
++                        (char*)0);
++  sprintf(buf,_("old %s script"),description);
++  if (stat(oldscriptpath,&stab)) {
++    if (errno == ENOENT) {
++      debug(dbg_scripts,"maintainer_script_alternative nonexistent %s `%s'",
++            scriptname,oldscriptpath);
++      return 0;
++    }
++    fprintf(stderr,
++            _("dpkg: warning - unable to stat %s `%.250s': %s\n"),
++            buf,oldscriptpath,strerror(errno));
++  } else {
++    if (!do_script(pkg->name, scriptname, oldscriptpath, &stab, arglist, _("unable to execute %s"), buf, PROCWARN))
++      return 1;
++    ensure_diversions();
++  }
++  fprintf(stderr, _("dpkg - trying script from the new package instead ...\n"));
++
++  arglist= buildarglist(scriptname,
++                        iffallback,versiondescribe(&pkg->installed.version,
++                                                   vdew_nonambig),
++                        (char*)0);
++  strcpy(cidirrest,scriptname);
++  sprintf(buf,_("new %s script"),description);
++
++  if (stat(cidir,&stab)) {
++    if (errno == ENOENT)
++      ohshit(_("there is no script in the new version of the package - giving up"));
++    else
++      ohshite(_("unable to stat %s `%.250s'"),buf,cidir);
++  }
++
++  do_script(pkg->name, scriptname, cidir, &stab, arglist, _("unable to execute %s"), buf, 0);
++  fprintf(stderr, _("dpkg: ... it looks like that went OK.\n"));
++
++  ensure_diversions();
++  return 1;
++}
++
++void clear_istobes(void) {
++  struct pkgiterator *it;
++  struct pkginfo *pkg;
++
++  it= iterpkgstart();
++  while ((pkg= iterpkgnext(it)) != 0) {
++    ensure_package_clientdata(pkg);
++    pkg->clientdata->istobe= itb_normal;
++    pkg->clientdata->replacingfilesandsaid= 0;
++  }
++}
++
++void debug(int which, const char *fmt, ...) {
++  va_list ap;
++  if (!(f_debug & which)) return;
++  fprintf(stderr,"D0%05o: ",which);
++  va_start(ap,fmt);
++  vfprintf(stderr,fmt,ap);
++  va_end(ap);
++  putc('\n',stderr);
++}
++
++int isdirectoryinuse(struct filenamenode *file, struct pkginfo *pkg) {
++  /* Returns 1 if the file is used by packages other than pkg, 0 otherwise. */
++  struct filepackages *packageslump;
++  int i;
++    
++  debug(dbg_veryverbose, "isdirectoryinuse `%s' (except %s)", file->name,
++        pkg ? pkg->name : "<none>");
++
++  /* FINK LOCAL begin */
++
++  /*
++   * Darwin has symlinks /etc -> /private/etc and /var -> /private/var
++   * instead of actual /etc and /var dirs. If dpkg removes the last
++   * pkg that it has record of having installed a file in one of those
++   * top-level dirs, it will try to remove the dir (since it thinks
++   * it's an empty dir) and it will succeed (since it's just unlinking
++   * a symlink, not trying to remove a dir that is not actually
++   * empty). That's Bad. Here we make sure these top-level dirs are
++   * never thought to be empty.
++   */
++  if( !strcmp(file->name,"/etc") || !strcmp(file->name,"/tmp") || !strcmp(file->name,"/var") ) {
++    debug(dbg_veryverbose, "isdirectoryinuse precious!");
++    return 1;
++  }
++
++  /* FINK LOCAL end */
++
++  for (packageslump= file->packages; packageslump; packageslump= packageslump->more) {
++    debug(dbg_veryverbose, "isdirectoryinuse packageslump %s ...",
++          packageslump->pkgs[0] ? packageslump->pkgs[0]->name : "<none>");
++    for (i=0; i < PERFILEPACKAGESLUMP && packageslump->pkgs[i]; i++) {
++      debug(dbg_veryverbose, "isdirectoryinuse considering [%d] %s ...", i,
++            packageslump->pkgs[i]->name);
++      if (packageslump->pkgs[i] == pkg) continue;
++      return 1;
++    }
++  }
++  debug(dbg_veryverbose, "isdirectoryinuse no");
++  return 0;
++}
++
++void oldconffsetflags(const struct conffile *searchconff) {
++  struct filenamenode *namenode;
++  
++  while (searchconff) {
++    namenode= findnamenode(searchconff->name, 0); /* XXX */
++    namenode->flags |= fnnf_old_conff;
++    debug(dbg_conffdetail, "oldconffsetflags `%s' namenode %p flags %o",
++          searchconff->name, namenode, namenode->flags);
++    searchconff= searchconff->next;
++  }
++}
++
++int chmodsafe_unlink(const char *pathname) {
++  struct stat stab;
++
++  if (lstat(pathname,&stab)) return -1;
++  if (S_ISREG(stab.st_mode) ? (stab.st_mode & 07000) :
++      !(S_ISLNK(stab.st_mode) || S_ISDIR(stab.st_mode) ||
++   S_ISFIFO(stab.st_mode) || S_ISSOCK(stab.st_mode))) {
++    /* We chmod it if it is 1. a sticky or set-id file, or 2. an unrecognised
++     * object (ie, not a file, link, directory, fifo or socket
++     */
++    if (chmod(pathname,0600)) return -1;
++  }
++  if (unlink(pathname)) return -1;
++  return 0;
++}
++
++void ensure_pathname_nonexisting(const char *pathname) {
++  int c1;
++  const char *u;
++
++  u= skip_slash_dotslash(pathname);
++  assert(*u);
++
++  debug(dbg_eachfile,"ensure_pathname_nonexisting `%s'",pathname);
++  if (!rmdir(pathname)) return; /* Deleted it OK, it was a directory. */
++  if (errno == ENOENT || errno == ELOOP) return;
++  if (errno == ENOTDIR) {
++    /* Either it's a file, or one of the path components is.  If one
++     * of the path components is this will fail again ...
++     */
++    if (!chmodsafe_unlink(pathname)) return; /* OK, it was */
++    if (errno == ENOTDIR) return;
++  }
++  if (errno != ENOTEMPTY) /* Huh ? */
++    ohshite(_("failed to rmdir/unlink `%.255s'"),pathname);
++  c1= m_fork();
++  if (!c1) {
++    execlp(RM,"rm","-rf","--",pathname,(char*)0);
++    ohshite(_("failed to exec rm for cleanup"));
++  }
++  debug(dbg_eachfile,"ensure_pathname_nonexisting running rm -rf");
++  waitsubproc(c1,"rm cleanup",0);
++}
 diff -urN dpkg-1.10.21.orig/main/main.c dpkg-1.10.21/main/main.c
---- dpkg-1.10.21.orig/main/main.c	2003-10-26 05:03:21.000000000 +0900
-+++ dpkg-1.10.21/main/main.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/main.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/main.c	2012-07-13 02:13:27.000000000 +0200
 @@ -38,6 +38,12 @@
  #include <version.h>
  #include <myopt.h>
@@ -915,8 +2147,8 @@ diff -urN dpkg-1.10.21.orig/main/main.c dpkg-1.10.21/main/main.c
  
    actionfunction(argv);
 diff -urN dpkg-1.10.21.orig/main/main.h dpkg-1.10.21/main/main.h
---- dpkg-1.10.21.orig/main/main.h	2002-05-20 14:56:02.000000000 +0900
-+++ dpkg-1.10.21/main/main.h	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/main.h	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/main.h	2012-07-13 02:13:27.000000000 +0200
 @@ -93,6 +93,11 @@
  extern const char *instdir;
  extern struct packageinlist *ignoredependss;
@@ -930,8 +2162,8 @@ diff -urN dpkg-1.10.21.orig/main/main.h dpkg-1.10.21/main/main.h
  /* from filesdb.c */
  
 diff -urN dpkg-1.10.21.orig/main/packages.c dpkg-1.10.21/main/packages.c
---- dpkg-1.10.21.orig/main/packages.c	2003-10-26 05:03:21.000000000 +0900
-+++ dpkg-1.10.21/main/packages.c	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/main/packages.c	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/main/packages.c	2012-07-13 02:13:27.000000000 +0200
 @@ -331,6 +331,30 @@
      return thisf;
    }
@@ -1003,8 +2235,8 @@ diff -urN dpkg-1.10.21.orig/main/packages.c dpkg-1.10.21/main/packages.c
          debug(dbg_depcondetail,"      break cycle so ok and found");
          found= 3; break;
 diff -urN dpkg-1.10.21.orig/man/en/dpkg.cfg.5 dpkg-1.10.21/man/en/dpkg.cfg.5
---- dpkg-1.10.21.orig/man/en/dpkg.cfg.5	2002-02-10 09:37:01.000000000 +0900
-+++ dpkg-1.10.21/man/en/dpkg.cfg.5	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/en/dpkg.cfg.5	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/en/dpkg.cfg.5	2012-07-13 02:13:27.000000000 +0200
 @@ -8,10 +8,11 @@
  here. Comments are allowed by starting a line with a hash sign
  ("\fB#\fR").
@@ -1020,8 +2252,8 @@ diff -urN dpkg-1.10.21.orig/man/en/dpkg.cfg.5 dpkg-1.10.21/man/en/dpkg.cfg.5
  .SH SEE ALSO
  .BR dpkg (8)
 diff -urN dpkg-1.10.21.orig/man/en/dselect.cfg.5 dpkg-1.10.21/man/en/dselect.cfg.5
---- dpkg-1.10.21.orig/man/en/dselect.cfg.5	2002-02-16 23:10:50.000000000 +0900
-+++ dpkg-1.10.21/man/en/dselect.cfg.5	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/en/dselect.cfg.5	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/en/dselect.cfg.5	2012-07-13 02:13:27.000000000 +0200
 @@ -8,10 +8,11 @@
  here. Comments are allowed by starting a line with a hash sign
  ("\fB#\fR").
@@ -1037,8 +2269,8 @@ diff -urN dpkg-1.10.21.orig/man/en/dselect.cfg.5 dpkg-1.10.21/man/en/dselect.cfg
  .SH SEE ALSO
  .BR dselect (8)
 diff -urN dpkg-1.10.21.orig/man/fr/cleanup-info.8 dpkg-1.10.21/man/fr/cleanup-info.8
---- dpkg-1.10.21.orig/man/fr/cleanup-info.8	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/fr/cleanup-info.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/cleanup-info.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/cleanup-info.8	2012-07-13 02:13:27.000000000 +0200
 @@ -38,7 +38,7 @@
  Affiche la version et se termine normalement.
  .SH FICHIERS
@@ -1058,8 +2290,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/cleanup-info.8 dpkg-1.10.21/man/fr/cleanup-in
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg-deb.1 dpkg-1.10.21/man/fr/dpkg-deb.1
---- dpkg-1.10.21.orig/man/fr/dpkg-deb.1	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg-deb.1	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg-deb.1	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg-deb.1	2012-07-13 02:13:27.000000000 +0200
 @@ -245,9 +245,11 @@
  Le copyright (C) date de 1995-1996 et ils ont paru sous la licence
  « GNU General Public Licence » ; il n'y a PAS de garantie.
@@ -1077,8 +2309,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg-deb.1 dpkg-1.10.21/man/fr/dpkg-deb.1
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg-divert.8 dpkg-1.10.21/man/fr/dpkg-divert.8
---- dpkg-1.10.21.orig/man/fr/dpkg-divert.8	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg-divert.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg-divert.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg-divert.8	2012-07-13 02:13:27.000000000 +0200
 @@ -41,7 +41,7 @@
  .TP
  .I --admindir <répertoire>
@@ -1107,8 +2339,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg-divert.8 dpkg-1.10.21/man/fr/dpkg-divert
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg-query.8 dpkg-1.10.21/man/fr/dpkg-query.8
---- dpkg-1.10.21.orig/man/fr/dpkg-query.8	2004-03-11 09:03:19.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg-query.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg-query.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg-query.8	2012-07-13 02:13:27.000000000 +0200
 @@ -15,7 +15,7 @@
  \fB-l\fP | \fB--list\fP \fIpaquet-nom-motif\fP ...
  Liste les paquets correspondant au motif donné. Quand on ne donne aucun
@@ -1137,8 +2369,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg-query.8 dpkg-1.10.21/man/fr/dpkg-query.8
  \fB--showformat=\fP\fIformat\fR
  On se sert de cette option pour préciser le format de la sortie que produit la
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg-scanpackages.8 dpkg-1.10.21/man/fr/dpkg-scanpackages.8
---- dpkg-1.10.21.orig/man/fr/dpkg-scanpackages.8	2004-03-11 09:03:19.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg-scanpackages.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg-scanpackages.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg-scanpackages.8	2012-07-13 02:13:27.000000000 +0200
 @@ -43,7 +43,7 @@
  .PP
  .I rep-de-binaires
@@ -1149,8 +2381,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg-scanpackages.8 dpkg-1.10.21/man/fr/dpkg-
  Il vaut mieux qu'elle soit relative à la racine de l'archive Debian\ ;
  ainsi chaque champ «\ Filename\ » dans le nouveau fichier «\ Packages\ »
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg-source.1 dpkg-1.10.21/man/fr/dpkg-source.1
---- dpkg-1.10.21.orig/man/fr/dpkg-source.1	2004-03-11 09:03:19.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg-source.1	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg-source.1	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg-source.1	2012-07-13 02:13:27.000000000 +0200
 @@ -58,13 +58,13 @@
  lit les informations concernant les dépendances envers les bibliothèques 
  partagées dans les fichiers suivants :
@@ -1179,8 +2411,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg-source.1 dpkg-1.10.21/man/fr/dpkg-source
  .SH TRADUCTION
  Philippe Batailler, Octobre 2003.
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg-split.8 dpkg-1.10.21/man/fr/dpkg-split.8
---- dpkg-1.10.21.orig/man/fr/dpkg-split.8	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg-split.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg-split.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg-split.8	2012-07-13 02:13:27.000000000 +0200
 @@ -162,7 +162,7 @@
  .BI --depotdir " répertoire"
  Indique un répertoire différent pour la file comprenant les parties en attente
@@ -1212,8 +2444,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg-split.8 dpkg-1.10.21/man/fr/dpkg-split.8
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg-statoverride.8 dpkg-1.10.21/man/fr/dpkg-statoverride.8
---- dpkg-1.10.21.orig/man/fr/dpkg-statoverride.8	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg-statoverride.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg-statoverride.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg-statoverride.8	2012-07-13 02:13:27.000000000 +0200
 @@ -55,10 +55,10 @@
  .TP
  .I --admindir
@@ -1237,8 +2469,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg-statoverride.8 dpkg-1.10.21/man/fr/dpkg-
 +.PP
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/man/fr/dpkg.8 dpkg-1.10.21/man/fr/dpkg.8
---- dpkg-1.10.21.orig/man/fr/dpkg.8	2004-03-11 09:03:19.000000000 +0900
-+++ dpkg-1.10.21/man/fr/dpkg.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/dpkg.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/dpkg.8	2012-07-13 02:13:27.000000000 +0200
 @@ -165,7 +165,7 @@
  configuration. Si l'on donne l'option \fB-a\fP ou \fB--pending\fP à la 
  place d'un nom de paquet, tous les paquets non dépaquetés, mais qui sont
@@ -1313,8 +2545,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/dpkg.8 dpkg-1.10.21/man/fr/dpkg.8
  .fi
  .SH "TRADUCTION"
 diff -urN dpkg-1.10.21.orig/man/fr/install-info.8 dpkg-1.10.21/man/fr/install-info.8
---- dpkg-1.10.21.orig/man/fr/install-info.8	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/fr/install-info.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/install-info.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/install-info.8	2012-07-13 02:13:27.000000000 +0200
 @@ -157,7 +157,7 @@
  dans
  .IR rep-info . 
@@ -1334,8 +2566,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/install-info.8 dpkg-1.10.21/man/fr/install-in
  Copyright 1994, Ian Jackson.
  .B install\-info
 diff -urN dpkg-1.10.21.orig/man/fr/update-alternatives.8 dpkg-1.10.21/man/fr/update-alternatives.8
---- dpkg-1.10.21.orig/man/fr/update-alternatives.8	2004-03-11 09:03:19.000000000 +0900
-+++ dpkg-1.10.21/man/fr/update-alternatives.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/fr/update-alternatives.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/fr/update-alternatives.8	2012-07-13 02:13:27.000000000 +0200
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -1431,8 +2663,8 @@ diff -urN dpkg-1.10.21.orig/man/fr/update-alternatives.8 dpkg-1.10.21/man/fr/upd
  .\" .SH REMERCIEMENTS
  .SH "VOIR AUSSI"
 diff -urN dpkg-1.10.21.orig/man/ja/cleanup-info.8 dpkg-1.10.21/man/ja/cleanup-info.8
---- dpkg-1.10.21.orig/man/ja/cleanup-info.8	2004-04-26 01:14:26.000000000 +0900
-+++ dpkg-1.10.21/man/ja/cleanup-info.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/cleanup-info.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/cleanup-info.8	2012-07-13 02:13:27.000000000 +0200
 @@ -37,7 +37,7 @@
  ¥Ð¡¼¥¸¥ç¥ó¤òÉ½¼¨¤·¡¢Àµ¾ï½ªÎ»¤¹¤ë¡£
  .SH ¥Õ¥¡¥¤¥ë
@@ -1452,8 +2684,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/cleanup-info.8 dpkg-1.10.21/man/ja/cleanup-in
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.21.orig/man/ja/dpkg-deb.1 dpkg-1.10.21/man/ja/dpkg-deb.1
---- dpkg-1.10.21.orig/man/ja/dpkg-deb.1	2004-04-26 01:14:26.000000000 +0900
-+++ dpkg-1.10.21/man/ja/dpkg-deb.1	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/dpkg-deb.1	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/dpkg-deb.1	2012-07-13 02:13:27.000000000 +0200
 @@ -260,9 +260,9 @@
  ¤È¤³¤Î¥Þ¥Ë¥å¥¢¥ë¥Ú¡¼¥¸¤Ï Ian Jackson ¤¬ºîÀ®¤·¤¿¡£¤³¤ì¤é¤ÎÃøºî¸¢¤ÏÈà¤Ë
  ¤¢¤ê(Copyright (C)1995-1996)¡¢GNU °ìÈÌ¸øÍ­»ÈÍÑµöÂú¤Ë¤è¤êÈÒÉÛ¤µ¤ì¤ë¡£
@@ -1483,8 +2715,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/dpkg-deb.1 dpkg-1.10.21/man/ja/dpkg-deb.1
  .SH ËÝÌõ¼Ô
  ´îÀ¥¹À <kise@fuyuneko.jp>
 diff -urN dpkg-1.10.21.orig/man/ja/dpkg-divert.8 dpkg-1.10.21/man/ja/dpkg-divert.8
---- dpkg-1.10.21.orig/man/ja/dpkg-divert.8	2004-04-26 01:14:26.000000000 +0900
-+++ dpkg-1.10.21/man/ja/dpkg-divert.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/dpkg-divert.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/dpkg-divert.8	2012-07-13 02:13:27.000000000 +0200
 @@ -86,6 +86,7 @@
  overriding a package's version of a file" ¤ò»²¾È¤Î¤³¤È¡£
  .SH Ãø¼Ô
@@ -1494,8 +2726,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/dpkg-divert.8 dpkg-1.10.21/man/ja/dpkg-divert
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.21.orig/man/ja/dpkg-scanpackages.8 dpkg-1.10.21/man/ja/dpkg-scanpackages.8
---- dpkg-1.10.21.orig/man/ja/dpkg-scanpackages.8	2004-04-26 01:14:26.000000000 +0900
-+++ dpkg-1.10.21/man/ja/dpkg-scanpackages.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/dpkg-scanpackages.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/dpkg-scanpackages.8	2012-07-13 02:13:27.000000000 +0200
 @@ -103,6 +103,8 @@
  .I newmaintainer
  ¤Î¾ì¹ç¤ÏÃÖ´¹¤µ¤ì¤ë¡£
@@ -1506,8 +2738,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/dpkg-scanpackages.8 dpkg-1.10.21/man/ja/dpkg-
  Debian ¥ß¥é¡¼¤Î
  .I indices
 diff -urN dpkg-1.10.21.orig/man/ja/dpkg-statoverride.8 dpkg-1.10.21/man/ja/dpkg-statoverride.8
---- dpkg-1.10.21.orig/man/ja/dpkg-statoverride.8	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/ja/dpkg-statoverride.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/dpkg-statoverride.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/dpkg-statoverride.8	2012-07-13 02:13:27.000000000 +0200
 @@ -99,14 +99,14 @@
  .TP
  .I --admindir
@@ -1536,8 +2768,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/dpkg-statoverride.8 dpkg-1.10.21/man/ja/dpkg-
  This is free software; see the GNU General Public Licence version 2 or
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.21.orig/man/ja/dpkg.8 dpkg-1.10.21/man/ja/dpkg.8
---- dpkg-1.10.21.orig/man/ja/dpkg.8	2004-04-26 01:14:26.000000000 +0900
-+++ dpkg-1.10.21/man/ja/dpkg.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/dpkg.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/dpkg.8	2012-07-13 02:13:27.000000000 +0200
 @@ -188,7 +188,7 @@
  \fB--remove\fP ¤Ï¡¢ÀßÄê¥Õ¥¡¥¤¥ë¤ò½ü¤¤¤¿¤¹¤Ù¤Æ¤òºï½ü¤¹¤ë(ÀßÄê¥Õ¥¡¥¤¥ë¤Î°ìÍ÷¤Ï¡¢
  \fIconffiles\fP ¥³¥ó¥È¥í¡¼¥ë¥Õ¥¡¥¤¥ë¤Ë¤¢¤ë)¡£
@@ -1603,8 +2835,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/dpkg.8 dpkg-1.10.21/man/ja/dpkg.8
  ¤É¤¦¤«¡¢¥¤¥ó¥¹¥È¡¼¥ëºÑ¤ß¤«¤É¤¦¤«¡¢¤Ê¤É¤Î¾ðÊó¤¬´Þ¤Þ¤ì¤Æ¤¤¤ë¡£¤¯¤ï¤·¤¯¤Ï¡¢
  \fB ¥Ñ¥Ã¥±¡¼¥¸¤Ë´Ø¤¹¤ë¾ðÊó\fP ¤Î¹à¤ò»²¾È¤¹¤ë¤³¤È¡£
 diff -urN dpkg-1.10.21.orig/man/ja/install-info.8 dpkg-1.10.21/man/ja/install-info.8
---- dpkg-1.10.21.orig/man/ja/install-info.8	2004-04-26 01:14:26.000000000 +0900
-+++ dpkg-1.10.21/man/ja/install-info.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/install-info.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/install-info.8	2012-07-13 02:13:27.000000000 +0200
 @@ -292,12 +292,12 @@
  .\"O be located in
  .\"O .IR infodir .
@@ -1630,8 +2862,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/install-info.8 dpkg-1.10.21/man/ja/install-in
  ´Ø¸Í ¹¬°ì <sekido@mbox.kyoto-inet.or.jp>
  .SH ËÝÌõ¼ÔÃí
 diff -urN dpkg-1.10.21.orig/man/ja/update-alternatives.8 dpkg-1.10.21/man/ja/update-alternatives.8
---- dpkg-1.10.21.orig/man/ja/update-alternatives.8	2004-04-26 01:14:26.000000000 +0900
-+++ dpkg-1.10.21/man/ja/update-alternatives.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ja/update-alternatives.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ja/update-alternatives.8	2012-07-13 02:13:27.000000000 +0200
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -1728,8 +2960,8 @@ diff -urN dpkg-1.10.21.orig/man/ja/update-alternatives.8 dpkg-1.10.21/man/ja/upd
  .BR ln (1),
  FHS, the Filesystem Hierarchy Standard.
 diff -urN dpkg-1.10.21.orig/man/pt_BR/update-alternatives.8 dpkg-1.10.21/man/pt_BR/update-alternatives.8
---- dpkg-1.10.21.orig/man/pt_BR/update-alternatives.8	2002-02-03 02:58:58.000000000 +0900
-+++ dpkg-1.10.21/man/pt_BR/update-alternatives.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/pt_BR/update-alternatives.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/pt_BR/update-alternatives.8	2012-07-13 02:13:27.000000000 +0200
 @@ -4,7 +4,7 @@
  .\" sob os termos da Lincença Pública Geral GNU como publicado pela
  .\" Free Software Foundation; versão 2 da Licença ou (a sua escolha)
@@ -1826,8 +3058,8 @@ diff -urN dpkg-1.10.21.orig/man/pt_BR/update-alternatives.8 dpkg-1.10.21/man/pt_
  .SH "VEJA TAMBÉM"
  .BR ln (1),
 diff -urN dpkg-1.10.21.orig/man/ru/dpkg.8 dpkg-1.10.21/man/ru/dpkg.8
---- dpkg-1.10.21.orig/man/ru/dpkg.8	2002-02-03 00:57:09.000000000 +0900
-+++ dpkg-1.10.21/man/ru/dpkg.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/ru/dpkg.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/ru/dpkg.8	2012-07-13 02:13:27.000000000 +0200
 @@ -232,7 +232,7 @@
  ÉÌÉ 
  .B --pending,
@@ -1943,8 +3175,8 @@ diff -urN dpkg-1.10.21.orig/man/ru/dpkg.8 dpkg-1.10.21/man/ru/dpkg.8
  
  .SH ðåòå÷ïä
 diff -urN dpkg-1.10.21.orig/man/sv/dpkg-deb.1 dpkg-1.10.21/man/sv/dpkg-deb.1
---- dpkg-1.10.21.orig/man/sv/dpkg-deb.1	2002-02-03 02:46:49.000000000 +0900
-+++ dpkg-1.10.21/man/sv/dpkg-deb.1	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/sv/dpkg-deb.1	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/sv/dpkg-deb.1	2012-07-13 02:13:27.000000000 +0200
 @@ -248,8 +248,9 @@
  och denna manualsida skrevs av Ian Jackson.
  De är upphovsrättsskyddade 1995-1996 av honom och släppta under
@@ -1958,8 +3190,8 @@ diff -urN dpkg-1.10.21.orig/man/sv/dpkg-deb.1 dpkg-1.10.21/man/sv/dpkg-deb.1
 +.B @PREFIX@/share/common-licenses/GPL
  för detaljer.
 diff -urN dpkg-1.10.21.orig/man/sv/dpkg-query.8 dpkg-1.10.21/man/sv/dpkg-query.8
---- dpkg-1.10.21.orig/man/sv/dpkg-query.8	2002-02-03 02:56:49.000000000 +0900
-+++ dpkg-1.10.21/man/sv/dpkg-query.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/sv/dpkg-query.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/sv/dpkg-query.8	2012-07-13 02:13:27.000000000 +0200
 @@ -16,7 +16,7 @@
  \fB-l\fP | \fB--list\fP \fIpaketnamnsmönster\fP ...
  Lista paket som matchar det givna mönstret.
@@ -1996,8 +3228,8 @@ diff -urN dpkg-1.10.21.orig/man/sv/dpkg-query.8 dpkg-1.10.21/man/sv/dpkg-query.8
  Detta är fri programvara; se GNU General Public License version 2 eller
  senare för kopieringsvillkor. Det finns INGEN garanti.
 diff -urN dpkg-1.10.21.orig/man/sv/dpkg-split.8 dpkg-1.10.21/man/sv/dpkg-split.8
---- dpkg-1.10.21.orig/man/sv/dpkg-split.8	2002-02-16 23:04:24.000000000 +0900
-+++ dpkg-1.10.21/man/sv/dpkg-split.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/sv/dpkg-split.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/sv/dpkg-split.8	2012-07-13 02:13:27.000000000 +0200
 @@ -169,7 +169,7 @@
  Anger en alternativ katalog för kön av delar som väntar på automatisk
  sammanslagning.
@@ -2031,8 +3263,8 @@ diff -urN dpkg-1.10.21.orig/man/sv/dpkg-split.8 dpkg-1.10.21/man/sv/dpkg-split.8
  
  Denna manualsida översattes av Peter Karlsson.
 diff -urN dpkg-1.10.21.orig/man/sv/dpkg.8 dpkg-1.10.21/man/sv/dpkg.8
---- dpkg-1.10.21.orig/man/sv/dpkg.8	2002-05-27 02:54:33.000000000 +0900
-+++ dpkg-1.10.21/man/sv/dpkg.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/sv/dpkg.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/sv/dpkg.8	2012-07-13 02:13:27.000000000 +0200
 @@ -157,7 +157,7 @@
  \fB-P\fP eller \fB--purge\fP tar bort allting, inklusive
  konfigurationsfiler.
@@ -2142,8 +3374,8 @@ diff -urN dpkg-1.10.21.orig/man/sv/dpkg.8 dpkg-1.10.21/man/sv/dpkg.8
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
  .fi
 diff -urN dpkg-1.10.21.orig/man/sv/dpkg.cfg.5 dpkg-1.10.21/man/sv/dpkg.cfg.5
---- dpkg-1.10.21.orig/man/sv/dpkg.cfg.5	2002-02-16 23:14:15.000000000 +0900
-+++ dpkg-1.10.21/man/sv/dpkg.cfg.5	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/sv/dpkg.cfg.5	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/sv/dpkg.cfg.5	2012-07-13 02:13:27.000000000 +0200
 @@ -10,10 +10,11 @@
  Kommentarer är tillåtna genom att inleda en rad med nummertecken
  ("\fB#\fR").
@@ -2159,8 +3391,8 @@ diff -urN dpkg-1.10.21.orig/man/sv/dpkg.cfg.5 dpkg-1.10.21/man/sv/dpkg.cfg.5
  .SH SE ÄVEN
  .BR dpkg (8)
 diff -urN dpkg-1.10.21.orig/man/sv/dselect.8 dpkg-1.10.21/man/sv/dselect.8
---- dpkg-1.10.21.orig/man/sv/dselect.8	2002-02-03 02:46:49.000000000 +0900
-+++ dpkg-1.10.21/man/sv/dselect.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/sv/dselect.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/sv/dselect.8	2012-07-13 02:13:27.000000000 +0200
 @@ -39,7 +39,7 @@
  programmet.
  .SH FLAGGOR
@@ -2187,8 +3419,8 @@ diff -urN dpkg-1.10.21.orig/man/sv/dselect.8 dpkg-1.10.21/man/sv/dselect.8
 +Paths modified by Carsten Klapp to reflect fink distribution,
 +December 2002.
 diff -urN dpkg-1.10.21.orig/man/sv/dselect.cfg.5 dpkg-1.10.21/man/sv/dselect.cfg.5
---- dpkg-1.10.21.orig/man/sv/dselect.cfg.5	2002-02-16 23:14:15.000000000 +0900
-+++ dpkg-1.10.21/man/sv/dselect.cfg.5	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/man/sv/dselect.cfg.5	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/man/sv/dselect.cfg.5	2012-07-13 02:13:27.000000000 +0200
 @@ -10,10 +10,11 @@
  Kommentarer är tillåtna genom att inleda en rad med nummertecken
  ("\fB#\fR").
@@ -2204,15 +3436,15 @@ diff -urN dpkg-1.10.21.orig/man/sv/dselect.cfg.5 dpkg-1.10.21/man/sv/dselect.cfg
  .SH SE ÄVEN
  .BR dselect (8)
 diff -urN dpkg-1.10.21.orig/origin.fink dpkg-1.10.21/origin.fink
---- dpkg-1.10.21.orig/origin.fink	1970-01-01 09:00:00.000000000 +0900
-+++ dpkg-1.10.21/origin.fink	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/origin.fink	1970-01-01 01:00:00.000000000 +0100
++++ dpkg-1.10.21/origin.fink	2012-07-13 02:13:27.000000000 +0200
 @@ -0,0 +1,3 @@
 +Vendor: Fink
 +Vendor-URL: http://fink.sourceforge.net/
 +Bugs: http://fink.sourceforge.net/
 diff -urN dpkg-1.10.21.orig/scripts/cleanup-info.8 dpkg-1.10.21/scripts/cleanup-info.8
---- dpkg-1.10.21.orig/scripts/cleanup-info.8	1999-12-06 02:49:04.000000000 +0900
-+++ dpkg-1.10.21/scripts/cleanup-info.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/cleanup-info.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/cleanup-info.8	2012-07-13 02:13:27.000000000 +0200
 @@ -34,7 +34,7 @@
  Output version and exit successfully.
  .SH FILES
@@ -2231,8 +3463,8 @@ diff -urN dpkg-1.10.21.orig/scripts/cleanup-info.8 dpkg-1.10.21/scripts/cleanup-
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.21.orig/scripts/dpkg-divert.8 dpkg-1.10.21/scripts/dpkg-divert.8
---- dpkg-1.10.21.orig/scripts/dpkg-divert.8	2004-04-26 02:10:57.000000000 +0900
-+++ dpkg-1.10.21/scripts/dpkg-divert.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/dpkg-divert.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/dpkg-divert.8	2012-07-13 02:13:27.000000000 +0200
 @@ -37,7 +37,7 @@
  .SH OPTIONS
  .TP
@@ -2260,8 +3492,8 @@ diff -urN dpkg-1.10.21.orig/scripts/dpkg-divert.8 dpkg-1.10.21/scripts/dpkg-dive
  This is free software; see the GNU General Public Licence
  version 2 or later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.21.orig/scripts/dpkg-name.sh dpkg-1.10.21/scripts/dpkg-name.sh
---- dpkg-1.10.21.orig/scripts/dpkg-name.sh	2000-12-24 21:34:20.000000000 +0900
-+++ dpkg-1.10.21/scripts/dpkg-name.sh	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/dpkg-name.sh	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/dpkg-name.sh	2012-07-13 02:13:27.000000000 +0200
 @@ -10,6 +10,7 @@
  license () {
  echo "# ${prog} ${version} -- ${purpose}
@@ -2280,8 +3512,8 @@ diff -urN dpkg-1.10.21.orig/scripts/dpkg-name.sh dpkg-1.10.21/scripts/dpkg-name.
  
  stderr () {
 diff -urN dpkg-1.10.21.orig/scripts/dpkg-scanpackages.8 dpkg-1.10.21/scripts/dpkg-scanpackages.8
---- dpkg-1.10.21.orig/scripts/dpkg-scanpackages.8	2003-10-28 01:50:00.000000000 +0900
-+++ dpkg-1.10.21/scripts/dpkg-scanpackages.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/dpkg-scanpackages.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/dpkg-scanpackages.8	2012-07-13 02:13:27.000000000 +0200
 @@ -41,7 +41,7 @@
  .PP
  .I binarydir
@@ -2301,8 +3533,8 @@ diff -urN dpkg-1.10.21.orig/scripts/dpkg-scanpackages.8 dpkg-1.10.21/scripts/dpk
 +.SH AUTHOR
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/scripts/dpkg-source.1 dpkg-1.10.21/scripts/dpkg-source.1
---- dpkg-1.10.21.orig/scripts/dpkg-source.1	2003-09-14 10:49:08.000000000 +0900
-+++ dpkg-1.10.21/scripts/dpkg-source.1	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/dpkg-source.1	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/dpkg-source.1	2012-07-13 02:13:27.000000000 +0200
 @@ -806,6 +806,7 @@
  .BR pgp (1).
  .SH AUTHOR
@@ -2322,8 +3554,8 @@ diff -urN dpkg-1.10.21.orig/scripts/dpkg-source.1 dpkg-1.10.21/scripts/dpkg-sour
 +.B @PREFIX@/share/common-licenses/GPL
  for details.
 diff -urN dpkg-1.10.21.orig/scripts/dpkg-statoverride.8 dpkg-1.10.21/scripts/dpkg-statoverride.8
---- dpkg-1.10.21.orig/scripts/dpkg-statoverride.8	2001-03-04 23:39:06.000000000 +0900
-+++ dpkg-1.10.21/scripts/dpkg-statoverride.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/dpkg-statoverride.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/dpkg-statoverride.8	2012-07-13 02:13:27.000000000 +0200
 @@ -51,10 +51,10 @@
  .TP
  .I --admindir
@@ -2346,8 +3578,8 @@ diff -urN dpkg-1.10.21.orig/scripts/dpkg-statoverride.8 dpkg-1.10.21/scripts/dpk
  This is free software; see the GNU General Public Licence version 2 or
  later for copying conditions.  There is NO warranty.
 diff -urN dpkg-1.10.21.orig/scripts/install-info.8 dpkg-1.10.21/scripts/install-info.8
---- dpkg-1.10.21.orig/scripts/install-info.8	2002-01-31 23:00:59.000000000 +0900
-+++ dpkg-1.10.21/scripts/install-info.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/install-info.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/install-info.8	2012-07-13 02:13:27.000000000 +0200
 @@ -156,7 +156,7 @@
  be located in
  .IR infodir .
@@ -2366,9 +3598,27 @@ diff -urN dpkg-1.10.21.orig/scripts/install-info.8 dpkg-1.10.21/scripts/install-
  .SH COPYRIGHT
  Copyright 1994, Ian Jackson.
  .B install\-info
+diff -urN dpkg-1.10.21.orig/scripts/install-info.pl dpkg-1.10.21/scripts/install-info.pl
+--- dpkg-1.10.21.orig/scripts/install-info.pl	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/install-info.pl	2012-07-13 02:13:27.000000000 +0200
+@@ -29,11 +29,11 @@
+ END
+ }
+ 
+-$infodir='/usr/share/info';
++$infodir='@PREFIX@/share/info';
+ $maxwidth=79;
+ $Text::Wrap::columns=$maxwidth;
+-$backup='/var/backups/infodir.bak';
+-$default='/usr/share/base-files/info.dir';
++$backup='@PREFIX@/var/backups/infodir.bak';
++$default='@PREFIX@/share/base-files/dir-base';
+ 
+ $menuentry="";
+ $description="";
 diff -urN dpkg-1.10.21.orig/scripts/update-alternatives.8 dpkg-1.10.21/scripts/update-alternatives.8
---- dpkg-1.10.21.orig/scripts/update-alternatives.8	2003-09-15 06:54:42.000000000 +0900
-+++ dpkg-1.10.21/scripts/update-alternatives.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/update-alternatives.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/update-alternatives.8	2012-07-13 02:13:27.000000000 +0200
 @@ -4,7 +4,7 @@
  .\" it under the terms of the GNU General Public License as published
  .\" by the Free Software Foundation; either version 2 of the License, or
@@ -2472,8 +3722,8 @@ diff -urN dpkg-1.10.21.orig/scripts/update-alternatives.8 dpkg-1.10.21/scripts/u
  .BR ln (1),
  FHS, the Filesystem Hierarchy Standard.
 diff -urN dpkg-1.10.21.orig/scripts/update-alternatives.pl dpkg-1.10.21/scripts/update-alternatives.pl
---- dpkg-1.10.21.orig/scripts/update-alternatives.pl	2003-09-17 02:51:15.000000000 +0900
-+++ dpkg-1.10.21/scripts/update-alternatives.pl	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/scripts/update-alternatives.pl	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/scripts/update-alternatives.pl	2012-07-13 02:13:27.000000000 +0200
 @@ -59,7 +59,7 @@
  sub quit { print STDERR "update-alternatives: @_\n"; exit(2); }
  sub badusage { print STDERR "update-alternatives: @_\n\n"; &usageversion; exit(2); }
@@ -2484,8 +3734,8 @@ diff -urN dpkg-1.10.21.orig/scripts/update-alternatives.pl dpkg-1.10.21/scripts/
  $testmode= 0;
  $verbosemode= 0;
 diff -urN dpkg-1.10.21.orig/split/Makefile.in dpkg-1.10.21/split/Makefile.in
---- dpkg-1.10.21.orig/split/Makefile.in	2002-05-20 13:40:29.000000000 +0900
-+++ dpkg-1.10.21/split/Makefile.in	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/split/Makefile.in	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/split/Makefile.in	2012-07-13 02:13:27.000000000 +0200
 @@ -42,7 +42,7 @@
  	$(INSTALL_DATA) $(srcdir)/dpkg-split.8 $(DESTDIR)/$(man8dir)
  
@@ -2496,8 +3746,8 @@ diff -urN dpkg-1.10.21.orig/split/Makefile.in dpkg-1.10.21/split/Makefile.in
  split.o: split.c
  	$(CC) $(ALL_CFLAGS) -DMKSPLITSCRIPT=\"$(dpkglibdir)/mksplit\" -c $<
 diff -urN dpkg-1.10.21.orig/split/dpkg-split.8 dpkg-1.10.21/split/dpkg-split.8
---- dpkg-1.10.21.orig/split/dpkg-split.8	2002-01-31 23:00:59.000000000 +0900
-+++ dpkg-1.10.21/split/dpkg-split.8	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/split/dpkg-split.8	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/split/dpkg-split.8	2012-07-13 02:13:27.000000000 +0200
 @@ -162,7 +162,7 @@
  .BI --depotdir " directory"
  Specifies an alternative directory for the queue of parts awaiting
@@ -2528,8 +3778,8 @@ diff -urN dpkg-1.10.21.orig/split/dpkg-split.8 dpkg-1.10.21/split/dpkg-split.8
  for details.
 +Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
 diff -urN dpkg-1.10.21.orig/utils/Makefile.in dpkg-1.10.21/utils/Makefile.in
---- dpkg-1.10.21.orig/utils/Makefile.in	2002-08-25 04:54:19.000000000 +0900
-+++ dpkg-1.10.21/utils/Makefile.in	2005-03-18 22:13:37.000000000 +0900
+--- dpkg-1.10.21.orig/utils/Makefile.in	2012-07-13 02:12:44.000000000 +0200
++++ dpkg-1.10.21/utils/Makefile.in	2012-07-13 02:13:27.000000000 +0200
 @@ -72,9 +72,9 @@
  	$(INSTALL_DATA) $(srcdir)/$(MD5_MANPAGES) $(DESTDIR)/$(man1dir)
  
@@ -2542,251 +3792,3 @@ diff -urN dpkg-1.10.21.orig/utils/Makefile.in dpkg-1.10.21/utils/Makefile.in
  md5sum md5sum-static: $(MD5_OBJECTS) ../lib/libdpkg.a
 -	$(CC) $(LDFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
 +	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
-diff -Nurd dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
---- dpkg-1.10.21.orig/main/help.c	Sat Oct 25 16:03:21 2003
-+++ dpkg-1.10.21/main/help.c	Thu Mar 10 03:56:22 2005
-@@ -417,6 +417,26 @@
-     
-   debug(dbg_veryverbose, "isdirectoryinuse `%s' (except %s)", file->name,
-         pkg ? pkg->name : "<none>");
-+
-+  /* FINK LOCAL begin */
-+
-+  /*
-+   * Darwin has symlinks /etc -> /private/etc and /var -> /private/var
-+   * instead of actual /etc and /var dirs. If dpkg removes the last
-+   * pkg that it has record of having installed a file in one of those
-+   * top-level dirs, it will try to remove the dir (since it thinks
-+   * it's an empty dir) and it will succeed (since it's just unlinking
-+   * a symlink, not trying to remove a dir that is not actually
-+   * empty). That's Bad. Here we make sure these top-level dirs are
-+   * never thought to be empty.
-+   */
-+  if( !strcmp(file->name,"/etc") || !strcmp(file->name,"/tmp") || !strcmp(file->name,"/var") ) {
-+    debug(dbg_veryverbose, "isdirectoryinuse precious!");
-+    return 1;
-+  }
-+
-+  /* FINK LOCAL end */
-+
-   for (packageslump= file->packages; packageslump; packageslump= packageslump->more) {
-     debug(dbg_veryverbose, "isdirectoryinuse packageslump %s ...",
-           packageslump->pkgs[0] ? packageslump->pkgs[0]->name : "<none>");
-diff -ur dpkg-1.10.21.orig/include/dpkg.h.in dpkg-1.10.21/include/dpkg.h.in
---- dpkg-1.10.21.orig/include/dpkg.h.in	2004-04-24 17:14:21.000000000 -0400
-+++ dpkg-1.10.21/include/dpkg.h.in	2005-03-18 01:59:16.000000000 -0500
-@@ -118,13 +118,13 @@
- 
- #define ARCHIVE_FILENAME_PATTERN "*.deb"
- 
--#define BACKEND		"dpkg-deb"
--#define DPKGQUERY	"dpkg-query"
--#define SPLITTER	"dpkg-split"
--#define MD5SUM		"md5sum"
--#define DSELECT		"dselect"
--#define DPKG		"dpkg"
--#define DEBSIGVERIFY	"/usr/bin/debsig-verify"
-+#define BACKEND		"@PREFIX@/bin/dpkg-deb"
-+#define DPKGQUERY	"@PREFIX@/bin/dpkg-query"
-+#define SPLITTER	"@PREFIX@/bin/dpkg-split"
-+#define MD5SUM		"@PREFIX@/bin/md5sum"
-+#define DSELECT		"@PREFIX@/bin/dselect"
-+#define DPKG		"@PREFIX@/bin/dpkg"
-+#define DEBSIGVERIFY	"@PREFIX@/bin/debsig-verify"
- 
- #define TAR		"tar"
- #define GZIP		"gzip"
-diff -ruN dpkg-1.10.21/lib/mlib.c dpkg-1.10.21-patched/lib/mlib.c
---- dpkg-1.10.21/lib/mlib.c	2004-03-08 12:13:09.000000000 -0500
-+++ dpkg-1.10.21-patched/lib/mlib.c	2005-06-20 04:10:00.000000000 -0400
-@@ -189,7 +189,7 @@
-   switch(data->type) {
-     case BUFFER_WRITE_BUF:
-       memcpy(data->data.ptr, buf, length);
--      (char*)data->data.ptr += length;
-+      data->data.ptr = (char*)data->data.ptr + length;
-       break;
-     case BUFFER_WRITE_VBUF:
-       varbufaddbuf((struct varbuf *)data->data.ptr, buf, length);
-diff -Nurd -x'*~' dpkg-1.10.21.orig/dpkg-deb/build.c dpkg-1.10.21/dpkg-deb/build.c
---- dpkg-1.10.21.orig/dpkg-deb/build.c	2003-10-25 16:03:21.000000000 -0400
-+++ dpkg-1.10.21/dpkg-deb/build.c	2006-12-18 04:52:19.000000000 -0500
-@@ -445,7 +445,7 @@
-     m_dup2(p1[0],0); close(p1[0]); close(p1[1]);
-     m_dup2(p2[1],1); close(p2[0]); close(p2[1]);
-     if (chdir(directory)) ohshite(_("failed to chdir to `%.255s'"),directory);
--    execlp(TAR,"tar","-cf", "-", "-T", "-", "--null", "--no-recursion", (char*)0);
-+    execlp(TAR,"tar","-cf", "-", "--null", "-T", "-", "--no-recursion", (char*)0);
-     ohshite(_("failed to exec tar -cf"));
-   }
-   close(p1[0]);
-diff -Naur dpkg-1.10.21/lib/mlib.c dpkg-new/lib/mlib.c
---- dpkg-1.10.21/lib/mlib.c	2007-03-10 12:20:35.000000000 -0500
-+++ dpkg-new/lib/mlib.c	2007-03-10 15:13:48.000000000 -0500
-@@ -110,7 +110,9 @@
-   if (WIFEXITED(status)) {
-     n= WEXITSTATUS(status); if (!n) return n;
-     if(!(flags & PROCNOERR)) {
--      if(flags & PROCWARN)
-+      /* FINK LOCAL: Tar status 1 is a warning. */
-+      if((flags & PROCWARN) || (n == 1 && strncmp(description, "tar", 3) == 0))
-+      /* FINK LOCAL */
-         fprintf(stderr, _("dpkg: warning - %s returned error exit status %d\n"),description,n);
-       else
-         ohshit(_("subprocess %s returned error exit status %d"),description,n);
-diff -Nurd dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
---- dpkg-1.10.21.orig/main/help.c	2003-10-25 16:03:21.000000000 +0400
-+++ dpkg-1.10.21/main/help.c	2009-12-20 02:37:43.000000000 -0400
-@@ -180,7 +187,7 @@
-   }
-   if (f_debug & dbg_scripts) {
-     fprintf(stderr,"D0%05o: fork/exec %s (",dbg_scripts,path);
--    while (*argv) fprintf(stderr," %s",*argv++);
-+    while (*++argv) fprintf(stderr," %s",*argv);
-     fputs(" )\n",stderr);
-   }
-   instdirl= strlen(instdir);
-@@ -256,17 +263,75 @@
- static int do_script(const char *pkg, const char *scriptname, const char *scriptpath, struct stat *stab, char *const arglist[], const char *desc, const char *name, int warn) {
-   const char *scriptexec;
-   int c1, r;
-+  if (scriptpath) // if NULL, just want wrapper side-effect, no actual .deb script present
-   setexecute(scriptpath,stab);
- 
-   c1= m_fork();
-   if (!c1) {
-     const char **narglist;
-+    /* FINK LOCAL begin */
-+    const char **full_narglist;
-+    char *path_wrapper;
-+    struct stat stab_wrapper;
-+    const char *null_script_path = "";  // must be blank string (NULL is end-of-array sentinel)
-+    /* FINK LOCAL end */
-     for (r=0; arglist[r]; r++) ;
--    narglist=nfmalloc((r+1)*sizeof(char*));
-+    // narglist=nfmalloc((r+1)*sizeof(char*));
-+    /* FINK LOCAL begin */
-+    full_narglist=nfmalloc((r+2)*sizeof(char*));  // leave space for wrapper-script-name, add NULL terminator
-+    narglist=full_narglist+1;  // orig pointer points to orig array
-+    /* FINK LOCAL end */
-     for (r=1; arglist[r-1]; r++)
-       narglist[r]= arglist[r];
-+    if (scriptpath) { // FINK LOCAL
-     scriptexec= preexecscript(scriptpath,narglist);
-+    } else { scriptexec = null_script_path; }; // FINK LOCAL was called with no actual script path to run
-     narglist[0]= scriptexec;
-+    /* FINK LOCAL begin */
-+    // try to set up with wrapper
-+#define FINK_DPKG_SCRIPT_DIR "@PREFIX@/lib/fink/dpkg-base-files"
-+    // determine wrapper-script pathname
-+    asprintf(&path_wrapper, "%s/%s", FINK_DPKG_SCRIPT_DIR, scriptname);
-+    if (path_wrapper == NULL) {
-+      ohshite(_("dpkg - error: could not allocate for fink script wrapper for %s.\n"), scriptpath);
-+    } else {
-+      if (!stat(path_wrapper, &stab_wrapper)) {
-+	if ((stab_wrapper.st_mode & 0555) == 0555) {
-+	  // only use it if it exists and is chmod a+rx
-+	  debug(dbg_scripts,"Wrapper script '%s' will be used around '%s'", path_wrapper, scriptpath);
-+	  // it's good! set wrapper as actual runnable thing in narglist array
-+	  narglist=full_narglist;
-+	  scriptexec= preexecscript(path_wrapper,narglist);
-+	  narglist[0]= scriptexec;
-+
-+	  /*
-+	    Global wrapper needs way to introspect name of package
-+	    being manipulated. Normal .deb scripts could have this
-+	    hard-coded in their script because this info is known at
-+	    the time the .deb is constructed. Pass the name as an
-+	    env var to the wrapper.
-+	  */
-+	  setenv("FINK_PACKAGE_NAME", pkg, 1);
-+	} else {
-+	  debug(dbg_scripts,"Wrapper script '%s' wrong perms", path_wrapper);
-+	  if (scriptpath) {
-+	    debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
-+	  } else {
-+	    debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
-+	    exit(0);
-+	  }
-+	}
-+      } else {
-+	debug(dbg_scripts,"Wrapper script '%s' does not exist", path_wrapper);
-+	if (scriptpath) {
-+	  debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
-+	} else {
-+	  debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
-+	  exit(0);
-+	}
-+      }
-+    }
-+    /* FINK LOCAL end */
-     execv(scriptexec,narglist);
-     ohshite(desc,name);
-   }
-@@ -294,8 +359,13 @@
-   if (stat(scriptpath,&stab)) {
-     if (errno == ENOENT) {
-       debug(dbg_scripts,"maintainer_script_installed nonexistent %s",scriptname);
--      return 0;
--    }
-+//    return 0;
-+      /* FINK LOCAL begin */
-+      // always call do_script (fink adds side-effects), but pass NULL if no actual script
-+      scriptpath = NULL;
-+//  }
-+    } else
-+      /* FINK LOCAL end */
-     ohshite(_("unable to stat installed %s script `%.250s'"),description,scriptpath);
-   }
-   do_script(pkg->name, scriptname, scriptpath, &stab, arglist, _("unable to execute %s"), buf, 0);
-@@ -320,8 +390,14 @@
-   if (stat(cidir,&stab)) {
-     if (errno == ENOENT) {
-       debug(dbg_scripts,"maintainer_script_new nonexistent %s `%s'",scriptname,cidir);
--      return 0;
--    }
-+//    return 0;
-+      //    }
-+      /* FINK LOCAL begin */
-+      // always call do_script (fink adds side-effects), but pass NULL if no actual script
-+      cidir = NULL;
-+//  }
-+    } else
-+      /* FINK LOCAL end */
-     ohshite(_("unable to stat new %s script `%.250s'"),description,cidir);
-   }
-   do_script(pkgname, scriptname, cidir, &stab, arglist, _("unable to execute new %s"), buf, 0);
-@@ -348,16 +424,19 @@
-     if (errno == ENOENT) {
-       debug(dbg_scripts,"maintainer_script_alternative nonexistent %s `%s'",
-             scriptname,oldscriptpath);
--      return 0;
--    }
-+      /* FINK LOCAL begin */
-+      // always call do_script (fink adds side-effects), but pass NULL if no actual script
-+      oldscriptpath = NULL;
-+    } else {
-+      /* FINK LOCAL end */
-     fprintf(stderr,
-             _("dpkg: warning - unable to stat %s `%.250s': %s\n"),
-             buf,oldscriptpath,strerror(errno));
--  } else {
-+    }
-+  }
-     if (!do_script(pkg->name, scriptname, oldscriptpath, &stab, arglist, _("unable to execute %s"), buf, PROCWARN))
-       return 1;
-     ensure_diversions();
--  }
-   fprintf(stderr, _("dpkg - trying script from the new package instead ...\n"));
- 
-   arglist= buildarglist(scriptname,
-@@ -367,6 +446,9 @@
-   strcpy(cidirrest,scriptname);
-   sprintf(buf,_("new %s script"),description);
- 
-+  // FINK if old-pkg fails, don't want to allow "success" of new
-+  // solely because wrapper worked in new-pkg: loses important
-+  // error-state that *should* fail loudly
-   if (stat(cidir,&stab)) {
-     if (errno == ENOENT)
-       ohshit(_("there is no script in the new version of the package - giving up"));
