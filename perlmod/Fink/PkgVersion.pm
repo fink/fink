@@ -4002,12 +4002,7 @@ sub phase_build {
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
-	my $build_as_nobody;
-	if ($self->has_parent()) {
-		$build_as_nobody = $self->get_parent()->param_boolean("BuildAsNobody", 1);
-	} else {
-		$build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
-	}
+	my $build_as_nobody = $self->get_family_parent()->param_boolean("BuildAsNobody", 1);
 	if (Fink::Config::get_option("build_as_nobody") && $build_as_nobody) {
 		print "Reverting ownership of install dir to root\n";
 		unless (chowname_hr 'root:admin', $destdir) {
@@ -5137,12 +5132,7 @@ sub run_script {
 	# Run the script under the modified environment
 	my $result;
 	# Don't build as nobody if BuildAsNobody: false
-	my $build_as_nobody;
-	if ($self->has_parent()) {
-	 	$build_as_nobody = $self->get_parent()->param_boolean("BuildAsNobody", 1);
-	} else {
-	 	$build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
-	}
+	my $build_as_nobody = $self->get_family_parent()->param_boolean("BuildAsNobody", 1);
 	$nonroot_okay = $nonroot_okay && $build_as_nobody;
 	{
 		local %ENV = %{$self->get_env($phase)};
