@@ -5739,21 +5739,21 @@ Otherwise, return the results from Fink::Config::build_as_user_group()
 
 sub pkg_build_as_user_group {
 	my $self = shift;
-	my $result;
-	my $build_as_nobody;
 	if ($self->has_parent()) {
-		#splitoff
-		$build_as_nobody = $self->get_parent()->param_boolean("BuildAsNobody", 1);
-	} else {
-		#parent
-		$build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
+		# whole build process for .info, not overrideable in splitoffs
+		return $self->get_parent()->pkg_build_as_user_group();
 	}
-	if ($build_as_nobody) {
-		$result = Fink::Config::build_as_user_group();
-	} else {
-		#package specifies 'BuildAsNobody: false'
-		$result = {qw/ user root group admin user:group root:admin /}
+	if (! $self->param_boolean("BuildAsNobody", 1)) {
+		# package asserts BAN:false, so use root
+		# NB: keep this in sync with Config::build_as_user_group!
+		return {
+			'user'       => "root",
+			'group'      => "admin",
+			'user:group' => "root:admin"
+		};
 	}
+	# default to fink global control
+	return Fink::Config::build_as_user_group();
 }
 
 =back
