@@ -2,11 +2,20 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.35.x
+\-------------
+
+0.35.? "TBD" (2012-??-??)
+	* EOL for Leopard: First release to only support 10.6 and upwards
+	* Update bootstrap package description files to match latest versions
+	  in 10.4/base and 10.7/base
+
+/-------------
 | fink 0.34.x
 \-------------
 
 0.34.? "TBD" (2012-??-??)
-	* EOL for Leopard
+	* EOL for Leopard: Last release to support Leopard
 
 0.34.2 "magnetic" (2012-??-??)
 	* Bugfixes
