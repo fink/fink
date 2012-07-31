@@ -1,6 +1,6 @@
 Package: tar
 Version: 1.26
-Revision: 1.1
+Revision: 2
 Essential: yes
 Depends: libgettext8-shlibs (>= 0.18.1.1-1), libiconv (>= 1.12-4.1), gzip, bzip2, base-files
 BuildAsNobody: false
