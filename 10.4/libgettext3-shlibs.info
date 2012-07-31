@@ -10,7 +10,8 @@ PatchScript: <<
  patch -p1 < %{PatchFile}
  cd build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
 <<
-Essential: yes
+# Supplanted as essential by libgettext8-shlibs-0.18.1.1-1
+#Essential: yes
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.24.12)
 Conflicts: libgettext3
