@@ -16,6 +16,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 		* BuildAsNobody: false issues:
 		  * Don't have fink-bld own directories in such cases.
 		  * SplitOffs should inherit the same behavior as their parent.
+		* Scrub a newline when getting the Developer directory for AppBundle
+		  generation (thanks to J. Steverud for the diagnosis)
 
 0.34.1 "hanger" (2012-07-26)
 	* Add a "pre-build-test.sh" script to check for system executables that fink
