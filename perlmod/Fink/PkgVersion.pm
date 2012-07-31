@@ -3912,7 +3912,7 @@ sub phase_install {
 			$bundle =~ s/\'/\\\'/gsi;
 			$install_script .= "\ncp -pR '$bundle' '%i/Applications/'";
 		}
-		my $developer_dir=`xcode-select -print-path 2>/dev/null`;
+		chomp (my $developer_dir=`xcode-select -print-path 2>/dev/null`);
 		$install_script .= "\nchmod -R o-w '%i/Applications/'" .
 			"\nif test -x $developer_dir/Tools/SplitForks; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
 	}
