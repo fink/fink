@@ -38,6 +38,7 @@ use strict;
 use warnings;
 
 our $VERSION = 1.00;
+my $vcs = "git";
 
 =head1 NAME
 
@@ -91,7 +92,7 @@ sub system_check {
 	}
 
 	if (!(-x "$gitpath")) {
-		warn "Before changing your selfupdate method to 'git', you must install the git package with 'fink install git'.\n";
+		warn "Before changing your selfupdate method to '$vcs', you must install the git package with 'fink install git'.\n";
 		return 0;
 	}
 
@@ -142,7 +143,7 @@ sub setup_direct_git {
 	my $class = shift;  # class method for now
 
 	my ($finkdir, $tempdir, $tempfinkdir);
-	my ($username, $gituser, @testlist);
+	my ($username, $vcsuser, @testlist);
 	my ($use_hardlinks, $cutoff, $cmd);
 	my ($cmdd);
 
@@ -153,9 +154,9 @@ sub setup_direct_git {
 
 	print "\n";
 	$username =
-		&prompt("Fink has the capability to run the git commands as a ".
+		&prompt("Fink has the capability to run the $vcs commands as a ".
 				"normal user. That has some advantages - it uses that ".
-				"user's git settings files and allows the package ".
+				"user's $vcs settings files and allows the package ".
 				"descriptions to be edited and updated without becoming ".
 				"root. Please specify the user login name that should be ".
 				"used:",
@@ -168,9 +169,9 @@ sub setup_direct_git {
 	}
 
 	print "\n";
-	$gituser =
+	$vcsuser =
 		&prompt_selection("For Fink developers only: ".
-				"Do you wish to use full read/write git access ".
+				"Do you wish to use full read/write $vcs access ".
 				"(requires GitHub SSH keys to be set up on your system) ".
 				"or anonymous read-only access? Just press return ".
 				"if you're not sure.",
@@ -219,31 +220,31 @@ sub setup_direct_git {
 		$verbosity = "";
 	}
 	my $gitpath = $config->param("GitPath");
-	my $gitrepository = 'https://github.com/danielj7/fink-dists.git';
+	my $repository = 'https://github.com/danielj7/fink-dists.git';
 	if (-f "$basepath/lib/fink/URL/git-repository") {
-		$gitrepository = cat "$basepath/lib/fink/URL/git-repository";
-		chomp($gitrepository);
+		$repository = cat "$basepath/lib/fink/URL/git-repository";
+		chomp($repository);
 	}
-	if ($gituser eq "anonymous") {
+	if ($vcsuser eq "anonymous") {
 		if (-f "$basepath/lib/fink/URL/anonymous-git") {
-			$gitrepository = cat "$basepath/lib/fink/URL/anonymous-git";
-			chomp($gitrepository);
+			$repository = cat "$basepath/lib/fink/URL/anonymous-git";
+			chomp($repository);
 		}
 	} else {
-		$gitrepository = 'git@github.com:danielj7/fink-dists.git';
+		$repository = 'git@github.com:danielj7/fink-dists.git';
 		if (-f "$basepath/lib/fink/URL/developer-git") {
-			$gitrepository = cat "$basepath/lib/fink/URL/developer-git";
-			chomp($gitrepository);
+			$repository = cat "$basepath/lib/fink/URL/developer-git";
+			chomp($repository);
 		}
 	}
 	$cmd ="$gitpath";
-	$cmdd = "$cmd clone $verbosity $gitrepository fink";
+	$cmdd = "$cmd clone $verbosity $repository fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
 	&print_breaking("Setting up base Fink directory...");
 	if (&execute($cmdd)) {
-		die "Downloading package descriptions from git failed.\n";
+		die "Downloading package descriptions from $vcs failed.\n";
 	}
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
@@ -257,7 +258,7 @@ sub setup_direct_git {
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
-		die "Git didn't report an error, but the directory '$tempfinkdir' ".
+		die "The $vcs command did not report an error, but the directory '$tempfinkdir' ".
 			"doesn't exist as expected. Strange.\n";
 	}
 
@@ -313,7 +314,7 @@ sub setup_direct_git {
 
 	print "\n";
 	&print_breaking("Your Fink installation was successfully set up for ".
-					"direct git updating. The directory \"$finkdir.old\" ".
+					"direct $vcs updating. The directory \"$finkdir.old\" ".
 					"contains your old package description tree. Its ".
 					"contents were merged into the new one, but the old ".
 					"tree was left intact for safety reasons. If you no ".
@@ -334,18 +335,16 @@ sub do_direct_git {
 		$verbosity = "";
 	}
 
-	my $gitpath = $config->param("GitPath");
-
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
 	@sb = stat("$descdir/.git");
 
-	$msg = "I will now run the git command to retrieve the latest package descriptions. ";
+	$msg = "I will now run the $vcs command to retrieve the latest package descriptions. ";
 
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
-		$msg .= "The 'su' command will be used to run the git command as the ".
+		$msg .= "The 'su' command will be used to run the $vcs command as the ".
 				"user '$username'. ";
 	}
 
@@ -361,6 +360,7 @@ sub do_direct_git {
 
 	my $errors = 0;
 
+	my $gitpath = $config->param("GitPath");
 	$cmd = "$gitpath fetch $verbosity origin";
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
@@ -390,7 +390,7 @@ sub do_direct_git {
 		$class->update_version_file(distribution => $tree);
 	}
 
-	die "Updating using git failed. Check the error messages above.\n" if ($errors);
+	die "Updating using $vcs failed. Check the error messages above.\n" if ($errors);
 }
 
 =over 4

@@ -38,6 +38,7 @@ use strict;
 use warnings;
 
 our $VERSION = 1.00;
+my $vcs = "svn"; # TODO: "SVN" ? "Subversion" ?
 
 =head1 NAME
 
@@ -76,7 +77,7 @@ sub system_check {
 	}
 
 	if (not Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'svn', you must install ".
+		warn "Before changing your selfupdate method to '$vcs', you must install ".
 		     $line2.
 		     "http://connect.apple.com (after free registration)".
 		     $line4.".\n";
@@ -142,7 +143,7 @@ sub setup_direct_svn {
 	my $class = shift;  # class method for now
 
 	my ($finkdir, $tempdir, $tempfinkdir);
-	my ($username, $svnuser, @testlist);
+	my ($username, $vcsuser, @testlist);
 	my ($use_hardlinks, $cutoff, $cmd);
 	my ($cmdd);
 
@@ -153,9 +154,9 @@ sub setup_direct_svn {
 
 	print "\n";
 	$username =
-		&prompt("Fink has the capability to run the svn commands as a ".
+		&prompt("Fink has the capability to run the $vcs commands as a ".
 				"normal user. That has some advantages - it uses that ".
-				"user's svn settings files and allows the package ".
+				"user's $vcs settings files and allows the package ".
 				"descriptions to be edited and updated without becoming ".
 				"root. Please specify the user login name that should be ".
 				"used:",
@@ -168,9 +169,9 @@ sub setup_direct_svn {
 	}
 
 	print "\n";
-	$svnuser =
+	$vcsuser =
 		&prompt("For Fink developers only: ".
-				"Enter your GitHub login name to set up full svn access. ".
+				"Enter your GitHub login name to set up full $vcs access. ".
 				"Other users, just press return to set up anonymous ".
 				"read-only access.",
 				default => "anonymous");
@@ -217,32 +218,32 @@ sub setup_direct_svn {
 		$verbosity = "";
 	}
 	my $svnpath = $config->param("SvnPath");
-	my $svnrepository = "https://github.com/danielj7/fink-dists.git/trunk";
+	my $repository = "https://github.com/danielj7/fink-dists.git/trunk";
 	if (-f "$basepath/lib/fink/URL/svn-repository") {
-		$svnrepository = cat "$basepath/lib/fink/URL/svn-repository";
-		chomp($svnrepository);
+		$repository = cat "$basepath/lib/fink/URL/svn-repository";
+		chomp($repository);
 	}
-	if ($svnuser eq "anonymous") {
+	if ($vcsuser eq "anonymous") {
 		if (-f "$basepath/lib/fink/URL/anonymous-svn") {
-			$svnrepository = cat "$basepath/lib/fink/URL/anonymous-svn";
-			chomp($svnrepository);
+			$repository = cat "$basepath/lib/fink/URL/anonymous-svn";
+			chomp($repository);
 		}
 	} else {
-		$svnrepository = 'https://USERNAME@github.com/danielj7/fink-dists.git/trunk';
+		$repository = 'https://USERNAME@github.com/danielj7/fink-dists.git/trunk';
 		if (-f "$basepath/lib/fink/URL/developer-svn") {
-			$svnrepository = cat "$basepath/lib/fink/URL/developer-svn";
-			chomp($svnrepository);
+			$repository = cat "$basepath/lib/fink/URL/developer-svn";
+			chomp($repository);
 		}
-		$svnrepository =~ s/USERNAME/$svnuser/;
+		$repository =~ s/USERNAME/$vcsuser/;
 	}
 	$cmd = "$svnpath ${verbosity}";
-	$cmdd = "$cmd checkout --depth=files ${svnrepository} fink";
+	$cmdd = "$cmd checkout --depth=files ${repository} fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
 	&print_breaking("Setting up base Fink directory...");
 	if (&execute($cmdd)) {
-		die "Downloading package descriptions from svn failed.\n";
+		die "Downloading package descriptions from $vcs failed.\n";
 	}
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
@@ -257,13 +258,13 @@ sub setup_direct_svn {
 			$cmdd = "/usr/bin/su $username -c '$cmdd'";
 		}
 		if (&execute($cmdd)) {
-			die "Downloading package descriptions from svn failed.\n";
+			die "Downloading package descriptions from $vcs failed.\n";
 		}
 	}
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
-		die "The svn didn't report an error, but the directory '$tempfinkdir' ".
+		die "The $vcs command did not report an error, but the directory '$tempfinkdir' ".
 			"doesn't exist as expected. Strange.\n";
 	}
 
@@ -319,7 +320,7 @@ sub setup_direct_svn {
 
 	print "\n";
 	&print_breaking("Your Fink installation was successfully set up for ".
-					"direct svn updating. The directory \"$finkdir.old\" ".
+					"direct $vcs updating. The directory \"$finkdir.old\" ".
 					"contains your old package description tree. Its ".
 					"contents were merged into the new one, but the old ".
 					"tree was left intact for safety reasons. If you no ".
@@ -340,20 +341,16 @@ sub do_direct_svn {
 		$verbosity = "";
 	}
 
-	my $svnpath = $config->param("SvnPath");
-
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
 	@sb = stat("$descdir/.svn");
 
-	$cmd = "$svnpath ${verbosity} update";
-
-	$msg = "I will now run the svn command to retrieve the latest package descriptions. ";
+	$msg = "I will now run the $vcs command to retrieve the latest package descriptions. ";
 
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
-		$msg .= "The 'su' command will be used to run the svn command as the ".
+		$msg .= "The 'su' command will be used to run the $vcs command as the ".
 				"user '$username'. ";
 	}
 
@@ -369,6 +366,8 @@ sub do_direct_svn {
 
 	my $errors = 0;
 
+	my $svnpath = $config->param("SvnPath");
+	$cmd = "$svnpath ${verbosity} update";
 	$cmd = "$cmd --depth=files";
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
@@ -388,7 +387,7 @@ sub do_direct_svn {
 		}
 	}
 
-	die "Updating using svn failed. Check the error messages above.\n" if ($errors);
+	die "Updating using $vcs failed. Check the error messages above.\n" if ($errors);
 }
 
 =over 4
