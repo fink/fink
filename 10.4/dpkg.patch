@@ -3611,7 +3611,7 @@ diff -urN dpkg-1.10.21.orig/scripts/install-info.pl dpkg-1.10.21/scripts/install
  $Text::Wrap::columns=$maxwidth;
 -$backup='/var/backups/infodir.bak';
 -$default='/usr/share/base-files/info.dir';
-+$backup='@PREFIX@/var/backups/infodir.bak';
++$backup='@PREFIX@/share/info/dir.bak';
 +$default='@PREFIX@/share/base-files/dir-base';
  
  $menuentry="";

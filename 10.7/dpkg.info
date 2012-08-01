@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1232
+Revision: 1233
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
 Depends: libgettext3-shlibs, libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
@@ -13,7 +13,7 @@ Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
 Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
 PatchFile: %n.patch
-PatchFile-MD5: 5fd92a9487b09079b70ceb0fca3b463e
+PatchFile-MD5: 62c4558d3ae7c3107fefaa031b9cf697
 PatchFile2: libgettext3-shlibs.patch
 PatchFile2-MD5: 3799b4f059212628bac707e5365856b3
 PatchScript: <<
