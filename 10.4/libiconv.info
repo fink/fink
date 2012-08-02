@@ -4,8 +4,8 @@ Revision: 5
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: c2be282595751535a618ae0edeb8f648
-Source2: mirror:sourceforge:fink/gettext-0.18.1.1.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.18.1.1.tar.gz
+Source2: mirror:sourceforge:fink/gettext-0.18.1.1.tar.gz
 Source2-MD5: 3dd55b952826d2b32f51308f2f91aa89
 Source3: mirror:gnu:gperf/gperf-3.0.3.tar.gz
 Source3-MD5: cc20e58975a38075440423c8fb85fd00

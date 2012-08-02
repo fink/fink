@@ -11,6 +11,7 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
+#Source2: mirror:gnu:gettext/gettext-0.18.1.1.tar.gz
 Source2: mirror:sourceforge:fink/gettext-0.18.1.1.tar.gz
 Source2-MD5: 3dd55b952826d2b32f51308f2f91aa89
 PatchFile: %n.patch
