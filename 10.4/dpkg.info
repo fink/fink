@@ -28,17 +28,40 @@ PatchScript: <<
 <<
 SetCFLAGS: -I%p/include
 CompileScript: <<
- if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
-
- ### First build the local gettext-tools to get msgfmt and xgettext 
- ### If gettext-tools gets updated, make sure these ./configure parameters 
- ### match the new package parameters (except build static only here).
- ### Not necessary, but will avoid unforeseen consequences.
- %p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
- cd %b/../gettext-0.18.1.1/gettext-tools; env EMACS=no ./configure --prefix="%b/../_inst%p" --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-libasprintf --disable-shared --with-included-glib --with-included-libcroco --with-included-libxml --with-included-libunistring --without-git --without-cvs ac_cv_prog_AWK=/usr/bin/awk ac_cv_path_GREP=/usr/bin/grep ac_cv_path_SED=/usr/bin/sed ; make; rm -rf %b/../_inst; make install
- ### Now actually build dpkg using msgfmt and xgettext we just compiled
- PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
- /usr/bin/make
+	#!/bin/sh -ev
+	if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
+	
+	### First build the local gettext-tools to get msgfmt and xgettext 
+	### If gettext-tools gets updated, make sure these ./configure parameters 
+	### match the new package parameters (except build static only here).
+	### Not necessary, but will avoid unforeseen consequences.
+	%p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
+	cd %b/../gettext-0.18.1.1/gettext-tools
+	env EMACS=no ./configure \
+	--prefix="%b/../_inst%p" \
+	--infodir='${prefix}/share/info' \
+	--mandir='${prefix}/share/man' \
+	--with-included-gettext \
+	--disable-csharp \
+	--disable-rpath \
+	--disable-libasprintf \
+	--disable-shared \
+	--with-included-glib \
+	--with-included-libcroco \
+	--with-included-libxml \
+	--with-included-libunistring \
+	--without-git \
+	--without-cvs \
+	ac_cv_prog_AWK=/usr/bin/awk \
+	ac_cv_path_GREP=/usr/bin/grep \
+	ac_cv_path_SED=/usr/bin/sed
+	make
+	rm -rf %b/../_inst
+	make install
+	### Now actually build dpkg using msgfmt and xgettext we just compiled
+	cd %b
+	PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
+	/usr/bin/make
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<

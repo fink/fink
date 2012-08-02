@@ -32,11 +32,18 @@ ConfigureParams: <<
 	ac_cv_path_GREP=/usr/bin/grep \
 	ac_cv_path_SED=/usr/bin/sed
 <<
-CompileScript: cd gettext-runtime; env EMACS=no CCACHE_DISABLE=1 ./configure %c ; make
+CompileScript: <<
+	#!/bin/sh -ev
+	cd gettext-runtime
+	env EMACS=no CCACHE_DISABLE=1 ./configure %c
+	make
+<<
 InstallScript: <<
- cd gettext-runtime; make install DESTDIR=%d
- #No need for dependency_libs in .la files if not building static libs
- perl -pi -e "s/dependency_libs=.*$/dependency_libs=''/" %i/lib/libintl.la
+	#!/bin/sh -ev
+	cd gettext-runtime
+	make install DESTDIR=%d
+	#No need for dependency_libs in .la files if not building static libs
+	perl -pi -e "s/dependency_libs=.*$/dependency_libs=''/" %i/lib/libintl.la
 <<
 DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog* 
 Description: GNU Internationalization utils (shared libs)
