@@ -1,8 +1,7 @@
 #!/usr/bin/perl -w
 #
 # postinstall.pl - perl script to check and store which OS version we
-#                are running, and to setup the dists directory in
-#                new (post-10.1) format
+#                are running, and to setup the dists directory
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
@@ -134,10 +133,12 @@ if (-d "$distdir/CVS") {
 }
 
 
-### Now, if we are running 10.2 or later, we need to create $basepath/fink/10.2
-### if still needed, and then make a symlink
+### Error out when running on an unsupported old systems.
 
-if (($distribution eq "10.1") or ($distribution eq "10.2") or ($distribution eq "10.3") or ($distribution eq "10.4-transitional")) {
+if (($distribution eq "10.1") or
+    ($distribution eq "10.2") or
+    ($distribution eq "10.3") or
+    ($distribution eq "10.4-transitional")) {
 	print "ERROR: The current version of fink cannot be used with the $distribution distribution.\nPlease use an appropriate earlier version of fink.\n";
 	exit 1;
 }

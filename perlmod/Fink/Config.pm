@@ -732,22 +732,6 @@ EOF
 
 	$body .= "\n";
 
-# For transition from 10.1 installations, we include pointers to "old"
-# deb files.
-
-	if (-e "$basepath/fink/old/dists") {
-		$body .= <<"EOF";
-# Allow APT to find pre-10.2 deb files
-deb file:$basepath/fink/old local main
-deb file:$basepath/fink/old stable main crypto
-EOF
-
-if (-e "$basepath/fink/old/dists/unstable") {
-	$body .= "deb file:$basepath/fink/old unstable main crypto\n";
-}
-		$body .= "\n";
-	}
-
 	# We only include the remote debs if the bindist looks like it's ok
 	if (!$self->bindist_check_prefix && !$self->bindist_check_distro) {
 

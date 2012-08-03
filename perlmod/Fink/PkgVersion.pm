@@ -3475,11 +3475,6 @@ GCC_MSG
 		$renamefield = "Tar".$suffix."FilesRename";
 		$renamelist = "";
 
-		# Note: the Apple-supplied /usr/bin/gnutar in versions 10.2 and
-		# earlier does not know about the flags --no-same-owner and
-		# --no-same-permissions.  Therefore, we do not use these in
-		# the "default" situation (which should only occur during bootstrap).
-
 		$tarflags = "-x${verbosity}f";
 		my $permissionflags = " --no-same-owner --no-same-permissions";
 		$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Default to Apple's GNU Tar
@@ -4972,11 +4967,7 @@ sub get_env {
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET")) {
 		my $sw_vers = Fink::Services::get_osx_vers() || Fink::Services::get_darwin_equiv();
 		if (defined $sw_vers) {
-			if ($sw_vers eq "10.2") {
-				$defaults{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
-			} else {
-				$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
-			}
+			$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
 
