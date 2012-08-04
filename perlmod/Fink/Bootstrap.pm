@@ -396,8 +396,7 @@ sub additional_packages {
 		"apt-dev",
 		"bzip2-dev",
 		"gettext-bin",
-		"libgettext3-dev",
-		"libgettext8-shlibs",
+		"libgettext8-dev",
 		"libiconv-dev",
 		"libncurses5",
 	);
