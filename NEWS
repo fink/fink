@@ -17,7 +17,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 0.34.? "TBD" (2012-??-??)
 	* EOL for Leopard: Last release to support Leopard
 
-0.34.2 "magnetic" (2012-??-??)
+0.34.2 "magnetic" (2012-08-04)
 	* Bugfixes
 		* Fix test for unused UIDs/GIDs in Services.pm to allow checking
 		  them separately.  This permits fink to restore the fink-bld user when
