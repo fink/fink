@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1233
+Revision: 1234
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
 Depends: libgettext8-shlibs (>= 0.18.1.1-1), libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
