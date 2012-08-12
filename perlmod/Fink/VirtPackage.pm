@@ -1352,7 +1352,7 @@ END
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
-			$hash->{provides} = 'x11-shlibs, libgl-shlibs, xft1-shlibs, fontconfig1-shlibs, xfree86-base-threaded-shlibs';
+			$hash->{provides} = 'x11-shlibs, libgl-shlibs, xft1-shlibs, xfree86-base-threaded-shlibs';
 			$self->{$hash->{package}} = $hash;
 
 			$hash = {};
@@ -1363,7 +1363,7 @@ END
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
-			$hash->{provides} = 'x11, xserver, libgl, xft1, fontconfig1, xfree86-base-threaded';
+			$hash->{provides} = 'x11, xserver, libgl, xft1, xfree86-base-threaded';
 			$self->{$hash->{package}} = $hash;
 
 			$hash = {};
@@ -1374,7 +1374,7 @@ END
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
-			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, fontconfig1, xfree86-base-threaded-dev';
+			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, xfree86-base-threaded-dev';
 			$self->{$hash->{package}} = $hash;
 
 			$hash = {};
@@ -1564,14 +1564,12 @@ only version 1 is considered.
 =item "fontconfigI<X>" and "fontconfigI<X>-dev"
 
 These packages represent components of the font configuration API for
-X11.
+X11. Version 1 was checked.
 
 They are no longer checked or provided as an x11 virtual package (long
-masked by a real package suite in fink of the same name).
+masked by the real fontconfig2* package suite in fink).
 
 =cut
-
-
 
 =item "rman"
 
