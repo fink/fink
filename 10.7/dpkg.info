@@ -1,39 +1,66 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1233
+Revision: 1234
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
-Depends: libgettext3-shlibs, libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
+Depends: libgettext8-shlibs (>= 0.18.1.1-1), libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
 Essential: yes
+UseMaxBuildJobs: false
 BuildAsNobody: false
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-Source2: mirror:sourceforge:fink/gettext-0.14.5.tar.gz
-Source2-MD5: e2f6581626a22a0de66dce1d81d00de3
+#Source2: mirror:gnu:gettext/gettext-0.18.1.1.tar.gz
+Source2: mirror:sourceforge:fink/gettext-0.18.1.1.tar.gz
+Source2-MD5: 3dd55b952826d2b32f51308f2f91aa89
 PatchFile: %n.patch
 PatchFile-MD5: 62c4558d3ae7c3107fefaa031b9cf697
-PatchFile2: libgettext3-shlibs.patch
-PatchFile2-MD5: 3799b4f059212628bac707e5365856b3
+PatchFile2: libgettext8-shlibs.patch
+PatchFile2-MD5: 34a11cf58bde5e40fd110004731fb574
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p0
- cd %b/../gettext-0.14.5/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
- cd %b/../gettext-0.14.5; perl -pi -e 's/extern char \*stpncpy \(char \*dest, const char \*src, size_t n\)\;//g' gettext-tools/configure
+ cd %b/../gettext-0.18.1.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
  cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
 <<
 SetCFLAGS: -I%p/include
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
 CompileScript: <<
- if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
-
- %p/bin/fink -y install gettext-bin libgettext3-dev libiconv-dev libncurses5
- cd %b/../gettext-0.14.5/gettext-tools; env EMACS=no ./configure --prefix="%b/../_inst%p" --infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --with-included-gettext --disable-csharp --disable-rpath --disable-shared; make; rm -rf %b/../_inst; make install
- PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
- /usr/bin/make
+	#!/bin/sh -ev
+	if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
+	
+	### First build the local gettext-tools to get msgfmt and xgettext 
+	### If gettext-tools gets updated, make sure these ./configure parameters 
+	### match the new package parameters (except build static only here).
+	### Not necessary, but will avoid unforeseen consequences.
+	%p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
+	cd %b/../gettext-0.18.1.1/gettext-tools
+	env EMACS=no ./configure \
+	--prefix="%b/../_inst%p" \
+	--infodir='${prefix}/share/info' \
+	--mandir='${prefix}/share/man' \
+	--with-included-gettext \
+	--disable-csharp \
+	--disable-rpath \
+	--disable-libasprintf \
+	--disable-shared \
+	--with-included-glib \
+	--with-included-libcroco \
+	--with-included-libxml \
+	--with-included-libunistring \
+	--without-git \
+	--without-cvs \
+	ac_cv_prog_AWK=/usr/bin/awk \
+	ac_cv_path_GREP=/usr/bin/grep \
+	ac_cv_path_SED=/usr/bin/sed
+	make
+	rm -rf %b/../_inst
+	make install
+	### Now actually build dpkg using msgfmt and xgettext we just compiled
+	cd %b
+	PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
+	/usr/bin/make
 <<
 ConfigureParams: --without-start-stop-daemon --without-sgml-doc --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b
 InstallScript: <<
