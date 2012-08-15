@@ -1,16 +1,15 @@
 Package: tar
 Version: 1.26
-Revision: 1
+Revision: 2
 Essential: yes
-# libgettext8-shlibs isn't Essential yet so we have to stick with 3.
-Depends: libgettext3-shlibs, libiconv, gzip, bzip2, base-files
+Depends: libgettext8-shlibs (>= 0.18.1.1-1), libiconv (>= 1.12-4.1), gzip, bzip2, base-files
 BuildAsNobody: false
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
 #Source: mirror:gnu:%n/%n-%v.tar.bz2
 Source-MD5: 2cee42a2ff4f1cd4f9298eeeb2264519
 ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib --disable-dependency-tracking FORCE_UNSAFE_CONFIGURE=1
 CompileScript: <<
- %p/bin/fink -y install libgettext3-dev libiconv-dev
+ %p/bin/fink -y install libgettext8-dev libiconv-dev
  ./configure %c
  make
 <<

@@ -3,10 +3,6 @@ Version: @VERSION@
 Revision: @REVISION@
 Distribution: @DISTRIBUTION@
 Depends: base-files
-Suggests: <<
- (%{Distribution} = 10.3) term-readkey-pm581 
- (%{Distribution} = 10.4) term-readkey-pm586
-<<
 Recommends: <<
  apt (>= 0.5.4-41)
 <<

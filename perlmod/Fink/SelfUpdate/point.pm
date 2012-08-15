@@ -88,10 +88,6 @@ sub do_direct {
 	# get the file with the current release number
 	my $currentfink;
 	$currentfink = "CURRENT-FINK-$distribution";
-	### if we are in 10.1, need to use "LATEST-FINK" not "CURRENT-FINK"
-	if ($distribution eq "10.1") {
-		$currentfink = "LATEST-FINK";
-	}
 	my $website = "http://www.finkproject.org";
 	if (-f "$basepath/lib/fink/URL/website") {
 		$website = cat "$basepath/lib/fink/URL/website";
@@ -150,11 +146,6 @@ sub do_direct {
 	# go ahead and upgrade
 	# first, download the packages tarball
 	$dir = "dists-$newversion";
-
-	### if we are in 10.1, need to use "packages" not "dists"
-	if ($distribution eq "10.1") {
-			$dir = "packages-$newversion";
-	}
 
 	$pkgtarball = "$dir.tar.gz";
 	$url = "mirror:sourceforge:fink/$pkgtarball";
