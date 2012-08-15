@@ -4,10 +4,6 @@ Revision: 46
 Distribution: 10.5
 Architecture: x86_64
 Depends: base-files, perl588-core
-Suggests: <<
- (%{Distribution} = 10.3) term-readkey-pm581 
- (%{Distribution} = 10.4) term-readkey-pm586
-<<
 Recommends: <<
  apt (>= 0.5.4-41)
 <<
