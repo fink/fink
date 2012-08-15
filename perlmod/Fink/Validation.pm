@@ -1709,9 +1709,9 @@ sub _validate_dpkg {
 			&stack_msg($msgs, "File installed outside of allowable subdirectories of $basepath", $filename);
 		}
 
-		# check for compiled-perl modules in unversioned place
-		if ($filename =~ /^$basepath\/lib\/perl5\/(auto|darwin)\/.*\.bundle/) {
-			&stack_msg($msgs, "Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a versioned subdirectory.", $filename);
+		# check for compiled-perl modules in unversioned place (perl5/$arch/auto or perl5/auto)
+		if ($filename =~ /^$basepath\/lib\/perl5\/([^\/]+\/)?auto\/.*\.bundle/) {
+			&stack_msg($msgs, "Apparent perl XS module installed directly into $basepath/lib/perl5 instead of a perl-versioned subdirectory.", $filename);
 		}
 
 		# check for compiled emacs libs
