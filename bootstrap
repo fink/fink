@@ -41,7 +41,7 @@ unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 require Fink::Services;
-import Fink::Services qw(&execute &version_cmp);
+import Fink::Services qw(&execute &version_cmp &is_world_readable);
 
 $| = 1;
 
@@ -466,6 +466,20 @@ foreach my $forbidden (
 		redo OPT_BASEPATH;
 	}
 }
+
+# Check whether the whole path containing basepath is world-readable, 
+# since the fink-bld user can't operate when it isn't.
+
+my $path_test = &is_world_readable($installto);
+if ($path_test) {
+	&print_breaking("ERROR: '$path_test' is not world-readable, which is ".
+					"a requirement to build most Fink packages. Either ".
+					"change its permissions in a new terminal window via:");
+	print "\nsudo chmod -R a+r $path_test\n\n";
+	&print_breaking("or install Fink into a different directory.");
+	redo OPT_BASEPATH;
+} 
+
 if (-d $installto) {
 	# check existing contents
 	if (has_installed_software $installto) {

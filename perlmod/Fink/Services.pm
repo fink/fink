@@ -71,7 +71,8 @@ BEGIN {
 					  &spec2struct &spec2string &get_options
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
 					  &find_subpackages &apt_available
-					  &ensure_fink_bld);
+					  &ensure_fink_bld
+					  &is_world_readable);
 }
 our @EXPORT_OK;
 
@@ -2462,6 +2463,38 @@ sub check_id_unused {
 	}
 	print "WARNING: ID $id is in use.\n";
 	return 0;
+}
+
+=item is_world_readable
+
+  my $dir = is_world_readable($path);
+
+Check whether a path (as a string in the $path variable) 
+is world-readable all the way down.  Return the first
+directory which is not world-readable,  or the empty string
+when we've exhausted all of the existing directories in $path.
+
+=cut
+
+sub is_world_readable {
+	use File::Spec;
+	use Fcntl ':mode';
+	my $path = shift;
+	my $path_so_far;
+	my @dirs;
+	foreach ( File::Spec->splitdir($path) ) {
+		# if we've run out of valid directories we're done.
+		push @dirs, ($_);
+		$path_so_far = File::Spec->catdir(@dirs);
+		# we're done once we hit a nonexistent directory
+		return '' if !(-d $path_so_far);
+		# check the permissions otherwise
+		(undef,undef,my $mode) = stat($path_so_far);
+		my $permissions = S_IMODE($mode);
+		return $path_so_far unless ($permissions & oct(0004));
+	}
+	# if we've gotten this far then we've gotten through the whole path.
+	return "";
 }
 
 =back
