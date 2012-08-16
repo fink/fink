@@ -72,7 +72,7 @@ BEGIN {
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
 					  &find_subpackages &apt_available
 					  &ensure_fink_bld
-					  &is_world_readable);
+					  &is_accessible);
 }
 our @EXPORT_OK;
 
@@ -2465,21 +2465,30 @@ sub check_id_unused {
 	return 0;
 }
 
-=item is_world_readable
+=item is_readable
 
-  my $dir = is_world_readable($path);
+  my $dir = is_accessible($path, $octmode);
 
-Check whether a path (as a string in the $path variable) 
-is world-readable all the way down.  Return the first
-directory which is not world-readable,  or the empty string
-when we've exhausted all of the existing directories in $path.
+Check whether a path is accessible via the octal mode in $octmode (not limited to just
+that mode, so "05" will satisfy e.g. 555, 755, 777, etc.).
+  
+Return the first directory which is not world-readable and executable,  
+or the empty string when we've exhausted all of the existing directories in $path.
 
 =cut
 
-sub is_world_readable {
+sub is_accessible {
 	use File::Spec;
 	use Fcntl ':mode';
 	my $path = shift;
+	my $octmode = shift;
+	# convert octmode into an array of binary bits
+	my @modebits;
+	foreach (0..9) {
+		my $bitval = 2**$_;
+		# make a bit-by-bit comparison
+		push @modebits, $bitval if ($octmode & $bitval) ;
+	}
 	my $path_so_far;
 	my @dirs;
 	foreach ( File::Spec->splitdir($path) ) {
@@ -2491,7 +2500,10 @@ sub is_world_readable {
 		# check the permissions otherwise
 		(undef,undef,my $mode) = stat($path_so_far);
 		my $permissions = S_IMODE($mode);
-		return $path_so_far unless ($permissions & oct(0004));
+		# Verify whether the bits set in @modebits are also set in $permissions
+		foreach (@modebits) {
+			return $path_so_far unless ($permissions & $_);
+		}
 	}
 	# if we've gotten this far then we've gotten through the whole path.
 	return "";

@@ -31,7 +31,7 @@ package Fink::Configure;
 
 use Fink::Config qw($config $basepath $libpath $distribution);
 use Fink::Services qw(&read_properties &read_properties_multival &filename
-				&get_options);
+				&get_options &is_accessible);
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
 use strict;
@@ -146,7 +146,19 @@ sub choose_misc {
 				"tarballs?",
 				default => $config->param_default("FetchAltDir", ""));
 	if ($otherdir =~ /\S/) {
-		$config->set_param("FetchAltDir", $otherdir);
+		# check whether entire path to FetchAltDir candidate is world-readable and 
+		# world-executable.
+		my $path_check = &is_accessible($otherdir,'05');
+		if ($path_check) {
+			&print_breaking("ERROR: '$path_check' is not both world-readable and world-writable, ".
+							"as required for Fink to be able to unpack sources. ".
+							"Either change the permissions via:".
+							"\n\nsudo chmod -R o+rx $path_check\n\n".
+	 						"or pick a different additional tarball directory. ".
+	 						"I'll leave the current setting untouched.");
+		} else {
+			$config->set_param("FetchAltDir", $otherdir);
+		}
 	}
 
 	print "\n";
@@ -161,7 +173,18 @@ sub choose_misc {
 								default => $builddir_default);
 		}
 		if ($builddir =~ /\S/) {
-			$config->set_param("Buildpath", $builddir);
+			# check whether entire path to Buildpath candidate is world-executable
+			my $path_check = &is_accessible($builddir,'01');
+			if ($path_check) {
+				&print_breaking("ERROR: '$path_check' is not world-executable, which is ".
+								"required for Fink to be able to unpack sources. ".
+								"Either change the permissions via:".
+								"\n\nsudo chmod -R o+x $path_check\n\n".
+	 							"or pick a different build directory. ".
+	 							"I'll leave the current setting untouched.");
+			} else {
+				$config->set_param("Buildpath", $builddir);
+			}
 		}
 	}
 	&spotlight_warning();

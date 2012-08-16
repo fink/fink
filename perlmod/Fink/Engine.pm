@@ -29,7 +29,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &count_files
 					  &call_queue_clear &call_queue_add
 					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
-					  $VALIDATE_HELP &apt_available &ensure_fink_bld);
+					  $VALIDATE_HELP &apt_available &ensure_fink_bld &is_accessible);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width &die_breaking);
@@ -237,10 +237,48 @@ sub process {
 		}
 	}
 
-	# update fink-bld if required
-	{
-		my $status=&ensure_fink_bld() if ($cmd =~ /build|update|install|update|activate|use/) ;
+	if ($cmd =~ /build|update|install|activate|use/) {
+		# update fink-bld if required
+		&ensure_fink_bld();
+		# check that BasePath, FetchAltDir and BuildPath are contained within a
+		# directory structure with appropriate permissions.
+		my $path_check = &is_accessible($basepath,'05');
+		if ($path_check) {
+				&print_breaking("ERROR: '$path_check' is not world-readable ".
+								"and world-executable, as required to build most Fink ".
+								"packages. You will need to change its ".
+								"permissions in a new terminal window via:".
+								"\n\nsudo chmod -R o+rw $path_check\n\n");
+				die "\n";
+		}
+		my $fetch_alt_dir=$self->{config}->param('FetchAltDir');
+		if ($fetch_alt_dir) {
+			$path_check = &is_accessible($fetch_alt_dir,'05');
+			if ($path_check) {
+				&print_breaking("ERROR: '$path_check' is not world-readable ".
+								"and world-executable, as required for Fink ".
+								"to unpack sources. You will need to change the ".
+								"permissions via:".
+								"\n\nsudo chmod -R o+rx $path_check\n\n".
+								"if you want to use this directory.");
+				die "\n";
+			}
+		}
+		my $build_path=$self->{config}->param('Buildpath');
+		if ($build_path) {
+			$path_check = &is_accessible($build_path,'01');
+			if ($path_check) {
+				&print_breaking("ERROR: '$path_check' is not world-executable, ".
+								"as required for Fink ".
+								"to unpack sources. You will need to change the ".
+								"permissions via:".
+								"\n\nsudo chmod -R o+x $path_check\n\n".
+								"if you want to use this directory.");
+				die "\n";
+			}
+		}
 	}	
+	
 	# Warn about Spotlight
 	if (&spotlight_warning()) {
 		$self->{config}->save;
