@@ -370,8 +370,10 @@ print "Verifying that installed Xcode version is supported...\n";
 	}
 }
 
-## quit immediately if pod2man isn't executable, to avoid folks nearly building
-### fink and then having it crap out.
+## Check for required features which are normally installed.
+
+## Currently quit if pod2man isn't available and executable, 
+## to avoid folks nearly building fink and then having it crap out.
 system "./pre-build-test.sh" and exit 1;
 
 ### setup the correct packages directory
