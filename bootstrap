@@ -437,7 +437,10 @@ if ($installto =~ /\s/) {
 	redo OPT_BASEPATH;
 }
 
-# remove any trailing slash(es)
+# consolidate slashes (foo//bar == foo/bar but could confuse parsers)
+$installto =~ s,//+,/,g;
+
+# remove trailing slash
 $installto =~ s,^(/.*?)/*$,$1,;
 
 # check well-known path (NB: these are regexes!)
@@ -464,6 +467,26 @@ foreach my $forbidden (
 		redo OPT_BASEPATH;
 	}
 }
+
+# fink-bld and various suid daemons need access to fink-prefix files
+{
+	my $prefix_parent = '';
+	foreach my $dir (split /\//, $installto) {
+		$prefix_parent .= '/' unless length $prefix_parent == 1;
+		$prefix_parent .= $dir;
+		warn "testing $prefix_parent\n";
+		if (-d $prefix_parent) {
+			unless ( (stat($prefix_parent))[2] & 5 ) { # chmod a+rx
+				&print_breaking("ERROR: '$prefix_parent', a directory component of '$installto', exists but is not accessible by all users.");
+				redo OPT_BASEPATH;
+			}
+		} elsif (-e $prefix_parent) {
+			&print_breaking("ERROR: '$prefix_parent', a component of '$installto', exists but is not a directory.");
+			redo OPT_BASEPATH;
+		}
+	}
+}
+
 if (-d $installto) {
 	# check existing contents
 	if (has_installed_software $installto) {
