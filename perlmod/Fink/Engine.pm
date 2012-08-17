@@ -240,6 +240,7 @@ sub process {
 	if ($cmd =~ /build|update|install|activate|use/) {
 		# update fink-bld if required
 		&ensure_fink_bld();
+		
 		# check that BasePath, FetchAltDir and BuildPath have and are contained within a
 		# directory structure with appropriate permissions.
 		# We'll traverse all the way to $basepath/src, since we have to operate there
