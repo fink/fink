@@ -240,15 +240,27 @@ sub process {
 	if ($cmd =~ /build|update|install|activate|use/) {
 		# update fink-bld if required
 		&ensure_fink_bld();
-		# check that BasePath, FetchAltDir and BuildPath are contained within a
+		# check that BasePath, FetchAltDir and BuildPath have and are contained within a
 		# directory structure with appropriate permissions.
+		# We'll traverse all the way to $basepath/src, since we have to operate there
+		# directly, too.
 		my $path_check = &is_accessible($basepath,'05');
 		if ($path_check) {
 				&print_breaking("ERROR: '$path_check' is not world-readable ".
 								"and world-executable, as required to build most Fink ".
 								"packages. You will need to change its ".
-								"permissions in a new terminal window via:".
-								"\n\nsudo chmod -R o+rw $path_check\n\n");
+								"permissions via:".
+								"\n\nsudo chmod -R o+rx $path_check\n");
+				die "\n";
+		}
+		# we've gone all the way down $basepath, so let's just check $basepath/src
+		# for executability directly. 
+		unless ((stat("$basepath/src"))[2] & 1) {
+				&print_breaking("ERROR: '$basepath/src' is not world-executable ".
+								"as required as required for Fink ".
+								"to unpack sources. You will need to change the ".
+								"permissions via:".
+								"\n\nsudo chmod -R o+x $path_check\n");
 				die "\n";
 		}
 		my $fetch_alt_dir=$self->{config}->param('FetchAltDir');
