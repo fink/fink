@@ -2479,16 +2479,9 @@ or the empty string when we've exhausted all of the existing directories in $pat
 
 sub is_accessible {
 	use File::Spec;
-	use Fcntl ':mode';
 	my $path = shift;
 	my $octmode = shift;
-	# convert octmode into an array of binary bits
-	my @modebits;
-	foreach (0..9) {
-		my $bitval = 2**$_;
-		# make a bit-by-bit comparison
-		push @modebits, $bitval if ($octmode & $bitval) ;
-	}
+	$octmode = oct($octmode); #convert octal string to decimal
 	my $path_so_far;
 	my @dirs;
 	foreach ( File::Spec->splitdir($path) ) {
@@ -2498,12 +2491,7 @@ sub is_accessible {
 		# we're done once we hit a nonexistent directory
 		return '' if !(-d $path_so_far);
 		# check the permissions otherwise
-		(undef,undef,my $mode) = stat($path_so_far);
-		my $permissions = S_IMODE($mode);
-		# Verify whether the bits set in @modebits are also set in $permissions
-		foreach (@modebits) {
-			return $path_so_far unless ($permissions & $_);
-		}
+		return (0,$path_so_far) unless (( (stat($path_so_far))[2] & $octmode) == $octmode);
 	}
 	# if we've gotten this far then we've gotten through the whole path.
 	return "";
