@@ -470,8 +470,13 @@ foreach my $forbidden (
 # Check whether the whole path containing basepath is world-accessible, 
 # since the fink-bld user can't operate when it isn't.
 
-my $path_test = &is_accessible($installto,'5'); 
+my ($status,$path_test) = &is_accessible($installto,'5'); 
 # we need at least world-read and world-execute
+if ($status) {
+	&print_breaking("ERROR: '$path_test' is not a directory.  ".
+	 				"Pick a different directory.");
+	redo OPT_BASEPATH;
+}
 if ($path_test) {
 	&print_breaking("ERROR: '$path_test' is not both world-readable and world-executable, ".
 					"as required to build most Fink packages. Either ".
