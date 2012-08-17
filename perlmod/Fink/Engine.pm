@@ -260,7 +260,7 @@ sub process {
 								"as required as required for Fink ".
 								"to unpack sources. You will need to change the ".
 								"permissions via:".
-								"\n\nsudo chmod -R o+x $path_check\n");
+								"\n\nsudo chmod -R o+x $basepath/src\n");
 				die "\n";
 		}
 		my $fetch_alt_dir=$self->{config}->param('FetchAltDir');
