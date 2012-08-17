@@ -31,7 +31,8 @@ use Fink::Services qw(&filename &execute
 					  &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
-					  &store_rename &apt_available);
+					  &store_rename &apt_available
+					  &is_accessible);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
 				 &should_skip_prompt &die_breaking);
@@ -3644,8 +3645,8 @@ sub phase_patch {
 
 			# check that we're contained in a world-executable directory
 			unless ($dir_checked) {
-				my $dir = dirname($file);
-				die "$dir needs to have at least o+x permissions.\n" unless ((stat($dir))[2] & 1); 
+				my ($status,$dir) = is_accessible(dirname($file),'01')
+				die "$dir needs to have at least o+x permissions.\n" if $dir; 
 				$dir_checked=1; 
 			}
 
