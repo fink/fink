@@ -3646,7 +3646,8 @@ sub phase_patch {
 			# check that we're contained in a world-executable directory
 			unless ($dir_checked) {
 				my ($status,$dir) = is_accessible(dirname($file),'01');
-				die "$dir needs to have at least o+x permissions.\n" if $dir; 
+				die "$dir and its contents need to have at least o+x permissions. Run:\n\n".
+					"sudo chmod -R o+x $dir\n\n" if $dir; 
 				$dir_checked=1; 
 			}
 
