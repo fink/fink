@@ -3626,7 +3626,7 @@ sub phase_patch {
 		if ($self->has_param('Patch')) {
 			die "Cannot specify both Patch and PatchFile!\n";
 		}
-
+		my $dir_checked;
 		for my $suffix ($self->get_patchfile_suffixes()) {
 			# field contains simple filename with %-exp
 			# figure out actual absolute filename
@@ -3640,6 +3640,13 @@ sub phase_patch {
 			my $file_md5 = file_MD5_checksum($file);  # old API so we are back-portable to branch_0-24
 			if ($md5 ne $file_md5) {
 				die "PatchFile$suffix \"$file\" checksum does not match!\nActual: $file_md5\nExpected: $md5\n";
+			}
+
+			# check that we're contained in a world-executable directory
+			unless ($dir_checked) {
+				my $dir = dirname($file);
+				die "$dir needs to have at least o+x permissions.\n" unless ((stat($dir))[2] & 1); 
+				$dir_checked=1; 
 			}
 
 			# make sure patchfile exists and can be read by the user (root
