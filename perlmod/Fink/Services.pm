@@ -2467,12 +2467,17 @@ sub check_id_unused {
 
 =item is_readable
 
-  my $dir = is_accessible($path, $octmode);
+  my ($status,$dir) = is_accessible($path, $octmode);
 
 Check whether a path is accessible via the octal mode in $octmode (not limited to just
 that mode, so "05" will satisfy e.g. 555, 755, 777, etc.).
   
-Return the first directory which is not world-readable and executable,  
+Returns a status value:
+
+0: only directories in the PATH
+1: we've hit a nondirectory
+
+Also returns the first directory which is not world-readable and executable  
 or the empty string when we've exhausted all of the existing directories in $path.
 
 =cut
@@ -2484,12 +2489,16 @@ sub is_accessible {
 	$octmode = oct($octmode); #convert octal string to decimal
 	my $path_so_far;
 	my @dirs;
-	foreach ( File::Spec->splitdir($path) ) {
-		# if we've run out of valid directories we're done.
+	foreach (File::Spec->splitdir($path)) {
+	    # stat() tracks the real directories rather than 
+	    # intervening links, so any non-directory indicates a 
+	    # file (or at least a symlink to a file) in the path
 		push @dirs, ($_);
 		$path_so_far = File::Spec->catdir(@dirs);
-		# we're done once we hit a nonexistent directory
-		return '' if !(-d $path_so_far);
+		# we're done once we hit a nonexistent item.
+		return (0,'') if !(-e $path_so_far);
+		# we're also done if we hit a non-directory
+		return (1,$path_so_far) if !(-d $path_so_far);
 		# check the permissions otherwise
 		return (0,$path_so_far) unless (( (stat($path_so_far))[2] & $octmode) == $octmode);
 	}
