@@ -1,6 +1,12 @@
 Package: libiconv
 Version: 1.14
 Revision: 1
+Description: Character set conversion library
+License: LGPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Depends: base-files
+BuildDepends: fink (>= 0.24.12)
+Essential: yes
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: e34509b1623cec449dfeb73d7ce9c6c6
@@ -13,24 +19,6 @@ PatchFile: %n.patch
 PatchFile-MD5: 5b3e0c7681965fe20cad4cd3a6fd9d28
 PatchScript: <<
 	cd %b/..; patch -p0 < %{PatchFile}
-<<
-Essential: yes
-Depends: base-files
-BuildDepends: fink (>= 0.24.12)
-Shlibs: <<
-	%p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
-	%p/lib/libiconv.2.dylib 8.0.0 %n (>= 1.14-1)
-<<
-DescPackaging: <<
- Shared libraries are in libiconv for backward compatibility, to avoid
- breaking dpkg during an update.
-
- In order to guarantee that the gettext header files are present when 
- libiconv is built, we now compile gettext during the building of this
- package.  (Previously, the complicated interaction between gettext and
- libiconv was handled during fink's bootstrap process, but not afterwards.)
-
- Previous versions by Christoph Pfisterer.
 <<
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
@@ -92,6 +80,10 @@ rm -rf %i/doc
 rm -f %i/lib/charset.alias
 <<
 DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
+Shlibs: <<
+	%p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
+	%p/lib/libiconv.2.dylib 8.0.0 %n (>= 1.14-1)
+<<
 #
 PostInstScript: <<
 if [ -L %p/etc/alternatives/charset.alias ]; then
@@ -117,10 +109,20 @@ SplitOff2: <<
 	Description: Developer files for libiconv package
 	DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
 <<
-Description: Character set conversion library
 DescDetail: <<
 GNU libiconv provides an iconv() implemententation for systems that lack
 it, or whose implementation cannot convert from/to Unicode.
+<<
+DescPackaging: <<
+ Shared libraries are in libiconv for backward compatibility, to avoid
+ breaking dpkg during an update.
+
+ In order to guarantee that the gettext header files are present when 
+ libiconv is built, we now compile gettext during the building of this
+ package.  (Previously, the complicated interaction between gettext and
+ libiconv was handled during fink's bootstrap process, but not afterwards.)
+
+ Previous versions by Christoph Pfisterer.
 <<
 DescPort: <<
 charset.alias is deleted because it is empty on Darwin anyway and
@@ -147,6 +149,4 @@ our build system.
 * Bump internal gettext to latest 0.18.1.1
 * On 10.7+, modernize compiler wrapper
 <<
-License: LGPL
-Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Homepage: http://www.gnu.org/software/libiconv/
