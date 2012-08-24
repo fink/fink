@@ -20,6 +20,8 @@ PatchFile-MD5: 5b3e0c7681965fe20cad4cd3a6fd9d28
 PatchScript: <<
 	cd %b/..; patch -p0 < %{PatchFile}
 <<
+### UMBJ: false only needed during bootstrap
+UseMaxBuildJobs: false
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
 CompileScript: <<
@@ -31,6 +33,7 @@ export PATH
 cd %b/../gperf-3.0.4
 ./configure --prefix=%p
 make
+make -j1 check || exit 2
 
 ### Build our local gettext-runtime.
 ### If gettext gets updated, make sure these ./configure parameters 
