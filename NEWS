@@ -7,8 +7,6 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 0.35.? "TBD" (2012-??-??)
 	* EOL for Leopard: First release to only support 10.6 and upwards
-	* Update bootstrap package description files to match latest versions
-	  in 10.4/base and 10.7/base
 
 /-------------
 | fink 0.34.x
@@ -16,6 +14,17 @@ For a more comprehensive changelog of the latest experimental code, see:
 
 0.34.? "TBD" (2012-??-??)
 	* EOL for Leopard: Last release to support Leopard
+	
+0.34.3 "wall anchor" (2012-08-29)
+	* Support 10.8.1.
+	* Move Essential packages to gettext8.
+	* Update 10.4/base and 10.7/base package description files to match latest versions
+	  in bootstrap.
+	* Bugfixes
+		* Fix .deb validator test for compiled perlmods.
+		* Remove fontconfig2 and xft2 from x11 virtual package Provides,
+		  since we're using Fink packages for those exclusively now.
+		* Update fink.conf manpage to include Distribution: 10.8.
 
 0.34.2 "magnetic" (2012-08-04)
 	* Bugfixes
@@ -25,8 +34,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 		* BuildAsNobody: false issues:
 		  * Don't have fink-bld own directories in such cases.
 		  * SplitOffs should inherit the same behavior as their parent.
-		* Scrub a newline when getting the Developer directory for AppBundle
-		  generation (thanks to J. Steverud for the diagnosis)
+		* Scrub a newline when finding the Developer directory via backticks
+		  in AppBundles generation  (thanks to J. Steverud for the diagnosis).
 
 0.34.1 "hanger" (2012-07-26)
 	* Add a "pre-build-test.sh" script to check for system executables that fink
