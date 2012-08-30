@@ -13,6 +13,7 @@ PatchScript: <<
 Essential: yes
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.24.12)
+BuildConflicts: ( %m = powerpc ) gcc45, ( %m = powerpc ) gcc46, ( %m = powerpc ) gcc47
 #UseMaxBuildJobs: false
 SetCFLAGS: -Os
 ConfigureParams: <<
