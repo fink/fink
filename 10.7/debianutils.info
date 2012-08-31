@@ -1,45 +1,109 @@
 Package: debianutils
-Version: 1.23
-Revision: 11
+Version: 4.3.1
+Revision: 3
 Essential: true
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+## Remove po4a
 BuildDepends: fink (>= 0.24.12-1)
-Depends: base-files
-Conflicts: mktemp
-Replaces: mktemp, tetex
+Depends: base-files, sensible-utils
+Conflicts: mktemp, ftpfiles (<< 20030406-1)
+Replaces: mktemp, tetex, ftpfiles (<< 20030406-1)
 Provides: mktemp
-Source: mirror:sourceforge:fink/%n_%v.tar.gz
-Source-MD5: 232b5bc916a1e2af43fde890f840a304
+Source: mirror:debian:pool/main/d/%n/%n_%v.tar.gz
+Source-MD5: cb9125c0990c7558376428f8348857a2
 SourceDirectory: %n-%v
-PatchFile: %n.patch
-PatchFile-MD5: b08afef2d893e68a12fe2b3823c2a502
-InstallScript: <<
-  #!/bin/sh -ev
-  INSTALL=install
-  INSTALL_FILE="$INSTALL -p -m 644"
-  INSTALL_PROGRAM="$INSTALL -p -m 755"
-  INSTALL_SCRIPT="$INSTALL -p -m 755"
-  INSTALL_DIR="$INSTALL -p -d -m 755"
-  $INSTALL_DIR %i/bin \
-               %i/sbin \
-               %i/share/man/man1 \
-               %i/share/man/man8 \
-               %i/share/man/fr/man8
-  $INSTALL_PROGRAM readlink run-parts tempfile mktemp %i/sbin
-  $INSTALL_SCRIPT which savelog sensible-editor sensible-pager %i/bin
-  $INSTALL_FILE run-parts.8 savelog.8 %i/share/man/man8
-  $INSTALL_FILE which.1 tempfile.1 sensible-editor.1 mktemp.1 readlink.1 \
-                %i/share/man/man1
-  $INSTALL_FILE savelog.fr.8 %i/share/man/fr/man8/savelog.8
-  ln -s sensible-editor.1 %i/share/man/man1/sensible-pager.1
+PatchScript: <<
+### fix use of chown/mod --reference which isn't supported in /bin/chown/mod
+perl -pi -e 's,chown --reference=\$file,chown root:admin,g' add-shell
+perl -pi -e 's,chmod --reference=\$file,chmod 644,g' add-shell
+
+#cd po4a && po4a --no-backups po4a.conf
 <<
-DocFiles: debian/copyright debian/changelog
-Description: Misc. utilities specific to Debian (and Fink)
-DescDetail: Includes the commands: mktemp, readlink, tempfile, and run-parts
+ConfigureParams: --mandir=%p/share/man
+CompileScript: <<
+DEBIANUTILS_VERSION="%v" ./configure %c
+make
+<<
+InstallScript: <<
+#!/bin/sh -ev
+install -d -m 0755 %d/DEBIAN \
+	           %i/bin \
+	           %i/sbin \
+	           %i/share/man/man1 \
+	           %i/share/man/man8 \
+	           %i/share/doc/%n \
+	           %i/share/%n
+make install DESTDIR=%d INSTALL_PROGRAM="install -m 0755"
+rm %i/sbin/installkernel \
+   %i/share/man/man8/installkernel.8
+install -m 0644 debian/shells %i/share/%n
+<<
+PostInstScript: <<
+set -e
+
+if test -z "$2" && test ! -f %p/etc/shells
+then
+        cp -p %p/share/debianutils/shells %p/etc/shells
+fi
+
+# Add all the default Lion shells
+add-shell /bin/bash /bin/csh /bin/ksh /bin/tcsh /bin/zsh /usr/bin/screen
+
+case "$1" in
+    configure)
+    if which update-mime >/dev/null;
+    then
+	    update-mime
+    fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+<<
+PostRmScript: <<
+set -e
+
+case "$1" in
+    remove|disappear)
+    if which update-mime >/dev/null;
+    then
+            update-mime
+    fi
+        ;;
+    upgrade|failed-upgrade|purge|abort-install|abort-upgrade)
+        ;;
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+<<
+DocFiles: debian/copyright debian/changelog debian/README.shells
+Description: Misc utilities specific to Debian/Fink
+DescDetail: <<
+This package provides a number of small utilities which are used primarily by
+the installation scripts of Debian packages, although you may use them
+directly.
+.
+The specific utilities included are: installkernel run-parts savelog tempfile
+which.
+<<
 DescPort: <<
  Both run-parts and tempfile require the getopt() routines from glibc.
  The versions included here come from glibc-2.2.4
  Thanks to Justin Hallett for the 1.22.5 port.
+
+ Newer version no longer have mktemp or readlink, as they are in coreutils.
+ Providing symlink from tempfile to mktemp for now, so the many packages that
+ use it don't break, but this packages should change to gmktmp and bdep on
+ coreutils.
 <<
-Homepage: http://packages.debian.org/unstable/base/debianutils.html
+Homepage: http://packages.debian.org/unstable/debianutils
 License: GPL
