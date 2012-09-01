@@ -42,10 +42,10 @@ Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Not
    `Always print verbose messages? [y/N]` **(press_return)**
     
     Proxy/Firewall settings
-   `Enter the URL of the HTTP proxy to use, or 'none' for no proxy.` 
+    Enter the URL of the HTTP proxy to use, or 'none' for no proxy. 
    `The URL should start with http:// and may contain username, password or port specifications. [none]` **(press_return)**
 
-   `Enter the URL of the proxy to use for FTP, or 'none' for no proxy.`
+    Enter the URL of the proxy to use for FTP, or 'none' for no proxy.
    `The URL should start with http:// and may contain username, password or port specifications.` [none] **(press_return)**
 
    `Use passive mode FTP transfers (to get through a firewall)? [Y/n]` **y**
@@ -96,7 +96,7 @@ to be pointed back at the documentation when your problem actually is well-docum
 
  Update Fast Track
 -------------------
-Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Note: If you have OS X 10.4 and XCode 2.1, you should use "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes below.) Then, open Terminal.app and follow the session below. Computer output is in "normal face" , your input is in "bold_face" (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "..." ).
+Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Note: If you have OS X 10.4 and XCode 2.1, you should use "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes below.) Then, open Terminal.app and follow the session below. Computer output is in "normal face", your input is in "bold_face" (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "..." ).
 
     [frodo:~] testuser% tar_xzf_fink-0.9.0-full.tar.gz
     [frodo:~] testuser% cd_fink-0.9.0-full
@@ -286,15 +286,15 @@ Upgrading From Fink 0.1.x
 
 Clean cut
 -----------
-There is no direct upgrade path from Fink 0.1.x to Fink 0.2.x, because they use different methods for underlying package management (stow vs. dpkg). The only way to upgrade is to do a complete reinstall. The procedure is as follows:
+There is no direct upgrade path from Fink 0.1.x to Fink 0.2.x, because they use different methods for underlying package management (`stow` vs. `dpkg`). The only way to upgrade is to do a complete reinstall. The procedure is as follows:
 
 * Save any changes you have made to configuration files etc.
 
-* Save a list of packages you had installed. Hint: Try "ls /sw/var/fink-stamp" .
+* Save a list of packages you had installed. Hint: Try "`ls /sw/var/fink-stamp`" .
 
 * If you have the source tarballs still lying around in /sw/src and don't want to download them again, move them to another directory.
 
-* Wipe out the /sw directory, i.e. "cd / ; rm -rf /sw" . Do this as root if necessary.
+* Wipe out the /sw directory, i.e. "`cd / ; rm -rf /sw`" . Do this as root if necessary.
 
 * Follow the procedures for a first time installation above.
 

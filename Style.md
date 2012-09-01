@@ -19,12 +19,16 @@ it makes you feel better, I don't mind it either, as long as it doesn't
 cause extremely unnatural code formatting
 * our bracing style is:
 
-    while (foo) {
+     while (foo) {
+     
     ...
+
     }
+
 
 * use a whitespace after keywords:  "`if (foo)`" and not "`if(foo)`"
 
+==========
 ==========
 
 Also, all perl code should be clean under "-w" and "strict" standards. A typical perl script would thus begin:
@@ -35,6 +39,7 @@ Also, all perl code should be clean under "-w" and "strict" standards. A typical
     use strict;
     use warnings;
 
+==========
 ==========
 
 Please try to avoid circular use/require among the perl modules, especially during their startup (BEGIN blocks, etc).
@@ -96,11 +101,13 @@ Please try to avoid circular use/require among the perl modules, especially duri
   Text::ParseWords uses nothing (imported from CPAN)
 
 
+
 There's a cycle here:
 
   Fink::Package uses Fink::Base Fink::Services Fink::CLI Fink::Config Fink::Command Fink::PkgVersion Fink::FinkVersion Fink::VirtPackage
 
   Fink::PkgVersion uses Fink::Base Fink::Services Fink:CLI Fink::Config Fink::NetAccess Fink::Mirror Fink::Package Fink::Status Fink::VirtPackage Fink::Bootstrap Fink::Command Fink::Notify Fink::Shlibs Fink::Validation Fink::Text::DelimMatch Fink::Text::ParseWords Fink::Checksum
+
 
 
 These have not yet been checked for cycles:
