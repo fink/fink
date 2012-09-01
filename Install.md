@@ -20,7 +20,7 @@ If you're looking for the real instructions, skip to the next section. (You can 
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Note: If you have OS X 10.4 and XCode 2.1, you should use "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes below.) Then, open Terminal.app and follow the session below. Computer output is in "normal face", your input is in "bold_face" (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "..." ).
+Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Note: If you have OS X 10.4 and XCode 2.1, you should use "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes below.) Then, open Terminal.app and follow the session below. Computer output is in "`normal face`", your input is in "**bold_face**" (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
     [frodo:~] testuser% tar_xzf_fink-0.9.0-full.tar.gz
     [frodo:~] testuser% cd_fink-0.9.0-full
@@ -96,7 +96,7 @@ to be pointed back at the documentation when your problem actually is well-docum
 
  Update Fast Track
 -------------------
-Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Note: If you have OS X 10.4 and XCode 2.1, you should use "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes below.) Then, open Terminal.app and follow the session below. Computer output is in "normal face", your input is in "bold_face" (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "..." ).
+Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Note: If you have OS X 10.4 and XCode 2.1, you should use "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes below.) Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in "**bold_face**" (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
     [frodo:~] testuser% tar_xzf_fink-0.9.0-full.tar.gz
     [frodo:~] testuser% cd_fink-0.9.0-full
