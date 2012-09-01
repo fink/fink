@@ -33,6 +33,7 @@ Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Not
     
     sudo /Users/testuser/fink-0.9.0-full/bootstrap .sudo '/sw'
    `Password:`**(your\_normal\_password\_here)**
+
     ...
     OK, I'll ask you some questions and update the configuration file in
     '/sw/etc/fink.conf'.
@@ -41,19 +42,25 @@ Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Not
    `Always print verbose messages? [y/N]` **(press_return)**
     
     Proxy/Firewall settings
-   `Enter the URL of the HTTP proxy to use, or 'none' for no proxy. The URL should start with http:// and may contain username, password or port specifications. [none]` **(press_return)**
-   `Enter the URL of the proxy to use for FTP, or 'none' for no proxy. The URL should start with http:// and may contain username, password or port specifications.` [none] **(press_return)**
+   `Enter the URL of the HTTP proxy to use, or 'none' for no proxy.` 
+   `The URL should start with http:// and may contain username, password or port specifications. [none]` **(press_return)**
+
+   `Enter the URL of the proxy to use for FTP, or 'none' for no proxy.`
+   `The URL should start with http:// and may contain username, password or port specifications.` [none] **(press_return)**
+
    `Use passive mode FTP transfers (to get through a firewall)? [Y/n]` **y**
     
     Mirror selection
     Choose a continent:
     ...
    **(enter\_the\_numbers\_corresponding\_to\_your_location)**
+
     ...
     Writing updated configuration to '/sw/etc/fink.conf'...
     Bootstrapping a base system via /sw/bootstrap.
     ...
    **(take\_a\_coffee\_break\_while\_Fink\_downloads\_and\_compiles\_the\_base_packages)**
+
     ...
    
    You should now have a working Fink installation in '/sw'.
@@ -73,12 +80,14 @@ You can now install additional packages with the "fink" command, like this:
     [frodo:~] testuser% fink_install_xfree86-server_gimp
     sudo /sw/bin/fink 'install' 'xfree86-server' 'gimp'
    `Password:`**(your\_normal\_password_here)**
+
     Reading package info...
     Information about 147 packages read.
     The following 14 additional packages will be installed:
      audiofile dlcompat esound giflib glib gnome-libs gtk+ imlib libjpeg libpng
      libtiff orbit xfree86-base zlib
    `Do you want to continue? [Y/n]` **y**
+
     ...
 
 If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://www.finkproject.org/faq/). You can also ask on the [fink-users mailing list](http://www.finkproject.org/lists/fink-users.php), but expect
@@ -94,6 +103,7 @@ Start out by copying the "fink-0.9.0-full.tar.gz" file to your home folder. (Not
     [frodo:~/fink-0.9.0-full] testuser% ./inject.pl_/sw
     sudo ./inject.pl /sw
    `Password:`**(your\_normal\_password_here)**
+
     Copying package descriptions
     ...
     Done.
@@ -135,7 +145,8 @@ You need:
 * Patience. Compiling several big packages takes time. I'm talking hours or even days here.
 
 
- Choosing A Directory
+
+Choosing A Directory
 ----------------------
 Before you install, you must decide where Fink's directory hierarchy will live. The recommended place is /sw, and all examples in this document will use that. Any other directory should be fine as well, as long as you don't use existing directories like /usr/local or /usr. The bootstrap script tries to catch these.
 
@@ -146,7 +157,7 @@ The directory that you choose must not contain any spaces or similar. Both Unix 
 A special note about /usr/local: While it is possible to install Fink in /usr/local (and the bootstrap script will let you do that after a confirmation), it is a bad idea. Many third party software packages install into /usr/local. This can cause severe problems for Fink, including overwriting files, `dpkg` refusing to install packages and strange build errors. Also, the /usr/local hierarchy is in the default search path for the shell and the compiler. That means that it is much more difficult to get back to a working system when things break. You have been warned.
 
 
- Installation
+Installation
 --------------
 First, you need to unpack the fink-0.9.0-full.tar.gz tarball. (Note: If you have OS X 10.4 and XCode 2.1, you should use "fink-0.8.0-full-XCode-2.1.tar.gz" instead, and make the appropriate changes below.) It is recommended that you do this from the command line - StuffIt Expander has a tendency to screw up text files. So, go to the directory where you put the tarball, and run this command:
 
@@ -187,7 +198,7 @@ For more information on installing and running X11, refer to the online X11 on D
 If you already have Fink 0.3.x installed, you can update your installation to 0.9.0 with the built-in 'selfupdate' command.
 
 
- Updating The Package Manager
+Updating The Package Manager
 ------------------------------
 To update Fink, run the following command:
 
@@ -196,12 +207,12 @@ To update Fink, run the following command:
 This will automatically update your existing Fink installation to use the latest package manager, and also update all essential packages. However, it will not update any other packages.
 
 
- Getting tetex Sorted Out
+Getting tetex Sorted Out
 --------------------------
 If you are upgrading from a Fink release prior to 0.3.1, and you have tetex installed, you should run the command "fink remove tetex" before upgrading. (It may also be necessary to remove the packages which depend on tetex, such as lyx, before tetex can be removed.) Afterwards you can again install tetex and the other packages you removed.
 
 
- Updating Packages
+Updating Packages
 -------------------
 The above updating steps will not update the actual packages, they only provide you with the means to do so. The easiest way to get the new packages is to use the 'update-all' command:
 
@@ -210,7 +221,7 @@ The above updating steps will not update the actual packages, they only provide 
 This will bring all installed packages to the latest version. If you don't want to do this (it may take some time), you can update individual packages with the 'update' command.
 
 
- Upgrading From Fink 0.2.x
+Upgrading From Fink 0.2.x
 ===========================
 
 If you already have Fink 0.2.x installed, you can update your installation to 0.9.0 with this package.
@@ -218,7 +229,7 @@ If you already have Fink 0.2.x installed, you can update your installation to 0.
 Actually, there are two pieces that are updated independently: the package manager and the package descriptions. It is recommended to update the package manager first.
 
 
- Updating The Package Manager
+Updating The Package Manager
 ------------------------------
 To update the package manager, run the inject.pl script in the fink-0.9.0-full directory, like this:
 
@@ -231,7 +242,7 @@ It will try to locate your Fink installation automatically. If it can't find it,
 The script copies the package descriptions into the appropriate directory, creates tarballs in /sw/src and then runs fink to install the new versions of the fink and base-files packages. (Yes, that means that fink updates itself. ":-)" )
 
 
- Updating The Package Descriptions
+Updating The Package Descriptions
 -----------------------------------
 If you downloaded the fink-0.9.0-full tarball, the package descriptions are in the subdirectory pkginfo. To install them, run the inject.pl script in that directory:
 
@@ -247,12 +258,12 @@ As a third alternative, you can have Fink automatically update itself to the lat
     fink selfupdate
 
 
- Getting X11 Sorted Out
+Getting X11 Sorted Out
 ------------------------
 The first thing you should do after updating the package descriptions is getting the X11 dependencies settled (unless you already did that after upgrading to 0.2.3). Refer to the "Getting X11 Sorted Out" section under "First Time Installation" above.
 
 
- Updating Packages
+Updating Packages
 -------------------
 The above updating steps will not update the actual packages, they only provide you with the means to do so. The easiest way to get the new packages is to use the 'update-all' command:
 
@@ -261,7 +272,7 @@ The above updating steps will not update the actual packages, they only provide 
 This will bring all installed packages to the latest version. If you don't want to do this (it may take some time), you can update individual packages with the 'update' command.
 
 
- Other Notes
+Other Notes
 -------------
 IMPORTANT! When you update from Fink 0.2.0 or a CVS version before 0.2.1, the first thing you should do after running the inject.pl scripts is this:
 
@@ -270,10 +281,10 @@ IMPORTANT! When you update from Fink 0.2.0 or a CVS version before 0.2.1, the fi
 There was a bug in dpkg that could lead to partially extracted packages. If you had unusual trouble with installed packages, especially missing symlinks, use 'fink reinstall' on them to re-install the .deb package files.
 
 
- Upgrading From Fink 0.1.x
+Upgrading From Fink 0.1.x
 ===========================
 
- Clean cut
+Clean cut
 -----------
 There is no direct upgrade path from Fink 0.1.x to Fink 0.2.x, because they use different methods for underlying package management (stow vs. dpkg). The only way to upgrade is to do a complete reinstall. The procedure is as follows:
 
