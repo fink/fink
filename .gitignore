@@ -1,6 +1,7 @@
 *.DS_Store
 *.swp
 *.build
+*.lock
 
 /compiler_wrapper
 /config*
@@ -23,4 +24,10 @@
 /perlmod/Fink/FinkVersion.pm
 /t/basepath/etc/apt/sources.list
 /t/basepath/etc/apt/sources.list.finkbak
+
+debs
+dists
+old
+override
+override.lock
 
