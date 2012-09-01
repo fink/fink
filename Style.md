@@ -3,9 +3,13 @@ Style
 <http://thread.gmane.org/gmane.os.apple.fink.devel/6012>
 
 From: Max Horn \<max \<at\> quendi.de\>
+
 Subject: Re: Basic style guide (was Re: fink/perlmod/Fink Bootstrap.pm,1.40,1.41 Command.pm,1.3,1.4 Config.pm,1.25,1.26 Mirror.pm,1.10,1.11)
+
 Newsgroups: gmane.os.apple.fink.devel
+
 Date: Sun, 16 Nov 2003 14:05:12 +0100
+
 
 [...] Here's them, roughly:
 
