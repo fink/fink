@@ -1,0 +1,88 @@
+afr: Africa
+afr-EG: Egypt
+afr-ZA: South Africa
+afr-MA: Madagascar
+afr-NA: Namibia
+
+nam: North America
+nam-BS: Bahamas
+nam-CA: Canada
+nam-MX: Mexico
+nam-US: United States
+
+sam: South America, Middle America and Caribbean
+sam-AR: Argentinia
+sam-BR: Brazil
+sam-CL: Chile
+sam-CO: Colombia
+sam-CR: Costa Rica
+sam-RQ: Puerto Rico
+sam-VE: Venezuela
+
+eur: Europe
+eur-AT: Austria
+eur-BA: Bosnia & Herzegovina
+eur-BE: Belgium
+eur-BG: Bulgaria
+eur-BY: Belarus
+eur-CH: Switzerland
+eur-CZ: Czech Republic
+eur-DE: Germany
+eur-DK: Denmark
+eur-EE: Estonia
+eur-ES: Spain
+eur-FI: Finland
+eur-FR: France
+eur-GR: Greece
+eur-HR: Croatia
+eur-HU: Hungary
+eur-IE: Ireland
+eur-IL: Israel
+eur-IS: Iceland
+eur-IT: Italy
+eur-LI: Liechtenstein
+eur-LT: Lithuania
+eur-LU: Luxembourg
+eur-LV: Latvia
+eur-MD: Moldova
+eur-MK: Macedonia
+eur-MT: Malta
+eur-NL: Netherlands
+eur-NO: Norway
+eur-PL: Poland
+eur-PT: Portugal
+eur-RO: Romania
+eur-RS: Serbia
+eur-RU: Russia
+eur-SE: Sweden
+eur-SI: Slovenia
+eur-SK: Slovak Republic
+eur-TR: Turkey
+eur-UA: Ukraine
+eur-UK: United Kingdom
+eur-YU: Yugoslavia
+
+aus: Australia
+aus-AU: Australia
+aus-NC: New Caledonia
+aus-NZ: New Zealand
+
+asi: Asia
+asi-AM: Armenia
+asi-BD: Bangladesh
+asi-CN: China
+asi-GE: Georgia
+asi-HK: Hong Kong
+asi-ID: Indonesia
+asi-IN: India
+asi-IR: Iran
+asi-JP: Japan
+asi-KR: South Korea
+asi-MY: Malaysia
+asi-PH: Philippines
+asi-PK: Pakistan
+asi-SA: Saudi Arabia
+asi-SG: Singapore
+asi-TH: Thailand
+asi-TW: Taiwan
+asi-VN: Vietnam

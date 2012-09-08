@@ -1,3 +1,0 @@
-[submodule "mirror"]
-	path = mirror
-	url = https://github.com/fink/fink-mirrors.git

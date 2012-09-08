@@ -1,0 +1,715 @@
+2011-10-11	Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* sourceforge: 	Previous "New primary mirror" scheme is already
+					outdated :-\
+					New "New primary mirror".
+
+2011-10-01	Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* sourceforge: New primary mirror
+
+2011-02-15  Alexander Hansen  <alexkhansen@users.sourceforge.net>
+
+	* postinstall.pl.in: Modify regex pattern in CVS/Root detection to
+	allow for quotes, which is needed for proxy support (by Tanaka
+	Atushi)
+
+2011-01-15  Dave Morrison  <drm@finkproject.org>
+
+	* inject.pl, install.sh, postinstall.pl.in: update copyright
+
+2010-10-21  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.29.14.1 of fink-mirrors
+
+2010-10-10  Max Horn  <max@quendi.de>
+
+	* _keys: Added Bangladesh
+	* apache, cpan, ctan, debian, freebsd, gimp, gnome, gnu, kde: mirror updates
+
+2010-10-01  Max Horn  <max@quendi.de>
+
+	* get-mirror.pl:
+	  - Re-enable apache parser (seems to work fine)
+	  - refactor code to reduce code duplication
+	  - when one mirror list has completed parsing, write the result
+	     immediately (instead of writing all result files at the end).
+	     This way, if you interrupt the script, you at least get to keep
+	     any mirror lists it already completed at that point.
+	* _keys: Added Serbia
+	* apache: mirror updates
+
+2010-10-01  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* _keys: Added Belarus, New Caledonia, and Pakistan
+	* kde: eur-PT mirror added
+
+2010-10-01  Max Horn  <max@quendi.de>
+
+	* get-mirror.pl:
+	  Fix CTAN mirror parser, disable broken PostgreSQL parser,
+	  add various comments
+	* cpan, ctan, debian, freebsd, gimp, gnome, gnu, kde: mirror updates
+
+2010-08-23  Andreas Gockel  <fink@unixforge.de>
+
+	* README.contacts, master, rsync:
+	  Added new mirror in Helsinki, Finland
+
+2010-06-09  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.29.12.1 of fink-mirrors
+
+2010-06-05  Andreas Gockel  <fink@unixforge.de>
+
+	* README.contacts, apt, master, rsync:
+	  Added new mirror in Aachen, Germany
+
+2010-01-06  Daniel Macks  <dmacks@netspace.org>
+
+	* inject.pl, install.sh, postinstall.pl.in: update copyright
+
+2009-12-22  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* VERSION: releasing version 0.29.10.3 of fink-mirrors
+	* apt: comment out the Wisconsin bindist
+
+2009-12-21  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* VERSION: releasing version 0.29.10.2 of fink-mirrors
+	* get-mirror.pl: use decoded_content instead of content, new URL for GNU
+	  mirrors
+	* cpan, freebsd, gimp, gnome, gnu, kde: mirror updates. CPAN mirrors marked
+	  as stale and bad in http://mirrors.cpan.org/status.cgi were removed
+
+2009-11-21  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* README.contacts: Fix Todai's e-mail address
+
+2009-11-15  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* VERSION: releasing version 0.29.10.1 of fink-mirrors
+
+2009-11-15  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* master, rsync: Remove trd.no.eu.finkmirrors.net (rsync and distfiles).
+	Reply from Hauglann Maria Wulff: 'We are planning to phase out this server:
+	pasta.cs.uit.no, so we are not interested in resuming the Fink rsync mirror
+	service on this machine.'
+	Bring back dub.ie.eu.finkmirrors.net after having contacted them about
+	following our rsync update policy.
+	Comment out msn.wi.us.finkmirrors.net as they are still not offering Fink.
+	According to a reply received by Alex Hansen, they intend to.
+
+2009-11-01  Augusto Devegili  <monipol@users.sourceforge.net>
+
+	* master, rsync: Remove nte.fr.eu.finkmirrors.net (rsync and distfiles).
+	  Cedric's reply to my e-mail: 'Sorry for shutting down the service, but I
+	  had to stop the dedicated server that was involved in the fink mirror.
+	  I'll contact you again if I have the oportunity to server Fink again.'
+
+2009-04-10  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* install.sh: it wasn't actually *installing* the postgresql mirror :(
+
+2009-04-04  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.28.7.1 of fink-mirrors
+
+2009-03-07  Dave Morrison  <drm@finkproject.org>
+
+	* all: updated Copyright notice
+
+2009-02-25  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* apt: add gecko's bindist mirror
+
+2008-11-29  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.28.6.1 of fink-mirrors
+
+2008-11-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* sourceforge: fix the sf mirrors
+
+2008-09-16  Dave Morrison  <drm@finkproject.org>
+
+	* master, rsync: disable nonfunctioning mirrors
+	* VERSION: releasing version 0.28.5.3 of fink-mirrors
+
+2008-08-29  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.28.5.2 of fink-mirrors
+
+2008-08-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* master, rsync: added new .no mirror
+
+2008-07-09  Dave Morrison  <drm@finkproject.org>
+
+	* Removed broken Belgian mirrors (master and rsync)
+	* VERSION: releasing version 0.28.5.1 of fink-mirrors
+
+2008-06-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Added german distfiles mirror.
+
+2008-06-23  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.28.3.1 of fink-mirrors
+
+2008-03-24  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* Added german finkinfo mirror.  Owner is fink-mirror@ig42.org (gecko2)
+
+2008-03-23  Darian Lanx <dmalloc@users.sourceforge.net>
+
+	* Added Nantes Frech distfiles and rsync mirror. Owner is Cédric QUILLEVERE <origin@killy.net>
+
+2008-02-01  Darian Lanx <dmalloc@users.sourceforge.net>
+
+	* Removed the mirror in Portugal as it is dead. No maintainer could be reachd
+
+2008-01-26  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* apt, master, rsync: added sjc.ca.us mirror (macosforge), also set it
+	as master.  ;)
+
+2008-01-17  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* apt, master, rsync: added proper msn.wi.us mirror, marked it as master
+
+2008-01-12  Daniel Macks  <dmacks@netspace.org>
+
+	* rsync: remove some dead ones (confirm martinm on fink-core 09Oct07
+
+
+2007-10-16  Daniel Macks  <dmacks@netspace.org>
+
+	* COPYING, inject.pl, install.sh, postinstall.pl.in: Update FSF street address.
+
+2007-09-26  Dave Morrison  <drm@finkproject.org>
+
+	* VERSION: releasing version 0.27.6.1 of fink-mirrors
+
+2007-09-26  Dave Morrison  <drm@finkproject.org>
+
+	Recent changes include:
+	* keys, list, get-mirrors.pl, inject.pl, install.sh: add freebsd to the mirror list
+	* apache, cpan, ctan, debian, freebsd, gimp, gnome, gnu, kde: lots of new mirrors
+
+2007-01-11  Daniel Macks  <dmacks@netspace.org>
+
+	* fink-mirrors.info.in, website: update website URL
+
+2006-10-16  Dave Morrison  <drm@finkproject.org>
+
+	* master, rsync: restored bru.be.eu at request of european users
+	* VERSION: releasing version 0.25.1.2 of fink-mirrors
+
+2006-10-15  Dave Morrison  <drm@finkproject.org>
+
+	* master, rsync: removed uox.ms.us and bru.be.eu because they do not 
+	work and we can no longer contact their maintainers
+	* VERSION: releasing version 0.25.1.1 of fink-mirrors
+
+2006-09-23  Dave Morrison  <drm@finkproject.org>
+
+	* sourceforge: update of mirror list, thanks to Jesse W
+	* VERSION: releasing version 0.25.0.1 of fink-mirrors
+
+2006-05-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: releasing version 0.24.15.2 of fink-mirrors
+
+2006-05-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: Repair CVS/Root parsing, and sharpen the
+	search/replace.
+
+2006-05-15  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Fix my bad chomp, add lots of other tests for
+	definedness before doing string ops.
+
+2006-05-15  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Don't create CVS metadata file if it doesn't
+	exist. Add diagnostic. Major code cleanup of find2perl residue.
+
+2006-05-15  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* anonymous-cvs, developer-cvs, cvs-repository: change to
+	fink.cvs.sourceforge.net
+	* postinstall.pl.in: when the CVS repository in /sw/fink/dists/CVS/Root
+	is not correct, fix it in all CVS/Root files
+
+2006-05-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: releasing version 0.24.15.1 of fink-mirrors
+
+2006-05-06  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _urls, anonymous-cvs, developer-cvs, inject.pl, install.sh: add 
+	anonymous-cvs to store URL for anonymous CVS access; also, change
+	the format of anonymous-cvs and developer-cvs to include the CVS
+	Root path
+
+2006-05-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _urls, developer-cvs, inject.pl, install.sh: add developer-cvs to 
+	store URL for non-anonymous CVS access
+
+2006-01-03  Daniel Macks  <dmacks@netspace.org>
+
+	* inject.pl, install.sh, postinstall.pl.in: updated Copyright notice
+
+2005-12-02  Daniel Macks  <dmacks@netspace.org>
+
+	* inject.pl, postinstall.pl.in: Fink core is coded assuming perl
+	>= 5.8.1 now.
+
+2005-10-15 Max Horn  <max@quendi.de>
+
+	* gnu: Updated mirror list.
+
+2005-09-25  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: releasing version 0.24.10.1 of fink-mirrors
+
+2005-09-16  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* apt: Add todai teams bindist mirror. Thanks Asari-san.
+
+2005-08-14  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: releasing version 0.24.8.1 of fink-mirrors
+
+2005-07-21 Max Horn  <max@quendi.de>
+
+	* all mirror files: Added URL pointing to the official mirror list
+	for that mirror set.
+	* gnome: Updated mirror list.
+
+2005-07-18 Max Horn  <max@quendi.de>
+
+	* debian: Fixed primary mirror URL; updated list to most current.
+
+2005-04-22  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* apt: switch from sourceforge to bindist.finkmirrors.net
+	* VERSION: releasing version 0.24.4.1 of fink-mirrors
+
+2005-04-21  Benjamin Reed  <rangerrick@users.sourceforge.net>
+
+	* _keys: added Colombia
+
+2005-04-16  David H <dmalloc@users.sourceforge.net>
+
+	* rsync: Clean up of dead and unmaintained mirrors
+
+2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: releasing version 0.24.3.1 of fink-mirrors
+
+2005-04-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink-mirrors.info.in: allow multiple replacements of @PREFIX@
+	* postinstall.pl.in: back up fink.conf before updating configuration
+
+2005-03-03  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Automatic compatibility for when enhanced
+	choose_mirrors is released.
+
+2005-03-03  Daniel Macks  <dmacks@netspace.org>
+
+	* postinstall.pl.in: Prepare for enhanced choose_mirrors functionality
+
+2005-03-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* README.buildsystem, fink-mirrors.info.in: minor revision to buildsystem
+
+2005-02-25 David H <dmalloc@users.sourceforge.net>
+	* master, rsync: New mirror in Mississippi
+	rsync as well as distfiles, thanks to mdjoy@phy.olemiss.edu
+
+2005-01-12  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.23.5.2 of fink-mirrors
+
+2005-01-12  David H  <dmalloc@users.sourceforge.net>
+	* master, rsync: Ne HE-Net mirror.
+	rsync as well as distfiles, thanks to colm.maccarthaigh@heanet.ie
+
+2005-01-02  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2004-12-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.23.5.1 of fink-mirrors
+
+2004-12-03  Peter O'Gorman  <peter@pogma.com>
+
+	* gnu: update to latest from http://www.gnu.org_order/ftp.html having
+	checked that they actuall work.
+	* _keys: add Bosnia & Herzegovina
+
+2004-09-24  David H. <dmalloc@users.sourceforge.net>
+	* master: Removing  distfiles.lha.uk.eu.finkmirrors.net
+	failure to comply with our mirror rules, admin has been warned often
+	enough. Belnet mirror makes more than up for this.
+
+2004-08-20  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.22.1.1 of fink-mirrors
+
+2004-08-17  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.21.1.1 of fink-mirrors
+
+2004-08-17 David H. <dmalloc@users.sourceforge.net>
+	* master, rsync: Added new mirror for Europe
+	Maintainer: bernard.grymonpon@belnet.be
+	Info: Belnet, the Belgian Education and Research network. 
+	Our network spans across Belgium and is connected to several
+	international networks and on several exchange points 
+	[Bnix, Ams-ix, Linx, Sfinx,... Our public FTP server is 
+	running on a SunFire V440 with 3 StorEdge 3510 Arrays, 
+	offering +4TB storage and is connected to our backbone 
+	through a double 1000Mbps link. We are located in 
+	Brussels-Belgium. 
+	
+	2004-08-01 David H. <dmalloc@users.sourceforge.net>
+	* master, rsync: Suspended trd and per mirrors.
+	Continued failures, maintainers not really responsive
+	pending removal in 30 days.
+
+2004-07-19  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* gimp: .nl is correct, not .ml. thanks to Martijn Dekker.
+
+2004-07-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.6.1 of fink-mirrors
+
+2004-07-16  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* _list, apt: add mirror list for apt-get repository
+	* website, cvs-repository, _urls, inject.pl, install.sh: store the 
+	URL's for fink-related sites in /sw/lib/fink/URL
+
+2004-05-31  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.2.1 of fink-mirrors
+
+2004-05-31  David H. <dmalloc@users.sourceforge.net>
+
+	* master, rsync: Added new Master mirror for 
+	Oceania in Australia,
+		*bne.qld.au.finkmirrors.net
+		Maintainer:
+		Dan Goodes
+		support@planetmirror.com
+	Changed the master rsync servers DNS for the
+	Master record of each continent
+
+2004-05-10  Peter O'Gorman  <ogorman@users.sourceforge.net>
+
+	* gnu: Only use mirrors which my tests showed have libtool-1.5.6.
+	It looks like a whole bunch of gnu mirrors have not been updated
+	since June 2003, when gnu stopped rsync updating.
+
+2004-05-08  David H. <dmalloc@users.sourceforge.net>
+	* added new Master mirror for Asia
+		University of Tokyo
+		distfiles.master.asi.finkmirrors.net
+		Maintainer:
+		Sodans
+		sodans@users.finkmirrors.net
+
+2004-04-29  David H. <dmalloc@users.sourceforge.net>
+
+	* added new full mirror in Indiana, USA
+		University of Notre Dame
+		distfiles.sbn.in.us.finkmirrors.net
+		Maintainer:
+		Brandon and the OSM Team
+		osm@cse.nd.edu
+
+2004-04-05  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.20.0.1 of fink-mirrors
+
+2004-04-04 Alexander Strange <astrange@ithinksw.com>
+	* sync GIMP mirror list to list on website
+
+2004-04-01  David H. <dmalloc@users.sourceforge.net>
+	* added new full mirror in Sweden
+		arn.se.eu.finkmirrors.net
+		Maintainer:
+		Stefan Cars
+		stefan@snowfall.se
+
+2004-03-11  David H. <dmalloc@users.sourceforge.net>
+	* added Japanese sourceforge download mirror
+	* changed rsync to default to tos for european users
+	* changed distfiles to default to lha for european users
+
+2004-03-01  David H. <dmalloc@users.sourceforge.net>
+	* added new rsync mirror in Hartford, CT, USA
+		bdl.ct.us.finkmirrors.net
+		Maintainer:
+		Christopher Molnar
+		molnar@kde.org
+
+2004-02-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.19.0.1 of fink-mirrors
+	* README.versioning: explanation of the versioning of this package
+
+2004-02-23 David H. <dmalloc@users.sourceforge.net>
+	* added new full mirror in Tromsoe, Norway
+		tos.no.eu.finkmirrors.net
+		Maintainer:
+		Tage Stabell-Kulo
+		task@ifi.uit.no
+
+2004-01-23  David H. <dmalloc@users.sourceforge.net>
+	* added new full mirror in Lisbon, Portugal
+		lis.pt.eu.finkmirrors.net
+		Maintainer:
+		 Nuno Goncalo dos Santos Monteiro
+		  suporte-mirrors@isp.novis.pt
+
+2004-01-02  David H. <dmalloc@users.sourceforge.net>
+	* added new rsync mirror in Los Angeles.
+		lax.finkmirrors.net
+		Maintainer:
+		Srikanth Sariapalli
+		srik@sagan.usc.edu
+		
+2004-01-01  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* all: updated Copyright notice
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* fink-mirrors.info.in: adjust dependency
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.0.4 of fink-mirrors
+
+2003-12-29  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in:  Write the new mirror choices to the config file
+	at the end of the process! (oops)
+
+2003-12-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.0.3 of fink-mirrors
+
+2003-12-28  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* postinstall.pl.in: Explicitly include the perl library path
+
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* VERSION: Releasing version 0.0.2 of fink-mirrors
+
+2003-12-23  Dave Morrison  <dmrrsn@users.sourceforge.net>
+
+	* COPYING, README, README.buildsystem, VERSION, fink-mirrors.info.in, 
+	inject.pl, install.sh, postinstall.pl.in: files to create a separate 
+	fink-mirrors package which can be updated independently of fink 
+	releases.
+
+2003-11-28 David H. <dmalloc@users.sourceforge.net>
+	* Adding full mirror in Perth, Austrial
+		Maintainer:
+		Matthew Healey
+		matt_h@mac.com
+	* Addding distfiles mirror in Lancester, UK
+		Maintainer:
+		Yang He
+		 tech-staff@mirror.ac.uk
+	This is part of mirrors.ac.uk.
+
+2003-11-24 David H. <dmalloc@users.sourceforge.net>
+	* rjk admin reported that the server is now fixed.
+
+2003-11-21 David H. <dmalloc@users.sourceforge.net>
+	* New rsync policy is in effect. The flags
+		--delete --delete-after -az
+		are now mandatory.
+		Mailed all mirrors so they can heed this.
+		
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Corrected all entries to have upper case ISO
+		country codes, because the _keys file
+		says so.
+
+2003-11-20 David H. <dmalloc@users.sourceforge.net>
+	* Added full mirror in Norway (rsync/distfiles)
+		trd.no.eu.finkmirrors.net
+		Maintainer:
+		Harvar Valeur
+		havarv@idi.ntnu.no
+		
+2003-11-19 David H. <dmalloc@users.sourceforge.net>
+	* Corrected the distfiles entry for San Fran
+		from .sf. to .sfo. to follow policy
+2003-11-05 David H. <dmalloc@users.sourceforge.net>
+	* Changed eu-hr to eur-hr to follow the
+		common scheme we use.
+
+2003-10-31 David H. <dmalloc@users.sourceforge.net>
+
+	* This is a cumulative update
+	* rsync Update Added:
+		Hrvoje Dogan, Rijeka Croatia
+		hdogan@dir.hr
+		Dave Schroeder, Madison WI
+		This is a dedicated 100Mbit
+		secondary Master
+		Dave Schroeder
+		das@doit.wisc.edu
+		A. J. Wright, Knoxville TN
+		SunSITE@UTK mirror
+		ajw@utk.edu
+		Rus Foster, Atlanta GA
+		jvsd.com
+	* distfile Update Added:
+		All of the above except for Atlanta
+
+2003-04-14 Max Horn  <max@quendi.de>
+
+	* sourceforge: Added new mirror heanet (Ireland)
+	
+2003-04-05  Ben Hines  <benh57@users.sourceforge.net>
+
+	* master: New file containing fink master mirrors
+	
+	* _list: Add master mirror, first one
+
+2003-03-19 Max Horn  <max@quendi.de>
+
+	* sourceforge: Added two new mirrors, flow (Australia) and aleron (USA)
+	
+2003-02-21 Max Horn  <max@quendi.de>
+
+	* gnu: Updated ftp.sun.ac.za directory; removed ftp://sapi.vlsm.org
+	  (http access seems to work)
+	
+2003-01-30 Martin Costabel <costabel@wanadoo.fr>
+
+	* ctan: Updated ftp.sunsite.kth.se directory
+	
+2002-12-29 Martin Costabel <costabel@wanadoo.fr>
+
+	* cpan: Updated cloud9 URLs (Bug #642355) 
+	
+2002-10-31 Benjamin Reed <rangerrick@users.sourceforge.net>
+
+	* kde: Removed unreachable and/or out-of-date KDE mirrors on...
+	  HALLOWEEN!  Oooooh... spooky.
+
+2002-10-18 Dave Morrison <dmrrsn@users.sourceforge.net>
+
+	* _list: Added kde and debian to list of mirror sites to check
+
+2002-10-04  Max Horn  <max@quendi.de>
+
+	* gnu: Completly redid the gnu mirror list based on the current information
+	  from the GNU homepage (there were many bad entries in the old list).
+
+2002-09-19  Max Horn  <max@quendi.de>
+
+	* sourceforge: Added two new mirrors, switch (Swiss) and easynews (USA)
+
+2002-08-19  Max Horn  <max@quendi.de>
+
+	* _list, debian: Added debian mirror
+
+	* _keys, _list, kde: Added KDE mirror
+
+2002-08-14  Max Horn  <max@quendi.de>
+
+	* sourceforge: Added cesnet
+
+2002-08-10  Max Horn  <max@quendi.de>
+
+	* sourceforge: Added twtelecom; corrected primary (it is west; us is just a
+	  round robin virtual server).
+
+2002-08-10  Max Horn  <max@quendi.de>
+
+	* gnu: Fixed sunsite.ulatina.ac.cr, not in the US but rather in Costa Rica.
+
+2002-08-03  Max Horn  <max@quendi.de>
+
+	* sourceforge: Added new US mirror, added global eu mirror.
+
+2002-05-04  Max Horn  <max@quendi.de>
+
+	* sourceforge: Mirrors for SourceForge's prdownloads server.
+
+2002-03-29  Max Horn  <max@quendi.de>
+
+	* cpan, gimp, gnome, gnu: removed all SourceForge mirrors again,
+	  they just don't work properly.
+
+2002-03-29  Max Horn  <max@quendi.de>
+
+	* gimp: Added SourceForge mirror.
+
+	* gnu: Added SourceForge mirror.
+
+2002-03-07  Max Horn  <max@quendi.de>
+
+	* gnome: Fixed SourceForge mirror once more - they now only allow
+	http access (as was announced some time ago).
+
+2002-01-18  Max Horn  <max@quendi.de>
+
+	* cpan: New mirror list for the Comprehensive Perl Archive Network.
+
+	* _list: Added cpan entries.
+
+	* _keys: Added entries for several missing countries.
+
+2001-11-07  Max Horn  <max@quendi.de>
+
+	* gnome: Fixed SourceForge mirror (ftp -> ftp2).
+
+2001-11-01  Christoph Pfisterer  <cp@chrisp.de>
+
+	* ctan: New mirror list for the Comprehensive TeX Archive Network.
+
+	* _list: Added ctan entries.
+
+	* _keys: Added entries for Costa Rica and Russia. The "sam" entry
+	was changed from "South America" to "South America, Middle America
+	and Caribbean".
+
+2001-05-09  Christoph Pfisterer  <cp@chrisp.de>
+
+	* gnome: Updated from GNOME web site. There are now a lot less
+	mirrors than before.
+	* gnu: Updated from the GNU web site.
+	* gimp: Updated from the GIMP web site.
+
+2001-03-08  Christoph Pfisterer  <cp@chrisp.de>
+
+	* _list: Added this file, listing available mirror lists.
+
+2001-02-19  Christoph Pfisterer  <cp@chrisp.de>
+
+	* gnu (Primary): Typo in URL fixed.
+
+2001-02-18  Christoph Pfisterer  <cp@chrisp.de>
+
+	* Released version 0.1.5. Started using CVS and ChangeLogs.
+
