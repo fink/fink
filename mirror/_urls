@@ -1,7 +1,0 @@
-# This file lists the available files containing URL's
-#
-
-cvs-repository: CVS Repository (old)
-anonymous-cvs: CVS Repository (anonymous access)
-developer-cvs: CVS Repository (developer access)
-website: Fink Website
