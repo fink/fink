@@ -316,13 +316,14 @@ if (-x "/usr/bin/head") {
 
 ### Check for allowable Xcode
 print "Verifying that installed Xcode version is supported...\n";
+my $xcode_version;
 {
 	# Compare Xcode version to allowed range via Fink::Services::version_cmp().
 	# Possibly replace with 'use version', qv() , and the standard comparison
 	# operators once 10.5 is no longer supported.  
 	
 	# minimum Xcode versions:
-	my ($min_xcode, $max_xcode, $xcode_version);
+	my ($min_xcode, $max_xcode);
 
 	if ($vers == 9) {
 		$min_xcode="3.0";
@@ -711,9 +712,13 @@ or
 
 ### the final words...
 
+
+
 $endmsg =~ s/\s+/ /gs;
 $endmsg =~ s/ $//;
 
+$endmsg .= 	" You should also run 'sudo xcodebuild -license' and accept the Xcode ".
+			"license, since some packages will require this.\n" if (&version_cmp ("$xcode_version", ">=", "4.3")); 
 print "\n";
 &print_breaking($endmsg);
 print "\n";
