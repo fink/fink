@@ -29,6 +29,7 @@ BuildDepends: <<
 <<
 Conflicts: gettext-tools-0.17
 Replaces: gettext-dev (<= 0.10.40-20), gettext (<= 0.10.40-4), gettext-bin (<= 0.10.40-20), libgettext3-shlibs (<< 0.14.5-1), libgettextpo2-shlibs (<< 0.14.5-2), gettext-tools-0.17
+BuildConflicts: (%m = powerpc) gcc45, (%m = powerpc) gcc46, (%m = powerpc) gcc47
 
 ### When gettext-tools gets updated, make sure these ./configure parameters 
 ### match the package parameters (except build shared only here) in the 
