@@ -440,7 +440,10 @@ if ($installto =~ /\s/) {
 	redo OPT_BASEPATH;
 }
 
-# remove any trailing slash(es)
+# consolidate slashes (foo//bar == foo/bar but could confuse parsers)
+$installto =~ s,//+,/,g;
+
+# remove trailing slash
 $installto =~ s,^(/.*?)/*$,$1,;
 
 # check well-known path (NB: these are regexes!)
