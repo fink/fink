@@ -4429,7 +4429,7 @@ EOF
 	### we will know if a packages file has be changed
 	
 	require File::Find;
-	my $md5s;
+	my $md5s="";
 	my $md5check=Fink::Checksum->new('MD5');
 	
 	File::Find::find({
