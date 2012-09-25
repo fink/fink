@@ -2465,7 +2465,7 @@ sub check_id_unused {
 	return 0;
 }
 
-=item is_readable
+=item is_accessible
 
   my ($status,$dir) = is_accessible($path, $octmode);
 
