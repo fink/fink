@@ -41,7 +41,7 @@ unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 require Fink::Services;
-import Fink::Services qw(&execute &version_cmp);
+import Fink::Services qw(&execute &version_cmp &is_accessible);
 
 $| = 1;
 
@@ -371,8 +371,10 @@ my $xcode_version;
 	}
 }
 
-## quit immediately if pod2man isn't executable, to avoid folks nearly building
-### fink and then having it crap out.
+## Check for required features which are normally installed.
+
+## Currently quit if pod2man isn't available and executable, 
+## to avoid folks nearly building fink and then having it crap out.
 system "./pre-build-test.sh" and exit 1;
 
 ### setup the correct packages directory
@@ -416,7 +418,7 @@ if ($retrying || not $installto) {
 		$nonstandard_warning = 1;
 	}
 	my $prompt = "Please choose the path where Fink should be installed. Note "
-		. "that you will be able to use the binary distribution only if you "
+		. "that you will normally be able to use a binary distribution only if you "
 		. "choose '/sw'.";
 	$installto =
 		&prompt($prompt, default => $default);
@@ -465,6 +467,26 @@ foreach my $forbidden (
 		redo OPT_BASEPATH;
 	}
 }
+
+# Check whether the whole path containing basepath is world-accessible, 
+# since the fink-bld user can't operate when it isn't.
+
+my ($status,$path_test) = &is_accessible($installto,'5'); 
+# we need at least world-read and world-execute
+if ($status) {
+	&print_breaking("ERROR: '$path_test' is not a directory.  ".
+	 				"Pick a different directory.");
+	redo OPT_BASEPATH;
+}
+if ($path_test) {
+	&print_breaking("ERROR: '$path_test' is not both world-readable and world-executable, ".
+					"as required to build most Fink packages. Either ".
+					"change the permissions via:".
+					"\n\nsudo chmod -R o+rx $path_test\n\n".
+	 				"or install Fink into a different directory.");
+	redo OPT_BASEPATH;
+} 
+
 if (-d $installto) {
 	# check existing contents
 	if (has_installed_software $installto) {
