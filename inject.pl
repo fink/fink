@@ -89,6 +89,10 @@ my $packagefiles = fink_packagefiles();
 
 my $info_script = "";
 
+# quit immediately if pod2man isn't executable, to avoid folks nearly building
+### fink and then having it crap out.
+system "./pre-build-test.sh" and exit 1;
+
 ### run the inject_package script
 
 import Fink::Bootstrap qw(&inject_package);

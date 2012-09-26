@@ -41,7 +41,7 @@ unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 require Fink::Services;
-import Fink::Services qw(&execute &version_cmp);
+import Fink::Services qw(&execute &version_cmp &is_accessible);
 
 $| = 1;
 
@@ -100,8 +100,6 @@ if ($> != 0) {
 	print "\n";
 	exit &execute($cmd, quiet=>1);
 }
-
-
 
 ### get the architecture... (and offer a choice to users where appropriate)
 
@@ -164,7 +162,7 @@ if ($arch eq "i386") {
 					die "Please install Java SDK before re-attempting fink bootstrap\n";
 				}
 			}
-		} else {
+		} elsif ($is64bit) {
 			# 10.[56] can do either 32- or 64-bit: user choice
 			my $arch_intro= "Your hardware is a 64bit-compatible intel " .
 				"processor, so you have the option of running Fink in ".
@@ -185,7 +183,7 @@ if ($arch eq "i386") {
 				&print_breaking("\n");
 				$arch = "i386" unless ($answer);
 			}
-		}
+		} # 32-bit-only machines get no choice, and $arch is already set to 'i386', so do nothing else.
 	}
 }
 
@@ -336,13 +334,14 @@ if (-x "/usr/bin/head") {
 
 ### Check for allowable Xcode
 print "Verifying that installed Xcode version is supported...\n";
+my $xcode_version;
 {
 	# Compare Xcode version to allowed range via Fink::Services::version_cmp().
 	# Possibly replace with 'use version', qv() , and the standard comparison
 	# operators once 10.5 is no longer supported.  
 	
 	# minimum Xcode versions:
-	my ($min_xcode, $max_xcode, $xcode_version);
+	my ($min_xcode, $max_xcode);
 
 	if ($vers == 9) {
 		$min_xcode="3.0";
@@ -390,6 +389,11 @@ print "Verifying that installed Xcode version is supported...\n";
 	}
 }
 
+## Check for required features which are normally installed.
+
+## Currently quit if pod2man isn't available and executable, 
+## to avoid folks nearly building fink and then having it crap out.
+system "./pre-build-test.sh" and exit 1;
 
 ### setup the correct packages directory
 # (no longer needed: we just use $distribution directly...)
@@ -432,7 +436,7 @@ if ($retrying || not $installto) {
 		$nonstandard_warning = 1;
 	}
 	my $prompt = "Please choose the path where Fink should be installed. Note "
-		. "that you will be able to use the binary distribution only if you "
+		. "that you will normally be able to use a binary distribution only if you "
 		. "choose '/sw'.";
 	$installto =
 		&prompt($prompt, default => $default);
@@ -454,7 +458,10 @@ if ($installto =~ /\s/) {
 	redo OPT_BASEPATH;
 }
 
-# remove any trailing slash(es)
+# consolidate slashes (foo//bar == foo/bar but could confuse parsers)
+$installto =~ s,//+,/,g;
+
+# remove trailing slash
 $installto =~ s,^(/.*?)/*$,$1,;
 
 # check well-known path (NB: these are regexes!)
@@ -481,6 +488,26 @@ foreach my $forbidden (
 		redo OPT_BASEPATH;
 	}
 }
+
+# Check whether the whole path containing basepath is world-accessible, 
+# since the fink-bld user can't operate when it isn't.
+
+my ($status,$path_test) = &is_accessible($installto,'5'); 
+# we need at least world-read and world-execute
+if ($status) {
+	&print_breaking("ERROR: '$path_test' is not a directory.  ".
+	 				"Pick a different directory.");
+	redo OPT_BASEPATH;
+}
+if ($path_test) {
+	&print_breaking("ERROR: '$path_test' is not both world-readable and world-executable, ".
+					"as required to build most Fink packages. Either ".
+					"change the permissions via:".
+					"\n\nsudo chmod -R o+rx $path_test\n\n".
+	 				"or install Fink into a different directory.");
+	redo OPT_BASEPATH;
+} 
+
 if (-d $installto) {
 	# check existing contents
 	if (has_installed_software $installto) {
@@ -705,9 +732,13 @@ or
 
 ### the final words...
 
+
+
 $endmsg =~ s/\s+/ /gs;
 $endmsg =~ s/ $//;
 
+$endmsg .= 	" You should also run 'sudo xcodebuild -license' and accept the Xcode ".
+			"license, since some packages will require this.\n" if (&version_cmp ("$xcode_version", ">=", "4.3")); 
 print "\n";
 &print_breaking($endmsg);
 print "\n";

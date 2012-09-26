@@ -36,6 +36,7 @@ use Fink::Services qw(&execute &version_cmp);
 use strict;
 use warnings;
 
+my $rsyncpath;
 our $VERSION = 1.00;
 
 =head1 NAME
@@ -63,13 +64,16 @@ sub system_check {
 	my ($line2,$line4)=("","");
 	{
 		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.5")) {
-			$line2="Xcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="Xcode, available on your original OS X install disk, from the App Store, or from ";
+		if (&version_cmp ("$osxversion", "<<", "10.6")) {
+			$line2="\nXcode, available on your original OS X install disk, or from "; 
+		} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
+			$line2="\nXcode, available on your original OS X install disk, from the App Store, or from\n" ;
+		} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
+			$line2 = ":\n* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
+			$line4 = "\n* or the Xcode Command Line Tools package,\nwhich is available from connect.apple.com\nor via the Downloads tab of the Preferences in Xcode 4.3.x";
 		} else {
-			$line2="Xcode, or at least the Command Line Tools for Xcode, available from the App Store, or from ";
-			$line4=". The Command Line Tools package is also available via the Downloads tab of the Xcode 4.3.x Preferences";
+			$line2 = "\nthe Xcode Command Line Tools package from\n"; 
+			$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
 		}
 	}
 
@@ -80,6 +84,19 @@ sub system_check {
 		     $line4.".\n";
 		return 0;
 	}
+
+    # We trust that our rsync will work, so default to that if present
+    # Otherwise choose system-rsync, which hopefully hasn't been broken by
+    # an Apple update. If system-rsync is known broken, add a version check
+    # for that here.
+    if (-x "$basepath/bin/rsync") {
+        $rsyncpath = "$basepath/bin/rsync";
+    } elsif (-x "/usr/bin/rsync") {
+        $rsyncpath= "/usr/bin/rsync";
+    } else {
+        warn "You appear to be missing /usr/bin/rsync, which is part of the BSD subsystem.\nBefore changing your selfupdate method to 'rsync', you must either:\n* reinstall your system (or just BSD.pkg)\n* or install the rsync package with 'fink install rsync'.\n";
+        return 0;
+    }
 
 	return 1;
 }
@@ -114,7 +131,7 @@ sub do_direct {
 
 	# get a needed filesystem-specific flag for the rsync command
 	my $nohfs ="";
-	if (system("rsync -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {
+	if (system("$rsyncpath -help 2>&1 | grep 'nohfs' >/dev/null") == 0) {
 		$nohfs = "--nohfs";
 	}
 
@@ -133,7 +150,7 @@ RSYNCAGAIN:
 	}
 
 	# Fetch the timestamp for comparison
-	if (&execute("rsync -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp")) {
+	if (&execute("$rsyncpath -az $verbosity $nohfs $rsynchost/TIMESTAMP $descdir/TIMESTAMP.tmp")) {
 		print "Failed to fetch the timestamp file from the rsync server: $rsynchost.  Check the error messages above.\n";
 		goto RSYNCAGAIN;
 	}
@@ -203,7 +220,7 @@ RSYNCAGAIN:
 				mkdir_p "$basepath/fink/$dist/$tree";
 			}
 		}
-		my $cmd = "rsync -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
+		my $cmd = "$rsyncpath -rtz --delete-after --delete $verbosity $nohfs $rinclist --include='VERSION' --include='DISTRIBUTION' --include='README' --exclude='**' '$rsynchost' '$basepath/fink/'";
 		if ($sb[4] != 0 and $> != $sb[4]) {
 			my $username;
 			($username) = getpwuid($sb[4]);

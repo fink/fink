@@ -1,12 +1,12 @@
 Package: dpkg-bootstrap
 Version: 1.10.21
-Revision: 1218
+Revision: 1220
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-PatchFile: %n.patch
-PatchFile-MD5: 83170a41fd6b458f7f99d01b5f01e8e8
+PatchFile: dpkg.patch
+PatchFile-MD5: 62c4558d3ae7c3107fefaa031b9cf697
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
@@ -23,7 +23,7 @@ InstallScript: <<
  mkdir -p %i/share/doc/dpkg
  make install DESTDIR=%d
 <<
-Description: The Debian package manager (bootstrap package)
+Description: The Debian package manager (bootstrap only)
 DescDetail: <<
 dpkg installs and removes binary packages; it is the base of the
 distribution. This package also contains some helper programs. This

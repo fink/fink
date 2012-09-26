@@ -208,7 +208,7 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.6";
-	} elsif ($host =~ /^i386-apple-darwin11\.[0-4]\.0/) {
+	} elsif ($host =~ /^i386-apple-darwin11\.[0-4]\.[0-2]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.7";
 	} elsif ($host =~ /^i386-apple-darwin11\./) {
@@ -217,7 +217,7 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.7";
-	} elsif ($host =~ /^i386-apple-darwin12\.0\.0/) {
+	} elsif ($host =~ /^i386-apple-darwin12\.[0-2]\.0/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.8";
 	} elsif ($host =~ /^i386-apple-darwin12\./) {
@@ -390,7 +390,16 @@ sub additional_packages {
 # handling any splitoffs of (essential or other) packages automatically. This
 # way, we don't risk running out of sync.
 
-	my @addlist = ("apt", "apt-shlibs", "apt-dev", "bzip2-dev", "libgettext3-dev", "gettext-bin", "libiconv-dev", "libncurses5", "libgettext8-shlibs");
+	my @addlist = (
+		"apt",
+		"apt-shlibs",
+		"apt-dev",
+		"bzip2-dev",
+		"gettext-bin",
+		"libgettext8-dev",
+		"libiconv-dev",
+		"libncurses5",
+	);
 
 	return \@addlist;
 

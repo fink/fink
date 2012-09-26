@@ -31,7 +31,8 @@ use Fink::Services qw(&filename &execute
 					  &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
-					  &store_rename &apt_available);
+					  &store_rename &apt_available
+					  &is_accessible);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr &rejoin_text
 				 &prompt_boolean &prompt_selection
 				 &should_skip_prompt &die_breaking);
@@ -3417,8 +3418,8 @@ sub phase_unpack {
 	my ($renamefield, @renamefiles, $renamefile, $renamelist, $expand);
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $xz);
 	my ($tar_is_pax,$alt_bzip2)=(0,0);
-	my $build_as_user_group = Fink::Config::build_as_user_group();
-
+	my $build_as_user_group = $self->pkg_build_as_user_group();
+	
 	$config->mixed_arch(msg=>'build a package', fatal=>1);
 
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
@@ -3475,17 +3476,12 @@ GCC_MSG
 		$renamefield = "Tar".$suffix."FilesRename";
 		$renamelist = "";
 
-		# Note: the Apple-supplied /usr/bin/gnutar in versions 10.2 and
-		# earlier does not know about the flags --no-same-owner and
-		# --no-same-permissions.  Therefore, we do not use these in
-		# the "default" situation (which should only occur during bootstrap).
-
 		$tarflags = "-x${verbosity}f";
 		my $permissionflags = " --no-same-owner --no-same-permissions";
 		$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Default to Apple's GNU Tar
 		# Determine the rename list (if any)
 		if ($self->has_param($renamefield)) {
-			@renamefiles = split(/\s+/, $self->param($renamefield));
+			@renamefiles = split(' ', $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
 				$renamefile = &expand_percent($renamefile, $expand, $self->get_info_filename." \"$renamefield\"");
 				if ($renamefile =~ /^(.+)\:(.+)$/) {
@@ -3631,7 +3627,7 @@ sub phase_patch {
 		if ($self->has_param('Patch')) {
 			die "Cannot specify both Patch and PatchFile!\n";
 		}
-
+		my $dir_checked;
 		for my $suffix ($self->get_patchfile_suffixes()) {
 			# field contains simple filename with %-exp
 			# figure out actual absolute filename
@@ -3645,6 +3641,14 @@ sub phase_patch {
 			my $file_md5 = file_MD5_checksum($file);  # old API so we are back-portable to branch_0-24
 			if ($md5 ne $file_md5) {
 				die "PatchFile$suffix \"$file\" checksum does not match!\nActual: $file_md5\nExpected: $md5\n";
+			}
+
+			# check that we're contained in a world-executable directory
+			unless ($dir_checked) {
+				my ($status,$dir) = is_accessible(dirname($file),'01');
+				die "$dir and its contents need to have at least o+x permissions. Run:\n\n".
+					"sudo chmod -R o+x $dir\n\n" if $dir; 
+				$dir_checked=1; 
 			}
 
 			# make sure patchfile exists and can be read by the user (root
@@ -3758,8 +3762,9 @@ sub phase_install {
 	}
 	$install_script .= "/bin/mkdir -p \%i\n";
 	unless ($self->{_bootstrap}) {
+		my $build_as_user_group = $self->pkg_build_as_user_group();
 		$install_script .= "/bin/mkdir -p \%d/DEBIAN\n";
-		$install_script .= "/usr/sbin/chown -R " . Fink::Config::build_as_user_group()->{'user:group'} . " \%d\n";
+		$install_script .= "/usr/sbin/chown -R " . $build_as_user_group->{'user:group'} . " \%d\n";
 	}
 	# Run the script part we have so far (NB: parameter-value
 	# "installing" is specially recognized by run_script!)
@@ -3911,8 +3916,9 @@ sub phase_install {
 			$bundle =~ s/\'/\\\'/gsi;
 			$install_script .= "\ncp -pR '$bundle' '%i/Applications/'";
 		}
+		chomp (my $developer_dir=`xcode-select -print-path 2>/dev/null`);
 		$install_script .= "\nchmod -R o-w '%i/Applications/'" .
-			"\nif test -x /Developer/Tools/SplitForks; then /Developer/Tools/SplitForks '%i/Applications/'; fi";
+			"\nif test -x $developer_dir/Tools/SplitForks; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
 	}
 
 	# generate commands to install jar files
@@ -4000,7 +4006,8 @@ sub phase_build {
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
-	if (Fink::Config::get_option("build_as_nobody")) {
+	my $build_as_nobody = $self->get_family_parent()->param_boolean("BuildAsNobody", 1);
+	if (Fink::Config::get_option("build_as_nobody") && $build_as_nobody) {
 		print "Reverting ownership of install dir to root\n";
 		unless (chowname_hr 'root:admin', $destdir) {
 			my $error = "Could not revert ownership of install directory to root.";
@@ -4422,7 +4429,7 @@ EOF
 	### we will know if a packages file has be changed
 	
 	require File::Find;
-	my $md5s;
+	my $md5s="";
 	my $md5check=Fink::Checksum->new('MD5');
 	
 	File::Find::find({
@@ -4440,7 +4447,7 @@ EOF
 				# md5sums wants filename relative to
 				# installed-location FS root
 				$md5file =~ s/^\Q$destdir\E\///;
-				$md5s .= "$md5file  $md5sum\n";
+				$md5s .= "$md5sum  $md5file\n";
 			}
 		},
 	}, $destdir
@@ -4969,11 +4976,7 @@ sub get_env {
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET")) {
 		my $sw_vers = Fink::Services::get_osx_vers() || Fink::Services::get_darwin_equiv();
 		if (defined $sw_vers) {
-			if ($sw_vers eq "10.2") {
-				$defaults{'MACOSX_DEPLOYMENT_TARGET'} = '10.1';
-			} else {
-				$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
-			}
+			$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
 	}
 
@@ -4985,7 +4988,7 @@ sub get_env {
 	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', DIR => File::Spec->tmpdir, CLEANUP => 1 );
 	if ($< == 0) {
 		# we might be writing to ENV{HOME} during build, so fix ownership
-		my $build_as_user_group = Fink::Config::build_as_user_group();
+		my $build_as_user_group = $self->pkg_build_as_user_group(); 
 		chowname $build_as_user_group->{'user:group'}, $script_env{HOME} or
 			die "can't chown '" . $build_as_user_group->{'user:group'} . "' $script_env{HOME}\n";
 	}
@@ -5129,8 +5132,7 @@ sub run_script {
 	# Run the script under the modified environment
 	my $result;
 	# Don't build as nobody if BuildAsNobody: false
-	my $build_as_nobody = $self->param_boolean("BuildAsNobody", 1);
-
+	my $build_as_nobody = $self->get_family_parent()->param_boolean("BuildAsNobody", 1);
 	$nonroot_okay = $nonroot_okay && $build_as_nobody;
 	{
 		local %ENV = %{$self->get_env($phase)};
@@ -5716,6 +5718,38 @@ sub scanpackages {
 		}
 		%built_trees = ();
 	}
+}
+
+=back
+
+=item pkg_build_as_user_group
+
+  $self->pkg_build_as_user_group();
+
+If BuildAsNobody: false is set, return 
+{qw/ user root group admin user:group root:admin /}
+
+Otherwise, return the results from Fink::Config::build_as_user_group()
+
+=cut
+
+sub pkg_build_as_user_group {
+	my $self = shift;
+	if ($self->has_parent()) {
+		# whole build process for .info, not overrideable in splitoffs
+		return $self->get_parent()->pkg_build_as_user_group();
+	}
+	if (! $self->param_boolean("BuildAsNobody", 1)) {
+		# package asserts BAN:false, so use root
+		# NB: keep this in sync with Config::build_as_user_group!
+		return {
+			'user'       => "root",
+			'group'      => "admin",
+			'user:group' => "root:admin"
+		};
+	}
+	# default to fink global control
+	return Fink::Config::build_as_user_group();
 }
 
 =back

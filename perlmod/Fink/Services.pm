@@ -71,7 +71,8 @@ BEGIN {
 					  &spec2struct &spec2string &get_options
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
 					  &find_subpackages &apt_available
-					  &ensure_fink_bld);
+					  &ensure_fink_bld
+					  &is_accessible);
 }
 our @EXPORT_OK;
 
@@ -2362,7 +2363,7 @@ sub add_user {
 	my ($user, $group, $name, $home, $uid) = @_;
 
 	$home = $home || '/var/empty';
-	$uid = check_id_unused($uid) or return 0;
+	$uid = check_id_unused($uid, "uid") or return 0;
 	my $gid = getgrnam($group);
 	my $ret;
 
@@ -2438,17 +2439,71 @@ sub edit_ds_entry {
 
 =item check_id_unused
 
-  check_id_unused;
+  check_id_unused($id,$mode);
 
-Tests whether an input is used either as a user id or as a group id.
+Tests whether an input is used either as a user id or as a group id. 
+$mode should be one of "uid", "gid" or "both"
 
 =cut
 
 sub check_id_unused {
 	my $id=shift;
-	return $id unless (getpwuid $id or getgrgid $id);
+	my $mode=shift;
+	$mode="both" if !defined($mode);
+	if ($mode eq "both") {
+		return $id unless (getpwuid $id or getgrgid $id);
+	} elsif ($mode eq "uid") {
+		return $id unless getpwuid $id;
+	} elsif ($mode eq "gid") {
+		return $id unless getgrgid $id;
+	} else {
+	#invalid mode
+		print "Invalid mode: $mode\n";
+		return 0
+	}
 	print "WARNING: ID $id is in use.\n";
 	return 0;
+}
+
+=item is_accessible
+
+  my ($status,$dir) = is_accessible($path, $octmode);
+
+Check whether a path is accessible via the octal mode in $octmode (not limited to just
+that mode, so "05" will satisfy e.g. 555, 755, 777, etc.).
+  
+Returns a status value:
+
+0: only directories in the PATH
+1: we've hit a nondirectory
+
+Also returns the first directory which is not world-readable and executable  
+or the empty string when we've exhausted all of the existing directories in $path.
+
+=cut
+
+sub is_accessible {
+	use File::Spec;
+	my $path = shift;
+	my $octmode = shift;
+	$octmode = oct($octmode); #convert octal string to decimal
+	my $path_so_far;
+	my @dirs;
+	foreach (File::Spec->splitdir($path)) {
+	    # stat() tracks the real directories rather than 
+	    # intervening links, so any non-directory indicates a 
+	    # file (or at least a symlink to a file) in the path
+		push @dirs, ($_);
+		$path_so_far = File::Spec->catdir(@dirs);
+		# we're done once we hit a nonexistent item.
+		return (0,'') if !(-e $path_so_far);
+		# we're also done if we hit a non-directory
+		return (1,$path_so_far) if !(-d $path_so_far);
+		# check the permissions otherwise
+		return (0,$path_so_far) unless (( (stat($path_so_far))[2] & $octmode) == $octmode);
+	}
+	# if we've gotten this far then we've gotten through the whole path.
+	return "";
 }
 
 =back

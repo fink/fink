@@ -732,22 +732,6 @@ EOF
 
 	$body .= "\n";
 
-# For transition from 10.1 installations, we include pointers to "old"
-# deb files.
-
-	if (-e "$basepath/fink/old/dists") {
-		$body .= <<"EOF";
-# Allow APT to find pre-10.2 deb files
-deb file:$basepath/fink/old local main
-deb file:$basepath/fink/old stable main crypto
-EOF
-
-if (-e "$basepath/fink/old/dists/unstable") {
-	$body .= "deb file:$basepath/fink/old unstable main crypto\n";
-}
-		$body .= "\n";
-	}
-
 	# We only include the remote debs if the bindist looks like it's ok
 	if (!$self->bindist_check_prefix && !$self->bindist_check_distro) {
 
@@ -1051,19 +1035,23 @@ to 'nobody'.
 =cut
 
 sub build_as_user_group {
-	my $result;
+	my( $user, $group );
 	if (get_option("build_as_nobody")) {
 		if (!getpwnam('fink-bld') or !getgrnam('fink-bld')) {
 			print "WARNING: User and/or group 'fink-bld' not found! Falling back to user/group 'nobody'. Please run 'fink configure' to set up user 'fink-bld'.\n";
-			$result = {qw/ user nobody group nobody user:group nobody:nobody /};
+			($user, $group) = qw/ nobody nobody /;
 		} else {
-			$result = {qw/ user fink-bld group fink-bld user:group fink-bld:fink-bld /};
+			($user, $group) = qw/ fink-bld fink-bld /;
 		}
 	} else {
-			$result = {qw/ user root group admin user:group root:admin /};
+			# NB: keep this in sync with PkgVersion::pkg_build_as_user_group!
+			($user, $group) = qw/ root admin /;
 	}
-
-	return $result;
+	return {
+		'user'       => $user,
+		'group'      => $group,
+		'user:group' => "$user:$group"
+	};
 }
 
 =item has_flag

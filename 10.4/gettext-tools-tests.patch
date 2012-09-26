@@ -1,0 +1,11 @@
+--- gettext-0.18.1.1/gettext-tools/tests/lang-bash.orig	2012-07-17 10:50:24.000000000 -0400
++++ gettext-0.18.1.1/gettext-tools/tests/lang-bash	2012-07-17 10:50:40.000000000 -0400
+@@ -12,6 +12,8 @@
+ tmpfiles=""
+ trap 'rm -fr $tmpfiles' 1 2 3 15
+ 
++echo "Skipping test: Darwin's bash lacks iconv support"; rm -fr $tmpfiles; exit 77;
++
+ tmpfiles="$tmpfiles prog.sh"
+ cat <<\EOF > prog.sh
+ #! /bin/bash

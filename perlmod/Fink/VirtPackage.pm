@@ -609,7 +609,7 @@ you can download it from Apple at:
 If you are on OS X 10.7 or later and have in fact installed 
 Xcode 4.3 or later, then you may need to run
 
-  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+  sudo xcode-select -switch /path/to/Xcode.app
 
 (changing /path/to to the actual path to Xcode on your system)
 to make it visible to its own CLI tools and to Fink.
@@ -732,6 +732,7 @@ as part of the Xcode tools.
 		@SDKDIRS=qw(
 			MacOSX10.6.sdk
 			MacOSX10.7.sdk
+			MacOSX10.8.sdk
 		);
 	} elsif ($osxversion == 12) {
 		@SDKDIRS=qw(
@@ -792,7 +793,7 @@ installed, you can download Xcode from Apple at:
 If you are on OS X 10.7 or  later and have in fact installed 
 Xcode 4.3 or later, then you may need to run
 
-  sudo xcode-select -switch /path/to/Xcode.app/Contents/Developer
+  sudo xcode-select -switch /path/to/Xcode.app
 
 (changing /path/to to the actual path to Xcode on your system)
 to make it visible to its own CLI tools and to Fink.
@@ -1352,7 +1353,7 @@ END
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
-			$hash->{provides} = 'x11-shlibs, libgl-shlibs, xft1-shlibs, xft2-shlibs, fontconfig1-shlibs, xfree86-base-threaded-shlibs';
+			$hash->{provides} = 'x11-shlibs, libgl-shlibs, xft1-shlibs, xfree86-base-threaded-shlibs';
 			$self->{$hash->{package}} = $hash;
 
 			$hash = {};
@@ -1363,7 +1364,7 @@ END
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
-			$hash->{provides} = 'x11, xserver, libgl, xft1, xft2, fontconfig1, xfree86-base-threaded';
+			$hash->{provides} = 'x11, xserver, libgl, xft1, xfree86-base-threaded';
 			$self->{$hash->{package}} = $hash;
 
 			$hash = {};
@@ -1374,7 +1375,7 @@ END
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{descdetail} = $descdetail;
 			$hash->{compilescript} =  &gen_compile_script($hash);
-			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, xft2-dev, fontconfig1-dev, xfree86-base-threaded-dev';
+			$hash->{provides} = 'x11-dev, libgl-dev, xft1-dev, xfree86-base-threaded-dev';
 			$self->{$hash->{package}} = $hash;
 
 			$hash = {};
@@ -1518,16 +1519,17 @@ present if GL/gl.h and libGL.dylib are found.
 
 This package represents the shared libraries for
 the modern font API for X.  It currently creates
-a B<Provide> for major versions 1 and 2 of the
+a B<Provide> for major version 1 of the
 libXft.[version].dylib library if it is found.
 
-=cut
+Major version 2 is no longer checked or provided as an x11 virtual
+package (long masked by a real package suite in fink of the same
+name).
 
-				for my $ver (1, 2) {
-					if ( has_lib("libXft.${ver}.dylib") ) {
-						print STDERR "  - system-xfree86-shlibs provides xft${ver}-shlibs\n" if ($options{debug});
-						push(@{$provides->{'system-xfree86-shlibs'}}, "xft${ver}-shlibs");
-					}
+=cut
+				if ( has_lib("libXft.1.dylib") ) {
+					print STDERR "  - system-xfree86-shlibs provides xft1-shlibs\n" if ($options{debug});
+					push(@{$provides->{'system-xfree86-shlibs'}}, "xft1-shlibs");
 				}
 
 =item "xftI<X>" and "xftI<X>-dev"
@@ -1535,7 +1537,8 @@ libXft.[version].dylib library if it is found.
 These packages represent the development headers and
 library for the Xft font API.  It is considered present
 if libXft.dylib exists and the version number I<X> is based
-on the version the symlink points to.
+on the version the symlink points to. As with xftI<X>-shlibs,
+only version 1 is considered.
 
 =cut
 
@@ -1544,46 +1547,30 @@ on the version the symlink points to.
 						my $link = readlink('/usr/X11R6/lib/libXft.dylib');
 						if ($link =~ /libXft\.(\d)/) {
 							my $major_version = $1;
-							print STDERR "  - libXft points to Xft${major_version}\n" if ($options{debug});
-							print STDERR "    - system-xfree86-dev provides xft${major_version}-dev\n" if ($options{debug});
-							push(@{$provides->{'system-xfree86-dev'}}, "xft${major_version}-dev");
-							print STDERR "    - system-xfree86 provides xft${major_version}\n" if ($options{debug});
-							push(@{$provides->{'system-xfree86'}}, "xft${major_version}");
+							if ($major_version ne 1) {
+								print STDERR "  - libXft points to Xft${major_version}... omitting\n" if ($options{debug});
+							} else {
+								print STDERR "  - libXft points to Xft${major_version}\n" if ($options{debug});
+								print STDERR "    - system-xfree86-dev provides xft${major_version}-dev\n" if ($options{debug});
+								push(@{$provides->{'system-xfree86-dev'}}, "xft${major_version}-dev");
+								print STDERR "    - system-xfree86 provides xft${major_version}\n" if ($options{debug});
+								push(@{$provides->{'system-xfree86'}}, "xft${major_version}");
+							}
 						}
 					}
 				}
 
 =item "fontconfigI<X>-shlibs"
 
-This package reprents the font configuration API for
-X11.  It is considered present if libfontconfig.*.dylib
-is found.
-
-=cut
-
-				if ( has_lib('libfontconfig.1.dylib') ) {
-					print STDERR "  - system-xfree86-shlibs provides fontconfig1-shlibs\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86-shlibs'}}, 'fontconfig1-shlibs');
-				}
-
 =item "fontconfigI<X>" and "fontconfigI<X>-dev"
 
-These packages represent the development headers and
-library for the X11 font configuration API.  It is
-considered present if libXft.dylib exists.
+These packages represent components of the font configuration API for
+X11. Version 1 was checked.
+
+They are no longer checked or provided as an x11 virtual package (long
+masked by the real fontconfig2* package suite in fink).
 
 =cut
-
-				if ( has_lib('libfontconfig.dylib') and
-						defined readlink('/usr/X11R6/lib/libfontconfig.dylib') and
-						readlink('/usr/X11R6/lib/libfontconfig.dylib') =~ /libfontconfig\.1/ and
-						has_header('fontconfig/fontconfig.h') ) {
-					print STDERR "  - libfontconfig points to fontconfig1\n" if ($options{debug});
-					print STDERR "    - system-xfree86-dev provides fontconfig1-dev\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86-dev'}}, 'fontconfig1-dev');
-					print STDERR "    - system-xfree86 provides fontconfig1\n" if ($options{debug});
-					push(@{$provides->{'system-xfree86'}}, 'fontconfig1');
-				}
 
 =item "rman"
 
