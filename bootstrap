@@ -41,7 +41,7 @@ unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 require Fink::CLI;
 import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
 require Fink::Services;
-import Fink::Services qw(&execute &version_cmp);
+import Fink::Services qw(&execute &version_cmp &is_accessible);
 
 $| = 1;
 
@@ -316,13 +316,14 @@ if (-x "/usr/bin/head") {
 
 ### Check for allowable Xcode
 print "Verifying that installed Xcode version is supported...\n";
+my $xcode_version;
 {
 	# Compare Xcode version to allowed range via Fink::Services::version_cmp().
 	# Possibly replace with 'use version', qv() , and the standard comparison
 	# operators once 10.5 is no longer supported.  
 	
 	# minimum Xcode versions:
-	my ($min_xcode, $max_xcode, $xcode_version);
+	my ($min_xcode, $max_xcode);
 
 	if ($vers == 9) {
 		$min_xcode="3.0";
@@ -370,8 +371,10 @@ print "Verifying that installed Xcode version is supported...\n";
 	}
 }
 
-## quit immediately if pod2man isn't executable, to avoid folks nearly building
-### fink and then having it crap out.
+## Check for required features which are normally installed.
+
+## Currently quit if pod2man isn't available and executable, 
+## to avoid folks nearly building fink and then having it crap out.
 system "./pre-build-test.sh" and exit 1;
 
 ### setup the correct packages directory
@@ -415,7 +418,7 @@ if ($retrying || not $installto) {
 		$nonstandard_warning = 1;
 	}
 	my $prompt = "Please choose the path where Fink should be installed. Note "
-		. "that you will be able to use the binary distribution only if you "
+		. "that you will normally be able to use a binary distribution only if you "
 		. "choose '/sw'.";
 	$installto =
 		&prompt($prompt, default => $default);
@@ -468,24 +471,24 @@ foreach my $forbidden (
 	}
 }
 
-# fink-bld and various suid daemons need access to fink-prefix files
-{
-	my $prefix_parent = '';
-	foreach my $dir (split /\//, $installto) {
-		$prefix_parent .= '/' unless length $prefix_parent == 1;
-		$prefix_parent .= $dir;
-		warn "testing $prefix_parent\n";
-		if (-d $prefix_parent) {
-			unless ( (stat($prefix_parent))[2] & 5 ) { # chmod a+rx
-				&print_breaking("ERROR: '$prefix_parent', a directory component of '$installto', exists but is not accessible by all users.");
-				redo OPT_BASEPATH;
-			}
-		} elsif (-e $prefix_parent) {
-			&print_breaking("ERROR: '$prefix_parent', a component of '$installto', exists but is not a directory.");
-			redo OPT_BASEPATH;
-		}
-	}
+# Check whether the whole path containing basepath is world-accessible, 
+# since the fink-bld user can't operate when it isn't.
+
+my ($status,$path_test) = &is_accessible($installto,'5'); 
+# we need at least world-read and world-execute
+if ($status) {
+	&print_breaking("ERROR: '$path_test' is not a directory.  ".
+	 				"Pick a different directory.");
+	redo OPT_BASEPATH;
 }
+if ($path_test) {
+	&print_breaking("ERROR: '$path_test' is not both world-readable and world-executable, ".
+					"as required to build most Fink packages. Either ".
+					"change the permissions via:".
+					"\n\nsudo chmod -R o+rx $path_test\n\n".
+	 				"or install Fink into a different directory.");
+	redo OPT_BASEPATH;
+} 
 
 if (-d $installto) {
 	# check existing contents
@@ -711,9 +714,13 @@ or
 
 ### the final words...
 
+
+
 $endmsg =~ s/\s+/ /gs;
 $endmsg =~ s/ $//;
 
+$endmsg .= 	" You should also run 'sudo xcodebuild -license' and accept the Xcode ".
+			"license, since some packages will require this.\n" if (&version_cmp ("$xcode_version", ">=", "4.3")); 
 print "\n";
 &print_breaking($endmsg);
 print "\n";

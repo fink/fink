@@ -5,15 +5,20 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.35.x
 \-------------
 
-0.35.? "TBD" (2012-??-??)
+0.35.0 "TBD" (2012-??-??)
 	* EOL for Leopard: First release to only support 10.6 and upwards
-
+	
 /-------------
 | fink 0.34.x
 \-------------
 
 0.34.? "TBD" (2012-??-??)
 	* EOL for Leopard: Last release to support Leopard
+
+0.34.4 "Ceiling Mount" (2012-09-25)
+	* Support 10.8.2 and 10.7.5
+	* Check permissions in working directories to make sure that fink-bld can
+	  operate.
 	
 0.34.3 "wall anchor" (2012-08-29)
 	* Support 10.8.1.
