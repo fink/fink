@@ -528,7 +528,7 @@ sub initialize {
 
 	# Setup restricted expansion hash. NOTE: multivalue lists were already cleared
 	$expand = { };
-	$self->{_type_hash} = $type_hash = $self->type_hash_from_string($self->param_default("Type", ""));
+	$self->{_type_hash} = $type_hash = $self->type_hash_from_string($self->param_default("Type", ""), $self->{_filename});
 	foreach (keys %$type_hash) {
 		( $expand->{"type_pkg[$_]"} = $expand->{"type_raw[$_]"} = $type_hash->{$_} ) =~ s/\.//g;
 		( $expand->{"type_num[$_]"} = $type_hash->{$_} ) =~ s/[^\d]//g;
@@ -1940,7 +1940,7 @@ sub _setup_type_hash {
 		die "Can't check non-dummy type of unloaded PkgVersion\n";
 	}
 
-	$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""));
+	$self->{_type_hash} = $self->type_hash_from_string($self->param_default("Type", ""), $self->{_filename});
 	return 1;
 }
 
@@ -1972,8 +1972,16 @@ sub get_subtype {
 	return $self->{_type_hash}->{$type};
 }
 
-# given a string representing the Type: field (with no multivalue
-# subtype lists), return a ref to a hash of type=>subtype
+=item type_hash_from_string
+
+  my $type_hash = Fink::PkgVersion->type_hash_from_string($string, $filename);
+
+Given a $string representing the Type: field of a single package
+(i.e., specific variant, not multivalue subtype lists), return a ref
+to a hash of type=>subtype key/value pairs. The $filename is used in
+error-reporting if the $string cannot be parsed.
+
+=cut
 
 sub type_hash_from_string {
 	shift;	# class method - ignore first parameter
@@ -1990,7 +1998,7 @@ sub type_hash_from_string {
 			# have subtype
 			$hash{lc $1} = $2;
 		} else {
-			warn "Bad Type specifier '$_' in $filename\n";
+			warn "Bad Type specifier '$_' in '$string' of $filename\n";
 		}
 	}
 	return \%hash;
