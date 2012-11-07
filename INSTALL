@@ -477,7 +477,7 @@ may find that you need to install Fink over again.
    and X11-based libraries and executables stop working.
 
  * Your Fink installation has linked to libraries, e.g. from Macports or
-   "/usr/local" which have been removed from your machine, resulting in
+   "/usr/local", which have been removed from your machine, resulting in
    breakage in your Fink libraries and executables.
 
 
