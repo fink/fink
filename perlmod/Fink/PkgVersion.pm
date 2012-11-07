@@ -272,6 +272,8 @@ a warning message and return a ref to an empty hash (i.e., ignore the
 
 =cut
 
+# must be class method because it controls if/how to parse a .info
+# file, so not enough data would be known yet to create a PV object
 sub handle_infon_block {
 	shift;	# class method - ignore first parameter
 	my $properties = shift;
@@ -1983,6 +1985,9 @@ error-reporting if the $string cannot be parsed.
 
 =cut
 
+# must be class method because it controls if/how to parse a .info
+# file and how to construct %n, so not enough data would be known yet
+# to create a PV object
 sub type_hash_from_string {
 	shift;	# class method - ignore first parameter
 	my $string = shift;
