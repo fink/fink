@@ -318,7 +318,7 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 								   	"range.  This is recommended unless you need ".
 								   	"to have a specific UID/GID e.g. due to a ".
 								   	"policy on your network.  Allow Fink to set ". 
-								   	"the UID GID dynamically?", default => $auto_uid);
+								   	"the UID/GID dynamically?", default => $auto_uid);
 		if ($auto_uid) {
 			$auto_uid = "true" ; 
 			IDRANGE: while (1) {
