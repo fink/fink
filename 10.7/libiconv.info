@@ -16,12 +16,10 @@ Source2-MD5: 3dd55b952826d2b32f51308f2f91aa89
 Source3: mirror:gnu:gperf/gperf-3.0.4.tar.gz
 Source3-MD5: c1f1db32fb6598d6a93e6e88796a8632
 PatchFile: %n.patch
-PatchFile-MD5: 5b3e0c7681965fe20cad4cd3a6fd9d28
+PatchFile-MD5: 93f202f6f6e27a9707ad8a21fc15aef4
 PatchScript: <<
 	cd %b/..; patch -p0 < %{PatchFile}
 <<
-### UMBJ: false only needed during bootstrap
-UseMaxBuildJobs: false
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
 CompileScript: <<
@@ -151,5 +149,7 @@ our build system.
 * Bump included gperf to latest 3.0.4
 * Bump internal gettext to latest 0.18.1.1
 * On 10.7+, modernize compiler wrapper
+* Don't build genaliases headers for systems that we will not even use.
+  Build is -jN safe afterwards.
 <<
 Homepage: http://www.gnu.org/software/libiconv/

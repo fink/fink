@@ -1730,3 +1730,16 @@ diff -Nurd libiconv-1.14/src/iconv.c libiconv-1.14/src/iconv.c
        for (; *option; option++)
          switch (*option) {
            case 'c': discard_unconvertible = 1; break;
+--- libiconv-1.14/Makefile.devel	2011-07-03 10:05:11.000000000 -0400
++++ libiconv-1.14/Makefile.devel	2012-11-29 12:37:45.000000000 -0500
+@@ -19,9 +19,7 @@
+ all : configures config.h.in \
+       srclib/Makefile.gnulib srclib/Makefile.in \
+       include/iconv.h.build.in \
+-      lib/aliases.h lib/aliases_sysaix.h lib/aliases_syshpux.h lib/aliases_sysosf1.h lib/aliases_syssolaris.h \
+-      lib/aliases_aix.h lib/aliases_aix_sysaix.h \
+-      lib/aliases_osf1.h lib/aliases_osf1_sysosf1.h \
++      lib/aliases.h \
+       lib/aliases_dos.h \
+       lib/aliases_extra.h \
+       lib/flags.h lib/translit.h \
