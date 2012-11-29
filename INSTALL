@@ -110,7 +110,7 @@ ahead. You won't have to stop the Fink install to do that.
    
    Enter the maximum number of simultaneous build jobs.
    ...
-   Maximum number of simultaneous build jobs: [&lt;number of cpus&gt;] (press_return)
+   Maximum number of simultaneous build jobs: [<number of cpus>] (press_return)
    
    Mirror selection
    Choose a continent:
@@ -168,7 +168,7 @@ descriptions. To do this, in your new Terminal.app window, ether use:
    Fink has the capability to run the CVS commands as a normal user. That has some
    advantages - it uses that user's CVS settings files and allows the package
    descriptions to be edited and updated without becoming root. Please specify the
-   user login name that should be used: [&lt;your username&gt;] (press_return)
+   user login name that should be used: [<your username>] (press_return)
    
    For Fink developers only: Enter your SourceForge login name to set up full CVS
    access. Other users, just press return to set up anonymous read-only access.
@@ -488,7 +488,7 @@ your installed packages. The following command in a terminal window will
 work, even if for some reason the Fink tools aren't functioning:
 
    grep -B1 "install ok installed" /sw/var/lib/dpkg/status \
-   | grep "^Package:" | cut -d: -f2 | cut -d\  f2 &gt; finkinst.txt
+   | grep "^Package:" | cut -d: -f2 | cut -d\  f2 > finkinst.txt
 
 This will save the list of your packages in the file "finkinst.txt" in the
 current working directory.
