@@ -62,7 +62,7 @@ You need:
 Start out by copying the "fink-0.35.0.tar.gz" file to your home folder (it
 might also show up as "fink-0.35.0.tar" if you used Safari to download it).
 Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "bold_face" (or otherwise highlighted). The
+"normal face" , your input is in "bold face" (or otherwise highlighted). The
 actual input prompts from the shell may vary, and some chunks of the output
 have been omitted ( "..." ).
 
@@ -70,8 +70,8 @@ Note: on 10.8, after you start the install process you may see dialog
 windows asking whether you want to install Xquartz. If you want to do so, go
 ahead. You won't have to stop the Fink install to do that.
 
-   [frodo:~] testuser% tar_xf_fink-0.35.0.tar.gz
-   [frodo:~] testuser% cd_fink-0.35.0
+   [frodo:~] testuser% tar xf fink-0.35.0.tar.gz
+   [frodo:~] testuser% cd fink-0.35.0
    [frodo:~/fink-0.35.0] testuser% ./bootstrap
    
    Fink must be installed and run with superuser (root) privileges
@@ -79,53 +79,53 @@ ahead. You won't have to stop the Fink install to do that.
    Choose a method: [1] 1
    
    sudo /Users/testuser/fink-0.35.0/bootstrap .sudo '/sw'
-   Password: (your_normal_password_here)
+   Password: (your normal password here)
    ...
    OK, I'll ask you some questions and update the configuration file in
    '/sw/etc/fink.conf'.
    
-   In what additional directory should Fink look for downloaded tarballs? [] (press_return)
+   In what additional directory should Fink look for downloaded tarballs? [] (press return)
    
    Which directory should Fink use to build packages? (If you don't know what this
-   means, it is safe to leave it at its default.) [] (press_return)
+   means, it is safe to leave it at its default.) [] (press return)
    
    "Fink can set the UID and GID of its build user dynamically...
-   ...Allow Fink to set the UID GID dynamically? [Y] (press_return)
+   ...Allow Fink to set the UID GID dynamically? [Y] (press return)
    
    (1)	Quiet (do not show download statistics)
    (2)	Low (do not show tarballs being expanded)
    (3)	Medium (will show almost everything)
    (4)	High (will show everything)
    
-   How verbose should Fink be? [2] (press_return)
+   How verbose should Fink be? [2] (press return)
    
    Proxy/Firewall settings
    Enter the URL of the HTTP proxy to use, or 'none' for no proxy. The URL
    should start with http:// and may contain username, password or port
-   specifications. [none] (press_return)
+   specifications. [none] (press return)
    Enter the URL of the proxy to use for FTP, or 'none' for no proxy. The URL
    should start with http:// and may contain username, password or port
-   specifications. [none] (press_return)
-   Use passive mode FTP transfers (to get through a firewall)? [Y/n] (press_return)
+   specifications. [none] (press return)
+   Use passive mode FTP transfers (to get through a firewall)? [Y/n] (press return)
    
    Enter the maximum number of simultaneous build jobs.
    ...
-   Maximum number of simultaneous build jobs: [<number of cpus>] (press_return)
+   Maximum number of simultaneous build jobs: [<number of cpus>] (press return)
    
    Mirror selection
    Choose a continent:
    ...
-   (enter_the_numbers_corresponding_to_your_location)
+   (enter the numbers corresponding to your location)
    ...
    Writing updated configuration to '/sw/etc/fink.conf'...
    Bootstrapping a base system via /sw/bootstrap.
    ...
-   (take_a_coffee_break_while_Fink_downloads_and_compiles_the_base_packages)
+   (take a coffee break while Fink downloads and compiles the base packages)
    ...
    
    You should now have a working Fink installation in '/sw'.
    [frodo:~/fink-0.35.0] testuser% cd
-   [frodo:~] testuser% rm_-r_fink-0.35.0
+   [frodo:~] testuser% rm -r fink-0.35.0
    [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and
@@ -146,18 +146,18 @@ all other ones. That's it, you now have a base Fink system installed.
 Before you can install additional packages, you will need to download their
 descriptions. To do this, in your new Terminal.app window, ether use:
 
-   [frodo:~] testuser% fink_selfupdate-rsync
-   Password: (your_normal_password_here)
+   [frodo:~] testuser% fink selfupdate-rsync
+   Password: (your normal password here)
    Please note: the simple command 'fink selfupdate' should be used for routine
    updating; you only need to use a command like 'fink selfupdate-cvs' or 'fink
    selfupdate --method=rsync' if you are changing your update method.
    ...
-   (wait_for_the_downloads_to_finish)
+   (wait for the downloads to finish)
 
  (preferred) or
 
-   [frodo:~] testuser% fink_selfupdate-cvs
-   Password: (your_normal_password_here)
+   [frodo:~] testuser% fink selfupdate-cvs
+   Password: (your normal password here)
    
    Please note: the simple command 'fink selfupdate' should be used for routine
    updating; you only need to use a command like 'fink selfupdate-cvs' or 'fink
@@ -168,11 +168,11 @@ descriptions. To do this, in your new Terminal.app window, ether use:
    Fink has the capability to run the CVS commands as a normal user. That has some
    advantages - it uses that user's CVS settings files and allows the package
    descriptions to be edited and updated without becoming root. Please specify the
-   user login name that should be used: [<your username>] (press_return)
+   user login name that should be used: [<your username>] (press return)
    
    For Fink developers only: Enter your SourceForge login name to set up full CVS
    access. Other users, just press return to set up anonymous read-only access.
-   [anonymous] (press_return)
+   [anonymous] (press return)
    
    Checking to see if we can use hard links to merge the existing tree. Please
    ignore errors on the next few lines.
@@ -180,16 +180,16 @@ descriptions. To do this, in your new Terminal.app window, ether use:
    return (i.e. the password is empty).
    /usr/bin/su hansen -c 'cvs -d":pserver:anonymous@fink.cvs.sourceforge.net:/cvsroot/fink" login'
    Logging in to :pserver:anonymous@fink.cvs.sourceforge.net:2401/cvsroot/fink
-   CVS password: (press_return)
+   CVS password: (press return)
    Logging in to :pserver:anonymous@fink.cvs.sourceforge.net:2401/cvsroot/fink
    ...
-   (wait_for_the_downloads_to_finish)
+   (wait for the downloads to finish)
 
 especially if you are using a proxy
 
 You can now install packages with the "fink" command, like this:
 
-   [frodo:~] testuser% fink_install_gimp2
+   [frodo:~] testuser% fink install gimp2
    Password:
    Scanning package description files..........
    Information about 6230 packages read in 1 seconds.
@@ -526,7 +526,7 @@ you backed up into "/sw/src" either using the Finder or the command line:
 "fink configure" to specify your backup location:
 
    In what additional directory should Fink look for downloaded tarballs? [] 
-   (enter_your_backup_directory_at_the_prompt). 
+   (enter your backup directory at the prompt). 
 
  Note: this requires that the entire path to and including your backup
 directory is world- readable.
