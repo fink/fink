@@ -24,7 +24,19 @@ NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
 CompileScript: <<
 #! /bin/sh -ex
-PATH=%p/var/lib/fink/path-prefix-clang:/bin:/sbin:/usr/bin:/usr/sbin
+osversion=`uname -r | cut -d. -f1`
+case "$osversion" in
+	9) PATH_SUFFIX=g++-4.0
+		;;
+	10) PATH_SUFFIX=10.6
+		;;
+	1[12]) PATH_SUFFIX=clang
+		;;
+	*) echo "System not supported";
+		exit 1
+		;;
+esac
+PATH=%p/var/lib/fink/path-prefix-$PATH_SUFFIX:/bin:/sbin:/usr/bin:/usr/sbin
 export PATH
 
 ### build gperf
