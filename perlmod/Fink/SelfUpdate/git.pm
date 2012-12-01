@@ -1,11 +1,11 @@
 # -*- mode: Perl; tab-width: 4; -*-
 # vim: ts=4 sw=4 noet
 #
-# Fink::SelfUpdate::CVS class
+# Fink::SelfUpdate::git class
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2012 The Fink Package Manager Team
+# Copyright (c) 2001-2011 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,11 +22,11 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
 #
 
-package Fink::SelfUpdate::CVS;
+package Fink::SelfUpdate::git;
 
 use base qw(Fink::SelfUpdate::Base);
 
-use Fink::CLI qw(&print_breaking &prompt);
+use Fink::CLI qw(&print_breaking &prompt &prompt_selection);
 use Fink::Config qw($basepath $config $distribution);
 use Fink::Package;
 use Fink::Command qw(cat chowname mkdir_p mv rm_f rm_rf touch);
@@ -37,13 +37,12 @@ use File::Find;
 use strict;
 use warnings;
 
-my $cvs="/usr/bin/cvs"; # Only one provider as of 10.5.
 our $VERSION = 1.00;
-my $vcs = "CVS"; # TODO: "CVS" or "cvs" ? Perhaps we need two variables?
+my $vcs = "git";
 
 =head1 NAME
 
-Fink::SelfUpdate::CVS - download package descriptions from a CVS server
+Fink::SelfUpdate::git - download package descriptions from a git server
 
 =head1 DESCRIPTION
 
@@ -61,33 +60,46 @@ This method builds packages from source, so it requires the
 =cut
 
 sub system_check {
+	require Fink::Config;
 	my $class = shift;  # class method for now
 
 	my ($line2,$line4)=("","");
 	{
 		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="\nXcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
-			$line2="\nXcode, available on your original OS X install disk, from the App Store, or from\n" ;
-		} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
-			$line2 = ":\n* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
-			$line4 = "\n* or the Xcode Command Line Tools package,\nwhich is available from connect.apple.com\nor via the Downloads tab of the Preferences in Xcode 4.3.x";
+		if (&version_cmp ("$osxversion", "<<", "10.5")) {
+			$line2="Xcode, available on your original OS X install disk, or from "; 
+		} elsif (&version_cmp ("$osxversion", "<<", "10.6")) {
+			$line2="Xcode, available on your original OS X install disk, from the App Store, or from ";
 		} else {
-			$line2 = "\nthe Xcode Command Line Tools package from\n"; 
-			$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
+			$line2="Xcode, or at least the Command Line Tools for Xcode, available from the App Store, or from ";
+			$line4=". The Command Line Tools package is also available via the Downloads tab of the Xcode 4.3.x Preferences";
 		}
 	}
 
-	unless ((-x $cvs) and Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'cvs', you must install".
+	if (not Fink::VirtPackage->query_package("dev-tools")) {
+		warn "Before changing your selfupdate method to 'rsync', you must install ".
 		     $line2.
 		     "http://connect.apple.com (after free registration)".
 		     $line4.".\n";
 		return 0;
 	}
 
-	return 1;
+	my $gitpath;
+	if (-x "$basepath/bin/git") {
+		$gitpath = $config->param_default("GitPath", "$basepath/bin/git");
+	} else {
+		$gitpath = $config->param_default("GitPath", "/usr/bin/git");
+	}
+
+	if (!(-x "$gitpath")) {
+		warn "Before changing your selfupdate method to '$vcs', you must install the git package with 'fink install git'.\n";
+		return 0;
+	}
+
+	$config->set_param("GitPath", $gitpath);
+	$config->save;
+
+return 1;
 }
 
 sub clear_metadata {
@@ -98,7 +110,7 @@ sub clear_metadata {
 		die "There is a left-over \"$finkdir.old\" directory. You have to ".
 			"move it out of the way before proceeding.\n";
 	}
-	&execute("/usr/bin/find $finkdir -name CVS -type d -print0 | xargs -0 /bin/rm -rf");
+	&execute("/bin/rm -rf $finkdir/.git");
 }
 
 =item do_direct
@@ -110,11 +122,11 @@ Returns a null string.
 sub do_direct {
 	my $class = shift;  # class method for now
 
-	if (-d "$basepath/fink/dists/CVS") {
-		# already have a cvs checkout
-		$class->do_direct_cvs();
+	if (-d "$basepath/fink/.git") {
+		# already have a git checkout
+		$class->do_direct_git();
 	} else {
-		$class->setup_direct_cvs();
+		$class->setup_direct_git();
 	}
 	return 1;
 }
@@ -125,36 +137,15 @@ sub do_direct {
 
 =cut
 
-### set up direct cvs
+### set up direct git
 
-sub setup_direct_cvs {
+sub setup_direct_git {
 	my $class = shift;  # class method for now
 
 	my ($finkdir, $tempdir, $tempfinkdir);
 	my ($username, $vcsuser, @testlist);
 	my ($use_hardlinks, $cutoff, $cmd);
 	my ($cmdd);
-	# Thanks to Tanaka Atushi for information about the quoting syntax which
-	# allows CVS proxies to function.
-	my $proxcmd=''; # default to null
-
-	my $http_proxy=$config->param_default("ProxyHTTP", ""); # get HTTP proxy information from fink.conf
-	if ($http_proxy) { # HTTP proxy has been set
-		my $proxy_port;
-		my @tokens;
-		$http_proxy =~ s|http://||; # strip leading 'http://', normally present.
-	    if ($http_proxy =~ /\@/ ) { # 'proxy' doesn't understand user:password@, so strip that off
-			@tokens = split /\@/, $http_proxy; 
-			$http_proxy=pop @tokens ; # keep host:port part
-		}
-		if  ($http_proxy =~ /:\d+$/) { # extract TCP port number if present
-			@tokens=split /:/,$http_proxy;
-			$proxy_port=pop @tokens ; # port is the last item following a colon
-			$http_proxy=pop @tokens ; # whatever is left
-		}
-		$proxcmd=";proxy=$http_proxy";
-		$proxcmd="$proxcmd;proxyport=$proxy_port" if $proxy_port;
-	}
 
 	$username = "root";
 	if (exists $ENV{SUDO_USER}) {
@@ -179,11 +170,13 @@ sub setup_direct_cvs {
 
 	print "\n";
 	$vcsuser =
-		&prompt("For Fink developers only: ".
-				"Enter your SourceForge login name to set up full CVS access. ".
-				"Other users, just press return to set up anonymous ".
-				"read-only access.",
-				default => "anonymous");
+		&prompt_selection("For Fink developers only: ".
+				"Do you wish to use full read/write $vcs access ".
+				"(requires GitHub SSH keys to be set up on your system) ".
+				"or anonymous read-only access? Just press return ".
+				"if you're not sure.",
+				choices => [ "anonymous read-only" => "anonymous",
+							 "read/write" => "developer" ]);
 	print "\n";
 
 	# start by creating a temporary directory with the right permissions
@@ -218,52 +211,34 @@ sub setup_direct_cvs {
 	}
 	unlink "$tempdir/README";
 
-	# start the CVS fun
+	# start the git fun
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
-	# add cvs quiet flag if verbosity level permits
-	my $verbosity = "-q";
+	# add git quiet flag if verbosity level permits
+	my $verbosity = "--quiet";
 	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
-	my $repository = "fink.cvs.sourceforge.net:/cvsroot/fink";
-	if (-f "$basepath/lib/fink/URL/cvs-repository") {
-		$repository = cat "$basepath/lib/fink/URL/cvs-repository";
+	my $gitpath = $config->param("GitPath");
+	my $repository = 'https://github.com/danielj7/fink-dists.git';
+	if (-f "$basepath/lib/fink/URL/git-repository") {
+		$repository = cat "$basepath/lib/fink/URL/git-repository";
 		chomp($repository);
-		$repository .= ':/cvsroot/fink';
 	}
 	if ($vcsuser eq "anonymous") {
-		if (-f "$basepath/lib/fink/URL/anonymous-cvs") {
-			$repository = cat "$basepath/lib/fink/URL/anonymous-cvs";
+		if (-f "$basepath/lib/fink/URL/anonymous-git") {
+			$repository = cat "$basepath/lib/fink/URL/anonymous-git";
 			chomp($repository);
 		}
-		&print_breaking("Now logging into the $vcs server. When $vcs asks you ".
-						"for a password, just press return (i.e. the password ".
-						"is empty).");
-		if ($repository =~ s/^:local://)  {
-			$cmd = "$cvs ${verbosity} -z3 -d$repository";
- 		}
- 		else {
-			$cmd = qq(cvs -d":pserver${proxcmd}:anonymous\@$repository" login);
-			if ($username ne "root") {
-				$cmd = "/usr/bin/su $username -c '$cmd'";
-			}
-			if (&execute($cmd)) {
-				die "Logging into the $vcs server for anonymous read-only access failed.\n";
-			}
-			else {
-				$cmd = qq(cvs ${verbosity} -z3 -d":pserver${proxcmd}:anonymous\@$repository");
-			}
- 		}
 	} else {
-		if (-f "$basepath/lib/fink/URL/developer-cvs") {
-			$repository = cat "$basepath/lib/fink/URL/developer-cvs";
+		$repository = 'git@github.com:danielj7/fink-dists.git';
+		if (-f "$basepath/lib/fink/URL/developer-git") {
+			$repository = cat "$basepath/lib/fink/URL/developer-git";
 			chomp($repository);
 		}
-		$cmd = qq(cvs ${verbosity} -z3 "-d:ext:$vcsuser\@$repository");
-		$ENV{CVS_RSH} = "ssh";
 	}
-	$cmdd = "$cmd checkout -l -d fink dists";
+	$cmd ="$gitpath";
+	$cmdd = "$cmd clone $verbosity $repository fink";
 	if ($username ne "root") {
 		$cmdd = "/usr/bin/su $username -c '$cmdd'";
 	}
@@ -275,20 +250,11 @@ sub setup_direct_cvs {
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	chdir "fink" or die "Can't cd to fink\n";
 
-	for my $tree (@trees) {
-		&print_breaking("Checking out $tree tree...");
+	# Add $distribution to files that git will ignore.
+	open EXCLUDE, ">>.git/info/exclude" or die "Unable to edit exclude file: $!";
+	print EXCLUDE "/$distribution";
+	close EXCLUDE;
 
-		my $cvsdir = "dists/$tree";
-		$cvsdir = "packages/dists" if ($tree eq "10.1");
-		$cmdd = "$cmd checkout -d $tree $cvsdir";
-
-		if ($username ne "root") {
-			$cmdd = "/usr/bin/su $username -c '$cmdd'";
-		}
-		if (&execute($cmdd)) {
-			die "Downloading package descriptions from $vcs failed.\n";
-		}
-	}
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
@@ -300,7 +266,7 @@ sub setup_direct_cvs {
 	# merge the old tree
 	$cutoff = length($finkdir)+1;
 	find(sub {
-				 if ($_ eq "CVS") {
+				 if ($_ eq ".git") {
 					 $File::Find::prune = 1;
 					 return;
 				 }
@@ -313,7 +279,7 @@ sub setup_direct_cvs {
 					 symlink $linkto, "$tempfinkdir/$rel" or
 						 die "Can't create symlink \"$tempfinkdir/$rel\": $!\n";
 				 } elsif (-d and not -d "$tempfinkdir/$rel") {
-					 &print_breaking("Merging $basepath/$rel...\n")
+					 &print_breaking("Merging $basepath/$rel...\n") 
 					 	if ($config->verbosity_level() > 1);
 					 mkdir_p "$tempfinkdir/$rel" or
 						 die "Can't create directory \"$tempfinkdir/$rel\": $!\n";
@@ -356,15 +322,15 @@ sub setup_direct_cvs {
 	print "\n";
 }
 
-### call cvs update
+### call git update
 
-sub do_direct_cvs {
+sub do_direct_git {
 	my $class = shift;  # class method for now
 
 	my ($descdir, @sb, $cmd, $cmd_recursive, $username, $msg);
 
-	# add cvs quiet flag if verbosity level permits
-	my $verbosity = "-q";
+	# add git quiet flag if verbosity level permits
+	my $verbosity = "--quiet";
 	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
@@ -372,7 +338,7 @@ sub do_direct_cvs {
 	$descdir = "$basepath/fink";
 	chdir $descdir or die "Can't cd to $descdir: $!\n";
 
-	@sb = stat("$descdir/CVS");
+	@sb = stat("$descdir/.git");
 
 	$msg = "I will now run the $vcs command to retrieve the latest package descriptions. ";
 
@@ -390,28 +356,38 @@ sub do_direct_cvs {
 	&print_breaking($msg);
 	print "\n";
 
-	# first, update the top-level stuff
+	# first, fetch changes from remote repository
 
 	my $errors = 0;
 
-	$ENV{CVS_RSH} = "ssh";
-	$cmd = "$cvs ${verbosity} -z3 update -d -P -l";
+	my $gitpath = $config->param("GitPath");
+	$cmd = "$gitpath fetch $verbosity origin";
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		$errors++;
 	}
 
-	# then, update the trees
+	# next make sure we're in the master branch
+
+	$cmd = "$gitpath checkout $verbosity master";
+	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
+	if (&execute($cmd)) {
+		$errors++;
+	}
+
+	# then attempt to merge remote changes
+
+	$cmd = "$gitpath merge $verbosity origin/master";
+	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
+	if (&execute($cmd)) {
+		$errors++;
+	}
+
+	# finally, update the trees
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
 	for my $tree (@trees) {
-		$cmd = "$cvs ${verbosity} -z3 update -d -P ${tree}";
-		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
-		if (&execute($cmd)) {
-			$errors++;
-		} else {
-			$class->update_version_file(distribution => $tree);
-		}
+		$class->update_version_file(distribution => $tree);
 	}
 
 	die "Updating using $vcs failed. Check the error messages above.\n" if ($errors);
