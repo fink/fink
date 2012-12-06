@@ -2,18 +2,22 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
-| fink 0.35.x
+| fink 0.36.x
 \-------------
 
-0.35.0 "TBD" (2012-??-??)
+0.36.0 "TBD" (2012-??-??)
 	* EOL for Leopard: First release to only support 10.6 and upwards
 	
 /-------------
-| fink 0.34.x
+| fink 0.35.x
 \-------------
 
-0.34.? "TBD" (2012-??-??)
+0.35.? "TBD" (2012-??-??)
 	* EOL for Leopard: Last release to support Leopard
+
+/-------------
+| fink 0.34.x
+\-------------
 
 0.34.4 "Ceiling Mount" (2012-09-25)
 	* Support 10.8.2 and 10.7.5
