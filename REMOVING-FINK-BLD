@@ -1,0 +1,13 @@
+Removing fink-bld:
+
+Fink doesn't remove package-specific users/groups, since these might have been
+deployed on the system by some other method.  If you want to remove fink-bld, 
+for example to change its UID and GID to a dynamically-assigned value, the following
+commands should suffice:
+
+sudo dscl . -delete /Users/fink-bld
+sudo dscl . -delete /Groups/fink-bld
+
+Then, if you want to switch to a dynamic value, run "fink configure" and choose that
+option, and then run an operation which _could potentially_ install a package, like
+"fink selfupdate".
