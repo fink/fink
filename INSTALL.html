@@ -204,7 +204,16 @@ Logging in to :pserver:anonymous@fink.cvs.sourceforge.net:2401/cvsroot/fink
 ...
 <b>(wait for the downloads to finish)</b></pre>
 <p>
-especially if you are using a proxy    
+especially if you are using a proxy.    
+</p>
+<p>
+If you are using Xcode 4.3 or later, you should also run
+</p>
+<pre>
+sudo xcodebuild -license
+</pre>
+<p>
+and enter <b>agree</b> so that Fink's unprivileged user can build packages that need more than just the basic tools.
 </p>
 <p>
 You can now install packages with the <tt style="white-space: nowrap;">fink</tt>
@@ -449,7 +458,16 @@ will pass its information along to cvs.  Note: you can only use anonymous cvs (p
 through a proxy.
 </p>
 <p>
-You can now use <tt style="white-space: nowrap;">fink</tt> commands to install packages.  A
+If you are using Xcode 4.3 or later, you should also run
+</p>
+<pre>
+sudo xcodebuild -license
+</pre>
+<p>
+and enter <b>agree</b> so that Fink's unprivileged user can build packages that need more than just the basic tools.
+</p>
+<p>
+You can now use <tt style="white-space: nowrap;">fink</tt> commands to install packages.
 </p>
 <pre>fink --help</pre>
 <p>
