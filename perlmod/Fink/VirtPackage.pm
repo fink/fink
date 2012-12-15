@@ -339,11 +339,7 @@ END
 				'locale-maketext-lexicon',
 				'perlio-eol',
 				'pod-simple',
-				'svn',
-				'svk',
 				'timedate',
-				'vcp',
-				'yaml',
 			);
 		}
 		if ($perlver >= 5.010000) {
