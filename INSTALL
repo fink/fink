@@ -29,7 +29,7 @@ can still use this section as an example.)
 --------------
 You need:
 
- * An installed Mac OS X system, version 10.6 or later.
+ * An installed Mac OS X system, version 10.5 or later.
 
  * Development tools. For OS X versions up to 10.6, you should install the
    newest version of Xcode available for your system, which can be
@@ -185,7 +185,15 @@ descriptions. To do this, in your new Terminal.app window, ether use:
    ...
    (wait for the downloads to finish)
 
-especially if you are using a proxy
+especially if you are using a proxy.
+
+If you are using Xcode 4.3 or later, you should also run
+
+   
+   sudo xcodebuild -license
+
+and enter agree so that Fink's unprivileged user can build packages that
+need more than just the basic tools.
 
 You can now install packages with the "fink" command, like this:
 
@@ -401,7 +409,15 @@ to download package descriptions using cvs. If you have an HTTP proxy set
 up, fink will pass its information along to cvs. Note: you can only use
 anonymous cvs (pserver) through a proxy.
 
-You can now use "fink" commands to install packages. A
+If you are using Xcode 4.3 or later, you should also run
+
+   
+   sudo xcodebuild -license
+
+and enter agree so that Fink's unprivileged user can build packages that
+need more than just the basic tools.
+
+You can now use "fink" commands to install packages.
 
    fink --help
 
