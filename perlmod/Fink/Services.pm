@@ -2500,6 +2500,9 @@ sub is_accessible {
 		# we're also done if we hit a non-directory
 		return (1,$path_so_far) if !(-d $path_so_far);
 		# check the permissions otherwise
+		# Note: '... == $octmode' is for bit-masking.  
+		# E.g. ($foo & 1) is true for any odd $foo, but ( ($foo & 1) == 1 ) is true only
+		# for $foo=1.
 		return (0,$path_so_far) unless (( (stat($path_so_far))[2] & $octmode) == $octmode);
 	}
 	# if we've gotten this far then we've gotten through the whole path.
