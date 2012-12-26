@@ -29,7 +29,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &count_files
 					  &call_queue_clear &call_queue_add
 					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
-					  $VALIDATE_HELP &apt_available &ensure_fink_bld &is_accessible);
+					  $VALIDATE_HELP &apt_available &ensure_fink_bld &select_legal_path);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
 				 &prompt_boolean &prompt_selection
 				 &get_term_width &die_breaking);
@@ -241,54 +241,23 @@ sub process {
 		# update fink-bld if required
 		&ensure_fink_bld();
 		
-		# check that BasePath, FetchAltDir and BuildPath have and are contained within a
+		# check that Basepath, FetchAltDir and Buildpath have and are contained within a
 		# directory structure with appropriate permissions.
 		# We'll traverse all the way to $basepath/src, since we have to operate there
 		# directly, too.
-		my $path_check = &is_accessible($basepath,'05');
-		if ($path_check) {
-				&print_breaking("ERROR: '$path_check' is not world-readable ".
-								"and world-executable, as required to build most Fink ".
-								"packages. You will need to change its ".
-								"permissions via:".
-								"\n\nsudo chmod -R o+rx $path_check\n");
-				die "\n";
-		}
+		die "\n" if !(&select_legal_path("Basepath", $basepath));
 		# we've gone all the way down $basepath, so let's just check $basepath/src
 		# for executability directly. 
-		unless ((stat("$basepath/src"))[2] & 1) {
-				&print_breaking("ERROR: '$basepath/src' is not world-executable ".
-								"as required as required for Fink ".
-								"to unpack sources. You will need to change the ".
-								"permissions via:".
-								"\n\nsudo chmod -R o+x $basepath/src\n");
-				die "\n";
-		}
+		die "\n" if !(&select_legal_path("SourceDir", "$basepath/src"));
+		# Check FetchAltDir
 		my $fetch_alt_dir=$self->{config}->param('FetchAltDir');
 		if ($fetch_alt_dir) {
-			$path_check = &is_accessible($fetch_alt_dir,'05');
-			if ($path_check) {
-				&print_breaking("ERROR: '$path_check' is not world-readable ".
-								"and world-executable, as required for Fink ".
-								"to unpack sources. You will need to change the ".
-								"permissions via:".
-								"\n\nsudo chmod -R o+rx $path_check\n\n".
-								"if you want to use this directory.");
-				die "\n";
-			}
+			die "\n" if !(&select_legal_path("FetchAltDir", $fetch_alt_dir));
 		}
+		# Check Buildpath
 		my $build_path=$self->{config}->param('Buildpath');
 		if ($build_path) {
-			$path_check = &is_accessible($build_path,'01');
-			if ($path_check) {
-				&print_breaking("ERROR: '$path_check' is not world-executable, ".
-								"as required for Fink ".
-								"to unpack sources. You will need to change the ".
-								"permissions via:".
-								"\n\nsudo chmod -R o+x $path_check\n\n".
-								"if you want to use this directory.");
-				die "\n";
-			}
+			die "\n" if !(&select_legal_path("Buildpath", $build_path));
 		}
 	}	
 	

@@ -333,7 +333,6 @@ END
 				'class-isa',
 				'corefoundation',
 				'data-hierarchy',
-				'date-parse',
 				'freezethaw',
 				'io-pager',
 				'locale-maketext-lexicon',
