@@ -429,6 +429,18 @@ is a useful place to get more information about how to use "fink" .
 Fink uses virtual packages to declare dependencies on X11. As of OS 10.5, we
 don't provide any packages of our own. The supported options are:
 
+ * 10.5: Either Apple's standard X11 or XQuartz-2.6.3 or earlier. Note: if
+   you install XQuartz-2.4 or later you will quite likely need to reinstall
+   Fink if you update to 10.6.
+
+ * 10.6: Only Apple's standard X11, since XQuartz installs in a different
+   directory tree ( "/opt/X11" ) than the standard X11 ( "/usr/X11" ) for
+   10.6 and later so that they can coexist.
+
+ * 10.7: Only Apple's standard X11.
+
+ * 10.8: Only Xquartz 2.7 and later.
+
 For more information on installing and running X11, refer to the online X11
 on Darwin and Mac OS X document [http://www.finkproject.org/doc/x11/].
 
