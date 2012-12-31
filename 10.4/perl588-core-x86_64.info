@@ -34,7 +34,7 @@ Because the perl build system is designed to download source files for
 perlmodules in this package.  For that reason, the following packages
 which are Provided by Apple's build of perl5.8.8 on 10.5 are not provided
 here:
-  apache-pm588, compress-zlib-pm588, convert-tnef-pm588, html-parser-pm588, 
+  compress-zlib-pm588, convert-tnef-pm588, html-parser-pm588, 
   perlobjcbridge-pm588, scalar-list-utils-pm588, uri-pm588, 
   algorithm-diff-pm588, class-autouse-pm588, corefoundation-pm588, 
   data-hierarchy-pm588, date-pares-pm588, freezethaw-pm588, io-pager-pm588, 

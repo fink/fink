@@ -316,7 +316,6 @@ END
 		}
 		if ($perlver >= 5.008006) {
 			push(@modules,
-				'apache',
 				'compress-zlib',
 				'convert-tnef',
 				'html-parser',
