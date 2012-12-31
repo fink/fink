@@ -338,6 +338,7 @@ END
 				'locale-maketext-lexicon',
 				'perlio-eol',
 				'pod-simple',
+				'timedate',
 			);
 		}
 		if ($perlver >= 5.010000) {
