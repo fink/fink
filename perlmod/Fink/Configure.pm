@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2012 The Fink Package Manager Team
+# Copyright (c) 2001-2013 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -31,7 +31,7 @@ package Fink::Configure;
 
 use Fink::Config qw($config $basepath $libpath $distribution);
 use Fink::Services qw(&read_properties &read_properties_multival &filename
-				&get_options &is_accessible);
+				&get_options &select_legal_path);
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
 use strict;
@@ -135,58 +135,27 @@ Configure everything but the mirrors
 =cut
 
 sub choose_misc {
-	my ($otherdir, $verbose);
+	my $verbose;
 	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
 	my ($auto_uid, $uid_min, $uid_max, $fink_conf_uid, $real_uid, $real_gid, 
 		$do_uid);
 
-	# normal configuration
-	$otherdir =
-		&prompt("In what additional directory should Fink look for downloaded ".
-				"tarballs?",
-				default => $config->param_default("FetchAltDir", ""));
-	if ($otherdir =~ /\S/) {
-		# check whether entire path to FetchAltDir candidate is world-readable and 
-		# world-executable.
-		my $path_check = &is_accessible($otherdir,'05');
-		if ($path_check) {
-			&print_breaking("ERROR: '$path_check' is not both world-readable and world-writable, ".
-							"as required for Fink to be able to unpack sources. ".
-							"Either change the permissions via:".
-							"\n\nsudo chmod -R o+rx $path_check\n\n".
-	 						"or pick a different additional tarball directory. ".
-	 						"I'll leave the current setting untouched.");
-		} else {
-			$config->set_param("FetchAltDir", $otherdir);
-		}
+	sub validpath {
+		my $parameter = shift;
+		my $default_value = $config->param_default($parameter,'');
+		my $set_path = &select_legal_path($parameter, $default_value, 1);
+		return $set_path;
 	}
 
+	# Set FetchAltDir, checking that the permissions are appropriate and
+	# no non-directory files are present.
+	$config->set_param('FetchAltDir', &validpath('FetchAltDir'));
 	print "\n";
-	{
-		my $builddir_default=$config->param_default("Buildpath", "");
-		my $builddir =
-			&prompt("Which directory should Fink use to build packages? \(If you don't ".
-					"know what this means, it is safe to leave it at its default.\)",
-					default => $builddir_default);
-		while ($builddir =~ /^[^\/]/) {
-			$builddir = &prompt("That does not look like a complete (absolute) pathname. Please try again",
-								default => $builddir_default);
-		}
-		if ($builddir =~ /\S/) {
-			# check whether entire path to Buildpath candidate is world-executable
-			my $path_check = &is_accessible($builddir,'01');
-			if ($path_check) {
-				&print_breaking("ERROR: '$path_check' is not world-executable, which is ".
-								"required for Fink to be able to unpack sources. ".
-								"Either change the permissions via:".
-								"\n\nsudo chmod -R o+x $path_check\n\n".
-	 							"or pick a different build directory. ".
-	 							"I'll leave the current setting untouched.");
-			} else {
-				$config->set_param("Buildpath", $builddir);
-			}
-		}
-	}
+
+	# Same for Buildpath.
+	$config->set_param('Buildpath', &validpath('Buildpath'));
+	
+	#Complain if Buildpath is Spotlight-indexable
 	&spotlight_warning();
 
 	print "\n";
@@ -318,7 +287,7 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 								   	"range.  This is recommended unless you need ".
 								   	"to have a specific UID/GID e.g. due to a ".
 								   	"policy on your network.  Allow Fink to set ". 
-								   	"the UID GID dynamically?", default => $auto_uid);
+								   	"the UID/GID dynamically?", default => $auto_uid);
 		if ($auto_uid) {
 			$auto_uid = "true" ; 
 			IDRANGE: while (1) {
@@ -783,7 +752,6 @@ sub choose_mirrors {
 
 	return 0;
 }
-
 
 =back
 

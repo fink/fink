@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2012 The Fink Package Manager Team
+# Copyright (c) 2001-2013 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -72,7 +72,8 @@ BEGIN {
 					  $VALIDATE_HELP $VALIDATE_ERROR $VALIDATE_OK
 					  &find_subpackages &apt_available
 					  &ensure_fink_bld
-					  &is_accessible);
+					  &is_accessible
+					  &select_legal_path);
 }
 our @EXPORT_OK;
 
@@ -2468,17 +2469,22 @@ sub check_id_unused {
 =item is_accessible
 
   my ($status,$dir) = is_accessible($path, $octmode);
+  
+Example:
+
+  my ($status,$dir) = is_accessible("/sw/src/fink.build", "05");
 
 Check whether a path is accessible via the octal mode in $octmode (not limited to just
 that mode, so "05" will satisfy e.g. 555, 755, 777, etc.).
   
-Returns a status value:
+Returns a status value of:
 
-0: only directories in the PATH
-1: we've hit a nondirectory
+0: when only directories or empty entries are in the path, i.e. it's a path one
+   could create with 'mkdir -p'
+1: we've hit a nondirectory file
 
-Also returns the first directory which is not world-readable and executable  
-or the empty string when we've exhausted all of the existing directories in $path.
+Also returns the first path element which is not a world-readable and executable  
+directory, or the empty string if $path terminates .
 
 =cut
 
@@ -2496,14 +2502,131 @@ sub is_accessible {
 		push @dirs, ($_);
 		$path_so_far = File::Spec->catdir(@dirs);
 		# we're done once we hit a nonexistent item.
-		return (0,'') if !(-e $path_so_far);
-		# we're also done if we hit a non-directory
-		return (1,$path_so_far) if !(-d $path_so_far);
+		return (0, '') if !(-e $path_so_far);
+		# we're also done if we hit a non-directory  
+		return (1, $path_so_far) if !(-d $path_so_far);
 		# check the permissions otherwise
-		return (0,$path_so_far) unless (( (stat($path_so_far))[2] & $octmode) == $octmode);
+		# Note: '... == $octmode' is for bit-masking.  
+		# E.g. ($foo & 1) is true for any odd $foo, but ( ($foo & 1) == 1 ) is true only
+		# for $foo=1.
+		return (0, $path_so_far) unless (( (stat($path_so_far))[2] & $octmode) == $octmode);
 	}
 	# if we've gotten this far then we've gotten through the whole path.
-	return "";
+	return (0, '');
+}
+
+=item select_legal_path 
+
+my $status = &select_legal_path ($fink_conf_field, $dir_to_check, $interactive) ;
+
+Currently $fink_conf_field can be 'Buildpath' or 'FetchAltDir'.
+$dir_to_check is the directory to check, unsurprisingly.
+If $interactive is true then run the prompts, e.g. for Configure.pm  
+If it's not set then skip them, e.g. for Engine.pm .
+
+Returns an empty string to indicate an error.
+
+Example:
+
+my $status = select_legal_path ("Buildpath",'',1) ;
+
+=cut
+
+sub select_legal_path {
+	use Fink::CLI qw(prompt);
+
+	my $fink_conf_item = shift;
+	my $default_dir = shift;
+	my $interactive = shift;
+
+	my ($prompt_text, $perm, $perm_name, $perm_code);
+	my ($error_text, $change, $alternative);
+	
+	# cases
+	if ( $fink_conf_item eq "FetchAltDir" ) {	
+		$prompt_text = "In what additional directory should Fink look for downloaded ".
+					   "tarballs? \(use the absolute pathname only\)"
+					   if $interactive;
+		$perm = '05';
+		$perm_name = 'both world-readable and world-writable';
+		$perm_code = 'o+rx';
+		$change = 'Either change';
+		$alternative = 'or choose a different directory';
+	} elsif ( $fink_conf_item eq "Buildpath" ) {
+		$prompt_text = "Which directory (absolute pathname) should ".
+		 			   "Fink use to build packages? \(If you don't ".
+					   "know what this means, it is safe to leave it at its default.\)"
+					   	if $interactive;
+		$perm = '01';
+		$perm_name = 'world-executable';
+		$perm_code = 'o+x';
+		$change = 'Either change';
+		$alternative = 'or choose a different directory';
+	} elsif ( $fink_conf_item eq "Basepath" ) {
+		$perm = '05';
+		$perm_name = 'both world-readable and world-writable';
+		$perm_code = 'o+rx';
+		$change = 'Change';
+		$alternative = '';
+	} else {
+		# currently just $basepath/src
+		$perm = '01';
+		$perm_name = 'world-executable';
+		$perm_code = 'o+x';
+		$change = 'Change';
+		$alternative = '';
+	}
+	# get candidate directory
+	my $dir_selection;
+	if ($interactive) {
+		$dir_selection = &prompt($prompt_text, default => $default_dir);
+	} else {
+		$dir_selection = $default_dir;
+	}
+	
+	# now check validity
+	
+	while ($dir_selection =~ /\S/) {
+		# avoid relative paths
+		if (!File::Spec->file_name_is_absolute($dir_selection)) {
+			unless ($interactive) {
+				&print_breaking_stderr ("ERROR: $dir_selection is not an absolute directory path.");
+				return '';
+			}
+			$dir_selection = &prompt("That does not look like a complete (absolute) pathname. ".
+										 "Please try again", default => $default_dir) 
+		}
+		
+		# We're otherwise good, so check whether entire path to candidate directory
+		# 1.  Contains no non-directory files
+		# 2.  Has the proper permissions all the way down
+		# Buildpath will generate the full tree, and 
+		my ($status, $path_check) = &is_accessible($dir_selection, $perm); 
+		if ($status == 1) { #non-directory
+			$error_text = "$path_check is not a directory.";
+			unless ($interactive) {
+				&print_breaking_stderr ("ERROR: $error_text");
+				return '';
+			}			
+			$dir_selection = &prompt("$error_text Please try again",
+									  default => $default_dir);
+		} elsif ($path_check) { #invalid permissions
+			$error_text = "'$path_check' is not $perm_name, ".
+						  "as required for Fink to be able to unpack sources. ".
+						  "$change the permissions via:".
+						  "\n\nsudo chmod -R $perm_code $path_check\n\n$alternative";
+			unless ($interactive) {
+				&print_breaking_stderr ("ERROR: $error_text");
+				return '';
+			}					
+			$dir_selection = &prompt("$error_text", default => $default_dir);
+		} else { 
+			# We've traversed the available path.
+			# If the whole path isn't present, Buildpath will be created, 
+			# but FetchAltDirectory will be ignored.
+			return $dir_selection;
+		}
+	}
 }
 
 =back
@@ -2512,3 +2635,4 @@ sub is_accessible {
 
 ### EOF
 1;
+
