@@ -25,11 +25,7 @@ You need:
 
 * Development tools. For OS X versions up to 10.6, you should install the newest version of Xcode available for your system, which can be downloaded from connect.apple.com after registering. For 10.7 and 10.8, installing the Xcode Command Line Tools is mandatory to use the most current build applications. This can be installed either by downloading it directly via connect.apple.com or through the Xcode application via the Components page of the Downloads tab of the Preferences. On 10.7 one can install an earlier monolithic Xcode (4.2.1 and earlier), but this isn't recommended.
 
-* On 10.7 and 10.8 you will need to install Java. Entering
-
-      javac
-
-   from a Terminal.app window should suffice to make the system download it for you.
+* On 10.7 and 10.8 you will need to install Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you.
 
 * Many other things that come with Mac OS X and the Developer Tools. 
 This includes `perl` and `curl`.
@@ -39,9 +35,9 @@ This includes `perl` and `curl`.
 * Patience. Compiling several big packages takes time. I'm talking hours or even days here.
 
 
- First Time Installation Fast Track
+First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.34.4.tar.gz" file to your home folder (it might also show up as "fink-0.34.4.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in "**bold_face**" (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
+Start out by copying the "fink-0.34.4.tar.gz" file to your home folder (it might also show up as "fink-0.34.4.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
 Note: on 10.8, after you start the install process you may see dialog windows asking whether you want to install Xquartz. 
 If you want to do so, go ahead. You won't have to stop the Fink install to do that.
@@ -66,6 +62,7 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
 
     In what additional directory should Fink look for downloaded tarballs? [] 
    **(press return)**
+   
     Which directory should Fink use to build packages? (If you don't know what this 
     means, it is safe to leave it at its default.) []
    **(press return)**
@@ -95,7 +92,7 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
     
      Enter the maximum number of simultaneous build jobs.
      ...
-    Maximum number of simultaneous build jobs: [<number of cpus>] 
+     Maximum number of simultaneous build jobs: [<number of cpus>] 
 **(press return)**
 
     Mirror selection
@@ -129,6 +126,7 @@ To do this, in your new Terminal.app window, ether use:
     [frodo:~] testuser% fink selfupdate-rsync
     Password: 
    **(your normal password here)**
+   
     Please note: the simple command 'fink selfupdate' should be used for routine
     updating; you only need to use a command like 'fink selfupdate-cvs' or 'fink
     selfupdate --method=rsync' if you are changing your update method.
@@ -140,7 +138,7 @@ To do this, in your new Terminal.app window, ether use:
     [frodo:~] testuser% fink selfupdate-cvs
     Password: 
    **(your normal password here)**
-   
+
     Please note: the simple command `fink selfupdate` should be used for routine
     updating; you only need to use a command like `fink selfupdate-cvs` or `fink 
     selfupdate --method=rsync` if you are changing your update method. 
@@ -166,6 +164,7 @@ To do this, in your new Terminal.app window, ether use:
     Logging in to :pserver:anonymous@fink.cvs.sourceforge.net:2401/cvsroot/fink
     CVS password: 
    **(press return)**
+   
     Logging in to :pserver:anonymous@fink.cvs.sourceforge.net:2401/cvsroot/fink
     ...
    **(wait for the downloads to finish)**
@@ -270,11 +269,7 @@ You need:
 
 * Development tools. For OS X versions up to 10.6, you should install the newest version of Xcode available for your system, which can be downloaded from connect.apple.com after registering. For 10.7 and 10.8, installing the Xcode Command Line Tools is mandatory to use the most current build applications. This can be installed either by downloading it directly via connect.apple.com or through the Xcode application via the Components page of the Downloads tab of the Preferences. On 10.7 one can install an earlier monolithic Xcode (4.2.1 and earlier), but this isn't recommended.
 
-* On 10.7 and 10.8 you will need to install Java. Entering
-
-      javac
-
-   from a Terminal.app window should suffice to make the system download it for you.
+* On 10.7 and 10.8 you will need to install Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you.
 
 * Many other things that come with Mac OS X and the Developer Tools. This includes `perl` and `curl`.
 
@@ -357,7 +352,7 @@ Fink uses virtual packages to declare dependencies on X11. As of OS 10.5, we don
    Fink if you update to 10.6.
 
 * 10.6: Only Apple's standard X11, since XQuartz installs in a different
-   directory tree ( "/opt/X11" ) than the standard X11 ( "/usr/X11" ) for
+   directory tree ("/opt/X11") than the standard X11 ("/usr/X11") for
    10.6 and later so that they can coexist.
 
 * 10.7: Only Apple's standard X11.
@@ -418,12 +413,14 @@ may find that you need to install Fink over again.
    breakage in your Fink libraries and executables.
 
 
- Backing up to save time
+Backing up to save time
 -------------------------
 To save time after you have reinstalled Fink, you can get a transcript of your installed packages. The following command in a terminal window will work, even if for some reason the Fink tools aren't functioning:
 
+
     grep -B1 "install ok installed" /sw/var/lib/dpkg/status \
     | grep "^Package:" | cut -d: -f2 | cut -d\  f2 > finkinst.txt
+
 
 This will save the list of your packages in the file "finkinst.txt" in the current working directory.
 
