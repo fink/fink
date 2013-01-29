@@ -39,6 +39,8 @@ use warnings;
 
 my $cvs="/usr/bin/cvs"; # Only one provider as of 10.5.
 our $VERSION = 1.00;
+my $vcs = "CVS"; # name of the format
+my $vcs_lc = "cvs"; # name of the executable
 
 =head1 NAME
 
@@ -55,37 +57,15 @@ See documentation for the Fink::SelfUpdate base class.
 =item system_check
 
 This method builds packages from source, so it requires the
-"dev-tools" virtual package.
+"dev-tools" virtual package.  This is checked via
+Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path);
 
 =cut
 
 sub system_check {
 	my $class = shift;  # class method for now
 
-	my ($line2,$line4)=("","");
-	{
-		my $osxversion=Fink::VirtPackage->query_package("macosx");
-		if (&version_cmp ("$osxversion", "<<", "10.6")) {
-			$line2="\nXcode, available on your original OS X install disk, or from "; 
-		} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
-			$line2="\nXcode, available on your original OS X install disk, from the App Store, or from\n" ;
-		} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
-			$line2 = ":\n* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
-			$line4 = "\n* or the Xcode Command Line Tools package,\nwhich is available from connect.apple.com\nor via the Downloads tab of the Preferences in Xcode 4.3.x";
-		} else {
-			$line2 = "\nthe Xcode Command Line Tools package from\n"; 
-			$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
-		}
-	}
-
-	unless ((-x $cvs) and Fink::VirtPackage->query_package("dev-tools")) {
-		warn "Before changing your selfupdate method to 'cvs', you must install".
-		     $line2.
-		     "http://connect.apple.com (after free registration)".
-		     $line4.".\n";
-		return 0;
-	}
-
+	return 0 unless $class->devtools_check($vcs_lc,$cvs);
 	return 1;
 }
 
@@ -130,7 +110,7 @@ sub setup_direct_cvs {
 	my $class = shift;  # class method for now
 
 	my ($finkdir, $tempdir, $tempfinkdir);
-	my ($username, $cvsuser, @testlist);
+	my ($username, $vcsuser, @testlist);
 	my ($use_hardlinks, $cutoff, $cmd);
 	my ($cmdd);
 	# Thanks to Tanaka Atushi for information about the quoting syntax which
@@ -162,9 +142,9 @@ sub setup_direct_cvs {
 
 	print "\n";
 	$username =
-		&prompt("Fink has the capability to run the CVS commands as a ".
+		&prompt("Fink has the capability to run the $vcs_lc commands as a ".
 				"normal user. That has some advantages - it uses that ".
-				"user's CVS settings files and allows the package ".
+				"user's $vcs settings files and allows the package ".
 				"descriptions to be edited and updated without becoming ".
 				"root. Please specify the user login name that should be ".
 				"used:",
@@ -177,9 +157,9 @@ sub setup_direct_cvs {
 	}
 
 	print "\n";
-	$cvsuser =
+	$vcsuser =
 		&prompt("For Fink developers only: ".
-				"Enter your SourceForge login name to set up full CVS access. ".
+				"Enter your SourceForge login name to set up full $vcs access. ".
 				"Other users, just press return to set up anonymous ".
 				"read-only access.",
 				default => "anonymous");
@@ -225,41 +205,41 @@ sub setup_direct_cvs {
 	if ($config->verbosity_level() > 1) {
 		$verbosity = "";
 	}
-	my $cvsrepository = "fink.cvs.sourceforge.net:/cvsroot/fink";
+	my $repository = "fink.cvs.sourceforge.net:/cvsroot/fink";
 	if (-f "$basepath/lib/fink/URL/cvs-repository") {
-		$cvsrepository = cat "$basepath/lib/fink/URL/cvs-repository";
-		chomp($cvsrepository);
-		$cvsrepository .= ':/cvsroot/fink';
+		$repository = cat "$basepath/lib/fink/URL/cvs-repository";
+		chomp($repository);
+		$repository .= ':/cvsroot/fink';
 	}
-	if ($cvsuser eq "anonymous") {
+	if ($vcsuser eq "anonymous") {
 		if (-f "$basepath/lib/fink/URL/anonymous-cvs") {
-			$cvsrepository = cat "$basepath/lib/fink/URL/anonymous-cvs";
-			chomp($cvsrepository);
+			$repository = cat "$basepath/lib/fink/URL/anonymous-cvs";
+			chomp($repository);
 		}
-		&print_breaking("Now logging into the CVS server. When CVS asks you ".
+		&print_breaking("Now logging into the $vcs server. When $vcs asks you ".
 						"for a password, just press return (i.e. the password ".
 						"is empty).");
-		if ($cvsrepository =~ s/^:local://)  {
-			$cmd = "$cvs ${verbosity} -z3 -d$cvsrepository";
+		if ($repository =~ s/^:local://)  {
+			$cmd = "$cvs ${verbosity} -z3 -d$repository";
  		}
  		else {
-			$cmd = qq(cvs -d":pserver${proxcmd}:anonymous\@$cvsrepository" login);
+			$cmd = qq(cvs -d":pserver${proxcmd}:anonymous\@$repository" login);
 			if ($username ne "root") {
 				$cmd = "/usr/bin/su $username -c '$cmd'";
 			}
 			if (&execute($cmd)) {
-				die "Logging into the CVS server for anonymous read-only access failed.\n";
+				die "Logging into the $vcs server for anonymous read-only access failed.\n";
 			}
 			else {
-				$cmd = qq(cvs ${verbosity} -z3 -d":pserver${proxcmd}:anonymous\@$cvsrepository");
+				$cmd = qq(cvs ${verbosity} -z3 -d":pserver${proxcmd}:anonymous\@$repository");
 			}
  		}
 	} else {
 		if (-f "$basepath/lib/fink/URL/developer-cvs") {
-			$cvsrepository = cat "$basepath/lib/fink/URL/developer-cvs";
-			chomp($cvsrepository);
+			$repository = cat "$basepath/lib/fink/URL/developer-cvs";
+			chomp($repository);
 		}
-		$cmd = qq(cvs ${verbosity} -z3 "-d:ext:$cvsuser\@$cvsrepository");
+		$cmd = qq(cvs ${verbosity} -z3 "-d:ext:$vcsuser\@$repository");
 		$ENV{CVS_RSH} = "ssh";
 	}
 	$cmdd = "$cmd checkout -l -d fink dists";
@@ -268,7 +248,7 @@ sub setup_direct_cvs {
 	}
 	&print_breaking("Setting up base Fink directory...");
 	if (&execute($cmdd)) {
-		die "Downloading package descriptions from CVS failed.\n";
+		die "Downloading package descriptions from $vcs failed.\n";
 	}
 
 	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
@@ -285,13 +265,13 @@ sub setup_direct_cvs {
 			$cmdd = "/usr/bin/su $username -c '$cmdd'";
 		}
 		if (&execute($cmdd)) {
-			die "Downloading package descriptions from CVS failed.\n";
+			die "Downloading package descriptions from $vcs failed.\n";
 		}
 	}
 	chdir $tempdir or die "Can't cd to $tempdir: $!\n";
 
 	if (not -d $tempfinkdir) {
-		die "The CVS didn't report an error, but the directory '$tempfinkdir' ".
+		die "The $vcs_lc command did not report an error, but the directory '$tempfinkdir' ".
 			"doesn't exist as expected. Strange.\n";
 	}
 
@@ -347,7 +327,7 @@ sub setup_direct_cvs {
 
 	print "\n";
 	&print_breaking("Your Fink installation was successfully set up for ".
-					"direct CVS updating. The directory \"$finkdir.old\" ".
+					"direct $vcs updating. The directory \"$finkdir.old\" ".
 					"contains your old package description tree. Its ".
 					"contents were merged into the new one, but the old ".
 					"tree was left intact for safety reasons. If you no ".
@@ -373,13 +353,11 @@ sub do_direct_cvs {
 
 	@sb = stat("$descdir/CVS");
 
-	$cmd = "$cvs ${verbosity} -z3 update -d -P -l";
-
-	$msg = "I will now run the cvs command to retrieve the latest package descriptions. ";
+	$msg = "I will now run the $vcs_lc command to retrieve the latest package descriptions. ";
 
 	if ($sb[4] != 0 and $> != $sb[4]) {
 		($username) = getpwuid($sb[4]);
-		$msg .= "The 'su' command will be used to run the cvs command as the ".
+		$msg .= "The 'su' command will be used to run the $vcs command as the ".
 				"user '$username'. ";
 	}
 
@@ -391,12 +369,12 @@ sub do_direct_cvs {
 	&print_breaking($msg);
 	print "\n";
 
-	$ENV{CVS_RSH} = "ssh";
-
 	# first, update the top-level stuff
 
 	my $errors = 0;
 
+	$ENV{CVS_RSH} = "ssh";
+	$cmd = "$cvs ${verbosity} -z3 update -d -P -l";
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		$errors++;
@@ -415,7 +393,7 @@ sub do_direct_cvs {
 		}
 	}
 
-	die "Updating using CVS failed. Check the error messages above.\n" if ($errors);
+	die "Updating using $vcs failed. Check the error messages above.\n" if ($errors);
 }
 
 =over 4
