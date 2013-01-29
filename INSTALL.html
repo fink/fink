@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!--
-Generated from $Fink: install.xml,v 1.30 2012/11/06 23:44:24 alexkhansen Exp $
+Generated from $Fink: install.xml,v 1.34 2012/12/15 23:48:11 alexkhansen Exp $
 -->
 <title>Fink Documentation - fink 0.34.5 Installation</title></head><body><h1 style="text-align: center;">fink 0.34.5 Installation</h1>
 <p>
@@ -204,7 +204,16 @@ Logging in to :pserver:anonymous@fink.cvs.sourceforge.net:2401/cvsroot/fink
 ...
 <b>(wait for the downloads to finish)</b></pre>
 <p>
-especially if you are using a proxy    
+especially if you are using a proxy.    
+</p>
+<p>
+If you are using Xcode 4.3 or later, you should also run
+</p>
+<pre>
+sudo xcodebuild -license
+</pre>
+<p>
+and enter <b>agree</b> so that Fink's unprivileged user can build packages that need more than just the basic tools.
 </p>
 <p>
 You can now install packages with the <tt style="white-space: nowrap;">fink</tt>
@@ -449,7 +458,16 @@ will pass its information along to cvs.  Note: you can only use anonymous cvs (p
 through a proxy.
 </p>
 <p>
-You can now use <tt style="white-space: nowrap;">fink</tt> commands to install packages.  A
+If you are using Xcode 4.3 or later, you should also run
+</p>
+<pre>
+sudo xcodebuild -license
+</pre>
+<p>
+and enter <b>agree</b> so that Fink's unprivileged user can build packages that need more than just the basic tools.
+</p>
+<p>
+You can now use <tt style="white-space: nowrap;">fink</tt> commands to install packages.
 </p>
 <pre>fink --help</pre>
 <p>
@@ -463,13 +481,13 @@ Fink uses virtual packages to declare dependencies on X11.  As of
 OS 10.5, we don't provide any packages of our own.  The supported options are:
 </p>
 <ul>
-<li>10.5:  Either Apple's standard X11 or XQuartz-2.6.3 or earlier.  Note:  if you install
-XQuartz-2.4 or later you will quite likely need to reinstall Fink if you update to 10.6.</li>
-<li>10.6:  Only Apple's standard X11, since XQuartz installs in a different directory tree
+<li><p>10.5:  Either Apple's standard X11 or XQuartz-2.6.3 or earlier.  Note:  if you install
+XQuartz-2.4 or later you will quite likely need to reinstall Fink if you update to 10.6.</p></li>
+<li><p>10.6:  Only Apple's standard X11, since XQuartz installs in a different directory tree
 (<tt style="white-space: nowrap;">/opt/X11</tt>) than the standard X11 (<tt style="white-space: nowrap;">/usr/X11</tt>) for
-10.6 and later so that they can coexist.</li>
-<li>10.7:  Only Apple's standard X11.</li>
-<li>10.8:  Only Xquartz 2.7 and later.</li>
+10.6 and later so that they can coexist.</p></li>
+<li><p>10.7:  Only Apple's standard X11.</p></li>
+<li><p>10.8:  Only Xquartz 2.7 and later.</p></li>
 </ul>
 <p>
 For more information on installing and running X11, refer to the
@@ -625,9 +643,9 @@ First, follow the <a href="#install-first">first-time install instructions</a>.
 
 
 <hr><h2>Copyright Notice</h2><p>Copyright (c) 2001 Christoph Pfisterer,
-Copyright (c) 2001-2012 The Fink Project.
+Copyright (c) 2001-2013 The Fink Project.
 You may distribute this document in print for private purposes,
 provided the document and this copyright notice remain complete and
 unmodified. Any commercial reproduction and any online publication
 requires the explicit consent of the author.</p><hr>
-<p>Generated from <i>$Fink: install.xml,v 1.30 2012/11/06 23:44:24 alexkhansen Exp $</i></p></body></html>
+<p>Generated from <i>$Fink: install.xml,v 1.34 2012/12/15 23:48:11 alexkhansen Exp $</i></p></body></html>
