@@ -316,7 +316,6 @@ END
 		}
 		if ($perlver >= 5.008006) {
 			push(@modules,
-				'apache',
 				'compress-zlib',
 				'convert-tnef',
 				'html-parser',
@@ -333,17 +332,11 @@ END
 				'class-isa',
 				'corefoundation',
 				'data-hierarchy',
-				'date-parse',
 				'freezethaw',
 				'io-pager',
 				'locale-maketext-lexicon',
 				'perlio-eol',
 				'pod-simple',
-				'svn',
-				'svk',
-				'timedate',
-				'vcp',
-				'yaml',
 			);
 		}
 		if ($perlver >= 5.010000) {
