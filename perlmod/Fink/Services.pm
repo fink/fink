@@ -570,9 +570,6 @@ EOSCRIPT
 	my $is_tempfile = &prepare_script(\$script,$drop_root);
 	return 0 if not defined $script;
 
-	# ignore SIGINT if requested
-	local $SIG{INT} = 'IGNORE' if $options{ignore_INT};
-
 	my @wrap = ();
 	my $wrap_token = '';
 	if ($drop_root) {
@@ -585,15 +582,28 @@ EOSCRIPT
 		$wrap_token = "$sudo_cmd [ENV] sh -c ";
 	}
 
+	{
+	# ignore SIGINT during the *Script if requested
+	local $SIG{INT} = 'IGNORE' if $options{ignore_INT};
+
 	# Execute each line as a separate command.
 	foreach my $cmd (split(/\n/,$script)) {
+		my ($commandname) = split(/\s+/, $cmd);
 		print "$wrap_token$cmd\n" unless $options{'quiet'};
-		system(@wrap, $cmd);
+		{
+			# system("no_such_command") emits a warning involving fink
+			# itself (it's the system() that fails)
+			local $SIG{__WARN__} = sub {};
+			my $rc = system(@wrap, $cmd);
+			if ($rc == -1) {
+				# system() failed to launch (!= launched cmd failed)
+				print "Can't exec \"$commandname\": $!\n";
+			}
+		}
 		$? >>= 8 if defined $? and $? >= 256;
 		if ($?) {
 			my $rc = $?;
 			if (not $options{'quiet'}) {
-				my ($commandname) = split(/\s+/, $cmd);
 				print "### execution of $commandname failed, exit code $rc\n";
 			}
 			if (defined $options{'delete_tempfile'} and $options{'delete_tempfile'} == 1) {
@@ -603,6 +613,8 @@ EOSCRIPT
 			return $rc;  # something went boom; give up now
 		}
 	}
+
+	} # %SIG scoping
 
 	# everything was successful so probably delete tempfile
 	if (!defined $options{'delete_tempfile'} or $options{'delete_tempfile'} != -1) {
