@@ -2,6 +2,13 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.36.x
+\-------------
+
+0.36.0 "TBD" (2012?-??-??)
+	* EOL for Leopard: First release to only support 10.6 and upwards
+	
+/-------------
 | fink 0.35.x
 \-------------
 
@@ -14,6 +21,13 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | fink 0.34.x
 \-------------
+
+0.34.5 "suction cup hook" (2013-01-28)
+	* Fix clang virtual package detection against Xcode 4.6+.
+	* Update 10.4/base and 10.7/base package description files to match latest versions
+	  in bootstrap.
+	* Removed a number of spurious virtual perlmods.
+	* Additional documentation.
 
 0.34.4 "Ceiling Mount" (2012-09-25)
 	* Support 10.8.2 and 10.7.5
