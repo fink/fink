@@ -5733,8 +5733,6 @@ sub scanpackages {
 	}
 }
 
-=back
-
 =item pkg_build_as_user_group
 
   $self->pkg_build_as_user_group();
