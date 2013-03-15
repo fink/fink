@@ -1,4 +1,4 @@
-Generated from: `$Fink: install.xml,v 1.34 2012/12/15 23:48:11 alexkhansen Exp $`
+Generated from: `$Fink: install.xml,v 1.36 2013/03/15 16:16:13 alexkhansen Exp $`
 
  Fink 0.34.4 Installation
 =========================
@@ -181,7 +181,7 @@ need more than just the basic tools.
 You can now install additional packages with the "`fink`" command, like this:
 
     [frodo:~] testuser% fink install gimp2
-    sudo /sw/bin/fink 'install' 'xfree86-server' 'gimp'
+    Password:
     Scanning package description files..........
     Information about 6230 packages read in 1 seconds.
     
@@ -408,9 +408,9 @@ may find that you need to install Fink over again.
 
 * You have updated from 10.5 to 10.6 with XQuartz-2.4 or later installed, and X11-based libraries and executables stop working.
 
-* Your Fink installation has linked to libraries, e.g. from MacPorts or
-   "/usr/local", which have been removed from your machine, resulting in
-   breakage in your Fink libraries and executables.
+ * Your Fink installation has linked to libraries, e.g. from MacPorts or
+   "/usr/local" , which have been removed from your machine thereby breaking
+   some of your Fink libraries and executables.
 
 
 Backing up to save time
@@ -419,7 +419,7 @@ To save time after you have reinstalled Fink, you can get a transcript of your i
 
 
     grep -B1 "install ok installed" /sw/var/lib/dpkg/status \
-    | grep "^Package:" | cut -d: -f2 | cut -d\  f2 > finkinst.txt
+    | grep "^Package:" | cut -d: -f2 | cut -d\  -f2 > finkinst.txt
 
 
 This will save the list of your packages in the file "finkinst.txt" in the current working directory.
