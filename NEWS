@@ -5,6 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
+0.34.6 "Hook and loop" (2013-03-16)
+	* Support 10.8.3.
+	* Clean up error reports from missing system commands.
+
 0.34.5 "suction cup hook" (2013-01-28)
 	* Fix clang virtual package detection against Xcode 4.6+.
 	* Update 10.4/base and 10.7/base package description files to match latest versions
