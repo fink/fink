@@ -1,6 +1,6 @@
-diff -Nurd libiconv-1.12/lib/aliases.gperf libiconv-1.12/lib/aliases.gperf
---- libiconv-1.12/lib/aliases.gperf	2007-11-11 11:47:01.000000000 -0500
-+++ libiconv-1.12/lib/aliases.gperf	2008-01-24 10:49:22.000000000 -0500
+diff -Nurd libiconv-1.14/lib/aliases.gperf libiconv-1.14/lib/aliases.gperf
+--- libiconv-1.14/lib/aliases.gperf	2007-11-11 11:47:01.000000000 -0500
++++ libiconv-1.14/lib/aliases.gperf	2008-01-24 10:49:22.000000000 -0500
 @@ -21,6 +21,9 @@
  US, ei_ascii
  CSASCII, ei_ascii
@@ -11,10 +11,10 @@ diff -Nurd libiconv-1.12/lib/aliases.gperf libiconv-1.12/lib/aliases.gperf
  UCS-2, ei_ucs2
  ISO-10646-UCS-2, ei_ucs2
  CSUNICODE, ei_ucs2
-diff -Nurd libiconv-1.12/lib/converters.h libiconv-1.12/lib/converters.h
---- libiconv-1.12/lib/converters.h	2007-05-25 19:18:25.000000000 -0400
-+++ libiconv-1.12/lib/converters.h	2008-01-24 10:49:22.000000000 -0500
-@@ -113,6 +113,7 @@
+diff -Nurd libiconv-1.14/lib/converters.h libiconv-1.14/lib/converters.h
+--- libiconv-1.14/lib/converters.h	2007-05-25 19:18:25.000000000 -0400
++++ libiconv-1.14/lib/converters.h	2008-01-24 10:49:22.000000000 -0500
+@@ -119,6 +119,7 @@
  /* General multi-byte encodings */
  #include "utf8.h"
  #include "ucs2.h"
@@ -22,19 +22,12 @@ diff -Nurd libiconv-1.12/lib/converters.h libiconv-1.12/lib/converters.h
  #include "ucs2be.h"
  #include "ucs2le.h"
  #include "ucs4.h"
-diff -Nurd libiconv-1.12/lib/encodings.def libiconv-1.12/lib/encodings.def
---- libiconv-1.12/lib/encodings.def	2007-05-25 19:17:48.000000000 -0400
-+++ libiconv-1.12/lib/encodings.def	2008-01-24 10:49:22.000000000 -0500
-@@ -55,12 +55,18 @@
- /* General multi-byte encodings */
- 
- DEFENCODING(( "UTF-8",                  /* IANA, RFC 2279 */
--            /*"UTF8",                      JDK 1.1 */
-+            "UTF8",                     /* JDK 1.1 */
-             /*"CP65001",                   Windows */
-             ),
-             utf8,
-             { utf8_mbtowc, NULL },        { utf8_wctomb, NULL })
+diff -Nurd libiconv-1.14/lib/encodings.def libiconv-1.14/lib/encodings.def
+--- libiconv-1.14/lib/encodings.def	2007-05-25 19:17:48.000000000 -0400
++++ libiconv-1.14/lib/encodings.def	2008-01-24 10:49:22.000000000 -0500
+@@ -69,6 +69,12 @@
+             utf8)
+ #endif
  
 +DEFENCODING(( "UTF-8-MAC",               /* utf8-nfd */
 +            "UTF8-MAC",                /* label from samba 2.2jp */
@@ -45,9 +38,9 @@ diff -Nurd libiconv-1.12/lib/encodings.def libiconv-1.12/lib/encodings.def
  DEFENCODING(( "UCS-2",                  /* glibc */
                "ISO-10646-UCS-2",        /* IANA */
                "csUnicode",              /* IANA */
-diff -Nurd libiconv-1.12/lib/flags.h libiconv-1.12/lib/flags.h
---- libiconv-1.12/lib/flags.h	2007-11-11 11:47:36.000000000 -0500
-+++ libiconv-1.12/lib/flags.h	2008-01-24 10:49:22.000000000 -0500
+diff -Nurd libiconv-1.14/lib/flags.h libiconv-1.14/lib/flags.h
+--- libiconv-1.14/lib/flags.h	2007-11-11 11:47:36.000000000 -0500
++++ libiconv-1.14/lib/flags.h	2008-01-24 10:49:22.000000000 -0500
 @@ -14,6 +14,7 @@
  
  #define ei_ascii_oflags (0)
@@ -56,10 +49,10 @@ diff -Nurd libiconv-1.12/lib/flags.h libiconv-1.12/lib/flags.h
  #define ei_ucs2_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2be_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2le_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
-diff -Nurd libiconv-1.12/lib/iconv.c libiconv-1.12/lib/iconv.c
---- libiconv-1.12/lib/iconv.c	2007-04-23 17:24:57.000000000 -0400
-+++ libiconv-1.12/lib/iconv.c	2008-01-24 10:49:22.000000000 -0500
-@@ -726,6 +726,29 @@
+diff -Nurd libiconv-1.14/lib/iconv.c libiconv-1.14/lib/iconv.c
+--- libiconv-1.14/lib/iconv.c	2007-04-23 17:24:57.000000000 -0400
++++ libiconv-1.14/lib/iconv.c	2008-01-24 10:49:22.000000000 -0500
+@@ -605,6 +605,29 @@
  strong_alias (libiconv_open, iconv_open)
  strong_alias (libiconv, iconv)
  strong_alias (libiconv_close, iconv_close)
@@ -89,9 +82,9 @@ diff -Nurd libiconv-1.12/lib/iconv.c libiconv-1.12/lib/iconv.c
  #endif
  
  #endif
-diff -Nurd libiconv-1.12/lib/utf8mac.h libiconv-1.12/lib/utf8mac.h
---- libiconv-1.12/lib/utf8mac.h	1969-12-31 19:00:00.000000000 -0500
-+++ libiconv-1.12/lib/utf8mac.h	2008-01-24 10:49:22.000000000 -0500
+diff -Nurd libiconv-1.14/lib/utf8mac.h libiconv-1.14/lib/utf8mac.h
+--- libiconv-1.14/lib/utf8mac.h	1969-12-31 19:00:00.000000000 -0500
++++ libiconv-1.14/lib/utf8mac.h	2008-01-24 10:49:22.000000000 -0500
 @@ -0,0 +1,1608 @@
 +/*
 + * Copyright (C) 2003 Apple Computer, Inc. All rights reserved.
@@ -1701,9 +1694,9 @@ diff -Nurd libiconv-1.12/lib/utf8mac.h libiconv-1.12/lib/utf8mac.h
 +
 +    return len;
 +}
-diff -Nurd libiconv-1.12/man/iconv.1 libiconv-1.12/man/iconv.1
---- libiconv-1.12/man/iconv.1	2007-10-07 14:23:11.000000000 -0400
-+++ libiconv-1.12/man/iconv.1	2008-01-24 10:50:02.000000000 -0500
+diff -Nurd libiconv-1.14/man/iconv.1 libiconv-1.14/man/iconv.1
+--- libiconv-1.14/man/iconv.1	2007-10-07 14:23:11.000000000 -0400
++++ libiconv-1.14/man/iconv.1	2008-01-24 10:50:02.000000000 -0500
 @@ -104,5 +104,4 @@
  .SH "CONFORMING TO"
  POSIX:2001
@@ -1711,22 +1704,22 @@ diff -Nurd libiconv-1.12/man/iconv.1 libiconv-1.12/man/iconv.1
 -.BR iconv_open (3),
 -.BR locale (7)
 +.BR iconv_open (3)
-diff -Nurd libiconv-1.12/src/Makefile.in libiconv-1.12/src/Makefile.in
---- libiconv-1.12/src/Makefile.in	2007-05-27 18:15:52.000000000 -0400
-+++ libiconv-1.12/src/Makefile.in	2008-01-24 10:51:45.000000000 -0500
-@@ -104,7 +104,7 @@
+diff -Nurd libiconv-1.14/src/Makefile.in libiconv-1.14/src/Makefile.in
+--- libiconv-1.14/src/Makefile.in	2007-05-27 18:15:52.000000000 -0400
++++ libiconv-1.14/src/Makefile.in	2008-01-24 10:51:45.000000000 -0500
+@@ -113,7 +113,7 @@
  	if [ ! -d $(DESTDIR)$(bindir) ] ; then $(mkinstalldirs) $(DESTDIR)$(bindir) ; fi
  	case "@host_os@" in \
- 	  hpux*) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a -L$(DESTDIR)$(libdir) -liconv @LIBINTL@ $(OBJECTS_RES_@WOE32@) `if test -n '$(DESTDIR)'; then echo " -Wl,+b -Wl,$(libdir)"; fi` -o iconv;; \
--	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a $(DESTDIR)$(libdir)/libiconv.la @LTLIBINTL@ $(OBJECTS_RES_@WOE32@) -o iconv;; \
-+     *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a ../lib/libiconv.la @LIBINTL_STATIC@ $(OBJECTS_RES_@WOE32@) -o iconv;; \
+ 	  hpux*) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a -L$(DESTDIR)$(libdir) -liconv @LIBINTL@ $(OBJECTS_RES_@WOE32@) `if test -n '$(DESTDIR)'; then echo " -Wl,+b -Wl,$(libdir)"; fi` -o iconv$(EXEEXT);; \
+-	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a $(DESTDIR)$(libdir)/libiconv.la @LTLIBINTL@ $(OBJECTS_RES_@WOE32@) -o iconv$(EXEEXT);; \
++	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a ../lib/libiconv.la @LIBINTL_STATIC@ $(OBJECTS_RES_@WOE32@) -o iconv$(EXEEXT);; \
  	esac
- 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv $(DESTDIR)$(bindir)/iconv
+ 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv$(EXEEXT) $(DESTDIR)$(bindir)/iconv$(EXEEXT)
  
-diff -Nurd libiconv-1.12/src/iconv.c libiconv-1.12/src/iconv.c
---- libiconv-1.12/src/iconv.c	2007-07-07 13:07:36.000000000 -0400
-+++ libiconv-1.12/src/iconv.c	2008-01-24 10:49:22.000000000 -0500
-@@ -976,6 +976,10 @@
+diff -Nurd libiconv-1.14/src/iconv.c libiconv-1.14/src/iconv.c
+--- libiconv-1.14/src/iconv.c	2007-07-07 13:07:36.000000000 -0400
++++ libiconv-1.14/src/iconv.c	2008-01-24 10:49:22.000000000 -0500
+@@ -981,6 +981,10 @@
        const char *option = argv[i] + 1;
        if (*option == '\0')
          usage(1);
@@ -1737,3 +1730,16 @@ diff -Nurd libiconv-1.12/src/iconv.c libiconv-1.12/src/iconv.c
        for (; *option; option++)
          switch (*option) {
            case 'c': discard_unconvertible = 1; break;
+--- libiconv-1.14/Makefile.devel	2011-07-03 10:05:11.000000000 -0400
++++ libiconv-1.14/Makefile.devel	2012-11-29 12:37:45.000000000 -0500
+@@ -19,9 +19,7 @@
+ all : configures config.h.in \
+       srclib/Makefile.gnulib srclib/Makefile.in \
+       include/iconv.h.build.in \
+-      lib/aliases.h lib/aliases_sysaix.h lib/aliases_syshpux.h lib/aliases_sysosf1.h lib/aliases_syssolaris.h \
+-      lib/aliases_aix.h lib/aliases_aix_sysaix.h \
+-      lib/aliases_osf1.h lib/aliases_osf1_sysosf1.h \
++      lib/aliases.h \
+       lib/aliases_dos.h \
+       lib/aliases_extra.h \
+       lib/flags.h lib/translit.h \
