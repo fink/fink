@@ -10,9 +10,9 @@ Essential: yes
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: e34509b1623cec449dfeb73d7ce9c6c6
-#Source2: mirror:gnu:gettext/gettext-0.18.1.1.tar.gz
-Source2: mirror:sourceforge:fink/gettext-0.18.1.1.tar.gz
-Source2-MD5: 3dd55b952826d2b32f51308f2f91aa89
+#Source2: mirror:gnu:gettext/gettext-0.18.2.1.tar.gz
+Source2: mirror:sourceforge:fink/gettext-0.18.2.1.tar.gz
+Source2-MD5: 034c8103b14654ebd300fadac44d6f14
 Source3: mirror:gnu:gperf/gperf-3.0.4.tar.gz
 Source3-MD5: c1f1db32fb6598d6a93e6e88796a8632
 PatchFile: %n.patch
@@ -49,7 +49,7 @@ make -j1 check || exit 2
 ### If gettext gets updated, make sure these ./configure parameters 
 ### match the new package parameters (except build static only here).
 ### Not necessary, but will avoid unforeseen consequences.
-cd %b/../gettext-0.18.1.1/gettext-runtime
+cd %b/../gettext-0.18.2.1/gettext-runtime
 EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_func_iconv=no ./configure \
 	--prefix=%p \
 	--infodir='${prefix}/share/info' \
@@ -155,11 +155,11 @@ our build system.
   gettext commands (only used locally while building libiconv) that
   would link aginst libiconv.
 
-2012-08-24 Hanspeter Niederstrasser
+2013-03-24 Hanspeter Niederstrasser
 
 * Update to 1.14
 * Bump included gperf to latest 3.0.4
-* Bump internal gettext to latest 0.18.1.1
+* Bump internal gettext to latest 0.18.2.1
 * On 10.7+, modernize compiler wrapper
 * Don't build genaliases headers for systems that we will not even use.
   Build is -jN safe afterwards.
