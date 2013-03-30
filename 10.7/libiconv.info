@@ -1,19 +1,19 @@
 Package: libiconv
 Version: 1.12
-Revision: 5
+Revision: 6
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: c2be282595751535a618ae0edeb8f648
-#Source2: mirror:gnu:gettext/gettext-0.18.1.1.tar.gz
-Source2: mirror:sourceforge:fink/gettext-0.18.1.1.tar.gz
-Source2-MD5: 3dd55b952826d2b32f51308f2f91aa89
+Source2: mirror:gnu:gettext/gettext-0.18.2.1.tar.gz
+#Source2: mirror:sourceforge:fink/gettext-0.18.2.1.tar.gz
+Source2-MD5: 034c8103b14654ebd300fadac44d6f14
 Source3: mirror:gnu:gperf/gperf-3.0.3.tar.gz
 Source3-MD5: cc20e58975a38075440423c8fb85fd00
 PatchFile: %n.patch
 PatchFile-MD5: a96d5622ed197552b36c7eea1e5c6ccf
 PatchScript: <<
  cd %b/..; patch -p0 < %{PatchFile}
- cd %b/../gettext-0.18.1.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+ cd %b/../gettext-0.18.2.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
 <<
 Essential: yes
 Depends: base-files
@@ -58,7 +58,7 @@ make
 ### If gettext gets updated, make sure these ./configure parameters 
 ### match the new package parameters (except build static only here).
 ### Not necessary, but will avoid unforeseen consequences.
-cd %b/../gettext-0.18.1.1/gettext-runtime
+cd %b/../gettext-0.18.2.1/gettext-runtime
 EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_func_iconv=no ./configure \
 	--prefix=%p \
 	--infodir='${prefix}/share/info' \
