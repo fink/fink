@@ -1,10 +1,9 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1234
+Revision: 1236
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
-Depends: libgettext8-shlibs (>= 0.18.1.1-1), libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
-BuildConflicts: (%m = powerpc) gcc45, (%m = powerpc) gcc46, (%m = powerpc) gcc47
+Depends: libgettext8-shlibs (>= 0.18.2.1-1), libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
 Essential: yes
 UseMaxBuildJobs: false
 BuildAsNobody: false
@@ -12,17 +11,17 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-#Source2: mirror:gnu:gettext/gettext-0.18.1.1.tar.gz
-Source2: mirror:sourceforge:fink/gettext-0.18.1.1.tar.gz
-Source2-MD5: 3dd55b952826d2b32f51308f2f91aa89
+Source2: mirror:gnu:gettext/gettext-0.18.2.1.tar.gz
+#Source2: mirror:sourceforge:fink/gettext-0.18.2.1.tar.gz
+Source2-MD5: 034c8103b14654ebd300fadac44d6f14
 PatchFile: %n.patch
 PatchFile-MD5: 62c4558d3ae7c3107fefaa031b9cf697
 PatchFile2: libgettext8-shlibs.patch
-PatchFile2-MD5: 34a11cf58bde5e40fd110004731fb574
+PatchFile2-MD5: 0fc008bcbe67004c6f2bcbf5581ef1c3
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p0
- cd %b/../gettext-0.18.1.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+ cd %b/../gettext-0.18.2.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
  cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
 <<
@@ -36,7 +35,7 @@ CompileScript: <<
 	### match the new package parameters (except build static only here).
 	### Not necessary, but will avoid unforeseen consequences.
 	%p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
-	cd %b/../gettext-0.18.1.1/gettext-tools
+	cd %b/../gettext-0.18.2.1/gettext-tools
 	env EMACS=no ./configure \
 	--prefix="%b/../_inst%p" \
 	--infodir='${prefix}/share/info' \
