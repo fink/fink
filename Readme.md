@@ -1,4 +1,4 @@
-Generated from: `$Fink: readme.en.xml,v 1.4 2006/09/16 23:17:53 dmrrsn Exp $`
+Generated from: `$Fink: readme.en.xml,v 1.5 2012/11/11 15:20:14 gecko2 Exp $`
 
 Fink ReadMe
 =============
@@ -23,16 +23,13 @@ Requirements
 
 You need:
 
- * An installed Mac OS X system, version 10.0 or later. 
-   (There may still be some stray linker-related problems with 10.1.) 
-   Darwin 1.3.1 should also work, but this has not been tested. 
-   Earlier versions of both will not work.
+ * An installed Mac OS X system, version 10.5 or later. 
+   Earlier versions will not work with fink-0.34.7.
 
  * Development tools. 
-   On Mac OS X, install the Developer.pkg package from the Developer Tools CD. 
-   (If on 10.7 or later, download Xcode from the Mac App Store, and then install the "Command Line Tools for Xcode" from Xcode's preferences.) 
+   On OS 10.6 and earlier, install the Developer.pkg package from the Developer Tools CD. 
+   If on 10.7 or later, download Xcode from the Mac App Store, and then install the "Command Line Tools for Xcode" from Xcode's preferences.
    Make sure that the tools you install match your Mac OS X version. 
-   On Darwin, the tools should be present in the default install.
 
  * Internet access. All source code is downloaded from mirror sites.
 
@@ -58,7 +55,7 @@ It also has a complete list of available commands.
 
 Further Questions?
 --------------------
-If the documentation included here doesn't answer your question, stroll over to the Fink website at [http://www.finkproject.org/](http://www.finkproject.org/) and check out the Help page there: [http://www.finkproject.org/help/](http://www.finkproject.org/help/). 
+If the documentation included here doesn't answer your question, stroll over to the Fink website at [http://fink.sourceforge.net/](http://fink.sourceforge.net/) and check out the Help page there: [http://fink.sourceforge.net/help/](http://fink.sourceforge.net/help/). 
 It will point you at the other documentation that is available and sources for support if you need it.
 
 If you'd like to contribute to Fink, the Help page mentioned above also has a list of things you can do, like testing or creating packages.
@@ -67,9 +64,9 @@ If you'd like to contribute to Fink, the Help page mentioned above also has a li
 
 Staying Informed
 ------------------
-The project's website is at [http://www.finkproject.org/](http://www.finkproject.org/).
+The project's website is at [http://fink.sourceforge.net/](http://fink.sourceforge.net/).
 
-To be informed of new releases, go to [http://www.finkproject.orgt/lists/fink-announce.php](http://www.finkproject.org/lists/fink-announce.php) and subscribe to the
+To be informed of new releases, go to [http://fink.sourceforge.net/lists/fink-announce.php](http://fink.sourceforge.net/lists/fink-announce.php) and subscribe to the
 `fink-announce` mailing list. 
 The list is moderated and low-traffic.
 

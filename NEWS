@@ -5,6 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
+0.34.7 "overhead track" (2013-03-29)
+	* Bugfix: address issue where fink's tar hangs during unpack operations. Thanks to
+	  Peter Dyballa for the workaround.
+
 0.34.6 "Hook and loop" (2013-03-16)
 	* Support 10.8.3.
 	* Clean up error reports from missing system commands.
