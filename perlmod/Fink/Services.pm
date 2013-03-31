@@ -576,6 +576,7 @@ EOSCRIPT
 		# sudo can clear or change the env, so we need to re-establish
 		# the env that existed outside the sudo
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
+		push @wrap, "__CFPREFERENCES_AVOID_DAEMON=1";
 		unshift @wrap, 'env' if @wrap;
 		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
 		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
