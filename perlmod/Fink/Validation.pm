@@ -86,6 +86,7 @@ our %check_hardcode_fields = map {$_, 1}
 		 postinstscript
 		 prermscript
 		 postrmscript
+		 debconf
 		 activatetriggers
 		 interesttriggers
 		 conffiles
@@ -215,6 +216,7 @@ our %valid_fields = map {$_, 1}
 		 'postinstscript',
 		 'prermscript',
 		 'postrmscript',
+		 'debconf',
 		 'activatetriggers',
 		 'interesttriggers',
 		 'conffiles',
@@ -266,6 +268,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'prermscript',
 		 'postrmscript',
 		 'conffiles',
+		 'debconf',
 		 'activatetriggers',
 		 'interesttriggers',
 		 'conffiles',
@@ -1231,8 +1234,19 @@ sub validate_info_component {
 	}
 
 	# dpkg install-time script stuff
-	foreach my $field (qw/preinstscript postinstscript prermscript postrmscript/) {
+	foreach my $field (qw/preinstscript postinstscript prermscript postrmscript debconf/) {
 		next unless defined ($value = $properties->{$field});
+
+		if ($field eq "debconf") {
+			my $sub_properties = &read_properties_var(
+				"Debconf of ".$filename,
+				$value,
+				{remove_space => 1}
+			);
+
+			$value = $sub_properties->{configscript};
+			next unless defined ($value);
+		}
 
 		# A #! line is worthless
 		if ($value =~ /^\s*\#!\s*(.*)/) {
@@ -1460,6 +1474,52 @@ sub validate_info_component {
 		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.34.99.git', 'use of Triggers', $filename);
 	}
 
+	# Debconf
+	if (defined $properties->{debconf}) {
+		# Packages using Debconf requires bdep on fink that supports it
+		# and dep on debconf
+		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.34.99.git', 'use of Debconf', $filename);
+		my $ckdepends = &pkglist2lol($properties->{depends});
+
+		my $has_debconf_dep = 0;
+		$has_debconf_dep = 1 if ($properties->{package} eq "debconf");
+		foreach (@$ckdepends) {
+			foreach my $atom (@$_) {
+				$atom =~ s/^\(.*?\)\s*//;
+				$has_debconf_dep = 1 if $atom =~ /^debconf\s*\(?\s*(>>|>=)?\s*(.*?)\)?\s*$/;
+				last if ($has_debconf_dep == 1);
+			}
+			last if ($has_debconf_dep == 1);
+		}
+		if (not $has_debconf_dep) {
+			print "Warning: Package contains a Debconf field but does not depend on the package \"debconf\"$splitoff_field. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		my $sub_properties = &read_properties_var(
+			"Debconf of ".$filename,
+			$properties->{debconf},
+			{remove_space => 1}
+		);
+		
+		# if Debconf -> PODirectory then bdep on po-debconf
+		if (defined $sub_properties->{podirectory}) {
+			my $ckbuilddepends = &pkglist2lol($options{builddepends});
+
+			my $has_podebconf_bdep = 0;
+			foreach (@$ckbuilddepends) {
+				foreach my $atom (@$_) {
+					$atom =~ s/^\(.*?\)\s*//;
+					$has_podebconf_bdep = 1 if $atom =~ /^po-debconf\s*\(?\s*(>>|>=)?\s*(.*?)\)?\s*$/;
+				}
+			}
+			if (not $has_podebconf_bdep) {
+				print "Warning: Package contains a Debconf PO directory but does not builddepend on the package \"po-debconf\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+	}
+
 	# Special checks when package building script uses an explicit interp
 
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
@@ -1595,6 +1655,7 @@ sub validate_dpkg_unpacked {
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
 # - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:rarian-compat
 # - Only gettext should should have charset.alias
+# - Check Debconf scripts for ". %p/share/debconf/confmodule" call
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
 # - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
@@ -1665,7 +1726,7 @@ sub _validate_dpkg {
 	}
 
 	# read some control script files
-	foreach my $scriptfile (qw/ preinst postinst prerm postrm /) {
+	foreach my $scriptfile (qw/ preinst postinst prerm postrm config templates /) {
 		# values for all normal scriptfiles are always valid array refs
 		$dpkg_script->{$scriptfile} = [];
 		my $filename = "$destdir/DEBIAN/$scriptfile";
