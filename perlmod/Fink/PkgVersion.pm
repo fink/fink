@@ -4369,6 +4369,71 @@ EOF
 			print $shlibsfile @shlibslines;
 			close $shlibsfile or &{$shlibs_error}($self, 'shlibs');
 			chmod 0644, "$destdir/DEBIAN/shlibs";
+
+			my @lib_files;
+			my $shlib_ver = "";
+			my $shlib_name = "";
+			foreach my $shlibsline (@shlibslines) {
+				chomp $shlibsline;
+				my @shlib_parts;
+
+				# strip off leading/trailing whitespace
+				$shlibsline =~ m/^\s*(.*?)\s*$/;
+				next unless $shlibsline =~ m/\S/;
+
+				@shlib_parts = split ' ', $shlibsline, 3;
+
+				push(@lib_files, $destdir.$shlib_parts[0]);
+
+				# only need to run till set (hopefully once)
+				if ($shlib_name eq "" or $shlib_ver eq "") {
+					my @shlib_deps = split /\s*\|\s*/, $shlib_parts[2], -1;
+					# we need to weed through this and pick one now
+					foreach my $shlib_dep (@shlib_deps) {
+						if ($shlib_dep =~ m/(\S)\s+\(\s*[>|<]?=[>|<]?\s*([0-9.-]+)\s*\)/) {
+							if ($1 eq $self->get_name()) {
+								$shlib_name = $1;
+								$shlib_ver = $2;
+							}
+						}
+					}
+				}
+
+			}
+
+			# make sure we got some libs
+			if (@lib_files) {
+				# make sure shlib_name and var are set
+				if ($shlib_ver eq "" or $shlib_name eq "") {
+					# something went wrong use current info
+					$shlib_name = $self->get_name();
+					$shlib_ver = $self->get_version();
+				}
+
+				$cmd = "dpkg-gensymbols -q -p$shlib_name";
+
+				# check for user symbols from info file
+				if ($self->has_param("Symbols")) {
+					# Create temp file with the user content
+					# FIXME
+					#my $symbols = $self->has_param("Symbols");
+					#$cmd .= " -I$symbols";
+				}
+
+				my $libs_string = join(" -e", @lib_files);
+				$cmd .= " -P$destdir -v$shlib_ver -O$destdir/DEBIAN/symbols -e".$libs_string;
+
+				print "Writing symbols file...\n";
+				if (&execute($cmd)) {
+					my $error = "can't create symbols file for ".$self->get_fullname().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				} else {
+					# should check the size here, if 0 then
+					# remove it
+					chmod 0644, "$destdir/DEBIAN/symbols";
+				}
+			}
 		}
 		if (@privateshlibslines) {
 			my $shlibsfile = IO::Handle->new();
