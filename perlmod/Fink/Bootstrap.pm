@@ -401,9 +401,12 @@ sub additional_packages {
 		"apt-shlibs",
 		"apt-dev",
 		"bzip2-dev",
+		"expat1",
 		"gettext-bin",
+		"gettext-tools",
 		"libgettext8-dev",
 		"libiconv-dev",
+		"liblzma5",
 		"libncurses5",
 	);
 
