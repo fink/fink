@@ -4,7 +4,7 @@ Revision: 1
 GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
-Source: mirror:debian:/pool/main/d/%n/%n_%v.tar.xz
+Source: mirror:debian:/pool/main/d/dpkg/dpkg_%v.tar.xz
 SourceDirectory: dpkg-%v
 Source-MD5: a20a06a5272717274a8b009368f237da
 
