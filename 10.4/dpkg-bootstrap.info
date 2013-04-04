@@ -63,7 +63,7 @@ SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -W
 SetLDFLAGS: -framework CoreFoundation
 
 ### Uncomment for bootstrap version, don't make dselect less depends
-ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --without-liblzma --with-bz2 --srcdir=%b
+ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%P/var --with-zlib --without-liblzma --with-bz2 --srcdir=%b
 
 CompileScript: <<
 PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
