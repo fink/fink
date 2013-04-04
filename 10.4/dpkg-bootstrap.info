@@ -4,9 +4,9 @@ Revision: 1
 GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
-Source: mirror:debian:/pool/main/d/dpkg/dpkg_%v.tar.xz
+Source: mirror:sourceforge:/fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
-Source-MD5: a20a06a5272717274a8b009368f237da
+Source-MD5: de4823d05100537e6d85304a6fa3b530
 
 PatchFile: dpkg.patch
 PatchFile-MD5: a9932d2527a62b1fb10196e24116a94c
@@ -63,8 +63,7 @@ SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -W
 SetLDFLAGS: -framework CoreFoundation
 
 ### Uncomment for bootstrap version, don't make dselect less depends
-ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b
-#ConfigureParams: --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b 
+ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --without-liblzma --with-bz2 --srcdir=%b
 
 CompileScript: <<
 PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
@@ -100,6 +99,8 @@ install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
 ln -s %p/bin/dpkg-divert %i/sbin/dpkg-divert
 ln -s %p/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
 ln -s %p/bin/update-alternatives %i/sbin/update-alternatives
+### end base-files postinst stuff
+
 <<
 ConfFiles: %p/etc/dpkg/origins/fink
 DocFiles: <<

@@ -3,7 +3,9 @@ Version: 1.16.10
 Revision: 1.1
 GCC: 4.0
 ## Remove po4a
-BuildDepends: fink (>= 0.32), libgettext8-dev, gettext-tools (>= 0.18), liblzma5, pkgconfig, bzip2-dev, libncursesw5
+### Uncomment for bootstrap version, don't make dselect less depends
+BuildDepends: fink (>= 0.32), libgettext8-dev, gettext-tools (>= 0.18), liblzma5, bzip2-dev
+#BuildDepends: fink (>= 0.32), libgettext8-dev, gettext-tools (>= 0.18), liblzma5, bzip2-dev, libncursesw5
 Depends: bzip2-shlibs, libgettext8-shlibs, liblzma5-shlibs, tar, install-info
 Conflicts: dpkg-bootstrap
 Replaces: dpkg-bootstrap
@@ -70,8 +72,8 @@ SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -W
 SetLDFLAGS: -framework CoreFoundation
 
 ### Uncomment for bootstrap version, don't make dselect less depends
-#ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b
-ConfigureParams: --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b 
+ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b
+#ConfigureParams: --disable-start-stop-daemon --with-admindir=%p/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%p/var --with-zlib --with-liblzma --with-bz2 --srcdir=%b 
 
 CompileScript: <<
 PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
@@ -753,29 +755,29 @@ modules.
   <<
 <<
 
-SplitOff4: <<
-  Package: dselect
-  Depends: dpkg (>= 1.13.1), libgettext8-shlibs, libncursesw5-shlibs (>= 5.6+20070908)
-  Conflicts: dpkg-ftp, dpkg-multicd
-  Replaces: dpkg-ftp, dpkg-multicd, dpkg (<< 1.15.8), dpkg-dev (<< 1.15.6)
-  ConfFiles: %p/etc/dpkg/dselect.cfg
-  Files: <<
-    etc/dpkg/dselect.cfg
-    etc/dpkg/dselect.cfg.d
-    bin/dselect
-    lib
-    share/locale/*/LC_MESSAGES/dselect.mo
-    share/man/man1/dselect.1
-    var/lib/dpkg/methods
-    share/man/man5/dselect.cfg.5
-<<
-  DocFiles: AUTHORS THANKS doc/README.feature-removal-schedule
-  Description: Debian package management front-end
-  DescDetail: <<
-dselect is a high-level interface for managing the installation and
-removal of Debian software packages.
-.
-Many users find dselect intimidating and new users may prefer to use
-apt-based user interfaces.
-  <<
-<<
+#SplitOff4: <<
+#  Package: dselect
+#  Depends: dpkg (>= 1.13.1), libgettext8-shlibs, libncursesw5-shlibs (>= 5.6+20070908)
+#  Conflicts: dpkg-ftp, dpkg-multicd
+#  Replaces: dpkg-ftp, dpkg-multicd, dpkg (<< 1.15.8), dpkg-dev (<< 1.15.6)
+#  ConfFiles: %p/etc/dpkg/dselect.cfg
+#  Files: <<
+#    etc/dpkg/dselect.cfg
+#    etc/dpkg/dselect.cfg.d
+#    bin/dselect
+#    lib
+#    share/locale/*/LC_MESSAGES/dselect.mo
+#    share/man/man1/dselect.1
+#    var/lib/dpkg/methods
+#    share/man/man5/dselect.cfg.5
+#<<
+#  DocFiles: AUTHORS THANKS doc/README.feature-removal-schedule
+#  Description: Debian package management front-end
+#  DescDetail: <<
+#dselect is a high-level interface for managing the installation and
+#removal of Debian software packages.
+#.
+#Many users find dselect intimidating and new users may prefer to use
+#apt-based user interfaces.
+#  <<
+#<<
