@@ -86,6 +86,8 @@ our %check_hardcode_fields = map {$_, 1}
 		 postinstscript
 		 prermscript
 		 postrmscript
+		 activatetriggers
+		 interesttriggers
 		 conffiles
 		 daemonicfile
 		),
@@ -213,6 +215,8 @@ our %valid_fields = map {$_, 1}
 		 'postinstscript',
 		 'prermscript',
 		 'postrmscript',
+		 'activatetriggers',
+		 'interesttriggers',
 		 'conffiles',
 		 'infodocs',
 		 'daemonicfile',
@@ -261,6 +265,9 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'postinstscript',
 		 'prermscript',
 		 'postrmscript',
+		 'conffiles',
+		 'activatetriggers',
+		 'interesttriggers',
 		 'conffiles',
 		 'infodocs',
 		 'daemonicfile',
@@ -1447,8 +1454,13 @@ sub validate_info_component {
 		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.27.2'} }, 'use of conditionals in ConfFiles', $filename);
 	}
 
-	# Special checks when package building script uses an explicit interp
+	if (defined $properties->{interesttriggers} || defined $properties->{activatetriggers}) {
+		# Packages using Triggers must BuildDepends on a fink that
+		# supports it
+		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.34.99.git', 'use of Triggers', $filename);
+	}
 
+	# Special checks when package building script uses an explicit interp
 
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});
