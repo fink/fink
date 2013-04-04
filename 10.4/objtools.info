@@ -1,6 +1,6 @@
 Package: objtools
 Version: 2.22
-Revision: 3
+Revision: 4
 Essential: true
 Replaces: binutils (<< 2.22)
 
@@ -25,10 +25,10 @@ CompileScript: <<
   ./configure %c
   make libiberty.a
   cd ../opcodes
-  ./configure %c
+  CFLAGS="-Wno-string-plus-int" ./configure %c
   make libopcodes.la
   cd ../binutils
-  ./configure %c
+  CFLAGS="-Wno-string-plus-int" ./configure %c
   make objcopy
   make objdump
   make readelf
