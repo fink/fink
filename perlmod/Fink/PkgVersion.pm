@@ -4033,7 +4033,7 @@ EOF
 			# templates
 			my $templatesfile = "$destdir/DEBIAN/templates";
 			my $templatesfileexpanded = &expand_percent($sub_properties->{templatesfile}, $self->{_expand}, $self->get_info_filename." \"TemplatesFile\"");
-			if (exists $sub_properties->{podirectory}) {
+			if (exists $sub_properties->{podirectory} && -e "$basepath/bin/po2debconf") {
 				my $podirectoryexpanded = &expand_percent($sub_properties->{podirectory}, $self->{_expand}, $self->get_info_filename." \"PODirectory\"");
 				print "Translating debconf templates...\n";
 				$cmd = "po2debconf --podir=$podirectoryexpanded --output $templatesfile $templatesfileexpanded";
@@ -4524,8 +4524,8 @@ EOF
 
 			}
 
-			# make sure we got some libs
-			if (@lib_files) {
+			# make sure we got some libs and a newer dpkg
+			if (@lib_files && -e "$basepath/bin/dpkg-gensymbols") {
 				# make sure shlib_name and var are set
 				if ($shlib_ver eq "" or $shlib_name eq "") {
 					# something went wrong use current info
