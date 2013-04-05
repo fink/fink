@@ -110,13 +110,13 @@ ConfigureParams: <<
 InfoTest: <<
   TestConfigureParams: --disable-silent-rules
   TestDepends: io-string-pm, time-date-pm
-  TestScript: /usr/bin/make check || exit 2
+  TestScript: make check || exit 2
 <<
 
 InstallScript: <<
   install -d -m 0755 %i/share/doc/dpkg
 
-  /usr/bin/make install DESTDIR=%d
+  make install DESTDIR=%d
 
   install -d -m 0755 %i/etc/dpkg/origins
   install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
