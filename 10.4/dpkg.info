@@ -4,12 +4,12 @@ Revision: 1.1
 GCC: 4.0
 ## Remove po4a
 ### Comment out libncursesw5 for bootstrap version, and don't make dselect
+#  libncursesw5,
 BuildDepends: <<
   fink (>= 0.32),
   libgettext8-dev,
   gettext-tools (>= 0.18),
   liblzma5,
-#  libncursesw5,
   bzip2-dev
 <<
 Depends: <<
