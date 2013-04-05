@@ -4,7 +4,7 @@ Revision: 1
 GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
-Source: mirror:sourceforge:/fink/dpkg_%v.tar.gz
+Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: de4823d05100537e6d85304a6fa3b530
 
@@ -62,12 +62,21 @@ perl -pi -e 's,-Wvla ,,g' configure
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetLDFLAGS: -framework CoreFoundation
 
-### Uncomment for bootstrap version, don't make dselect less depends
-ConfigureParams: --disable-dselect --disable-start-stop-daemon --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --sysconfdir=%p/etc --localstatedir=%P/var --with-zlib --without-liblzma --with-bz2 --srcdir=%b
-
-CompileScript: <<
-PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
-/usr/bin/make
+# Use %P for all state and admindirs for pre fink build
+ConfigureParams: <<
+  --disable-dselect \
+  --disable-start-stop-daemon \
+  --with-admindir=%P/var/lib/dpkg \
+  --mandir=%p/share/man \
+  --infodir=%p/share/info \
+  --sysconfdir=%p/etc \
+  --localstatedir=%P/var \
+  --with-zlib \
+  --without-liblzma \
+  --with-bz2 \
+  --build=%m-apple-darwin \
+  --srcdir=%b \
+  PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl
 <<
 
 InfoTest: <<
