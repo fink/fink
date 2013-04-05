@@ -101,11 +101,6 @@ ConfigureParams: <<
   PERL=/usr/bin/perl
 <<
 
-CompileScript: <<
-  ./configure %c
-  /usr/bin/make
-<<
-
 InfoTest: <<
   TestConfigureParams: --disable-silent-rules
   TestDepends: io-string-pm, time-date-pm
@@ -817,7 +812,7 @@ modules.
 #    share/man/man1/dselect.1
 #    var/lib/dpkg/methods
 #    share/man/man5/dselect.cfg.5
-#<<
+#  <<
 #  DocFiles: AUTHORS THANKS doc/README.feature-removal-schedule
 #  Description: Debian package management front-end
 #  DescDetail: <<
