@@ -13,10 +13,6 @@ PatchScript: <<
 <<
 SetCFLAGS: -g -O2 -fshort-wchar
 ConfigureParams: --mandir=%p/share/man 
-CompileScript:<<
- ./configure %c
- make all
-<<
 InfoTest: TestScript: make check || exit 2
 InstallScript: make install DESTDIR=%d
 DocFiles: <<
@@ -29,8 +25,8 @@ SplitOff:<<
  Files: lib/libexpat.*.dylib
  Shlibs: <<
   %p/lib/libexpat.1.dylib 7.0.0 %n (>= 2.0.0-1)
-  <<
-  DocFiles: COPYING MANIFEST README
+ <<
+ DocFiles: COPYING MANIFEST README
 <<
 
 Description: C library for parsing XML
