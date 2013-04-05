@@ -7,7 +7,7 @@ Replaces: binutils (<< 2.22)
 Maintainer: Sjors Gielen <fink-objtools@sjorsgielen.nl>
 License: GPL
 DocFiles: COPYING README
-Description: . objcopy, objdump and readelf from binutils
+Description: Binutils tools objcopy, objdump and readelf
 
 Source: mirror:gnu:binutils/binutils-%v.tar.bz2
 Source-MD5: ee0f10756c84979622b992a4a61ea3f5
