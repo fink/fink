@@ -6,7 +6,7 @@ use Test::More 'no_plan';
 # Write a config file
 my $conffile = "fink.conf";
 open CONF, ">$conffile" or die "Can't open: $!";
-print CONF <<__HEADER;
+print CONF <<'__HEADER';
 Basepath: basepath
 Distribution: 10.2-gcc3.3
 Trees: who/cares
