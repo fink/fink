@@ -659,7 +659,7 @@ sub do_real_list {
 				my @providers = $package->get_all_providers();
 				for my $provider (@providers) {
 					my $name = $provider->get_name();
-					print "\"$pname\" -> \"$name\";\n";
+					print "\"$pname\" -> \"$name\";\n" if $name ne $pname;
 				}
 			}
 		} else {
