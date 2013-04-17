@@ -84,6 +84,11 @@ perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c 
 
 # Fix for older gcc ie: 10.5
 perl -pi -e 's,-Wvla ,,g' configure
+
+# Move dselect and dpkg-dev locals for cleaner Install Phases
+perl -pi -e 's,localedir = \$\(datadir\)\/locale,localedir = \$(datadir)/locale-dselect,g' dselect/Makefile.in
+perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-dselect,g' dselect/po/Makefile.in.in
+perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-perl,g' scripts/Makefile.in scripts/po/Makefile.in.in
 <<
 
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
@@ -704,7 +709,6 @@ SplitOff2: <<
     bin/dpkg-source
     bin/dpkg-vendor
     share/dpkg/*.mk
-    share/locale/*/LC_MESSAGES/dpkg-dev.mo
     share/man/man1/dpkg-architecture.1
     share/man/man1/dpkg-buildflags.1
     share/man/man1/dpkg-buildpackage.1
@@ -757,9 +761,13 @@ SplitOff3: <<
   Essential: yes
   Files: <<
     lib/dpkg/parsechangelog
-    share/man/man3
     lib/perl5/Dpkg
     lib/perl5/Dpkg.pm
+    share/man/man3
+  <<
+  InstallScript: <<
+    mkdir -p %i/share
+    mv %I/share/locale-perl %i/share/locale
   <<
   DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
   Description: Dpkg perl modules
@@ -814,10 +822,13 @@ modules.
 #    etc/dpkg/dselect.cfg.d
 #    bin/dselect
 #    lib
-#    share/locale/*/LC_MESSAGES/dselect.mo
 #    share/man/man1/dselect.1
 #    var/lib/dpkg/methods
 #    share/man/man5/dselect.cfg.5
+#  <<
+#  InstallScript: <<
+#    mkdir -p %i/share
+#    mv %I/share/locale-dselect %i/share/locale
 #  <<
 #  DocFiles: AUTHORS THANKS doc/README.feature-removal-schedule
 #  Description: Debian package management front-end
