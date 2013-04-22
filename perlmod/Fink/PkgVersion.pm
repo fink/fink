@@ -4885,7 +4885,13 @@ EOF
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
 	}
 
-	foreach my $cpp ("$dir/cc", "$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2", "$dir/gcc", "$dir/gcc-4.0", "$dir/gcc-4.2", "$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2") {
+	foreach my $cpp (
+		"$dir/cc",
+		"$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2",
+		"$dir/gcc", "$dir/gcc-4.0", "$dir/gcc-4.2",
+		"$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2",
+		"$dir/clang", "$dir/clang++",
+	) {
 		unless (-l $cpp) {
 			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
 		}

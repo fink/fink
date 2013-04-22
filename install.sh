@@ -117,11 +117,17 @@ for gccvers in 3.3 4.0; do
 	ln -s -n -f g++ "$basepath/var/lib/fink/path-prefix-g++-$gccvers/c++" 
 done
 
-for file in c++ c++-4.2 c++-4.0 cc gcc gcc-4.0 gcc-4.2 g++ g++-4.0 g++-4.2; do
-    ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-10.6/$file"
-done
 install -c -p -m 755 "compiler_wrapper" \
 	    "$basepath/var/lib/fink/path-prefix-10.6/compiler_wrapper"
+for file in \
+	cc \
+	c++ c++-4.0 c++-4.2 \
+	gcc gcc-4.0 gcc-4.2 \
+	g++ g++-4.0 g++-4.2 \
+	clang clang++ \
+; do
+    ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-10.6/$file"
+done
 
 # Gotta do this in install.sh, takes too long for setup.sh
 echo "Creating man pages from POD..."
