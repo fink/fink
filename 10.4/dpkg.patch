@@ -1,6 +1,6 @@
-diff -ruN dpkg-1.16.9.orig/fink/md5sum dpkg-1.16.9/fink/md5sum
---- dpkg-1.16.9.orig/fink/md5sum	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/md5sum	2012-07-02 16:14:45.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
+--- dpkg-1.16.10.orig/fink/md5sum	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/md5sum	2012-07-02 16:14:45.000000000 -0600
 @@ -0,0 +1,313 @@
 +#!/usr/bin/perl
 +use strict;
@@ -315,16 +315,16 @@ diff -ruN dpkg-1.16.9.orig/fink/md5sum dpkg-1.16.9/fink/md5sum
 +    }
 +  }
 +}
-diff -ruN dpkg-1.16.9.orig/fink/origins dpkg-1.16.9/fink/origins
---- dpkg-1.16.9.orig/fink/origins	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/origins	2012-07-02 16:14:45.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/origins dpkg-1.16.10/fink/origins
+--- dpkg-1.16.10.orig/fink/origins	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/origins	2012-07-02 16:14:45.000000000 -0600
 @@ -0,0 +1,3 @@
 +Vendor: Fink
 +Vendor-URL: http://fink.sourceforge.net/
 +Bugs: http://fink.sourceforge.net/
-diff -ruN dpkg-1.16.9.orig/fink/patches/add-BOD.patch dpkg-1.16.9/fink/patches/add-BOD.patch
---- dpkg-1.16.9.orig/fink/patches/add-BOD.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/add-BOD.patch	2012-07-09 15:39:48.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/add-BOD.patch dpkg-1.16.10/fink/patches/add-BOD.patch
+--- dpkg-1.16.10.orig/fink/patches/add-BOD.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/add-BOD.patch	2012-07-09 15:39:48.000000000 -0600
 @@ -0,0 +1,32 @@
 +diff -ruN dpkg-1.16.4.3.orig/dpkg-deb/build.c dpkg-1.16.4.3/dpkg-deb/build.c
 +--- dpkg-1.16.4.3.orig/dpkg-deb/build.c	2012-06-13 23:18:31.000000000 -0600
@@ -358,9 +358,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/add-BOD.patch dpkg-1.16.9/fink/patches/a
 +   /* Always accept fields starting with a private field prefix. */
 +   if (strncasecmp(field->name, private_prefix, strlen(private_prefix)) == 0)
 +     return true;
-diff -ruN dpkg-1.16.9.orig/fink/patches/build-fix.patch dpkg-1.16.9/fink/patches/build-fix.patch
---- dpkg-1.16.9.orig/fink/patches/build-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/build-fix.patch	2012-08-22 15:34:39.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/build-fix.patch dpkg-1.16.10/fink/patches/build-fix.patch
+--- dpkg-1.16.10.orig/fink/patches/build-fix.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/build-fix.patch	2012-08-22 15:34:39.000000000 -0600
 @@ -0,0 +1,198 @@
 +diff -ruN dpkg-1.16.4.3.orig/configure dpkg-1.16.4.3/configure
 +--- dpkg-1.16.4.3.orig/configure	2012-06-17 02:57:17.000000000 -0600
@@ -560,9 +560,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/build-fix.patch dpkg-1.16.9/fink/patches
 +     for (path = path_list; path; path = path_end ? path_end + 1 : NULL) {
 +       path_end = strchr(path, ':');
 +       path_len = path_end ? (size_t)(path_end - path) : strlen(path);
-diff -ruN dpkg-1.16.9.orig/fink/patches/c++filt-defaults.patch dpkg-1.16.9/fink/patches/c++filt-defaults.patch
---- dpkg-1.16.9.orig/fink/patches/c++filt-defaults.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/c++filt-defaults.patch	2012-07-09 16:11:49.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/c++filt-defaults.patch dpkg-1.16.10/fink/patches/c++filt-defaults.patch
+--- dpkg-1.16.10.orig/fink/patches/c++filt-defaults.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/c++filt-defaults.patch	2012-07-09 16:11:49.000000000 -0600
 @@ -0,0 +1,12 @@
 +diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Cppfilt.pm dpkg-1.16.4.3/scripts/Dpkg/Shlibs/Cppfilt.pm
 +--- dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Cppfilt.pm	2012-06-09 08:32:08.000000000 -0600
@@ -576,9 +576,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/c++filt-defaults.patch dpkg-1.16.9/fink/
 + 	                     from_pipe => \$filt->{from},
 + 	                     to_pipe => \$filt->{to});
 + 	internerr(_g("unable to execute %s"), "c++filt")
-diff -ruN dpkg-1.16.9.orig/fink/patches/dselect-methods.patch dpkg-1.16.9/fink/patches/dselect-methods.patch
---- dpkg-1.16.9.orig/fink/patches/dselect-methods.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/dselect-methods.patch	2012-07-09 15:48:55.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/dselect-methods.patch dpkg-1.16.10/fink/patches/dselect-methods.patch
+--- dpkg-1.16.10.orig/fink/patches/dselect-methods.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/dselect-methods.patch	2012-07-09 15:48:55.000000000 -0600
 @@ -0,0 +1,93 @@
 +diff -ruN dpkg-1.16.4.3.orig/dselect/methods/Debian/Dselect/Ftp.pm dpkg-1.16.4.3/dselect/methods/Debian/Dselect/Ftp.pm
 +--- dpkg-1.16.4.3.orig/dselect/methods/Debian/Dselect/Ftp.pm	2012-06-13 23:12:30.000000000 -0600
@@ -673,9 +673,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/dselect-methods.patch dpkg-1.16.9/fink/p
 + package by using `dpkg --install --auto-deconfigure'\'' by hand.
 + 
 + ";
-diff -ruN dpkg-1.16.9.orig/fink/patches/fink-as-vendor.patch dpkg-1.16.9/fink/patches/fink-as-vendor.patch
---- dpkg-1.16.9.orig/fink/patches/fink-as-vendor.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/fink-as-vendor.patch	2012-07-31 15:46:48.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/fink-as-vendor.patch dpkg-1.16.10/fink/patches/fink-as-vendor.patch
+--- dpkg-1.16.10.orig/fink/patches/fink-as-vendor.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/fink-as-vendor.patch	2012-07-31 15:46:48.000000000 -0600
 @@ -0,0 +1,101 @@
 +--- a/scripts/Dpkg/Vendor/Fink.pm	2012-07-31 15:29:11.000000000 -0600
 ++++ b/scripts/Dpkg/Vendor/Fink.pm	2012-07-31 14:57:25.000000000 -0600
@@ -778,9 +778,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/fink-as-vendor.patch dpkg-1.16.9/fink/pa
 ++}
 ++
 ++1;
-diff -ruN dpkg-1.16.9.orig/fink/patches/fink-triggers.patch dpkg-1.16.9/fink/patches/fink-triggers.patch
---- dpkg-1.16.9.orig/fink/patches/fink-triggers.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/fink-triggers.patch	2012-08-22 15:45:46.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/fink-triggers.patch dpkg-1.16.10/fink/patches/fink-triggers.patch
+--- dpkg-1.16.10.orig/fink/patches/fink-triggers.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/fink-triggers.patch	2012-08-22 15:45:46.000000000 -0600
 @@ -0,0 +1,238 @@
 +diff -ruN dpkg-1.16.4.3.orig/src/script.c dpkg-1.16.4.3/src/script.c
 +--- dpkg-1.16.4.3.orig/src/script.c	2012-06-13 23:12:34.000000000 -0600
@@ -1020,9 +1020,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/fink-triggers.patch dpkg-1.16.9/fink/pat
 + 	if (stat(cidir, &stab)) {
 + 		command_destroy(&cmd);
 + 		if (errno == ENOENT)
-diff -ruN dpkg-1.16.9.orig/fink/patches/fink-virtuals.patch dpkg-1.16.9/fink/patches/fink-virtuals.patch
---- dpkg-1.16.9.orig/fink/patches/fink-virtuals.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/fink-virtuals.patch	2012-08-22 15:37:19.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch dpkg-1.16.10/fink/patches/fink-virtuals.patch
+--- dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/fink-virtuals.patch	2012-08-22 15:37:19.000000000 -0600
 @@ -0,0 +1,546 @@
 +diff -ruN dpkg-1.16.4.3.orig/dselect/main.cc dpkg-1.16.4.3/dselect/main.cc
 +--- dpkg-1.16.4.3.orig/dselect/main.cc	2012-06-13 23:12:30.000000000 -0600
@@ -1570,9 +1570,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/fink-virtuals.patch dpkg-1.16.9/fink/pat
 +       if (possi->cyclebreak) {
 +         debug(dbg_depcondetail,"      break cycle so ok and found");
 +         found = found_ok;
-diff -ruN dpkg-1.16.9.orig/fink/patches/full-path-calls.patch dpkg-1.16.9/fink/patches/full-path-calls.patch
---- dpkg-1.16.9.orig/fink/patches/full-path-calls.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/full-path-calls.patch	2012-07-09 16:10:10.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/full-path-calls.patch dpkg-1.16.10/fink/patches/full-path-calls.patch
+--- dpkg-1.16.10.orig/fink/patches/full-path-calls.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/full-path-calls.patch	2012-07-09 16:10:10.000000000 -0600
 @@ -0,0 +1,44 @@
 +diff -ruN dpkg-1.16.4.3.orig/dselect/dselect.h dpkg-1.16.4.3/dselect/dselect.h
 +--- dpkg-1.16.4.3.orig/dselect/dselect.h	2012-06-13 23:12:30.000000000 -0600
@@ -1618,9 +1618,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/full-path-calls.patch dpkg-1.16.9/fink/p
 + 
 + #define TAR		"tar"
 + #define RM		"rm"
-diff -ruN dpkg-1.16.9.orig/fink/patches/gzip-rsyncable-fix.patch dpkg-1.16.9/fink/patches/gzip-rsyncable-fix.patch
---- dpkg-1.16.9.orig/fink/patches/gzip-rsyncable-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/gzip-rsyncable-fix.patch	2012-07-09 15:51:46.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/gzip-rsyncable-fix.patch dpkg-1.16.10/fink/patches/gzip-rsyncable-fix.patch
+--- dpkg-1.16.10.orig/fink/patches/gzip-rsyncable-fix.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/gzip-rsyncable-fix.patch	2012-07-09 15:51:46.000000000 -0600
 @@ -0,0 +1,16 @@
 +diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Compression.pm dpkg-1.16.4.3/scripts/Dpkg/Compression.pm
 +--- dpkg-1.16.4.3.orig/scripts/Dpkg/Compression.pm	2012-06-13 23:12:33.000000000 -0600
@@ -1638,10 +1638,10 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/gzip-rsyncable-fix.patch dpkg-1.16.9/fin
 + 	"decomp_prog" => [ "gunzip" ],
 + 	"default_level" => 9,
 +     },
-diff -ruN dpkg-1.16.9.orig/fink/patches/location-fixes.patch dpkg-1.16.9/fink/patches/location-fixes.patch
---- dpkg-1.16.9.orig/fink/patches/location-fixes.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/location-fixes.patch	2012-08-22 15:39:58.000000000 -0600
-@@ -0,0 +1,184 @@
+diff -ruN dpkg-1.16.10.orig/fink/patches/location-fixes.patch dpkg-1.16.10/fink/patches/location-fixes.patch
+--- dpkg-1.16.10.orig/fink/patches/location-fixes.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/location-fixes.patch	2013-04-17 15:06:41.000000000 -0600
+@@ -0,0 +1,190 @@
 +diff -ruN dpkg-1.16.4.3.orig/dpkg-split/queue.c dpkg-1.16.4.3/dpkg-split/queue.c
 +--- dpkg-1.16.4.3.orig/dpkg-split/queue.c	2012-06-13 23:12:30.000000000 -0600
 ++++ dpkg-1.16.4.3/dpkg-split/queue.c	2012-07-02 16:14:45.000000000 -0600
@@ -1769,7 +1769,7 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/location-fixes.patch dpkg-1.16.9/fink/pa
 +diff -ruN dpkg-1.16.4.3.orig/scripts/dpkg-shlibdeps.pl dpkg-1.16.4.3/scripts/dpkg-shlibdeps.pl
 +--- dpkg-1.16.4.3.orig/scripts/dpkg-shlibdeps.pl	2012-06-13 23:12:34.000000000 -0600
 ++++ dpkg-1.16.4.3/scripts/dpkg-shlibdeps.pl	2012-07-02 16:14:45.000000000 -0600
-+@@ -55,8 +55,8 @@
++@@ -55,12 +55,12 @@
 + 
 + textdomain("dpkg-dev");
 + 
@@ -1777,9 +1777,15 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/location-fixes.patch dpkg-1.16.9/fink/pa
 +-my $shlibsdefault = '/etc/dpkg/shlibs.default';
 ++my $shlibsoverride = '@FINKPREFIX@/etc/dpkg/shlibs.override';
 ++my $shlibsdefault = '@FINKPREFIX@/etc/dpkg/shlibs.default';
-+ my $shlibslocal = 'debian/shlibs.local';
++-my $shlibslocal = 'debian/shlibs.local';
+++my $shlibslocal = 'fink/shlibs.local';
 + my $packagetype = 'deb';
 + my $dependencyfield = 'Depends';
++-my $varlistfile = 'debian/substvars';
+++my $varlistfile = 'fink/substvars';
++ my $varnameprefix = 'shlibs';
++ my $ignore_missing_info = 0;
++ my $warnings = 3;
 +@@ -726,8 +726,8 @@
 + 	# Fallback to other symbols files but it shouldn't be necessary
 + 	push @files, @pkg_symbols;
@@ -1826,9 +1832,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/location-fixes.patch dpkg-1.16.9/fink/pa
 +     }
 + 
 + 	execv(WRAPPED, argv);
-diff -ruN dpkg-1.16.9.orig/fink/patches/protect-system-dirs.patch dpkg-1.16.9/fink/patches/protect-system-dirs.patch
---- dpkg-1.16.9.orig/fink/patches/protect-system-dirs.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/protect-system-dirs.patch	2012-10-31 09:08:22.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/protect-system-dirs.patch dpkg-1.16.10/fink/patches/protect-system-dirs.patch
+--- dpkg-1.16.10.orig/fink/patches/protect-system-dirs.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/protect-system-dirs.patch	2012-10-31 09:08:22.000000000 -0600
 @@ -0,0 +1,29 @@
 +diff -ruN dpkg-1.16.4.3.orig/src/help.c dpkg-1.16.4.3/src/help.c
 +--- dpkg-1.16.4.3.orig/src/help.c	2012-06-13 23:12:34.000000000 -0600
@@ -1859,13 +1865,885 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/protect-system-dirs.patch dpkg-1.16.9/fi
 +   iter = filepackages_iter_new(file);
 +   while ((other_pkg = filepackages_iter_next(iter))) {
 +     debug(dbg_veryverbose, "dir_is_used_by_others considering %s ...",
-diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patches/so-to-dylib.patch
---- dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/so-to-dylib.patch	2012-08-27 16:52:49.000000000 -0600
-@@ -0,0 +1,160 @@
-+diff -ruN dpkg-1.16.8.orig/scripts/Dpkg/Shlibs/Objdump.pm dpkg-1.16.8.new/scripts/Dpkg/Shlibs/Objdump.pm
-+--- dpkg-1.16.8.orig/scripts/Dpkg/Shlibs/Objdump.pm	2012-07-19 06:27:39.000000000 -0600
-++++ dpkg-1.16.8.new/scripts/Dpkg/Shlibs/Objdump.pm	2012-08-27 16:48:41.000000000 -0600
+diff -ruN dpkg-1.16.10.orig/fink/patches/so-to-dylib.patch dpkg-1.16.10/fink/patches/so-to-dylib.patch
+--- dpkg-1.16.10.orig/fink/patches/so-to-dylib.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/so-to-dylib.patch	2013-04-18 13:38:33.000000000 -0600
+@@ -0,0 +1,1141 @@
++diff -ruN dpkg-1.16.10/scripts.orig/:wq dpkg-1.16.10/scripts/:wq
++--- dpkg-1.16.10/scripts.orig/:wq	1969-12-31 17:00:00.000000000 -0700
+++++ dpkg-1.16.10/scripts/:wq	2013-04-18 11:00:49.000000000 -0600
++@@ -0,0 +1,868 @@
+++#!/usr/bin/perl
+++#
+++# dpkg-shlibdeps
+++#
+++# Copyright © 1996 Ian Jackson
+++# Copyright © 2000 Wichert Akkerman
+++# Copyright © 2006 Frank Lichtenheld
+++# Copyright © 2006-2010,2012 Guillem Jover <guillem@debian.org>
+++# Copyright © 2007 Raphaël Hertzog
+++#
+++# This program is free software; you can redistribute it and/or modify
+++# it under the terms of the GNU General Public License as published by
+++# the Free Software Foundation; either version 2 of the License, or
+++# (at your option) any later version.
+++#
+++# This program is distributed in the hope that it will be useful,
+++# but WITHOUT ANY WARRANTY; without even the implied warranty of
+++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+++# GNU General Public License for more details.
+++#
+++# You should have received a copy of the GNU General Public License
+++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+++
+++use strict;
+++use warnings;
+++
+++use POSIX qw(:errno_h :signal_h);
+++use Cwd qw(realpath);
+++use File::Basename qw(dirname);
+++
+++use Dpkg;
+++use Dpkg::Gettext;
+++use Dpkg::ErrorHandling;
+++use Dpkg::Path qw(relative_to_pkg_root guess_pkg_root_dir
+++		  check_files_are_the_same get_control_path);
+++use Dpkg::Version;
+++use Dpkg::Shlibs qw(find_library @librarypaths);
+++use Dpkg::Shlibs::Objdump;
+++use Dpkg::Shlibs::SymbolFile;
+++use Dpkg::Arch qw(get_host_arch);
+++use Dpkg::Deps;
+++use Dpkg::Control::Info;
+++use Dpkg::Control::Fields;
+++
+++
+++use constant {
+++    WARN_SYM_NOT_FOUND => 1,
+++    WARN_DEP_AVOIDABLE => 2,
+++    WARN_NOT_NEEDED => 4,
+++};
+++
+++# By increasing importance
+++my @depfields = qw(Suggests Recommends Depends Pre-Depends);
+++my $i = 0; my %depstrength = map { $_ => $i++ } @depfields;
+++
+++textdomain("dpkg-dev");
+++
+++my $shlibsoverride = '/etc/dpkg/shlibs.override';
+++my $shlibsdefault = '/etc/dpkg/shlibs.default';
+++my $shlibslocal = 'debian/shlibs.local';
+++my $packagetype = 'deb';
+++my $dependencyfield = 'Depends';
+++my $varlistfile = 'debian/substvars';
+++my $varnameprefix = 'shlibs';
+++my $ignore_missing_info = 0;
+++my $warnings = 3;
+++my $debug = 0;
+++my @exclude = ();
+++my @pkg_dir_to_search = ();
+++my $host_arch = get_host_arch();
+++
+++my (@pkg_shlibs, @pkg_symbols, @pkg_root_dirs);
+++if (-d "debian") {
+++    push @pkg_symbols, <debian/*/DEBIAN/symbols>;
+++    push @pkg_shlibs, <debian/*/DEBIAN/shlibs>;
+++    my %uniq = map { guess_pkg_root_dir($_) => 1 } (@pkg_symbols, @pkg_shlibs);
+++    push @pkg_root_dirs, keys %uniq;
+++}
+++
+++my ($stdout, %exec);
+++foreach (@ARGV) {
+++    if (m/^-T(.*)$/) {
+++	$varlistfile = $1;
+++    } elsif (m/^-p(\w[-:0-9A-Za-z]*)$/) {
+++	$varnameprefix = $1;
+++    } elsif (m/^-L(.*)$/) {
+++	$shlibslocal = $1;
+++    } elsif (m/^-S(.*)$/) {
+++	push @pkg_dir_to_search, $1;
+++    } elsif (m/^-O$/) {
+++	$stdout = 1;
+++    } elsif (m/^-(\?|-help)$/) {
+++	usage(); exit(0);
+++    } elsif (m/^--version$/) {
+++	version(); exit(0);
+++    } elsif (m/^--admindir=(.*)$/) {
+++	$admindir = $1;
+++	-d $admindir ||
+++	    error(_g("administrative directory '%s' does not exist"), $admindir);
+++	$ENV{'DPKG_ADMINDIR'} = $admindir;
+++    } elsif (m/^-d(.*)$/) {
+++	$dependencyfield = field_capitalize($1);
+++	defined($depstrength{$dependencyfield}) ||
+++	    warning(_g("unrecognized dependency field '%s'"), $dependencyfield);
+++    } elsif (m/^-e(.*)$/) {
+++	if (exists $exec{$1}) {
+++	    # Affect the binary to the most important field
+++	    if ($depstrength{$dependencyfield} > $depstrength{$exec{$1}}) {
+++		$exec{$1} = $dependencyfield;
+++	    }
+++	} else {
+++	    $exec{$1} = $dependencyfield;
+++	}
+++    } elsif (m/^--ignore-missing-info$/) {
+++	$ignore_missing_info = 1;
+++    } elsif (m/^--warnings=(\d+)$/) {
+++	$warnings = $1;
+++    } elsif (m/^-t(.*)$/) {
+++	$packagetype = $1;
+++    } elsif (m/^-v$/) {
+++	$debug++;
+++    } elsif (m/^-x(.*)$/) {
+++	push @exclude, $1;
+++    } elsif (m/^-/) {
+++	usageerr(_g("unknown option \`%s'"), $_);
+++    } else {
+++	if (exists $exec{$_}) {
+++	    # Affect the binary to the most important field
+++	    if ($depstrength{$dependencyfield} > $depstrength{$exec{$_}}) {
+++		$exec{$_} = $dependencyfield;
+++	    }
+++	} else {
+++	    $exec{$_} = $dependencyfield;
+++	}
+++    }
+++}
+++
+++scalar keys %exec || usageerr(_g("need at least one executable"));
+++
+++my $control = Dpkg::Control::Info->new();
+++my $fields = $control->get_source();
+++my $build_depends = defined($fields->{"Build-Depends"}) ?
+++		    $fields->{"Build-Depends"} : "";
+++my $build_deps = deps_parse($build_depends, build_dep => 1, reduce_arch => 1);
+++error(_("error occurred while parsing %s"), "Build-Depends") unless defined $build_deps;
+++
+++my %dependencies;
+++my %shlibs;
+++
+++# Statictics on soname seen in the whole run (with multiple analysis of
+++# binaries)
+++my %global_soname_notfound;
+++my %global_soname_used;
+++my %global_soname_needed;
+++
+++# Symfile and objdump caches
+++my %symfile_cache;
+++my %objdump_cache;
+++my %symfile_has_soname_cache;
+++
+++# Used to count errors due to missing libraries
+++my $error_count = 0;
+++
+++my $cur_field;
+++foreach my $file (keys %exec) {
+++    $cur_field = $exec{$file};
+++    print ">> Scanning $file (for $cur_field field)\n" if $debug;
+++
+++    my $obj = Dpkg::Shlibs::Objdump::Object->new($file);
+++    my @sonames = $obj->get_needed_libraries;
+++
+++    # Load symbols files for all needed libraries (identified by SONAME)
+++    my %libfiles;
+++    my %altlibfiles;
+++    my %soname_notfound;
+++    my %alt_soname;
+++    foreach my $soname (@sonames) {
+++	my $lib = my_find_library($soname, $obj->{RPATH}, $obj->{format}, $file);
+++	unless (defined $lib) {
+++	    $soname_notfound{$soname} = 1;
+++	    $global_soname_notfound{$soname} = 1;
+++	    my $msg = _g("couldn't find library %s needed by %s (" .
+++			 "format: '%s'; RPATH: '%s')");
+++	    if (scalar(split_soname($soname))) {
+++		errormsg($msg, $soname, $file, $obj->{format}, join(":", @{$obj->{RPATH}}));
+++		$error_count++;
+++	    } else {
+++		warning($msg, $soname, $file, $obj->{format}, join(":", @{$obj->{RPATH}}));
+++	    }
+++	    next;
+++	}
+++	$libfiles{$lib} = $soname;
+++	my $reallib = realpath($lib);
+++	if ($reallib ne $lib) {
+++	    $altlibfiles{$reallib} = $soname;
+++	}
+++	print "Library $soname found in $lib\n" if $debug;
+++    }
+++    my $file2pkg = find_packages(keys %libfiles, keys %altlibfiles);
+++    my $symfile = Dpkg::Shlibs::SymbolFile->new();
+++    my $dumplibs_wo_symfile = Dpkg::Shlibs::Objdump->new();
+++    my @soname_wo_symfile;
+++    foreach my $lib (keys %libfiles) {
+++	my $soname = $libfiles{$lib};
+++	if (not scalar(grep { $_ ne '' } @{$file2pkg->{$lib}})) {
+++	    # The path of the library as calculated is not the
+++	    # official path of a packaged file, try to fallback on
+++	    # on the realpath() first, maybe this one is part of a package
+++	    my $reallib = realpath($lib);
+++	    if (exists $file2pkg->{$reallib}) {
+++		$file2pkg->{$lib} = $file2pkg->{$reallib};
+++	    }
+++	}
+++	if (not scalar(grep { $_ ne '' } @{$file2pkg->{$lib}})) {
+++	    # If the library is really not available in an installed package,
+++	    # it's because it's in the process of being built
+++	    # Empty package name will lead to consideration of symbols
+++	    # file from the package being built only
+++	    $file2pkg->{$lib} = [""];
+++	    print "No associated package found for $lib\n" if $debug;
+++	}
+++
+++	# Load symbols/shlibs files from packages providing libraries
+++	foreach my $pkg (@{$file2pkg->{$lib}}) {
+++	    my $symfile_path;
+++            my $haslocaldep = 0;
+++            if (-e $shlibslocal and
+++                defined(extract_from_shlibs($soname, $shlibslocal)))
+++            {
+++                $haslocaldep = 1;
+++            }
+++            if ($packagetype eq "deb" and not $haslocaldep) {
+++		# Use fine-grained dependencies only on real deb
+++                # and only if the dependency is not provided by shlibs.local
+++		$symfile_path = find_symbols_file($pkg, $soname, $lib);
+++            }
+++            if (defined($symfile_path)) {
+++                # Load symbol information
+++                print "Using symbols file $symfile_path for $soname\n" if $debug;
+++                unless (exists $symfile_cache{$symfile_path}) {
+++                    $symfile_cache{$symfile_path} =
+++                        Dpkg::Shlibs::SymbolFile->new(file => $symfile_path);
+++                }
+++                $symfile->merge_object_from_symfile($symfile_cache{$symfile_path}, $soname);
+++            }
+++	    if (defined($symfile_path) && $symfile->has_object($soname)) {
+++		# Initialize dependencies with the smallest minimal version
+++                # of all symbols (unversioned dependency is not ok as the
+++                # library might not have always been available in the
+++                # package and we really need it)
+++		my $dep = $symfile->get_dependency($soname);
+++		my $minver = $symfile->get_smallest_version($soname) || '';
+++		foreach my $subdep (split /\s*,\s*/, $dep) {
+++		    if (not exists $dependencies{$cur_field}{$subdep}) {
+++			$dependencies{$cur_field}{$subdep} = Dpkg::Version->new($minver);
+++                        print " Initialize dependency ($subdep) with minimal " .
+++                              "version ($minver)\n" if $debug > 1;
+++		    }
+++		}
+++	    } else {
+++		# No symbol file found, fall back to standard shlibs
+++                print "Using shlibs+objdump for $soname (file $lib)\n" if $debug;
+++                unless (exists $objdump_cache{$lib}) {
+++                    $objdump_cache{$lib} = Dpkg::Shlibs::Objdump::Object->new($lib);
+++                }
+++                my $libobj = $objdump_cache{$lib};
+++                my $id = $dumplibs_wo_symfile->add_object($libobj);
+++		if (($id ne $soname) and ($id ne $lib)) {
+++		    warning(_g("%s has an unexpected SONAME (%s)"), $lib, $id);
+++		    $alt_soname{$id} = $soname;
+++		}
+++		push @soname_wo_symfile, $soname;
+++		# Only try to generate a dependency for libraries with a SONAME
+++		if ($libobj->is_public_library() and not
+++		    add_shlibs_dep($soname, $pkg, $lib)) {
+++		    # This failure is fairly new, try to be kind by
+++		    # ignoring as many cases that can be safely ignored
+++		    my $ignore = 0;
+++		    # 1/ when the lib and the binary are in the same
+++		    # package
+++		    my $root_file = guess_pkg_root_dir($file);
+++		    my $root_lib = guess_pkg_root_dir($lib);
+++		    $ignore++ if defined $root_file and defined $root_lib
+++			and check_files_are_the_same($root_file, $root_lib);
+++		    # 2/ when the lib is not versioned and can't be
+++		    # handled by shlibs
+++		    $ignore++ unless scalar(split_soname($soname));
+++		    # 3/ when we have been asked to do so
+++		    $ignore++ if $ignore_missing_info;
+++		    error(_g("no dependency information found for %s " .
+++		             "(used by %s)"), $lib, $file)
+++		        unless $ignore;
+++		}
+++	    }
+++	}
+++    }
+++
+++    # Scan all undefined symbols of the binary and resolve to a
+++    # dependency
+++    my %soname_used;
+++    foreach (@sonames) {
+++        # Initialize statistics
+++        $soname_used{$_} = 0;
+++        $global_soname_used{$_} = 0 unless exists $global_soname_used{$_};
+++        if (exists $global_soname_needed{$_}) {
+++            push @{$global_soname_needed{$_}}, $file;
+++        } else {
+++            $global_soname_needed{$_} = [ $file ];
+++        }
+++    }
+++    my $nb_warnings = 0;
+++    my $nb_skipped_warnings = 0;
+++    # Disable warnings about missing symbols when we have not been able to
+++    # find all libs
+++    my $disable_warnings = scalar(keys(%soname_notfound));
+++    my $in_public_dir = 1;
+++    if (my $relname = relative_to_pkg_root($file)) {
+++        my $parent_dir = "/" . dirname($relname);
+++        $in_public_dir = (grep { $parent_dir eq $_ } @librarypaths) ? 1 : 0;
+++    } else {
+++        warning(_g("binaries to analyze should already be " .
+++                   "installed in their package's directory"));
+++    }
+++    print "Analyzing all undefined symbols\n" if $debug > 1;
+++    foreach my $sym ($obj->get_undefined_dynamic_symbols()) {
+++	my $name = $sym->{name};
+++	if ($sym->{version}) {
+++	    $name .= "\@$sym->{version}";
+++	} else {
+++	    $name .= "\@Base";
+++	}
+++        print " Looking up symbol $name\n" if $debug > 1;
+++	my %symdep = $symfile->lookup_symbol($name, \@sonames);
+++	if (keys %symdep) {
+++	    my $depends = $symfile->get_dependency($symdep{soname},
+++		$symdep{symbol}{dep_id});
+++            print " Found in symbols file of $symdep{soname} (minver: " .
+++                  "$symdep{symbol}{minver}, dep: $depends)\n" if $debug > 1;
+++	    $soname_used{$symdep{soname}}++;
+++	    $global_soname_used{$symdep{soname}}++;
+++            if (exists $alt_soname{$symdep{soname}}) {
+++                # Also count usage on alternate soname
+++                $soname_used{$alt_soname{$symdep{soname}}}++;
+++                $global_soname_used{$alt_soname{$symdep{soname}}}++;
+++            }
+++	    update_dependency_version($depends, $symdep{symbol}{minver});
+++	} else {
+++	    my $syminfo = $dumplibs_wo_symfile->locate_symbol($name);
+++	    if (not defined($syminfo)) {
+++                print " Not found\n" if $debug > 1;
+++                next unless ($warnings & WARN_SYM_NOT_FOUND);
+++		next if $disable_warnings;
+++		# Complain about missing symbols only for executables
+++		# and public libraries
+++		if ($obj->is_executable() or $obj->is_public_library()) {
+++		    my $print_name = $name;
+++		    # Drop the default suffix for readability
+++		    $print_name =~ s/\@Base$//;
+++		    unless ($sym->{weak}) {
+++			if ($debug or ($in_public_dir and $nb_warnings < 10)
+++                            or (!$in_public_dir and $nb_warnings < 1))
+++                        {
+++                            if ($in_public_dir) {
+++			        warning(_g("symbol %s used by %s found in none of the " .
+++				           "libraries"), $print_name, $file);
+++                            } else {
+++			        warning(_g("%s contains an unresolvable reference to " .
+++                                           "symbol %s: it's probably a plugin"),
+++                                        $file, $print_name);
+++                            }
+++			    $nb_warnings++;
+++			} else {
+++			    $nb_skipped_warnings++;
+++			}
+++		    }
+++		}
+++	    } else {
+++                print " Found in $syminfo->{soname} ($syminfo->{objid})\n" if $debug > 1;
+++		if (exists $alt_soname{$syminfo->{soname}}) {
+++		    # Also count usage on alternate soname
+++		    $soname_used{$alt_soname{$syminfo->{soname}}}++;
+++		    $global_soname_used{$alt_soname{$syminfo->{soname}}}++;
+++		}
+++		$soname_used{$syminfo->{soname}}++;
+++		$global_soname_used{$syminfo->{soname}}++;
+++	    }
+++	}
+++    }
+++    warning(P_("%d similar warning has been skipped (use -v to see it)",
+++               "%d other similar warnings have been skipped (use -v to see " .
+++               "them all)", $nb_skipped_warnings), $nb_skipped_warnings)
+++        if $nb_skipped_warnings;
+++    foreach my $soname (@sonames) {
+++	# Adjust minimal version of dependencies with information
+++	# extracted from build-dependencies
+++	my $dev_pkg = $symfile->get_field($soname, 'Build-Depends-Package');
+++	if (defined $dev_pkg) {
+++            print "Updating dependencies of $soname with build-dependencies\n" if $debug;
+++	    my $minver = get_min_version_from_deps($build_deps, $dev_pkg);
+++	    if (defined $minver) {
+++		foreach my $dep ($symfile->get_dependencies($soname)) {
+++		    update_dependency_version($dep, $minver, 1);
+++                    print " Minimal version of $dep updated with $minver\n" if $debug;
+++		}
+++	    } else {
+++                print " No minimal version found in $dev_pkg build-dependency\n" if $debug;
+++            }
+++	}
+++
+++	# Warn about un-NEEDED libraries
+++	unless ($soname_notfound{$soname} or $soname_used{$soname}) {
+++	    # Ignore warning for libm.so.6 if also linked against libstdc++
+++	    next if ($soname =~ /^libm\.so\.\d+$/ and
+++		     scalar grep(/^libstdc\+\+\.so\.\d+/, @sonames));
+++            next unless ($warnings & WARN_NOT_NEEDED);
+++	    warning(_g("%s should not be linked against %s (it uses none of " .
+++	               "the library's symbols)"), $file, $soname);
+++	}
+++    }
+++}
+++
+++# Warn of unneeded libraries at the "package" level (i.e. over all
+++# binaries that we have inspected)
+++foreach my $soname (keys %global_soname_needed) {
+++    unless ($global_soname_notfound{$soname} or $global_soname_used{$soname}) {
+++        next if ($soname =~ /^libm\.so\.\d+$/ and scalar(
+++                 grep(/^libstdc\+\+\.so\.\d+/, keys %global_soname_needed)));
+++        next unless ($warnings & WARN_DEP_AVOIDABLE);
+++        warning(P_("package could avoid a useless dependency if %s was not " .
+++                   "linked against %s (it uses none of the library's symbols)",
+++                   "package could avoid a useless dependency if %s were not " .
+++                   "linked against %s (they use none of the library's symbols)",
+++                   scalar @{$global_soname_needed{$soname}}),
+++                join(" ", @{$global_soname_needed{$soname}}), $soname);
+++    }
+++}
+++
+++# Quit now if any missing libraries
+++if ($error_count >= 1) {
+++    my $note = _g("Note: libraries are not searched in other binary packages " .
+++	"that do not have any shlibs or symbols file.\nTo help dpkg-shlibdeps " .
+++	"find private libraries, you might need to set LD_LIBRARY_PATH.");
+++    error(P_("cannot continue due to the error above",
+++             "cannot continue due to the errors listed above",
+++             $error_count) . "\n" . $note);
+++}
+++
+++# Open substvars file
+++my $fh;
+++if ($stdout) {
+++    $fh = \*STDOUT;
+++} else {
+++    open(NEW, ">", "$varlistfile.new") ||
+++	syserr(_g("open new substvars file \`%s'"), "$varlistfile.new");
+++    if (-e $varlistfile) {
+++	open(OLD, "<", $varlistfile) ||
+++	    syserr(_g("open old varlist file \`%s' for reading"), $varlistfile);
+++	foreach my $entry (grep { not m/^\Q$varnameprefix\E:/ } (<OLD>)) {
+++	    print(NEW $entry) ||
+++	        syserr(_g("copy old entry to new varlist file \`%s'"),
+++	               "$varlistfile.new");
+++	}
+++	close(OLD);
+++    }
+++    $fh = \*NEW;
+++}
+++
+++# Write out the shlibs substvars
+++my %depseen;
+++
+++sub filter_deps {
+++    my ($dep, $field) = @_;
+++    # Skip dependencies on excluded packages
+++    foreach my $exc (@exclude) {
+++	return 0 if $dep =~ /^\s*\Q$exc\E\b/;
+++    }
+++    # Don't include dependencies if they are already
+++    # mentionned in a higher priority field
+++    if (not exists($depseen{$dep})) {
+++	$depseen{$dep} = $dependencies{$field}{$dep};
+++	return 1;
+++    } else {
+++	# Since dependencies can be versionned, we have to
+++	# verify if the dependency is stronger than the
+++	# previously seen one
+++	my $stronger;
+++	if ($depseen{$dep} eq $dependencies{$field}{$dep}) {
+++	    # If both versions are the same (possibly unversionned)
+++	    $stronger = 0;
+++	} elsif ($dependencies{$field}{$dep} eq '') {
+++	    $stronger = 0; # If the dep is unversionned
+++	} elsif ($depseen{$dep} eq '') {
+++	    $stronger = 1; # If the dep seen is unversionned
+++	} elsif (version_compare_relation($depseen{$dep}, REL_GT,
+++                                          $dependencies{$field}{$dep})) {
+++	    # The version of the dep seen is stronger...
+++	    $stronger = 0;
+++	} else {
+++	    $stronger = 1;
+++	}
+++	$depseen{$dep} = $dependencies{$field}{$dep} if $stronger;
+++	return $stronger;
+++    }
+++}
+++
+++foreach my $field (reverse @depfields) {
+++    my $dep = "";
+++    if (exists $dependencies{$field} and scalar keys %{$dependencies{$field}}) {
+++	$dep = join ", ",
+++	    map {
+++		# Translate dependency templates into real dependencies
+++		if ($dependencies{$field}{$_}) {
+++		    s/#MINVER#/(>= $dependencies{$field}{$_})/g;
+++		} else {
+++		    s/#MINVER#//g;
+++		}
+++		s/\s+/ /g;
+++		$_;
+++	    } grep { filter_deps($_, $field) }
+++	    keys %{$dependencies{$field}};
+++    }
+++    if ($dep) {
+++        my $obj = deps_parse($dep);
+++        error(_g("invalid dependency got generated: %s"), $dep) unless defined $obj;
+++        $obj->sort();
+++	print $fh "$varnameprefix:$field=$obj\n";
+++    }
+++}
+++
+++# Replace old file by new one
+++if (!$stdout) {
+++    close($fh) || syserr(_g("cannot close %s"), "$varlistfile.new");
+++    rename("$varlistfile.new",$varlistfile) ||
+++	syserr(_g("install new varlist file \`%s'"), $varlistfile);
+++}
+++
+++##
+++## Functions
+++##
+++
+++sub version {
+++    printf _g("Debian %s version %s.\n"), $progname, $version;
+++
+++    printf _g("
+++This is free software; see the GNU General Public License version 2 or
+++later for copying conditions. There is NO warranty.
+++");
+++}
+++
+++sub usage {
+++    printf _g(
+++"Usage: %s [<option>...] <executable>|-e<executable> [<option>...]")
+++    . "\n\n" . _g(
+++"Positional options (order is significant):
+++  <executable>             include dependencies for <executable>,
+++  -e<executable>           (use -e if <executable> starts with '-')
+++  -d<dependency-field>     next executable(s) set shlibs:<dependency-field>.")
+++    . "\n\n" . _g(
+++"Options:
+++  -p<varname-prefix>       set <varname-prefix>:* instead of shlibs:*.
+++  -O                       print variable settings to stdout.
+++  -L<local-shlibs-file>    shlibs override file, not debian/shlibs.local.
+++  -T<substvars-file>       update variables here, not debian/substvars.
+++  -t<type>                 set package type (default is deb).
+++  -x<package>              exclude package from the generated dependencies.
+++  -S<package-build-dir>    search needed libraries in the given
+++                           package build directory first.
+++  -v                       enable verbose mode (can be used multiple times).
+++  --ignore-missing-info    don't fail if dependency information can't be found.
+++  --warnings=<value>       define set of active warnings (see manual page).
+++  --admindir=<directory>   change the administrative directory.
+++  -?, --help               show this help message.
+++      --version            show the version.")
+++    . "\n\n" . _g(
+++"Dependency fields recognized are:
+++  %s
+++"), $progname, join("/",@depfields);
+++}
+++
+++sub get_min_version_from_deps {
+++    my ($dep, $pkg) = @_;
+++    if ($dep->isa('Dpkg::Deps::Simple')) {
+++	if (($dep->{package} eq $pkg) &&
+++	    defined($dep->{relation}) &&
+++	    (($dep->{relation} eq REL_GE) ||
+++	     ($dep->{relation} eq REL_GT)))
+++	{
+++	    return $dep->{version};
+++	}
+++	return undef;
+++    } else {
+++	my $res;
+++	foreach my $subdep ($dep->get_deps()) {
+++	    my $minver = get_min_version_from_deps($subdep, $pkg);
+++	    next if not defined $minver;
+++	    if (defined $res) {
+++		if (version_compare_relation($minver, REL_GT, $res)) {
+++		    $res = $minver;
+++		}
+++	    } else {
+++		$res = $minver;
+++	    }
+++	}
+++	return $res;
+++    }
+++}
+++
+++sub update_dependency_version {
+++    my ($dep, $minver, $existing_only) = @_;
+++    return if not defined($minver);
+++    $minver = Dpkg::Version->new($minver);
+++    foreach my $subdep (split /\s*,\s*/, $dep) {
+++	if (exists $dependencies{$cur_field}{$subdep} and
+++	    defined($dependencies{$cur_field}{$subdep}))
+++	{
+++	    if ($dependencies{$cur_field}{$subdep} eq '' or
+++		version_compare_relation($minver, REL_GT,
+++				         $dependencies{$cur_field}{$subdep}))
+++	    {
+++		$dependencies{$cur_field}{$subdep} = $minver;
+++	    }
+++	} elsif (!$existing_only) {
+++	    $dependencies{$cur_field}{$subdep} = $minver;
+++	}
+++    }
+++}
+++
+++sub add_shlibs_dep {
+++    my ($soname, $pkg, $libfile) = @_;
+++    my @shlibs = ($shlibslocal, $shlibsoverride);
+++    if ($pkg eq "") {
+++	# If the file is not packaged, try to find out the shlibs file in
+++	# the package being built where the lib has been found
+++	my $pkg_root = guess_pkg_root_dir($libfile);
+++	if (defined $pkg_root) {
+++	    push @shlibs, "$pkg_root/DEBIAN/shlibs";
+++	}
+++	# Fallback to other shlibs files but it shouldn't be necessary
+++	push @shlibs, @pkg_shlibs;
+++    } else {
+++	my $control_file = get_control_path($pkg, "shlibs");
+++	push @shlibs, $control_file if defined $control_file;
+++    }
+++    push @shlibs, $shlibsdefault;
+++    print " Looking up shlibs dependency of $soname provided by '$pkg'\n" if $debug;
+++    foreach my $file (@shlibs) {
+++	next if not -e $file;
+++	my $dep = extract_from_shlibs($soname, $file);
+++	if (defined($dep)) {
+++	    print " Found $dep in $file\n" if $debug;
+++	    foreach (split(/,\s*/, $dep)) {
+++		# Note: the value is empty for shlibs based dependency
+++		# symbol based dependency will put a valid version as value
+++		$dependencies{$cur_field}{$_} = Dpkg::Version->new('');
+++	    }
+++	    return 1;
+++	}
+++    }
+++    print " Found nothing\n" if $debug;
+++    return 0;
+++}
+++
+++sub split_soname {
+++    my $soname = shift;
+++    my $obj = Dpkg::Shlibs::Objdump::Object->new($soname);
+++
+++    if ($obj->is_mach_o()) {
+++        use File::Basename;
+++
+++        return wantarray ? ($1, $obj->get_macho_compatversion($soname)) : 1;
+++    } else {
+++        if ($soname =~ /^(.*)\.so\.(.*)$/) {
+++	    return wantarray ? ($1, $2) : 1;
+++        } elsif ($soname =~ /^(.*)-(\d.*)\.so$/) {
+++	    return wantarray ? ($1, $2) : 1;
+++	}
+++    }
+++    return wantarray ? () : 0;
+++}
+++
+++sub extract_from_shlibs {
+++    my ($soname, $shlibfile) = @_;
+++    # Split soname in name/version
+++    my ($libname, $libversion) = split_soname($soname);
+++    unless (defined $libname) {
+++	warning(_g("Can't extract name and version from library name \`%s'"),
+++	        $soname);
+++	return;
+++    }
+++    # Open shlibs file
+++    $shlibfile = "./$shlibfile" if $shlibfile =~ m/^\s/;
+++    open(SHLIBS, "<", $shlibfile) ||
+++        syserr(_g("unable to open shared libs info file \`%s'"), $shlibfile);
+++    my $dep;
+++    while (<SHLIBS>) {
+++	s/\s*\n$//;
+++	next if m/^\#/;
+++	if (!m/^\s*(?:(\S+):\s+)?(\S+)\s+(\S+)(?:\s+(\S.*\S))?\s*$/) {
+++	    warning(_g("shared libs info file \`%s' line %d: bad line \`%s'"),
+++	            $shlibfile, $., $_);
+++	    next;
+++	}
+++	my $depread = defined($4) ? $4 : '';
+++	if (($libname eq $2 || $soname eq $2) && ($libversion eq $3)) {
+++	    # Define dep and end here if the package type explicitly
+++	    # matches. Otherwise if the packagetype is not specified, use
+++	    # the dep only as a default that can be overriden by a later
+++	    # line
+++	    if (defined($1)) {
+++		if ($1 eq $packagetype) {
+++		    $dep = $depread;
+++		    last;
+++		}
+++	    } else {
+++		$dep = $depread unless defined $dep;
+++	    }
+++	}
+++    }
+++    close(SHLIBS);
+++    return $dep;
+++}
+++
+++sub find_symbols_file {
+++    my ($pkg, $soname, $libfile) = @_;
+++    my @files;
+++    if ($pkg eq "") {
+++	# If the file is not packaged, try to find out the symbols file in
+++	# the package being built where the lib has been found
+++	my $pkg_root = guess_pkg_root_dir($libfile);
+++	if (defined $pkg_root) {
+++	    push @files, "$pkg_root/DEBIAN/symbols";
+++	}
+++	# Fallback to other symbols files but it shouldn't be necessary
+++	push @files, @pkg_symbols;
+++    } else {
+++	push @files, "/etc/dpkg/symbols/$pkg.symbols.$host_arch",
+++	    "/etc/dpkg/symbols/$pkg.symbols";
+++	my $control_file = get_control_path($pkg, "symbols");
+++	push @files, $control_file if defined $control_file;
+++    }
+++
+++    foreach my $file (@files) {
+++	if (-e $file and symfile_has_soname($file, $soname)) {
+++	    return $file;
+++	}
+++    }
+++    return undef;
+++}
+++
+++sub symfile_has_soname {
+++    my ($file, $soname) = @_;
+++
+++    if (exists $symfile_has_soname_cache{$file}{$soname}) {
+++        return $symfile_has_soname_cache{$file}{$soname};
+++    }
+++
+++    open(SYM_FILE, "<", $file) ||
+++        syserr(_g("cannot open file %s"), $file);
+++    my $result = 0;
+++    while (<SYM_FILE>) {
+++	if (/^\Q$soname\E /) {
+++	    $result = 1;
+++	    last;
+++	}
+++    }
+++    close(SYM_FILE);
+++    $symfile_has_soname_cache{$file}{$soname} = $result;
+++    return $result;
+++}
+++
+++# find_library ($soname, \@rpath, $format)
+++sub my_find_library {
+++    my ($lib, $rpath, $format, $execfile) = @_;
+++    my $file;
+++
+++    # Create real RPATH in case $ORIGIN is used
+++    # Note: ld.so also supports $PLATFORM and $LIB but they are
+++    # used in real case (yet)
+++    my $libdir = relative_to_pkg_root($execfile);
+++    my $origin;
+++    if (defined $libdir) {
+++	$origin = "/$libdir";
+++	$origin =~ s{/+[^/]*$}{};
+++    }
+++    my @RPATH = ();
+++    foreach my $path (@{$rpath}) {
+++	if ($path =~ /\$ORIGIN|\$\{ORIGIN\}/) {
+++	    if (defined $origin) {
+++		$path =~ s/\$ORIGIN/$origin/g;
+++		$path =~ s/\$\{ORIGIN\}/$origin/g;
+++	    } else {
+++		warning(_g("\$ORIGIN is used in RPATH of %s and the corresponding " .
+++		"directory could not be identified due to lack of DEBIAN " .
+++		"sub-directory in the root of package's build tree"), $execfile);
+++	    }
+++	}
+++	push @RPATH, $path;
+++    }
+++
+++    # Look into the packages we're currently building in the following
+++    # order:
+++    # - package build tree of the binary which is analyzed
+++    # - package build tree given on the command line (option -S)
+++    # - other package build trees that contain either a shlibs or a
+++    # symbols file
+++    my @builddirs;
+++    my $pkg_root = guess_pkg_root_dir($execfile);
+++    push @builddirs, $pkg_root if defined $pkg_root;
+++    push @builddirs, @pkg_dir_to_search;
+++    push @builddirs, @pkg_root_dirs;
+++    my %dir_checked;
+++    foreach my $builddir (@builddirs) {
+++	next if defined($dir_checked{$builddir});
+++	$file = find_library($lib, \@RPATH, $format, $builddir);
+++	return $file if defined($file);
+++	$dir_checked{$builddir} = 1;
+++    }
+++
+++    # Fallback in the root directory if we have not found what we were
+++    # looking for in the packages
+++    $file = find_library($lib, \@RPATH, $format, "");
+++    return $file if defined($file);
+++
+++    return undef;
+++}
+++
+++my %cached_pkgmatch = ();
+++
+++sub find_packages {
+++    my @files;
+++    my $pkgmatch = {};
+++
+++    foreach (@_) {
+++	if (exists $cached_pkgmatch{$_}) {
+++	    $pkgmatch->{$_} = $cached_pkgmatch{$_};
+++	} else {
+++	    push @files, $_;
+++	    $cached_pkgmatch{$_} = [""]; # placeholder to cache misses too.
+++	    $pkgmatch->{$_} = [""];        # might be replaced later on
+++	}
+++    }
+++    return $pkgmatch unless scalar(@files);
+++
+++    my $pid = open(DPKG, "-|");
+++    syserr(_g("cannot fork for %s"), "dpkg --search") unless defined($pid);
+++    if (!$pid) {
+++	# Child process running dpkg --search and discarding errors
+++	close STDERR;
+++	open STDERR, ">", "/dev/null";
+++	$ENV{LC_ALL} = "C";
+++	exec("dpkg", "--search", "--", @files)
+++	    || syserr(_g("unable to execute %s"), "dpkg");
+++    }
+++    while(defined($_ = <DPKG>)) {
+++	chomp($_);
+++	if (m/^local diversion |^diversion by/) {
+++	    warning(_g("diversions involved - output may be incorrect"));
+++	    print(STDERR " $_\n")
+++		|| syserr(_g("write diversion info to stderr"));
+++	} elsif (m/^([-a-z0-9+.:, ]+): (\/.*)$/) {
+++	    $cached_pkgmatch{$2} = $pkgmatch->{$2} = [ split(/, /, $1) ];
+++	} else {
+++	    warning(_g("unknown output from dpkg --search: '%s'"), $_);
+++	}
+++    }
+++    close(DPKG);
+++    return $pkgmatch;
+++}
++diff -ruN dpkg-1.16.10/scripts.orig/Dpkg/Shlibs/Objdump.pm dpkg-1.16.10/scripts/Dpkg/Shlibs/Objdump.pm
++--- dpkg-1.16.10/scripts.orig/Dpkg/Shlibs/Objdump.pm	2013-03-17 21:40:28.000000000 -0600
+++++ dpkg-1.16.10/scripts/Dpkg/Shlibs/Objdump.pm	2013-04-18 13:35:21.000000000 -0600
 +@@ -26,11 +26,17 @@
 + 
 + our $VERSION = "0.01";
@@ -1885,7 +2763,28 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 + }
 + 
 + 
-+@@ -128,6 +134,20 @@
++@@ -91,9 +97,7 @@
++ 	    return $format{$file};
++ 	} else {
++ 	    my ($output, %opts, $pid, $res);
++-	    if ($OBJDUMP ne "objdump") {
++-		$opts{"error_to_file"} = "/dev/null";
++-	    }
+++	    $opts{"error_to_file"} = "/dev/null";
++ 	    $pid = spawn(exec => [ $OBJDUMP, "-a", "--", $file ],
++ 			 env => { "LC_ALL" => "C" },
++ 			 to_pipe => \$output, %opts);
++@@ -102,7 +106,8 @@
++ 		if (/^\s*\S+:\s*file\s+format\s+(\S+)\s*$/) {
++ 		    $format{$file} = $1;
++ 		    $res = $format{$file};
++-		    last;
+++                    # This might now be the only format, lets always take last
+++		    # last;
++ 		}
++ 	    }
++ 	    close($output);
++@@ -128,6 +133,29 @@
 +     return $result;
 + }
 + 
@@ -1894,10 +2793,19 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 ++    open(FILE, "<", $file) || syserr(_g("cannot read %s"), $file);
 ++    my ($header, $result) = ("", 0);
 ++    if (read(FILE, $header, 4) == 4) {
+++	# isLittleEndian
 ++        # 32 bit Mach-O
 ++        $result = 1 if ($header =~ /^\xce\xfa\xed\xfe$/);
 ++        # 64 bit Mach-O
 ++        $result = 1 if ($header =~ /^\xcf\xfa\xed\xfe$/);
+++	# Fat
+++        # 32 bit Mach-O
+++        $result = 1 if ($header =~ /^\xfe\xed\xfa\xce$/);
+++        # 64 bit Mach-O
+++        $result = 1 if ($header =~ /^\xfe\xed\xfa\xcf$/);
+++
+++	# Mach-O Universal object files
+++        $result = 1 if ($header =~ /^\xca\xfe\xba\xbe$/);
 ++    }
 ++    close(FILE);
 ++    return $result;
@@ -1906,7 +2814,7 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 + package Dpkg::Shlibs::Objdump::Object;
 + 
 + use Dpkg::Gettext;
-+@@ -166,9 +186,9 @@
++@@ -166,24 +194,120 @@
 +     return $self;
 + }
 + 
@@ -1917,7 +2825,10 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 + 
 +     $file ||= $self->{file};
 +     return unless $file;
-+@@ -177,13 +197,88 @@
++ 
+++    use IPC::Open3;
+++
++     $self->reset;
 +     $self->{file} = $file;
 + 
 +     local $ENV{LC_ALL} = 'C';
@@ -1926,12 +2837,18 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 +-    my $ret = $self->parse_objdump_output($objdump);
 +-    close($objdump);
 ++    if (Dpkg::Shlibs::Objdump::is_elf($file)) {
-++	open(my $objdump, "-|", $OBJDUMP, "-w", "-f", "-p", "-T", "-R", $file)
+++	open3(my $objdumpin, my $objdump, my $objdumperr, $OBJDUMP, "-w", "-f", "-p", "-T", "-R", $file)
 ++	    || syserr(_g("cannot fork for %s"), $OBJDUMP);
 ++	$ret = $self->parse_objdump_output($objdump);
 ++	close($objdump);
 ++    } elsif (Dpkg::Shlibs::Objdump::is_mach_o($file)) {
 ++	# no RPATH, HASH or GNU_HASH in macho
+++    	$self->{RPATH} = [ '/' ];
+++
+++	open3(my $objdumpin, my $objdump, my $objdumperr, $OBJDUMP, "-f", "-p", $file)
+++	    || syserr(_g("cannot fork for %s"), $OBJDUMP);
+++	$ret = $self->parse_objdump_output($objdump);
+++	close($objdump);
 ++
 ++	# get SONAME (dylib doesn't really use rpath but SONAME has a path)
 ++	open(my $install_name, "-|", $OTOOL, "-X", "-D", $file)
@@ -1939,19 +2856,17 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 ++	$self->parse_macho_soname($install_name);
 ++	close($install_name);
 ++
-++	# Get list of linked libs
-++	open(my $needed_names, "-|", $OTOOL, "-L", "-X", $file)
-++	    || syserr(_g("cannot fork for %s"), $OTOOL);
-++	$self->parse_macho_needed($needed_names);
-++	close($needed_names);
+++        # Get list of linked libs
+++        open(my $needed_names, "-|", $OTOOL, "-L", "-X", $file)
+++            || syserr(_g("cannot fork for %s"), $OTOOL);
+++        $self->parse_macho_needed($needed_names);
+++        close($needed_names);
 ++
 ++	# Get list of symbols
 ++	open(my $dynsymbols, "-|", $NM, "-g", $file)
 ++	    || syserr(_g("cannot fork for %s"), $NM);
 ++	$self->parse_macho_dynamic_symbol($dynsymbols);
 ++	close($dynsymbols);
-++
-++	$ret = 'dynsym';
 ++    }
 +     return $ret;
 + }
@@ -1985,14 +2900,27 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 ++    }
 ++}
 ++
+++sub get_macho_compatversion {
+++    my ($self, $file) = @_;
+++    open(my $fh, "-|", $OTOOL, "-L", "-X", $file)
+++        || syserr(_g("cannot fork for %s"), $OTOOL);
+++    while (defined($_ = <$fh>)) {
+++	chomp;
+++	if (/^\s*(.+) \(compatibility version ([0-9.]+)/) {
+++	    return $2 if $1 eq $self->{SONAME};
+++	}
+++    }
+++    close($fh);
+++}
+++
 ++sub parse_macho_needed {
 ++    my ($self, $fh) = @_;
 ++    while (defined($_ = <$fh>)) {
-++	chomp;
-++	if (/^\s*(.+) \(compatibility version/) {
-++	    next if $1 eq $self->{SONAME};
-++	    push @{$self->{NEEDED}}, $1;
-++	}
+++        chomp;
+++        if (/^\s*(.+) \(compatibility version/) {
+++            next if $1 eq $self->{SONAME};
+++            push @{$self->{NEEDED}}, $1;
+++        }
 ++    }
 ++}
 ++
@@ -2003,6 +2931,8 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 ++	if ($_) {
 ++		use File::Basename;
 ++		$self->{SONAME} = basename $_;
+++		$self->{SONAME} = $_;
+++		$self->{RPATH} = [ dirname $_ ];
 ++	}
 ++    }
 ++}
@@ -2010,9 +2940,9 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 + sub parse_objdump_output {
 +     my ($self, $fh) = @_;
 + 
-+diff -ruN dpkg-1.16.8.orig/scripts/dpkg-gensymbols.pl dpkg-1.16.8.new/scripts/dpkg-gensymbols.pl
-+--- dpkg-1.16.8.orig/scripts/dpkg-gensymbols.pl	2012-07-19 06:27:40.000000000 -0600
-++++ dpkg-1.16.8.new/scripts/dpkg-gensymbols.pl	2012-08-27 16:51:24.000000000 -0600
++diff -ruN dpkg-1.16.10/scripts.orig/dpkg-gensymbols.pl dpkg-1.16.10/scripts/dpkg-gensymbols.pl
++--- dpkg-1.16.10/scripts.orig/dpkg-gensymbols.pl	2013-03-17 21:40:29.000000000 -0600
+++++ dpkg-1.16.10/scripts/dpkg-gensymbols.pl	2013-04-17 15:28:52.000000000 -0600
 +@@ -196,7 +196,8 @@
 + 	opendir(DIR, "$libdir") ||
 + 	    syserr(_g("Can't read directory %s: %s"), $libdir, $!);
@@ -2023,328 +2953,66 @@ diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch dpkg-1.16.9/fink/patch
 + 	    Dpkg::Shlibs::Objdump::is_elf($_);
 + 	} map { "$libdir/$_" } readdir(DIR);
 + 	close(DIR);
-diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch.old dpkg-1.16.9/fink/patches/so-to-dylib.patch.old
---- dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch.old	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/so-to-dylib.patch.old	2012-08-24 15:22:15.000000000 -0600
-@@ -0,0 +1,39 @@
-+diff -ruN dpkg-1.16.4.3.orig/scripts/dpkg-gensymbols.pl dpkg-1.16.4.3/scripts/dpkg-gensymbols.pl
-+--- dpkg-1.16.4.3.orig/scripts/dpkg-gensymbols.pl	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/scripts/dpkg-gensymbols.pl	2012-07-02 16:14:45.000000000 -0600
-+@@ -196,8 +209,9 @@
-+ 	opendir(DIR, "$libdir") ||
-+ 	    syserr(_g("Can't read directory %s: %s"), $libdir, $!);
-+ 	push @files, grep {
-+-	    /(\.so\.|\.so$)/ && -f $_ &&
-+-	    Dpkg::Shlibs::Objdump::is_elf($_);
-++	    /(\.so\.|\.so$|\.dylib$|\.bundle$)/ && -f $_ &&
-++	    (Dpkg::Shlibs::Objdump::is_elf($_) ||
-++	    Dpkg::Shlibs::Objdump::is_mach_o($_));
-+ 	} map { "$libdir/$_" } readdir(DIR);
-+ 	close(DIR);
-+     }
-+diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Objdump.pm dpkg-1.16.4.3/scripts/Dpkg/Shlibs/Objdump.pm
-+--- dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Objdump.pm	2012-06-09 08:32:08.000000000 -0600
-++++ dpkg-1.16.4.3/scripts/Dpkg/Shlibs/Objdump.pm	2012-07-10 10:44:10.000000000 -0600
-+@@ -128,6 +128,20 @@
-+     return $result;
-+ }
++diff -ruN dpkg-1.16.10/scripts.orig/dpkg-shlibdeps.pl dpkg-1.16.10/scripts/dpkg-shlibdeps.pl
++--- dpkg-1.16.10/scripts.orig/dpkg-shlibdeps.pl	2013-03-17 21:40:29.000000000 -0600
+++++ dpkg-1.16.10/scripts/dpkg-shlibdeps.pl	2013-04-18 11:12:48.000000000 -0600
++@@ -179,13 +179,15 @@
++ 	unless (defined $lib) {
++ 	    $soname_notfound{$soname} = 1;
++ 	    $global_soname_notfound{$soname} = 1;
++-	    my $msg = _g("couldn't find library %s needed by %s (ELF " .
+++            my $libtype = 'ELF';
+++            $libtype = 'MACH-O' if Dpkg::Shlibs::Objdump::is_mach_o($soname);
+++	    my $msg = _g("couldn't find library %s needed by %s (%s " .
++ 			 "format: '%s'; RPATH: '%s')");
++ 	    if (scalar(split_soname($soname))) {
++-		errormsg($msg, $soname, $file, $obj->{format}, join(":", @{$obj->{RPATH}}));
+++		errormsg($msg, $soname, $file, $libtype, $obj->{format}, join(":", @{$obj->{RPATH}}));
++ 		$error_count++;
++ 	    } else {
++-		warning($msg, $soname, $file, $obj->{format}, join(":", @{$obj->{RPATH}}));
+++		warning($msg, $soname, $file, $libtype, $obj->{format}, join(":", @{$obj->{RPATH}}));
++ 	    }
++ 	    next;
++ 	}
++@@ -662,13 +664,20 @@
 + 
-++sub is_mach_o {
-++    my ($file) = @_;
-++    open(FILE, "<", $file) || syserr(_g("cannot read %s"), $file);
-++    my ($header, $result) = ("", 0);
-++    if (read(FILE, $header, 4) == 4) {
-++        # 32 bit Mach-O
-++        $result = 1 if ($header =~ /^\xce\xfa\xed\xfe$/);
-++        # 64 bit Mach-O
-++        $result = 1 if ($header =~ /^\xcf\xfa\xed\xfe$/);
-++    }
-++    close(FILE);
-++    return $result;
-++}
++ sub split_soname {
++     my $soname = shift;
++-    if ($soname =~ /^(.*)\.so\.(.*)$/) {
++-	return wantarray ? ($1, $2) : 1;
++-    } elsif ($soname =~ /^(.*)-(\d.*)\.so$/) {
++-	return wantarray ? ($1, $2) : 1;
 ++
-+ package Dpkg::Shlibs::Objdump::Object;
-+ 
-+ use Dpkg::Gettext;
-diff -ruN dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch.old2 dpkg-1.16.9/fink/patches/so-to-dylib.patch.old2
---- dpkg-1.16.9.orig/fink/patches/so-to-dylib.patch.old2	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/so-to-dylib.patch.old2	2012-08-27 14:11:24.000000000 -0600
-@@ -0,0 +1,272 @@
-+--- dpkg-1.16.8.orig/scripts/Dpkg/Shlibs/Objdump.pm	2012-07-19 06:27:39.000000000 -0600
-++++ dpkg-1.16.8.new/scripts/Dpkg/Shlibs/Objdump.pm	2012-08-27 14:10:29.000000000 -0600
-+@@ -26,11 +26,17 @@
-+ 
-+ our $VERSION = "0.01";
-+ 
-+-# Decide which objdump to call
-++# Decide which objdump, otool, nm to call
-+ our $OBJDUMP = "objdump";
-++our $OTOOL = "otool";
-++our $NM = "nm";
-+ if (get_build_arch() ne get_host_arch()) {
-+     my $od = debarch_to_gnutriplet(get_host_arch()) . "-objdump";
-+     $OBJDUMP = $od if find_command($od);
-++    my $otool = debarch_to_gnutriplet(get_host_arch()) . "-otool";
-++    $OTOOL = $otool if find_command($otool);
-++    my $nm = debarch_to_gnutriplet(get_host_arch()) . "-nm";
-++    $NM = $nm if find_command($nm);
-+ }
-+ 
-+ 
-+@@ -43,7 +49,7 @@
-+ }
-+ 
-+ sub add_object {
-+-    my ($self, $obj) = @_;
-++    my ($self, $obj, $type) = @_;
-+     my $id = $obj->get_id;
-+     if ($id) {
-+ 	$self->{objects}{$id} = $obj;
-+@@ -52,10 +58,10 @@
-+ }
-+ 
-+ sub analyze {
-+-    my ($self, $file) = @_;
-+-    my $obj = Dpkg::Shlibs::Objdump::Object->new($file);
-++    my ($self, $file, $type) = @_;
-++    my $obj = Dpkg::Shlibs::Objdump::Object->new($file, $type);
-+ 
-+-    return $self->add_object($obj);
-++    return $self->add_object($obj, $type);
-+ }
-+ 
-+ sub locate_symbol {
-+@@ -128,6 +134,20 @@
-+     return $result;
-+ }
-+ 
-++sub is_mach_o {
-++    my ($file) = @_;
-++    open(FILE, "<", $file) || syserr(_g("cannot read %s"), $file);
-++    my ($header, $result) = ("", 0);
-++    if (read(FILE, $header, 4) == 4) {
-++        # 32 bit Mach-O
-++        $result = 1 if ($header =~ /^\xce\xfa\xed\xfe$/);
-++        # 64 bit Mach-O
-++        $result = 1 if ($header =~ /^\xcf\xfa\xed\xfe$/);
-++    }
-++    close(FILE);
-++    return $result;
-++}
+++    if (Dpkg::Shlibs::Objdump::is_mach_o($soname)) {
+++        use File::Basename;
+++        my $obj = Dpkg::Shlibs::Objdump::Object->new($soname);
 ++
-+ package Dpkg::Shlibs::Objdump::Object;
-+ 
-+ use Dpkg::Gettext;
-+@@ -137,12 +157,13 @@
-+     my $this = shift;
-+     my $file = shift || '';
-+     my $class = ref($this) || $this;
-++    my $type = shift || 'elf';
-+     my $self = {};
-+     bless $self, $class;
-+ 
-+     $self->reset;
-+     if ($file) {
-+-	$self->analyze($file);
-++	$self->analyze($file, $type);
-+     }
-+ 
-+     return $self;
-+@@ -168,7 +189,8 @@
-+ 
-+ 
-+ sub analyze {
-+-    my ($self, $file) = @_;
-++    my ($self, $file, $type) = @_;
-++    my $ret = 'none';
-+ 
-+     $file ||= $self->{file};
-+     return unless $file;
-+@@ -177,13 +199,88 @@
-+     $self->{file} = $file;
-+ 
-+     local $ENV{LC_ALL} = 'C';
-+-    open(my $objdump, "-|", $OBJDUMP, "-w", "-f", "-p", "-T", "-R", $file)
-+-	|| syserr(_g("cannot fork for %s"), $OBJDUMP);
-+-    my $ret = $self->parse_objdump_output($objdump);
-+-    close($objdump);
-++    if ($type eq 'elf') {
-++	open(my $objdump, "-|", $OBJDUMP, "-w", "-f", "-p", "-T", "-R", $file)
-++	    || syserr(_g("cannot fork for %s"), $OBJDUMP);
-++	$ret = $self->parse_objdump_output($objdump);
-++	close($objdump);
-++    } elsif ($type eq 'macho') {
-++	# no RPATH, HASH or GNU_HASH in macho
-++
-++	# get SONAME (dylib doesn't really use rpath but SONAME has a path)
-++	open(my $install_name, "-|", $OTOOL, "-X", "-D", $file)
-++	    || syserr(_g("cannot fork for %s"), $OTOOL);
-++	$self->parse_macho_soname($install_name);
-++	close($install_name);
-++
-++	# Get list of linked libs
-++	open(my $needed_names, "-|", $OTOOL, "-L", "-X", $file)
-++	    || syserr(_g("cannot fork for %s"), $OTOOL);
-++	$self->parse_macho_needed($needed_names);
-++	close($needed_names);
-++
-++	# Get list of symbols
-++	open(my $dynsymbols, "-|", $NM, "-g", $file)
-++	    || syserr(_g("cannot fork for %s"), $NM);
-++	$self->parse_macho_dynamic_symbol($dynsymbols);
-++	close($dynsymbols);
-++
-++	$ret = 'dynsym';
-++    }
-+     return $ret;
-+ }
-+ 
-++sub parse_macho_dynamic_symbol {
-++    my ($self, $fh) = @_;
-++    while (defined($_ = <$fh>)) {
-++	chomp;
-++
-++	# no version in mach o
-++	my $ver = '';
-++
-++	if (/^([0-9a-f]{16}) ([T|D|U]) (\S+)$/) {
-++	    my ($flags, $sect, $name) = ($1, $2, $3);
-++	    my $symbol = {
-++		name => $name,
-++		version => defined($ver) ? $ver : '',
-++		section => $sect,
-++		dynamic => "D",
-++		#debug => substr($flags, 5, 1) eq "d",
-++		type => $sect,
-++		#weak => substr($flags, 1, 1) eq "w",
-++		#local => substr($flags, 0, 1) eq "l",
-++		#global => substr($flags, 0, 1) eq "g",
-++		#visibility => defined($vis) ? $vis : '',
-++		hidden => '',
-++		defined => $sect ne 'U'
-++	    };
-++	    $self->add_dynamic_symbol($symbol);
+++        return wantarray ? ($soname, $obj->get_macho_compatversion($soname)) : 1;
++     } else {
++-	return wantarray ? () : 0;
+++        if ($soname =~ /^(.*)\.so\.(.*)$/) {
+++	    return wantarray ? ($1, $2) : 1;
+++        } elsif ($soname =~ /^(.*)-(\d.*)\.so$/) {
+++	    return wantarray ? ($1, $2) : 1;
 ++	}
-++    }
-++}
-++
-++sub parse_macho_needed {
-++    my ($self, $fh) = @_;
-++    while (defined($_ = <$fh>)) {
-++	chomp;
-++	if (/^\s*(.+) \(compatibility version/) {
-++	    next if $1 eq $self->{SONAME};
-++	    push @{$self->{NEEDED}}, $1;
-++	}
-++    }
-++}
-++
-++sub parse_macho_soname {
-++    my ($self, $fh) = @_;
-++    while (defined($_ = <$fh>)) {
-++	chomp;
-++	if ($_) {
-++		use File::Basename;
-++		$self->{SONAME} = basename $_;
-++	}
-++    }
-++}
-++
-+ sub parse_objdump_output {
-+     my ($self, $fh) = @_;
-+ 
-+diff -ruN dpkg-1.16.8.orig/scripts/dpkg-gensymbols.pl dpkg-1.16.8.new/scripts/dpkg-gensymbols.pl
-+--- dpkg-1.16.8.orig/scripts/dpkg-gensymbols.pl	2012-07-19 06:27:40.000000000 -0600
-++++ dpkg-1.16.8.new/scripts/dpkg-gensymbols.pl	2012-08-24 15:51:18.000000000 -0600
-+@@ -91,7 +91,7 @@
-+ "), $progname;
++     }
+++    return wantarray ? () : 0;
 + }
 + 
-+-my @files;
-++my (@files, @elffiles, @machofiles);
-+ while (@ARGV) {
-+     $_ = shift(@ARGV);
-+     if (m/^-p/) {
-+@@ -108,8 +108,10 @@
-+ 	$sourceversion = $1;
-+     } elsif (m/^-e(.+)$/) {
-+ 	my $file = $1;
-+-	if (-e $file) {
-+-	    push @files, $file;
-++	if (Dpkg::Shlibs::Objdump::is_elf($file) && -e $file) {
-++	    push @elffiles, $file;
-++	} elsif (Dpkg::Shlibs::Objdump::is_mach_o($file) && -e $file) {
-++	    push @machofiles, $file;
-+ 	} else {
-+ 	    my @to_add = glob($file);
-+ 	    push @files, @to_add;
-+@@ -195,24 +197,28 @@
-+         }
-+ 	opendir(DIR, "$libdir") ||
-+ 	    syserr(_g("Can't read directory %s: %s"), $libdir, $!);
-+-	push @files, grep {
-++	push @elffiles, grep {
-+ 	    /(\.so\.|\.so$)/ && -f $_ &&
-+ 	    Dpkg::Shlibs::Objdump::is_elf($_);
-+ 	} map { "$libdir/$_" } readdir(DIR);
-++	push @machofiles, grep {
-++	    /(\.so$|\.dylib$|\.bundle$)/ && -f $_ &&
-++	    Dpkg::Shlibs::Objdump::is_mach_o($_);
-++	} map { "$libdir/$_" } readdir(DIR);
-+ 	close(DIR);
-+     }
-+ }
-+ 
-+-# Merge symbol information
-++# Merge ELF symbol information
-+ my $od = Dpkg::Shlibs::Objdump->new();
-+-foreach my $file (@files) {
-++foreach my $file (@elffiles) {
-+     print "Scanning $file for symbol information\n" if $debug;
-+-    my $objid = $od->analyze($file);
-++    my $objid = $od->analyze($file, 'elf');
-+     unless (defined($objid) && $objid) {
-+ 	warning(_g("Objdump couldn't parse %s\n"), $file);
-+ 	next;
-+     }
-+-    my $object = $od->get_object($objid);
-++    my $object = $od->get_object($objid, 'elf');
-+     if ($object->{SONAME}) { # Objects without soname are of no interest
-+ 	print "Merging symbols from $file as $object->{SONAME}\n" if $debug;
-+ 	if (not $symfile->has_object($object->{SONAME})) {
-+@@ -223,8 +229,29 @@
-+ 	print "File $file doesn't have a soname. Ignoring.\n" if $debug;
-+     }
-+ }
-++
-+ $symfile->clear_except(keys %{$od->{objects}});
-+ 
-++# Merge Mach-O symbol information
-++foreach my $file (@machofiles) {
-++    print "Scanning $file for symbol information\n" if $debug;
-++    my $objid = $od->analyze($file, 'macho');
-++    unless (defined($objid) && $objid) {
-++	warning(_g("otool, nm, objdump couldn't parse %s\n"), $file);
-++	next;
-++    }
-++    my $object = $od->get_object($objid, 'macho');
-++    if ($object->{SONAME}) { # Objects without soname are of no interest
-++	print "Merging symbols from $file as $object->{SONAME}\n" if $debug;
-++	if (not $symfile->has_object($object->{SONAME})) {
-++	    $symfile->create_object($object->{SONAME}, "$oppackage #MINVER#");
-++	}
-++	$symfile->merge_symbols($object, $sourceversion);
-++    } else {
-++	print "File $file doesn't have a soname. Ignoring.\n" if $debug;
-++    }
-++}
-++
-+ # Write out symbols files
-+ if ($stdout) {
-+     $output = _g("<standard output>");
-diff -ruN dpkg-1.16.9.orig/fink/patches/test-fix.patch dpkg-1.16.9/fink/patches/test-fix.patch
---- dpkg-1.16.9.orig/fink/patches/test-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.9/fink/patches/test-fix.patch	2012-10-31 09:11:35.000000000 -0600
++ sub extract_from_shlibs {
++@@ -694,7 +703,7 @@
++ 	    next;
++ 	}
++ 	my $depread = defined($4) ? $4 : '';
++-	if (($libname eq $2) && ($libversion eq $3)) {
+++	if (($libname eq $2 || $soname eq $2) && ($libversion eq $3)) {
++ 	    # Define dep and end here if the package type explicitly
++ 	    # matches. Otherwise if the packagetype is not specified, use
++ 	    # the dep only as a default that can be overriden by a later
+diff -ruN dpkg-1.16.10.orig/fink/patches/test-fix.patch dpkg-1.16.10/fink/patches/test-fix.patch
+--- dpkg-1.16.10.orig/fink/patches/test-fix.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/patches/test-fix.patch	2012-10-31 09:11:35.000000000 -0600
 @@ -0,0 +1,20 @@
 +diff -ruN dpkg-1.16.4.3.orig/src/t/100_dpkg_divert.t dpkg-1.16.4.3/src/t/100_dpkg_divert.t
 +--- dpkg-1.16.4.3.orig/src/t/100_dpkg_divert.t	2012-06-13 23:12:34.000000000 -0600
