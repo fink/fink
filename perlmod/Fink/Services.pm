@@ -1414,7 +1414,8 @@ sub get_darwin_equiv {
 		'11' => '10.7',
 		'12' => '10.8',
 	);
-	return $darwin_osx{get_kernel_vers()};
+	my $kernel_vers = get_kernel_vers();
+	return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
 }
 
 =item get_kernel_vers
