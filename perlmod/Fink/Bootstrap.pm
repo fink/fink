@@ -433,6 +433,7 @@ sub is_perl_supported {
 	} elsif ("$]" == "5.010000") {
 	} elsif ("$]" == "5.012003") {
 	} elsif ("$]" == "5.012004") {
+	} elsif ("$]" =~ /5\.01200[5-9]/) {
 	} else {
 		# unsupported version of perl
 		return 0;
