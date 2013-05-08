@@ -5,7 +5,7 @@ use strict;
 BEGIN {
     unless( eval { require Test::More } ) {
         print "Bail out!  Can't find Test::More\n";
-        print STDERR <<ERROR;
+        print STDERR <<"ERROR";
 
 $@
 

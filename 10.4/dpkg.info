@@ -3,6 +3,12 @@ Version: 1.10.21
 Revision: 1236
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
+BuildConflicts: <<
+	( %m = powerpc ) gcc45, 
+	( %m = powerpc ) gcc46, 
+	( %m = powerpc ) gcc47,
+	( %m = powerpc ) gcc48
+<<
 Depends: libgettext8-shlibs (>= 0.18.2.1-1), libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
 Essential: yes
 UseMaxBuildJobs: false

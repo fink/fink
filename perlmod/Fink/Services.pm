@@ -576,6 +576,7 @@ EOSCRIPT
 		# sudo can clear or change the env, so we need to re-establish
 		# the env that existed outside the sudo
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
+		push @wrap, "__CFPREFERENCES_AVOID_DAEMON=1";
 		unshift @wrap, 'env' if @wrap;
 		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
 		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
@@ -2602,7 +2603,9 @@ sub select_legal_path {
 		# avoid relative paths
 		if (!File::Spec->file_name_is_absolute($dir_selection)) {
 			unless ($interactive) {
-				&print_breaking_stderr ("ERROR: $dir_selection is not an absolute directory path.");
+				&print_breaking_stderr ("ERROR: '$dir_selection' is not an absolute directory path. ".
+										"Run 'fink configure' and fix the item (use a space if ". 
+										"you want to clear it)." );
 				return '';
 			}
 			$dir_selection = &prompt("That does not look like a complete (absolute) pathname. ".
@@ -2612,7 +2615,7 @@ sub select_legal_path {
 		# We're otherwise good, so check whether entire path to candidate directory
 		# 1.  Contains no non-directory files
 		# 2.  Has the proper permissions all the way down
-		# Buildpath will generate the full tree, and 
+		# Buildpath will generate the full tree 
 		my ($status, $path_check) = &is_accessible($dir_selection, $perm); 
 		if ($status == 1) { #non-directory
 			$error_text = "$path_check is not a directory.";

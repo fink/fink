@@ -655,6 +655,12 @@ sub do_real_list {
 						print "\"$pname\" -> \"$1\";\n";
 					}
 				}
+			} else {
+				my @providers = $package->get_all_providers();
+				for my $provider (@providers) {
+					my $name = $provider->get_name();
+					print "\"$pname\" -> \"$name\";\n" if $name ne $pname;
+				}
 			}
 		} else {
 			printf $formatstr,

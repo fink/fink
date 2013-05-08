@@ -24,7 +24,7 @@ Requirements
 You need:
 
  * An installed Mac OS X system, version 10.5 or later. 
-   Earlier versions will not work with fink-0.34.7.
+   Earlier versions will not work with fink-0.34.8.
 
  * Development tools. 
    On OS 10.6 and earlier, install the Developer.pkg package from the Developer Tools CD. 

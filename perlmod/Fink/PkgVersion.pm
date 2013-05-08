@@ -3506,7 +3506,7 @@ GCC_MSG
 			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
 			$tar_is_pax=1; # Flag denoting that we're using pax
 		} elsif ( -e "$basepath/bin/tar" ) {
-			$tarcommand = "env LANG=C LC_ALL=C $basepath/bin/tar $permissionflags $tarflags"; # Use Fink's GNU Tar if available
+			$tarcommand = "$basepath/bin/tar $permissionflags $tarflags"; # Use Fink's GNU Tar if available
 		}
 		$bzip2 = $config->param_default("Bzip2path", 'bzip2');
 		$bzip2 = 'bzip2' unless (-x $bzip2);
@@ -4885,7 +4885,13 @@ EOF
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
 	}
 
-	foreach my $cpp ("$dir/cc", "$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2", "$dir/gcc", "$dir/gcc-4.0", "$dir/gcc-4.2", "$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2") {
+	foreach my $cpp (
+		"$dir/cc",
+		"$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2",
+		"$dir/gcc", "$dir/gcc-4.0", "$dir/gcc-4.2",
+		"$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2",
+		"$dir/clang", "$dir/clang++",
+	) {
 		unless (-l $cpp) {
 			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
 		}
