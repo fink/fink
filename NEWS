@@ -5,6 +5,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
+0.34.8 "duct tape" (2013-05-08)
+	* More general fix to the hanging tar issue.  Thanks to Eric Gallager (cooljeanius)
+	  for suggesting and testing this option.  Thanks, also, to Murr.
+	* Improved "fink list --dotty-build".
+	* Suggest using "fink configure" when facing legacy fink.conf path issue.
+	* clang and clang++ wrappers, mostly for 10.6/i386.
+	* Other bugfixes.
+
 0.34.7 "overhead track" (2013-03-29)
 	* Bugfix: address issue where fink's tar hangs during unpack operations. Thanks to
 	  Peter Dyballa for the workaround.
