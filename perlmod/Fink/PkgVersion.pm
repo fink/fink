@@ -1170,7 +1170,11 @@ sub get_script {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$perlcmd = "ARCHFLAGS=\"\" $perlcmd"; # prevent Apple's perl from building fat
 			my $makeflags = '';
-			if ($self->get_subtype('perl') eq '5.12.3' and Fink::Services::get_kernel_vers() eq '11') {
+			if ($self->get_subtype('perl') eq '5.10.0' and Fink::Services::get_kernel_vers() eq '10') {
+				# system-perl configure hardcodes gcc-4.2, which is
+				# not necessarily even present
+				$makeflags = ' CC=gcc CXX=g++';
+			} elsif ($self->get_subtype('perl') eq '5.12.3' and Fink::Services::get_kernel_vers() eq '11') {
 				# path-prefix-clang wraps gcc and g++ but system-perl
 				# configure hardcodes gcc-4.x, which is not wrapped
 				$makeflags = ' CC=gcc CXX=g++';
