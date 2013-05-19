@@ -940,8 +940,8 @@ sub validate_info_file {
 # 0.24.12 came out many years ago and nothing that old likely even
 # boots on any currently supported OSX
 #			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.24.12', 'use of PatchFile', $filename);
-#		} else {
-			$looks_good = 0 unless _min_fink_version($properties, {build => '0.30.0'}, 'use of PatchFile(N)', $filename);
+		} else {
+			$looks_good = 0 unless _min_fink_version($properties, {build => '0.30.0'}, 'use of PatchFileN', $filename);
 		}
 
 		# can't mix old and new patching styles
