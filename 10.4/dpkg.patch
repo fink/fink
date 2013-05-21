@@ -1022,8 +1022,8 @@ diff -ruN dpkg-1.16.10.orig/fink/patches/fink-triggers.patch dpkg-1.16.10/fink/p
 + 		if (errno == ENOENT)
 diff -ruN dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch dpkg-1.16.10/fink/patches/fink-virtuals.patch
 --- dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.10/fink/patches/fink-virtuals.patch	2012-08-22 15:37:19.000000000 -0600
-@@ -0,0 +1,546 @@
++++ dpkg-1.16.10/fink/patches/fink-virtuals.patch	2013-05-21 14:45:39.000000000 -0600
+@@ -0,0 +1,547 @@
 +diff -ruN dpkg-1.16.4.3.orig/dselect/main.cc dpkg-1.16.4.3/dselect/main.cc
 +--- dpkg-1.16.4.3.orig/dselect/main.cc	2012-06-13 23:12:30.000000000 -0600
 ++++ dpkg-1.16.4.3/dselect/main.cc	2012-07-02 16:42:33.000000000 -0600
@@ -1040,7 +1040,7 @@ diff -ruN dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch dpkg-1.16.10/fink/p
 + #include "dselect.h"
 + #include "bindings.h"
 + #include "pkglist.h"
-+@@ -507,6 +513,173 @@
++@@ -500,6 +506,173 @@
 +   return urqr_quitmenu;
 + }
 + 
@@ -1214,7 +1214,7 @@ diff -ruN dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch dpkg-1.16.10/fink/p
 + static void
 + dselect_catch_fatal_error()
 + {
-+@@ -521,6 +694,10 @@
++@@ -514,6 +687,10 @@
 +   bindtextdomain(DSELECT, LOCALEDIR);
 +   textdomain(DSELECT);
 + 
@@ -1542,23 +1542,24 @@ diff -ruN dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch dpkg-1.16.10/fink/p
 + 
 +   interestingwarnings= 0;
 +   ok = dep_check_ok;
-+@@ -576,6 +611,27 @@
-+       struct pkginfo *pkg_pos;
++@@ -595,6 +630,28 @@
++       }
++       deppossi_pkg_iter_free(possi_iter);
 + 
-+       debug(dbg_depcondetail,"    checking possibility  -> %s",possi->ed->name);
 ++      /* FINK LOCAL begin */
-++      virt_pkg = fink_virt_pkg;
-++      while (virt_pkg)
-++      {
-++        if (strcasecmp(possi->ed->name, virt_pkg->pkgname) == 0) {
-++          found = check_pseudo_package(&virt_pkg->version, possi,
-++				       &interestingwarnings, &oemsgs);
-++	  if (found == found_ok || found == found_forced) {
-++            debug(dbg_depcondetail,"        is fink-virtual, ok and found");
-++	    break;
-++	  }
+++      if (found != found_ok) {
+++        virt_pkg = fink_virt_pkg;
+++        while (virt_pkg) {
+++          if (strcasecmp(possi->ed->name, virt_pkg->pkgname) == 0) {
+++              found = check_pseudo_package(&virt_pkg->version, possi,
+++				           &interestingwarnings, &oemsgs);
+++            if (found == found_ok || found == found_forced) {
+++              debug(dbg_depcondetail,"        is fink-virtual, ok and found");
+++	      break;
+++	    }
+++          }
+++          virt_pkg = virt_pkg->next;
 ++        }
-++        virt_pkg = virt_pkg->next;
 ++      }
 ++      if (found == found_ok || found == found_forced) {
 ++        /* found done */
@@ -1567,9 +1568,9 @@ diff -ruN dpkg-1.16.10.orig/fink/patches/fink-virtuals.patch dpkg-1.16.10/fink/p
 ++      }
 ++      /* FINK LOCAL end */
 ++
-+       if (possi->cyclebreak) {
-+         debug(dbg_depcondetail,"      break cycle so ok and found");
-+         found = found_ok;
++       if (found != found_ok && possi->verrel == dpkg_relation_none) {
++         for (provider = possi->ed->depended.installed;
++              found != found_ok && provider;
 diff -ruN dpkg-1.16.10.orig/fink/patches/full-path-calls.patch dpkg-1.16.10/fink/patches/full-path-calls.patch
 --- dpkg-1.16.10.orig/fink/patches/full-path-calls.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.16.10/fink/patches/full-path-calls.patch	2012-07-09 16:10:10.000000000 -0600
