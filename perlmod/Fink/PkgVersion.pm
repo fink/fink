@@ -5313,6 +5313,10 @@ sub get_perl_dir_arch {
 				# 10.8 system-perl is 5.12.4, but the only supplied
 				# interp is /usr/bin/perl5.12 (not perl5.12.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
+			} elsif ($perlversion gt  "5.12" and Fink::Services::get_kernel_vers() gt '12') {
+				# The above pattern is likely to continue
+				$perlversion = s/5\.(\d+).*/5.$1/;	
+				$perlcmd = "/usr/bin/arch -%m perl$perlversion" ;
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);
