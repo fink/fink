@@ -4249,8 +4249,6 @@ EOF
 
 # FIXME:
 #    * Make sure each interest/activate is actutally in fink base
-#    * Rejoin wrap continuation lines
-#      (use \ not heredoc multiline-field)
 
 		my @triggerlines;
 		for my $line (split(/\n/, $triggersbody)) {
@@ -4264,7 +4262,6 @@ EOF
 			close $triggersfile or &{$triggers_error}($self, 'triggers');
 			chmod 0644, "$destdir/DEBIAN/triggers";
 		}
-
 	}
 
 	### create scripts as neccessary
@@ -6031,21 +6028,30 @@ sub get_triggers_fields {
 
 	my @triggertypes = (
 		"activate",
+		"activate-noawait",
 		"interest",
+		"interest-noawait",
 	);
 	
+	my $expand = $self->{_expand};
 	my $triggers_cooked = '';  # processed results
-	foreach my $triggertype (@triggertypes) {
-		# lines from .info
-		my $triggers_raw = $self->param_default_expanded(ucfirst($triggertype).'Triggers', '');
-		$triggers_raw =~ s/\s+/ /g; # Make it one line
-		$triggers_raw = $self->conditional_space_list($triggers_raw,
-			ucfirst($triggertype)."Triggers of ".$self->get_fullname()." in ".$self->get_info_filename
-		);
-		foreach my $info_line (split /\s+/, $triggers_raw) {
-			next if $info_line =~ /^#/;  # skip comments
-			$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
-			$triggers_cooked .= "$triggertype $1\n" if length $1;
+	my $triggers = $self->param_default("Triggers", "");
+	my $trigger_properties = &read_properties_var(
+		"Triggers of ".$self->get_fullname,
+		$self->param_default('Triggers', ''), {remove_space => 1});
+	while (my($key, $val) = each(%$trigger_properties)) {
+		if (grep $_ eq lc($key), @triggertypes) {
+			my $triggertype = lc($key);
+			my $triggers_raw = &expand_percent($val, $expand, $self->get_info_filename." \"$val\"", 2);
+			$triggers_raw =~ s/\s+/ /g; # Make it one line
+			$triggers_raw = $self->conditional_space_list($triggers_raw,
+				ucfirst($triggertype)."Triggers of ".$self->get_fullname()." in ".$self->get_info_filename
+			);
+			foreach my $info_line (split /\s+/, $triggers_raw) {
+				next if $info_line =~ /^#/;  # skip comments
+				$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
+				$triggers_cooked .= "$triggertype $1\n" if length $1;
+			}
 		}
 	}
 	$triggers_cooked;
