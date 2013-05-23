@@ -306,9 +306,11 @@ SplitOff2: <<
     share/man/man8
   <<
   DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
-  InterestTriggers: <<
-    %p/share/info
-    %p/info
+  Triggers: <<
+    Interest-noawait: <<
+      %p/share/info
+      %p/info
+    <<
   <<
   Description: Manage installed documentation in info format
   DescDetail: <<
