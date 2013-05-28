@@ -1,7 +1,7 @@
 diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 --- dpkg-1.16.10.orig/fink/md5sum	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.16.10/fink/md5sum	2012-07-02 16:14:45.000000000 -0600
-@@ -0,0 +1,313 @@
++++ dpkg-1.16.10/fink/md5sum	2013-05-28 08:30:00.000000000 -0600
+@@ -0,0 +1,322 @@
 +#!/usr/bin/perl
 +use strict;
 +use warnings;
@@ -14,6 +14,7 @@ diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 +# GNU General Public License version 2.
 +
 +my $md5_bin = "/sbin/md5";
++my $binary_mode = "";
 +my $check_mode = 0;
 +my $quiet = 0;
 +my $warn  = 0;
@@ -49,7 +50,7 @@ diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 +  if( $file eq "-" and $stdin_done )
 +  {
 +    # second - is empty, so md5sum is of the empty string
-+    print "d41d8cd98f00b204e9800998ecf8427e  -\n";
++    print "d41d8cd98f00b204e9800998ecf8427e  $binary_mode-\n";
 +    next;
 +  }
 +
@@ -60,7 +61,7 @@ diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 +  }
 +
 +  # the old md5sum, nor md5, understand binary mode, so...
-+  print "$checksum  $file\n";
++  print "$checksum  $binary_mode$file\n";
 +
 +  if( $file eq "-" )
 +  {
@@ -132,9 +133,13 @@ diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 +      {
 +        version_and_exit();
 +      }
-+      elsif( $opt eq "binary" or $opt eq "text" )
++      elsif( $opt eq "text" )
 +      {
 +        # ignore
++      }
++      elsif( $opt eq "binary" )
++      {
++        $binary_mode = "*";
 +      }
 +      elsif( $opt eq "check" )
 +      {
@@ -165,9 +170,13 @@ diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 +    {
 +      my @opts = split //, $1;
 +      for(@opts) {
-+        if( $_ eq "b" or $_ eq "t" )
++        if( $_ eq "t" )
 +        {
 +          # ignore
++        }
++        elsif( $_ eq "b" )
++        {
++          $binary_mode = "*";
 +        }
 +        elsif( $_ eq "c" )
 +        {
