@@ -1056,7 +1056,7 @@ sub _validate_info_filename {
 }
 
 # Given a package hashref, check the various *Depends for whether any "fink" less than
-# than the given $required_versions{build=>'some_version', run=>'possbly_other_version'} 
+# than the given $required_versions{build=>'some_version', run=>'possibly_other_version'} 
 # will not suffice. If so (i.e., insufficient dependency for something that requires 
 # at least the given version-string), print warning indicating the minimum
 # requirement for $feature.  build subsumes both BuildDepends and Depends, run subsumes
