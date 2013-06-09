@@ -295,7 +295,7 @@ fi
 SplitOff2: <<
   Package: install-info
   # Comment out for bootstrap version
-  Depends: dpkg (>= 1.15)
+  # Depends: dpkg (>= 1.15)
   Replaces: texinfo (<< 4.13-1002)
   Essential: true
   Files: <<
