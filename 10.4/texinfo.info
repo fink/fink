@@ -32,7 +32,7 @@ patch -p1 < fink/patches/info_universal_argument
 patch -p1 < fink/patches/dont_build_info
 
 # help2man isn't present in bootstrap so patch it out
-perl -pi -e 's,help2man,true,g' configure
+# perl -pi -e 's,help2man,true,g' configure
 <<
 ConfigureParams: <<
   --mandir=%p/share/man \
@@ -46,7 +46,8 @@ CompileScript: <<
   make
 <<
 InfoTest: <<
-  TestScript: make check ALL_TESTS=yes || exit 2
+  TestConflicts: pod-simple-pm
+  TestScript: make check || exit 2
 <<
 InstallScript: <<
   make install prefix=%i mandir=%i/share/man infodir=%i/share/info
@@ -294,7 +295,7 @@ fi
 SplitOff2: <<
   Package: install-info
   # Comment out for bootstrap version
-  # Depends: dpkg (>= 1.15)
+  Depends: dpkg (>= 1.15)
   Replaces: texinfo (<< 4.13-1002)
   Essential: true
   Files: <<
