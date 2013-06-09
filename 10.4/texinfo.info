@@ -32,7 +32,7 @@ patch -p1 < fink/patches/info_universal_argument
 patch -p1 < fink/patches/dont_build_info
 
 # help2man isn't present in bootstrap so patch it out
-# perl -pi -e 's,help2man,true,g' configure
+perl -pi -e 's,help2man,true,g' configure
 <<
 ConfigureParams: <<
   --mandir=%p/share/man \
