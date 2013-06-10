@@ -35,7 +35,7 @@ ConfigureParams: <<
 CompileScript: <<
 	#!/bin/sh -ev
 	cd gettext-runtime
-	env EMACS=no CCACHE_DISABLE=1 ./configure %c
+	env EMACS=no CCACHE_DISABLE=1 JAVA=/usr/bin/java JAVAC=/usr/bin/javac ./configure %c
 	make
 <<
 InstallScript: <<

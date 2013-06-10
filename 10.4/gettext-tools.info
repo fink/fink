@@ -28,12 +28,6 @@ BuildDepends: <<
 	libncurses5 (>= 5.4-20041023-1011)
 <<
 Conflicts: gettext-tools-0.17
-BuildConflicts: <<
-	( %m = powerpc ) gcc45, 
-	( %m = powerpc ) gcc46, 
-	( %m = powerpc ) gcc47,
-	( %m = powerpc ) gcc48
-<<
 Replaces: gettext-dev (<= 0.10.40-20), gettext (<= 0.10.40-4), gettext-bin (<= 0.10.40-20), libgettext3-shlibs (<< 0.14.5-1), libgettextpo2-shlibs (<< 0.14.5-2), gettext-tools-0.17
 
 ### When gettext-tools gets updated, make sure these ./configure parameters 
@@ -62,7 +56,7 @@ ConfigureParams: <<
 CompileScript: <<
 	#!/bin/sh -ev
 	cd gettext-tools
-	env EMACS=no ./configure %c
+	env EMACS=no JAVA=/usr/bin/java GCJ=/usr/bin/javac ./configure %c
 	make -w
 <<
 InfoTest: <<
@@ -185,6 +179,10 @@ DescPackaging: <<
 	Don't bother checking for AIX-specific bug (test is bugged on
 	clang). See:
 	http://lists.gnu.org/archive/html/bug-autoconf/2010-08/msg00116.html
+
+	--disable-java --disable-native-java don't stop configure-time checking,
+	and gcj cause hangups on powerpc.  Setting JAVA=/usr/bin/java and 
+	GCJ=/usr/bin/javac avoids that. 
 <<
 
 
