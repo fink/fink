@@ -1,6 +1,6 @@
 Package: texinfo
 Version: 5.1
-Revision: 1.1
+Revision: 2.1
 Source: gnu
 Source-MD5: 54e250014fe698fb4832016158747c03
 SourceDirectory: %n-%v
@@ -50,7 +50,7 @@ InfoTest: <<
   TestScript: make check || exit 2
 <<
 InstallScript: <<
-  make install prefix=%i mandir=%i/share/man infodir=%i/share/info
+  AM_UPDATE_INFO_DIR=no make install prefix=%i mandir=%i/share/man infodir=%i/share/info
   TEXMF=%i/share/texmf make install-tex prefix=%i mandir=%i/share/man infodir=%i/share/info
   find %i -type f -name dir | xargs rm -f
 
