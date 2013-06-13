@@ -4546,6 +4546,12 @@ EOF
 						$libfile = $destdir.File::Spec->rel2abs(readlink($libfile))
 					}
 
+					if ( ! -f $libfile) {
+						# at this point we need to do a
+						# find in $destdir to find it
+						# FIXME
+					}
+
 					$libs_string .= " -e$libfile";
 				}
 				$cmd .= " -P$destdir -v$shlib_ver -O$destdir/DEBIAN/symbols $libs_string";
