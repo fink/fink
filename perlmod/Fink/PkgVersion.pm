@@ -4540,8 +4540,15 @@ EOF
 					#$cmd .= " -I$symbols";
 				}
 
-				my $libs_string = join(" -e", @lib_files);
-				$cmd .= " -P$destdir -v$shlib_ver -O$destdir/DEBIAN/symbols -e".$libs_string;
+				my $libs_string = "";
+				foreach my $libfile (@lib_files) {
+					if ( -l $libfile ) {
+						$libfile = $destdir.File::Spec->rel2abs(readlink($libfile))
+					}
+
+					$libs_string .= " -e$libfile";
+				}
+				$cmd .= " -P$destdir -v$shlib_ver -O$destdir/DEBIAN/symbols $libs_string";
 
 				print "Writing symbols file...\n";
 				if (&execute($cmd)) {
