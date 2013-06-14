@@ -4520,53 +4520,6 @@ EOF
 				}
 
 			}
-
-			# make sure we got some libs and a newer dpkg
-			if (@lib_files && -e "$basepath/bin/dpkg-gensymbols") {
-				# make sure shlib_name and var are set
-				if ($shlib_ver eq "" or $shlib_name eq "") {
-					# something went wrong use current info
-					$shlib_name = $self->get_name();
-					$shlib_ver = $self->get_version();
-				}
-
-				$cmd = "dpkg-gensymbols -q -p$shlib_name";
-
-				# check for user symbols from info file
-				if ($self->has_param("Symbols")) {
-					# Create temp file with the user content
-					# FIXME
-					#my $symbols = $self->has_param("Symbols");
-					#$cmd .= " -I$symbols";
-				}
-
-				my $libs_string = "";
-				foreach my $libfile (@lib_files) {
-					if ( -l $libfile ) {
-						$libfile = $destdir.File::Spec->rel2abs(readlink($libfile))
-					}
-
-					if ( ! -f $libfile) {
-						# at this point we need to do a
-						# find in $destdir to find it
-						# FIXME
-					}
-
-					$libs_string .= " -e$libfile";
-				}
-				$cmd .= " -P$destdir -v$shlib_ver -O$destdir/DEBIAN/symbols $libs_string";
-
-				print "Writing symbols file...\n";
-				if (&execute($cmd)) {
-					my $error = "can't create symbols file for ".$self->get_fullname().": $!";
-					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
-					die $error . "\n";
-				} else {
-					# should check the size here, if 0 then
-					# remove it
-					chmod 0644, "$destdir/DEBIAN/symbols";
-				}
-			}
 		}
 		if (@privateshlibslines) {
 			my $shlibsfile = IO::Handle->new();
@@ -4576,7 +4529,79 @@ EOF
 			chmod 0644, "$destdir/DEBIAN/private-shlibs";
 		}
 
+		### Create symbol file
+
+		chomp(my $otool = `which otool 2>/dev/null`);
+		undef $otool unless -x $otool;
+		chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
+		undef $otool64 unless -x $otool64;		  # binaries (otool itself cannot handle them)
+		my @symbol_files;
+		File::Find::find({
+			preprocess => sub {
+				# Don't descend into the .deb control directory
+				return () if $File::Find::dir eq "$destdir/DEBIAN";
+				return @_;
+			},
+			wanted => sub {
+				if (-f $_ && ! -l $_ && $_ =~ m/\.dylib$/) {
+					if (defined $otool) {
+						if (open (OTOOL, "$otool -L '$_' |")) {
+							<OTOOL>; # skip the first line
+							my ($install_name, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+							close (OTOOL);
+
+							if (!defined $install_name or !defined $compat_version) {
+								if (defined $otool64) {
+									if (open (OTOOL, "$otool64 -L '$_' |")) {
+										<OTOOL>; # skip the first line
+										($install_name, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+										close (OTOOL);
+									}
+								}
+							}
+							if (defined $install_name) {
+								if (grep {/^\s*$install_name\s/} @shlibslines) {
+									push(@symbol_files, $File::Find::name);
+								}
+							}
+						} else {
+							print "Warning: otool -L failed on $_.\n";
+						}
+					}
+				}
+			},
+		}, $destdir
+		);
+
+		# make sure we got some libs and a newer dpkg
+		if (@symbol_files && -e "$basepath/bin/dpkg-gensymbols") {
+			$cmd = "dpkg-gensymbols -q -p".$self->get_name();
+
+			# check for user symbols from info file
+			# FIXME NOT IMPLEMENTED
+			if ($self->has_param("Symbols")) {
+				# Create temp file with the user content
+				# FIXME
+				#my $symbols = $self->has_param("Symbols");
+				#$cmd .= " -I$symbols";
+			}
+
+			my $libs_string = "-e".join(" -e", @symbol_files);
+			$cmd .= " -P$destdir -v".$self->get_version()." -O$destdir/DEBIAN/symbols $libs_string";
+
+			print "Writing symbols file...\n";
+			if (&execute($cmd)) {
+				my $error = "can't create symbols file for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			} else {
+				# should check the size here, if 0 then
+				# remove it
+				chmod 0644, "$destdir/DEBIAN/symbols";
+			}
+		}
 	}
+
 
 	### config file list
 
