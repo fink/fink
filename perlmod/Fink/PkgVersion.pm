@@ -4602,7 +4602,6 @@ EOF
 		}
 	}
 
-
 	### config file list
 
 	if ($self->has_param('ConfFiles')) {
