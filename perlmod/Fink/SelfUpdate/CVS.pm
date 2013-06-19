@@ -37,7 +37,12 @@ use File::Find;
 use strict;
 use warnings;
 
-my $cvs="/usr/bin/cvs"; # Only one provider as of 10.5.
+my $cvs
+if (-x "/usr/bin/cvs") {
+	$cvs = "/usr/bin/cvs"; #Apple's
+} else {
+	$cvs = "$basepath/bin/cvs"; #ours otherwise
+}
 our $VERSION = 1.00;
 my $vcs = "CVS"; # name of the format
 my $vcs_lc = "cvs"; # name of the executable
