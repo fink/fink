@@ -37,13 +37,8 @@ use File::Find;
 use strict;
 use warnings;
 
-my $cvs
-if (-x "/usr/bin/cvs") {
-	$cvs = "/usr/bin/cvs"; #Apple's
-} else {
-	$cvs = "$basepath/bin/cvs"; #ours otherwise
-}
-our $VERSION = 1.00;
+our $VERSION = 1.01;
+our $cvs;
 my $vcs = "CVS"; # name of the format
 my $vcs_lc = "cvs"; # name of the executable
 
@@ -63,14 +58,20 @@ See documentation for the Fink::SelfUpdate base class.
 
 This method builds packages from source, so it requires the
 "dev-tools" virtual package.  This is checked via
-Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path);
+Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path.);
 
 =cut
 
 sub system_check {
 	my $class = shift;  # class method for now
-
-	return 0 unless $class->devtools_check($vcs_lc,$cvs);
+	our $cvs = "$basepath/bin/cvs"; # set to our cvs now to simplify later conditional
+	if (-f "/usr/bin/cvs" and -x "/usr/bin/cvs") {
+		$cvs = "/usr/bin/cvs"; #Apple's
+	} elsif (! -x $cvs) { # have fallen through to Fink's CVS
+		warn "Before changing your selfupdate method to '$vcs', you must install\n"."Fink's cvs package.\n";
+		return 0;
+	}
+	return 0 unless $class->devtools_check($vcs_lc,$cvs,);
 	return 1;
 }
 
