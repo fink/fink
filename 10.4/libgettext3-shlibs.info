@@ -15,6 +15,12 @@ PatchScript: <<
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.24.12)
 Conflicts: libgettext3
+BuildConflicts: <<
+	( %m = powerpc ) gcc45, 
+	( %m = powerpc ) gcc46, 
+	( %m = powerpc ) gcc47,
+	( %m = powerpc ) gcc48
+<<
 Replaces: gettext-bin (<< 0.14-1), libgettext3
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1

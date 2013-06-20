@@ -22,6 +22,44 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
+0.34.9 "recessed" (2013-06-05)
+	* Support OS 10.8.4.
+	* We appear to need the fixes from both 0.34.7 and 0.34.8 for hanging tar, so 
+	  we'll have both.
+	* For MakeMaker builds:  Override the default "g(cc|++)2-4.2" compiler option 
+	  given by the system's Perl on 10.6 in favor of our "g(cc|++)" wrapper, since
+	  gcc-4.2 isn't present for clean Xcode 4.2 installs, and our wrapper is equivalent
+	  (and contains arch information) for Xcode 3.2.x.
+	* Validation::_min_fink_version() API change to allow more generic dependencies.
+	  Example:  Depends: fink (>= 0.32) now automatically satisfies BuildDepends 
+	  fink (>= 0.32).  Similarly, Depends: automatically satisfies RuntimeDepends.
+	* Have fink display the help text if given an unknown verb.  This lets "fink help"
+	  and "fink --help" give the same output and reduces surprises. :-)
+	
+0.34.8 "duct tape" (2013-05-08)
+	* More general fix to the hanging tar issue.  Thanks to Eric Gallager (cooljeanius)
+	  for suggesting and testing this option.  Thanks, also, to Murr.
+	* Improved "fink list --dotty-build".
+	* Suggest using "fink configure" when facing legacy fink.conf path issue.
+	* clang and clang++ wrappers, mostly for 10.6/i386.
+	* Other bugfixes.
+
+0.34.7 "overhead track" (2013-03-29)
+	* Bugfix: address issue where fink's tar hangs during unpack operations. Thanks to
+	  Peter Dyballa for the workaround.
+
+0.34.6 "Hook and loop" (2013-03-16)
+	* Support 10.8.3.
+	* Clean up error reports from missing system commands.
+
+0.34.5 "suction cup hook" (2013-01-28)
+	* Fix clang virtual package detection against Xcode 4.6+.
+	* Update 10.4/base and 10.7/base package description files to match latest versions
+	  in bootstrap.
+	* Removed a number of spurious virtual perlmods.
+	* Check for valid Buildpath and FetchAltDir during 'fink configure'.
+	* Additional documentation.
+
 0.34.4 "Ceiling Mount" (2012-09-25)
 	* Support 10.8.2 and 10.7.5
 	* Check permissions in working directories to make sure that fink-bld can
