@@ -686,7 +686,7 @@ END
 							# between CLI tools versions.  If we find something
 							# then we can update the revision based on that.
 			$hash->{version} = "$version-$revision";
-			print STDERR $result, "\n" if $options{debug};
+			print STDERR $version, "\n" if $options{debug};
 			$hash->{status} = STATUS_PRESENT;
 		} elsif ($options{debug}) {
 			# failed, so display whatever error message or diagnostics we can find
