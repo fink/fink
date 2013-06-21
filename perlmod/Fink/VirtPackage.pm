@@ -376,64 +376,83 @@ END
 
 =item "system-javaI<XX>"
 
-This package represents an installed version of Apple's Java.
+This package represents an installed version of Apple's and/or Oracle's Java.
 It is considered present if the
 /System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Commands
-directory exists.
+and or the /Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/bin
+directories exist.
 
 =cut
 
 	# create dummy object for java
 	print STDERR "- checking Java versions:\n" if ($options{debug});
+	my @jdktest= split /\n/, `/usr/libexec/java_home -V 2>&1`;
+	my ($latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
-	my ($latest_java, $latest_javadev);
-	if (opendir(DIR, $javadir)) {
-		chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
-		for my $dir (reverse(sort(@dirs, '1.3', '1.4', '1.5'))) {
-			my $ver = $dir;
-			# chop the version down to major/minor without dots
-			$ver =~ s/[^\d]+//g;
-			$ver =~ s/^(..).*$/$1/;
-			next if ($ver eq "");
-			print STDERR "  - $dir... " if ($options{debug});
+	my $arch = Fink::FinkVersion::get_arch();
+	foreach (@jdktest) {
+		next unless /$arch/; #exclude off-Fink-architecture JDK's
+		my ($ver,$javadir) = m|(\d.*),.*\s(/.*)$|; #extract version and directory info
+		# However, we'll have to switch the directory for JDK 1.6 and earlier.
+		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
+		if (opendir(DIR, $javadir)) {
+			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
+			for my $dir (reverse(sort(@dirs))) {
+				if ($javadir =~ /System/) { # 1.6 and earlier
+					$ver = $dir;
+					$java_test_dir = "$javadir/$dir/Commands";
+					$java_cmd_dir = "$dir/Commands";
+				} else { # 1.7 and later
+					($dir) = ($javadir =~ m|jdk(\d.*)_|) ;
+					$java_test_dir = "$javadir/bin";
+					($java_cmd_dir) = ($java_test_dir =~ /(jdk.*jdk.*)/);
+					($java_inc_dir) = ($javadir =~ /(jdk.*jdk.*)/);
+					$java_inc_dir .= '/include';
+				}
+				# chop the version down to major/minor without dots
+				$ver =~ s/[^\d]+//g;
+				$ver =~ s/^(..).*$/$1/;
+				next if ($ver eq ""); # directories that aren't versioned;
+				print STDERR "  - $dir... " if ($options{debug});
 
-			$hash = {};
-			$hash->{package}     = "system-java${ver}";
-			$hash->{version}     = $dir . "-1";
-			$hash->{description} = "[virtual package representing Java $dir]";
-			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-			$hash->{provides}    = 'system-java';
-			if ($ver >= 14) {
-				$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
-			}
-			$hash->{descdetail}  = <<END;
+				$hash = {};
+				$hash->{package}     = "system-java${ver}";
+				$hash->{version}     = $dir . "-1";
+				$hash->{description} = "[virtual package representing Java $dir]";
+				$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+				$hash->{provides}    = 'system-java';
+				if ($ver >= 14) {
+					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
+				}
+				$hash->{descdetail}  = <<END;
 This package represents the currently installed version
 of Java $dir.
 END
-			$hash->{compilescript} = &gen_compile_script($hash);
+				$hash->{compilescript} = &gen_compile_script($hash);
 
-			if ($dir =~ /^\d[\d\.]*$/ and -d $javadir . '/' . $dir . '/Commands') {
-				print STDERR "$dir/Commands " if ($options{debug});
-				$hash->{status}      = STATUS_PRESENT;
-				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
-				$latest_java = $dir unless (defined $latest_java);
+				if ($dir =~ /^\d[\d\.]*$/ and -d $java_test_dir) {
+					print STDERR "$java_cmd_dir " if ($options{debug});
+					$hash->{status}      = STATUS_PRESENT;
+					$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+					$latest_java = $dir unless (defined $latest_java);
 
 =item "system-javaI<XX>-dev"
 
-This package represents an installed version of Apple's Java SDK.
+This package represents an installed version of Apple's Java SDK or Oracle's JDK.
 It is considered present if the
 /System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Headers
-directory exists.
+and or /Library/Java/JavaVirtualMachines/jdk<version>.jdk/Contents/Home/include
+directories exist.
 
 =cut
 
-				$hash = {};
-				$hash->{package}     = "system-java${ver}-dev";
-				$hash->{status}      = STATUS_PRESENT;
-				$hash->{version}     = $dir . "-1";
-				$hash->{description} = "[virtual package representing Java $dir development headers]";
-				$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-				$hash->{descdetail}  = <<END;
+					$hash = {};
+					$hash->{package}     = "system-java${ver}-dev";
+					$hash->{status}      = STATUS_PRESENT;
+					$hash->{version}     = $dir . "-1";
+					$hash->{description} = "[virtual package representing Java $dir development headers]";
+					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+					$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
 you must download the Java SDK from Apple at:
@@ -441,30 +460,39 @@ you must download the Java SDK from Apple at:
   http://connect.apple.com/
 
 (free registration required)
+
+or the Java JDK from Oracle at:
+
+http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
 END
-				$hash->{compilescript} = &gen_compile_script($hash);
+					$hash->{compilescript} = &gen_compile_script($hash);
 
-				if (-r $javadir . '/' . $dir . '/Headers/jni.h') {
-					print STDERR "$dir/Headers/jni.h " if ($options{debug});
-					$latest_javadev = $dir unless (defined $latest_javadev);
-				} elsif ($distribution ge "10.5" && $ver >= 14 && -r $javadir . '/Current/Headers/jni.h') {
-					print STDERR "Current/Headers/jni.h " if ($options{debug});
-					$latest_javadev = $dir unless (defined $latest_javadev);
+					if (-r "$javadir/$dir/Headers/jni.h") {
+						print STDERR "$dir/Headers/jni.h " if ($options{debug});
+						$latest_javadev = $dir unless (defined $latest_javadev);
+					} elsif ($ver >= 14 && $ver < 17 && -r "$javadir/Current/Headers/jni.h") {
+						print STDERR "Current/Headers/jni.h " if ($options{debug});
+						$latest_javadev = $dir unless (defined $latest_javadev);
+					} elsif ($ver >= 17 && -r "$javadir/include/jni.h") {
+						print STDERR "$java_inc_dir " ;
+						$latest_javadev = $dir unless (defined $latest_javadev);
+					} else {
+						print STDERR "$javadir/$dir/Headers/jni.h missing " if ($options{debug});
+						$hash->{status} = STATUS_ABSENT;
+					}
+						$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+						print STDERR "\n" if ($options{debug});
 				} else {
-					print STDERR "$javadir/$dir/Headers/jni.h missing " if ($options{debug});
 					$hash->{status} = STATUS_ABSENT;
+					$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+					print STDERR "nothing\n" if ($options{debug});
 				}
-				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
-				print STDERR "\n" if ($options{debug});
-			} else {
-				$hash->{status} = STATUS_ABSENT;
-				$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
-				print STDERR "nothing\n" if ($options{debug});
+				last if $javadir !~ /System/ ; #JDK 1.7 and later
 			}
+			closedir(DIR);
 		}
-		closedir(DIR);
 	}
-
 =item "system-java"
 
 This is a convenience package that represents the latest Java version
@@ -686,7 +714,7 @@ END
 							# between CLI tools versions.  If we find something
 							# then we can update the revision based on that.
 			$hash->{version} = "$version-$revision";
-			print STDERR $result, "\n" if $options{debug};
+			print STDERR $version, "\n" if $options{debug};
 			$hash->{status} = STATUS_PRESENT;
 		} elsif ($options{debug}) {
 			# failed, so display whatever error message or diagnostics we can find
@@ -1027,8 +1055,8 @@ the successful execution of "/usr/bin/clang -v".
 				my ($versionoutput, $version, $build);
 				{ local $/ = undef; $versionoutput = <CLANG> }
 				close(CLANG);
-				if ($versionoutput =~ m|Apple\sclang\sversion\s(\d(?:\.\d+(?:\.\d+)?)?)\s\(tags/Apple/clang\-(\d+(?:\.\d+(?:\.\d+)?)?)|) {
-					($version, $build)= ($1, $2);
+				if ($versionoutput =~ m[Apple\s(clang|LLVM)\sversion\s(\d(?:\.\d+(?:\.\d+)?)?)\s\((tags/Apple/)?clang\-(\d+(?:\.\d+(?:\.\d+)?)?)]) {
+					($version, $build)= ($2, $4);
 				} else {
 					print STDERR "  - warning, unable to determine the version for clang\n" if ($options{debug});
 				}

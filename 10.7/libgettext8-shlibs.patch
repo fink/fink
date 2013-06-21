@@ -1,25 +1,28 @@
-diff -uNr gettext-0.18.1.1/gettext-runtime/libasprintf/Makefile.in gettext-0.18.1.1-new/gettext-runtime/libasprintf/Makefile.in
---- gettext-0.18.1.1/gettext-runtime/libasprintf/Makefile.in	2007-11-06 18:35:22.000000000 -0500
-+++ gettext-0.18.1.1-new/gettext-runtime/libasprintf/Makefile.in	2007-12-06 16:31:05.000000000 -0500
-@@ -394,7 +394,7 @@
+diff -uNr gettext-0.18.2.1/gettext-runtime/libasprintf/Makefile.in gettext-0.18.2.1.fink/gettext-runtime/libasprintf/Makefile.in
+--- gettext-0.18.2.1/gettext-runtime/libasprintf/Makefile.in	2013-03-05 03:41:30.000000000 -0500
++++ gettext-0.18.2.1.fink/gettext-runtime/libasprintf/Makefile.in	2013-03-21 15:33:38.000000000 -0400
+@@ -483,7 +483,7 @@
  # How to build libasprintf.
  # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
  # to create a shared library, however "libtool --tag=CC" succeeds.
 -libasprintf_la_LDFLAGS = @LTNOUNDEF@
 +libasprintf_la_LDFLAGS = @LTNOUNDEF@ -static
- libgnu_la_SOURCES = dummy.c
+ libgnu_la_SOURCES = size_max.h xsize.h xsize.c
  libgnu_la_LIBADD = $(gl_LTLIBOBJS) @LTALLOCA@
  libgnu_la_DEPENDENCIES = $(gl_LTLIBOBJS) @LTALLOCA@
-diff -uNr gettext-0.18.1.1/gettext-runtime/libasprintf/Makefile.in gettext-0.18.1.1-new/gettext-runtime/libasprintf/Makefile.in
---- gettext-0.18.1.1/gettext-tools/configure 2010-06-06 13:12:20.000000000 -0700
-+++ gettext-0.18.1.1-new/gettext-tools/configure 2010-08-13 23:24:09.000000000 -0700
-@@ -40606,7 +40606,9 @@
- #include <stdlib.h>
- #include <string.h> /* for strcpy */
- /* The stpncpy prototype is missing in <string.h> on AIX 4.  */
-+#ifndef stpncpy
- extern char *stpncpy (char *dest, const char *src, size_t n);
-+#endif
- int main () {
-   const char *src = "Hello";
-   char dest[10];
+diff -uNr gettext-0.18.2.1/gettext-tools/src/Makefile.in gettext-0.18.2.1.fink/gettext-tools/src/Makefile.in
+--- gettext-0.18.2.1/gettext-tools/src/Makefile.in	2013-03-05 03:43:55.000000000 -0500
++++ gettext-0.18.2.1.fink/gettext-tools/src/Makefile.in	2013-03-21 15:36:15.000000000 -0400
+@@ -2744,10 +2744,10 @@
+ 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
+ 
+ xgettext-xgettext.o: xgettext.c
+-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-xgettext.o `test -f 'xgettext.c' || echo '$(srcdir)/'`xgettext.c
++	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -O0 -c -o xgettext-xgettext.o `test -f 'xgettext.c' || echo '$(srcdir)/'`xgettext.c
+ 
+ xgettext-xgettext.obj: xgettext.c
+-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-xgettext.obj `if test -f 'xgettext.c'; then $(CYGPATH_W) 'xgettext.c'; else $(CYGPATH_W) '$(srcdir)/xgettext.c'; fi`
++	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -O0 -c -o xgettext-xgettext.obj `if test -f 'xgettext.c'; then $(CYGPATH_W) 'xgettext.c'; else $(CYGPATH_W) '$(srcdir)/xgettext.c'; fi`
+ 
+ xgettext-x-c.o: x-c.c
+ 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-x-c.o `test -f 'x-c.c' || echo '$(srcdir)/'`x-c.c

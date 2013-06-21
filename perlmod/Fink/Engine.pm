@@ -178,9 +178,8 @@ sub process {
 		return;
 	}
 
-	if (not exists $commands{$cmd}) {
-		die "fink: unknown command \"$cmd\".\nType 'fink --help' for more information.\n";
-	}
+	# Pop up help text when arbitrary verbs are used.
+	exit &execute("fink --help", quiet=>1) if (not exists $commands{$cmd}); 
 
 	# Store original @ARGV in case we want to know how we were called.
 	# This is a stack (a ref to a list of refs to @ARGV) in case we
@@ -654,6 +653,12 @@ sub do_real_list {
 						$subdep =~ /^([+\-.a-z0-9]+)/; # only %n, not versioning
 						print "\"$pname\" -> \"$1\";\n";
 					}
+				}
+			} else {
+				my @providers = $package->get_all_providers();
+				for my $provider (@providers) {
+					my $name = $provider->get_name();
+					print "\"$pname\" -> \"$name\";\n" if $name ne $pname;
 				}
 			}
 		} else {
