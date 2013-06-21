@@ -475,7 +475,7 @@ END
 						print STDERR "Current/Headers/jni.h " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
 					} elsif ($ver >= 17 && -r "$javadir/include/jni.h") {
-						print STDERR "$java_inc_dir " ;
+						print STDERR "$java_inc_dir " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
 					} else {
 						print STDERR "$javadir/$dir/Headers/jni.h missing " if ($options{debug});
