@@ -402,12 +402,12 @@ directories exist.
 					$ver = $dir;
 					$java_test_dir = "$javadir/$dir/Commands";
 					$java_cmd_dir = "$dir/Commands";
-				} else { # 1.7 and later
-					($dir) = ($javadir =~ m|jdk(\d.*)_|) ;
+				} else { # 1.7 and later, including older formats
+					($dir) = ($javadir =~ m|(\d+\.\d+\.\d+).*jdk|) ;
 					$java_test_dir = "$javadir/bin";
-					($java_cmd_dir) = ($java_test_dir =~ /(jdk.*jdk.*)/);
-					($java_inc_dir) = ($javadir =~ /(jdk.*jdk.*)/);
-					$java_inc_dir .= '/include';
+					($java_cmd_dir) = ($java_test_dir =~ m|/.*/((.*)?jdk/.*/bin)|);
+					$java_inc_dir = $java_cmd_dir;			
+					$java_inc_dir =~ s/bin/include/;
 				}
 				# chop the version down to major/minor without dots
 				$ver =~ s/[^\d]+//g;
@@ -689,6 +689,7 @@ from Apple at:
 (free registration required).  
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
+    	my $osxversion = Fink::Services::get_kernel_vers();
     # for Xcode 4.2.1 and earlier, this will be the same as 
     # the version of xcode.app
     if ( defined ($xcode_app_version) && Fink::Services::version_cmp ("$xcode_app_version",'<<','4.3') ) {
@@ -701,7 +702,13 @@ END
     #	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
     # e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
     # We'll take the whole thing as the version.
-	    chomp(my $result=`pkgutil --pkg-info com.apple.pkg.DeveloperToolsCLI 2>&1`);
+        my $receipt_to_check;
+        if ($osxversion >= 13) {
+        	chomp($receipt_to_check = "com.apple.pkg.CLTools_Executables");
+        } else {
+            chomp($receipt_to_check = "com.apple.pkg.DeveloperToolsCLI");
+        } 
+        my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`; 
 		if (not $?) {
 			# didn't fail
 			# iterate over output lines and grab version
@@ -735,7 +742,6 @@ as part of the Xcode tools.
 =cut
 
 	my @SDKDIRS;
-	my $osxversion=Fink::Services::get_kernel_vers();
 	# possible SDKs for known OS X versions and supported Xcodes.
 	if ($osxversion == 9) {
 		@SDKDIRS= qw(
