@@ -6108,7 +6108,7 @@ sub scanpackages {
 		my $autoscan = !$config->has_param("AutoScanpackages")
 			|| $config->param_boolean("AutoScanpackages");
 
-		if ($autoscan && apt_available) {
+		if ($autoscan) {
 			require Fink::Engine; # yuck
 			Fink::Engine::scanpackages({}, [ keys %built_trees ]);
 			Fink::Engine::aptget_update();
