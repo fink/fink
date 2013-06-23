@@ -237,8 +237,31 @@ sub process {
 	}
 
 	if ($cmd =~ /build|update|install|activate|use/) {
-		# update fink-bld if required
-		&ensure_fink_bld();
+		# Check if the Distribution encoded in fink.conf matches the current OS version
+		# or if there is a permitted upgrade path.
+		my $distribution = $Fink::Config::distribution;
+		my $osversion = &Fink::Services::get_osx_vers();
+		# return immediately if distribution and OS match
+		unless ($osversion eq $distribution) { 
+			my $valid_upgrade = 0; #default
+			# legal update paths; add new ones as needed
+			$valid_upgrade = 1 if ($osversion eq "10.6" and $distribution eq "10.5");
+			$valid_upgrade = 1 if ($osversion eq "10.8" and $distribution eq "10.7");
+			if ($valid_upgrade) {
+				# allow reinstalls to proceed otherwise block the operation.
+				warn "Use 'fink reinstall fink' to switch  distributions\n" .
+					 "from $distribution to $osversion.\n";
+				die "'$cmd' operation not permitted.\n" if $cmd ne "reinstall";
+			} else {
+				die "\nWe don't support updates from $distribution to $osversion.\n" . 
+					"Check the 'Clean Upgrade' section of $basepath/share/doc/fink/INSTALL\n" .
+					"or $basepath/share/doc/fink/INSTALL.html for information about \n" .
+					"how to proceed.\n\n".
+					"'$cmd' operation not permitted.\n"
+			}
+		}		
+	
+		&ensure_fink_bld(); # update fink-bld if required
 		
 		# check that Basepath, FetchAltDir and Buildpath have and are contained within a
 		# directory structure with appropriate permissions.
