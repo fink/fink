@@ -397,9 +397,6 @@ sub additional_packages {
 # way, we don't risk running out of sync.
 
 	my @addlist = (
-		"apt",
-		"apt-shlibs",
-		"apt-dev",
 		"bzip2-dev",
 		"expat1",
 		"gettext-bin",
