@@ -1,5 +1,3 @@
-Generated from: `$Fink: readme.en.xml,v 1.5 2012/11/11 15:20:14 gecko2 Exp $`
-
 Fink ReadMe
 =============
 

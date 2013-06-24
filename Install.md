@@ -1,5 +1,3 @@
-Generated from: `$Fink: install.xml,v 1.38 2013/03/15 21:08:13 alexkhansen Exp $`
-
  Fink 0.34.8 Installation
 =========================
 
