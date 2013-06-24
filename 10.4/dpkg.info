@@ -3,12 +3,6 @@ Version: 1.10.21
 Revision: 1236
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
-BuildConflicts: <<
-	( %m = powerpc ) gcc45, 
-	( %m = powerpc ) gcc46, 
-	( %m = powerpc ) gcc47,
-	( %m = powerpc ) gcc48
-<<
 Depends: libgettext8-shlibs (>= 0.18.2.1-1), libiconv (>= 1.11-1), gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
 Essential: yes
 UseMaxBuildJobs: false
@@ -42,7 +36,7 @@ CompileScript: <<
 	### Not necessary, but will avoid unforeseen consequences.
 	%p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
 	cd %b/../gettext-0.18.2.1/gettext-tools
-	env EMACS=no ./configure \
+	env EMACS=no JAVA=/usr/bin/java GCJ=/usr/bin/javac ./configure \
 	--prefix="%b/../_inst%p" \
 	--infodir='${prefix}/share/info' \
 	--mandir='${prefix}/share/man' \

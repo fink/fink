@@ -13,12 +13,6 @@ PatchScript: <<
 Essential: yes
 Depends: libiconv, libiconv-bin, base-files
 BuildDepends: libiconv-dev, fink (>= 0.24.12)
-BuildConflicts: <<
-	( %m = powerpc ) gcc45, 
-	( %m = powerpc ) gcc46, 
-	( %m = powerpc ) gcc47,
-	( %m = powerpc ) gcc48
-<<
 #UseMaxBuildJobs: false
 SetCFLAGS: -Os
 ConfigureParams: <<
@@ -41,7 +35,7 @@ ConfigureParams: <<
 CompileScript: <<
 	#!/bin/sh -ev
 	cd gettext-runtime
-	env EMACS=no CCACHE_DISABLE=1 ./configure %c
+	env EMACS=no CCACHE_DISABLE=1 JAVA=/usr/bin/java JAVAC=/usr/bin/javac ./configure %c
 	make
 <<
 InstallScript: <<

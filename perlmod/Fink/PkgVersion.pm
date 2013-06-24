@@ -1170,7 +1170,11 @@ sub get_script {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			$perlcmd = "ARCHFLAGS=\"\" $perlcmd"; # prevent Apple's perl from building fat
 			my $makeflags = '';
-			if ($self->get_subtype('perl') eq '5.12.3' and Fink::Services::get_kernel_vers() eq '11') {
+			if ($self->get_subtype('perl') eq '5.10.0' and Fink::Services::get_kernel_vers() eq '10') {
+				# system-perl configure hardcodes gcc-4.2, which is
+				# not necessarily even present
+				$makeflags = ' CC=gcc CXX=g++';
+			} elsif ($self->get_subtype('perl') eq '5.12.3' and Fink::Services::get_kernel_vers() eq '11') {
 				# path-prefix-clang wraps gcc and g++ but system-perl
 				# configure hardcodes gcc-4.x, which is not wrapped
 				$makeflags = ' CC=gcc CXX=g++';
@@ -3491,9 +3495,10 @@ GCC_MSG
 
 		$tarflags = "-x${verbosity}f";
 		my $permissionflags = " --no-same-owner --no-same-permissions";
-		$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Default to Apple's GNU Tar
-		# Determine the rename list (if any)
-		if ($self->has_param($renamefield)) {
+
+		# set up "tar"
+		# Determine the rename list ; if not present then then move on.	
+		if ($self->has_param($renamefield)) { # we need pax
 			@renamefiles = split(' ', $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
 				$renamefile = &expand_percent($renamefile, $expand, $self->get_info_filename." \"$renamefield\"");
@@ -3504,10 +3509,18 @@ GCC_MSG
 				}
 			}
 			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
-			$tar_is_pax=1; # Flag denoting that we're using pax
+			$tar_is_pax = 1; # Flag denoting that we're using pax
 		} elsif ( -e "$basepath/bin/tar" ) {
-			$tarcommand = "$basepath/bin/tar $permissionflags $tarflags"; # Use Fink's GNU Tar if available
+			$tarcommand = "env LANG=C LC_ALL=C $basepath/bin/tar $permissionflags $tarflags"; # Use Fink's GNU Tar if available
+			$tar_is_pax=0;
+		} elsif ( -e "/usr/bin/gnutar" ) {
+			$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Apple's GNU tar
+			$tar_is_pax=0;	
+		} else {
+			$tarcommand = "/usr/bin/tar $permissionflags $tarflags"; # probably BSD tar		
+			$tar_is_pax=0;
 		}
+		
 		$bzip2 = $config->param_default("Bzip2path", 'bzip2');
 		$bzip2 = 'bzip2' unless (-x $bzip2);
 		$alt_bzip2=1 if ($bzip2 ne 'bzip2');
@@ -3563,8 +3576,6 @@ GCC_MSG
 		# unpack it
 		chdir $destdir;
 		$self->run_script($unpack_cmd, "unpacking '$archive'", 1, 1);
-
-		$tar_is_pax=0;
 	}
 }
 
