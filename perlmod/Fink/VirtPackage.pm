@@ -1804,7 +1804,7 @@ sub query_package {
 
 =item $self->list(I<%options>)
 
-Retrieves a complete hash of all virtual packages,
+Retrieves a copy of the complete hash of all virtual packages,
 with versions, regardless of installed status.
 
 The list is a hash reference, with the package name
@@ -1821,8 +1821,6 @@ sub list {
 	my $self = shift;
 	%options = (@_);
 
-	my ($list, $pkgname, $hash, $newhash, $field);
-
 	if (not ref($self)) {
 		if (defined($the_instance)) {
 			$self = $the_instance;
@@ -1831,14 +1829,15 @@ sub list {
 		}
 	}
 
-	$list = {};
-	foreach $pkgname (keys %$self) {
+	my $list = {};
+	foreach my $pkgname (keys %$self) {
 		next if $pkgname =~ /^_/;
-		$hash = $self->{$pkgname};
+		my $hash = $self->{$pkgname};
 		next unless exists $hash->{version};
 
-		$newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
-		foreach $field (qw(depends provides conflicts maintainer description descdetail homepage status builddependsonly compilescript)) {
+		# make a copy of the $hash entry
+		my $newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
+		foreach my $field (qw(depends provides conflicts maintainer description descdetail homepage status builddependsonly compilescript)) {
 			if (exists $hash->{$field}) {
 				$newhash->{$field} = $hash->{$field};
 			}
