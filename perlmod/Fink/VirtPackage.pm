@@ -1145,7 +1145,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be 
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Preferences... in Xcode 4.3+.
 END
 				$hash->{compilescript} = &gen_compile_script($hash);
 				if ($version) {
@@ -2108,7 +2108,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be 
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Preferences... in Xcode 4.3.
 END
 		status           => $status
 	};
