@@ -1842,6 +1842,10 @@ sub list {
 				$newhash->{$field} = $hash->{$field};
 			}
 		}
+		if (!exists $newhash->{maintainer}) {
+			# assume fink itself if not previously claimed by someone else
+			$newhash->{maintainer} = 'Fink Core Group <fink-core@lists.sourceforge.net>';
+		}
 		$newhash->{status} = STATUS_ABSENT if $config->mixed_arch();
 		$list->{$pkgname} = $newhash;
 	}
@@ -2108,7 +2112,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be 
 installed either as a separate download from the above site, or
-from the Downloads pane of Preferences... in Xcode 4.3.
+from the Downloads pane of Preferences... in Xcode 4.3+.
 END
 		status           => $status
 	};
