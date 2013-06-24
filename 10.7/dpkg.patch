@@ -1,3 +1,37 @@
+diff -ruN dpkg-1.16.10.orig/fink/buildflags.conf dpkg-1.16.10/fink/buildflags.conf
+--- dpkg-1.16.10.orig/fink/buildflags.conf	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/buildflags.conf	2013-06-22 20:26:06.000000000 -0600
+@@ -0,0 +1,30 @@
++# defaults
++APPEND CFLAGS -g -O2
++APPEND CXXFLAGS -g -O2
++APPEND FFLAGS -g -O2
++
++# debian stackprotector
++APPEND CFLAGS -fstack-protector         
++APPEND CXXFLAGS -fstack-protector         
++
++# debian pie
++APPEND CFLAGS -fPIE
++APPEND CXXFLAGS -fPIE
++APPEND LDFLAGS -fPIE -Wl,-pie
++
++# debian relro
++APPEND LDFLAGS -Wl,-read_only_stubs
++
++# debian bindnow
++APPEND LDFLAGS -Wl,-bind_at_load
++
++# debian fortify
++APPEND CPPFLAGS -D_FORTIFY_SOURCE=2
++
++# debian format
++PREPEND CFLAGS -Wformat -Werror=format-security
++PREPEND CXXFLAGS -Wformat -Werror=format-security
++
++# fink defaults
++PREPEND CPPFLAGS -I@FINKPREFIX@/include
++PREPEND LDFLAGS -L@FINKPREFIX@/lib
 diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 --- dpkg-1.16.10.orig/fink/md5sum	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.16.10/fink/md5sum	2013-05-28 08:30:00.000000000 -0600

@@ -9,7 +9,7 @@ SourceDirectory: dpkg-%v
 Source-MD5: de4823d05100537e6d85304a6fa3b530
 
 PatchFile: dpkg.patch
-PatchFile-MD5: 30d353628371c0eb464812cf25384122
+PatchFile-MD5: a851cfe5976cffc3efe6c044d1c88578
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -49,11 +49,22 @@ cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/o
 # Fink uses "x86_64" instead of "amd64"
 perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
 
-# Fix for gnutar (Slightly modified for bootstrap version)
-perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
-perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c
-# Fix for gnutar
-#perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
+# Fix for tar (Slightly modified for dpkg-bootstrap)
+if [ "%n" = "dpkg-bootstrap" ]; then \
+  if [ `/usr/bin/sw_vers -productVersion | cut -d'.' -f1-2` > 10.8 ]; then \
+    perl -pi -e 's,\"tar\",\"/usr/bin/tar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+    perl -pi -e 's,--warning=no-timestamp,-v,g' dpkg-deb/extract.c; \
+    perl -pi -e 's,--format=gnu,--format=ustar,g' dpkg-deb/build.c; \
+  else \
+    perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+    perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c; \
+  fi \
+else \
+  perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+fi
+
+# Fix for --disable-nls
+perl -pi -e 's,defined\(__GNUG__\),defined(__NOTGNUG__),g' lib/compat/gettext.h
 
 # Fix for older gcc ie: 10.5
 perl -pi -e 's,-Wvla ,,g' configure
@@ -64,11 +75,14 @@ perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-dselect,g' ds
 perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-perl,g' scripts/Makefile.in scripts/po/Makefile.in.in
 <<
 
-SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
-SetLDFLAGS: -framework CoreFoundation
+SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -F/System/Library/Frameworks/CoreFoundation.framework -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security -Wno-deprecated-writable-strings
+SetCPPFLAGS: -D_FORTIFY_SOURCE=2
+SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
+SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework CoreFoundation
 
 # Use %P for all state and admindirs for pre fink build
 ConfigureParams: <<
+  --disable-nls \
   --disable-dselect \
   --disable-start-stop-daemon \
   --with-admindir=%P/var/lib/dpkg \
@@ -79,9 +93,11 @@ ConfigureParams: <<
   --with-zlib \
   --without-liblzma \
   --with-bz2 \
-  --build=%m-apple-darwin \
   --srcdir=%b \
-  PERL_LIBDIR=%p/lib/perl5 PERL=/usr/bin/perl
+  --build=%m-apple-darwin \
+  --disable-linker-optimisations \
+  PERL_LIBDIR=%p/lib/perl5 \
+  PERL=/usr/bin/perl
 <<
 
 InfoTest: <<
@@ -101,6 +117,7 @@ install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
 ## currently in fink
 # install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
 install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
+install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
 rm -rf %i/lib/dpkg/methods/*
 
 install -m 0755 fink/md5sum %i/bin
