@@ -46,7 +46,8 @@ You need:
       javac
 
    from a Terminal.app window should suffice to make the system download it
-   for you.
+   for you (10.7) or open up a browser window from which you can download
+   the latest Java JDK (10.8).
 
  * Many other things that come with Mac OS X and the Developer Tools. This
    includes perl and curl.
