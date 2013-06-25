@@ -348,13 +348,14 @@ my $xcode_version;
 		# OS version specific messages
 		if ($vers < 11) {
 			die "ERROR:\n\tXcode is not set up properly.\n";
-		} else {
-			warn "WARNING:\n\tXcode may not be set up properly.\n".
-				"\tThere may be information immediately above this message". 
-				"\tabout how to fix\n".
-				"\tthis issue.\n".
-				"\tIf you are using only the Xcode command-line tools for Xcode 4.3+,\n".
-				"\tplease ignore this warning.\n";
+		} else{
+			warn "\nNOTE: If you are using only the Xcode command-line tools for Xcode,\n".
+				 "it's OK to ignore the messages immediately above and below this one.\n\n".
+				 "If you _do_ want the full Xcode to work with Fink, then\n".
+				 "you'll want to verify where your Xcode application actually\n".
+				 "is, and use\n".
+				 "\n\tsudo xcode-select -switch /path/to/Xcode.app\n\n".
+				 "to switch that (replacing /path/to by the path to it, of course).\n";
 		}
 	} else {
 		print "Found Xcode version: $xcode_version";
