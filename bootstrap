@@ -344,6 +344,7 @@ my $xcode_version;
     die "ERROR:\n\tNo Xcode command-line tools installed.  Install them (or all of Xcode).\n" unless (-x "/usr/bin/xcodebuild");
 	($xcode_version) = (`xcodebuild -version` =~ /Xcode\s(\d+\.\d+\.?(\d+)?)\n/) ;
 	if (!defined $xcode_version) {
+		$xcode_version = 0.0 ; # set a value for later
 		# OS version specific messages
 		if ($vers < 11) {
 			die "ERROR:\n\tXcode is not set up properly.\n";
