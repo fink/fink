@@ -26,6 +26,7 @@ use Fcntl;
 
 my $standalone = 0;
 my $basepath = '@BASEPATH@';
+my $config;
 
 our $VERSION = 1.28;
 
@@ -71,10 +72,35 @@ if ($standalone == 0)
 			}
 		} else {
 			printf "Package: %s\nStatus: %s\nVersion: %s\n", $hash->{package},$hash->{status},$hash->{version};
+			printf "Package: %s\nStatus: %s\nPriority: optional\nArchitecture: ".$config->param('Debarch')."\nVersion: %s\nMaintainer: %s\n", $hash->{package},$hash->{status},$hash->{version},$hash->{maintainer};
 			foreach $field (keys %$hash)
 			{
-				next if ($field =~ /^(package|status|version|descdetail|compilescript)$/);
-				printf "%s: %s\n",$field,$hash->{$field};
+				next if ($field =~ /^(package|status|version|descdetail|compilescript|homepage)$/);
+				if ($field eq "description") {
+					printf "Description: %s\n",$hash->{$field};
+					if ($hash->{'descdetail'}) {
+						my $descdetail = $hash->{'descdetail'};
+						chomp($descdetail);
+						my @descdetails;
+						foreach my $line (split("\n", $descdetail)) {
+							if ($line eq "" || $line =~ /^[\s|\t]+?$/) {
+								$line = ".";
+							}
+							$line = " ".$line;
+							push @descdetails, $line;
+						}
+						$descdetail = join("\n", @descdetails);
+						printf "%s\n",$descdetail;
+					}
+					if ($hash->{'homepage'}) {
+						printf " .\n";
+						printf " Web site: %s\n",$hash->{'homepage'};
+					}
+					printf " .\n";
+					printf " Maintainer: %s\n",$hash->{'maintainer'};
+				} else {
+					printf "%s: %s\n",ucfirst $field,$hash->{$field};
+				}
 			}
 			print "\n";
 		}
@@ -162,7 +188,6 @@ sub UseFinkModules {
 	if ($standalone != 1)
 	{
 		my $configpath = "$basepath/etc/fink.conf";
-                my $config;
 		if (-f $configpath) {
 			$config = read_config($configpath,
                                               { Basepath => "$basepath" }

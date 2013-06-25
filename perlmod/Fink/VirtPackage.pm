@@ -1145,7 +1145,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be 
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Preferences... in Xcode 4.3+.
 END
 				$hash->{compilescript} = &gen_compile_script($hash);
 				if ($version) {
@@ -1804,7 +1804,7 @@ sub query_package {
 
 =item $self->list(I<%options>)
 
-Retrieves a complete hash of all virtual packages,
+Retrieves a copy of the complete hash of all virtual packages,
 with versions, regardless of installed status.
 
 The list is a hash reference, with the package name
@@ -1821,8 +1821,6 @@ sub list {
 	my $self = shift;
 	%options = (@_);
 
-	my ($list, $pkgname, $hash, $newhash, $field);
-
 	if (not ref($self)) {
 		if (defined($the_instance)) {
 			$self = $the_instance;
@@ -1831,17 +1829,22 @@ sub list {
 		}
 	}
 
-	$list = {};
-	foreach $pkgname (keys %$self) {
+	my $list = {};
+	foreach my $pkgname (keys %$self) {
 		next if $pkgname =~ /^_/;
-		$hash = $self->{$pkgname};
+		my $hash = $self->{$pkgname};
 		next unless exists $hash->{version};
 
-		$newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
-		foreach $field (qw(depends provides conflicts maintainer description descdetail homepage status builddependsonly compilescript)) {
+		# make a copy of the $hash entry
+		my $newhash = { 'package' => $pkgname, 'version' => $hash->{version} };
+		foreach my $field (qw(depends provides conflicts maintainer description descdetail homepage status builddependsonly compilescript)) {
 			if (exists $hash->{$field}) {
 				$newhash->{$field} = $hash->{$field};
 			}
+		}
+		if (!exists $newhash->{maintainer}) {
+			# assume fink itself if not previously claimed by someone else
+			$newhash->{maintainer} = 'Fink Core Group <fink-core@lists.sourceforge.net>';
 		}
 		$newhash->{status} = STATUS_ABSENT if $config->mixed_arch();
 		$list->{$pkgname} = $newhash;
@@ -2109,7 +2112,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be 
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Preferences... in Xcode 4.3+.
 END
 		status           => $status
 	};
