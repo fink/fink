@@ -16,6 +16,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 	  fink (>= 0.32).  Similarly, Depends: automatically satisfies RuntimeDepends.
 === in common with 0.35.0 ===
 	* Support OS 10.8.4.
+	* Forbid bootstrapping into /opt/local.
 	* Add detection for Java-1.7.0.
 	* We appear to need the fixes from both 0.34.7 and 0.34.8 for hanging tar, so 
 	  we'll have both.
