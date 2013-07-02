@@ -455,7 +455,7 @@ foreach my $forbidden (
 	   /usr/libexec /usr/X11R6 /usr/X11
 	   /root /private /cores /boot
 	   /debian /debian/.*
-	   /usr/local /usr/local/.*)
+	   /usr/local /usr/local/.* /opt/local /opt/local/.*)
 ) {
 	if ($installto =~ /^$forbidden$/i) {
 		print "ERROR: Refusing to install into '$installto'.\n";
@@ -468,6 +468,11 @@ foreach my $forbidden (
 				 "other compilers, which often leads to unexpected and sometimes ".
 				 "unpredictable results for when fink-supplied files are installed ".
 				 "there and for fink itself.");
+		}
+		if ($installto =~ /^\/opt\/local/) {
+			&print_breaking(
+				 "/opt/local is the default location that Macports ".
+				 "uses, so installing there is likely to lead to problems.");
 		}
 		redo OPT_BASEPATH;
 	}
