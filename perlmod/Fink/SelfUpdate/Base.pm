@@ -101,7 +101,7 @@ sub devtools_check {
 		$line2 = "\nthe Xcode Command Line Tools package from\n"; 
 		$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
 	}	
-	unless ((-x $vcs_exec) and Fink::VirtPackage->query_package("dev-tools")) {
+	unless (-f $vcs_exec and -x $vcs_exec  and Fink::VirtPackage->query_package("dev-tools")) {
 		warn "Before changing your selfupdate method to '$vcs', you must install".
 		     $line2.
 		     "http://connect.apple.com (after free registration)".

@@ -94,9 +94,7 @@ update/config.sub
 update/ltconfig
 update/ltmain.sh
 update/Makefile.in.in
-update-packages/rman-10.5.info
-update-packages/rman-10.5.patch
-update-packages/perl586-10.5.info
+update-packages/README
 t/00compile.t
 t/10features/ChangeLog
 t/10features/users_groups.t
