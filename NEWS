@@ -5,7 +5,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.35.x
 \-------------
 
-0.35.0 "TBD" (2013-07-01)
+0.35.0 "TLA" (2013-07-01)
 	* First release to support only Snow Leopard (10.6) and later.
 	* Support OS 10.8.4.
 	* Add detection for Java-1.7.0.
