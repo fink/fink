@@ -25,9 +25,7 @@ You need:
    Earlier versions will not work with fink-0.34.9.
 
  * Development tools. 
-   On OS 10.6 and earlier, install the Developer.pkg package from the Developer Tools CD. 
-   If on 10.7 or later, download Xcode from the Mac App Store, and then install the "Command Line Tools for Xcode" from Xcode's preferences.
-   Make sure that the tools you install match your Mac OS X version. 
+   Download Xcode 3.1.4 from connect.apple.com (registration required).
 
  * Internet access. All source code is downloaded from mirror sites.
 
