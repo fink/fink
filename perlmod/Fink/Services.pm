@@ -1360,7 +1360,9 @@ sub get_osx_vers {
 	my $sw_vers = get_osx_vers_long();
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
-	($sw_vers == $darwin_osx) or exit "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+	if ($sw_vers != $darwin_osx) {
+		die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+	}
 	return $sw_vers;
 }
 
