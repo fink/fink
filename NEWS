@@ -5,7 +5,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.34.x
 \-------------
 
-0.34.9 "recessed" (2013-07-01)
+0.34.9 "recessed" (2013-07-05)
 	* Last release to support Leopard (10.5.x).
 	* Have fink display the help text if given an unknown verb.  This lets "fink help"
 	  and "fink --help" give the same output and reduces surprises. :-)
