@@ -5,6 +5,9 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.35.x
 \-------------
 
+0.35.1 "BBQ" (2013-07-08)
+	* Bugfix:  10.5-EOL was still visible.  Fix that.
+
 0.35.0 "TLA" (2013-07-05)
 	* First release to support only Snow Leopard (10.6) and later.
 	* Support OS 10.8.4.
