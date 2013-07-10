@@ -1,4 +1,4 @@
-Generated from: `$Fink: readme.en.xml,v 1.5 2012/11/11 15:20:14 gecko2 Exp $`
+Generated from: `$Fink: readme.en.xml,v 1.8 2013/07/09 02:28:18 alexkhansen Exp$`
 
 Fink ReadMe
 =============
@@ -24,7 +24,7 @@ Requirements
 You need:
 
  * An installed Mac OS X system, version 10.6 or later. 
-   Earlier versions will not work with fink-0.35.0.
+   Earlier versions will not work with fink-0.35.1.
 
  * Development tools. 
    For 10.6, you should install Xcode 3.2.6 or 4.2, which can be downloaded from connect.apple.com after registering. 
