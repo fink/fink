@@ -43,14 +43,20 @@ sub new {
 
 	my $self = bless({}, $class);
 
-	$match = '([^\s]*)\s*(:?[^\s]*)';
+	$match = '(\S*)\s*(:?\S*)';
 
 	if (-e "$basepath/bin/sha256deep") {
 		$sha256cmd = "$basepath/bin/sha256deep";
+		} elsif (-x "/usr/bin/openssl") {
+			$sha256cmd = '/usr/bin/openssl dgst -sha256';
+			$match   = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
+		} elsif (-e "$basepath/lib/coreutils/bin/sha256sum") {
+			$sha256cmd = "$basepath/lib/coreutils/bin/sha256sum";
+
 	}
 
 	if (!defined $sha256cmd or not -x $sha256cmd) {
-		die "unable to find sha256 implementation\n";
+		die "unable to find sha256 implementation. Try installing md5deep or coreutils\n";
 	}
 
 	return $self;
