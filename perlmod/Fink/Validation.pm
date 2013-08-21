@@ -1670,6 +1670,9 @@ sub _validate_dpkg {
 			} elsif ($langver_re =~ /^(\d)(\d)(\d)(\d)$/) {
 				# -pmWXYZ is perlW.X.YZ or perlW.XY.Z
 				$langver_re = "(?:$langver_re|$1.$2.$3$4|$1.$2$3.$4)";
+			} elsif ($langver_re =~ /^(\d)(\d\d)(\d\d)$/) {
+				# -pmXYYZZ is perlX.YY.ZZ
+				$langver_re = "(?:$langver_re|$1.$2.$3)";
 			}
 		} else {
 			# python language is major.minor
