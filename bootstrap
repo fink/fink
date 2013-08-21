@@ -455,7 +455,7 @@ foreach my $forbidden (
 	   /usr/libexec /usr/X11R6 /usr/X11
 	   /root /private /cores /boot
 	   /debian /debian/.*
-	   /usr/local /usr/local/.*)
+	   /usr/local /usr/local/.* /opt/local /opt/local/.*)
 ) {
 	if ($installto =~ /^$forbidden$/i) {
 		print "ERROR: Refusing to install into '$installto'.\n";
@@ -468,6 +468,11 @@ foreach my $forbidden (
 				 "other compilers, which often leads to unexpected and sometimes ".
 				 "unpredictable results for when fink-supplied files are installed ".
 				 "there and for fink itself.");
+		}
+		if ($installto =~ /^\/opt\/local/) {
+			&print_breaking(
+				 "/opt/local is the default location that Macports ".
+				 "uses, so installing there is likely to lead to problems.");
 		}
 		redo OPT_BASEPATH;
 	}
@@ -628,17 +633,13 @@ my $bsbase = get_bsbase();
 
 my $cmd = "'$homebase/bootstrap-phase2.pl'";
 
-my $perlexe  = "/usr/bin/perl";
-
+my $perlexe  = "/usr/bin/perl"; #default
+# override defaults
 if ($distribution eq "10.6") { 
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.10.0";
-}
-
-if ($distribution gt "10.6") { 
+} elsif ($distribution gt "10.6") { 
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.12";
-}
-
-if (($arch eq "x86_64") and ($distribution eq "10.5")) {
+} elsif (($arch eq "x86_64") and ($distribution eq "10.5")) {
 	$perlexe = "$bsbase/bin/perl5.8.8";
 }
 

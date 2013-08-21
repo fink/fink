@@ -1,11 +1,11 @@
-Generated from: `$Fink: install.xml,v 1.38 2013/03/15 21:08:13 alexkhansen Exp $`
+Generated from: `$Fink: install.xml,v 1.44 2013/07/09 02:28:43 alexkhansen Exp$`
 
- Fink 0.34.8 Installation
+ Fink 0.35.1 Installation
 =========================
 
-These are the installation instructions for the "source" distribution based on "fink-0.34.8" , intended for use with OS X v.10.5 and later.
+These are the installation instructions for the "source" distribution based on "fink-0.35.1" , intended for use with OS X v.10.6 and later.
 
-This document does not apply to the "[binary](http://www.finkproject.org/download/index.php)" distribution.
+This document does not apply to the "[binary](http://fink.sourceforge.net/download/index.php)" distribution.
 
 There are instructions for both first time installation and upgrading from a previous version. Fast track instructions for the impatient are at the top.
 
@@ -21,9 +21,9 @@ If you're looking for the real instructions, skip to the next section. (You can 
 --------------
 You need:
 
-* An installed Mac OS X system, version 10.5 or later.
+* An installed Mac OS X system, version 10.6 or later.
 
-* Development tools. For OS X versions up to 10.6, you should install the newest version of Xcode available for your system, which can be downloaded from connect.apple.com after registering. For 10.7 and 10.8, installing the Xcode Command Line Tools is mandatory to use the most current build applications. This can be installed either by downloading it directly via connect.apple.com or through the Xcode application via the Components page of the Downloads tab of the Preferences. On 10.7 one can install an earlier monolithic Xcode (4.2.1 and earlier), but this isn't recommended.
+* Development tools. For 10.6, you should install Xcode 3.2.6 or 4.2, which can be downloaded from connect.apple.com after registering.
 
 * On 10.7 and 10.8 you will need to install Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you, (10.7) or open up a browser window from which you can downloadthe latest Java JDK (10.8).
 
@@ -37,14 +37,14 @@ This includes `perl` and `curl`.
 
 First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.34.8.tar.gz" file to your home folder (it might also show up as "fink-0.34.8.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
+Start out by copying the "fink-0.35.1.tar.gz" file to your home folder (it might also show up as "fink-0.35.1.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
 Note: on 10.8, after you start the install process you may see dialog windows asking whether you want to install Xquartz. 
 If you want to do so, go ahead. You won't have to stop the Fink install to do that.
 
-    [frodo:~] testuser% tar xf fink-0.34.8.tar.gz
-    [frodo:~] testuser% cd fink-0.34.8
-    [frodo:~/fink-0.34.8] testuser% ./bootstrap
+    [frodo:~] testuser% tar xf fink-0.35.1.tar.gz
+    [frodo:~] testuser% cd fink-0.35.1
+    [frodo:~/fink-0.35.1] testuser% ./bootstrap
 
     Fink must be installed and run with superuser (root) privileges
 
@@ -52,7 +52,7 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
     Choose a method: [1] 
    **1**
 
-    sudo /Users/testuser/fink-0.34.8/bootstrap .sudo '/sw'
+    sudo /Users/testuser/fink-0.35.1/bootstrap .sudo '/sw'
     Password:
    **(your normal password here)**
 
@@ -110,8 +110,8 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
    
    You should now have a working Fink installation in '/sw'.
    
-    [frodo:~/fink-0.34.8] testuser% cd
-    [frodo:~] testuser% rm -r fink-0.34.8
+    [frodo:~/fink-0.35.1] testuser% cd
+    [frodo:~] testuser% rm -r fink-0.35.1
     [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and other things) for use with Fink. In most cases, it will run automatically, and prompt you for permission to make changes. If the script fails, you'll have to do things by hand.
@@ -258,7 +258,7 @@ You can now install additional packages with the "`fink`" command, like this:
     Do you want to continue? [Y/n]
     ...
 
-If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://www.finkproject.org/faq/). You can also ask on the [fink-users mailing list](http://www.finkproject.org/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
+If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://fink.sourceforge.net/faq/). You can also ask on the [fink-users mailing list](http://fink.sourceforge.net/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
 
  First Time Installation
 =========================
@@ -291,13 +291,13 @@ A special note about /usr/local: While it is possible to install Fink in /usr/lo
 
 Installation
 --------------
-First, you need to unpack the fink-0.34.8.tar.gz tarball (it might also show up as "fink-0.34.8.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
+First, you need to unpack the fink-0.35.1.tar.gz tarball (it might also show up as "fink-0.35.1.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
 
-    tar xf fink-0.34.8.tar.gz
+    tar xf fink-0.35.1.tar.gz
 
-You now have a directory named fink-0.34.8. Change to it with "`cd fink-0.34.8`".
+You now have a directory named fink-0.35.1. Change to it with "`cd fink-0.35.1`".
 
-The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.34.8 directory and run this command:
+The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.35.1 directory and run this command:
 
     ./bootstrap
 
@@ -347,10 +347,6 @@ is a useful place to get more information about how to use "`fink`" .
 ------------------------
 Fink uses virtual packages to declare dependencies on X11. As of OS 10.5, we don't provide any packages of our own. The supported options are:
 
-* 10.5: Either Apple's standard X11 or XQuartz-2.6.3 or earlier. Note: if
-   you install XQuartz-2.4 or later you will quite likely need to reinstall
-   Fink if you update to 10.6.
-
 * 10.6: Only Apple's standard X11, since XQuartz installs in a different
    directory tree ("/opt/X11") than the standard X11 ("/usr/X11") for
    10.6 and later so that they can coexist.
@@ -360,7 +356,7 @@ Fink uses virtual packages to declare dependencies on X11. As of OS 10.5, we don
 * 10.8: Only Xquartz 2.7 and later.
 
 For more information on installing and running X11, refer to the online X11
-on Darwin and Mac OS X document [http://www.finkproject.org/doc/x11/](http://www.finkproject.org/doc/x11/).
+on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/](http://fink.sourceforge.net/doc/x11/).
 
  Upgrading Fink
 ================

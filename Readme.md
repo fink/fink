@@ -1,4 +1,4 @@
-Generated from: `$Fink: readme.en.xml,v 1.5 2012/11/11 15:20:14 gecko2 Exp $`
+Generated from: `$Fink: readme.en.xml,v 1.8 2013/07/09 02:28:18 alexkhansen Exp$`
 
 Fink ReadMe
 =============
@@ -23,12 +23,12 @@ Requirements
 
 You need:
 
- * An installed Mac OS X system, version 10.5 or later. 
-   Earlier versions will not work with fink-0.34.8.
+ * An installed Mac OS X system, version 10.6 or later. 
+   Earlier versions will not work with fink-0.35.1.
 
  * Development tools. 
-   On OS 10.6 and earlier, install the Developer.pkg package from the Developer Tools CD. 
-   If on 10.7 or later, download Xcode from the Mac App Store, and then install the "Command Line Tools for Xcode" from Xcode's preferences.
+   For 10.6, you should install Xcode 3.2.6 or 4.2, which can be downloaded from connect.apple.com after registering. 
+   If on 10.7 or later, download Xcode from the Mac App Store, and then install the "Command Line Tools for Xcode" from Xcode's Preferences, or download the Command Line Tools from connect.apple.com.
    Make sure that the tools you install match your Mac OS X version. 
 
  * Internet access. All source code is downloaded from mirror sites.

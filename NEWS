@@ -2,27 +2,14 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
-| fink 0.36.x
-\-------------
-
-0.36.0 "TBD" (2012?-??-??)
-	* EOL for Leopard: First release to only support 10.6 and upwards
-	
-/-------------
 | fink 0.35.x
 \-------------
 
-0.35.? "TBD" (2012?-??-??)
-	* EOL for Leopard: Last release to support Leopard
+0.35.1 "BBQ" (2013-07-08)
+	* Bugfix:  10.5-EOL was still visible.  Fix that.
 
-0.35.? "TBD" (2012?-??-??)
-	* git/svn support
-	
-/-------------
-| fink 0.34.x
-\-------------
-
-0.34.9 "recessed" (2013-06-05)
+0.35.0 "TLA" (2013-07-05)
+	* First release to support only Snow Leopard (10.6) and later.
 	* Support OS 10.8.4.
 	* Add detection for Java-1.7.0.
 	* Have fink display the help text if given an unknown verb.  This lets "fink help"
@@ -38,6 +25,29 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Validation::_min_fink_version() API change to allow more generic dependencies.
 	  Example:  Depends: fink (>= 0.32) now automatically satisfies BuildDepends 
 	  fink (>= 0.32).  Similarly, Depends: automatically satisfies RuntimeDepends.
+
+/-------------
+| fink 0.34.x
+\-------------
+
+0.34.9 "recessed" (2013-07-05)
+	* Last release to support Leopard (10.5.x).
+	* Have fink display the help text if given an unknown verb.  This lets "fink help"
+	  and "fink --help" give the same output and reduces surprises. :-)
+	* Prevent package builds/installs if there is no upgrade path between the prior
+	  Distribution and the current OS.
+	* Validation::_min_fink_version() API change to allow more generic dependencies.
+	  Example:  Depends: fink (>= 0.32) now automatically satisfies BuildDepends 
+	  fink (>= 0.32).  Similarly, Depends: automatically satisfies RuntimeDepends.
+=== in common with 0.35.0 ===
+	* Support OS 10.8.4.
+	* Add detection for Java-1.7.0.
+	* We appear to need the fixes from both 0.34.7 and 0.34.8 for hanging tar, so 
+	  we'll have both.
+	* For MakeMaker builds:  Override the default "g(cc|++)2-4.2" compiler option 
+	  given by the system's Perl on 10.6 in favor of our "g(cc|++)" wrapper, since
+	  gcc-4.2 isn't present for clean Xcode 4.2 installs, and our wrapper is equivalent
+	  (and contains arch information) for Xcode 3.2.x.
 	
 0.34.8 "duct tape" (2013-05-08)
 	* More general fix to the hanging tar issue.  Thanks to Eric Gallager (cooljeanius)
