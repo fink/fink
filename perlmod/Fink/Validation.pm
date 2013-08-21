@@ -1656,11 +1656,11 @@ sub _validate_dpkg {
 		map { /\s*([^ \(]*)/, undef } split /[|,]/, $deb_control->{depends}
 	};
 
-	# prepare to check that -pmXXX and -pyXX packages only contain
+	# prepare to check that -pmXXX, -pyXX, and -rbXX packages only contain
 	# file in language-versioned locations: define a regex for the
 	# language-versioned path component
 	my $langver_re;
-	if ($deb_control->{package} =~ /-(pm|py)(\d+)$/) {
+	if ($deb_control->{package} =~ /-(pm|py|rb)(\d+)$/) {
 		$langver_re = $2;
 		if ($1 eq 'pm') {
 			# perl language is major.minor.teeny
@@ -1676,9 +1676,11 @@ sub _validate_dpkg {
 			}
 		} else {
 			# python language is major.minor
+			# ruby language is major.minor
 			# numbers are all "small" (one-digit)
 			$langver_re =~ /^(\d)(\d)$/;
 			# -pyXY is pythonX.Y
+			# -rbXY is rubyX.Y
 			$langver_re = "(?:$langver_re|$1.$2)";
 		}
 	}
