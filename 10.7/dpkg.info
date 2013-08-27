@@ -12,12 +12,6 @@ BuildDepends: <<
   liblzma5,
   bzip2-dev
 <<
-BuildConflicts: <<
-  ( %m = powerpc ) gcc45, 
-  ( %m = powerpc ) gcc46, 
-  ( %m = powerpc ) gcc47,
-  ( %m = powerpc ) gcc48
-<<
 Depends: <<
   bzip2-shlibs,
   libgettext8-shlibs,
@@ -123,7 +117,7 @@ ConfigureParams: <<
   --build=%m-apple-darwin \
   --disable-linker-optimisations \
   PERL_LIBDIR=%p/lib/perl5 \
-  PERL=/usr/bin/perl
+  PERL=/usr/bin/perl \
 <<
 
 InfoTest: <<
