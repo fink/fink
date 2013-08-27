@@ -117,7 +117,7 @@ ConfigureParams: <<
   --build=%m-apple-darwin \
   --disable-linker-optimisations \
   PERL_LIBDIR=%p/lib/perl5 \
-  PERL=/usr/bin/perl \
+  PERL=/usr/bin/perl
 <<
 
 InfoTest: <<
