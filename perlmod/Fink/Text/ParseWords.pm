@@ -1,13 +1,13 @@
-# This file is based on Text::ParseWords v3.27 from CPAN.
+# This file is based on Text::ParseWords v3.29 from CPAN.
 # It was converted to Fink::Text::ParseWords and further modified 
 # for use by Fink. You can read about these changes in the accompanying
-# ChangeLog files and by browsing the CVS repository.
+# ChangeLog files and by browsing the fink git repository.
 
 package Fink::Text::ParseWords;
 
 use strict;
 require 5.006;
-our $VERSION = "3.27";
+our $VERSION = "3.29";
 
 
 use Exporter;
@@ -278,6 +278,10 @@ backslashed double-quote)
 Replacing C<quotewords('\s+', 0, q{this   is...})>
 with C<shellwords(q{this   is...})>
 is a simpler way to accomplish the same thing.
+
+=head1 SEE ALSO
+
+L<Text::CSV> - for parsing CSV files
 
 =head1 AUTHORS
 
