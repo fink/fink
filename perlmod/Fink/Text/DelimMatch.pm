@@ -1,7 +1,7 @@
 # This file is based on Text::DelimMatch v1.06 from CPAN.
 # It was converted to Fink::Text::DelimMatch and further modified 
 # for use by Fink. You can read about these changes in the accompanying
-# ChangeLog files and by browsing the CVS repository.
+# ChangeLog files and by browsing the fink git repository.
 
 package Fink::Text::DelimMatch;
 
