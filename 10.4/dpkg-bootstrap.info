@@ -49,11 +49,19 @@ cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/o
 # Fink uses "x86_64" instead of "amd64"
 perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
 
-# Fix for gnutar (Slightly modified for bootstrap version)
-perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
-perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c
-# Fix for gnutar
-#perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c
+# Fix for tar (Slightly modified for dpkg-bootstrap)
+if [ "%n" = "dpkg-bootstrap" ]; then \
+  if [ "$(/usr/bin/sw_vers -productVersion | cut -d'.' -f1-2)" > "10.8" ]; then \
+    perl -pi -e 's,\"tar\",\"/usr/bin/tar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+    perl -pi -e 's,--warning=no-timestamp,-v,g' dpkg-deb/extract.c; \
+    perl -pi -e 's,--format=gnu,--format=ustar,g' dpkg-deb/build.c; \
+  else \
+    perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+    perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c; \
+  fi \
+else \
+  perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+fi
 
 # Fix for --disable-nls
 perl -pi -e 's,defined\(__GNUG__\),defined(__NOTGNUG__),g' lib/compat/gettext.h
@@ -74,6 +82,7 @@ SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework Cor
 
 # Use %P for all state and admindirs for pre fink build
 ConfigureParams: <<
+  --disable-nls \
   --disable-dselect \
   --disable-start-stop-daemon \
   --with-admindir=%P/var/lib/dpkg \
