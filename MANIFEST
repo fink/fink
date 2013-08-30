@@ -167,7 +167,7 @@ t/Services/spec2struct.t
 t/Services/version_cmp.t
 t/basepath/etc/fink.conf
 t/testmore.pl
-t/Text/DelimMatch.t
+t/Text/DelimMatch/DelimMatch.t
 t/Validation/ChangeLog
 t/Validation/exports.t
 t/Validation/_filename_versioning_cmp.t
