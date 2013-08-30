@@ -96,7 +96,7 @@ perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-dselect,g' ds
 perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-perl,g' scripts/Makefile.in scripts/po/Makefile.in.in
 <<
 
-SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -F/System/Library/Frameworks/CoreFoundation.framework -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security -Wno-deprecated-writable-strings
+SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -F/System/Library/Frameworks/CoreFoundation.framework -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetCPPFLAGS: -D_FORTIFY_SOURCE=2
 SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
 SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework CoreFoundation
