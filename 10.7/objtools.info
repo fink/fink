@@ -25,14 +25,14 @@ CompileScript: <<
   ./configure %c
   make libiberty.a
   cd ../opcodes
-  if [ "$(/usr/bin/sw_vers -productVersion | cut -d'.' -f1-2)" < "10.7" ]; then \
+  if [[ $(/usr/bin/sw_vers -productVersion) < 10.7 ]]; then \
     ./configure %c; \
   else \
     CFLAGS="-Wno-string-plus-int" ./configure %c; \
   fi
   make libopcodes.la
   cd ../binutils
-  if [ "$(/usr/bin/sw_vers -productVersion | cut -d'.' -f1-2)" < "10.7" ]; then \
+  if [[ $(/usr/bin/sw_vers -productVersion) < 10.7 ]]; then \
     ./configure %c; \
   else \
     CFLAGS="-Wno-string-plus-int" ./configure %c; \
