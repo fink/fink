@@ -1,5 +1,5 @@
 Package: expat1
-Version: 2.0.1
+Version: 2.1.0
 Revision: 2
 BuildDepends: fink (>= 0.24.12-1)
 Depends: %N-shlibs (= %v-%r)
@@ -7,7 +7,7 @@ Replaces: expat
 Conflicts: expat
 BuildDependsOnly: true
 Source: mirror:sourceforge:expat/expat-%v.tar.gz
-Source-MD5: ee8b492592568805593f81f8cdf2a04c
+Source-MD5: dd7dab7a5fea97d2a6a43f511449b7cd
 PatchScript: <<
  perl -pi -e 's/^LTFLAGS/#LTFLAGS/' Makefile.in
 <<
@@ -24,7 +24,7 @@ SplitOff:<<
  Essential: true
  Files: lib/libexpat.*.dylib
  Shlibs: <<
-  %p/lib/libexpat.1.dylib 7.0.0 %n (>= 2.0.0-1)
+  %p/lib/libexpat.1.dylib 8.0.0 %n (>= 2.1.0-1)
  <<
  DocFiles: COPYING MANIFEST README
 <<
