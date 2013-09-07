@@ -61,7 +61,7 @@ podcheck:
 	@find . -name '.git' -prune -o \! -name '.#*' -type f -print | \
 		xargs grep -l '[=]head' | xargs podchecker
 
-.PHONY: all test install
+.PHONY: all bootstrap install test test_setup manifest_check clean podcheck
 
 .SUFFIXES:
 
