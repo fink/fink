@@ -402,10 +402,6 @@ sub do_direct_cvs {
 	die "Updating using $vcs failed. Check the error messages above.\n" if ($errors);
 }
 
-=over 4
-
-=back
-
 =cut
 
 1;

@@ -2485,14 +2485,14 @@ sub check_id_unused {
 =item is_accessible
 
   my ($status,$dir) = is_accessible($path, $octmode);
-  
+
 Example:
 
   my ($status,$dir) = is_accessible("/sw/src/fink.build", "05");
 
 Check whether a path is accessible via the octal mode in $octmode (not limited to just
 that mode, so "05" will satisfy e.g. 555, 755, 777, etc.).
-  
+
 Returns a status value of:
 
 0: when only directories or empty entries are in the path, i.e. it's a path one

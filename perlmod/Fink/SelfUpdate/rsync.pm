@@ -236,10 +236,6 @@ RSYNCAGAIN:
 
 None yet.
 
-=over 4
-
-=back
-
 =cut
 
 1;

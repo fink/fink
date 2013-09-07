@@ -1554,6 +1554,7 @@ package (long masked by a real package suite in fink of the same
 name).
 
 =cut
+
 				if ( has_lib("libXft.1.dylib") ) {
 					print STDERR "  - system-xfree86-shlibs provides xft1-shlibs\n" if ($options{debug});
 					push(@{$provides->{'system-xfree86-shlibs'}}, "xft1-shlibs");

@@ -191,10 +191,6 @@ sub do_direct {
 
 None yet.
 
-=over 4
-
-=back
-
 =cut
 
 1;
