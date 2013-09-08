@@ -14,6 +14,10 @@ Source-MD5: ee0f10756c84979622b992a4a61ea3f5
 PatchFile: objtools.patch
 PatchFile-MD5: 46c7844a1fe9dfc5148615d5db251140
 
+ConfigureParams: <<
+	--disable-werror
+<<
+
 CompileScript: <<
 #!/bin/sh -ev
   cd bfd
@@ -25,18 +29,10 @@ CompileScript: <<
   ./configure %c
   make libiberty.a
   cd ../opcodes
-  if [[ $(/usr/bin/sw_vers -productVersion) < 10.7 ]]; then \
-    ./configure %c; \
-  else \
-    CFLAGS="-Wno-string-plus-int" ./configure %c; \
-  fi
+  ./configure %c
   make libopcodes.la
   cd ../binutils
-  if [[ $(/usr/bin/sw_vers -productVersion) < 10.7 ]]; then \
-    ./configure %c; \
-  else \
-    CFLAGS="-Wno-string-plus-int" ./configure %c; \
-  fi
+  ./configure %c
   make objcopy
   make objdump
   make readelf
