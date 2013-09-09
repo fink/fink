@@ -405,6 +405,8 @@ sub additional_packages {
 		"libiconv-dev",
 		"liblzma5",
 		"libncurses5",
+		"libncursesw5",
+		"libncursesw5-shlibs",
 	);
 
 	return \@addlist;
