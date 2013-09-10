@@ -12,6 +12,7 @@ BuildDepends: <<
   libncursesw5,
   bzip2-dev
 <<
+## debianutils is a runtime dep for the cron job with calls savelog
 Depends: <<
   bzip2-shlibs,
   libgettext8-shlibs,
@@ -757,6 +758,7 @@ for example, most packages need make and the C compiler gcc.
 
 SplitOff3: <<
   Package: lib%N-pm
+  # sensible-utils is a runtime dep for V2.pm
   Depends: <<
     %N (>= 1.15.8),
     time-date-pm,
