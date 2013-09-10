@@ -73,9 +73,6 @@ if ($standalone == 0)
 		} else {
 			print "Package: ".$hash->{package}."\n";
 			print "Status: ".$hash->{status}."\n";
-			print "Version: ".$hash->{version}."\n";
-			print "Package: ".$hash->{package}."\n";
-			print "Status: ".$hash->{status}."\n";
 			print "Priority: optional\n";
 			print "Architecture: ".$config->param('Debarch')."\n";
 			print "Version: ".$hash->{version}."\n";
