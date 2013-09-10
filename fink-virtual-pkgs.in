@@ -71,6 +71,9 @@ if ($standalone == 0)
 				}
 			}
 		} else {
+			# The following code tries very hard to exactly match the output in the dpkg
+			# status file. This is necessary to make sure that (the new) apt works
+			# correctly. Thus, be very careful when changing any of this code.
 			print "Package: ".$hash->{package}."\n";
 			print "Status: ".$hash->{status}."\n";
 			print "Priority: optional\n";
