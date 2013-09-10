@@ -1,15 +1,13 @@
 Package: debianutils
-Version: 4.3.2
-Revision: 2
+Version: 4.4
+Revision: 1
 Essential: true
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 ## Remove po4a
 BuildDepends: fink (>= 0.24.12-1)
 Depends: base-files, sensible-utils
-Conflicts: mktemp, ftpfiles (<< 20030406-1)
-Replaces: mktemp, tetex, ftpfiles (<< 20030406-1)
 Source: mirror:debian:pool/main/d/%n/%n_%v.tar.gz
-Source-MD5: 6270998707ed0d0894b981e2e9dbb912
+Source-MD5: c0cb076754d7f4eb1e3397d00916647f
 SourceDirectory: %n-%v
 PatchScript: <<
 ### fix use of chown/mod --reference which isn't supported in /bin/chown/mod
