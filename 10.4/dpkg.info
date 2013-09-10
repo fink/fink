@@ -17,10 +17,12 @@ Depends: <<
   libgettext8-shlibs,
   liblzma5-shlibs,
   tar,
-  install-info
+  install-info,
+  debianutils
 <<
 Conflicts: dpkg-bootstrap
 Replaces: dpkg-bootstrap
+Recommends: anacron
 Suggests: apt
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
@@ -30,7 +32,7 @@ SourceDirectory: dpkg-%v
 Source-MD5: a20a06a5272717274a8b009368f237da
 
 PatchFile: dpkg.patch
-PatchFile-MD5: a851cfe5976cffc3efe6c044d1c88578
+PatchFile-MD5: 955e0a002c785067af074e312da4747f
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -142,6 +144,10 @@ InstallScript: <<
 
   install -m 0755 fink/md5sum %i/bin
 
+  install -d -m 0755 %i/etc/cron.daily
+  install -d -m 0755 %i/var/backups
+  install -m 0644 fink/dpkg.cron.daily %i/etc/cron.daily/dpkg
+
   # install fink as a vendor
   install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
 
@@ -151,7 +157,9 @@ InstallScript: <<
   ln -s %p/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
   ln -s %p/bin/update-alternatives %i/sbin/update-alternatives
 <<
-ConfFiles: %p/etc/dpkg/origins/fink
+ConfFiles: <<
+  %p/etc/dpkg/origins/fink
+<<
 DocFiles: <<
   ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
   README README.translators THANKS TODO
@@ -751,7 +759,8 @@ SplitOff3: <<
   Package: lib%N-pm
   Depends: <<
     %N (>= 1.15.8),
-    time-date-pm
+    time-date-pm,
+    sensible-utils
   <<
   Recommends: <<
     bzip2,

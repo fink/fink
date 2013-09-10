@@ -32,6 +32,20 @@ diff -ruN dpkg-1.16.10.orig/fink/buildflags.conf dpkg-1.16.10/fink/buildflags.co
 +# fink defaults
 +PREPEND CPPFLAGS -I@FINKPREFIX@/include
 +PREPEND LDFLAGS -L@FINKPREFIX@/lib
+diff -ruN dpkg-1.16.10.orig/fink/dpkg.cron.daily dpkg-1.16.10/fink/dpkg.cron.daily
+--- dpkg-1.16.10.orig/fink/dpkg.cron.daily	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.16.10/fink/dpkg.cron.daily	2013-09-10 09:13:20.000000000 -0600
+@@ -0,0 +1,10 @@
++#!/bin/sh
++
++# Backup the 7 last versions of dpkg's status file
++if cd @FINKPREFIX@/var/backups ; then
++    if ! cmp -s dpkg.status.0 @FINKPREIFX@/var/lib/dpkg/status ; then
++            cp -p @FINKPREFIX@/var/lib/dpkg/status dpkg.status
++            savelog -c 7 dpkg.status >/dev/null
++    fi
++fi
++
 diff -ruN dpkg-1.16.10.orig/fink/md5sum dpkg-1.16.10/fink/md5sum
 --- dpkg-1.16.10.orig/fink/md5sum	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.16.10/fink/md5sum	2013-05-28 08:30:00.000000000 -0600
