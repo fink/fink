@@ -79,7 +79,7 @@ if ($standalone == 0)
 			print "Maintainer: ".$hash->{maintainer}."\n";
 			foreach $field (keys %$hash)
 			{
-				next if ($field =~ /^(package|status|version|descdetail|compilescript|homepage)$/);
+				next if ($field =~ /^(package|status|version|descdetail|compilescript|homepage|maintainer)$/);
 				if ($field eq "description") {
 					print "Description: ".$hash->{'description'}."\n";
 					if ($hash->{'descdetail'}) {
