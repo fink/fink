@@ -1,6 +1,6 @@
 Package: xz
 Version: 5.0.5
-Revision: 1.1
+Revision: 2.1
 Essential: yes
 Description: LZMA file compressor
 DescDetail: <<
