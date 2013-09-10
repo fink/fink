@@ -12,11 +12,13 @@ BuildDepends: <<
   libncursesw5,
   bzip2-dev
 <<
-## debianutils is a runtime dep for the cron job with calls savelog
 Depends: <<
   bzip2-shlibs,
   libgettext8-shlibs,
-  liblzma5-shlibs,
+  liblzma5-shlibs
+<<
+## debianutils is a runtime dep for the cron job with calls savelog
+RuntimeDepends: <<
   tar,
   install-info,
   debianutils
@@ -124,9 +126,18 @@ ConfigureParams: <<
 <<
 
 InfoTest: <<
-  TestConfigureParams: --disable-silent-rules
-  TestDepends: io-string-pm, time-date-pm
-  TestScript: make check || exit 2
+  TestConfigureParams: <<
+    --disable-silent-rules
+  <<
+  TestDepends: <<
+    io-string-pm,
+    time-date-pm,
+    objtools,
+    sensible-utils
+  <<
+  TestScript: <<
+    make check || exit 2
+  <<
 <<
 
 InstallScript: <<
@@ -688,10 +699,12 @@ SplitOff2: <<
   Package: %N-dev
   Depends: <<
     lib%N-pm (= %v-%r),
+    base-files (>= 1.9.12-1)
+  <<
+  RuntimeDepends: <<
     objtools,
     bzip2,
-    xz,
-    base-files (>= 1.9.12-1)
+    xz
   <<
   Recommends: <<
     patch,
@@ -758,9 +771,11 @@ for example, most packages need make and the C compiler gcc.
 
 SplitOff3: <<
   Package: lib%N-pm
-  # sensible-utils is a runtime dep for V2.pm
   Depends: <<
-    %N (>= 1.15.8),
+    %N (>= 1.15.8)
+  <<
+  # sensible-utils is a runtime dep for V2.pm
+  RuntimeDepends: <<
     time-date-pm,
     sensible-utils
   <<
@@ -822,9 +837,11 @@ modules.
 SplitOff4: <<
   Package: dselect
   Depends: <<
-    dpkg (>= 1.13.1),
     libgettext8-shlibs,
     libncursesw5-shlibs (>= 5.6+20070908)
+  <<
+  RuntimeDepends: <<
+    dpkg (>= 1.13.1)
   <<
   Conflicts: <<
     dpkg-ftp,
