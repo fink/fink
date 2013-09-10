@@ -71,13 +71,20 @@ if ($standalone == 0)
 				}
 			}
 		} else {
-			printf "Package: %s\nStatus: %s\nVersion: %s\n", $hash->{package},$hash->{status},$hash->{version};
-			printf "Package: %s\nStatus: %s\nPriority: optional\nArchitecture: ".$config->param('Debarch')."\nVersion: %s\nMaintainer: %s\n", $hash->{package},$hash->{status},$hash->{version},$hash->{maintainer};
+			print "Package: ".$hash->{package}."\n";
+			print "Status: ".$hash->{status}."\n";
+			print "Version: ".$hash->{version}."\n";
+			print "Package: ".$hash->{package}."\n";
+			print "Status: ".$hash->{status}."\n";
+			print "Priority: optional\n";
+			print "Architecture: ".$config->param('Debarch')."\n";
+			print "Version: ".$hash->{version}."\n";
+			print "Maintainer: ".$hash->{maintainer}."\n";
 			foreach $field (keys %$hash)
 			{
 				next if ($field =~ /^(package|status|version|descdetail|compilescript|homepage)$/);
 				if ($field eq "description") {
-					printf "Description: %s\n",$hash->{$field};
+					print "Description: ".$hash->{'description'}."\n";
 					if ($hash->{'descdetail'}) {
 						my $descdetail = $hash->{'descdetail'};
 						chomp($descdetail);
@@ -90,16 +97,16 @@ if ($standalone == 0)
 							push @descdetails, $line;
 						}
 						$descdetail = join("\n", @descdetails);
-						printf "%s\n",$descdetail;
+						print $descdetail."\n";
 					}
 					if ($hash->{'homepage'}) {
-						printf " .\n";
-						printf " Web site: %s\n",$hash->{'homepage'};
+						print " .\n";
+						print " Web site: ".$hash->{'homepage'}."\n";
 					}
 					printf " .\n";
-					printf " Maintainer: %s\n",$hash->{'maintainer'};
+					printf " Maintainer: ".$hash->{'maintainer'}."\n";
 				} else {
-					printf "%s: %s\n",ucfirst $field,$hash->{$field};
+					printf ucfirst $field.": ".$hash->{$field}."\n";
 				}
 			}
 			print "\n";
@@ -132,9 +139,14 @@ else
 	}
 	else
 	{
-		printf "Package: %s\nStatus: install ok installed\nVersion: %s-1\nProvides: kernel\n\n", lc((uname())[0]), lc((uname())[2]);
+		print "Package: ".lc((uname())[0])."\n";
+		print "Status: install ok installed\n";
+		print "Version: ".lc((uname())[2])."-1\n", ;
+		print "Provides: kernel\n\n";
 		if ($macosx_version ne 0) {
-			printf "Package: macosx\nStatus: install ok installed\nVersion: %s-1\n\n",$macosx_version;
+			print "Package: macosx\n";
+			print "Status: install ok installed\n";
+			print "Version: ".$macosx_version."-1\n", ;
 		}
 	}
 }
