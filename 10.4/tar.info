@@ -1,24 +1,36 @@
 Package: tar
 Version: 1.26
-Revision: 2
+Revision: 3
 Essential: yes
-Depends: libgettext8-shlibs (>= 0.18.1.1-1), libiconv (>= 1.12-4.1), gzip, bzip2, base-files
+Depends: <<
+	base-files,
+	bzip2,
+	gzip,
+	libgettext8-shlibs (>= 0.18.1.1-1),
+	libiconv (>= 1.14-5)
+<<
 BuildAsNobody: false
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
 #Source: mirror:gnu:%n/%n-%v.tar.bz2
 Source-MD5: 2cee42a2ff4f1cd4f9298eeeb2264519
-ConfigureParams: --program-transform-name=s/tar/gtar/ --infodir=%p/share/info --libexecdir=%p/lib --disable-dependency-tracking FORCE_UNSAFE_CONFIGURE=1
+ConfigureParams: <<
+	--program-transform-name=s/tar/gtar/ \
+	--infodir=%p/share/info \
+	--libexecdir=%p/lib \
+	--disable-dependency-tracking \
+	FORCE_UNSAFE_CONFIGURE=1
+<<
 CompileScript: <<
- %p/bin/fink -y install libgettext8-dev libiconv-dev
- ./configure %c
- make
+	%p/bin/fink -y install libgettext8-dev libiconv-dev
+	./configure %c
+	make
 <<
 InfoTest: <<
- TestScript: <<
-  # Fix bug in test 91 (fails when built as root).
-  perl -pi -e 's/(^AT_CHECK.*$)/$&\nAT_UNPRIVILEGED_PREREQ/' tests/remfiles01.at
-  make check || exit 2
- <<
+	# NOTE: if any test macros are modified in tests/at, it is critical to 
+	# test the build without autoconf* installed.
+	TestScript: <<
+		make check || exit 2
+	<<
 <<
 InstallScript: <<
  make install DESTDIR=%d
@@ -29,8 +41,8 @@ DocFiles: README* COPYING AUTHORS NEWS THANKS
 #
 PreInstScript: <<
 if [ -L %p/etc/alternatives/rmt ]; then
-  update-alternatives --remove rmt %p/lib/rmt-tar
-  rm -f %p/lib/rmt
+	update-alternatives --remove rmt %p/lib/rmt-tar
+	rm -f %p/lib/rmt
 fi
 <<
 InfoDocs: tar.info
