@@ -66,5 +66,6 @@ if ($> == 0) {
 	print STDERR "Non-root, can't pre-lock\n" if $debug;
 }
 
+unshift(@ARGV, '-D1') if $debug;
 print STDERR "Execing $exec with args: ", join(' ', @ARGV), "\n" if $debug;
 exec($exec, @ARGV) or die "lockwait: Exec failed: $!";
