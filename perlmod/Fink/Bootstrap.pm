@@ -343,8 +343,8 @@ Called by inject_package() and fink's postinstall.pl.
 sub add_injected_to_trees {
 
 	my $distribution = shift || die "The API for add_injected_to_trees has
-       changed, and now requires an argument.  If you see this message,
-       complain to your friendly neighborhood fink maintainers.\n";;
+	   changed, and now requires an argument.  If you see this message,
+	   complain to your friendly neighborhood fink maintainers.\n";;
 
 	my $trees = $config->param("Trees");
 	if ($trees =~ /^\s*$/) {

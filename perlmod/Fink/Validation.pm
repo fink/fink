@@ -650,11 +650,11 @@ sub validate_info_file {
 			# fink recently changed .tar.xz source handling (now
 			# auto-extracts) and maybe other .xz effects as well
 			if (exists $source_props->{$_} and $source_props->{$_} =~ /\.xz$/ ) {
-				$looks_good=0 unless _require_dep($properties, {build => {'fink' => '0.32'} }, 'use of a .xz source archive', $filename); 
+				$looks_good=0 unless _require_dep($properties, {build => {'fink' => '0.32'} }, 'use of a .xz source archive', $filename);
 			}
 		}
 	}
-	
+
 	$expand = { 'n' => $pkgname,
 				'N' => $pkgname,
 				'v' => $pkgversion,

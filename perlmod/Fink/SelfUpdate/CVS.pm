@@ -129,7 +129,7 @@ sub setup_direct_cvs {
 		my @tokens;
 		$http_proxy =~ s|http://||; # strip leading 'http://', normally present.
 	    if ($http_proxy =~ /\@/ ) { # 'proxy' doesn't understand user:password@, so strip that off
-			@tokens = split /\@/, $http_proxy; 
+			@tokens = split /\@/, $http_proxy;
 			$http_proxy=pop @tokens ; # keep host:port part
 		}
 		if  ($http_proxy =~ /:\d+$/) { # extract TCP port number if present

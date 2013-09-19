@@ -406,7 +406,7 @@ directories exist.
 					($dir) = ($javadir =~ m|(\d+\.\d+\.\d+).*jdk|) ;
 					$java_test_dir = "$javadir/bin";
 					($java_cmd_dir) = ($java_test_dir =~ m|/.*/((.*)?jdk/.*/bin)|);
-					$java_inc_dir = $java_cmd_dir;			
+					$java_inc_dir = $java_cmd_dir;
 					$java_inc_dir =~ s/bin/include/;
 				}
 				# chop the version down to major/minor without dots
@@ -620,14 +620,14 @@ This package represents your Xcode.app version.
 	$hash->{description} = "[virtual package representing Xcode]";
 	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 	$hash->{descdetail} = <<END;
-This package represents Xcode.app and 'xcodebuild', 
+This package represents Xcode.app and 'xcodebuild',
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
   http://connect.apple.com/
 
-(free registration required).  
-If you are on OS X 10.7 or later and have in fact installed 
+(free registration required).
+If you are on OS X 10.7 or later and have in fact installed
 Xcode 4.3 or later, then you may need to run
 
   sudo xcode-select -switch /path/to/Xcode.app
@@ -637,10 +637,10 @@ to make it visible to its own CLI tools and to Fink.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-    chomp(my $xcodepath=`xcode-select -print-path 2>/dev/null`);
-    # Xcode 4.3+ is relocatable
-    my $result=`defaults read $xcodepath/../version CFBundleShortVersionString 2>&1`;
-    my $xcode_app_version; # to use in the next entry
+	chomp(my $xcodepath=`xcode-select -print-path 2>/dev/null`);
+	# Xcode 4.3+ is relocatable
+	my $result=`defaults read $xcodepath/../version CFBundleShortVersionString 2>&1`;
+	my $xcode_app_version; # to use in the next entry
 	if ($?) {
 		$result = `defaults read $xcodepath/Applications/Xcode.app/Contents/version CFBundleShortVersionString 2>&1`;
 	}
@@ -686,29 +686,29 @@ from Apple at:
 
   http://connect.apple.com/
 
-(free registration required).  
+(free registration required).
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
-    	my $osxversion = Fink::Services::get_kernel_vers();
-    # for Xcode 4.2.1 and earlier, this will be the same as 
-    # the version of xcode.app
-    if ( defined ($xcode_app_version) && Fink::Services::version_cmp ("$xcode_app_version",'<<','4.3') ) {
+	my $osxversion = Fink::Services::get_kernel_vers();
+	# for Xcode 4.2.1 and earlier, this will be the same as
+	# the version of xcode.app
+	if ( defined ($xcode_app_version) && Fink::Services::version_cmp ("$xcode_app_version",'<<','4.3') ) {
 		$hash->{version} = $xcode_app_version . '-1';
 		print STDERR $xcode_app_version, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
-    } else {
-    # For Xcode 4.3.0 and later (as far as we know) get the CLI tools version
-    # via pkgutil.  The version string currently looks like:
-    #	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
-    # e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
-    # We'll take the whole thing as the version.
-        my $receipt_to_check;
-        if ($osxversion >= 13) {
-        	chomp($receipt_to_check = "com.apple.pkg.CLTools_Executables");
-        } else {
-            chomp($receipt_to_check = "com.apple.pkg.DeveloperToolsCLI");
-        } 
-        my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`; 
+	} else {
+	# For Xcode 4.3.0 and later (as far as we know) get the CLI tools version
+	# via pkgutil.  The version string currently looks like:
+	#	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
+	# e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
+	# We'll take the whole thing as the version.
+		my $receipt_to_check;
+		if ($osxversion >= 13) {
+			chomp($receipt_to_check = "com.apple.pkg.CLTools_Executables");
+		} else {
+			chomp($receipt_to_check = "com.apple.pkg.DeveloperToolsCLI");
+		}
+		my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`;
 		if (not $?) {
 			# didn't fail
 			# iterate over output lines and grab version
@@ -731,7 +731,7 @@ END
 				print STDERR "unknown:\n$result\n";	# dump command's own diagnostics
 			}
 		}
-    }
+	}
 	$self->{$hash->{package}} = $hash;
 
 =item "system-sdk-*"
@@ -773,7 +773,7 @@ as part of the Xcode tools.
 	{
 		chomp (my $testpath=`xcode-select -print-path 2>/dev/null`);
 		# avoid pathological xcodebuild path case
-		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/'; 
+		my @sdkread=`xcodebuild -version -sdk 2>&1` unless $testpath eq '/';
 		foreach (@sdkread) {
 			chomp;
 			$sdkpath=$1 if /Path:\s(.*)MacOSX.*\.sdk/;
@@ -816,8 +816,8 @@ installed, you can download Xcode from Apple at:
 
   http://connect.apple.com/
 
-(free registration required).  
-If you are on OS X 10.7 or  later and have in fact installed 
+(free registration required).
+If you are on OS X 10.7 or  later and have in fact installed
 Xcode 4.3 or later, then you may need to run
 
   sudo xcode-select -switch /path/to/Xcode.app
@@ -828,9 +828,9 @@ END
 			$hash->{compilescript} = &gen_compile_script($hash);
 			if (-d "$sdkpath$dir" ) {
 				$hash->{status} = STATUS_PRESENT;
-				$self->{$hash->{package}} = $hash;			
 				$self->{$hash->{package}} = $hash;
-				print STDERR "found\n" if $options{debug};			
+				$self->{$hash->{package}} = $hash;
+				print STDERR "found\n" if $options{debug};
 			} else {
 				$self->{$hash->{package}} = $hash
 					unless (exists $self->{$hash->{package}}->{status} and $self->{$hash->{package}}->{status} eq STATUS_PRESENT);
@@ -886,7 +886,7 @@ you can download it from Apple at:
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
-or if you just want the command-line tools. This can be 
+or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
 from the Downloads pane of Xcode 4.3+'s Preferences.
 END
@@ -940,7 +940,7 @@ developer tools (called Xcode) from Apple at:
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
-or if you just want the command-line tools. This can be 
+or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
 from the Downloads pane of Xcode 4.3+'s Preferences.
 END
@@ -1018,8 +1018,8 @@ the successful execution of "gcc --version".
 	{
 		# force presence of structs for some possible compilers
 		# list each as %n=>%v
-		my %expected_gcc; 
-		
+		my %expected_gcc;
+
 		if ($osxversion == 9) {
 			%expected_gcc = (
 				'gcc3.3'  => '3.3',
@@ -1036,7 +1036,7 @@ the successful execution of "gcc --version".
 				'gcc4.2'  => '4.2',
 			)
 		}
-		
+
 		foreach my $key (sort keys %expected_gcc) {
 			if (not exists $self->{$key} && not Fink::Status->query_package($key)) {
 				$hash = &gen_gcc_hash($key, $expected_gcc{$key}, 0, 0, STATUS_ABSENT);
@@ -1052,9 +1052,9 @@ The clang virtual package is considered present based on
 the successful execution of "/usr/bin/clang -v".
 
 =cut
-    
-    # possible for 10.6 and later
-    if ($osxversion >= 10) {
+
+	# possible for 10.6 and later
+	if ($osxversion >= 10) {
 		print STDERR "- checking for /usr/bin/clang:\n" if ($options{debug});
 		if (opendir(DIR, "/usr/bin")) {
 			if (open(CLANG, '/usr/bin/clang -### -v -x c /dev/null 2>&1 |')) {
@@ -1073,8 +1073,8 @@ the successful execution of "/usr/bin/clang -v".
 				$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 				$hash->{builddependsonly} = "true";
 				$hash->{descdetail} = <<END;
-This package represents the presence of the clang compiler 
-in the development tools provided by Apple.  If it does 
+This package represents the presence of the clang compiler
+in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
@@ -1083,7 +1083,7 @@ Xcode for your OS X version from Apple at:
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
-or if you just want the command-line tools. This can be 
+or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
 from the Downloads pane of Xcode 4.3+'s Preferences.
 END
@@ -1096,7 +1096,7 @@ END
 					$hash->{version} = '0-0';
 				}
 				$self->{$hash->{package}} = $hash;
-			
+
 				print STDERR "  - found $version\n" if ($options{debug});
 
 			}
@@ -1112,9 +1112,9 @@ The llvm-gcc virtual package is considered present based on
 the successful execution of "/usr/bin/llvm-gcc -v".
 
 =cut
-    
-    # possible for 10.6 and later
-    if ($osxversion >= 10) {
+
+	# possible for 10.6 and later
+	if ($osxversion >= 10) {
 		print STDERR "- checking for /usr/bin/llvm-gcc:\n" if ($options{debug});
 		if (opendir(DIR, "/usr/bin")) {
 			if (open(LLVM, '/usr/bin/llvm-gcc -### -v -x c /dev/null 2>&1 |')) {
@@ -1133,8 +1133,8 @@ the successful execution of "/usr/bin/llvm-gcc -v".
 				$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 				$hash->{builddependsonly} = "true";
 				$hash->{descdetail} = <<END;
-This package represents the presence of the LLVM compiler 
-in the development tools provided by Apple.  If it does 
+This package represents the presence of the LLVM compiler
+in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
@@ -1143,7 +1143,7 @@ Xcode for your OS X version from Apple at:
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
-or if you just want the command-line tools. This can be 
+or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
 from the Downloads pane of Preferences... in Xcode 4.3+.
 END
@@ -1156,7 +1156,7 @@ END
 					$hash->{version} = '0-0';
 				}
 				$self->{$hash->{package}} = $hash;
-			
+
 				print STDERR "  - found $version\n" if ($options{debug});
 
 			}
@@ -1239,10 +1239,10 @@ developer tools are always available from Apple at:
 
   http://connect.apple.com/
 
-(free registration required).  
+(free registration required).
 If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
-or if you just want the command-line tools. This can be 
+or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
 from the Downloads pane of Xcode 4.3+'s Preferences.
 END
@@ -1714,7 +1714,7 @@ For more info on this package see http://growl.info/.
 			}
 		} else {
 			print STDERR "/Library/PreferencePanes/Growl.prefPane/Contents/Info.plist or\n/Applications/Growl.app/Contents/Info.plist not found... " if ($options{debug});
- 			$growl_version = "0";
+			$growl_version = "0";
 		}
 
 		### This check is for growl's less then 0.6
@@ -2097,8 +2097,8 @@ sub gen_gcc_hash {
 		builddependsonly => 'true',
 		descdetail       => <<END,
 This package represents the$is_64bit gcc $version compiler,
-which is part of the Apple developer tools (Xcode). The latest 
-versions of the Apple developer tools are always available 
+which is part of the Apple developer tools (Xcode). The latest
+versions of the Apple developer tools are always available
 from Apple at:
 
   http://connect.apple.com/
@@ -2107,11 +2107,11 @@ from Apple at:
 
 Note that some versions of GCC are *not* installed by default
 when installing some versions of Xcode.  Make sure you customize
-your install and check all GCC versions to ensure proper 
+your install and check all GCC versions to ensure proper
 compatibility with Fink.
 If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
-or if you just want the command-line tools. This can be 
+or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
 from the Downloads pane of Preferences... in Xcode 4.3+.
 END
