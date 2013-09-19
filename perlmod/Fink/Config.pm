@@ -34,9 +34,9 @@ require Exporter;
 
 our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $buildpath $dbpath
-                      $distribution $ignore_errors
-                      get_option set_options fink_tree_default
-                     );
+					  $distribution $ignore_errors
+					  get_option set_options fink_tree_default
+					 );
 our $VERSION	 = 1.00;
 
 

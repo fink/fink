@@ -761,9 +761,9 @@ sub can_read_write_db {
 		return (0,0);
 	}
 
-    # do not use disk cache if we are in the first bootstrap phase
-    # (because we may be running under a different perl than fink will
-    #  eventually use, and Storable.pm may be incompatible)
+	# do not use disk cache if we are in the first bootstrap phase
+	# (because we may be running under a different perl than fink will
+	#  eventually use, and Storable.pm may be incompatible)
 	if ($config->has_flag("bootstrap1")) {
 		return (0,0);
 		}
@@ -1124,17 +1124,17 @@ sub tree_infos {
 
 	my $legacy_subdir = $config->param('Distribution') . '-EOL';
 	if (-d "$treedir/$legacy_subdir") {
-	    # legacy system: only look in legacy-support subdir
-	    $treedir = "$treedir/$legacy_subdir";
+		# legacy system: only look in legacy-support subdir
+		$treedir = "$treedir/$legacy_subdir";
 	} else {
-    	# current system: don't look in legacy-support subdirs
-    	$wanted = sub {
-        	if (-f _ and not /^[\.\#]/ and /\.info$/) {
-            	push @filelist, $File::Find::fullname if defined ($File::Find::fullname);
-        	} elsif (-d _ and /-EOL$/) {
-            	$File::Find::prune = 1;
-        	}
-    	}
+		# current system: don't look in legacy-support subdirs
+		$wanted = sub {
+			if (-f _ and not /^[\.\#]/ and /\.info$/) {
+				push @filelist, $File::Find::fullname if defined ($File::Find::fullname);
+			} elsif (-d _ and /-EOL$/) {
+				$File::Find::prune = 1;
+			}
+		}
 	}
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $treedir);
 

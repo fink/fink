@@ -62,23 +62,23 @@ Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path);
 sub system_check {
 	my $class = shift;  # class method for now
 
-    # We trust that our rsync will work, so default to that if present
-    # Otherwise choose system-rsync, which hopefully hasn't been broken by
-    # an Apple update. If system-rsync is known to be broken at some point, 
-    # we'll add a version check for that here.
-    
-    if (-x "$basepath/bin/rsync") {
-        $rsyncpath = "$basepath/bin/rsync";
-    } elsif (-x "/usr/bin/rsync") {
-        $rsyncpath= "/usr/bin/rsync";
-    } else {
-        warn "You appear to be missing /usr/bin/rsync, ".
-        	 "which is part of the BSD subsystem.\n".
-        	 "Before changing your selfupdate method to 'rsync', you must either:\n".
-        	 "* reinstall your system (or just BSD.pkg)\n".
-        	 "* or install the rsync package with 'fink install rsync'.\n";
-        return 0;
-    }
+	# We trust that our rsync will work, so default to that if present
+	# Otherwise choose system-rsync, which hopefully hasn't been broken by
+	# an Apple update. If system-rsync is known to be broken at some point,
+	# we'll add a version check for that here.
+
+	if (-x "$basepath/bin/rsync") {
+		$rsyncpath = "$basepath/bin/rsync";
+	} elsif (-x "/usr/bin/rsync") {
+		$rsyncpath= "/usr/bin/rsync";
+	} else {
+		warn "You appear to be missing /usr/bin/rsync, ".
+			 "which is part of the BSD subsystem.\n".
+			 "Before changing your selfupdate method to 'rsync', you must either:\n".
+			 "* reinstall your system (or just BSD.pkg)\n".
+			 "* or install the rsync package with 'fink install rsync'.\n";
+		return 0;
+	}
 
 	# Check for devtools, since folks won't be able to build without them.
 	return 0 unless $class->devtools_check('rsync',$rsyncpath);
@@ -235,10 +235,6 @@ RSYNCAGAIN:
 =head2 Private Methods
 
 None yet.
-
-=over 4
-
-=back
 
 =cut
 

@@ -210,7 +210,7 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.7";
-	} elsif ($host =~ /^i386-apple-darwin12\.[0-4]\.[0-1]/) {
+	} elsif ($host =~ /^i386-apple-darwin12\.[0-5]\.[0-1]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.8";
 	} elsif ($host =~ /^i386-apple-darwin12\./) {
@@ -343,8 +343,8 @@ Called by inject_package() and fink's postinstall.pl.
 sub add_injected_to_trees {
 
 	my $distribution = shift || die "The API for add_injected_to_trees has
-       changed, and now requires an argument.  If you see this message,
-       complain to your friendly neighborhood fink maintainers.\n";;
+	   changed, and now requires an argument.  If you see this message,
+	   complain to your friendly neighborhood fink maintainers.\n";;
 
 	my $trees = $config->param("Trees");
 	if ($trees =~ /^\s*$/) {
