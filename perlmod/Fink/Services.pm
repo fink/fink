@@ -1261,6 +1261,10 @@ sub gcc_selected {
 		} else {
 			print STDERR "WARNING: /usr/bin/gcc is not a symlink!";
 		}
+	} elsif (-x '/usr/bin/gcc') {
+		if (`/usr/bin/gcc --version` =~ /clang/) {
+			return "4.2";
+		}
 	}
 	return 0;
 }
