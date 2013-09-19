@@ -697,18 +697,18 @@ END
 		print STDERR $xcode_app_version, "\n" if $options{debug};
 		$hash->{status} = STATUS_PRESENT;
 	} else {
-	# For Xcode 4.3.0 and later (as far as we know) get the CLI tools version
-	# via pkgutil.  The version string currently looks like:
-	#	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
-	# e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
-	# We'll take the whole thing as the version.
+		# For Xcode 4.3.0 and later (as far as we know) get the CLI tools version
+		# via pkgutil.  The version string currently looks like:
+		#	<Xcode major>.<Xcode minor>.<Xcode micro>.0.1.<build_date>
+		# e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
+		# We'll take the whole thing as the version.
 		my $receipt_to_check;
 		if ($osxversion >= 13) {
-			chomp($receipt_to_check = "com.apple.pkg.CLTools_Executables");
+			$receipt_to_check = "com.apple.pkg.CLTools_Executables";
 		} else {
-			chomp($receipt_to_check = "com.apple.pkg.DeveloperToolsCLI");
+			$receipt_to_check = "com.apple.pkg.DeveloperToolsCLI";
 		}
-		my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`;
+		chomp(my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`);
 		if (not $?) {
 			# didn't fail
 			# iterate over output lines and grab version

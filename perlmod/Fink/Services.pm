@@ -1407,16 +1407,9 @@ couldn't be determined.
 sub get_darwin_equiv {
 	my %darwin_osx = (
 		'1' => '10.0',
-		'5' => '10.1',
-		'6' => '10.2',
-		'7' => '10.3',
-		'8' => '10.4',
-		'9' => '10.5',
-		'10' => '10.6',
-		'11' => '10.7',
-		'12' => '10.8',
 	);
-	return $darwin_osx{get_kernel_vers()};
+	my $kernel_vers = get_kernel_vers();
+	return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
 }
 
 =item get_kernel_vers
