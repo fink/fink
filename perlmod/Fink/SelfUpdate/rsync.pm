@@ -81,9 +81,7 @@ sub system_check {
 	}
 
 	# Check for devtools, since folks won't be able to build without them.
-	return 0 unless $class->devtools_check('rsync',$rsyncpath);
-
-	return 1;
+	return $class->devtools_check('rsync',$rsyncpath);
 }
 
 =item do_direct

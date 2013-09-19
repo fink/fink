@@ -71,8 +71,7 @@ sub system_check {
 		warn "Before changing your selfupdate method to '$vcs', you must install\n"."Fink's cvs package.\n";
 		return 0;
 	}
-	return 0 unless $class->devtools_check($vcs_lc,$cvs,);
-	return 1;
+	return $class->devtools_check($vcs_lc,$cvs);
 }
 
 sub clear_metadata {
