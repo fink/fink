@@ -219,20 +219,11 @@ if (&execute("ln -s $distribution $distdir")) {
 # If SelfUpdateTrees is not defined, or just has a single entry, we update
 # the entry to $selfupdatetree.	 Otherwise, we append $selfupdatetree
 # to the entry (unless it is already present).
-# 
-# Note that SelfUpdateCVSTrees was used for a while before SelfUpdateTrees,
-# so we use that one if it is present and SelfUpdateTrees is absent.  (We
-# also zero out SelfUpdateCVSTrees at the end, to avoid future confusion.)
 my @alltrees = ();
 my $SUTrees = "";
 if (defined $config->param("SelfUpdateTrees")) {
 	$SUTrees = $config->param("SelfUpdateTrees") ;
 	@alltrees = split(/\s+/, $SUTrees);
-} else {
-	if (defined $config->param("SelfUpdateCVSTrees")) {
-		$SUTrees = $config->param("SelfUpdateCVSTrees");
-		@alltrees = split(/\s+/, $SUTrees);
-	}
 }
 if (scalar @alltrees eq "1") {
 	$SUTrees = "";
@@ -244,7 +235,6 @@ for my $tree (@alltrees) {
 my $SUTreesEntry = $SUTrees . " " . $selfupdatetree;
 $SUTreesEntry =~ s/(^\s+|\s+$)//g;
 $config->set_param("SelfUpdateTrees", $SUTreesEntry);
-$config->set_param("SelfUpdateCVSTrees", "");
 $config->save();
 
 # Now that we've symlinked to the new directory, we can copy over the
