@@ -53,9 +53,9 @@ See documentation for the Fink::SelfUpdate base class.
 
 =item system_check
 
-This method builds packages from source, so it requires the
-"dev-tools" virtual package.  This is checked via
-Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path);
+Selfupdating builds packages from source, so it requires the
+"dev-tools" virtual package. Check for this and for the
+presence of an executable rsync binary.
 
 =cut
 
