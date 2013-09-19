@@ -2328,23 +2328,23 @@ sub ensure_fink_bld {
 	require Fink::Config;
 	my $fink_conf_uid = $Fink::Config::config->param('FinkBldUid');
 	chomp ($_ = `/usr/bin/id -P fink-bld 2>&1`);
-    my ($real_uid, $real_gid) = /.*:.*:(\d+):(\d+):.*:.*:.*:.*:.*/ ;
-    if ($fink_conf_uid)	{
-    	# do nothing if fink.conf UID and real UID are the same.
+	my ($real_uid, $real_gid) = /.*:.*:(\d+):(\d+):.*:.*:.*:.*:.*/ ;
+	if ($fink_conf_uid)	{
+		# do nothing if fink.conf UID and real UID are the same.
 		if ($real_uid) {
-			return 1 if $fink_conf_uid == $real_uid; 
-    	}
-    	# Otherwise we must have $fink_conf_uid != $real_uid (possibly with $real_uid not defined);
+			return 1 if $fink_conf_uid == $real_uid;
+		}
+		# Otherwise we must have $fink_conf_uid != $real_uid (possibly with $real_uid not defined);
 		if (!$real_uid) {
 			print "Adding user and group fink-bld for building packages unprivileged.\n";
 			if (!add_user('fink-bld', 'fink-bld', 'Fink Build System', '/var/empty', $fink_conf_uid)) {
 				print "WARNING: Could not add fink-bld user.  Try running 'fink configure'.\n";
-				return -1;		
+				return -1;
 			}
 			return 1; # success
 		} else {
 			print "Modifying fink-bld user and group.\n";
-			if (!edit_ds_entry('/Users/fink-bld', ["UniqueID", $real_uid, $fink_conf_uid],  
+			if (!edit_ds_entry('/Users/fink-bld', ["UniqueID", $real_uid, $fink_conf_uid],
 												["PrimaryGroupID", $real_gid, $fink_conf_uid])) {
 				print "Error changing entries in /Users/fink-bld.\n";
 				return -1;
@@ -2354,15 +2354,15 @@ sub ensure_fink_bld {
 				return -1;
 			}
 		}
-    } else {
-    	# OK if we've got fink-bld but not a fink.conf UID setting yet.
-    	if ($real_uid) {
-    		return 1;
-    	} else {
-    	# Bail out if we have neither.
-    		return 0;   
-    	}
-    }
+	} else {
+		# OK if we've got fink-bld but not a fink.conf UID setting yet.
+		if ($real_uid) {
+			return 1;
+		} else {
+		# Bail out if we have neither.
+			return 0;
+		}
+	}
 }
 
 =item add_user
@@ -2458,7 +2458,7 @@ sub edit_ds_entry {
 
   check_id_unused($id,$mode);
 
-Tests whether an input is used either as a user id or as a group id. 
+Tests whether an input is used either as a user id or as a group id.
 $mode should be one of "uid", "gid" or "both"
 
 =cut
@@ -2499,7 +2499,7 @@ Returns a status value of:
    could create with 'mkdir -p'
 1: we've hit a nondirectory file
 
-Also returns the first path element which is not a world-readable and executable  
+Also returns the first path element which is not a world-readable and executable
 directory, or the empty string if $path terminates .
 
 =cut
@@ -2512,17 +2512,17 @@ sub is_accessible {
 	my $path_so_far;
 	my @dirs;
 	foreach (File::Spec->splitdir($path)) {
-	    # stat() tracks the real directories rather than 
-	    # intervening links, so any non-directory indicates a 
+	    # stat() tracks the real directories rather than
+	    # intervening links, so any non-directory indicates a
 	    # file (or at least a symlink to a file) in the path
 		push @dirs, ($_);
 		$path_so_far = File::Spec->catdir(@dirs);
 		# we're done once we hit a nonexistent item.
 		return (0, '') if !(-e $path_so_far);
-		# we're also done if we hit a non-directory  
+		# we're also done if we hit a non-directory
 		return (1, $path_so_far) if !(-d $path_so_far);
 		# check the permissions otherwise
-		# Note: '... == $octmode' is for bit-masking.  
+		# Note: '... == $octmode' is for bit-masking.
 		# E.g. ($foo & 1) is true for any odd $foo, but ( ($foo & 1) == 1 ) is true only
 		# for $foo=1.
 		return (0, $path_so_far) unless (( (stat($path_so_far))[2] & $octmode) == $octmode);
@@ -2531,13 +2531,13 @@ sub is_accessible {
 	return (0, '');
 }
 
-=item select_legal_path 
+=item select_legal_path
 
 my $status = &select_legal_path ($fink_conf_field, $dir_to_check, $interactive) ;
 
 Currently $fink_conf_field can be 'Buildpath' or 'FetchAltDir'.
 $dir_to_check is the directory to check, unsurprisingly.
-If $interactive is true then run the prompts, e.g. for Configure.pm  
+If $interactive is true then run the prompts, e.g. for Configure.pm
 If it's not set then skip them, e.g. for Engine.pm .
 
 Returns an empty string to indicate an error.
@@ -2557,9 +2557,9 @@ sub select_legal_path {
 
 	my ($prompt_text, $perm, $perm_name, $perm_code);
 	my ($error_text, $change, $alternative);
-	
+
 	# cases
-	if ( $fink_conf_item eq "FetchAltDir" ) {	
+	if ( $fink_conf_item eq "FetchAltDir" ) {
 		$prompt_text = "In what additional directory should Fink look for downloaded ".
 					   "tarballs? \(use the absolute pathname only\)"
 					   if $interactive;
@@ -2599,33 +2599,33 @@ sub select_legal_path {
 	} else {
 		$dir_selection = $default_dir;
 	}
-	
+
 	# now check validity
-	
+
 	while ($dir_selection =~ /\S/) {
 		# avoid relative paths
 		if (!File::Spec->file_name_is_absolute($dir_selection)) {
 			unless ($interactive) {
 				&print_breaking_stderr ("ERROR: '$dir_selection' is not an absolute directory path. ".
-										"Run 'fink configure' and fix the item (use a space if ". 
+										"Run 'fink configure' and fix the item (use a space if ".
 										"you want to clear it)." );
 				return '';
 			}
 			$dir_selection = &prompt("That does not look like a complete (absolute) pathname. ".
-										 "Please try again", default => $default_dir) 
+										 "Please try again", default => $default_dir)
 		}
-		
+
 		# We're otherwise good, so check whether entire path to candidate directory
 		# 1.  Contains no non-directory files
 		# 2.  Has the proper permissions all the way down
-		# Buildpath will generate the full tree 
-		my ($status, $path_check) = &is_accessible($dir_selection, $perm); 
+		# Buildpath will generate the full tree
+		my ($status, $path_check) = &is_accessible($dir_selection, $perm);
 		if ($status == 1) { #non-directory
 			$error_text = "$path_check is not a directory.";
 			unless ($interactive) {
 				&print_breaking_stderr ("ERROR: $error_text");
 				return '';
-			}			
+			}
 			$dir_selection = &prompt("$error_text Please try again",
 									  default => $default_dir);
 		} elsif ($path_check) { #invalid permissions
@@ -2636,11 +2636,11 @@ sub select_legal_path {
 			unless ($interactive) {
 				&print_breaking_stderr ("ERROR: $error_text");
 				return '';
-			}					
+			}
 			$dir_selection = &prompt("$error_text", default => $default_dir);
-		} else { 
+		} else {
 			# We've traversed the available path.
-			# If the whole path isn't present, Buildpath will be created, 
+			# If the whole path isn't present, Buildpath will be created,
 			# but FetchAltDirectory will be ignored.
 			return $dir_selection;
 		}

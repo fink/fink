@@ -544,7 +544,7 @@ sub initialize {
 				$expand->{"lib"} = "lib/x86_64";
 			} elsif ($config->param('Architecture') eq "x86_64" ) {
 				# paradoxically, no special library location is required for
-                # -64bit variants under x86_64 architecture
+				# -64bit variants under x86_64 architecture
 			} else {
 				print_breaking_stderr "Skipping $self->{_filename}\n";
 				delete $self->{package};
@@ -3435,7 +3435,7 @@ sub phase_unpack {
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $xz);
 	my ($tar_is_pax,$alt_bzip2)=(0,0);
 	my $build_as_user_group = $self->pkg_build_as_user_group();
-	
+
 	$config->mixed_arch(msg=>'build a package', fatal=>1);
 
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
@@ -3496,7 +3496,7 @@ GCC_MSG
 		my $permissionflags = " --no-same-owner --no-same-permissions";
 
 		# set up "tar"
-		# Determine the rename list ; if not present then then move on.	
+		# Determine the rename list ; if not present then then move on.
 		if ($self->has_param($renamefield)) { # we need pax
 			@renamefiles = split(' ', $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
@@ -3514,12 +3514,12 @@ GCC_MSG
 			$tar_is_pax=0;
 		} elsif ( -e "/usr/bin/gnutar" ) {
 			$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Apple's GNU tar
-			$tar_is_pax=0;	
+			$tar_is_pax=0;
 		} else {
-			$tarcommand = "/usr/bin/tar $permissionflags $tarflags"; # probably BSD tar		
+			$tarcommand = "/usr/bin/tar $permissionflags $tarflags"; # probably BSD tar
 			$tar_is_pax=0;
 		}
-		
+
 		$bzip2 = $config->param_default("Bzip2path", 'bzip2');
 		$bzip2 = 'bzip2' unless (-x $bzip2);
 		$alt_bzip2=1 if ($bzip2 ne 'bzip2');
@@ -3670,8 +3670,8 @@ sub phase_patch {
 			unless ($dir_checked) {
 				my ($status,$dir) = is_accessible(dirname($file),'01');
 				die "$dir and its contents need to have at least o+x permissions. Run:\n\n".
-					"sudo chmod -R o+x $dir\n\n" if $dir; 
-				$dir_checked=1; 
+					"sudo chmod -R o+x $dir\n\n" if $dir;
+				$dir_checked=1;
 			}
 
 			# make sure patchfile exists and can be read by the user (root
@@ -4450,11 +4450,11 @@ EOF
 	### policy and so that tools like debsums can check the consistancy
 	### of installed file, this will also help for trouble shooting, since
 	### we will know if a packages file has be changed
-	
+
 	require File::Find;
 	my $md5s="";
 	my $md5check=Fink::Checksum->new('MD5');
-	
+
 	File::Find::find({
 		preprocess => sub {
 			# Don't descend into the .deb control directory
@@ -4992,11 +4992,11 @@ sub get_env {
 
 # for building 64bit libraries, we change LDFLAGS:
 
-    if (exists $self->{_type_hash}->{"-64bit"}) {
-        if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
-            $defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
-        }
-    }
+	if (exists $self->{_type_hash}->{"-64bit"}) {
+		if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
+			$defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
+		}
+	}
 
 	# uncomment this to be able to use distcc -- not officially supported!
 	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
@@ -5017,7 +5017,7 @@ sub get_env {
 	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', DIR => File::Spec->tmpdir, CLEANUP => 1 );
 	if ($< == 0) {
 		# we might be writing to ENV{HOME} during build, so fix ownership
-		my $build_as_user_group = $self->pkg_build_as_user_group(); 
+		my $build_as_user_group = $self->pkg_build_as_user_group();
 		chowname $build_as_user_group->{'user:group'}, $script_env{HOME} or
 			die "can't chown '" . $build_as_user_group->{'user:group'} . "' $script_env{HOME}\n";
 	}
@@ -5117,7 +5117,7 @@ sub get_env {
 		if  ($config->param("Distribution") gt "10.6") {
 			# Use clang for gcc/g++ on darwin11 and later. Only
 			# x86_64 supported so can override single-arch wrappers.
- 			$pathprefix = ensure_clang_prefix();
+			$pathprefix = ensure_clang_prefix();
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
@@ -5236,7 +5236,7 @@ sub package_error {
 	}
 
 	$error .= ".\n\nPlease try to include the complete error message in your report.  This\n" .
-        	"generally consists of a compiler line starting with e.g. \"gcc\" or \"g++\"\n" .
+			"generally consists of a compiler line starting with e.g. \"gcc\" or \"g++\"\n" .
 			"followed by the actual error output from the compiler.\n\n".
 			"Also include the following system information:\n";
 
@@ -5277,8 +5277,8 @@ sub package_error {
 		}
 		if ($umbj) {
 			$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
-		} else {			
-			$error .= $self->get_fullname() ." is set to build with only one job.\n"; 
+		} else {
+			$error .= $self->get_fullname() ." is set to build with only one job.\n";
 		}
 	}
 
@@ -5303,10 +5303,10 @@ sub get_perl_dir_arch {
 
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
-    ###
-    ### But when $perlversion is at least 5.10.0, we call it
-    ### with /usr/bin/arch instead, unless the architecture is powerpc
-    ###
+	###
+	### But when $perlversion is at least 5.10.0, we call it
+	### with /usr/bin/arch instead, unless the architecture is powerpc
+	###
 	my $perlcmd;
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
@@ -5753,7 +5753,7 @@ sub scanpackages {
 
   $self->pkg_build_as_user_group();
 
-If BuildAsNobody: false is set, return 
+If BuildAsNobody: false is set, return
 {qw/ user root group admin user:group root:admin /}
 
 Otherwise, return the results from Fink::Config::build_as_user_group()
