@@ -704,11 +704,11 @@ END
 		# We'll take the whole thing as the version.
 		my $receipt_to_check;
 		if ($osxversion >= 13) {
-			chomp($receipt_to_check = "com.apple.pkg.CLTools_Executables");
+			$receipt_to_check = "com.apple.pkg.CLTools_Executables";
 		} else {
-			chomp($receipt_to_check = "com.apple.pkg.DeveloperToolsCLI");
+			$receipt_to_check = "com.apple.pkg.DeveloperToolsCLI";
 		}
-		my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`;
+		chomp(my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`);
 		if (not $?) {
 			# didn't fail
 			# iterate over output lines and grab version
