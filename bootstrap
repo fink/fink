@@ -333,16 +333,16 @@ my $xcode_version;
 		$max_xcode="4.2";
 	} elsif ($vers == 11) { 
 		$min_xcode="4.1";
-		$max_xcode="4.9";
+		$max_xcode="4.6.3";
 	} elsif ($vers == 12) {
 		$min_xcode="4.4";
-		$max_xcode="4.9";
+		$max_xcode="5.0";
 	} elsif ($vers >= 13) {
 		#
 		# Extrapolate for future releases
 		#
-		$min_xcode="4.9";
-		$max_xcode="9.9";
+		$min_xcode="5.0";
+		$max_xcode="5.9";
 	} else {
 		die "ERROR:\n\tUnsupported OS X version.\n";
 	}
