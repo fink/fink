@@ -1262,6 +1262,10 @@ sub gcc_selected {
 			print STDERR "WARNING: /usr/bin/gcc is not a symlink!";
 		}
 	} elsif (-x '/usr/bin/gcc') {
+		# For Xcode 5+: "4.2" return value is compatible with
+		# what enforce_gcc() expects for prior Xcode versions.  
+		# TODO: get the return value by parsing the output
+		# in case something changes later.
 		if (`/usr/bin/gcc --version` =~ /clang/) {
 			return "4.2";
 		}
