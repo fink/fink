@@ -24,7 +24,7 @@ Requirements
 You need:
 
  * An installed Mac OS X system, version 10.6 or later. 
-   Earlier versions will not work with fink-0.35.1.
+   Earlier versions will not work with fink-0.35.2.
 
  * Development tools. 
    For 10.6, you should install Xcode 3.2.6 or 4.2, which can be downloaded from connect.apple.com after registering. 
