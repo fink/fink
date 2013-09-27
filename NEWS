@@ -5,6 +5,13 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.35.x
 \-------------
 
+0.35.2 "BYOB" (2013-09-26)
+	* Bugfix: Fix bootstrap/build under 10.8/Xcode 5
+	* Support OS 10.8.5
+	* Bugfix: Fix 'fink dumpinfo' output for PatchFileN.
+	* Validation::_min_fink_version() replaced by more generic
+	  Validation::_require_dep()
+
 0.35.1 "BBQ" (2013-07-08)
 	* Bugfix:  10.5-EOL was still visible.  Fix that.
 
