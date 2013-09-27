@@ -37,7 +37,7 @@ sub about {
 }
 
 sub events {
-    my @eventlist = ();  # this is a non-standard notifier!
+	my @eventlist = ();  # this is a non-standard notifier!
 	return wantarray? @eventlist : \@eventlist;
 }
 

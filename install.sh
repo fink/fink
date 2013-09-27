@@ -104,13 +104,6 @@ for file in AUTHORS COPYING README README.html README.removing-fink-bld readme.*
   install -c -p -m 644  $file "$basepath/share/doc/fink/"
 done
 
-# some/place/ChangeLog goes as ChangeLoge.some.place
-for cl_src in . perlmod perlmod/Fink update; do
-  cl_dst=`echo $cl_src | tr '/' '.' | sed -e 's/^\.*//'`
-  [ -n "$cl_dst" ] && cl_dst=".$cl_dst"
-  install -c -p -m644 $cl_src/ChangeLog "$basepath/share/doc/fink/ChangeLog$cl_dst"
-done
-
 for gccvers in 3.3 4.0; do
 	install -c -p -m 755 "g++-wrapper-$gccvers" \
 		"$basepath/var/lib/fink/path-prefix-g++-$gccvers/g++"

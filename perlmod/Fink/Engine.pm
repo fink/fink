@@ -179,7 +179,7 @@ sub process {
 	}
 
 	# Pop up help text when arbitrary verbs are used.
-	exit &execute("fink --help", quiet=>1) if (not exists $commands{$cmd}); 
+	exit &execute("fink --help", quiet=>1) if (not exists $commands{$cmd});
 
 	# Store original @ARGV in case we want to know how we were called.
 	# This is a stack (a ref to a list of refs to @ARGV) in case we
@@ -242,7 +242,7 @@ sub process {
 		my $distribution = $Fink::Config::distribution;
 		my $osversion = &Fink::Services::get_osx_vers();
 		# return immediately if distribution and OS match
-		unless ($osversion eq $distribution) { 
+		unless ($osversion eq $distribution) {
 			my $valid_upgrade = 0; #default
 			# legal update paths; add new ones as needed
 			$valid_upgrade = 1 if ($osversion eq "10.6" and $distribution eq "10.5");
@@ -253,23 +253,23 @@ sub process {
 					 "from $distribution to $osversion.\n";
 				die "'$cmd' operation not permitted.\n" if $cmd ne "reinstall";
 			} else {
-				die "\nWe don't support updates from $distribution to $osversion.\n" . 
+				die "\nWe don't support updates from $distribution to $osversion.\n" .
 					"Check the 'Clean Upgrade' section of $basepath/share/doc/fink/INSTALL\n" .
 					"or $basepath/share/doc/fink/INSTALL.html for information about \n" .
 					"how to proceed.\n\n".
 					"'$cmd' operation not permitted.\n"
 			}
-		}		
-	
+		}
+
 		&ensure_fink_bld(); # update fink-bld if required
-		
+
 		# check that Basepath, FetchAltDir and Buildpath have and are contained within a
 		# directory structure with appropriate permissions.
 		# We'll traverse all the way to $basepath/src, since we have to operate there
 		# directly, too.
 		die "\n" if !(&select_legal_path("Basepath", $basepath));
 		# we've gone all the way down $basepath, so let's just check $basepath/src
-		# for executability directly. 
+		# for executability directly.
 		die "\n" if !(&select_legal_path("SourceDir", "$basepath/src"));
 		# Check FetchAltDir
 		my $fetch_alt_dir=$self->{config}->param('FetchAltDir');
@@ -281,8 +281,8 @@ sub process {
 		if ($build_path) {
 			die "\n" if !(&select_legal_path("Buildpath", $build_path));
 		}
-	}	
-	
+	}
+
 	# Warn about Spotlight
 	if (&spotlight_warning()) {
 		$self->{config}->save;
@@ -2494,7 +2494,7 @@ HELPFORMAT
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
 					 $_ =~ /^set/ or $_ =~ /^jarfiles$/ or
-					 $_ =~ /^patch(|\d*file|\d*file-md5)$/ or $_ eq 'appbundles' or
+					 $_ =~ /^patch(|file\d*|file\d*-md5)$/ or $_ eq 'appbundles' or
  					 $_ eq 'infodocs' or $_ =~ /^daemonicname$/
 					) {
 				# singleline fields start on the same line, have

@@ -56,9 +56,9 @@ See documentation for the Fink::SelfUpdate base class.
 
 =item system_check
 
-This method builds packages from source, so it requires the
-"dev-tools" virtual package.  This is checked via
-Fink::Selfupdate::Base->devtools_check($vcs,$vcs_path.);
+Selfupdating builds packages from source, so it requires the
+"dev-tools" virtual package. Check for this and for the
+presence of an executable CVS binary.
 
 =cut
 
@@ -71,8 +71,7 @@ sub system_check {
 		warn "Before changing your selfupdate method to '$vcs', you must install\n"."Fink's cvs package.\n";
 		return 0;
 	}
-	return 0 unless $class->devtools_check($vcs_lc,$cvs,);
-	return 1;
+	return $class->devtools_check($vcs_lc,$cvs);
 }
 
 sub clear_metadata {
@@ -129,7 +128,7 @@ sub setup_direct_cvs {
 		my @tokens;
 		$http_proxy =~ s|http://||; # strip leading 'http://', normally present.
 	    if ($http_proxy =~ /\@/ ) { # 'proxy' doesn't understand user:password@, so strip that off
-			@tokens = split /\@/, $http_proxy; 
+			@tokens = split /\@/, $http_proxy;
 			$http_proxy=pop @tokens ; # keep host:port part
 		}
 		if  ($http_proxy =~ /:\d+$/) { # extract TCP port number if present
@@ -257,7 +256,7 @@ sub setup_direct_cvs {
 		die "Downloading package descriptions from $vcs failed.\n";
 	}
 
-	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $distribution));
 	chdir "fink" or die "Can't cd to fink\n";
 
 	for my $tree (@trees) {
@@ -388,7 +387,7 @@ sub do_direct_cvs {
 
 	# then, update the trees
 
-	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $config->param_default("SelfUpdateCVSTrees", $distribution)));
+	my @trees = split(/\s+/, $config->param_default("SelfUpdateTrees", $distribution));
 	for my $tree (@trees) {
 		$cmd = "$cvs ${verbosity} -z3 update -d -P ${tree}";
 		$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
@@ -401,10 +400,6 @@ sub do_direct_cvs {
 
 	die "Updating using $vcs failed. Check the error messages above.\n" if ($errors);
 }
-
-=over 4
-
-=back
 
 =cut
 
