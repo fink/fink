@@ -1071,7 +1071,6 @@ the successful execution of "/usr/bin/clang -v".
 				$hash->{package} = "clang";
 				$hash->{description} = "[virtual package representing Apple's clang compiler]";
 				$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-				$hash->{builddependsonly} = "true";
 				$hash->{descdetail} = <<END;
 This package represents the presence of the clang compiler
 in the development tools provided by Apple.  If it does
@@ -1131,7 +1130,6 @@ the successful execution of "/usr/bin/llvm-gcc -v".
 				$hash->{package} = "llvm-gcc";
 				$hash->{description} = "[virtual package representing Apple's LLVM compiler]";
 				$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-				$hash->{builddependsonly} = "true";
 				$hash->{descdetail} = <<END;
 This package represents the presence of the LLVM compiler
 in the development tools provided by Apple.  If it does
