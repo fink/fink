@@ -5,17 +5,20 @@ Source: gnu
 Source-MD5: 54e250014fe698fb4832016158747c03
 SourceDirectory: %n-%v
 BuildDepends: <<
-  fink (>= 0.34.99.git),
-  libiconv-dev,
-  libncurses5 (>= 5.4-20041023-1006),
-  libgettext8-dev,
-  gettext-tools
+	fink (>= 0.34.99.git),
+	libiconv-dev,
+	libncurses5 (>= 5.4-20041023-1006),
+	libgettext8-dev,
+	gettext-tools
 <<
 Depends: <<
-  ncurses (>= 5.4-20041023-1006),
-  libncurses5-shlibs (>= 5.4-20041023-1006),
-  libgettext8-shlibs,
-  libiconv
+	ncurses (>= 5.4-20041023-1006),
+	libncurses5-shlibs (>= 5.4-20041023-1006),
+	libgettext8-shlibs,
+	libiconv
+<<
+RuntimeDepends: <<
+	text-unidecode-pm
 <<
 Replaces: tetex-base (<< 3.0-1)
 PatchFile: %n.patch
