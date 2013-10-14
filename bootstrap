@@ -641,9 +641,9 @@ my $cmd = "'$homebase/bootstrap-phase2.pl'";
 
 my $perlexe  = "/usr/bin/perl"; #default
 # override defaults
-if ($distribution eq "10.6") { 
+if ($distribution eq "10.6") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.10.0";
-} elsif ($distribution gt "10.6") { 
+} elsif ($distribution gt "10.6") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.12";
 } elsif (($arch eq "x86_64") and ($distribution eq "10.5")) {
 	$perlexe = "$bsbase/bin/perl5.8.8";
