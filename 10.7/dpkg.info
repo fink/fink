@@ -1,5 +1,5 @@
 Package: dpkg
-Version: 1.16.10
+Version: 1.16.12
 Revision: 1.1
 GCC: 4.0
 ## Remove po4a
@@ -32,7 +32,7 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
 Source: mirror:debian:/pool/main/d/%n/%n_%v.tar.xz
 SourceDirectory: dpkg-%v
-Source-MD5: a20a06a5272717274a8b009368f237da
+Source-MD5: b7e9cac52ff7882b088a3058b52081b5
 
 PatchFile: dpkg.patch
 PatchFile-MD5: 955e0a002c785067af074e312da4747f
