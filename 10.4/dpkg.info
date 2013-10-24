@@ -89,9 +89,6 @@ else \
   perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
 fi
 
-# Fix for --disable-nls
-perl -pi -e 's,defined\(__GNUG__\),defined(__NOTGNUG__),g' lib/compat/gettext.h
-
 # Fix for older gcc ie: 10.5
 perl -pi -e 's,-Wvla ,,g' configure
 
