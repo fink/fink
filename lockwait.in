@@ -68,4 +68,6 @@ if ($> == 0) {
 
 unshift(@ARGV, '-D1') if $debug;
 print STDERR "Execing $exec with args: ", join(' ', @ARGV), "\n" if $debug;
+$ENV{LANG} = "C";
+$ENV{LC_ALL} = "C";
 exec($exec, @ARGV) or die "lockwait: Exec failed: $!";

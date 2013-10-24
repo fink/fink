@@ -4494,7 +4494,7 @@ EOF
 		Fink::Config::set_options(\%saved_options);
 	}
 
-	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
+	$cmd = "env LANG=C LC_ALL=C dpkg-deb -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
 		my $error = "can't create package ".$self->get_debname();
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
