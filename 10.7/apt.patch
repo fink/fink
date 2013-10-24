@@ -1313,3 +1313,1050 @@ diff -urN apt-0.5.4/apt-inst/contrib/extracttar.cc apt-new/apt-inst/contrib/extr
  /* Templates tend to mess up existing code that uses min/max because of the
     strict matching requirements */
  #if !defined(MIN)
+--- apt-0.5.4/apt-inst/extract.cc.orig	2013-06-18 14:02:07.000000000 -0400
++++ apt-0.5.4/apt-inst/extract.cc	2013-06-18 14:07:02.000000000 -0400
+@@ -164,7 +164,7 @@
+       if (Res.length() > sizeof(FileName))
+ 	 return _error->Error("The path %s is too long",Res.c_str());
+       if (Debug == true)
+-	 clog << "Followed conf file from " << FileName << " to " << Res << endl;
++	 std::clog << "Followed conf file from " << FileName << " to " << Res << std::endl;
+       Itm.Name = strcpy(FileName,Res.c_str());      
+    }
+    
+@@ -242,7 +242,7 @@
+    }
+    
+    if (Debug == true)
+-      clog << "Extract " << string(Itm.Name,End) << endl;
++      std::clog << "Extract " << string(Itm.Name,End) << std::endl;
+ /*   if (Count != 0)
+       return _error->Error("Done");*/
+    
+@@ -265,7 +265,7 @@
+ bool pkgExtract::Aborted()
+ {
+    if (Debug == true)
+-      clog << "Aborted, backing out" << endl;
++      std::clog << "Aborted, backing out" << std::endl;
+    
+    pkgFLCache::NodeIterator Files = FLPkg.Files();
+    map_ptrloc *Last = &FLPkg->Files;
+@@ -306,21 +306,21 @@
+ 	     pkgFLCache::Node::Replaced)
+ 	 {
+ 	    if (Debug == true)
+-	       clog << "De-replaced " << FileName << " from " << Nde.RealPackage()->Name << endl;
++	       std::clog << "De-replaced " << FileName << " from " << Nde.RealPackage()->Name << std::endl;
+ 	    Nde->Flags &= ~pkgFLCache::Node::Replaced;
+ 	 }	 
+       }      
+       
+       // Undo the change in the filesystem
+       if (Debug == true)
+-	 clog << "Backing out " << FileName;
++	 std::clog << "Backing out " << FileName;
+       
+       // Remove a new node
+       if ((Files->Flags & pkgFLCache::Node::NewFile) ==
+ 	 pkgFLCache::Node::NewFile)
+       {
+ 	 if (Debug == true)
+-	    clog << " [new node]" << endl;
++	    std::clog << " [new node]" << std::endl;
+ 	 pkgFLCache::Node *Tmp = Files;
+ 	 Files++;
+ 	 *Last = Tmp->NextPkg;
+@@ -331,7 +331,7 @@
+       else
+       {
+ 	 if (Debug == true)
+-	    clog << endl;
++	    std::clog << std::endl;
+ 	 
+ 	 Last = &Files->NextPkg;
+ 	 Files++;
+@@ -420,7 +420,7 @@
+ 	 if (debVS.CheckDep(Pkg.CurrentVer().VerStr(),Dep->CompareOp,Dep.TargetVer()) == true)
+ 	 {
+ 	    if (Debug == true)
+-	       clog << "Replaced file " << Nde.DirN() << '/' << Nde.File() << " from " << Pkg.Name() << endl;
++	       std::clog << "Replaced file " << Nde.DirN() << '/' << Nde.File() << " from " << Pkg.Name() << std::endl;
+ 	    Nde->Flags |= pkgFLCache::Node::Replaced;
+ 	    Ok = true;
+ 	    break;
+--- apt-0.5.4/apt-inst/deb/dpkgdb.cc.orig	2013-06-18 14:05:01.000000000 -0400
++++ apt-0.5.4/apt-inst/deb/dpkgdb.cc	2013-06-18 14:06:09.000000000 -0400
+@@ -401,12 +401,12 @@
+       return false;
+    }
+       
+-   cout << "Node: " << FList->HeaderP->NodeCount << ',' << FList->HeaderP->UniqNodes << endl;
+-   cout << "Dir: " << FList->HeaderP->DirCount << endl;
+-   cout << "Package: " << FList->HeaderP->PackageCount << endl;
+-   cout << "HashSize: " << FList->HeaderP->HashSize << endl;
+-   cout << "Size: " << FileMap->Size() << endl;
+-   cout << endl;
++   std::cout << "Node: " << FList->HeaderP->NodeCount << ',' << FList->HeaderP->UniqNodes << std::endl;
++   std::cout << "Dir: " << FList->HeaderP->DirCount << std::endl;
++   std::cout << "Package: " << FList->HeaderP->PackageCount << std::endl;
++   std::cout << "HashSize: " << FList->HeaderP->HashSize << std::endl;
++   std::cout << "Size: " << FileMap->Size() << std::endl;
++   std::cout << std::endl;
+ 
+    return true;
+ }
+--- apt-0.5.4/apt-pkg/algorithms.cc.orig	2013-06-18 13:19:25.000000000 -0400
++++ apt-0.5.4/apt-pkg/algorithms.cc	2013-06-18 13:56:47.000000000 -0400
+@@ -75,8 +75,8 @@
+    PkgIterator Pkg = Sim.FindPkg(iPkg.Name());
+    Flags[Pkg->ID] = 1;
+    
+-   cout << "Inst ";
+-   Describe(Pkg,cout,false);
++   std::cout << "Inst ";
++   Describe(Pkg,std::cout,false);
+    Sim.MarkInstall(Pkg,false);
+    
+    // Look for broken conflicts+predepends.
+@@ -96,7 +96,7 @@
+          {
+ 	    if ((Sim[End] & pkgDepCache::DepGInstall) == 0)
+ 	    {
+-	       cout << " [" << I.Name() << " on " << Start.TargetPkg().Name() << ']';
++	       std::cout << " [" << I.Name() << " on " << Start.TargetPkg().Name() << ']';
+ 	       if (Start->Type == pkgCache::Dep::Conflicts)
+ 		  _error->Error("Fatal, conflicts violated %s",I.Name());
+ 	    }	    
+@@ -107,7 +107,7 @@
+    if (Sim.BrokenCount() != 0)
+       ShortBreaks();
+    else
+-      cout << endl;
++      std::cout << std::endl;
+    return true;
+ }
+ 									/*}}}*/
+@@ -125,7 +125,7 @@
+ //   Sim.MarkInstall(Pkg,false);
+    if (Sim[Pkg].InstBroken() == true)
+    {
+-      cout << "Conf " << Pkg.Name() << " broken" << endl;
++      std::cout << "Conf " << Pkg.Name() << " broken" << std::endl;
+ 
+       Sim.Update();
+       
+@@ -137,26 +137,26 @@
+ 	    continue;
+ 	 
+ 	 if (D->Type == pkgCache::Dep::Obsoletes)
+-	    cout << " Obsoletes:" << D.TargetPkg().Name();
++	    std::cout << " Obsoletes:" << D.TargetPkg().Name();
+ 	 else if (D->Type == pkgCache::Dep::Conflicts)
+-	    cout << " Conflicts:" << D.TargetPkg().Name();
++	    std::cout << " Conflicts:" << D.TargetPkg().Name();
+ 	 else
+-	    cout << " Depends:" << D.TargetPkg().Name();
++	    std::cout << " Depends:" << D.TargetPkg().Name();
+       }	    
+-      cout << endl;
++      std::cout << std::endl;
+ 
+       _error->Error("Conf Broken %s",Pkg.Name());
+    }   
+    else
+    {
+-      cout << "Conf "; 
+-      Describe(Pkg,cout,false);
++      std::cout << "Conf "; 
++      Describe(Pkg,std::cout,false);
+    }
+ 
+    if (Sim.BrokenCount() != 0)
+       ShortBreaks();
+    else
+-      cout << endl;
++      std::cout << std::endl;
+    
+    return true;
+ }
+@@ -172,15 +172,15 @@
+    Flags[Pkg->ID] = 3;
+    Sim.MarkDelete(Pkg);
+    if (Purge == true)
+-      cout << "Purg ";
++      std::cout << "Purg ";
+    else
+-      cout << "Remv ";
+-   Describe(Pkg,cout,false);
++      std::cout << "Remv ";
++   Describe(Pkg,std::cout,false);
+ 
+    if (Sim.BrokenCount() != 0)
+       ShortBreaks();
+    else
+-      cout << endl;
++      std::cout << std::endl;
+ 
+    return true;
+ }
+@@ -190,18 +190,18 @@
+ /* */
+ void pkgSimulate::ShortBreaks()
+ {
+-   cout << " [";
++   std::cout << " [";
+    for (PkgIterator I = Sim.PkgBegin(); I.end() == false; I++)
+    {
+       if (Sim[I].InstBroken() == true)
+       {
+ 	 if (Flags[I->ID] == 0)
+-	    cout << I.Name() << ' ';
++	    std::cout << I.Name() << ' ';
+ /*	 else
+-	    cout << I.Name() << "! ";*/
++	    std::cout << I.Name() << "! ";*/
+       }      
+    }
+-   cout << ']' << endl;
++   std::cout << ']' << std::endl;
+ }
+ 									/*}}}*/
+ // ApplyStatus - Adjust for non-ok packages				/*{{{*/
+@@ -599,7 +599,7 @@
+ 	 if ((Flags[P->ID] & Protected) == Protected)
+ 	 {
+ 	    if (Debug == true)
+-	       clog << "    Reinst Failed because of protected " << P.Name() << endl;
++	       std::clog << "    Reinst Failed because of protected " << P.Name() << std::endl;
+ 	    Fail = true;
+ 	 }      
+ 	 else
+@@ -610,7 +610,7 @@
+ 	       if (DoUpgrade(P) == false)
+ 	       {
+ 		  if (Debug == true)
+-		     clog << "    Reinst Failed because of " << P.Name() << endl;
++		     std::clog << "    Reinst Failed because of " << P.Name() << std::endl;
+ 		  Fail = true;
+ 	       }
+ 	       else
+@@ -628,7 +628,7 @@
+ 		   break;
+ 	       
+ 	       if (Debug == true)
+-		  clog << "    Reinst Failed early because of " << Start.TargetPkg().Name() << endl;
++		  std::clog << "    Reinst Failed early because of " << Start.TargetPkg().Name() << std::endl;
+ 	       Fail = true;
+ 	    }     
+ 	 }
+@@ -652,7 +652,7 @@
+    }	 
+    
+    if (Debug == true)
+-      clog << "  Re-Instated " << Pkg.Name() << endl;
++      std::clog << "  Re-Instated " << Pkg.Name() << std::endl;
+    return true;
+ }
+ 									/*}}}*/
+@@ -700,7 +700,7 @@
+    while (Again == true);
+ 
+    if (Debug == true)
+-      clog << "Starting" << endl;
++      std::clog << "Starting" << std::endl;
+    
+    MakeScores();
+    
+@@ -725,7 +725,7 @@
+       } */
+ 
+    if (Debug == true)
+-      clog << "Starting 2" << endl;
++      std::clog << "Starting 2" << std::endl;
+    
+    /* Now consider all broken packages. For each broken package we either
+       remove the package or fix it's problem. We do this once, it should
+@@ -748,7 +748,7 @@
+ 	     (Flags[I->ID] & ReInstateTried) == 0)
+ 	 {
+ 	    if (Debug == true)
+-	       clog << " Try to Re-Instate " << I.Name() << endl;
++	       std::clog << " Try to Re-Instate " << I.Name() << std::endl;
+ 	    unsigned long OldBreaks = Cache.BrokenCount();
+ 	    pkgCache::Version *OldVer = Cache[I].InstallVer;
+ 	    Flags[I->ID] &= ReInstateTried;
+@@ -764,14 +764,14 @@
+ 	    }	    
+ 	    else
+ 	       if (Debug == true)
+-		  clog << "Re-Instated " << I.Name() << " (" << OldBreaks << " vs " << Cache.BrokenCount() << ')' << endl;
++		  std::clog << "Re-Instated " << I.Name() << " (" << OldBreaks << " vs " << Cache.BrokenCount() << ')' << std::endl;
+ 	 }
+ 	    
+ 	 if (Cache[I].InstallVer == 0 || Cache[I].InstBroken() == false)
+ 	    continue;
+ 	 
+ 	 if (Debug == true)
+-	    cout << "Investigating " << I.Name() << endl;
++	    std::cout << "Investigating " << I.Name() << std::endl;
+ 	 
+ 	 // Isolate the problem dependency
+ 	 PackageKill KillList[100];
+@@ -796,14 +796,14 @@
+ 		     if ((Flags[I->ID] & Protected) != Protected)
+ 		     {
+ 			if (Debug == true)
+-			   clog << "  Or group remove for " << I.Name() << endl;
++			   std::clog << "  Or group remove for " << I.Name() << std::endl;
+ 			Cache.MarkDelete(I);
+ 		     }		     
+ 		  }		  
+ 		  if (OldEnd == LEnd && OrOp == OrKeep)
+ 		  {
+ 		     if (Debug == true)
+-			clog << "  Or group keep for " << I.Name() << endl;
++			std::clog << "  Or group keep for " << I.Name() << std::endl;
+ 		     Cache.MarkKeep(I);
+ 		  }
+ 	       }
+@@ -831,7 +831,7 @@
+ 	       continue;
+ 	    	    
+ 	    if (Debug == true)
+-	       clog << "Package " << I.Name() << " has broken dep on " << Start.TargetPkg().Name() << endl;
++	       std::clog << "Package " << I.Name() << " has broken dep on " << Start.TargetPkg().Name() << std::endl;
+ 
+ 	    /* Look across the version list. If there are no possible
+ 	       targets then we keep the package and bail. This is necessary
+@@ -861,8 +861,8 @@
+ 	       pkgCache::PkgIterator Pkg = Ver.ParentPkg();
+ 
+ 	       if (Debug == true)
+-		  clog << "  Considering " << Pkg.Name() << ' ' << (int)Scores[Pkg->ID] <<
+-		  " as a solution to " << I.Name() << ' ' << (int)Scores[I->ID] << endl;
++		  std::clog << "  Considering " << Pkg.Name() << ' ' << (int)Scores[Pkg->ID] <<
++		  " as a solution to " << I.Name() << ' ' << (int)Scores[I->ID] << std::endl;
+ 
+ 	       /* Try to fix the package under consideration rather than
+ 	          fiddle with the VList package */
+@@ -899,7 +899,7 @@
+ 			Cache.MarkInstall(I,false);
+ 		     
+ 		     if (Debug == true)
+-			clog << "  Holding Back " << I.Name() << " rather than change " << Start.TargetPkg().Name() << endl;
++			std::clog << "  Holding Back " << I.Name() << " rather than change " << Start.TargetPkg().Name() << std::endl;
+ 		  }		  
+ 		  else
+ 		  {		     
+@@ -909,7 +909,7 @@
+ 			if (InOr == false)
+ 			{
+ 			   if (Debug == true)
+-			      clog << "  Removing " << I.Name() << " rather than change " << Start.TargetPkg().Name() << endl;
++			      std::clog << "  Removing " << I.Name() << " rather than change " << Start.TargetPkg().Name() << std::endl;
+ 			   Cache.MarkDelete(I);
+ 			   if (Counter > 1)
+ 			   {
+@@ -940,7 +940,7 @@
+ 		     continue;
+ 		
+ 		  if (Debug == true)
+-		     clog << "  Added " << Pkg.Name() << " to the remove list" << endl;
++		     std::clog << "  Added " << Pkg.Name() << " to the remove list" << std::endl;
+ 		  
+ 		  LEnd->Pkg = Pkg;
+ 		  LEnd->Dep = End;
+@@ -971,12 +971,12 @@
+ 		     Cache.MarkInstall(I,false);
+ 		  
+ 		  if (Debug == true)
+-		     clog << "  Holding Back " << I.Name() << " because I can't find " << Start.TargetPkg().Name() << endl;
++		     std::clog << "  Holding Back " << I.Name() << " because I can't find " << Start.TargetPkg().Name() << std::endl;
+ 	       }	       
+ 	       else
+ 	       {
+ 		  if (Debug == true)
+-		     clog << "  Removing " << I.Name() << " because I can't find " << Start.TargetPkg().Name() << endl;
++		     std::clog << "  Removing " << I.Name() << " because I can't find " << Start.TargetPkg().Name() << std::endl;
+ 		  if (InOr == false)
+ 		     Cache.MarkDelete(I);
+ 	       }
+@@ -1005,14 +1005,14 @@
+ 		      J->Dep->Type == pkgCache::Dep::Obsoletes)
+ 		  {
+ 		     if (Debug == true)
+-			clog << "  Fixing " << I.Name() << " via remove of " << J->Pkg.Name() << endl;
++			std::clog << "  Fixing " << I.Name() << " via remove of " << J->Pkg.Name() << std::endl;
+ 		     Cache.MarkDelete(J->Pkg);
+ 		  }
+ 	       }
+ 	       else
+ 	       {
+ 		  if (Debug == true)
+-		     clog << "  Fixing " << I.Name() << " via keep of " << J->Pkg.Name() << endl;
++		     std::clog << "  Fixing " << I.Name() << " via keep of " << J->Pkg.Name() << std::endl;
+ 		  Cache.MarkKeep(J->Pkg);
+ 	       }
+ 
+@@ -1027,7 +1027,7 @@
+    }
+ 
+    if (Debug == true)
+-      clog << "Done" << endl;
++      std::clog << "Done" << std::endl;
+       
+    if (Cache.BrokenCount() != 0)
+    {
+@@ -1056,7 +1056,7 @@
+    unsigned long Size = Cache.Head().PackageCount;
+ 
+    if (Debug == true)      
+-      clog << "Entering ResolveByKeep" << endl;
++      std::clog << "Entering ResolveByKeep" << std::endl;
+    
+    MakeScores();
+    
+@@ -1085,7 +1085,7 @@
+       if ((Flags[I->ID] & Protected) == 0)
+       {
+ 	 if (Debug == true)
+-	    clog << "Keeping package " << I.Name() << endl;
++	    std::clog << "Keeping package " << I.Name() << std::endl;
+ 	 Cache.MarkKeep(I);
+ 	 if (Cache[I].InstBroken() == false)
+ 	 {
+@@ -1120,14 +1120,14 @@
+ 	 // Hm, the group is broken.. I have no idea how to handle this
+ 	 if (Start != End)
+ 	 {
+-	    clog << "Note, a broken or group was found in " << I.Name() << "." << endl;
++	    std::clog << "Note, a broken or group was found in " << I.Name() << "." << std::endl;
+ 	    if ((Flags[I->ID] & Protected) == 0)
+ 	       Cache.MarkKeep(I);
+ 	    break;
+ 	 }
+ 	 
+ 	 if (Debug == true)
+-	    clog << "Package " << I.Name() << " has broken dep on " << End.TargetPkg().Name() << endl;
++	    std::clog << "Package " << I.Name() << " has broken dep on " << End.TargetPkg().Name() << std::endl;
+ 	 
+ 	 // Look at all the possible provides on this package
+ 	 SPtrArray<pkgCache::Version *> VList = End.AllTargets();
+@@ -1144,7 +1144,7 @@
+ 	    if ((Flags[I->ID] & Protected) == 0)
+ 	    {
+ 	       if (Debug == true)
+-		  clog << "  Keeping Package " << Pkg.Name() << " due to dep" << endl;
++		  std::clog << "  Keeping Package " << Pkg.Name() << " due to dep" << std::endl;
+ 	       Cache.MarkKeep(Pkg);
+ 	    }
+ 	    
+--- apt-0.5.4/apt-pkg/init.cc.orig	2013-06-18 13:18:38.000000000 -0400
++++ apt-0.5.4/apt-pkg/init.cc	2013-06-18 13:18:50.000000000 -0400
+@@ -15,6 +15,7 @@
+ #include <apti18n.h>
+ #include <config.h>
+ #include <sys/stat.h>
++#include <stdlib.h>
+ 
+ extern void initDebSystem();
+ 									/*}}}*/
+--- apt-0.5.4/apt-pkg/deb/debsystem.cc.orig	2013-06-18 13:13:53.000000000 -0400
++++ apt-0.5.4/apt-pkg/deb/debsystem.cc	2013-06-18 13:59:15.000000000 -0400
+@@ -26,6 +26,7 @@
+ #include <unistd.h>
+ #include <dirent.h>
+ #include <errno.h>
++#include <stdlib.h>
+ 									/*}}}*/
+ /* FINK LOCAL begin */
+ #include <sys/utsname.h>
+@@ -330,25 +331,25 @@
+ 	std::ofstream finkstatus(FINKSTATUSFILE);
+       if(macosx_version.version != 0)
+       {
+-        finkstatus << "Package: macosx" << endl;
+-        finkstatus << "Status: install ok installed" << endl;      
+-        finkstatus << "Priority: optional" << endl;
+-        finkstatus << "Section: base" << endl;
+-        finkstatus << "Maintainer: None" << endl;
+-        finkstatus << "Source: macosx" << endl;
+-        finkstatus << "Version: " << macosx_version.version << endl;
+-        finkstatus << "Description: Pseudo package representing Mac OS X" << endl;
+-        finkstatus << " Pseudo package representing Mac OS X" << endl << endl;
++        finkstatus << "Package: macosx" << std::endl;
++        finkstatus << "Status: install ok installed" << std::endl;      
++        finkstatus << "Priority: optional" << std::endl;
++        finkstatus << "Section: base" << std::endl;
++        finkstatus << "Maintainer: None" << std::endl;
++        finkstatus << "Source: macosx" << std::endl;
++        finkstatus << "Version: " << macosx_version.version << std::endl;
++        finkstatus << "Description: Pseudo package representing Mac OS X" << std::endl;
++        finkstatus << " Pseudo package representing Mac OS X" << std::endl << std::endl;
+       }
+-      finkstatus << "Package: darwin" << endl;
+-      finkstatus << "Status: install ok installed" << endl;
+-      finkstatus << "Priority: optional" << endl;
+-      finkstatus << "Section: base" << endl;
+-      finkstatus << "Maintainer: None" << endl;
+-      finkstatus << "Source: darwin" << endl;
+-      finkstatus << "Version: " << darwin_version.version  << endl;
+-      finkstatus << "Description: Pseudo package representing Darwin" << endl;
+-      finkstatus << " Pseudo package representing Darwin" << endl << endl;
++      finkstatus << "Package: darwin" << std::endl;
++      finkstatus << "Status: install ok installed" << std::endl;
++      finkstatus << "Priority: optional" << std::endl;
++      finkstatus << "Section: base" << std::endl;
++      finkstatus << "Maintainer: None" << std::endl;
++      finkstatus << "Source: darwin" << std::endl;
++      finkstatus << "Version: " << darwin_version.version  << std::endl;
++      finkstatus << "Description: Pseudo package representing Darwin" << std::endl;
++      finkstatus << " Pseudo package representing Darwin" << std::endl << std::endl;
+       finkstatus.close();
+       }
+       FinkStatusFile = new debStatusIndex(FINKSTATUSFILE);
+--- apt-0.5.4/apt-pkg/contrib/cdromutl.cc.orig	2013-06-18 13:08:41.000000000 -0400
++++ apt-0.5.4/apt-pkg/contrib/cdromutl.cc	2013-06-18 13:11:01.000000000 -0400
+@@ -29,6 +29,7 @@
+ #include <sys/stat.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ 									/*}}}*/
+ 
+ // IsMounted - Returns true if the mount point is mounted		/*{{{*/
+--- apt-0.5.4/cmdline/apt-cache.cc.orig	2013-06-18 14:12:28.000000000 -0400
++++ apt-0.5.4/cmdline/apt-cache.cc	2013-06-18 15:00:01.000000000 -0400
+@@ -127,29 +127,29 @@
+ 	    
+ 	    // Oops, it failed..
+ 	    if (Header == false)
+-	       ioprintf(cout,_("Package %s version %s has an unmet dep:\n"),
++	       ioprintf(std::cout,_("Package %s version %s has an unmet dep:\n"),
+ 			P.Name(),V.VerStr());
+ 	    Header = true;
+ 	    
+ 	    // Print out the dep type
+-	    cout << " " << End.DepType() << ": ";
++	    std::cout << " " << End.DepType() << ": ";
+ 
+ 	    // Show the group
+ 	    Start = RealStart;
+ 	    do
+ 	    {
+-	       cout << Start.TargetPkg().Name();
++	       std::cout << Start.TargetPkg().Name();
+ 	       if (Start.TargetVer() != 0)
+-		  cout << " (" << Start.CompType() << " " << Start.TargetVer() <<
++		  std::cout << " (" << Start.CompType() << " " << Start.TargetVer() <<
+ 		  ")";
+ 	       if (Start == End)
+ 		  break;
+-	       cout << " | ";
++	       std::cout << " | ";
+ 	       Start++;
+ 	    }
+ 	    while (1);
+ 	    
+-	    cout << endl;
++	    std::cout << std::endl;
+ 	 }	 
+       }
+    }   
+@@ -171,48 +171,48 @@
+ 	 continue;
+       }
+ 
+-      cout << "Package: " << Pkg.Name() << endl;
+-      cout << "Versions: " << endl;
++      std::cout << "Package: " << Pkg.Name() << std::endl;
++      std::cout << "Versions: " << std::endl;
+       for (pkgCache::VerIterator Cur = Pkg.VersionList(); Cur.end() != true; Cur++)
+       {
+-	 cout << Cur.VerStr();
++	 std::cout << Cur.VerStr();
+ 	 for (pkgCache::VerFileIterator Vf = Cur.FileList(); Vf.end() == false; Vf++)
+-	    cout << "(" << Vf.File().FileName() << ")";
+-	 cout << endl;
++	    std::cout << "(" << Vf.File().FileName() << ")";
++	 std::cout << std::endl;
+       }
+       
+-      cout << endl;
++      std::cout << std::endl;
+       
+-      cout << "Reverse Depends: " << endl;
++      std::cout << "Reverse Depends: " << std::endl;
+       for (pkgCache::DepIterator D = Pkg.RevDependsList(); D.end() != true; D++)
+       {
+-	 cout << "  " << D.ParentPkg().Name() << ',' << D.TargetPkg().Name();
++	 std::cout << "  " << D.ParentPkg().Name() << ',' << D.TargetPkg().Name();
+ 	 if (D->Version != 0)
+-	    cout << ' ' << DeNull(D.TargetVer()) << endl;
++	    std::cout << ' ' << DeNull(D.TargetVer()) << std::endl;
+ 	 else
+-	    cout << endl;
++	    std::cout << std::endl;
+       }
+       
+-      cout << "Dependencies: " << endl;
++      std::cout << "Dependencies: " << std::endl;
+       for (pkgCache::VerIterator Cur = Pkg.VersionList(); Cur.end() != true; Cur++)
+       {
+-	 cout << Cur.VerStr() << " - ";
++	 std::cout << Cur.VerStr() << " - ";
+ 	 for (pkgCache::DepIterator Dep = Cur.DependsList(); Dep.end() != true; Dep++)
+-	    cout << Dep.TargetPkg().Name() << " (" << (int)Dep->CompareOp << " " << DeNull(Dep.TargetVer()) << ") ";
+-	 cout << endl;
++	    std::cout << Dep.TargetPkg().Name() << " (" << (int)Dep->CompareOp << " " << DeNull(Dep.TargetVer()) << ") ";
++	 std::cout << std::endl;
+       }      
+ 
+-      cout << "Provides: " << endl;
++      std::cout << "Provides: " << std::endl;
+       for (pkgCache::VerIterator Cur = Pkg.VersionList(); Cur.end() != true; Cur++)
+       {
+-	 cout << Cur.VerStr() << " - ";
++	 std::cout << Cur.VerStr() << " - ";
+ 	 for (pkgCache::PrvIterator Prv = Cur.ProvidesList(); Prv.end() != true; Prv++)
+-	    cout << Prv.ParentPkg().Name() << " ";
+-	 cout << endl;
++	    std::cout << Prv.ParentPkg().Name() << " ";
++	 std::cout << std::endl;
+       }
+-      cout << "Reverse Provides: " << endl;
++      std::cout << "Reverse Provides: " << std::endl;
+       for (pkgCache::PrvIterator Prv = Pkg.ProvidesList(); Prv.end() != true; Prv++)
+-	 cout << Prv.OwnerPkg().Name() << " " << Prv.OwnerVer().VerStr() << endl;            
++	 std::cout << Prv.OwnerPkg().Name() << " " << Prv.OwnerVer().VerStr() << std::endl;            
+    }
+ 
+    return true;
+@@ -224,8 +224,8 @@
+ bool Stats(CommandLine &Cmd)
+ {
+    pkgCache &Cache = *GCache;
+-   cout << _("Total Package Names : ") << Cache.Head().PackageCount << " (" <<
+-      SizeToStr(Cache.Head().PackageCount*Cache.Head().PackageSz) << ')' << endl;
++   std::cout << _("Total Package Names : ") << Cache.Head().PackageCount << " (" <<
++      SizeToStr(Cache.Head().PackageCount*Cache.Head().PackageSz) << ')' << std::endl;
+ 
+    int Normal = 0;
+    int Virtual = 0;
+@@ -264,21 +264,21 @@
+ 	 continue;
+       }
+    }
+-   cout << _("  Normal Packages: ") << Normal << endl;
+-   cout << _("  Pure Virtual Packages: ") << Virtual << endl;
+-   cout << _("  Single Virtual Packages: ") << DVirt << endl;
+-   cout << _("  Mixed Virtual Packages: ") << NVirt << endl;
+-   cout << _("  Missing: ") << Missing << endl;
+-   
+-   cout << _("Total Distinct Versions: ") << Cache.Head().VersionCount << " (" <<
+-      SizeToStr(Cache.Head().VersionCount*Cache.Head().VersionSz) << ')' << endl;
+-   cout << _("Total Dependencies: ") << Cache.Head().DependsCount << " (" << 
+-      SizeToStr(Cache.Head().DependsCount*Cache.Head().DependencySz) << ')' << endl;
+-   
+-   cout << _("Total Ver/File relations: ") << Cache.Head().VerFileCount << " (" <<
+-      SizeToStr(Cache.Head().VerFileCount*Cache.Head().VerFileSz) << ')' << endl;
+-   cout << _("Total Provides Mappings: ") << Cache.Head().ProvidesCount << " (" <<
+-      SizeToStr(Cache.Head().ProvidesCount*Cache.Head().ProvidesSz) << ')' << endl;
++   std::cout << _("  Normal Packages: ") << Normal << std::endl;
++   std::cout << _("  Pure Virtual Packages: ") << Virtual << std::endl;
++   std::cout << _("  Single Virtual Packages: ") << DVirt << std::endl;
++   std::cout << _("  Mixed Virtual Packages: ") << NVirt << std::endl;
++   std::cout << _("  Missing: ") << Missing << std::endl;
++   
++   std::cout << _("Total Distinct Versions: ") << Cache.Head().VersionCount << " (" <<
++      SizeToStr(Cache.Head().VersionCount*Cache.Head().VersionSz) << ')' << std::endl;
++   std::cout << _("Total Dependencies: ") << Cache.Head().DependsCount << " (" << 
++      SizeToStr(Cache.Head().DependsCount*Cache.Head().DependencySz) << ')' << std::endl;
++   
++   std::cout << _("Total Ver/File relations: ") << Cache.Head().VerFileCount << " (" <<
++      SizeToStr(Cache.Head().VerFileCount*Cache.Head().VerFileSz) << ')' << std::endl;
++   std::cout << _("Total Provides Mappings: ") << Cache.Head().ProvidesCount << " (" <<
++      SizeToStr(Cache.Head().ProvidesCount*Cache.Head().ProvidesSz) << ')' << std::endl;
+    
+    // String list stats
+    unsigned long Size = 0;
+@@ -289,7 +289,7 @@
+       Count++;
+       Size += strlen(Cache.StrP + I->String) + 1;
+    }
+-   cout << _("Total Globbed Strings: ") << Count << " (" << SizeToStr(Size) << ')' << endl;
++   std::cout << _("Total Globbed Strings: ") << Count << " (" << SizeToStr(Size) << ')' << std::endl;
+ 
+    unsigned long DepVerSize = 0;
+    for (pkgCache::PkgIterator P = Cache.PkgBegin(); P.end() == false; P++)
+@@ -303,12 +303,12 @@
+ 	 }
+       }
+    }
+-   cout << _("Total Dependency Version space: ") << SizeToStr(DepVerSize) << endl;
++   std::cout << _("Total Dependency Version space: ") << SizeToStr(DepVerSize) << std::endl;
+    
+    unsigned long Slack = 0;
+    for (int I = 0; I != 7; I++)
+       Slack += Cache.Head().Pools[I].ItemSize*Cache.Head().Pools[I].Count;
+-   cout << _("Total Slack space: ") << SizeToStr(Slack) << endl;
++   std::cout << _("Total Slack space: ") << SizeToStr(Slack) << std::endl;
+    
+    unsigned long Total = 0;
+    Total = Slack + Size + Cache.Head().DependsCount*Cache.Head().DependencySz + 
+@@ -316,7 +316,7 @@
+            Cache.Head().PackageCount*Cache.Head().PackageSz + 
+            Cache.Head().VerFileCount*Cache.Head().VerFileSz +
+            Cache.Head().ProvidesCount*Cache.Head().ProvidesSz;
+-   cout << _("Total Space Accounted for: ") << SizeToStr(Total) << endl;
++   std::cout << _("Total Space Accounted for: ") << SizeToStr(Total) << std::endl;
+    
+    return true;
+ }
+@@ -327,36 +327,36 @@
+ bool Dump(CommandLine &Cmd)
+ {
+    pkgCache &Cache = *GCache;
+-   cout << "Using Versioning System: " << Cache.VS->Label << endl;
++   std::cout << "Using Versioning System: " << Cache.VS->Label << std::endl;
+    
+    for (pkgCache::PkgIterator P = Cache.PkgBegin(); P.end() == false; P++)
+    {
+-      cout << "Package: " << P.Name() << endl;
++      std::cout << "Package: " << P.Name() << std::endl;
+       for (pkgCache::VerIterator V = P.VersionList(); V.end() == false; V++)
+       {
+-	 cout << " Version: " << V.VerStr() << endl;
+-	 cout << "     File: " << V.FileList().File().FileName() << endl;
++	 std::cout << " Version: " << V.VerStr() << std::endl;
++	 std::cout << "     File: " << V.FileList().File().FileName() << std::endl;
+ 	 for (pkgCache::DepIterator D = V.DependsList(); D.end() == false; D++)
+-	    cout << "  Depends: " << D.TargetPkg().Name() << ' ' << 
+-	                     DeNull(D.TargetVer()) << endl;
++	    std::cout << "  Depends: " << D.TargetPkg().Name() << ' ' << 
++	                     DeNull(D.TargetVer()) << std::endl;
+       }      
+    }
+ 
+    for (pkgCache::PkgFileIterator F = Cache.FileBegin(); F.end() == false; F++)
+    {
+-      cout << "File: " << F.FileName() << endl;
+-      cout << " Type: " << F.IndexType() << endl;
+-      cout << " Size: " << F->Size << endl;
+-      cout << " ID: " << F->ID << endl;
+-      cout << " Flags: " << F->Flags << endl;
+-      cout << " Time: " << TimeRFC1123(F->mtime) << endl;
+-      cout << " Archive: " << DeNull(F.Archive()) << endl;
+-      cout << " Component: " << DeNull(F.Component()) << endl;
+-      cout << " Version: " << DeNull(F.Version()) << endl;
+-      cout << " Origin: " << DeNull(F.Origin()) << endl;
+-      cout << " Site: " << DeNull(F.Site()) << endl;
+-      cout << " Label: " << DeNull(F.Label()) << endl;
+-      cout << " Architecture: " << DeNull(F.Architecture()) << endl;
++      std::cout << "File: " << F.FileName() << std::endl;
++      std::cout << " Type: " << F.IndexType() << std::endl;
++      std::cout << " Size: " << F->Size << std::endl;
++      std::cout << " ID: " << F->ID << std::endl;
++      std::cout << " Flags: " << F->Flags << std::endl;
++      std::cout << " Time: " << TimeRFC1123(F->mtime) << std::endl;
++      std::cout << " Archive: " << DeNull(F.Archive()) << std::endl;
++      std::cout << " Component: " << DeNull(F.Component()) << std::endl;
++      std::cout << " Version: " << DeNull(F.Version()) << std::endl;
++      std::cout << " Origin: " << DeNull(F.Origin()) << std::endl;
++      std::cout << " Site: " << DeNull(F.Site()) << std::endl;
++      std::cout << " Label: " << DeNull(F.Label()) << std::endl;
++      std::cout << " Architecture: " << DeNull(F.Architecture()) << std::endl;
+    }
+ 
+    return true;
+@@ -541,25 +541,25 @@
+ 	 pkgCache::VerIterator Ver = Pkg.VersionList();
+ 	 if (Ver.end() == true)
+ 	 {
+-	    cout << '<' << Pkg.Name() << '>' << endl;
++	    std::cout << '<' << Pkg.Name() << '>' << std::endl;
+ 	    continue;
+ 	 }
+ 	 
+-	 cout << Pkg.Name() << endl;
++	 std::cout << Pkg.Name() << std::endl;
+ 	 
+ 	 for (pkgCache::DepIterator D = Ver.DependsList(); D.end() == false; D++)
+ 	 {
+ 	    if ((D->CompareOp & pkgCache::Dep::Or) == pkgCache::Dep::Or)
+-	       cout << " |";
++	       std::cout << " |";
+ 	    else
+-	       cout << "  ";
++	       std::cout << "  ";
+ 	    
+ 	    // Show the package
+ 	    pkgCache::PkgIterator Trg = D.TargetPkg();
+ 	    if (Trg->VersionList == 0)
+-	       cout << D.DepType() << ": <" << Trg.Name() << ">" << endl;
++	       std::cout << D.DepType() << ": <" << Trg.Name() << ">" << std::endl;
+ 	    else
+-	       cout << D.DepType() << ": " << Trg.Name() << endl;
++	       std::cout << D.DepType() << ": " << Trg.Name() << std::endl;
+ 	    
+ 	    if (Recurse == true)
+ 	       Colours[D.TargetPkg()->ID]++;
+@@ -573,7 +573,7 @@
+ 	       if (V != Cache.VerP + V.ParentPkg()->VersionList ||
+ 		   V->ParentPkg == D->Package)
+ 		  continue;
+-	       cout << "    " << V.ParentPkg().Name() << endl;
++	       std::cout << "    " << V.ParentPkg().Name() << std::endl;
+ 	       
+ 	       if (Recurse == true)
+ 		  Colours[D.ParentPkg()->ID]++;
+@@ -1075,7 +1075,7 @@
+ 	    continue;
+ 	 
+ 	 if (strncmp(I.Name(),CmdL.FileList[1],strlen(CmdL.FileList[1])) == 0)
+-	    cout << I.Name() << endl;
++	    std::cout << I.Name() << std::endl;
+       }
+ 
+       return true;
+@@ -1086,7 +1086,7 @@
+    {
+       if (All == false && I->VersionList == 0)
+ 	 continue;
+-      cout << I.Name() << endl;
++      std::cout << I.Name() << std::endl;
+    }
+    
+    return true;
+@@ -1111,7 +1111,7 @@
+       
+       pkgSrcRecords::Parser *Parse;
+       while ((Parse = SrcRecs.Find(*I,false)) != 0)
+-	 cout << Parse->AsStr() << endl;;
++	 std::cout << Parse->AsStr() << std::endl;;
+    }      
+    return true;
+ }
+@@ -1132,7 +1132,7 @@
+    // Print out all of the package files
+    if (CmdL.FileList[1] == 0)
+    {
+-      cout << _("Package Files:") << endl;   
++      std::cout << _("Package Files:") << std::endl;   
+       for (pkgCache::PkgFileIterator F = Cache.FileBegin(); F.end() == false; F++)
+       {
+ 	 // Locate the associated index files so we can derive a description
+@@ -1152,7 +1152,7 @@
+       }
+       
+       // Show any packages have explicit pins
+-      cout << _("Pinned Packages:") << endl;
++      std::cout << _("Pinned Packages:") << std::endl;
+       pkgCache::PkgIterator I = Cache.PkgBegin();
+       for (;I.end() != true; I++)
+       {
+@@ -1160,13 +1160,13 @@
+ 	    continue;
+ 
+ 	 // Print the package name and the version we are forcing to
+-	 cout << "     " << I.Name() << " -> ";
++	 std::cout << "     " << I.Name() << " -> ";
+ 	 
+ 	 pkgCache::VerIterator V = Plcy.GetMatch(I);
+ 	 if (V.end() == true)
+-	    cout << _("(not found)") << endl;
++	    std::cout << _("(not found)") << std::endl;
+ 	 else
+-	    cout << V.VerStr() << endl;
++	    std::cout << V.VerStr() << std::endl;
+       }     
+       
+       return true;
+@@ -1182,43 +1182,43 @@
+ 	 continue;
+       }
+       
+-      cout << Pkg.Name() << ":" << endl;
++      std::cout << Pkg.Name() << ":" << std::endl;
+       
+       // Installed version
+-      cout << _("  Installed: ");
++      std::cout << _("  Installed: ");
+       if (Pkg->CurrentVer == 0)
+-	 cout << _("(none)") << endl;
++	 std::cout << _("(none)") << std::endl;
+       else
+-	 cout << Pkg.CurrentVer().VerStr() << endl;
++	 std::cout << Pkg.CurrentVer().VerStr() << std::endl;
+       
+       // Candidate Version 
+-      cout << _("  Candidate: ");
++      std::cout << _("  Candidate: ");
+       pkgCache::VerIterator V = Plcy.GetCandidateVer(Pkg);
+       if (V.end() == true)
+-	 cout << _("(none)") << endl;
++	 std::cout << _("(none)") << std::endl;
+       else
+-	 cout << V.VerStr() << endl;
++	 std::cout << V.VerStr() << std::endl;
+ 
+       // Pinned version
+       if (Plcy.GetPriority(Pkg) != 0)
+       {
+-	 cout << _("  Package Pin: ");
++	 std::cout << _("  Package Pin: ");
+ 	 V = Plcy.GetMatch(Pkg);
+ 	 if (V.end() == true)
+-	    cout << _("(not found)") << endl;
++	    std::cout << _("(not found)") << std::endl;
+ 	 else
+-	    cout << V.VerStr() << endl;
++	    std::cout << V.VerStr() << std::endl;
+       }
+       
+       // Show the priority tables
+-      cout << _("  Version Table:") << endl;
++      std::cout << _("  Version Table:") << std::endl;
+       for (V = Pkg.VersionList(); V.end() == false; V++)
+       {
+ 	 if (Pkg.CurrentVer() == V)
+-	    cout << " *** " << V.VerStr();
++	    std::cout << " *** " << V.VerStr();
+ 	 else
+-	    cout << "     " << V.VerStr();
+-	 cout << " " << Plcy.GetPriority(Pkg) << endl;
++	    std::cout << "     " << V.VerStr();
++	 std::cout << " " << Plcy.GetPriority(Pkg) << std::endl;
+ 	 for (pkgCache::VerFileIterator VF = V.FileList(); VF.end() == false; VF++)
+ 	 {
+ 	    // Locate the associated index files so we can derive a description
+@@ -1253,10 +1253,10 @@
+ /* */
+ bool ShowHelp(CommandLine &Cmd)
+ {
+-   ioprintf(cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
++   ioprintf(std::cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
+ 	    COMMON_OS,COMMON_CPU,__DATE__,__TIME__);
+    
+-   cout << 
++   std::cout << 
+     _("Usage: apt-cache [options] command\n"
+       "       apt-cache [options] add file1 [file1 ...]\n"
+       "       apt-cache [options] showpkg pkg1 [pkg2 ...]\n"
+--- apt-0.5.4/cmdline/apt-config.cc.orig	2013-06-18 14:09:25.000000000 -0400
++++ apt-0.5.4/cmdline/apt-config.cc	2013-06-18 14:22:41.000000000 -0400
+@@ -43,8 +43,8 @@
+ 	 key.append("d");
+ 
+       if (_config->ExistsAny(key.c_str()))
+-	 cout << *I << "='" << 
+-	         SubstVar(_config->FindAny(key.c_str()),"'","'\\''") << '\'' << endl;
++	 std::cout << *I << "='" << 
++	         SubstVar(_config->FindAny(key.c_str()),"'","'\\''") << '\'' << std::endl;
+       
+    }
+    
+@@ -65,12 +65,12 @@
+ /* */
+ int ShowHelp()
+ {
+-   ioprintf(cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
++   ioprintf(std::cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
+ 	    COMMON_OS,COMMON_CPU,__DATE__,__TIME__);
+    if (_config->FindB("version") == true)
+       return 0;
+    
+-   cout <<
++   std::cout <<
+     _("Usage: apt-config [options] command\n"
+       "\n"
+       "apt-config is a simple tool to read the APT config file\n"
+--- apt-0.5.4/cmdline/apt-extracttemplates.cc.orig	2013-06-18 14:26:35.000000000 -0400
++++ apt-0.5.4/cmdline/apt-extracttemplates.cc	2013-06-18 14:29:38.000000000 -0400
+@@ -219,13 +219,13 @@
+ /* */
+ int ShowHelp(void)
+ {
+-   	ioprintf(cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
++   	ioprintf(std::cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
+ 	    COMMON_OS,COMMON_CPU,__DATE__,__TIME__);
+ 
+ 	if (_config->FindB("version") == true) 
+ 		return 0;
+ 
+-	cout << 
++	std::cout << 
+ 		_("Usage: apt-extracttemplates file1 [file2 ...]\n"
+ 		"\n"
+ 		"apt-extracttemplates is a tool to extract config and template info\n"
+@@ -272,8 +272,8 @@
+ 
+ 	if (templatefile.empty() == true || configscript.empty() == true)
+ 		return;
+-	cout << file.Package << " " << file.Version << " " 
+-	     << templatefile << " " << configscript << endl;
++	std::cout << file.Package << " " << file.Version << " " 
++	     << templatefile << " " << configscript << std::endl;
+ }
+ 									/*}}}*/
+ // InitCache - initialize the package cache				/*{{{*/
+@@ -309,7 +309,7 @@
+ 		{
+ 			// Check to make sure debconf dependencies are
+ 			// satisfied
+-			cout << "Check " << file.DepVer << ',' << debconfver << endl;
++			std::cout << "Check " << file.DepVer << ',' << debconfver << std::endl;
+ 			if (file.DepVer != "" &&
+ 			    DebFile::Cache->VS->CheckDep(debconfver.c_str(),
+ 					file.DepOp,file.DepVer.c_str()
+--- apt-0.5.4/cmdline/apt-sortpkgs.cc.orig	2013-06-18 14:14:06.000000000 -0400
++++ apt-0.5.4/cmdline/apt-sortpkgs.cc	2013-06-18 14:22:16.000000000 -0400
+@@ -138,12 +138,12 @@
+ /* */
+ int ShowHelp()
+ {
+-   ioprintf(cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
++   ioprintf(std::cout,_("%s %s for %s %s compiled on %s %s\n"),PACKAGE,VERSION,
+ 	    COMMON_OS,COMMON_CPU,__DATE__,__TIME__);
+    if (_config->FindB("version") == true)
+       return 0;
+    
+-   cout <<
++   std::cout <<
+     _("Usage: apt-sortpkgs [options] file1 [file2 ...]\n"
+       "\n"
+       "apt-sortpkgs is a simple tool to sort package files. The -s option is used\n"
+--- apt-0.5.4/apt-inst/contrib/extracttar.cc.orig	2013-06-18 14:00:53.000000000 -0400
++++ apt-0.5.4/apt-inst/contrib/extracttar.cc	2013-06-18 14:01:35.000000000 -0400
+@@ -134,7 +134,7 @@
+       Args[1] = "-d";
+       Args[2] = 0;
+       execv(Args[0],(char **)Args);
+-      cerr << "Failed to exec gzip " << Args[0] << endl;
++      std::cerr << "Failed to exec gzip " << Args[0] << std::endl;
+       _exit(100);
+    }
+ 
+--- apt-0.5.4/apt-pkg/deb/debsystem.h.orig	2013-06-18 13:16:56.000000000 -0400
++++ apt-0.5.4/apt-pkg/deb/debsystem.h	2013-06-18 13:17:31.000000000 -0400
+@@ -35,7 +35,7 @@
+    virtual bool Initialize(Configuration &Cnf);
+    virtual bool ArchiveSupported(const char *Type);
+    virtual signed Score(Configuration const &Cnf);
+-   virtual bool AddStatusFiles(vector<pkgIndexFile *> &List);
++   virtual bool AddStatusFiles(std::vector<pkgIndexFile *> &List);
+    virtual bool FindIndex(pkgCache::PkgFileIterator File,
+ 			  pkgIndexFile *&Found) const;
+ 
+--- apt-0.5.4/apt-pkg/pkgsystem.h.orig	2013-06-18 16:52:54.000000000 -0400
++++ apt-0.5.4/apt-pkg/pkgsystem.h	2013-06-18 16:53:53.000000000 -0400
+@@ -79,7 +79,7 @@
+    virtual bool ArchiveSupported(const char *Type) = 0;
+ 
+    // Return a list of system index files..
+-   virtual bool AddStatusFiles(vector<pkgIndexFile *> &List) = 0;   
++   virtual bool AddStatusFiles(std::vector<pkgIndexFile *> &List) = 0;   
+    virtual bool FindIndex(pkgCache::PkgFileIterator File,
+ 			  pkgIndexFile *&Found) const = 0;
+    
