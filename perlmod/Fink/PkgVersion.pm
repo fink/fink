@@ -5305,6 +5305,8 @@ sub get_perl_dir_arch {
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.3).
 				# 10.8 system-perl is 5.12.4, but the only supplied
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.4).
+				# 10.9 system-perl is 5.16.2, but the only supplied
+				# interpreter is /usr/bin/perl5.16 (not perl5.16.2)
 				# The above pattern is likely to continue... the following
 				# code deals with it:
 				$perlversion =~ s/5\.(\d+).*/5.$1/;

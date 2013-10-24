@@ -432,6 +432,7 @@ sub is_perl_supported {
 	} elsif ("$]" == "5.010000") {
 	} elsif ("$]" == "5.012003") {
 	} elsif ("$]" == "5.012004") {
+	} elsif ("$]" == "5.016002") {
 	} else {
 		# unsupported version of perl
 		return 0;
