@@ -1167,25 +1167,14 @@ sub get_script {
 
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'makemaker') {
+			# We specify explicit CC and CXX values below, because even though
+			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
+			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			$perlcmd = "ARCHFLAGS=\"\" $perlcmd"; # prevent Apple's perl from building fat
-			my $makeflags = '';
-			if ($self->get_subtype('perl') eq '5.10.0' and Fink::Services::get_kernel_vers() eq '10') {
-				# system-perl configure hardcodes gcc-4.2, which is
-				# not necessarily even present
-				$makeflags = ' CC=gcc CXX=g++';
-			} elsif ($self->get_subtype('perl') eq '5.12.3' and Fink::Services::get_kernel_vers() eq '11') {
-				# path-prefix-clang wraps gcc and g++ but system-perl
-				# configure hardcodes gcc-4.x, which is not wrapped
-				$makeflags = ' CC=gcc CXX=g++';
-			} elsif ($self->get_subtype('perl') eq '5.12.4' and Fink::Services::get_kernel_vers() eq '12') {
-				# path-prefix-clang wraps gcc and g++ but system-perl
-				# configure hardcodes gcc-4.x, which is not wrapped
-				$makeflags = ' CC=gcc CXX=g++';
-			}
+			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
 			$default_script =
-				"$perlcmd Makefile.PL \%c\n".
-				"make$makeflags\n";
+				"$archflags $perlcmd Makefile.PL \%c\n".
+				"make CC=gcc CXX=g++\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
