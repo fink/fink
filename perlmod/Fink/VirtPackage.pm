@@ -1112,8 +1112,8 @@ the successful execution of "/usr/bin/llvm-gcc -v".
 
 =cut
 
-	# possible for 10.6 and later
-	if ($osxversion >= 10) {
+	# possible for 10.6 - 10.8
+	if ($osxversion >= 10 && $osxversion < 13) {
 		print STDERR "- checking for /usr/bin/llvm-gcc:\n" if ($options{debug});
 		if (opendir(DIR, "/usr/bin")) {
 			if (open(LLVM, '/usr/bin/llvm-gcc -### -v -x c /dev/null 2>&1 |')) {
