@@ -69,7 +69,6 @@ CompileScript: <<
 	/usr/bin/make
 <<
 ConfigureParams: <<
-    --disable-nls \
 	--without-start-stop-daemon \
 	--without-sgml-doc \
 	--with-admindir=%p/var/lib/dpkg \
