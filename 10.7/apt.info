@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.5.4
-Revision: 1060
+Revision: 1061
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Depends: %N-shlibs (= %v-%r)
@@ -8,9 +8,13 @@ Source: mirror:sourceforge:fink/%n_%v.tar.gz
 Source-MD5: 274fb64e2e67318b4c9c94599785c37d
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: 6b83d9ba0b19aa525de8f39603938c97
+PatchFile-MD5: 300193d8dc6e85c96b87592e5ba9d73c
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e 's|@DIST@|10.3|g' < %{PatchFile} | patch -p1
+ # fix inclusion of headers for libc++ build
+ perl -pi -e 's|vector.h|vector|g' apt-pkg/pkgsystem.h include/apt-pkg/pkgsystem.h
+ perl -pi -e 's|iostream.h|iostream|g' apt-inst/contrib/extracttar.cc apt-inst/deb/dpkgdb.cc apt-inst/extract.cc apt-pkg/algorithms.cc apt-pkg/contrib/error.cc cmdline/apt-cache.cc cmdline/indexcopy.cc test/versiontest.cc 
+ perl -pi -e 's|fstream.h|fstream|g' apt-pkg/sourcelist.cc cmdline/apt-get.cc
  sh patch_flush
  for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
  echo "x86_64\tx86_64" >> %b/buildlib/archtable

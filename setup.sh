@@ -45,8 +45,12 @@ if [ $osMajorVer -eq 10 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.10.0"
 fi
 
-if [ $osMajorVer -gt 10 ]; then
+if [ $osMajorVer -eq 11 || $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
+fi
+
+if [ $osMajorVer -gt 12 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
 fi
 
 echo "Creating $fink..." 

@@ -1167,25 +1167,14 @@ sub get_script {
 
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'makemaker') {
+			# We specify explicit CC and CXX values below, because even though
+			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
+			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			$perlcmd = "ARCHFLAGS=\"\" $perlcmd"; # prevent Apple's perl from building fat
-			my $makeflags = '';
-			if ($self->get_subtype('perl') eq '5.10.0' and Fink::Services::get_kernel_vers() eq '10') {
-				# system-perl configure hardcodes gcc-4.2, which is
-				# not necessarily even present
-				$makeflags = ' CC=gcc CXX=g++';
-			} elsif ($self->get_subtype('perl') eq '5.12.3' and Fink::Services::get_kernel_vers() eq '11') {
-				# path-prefix-clang wraps gcc and g++ but system-perl
-				# configure hardcodes gcc-4.x, which is not wrapped
-				$makeflags = ' CC=gcc CXX=g++';
-			} elsif ($self->get_subtype('perl') eq '5.12.4' and Fink::Services::get_kernel_vers() eq '12') {
-				# path-prefix-clang wraps gcc and g++ but system-perl
-				# configure hardcodes gcc-4.x, which is not wrapped
-				$makeflags = ' CC=gcc CXX=g++';
-			}
+			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
 			$default_script =
-				"$perlcmd Makefile.PL \%c\n".
-				"make$makeflags\n";
+				"$archflags $perlcmd Makefile.PL \%c\n".
+				"make CC=gcc CXX=g++\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
@@ -4505,7 +4494,7 @@ EOF
 		Fink::Config::set_options(\%saved_options);
 	}
 
-	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
+	$cmd = "env LANG=C LC_ALL=C dpkg-deb -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
 		my $error = "can't create package ".$self->get_debname();
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
@@ -4801,6 +4790,52 @@ sub phase_purge_recursive {
 	Fink::PkgVersion->dpkg_changed;
 }
 
+=item ensure_libcxx_prefix
+
+	my $prefix_path = ensure_libcxx_prefix;
+
+Ensures that a path-prefix directory exists to use libcxx wrapper for the C++ compilers.
+Returns the path to the resulting directory.
+
+=cut
+
+sub ensure_libcxx_prefix {
+	my $dir = "$basepath/var/lib/fink/path-prefix-libcxx";
+	unless (-d $dir) {
+		mkdir_p $dir or die "Path-prefix dir $dir cannot be created!\n";
+	}
+
+	my $gpp = "$dir/compiler_wrapper";
+	unless (-x $gpp) {
+		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
+		print GPP <<EOF;
+#!/bin/sh
+compiler=\${0##*/}
+save_IFS="\$IFS"
+IFS=:
+newpath=
+for dir in \$PATH ; do
+  case \$dir in
+    *var/lib/fink/path-prefix*) ;;
+    *) newpath="\${newpath:+\${newpath}:}\$dir" ;;
+  esac
+done
+IFS="\$save_IFS"
+export PATH="\$newpath"
+exec \$compiler -stdlib=libc++ "\$@"
+EOF
+		close GPP;
+		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
+	}
+
+	foreach my $cpp ("$dir/c++", "$dir/g++", "$dir/clang++") {
+		unless (-l $cpp) {
+			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
+		}
+	}
+
+	return $dir;
+}
 
 =item ensure_clang_prefix
 
@@ -5109,15 +5144,18 @@ sub get_env {
 			# first 'g++' in the path (symbol-munging binary compatibility)
 			$pathprefix = ensure_gpp_prefix('4.0');
 		}
-		if ($config->param("Distribution") eq "10.6" || $config->param("Architecture") eq "x86_64") {
+		if ($config->param("Distribution") eq "10.6" || ( $config->param("Distribution") eq "10.5" && $config->param("Architecture") eq "x86_64")) {
 			# Use single-architecture compiler-wrapper on 10.6. Also
 			# override on older 10.x (gcc3.3 & 10.4T not supported)
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
-		if  ($config->param("Distribution") gt "10.6") {
-			# Use clang for gcc/g++ on darwin11 and later. Only
-			# x86_64 supported so can override single-arch wrappers.
+		if  ($config->param("Distribution") eq "10.7" || $config->param("Distribution") eq "10.8") {
+			# Use clang for gcc/g++. Only x86_64 supported so can override single-arch wrappers.
 			$pathprefix = ensure_clang_prefix();
+		}
+		if  ($config->param("Distribution") ge "10.9") {
+			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
+			$pathprefix = ensure_libcxx_prefix();
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
@@ -5311,14 +5349,17 @@ sub get_perl_dir_arch {
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
-			if ($perlversion eq  "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
+			if (Fink::Services::get_kernel_vers() ge '11') {
 				# 10.7 system-perl is 5.12.3, but the only supplied
-				# interp is /usr/bin/perl5.12 (not perl5.12.3)
-				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
-			} elsif ($perlversion eq  "5.12.4" and Fink::Services::get_kernel_vers() eq '12') {
+				# interpreter is /usr/bin/perl5.12 (not perl5.12.3).
 				# 10.8 system-perl is 5.12.4, but the only supplied
-				# interp is /usr/bin/perl5.12 (not perl5.12.4)
-				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
+				# interpreter is /usr/bin/perl5.12 (not perl5.12.4).
+				# 10.9 system-perl is 5.16.2, but the only supplied
+				# interpreter is /usr/bin/perl5.16 (not perl5.16.2)
+				# The above pattern is likely to continue... the following
+				# code deals with it:
+				$perlversion =~ s/5\.(\d+).*/5.$1/;
+				$perlcmd = "/usr/bin/arch -%m perl$perlversion" ;
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);

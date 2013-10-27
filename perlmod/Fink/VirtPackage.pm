@@ -765,6 +765,12 @@ as part of the Xcode tools.
 		@SDKDIRS=qw(
 			MacOSX10.7.sdk
 			MacOSX10.8.sdk
+			MacOSX10.9.sdk
+		);
+	} elsif ($osxversion == 13) {
+		@SDKDIRS=qw(
+			MacOSX10.8.sdk
+			MacOSX10.9.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
@@ -1112,8 +1118,8 @@ the successful execution of "/usr/bin/llvm-gcc -v".
 
 =cut
 
-	# possible for 10.6 and later
-	if ($osxversion >= 10) {
+	# possible for 10.6 - 10.8
+	if ($osxversion >= 10 && $osxversion < 13) {
 		print STDERR "- checking for /usr/bin/llvm-gcc:\n" if ($options{debug});
 		if (opendir(DIR, "/usr/bin")) {
 			if (open(LLVM, '/usr/bin/llvm-gcc -### -v -x c /dev/null 2>&1 |')) {
