@@ -354,7 +354,7 @@ sub _control {
 
 	my (%control, $field);
 	my $dpkgdeb = $self->_prefix . "/bin/dpkg-deb";
-	open CONTROL, '-|', "LANG=C LC_ALL=C ".$dpkgdeb, '-f', $path
+	open CONTROL, '-|', "env LANG=C LC_ALL=C ".$dpkgdeb, '-f', $path
 		or die "SKIPPING: Can't read control for '$path': $!\n";
 	eval {
 		while (<CONTROL>) {
