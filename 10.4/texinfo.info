@@ -1,8 +1,8 @@
 Package: texinfo
-Version: 5.1
-Revision: 2.1
+Version: 5.2
+Revision: 1.1
 Source: gnu
-Source-MD5: 54e250014fe698fb4832016158747c03
+Source-MD5: 1b8f98b80a8e6c50422125e07522e8db
 SourceDirectory: %n-%v
 BuildDepends: <<
 	fink (>= 0.34.99.git),
@@ -20,9 +20,11 @@ Depends: <<
 RuntimeDepends: <<
 	text-unidecode-pm
 <<
-Replaces: tetex-base (<< 3.0-1)
+Replaces: <<
+	tetex-base (<< 3.0-1)
+<<
 PatchFile: %n.patch
-PatchFile-MD5: 547bfe54593879cd6a62f9a07a2b84ee
+PatchFile-MD5: 86da36f82b92097944964490772282ba
 PatchScript: <<
 chmod a+x build-aux/install-sh
 
@@ -35,56 +37,64 @@ patch -p1 < fink/patches/info_universal_argument
 patch -p1 < fink/patches/dont_build_info
 
 # help2man isn't present in bootstrap so patch it out
-perl -pi -e 's,help2man,true,g' configure
+# perl -pi -e 's,help2man,true,g' configure
 <<
 ConfigureParams: <<
-  --mandir=%p/share/man \
-  --infodir=%p/share/info \
-  --with-external-Text-Unidecode=yes \
-  --with-external-libintl-perl=yes
+	--mandir=%p/share/man \
+	--infodir=%p/share/info \
+	--with-external-Text-Unidecode=yes \
+	--with-external-libintl-perl=yes \
+	--disable-tp-tests
 <<
 CompileScript: <<
-  ./configure %c
-  echo '#define DEFAULT_INFOPATH "%p/share/info:%p/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:."' >>config.h
-  make
+./configure %c
+echo '#define DEFAULT_INFOPATH "%p/share/info:%p/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:."' >>config.h
+make
 <<
 InfoTest: <<
-  TestConflicts: pod-simple-pm
-  TestScript: make check || exit 2
+	TestConflicts: <<
+		pod-simple-pm
+	<<
+	TestScript: <<
+		make check ALL_TESTS=yes || exit 2
+	<<
 <<
 InstallScript: <<
-  AM_UPDATE_INFO_DIR=no make install prefix=%i mandir=%i/share/man infodir=%i/share/info
-  TEXMF=%i/share/texmf make install-tex prefix=%i mandir=%i/share/man infodir=%i/share/info
-  find %i -type f -name dir | xargs rm -f
+AM_UPDATE_INFO_DIR=no make install prefix=%i mandir=%i/share/man infodir=%i/share/info
+TEXMF=%i/share/texmf make install-tex prefix=%i mandir=%i/share/man infodir=%i/share/info
+find %i -type f -name dir | xargs rm -f
 
-  # epsf.tex is in texlive
-  rm -rf %i/share/texmf/tex/generic
+# epsf.tex is in texlive
+rm -rf %i/share/texmf/tex/generic
 
-  # install additional files that are not installed by default
-  install -m 0755 util/txixml2texi %i/bin/txixml2texi
+# install additional files that are not installed by default
+install -m 0755 util/txixml2texi %i/bin/txixml2texi
 
-  # work on fink install-info
-  mv %i/bin/install-info %i/bin/ginstall-info
-  sed -e "s/install-info/g&/g" \
-         < %i/share/man/man1/install-info.1 \
-         > %i/share/man/man1/ginstall-info.1
-  rm -f %i/share/man/man1/install-info.1
-  install -m 0755 fink/install-info.sh %i/bin/install-info
-  install -m 0644 fink/install-info.1 %i/share/man/man1/install-info.1
-  install -d -m 0755 %i/sbin
-  install -m 0755 fink/update-info-dir %i/sbin/update-info-dir
-  install -d -m 0755 %i/share/man/man8
-  install -m 0644 fink/update-info-dir.8 %i/share/man/man8/update-info-dir.8
-  install -d -m 0755 %i/etc/texmf/fmt.d
-  install -m 0644 fink/conf/50cyrtexinfo.cnf %i/etc/texmf/fmt.d
-  install -d -m 0755 %i/var/lib/tex-common/fmtutil-cnf
-  echo "50cyrtexinfo" > %i/var/lib/tex-common/fmtutil-cnf/texinfo.list
+# work on fink install-info
+mv %i/bin/install-info %i/bin/ginstall-info
+sed -e "s/install-info/g&/g" \
+	< %i/share/man/man1/install-info.1 \
+	> %i/share/man/man1/ginstall-info.1
+rm -f %i/share/man/man1/install-info.1
+install -m 0755 fink/install-info.sh %i/bin/install-info
+install -m 0644 fink/install-info.1 %i/share/man/man1/install-info.1
+install -d -m 0755 %i/sbin
+install -m 0755 fink/update-info-dir %i/sbin/update-info-dir
+install -d -m 0755 %i/share/man/man8
+install -m 0644 fink/update-info-dir.8 %i/share/man/man8/update-info-dir.8
+install -d -m 0755 %i/etc/texmf/fmt.d
+install -m 0644 fink/conf/50cyrtexinfo.cnf %i/etc/texmf/fmt.d
+install -d -m 0755 %i/var/lib/tex-common/fmtutil-cnf
+echo "50cyrtexinfo" > %i/var/lib/tex-common/fmtutil-cnf/texinfo.list
 
-  install -d -m 0755 %i/share/menu
-  install -m 0644 fink/info.menu %i/share/menu/info
+install -d -m 0755 %i/share/menu
+install -m 0644 fink/info.menu %i/share/menu/info
 
-  # charset.alias supplied from gettext
-  rm -rf %i/lib
+# charset.alias supplied from gettext
+rm -rf %i/lib
+
+install -d -m 0755 %i/lib/mime/packages
+install -m 0644 fink/info.mime %i/lib/mime/packages/info
 <<
 DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
 #
@@ -198,7 +208,7 @@ check_run_without_errors ()
 {
     tempfile=`mktemp -t checkrun.XXXXXXXX`
     if which $1  >/dev/null; then
-        /bin/echo -n "Running $*. This may take some time. ..."
+        /bin/echo -n "Running $1. This may take some time. ..."
 	set +e
         $* > $tempfile 2>&1
 	if [ $? = 0 ] ; then
@@ -241,7 +251,7 @@ case "$1" in
         rm -f %p/var/lib/texmf/web2c/texinfo.*
         rm -f %p/var/lib/texmf/web2c/cyrtexinfo.*
         check_run_without_errors update-fmtutil
-	check_run_without_errors mktexlsr
+	check_run_without_errors mktexlsr %p/share/texmf %p/var/lib/texmf
     ;;
     purge|upgrade|failed-upgrade|abort-upgrade|abort-install)
     ;;
@@ -256,70 +266,73 @@ Maintainer:  Dave Morrison <drm@finkproject.org>
 Homepage: http://www.gnu.org/software/texinfo/
 
 SplitOff: <<
-  Package: info
-  Depends: <<
-    install-info,
-    libncurses5-shlibs
-  <<
-  Provides: info-browser
-  Replaces: <<
-    texinfo (<< 4.13-1002),
-    dpkg (<< 1.15)
-  <<
-  Files: <<
-    bin/info*
-    share/man/man1/info*
-    share/menu
-  <<
-  DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
-  Description: Standalone GNU Info documentation browser
-  DescDetail: <<
+	Package: info
+	Depends: <<
+		install-info,
+		libncurses5-shlibs
+	<<
+	Provides: info-browser
+	Replaces: <<
+		texinfo (<< 4.13-1002),
+		dpkg (<< 1.15)
+	<<
+	Files: <<
+		bin/info*
+		lib/mime
+		share/man/man1/info*
+		share/menu
+	<<
+	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
+	Description: Standalone GNU Info documentation browser
+	DescDetail: <<
 The Info file format is an easily-parsable representation for online
 documents. This program allows you to view Info documents, like the
 ones stored in %p/share/info and $p/info.
 .
 Much of the software in Debian comes with its online documentation in
 the form of Info files, so it is most likely you will want to install it.
-  <<
-  PostInstScript: <<
+	<<
+	PostInstScript: <<
 if [ "$1" = "configure" ] || [ "$1" = "upgrade" ]; then
   update-alternatives --install %p/bin/infobrowser infobrowser \
                                 %p/bin/info 60 \
                       --slave %p/share/man/man1/infobrowser.1 infobrowser.1 \
                               %p/share/man/man1/info.1
 fi
-  <<
-  PreRmScript: <<
+	<<
+	PreRmScript: <<
 if [ "$1" != "upgrade" ]; then
   update-alternatives --remove infobrowser %p/bin/info
 fi
-  <<
+	<<
 <<
 SplitOff2: <<
-  Package: install-info
-  Replaces: texinfo (<< 4.13-1002)
-  Essential: true
-  Files: <<
-    bin/ginstall-info
-    bin/install-info
-    sbin
-    share/man/man1/ginstall-info.1
-    share/man/man1/install-info.1
-    share/man/man8
-  <<
-  DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
-  Triggers: <<
-    Interest-noawait: <<
-      %p/share/info
-      %p/info
-    <<
-  <<
-  Description: Manage installed documentation in info format
-  DescDetail: <<
+	Package: install-info
+	# Comment out for bootstrap version
+	# Depends: dpkg (>= 1.15)
+	Replaces: texinfo (<< 4.13-1002)
+	Essential: true
+	Files: <<
+		bin/ginstall-info
+		bin/install-info
+		sbin
+		share/man/man1/ginstall-info.1
+		share/man/man1/install-info.1
+		share/man/man8
+	<<
+	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
+	Triggers: <<
+		Interest-noawait: <<
+			%p/share/info
+			%p/info
+		<<
+	<<
+	Description: Manage installed documentation in info format
+	DescDetail: <<
 The install-info utility creates the index of all installed documentation
 in info format and makes it available to info readers.
-  <<
-  PostInstScript: <<
+	<<
+	PostInstScript: <<
 # 
 # postinst maintainer script for the Debian install-info package
 #
@@ -355,5 +368,5 @@ case $1 in
     *)
         ;;
 esac
-  <<
+	<<
 <<
