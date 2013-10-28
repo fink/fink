@@ -354,6 +354,8 @@ sub _control {
 
 	my (%control, $field);
 	my $dpkgdeb = $self->_prefix . "/bin/dpkg-deb";
+	# Set ENV so for tar on 10.9, dpkg-deb calls tar and thus requires it
+	# as well.
 	local %ENV;
 	$ENV{LANG} = "C";
 	$ENV{LC_ALL} = "C";

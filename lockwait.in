@@ -68,6 +68,8 @@ if ($> == 0) {
 
 unshift(@ARGV, '-D1') if $debug;
 print STDERR "Execing $exec with args: ", join(' ', @ARGV), "\n" if $debug;
+# Set ENV so for tar on 10.9, dpkg-deb calls tar and thus requires it
+# as well.
 $ENV{LANG} = "C";
 $ENV{LC_ALL} = "C";
 exec($exec, @ARGV) or die "lockwait: Exec failed: $!";
