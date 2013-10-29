@@ -1403,6 +1403,29 @@ sub get_osx_vers_long {
 	return Fink::Config::get_option('sw_vers_long');
 }
 
+=item get_host_multiarch
+
+    my $host_multiarch = get_host_multiarch();
+
+Returns the current hosts multiarch value as reported by
+`dpkg-architecture -qDEB_HOST_MULTIARCH`. The output of that
+command is parsed and cached in a global configuration option in the
+Fink::Config package so that multiple calls to this function do not
+result in repeated spawning of dpkg-architecture processes.
+
+=cut
+
+sub get_host_multiarch {
+	if (not defined Fink::Config::get_option('host_multiarch') or Fink::Config::get_option('host_multiarch') eq "0" and -x "$Fink::Config::basepath/bin/dpkg-architecture") {
+		if (open(MYARCH, "dpkg-architecture -qDEB_HOST_MULTIARCH |")) {
+                        chomp(my $hostarch = <MYARCH>);
+			Fink::Config::set_options( { 'host_multiarch' => $hostarch } );
+			close(MYARCH);
+		}
+	}
+	return Fink::Config::get_option('host_multiarch');
+}
+
 =item get_darwin_equiv
 
 	my $os_x_version = get_darwin_equiv($kernel_major_version);

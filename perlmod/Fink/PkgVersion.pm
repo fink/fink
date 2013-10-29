@@ -5303,12 +5303,17 @@ sub get_env {
 		"LDFLAGS"                  => "-L\%p/lib",
 	);
 
-# for building 64bit libraries, we change LDFLAGS:
-
+	# for building 64bit libraries, we change LDFLAGS:
 	if (exists $self->{_type_hash}->{"-64bit"}) {
 		if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
 			$defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
 		}
+	}
+
+	# for dpkg 1.16.2+ and multiarch, we change LDFLAGS:
+	my $host_arch = Fink::Services::get_host_multiarch();
+	if (defined $host_arch) {
+		$defaults{"LDFLAGS"} = "-L\%p/lib/" . $host_arch . " -L\%p/lib";
 	}
 
 	# uncomment this to be able to use distcc -- not officially supported!
