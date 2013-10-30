@@ -4,11 +4,9 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | fink 0.36.x
 \-------------
-(Tentative)
-0.36.0 "TBD" (TBD)
-	* Updates to Debian toolset.
+
+0.36.0 "Watch this space" (2013-10-30)
 	* Support OS 10.9.
-	* Selfupdate via git and svn.
 
 /-------------
 | fink 0.35.x
