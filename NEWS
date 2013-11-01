@@ -4,9 +4,16 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | fink 0.36.x
 \-------------
-0.36.? TBD
-	* Update Debian toolset.
-	* Selfupdate via git and svn.
+0.36.? "TBD" (TBD)
+	* Updates to Debian toolset
+		* Major change: Switch to dpkg 1.16.10. This brings us back on par with the tools
+		  used by Debian and opens up many interesting possibilities. Many thanks to Justin
+		  "TheSin" Hallett and Sjors Gielen who did the brunt of the work.
+		* Support for "triggers" (a feature of the new dpkg) via the "Triggers" .info field.
+		  For more information, see [TODO: the documentation... to be written]
+		* Improved support for debsums. [TODO]
+		* [TODO: what else?]
+
 0.36.0 "Watch this space" (2013-10-31)
 	* Support OS 10.9.
 
