@@ -1,12 +1,12 @@
 Package: dpkg-bootstrap
-Version: 1.16.10
+Version: 1.16.12
 Revision: 1
 GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
-Source-MD5: de4823d05100537e6d85304a6fa3b530
+Source-MD5: 60eef085c78776108de4f4ec8ff928ef
 
 PatchFile: dpkg.patch
 PatchFile-MD5: 955e0a002c785067af074e312da4747f
