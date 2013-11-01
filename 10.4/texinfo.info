@@ -1,8 +1,8 @@
 Package: texinfo
-Version: 5.1
-Revision: 2.1
+Version: 5.2
+Revision: 1.1
 Source: gnu
-Source-MD5: 54e250014fe698fb4832016158747c03
+Source-MD5: 1b8f98b80a8e6c50422125e07522e8db
 SourceDirectory: %n-%v
 BuildDepends: <<
   fink (>= 0.35.99.git),
@@ -22,7 +22,7 @@ RuntimeDepends: <<
 <<
 Replaces: tetex-base (<< 3.0-1)
 PatchFile: %n.patch
-PatchFile-MD5: 547bfe54593879cd6a62f9a07a2b84ee
+PatchFile-MD5: 86da36f82b92097944964490772282ba
 PatchScript: <<
 chmod a+x build-aux/install-sh
 
@@ -41,7 +41,8 @@ ConfigureParams: <<
   --mandir=%p/share/man \
   --infodir=%p/share/info \
   --with-external-Text-Unidecode=yes \
-  --with-external-libintl-perl=yes
+  --with-external-libintl-perl=yes \
+  --disable-tp-tests
 <<
 CompileScript: <<
   ./configure %c
@@ -50,7 +51,7 @@ CompileScript: <<
 <<
 InfoTest: <<
   TestConflicts: pod-simple-pm
-  TestScript: make check || exit 2
+  TestScript: make check ALL_TESTS=yes || exit 2
 <<
 InstallScript: <<
   AM_UPDATE_INFO_DIR=no make install prefix=%i mandir=%i/share/man infodir=%i/share/info
@@ -85,6 +86,9 @@ InstallScript: <<
 
   # charset.alias supplied from gettext
   rm -rf %i/lib
+
+  install -d -m 0755 %i/lib/mime/packages
+  install -m 0644 fink/info.mime %i/lib/mime/packages/info
 <<
 DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
 #
@@ -198,7 +202,7 @@ check_run_without_errors ()
 {
     tempfile=`mktemp -t checkrun.XXXXXXXX`
     if which $1  >/dev/null; then
-        /bin/echo -n "Running $*. This may take some time. ..."
+        /bin/echo -n "Running $1. This may take some time. ..."
 	set +e
         $* > $tempfile 2>&1
 	if [ $? = 0 ] ; then
@@ -241,7 +245,7 @@ case "$1" in
         rm -f %p/var/lib/texmf/web2c/texinfo.*
         rm -f %p/var/lib/texmf/web2c/cyrtexinfo.*
         check_run_without_errors update-fmtutil
-	check_run_without_errors mktexlsr
+	check_run_without_errors mktexlsr %p/share/texmf %p/var/lib/texmf
     ;;
     purge|upgrade|failed-upgrade|abort-upgrade|abort-install)
     ;;
@@ -268,6 +272,7 @@ SplitOff: <<
   <<
   Files: <<
     bin/info*
+    lib/mime
     share/man/man1/info*
     share/menu
   <<
@@ -297,6 +302,8 @@ fi
 <<
 SplitOff2: <<
   Package: install-info
+  # Comment out for bootstrap version
+  # Depends: dpkg (>= 1.15)
   Replaces: texinfo (<< 4.13-1002)
   Essential: true
   Files: <<

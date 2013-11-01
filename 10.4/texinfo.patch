@@ -1,6 +1,6 @@
-diff -ruN texinfo-5.1.orig/fink/conf/50cyrtexinfo.cnf texinfo-5.1/fink/conf/50cyrtexinfo.cnf
---- texinfo-5.1.orig/fink/conf/50cyrtexinfo.cnf	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/conf/50cyrtexinfo.cnf	2012-07-09 13:20:38.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/conf/50cyrtexinfo.cnf texinfo-5.2/fink/conf/50cyrtexinfo.cnf
+--- texinfo-5.2.orig/fink/conf/50cyrtexinfo.cnf	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/conf/50cyrtexinfo.cnf	2012-07-09 13:20:38.000000000 -0600
 @@ -0,0 +1,18 @@
 +# 
 +# 50cyrtexinfo.cnf
@@ -20,15 +20,20 @@ diff -ruN texinfo-5.1.orig/fink/conf/50cyrtexinfo.cnf texinfo-5.1/fink/conf/50cy
 +# . call fmtutil-sys --missing (or --all)
 +#
 +#cyrtexinfo pdfetex language.dat -translate-file=cp227.tcx *cyrtxinf.ini
-diff -ruN texinfo-5.1.orig/fink/info.menu texinfo-5.1/fink/info.menu
---- texinfo-5.1.orig/fink/info.menu	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/info.menu	2012-07-09 13:31:11.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/info.menu texinfo-5.2/fink/info.menu
+--- texinfo-5.2.orig/fink/info.menu	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/info.menu	2012-07-09 13:31:11.000000000 -0600
 @@ -0,0 +1,2 @@
 +?package(info): needs="text" title="Info" section="Help" \
 +  longtitle="GNU Info browser" command="info"
-diff -ruN texinfo-5.1.orig/fink/install-info.1 texinfo-5.1/fink/install-info.1
---- texinfo-5.1.orig/fink/install-info.1	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/install-info.1	2012-07-09 13:17:17.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/info.mime texinfo-5.2/fink/info.mime
+--- texinfo-5.2.orig/fink/info.mime	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/info.mime	2013-10-28 09:13:39.000000000 -0600
+@@ -0,0 +1 @@
++application/x-info; @FINKPREFIX@/bin/info -f '%s'; needsterminal; description=GNU Info document
+diff -ruN texinfo-5.2.orig/fink/install-info.1 texinfo-5.2/fink/install-info.1
+--- texinfo-5.2.orig/fink/install-info.1	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/install-info.1	2012-07-09 13:17:17.000000000 -0600
 @@ -0,0 +1,29 @@
 +.TH INSTALL-INFO 1
 +.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
@@ -59,9 +64,9 @@ diff -ruN texinfo-5.1.orig/fink/install-info.1 texinfo-5.1/fink/install-info.1
 +.SH AUTHOR
 +This manual page was written by Norbert Preining <preining@logic.at>,
 +for the Debian GNU/Linux system (but may be used by others).
-diff -ruN texinfo-5.1.orig/fink/install-info.sh texinfo-5.1/fink/install-info.sh
---- texinfo-5.1.orig/fink/install-info.sh	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/install-info.sh	2012-07-09 13:16:47.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/install-info.sh texinfo-5.2/fink/install-info.sh
+--- texinfo-5.2.orig/fink/install-info.sh	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/install-info.sh	2012-07-09 13:16:47.000000000 -0600
 @@ -0,0 +1,36 @@
 +#!/bin/sh
 +#
@@ -99,15 +104,15 @@ diff -ruN texinfo-5.1.orig/fink/install-info.sh texinfo-5.1/fink/install-info.sh
 +fi
 +
 +
-diff -ruN texinfo-5.1.orig/fink/install-info.triggers texinfo-5.1/fink/install-info.triggers
---- texinfo-5.1.orig/fink/install-info.triggers	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/install-info.triggers	2012-07-09 13:30:53.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/install-info.triggers texinfo-5.2/fink/install-info.triggers
+--- texinfo-5.2.orig/fink/install-info.triggers	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/install-info.triggers	2012-07-09 13:30:53.000000000 -0600
 @@ -0,0 +1,2 @@
 +interest @FINKPREFIX@/share/info
 +interest @FINKPREFIX@/info
-diff -ruN texinfo-5.1.orig/fink/patches/dont_build_info texinfo-5.1/fink/patches/dont_build_info
---- texinfo-5.1.orig/fink/patches/dont_build_info	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/patches/dont_build_info	2013-04-02 13:43:06.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/patches/dont_build_info texinfo-5.2/fink/patches/dont_build_info
+--- texinfo-5.2.orig/fink/patches/dont_build_info	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/patches/dont_build_info	2013-10-28 09:02:55.000000000 -0600
 @@ -0,0 +1,39 @@
 +dont build the info documentation, it has been removed
 +---
@@ -116,12 +121,12 @@ diff -ruN texinfo-5.1.orig/fink/patches/dont_build_info texinfo-5.1/fink/patches
 +
 +--- texinfo.orig/doc/Makefile.in
 ++++ texinfo/doc/Makefile.in
-+@@ -210,14 +210,16 @@
++@@ -240,14 +240,16 @@
 + am__v_texidevnull_ = $(am__v_texidevnull_@AM_DEFAULT_V@)
 + am__v_texidevnull_0 = > /dev/null
 + am__v_texidevnull_1 = 
-+-INFO_DEPS = texinfo info-stnd.info info.info
-++#INFO_DEPS = texinfo info-stnd.info info.info
++-INFO_DEPS = texinfo.info info-stnd.info info.info
+++#INFO_DEPS = texinfo.info info-stnd.info info.info
 ++INFO_DEPS =
 + TEXINFO_TEX = $(top_srcdir)/build-aux/texinfo.tex
 + am__TEXINFO_TEX_DIR = $(top_srcdir)/build-aux
@@ -129,28 +134,28 @@ diff -ruN texinfo-5.1.orig/fink/patches/dont_build_info texinfo-5.1/fink/patches
 + PDFS = texinfo.pdf info-stnd.pdf info.pdf
 + PSS = texinfo.ps info-stnd.ps info.ps
 + HTMLS = texinfo.html info-stnd.html info.html
-+-TEXINFOS = texinfo.txi info-stnd.texi info.texi
-++#TEXINFOS = texinfo.txi info-stnd.texi info.texi
++-TEXINFOS = texinfo.texi info-stnd.texi info.texi
+++#TEXINFOS = texinfo.texi info-stnd.texi info.texi
 ++TEXINFOS =
 + TEXI2DVI = texi2dvi
 + TEXI2PDF = $(TEXI2DVI) --pdf --batch
 + MAKEINFOHTML = $(MAKEINFO) --html
-+@@ -1006,8 +1008,10 @@
++@@ -1044,8 +1046,10 @@
 + SUBDIRS = tp_api
 + 
-+ # Put texinfo.txi first because that's the most important.
-+-info_TEXINFOS = texinfo.txi info-stnd.texi info.texi
-+-DISTCLEANFILES = texinfo texinfo-* info*.info*
-++#info_TEXINFOS = texinfo.txi info-stnd.texi info.texi
-++#DISTCLEANFILES = texinfo texinfo-* info*.info*
++ # Put the Texinfo manual first because that's the most important.
++-info_TEXINFOS = texinfo.texi info-stnd.texi info.texi
++-DISTCLEANFILES = texinfo.info* info*.info*
+++#info_TEXINFOS = texinfo.texi info-stnd.texi info.texi
+++#DISTCLEANFILES = texinfo.info* info*.info*
 ++info_TEXINFOS =
 ++DISTCLEANFILES =
 + 
 + # Use the programs built in our distribution, taking account of possible
 + # cross-compiling.
-diff -ruN texinfo-5.1.orig/fink/patches/fix-broken-po-files texinfo-5.1/fink/patches/fix-broken-po-files
---- texinfo-5.1.orig/fink/patches/fix-broken-po-files	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/patches/fix-broken-po-files	2013-04-02 13:43:43.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/patches/fix-broken-po-files texinfo-5.2/fink/patches/fix-broken-po-files
+--- texinfo-5.2.orig/fink/patches/fix-broken-po-files	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/patches/fix-broken-po-files	2013-10-28 09:02:55.000000000 -0600
 @@ -0,0 +1,18 @@
 +fix wrong control character in some .po files
 +See Ubuntu bug 707931
@@ -161,7 +166,7 @@ diff -ruN texinfo-5.1.orig/fink/patches/fix-broken-po-files texinfo-5.1/fink/pat
 +
 +--- texinfo.orig/po/id.po
 ++++ texinfo/po/id.po
-+@@ -2166,7 +2166,7 @@
++@@ -2260,7 +2260,7 @@
 + "Ini adalah berkas .../info/dir, yang berisi\n"
 + "titik paling atas dari struktur Info, dipanggil (dir)Top.\n"
 + "Pertama kali anda memanggil Info anda berawal dari melihat titik ini.\n"
@@ -170,9 +175,9 @@ diff -ruN texinfo-5.1.orig/fink/patches/fix-broken-po-files texinfo-5.1/fink/pat
 + "%s\tIni adalah tingkat paling atas dari pohon INFO\n"
 + "\n"
 + " Ini (titik Direktori) memberikan sebuah menu dari topik utama.\n"
-diff -ruN texinfo-5.1.orig/fink/patches/info_universal_argument texinfo-5.1/fink/patches/info_universal_argument
---- texinfo-5.1.orig/fink/patches/info_universal_argument	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/patches/info_universal_argument	2013-04-02 13:43:27.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/patches/info_universal_argument texinfo-5.2/fink/patches/info_universal_argument
+--- texinfo-5.2.orig/fink/patches/info_universal_argument	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/patches/info_universal_argument	2013-10-28 09:02:55.000000000 -0600
 @@ -0,0 +1,16 @@
 +fix some .po files that have wrong references
 +---
@@ -181,18 +186,18 @@ diff -ruN texinfo-5.1.orig/fink/patches/info_universal_argument texinfo-5.1/fink
 +
 +--- texinfo.orig/po/ro.po
 ++++ texinfo/po/ro.po
-+@@ -1817,7 +1817,7 @@
++@@ -1900,7 +1900,7 @@
 + 
-+ #: info/session.c:5216
++ #: info/session.c:5312
 + msgid "Internally used by \\[universal-argument]"
 +-msgstr "Folosit intern de \\[argument-universal]"
 ++msgstr "Folosit intern de \\[universal-argument]"
 + 
-+ #: info/tilde.c:361
-+ #, c-format
-diff -ruN texinfo-5.1.orig/fink/patches/numerical-signal-names texinfo-5.1/fink/patches/numerical-signal-names
---- texinfo-5.1.orig/fink/patches/numerical-signal-names	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/patches/numerical-signal-names	2013-04-02 13:43:56.000000000 -0600
++ #: info/session.c:5388
++ msgid "Show full file name of node being displayed"
+diff -ruN texinfo-5.2.orig/fink/patches/numerical-signal-names texinfo-5.2/fink/patches/numerical-signal-names
+--- texinfo-5.2.orig/fink/patches/numerical-signal-names	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/patches/numerical-signal-names	2013-10-28 09:02:55.000000000 -0600
 @@ -0,0 +1,48 @@
 +replace numerical signal names with symbolical
 +---
@@ -203,7 +208,7 @@ diff -ruN texinfo-5.1.orig/fink/patches/numerical-signal-names texinfo-5.1/fink/
 +
 +--- texinfo.orig/util/texi2dvi
 ++++ texinfo/util/texi2dvi
-+@@ -1948,7 +1948,7 @@
++@@ -1959,7 +1959,7 @@
 +              sed "s,^$orig_pwd/,,;s,^\./,,;s,/,!,g"`
 +   esac
 +   # Remove it at exit if clean mode.
@@ -242,9 +247,9 @@ diff -ruN texinfo-5.1.orig/fink/patches/numerical-signal-names texinfo-5.1/fink/
 + 
 + # Find all the fonts with names that include `circle'.
 + (cd "${texfontdir}"; find . -name '*circle*' -print > "${tempfile}")
-diff -ruN texinfo-5.1.orig/fink/patches/warn_missing_tex texinfo-5.1/fink/patches/warn_missing_tex
---- texinfo-5.1.orig/fink/patches/warn_missing_tex	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/patches/warn_missing_tex	2013-04-02 13:43:50.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/patches/warn_missing_tex texinfo-5.2/fink/patches/warn_missing_tex
+--- texinfo-5.2.orig/fink/patches/warn_missing_tex	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/patches/warn_missing_tex	2013-10-28 09:02:55.000000000 -0600
 @@ -0,0 +1,28 @@
 +20_warn_missing_tex.dpatch by  <preining@logic.at>
 +
@@ -272,11 +277,11 @@ diff -ruN texinfo-5.1.orig/fink/patches/warn_missing_tex texinfo-5.1/fink/patche
 ++
 ++
 + # This string is expanded automatically when this file is checked out.
-+ rcs_revision='$Revision: 5234 $'
++ rcs_revision='$Revision: 5381 $'
 + rcs_version=`set - $rcs_revision; echo $2`
-diff -ruN texinfo-5.1.orig/fink/texi2pdf.man texinfo-5.1/fink/texi2pdf.man
---- texinfo-5.1.orig/fink/texi2pdf.man	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/texi2pdf.man	2012-07-09 13:15:44.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/texi2pdf.man texinfo-5.2/fink/texi2pdf.man
+--- texinfo-5.2.orig/fink/texi2pdf.man	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/texi2pdf.man	2012-07-09 13:15:44.000000000 -0600
 @@ -0,0 +1,49 @@
 +.TH "texi2pdf" "1" "September 2000" "teTeX" "teTeX" 
 +.PP 
@@ -327,9 +332,9 @@ diff -ruN texinfo-5.1.orig/fink/texi2pdf.man texinfo-5.1/fink/texi2pdf.man
 +without contacting the author\&.  Any mistakes or omissions in the
 +manual page are my fault; inquiries about or corrections to this
 +manual page should be directed to me (and not to the primary author)\&.
-diff -ruN texinfo-5.1.orig/fink/transition-plan.txt texinfo-5.1/fink/transition-plan.txt
---- texinfo-5.1.orig/fink/transition-plan.txt	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/transition-plan.txt	2012-07-09 13:32:54.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/transition-plan.txt texinfo-5.2/fink/transition-plan.txt
+--- texinfo-5.2.orig/fink/transition-plan.txt	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/transition-plan.txt	2012-07-09 13:32:54.000000000 -0600
 @@ -0,0 +1,120 @@
 +Proposal to replace Debian's install-info with GNU's install-info
 +=================================================================
@@ -451,9 +456,9 @@ diff -ruN texinfo-5.1.orig/fink/transition-plan.txt texinfo-5.1/fink/transition-
 +   previous step).
 +
 +
-diff -ruN texinfo-5.1.orig/fink/update-info-dir texinfo-5.1/fink/update-info-dir
---- texinfo-5.1.orig/fink/update-info-dir	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/update-info-dir	2013-04-02 14:04:40.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/update-info-dir texinfo-5.2/fink/update-info-dir
+--- texinfo-5.2.orig/fink/update-info-dir	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/update-info-dir	2013-04-02 14:04:40.000000000 -0600
 @@ -0,0 +1,82 @@
 +#!/bin/bash
 +# update-info-dir
@@ -537,9 +542,9 @@ diff -ruN texinfo-5.1.orig/fink/update-info-dir texinfo-5.1/fink/update-info-dir
 +exit 0
 +
 +# vim:set expandtab tabstop=2: #
-diff -ruN texinfo-5.1.orig/fink/update-info-dir.8 texinfo-5.1/fink/update-info-dir.8
---- texinfo-5.1.orig/fink/update-info-dir.8	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-5.1/fink/update-info-dir.8	2012-07-09 13:20:07.000000000 -0600
+diff -ruN texinfo-5.2.orig/fink/update-info-dir.8 texinfo-5.2/fink/update-info-dir.8
+--- texinfo-5.2.orig/fink/update-info-dir.8	1969-12-31 17:00:00.000000000 -0700
++++ texinfo-5.2/fink/update-info-dir.8	2012-07-09 13:20:07.000000000 -0600
 @@ -0,0 +1,34 @@
 +.TH UPDATE-INFO-DIR 8
 +.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
