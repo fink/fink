@@ -30,6 +30,9 @@ patch -p1 < fink/patches/warn_missing_tex
 patch -p1 < fink/patches/numerical-signal-names
 patch -p1 < fink/patches/info_universal_argument
 patch -p1 < fink/patches/dont_build_info
+
+# help2man isn't actually used, so to avoid a dependency, patch it out
+perl -pi -e 's,help2man,true,g' configure
 <<
 ConfigureParams: <<
   --mandir=%p/share/man \
