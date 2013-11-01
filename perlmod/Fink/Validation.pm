@@ -87,6 +87,7 @@ our %check_hardcode_fields = map {$_, 1}
 		 postrmscript
 		 conffiles
 		 daemonicfile
+		 triggers
 		),
 		(map {"set".$_} @set_vars)
 	);
@@ -223,6 +224,7 @@ our %valid_fields = map {$_, 1}
 		 'descpackaging',
 		 'descport',
 		 'infotest',
+		 'triggers',
 		)
 	);
 
@@ -261,6 +263,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'prermscript',
 		 'postrmscript',
 		 'conffiles',
+		 'conffiles',
 		 'infodocs',
 		 'daemonicfile',
 		 'daemonicname',
@@ -271,6 +274,7 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'descusage',
 		 'descpackaging',
 		 'descport',
+		 'triggers',
 		)
 	);
 
@@ -318,6 +322,18 @@ our %allowed_testsuitesize_values = map {lc $_, 1}
 	 'small',
 	 'medium',
 	 'large',
+	);
+
+# Triggers have no required fields right now.
+our @triggers_required_fields = map {lc $_} ();
+
+# Extra fields valid inside Triggers
+our %triggers_valid_fields = map {lc $_, 1}
+	(
+	 'activate',
+	 'activate-noawait',
+	 'interest',
+	 'interest-noawait',
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -380,7 +396,7 @@ END { }				# module clean-up code here (global destructor)
 sub validate_info_file {
 	my $filename = shift;
 	my $val_prefix = shift;
-	my ($properties, $info_level, $test_properties);
+	my ($properties, $info_level, $test_properties, $triggers_properties);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgepoch, $pkgfullname, $pkgdestdir, $pkgpatchpath);
 	my $value;
 	my ($basepath, $buildpath);
@@ -417,6 +433,9 @@ sub validate_info_file {
 	$test_properties = &read_properties_var(
 		"InfoTest of $filename",
 		$properties->{infotest}, {remove_space => 1}) if $properties->{infotest};
+	$triggers_properties = &read_properties_var(
+		"Triggers of $filename",
+		$properties->{triggers}, {remove_space => 1}) if $properties->{triggers};
 
 	# determine the base path
 	if (defined $val_prefix) {
@@ -688,10 +707,18 @@ sub validate_info_file {
 				 is_infotest => 1,
 			 ) == 0) {
 		$looks_good = 0;
+	} elsif ($properties->{triggers} and &validate_info_component(
+				 properties => $triggers_properties,
+				 filename => $filename,
+				 info_level => $info_level,
+				 expand => $expand,
+				 has_triggers => 1,
+			 ) == 0) {
+		$looks_good = 0;
 	}
 
 	my $field_check = sub {
-		my($field, $value, $in_infotest) = @_;
+		my($field, $value, $in_infotest, $in_triggers) = @_;
 
 		# Warn if field is obsolete
 		if ($obsolete_fields{$field}) {
@@ -757,6 +784,11 @@ sub validate_info_file {
 			$splitoff_properties =~ s/^\s+//gm;
 			$splitoff_properties = &read_properties_var("$field of \"$filename\"", $splitoff_properties);
 
+			my $splitoff_triggers_properties;
+			$splitoff_triggers_properties = &read_properties_var(
+				"Triggers of $filename",
+				$splitoff_properties->{triggers}, {remove_space => 1}) if $splitoff_properties->{triggers};
+
 			# make sure have InfoN (N>=2) if use Info2 features
 			if ($info_level < 2) {
 				# fink-0.16.1 can't even index if unknown %-exp in *any* field!
@@ -770,12 +802,21 @@ sub validate_info_file {
 			}
 
 			if (&validate_info_component(
-					 properties => $splitoff_properties,
-					 splitoff_field => $splitoff_field,
-					 filename => $filename,
-					 info_level => $info_level,
-					 expand => { 'N' => $pkgname, %{$expand} },
-					 builddepends => $properties->{builddepends},
+					properties => $splitoff_properties,
+					splitoff_field => $splitoff_field,
+					filename => $filename,
+					info_level => $info_level,
+					expand => { 'N' => $pkgname, %{$expand} },
+					builddepends => $properties->{builddepends},
+				) == 0) {
+				$looks_good = 0;
+			} elsif ($splitoff_properties->{triggers} && &validate_info_component(
+					properties => $splitoff_triggers_properties,
+					splitoff_field => $splitoff_field,
+					filename => $filename,
+					info_level => $info_level,
+					expand => { 'N' => $pkgname, %{$expand} },
+					has_triggers => 1,
 				) == 0) {
 				$looks_good = 0;
 			}
@@ -795,10 +836,13 @@ sub validate_info_file {
 
 	# Loop over all fields and verify them
 	while (my($field, $value) = each(%$properties)) {
-		$field_check->($field, $value, 0);
+		$field_check->($field, $value, 0, 0);
 	}
 	while (my($field, $value) = each(%$test_properties)) {
-		$field_check->($field, $value, 1);
+		$field_check->($field, $value, 1, 0);
+	}
+	while (my($field, $value) = each(%$triggers_properties)) {
+		$field_check->($field, $value, 0, 1);
 	}
 
 	if (exists $properties->{runtimevars} and defined $properties->{runtimevars}) {
@@ -1177,6 +1221,7 @@ sub validate_info_component {
 	my $info_level = $options{info_level};
 	my $expand = $options{expand};
 	my $is_infotest = $options{is_infotest};
+	my $has_triggers = $options{has_triggers};
 
 	# make sure this $option is available even in parent
 	$options{builddepends} = $properties->{builddepends} unless $splitoff_field;
@@ -1190,9 +1235,16 @@ sub validate_info_component {
 		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
 		@pkg_required_fields = @splitoff_required_fields;
 		%pkg_valid_fields = %splitoff_valid_fields;
+		if ($has_triggers) {
+			@pkg_required_fields = @triggers_required_fields;
+			%pkg_valid_fields = (%triggers_valid_fields, %splitoff_valid_fields);
+		}
 	} elsif ($is_infotest) {
 		@pkg_required_fields = @infotest_required_fields;
 		%pkg_valid_fields = (%infotest_valid_fields, %valid_fields);
+	} elsif ($has_triggers) {
+		@pkg_required_fields = @triggers_required_fields;
+		%pkg_valid_fields = (%triggers_valid_fields, %valid_fields);
 	} else {
 		@pkg_required_fields = @required_fields;
 		%pkg_valid_fields = %valid_fields;
@@ -1269,8 +1321,10 @@ sub validate_info_component {
 					  or $field =~ m/^(test)?tar([2-9]|[1-9]\d+)filesrename$/
 					  ) ) {
 				my $test = "";
+				my $triggers = "";
 				$test = " inside InfoTest" if $is_infotest;
-				print "Warning: Field \"$field\"$splitoff_field is unknown${test}. ($filename)\n";
+				$triggers = " inside Triggers" if $has_triggers;
+				print "Warning: Field \"$field\"$splitoff_field is unknown${test}${triggers}. ($filename)\n";
 				$looks_good = 0;
 			}
 		}
@@ -1437,8 +1491,13 @@ sub validate_info_component {
 		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.27.2'} }, 'use of conditionals in ConfFiles', $filename);
 	}
 
-	# Special checks when package building script uses an explicit interp
+	if (defined $properties->{triggers}) {
+		# Packages using Triggers must BuildDepends on a fink that
+		# supports it
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.35.99.git'} }, 'use of Triggers', $filename);
+	}
 
+	# Special checks when package building script uses an explicit interp
 
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});

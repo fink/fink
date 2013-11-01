@@ -4137,6 +4137,41 @@ EOF
 		die $error . "\n";
 	}
 
+	### triggers file
+
+	if (length(my $triggersbody = $self->get_triggers_fields)) {
+		chomp $triggersbody;
+
+# Since this is also used in shlibs, maybe this should be moved to a common
+# sub function or instead of shlibs_error or triggers_error, just fpb_error
+# and reuse it
+		my $triggers_error = sub {
+			my $self = shift;
+			my $type = shift;
+			my $error = "can't write to $type file for " . $self->get_fullname() . ": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		};
+
+		print "Writing triggers file...\n";
+
+# FIXME:
+#    * Make sure each interest/activate is actutally in fink base
+
+		my @triggerlines;
+		for my $line (split(/\n/, $triggersbody)) {
+			push @triggerlines, $line."\n";
+		}
+
+		if (@triggerlines) {
+			my $triggersfile = IO::Handle->new();
+			open $triggersfile, ">$destdir/DEBIAN/triggers" or &{$triggers_error}($self, 'triggers');
+			print $triggersfile @triggerlines;
+			close $triggersfile or &{$triggers_error}($self, 'triggers');
+			chmod 0644, "$destdir/DEBIAN/triggers";
+		}
+	}
+
 	### create scripts as neccessary
 	## TODO: refactor more of this stuff to fink-instscripts
 
@@ -5917,6 +5952,50 @@ sub get_shlibs_field {
 		$shlibs_cooked .= "$1\n" if length $1;
 	}
 	$shlibs_cooked;
+}
+
+=item get_triggers_field
+
+	my $triggers_field = $pv->get_triggers_field;
+
+Returns a multiline string of the Triggers entries. The string will
+always be defined, but will be null if no entries, and every entry
+(even last) will have trailing newline.
+
+=cut
+
+sub get_triggers_fields {
+	my $self = shift;
+
+	my @triggertypes = (
+		"activate",
+		"activate-noawait",
+		"interest",
+		"interest-noawait",
+	);
+	
+	my $expand = $self->{_expand};
+	my $triggers_cooked = '';  # processed results
+	my $triggers = $self->param_default("Triggers", "");
+	my $trigger_properties = &read_properties_var(
+		"Triggers of ".$self->get_fullname,
+		$self->param_default('Triggers', ''), {remove_space => 1});
+	while (my($key, $val) = each(%$trigger_properties)) {
+		if (grep $_ eq lc($key), @triggertypes) {
+			my $triggertype = lc($key);
+			my $triggers_raw = &expand_percent($val, $expand, $self->get_info_filename." \"$val\"", 2);
+			$triggers_raw =~ s/\s+/ /g; # Make it one line
+			$triggers_raw = $self->conditional_space_list($triggers_raw,
+				ucfirst($triggertype)."Triggers of ".$self->get_fullname()." in ".$self->get_info_filename
+			);
+			foreach my $info_line (split /\s+/, $triggers_raw) {
+				next if $info_line =~ /^#/;  # skip comments
+				$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
+				$triggers_cooked .= "$triggertype $1\n" if length $1;
+			}
+		}
+	}
+	$triggers_cooked;
 }
 
 =item scanpackages
