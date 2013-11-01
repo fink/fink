@@ -987,7 +987,7 @@ sub raw_version_cmp {
 	$a1 = shift;
 	$b1 = shift;
 
-	while ($a1 ne "" and $b1 ne "") {
+	while ($a1 ne "" or $b1 ne "") {
 		# pull a string of non-digit chars from the left
 		# compare it left-to-right, sorting non-letters higher than letters
 		$a1 =~ /^(\D*)/;
@@ -997,11 +997,18 @@ sub raw_version_cmp {
 		@cb = unpack("C*", $1);
 		$b1 = substr($b1,length($1));
 
-		while (int(@ca) and int(@cb)) {
+		push @ca, 0;
+		push @cb, 0;
+
+		while (int(@ca) or int(@cb)) {
 			$res = chr($a2 = shift @ca);
-			$a2 += 256 if $res !~ /[A-Za-z]/;
+			$a2 += 256 if $a2 != 0 and $res !~ /[A-Za-z]/;
+			$a2 = -1 if $res eq '~';	# tilde comes before anything else
+
 			$res = chr($b2 = shift @cb);
-			$b2 += 256 if $res !~ /[A-Za-z]/;
+			$b2 += 256 if $b2 != 0 and $res !~ /[A-Za-z]/;
+			$b2 = -1 if $res eq '~';	# tilde comes before anything else
+
 			$res = $a2 <=> $b2;
 			return $res if $res;
 		}

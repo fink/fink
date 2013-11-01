@@ -576,14 +576,14 @@ sub validate_info_file {
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
-	if ($pkgversion =~ /[^+\-.a-z0-9]/) {
+	if ($pkgversion =~ /[^+\-.a-z0-9~]/) {
 		print "Error: Package version may only contain lowercase letters, numbers,";
-		print "'.', '+' and '-' ($filename)\n";
+		print "'.', '~', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
-	if ($pkgrevision =~ /[^+.a-z0-9]/) {
+	if ($pkgrevision =~ /[^+.a-z0-9~]/) {
 		print "Error: Package revision may only contain lowercase letters, numbers,";
-		print "'.' and '+' ($filename)\n";
+		print "'.', '~' and '+' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgepoch !~ /^([1-9][0-9]*)?$/) {
