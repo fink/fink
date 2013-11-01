@@ -17,6 +17,9 @@ Depends: <<
   libgettext8-shlibs,
   libiconv
 <<
+RuntimeDepends: <<
+  text-unidecode-pm
+<<
 Replaces: tetex-base (<< 3.0-1)
 PatchFile: %n.patch
 PatchFile-MD5: 547bfe54593879cd6a62f9a07a2b84ee
