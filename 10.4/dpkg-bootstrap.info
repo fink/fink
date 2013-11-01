@@ -1,70 +1,151 @@
 Package: dpkg-bootstrap
-Version: 1.10.21
-Revision: 1220
+Version: 1.16.10
+Revision: 1
+GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
-Source-MD5: a9f6c43891db74d727beab7dfc0ee663
+Source-MD5: de4823d05100537e6d85304a6fa3b530
+
 PatchFile: dpkg.patch
-PatchFile-MD5: 62c4558d3ae7c3107fefaa031b9cf697
+PatchFile-MD5: a851cfe5976cffc3efe6c044d1c88578
+
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
- echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+
+patch -p1 < fink/patches/add-BOD.patch
+patch -p1 < fink/patches/build-fix.patch
+patch -p1 < fink/patches/c++filt-defaults.patch
+patch -p1 < fink/patches/dselect-methods.patch
+patch -p1 < fink/patches/fink-triggers.patch
+patch -p1 < fink/patches/fink-virtuals.patch
+patch -p1 < fink/patches/full-path-calls.patch
+patch -p1 < fink/patches/gzip-rsyncable-fix.patch
+patch -p1 < fink/patches/location-fixes.patch
+patch -p1 < fink/patches/protect-system-dirs.patch
+patch -p1 < fink/patches/so-to-dylib.patch
+patch -p1 < fink/patches/test-fix.patch
+patch -p1 < fink/patches/fink-as-vendor.patch
+
+# Remove po4a and make sure it can't be found if it's installed
+# this is to keep fink policy happy since it has to build the same
+# everytime on all systems
+perl -pi -e 's,po4a,notpo4a,g' configure
+
+# Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
+perl -pi -e 's,^(\#\!/usr/bin/perl.*)$,$1\nuse lib "%p/lib/perl5";,' %b/scripts/*.pl
+
+# fix paths
+for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
+  perl -pi -e 's,/usr,%p,g' $i; \
+  perl -pi -e 's,/var,%p/var,g' $i; \
+  perl -pi -e 's,/etc,%p/etc,g' $i; \
+  perl -pi -e 's,amd64,x86_64,g' $i; \
+done 
+
+cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
+
+# Fink uses "x86_64" instead of "amd64"
+perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+
+# Fix for tar (Slightly modified for dpkg-bootstrap)
+if [ "%n" = "dpkg-bootstrap" ]; then \
+  if [[ $(/usr/bin/sw_vers -productVersion) > 10.8 ]]; then \
+    perl -pi -e 's,\"tar\",\"/usr/bin/tar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+    perl -pi -e 's,--warning=no-timestamp,-v,g' dpkg-deb/extract.c; \
+    perl -pi -e 's,--format=gnu,--format=ustar,g' dpkg-deb/build.c; \
+  else \
+    perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+    perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c; \
+  fi \
+else \
+  perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+fi
+
+# Fix for --disable-nls
+perl -pi -e 's,defined\(__GNUG__\),defined(__NOTGNUG__),g' lib/compat/gettext.h
+
+# Fix for older gcc ie: 10.5
+perl -pi -e 's,-Wvla ,,g' configure
+
+# Move dselect and dpkg-dev locals for cleaner Install Phases
+perl -pi -e 's,localedir = \$\(datadir\)\/locale,localedir = \$(datadir)/locale-dselect,g' dselect/Makefile.in
+perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-dselect,g' dselect/po/Makefile.in.in
+perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-perl,g' scripts/Makefile.in scripts/po/Makefile.in.in
 <<
-SetCFLAGS: -I%p/include
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
-CompileScript: <<
- PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
- make
+
+SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -F/System/Library/Frameworks/CoreFoundation.framework -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
+SetCPPFLAGS: -D_FORTIFY_SOURCE=2
+SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
+SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework CoreFoundation
+
+# Using %P for admindir and localstatedir is crucial for bootstrap version.
+### Uncomment --disable-dselect for bootstrap version, don't make dselect
+ConfigureParams: <<
+  --disable-nls \
+  --disable-dselect \
+  --disable-start-stop-daemon \
+  --with-admindir=%P/var/lib/dpkg \
+  --mandir=%p/share/man \
+  --infodir=%p/share/info \
+  --sysconfdir=%p/etc \
+  --localstatedir=%P/var \
+  --with-zlib \
+  --without-liblzma \
+  --with-bz2 \
+  --srcdir=%b \
+  --build=%m-apple-darwin \
+  --disable-linker-optimisations \
+  PERL_LIBDIR=%p/lib/perl5 \
+  PERL=/usr/bin/perl
 <<
-ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix --disable-nls
+
+InfoTest: <<
+  TestConfigureParams: --disable-silent-rules
+  TestDepends: io-string-pm, time-date-pm
+  TestScript: make check || exit 2
+<<
+
 InstallScript: <<
- mkdir -p %i/share/doc/dpkg
- make install DESTDIR=%d
+  install -d -m 0755 %i/share/doc/dpkg
+
+  make install DESTDIR=%d
+
+  install -d -m 0755 %i/etc/dpkg/origins
+  install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
+  install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
+  ## currently in fink
+  # install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
+  install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
+  install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
+  rm -rf %i/lib/dpkg/methods/*
+
+  install -m 0755 fink/md5sum %i/bin
+
+  # install fink as a vendor
+  install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
+
+  # some files that were previously installed in sbin are now in bin
+  # but some stuff still expects it in sbin
+  ln -s %p/bin/dpkg-divert %i/sbin/dpkg-divert
+  ln -s %p/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
+  ln -s %p/bin/update-alternatives %i/sbin/update-alternatives
 <<
-Description: The Debian package manager (bootstrap only)
+ConfFiles: %p/etc/dpkg/origins/fink
+DocFiles: <<
+  ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
+  README README.translators THANKS TODO
+<<
+Description: The Debian package manager (bootstrap package)
 DescDetail: <<
-dpkg installs and removes binary packages; it is the base of the
-distribution. This package also contains some helper programs. This
-package does not build dselect and thus doesn't require ncurses. It is
-intended to be used during bootstrap.
+This package provides the low-level infrastructure for handling the
+installation and removal of Debian software packages.
+.
+For Debian package development tools, install dpkg-dev.
 <<
 DescPort: <<
-1.10.9 
-- Removed --without-zlib flag
-- Gets confused about top_srcdir without the --srcdir arg.
-- Fixed bug with BR manpage
-- Patched update-rc.d out of the app check code, not needed on OS X.
-
-Pre-Jaguar: Needed fixes to use the right architecture, disable code that uses
-unimplemented functions on Darwin and other stuff.
-
-Added code to support the pseudo package 'macosx' and 'darwin'.
-
-Fix to install-info script to prevent a certain problem with section titles.
-
-Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $prefix.
-
-Patched to suppress warning about BuildDependsOnly control field.
-
-Previous versions by Christoph Pfisterer.
-
-Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
-
-Patched to hardcode complete paths to our component executables
-instead of relying on PATH
-
-stpncpy test may fail due to wrong prototype even if we have the
-function, so remove AIX-bug-specific hack
-<<
-DescPackaging: <<
-  admindir goes in %P (eventual live basedir) not %p (bootstrap
-  basedir): dpkg-bootstrap needs to set up the initial live dpkg
-  status database.
-
-  removed Depends and BuildDepends since this is built during phase two
-  of bootstrap and those fields are not relevant there
+See dpkg DescPort
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
