@@ -568,7 +568,8 @@ sub validate_info_file {
 	}
 
 	#
-	# First check for critical errors
+	# First check for critical errors;
+	# see also http://www.debian.org/doc/debian-policy/ch-controlfields.html
 	#
 
 	if ($pkgname =~ /[^+\-.a-z0-9]/) {
@@ -579,6 +580,10 @@ sub validate_info_file {
 	if ($pkgversion =~ /[^+\-.a-z0-9~]/) {
 		print "Error: Package version may only contain lowercase letters, numbers,";
 		print "'.', '~', '+' and '-' ($filename)\n";
+		$looks_good = 0;
+	}
+	if ($pkgversion !~ /^[0-9]/) {
+		print "Error: Package version must start with a start with digit. ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgrevision =~ /[^+.a-z0-9~]/) {
