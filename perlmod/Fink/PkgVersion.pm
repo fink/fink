@@ -4538,6 +4538,53 @@ EOF
 		}
 	}
 
+	### Check and modify .la files, must happen before md5sums file
+	### creation
+	File::Find::find({
+		preprocess => sub {
+			# Don't descend into the .deb control directory
+			return () if $File::Find::dir eq "$destdir/DEBIAN";
+			return @_;
+
+		},
+		wanted => sub {
+			if (-f $_ && ! -l $_ && $_ =~ m/\.la$/) {
+				print "Reading ".$_.".\n";
+				my $filechanged = 0;
+				if ( open(LA,"<$File::Find::name") ) {
+					my @lalines;
+					while (my $laline = <LA>) {
+						if ($laline =~ m/^dependency_libs=/) {
+							print "Clearing dependency_lib from ".$_.".\n";
+							$laline =~ s/^(dependency_libs)=.*/$1=''/;
+							$filechanged = 1;
+						}
+						push(@lalines, $laline);
+					}
+					close(LA) or die "can't clear dependency_libs of ".$_.": $!\n";
+					if ($filechanged) {
+						print "Writing new ".$_.".\n";
+						if ( open(NEWLA,">$File::Find::name") ) {
+							foreach my $newlaline (@lalines) {
+								print NEWLA $newlaline;
+							}
+							close(NEWLA) or die "can't clear dependency_libs of ".$_.": $!\n";
+						} else {
+							my $error = "can't clear dependency_libs of ".$_.": $!";
+							$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+							die $error . "\n";
+						}
+					}
+				} else {
+					my $error = "can't clear dependency_libs of ".$_.": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			}
+		},
+	}, $destdir
+	);
+
 	### Create md5sum for deb, this is done as part of the debian package
 	### policy and so that tools like debsums can check the consistancy
 	### of installed file, this will also help for trouble shooting, since
