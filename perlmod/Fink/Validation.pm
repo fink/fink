@@ -230,6 +230,15 @@ our %valid_fields = map {$_, 1}
 		)
 	);
 
+# List of all valid fields, that are now depreacted
+our %deprecated_fields = map {$_, 1}
+	(
+		(
+#  build phase:
+		 'infodocs',
+		)
+	);
+
 # List of all fields which are legal in a splitoff
 our %splitoff_valid_fields = map {$_, 1}
 	(
@@ -278,6 +287,15 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'descpackaging',
 		 'descport',
 		 'triggers',
+		)
+	);
+
+# List of all fields which are legal in a splitoff, that are now depreacted
+our %splitoff_deprecated_fields = map {$_, 1}
+	(
+		(
+#  build phase:
+		 'infodocs',
 		)
 	);
 
@@ -1229,7 +1247,7 @@ sub validate_info_component {
 	# make sure this $option is available even in parent
 	$options{builddepends} = $properties->{builddepends} unless $splitoff_field;
 
-	my (@pkg_required_fields, %pkg_valid_fields);
+	my (@pkg_required_fields, %pkg_valid_fields, %pkg_deprecated_fields);
 
 	my $is_splitoff = 0;
 	$splitoff_field = "" unless defined $splitoff_field;
@@ -1238,6 +1256,7 @@ sub validate_info_component {
 		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
 		@pkg_required_fields = @splitoff_required_fields;
 		%pkg_valid_fields = %splitoff_valid_fields;
+		%pkg_deprecated_fields = %splitoff_deprecated_fields;
 		if ($has_triggers) {
 			@pkg_required_fields = @triggers_required_fields;
 			%pkg_valid_fields = (%triggers_valid_fields, %splitoff_valid_fields);
@@ -1251,6 +1270,7 @@ sub validate_info_component {
 	} else {
 		@pkg_required_fields = @required_fields;
 		%pkg_valid_fields = %valid_fields;
+		%pkg_deprecated_fields = %deprecated_fields;
 	}
 
 	my $value;
@@ -1324,6 +1344,12 @@ sub validate_info_component {
 		# this doesn't work for unicode; is there a good way to accept unicode without just ignoring validation?
 		if ($value =~ /[^[:ascii:]]/) {
 			print "Warning: \"$field\"$splitoff_field contains non-ASCII characters. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# Warn if field is deprecated
+		if ($pkg_deprecated_fields{$field}) {
+			print "Warning: Field \"$field\"$splitoff_field is deprecated. ($filename)\n";
 			$looks_good = 0;
 		}
 
@@ -2078,8 +2104,11 @@ sub _validate_dpkg {
 			my $infofile = $1;
 			if ($infofile eq 'dir') {
 				&stack_msg($msgs, "The texinfo table of contents file \"$filename\" must not be installed directly as part of the .deb");
-			} elsif (not $install_info_called) {
-				&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
+			### Deprecated, InfoDocs is no longer required
+			#} elsif (not $install_info_called) {
+			#	&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
+			} elsif ($install_info_called) {
+				&stack_msg($msgs, "install-info called found in dpkg scrips, please avoid this as Triggers in install-info will already do this for you.", $filename);
 			}
 		}
 
