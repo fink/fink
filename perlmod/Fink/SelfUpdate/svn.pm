@@ -104,7 +104,7 @@ Returns a null string.
 sub do_direct {
 	my $class = shift;  # class method for now
 
-	if (-d "$basepath/fink/dists/.svn") {
+	if (-d "$basepath/fink/.svn") {
 		# already have a svn checkout
 		$class->do_direct_svn();
 	} else {
