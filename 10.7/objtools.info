@@ -14,6 +14,13 @@ Source-MD5: ee0f10756c84979622b992a4a61ea3f5
 PatchFile: objtools.patch
 PatchFile-MD5: 46c7844a1fe9dfc5148615d5db251140
 
+# Suppress -Werror, as with clang we get some warnings. These are
+# triggered by valid code in objtools, so it is safe to ignore them. We
+# previously only suppressed the specific warnings by adding
+# -Wno-string-plus-int to the CFLAGS, but this in turn causes problems
+# with gcc. So for now we just disable -Werror.
+ConfigureParams: --disable-werror
+
 CompileScript: <<
 #!/bin/sh -ev
   cd bfd
@@ -25,10 +32,10 @@ CompileScript: <<
   ./configure %c
   make libiberty.a
   cd ../opcodes
-  CFLAGS="-Wno-string-plus-int" ./configure %c
+  ./configure %c
   make libopcodes.la
   cd ../binutils
-  CFLAGS="-Wno-string-plus-int" ./configure %c
+  ./configure %c
   make objcopy
   make objdump
   make readelf
