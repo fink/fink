@@ -1,8 +1,7 @@
 Package: objtools
 Version: 2.22
-Revision: 3
-# not yet
-#Essential: true
+Revision: 4
+Essential: true
 Replaces: binutils (<< 2.22)
 
 Maintainer: Sjors Gielen <fink-objtools@sjorsgielen.nl>
