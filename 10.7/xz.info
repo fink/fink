@@ -1,6 +1,7 @@
 Package: xz
 Version: 5.0.5
-Revision: 2
+Revision: 2.1
+Essential: yes
 Description: LZMA file compressor
 DescDetail: <<
     LZMA is a general purporse compression algorithm designed by
@@ -93,6 +94,7 @@ SplitOff: <<
 	Package: liblzma5-shlibs
 	License: Public Domain
 	Depends: libiconv, libgettext8-shlibs
+	Essential: yes
 	Files: <<
 		lib/liblzma.5.dylib
 	<<
