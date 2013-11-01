@@ -1,0 +1,52 @@
+Package: texinfo
+Version: 5.1
+Revision: 2
+Source: gnu
+Source-MD5: 54e250014fe698fb4832016158747c03
+SourceDirectory: %n-%v
+BuildDepends: <<
+  libiconv-dev,
+  libncurses5 (>= 5.4-20041023-1006),
+  libgettext8-dev,
+  gettext-tools
+<<
+Depends: <<
+  ncurses (>= 5.4-20041023-1006),
+  libncurses5-shlibs (>= 5.4-20041023-1006),
+  libgettext8-shlibs,
+  libiconv
+<<
+Replaces: tetex-base (<< 3.0-1)
+ConfigureParams: --mandir=%p/share/man --infodir=%p/share/info
+CompileScript: <<
+ ./configure %c --disable-tp-tests
+ echo '#define DEFAULT_INFOPATH "%p/share/info:%p/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:."' >>config.h
+ make
+<<
+InstallScript: <<
+ make install prefix=%i mandir=%i/share/man infodir=%i/share/info AM_UPDATE_INFO_DIR=no
+ rm -f %i/bin/install-info %i/share/man/man1/install-info.1
+<<
+InfoTest: <<
+  TestConflicts: pod-simple-pm
+  TestScript: make check || exit 2
+<<
+DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi
+InfoDocs: texinfo info-stnd.info info.info
+Description: GNU documentation system
+DescDetail: <<
+Texinfo is a documentation system that can render a single source file
+into many representations for both on-line and print use. This package
+contains both the generation utilities and the standalone 'info'
+reader for the Info format.
+<<
+DescPackaging: <<
+The TeX files (texinfo.tex, txi-??.tex and epsf.tex) are not installed
+right now. The teTeX package already has them.
+
+Fink uses Debian's version of install-info (in the dpkg package);
+texinfo's version is not installed.
+<<
+License: GPL/GFDL
+Maintainer: Dave Morrison <drm@finkproject.org>
+Homepage: http://www.gnu.org/software/texinfo/
