@@ -4362,6 +4362,37 @@ EOF
 			print $shlibsfile @shlibslines;
 			close $shlibsfile or &{$shlibs_error}($self, 'shlibs');
 			chmod 0644, "$destdir/DEBIAN/shlibs";
+
+			my @lib_files;
+			my $shlib_ver = "";
+			my $shlib_name = "";
+			foreach my $shlibsline (@shlibslines) {
+				chomp $shlibsline;
+				my @shlib_parts;
+
+				# strip off leading/trailing whitespace
+				$shlibsline =~ m/^\s*(.*?)\s*$/;
+				next unless $shlibsline =~ m/\S/;
+
+				@shlib_parts = split ' ', $shlibsline, 3;
+
+				push(@lib_files, $destdir.$shlib_parts[0]);
+
+				# only need to run till set (hopefully once)
+				if ($shlib_name eq "" or $shlib_ver eq "") {
+					my @shlib_deps = split /\s*\|\s*/, $shlib_parts[2], -1;
+					# we need to weed through this and pick one now
+					foreach my $shlib_dep (@shlib_deps) {
+						if ($shlib_dep =~ m/(\S)\s+\(\s*[>|<]?=[>|<]?\s*([0-9.-]+)\s*\)/) {
+							if ($1 eq $self->get_name()) {
+								$shlib_name = $1;
+								$shlib_ver = $2;
+							}
+						}
+					}
+				}
+
+			}
 		}
 		if (@privateshlibslines) {
 			my $shlibsfile = IO::Handle->new();
@@ -4371,7 +4402,79 @@ EOF
 			chmod 0644, "$destdir/DEBIAN/private-shlibs";
 		}
 
+		### Create symbol file
+
+		chomp(my $otool = `which otool 2>/dev/null`);
+		undef $otool unless -x $otool;
+		chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
+		undef $otool64 unless -x $otool64;		  # binaries (otool itself cannot handle them)
+		my @symbol_files;
+		File::Find::find({
+			preprocess => sub {
+				# Don't descend into the .deb control directory
+				return () if $File::Find::dir eq "$destdir/DEBIAN";
+				return @_;
+			},
+			wanted => sub {
+				if (-f $_ && ! -l $_ && $_ =~ m/\.dylib$/) {
+					if (defined $otool) {
+						if (open (OTOOL, "$otool -L '$_' |")) {
+							<OTOOL>; # skip the first line
+							my ($install_name, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+							close (OTOOL);
+
+							if (!defined $install_name or !defined $compat_version) {
+								if (defined $otool64) {
+									if (open (OTOOL, "$otool64 -L '$_' |")) {
+										<OTOOL>; # skip the first line
+										($install_name, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+										close (OTOOL);
+									}
+								}
+							}
+							if (defined $install_name) {
+								if (grep {/^\s*$install_name\s/} @shlibslines) {
+									push(@symbol_files, $File::Find::name);
+								}
+							}
+						} else {
+							print "Warning: otool -L failed on $_.\n";
+						}
+					}
+				}
+			},
+		}, $destdir
+		);
+
+		# make sure we got some libs and a newer dpkg
+		if (@symbol_files && -e "$basepath/bin/dpkg-gensymbols") {
+			$cmd = "dpkg-gensymbols -q -p".$self->get_name();
+
+			# check for user symbols from info file
+			# FIXME NOT IMPLEMENTED
+			if ($self->has_param("Symbols")) {
+				# Create temp file with the user content
+				# FIXME
+				#my $symbols = $self->has_param("Symbols");
+				#$cmd .= " -I$symbols";
+			}
+
+			my $libs_string = "-e".join(" -e", @symbol_files);
+			$cmd .= " -P$destdir -v".$self->get_version()." -O$destdir/DEBIAN/symbols $libs_string";
+
+			print "Writing symbols file...\n";
+			if (&execute($cmd)) {
+				my $error = "can't create symbols file for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			} else {
+				# should check the size here, if 0 then
+				# remove it
+				chmod 0644, "$destdir/DEBIAN/symbols";
+			}
+		}
 	}
+
 
 	### config file list
 
