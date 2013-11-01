@@ -401,10 +401,16 @@ sub additional_packages {
 		"apt-shlibs",
 		"apt-dev",
 		"bzip2-dev",
+		"expat1",
+		"expat1-shlibs",
 		"gettext-bin",
+		"gettext-tools",
 		"libgettext8-dev",
 		"libiconv-dev",
+		"liblzma5",
 		"libncurses5",
+		"libncursesw5",
+		"libncursesw5-shlibs",
 	);
 
 	return \@addlist;
