@@ -45,7 +45,7 @@ if [ $osMajorVer -eq 10 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.10.0"
 fi
 
-if [ $osMajorVer -eq 11 || $osMajorVer -eq 12 ]; then
+if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
 fi
 
