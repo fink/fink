@@ -1539,14 +1539,14 @@ sub validate_info_component {
 	if (defined $properties->{triggers}) {
 		# Packages using Triggers must BuildDepends on a fink that
 		# supports it
-		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.35.99.git'} }, 'use of Triggers', $filename);
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.36.99.git'} }, 'use of Triggers', $filename);
 	}
 
 	# Debconf
 	if (defined $properties->{debconf}) {
 		# Packages using Debconf requires bdep on fink that supports it
 		# and dep on debconf
-		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.35.99.git'} }, 'use of Triggers', $filename);
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.36.99.git'} }, 'use of Triggers', $filename);
 		my $ckdepends = &pkglist2lol($properties->{depends});
 
 		my $has_debconf_dep = 0;
