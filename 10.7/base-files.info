@@ -1,9 +1,9 @@
 Package: base-files
-Version: 1.9.14
+Version: 1.9.15
 Revision: 1
 Source: mirror:custom:fink/%n-%v.tar.gz
 Essential: yes
-Source-MD5: 86fe556d1070ac10496d050917e44261
+Source-MD5: d6f82971fb5c003e066232f5b8866cb7
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 DocFiles: COPYING NEWS README
@@ -26,7 +26,6 @@ License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 CustomMirror: <<
 Primary: http://downloads.sourceforge.net/
-nam-US: http://voxel.dl.sourceforge.net/sourceforge/
 asi-JP: http://jaist.dl.sourceforge.net/sourceforge/
 asi-TW: http://nchc.dl.sourceforge.net/sourceforge/
 aus-AU: http://internode.dl.sourceforge.net/sourceforge/
