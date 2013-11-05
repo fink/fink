@@ -5,7 +5,7 @@ Source: gnu
 Source-MD5: 1b8f98b80a8e6c50422125e07522e8db
 SourceDirectory: %n-%v
 BuildDepends: <<
-  fink (>= 0.35.99.git),
+  fink (>= 0.36.99.git),
   libiconv-dev,
   libncurses5 (>= 5.4-20041023-1006),
   libgettext8-dev,
