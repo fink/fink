@@ -117,6 +117,8 @@ our %commands =
 	  'self-update'       => [\&cmd_selfupdate,        0, 1, 1],
 	  'selfupdate-cvs'    => [\&cmd_selfupdate_cvs,    0, 1, 1],
 	  'selfupdate-rsync'  => [\&cmd_selfupdate_rsync,  0, 1, 1],
+	  'selfupdate-svn'    => [\&cmd_selfupdate_svn,    0, 1, 1],
+	  'selfupdate-git'    => [\&cmd_selfupdate_git,    0, 1, 1],
 	  'selfupdate-finish' => [\&cmd_selfupdate_finish, 1, 1, 1],
 	  'validate'          => [\&cmd_validate,          0, 0, 0],
 	  'check'             => [\&cmd_validate,          0, 0, 0],
@@ -424,6 +426,14 @@ sub cmd_selfupdate_cvs {
 
 sub cmd_selfupdate_rsync {
 	&cmd_selfupdate('--method=rsync', @_);
+}
+
+sub cmd_selfupdate_svn {
+	&cmd_selfupdate('--method=svn', @_);
+}
+
+sub cmd_selfupdate_git {
+	&cmd_selfupdate('--method=git', @_);
 }
 
 sub cmd_selfupdate_finish {

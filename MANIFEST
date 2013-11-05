@@ -70,6 +70,8 @@ perlmod/Fink/SelfUpdate/Base.pm
 perlmod/Fink/SelfUpdate/CVS.pm
 perlmod/Fink/SelfUpdate/point.pm
 perlmod/Fink/SelfUpdate/rsync.pm
+perlmod/Fink/SelfUpdate/svn.pm
+perlmod/Fink/SelfUpdate/git.pm
 perlmod/Fink/Services.pm
 perlmod/Fink/Status.pm
 perlmod/Fink/SysState.pm
