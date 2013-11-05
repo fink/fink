@@ -987,7 +987,7 @@ sub raw_version_cmp {
 	$a1 = shift;
 	$b1 = shift;
 
-	while ($a1 ne "" and $b1 ne "") {
+	while ($a1 ne "" or $b1 ne "") {
 		# pull a string of non-digit chars from the left
 		# compare it left-to-right, sorting non-letters higher than letters
 		$a1 =~ /^(\D*)/;
@@ -997,11 +997,18 @@ sub raw_version_cmp {
 		@cb = unpack("C*", $1);
 		$b1 = substr($b1,length($1));
 
-		while (int(@ca) and int(@cb)) {
+		push @ca, 0;
+		push @cb, 0;
+
+		while (int(@ca) or int(@cb)) {
 			$res = chr($a2 = shift @ca);
-			$a2 += 256 if $res !~ /[A-Za-z]/;
+			$a2 += 256 if $a2 != 0 and $res !~ /[A-Za-z]/;
+			$a2 = -1 if $res eq '~';	# tilde comes before anything else
+
 			$res = chr($b2 = shift @cb);
-			$b2 += 256 if $res !~ /[A-Za-z]/;
+			$b2 += 256 if $b2 != 0 and $res !~ /[A-Za-z]/;
+			$b2 = -1 if $res eq '~';	# tilde comes before anything else
+
 			$res = $a2 <=> $b2;
 			return $res if $res;
 		}
@@ -1401,6 +1408,29 @@ sub get_osx_vers_long {
 		}
 	}
 	return Fink::Config::get_option('sw_vers_long');
+}
+
+=item get_host_multiarch
+
+    my $host_multiarch = get_host_multiarch();
+
+Returns the current hosts multiarch value as reported by
+`dpkg-architecture -qDEB_HOST_MULTIARCH`. The output of that
+command is parsed and cached in a global configuration option in the
+Fink::Config package so that multiple calls to this function do not
+result in repeated spawning of dpkg-architecture processes.
+
+=cut
+
+sub get_host_multiarch {
+	if (not defined Fink::Config::get_option('host_multiarch') or Fink::Config::get_option('host_multiarch') eq "0" and -x "$Fink::Config::basepath/bin/dpkg-architecture") {
+		if (open(MYARCH, "dpkg-architecture -qDEB_HOST_MULTIARCH |")) {
+                        chomp(my $hostarch = <MYARCH>);
+			Fink::Config::set_options( { 'host_multiarch' => $hostarch } );
+			close(MYARCH);
+		}
+	}
+	return Fink::Config::get_option('host_multiarch');
 }
 
 =item get_darwin_equiv
