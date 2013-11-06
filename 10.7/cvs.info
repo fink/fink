@@ -1,12 +1,14 @@
 Package: cvs
 Version: 1.12.13
-Revision: 13
+Revision: 14
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 #
 Conflicts: cvs-stable, cvs-proxy
 Replaces: cvs-stable, cvs-proxy
 Source: mirror:gnu:non-gnu/%n/source/feature/%v/%n-%v.tar.bz2 
 Source-MD5: 956ab476ce276c2d19d583e227dbdbea
+PatchFile: %n.patch
+PatchFile-MD5: e0c5fa192b685e9943f8388d24076a54
 ConfigureParams: <<
 --mandir=%p/share/man\
 --infodir=%p/share/info\
@@ -16,16 +18,25 @@ ConfigureParams: <<
 --with-krb4=/usr\
 --enable-case-sensitivity\
 --with-external-zlib\
---disable-dependency-tracking
+ac_cv_func_working_mktime=no
 <<
-BuildDepends: openssl100-dev (>= 1.0.1e-1), libgettext8-dev, libiconv-dev
+SetCFLAGS: -D_DARWIN_NO_64_BIT_INODE
+BuildDepends: openssl100-dev (>= 1.0.1e-1), libgettext8-dev, libiconv-dev, fink (>= 0.30.0)
 Depends: openssl100-shlibs (>= 1.0.1e-1), libgettext8-shlibs, libiconv
+PatchScript: cat %{PatchFile} | patch -p0
 # Tests take a REALLY long time and I did get a failure.
 #InfoTest: <<
 # TestDepends: coreutils, gawk
 # TestSuiteSize: large
 # TestScript: AWK=gawk EXPR=gexpr ID=gid TR=gtr TESTDIR='/private/tmp/cvs-sanity' make -j1 -k localcheck || exit 2
 #<<
+CompileScript: <<
+ ./configure %c
+ ed - %b/config.h < %b/config.h.ed
+ echo TESTDIR=/private/tmp/cvs-sanity >> %b/src/sanity.config.sh
+ echo TMPDIR=/private/tmp/cvs-sanity/tmp >> %b/src/sanity.config.sh
+ make
+<<
 InstallScript: <<
  make install DESTDIR=%d
 <<
