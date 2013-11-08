@@ -4,7 +4,9 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | fink 0.36.x
 \-------------
-
+0.36.? TBD
+	* Update Debian toolset.
+	* Selfupdate via git and svn.
 0.36.0 "Watch this space" (2013-10-31)
 	* Support OS 10.9.
 
