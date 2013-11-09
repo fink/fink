@@ -1929,10 +1929,10 @@ sub _validate_dpkg {
 		}
 
 		# check for files in a language-versioned package whose path
-		# is not language-versioned (goal: language-versioned modules
-		# are orthogonal and do not conflict with each other)
+		# is not language-versioned (goal: all language-versions of a
+		# package are orthogonal and do not conflict with each other)
 		if (defined $langver_re and $filename !~ /$langver_re/ and !-d $File::Find::name) {
-			&stack_msg($msgs, "File in a language-versioned package is neither versioned nor in a versioned directory.", $filename);
+			&stack_msg($msgs, "File in a language-versioned package does not have a pathname specific to that version.", $filename);
 		}
 
 		# passing -framework flag and its argument as separate words
