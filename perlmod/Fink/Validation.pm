@@ -815,42 +815,6 @@ sub validate_info_file {
 		}
 	}
 
-	# Warn for missing / overlong package descriptions
-	$value = $properties->{description};
-	if (not (defined $value and length $value)) {
-		print "Error: No package description supplied. ($filename)\n";
-		$looks_good = 0;
-	} elsif (length($value) > 60 and !&obsolete_via_depends($properties) ) {
-		print "Error: Length of package description exceeds 60 characters. ($filename)\n";
-		$looks_good = 0;
-	} elsif (Fink::Config::get_option("Pedantic")) {
-		# Some pedantic checks
-		if (length($value) > 45 and !&obsolete_via_depends($properties) ) {
-			print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/^[Aa]n? /) {
-			print "Warning: Description starts with \"A\" or \"An\". ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/^[a-z]/) {
-			print "Warning: Description starts with lower case. ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ /(\b\Q$pkgname\E\b|%\{?n)/i and !&obsolete_via_depends($properties) ) {
-			print "Warning: Description contains package name. ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/\.$/) {
-			print "Warning: Description ends with \".\". ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/^\[/) {
-			print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
-			$looks_good = 0;
-		}
-	}
-
 	my %patchfile_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)$/ } keys %$properties;
 	my %patchfile_md5_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-md5$/ } keys %$properties;
 
@@ -990,13 +954,58 @@ sub validate_info_file {
 	}
 
 	# instantiate the PkgVersion objects
-	my @pv = Fink::PkgVersion->pkgversions_from_info_file($full_filename, no_exclusions => 1);
+	my @pvs = Fink::PkgVersion->pkgversions_from_info_file($full_filename, no_exclusions => 1);
 
-	if (@pv > 1) {
+	if (@pvs > 1) {
 		my %names;
-		foreach (map {$_->get_name()} @pv) {
+		foreach (map {$_->get_name()} @pvs) {
 			if ($names{$_}++) {
 				print "Error: Duplicate declaration of package \"$_\". ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+	}
+
+	# Warn for missing / overlong package descriptions
+	if (not (defined $properties->{description} and length $properties->{description})) {
+		# main package in .info must have one
+		print "Error: No package description supplied. ($filename)\n";
+		$looks_good = 0;
+	}
+
+	foreach my $pv (@pvs) {
+		# sanity-checks for each in family (including variants and splitoffs)
+
+		my $desc = $pv->{description};
+		my $name = $pv->get_name();
+
+		if (length($desc) > 60 and !$pv->is_obsolete()) {
+			print "Error: Description of \"$name\" exceeds 60 characters. ($filename)\n";
+			$looks_good = 0;
+		} elsif (Fink::Config::get_option("Pedantic")) {
+			# Some pedantic checks
+			if (length($desc) > 45 and !$pv->is_obsolete() ) {
+				print "Warning: Description of \"$name\" exceeds 45 characters. ($filename)\n";
+				$looks_good = 0;
+			}
+			if ($desc =~ m/^[Aa]n? /) {
+				print "Warning: Description of \"$name\" starts with \"A\" or \"An\". ($filename)\n";
+				$looks_good = 0;
+			}
+			if ($desc =~ m/^[a-z]/) {
+				print "Warning: Description of \"$name\" starts with lower case. ($filename)\n";
+				$looks_good = 0;
+			}
+			if ($desc =~ /\b\Q$name\E\b/i and !$pv->is_obsolete() ) {
+				print "Warning: Description of \"$name\" contains package name. ($filename)\n";
+				$looks_good = 0;
+			}
+			if ($desc =~ m/\.$/) {
+				print "Warning: Description of \"$name\" ends with \".\". ($filename)\n";
+				$looks_good = 0;
+			}
+			if ($desc =~ m/^\[/) {
+				print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
 				$looks_good = 0;
 			}
 		}
