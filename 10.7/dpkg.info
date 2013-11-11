@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1238
+Revision: 1239
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
 Depends: <<
@@ -21,7 +21,7 @@ Source2: mirror:gnu:gettext/gettext-0.18.3.1.tar.gz
 #Source2: mirror:sourceforge:fink/gettext-0.18.3.1.tar.gz
 Source2-MD5: 3fc808f7d25487fc72b5759df7419e02
 PatchFile: %n.patch
-PatchFile-MD5: 62c4558d3ae7c3107fefaa031b9cf697
+PatchFile-MD5: 229a815eac6e113cf099bf2ad42489d9
 PatchFile2: libgettext8-shlibs.patch
 PatchFile2-MD5: 0fa124a9e56f702eb9f817ebd10aae5f
 PatchScript: <<
@@ -106,6 +106,10 @@ DescPackaging: <<
  actual libs themselves.
 <<
 DescPort: <<
+1.10.21-1239
+- Patch to avoid invoking gettext and thus CoreFoundation between fork() and exec()
+  which is fatal on 10.9.
+
 1.10.9 
 - Removed --without-zlib flag
 - Gets confused about top_srcdir without the --srcdir arg.

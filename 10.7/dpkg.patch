@@ -3792,3 +3792,14 @@ diff -urN dpkg-1.10.21.orig/utils/Makefile.in dpkg-1.10.21/utils/Makefile.in
  md5sum md5sum-static: $(MD5_OBJECTS) ../lib/libdpkg.a
 -	$(CC) $(LDFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
 +	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
+diff -Nurd dpkg-1.10.21/include/dpkg.h.in dpkg-1.10.21.patched/include/dpkg.h.in
+--- dpkg-1.10.21/include/dpkg.h.in	2004-04-24 14:14:21.000000000 -0700
++++ dpkg-1.10.21.patched/include/dpkg.h.in	2013-11-10 18:04:41.000000000 -0800
+@@ -148,6 +148,7 @@
+   setlocale(LC_ALL, "");\
+   bindtextdomain(PACKAGE, LOCALEDIR);\
+   textdomain(PACKAGE);\
++  gettext("");\
+   if (setjmp(*ejbuf)) { /* expect warning about possible clobbering of argv */\
+     error_unwind(ehflag_bombout); exit(2);\
+   }\
