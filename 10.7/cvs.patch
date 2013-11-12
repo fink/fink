@@ -69,6 +69,25 @@ index 3f12513..9a7a559 100644
  
        va_end (arg);
      }
+--- src/cvsbug.in	2003-02-26 05:31:33.000000000 +0800
++++ src/cvsbug.in	2006-02-26 22:07:08.000000000 +0800
+@@ -109,14 +109,14 @@
+     /usr/bin/ypcat passwd 2>/dev/null | cat - /etc/passwd | grep "^$LOGNAME:" |
+       cut -f5 -d':' | sed -e 's/,.*//' > $TEMP
+     ORIGINATOR="`cat $TEMP`"
+-    rm -f $TEMP
++    > $TEMP
+   fi
+ fi
+ 
+ if [ "$ORIGINATOR" = "" ]; then
+   grep "^$LOGNAME:" /etc/passwd | cut -f5 -d':' | sed -e 's/,.*//' > $TEMP
+   ORIGINATOR="`cat $TEMP`"
+-  rm -f $TEMP
++  > $TEMP
+ fi
+ 
+ if [ -n "$ORGANIZATION" ]; then
 --- src/error.c.orig	2007-05-03 15:17:29.000000000 -0700
 +++ src/error.c	2007-05-03 15:17:59.000000000 -0700
 @@ -208,7 +208,7 @@
@@ -558,3 +577,109 @@ index 3f12513..9a7a559 100644
 +#endif /* __LP64__ */
 +.
 +w
+--- src/main.c.orig	2013-11-09 18:18:10.000000000 -0500
++++ src/main.c	2013-11-09 18:20:07.000000000 -0500
+@@ -1458,7 +1458,7 @@
+ {
+     (void) fprintf (stderr, *cpp++, program_name, cvs_cmd_name);
+     for (; *cpp; cpp++)
+-	(void) fprintf (stderr, *cpp);
++	(void) fprintf (stderr, "%s", *cpp);
+     exit (EXIT_FAILURE);
+ }
+ 
+--- diff/diff3.c.orig	2013-11-09 18:24:49.000000000 -0500
++++ diff/diff3.c	2013-11-09 18:25:36.000000000 -0500
+@@ -1503,7 +1503,7 @@
+ 	      line = 0;
+ 	      do
+ 		{
+-		  printf_output (line_prefix);
++		  printf_output ("%s", line_prefix);
+ 		  cp = D_RELNUM (ptr, realfile, line);
+ 		  length = D_RELLEN (ptr, realfile, line);
+ 		  write_output (cp, length);
+--- src/parseinfo.c.orig	2013-11-09 18:28:58.000000000 -0500
++++ src/parseinfo.c	2013-11-09 18:30:20.000000000 -0500
+@@ -250,7 +250,7 @@
+ 		       infopath, option, p[strlen(p)]);
+ 		return false;
+ 	}
+-	TRACE (TRACE_DATA, "readSizeT(): Found factor %u for %s",
++	TRACE (TRACE_DATA, "readSizeT(): Found factor %zu for %s",
+ 	       factor, option);
+     }
+ 
+@@ -274,9 +274,9 @@
+ 	/* Don't return an error, just max out.  */
+ 	num = SIZE_MAX;
+ 
+-    TRACE (TRACE_DATA, "readSizeT(): read number %u for %s", num, option);
++    TRACE (TRACE_DATA, "readSizeT(): read number %zu for %s", num, option);
+     *val = xtimes (strtoul (p, NULL, 10), factor);
+-    TRACE (TRACE_DATA, "readSizeT(): returnning %u for %s", *val, option);
++    TRACE (TRACE_DATA, "readSizeT(): returnning %zu for %s", *val, option);
+     return true;
+ }
+ 
+--- src/server.c.orig	2013-11-09 18:33:18.000000000 -0500
++++ src/server.c	2013-11-09 18:37:04.000000000 -0500
+@@ -977,7 +977,7 @@
+ 	if (forced && !quiet
+ 	    && alloc_pending_warning (120 + strlen (program_name)))
+ 	    sprintf (pending_warning_text,
+-"E %s server: Forcing compression level %d (allowed: %d <= z <= %d).",
++"E %s server: Forcing compression level %d (allowed: %zu <= z <= %zu).",
+ 		     program_name, gzip_level, config->MinCompressionLevel,
+ 		     config->MaxCompressionLevel);
+     }
+@@ -5483,7 +5483,7 @@
+     if (forced && !quiet
+ 	&& alloc_pending_warning (120 + strlen (program_name)))
+ 	sprintf (pending_warning_text,
+-"E %s server: Forcing compression level %d (allowed: %d <= z <= %d).",
++"E %s server: Forcing compression level %d (allowed: %zu <= z <= %zu).",
+ 		 program_name, level, config->MinCompressionLevel,
+ 		 config->MaxCompressionLevel);
+ 
+@@ -5514,7 +5514,7 @@
+     if (forced && !quiet
+ 	&& alloc_pending_warning (120 + strlen (program_name)))
+ 	sprintf (pending_warning_text,
+-"E %s server: Forcing compression level %d (allowed: %d <= z <= %d).",
++"E %s server: Forcing compression level %d (allowed: %zu <= z <= %zu).",
+ 		 program_name, level, config->MinCompressionLevel,
+ 		 config->MaxCompressionLevel);
+ 	
+--- src/subr.c.orig	2013-11-09 18:41:16.000000000 -0500
++++ src/subr.c	2013-11-09 18:42:28.000000000 -0500
+@@ -1285,7 +1285,7 @@
+ 	    		dellist(&pflist);
+ 	    		free(b);
+ 			error (1, 0,
+-"internal error:  unknown integer arg size (%d)",
++"internal error:  unknown integer arg size (%zu)",
+                                length);
+ 			break;
+ 		}
+@@ -1328,7 +1328,7 @@
+ 	    		dellist(&pflist);
+ 	    		free(b);
+ 			error (1, 0,
+-"internal error:  unknown floating point arg size (%d)",
++"internal error:  unknown floating point arg size (%zu)",
+                                length);
+ 			break;
+ 		}
+--- src/hash.c.orig	2013-11-09 18:45:36.000000000 -0500
++++ src/hash.c	2013-11-09 18:45:57.000000000 -0500
+@@ -347,7 +347,7 @@
+ {
+     Node *head, *p;
+ 
+-    if ((list == NULL))
++    if (list == NULL)
+ 	return NULL;
+ 
+     assert (key != NULL);
+
