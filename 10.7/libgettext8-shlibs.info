@@ -62,7 +62,7 @@ Splitoff: <<
   Depends: %N (= %v-%r), gettext-bin (>= %v-%r)
   BuildDependsOnly: true
   DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog*
-  Description: GNU Internationalization utils (Development Files)
+  Description: Development files for libgettext8-shlibs
   Files: include lib/libintl.la lib/libintl.dylib 
 <<
 
@@ -78,7 +78,7 @@ Splitoff2: <<
 Splitoff3: <<
   Package: gettext-doc
   DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog*
-  Description: GNU Internationalization utils (Documentation)
+  Description: Documentation for libgettext8, gettext-bin
   Files: share/doc/gettext
 <<
 
