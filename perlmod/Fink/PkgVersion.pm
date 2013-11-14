@@ -5351,17 +5351,22 @@ sub get_perl_dir_arch {
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
-			if (Fink::Services::get_kernel_vers() ge '11') {
+			### FIXME: instead of hardcoded expectation of system-perl
+			### perl kernel, check if matches %v of system-perl, then
+			###   $perlversion =~ /(5\.\d+)\.*/;
+			###   $perlcmd = "/usr/bin/arch -%m perl$1";
+			if ($perlversion eq  "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
 				# 10.7 system-perl is 5.12.3, but the only supplied
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.3).
+				$perlcmd = "/usr/bin/arch -%m perl5.12";
+			} elsif ($perlversion eq  "5.12.4" and Fink::Services::get_kernel_vers() eq '12') {
 				# 10.8 system-perl is 5.12.4, but the only supplied
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.4).
+				$perlcmd = "/usr/bin/arch -%m perl5.12";
+			} elsif ($perlversion eq  "5.16.2" and Fink::Services::get_kernel_vers() eq '13') {
 				# 10.9 system-perl is 5.16.2, but the only supplied
 				# interpreter is /usr/bin/perl5.16 (not perl5.16.2)
-				# The above pattern is likely to continue... the following
-				# code deals with it:
-				$perlversion =~ s/5\.(\d+).*/5.$1/;
-				$perlcmd = "/usr/bin/arch -%m perl$perlversion" ;
+				$perlcmd = "/usr/bin/arch -%m perl5.16";
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);
