@@ -355,7 +355,7 @@ my $xcode_version;
 
 	# Check that we're using the right CLI tools for the OS.	
 	my ($receipt_to_check, $error_msg);
-	my $error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools.\n".
+	my $error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools\n".
 					 "for your OS X version.  Tools from a prior OS X version won't work properly.\n";
 	my $error_msg2 = "or download them from developer.apple.com.\n".
 					 "After they are installed, try the bootstrap operation again.\n" ;
@@ -383,7 +383,7 @@ my $xcode_version;
 		# TODO:  Should we check if we're in the legal range of CLI tools on 10.7/10.8?
 		print "$version is OK\n";
 	} elsif (&version_cmp ("$xcode_version", "<<", "4.3")) { # failed, but using monolithic Xcode 
-		print "Skipping.  Xcode $xcode_version is monolithic.\n";
+		print "Skipping.\nXcode $xcode_version is monolithic and includes command-line tools.\n";
 	} else { # all other failures
 		die $error_msg;
 	}
