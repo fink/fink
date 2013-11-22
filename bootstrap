@@ -570,6 +570,25 @@ if (not -d $installto) {
 	}
 }
 
+{
+    my @cmd_out = `/bin/df -P "$installto"`;
+    @cmd_out = split /\s+/, $cmd_out[1];
+    my $cmd = "/usr/sbin/diskutil info \"$cmd_out[-1]\" 2>&1";
+	@cmd_out = `$cmd`;
+
+	if (!@cmd_out || $?) {
+		&print_breaking("Could not run `$cmd` so we cannot test that the target volume has permissions enabled. Continuing anyway, but there may be failures if permissions are not enabled on target volume.");
+	} else {
+		@cmd_out = map { /(?:Permissions|Owners):\s*(Enabled|Disabled)/ } @cmd_out;
+		if (@cmd_out != 1) {
+			&print_breaking("Could not find Owners or Permissions flag in output of `$cmd` so we cannot test that the target volume has permissions enabled. Continuing anyway, but there may be failures if permissions are not enabled on target volume.");
+		} elsif ($cmd_out[0] ne 'Enabled') {
+			&print_breaking("ERROR: Target volume does not have permissions enabled.");
+			exit 1;
+		}
+	}
+}
+
 my $selfupdatetrees = get_selfupdatetrees($distribution);
 my $fink_trees = &Fink::Config::fink_tree_default($distribution);
 
