@@ -985,6 +985,20 @@ sub cmd_remove {
 	}
 }
 
+=item get_pkglist
+
+	@packages = get_pkglist $cmd;
+	@packages = get_pkglist $cmd, @selected;
+
+The $cmd is the fink command-line mode (and optional mode-specific
+flags), such as "remove" or "purge --recursive".  Given a list of
+@selected packages, return a list from which those than cannot be
+removed have been elided. Default is all known packages, but this is
+only allowable in --buildonly mode. Packages elided from the list are
+those that are virtual, Essential:yes, or not-installed.
+
+=cut
+
 sub get_pkglist {
 	my $cmd = shift;
 	my ($package, @plist, $pname, @selected, $pattern, @packages);
@@ -1045,7 +1059,7 @@ sub get_pkglist {
 
 	# In case no packages meet the requirements above.
 	if ($#packages < 0) {
-		print "Nothing ".$cmd."d\n";
+		print "No packages to $cmd\n";
 		exit(0);
 	}
 
@@ -2737,7 +2751,6 @@ sub choose_filter {
 		return 0;
 	}
 }
-
 
 =item choose_package_conf
 
