@@ -1001,9 +1001,11 @@ those that are virtual, Essential:yes, or not-installed.
 
 sub get_pkglist {
 	my $cmd = shift;
-	my ($package, @plist, $pname, @selected, $pattern, @packages);
-	my ($buildonly, $po);
+	my (@plist, @selected, @packages);
+	my ($buildonly);
 
+	### is this usable? 'fink remove --help' doesn't display it
+	### and 'fink remove -b' reports "Known option: b"
 	get_options($cmd, [
 		[ 'buildonly|b'	=> \$buildonly, "Only packages which are Build Depends Only" ],
 	], \@_, helpformat => "%intro{[options] [string]}\n%all{}\n");
@@ -1017,6 +1019,7 @@ sub get_pkglist {
 			die "no package specified for command '$cmd'!\n";
 		}
 	} else {
+		my $pattern;
 		@selected = ();
 		while (defined($pattern = shift)) {
 			$pattern = lc quotemeta $pattern; # fixes bug about ++ etc in search string.
@@ -1028,8 +1031,8 @@ sub get_pkglist {
 		die "no package specified for command '$cmd'!\n";
 	}
 
-	foreach $pname (sort @selected) {
-		$package = Fink::Package->package_by_name($pname);
+	foreach my $pname (sort @selected) {
+		my $package = Fink::Package->package_by_name($pname);
 
 		# Can only remove/purge installed pkgs
 		my ($vers) = $package->list_installed_versions();
