@@ -3190,6 +3190,10 @@ sub fetch_deb {
 	if ($dryrun) {
 		$aptcmd .= "--dry-run ";
 	}
+	# Newer apt does a sign authentication, since we don't have that in
+	# place yet, we need to ignore it.  That way it doesn't stop for
+	# interaction, not to mention it defaults to 'N'. 0.6.8 is required!
+	#$aptcmd .= "--allow-unauthenticated ";
 	$aptcmd .= "--ignore-breakage --download-only install " .
 		join(' ', map {
 			sprintf "%s=%s", $_->get_name(), $_->get_fullversion
