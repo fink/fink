@@ -204,6 +204,28 @@ speaking,
 uses the value of this option in MAKEFLAGS=-j. Running
 .Cm fink configure
 will tell you how many active CPUs/cores are available on your system.
+.It Cm AutoUid: Ar boolean
+This option specifies whether fink should dynamically allocate the UID and GID
+of its unprivileged fink-bld user if that user is absent.
+.It Cm FinkBldUid: Ar positive integer
+This item specifies the current UID for the fink-bld user. The new setting will 
+take effect when you run a fink operation that can
+build a package, such as 
+.Cm selfupdate,
+.Cm build,
+.Cm rebuild,
+or
+.Cm install.
+.It Cm AutoUidMin: Ar positive integer
+Minimum value for the pool of values from which fink will attempt to find an
+unused UID or GID automatically if
+.Cm AutoUid: true 
+is set.
+.It Cm AutoUidMax: Ar positive integer
+Maximum value for the pool of values from from which fink will attempt to find an
+unused UID or GID automatically if
+.Cm AutoUid: true 
+is set.
 .El
 .\"
 .\"
