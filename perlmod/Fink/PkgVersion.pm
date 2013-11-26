@@ -2463,6 +2463,9 @@ sub find_debfile {
 	# maybe it's available from the bindist?
 	if ($config->binary_requested()) {
 		my $epoch = $self->get_epoch();
+		# Fix for Debarch since Apt converts _ into %5f
+		my $debarch = $config->param('Debarch');
+		$debarch =~ s/_/%5f/g;
 		# the colon (':') for the epoch needs to be url encoded to
 		# '%3a' since likes to store the debs in its cache like this
 		$fn = sprintf "%s/%s_%s%s-%s_%s.deb",
@@ -2471,7 +2474,7 @@ sub find_debfile {
 			$epoch ? $epoch.'%3a' : '',
 			$self->get_version(),
 			$self->get_revision(),
-			$config->param('Debarch');
+			$debarch;
 		if (-f $fn) {
 			return $fn;
 		}
