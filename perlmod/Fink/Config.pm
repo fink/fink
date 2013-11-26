@@ -937,21 +937,21 @@ the values as:
 
 =over 4
 
-=item 3
+=item 
 
-full
+3 full
 
-=item 2
+=item 
 
-download and tarballs
+2 download and tarballs
 
-=item 1
+=item
 
-download
+1 download
 
-=item 0
+=item
 
-none
+0 none
 
 =back
 
