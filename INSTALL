@@ -1,11 +1,11 @@
 Generated from $Fink: install.xml,v 1.38 2013/03/15 21:08:13 alexkhansen Exp
 $
 
- Fink 0.34.9 Installation
+ Fink 0.34.10 Installation
 ==========================
 
 These are the installation instructions for the "source" distribution based
-on "fink-0.34.9" , intended for use with OS X v.10.5.
+on "fink-0.34.10" , intended for use with OS X v.10.5.
 
 This document does not apply to the binary distribution 
 [http://fink.sourceforge.net/download/index.php].
@@ -45,22 +45,22 @@ You need:
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.34.9.tar.gz" file to your home folder (it
-might also show up as "fink-0.34.9.tar" if you used Safari to download it).
+Start out by copying the "fink-0.34.10.tar.gz" file to your home folder (it
+might also show up as "fink-0.34.10.tar" if you used Safari to download it).
 Then, open Terminal.app and follow the session below. Computer output is in
 "normal face" , your input is in "bold face" (or otherwise highlighted). The
 actual input prompts from the shell may vary, and some chunks of the output
 have been omitted ( "..." ).
 
-   [frodo:~] testuser% tar xf fink-0.34.9.tar.gz
-   [frodo:~] testuser% cd fink-0.34.9
-   [frodo:~/fink-0.34.9] testuser% ./bootstrap
+   [frodo:~] testuser% tar xf fink-0.34.10.tar.gz
+   [frodo:~] testuser% cd fink-0.34.10
+   [frodo:~/fink-0.34.10] testuser% ./bootstrap
    
    Fink must be installed and run with superuser (root) privileges
    ...
    Choose a method: [1] 1
    
-   sudo /Users/testuser/fink-0.34.9/bootstrap .sudo '/sw'
+   sudo /Users/testuser/fink-0.34.10/bootstrap .sudo '/sw'
    Password: (your normal password here)
    ...
    OK, I'll ask you some questions and update the configuration file in
@@ -106,8 +106,8 @@ have been omitted ( "..." ).
    ...
    
    You should now have a working Fink installation in '/sw'.
-   [frodo:~/fink-0.34.9] testuser% cd
-   [frodo:~] testuser% rm -r fink-0.34.9
+   [frodo:~/fink-0.34.10] testuser% cd
+   [frodo:~] testuser% rm -r fink-0.34.10
    [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and
@@ -292,18 +292,18 @@ won't work.
 
  Installation
 --------------
-First, you need to unpack the fink-0.34.9.tar.gz tarball (it might also show
-up as "fink-0.34.9.tar" if you used Safari to download it). So, in a
+First, you need to unpack the fink-0.34.10.tar.gz tarball (it might also show
+up as "fink-0.34.10.tar" if you used Safari to download it). So, in a
 terminal window, go to the directory where you put the tarball, and run this
 command:
 
-   tar xf fink-0.34.9.tar.gz
+   tar xf fink-0.34.10.tar.gz
 
-You now have a directory named fink-0.34.9. Change to it with "cd
-fink-0.34.9" .
+You now have a directory named fink-0.34.10. Change to it with "cd
+fink-0.34.10" .
 
 The actual installation is performed by the perl script bootstrap. So, to
-start installation, go to the fink-0.34.9 directory and run this command:
+start installation, go to the fink-0.34.10 directory and run this command:
 
    ./bootstrap
 
