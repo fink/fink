@@ -392,7 +392,7 @@ directories exist.
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
-		my ($ver,$javadir) = m|(\d.*),.*\s(/.*)$|; #extract version and directory info
+		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
 		# However, we'll have to switch the directory for JDK 1.6 and earlier.
 		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
 		if (opendir(DIR, $javadir)) {
