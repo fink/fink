@@ -390,6 +390,7 @@ directories exist.
 	my ($latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
 	my $arch = Fink::FinkVersion::get_arch();
+	$arch = "ppc" if $arch eq "powerpc";	
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
 		my ($ver,$javadir) = m|(\d.*),.*\s(/.*)$|; #extract version and directory info
