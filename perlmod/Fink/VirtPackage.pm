@@ -350,7 +350,7 @@ END
 				 'extutils-parsexs',
 				 'io-zlib',
 				 'locale-maketext-simple',
-				 'module-build',
+				 ( $perlver < 5.019000 && 'module-build' ),
 				 'module-corelist',
 				 'module-load',
 				 'module-load-conditional',
