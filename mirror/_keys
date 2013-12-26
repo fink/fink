@@ -3,6 +3,9 @@ afr-EG: Egypt
 afr-ZA: South Africa
 afr-MA: Madagascar
 afr-NA: Namibia
+afr-TN: Tunisia
+afr-UG: Uganda	
+afr-ZW: Zimbabwe
 
 nam: North America
 nam-BS: Bahamas
@@ -17,6 +20,7 @@ sam-CL: Chile
 sam-CO: Colombia
 sam-CR: Costa Rica
 sam-RQ: Puerto Rico
+sam-SV: El Salvador
 sam-VE: Venezuela
 
 eur: Europe
@@ -56,6 +60,7 @@ eur-RS: Serbia
 eur-RU: Russia
 eur-SE: Sweden
 eur-SI: Slovenia
+eur-SU: Russia
 eur-SK: Slovak Republic
 eur-TR: Turkey
 eur-UA: Ukraine
@@ -78,7 +83,9 @@ asi-IN: India
 asi-IR: Iran
 asi-JP: Japan
 asi-KR: South Korea
+asi-KZ: Kazakhstan
 asi-MY: Malaysia
+asi-OM: Oman
 asi-PH: Philippines
 asi-PK: Pakistan
 asi-SA: Saudi Arabia

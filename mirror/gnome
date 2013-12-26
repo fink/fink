@@ -1,14 +1,18 @@
 # Official mirror list: http://ftp.gnome.org/pub/GNOME/MIRRORS
-Timestamp: 2011-10-25
+Timestamp: 2013-12-26
 
 Primary: ftp://ftp.gnome.org/pub/GNOME
 
-asi-JP: ftp://ftp.nara.wide.ad.jp/pub/X11/GNOME
-eur-BE: http://ftp.belnet.be/mirror/ftp.gnome.org
+afr-ZA: http://ftp.is.co.za/mirror/ftp.gnome.org
+asi-JP: http://ftp.nara.wide.ad.jp/pub/X11/GNOME
+eur-DE: http://artfiles.org/gnome.org
 eur-FR: http://fr2.rpmfind.net/linux/gnome.org
-eur-IT: http://ftp.unina.it/pub/linux/GNOME
+eur-FR: http://ftp.rpmfind.net/linux/gnome.org
 eur-SE: ftp://ftp.gnome.org/pub/GNOME
 eur-SE: http://ftp.acc.umu.se/pub/GNOME
 eur-SE: http://ftp.df.lth.se/pub/gnome
+eur-SE: http://ftp.sunet.se/pub/X11/GNOME
+eur-UK: http://ftp2.uk.freebsd.org/sites/ftp.gnome.org/pub/GNOME
+eur-UK: http://www.mirrorservice.org/sites/ftp.gnome.org/pub/GNOME
 nam-US: ftp://ftp.cse.buffalo.edu/pub/Gnome
-sam-BR: http://linorg.usp.br/gnome
+nam-US: http://ftp.gnome.org/pub/GNOME
