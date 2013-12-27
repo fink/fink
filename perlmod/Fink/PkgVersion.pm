@@ -2463,6 +2463,9 @@ sub find_debfile {
 	# maybe it's available from the bindist?
 	if ($config->binary_requested()) {
 		my $epoch = $self->get_epoch();
+		# Fix for Debarch since Apt converts _ into %5f
+		my $debarch = $config->param('Debarch');
+		$debarch =~ s/_/%5f/g;
 		# the colon (':') for the epoch needs to be url encoded to
 		# '%3a' since likes to store the debs in its cache like this
 		$fn = sprintf "%s/%s_%s%s-%s_%s.deb",
@@ -2471,7 +2474,7 @@ sub find_debfile {
 			$epoch ? $epoch.'%3a' : '',
 			$self->get_version(),
 			$self->get_revision(),
-			$config->param('Debarch');
+			$debarch;
 		if (-f $fn) {
 			return $fn;
 		}
@@ -3187,6 +3190,10 @@ sub fetch_deb {
 	if ($dryrun) {
 		$aptcmd .= "--dry-run ";
 	}
+	# Newer apt does a sign authentication, since we don't have that in
+	# place yet, we need to ignore it.  That way it doesn't stop for
+	# interaction, not to mention it defaults to 'N'. 0.6.8 is required!
+	#$aptcmd .= "--allow-unauthenticated ";
 	$aptcmd .= "--ignore-breakage --download-only install " .
 		join(' ', map {
 			sprintf "%s=%s", $_->get_name(), $_->get_fullversion

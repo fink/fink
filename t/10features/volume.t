@@ -8,8 +8,10 @@ unlike( $ENV{PREFIX}, qr/\s/, "Whitespace prohibited in fink prefix ($ENV{PREFIX
 SKIP: {
     my $skips = 1;
 
-    my $cmd = "/usr/sbin/diskutil info \"$ENV{PREFIX}\" 2>&1";
-    my @cmd_out = `$cmd`;
+    my @cmd_out = `/bin/df -P "$ENV{PREFIX}"`;
+    @cmd_out = split /\s+/, $cmd_out[1];
+    my $cmd = "/usr/sbin/diskutil info \"$cmd_out[-1]\" 2>&1";
+    @cmd_out = `$cmd`;
 
     skip "Could not run `$cmd`", $skips unless @cmd_out && !$?;
 

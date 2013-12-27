@@ -355,7 +355,11 @@ my $xcode_version;
 
 	# Check that we're using the right CLI tools for the OS.	
 	my ($receipt_to_check, $error_msg);
+<<<<<<< HEAD
 	my $error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools.\n".
+=======
+	my $error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools\n".
+>>>>>>> 11ebccdc73f5346cabd646708fdb5b27f92304f1
 					 "for your OS X version.  Tools from a prior OS X version won't work properly.\n";
 	my $error_msg2 = "or download them from developer.apple.com.\n".
 					 "After they are installed, try the bootstrap operation again.\n" ;
@@ -383,7 +387,11 @@ my $xcode_version;
 		# TODO:  Should we check if we're in the legal range of CLI tools on 10.7/10.8?
 		print "$version is OK\n";
 	} elsif (&version_cmp ("$xcode_version", "<<", "4.3")) { # failed, but using monolithic Xcode 
+<<<<<<< HEAD
 		print "Skipping.  Xcode $xcode_version is monolithic.\n";
+=======
+		print "Skipping.\nXcode $xcode_version is monolithic and includes command-line tools.\n";
+>>>>>>> 11ebccdc73f5346cabd646708fdb5b27f92304f1
 	} else { # all other failures
 		die $error_msg;
 	}
@@ -567,6 +575,25 @@ if (not -d $installto) {
 	if (&execute("/bin/mkdir -p -m755 $installto")) {
 		print "ERROR: Can't create directory '$installto'.\n";
 		exit 1;
+	}
+}
+
+{
+    my @cmd_out = `/bin/df -P "$installto"`;
+    @cmd_out = split /\s+/, $cmd_out[1];
+    my $cmd = "/usr/sbin/diskutil info \"$cmd_out[-1]\" 2>&1";
+	@cmd_out = `$cmd`;
+
+	if (!@cmd_out || $?) {
+		&print_breaking("Could not run `$cmd` so we cannot test that the target volume has permissions enabled. Continuing anyway, but there may be failures if permissions are not enabled on target volume.");
+	} else {
+		@cmd_out = map { /(?:Permissions|Owners):\s*(Enabled|Disabled)/ } @cmd_out;
+		if (@cmd_out != 1) {
+			&print_breaking("Could not find Owners or Permissions flag in output of `$cmd` so we cannot test that the target volume has permissions enabled. Continuing anyway, but there may be failures if permissions are not enabled on target volume.");
+		} elsif ($cmd_out[0] ne 'Enabled') {
+			&print_breaking("ERROR: Target volume does not have permissions enabled.");
+			exit 1;
+		}
 	}
 }
 
