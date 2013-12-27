@@ -5,7 +5,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.36.x
 \-------------
 
-0.36.1 "Order now, and we'll double the offer!" (2013-12-26)
+0.36.3 "Order now, and we'll double the offer!" (2013-12-26)
 	* Official 10.9.1 support.
 	* Allow binary distributions to work for x86_64.
 	* Other bugfixes and validator improvements.
