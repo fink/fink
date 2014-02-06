@@ -2,8 +2,9 @@ Package: fink
 Version: @VERSION@
 Revision: @REVISION@
 Distribution: @DISTRIBUTION@
+# This doe not work for bootstraping (causes circ deps) :(
+#	dpkg (>> 1.16) || dpkg-bootstrap (>> 1.16),
 Depends: <<
-	dpkg (>> 1.16) || dpkg-bootstrap (>> 1.16),
 	base-files
 <<
 Recommends: <<
