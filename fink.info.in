@@ -28,6 +28,7 @@ install -c -p -m 644 fink.shlibs "%d/DEBIAN/shlibs"
 Triggers: <<
 	Interest-noawait: <<
 		%p/lib
+		%p/opt
 	<<
 <<
 PostInstScript: <<
