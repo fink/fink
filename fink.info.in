@@ -33,8 +33,9 @@ Triggers: <<
 PostInstScript: <<
 # dpkg triggers to clean .la files (we can not get a pkg name to process all)
 if [ "$1" = "triggered" ]; then
+		shift;
 		msg="Clearing dependency_libs of .la files"
-		for lafile in `find %p/lib -name *.la`; do
+		for lafile in `find $@ -name *.la`; do
 			if [ -f "$lafile" ] && [ ! -h "$lafile" ]; then
 				if [ -n "$msg" ]; then
 					echo $msg
