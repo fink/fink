@@ -1,9 +1,8 @@
 Package: dpkg
-Version: 1.16.12
+Version: 1.17.6
 Revision: 1.1
 GCC: 4.0
 ## Remove po4a
-### Comment out libncursesw5 for bootstrap version, and don't make dselect
 BuildDepends: <<
   fink (>= 0.32),
   libgettext8-dev,
@@ -30,12 +29,12 @@ Suggests: apt
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
-Source: mirror:debian:/pool/main/d/%n/%n_%v.tar.xz
+Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
-Source-MD5: b7e9cac52ff7882b088a3058b52081b5
+Source-MD5: bdb6d88470c901d35fa19d776a8e8828
 
 PatchFile: dpkg.patch
-PatchFile-MD5: 955e0a002c785067af074e312da4747f
+PatchFile-MD5: d8511df8f2a98c08c752cc1ce1dfc305
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -44,7 +43,6 @@ patch -p1 < fink/patches/add-BOD.patch
 patch -p1 < fink/patches/build-fix.patch
 patch -p1 < fink/patches/c++filt-defaults.patch
 patch -p1 < fink/patches/dselect-methods.patch
-patch -p1 < fink/patches/fink-triggers.patch
 patch -p1 < fink/patches/fink-virtuals.patch
 patch -p1 < fink/patches/full-path-calls.patch
 patch -p1 < fink/patches/gzip-rsyncable-fix.patch
@@ -53,6 +51,7 @@ patch -p1 < fink/patches/protect-system-dirs.patch
 patch -p1 < fink/patches/so-to-dylib.patch
 patch -p1 < fink/patches/test-fix.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
+patch -p1 < fink/patches/add-install-info.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
@@ -73,7 +72,7 @@ done
 cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
 
 # Fink uses "x86_64" instead of "amd64"
-perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+perl -pi -e 's,amd64,x86_64,g' *table scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
 
 # Fix for tar (Slightly modified for dpkg-bootstrap)
 if [ "%n" = "dpkg-bootstrap" ]; then \
@@ -89,6 +88,9 @@ else \
   perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
 fi
 
+# Fix gnu date -R for BSD date +"%a, %d %b %Y %H:%M:%S %z"
+perl -pi -e "s;date -R;date +'%%a, %%d %%b %%Y %%H:%%M:%%S %%z';g" scripts/dpkg-genchanges.pl
+
 # Fix for older gcc ie: 10.5
 perl -pi -e 's,-Wvla ,,g' configure
 
@@ -103,14 +105,13 @@ SetCPPFLAGS: -D_FORTIFY_SOURCE=2
 SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
 SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework CoreFoundation
 
-### Uncomment --disable-dselect for bootstrap version, don't make dselect
-#  --disable-dselect \
 ConfigureParams: <<
   --disable-start-stop-daemon \
   --with-admindir=%p/var/lib/dpkg \
   --mandir=%p/share/man \
   --infodir=%p/share/info \
   --sysconfdir=%p/etc \
+  --sbindir=%p/sbin \
   --localstatedir=%p/var \
   --with-zlib \
   --with-liblzma \
@@ -159,19 +160,13 @@ InstallScript: <<
 
   # install fink as a vendor
   install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
-
-  # some files that were previously installed in sbin are now in bin
-  # but some stuff still expects it in sbin
-  ln -s %p/bin/dpkg-divert %i/sbin/dpkg-divert
-  ln -s %p/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
-  ln -s %p/bin/update-alternatives %i/sbin/update-alternatives
 <<
 ConfFiles: <<
   %p/etc/dpkg/origins/fink
 <<
 DocFiles: <<
   ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
-  README README.translators THANKS TODO
+  README* THANKS TODO
 <<
 Description: The Debian package manager
 DescDetail: <<
@@ -261,6 +256,8 @@ PreInstScript: <<
 # If postrm fails during upgrade or fails on failed upgrade:
 #	<old-preinst> abort-upgrade <new-version>
 
+set -e
+
 # Handle upgrades from pre-conffile dpkg.cfg
 upgrade_dpkg_non_conffile()
 {
@@ -349,6 +346,8 @@ PostInstScript: <<
 #
 # If prerm fails during replacement due to conflict:
 #	<postinst> abort-remove in-favour <new-package> <version>
+
+set -e
 
 # this should be done in base-files but since fink has origins in dpkg we
 # do it here
@@ -453,6 +452,8 @@ PreRmScript: <<
 #
 # Before the package is replaced due to conflict:
 #      <prerm> remove in-favour <new-package> <version>
+
+set -e
 
 ensure_no_triggers_noawait()
 {
@@ -624,6 +625,7 @@ PostRmScript: <<
 # If preinst fails during upgrade:
 #	<new-postrm> abort-upgrade <old-version>
 
+set -e
 
 # Remove log file when dpkg is purged
 remove_logfile() {
@@ -669,13 +671,15 @@ case "$1" in
 esac
 <<
 License: GPL
-Homepage: http://packages.qa.debian.org/d/dpkg.html
+Homepage: https://wiki.debian.org/Teams/Dpkg
 
 SplitOff: <<
   Package: lib%N-dev
   Replaces: dpkg (<< 1.15.8)
   Suggests: apt
   BuildDependsOnly: True
+  # Fink doesn't allow Deps on BODs, but these should be installed to use this
+  #Depends: zlib1g-dev, liblzma-dev, libbz2-dev
   Files: <<
     include
     lib/pkgconfig
@@ -764,6 +768,48 @@ required to unpack, build and upload Debian source packages.
 Most Debian source packages will require additional tools to build;
 for example, most packages need make and the C compiler gcc.
   <<
+  PreInstScript: <<
+# This script can be called in the following ways:
+#
+# Before the package is installed:
+#	<new-preinst> install
+#
+# Before removed package is upgraded:
+#	<new-preinst> install <old-version>
+#
+# Before the package is upgraded:
+#	<new-preinst> upgrade <old-version>
+#
+#
+# If postrm fails during upgrade or fails on failed upgrade:
+#	<old-preinst> abort-upgrade <new-version>
+
+set -e
+
+remove_doc_symlink() {
+    if [ -L %p/share/doc/dpkg-dev ]; then
+	rm %p/share/doc/dpkg-dev
+    fi
+}
+
+case "$1" in
+    install)
+	;;
+
+    upgrade)
+	remove_doc_symlink
+	;;
+
+    abort-upgrade)
+	;;
+
+
+    *)
+	echo "$0 called with unknown argument \`$1'" 1>&2
+	exit 1
+	;;
+esac
+  <<
 <<
 
 SplitOff3: <<
@@ -805,22 +851,25 @@ SplitOff3: <<
   Description: Dpkg perl modules
   DescDetail: <<
 This package provides the perl modules used by the scripts
-in dpkg-dev. They cover a wide range of functionalities. Among them
-there are the following modules:
+in dpkg-dev. They cover a wide range of functionality. Among them
+there are the following public modules:
 .
- - Dpkg::Arch: manipulate Debian architecture information
+ - Dpkg::BuildFlags: set, modify and query compilation build flags
  - Dpkg::BuildOptions: parse and manipulate DEB_BUILD_OPTIONS
  - Dpkg::Changelog: parse Debian changelogs
  - Dpkg::Checksums: generate and parse checksums
  - Dpkg::Compression::Process: wrapper around compression tools
  - Dpkg::Compression::FileHandle: transparently (de)compress files
+ - Dpkg::Conf: parse dpkg configuration files
  - Dpkg::Control: parse and manipulate Debian control information
    (.dsc, .changes, Packages/Sources entries, etc.)
  - Dpkg::Deps: parse and manipulate dependencies
- - Dpkg::ErrorHandling: common error functions
+ - Dpkg::Gettext: wrapper around Locale::gettext
+ - Dpkg::IPC: spawn sub-processes and feed/retrieve data
  - Dpkg::Index: collections of Dpkg::Control (Packages/Sources files for
    example)
- - Dpkg::IPC: spawn sub-processes and feed/retrieve data
+ - Dpkg::Path: common path handling functions
+ - Dpkg::Source::Package: extract Debian source packages
  - Dpkg::Substvars: substitute variables in strings
  - Dpkg::Vendor: identify current distribution vendor
  - Dpkg::Version: parse and manipulate Debian package versions
@@ -830,7 +879,6 @@ modules.
   <<
 <<
 
-# Comment out entire SplitOff for bootstrap version
 SplitOff4: <<
   Package: dselect
   Depends: <<
@@ -872,5 +920,47 @@ removal of Debian software packages.
 .
 Many users find dselect intimidating and new users may prefer to use
 apt-based user interfaces.
+  <<
+  PreInstScript: <<
+# This script can be called in the following ways:
+#
+# Before the package is installed:
+#	<new-preinst> install
+#
+# Before removed package is upgraded:
+#	<new-preinst> install <old-version>
+#
+# Before the package is upgraded:
+#	<new-preinst> upgrade <old-version>
+#
+#
+# If postrm fails during upgrade or fails on failed upgrade:
+#	<old-preinst> abort-upgrade <new-version>
+
+set -e
+
+remove_doc_symlink() {
+    if [ -L %p/share/doc/dselect ]; then
+	rm %p/share/doc/dselect
+    fi
+}
+
+case "$1" in
+    install)
+	;;
+
+    upgrade)
+	remove_doc_symlink
+	;;
+
+    abort-upgrade)
+	;;
+
+
+    *)
+	echo "$0 called with unknown argument \`$1'" 1>&2
+	exit 1
+	;;
+esac
   <<
 <<

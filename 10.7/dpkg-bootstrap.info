@@ -1,15 +1,15 @@
 Package: dpkg-bootstrap
-Version: 1.16.12
+Version: 1.17.6
 Revision: 1
 GCC: 4.0
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
-Source-MD5: 60eef085c78776108de4f4ec8ff928ef
+Source-MD5: bdb6d88470c901d35fa19d776a8e8828
 
 PatchFile: dpkg.patch
-PatchFile-MD5: 955e0a002c785067af074e312da4747f
+PatchFile-MD5: d8511df8f2a98c08c752cc1ce1dfc305
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -18,7 +18,6 @@ patch -p1 < fink/patches/add-BOD.patch
 patch -p1 < fink/patches/build-fix.patch
 patch -p1 < fink/patches/c++filt-defaults.patch
 patch -p1 < fink/patches/dselect-methods.patch
-patch -p1 < fink/patches/fink-triggers.patch
 patch -p1 < fink/patches/fink-virtuals.patch
 patch -p1 < fink/patches/full-path-calls.patch
 patch -p1 < fink/patches/gzip-rsyncable-fix.patch
@@ -27,6 +26,7 @@ patch -p1 < fink/patches/protect-system-dirs.patch
 patch -p1 < fink/patches/so-to-dylib.patch
 patch -p1 < fink/patches/test-fix.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
+patch -p1 < fink/patches/add-install-info.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
@@ -47,7 +47,7 @@ done
 cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
 
 # Fink uses "x86_64" instead of "amd64"
-perl -pi -e 's,amd64,x86_64,g' *table debian/archtable scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+perl -pi -e 's,amd64,x86_64,g' *table scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
 
 # Fix for tar (Slightly modified for dpkg-bootstrap)
 if [ "%n" = "dpkg-bootstrap" ]; then \
@@ -63,8 +63,8 @@ else \
   perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
 fi
 
-# Fix for --disable-nls
-perl -pi -e 's,defined\(__GNUG__\),defined(__NOTGNUG__),g' lib/compat/gettext.h
+# Fix gnu date -R for BSD date +"%a, %d %b %Y %H:%M:%S %z"
+perl -pi -e "s;date -R;date +'%%a, %%d %%b %%Y %%H:%%M:%%S %%z';g" scripts/dpkg-genchanges.pl
 
 # Fix for older gcc ie: 10.5
 perl -pi -e 's,-Wvla ,,g' configure
@@ -82,13 +82,13 @@ SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework Cor
 
 # Use %P for all state and admindirs for pre fink build
 ConfigureParams: <<
-  --disable-nls \
   --disable-dselect \
   --disable-start-stop-daemon \
   --with-admindir=%P/var/lib/dpkg \
   --mandir=%p/share/man \
   --infodir=%p/share/info \
   --sysconfdir=%p/etc \
+  --sbindir=%p/sbin \
   --localstatedir=%P/var \
   --with-zlib \
   --without-liblzma \
@@ -96,47 +96,55 @@ ConfigureParams: <<
   --srcdir=%b \
   --build=%m-apple-darwin \
   --disable-linker-optimisations \
+  --with-dpkg-deb-compressor=gzip \
   PERL_LIBDIR=%p/lib/perl5 \
   PERL=/usr/bin/perl
 <<
 
 InfoTest: <<
-  TestConfigureParams: --disable-silent-rules
-  TestDepends: io-string-pm, time-date-pm
-  TestScript: make check || exit 2
+  TestConfigureParams: <<
+    --disable-silent-rules
+  <<
+  TestDepends: <<
+    io-string-pm,
+    time-date-pm,
+    objtools,
+    sensible-utils
+  <<
+  TestScript: <<
+    make check || exit 2
+  <<
 <<
 
 InstallScript: <<
-install -d -m 0755 %i/share/doc/dpkg
+  install -d -m 0755 %i/share/doc/dpkg
 
-make install DESTDIR=%d
+  make install DESTDIR=%d
 
-install -d -m 0755 %i/etc/dpkg/origins
-install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
-install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
-## currently in fink
-# install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
-install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
-install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
-rm -rf %i/lib/dpkg/methods/*
+  install -d -m 0755 %i/etc/dpkg/origins
+  install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
+  install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
+  ## currently in fink
+  # install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
+  install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
+  install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
+  rm -rf %i/lib/dpkg/methods/*
 
-install -m 0755 fink/md5sum %i/bin
+  install -m 0755 fink/md5sum %i/bin
 
-# install fink as a vendor
-install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
+  install -d -m 0755 %i/etc/cron.daily
+  install -d -m 0755 %i/var/backups
+  install -m 0644 fink/dpkg.cron.daily %i/etc/cron.daily/dpkg
 
-# some files that were previously installed in sbin are now in bin
-# but some stuff still expects it in sbin
-ln -s %p/bin/dpkg-divert %i/sbin/dpkg-divert
-ln -s %p/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
-ln -s %p/bin/update-alternatives %i/sbin/update-alternatives
-### end base-files postinst stuff
-
+  # install fink as a vendor
+  install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
 <<
-ConfFiles: %p/etc/dpkg/origins/fink
+ConfFiles: <<
+  %p/etc/dpkg/origins/fink
+<<
 DocFiles: <<
   ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
-  README README.translators THANKS TODO
+  README* THANKS TODO
 <<
 Description: The Debian package manager (bootstrap package)
 DescDetail: <<
@@ -149,4 +157,4 @@ DescPort: <<
 See dpkg DescPort
 <<
 License: GPL
-Homepage: http://packages.qa.debian.org/d/dpkg.html
+Homepage: https://wiki.debian.org/Teams/Dpkg
