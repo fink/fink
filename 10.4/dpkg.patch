@@ -381,40 +381,18 @@ diff -ruN dpkg-1.17.6.orig/fink/origins dpkg-1.17.6/fink/origins
 +Bugs: http://fink.sourceforge.net/
 diff -ruN dpkg-1.17.6.orig/fink/patches/add-BOD.patch dpkg-1.17.6/fink/patches/add-BOD.patch
 --- dpkg-1.17.6.orig/fink/patches/add-BOD.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/add-BOD.patch	2014-02-07 08:50:20.000000000 -0700
-@@ -0,0 +1,32 @@
-+diff -ruN dpkg-1.16.4.3.orig/dpkg-deb/build.c dpkg-1.16.4.3/dpkg-deb/build.c
-+--- dpkg-1.16.4.3.orig/dpkg-deb/build.c	2012-06-13 23:18:31.000000000 -0600
-++++ dpkg-1.16.4.3/dpkg-deb/build.c	2012-07-03 10:48:25.000000000 -0600
-+@@ -344,6 +344,14 @@
++++ dpkg-1.17.6/fink/patches/add-BOD.patch	2014-02-08 09:41:22.000000000 -0700
+@@ -0,0 +1,10 @@
++--- dpkg-1.17.6.orig/dpkg-deb/build.c
+++++ dpkg-1.17.6/dpkg-deb/build.c
++@@ -341,6 +341,7 @@
++   "Installer-Menu-Item",
++   "Homepage",
++   "Tag",
+++  "BuildDependsOnly",
 +   NULL
 + };
 + 
-++/* FINK LOCAL begin */
-++/* List of Fink fields */
-++static const char *fink_fields[] = {
-++  "BuildDependsOnly",
-++  NULL
-++};
-++/* FINK LOCAL end */
-++
-+ static const char private_prefix[] = "Private-";
-+ 
-+ static bool
-+@@ -351,6 +359,13 @@
-+ {
-+   const char **known;
-+ 
-++  /* FINK LOCAL begin */
-++  /* Fink fields are okay */
-++  for (known = fink_fields; *known; known++)
-++    if (strcasecmp(field->name, *known) == 0)
-++      return true;
-++  /* FINK LOCAL end */
-++
-+   /* Always accept fields starting with a private field prefix. */
-+   if (strncasecmp(field->name, private_prefix, strlen(private_prefix)) == 0)
-+     return true;
 diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/patches/add-install-info.patch
 --- dpkg-1.17.6.orig/fink/patches/add-install-info.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/add-install-info.patch	2014-02-07 08:45:05.000000000 -0700
@@ -607,22 +585,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/
 ++}
 diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches/build-fix.patch
 --- dpkg-1.17.6.orig/fink/patches/build-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/build-fix.patch	2014-02-07 08:50:57.000000000 -0700
-@@ -0,0 +1,164 @@
-+diff -ruN dpkg-1.16.4.3.orig/configure dpkg-1.16.4.3/configure
-+--- dpkg-1.16.4.3.orig/configure	2012-06-17 02:57:17.000000000 -0600
-++++ dpkg-1.16.4.3/configure	2012-07-02 16:14:45.000000000 -0600
-+@@ -13116,10 +13116,6 @@
-+ 
-+     LDFLAGS=$(echo "$LDFLAGS" | sed -e "s/ -Wl,-O[0-9]*\b//g")
-+ 
-+-else
-+-
-+-    LDFLAGS="$LDFLAGS -Wl,-O1"
-+-
-+ fi
-+ 
-+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking dpkg cpu type" >&5
++++ dpkg-1.17.6/fink/patches/build-fix.patch	2014-02-10 14:15:40.000000000 -0700
+@@ -0,0 +1,107 @@
 +diff -ruN dpkg-1.16.4.3.orig/dselect/Makefile.am dpkg-1.16.4.3/dselect/Makefile.am
 +--- dpkg-1.16.4.3.orig/dselect/Makefile.am	2012-06-13 23:12:30.000000000 -0600
 ++++ dpkg-1.16.4.3/dselect/Makefile.am	2012-07-02 16:14:45.000000000 -0600
@@ -647,30 +611,6 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 + 	-idirafter $(top_srcdir)/lib/compat \
 + 	-iquote $(builddir) \
 + 	-I$(top_builddir) \
-+diff -ruN dpkg-1.16.4.3.orig/dselect/dselect-curses.h dpkg-1.16.4.3/dselect/dselect-curses.h
-+--- dpkg-1.16.4.3.orig/dselect/dselect-curses.h	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/dselect-curses.h	2012-07-02 16:14:45.000000000 -0600
-+@@ -26,7 +26,7 @@
-+ #undef ERR
-+ 
-+ #if defined(HAVE_NCURSESW_NCURSES_H)
-+-#include <ncursesw/ncurses.h>
-++#include <ncursesw/curses.h>
-+ #elif defined(HAVE_NCURSES_NCURSES_H)
-+ #include <ncurses/ncurses.h>
-+ #elif defined(HAVE_NCURSES_H)
-+diff -ruN dpkg-1.16.4.3.orig/lib/dpkg/nfmalloc.c dpkg-1.16.4.3/lib/dpkg/nfmalloc.c
-+--- dpkg-1.16.4.3.orig/lib/dpkg/nfmalloc.c	2012-06-09 08:32:06.000000000 -0600
-++++ dpkg-1.16.4.3/lib/dpkg/nfmalloc.c	2012-07-02 16:14:45.000000000 -0600
-+@@ -23,7 +23,7 @@
-+ 
-+ #include <string.h>
-+ #include <stdlib.h>
-+-#include <obstack.h>
-++#include "obstack.h"
-+ 
-+ #include <dpkg/i18n.h>
-+ #include <dpkg/dpkg.h>
 +diff -ruN dpkg-1.16.4.3.orig/lib/dpkg/subproc.c dpkg-1.16.4.3/lib/dpkg/subproc.c
 +--- dpkg-1.16.4.3.orig/lib/dpkg/subproc.c	2012-06-13 23:12:31.000000000 -0600
 ++++ dpkg-1.16.4.3/lib/dpkg/subproc.c	2012-07-02 16:14:45.000000000 -0600
@@ -685,39 +625,20 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 + 		out = warning;
 + 	else
 + 		out = ohshit;
-+diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Arch.pm dpkg-1.16.4.3/scripts/Dpkg/Arch.pm
-+--- dpkg-1.16.4.3.orig/scripts/Dpkg/Arch.pm	2012-06-17 02:10:04.000000000 -0600
-++++ dpkg-1.16.4.3/scripts/Dpkg/Arch.pm	2012-07-02 16:14:45.000000000 -0600
-+@@ -90,11 +90,14 @@
-+     {
-+ 	return $host_arch if defined $host_arch;
-+ 
-+-	$gcc_host_gnu_type = get_gcc_host_gnu_type();
-++#	Don't ask `gcc` what its host type is: this always returns i686 on Macs
-++#	$gcc_host_gnu_type = get_gcc_host_gnu_type();
-++#	Instead of that, auto-detect the current build architecture and use it
-++	$gcc_host_gnu_type = '';
-+ 
-+ 	if ($gcc_host_gnu_type eq '') {
-+-	    warning(_g("couldn't determine gcc system type, falling back to " .
-+-	               'default (native compilation)'));
-++#	    warning(_g("couldn't determine gcc system type, falling back to " .
-++#	               'default (native compilation)'));
-+ 	} else {
-+ 	    my (@host_archtriplet) = gnutriplet_to_debtriplet($gcc_host_gnu_type);
-+ 	    $host_arch = debtriplet_to_debarch(@host_archtriplet);
 +diff -ruN dpkg-1.16.4.3.orig/src/filesdb.c dpkg-1.16.4.3/src/filesdb.c
 +--- dpkg-1.16.4.3.orig/src/filesdb.c	2012-06-13 23:12:34.000000000 -0600
 ++++ dpkg-1.16.4.3/src/filesdb.c	2012-07-02 16:14:45.000000000 -0600
-+@@ -34,6 +34,7 @@
++@@ -34,6 +34,9 @@
 + #include <assert.h>
 + #include <errno.h>
 + #include <string.h>
-++#include <ctype.h>
+++#if defined(__APPLE__) && defined(__MACH__)
+++	#include <ctype.h>
+++#endif
 + #include <pwd.h>
 + #include <grp.h>
 + #include <fcntl.h>
-+@@ -577,7 +578,7 @@
++@@ -577,7 +580,7 @@
 + 
 + static int hash(const char *name) {
 +   int v= 0;
@@ -726,7 +647,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 +   return v;
 + }
 + 
-+@@ -593,7 +594,7 @@
++@@ -593,7 +596,7 @@
 +   while (*pointerp) {
 +     /* XXX: Why is the assert needed? It's checking already added entries. */
 +     assert((*pointerp)->name[0] == '/');
@@ -850,6 +771,142 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/dselect-methods.patch dpkg-1.17.6/fink/p
 + package by using `dpkg --install --auto-deconfigure'\'' by hand.
 + 
 + ";
+diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches/extra-env.patch
+--- dpkg-1.17.6.orig/fink/patches/extra-env.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-02-07 15:33:10.000000000 -0700
+@@ -0,0 +1,132 @@
++--- dpkg-1.17.6.orig/configure
+++++ dpkg-1.17.6/configure
++@@ -819,6 +819,7 @@
++ enable_dselect
++ enable_start_stop_daemon
++ enable_update_alternatives
+++with_dpkg_env_script
++ with_pkgconfdir
++ with_admindir
++ with_logdir
++@@ -1508,6 +1509,8 @@
++   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
++   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
++   --without-libintl-prefix     don't search for libintl in includedir and libdir
+++  --with-dpkg-env-script=PATH/TO/SCRIPT
+++                          script to include in the maintainer environment
++   --with-pkgconfdir=DIR   dpkg configuration directory [SYSCONFDIR/dpkg]
++   --with-admindir=DIR     dpkg database directory [LOCALSTATEDIR/lib/dpkg]
++   --with-logdir=DIR       system logging directory [LOCALSTATEDIR/log]
++@@ -7047,6 +7050,36 @@
++ $as_echo "$build_update_alternatives" >&6; }
++ 
++ 
+++# Check if we want to run a script to set extra env vars
+++
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for maintainer environment script" >&5
+++$as_echo_n "checking for maintainer environment script... " >&6; }
+++
+++# Check whether --with-dpkg-env-script was given.
+++if test "${with_dpkg_env_script+set}" = set; then :
+++  withval=$with_dpkg_env_script; with_dpkg_deb_script=$withval
+++else
+++  with_dpkg_deb_script=no
+++fi
+++
+++  if test "x$with_dpkg_env_script" != "xno"; then :
+++
+++
+++cat >>confdefs.h <<_ACEOF
+++#define DPKG_MAINT_ENV_SCRIPT "$with_dpkg_env_script"
+++_ACEOF
+++
+++
+++else
+++
+++    $as_echo "#define DPKG_MAINT_ENV_SCRIPT 0" >>confdefs.h
+++
+++
+++fi
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_dpkg_env_script" >&5
+++$as_echo "$with_dpkg_env_script" >&6; }
+++
+++
++ # Allow alternate directories
++ 
++   pkgconfdir="${sysconfdir}/${PACKAGE_NAME}"
++--- dpkg-1.17.6.orig/configure.ac
+++++ dpkg-1.17.6/configure.ac 
++@@ -23,6 +23,9 @@
++ DPKG_BUILD_PROG([start-stop-daemon])
++ DPKG_BUILD_PROG([update-alternatives])
++ 
+++# Check if we want to run a script to set extra env vars
+++DPKG_ENV_SCRIPT([no])
+++
++ # Allow alternate directories
++ DPKG_WITH_DIR([pkgconfdir], [${sysconfdir}/${PACKAGE_NAME}],
++               [dpkg configuration directory [SYSCONFDIR/dpkg]])
++--- dpkg-1.17.6.orig/m4/dpkg-build.m4
+++++ dpkg-1.17.6/m4/dpkg-build.m4
++@@ -52,6 +52,23 @@
++   AC_MSG_NOTICE([using default dpkg-deb compressor = $with_dpkg_deb_compressor])
++ ]) # DPKG_DEB_COMPRESSOR
++ 
+++# DPKG_ENV_SCRIPT(SCRIPT)
+++# -------------------
+++# Add script to the maintainer script env.
+++AC_DEFUN([DPKG_ENV_SCRIPT], [
+++  AC_MSG_CHECKING([for maintainer environment script])
+++  AC_ARG_WITH([dpkg-env-script],
+++    [AS_HELP_STRING([--with-dpkg-env-script=PATH/TO/SCRIPT],
+++                   [script to include in the maintainer environment])],
+++    [with_dpkg_deb_script=$withval], [with_dpkg_deb_script=$1])
+++  AS_IF([test "x$with_dpkg_env_script" != "xno"], [
+++    AC_DEFINE_UNQUOTED([DPKG_MAINT_ENV_SCRIPT], ["$with_dpkg_env_script"], [Define to value if not no.])
+++  ], [
+++    AC_DEFINE([DPKG_MAINT_ENV_SCRIPT], [0])
+++  ])
+++  AC_MSG_RESULT([$with_dpkg_env_script])
+++]) # DPKG_ENV_SCRIPT
+++
++ # DPKG_DIST_CHECK(COND, ERROR)
++ # ---------------
++ # Check if the condition is fulfilled when preparing a distribution tarball.
++--- dpkg-1.17.6.orig/src/main.h
+++++ dpkg-1.17.6/src/main.h
++@@ -237,6 +237,9 @@
++                          const char *scriptname, const char *desc,
++                          const char *cidir, char *cidirrest,
++                          const char *ifok, const char *iffallback);
+++#ifdef DPKG_MAINT_ENV_SCRIPT
+++int execute_env_script();
+++#endif
++ 
++ /* Callers wanting to run the postinst use these two as they want to postpone
++  * trigger incorporation until after updating the package status. The effect
++--- dpkg-1.17.6.orig/src/script.c
+++++ dpkg-1.17.6/src/script.c
++@@ -217,6 +217,11 @@
++ 		    setenv("DPKG_RUNNING_VERSION", PACKAGE_VERSION, 1))
++ 			ohshite(_("unable to setenv for maintainer script"));
++ 
+++#ifdef DPKG_MAINT_ENV_SCRIPT
+++		if (execute_env_script())
+++			ohshite(_("unable to set extra env for maintainer script"));
+++#endif
+++
++ 		cmd->filename = cmd->argv[0] = maintscript_pre_exec(cmd);
++ 
++ 		if (maintscript_set_exec_context(cmd, "dpkg_script_t") < 0)
++@@ -403,3 +408,11 @@
++ 
++ 	return 1;
++ }
+++
+++#ifdef DPKG_MAINT_ENV_SCRIPT
+++int
+++execute_env_script() {
+++	notice(_("Injecting %s\n"), DPKG_MAINT_ENV_SCRIPT);
+++	return 0;
+++}
+++#endif
 diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/patches/fink-as-vendor.patch
 --- dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/fink-as-vendor.patch	2012-07-31 15:46:48.000000000 -0600
@@ -1968,3 +2025,424 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/test-fix.patch dpkg-1.17.6/fink/patches/
 + }
 + 
 + system("rm -f $admindir/diversions-new; mkdir $admindir/diversions-old");
+diff -ruN dpkg-1.17.6.orig/src/script.c.new dpkg-1.17.6/src/script.c.new
+--- dpkg-1.17.6.orig/src/script.c.new	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/src/script.c.new	2014-02-07 11:43:57.000000000 -0700
+@@ -0,0 +1,417 @@
++/*
++ * dpkg - main program for package management
++ * script.c - maintainer script routines
++ *
++ * Copyright © 1995 Ian Jackson <ian@chiark.greenend.org.uk>
++ * Copyright © 2007-2013 Guillem Jover <guillem@debian.org>
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ */
++
++#include <config.h>
++#include <compat.h>
++
++#include <sys/types.h>
++#include <sys/stat.h>
++
++#include <assert.h>
++#include <errno.h>
++#include <string.h>
++#include <unistd.h>
++#include <stdlib.h>
++
++#ifdef WITH_SELINUX
++#include <selinux/selinux.h>
++#include <selinux/flask.h>
++#include <selinux/context.h>
++#endif
++
++#include <dpkg/i18n.h>
++#include <dpkg/dpkg.h>
++#include <dpkg/dpkg-db.h>
++#include <dpkg/pkg.h>
++#include <dpkg/subproc.h>
++#include <dpkg/command.h>
++#include <dpkg/triglib.h>
++
++#include "filesdb.h"
++#include "infodb.h"
++#include "main.h"
++
++void
++post_postinst_tasks(struct pkginfo *pkg, enum pkgstatus new_status)
++{
++	if (new_status < stat_triggersawaited)
++		pkg_set_status(pkg, new_status);
++	else if (pkg->trigaw.head)
++		pkg_set_status(pkg, stat_triggersawaited);
++	else if (pkg->trigpend_head)
++		pkg_set_status(pkg, stat_triggerspending);
++	else
++		pkg_set_status(pkg, stat_installed);
++	modstatdb_note(pkg);
++
++	debug(dbg_triggersdetail, "post_postinst_tasks - trig_incorporate");
++	trig_incorporate(modstatdb_get_status());
++}
++
++static void
++post_script_tasks(void)
++{
++	debug(dbg_triggersdetail, "post_script_tasks - ensure_diversions");
++	ensure_diversions();
++
++	debug(dbg_triggersdetail, "post_script_tasks - trig_incorporate");
++	trig_incorporate(modstatdb_get_status());
++}
++
++static void
++cu_post_script_tasks(int argc, void **argv)
++{
++	post_script_tasks();
++}
++
++static void
++setexecute(const char *path, struct stat *stab)
++{
++	if ((stab->st_mode & 0555) == 0555)
++		return;
++	if (!chmod(path, 0755))
++		return;
++	ohshite(_("unable to set execute permissions on `%.250s'"), path);
++}
++
++/**
++ * Returns the path to the script inside the chroot.
++ */
++static const char *
++maintscript_pre_exec(struct command *cmd)
++{
++	const char *admindir = dpkg_db_get_dir();
++	size_t instdirl = strlen(instdir);
++
++	if (*instdir) {
++		if (strncmp(admindir, instdir, instdirl) != 0)
++			ohshit(_("admindir must be inside instdir for dpkg to work properly"));
++		if (setenv("DPKG_ADMINDIR", admindir + instdirl, 1) < 0)
++			ohshite(_("unable to setenv for subprocesses"));
++
++		if (chroot(instdir))
++			ohshite(_("failed to chroot to `%.250s'"), instdir);
++	}
++	/* Switch to a known good directory to give the maintainer script
++	 * a saner environment, also needed after the chroot(). */
++	if (chdir("/"))
++		ohshite(_("failed to chdir to `%.255s'"), "/");
++	if (debug_has_flag(dbg_scripts)) {
++		struct varbuf args = VARBUF_INIT;
++		const char **argv = cmd->argv;
++
++		while (*++argv) {
++			varbuf_add_char(&args, ' ');
++			varbuf_add_str(&args, *argv);
++		}
++		varbuf_end_str(&args);
++		debug(dbg_scripts, "fork/exec %s (%s )", cmd->filename,
++		      args.buf);
++		varbuf_destroy(&args);
++	}
++	if (!instdirl)
++		return cmd->filename;
++
++	assert(strlen(cmd->filename) >= instdirl);
++	return cmd->filename + instdirl;
++}
++
++/**
++ * Set a new security execution context for the maintainer script.
++ *
++ * Try to create a new execution context based on the current one and the
++ * specific maintainer script filename. If it's the same as the current
++ * one, use the given fallback.
++ */
++static int
++maintscript_set_exec_context(struct command *cmd, const char *fallback)
++{
++	int rc = 0;
++#ifdef WITH_SELINUX
++	security_context_t curcon = NULL, newcon = NULL, filecon = NULL;
++	context_t tmpcon = NULL;
++
++	if (is_selinux_enabled() < 1)
++		return 0;
++
++	rc = getcon(&curcon);
++	if (rc < 0)
++		goto out;
++
++	rc = getfilecon(cmd->filename, &filecon);
++	if (rc < 0)
++		goto out;
++
++	rc = security_compute_create(curcon, filecon, SECCLASS_PROCESS, &newcon);
++	if (rc < 0)
++		goto out;
++
++	if (strcmp(curcon, newcon) == 0) {
++		/* No default transition, use fallback for now. */
++		rc = -1;
++		tmpcon = context_new(curcon);
++		if (tmpcon == NULL)
++			goto out;
++		if (context_type_set(tmpcon, fallback))
++			goto out;
++		freecon(newcon);
++		newcon = strdup(context_str(tmpcon));
++		if (newcon == NULL)
++			goto out;
++	}
++
++	rc = setexeccon(newcon);
++
++out:
++	if (rc < 0 && security_getenforce() == 0)
++		rc = 0;
++
++	context_free(tmpcon);
++	freecon(newcon);
++	freecon(curcon);
++	freecon(filecon);
++#endif
++
++	return rc < 0 ? rc : 0;
++}
++
++static int
++maintscript_exec(struct pkginfo *pkg, struct pkgbin *pkgbin,
++                 struct command *cmd, struct stat *stab, int warn)
++{
++	pid_t pid;
++	int rc;
++
++	setexecute(cmd->filename, stab);
++
++	push_cleanup(cu_post_script_tasks, ehflag_bombout, NULL, 0, 0);
++
++	pid = subproc_fork();
++	if (pid == 0) {
++		char *pkg_count;
++
++		m_asprintf(&pkg_count, "%d", pkgset_installed_instances(pkg->set));
++
++		if (setenv("DPKG_MAINTSCRIPT_PACKAGE", pkg->set->name, 1) ||
++		    setenv("DPKG_MAINTSCRIPT_PACKAGE_REFCOUNT", pkg_count, 1) ||
++		    setenv("DPKG_MAINTSCRIPT_ARCH", pkgbin->arch->name, 1) ||
++		    setenv("DPKG_MAINTSCRIPT_NAME", cmd->argv[0], 1) ||
++		    setenv("DPKG_RUNNING_VERSION", PACKAGE_VERSION, 1))
++			ohshite(_("unable to setenv for maintainer script"));
++
++#ifdef WITH_EXTRA_ENV
++		if (set_extra_env())
++			ohshite(_("unable to set extra env for maintainer script"));
++#endif
++
++		cmd->filename = cmd->argv[0] = maintscript_pre_exec(cmd);
++
++		if (maintscript_set_exec_context(cmd, "dpkg_script_t") < 0)
++			ohshite(_("cannot set security execution context for "
++			          "maintainer script"));
++
++		command_exec(cmd);
++	}
++	subproc_signals_setup(cmd->name); /* This does a push_cleanup(). */
++	rc = subproc_wait_check(pid, cmd->name, warn);
++	pop_cleanup(ehflag_normaltidy);
++
++	pop_cleanup(ehflag_normaltidy);
++
++	return rc;
++}
++
++static int
++vmaintscript_installed(struct pkginfo *pkg, const char *scriptname,
++                       const char *desc, va_list args)
++{
++	struct command cmd;
++	const char *scriptpath;
++	struct stat stab;
++	char buf[100];
++
++	scriptpath = pkg_infodb_get_file(pkg, &pkg->installed, scriptname);
++	sprintf(buf, _("installed %s script"), desc);
++
++	command_init(&cmd, scriptpath, buf);
++	command_add_arg(&cmd, scriptname);
++	command_add_argv(&cmd, args);
++
++	if (stat(scriptpath, &stab)) {
++		command_destroy(&cmd);
++		if (errno == ENOENT) {
++			debug(dbg_scripts,
++			      "vmaintscript_installed nonexistent %s",
++			      scriptname);
++			return 0;
++		}
++		ohshite(_("unable to stat %s `%.250s'"), buf, scriptpath);
++	}
++	maintscript_exec(pkg, &pkg->installed, &cmd, &stab, 0);
++
++	command_destroy(&cmd);
++
++	return 1;
++}
++
++/*
++ * All ...'s in maintscript_* are const char *'s.
++ */
++
++int
++maintscript_installed(struct pkginfo *pkg, const char *scriptname,
++                      const char *desc, ...)
++{
++	va_list args;
++	int rc;
++
++	va_start(args, desc);
++	rc = vmaintscript_installed(pkg, scriptname, desc, args);
++	va_end(args);
++
++	if (rc)
++		post_script_tasks();
++
++	return rc;
++}
++
++int
++maintscript_postinst(struct pkginfo *pkg, ...)
++{
++	va_list args;
++	int rc;
++
++	va_start(args, pkg);
++	rc = vmaintscript_installed(pkg, POSTINSTFILE, "post-installation", args);
++	va_end(args);
++
++	if (rc)
++		ensure_diversions();
++
++	return rc;
++}
++
++int
++maintscript_new(struct pkginfo *pkg, const char *scriptname,
++                const char *desc, const char *cidir, char *cidirrest, ...)
++{
++	struct command cmd;
++	struct stat stab;
++	va_list args;
++	char buf[100];
++
++	strcpy(cidirrest, scriptname);
++	sprintf(buf, _("new %s script"), desc);
++
++	va_start(args, cidirrest);
++	command_init(&cmd, cidir, buf);
++	command_add_arg(&cmd, scriptname);
++	command_add_argv(&cmd, args);
++	va_end(args);
++
++	if (stat(cidir, &stab)) {
++		command_destroy(&cmd);
++		if (errno == ENOENT) {
++			debug(dbg_scripts,
++			      "maintscript_new nonexistent %s '%s'",
++			      scriptname, cidir);
++			return 0;
++		}
++		ohshite(_("unable to stat %s `%.250s'"), buf, cidir);
++	}
++	maintscript_exec(pkg, &pkg->available, &cmd, &stab, 0);
++
++	command_destroy(&cmd);
++	post_script_tasks();
++
++	return 1;
++}
++
++int
++maintscript_fallback(struct pkginfo *pkg,
++                     const char *scriptname, const char *desc,
++                     const char *cidir, char *cidirrest,
++                     const char *ifok, const char *iffallback)
++{
++	struct command cmd;
++	const char *oldscriptpath;
++	struct stat stab;
++	char buf[100];
++
++	oldscriptpath = pkg_infodb_get_file(pkg, &pkg->installed, scriptname);
++	sprintf(buf, _("old %s script"), desc);
++
++	command_init(&cmd, oldscriptpath, buf);
++	command_add_args(&cmd, scriptname, ifok,
++	                 versiondescribe(&pkg->available.version, vdew_nonambig),
++	                 NULL);
++
++	if (stat(oldscriptpath, &stab)) {
++		if (errno == ENOENT) {
++			debug(dbg_scripts,
++			      "maintscript_fallback nonexistent %s '%s'",
++			      scriptname, oldscriptpath);
++			command_destroy(&cmd);
++			return 0;
++		}
++		warning(_("unable to stat %s '%.250s': %s"),
++		        cmd.name, oldscriptpath, strerror(errno));
++	} else {
++		if (!maintscript_exec(pkg, &pkg->installed, &cmd, &stab, PROCWARN)) {
++			command_destroy(&cmd);
++			post_script_tasks();
++			return 1;
++		}
++	}
++	notice(_("trying script from the new package instead ..."));
++
++	strcpy(cidirrest, scriptname);
++	sprintf(buf, _("new %s script"), desc);
++
++	command_destroy(&cmd);
++	command_init(&cmd, cidir, buf);
++	command_add_args(&cmd, scriptname, iffallback,
++	                 versiondescribe(&pkg->installed.version, vdew_nonambig),
++	                 NULL);
++
++	if (stat(cidir, &stab)) {
++		command_destroy(&cmd);
++		if (errno == ENOENT)
++			ohshit(_("there is no script in the new version of the package - giving up"));
++		else
++			ohshite(_("unable to stat %s `%.250s'"), buf, cidir);
++	}
++
++	maintscript_exec(pkg, &pkg->available, &cmd, &stab, 0);
++	notice(_("... it looks like that went OK"));
++
++	command_destroy(&cmd);
++	post_script_tasks();
++
++	return 1;
++}
++
++#ifdef WITH_EXTRA_ENV
++int
++set_extra_env() {
++	return 0;
++}
++#endif
