@@ -1360,7 +1360,6 @@ sub validate_info_component {
 		# Warn if field is deprecated
 		if ($pkg_deprecated_fields{$field}) {
 			print "Warning: Field \"$field\"$splitoff_field is deprecated. ($filename)\n";
-			$looks_good = 0;
 		}
 
 		# Warn if field is unknown
