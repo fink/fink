@@ -1894,6 +1894,10 @@ sub _validate_dpkg {
 		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}} &&
 		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}};
 
+	if ($install_info_called) {
+		print "\nWarning: install-info called found in dpkg scrips, please avoid this as Triggers in install-info will already do this for you.\n\n";
+	}
+
 	# during File::Find loop, we stack all error msgs
 	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
 
@@ -2114,10 +2118,8 @@ sub _validate_dpkg {
 			if ($infofile eq 'dir') {
 				&stack_msg($msgs, "The texinfo table of contents file \"$filename\" must not be installed directly as part of the .deb");
 			### Deprecated, InfoDocs is no longer required
-			#} elsif (not $install_info_called) {
+			#} else if (not $install_info_called) {
 			#	&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
-			} elsif ($install_info_called) {
-				&stack_msg($msgs, "install-info called found in dpkg scrips, please avoid this as Triggers in install-info will already do this for you.", $filename);
 			}
 		}
 
