@@ -1,11 +1,12 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2013-12-26
+Timestamp: 2014-03-03
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
 afr-ZA: ftp://ftp.is.co.za/mirror/ftp.gimp.org/gimp
 asi-JP: ftp://ftp.ring.gr.jp/pub/graphics/gimp
 asi-JP: ftp://ftp.u-aizu.ac.jp/pub/graphics/tools/gimp/gimp
+asi-JP: http://www.ring.gr.jp/pub/graphics/gimp
 eur-DE: ftp://artfiles.org/gimp.org/gimp
 eur-DE: ftp://ftp.fernuni-hagen.de/pub/mirrors/www.gimp.org
 eur-DE: ftp://ftp.gwdg.de/pub/misc/grafik/gimp/gimp
@@ -33,6 +34,7 @@ eur-PL: ftp://ftp.tpnet.pl/pub/graphics/gimp
 eur-PL: ftp://sunsite.icm.edu.pl/pub/graphics/gimp
 eur-PT: ftp://mirrors.dominios.pt/pub/ftp.gimp.org
 eur-PT: http://mirrors.dominios.pt/gimp
+eur-RO: http://mirrors.serverhost.ro/gimp
 eur-SE: ftp://ftp.sunet.se/pub/gnu/gimp
 eur-SE: http://ftp.sunet.se/pub/gnu/gimp
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
@@ -47,3 +49,5 @@ nam-US: http://gimp.mirrors.hoobly.com/gimp
 nam-US: http://mirror.hessmo.com/gimp
 nam-US: http://mirror.umd.edu/gimp/gimp
 nam-US: http://mirrors.xmission.com/gimp/gimp
+sam-BR: ftp://mirrors-br.go-parts.com/gimp
+sam-BR: http://mirrors-br.go-parts.com/gimp
