@@ -106,7 +106,17 @@ distro for the given $distribution.
 sub default_binary_version {
 	my $distribution = shift;
 	my $architecture = get_arch();
-	my %bindists = ("10.2-gcc3.3/powerpc" => "0.6.4", "10.3/powerpc" => "0.7.2", "10.4-transitional/powerpc" => "0.8.0", "10.4/powerpc" => "0.8.1", "10.4/i386" => "0.8.1", "10.5/powerpc" => "0.9.0", "10.5/i386" => "0.9.0");
+	my %bindists = (
+					"10.2-gcc3.3/powerpc" => "0.6.4",
+					"10.3/powerpc" => "0.7.2",
+					"10.4-transitional/powerpc" => "0.8.0",
+					"10.4/powerpc" => "0.8.1",
+					"10.4/i386" => "0.8.1",
+					"10.5/powerpc" => "0.9.0",
+					"10.5/i386" => "0.9.0",
+					"10.8/x86_64" => "0.12.0",
+					"10.9/x86_64" => "0.13.0",
+					);
 	return $bindists{"$distribution/$architecture"};
 }
 
