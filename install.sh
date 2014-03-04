@@ -40,7 +40,7 @@ mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin sbin \
-	lib lib/perl5 lib/perl5/Fink \
+	lib lib/${architecture}-darwin lib/perl5 lib/perl5/Fink \
 	lib/perl5/Fink/{Text,Notify,Checksum,Finally,SelfUpdate} \
 	lib/fink lib/fink/update lib/fink/update-packages \
 	etc etc/dpkg \
