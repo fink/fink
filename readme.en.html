@@ -1,126 +1,94 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<!--
-Generated from $Fink: readme.en.xml,v 1.9 2013/11/01 02:27:27 alexkhansen Exp $
--->
-<title>Fink Documentation - Fink ReadMe</title></head><body>
-<table width="100%" cellspacing="0">
-<tr valign="bottom">
-<td align="center">
-Available Languages:  | 
-English | 
-<a href="readme.es.html">Espa&ntilde;ol</a> | 
-<a href="readme.fr.html">Fran&ccedil;ais</a> | 
-<a href="readme.ja.html">&#26085;&#26412;&#35486; (Nihongo)</a> | 
-<a href="readme.pt.html">Portugu&ecirc;s</a> | 
-<a href="readme.ru.html">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081; (Russkiy)</a> | 
-<a href="readme.zh.html">&#20013;&#25991; (&#31616;) (Simplified Chinese)</a> | 
-</td>
-</tr>
-</table>
-<h1 align="center">Fink ReadMe</h1>
-<p>
-This is Fink, a package management system that aims to bring the full
-world of Open Source software to Darwin and Mac OS X.
-</p>
-<p>
-With the help of dpkg, it maintains a separate directory hierarchy.
-It downloads original source releases, patches them if necessary,
-configures them for Darwin and compiles and installs them.
-The information about available packages and the necessary patches
-(the "package descriptions") are maintained separately, but are
-usually included with this distribution.
+Generated from $Fink: readme.en.xml,v 1.9 2013/11/01 02:27:27 alexkhansen
+Exp $
+
+ Fink ReadMe
+=============
+
+This is Fink, a package management system that aims to bring the full world
+of Open Source software to Darwin and Mac OS X.
+
+With the help of dpkg, it maintains a separate directory hierarchy. It
+downloads original source releases, patches them if necessary, configures
+them for Darwin and compiles and installs them. The information about
+available packages and the necessary patches (the "package descriptions")
+are maintained separately, but are usually included with this distribution.
 The actual source code is downloaded from the Internet as necessary.
-</p>
-<p>
-Although Fink cannot be considered "mature" and it has some rough
-edges and lacking features, it is successfully used by a large number
-of people.
-Please read the instructions carefully and don't be surprised if
-something doesn't work as expected.
-There are good explanations for most failures; check the website if
-you need help.
-</p>
-<p>
-Fink is released under the terms of the GNU General Public License.
-See the file COPYING for details.
-</p>
-<h3><a name="readme.req">Requirements</a></h3>
-<p>
+
+Although Fink cannot be considered "mature" and it has some rough edges and
+lacking features, it is successfully used by a large number of people.
+Please read the instructions carefully and don't be surprised if something
+doesn't work as expected. There are good explanations for most failures;
+check the website if you need help.
+
+Fink is released under the terms of the GNU General Public License. See the
+file COPYING for details.
+
+
+ Requirements
+--------------
 You need:
-</p>
-<ul>
-<li><p>
-An installed Mac OS X system, version 10.6 or later. 
-Earlier versions will <b>not</b> work with fink-0.36.0.
-</p></li>
-<li><p>
-Development tools.  For 10.6, you should install Xcode 3.2.6, 
-which can be downloaded from connect.apple.com after registering.  
-For 10.7-10.9, installing the Xcode Command Line Tools is mandatory to use 
-the most current build applications. This can be installed either by downloading
-it directly via connect.apple.com, through the Xcode application via the Components 
-page of the Downloads tab of the Preferences, or on 10.9 by running the</p>
-<pre>xcode-select --install</pre>
-<p>command and choosing the   
-<b>Install</b> button in the window that pops up, or you can install the full
-Xcode if you prefer.  You may also need to use this command to update the tools,
-especially if you're having build problems.</p>
-<p>If you're doing a manual download, make sure that the tools you install match your Mac OS X version.
-</p></li>
-<li><p>
-Internet access.
-All source code is downloaded from mirror sites.
-</p></li>
-<li><p>
-Patience.
-Compiling several big packages takes time.
-I'm talking hours or even days here.
-</p></li>
-</ul>
-<h3><a name="readme.install">Installation</a></h3>
-<p>
-The installation process is described in detail in the file
-INSTALL.
-Please read it first, the process is non-trivial.
-It also describes the upgrade procedure.
-</p>
-<h3><a name="readme.usage">Using Fink</a></h3>
-<p>
-The file USAGE describes how to set your paths and how to install and
-remove packages.
-It also has a complete list of available commands.
-</p>
-<h3><a name="readme.questions">Further Questions?</a></h3>
-<p>
-If the documentation included here doesn't answer your question,
-stroll over to the Fink website at
-<a href="http://fink.sourceforge.net/">http://fink.sourceforge.net/</a>
-and check out the Help page there:
-<a href="http://fink.sourceforge.net/help/">http://fink.sourceforge.net/help/</a>.
-It will point you at the other documentation that is available and
-sources for support if you need it.
-</p>
-<p>
-If you'd like to contribute to Fink, the Help page mentioned above
-also has a list of things you can do, like testing or creating
-packages.
-</p>
-<h3><a name="readme.uptodate">Staying Informed</a></h3>
-<p>
-The project's website is at 
-<a href="http://fink.sourceforge.net/">http://fink.sourceforge.net</a>.
-</p>
-<p>
+
+ * An installed Mac OS X system, version 10.6 or later. Earlier versions
+   will not work with fink-0.36.3.1.
+
+ * Development tools. For 10.6, you should install Xcode 3.2.6, which can be
+   downloaded from connect.apple.com after registering. For 10.7-10.9,
+   installing the Xcode Command Line Tools is mandatory to use the most
+   current build applications. This can be installed either by downloading
+   it directly via connect.apple.com, through the Xcode application via the
+   Components page of the Downloads tab of the Preferences, or on 10.9 by
+   running the
+
+      xcode-select --install
+
+   command and choosing the Install button in the window that pops up, or
+   you can install the full Xcode if you prefer. You may also need to use
+   this command to update the tools, especially if you're having build
+   problems.
+
+   If you're doing a manual download, make sure that the tools you install
+   match your Mac OS X version.
+
+ * Internet access. All source code is downloaded from mirror sites.
+
+ * Patience. Compiling several big packages takes time. I'm talking hours or
+   even days here.
+
+
+ Installation
+--------------
+The installation process is described in detail in the file INSTALL. Please
+read it first, the process is non-trivial. It also describes the upgrade
+procedure.
+
+
+ Using Fink
+------------
+The file USAGE describes how to set your paths and how to install and remove
+packages. It also has a complete list of available commands.
+
+
+ Further Questions?
+--------------------
+If the documentation included here doesn't answer your question, stroll over
+to the Fink website at <http://fink.sourceforge.net/> and check out the Help page there:
+<http://fink.sourceforge.net/help/>. It
+will point you at the other documentation that is available and sources for
+support if you need it.
+
+If you'd like to contribute to Fink, the Help page mentioned above also has
+a list of things you can do, like testing or creating packages.
+
+
+ Staying Informed
+------------------
+The project's website is at <http://fink.sourceforge.net/>.
+
 To be informed of new releases, go to
-<a href="http://fink.sourceforge.net/lists/fink-announce.php">http://fink.sourceforge.net/lists/fink-announce.php</a>
-and subscribe to the fink-announce mailing list.
+http://fink.sourceforge.net/lists/fink-announce.php
+[http://fink.sourceforge.net/lists/fink-announce.php] and subscribe to the 
+fink-announce mailing list.
 The list is moderated and low-traffic.
-</p>
-<hr><h2>Copyright Notice</h2><p>Copyright (c) 2001 Christoph Pfisterer,
-Copyright (c) 2001-2013 The Fink Project.
-You may distribute this document in print for private purposes,
-provided the document and this copyright notice remain complete and
-unmodified. Any commercial reproduction and any online publication
-requires the explicit consent of the author.</p><hr>
-<p>Generated from <i>$Fink: readme.en.xml,v 1.9 2013/11/01 02:27:27 alexkhansen Exp $</i></p></body></html>
+
+
+EOF.

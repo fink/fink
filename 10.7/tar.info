@@ -1,6 +1,6 @@
 Package: tar
 Version: 1.26
-Revision: 3
+Revision: 4
 Essential: yes
 Depends: <<
 	base-files,
@@ -13,6 +13,7 @@ BuildAsNobody: false
 Source: mirror:sourceforge:fink/%n-%v.tar.bz2
 #Source: mirror:gnu:%n/%n-%v.tar.bz2
 Source-MD5: 2cee42a2ff4f1cd4f9298eeeb2264519
+PatchScript: perl -pi -e "s/(textdomain \(PACKAGE\)\;)/\1\ngettext\(\"\"\)\;/" src/tar.c
 ConfigureParams: <<
 	--program-transform-name=s/tar/gtar/ \
 	--infodir=%p/share/info \

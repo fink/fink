@@ -4,9 +4,26 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | fink 0.36.x
 \-------------
+
 0.36.? TBD
 	* Update Debian toolset.
 	* Selfupdate via git and svn.
+
+0.36.3.1 (2013-12-30)
+	* Bugfix: fix dpkg-lockwait and apt-get-lockwait on 10.6/i386
+	  by reverting the changes from dcf07ad27536cea139069ea3570a225bb91590b3
+	  only for that platform. 
+
+0.36.3 "Order now, and we'll double the offer!" (2013-12-26)
+	* Official 10.9.1 support.
+	* Allow binary distributions to work for x86_64.
+	* Other bugfixes and validator improvements.
+
+0.36.1 "But wait, there's more!" (2013-11-17)
+	* Bugfix: fix a perlmod build issue which crept in with 0.36.0.
+	* Check for compatible CLI tools version in bootstrap.
+	* Validator improvements.
+
 0.36.0 "Watch this space" (2013-10-31)
 	* Support OS 10.9.
 

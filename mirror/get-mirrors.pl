@@ -5,10 +5,17 @@
 # as well as for its geographical location.
 #
 # To use this tool, you need to install the following Fink packages:
-#  * uri-find-pm5100 
-#  * www-mechanize-pm5100
-#  * html-tree-pm5100
-#  * geo-ip-pm5100
+#  * uri-find-pm*
+#  * www-mechanize-pm*
+#  * html-tree-pm*
+#  * geo-ip-pm*
+# You have to choose those variants appropriate for the Perl version on your system.
+#
+# Then, invoke this script as
+#   ./get-mirrors.pl
+# to update all mirror sets, respectively
+#   ./get-mirrors.pl --debian --freebsd
+# to only update the specified ones.
 #
 # TODO: Right now we test all mirrors sequentially, which can take a looong
 #       time. We should try to parallelize this. An easy way for that would
@@ -22,6 +29,20 @@
 #       a single mirmon parser.
 #
 # TODO: PostgreSQL analysis is broken; the website we used to use only lists redirect URLs now.
+# 
+# NOTE: SourceForge does have a mirror list at 
+# 		http://sourceforge.net/apps/trac/sourceforge/wiki/Mirrors, 
+# 		but that's as not easily parseable.  They really want folks to use e.g 
+# 		http://downloads.sourceforge.net/<project>/<tarball.tar.gz>.  This is set as
+# 		as our Primary mirror option for the SourceForge mirrors.
+#
+# TODO: Some mirrors perform automatic mirror rotation based on the client's IP.
+#       E.g. ftp.cpan.org gets resolved to (and hence served from) different
+#		servers, depending on from where you make requests to it. As a result,
+#		it tends to "wander around" in our mirror list.
+#		Perhaps add an explicit list of such servers to ensure they always get
+#		mapped to the same "region". Perhaps also introduce a special wildcard
+#		regions (say, "*") to be used for such servers that work "everywhere"?
 
 $|++;
 
@@ -33,6 +54,7 @@ use File::Slurp;
 use File::Temp qw(mktemp);
 use Geo::IP;
 use HTML::TreeBuilder;
+use List::MoreUtils qw(uniq);
 use LWP::UserAgent;
 use Net::FTP;
 use WWW::Mechanize;
@@ -41,6 +63,7 @@ use URI::Escape;
 use URI::Find;
 
 use vars qw($VERSION %keys %reverse_keys $debug $response);
+use Getopt::Long;
 
 # map 'site name' to [ proc, URL of mirror list, primary mirror ]
 my %mirror_sites = (
@@ -51,11 +74,11 @@ my %mirror_sites = (
 	'FreeBSD' => [ \&parse_freebsd, 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html', 'ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles' ],
 	'Gimp' => [ \&parse_gimp, 'http://www.gimp.org/downloads', 'ftp://ftp.gimp.org/pub/gimp' ],
 	'GNOME' => [ \&parse_gnome, 'http://ftp.gnome.org/pub/GNOME/MIRRORS', 'ftp://ftp.gnome.org/pub/GNOME' ],
-	'GNU' => [ \&parse_gnu, 'http://www.gnu.org/prep/ftp.html', 'ftp://ftp.gnu.org/gnu' ],
-	'KDE' => [ \&parse_kde, 'http://download.kde.org/mirrorstatus.html', 'ftp://ftp.kde.org/pub/kde' ],
-	
+	'GNU'         => [ \&parse_gnu, 'http://www.gnu.org/prep/ftp.html', 'ftp://ftpmirror.gnu.org' ],
+	'KDE' => [ \&parse_kde, 'http://files.kde.org/extra/mirrors.html', 'ftp://ftp.kde.org/pub/kde' ],
 	# FIXME: Format changed, they now only list redirect URls
 #	'PostgreSQL' => [ \&parse_postgresql, 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F', 'ftp://ftp.postgresql.org/pub' ],
+	'SourceForge' => [ \&parse_sourceforge, 'http://sourceforge.net/apps/trac/sourceforge/wiki/Mirrors','http://downloads.sourceforge.net'],
 	);
 
 $debug = 0;
@@ -82,9 +105,40 @@ while (<KEYS>) {
 }
 close (KEYS);
 
-### Iterate over all sites
+### Parse options 
+my @sites_to_check;
+{
+	my ($apache,$cpan,$ctan,$debian,$freebsd,$gimp,$gnome,$gnu,$kde,$sourceforge);
+	GetOptions	(	
+				"apache" => 	\$apache,
+				"cpan" => 		\$cpan,
+				"ctan" => 		\$ctan,
+				"debian" => 	\$debian,
+				"freebsd" => 	\$freebsd,
+				"gimp" =>		\$gimp,
+				"gnome" => 		\$gnome,
+				"gnu" =>		\$gnu,
+				"kde" =>		\$kde,
+				"sourceforge" =>\$sourceforge,
+				);	
+	push @sites_to_check, "Apache" if $apache;
+	push @sites_to_check, "CPAN" if $cpan;
+	push @sites_to_check, "CTAN" if $ctan;
+	push @sites_to_check, "Debian" if $debian;
+	push @sites_to_check, "FreeBSD" if $freebsd;
+	push @sites_to_check, "Gimp" if $gimp;
+	push @sites_to_check, "GNOME" if $gnome;
+	push @sites_to_check, "GNU" if $gnu;
+	push @sites_to_check, "KDE" if $kde;
+	push @sites_to_check, "SourceForge" if $sourceforge;
+	if (scalar @sites_to_check == 0) { # default when no options chosen
+		@sites_to_check = keys %mirror_sites;
+	}
+}
 
-foreach my $mirror_name (sort keys %mirror_sites) {
+### Iterate over selected sites
+
+foreach my $mirror_name (sort @sites_to_check) {
 	my $site = lc $mirror_name;
 	my ($parse_sub, $mirror_list_url, $primary) = @{$mirror_sites{$mirror_name}};
 
@@ -136,32 +190,32 @@ sub parse_apache {
 	my $response = shift;
 	my $links = shift;
 
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		my $table = $tree->look_down(
-			'_tag' => 'th',
-			sub {
-				$_[0]->as_text =~ /last stat/
-			},
-		)->look_up('_tag' => 'table');
-	
-		for my $row ($table->look_down('_tag' => 'tr')) {
-			my @tds = $row->look_down('_tag' => 'td');
-			if (@tds and defined $tds[4]) {
-				my $link = $tds[0]->look_down('_tag' => 'a');
-				if ($link and $tds[4]->as_text eq "ok") {
-					my $url = $link->attr('href');
-					$url =~ s#/$##;
-					print "\t", $url, ": ";
-					if (get_content($url . '/DATE') =~ /^\d+$/gs) {
-						print "ok\n";
-						push(@$links, $url);
-					} else {
-						print "failed\n";
-					}
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	my $table = $tree->look_down(
+		'_tag' => 'th',
+		sub {
+			$_[0]->as_text =~ /last stat/
+		},
+	)->look_up('_tag' => 'table');
+
+	for my $row ($table->look_down('_tag' => 'tr')) {
+		my @tds = $row->look_down('_tag' => 'td');
+		if (@tds and defined $tds[4]) {
+			my $link = $tds[0]->look_down('_tag' => 'a');
+			if ($link and $tds[4]->as_text eq "ok") {
+				my $url = $link->attr('href');
+				$url =~ s#/$##;
+				print "\t", $url, ": ";
+				if (get_content($url . '/zzz/time.txt') =~ /^\d+\s.*apache\.org$/gs) {
+					print "ok\n";
+					push(@$links, $url);
+				} else {
+					print "failed\n";
 				}
 			}
 		}
+	}
 }
 
 ### CPAN
@@ -169,22 +223,33 @@ sub parse_cpan {
 	my $response = shift;
 	my $links = shift;
 	
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		my $hostlist = $tree->look_down(
-			'_tag' => 'a',
-			sub {
-				$_[0]->attr('name') =~ /^hostlist$/
-			},
-		);
-	
-		for my $link ($tree->look_down('_tag' => 'a')) {
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	my $hostlist = $tree->look_down(
+		'_tag' => 'h2',
+		sub {
+			$_[0]->attr('id') =~ /^hostlist$/
+		},
+	);
+
+	for my $sub ($hostlist->right()) {
+		last if ($sub->attr('id') =~ /^feedback$/i);
+		for my $link ($sub->look_down('_tag' => 'a')) {
 			last if ($link->attr('name') =~ /^rsync$/i);
-			next if ($link->attr('href') =~ /^\#/);
-			next if ($link->attr('href') eq "");
-			print "\t", $link->attr('href'), ": ok\n";
-			push(@$links, $link->attr('href'));
+
+			my $url = $link->attr('href');
+
+			# Only accept ftp/http links
+			next if ($url !~ m#^(ftp|http)://#);
+
+			# Sanity check: Link content must match href
+			my $content = join('',$link->content_list());
+			next if ($url ne $content);
+
+			print "\t", $url, ": ok\n";
+			push(@$links, $url);
 		}
+	}
 }
 
 ### CTAN
@@ -192,20 +257,20 @@ sub parse_ctan {
 	my $response = shift;
 	my $links = shift;
 
-		for my $line (split(/\r?\n/, $response->decoded_content)) {
-			# Typical line:
-			#    URL: ftp://carroll.aset.psu.edu/pub/CTAN
-			if ($line =~ /^\s+URL: (\S+)$/) {
-				my $url = $1;
-				print "\t", $url, ": ";
-				if (get_content($url . '/CTAN.sites')) {
-					print "ok\n";
-					push(@$links, $url);
-				} else {
-					print "failed\n";
-				}
+	for my $line (split(/\r?\n/, $response->decoded_content)) {
+		# Typical line:
+		#    URL: ftp://carroll.aset.psu.edu/pub/CTAN
+		if ($line =~ /^\s+URL: ((ftp|http):\S+)$/) {
+			my $url = $1;
+			print "\t", $url, ": ";
+			if (get_content($url . '/CTAN.sites')) {
+				print "ok\n";
+				push(@$links, $url);
+			} else {
+				print "failed\n";
 			}
 		}
+	}
 }
 
 ### Debian
@@ -213,20 +278,20 @@ sub parse_debian {
 	my $response = shift;
 	my $links = shift;
 
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		my $table = $tree->look_down(
-			'_tag' => 'th',
-			sub { $_[0]->as_text eq "Country" },
-		)->look_up('_tag' => 'table');
-		if ($table) {
-			for my $link ($table->look_down('_tag' => 'a')) {
-				if ($link) {
-					print "\t", $link->attr('href'), ": ok\n";
-					push(@$links, $link->attr('href'));
-				}
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	my $table = $tree->look_down(
+		'_tag' => 'th',
+		sub { $_[0]->as_text eq "Country" },
+	)->look_up('_tag' => 'table');
+	if ($table) {
+		for my $link ($table->look_down('_tag' => 'a')) {
+			if ($link) {
+				print "\t", $link->attr('href'), ": ok\n";
+				push(@$links, $link->attr('href'));
 			}
 		}
+	}
 }
 
 ### FreeBSD
@@ -234,34 +299,26 @@ sub parse_freebsd {
 	my $response = shift;
 	my $links = shift;
 
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		my $tag = $tree->look_down(
-			'_tag' => 'div',
-			sub { $_[0]->attr('class') eq "VARIABLELIST" },
-		);
-		if ($tag) {
-			FREEBSDLINKS: for my $link ($tag->look_down('_tag' => 'a')) {
-				if ($link) {
-					my $url = $link->attr('href');
-					next if ($url =~ m#^rsync://#);
-					$url =~ s,/$,,;
-					$url = $url . '/ports/distfiles/';
-					for my $num (0..2) {
-						my $tempurl = $url . 'exifautotran.txt';
-						print "\t", $tempurl, ": ";
-						my $content = get_content($tempurl);
-						if ($content =~ /Transforms Exif files/gs) {
-							print "ok\n";
-							push(@$links, $url);
-							next FREEBSDLINKS;
-						} else {
-							print "failed\n";
-						}
-					}
+	FREEBSDLINKS: for my $line (split(/\r?\n/, $response->decoded_content)) {
+		if ($line =~ /href=\"((ftp|http):\S+)\"/) {
+			my $url = $1;
+			print "\t", $url, ": \n";
+			$url = $url . 'ports/distfiles/';
+			for my $num (0..2) {
+				my $tempurl = $url . 'exifautotran.txt';
+				print "\t", $tempurl, ": ";
+				my $content = get_content($tempurl);
+				if ($content =~ /Transforms Exif files/gs) {
+					print "ok\n";
+					push(@$links, $url);
+					next FREEBSDLINKS;
+				} else {
+					print "failed\n";
 				}
 			}
 		}
+	}
+	@$links=uniq @$links;
 }
 
 ### GIMP
@@ -269,33 +326,33 @@ sub parse_gimp {
 	my $response = shift;
 	my $links = shift;
 
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		my $dl = $tree->look_down(
-			'_tag' => 'dl',
-			sub { $_[0]->attr('class') eq "download-mirror" },
-		);
-		if ($dl) {
-			GIMPLINKS: for my $link ($dl->look_down('_tag' => 'a')) {
-				if ($link) {
-					next if ($link->look_up('_tag' => 'dd')->as_text =~ /WAIX/);
-					my $url = $link->attr('href');
-					next if ($url =~ m#^rsync://#);
-					$url = $url . '/' unless ($url =~ m#/$#);
-					for my $num (0..2) {
-						my $tempurl = $url . 'gimp/' x $num;
-						print "\t", $tempurl, ": ";
-						if (get_content($tempurl . 'README') =~ /This is the root directory of the official GIMP/) {
-							print "ok\n";
-							push(@$links, $tempurl);
-							next GIMPLINKS;
-						} else {
-							print "failed\n";
-						}
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	my $dl = $tree->look_down(
+		'_tag' => 'dl',
+		sub { $_[0]->attr('class') eq "download-mirror" },
+	);
+	if ($dl) {
+		GIMPLINKS: for my $link ($dl->look_down('_tag' => 'a')) {
+			if ($link) {
+				next if ($link->look_up('_tag' => 'dd')->as_text =~ /WAIX/);
+				my $url = $link->attr('href');
+				next if ($url =~ m#^rsync://#);
+				$url = $url . '/' unless ($url =~ m#/$#);
+				for my $num (0..2) {
+					my $tempurl = $url . 'gimp/' x $num;
+					print "\t", $tempurl, ": ";
+					if (get_content($tempurl . 'README') =~ /This is the root directory of the official GIMP/) {
+						print "ok\n";
+						push(@$links, $tempurl);
+						next GIMPLINKS;
+					} else {
+						print "failed\n";
 					}
 				}
 			}
 		}
+	}
 }
 
 ### Gnome
@@ -303,23 +360,23 @@ sub parse_gnome {
 	my $response = shift;
 	my $links = shift;
 
-		my $finder = URI::Find->new(
-			sub {
-				my ( $url, $orig_uri ) = @_;
-				return if ($url =~ /^mailto/);
-				$url =~ s#/$##;
-				print "\t", $url, ": ";
-				if (get_content($url . '/LATEST') =~ /download.gnome.org/gs) {
-					print "ok\n";
-					push(@$links, $url);
-				} else {
-					print "failed\n";
-				}
-			},
-		);
+	my $finder = URI::Find->new(
+		sub {
+			my ( $url, $orig_uri ) = @_;
+			return if ($url =~ /^mailto/);
+			$url =~ s#/$##;
+			print "\t", $url, ": ";
+			if (get_content($url . '/LATEST') =~ /download.gnome.org/gs) {
+				print "ok\n";
+				push(@$links, $url);
+			} else {
+				print "failed\n";
+			}
+		},
+	);
 
-		my $content = $mech->content;
-		$finder->find( \$content );
+	my $content = $mech->content;
+	$finder->find( \$content );
 }
 
 ### GNU
@@ -327,77 +384,25 @@ sub parse_gnu {
 	my $response = shift;
 	my $links = shift;
 
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		my $content = $tree->look_down(
-			'_tag' => 'div',
-			sub { $_[0]->attr('id') eq "content" },
-		);
-		if ($content) {
-			for my $link ($content->look_down('_tag' => 'a')) {
-				if ($link) {
-					my $url = $link->attr('href');
-					next if ($url =~ /^rsync:\/\//);
-					$url =~ s#(ftp://)+#ftp://#g;
-					$url =~ s#/+$##gs;
-					print "\t", $url, ": ";
-					if (get_content($url . '/=README') =~ /This directory contains programs/gs) {
-						print "ok\n";
-						push(@$links, $url);
-					} else {
-						print "failed\n";
-					}
-				}
-			}
-		}
-}
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	my $content = $tree->look_down(
+		'_tag' => 'div',
+		sub { $_[0]->attr('id') eq "content" },
+	);
+	if ($content) {
+		for my $link ($content->look_down('_tag' => 'a', sub { $_[0]->attr('rel') eq "nofollow" })) {
+			if ($link) {
+				my $url = $link->attr('href');
+				# Only accept ftp/http links
+				next if ($url !~ m#^(ftp|http)://#);
 
-### KDE
-sub parse_kde {
-	my $response = shift;
-	my $links = shift;
+				# Remove trailing slashes
+				$url =~ s#/+$##gs;
 
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		my $table = $tree->look_down(
-			'_tag' => 'th',
-			sub {
-				$_[0]->as_text =~ /last stat/
-			},
-		)->look_up('_tag' => 'table');
-	
-		for my $row ($table->look_down('_tag' => 'tr')) {
-			my @tds = $row->look_down('_tag' => 'td');
-			if (@tds and defined $tds[4]) {
-				my $link = $tds[0]->look_down('_tag' => 'a');
-				if ($link and $tds[4]->as_text eq "ok") {
-					my $url = $link->attr('href');
-					$url =~ s#/$##;
-					print "\t", $url, ": ";
-					if (get_content($url . '/README') =~ /This is the ftp distribution/gs) {
-						print "ok\n";
-						push(@$links, $url);
-					} else {
-						print "failed\n";
-					}
-				}
-			}
-		}
-}
-
-## PostgreSQL
-sub parse_postgresql {
-	my $response = shift;
-	my $links = shift;
-
-		my $tree = HTML::TreeBuilder->new();
-		$tree->parse($response->decoded_content);
-		for my $link ($tree->look_down('_tag' => 'a')) {
-			my $url = $link->attr('href');
-			if ($url =~ s/^.*?\&url=//) {
-				$url = uri_unescape($url);
+				# Finally, test whether the mirror is reachable
 				print "\t", $url, ": ";
-				if (get_content($url . 'README') =~ /This directory contains the current and past releases of PostgreSQL/gs) {
+				if (get_content($url . '/=README') =~ /This directory contains programs/gs) {
 					print "ok\n";
 					push(@$links, $url);
 				} else {
@@ -405,7 +410,84 @@ sub parse_postgresql {
 				}
 			}
 		}
+	}
 }
+
+### KDE
+sub parse_kde {
+	my $response = shift;
+	my $links = shift;
+
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	my $table = $tree->look_down(
+		'_tag' => 'tbody');
+	for my $row ($table->look_down('_tag' => 'tr')) {
+		TDS: for my $tds ($row->look_down('_tag' => 'td')) {
+			my $link = $tds->look_down('_tag' => 'a');
+			next TDS if !($link);
+			my $url = $link->attr('href');
+			next TDS if $url =~ /rsync:/;
+			$url =~ s#/$##;
+			print "\t", $url, ": ";
+			if (get_content($url . '/README') =~ /This is the ftp distribution/gs) {
+				print "ok\n";
+				push(@$links, $url);
+			} else {
+				print "failed\n";
+			}
+		}
+	}
+}
+
+## PostgreSQL
+sub parse_postgresql {
+	my $response = shift;
+	my $links = shift;
+
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	for my $link ($tree->look_down('_tag' => 'a')) {
+		my $url = $link->attr('href');
+		if ($url =~ s/^.*?\&url=//) {
+			$url = uri_unescape($url);
+			print "\t", $url, ": ";
+			if (get_content($url . 'README') =~ /This directory contains the current and past releases of PostgreSQL/gs) {
+				print "ok\n";
+				push(@$links, $url);
+			} else {
+				print "failed\n";
+			}
+		}
+	}
+}
+
+## SourceForge
+sub parse_sourceforge {
+	my $response = shift;
+	my $links = shift;
+
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	# As of right now (4 March, 2014) the information we want, which is the short name
+	# is just hardcoded in the table on 
+	# http://sourceforge.net/apps/trac/sourceforge/wiki/Mirrors, so we can iterate over
+	# those entries and reject anything that has 
+	for my $entry ($tree->look_down('_tag' => 'td')) {
+		my $url = ($entry->content_list)[0];
+		next if $url =~ /HTML/ ; # we can remove anything which is an HTML::Element structure
+		next if $url =~ /[A-Z]/ ; # short names are listed in lower case only (hopefully they won't change this)
+		print "found $url\n";		
+		# construct the real URLs
+		$url = "http://$url.dl.sourceforge.net/sourceforge";	
+		print "$url\n";		
+		# AKH Since it's not completely clear to me if there's a way for us to check the mirror
+		# status for SourceForge mirrors, for now assume that they know what mirrors are working
+		# and update the posted list in a timely manner.  (HA!)
+		push(@$links, $url);
+	}
+}
+
 
 sub timestamp {
 	my (undef, undef, undef, $day, $month, $year) = localtime();

@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -350,7 +350,7 @@ END
 				 'extutils-parsexs',
 				 'io-zlib',
 				 'locale-maketext-simple',
-				 'module-build',
+				 ( $perlver < 5.019000 && 'module-build' ),
 				 'module-corelist',
 				 'module-load',
 				 'module-load-conditional',
@@ -404,8 +404,16 @@ directories exist.
 					$java_cmd_dir = "$dir/Commands";
 				} else { # 1.7 and later, including older formats
 					($dir) = ($javadir =~ m|(\d+\.\d+\.\d+).*jdk|) ;
+					if (not defined $dir) {
+						print STDERR "  - warning, unsure how to handle Java directory $dir\n" if ($options{debug});
+						next;
+					}
 					$java_test_dir = "$javadir/bin";
 					($java_cmd_dir) = ($java_test_dir =~ m|/.*/((.*)?jdk/.*/bin)|);
+					if (not defined $java_cmd_dir) {
+						print STDERR "  - warning, unsure how to determine Java command directory from $java_test_dir\n" if ($options{debug});
+						next;
+					}
 					$java_inc_dir = $java_cmd_dir;
 					$java_inc_dir =~ s/bin/include/;
 				}

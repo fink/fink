@@ -1,11 +1,11 @@
 Generated from $Fink: install.xml,v 1.45 2013/11/01 02:27:03 alexkhansen Exp
 $
 
- Fink 0.36.0 Installation
-==========================
+ Fink 0.36.3.1 Installation
+============================
 
 These are the installation instructions for the "source" distribution based
-on "fink-0.36.0" , intended for use with OS X v.10.6 and later.
+on "fink-0.36.3.1" , intended for use with OS X v.10.6 and later.
 
 This document does not apply to the binary distribution 
 [http://fink.sourceforge.net/download/index.php].
@@ -67,27 +67,27 @@ You need:
 
  First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.36.0.tar.gz" file to your home folder (it
-might also show up as "fink-0.36.0.tar" if you used Safari to download it).
-Then, open Terminal.app and follow the session below. Computer output is in
-"normal face" , your input is in "bold face" (or otherwise highlighted). The
-actual input prompts from the shell may vary, and some chunks of the output
-have been omitted ( "..." ).
+Start out by copying the "fink-0.36.3.1.tar.gz" file to your home folder (it
+might also show up as "fink-0.36.3.1.tar" if you used Safari to download
+it). Then, open Terminal.app and follow the session below. Computer output
+is in "normal face" , your input is in "bold face" (or otherwise
+highlighted). The actual input prompts from the shell may vary, and some
+chunks of the output have been omitted ( "..." ).
 
 Note: on 10.8 and 10.9, after you start the install process you may see
 dialog windows asking whether you want to install XQuartz. If you want to do
 so, go ahead. You won't have to stop the Fink install to do that.
 
-   [frodo:~] testuser% tar_xf_fink-0.36.0.tar.gz
-   [frodo:~] testuser% cd_fink-0.36.0
-   [frodo:~/fink-0.36.0] testuser% ./bootstrap
+   [frodo:~] testuser% tar xf fink-0.36.3.1.tar.gz
+   [frodo:~] testuser% cd fink-0.36.3.1
+   [frodo:~/fink-0.36.3.1] testuser% ./bootstrap
    
    Fink must be installed and run with superuser (root) privileges
    ...
    Choose a method: [1] 1
    
+   sudo /Users/testuser/fink-0.36.3.1/bootstrap .sudo '/sw'
    Password: (your normal password here)
-   sudo /Users/testuser/fink-0.36.0/bootstrap .sudo '/sw'
    ...
    OK, I'll ask you some questions and update the configuration file in
    '/sw/etc/fink.conf'.
@@ -98,7 +98,7 @@ so, go ahead. You won't have to stop the Fink install to do that.
    means, it is safe to leave it at its default.) [] (press return)
    
    "Fink can set the UID and GID of its build user dynamically...
-   ...Allow Fink to set the UID/GID dynamically? [Y] (press_return)
+   ...Allow Fink to set the UID/GID dynamically? [Y] (press return)
    
    (1)	Quiet (do not show download statistics)
    (2)	Low (do not show tarballs being expanded)
@@ -132,8 +132,8 @@ so, go ahead. You won't have to stop the Fink install to do that.
    ...
    
    You should now have a working Fink installation in '/sw'.
-   [frodo:~/fink-0.36.0] testuser% cd
-   [frodo:~] testuser% rm_-r_fink-0.36.0
+   [frodo:~/fink-0.36.3.1] testuser% cd
+   [frodo:~] testuser% rm -r fink-0.36.3.1
    [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and
@@ -176,7 +176,7 @@ descriptions. To do this, in your new Terminal.app window, ether use:
    Fink has the capability to run the CVS commands as a normal user. That has some
    advantages - it uses that user's CVS settings files and allows the package
    descriptions to be edited and updated without becoming root. Please specify the
-   user login name that should be used: [&lt;your username&gt;] (press return)
+   user login name that should be used: [<your username>] (press return)
    
    For Fink developers only: Enter your SourceForge login name to set up full CVS
    access. Other users, just press return to set up anonymous read-only access.
@@ -284,9 +284,8 @@ You can now install packages with the "fink" command, like this:
    ...
 
 If these instructions don't work for you, well, you'll have to take the time
-to read through the rest of this document and the online FAQ 
-[http://fink.sourceforge.net/faq/]. You can also ask on the fink-users mailing list 
-[http://fink.sourceforge.net/lists/fink-users.php], but
+to read through the rest of this document and the online FAQ [/faq/]. You
+can also ask on the fink-users mailing list [/lists/fink-users.php], but
 expect to be pointed back at the documentation when your problem actually is
 well-documented.
 
@@ -349,18 +348,18 @@ won't work.
 
  Installation
 --------------
-First, you need to unpack the fink-0.36.0.tar.gz tarball (it might also show
-up as "fink-0.36.0.tar" if you used Safari to download it). So, in a
+First, you need to unpack the fink-0.36.3.1.tar.gz tarball (it might also
+show up as "fink-0.36.3.1.tar" if you used Safari to download it). So, in a
 terminal window, go to the directory where you put the tarball, and run this
 command:
 
-   tar xf fink-0.36.0.tar.gz
+   tar xf fink-0.36.3.1.tar.gz
 
-You now have a directory named fink-0.36.0. Change to it with "cd
-fink-0.36.0" .
+You now have a directory named fink-0.36.3.1. Change to it with "cd
+fink-0.36.3.1" .
 
 The actual installation is performed by the perl script bootstrap. So, to
-start installation, go to the fink-0.36.0 directory and run this command:
+start installation, go to the fink-0.36.3.1 directory and run this command:
 
    ./bootstrap
 

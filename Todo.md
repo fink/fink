@@ -30,5 +30,3 @@ Major
 * Spotlight might be able to notice new .info files for Fink, so updating can happen in the background.
 
 * There should be a better way than `passwd` for packages to use new user/groups. See branch UID/GID.
-
-* As much as possible of fink should work as non-root. Especially important that '`fink build`' should work, in case we ever want to use a build farm.

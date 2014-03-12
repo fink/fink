@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -400,7 +400,5 @@ sub do_direct_cvs {
 
 	die "Updating using $vcs failed. Check the error messages above.\n" if ($errors);
 }
-
-=cut
 
 1;

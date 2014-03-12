@@ -95,7 +95,7 @@ Splitoff: <<
   <<
   BuildDependsOnly: true
   DocFiles: README* AUTHORS COPYING* NEWS THANKS ChangeLog*
-  Description: GNU Internationalization utils (Development Files)
+  Description: Development files for libgettextpo2-shlibs
   Files: include lib/*.a lib/*.la lib/libgettextpo.dylib 
 <<
 

@@ -32,7 +32,13 @@ if ($> == 0) {
 	#       short   l_type;     /* lock type: read/write, etc. */
 	#       short   l_whence;   /* type of l_start */
 	#   };
-	my $struct_flock = pack("lllliss", (0, 0), (0, 0), 0, F_WRLCK, SEEK_SET);
+	# _types.h declares:
+	#   typedef __int64_t __darwin_off_t;
+	#   typedef __int32_t __darwin_pid_t;
+	# FIXME: add self-test for order & size of fields in struct.
+	# The "right way" is to use direct access, but compiled-C perl
+	# modules are problematic for runtime fink core.
+	my $struct_flock = pack(@PACKARGS@, 0, F_WRLCK, SEEK_SET);
 	my $lock_ok = fcntl(LOCK, F_SETLK, $struct_flock);
 	unless ($lock_ok || $! == EOPNOTSUPP || $! == ENOLCK) {
 		die "lockwait: Can't get lock: $!" unless $! == EAGAIN || $! == EACCES;

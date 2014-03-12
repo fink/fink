@@ -102,7 +102,7 @@ but this is not necessary in most circumstances. The default trees are
 .Pp
 The order of trees is meaningful, as packages from later trees may override
 packages from earlier ones.
-.It Cm Distribution: Ar 10.6, 10.7, or 10.8
+.It Cm Distribution: Ar 10.6, 10.7, 10.8, or 10.9.
 .Nm fink
 needs to know which version of Mac OS X you are running. Mac OS X versions up to 10.5 are no longer supported by this version of
 .Nm fink.
@@ -204,6 +204,28 @@ speaking,
 uses the value of this option in MAKEFLAGS=-j. Running
 .Cm fink configure
 will tell you how many active CPUs/cores are available on your system.
+.It Cm AutoUid: Ar boolean
+This option specifies whether fink should dynamically allocate the UID and GID
+of its unprivileged fink-bld user if that user is absent.
+.It Cm FinkBldUid: Ar positive integer
+This item specifies the current UID for the fink-bld user. The new setting will 
+take effect when you run a fink operation that can
+build a package, such as 
+.Cm selfupdate,
+.Cm build,
+.Cm rebuild,
+or
+.Cm install.
+.It Cm AutoUidMin: Ar positive integer
+Minimum value for the pool of values from which fink will attempt to find an
+unused UID or GID automatically if
+.Cm AutoUid: true 
+is set.
+.It Cm AutoUidMax: Ar positive integer
+Maximum value for the pool of values from from which fink will attempt to find an
+unused UID or GID automatically if
+.Cm AutoUid: true 
+is set.
 .El
 .\"
 .\"
@@ -443,7 +465,7 @@ Defaults to
 (requires Mac::Growl to operate).  The available plugins are listed in the output of
 "fink plugins".
 .nf
-See the wiki at http://wiki.finkproject.org/index.php/Fink:Notification_Plugins
+See the wiki at https://github.com/fink/fink/wiki/Notification-plugins
 for more information.
 .fi
 .It Cm AutoScanpackages: Ar boolean

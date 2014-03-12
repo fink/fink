@@ -40,6 +40,3 @@ happen in the background.
 
 * there should be a better way than passwd for packages to use new user/groups.
 See branch UID/GID.
-
-* as much as possible of fink should work as non-root. Especially important that
-'fink build' should work, in case we ever want to use a build farm.

@@ -3,10 +3,10 @@
 <!--
 Generated from $Fink: install.xml,v 1.45 2013/11/01 02:27:03 alexkhansen Exp $
 -->
-<title>Fink Documentation - Fink 0.36.0 Installation</title></head><body><h1 style="text-align: center;">Fink 0.36.0 Installation</h1>
+<title>Fink Documentation - Fink 0.36.3.1 Installation</title></head><body><h1 style="text-align: center;">Fink 0.36.3.1 Installation</h1>
 <p>
 These are the installation instructions for the "source" distribution
-based on <tt style="white-space: nowrap;">fink-0.36.0</tt>, intended for use with OS X v.10.6 and later.</p>
+based on <tt style="white-space: nowrap;">fink-0.36.3.1</tt>, intended for use with OS X v.10.6 and later.</p>
 <p>
 This document does not apply to the "<a href="http://fink.sourceforge.net/download/index.php">binary</a>" distribution.
 </p>
@@ -77,8 +77,8 @@ I'm talking hours or even days here.
 <h3><a name="install-fast.install">1.2 First Time Installation Fast
 Track</a></h3>
 <p>
-Start out by copying the <tt style="white-space: nowrap;">fink-0.36.0.tar.gz</tt>
-file to your home folder (it might also show up as <tt style="white-space: nowrap;">fink-0.36.0.tar</tt> if you
+Start out by copying the <tt style="white-space: nowrap;">fink-0.36.3.1.tar.gz</tt>
+file to your home folder (it might also show up as <tt style="white-space: nowrap;">fink-0.36.3.1.tar</tt> if you
 used Safari to download it).
 Then, open Terminal.app and follow the session below.
 Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your input is in
@@ -90,15 +90,15 @@ the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 dialog windows asking whether you want to install XQuartz.
 If you want to do so, go ahead.  You won't have to stop the Fink install
 to do that.</p>
-<pre>[frodo:~] testuser% <b>tar xf fink-0.36.0.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.36.0</b>
-[frodo:~/fink-0.36.0] testuser% <b>./bootstrap</b>
+<pre>[frodo:~] testuser% <b>tar xf fink-0.36.3.1.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.36.3.1</b>
+[frodo:~/fink-0.36.3.1] testuser% <b>./bootstrap</b>
 
 Fink must be installed and run with superuser (root) privileges
 ...
 Choose a method: [1] <b>1</b>
 
-sudo /Users/testuser/fink-0.36.0/bootstrap .sudo '/sw'
+sudo /Users/testuser/fink-0.36.3.1/bootstrap .sudo '/sw'
 Password: <b>(your normal password here)</b>
 ...
 OK, I'll ask you some questions and update the configuration file in
@@ -144,8 +144,8 @@ Bootstrapping a base system via /sw/bootstrap.
 ...
 
 You should now have a working Fink installation in '/sw'.
-[frodo:~/fink-0.36.0] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.36.0</b>
+[frodo:~/fink-0.36.3.1] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.36.3.1</b>
 [frodo:~] testuser% <b>/sw/bin/pathsetup.sh</b></pre>
 <p>
 The last command runs a little script to help set up your Unix paths
@@ -368,19 +368,19 @@ Using symlinks to trick the bootstrap script simply won't work.
 
 <h3><a name="install-first.install">2.3 Installation</a></h3>
 <p>
-First, you need to unpack the fink-0.36.0.tar.gz tarball (it might also show up as <tt style="white-space: nowrap;">fink-0.36.0.tar</tt> if you
+First, you need to unpack the fink-0.36.3.1.tar.gz tarball (it might also show up as <tt style="white-space: nowrap;">fink-0.36.3.1.tar</tt> if you
 used Safari to download it).  So, in a terminal window, go to the directory where you put the tarball, and run this
 command:
 </p>
-<pre>tar xf fink-0.36.0.tar.gz</pre>
+<pre>tar xf fink-0.36.3.1.tar.gz</pre>
 <p>
-You now have a directory named fink-0.36.0.
-Change to it with <tt style="white-space: nowrap;">cd fink-0.36.0</tt>.
+You now have a directory named fink-0.36.3.1.
+Change to it with <tt style="white-space: nowrap;">cd fink-0.36.3.1</tt>.
 </p>
 <p>
 The actual installation is performed by the perl script
 bootstrap.
-So, to start installation, go to the fink-0.36.0 directory and run
+So, to start installation, go to the fink-0.36.3.1 directory and run
 this command:
 </p>
 <pre>./bootstrap</pre>

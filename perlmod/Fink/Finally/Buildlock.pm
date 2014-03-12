@@ -3,7 +3,7 @@
 # Fink::Finally::Buildlock module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2006-2013 The Fink Package Manager Team
+# Copyright (c) 2006-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -46,7 +46,7 @@ Buildlocks are designed to prevent concurrent fink processes from interfering wi
 
 For example, if one fink process is compiling a package "foo" that has a build-time dependency on the package "bar-dev", that fink process will set a build-lock that prevents another fink (or dpkg or apt or...) from removing the bar-dev package until the first fink process finishes building the package foo. In addition, buildlocks prevent concurrent builds of any given package (name-version-revision) to prevent the build processes from over-writing each other's files.
 
-See L<http://wiki.finkproject.org/index.php/Fink:buildlocks> for more
+See L<https://github.com/fink/fink/wiki/Buildlocks> for more
 information.
 
 =head1 CLASS METHODS
@@ -128,7 +128,7 @@ Description: Package compile-time lockfile
    $pkgname ($pkgvers)
  and the build process begun at $timestamp
  .
- Web site: http://wiki.finkproject.org/index.php/Fink:buildlocks
+ Web site: https://github.com/fink/fink/wiki/Buildlocks
  .
  Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
 Maintainer: Fink Core Group <fink-core\@lists.sourceforge.net>
@@ -233,7 +233,7 @@ Regardless of the cause of the lock failure, don't worry: you have not
 wasted compiling time! Packages that had been completely built before
 this error occurred will not have to be recompiled.
 
-See http://wiki.finkproject.org/index.php/Fink:buildlocks for more information.
+See https://github.com/fink/fink/wiki/Buildlocks for more information.
 EOMSG
 
 		# Failure due to dependency problems leaves lockpkg in an

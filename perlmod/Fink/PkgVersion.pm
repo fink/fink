@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -2463,6 +2463,9 @@ sub find_debfile {
 	# maybe it's available from the bindist?
 	if ($config->binary_requested()) {
 		my $epoch = $self->get_epoch();
+		# Fix for Debarch since Apt converts _ into %5f
+		my $debarch = $config->param('Debarch');
+		$debarch =~ s/_/%5f/g;
 		# the colon (':') for the epoch needs to be url encoded to
 		# '%3a' since likes to store the debs in its cache like this
 		$fn = sprintf "%s/%s_%s%s-%s_%s.deb",
@@ -2471,7 +2474,7 @@ sub find_debfile {
 			$epoch ? $epoch.'%3a' : '',
 			$self->get_version(),
 			$self->get_revision(),
-			$config->param('Debarch');
+			$debarch;
 		if (-f $fn) {
 			return $fn;
 		}
@@ -3187,6 +3190,10 @@ sub fetch_deb {
 	if ($dryrun) {
 		$aptcmd .= "--dry-run ";
 	}
+	# Newer apt does a sign authentication, since we don't have that in
+	# place yet, we need to ignore it.  That way it doesn't stop for
+	# interaction, not to mention it defaults to 'N'. 0.6.8 is required!
+	#$aptcmd .= "--allow-unauthenticated ";
 	$aptcmd .= "--ignore-breakage --download-only install " .
 		join(' ', map {
 			sprintf "%s=%s", $_->get_name(), $_->get_fullversion
@@ -5351,17 +5358,22 @@ sub get_perl_dir_arch {
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
-			if (Fink::Services::get_kernel_vers() ge '11') {
+			### FIXME: instead of hardcoded expectation of system-perl
+			### perl kernel, check if matches %v of system-perl, then
+			###   $perlversion =~ /(5\.\d+)\.*/;
+			###   $perlcmd = "/usr/bin/arch -%m perl$1";
+			if ($perlversion eq  "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
 				# 10.7 system-perl is 5.12.3, but the only supplied
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.3).
+				$perlcmd = "/usr/bin/arch -%m perl5.12";
+			} elsif ($perlversion eq  "5.12.4" and Fink::Services::get_kernel_vers() eq '12') {
 				# 10.8 system-perl is 5.12.4, but the only supplied
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.4).
+				$perlcmd = "/usr/bin/arch -%m perl5.12";
+			} elsif ($perlversion eq  "5.16.2" and Fink::Services::get_kernel_vers() eq '13') {
 				# 10.9 system-perl is 5.16.2, but the only supplied
 				# interpreter is /usr/bin/perl5.16 (not perl5.16.2)
-				# The above pattern is likely to continue... the following
-				# code deals with it:
-				$perlversion =~ s/5\.(\d+).*/5.$1/;
-				$perlcmd = "/usr/bin/arch -%m perl$perlversion" ;
+				$perlcmd = "/usr/bin/arch -%m perl5.16";
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);

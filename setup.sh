@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -45,7 +45,7 @@ if [ $osMajorVer -eq 10 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.10.0"
 fi
 
-if [ $osMajorVer -eq 11 || $osMajorVer -eq 12 ]; then
+if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
 fi
 
@@ -93,12 +93,19 @@ sed "s|@PREFIX@|$basepath|g" <fink-dpkg-status-cleanup.in >fink-dpkg-status-clea
 # dpkg-lockwait, but to GIVE the full path to the apt-get executable in
 # apt-get-lockwait
 
+# set arguments for pack() up in an architecture-appropriate manner
+if [ "$architecture" = "x86_64" ]; then
+	packargs='"qqiss", 0, 0'
+else
+	packargs='"lllliss", (0, 0), (0, 0)'	
+fi
+
 echo "Creating lockwait wrappers..."
 for prog in dpkg; do
-	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$prog|g" <lockwait.in >$prog-lockwait
+	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$prog|g" -e "s|@PACKARGS@|$packargs|" <lockwait.in >$prog-lockwait
 done
 for prog in apt-get; do
-	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$basepath/bin/$prog|g" <lockwait.in >$prog-lockwait
+	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$basepath/bin/$prog|g" -e "s|@PACKARGS@|$packargs|" <lockwait.in >$prog-lockwait
 done
 
 echo "Creating g++ wrappers..."
