@@ -826,7 +826,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/dselect-methods.patch dpkg-1.17.6/fink/p
 + ";
 diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches/extra-env.patch
 --- dpkg-1.17.6.orig/fink/patches/extra-env.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-13 09:49:38.000000000 -0600
++++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-13 10:04:46.000000000 -0600
 @@ -0,0 +1,184 @@
 +--- dpkg-1.17.6.orig/configure
 ++++ dpkg-1.17.6/configure
@@ -1001,7 +1001,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 ++
 ++		path = getenv("PATH");
 ++		if (path) {
-++			sprintf(buf, "PATH=%s:%s:%s", "/sw/bin", "/sw/sbin", path);
+++			sprintf(buf, "PATH=%s:%s:%s", "@FINKPREFIX@/bin", "@FINKPREFIX@/sbin", path);
 ++			putenv(strdup(buf));
 ++
 ++			return 0;
