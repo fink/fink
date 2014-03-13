@@ -103,6 +103,13 @@ perl -pi -e 's,-Wvla ,,g' configure
 perl -pi -e 's,localedir = \$\(datadir\)\/locale,localedir = \$(datadir)/locale-dselect,g' dselect/Makefile.in
 perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-dselect,g' dselect/po/Makefile.in.in
 perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-perl,g' scripts/Makefile.in scripts/po/Makefile.in.in
+
+# Do not require autotools
+perl -pi -e 's,ACLOCAL=.*$,ACLOCAL=echo,g' configure
+perl -pi -e 's,AUTOCONF=.*$,AUTOCONF=echo,g' configure
+perl -pi -e 's,AUTOMAKE=.*$,AUTOMAKE=echo,g' configure
+perl -pi -e 's,AUTOHEADER=.*$,AUTOHEADER=echo,g' configure
+perl -pi -e 's,ACLOCAL_AMFLAGS =.*$,ACLOCAL_AMFLAGS = ,g' Makefile.in
 <<
 
 SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -F/System/Library/Frameworks/CoreFoundation.framework -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
