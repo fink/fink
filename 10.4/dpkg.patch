@@ -583,6 +583,34 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/
 ++
 ++    return 0;
 ++}
+diff -ruN dpkg-1.17.6.orig/fink/patches/bsdutils.patch dpkg-1.17.6/fink/patches/bsdutils.patch
+--- dpkg-1.17.6.orig/fink/patches/bsdutils.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/bsdutils.patch	2014-03-05 14:49:09.000000000 -0700
+@@ -0,0 +1,24 @@
++--- dpkg-1.16.4.3.orig/scripts/dpkg-genchanges.pl	2014-01-14 11:39:12.000000000 -0700
+++++ dpkg-1.16.4.3/scripts/dpkg-genchanges.pl	2014-03-05 14:46:01.000000000 -0700
++@@ -466,8 +466,8 @@
++ $fields->{'Format'} = $substvars->get('Format');
++ 
++ if (!defined($fields->{'Date'})) {
++-    chomp(my $date822 = `date -R`);
++-    subprocerr('date -R') if $?;
+++    chomp(my $date822 = `date +"%%a, %%d %%b %%Y %%H:%%M:%%S %%z"`);
+++    subprocerr('date +"%%a, %%d %%b %%Y %%H:%%M:%%S %%z"') if $?;
++     $fields->{'Date'}= $date822;
++ }
++ 
++--- dpkg-1.16.4.3.orig/scripts/dpkg-gencontrol.pl	2014-01-15 07:02:16.000000000 -0700
+++++ dpkg-1.16.4.3/scripts/dpkg-gencontrol.pl	2014-03-05 14:48:17.000000000 -0700
++@@ -340,7 +340,7 @@
++     if (!$c) {
++         chdir("$packagebuilddir")
++             or syserr(_g("chdir for du to \`%s'"), $packagebuilddir);
++-        exec('du', '-k', '-s', '--apparent-size', '.')
+++        exec('du', '-k', '-s', '.')
++             or syserr(_g('unable to execute %s'), 'du');
++     }
++     my $duo = '';
 diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches/build-fix.patch
 --- dpkg-1.17.6.orig/fink/patches/build-fix.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/build-fix.patch	2014-02-10 14:15:40.000000000 -0700
@@ -710,6 +738,31 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/c++filt-defaults.patch dpkg-1.17.6/fink/
 + 	                     from_pipe => \$filt->{from},
 + 	                     to_pipe => \$filt->{to});
 + 	syserr(_g('unable to execute %s'), 'c++filt')
+diff -ruN dpkg-1.17.6.orig/fink/patches/coreutils.patch dpkg-1.17.6/fink/patches/coreutils.patch
+--- dpkg-1.17.6.orig/fink/patches/coreutils.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/coreutils.patch	2014-03-05 14:45:28.000000000 -0700
+@@ -0,0 +1,21 @@
++--- dpkg-1.16.4.3.orig/scripts/Dpkg/Checksums.pm	2014-03-05 14:41:33.000000000 -0700
+++++ dpkg-1.16.4.3.orig/scripts/Dpkg/Checksums.pm	2014-03-05 14:41:50.000000000 -0700
++@@ -51,15 +51,15 @@
++ 
++ my $CHECKSUMS = {
++     md5 => {
++-	program => [ 'md5sum' ],
+++	program => [ 'gmd5sum' ],
++ 	regex => qr/[0-9a-f]{32}/,
++     },
++     sha1 => {
++-	program => [ 'sha1sum' ],
+++	program => [ 'gsha1sum' ],
++ 	regex => qr/[0-9a-f]{40}/,
++     },
++     sha256 => {
++-	program => [ 'sha256sum' ],
+++	program => [ 'gsha256sum' ],
++ 	regex => qr/[0-9a-f]{64}/,
++     },
++ };
 diff -ruN dpkg-1.17.6.orig/fink/patches/dselect-methods.patch dpkg-1.17.6/fink/patches/dselect-methods.patch
 --- dpkg-1.17.6.orig/fink/patches/dselect-methods.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/dselect-methods.patch	2013-12-23 09:40:31.000000000 -0700
@@ -773,8 +826,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/dselect-methods.patch dpkg-1.17.6/fink/p
 + ";
 diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches/extra-env.patch
 --- dpkg-1.17.6.orig/fink/patches/extra-env.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-02-07 15:33:10.000000000 -0700
-@@ -0,0 +1,132 @@
++++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-13 09:49:38.000000000 -0600
+@@ -0,0 +1,184 @@
 +--- dpkg-1.17.6.orig/configure
 ++++ dpkg-1.17.6/configure
 +@@ -819,6 +819,7 @@
@@ -871,7 +924,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 + # Check if the condition is fulfilled when preparing a distribution tarball.
 +--- dpkg-1.17.6.orig/src/main.h
 ++++ dpkg-1.17.6/src/main.h
-+@@ -237,6 +237,9 @@
++@@ -242,6 +242,9 @@
 +                          const char *scriptname, const char *desc,
 +                          const char *cidir, char *cidirrest,
 +                          const char *ifok, const char *iffallback);
@@ -895,16 +948,68 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 + 		cmd->filename = cmd->argv[0] = maintscript_pre_exec(cmd);
 + 
 + 		if (maintscript_set_exec_context(cmd, "dpkg_script_t") < 0)
-+@@ -403,3 +408,11 @@
++@@ -403,3 +408,63 @@
 + 
 + 	return 1;
 + }
 ++
 ++#ifdef DPKG_MAINT_ENV_SCRIPT
+++// Need limits.h for POSIX_ARG_MAX
+++#include <limits.h>
+++
+++int execute_env_script(void);
+++
 ++int
 ++execute_env_script() {
-++	notice(_("Injecting %s\n"), DPKG_MAINT_ENV_SCRIPT);
-++	return 0;
+++	debug(dbg_scripts, "Injecting env script (%s)", DPKG_MAINT_ENV_SCRIPT);
+++
+++	struct stat sb;
+++	// is this the right max len?
+++	char buf[_POSIX_ARG_MAX];
+++
+++	if (!stat(DPKG_MAINT_ENV_SCRIPT, &sb)) {
+++		char cmd_full[sizeof(DPKG_MAINT_ENV_SCRIPT) + 16];
+++		sprintf(cmd_full, ". %s; /usr/bin/env", DPKG_MAINT_ENV_SCRIPT);
+++
+++		FILE *cmd_stream;
+++
+++		cmd_stream = popen(cmd_full, "r");
+++		if (cmd_stream) {
+++			debug(dbg_veryverbose, " -> reading %s env results...", DPKG_MAINT_ENV_SCRIPT);
+++			while (fgets(buf, _POSIX_ARG_MAX, cmd_stream)) {
+++				if (!strcmp(buf+strlen(buf)-1, "\n")) {
+++					// chomp trailing newline
+++					buf[strlen(buf)-1]=0;
+++				}
+++				// putenv owns actual passed char*
+++				debug(dbg_veryverbose, " -> adding to ENV '%s'", strdup(buf));
+++				putenv(strdup(buf));
+++			}
+++			pclose(cmd_stream);
+++
+++			return 0;
+++		} else {
+++			debug(dbg_scripts, "popen(%s) failed.", DPKG_MAINT_ENV_SCRIPT);
+++		}
+++	} else {
+++		debug(dbg_scripts, "%s not found.", DPKG_MAINT_ENV_SCRIPT);
+++	}
+++
+++	debug(dbg_scripts, "fallback: just prepend fink to PATH");
+++	{
+++		char *path;
+++
+++		path = getenv("PATH");
+++		if (path) {
+++			sprintf(buf, "PATH=%s:%s:%s", "/sw/bin", "/sw/sbin", path);
+++			putenv(strdup(buf));
+++
+++			return 0;
+++		}
+++		debug(dbg_scripts, "could not read PATH from ENV!");
+++	}
+++
+++	return 1;
 ++}
 ++#endif
 diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/patches/fink-as-vendor.patch
@@ -1012,6 +1117,29 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/pa
 ++}
 ++
 ++1;
+diff -ruN dpkg-1.17.6.orig/fink/patches/fink-bld_no_fakeroot.patch dpkg-1.17.6/fink/patches/fink-bld_no_fakeroot.patch
+--- dpkg-1.17.6.orig/fink/patches/fink-bld_no_fakeroot.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/fink-bld_no_fakeroot.patch	2014-03-05 14:58:48.000000000 -0700
+@@ -0,0 +1,19 @@
++--- dpkg-1.16.4.3.orig/scripts/dpkg-buildpackage.pl	2014-01-15 07:02:15.000000000 -0700
+++++ dpkg-1.16.4.3/scripts/dpkg-buildpackage.pl	2014-03-05 14:53:44.000000000 -0700
++@@ -319,12 +319,15 @@
++ 
++ if ($< == 0) {
++     warning(_g('using a gain-root-command while being root')) if (@rootcommand);
+++} elsif (getpwuid($<) eq "fink-bld") {
+++    warning(_g('removing the gain-root-command while being fink-bld')) if (@rootcommand);
+++    pop  @rootcommand if (@rootcommand);
++ } else {
++     push @rootcommand, 'fakeroot' unless @rootcommand;
++ }
++ 
++ if (@rootcommand and not find_command($rootcommand[0])) {
++-    if ($rootcommand[0] eq 'fakeroot' and $< != 0) {
+++    if ($rootcommand[0] eq 'fakeroot' and $< != 0 and getpwuid($<) ne "fink-bld") {
++         error(_g("fakeroot not found, either install the fakeroot\n" .
++                  'package, specify a command with the -r option, ' .
++                  'or run this as root'));
 diff -ruN dpkg-1.17.6.orig/fink/patches/fink-virtuals.patch dpkg-1.17.6/fink/patches/fink-virtuals.patch
 --- dpkg-1.17.6.orig/fink/patches/fink-virtuals.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/fink-virtuals.patch	2014-02-07 08:51:43.000000000 -0700

@@ -9,7 +9,7 @@ SourceDirectory: dpkg-%v
 Source-MD5: bdb6d88470c901d35fa19d776a8e8828
 
 PatchFile: dpkg.patch
-PatchFile-MD5: ec02fcae8b41a60d0b482a7d3aba57eb
+PatchFile-MD5: 428d34145bfeef70d02adb9e4c6c1b00
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -28,6 +28,10 @@ patch -p1 < fink/patches/so-to-dylib.patch
 #patch -p1 < fink/patches/test-fix.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
 patch -p1 < fink/patches/add-install-info.patch
+patch -p1 < fink/patches/extra-env.patch
+patch -p1 < fink/patches/coreutils.patch
+patch -p1 < fink/patches/bsdutils.patch
+patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
@@ -63,9 +67,6 @@ if [ "%n" = "dpkg-bootstrap" ]; then \
 else \
   perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
 fi
-
-# Fix gnu date -R for BSD date +"%a, %d %b %Y %H:%M:%S %z"
-perl -pi -e "s;date -R;date +'%%a, %%d %%b %%Y %%H:%%M:%%S %%z';g" scripts/dpkg-genchanges.pl
 
 # Fix for older gcc ie: 10.5
 perl -pi -e 's,-Wvla ,,g' configure

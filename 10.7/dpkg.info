@@ -29,12 +29,15 @@ Suggests: apt
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
+#Source: mirror:debian:/pool/main/d/%n/%n_%v.tar.xz
+#Source-MD5: c87f2ae291d460015353e01d121bea85
+# For bootstrap tar.gz version
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
-SourceDirectory: dpkg-%v
 Source-MD5: bdb6d88470c901d35fa19d776a8e8828
+SourceDirectory: dpkg-%v
 
 PatchFile: dpkg.patch
-PatchFile-MD5: ec02fcae8b41a60d0b482a7d3aba57eb
+PatchFile-MD5: 428d34145bfeef70d02adb9e4c6c1b00
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -53,6 +56,10 @@ patch -p1 < fink/patches/so-to-dylib.patch
 #patch -p1 < fink/patches/test-fix.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
 patch -p1 < fink/patches/add-install-info.patch
+patch -p1 < fink/patches/extra-env.patch
+patch -p1 < fink/patches/coreutils.patch
+patch -p1 < fink/patches/bsdutils.patch
+patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
@@ -89,9 +96,6 @@ else \
   perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
 fi
 
-# Fix gnu date -R for BSD date +"%a, %d %b %Y %H:%M:%S %z"
-perl -pi -e "s;date -R;date +'%%a, %%d %%b %%Y %%H:%%M:%%S %%z';g" scripts/dpkg-genchanges.pl
-
 # Fix for older gcc ie: 10.5
 perl -pi -e 's,-Wvla ,,g' configure
 
@@ -107,6 +111,7 @@ SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
 SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework CoreFoundation
 
 ConfigureParams: <<
+  --with-dpkg-env-script=%p/bin/init.sh \
   --disable-start-stop-daemon \
   --with-admindir=%p/var/lib/dpkg \
   --mandir=%p/share/man \
@@ -360,13 +365,13 @@ fi
 
 if [ ! -d %p/var/lib/dpkg ]; then
   mkdir -m 755 -p %p/var/lib/dpkg
-  chown root:root %p/var/lib/dpkg
+  chown root: %p/var/lib/dpkg
 fi
 
 if [ ! -f %p/var/lib/dpkg/status ]; then
   echo > %p/var/lib/dpkg/status
   chmod 644 %p/var/lib/dpkg/status
-  chown root:root %p/var/lib/dpkg/status
+  chown root: %p/var/lib/dpkg/status
 fi
 
 ### end base-files postinst stuff
@@ -413,7 +418,7 @@ create_logfile() {
     logfile=%p/var/log/dpkg.log
     touch $logfile
     chmod 644 $logfile
-    chown root:root $logfile 2>/dev/null || chown 0:0 $logfile
+    chown root: $logfile 2>/dev/null || chown 0:0 $logfile
 }
 
 
@@ -831,6 +836,7 @@ SplitOff3: <<
   Suggests: <<
     gnupg2,
     objtools,
+    coretuils,
     patch
   <<
   Replaces: <<
