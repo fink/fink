@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.17.6
-Revision: 1.1
+Revision: 1.2
 GCC: 4.0
 ## Remove po4a
 BuildDepends: <<
