@@ -826,8 +826,20 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/dselect-methods.patch dpkg-1.17.6/fink/p
 + ";
 diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches/extra-env.patch
 --- dpkg-1.17.6.orig/fink/patches/extra-env.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-13 10:04:46.000000000 -0600
-@@ -0,0 +1,184 @@
++++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-14 11:37:08.000000000 -0600
+@@ -0,0 +1,196 @@
++--- dpkg-1.17.6.orig/config.h.in
+++++ dpkg-1.17.6/config.h.in
++@@ -24,6 +24,9 @@
++ /* default dpkg-deb build compressor */
++ #undef DPKG_DEB_DEFAULT_COMPRESSOR
++ 
+++/* Define if we are including an env script for maintainer script ENV */
+++#undef DPKG_MAINT_ENV_SCRIPT
+++
++ /* Define to 1 if translation of program messages to the user's native
++    language is requested. */
++ #undef ENABLE_NLS
 +--- dpkg-1.17.6.orig/configure
 ++++ dpkg-1.17.6/configure
 +@@ -819,6 +819,7 @@
