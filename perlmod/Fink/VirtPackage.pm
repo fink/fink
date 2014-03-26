@@ -365,7 +365,7 @@ END
 				 'compress-raw-bzip2',
 				);
 		}
-		$perlprovides .= ', ' . join(', ', map { $_ . '-pm' . $shortver } sort @modules);
+		$perlprovides .= ', ' . join(', ', map { $_ ? $_ . '-pm' . $shortver : () } sort @modules);
 		$hash->{provides} = $perlprovides;
 	} else {
 		$hash->{version} = '0-0';
