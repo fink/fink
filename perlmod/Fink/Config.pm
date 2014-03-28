@@ -735,7 +735,7 @@ EOF
 	# We only include the remote debs if the bindist looks like it's ok
 	if (!$self->bindist_check_prefix && !$self->bindist_check_distro) {
 
-		my $apt_mirror = "http://us.dl.sourceforge.net/fink/direct_download";
+		my $apt_mirror = "http://bindist.finkmirrors.net";
 
 		if ($self->has_param("Mirror-apt")) {
 			$apt_mirror = $self->param("Mirror-apt");
@@ -748,14 +748,8 @@ EOF
 # Official binary distribution: download location for packages
 # from the latest release
 EOF
-
-	$body .= "deb $apt_mirror $distribution/release $apt_trees\n\n";
-		$body .= <<EOF;
-# Official binary distribution: download location for updated
-# packages built between releases
-EOF
-
-	$body .= "deb $apt_mirror $distribution/current $apt_trees\n\n";
+	# bindist structure for supported distros as of 3/2014.  
+	$body .= "deb $apt_mirror/$distribution stable $apt_trees\n\n";
 
 	}
 
