@@ -151,14 +151,15 @@ if ($arch eq "i386") {
 				my $arch_intro= "Your hardware is a 64bit-compatible intel " .
 						"processor, so you have the option of running Fink in ".
 						"64bit-only mode.  This is recommended for most ".
-						"users, since newer versions of OS X are all 64bit-only,".
-						"so using the 64bit-only distribution should be closer to".
-						"the distributions for newer OSes.  It used to be the case ".
-						"that the 32-bit distribution had significantly more ".
-						"packages than the 32-bit one, but that gap has closed ".
-						"recently, and the 64bit-only distribution does actually ".
-						"contain some 32-bit packages.  Which mode would you like to use?";
-				
+						"users, since newer versions of OS X are all 64bit-only, ".
+						"so using the 64bit-only distribution should be closer ".
+						"to the distributions for newer OSes.  It used to be ".
+						"the case that the 32-bit distribution had significantly ".
+						"more packages than the 32-bit one, but that gap has ".
+						"closed recently, and the 64bit-only distribution does ".
+						"actually contain some 32-bit packages.  ".
+						"Which mode would you like to use?";
+
 				$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "x86_64" ], choices => [ "mostly 32bit" => "i386" , "mostly 64bit" => "x86_64" ]);
 			} elsif ($vers == 9) {
 				my $arch_intro= "Your hardware is a 64bit-compatible intel " .
@@ -167,9 +168,9 @@ if ($arch eq "i386") {
 						"users, since many more packages are available for the ".
 						"default mode (which is mostly 32bit but includes some ".
 						"64bit packages).  Which mode would you like to use?";
-						
+
 				$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "Default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ]);
-				# it is already the case that $vers == 9 in this condition, so no need to check for it again: 
+				# it is already the case that $vers == 9 in this condition, so no need to check for it again:
 				if ($arch eq "x86_64") {
 					my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
 								     "selecting 64bit-only mode will ".
@@ -256,7 +257,7 @@ print "Architecture: $arch\n";
 
 my ($packageversion, $packagerevision) = &get_version_revision(".",$distribution);
 
-# root method has already been chosen 
+# root method has already been chosen
 # (so I'm not sure why this code is still here...)
 
 my ($rootmethod);
@@ -337,9 +338,9 @@ my $xcode_version;
 {
 	# Compare Xcode version to allowed range via Fink::Services::version_cmp().
 	# AKH  Maybe replace with 'use version', qv() , and the standard comparison
-	# operators once 10.5 is no longer supported, as long as we don't use 
+	# operators once 10.5 is no longer supported, as long as we don't use
 	# epochs in the xcode* virtual packages.
-	
+
 	# minimum Xcode versions:
 	my ($min_xcode, $max_xcode);
 
@@ -349,7 +350,7 @@ my $xcode_version;
 	} elsif ($vers == 10) {
 		$min_xcode="3.2";
 		$max_xcode="4.2";
-	} elsif ($vers == 11) { 
+	} elsif ($vers == 11) {
 		$min_xcode="4.1";
 		$max_xcode="4.6.3";
 	} elsif ($vers == 12) {
@@ -371,7 +372,7 @@ my $xcode_version;
 	($xcode_version) = (`xcodebuild -version` =~ /Xcode\s(\d+\.\d+\.?(\d+)?)\n/);
 	$xcode_version = '0.0' if !defined $xcode_version; # set a value for later
 
-	# Check that we're using the right CLI tools for the OS.	
+	# Check that we're using the right CLI tools for the OS.
 	my ($receipt_to_check, $error_msg);
 	my $error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools\n".
 					 "for your OS X version.  Tools from a prior OS X version won't work properly.\n";
@@ -382,7 +383,7 @@ my $xcode_version;
 		$error_msg = $error_msg1 . "You can install them by running the command\n".
 					  			   "\n\txcode-select --install\n\n".
 					 			   "in a terminal window, and then selecting Install in the dialog window that\n".
-					  			   "pops up, ".$error_msg2;					  				
+					  			   "pops up, ".$error_msg2;
 	} elsif ($vers == 12 or $vers == 11) { 	# 10.7 or 10.8
 		$receipt_to_check = "com.apple.pkg.DeveloperToolsCLI";
 		$error_msg = $error_msg1 . "You can install them via the Downloads Pane of the Xcode Preferences,\n".$error_msg2;
@@ -397,15 +398,15 @@ my $xcode_version;
 		foreach (split /\n/, $result) {
 			($version) = /version:\s(.*)$/;
 			last if $version;
-		} 
+		}
 		# TODO:  Should we check if we're in the legal range of CLI tools on 10.7/10.8?
 		print "$version is OK\n";
-	} elsif (&version_cmp ("$xcode_version", "<<", "4.3")) { # failed, but using monolithic Xcode 
+	} elsif (&version_cmp ("$xcode_version", "<<", "4.3")) { # failed, but using monolithic Xcode
 		print "Skipping.\nXcode $xcode_version is monolithic and includes command-line tools.\n";
 	} else { # all other failures
 		die $error_msg;
 	}
-	
+
 	print "Verifying that installed Xcode app version is supported...\n";
 	if (!$xcode_version) {
 		# OS version specific messages
@@ -438,7 +439,7 @@ my $xcode_version;
 
 ## Check for required features which are normally installed.
 
-## Currently quit if pod2man isn't available and executable, 
+## Currently quit if pod2man isn't available and executable,
 ## to avoid folks nearly building fink and then having it crap out.
 system "./pre-build-test.sh" and exit 1;
 
@@ -474,7 +475,7 @@ if ($retrying || not $installto) {
 		$default =~ /^(.*?)(\d*)$/;
 		$default = $1 . (($2 || 1) + 1);
 	}
-	
+
 	print "\n";
 	if ($default ne '/sw' && !$nonstandard_warning) {
 		print "It looks like you already have Fink installed in /sw, trying "
@@ -541,10 +542,10 @@ foreach my $forbidden (
 	}
 }
 
-# Check whether the whole path containing basepath is world-accessible, 
+# Check whether the whole path containing basepath is world-accessible,
 # since the fink-bld user can't operate when it isn't.
 
-my ($status,$path_test) = &is_accessible($installto,'5'); 
+my ($status,$path_test) = &is_accessible($installto,'5');
 # we need at least world-read and world-execute
 if ($status) {
 	&print_breaking("ERROR: '$path_test' is not a directory.  ".
@@ -558,7 +559,7 @@ if ($path_test) {
 					"\n\nsudo chmod -R o+rx $path_test\n\n".
 	 				"or install Fink into a different directory.");
 	redo OPT_BASEPATH;
-} 
+}
 
 if (-d $installto) {
 	# check existing contents
@@ -764,9 +765,9 @@ EOF
 			$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 		}
-		$endmsg .= " by running either of the commands:  
-'fink selfupdate-rsync', to update via rsync (generally preferred); 
-or  
+		$endmsg .= " by running either of the commands:
+'fink selfupdate-rsync', to update via rsync (generally preferred);
+or
 'fink selfupdate-cvs', to update via CVS (more likely to work through a firewall)."	;
 	} else {
 		# inject worked
@@ -785,9 +786,9 @@ EOF
 		$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
 tarball, or";
 	}
-	$endmsg .= " by running either of the commands:  
-'fink selfupdate-rsync', to update via rsync (generally preferred); 
-or  
+	$endmsg .= " by running either of the commands:
+'fink selfupdate-rsync', to update via rsync (generally preferred);
+or
 'fink selfupdate-cvs', to update via CVS (more likely to work through a firewall).";
 }
 
@@ -807,7 +808,7 @@ $endmsg =~ s/\s+/ /gs;
 $endmsg =~ s/ $//;
 
 $endmsg .= 	" You should also run 'sudo xcodebuild -license' and accept the Xcode ".
-			"license, since some packages will require this.\n" if (&version_cmp ("$xcode_version", ">=", "4.3")); 
+			"license, since some packages will require this.\n" if (&version_cmp ("$xcode_version", ">=", "4.3"));
 print "\n";
 &print_breaking($endmsg);
 print "\n";
