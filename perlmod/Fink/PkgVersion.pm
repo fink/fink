@@ -5042,22 +5042,12 @@ sub get_env {
 		}
 	}
 
-		# fix (possibly interim) for clang strictness introduced with Xcode 5.1
-	my $sw_vers = Fink::Services::get_osx_vers() || Fink::Services::get_darwin_equiv();
-	if ( $sw_vers ge "10.8" ) {
-		my $clang_vers = `clang --version | head -n 1 | cut -d' '  -f 4` ;
-		if  ( $clang_vers ge "5.1" ) {
-			$defaults{"CFLAGS"} = "-Wno-error=unused-command-line-argument-hard-error-in-future";
-			$defaults{"CXXFLAGS"} = "-Wno-error=unused-command-line-argument-hard-error-in-future";
-			$defaults{"CPPFLAGS"} .= " -Wno-error=unused-command-line-argument-hard-error-in-future";
-		}
-	}
-
 	# uncomment this to be able to use distcc -- not officially supported!
 	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
 
 	# Special feature: SetMACOSX_DEPLOYMENT_TARGET does an implicit NoSet:true
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET")) {
+		my $sw_vers = Fink::Services::get_osx_vers() || Fink::Services::get_darwin_equiv();
 		if (defined $sw_vers) {
 			$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
