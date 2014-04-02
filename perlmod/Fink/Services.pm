@@ -1266,7 +1266,7 @@ sub gcc_selected {
 		# what enforce_gcc() expects for prior Xcode versions.  
 		# TODO: get the return value by parsing the output
 		# in case something changes later.
-		if (`/usr/bin/gcc --version` =~ /clang/) {
+		if (`/usr/bin/gcc --version 2>&1` =~ /clang/) {
 			return "4.2";
 		}
 	}
