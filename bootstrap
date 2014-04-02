@@ -389,7 +389,7 @@ my $xcode_version;
 	}
 	
 	print "Verifying that installed Xcode app version is supported...\n";
-	if (!$xcode_version) {
+	if ($xcode_version eq '0.0') {
 		# OS version specific messages
 		if ($vers < 11) {
 			die "ERROR:\n\tXcode is not set up properly.\n";
