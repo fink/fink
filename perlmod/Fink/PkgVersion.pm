@@ -4831,7 +4831,10 @@ for dir in \$PATH ; do
 done
 IFS="\$save_IFS"
 export PATH="\$newpath"
-exec \$compiler -stdlib=libc++ "\$@"
+exec \$compiler -stdlib=libc++ -Wno-error=unused-command-line-argument-hard-error-in-future "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_libcxx_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
@@ -4884,7 +4887,10 @@ fi
 if [ "\$compiler" = "c++" -o "\$compiler" = "g++" ]; then
   compiler="clang++"
 fi
-exec \$compiler "\$@"
+exec \$compiler -Wno-error=unused-command-line-argument-hard-error-in-future "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_clang_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
@@ -4934,6 +4940,9 @@ done
 IFS="\$save_IFS"
 export PATH="\$newpath"
 exec \$compiler "-arch" "$arch" "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_gpp106_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
