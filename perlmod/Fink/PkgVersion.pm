@@ -5167,13 +5167,13 @@ sub get_env {
 			# override on older 10.x (gcc3.3 & 10.4T not supported)
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
-		if  ($config->param("Distribution") eq "10.7" || $config->param("Distribution") eq "10.8") {
+		if  ($config->param("Distribution") ge "10.7") {
 			# Use clang for gcc/g++. Only x86_64 supported so can override single-arch wrappers.
 			$pathprefix = ensure_clang_prefix();
 		}
 		if  ($config->param("Distribution") ge "10.9") {
 			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
-			$pathprefix = ensure_libcxx_prefix();
+			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
