@@ -4831,7 +4831,15 @@ for dir in \$PATH ; do
 done
 IFS="\$save_IFS"
 export PATH="\$newpath"
-exec \$compiler -stdlib=libc++ -Wno-error=unused-command-line-argument-hard-error-in-future "\$@"
+# To avoid extra warning spew, don't add 
+# -Wno-error=unused-command-line-argument-hard-error-in-future
+# when clang doesn't support it .
+if [ "x`clang++ -Wno-error=unused-command-line-argument-hard-error-in-future 2>&1 | grep unknown`" = "x" ]; then
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
+else
+	suppress_hard_error=""
+fi
+exec \$compiler -stdlib=libc++ "\$suppress_hard_error" "\$@"
 # strip path-prefix to avoid finding this wrapper again
 # $basepath/bin is needed to pick up ccache-default
 # This file was auto-generated via Fink::PkgVersion::ensure_libcxx_prefix()
@@ -4887,7 +4895,15 @@ fi
 if [ "\$compiler" = "c++" -o "\$compiler" = "g++" ]; then
   compiler="clang++"
 fi
-exec \$compiler -Wno-error=unused-command-line-argument-hard-error-in-future "\$@"
+# To avoid extra warning spew, don't add 
+# -Wno-error=unused-command-line-argument-hard-error-in-future
+# when clang doesn't support it .
+if [ "x`clang -Wno-error=unused-command-line-argument-hard-error-in-future 2>&1 | grep unknown`" = "x" ]; then
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
+else
+	suppress_hard_error=""
+fi
+exec \$compiler "\$suppress_hard_error" "\$@"
 # strip path-prefix to avoid finding this wrapper again
 # $basepath/bin is needed to pick up ccache-default
 # This file was auto-generated via Fink::PkgVersion::ensure_clang_prefix()
