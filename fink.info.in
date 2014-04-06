@@ -30,6 +30,8 @@ PostInstScript: <<
  rm -f %p/var/db/fink.db
  rm -f %p/var/db/shlibs.db
  rm -f %p/var/lib/fink/fink.db
+ # remove auto-generated compiler wrappers (to be refreshed on next build)
+ rm -rf %p/var/lib/fink/path-prefix-{clang,libcxx}
 <<
 PreRmScript: <<
  # clean up package indexes
