@@ -146,24 +146,43 @@ if ($arch eq "i386") {
 			}
 		} elsif ($is64bit) {
 			# 10.[56] can do either 32- or 64-bit: user choice
-			my $arch_intro= "Your hardware is a 64bit-compatible intel " .
-				"processor, so you have the option of running Fink in ".
-				"64bit-only mode.  This is not recommended for most ".
-				"users, since many more packages are available for the ".
-				"default mode (which is mostly 32bit but includes some ".
-				"64bit packages).  Which mode would you like to use?";
-			$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "Default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ] );
-			if (($vers == 9) and ($arch eq "x86_64")) {
-				my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
-											 "selecting 64bit-only mode will ".
-											 "not allow you to build perl ".
-											 "modules that work with the ".
-											 "built-in /usr/bin/perl.  (They ".
-											 "will work with fink's perl ".
-											 "however.)  Are you sure you ".
-											 "want to do this?", default => 0);
-				&print_breaking("\n");
-				$arch = "i386" unless ($answer);
+			if ($vers == 10) {
+				# prefer 64-bit on 10.6 though:
+				my $arch_intro= "Your hardware is a 64bit-compatible intel " .
+						"processor, so you have the option of running Fink in ".
+						"64bit-only mode.  This is recommended for most ".
+						"users, since newer versions of OS X are all 64bit-only, ".
+						"so using the 64bit-only distribution should be closer ".
+						"to the distributions for newer OSes.  It used to be ".
+						"the case that the 32-bit distribution had significantly ".
+						"more packages than the 32-bit one, but that gap has ".
+						"closed recently, and the 64bit-only distribution does ".
+						"actually contain some 32-bit packages.  ".
+						"Which mode would you like to use?";
+
+				$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "x86_64" ], choices => [ "mostly 32bit" => "i386" , "mostly 64bit" => "x86_64" ]);
+			} elsif ($vers == 9) {
+				my $arch_intro= "Your hardware is a 64bit-compatible intel " .
+						"processor, so you have the option of running Fink in ".
+						"64bit-only mode.  This is not recommended for most ".
+						"users, since many more packages are available for the ".
+						"default mode (which is mostly 32bit but includes some ".
+						"64bit packages).  Which mode would you like to use?";
+
+				$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "Default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ]);
+				# it is already the case that $vers == 9 in this condition, so no need to check for it again:
+				if ($arch eq "x86_64") {
+					my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
+								     "selecting 64bit-only mode will ".
+								     "not allow you to build perl ".
+								     "modules that work with the ".
+								     "built-in /usr/bin/perl.  (They ".
+								     "will work with fink's perl ".
+								     "however.)  Are you sure you ".
+								     "want to do this?", default => 0);
+					&print_breaking("\n");
+					$arch = "i386" unless ($answer);
+				}
 			}
 		} # 32-bit-only machines get no choice, and $arch is already set to 'i386', so do nothing else.
 	}
