@@ -5,6 +5,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.36.x
 \-------------
 
+0.36.4 (2014-04-06)
+	* Activate official binary distributions. 
+	* Official 10.9.2. support
+	* Tweak compiler wrappers to allow packages that pass flags that clang doesn't
+	  understand still to build (-Werror-unused-command-line-argument-hard-error-in-future)
+	  with the Xcode 5.1 Command Line Tools.
+	* Bugfix: fix issue with bootstrapping with no Xcode.app installed.  
+	  
 0.36.3.1 (2013-12-30)
 	* Bugfix: fix dpkg-lockwait and apt-get-lockwait on 10.6/i386
 	  by reverting the changes from dcf07ad27536cea139069ea3570a225bb91590b3
