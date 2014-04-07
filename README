@@ -71,8 +71,8 @@ packages. It also has a complete list of available commands.
  Further Questions?
 --------------------
 If the documentation included here doesn't answer your question, stroll over
-to the Fink website at <http://fink.sourceforge.net/> and check out the Help page there:
-<http://fink.sourceforge.net/help/>. It
+to the Fink website at <http://www.finkproject.org/> and check out the Help page there:
+<http://www.finkproject.org/help/>. It
 will point you at the other documentation that is available and sources for
 support if you need it.
 
@@ -82,11 +82,11 @@ a list of things you can do, like testing or creating packages.
 
  Staying Informed
 ------------------
-The project's website is at <http://fink.sourceforge.net/>.
+The project's website is at <http://www.finkproject.org/>.
 
 To be informed of new releases, go to
-http://fink.sourceforge.net/lists/fink-announce.php
-[http://fink.sourceforge.net/lists/fink-announce.php] and subscribe to the 
+http://www.finkproject.org/lists/fink-announce.php
+[http://www.finkproject.org/lists/fink-announce.php] and subscribe to the 
 fink-announce mailing list.
 The list is moderated and low-traffic.
 

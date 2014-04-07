@@ -1,11 +1,9 @@
-Generated from: `$Fink: install.xml,v 1.45 2013/11/01 02:27:03  alexkhansen Exp$`
-
- Fink 0.36.1 Installation
+ Fink 0.36.4 Installation
 =========================
 
-These are the installation instructions for the "source" distribution based on "fink-0.36.1" , intended for use with OS X v.10.6 and later.
+These are the installation instructions for the "source" distribution based on "fink-0.36.4" , intended for use with OS X v.10.6 and later.
 
-This document does not apply to the "[binary](http://fink.sourceforge.net/download/index.php)" distribution.
+This document does not apply to the "[binary](http://www.finkproject.org/download/index.php)" distribution.
 
 There are instructions for both first time installation and upgrading from a previous version. Fast track instructions for the impatient are at the top.
 
@@ -50,14 +48,14 @@ This includes `perl` and `curl`.
 
 First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.36.1.tar.gz" file to your home folder (it might also show up as "fink-0.36.1.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
+Start out by copying the "fink-0.36.4.tar.gz" file to your home folder (it might also show up as "fink-0.36.4.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
 Note: on 10.8 and 10.9 after you start the install process you may see dialog windows asking whether you want to install Xquartz. 
 If you want to do so, go ahead. You won't have to stop the Fink install to do that.
 
-    [frodo:~] testuser% tar xf fink-0.36.1.tar.gz
-    [frodo:~] testuser% cd fink-0.36.1
-    [frodo:~/fink-0.36.1] testuser% ./bootstrap
+    [frodo:~] testuser% tar xf fink-0.36.4.tar.gz
+    [frodo:~] testuser% cd fink-0.36.4
+    [frodo:~/fink-0.36.4] testuser% ./bootstrap
 
     Fink must be installed and run with superuser (root) privileges
 
@@ -65,7 +63,7 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
     Choose a method: [1] 
    **1**
 
-    sudo /Users/testuser/fink-0.36.1/bootstrap .sudo '/sw'
+    sudo /Users/testuser/fink-0.36.4/bootstrap .sudo '/sw'
     Password:
    **(your normal password here)**
 
@@ -123,8 +121,8 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
    
    You should now have a working Fink installation in '/sw'.
    
-    [frodo:~/fink-0.36.1] testuser% cd
-    [frodo:~] testuser% rm -r fink-0.36.1
+    [frodo:~/fink-0.36.4] testuser% cd
+    [frodo:~] testuser% rm -r fink-0.36.4
     [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and other things) for use with Fink. In most cases, it will run automatically, and prompt you for permission to make changes. If the script fails, you'll have to do things by hand.
@@ -271,7 +269,7 @@ You can now install additional packages with the "`fink`" command, like this:
     Do you want to continue? [Y/n]
     ...
 
-If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://fink.sourceforge.net/faq/). You can also ask on the [fink-users mailing list](http://fink.sourceforge.net/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
+If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://www.finkproject.org/faq/). You can also ask on the [fink-users mailing list](http://www.finkproject.org/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
 
  First Time Installation
 =========================
@@ -317,13 +315,13 @@ A special note about /usr/local: While it is possible to install Fink in /usr/lo
 
 Installation
 --------------
-First, you need to unpack the fink-0.36.1.tar.gz tarball (it might also show up as "fink-0.36.1.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
+First, you need to unpack the fink-0.36.4.tar.gz tarball (it might also show up as "fink-0.36.4.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
 
-    tar xf fink-0.36.1.tar.gz
+    tar xf fink-0.36.4.tar.gz
 
-You now have a directory named fink-0.36.1. Change to it with "`cd fink-0.36.1`".
+You now have a directory named fink-0.36.4. Change to it with "`cd fink-0.36.4`".
 
-The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.36.1 directory and run this command:
+The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.36.4 directory and run this command:
 
     ./bootstrap
 
@@ -384,7 +382,7 @@ Fink uses virtual packages to declare dependencies on X11. As of OS 10.5, we don
 * 10.9: Only XQuartz 2.7.4 and later.
 
 For more information on installing and running X11, refer to the online X11
-on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/](http://fink.sourceforge.net/doc/x11/).
+on Darwin and Mac OS X document [http://www.finkproject.org/doc/x11/](http://www.finkproject.org/doc/x11/).
 
  Upgrading Fink
 ================
