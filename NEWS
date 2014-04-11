@@ -5,7 +5,11 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.36.x
 \-------------
 
-0.36.4.1 (2014-04-06)
+0.36.41 (2014-04-11)
+	* Bugfix: change compiler wrapper test so that clang from Xcode 5.0 doesn't
+	  use -Wno-error=unused-command-line-argument-hard-error-in-future.
+
+0.36.4 (2014-04-06)
 	* Activate official binary distributions. 
 	* Official 10.9.2. support
 	* Bootstrap on 10.6 defaults to 10.6/x86_64.
