@@ -4834,10 +4834,10 @@ export PATH="\$newpath"
 # To avoid extra warning spew, don't add 
 # -Wno-error=unused-command-line-argument-hard-error-in-future
 # when clang doesn't support it .
-if [ "x`clang++ -Wno-error=unused-command-line-argument-hard-error-in-future 2>&1 | grep unknown`" = "x" ]; then
-	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
-else
+if [[ `clang --version | head -n1 | cut -d- -f2 | cut -d')' -f1` < "503.0.38" ]]; then
 	suppress_hard_error=""
+else
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
 fi
 exec \$compiler -stdlib=libc++ "\$suppress_hard_error" "\$@"
 # strip path-prefix to avoid finding this wrapper again
@@ -4898,10 +4898,10 @@ fi
 # To avoid extra warning spew, don't add 
 # -Wno-error=unused-command-line-argument-hard-error-in-future
 # when clang doesn't support it .
-if [ "x`clang -Wno-error=unused-command-line-argument-hard-error-in-future 2>&1 | grep unknown`" = "x" ]; then
-	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
-else
+if [[ "`clang --version | head -n1 | cut -d- -f2 | cut -d')' -f1`" < "503.0.38" ]]; then
 	suppress_hard_error=""
+else
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
 fi
 exec \$compiler "\$suppress_hard_error" "\$@"
 # strip path-prefix to avoid finding this wrapper again
