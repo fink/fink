@@ -49,7 +49,9 @@ for dir in bin sbin \
 	share/fink share/fink/images \
 	var var/run var/run/fink var/run/fink/buildlock \
 	var/lib var/lib/fink var/lib/fink/path-prefix-g++-{3.3,4.0} \
-	var/lib/fink/path-prefix-10.6 ; do
+	var/lib/fink/path-prefix-10.6 \
+	var/lib/fink/path-prefix-clang \
+	var/lib/fink/path-prefix-libcxx ; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -112,6 +114,13 @@ done
 
 install -c -p -m 755 "compiler_wrapper" \
 	    "$basepath/var/lib/fink/path-prefix-10.6/compiler_wrapper"
+
+install -c -p -m 755 "compiler_wrapper-10.7" \
+	    "$basepath/var/lib/fink/path-prefix-clang/compiler_wrapper"
+
+install -c -p -m 755 "compiler_wrapper-10.9" \
+	    "$basepath/var/lib/fink/path-prefix-libcxx/compiler_wrapper"
+
 for file in \
 	cc \
 	c++ c++-4.0 c++-4.2 \
@@ -121,6 +130,17 @@ for file in \
 ; do
     ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-10.6/$file"
 done
+
+for file in cc c++ gcc g++ clang clang++ \
+; do
+	ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-clang/$file"
+done
+
+for file in c++ g++ clang++ \
+; do
+	ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-libcxx/$file"
+done
+
 
 # Gotta do this in install.sh, takes too long for setup.sh
 echo "Creating man pages from POD..."

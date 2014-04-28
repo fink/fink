@@ -114,8 +114,9 @@ for gccvers in 3.3 4.0; do
 		>"g++-wrapper-$gccvers"
 done
 
-echo "Creating compiler_wrapper"
-  sed -e "s|@ARCHITECTURE@|$architecture|g" < compiler_wrapper.in \
-    >"compiler_wrapper"
+echo "Creating compiler wrapper"
+sed -e "s|@ARCHITECTURE@|$architecture|g" -e "s|@PREFIX@|$basepath|g" < compiler_wrapper-10.6.in >"compiler_wrapper"
+sed -e "s|@PREFIX@|$basepath|g" < compiler_wrapper-10.7.in >"compiler_wrapper-10.7"
+sed -e "s|@PREFIX@|$basepeath|g" < compiler_wrapper-10.9.in >"compiler_wrapper-10.9"
 
 exit 0

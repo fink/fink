@@ -34,7 +34,9 @@ test: manifest_check test_setup
 
 # remove various generated files
 clean:
-	rm -f compiler_wrapper
+	rm -f compiler_wrapper 
+	rm -f compiler_wrapper-10.7
+	rm -f compiler_wrapper-10.9
 	rm -f config*
 	rm -f fink
 	rm -f fink-dpkg-status-cleanup
