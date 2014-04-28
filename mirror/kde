@@ -1,5 +1,5 @@
 # Official mirror list: http://files.kde.org/extra/mirrors.html
-Timestamp: 2014-03-03
+Timestamp: 2014-04-14
 
 Primary: ftp://ftp.kde.org/pub/kde
 
@@ -59,23 +59,19 @@ eur-PL: http://piotrkosoft.net/pub/mirrors/ftp.kde.org
 eur-PT: http://mirrors.fe.up.pt/pub/kde
 eur-SE: ftp://archive.sunet.se/pub/X11/kde
 eur-SE: http://archive.sunet.se/pub/X11/kde
-eur-UA: ftp://kde.ip-connect.vn.ua/mirror/kde
 eur-UA: http://kde.ip-connect.vn.ua
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.kde.org/pub/kde
 eur-UK: ftp://kde.mirror.anlx.net
 eur-UK: http://kde.mirror.anlx.net
-eur-UK: http://mirror.catn.com/pub/kde
 eur-UK: http://www.mirrorservice.org/sites/ftp.kde.org/pub/kde
 nam-CA: ftp://mirror.its.dal.ca/kde
 nam-CA: http://mirror.csclub.uwaterloo.ca/kde
 nam-CA: http://mirror.its.dal.ca/kde
 nam-US: ftp://carroll.aset.psu.edu/pub/kde
-nam-US: ftp://chernabog.cc.vt.edu/pub2/kde
 nam-US: ftp://ftp.ussg.iu.edu/pub/kde
 nam-US: ftp://mirror.cc.columbia.edu/pub/software/kde
 nam-US: ftp://mirrors.mit.edu/kde
 nam-US: http://carroll.aset.psu.edu/pub/kde
-nam-US: http://chernabog.cc.vt.edu/pub2/kde
 nam-US: http://ftp.ussg.iu.edu/kde
 nam-US: http://kde.mirrorcatalogs.com
 nam-US: http://kde.mirrors.hoobly.com
