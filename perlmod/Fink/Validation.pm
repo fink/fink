@@ -533,19 +533,19 @@ sub validate_info_file {
 	#
 
 	if ($pkgname =~ /[^+\-.a-z0-9]/) {
-		print "Error: Package name ' $pkgname ' is invalid.\n";
+		print "Error: Package name ' $pkgname ' is invalid. ";
 		print "Package names may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgversion =~ /[^+\-.a-z0-9]/) {
-		print "Error: Version ' $pkgversion ' is invalid.\n";
+		print "Error: Version ' $pkgversion ' is invalid. ";
 		print "Package versions may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgrevision =~ /[^+.a-z0-9]/) {
-		print "Error: Revision ' $pkgrevision ' is invalid.\n";
+		print "Error: Revision ' $pkgrevision ' is invalid. ";
 		print "Package revisions may only contain lowercase letters, numbers,";
 		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
