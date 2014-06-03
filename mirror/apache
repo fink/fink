@@ -1,11 +1,12 @@
 # Official mirror list: http://www.apache.org/mirrors/
-Timestamp: 2014-03-03
+Timestamp: 2014-04-14
 
 Primary: http://www.apache.org/dist
 
 afr-ZA: http://apache.is.co.za
 afr-ZA: http://apache.saix.net
 asi-BD: http://mirrors.ispros.com.bd/apache
+asi-CN: http://apache.dataguru.cn
 asi-CN: http://apache.fayea.com/apache-mirror
 asi-CN: http://mirror.bit.edu.cn/apache
 asi-CN: http://mirror.esocc.com/apache
@@ -24,9 +25,10 @@ asi-JP: http://ftp.riken.jp/net/apache
 asi-JP: http://ftp.tsukuba.wide.ad.jp/software/apache
 asi-JP: http://ftp.yz.yamagata-u.ac.jp/pub/network/apache
 asi-KR: http://apache.mirror.cdnetworks.com
+asi-KR: http://apache.tt.co.kr
+asi-KR: http://mirror.apache-kr.org
 asi-PK: ftp://stingray.cyber.net.pk/apache
 asi-PK: http://stingray.cyber.net.pk/pub/apache
-asi-SA: http://mirrors.isu.net.sa/pub/apache
 asi-SG: http://mirror.nus.edu.sg/apache
 asi-TW: ftp://apache.cdpa.nsysu.edu.tw/Unix/Web/apache
 asi-TW: ftp://ftp.stu.edu.tw/Unix/Web/apache
@@ -45,6 +47,8 @@ aus-AU: http://mirror.ventraip.net.au/apache
 aus-NC: http://mirror.lagoon.nc/pub/apache
 aus-NZ: http://apache.insync.za.net
 eur-AT: ftp://gd.tuwien.ac.at/pub/infosys/servers/http/apache/dist
+eur-AT: ftp://mirror2.klaus-uwe.me/apache
+eur-AT: http://mirror2.klaus-uwe.me/apache
 eur-BE: ftp://apache.belnet.be/mirrors/ftp.apache.org
 eur-BE: http://apache.belnet.be
 eur-BE: http://apache.cu.be
@@ -85,7 +89,6 @@ eur-DK: http://mirrors.dotsrc.org/apache
 eur-DK: http://mirrors.rackhosting.com/apache
 eur-EE: http://servingzone.com/mirrors/apache
 eur-ES: http://apache.rediris.es
-eur-ES: http://ftp.cixug.es/apache
 eur-FI: ftp://ftp.funet.fi/pub/mirrors/apache.org
 eur-FI: http://www.nic.funet.fi/pub/mirrors/apache.org
 eur-FR: ftp://mir1.ovh.net/ftp.apache.org/dist
@@ -101,7 +104,6 @@ eur-FR: http://mirrors.linsrv.net/apache
 eur-FR: http://wwwftp.ciril.fr/pub/apache
 eur-GR: ftp://ftp.cc.uoc.gr/mirrors/apache
 eur-GR: ftp://ftp.forthnet.gr/pub/www/apache
-eur-GR: http://apache.cc.uoc.gr
 eur-GR: http://apache.forthnet.gr
 eur-GR: http://apache.otenet.gr/dist
 eur-GR: http://apache.tsl.gr
@@ -141,10 +143,8 @@ eur-NL: http://ftp.nluug.nl/internet/apache
 eur-NL: http://ftp.tudelft.nl/apache
 eur-NL: http://mirror.nl.webzilla.com/apache
 eur-NL: http://mirrors.supportex.net/apache
-eur-NL: http://www.apache.org/dist
 eur-NL: http://www.eu.apache.org/dist
 eur-NO: ftp://apache.uib.no/pub/apache
-eur-NO: http://apache.komsys.org
 eur-NO: http://apache.uib.no
 eur-NO: http://apache.vianett.no
 eur-PL: ftp://ftp.piotrkosoft.net/pub/mirrors/ftp.apache.org
@@ -210,6 +210,7 @@ nam-US: http://mirror.cogentco.com/pub/apache
 nam-US: http://mirror.metrocast.net/apache
 nam-US: http://mirror.netinch.com/pub/apache
 nam-US: http://mirror.nexcess.net/apache
+nam-US: http://mirror.reverse.net/pub/apache
 nam-US: http://mirror.sdunix.com/apache
 nam-US: http://mirror.symnds.com/software/Apache
 nam-US: http://mirror.tcpdiag.net/apache
@@ -222,6 +223,7 @@ nam-US: http://mirrors.sendthisfile.com/apache
 nam-US: http://mirrors.sonic.net/apache
 nam-US: http://psg.mtu.edu/pub/apache
 nam-US: http://supergsego.com/apache
+nam-US: http://www.apache.org/dist
 nam-US: http://www.bizdirusa.com/mirrors/apache
 nam-US: http://www.carfab.com/apachesoftware
 nam-US: http://www.dsgnwrld.com/am
@@ -231,6 +233,7 @@ nam-US: http://www.gtlib.gatech.edu/pub/apache
 nam-US: http://www.interior-dsgn.com/apache
 nam-US: http://www.motorlogy.com/apache
 nam-US: http://www.poolsaboveground.com/apache
+nam-US: http://www.trieuvan.com/apache
 nam-US: http://www.us.apache.org/dist
 nam-US: http://www.webhostingjams.com/mirror/apache
 nam-US: http://www.whoishostingthis.com/mirrors/apache

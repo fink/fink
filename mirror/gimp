@@ -1,12 +1,16 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2014-03-03
+Timestamp: 2014-04-14
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
 afr-ZA: ftp://ftp.is.co.za/mirror/ftp.gimp.org/gimp
+asi-CN: ftp://mirrors.go-parts.com/gimp
+asi-CN: http://mirrors.go-parts.com/gimp
 asi-JP: ftp://ftp.ring.gr.jp/pub/graphics/gimp
 asi-JP: ftp://ftp.u-aizu.ac.jp/pub/graphics/tools/gimp/gimp
 asi-JP: http://www.ring.gr.jp/pub/graphics/gimp
+aus-AU: ftp://mirrors-au.go-parts.com/gimp
+aus-AU: http://mirrors-au.go-parts.com/gimp
 eur-DE: ftp://artfiles.org/gimp.org/gimp
 eur-DE: ftp://ftp.fernuni-hagen.de/pub/mirrors/www.gimp.org
 eur-DE: ftp://ftp.gwdg.de/pub/misc/grafik/gimp/gimp
@@ -26,14 +30,13 @@ eur-GR: ftp://ftp.cc.uoc.gr/mirrors/gimp/gimp
 eur-GR: http://ftp.cc.uoc.gr/mirrors/gimp/gimp
 eur-IE: ftp://ftp.heanet.ie/mirrors/ftp.gimp.org/pub/gimp
 eur-IE: http://ftp.heanet.ie/mirrors/ftp.gimp.org/pub/gimp
-eur-NL: ftp://ftp.nluug.nl/pub/graphics/gimp
 eur-NL: ftp://ftp.snt.utwente.nl/pub/software/gimp/gimp
-eur-NL: http://ftp.nluug.nl/graphics/gimp
 eur-NL: http://ftp.snt.utwente.nl/pub/software/gimp/gimp
 eur-PL: ftp://ftp.tpnet.pl/pub/graphics/gimp
 eur-PL: ftp://sunsite.icm.edu.pl/pub/graphics/gimp
 eur-PT: ftp://mirrors.dominios.pt/pub/ftp.gimp.org
 eur-PT: http://mirrors.dominios.pt/gimp
+eur-PT: http://mirrors.fe.up.pt/mirrors/ftp.gimp.org/pub/gimp
 eur-RO: http://mirrors.serverhost.ro/gimp
 eur-SE: ftp://ftp.sunet.se/pub/gnu/gimp
 eur-SE: http://ftp.sunet.se/pub/gnu/gimp

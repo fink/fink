@@ -37,14 +37,14 @@ my $package = "fink-mirrors";
 ### check if we're unharmed, and specify files for tarball
 
 my ($file);
-foreach $file (qw( _keys _list)) {
+foreach $file (qw(ChangeLog _keys _list)) {
     if (not -e $file) {
 	print "ERROR: Package incomplete, '$file' is missing.\n";
 	exit 1;
     }
 }
 
-my $packagefiles = "COPYING README README.contacts install.sh postinstall.pl.in " .
+my $packagefiles = "COPYING ChangeLog README README.contacts install.sh postinstall.pl.in " .
     "_keys _list _urls anonymous-cvs apache apt cpan ctan cvs-repository debian developer-cvs freebsd gimp gnome gnu kde master postgresql rsync sourceforge website" ;
 
 my $info_script = "";

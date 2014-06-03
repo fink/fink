@@ -160,7 +160,9 @@ fink-virtual-pkgs.in
 fink.shlibs
 lockwait.in
 g++-wrapper.in
-compiler_wrapper.in
+compiler_wrapper-10.6.in
+compiler_wrapper-10.7.in
+compiler_wrapper-10.9.in
 fink-instscripts.in
 fink-scanpackages.in
 Release

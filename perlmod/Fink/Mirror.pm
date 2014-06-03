@@ -82,7 +82,7 @@ sub new_from_name {
 	# set default values for critical mirrors, in case mirror directory
 	# is not present
 	my %mirrordefaults = (
-		"master" => "Primary: http://distfiles.master.finkmirrors.net/",
+		"master" => "Primary: http://distfiles.master.finkmirrors.net/distfiles/",
 		"rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
 		"sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
 		);
