@@ -22,7 +22,7 @@ Requirements
 You need:
 
  * An installed Mac OS X system, version 10.6 or later. 
-   Earlier versions will not work with fink-0.36.4.1.
+   Earlier versions will not work with fink-0.36.5.
 
  * Development tools. For 10.6, you should install Xcode 3.2.6, which can be
    downloaded from connect.apple.com after registering. For 10.7-10.9,

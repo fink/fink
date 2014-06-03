@@ -5,6 +5,11 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.36.x
 \-------------
 
+0.36.5 (2014-06-03)
+	* Last release to support 10.6.
+	* fix system-java detection for older Java versions.
+	* Additional fixes and enhancements.
+
 0.36.4.1 (2014-04-11)
 	* Bugfix: change compiler wrapper test so that clang from Xcode 5.0 doesn't
 	  use -Wno-error=unused-command-line-argument-hard-error-in-future.
