@@ -530,7 +530,7 @@ your installed packages. The following command in a terminal window will
 work, even if for some reason the Fink tools aren't functioning:
 
    grep -B1 "install ok installed" /sw/var/lib/dpkg/status \
-   | grep "^Package:" | cut -d: -f2 | cut -d\  -f2 &gt; finkinst.txt
+   | grep "^Package:" | cut -d: -f2 | cut -d\  -f2 > finkinst.txt
 
 This will save the list of your packages in the file "finkinst.txt" in the
 current working directory.
