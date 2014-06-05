@@ -4,18 +4,34 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | TBD
 \-------------
+	
 	* Update Debian toolset.
 	* Selfupdate via git and svn.
+
+/-------------
+| fink 0.37.x
+\-------------
+
+0.37.0 "Alabama Antiquarian" (2014-06-03) 
+	* First release not to support 10.6.
+	* Officially recognize OS 10.9.3.
+	* Install compiler wrappers in the .deb rather than autogenerating them.
+	* Additional fixes and enhancements.
 	
 /-------------
 | fink 0.36.x
 \-------------
 
+0.36.5 "Order today" (2014-06-03) "Order today"
+	* Last release to support 10.6.
+	* fix system-java detection for older Java versions.
+	* Additional fixes and enhancements.
+
 0.36.4.1 (2014-04-11)
 	* Bugfix: change compiler wrapper test so that clang from Xcode 5.0 doesn't
 	  use -Wno-error=unused-command-line-argument-hard-error-in-future.
 
-0.36.4 (2014-04-06) "Supplies are limited"
+0.36.4 "Supplies are limited" (2014-04-06)
 	* Activate official binary distributions. 
 	* Official 10.9.2. support
 	* Bootstrap on 10.6 defaults to 10.6/x86_64.
