@@ -24,14 +24,11 @@ You need:
  * An installed Mac OS X system, version 10.6 or later. 
    Earlier versions will not work with fink-0.36.4.1.
 
- * Development tools. For 10.6, you should install Xcode 3.2.6, which can be
-   downloaded from connect.apple.com after registering. For 10.7-10.9,
-   installing the Xcode Command Line Tools is mandatory to use the most
-   current build applications. This can be installed either by downloading
-   it directly via connect.apple.com, through the Xcode application via the
-   Components page of the Downloads tab of the Preferences, or on 10.9 by
-   running the `xcode-select --install` command and choosing the Install 
-   button in the window that pops up, or
+ * The Xcode Command Line Tools are mandatory. This package can be installed
+   either by downloading it directly via developer.apple.com, through the
+   Xcode application, on via the Components page of the Downloads tab of the
+   Preferences on 10.7 and 10.8, or on 10.9 by running the `xcode-select --install` 
+   command and choosing the Install button in the window that pops up, or
    you can install the full Xcode if you prefer. You may also need to use
    this command to update the tools, especially if you're having build
    problems.
