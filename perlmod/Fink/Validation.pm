@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -533,17 +533,20 @@ sub validate_info_file {
 	#
 
 	if ($pkgname =~ /[^+\-.a-z0-9]/) {
-		print "Error: Package name may only contain lowercase letters, numbers,";
+		print "Error: Package name ' $pkgname ' is invalid. ";
+		print "Package names may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgversion =~ /[^+\-.a-z0-9]/) {
-		print "Error: Package version may only contain lowercase letters, numbers,";
+		print "Error: Version ' $pkgversion ' is invalid. ";
+		print "Package versions may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgrevision =~ /[^+.a-z0-9]/) {
-		print "Error: Package revision may only contain lowercase letters, numbers,";
+		print "Error: Revision ' $pkgrevision ' is invalid. ";
+		print "Package revisions may only contain lowercase letters, numbers,";
 		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
 	}

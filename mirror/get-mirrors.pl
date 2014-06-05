@@ -67,17 +67,18 @@ use Getopt::Long;
 
 # map 'site name' to [ proc, URL of mirror list, primary mirror ]
 my %mirror_sites = (
-	'Apache'  => [ \&parse_apache, 'http://www.apache.org/mirrors/', 'http://www.apache.org/dist' ],
-	'CPAN'    => [ \&parse_cpan, 'http://www.cpan.org/SITES.html', 'ftp://ftp.cpan.org/pub/CPAN' ],
-	'CTAN'    => [ \&parse_ctan, 'ftp://tug.ctan.org/tex-archive/README.mirrors', 'ftp://tug.ctan.org/tex-archive' ],
-	'Debian' => [ \&parse_debian, 'http://www.debian.org/mirror/list', 'ftp://ftp.debian.org/debian' ],
-	'FreeBSD' => [ \&parse_freebsd, 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html', 'ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles' ],
-	'Gimp' => [ \&parse_gimp, 'http://www.gimp.org/downloads', 'ftp://ftp.gimp.org/pub/gimp' ],
-	'GNOME' => [ \&parse_gnome, 'http://ftp.gnome.org/pub/GNOME/MIRRORS', 'ftp://ftp.gnome.org/pub/GNOME' ],
-	'GNU' => [ \&parse_gnu, 'http://www.gnu.org/prep/ftp.html', 'ftp://ftp.gnu.org/gnu' ],
-	'KDE' => [ \&parse_kde, 'http://files.kde.org/extra/mirrors.html', 'ftp://ftp.kde.org/pub/kde' ],
+	'Apache'      => [ \&parse_apache, 'http://www.apache.org/mirrors/', 'http://www.apache.org/dist' ],
+	'CPAN'        => [ \&parse_cpan, 'http://www.cpan.org/SITES.html', 'ftp://ftp.cpan.org/pub/CPAN' ],
+	'CTAN'        => [ \&parse_ctan, 'ftp://tug.ctan.org/tex-archive/README.mirrors', 'ftp://tug.ctan.org/tex-archive' ],
+	'Debian'      => [ \&parse_debian, 'http://www.debian.org/mirror/list', 'ftp://ftp.debian.org/debian' ],
+	'FreeBSD'     => [ \&parse_freebsd, 'http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html', 'ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles' ],
+	'Gimp'        => [ \&parse_gimp, 'http://www.gimp.org/downloads', 'ftp://ftp.gimp.org/pub/gimp' ],
+	'GNOME'       => [ \&parse_gnome, 'http://ftp.gnome.org/pub/GNOME/MIRRORS', 'ftp://ftp.gnome.org/pub/GNOME' ],
+	'GNU'         => [ \&parse_gnu, 'http://www.gnu.org/prep/ftp.html', 'ftp://ftpmirror.gnu.org' ],
+	'KDE'         => [ \&parse_kde, 'http://files.kde.org/extra/mirrors.html', 'ftp://ftp.kde.org/pub/kde' ],
 	# FIXME: Format changed, they now only list redirect URls
-#	'PostgreSQL' => [ \&parse_postgresql, 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F', 'ftp://ftp.postgresql.org/pub' ],
+#	'PostgreSQL'  => [ \&parse_postgresql, 'http://wwwmaster.postgresql.org/download/mirrors-ftp?file=%2F', 'ftp://ftp.postgresql.org/pub' ],
+	'SourceForge' => [ \&parse_sourceforge, 'http://sourceforge.net/apps/trac/sourceforge/wiki/Mirrors','http://downloads.sourceforge.net'],
 	);
 
 $debug = 0;
@@ -107,7 +108,7 @@ close (KEYS);
 ### Parse options 
 my @sites_to_check;
 {
-	my ($apache,$cpan,$ctan,$debian,$freebsd,$gimp,$gnome,$gnu,$kde);
+	my ($apache,$cpan,$ctan,$debian,$freebsd,$gimp,$gnome,$gnu,$kde,$sourceforge);
 	GetOptions	(	
 				"apache" => 	\$apache,
 				"cpan" => 		\$cpan,
@@ -118,6 +119,7 @@ my @sites_to_check;
 				"gnome" => 		\$gnome,
 				"gnu" =>		\$gnu,
 				"kde" =>		\$kde,
+				"sourceforge" =>\$sourceforge,
 				);	
 	push @sites_to_check, "Apache" if $apache;
 	push @sites_to_check, "CPAN" if $cpan;
@@ -128,6 +130,7 @@ my @sites_to_check;
 	push @sites_to_check, "GNOME" if $gnome;
 	push @sites_to_check, "GNU" if $gnu;
 	push @sites_to_check, "KDE" if $kde;
+	push @sites_to_check, "SourceForge" if $sourceforge;
 	if (scalar @sites_to_check == 0) { # default when no options chosen
 		@sites_to_check = keys %mirror_sites;
 	}
@@ -458,6 +461,33 @@ sub parse_postgresql {
 		}
 	}
 }
+
+## SourceForge
+sub parse_sourceforge {
+	my $response = shift;
+	my $links = shift;
+
+	my $tree = HTML::TreeBuilder->new();
+	$tree->parse($response->decoded_content);
+	# As of right now (4 March, 2014) the information we want, which is the short name
+	# is just hardcoded in the table on 
+	# http://sourceforge.net/apps/trac/sourceforge/wiki/Mirrors, so we can iterate over
+	# those entries and reject anything that has 
+	for my $entry ($tree->look_down('_tag' => 'td')) {
+		my $url = ($entry->content_list)[0];
+		next if $url =~ /HTML/ ; # we can remove anything which is an HTML::Element structure
+		next if $url =~ /[A-Z]/ ; # short names are listed in lower case only (hopefully they won't change this)
+		print "found $url\n";		
+		# construct the real URLs
+		$url = "http://$url.dl.sourceforge.net/sourceforge";	
+		print "$url\n";		
+		# AKH Since it's not completely clear to me if there's a way for us to check the mirror
+		# status for SourceForge mirrors, for now assume that they know what mirrors are working
+		# and update the posted list in a timely manner.  (HA!)
+		push(@$links, $url);
+	}
+}
+
 
 sub timestamp {
 	my (undef, undef, undef, $day, $month, $year) = localtime();

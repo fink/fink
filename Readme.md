@@ -1,5 +1,3 @@
-Generated from: `$Fink: readme.en.xml,v 1.8 2013/07/09 02:28:18 alexkhansen Exp$`
-
 Fink ReadMe
 =============
 
@@ -24,17 +22,28 @@ Requirements
 You need:
 
  * An installed Mac OS X system, version 10.6 or later. 
-   Earlier versions will not work with fink-0.35.2.
+   Earlier versions will not work with fink-0.36.4.1.
 
- * Development tools. 
-   For 10.6, you should install Xcode 3.2.6 or 4.2, which can be downloaded from connect.apple.com after registering. 
-   If on 10.7 or later, download Xcode from the Mac App Store, and then install the "Command Line Tools for Xcode" from Xcode's Preferences, or download the Command Line Tools from connect.apple.com.
-   Make sure that the tools you install match your Mac OS X version. 
+ * The Xcode Command Line Tools are mandatory. This package can be installed
+   either by downloading it directly via developer.apple.com, through the
+   Xcode application, on via the Components page of the Downloads tab of the
+   Preferences on 10.7 and 10.8, or on 10.9 by running the `xcode-select --install` 
+   command and choosing the Install button in the window that pops up, or
+   you can install the full Xcode if you prefer. You may also need to use
+   this command to update the tools, especially if you're having build
+   problems.
 
- * Internet access. All source code is downloaded from mirror sites.
+   If you're doing a manual download, make sure that the tools you install
+   match your Mac OS X version.
 
- * Patience. Compiling several big packages takes time. 
-   I'm talking hours or even days here.
+* On 10.7-10.9 you will need to install Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you, (10.7, 10.9) or open up a browser window from which you can downloadthe latest Java JDK (10.8).
+
+* Many other things that come with Mac OS X and the Developer Tools. 
+This includes `perl` and `curl`.
+
+* Internet access. All source code is downloaded from mirror sites.
+
+* Patience. Compiling several big packages takes time. I'm talking hours or even days here.
 
 
 
@@ -55,7 +64,7 @@ It also has a complete list of available commands.
 
 Further Questions?
 --------------------
-If the documentation included here doesn't answer your question, stroll over to the Fink website at [http://fink.sourceforge.net/](http://fink.sourceforge.net/) and check out the Help page there: [http://fink.sourceforge.net/help/](http://fink.sourceforge.net/help/). 
+If the documentation included here doesn't answer your question, stroll over to the Fink website at [http://www.finkproject.org/](http://www.finkproject.org/) and check out the Help page there: [http://www.finkproject.org/help/](http://www.finkproject.org/help/). 
 It will point you at the other documentation that is available and sources for support if you need it.
 
 If you'd like to contribute to Fink, the Help page mentioned above also has a list of things you can do, like testing or creating packages.
@@ -64,9 +73,9 @@ If you'd like to contribute to Fink, the Help page mentioned above also has a li
 
 Staying Informed
 ------------------
-The project's website is at [http://fink.sourceforge.net/](http://fink.sourceforge.net/).
+The project's website is at [http://www.finkproject.org/](http://www.finkproject.org/).
 
-To be informed of new releases, go to [http://fink.sourceforge.net/lists/fink-announce.php](http://fink.sourceforge.net/lists/fink-announce.php) and subscribe to the
+To be informed of new releases, go to [http://www.finkproject.org/lists/fink-announce.php](http://www.finkproject.org/lists/fink-announce.php) and subscribe to the
 `fink-announce` mailing list. 
 The list is moderated and low-traffic.
 

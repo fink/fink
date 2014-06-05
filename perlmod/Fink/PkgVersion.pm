@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -4831,7 +4831,18 @@ for dir in \$PATH ; do
 done
 IFS="\$save_IFS"
 export PATH="\$newpath"
-exec \$compiler -stdlib=libc++ "\$@"
+# To avoid extra warning spew, don't add 
+# -Wno-error=unused-command-line-argument-hard-error-in-future
+# when clang doesn't support it .
+if [[ `clang --version | head -n1 | cut -d- -f2 | cut -d')' -f1` < "503.0.38" ]]; then
+	suppress_hard_error=""
+else
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
+fi
+exec \$compiler -stdlib=libc++ "\$suppress_hard_error" "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_libcxx_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
@@ -4884,7 +4895,18 @@ fi
 if [ "\$compiler" = "c++" -o "\$compiler" = "g++" ]; then
   compiler="clang++"
 fi
-exec \$compiler "\$@"
+# To avoid extra warning spew, don't add 
+# -Wno-error=unused-command-line-argument-hard-error-in-future
+# when clang doesn't support it .
+if [[ "`clang --version | head -n1 | cut -d- -f2 | cut -d')' -f1`" < "503.0.38" ]]; then
+	suppress_hard_error=""
+else
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
+fi
+exec \$compiler "\$suppress_hard_error" "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_clang_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
@@ -4934,6 +4956,9 @@ done
 IFS="\$save_IFS"
 export PATH="\$newpath"
 exec \$compiler "-arch" "$arch" "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_gpp106_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
@@ -5158,13 +5183,13 @@ sub get_env {
 			# override on older 10.x (gcc3.3 & 10.4T not supported)
 			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
 		}
-		if  ($config->param("Distribution") eq "10.7" || $config->param("Distribution") eq "10.8") {
+		if  ($config->param("Distribution") ge "10.7") {
 			# Use clang for gcc/g++. Only x86_64 supported so can override single-arch wrappers.
 			$pathprefix = ensure_clang_prefix();
 		}
 		if  ($config->param("Distribution") ge "10.9") {
 			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
-			$pathprefix = ensure_libcxx_prefix();
+			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}

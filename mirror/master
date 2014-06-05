@@ -1,11 +1,12 @@
-Timestamp: 2010-08-23
-Primary: http://distfiles.master.finkmirrors.net/
+Timestamp: 2014-04-14
+Primary: http://distfiles.master.finkmirrors.net/distfiles/
 
 asi-JP: http://distfiles.hnd.jp.asi.finkmirrors.net/
 eur-DE: http://distfiles.ber.de.eu.finkmirrors.net/
 eur-DE: http://distfiles.aah.de.eu.finkmirrors.net/fink-distfiles/
-eur-FI: http://distfiles.hel.fi.eu.finkmirrors.net/
+#eur-FI: http://distfiles.hel.fi.eu.finkmirrors.net/
 eur-IE: http://distfiles.dub.ie.eu.finkmirrors.net/
 eur-NL: http://distfiles.ams.nl.eu.finkmirrors.net/
 #nam-US: http://distfiles.msn.wi.us.finkmirrors.net/mirrors/fink/distfiles/
+nam-CA: http://distfiles.yeg.ab.ca.finkmirrors.net/distfiles/
 nam-US: http://distfiles.sjc.ca.us.finkmirrors.net/

@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -82,7 +82,7 @@ sub new_from_name {
 	# set default values for critical mirrors, in case mirror directory
 	# is not present
 	my %mirrordefaults = (
-		"master" => "Primary: http://distfiles.master.finkmirrors.net/",
+		"master" => "Primary: http://distfiles.master.finkmirrors.net/distfiles/",
 		"rsync" => "Primary: rsync://master.us.finkmirrors.net/finkinfo/",
 		"sourceforge" => "Primary: http://west.dl.sourceforge.net/sourceforge/",
 		);

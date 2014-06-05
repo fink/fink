@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -283,7 +283,6 @@ END
 				'cgi',
 				'data-dumper',
 				'db',
-				( $perlver < 5.015000 && 'devel-dprof' ),
 				'devel-peek',
 				'digest',
 				'digest-md5',
@@ -303,7 +302,6 @@ END
 				'mime-base64',
 				'podparser',
 				'pod-parser',
-				( $perlver < 5.013001 && 'switch' ),
 				'sys-syslog',
 				'term-readline',
 				'test-harness',
@@ -313,6 +311,16 @@ END
 				'time-hires',
 				'unicode-normalize',
 			);
+			if ($perlver < 5.015000) {
+				push(@modules,
+					 'devel-dprof',
+				);
+			}
+			if ($perlver < 5.013001) {
+				push(@modules,
+					 'switch',
+				);
+			}
 		}
 		if ($perlver >= 5.008006) {
 			push(@modules,
@@ -329,7 +337,6 @@ END
 				'algorithm-diff',
 				'carp',
 				'class-autouse',
-				( $perlver < 5.013001 && 'class-isa' ),
 				'corefoundation',
 				'data-hierarchy',
 				'freezethaw',
@@ -338,34 +345,43 @@ END
 				'perlio-eol',
 				'pod-simple',
 			);
+			if ($perlver < 5.013001) {
+				push(@modules,
+					 'class-isa',
+				);
+			}
 		}
 		if ($perlver >= 5.010000) {
 			push(@modules,
 				 'archive-tar',
-				 ( $perlver < 5.019000 && 'cpanplus' ),
-				 ( $perlver < 5.019000 && 'cpanplus-dist-build' ),
 				 'compress-raw-zlib',
 				 'digest-sha',
 				 'extutils-cbuilder',
 				 'extutils-parsexs',
 				 'io-zlib',
 				 'locale-maketext-simple',
-				 ( $perlver < 5.019000 && 'module-build' ),
 				 'module-corelist',
 				 'module-load',
 				 'module-load-conditional',
-				 ( $perlver < 5.019000 && 'module-pluggable' ),
 				 'package-constants',
 				 'params-check',
 				 'pod-escapes',
+			);
+			if ($perlver < 5.019000) {
+				push(@modules,
+					 'cpanplus',
+					 'cpanplus-dist-build',
+					 'module-build',
+					 'module-pluggable',
 				);
+			}
 		}
 		if ($perlver >= 5.012000) {
 			push(@modules,
 				 'compress-raw-bzip2',
 				);
 		}
-		$perlprovides .= ', ' . join(', ', map { $_ . '-pm' . $shortver } sort @modules);
+		$perlprovides .= ', ' . join(', ', map { $_ ? $_ . '-pm' . $shortver : () } sort @modules);
 		$hash->{provides} = $perlprovides;
 	} else {
 		$hash->{version} = '0-0';
@@ -392,7 +408,7 @@ directories exist.
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
-		my ($ver,$javadir) = m|(\d.*),.*\s(/.*)$|; #extract version and directory info
+		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
 		# However, we'll have to switch the directory for JDK 1.6 and earlier.
 		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
 		if (opendir(DIR, $javadir)) {

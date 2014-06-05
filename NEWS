@@ -2,12 +2,49 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| TBD
+\-------------
+	
+	* Update Debian toolset.
+	* Selfupdate via git and svn.
+
+/-------------
+| fink 0.37.x
+\-------------
+
+0.37.0 "Alabama Antiquarian" (2014-06-03) 
+	* First release not to support 10.6.
+	* Officially recognize OS 10.9.3.
+	* Install compiler wrappers in the .deb rather than autogenerating them.
+	* Additional fixes and enhancements.
+	
+/-------------
 | fink 0.36.x
 \-------------
 
-0.36.? TBD
-	* Update Debian toolset.
-	* Selfupdate via git and svn.
+0.36.5 "Order today" (2014-06-03) "Order today"
+	* Last release to support 10.6.
+	* fix system-java detection for older Java versions.
+	* Additional fixes and enhancements.
+
+0.36.4.1 (2014-04-11)
+	* Bugfix: change compiler wrapper test so that clang from Xcode 5.0 doesn't
+	  use -Wno-error=unused-command-line-argument-hard-error-in-future.
+
+0.36.4 "Supplies are limited" (2014-04-06)
+	* Activate official binary distributions. 
+	* Official 10.9.2. support
+	* Bootstrap on 10.6 defaults to 10.6/x86_64.
+	* Tweak compiler wrappers to allow packages that pass flags that clang doesn't
+	  understand still to build with the Xcode 5.1 Command Line Tools.
+	  (-Wno-error=unused-command-line-argument-hard-error-in-future)
+	* Bugfix: fix issue with bootstrapping with no Xcode.app installed.
+	* Additional fixes  
+	  
+0.36.3.1 (2013-12-30)
+	* Bugfix: fix dpkg-lockwait and apt-get-lockwait on 10.6/i386
+	  by reverting the changes from dcf07ad27536cea139069ea3570a225bb91590b3
+	  only for that platform. 
 
 0.36.3 "Order now, and we'll double the offer!" (2013-12-26)
 	* Official 10.9.1 support.

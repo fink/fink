@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -93,12 +93,19 @@ sed "s|@PREFIX@|$basepath|g" <fink-dpkg-status-cleanup.in >fink-dpkg-status-clea
 # dpkg-lockwait, but to GIVE the full path to the apt-get executable in
 # apt-get-lockwait
 
+# set arguments for pack() up in an architecture-appropriate manner
+if [ "$architecture" = "x86_64" ]; then
+	packargs='"qqiss", 0, 0'
+else
+	packargs='"lllliss", (0, 0), (0, 0)'	
+fi
+
 echo "Creating lockwait wrappers..."
 for prog in dpkg; do
-	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$prog|g" <lockwait.in >$prog-lockwait
+	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$prog|g" -e "s|@PACKARGS@|$packargs|" <lockwait.in >$prog-lockwait
 done
 for prog in apt-get; do
-	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$basepath/bin/$prog|g" <lockwait.in >$prog-lockwait
+	sed -e "s|@PREFIX@|$basepath|g" -e "s|@PROG@|$basepath/bin/$prog|g" -e "s|@PACKARGS@|$packargs|" <lockwait.in >$prog-lockwait
 done
 
 echo "Creating g++ wrappers..."
@@ -107,8 +114,9 @@ for gccvers in 3.3 4.0; do
 		>"g++-wrapper-$gccvers"
 done
 
-echo "Creating compiler_wrapper"
-  sed -e "s|@ARCHITECTURE@|$architecture|g" < compiler_wrapper.in \
-    >"compiler_wrapper"
+echo "Creating compiler wrapper"
+sed -e "s|@ARCHITECTURE@|$architecture|g" -e "s|@PREFIX@|$basepath|g" < compiler_wrapper-10.6.in >"compiler_wrapper"
+sed -e "s|@PREFIX@|$basepath|g" < compiler_wrapper-10.7.in >"compiler_wrapper-10.7"
+sed -e "s|@PREFIX@|$basepeath|g" < compiler_wrapper-10.9.in >"compiler_wrapper-10.9"
 
 exit 0

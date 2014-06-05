@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1266,7 +1266,7 @@ sub gcc_selected {
 		# what enforce_gcc() expects for prior Xcode versions.  
 		# TODO: get the return value by parsing the output
 		# in case something changes later.
-		if (`/usr/bin/gcc --version` =~ /clang/) {
+		if (`/usr/bin/gcc --version 2>&1` =~ /clang/) {
 			return "4.2";
 		}
 	}

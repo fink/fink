@@ -301,7 +301,7 @@ Jeff Friedl <jfriedl@yahoo-inc.com> for telling me not to worry about
 error-checking (sort of-- you had to be there).
 
 For the changes by Fink:
-Copyright (C) 2005-2013 The Fink Package Manager Team.
+Copyright (C) 2005-2014 The Fink Package Manager Team.
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
