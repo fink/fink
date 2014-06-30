@@ -246,7 +246,7 @@ if ($host =~ /^\s*$/) {
 print " $host\n";
 
 $distribution = check_host($host,1,$arch);
-if (($distribution eq "unknown") or ($distribution lt "10.5")) {
+if (($distribution eq "unknown") or ($distribution lt "10.5" and $distribution ne "10.10")) {
 	exit(1);
 }
 
