@@ -12,6 +12,9 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.37.x
 \-------------
 
+0.37.1 "Alaska Assessor" (TBD) 
+	* Officially recognize OS 10.9.4.
+
 0.37.0 "Alabama Antiquarian" (2014-06-03) 
 	* First release not to support 10.6.
 	* Officially recognize OS 10.9.3.
