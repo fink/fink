@@ -1,5 +1,5 @@
-# Official mirror list: http://sourceforge.net/apps/trac/sourceforge/wiki/Mirrors
-Timestamp: 2014-04-14
+# Official mirror list: http://sourceforge.net/p/forge/documentation/Mirrors/
+Timestamp: 2014-07-04
 
 Primary: http://downloads.sourceforge.net
 
@@ -11,12 +11,11 @@ asi-TW: http://ncu.dl.sourceforge.net/sourceforge
 aus-AU: http://aarnet.dl.sourceforge.net/sourceforge
 aus-AU: http://internode.dl.sourceforge.net/sourceforge
 aus-AU: http://waia.dl.sourceforge.net/sourceforge
+eur-CH: http://switch.dl.sourceforge.net/sourceforge
 eur-CZ: http://cznic.dl.sourceforge.net/sourceforge
 eur-CZ: http://ignum.dl.sourceforge.net/sourceforge
 eur-DE: http://dfn.dl.sourceforge.net/sourceforge
 eur-DE: http://netcologne.dl.sourceforge.net/sourceforge
-eur-DE: http://optimate.dl.sourceforge.net/sourceforge
-eur-DE: http://skylink.dl.sourceforge.net/sourceforge
 eur-FR: http://freefr.dl.sourceforge.net/sourceforge
 eur-IE: http://heanet.dl.sourceforge.net/sourceforge
 eur-IT: http://garr.dl.sourceforge.net/sourceforge
@@ -31,5 +30,6 @@ nam-US: http://hivelocity.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-ams.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-dal.dl.sourceforge.net/sourceforge
 nam-US: http://superb-dca2.dl.sourceforge.net/sourceforge
+nam-US: http://superb-dca3.dl.sourceforge.net/sourceforge
 nam-US: http://tcpdiag.dl.sourceforge.net/sourceforge
 sam-BR: http://ufpr.dl.sourceforge.net/sourceforge
