@@ -727,9 +727,7 @@ END
 		# e.g. 4.3.0.0.1.1249367152 for the "late March 2012" CLI tools.
 		# We'll take the whole thing as the version.
 		my $receipt_to_check;
-		if ($osxversion >= 14) {
-			$receipt_to_check = "com.apple.pkg.CLITools_Base";		
-		} elsif ($osxversion = 13) {
+		if ($osxversion >= 13) {
 			$receipt_to_check = "com.apple.pkg.CLTools_Executables";
 		} else {
 			$receipt_to_check = "com.apple.pkg.DeveloperToolsCLI";
