@@ -5403,11 +5403,10 @@ sub get_perl_dir_arch {
 				# 10.9 system-perl is 5.16.2, but the only supplied
 				# interpreter is /usr/bin/perl5.16 (not perl5.16.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.16";
-			} elsif ($perlversion eq  "5.16.3" and Fink::Services::get_kernel_vers() eq '14') {
-				# 10.10 system-perl is 5.16.3, but the only supplied
-				# interpreter is /usr/bin/perl5.16 (not perl5.16.3)
-				# actually I lied, we have 5.18.2, it doesn't seem to be the default though
-				$perlcmd = "/usr/bin/arch -%m perl5.16";
+			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '14') {
+				# 10.10 system-perl is 5.18.2, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);
