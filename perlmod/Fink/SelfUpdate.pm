@@ -110,15 +110,15 @@ numerical values for some specific methods:
 
 =over 4
 
-=item 0
+=item 0.
 
 Use the current default method
 
-=item 1
+=item 1.
 
 Use the "cvs" method
 
-=item 2
+=item 2.
 
 Use the "rsync" method
 
