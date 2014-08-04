@@ -1021,7 +1021,7 @@ sub validate_info_file {
 		# other varianted perlmods must depend on varianted perl
 		# interp). Higher parts of dep-tree thus get them indirectly.
 		# Skip obsolete packages (replacement might be unified).
-		if ($name =~ /-(pm|py|rb)(\d+)$/) {
+		if ($name =~ /-(pm|py|rb)(\d+)/) {
 			my $modpkg = "-$1$2";
 			my $langpkg;
 			if ($1 eq 'pm') {
