@@ -1,6 +1,7 @@
+# -*- coding: ascii; tab-width: 4; x-counterpart: cvs.patch -*-
 Package: cvs
 Version: 1.12.13
-Revision: 16
+Revision: 17
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 #
 Conflicts: cvs-stable, cvs-proxy
@@ -8,7 +9,7 @@ Replaces: cvs-stable, cvs-proxy
 Source: mirror:gnu:non-gnu/%n/source/feature/%v/%n-%v.tar.bz2 
 Source-MD5: 956ab476ce276c2d19d583e227dbdbea
 PatchFile: %n.patch
-PatchFile-MD5: bbe516b5fbcb31368b46f1729e28826c
+PatchFile-MD5: c8f480b3d01d9ff1e980044274e1d192
 ConfigureParams: <<
 --mandir=%p/share/man\
 --infodir=%p/share/info\
@@ -21,7 +22,7 @@ ConfigureParams: <<
 --with-editor=vim\
 ac_cv_func_working_mktime=no
 <<
-SetCFLAGS: -D_DARWIN_NO_64_BIT_INODE
+SetCFLAGS: -D_DARWIN_NO_64_BIT_INODE -O2 -g -Wall
 BuildDepends: openssl100-dev (>= 1.0.1e-1), libgettext8-dev, libiconv-dev, fink (>= 0.30.0)
 Depends: openssl100-shlibs (>= 1.0.1e-1), libgettext8-shlibs, libiconv
 PatchScript: cat %{PatchFile} | patch -p0
@@ -76,6 +77,9 @@ DescPackaging: <<
  and cvs-1.12.12-openat.patch.
  Added Gentoo cvs-1.12.12-cvsbug-tmpfix.patch to prevent race.
  Eliminate clang warnings on formatting.
+ Added FreeBSD patch-64bit_crashfix, restore -O2 -g and add -Wall.
+ Fixed K&R function parameter issue and uninitialized variables
+ detected by clang.
 <<
 DescPort: <<
 
