@@ -37,13 +37,9 @@ osMajorVer=`uname -r | cut -d. -f1`
 
 if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
-fi
-
-if [ $osMajorVer -eq 13 ]; then
+elif [ $osMajorVer -eq 13 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
-fi
-
-if [ $osMajorVer -gt 13 ]; then
+elif [ $osMajorVer -gt 13 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.18"
 fi
 
