@@ -85,11 +85,8 @@ sed "s|@PREFIX@|$basepath|g" <fink-dpkg-status-cleanup.in >fink-dpkg-status-clea
 # apt-get-lockwait
 
 # set arguments for pack() up in an architecture-appropriate manner
-if [ "$architecture" = "x86_64" ]; then
-	packargs='"qqiss", 0, 0'
-else
-	packargs='"lllliss", (0, 0), (0, 0)'	
-fi
+# These are appropriate for x86_64:
+packargs='"qqiss", 0, 0'
 
 echo "Creating lockwait wrappers..."
 for prog in dpkg; do
