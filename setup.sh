@@ -49,9 +49,14 @@ if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
 fi
 
-if [ $osMajorVer -gt 12 ]; then
+if [ $osMajorVer -eq 13 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
 fi
+
+if [ $osMajorVer -gt 13 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.18"
+fi
+
 
 echo "Creating $fink..." 
 sed -e "s|@BASEPATH@|$basepath|g" -e "s|@PERLEXE@|$perlexe|g" < fink.in > fink
