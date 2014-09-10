@@ -20,7 +20,8 @@ fi
 # To avoid extra warning spew, don't add 
 # -Wno-error=unused-command-line-argument-hard-error-in-future
 # when clang doesn't support it .
-if [[ "`clang --version | head -n1 | cut -d- -f2 | cut -d')' -f1`" < "503.0.38" ]]; then
+clang_version=`clang --version | head -n1 | cut -d- -f2 | cut -d'.' -f1`
+if [[ ($clang_version -lt "503") || ($clang_version -ge "600") ]]; then
 	suppress_hard_error=""
 else
 	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
