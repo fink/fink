@@ -1,9 +1,9 @@
 Package: fink-mirrors
-Version: 0.37.0.1
+Version: 0.37.0.2
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: 9bcfb2c01d7a23d9191570eae7453a4e
+Source-MD5: 8dbbb3eaa1e3f1bb6b9cae6624c716b2
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
@@ -24,14 +24,15 @@ Primary: http://downloads.sourceforge.net
 afr-ZA: http://tenet.dl.sourceforge.net/sourceforge
 asi-JP: http://jaist.dl.sourceforge.net/sourceforge
 asi-KZ: http://kaz.dl.sourceforge.net/sourceforge
+asi-SG: http://softlayer-sng.dl.sourceforge.net/sourceforge
 asi-TW: http://nchc.dl.sourceforge.net/sourceforge
 asi-TW: http://ncu.dl.sourceforge.net/sourceforge
 aus-AU: http://aarnet.dl.sourceforge.net/sourceforge
 aus-AU: http://internode.dl.sourceforge.net/sourceforge
 aus-AU: http://waia.dl.sourceforge.net/sourceforge
+eur-CH: http://switch.dl.sourceforge.net/sourceforge
 eur-CZ: http://cznic.dl.sourceforge.net/sourceforge
 eur-CZ: http://ignum.dl.sourceforge.net/sourceforge
-eur-DE: http://dfn.dl.sourceforge.net/sourceforge
 eur-DE: http://netcologne.dl.sourceforge.net/sourceforge
 eur-DE: http://optimate.dl.sourceforge.net/sourceforge
 eur-DE: http://skylink.dl.sourceforge.net/sourceforge
@@ -49,6 +50,7 @@ nam-US: http://hivelocity.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-ams.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-dal.dl.sourceforge.net/sourceforge
 nam-US: http://superb-dca2.dl.sourceforge.net/sourceforge
+nam-US: http://superb-dca3.dl.sourceforge.net/sourceforge
 nam-US: http://tcpdiag.dl.sourceforge.net/sourceforge
 sam-BR: http://ufpr.dl.sourceforge.net/sourceforge
 <<

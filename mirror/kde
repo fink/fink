@@ -1,5 +1,5 @@
 # Official mirror list: http://files.kde.org/extra/mirrors.html
-Timestamp: 2014-07-04
+Timestamp: 2014-09-20
 
 Primary: http://download.kde.org/
 
@@ -9,6 +9,7 @@ asi-CN: http://mirrors.ustc.edu.cn/kde
 asi-JP: ftp://ftp.kddlabs.co.jp/pub/X11/kde
 asi-JP: http://ftp.kddlabs.co.jp/pub/X11/kde
 asi-KR: ftp://ftp.kaist.ac.kr/kde
+asi-KR: ftp://ftp.neowiz.com/X/KDE
 asi-KR: http://ftp.kaist.ac.kr/kde
 asi-KR: http://ftp.neowiz.com/X/KDE
 asi-OM: ftp://mirror.squ.edu.om/kde
@@ -17,8 +18,10 @@ aus-AU: http://kde.mirror.uber.com.au
 eur-BE: http://kde.cu.be
 eur-CZ: ftp://ftp.fi.muni.cz/pub/kde
 eur-CZ: ftp://mirror.karneval.cz/pub/kde
+eur-CZ: ftp://mirror.oss.maxcdn.com/kde
 eur-CZ: http://ftp.fi.muni.cz/pub/kde
 eur-CZ: http://mirror.karneval.cz/pub/kde
+eur-CZ: http://mirror.oss.maxcdn.com/kde
 eur-DE: ftp://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.kde.org/pub/kde
 eur-DE: ftp://ftp.rz.uni-wuerzburg.de/pub/unix/kde
 eur-DE: ftp://ftp5.gwdg.de/pub/linux/kde
@@ -54,8 +57,6 @@ eur-PL: http://ftp.icm.edu.pl/pub/unix/kde
 eur-PL: http://ftp.pbone.net/pub/kde
 eur-PL: http://piotrkosoft.net/pub/mirrors/ftp.kde.org
 eur-PT: http://mirrors.fe.up.pt/pub/kde
-eur-SE: ftp://archive.sunet.se/pub/X11/kde
-eur-SE: http://archive.sunet.se/pub/X11/kde
 eur-UA: ftp://kde.ip-connect.vn.ua/mirror/kde
 eur-UA: http://kde.ip-connect.vn.ua
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.kde.org/pub/kde
