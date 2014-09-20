@@ -926,26 +926,25 @@ Return the current verbosity level as a value 0-3, where 0 is the
 quietest. This is affected by the --verbose and --quiet command line
 options as well as by the "Verbose" setting in fink.conf. A --quiet
 always takes precedence; otherwise the more verbose of the fink.conf
-and cmdline values is used. The former documentation here described
-the values as:
+and cmdline values is used. The general sense of each level is:
 
 =over 4
 
-=item 
+=item Z<>3
 
-3 full
+full
 
-=item 
+=item Z<>2
 
-2 download and tarballs
+download and tarballs
 
-=item
+=item Z<>1
 
-1 download
+download
 
-=item
+=item Z<>0
 
-0 none
+none
 
 =back
 

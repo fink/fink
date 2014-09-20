@@ -683,3 +683,63 @@ index 3f12513..9a7a559 100644
  
      assert (key != NULL);
 
+--- src/import.c.orig	2013-11-10 11:49:26.000000000 -0500
++++ src/import.c	2013-11-10 11:53:46.000000000 -0500
+@@ -1592,10 +1592,8 @@
+  *   no error message has yet been printed).
+  */
+ static int
+-expand_and_copy_contents (fprcs, file_type, user, fpuser)
+-    FILE *fprcs, *fpuser;
+-    mode_t file_type;
+-    const char *user;
++expand_and_copy_contents (FILE *fprcs, mode_t file_type, const char *user, 
++	FILE *fpuser)
+ {
+     if (
+ #ifdef PRESERVE_PERMISSIONS_SUPPORT
+--- src/ls.c.orig	2013-11-10 11:37:15.000000000 -0500
++++ src/ls.c	2013-11-10 11:38:08.000000000 -0500
+@@ -503,7 +503,7 @@
+          */
+ 	if (!isdir (dir))
+         {
+-	    int nonbranch;
++	    int nonbranch = 0;
+ 	    if (show_tag == NULL && show_date == NULL)
+ 	    {
+ 		ParseTag (&show_tag, &show_date, &nonbranch);
+--- src/server.c.orig	2013-11-10 11:40:01.000000000 -0500
++++ src/server.c	2013-11-10 11:40:28.000000000 -0500
+@@ -7468,7 +7468,7 @@
+        We could instead use an authentication to access mapping.  */
+     {
+ 	krb5_context kc;
+-	krb5_principal p;
++	krb5_principal p = NULL;
+ 	gss_buffer_desc desc;
+ 
+ 	krb5_init_context (&kc);
+--- src/rcscmds.c.orig	2013-11-10 11:56:27.000000000 -0500
++++ src/rcscmds.c	2013-11-10 11:56:56.000000000 -0500
+@@ -356,7 +356,7 @@
+     char *tmpfile1 = NULL;
+     char *tmpfile2 = NULL;
+     const char *use_file1, *use_file2;
+-    int status, retval;
++    int status, retval = 0;
+ 
+ 
+     cvs_output ("\
+--- diff/util.c.orig	2013-11-10 11:42:14.000000000 -0500
++++ diff/util.c	2013-11-10 11:42:51.000000000 -0500
+@@ -235,7 +235,7 @@
+ 	      close (pipes[0]);
+ 	    }
+ 
+-	  execl (PR_PROGRAM, PR_PROGRAM, "-f", "-h", name, 0);
++	  execl (PR_PROGRAM, PR_PROGRAM, "-f", "-h", name, NULL);
+ 	  pfatal_with_name (PR_PROGRAM);
+ 	}
+       else
+

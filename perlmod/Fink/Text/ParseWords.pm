@@ -248,27 +248,27 @@ demonstrating:
 
 =over 4
 
-=item 0
+=item 0Z<>
 
 a simple word
 
-=item 1
+=item 1Z<>
 
 multiple spaces are skipped because of our $delim
 
-=item 2
+=item 2Z<>
 
 use of quotes to include a space in a word
 
-=item 3
+=item 3Z<>
 
 use of a backslash to include a space in a word
 
-=item 4
+=item 4Z<>
 
 use of a backslash to remove the special meaning of a double-quote
 
-=item 5
+=item 5Z<>
 
 another simple word (note the lack of effect of the
 backslashed double-quote)

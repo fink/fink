@@ -1,13 +1,24 @@
+# -*- coding: ascii; tab-width: 4; x-counterpart: openssl100-dev.patch -*-
 Package: openssl100-dev
-Version: 1.0.1e
-Revision: 3
+Version: 1.0.1i
+Revision: 1
 Description: Secure Sockets Layer and Crypto Library
 License: OSI-Approved
 Homepage: http://www.openssl.org/
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 
-Conflicts: libmd (<= 0.3-2), system-openssl-dev, openssl-dev, openssl097-dev, openssl098-dev
-Replaces: system-openssl-dev, openssl-dev, openssl097-dev, openssl098-dev, openssl, openssl097
+Conflicts: <<
+	libressl-libcrypto30,
+	libressl-libssl27,
+	openssl100-dev,
+	system-openssl-dev
+<<
+Replaces: <<
+	libressl-libcrypto30,
+	libressl-libssl27,
+	openssl100-dev,
+	system-openssl-dev
+<<
 BuildDependsOnly: True
 
 Source: mirror:custom:source/openssl-%v.tar.gz
@@ -15,7 +26,7 @@ CustomMirror: <<
   Primary:   http://www.openssl.org/
   Secondary: ftp://ftp.openssl.org/
 <<
-Source-MD5: 66bf6f10f060d561929de96f9dfe5b8c
+Source-MD5: c8dc151a671b9b92ff3e4c118b174972
 
 PatchFile: %{ni}.patch
 PatchFile-MD5: 8d86d626da439dd15dfb515193d4d573 
@@ -111,8 +122,8 @@ SplitOff: <<
 SplitOff2: <<
   Package: openssl
   Depends: openssl100-shlibs (= %v-%r)
-  Conflicts: openssl097
-  Replaces: openssl097
+  Conflicts: libressl
+  Replaces: libressl
   Files: bin etc share/man/man1
   DocFiles: README LICENSE CHANGES FAQ NEWS
   ConfFiles: %p/etc/ssl/openssl.cnf

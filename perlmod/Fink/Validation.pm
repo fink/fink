@@ -1013,6 +1013,31 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 		}
+
+		# Language-versioned packages need the language itself
+		# (otherwise mis- or fail-to-build, and not usable at
+		# runtime). Require only for bottom of lang-versioned
+		# dep-trees (e.g., varianted perlmods that do not depend on
+		# other varianted perlmods must depend on varianted perl
+		# interp). Higher parts of dep-tree thus get them indirectly.
+		# Skip obsolete packages (replacement might be unified).
+		if ($name =~ /-(pm|py|rb)(\d+)/) {
+			my $modpkg = "-$1$2";
+			my $langpkg;
+			if ($1 eq 'pm') {
+				$langpkg = "perl$2-core";
+			} elsif ($1 eq 'py') {
+				$langpkg = "python$2";
+			} else {
+				$langpkg = "ruby$2";
+			}
+
+			my $depends = $pv->pkglist_default('depends', '');
+			unless ($depends =~ /(\A|,|\s)($langpkg|.*$modpkg)(-|\z|,|\s|\()/ || $pv->is_obsolete) {
+				print "Error: language-versioned package $name needs Depends on another $modpkg (package of the same language-version) or on $langpkg (the language interpretter itself). ($filename)\n";
+				$looks_good = 0;
+			}
+		}
 	}
 
 	if ($looks_good and $config->verbosity_level() >= 3) {
@@ -1451,7 +1476,6 @@ sub validate_info_component {
 	}
 
 	# Special checks when package building script uses an explicit interp
-
 
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});
