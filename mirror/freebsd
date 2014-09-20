@@ -1,9 +1,8 @@
 # Official mirror list: http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html
-Timestamp: 2014-07-04
+Timestamp: 2014-09-20
 
 Primary: http://distcache.FreeBSD.org/ports-distfiles/
 
-asi-SA: ftp://ftp.isu.net.sa/pub/ftp.freebsd.org/ports/distfiles
 asi-TW: ftp://ftp.tw.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-FI: ftp://ftp.fi.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-SE: ftp://ftp.se.freebsd.org/pub/FreeBSD/ports/distfiles

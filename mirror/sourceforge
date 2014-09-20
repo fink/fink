@@ -1,11 +1,12 @@
 # Official mirror list: http://sourceforge.net/p/forge/documentation/Mirrors/
-Timestamp: 2014-07-04
+Timestamp: 2014-09-20
 
 Primary: http://downloads.sourceforge.net
 
 afr-ZA: http://tenet.dl.sourceforge.net/sourceforge
 asi-JP: http://jaist.dl.sourceforge.net/sourceforge
 asi-KZ: http://kaz.dl.sourceforge.net/sourceforge
+asi-SG: http://softlayer-sng.dl.sourceforge.net/sourceforge
 asi-TW: http://nchc.dl.sourceforge.net/sourceforge
 asi-TW: http://ncu.dl.sourceforge.net/sourceforge
 aus-AU: http://aarnet.dl.sourceforge.net/sourceforge
@@ -14,8 +15,9 @@ aus-AU: http://waia.dl.sourceforge.net/sourceforge
 eur-CH: http://switch.dl.sourceforge.net/sourceforge
 eur-CZ: http://cznic.dl.sourceforge.net/sourceforge
 eur-CZ: http://ignum.dl.sourceforge.net/sourceforge
-eur-DE: http://dfn.dl.sourceforge.net/sourceforge
 eur-DE: http://netcologne.dl.sourceforge.net/sourceforge
+eur-DE: http://optimate.dl.sourceforge.net/sourceforge
+eur-DE: http://skylink.dl.sourceforge.net/sourceforge
 eur-FR: http://freefr.dl.sourceforge.net/sourceforge
 eur-IE: http://heanet.dl.sourceforge.net/sourceforge
 eur-IT: http://garr.dl.sourceforge.net/sourceforge
