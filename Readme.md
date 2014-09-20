@@ -21,8 +21,8 @@ Requirements
 
 You need:
 
- * An installed Mac OS X system, version 10.6 or later. 
-   Earlier versions will not work with fink-0.36.4.1.
+ * An installed Mac OS X system, version 10.7 or later. 
+   Earlier versions will not work with fink-0.37.
 
  * The Xcode Command Line Tools are mandatory. This package can be installed
    either by downloading it directly via developer.apple.com, through the
