@@ -1,7 +1,7 @@
- Fink 0.36.5 Installation
+ Fink 0.37.1 Installation
 =========================
 
-These are the installation instructions for the "source" distribution based on "fink-0.36.5" , intended for use with OS X v.10.6 and later.
+These are the installation instructions for the "source" distribution based on "fink-0.36.5" , intended for use with OS X v.10.7 and later.
 
 This document does not apply to the "[binary](http://www.finkproject.org/download/index.php)" distribution.
 
@@ -310,13 +310,13 @@ A special note about /usr/local: While it is possible to install Fink in /usr/lo
 
 Installation
 --------------
-First, you need to unpack the fink-0.36.5.tar.gz tarball (it might also show up as "fink-0.36.5.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
+First, you need to unpack the fink-0.37.1.tar.gz tarball (it might also show up as "fink-0.37.1.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
 
-    tar xf fink-0.36.5.tar.gz
+    tar xf fink-0.37.1.tar.gz
 
-You now have a directory named fink-0.36.5. Change to it with "`cd fink-0.36.5`".
+You now have a directory named fink-0.37.1. Change to it with "`cd fink-0.37.1`".
 
-The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.36.5 directory and run this command:
+The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.37.1 directory and run this command:
 
     ./bootstrap
 
