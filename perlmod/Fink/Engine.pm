@@ -31,7 +31,7 @@ use Fink::Services qw(&latest_version &sort_versions
 					  &dpkg_lockwait &aptget_lockwait &store_rename &get_options
 					  $VALIDATE_HELP &apt_available &ensure_fink_bld &select_legal_path);
 use Fink::CLI qw(&print_breaking &print_breaking_stderr
-				 &prompt_boolean &prompt_selection
+				 &prompt_boolean
 				 &get_term_width &die_breaking);
 use Fink::Configure qw(&spotlight_warning);
 use Fink::Finally;
@@ -1983,7 +1983,8 @@ sub real_install {
 			}
 			if (not $dryrun) {
 				$answer = &prompt_boolean("Do you want to continue?",
-						  				  default => 1);
+						  				  default => 1,
+										  timeout => 60);
 				if (! $answer) {
 					die "Package requirements not satisfied\n";
 				}
