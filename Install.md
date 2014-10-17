@@ -24,7 +24,7 @@ You need:
  * The Xcode Command Line Tools are mandatory. This package can be installed
    either by downloading it directly via developer.apple.com, through the
    Xcode application, on via the Components page of the Downloads tab of the
-   Preferences on 10.7 and 10.8, or on 10.9 by running the
+   Preferences on 10.7 and 10.8, or on 10.9 and 10.10 by running the
    `xcode-select --install` command and choosing the Install 
    button in the window that pops up, or
    you can install the full Xcode if you prefer. You may also need to use
@@ -48,7 +48,7 @@ First Time Installation Fast Track
 ------------------------------------
 Start out by copying the "fink-0.36.5.tar.gz" file to your home folder (it might also show up as "fink-0.36.5.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
-Note: on 10.8 and 10.9 after you start the install process you may see dialog windows asking whether you want to install Xquartz. 
+Note: on 10.8, 10.9 and 10.10 after you start the install process you may see dialog windows asking whether you want to install Xquartz. 
 If you want to do so, go ahead. You won't have to stop the Fink install to do that.
 
     [frodo:~] testuser% tar xf fink-0.36.5.tar.gz
@@ -279,7 +279,7 @@ You need:
  * The Xcode Command Line Tools are mandatory. This package can be installed
    either by downloading it directly via developer.apple.com, through the
    Xcode application, on via the Components page of the Downloads tab of the
-   Preferences on 10.7 and 10.8, or on 10.9 by running the `xcode-select --install` 
+   Preferences on 10.7 and 10.8, or on 10.9 and 10.10 by running the `xcode-select --install` 
    command and choosing the Install  button in the window that pops up, or
    you can install the full Xcode if you prefer. You may also need to use
    this command to update the tools, especially if you're having build
