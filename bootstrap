@@ -33,6 +33,7 @@ $ENV{'PATH'} = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin";
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use IO::Handle;
+use version;
 
 # beware of old, stray FinkVersion.pm files
 unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
@@ -246,7 +247,7 @@ if ($host =~ /^\s*$/) {
 print " $host\n";
 
 $distribution = check_host($host,1,$arch);
-if (($distribution eq "unknown") or ($distribution lt "10.5" and $distribution ne "10.10")) {
+if (($distribution eq "unknown") or (version->parse('v'.$distribution) lt version->parse("v10.7"))) {
 	exit(1);
 }
 
