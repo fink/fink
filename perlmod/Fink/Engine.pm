@@ -247,6 +247,7 @@ sub process {
 			# legal update paths; add new ones as needed
 			$valid_upgrade = 1 if ($osversion eq "10.6" and $distribution eq "10.5");
 			$valid_upgrade = 1 if ($osversion eq "10.8" and $distribution eq "10.7");
+			$valid_upgrade = 1 if ($osversion eq "10.10" and $distribution eq "10.9");
 			if ($valid_upgrade) {
 				# allow reinstalls to proceed otherwise block the operation.
 				warn "Use 'fink reinstall fink' to switch  distributions\n" .
