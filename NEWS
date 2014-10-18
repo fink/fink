@@ -9,10 +9,17 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Selfupdate via git and svn.
 
 /-------------
+| fink 0.38.0
+\-------------
+
+0.38.0 "Acadia" (2014-10-18)
+	* Support Yosemite (10.10)
+
+/-------------
 | fink 0.37.x
 \-------------
 
-0.37.1 "Alaska Assessor" (TBD) 
+0.37.1 "Alaska Assessor" (2014-09-20) 
 	* Officially recognize OS 10.9.4.
 
 
@@ -26,7 +33,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.36.x
 \-------------
 
-0.36.5 "Order today" (2014-06-03) "Order today"
+0.36.5 "Order today" (2014-06-03) 
 	* Last release to support 10.6.
 	* fix system-java detection for older Java versions.
 	* Additional fixes and enhancements.
