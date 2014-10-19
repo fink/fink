@@ -33,7 +33,7 @@ $ENV{'PATH'} = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin";
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use IO::Handle;
-use version;
+use version 0.77;
 
 # beware of old, stray FinkVersion.pm files
 unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
