@@ -2,15 +2,13 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
-| TBD
+| fink 0.38.x
 \-------------
-	
-	* Update Debian toolset.
-	* Selfupdate via git and svn.
 
-/-------------
-| fink 0.38.0
-\-------------
+0.38.1 "American Samoa" (2014-10-18)
+	* Bugfix: restore Fink::CLI::prompt_selection to Engine.pm (removed accidentally
+	  in [9177185])
+	* Add 10.10 SDK option for 10.9/Xcode 6.1.
 
 0.38.0 "Acadia" (2014-10-18)
 	* Support Yosemite (10.10)
