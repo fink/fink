@@ -289,6 +289,7 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Suggests',
 	 'Recommends',
 	 'Enhances',
+	 'Replaces',
 	 # 'Architecture' is not a "Depends"-style list, but its syntax is
 	 # like a package-list, so piggy-back on those fields' parser
 	 'Architecture',
