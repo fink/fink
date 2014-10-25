@@ -1282,10 +1282,14 @@ from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	};
 
-	print STDERR "- checking for dev-tools commands:\n" if ($options{debug});
+	print STDERR "- checking heuristics for dev-tools:\n" if ($options{debug});
 	foreach my $file (qw| /usr/bin/gcc /usr/bin/make |) {
-		$options{debug} && printf STDERR " - %s... %s\n", $file, -x $file ? "found" : "missing!";
+		$options{debug} && printf STDERR " - program %s... %s\n", $file, -x $file ? "found" : "missing!";
 		$hash->{status} = STATUS_ABSENT if not -x $file;
+	}
+	foreach my $file (qw| /usr/include |) {
+		$options{debug} && printf STDERR " - directory %s... %s\n", $file, -d $file ? "found" : "missing!";
+		$hash->{status} = STATUS_ABSENT if not -d $file;
 	}
 
 	$hash->{compilescript} = &gen_compile_script($hash);
