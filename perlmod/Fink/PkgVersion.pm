@@ -60,6 +60,7 @@ use File::Temp qw(tempdir);
 use Fcntl;
 use Storable;
 use IO::Handle;
+use version 0.77;	
 
 use strict;
 use warnings;
@@ -5173,18 +5174,19 @@ sub get_env {
 
 # FIXME: (No)SetPATH is undocumented
 	unless ($self->has_param('NoSetPATH')) {
+		# Get distribution once for better readability 
+		# since we want to append a "v" for future-proofing.
+		my $distro = version->parse ('v'.$config->param("Distribution")); 
 		# use path-prefix-* to give magic to 'gcc' and related commands
 		my $pathprefix;
-		if  ($config->param("Distribution") ge "10.7") {
-			# Use clang for gcc/g++. Only x86_64 supported so can override single-arch wrappers.
-			$pathprefix = ensure_clang_prefix();
-		}
-		if  ($config->param("Distribution") ge "10.9") {
-			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
+		if  ( $distro lt version->parse ("v10.10") ) {
+			# Clang isn't the default compiler for Xcode 4.x, so wrapping mandatory on 10.7 and 10.8/Xcode 4.x .
+			# Includes unused argument error suppression for clang-5's C compiler for 10.8 and 10.9 .
 			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
 		}
-		if  ($config->param("Distribution") eq "10.10") {
-			# Use -stdlib=libc++ for c++/g++/clang++ on 10.10
+		if  ( $distro ge version->parse ("v10.9") ) {
+			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
+			# Also includes unused argument error suppression for clang-5's C++ compiler for 10.9.
 			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
 		}
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
