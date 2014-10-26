@@ -5190,7 +5190,6 @@ sub get_env {
 		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 
-# FIXME: (No)SetPATH is undocumented
 # FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
