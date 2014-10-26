@@ -5175,16 +5175,6 @@ sub get_env {
 	unless ($self->has_param('NoSetPATH')) {
 		# use path-prefix-* to give magic to 'gcc' and related commands
 		my $pathprefix;
-		if  ($config->param("Distribution") lt "10.6") {
-			# Enforce g++-4.0 even for uncooperative packages, by making it the
-			# first 'g++' in the path (symbol-munging binary compatibility)
-			$pathprefix = ensure_gpp_prefix('4.0');
-		}
-		if ($config->param("Distribution") eq "10.6" || ( $config->param("Distribution") eq "10.5" && $config->param("Architecture") eq "x86_64")) {
-			# Use single-architecture compiler-wrapper on 10.6. Also
-			# override on older 10.x (gcc3.3 & 10.4T not supported)
-			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
-		}
 		if  ($config->param("Distribution") ge "10.7") {
 			# Use clang for gcc/g++. Only x86_64 supported so can override single-arch wrappers.
 			$pathprefix = ensure_clang_prefix();
