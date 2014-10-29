@@ -1,5 +1,5 @@
 # Official mirror list: http://www.gnu.org/prep/ftp.html
-Timestamp: 2014-10-17
+Timestamp: 2014-10-29
 
 Primary: http://ftpmirror.gnu.org
 
@@ -21,7 +21,6 @@ asi-JP: http://mirror.jre655.com/GNU
 asi-JP: http://public.p-knowledge.co.jp/gnu-mirror/gnu
 asi-KR: http://ftp.kaist.ac.kr/gnu/gnu
 asi-MY: http://ossm.utm.my/gnu
-asi-OM: http://mirror.squ.edu.om/gnu
 asi-TW: ftp://ftp.twaren.net/Unix/GNU/gnu
 asi-TW: ftp://ftp.yzu.edu.tw/gnu
 asi-TW: http://ftp.yzu.edu.tw/gnu
@@ -61,7 +60,6 @@ eur-DK: http://mirrors.dotsrc.org/gnu
 eur-ES: ftp://ftp.gul.es/gnu/ftp.gnu.org/gnu
 eur-ES: ftp://ftp.rediris.es/mirror/GNU/gnu
 eur-ES: http://ftp.gul.es/gnu/ftp.gnu.org/gnu
-eur-ES: http://ftp.rediris.es/mirror/GNU/gnu
 eur-FI: ftp://ftp.funet.fi/pub/gnu/prep
 eur-FI: http://www.nic.funet.fi/pub/gnu/ftp.gnu.org/pub/gnu
 eur-FR: ftp://ftp.igh.cnrs.fr/pub/gnu
