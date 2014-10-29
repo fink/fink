@@ -5178,12 +5178,9 @@ sub get_env {
 		# since we want to append a "v" for future-proofing.
 		my $distro = version->parse ('v'.$config->param("Distribution")); 
 		# use path-prefix-* to give magic to 'gcc' and related commands
-		my $pathprefix;
-		if  ( $distro lt version->parse ("v10.10") ) {
-			# Clang isn't the default compiler for Xcode 4.x, so wrapping mandatory on 10.7 and 10.8/Xcode 4.x .
-			# Includes unused argument error suppression for clang-5's C compiler for 10.8 and 10.9 .
-			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
-		}
+		# Clang isn't the default compiler for Xcode 4.x, so wrapping mandatory on 10.7 and 10.8/Xcode 4.x .
+		# Includes unused argument error suppression for clang-5's C compiler for 10.8 and 10.9 .
+		my $pathprefix = ensure_clang_prefix() . ":$pathprefix";
 		if  ( $distro ge version->parse ("v10.9") ) {
 			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
 			# Also includes unused argument error suppression for clang-5's C++ compiler for 10.9.
