@@ -1,5 +1,5 @@
 # Official mirror list: http://www.apache.org/mirrors/
-Timestamp: 2014-10-17
+Timestamp: 2014-10-29
 
 Primary: http://www.apache.org/dist
 
@@ -133,6 +133,7 @@ eur-NL: http://ftp.nluug.nl/internet/apache
 eur-NL: http://ftp.tudelft.nl/apache
 eur-NL: http://mirror.nl.webzilla.com/apache
 eur-NL: http://mirrors.supportex.net/apache
+eur-NL: http://www.apache.org/dist
 eur-NL: http://www.eu.apache.org/dist
 eur-NO: ftp://apache.uib.no/pub/apache
 eur-NO: http://apache.uib.no
@@ -162,6 +163,7 @@ eur-UK: http://www.mirrorservice.org/sites/ftp.apache.org
 nam-CA: ftp://apache.mirror.iweb.ca
 nam-CA: ftp://apache.mirror.rafal.ca/pub/apache
 nam-CA: ftp://apache.sunsite.ualberta.ca/pub/apache
+nam-CA: ftp://mirror.csclub.uwaterloo.ca/apache
 nam-CA: http://apache.mirror.gtcomm.net
 nam-CA: http://apache.mirror.iweb.ca
 nam-CA: http://apache.mirror.nexicom.net
@@ -169,6 +171,7 @@ nam-CA: http://apache.mirror.rafal.ca
 nam-CA: http://apache.mirror.vexxhost.com
 nam-CA: http://apache.parentingamerica.com
 nam-CA: http://apache.sunsite.ualberta.ca
+nam-CA: http://mirror.csclub.uwaterloo.ca/apache
 nam-CA: http://mirror.its.dal.ca/apache
 nam-CA: http://mirror.olnevhost.net/pub/apache
 nam-US: ftp://apache.cs.utah.edu/apache.org
@@ -200,11 +203,9 @@ nam-US: http://mirrors.advancedhosters.com/apache
 nam-US: http://mirrors.devlib.org/apache
 nam-US: http://mirrors.gigenet.com/apache
 nam-US: http://mirrors.ibiblio.org/apache
-nam-US: http://mirrors.koehn.com/apache
 nam-US: http://mirrors.sonic.net/apache
 nam-US: http://psg.mtu.edu/pub/apache
 nam-US: http://supergsego.com/apache
-nam-US: http://www.apache.org/dist
 nam-US: http://www.bizdirusa.com/mirrors/apache
 nam-US: http://www.carfab.com/apachesoftware
 nam-US: http://www.dsgnwrld.com/am

@@ -1909,14 +1909,21 @@ sub real_install {
 				# only use default level for dependencies of explicit packages
 				# (explicitly requested pkgs were severely validated earlier)
 				if (Fink::Config::get_option("validate")) {
-					my $info_filename = $item->[PKGVER]->get_info_filename();
-					if (not $validated_info_files{$info_filename}++) {
-						my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ Pedantic /;
-						Fink::Config::set_options( {
-							'Pedantic'  => 0
-												   } );
-						$bad_infos = 1 unless Fink::Validation::validate_info_file($info_filename);
-						Fink::Config::set_options(\%saved_options);
+					# Can't validate virtuals
+					if ($item->[PKGVER]->is_type('dummy') && $item->[PKGVER]->get_subtype('dummy') eq 'virtual') {
+						print "Package '" . $item->[PKGVER]->get_name() . "' is a virtual package, skipping validation.\n";
+					} elsif ($item->[PKGVER]->is_type('dummy') && $item->[PKGVER]->get_info_filename() eq '') {
+						print "Package '" . $item->[PKGVER]->get_name() . "' is a dummy package without info file, skipping validation.\n";
+					} else {
+						my $info_filename = $item->[PKGVER]->get_info_filename();
+						if (not $validated_info_files{$info_filename}++) {
+							my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ Pedantic /;
+							Fink::Config::set_options( {
+								'Pedantic'  => 0
+													   } );
+							$bad_infos = 1 unless Fink::Validation::validate_info_file($info_filename);
+							Fink::Config::set_options(\%saved_options);
+						}
 					}
 				}
 			}

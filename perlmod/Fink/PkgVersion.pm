@@ -60,6 +60,7 @@ use File::Temp qw(tempdir);
 use Fcntl;
 use Storable;
 use IO::Handle;
+use version 0.77;	
 
 use strict;
 use warnings;
@@ -5173,34 +5174,20 @@ sub get_env {
 
 # FIXME: (No)SetPATH is undocumented
 	unless ($self->has_param('NoSetPATH')) {
+		# Get distribution once for better readability 
+		# since we want to append a "v" for future-proofing.
+		my $distro = version->parse ('v'.$config->param("Distribution")); 
 		# use path-prefix-* to give magic to 'gcc' and related commands
-		my $pathprefix;
-		if  ($config->param("Distribution") lt "10.6") {
-			# Enforce g++-4.0 even for uncooperative packages, by making it the
-			# first 'g++' in the path (symbol-munging binary compatibility)
-			$pathprefix = ensure_gpp_prefix('4.0');
-		}
-		if ($config->param("Distribution") eq "10.6" || ( $config->param("Distribution") eq "10.5" && $config->param("Architecture") eq "x86_64")) {
-			# Use single-architecture compiler-wrapper on 10.6. Also
-			# override on older 10.x (gcc3.3 & 10.4T not supported)
-			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
-		}
-		if  ($config->param("Distribution") ge "10.7") {
-			# Use clang for gcc/g++. Only x86_64 supported so can override single-arch wrappers.
-			$pathprefix = ensure_clang_prefix();
-		}
-		if  ($config->param("Distribution") ge "10.9") {
+		# Clang isn't the default compiler for Xcode 4.x, so wrapping mandatory on 10.7 and 10.8/Xcode 4.x .
+		# Includes unused argument error suppression for clang-5's C compiler for 10.8 and 10.9 .
+		$script_env{'PATH'} = ensure_clang_prefix() . ':' . $script_env{'PATH'}; 
+		if  ( $distro ge version->parse ("v10.9") ) {
 			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
-			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
+			# Also includes unused argument error suppression for clang-5's C++ compiler for 10.9.
+			$script_env{'PATH'} = ensure_libcxx_prefix() . ':' . $script_env{'PATH'};
 		}
-		if  ($config->param("Distribution") eq "10.10") {
-			# Use -stdlib=libc++ for c++/g++/clang++ on 10.10
-			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
-		}
-		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 
-# FIXME: (No)SetPATH is undocumented
 # FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {

@@ -1,5 +1,5 @@
 # Official mirror list: http://www.cpan.org/SITES.html
-Timestamp: 2014-10-17
+Timestamp: 2014-10-29
 
 Primary: ftp://ftp.cpan.org/pub/CPAN
 
@@ -185,11 +185,11 @@ eur-HR: http://ftp.carnet.hr/pub/CPAN
 eur-IE: ftp://ftp.heanet.ie/mirrors/ftp.perl.org/pub/CPAN
 eur-IE: http://ftp.heanet.ie/mirrors/ftp.perl.org/pub/CPAN
 eur-IL: http://biocourse.weizmann.ac.il/CPAN
-eur-IS: ftp://ftp.rhnet.is/pub/CPAN
-eur-IS: http://ftp.rhnet.is/pub/CPAN
 eur-IT: ftp://ftp.eutelia.it/CPAN_Mirror
 eur-IT: ftp://ftp.panu.it/pub/mirrors/perl/CPAN
+eur-IT: ftp://mirrors.muzzy.it/CPAN
 eur-IT: http://bo.mirror.garr.it/mirrors/CPAN
+eur-IT: http://cpan.muzzy.it
 eur-IT: http://cpan.panu.it
 eur-LT: ftp://ftp.litnet.lt/pub/CPAN
 eur-LT: http://ftp.litnet.lt/pub/CPAN
@@ -313,7 +313,6 @@ nam-US: ftp://cpan.netnitco.net/pub/mirrors/CPAN
 nam-US: ftp://cpan.pair.com/pub/CPAN
 nam-US: ftp://ftp-mirror.internap.com/pub/CPAN
 nam-US: ftp://ftp.cpan.org/pub/CPAN
-nam-US: ftp://ftp.ndlug.nd.edu/pub/perl
 nam-US: ftp://ftp.osuosl.org/pub/CPAN
 nam-US: ftp://ftp.ottix.net/pub/CPAN
 nam-US: ftp://ftp.uwsg.iu.edu/pub/perl/CPAN
@@ -349,7 +348,6 @@ nam-US: http://cpan.msi.umn.edu
 nam-US: http://cpan.netnitco.net
 nam-US: http://cpan.pair.com
 nam-US: http://cpan.yimg.com
-nam-US: http://ftp.ndlug.nd.edu/pub/perl
 nam-US: http://ftp.osuosl.org/pub/CPAN
 nam-US: http://ftp.wayne.edu/CPAN
 nam-US: http://httpupdate1.cpanel.net/CPAN
