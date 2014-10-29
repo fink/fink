@@ -5,6 +5,13 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.38.x
 \-------------
 
+0.38.2 "Arches" (2014-10-29)
+	* dev-tools virtual package now requires /usr/include/
+	* Validator check for flat-namespace linkage
+	* Skip validation of virtual package .infos
+	* Bugfix: 10.10 SDK option for 10.9/Xcode 6.1 now works
+	* Bugfix: Use appropriate prefixes for Yosemite
+
 0.38.1 "American Samoa" (2014-10-18)
 	* Bugfix: restore Fink::CLI::prompt_selection to Engine.pm (removed accidentally
 	  in [9177185])
