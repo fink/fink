@@ -5180,13 +5180,12 @@ sub get_env {
 		# use path-prefix-* to give magic to 'gcc' and related commands
 		# Clang isn't the default compiler for Xcode 4.x, so wrapping mandatory on 10.7 and 10.8/Xcode 4.x .
 		# Includes unused argument error suppression for clang-5's C compiler for 10.8 and 10.9 .
-		my $pathprefix = ensure_clang_prefix() . ":$pathprefix";
+		$script_env{'PATH'} = ensure_clang_prefix() . ':' . $script_env{'PATH'}; 
 		if  ( $distro ge version->parse ("v10.9") ) {
 			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
 			# Also includes unused argument error suppression for clang-5's C++ compiler for 10.9.
-			$pathprefix = ensure_libcxx_prefix() . ":$pathprefix";
+			$script_env{'PATH'} = ensure_libcxx_prefix() . ':' . $script_env{'PATH'};
 		}
-		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 
 # FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
