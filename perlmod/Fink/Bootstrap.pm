@@ -222,7 +222,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin14\.[0]/) {
 		&print_breaking("The Fink Project is currently preparing " .
 						"packages for this system " .
-						"and the distribution should be regarded as "
+						"and the distribution should be regarded as " .
 						"beta quality.");
 		$distribution = "10.10";
 } elsif ($host =~ /^i386-apple-darwin14\./) {
