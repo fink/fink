@@ -2220,7 +2220,7 @@ sub _validate_dpkg {
 					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
 						print "Error: $dylib_temp appears to have been linked using a flat namespace.\n";
 						print "       If this package BuildDepends on libtool, make sure that you use\n";
-						print "          BuildDepends: libtool (>= 2.4.3-1).\n";
+						print "          BuildDepends: libtool (>= 2.4.2-4).\n";
 						print "       and use autoreconf to regenerate the configure script.\n";
 						print "       If the package doesn't BuildDepend on libtool, you'll need to\n";
 						print "       update its build procedure to avoid passing\n";	 
