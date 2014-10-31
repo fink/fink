@@ -35,23 +35,14 @@ perlexe="/usr/bin/perl"
 
 osMajorVer=`uname -r | cut -d. -f1`
 
-if [ $osMajorVer -eq 9 ]; then
-  if [ "$architecture" = "x86_64" ]; then
-    perlexe="$basepath/bin/perl5.8.8"
-  fi
-fi
-
-if [ $osMajorVer -eq 10 ]; then
-  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.10.0"
-fi
-
 if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
+elif [ $osMajorVer -eq 13 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
+elif [ $osMajorVer -gt 13 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.18"
 fi
 
-if [ $osMajorVer -gt 12 ]; then
-  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
-fi
 
 echo "Creating $fink..." 
 sed -e "s|@BASEPATH@|$basepath|g" -e "s|@PERLEXE@|$perlexe|g" < fink.in > fink
@@ -94,11 +85,8 @@ sed "s|@PREFIX@|$basepath|g" <fink-dpkg-status-cleanup.in >fink-dpkg-status-clea
 # apt-get-lockwait
 
 # set arguments for pack() up in an architecture-appropriate manner
-if [ "$architecture" = "x86_64" ]; then
-	packargs='"qqiss", 0, 0'
-else
-	packargs='"lllliss", (0, 0), (0, 0)'	
-fi
+# These are appropriate for x86_64:
+packargs='"qqiss", 0, 0'
 
 echo "Creating lockwait wrappers..."
 for prog in dpkg; do

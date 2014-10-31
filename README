@@ -1,4 +1,4 @@
-Generated from $Fink: readme.en.xml,v 1.10 2014/04/07 01:12:29 alexkhansen
+Generated from $Fink: readme.en.xml,v 1.11 2014/06/05 03:43:54 alexkhansen
 Exp $
 
  Fink ReadMe
@@ -33,7 +33,7 @@ You need:
  * The Xcode Command Line Tools are mandatory. This package can be installed
    either by downloading it directly via developer.apple.com, through the
    Xcode application, on via the Components page of the Downloads tab of the
-   Preferences on 10.7 and 10.8, or on 10.9 by running the
+   Preferences on 10.7 and 10.8, or on 10.9 and 10.10 by running the
 
       xcode-select --install
 

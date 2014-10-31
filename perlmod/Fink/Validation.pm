@@ -289,6 +289,7 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Suggests',
 	 'Recommends',
 	 'Enhances',
+	 'Replaces',
 	 # 'Architecture' is not a "Depends"-style list, but its syntax is
 	 # like a package-list, so piggy-back on those fields' parser
 	 'Architecture',
@@ -1013,6 +1014,31 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 		}
+
+		# Language-versioned packages need the language itself
+		# (otherwise mis- or fail-to-build, and not usable at
+		# runtime). Require only for bottom of lang-versioned
+		# dep-trees (e.g., varianted perlmods that do not depend on
+		# other varianted perlmods must depend on varianted perl
+		# interp). Higher parts of dep-tree thus get them indirectly.
+		# Skip obsolete packages (replacement might be unified).
+		if ($name =~ /-(pm|py|rb)(\d+)/) {
+			my $modpkg = "-$1$2";
+			my $langpkg;
+			if ($1 eq 'pm') {
+				$langpkg = "perl$2-core";
+			} elsif ($1 eq 'py') {
+				$langpkg = "python$2";
+			} else {
+				$langpkg = "ruby$2";
+			}
+
+			my $depends = $pv->pkglist_default('depends', '');
+			unless ($depends =~ /(\A|,|\s)($langpkg|.*$modpkg)(-|\z|,|\s|\()/ || $pv->is_obsolete) {
+				print "Error: language-versioned package $name needs Depends on another $modpkg (package of the same language-version) or on $langpkg (the language interpretter itself). ($filename)\n";
+				$looks_good = 0;
+			}
+		}
 	}
 
 	if ($looks_good and $config->verbosity_level() >= 3) {
@@ -1452,7 +1478,6 @@ sub validate_info_component {
 
 	# Special checks when package building script uses an explicit interp
 
-
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});
 		if ($value =~ /^\s*\#!\s*(\S+)([^\n]*)/) {
@@ -1810,6 +1835,22 @@ sub _validate_dpkg {
 		# track whether BuildDependsOnly will be needed
 		if ($filename =~/\/include\// && !-d $File::Find::name) {
 			$installed_headers = 1;
+		}
+		if ($filename =~/\.framework\/(.+)/) {
+			# heuristic for Framework library suites
+			if (-d $File::Find::name && !-l $File::Find::name) {
+				# allow real directory (only care about real file or
+				# symlink to dir ("real file" on disk) that would
+				# collide among .deb)
+			} else {
+				my $component = $1;
+				if ($component eq 'Versions/Current/' or $component !~ /^Versions\//) {
+					# non-libversioned Framework files
+					if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
+						&stack_msg($msgs, "Framework files not part of a specific library-version, but package does not declare BuildDependsOnly to be true (or false)", $filename);
+					}
+				}
+			}
 		}
 
 		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
@@ -2173,6 +2214,21 @@ sub _validate_dpkg {
 						print "       are not listed in the Shlibs field.  See the packaging manual.\n";
 						$looks_good = 0;
 					}
+				}
+				if (open (OTOOL, "$otool -hv '$dylib_temp' |")) {
+					<OTOOL>; <OTOOL>; <OTOOL>; # skip first three lines
+					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
+						print "Error: $dylib_temp appears to have been linked using a flat namespace.\n";
+						print "       If this package BuildDepends on libtool, make sure that you use\n";
+						print "          BuildDepends: libtool (>= 2.4.3-1).\n";
+						print "       and use autoreconf to regenerate the configure script.\n";
+						print "       If the package doesn't BuildDepend on libtool, you'll need to\n";
+						print "       update its build procedure to avoid passing\n";	 
+						print "          -Wl,-flat_namespace\n"; 
+						print "       when linking libraries.\n";
+						$looks_good = 0;
+					} 
+					close (OTOOL);
 				}
 			}
 		}

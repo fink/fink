@@ -1,35 +1,9 @@
 # Official mirror list: http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/mirrors-ftp.html
-Timestamp: 2014-04-14
+Timestamp: 2014-10-29
 
-Primary: ftp://ftp.FreeBSD.org/pub/FreeBSD/ports/distfiles
+Primary: http://distcache.FreeBSD.org/ports-distfiles/
 
-afr-ZA: ftp://ftp.za.freebsd.org/pub/FreeBSD/ports/distfiles
-asi-CN: ftp://ftp.cn.freebsd.org/pub/FreeBSD/ports/distfiles
-asi-JP: ftp://ftp.jp.freebsd.org/pub/FreeBSD/ports/distfiles
-asi-KR: ftp://ftp.kr.freebsd.org/pub/FreeBSD/ports/distfiles
-asi-SA: ftp://ftp.isu.net.sa/pub/ftp.freebsd.org/ports/distfiles
 asi-TW: ftp://ftp.tw.freebsd.org/pub/FreeBSD/ports/distfiles
-aus-AU: ftp://ftp.au.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-AT: ftp://ftp.at.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-CZ: ftp://ftp.cz.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-DE: ftp://ftp.ch.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-DE: ftp://ftp.de.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-DK: ftp://ftp.dk.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-EE: ftp://ftp.ee.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-ES: ftp://ftp.es.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-FI: ftp://ftp.fi.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-FR: ftp://ftp.fr.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-GR: ftp://ftp.gr.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-IE: ftp://ftp3.ie.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-LV: ftp://ftp.lv.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-NL: ftp://ftp.nl.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-NO: ftp://ftp.no.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-PL: ftp://ftp.pl.freebsd.org/pub/FreeBSD/ports/distfiles
 eur-SE: ftp://ftp.se.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-SI: ftp://ftp.si.freebsd.org/pub/FreeBSD/ports/distfiles
-eur-UK: ftp://ftp.uk.freebsd.org/pub/FreeBSD/ports/distfiles
-nam-US: ftp://ftp.freebsd.org/pub/FreeBSD/ports/distfiles
-nam-US: ftp://ftp.freebsd.org/pub/FreeBSD/ports/distfiles
-nam-US: ftp://ftp1.freebsd.org/pub/FreeBSD/ports/distfiles
-nam-US: ftp://ftp1.us.freebsd.org/pub/FreeBSD/ports/distfiles
-sam-BR: ftp://ftp2.br.freebsd.org/FreeBSD/ports/distfiles
+nam-US: http://distcache.freebsd.org/ports-distfiles

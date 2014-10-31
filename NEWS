@@ -9,8 +9,31 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Selfupdate via git and svn.
 
 /-------------
+| fink 0.38.0
+\-------------
+
+0.38.2 "Arches" (2014-10-29)
+	* dev-tools virtual package now requires /usr/include/
+	* Validator check for flat-namespace linkage
+	* Skip validation of virtual package .infos
+	* Bugfix: 10.10 SDK option for 10.9/Xcode 6.1 now works
+	* Bugfix: Use appropriate prefixes for Yosemite
+
+0.38.1 "American Samoa" (2014-10-18)
+	* Bugfix: restore Fink::CLI::prompt_selection to Engine.pm (removed accidentally
+	  in [9177185])
+	* Add 10.10 SDK option for 10.9/Xcode 6.1.
+
+0.38.0 "Acadia" (2014-10-18)
+	* Support Yosemite (10.10)
+
+/-------------
 | fink 0.37.x
 \-------------
+
+0.37.1 "Alaska Assessor" (2014-09-20) 
+	* Officially recognize OS 10.9.4.
+
 
 0.37.0 "Alabama Antiquarian" (2014-06-03) 
 	* First release not to support 10.6.
@@ -22,7 +45,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.36.x
 \-------------
 
-0.36.5 "Order today" (2014-06-03) "Order today"
+0.36.5 "Order today" (2014-06-03) 
 	* Last release to support 10.6.
 	* fix system-java detection for older Java versions.
 	* Additional fixes and enhancements.

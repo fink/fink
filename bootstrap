@@ -28,11 +28,12 @@ use 5.008_001;	 # perl 5.8.1 or newer required
 use strict;
 use warnings;
 
-$ENV{'PATH'} = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin";
+$ENV{'PATH'} = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin";
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use IO::Handle;
+use version 0.77;
 
 # beware of old, stray FinkVersion.pm files
 unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
@@ -246,7 +247,7 @@ if ($host =~ /^\s*$/) {
 print " $host\n";
 
 $distribution = check_host($host,1,$arch);
-if (($distribution eq "unknown") or ($distribution lt "10.5")) {
+if (($distribution eq "unknown") or (version->parse('v'.$distribution) lt version->parse("v10.7"))) {
 	exit(1);
 }
 
@@ -355,13 +356,17 @@ my $xcode_version;
 		$max_xcode="4.6.3";
 	} elsif ($vers == 12) {
 		$min_xcode="4.4";
-		$max_xcode="99.9";
+		$max_xcode="5.1.1";
 	} elsif ($vers >= 13) {
 		#
 		# Extrapolate for future releases
 		#
 		$min_xcode="5.0";
 		$max_xcode="99.9";
+	} elsif ($vers == 14) {
+		$min_xcode="6.0";
+		$max_xcode="99.9";
+		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} else {
 		die "ERROR:\n\tUnsupported OS X version.\n";
 	}
@@ -373,23 +378,25 @@ my $xcode_version;
 	$xcode_version = '0.0' if !defined $xcode_version; # set a value for later
 
 	# Check that we're using the right CLI tools for the OS.	
-	my ($receipt_to_check, $error_msg);
-	my $error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools\n".
+	my ($receipt_to_check, $os_dep_error_msg, $error_msg)=('','','');
+	my $os_indep_error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools\n".
 					 "for your OS X version.  Tools from a prior OS X version won't work properly.\n";
-	my $error_msg2 = "or download them from developer.apple.com.\n".
+	my $os_indep_error_msg2 = "or download them from developer.apple.com.\n".
 					 "After they are installed, try the bootstrap operation again.\n" ;
 	if ($vers >= 13) {
 		$receipt_to_check = "com.apple.pkg.CLTools_Executables";
-		$error_msg = $error_msg1 . "You can install them by running the command\n".
-					  			   "\n\txcode-select --install\n\n".
-					 			   "in a terminal window, and then selecting Install in the dialog window that\n".
-					  			   "pops up, ".$error_msg2;					  				
+		$os_dep_error_msg = "You can install them by running the command\n".
+					  		"\n\txcode-select --install\n\n".
+					 		"in a terminal window, and then selecting Install in the dialog window that\n".
+					  		"pops up, ";					  				
 	} elsif ($vers == 12 or $vers == 11) { 	# 10.7 or 10.8
 		$receipt_to_check = "com.apple.pkg.DeveloperToolsCLI";
-		$error_msg = $error_msg1 . "You can install them via the Downloads Pane of the Xcode Preferences,\n".$error_msg2;
-	} else { # 10.6
+		$os_dep_error_msg = "You can install them via the Downloads Pane of the Xcode Preferences,\n";
+	} else { # 10.6-
 		$receipt_to_check = "com.apple.pkg.bogus";
 	}
+	# this will look insane for a monolithic xcode, but should not be seen in that case.
+	$error_msg = $os_indep_error_msg1 . $os_dep_error_msg . $os_indep_error_msg2;
 	chomp(my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`);
 	if (not $?) {
 		# didn't fail
