@@ -4502,7 +4502,7 @@ EOF
 		Fink::Config::set_options(\%saved_options);
 	}
 
-	# Set ENV so for tar on 10.9, dpkg-deb calls tar and thus requires it
+	# Set ENV so for tar on 10.9+, dpkg-deb calls tar and thus requires it
 	# as well.
 	$cmd = "env LANG=C LC_ALL=C dpkg-deb -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
