@@ -408,6 +408,8 @@ my $xcode_version;
 		} 
 		# TODO:  Should we check if we're in the legal range of CLI tools on 10.7/10.8?
 		print "$version is OK\n";
+		# We'll continue to use &version_cmp() in case we need to put an Epoch on an Xcode
+		# version someday.
 	} elsif (&version_cmp ("$xcode_version", "<<", "4.3")) { # failed, but using monolithic Xcode 
 		print "Skipping.\nXcode $xcode_version is monolithic and includes command-line tools.\n";
 	} else { # all other failures
