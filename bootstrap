@@ -729,8 +729,10 @@ if ($distribution eq "10.6") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.10.0";
 } elsif (($distribution eq "10.7") or ($distribution eq "10.8")) {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.12";
-} elsif ($distribution gt "10.8") {
+} elsif ($distribution eq "10.9") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.16";
+} elsif ($distribution eq "10.10") {
+	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.18";
 } elsif (($arch eq "x86_64") and ($distribution eq "10.5")) {
 	$perlexe = "$bsbase/bin/perl5.8.8";
 }
