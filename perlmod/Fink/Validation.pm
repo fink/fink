@@ -2137,7 +2137,7 @@ sub _validate_dpkg {
 		my $file = resolve_rooted_symlink($destdir, $shlibs_file);
 		if (not defined $file) {
 			if ($deb_control->{'package'} eq 'fink') {
-				# fink is a special case, it has an shlibs field that provides system-shlibs
+				# fink is a special case, it has a shlibs field that provides system-shlibs
 			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
 				if ($shlibs_file !~ /^\@/) {
 					print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
@@ -2198,12 +2198,12 @@ sub _validate_dpkg {
 					<OTOOL>; # skip first line
 					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
-					if ($libname !~ /^\//) {
+					if (($libname !~ /^\//) and ($libname !~ /\@.*path\//)) {
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";
 						print "       but the corresponding install_name\n";
 						print "          $libname\n";
-						print "       is not an absolute pathname.\n";
+						print "       is not an absolute pathname or runtime path.\n";
 						$looks_good = 0;
 					} elsif (not exists $deb_shlibs->{$libname}) {
 						$libname =~ s/^$basepath/%p/;
