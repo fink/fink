@@ -2148,10 +2148,10 @@ sub _validate_dpkg {
 			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
 				# AKH: it appears that we've been allowing @rpath and friends for private libraries?
 				if ($shlibs_file !~ /^\@/) {
-					print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+					print "Warning: Shlibs field specifies private install_name '$shlibs_file', but it does not exist!\n";
 				}
 			} else {
-				print "Error: Shlibs field specifies file '$shlibs_file', but it does not exist!\n";
+				print "Error: Shlibs field specifies install_name '$shlibs_file', but it does not exist!\n";
 				$looks_good = 0;
 			}
 		} elsif (not -f $file) {
