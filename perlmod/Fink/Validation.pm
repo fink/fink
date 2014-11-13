@@ -1419,8 +1419,8 @@ sub validate_info_component {
 				$looks_good = 0;
 				next;
 			}
-			if (not $shlibs_parts[0] =~ /^(\%p)?\//) {
-				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\"$splitoff_field. ($filename)\n";
+			if (not $shlibs_parts[0] =~ /^(\%p|@[a-z,_]*path)?\//) {
+				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p or a runtime path in field \"shlibs\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
 			}
 			if ($shlibs{$shlibs_parts[0]}++) {
