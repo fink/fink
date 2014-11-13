@@ -2198,7 +2198,7 @@ sub _validate_dpkg {
 					<OTOOL>; # skip first line
 					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
-					if (($libname !~ /^\//) and ($libname !~ /\@.*path\//)) {
+					if (($libname !~ /^\//) and ($libname !~ /^\@[a-z,_]*path\//)) {
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";
 						print "       but the corresponding install_name\n";
