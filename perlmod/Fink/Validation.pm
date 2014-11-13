@@ -2134,11 +2134,20 @@ sub _validate_dpkg {
 		print "Warning: Package has shlibs data but otool is not in the path; skipping parts of shlibs validation.\n";
 	}
 	foreach my $shlibs_file (sort keys %$deb_shlibs) {
-		my $file = resolve_rooted_symlink($destdir, $shlibs_file);
+		my ($file, $named_file);
+		#discard runtime path portion of the install_name
+		($named_file) = $shlibs_file =~ /^\@[a-z,_]*path\/(.*)/ ; 
+		if ( $named_file ) {
+			find ({wanted => sub {$file = $File::Find::name if m,$named_file,}, no_chdir=>1 }, $destdir);
+		} else {
+			$file = resolve_rooted_symlink($destdir, $shlibs_file);
+		}
+		print "$file\n";
 		if (not defined $file) {
 			if ($deb_control->{'package'} eq 'fink') {
 				# fink is a special case, it has a shlibs field that provides system-shlibs
 			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
+				# AKH: it appears that we've been allowing @rpath and friends for private libraries?
 				if ($shlibs_file !~ /^\@/) {
 					print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
 				}
@@ -2155,7 +2164,7 @@ sub _validate_dpkg {
 			if (defined $otool) {
 				if (open (OTOOL, "$otool -L '$file' |")) {
 					<OTOOL>; # skip the first line
-					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+					my ($libname, undef, $compat_version) = <OTOOL> =~ /^\s*((\/|@[a-z,_]*path\/).+?)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
 
 					if (!defined $libname or !defined $compat_version) {
@@ -2168,11 +2177,11 @@ sub _validate_dpkg {
 						}
 					}
 					if (!defined $libname or !defined $compat_version) {
-						print "Error: File name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
+						print "Error: Name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
 						$looks_good = 0;
 					} else {
 						if ($shlibs_file ne $libname) {
-							print "Error: File name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
+							print "Error: Name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
 						}
 						if ($deb_shlibs->{$shlibs_file}->{'compatibility_version'} ne $compat_version) {
 							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->{'compatibility_version'}.", but it is actually $compat_version.\n";
