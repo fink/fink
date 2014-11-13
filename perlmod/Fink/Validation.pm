@@ -2142,7 +2142,6 @@ sub _validate_dpkg {
 		} else {
 			$file = resolve_rooted_symlink($destdir, $shlibs_file);
 		}
-		print "$file\n";
 		if (not defined $file) {
 			if ($deb_control->{'package'} eq 'fink') {
 				# fink is a special case, it has a shlibs field that provides system-shlibs
