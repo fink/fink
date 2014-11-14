@@ -1424,7 +1424,7 @@ sub validate_info_component {
 				$looks_good = 0;
 			}
 			if ($shlibs{$shlibs_parts[0]}++) {
-				print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
+				print "Warning: Entry \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
 			}
 			if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
