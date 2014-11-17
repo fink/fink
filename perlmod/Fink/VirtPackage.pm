@@ -479,16 +479,13 @@ directories exist.
 					$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
-you must download the Java SDK from Apple at:
+you must download the Java SDK from Apple (free registration required) at:
 
-  http://connect.apple.com/
-
-(free registration required)
+  http://developer.apple.com/
 
 or the Java JDK from Oracle at:
 
-http://www.oracle.com/technetwork/java/javase/downloads/index.html
-
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
 END
 					$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -648,7 +645,7 @@ This package represents Xcode.app and 'xcodebuild',
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later and have in fact installed
@@ -704,11 +701,11 @@ This package represents your Xcode CLI tools version.
 	$hash->{descdetail} = <<END;
 This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
-you can download Xcode (for OS 10.5, 10.6, and 10.7)
-or the Command Line Tools For Xcode (OS 10.7 or later)
+you can download Xcode (for OS X 10.5 - 10.10)
+or the Command Line Tools For Xcode (OS X 10.7 or later)
 from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 END
@@ -850,7 +847,7 @@ This package represents the Mac OS X $versiontext SDK
 provided by Apple as part of Xcode.  If it does not show as
 installed, you can download Xcode from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or  later and have in fact installed
@@ -917,7 +914,7 @@ This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -971,7 +968,7 @@ flag in the development tools provided by Apple.  If it
 does not show as installed, you can download the latest
 developer tools (called Xcode) from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1113,7 +1110,7 @@ in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1172,7 +1169,7 @@ in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1223,9 +1220,9 @@ cc1plus.
 This package represents broken versions of the GCC compiler
 as shipped by Apple.  If this package shows as installed,
 you should see if there is a newer version of the developer
-tools at:
+tools for your OS X version at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required)
 END
@@ -1271,7 +1268,7 @@ system.  You can obtain them by installing the Apple developer
 tools (also known as Xcode).  The latest versions of the Apple
 developer tools are always available from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -2139,9 +2136,9 @@ which is part of the Apple developer tools (Xcode). The latest
 versions of the Apple developer tools are always available
 from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
-(free registration required)
+(free registration required).
 
 Note that some versions of GCC are *not* installed by default
 when installing some versions of Xcode.  Make sure you customize
