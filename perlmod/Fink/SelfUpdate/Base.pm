@@ -101,7 +101,7 @@ sub devtools_check {
 		         "* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
 		$line4 = "\n".
 		         "* or the Xcode Command Line Tools package,\n".
-				 "which is available from connect.apple.com\n".
+				 "which is available from developer.apple.com\n".
 				 "or via the Downloads tab of the Preferences in Xcode 4.3 and later";
 	} else {
 		$line2 = "\n".
@@ -112,7 +112,7 @@ sub devtools_check {
 	unless (-f $vcs_exec and -x $vcs_exec  and Fink::VirtPackage->query_package("dev-tools")) {
 		warn "Before changing your selfupdate method to '$vcs', you must install".
 			 $line2.
-			 "http://connect.apple.com (after free registration)".
+			 "http://developer.apple.com (after free registration)".
 			 $line4.".\n";
 		return 0;
 	}
