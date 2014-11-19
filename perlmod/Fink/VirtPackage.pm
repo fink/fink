@@ -394,27 +394,35 @@ END
 
 This package represents an installed version of Apple's and/or Oracle's Java.
 It is considered present if the
-/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Commands
-and or the /Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/bin
+/System/Library/Frameworks/JavaVM.framework/Versions/<version>/Commands (for versions<=1.6)
+and/or the /Library/Java/JavaVirtualMachines/jdk<version>_<uversion>.jdk/Contents/Home/bin (for versions>=1.7)
 directories exist.
 
 =cut
 
 	# create dummy object for java
 	print STDERR "- checking Java versions:\n" if ($options{debug});
-	my @jdktest= split /\n/, `/usr/libexec/java_home -V 2>&1`;
-	my ($latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
-	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+	# check all Javas on system so that we can generate virtual packages
+	# for each version (even those new at the time of this fink release) and
+	# add hardcoded patterns for Javas which are known to be available 
+	# on supported OS X so that their system-* packages will show up as
+	# potentially installable.
+	my @jdktest = ( split (/\n/, `/usr/libexec/java_home -V 2>&1`),
+					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home',
+					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
+					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
+					);
+	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
 		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
-		# However, we'll have to switch the directory for JDK 1.6 and earlier.
-		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
 		if (opendir(DIR, $javadir)) {
 			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 			for my $dir (reverse(sort(@dirs))) {
 				if ($javadir =~ /System/) { # 1.6 and earlier
+					# Tweak $javadir to point to where stuff lives for JDK 1.6 and earlier.
+					$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
 					$ver = $dir;
 					$java_test_dir = "$javadir/$dir/Commands";
 					$java_cmd_dir = "$dir/Commands";
@@ -464,8 +472,8 @@ END
 
 This package represents an installed version of Apple's Java SDK or Oracle's JDK.
 It is considered present if the
-/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Headers
-and or /Library/Java/JavaVirtualMachines/jdk<version>.jdk/Contents/Home/include
+/System/Library/Frameworks/JavaVM.framework/Versions/<version>/Headers (for versions<=1.6)
+and or /Library/Java/JavaVirtualMachines/jdk<version>.jdk/Contents/Home/include (for versions>=1.7)
 directories exist.
 
 =cut
@@ -476,17 +484,27 @@ directories exist.
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-					$hash->{descdetail}  = <<END;
+					if ($ver == 16) {
+						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
-you must download the Java SDK from Apple (free registration required) at:
+you must download and install Java for OS X 2014-001 from Apple:
 
-  http://developer.apple.com/
+  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
 
-or the Java JDK from Oracle at:
+END
+					} else {
+						$hash->{descdetail}  = <<END;
+This package represents the development headers for
+Java $dir.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
 
   http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
 END
+					}
 					$hash->{compilescript} = &gen_compile_script($hash);
 
 					if (-r "$javadir/$dir/Headers/jni.h") {
@@ -512,6 +530,80 @@ END
 				last if $javadir !~ /System/ ; #JDK 1.7 and later
 			}
 			closedir(DIR);
+		# if the directory isn't valid start by assuming that we're on a dummy placeholder
+		# and create 
+		} elsif ($ver =~ /1\.6\.0_AB/) {
+			my $legacy_boilerplate = <<END;
+This package represents the currently installed version
+of Java 1.6.0.  If this package shows as not being installed,
+you must download and install Java for OS X 2014-001 from Apple:
+
+  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java16";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "1.6.0-1";
+			$hash->{description} = "[virtual package representing Java 1.6.0]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $legacy_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash;
+				print STDERR "  - 1.6.0... not present on system\n" if ($options{debug});	
+			} 		
+
+			$hash = {};
+			$hash->{package}     = "system-java16-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "1.6.0-1";
+			$hash->{description} = "[virtual package representing Java 1.6.0 development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $legacy_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+
+		} elsif ($ver =~ /(1)\.([78])\.(0)_XY/) {
+			my $real_ver = "$1.$2.$3";
+			my $short_ver = $1.$2; 
+			my $oracle_boilerplate = <<END;
+This package represents the currently installed version
+of Java $real_ver.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
+
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash ;
+				print STDERR "  - $real_ver... not present on system\n" if ($options{debug});	
+			}
+			
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+		
+		} else {
+			print STDERR "  - $ver isn't recognized.  Contact the Fink Core Developers at fink-core\@lists.sourceforge.net .\n"
 		}
 	}
 =item "system-java"
