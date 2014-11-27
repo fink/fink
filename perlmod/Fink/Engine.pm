@@ -470,13 +470,13 @@ sub _user_visible_versions {
 }
 
 sub do_real_list {
-	my ($pattern, @allnames, @selected);
-	my ($name);
+	my (@selected);
 	my %sel_opts = (
 		'installedstate' => 0,
 		'section' => undef,
 		'maintainer' => undef,
 		'buildonly' => undef,
+		'apropos_pattern' => undef,
 	);
 	# bits used by $sel_opts{intalledstate}
 	my $ISTATE_OUTDATED = 1;
@@ -537,7 +537,6 @@ sub do_real_list {
 	get_options($cmd, \@options, \@_,
 		helpformat => "%intro{[options] [string],foo bar}\n%all{}\n");
 
-
 	if ($sel_opts{installedstate} == 0) {
 		$sel_opts{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT
 			| $ISTATE_ABSENT | $ISTATE_TOONEW;
@@ -570,9 +569,11 @@ sub do_real_list {
 		$fmt_opts{'formatstr'} = "%s\t%s\t%s\t%s\n";
 		$fmt_opts{'desclen'} = 0;
 	}
+
 	Fink::Package->require_packages();
-	@allnames = Fink::Package->list_packages();
+	@selected = Fink::Package->list_packages(); # first gather all package-names
 	if ($cmd eq "list") {
+		# narrow down the list if user gave a regex on commandline
 		if (@_) {
 			# prepare the regex patterns
 			foreach (@_) {
@@ -586,16 +587,13 @@ sub do_real_list {
 				}
 			}
 			# match all patterns in a single go
-			$pattern = join '|', @_;
-			@selected = grep /$pattern/, @allnames;
-		} else {
-			# no patterns specified, so list them all
-			@selected = @allnames;
+			my $pattern = join '|', @_;
+			@selected = grep /$pattern/, @selected;
 		}
 	} else {
-		$pattern = shift;
-		@selected = @allnames;
-		unless ($pattern) {
+		# will later narrow down by name/desc pattern given on commandline
+		$sel_opts{'apropos_pattern'} = shift;
+		unless (defined $sel_opts{'apropos_pattern'}) {
 			die "no keyword specified for command 'apropos'!\n";
 		}
 	}
@@ -664,8 +662,8 @@ sub do_real_list {
 		if ($cmd eq "apropos") {
 			next unless $vo;
 			my $ok = $vo->has_param("Description")
-				&& $vo->param("Description") =~ /\Q$pattern\E/i;
-			$ok ||= $vo->get_name() =~ /\Q$pattern\E/i;;
+				&& $vo->param("Description") =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
+			$ok ||= $vo->get_name() =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
 			next unless $ok;
 		}
 
@@ -897,7 +895,7 @@ sub do_fetch_all {
 	$dryrun = $options{"dryrun"} || 0;
 
 	if ($options{"recursive"}) {
-		print "fetch_all already fetches everything; --recursive is meaningless\n";
+		print "fetch-all already fetches everything; --recursive is meaningless\n";
 	}
 
 	&call_queue_clear;
