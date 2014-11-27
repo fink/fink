@@ -471,59 +471,65 @@ sub _user_visible_versions {
 
 sub do_real_list {
 	my ($pattern, @allnames, @selected);
-	my ($formatstr, $desclen, $name, $section, $maintainer);
-	my ($buildonly, $format);
-	my %options =
-	(
-	 "installedstate" => 0
+	my ($name);
+	my %sel_opts = (
+		'installedstate' => 0,
+		'section' => undef,
+		'maintainer' => undef,
+		'buildonly' => undef,
 	);
-	# bits used by $options{intalledstate}
+	# bits used by $sel_opts{intalledstate}
 	my $ISTATE_OUTDATED = 1;
 	my $ISTATE_CURRENT  = 2;
 	my $ISTATE_ABSENT   = 4;
 	my $ISTATE_TOONEW   = 8; # FIXME: Add option details!
-	my ($width, $namelen, $verlen, $dotab);
+	my %fmt_opts = (
+		'width' => undef,
+		'namelen' => undef,
+		'verlen' => undef,
+		'desclen' => 43,
+		'format' => 'table',
+		'formatstr' => "%s	%-15.15s	%-11.11s	%s\n",
+		'do_tab' => undef,
+	);
 	my $cmd = shift;
 	use Getopt::Long;
-	$formatstr = "%s	%-15.15s	%-11.11s	%s\n";
-	$desclen = 43;
-	$format = 'table';
 
 	my @options = (
-		[ 'width|w=s'	=> \$width,
+		[ 'width|w=s'	=> \$fmt_opts{'width'},
 			'Sets the width of the display you would like the output ' .
 			'formatted for. NUM is either a numeric value or auto. auto will ' .
 			'set the width based on the terminal width.', 'NUM' ],
-		[ 'tab|t'		=> \$dotab,
+		[ 'tab|t'		=> \$fmt_opts{do_tab},
 			'Outputs the list with tabs as field delimiter.' ],
-		[ 'format|f=s'	=> \$format,
+		[ 'format|f=s'	=> \$fmt_opts{'format'},
 			"The output format. FMT is 'table' (default), 'dotty', or 'dotty-build'", 'FMT' ],
 	);
 
 	if ($cmd eq "list") {
 		@options = ( @options,
 			[ 'installed|i'		=>
-				sub {$options{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
 				'Only list packages which are currently installed.' ],
 			[ 'uptodate|u'		=>
-				sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_CURRENT  ;},
 				'Only list packages which are up to date.' ],
 			[ 'outdated|o'		=>
-				sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_OUTDATED ;},
 				'Only list packages for which a newer version is available.' ],
 			[ 'notinstalled|n'	=>
-				sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_ABSENT   ;},
 				'Only list packages which are not installed.' ],
 			[ 'newer|N'			=>
-				sub {$options{installedstate} |= $ISTATE_TOONEW   ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_TOONEW   ;},
 				'Only list packages whose installed version is newer than '
 				. 'anything fink knows about.' ],
-			[ 'buildonly|b'		=> \$buildonly,
+			[ 'buildonly|b'		=> \$sel_opts{'buildonly'},
 				'Only list packages which are Build Depends Only' ],
-			[ 'section|s=s'		=> \$section,
+			[ 'section|s=s'		=> \$sel_opts{'section'},
 				"Only list packages in the section(s) matching EXPR\n" .
 				"(example: fink list --section=x11).", 'EXPR'],
-			[ 'maintainer|m=s'	=> \$maintainer,
+			[ 'maintainer|m=s'	=> \$sel_opts{'maintainer'},
 				"Only list packages with the maintainer(s) matching EXPR\n" .
 				"(example: fink list --maintainer=beren12).", 'EXPR'],
 		);
@@ -532,34 +538,37 @@ sub do_real_list {
 		helpformat => "%intro{[options] [string],foo bar}\n%all{}\n");
 
 
-	if ($options{installedstate} == 0) {
-		$options{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT
+	if ($sel_opts{installedstate} == 0) {
+		$sel_opts{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT
 			| $ISTATE_ABSENT | $ISTATE_TOONEW;
 	}
 
 	# By default or if --width=auto, compute the output width to fit exactly into the terminal
-	if ((not defined $width and not $dotab) or (defined $width and
-				(($width eq "") or ($width eq "auto") or ($width eq "=auto") or ($width eq "=")))) {
-		$width = &get_term_width();
-		if (not defined $width or $width == 0) {
-			$dotab = 1;				# not a terminal, fallback to tabbed mode
-			undef $width;
+	if ((not defined $fmt_opts{'width'} and not $fmt_opts{'do_tab'})
+		or (defined $fmt_opts{'width'} and (
+			($fmt_opts{'width'} eq "") or ($fmt_opts{'width'} eq "auto") or ($fmt_opts{'width'} eq "=auto") or ($fmt_opts{'width'} eq "=")
+		))
+	) {
+		$fmt_opts{'width'} = &get_term_width();
+		if (not defined $fmt_opts{'width'} or $fmt_opts{'width'} == 0) {
+			$fmt_opts{'do_tab'} = 1;				# not a terminal, fallback to tabbed mode
+			undef $fmt_opts{'width'};
 		}
 	}
 
-	if (defined $width) {
-		$width =~ s/[\=]?([0-9]+)/$1/;
-		$width = 40 if ($width < 40);	 # enforce minimum display width of 40 characters
-		$width = $width - 5;			 # 5 chars for the first field
-		$namelen = int($width * 0.2);	 # 20% for the name
-		$verlen = int($width * 0.15);	 # 15% for the version
-		if ($desclen != 0) {
-			$desclen = $width - $namelen - $verlen - 5;
+	if (defined $fmt_opts{'width'}) {
+		$fmt_opts{'width'} =~ s/[\=]?([0-9]+)/$1/;
+		$fmt_opts{'width'} = 40 if ($fmt_opts{'width'} < 40);	 # enforce minimum display width of 40 characters
+		$fmt_opts{'width'} = $fmt_opts{'width'} - 5;			 # 5 chars for the first field
+		$fmt_opts{'namelen'} = int($fmt_opts{'width'} * 0.2);	 # 20% for the name
+		$fmt_opts{'verlen'} = int($fmt_opts{'width'} * 0.15);	 # 15% for the version
+		if ($fmt_opts{'desclen'} != 0) {
+			$fmt_opts{'desclen'} = $fmt_opts{'width'} - $fmt_opts{'namelen'} - $fmt_opts{'verlen'} - 5;
 		}
-		$formatstr = "%s  %-" . $namelen . "." . $namelen . "s  %-" . $verlen . "." . $verlen . "s  %s\n";
-	} elsif ($dotab) {
-		$formatstr = "%s\t%s\t%s\t%s\n";
-		$desclen = 0;
+		$fmt_opts{'formatstr'} = "%s  %-" . $fmt_opts{'namelen'} . "." . $fmt_opts{'namelen'} . "s  %-" . $fmt_opts{'verlen'} . "." . $fmt_opts{'verlen'} . "s  %s\n";
+	} elsif ($fmt_opts{'do_tab'}) {
+		$fmt_opts{'formatstr'} = "%s\t%s\t%s\t%s\n";
+		$fmt_opts{'desclen'} = 0;
 	}
 	Fink::Package->require_packages();
 	@allnames = Fink::Package->list_packages();
@@ -591,7 +600,7 @@ sub do_real_list {
 		}
 	}
 
-	if ($format eq 'dotty' or $format eq 'dotty-build') {
+	if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
 		print "digraph packages {\n";
 		print "concentrate=true;\n";
 		print "size=\"30,40\";\n";
@@ -617,21 +626,21 @@ sub do_real_list {
 		if ($vo && $vo->is_installed()) {
 			if ($vo->is_type('dummy') && $vo->get_subtype('dummy') eq 'status') {
 				# Newer version than fink knows about
-				next unless $options{installedstate} & $ISTATE_TOONEW;
+				next unless $sel_opts{installedstate} & $ISTATE_TOONEW;
 				$iflag = "*i*";
 			} else {
-				next unless $options{installedstate} & $ISTATE_CURRENT;
+				next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
 				$iflag = " i ";
 			}
 		} elsif (grep { $_->is_installed() } @pvs) {
-			next unless $options{installedstate} & $ISTATE_OUTDATED;
+			next unless $sel_opts{installedstate} & $ISTATE_OUTDATED;
 			$iflag = "(i)";
 		} elsif (grep { $_->is_installed() } @provs) {
-			next unless $options{installedstate} & $ISTATE_CURRENT;
+			next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
 			$iflag = " p ";
 			$lversion = ''; # no version for provided
 		} else {
-			next unless $options{installedstate} & $ISTATE_ABSENT;
+			next unless $sel_opts{installedstate} & $ISTATE_ABSENT;
 			$iflag = "   ";
 		}
 
@@ -639,18 +648,18 @@ sub do_real_list {
 		$vo = $lversion ? $package->get_version($lversion) : 0;
 
 		my $description = $vo
-			? $vo->get_shortdescription($desclen)
+			? $vo->get_shortdescription($fmt_opts{'desclen'})
 			: '[virtual package]';
 
-		if (defined $buildonly) {
+		if (defined $sel_opts{'buildonly'}) {
 			next unless $vo && $vo->param_boolean("builddependsonly");
 		}
-		if (defined $section) {
-			next unless $vo && $vo->get_section($vo) =~ /\Q$section\E/i;
+		if (defined $sel_opts{'section'}) {
+			next unless $vo && $vo->get_section($vo) =~ /\Q$sel_opts{'section'}\E/i;
 		}
-		if (defined $maintainer) {
+		if (defined $sel_opts{'maintainer'}) {
 			next unless $vo && $vo->has_param("maintainer")
-				&& $vo->param("maintainer")  =~ /\Q$maintainer\E/i ;
+				&& $vo->param("maintainer")  =~ /\Q$sel_opts{'maintainer'}\E/i ;
 		}
 		if ($cmd eq "apropos") {
 			next unless $vo;
@@ -661,16 +670,16 @@ sub do_real_list {
 		}
 
 		my $dispname = $pname;
-		if ($namelen && length($pname) > $namelen) {
+		if ($fmt_opts{'namelen'} && length($pname) > $fmt_opts{'namelen'}) {
 			# truncate pkg name if wider than its field
-			$dispname = substr($pname, 0, $namelen - 3)."...";
+			$dispname = substr($pname, 0, $fmt_opts{'namelen'} - 3)."...";
 		}
 
-		if ($format eq 'dotty' or $format eq 'dotty-build') {
+		if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
 			print "\"$pname\" [shape=box];\n";
 			if (ref $vo) {
-				# grab the Depends of pkg (not BDep, not others in family)
-				for my $dep (@{$vo->get_depends(($format eq 'dotty-build'),0)}) {
+				# grab the Depends of pkg (and possibly BDep)
+				for my $dep (@{$vo->get_depends(($fmt_opts{'format'} eq 'dotty-build'),0)}) {
 					# for each ANDed (comma-sep) chunk...
 					for my $subdep (@$dep) {
 						# include all ORed items in it
@@ -686,12 +695,12 @@ sub do_real_list {
 				}
 			}
 		} else {
-			printf $formatstr,
+			printf $fmt_opts{'formatstr'},
 					$iflag, $pname, $lversion, $description;
 		}
 	}
 
-	if ($format eq 'dotty' or $format eq 'dotty-build') {
+	if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
 		print "}\n";
 	}
 
