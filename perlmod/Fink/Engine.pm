@@ -620,123 +620,123 @@ sub do_real_list {
 	while (@selected) {
 		my @next_selected = ();	# propagate additional from inner loop
 
-	foreach my $pname (sort @selected) {
-		my $package = Fink::Package->package_by_name($pname);
+		foreach my $pname (sort @selected) {
+			my $package = Fink::Package->package_by_name($pname);
 
-		# Look only in versions the user should see. noload
-		my @pvs = _user_visible_versions($package->get_all_versions(1));
-		my @provs = _user_visible_versions($package->get_all_providers( no_load => 1 ));
-		next unless @provs; # if no providers, it doesn't really exist!
+			# Look only in versions the user should see. noload
+			my @pvs = _user_visible_versions($package->get_all_versions(1));
+			my @provs = _user_visible_versions($package->get_all_providers( no_load => 1 ));
+			next unless @provs; # if no providers, it doesn't really exist!
 
-		my @vers = map { $_->get_fullversion() } @pvs;
-		my $lversion = @vers ? latest_version(@vers) : '';
+			my @vers = map { $_->get_fullversion() } @pvs;
+			my $lversion = @vers ? latest_version(@vers) : '';
 
-		# noload: don't bother loading fields until we know we need them
-		my $vo = $lversion ? $package->get_version($lversion, 1) : 0;
+			# noload: don't bother loading fields until we know we need them
+			my $vo = $lversion ? $package->get_version($lversion, 1) : 0;
 
-		my $iflag;
-		unless ($list_always{$pname}) {
-		if ($vo && $vo->is_installed()) {
-			if ($vo->is_type('dummy') && $vo->get_subtype('dummy') eq 'status') {
-				# Newer version than fink knows about
-				next unless $sel_opts{installedstate} & $ISTATE_TOONEW;
-				$iflag = "*i*";
-			} else {
-				next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
-				$iflag = " i ";
+			my $iflag;
+			unless ($list_always{$pname}) {
+				if ($vo && $vo->is_installed()) {
+					if ($vo->is_type('dummy') && $vo->get_subtype('dummy') eq 'status') {
+						# Newer version than fink knows about
+						next unless $sel_opts{installedstate} & $ISTATE_TOONEW;
+						$iflag = "*i*";
+					} else {
+						next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
+						$iflag = " i ";
+					}
+				} elsif (grep { $_->is_installed() } @pvs) {
+					next unless $sel_opts{installedstate} & $ISTATE_OUTDATED;
+					$iflag = "(i)";
+				} elsif (grep { $_->is_installed() } @provs) {
+					next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
+					$iflag = " p ";
+					$lversion = ''; # no version for provided
+				} else {
+					next unless $sel_opts{installedstate} & $ISTATE_ABSENT;
+					$iflag = "   ";
+				}
 			}
-		} elsif (grep { $_->is_installed() } @pvs) {
-			next unless $sel_opts{installedstate} & $ISTATE_OUTDATED;
-			$iflag = "(i)";
-		} elsif (grep { $_->is_installed() } @provs) {
-			next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
-			$iflag = " p ";
-			$lversion = ''; # no version for provided
-		} else {
-			next unless $sel_opts{installedstate} & $ISTATE_ABSENT;
-			$iflag = "   ";
-		}
-		}
 
-		# Now load the fields
-		$vo = $lversion ? $package->get_version($lversion) : 0;
+			# Now load the fields
+			$vo = $lversion ? $package->get_version($lversion) : 0;
 
-		my $description = $vo
-			? $vo->get_shortdescription($fmt_opts{'desclen'})
-			: '[virtual package]';
+			my $description = $vo
+				? $vo->get_shortdescription($fmt_opts{'desclen'})
+				: '[virtual package]';
 
-		unless ($list_always{$pname}) {
-		if (defined $sel_opts{'buildonly'}) {
-			next unless $vo && $vo->param_boolean("builddependsonly");
-		}
-		if (defined $sel_opts{'section'}) {
-			next unless $vo && $vo->get_section($vo) =~ /\Q$sel_opts{'section'}\E/i;
-		}
-		if (defined $sel_opts{'maintainer'}) {
-			next unless $vo && $vo->has_param("maintainer")
-				&& $vo->param("maintainer")  =~ /\Q$sel_opts{'maintainer'}\E/i ;
-		}
-		if ($cmd eq "apropos") {
-			next unless $vo;
-			my $ok = $vo->has_param("Description")
-				&& $vo->param("Description") =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
-			$ok ||= $vo->get_name() =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
-			next unless $ok;
-		}
-		}
+			unless ($list_always{$pname}) {
+				if (defined $sel_opts{'buildonly'}) {
+					next unless $vo && $vo->param_boolean("builddependsonly");
+				}
+				if (defined $sel_opts{'section'}) {
+					next unless $vo && $vo->get_section($vo) =~ /\Q$sel_opts{'section'}\E/i;
+				}
+				if (defined $sel_opts{'maintainer'}) {
+					next unless $vo && $vo->has_param("maintainer")
+						&& $vo->param("maintainer")  =~ /\Q$sel_opts{'maintainer'}\E/i ;
+				}
+				if ($cmd eq "apropos") {
+					next unless $vo;
+					my $ok = $vo->has_param("Description")
+						&& $vo->param("Description") =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
+					$ok ||= $vo->get_name() =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
+					next unless $ok;
+				}
+			}
 
-		my $dispname = $pname;
-		if ($fmt_opts{'namelen'} && length($pname) > $fmt_opts{'namelen'}) {
-			# truncate pkg name if wider than its field
-			$dispname = substr($pname, 0, $fmt_opts{'namelen'} - 3)."...";
-		}
+			my $dispname = $pname;
+			if ($fmt_opts{'namelen'} && length($pname) > $fmt_opts{'namelen'}) {
+				# truncate pkg name if wider than its field
+				$dispname = substr($pname, 0, $fmt_opts{'namelen'} - 3)."...";
+			}
 
-		if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
-			print "\"$pname\" [shape=box];\n";
-			if (ref $vo) {
-				# grab the Depends of pkg (and possibly BDep)
-				for my $dep (@{$vo->get_depends(($fmt_opts{'format'} eq 'dotty-build'),0)}) {
-					# for each ANDed (comma-sep) chunk...
-					for my $subdep (@$dep) {
-						# include all ORed items in it
-						my ($subdepname) = ($subdep =~ /^([+\-.a-z0-9]+)/); # only %n, not versioning
-						print "\"$pname\" -> \"$subdepname\";\n";
-						if ($sel_opts{'recursive'}) {
-							# as a dep, it *must* be listed
-							unless ($list_always{$subdepname}++) {
-								# haven't already found it implicitly;
-								# may have been excluded earlier
-								push @next_selected, $subdepname;
+			if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
+				print "\"$pname\" [shape=box];\n";
+				if (ref $vo) {
+					# grab the Depends of pkg (and possibly BDep)
+					for my $dep (@{$vo->get_depends(($fmt_opts{'format'} eq 'dotty-build'),0)}) {
+						# for each ANDed (comma-sep) chunk...
+						for my $subdep (@$dep) {
+							# include all ORed items in it
+							my ($subdepname) = ($subdep =~ /^([+\-.a-z0-9]+)/); # only %n, not versioning
+							print "\"$pname\" -> \"$subdepname\";\n";
+							if ($sel_opts{'recursive'}) {
+								# as a dep, it *must* be listed
+								unless ($list_always{$subdepname}++) {
+									# haven't already found it implicitly;
+									# may have been excluded earlier
+									push @next_selected, $subdepname;
+								}
+							}
+						}
+					}
+				} else {
+					my @providers = $package->get_all_providers();
+					for my $provider (@providers) {
+						my $name = $provider->get_name();
+						if ($name ne $pname) {
+							print "\"$pname\" -> \"$name\";\n";
+							if ($sel_opts{'recursive'}) {
+								# as a dep, it *must* be listed
+								unless ($list_always{$name}++) {
+									# haven't already found it implicitly;
+									# may have been excluded earlier
+									push @next_selected, $name;
+								}
 							}
 						}
 					}
 				}
 			} else {
-				my @providers = $package->get_all_providers();
-				for my $provider (@providers) {
-					my $name = $provider->get_name();
-					if ($name ne $pname) {
-						print "\"$pname\" -> \"$name\";\n";
-						if ($sel_opts{'recursive'}) {
-							# as a dep, it *must* be listed
-							unless ($list_always{$name}++) {
-								# haven't already found it implicitly;
-								# may have been excluded earlier
-								push @next_selected, $name;
-							}
-						}
-					}
-				}
+				printf $fmt_opts{'formatstr'},
+				$iflag, $pname, $lversion, $description;
 			}
-		} else {
-			printf $fmt_opts{'formatstr'},
-					$iflag, $pname, $lversion, $description;
+
+			$pkg_listed{$pname}++;	# track which ones we've done
 		}
 
-		$pkg_listed{$pname}++;	# track which ones we've done
-	}
-
-	@selected = @next_selected;
+		@selected = @next_selected;
 	}
 
 	if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
