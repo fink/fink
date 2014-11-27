@@ -470,13 +470,16 @@ sub _user_visible_versions {
 }
 
 sub do_real_list {
-	my (@selected);
+	my @selected;			# list of pkg-names to list partly based on user options
+	my %list_always;		# hash of pkg-names to list regardless of user options
+	my %pkg_listed;			# hash of pkg-names that have already been listed
 	my %sel_opts = (
 		'installedstate' => 0,
 		'section' => undef,
 		'maintainer' => undef,
 		'buildonly' => undef,
 		'apropos_pattern' => undef,
+		'recursive' => undef,
 	);
 	# bits used by $sel_opts{intalledstate}
 	my $ISTATE_OUTDATED = 1;
@@ -532,6 +535,8 @@ sub do_real_list {
 			[ 'maintainer|m=s'	=> \$sel_opts{'maintainer'},
 				"Only list packages with the maintainer(s) matching EXPR\n" .
 				"(example: fink list --maintainer=beren12).", 'EXPR'],
+			[ 'recursive|r'  => \$sel_opts{'recursive'},
+				"List recursively (dotty and dotty-build formats only)." ],
 		);
 	}
 	get_options($cmd, \@options, \@_,
@@ -570,10 +575,15 @@ sub do_real_list {
 		$fmt_opts{'desclen'} = 0;
 	}
 
+	if ( $sel_opts{'recursive'} && ($fmt_opts{'format'} ne 'dotty' && $fmt_opts{'format'} ne 'dotty_build') ) {
+		print "The chosen --format does not support the --recursive option\n";
+	}
+
 	Fink::Package->require_packages();
 	@selected = Fink::Package->list_packages(); # first gather all package-names
 	if ($cmd eq "list") {
 		# narrow down the list if user gave a regex on commandline
+		# NB: may be re-extended later based on --recursive
 		if (@_) {
 			# prepare the regex patterns
 			foreach (@_) {
@@ -606,6 +616,10 @@ sub do_real_list {
 
 	my $reload_disable_save = Fink::Status->is_reload_disabled();  # save previous setting
 	Fink::Status->disable_reload(1);  # don't keep stat()ing status db
+
+	while (@selected) {
+		my @next_selected = ();	# propagate additional from inner loop
+
 	foreach my $pname (sort @selected) {
 		my $package = Fink::Package->package_by_name($pname);
 
@@ -621,6 +635,7 @@ sub do_real_list {
 		my $vo = $lversion ? $package->get_version($lversion, 1) : 0;
 
 		my $iflag;
+		unless ($list_always{$pname}) {
 		if ($vo && $vo->is_installed()) {
 			if ($vo->is_type('dummy') && $vo->get_subtype('dummy') eq 'status') {
 				# Newer version than fink knows about
@@ -641,6 +656,7 @@ sub do_real_list {
 			next unless $sel_opts{installedstate} & $ISTATE_ABSENT;
 			$iflag = "   ";
 		}
+		}
 
 		# Now load the fields
 		$vo = $lversion ? $package->get_version($lversion) : 0;
@@ -649,6 +665,7 @@ sub do_real_list {
 			? $vo->get_shortdescription($fmt_opts{'desclen'})
 			: '[virtual package]';
 
+		unless ($list_always{$pname}) {
 		if (defined $sel_opts{'buildonly'}) {
 			next unless $vo && $vo->param_boolean("builddependsonly");
 		}
@@ -666,6 +683,7 @@ sub do_real_list {
 			$ok ||= $vo->get_name() =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
 			next unless $ok;
 		}
+		}
 
 		my $dispname = $pname;
 		if ($fmt_opts{'namelen'} && length($pname) > $fmt_opts{'namelen'}) {
@@ -681,21 +699,44 @@ sub do_real_list {
 					# for each ANDed (comma-sep) chunk...
 					for my $subdep (@$dep) {
 						# include all ORed items in it
-						$subdep =~ /^([+\-.a-z0-9]+)/; # only %n, not versioning
-						print "\"$pname\" -> \"$1\";\n";
+						my ($subdepname) = ($subdep =~ /^([+\-.a-z0-9]+)/); # only %n, not versioning
+						print "\"$pname\" -> \"$subdepname\";\n";
+						if ($sel_opts{'recursive'}) {
+							# as a dep, it *must* be listed
+							unless ($list_always{$subdepname}++) {
+								# haven't already found it implicitly;
+								# may have been excluded earlier
+								push @next_selected, $subdepname;
+							}
+						}
 					}
 				}
 			} else {
 				my @providers = $package->get_all_providers();
 				for my $provider (@providers) {
 					my $name = $provider->get_name();
-					print "\"$pname\" -> \"$name\";\n" if $name ne $pname;
+					if ($name ne $pname) {
+						print "\"$pname\" -> \"$name\";\n";
+						if ($sel_opts{'recursive'}) {
+							# as a dep, it *must* be listed
+							unless ($list_always{$name}++) {
+								# haven't already found it implicitly;
+								# may have been excluded earlier
+								push @next_selected, $name;
+							}
+						}
+					}
 				}
 			}
 		} else {
 			printf $fmt_opts{'formatstr'},
 					$iflag, $pname, $lversion, $description;
 		}
+
+		$pkg_listed{$pname}++;	# track which ones we've done
+	}
+
+	@selected = @next_selected;
 	}
 
 	if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
