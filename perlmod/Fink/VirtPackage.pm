@@ -417,12 +417,12 @@ directories exist.
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
 		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
+		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
+		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if $javadir =~ /System/;
 		if (opendir(DIR, $javadir)) {
 			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 			for my $dir (reverse(sort(@dirs))) {
 				if ($javadir =~ /System/) { # 1.6 and earlier
-					# Tweak $javadir to point to where stuff lives for JDK 1.6 and earlier.
-					$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
 					$ver = $dir;
 					$java_test_dir = "$javadir/$dir/Commands";
 					$java_cmd_dir = "$dir/Commands";
