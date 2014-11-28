@@ -408,6 +408,8 @@ directories exist.
 	# on supported OS X so that their system-* packages will show up as
 	# potentially installable.
 	my @jdktest = ( split (/\n/, `/usr/libexec/java_home -V 2>&1`),
+					'1.4.2_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.4.2.jdk/Contents/Home',
+					'1.5.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.5.0.jdk/Contents/Home',
 					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home',
 					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
 					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
@@ -484,7 +486,7 @@ directories exist.
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-					if ($ver == 16) {
+					if ($ver <= 16) {
 						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
@@ -532,7 +534,7 @@ END
 			closedir(DIR);
 		# if the directory isn't valid start by assuming that we're on a dummy placeholder
 		# and create 
-		} elsif ($ver =~ /1\.6\.0_AB/) {
+		} elsif ($ver =~ /1\.[4-6]\.\d_AB/) {
 			my $legacy_boilerplate = <<END;
 This package represents the currently installed version
 of Java 1.6.0.  If this package shows as not being installed,
