@@ -603,7 +603,7 @@ END
 			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 		
 		} else {
-			print STDERR "  - $ver isn't recognized.  Contact the Fink Core Developers at fink-core\@lists.sourceforge.net .\n"
+			print STDERR "  - $ver isn't recognized.  Contact the Fink Core Developers at fink-core\@lists.sourceforge.net .\n" if ($options{debug});
 		}
 	}
 =item "system-java"
