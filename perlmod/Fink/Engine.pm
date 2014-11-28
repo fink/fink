@@ -48,6 +48,7 @@ use Fink::Validation;
 use Fink::Checksum;
 use Fink::Scanpackages;
 use IO::Handle;
+use Hash::Util qw(lock_keys);
 
 use strict;
 use warnings;
@@ -473,6 +474,7 @@ sub do_real_list {
 	my @selected;			# list of pkg-names to list partly based on user options
 	my %list_always;		# hash of pkg-names to list regardless of user options
 	my %pkg_listed;			# hash of pkg-names that have already been listed
+
 	my %sel_opts = (
 		'installedstate' => 0,
 		'section' => undef,
@@ -481,11 +483,13 @@ sub do_real_list {
 		'apropos_pattern' => undef,
 		'recursive' => undef,
 	);
+	lock_keys(%sel_opts);	   # prevent typos
 	# bits used by $sel_opts{intalledstate}
 	my $ISTATE_OUTDATED = 1;
 	my $ISTATE_CURRENT  = 2;
 	my $ISTATE_ABSENT   = 4;
 	my $ISTATE_TOONEW   = 8; # FIXME: Add option details!
+
 	my %fmt_opts = (
 		'width' => undef,
 		'namelen' => undef,
@@ -495,6 +499,8 @@ sub do_real_list {
 		'formatstr' => "%s	%-15.15s	%-11.11s	%s\n",
 		'do_tab' => undef,
 	);
+	lock_keys(%fmt_opts);		# prevent typos
+
 	my $cmd = shift;
 	use Getopt::Long;
 
