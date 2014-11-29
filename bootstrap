@@ -142,7 +142,13 @@ if ($arch eq "i386") {
 			if (-x '/usr/bin/javac') {
 				my $need_java_sdk = `/usr/bin/javac -version 2>&1>/dev/null`;
 				if ($need_java_sdk =~ m/No Java runtime present\, requesting install\./) {
-					die "Please install Java SDK before re-attempting fink bootstrap\n";
+					die "Please install an Oracle JDK from\n" .
+						"http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html\n" .
+						"or\n" .
+						"http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html\n" .
+						"or the Apple Legacy Java package from\n" .
+						"http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg\n" .
+						"before re-attempting the fink bootstrap.\n";
 				}
 			}
 		} elsif ($is64bit) {
