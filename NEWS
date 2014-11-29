@@ -2,9 +2,23 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| TBD
+\-------------
+	
+	* Update Debian toolset.
+	* Selfupdate via git and svn.
+
+/-------------
 | fink 0.38.x
 \-------------
 
+0.38.3 "Badlands" (2014-11-29)
+	* Enable 10.10 bindist by default
+	* Support OS 10.10.1
+	* Make system-java* packages visible even if not installed.
+	* Validator now allows for public libraries to use @rpath.
+	* Bootstrap with perl-5.18.
+	
 0.38.2 "Arches" (2014-10-29)
 	* dev-tools virtual package now requires /usr/include/
 	* Validator check for flat-namespace linkage

@@ -394,23 +394,33 @@ END
 
 This package represents an installed version of Apple's and/or Oracle's Java.
 It is considered present if the
-/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Commands
-and or the /Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/bin
+/System/Library/Frameworks/JavaVM.framework/Versions/<version>/Commands (for versions<=1.6)
+and/or the /Library/Java/JavaVirtualMachines/jdk<version>_<uversion>.jdk/Contents/Home/bin (for versions>=1.7)
 directories exist.
 
 =cut
 
 	# create dummy object for java
 	print STDERR "- checking Java versions:\n" if ($options{debug});
-	my @jdktest= split /\n/, `/usr/libexec/java_home -V 2>&1`;
-	my ($latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
-	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+	# check all Javas on system so that we can generate virtual packages
+	# for each version (even those new at the time of this fink release) and
+	# add hardcoded patterns for Javas which are known to be available 
+	# on supported OS X so that their system-* packages will show up as
+	# potentially installable.
+	my @jdktest = ( split (/\n/, `/usr/libexec/java_home -V 2>&1`),
+					'1.4.2_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.4.2.jdk/Contents/Home',
+					'1.5.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.5.0.jdk/Contents/Home',
+					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home',
+					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
+					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
+					);
+	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
 		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
-		# However, we'll have to switch the directory for JDK 1.6 and earlier.
-		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
+		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
+		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if $javadir =~ /System/;
 		if (opendir(DIR, $javadir)) {
 			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 			for my $dir (reverse(sort(@dirs))) {
@@ -464,8 +474,8 @@ END
 
 This package represents an installed version of Apple's Java SDK or Oracle's JDK.
 It is considered present if the
-/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Headers
-and or /Library/Java/JavaVirtualMachines/jdk<version>.jdk/Contents/Home/include
+/System/Library/Frameworks/JavaVM.framework/Versions/<version>/Headers (for versions<=1.6)
+and or /Library/Java/JavaVirtualMachines/jdk<version>.jdk/Contents/Home/include (for versions>=1.7)
 directories exist.
 
 =cut
@@ -476,20 +486,27 @@ directories exist.
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-					$hash->{descdetail}  = <<END;
+					if ($ver <= 16) {
+						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
-you must download the Java SDK from Apple at:
+you must download and install Java for OS X 2014-001 from Apple:
 
-  http://connect.apple.com/
-
-(free registration required)
-
-or the Java JDK from Oracle at:
-
-http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
 
 END
+					} else {
+						$hash->{descdetail}  = <<END;
+This package represents the development headers for
+Java $dir.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
+
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
+END
+					}
 					$hash->{compilescript} = &gen_compile_script($hash);
 
 					if (-r "$javadir/$dir/Headers/jni.h") {
@@ -515,6 +532,80 @@ END
 				last if $javadir !~ /System/ ; #JDK 1.7 and later
 			}
 			closedir(DIR);
+		# if the directory isn't valid start by assuming that we're on a dummy placeholder
+		# and create 
+		} elsif ($ver =~ /1\.[4-6]\.\d_AB/) {
+			my $legacy_boilerplate = <<END;
+This package represents the currently installed version
+of Java 1.6.0.  If this package shows as not being installed,
+you must download and install Java for OS X 2014-001 from Apple:
+
+  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java16";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "1.6.0-1";
+			$hash->{description} = "[virtual package representing Java 1.6.0]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $legacy_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash;
+				print STDERR "  - 1.6.0... not present on system\n" if ($options{debug});	
+			} 		
+
+			$hash = {};
+			$hash->{package}     = "system-java16-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "1.6.0-1";
+			$hash->{description} = "[virtual package representing Java 1.6.0 development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $legacy_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+
+		} elsif ($ver =~ /(1)\.([78])\.(0)_XY/) {
+			my $real_ver = "$1.$2.$3";
+			my $short_ver = $1.$2; 
+			my $oracle_boilerplate = <<END;
+This package represents the currently installed version
+of Java $real_ver.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
+
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash ;
+				print STDERR "  - $real_ver... not present on system\n" if ($options{debug});	
+			}
+			
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+		
+		} else {
+			print STDERR "  - $ver isn't recognized.  Contact the Fink Core Developers at fink-core\@lists.sourceforge.net .\n" if ($options{debug});
 		}
 	}
 =item "system-java"
@@ -648,7 +739,7 @@ This package represents Xcode.app and 'xcodebuild',
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later and have in fact installed
@@ -704,11 +795,11 @@ This package represents your Xcode CLI tools version.
 	$hash->{descdetail} = <<END;
 This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
-you can download Xcode (for OS 10.5, 10.6, and 10.7)
-or the Command Line Tools For Xcode (OS 10.7 or later)
+you can download Xcode (for OS X 10.5 - 10.10)
+or the Command Line Tools For Xcode (OS X 10.7 or later)
 from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 END
@@ -850,7 +941,7 @@ This package represents the Mac OS X $versiontext SDK
 provided by Apple as part of Xcode.  If it does not show as
 installed, you can download Xcode from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or  later and have in fact installed
@@ -917,7 +1008,7 @@ This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -971,7 +1062,7 @@ flag in the development tools provided by Apple.  If it
 does not show as installed, you can download the latest
 developer tools (called Xcode) from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1113,7 +1204,7 @@ in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1172,7 +1263,7 @@ in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1223,9 +1314,9 @@ cc1plus.
 This package represents broken versions of the GCC compiler
 as shipped by Apple.  If this package shows as installed,
 you should see if there is a newer version of the developer
-tools at:
+tools for your OS X version at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required)
 END
@@ -1271,7 +1362,7 @@ system.  You can obtain them by installing the Apple developer
 tools (also known as Xcode).  The latest versions of the Apple
 developer tools are always available from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -2139,9 +2230,9 @@ which is part of the Apple developer tools (Xcode). The latest
 versions of the Apple developer tools are always available
 from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
-(free registration required)
+(free registration required).
 
 Note that some versions of GCC are *not* installed by default
 when installing some versions of Xcode.  Make sure you customize

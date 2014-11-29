@@ -136,13 +136,19 @@ if ($arch eq "i386") {
 			print "ERROR: fink requires a 64-bit-capable CPU for your version of OS X\n";
 			exit 1;
 		} elsif ($vers >= 11) {
-			# 10.7 we support only 64-bit
+			# on 10.7+ we support only 64-bit
 			$arch = "x86_64";
-			# check that Java SDK is installed (otherwise Lion autoinstalls it on-demand)
+			# check that JDK/Legacy Java SDK is installed (otherwise Lion+ autoinstalls it on-demand)
 			if (-x '/usr/bin/javac') {
 				my $need_java_sdk = `/usr/bin/javac -version 2>&1>/dev/null`;
 				if ($need_java_sdk =~ m/No Java runtime present\, requesting install\./) {
-					die "Please install Java SDK before re-attempting fink bootstrap\n";
+					die "Please install an Oracle JDK from\n" .
+						"http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html\n" .
+						"or\n" .
+						"http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html\n" .
+						"or the Apple Legacy Java package from\n" .
+						"http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg\n" .
+						"before re-attempting the fink bootstrap.\n";
 				}
 			}
 		} elsif ($is64bit) {
@@ -408,6 +414,8 @@ my $xcode_version;
 		} 
 		# TODO:  Should we check if we're in the legal range of CLI tools on 10.7/10.8?
 		print "$version is OK\n";
+		# We'll continue to use &version_cmp() in case we need to put an Epoch on an Xcode
+		# version someday.
 	} elsif (&version_cmp ("$xcode_version", "<<", "4.3")) { # failed, but using monolithic Xcode 
 		print "Skipping.\nXcode $xcode_version is monolithic and includes command-line tools.\n";
 	} else { # all other failures
@@ -729,8 +737,10 @@ if ($distribution eq "10.6") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.10.0";
 } elsif (($distribution eq "10.7") or ($distribution eq "10.8")) {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.12";
-} elsif ($distribution gt "10.8") {
+} elsif ($distribution eq "10.9") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.16";
+} elsif ($distribution eq "10.10") {
+	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.18";
 } elsif (($arch eq "x86_64") and ($distribution eq "10.5")) {
 	$perlexe = "$bsbase/bin/perl5.8.8";
 }
