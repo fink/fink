@@ -2,13 +2,6 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
-| TBD
-\-------------
-	
-	* Update Debian toolset.
-	* Selfupdate via git and svn.
-
-/-------------
 | fink 0.38.x
 \-------------
 
