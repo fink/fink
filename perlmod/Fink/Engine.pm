@@ -581,7 +581,7 @@ sub do_real_list {
 		$fmt_opts{'desclen'} = 0;
 	}
 
-	if ( $sel_opts{'recursive'} && ($fmt_opts{'format'} ne 'dotty' && $fmt_opts{'format'} ne 'dotty_build') ) {
+	if ( $sel_opts{'recursive'} && ($fmt_opts{'format'} ne 'dotty' && $fmt_opts{'format'} ne 'dotty-build') ) {
 		print "The chosen --format does not support the --recursive option\n";
 	}
 
