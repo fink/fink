@@ -26,6 +26,7 @@ License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 CustomMirror: <<
 Primary: http://downloads.sourceforge.net
+afr-KE: http://liquidtelecom.dl.sourceforge.net/sourceforge
 afr-ZA: http://tenet.dl.sourceforge.net/sourceforge
 asi-JP: http://jaist.dl.sourceforge.net/sourceforge
 asi-KZ: http://kaz.dl.sourceforge.net/sourceforge
@@ -51,11 +52,9 @@ eur-UK: http://vorboss.dl.sourceforge.net/sourceforge
 nam-CA: http://iweb.dl.sourceforge.net/sourceforge
 nam-US: http://colocrossing.dl.sourceforge.net/sourceforge
 nam-US: http://downloads.sourceforge.net
-nam-US: http://hivelocity.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-ams.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-dal.dl.sourceforge.net/sourceforge
 nam-US: http://superb-dca2.dl.sourceforge.net/sourceforge
-nam-US: http://superb-dca3.dl.sourceforge.net/sourceforge
 nam-US: http://tcpdiag.dl.sourceforge.net/sourceforge
 sam-BR: http://ufpr.dl.sourceforge.net/sourceforge
 <<

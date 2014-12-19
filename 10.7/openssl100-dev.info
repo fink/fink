@@ -1,6 +1,6 @@
 # -*- coding: ascii; tab-width: 4; x-counterpart: openssl100-dev.patch -*-
 Package: openssl100-dev
-Version: 1.0.1i
+Version: 1.0.1j
 Revision: 1
 Description: Secure Sockets Layer and Crypto Library
 License: OSI-Approved
@@ -26,7 +26,7 @@ CustomMirror: <<
   Primary:   http://www.openssl.org/
   Secondary: ftp://ftp.openssl.org/
 <<
-Source-MD5: c8dc151a671b9b92ff3e4c118b174972
+Source-MD5: f7175c9cd3c39bb1907ac8bba9df8ed3
 
 PatchFile: %{ni}.patch
 PatchFile-MD5: 8d86d626da439dd15dfb515193d4d573 
