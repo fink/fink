@@ -2140,7 +2140,6 @@ Returns the X11 version if found.
 ### Check the installed x11 version
 sub check_x11_version {
 	our @x11_dirs;
-	print "@x11_dirs in check_x11_version\n";
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
 	for my $checkfile ('xterm.1', 'bdftruncate.1', 'gccmakedep.1') {
 		for my $xdir (@x11_dirs) {
