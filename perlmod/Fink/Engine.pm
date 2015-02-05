@@ -51,6 +51,7 @@ use IO::Handle;
 use Hash::Util qw(lock_keys);
 
 use strict;
+use version 0.77;
 use warnings;
 
 BEGIN {
@@ -239,23 +240,34 @@ sub process {
 
 	if ($cmd =~ /build|update|install|activate|use/) {
 		# Check if the Distribution encoded in fink.conf matches the current OS version
-		# or if there is a permitted upgrade path.
-		my $distribution = $Fink::Config::distribution;
-		my $osversion = &Fink::Services::get_osx_vers();
+		# or if there is a permitted upgrade path.  This needs to be evaluated before
+		# the .info collection is selected.
+		# Use version objects in case we have an extended series of OS versions with 
+		# supported upgrade paths, like 10.9->10.11
+
+		my $raw_distribution = $Fink::Config::distribution;
+		my $raw_osversion = &Fink::Services::get_osx_vers();
+		my $distribution = version->parse('v'.$raw_distribution);
+		our $osversion = version->parse('v'.$raw_osversion); #shared elsewhere so use 'our'
+		# $osversion is also used in &real_install() if $willbuild is set, and that
+		# _should_ only happen under a more restrictive set of conditions than the 
+		# match above to trigger this block.
+
 		# return immediately if distribution and OS match
-		unless ($osversion eq $distribution) {
+		unless ($osversion == $distribution) {
 			my $valid_upgrade = 0; #default
 			# legal update paths; add new ones as needed
-			$valid_upgrade = 1 if ($osversion eq "10.6" and $distribution eq "10.5");
-			$valid_upgrade = 1 if ($osversion eq "10.8" and $distribution eq "10.7");
-			$valid_upgrade = 1 if ($osversion eq "10.10" and $distribution eq "10.9");
+			$valid_upgrade = 1 if ($osversion == version->parse("v10.6") and $distribution == version->parse("v10.5"));
+			$valid_upgrade = 1 if ($osversion == version->parse("v10.8") and $distribution == version->parse("v10.7"));
+			# Assuming 10.11 won't break stuff.  This probably isn't safe...
+			$valid_upgrade = 1 if ($osversion > version->parse("v10.9") and $distribution >= version->parse("v10.9"));
 			if ($valid_upgrade) {
 				# allow reinstalls to proceed otherwise block the operation.
-				warn "Use 'fink reinstall fink' to switch  distributions\n" .
-					 "from $distribution to $osversion.\n";
+				warn "Use 'fink reinstall fink' to switch distributions\n" .
+					 "from $raw_distribution to $raw_osversion.\n";
 				die "'$cmd' operation not permitted.\n" if $cmd ne "reinstall";
 			} else {
-				die "\nWe don't support updates from $distribution to $osversion.\n" .
+				die "\nWe don't support updates from $raw_distribution to $raw_osversion\n" .
 					"Check the 'Clean Upgrade' section of $basepath/share/doc/fink/INSTALL\n" .
 					"or $basepath/share/doc/fink/INSTALL.html for information about \n" .
 					"how to proceed.\n\n".
