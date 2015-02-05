@@ -2003,6 +2003,46 @@ sub real_install {
 		if ($build_path) {
 			die "\n" if !(&select_legal_path("Buildpath", $build_path));
 		}
+
+		# OS updates seem to remove /usr/include, which happens to be something we test
+		# for in the dev-tools virtual package, so check for that.
+		unless (Fink::VirtPackage->query_package("dev-tools")) {
+	    	my $install_source;
+			our $osversion;
+			if ( $osversion == version->parse("v10.7") or $osversion == version->parse("10.8") ) {
+	    		$install_source = "Install them from the Components panel in Xcode's Preferences.\n";
+	    	} elsif ( $osversion >= version->parse("v10.9") ) {
+	    		$install_source = "Execute 'sudo xcode-select --install' to obtain them.\n";
+	    	} else {
+	    		die "Reinstall Xcode\n";
+	    	}
+	    	die	"\nThe Xcode Command Line Tools need to be (re)installed. \n" .
+	   		 	"$install_source" .
+	   		 	"Or you can get them via direct download from developer.apple.com\n" .
+	   		 	"(free registration required) if you don't want to install Xcode.app.";
+      	}
+	
+		# check whether the command-line tools and Xcode.app are compatible.
+		my $xcode_cli_version = ${${Fink::VirtPackage->list}{'xcode'}}{'version'};
+		my $xcode_app_version = ${${Fink::VirtPackage->list}{'xcode.app'}}{'version'};
+
+		# If there is no Xcode.app we're OK.		
+		unless ( $xcode_app_version eq (0-0) ) {			
+
+			# For now, let's assume that the CL tools and the app need to agree to the largest minor version.
+			# Truncate them accordingly.
+			$xcode_cli_version =~ s/(\d+?).(\d+?).*/$1.$2/;
+			$xcode_app_version =~ s/(\d+?).(\d+?).*/$1.$2/ ;
+
+			# Compare versions
+			if ($xcode_cli_version ne $xcode_app_version) {
+				&print_breaking( "\nWARNING: Xcode.app version ($xcode_app_version) and Xcode Command Line Tools version ($xcode_cli_version)\n" .
+					 			 "are not compatible.\nYou may experience build errors.\n\n");
+				sleep 10;
+			}
+		}
+
+		# legacy item.  We might need that if Apple breaks a compiler.
 		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) {
 			&print_breaking("\nWARNING: You are using a version of gcc which is known to produce incorrect output from C++ code under certain circumstances.\n\nFor information about upgrading, see the Fink web site.\n\n");
 			sleep 10;
