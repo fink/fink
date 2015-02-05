@@ -74,7 +74,7 @@ BEGIN {
 our @EXPORT_OK;
 
 my $pkgconfig_virtual_prefix = 'system-pkgconfig-';
-my @xservers                 = ('XDarwin', 'Xquartz', 'XDarwinQuartz');
+my @xservers                 = ('Xquartz', 'XDarwin', 'XDarwinQuartz');
 my $the_instance             = undef;
 
 END { }				# module clean-up code here (global destructor)
