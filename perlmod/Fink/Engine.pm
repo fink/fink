@@ -274,27 +274,6 @@ sub process {
 					"'$cmd' operation not permitted.\n"
 			}
 		}
-
-		&ensure_fink_bld(); # update fink-bld if required
-
-		# check that Basepath, FetchAltDir and Buildpath have and are contained within a
-		# directory structure with appropriate permissions.
-		# We'll traverse all the way to $basepath/src, since we have to operate there
-		# directly, too.
-		die "\n" if !(&select_legal_path("Basepath", $basepath));
-		# we've gone all the way down $basepath, so let's just check $basepath/src
-		# for executability directly.
-		die "\n" if !(&select_legal_path("SourceDir", "$basepath/src"));
-		# Check FetchAltDir
-		my $fetch_alt_dir=$self->{config}->param('FetchAltDir');
-		if ($fetch_alt_dir) {
-			die "\n" if !(&select_legal_path("FetchAltDir", $fetch_alt_dir));
-		}
-		# Check Buildpath
-		my $build_path=$self->{config}->param('Buildpath');
-		if ($build_path) {
-			die "\n" if !(&select_legal_path("Buildpath", $build_path));
-		}
 	}
 
 	# Warn about Spotlight
@@ -2004,6 +1983,26 @@ sub real_install {
 	}
 
 	if ($willbuild) {
+		&ensure_fink_bld(); # update fink-bld if required
+
+		# check that Basepath, FetchAltDir and Buildpath have and are contained within a
+		# directory structure with appropriate permissions.
+		# We'll traverse all the way to $basepath/src, since we have to operate there
+		# directly, too.
+		die "\n" if !(&select_legal_path("Basepath", $basepath));
+		# we've gone all the way down $basepath, so let's just check $basepath/src
+		# for executability directly.
+		die "\n" if !(&select_legal_path("SourceDir", "$basepath/src"));
+		# Check FetchAltDir
+		my $fetch_alt_dir = $config->param('FetchAltDir');
+		if ($fetch_alt_dir) {
+			die "\n" if !(&select_legal_path("FetchAltDir", $fetch_alt_dir));
+		}
+		# Check Buildpath
+		my $build_path = $config->param('Buildpath');
+		if ($build_path) {
+			die "\n" if !(&select_legal_path("Buildpath", $build_path));
+		}
 		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) {
 			&print_breaking("\nWARNING: You are using a version of gcc which is known to produce incorrect output from C++ code under certain circumstances.\n\nFor information about upgrading, see the Fink web site.\n\n");
 			sleep 10;
