@@ -531,7 +531,8 @@ $installto =~ s,^(/.*?)/*$,$1,;
 foreach my $forbidden (
 	qw(/ /etc /usr /var /bin /sbin /lib /tmp /dev
 	   /usr/lib /usr/include /usr/bin /usr/sbin /usr/share
-	   /usr/libexec /usr/X11R6 /usr/X11
+	   /usr/libexec 
+	   /usr/X11R6 /usr/X11 /opt/X11
 	   /root /private /cores /boot
 	   /debian /debian/.*
 	   /usr/local /usr/local/.* /opt/local /opt/local/.*)
