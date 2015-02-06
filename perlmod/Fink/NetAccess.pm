@@ -219,7 +219,7 @@ sub fetch_url_to_file {
 				$default_value = "use_it"; # checksum matches: assume okay to use it
 			} else {
 				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
-				$checksum_msg = " but its checksum does not match. The most likely ".
+				$checksum_msg = " but its $checksum_type checksum does not match. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
 								"Expected: $checksum\nActual: " .
 								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
@@ -295,7 +295,7 @@ sub fetch_url_to_file {
 		} else {
 			if (defined $checksum and (not Fink::Checksum->validate($file, $checksum, $checksum_type))) {
 				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
-				&print_breaking("The checksum of the file is incorrect. The most likely ".
+				&print_breaking("The $checksum_type checksum of the file is incorrect. The most likely ".
 								"cause for this is a corrupted or incomplete download\n".
 								"Expected: $checksum\nActual: " .
 								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
