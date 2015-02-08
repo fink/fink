@@ -1,5 +1,5 @@
 # Official mirror list: ftp://tug.ctan.org/tex-archive/README.mirrors
-Timestamp: 2014-10-29
+Timestamp: 2015-02-06
 
 Primary: ftp://tug.ctan.org/tex-archive
 
@@ -10,12 +10,14 @@ afr-ZA: http://ctan.mirror.ac.za
 afr-ZA: http://ftp.leg.uct.ac.za/pub/packages/ctan
 asi-CN: ftp://ftp.ctex.org/mirrors/CTAN
 asi-CN: ftp://mirrors.ustc.edu.cn/CTAN
+asi-CN: http://ftp.ctex.org/mirrors/CTAN
 asi-CN: http://mirror.bjtu.edu.cn/CTAN
 asi-CN: http://mirror.neu.edu.cn/CTAN
 asi-CN: http://mirrors.hust.edu.cn/CTAN
 asi-CN: http://mirrors.hustunique.com/CTAN
+asi-CN: http://mirrors.stuhome.net/CTAN
 asi-CN: http://mirrors.ustc.edu.cn/CTAN
-asi-ID: http://kambing.ui.ac.id/ctan
+asi-HK: ftp://ftp.comp.hkbu.edu.hk/pub/TeX/CTAN
 asi-IN: http://ctan.imsc.res.in
 asi-IR: http://ctan.asis.io/tex-archive
 asi-IR: http://ctan.yazd.ac.ir
@@ -32,19 +34,17 @@ asi-KR: http://ftp.neowiz.com/CTAN
 asi-MY: http://ossm.utm.my/tex-archive
 asi-SG: http://download.nus.edu.sg/mirror/CTAN
 asi-TH: http://ctan.megagod.net/tex-archive
-asi-TW: ftp://ctan.cdpa.nsysu.edu.tw/Unix/TeX/CTAN
 asi-TW: ftp://ftp.ccu.edu.tw/pub/tex
 asi-TW: ftp://ftp.yzu.edu.tw/CTAN
 asi-TW: ftp://shadow.ind.ntou.edu.tw/ctan
 asi-TW: http://ftp.yzu.edu.tw/CTAN
 asi-TW: http://shadow.ind.ntou.edu.tw/ctan
-aus-AU: ftp://ctan.unsw.edu.au/tex-archive
-aus-AU: http://ctan.unsw.edu.au
 aus-NZ: ftp://mirror.aut.ac.nz/CTAN
 aus-NZ: http://mirror.aut.ac.nz/CTAN
 eur-AT: ftp://ftp.univie.ac.at/packages/tex
 eur-AT: ftp://mirror.klaus-uwe.me/ctan
 eur-AT: http://mirror.klaus-uwe.me/ctan
+eur-BY: ftp://mirror.datacenter.by/pub/mirrors/CTAN
 eur-BY: http://mirror.datacenter.by/pub/mirrors/CTAN
 eur-CH: ftp://mirror.switch.ch/mirror/tex
 eur-CH: http://mirror.switch.ch/ftp/mirror/tex
@@ -52,16 +52,17 @@ eur-CZ: ftp://ftp.cstug.cz/pub/tex/CTAN
 eur-CZ: ftp://ftp.cvut.cz/tex-archive
 eur-CZ: http://ftp.cvut.cz/tex-archive
 eur-CZ: http://mirrors.nic.cz/pub/tex-archive
+eur-CZ: http://www.cstug.cz/ctan/index.html
 eur-DE: ftp://ftp.fau.de/ctan
 eur-DE: ftp://ftp.fernuni-hagen.de/pub/mirrors/www.ctan.org
 eur-DE: ftp://ftp.fu-berlin.de/tex/CTAN
-eur-DE: ftp://ftp.gwdg.de/pub/dante
 eur-DE: ftp://ftp.mpi-sb.mpg.de/pub/tex/mirror/ftp.dante.de/pub/tex
 eur-DE: ftp://ftp.rrzn.uni-hannover.de/pub/mirror/tex-archive
 eur-DE: ftp://ftp.tu-chemnitz.de/pub/tex
 eur-DE: ftp://mirror.physik-pool.tu-berlin.de/tex-archive
 eur-DE: ftp://mirror.selfnet.de/tex-archive
 eur-DE: ftp://sunsite.informatik.rwth-aachen.de/pub/mirror/ctan
+eur-DE: http://ctan.sciserv.eu
 eur-DE: http://ctan.space-pro.be/tex-archive
 eur-DE: http://ftp.fau.de/ctan
 eur-DE: http://ftp.fernuni-hagen.de/ftp-dir/pub/mirrors/www.ctan.org
@@ -86,9 +87,7 @@ eur-GR: http://ftp.cc.uoc.gr/mirrors/CTAN
 eur-IE: http://ftp.heanet.ie/mirrors/ctan.org/tex
 eur-IL: ftp://mirror.isoc.org.il/pub/ctan
 eur-IL: http://mirror.isoc.org.il/pub/ctan
-eur-IT: ftp://ftp.uniroma2.it/TeX
 eur-IT: http://ctan.mirror.garr.it/mirrors/CTAN
-eur-IT: http://ftp.uniroma2.it/TeX
 eur-NL: ftp://archive.cs.uu.nl/mirror/CTAN
 eur-NL: ftp://ftp.snt.utwente.nl/pub/software/tex
 eur-NL: http://archive.cs.uu.nl/mirror/CTAN
@@ -103,6 +102,7 @@ eur-PL: http://piotrkosoft.net/pub/mirrors/CTAN
 eur-PT: ftp://ftp.di.uminho.pt/pub/ctan
 eur-PT: ftp://ftp.eq.uc.pt/pub/software/TeX
 eur-PT: ftp://ftp.ist.utl.pt/pub/ctan
+eur-PT: ftp://mirrors.fe.up.pt/pub/CTAN
 eur-PT: http://ftp.eq.uc.pt/software/TeX
 eur-PT: http://mirrors.fe.up.pt/pub/CTAN
 eur-RU: ftp://mirror.macomnet.net/pub/CTAN
@@ -148,9 +148,11 @@ nam-US: http://mirrors.concertpass.com/tex-archive
 nam-US: http://mirrors.ibiblio.org/pub/mirrors/CTAN
 nam-US: http://mirrors.rit.edu/CTAN
 nam-US: http://tug.ctan.org/tex-archive
+nam-US: http://www.pirbot.com/mirrors/ctan
 sam-AR: http://ctan.localhost.net.ar
-sam-BR: ftp://ctan.tche.br/pub/ctan
-sam-BR: http://ctan.tche.br
+sam-BR: ftp://ftp.las.ic.unicamp.br/pub/ctan
+sam-BR: ftp://linorg.usp.br/CTAN
+sam-BR: http://linorg.usp.br/CTAN
 sam-BR: http://repositorios.cpai.unb.br/ctan
 sam-BR: http://www.las.ic.unicamp.br/pub/ctan
 sam-CL: ftp://ctan.dcc.uchile.cl/pub/lang/ctan/tex-archive

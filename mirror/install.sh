@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2015 The Fink Package Manager Team
+# Copyright (c) 2001-2014 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -63,7 +63,7 @@ for file in COPYING README README.contacts; do
   install -c -p -m 644  $file "$basepath/share/doc/fink-mirrors/"
 done
 
-install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog.mirror"
+install -c -p -m 644  NEWS "$basepath/share/doc/fink/NEWS.mirror"
 
 echo "Done."
 exit 0
