@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2014 The Fink Package Manager Team
+# Copyright (c) 2001-2015 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -48,8 +48,10 @@ use Fink::Validation;
 use Fink::Checksum;
 use Fink::Scanpackages;
 use IO::Handle;
+use Hash::Util qw(lock_keys);
 
 use strict;
+use version 0.77;
 use warnings;
 
 BEGIN {
@@ -238,49 +240,39 @@ sub process {
 
 	if ($cmd =~ /build|update|install|activate|use/) {
 		# Check if the Distribution encoded in fink.conf matches the current OS version
-		# or if there is a permitted upgrade path.
-		my $distribution = $Fink::Config::distribution;
-		my $osversion = &Fink::Services::get_osx_vers();
+		# or if there is a permitted upgrade path.  This needs to be evaluated before
+		# the .info collection is selected.
+		# Use version objects in case we have an extended series of OS versions with 
+		# supported upgrade paths, like 10.9->10.11
+
+		my $raw_distribution = $Fink::Config::distribution;
+		my $raw_osversion = &Fink::Services::get_osx_vers();
+		my $distribution = version->parse('v'.$raw_distribution);
+		our $osversion = version->parse('v'.$raw_osversion); #shared elsewhere so use 'our'
+		# $osversion is also used in &real_install() if $willbuild is set, and that
+		# _should_ only happen under a more restrictive set of conditions than the 
+		# match above to trigger this block.
+
 		# return immediately if distribution and OS match
-		unless ($osversion eq $distribution) {
+		unless ($osversion == $distribution) {
 			my $valid_upgrade = 0; #default
 			# legal update paths; add new ones as needed
-			$valid_upgrade = 1 if ($osversion eq "10.6" and $distribution eq "10.5");
-			$valid_upgrade = 1 if ($osversion eq "10.8" and $distribution eq "10.7");
-			$valid_upgrade = 1 if ($osversion eq "10.10" and $distribution eq "10.9");
+			$valid_upgrade = 1 if ($osversion == version->parse("v10.6") and $distribution == version->parse("v10.5"));
+			$valid_upgrade = 1 if ($osversion == version->parse("v10.8") and $distribution == version->parse("v10.7"));
+			# Assuming 10.11 won't break stuff.  This probably isn't safe...
+			$valid_upgrade = 1 if ($osversion > version->parse("v10.9") and $distribution >= version->parse("v10.9"));
 			if ($valid_upgrade) {
 				# allow reinstalls to proceed otherwise block the operation.
-				warn "Use 'fink reinstall fink' to switch  distributions\n" .
-					 "from $distribution to $osversion.\n";
+				warn "Use 'fink reinstall fink' to switch distributions\n" .
+					 "from $raw_distribution to $raw_osversion.\n";
 				die "'$cmd' operation not permitted.\n" if $cmd ne "reinstall";
 			} else {
-				die "\nWe don't support updates from $distribution to $osversion.\n" .
+				die "\nWe don't support updates from $raw_distribution to $raw_osversion\n" .
 					"Check the 'Clean Upgrade' section of $basepath/share/doc/fink/INSTALL\n" .
 					"or $basepath/share/doc/fink/INSTALL.html for information about \n" .
 					"how to proceed.\n\n".
 					"'$cmd' operation not permitted.\n"
 			}
-		}
-
-		&ensure_fink_bld(); # update fink-bld if required
-
-		# check that Basepath, FetchAltDir and Buildpath have and are contained within a
-		# directory structure with appropriate permissions.
-		# We'll traverse all the way to $basepath/src, since we have to operate there
-		# directly, too.
-		die "\n" if !(&select_legal_path("Basepath", $basepath));
-		# we've gone all the way down $basepath, so let's just check $basepath/src
-		# for executability directly.
-		die "\n" if !(&select_legal_path("SourceDir", "$basepath/src"));
-		# Check FetchAltDir
-		my $fetch_alt_dir=$self->{config}->param('FetchAltDir');
-		if ($fetch_alt_dir) {
-			die "\n" if !(&select_legal_path("FetchAltDir", $fetch_alt_dir));
-		}
-		# Check Buildpath
-		my $build_path=$self->{config}->param('Buildpath');
-		if ($build_path) {
-			die "\n" if !(&select_legal_path("Buildpath", $build_path));
 		}
 	}
 
@@ -470,100 +462,125 @@ sub _user_visible_versions {
 }
 
 sub do_real_list {
-	my ($pattern, @allnames, @selected);
-	my ($formatstr, $desclen, $name, $section, $maintainer);
-	my ($buildonly, $format);
-	my %options =
-	(
-	 "installedstate" => 0
+	my @selected;			# list of pkg-names to list partly based on user options
+	my %list_always;		# hash of pkg-names to list regardless of user options
+	my %pkg_listed;			# hash of pkg-names that have already been listed
+
+	my %sel_opts = (
+		'installedstate' => 0,
+		'section' => undef,
+		'maintainer' => undef,
+		'buildonly' => undef,
+		'apropos_pattern' => undef,
+		'recursive' => undef,
 	);
-	# bits used by $options{intalledstate}
+	lock_keys(%sel_opts);	   # prevent typos
+	# bits used by $sel_opts{intalledstate}
 	my $ISTATE_OUTDATED = 1;
 	my $ISTATE_CURRENT  = 2;
 	my $ISTATE_ABSENT   = 4;
 	my $ISTATE_TOONEW   = 8; # FIXME: Add option details!
-	my ($width, $namelen, $verlen, $dotab);
+
+	my %fmt_opts = (
+		'width' => undef,
+		'namelen' => undef,
+		'verlen' => undef,
+		'desclen' => 43,
+		'format' => 'table',
+		'formatstr' => "%s	%-15.15s	%-11.11s	%s\n",
+		'do_tab' => undef,
+	);
+	lock_keys(%fmt_opts);		# prevent typos
+
 	my $cmd = shift;
 	use Getopt::Long;
-	$formatstr = "%s	%-15.15s	%-11.11s	%s\n";
-	$desclen = 43;
-	$format = 'table';
 
 	my @options = (
-		[ 'width|w=s'	=> \$width,
+		[ 'width|w=s'	=> \$fmt_opts{'width'},
 			'Sets the width of the display you would like the output ' .
 			'formatted for. NUM is either a numeric value or auto. auto will ' .
 			'set the width based on the terminal width.', 'NUM' ],
-		[ 'tab|t'		=> \$dotab,
+		[ 'tab|t'		=> \$fmt_opts{do_tab},
 			'Outputs the list with tabs as field delimiter.' ],
-		[ 'format|f=s'	=> \$format,
+		[ 'format|f=s'	=> \$fmt_opts{'format'},
 			"The output format. FMT is 'table' (default), 'dotty', or 'dotty-build'", 'FMT' ],
 	);
 
 	if ($cmd eq "list") {
 		@options = ( @options,
 			[ 'installed|i'		=>
-				sub {$options{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_OUTDATED | $ISTATE_CURRENT ;},
 				'Only list packages which are currently installed.' ],
 			[ 'uptodate|u'		=>
-				sub {$options{installedstate} |= $ISTATE_CURRENT  ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_CURRENT  ;},
 				'Only list packages which are up to date.' ],
 			[ 'outdated|o'		=>
-				sub {$options{installedstate} |= $ISTATE_OUTDATED ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_OUTDATED ;},
 				'Only list packages for which a newer version is available.' ],
 			[ 'notinstalled|n'	=>
-				sub {$options{installedstate} |= $ISTATE_ABSENT   ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_ABSENT   ;},
 				'Only list packages which are not installed.' ],
 			[ 'newer|N'			=>
-				sub {$options{installedstate} |= $ISTATE_TOONEW   ;},
+				sub {$sel_opts{installedstate} |= $ISTATE_TOONEW   ;},
 				'Only list packages whose installed version is newer than '
 				. 'anything fink knows about.' ],
-			[ 'buildonly|b'		=> \$buildonly,
+			[ 'buildonly|b'		=> \$sel_opts{'buildonly'},
 				'Only list packages which are Build Depends Only' ],
-			[ 'section|s=s'		=> \$section,
+			[ 'section|s=s'		=> \$sel_opts{'section'},
 				"Only list packages in the section(s) matching EXPR\n" .
 				"(example: fink list --section=x11).", 'EXPR'],
-			[ 'maintainer|m=s'	=> \$maintainer,
+			[ 'maintainer|m=s'	=> \$sel_opts{'maintainer'},
 				"Only list packages with the maintainer(s) matching EXPR\n" .
 				"(example: fink list --maintainer=beren12).", 'EXPR'],
+			[ 'recursive|r'  => \$sel_opts{'recursive'},
+				"List recursively (dotty and dotty-build formats only)." ],
 		);
 	}
 	get_options($cmd, \@options, \@_,
 		helpformat => "%intro{[options] [string],foo bar}\n%all{}\n");
 
-
-	if ($options{installedstate} == 0) {
-		$options{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT
+	if ($sel_opts{installedstate} == 0) {
+		$sel_opts{installedstate} = $ISTATE_OUTDATED | $ISTATE_CURRENT
 			| $ISTATE_ABSENT | $ISTATE_TOONEW;
 	}
 
 	# By default or if --width=auto, compute the output width to fit exactly into the terminal
-	if ((not defined $width and not $dotab) or (defined $width and
-				(($width eq "") or ($width eq "auto") or ($width eq "=auto") or ($width eq "=")))) {
-		$width = &get_term_width();
-		if (not defined $width or $width == 0) {
-			$dotab = 1;				# not a terminal, fallback to tabbed mode
-			undef $width;
+	if ((not defined $fmt_opts{'width'} and not $fmt_opts{'do_tab'})
+		or (defined $fmt_opts{'width'} and (
+			($fmt_opts{'width'} eq "") or ($fmt_opts{'width'} eq "auto") or ($fmt_opts{'width'} eq "=auto") or ($fmt_opts{'width'} eq "=")
+		))
+	) {
+		$fmt_opts{'width'} = &get_term_width();
+		if (not defined $fmt_opts{'width'} or $fmt_opts{'width'} == 0) {
+			$fmt_opts{'do_tab'} = 1;				# not a terminal, fallback to tabbed mode
+			undef $fmt_opts{'width'};
 		}
 	}
 
-	if (defined $width) {
-		$width =~ s/[\=]?([0-9]+)/$1/;
-		$width = 40 if ($width < 40);	 # enforce minimum display width of 40 characters
-		$width = $width - 5;			 # 5 chars for the first field
-		$namelen = int($width * 0.2);	 # 20% for the name
-		$verlen = int($width * 0.15);	 # 15% for the version
-		if ($desclen != 0) {
-			$desclen = $width - $namelen - $verlen - 5;
+	if (defined $fmt_opts{'width'}) {
+		$fmt_opts{'width'} =~ s/[\=]?([0-9]+)/$1/;
+		$fmt_opts{'width'} = 40 if ($fmt_opts{'width'} < 40);	 # enforce minimum display width of 40 characters
+		$fmt_opts{'width'} = $fmt_opts{'width'} - 5;			 # 5 chars for the first field
+		$fmt_opts{'namelen'} = int($fmt_opts{'width'} * 0.2);	 # 20% for the name
+		$fmt_opts{'verlen'} = int($fmt_opts{'width'} * 0.15);	 # 15% for the version
+		if ($fmt_opts{'desclen'} != 0) {
+			$fmt_opts{'desclen'} = $fmt_opts{'width'} - $fmt_opts{'namelen'} - $fmt_opts{'verlen'} - 5;
 		}
-		$formatstr = "%s  %-" . $namelen . "." . $namelen . "s  %-" . $verlen . "." . $verlen . "s  %s\n";
-	} elsif ($dotab) {
-		$formatstr = "%s\t%s\t%s\t%s\n";
-		$desclen = 0;
+		$fmt_opts{'formatstr'} = "%s  %-" . $fmt_opts{'namelen'} . "." . $fmt_opts{'namelen'} . "s  %-" . $fmt_opts{'verlen'} . "." . $fmt_opts{'verlen'} . "s  %s\n";
+	} elsif ($fmt_opts{'do_tab'}) {
+		$fmt_opts{'formatstr'} = "%s\t%s\t%s\t%s\n";
+		$fmt_opts{'desclen'} = 0;
 	}
+
+	if ( $sel_opts{'recursive'} && ($fmt_opts{'format'} ne 'dotty' && $fmt_opts{'format'} ne 'dotty-build') ) {
+		print "The chosen --format does not support the --recursive option\n";
+	}
+
 	Fink::Package->require_packages();
-	@allnames = Fink::Package->list_packages();
+	@selected = Fink::Package->list_packages(); # first gather all package-names
 	if ($cmd eq "list") {
+		# narrow down the list if user gave a regex on commandline
+		# NB: may be re-extended later based on --recursive
 		if (@_) {
 			# prepare the regex patterns
 			foreach (@_) {
@@ -577,21 +594,18 @@ sub do_real_list {
 				}
 			}
 			# match all patterns in a single go
-			$pattern = join '|', @_;
-			@selected = grep /$pattern/, @allnames;
-		} else {
-			# no patterns specified, so list them all
-			@selected = @allnames;
+			my $pattern = join '|', @_;
+			@selected = grep /$pattern/, @selected;
 		}
 	} else {
-		$pattern = shift;
-		@selected = @allnames;
-		unless ($pattern) {
+		# will later narrow down by name/desc pattern given on commandline
+		$sel_opts{'apropos_pattern'} = shift;
+		unless (defined $sel_opts{'apropos_pattern'}) {
 			die "no keyword specified for command 'apropos'!\n";
 		}
 	}
 
-	if ($format eq 'dotty' or $format eq 'dotty-build') {
+	if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
 		print "digraph packages {\n";
 		print "concentrate=true;\n";
 		print "size=\"30,40\";\n";
@@ -599,99 +613,130 @@ sub do_real_list {
 
 	my $reload_disable_save = Fink::Status->is_reload_disabled();  # save previous setting
 	Fink::Status->disable_reload(1);  # don't keep stat()ing status db
-	foreach my $pname (sort @selected) {
-		my $package = Fink::Package->package_by_name($pname);
 
-		# Look only in versions the user should see. noload
-		my @pvs = _user_visible_versions($package->get_all_versions(1));
-		my @provs = _user_visible_versions($package->get_all_providers( no_load => 1 ));
-		next unless @provs; # if no providers, it doesn't really exist!
+	while (@selected) {
+		my @next_selected = ();	# propagate additional from inner loop
 
-		my @vers = map { $_->get_fullversion() } @pvs;
-		my $lversion = @vers ? latest_version(@vers) : '';
+		foreach my $pname (sort @selected) {
+			my $package = Fink::Package->package_by_name($pname);
 
-		# noload: don't bother loading fields until we know we need them
-		my $vo = $lversion ? $package->get_version($lversion, 1) : 0;
+			# Look only in versions the user should see. noload
+			my @pvs = _user_visible_versions($package->get_all_versions(1));
+			my @provs = _user_visible_versions($package->get_all_providers( no_load => 1 ));
+			next unless @provs; # if no providers, it doesn't really exist!
 
-		my $iflag;
-		if ($vo && $vo->is_installed()) {
-			if ($vo->is_type('dummy') && $vo->get_subtype('dummy') eq 'status') {
-				# Newer version than fink knows about
-				next unless $options{installedstate} & $ISTATE_TOONEW;
-				$iflag = "*i*";
-			} else {
-				next unless $options{installedstate} & $ISTATE_CURRENT;
-				$iflag = " i ";
+			my @vers = map { $_->get_fullversion() } @pvs;
+			my $lversion = @vers ? latest_version(@vers) : '';
+
+			# noload: don't bother loading fields until we know we need them
+			my $vo = $lversion ? $package->get_version($lversion, 1) : 0;
+
+			my $iflag;
+			unless ($list_always{$pname}) {
+				if ($vo && $vo->is_installed()) {
+					if ($vo->is_type('dummy') && $vo->get_subtype('dummy') eq 'status') {
+						# Newer version than fink knows about
+						next unless $sel_opts{installedstate} & $ISTATE_TOONEW;
+						$iflag = "*i*";
+					} else {
+						next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
+						$iflag = " i ";
+					}
+				} elsif (grep { $_->is_installed() } @pvs) {
+					next unless $sel_opts{installedstate} & $ISTATE_OUTDATED;
+					$iflag = "(i)";
+				} elsif (grep { $_->is_installed() } @provs) {
+					next unless $sel_opts{installedstate} & $ISTATE_CURRENT;
+					$iflag = " p ";
+					$lversion = ''; # no version for provided
+				} else {
+					next unless $sel_opts{installedstate} & $ISTATE_ABSENT;
+					$iflag = "   ";
+				}
 			}
-		} elsif (grep { $_->is_installed() } @pvs) {
-			next unless $options{installedstate} & $ISTATE_OUTDATED;
-			$iflag = "(i)";
-		} elsif (grep { $_->is_installed() } @provs) {
-			next unless $options{installedstate} & $ISTATE_CURRENT;
-			$iflag = " p ";
-			$lversion = ''; # no version for provided
-		} else {
-			next unless $options{installedstate} & $ISTATE_ABSENT;
-			$iflag = "   ";
-		}
 
-		# Now load the fields
-		$vo = $lversion ? $package->get_version($lversion) : 0;
+			# Now load the fields
+			$vo = $lversion ? $package->get_version($lversion) : 0;
 
-		my $description = $vo
-			? $vo->get_shortdescription($desclen)
-			: '[virtual package]';
+			my $description = $vo
+				? $vo->get_shortdescription($fmt_opts{'desclen'})
+				: '[virtual package]';
 
-		if (defined $buildonly) {
-			next unless $vo && $vo->param_boolean("builddependsonly");
-		}
-		if (defined $section) {
-			next unless $vo && $vo->get_section($vo) =~ /\Q$section\E/i;
-		}
-		if (defined $maintainer) {
-			next unless $vo && $vo->has_param("maintainer")
-				&& $vo->param("maintainer")  =~ /\Q$maintainer\E/i ;
-		}
-		if ($cmd eq "apropos") {
-			next unless $vo;
-			my $ok = $vo->has_param("Description")
-				&& $vo->param("Description") =~ /\Q$pattern\E/i;
-			$ok ||= $vo->get_name() =~ /\Q$pattern\E/i;;
-			next unless $ok;
-		}
+			unless ($list_always{$pname}) {
+				if (defined $sel_opts{'buildonly'}) {
+					next unless $vo && $vo->param_boolean("builddependsonly");
+				}
+				if (defined $sel_opts{'section'}) {
+					next unless $vo && $vo->get_section($vo) =~ /\Q$sel_opts{'section'}\E/i;
+				}
+				if (defined $sel_opts{'maintainer'}) {
+					next unless $vo && $vo->has_param("maintainer")
+						&& $vo->param("maintainer")  =~ /\Q$sel_opts{'maintainer'}\E/i ;
+				}
+				if ($cmd eq "apropos") {
+					next unless $vo;
+					my $ok = $vo->has_param("Description")
+						&& $vo->param("Description") =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
+					$ok ||= $vo->get_name() =~ /\Q$sel_opts{'apropos_pattern'}\E/i;
+					next unless $ok;
+				}
+			}
 
-		my $dispname = $pname;
-		if ($namelen && length($pname) > $namelen) {
-			# truncate pkg name if wider than its field
-			$dispname = substr($pname, 0, $namelen - 3)."...";
-		}
+			my $dispname = $pname;
+			if ($fmt_opts{'namelen'} && length($pname) > $fmt_opts{'namelen'}) {
+				# truncate pkg name if wider than its field
+				$dispname = substr($pname, 0, $fmt_opts{'namelen'} - 3)."...";
+			}
 
-		if ($format eq 'dotty' or $format eq 'dotty-build') {
-			print "\"$pname\" [shape=box];\n";
-			if (ref $vo) {
-				# grab the Depends of pkg (not BDep, not others in family)
-				for my $dep (@{$vo->get_depends(($format eq 'dotty-build'),0)}) {
-					# for each ANDed (comma-sep) chunk...
-					for my $subdep (@$dep) {
-						# include all ORed items in it
-						$subdep =~ /^([+\-.a-z0-9]+)/; # only %n, not versioning
-						print "\"$pname\" -> \"$1\";\n";
+			if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
+				print "\"$pname\" [shape=box];\n";
+				if (ref $vo) {
+					# grab the Depends of pkg (and possibly BDep)
+					for my $dep (@{$vo->get_depends(($fmt_opts{'format'} eq 'dotty-build'),0)}) {
+						# for each ANDed (comma-sep) chunk...
+						for my $subdep (@$dep) {
+							# include all ORed items in it
+							my ($subdepname) = ($subdep =~ /^([+\-.a-z0-9]+)/); # only %n, not versioning
+							print "\"$pname\" -> \"$subdepname\";\n";
+							if ($sel_opts{'recursive'}) {
+								# as a dep, it *must* be listed
+								unless ($list_always{$subdepname}++) {
+									# haven't already found it implicitly;
+									# may have been excluded earlier
+									push @next_selected, $subdepname;
+								}
+							}
+						}
+					}
+				} else {
+					my @providers = $package->get_all_providers();
+					for my $provider (@providers) {
+						my $name = $provider->get_name();
+						if ($name ne $pname) {
+							print "\"$pname\" -> \"$name\";\n";
+							if ($sel_opts{'recursive'}) {
+								# as a dep, it *must* be listed
+								unless ($list_always{$name}++) {
+									# haven't already found it implicitly;
+									# may have been excluded earlier
+									push @next_selected, $name;
+								}
+							}
+						}
 					}
 				}
 			} else {
-				my @providers = $package->get_all_providers();
-				for my $provider (@providers) {
-					my $name = $provider->get_name();
-					print "\"$pname\" -> \"$name\";\n" if $name ne $pname;
-				}
+				printf $fmt_opts{'formatstr'},
+				$iflag, $pname, $lversion, $description;
 			}
-		} else {
-			printf $formatstr,
-					$iflag, $pname, $lversion, $description;
+
+			$pkg_listed{$pname}++;	# track which ones we've done
 		}
+
+		@selected = @next_selected;
 	}
 
-	if ($format eq 'dotty' or $format eq 'dotty-build') {
+	if ($fmt_opts{'format'} eq 'dotty' or $fmt_opts{'format'} eq 'dotty-build') {
 		print "}\n";
 	}
 
@@ -888,7 +933,7 @@ sub do_fetch_all {
 	$dryrun = $options{"dryrun"} || 0;
 
 	if ($options{"recursive"}) {
-		print "fetch_all already fetches everything; --recursive is meaningless\n";
+		print "fetch-all already fetches everything; --recursive is meaningless\n";
 	}
 
 	&call_queue_clear;
@@ -1938,6 +1983,66 @@ sub real_install {
 	}
 
 	if ($willbuild) {
+		&ensure_fink_bld(); # update fink-bld if required
+
+		# check that Basepath, FetchAltDir and Buildpath have and are contained within a
+		# directory structure with appropriate permissions.
+		# We'll traverse all the way to $basepath/src, since we have to operate there
+		# directly, too.
+		die "\n" if !(&select_legal_path("Basepath", $basepath));
+		# we've gone all the way down $basepath, so let's just check $basepath/src
+		# for executability directly.
+		die "\n" if !(&select_legal_path("SourceDir", "$basepath/src"));
+		# Check FetchAltDir
+		my $fetch_alt_dir = $config->param('FetchAltDir');
+		if ($fetch_alt_dir) {
+			die "\n" if !(&select_legal_path("FetchAltDir", $fetch_alt_dir));
+		}
+		# Check Buildpath
+		my $build_path = $config->param('Buildpath');
+		if ($build_path) {
+			die "\n" if !(&select_legal_path("Buildpath", $build_path));
+		}
+
+		# OS updates seem to remove /usr/include, which happens to be something we test
+		# for in the dev-tools virtual package, so check for that.
+		unless (Fink::VirtPackage->query_package("dev-tools")) {
+	    	my $install_source;
+			our $osversion;
+			if ( $osversion == version->parse("v10.7") or $osversion == version->parse("10.8") ) {
+	    		$install_source = "Install them from the Components panel in Xcode's Preferences.\n";
+	    	} elsif ( $osversion >= version->parse("v10.9") ) {
+	    		$install_source = "Execute 'sudo xcode-select --install' to obtain them.\n";
+	    	} else {
+	    		die "Reinstall Xcode\n";
+	    	}
+	    	die	"\nThe Xcode Command Line Tools need to be (re)installed. \n" .
+	   		 	"$install_source" .
+	   		 	"Or you can get them via direct download from developer.apple.com\n" .
+	   		 	"(free registration required) if you don't want to install Xcode.app.";
+      	}
+	
+		# check whether the command-line tools and Xcode.app are compatible.
+		my $xcode_cli_version = ${${Fink::VirtPackage->list}{'xcode'}}{'version'};
+		my $xcode_app_version = ${${Fink::VirtPackage->list}{'xcode.app'}}{'version'};
+
+		# If there is no Xcode.app we're OK.		
+		unless ( $xcode_app_version eq (0-0) ) {			
+
+			# For now, let's assume that the CL tools and the app need to agree to the largest minor version.
+			# Truncate them accordingly.
+			$xcode_cli_version =~ s/(\d+?).(\d+?).*/$1.$2/;
+			$xcode_app_version =~ s/(\d+?).(\d+?).*/$1.$2/ ;
+
+			# Compare versions
+			if ($xcode_cli_version ne $xcode_app_version) {
+				&print_breaking( "\nWARNING: Xcode.app version ($xcode_app_version) and Xcode Command Line Tools version ($xcode_cli_version)\n" .
+					 			 "are not compatible.\nYou may experience build errors.\n\n");
+				sleep 10;
+			}
+		}
+
+		# legacy item.  We might need that if Apple breaks a compiler.
 		if (Fink::PkgVersion->match_package("broken-gcc")->is_installed()) {
 			&print_breaking("\nWARNING: You are using a version of gcc which is known to produce incorrect output from C++ code under certain circumstances.\n\nFor information about upgrading, see the Fink web site.\n\n");
 			sleep 10;

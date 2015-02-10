@@ -63,7 +63,7 @@ for file in COPYING README README.contacts; do
   install -c -p -m 644  $file "$basepath/share/doc/fink-mirrors/"
 done
 
-install -c -p -m 644  ChangeLog "$basepath/share/doc/fink/ChangeLog.mirror"
+install -c -p -m 644  NEWS "$basepath/share/doc/fink/NEWS.mirror"
 
 echo "Done."
 exit 0

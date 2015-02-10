@@ -1,5 +1,5 @@
 # Official mirror list: http://www.cpan.org/SITES.html
-Timestamp: 2014-10-29
+Timestamp: 2015-02-06
 
 Primary: ftp://ftp.cpan.org/pub/CPAN
 
@@ -25,14 +25,12 @@ asi-CN: http://mirrors.sohu.com/CPAN
 asi-CN: http://mirrors.ustc.edu.cn/CPAN
 asi-CN: http://mirrors.xmu.edu.cn/CPAN
 asi-HK: ftp://ftp.cuhk.edu.hk/pub/packages/perl/CPAN
-asi-HK: http://cpan.communilink.net
 asi-HK: http://ftp.cuhk.edu.hk/pub/packages/perl/CPAN
 asi-ID: http://cpan.mirrors.gudangteknologi.com
 asi-ID: http://cpan.pesat.net.id
 asi-ID: http://kambing.ui.ac.id/cpan
 asi-ID: http://kartolo.sby.datautama.net.id/CPAN
 asi-ID: http://mirror.poliwangi.ac.id/CPAN
-asi-IN: http://perlmirror.indialinks.com
 asi-IR: http://cpan.poldownload.com
 asi-IR: http://mirror.yazd.ac.ir/cpan
 asi-JP: ftp://ftp.jaist.ac.jp/pub/CPAN
@@ -50,10 +48,12 @@ asi-JP: http://mirror.jre655.com/CPAN
 asi-KR: ftp://cpan.mirror.cdnetworks.com/CPAN
 asi-KR: ftp://cpan.sarang.net/CPAN
 asi-KR: ftp://ftp.kaist.ac.kr/CPAN
+asi-KR: ftp://ftp.kr.freebsd.org/pub/CPAN
 asi-KR: ftp://ftp.neowiz.com/CPAN
 asi-KR: http://cpan.mirror.cdnetworks.com
 asi-KR: http://cpan.sarang.net
 asi-KR: http://ftp.kaist.ac.kr/pub/CPAN
+asi-KR: http://ftp.kr.freebsd.org/pub/CPAN
 asi-KR: http://ftp.neowiz.com/CPAN
 asi-KZ: ftp://mirror.neolabs.kz/CPAN
 asi-KZ: http://mirror.neolabs.kz/CPAN
@@ -76,11 +76,12 @@ asi-VN: http://mirrors.digipower.vn/CPAN
 asi-VN: http://mirrors.vinahost.vn/CPAN
 aus-AU: ftp://mirror.as24220.net/pub/cpan
 aus-AU: ftp://mirror.internode.on.net/pub/cpan
+aus-AU: http://cpan.mirror.digitalpacific.com.au
 aus-AU: http://cpan.mirror.serversaustralia.com.au
 aus-AU: http://cpan.mirror.uber.com.au
 aus-AU: http://cpan.mirrors.ilisys.com.au
-aus-AU: http://cpan.syd.au.glomirror.com.au
 aus-AU: http://mirror.as24220.net/pub/cpan
+aus-AU: http://mirror.optusnet.com.au/CPAN
 aus-AU: http://mirror.waia.asn.au/pub/cpan
 aus-NC: ftp://cpan.lagoon.nc/pub/CPAN
 aus-NC: ftp://cpan.nautile.nc/CPAN
@@ -102,6 +103,7 @@ eur-BE: ftp://ftp.belnet.be/mirror/ftp.cpan.org
 eur-BE: http://cpan.cu.be
 eur-BE: http://cpan.weepeetelecom.be
 eur-BE: http://ftp.belnet.be/ftp.cpan.org
+eur-BE: http://lib.ugent.be/CPAN
 eur-BG: ftp://mirrors.neterra.net/CPAN
 eur-BG: http://mirrors.neterra.net/CPAN
 eur-BY: ftp://ftp.byfly.by/pub/CPAN
@@ -125,7 +127,6 @@ eur-DE: ftp://ftp.gwdg.de/pub/languages/perl/CPAN
 eur-DE: ftp://ftp.hawo.stw.uni-erlangen.de/CPAN
 eur-DE: ftp://ftp.hosteurope.de/pub/CPAN
 eur-DE: ftp://ftp.mpi-inf.mpg.de/pub/perl/CPAN
-eur-DE: ftp://ftp.rub.de/pub/CPAN
 eur-DE: ftp://ftp.u-tx.net/CPAN
 eur-DE: ftp://mirror.23media.de/cpan
 eur-DE: ftp://mirror.checkdomain.de/CPAN
@@ -162,14 +163,12 @@ eur-ES: ftp://ftp.rediris.es/mirror/CPAN
 eur-ES: http://ftp.rediris.es/mirror/CPAN
 eur-ES: http://osl.ugr.es/CPAN
 eur-FI: ftp://ftp.funet.fi/pub/languages/perl/CPAN
-eur-FR: ftp://cpan.fiat-tux.fr
 eur-FR: ftp://distrib-coffee.ipsl.jussieu.fr/pub/mirrors/cpan
 eur-FR: ftp://ftp.ciril.fr/pub/cpan
 eur-FR: ftp://ftp.lip6.fr/pub/perl/CPAN
 eur-FR: ftp://ftp.oleane.net/pub/CPAN
 eur-FR: ftp://mir1.ovh.net/ftp.cpan.org
 eur-FR: http://cpan.enstimac.fr
-eur-FR: http://cpan.fiat-tux.fr
 eur-FR: http://distrib-coffee.ipsl.jussieu.fr/pub/mirrors/cpan
 eur-FR: http://ftp.ciril.fr/pub/cpan
 eur-FR: http://ftp.lip6.fr/pub/perl/CPAN
@@ -182,6 +181,7 @@ eur-GR: http://cpan.cc.uoc.gr/mirrors/CPAN
 eur-GR: http://ftp.ntua.gr/pub/lang/perl
 eur-HR: ftp://ftp.carnet.hr/pub/CPAN
 eur-HR: http://ftp.carnet.hr/pub/CPAN
+eur-HU: http://mirror.met.hu/CPAN
 eur-IE: ftp://ftp.heanet.ie/mirrors/ftp.perl.org/pub/CPAN
 eur-IE: http://ftp.heanet.ie/mirrors/ftp.perl.org/pub/CPAN
 eur-IL: http://biocourse.weizmann.ac.il/CPAN
@@ -211,26 +211,26 @@ eur-NO: ftp://cpan.vianett.no/pub/CPAN
 eur-NO: ftp://ftp.uninett.no/pub/languages/perl/CPAN
 eur-NO: http://cpan.uib.no
 eur-NO: http://cpan.vianett.no
+eur-PL: ftp://ftp.agh.edu.pl/CPAN
 eur-PL: ftp://ftp.piotrkosoft.net/pub/mirrors/CPAN
 eur-PL: ftp://ftp.ps.pl/pub/CPAN
 eur-PL: ftp://sunsite.icm.edu.pl/pub/CPAN
+eur-PL: http://ftp.agh.edu.pl/CPAN
 eur-PL: http://ftp.piotrkosoft.net/pub/mirrors/CPAN
 eur-PL: http://sunsite.icm.edu.pl/pub/CPAN
 eur-PT: ftp://ftp.dei.uc.pt/pub/CPAN
-eur-PT: ftp://mirrors.nfsi.pt/pub/CPAN
 eur-PT: http://cpan.dcc.fc.up.pt
 eur-PT: http://cpan.dei.uc.pt
 eur-PT: http://cpan.perl.pt
 eur-PT: http://mirrors.fe.up.pt/pub/CPAN
-eur-PT: http://mirrors.nfsi.pt/CPAN
 eur-RO: ftp://ftp.lug.ro/CPAN
 eur-RO: ftp://ftp.roedu.net/pub/mirrors/ftp.cpan.org
 eur-RO: ftp://mirror.transip.net/CPAN
-eur-RO: ftp://mirrors.m247.ro/CPAN
 eur-RO: ftp://mirrors.teentelecom.net/CPAN
 eur-RO: http://cpan.singletasker.co.uk
 eur-RO: http://ftp.roedu.net/mirrors/ftp.cpan.org
 eur-RO: http://mirror.transip.net/CPAN
+eur-RO: http://mirrors.hostingromania.ro/cpan.org
 eur-RO: http://mirrors.m247.ro/CPAN
 eur-RO: http://mirrors.teentelecom.net/CPAN
 eur-RO: http://mirrors.xservers.ro/CPAN
@@ -287,11 +287,9 @@ eur-UK: http://mirrors.coreix.net/CPAN
 eur-UK: http://www.mirrorservice.org/sites/cpan.perl.org/CPAN
 nam-CA: ftp://cpan.mirror.rafal.ca/pub/CPAN
 nam-CA: ftp://cpan.sunsite.ualberta.ca/pub/CPAN
-nam-CA: ftp://mirror.arcticnetwork.ca/pub/CPAN
 nam-CA: ftp://mirror.csclub.uwaterloo.ca/CPAN
 nam-CA: ftp://mirror.its.dal.ca/cpan
 nam-CA: ftp://mirror.vexxhost.com/cpan
-nam-CA: http://cpan.arcticnetwork.ca
 nam-CA: http://cpan.mirror.rafal.ca
 nam-CA: http://cpan.mirror.vexxhost.com
 nam-CA: http://cpan.perlnow.com
@@ -337,7 +335,6 @@ nam-US: http://cpan.cs.utah.edu
 nam-US: http://cpan.cse.msu.edu
 nam-US: http://cpan.develooper.com
 nam-US: http://cpan.erlbaum.net
-nam-US: http://cpan.knowledgematters.net
 nam-US: http://cpan.llarian.net
 nam-US: http://cpan.mirror.clemson.edu
 nam-US: http://cpan.mirror.facebook.net
@@ -358,7 +355,6 @@ nam-US: http://httpupdate27.cpanel.net/CPAN
 nam-US: http://httpupdate3.cpanel.net/CPAN
 nam-US: http://httpupdate35.cpanel.net/CPAN
 nam-US: http://httpupdate40.cpanel.net/CPAN
-nam-US: http://httpupdate43.cpanel.net/CPAN
 nam-US: http://httpupdate8.cpanel.net/CPAN
 nam-US: http://metatraderprogramming.com/cpan
 nam-US: http://mirror.cc.columbia.edu/pub/software/cpan
@@ -374,14 +370,17 @@ nam-US: http://mirror.us.leaseweb.net/CPAN
 nam-US: http://mirror.uta.edu/CPAN
 nam-US: http://mirrors-usa.go-parts.com/cpan
 nam-US: http://mirrors.ccs.neu.edu/CPAN
+nam-US: http://mirrors.concertpass.com/cpan
 nam-US: http://mirrors.devlib.org/cpan
 nam-US: http://mirrors.ibiblio.org/CPAN
 nam-US: http://mirrors.rit.edu/CPAN
 nam-US: http://mirrors.sonic.net/cpan
 nam-US: http://mirrors.syringanetworks.net/CPAN
 nam-US: http://noodle.portalus.net/CPAN
+nam-US: http://perlmirror.indialinks.com
 nam-US: http://soft-download.org
 nam-US: http://www.perl.com/CPAN
+nam-US: http://www.pirbot.com/mirrors/cpan
 sam-AR: http://cpan.mmgdesigns.com.ar
 sam-BR: http://cpan.kinghost.net
 sam-BR: http://linorg.usp.br/CPAN

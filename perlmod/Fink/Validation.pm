@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2014 The Fink Package Manager Team
+# Copyright (c) 2001-2015 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -855,50 +855,53 @@ sub validate_info_file {
 	# check the contents of PatchFile (if any)
 	if (exists $expand->{patchfile}) {
 		for my $field (keys %patchfile_fields) {
+			my $pretty_field = $field;
+			$pretty_field =~ s/patchfile/PatchFile/i;
 			$value = "\%{$field}";
 			$value = &expand_percent($value, $expand, $filename.' Patch');
 			unless (-f $value) {
-				print "Error: can't find patchfile \"$value\"\n";
+				print "Error: can't read $pretty_field. ($value)\n";
 				$looks_good = 0;
 			}
 			else {
 				# Check patch file
-				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				open(INPUT, "<$value") or die "Couldn't read $pretty_field ($value): $!\n";
 				my $patch_file_content = <INPUT>;
-				close INPUT or die "Couldn't read $value: $!\n";
+				close INPUT or die "Couldn't read $pretty_field ($value): $!\n";
 				# Check for empty patch file
 				if (!$patch_file_content) {
-					print "Warning: Patch file is empty. ($value)\n";
+					print "Warning: $pretty_field is an empty file. ($value)\n";
 					$looks_good = 0;
 				}
 				# Check for line endings of patch file
 				elsif ($patch_file_content =~ m/\r\n/s) {
-					print "Error: Patch file has DOS line endings. ($value)\n";
+					print "Error: $pretty_field has DOS line endings. ($value)\n";
 					$looks_good = 0;
 				}
 				elsif ($patch_file_content =~ m/\r/s) {
-					print "Error: Patch file has Mac line endings. ($value)\n";
+					print "Error: $pretty_field has Mac line endings. ($value)\n";
 					$looks_good = 0;
 				}
 				# Check for hardcoded /sw.
-				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				open(INPUT, "<$value") or die "Couldn't read $pretty_field ($value): $!\n";
 				while (defined($patch_file_content=<INPUT>)) {
 					# only check lines being added (and skip diff header line)
 					next unless $patch_file_content =~ /^\+(?!\+\+ )/;
 					if ($patch_file_content =~ /\/sw([\s\/]|\Z)/) {
-						print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
+						print "Warning: $pretty_field appears to contain a hardcoded /sw. ($value)\n";
 						$looks_good = 0;
 						last;
 					}
 				}
-				close INPUT or die "Couldn't read $value: $!\n";
+				close INPUT or die "Couldn't read $pretty_field ($value): $!\n";
 			}
 		}
 	}
 
 	# if we are using new PatchFile field, check some things about it
 	for my $field (keys %patchfile_fields) {
-		my $pretty_field = $field; $pretty_field =~ s/patchfile/PatchFile/i;
+		my $pretty_field = $field;
+		$pretty_field =~ s/patchfile/PatchFile/i;
 
 		if (not exists $patchfile_md5_fields{$field.'-md5'}) {
 			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";

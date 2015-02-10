@@ -1,9 +1,12 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2014-10-29
+Timestamp: 2015-02-06
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
 afr-ZA: http://gimp.afri.cc/pub/gimp
+eur-DE: ftp://artfiles.org/gimp.org/gimp
+eur-DE: http://artfiles.org/gimp.org/gimp
 eur-DE: http://de-mirror.gimper.net/pub/gimp
 nam-US: ftp://ftp.gimp.org/pub/gimp
 nam-US: http://gimper.net/downloads/pub/gimp
+sam-BR: http://mirror.nbtelecom.com.br/gimp
