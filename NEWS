@@ -12,6 +12,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.38.x
 \-------------
 
+0.38.4 "Big Bend" (2015-02-09)
+	* Support OS 10.10.2
+	* Issue warning if Xcode and Xcode CLI versions don't match.
+	* Fail if 'dev-tools' virtual package disappears.
+	* Support /opt/X11 directly on 10.8+. 
+	* Improved --dotty-build output.
+	* Other diagnostic improvements.
+
 0.38.3 "Badlands" (2014-11-29)
 	* Enable 10.10 bindist by default
 	* Support OS 10.10.1
