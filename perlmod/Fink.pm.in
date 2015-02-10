@@ -57,7 +57,9 @@ This module allows other scripts to easily initialize Fink.
 		umask oct("022");
 		
 		# set PATH so we find dpkg and *-config scripts
-		$ENV{PATH} = "$basepath/sbin:$basepath/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/X11/bin:"
+		# Adding /opt/X11/bin carries a slight risk because folks may have Xquartz on 10.7,
+		# but having it at the end of the PATH gives the stock X11 priority.
+		$ENV{PATH} = "$basepath/sbin:$basepath/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/X11/bin:/opt/X11/bin:"
 			. $ENV{PATH};
 		
 		# get rid of CDPATH
