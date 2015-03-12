@@ -1044,20 +1044,13 @@ sub validate_info_file {
 		}
 
 		foreach my $field (sort keys %pkglist_fields) {
+			next if $field eq 'architecture'; # same format but entries not same as for dpkg package specs
 			foreach my $altspecs (@{&pkglist2lol($pv->pkglist_default($field, ''))}) {
 				foreach my $depspec (@$altspecs) {
-					my ($depname, $versionspec);
-					if ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*\((.+)\)\s*$/) {
-						$depname = $1;
-						$versionspec = $2;
-					} elsif ($depspec =~ /^\s*([0-9a-zA-Z.\+-]+)\s*$/) {
-						$depname = $1;
-					} else {
-						print "Error: could not parse \"$depspec\" entry in $field of package $name. ($filename)\n";
-						$looks_good = 0;
-					}
-					if ($depname =~ /[^+\-.a-z0-9]/) {
-						print "Error: invalid character in packagename \"$depname\" in $field of package $name. ($filename)\n";
+					$depspec =~ s/\s+//g;
+					my $verspec = ($depspec =~ s/\((.*)\)//);
+					if ($depspec =~ /[^+\-.a-z0-9]/) {
+						print "Error: invalid character in packagename \"$depspec\" in $field of package $name. ($filename)\n";
 						$looks_good = 0;
 					}
 					# TODO: check epoch, version, revision
