@@ -1042,6 +1042,21 @@ sub validate_info_file {
 				$looks_good = 0;
 			}
 		}
+
+		foreach my $field (sort keys %pkglist_fields) {
+			next if $field eq 'architecture'; # same format but entries not same as for dpkg package specs
+			foreach my $altspecs (@{&pkglist2lol($pv->pkglist_default($field, ''))}) {
+				foreach my $depspec (@$altspecs) {
+					$depspec =~ s/\s+//g;
+					my $verspec = ($depspec =~ s/\((.*)\)//);
+					if ($depspec =~ /[^+\-.a-z0-9]/) {
+						print "Error: invalid character in packagename \"$depspec\" in $field of package $name. ($filename)\n";
+						$looks_good = 0;
+					}
+					# TODO: check epoch, version, revision
+				}
+			}
+		}
 	}
 
 	if ($looks_good and $config->verbosity_level() >= 3) {
@@ -1355,7 +1370,7 @@ sub validate_info_component {
 				my ($cond, $pkgname, $vers) = ($1, $2, $3);
 				# no logical AND (OR would be split() and give broken atoms)
 				if (defined $cond and $cond =~ /&/) {
-					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Warning: invalid conditional in dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
 				}
 				if ($field eq 'architecture') {
 					$pkgname .= " ($vers)" if defined $vers;
