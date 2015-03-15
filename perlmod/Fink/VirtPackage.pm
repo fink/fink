@@ -1454,7 +1454,7 @@ virtual packages. (See &package_from_pkgconfig).
 
 =cut
 
-	our @x11_dirs=('/usr/X11','/usr/X11R6'); # Put the real directory at the left
+	our @x11_dirs=('/usr/X11R6'); 
 #   uncomment the line below when 10.7 and 10.8 are no longer supported, or 
 #   better yet, just put /opt/X11 above without a conditional.
 #	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later 
