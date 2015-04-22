@@ -2199,6 +2199,7 @@ sub _validate_dpkg {
 					} else {
 						if ($shlibs_file ne $libname) {
 							print "Error: Name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
+							$looks_good = 0;
 						}
 						if ($deb_shlibs->{$shlibs_file}->{'compatibility_version'} ne $compat_version) {
 							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->{'compatibility_version'}.", but it is actually $compat_version.\n";
