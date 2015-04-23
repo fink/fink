@@ -1,6 +1,6 @@
 Package: xz
-Version: 5.0.5
-Revision: 2.1
+Version: 5.2.0
+Revision: 1.1
 Essential: yes
 Description: LZMA file compressor
 DescDetail: <<
@@ -33,13 +33,13 @@ DescUsage: <<
 	Additional scripts: lzdiff, lzcmp, lzgrep, lzegrep, lzfgrep,
 	lzmore, lzless, lzcat, xzcat
 <<
-# The zx and xzdec commands are Public Domain, but the scripts are GPL2+.
+# The xz and xzdec commands are Public Domain, but the scripts are GPL2+.
 License: GPL2+
 Homepage: http://tukaani.org/xz/
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 
 Source: http://tukaani.org/%n/%n-%v.tar.bz2
-Source-MD5: db44efe0d53ac4317627624b98c63da0
+Source-MD5: 867cc8611760240ebf3440bd6e170bb9
 
 BuildDepends: libiconv-dev, libgettext8-dev, gettext-tools, fink (>= 0.24.12)
 Depends: liblzma5-shlibs (= %v-%r)
@@ -98,7 +98,7 @@ SplitOff: <<
 	Files: <<
 		lib/liblzma.5.dylib
 	<<
-	Shlibs: %p/lib/liblzma.5.dylib 6.0.0 %n (>= 5.0.0-1)
+	Shlibs: %p/lib/liblzma.5.dylib 8.0.0 %n (>= 5.2.0-1)
 	DocFiles: AUTHORS ChangeLog COPYING* NEWS README THANKS
 <<
 
